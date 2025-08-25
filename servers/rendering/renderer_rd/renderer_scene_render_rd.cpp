@@ -1278,6 +1278,8 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 
 		scene_data.z_near = p_camera_data->main_projection.get_z_near();
 		scene_data.z_far = p_camera_data->main_projection.get_z_far();
+		scene_data.transparency_sort_mode = p_camera_data->transparency_sort_mode;
+		scene_data.transparency_sort_axis = p_camera_data->transparency_sort_axis;
 
 		// this should be the same for all cameras..
 		const float lod_distance_multiplier = p_camera_data->main_projection.get_lod_multiplier();
