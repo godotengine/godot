@@ -704,10 +704,6 @@ void SoftBody3D::apply_central_force(const Vector3 &p_force) {
 	PhysicsServer3D::get_singleton()->soft_body_apply_central_force(physics_rid, p_force);
 }
 
-void SoftBody3D::pin_point_toggle(int p_point_index) {
-	pin_point(p_point_index, !(-1 != _has_pinned_point(p_point_index)));
-}
-
 void SoftBody3D::pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path, int p_insert_at) {
 	ERR_FAIL_COND_MSG(p_insert_at < -1 || p_insert_at >= pinned_points.size(), "Invalid index for pin point insertion position.");
 	_pin_point_on_physics_server(p_point_index, pin);
