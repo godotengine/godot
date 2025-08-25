@@ -247,6 +247,7 @@ private:
 
 	Button *translation_preview_button = nullptr;
 	CheckBox *preview_camera = nullptr;
+	CheckBox *pilot_camera = nullptr;
 	SubViewportContainer *subviewport_container = nullptr;
 
 	MenuButton *view_display_menu = nullptr;
@@ -499,11 +500,13 @@ private:
 
 	bool previewing_camera = false;
 	bool previewing_cinema = false;
+	bool pilot_preview_enabled = false;
 	bool _is_node_locked(const Node *p_node) const;
 	void _preview_exited_scene();
 	void _preview_camera_property_changed();
 	void _update_centered_labels();
 	void _toggle_camera_preview(bool);
+	void _toggle_pilot_preview(bool);
 	void _toggle_cinema_preview(bool);
 	void _init_gizmo_instance(int p_idx);
 	void _finish_gizmo_instances();
