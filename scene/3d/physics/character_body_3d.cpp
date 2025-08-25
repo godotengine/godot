@@ -138,6 +138,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 	Vector3 motion = velocity * p_delta;
 	Vector3 motion_slide_up = motion.slide(up_direction);
 	Vector3 prev_floor_normal = floor_normal;
+	const real_t recovery_tolerance = margin + CMP_EPSILON;
 
 	platform_rid = RID();
 	platform_object_id = ObjectID();
@@ -180,19 +181,19 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 			// If we hit a ceiling platform, we set the vertical velocity to at least the platform one.
 			if (collision_state.ceiling && platform_ceiling_velocity != Vector3() && platform_ceiling_velocity.dot(up_direction) < 0) {
 				// If ceiling sliding is on, only apply when the ceiling is flat or when the motion is upward.
-				if (!slide_on_ceiling || motion.dot(up_direction) < 0 || (ceiling_normal + up_direction).length() < 0.01) {
+				if (!slide_on_ceiling || motion.dot(up_direction) < 0.0f || (ceiling_normal + up_direction).length() < 0.01f) {
 					apply_ceiling_velocity = true;
 					Vector3 ceiling_vertical_velocity = up_direction * up_direction.dot(platform_ceiling_velocity);
 					Vector3 motion_vertical_velocity = up_direction * up_direction.dot(velocity);
-					if (motion_vertical_velocity.dot(up_direction) > 0 || ceiling_vertical_velocity.length_squared() > motion_vertical_velocity.length_squared()) {
+					if (motion_vertical_velocity.dot(up_direction) > 0.0f || ceiling_vertical_velocity.length_squared() > motion_vertical_velocity.length_squared()) {
 						velocity = ceiling_vertical_velocity + velocity.slide(up_direction);
 					}
 				}
 			}
 
-			if (collision_state.floor && floor_stop_on_slope && (velocity.normalized() + up_direction).length() < 0.01) {
+			if (collision_state.floor && floor_stop_on_slope && (velocity.normalized() + up_direction).length() < 0.01f) {
 				Transform3D gt = get_global_transform();
-				if (result.travel.length() <= margin + CMP_EPSILON) {
+				if (result.travel.length() <= recovery_tolerance) {
 					gt.origin -= result.travel;
 				}
 				set_global_transform(gt);
@@ -228,9 +229,9 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 						if (p_was_on_floor && !vel_dir_facing_up) {
 							// Cancel the motion.
 							Transform3D gt = get_global_transform();
-							real_t travel_total = result.travel.length();
-							real_t cancel_dist_max = MIN(0.1, margin * 20);
-							if (travel_total <= margin + CMP_EPSILON) {
+							const real_t travel_total = result.travel.length();
+							const real_t cancel_dist_max = MIN(0.1f, margin * 20.0f);
+							if (travel_total <= recovery_tolerance) {
 								gt.origin -= result.travel;
 								result.travel = Vector3(); // Cancel for constant speed computation.
 							} else if (travel_total < cancel_dist_max) { // If the movement is large the body can be prevented from reaching the walls.
