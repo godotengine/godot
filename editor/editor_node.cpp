@@ -143,6 +143,7 @@
 #include "editor/run/editor_run.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/run/game_view_plugin.h"
+#include "editor/scene/3d/material_3d_conversion_plugins.h"
 #include "editor/scene/3d/mesh_library_editor_plugin.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/scene/3d/root_motion_editor_plugin.h"
