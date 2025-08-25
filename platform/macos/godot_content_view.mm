@@ -35,6 +35,7 @@
 #import "key_mapping_macos.h"
 
 #include "main/main.h"
+#include "main/profiling/profiling.h"
 
 @implementation GodotContentLayerDelegate
 
@@ -56,6 +57,9 @@
 - (void)displayLayer:(CALayer *)layer {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (OS::get_singleton()->get_main_loop() && ds->get_is_resizing() && need_redraw) {
+		GodotProfileFrameMark;
+		GodotProfileZone("[GodotContentLayerDelegate displayLayer]");
+
 		Main::force_redraw();
 		if (!Main::is_iterating()) { // Avoid cyclic loop.
 			Main::iteration();
