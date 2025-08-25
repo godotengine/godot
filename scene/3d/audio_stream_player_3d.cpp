@@ -251,7 +251,6 @@ float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 		}
 	}
 
-	att += internal->volume_db;
 	if (att > max_db) {
 		att = max_db;
 	}
@@ -475,7 +474,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		}
 
 		for (unsigned int k = 0; k < 4; k++) {
-			output_volume_vector.write[k] = multiplier * output_volume_vector[k];
+			output_volume_vector.write[k] = multiplier * Math::db_to_linear(internal->volume_db) * output_volume_vector[k];
 		}
 
 		HashMap<StringName, Vector<AudioFrame>> bus_volumes;
