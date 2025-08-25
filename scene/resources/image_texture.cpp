@@ -87,7 +87,7 @@ void ImageTexture::set_image(const Ref<Image> &p_image) {
 	w = p_image->get_width();
 	h = p_image->get_height();
 	format = p_image->get_format();
-	mipmaps = p_image->has_mipmaps();
+	mipmap_count = p_image->get_mipmap_count();
 
 	if (texture.is_null()) {
 		texture = RenderingServer::get_singleton()->texture_2d_create(p_image);
@@ -112,7 +112,7 @@ void ImageTexture::update(const Ref<Image> &p_image) {
 			"The new image dimensions must match the texture size.");
 	ERR_FAIL_COND_MSG(p_image->get_format() != format,
 			"The new image format must match the texture's image format.");
-	ERR_FAIL_COND_MSG(mipmaps != p_image->has_mipmaps(),
+	ERR_FAIL_COND_MSG(mipmap_count != p_image->get_mipmap_count(),
 			"The new image mipmaps configuration must match the texture's image mipmaps configuration");
 
 	RS::get_singleton()->texture_2d_update(texture, p_image);
@@ -258,7 +258,11 @@ int ImageTextureLayered::get_layers() const {
 }
 
 bool ImageTextureLayered::has_mipmaps() const {
-	return mipmaps;
+	return mipmap_count > 0;
+}
+
+int ImageTextureLayered::get_mipmap_count() const {
+	return mipmap_count;
 }
 
 ImageTextureLayered::LayeredType ImageTextureLayered::get_layered_type() const {
@@ -304,14 +308,14 @@ Error ImageTextureLayered::create_from_images(Vector<Ref<Image>> p_images) {
 	Image::Format new_format = p_images[0]->get_format();
 	int new_width = p_images[0]->get_width();
 	int new_height = p_images[0]->get_height();
-	bool new_mipmaps = p_images[0]->has_mipmaps();
+	int new_mipmaps = p_images[0]->get_mipmap_count();
 
 	for (int i = 1; i < p_images.size(); i++) {
 		ERR_FAIL_COND_V_MSG(p_images[i]->get_format() != new_format, ERR_INVALID_PARAMETER,
 				"All images must share the same format");
 		ERR_FAIL_COND_V_MSG(p_images[i]->get_width() != new_width || p_images[i]->get_height() != new_height, ERR_INVALID_PARAMETER,
 				"All images must share the same dimensions");
-		ERR_FAIL_COND_V_MSG(p_images[i]->has_mipmaps() != new_mipmaps, ERR_INVALID_PARAMETER,
+		ERR_FAIL_COND_V_MSG(p_images[i]->get_mipmap_count() != new_mipmaps, ERR_INVALID_PARAMETER,
 				"All images must share the usage of mipmaps");
 	}
 
@@ -328,7 +332,7 @@ Error ImageTextureLayered::create_from_images(Vector<Ref<Image>> p_images) {
 	width = new_width;
 	height = new_height;
 	layers = new_layers;
-	mipmaps = new_mipmaps;
+	mipmap_count = new_mipmaps;
 	return OK;
 }
 
@@ -337,7 +341,7 @@ void ImageTextureLayered::update_layer(const Ref<Image> &p_image, int p_layer) {
 	ERR_FAIL_COND_MSG(p_image.is_null(), "Invalid image.");
 	ERR_FAIL_COND_MSG(p_image->get_format() != format, "Image format must match texture's image format.");
 	ERR_FAIL_COND_MSG(p_image->get_width() != width || p_image->get_height() != height, "Image size must match texture's image size.");
-	ERR_FAIL_COND_MSG(p_image->has_mipmaps() != mipmaps, "Image mipmap configuration must match texture's image mipmap configuration.");
+	ERR_FAIL_COND_MSG(p_image->get_mipmap_count() != mipmap_count, "Image mipmap configuration must match texture's image mipmap configuration.");
 	ERR_FAIL_INDEX_MSG(p_layer, layers, "Layer index is out of bounds.");
 	RS::get_singleton()->texture_2d_update(texture, p_image, p_layer);
 }
@@ -396,7 +400,11 @@ int ImageTexture3D::get_depth() const {
 	return depth;
 }
 bool ImageTexture3D::has_mipmaps() const {
-	return mipmaps;
+	return mipmap_count > 0;
+}
+
+int ImageTexture3D::get_mipmap_count() const {
+	return mipmap_count;
 }
 
 Error ImageTexture3D::_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const TypedArray<Image> &p_data) {
@@ -431,7 +439,7 @@ Error ImageTexture3D::create(Image::Format p_format, int p_width, int p_height, 
 	width = p_width;
 	height = p_height;
 	depth = p_depth;
-	mipmaps = p_mipmaps;
+	mipmap_count = p_mipmaps ? Image::get_image_required_mipmaps(width, height, format) : 0;
 
 	return OK;
 }
