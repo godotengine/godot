@@ -248,6 +248,12 @@ protected:
 
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	Error _load_svg_from_buffer_109947(const Vector<uint8_t> &p_array, float scale);
+	Error _load_svg_from_string_109947(const String &p_svg_str, float scale);
+	static void _bind_compatibility_methods();
+#endif
+
 private:
 	Format format = FORMAT_L8;
 	Vector<uint8_t> data;
