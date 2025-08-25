@@ -102,11 +102,17 @@ public:
 	void set_max_value(real_t p_max);
 	real_t get_value_range() const { return _max_value - _min_value; }
 
+	void set_min_value_nocheck(real_t p_min);
+	void set_max_value_nocheck(real_t p_max);
+
 	real_t get_min_domain() const { return _min_domain; }
 	void set_min_domain(real_t p_min);
 	real_t get_max_domain() const { return _max_domain; }
 	void set_max_domain(real_t p_max);
 	real_t get_domain_range() const { return _max_domain - _min_domain; }
+
+	void set_min_domain_nocheck(real_t p_min);
+	void set_max_domain_nocheck(real_t p_max);
 
 	Array get_limits() const;
 	void set_limits(const Array &p_input);
@@ -130,6 +136,9 @@ public:
 
 	Array get_data() const;
 	void set_data(Array p_input);
+
+	void remap_value(real_t p_new_min, real_t p_new_max);
+	void remap_domain(real_t p_new_min, real_t p_new_max);
 
 	void bake();
 	void _bake() const;
