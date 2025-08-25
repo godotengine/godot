@@ -226,6 +226,7 @@ opts.Add(
     EnumVariable("warnings", "Level of compilation warnings", "all", ["extra", "all", "moderate", "no"], ignorecase=2)
 )
 opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
+opts.Add("output_path", "Explicit path to output Godot binary relative to source root", "")
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
 opts.Add("object_prefix", "Custom prefix added to the base filename of all generated object files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
