@@ -463,8 +463,13 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 	for (uint32_t i = 0; i < variant_count; i++) {
 		int variant_id = group_to_variant_map[p_group][i];
 		uint32_t variant_size = f->get_32();
-		if (!variants_enabled[variant_id] || variant_size == 0) {
+		if (!variants_enabled[variant_id]) {
 			continue;
+		}
+		if (variant_size == 0) {
+			// A new variant has been requested, failing the entire load will generate it
+			print_verbose(vformat("Shader cache miss for %s due to missing variant %d", name.path_join(group_sha256[p_group]).path_join(_version_get_sha1(p_version)), variant_id));
+			return false;
 		}
 		Vector<uint8_t> variant_bytes;
 		variant_bytes.resize(variant_size);

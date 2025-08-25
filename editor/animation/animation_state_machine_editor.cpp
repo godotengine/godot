@@ -506,8 +506,6 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	}
 
 	if (mm.is_valid()) {
-		state_machine_draw->grab_focus();
-
 		String new_hovered_node_name;
 		HoveredNodeArea new_hovered_node_area = HOVER_NODE_NONE;
 		if (tool_select->is_pressed()) {

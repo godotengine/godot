@@ -1503,7 +1503,8 @@ Error GLTFDocument::_decode_buffer_view(Ref<GLTFState> p_state, double *p_dst, c
 			}
 
 			double d = 0;
-
+			// 3.11. Implementations MUST use following equations to decode real floating-point value f from a normalized integer c and vise-versa.
+			// https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#animations
 			switch (p_component_type) {
 				case GLTFAccessor::COMPONENT_TYPE_NONE: {
 					ERR_FAIL_V_MSG(ERR_INVALID_DATA, "glTF: Failed to decode buffer view, component type not set.");
@@ -1511,7 +1512,7 @@ Error GLTFDocument::_decode_buffer_view(Ref<GLTFState> p_state, double *p_dst, c
 				case GLTFAccessor::COMPONENT_TYPE_SIGNED_BYTE: {
 					int8_t b = int8_t(*src);
 					if (p_normalized) {
-						d = (double(b) / 128.0);
+						d = MAX(double(b) / 127.0, -1.0);
 					} else {
 						d = double(b);
 					}
@@ -1527,7 +1528,7 @@ Error GLTFDocument::_decode_buffer_view(Ref<GLTFState> p_state, double *p_dst, c
 				case GLTFAccessor::COMPONENT_TYPE_SIGNED_SHORT: {
 					int16_t s = *(int16_t *)src;
 					if (p_normalized) {
-						d = (double(s) / 32768.0);
+						d = MAX(double(s) / 32767.0, -1.0);
 					} else {
 						d = double(s);
 					}
@@ -1628,7 +1629,7 @@ Vector<double> GLTFDocument::_decode_accessor(Ref<GLTFState> p_state, const GLTF
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT: {
 			if (a->accessor_type == GLTFAccessor::TYPE_MAT3) {
 				skip_every = 6;
-				skip_bytes = 4;
+				skip_bytes = 2;
 				element_size = 16; //override for this case
 			}
 		} break;
@@ -1724,7 +1725,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> p_state,
 	int64_t size = p_state->buffers[0].size();
 	const GLTFAccessor::GLTFAccessorType accessor_type = GLTFAccessor::TYPE_SCALAR;
 	GLTFAccessor::GLTFComponentType component_type;
-	if (max_index > 65535 || p_for_vertex) {
+	if (max_index > 65534 || p_for_vertex) {
 		component_type = GLTFAccessor::COMPONENT_TYPE_UNSIGNED_INT;
 	} else {
 		component_type = GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT;
@@ -2274,7 +2275,7 @@ GLTFAccessorIndex GLTFDocument::_encode_sparse_accessor_as_vec3(Ref<GLTFState> p
 	}
 	sparse_accessor->max = type_max;
 	sparse_accessor->min = type_min;
-	int64_t sparse_accessor_index_stride = max_changed_index > 65535 ? 4 : 2;
+	int64_t sparse_accessor_index_stride = max_changed_index > 65534 ? 4 : 2;
 
 	int64_t sparse_accessor_storage_size = changed_indices.size() * (sparse_accessor_index_stride + element_count * sizeof(float));
 	int64_t conventional_storage_size = p_attribs.size() * element_count * sizeof(float);
@@ -3051,7 +3052,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 				}
 			}
 			{
-				const Array &a = array[Mesh::ARRAY_WEIGHTS];
+				const PackedRealArray &a = array[Mesh::ARRAY_WEIGHTS];
 				const Vector<Vector3> &vertex_array = array[Mesh::ARRAY_VERTEX];
 				if ((a.size() / JOINT_GROUP_SIZE) == vertex_array.size()) {
 					int32_t vertex_count = vertex_array.size();
@@ -3475,6 +3476,9 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				}
 				array[Mesh::ARRAY_BONES] = joints;
 			}
+			// glTF stores weights as a VEC4 array or multiple VEC4 arrays, but Godot's
+			// ArrayMesh uses a flat array of either 4 or 8 floats per vertex.
+			// Therefore, decode up to two glTF VEC4 arrays as float arrays.
 			if (a.has("WEIGHTS_0") && !a.has("WEIGHTS_1")) {
 				Vector<float> weights = _decode_accessor_as_floats(p_state, a["WEIGHTS_0"], true, indices_vec4_mapping);
 				ERR_FAIL_COND_V(weights.size() != 4 * vertex_num, ERR_INVALID_DATA);
