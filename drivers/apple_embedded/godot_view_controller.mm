@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  view_controller.mm                                                    */
+/*  godot_view_controller.mm                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "view_controller.h"
+#import "godot_view_controller.h"
 
 #import "display_server_apple_embedded.h"
+#import "godot_keyboard_input_view.h"
 #import "godot_view_apple_embedded.h"
 #import "godot_view_renderer.h"
 #import "key_mapping_apple_embedded.h"
-#import "keyboard_input_view.h"
 #import "os_apple_embedded.h"
 
 #include "core/config/project_settings.h"
@@ -166,6 +166,16 @@
 	[self displayLoadingOverlay];
 
 	[self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+	[super viewDidAppear:animated];
+	[self.godotView startRendering];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+	[self.godotView stopRendering];
+	[super viewDidDisappear:animated];
 }
 
 - (void)observeKeyboard {

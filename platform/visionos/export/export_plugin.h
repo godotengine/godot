@@ -41,7 +41,7 @@ class EditorExportPlatformVisionOS : public EditorExportPlatformAppleEmbedded {
 	virtual String get_sdk_name() const override { return "xros"; }
 	virtual const Vector<String> get_device_types() const override { return device_types; }
 
-	virtual String get_minimum_deployment_target() const override { return "2.0"; }
+	virtual String get_minimum_deployment_target() const override { return "26.0"; }
 
 	virtual Vector<EditorExportPlatformAppleEmbedded::IconInfo> get_icon_infos() const override;
 

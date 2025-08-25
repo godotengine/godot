@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  keyboard_input_view.h                                                 */
+/*  godot_view_controller.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -32,8 +32,12 @@
 
 #import <UIKit/UIKit.h>
 
-@interface GDTKeyboardInputView : UITextView
+@class GDTView;
+@class GDTKeyboardInputView;
 
-- (BOOL)becomeFirstResponderWithString:(NSString *)existingString cursorStart:(NSInteger)start cursorEnd:(NSInteger)end;
+@interface GDTViewController : UIViewController
+
+@property(nonatomic, readonly, strong) GDTView *godotView;
+@property(nonatomic, readonly, strong) GDTKeyboardInputView *keyboardView;
 
 @end
