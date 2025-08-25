@@ -15,7 +15,7 @@ with open(fname.strip(), "r", encoding="utf-8") as fileread:
 # If find "ERROR: AddressSanitizer:", then happens invalid read or write
 # This is critical bug, so we need to fix this as fast as possible
 
-if file_contents.find("ERROR: AddressSanitizer:") != -1:
+if file_contents.find("ERROR: AddressSanitizer:") != -1 or file_contents.find("WARNING: AddressSanitizer:") != -1:
     print("FATAL ERROR: An incorrectly used memory was found.")
     sys.exit(51)
 
@@ -37,7 +37,7 @@ if (
 # so searching for 5 element - "#4 0x" - should correctly detect the vast
 # majority of memory leaks
 
-if file_contents.find("ERROR: LeakSanitizer:") != -1:
+if file_contents.find("ERROR: LeakSanitizer:") != -1 or file_contents.find("WARNING: LeakSanitizer:") != -1:
     if file_contents.find("#4 0x") != -1:
         print("ERROR: Memory leak was found")
         sys.exit(53)
@@ -57,6 +57,16 @@ if file_contents.find("ObjectDB instances leaked at exit") != -1:
 if file_contents.find("Assertion failed") != -1:
     print("ERROR: Assertion failed in project, check execution log for more info")
     sys.exit(55)
+
+# This file is pretty archaic, but for now we'll expand on it to catch TSAN and UBSAN too
+
+if file_contents.find("ERROR: ThreadSanitizer:") != -1 or file_contents.find("WARNING: ThreadSanitizer:") != -1:
+    print("ERROR: Data race detected.")
+    sys.exit(56)
+
+if file_contents.find("runtime error:") != -1:
+    print("ERROR: Undefined behavior detected.")
+    sys.exit(57)
 
 # For now Godot leaks a lot of rendering stuff so for now we just show info
 # about it and this needs to be re-enabled after fixing this memory leaks.
