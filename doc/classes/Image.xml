@@ -388,8 +388,10 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="buffer" type="PackedByteArray" />
 			<param index="1" name="scale" type="float" default="1.0" />
+			<param index="2" name="premult_alpha" type="bool" default="false" />
 			<description>
 				Loads an image from the UTF-8 binary contents of an [b]uncompressed[/b] SVG file ([b].svg[/b]).
+				Set [param premult_alpha] to true to avoid unnecessary conversions, as the underlying SVG renderer (ThorVG) internally uses premultiplied alpha. Use the corresponding blend mode [constant CanvasItemMaterial.BLEND_MODE_PREMULT_ALPHA].
 				[b]Note:[/b] Beware when using compressed SVG files (like [b].svgz[/b]), they need to be [code]decompressed[/code] before loading.
 				[b]Note:[/b] This method is only available in engine builds with the SVG module enabled. By default, the SVG module is enabled, but it can be disabled at build-time using the [code]module_svg_enabled=no[/code] SCons option.
 			</description>
@@ -398,8 +400,10 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="svg_str" type="String" />
 			<param index="1" name="scale" type="float" default="1.0" />
+			<param index="2" name="premult_alpha" type="bool" default="false" />
 			<description>
 				Loads an image from the string contents of an SVG file ([b].svg[/b]).
+				Set [param premult_alpha] to true to avoid unnecessary conversions, as the underlying SVG renderer (ThorVG) internally uses premultiplied alpha. Use the corresponding blend mode [constant CanvasItemMaterial.BLEND_MODE_PREMULT_ALPHA].
 				[b]Note:[/b] This method is only available in engine builds with the SVG module enabled. By default, the SVG module is enabled, but it can be disabled at build-time using the [code]module_svg_enabled=no[/code] SCons option.
 			</description>
 		</method>
