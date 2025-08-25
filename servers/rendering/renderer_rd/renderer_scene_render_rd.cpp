@@ -242,7 +242,7 @@ Ref<RenderSceneBuffers> RendererSceneRenderRD::render_buffers_create() {
 
 	rb->set_can_be_storage(_render_buffers_can_be_storage());
 	rb->set_max_cluster_elements(max_cluster_elements);
-	rb->set_base_data_format(_render_buffers_get_color_format());
+	rb->set_preferred_data_format(_render_buffers_get_preferred_color_format());
 	if (vrs) {
 		rb->set_vrs(vrs);
 	}
@@ -587,7 +587,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			}
 		}
 
-		float luminance_multiplier = _render_buffers_get_luminance_multiplier();
+		float luminance_multiplier = rb->get_luminance_multiplier();
 		for (uint32_t l = 0; l < rb->get_view_count(); l++) {
 			for (int i = 0; i < (max_glow_level + 1); i++) {
 				Size2i vp_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, i);
@@ -694,7 +694,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			}
 		}
 
-		tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
+		tonemap.luminance_multiplier = rb->get_luminance_multiplier();
 		tonemap.view_count = rb->get_view_count();
 
 		RID dest_fb;
@@ -703,7 +703,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		if (spatial_upscaler != nullptr || use_smaa) {
 			// If we use a spatial upscaler to upscale or SMAA to antialias we need to write our result into an intermediate buffer.
 			// Note that this is cached so we only create the texture the first time.
-			dest_fb_format = _render_buffers_get_color_format();
+			dest_fb_format = rb->get_base_data_format();
 			RID dest_texture = rb->create_texture(SNAME("Tonemapper"), SNAME("destination"), dest_fb_format, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
 			dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
 			if (use_smaa) {
@@ -759,7 +759,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		bool using_hdr = texture_storage->render_target_is_using_hdr(render_target);
 		RID dest_fb;
 		if (spatial_upscaler) {
-			rb->create_texture(SNAME("SMAA"), SNAME("destination"), _render_buffers_get_color_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
+			rb->create_texture(SNAME("SMAA"), SNAME("destination"), rb->get_base_data_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
 		}
 		if (rb->get_view_count() > 1) {
 			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
@@ -803,7 +803,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			RD::DataFormat format_for_debanding;
 
 			if (spatial_upscaler) {
-				RID dest_texture = rb->create_texture(SNAME("SMAA"), SNAME("destination"), _render_buffers_get_color_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
+				RID dest_texture = rb->create_texture(SNAME("SMAA"), SNAME("destination"), rb->get_base_data_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
 				dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
 				// Debanding is currently not supported when using spatial upscaling, so apply it before scaling.
 				// This produces suboptimal results because the image will be modified by spatial upscaling after
@@ -937,7 +937,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 
 	tonemap.texture_size = Vector2i(target_size.x, target_size.y);
 
-	tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
+	tonemap.luminance_multiplier = rb->get_luminance_multiplier();
 	tonemap.view_count = rb->get_view_count();
 
 	if (rb->get_use_debanding()) {
@@ -1117,11 +1117,7 @@ RID RendererSceneRenderRD::render_buffers_get_default_voxel_gi_buffer() {
 	return gi.default_voxel_gi_buffer;
 }
 
-float RendererSceneRenderRD::_render_buffers_get_luminance_multiplier() {
-	return 1.0;
-}
-
-RD::DataFormat RendererSceneRenderRD::_render_buffers_get_color_format() {
+RD::DataFormat RendererSceneRenderRD::_render_buffers_get_preferred_color_format() {
 	return RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 }
 

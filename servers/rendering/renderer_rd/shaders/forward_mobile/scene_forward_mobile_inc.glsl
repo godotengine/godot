@@ -211,6 +211,10 @@ half sc_luminance_multiplier() {
 	return half(sc_packed_2());
 }
 
+// Like the luminance multiplier, but it is only for sky and reflection probes
+// since they are always LDR.
+#define REFLECTION_MULTIPLIER half(2.0)
+
 /* Set 0: Base Pass (never changes) */
 
 #include "../light_data_inc.glsl"
