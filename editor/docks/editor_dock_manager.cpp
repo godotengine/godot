@@ -293,20 +293,15 @@ void EditorDockManager::_dock_container_gui_input(const Ref<InputEvent> &p_input
 			return;
 		}
 
-		// Right click context menu.
-		dock_context_popup->set_dock(p_dock_container->get_tab_control(tab_id));
-		dock_context_popup->set_position(p_dock_container->get_screen_position() + mb->get_position());
-		dock_context_popup->popup();
-	}
-}
+		Control *tab_control = p_dock_container->get_tab_control(tab_id);
 
-void EditorDockManager::_bottom_dock_button_gui_input(const Ref<InputEvent> &p_input, Control *p_dock, Button *p_bottom_button) {
-	Ref<InputEventMouseButton> mb = p_input;
+		if (!all_docks.has(tab_control)) {
+			return;
+		}
 
-	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 		// Right click context menu.
-		dock_context_popup->set_dock(p_dock);
-		dock_context_popup->set_position(p_bottom_button->get_screen_position() + mb->get_position());
+		dock_context_popup->set_dock(tab_control);
+		dock_context_popup->set_position(p_dock_container->get_tab_bar()->get_screen_position() + mb->get_position());
 		dock_context_popup->popup();
 	}
 }
@@ -459,8 +454,7 @@ void EditorDockManager::_dock_move_to_bottom(Control *p_dock, bool p_visible) {
 	p_dock->call("_set_dock_horizontal", true);
 
 	// Force docks moved to the bottom to appear first in the list, and give them their associated shortcut to toggle their bottom panel.
-	Button *bottom_button = EditorNode::get_bottom_panel()->add_item(all_docks[p_dock].title, p_dock, all_docks[p_dock].shortcut, true);
-	bottom_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorDockManager::_bottom_dock_button_gui_input).bind(bottom_button).bind(p_dock));
+	EditorNode::get_bottom_panel()->add_item(all_docks[p_dock].title, p_dock, all_docks[p_dock].shortcut, true);
 	EditorNode::get_bottom_panel()->make_item_visible(p_dock, p_visible);
 }
 
