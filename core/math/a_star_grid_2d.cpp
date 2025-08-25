@@ -614,6 +614,8 @@ TypedArray<Dictionary> AStarGrid2D::get_point_data_in_region(const Rect2i &p_reg
 	const int32_t end_y = inter_region.get_end().y - region.position.y;
 
 	TypedArray<Dictionary> data;
+	data.resize((end_y - start_y) * (end_x - start_x));
+	int idx = 0;
 
 	for (int32_t y = start_y; y < end_y; y++) {
 		for (int32_t x = start_x; x < end_x; x++) {
@@ -624,7 +626,7 @@ TypedArray<Dictionary> AStarGrid2D::get_point_data_in_region(const Rect2i &p_reg
 			dict["position"] = p.pos;
 			dict["solid"] = _get_solid_unchecked(p.id);
 			dict["weight_scale"] = p.weight_scale;
-			data.push_back(dict);
+			data.set(idx++, dict);
 		}
 	}
 

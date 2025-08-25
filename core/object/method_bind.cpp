@@ -38,8 +38,9 @@ uint32_t MethodBind::get_hash() const {
 	MethodInfo mi;
 	mi.return_val = get_return_info();
 	mi.flags = get_hint_flags();
+	mi.arguments.resize(get_argument_count());
 	for (int i = 0; i < get_argument_count(); i++) {
-		mi.arguments.push_back(get_argument_info(i));
+		mi.arguments.set(i, get_argument_info(i));
 	}
 	mi.default_arguments = default_arguments;
 
