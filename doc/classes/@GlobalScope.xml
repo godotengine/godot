@@ -3030,7 +3030,7 @@
 			When duplicating a resource with [method Resource.duplicate], and this flag is set on a property of that resource, the property should always be duplicated, regardless of the [code]subresources[/code] bool parameter.
 		</constant>
 		<constant name="PROPERTY_USAGE_NEVER_DUPLICATE" value="1048576" enum="PropertyUsageFlags" is_bitfield="true">
-			When duplicating a resource with [method Resource.duplicate], and this flag is set on a property of that resource, the property should never be duplicated, regardless of the [code]subresources[/code] bool parameter.
+			When duplicating a resource with [method Resource.duplicate], and this flag is set on a property of that resource, the property should never be duplicated.
 		</constant>
 		<constant name="PROPERTY_USAGE_HIGH_END_GFX" value="2097152" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is only shown in the editor if modern renderers are supported (the Compatibility rendering method is excluded).
