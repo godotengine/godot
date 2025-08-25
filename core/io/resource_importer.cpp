@@ -508,6 +508,13 @@ void ResourceFormatImporter::get_importers(List<Ref<ResourceImporter>> *r_import
 }
 
 Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_file(const String &p_file) const {
+	const String extension = p_file.get_extension().to_lower();
+
+	Ref<ResourceImporter> default_importer = get_default_importer_by_extension(extension);
+	if (default_importer.is_valid()) {
+		return default_importer;
+	}
+
 	Ref<ResourceImporter> importer;
 	float priority = 0;
 
@@ -524,6 +531,25 @@ Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_file(const String 
 	}
 
 	return importer;
+}
+
+Ref<ResourceImporter> ResourceFormatImporter::get_default_importer_by_extension(const String &p_extension) const {
+	// Early return if the setting doesn't exist.
+	if (!ProjectSettings::get_singleton()->has_setting("default_resource_importers/" + p_extension)) {
+		return Ref<ResourceImporter>();
+	}
+	const String importer_name = GLOBAL_GET("default_resource_importers/" + p_extension);
+
+	Ref<ResourceImporter> importer = get_importer_by_name(importer_name);
+	if (importer.is_valid()) {
+		List<String> extensions;
+		importer->get_recognized_extensions(&extensions);
+		if (extensions.find(p_extension)) {
+			return importer;
+		}
+	}
+
+	return Ref<ResourceImporter>();
 }
 
 String ResourceFormatImporter::get_import_base_path(const String &p_for_file) const {
