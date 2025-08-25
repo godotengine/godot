@@ -570,7 +570,7 @@ private:
 	void seat_name_enter_surface(uint32_t p_seat_name, uint32_t p_global_surface_id);
 	void seat_name_leave_surface(uint32_t p_seat_name, uint32_t p_global_surface_id);
 
-	bool handle_request(LocalObjectHandle p_object, uint32_t p_opcode, uint32_t *msg_data, size_t msg_len);
+	MessageStatus handle_request(LocalObjectHandle p_object, uint32_t p_opcode, uint32_t *msg_data, size_t msg_len);
 	MessageStatus handle_event(uint32_t p_global_id, LocalObjectHandle p_local_handle, uint32_t p_opcode, uint32_t *msg_data, size_t msg_len);
 
 	bool handle_generic_msg(Client *client, const WaylandObject *p_object, const struct wl_message *message, const struct msg_info *info, uint32_t *buf, uint32_t instance_id = INVALID_ID);

@@ -234,7 +234,7 @@ struct WaylandEmbedder::WaylandObject *WaylandEmbedder::Client::get_object(uint3
 		return nullptr;
 	}
 
-	ERR_FAIL_COND_V(embedder == nullptr, nullptr);
+	ERR_FAIL_NULL_V(embedder, nullptr);
 	return embedder->get_object(get_global_id(p_local_id));
 }
 
@@ -1062,23 +1062,22 @@ bool WaylandEmbedder::handle_generic_msg(Client *client, const WaylandObject *p_
 	return valid;
 }
 
-// Returns whether handled.
-bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opcode, uint32_t *msg_data, size_t msg_len) {
+WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opcode, uint32_t *msg_data, size_t msg_len) {
 	WaylandObject *object = p_object.get();
 	Client *client = p_object.get_client();
 
-	ERR_FAIL_NULL_V(object, true);
+	ERR_FAIL_NULL_V(object, MessageStatus::HANDLED);
 
-	ERR_FAIL_COND_V(!p_object.is_valid(), true);
+	ERR_FAIL_COND_V(!p_object.is_valid(), MessageStatus::HANDLED);
 
 	// NOTE: Global ID may be null.
 	uint32_t global_id = p_object.get_global_id();
 	uint32_t local_id = p_object.get_local_id();
 
-	CRASH_COND(object->interface == nullptr);
+	ERR_FAIL_NULL_V(object->interface, MessageStatus::ERROR);
 	const struct wl_interface *interface = object->interface;
 
-	CRASH_COND((int)p_opcode >= interface->method_count);
+	ERR_FAIL_COND_V((int)p_opcode >= interface->method_count, MessageStatus::ERROR);
 	const struct wl_message message = interface->methods[p_opcode];
 
 	DEBUG_LOG_WAYLAND_EMBED(vformat("Request %s::%s(%s) l0x%x -> g0x%x", interface->name, message.name, message.signature, local_id, global_id));
@@ -1116,7 +1115,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 		client->new_global_instance(local_registry_id, REGISTRY_ID, &wl_registry_interface, 1);
 
-		return true;
+		return MessageStatus::HANDLED;
 	}
 
 	if (object->interface == &wl_registry_interface) {
@@ -1130,7 +1129,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			uint32_t new_local_id = body[new_local_id_idx];
 
 			RegistryGlobalInfo &global_info = registry_globals[global_name];
-			CRASH_COND(global_info.interface == nullptr);
+			ERR_FAIL_NULL_V(global_info.interface, MessageStatus::ERROR);
 
 			version = MIN(global_info.version, version);
 
@@ -1142,7 +1141,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 				client->registry_globals_instances[global_name].insert(new_local_id);
 				DEBUG_LOG_WAYLAND_EMBED("Bound embedded compositor interface.");
 				client->new_fake_object(new_local_id, &godot_embedding_compositor_interface, 1);
-				return true;
+				return MessageStatus::HANDLED;
 			}
 
 			bool can_destroy = false;
@@ -1169,7 +1168,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 				// Passthrough.
 				uint32_t instance_gid = client->new_object(new_local_id, global_info.interface, version);
-				ERR_FAIL_COND_V(instance_gid == INVALID_ID, true);
+				ERR_FAIL_COND_V(instance_gid == INVALID_ID, MessageStatus::HANDLED);
 
 				instance = get_object(instance_gid);
 
@@ -1210,7 +1209,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 					send_raw_message(compositor_socket, { { header, sizeof header }, { body, body_len - WL_WORD_SIZE }, { &new_gid, sizeof new_gid } });
 				}
 
-				CRASH_COND(global_info.global_ids[version] == INVALID_ID);
+				ERR_FAIL_COND_V(global_info.global_ids[version] == INVALID_ID, MessageStatus::ERROR);
 
 				// FIXME: Consider simplifying the relationship between shared_objects and
 				// global_instances. global_instances is only a store for certain objects,
@@ -1228,7 +1227,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 					client->send_wl_drm_state(new_local_id, (WaylandDrmGlobalData *)global_info.data);
 				} else if (global_info.interface == &wl_shm_interface) {
 					WaylandShmGlobalData *global_data = (WaylandShmGlobalData *)global_info.data;
-					CRASH_COND(global_data == nullptr);
+					ERR_FAIL_NULL_V(global_data, MessageStatus::ERROR);
 
 					for (uint32_t format : global_data->formats) {
 						send_wayland_message(client->socket, new_local_id, WL_SHM_FORMAT, { format });
@@ -1236,14 +1235,14 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 				}
 			}
 
-			ERR_FAIL_NULL_V(instance, false);
+			ERR_FAIL_NULL_V(instance, MessageStatus::UNHANDLED);
 
 			if (global_info.interface == &wl_seat_interface) {
 				WaylandSeatInstanceData *new_data = memnew(WaylandSeatInstanceData);
 				instance->data = new_data;
 			}
 
-			return true;
+			return MessageStatus::HANDLED;
 		}
 	}
 
@@ -1254,21 +1253,21 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 		data->client = client;
 
 		uint32_t new_global_id = client->new_object(new_local_id, &wl_surface_interface, object->version, data);
-		ERR_FAIL_COND_V(new_global_id == INVALID_ID, true);
+		ERR_FAIL_COND_V(new_global_id == INVALID_ID, MessageStatus::HANDLED);
 
 		DEBUG_LOG_WAYLAND_EMBED(vformat("Keeping track of surface l0x%x g0x%x.", new_local_id, new_global_id));
 
 		send_wayland_message(compositor_socket, global_id, p_opcode, { new_global_id });
-		return true;
+		return MessageStatus::HANDLED;
 	}
 
 	if (object->interface == &wl_surface_interface) {
 		WaylandSurfaceData *surface_data = (WaylandSurfaceData *)object->data;
-		CRASH_COND(surface_data == nullptr);
+		ERR_FAIL_NULL_V(surface_data, MessageStatus::ERROR);
 
 		if (p_opcode == WL_SURFACE_DESTROY) {
 			WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)registry_globals[wl_seat_name].data;
-			CRASH_COND(global_seat_data == nullptr);
+			ERR_FAIL_NULL_V(global_seat_data, MessageStatus::ERROR);
 
 			if (global_seat_data->pointed_surface_id == global_id) {
 				global_seat_data->pointed_surface_id = INVALID_ID;
@@ -1286,7 +1285,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 				if (role_object && role_object->interface == &xdg_toplevel_interface) {
 					XdgToplevelData *toplevel_data = (XdgToplevelData *)role_object->data;
-					CRASH_COND(toplevel_data == nullptr);
+					ERR_FAIL_NULL_V(toplevel_data, MessageStatus::ERROR);
 					// xdg shell spec requires clients to first send data and then commit the
 					// surface.
 
@@ -1299,7 +1298,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			}
 
 			send_wayland_message(compositor_socket, global_id, p_opcode, {});
-			return true;
+			return MessageStatus::HANDLED;
 		}
 	}
 
@@ -1308,13 +1307,13 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 		RegistryGlobalInfo &seat_global_info = registry_globals[global_seat_name];
 		WaylandSeatGlobalData *global_data = (WaylandSeatGlobalData *)seat_global_info.data;
-		CRASH_COND(global_data == nullptr);
+		ERR_FAIL_NULL_V(global_data, MessageStatus::ERROR);
 
 		WaylandSeatInstanceData *instance_data = (WaylandSeatInstanceData *)object->data;
-		CRASH_COND(instance_data == nullptr);
+		ERR_FAIL_NULL_V(instance_data, MessageStatus::ERROR);
 
 		if (p_opcode == WL_SEAT_GET_POINTER) {
-			CRASH_COND(global_id == INVALID_ID);
+			ERR_FAIL_COND_V(global_id == INVALID_ID, MessageStatus::ERROR);
 			// [Request] wl_seat::get_pointer(n);
 			uint32_t new_local_id = body[0];
 
@@ -1322,17 +1321,17 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			new_data->wl_seat_id = global_id;
 
 			uint32_t new_global_id = client->new_object(new_local_id, &wl_pointer_interface, object->version, new_data);
-			ERR_FAIL_COND_V(new_global_id == INVALID_ID, true);
+			ERR_FAIL_COND_V(new_global_id == INVALID_ID, MessageStatus::HANDLED);
 
 			instance_data->wl_pointer_id = new_global_id;
 
 			send_wayland_message(compositor_socket, global_id, p_opcode, { new_global_id });
 
-			return true;
+			return MessageStatus::HANDLED;
 		}
 
 		if (p_opcode == WL_SEAT_GET_KEYBOARD) {
-			CRASH_COND(global_id == INVALID_ID);
+			ERR_FAIL_COND_V(global_id == INVALID_ID, MessageStatus::ERROR);
 			// [Request] wl_seat::get_pointer(n);
 			uint32_t new_local_id = body[0];
 
@@ -1340,13 +1339,13 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			new_data->wl_seat_id = global_id;
 
 			uint32_t new_global_id = client->new_object(new_local_id, &wl_keyboard_interface, object->version, new_data);
-			ERR_FAIL_COND_V(new_global_id == INVALID_ID, true);
+			ERR_FAIL_COND_V(new_global_id == INVALID_ID, MessageStatus::HANDLED);
 
 			instance_data->wl_keyboard_id = new_global_id;
 
 			send_wayland_message(compositor_socket, global_id, p_opcode, { new_global_id });
 
-			return true;
+			return MessageStatus::HANDLED;
 		}
 	}
 
@@ -1354,10 +1353,10 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 		if (p_opcode == XDG_WM_BASE_CREATE_POSITIONER) {
 			uint32_t new_local_id = body[0];
 			uint32_t new_global_id = client->new_object(new_local_id, &xdg_positioner_interface, object->version, memnew(XdgPositionerData));
-			ERR_FAIL_COND_V(new_global_id == INVALID_ID, true);
+			ERR_FAIL_COND_V(new_global_id == INVALID_ID, MessageStatus::HANDLED);
 
 			send_wayland_message(compositor_socket, global_id, p_opcode, { new_global_id });
-			return true;
+			return MessageStatus::HANDLED;
 		}
 
 		if (p_opcode == XDG_WM_BASE_GET_XDG_SURFACE) {
@@ -1377,23 +1376,23 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 				DEBUG_LOG_WAYLAND_EMBED(vformat("Created fake xdg_surface l0x%x for surface l0x%x", new_local_id, surface_id));
 			} else {
 				uint32_t new_global_id = client->new_object(new_local_id, &xdg_surface_interface, object->version, data);
-				ERR_FAIL_COND_V(new_global_id == INVALID_ID, true);
+				ERR_FAIL_COND_V(new_global_id == INVALID_ID, MessageStatus::HANDLED);
 
 				DEBUG_LOG_WAYLAND_EMBED(vformat("Created real xdg_surface l0x%x g0x%x for surface l0x%x", new_local_id, new_global_id, surface_id));
 
 				send_wayland_message(compositor_socket, global_id, p_opcode, { new_global_id, global_surface_id });
 			}
 
-			return true;
+			return MessageStatus::HANDLED;
 		}
 	}
 
 	if (object->interface == &xdg_surface_interface) {
 		XdgSurfaceData *xdg_surf_data = (XdgSurfaceData *)object->data;
-		CRASH_COND(xdg_surf_data == nullptr);
+		ERR_FAIL_NULL_V(xdg_surf_data, MessageStatus::ERROR);
 
 		WaylandSurfaceData *surface_data = (WaylandSurfaceData *)get_object(xdg_surf_data->wl_surface_id)->data;
-		CRASH_COND(surface_data == nullptr);
+		ERR_FAIL_NULL_V(surface_data, MessageStatus::ERROR);
 
 		bool is_embedded = client->fake_objects.has(local_id);
 
@@ -1411,13 +1410,13 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 			if (!is_embedded) {
 				uint32_t new_global_id = client->new_object(new_local_id, &xdg_popup_interface, object->version, popup_data);
-				ERR_FAIL_COND_V(new_global_id == INVALID_ID, true);
+				ERR_FAIL_COND_V(new_global_id == INVALID_ID, MessageStatus::HANDLED);
 
 				uint32_t global_parent_id = client->get_global_id(local_parent_id);
 				uint32_t global_positioner_id = client->get_global_id(local_positioner_id);
 				send_wayland_message(compositor_socket, global_id, p_opcode, { new_global_id, global_parent_id, global_positioner_id });
 
-				return true;
+				return MessageStatus::HANDLED;
 			}
 
 			{
@@ -1426,7 +1425,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 				client->fake_objects.erase(local_id);
 
 				global_id = client->new_object(local_id, copy.interface, copy.version, copy.data);
-				ERR_FAIL_COND_V(global_id == INVALID_ID, true);
+				ERR_FAIL_COND_V(global_id == INVALID_ID, MessageStatus::HANDLED);
 				object = get_object(global_id);
 
 				// xdg_wm_base::get_xdg_surface(no);
@@ -1434,25 +1433,25 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			}
 
 			uint32_t new_global_id = client->new_object(new_local_id, &xdg_popup_interface, object->version, popup_data);
-			ERR_FAIL_COND_V(new_global_id == INVALID_ID, true);
+			ERR_FAIL_COND_V(new_global_id == INVALID_ID, MessageStatus::HANDLED);
 
 			uint32_t global_parent_id = INVALID_ID;
 			if (local_parent_id != INVALID_ID) {
 				XdgSurfaceData *parent_xdg_surf_data = (XdgSurfaceData *)client->get_object(local_parent_id)->data;
-				CRASH_COND(parent_xdg_surf_data == nullptr);
+				ERR_FAIL_NULL_V(parent_xdg_surf_data, MessageStatus::ERROR);
 
 				WaylandSurfaceData *parent_surface_data = (WaylandSurfaceData *)get_object(parent_xdg_surf_data->wl_surface_id)->data;
-				CRASH_COND(parent_surface_data == nullptr);
+				ERR_FAIL_NULL_V(parent_surface_data, MessageStatus::ERROR);
 
 				WaylandObject *parent_role_obj = parent_surface_data->role_object_handle.get();
-				CRASH_COND(parent_role_obj == nullptr);
+				ERR_FAIL_NULL_V(parent_role_obj, MessageStatus::ERROR);
 
 				XdgPositionerData *pos_data = (XdgPositionerData *)client->get_object(local_positioner_id)->data;
-				CRASH_COND(pos_data == nullptr);
+				ERR_FAIL_NULL_V(pos_data, MessageStatus::ERROR);
 
 				if (parent_role_obj->interface == &xdg_toplevel_interface) {
 					XdgToplevelData *parent_toplevel_data = (XdgToplevelData *)parent_role_obj->data;
-					CRASH_COND(parent_toplevel_data == nullptr);
+					ERR_FAIL_NULL_V(parent_toplevel_data, MessageStatus::ERROR);
 
 					if (parent_toplevel_data->is_embedded()) {
 						// Embedded windows are subsurfaces of a parent window. We need to
@@ -1460,12 +1459,12 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 						// positioner properly if needed.
 
 						XdgToplevelData *main_parent_toplevel_data = (XdgToplevelData *)parent_toplevel_data->parent_handle.get()->data;
-						CRASH_COND(main_parent_toplevel_data == nullptr);
+						ERR_FAIL_NULL_V(main_parent_toplevel_data, MessageStatus::ERROR);
 
 						global_parent_id = main_parent_toplevel_data->xdg_surface_handle.get_global_id();
 
 						WaylandSubsurfaceData *subsurf_data = (WaylandSubsurfaceData *)get_object(parent_toplevel_data->wl_subsurface_id)->data;
-						CRASH_COND(subsurf_data == nullptr);
+						ERR_FAIL_NULL_V(subsurf_data, MessageStatus::ERROR);
 
 						Point2i adj_pos = subsurf_data->position + pos_data->anchor_rect.position;
 
@@ -1478,7 +1477,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			}
 
 			send_wayland_message(compositor_socket, global_id, p_opcode, { new_global_id, global_parent_id, client->get_global_id(local_positioner_id) });
-			return true;
+			return MessageStatus::HANDLED;
 		}
 
 		if (p_opcode == XDG_SURFACE_GET_TOPLEVEL) {
@@ -1498,7 +1497,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 				send_wayland_message(main_client->socket, client->embedded_client_id, 1, {});
 			} else {
 				uint32_t new_global_id = client->new_object(new_local_id, &xdg_toplevel_interface, object->version, data);
-				ERR_FAIL_COND_V(new_global_id == INVALID_ID, true);
+				ERR_FAIL_COND_V(new_global_id == INVALID_ID, MessageStatus::HANDLED);
 
 				if (main_toplevel_id == 0) {
 					main_toplevel_id = new_global_id;
@@ -1508,27 +1507,27 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 				send_wayland_message(compositor_socket, global_id, p_opcode, { new_global_id });
 			}
 
-			return true;
+			return MessageStatus::HANDLED;
 		}
 	}
 
 	if (object->interface == &xdg_positioner_interface) {
 		XdgPositionerData *pos_data = (XdgPositionerData *)object->data;
-		CRASH_COND(pos_data == nullptr);
+		ERR_FAIL_NULL_V(pos_data, MessageStatus::ERROR);
 
 		if (p_opcode == XDG_POSITIONER_SET_ANCHOR_RECT) {
 			// Args: int x, int y, int width, int height.
 			pos_data->anchor_rect = Rect2i(body[0], body[1], body[2], body[3]);
 
 			send_wayland_message(compositor_socket, global_id, p_opcode, body, body_len);
-			return true;
+			return MessageStatus::HANDLED;
 		}
 	}
 
 	if (object->interface == &xdg_toplevel_interface && p_opcode == XDG_TOPLEVEL_DESTROY) {
 		if (client->fake_objects.has(local_id)) {
 			XdgToplevelData *data = (XdgToplevelData *)object->data;
-			CRASH_COND(data == nullptr);
+			ERR_FAIL_NULL_V(data, MessageStatus::ERROR);
 
 			// wl_display::delete_id
 			send_wayland_message(client->socket, local_id, p_opcode, {});
@@ -1541,7 +1540,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 			client->delete_object(local_id);
 
-			return true;
+			return MessageStatus::HANDLED;
 		}
 	}
 
@@ -1557,18 +1556,18 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			uint32_t lifetime = body[4];
 
 			WaylandSurfaceData *surf_data = (WaylandSurfaceData *)client->get_object(local_surface_id)->data;
-			CRASH_COND(surf_data == nullptr);
+			ERR_FAIL_NULL_V(surf_data, MessageStatus::ERROR);
 
 			WaylandObject *role_obj = surf_data->role_object_handle.get();
-			CRASH_COND(role_obj == nullptr);
+			ERR_FAIL_NULL_V(role_obj, MessageStatus::ERROR);
 
 			if (role_obj->interface == &xdg_toplevel_interface) {
 				XdgToplevelData *toplevel_data = (XdgToplevelData *)role_obj->data;
-				CRASH_COND(toplevel_data == nullptr);
+				ERR_FAIL_NULL_V(toplevel_data, MessageStatus::ERROR);
 
 				if (!toplevel_data->is_embedded()) {
 					// Passthrough.
-					return false;
+					return MessageStatus::UNHANDLED;
 				}
 
 				// Subsurfaces don't normally work, at least on sway, as the locking
@@ -1576,16 +1575,16 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 				// the parent surface and set a region though.
 
 				XdgToplevelData *parent_data = (XdgToplevelData *)toplevel_data->parent_handle.get()->data;
-				CRASH_COND(parent_data == nullptr);
+				ERR_FAIL_NULL_V(parent_data, MessageStatus::ERROR);
 
 				XdgSurfaceData *parent_xdg_surf_data = (XdgSurfaceData *)parent_data->xdg_surface_handle.get()->data;
-				CRASH_COND(parent_xdg_surf_data == nullptr);
+				ERR_FAIL_NULL_V(parent_xdg_surf_data, MessageStatus::ERROR);
 
 				WaylandSubsurfaceData *subsurf_data = (WaylandSubsurfaceData *)get_object(toplevel_data->wl_subsurface_id)->data;
-				CRASH_COND(subsurf_data == nullptr);
+				ERR_FAIL_NULL_V(subsurf_data, MessageStatus::ERROR);
 
 				uint32_t new_global_id = client->new_object(new_local_id, &zwp_locked_pointer_v1_interface, object->version);
-				ERR_FAIL_COND_V(new_global_id == INVALID_ID, true);
+				ERR_FAIL_COND_V(new_global_id == INVALID_ID, MessageStatus::HANDLED);
 
 				uint32_t x = subsurf_data->position.x;
 				uint32_t y = subsurf_data->position.y;
@@ -1611,17 +1610,17 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 				// wl_region::destroy().
 				send_wayland_message(compositor_socket, new_region_id, 0, {});
 
-				return true;
+				return MessageStatus::HANDLED;
 			}
 		}
 	}
 
 	if (interface == &godot_embedded_client_interface) {
 		EmbeddedClientData *eclient_data = (EmbeddedClientData *)object->data;
-		CRASH_COND(eclient_data == nullptr);
+		ERR_FAIL_NULL_V(eclient_data, MessageStatus::ERROR);
 
 		Client *eclient = eclient_data->client;
-		CRASH_COND(eclient == nullptr);
+		ERR_FAIL_NULL_V(eclient, MessageStatus::ERROR);
 
 		if (p_opcode == GODOT_EMBEDDED_CLIENT_DESTROY) {
 			if (!eclient_data->disconnected) {
@@ -1630,18 +1629,18 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 			client->delete_object(local_id);
 
-			return true;
+			return MessageStatus::HANDLED;
 		}
 
 		if (eclient_data->disconnected) {
 			// Object is inert.
-			return true;
+			return MessageStatus::HANDLED;
 		}
 
-		CRASH_COND(eclient->embedded_window_id == 0);
+		ERR_FAIL_COND_V(eclient->embedded_window_id == 0, MessageStatus::ERROR);
 
 		XdgToplevelData *toplevel_data = (XdgToplevelData *)eclient->get_object(eclient->embedded_window_id)->data;
-		CRASH_COND(toplevel_data == nullptr);
+		ERR_FAIL_NULL_V(toplevel_data, MessageStatus::ERROR);
 
 		if (p_opcode == GODOT_EMBEDDED_CLIENT_SET_EMBEDDED_WINDOW_RECT && toplevel_data->wl_subsurface_id != INVALID_ID) {
 			uint32_t x = body[0];
@@ -1652,7 +1651,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			DEBUG_LOG_WAYLAND_EMBED("Received?");
 
 			WaylandSubsurfaceData *subsurf_data = (WaylandSubsurfaceData *)get_object(toplevel_data->wl_subsurface_id)->data;
-			CRASH_COND(subsurf_data == nullptr);
+			ERR_FAIL_NULL_V(subsurf_data, MessageStatus::ERROR);
 
 			toplevel_data->size.width = width;
 			toplevel_data->size.height = height;
@@ -1669,12 +1668,12 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			// xdg_surface::configure
 			send_wayland_message(eclient->socket, toplevel_data->xdg_surface_handle.get_local_id(), 0, { configure_serial_counter++ });
 
-			return true;
+			return MessageStatus::HANDLED;
 		} else if (p_opcode == GODOT_EMBEDDED_CLIENT_SET_EMBEDDED_WINDOW_PARENT) {
 			uint32_t main_client_parent_id = body[0];
 
 			if (toplevel_data->parent_handle.get_local_id() == main_client_parent_id) {
-				return true;
+				return MessageStatus::HANDLED;
 			}
 
 			if (main_client_parent_id == INVALID_ID && toplevel_data->wl_subsurface_id != INVALID_ID) {
@@ -1686,16 +1685,16 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 				toplevel_data->parent_handle.invalidate();
 				toplevel_data->wl_subsurface_id = INVALID_ID;
 
-				return true;
+				return MessageStatus::HANDLED;
 			}
 
 			XdgToplevelData *parent_toplevel_data = (XdgToplevelData *)client->get_object(main_client_parent_id)->data;
-			CRASH_COND(parent_toplevel_data == nullptr);
+			ERR_FAIL_NULL_V(parent_toplevel_data, MessageStatus::ERROR);
 			XdgSurfaceData *parent_xdg_surf_data = (XdgSurfaceData *)parent_toplevel_data->xdg_surface_handle.get()->data;
-			CRASH_COND(parent_xdg_surf_data == nullptr);
+			ERR_FAIL_NULL_V(parent_xdg_surf_data, MessageStatus::ERROR);
 
 			XdgSurfaceData *xdg_surf_data = (XdgSurfaceData *)toplevel_data->xdg_surface_handle.get()->data;
-			CRASH_COND(xdg_surf_data == nullptr);
+			ERR_FAIL_NULL_V(xdg_surf_data, MessageStatus::ERROR);
 
 			if (toplevel_data->wl_subsurface_id != INVALID_ID) {
 				// wl_subsurface::destroy()
@@ -1719,10 +1718,10 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			// wl_subsurface::set_desync
 			send_wayland_message(compositor_socket, new_sub_id, 5, {});
 
-			return true;
+			return MessageStatus::HANDLED;
 		} else if (p_opcode == GODOT_EMBEDDED_CLIENT_FOCUS_WINDOW) {
 			XdgSurfaceData *xdg_surf_data = (XdgSurfaceData *)toplevel_data->xdg_surface_handle.get()->data;
-			CRASH_COND(xdg_surf_data == nullptr);
+			ERR_FAIL_NULL_V(xdg_surf_data, MessageStatus::ERROR);
 
 			RegistryGlobalInfo &global_seat_info = registry_globals[wl_seat_name];
 			WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)global_seat_info.data;
@@ -1738,7 +1737,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			// xdg_toplevel::close
 			send_wayland_message(eclient->socket, eclient->embedded_window_id, 1, {});
 
-			return true;
+			return MessageStatus::HANDLED;
 		}
 	}
 
@@ -1754,7 +1753,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 		if (shared_objects.has(object->interface)) {
 			// We must not delete shared objects.
 			client->delete_object(local_id);
-			return true;
+			return MessageStatus::HANDLED;
 		}
 
 		if (global_id != INVALID_ID) {
@@ -1762,21 +1761,21 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			object->destroyed = true;
 		}
 
-		return true;
+		return MessageStatus::HANDLED;
 	}
 
 	if (client->fake_objects.has(local_id)) {
 		// Object is fake, we're done.
 		DEBUG_LOG_WAYLAND_EMBED("Dropping unhandled request for fake object.");
-		return true;
+		return MessageStatus::HANDLED;
 	}
 
 	if (global_id == INVALID_ID) {
 		DEBUG_LOG_WAYLAND_EMBED("Dropping request with invalid global object id");
-		return true;
+		return MessageStatus::HANDLED;
 	}
 
-	return false;
+	return MessageStatus::UNHANDLED;
 }
 
 WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_id, LocalObjectHandle p_local_handle, uint32_t p_opcode, uint32_t *msg_data, size_t msg_len) {
@@ -2149,9 +2148,9 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 }
 
 Error WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *info, uint32_t *buf, int *fds_requested) {
-	ERR_FAIL_COND_V(info == nullptr, ERR_BUG);
-	ERR_FAIL_COND_V(fds_requested == nullptr, ERR_BUG);
-	ERR_FAIL_COND_V_MSG(info->direction == ProxyDirection::COMPOSITOR && client == nullptr, ERR_BUG, "Wait, where did this message come from?");
+	ERR_FAIL_NULL_V(info, ERR_BUG);
+	ERR_FAIL_NULL_V(fds_requested, ERR_BUG);
+	ERR_FAIL_NULL_V_MSG(info->direction == ProxyDirection::COMPOSITOR && client, ERR_BUG, "Wait, where did this message come from?");
 
 	*fds_requested = 0;
 
@@ -2195,7 +2194,7 @@ Error WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *in
 		return OK;
 	}
 
-	ERR_FAIL_COND_V_MSG(interface == nullptr, ERR_BUG, vformat("Object r0x%x has no interface", info->raw_id));
+	ERR_FAIL_NULL_V_MSG(interface, ERR_BUG, vformat("Object r0x%x has no interface", info->raw_id));
 
 	const struct wl_message *message = nullptr;
 	if (info->direction == ProxyDirection::CLIENT) {
@@ -2205,7 +2204,7 @@ Error WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *in
 		ERR_FAIL_COND_V(info->opcode >= interface->method_count, ERR_BUG);
 		message = &interface->methods[info->opcode];
 	}
-	ERR_FAIL_COND_V(message == nullptr, ERR_BUG);
+	ERR_FAIL_NULL_V(message, ERR_BUG);
 
 	*fds_requested = String(message->signature).count("h");
 	LocalVector<int> sent_fds;
@@ -2231,7 +2230,12 @@ Error WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *in
 	}
 
 	if (info->direction == ProxyDirection::COMPOSITOR) {
-		if (handle_request(LocalObjectHandle(client, info->raw_id), info->opcode, buf, info->size)) {
+		MessageStatus request_status = handle_request(LocalObjectHandle(client, info->raw_id), info->opcode, buf, info->size);
+		if (request_status == MessageStatus::ERROR) {
+			return ERR_BUG;
+		}
+
+		if (request_status == MessageStatus::HANDLED) {
 			DEBUG_LOG_WAYLAND_EMBED("Custom handler success.");
 			return OK;
 		}
