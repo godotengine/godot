@@ -309,6 +309,80 @@ void CopyEffects::gaussian_blur(GLuint p_source_texture, int p_mipmap_count, con
 	glViewport(0, 0, p_size.x, p_size.y);
 }
 
+void CopyEffects::gaussian_blur_layer(GLuint p_source_texture, int p_mipmap_count, const Rect2i &p_region, const Size2i &p_size, int p_layer) {
+	GLuint framebuffer;
+	glGenFramebuffers(1, &framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, p_source_texture);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	Size2i base_size = p_size;
+
+	Rect2i source_region = p_region;
+	Rect2i dest_region = p_region;
+
+	Size2 float_size = Size2(p_size);
+	Rect2 normalized_source_region = Rect2(p_region);
+	normalized_source_region.position = normalized_source_region.position / float_size;
+	normalized_source_region.size = normalized_source_region.size / float_size;
+	Rect2 normalized_dest_region = Rect2(p_region);
+	for (int i = 1; i < p_mipmap_count; i++) {
+		dest_region.position.x >>= 1;
+		dest_region.position.y >>= 1;
+		dest_region.size = Size2i(dest_region.size.x >> 1, dest_region.size.y >> 1).maxi(1);
+		base_size.x >>= 1;
+		base_size.y >>= 1;
+
+		glBindTexture(GL_TEXTURE_2D_ARRAY, p_source_texture);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, i - 1);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_LEVEL, i);
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, p_source_texture, i, p_layer);
+#ifdef DEV_ENABLED
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			WARN_PRINT("Could not bind Gaussian blur framebuffer, status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
+		}
+#endif
+
+		glViewport(0, 0, base_size.x, base_size.y);
+
+		bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_GAUSSIAN_BLUR_LAYER);
+		if (!success) {
+			return;
+		}
+
+		float_size = Size2(base_size);
+		normalized_dest_region.position = Size2(dest_region.position) / float_size;
+		normalized_dest_region.size = Size2(dest_region.size) / float_size;
+
+		copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, normalized_dest_region.position.x, normalized_dest_region.position.y, normalized_dest_region.size.x, normalized_dest_region.size.y, copy.shader_version, CopyShaderGLES3::MODE_GAUSSIAN_BLUR_LAYER);
+		copy.shader.version_set_uniform(CopyShaderGLES3::SOURCE_SECTION, normalized_source_region.position.x, normalized_source_region.position.y, normalized_source_region.size.x, normalized_source_region.size.y, copy.shader_version, CopyShaderGLES3::MODE_GAUSSIAN_BLUR_LAYER);
+		copy.shader.version_set_uniform(CopyShaderGLES3::PIXEL_SIZE, 1.0 / float_size.x, 1.0 / float_size.y, copy.shader_version, CopyShaderGLES3::MODE_GAUSSIAN_BLUR_LAYER);
+		copy.shader.version_set_uniform(CopyShaderGLES3::LAYER, float(p_layer), copy.shader_version, CopyShaderGLES3::MODE_GAUSSIAN_BLUR_LAYER);
+		copy.shader.version_set_uniform(CopyShaderGLES3::LOD, float(i - 1), copy.shader_version, CopyShaderGLES3::MODE_GAUSSIAN_BLUR_LAYER);
+
+		draw_screen_quad();
+
+		source_region = dest_region;
+		normalized_source_region = normalized_dest_region;
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	glDeleteFramebuffers(1, &framebuffer);
+
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_LEVEL, p_mipmap_count - 1);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+
+	glViewport(0, 0, p_size.x, p_size.y);
+}
+
 void CopyEffects::set_color(const Color &p_color, const Rect2i &p_region) {
 	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_SIMPLE_COLOR);
 	if (!success) {

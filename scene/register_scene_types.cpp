@@ -119,6 +119,7 @@
 #include "scene/resources/compositor.h"
 #include "scene/resources/compressed_texture.h"
 #include "scene/resources/curve_texture.h"
+#include "scene/resources/drawable_texture.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/external_texture.h"
 #include "scene/resources/font.h"
@@ -131,6 +132,7 @@
 #include "scene/resources/mesh_data_tool.h"
 #include "scene/resources/mesh_texture.h"
 #include "scene/resources/multimesh.h"
+#include "scene/resources/rasterized_mesh_texture.h"
 #if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 #include "scene/resources/navigation_mesh.h"
 #endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
@@ -1051,6 +1053,13 @@ void register_scene_types() {
 	GDREGISTER_CLASS(TextureCubemapRD);
 	GDREGISTER_CLASS(TextureCubemapArrayRD);
 	GDREGISTER_CLASS(Texture3DRD);
+
+	GDREGISTER_CLASS(DrawableTexture2D);
+	GDREGISTER_ABSTRACT_CLASS(DrawableTextureLayered);
+	GDREGISTER_CLASS(DrawableTexture2DArray);
+	GDREGISTER_CLASS(DrawableTextureCubemap);
+	GDREGISTER_CLASS(DrawableTextureCubemapArray);
+	GDREGISTER_CLASS(RasterizedMeshTexture);
 
 	GDREGISTER_CLASS(Animation);
 	GDREGISTER_CLASS(AnimationLibrary);

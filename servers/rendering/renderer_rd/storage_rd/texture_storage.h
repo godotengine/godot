@@ -136,6 +136,11 @@ private:
 
 	struct RenderTarget;
 
+	struct DrawableTexture {
+		bool use_srgb = false;
+		LocalVector<LocalVector<RID>> slices;
+	};
+
 	class Texture {
 	public:
 		TextureType type;
@@ -191,6 +196,8 @@ private:
 		void *detect_roughness_callback_ud = nullptr;
 
 		CanvasTexture *canvas_texture = nullptr;
+
+		DrawableTexture *drawable_texture = nullptr;
 
 		void cleanup();
 	};
@@ -563,7 +570,10 @@ public:
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override;
 
+	Size2i texture_2d_get_size(RID p_texture) override;
+
 	//internal usage
+
 	_FORCE_INLINE_ TextureType texture_get_type(RID p_texture) {
 		RendererRD::TextureStorage::Texture *tex = texture_owner.get_or_null(p_texture);
 		if (tex == nullptr) {
@@ -580,18 +590,6 @@ public:
 		}
 
 		return tex->layers;
-	}
-
-	_FORCE_INLINE_ Size2i texture_2d_get_size(RID p_texture) {
-		if (p_texture.is_null()) {
-			return Size2i();
-		}
-		RendererRD::TextureStorage::Texture *tex = texture_owner.get_or_null(p_texture);
-
-		if (!tex) {
-			return Size2i();
-		}
-		return Size2i(tex->width_2d, tex->height_2d);
 	}
 
 	/* DECAL API */
@@ -735,6 +733,15 @@ public:
 	void set_max_decals(const uint32_t p_max_decals);
 	RID get_decal_buffer() { return decal_buffer; }
 	void update_decal_buffer(const PagedArray<RID> &p_decals, const Transform3D &p_camera_xform);
+
+	/* TEXTURE DRAWABLE API */
+
+	virtual void texture_drawable_2d_initialize(RID p_texture_drawable, int p_width, int p_height, RS::TextureDrawableFormat p_texture_format, bool p_use_mipmaps = false) override;
+	virtual void texture_drawable_2d_layered_initialize(RID p_texture_drawable, int p_width, int p_height, int p_layers, RS::TextureLayeredType p_layered_type, RS::TextureDrawableFormat p_texture_format, bool p_use_mipmaps = false) override;
+	virtual void texture_drawable_generate_mipmaps(RID p_texture_drawable, int p_layer = 0) override;
+
+	bool texture_drawable_is_srgb(RID p_texture_drawable);
+	RID texture_drawable_get_slice(RID p_texture_drawable, int p_layer, int p_mipmaps);
 
 	/* RENDER TARGET API */
 

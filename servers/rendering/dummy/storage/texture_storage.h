@@ -131,6 +131,8 @@ public:
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override { return RID(); }
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override { return 0; }
 
+	virtual Size2i texture_2d_get_size(RID p_texture) override { return Size2i(); }
+
 	/* DECAL API */
 	virtual RID decal_allocate() override { return RID(); }
 	virtual void decal_initialize(RID p_rid) override {}
@@ -158,6 +160,12 @@ public:
 	virtual void decal_instance_free(RID p_decal_instance) override {}
 	virtual void decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) override {}
 	virtual void decal_instance_set_sorting_offset(RID p_decal_instance, float p_sorting_offset) override {}
+
+	/* TEXTURE DRAWABLE API */
+
+	void texture_drawable_2d_initialize(RID texture_drawable, int p_width, int p_height, RS::TextureDrawableFormat p_texture_format, bool p_use_mipmaps = false) override {}
+	void texture_drawable_2d_layered_initialize(RID p_texture_drawable, int p_width, int p_height, int p_layers, RS::TextureLayeredType p_layered_type, RS::TextureDrawableFormat p_texture_format, bool p_use_mipmaps = false) override {}
+	void texture_drawable_generate_mipmaps(RID p_texture_drawable, int p_layer = 0) override {}
 
 	/* RENDER TARGET */
 

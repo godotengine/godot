@@ -387,6 +387,8 @@ void ShaderTextEditor::_check_shader_mode() {
 		mode = Shader::MODE_SKY;
 	} else if (type == "fog") {
 		mode = Shader::MODE_FOG;
+	} else if (type == "mesh_rasterizer") {
+		mode = Shader::MODE_MESH_RASTERIZER;
 	} else {
 		mode = Shader::MODE_SPATIAL;
 	}

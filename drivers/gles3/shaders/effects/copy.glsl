@@ -9,6 +9,7 @@ mode_copy_section_2d_array = #define USE_COPY_SECTION \n#define MODE_SIMPLE_COPY
 mode_lens_distortion = #define USE_COPY_SECTION \n#define MODE_SIMPLE_COPY \n#define USE_TEXTURE_2D_ARRAY \n#define APPLY_LENS_DISTORTION
 mode_screen = #define MODE_SIMPLE_COPY \n#define MODE_MULTIPLY
 mode_gaussian_blur = #define MODE_GAUSSIAN_BLUR
+mode_gaussian_blur_layer = #define MODE_GAUSSIAN_BLUR \n#define USE_TEXTURE_2D_ARRAY
 mode_mipmap = #define MODE_MIPMAP
 mode_simple_color = #define MODE_SIMPLE_COLOR \n#define USE_COPY_SECTION
 mode_cube_to_octahedral = #define CUBE_TO_OCTAHEDRAL \n#define USE_COPY_SECTION
@@ -184,6 +185,21 @@ void main() {
 // Efficient box filter from Jimenez: http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
 // Approximates a Gaussian in a single pass.
 #ifdef MODE_GAUSSIAN_BLUR
+#ifdef USE_TEXTURE_2D_ARRAY
+	vec4 A = textureLod(source_2d_array, vec3(uv_interp + pixel_size * vec2(-1.0, -1.0), layer), 0.0);
+	vec4 B = textureLod(source_2d_array, vec3(uv_interp + pixel_size * vec2(0.0, -1.0), layer), 0.0);
+	vec4 C = textureLod(source_2d_array, vec3(uv_interp + pixel_size * vec2(1.0, -1.0), layer), 0.0);
+	vec4 D = textureLod(source_2d_array, vec3(uv_interp + pixel_size * vec2(-0.5, -0.5), layer), 0.0);
+	vec4 E = textureLod(source_2d_array, vec3(uv_interp + pixel_size * vec2(0.5, -0.5), layer), 0.0);
+	vec4 F = textureLod(source_2d_array, vec3(uv_interp + pixel_size * vec2(-1.0, 0.0), layer), 0.0);
+	vec4 G = textureLod(source_2d_array, vec3(uv_interp, layer), 0.0);
+	vec4 H = textureLod(source_2d_array, vec3(uv_interp + pixel_size * vec2(1.0, 0.0), layer), 0.0);
+	vec4 I = textureLod(source_2d_array, vec3(uv_interp + pixel_size * vec2(-0.5, 0.5), layer), 0.0);
+	vec4 J = textureLod(source_2d_array, vec3(uv_interp + pixel_size * vec2(0.5, 0.5), layer), 0.0);
+	vec4 K = textureLod(source_2d_array, vec3(uv_interp + pixel_size * vec2(-1.0, 1.0), layer), 0.0);
+	vec4 L = textureLod(source_2d_array, vec3(uv_interp + pixel_size * vec2(0.0, 1.0), layer), 0.0);
+	vec4 M = textureLod(source_2d_array, vec3(uv_interp + pixel_size * vec2(1.0, 1.0), layer), 0.0);
+#else
 	vec4 A = textureLod(source, uv_interp + pixel_size * vec2(-1.0, -1.0), 0.0);
 	vec4 B = textureLod(source, uv_interp + pixel_size * vec2(0.0, -1.0), 0.0);
 	vec4 C = textureLod(source, uv_interp + pixel_size * vec2(1.0, -1.0), 0.0);
@@ -197,7 +213,7 @@ void main() {
 	vec4 K = textureLod(source, uv_interp + pixel_size * vec2(-1.0, 1.0), 0.0);
 	vec4 L = textureLod(source, uv_interp + pixel_size * vec2(0.0, 1.0), 0.0);
 	vec4 M = textureLod(source, uv_interp + pixel_size * vec2(1.0, 1.0), 0.0);
-
+#endif
 	float weight = 0.5 / 4.0;
 	float lesser_weight = 0.125 / 4.0;
 
