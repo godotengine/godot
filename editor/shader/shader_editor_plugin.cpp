@@ -190,12 +190,6 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 			cte->connect("zoomed", callable_mp(this, &ShaderEditorPlugin::_set_text_shader_zoom_factor));
 			cte->connect(SceneStringName(visibility_changed), callable_mp(this, &ShaderEditorPlugin::_update_shader_editor_zoom_factor).bind(cte));
 		}
-
-		if (text_shader_editor->get_top_bar()) {
-			text_shader_editor->get_top_bar()->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			menu_hb->add_child(text_shader_editor->get_top_bar());
-			menu_hb->move_child(text_shader_editor->get_top_bar(), 1);
-		}
 	}
 
 	shader_tabs->set_current_tab(shader_tabs->get_tab_count() - 1);
@@ -459,29 +453,22 @@ void ShaderEditorPlugin::_make_script_list_context_menu() {
 
 void ShaderEditorPlugin::_close_shader(int p_index) {
 	ERR_FAIL_INDEX(p_index, shader_tabs->get_tab_count());
-
-	Control *c = shader_tabs->get_tab_control(p_index);
-	VisualShaderEditor *vs_editor = Object::cast_to<VisualShaderEditor>(c);
-	if (vs_editor) {
-		vs_editor->save_editor_layout();
+	if (file_menu->get_parent() != nullptr) {
 		file_menu->get_parent()->remove_child(file_menu);
-		menu_hb->add_child(file_menu);
-		menu_hb->move_child(file_menu, 0);
-
-		make_floating->get_parent()->remove_child(make_floating);
-		menu_hb->add_child(make_floating);
-	} else {
-		memdelete(edited_shaders[p_index].shader_editor->get_top_bar());
 	}
+	if (make_floating->get_parent()) {
+		make_floating->get_parent()->remove_child(make_floating);
+	}
+	ShaderEditor *shader_editor = Object::cast_to<ShaderEditor>(shader_tabs->get_tab_control(p_index));
+	ERR_FAIL_NULL(shader_editor);
 
-	memdelete(c);
+	memdelete(shader_editor);
 	edited_shaders.remove_at(p_index);
 	_update_shader_list();
 	EditorUndoRedoManager::get_singleton()->clear_history(); // To prevent undo on deleted graphs.
 
 	if (shader_tabs->get_tab_count() == 0) {
 		shader_list->show(); // Make sure the panel is visible, because it can't be toggled without open shaders.
-		menu_spacer->show();
 	} else {
 		_switch_to_editor(edited_shaders[shader_tabs->get_current_tab()].shader_editor);
 	}
@@ -795,44 +782,13 @@ void ShaderEditorPlugin::_update_shader_editor_zoom_factor(CodeTextEditor *p_sha
 }
 
 void ShaderEditorPlugin::_switch_to_editor(ShaderEditor *p_editor) {
-	Control *bar = p_editor->get_top_bar();
-
-	VisualShaderEditor *vs_editor = Object::cast_to<VisualShaderEditor>(p_editor);
-	if (vs_editor) {
+	if (file_menu->get_parent() != nullptr) {
 		file_menu->get_parent()->remove_child(file_menu);
-		file_menu->set_switch_on_hover(false);
-		bar->add_child(file_menu);
-		bar->move_child(file_menu, 2); // Toggle Files Panel button + separator.
-
+	}
+	if (make_floating->get_parent()) {
 		make_floating->get_parent()->remove_child(make_floating);
-		bar->add_child(make_floating);
-	} else {
-		if (menu_spacer->is_visible()) {
-			menu_spacer->hide();
-		}
-
-		// Just swapped from a visual shader editor.
-		if (file_menu->get_parent() != menu_hb) {
-			file_menu->get_parent()->remove_child(file_menu);
-			file_menu->set_switch_on_hover(true);
-			menu_hb->add_child(file_menu);
-			menu_hb->move_child(file_menu, 0);
-
-			make_floating->get_parent()->remove_child(make_floating);
-			menu_hb->add_child(make_floating);
-		}
 	}
-
-	for (int i = 0; i < shader_tabs->get_tab_count(); i++) {
-		ShaderEditor *se = Object::cast_to<ShaderEditor>(shader_tabs->get_tab_control(i));
-		if (se && se->get_top_bar()) {
-			if (se == p_editor) {
-				se->get_top_bar()->show();
-			} else {
-				se->get_top_bar()->hide();
-			}
-		}
-	}
+	p_editor->use_menu_bar_items(file_menu, make_floating);
 }
 
 void ShaderEditorPlugin::_file_removed(const String &p_removed_file) {
@@ -902,8 +858,6 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	files_split->set_split_offset(200 * EDSCALE);
 	files_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
-	menu_hb = memnew(HBoxContainer);
-	main_container->add_child(menu_hb);
 	file_menu = memnew(MenuButton);
 	file_menu->set_flat(false);
 	file_menu->set_theme_type_variation("FlatMenuButton");
@@ -912,15 +866,12 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	file_menu->set_shortcut_context(files_split);
 	_setup_popup_menu(FILE, file_menu->get_popup());
 	file_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ShaderEditorPlugin::_menu_item_pressed));
-	menu_hb->add_child(file_menu);
 
 	_set_file_specific_items_disabled(true);
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
 	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ShaderEditorPlugin::_menu_item_pressed));
-
-	menu_spacer = menu_hb->add_spacer();
 
 	make_floating = memnew(ScreenSelect);
 	make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
@@ -929,7 +880,6 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 		make_floating->set_tooltip_text(TTR("Make the shader editor floating.") + "\n" + TTR("Right-click to open the screen selector."));
 	}
 
-	menu_hb->add_child(make_floating);
 	window_wrapper->connect("window_visibility_changed", callable_mp(this, &ShaderEditorPlugin::_window_changed));
 
 	shader_list = memnew(ItemList);
@@ -961,4 +911,9 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	files_split->add_child(shader_create_dialog);
 	shader_create_dialog->connect("shader_created", callable_mp(this, &ShaderEditorPlugin::_shader_created));
 	shader_create_dialog->connect("shader_include_created", callable_mp(this, &ShaderEditorPlugin::_shader_include_created));
+}
+
+ShaderEditorPlugin::~ShaderEditorPlugin() {
+	memdelete(file_menu);
+	memdelete(make_floating);
 }
