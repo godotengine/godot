@@ -408,6 +408,12 @@ public:
 	void set_display_mode(DisplayMode p_mode);
 	DisplayMode get_display_mode() const;
 
+	static void set_favorite_list(const PackedStringArray &p_favorites);
+	static PackedStringArray get_favorite_list();
+
+	static void set_recent_list(const PackedStringArray &p_recents);
+	static PackedStringArray get_recent_list();
+
 	void set_customization_flag_enabled(Customization p_flag, bool p_enabled);
 	bool is_customization_flag_enabled(Customization p_flag) const;
 
