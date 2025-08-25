@@ -95,6 +95,10 @@ PackedStringArray XRCamera3D::get_configuration_warnings() const {
 		if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
 			warnings.push_back(RTR("XRCamera3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
 		}
+
+		if (get_near() < 0.1) {
+			warnings.push_back(RTR("XRCamera3D doesn't support a Near value lower than 0.1 on the visionOS platform. The scene won't be displayed."));
+		}
 	}
 
 	return warnings;
@@ -684,6 +688,10 @@ PackedStringArray XROrigin3D::get_configuration_warnings() const {
 
 		if (!has_camera) {
 			warnings.push_back(RTR("XROrigin3D requires an XRCamera3D child node."));
+		}
+
+		if (get_scale() != Vector3(1, 1, 1)) {
+			warnings.push_back(RTR("Changing XROrigin3D's scale is not supported. It'll break reprojection on platforms that support it, and it may cause other issues."));
 		}
 	}
 

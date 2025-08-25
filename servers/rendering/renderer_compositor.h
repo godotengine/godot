@@ -92,6 +92,7 @@ public:
 	virtual void initialize() = 0;
 	virtual void begin_frame(double frame_step) = 0;
 
+	virtual Error prepare_screen_for_drawing(DisplayServer::WindowID p_screen) { return OK; }
 	virtual void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) = 0;
 
 	virtual bool is_opengl() = 0;

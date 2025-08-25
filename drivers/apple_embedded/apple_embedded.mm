@@ -30,7 +30,7 @@
 
 #import "apple_embedded.h"
 
-#import "app_delegate_service.h"
+#import "godot_app_delegate_service_apple_embedded.h"
 #import "godot_view_controller.h"
 
 #import <CoreHaptics/CoreHaptics.h>
