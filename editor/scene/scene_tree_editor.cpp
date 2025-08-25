@@ -1098,7 +1098,7 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 				// Needs to be deferred to account for possible root visibility change.
 				callable_mp(tree, &Tree::scroll_to_item).call_deferred(p_parent, false);
 			}
-		} else if (n) {
+		} else if (n && !suppress_filter_removal) {
 			editor_selection->remove_node(n);
 			p_parent->deselect(0);
 		}
@@ -1691,8 +1691,12 @@ void SceneTreeEditor::set_marked(Node *p_marked, bool p_selectable, bool p_child
 }
 
 void SceneTreeEditor::set_filter(const String &p_filter) {
+	if (filter != p_filter) {
+		suppress_filter_removal = false;
+	}
 	filter = p_filter;
 	_update_filter(nullptr, true);
+	suppress_filter_removal = true;
 }
 
 String SceneTreeEditor::get_filter() const {
