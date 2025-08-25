@@ -920,15 +920,19 @@ void RenderingDeviceGraph::_run_draw_list_command(RDD::CommandBufferID p_command
 				instruction_data_cursor += sizeof(DrawListSetPushConstantInstruction);
 				instruction_data_cursor += set_push_constant_instruction->size;
 			} break;
-			case DrawListInstruction::TYPE_SET_SCISSOR: {
-				const DrawListSetScissorInstruction *set_scissor_instruction = reinterpret_cast<const DrawListSetScissorInstruction *>(instruction);
-				driver->command_render_set_scissor(p_command_buffer, set_scissor_instruction->rect);
-				instruction_data_cursor += sizeof(DrawListSetScissorInstruction);
+			case DrawListInstruction::TYPE_SET_SCISSORS: {
+				const DrawListSetScissorsInstruction *set_scissor_instruction = reinterpret_cast<const DrawListSetScissorsInstruction *>(instruction);
+				const VectorView rects(set_scissor_instruction->rects(), set_scissor_instruction->rects_count);
+				driver->command_render_set_scissor(p_command_buffer, rects);
+				instruction_data_cursor += sizeof(DrawListSetScissorsInstruction);
+				instruction_data_cursor += sizeof(Rect2i) * set_scissor_instruction->rects_count;
 			} break;
-			case DrawListInstruction::TYPE_SET_VIEWPORT: {
-				const DrawListSetViewportInstruction *set_viewport_instruction = reinterpret_cast<const DrawListSetViewportInstruction *>(instruction);
-				driver->command_render_set_viewport(p_command_buffer, set_viewport_instruction->rect);
-				instruction_data_cursor += sizeof(DrawListSetViewportInstruction);
+			case DrawListInstruction::TYPE_SET_VIEWPORTS: {
+				const DrawListSetViewportsInstruction *set_viewport_instruction = reinterpret_cast<const DrawListSetViewportsInstruction *>(instruction);
+				const VectorView rects(set_viewport_instruction->rects(), set_viewport_instruction->rects_count);
+				driver->command_render_set_viewport(p_command_buffer, rects);
+				instruction_data_cursor += sizeof(DrawListSetViewportsInstruction);
+				instruction_data_cursor += sizeof(Rect2i) * set_viewport_instruction->rects_count;
 			} break;
 			case DrawListInstruction::TYPE_UNIFORM_SET_PREPARE_FOR_USE: {
 				const DrawListUniformSetPrepareForUseInstruction *uniform_set_prepare_for_use_instruction = reinterpret_cast<const DrawListUniformSetPrepareForUseInstruction *>(instruction);
@@ -1481,15 +1485,35 @@ void RenderingDeviceGraph::_print_draw_list(const uint8_t *p_instruction_data, u
 				instruction_data_cursor += sizeof(DrawListSetPushConstantInstruction);
 				instruction_data_cursor += set_push_constant_instruction->size;
 			} break;
-			case DrawListInstruction::TYPE_SET_SCISSOR: {
-				const DrawListSetScissorInstruction *set_scissor_instruction = reinterpret_cast<const DrawListSetScissorInstruction *>(instruction);
-				print_line("\tSET SCISSOR", set_scissor_instruction->rect);
-				instruction_data_cursor += sizeof(DrawListSetScissorInstruction);
+			case DrawListInstruction::TYPE_SET_SCISSORS: {
+				const DrawListSetScissorsInstruction *set_scissor_instruction = reinterpret_cast<const DrawListSetScissorsInstruction *>(instruction);
+				const Rect2i *rects = set_scissor_instruction->rects();
+				String rects_string = "[ ";
+				for (uint32_t i = 0; i < set_scissor_instruction->rects_count; i++) {
+					if (i != 0) {
+						rects_string += ", ";
+					}
+					rects_string += String(rects[i]);
+				}
+				rects_string += " ]";
+				print_line("\tSET SCISSOR", rects_string);
+				instruction_data_cursor += sizeof(DrawListSetScissorsInstruction);
+				instruction_data_cursor += sizeof(Rect2i) * set_scissor_instruction->rects_count;
 			} break;
-			case DrawListInstruction::TYPE_SET_VIEWPORT: {
-				const DrawListSetViewportInstruction *set_viewport_instruction = reinterpret_cast<const DrawListSetViewportInstruction *>(instruction);
-				print_line("\tSET VIEWPORT", set_viewport_instruction->rect);
-				instruction_data_cursor += sizeof(DrawListSetViewportInstruction);
+			case DrawListInstruction::TYPE_SET_VIEWPORTS: {
+				const DrawListSetViewportsInstruction *set_viewport_instruction = reinterpret_cast<const DrawListSetViewportsInstruction *>(instruction);
+				const Rect2i *rects = set_viewport_instruction->rects();
+				String rects_string = "[ ";
+				for (uint32_t i = 0; i < set_viewport_instruction->rects_count; i++) {
+					if (i != 0) {
+						rects_string += ", ";
+					}
+					rects_string += String(rects[i]);
+				}
+				rects_string += " ]";
+				print_line("\tSET VIEWPORT", rects_string);
+				instruction_data_cursor += sizeof(DrawListSetViewportsInstruction);
+				instruction_data_cursor += sizeof(Rect2i) * set_viewport_instruction->rects_count;
 			} break;
 			case DrawListInstruction::TYPE_UNIFORM_SET_PREPARE_FOR_USE: {
 				const DrawListUniformSetPrepareForUseInstruction *uniform_set_prepare_for_use_instruction = reinterpret_cast<const DrawListUniformSetPrepareForUseInstruction *>(instruction);
@@ -1965,16 +1989,26 @@ void RenderingDeviceGraph::add_draw_list_set_push_constant(RDD::ShaderID p_shade
 	memcpy(instruction->data(), p_data, p_data_size);
 }
 
-void RenderingDeviceGraph::add_draw_list_set_scissor(Rect2i p_rect) {
-	DrawListSetScissorInstruction *instruction = reinterpret_cast<DrawListSetScissorInstruction *>(_allocate_draw_list_instruction(sizeof(DrawListSetScissorInstruction)));
-	instruction->type = DrawListInstruction::TYPE_SET_SCISSOR;
-	instruction->rect = p_rect;
+void RenderingDeviceGraph::add_draw_list_set_scissors(VectorView<Rect2i> p_rects) {
+	uint32_t instruction_size = sizeof(DrawListSetScissorsInstruction) + sizeof(Rect2i) * p_rects.size();
+	DrawListSetScissorsInstruction *instruction = reinterpret_cast<DrawListSetScissorsInstruction *>(_allocate_draw_list_instruction(instruction_size));
+	instruction->type = DrawListInstruction::TYPE_SET_SCISSORS;
+	instruction->rects_count = p_rects.size();
+	Rect2i *rects = instruction->rects();
+	for (uint32_t i = 0; i < instruction->rects_count; i++) {
+		rects[i] = p_rects[i];
+	}
 }
 
-void RenderingDeviceGraph::add_draw_list_set_viewport(Rect2i p_rect) {
-	DrawListSetViewportInstruction *instruction = reinterpret_cast<DrawListSetViewportInstruction *>(_allocate_draw_list_instruction(sizeof(DrawListSetViewportInstruction)));
-	instruction->type = DrawListInstruction::TYPE_SET_VIEWPORT;
-	instruction->rect = p_rect;
+void RenderingDeviceGraph::add_draw_list_set_viewports(VectorView<Rect2i> p_rects) {
+	uint32_t instruction_size = sizeof(DrawListSetViewportsInstruction) + sizeof(Rect2i) * p_rects.size();
+	DrawListSetViewportsInstruction *instruction = reinterpret_cast<DrawListSetViewportsInstruction *>(_allocate_draw_list_instruction(instruction_size));
+	instruction->type = DrawListInstruction::TYPE_SET_VIEWPORTS;
+	instruction->rects_count = p_rects.size();
+	Rect2i *rects = instruction->rects();
+	for (uint32_t i = 0; i < instruction->rects_count; i++) {
+		rects[i] = p_rects[i];
+	}
 }
 
 void RenderingDeviceGraph::add_draw_list_uniform_set_prepare_for_use(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index) {

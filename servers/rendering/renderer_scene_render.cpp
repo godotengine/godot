@@ -49,11 +49,12 @@ void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, 
 	taa_frame_count = p_taa_frame_count;
 }
 
-void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect) {
+void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, const Vector<Rect2i> p_xr_viewports, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect) {
 	ERR_FAIL_COND_MSG(p_view_count != 2, "Incorrect view count for stereoscopic view");
 
 	visible_layers = 0xFFFFFFFF;
 	view_count = p_view_count;
+	xr_viewports = p_xr_viewports;
 	is_orthogonal = p_is_orthogonal;
 	is_frustum = p_is_frustum;
 	vaspect = p_vaspect;

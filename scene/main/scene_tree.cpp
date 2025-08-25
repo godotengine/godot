@@ -2102,6 +2102,8 @@ SceneTree::SceneTree() {
 	root->set_snap_2d_vertices_to_pixel(snap_2d_vertices);
 
 	// We setup VRS for the main viewport here, in the editor this will have little effect.
+	// Exporting a visionOS project with the 'application/app_role' export setting set to Immersive
+	// automatically sets the VRS mode to VRS_XR.
 	const int vrs_mode = GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/vrs/mode", PROPERTY_HINT_ENUM, String::utf8("Disabled,Texture,XR")), 0);
 	root->set_vrs_mode(Viewport::VRSMode(vrs_mode));
 	const String vrs_texture_path = String(GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/vrs/texture", PROPERTY_HINT_FILE, "*.bmp,*.png,*.tga,*.webp"), String())).strip_edges();

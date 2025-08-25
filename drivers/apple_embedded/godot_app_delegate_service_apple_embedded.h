@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_app_delegate.h                                                  */
+/*  godot_app_delegate_service_apple_embedded.h                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -32,12 +32,10 @@
 
 #import <UIKit/UIKit.h>
 
-typedef NSObject<UIApplicationDelegate> GDTAppDelegateServiceProtocol;
+@class GDTViewController;
 
-@interface GDTApplicationDelegate : NSObject <UIApplicationDelegate>
+@interface GDTAppDelegateService : NSObject <UIApplicationDelegate>
 
-@property(class, readonly, strong) NSArray<GDTAppDelegateServiceProtocol *> *services;
-
-+ (void)addService:(GDTAppDelegateServiceProtocol *)service;
+@property(weak, class, nonatomic, nullable) GDTViewController *viewController;
 
 @end

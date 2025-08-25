@@ -94,4 +94,7 @@ public:
 	const RendererSceneRender::RenderSDFGIUpdateData *sdfgi_update_data = nullptr;
 
 	uint32_t voxel_gi_count = 0;
+
+	// For visionOS immersive rendering. It should have one rect for each view. It should be empty when XR is disabled.
+	LocalVector<Rect2i> xr_viewports;
 };

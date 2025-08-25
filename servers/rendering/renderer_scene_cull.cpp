@@ -2664,6 +2664,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		// We can support multiple views here each with their own camera
 		Transform3D transforms[RendererSceneRender::MAX_RENDER_VIEWS];
 		Projection projections[RendererSceneRender::MAX_RENDER_VIEWS];
+		Vector<Rect2i> viewports;
 
 		uint32_t view_count = p_xr_interface->get_view_count();
 		ERR_FAIL_COND_MSG(view_count == 0 || view_count > RendererSceneRender::MAX_RENDER_VIEWS, "Requested view count is not supported");
@@ -2677,6 +2678,10 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		for (uint32_t v = 0; v < view_count; v++) {
 			transforms[v] = p_xr_interface->get_transform_for_view(v, world_origin);
 			projections[v] = p_xr_interface->get_projection_for_view(v, aspect, camera->znear, camera->zfar);
+			Rect2 viewport = p_xr_interface->get_viewport_for_view(v);
+			if (viewport != Rect2()) {
+				viewports.push_back(p_xr_interface->get_viewport_for_view(v));
+			}
 		}
 
 		// If requested, we move the views to be rendered as if the HMD is at the XROrigin.
@@ -2690,9 +2695,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		if (view_count == 1) {
 			camera_data.set_camera(transforms[0], projections[0], false, false, camera->vaspect, jitter, p_jitter_phase_count, camera->visible_layers);
 		} else if (view_count == 2) {
-			camera_data.set_multiview_camera(view_count, transforms, projections, false, false, camera->vaspect);
-		} else {
-			// this won't be called (see fail check above) but keeping this comment to indicate we may support more then 2 views in the future...
+			camera_data.set_multiview_camera(view_count, transforms, projections, viewports, false, false, camera->vaspect);
 		}
 #endif // XR_DISABLED
 	}

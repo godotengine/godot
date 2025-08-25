@@ -1416,6 +1416,8 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 			render_data.transparent_bg = texture_storage->render_target_get_transparent(rb->get_render_target());
 			render_data.render_region = texture_storage->render_target_get_render_region(rb->get_render_target());
 		}
+
+		render_data.xr_viewports = p_camera_data->xr_viewports;
 	}
 
 	PagedArray<RID> empty;

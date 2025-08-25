@@ -603,6 +603,7 @@ public:
 		LocalVector<uint32_t> preserve_attachments;
 		AttachmentReference fragment_shading_rate_reference;
 		Size2i fragment_shading_rate_texel_size;
+		void *rasterization_rate_map = nullptr;
 	};
 
 	struct SubpassDependency {

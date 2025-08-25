@@ -766,8 +766,21 @@ void MDCommandBuffer::render_next_subpass() {
 		}
 	}
 
+#ifdef VISIONOS_ENABLED
+	// If the subpass has a rasterization rate map, it means we're rendering in Immersive mode with foveation enabled.
+	// In that case, the renderTarget size should be the screen logical viewport, which is bigger than the actual render
+	// area (physical texture size). Not setting renderTargetWidth/renderTargetHeight is enough to render the full
+	// screen Immersive scene.
+	if (subpass.rasterization_rate_map != nil) {
+		desc.rasterizationRateMap = subpass.rasterization_rate_map;
+	} else {
+		desc.renderTargetWidth = MAX((NSUInteger)MIN(render.render_area.position.x + render.render_area.size.width, fb.size.width), 1u);
+		desc.renderTargetHeight = MAX((NSUInteger)MIN(render.render_area.position.y + render.render_area.size.height, fb.size.height), 1u);
+	}
+#else
 	desc.renderTargetWidth = MAX((NSUInteger)MIN(render.render_area.position.x + render.render_area.size.width, fb.size.width), 1u);
 	desc.renderTargetHeight = MAX((NSUInteger)MIN(render.render_area.position.y + render.render_area.size.height, fb.size.height), 1u);
+#endif
 
 	if (attachmentCount == 0) {
 		// If there are no attachments, delay the creation of the encoder,

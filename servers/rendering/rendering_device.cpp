@@ -2550,6 +2550,8 @@ RDD::RenderPassID RenderingDevice::_render_pass_create(RenderingDeviceDriver *p_
 		const FramebufferPass *pass = &p_passes[i];
 		RDD::Subpass &subpass = subpasses[i];
 
+		subpass.rasterization_rate_map = pass->rasterization_rate_map;
+
 		TextureSamples texture_samples = TEXTURE_SAMPLES_1;
 		bool is_multisample_first = true;
 
@@ -4389,8 +4391,8 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin_for_screen(DisplayS
 	RDD::RenderPassID render_pass = driver->swap_chain_get_render_pass(sc_it->value);
 	draw_graph.add_draw_list_begin(render_pass, fb_it->value, viewport, RDG::ATTACHMENT_OPERATION_CLEAR, clear_value, RDD::PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, RDD::BreadcrumbMarker::BLIT_PASS, split_swapchain_into_its_own_cmd_buffer);
 
-	draw_graph.add_draw_list_set_viewport(viewport);
-	draw_graph.add_draw_list_set_scissor(viewport);
+	draw_graph.add_draw_list_set_viewports(viewport);
+	draw_graph.add_draw_list_set_scissors(viewport);
 
 	return int64_t(ID_TYPE_DRAW_LIST) << ID_BASE_SHIFT;
 }
@@ -4510,8 +4512,8 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 	draw_list_subpass_count = framebuffer_key.passes.size();
 
 	Rect2i viewport_rect(viewport_offset, viewport_size);
-	draw_graph.add_draw_list_set_viewport(viewport_rect);
-	draw_graph.add_draw_list_set_scissor(viewport_rect);
+	draw_graph.add_draw_list_set_viewports(viewport_rect);
+	draw_graph.add_draw_list_set_scissors(viewport_rect);
 
 	return int64_t(ID_TYPE_DRAW_LIST) << ID_BASE_SHIFT;
 }
@@ -5006,7 +5008,7 @@ void RenderingDevice::draw_list_draw_indirect(DrawListID p_list, bool p_use_indi
 	_check_transfer_worker_buffer(buffer);
 }
 
-void RenderingDevice::draw_list_set_viewport(DrawListID p_list, const Rect2 &p_rect) {
+void RenderingDevice::draw_list_set_viewport(DrawListID p_list, const Rect2i &p_rect) {
 	ERR_FAIL_COND(!draw_list.active);
 
 	if (p_rect.get_area() == 0) {
@@ -5014,7 +5016,18 @@ void RenderingDevice::draw_list_set_viewport(DrawListID p_list, const Rect2 &p_r
 	}
 
 	draw_list.viewport = p_rect;
-	draw_graph.add_draw_list_set_viewport(p_rect);
+	draw_graph.add_draw_list_set_viewports(p_rect);
+}
+
+void RenderingDevice::draw_list_set_viewports(DrawListID p_list, VectorView<Rect2i> p_rects) {
+	ERR_FAIL_COND(!draw_list.active);
+
+	if (p_rects.size() == 0) {
+		return;
+	}
+
+	draw_list.viewport = p_rects[0];
+	draw_graph.add_draw_list_set_viewports(p_rects);
 }
 
 void RenderingDevice::draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect) {
@@ -5031,7 +5044,7 @@ void RenderingDevice::draw_list_enable_scissor(DrawListID p_list, const Rect2 &p
 		return;
 	}
 
-	draw_graph.add_draw_list_set_scissor(rect);
+	draw_graph.add_draw_list_set_scissors(rect);
 }
 
 void RenderingDevice::draw_list_disable_scissor(DrawListID p_list) {
@@ -5039,7 +5052,15 @@ void RenderingDevice::draw_list_disable_scissor(DrawListID p_list) {
 
 	ERR_FAIL_COND(!draw_list.active);
 
-	draw_graph.add_draw_list_set_scissor(draw_list.viewport);
+	draw_graph.add_draw_list_set_scissors(draw_list.viewport);
+}
+
+void RenderingDevice::draw_list_set_empty_scissor(DrawListID p_list) {
+	ERR_RENDER_THREAD_GUARD();
+
+	ERR_FAIL_COND(!draw_list.active);
+
+	draw_graph.add_draw_list_set_scissors(LocalVector<Rect2i>());
 }
 
 uint32_t RenderingDevice::draw_list_get_current_pass() {

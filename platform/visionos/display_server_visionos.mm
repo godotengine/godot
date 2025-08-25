@@ -30,12 +30,20 @@
 
 #import "display_server_visionos.h"
 
+#import "platform/visionos/godot_app_delegate_service_visionos.h"
+
 DisplayServerVisionOS *DisplayServerVisionOS::get_singleton() {
 	return (DisplayServerVisionOS *)DisplayServerAppleEmbedded::get_singleton();
 }
 
 DisplayServerVisionOS::DisplayServerVisionOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) :
 		DisplayServerAppleEmbedded(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error) {
+	String rendering_method = OS::get_singleton()->get_current_rendering_method();
+	GDTRenderMode app_delegate_render_mode = GDTAppDelegateServiceVisionOS.renderMode;
+	if (app_delegate_render_mode == GDTRenderModeCompositorServices && rendering_method == "forward_plus") {
+		WARN_PRINT_ONCE("visionOS in immersive mode doesn't support the Forward+ renderer, switching to the Mobile renderer.");
+		OS::get_singleton()->set_current_rendering_method("mobile");
+	}
 }
 
 DisplayServerVisionOS::~DisplayServerVisionOS() {

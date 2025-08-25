@@ -89,6 +89,7 @@ public:
 		XR_VRS_TEXTURE_FORMAT_UNIFIED,
 		XR_VRS_TEXTURE_FORMAT_FRAGMENT_SHADING_RATE,
 		XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP,
+		XR_VRS_TEXTURE_FORMAT_RASTERIZATION_RATE_MAP,
 	};
 
 protected:
@@ -136,10 +137,14 @@ public:
 	// These methods can be called from both main and render thread.
 	virtual Size2 get_render_target_size() = 0; /* returns the recommended render target size per eye for this device */
 	virtual uint32_t get_view_count() = 0; /* returns the view count we need (1 is monoscopic, 2 is stereoscopic but can be more) */
+	virtual bool get_viewports_are_hdr() { return false; } /* returns whether the platform viewports are HDR (if true, the tonemapper skips performing the sRGB conversion) */
 
 	// These methods are called from the rendering thread.
-	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) = 0; /* get each views transform */
+	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) = 0; /* get each view transform */
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) = 0; /* get each view projection matrix */
+	virtual Rect2i get_viewport_for_view(uint32_t p_view) {
+		return Rect2i();
+	} /* get each view viewport rect, used for visionOS VR */
 	virtual RID get_color_texture(); /* obtain color output texture (if applicable) */
 	virtual RID get_depth_texture(); /* obtain depth output texture (if applicable, used for reprojection) */
 	virtual RID get_velocity_texture(); /* obtain velocity output texture (if applicable, used for spacewarp) */
