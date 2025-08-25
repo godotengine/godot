@@ -82,6 +82,7 @@ layout(set = 1, binding = 4) uniform DenoiseParams {
 
 	int half_search_window;
 	float filter_strength;
+	uint slice_count;
 }
 denoise_params;
 #endif
@@ -1193,13 +1194,9 @@ void main() {
 	const float FILTER_SQUARE_TWO_SIGMA_LIGHT_SQUARE = FILTER_VALUE * FILTER_VALUE * TWO_SIGMA_LIGHT_SQUARE;
 	const float EPSILON = 1e-6f;
 
-#ifdef USE_SH_LIGHTMAPS
-	const uint slice_count = 4;
+	const uint slice_count = denoise_params.slice_count;
 	const uint slice_base = params.atlas_slice * slice_count;
-#else
-	const uint slice_count = 1;
-	const uint slice_base = params.atlas_slice;
-#endif
+	const bool is_directional = (slice_count == 4);
 
 	for (uint i = 0; i < slice_count; i++) {
 		uint lightmap_slice = slice_base + i;
@@ -1223,9 +1220,16 @@ void main() {
 						for (int offset_x = -HALF_PATCH_WINDOW; offset_x <= HALF_PATCH_WINDOW; offset_x++) {
 							ivec2 offset_input_pos = atlas_pos + ivec2(offset_x, offset_y);
 							ivec2 offset_search_pos = search_pos + ivec2(offset_x, offset_y);
-							vec3 offset_input_rgb = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(offset_input_pos, lightmap_slice), 0).rgb;
-							vec3 offset_search_rgb = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(offset_search_pos, lightmap_slice), 0).rgb;
+							vec3 offset_input_rgb = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(offset_input_pos, slice_base), 0).rgb;
+							vec3 offset_search_rgb = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(offset_search_pos, slice_base), 0).rgb;
 							vec3 offset_delta_rgb = offset_input_rgb - offset_search_rgb;
+
+							if (is_directional) {
+								// Since L0 data is 1/4 the value of a regular lightmap,
+								// we have to multiply it by 4.
+								offset_delta_rgb *= 4.0;
+							}
+
 							patch_square_dist += dot(offset_delta_rgb, offset_delta_rgb) - TWO_SIGMA_LIGHT_SQUARE;
 						}
 					}
@@ -1280,24 +1284,13 @@ void main() {
 
 #ifdef MODE_PACK_L1_COEFFS
 	vec4 base_coeff = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos, params.atlas_slice * 4), 0);
+	imageStore(dest_light, ivec3(atlas_pos, params.atlas_slice * 4), base_coeff);
 
 	for (int i = 1; i < 4; i++) {
 		vec4 c = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos, params.atlas_slice * 4 + i), 0);
+		c.rgb /= (base_coeff.rgb * 8.0 + vec3(1e-6f));
+		c.rgb = clamp(c.rgb + vec3(0.5), vec3(0.0), vec3(1.0));
 
-		if (abs(base_coeff.r) > 0.0) {
-			c.r /= (base_coeff.r * 8);
-		}
-
-		if (abs(base_coeff.g) > 0.0) {
-			c.g /= (base_coeff.g * 8);
-		}
-
-		if (abs(base_coeff.b) > 0.0) {
-			c.b /= (base_coeff.b * 8);
-		}
-
-		c.rgb += vec3(0.5);
-		c.rgb = clamp(c.rgb, vec3(0.0), vec3(1.0));
 		imageStore(dest_light, ivec3(atlas_pos, params.atlas_slice * 4 + i), c);
 	}
 #endif
