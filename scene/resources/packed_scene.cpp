@@ -347,7 +347,25 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 							node->get_script_instance()->get_property_state(old_state);
 						}
 
-						node->set(snames[nprops[j].name], props[nprops[j].value], &valid);
+#ifdef TOOLS_ENABLED
+						const Ref<Script> value_as_script = (Script *)(Object *)props[nprops[j].value];
+						// It is possible that the user changed an existing script to abstract after it was attached to a node.
+						// When this happens, the user needs to fix it, and we should keep track of the global class name to
+						// allow the "Extend Script" button to work. See https://github.com/godotengine/godot/issues/109171
+						if (value_as_script.is_valid() && value_as_script->is_abstract()) {
+							const String global_class_name = value_as_script->get_global_name();
+							if (global_class_name.is_empty()) {
+								ERR_PRINT("Node '" + snames[n.name] + "' previously had a script, but that script is now abstract. Please assign a different script (right-click -> Extend Script...) or change the node to a different type (right-click -> Change Type...) to fix this, then re-save the scene.");
+							} else {
+								node->set_meta(StringName("_custom_type_name"), global_class_name);
+								ERR_PRINT("Node '" + snames[n.name] + "' previously had a class of type '" + global_class_name + "', but that class is now abstract. Please assign a different script (right-click -> Extend Script...) or change the node to a different type (right-click -> Change Type...) to fix this, then re-save the scene.");
+							}
+						} else {
+							node->set_script(props[nprops[j].value]);
+						}
+#else
+						node->set_script(props[nprops[j].value]);
+#endif // TOOLS_ENABLED
 
 						//restore old state for new script, if exists
 						for (const Pair<StringName, Variant> &E : old_state) {
