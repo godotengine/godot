@@ -36,6 +36,9 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/http_client_tcp.h"
+#ifdef WEB_ENABLED
+#include "platform/web/http_client_web.h"
+#endif
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
 #include "core/templates/vector.h"
@@ -154,8 +157,12 @@ PackedByteArray Sandbox::download_program(String program_name) {
 	}
 
 	// Download the program from the URL
+#ifdef WEB_ENABLED
+	HTTPClientWeb *client = memnew(HTTPClientWeb);
+#else
 	HTTPClientTCP *client = memnew(HTTPClientTCP);
 	client->set_blocking_mode(true);
+#endif
 	client->connect_to_host("https://github.com", 443);
 
 	PackedByteArray data = handle_request(client, url);

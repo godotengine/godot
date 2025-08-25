@@ -8,7 +8,11 @@ env_sandbox = env_modules.Clone()
 
 # Enable exceptions for libriscv (required)
 env_sandbox.Append(CPPDEFINES=["RISCV_EXCEPTIONS_ENABLED"])
-if env["platform"] != "windows" or env.get("use_mingw", False):
+if env["platform"] == "web":
+    # Force enable exceptions for Emscripten
+    env_sandbox.Append(CXXFLAGS=["-fexceptions"])
+    env_sandbox.Append(LINKFLAGS=["-fexceptions", "-s", "DISABLE_EXCEPTION_CATCHING=0"])
+elif env["platform"] != "windows" or env.get("use_mingw", False):
     env_sandbox.Append(CXXFLAGS=["-fexceptions"])
 else:
     env_sandbox.Append(CXXFLAGS=["/EHsc"])
@@ -47,6 +51,10 @@ if env["platform"] == "windows":
 elif env["platform"] == "macos":
     env_sandbox.Prepend(CPPPATH=["#modules/sandbox/thirdparty/libriscv/lib/libriscv/lib/macos"])
     env_sandbox.Append(LINKFLAGS=["-framework", "Security"])
+elif env["platform"] == "web":
+    env_sandbox.Prepend(CPPPATH=["#modules/sandbox/thirdparty/libriscv/lib/libriscv/lib/linux"])
+    # Force disable exceptions in global environment to override for sandbox only
+    env["disable_exceptions"] = False
 elif env["platform"] == "linux" or env["platform"] == "android":
     env_sandbox.Prepend(CPPPATH=["#modules/sandbox/thirdparty/libriscv/lib/libriscv/lib/linux"])
 

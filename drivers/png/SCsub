@@ -36,6 +36,12 @@ if env["builtin_libpng"]:
 
     env_thirdparty = env_png.Clone()
     env_thirdparty.disable_warnings()
+
+    # Configure setjmp/longjmp for web platform compatibility
+    if env["platform"] == "web":
+        # Enable emscripten setjmp/longjmp support instead of disabling it
+        env_thirdparty.Append(CCFLAGS=["-sSUPPORT_LONGJMP='emscripten'"])
+
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 
     if env["arch"].startswith("arm"):

@@ -68,6 +68,12 @@ if env["builtin_freetype"]:
 
     env_freetype.Append(CPPDEFINES=["FT2_BUILD_LIBRARY", "FT_CONFIG_OPTION_USE_PNG", "FT_CONFIG_OPTION_SYSTEM_ZLIB"])
 
+    # Configure longjmp for web platform compatibility
+    if env["platform"] == "web":
+        env_freetype.Append(CPPDEFINES=["FT_CONFIG_OPTION_ERROR_STRINGS"])
+        # Enable emscripten setjmp/longjmp support
+        env_freetype.Append(CCFLAGS=["-sSUPPORT_LONGJMP='emscripten'"])
+
     # Also requires libpng headers
     if env["builtin_libpng"]:
         env_freetype.Prepend(CPPPATH=["#thirdparty/libpng"])

@@ -315,9 +315,19 @@ def configure(env: "SConsEnvironment"):
     # Wrap the JavaScript support code around a closure named Godot.
     env.Append(LINKFLAGS=["-sMODULARIZE=1", "-sEXPORT_NAME='Godot'"])
 
-    # Force long jump mode to 'wasm'
-    env.Append(CCFLAGS=["-sSUPPORT_LONGJMP='wasm'"])
-    env.Append(LINKFLAGS=["-sSUPPORT_LONGJMP='wasm'"])
+    # Use emscripten exception handling mode for better compatibility with C++ modules
+    env.Append(CCFLAGS=["-sSUPPORT_LONGJMP='emscripten'"])
+    env.Append(LINKFLAGS=["-sSUPPORT_LONGJMP='emscripten'"])
+
+    # Enable exception handling for web platform to support C++ modules like sandbox
+    env.Append(LINKFLAGS=["-sDISABLE_EXCEPTION_CATCHING=0"])
+    env.Append(LINKFLAGS=["-sDISABLE_EXCEPTION_THROWING=0"])
+
+    # Explicitly disable the disable_exceptions flag to allow sandbox module to build
+    env["disable_exceptions"] = False
+
+    # Configure third-party libraries to not use longjmp
+    env.Append(CPPDEFINES=["WEBP_NO_LONGJMP", "PNG_NO_SETJMP", "FT_NO_LONGJMP"])
 
     # Allow increasing memory buffer size during runtime. This is efficient
     # when using WebAssembly (in comparison to asm.js) and works well for
