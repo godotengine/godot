@@ -470,7 +470,7 @@ void Label3D::_shape() {
 
 	// Clear materials.
 	for (const KeyValue<SurfaceKey, SurfaceData> &E : surfaces) {
-		RenderingServer::get_singleton()->free(E.value.material);
+		RenderingServer::get_singleton()->free_rid(E.value.material);
 	}
 	surfaces.clear();
 
@@ -1105,9 +1105,9 @@ Label3D::~Label3D() {
 	TS->free_rid(text_rid);
 
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(mesh);
+	RenderingServer::get_singleton()->free_rid(mesh);
 	for (KeyValue<SurfaceKey, SurfaceData> E : surfaces) {
-		RenderingServer::get_singleton()->free(E.value.material);
+		RenderingServer::get_singleton()->free_rid(E.value.material);
 	}
 	surfaces.clear();
 }
