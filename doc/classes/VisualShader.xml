@@ -127,6 +127,18 @@
 				Returns next valid node ID that can be added to the shader graph.
 			</description>
 		</method>
+		<method name="has_node_builtins" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if any of the Shader's nodes have embedded subresources.
+			</description>
+		</method>
+		<method name="has_node_embeds" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if any of the Shader's nodes have embedded resources.
+			</description>
+		</method>
 		<method name="has_varying" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />

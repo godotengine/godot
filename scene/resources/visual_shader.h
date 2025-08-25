@@ -183,6 +183,8 @@ public: // internal methods
 
 	void add_node(Type p_type, const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id);
 	void set_node_position(Type p_type, int p_id, const Vector2 &p_position);
+	bool has_node_builtins() const;
+	bool has_node_embeds() const;
 
 	void add_varying(const String &p_name, VaryingMode p_mode, VaryingType p_type);
 	void remove_varying(const String &p_name);
@@ -308,12 +310,15 @@ protected:
 	bool simple_decl = true;
 	bool disabled = false;
 	bool closable = false;
+	int builtin_count = 0;
 
 	static void _bind_methods();
 
 public:
 	bool is_simple_decl() const;
 
+	bool has_builtin() const { return builtin_count > 0; }
+	virtual bool has_embed() const { return false; }
 	virtual String get_caption() const = 0;
 
 	virtual int get_input_port_count() const = 0;
