@@ -1403,6 +1403,27 @@ void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 	}
 }
 
+void TextureStorage::texture_remap_proxies(RID p_from_texture, RID p_to_texture) {
+	Texture *from_tex = texture_owner.get_or_null(p_from_texture);
+	ERR_FAIL_NULL(from_tex);
+	ERR_FAIL_COND(from_tex->is_proxy);
+	Texture *to_tex = texture_owner.get_or_null(p_to_texture);
+	ERR_FAIL_NULL(to_tex);
+	ERR_FAIL_COND(to_tex->is_proxy);
+
+	if (from_tex == to_tex) {
+		return;
+	}
+
+	// Make a copy, we're about to change this.
+	Vector<RID> proxies = from_tex->proxies; // TODO we should change Texture::proxies to LocalVector<RID> and this to thread_local LocalVector<RID>
+
+	// Now change them to our new texture.
+	for (RID &proxy : proxies) {
+		texture_proxy_update(proxy, p_to_texture);
+	}
+}
+
 //these two APIs can be used together or in combination with the others.
 void TextureStorage::texture_2d_placeholder_initialize(RID p_texture) {
 	texture_2d_initialize(p_texture, texture_2d_placeholder);
@@ -3279,6 +3300,7 @@ RID TextureStorage::RenderTarget::get_framebuffer() {
 
 void TextureStorage::_clear_render_target(RenderTarget *rt) {
 	// clear overrides, we assume these are freed by the object that created them
+	rt->overridden.texture = RID();
 	rt->overridden.color = RID();
 	rt->overridden.depth = RID();
 	rt->overridden.velocity = RID();
@@ -3521,6 +3543,10 @@ RID TextureStorage::render_target_get_texture(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL_V(rt, RID());
 
+	if (rt->overridden.texture.is_valid()) {
+		return rt->overridden.texture;
+	}
+
 	return rt->texture;
 }
 
@@ -3528,10 +3554,18 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
 
-	rt->overridden.color = p_color_texture;
-	rt->overridden.depth = p_depth_texture;
-	rt->overridden.velocity = p_velocity_texture;
-	rt->overridden.velocity_depth = p_velocity_depth_texture;
+	RID was_color_texture = render_target_get_texture(p_render_target);
+
+	rt->overridden.texture = p_color_texture;
+	rt->overridden.color = p_color_texture.is_valid() ? texture_get_rd_texture(p_color_texture) : RID();
+	rt->overridden.depth = p_depth_texture.is_valid() ? texture_get_rd_texture(p_depth_texture) : RID();
+	rt->overridden.velocity = p_velocity_texture.is_valid() ? texture_get_rd_texture(p_velocity_texture) : RID();
+	rt->overridden.velocity_depth = p_velocity_depth_texture.is_valid() ? texture_get_rd_texture(p_velocity_depth_texture) : RID();
+
+	RID new_color_texture = render_target_get_texture(p_render_target);
+	if (was_color_texture.is_valid() && new_color_texture.is_valid()) {
+		texture_remap_proxies(was_color_texture, new_color_texture);
+	}
 }
 
 RID TextureStorage::render_target_get_override_color(RID p_render_target) const {
