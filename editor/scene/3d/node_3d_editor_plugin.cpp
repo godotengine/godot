@@ -679,6 +679,10 @@ Vector3 Node3DEditorViewport::get_ray(const Vector2 &p_pos) const {
 }
 
 void Node3DEditorViewport::_clear_selected() {
+	if (previewing) {
+		return;
+	}
+
 	_edit.gizmo = Ref<EditorNode3DGizmo>();
 	_edit.gizmo_handle = -1;
 	_edit.gizmo_handle_secondary = false;
@@ -699,6 +703,11 @@ void Node3DEditorViewport::_clear_selected() {
 }
 
 void Node3DEditorViewport::_select_clicked(bool p_allow_locked) {
+	if (previewing) {
+		clicked = ObjectID();
+		return;
+	}
+
 	Node *node = ObjectDB::get_instance<Node3D>(clicked);
 	Node3D *selected = Object::cast_to<Node3D>(node);
 	clicked = ObjectID();
@@ -1990,6 +1999,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 	}
 
+	if (get_viewport()->gui_get_drag_data()) {
+		// Disable all input actions during drag-and-drop.
+		return;
+	}
+
 	if (k.is_valid()) {
 		if (!vertex_snap_mode && !vertex_snap_dragging && k->is_pressed() && _edit.mode == TRANSFORM_NONE && ED_IS_SHORTCUT("spatial_editor/vertex_snap", p_event)) {
 			vertex_snap_mode = true;
@@ -2019,11 +2033,6 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			set_message("");
 			return;
 		}
-	}
-
-	if (previewing || get_viewport()->gui_get_drag_data()) {
-		// Disable all input actions when previewing a camera or during drag-and-drop.
-		return;
 	}
 
 	if (_redirect_freelook_input(p_event, this)) {
@@ -2173,7 +2182,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 
 					const Key mod = _get_key_modifier(b);
-					if (!view_3d_controller->is_orthogonal()) {
+					if (!view_3d_controller->is_orthogonal() && !(previewing && !pilot_preview_enabled)) {
 						if (mod == _get_key_modifier_setting("editors/3d/freelook/freelook_activation_modifier")) {
 							view_3d_controller->set_freelook_enabled(true);
 						}
@@ -2398,10 +2407,12 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								}
 							}
 
-							// Default to region select.
-							view_3d_controller->cursor.region_select = true;
-							view_3d_controller->cursor.region_begin = b->get_position();
-							view_3d_controller->cursor.region_end = b->get_position();
+							if (!previewing) {
+								// Default to region select.
+								view_3d_controller->cursor.region_select = true;
+								view_3d_controller->cursor.region_begin = b->get_position();
+								view_3d_controller->cursor.region_end = b->get_position();
+							}
 							break;
 						}
 					}
@@ -2612,7 +2623,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		} else {
 			movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
 
-			if ((selection_in_progress || clicked_wants_append || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT) && movement_threshold_passed && clicked.is_valid()) {
+			if ((selection_in_progress || clicked_wants_append || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT) && movement_threshold_passed && clicked.is_valid() && !previewing) {
 				view_3d_controller->cursor.region_select = true;
 				view_3d_controller->cursor.region_begin = _edit.original_mouse_pos;
 				clicked = ObjectID();
@@ -2917,8 +2928,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		// Freelook doesn't work in orthogonal mode.
-		if (!view_3d_controller->is_orthogonal() && ED_IS_SHORTCUT("spatial_editor/freelook_toggle", event_mod)) {
+		// Freelook doesn't work in orthogonal mode or when previewing without pilot mode.
+		if (!view_3d_controller->is_orthogonal() && !(previewing && !pilot_preview_enabled) && ED_IS_SHORTCUT("spatial_editor/freelook_toggle", event_mod)) {
 			view_3d_controller->set_freelook_enabled(!view_3d_controller->is_freelook_enabled());
 		} else if (k->get_keycode() == Key::ESCAPE) {
 			view_3d_controller->set_freelook_enabled(false);
@@ -2940,7 +2951,12 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 void Node3DEditorViewport::_cursor_interpolated() {
 	last_camera_transform = view_3d_controller->interp_to_camera_transform();
-	camera->set_global_transform(last_camera_transform);
+
+	if (previewing_camera && previewing && pilot_preview_enabled) {
+		previewing->set_global_transform(last_camera_transform);
+	} else if (!previewing_camera) {
+		camera->set_global_transform(last_camera_transform);
+	}
 
 	if (view_3d_controller->is_orthogonal()) {
 		float half_fov = Math::deg_to_rad(get_fov()) / 2.0;
@@ -3480,7 +3496,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			view_display_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHlDarkBackground")));
 			preview_camera->set_button_icon(get_editor_theme_icon(SNAME("Camera3DDarkBackground")));
-
+			pilot_camera->set_button_icon(get_editor_theme_icon(SNAME("3D")));
 			Control *gui_base = EditorNode::get_singleton()->get_gui_base();
 
 			const Ref<StyleBox> &information_3d_stylebox = gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles));
@@ -3497,6 +3513,9 @@ void Node3DEditorViewport::_notification(int p_what) {
 			frame_time_gradient->set_color(0, get_theme_color(SNAME("success_color_dark_background"), EditorStringName(Editor)));
 			frame_time_gradient->set_color(1, get_theme_color(SNAME("warning_color_dark_background"), EditorStringName(Editor)));
 			frame_time_gradient->set_color(2, get_theme_color(SNAME("error_color_dark_background"), EditorStringName(Editor)));
+
+			override_button_stylebox(pilot_camera, information_3d_stylebox);
+			override_label_colors(pilot_camera);
 
 			info_panel->add_theme_style_override(SceneStringName(panel), information_3d_stylebox);
 			override_label_colors(info_label);
@@ -3900,28 +3919,25 @@ void Node3DEditorViewport::_draw() {
 }
 
 bool Node3DEditorViewport::_camera_moved_externally() {
+	if (previewing_camera && previewing) {
+		if (pilot_preview_enabled) {
+			Transform3D t = previewing->get_global_transform();
+			return !t.is_equal_approx(last_camera_transform);
+		}
+		return false;
+	}
 	Transform3D t = camera->get_global_transform();
 	return !t.is_equal_approx(last_camera_transform);
 }
 
 void Node3DEditorViewport::_apply_camera_transform_to_cursor() {
-	// Effectively the reverse of to_camera_transform, use camera transform to set cursor position and rotation.
-	const Transform3D camera_transform = camera->get_camera_transform();
-	const Basis basis = camera_transform.basis;
-
-	real_t distance;
-	if (view_3d_controller->is_orthogonal()) {
-		distance = (get_zfar() - get_znear()) / 2.0;
-	} else {
-		distance = view_3d_controller->cursor.distance;
+	if (previewing_camera && previewing) {
+		if (pilot_preview_enabled) {
+			_sync_cursor_from_transform(previewing->get_global_transform());
+		}
+		return;
 	}
-
-	view_3d_controller->cursor.pos = camera_transform.origin - basis.get_column(2) * distance;
-
-	view_3d_controller->cursor.x_rot = -camera_transform.basis.get_euler().x;
-	view_3d_controller->cursor.y_rot = -camera_transform.basis.get_euler().y;
-	view_3d_controller->cursor.unsnapped_x_rot = view_3d_controller->cursor.x_rot;
-	view_3d_controller->cursor.unsnapped_y_rot = view_3d_controller->cursor.y_rot;
+	_sync_cursor_from_transform(camera->get_camera_transform());
 }
 
 void Node3DEditorViewport::_menu_option(int p_option) {
@@ -4324,6 +4340,22 @@ void Node3DEditorViewport::_preview_camera_property_changed() {
 	}
 }
 
+void Node3DEditorViewport::_sync_cursor_from_transform(const Transform3D &p_transform) {
+	const Basis basis = p_transform.basis;
+
+	view_3d_controller->cursor.eye_pos = p_transform.origin;
+	view_3d_controller->cursor.x_rot = -basis.get_euler().x;
+	view_3d_controller->cursor.y_rot = -basis.get_euler().y;
+	view_3d_controller->cursor.unsnapped_x_rot = view_3d_controller->cursor.x_rot;
+	view_3d_controller->cursor.unsnapped_y_rot = view_3d_controller->cursor.y_rot;
+
+	real_t distance = view_3d_controller->cursor.distance;
+	if (view_3d_controller->is_orthogonal()) {
+		distance = (get_zfar() - get_znear()) / 2.0;
+	}
+	view_3d_controller->cursor.pos = p_transform.origin - basis.get_column(2) * distance;
+}
+
 void Node3DEditorViewport::_update_centered_labels() {
 	if (cinema_label->is_visible()) {
 		cinema_label->reset_size();
@@ -4445,6 +4477,7 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 	ERR_FAIL_COND(p_activate && !preview);
 	ERR_FAIL_COND(!p_activate && !previewing);
 
+	emit_signal(SNAME("clicked"));
 	previewing_camera = p_activate;
 	_update_navigation_controls_visibility();
 
@@ -4456,6 +4489,14 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 		if (!preview) {
 			preview_camera->hide();
 		}
+		pilot_camera->hide();
+		pilot_preview_enabled = false;
+		pilot_camera->set_pressed(false);
+
+		_apply_camera_transform_to_cursor();
+		view_3d_controller->update_camera(0);
+		last_camera_transform = camera->get_global_transform();
+
 		surface->queue_redraw();
 
 	} else {
@@ -4463,7 +4504,25 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 		previewing->connect(SceneStringName(tree_exiting), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 		previewing->connect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
 		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), preview->get_camera()); //replace
+
+		_sync_cursor_from_transform(preview->get_global_transform());
+		view_3d_controller->update_camera(0);
+
+		pilot_camera->show();
+
+		if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
+			pilot_camera->set_pressed(true);
+		}
+
 		surface->queue_redraw();
+	}
+}
+
+void Node3DEditorViewport::_toggle_pilot_preview(bool p_activate) {
+	pilot_preview_enabled = p_activate;
+	if (p_activate && previewing) {
+		_sync_cursor_from_transform(previewing->get_global_transform());
+		view_3d_controller->update_camera(0);
 	}
 }
 
@@ -4516,6 +4575,25 @@ void Node3DEditorViewport::set_can_preview(Camera3D *p_preview) {
 	if (!preview_camera->is_pressed() && !previewing_cinema) {
 		preview_camera->set_visible(p_preview);
 	}
+}
+
+void Node3DEditorViewport::switch_preview_camera(Camera3D *p_new_camera) {
+	if (!previewing_camera || !previewing || !p_new_camera || p_new_camera == previewing) {
+		return;
+	}
+
+	previewing->disconnect(SceneStringName(tree_exiting), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
+	previewing->disconnect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
+
+	previewing = p_new_camera;
+	previewing->connect(SceneStringName(tree_exiting), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
+	previewing->connect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
+	RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), p_new_camera->get_camera());
+
+	_sync_cursor_from_transform(p_new_camera->get_global_transform());
+	view_3d_controller->update_camera(0);
+
+	surface->queue_redraw();
 }
 
 void Node3DEditorViewport::update_transform_gizmo_view() {
@@ -4794,6 +4872,12 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 			_update_navigation_controls_visibility();
 			preview_camera->set_pressed(true);
 			preview_camera->show();
+			pilot_camera->show();
+
+			camera->set_global_transform(view_3d_controller->to_camera_transform());
+
+			_sync_cursor_from_transform(previewing->get_global_transform());
+			view_3d_controller->update_camera(0);
 		}
 	}
 	preview_camera->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
@@ -5433,6 +5517,10 @@ void Node3DEditorViewport::_show_tooltip(const String &p_title, const String &p_
 }
 
 bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	if (previewing) {
+		return false;
+	}
+
 	if (p_point == Vector2(Math::INF, Math::INF)) {
 		tooltip_panel->hide();
 		return false;
@@ -5636,6 +5724,10 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 }
 
 void Node3DEditorViewport::begin_transform(TransformMode p_mode, bool instant) {
+	if (previewing) {
+		return;
+	}
+
 	if (get_selected_count() > 0) {
 		_edit.children_original_globals.clear();
 
@@ -6411,6 +6503,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	preview_camera = memnew(CheckBox);
 	preview_camera->set_text(TTRC("Preview"));
+	preview_camera->set_tooltip_text(TTRC("Preview through the selected camera.\nHold Shift while clicking to also enable Pilot mode."));
 	// Using Control even on macOS to avoid conflict with Quick Open shortcut.
 	preview_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_camera_preview", TTRC("Toggle Camera Preview"), KeyModifierMask::CTRL | Key::P));
 	vbox->add_child(preview_camera);
@@ -6418,6 +6511,16 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	preview_camera->set_theme_type_variation("CheckBoxNoIconTint");
 	preview_camera->hide();
 	preview_camera->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
+
+	pilot_camera = memnew(CheckBox);
+	pilot_camera->set_text(TTRC("Pilot"));
+	pilot_camera->set_tooltip_text(TTRC("Enable pilot mode for the preview camera.\nAllows WASD movement and mouse look when in preview mode."));
+	pilot_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_pilot_preview", TTRC("Toggle Pilot Mode in Preview")));
+	vbox->add_child(pilot_camera);
+	pilot_camera->set_h_size_flags(0);
+	pilot_camera->set_theme_type_variation("CheckBoxNoIconTint");
+	pilot_camera->hide();
+	pilot_camera->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditorViewport::_toggle_pilot_preview));
 	previewing = nullptr;
 	gizmo_scale = 1.0;
 
@@ -9180,6 +9283,8 @@ void Node3DEditor::set_can_preview(Camera3D *p_preview) {
 	for (int i = 0; i < 4; i++) {
 		viewports[i]->set_can_preview(p_preview);
 	}
+
+	viewports[last_used_viewport]->switch_preview_camera(p_preview);
 }
 
 VSplitContainer *Node3DEditor::get_shader_split() {
