@@ -94,6 +94,10 @@ public:
 	void update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_pancake_shadows, const Size2i &p_screen_size, const Color &p_default_bg_color, float p_luminance_multiplier, bool p_opaque_render_buffers, bool p_apply_alpha_multiplier);
 	virtual RID get_uniform_buffer() const override;
 
+	static uint32_t get_sh_coeffs_offset_bytes() {
+		return offsetof(UBO, ambient_sh_coeffs);
+	}
+
 private:
 	RID uniform_buffer; // loaded into this uniform buffer (supplied externally)
 
@@ -168,6 +172,10 @@ private:
 		float IBL_exposure_normalization; // Adjusts for baked exposure.
 		uint32_t camera_visible_layers;
 		float pass_alpha_multiplier;
+
+		// ambient_sh_coeffs is filled from GPU, not from CPU, via a buffer_copy().
+		// See get_sh_coeffs_offset_bytes(). Always big enough to cover L2 version, even if using L1.
+		float ambient_sh_coeffs[7][4];
 	};
 
 	struct UBODATA {
