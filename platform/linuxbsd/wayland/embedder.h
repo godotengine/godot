@@ -194,7 +194,7 @@ private:
 		WaylandObject *new_fake_object(uint32_t p_local_id, const struct wl_interface *p_interface, int p_version = 1, WaylandObjectData *p_data = nullptr);
 		WaylandObject *new_global_instance(uint32_t p_local_id, uint32_t p_global_id, const struct wl_interface *p_interface, int p_version = 1, WaylandObjectData *p_data = nullptr);
 
-		void send_wl_drm_state(uint32_t p_id, WaylandDrmGlobalData *p_state);
+		Error send_wl_drm_state(uint32_t p_id, WaylandDrmGlobalData *p_state);
 	};
 
 	// Local IDs are a mess to handle as they strictly depend on their client of
@@ -495,23 +495,23 @@ private:
 	static size_t wl_array_word_offset(uint32_t p_size);
 	const static struct wl_interface *wl_interface_from_string(const char *name, size_t size);
 
-	static void send_raw_message(int p_socket, std::initializer_list<struct iovec> p_vecs, const LocalVector<int> &p_fds = LocalVector<int>());
+	static Error send_raw_message(int p_socket, std::initializer_list<struct iovec> p_vecs, const LocalVector<int> &p_fds = LocalVector<int>());
 
-	static void send_wayland_message(int p_socket, uint32_t p_id, uint32_t p_opcode, const uint32_t *p_args, const size_t p_args_words);
-	static void send_wayland_message(ProxyDirection p_direction, int p_socket, uint32_t p_id, const struct wl_interface &p_interface, uint32_t p_opcode, LocalVector<union wl_argument> p_args);
+	static Error send_wayland_message(int p_socket, uint32_t p_id, uint32_t p_opcode, const uint32_t *p_args, const size_t p_args_words);
+	static Error send_wayland_message(ProxyDirection p_direction, int p_socket, uint32_t p_id, const struct wl_interface &p_interface, uint32_t p_opcode, LocalVector<union wl_argument> p_args);
 
 	// Utility aliases.
 
-	static void send_wayland_message(int p_socket, uint32_t p_id, uint32_t p_opcode, std::initializer_list<uint32_t> p_args) {
-		send_wayland_message(p_socket, p_id, p_opcode, p_args.begin(), p_args.size());
+	static Error send_wayland_message(int p_socket, uint32_t p_id, uint32_t p_opcode, std::initializer_list<uint32_t> p_args) {
+		return send_wayland_message(p_socket, p_id, p_opcode, p_args.begin(), p_args.size());
 	}
 
-	static void send_wayland_method(int p_socket, uint32_t p_id, const struct wl_interface &p_interface, uint32_t p_opcode, LocalVector<union wl_argument> p_args) {
-		send_wayland_message(ProxyDirection::COMPOSITOR, p_socket, p_id, p_interface, p_opcode, p_args);
+	static Error send_wayland_method(int p_socket, uint32_t p_id, const struct wl_interface &p_interface, uint32_t p_opcode, LocalVector<union wl_argument> p_args) {
+		return send_wayland_message(ProxyDirection::COMPOSITOR, p_socket, p_id, p_interface, p_opcode, p_args);
 	}
 
-	static void send_wayland_event(int p_socket, uint32_t p_id, const struct wl_interface &p_interface, uint32_t p_opcode, LocalVector<union wl_argument> p_args) {
-		send_wayland_message(ProxyDirection::CLIENT, p_socket, p_id, p_interface, p_opcode, p_args);
+	static Error send_wayland_event(int p_socket, uint32_t p_id, const struct wl_interface &p_interface, uint32_t p_opcode, LocalVector<union wl_argument> p_args) {
+		return send_wayland_message(ProxyDirection::CLIENT, p_socket, p_id, p_interface, p_opcode, p_args);
 	}
 
 	// Closes the socket.

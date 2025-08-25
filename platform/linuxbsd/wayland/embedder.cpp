@@ -424,12 +424,12 @@ WaylandEmbedder::WaylandObject *WaylandEmbedder::Client::new_global_instance(uin
 	return &new_object;
 }
 
-void WaylandEmbedder::Client::send_wl_drm_state(uint32_t p_id, WaylandDrmGlobalData *p_state) {
-	CRASH_COND(p_state == nullptr);
+Error WaylandEmbedder::Client::send_wl_drm_state(uint32_t p_id, WaylandDrmGlobalData *p_state) {
+	ERR_FAIL_COND_V(p_state == nullptr, ERR_INVALID_PARAMETER);
 
 	if (p_state->device.is_empty()) {
 		// Not yet initialized.
-		return;
+		return OK;
 	}
 
 	LocalVector<union wl_argument> args;
@@ -437,14 +437,19 @@ void WaylandEmbedder::Client::send_wl_drm_state(uint32_t p_id, WaylandDrmGlobalD
 	send_wayland_event(socket, p_id, wl_drm_interface, WL_DRM_DEVICE, args);
 
 	for (uint32_t format : p_state->formats) {
-		send_wayland_message(socket, p_id, WL_DRM_FORMAT, { format });
+		Error err = send_wayland_message(socket, p_id, WL_DRM_FORMAT, { format });
+		ERR_FAIL_COND_V(err != OK, err);
 	}
 
 	if (p_state->authenticated) {
-		send_wayland_message(socket, p_id, WL_DRM_AUTHENTICATED, {});
+		Error err = send_wayland_message(socket, p_id, WL_DRM_AUTHENTICATED, {});
+		ERR_FAIL_COND_V(err != OK, err);
 	}
 
-	send_wayland_message(socket, p_id, WL_DRM_CAPABILITIES, { p_state->capabilities });
+	Error err = send_wayland_message(socket, p_id, WL_DRM_CAPABILITIES, { p_state->capabilities });
+	ERR_FAIL_COND_V(err != OK, err);
+
+	return OK;
 }
 
 void WaylandEmbedder::cleanup_socket(int p_socket) {
@@ -628,7 +633,7 @@ void WaylandEmbedder::poll_sockets() {
 	handle_fd(pollfds[0].fd, pollfds[0].revents);
 }
 
-void WaylandEmbedder::send_raw_message(int p_socket, std::initializer_list<struct iovec> p_vecs, const LocalVector<int> &p_fds) {
+Error WaylandEmbedder::send_raw_message(int p_socket, std::initializer_list<struct iovec> p_vecs, const LocalVector<int> &p_fds) {
 	struct msghdr msg = {};
 	msg.msg_iov = (struct iovec *)p_vecs.begin();
 	msg.msg_iovlen = p_vecs.size();
@@ -666,11 +671,13 @@ void WaylandEmbedder::send_raw_message(int p_socket, std::initializer_list<struc
 	if (msg.msg_control) {
 		Memory::free_aligned_static(msg.msg_control);
 	}
+
+	return OK;
 }
 
-void WaylandEmbedder::send_wayland_message(int p_socket, uint32_t p_id, uint32_t p_opcode, const uint32_t *p_args, const size_t p_args_words) {
-	CRASH_COND(p_socket < 0);
-	CRASH_COND(p_id == INVALID_ID);
+Error WaylandEmbedder::send_wayland_message(int p_socket, uint32_t p_id, uint32_t p_opcode, const uint32_t *p_args, const size_t p_args_words) {
+	ERR_FAIL_COND_V(p_socket < 0, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_id == INVALID_ID, ERR_INVALID_PARAMETER);
 
 	uint32_t args_size = p_args_words * sizeof *p_args;
 
@@ -701,12 +708,16 @@ void WaylandEmbedder::send_wayland_message(int p_socket, uint32_t p_id, uint32_t
 	printf("\n");
 #endif
 
-	sendmsg(p_socket, &msg, MSG_NOSIGNAL);
+	if (sendmsg(p_socket, &msg, MSG_NOSIGNAL) < 0) {
+		return FAILED;
+	}
+
+	return OK;
 }
 
-void WaylandEmbedder::send_wayland_message(ProxyDirection p_direction, int p_socket, uint32_t p_id, const struct wl_interface &p_interface, uint32_t p_opcode, LocalVector<union wl_argument> p_args) {
-	CRASH_COND(p_direction == ProxyDirection::CLIENT && p_opcode >= (uint32_t)p_interface.event_count);
-	CRASH_COND(p_direction == ProxyDirection::COMPOSITOR && p_opcode >= (uint32_t)p_interface.method_count);
+Error WaylandEmbedder::send_wayland_message(ProxyDirection p_direction, int p_socket, uint32_t p_id, const struct wl_interface &p_interface, uint32_t p_opcode, LocalVector<union wl_argument> p_args) {
+	ERR_FAIL_COND_V(p_direction == ProxyDirection::CLIENT && p_opcode >= (uint32_t)p_interface.event_count, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_direction == ProxyDirection::COMPOSITOR && p_opcode >= (uint32_t)p_interface.method_count, ERR_INVALID_PARAMETER);
 
 	const struct wl_message &msg = p_direction == ProxyDirection::CLIENT ? p_interface.events[p_opcode] : p_interface.methods[p_opcode];
 
@@ -716,7 +727,7 @@ void WaylandEmbedder::send_wayland_message(ProxyDirection p_direction, int p_soc
 	for (size_t sig_idx = 0; sig_idx < strlen(msg.signature); ++sig_idx) {
 		if (arg_idx >= p_args.size()) {
 			String err_msg = vformat("Not enough arguments for r0x%d %s.%s(%s) (only got %d)", p_id, p_interface.name, msg.name, msg.signature, p_args.size());
-			CRASH_COND_MSG(arg_idx >= p_args.size(), err_msg);
+			ERR_FAIL_COND_V_MSG(arg_idx >= p_args.size(), ERR_INVALID_PARAMETER, err_msg);
 		}
 
 		char sym = msg.signature[sig_idx];
@@ -786,6 +797,8 @@ void WaylandEmbedder::send_wayland_message(ProxyDirection p_direction, int p_soc
 	}
 
 	send_wayland_message(p_socket, p_id, p_opcode, arg_buf.ptr(), arg_buf.size());
+
+	return OK;
 }
 
 uint32_t WaylandEmbedder::new_object(const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data) {
@@ -1224,7 +1237,10 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 				// instances are handled by us, we need to track and report the relevant
 				// data ourselves.
 				if (global_info.interface == &wl_drm_interface) {
-					client->send_wl_drm_state(new_local_id, (WaylandDrmGlobalData *)global_info.data);
+					Error err = client->send_wl_drm_state(new_local_id, (WaylandDrmGlobalData *)global_info.data);
+					if (err != OK) {
+						return MessageStatus::ERROR;
+					}
 				} else if (global_info.interface == &wl_shm_interface) {
 					WaylandShmGlobalData *global_data = (WaylandShmGlobalData *)global_info.data;
 					ERR_FAIL_NULL_V(global_data, MessageStatus::ERROR);
