@@ -516,7 +516,7 @@ void EditorFileSystemImportFormatSupportQueryBlend::_update_icons() {
 }
 
 bool EditorFileSystemImportFormatSupportQueryBlend::query() {
-	ERR_FAIL_COND_V_MSG(DisplayServer::get_singleton()->get_name() == "headless", true, "Blender path is invalid or not set, check your Editor Settings.");
+	ERR_FAIL_COND_V_MSG(DisplayServer::get_singleton()->get_name() == "headless", true, "Blender is required to import .blend files but it could not be found.");
 
 	if (!configure_blender_dialog) {
 		configure_blender_dialog = memnew(ConfirmationDialog);
