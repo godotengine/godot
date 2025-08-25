@@ -56,13 +56,13 @@ public:
 	EXBIND1RC(bool, inherits_script, const Ref<Script> &)
 	EXBIND0RC(StringName, get_instance_base_type)
 
-	GDVIRTUAL1RC_REQUIRED(GDExtensionPtr<void>, _instance_create, Object *)
+	GDVIRTUAL1R_REQUIRED(GDExtensionPtr<void>, _instance_create, Object *)
 	virtual ScriptInstance *instance_create(Object *p_this) override {
 		GDExtensionPtr<void> ret = nullptr;
 		GDVIRTUAL_CALL(_instance_create, p_this, ret);
 		return reinterpret_cast<ScriptInstance *>(ret.operator void *());
 	}
-	GDVIRTUAL1RC_REQUIRED(GDExtensionPtr<void>, _placeholder_instance_create, Object *)
+	GDVIRTUAL1R_REQUIRED(GDExtensionPtr<void>, _placeholder_instance_create, Object *)
 	PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) override {
 		GDExtensionPtr<void> ret = nullptr;
 		GDVIRTUAL_CALL(_placeholder_instance_create, p_this, ret);
