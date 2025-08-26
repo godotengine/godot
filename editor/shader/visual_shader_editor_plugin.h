@@ -669,7 +669,7 @@ public:
 
 	void clear_custom_types();
 	void add_custom_type(const String &p_name, const String &p_type, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, bool p_highend);
-	void set_toggle_list_control(Control *p_control);
+	void set_toggle_list_control(Control *p_toggle_list_control);
 
 	Dictionary get_custom_node_data(Ref<VisualShaderNodeCustom> &p_custom_node);
 	void update_custom_type(const Ref<Resource> &p_resource);
