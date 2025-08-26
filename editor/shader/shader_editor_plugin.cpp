@@ -39,9 +39,9 @@
 #include "editor/gui/window_wrapper.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/shader/shader_create_dialog.h"
+#include "editor/shader/shader_language_editor_plugin.h"
 #include "editor/shader/text_shader_editor.h"
 #include "editor/shader/text_shader_language_plugin.h"
-#include "editor/shader/visual_shader_language_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/tab_container.h"
@@ -925,10 +925,6 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	Ref<TextShaderLanguagePlugin> text_shader_lang;
 	text_shader_lang.instantiate();
 	EditorShaderLanguagePlugin::register_shader_language(text_shader_lang);
-
-	Ref<VisualShaderLanguagePlugin> visual_shader_lang;
-	visual_shader_lang.instantiate();
-	EditorShaderLanguagePlugin::register_shader_language(visual_shader_lang);
 }
 
 ShaderEditorPlugin::~ShaderEditorPlugin() {
