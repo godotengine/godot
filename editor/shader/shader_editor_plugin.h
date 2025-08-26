@@ -39,10 +39,8 @@ class MenuButton;
 class ShaderCreateDialog;
 class ShaderEditor;
 class TabContainer;
-class TextShaderEditor;
 class VBoxContainer;
 class HBoxContainer;
-class VisualShaderEditor;
 class WindowWrapper;
 
 class ShaderEditorPlugin : public EditorPlugin {
