@@ -47,5 +47,7 @@ public:
 	virtual void apply_shaders() = 0;
 	virtual bool is_unsaved() const = 0;
 	virtual void save_external_data(const String &p_str = "") = 0;
+	virtual void set_toggle_list_control(Control *p_toggle_list_control) = 0;
+	virtual void update_toggle_files_button() = 0;
 	virtual void validate_script() = 0;
 };

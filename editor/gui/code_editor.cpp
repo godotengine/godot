@@ -1867,8 +1867,8 @@ void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_cod
 	code_complete_ud = p_ud;
 }
 
-void CodeTextEditor::set_toggle_list_control(Control *p_control) {
-	toggle_files_list = p_control;
+void CodeTextEditor::set_toggle_list_control(Control *p_toggle_list_control) {
+	toggle_files_list = p_toggle_list_control;
 }
 
 void CodeTextEditor::show_toggle_files_button() {

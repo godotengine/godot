@@ -151,11 +151,8 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 			}
 		}
 		es.shader_inc = Ref<ShaderInclude>(si);
-		TextShaderEditor *text_shader = memnew(TextShaderEditor);
-		text_shader->get_code_editor()->set_toggle_list_control(shader_list);
-		es.shader_editor = text_shader;
+		es.shader_editor = memnew(TextShaderEditor);
 		es.shader_editor->edit_shader_include(si);
-		shader_tabs->add_child(es.shader_editor);
 	} else {
 		Shader *s = Object::cast_to<Shader>(p_object);
 		for (uint32_t i = 0; i < edited_shaders.size(); i++) {
@@ -169,15 +166,10 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 		es.shader = Ref<Shader>(s);
 		Ref<VisualShader> vs = es.shader;
 		if (vs.is_valid()) {
-			VisualShaderEditor *vs_editor = memnew(VisualShaderEditor);
-			vs_editor->set_toggle_list_control(shader_list);
-			es.shader_editor = vs_editor;
+			es.shader_editor = memnew(VisualShaderEditor);
 		} else {
-			TextShaderEditor *text_shader = memnew(TextShaderEditor);
-			text_shader->get_code_editor()->set_toggle_list_control(shader_list);
-			es.shader_editor = text_shader;
+			es.shader_editor = memnew(TextShaderEditor);
 		}
-		shader_tabs->add_child(es.shader_editor);
 		es.shader_editor->edit_shader(es.shader);
 	}
 
@@ -192,6 +184,9 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 		}
 	}
 
+	// `set_toggle_list_control` must be called before adding the editor to the scene tree.
+	es.shader_editor->set_toggle_list_control(shader_list);
+	shader_tabs->add_child(es.shader_editor);
 	shader_tabs->set_current_tab(shader_tabs->get_tab_count() - 1);
 	edited_shaders.push_back(es);
 	_update_shader_list();
@@ -627,15 +622,9 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 			int index = shader_tabs->get_current_tab();
 			if (index != -1) {
 				ERR_FAIL_INDEX(index, (int)edited_shaders.size());
-				TextShaderEditor *editor = Object::cast_to<TextShaderEditor>(edited_shaders[index].shader_editor);
-				if (editor) {
-					editor->get_code_editor()->update_toggle_files_button();
-				} else {
-					VisualShaderEditor *vs_editor = Object::cast_to<VisualShaderEditor>(edited_shaders[index].shader_editor);
-					if (vs_editor) {
-						vs_editor->update_toggle_files_button();
-					}
-				}
+				ShaderEditor *shader_editor = edited_shaders[index].shader_editor;
+				ERR_FAIL_NULL(shader_editor);
+				shader_editor->update_toggle_files_button();
 			}
 		} break;
 	}
@@ -788,7 +777,7 @@ void ShaderEditorPlugin::_switch_to_editor(ShaderEditor *p_editor) {
 	if (file_menu->get_parent() != nullptr) {
 		file_menu->get_parent()->remove_child(file_menu);
 	}
-	if (make_floating->get_parent()) {
+	if (make_floating->get_parent() != nullptr) {
 		make_floating->get_parent()->remove_child(make_floating);
 	}
 	empty_menu->set_visible(false);
