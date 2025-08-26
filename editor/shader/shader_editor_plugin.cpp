@@ -137,33 +137,37 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 	if (!p_object) {
 		return;
 	}
-
 	EditedShader es;
-
-	ShaderInclude *si = Object::cast_to<ShaderInclude>(p_object);
-	if (si != nullptr) {
+	// First, check for ShaderInclude.
+	ShaderInclude *shader_include = Object::cast_to<ShaderInclude>(p_object);
+	if (shader_include != nullptr) {
+		// Check if this shader include is already being edited.
 		for (uint32_t i = 0; i < edited_shaders.size(); i++) {
-			if (edited_shaders[i].shader_inc.ptr() == si) {
+			if (edited_shaders[i].shader_inc.ptr() == shader_include) {
 				shader_tabs->set_current_tab(i);
 				shader_list->select(i);
 				_switch_to_editor(edited_shaders[i].shader_editor);
 				return;
 			}
 		}
-		es.shader_inc = Ref<ShaderInclude>(si);
+		es.shader_inc = Ref<ShaderInclude>(shader_include);
 		es.shader_editor = memnew(TextShaderEditor);
-		es.shader_editor->edit_shader_include(si);
+		es.shader_editor->edit_shader_include(shader_include);
 	} else {
-		Shader *s = Object::cast_to<Shader>(p_object);
+		// If it's not a ShaderInclude, check for Shader.
+		Shader *shader = Object::cast_to<Shader>(p_object);
+		ERR_FAIL_NULL_MSG(shader, "ShaderEditorPlugin: Unable to edit object " + p_object->to_string() + " because it is not a Shader or ShaderInclude.");
+		// Check if this shader is already being edited.
 		for (uint32_t i = 0; i < edited_shaders.size(); i++) {
-			if (edited_shaders[i].shader.ptr() == s) {
+			if (edited_shaders[i].shader.ptr() == shader) {
 				shader_tabs->set_current_tab(i);
 				shader_list->select(i);
 				_switch_to_editor(edited_shaders[i].shader_editor);
 				return;
 			}
 		}
-		es.shader = Ref<Shader>(s);
+		// If we did not return, the shader needs to be opened in a new shader editor.
+		es.shader = Ref<Shader>(shader);
 		Ref<VisualShader> vs = es.shader;
 		if (vs.is_valid()) {
 			es.shader_editor = memnew(VisualShaderEditor);
@@ -173,6 +177,7 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 		es.shader_editor->edit_shader(es.shader);
 	}
 
+	// TextShaderEditor-specific setup code.
 	TextShaderEditor *text_shader_editor = Object::cast_to<TextShaderEditor>(es.shader_editor);
 	if (text_shader_editor) {
 		text_shader_editor->connect("validation_changed", callable_mp(this, &ShaderEditorPlugin::_update_shader_list));
@@ -434,7 +439,7 @@ void ShaderEditorPlugin::_make_script_list_context_menu() {
 	}
 
 	Control *control = shader_tabs->get_tab_control(selected);
-	bool is_valid_editor_control = Object::cast_to<TextShaderEditor>(control) || Object::cast_to<VisualShaderEditor>(control);
+	bool is_valid_editor_control = Object::cast_to<ShaderEditor>(control) != nullptr;
 
 	_setup_popup_menu(is_valid_editor_control ? CONTEXT_VALID_ITEM : CONTEXT, context_menu);
 
@@ -774,6 +779,7 @@ void ShaderEditorPlugin::_update_shader_editor_zoom_factor(CodeTextEditor *p_sha
 }
 
 void ShaderEditorPlugin::_switch_to_editor(ShaderEditor *p_editor) {
+	ERR_FAIL_NULL(p_editor);
 	if (file_menu->get_parent() != nullptr) {
 		file_menu->get_parent()->remove_child(file_menu);
 	}
