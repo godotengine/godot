@@ -2711,17 +2711,17 @@ void FileSystemDock::_resource_created() {
 		fpath = fpath.get_base_dir();
 	}
 
-	String type_name = new_resource_dialog->get_selected_type();
+	const String type_name = new_resource_dialog->get_selected_type();
 	if (type_name == "Shader") {
-		make_shader_dialog->config(fpath.path_join("new_shader"), false, false, 0);
-		make_shader_dialog->popup_centered();
-		return;
-	} else if (type_name == "VisualShader") {
-		make_shader_dialog->config(fpath.path_join("new_shader"), false, false, 1);
+		make_shader_dialog->config(fpath.path_join("new_shader"), false, false, type_name);
 		make_shader_dialog->popup_centered();
 		return;
 	} else if (type_name == "ShaderInclude") {
-		make_shader_dialog->config(fpath.path_join("new_shader_include"), false, false, 2);
+		make_shader_dialog->config(fpath.path_join("new_shader_include"), false, false, type_name);
+		make_shader_dialog->popup_centered();
+		return;
+	} else if (type_name == "VisualShader") {
+		make_shader_dialog->config(fpath.path_join("new_shader"), false, false, type_name);
 		make_shader_dialog->popup_centered();
 		return;
 	}
