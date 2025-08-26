@@ -1593,7 +1593,7 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 		if (r_type) {
 			*r_type = IDENTIFIER_BUFFER_FIELD;
 		}
-		if (r_data_type || r_array_size) {
+		if (r_data_type || r_array_size || r_struct_name) {
 			MemberNode *member = shader->unnamed_buffer_members[p_identifier];
 			if (r_data_type) {
 				*r_data_type = member->datatype;
@@ -10614,11 +10614,13 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				if (!buf.name.is_empty()) {
 					shader->buffers[buf.name] = buf;
 				} else {
-					shader->unnamed_buffers.push_back(buf);
 					int index = shader->unnamed_buffers.size();
+					shader->unnamed_buffers.push_back(buf);
+					print_line(vformat("Unnamed buffer \"%s\" parsed with index %s", buf.name_bind, itos(index)));
 					for (MemberNode *member : bufnode->members) {
 						member->owner_index = index;
 						shader->unnamed_buffer_members[member->name] = member;
+						print_line(vformat("- Member \"%s\" parsed", shader->unnamed_buffer_members[member->name]->name));
 					}
 				}
 

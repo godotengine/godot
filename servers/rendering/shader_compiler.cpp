@@ -1139,6 +1139,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				} else if (shader->buffers.has(vnode->name)) {
 					code += String(shader->buffers[vnode->name].name).replace("__", "_dus_");
 				} else if (shader->unnamed_buffer_members.has(vnode->name)) {
+					print_line(vformat("Field \"%s\" of unnamed buffer \"%s\" compiled", vnode->name, shader->unnamed_buffers[shader->unnamed_buffer_members[vnode->name]->owner_index].name_bind));
 					code += String(vnode->name).replace("__", "_dus_");
 				} else {
 					if (use_fragment_varying) {
@@ -1240,10 +1241,14 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						}
 					}
 				} else {
-					if (use_fragment_varying) {
-						code = "frag_to_light.";
+					if (shader->unnamed_buffer_members.has(anode->name)) {
+						code += String(anode->name).replace("__", "_dus_");
+					} else {
+						if (use_fragment_varying) {
+							code = "frag_to_light.";
+						}
+						code += _mkid(anode->name);
 					}
-					code += _mkid(anode->name);
 				}
 			}
 

@@ -862,9 +862,14 @@ MaterialStorage::MaterialData::~MaterialData() {
 			RD::get_singleton()->free(uniform_buffer[i]);
 		}
 	}
-	for (int i = 0; i < uniform_buffer_ids.size(); i++) {
-		if (uniform_buffer_ids[i].is_valid()) {
-			RD::get_singleton()->free(uniform_buffer_ids[i]);
+	for (RID &ub_rid : uniform_buffer_ids) {
+		if (ub_rid.is_valid()) {
+			RD::get_singleton()->free(ub_rid);
+		}
+	}
+	for (RID &sb_rid : storage_buffer_ids) {
+		if (sb_rid.is_valid()) {
+			RD::get_singleton()->free(sb_rid);
 		}
 	}
 }
@@ -1203,17 +1208,15 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 		uniform_buffer_ids.resize(p_uniform_buffers.size());
 		for (const ShaderCompiler::GeneratedCode::Buffer &B : p_uniform_buffers) {
 			PackedByteArray data;
-			// uint8_t *dataptr = data.ptrw();
-			// int offset = 0;
+
 			if (p_buffer_params.has(B.bufName)) {
 				data = p_buffer_params[B.bufName];
 			}
-			// int j = 0;
-			// for (const ShaderLanguage::MemberNode &E : B.members) {
-			// 	_fill_std140_ubo_empty(E.datatype, E.array_size, &dataptr[offset]);
-			// 	offset += B.member_offsets[j++];
-			// }
+
 			data.resize(B.total_size);
+			if (uniform_buffer_ids[i].is_valid()) {
+				RD::get_singleton()->free(uniform_buffer_ids[i]);
+			}
 			uniform_buffer_ids.set(i, RD::get_singleton()->uniform_buffer_create(data.size()));
 			RD::get_singleton()->buffer_update(uniform_buffer_ids[i++], 0, data.size(), data.ptrw());
 		}
@@ -1221,17 +1224,15 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 		storage_buffer_ids.resize(p_storage_buffers.size());
 		for (const ShaderCompiler::GeneratedCode::Buffer &B : p_storage_buffers) {
 			PackedByteArray data;
-			// uint8_t *dataptr = data.ptrw();
-			// int offset = 0;
+
 			if (p_buffer_params.has(B.bufName)) {
 				data = p_buffer_params[B.bufName];
 			}
-			// int j = 0;
-			// for (const ShaderLanguage::MemberNode &E : B.members) {
-			// 	_fill_std140_ubo_empty(E.datatype, E.array_size, &dataptr[offset]);
-			// 	offset += B.member_offsets[j++];
-			// }
+
 			data.resize(B.total_size);
+			if (storage_buffer_ids[i].is_valid()) {
+				RD::get_singleton()->free(storage_buffer_ids[i]);
+			}
 			storage_buffer_ids.set(i, RD::get_singleton()->storage_buffer_create(data.size()));
 			RD::get_singleton()->buffer_update(storage_buffer_ids[i++], 0, data.size(), data.ptrw());
 		}
@@ -2437,6 +2438,32 @@ void RendererRD::MaterialStorage::material_set_buffer(RID p_material, const Stri
 	} else {
 		_material_queue_update(material, true, true, true);
 	}
+}
+
+PackedByteArray MaterialStorage::material_get_buffer(RID p_material, const StringName &p_buffer) const {
+	Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL_V(material, PackedByteArray());
+
+	if (material->buffers.has(p_buffer)) {
+		return material->buffers[p_buffer];
+	} else {
+		return PackedByteArray();
+	}
+}
+
+void MaterialStorage::material_set_buffer_field(RID p_material, const StringName &p_buffer, const StringName &p_field, const Variant &p_value) {
+	Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL(material);
+
+	// TODO: implement this
+}
+
+Variant MaterialStorage::material_get_buffer_field(RID p_material, const StringName &p_buffer, const StringName &p_field) const {
+	Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL_V(material, Variant());
+
+	// TODO: implement this
+	return Variant();
 }
 
 void MaterialStorage::material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) {

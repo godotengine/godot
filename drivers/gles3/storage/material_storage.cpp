@@ -2482,6 +2482,32 @@ void MaterialStorage::material_set_buffer(RID p_material, const StringName &p_bu
 	}
 }
 
+Vector<uint8_t> MaterialStorage::material_get_buffer(RID p_material, const StringName &p_buffer) const {
+	GLES3::Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL_V(material, Vector<uint8_t>());
+
+	if (material->buffers.has(p_buffer)) { 
+		return material->buffers[p_buffer];
+	} else {
+		return Vector<uint8_t>();
+	}
+}
+
+void MaterialStorage::material_set_buffer_field(RID p_material, const StringName &p_buffer, const StringName &p_field, const Variant &p_value) {
+	GLES3::Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL(material);
+
+	// TODO: implement this
+}
+
+Variant MaterialStorage::material_get_buffer_field(RID p_material, const StringName &p_buffer, const StringName &p_field) const {
+	GLES3::Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL_V(material, Variant());
+
+	// TODO: implement this
+	return Variant();
+}
+
 void MaterialStorage::material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) {
 	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_NULL(material);
