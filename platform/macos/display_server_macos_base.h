@@ -52,6 +52,8 @@ class DisplayServerMacOSBase : public DisplayServer {
 	mutable int current_layout = 0;
 	mutable bool keyboard_layout_dirty = true;
 
+	Callable system_theme_changed;
+
 protected:
 	_THREAD_SAFE_CLASS_
 
@@ -75,6 +77,13 @@ public:
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
 	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
 	virtual void show_emoji_and_symbol_picker() const override;
+
+	void emit_system_theme_changed();
+	virtual bool is_dark_mode_supported() const override;
+	virtual bool is_dark_mode() const override;
+	virtual Color get_accent_color() const override;
+	virtual Color get_base_color() const override;
+	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
 	virtual bool tts_is_speaking() const override;
 	virtual bool tts_is_paused() const override;
