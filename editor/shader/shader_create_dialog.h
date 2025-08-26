@@ -78,7 +78,6 @@ class ShaderCreateDialog : public ConfirmationDialog {
 	bool load_enabled = false;
 	bool re_check_path = false;
 	int current_type = -1;
-	int default_type = -1;
 	int current_mode = 0;
 	int current_template = 0;
 
