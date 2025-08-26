@@ -67,16 +67,24 @@ void ShaderCreateDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			static const char *shader_types[3] = { "Shader", "VisualShader", "TextFile" };
-			for (int i = 0; i < 3; i++) {
-				Ref<Texture2D> icon = get_editor_theme_icon(shader_types[i]);
-				if (icon.is_valid()) {
-					type_menu->set_item_icon(i, icon);
-				}
-			}
-
+			_refresh_type_icons();
 			path_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
+	}
+}
+
+void ShaderCreateDialog::_refresh_type_icons() {
+	for (int i = 0; i < type_menu->get_item_count(); i++) {
+		const String item_name = type_menu->get_item_text(i);
+		Ref<Texture2D> icon = get_editor_theme_icon(item_name);
+		if (icon.is_valid()) {
+			type_menu->set_item_icon(i, icon);
+		} else {
+			icon = get_editor_theme_icon("TextFile");
+			if (icon.is_valid()) {
+				type_menu->set_item_icon(i, icon);
+			}
+		}
 	}
 }
 
@@ -87,16 +95,17 @@ void ShaderCreateDialog::_update_language_info() {
 		ShaderTypeData shader_type_data;
 		if (i == int(SHADER_TYPE_TEXT)) {
 			shader_type_data.use_templates = true;
-			shader_type_data.extensions.push_back("gdshader");
 			shader_type_data.default_extension = "gdshader";
 		} else if (i == int(SHADER_TYPE_INC)) {
-			shader_type_data.extensions.push_back("gdshaderinc");
 			shader_type_data.default_extension = "gdshaderinc";
 		} else {
 			shader_type_data.default_extension = "tres";
 		}
+		shader_type_data.extensions.push_back(shader_type_data.default_extension);
+		if (shader_type_data.default_extension != "tres") {
+			shader_type_data.extensions.push_back("tres");
+		}
 		shader_type_data.extensions.push_back("res");
-		shader_type_data.extensions.push_back("tres");
 		type_data.push_back(shader_type_data);
 	}
 }
@@ -432,31 +441,33 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 }
 
 String ShaderCreateDialog::_validate_path(const String &p_path) {
-	String p = p_path.strip_edges();
+	ERR_FAIL_COND_V(current_type >= type_data.size(), TTR("Invalid shader type selected."));
+	String stripped_file_path = p_path.strip_edges();
 
-	if (p.is_empty()) {
+	if (stripped_file_path.is_empty()) {
 		return TTR("Path is empty.");
 	}
-	if (p.get_file().get_basename().is_empty()) {
+	if (stripped_file_path.get_file().get_basename().is_empty()) {
 		return TTR("Filename is empty.");
 	}
 
-	p = ProjectSettings::get_singleton()->localize_path(p);
-	if (!p.begins_with("res://")) {
+	stripped_file_path = ProjectSettings::get_singleton()->localize_path(stripped_file_path);
+	if (!stripped_file_path.begins_with("res://")) {
 		return TTR("Path is not local.");
 	}
 
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (d->change_dir(p.get_base_dir()) != OK) {
+	if (d->change_dir(stripped_file_path.get_base_dir()) != OK) {
 		return TTR("Invalid base path.");
 	}
 
 	Ref<DirAccess> f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (f->dir_exists(p)) {
+	if (f->dir_exists(stripped_file_path)) {
 		return TTR("A directory with the same name exists.");
 	}
 
-	String extension = p.get_extension();
+	const ShaderCreateDialog::ShaderTypeData &current_type_data = type_data.get(current_type);
+	const String file_extension = stripped_file_path.get_extension();
 	HashSet<String> extensions;
 
 	List<ShaderCreateDialog::ShaderTypeData>::ConstIterator itr = type_data.begin();
@@ -472,10 +483,10 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 	bool match = false;
 
 	for (const String &ext : extensions) {
-		if (ext.nocasecmp_to(extension) == 0) {
+		if (ext.nocasecmp_to(file_extension) == 0) {
 			found = true;
-			for (const String &type_ext : type_data.get(current_type).extensions) {
-				if (type_ext.nocasecmp_to(extension) == 0) {
+			for (const String &type_ext : current_type_data.extensions) {
+				if (type_ext.nocasecmp_to(file_extension) == 0) {
 					match = true;
 					break;
 				}
