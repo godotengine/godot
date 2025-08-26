@@ -64,6 +64,7 @@ public:
 	void pause();
 	void resume();
 	GdBool is_paused();
+	void next_frame();
 
 	// obj APIs
 	void destroy_all_pens();

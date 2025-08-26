@@ -145,6 +145,9 @@ static void gdextension_spx_ext_resume() {
 static void gdextension_spx_ext_is_paused(GdBool* ret_val) {
 	*ret_val = extMgr->is_paused();
 }
+static void gdextension_spx_ext_next_frame() {
+	 extMgr->next_frame();
+}
 static void gdextension_spx_ext_destroy_all_pens() {
 	 extMgr->destroy_all_pens();
 }
@@ -788,6 +791,7 @@ void gdextension_spx_setup_interface() {
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_pause);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_resume);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_is_paused);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_next_frame);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_destroy_all_pens);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_create_pen);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_destroy_pen);

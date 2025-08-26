@@ -251,6 +251,12 @@ gdspx_ext_is_paused() {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
+gdspx_ext_next_frame() {
+	var _gdFuncPtr = Module._gdspx_ext_next_frame; 
+	
+	_gdFuncPtr();
+
+}
 gdspx_ext_destroy_all_pens() {
 	var _gdFuncPtr = Module._gdspx_ext_destroy_all_pens; 
 	

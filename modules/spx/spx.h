@@ -51,6 +51,7 @@ public:
 	static void pause();
 	static void resume();
 	static bool is_paused();
+	static void next_frame();
 };
 
 #endif // SPX_H
