@@ -76,6 +76,24 @@ void initialize_sandbox_module(ModuleInitializationLevel p_level) {
 
 void uninitialize_sandbox_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		// Cleanup will be added as classes are converted
+		// Unregister resource loaders/savers
+		if (resource_loader_elf.is_valid()) {
+			ResourceLoader::remove_resource_format_loader(resource_loader_elf);
+			resource_loader_elf.unref();
+		}
+
+		if (resource_saver_cpp.is_valid()) {
+			ResourceSaver::remove_resource_format_saver(resource_saver_cpp);
+			resource_saver_cpp.unref();
+		}
+
+		// Cleanup script languages
+		CPPScriptLanguage::deinit();
+
+		// Note: ELFScriptLanguage cleanup will be handled by ScriptServer
+		// when it shuts down, as it was created with memnew()
+
+		// Cleanup static dummy machine to prevent ObjectDB leaks
+		Sandbox::cleanup_static_resources();
 	}
 }

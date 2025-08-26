@@ -60,6 +60,17 @@ static machine_t *get_dummy_machine() {
 	});
 	return dummy;
 }
+
+// Cleanup function for dummy machine
+static void cleanup_dummy_machine() {
+	static std::once_flag cleanup_flag;
+	std::call_once(cleanup_flag, []() {
+		machine_t *dummy = get_dummy_machine();
+		if (dummy) {
+			delete dummy;
+		}
+	});
+}
 enum SandboxPropertyNameIndex : int {
 	PROP_REFERENCES_MAX,
 	PROP_MEMORY_MAX,
@@ -1789,4 +1800,8 @@ void Sandbox::print(const Variant &v) {
 	}
 
 	already_been_here = false;
+}
+
+void Sandbox::cleanup_static_resources() {
+	cleanup_dummy_machine();
 }

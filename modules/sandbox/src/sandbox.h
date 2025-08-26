@@ -658,6 +658,10 @@ public:
 	/// @return The downloaded program as a byte array.
 	static PackedByteArray download_program(String program_name);
 
+	/// @brief Cleanup static resources to prevent memory leaks on module shutdown.
+	/// @note This should only be called during module uninitialization.
+	static void cleanup_static_resources();
+
 private:
 	static void generate_runtime_cpp_api(bool use_argument_names = false);
 	gaddr_t share_array_internal(void *data, size_t size, bool allow_write);
