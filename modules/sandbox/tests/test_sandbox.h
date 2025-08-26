@@ -65,8 +65,7 @@ TEST_CASE("[SceneTree][Sandbox] SandboxDummy basic instantiation and scene attac
 	CHECK_FALSE(sandbox->has_program_loaded());
 
 	// Cleanup
-	SceneTree::get_singleton()->get_root()->remove_child(sandbox);
-	memdelete(sandbox);
+	sandbox->queue_free();
 }
 
 TEST_CASE("[SceneTree][Sandbox] SandboxDummy memory and instruction limits") {
@@ -91,8 +90,7 @@ TEST_CASE("[SceneTree][Sandbox] SandboxDummy memory and instruction limits") {
 	CHECK(sandbox->get_max_refs() == 200);
 
 	// Cleanup
-	SceneTree::get_singleton()->get_root()->remove_child(sandbox);
-	memdelete(sandbox);
+	sandbox->queue_free();
 }
 
 TEST_CASE("[SceneTree][Sandbox] SandboxDummy restrictions and security") {
@@ -129,8 +127,7 @@ TEST_CASE("[SceneTree][Sandbox] SandboxDummy restrictions and security") {
 
 	// Cleanup
 	memdelete(test_node);
-	SceneTree::get_singleton()->get_root()->remove_child(sandbox);
-	memdelete(sandbox);
+	sandbox->queue_free();
 }
 
 TEST_CASE("[SceneTree][Sandbox] SandboxDummy tree base functionality") {
@@ -148,10 +145,8 @@ TEST_CASE("[SceneTree][Sandbox] SandboxDummy tree base functionality") {
 	CHECK(sandbox->get_tree_base()->get_name() == "tree_base");
 
 	// Cleanup
-	SceneTree::get_singleton()->get_root()->remove_child(tree_base);
-	SceneTree::get_singleton()->get_root()->remove_child(sandbox);
-	memdelete(tree_base);
-	memdelete(sandbox);
+	tree_base->queue_free();
+	sandbox->queue_free();
 }
 
 TEST_CASE("[SceneTree][Sandbox] SandboxDummy profiling functionality") {
@@ -178,8 +173,7 @@ TEST_CASE("[SceneTree][Sandbox] SandboxDummy profiling functionality") {
 	CHECK_FALSE(sandbox->get_profiling());
 
 	// Cleanup
-	SceneTree::get_singleton()->get_root()->remove_child(sandbox);
-	memdelete(sandbox);
+	sandbox->queue_free();
 }
 
 TEST_CASE("[SceneTree][Sandbox] SandboxDummy global statistics") {
@@ -219,8 +213,7 @@ TEST_CASE("[SceneTree][Sandbox] SandboxDummy binary translation features") {
 	CHECK_FALSE(sandbox->is_jit());
 
 	// Cleanup
-	SceneTree::get_singleton()->get_root()->remove_child(sandbox);
-	memdelete(sandbox);
+	sandbox->queue_free();
 }
 
 } //namespace TestSandbox

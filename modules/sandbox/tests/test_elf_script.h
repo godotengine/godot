@@ -62,8 +62,7 @@ TEST_CASE("[SceneTree][Sandbox] SandboxDummy ELF-like functionality") {
 	CHECK_FALSE(sandbox->has_function("nonexistent_function"));
 
 	// Cleanup
-	SceneTree::get_singleton()->get_root()->remove_child(sandbox);
-	memdelete(sandbox);
+	sandbox->queue_free();
 }
 
 TEST_CASE("[SceneTree][Sandbox] SandboxDummy ELF buffer loading") {
@@ -92,8 +91,7 @@ TEST_CASE("[SceneTree][Sandbox] SandboxDummy ELF buffer loading") {
 	CHECK_FALSE(sandbox->has_program_loaded()); // Should be unloaded
 
 	// Cleanup
-	SceneTree::get_singleton()->get_root()->remove_child(sandbox);
-	memdelete(sandbox);
+	sandbox->queue_free();
 }
 
 TEST_CASE("[SceneTree][Sandbox] SandboxDummy function address management") {
@@ -121,8 +119,7 @@ TEST_CASE("[SceneTree][Sandbox] SandboxDummy function address management") {
 	CHECK(func3.is_empty());
 
 	// Cleanup
-	SceneTree::get_singleton()->get_root()->remove_child(sandbox);
-	memdelete(sandbox);
+	sandbox->queue_free();
 }
 
 TEST_CASE("[SceneTree][Sandbox] SandboxDummy VM call functionality") {
@@ -163,8 +160,7 @@ TEST_CASE("[SceneTree][Sandbox] SandboxDummy VM call functionality") {
 	CHECK(invalid_str.contains("dummy_result_nonexistent_function"));
 
 	// Cleanup
-	SceneTree::get_singleton()->get_root()->remove_child(sandbox);
-	memdelete(sandbox);
+	sandbox->queue_free();
 }
 
 TEST_CASE("[SceneTree][Sandbox] SandboxDummy binary translation features") {
@@ -185,8 +181,7 @@ TEST_CASE("[SceneTree][Sandbox] SandboxDummy binary translation features") {
 	CHECK_FALSE(sandbox->is_jit());
 
 	// Cleanup
-	SceneTree::get_singleton()->get_root()->remove_child(sandbox);
-	memdelete(sandbox);
+	sandbox->queue_free();
 }
 
 } //namespace TestELFScript

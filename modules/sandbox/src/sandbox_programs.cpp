@@ -53,7 +53,6 @@ static PackedByteArray handle_request(HTTPClient *client, String url) {
 	while (client->get_status() != HTTPClient::Status::STATUS_CONNECTED) {
 		if (client->get_status() == HTTPClient::Status::STATUS_CANT_CONNECT || client->get_status() == HTTPClient::Status::STATUS_CONNECTION_ERROR || client->get_status() == HTTPClient::Status::STATUS_CANT_RESOLVE) {
 			ERR_PRINT("Failed to connect to server");
-			memdelete(client);
 			return PackedByteArray();
 		}
 		client->poll();
@@ -61,7 +60,6 @@ static PackedByteArray handle_request(HTTPClient *client, String url) {
 	Vector<String> headers;
 	Error err = client->request(HTTPClient::Method::METHOD_GET, url, headers, nullptr, 0);
 	if (err != OK) {
-		memdelete(client);
 		return PackedByteArray();
 	}
 
@@ -70,7 +68,6 @@ static PackedByteArray handle_request(HTTPClient *client, String url) {
 	}
 
 	if (!client->has_response()) {
-		memdelete(client);
 		return PackedByteArray();
 	}
 
@@ -86,7 +83,6 @@ static PackedByteArray handle_request(HTTPClient *client, String url) {
 		}
 		if (location.is_empty()) {
 			ERR_PRINT("No Location header found in redirect");
-			memdelete(client);
 			return PackedByteArray();
 		}
 
@@ -99,7 +95,6 @@ static PackedByteArray handle_request(HTTPClient *client, String url) {
 		int32_t host_end = location.find("/", 8);
 		if (host_end == -1) {
 			ERR_PRINT("Invalid redirect location");
-			memdelete(client);
 			return PackedByteArray();
 		}
 		String host = location.substr(0, host_end);
@@ -189,6 +184,11 @@ PackedByteArray Sandbox::download_program(String program_name) {
 	if (err != OK) {
 		ERR_PRINT("Failed to open temporary file for reading");
 		memdelete(zip);
+		// Remove the temporary file even on error
+		Ref<DirAccess> dir = DirAccess::open("user://");
+		if (dir.is_valid()) {
+			dir->remove("temp.zip");
+		}
 		return PackedByteArray();
 	}
 
@@ -197,7 +197,9 @@ PackedByteArray Sandbox::download_program(String program_name) {
 
 	// Remove the temporary file
 	Ref<DirAccess> dir = DirAccess::open("user://");
-	dir->remove("temp.zip");
+	if (dir.is_valid()) {
+		dir->remove("temp.zip");
+	}
 
 	return program_data;
 }
