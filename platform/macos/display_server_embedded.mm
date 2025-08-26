@@ -326,48 +326,6 @@ void DisplayServerEmbedded::warp_mouse(const Point2i &p_position) {
 	EngineDebugger::get_singleton()->send_message("game_view:warp_mouse", { p_position });
 }
 
-Point2i DisplayServerEmbedded::mouse_get_position() const {
-	_THREAD_SAFE_METHOD_
-
-	const NSPoint mouse_pos = [NSEvent mouseLocation];
-	const float scale = screen_get_max_scale();
-
-	for (NSScreen *screen in [NSScreen screens]) {
-		NSRect frame = [screen frame];
-		if (NSMouseInRect(mouse_pos, frame, NO)) {
-			Vector2i pos = Vector2i((int)mouse_pos.x, (int)mouse_pos.y);
-			pos *= scale;
-			// TODO(sgc): fix this
-			// pos -= _get_screens_origin();
-			pos.y *= -1;
-			return pos;
-		}
-	}
-	return Vector2i();
-}
-
-BitField<MouseButtonMask> DisplayServerEmbedded::mouse_get_button_state() const {
-	BitField<MouseButtonMask> last_button_state = MouseButtonMask::NONE;
-
-	NSUInteger buttons = [NSEvent pressedMouseButtons];
-	if (buttons & (1 << 0)) {
-		last_button_state.set_flag(MouseButtonMask::LEFT);
-	}
-	if (buttons & (1 << 1)) {
-		last_button_state.set_flag(MouseButtonMask::RIGHT);
-	}
-	if (buttons & (1 << 2)) {
-		last_button_state.set_flag(MouseButtonMask::MIDDLE);
-	}
-	if (buttons & (1 << 3)) {
-		last_button_state.set_flag(MouseButtonMask::MB_XBUTTON1);
-	}
-	if (buttons & (1 << 4)) {
-		last_button_state.set_flag(MouseButtonMask::MB_XBUTTON2);
-	}
-	return last_button_state;
-}
-
 // MARK: Events
 
 void DisplayServerEmbedded::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
@@ -479,7 +437,7 @@ bool DisplayServerEmbedded::has_feature(Feature p_feature) const {
 		case FEATURE_CUSTOM_CURSOR_SHAPE:
 			// case FEATURE_HIDPI:
 			// case FEATURE_ICON:
-			// case FEATURE_MOUSE:
+		case FEATURE_MOUSE:
 		case FEATURE_MOUSE_WARP:
 			// case FEATURE_NATIVE_DIALOG:
 			// case FEATURE_NATIVE_ICON:
@@ -498,88 +456,6 @@ bool DisplayServerEmbedded::has_feature(Feature p_feature) const {
 
 String DisplayServerEmbedded::get_name() const {
 	return "embedded";
-}
-
-int DisplayServerEmbedded::get_screen_count() const {
-	return 1;
-}
-
-int DisplayServerEmbedded::get_primary_screen() const {
-	return 0;
-}
-
-Point2i DisplayServerEmbedded::screen_get_position(int p_screen) const {
-	_THREAD_SAFE_METHOD_
-
-	p_screen = _get_screen_index(p_screen);
-	int screen_count = get_screen_count();
-	ERR_FAIL_INDEX_V(p_screen, screen_count, Point2i());
-
-	return Point2i(0, 0);
-}
-
-Size2i DisplayServerEmbedded::screen_get_size(int p_screen) const {
-	_THREAD_SAFE_METHOD_
-
-	p_screen = _get_screen_index(p_screen);
-	int screen_count = get_screen_count();
-	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
-
-	return window_get_size(MAIN_WINDOW_ID);
-}
-
-Rect2i DisplayServerEmbedded::screen_get_usable_rect(int p_screen) const {
-	_THREAD_SAFE_METHOD_
-
-	p_screen = _get_screen_index(p_screen);
-	int screen_count = get_screen_count();
-	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
-
-	return Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
-}
-
-int DisplayServerEmbedded::screen_get_dpi(int p_screen) const {
-	_THREAD_SAFE_METHOD_
-
-	p_screen = _get_screen_index(p_screen);
-	int screen_count = get_screen_count();
-	ERR_FAIL_INDEX_V(p_screen, screen_count, 72);
-
-	return 96;
-}
-
-float DisplayServerEmbedded::screen_get_scale(int p_screen) const {
-	_THREAD_SAFE_METHOD_
-
-	switch (p_screen) {
-		case SCREEN_WITH_MOUSE_FOCUS:
-		case SCREEN_WITH_KEYBOARD_FOCUS:
-		case SCREEN_PRIMARY:
-		case SCREEN_OF_MAIN_WINDOW:
-		case 0:
-			return state.screen_window_scale;
-		default:
-			return 1.0;
-	}
-}
-
-float DisplayServerEmbedded::screen_get_refresh_rate(int p_screen) const {
-	_THREAD_SAFE_METHOD_
-
-	p_screen = _get_screen_index(p_screen);
-	int screen_count = get_screen_count();
-	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
-
-	p_screen = _get_screen_index(p_screen);
-	NSArray *screenArray = [NSScreen screens];
-	if ((NSUInteger)p_screen < [screenArray count]) {
-		NSDictionary *description = [[screenArray objectAtIndex:p_screen] deviceDescription];
-		const CGDisplayModeRef displayMode = CGDisplayCopyDisplayMode([[description objectForKey:@"NSScreenNumber"] unsignedIntValue]);
-		const double displayRefreshRate = CGDisplayModeGetRefreshRate(displayMode);
-		return (float)displayRefreshRate;
-	}
-	ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
-	return SCREEN_REFRESH_RATE_FALLBACK;
 }
 
 Vector<DisplayServer::WindowID> DisplayServerEmbedded::get_window_list() const {
@@ -608,7 +484,7 @@ int DisplayServerEmbedded::window_get_current_screen(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, INVALID_SCREEN);
 
-	return 0;
+	return state.screen;
 }
 
 void DisplayServerEmbedded::window_set_current_screen(int p_screen, WindowID p_window) {
@@ -616,11 +492,11 @@ void DisplayServerEmbedded::window_set_current_screen(int p_screen, WindowID p_w
 }
 
 Point2i DisplayServerEmbedded::window_get_position(WindowID p_window) const {
-	return Point2i();
+	return state.window_rect.position;
 }
 
 Point2i DisplayServerEmbedded::window_get_position_with_decorations(WindowID p_window) const {
-	return Point2i();
+	return state.window_rect.position;
 }
 
 void DisplayServerEmbedded::window_set_position(const Point2i &p_position, WindowID p_window) {
@@ -645,6 +521,11 @@ void DisplayServerEmbedded::window_set_min_size(const Size2i p_size, WindowID p_
 
 Size2i DisplayServerEmbedded::window_get_min_size(WindowID p_window) const {
 	return Size2i();
+}
+
+void DisplayServerEmbedded::window_set_rect(const Rect2i p_rect, WindowID p_window) {
+	state.window_rect = p_rect;
+	window_set_size(p_rect.size, p_window);
 }
 
 void DisplayServerEmbedded::window_set_size(const Size2i p_size, WindowID p_window) {
@@ -734,10 +615,6 @@ void DisplayServerEmbedded::window_move_to_foreground(WindowID p_window) {
 
 bool DisplayServerEmbedded::window_is_focused(WindowID p_window) const {
 	return true;
-}
-
-float DisplayServerEmbedded::screen_get_max_scale() const {
-	return state.screen_max_scale;
 }
 
 bool DisplayServerEmbedded::window_can_draw(WindowID p_window) const {
@@ -851,13 +728,16 @@ void DisplayServerEmbedded::swap_buffers() {
 }
 
 void DisplayServerEmbeddedState::serialize(PackedByteArray &r_data) {
-	r_data.resize(16);
+	r_data.resize(28);
 
 	uint8_t *data = r_data.ptrw();
-	data += encode_float(screen_max_scale, data);
-	data += encode_float(screen_dpi, data);
 	data += encode_float(screen_window_scale, data);
+	data += encode_uint32(screen, data);
 	data += encode_uint32(display_id, data);
+	data += encode_uint32(window_rect.position.x, data);
+	data += encode_uint32(window_rect.position.y, data);
+	data += encode_uint32(window_rect.size.x, data);
+	data += encode_uint32(window_rect.size.y, data);
 
 	// Assert we had enough space.
 	DEV_ASSERT(r_data.size() >= (data - r_data.ptrw()));
@@ -866,13 +746,19 @@ void DisplayServerEmbeddedState::serialize(PackedByteArray &r_data) {
 Error DisplayServerEmbeddedState::deserialize(const PackedByteArray &p_data) {
 	const uint8_t *data = p_data.ptr();
 
-	screen_max_scale = decode_float(data);
-	data += sizeof(float);
-	screen_dpi = decode_float(data);
-	data += sizeof(float);
 	screen_window_scale = decode_float(data);
 	data += sizeof(float);
+	screen = decode_uint32(data);
+	data += sizeof(uint32);
 	display_id = decode_uint32(data);
+	data += sizeof(uint32);
+	window_rect.position.x = decode_uint32(data);
+	data += sizeof(uint32);
+	window_rect.position.y = decode_uint32(data);
+	data += sizeof(uint32);
+	window_rect.size.x = decode_uint32(data);
+	data += sizeof(uint32);
+	window_rect.size.y = decode_uint32(data);
 
 	return OK;
 }

@@ -83,6 +83,7 @@ class EmbeddedProcessMacOS final : public EmbeddedProcessBase {
 	ScriptEditorDebugger *script_debugger = nullptr;
 	LayerHost *layer_host = nullptr;
 	OS::ProcessID current_process_id = 0;
+	Vector2i wpos;
 
 	// Embedded process state.
 
