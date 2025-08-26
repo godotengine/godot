@@ -339,8 +339,8 @@ public:
 	float get_current_play_pos() const;
 	float get_current_length() const;
 
-	float get_fade_from_play_pos() const;
-	float get_fade_from_length() const;
+	float get_fading_from_play_pos() const;
+	float get_fading_from_length() const;
 
 	float get_fading_time() const;
 	float get_fading_pos() const;

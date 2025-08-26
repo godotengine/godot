@@ -1474,8 +1474,8 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 				fading_from_node = playback->get_fading_from_node();
 				current_play_pos = playback->get_current_play_pos();
 				current_length = playback->get_current_length();
-				fade_from_current_play_pos = playback->get_fade_from_play_pos();
-				fade_from_length = playback->get_fade_from_length();
+				fade_from_current_play_pos = playback->get_fading_from_play_pos();
+				fade_from_length = playback->get_fading_from_length();
 				fading_time = playback->get_fading_time();
 				fading_pos = playback->get_fading_pos();
 			}
