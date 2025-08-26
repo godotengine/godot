@@ -297,7 +297,7 @@ public:
 
 	void validate_script();
 
-	void set_toggle_list_control(Control *p_control);
+	void set_toggle_list_control(Control *p_toggle_list_control);
 	void show_toggle_files_button();
 	void update_toggle_files_button();
 

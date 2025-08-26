@@ -1030,6 +1030,14 @@ void TextShaderEditor::trim_final_newlines() {
 	code_editor->trim_final_newlines();
 }
 
+void TextShaderEditor::set_toggle_list_control(Control *p_toggle_list_control) {
+	code_editor->set_toggle_list_control(p_toggle_list_control);
+}
+
+void TextShaderEditor::update_toggle_files_button() {
+	code_editor->update_toggle_files_button();
+}
+
 void TextShaderEditor::validate_script() {
 	code_editor->_validate_script();
 }

@@ -196,6 +196,8 @@ public:
 	virtual void apply_shaders() override;
 	virtual bool is_unsaved() const override;
 	virtual void save_external_data(const String &p_str = "") override;
+	virtual void set_toggle_list_control(Control *p_toggle_list_control) override;
+	virtual void update_toggle_files_button() override;
 	virtual void validate_script() override;
 
 	bool was_compilation_successful() const { return compilation_success; }
