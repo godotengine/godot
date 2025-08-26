@@ -65,8 +65,14 @@ protected:
 public:
 	static EditorExport *get_singleton() { return singleton; }
 
+	// Encodes a platform/device pair into a single menu/device id and decodes it back.
+	static int encode_platform_device_id(int p_platform_idx, int p_device_idx) { return p_platform_idx * 10000 + p_device_idx; }
+	static int decode_platform_from_id(int p_id) { return p_id / 10000; }
+	static int decode_device_from_id(int p_id) { return p_id % 10000; }
+
 	void add_export_platform(const Ref<EditorExportPlatform> &p_platform);
-	int get_export_platform_count();
+	int get_export_platform_count() const;
+	int get_export_platform_index_by_name(const String &p_name);
 	Ref<EditorExportPlatform> get_export_platform(int p_idx);
 	void remove_export_platform(const Ref<EditorExportPlatform> &p_platform);
 

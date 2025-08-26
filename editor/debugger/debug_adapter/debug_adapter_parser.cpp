@@ -33,6 +33,7 @@
 #include "editor/debugger/debug_adapter/debug_adapter_protocol.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
+#include "editor/export/editor_export.h"
 #include "editor/export/editor_export_platform.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/script/script_editor_plugin.h"
@@ -217,32 +218,20 @@ Dictionary DebugAdapterParser::_launch_process(const Dictionary &p_params) const
 			EditorRunBar::get_singleton()->play_custom_scene(scene, play_args);
 		}
 	} else {
-		int device = args.get("device", -1);
-		int idx = -1;
-		if (platform_string == "android") {
-			for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
-				if (EditorExport::get_singleton()->get_export_platform(i)->get_name() == "Android") {
-					idx = i;
-					break;
-				}
-			}
-		} else if (platform_string == "web") {
-			for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
-				if (EditorExport::get_singleton()->get_export_platform(i)->get_name() == "Web") {
-					idx = i;
-					break;
-				}
-			}
-		}
-
-		if (idx == -1) {
+		// Not limited to Android, iOS, Web.
+		const int platform_idx = EditorExport::get_singleton()->get_export_platform_index_by_name(platform_string);
+		if (platform_idx == -1) {
 			return prepare_error_response(p_params, DAP::ErrorType::UNKNOWN_PLATFORM);
 		}
 
-		EditorRunBar *run_bar = EditorRunBar::get_singleton();
-		Error err = platform_string == "android" ? run_bar->start_native_device(device * 10000 + idx) : run_bar->start_native_device(idx);
+		// If it is not passed, would mean first device of this platform.
+		const int device_idx = args.get("device", 0);
+
+		const EditorRunBar *run_bar = EditorRunBar::get_singleton();
+		const int encoded_id = EditorExport::encode_platform_device_id(platform_idx, device_idx);
+		const Error err = run_bar->start_native_device(encoded_id);
 		if (err) {
-			if (err == ERR_INVALID_PARAMETER && platform_string == "android") {
+			if (err == ERR_INVALID_PARAMETER) {
 				return prepare_error_response(p_params, DAP::ErrorType::MISSING_DEVICE);
 			} else {
 				return prepare_error_response(p_params, DAP::ErrorType::UNKNOWN);
