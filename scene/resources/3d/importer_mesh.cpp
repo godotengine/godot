@@ -493,6 +493,9 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 			// Lock geometric boundary in case the mesh is composed of multiple material subsets.
 			simplify_options |= SurfaceTool::SIMPLIFY_LOCK_BORDER;
 
+			// Remove small disconnected components.
+			simplify_options |= SurfaceTool::SIMPLIFY_PRUNE;
+
 			if (deformable) {
 				// Improves appearance of deformable objects after deformation by using more regular tessellation.
 				simplify_options |= SurfaceTool::SIMPLIFY_REGULARIZE;
