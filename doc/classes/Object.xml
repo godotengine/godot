@@ -25,7 +25,7 @@
 		[b]Note:[/b] In a boolean context, an [Object] will evaluate to [code]false[/code] if it is equal to [code]null[/code]. Otherwise, an [Object] will always evaluate to [code]true[/code], even if it has been freed. This behavior may change in future releases. See also [method @GlobalScope.is_instance_valid].
 	</description>
 	<tutorials>
-		<link title="Object class introduction">$DOCS_URL/contributing/development/core_and_modules/object_class.html</link>
+		<link title="Object class introduction">$DOCS_URL/engine_details/architecture/object_class.html</link>
 		<link title="When and how to avoid using nodes for everything">$DOCS_URL/tutorials/best_practices/node_alternatives.html</link>
 		<link title="Object notifications">$DOCS_URL/tutorials/best_practices/godot_notifications.html</link>
 	</tutorials>
