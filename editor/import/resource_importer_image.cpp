@@ -83,8 +83,7 @@ Error ResourceImporterImage::import(ResourceUID::ID p_source_id, const String &p
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_CREATE, "Cannot create file in path '" + p_save_path + ".image'.");
 
 	//save the header GDIM
-	const uint8_t header[4] = { 'G', 'D', 'I', 'M' };
-	f->store_buffer(header, 4);
+	f->store_32(Image::FOURCC);
 	//SAVE the extension (so it can be recognized by the loader later
 	f->store_pascal_string(p_source_file.get_extension().to_lower());
 	//SAVE the actual image
