@@ -2170,6 +2170,7 @@ ColorPicker::ColorPicker() {
 	intensity_slider->set_step(0.001);
 	intensity_value->set_allow_greater(true);
 	intensity_value->set_custom_arrow_step(1);
+	intensity_value->set_custom_arrow_round(true);
 
 	hex_hbc = memnew(HBoxContainer);
 	hex_hbc->set_alignment(ALIGNMENT_BEGIN);
