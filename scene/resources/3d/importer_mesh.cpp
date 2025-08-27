@@ -480,6 +480,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 
 		LocalVector<int> current_indices = merged_indices;
 		float current_error = 0.0f;
+		bool allow_prune = true;
 
 		while (current_indices.size() > min_target_indices * 2) {
 			unsigned int current_index_count = current_indices.size();
@@ -492,6 +493,11 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 
 			// Lock geometric boundary in case the mesh is composed of multiple material subsets.
 			simplify_options |= SurfaceTool::SIMPLIFY_LOCK_BORDER;
+
+			if (allow_prune) {
+				// Remove small disconnected components.
+				simplify_options |= SurfaceTool::SIMPLIFY_PRUNE;
+			}
 
 			if (deformable) {
 				// Improves appearance of deformable objects after deformation by using more regular tessellation.
@@ -512,6 +518,15 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 					max_mesh_error,
 					simplify_options,
 					&step_error);
+
+			if (new_index_count == 0 && allow_prune) {
+				// If the best result the simplifier could arrive at with pruning enabled is 0 triangles, there might still be an opportunity
+				// to reduce the number of triangles further *without* completely decimating the mesh. It will be impossible to reach the target
+				// this way - if the target was reachable without going down to 0, the simplifier would have done it! - but we might still be able
+				// to get one more slightly lower level if we retry without pruning.
+				allow_prune = false;
+				continue;
+			}
 
 			// Accumulate error over iterations. Usually, it's correct to use step_error as is; however, on coarse LODs, we may start
 			// getting *smaller* relative error compared to the previous LOD. To make sure the error is monotonic and strictly increasing,
