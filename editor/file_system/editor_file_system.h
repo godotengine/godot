@@ -54,6 +54,8 @@ class EditorFileSystemDirectory : public Object {
 
 	struct FileInfo {
 		String file;
+		bool verified = false; // Used for checking changes.
+
 		StringName type;
 		StringName resource_script_class; // If any resource has script with a global class name, its found here.
 		ResourceUID::ID uid = ResourceUID::INVALID_ID;
@@ -64,7 +66,6 @@ class EditorFileSystemDirectory : public Object {
 		bool import_valid = false;
 		String import_group_file;
 		Vector<String> deps;
-		bool verified = false; //used for checking changes
 		// This is for script resources only.
 		struct ScriptClassInfo {
 			String name;
@@ -74,6 +75,8 @@ class EditorFileSystemDirectory : public Object {
 			bool is_tool = false;
 		};
 		ScriptClassInfo class_info;
+
+		void copy_from_cache(const FileInfo *p_cache);
 	};
 
 	Vector<FileInfo *> files;
@@ -210,24 +213,10 @@ class EditorFileSystem : public Node {
 
 	static EditorFileSystem *singleton;
 
+	using FileInfo = EditorFileSystemDirectory::FileInfo;
 	using ScriptClassInfo = EditorFileSystemDirectory::FileInfo::ScriptClassInfo;
 
-	/* Used for reading the filesystem cache file */
-	struct FileCache {
-		StringName type;
-		String resource_script_class;
-		ResourceUID::ID uid = ResourceUID::INVALID_ID;
-		uint64_t modification_time = 0;
-		uint64_t import_modification_time = 0;
-		String import_md5;
-		Vector<String> import_dest_paths;
-		Vector<String> deps;
-		bool import_valid = false;
-		String import_group_file;
-		ScriptClassInfo class_info;
-	};
-
-	HashMap<String, FileCache> file_cache;
+	HashMap<String, FileInfo> file_cache;
 	HashSet<String> dep_update_list;
 
 	struct ScanProgress {
