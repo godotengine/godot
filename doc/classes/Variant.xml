@@ -80,6 +80,6 @@
 		Modifications to a container will modify all references to it. A [Mutex] should be created to lock it if multi-threaded access is desired.
 	</description>
 	<tutorials>
-		<link title="Variant class introduction">$DOCS_URL/contributing/development/core_and_modules/variant_class.html</link>
+		<link title="Variant class introduction">$DOCS_URL/engine_details/development/core_and_modules/variant_class.html</link>
 	</tutorials>
 </class>
