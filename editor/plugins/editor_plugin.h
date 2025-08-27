@@ -40,6 +40,7 @@ class Node3D;
 class Button;
 class PopupMenu;
 class EditorDebuggerPlugin;
+class EditorExtensionSourceCodePlugin;
 class EditorDock;
 class EditorExport;
 class EditorExportPlugin;
@@ -263,6 +264,9 @@ public:
 
 	void add_context_menu_plugin(EditorContextMenuPlugin::ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin);
 	void remove_context_menu_plugin(const Ref<EditorContextMenuPlugin> &p_plugin);
+
+	void add_extension_source_code_plugin(const Ref<EditorExtensionSourceCodePlugin> &p_plugin);
+	void remove_extension_source_code_plugin(const Ref<EditorExtensionSourceCodePlugin> &p_plugin);
 
 	void enable_plugin();
 	void disable_plugin();
