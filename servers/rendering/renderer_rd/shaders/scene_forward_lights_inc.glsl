@@ -1175,7 +1175,6 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	float b_len = length(area_height);
 	float a_half_len = a_len / 2.0;
 	float b_half_len = b_len / 2.0;
-	float inv_center_range = area_lights.data[idx].cone_attenuation;
 
 	mat4 light_mat = mat4(
 			vec4(normalize(area_width), 0),
@@ -1207,6 +1206,8 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 
 		vec3 local_normal = normalize(mat3(area_lights.data[idx].shadow_matrix) * vec3(normal));
 		vec3 normal_bias = local_normal * area_lights.data[idx].shadow_normal_bias * (1.0 - abs(dot(local_normal, shadow_dir)));
+
+		float inv_center_range = area_lights.data[idx].cone_attenuation;
 
 		if (sc_use_light_soft_shadows() && area_lights.data[idx].soft_shadow_size > 0.0) {
 			//soft shadow
@@ -1315,9 +1316,10 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 		diffuse_light += ltc_diffuse * color / half(2.0 * M_PI) * light_attenuation;
 	}
 	hvec3 spec = ltc_specular * color;
-	hvec3 spec_color = mix(hvec3(0.04), albedo, hvec3(metallic));
+	half f90 = clamp(dot(f0, hvec3(50.0 * 0.33)), metallic, half(1.0));
+	hvec3 spec_color = f0;
 
-	spec *= spec_color * max(half(M_brdf_e_mag_fres.y), half(0.0)) + (half(1.0) - spec_color) * max(half(M_brdf_e_mag_fres.z), half(0.0));
+	spec *= spec_color * max(half(M_brdf_e_mag_fres.y), half(0.0)) + (f90 - spec_color) * max(half(M_brdf_e_mag_fres.z), half(0.0));
 	specular_light += spec / half(2.0 * M_PI) * half(area_lights.data[idx].specular_amount) * light_attenuation;
 }
 
