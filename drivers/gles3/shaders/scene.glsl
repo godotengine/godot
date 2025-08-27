@@ -2000,7 +2000,6 @@ void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 	float b_len = length(area_height);
 	float a_half_len = a_len / 2.0;
 	float b_half_len = b_len / 2.0;
-	float inv_center_range = area_lights[idx].cone_attenuation;
 
 	mat4 light_mat = mat4(
 			vec4(normalize(area_width), 0),
