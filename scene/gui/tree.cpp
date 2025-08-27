@@ -1288,6 +1288,15 @@ bool TreeItem::is_selected(int p_column) {
 	return cells[p_column].selectable && cells[p_column].selected;
 }
 
+bool TreeItem::is_any_column_selected() const {
+	for (const Cell &cell : cells) {
+		if (cell.selectable && cell.selected) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void TreeItem::set_as_cursor(int p_column) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	if (!tree) {
@@ -2787,7 +2796,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						more_prev_ofs = theme_cache.parent_hl_line_margin;
 						prev_hl_ofs = parent_bottom_y;
 						has_sibling_selection = _is_sibling_branch_selected(c);
-					} else if (p_item->is_selected(0)) {
+					} else if (p_item->is_any_column_selected()) {
 						// If parent item is selected (but this item is not), we draw the line using children highlight style.
 						// Siblings of the selected branch can be drawn with a slight offset and their vertical line must appear as highlighted.
 						if (has_sibling_selection) {
@@ -2872,10 +2881,8 @@ int Tree::_count_selected_items(TreeItem *p_from) const {
 }
 
 bool Tree::_is_branch_selected(TreeItem *p_from) const {
-	for (int i = 0; i < columns.size(); i++) {
-		if (p_from->is_selected(i)) {
-			return true;
-		}
+	if (p_from->is_any_column_selected()) {
+		return true;
 	}
 
 	TreeItem *child_item = p_from->get_first_child();
