@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/docks/editor_dock.h"
+#include "editor/extension/extension_class_create_dialog.h"
 #include "editor/file_system/dependency_editor.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/file_system/file_info.h"
@@ -134,6 +135,7 @@ private:
 		FILE_MENU_NEW_TEXTFILE,
 		FILE_MENU_NEW_FOLDER,
 		FILE_MENU_NEW_SCRIPT,
+		FILE_MENU_NEW_EXTENSION_CLASS,
 		FILE_MENU_NEW_SCENE,
 		FILE_MENU_RUN_SCRIPT,
 		FILE_MENU_MAX,
@@ -208,6 +210,7 @@ private:
 
 	SceneCreateDialog *make_scene_dialog = nullptr;
 	ScriptCreateDialog *make_script_dialog = nullptr;
+	ExtensionClassCreateDialog *make_extension_class_dialog = nullptr;
 	ShaderCreateDialog *make_shader_dialog = nullptr;
 	CreateDialog *new_resource_dialog = nullptr;
 

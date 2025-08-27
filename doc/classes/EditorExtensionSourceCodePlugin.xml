@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExtensionSourceCodePlugin" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_add_method_func" qualifiers="virtual const">
+			<return type="int" enum="Error" />
+			<param index="0" name="class_name" type="StringName" />
+			<param index="1" name="method_name" type="String" />
+			<param index="2" name="args" type="PackedStringArray" />
+			<description>
+				Called when connecting a signal to a new method in the extension source code. Implementation should add a method named [param method_name] to the class [param class_name] with the given [param args].
+				The [param args] format is [code]{ARG_NAME}:{ARG_TYPE}[/code].
+			</description>
+		</method>
+		<method name="_adjust_path" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="path_index" type="int" />
+			<param index="1" name="class_name" type="String" />
+			<param index="2" name="base_path" type="String" />
+			<param index="3" name="old_path" type="String" />
+			<description>
+				Called when the path field on the create new extension class dialog needs to be adjusted. For example, when the class name field is changed, this method can be used to update the path to match the new class name.
+				Use [method adjust_script_name_casing] to ensure the file name matches the user's preference.
+				The [param path_index] corresponds to the index of the path field being adjusted. The amount of path fields in the dialog can be configured by implementing [method _get_path_count].
+				The [param class_name] is the current name of the class to be created.
+				The [param base_path] is the directory that the create dialog was opened from. It's likely that the user expects the new class source files to be created in this directory, but depending on the language it may also be appropriate to use a different directory.
+				The [param old_path] is the current value of the path field being adjusted. Some plugins may choose to use this value to maintain user changes.
+			</description>
+		</method>
+		<method name="_can_create_class_source" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Indicates that the plugin can create source files. If so, the plugin must also implement [method _create_class_source].
+				If [method _get_available_templates] is implemented and returns a non-empty array it should also implement [method _create_class_source_from_template_id].
+				If [method _can_use_template_files] is implemented and returns [code]true[/code] it should also implement [method _create_class_source_from_template_file].
+			</description>
+		</method>
+		<method name="_can_edit_class_source" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Indicates that the plugin can edit existing source files to add methods. If so, the plugin must also implement [method _add_method_func].
+			</description>
+		</method>
+		<method name="_can_handle_object" qualifiers="virtual required const">
+			<return type="bool" />
+			<param index="0" name="object" type="Object" />
+			<description>
+				Indicates whether the given object is an extension class that can be handled by this plugin. The first registered plugin that claims to handle the object will be used to provide source code editing capabilities.
+			</description>
+		</method>
+		<method name="_can_handle_template_file" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="template_path" type="String" />
+			<description>
+				Indicates that the plugin can handle the specified template file. It should return [code]true[/code] only if the plugin can parse the template file and will be able to use it later when creating source files. For example, it's common to check that the file extension matches one of the supported extensions.
+				This method will never be called and doesn't need to be implemented if [method _is_using_templates] or [method _can_use_template_files] return [code]false[/code].
+			</description>
+		</method>
+		<method name="_can_use_template_files" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Indicates that the plugin supports template files to create source files. If so, the plugin must also implement [method _can_handle_template_file] and [method _create_class_source_from_template_file].
+				This method will never be called if [method _is_using_templates] returns [code]false[/code].
+			</description>
+		</method>
+		<method name="_configure_select_path_dialog" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="path_index" type="int" />
+			<param index="1" name="dialog" type="EditorFileDialog" />
+			<description>
+				Called when the user opens the file dialog to select a path for one of the source code files on the create new extension class dialog. Implementation should configure the dialog as needed, for example by setting the initial directory or file filters, changing the dialog title, or changing the dialog accept button text.
+			</description>
+		</method>
+		<method name="_create_class_source" qualifiers="virtual const">
+			<return type="int" enum="Error" />
+			<param index="0" name="class_name" type="String" />
+			<param index="1" name="base_class_name" type="String" />
+			<param index="2" name="paths" type="PackedStringArray" />
+			<description>
+				Called when creating a new extension class from the editor. Implementation should create and/or modify the required files to add a new class to the extension, this may require adding multiple files and editing existing ones. For example, C++ may require creating a header and source file, and edit the [code]register_types.cpp[/code] file to register the new class.
+				The [param class_name] is the name the user specified for the new class.
+				The [param base_class_name] is the name of the base class to inherit from.
+				The [param paths] contains the list of paths the user selected where the new class source files should be created, although in some cases files in other directories may also need to be modified. The amount of paths can be configured by implementing [method _get_path_count].
+			</description>
+		</method>
+		<method name="_create_class_source_from_template_file" qualifiers="virtual const">
+			<return type="int" enum="Error" />
+			<param index="0" name="class_name" type="String" />
+			<param index="1" name="base_class_name" type="String" />
+			<param index="2" name="paths" type="PackedStringArray" />
+			<param index="3" name="template_path" type="String" />
+			<description>
+				Called when creating a new extension class from the editor using the specified template file. Implementation should create and/or modify the required files to add a new class to the extension, this may require adding multiple files and editing existing ones. For example, C++ may require creating a header and source file, and edit the [code]register_types.cpp[/code] file to register the new class.
+				The [param class_name] is the name the user specified for the new class.
+				The [param base_class_name] is the name of the base class to inherit from.
+				The [param paths] contains the list of paths the user selected where the new class source files should be created, although in some cases files in other directories may also need to be modified. The amount of paths can be configured by implementing [method _get_path_count].
+				The [param template_path] is the path to the template file to use for creating the class, and should be one of the templates that was previously checked by [method _can_handle_template_file].
+				This method will never be called and doesn't need to be implemented if [method _is_using_templates] or [method _can_use_template_files] return [code]false[/code].
+			</description>
+		</method>
+		<method name="_create_class_source_from_template_id" qualifiers="virtual const">
+			<return type="int" enum="Error" />
+			<param index="0" name="class_name" type="String" />
+			<param index="1" name="base_class_name" type="String" />
+			<param index="2" name="paths" type="PackedStringArray" />
+			<param index="3" name="template_id" type="String" />
+			<param index="4" name="template_options" type="Dictionary" />
+			<description>
+				Called when creating a new extension class from the editor using the template specified by ID. Implementation should create and/or modify the required files to add a new class to the extension, this may require adding multiple files and editing existing ones. For example, C++ may require creating a header and source file, and edit the [code]register_types.cpp[/code] file to register the new class.
+				The [param class_name] is the name the user specified for the new class.
+				The [param base_class_name] is the name of the base class to inherit from.
+				The [param paths] contains the list of paths the user selected where the new class source files should be created, although in some cases files in other directories may also need to be modified. The amount of paths can be configured by implementing [method _get_path_count].
+				The [param template_id] is the ID of the template to use for creating the class, and should be one of the template IDs provided by [method _get_available_templates].
+				If a template was specified, the [param template_options] dictionary will contain the specified values for the additional options provided by [method _get_template_options].
+				This method will never be called and doesn't need to be implemented if [method _is_using_templates] return [code]false[/code].
+			</description>
+		</method>
+		<method name="_get_available_templates" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<param index="0" name="base_class_name" type="String" />
+			<description>
+				Returns a list of available templates (more specifically their IDs) for creating new extension classes. The [param base_class_name] is the name of the base class to inherit from, and the returned templates should be filtered to match. If a template matches multiple base classes, it should only be returned for the most specific one, since this method will be called once for each class in the hierarchy and would otherwise list the same template multiple times.
+			</description>
+		</method>
+		<method name="_get_language_icon" qualifiers="virtual const">
+			<return type="Texture2D" />
+			<description>
+				Returns the icon to use for the programming language used for the extension. If not provided, a default icon will be used.
+			</description>
+		</method>
+		<method name="_get_language_name" qualifiers="virtual required const">
+			<return type="String" />
+			<description>
+				Returns the name of the programming language used for the extension.
+			</description>
+		</method>
+		<method name="_get_path_count" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Returns the number of path fields to show in the create new extension class dialog. For example, some programming languages may require additional paths for things like headers or resources.
+				If more than one path is required, the plugin should implement [method _get_path_label] to return the appropriate label for each path, otherwise every path field will have the same label which would be confusing for users.
+			</description>
+		</method>
+		<method name="_get_path_label" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="path_index" type="int" />
+			<description>
+				Returns the label for the path field at the given index. For example, a programming language that requires a path for the header and a path for the source file might return "Path .h/.hpp" for index 0 and "Path .cpp" for index 1.
+			</description>
+		</method>
+		<method name="_get_source_path" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="class_name" type="StringName" />
+			<description>
+				Implement to provide the absolute path to the source file of the class with the given [param class_name]. This is used by the editor to open the source file in an editor.
+				If the class is defined in multiple files, the plugin is responsible for returning the most relevant one, such as the one considered the main file for the class or the first one found sorted alphabetically.
+			</description>
+		</method>
+		<method name="_get_template_description" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="template_id" type="String" />
+			<description>
+				Returns the description for the given template ID. This description will be shown on the create new extension class dialog, and should provide more information about the template's purpose and usage.
+			</description>
+		</method>
+		<method name="_get_template_display_name" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="template_id" type="String" />
+			<description>
+				Returns the display name for the given template ID. This name will be used in the template menu on the create new extension class dialog, and should be a more user-friendly name than the ID, but if not implemented the ID will be used instead.
+			</description>
+		</method>
+		<method name="_get_template_file_description" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="template_path" type="String" />
+			<description>
+				Returns the description for the given template file. This description will be shown on the create new extension class dialog, and should provide more information about the template's purpose and usage.
+			</description>
+		</method>
+		<method name="_get_template_file_display_name" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="template_path" type="String" />
+			<description>
+				Returns the display name for the given template file. This name will be used in the template menu on the create new extension class dialog, and should be a more user-friendly name than the path, but if not implemented the file name capitalized will be used instead.
+			</description>
+		</method>
+		<method name="_get_template_options" qualifiers="virtual const">
+			<return type="Dictionary[]" />
+			<param index="0" name="template_id" type="String" />
+			<description>
+				Implement to provide a list of additional options for the given [param template_id]. The [param template_id] should be one of the template IDs provided by [method _get_available_templates].
+				The returned array should contain dictionaries with the following keys:
+				- [code]name[/code] is the option's name, as a [String].
+				- [code]type[/code] is the option's type, as an [int] (see [enum Variant.Type]).
+				- [code]hint[/code] is the option's property hint, as an [int] (see [enum PropertyHint]).
+				- [code]hint_string[/code] is the option's property hint string, as a [String].
+				- [code]usage[/code] is the option's property usage flags, as an [int] (see [enum PropertyUsageFlags]).
+				- [code]default_value[/code] is the default value for the option, which should match the specified [code]type[/code].
+			</description>
+		</method>
+		<method name="_is_using_templates" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the plugin can use templates for creating new extension classes. If [code]false[/code], the create new extension class dialog will not allow users to select a template.
+				Plugins that do not use templates should still implement [method _create_class_source] if they can create source files according to [method _can_create_class_source] but don't need to implement [method _create_class_source_from_template_id] or [method _create_class_source_from_template_file].
+			</description>
+		</method>
+		<method name="_open_in_external_editor" qualifiers="virtual const">
+			<return type="int" enum="Error" />
+			<param index="0" name="source_path" type="String" />
+			<param index="1" name="line" type="int" />
+			<param index="2" name="col" type="int" />
+			<description>
+				Called when the user requests to open the source code of an extension class from the editor. Implement to open the source file at the given [param source_path] in an external editor. The [param line] and [param col] parameters specify the line and column to open the file at, respectively. If the external editor is not available or the file cannot be opened, return an error code.
+				The plugin is responsible for providing the configuration for the external editor, such as the command to run and any required arguments.
+				This method is only called if [method _overrides_external_editor] returns [code]true[/code].
+			</description>
+		</method>
+		<method name="_overrides_external_editor" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the plugin implements [method _open_in_external_editor] to provide its own implementation for opening source files in an external editor.
+			</description>
+		</method>
+		<method name="_validate_class_name" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="validation_context" type="ValidationContext" />
+			<param index="1" name="class_name" type="String" />
+			<description>
+				Called when validating the class name on the create new extension class dialog. Implementation should use [param validation_context] to report any errors or warnings found in [param class_name].
+			</description>
+		</method>
+		<method name="_validate_path" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="validation_context" type="ValidationContext" />
+			<param index="1" name="path_index" type="int" />
+			<param index="2" name="path" type="String" />
+			<description>
+				Called when validating the path for one of the source code files on the create new extension class dialog. Implementation should use [param validation_context] to report any errors or warnings if the found in [param path].
+				The [param path_index] corresponds to the index of the path field being validated. The amount of path fields in the dialog can be configured by implementing [method _get_path_count].
+				The [param path] is the current value of the path field being validated.
+			</description>
+		</method>
+		<method name="_validate_template_option" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="validation_context" type="ValidationContext" />
+			<param index="1" name="template_id" type="String" />
+			<param index="2" name="option_name" type="String" />
+			<param index="3" name="value" type="Variant" />
+			<description>
+				Called when validating one of the template options on the create new extension class dialog. Implementation should use [param validation_context] to report any errors or warnings found in [param value].
+				The [param template_id] corresponds to the ID of the template that the option belongs to, and it's one of the IDs returned by [method _get_available_templates].
+				The [param option_name] corresponds to the name of the option being validated, and it's the name of one the options returned by [method _get_template_options].
+				The [param value] contains the current value of the option being validated.
+			</description>
+		</method>
+		<method name="adjust_script_name_casing" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="script_name" type="String" />
+			<param index="1" name="auto_casing" type="int" enum="ScriptLanguage.ScriptNameCasing" />
+			<description>
+				Adjusts the given [param script_name] according to the specified [param auto_casing] mode. This is a utility method that can be used by plugins when implementing [method _adjust_path] to ensure that the file name matches the user's preferences and falls back to the specified casing in [param auto_casing] otherwise.
+				The [param script_name] is the name of the file to adjust.
+				The [param auto_casing] is the language preferred casing and will be used if the user has not specified a different casing.
+				See [enum ScriptLanguage.ScriptNameCasing] for the available casing modes.
+			</description>
+		</method>
+	</methods>
+</class>
