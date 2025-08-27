@@ -45,7 +45,7 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "scene/gui/line_edit.h"
 
-#define CONTRIBUTE_URL vformat("%s/contributing/documentation/updating_the_class_reference.html", VERSION_DOCS_URL)
+#define CONTRIBUTE_URL "https://contributing.godotengine.org/en/latest/documentation/class_reference.html"
 
 #ifdef MODULE_MONO_ENABLED
 // Sync with the types mentioned in https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_differences.html
