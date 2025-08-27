@@ -33,12 +33,13 @@
 #include "core/crypto/crypto_core.h"
 #include "core/io/file_access.h"
 
-#define ENCRYPTED_HEADER_MAGIC 0x43454447
-
 class FileAccessEncrypted : public FileAccess {
 	GDSOFTCLASS(FileAccessEncrypted, FileAccess);
 
 public:
+	// Godot Encrypted.
+	static constexpr uint32_t FOURCC = make_fourcc("GDEC");
+
 	enum Mode : int32_t {
 		MODE_READ,
 		MODE_WRITE_AES256,

@@ -89,7 +89,7 @@ Error PCKPacker::pck_start(const String &p_pck_path, int p_alignment, const Stri
 
 	alignment = p_alignment;
 
-	file->store_32(PACK_HEADER_MAGIC);
+	file->store_32(PackedSourcePCK::FOURCC);
 	file->store_32(PACK_FORMAT_VERSION);
 	file->store_32(GODOT_VERSION_MAJOR);
 	file->store_32(GODOT_VERSION_MINOR);

@@ -76,8 +76,7 @@ Error FileAccessEncrypted::open_and_parse(Ref<FileAccess> p_base, const Vector<u
 		key = p_key;
 
 		if (use_magic) {
-			uint32_t magic = p_base->get_32();
-			ERR_FAIL_COND_V(magic != ENCRYPTED_HEADER_MAGIC, ERR_FILE_UNRECOGNIZED);
+			ERR_FAIL_COND_V(p_base->get_32() != FOURCC, ERR_FILE_UNRECOGNIZED);
 		}
 
 		unsigned char md5d[16];
@@ -157,7 +156,7 @@ void FileAccessEncrypted::_close() {
 		ctx.set_encode_key(key.ptrw(), 256);
 
 		if (use_magic) {
-			file->store_32(ENCRYPTED_HEADER_MAGIC);
+			file->store_32(FOURCC);
 		}
 
 		file->store_buffer(hash, 16);

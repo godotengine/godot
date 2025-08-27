@@ -30,10 +30,8 @@
 
 #include "file_access_compressed.h"
 
-void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_mode, uint32_t p_block_size) {
-	magic = p_magic.ascii().get_data();
-	magic = (magic + "    ").substr(0, 4);
-
+void FileAccessCompressed::configure(uint32_t p_magic, Compression::Mode p_mode, uint32_t p_block_size) {
+	magic = p_magic;
 	cmode = p_mode;
 	block_size = p_block_size;
 }
@@ -98,9 +96,7 @@ Error FileAccessCompressed::open_internal(const String &p_path, int p_mode_flags
 
 		//don't store anything else unless it's done saving!
 	} else {
-		char rmagic[5];
-		f->get_buffer((uint8_t *)rmagic, 4);
-		rmagic[4] = 0;
+		uint32_t rmagic = f->get_32();
 		err = ERR_FILE_UNRECOGNIZED;
 		if (magic != rmagic || (err = open_after_magic(f)) != OK) {
 			f.unref();
@@ -118,9 +114,7 @@ void FileAccessCompressed::_close() {
 
 	if (writing) {
 		//save block table and all compressed blocks
-
-		CharString mgc = magic.utf8();
-		f->store_buffer((const uint8_t *)mgc.get_data(), mgc.length()); //write header 4
+		f->store_32(magic); //write header 4
 		f->store_32(cmode); //write compression mode 4
 		f->store_32(block_size); //write block size 4
 		f->store_32(uint32_t(write_max)); //max amount of data written 4
@@ -155,7 +149,7 @@ void FileAccessCompressed::_close() {
 			f->store_32(block_sizes[i]);
 		}
 		f->seek_end();
-		f->store_buffer((const uint8_t *)mgc.get_data(), mgc.length()); //magic at the end too
+		f->store_32(magic);
 	} else {
 		comp_buffer.clear();
 		read_blocks.clear();
