@@ -1465,6 +1465,16 @@ gdspx_sprite_is_anim_flipped_v(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
+gdspx_sprite_get_current_anim_name(obj) {
+	var _gdFuncPtr = Module._gdspx_sprite_get_current_anim_name; 
+	var _retValue = AllocGdString();
+	var _arg0 = ToGdObj(obj);
+	_gdFuncPtr(_arg0, _retValue);
+	FreeGdObj(_arg0); 
+	var _finalRetValue = ToJsString(_retValue);
+	FreeGdString(_retValue); 
+	return _finalRetValue
+}
 gdspx_sprite_set_velocity(obj,velocity) {
 	var _gdFuncPtr = Module._gdspx_sprite_set_velocity; 
 	

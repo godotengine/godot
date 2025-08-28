@@ -508,6 +508,9 @@ static void gdextension_spx_sprite_set_anim_flip_v(GdObj obj,GdBool p_flip) {
 static void gdextension_spx_sprite_is_anim_flipped_v(GdObj obj,GdBool* ret_val) {
 	*ret_val = spriteMgr->is_anim_flipped_v(obj);
 }
+static void gdextension_spx_sprite_get_current_anim_name(GdObj obj,GdString* ret_val) {
+	*ret_val = spriteMgr->get_current_anim_name(obj);
+}
 static void gdextension_spx_sprite_set_velocity(GdObj obj,GdVec2 velocity) {
 	 spriteMgr->set_velocity(obj, velocity);
 }
@@ -912,6 +915,7 @@ void gdextension_spx_setup_interface() {
 	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_is_anim_flipped_h);
 	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_set_anim_flip_v);
 	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_is_anim_flipped_v);
+	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_get_current_anim_name);
 	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_set_velocity);
 	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_get_velocity);
 	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_is_on_floor);

@@ -546,6 +546,10 @@ GdBool SpxSpriteMgr::is_anim_flipped_v(GdObj obj) {
 	check_and_get_sprite_r(false)
 	return sprite->is_anim_flipped_v();
 }
+GdString SpxSpriteMgr::get_current_anim_name(GdObj obj) {
+	check_and_get_sprite_r(GdString())
+	return sprite->get_current_anim_name();
+}
 
 void SpxSpriteMgr::set_velocity(GdObj obj, GdVec2 velocity) {
 	check_and_get_sprite_v()

@@ -200,7 +200,8 @@ public:
 	GdBool is_anim_flipped_h(GdObj obj);
 	void set_anim_flip_v(GdObj obj, GdBool p_flip);
 	GdBool is_anim_flipped_v(GdObj obj);
-
+	GdString get_current_anim_name(GdObj obj);
+	
 	// physics
 	void set_velocity(GdObj obj, GdVec2 velocity);
 	GdVec2 get_velocity(GdObj obj);
