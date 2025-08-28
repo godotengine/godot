@@ -167,34 +167,50 @@ public:
 			return;
 		}
 
+
+		PackedByteArray out;
+		int data_size;
+		void *val_out = memalloc(16);
 		// handle normal variables
 		switch (value.get_type()) {
 			case Variant::FLOAT: {
-				if (empty) {
-					data.append_array({0, 0, 0, 0});
-					return;
-				} 
-				float val_out = value;
-				PackedByteArray out = {0,0,0,0};
-				memcpy(out.ptrw(), &val_out, 4);
-				data.append_array(out);
-				return;
-			}
-			case Variant::VECTOR2: {
-				if (empty) {
-					data.append_array({0, 0, 0, 0, 0, 0, 0, 0});
-					return;
-				} 
-				Vector2 val_out = value;
-				PackedByteArray out = {0,0,0,0,0,0,0,0};
-				memcpy(out.ptrw(), &val_out, 8);
-				data.append_array(out);
-				return;
-			}
-			default: {
-
+				out.resize_initialized(4);
+				*((float*) val_out) = value;
+				data_size = 4;
 			} break;
+			case Variant::INT: {
+				out.resize_initialized(4);
+				*((int*) val_out) = value;
+				data_size = 4;
+			} break;
+			case Variant::BOOL: {
+				out.resize_initialized(4);
+				*((bool*) val_out) = value;
+				data_size = 4;
+			} break;
+			case Variant::VECTOR2: {
+				out.resize_initialized(8);
+				*((Vector2 *)val_out) = value;
+				data_size = 8;
+			} break;
+			case Variant::VECTOR3: {
+				out.resize_initialized(16);
+				*((Vector3 *)val_out) = value;
+				data_size = 16;
+			} break;
+			case Variant::VECTOR4: {
+				out.resize_initialized(16);
+				*((Vector4 *)val_out) = value;
+				data_size = 16;
+			} break;
+			default: {
+				// should never be reached
+			} return;
 		}
+		if (!empty) {
+			memcpy(out.ptrw(), val_out, data_size);
+		} 
+		data.append_array(out);
 	}
 };
 
