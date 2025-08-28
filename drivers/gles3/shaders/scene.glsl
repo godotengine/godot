@@ -1383,6 +1383,7 @@ uniform lowp uint lightmap_slice;
 uniform highp vec4 lightmap_uv_scale;
 uniform float lightmap_exposure_normalization;
 uniform uint lightmap_shadowmask_mode;
+uniform float lightmap_specular_strength;
 
 #define SHADOWMASK_MODE_NONE uint(0)
 #define SHADOWMASK_MODE_REPLACE uint(1)
@@ -2325,39 +2326,41 @@ void main() {
 		sh_light += lm_light_l1p1 * n.x * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
 		ambient_light += sh_light;
 
-		vec3 l1 = vec3(
-				dot(lm_light_l1p1, vec3(0.2126, 0.7152, 0.0722)),
-				dot(lm_light_l1n1, vec3(0.2126, 0.7152, 0.0722)),
-				dot(lm_light_l1_0, vec3(0.2126, 0.7152, 0.0722)));
+		if (lightmap_specular_strength > 0.0) {
+			// Fake specular light to create some direct light specular lobes for directional lightmaps.
+			// https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/gdc2018-precomputedgiobalilluminationinfrostbite.pdf (slides 66-71)
+			vec3 l1_r = vec3(lm_light_l1p1.r, lm_light_l1n1.r, lm_light_l1_0.r);
+			vec3 l1_g = vec3(lm_light_l1p1.g, lm_light_l1n1.g, lm_light_l1_0.g);
+			vec3 l1_b = vec3(lm_light_l1p1.b, lm_light_l1n1.b, lm_light_l1_0.b);
 
-		float lightmap_direction_length = length(l1);
-		vec3 lightmap_direction = normalize(l1) / lightmap_direction_length;
-		vec3 L_view = mat3(scene_data.view_matrix) * lightmap_direction;
+			vec3 l1 = (l1_r + l1_g + l1_b) / 3.0;
+			vec3 lightmap_direction = normalize(l1);
 
-		float adjusted_roughness = clamp(1.0 - ((1.0 - roughness) * sqrt(lightmap_direction_length)), 0.05, 1.0);
+			vec3 L_view = normalize((scene_data.view_matrix * vec4(lightmap_direction, 0.0)).xyz);
 
-		vec3 f0 = F0(metallic, specular, albedo);
+			vec3 f0 = F0(metallic, specular, albedo);
 
-		// Discard diffuse light from this fake light, as we're only interested in its specular light output.
-		vec3 diffuse_light_discarded = diffuse_light;
+			// Discard diffuse light from this fake light, as we're only interested in its specular light output.
+			vec3 diffuse_light_discarded = diffuse_light;
 
-		float specular_strength = length(sh_light) * lightmap_direction_length * 40;
+			float specular_strength = length(l1) * lightmap_specular_strength * 150.0;
 
-		light_compute(normal, L_view, view, 0.0, sh_light, false, 1.0, f0, adjusted_roughness, metallic, specular_strength, albedo, alpha, screen_uv,
+			light_compute(normal, L_view, view, 0.0, sh_light, false, 1.0, f0, roughness, metallic, specular_strength, albedo, alpha, screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
-				backlight,
+					backlight,
 #endif
 #ifdef LIGHT_RIM_USED
-				rim, rim_tint,
+					rim, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-				clearcoat, clearcoat_roughness, normalize(normal_interp),
+					clearcoat, clearcoat_roughness, normalize(normal_interp),
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
-				binormal, tangent, anisotropy,
+					binormal, tangent, anisotropy,
 #endif
-				diffuse_light_discarded,
-				specular_light);
+					diffuse_light_discarded,
+					specular_light);
+		}
 
 #else
 #ifdef LIGHTMAP_BICUBIC_FILTER
