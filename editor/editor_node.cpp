@@ -1595,16 +1595,7 @@ void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const St
 		return;
 	}
 
-	Ref<Resource> prev_resource = ResourceCache::get_ref(p_path);
-	if (prev_resource.is_null() || prev_resource != p_resource) {
-		p_resource->set_path(path, true);
-	}
-	if (prev_resource.is_valid() && prev_resource != p_resource) {
-		replace_resources_in_scenes({ prev_resource }, { p_resource });
-	}
 	saving_resources_in_path.erase(p_resource);
-
-	_resource_saved(p_resource, path);
 
 	emit_signal(SNAME("resource_saved"), p_resource);
 	editor_data.notify_resource_saved(p_resource);
@@ -7205,10 +7196,30 @@ void EditorNode::_set_renderer_name_save_and_restart() {
 	restart_editor();
 }
 
-void EditorNode::_resource_saved(Ref<Resource> p_resource, const String &p_path) {
-	if (singleton->saving_resources_in_path.has(p_resource)) {
-		// This is going to be handled by save_resource_in_path when the time is right.
-		return;
+void EditorNode::_resource_saved(Ref<Resource> p_resource, const String &p_path, bool p_need_to_update_cache) {
+	// Update the cached instance's data with the saved instance's data.
+	if (p_need_to_update_cache) {
+		Ref<Resource> prev_resource = ResourceCache::get_ref(p_path);
+		if (prev_resource.is_valid()) {
+			// Assume that the cached and saved instances are of the same type.
+			Error err = prev_resource->copy_from(p_resource);
+			if (err != OK) {
+				// The types before and after are different.
+				EditorToaster::get_singleton()->popup_str(
+						vformat(TTR("The data type \"%s\" of the file at \"%s\" does not match the data type \"%s\" of the cached instance."),
+								p_resource->get_class_name(),
+								p_path,
+								prev_resource->get_class_name()),
+						EditorToaster::SEVERITY_WARNING);
+
+				// Just clear the cached instance's resource_path to clear the cached instance in ResourceCache.
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+				undo_redo->create_action("Auto clear path", UndoRedo::MERGE_ALL);
+				undo_redo->add_do_property(prev_resource.ptr(), "resource_path", "");
+				undo_redo->add_undo_property(prev_resource.ptr(), "resource_path", p_path);
+				undo_redo->commit_action();
+			}
+		}
 	}
 
 	if (EditorFileSystem::get_singleton()) {

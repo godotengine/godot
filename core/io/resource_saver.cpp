@@ -143,7 +143,8 @@ Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path,
 			}
 
 			if (save_callback && path.begins_with("res://")) {
-				save_callback(p_resource, path);
+				bool need_to_update_cache = ((p_flags & FLAG_CHANGE_PATH) != FLAG_CHANGE_PATH) && old_path != local_path;
+				save_callback(p_resource, path, need_to_update_cache);
 			}
 
 			return OK;
