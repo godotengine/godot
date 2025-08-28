@@ -548,6 +548,8 @@ private:
 
 	int compute_item_height(TreeItem *p_item) const;
 	int get_item_height(TreeItem *p_item) const;
+	Point2i convert_rtl_position(const Point2i &pos, int width = 0) const;
+	Rect2i convert_rtl_rect(const Rect2i &Rect2) const;
 	void _update_all();
 	void update_column(int p_col);
 	void update_item_cell(TreeItem *p_item, int p_col) const;
