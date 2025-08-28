@@ -10379,7 +10379,6 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					tk = _get_token();
 				}
 
-
 				if (tk.type != TK_CURLY_BRACKET_OPEN) {
 					_set_error(vformat(RTR("Unexpected token '%s'."), tk.text));
 					return ERR_PARSE_ERROR;
@@ -10448,7 +10447,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 								}
 
 								if (tk.type == TK_BRACKET_OPEN) {
-									Error error = _parse_array_size(nullptr, constants, false, nullptr, &array_size, &unsized_array_init);
+									Error error = _parse_array_size(nullptr, constants, (buf.io_qual == ShaderNode::Buffer::BUFFER_UNIFORM), nullptr, &array_size, &unsized_array_init);
 									if (error != OK) {
 										return error;
 									}
@@ -10491,7 +10490,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 							tk = _get_token();
 
 							if (tk.type == TK_BRACKET_OPEN) {
-								Error error = _parse_array_size(nullptr, constants, false, nullptr, &member->array_size, &unsized_array_init);
+								Error error = _parse_array_size(nullptr, constants, (buf.io_qual == ShaderNode::Buffer::BUFFER_UNIFORM), nullptr, &member->array_size, &unsized_array_init);
 								if (error != OK) {
 									return error;
 								}
@@ -10616,11 +10615,9 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				} else {
 					int index = shader->unnamed_buffers.size();
 					shader->unnamed_buffers.push_back(buf);
-					print_line(vformat("Unnamed buffer \"%s\" parsed with index %s", buf.name_bind, itos(index)));
 					for (MemberNode *member : bufnode->members) {
 						member->owner_index = index;
 						shader->unnamed_buffer_members[member->name] = member;
-						print_line(vformat("- Member \"%s\" parsed", shader->unnamed_buffer_members[member->name]->name));
 					}
 				}
 

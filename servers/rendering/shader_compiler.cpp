@@ -495,6 +495,20 @@ uint32_t get_offset(SL::MemberNode *m, uint32_t &offset, const SL::ShaderNode *s
 	return retval;
 }
 
+
+
+TypedDictionary<StringName, Variant> fill_struct_dict(const SL::ShaderNode::Struct &in_struct, const HashMap<StringName, SL::ShaderNode::Struct> &structs) {
+	TypedDictionary<StringName, Variant> output;
+	for (SL::MemberNode *st_mem : in_struct.shader_struct->members) {
+		if (st_mem->datatype == SL::TYPE_STRUCT) {
+			output[st_mem->name] = fill_struct_dict(structs[st_mem->struct_name], structs);
+		} else {
+			output[st_mem->name] = SL::shader_datatype_to_variant(st_mem->datatype);
+		}
+	}
+	return output;
+}
+
 String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning, bool p_use_scope) {
 	String code;
 
@@ -749,6 +763,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				buffer_code += "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(buffer_binding_index) + ", ";
 				buffer_binding_index++;
 
+				StringName buffer_format;
+
 				switch (buf.format) {
 					case SL::ShaderNode::Buffer::BUFFORMAT_PACKED: {
 						buffer_code += "packed) ";
@@ -758,9 +774,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					} break;
 					case SL::ShaderNode::Buffer::BUFFORMAT_STD140: {
 						buffer_code += "std140) ";
+						buffer_format = "std140";
 					} break;
 					case SL::ShaderNode::Buffer::BUFFORMAT_STD430: {
 						buffer_code += "std430) ";
+						buffer_format = "std430";
 					} break;
 				}
 
@@ -799,13 +817,16 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				GeneratedCode::Buffer buffer;
 				buffer.name = buf.name;
 				buffer.bufName = buf.name_bind;
-				buffer.members.resize(buf.shader_buffer->members.size());
-				buffer.member_offsets.resize(buf.shader_buffer->members.size());
+				buffer.format = buffer_format;
+				TypedDictionary<StringName, Dictionary> buffer_structs;
 				uint32_t total_offset = 0;
 				for (SL::MemberNode *m : buf.shader_buffer->members) {
 					uint32_t offset = 0;
 					if (m->datatype == SL::TYPE_STRUCT) {
 						buffer_code += _mkid(m->struct_name);
+						if (!buffer_structs.has(m->struct_name)) {
+							buffer_structs[m->struct_name] = fill_struct_dict(shader->structs[m->struct_name], shader->structs);
+						}
 					} else {
 						buffer_code += _prestr(m->precision);
 						buffer_code += _typestr(m->datatype);
@@ -825,7 +846,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						}
 						buffer_code += "]";
 					}
-					
+
 					buffer_code += ";\n";
 					buffer.member_offsets.push_back(offset);
 					buffer.members.push_back(*m);
@@ -843,12 +864,10 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					}
 					buffer.total_size = total_offset;
 					r_gen_code.uniform_buffers.push_back(buffer);
-					print_line(vformat("Uniform buffer \"%s\" compiled with binding %s", buffer.bufName, itos(buffer_binding_index - 1)));
 				} else {
 					buffer.total_size = total_offset;
 					r_gen_code.storage_buffers.push_back(buffer);
-					print_line(vformat("Storage buffer \"%s\" compiled with binding %s", buffer.bufName, itos(buffer_binding_index - 1)));
-				}				
+				}
 			}
 
 			uint32_t index = p_default_actions.base_varying_index;
@@ -1139,7 +1158,6 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				} else if (shader->buffers.has(vnode->name)) {
 					code += String(shader->buffers[vnode->name].name).replace("__", "_dus_");
 				} else if (shader->unnamed_buffer_members.has(vnode->name)) {
-					print_line(vformat("Field \"%s\" of unnamed buffer \"%s\" compiled", vnode->name, shader->unnamed_buffers[shader->unnamed_buffer_members[vnode->name]->owner_index].name_bind));
 					code += String(vnode->name).replace("__", "_dus_");
 				} else {
 					if (use_fragment_varying) {

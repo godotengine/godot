@@ -71,9 +71,11 @@ public:
 		struct Buffer {
 			StringName name;
 			StringName bufName;
+			StringName format;
 			Vector<ShaderLanguage::MemberNode> members;
 			Vector<uint32_t> member_offsets;
 			uint32_t total_size;
+			TypedDictionary<StringName, Dictionary> structs;
 		};
 
 		Vector<Texture> texture_uniforms;

@@ -119,8 +119,11 @@ public:
 
 	virtual void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) override {}
 	virtual Variant material_get_param(RID p_material, const StringName &p_param) const override { return Variant(); }
-	virtual void material_set_buffer(RID p_material, const StringName &p_buffer, const PackedByteArray &p_values) override {}
-	virtual PackedByteArray material_get_buffer(RID p_material, const StringName &p_buffer) const override {return PackedByteArray();}
+
+	virtual void material_set_buffer(RID p_material, const StringName &p_buffer, const TypedDictionary<StringName, Variant> &p_values) override {}
+	virtual TypedDictionary<StringName, Variant> material_get_buffer(RID p_material, const StringName &p_buffer) const override { return TypedDictionary<StringName, Variant>(); }
+	virtual void material_set_buffer_raw(RID p_material, const StringName &p_buffer, const PackedByteArray &p_values) override {}
+	virtual PackedByteArray material_get_buffer_raw(RID p_material, const StringName &p_buffer) const override { return PackedByteArray(); }
 	virtual void material_set_buffer_field(RID p_material, const StringName &p_buffer, const StringName &p_field, const Variant &p_value) override {}
 	virtual Variant material_get_buffer_field(RID p_material, const StringName &p_buffer, const StringName &p_field) const override { return Variant(); }
 

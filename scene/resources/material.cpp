@@ -487,9 +487,50 @@ Variant ShaderMaterial::get_shader_parameter(const StringName &p_param) const {
 	}
 }
 
-void ShaderMaterial::set_shader_buffer(const StringName &buf_name, const PackedByteArray &buf) {
+// bool is_valid_shader_variant(Variant &var) {
+// 	switch (var.get_type()) {
+// 		case Variant::INT:
+// 		case Variant::BOOL:
+// 		case Variant::FLOAT:
+// 		case Variant::VECTOR2:
+// 		case Variant::VECTOR2I:
+// 		case Variant::VECTOR3:
+// 		case Variant::VECTOR3I:
+// 		case Variant::VECTOR4:
+// 		case Variant::VECTOR4I:
+// 		case Variant::BASIS:
+// 			return true;
+// 		default:
+// 			return false;
+// 	}
+// }
+
+
+
+void ShaderMaterial::set_shader_buffer(const StringName &buf_name, const TypedDictionary<StringName, Variant> &buf_values) {
 	RID material_rid = _get_material();
-	RS::get_singleton()->material_set_buffer(material_rid, buf_name, buf);
+	RS::get_singleton()->material_set_buffer(material_rid, buf_name, buf_values);
+}
+
+TypedDictionary<StringName, Variant> ShaderMaterial::get_shader_buffer(const StringName &buf_name) const {
+	return Dictionary();
+}
+
+
+void ShaderMaterial::set_shader_buffer_raw(const StringName &buf_name, const PackedByteArray &buf) {
+	RID material_rid = _get_material();
+	RS::get_singleton()->material_set_buffer_raw(material_rid, buf_name, buf);
+}
+
+PackedByteArray ShaderMaterial::get_shader_buffer_raw(const StringName &buf_name) const {
+	return PackedByteArray();
+}
+
+void ShaderMaterial::set_shader_buffer_parameter(const StringName &buf_name, const StringName &p_field, const Variant &p_value) {
+}
+
+Variant ShaderMaterial::get_shader_buffer_parameter(const StringName &buf_name, const StringName &p_field) {
+	return Variant();
 }
 
 void ShaderMaterial::_shader_changed() {
@@ -528,9 +569,11 @@ void ShaderMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shader_parameter", "param", "value"), &ShaderMaterial::set_shader_parameter);
 	ClassDB::bind_method(D_METHOD("get_shader_parameter", "param"), &ShaderMaterial::get_shader_parameter);
 	ClassDB::bind_method(D_METHOD("set_shader_buffer", "buffer", "data"), &ShaderMaterial::set_shader_buffer);
-	// ClassDB::bind_method(D_METHOD("get_shader_buffer", "buffer"), &ShaderMaterial::get_shader_buffer);
-	// ClassDB::bind_method(D_METHOD("set_shader_buffer_parameter", "buffer", "param", "value"), &ShaderMaterial::set_shader_buffer_parameter);
-	// ClassDB::bind_method(D_METHOD("get_shader_buffer_parameter", "buffer", "param"), &ShaderMaterial::get_shader_buffer_parameter);
+	ClassDB::bind_method(D_METHOD("get_shader_buffer", "buffer"), &ShaderMaterial::get_shader_buffer);
+	ClassDB::bind_method(D_METHOD("set_shader_buffer_raw", "buffer", "raw_data"), &ShaderMaterial::set_shader_buffer_raw);
+	ClassDB::bind_method(D_METHOD("get_shader_buffer_raw", "buffer"), &ShaderMaterial::get_shader_buffer_raw);
+	ClassDB::bind_method(D_METHOD("set_shader_buffer_parameter", "buffer", "param", "value"), &ShaderMaterial::set_shader_buffer_parameter);
+	ClassDB::bind_method(D_METHOD("get_shader_buffer_parameter", "buffer", "param"), &ShaderMaterial::get_shader_buffer_parameter);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader"), "set_shader", "get_shader");
 }

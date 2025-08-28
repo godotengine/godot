@@ -743,8 +743,8 @@ public:
 			};
 
 			enum BufferFormat {
-				BUFFORMAT_PACKED,
-				BUFFORMAT_SHARED,
+				BUFFORMAT_PACKED, // unsupported apparently
+				BUFFORMAT_SHARED, // ^
 				BUFFORMAT_STD140,
 				BUFFORMAT_STD430,
 			};
@@ -1325,4 +1325,33 @@ public:
 
 	ShaderLanguage();
 	~ShaderLanguage();
+
+	static Variant shader_datatype_to_variant(ShaderLanguage::DataType type) {
+		switch (type) {
+			case TYPE_BOOL:
+				return Variant(false);
+			case TYPE_INT:
+			case TYPE_UINT:
+				return Variant(0);
+			case TYPE_FLOAT:
+				return Variant(0.0f);
+			case TYPE_VEC2:
+				return Variant(Vector2());
+			case TYPE_VEC3:
+				return Variant(Vector3());
+			case TYPE_VEC4:
+				return Variant(Vector4());
+			case TYPE_UVEC2:
+			case TYPE_IVEC2:
+				return Variant(Vector2i());
+			case TYPE_UVEC3:
+			case TYPE_IVEC3:
+				return Variant(Vector2i());
+			case TYPE_UVEC4:
+			case TYPE_IVEC4:
+				return Variant(Vector2i());
+			default:
+				return Variant();
+		}
+	}
 };

@@ -272,6 +272,8 @@ private:
 
 	static void _material_uniform_set_erased(void *p_material);
 
+	mutable HashMap<StringName, Pair<TypedDictionary<StringName, Variant>, StringName>> buffer_cache;
+
 public:
 	static MaterialStorage *get_singleton();
 
@@ -454,8 +456,10 @@ public:
 	virtual void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) override;
 	virtual Variant material_get_param(RID p_material, const StringName &p_param) const override;
 
-	virtual void material_set_buffer(RID p_material, const StringName &p_buffer, const PackedByteArray &p_values) override;
-	virtual PackedByteArray material_get_buffer(RID p_material, const StringName &p_buffer) const override;
+	virtual void material_set_buffer(RID p_material, const StringName &p_buffer, const TypedDictionary<StringName, Variant> &p_values) override;
+	virtual TypedDictionary<StringName, Variant> material_get_buffer(RID p_material, const StringName &p_buffer) const override;
+	virtual void material_set_buffer_raw(RID p_material, const StringName &p_buffer, const PackedByteArray &p_values) override;
+	virtual PackedByteArray material_get_buffer_raw(RID p_material, const StringName &p_buffer) const override;
 	virtual void material_set_buffer_field(RID p_material, const StringName &p_buffer, const StringName &p_field, const Variant &p_value) override;
 	virtual Variant material_get_buffer_field(RID p_material, const StringName &p_buffer, const StringName &p_field) const override;
 
@@ -484,6 +488,34 @@ public:
 			return nullptr;
 		} else {
 			return material->data;
+		}
+	}
+
+	static void create_buffer_cache(TypedDictionary<StringName, Variant> &buf_dict, TypedDictionary<StringName, Dictionary> structs, const Vector<ShaderLanguage::MemberNode> &members) {
+		for (const ShaderLanguage::MemberNode &member : members) {
+			if (member.datatype == ShaderLanguage::TYPE_STRUCT) {
+				if (member.array_size != 0) {
+					TypedArray<Dictionary> out = Array();
+					out.resize(member.array_size);
+					out.fill(structs[member.struct_name].duplicate());
+					buf_dict[member.name] = out;
+				} else {
+					buf_dict[member.name] = structs[member.struct_name].duplicate();
+				}
+			} else {
+				if (member.array_size != 0 ) {
+					Array out = Array();
+					out.set_typed(ShaderLanguage::shader_datatype_to_variant(member.datatype).get_type(), "", Variant());
+					if (member.array_size > 0) {
+						out.resize(member.array_size);
+					} else {
+						out.resize(0);
+					}
+					buf_dict[member.name] = out;
+				} else {
+					buf_dict[member.name] = ShaderLanguage::shader_datatype_to_variant(member.datatype);
+				}
+			}
 		}
 	}
 };
