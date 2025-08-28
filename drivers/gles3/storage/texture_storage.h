@@ -523,6 +523,7 @@ public:
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override;
+	virtual void texture_update_partial(RID p_texture, const Ref<Image> &p_image, Rect2i p_src_rect, Vector2i p_dst_pos, int p_dst_depth = 0, int p_dst_mipmap = 0, int p_dst_layer = 0) override;
 	virtual void texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) override;
 

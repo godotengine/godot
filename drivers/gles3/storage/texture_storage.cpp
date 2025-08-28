@@ -1010,6 +1010,94 @@ void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image,
 #endif
 }
 
+void TextureStorage::texture_update_partial(RID p_texture, const Ref<Image> &p_image, Rect2i p_src_rect, Vector2i p_dst_pos, int p_dst_depth, int p_dst_mipmap, int p_dst_layer) {
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	int src_x = p_src_rect.position.x;
+	int src_y = p_src_rect.position.y;
+	int src_w = p_src_rect.size.width;
+	int src_h = p_src_rect.size.height;
+	int dst_x = p_dst_pos.x;
+	int dst_y = p_dst_pos.y;
+
+	ERR_FAIL_NULL(texture);
+	ERR_FAIL_COND(p_image.is_null());
+	ERR_FAIL_COND(!texture->active);
+	ERR_FAIL_COND(texture->render_target);
+	ERR_FAIL_COND(texture->format != p_image->get_format());
+	ERR_FAIL_COND(src_w <= 0 || src_h <= 0);
+	ERR_FAIL_COND(src_x < 0 || src_y < 0 || src_x + src_w > p_image->get_width() || src_y + src_h > p_image->get_height());
+	ERR_FAIL_INDEX(p_dst_layer, texture->layers);
+	ERR_FAIL_COND(p_dst_mipmap < 0 || p_dst_mipmap >= texture->mipmaps);
+
+	int width = MAX(1, texture->width >> p_dst_mipmap);
+	int height = MAX(1, texture->height >> p_dst_mipmap);
+	int depth = MAX(1, texture->depth >> p_dst_mipmap);
+	ERR_FAIL_COND(p_dst_pos.x < 0 || p_dst_pos.x + src_w > width);
+	ERR_FAIL_COND(p_dst_pos.y < 0 || p_dst_pos.y + src_h > height);
+	ERR_FAIL_COND(p_dst_depth < 0 || p_dst_depth + 1 > depth);
+
+	GLenum type;
+	GLenum format;
+	GLenum internal_format;
+	bool compressed;
+
+	Ref<Image> sub_img = p_image;
+	if (src_x > 0 || src_y > 0 || src_w != p_image->get_width() || src_h != p_image->get_height()) {
+		sub_img = p_image->get_region(p_src_rect);
+	}
+
+	Image::Format real_format;
+	Ref<Image> gl_img = _get_gl_image_and_format(sub_img, sub_img->get_format(), real_format, format, internal_format, type, compressed, false);
+
+	GLenum blit_target = GL_TEXTURE_2D;
+
+	switch (texture->type) {
+		case Texture::TYPE_2D: {
+			blit_target = GL_TEXTURE_2D;
+		} break;
+		case Texture::TYPE_LAYERED: {
+			blit_target = GL_TEXTURE_2D_ARRAY;
+		} break;
+		case Texture::TYPE_3D: {
+			blit_target = GL_TEXTURE_3D;
+		} break;
+	}
+
+	Vector<uint8_t> read = gl_img->get_data();
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(texture->target, texture->tex_id);
+
+	int64_t src_ofs = 0;
+	int64_t src_data_size = gl_img->get_data().size();
+	if (gl_img->has_mipmaps()) {
+		// Only use the data of the first mipmap level.
+		sub_img->get_mipmap_offset_and_size(0, src_ofs, src_data_size);
+	}
+
+	if (texture->type == Texture::TYPE_2D) {
+		if (texture->compressed) {
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+			glCompressedTexSubImage2D(blit_target, p_dst_mipmap, dst_x, dst_y, src_w, src_h, internal_format, src_data_size, &read[src_ofs]);
+
+		} else {
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+			// `format` has to match the internal_format used when the texture was created
+			glTexSubImage2D(blit_target, p_dst_mipmap, dst_x, dst_y, src_w, src_h, format, type, &read[src_ofs]);
+		}
+	} else {
+		int zoffset = texture->type == Texture::TYPE_LAYERED ? p_dst_layer : p_dst_depth;
+		if (texture->compressed) {
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+			glCompressedTexSubImage3D(blit_target, p_dst_mipmap, dst_x, dst_y, zoffset, src_w, src_h, 1, internal_format, src_data_size, &read[src_ofs]);
+		} else {
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+			// `format` has to match the internal_format used when the texture was created
+			glTexSubImage3D(blit_target, p_dst_mipmap, dst_x, dst_y, zoffset, src_w, src_h, 1, format, type, &read[src_ofs]);
+		}
+	}
+}
+
 void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) {
 	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL(tex);
