@@ -68,7 +68,7 @@ private:
 	int current_svg_scale = 1; // Current SVG animation scale
 	String current_svg_path; // Name of the current SVG animation (image)
 	String current_svg_anim_key; // Name of the current SVG animation
-	
+	String current_anim_name; // Name of the current animation
 	
 	void update_anim_scale();
 	Vector2 _get_actual_render_scale();
@@ -210,6 +210,7 @@ public:
 
 	void set_render_scale(GdVec2 scale);
 	GdVec2 get_render_scale();
+	GdString get_current_anim_name();
 };
 
 template <typename T>

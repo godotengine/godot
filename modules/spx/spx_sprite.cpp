@@ -389,6 +389,7 @@ GdColor SpxSprite::get_material_params_color(GdString effect) {
 
 void SpxSprite::set_texture_altas_direct(GdString path, GdRect2 rect2, GdBool direct) {
 	auto path_str = SpxStr(path);
+	current_anim_name = "";
 	is_svg_mode = false;// svg don't support atlas
 	Ref<Texture2D> texture = resMgr->load_texture(path_str, direct);
 
@@ -402,6 +403,7 @@ void SpxSprite::set_texture_altas_direct(GdString path, GdRect2 rect2, GdBool di
 
 void SpxSprite::set_texture_direct(GdString path, GdBool direct) {
 	auto path_str = SpxStr(path);
+	current_anim_name = "";
 
 	Ref<Texture2D> texture = nullptr;
 	is_svg_mode = svgMgr->is_svg_file(path_str);
@@ -445,6 +447,9 @@ GdString SpxSprite::get_texture() {
 	return SpxReturnStr(tex->get_name());
 }
 
+GdString SpxSprite::get_current_anim_name() {
+	return SpxReturnStr(current_anim_name);
+}
 
 void SpxSprite::play_anim(GdString p_name, GdFloat p_speed, GdBool isLoop, GdBool p_from_end) {
 	String anim_name = SpxStr(p_name);
@@ -452,6 +457,7 @@ void SpxSprite::play_anim(GdString p_name, GdFloat p_speed, GdBool isLoop, GdBoo
 	String final_anim_key;
 	is_svg_mode = false;
 	is_single_image_mode = false;
+	current_anim_name = anim_name;
 
 	if (resMgr->is_dynamic_anim_mode()) {
 		String sprite_type = get_spx_type_name();

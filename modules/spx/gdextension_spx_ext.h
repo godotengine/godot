@@ -355,6 +355,7 @@ typedef void (*GDExtensionSpxSpriteSetAnimFlipH)(GdObj obj, GdBool p_flip);
 typedef void (*GDExtensionSpxSpriteIsAnimFlippedH)(GdObj obj, GdBool* ret_value);
 typedef void (*GDExtensionSpxSpriteSetAnimFlipV)(GdObj obj, GdBool p_flip);
 typedef void (*GDExtensionSpxSpriteIsAnimFlippedV)(GdObj obj, GdBool* ret_value);
+typedef void (*GDExtensionSpxSpriteGetCurrentAnimName)(GdObj obj, GdString* ret_value);
 typedef void (*GDExtensionSpxSpriteSetVelocity)(GdObj obj, GdVec2 velocity);
 typedef void (*GDExtensionSpxSpriteGetVelocity)(GdObj obj, GdVec2* ret_value);
 typedef void (*GDExtensionSpxSpriteIsOnFloor)(GdObj obj, GdBool* ret_value);

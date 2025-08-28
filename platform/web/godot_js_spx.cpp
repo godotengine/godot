@@ -667,6 +667,10 @@ void gdspx_sprite_is_anim_flipped_v(GdObj* obj,GdBool* ret_val) {
 	*ret_val = spriteMgr->is_anim_flipped_v(*obj);
 }
 EMSCRIPTEN_KEEPALIVE
+void gdspx_sprite_get_current_anim_name(GdObj* obj,GdString* ret_val) {
+	*ret_val = spriteMgr->get_current_anim_name(*obj);
+}
+EMSCRIPTEN_KEEPALIVE
 void gdspx_sprite_set_velocity(GdObj* obj,GdVec2* velocity) {
 	 spriteMgr->set_velocity(*obj, *velocity);
 }
