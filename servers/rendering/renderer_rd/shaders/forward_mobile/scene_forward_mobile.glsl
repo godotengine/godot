@@ -1747,40 +1747,42 @@ void main() {
 			sh_light += lm_light_l1p1 * n.x * lm_light_l0 * exposure_normalization * half(4.0);
 			ambient_light += sh_light;
 
-			hvec3 l1 = hvec3(
-					dot(lm_light_l1p1, hvec3(0.2126, 0.7152, 0.0722)),
-					dot(lm_light_l1n1, hvec3(0.2126, 0.7152, 0.0722)),
-					dot(lm_light_l1_0, hvec3(0.2126, 0.7152, 0.0722)));
+			if (lightmaps.data[ofs].specular_strength > 0.0) {
+				// Fake specular light to create some direct light specular lobes for directional lightmaps.
+				// https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/gdc2018-precomputedgiobalilluminationinfrostbite.pdf (slides 66-71)
+				hvec3 l1_r = hvec3(lm_light_l1p1.r, lm_light_l1n1.r, lm_light_l1_0.r);
+				hvec3 l1_g = hvec3(lm_light_l1p1.g, lm_light_l1n1.g, lm_light_l1_0.g);
+				hvec3 l1_b = hvec3(lm_light_l1p1.b, lm_light_l1n1.b, lm_light_l1_0.b);
 
-			float lightmap_direction_length = length(l1);
-			vec3 lightmap_direction = normalize(l1) / lightmap_direction_length;
-			hvec3 L_view = hvec3(mat3(scene_data.view_matrix) * lightmap_direction);
+				hvec3 l1 = (l1_r + l1_g + l1_b) / half(3.0);
+				hvec3 lightmap_direction = normalize(l1);
 
-			half adjusted_roughness = half(clamp(1.0 - ((1.0 - roughness) * sqrt(lightmap_direction_length)), 0.05, 1.0));
+				hvec3 L_view = hvec3(mat3(scene_data.view_matrix) * lightmap_direction);
 
-			hvec3 f0 = F0(metallic, specular, albedo);
+				hvec3 f0 = F0(metallic, specular, albedo);
 
-			// Discard diffuse light from this fake light, as we're only interested in its specular light output.
-			hvec3 diffuse_light_discarded = diffuse_light;
+				// Discard diffuse light from this fake light, as we're only interested in its specular light output.
+				hvec3 diffuse_light_discarded = diffuse_light;
 
-			float specular_strength = length(sh_light) * lightmap_direction_length * 40;
+				float specular_strength = length(l1) * lightmaps.data[ofs].specular_strength * 10.0;
 
-			light_compute(normal, L_view, view, saturateHalf(0.0), hvec3(sh_light), true, half(1.0), f0, adjusted_roughness, metallic, half(specular_strength), albedo, alpha,
-					screen_uv, hvec3(1.0),
+				light_compute(normal, L_view, view, saturateHalf(0.0), hvec3(sh_light), true, half(1.0), f0, roughness, metallic, half(specular_strength), albedo, alpha,
+						screen_uv, hvec3(1.0),
 #ifdef LIGHT_BACKLIGHT_USED
-					backlight,
+						backlight,
 #endif
 #ifdef LIGHT_RIM_USED
-					rim, rim_tint,
+						rim, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-					clearcoat, clearcoat_roughness, geo_normal,
+						clearcoat, clearcoat_roughness, geo_normal,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
-					binormal, tangent, anisotropy,
+						binormal, tangent, anisotropy,
 #endif
-					diffuse_light_discarded,
-					direct_specular_light);
+						diffuse_light_discarded,
+						direct_specular_light);
+			}
 
 		} else {
 			if (sc_use_lightmap_bicubic_filter()) {

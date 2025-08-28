@@ -138,6 +138,9 @@ public:
 	void clear_shadowmask_textures();
 	bool has_shadowmask_textures();
 
+	float get_specular_strength() const;
+	void set_specular_strength(float p_strength);
+
 	virtual RID get_rid() const override;
 	LightmapGIData();
 	~LightmapGIData();
