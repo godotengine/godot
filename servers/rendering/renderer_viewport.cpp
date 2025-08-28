@@ -192,6 +192,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				// Fall back to bilinear scaling.
 				WARN_PRINT_ONCE("FSR 3D resolution scaling is not designed for downsampling. Falling back to bilinear 3D resolution scaling.");
 				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
+				scaling_type = RS::scaling_3d_mode_type(scaling_3d_mode);
 			}
 
 			if (scaling_3d_is_not_bilinear && !upscaler_available) {
@@ -199,6 +200,13 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				// Fall back to bilinear scaling.
 				WARN_PRINT_ONCE("FSR 3D resolution scaling is not available. Falling back to bilinear 3D resolution scaling.");
 				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
+				scaling_type = RS::scaling_3d_mode_type(scaling_3d_mode);
+			}
+
+			if (scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2 && (MIN(p_viewport->size.width * scaling_3d_scale, p_viewport->size.height * scaling_3d_scale) < 64)) {
+				WARN_PRINT_ONCE("FSR2 is not compatible with viewport dimensions below 64px. Falling back to bilinear 3D resolution scaling.");
+				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
+				scaling_type = RS::scaling_3d_mode_type(scaling_3d_mode);
 			}
 
 			if (use_taa && (scaling_type == RS::VIEWPORT_SCALING_3D_TYPE_TEMPORAL)) {
@@ -208,8 +216,8 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				use_taa = false;
 			}
 
-			int target_width;
-			int target_height;
+			int target_width = p_viewport->size.width;
+			int target_height = p_viewport->size.height;
 			int render_width;
 			int render_height;
 
@@ -217,23 +225,20 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				case RS::VIEWPORT_SCALING_3D_MODE_BILINEAR:
 					// Clamp 3D rendering resolution to reasonable values supported on most hardware.
 					// This prevents freezing the engine or outright crashing on lower-end GPUs.
-					target_width = p_viewport->size.width;
-					target_height = p_viewport->size.height;
 					render_width = CLAMP(target_width * scaling_3d_scale, 1, 16384);
 					render_height = CLAMP(target_height * scaling_3d_scale, 1, 16384);
 					break;
 				case RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL:
 				case RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL:
 				case RS::VIEWPORT_SCALING_3D_MODE_FSR:
+					render_width = CLAMP(target_width * scaling_3d_scale, 1.0, 16384.0);
+					render_height = CLAMP(target_height * scaling_3d_scale, 1.0, 16384.0);
+					break;
 				case RS::VIEWPORT_SCALING_3D_MODE_FSR2:
-					target_width = p_viewport->size.width;
-					target_height = p_viewport->size.height;
-					render_width = MAX(target_width * scaling_3d_scale, 1.0); // target_width / (target_width * scaling)
-					render_height = MAX(target_height * scaling_3d_scale, 1.0);
+					render_width = CLAMP(target_width * scaling_3d_scale, 64.0, 16384.0);
+					render_height = CLAMP(target_height * scaling_3d_scale, 64.0, 16384.0);
 					break;
 				case RS::VIEWPORT_SCALING_3D_MODE_OFF:
-					target_width = p_viewport->size.width;
-					target_height = p_viewport->size.height;
 					render_width = target_width;
 					render_height = target_height;
 					break;
@@ -242,8 +247,6 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 					WARN_PRINT_ONCE(vformat("Unknown scaling mode: %d. Disabling 3D resolution scaling.", scaling_3d_mode));
 					scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
 					scaling_3d_scale = 1.0;
-					target_width = p_viewport->size.width;
-					target_height = p_viewport->size.height;
 					render_width = target_width;
 					render_height = target_height;
 					break;
