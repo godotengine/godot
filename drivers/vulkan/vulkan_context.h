@@ -40,11 +40,7 @@
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_device.h"
 
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include "drivers/vulkan/godot_vulkan.h"
 
 #include "vulkan_hooks.h"
 
