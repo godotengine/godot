@@ -1262,6 +1262,11 @@ void OS_MacOS_Embedded::run() {
 			@autoreleasepool {
 				@try {
 					ds->process_events();
+#ifdef SDL_ENABLED
+					if (joypad_sdl) {
+						joypad_sdl->process_events();
+					}
+#endif
 
 					if (Main::iteration()) {
 						break;
