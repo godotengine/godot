@@ -72,10 +72,6 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		return;
 	}
 
-	if (p_path.is_empty()) {
-		p_take_over = false; // Can't take over an empty path
-	}
-
 	{
 		MutexLock lock(ResourceCache::lock);
 
@@ -83,22 +79,21 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 			ResourceCache::resources.erase(path_cache);
 		}
 
-		path_cache = "";
-
-		Ref<Resource> existing = ResourceCache::get_ref(p_path);
-
-		if (existing.is_valid()) {
-			if (p_take_over) {
-				existing->path_cache = String();
-				ResourceCache::resources.erase(p_path);
-			} else {
-				ERR_FAIL_MSG(vformat("Another resource is loaded from path '%s' (possible cyclic resource inclusion).", p_path));
-			}
-		}
-
 		path_cache = p_path;
 
-		if (!path_cache.is_empty()) {
+		if (!p_path.is_empty()) {
+			Ref<Resource> existing = ResourceCache::get_ref(p_path);
+
+			if (existing.is_valid()) {
+				if (p_take_over) {
+					existing->path_cache = String();
+					ResourceCache::resources.erase(p_path);
+				} else {
+					path_cache = String();
+					ERR_FAIL_MSG(vformat("Another resource is loaded from path '%s' (possible cyclic resource inclusion).", p_path));
+				}
+			}
+
 			ResourceCache::resources[path_cache] = this;
 		}
 	}
