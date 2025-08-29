@@ -635,7 +635,7 @@ void main() {
 					vec3 area_direction = area_lights.data[light_index].direction;
 					float EPSILON = 1e-4f;
 
-					if (area_lights.data[light_index].volumetric_fog_energy > 0.001 && dot(area_width, area_width) > EPSILON || dot(area_height, area_height) > EPSILON) {
+					if (area_lights.data[light_index].volumetric_fog_energy > 0.001 && dot(area_width, area_width) > EPSILON && dot(area_height, area_height) > EPSILON) {
 						float a_len = length(area_width);
 						float b_len = length(area_height);
 						vec3 area_width_norm = normalize(area_width);
