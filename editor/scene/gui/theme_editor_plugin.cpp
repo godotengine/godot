@@ -1334,11 +1334,7 @@ void ThemeItemEditorDialog::_edited_type_edited() {
 	TreeItem *edited_item = edit_type_list->get_selected();
 	const String old_type_name = edited_item->get_metadata(0);
 
-	String new_type_name = edited_item->get_text(0).strip_edges();
-	if (!new_type_name.is_empty()) { // The type name can be empty, unlike the item name.
-		new_type_name = new_type_name.validate_ascii_identifier();
-	}
-
+	const String &new_type_name = Theme::validate_type_name(edited_item->get_text(0));
 	if (old_type_name == new_type_name) {
 		edited_item->set_text(0, old_type_name);
 		return;
@@ -1585,10 +1581,7 @@ void ThemeItemEditorDialog::_item_tree_button_pressed(Object *p_item, int p_colu
 }
 
 void ThemeItemEditorDialog::_add_theme_type() {
-	String new_type_name = edit_add_type_value->get_text().strip_edges();
-	if (!new_type_name.is_empty()) { // The type name can be empty, unlike the item name.
-		new_type_name = new_type_name.validate_ascii_identifier();
-	}
+	const String &new_type_name = Theme::validate_type_name(edit_add_type_value->get_text());
 	edit_add_type_value->clear();
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
@@ -2254,7 +2247,7 @@ void ThemeTypeDialog::_add_type_options_cbk(int p_index) {
 }
 
 void ThemeTypeDialog::_add_type_dialog_entered(const String &p_value) {
-	_add_type_selected(p_value.strip_edges());
+	_add_type_selected(Theme::validate_type_name(p_value));
 }
 
 void ThemeTypeDialog::_add_type_dialog_activated(int p_index) {
@@ -2890,11 +2883,7 @@ void ThemeTypeEditor::_rename_type_button_cbk() {
 }
 
 void ThemeTypeEditor::_theme_type_rename_dialog_confirmed() {
-	String new_type_name = theme_type_rename_line_edit->get_text().strip_edges();
-	if (!new_type_name.is_empty()) { // The type name can be empty, unlike the item name.
-		new_type_name = new_type_name.validate_ascii_identifier();
-	}
-
+	const String &new_type_name = Theme::validate_type_name(theme_type_rename_line_edit->get_text());
 	if (edited_type == new_type_name) {
 		return;
 	}
