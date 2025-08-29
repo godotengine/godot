@@ -2071,27 +2071,22 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	play_bw_from = memnew(Button);
 	play_bw_from->set_theme_type_variation(SceneStringName(FlatButton));
-	play_bw_from->set_tooltip_text(TTR("Play selected animation backwards from current pos. (A)"));
 	playback_container->add_child(play_bw_from);
 
 	play_bw = memnew(Button);
 	play_bw->set_theme_type_variation(SceneStringName(FlatButton));
-	play_bw->set_tooltip_text(TTR("Play selected animation backwards from end. (Shift+A)"));
 	playback_container->add_child(play_bw);
 
 	stop = memnew(Button);
 	stop->set_theme_type_variation(SceneStringName(FlatButton));
-	stop->set_tooltip_text(TTR("Pause/stop animation playback. (S)"));
 	playback_container->add_child(stop);
 
 	play = memnew(Button);
 	play->set_theme_type_variation(SceneStringName(FlatButton));
-	play->set_tooltip_text(TTR("Play selected animation from start. (Shift+D)"));
 	playback_container->add_child(play);
 
 	play_from = memnew(Button);
 	play_from->set_theme_type_variation(SceneStringName(FlatButton));
-	play_from->set_tooltip_text(TTR("Play selected animation from current pos. (D)"));
 	playback_container->add_child(play_from);
 
 	hfc->add_child(memnew(VSeparator));
@@ -2239,6 +2234,11 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	move_up->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_up_pressed));
 	move_down->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_down_pressed));
 
+	play_bw_from->set_shortcut(ED_SHORTCUT("sprite_frames/play_animation_backwards", TTRC("Play selected animation backwards from current pos."), Key::A));
+	play_bw->set_shortcut(ED_SHORTCUT("sprite_frames/play_animation_from_end", TTRC("Play selected animation backwards from end."), KeyModifierMask::SHIFT + Key::A));
+	stop->set_shortcut(ED_SHORTCUT("sprite_frames/stop_animation", TTRC("Pause/stop animation playback."), Key::S));
+	play->set_shortcut(ED_SHORTCUT("sprite_frames/play_animation_from_start", TTRC("Play selected animation from start."), KeyModifierMask::SHIFT + Key::D));
+	play_from->set_shortcut(ED_SHORTCUT("sprite_frames/play_animation", TTRC("Play selected animation from current pos."), Key::D));
 	load->set_shortcut_context(frame_list);
 	load->set_shortcut(ED_SHORTCUT("sprite_frames/load_from_file", TTRC("Add frame from file"), KeyModifierMask::CMD_OR_CTRL | Key::O));
 	load_sheet->set_shortcut_context(frame_list);
