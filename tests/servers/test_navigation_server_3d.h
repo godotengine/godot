@@ -75,6 +75,7 @@ TEST_SUITE("[Navigation3D]") {
 		CHECK(agent.is_valid());
 
 		SUBCASE("'ProcessInfo' should not report dangling agent") {
+			navigation_server->process(0.0); // Force stats update.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_AGENT_COUNT), 0);
 		}
 
@@ -93,10 +94,12 @@ TEST_SUITE("[Navigation3D]") {
 			navigation_server->map_set_active(map, true);
 			navigation_server->agent_set_map(agent, map);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
+			navigation_server->process(0.0); // Force stats update.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_AGENT_COUNT), 1);
 			navigation_server->agent_set_map(agent, RID());
 			navigation_server->free(map);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
+			navigation_server->process(0.0); // Force stats update.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_AGENT_COUNT), 0);
 		}
 
@@ -137,6 +140,7 @@ TEST_SUITE("[Navigation3D]") {
 		CHECK_EQ(navigation_server->get_maps().size(), 1);
 
 		SUBCASE("'ProcessInfo' should not report inactive map") {
+			navigation_server->process(0.0); // Force stats update.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_ACTIVE_MAPS), 0);
 		}
 
@@ -160,9 +164,11 @@ TEST_SUITE("[Navigation3D]") {
 			navigation_server->map_set_active(map, true);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK(navigation_server->map_is_active(map));
+			navigation_server->process(0.0); // Force stats update.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_ACTIVE_MAPS), 1);
 			navigation_server->map_set_active(map, false);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
+			navigation_server->process(0.0); // Force stats update.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_ACTIVE_MAPS), 0);
 		}
 
@@ -251,6 +257,7 @@ TEST_SUITE("[Navigation3D]") {
 		CHECK(link.is_valid());
 
 		SUBCASE("'ProcessInfo' should not report dangling link") {
+			navigation_server->process(0.0); // Force stats update.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_LINK_COUNT), 0);
 		}
 
@@ -280,10 +287,12 @@ TEST_SUITE("[Navigation3D]") {
 			navigation_server->map_set_active(map, true);
 			navigation_server->link_set_map(link, map);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
+			navigation_server->process(0.0); // Force stats update.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_LINK_COUNT), 1);
 			navigation_server->link_set_map(link, RID());
 			navigation_server->free(map);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
+			navigation_server->process(0.0); // Force stats update.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_LINK_COUNT), 0);
 		}
 
@@ -308,6 +317,7 @@ TEST_SUITE("[Navigation3D]") {
 		CHECK(region.is_valid());
 
 		SUBCASE("'ProcessInfo' should not report dangling region") {
+			navigation_server->process(0.0); // Force stats update.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_REGION_COUNT), 0);
 		}
 
@@ -333,10 +343,12 @@ TEST_SUITE("[Navigation3D]") {
 			navigation_server->map_set_active(map, true);
 			navigation_server->region_set_map(region, map);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
+			navigation_server->process(0.0); // Force stats update.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_REGION_COUNT), 1);
 			navigation_server->region_set_map(region, RID());
 			navigation_server->free(map);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
+			navigation_server->process(0.0); // Force stats update.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_REGION_COUNT), 0);
 		}
 
