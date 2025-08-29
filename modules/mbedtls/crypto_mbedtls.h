@@ -48,6 +48,8 @@ private:
 	int locks = 0;
 	bool public_only = true;
 
+	int _parse_key(const uint8_t *p_buf, int p_size);
+
 public:
 	static CryptoKey *create();
 	static void make_default() { CryptoKey::_create = create; }
