@@ -67,8 +67,9 @@
 			The amount by which the depth of this [VisualInstance3D] will be adjusted when sorting by depth. Uses the same units as the engine (which are typically meters). Adjusting it to a higher value will make the [VisualInstance3D] reliably draw on top of other [VisualInstance3D]s that are otherwise positioned at the same spot. To ensure it always draws on top of other objects around it (not positioned at the same spot), set the value to be greater than the distance between this [VisualInstance3D] and the other nearby [VisualInstance3D]s.
 		</member>
 		<member name="sorting_use_aabb_center" type="bool" setter="set_sorting_use_aabb_center" getter="is_sorting_use_aabb_center">
-			If [code]true[/code], the object is sorted based on the [AABB] center. The object will be sorted based on the global position otherwise.
-			The [AABB] center based sorting is generally more accurate for 3D models. The position based sorting instead allows to better control the drawing order when working with [GPUParticles3D] and [CPUParticles3D].
+			If [code]true[/code], the object is sorted based on the [AABB]. The object will be sorted based on the global position otherwise.
+			The [AABB] based sorting is generally more accurate for 3D models. The position based sorting instead allows to better control the drawing order when working with [GPUParticles3D] and [CPUParticles3D].
+			[b]Note:[/b] Despite the name, [AABB]'s center is only used when camera's projection is set to [constant Camera3D.PROJECTION_PERSPECTIVE] or [constant Camera3D.PROJECTION_FRUSTUM], and its sorting method is set to [constant RenderingServer.TRANSPARENCY_SORT_DEPTH]. Otherwise [AABB]'s support is used. See [method AABB.get_support].
 		</member>
 	</members>
 </class>

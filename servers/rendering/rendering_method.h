@@ -55,7 +55,12 @@ public:
 	virtual void camera_set_camera_attributes(RID p_camera, RID p_attributes) = 0;
 	virtual void camera_set_compositor(RID p_camera, RID p_compositor) = 0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
+	virtual void camera_set_transparency_sort_mode(RID p_camera, RS::TransparencySortMode p_mode) = 0;
+	virtual void camera_set_transparency_sort_axis(RID p_camera, const Vector3 &p_axis) = 0;
 	virtual bool is_camera(RID p_camera) const = 0;
+
+	virtual void set_default_transparency_sort_mode(RS::TransparencySortMode p_mode) = 0;
+	virtual void set_default_transparency_sort_axis(const Vector3 &p_axis) = 0;
 
 	virtual RID occluder_allocate() = 0;
 	virtual void occluder_initialize(RID p_occluder) = 0;

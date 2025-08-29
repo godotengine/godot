@@ -2817,6 +2817,16 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("camera_set_camera_attributes", "camera", "effects"), &RenderingServer::camera_set_camera_attributes);
 	ClassDB::bind_method(D_METHOD("camera_set_compositor", "camera", "compositor"), &RenderingServer::camera_set_compositor);
 	ClassDB::bind_method(D_METHOD("camera_set_use_vertical_aspect", "camera", "enable"), &RenderingServer::camera_set_use_vertical_aspect);
+	ClassDB::bind_method(D_METHOD("camera_set_transparency_sort_mode", "camera", "mode"), &RenderingServer::camera_set_transparency_sort_mode);
+	ClassDB::bind_method(D_METHOD("camera_set_transparency_sort_axis", "camera", "axis"), &RenderingServer::camera_set_transparency_sort_axis);
+
+	ClassDB::bind_method(D_METHOD("set_default_transparency_sort_mode", "mode"), &RenderingServer::set_default_transparency_sort_mode);
+	ClassDB::bind_method(D_METHOD("set_default_transparency_sort_axis", "axis"), &RenderingServer::set_default_transparency_sort_axis);
+
+	BIND_ENUM_CONSTANT(TRANSPARENCY_SORT_DEFAULT);
+	BIND_ENUM_CONSTANT(TRANSPARENCY_SORT_DEPTH);
+	BIND_ENUM_CONSTANT(TRANSPARENCY_SORT_ORTHOGONAL);
+	BIND_ENUM_CONSTANT(TRANSPARENCY_SORT_CUSTOM_AXIS);
 
 	/* VIEWPORT */
 
@@ -3670,6 +3680,9 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_shape", PROPERTY_HINT_ENUM, "Box (Fast),Hexagon (Average),Circle (Slowest)"), 1);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_quality", PROPERTY_HINT_ENUM, "Very Low (Fastest),Low (Fast),Medium (Average),High (Slow)"), 1);
 	GLOBAL_DEF("rendering/camera/depth_of_field/depth_of_field_use_jitter", false);
+
+	GLOBAL_DEF(PropertyInfo(Variant::VECTOR3, "rendering/camera/transparency_sort/default_transparency_sort_axis"), Vector3(0, 0, 1));
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/camera/transparency_sort/default_transparency_sort_mode", PROPERTY_HINT_ENUM, "Depth:1,Orthogonal:2,CustomAxis:3"), 1);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/ssao/quality", PROPERTY_HINT_ENUM, "Very Low (Fast),Low (Fast),Medium (Average),High (Slow),Ultra (Custom)"), 2);
 	GLOBAL_DEF("rendering/environment/ssao/half_size", true);
