@@ -130,11 +130,12 @@ public:
 	Variant get_shader_parameter(const StringName &p_param) const;
 
 	void set_shader_buffer(const StringName &buf_name, const TypedDictionary<StringName, Variant> &buf_values);
+	void update_shader_buffer(const StringName &buf_name, const TypedDictionary<StringName, Variant> &buf_values);
 	TypedDictionary<StringName, Variant> get_shader_buffer(const StringName &buf_name) const;
 	void set_shader_buffer_raw(const StringName &buf_name, const PackedByteArray &buf);
 	PackedByteArray get_shader_buffer_raw(const StringName &buf_name) const;
-	void set_shader_buffer_parameter(const StringName &buf_name, const StringName &p_field, const Variant &p_value);
-	Variant get_shader_buffer_parameter(const StringName &buf_name, const StringName &p_field);
+	void set_shader_buffer_field(const StringName &buf_name, const StringName &p_field, const Variant &p_value);
+	Variant get_shader_buffer_field(const StringName &buf_name, const StringName &p_field);
 
 	virtual Shader::Mode get_shader_mode() const override;
 

@@ -2514,6 +2514,52 @@ void MaterialStorage::material_set_buffer(RID p_material, const StringName &p_bu
 	// }
 }
 
+void MaterialStorage::material_update_buffer(RID p_material, const StringName &p_buffer, const TypedDictionary<StringName, Variant> &p_values) {
+	// Material *material = material_owner.get_or_null(p_material);
+	// ERR_FAIL_NULL(material);
+	// if (!buffer_cache.has(p_buffer)) {
+	// 	ERR_FAIL_MSG(vformat("Buffer \"%s\" does not exist", p_buffer));
+	// }
+	// TypedDictionary<StringName, Variant> &buffer = buffer_cache[p_buffer].first;
+	// StringName buffer_format = buffer_cache[p_buffer].second;
+	// HashSet<StringName> used;
+
+	// PackedByteArray data;
+	// for (const KeyValue<Variant, Variant> &entry : buffer) {
+	// 	const StringName &e_name = entry.key;
+	// 	const Variant &e_val = entry.value;
+
+	// 	bool valid = true;
+
+	// 	if (!p_values.has(e_name)) {
+	// 		WARN_PRINT(vformat("No value provided for field \"%s\" of buffer \"%s\"", e_name, p_buffer));
+	// 		valid = false;
+			
+	// 	} else {
+	// 		if (p_values[e_name].get_type() != e_val.get_type()) {
+	// 			WARN_PRINT(vformat("Wrong value type provided for field \"%s\" of buffer \"%s\"", e_name, p_buffer));
+	// 			valid = false;
+	// 		}
+	// 	}		
+	// 	if (!valid) {
+	// 		Variant new_val = Variant(e_val);
+	// 		format_buffer_data(data, buffer_format, new_val, true);
+	// 		buffer[e_name] = new_val;
+	// 		continue;
+	// 	}
+	// 	const Variant &buf_val = p_values[e_name];
+	// 	format_buffer_data(data, buffer_format, buf_val, false);
+	// }
+
+	// material->buffers[p_buffer] = data;
+
+	// if (material->shader && material->shader->data) { //shader is valid
+	// 	_material_queue_update(material, false, false, true);
+	// } else {
+	// 	_material_queue_update(material, true, true, true);
+	// }
+}
+
 TypedDictionary<StringName, Variant> MaterialStorage::material_get_buffer(RID p_material, const StringName &p_buffer) const {
 	return Dictionary();
 }

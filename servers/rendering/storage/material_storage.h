@@ -87,6 +87,7 @@ public:
 	virtual Variant material_get_param(RID p_material, const StringName &p_param) const = 0;
 
 	virtual void material_set_buffer(RID p_material, const StringName &p_buffer, const TypedDictionary<StringName, Variant> &p_values) = 0;
+	virtual void material_update_buffer(RID p_material, const StringName &p_buffer, const TypedDictionary<StringName, Variant> &p_values) = 0;
 	virtual TypedDictionary<StringName, Variant> material_get_buffer(RID p_material, const StringName &p_buffer) const = 0;
 	virtual void material_set_buffer_raw(RID p_material, const StringName &p_buffer, const PackedByteArray &p_values) = 0;
 	virtual PackedByteArray material_get_buffer_raw(RID p_material, const StringName &p_buffer) const = 0;
@@ -170,7 +171,8 @@ public:
 
 		PackedByteArray out;
 		int data_size;
-		void *val_out = memalloc(16);
+		constexpr int max_var_size = 64;
+		void *val_out = memalloc(max_var_size);
 		// handle normal variables
 		switch (value.get_type()) {
 			case Variant::FLOAT: {
@@ -201,6 +203,21 @@ public:
 			case Variant::VECTOR4: {
 				out.resize_initialized(16);
 				*((Vector4 *)val_out) = value;
+				data_size = 16;
+			} break;
+			case Variant::VECTOR2I: {
+				out.resize_initialized(8);
+				*((Vector2i *)val_out) = value;
+				data_size = 8;
+			} break;
+			case Variant::VECTOR3I: {
+				out.resize_initialized(16);
+				*((Vector3i *)val_out) = value;
+				data_size = 16;
+			} break;
+			case Variant::VECTOR4I: {
+				out.resize_initialized(16);
+				*((Vector4i *)val_out) = value;
 				data_size = 16;
 			} break;
 			default: {

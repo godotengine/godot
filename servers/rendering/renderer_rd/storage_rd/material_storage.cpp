@@ -2437,13 +2437,15 @@ MaterialStorage::ShaderData *MaterialStorage::material_get_shader_data(RID p_mat
 	return nullptr;
 }
 
-void MaterialStorage::material_set_buffer(RID p_material, const StringName &p_buffer, const TypedDictionary<StringName, Variant> &p_values) {
+using ShaderBuffer = TypedDictionary<StringName, Variant>;
+
+void MaterialStorage::material_set_buffer(RID p_material, const StringName &p_buffer, const ShaderBuffer &p_values) {
 	Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_NULL(material);
 	if (!buffer_cache.has(p_buffer)) {
 		ERR_FAIL_MSG(vformat("Buffer \"%s\" does not exist", p_buffer));
 	}
-	TypedDictionary<StringName, Variant> &buffer = buffer_cache[p_buffer].first;
+	ShaderBuffer &buffer = buffer_cache[p_buffer].first;
 	StringName &buffer_format = buffer_cache[p_buffer].second;
 	HashSet<StringName> used;
 
@@ -2483,8 +2485,68 @@ void MaterialStorage::material_set_buffer(RID p_material, const StringName &p_bu
 	}
 }
 
-TypedDictionary<StringName, Variant> MaterialStorage::material_get_buffer(RID p_material, const StringName &p_buffer) const {
-	return TypedDictionary<StringName, Variant>();
+void MaterialStorage::material_update_buffer(RID p_material, const StringName &p_buffer, const ShaderBuffer &p_values) {
+	Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL(material);
+
+	ERR_FAIL_COND_MSG(!buffer_cache.has(p_buffer), vformat("Buffer \"%s\" does not exist", p_buffer));
+
+	ShaderBuffer &buffer = buffer_cache[p_buffer].first;
+	StringName &buffer_format = buffer_cache[p_buffer].second;
+	bool changed = false;
+
+	PackedByteArray data;
+	for (const KeyValue<Variant, Variant> &entry : buffer) {
+		const StringName &e_name = entry.key;
+		const Variant &e_val = entry.value;
+
+
+		if (!p_values.has(e_name)) {
+			format_buffer_data(data, buffer_format, e_val, true);
+			continue;
+		}
+
+		if (p_values[e_name].get_type() != e_val.get_type()) {
+			WARN_PRINT(vformat("Wrong value type provided for field \"%s\" of buffer \"%s\": expected type %s and got type %s", e_name, p_buffer, Variant::get_type_name(e_val.get_type()), Variant::get_type_name(p_values[e_name].get_type())));
+			Variant new_val = Variant(e_val);
+			format_buffer_data(data, buffer_format, new_val, true);
+			buffer[e_name] = new_val;
+			if (!changed) {
+				changed = true;
+			}
+			continue;
+		}
+		const Variant &buf_val = p_values[e_name];
+		format_buffer_data(data, buffer_format, buf_val, false);
+		buffer[e_name] = buf_val;
+		if (!changed) {
+			changed = true;
+		}
+	}
+
+	if (!changed) {
+		return;
+	}
+
+	material->buffers[p_buffer] = data;
+
+	if (material->shader && material->shader->data) { //shader is valid
+		_material_queue_update(material, false, false, true);
+	} else {
+		_material_queue_update(material, true, true, true);
+	}
+}
+
+
+ShaderBuffer MaterialStorage::material_get_buffer(RID p_material, const StringName &p_buffer) const {
+	Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL_V(material, ShaderBuffer());
+
+	if (buffer_cache.has(p_buffer)) {
+		return buffer_cache[p_buffer].first;
+	} else {
+		return ShaderBuffer();
+	}
 }
 
 void MaterialStorage::material_set_buffer_raw(RID p_material, const StringName &p_buffer, const PackedByteArray &p_values) {
@@ -2515,15 +2577,49 @@ void MaterialStorage::material_set_buffer_field(RID p_material, const StringName
 	Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_NULL(material);
 
-	// TODO: implement this
+	ERR_FAIL_COND_MSG(!buffer_cache.has(p_buffer), vformat("Buffer \"%s\" does not exist", p_buffer));
+	ShaderBuffer &buffer = buffer_cache[p_buffer].first;
+	ERR_FAIL_COND_MSG(!buffer.has(p_field), vformat("Buffer \"%s\" has no field with name \"%s\"", p_buffer, p_field));
+	ERR_FAIL_COND_MSG(buffer[p_field].get_type() != p_value.get_type(), vformat("Wrong value type provided for field \"%s\" of buffer \"%s\": expected type %s and got type %s", p_field, p_buffer, Variant::get_type_name(buffer[p_field].get_type()), Variant::get_type_name(p_value.get_type())));
+	StringName &buffer_format = buffer_cache[p_buffer].second;
+
+	PackedByteArray data;
+
+	for (const KeyValue<Variant, Variant> &entry : buffer) {
+		const StringName &e_name = entry.key;
+		const Variant &e_val = entry.value;
+
+		if (p_field != e_name) {
+			format_buffer_data(data, buffer_format, e_val, true);
+		} else {
+			format_buffer_data(data, buffer_format, p_value, false);
+			buffer[e_name] = p_value;
+		}
+	}
+
+	material->buffers[p_buffer] = data;
+
+	if (material->shader && material->shader->data) { //shader is valid
+		_material_queue_update(material, false, false, true);
+	} else {
+		_material_queue_update(material, true, true, true);
+	}
 }
 
 Variant MaterialStorage::material_get_buffer_field(RID p_material, const StringName &p_buffer, const StringName &p_field) const {
 	Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_NULL_V(material, Variant());
 
-	// TODO: implement this
-	return Variant();
+	ERR_FAIL_COND_V_MSG(!buffer_cache.has(p_buffer), Variant(), vformat("Buffer \"%s\" does not exist", p_buffer));
+
+	ShaderBuffer &buffer = buffer_cache[p_buffer].first;
+
+	if (buffer.has(p_field)) {
+		return buffer[p_field];
+	} else {
+		WARN_PRINT(vformat("Buffer \"%s\" has no field with name \"%s\"", p_buffer, p_field));
+		return Variant();
+	}
 }
 
 void MaterialStorage::material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) {

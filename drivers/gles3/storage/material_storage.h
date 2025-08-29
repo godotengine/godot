@@ -634,6 +634,7 @@ public:
 	virtual Variant material_get_param(RID p_material, const StringName &p_param) const override;
 
 	virtual void material_set_buffer(RID p_material, const StringName &p_buffer, const TypedDictionary<StringName, Variant> &p_values) override;
+	virtual void material_update_buffer(RID p_material, const StringName &p_buffer, const TypedDictionary<StringName, Variant> &p_values) override;
 	virtual TypedDictionary<StringName, Variant> material_get_buffer(RID p_material, const StringName &p_buffer) const override;
 	virtual void material_set_buffer_raw(RID p_material, const StringName &p_buffer, const Vector<uint8_t> &p_values) override;
 	virtual Vector<uint8_t> material_get_buffer_raw(RID p_material, const StringName &p_buffer) const override;

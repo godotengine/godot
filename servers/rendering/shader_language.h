@@ -1346,10 +1346,22 @@ public:
 				return Variant(Vector2i());
 			case TYPE_UVEC3:
 			case TYPE_IVEC3:
-				return Variant(Vector2i());
+				return Variant(Vector3i());
 			case TYPE_UVEC4:
 			case TYPE_IVEC4:
-				return Variant(Vector2i());
+				return Variant(Vector4i());
+			case TYPE_BVEC2:
+				return Variant(TypedArray<bool>({false, false}));
+			case TYPE_BVEC3:
+				return Variant(TypedArray<bool>({false, false, false}));
+			case TYPE_BVEC4:
+				return Variant(TypedArray<bool>({false, false, false, false}));
+			case TYPE_MAT2:
+				return Variant(Array({Vector2(), Vector2()}));
+			case TYPE_MAT3:
+				return Variant(Array({Vector3(), Vector3(), Vector3()}));
+			case TYPE_MAT4:
+				return Variant(Array({Vector4(), Vector4(), Vector4(), Vector4()}));
 			default:
 				return Variant();
 		}
