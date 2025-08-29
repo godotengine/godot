@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		The [WorkerThreadPool] singleton allocates a set of [Thread]s (called worker threads) on project startup and provides methods for offloading tasks to them. This can be used for simple multithreading without having to create [Thread]s.
+		The number of available worker threads is determined by [member ProjectSettings.threading/worker_pool/max_threads] and [member ProjectSettings.threading/worker_pool/low_priority_thread_ratio]. Given default settings ([code]low_priority_thread_ratio = 0.3[/code]) and a 16-Thread CPU, [b]WorkerThreadPool[/b] will execute up to 16 high-priority tasks [i]or[/i] up to 11 high-priority and 5 low-priority tasks simultaneously.
 		Tasks hold the [Callable] to be run by the threads. [WorkerThreadPool] can be used to create regular tasks, which will be taken by one worker thread, or group tasks, which can be distributed between multiple worker threads. Group tasks execute the [Callable] multiple times, which makes them useful for iterating over a lot of elements, such as the enemies in an arena.
 		Here's a sample on how to offload an expensive function to worker threads:
 		[codeblocks]
