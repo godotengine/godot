@@ -11,8 +11,10 @@ env:
   GODOT_CPP_BRANCH: 4.4
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
-  TSAN_OPTIONS: suppressions=${{ github.workspace }}/misc/error_suppressions/tsan.txt
-  UBSAN_OPTIONS: suppressions=${{ github.workspace }}/misc/error_suppressions/ubsan.txt
+  ASAN_OPTIONS: color=always:print_suppressions=1:suppressions=${{ github.workspace }}/misc/error_suppressions/asan.txt # :halt_on_error=1:abort_on_error=1
+  LSAN_OPTIONS: color=always:print_suppressions=1:suppressions=${{ github.workspace }}/misc/error_suppressions/lsan.txt # :halt_on_error=1:abort_on_error=1
+  TSAN_OPTIONS: color=always:print_suppressions=1:suppressions=${{ github.workspace }}/misc/error_suppressions/tsan.txt # :halt_on_error=1:abort_on_error=1
+  UBSAN_OPTIONS: color=always:print_suppressions=1:suppressions=${{ github.workspace }}/misc/error_suppressions/ubsan.txt # :halt_on_error=1:abort_on_error=1
 
 jobs:
   build-linux:
@@ -62,6 +64,7 @@ jobs:
               use_llvm=yes
               linker=lld
             bin: ./bin/godot.linuxbsd.editor.dev.x86_64.llvm.san
+            proj-test: true
             # Test our oldest supported SCons/Python versions on one arbitrary editor build.
             legacy-scons: true
 
@@ -74,6 +77,7 @@ jobs:
               use_llvm=yes
               linker=lld
             bin: ./bin/godot.linuxbsd.editor.dev.x86_64.llvm.san
+            proj-test: true
 
           - name: Template w/ Mono, release (target=template_release)
             cache-name: linux-template-mono
