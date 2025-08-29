@@ -225,6 +225,8 @@ public:
 	virtual void set_window_size(const Size2 &p_size);
 	virtual void set_window_fullscreen(bool p_enabled);
 	virtual bool is_window_fullscreen() const;
+	virtual void set_window_use_nonexclusive_fullscreen(bool p_enabled);
+	virtual bool is_window_use_nonexclusive_fullscreen() const;
 	virtual void set_window_resizable(bool p_enabled);
 	virtual bool is_window_resizable() const;
 	virtual void set_window_minimized(bool p_enabled);

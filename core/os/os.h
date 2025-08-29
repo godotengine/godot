@@ -107,6 +107,7 @@ public:
 	struct VideoMode {
 		int width, height;
 		bool fullscreen;
+		bool non_ex_fs;
 		bool resizable;
 		bool borderless_window;
 		bool maximized;
@@ -126,6 +127,7 @@ public:
 			use_vsync = p_use_vsync;
 			vsync_via_compositor = p_vsync_via_compositor;
 			layered = false;
+			non_ex_fs = false;
 		}
 	};
 
@@ -282,6 +284,8 @@ public:
 	virtual void set_window_size(const Size2 p_size) {}
 	virtual void set_window_fullscreen(bool p_enabled) {}
 	virtual bool is_window_fullscreen() const { return true; }
+	virtual void set_window_use_nonexclusive_fullscreen(bool p_enabled) {}
+	virtual bool is_window_use_nonexclusive_fullscreen() const { return false; }
 	virtual void set_window_resizable(bool p_enabled) {}
 	virtual bool is_window_resizable() const { return false; }
 	virtual void set_window_minimized(bool p_enabled) {}

@@ -151,6 +151,7 @@ HashMap<Main::CLIScope, Vector<String>> forwardable_cli_arguments;
 static OS::VideoMode video_mode;
 static int init_screen = -1;
 static bool init_fullscreen = false;
+static bool init_non_ex_fs = false;
 static bool init_maximized = false;
 static bool init_windowed = false;
 static bool init_always_on_top = false;
@@ -641,6 +642,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "-f" || I->get() == "--fullscreen") { // force fullscreen
 
 			init_fullscreen = true;
+		} else if (I->get() == "--nonexclusive-fullscreen") { // force fullscreen
+
+			init_fullscreen = true;
+			init_non_ex_fs = true;
 		} else if (I->get() == "-m" || I->get() == "--maximized") { // force maximized window
 
 			init_maximized = true;
@@ -1141,6 +1146,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (editor || project_manager) {
 		Engine::get_singleton()->set_editor_hint(true);
 		use_custom_res = false;
+		init_non_ex_fs = true;
 		input_map->load_default(); //keys for editor
 	} else {
 		input_map->load_from_globals(); //keys for game
@@ -1192,6 +1198,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		video_mode.resizable = GLOBAL_GET("display/window/size/resizable");
 		video_mode.borderless_window = GLOBAL_GET("display/window/size/borderless");
 		video_mode.fullscreen = GLOBAL_GET("display/window/size/fullscreen");
+		video_mode.non_ex_fs = GLOBAL_GET("display/window/size/use_nonexclusive_fullscreen");
 		video_mode.always_on_top = GLOBAL_GET("display/window/size/always_on_top");
 	}
 
@@ -1486,6 +1493,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	if (init_screen != -1) {
 		OS::get_singleton()->set_current_screen(init_screen);
+	}
+	if (init_non_ex_fs) {
+		OS::get_singleton()->set_window_use_nonexclusive_fullscreen(true);
 	}
 	if (init_windowed) {
 		//do none..

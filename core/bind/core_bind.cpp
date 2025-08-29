@@ -403,6 +403,14 @@ bool _OS::is_window_fullscreen() const {
 	return OS::get_singleton()->is_window_fullscreen();
 }
 
+void _OS::set_window_use_nonexclusive_fullscreen(bool p_enabled) {
+	OS::get_singleton()->set_window_use_nonexclusive_fullscreen(p_enabled);
+}
+
+bool _OS::is_window_use_nonexclusive_fullscreen() const {
+	return OS::get_singleton()->is_window_use_nonexclusive_fullscreen();
+}
+
 void _OS::set_window_resizable(bool p_enabled) {
 	OS::get_singleton()->set_window_resizable(p_enabled);
 }
@@ -1371,6 +1379,8 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_display_cutouts"), &_OS::get_display_cutouts);
 	ClassDB::bind_method(D_METHOD("set_window_fullscreen", "enabled"), &_OS::set_window_fullscreen);
 	ClassDB::bind_method(D_METHOD("is_window_fullscreen"), &_OS::is_window_fullscreen);
+	ClassDB::bind_method(D_METHOD("set_window_use_nonexclusive_fullscreen", "enabled"), &_OS::set_window_use_nonexclusive_fullscreen);
+	ClassDB::bind_method(D_METHOD("is_window_use_nonexclusive_fullscreen"), &_OS::is_window_use_nonexclusive_fullscreen);
 	ClassDB::bind_method(D_METHOD("set_window_resizable", "enabled"), &_OS::set_window_resizable);
 	ClassDB::bind_method(D_METHOD("is_window_resizable"), &_OS::is_window_resizable);
 	ClassDB::bind_method(D_METHOD("set_window_minimized", "enabled"), &_OS::set_window_minimized);
@@ -1568,6 +1578,7 @@ void _OS::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_borderless"), "set_borderless_window", "get_borderless_window");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_per_pixel_transparency_enabled"), "set_window_per_pixel_transparency_enabled", "get_window_per_pixel_transparency_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_fullscreen"), "set_window_fullscreen", "is_window_fullscreen");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_use_nonexclusive_fullscreen"), "set_window_use_nonexclusive_fullscreen", "is_window_use_nonexclusive_fullscreen");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_maximized"), "set_window_maximized", "is_window_maximized");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_minimized"), "set_window_minimized", "is_window_minimized");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_resizable"), "set_window_resizable", "is_window_resizable");

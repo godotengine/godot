@@ -539,8 +539,9 @@
 			[b]Note:[/b] This setting is ignored on iOS, Android, and HTML5.
 		</member>
 		<member name="display/window/size/fullscreen" type="bool" setter="" getter="" default="false">
-			Sets the main window to full screen when the project starts. Note that this is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless window is used to emulate fullscreen. On macOS, a new desktop is used to display the running project.
+			Sets the main window to full screen when the project starts. The display's video mode is not changed. See also [member display/window/size/use_nonexclusive_fullscreen].
 			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
+			[b]Note:[/b] On macOS, a new desktop is used to display the running project.
 			[b]Note:[/b] This setting is ignored on iOS, Android, and HTML5.
 		</member>
 		<member name="display/window/size/height" type="int" setter="" getter="" default="600">
@@ -555,6 +556,11 @@
 		</member>
 		<member name="display/window/size/test_width" type="int" setter="" getter="" default="0">
 			If greater than zero, overrides the window width when running the game. Useful for testing stretch modes.
+		</member>
+		<member name="display/window/size/use_nonexclusive_fullscreen" type="bool" setter="" getter="" default="false">
+			If [code]true[/code] and [member display/window/size/fullscreen] is set, a full screen mode with full multi-window support is used.
+			If [code]false[/code] and [member display/window/size/fullscreen] is set, a single window fullscreen mode is used, this mode has less overhead, but only one window can be open on a given screen at a time (opening a application switching will trigger a full screen transition). This mode might not work with screen recording software.
+			[b]Note:[/b] This property is only implemented on Windows.
 		</member>
 		<member name="display/window/size/width" type="int" setter="" getter="" default="1024">
 			Sets the game's main viewport width. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
