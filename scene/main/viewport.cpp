@@ -5350,17 +5350,6 @@ Viewport::Viewport() {
 
 	viewport = RenderingServer::get_singleton()->viewport_create();
 	texture_rid = RenderingServer::get_singleton()->viewport_get_texture(viewport);
-	/*{
-		const Viewport *viewport = RenderingServer::get_singleton()->viewport_owner.get_or_null(viewport);
-		ERR_FAIL_NULL_V(viewport, RID());
-
-		RenderTarget *rt = RSG::texture_storage->render_target_owner.get_or_null(p_render_target);
-		ERR_FAIL_NULL_V(rt, RID());
-
-		return rt->texture;
-
-		texture_rid = RSG::texture_storage->render_target_get_texture(viewport->render_target);
-	}*/
 
 	default_texture.instantiate();
 	default_texture->vp = this;
