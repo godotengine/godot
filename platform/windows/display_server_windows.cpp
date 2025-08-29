@@ -2783,6 +2783,78 @@ DisplayServerWindows::WindowID DisplayServerWindows::get_focused_window() const 
 	return last_focused_window;
 }
 
+static BOOL is_window_cloaked(HWND hwnd) {
+	BOOL is_cloaked = FALSE;
+	HRESULT hr = DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &is_cloaked, sizeof(is_cloaked));
+	ERR_FAIL_COND_V_MSG(!SUCCEEDED(hr), FALSE, "DwmGetWindowAttribute DWMWA_CLOAKED failed!");
+	return is_cloaked;
+}
+
+static BOOL is_rect_fully_inside(const RECT &rect1, const RECT &rect2) {
+	return rect1.left >= rect2.left &&
+			rect1.right <= rect2.right &&
+			rect1.top >= rect2.top &&
+			rect1.bottom <= rect2.bottom;
+}
+
+struct ObscureTestEnumData {
+	DWORD process_id;
+	RECT rect;
+	bool fully_occluded;
+};
+
+static BOOL CALLBACK _enum_proc_is_window_fully_occluded(HWND p_hwnd_enum, LPARAM p_lparam) {
+	ObscureTestEnumData &data = *(ObscureTestEnumData *)p_lparam;
+
+	// Get the current window's rectangle.
+	RECT other_rect;
+	GetWindowRect(p_hwnd_enum, &other_rect);
+
+	// Check if we're inside it.
+	if (is_rect_fully_inside(data.rect, other_rect)) {
+		DWORD process_id = 0u;
+		GetWindowThreadProcessId(p_hwnd_enum, &process_id);
+
+		// Ignore windows that belong to us.
+		if (data.process_id != process_id) {
+			data.fully_occluded = true;
+			return FALSE; // Stop enumeration.
+		}
+	}
+
+	return TRUE; // Continue enumerating.
+}
+
+bool DisplayServerWindows::_window_presentation_occluded(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+	WindowData &wd = windows[p_window];
+
+	if (IsIconic(wd.hWnd)) {
+		return true; // Minimized.
+	}
+
+	if (!IsWindowVisible(wd.hWnd)) {
+		return true; // Not visible (according to very old pre-Vista rules).
+	}
+
+	if (is_window_cloaked(wd.hWnd)) {
+		return true; // Not visible (according to newer Windows 7+ rules).
+	}
+
+	RECT target_rect{};
+	DWORD process_id = 0u;
+	GetWindowRect(wd.hWnd, &target_rect);
+	GetWindowThreadProcessId(wd.hWnd, &process_id);
+
+	ObscureTestEnumData data{ process_id, target_rect, false };
+
+	EnumWindows(_enum_proc_is_window_fully_occluded, (LPARAM)&data);
+
+	return data.fully_occluded;
+}
+
 bool DisplayServerWindows::window_can_draw(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
