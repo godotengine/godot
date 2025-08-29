@@ -78,7 +78,6 @@ class ShaderCreateDialog : public ConfirmationDialog {
 	bool load_enabled = false;
 	bool re_check_path = false;
 	int current_type = -1;
-	int default_type = -1;
 	int current_mode = 0;
 	int current_template = 0;
 
@@ -93,6 +92,7 @@ class ShaderCreateDialog : public ConfirmationDialog {
 	void _mode_changed(int p_mode = 0);
 	void _browse_path();
 	void _file_selected(const String &p_file);
+	void _refresh_type_icons();
 	String _validate_path(const String &p_path);
 	virtual void ok_pressed() override;
 	void _create_new();
