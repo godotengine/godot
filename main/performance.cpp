@@ -35,6 +35,7 @@
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "servers/audio_server.h"
+
 #ifndef NAVIGATION_2D_DISABLED
 #include "servers/navigation_server_2d.h"
 #endif // NAVIGATION_2D_DISABLED
@@ -46,7 +47,6 @@
 #ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_server_2d.h"
 #endif // PHYSICS_2D_DISABLED
-
 #ifndef PHYSICS_3D_DISABLED
 #include "servers/physics_server_3d.h"
 #endif // PHYSICS_3D_DISABLED
@@ -79,14 +79,16 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(RENDER_VIDEO_MEM_USED);
 	BIND_ENUM_CONSTANT(RENDER_TEXTURE_MEM_USED);
 	BIND_ENUM_CONSTANT(RENDER_BUFFER_MEM_USED);
+#ifndef PHYSICS_2D_DISABLED
 	BIND_ENUM_CONSTANT(PHYSICS_2D_ACTIVE_OBJECTS);
 	BIND_ENUM_CONSTANT(PHYSICS_2D_COLLISION_PAIRS);
 	BIND_ENUM_CONSTANT(PHYSICS_2D_ISLAND_COUNT);
-#ifndef _3D_DISABLED
+#endif // PHYSICS_2D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	BIND_ENUM_CONSTANT(PHYSICS_3D_ACTIVE_OBJECTS);
 	BIND_ENUM_CONSTANT(PHYSICS_3D_COLLISION_PAIRS);
 	BIND_ENUM_CONSTANT(PHYSICS_3D_ISLAND_COUNT);
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 	BIND_ENUM_CONSTANT(AUDIO_OUTPUT_LATENCY);
 #if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 	BIND_ENUM_CONSTANT(NAVIGATION_ACTIVE_MAPS);
@@ -143,7 +145,7 @@ int Performance::_get_node_count() const {
 
 String Performance::get_monitor_name(Monitor p_monitor) const {
 	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, String());
-	static const char *names[MONITOR_MAX] = {
+	static const char *names[] = {
 		PNAME("time/fps"),
 		PNAME("time/process"),
 		PNAME("time/physics_process"),
@@ -161,12 +163,16 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		PNAME("video/video_mem"),
 		PNAME("video/texture_mem"),
 		PNAME("video/buffer_mem"),
+#ifndef PHYSICS_2D_DISABLED
 		PNAME("physics_2d/active_objects"),
 		PNAME("physics_2d/collision_pairs"),
 		PNAME("physics_2d/islands"),
+#endif // PHYSICS_2D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 		PNAME("physics_3d/active_objects"),
 		PNAME("physics_3d/collision_pairs"),
 		PNAME("physics_3d/islands"),
+#endif // PHYSICS_3D_DISABLED
 		PNAME("audio/driver/output_latency"),
 #if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 		PNAME("navigation/active_maps"),
@@ -263,6 +269,7 @@ double Performance::get_monitor(Monitor p_monitor) const {
 			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW);
 		case PIPELINE_COMPILATIONS_SPECIALIZATION:
 			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION);
+
 #ifndef PHYSICS_2D_DISABLED
 		case PHYSICS_2D_ACTIVE_OBJECTS:
 			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_ACTIVE_OBJECTS);
@@ -270,13 +277,6 @@ double Performance::get_monitor(Monitor p_monitor) const {
 			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_COLLISION_PAIRS);
 		case PHYSICS_2D_ISLAND_COUNT:
 			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_ISLAND_COUNT);
-#else
-		case PHYSICS_2D_ACTIVE_OBJECTS:
-			return 0;
-		case PHYSICS_2D_COLLISION_PAIRS:
-			return 0;
-		case PHYSICS_2D_ISLAND_COUNT:
-			return 0;
 #endif // PHYSICS_2D_DISABLED
 #ifndef PHYSICS_3D_DISABLED
 		case PHYSICS_3D_ACTIVE_OBJECTS:
@@ -285,13 +285,6 @@ double Performance::get_monitor(Monitor p_monitor) const {
 			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_COLLISION_PAIRS);
 		case PHYSICS_3D_ISLAND_COUNT:
 			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_ISLAND_COUNT);
-#else
-		case PHYSICS_3D_ACTIVE_OBJECTS:
-			return 0;
-		case PHYSICS_3D_COLLISION_PAIRS:
-			return 0;
-		case PHYSICS_3D_ISLAND_COUNT:
-			return 0;
 #endif // PHYSICS_3D_DISABLED
 
 		case AUDIO_OUTPUT_LATENCY:
@@ -442,8 +435,7 @@ double Performance::get_monitor(Monitor p_monitor) const {
 
 Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const {
 	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, MONITOR_TYPE_QUANTITY);
-	// ugly
-	static const MonitorType types[MONITOR_MAX] = {
+	static const MonitorType types[] = {
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_TIME,
 		MONITOR_TYPE_TIME,
@@ -461,13 +453,18 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,
+#ifndef PHYSICS_2D_DISABLED
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
+#endif // PHYSICS_2D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
+#endif // PHYSICS_3D_DISABLED
 		MONITOR_TYPE_TIME,
+#if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
@@ -478,6 +475,13 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
+#endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+#ifndef NAVIGATION_2D_DISABLED
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
@@ -488,6 +492,8 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
@@ -498,14 +504,9 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-
+#endif // NAVIGATION_3D_DISABLED
 	};
-	static_assert((sizeof(types) / sizeof(MonitorType)) == MONITOR_MAX);
+	static_assert(std::size(types) == MONITOR_MAX);
 
 	return types[p_monitor];
 }
