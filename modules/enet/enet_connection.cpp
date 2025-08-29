@@ -133,7 +133,6 @@ ENetConnection::EventType ENetConnection::_parse_event(const ENetEvent &p_event,
 			// A peer disconnected.
 			if (p_event.peer->data != nullptr) {
 				Ref<ENetPacketPeer> pp = Ref<ENetPacketPeer>((ENetPacketPeer *)p_event.peer->data);
-				pp->_on_disconnect();
 				peers.erase(pp);
 				r_event.peer = pp;
 				r_event.data = p_event.data;
