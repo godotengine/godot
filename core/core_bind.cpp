@@ -1512,6 +1512,10 @@ bool Thread::is_alive() const {
 	return running.is_set();
 }
 
+bool Thread::is_main_thread() {
+	return ::Thread::is_main_thread();
+}
+
 Variant Thread::wait_to_finish() {
 	ERR_FAIL_COND_V_MSG(!is_started(), Variant(), "Thread must have been started to wait for its completion.");
 	thread.wait_to_finish();
@@ -1526,6 +1530,98 @@ void Thread::set_thread_safety_checks_enabled(bool p_enabled) {
 	set_current_thread_safe_for_nodes(!p_enabled);
 }
 
+class CallableCustomSuspend : public CallableCustom {
+	Semaphore *semaphore = nullptr;
+	Variant *return_value = nullptr;
+
+	// Never really going to execute since disconnection is automatic.
+	static bool _equal_func(const CallableCustom *p_a, const CallableCustom *p_b) {
+		const CallableCustomSuspend *A = static_cast<const CallableCustomSuspend *>(p_a);
+		const CallableCustomSuspend *B = static_cast<const CallableCustomSuspend *>(p_b);
+
+		return A->semaphore == B->semaphore;
+	}
+
+	// Never really going to execute since disconnection is automatic.
+	static bool _less_func(const CallableCustom *p_a, const CallableCustom *p_b) {
+		const CallableCustomSuspend *A = static_cast<const CallableCustomSuspend *>(p_a);
+		const CallableCustomSuspend *B = static_cast<const CallableCustomSuspend *>(p_b);
+
+		return A->semaphore < B->semaphore;
+	}
+
+public:
+	//for every type that inherits, these must always be the same for this type
+	virtual uint32_t hash() const override {
+		return size_t(semaphore);
+	}
+
+	virtual String get_as_text() const override {
+		return "SemaphoreCallable";
+	}
+
+	virtual CompareEqualFunc get_compare_equal_func() const override {
+		return _equal_func;
+	}
+
+	virtual CompareLessFunc get_compare_less_func() const override {
+		return _less_func;
+	}
+
+	virtual ObjectID get_object() const override {
+		return ObjectID();
+	}
+
+	virtual bool is_valid() const override {
+		return true;
+	}
+
+	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
+		if (p_argcount == 1) { // If passed one argument, will be returned.
+			if (return_value) {
+				*return_value = *p_arguments[0];
+			}
+		} else if (p_argcount > 1) {
+			if (return_value) {
+				Array ret_array;
+				for (int i = 0; i < p_argcount; i++) {
+					ret_array.append(*p_arguments[i]);
+				}
+				*return_value = ret_array;
+			}
+		}
+
+		r_call_error.error = Callable::CallError::CALL_OK;
+
+		// Post after the return value has been set.
+		semaphore->post();
+	}
+
+	CallableCustomSuspend(Semaphore *p_semaphore, Variant *r_return_value) {
+		semaphore = p_semaphore;
+		return_value = r_return_value;
+	}
+};
+
+Variant Thread::suspend(Signal p_resume_signal, bool p_connect_on_main_thread) {
+	ERR_FAIL_COND_V_MSG(Thread::is_main_thread(), Variant(), "Thread.suspend can't be used on the main thread.");
+
+	Semaphore semaphore;
+	Variant return_value;
+
+	Callable callable(memnew(CallableCustomSuspend(&semaphore, &return_value)));
+	if (p_connect_on_main_thread) {
+		ObjectID obj_id = p_resume_signal.get_object_id();
+		MessageQueue::get_singleton()->push_call(obj_id, SNAME("connect"), p_resume_signal.get_name(), callable, CONNECT_ONE_SHOT);
+	} else {
+		p_resume_signal.connect(callable, Object::CONNECT_ONE_SHOT);
+	}
+
+	semaphore.wait();
+
+	return return_value;
+}
+
 void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start", "callable", "priority"), &Thread::start, DEFVAL(PRIORITY_NORMAL));
 	ClassDB::bind_method(D_METHOD("get_id"), &Thread::get_id);
@@ -1534,6 +1630,8 @@ void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("wait_to_finish"), &Thread::wait_to_finish);
 
 	ClassDB::bind_static_method("Thread", D_METHOD("set_thread_safety_checks_enabled", "enabled"), &Thread::set_thread_safety_checks_enabled);
+	ClassDB::bind_static_method("Thread", D_METHOD("is_main_thread"), &Thread::is_main_thread);
+	ClassDB::bind_static_method("Thread", D_METHOD("suspend", "resume_signal", "connect_on_main_thread"), &Thread::suspend, DEFVAL(true));
 
 	BIND_ENUM_CONSTANT(PRIORITY_LOW);
 	BIND_ENUM_CONSTANT(PRIORITY_NORMAL);
