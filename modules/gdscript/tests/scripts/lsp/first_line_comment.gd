@@ -1,2 +1,0 @@
-# Some comment
-extends Node

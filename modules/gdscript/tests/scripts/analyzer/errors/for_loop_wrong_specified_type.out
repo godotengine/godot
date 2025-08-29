@@ -1,2 +1,0 @@
-GDTEST_ANALYZER_ERROR
->> ERROR at line 3: Unable to iterate on value of type "Array[Resource]" with variable of type "Node".

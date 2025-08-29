@@ -1,3 +1,0 @@
-GDTEST_OK
-~~ WARNING at line 4: (REDUNDANT_AWAIT) "await" keyword is unnecessary because the expression isn't a coroutine nor a signal.
-awaited

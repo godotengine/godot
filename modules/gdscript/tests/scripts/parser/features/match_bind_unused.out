@@ -1,3 +1,0 @@
-GDTEST_OK
-~~ WARNING at line 9: (UNUSED_VARIABLE) The local variable "value" is declared but never used in the block. If this is intended, prefix it with an underscore: "_value".
-value

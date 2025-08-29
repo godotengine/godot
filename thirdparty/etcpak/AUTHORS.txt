@@ -1,5 +1,0 @@
-Bartosz Taudul <wolf@nereid.pl>
-Daniel Jungmann <el.3d.source@gmail.com>
-Florian Penzkofer <fp@nullptr.de>
-Jae-Ho Nah <nahjaeho@gmail.com>
-Marcin Ławicki <marcin.lawicki@gmail.com>

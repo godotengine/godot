@@ -1,5 +1,0 @@
-GDTEST_OK
-get static_var
-get member_var
-set static_var 1
-set member_var 1

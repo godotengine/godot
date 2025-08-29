@@ -1,3 +1,0 @@
-@export
-func test():
-    pass

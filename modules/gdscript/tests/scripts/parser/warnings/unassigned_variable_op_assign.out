@@ -1,2 +1,0 @@
-GDTEST_OK
-~~ WARNING at line 4: (UNASSIGNED_VARIABLE_OP_ASSIGN) The variable "__" is modified with the compound-assignment operator "+=" but was not previously initialized.
