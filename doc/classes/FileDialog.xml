@@ -111,6 +111,28 @@
 				Toggles the specified customization [param flag], allowing to customize features available in this [FileDialog]. See [enum Customization] for options.
 			</description>
 		</method>
+		<method name="set_get_icon_callback" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<description>
+				Sets the callback used by the [FileDialog] nodes to get a file icon, when [constant DISPLAY_LIST] mode is used. The callback should take a single [String] argument (file path), and return a [Texture2D]. If an invalid texture is returned, [theme_item file] icon will be used instead.
+			</description>
+		</method>
+		<method name="set_get_thumbnail_callback" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+				Sets the callback used by the [FileDialog] nodes to get a file icon, when [constant DISPLAY_THUMBNAILS] mode is used. The method should take two arguments: [String] path, and [Callable] icon callback. Call the icon callback with the texture as an argument. The icon callback does not need to be called immediately, which allows to use it asynchronously. Until the callback is called with a valid texture, [theme_item file_thumbnail] icon will be used instead.
+				[codeblock]
+				func _ready():
+					FileDialog.set_get_thumbnail_callback(thumbnail_method)
+
+				func thumbnail_method(path, callback):
+					var icon = await generate_preview(path) # Some method that makes a preview.
+					callback.call(icon)
+				[/codeblock]
+			<description>
+			</description>
+		</method>
 		<method name="set_option_default">
 			<return type="void" />
 			<param index="0" name="option" type="int" />
