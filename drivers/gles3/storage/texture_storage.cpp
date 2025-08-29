@@ -2177,7 +2177,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 				width = MAX(1, width >> 1);
 				height = MAX(1, height >> 1);
 			}
-			
+
 			texture->gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 			texture->gl_set_repeat(RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
