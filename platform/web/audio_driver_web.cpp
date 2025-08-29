@@ -190,12 +190,16 @@ void AudioDriverWeb::finish() {
 }
 
 Error AudioDriverWeb::input_start() {
+	if (input_started) {
+		return ERR_ALREADY_IN_USE;
+	}
 	lock();
 	input_buffer_init(buffer_length);
 	unlock();
 	if (godot_audio_input_start()) {
 		return FAILED;
 	}
+	input_started = true;
 	return OK;
 }
 
@@ -204,6 +208,7 @@ Error AudioDriverWeb::input_stop() {
 	lock();
 	input_buffer.clear();
 	unlock();
+	input_started = false;
 	return OK;
 }
 
