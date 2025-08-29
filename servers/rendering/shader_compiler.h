@@ -53,6 +53,7 @@ public:
 		HashMap<StringName, Pair<int *, int>> stencil_mode_values;
 		int *stencil_reference = nullptr;
 
+		Vector<StringName> *blend_factors = nullptr;
 		HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> *uniforms = nullptr;
 	};
 
