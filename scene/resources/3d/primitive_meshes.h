@@ -335,15 +335,28 @@ public:
 class SphereMesh : public PrimitiveMesh {
 	GDCLASS(SphereMesh, PrimitiveMesh);
 
+public:
+	enum Shape {
+		SPHERE = 0,
+		SPHEROID = 1,
+		ELLIPSOID = 2,
+	};
+
 private:
+	SphereMesh::Shape shape = SPHEROID;
 	float radius = 0.5;
 	float height = 1.0;
+	float width = 1.0;
+	float depth = 1.0;
 	int radial_segments = 64;
 	int rings = 32;
 	bool is_hemisphere = false;
 
 protected:
 	static void _bind_methods();
+
+	void _validate_property(PropertyInfo &p_property) const;
+
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
 	virtual void _update_lightmap_size() override;
@@ -351,11 +364,20 @@ protected:
 public:
 	static void create_mesh_array(Array &p_arr, float radius, float height, int radial_segments = 64, int rings = 32, bool is_hemisphere = false, bool p_add_uv2 = false, const float p_uv2_padding = 1.0);
 
+	static void create_mesh_array(SphereMesh::Shape shape, Array &p_arr, float radius, float height, float width, float depth, int radial_segments = 64, int rings = 32, bool is_hemisphere = false, bool p_add_uv2 = false, const float p_uv2_padding = 1.0);
+
+	void set_shape(SphereMesh::Shape p_shape_mode);
+	SphereMesh::Shape get_shape() const;
+
 	void set_radius(const float p_radius);
 	float get_radius() const;
 
 	void set_height(const float p_height);
 	float get_height() const;
+	void set_width(float p_width);
+	float get_width() const;
+	void set_depth(float p_depth);
+	float get_depth() const;
 
 	void set_radial_segments(const int p_radial_segments);
 	int get_radial_segments() const;
@@ -366,6 +388,7 @@ public:
 	void set_is_hemisphere(const bool p_is_hemisphere);
 	bool get_is_hemisphere() const;
 };
+VARIANT_ENUM_CAST(SphereMesh::Shape);
 
 /**
 	Big donut
