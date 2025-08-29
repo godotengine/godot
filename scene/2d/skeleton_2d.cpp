@@ -186,6 +186,7 @@ void Bone2D::_notification(int p_what) {
 			cache_transform = tmp_trans;
 		} break;
 
+#ifdef DEBUG_ENABLED
 		// Bone2D Editor gizmo drawing.
 		// TODO: Bone2D gizmo drawing needs to be moved to an editor plugin.
 		case NOTIFICATION_DRAW: {
@@ -194,22 +195,16 @@ void Bone2D::_notification(int p_what) {
 				return;
 			}
 
-			if (editor_gizmo_rid.is_null()) {
-				editor_gizmo_rid = RenderingServer::get_singleton()->canvas_item_create();
-				RenderingServer::get_singleton()->canvas_item_set_parent(editor_gizmo_rid, get_canvas_item());
-				RenderingServer::get_singleton()->canvas_item_set_z_as_relative_to_parent(editor_gizmo_rid, true);
-				RenderingServer::get_singleton()->canvas_item_set_z_index(editor_gizmo_rid, 10);
-			}
-			RenderingServer::get_singleton()->canvas_item_clear(editor_gizmo_rid);
+			_prepare_debug_canvas_item();
 
 			if (!_editor_show_bone_gizmo) {
 				return;
 			}
 
 			// Undo scaling
-			Transform2D editor_gizmo_trans;
+			Transform2D editor_gizmo_trans = get_global_transform();
 			editor_gizmo_trans.set_scale(Vector2(1, 1) / get_global_scale());
-			RenderingServer::get_singleton()->canvas_item_set_transform(editor_gizmo_rid, editor_gizmo_trans);
+			RenderingServer::get_singleton()->canvas_item_set_transform(_get_debug_canvas_item(), editor_gizmo_trans);
 
 			Color bone_color1 = EDITOR_GET("editors/2d/bone_color1");
 			Color bone_color2 = EDITOR_GET("editors/2d/bone_color2");
@@ -261,8 +256,8 @@ void Bone2D::_notification(int p_what) {
 					outline_colors.push_back(bone_outline_color);
 				}
 
-				RenderingServer::get_singleton()->canvas_item_add_polygon(editor_gizmo_rid, bone_shape_outline, outline_colors);
-				RenderingServer::get_singleton()->canvas_item_add_polygon(editor_gizmo_rid, bone_shape, colors);
+				RenderingServer::get_singleton()->canvas_item_add_polygon(_get_debug_canvas_item(), bone_shape_outline, outline_colors);
+				RenderingServer::get_singleton()->canvas_item_add_polygon(_get_debug_canvas_item(), bone_shape, colors);
 			}
 
 			if (!Bone2D_found) {
@@ -301,10 +296,11 @@ void Bone2D::_notification(int p_what) {
 					outline_colors.push_back(bone_outline_color);
 				}
 
-				RenderingServer::get_singleton()->canvas_item_add_polygon(editor_gizmo_rid, bone_shape_outline, outline_colors);
-				RenderingServer::get_singleton()->canvas_item_add_polygon(editor_gizmo_rid, bone_shape, colors);
+				RenderingServer::get_singleton()->canvas_item_add_polygon(_get_debug_canvas_item(), bone_shape_outline, outline_colors);
+				RenderingServer::get_singleton()->canvas_item_add_polygon(_get_debug_canvas_item(), bone_shape, colors);
 			}
 		} break;
+#endif // DEBUG_ENABLED
 #endif // TOOLS_ENABLED
 	}
 }
@@ -498,15 +494,6 @@ Bone2D::Bone2D() {
 		rest[i] = Vector2(0, 0);
 	}
 	copy_transform_to_cache = true;
-}
-
-Bone2D::~Bone2D() {
-#ifdef TOOLS_ENABLED
-	if (!editor_gizmo_rid.is_null()) {
-		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(editor_gizmo_rid);
-	}
-#endif // TOOLS_ENABLED
 }
 
 //////////////////////////////////////
