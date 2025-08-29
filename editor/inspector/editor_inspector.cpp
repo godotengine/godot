@@ -4999,11 +4999,37 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		undo_redo->add_do_property(object, p_name, p_value);
 		bool valid = false;
 		Variant value = object->get(p_name, &valid);
+		Node *node = Object::cast_to<Node>(object);
+		Resource *ref = Object::cast_to<Resource>(object);
+		;
 		if (valid) {
+			// TODO Check if it's a resource/subresource. It will check Resources only for now.
+			Ref<Resource> res = Object::cast_to<Resource>(value);
+			Ref<Resource> resprev = Object::cast_to<Resource>(p_value);
 			if (Object::cast_to<Control>(object) && (p_name == "anchors_preset" || p_name == "layout_mode")) {
 				undo_redo->add_undo_method(object, "_edit_set_state", Object::cast_to<Control>(object)->_edit_get_state());
 			} else {
 				undo_redo->add_undo_property(object, p_name, value);
+			}
+			if (node) {
+				if (res.is_valid()) {
+					undo_redo->add_do_method(EditorNode::get_singleton(), "remove_node_reference", res, node);
+				}
+				if (resprev.is_valid()) {
+					undo_redo->add_undo_method(EditorNode::get_singleton(), "remove_node_reference", resprev, node);
+				}
+				undo_redo->add_undo_method(EditorNode::get_singleton(), "update_resource_count", node, false);
+			} else if (ref) {
+				// SubResource. The decided approach is to use the Parent's hashmap, since Making nested Resource unique independently from parent is not possible. They will always the same Nodes using them.
+				for (Node *N : EditorNode::get_singleton()->get_resource_node_list(ref)) {
+					if (res.is_valid()) {
+						undo_redo->add_do_method(EditorNode::get_singleton(), "remove_node_reference", res, N);
+					}
+					if (resprev.is_valid()) {
+						undo_redo->add_undo_method(EditorNode::get_singleton(), "remove_node_reference", resprev, N);
+					}
+					undo_redo->add_undo_method(EditorNode::get_singleton(), "update_resource_count", N, false);
+				}
 			}
 		}
 
@@ -5068,6 +5094,14 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		undo_redo->add_do_method(this, "emit_signal", _prop_edited, p_name);
 		undo_redo->add_undo_method(this, "emit_signal", _prop_edited, p_name);
 		undo_redo->commit_action();
+
+		if (node) { //maybe use a do_method?
+			EditorNode::get_singleton()->update_resource_count(node);
+		} else if (ref) {
+			for (Node *N : EditorNode::get_singleton()->get_resource_node_list(ref)) {
+				EditorNode::get_singleton()->update_resource_count(N);
+			}
+		}
 	}
 
 	if (editor_property_map.has(p_name)) {
