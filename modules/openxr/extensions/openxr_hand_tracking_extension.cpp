@@ -349,7 +349,9 @@ void OpenXRHandTrackingExtension::cleanup_hand_tracking() {
 			hand_trackers[i].is_initialized = false;
 			hand_trackers[i].hand_tracker = XR_NULL_HANDLE;
 
-			XRServer::get_singleton()->remove_tracker(hand_trackers[i].godot_tracker);
+			if (hand_trackers[i].godot_tracker.is_valid()) {
+				XRServer::get_singleton()->remove_tracker(hand_trackers[i].godot_tracker);
+			}
 		}
 	}
 }

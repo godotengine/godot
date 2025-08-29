@@ -635,8 +635,10 @@ void OpenXRInterface::free_trackers() {
 		Tracker *tracker = trackers[i];
 
 		openxr_api->tracker_free(tracker->tracker_rid);
-		xr_server->remove_tracker(tracker->controller_tracker);
-		tracker->controller_tracker.unref();
+		if (tracker->controller_tracker.is_valid()) {
+			xr_server->remove_tracker(tracker->controller_tracker);
+			tracker->controller_tracker.unref();
+		}
 
 		memdelete(tracker);
 	}
