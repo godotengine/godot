@@ -549,9 +549,9 @@ void LineBuilder::new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Col
 	float tt_begin = -Math::PI / 2.0f;
 	float tt = tt_begin;
 
-	// Center vertice
+	// First vertex
 	int vi = vertices.size();
-	vertices.push_back(center);
+	vertices.push_back(vbegin);
 	if (_interpolate_color) {
 		colors.push_back(color);
 	}
