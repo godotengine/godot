@@ -33,6 +33,8 @@
 #include "logo_svg.gen.h"
 #include "run_icon_svg.gen.h"
 
+#include "scene/main/viewport.h"
+
 Vector<String> EditorExportPlatformVisionOS::device_types({ "realityDevice" });
 
 EditorExportPlatformVisionOS::EditorExportPlatformVisionOS() :
@@ -49,8 +51,109 @@ void EditorExportPlatformVisionOS::get_export_options(List<ExportOption> *r_opti
 	EditorExportPlatformAppleEmbedded::get_export_options(r_options);
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_visionos_version"), get_minimum_deployment_target()));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/app_role", PROPERTY_HINT_ENUM, "Window,Immersive"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/immersion_style", PROPERTY_HINT_ENUM, "Full,Mixed"), 1));
 }
 
 Vector<EditorExportPlatformAppleEmbedded::IconInfo> EditorExportPlatformVisionOS::get_icon_infos() const {
 	return Vector<EditorExportPlatformAppleEmbedded::IconInfo>();
+}
+
+Error EditorExportPlatformVisionOS::customize_exported_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+	int app_role_enum = (int)p_preset->get("application/app_role");
+	if (app_role_enum == 1) {
+		// App role is immersive mode, set hardcoded VRS_XR project setting
+		ProjectSettings::get_singleton()->set_setting("rendering/vrs/mode", Viewport::VRS_XR);
+	}
+	return OK;
+}
+
+String EditorExportPlatformVisionOS::_process_config_file_line(const Ref<EditorExportPreset> &p_preset, const String &p_line, const AppleEmbeddedConfigData &p_config, bool p_debug, const CodeSigningDetails &p_code_signing) {
+	// Do visionOS specific processing first, and call super implementation if there are no matches
+
+	String strnew;
+
+	// Supported Destinations
+	if (p_line.contains("$targeted_device_family")) {
+		strnew += p_line.replace("$targeted_device_family", "7") + "\n";
+
+		// MoltenVK Framework not used on visionOS
+	} else if (p_line.contains("$moltenvk_buildfile")) {
+		strnew += p_line.replace("$moltenvk_buildfile", "") + "\n";
+	} else if (p_line.contains("$moltenvk_fileref")) {
+		strnew += p_line.replace("$moltenvk_fileref", "") + "\n";
+	} else if (p_line.contains("$moltenvk_buildphase")) {
+		strnew += p_line.replace("$moltenvk_buildphase", "") + "\n";
+	} else if (p_line.contains("$moltenvk_buildgrp")) {
+		strnew += p_line.replace("$moltenvk_buildgrp", "") + "\n";
+
+		// Launch Storyboard
+	} else if (p_line.contains("$plist_launch_screen_name")) {
+		strnew += p_line.replace("$plist_launch_screen_name", "") + "\n";
+	} else if (p_line.contains("$pbx_launch_screen_file_reference")) {
+		strnew += p_line.replace("$pbx_launch_screen_file_reference", "") + "\n";
+	} else if (p_line.contains("$pbx_launch_screen_copy_files")) {
+		strnew += p_line.replace("$pbx_launch_screen_copy_files", "") + "\n";
+	} else if (p_line.contains("$pbx_launch_screen_build_phase")) {
+		strnew += p_line.replace("$pbx_launch_screen_build_phase", "") + "\n";
+	} else if (p_line.contains("$pbx_launch_screen_build_reference")) {
+		strnew += p_line.replace("$pbx_launch_screen_build_reference", "") + "\n";
+
+		// OS Deployment Target
+	} else if (p_line.contains("$os_deployment_target")) {
+		String min_version = p_preset->get("application/min_" + get_platform_name() + "_version");
+		String value = "XROS_DEPLOYMENT_TARGET = " + min_version + ";";
+		strnew += p_line.replace("$os_deployment_target", value) + "\n";
+
+		// Valid Archs
+	} else if (p_line.contains("$valid_archs")) {
+		strnew += p_line.replace("$valid_archs", "arm64") + "\n";
+
+		// Application Scene Manifest
+	} else if (p_line.contains("$application_scene_manifest")) {
+		int app_role_enum = (int)p_preset->get("application/app_role");
+		if (app_role_enum == 0) {
+			// Windowed mode, no Application Scene Manifest needed
+			strnew += p_line.replace("$application_scene_manifest", "") + "\n";
+			return strnew;
+		}
+
+		String initial_immersion_style;
+		switch ((int)p_preset->get("application/immersion_style")) {
+			case 0: // Full
+				initial_immersion_style = "UIImmersionStyleFull";
+				break;
+			case 1: // Mixed
+				initial_immersion_style = "UIImmersionStyleMixed";
+				break;
+		}
+
+		String value =
+				"<key>UIApplicationSceneManifest</key>\n"
+				"<dict>\n"
+				"	<key>UIApplicationPreferredDefaultSceneSessionRole</key>\n"
+				"	<string>CPSceneSessionRoleImmersiveSpaceApplication</string>\n"
+				"	  <key>UIApplicationSupportsMultipleScenes</key>\n"
+				"	  <true/>\n"
+				"	  <key>UISceneConfigurations</key>\n"
+				"	  <dict>"
+				"		  <key>UISceneSessionRoleImmersiveSpaceApplication</key>"
+				"		  <array>"
+				"			  <dict>"
+				"				  <key>UISceneInitialImmersionStyle</key>"
+				"				  <string>" +
+				initial_immersion_style + "</string>"
+										  "			  </dict>"
+										  "		  </array>"
+										  "	  </dict>"
+										  "</dict>";
+
+		strnew += p_line.replace("$application_scene_manifest", value) + "\n";
+
+		// Apple Embedded common
+	} else {
+		strnew += EditorExportPlatformAppleEmbedded::_process_config_file_line(p_preset, p_line, p_config, p_debug, p_code_signing);
+	}
+	return strnew;
 }
