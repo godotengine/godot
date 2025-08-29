@@ -96,6 +96,7 @@
 #define WL_DISPLAY_DELETE_ID 1
 
 #define WL_REGISTRY_GLOBAL 0
+#define WL_REGISTRY_GLOBAL_REMOVE 1
 
 #define WL_CALLBACK_DONE 0
 
@@ -300,7 +301,7 @@ Error WaylandEmbedder::Client::delete_object(uint32_t p_local_id) {
 
 	uint32_t *global_name = embedder->registry_globals_names.getptr(global_id);
 	if (global_name) {
-		registry_globals_instances.erase(*global_name);
+		registry_globals_instances[*global_name].erase(p_local_id);
 	}
 
 	return embedder->delete_object(global_id);
@@ -1889,98 +1890,101 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 		}
 
 		// TODO: wl_registry::global_remove(u)
-		if (global_object->interface == &wl_registry_interface && p_opcode == WL_REGISTRY_GLOBAL) {
-			// [Event] wl_registry::global(usu).
+		if (global_object->interface == &wl_registry_interface) {
+			if (p_opcode == WL_REGISTRY_GLOBAL) {
+				// [Event] wl_registry::global(usu).
 
-			uint32_t global_name = body[0];
-			uint32_t interface_name_len = body[1];
-			const char *interface_name = (const char *)(body + 2);
-			uint32_t global_version = body[2 + wl_array_word_offset(interface_name_len)];
+				uint32_t global_name = body[0];
+				uint32_t interface_name_len = body[1];
+				const char *interface_name = (const char *)(body + 2);
+				uint32_t global_version = body[2 + wl_array_word_offset(interface_name_len)];
 
-			DEBUG_LOG_WAYLAND_EMBED("Global %s %d", interface_name, global_version);
+				DEBUG_LOG_WAYLAND_EMBED("Global %s %d", interface_name, global_version);
 
-			const struct wl_interface *global_interface = wl_interface_from_string(interface_name, interface_name_len);
-			if (global_interface) {
-				RegistryGlobalInfo global_info = {};
-				global_info.interface = global_interface;
-				global_info.version = MIN(global_version, (uint32_t)global_interface->version);
-				DEBUG_LOG_WAYLAND_EMBED("Clamped global %s %d", interface_name, global_info.version);
-				global_info.compositor_name = global_name;
+				const struct wl_interface *global_interface = wl_interface_from_string(interface_name, interface_name_len);
+				if (global_interface) {
+					RegistryGlobalInfo global_info = {};
+					global_info.interface = global_interface;
+					global_info.version = MIN(global_version, (uint32_t)global_interface->version);
+					DEBUG_LOG_WAYLAND_EMBED("Clamped global %s %d", interface_name, global_info.version);
+					global_info.compositor_name = global_name;
 
-				if (global_info.interface == &wl_shm_interface) {
-					// FIXME: Cleanup.
-					DEBUG_LOG_WAYLAND_EMBED("Allocating global wl_shm data.");
-					global_info.data = memnew(WaylandShmGlobalData);
-				}
+					if (global_info.interface == &wl_shm_interface) {
+						// FIXME: Cleanup.
+						DEBUG_LOG_WAYLAND_EMBED("Allocating global wl_shm data.");
+						global_info.data = memnew(WaylandShmGlobalData);
+					}
 
-				if (global_info.interface == &wl_seat_interface) {
-					// FIXME: Cleanup.
-					DEBUG_LOG_WAYLAND_EMBED("Allocating global wl_seat data.");
-					global_info.data = memnew(WaylandSeatGlobalData);
-					wl_seat_name = registry_globals.size();
-				}
+					if (global_info.interface == &wl_seat_interface) {
+						// FIXME: Cleanup.
+						DEBUG_LOG_WAYLAND_EMBED("Allocating global wl_seat data.");
+						global_info.data = memnew(WaylandSeatGlobalData);
+						wl_seat_name = registry_globals.size();
+					}
 
-				if (global_info.interface == &wl_drm_interface) {
-					// FIXME: Cleanup.
-					DEBUG_LOG_WAYLAND_EMBED("Allocating global wl_drm data.");
-					global_info.data = memnew(WaylandDrmGlobalData);
-				}
+					if (global_info.interface == &wl_drm_interface) {
+						// FIXME: Cleanup.
+						DEBUG_LOG_WAYLAND_EMBED("Allocating global wl_drm data.");
+						global_info.data = memnew(WaylandDrmGlobalData);
+					}
 
-				// FIXME: Ensure that no duplicate entries get added (VSet?)
-				registry_globals.push_back(global_info);
+					// FIXME: Ensure that no duplicate entries get added (VSet?)
+					registry_globals.push_back(global_info);
 
-				int new_global_name = registry_globals.size() - 1;
+					int new_global_name = registry_globals.size() - 1;
 
-				// We need some interfaces directly. It's better to bind a "copy" ourselves
-				// than to wait for the client to ask one. Since I'm lazy, we can exploit
-				// the fact that a bind request is the global event with the new id tacked on.
-				if (global_interface == &xdg_wm_base_interface && xdg_wm_base_id == 0) {
-					xdg_wm_base_id = new_object(&xdg_wm_base_interface, global_info.version);
-					DEBUG_LOG_WAYLAND_EMBED(vformat("Binding global xdg_wm_base as g0x%x version %d", xdg_wm_base_id, global_info.version));
+					// We need some interfaces directly. It's better to bind a "copy" ourselves
+					// than to wait for the client to ask one. Since I'm lazy, we can exploit
+					// the fact that a bind request is the global event with the new id tacked on.
+					if (global_interface == &xdg_wm_base_interface && xdg_wm_base_id == 0) {
+						xdg_wm_base_id = new_object(&xdg_wm_base_interface, global_info.version);
+						DEBUG_LOG_WAYLAND_EMBED(vformat("Binding global xdg_wm_base as g0x%x version %d", xdg_wm_base_id, global_info.version));
 
-					uint32_t header[2] = { p_global_id, 0 };
-					header[1] = (sizeof header + body_len + sizeof xdg_wm_base_id) << 16; // opcode is 0.
+						uint32_t header[2] = { p_global_id, 0 };
+						header[1] = (sizeof header + body_len + sizeof xdg_wm_base_id) << 16; // opcode is 0.
 
-					registry_globals[new_global_name].global_ids[global_info.version] = xdg_wm_base_id;
-					registry_globals_names[xdg_wm_base_id] = new_global_name;
+						registry_globals[new_global_name].global_ids[global_info.version] = xdg_wm_base_id;
+						registry_globals_names[xdg_wm_base_id] = new_global_name;
 
-					send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &xdg_wm_base_id, sizeof xdg_wm_base_id } });
+						send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &xdg_wm_base_id, sizeof xdg_wm_base_id } });
+
+						return MessageStatus::HANDLED;
+					}
+
+					if (global_interface == &wl_compositor_interface && wl_compositor_id == 0) {
+						wl_compositor_id = new_object(&wl_compositor_interface, global_info.version);
+						DEBUG_LOG_WAYLAND_EMBED(vformat("Binding global wl_compositor as g0x%x version %d", wl_compositor_id, global_info.version));
+
+						uint32_t header[2] = { p_global_id, 0 };
+						header[1] = (sizeof header + body_len + sizeof wl_compositor_id) << 16; // opcode is 0.
+
+						registry_globals[new_global_name].global_ids[global_info.version] = wl_compositor_id;
+						registry_globals_names[wl_compositor_id] = new_global_name;
+
+						send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &wl_compositor_id, sizeof wl_compositor_id } });
+
+						return MessageStatus::HANDLED;
+					}
+
+					if (global_interface == &wl_subcompositor_interface && wl_subcompositor_id == 0) {
+						wl_subcompositor_id = new_object(&wl_subcompositor_interface, global_info.version);
+						DEBUG_LOG_WAYLAND_EMBED(vformat("Binding global wl_subcompositor as g0x%x version %d", wl_subcompositor_id, global_info.version));
+
+						uint32_t header[2] = { p_global_id, 0 };
+						header[1] = (sizeof header + body_len + sizeof wl_subcompositor_id) << 16; // opcode is 0.
+
+						registry_globals[new_global_name].global_ids[global_info.version] = wl_subcompositor_id;
+						registry_globals_names[wl_subcompositor_id] = new_global_name;
+
+						send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &wl_subcompositor_id, sizeof wl_subcompositor_id } });
+
+						return MessageStatus::HANDLED;
+					}
+				} else {
+					DEBUG_LOG_WAYLAND_EMBED("Skipping unknown global %s %d.", interface_name, global_version);
 
 					return MessageStatus::HANDLED;
 				}
-
-				if (global_interface == &wl_compositor_interface && wl_compositor_id == 0) {
-					wl_compositor_id = new_object(&wl_compositor_interface, global_info.version);
-					DEBUG_LOG_WAYLAND_EMBED(vformat("Binding global wl_compositor as g0x%x version %d", wl_compositor_id, global_info.version));
-
-					uint32_t header[2] = { p_global_id, 0 };
-					header[1] = (sizeof header + body_len + sizeof wl_compositor_id) << 16; // opcode is 0.
-
-					registry_globals[new_global_name].global_ids[global_info.version] = wl_compositor_id;
-					registry_globals_names[wl_compositor_id] = new_global_name;
-
-					send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &wl_compositor_id, sizeof wl_compositor_id } });
-
-					return MessageStatus::HANDLED;
-				}
-
-				if (global_interface == &wl_subcompositor_interface && wl_subcompositor_id == 0) {
-					wl_subcompositor_id = new_object(&wl_subcompositor_interface, global_info.version);
-					DEBUG_LOG_WAYLAND_EMBED(vformat("Binding global wl_subcompositor as g0x%x version %d", wl_subcompositor_id, global_info.version));
-
-					uint32_t header[2] = { p_global_id, 0 };
-					header[1] = (sizeof header + body_len + sizeof wl_subcompositor_id) << 16; // opcode is 0.
-
-					registry_globals[new_global_name].global_ids[global_info.version] = wl_subcompositor_id;
-					registry_globals_names[wl_subcompositor_id] = new_global_name;
-
-					send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &wl_subcompositor_id, sizeof wl_subcompositor_id } });
-
-					return MessageStatus::HANDLED;
-				}
-			} else {
-				DEBUG_LOG_WAYLAND_EMBED("Skipping unknown global %s %d.", interface_name, global_version);
-				return MessageStatus::HANDLED;
 			}
 		}
 
