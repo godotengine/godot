@@ -56,7 +56,7 @@ private:
 	static HashMap<String, ParseMessageFunc> parse_message_handlers;
 	static void _init_parse_message_handlers();
 
-	Error _msg_window_size(const Array &p_args);
+	Error _msg_window_rect(const Array &p_args);
 	Error _msg_mouse_set_mode(const Array &p_args);
 	Error _msg_event(const Array &p_args);
 	Error _msg_win_event(const Array &p_args);
