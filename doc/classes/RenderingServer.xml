@@ -4274,7 +4274,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="use_mipmaps" type="bool" />
 			<description>
-				If [code]true[/code], the viewport will generate mipmaps for the output [ViewportTexture].
+				If [code]true[/code], the viewport will generate mipmaps for the output [ViewportTexture]. This has a performance impact, so only enable mipmaps if they are actually needed during rendering.
 			</description>
 		</method>
 		<method name="viewport_set_vrs_mode">
