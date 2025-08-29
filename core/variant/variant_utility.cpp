@@ -1427,12 +1427,14 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		}                                                                                                        \
 		static void ptrcall(void *ret, const void **p_args, int p_argcount) {                                    \
 			Vector<Variant> args;                                                                                \
+			args.resize(p_argcount);                                                                             \
 			for (int i = 0; i < p_argcount; i++) {                                                               \
-				args.push_back(PtrToArg<Variant>::convert(p_args[i]));                                           \
+				args.set(i, PtrToArg<Variant>::convert(p_args[i]));                                              \
 			}                                                                                                    \
 			Vector<const Variant *> argsp;                                                                       \
+			argsp.resize(p_argcount);                                                                            \
 			for (int i = 0; i < p_argcount; i++) {                                                               \
-				argsp.push_back(&args[i]);                                                                       \
+				argsp.set(i, &args[i]);                                                                          \
 			}                                                                                                    \
 			Variant r;                                                                                           \
 			validated_call(&r, (const Variant **)argsp.ptr(), p_argcount);                                       \
@@ -1472,12 +1474,14 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		}                                                                                                        \
 		static void ptrcall(void *ret, const void **p_args, int p_argcount) {                                    \
 			Vector<Variant> args;                                                                                \
+			args.resize(p_argcount);                                                                             \
 			for (int i = 0; i < p_argcount; i++) {                                                               \
-				args.push_back(PtrToArg<Variant>::convert(p_args[i]));                                           \
+				args.set(i, PtrToArg<Variant>::convert(p_args[i]));                                              \
 			}                                                                                                    \
 			Vector<const Variant *> argsp;                                                                       \
+			argsp.resize(p_argcount);                                                                            \
 			for (int i = 0; i < p_argcount; i++) {                                                               \
-				argsp.push_back(&args[i]);                                                                       \
+				argsp.set(i, &args[i]);                                                                          \
 			}                                                                                                    \
 			Variant r;                                                                                           \
 			validated_call(&r, (const Variant **)argsp.ptr(), p_argcount);                                       \
@@ -1517,12 +1521,14 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		}                                                                                                        \
 		static void ptrcall(void *ret, const void **p_args, int p_argcount) {                                    \
 			Vector<Variant> args;                                                                                \
+			args.resize(p_argcount);                                                                             \
 			for (int i = 0; i < p_argcount; i++) {                                                               \
-				args.push_back(PtrToArg<Variant>::convert(p_args[i]));                                           \
+				args.set(i, PtrToArg<Variant>::convert(p_args[i]));                                              \
 			}                                                                                                    \
 			Vector<const Variant *> argsp;                                                                       \
+			argsp.resize(p_argcount);                                                                            \
 			for (int i = 0; i < p_argcount; i++) {                                                               \
-				argsp.push_back(&args[i]);                                                                       \
+				argsp.set(i, &args[i]);                                                                          \
 			}                                                                                                    \
 			Variant r;                                                                                           \
 			validated_call(&r, (const Variant **)argsp.ptr(), p_argcount);                                       \
@@ -1854,11 +1860,12 @@ MethodInfo Variant::get_utility_function_info(const StringName &p_name) {
 		if (bfi->is_vararg) {
 			info.flags |= METHOD_FLAG_VARARG;
 		}
+		info.arguments.resize(bfi->argnames.size());
 		for (int i = 0; i < bfi->argnames.size(); ++i) {
 			PropertyInfo arg;
 			arg.type = bfi->get_arg_type(i);
 			arg.name = bfi->argnames[i];
-			info.arguments.push_back(arg);
+			info.arguments.set(i, arg);
 		}
 	}
 	return info;

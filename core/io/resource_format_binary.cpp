@@ -361,8 +361,6 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 		} break;
 
 		case VARIANT_NODE_PATH: {
-			Vector<StringName> names;
-			Vector<StringName> subnames;
 			bool absolute;
 
 			int name_count = f->get_16();
@@ -373,11 +371,16 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 				subname_count += 1; // has a property field, so we should count it as well
 			}
 
+			Vector<StringName> names;
+			names.resize(name_count);
 			for (int i = 0; i < name_count; i++) {
-				names.push_back(_get_string());
+				names.set(i, _get_string());
 			}
+
+			Vector<StringName> subnames;
+			subnames.resize(subname_count);
 			for (uint32_t i = 0; i < subname_count; i++) {
-				subnames.push_back(_get_string());
+				subnames.set(i, _get_string());
 			}
 
 			NodePath np = NodePath(names, subnames, absolute);

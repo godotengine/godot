@@ -639,9 +639,10 @@ void GDExtension::_register_extension_class_signal(GDExtensionClassLibraryPtr p_
 
 	MethodInfo s;
 	s.name = signal_name;
+	s.arguments.resize(p_argument_count);
 	for (int i = 0; i < p_argument_count; i++) {
 		PropertyInfo arg(p_argument_info[i]);
-		s.arguments.push_back(arg);
+		s.arguments.set(i, arg);
 	}
 	ClassDB::add_signal(class_name, s);
 }
