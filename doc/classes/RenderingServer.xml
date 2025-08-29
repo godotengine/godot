@@ -3750,6 +3750,58 @@
 				[b]Note:[/b] If using only the rendering device renderer, it's recommend to use [method RenderingDevice.texture_create_from_extension] together with [method RenderingServer.texture_rd_create], rather than this method. It will give you much more control over the texture's format and usage.
 			</description>
 		</method>
+		<method name="texture_drawable_2d_create">
+			<return type="RID" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="texture_format" type="int" enum="RenderingServer.TextureDrawableFormat" />
+			<param index="3" name="use_mipmaps" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="texture_drawable_2d_layered_create">
+			<return type="RID" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="layers" type="int" />
+			<param index="3" name="layererd_type" type="int" enum="RenderingServer.TextureLayeredType" />
+			<param index="4" name="texture_format" type="int" enum="RenderingServer.TextureDrawableFormat" />
+			<param index="5" name="use_mipmaps" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="texture_drawable_blit_mesh_advanced">
+			<return type="void" />
+			<param index="0" name="texture_drawable" type="RID" />
+			<param index="1" name="material" type="RID" />
+			<param index="2" name="mesh" type="RID" />
+			<param index="3" name="surface_index" type="int" />
+			<param index="4" name="blend_mode" type="int" enum="RenderingServer.TextureDrawableBlendMode" />
+			<param index="5" name="clear_color" type="Color" />
+			<param index="6" name="layer" type="int" default="0" />
+			<description>
+			</description>
+		</method>
+		<method name="texture_drawable_blit_texture_rect_region">
+			<return type="void" />
+			<param index="0" name="texture_drawable" type="RID" />
+			<param index="1" name="source_texture" type="RID" />
+			<param index="2" name="dst_rect" type="Rect2" />
+			<param index="3" name="src_rect" type="Rect2" />
+			<param index="4" name="modulate" type="Color" />
+			<param index="5" name="blend_mode" type="int" enum="RenderingServer.TextureDrawableBlendMode" />
+			<param index="6" name="clear_color" type="Color" />
+			<param index="7" name="layer" type="int" default="0" />
+			<description>
+			</description>
+		</method>
+		<method name="texture_drawable_generate_mipmaps">
+			<return type="void" />
+			<param index="0" name="texture_drawable" type="RID" />
+			<param index="1" name="layer" type="int" default="0" />
+			<description>
+			</description>
+		</method>
 		<method name="texture_get_format" qualifiers="const">
 			<return type="int" enum="Image.Format" />
 			<param index="0" name="texture" type="RID" />
@@ -4545,7 +4597,9 @@
 		<constant name="SHADER_FOG" value="4" enum="ShaderMode">
 			Shader is a 3D fog shader.
 		</constant>
-		<constant name="SHADER_MAX" value="5" enum="ShaderMode">
+		<constant name="SHADER_MESH_RASTERIZER" value="5" enum="ShaderMode">
+		</constant>
+		<constant name="SHADER_MAX" value="6" enum="ShaderMode">
 			Represents the size of the [enum ShaderMode] enum.
 		</constant>
 		<constant name="MATERIAL_RENDER_PRIORITY_MIN" value="-128">
@@ -4760,6 +4814,40 @@
 		</constant>
 		<constant name="MULTIMESH_INTERP_QUALITY_HIGH" value="1" enum="MultimeshPhysicsInterpolationQuality">
 			MultiMesh physics interpolation favors quality over speed.
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_BLEND_CLEAR" value="-1" enum="TextureDrawableBlendMode">
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_BLEND_DISABLED" value="0" enum="TextureDrawableBlendMode">
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_BLEND_MIX" value="1" enum="TextureDrawableBlendMode">
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_BLEND_ADD" value="2" enum="TextureDrawableBlendMode">
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_BLEND_SUB" value="3" enum="TextureDrawableBlendMode">
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_BLEND_MUL" value="4" enum="TextureDrawableBlendMode">
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_BLEND_PREMULTIPLIED_ALPHA" value="5" enum="TextureDrawableBlendMode">
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_FORMAT_R8" value="8" enum="TextureDrawableFormat">
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RH" value="75" enum="TextureDrawableFormat">
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RF" value="99" enum="TextureDrawableFormat">
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RG8" value="15" enum="TextureDrawableFormat">
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RGH" value="82" enum="TextureDrawableFormat">
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RGF" value="102" enum="TextureDrawableFormat">
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB" value="42" enum="TextureDrawableFormat">
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBA8" value="36" enum="TextureDrawableFormat">
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBAH" value="96" enum="TextureDrawableFormat">
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBAF" value="108" enum="TextureDrawableFormat">
 		</constant>
 		<constant name="LIGHT_PROJECTOR_FILTER_NEAREST" value="0" enum="LightProjectorFilter">
 			Nearest-neighbor filter for light projectors (use for pixel art light projectors). No mipmaps are used for rendering, which means light projectors at a distance will look sharp but grainy. This has roughly the same performance cost as using mipmaps.

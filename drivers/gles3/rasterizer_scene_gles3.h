@@ -37,17 +37,12 @@
 #include "core/templates/paged_allocator.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "drivers/gles3/shaders/effects/cubemap_filter.glsl.gen.h"
-#include "drivers/gles3/shaders/sky.glsl.gen.h"
-#include "scene/resources/mesh.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering_server.h"
-#include "shader_gles3.h"
 #include "storage/light_storage.h"
 #include "storage/material_storage.h"
 #include "storage/render_scene_buffers_gles3.h"
-#include "storage/utilities.h"
 
 enum RenderListType {
 	RENDER_LIST_OPAQUE, //used for opaque objects
