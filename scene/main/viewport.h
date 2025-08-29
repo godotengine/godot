@@ -252,6 +252,8 @@ private:
 	Transform2D global_canvas_transform;
 	Transform2D stretch_transform;
 
+	bool use_mipmaps = false;
+
 	Size2i size = Size2i(512, 512);
 	Size2 size_2d_override;
 	bool size_allocated = false;
@@ -581,6 +583,9 @@ public:
 	float get_oversampling_override() const;
 
 	float get_oversampling() const { return font_oversampling; }
+
+	void set_use_mipmaps(bool p_use_mipmaps);
+	bool is_using_mipmaps() const;
 
 	void set_scaling_3d_mode(Scaling3DMode p_scaling_3d_mode);
 	Scaling3DMode get_scaling_3d_mode() const;
