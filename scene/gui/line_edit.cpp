@@ -1128,8 +1128,7 @@ bool LineEdit::_is_over_clear_button(const Point2 &p_pos) const {
 		return false;
 	}
 	Ref<Texture2D> icon = theme_cache.clear_icon;
-	int x_ofs = theme_cache.normal->get_margin(SIDE_RIGHT);
-	return p_pos.x > get_size().width - icon->get_width() - x_ofs;
+	return is_layout_rtl() ? p_pos.x < theme_cache.normal->get_margin(SIDE_LEFT) + icon->get_width() : p_pos.x > get_size().width - icon->get_width() - theme_cache.normal->get_margin(SIDE_RIGHT);
 }
 
 void LineEdit::_update_theme_item_cache() {
@@ -1226,12 +1225,12 @@ void LineEdit::_notification(int p_what) {
 					if (rtl) {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - Math::ceil(style->get_margin(SIDE_RIGHT) + (text_width))));
 					} else {
-						x_ofs = style->get_offset().x;
+						x_ofs = style->get_margin(SIDE_LEFT);
 					}
 				} break;
 				case HORIZONTAL_ALIGNMENT_CENTER: {
 					if (!Math::is_zero_approx(scroll_offset)) {
-						x_ofs = style->get_offset().x;
+						x_ofs = style->get_margin(SIDE_LEFT);
 					} else {
 						int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
 						int centered = int((size.width - total_margin - text_width)) / 2;
@@ -1240,7 +1239,7 @@ void LineEdit::_notification(int p_what) {
 				} break;
 				case HORIZONTAL_ALIGNMENT_RIGHT: {
 					if (rtl) {
-						x_ofs = style->get_offset().x;
+						x_ofs = style->get_margin(SIDE_LEFT);
 					} else {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - Math::ceil(style->get_margin(SIDE_RIGHT) + (text_width))));
 					}
@@ -1255,8 +1254,15 @@ void LineEdit::_notification(int p_what) {
 						int center = int(size.width - total_margin - text_width - r_icon->get_width()) / 2;
 						x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
 					}
+					if (rtl) {
+						x_ofs += r_icon->get_width();
+					}
 				} else {
-					x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+					if (rtl) {
+						x_ofs = MAX(style->get_margin(SIDE_LEFT) + r_icon->get_width(), x_ofs);
+					} else {
+						x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+					}
 				}
 			}
 
@@ -1352,12 +1358,12 @@ void LineEdit::_notification(int p_what) {
 					if (rtl) {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - Math::ceil(style->get_margin(SIDE_RIGHT) + (text_width))));
 					} else {
-						x_ofs = style->get_offset().x;
+						x_ofs = style->get_margin(SIDE_LEFT);
 					}
 				} break;
 				case HORIZONTAL_ALIGNMENT_CENTER: {
 					if (!Math::is_zero_approx(scroll_offset)) {
-						x_ofs = style->get_offset().x;
+						x_ofs = style->get_margin(SIDE_LEFT);
 					} else {
 						int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
 						int centered = int((size.width - total_margin - text_width)) / 2;
@@ -1366,7 +1372,7 @@ void LineEdit::_notification(int p_what) {
 				} break;
 				case HORIZONTAL_ALIGNMENT_RIGHT: {
 					if (rtl) {
-						x_ofs = style->get_offset().x;
+						x_ofs = style->get_margin(SIDE_LEFT);
 					} else {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - Math::ceil(style->get_margin(SIDE_RIGHT) + (text_width))));
 					}
@@ -1405,7 +1411,11 @@ void LineEdit::_notification(int p_what) {
 					}
 				}
 
-				r_icon->draw(ci, Point2(width - r_icon->get_width() - style->get_margin(SIDE_RIGHT), height / 2 - r_icon->get_height() / 2), color_icon);
+				Point2 icon_pos = Point2(width - r_icon->get_width() - style->get_margin(SIDE_RIGHT), height / 2 - r_icon->get_height() / 2);
+				if (rtl) {
+					icon_pos.x = style->get_margin(SIDE_LEFT);
+				}
+				r_icon->draw(ci, icon_pos, color_icon);
 
 				if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
 					if (Math::is_zero_approx(scroll_offset)) {
@@ -1413,11 +1423,20 @@ void LineEdit::_notification(int p_what) {
 						int center = int(size.width - total_margin - text_width - r_icon->get_width()) / 2;
 						x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
 					}
+					if (rtl) {
+						x_ofs += r_icon->get_width();
+					}
 				} else {
-					x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+					if (rtl) {
+						x_ofs = MAX(style->get_margin(SIDE_LEFT) + r_icon->get_width(), x_ofs);
+					} else {
+						x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+					}
 				}
 
-				ofs_max -= r_icon->get_width();
+				if (!rtl) {
+					ofs_max -= r_icon->get_width();
+				}
 			}
 
 			// Draw selections rects.
@@ -1515,7 +1534,7 @@ void LineEdit::_notification(int p_what) {
 							} break;
 							case HORIZONTAL_ALIGNMENT_RIGHT: {
 								if (rtl) {
-									caret.l_caret = Rect2(Vector2(style->get_offset().x, y), Size2(caret_width, h));
+									caret.l_caret = Rect2(Vector2(x_ofs, y), Size2(caret_width, h));
 								} else {
 									caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
 								}
@@ -1788,12 +1807,12 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 			if (rtl) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			} else {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_CENTER: {
 			if (!Math::is_zero_approx(scroll_offset)) {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			} else {
 				int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
 				int centered = int((get_size().width - total_margin - text_width)) / 2;
@@ -1802,7 +1821,7 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 		} break;
 		case HORIZONTAL_ALIGNMENT_RIGHT: {
 			if (rtl) {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			} else {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			}
@@ -1819,8 +1838,15 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 				int center = int(get_size().width - total_margin - text_width - r_icon->get_width()) / 2;
 				x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
 			}
+			if (rtl) {
+				x_ofs += r_icon->get_width();
+			}
 		} else {
-			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			if (rtl) {
+				x_ofs = MAX(style->get_margin(SIDE_LEFT) + r_icon->get_width(), x_ofs);
+			} else {
+				x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			}
 		}
 	}
 
@@ -1846,12 +1872,12 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 			if (rtl) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			} else {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_CENTER: {
 			if (!Math::is_zero_approx(scroll_offset)) {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			} else {
 				int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
 				int centered = int((get_size().width - total_margin - text_width)) / 2;
@@ -1860,7 +1886,7 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 		} break;
 		case HORIZONTAL_ALIGNMENT_RIGHT: {
 			if (rtl) {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			} else {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			}
@@ -1877,8 +1903,15 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 				int center = int(get_size().width - total_margin - text_width - r_icon->get_width()) / 2;
 				x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
 			}
+			if (rtl) {
+				x_ofs += r_icon->get_width();
+			}
 		} else {
-			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			if (rtl) {
+				x_ofs = MAX(style->get_margin(SIDE_LEFT) + r_icon->get_width(), x_ofs);
+			} else {
+				x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			}
 		}
 	}
 
@@ -2201,12 +2234,12 @@ void LineEdit::set_caret_column(int p_column) {
 			if (rtl) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			} else {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_CENTER: {
 			if (!Math::is_zero_approx(scroll_offset)) {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			} else {
 				int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
 				int centered = int((get_size().width - total_margin - text_width)) / 2;
@@ -2215,7 +2248,7 @@ void LineEdit::set_caret_column(int p_column) {
 		} break;
 		case HORIZONTAL_ALIGNMENT_RIGHT: {
 			if (rtl) {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			} else {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			}
@@ -2233,10 +2266,23 @@ void LineEdit::set_caret_column(int p_column) {
 				int center = int(get_size().width - total_margin - text_width - r_icon->get_width()) / 2;
 				x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
 			}
+			if (rtl) {
+				x_ofs += r_icon->get_width();
+			}
 		} else {
-			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			if (rtl) {
+				x_ofs = MAX(style->get_margin(SIDE_LEFT) + r_icon->get_width(), x_ofs);
+			} else {
+				if (rtl) {
+					x_ofs = MAX(style->get_margin(SIDE_LEFT) + r_icon->get_width(), x_ofs);
+				} else {
+					x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+				}
+			}
 		}
-		ofs_max -= r_icon->get_width();
+		if (!rtl) {
+			ofs_max -= r_icon->get_width();
+		}
 	}
 
 	// Note: Use two coordinates to fit IME input range.
