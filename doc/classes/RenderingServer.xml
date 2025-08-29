@@ -3833,6 +3833,22 @@
 			<description>
 			</description>
 		</method>
+		<method name="texture_update_partial">
+			<return type="void" />
+			<param index="0" name="texture" type="RID" />
+			<param index="1" name="image" type="Image" />
+			<param index="2" name="src_rect" type="Rect2i" />
+			<param index="3" name="dst_pos" type="Vector2i" />
+			<param index="4" name="dst_depth" type="int" default="0" />
+			<param index="5" name="dst_mipmap" type="int" default="0" />
+			<param index="6" name="dst_layer" type="int" default="0" />
+			<description>
+				Updates a part of the data of the texture specified by the [param texture] with the data in [param image]. Can be used to update [Texture2D], [TextureLayered], and [Texture3D]. For 2D textures (which only have one depth and one layer), the [param dst_depth] and [param dst_layer] must be [code]0[/code].
+				[b]Note:[/b] The valid update region size is [code]Vector3i(texture_width &gt;&gt; dst_mipmap, texture_height &gt;&gt; dst_mipmap, texture_depth &gt;&gt; dst_mipmap)[/code], make sure the update region is within the bounds.
+				[b]Note:[/b] The [param image] must have the same format as the [param texture] data. To update a compressed texture, [param src_rect] must be [code]Rect2i(0, 0, image.get_width(), image.get_height())[/code]. Otherwise, an error will be printed and the original texture won't be modified.
+				[b]Note:[/b] The mipmaps of [param image] are ignored. Only the first mipmap level is used.
+			</description>
+		</method>
 		<method name="viewport_attach_camera">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
