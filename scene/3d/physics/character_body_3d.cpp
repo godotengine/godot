@@ -31,7 +31,7 @@
 #include "character_body_3d.h"
 
 #ifndef DISABLE_DEPRECATED
-#include "servers/extensions/physics_server_3d_extension.h"
+#include "servers/physics_3d/physics_server_3d_extension.h"
 #endif
 
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
