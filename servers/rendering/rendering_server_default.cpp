@@ -406,6 +406,16 @@ void RenderingServerDefault::set_physics_interpolation_enabled(bool p_enabled) {
 	RSG::scene->set_physics_interpolation_enabled(p_enabled);
 }
 
+/* SYNCHRONIZATION */
+
+void RenderingServerDefault::set_cpu_gpu_sync_mode(RenderingServer::CpuGpuSyncMode p_sync_mode) {
+	RSG::utilities->set_cpu_gpu_sync_mode(p_sync_mode);
+}
+
+RenderingServer::CpuGpuSyncMode RenderingServerDefault::get_cpu_gpu_sync_mode() const {
+	return RSG::utilities->get_cpu_gpu_sync_mode();
+}
+
 /* EVENT QUEUING */
 
 void RenderingServerDefault::sync() {

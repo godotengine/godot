@@ -385,6 +385,12 @@ String Utilities::get_captured_timestamp_name(uint32_t p_index) const {
 	return frames[frame].timestamp_result_names[p_index];
 }
 
+/* SYNCHRONIZATION */
+
+void Utilities::set_cpu_gpu_sync_mode(RS::CpuGpuSyncMode p_sync_mode) {
+	_cpu_gpu_sync_mode = p_sync_mode;
+}
+
 /* MISC */
 
 void Utilities::update_dirty_resources() {
