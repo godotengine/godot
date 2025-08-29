@@ -50,6 +50,7 @@ struct FileInfo {
 	StringName type;
 	Vector<String> sources;
 	bool import_broken = false;
+	bool has_sub_resources = false;
 	uint64_t modified_time = 0;
 
 	bool operator<(const FileInfo &p_fi) const {

@@ -1563,6 +1563,19 @@ Error ResourceFormatLoaderText::rename_dependencies(const String &p_path, const 
 	return err;
 }
 
+bool ResourceFormatLoaderText::has_sub_resources(const String &p_path) const {
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(file.is_null(), false, vformat("Resource file \"%s\" not found.", p_path));
+
+	while (!file->eof_reached()) {
+		const String line = file->get_line();
+		if (line.begins_with("[sub_resource")) {
+			return true;
+		}
+	}
+	return false;
+}
+
 ResourceFormatLoaderText *ResourceFormatLoaderText::singleton = nullptr;
 
 /*****************************************************************************************************/
