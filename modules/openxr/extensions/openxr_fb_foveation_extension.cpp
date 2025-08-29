@@ -182,6 +182,8 @@ void OpenXRFBFoveationExtension::_update_profile() {
 
 	XrSwapchainStateFoveationFB foveation_update_state;
 	foveation_update_state.type = XR_TYPE_SWAPCHAIN_STATE_FOVEATION_FB;
+	foveation_update_state.next = nullptr;
+	foveation_update_state.flags = 0;
 	foveation_update_state.profile = foveation_profile;
 
 	result = fov_ext->swapchain_update_state_ext->xrUpdateSwapchainFB(main_color_swapchain, (XrSwapchainStateBaseHeaderFB *)&foveation_update_state);
