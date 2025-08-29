@@ -7,7 +7,7 @@ This platform derives from the Apple embedded abstract platform ([`drivers/apple
 
 This platform uses shared Apple code ([`drivers/apple`](/drivers/apple)).
 
-See also [`misc/dist/ios_xcode`](/misc/dist/ios_xcode) folder for the Xcode
+See also [`misc/dist/apple_embedded_xcode`](/misc/dist/apple_embedded_xcode) folder for the Xcode
 project template used for packaging the iOS export templates.
 
 ## Documentation
