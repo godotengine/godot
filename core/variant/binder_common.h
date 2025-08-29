@@ -531,27 +531,27 @@ void call_with_ptr_args_static_method(void (*p_method)(P...), const void **p_arg
 
 template <typename T, typename... P>
 void call_with_validated_variant_args(Variant *base, void (T::*p_method)(P...), const Variant **p_args) {
-	call_with_validated_variant_args_helper<T, P...>(VariantGetInternalPtr<T>::get_ptr(base), p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_helper<T, P...>(&VariantInternalAccessor<T>::get(base), p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P>
 void call_with_validated_variant_args_ret(Variant *base, R (T::*p_method)(P...), const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_ret_helper<T, R, P...>(VariantGetInternalPtr<T>::get_ptr(base), p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_ret_helper<T, R, P...>(&VariantInternalAccessor<T>::get(base), p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P>
 void call_with_validated_variant_args_retc(Variant *base, R (T::*p_method)(P...) const, const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_retc_helper<T, R, P...>(VariantGetInternalPtr<T>::get_ptr(base), p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_retc_helper<T, R, P...>(&VariantInternalAccessor<T>::get(base), p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
 }
 
 template <typename T, typename... P>
 void call_with_validated_variant_args_static(Variant *base, void (*p_method)(T *, P...), const Variant **p_args) {
-	call_with_validated_variant_args_static_helper<T, P...>(VariantGetInternalPtr<T>::get_ptr(base), p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_static_helper<T, P...>(&VariantInternalAccessor<T>::get(base), p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P>
 void call_with_validated_variant_args_static_retc(Variant *base, R (*p_method)(T *, P...), const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_static_retc_helper<T, R, P...>(VariantGetInternalPtr<T>::get_ptr(base), p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_static_retc_helper<T, R, P...>(&VariantInternalAccessor<T>::get(base), p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
 }
 
 template <typename... P>
