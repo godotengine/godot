@@ -39,6 +39,7 @@ Ref<AudioStreamPlayback> AudioStreamInteractive::instantiate_playback() {
 	Ref<AudioStreamPlaybackInteractive> playback_transitioner;
 	playback_transitioner.instantiate();
 	playback_transitioner->stream = Ref<AudioStreamInteractive>(this);
+	playback_transitioner->volume_linear_smooth = playback_transitioner->stream->volume_linear;
 	return playback_transitioner;
 }
 
@@ -866,16 +867,19 @@ int AudioStreamPlaybackInteractive::mix(AudioFrame *p_buffer, float p_rate_scale
 	}
 
 	int todo = p_frames;
-
+	float volume_increment = (stream->volume_linear - volume_linear_smooth) / p_frames;
 	while (todo) {
 		int to_mix = MIN(todo, BUFFER_SIZE);
 		_mix_internal(to_mix);
 		for (int i = 0; i < to_mix; i++) {
 			p_buffer[i] = mix_buffer[i];
+			p_buffer[i] *= volume_linear_smooth;
+			volume_linear_smooth += volume_increment;
 		}
 		p_buffer += to_mix;
 		todo -= to_mix;
 	}
+	volume_linear_smooth = stream->volume_linear;
 
 	return p_frames;
 }
