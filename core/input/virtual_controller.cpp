@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  os_ios.mm                                                             */
+/*  virtual_controller.cpp                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,66 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "os_ios.h"
+#include "virtual_controller.h"
 
-#import "display_server_ios.h"
-#include <iostream>
-
-#ifdef IOS_ENABLED
-
-OS_IOS *OS_IOS::get_singleton() {
-	return (OS_IOS *)OS_AppleEmbedded::get_singleton();
+void VirtualController::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("enable"), &VirtualController::enable);
+	ClassDB::bind_method(D_METHOD("disable"), &VirtualController::disable);
+	ClassDB::bind_method(D_METHOD("is_enabled"), &VirtualController::is_enabled);
+	ClassDB::bind_method(D_METHOD("set_enabled_left_thumbstick", "enable"), &VirtualController::set_enabled_left_thumbstick);
+	ClassDB::bind_method(D_METHOD("is_enabled_left_thumbstick"), &VirtualController::is_enabled_left_thumbstick);
+	ClassDB::bind_method(D_METHOD("set_enabled_right_thumbstick", "enable"), &VirtualController::set_enabled_right_thumbstick);
+	ClassDB::bind_method(D_METHOD("is_enabled_right_thumbstick"), &VirtualController::is_enabled_right_thumbstick);
+	ClassDB::bind_method(D_METHOD("set_enabled_button_a", "enable"), &VirtualController::set_enabled_button_a);
+	ClassDB::bind_method(D_METHOD("is_enabled_button_a"), &VirtualController::is_enabled_button_a);
+	ClassDB::bind_method(D_METHOD("set_enabled_button_b", "enable"), &VirtualController::set_enabled_button_b);
+	ClassDB::bind_method(D_METHOD("is_enabled_button_b"), &VirtualController::is_enabled_button_b);
+	ClassDB::bind_method(D_METHOD("set_enabled_button_x", "enable"), &VirtualController::set_enabled_button_x);
+	ClassDB::bind_method(D_METHOD("is_enabled_button_x"), &VirtualController::is_enabled_button_x);
+	ClassDB::bind_method(D_METHOD("set_enabled_button_y", "enable"), &VirtualController::set_enabled_button_y);
+	ClassDB::bind_method(D_METHOD("is_enabled_button_y"), &VirtualController::is_enabled_button_y);
 }
-
-OS_IOS::OS_IOS() :
-		OS_AppleEmbedded() {
-	DisplayServerIOS::register_ios_driver();
-}
-
-OS_IOS::~OS_IOS() {}
-
-String OS_IOS::get_name() const {
-	return "iOS";
-}
-
-void OS_IOS::start() {
-	OS_AppleEmbedded::start();
-
-	if (virtual_controller) {
-		virtual_controller->update_state();
-		std::cout << "SHOW VIRTUAL CONTROLLER\n";
-	}
-}
-
-void OS_IOS::deinitialize_modules() {
-	if (virtual_controller) {
-		memdelete(virtual_controller);
-	}
-	OS_AppleEmbedded::deinitialize_modules();
-}
-
-void OS_IOS::initialize_joypads() {
-	OS_AppleEmbedded::initialize_joypads();
-
-	std::cout << "CREATE VIRTUAL CONTROLLER\n";
-
-	virtual_controller = memnew(IOSVirtualController);
-}
-
-VirtualController *OS_IOS::get_virtual_controller() const {
-	return virtual_controller;
-}
-
-void OS_IOS::controller_connected() const {
-	if (virtual_controller) {
-		virtual_controller->controller_connected();
-	}
-}
-
-void OS_IOS::controller_disconnected() const {
-	if (virtual_controller) {
-		virtual_controller->controller_disconnected();
-	}
-}
-
-#endif // IOS_ENABLED
