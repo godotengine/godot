@@ -1312,9 +1312,15 @@ void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_
 	}
 
 	// Emitted "selected" in _selected_changed() when select single node, so select multiple node emit "changed".
-	if (editor_selection->get_selected_nodes().size() > 1) {
-		emit_signal(SNAME("node_changed"));
+	if (editor_selection->get_selection().size() > 1 && !pending_selection_update) {
+		pending_selection_update = true;
+		callable_mp(this, &SceneTreeEditor::_process_selection_update).call_deferred();
 	}
+}
+
+void SceneTreeEditor::_process_selection_update() {
+	pending_selection_update = false;
+	emit_signal(SNAME("node_changed"));
 }
 
 void SceneTreeEditor::_tree_scroll_to_item(ObjectID p_item_id) {

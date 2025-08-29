@@ -2590,7 +2590,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					begin_transform(TRANSFORM_SCALE, true);
 				}
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/collision_reposition", p_event) && editor_selection->get_top_selected_node_list().size() == 1 && !collision_reposition) {
+			if (ED_IS_SHORTCUT("spatial_editor/collision_reposition", p_event) && editor_selection->get_selection().size() == 1 && !collision_reposition) {
 				if (_edit.mode == TRANSFORM_NONE || _edit.instant) {
 					if (_edit.mode == TRANSFORM_NONE) {
 						_compute_edit(_edit.mouse_pos);
@@ -5225,7 +5225,7 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 		selected_files = d["files"];
 	}
 
-	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list();
+	const List<Node *> &selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list();
 	Node *root_node = EditorNode::get_singleton()->get_edited_scene();
 	if (selected_nodes.size() > 0) {
 		Node *selected_node = selected_nodes.front()->get();
