@@ -67,7 +67,7 @@
 			If [code]true[/code], texture can be seen from the back as well, if [code]false[/code], it is invisible when looking at it from behind.
 		</member>
 		<member name="fixed_size" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
-			If [code]true[/code], the texture is rendered at the same size regardless of distance. The texture's size on screen is the same as if the camera was [code]1.0[/code] units away from the texture's origin, regardless of the actual distance from the camera. The [Camera3D]'s field of view (or [member Camera3D.size] when in orthogonal/frustum mode) still affects the size the sprite is drawn at.
+			If [code]true[/code], the texture is rendered at the same size regardless of distance. The texture's size on screen is the same as if the camera was [code]1.0[/code] meters away from the texture's origin, regardless of the actual distance from the camera. The [Camera3D]'s field of view (or [member Camera3D.size] when in orthogonal/frustum mode) still affects the size the sprite is drawn at.
 		</member>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
 			If [code]true[/code], texture is flipped horizontally.
