@@ -348,6 +348,11 @@ Comment: NanoSVG
 Copyright: 2013-2014, Mikko Mononen
 License: Zlib
 
+Files: ./thirdparty/nvapi/nvapi_minimal.h
+Comment: Stripped down version of "nvapi.h" from the NVIDIA NVAPI SDK
+Copyright: 2019-2022, NVIDIA Corporation
+License: Expat
+
 Files: ./thirdparty/opus/
 Comment: Opus
 Copyright: 2001-2011, Xiph.Org, Skype Limited, Octasic,

@@ -1246,6 +1246,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		rtm = GLOBAL_DEF("rendering/threads/thread_model", OS::RENDER_THREAD_SAFE);
 	}
 	GLOBAL_DEF("rendering/threads/thread_safe_bvh", false);
+	GLOBAL_DEF_RST("rendering/misc/compatibility/nvidia_disable_threaded_optimization", false);
 
 	if (rtm >= 0 && rtm < 3) {
 #ifdef NO_THREADS

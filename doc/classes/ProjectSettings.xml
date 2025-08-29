@@ -1657,6 +1657,10 @@
 		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
 			Shaders have a time variable that constantly increases. At some point, it needs to be rolled back to zero to avoid precision errors on shader animations. This setting specifies when (in seconds).
 		</member>
+		<member name="rendering/misc/compatibility/nvidia_disable_threaded_optimization" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], disables the threaded optimization feature from the NVIDIA drivers, which are known to cause stuttering in most OpenGL applications.
+			[b]Note:[/b] This setting only works on Windows, as threaded optimization is disabled by default on other platforms.
+		</member>
 		<member name="rendering/misc/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
 		</member>
