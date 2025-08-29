@@ -33,6 +33,7 @@
 #include "editor/inspector/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/spin_box.h"
 #include "scene/resources/texture.h"
 
 class AspectRatioContainer;
@@ -40,6 +41,7 @@ class ColorRect;
 class TextureRect;
 class ShaderMaterial;
 class ColorChannelSelector;
+class MipmapSelector;
 
 class TexturePreview : public MarginContainer {
 	GDCLASS(TexturePreview, MarginContainer);
@@ -60,6 +62,7 @@ private:
 	Ref<ShaderMaterial> material;
 
 	ColorChannelSelector *channel_selector = nullptr;
+	SpinBox *mipmap_spinbox = nullptr;
 
 	void _draw_outline();
 	void _update_metadata_label_text();
@@ -67,8 +70,8 @@ private:
 protected:
 	void _notification(int p_what);
 	void _update_texture_display_ratio();
-
 	void on_selected_channels_changed();
+	void on_selected_mipmap_changed(double);
 
 public:
 	TextureRect *get_texture_display();
@@ -77,6 +80,9 @@ public:
 
 class EditorInspectorPluginTexture : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginTexture, EditorInspectorPlugin);
+
+private:
+	Ref<Image> this_image;
 
 public:
 	virtual bool can_handle(Object *p_object) override;
