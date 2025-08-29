@@ -49,6 +49,9 @@
 		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
 			Changes the alignment of the underlying [LineEdit].
 		</member>
+		<member name="custom_arrow_round" type="bool" setter="set_custom_arrow_round" getter="is_custom_arrow_rounding" default="false">
+			If [code]true[/code], the value will be rounded to a multiple of [member custom_arrow_step] when interacting with the arrow buttons. Otherwise, increments the value by [member custom_arrow_step] and then rounds it according to [member Range.step].
+		</member>
 		<member name="custom_arrow_step" type="float" setter="set_custom_arrow_step" getter="get_custom_arrow_step" default="0.0">
 			If not [code]0[/code], sets the step when interacting with the arrow buttons of the [SpinBox].
 			[b]Note:[/b] [member Range.value] will still be rounded to a multiple of [member Range.step].
