@@ -11,8 +11,10 @@ env:
   GODOT_CPP_BRANCH: 4.4
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
-  TSAN_OPTIONS: suppressions=${{ github.workspace }}/misc/error_suppressions/tsan.txt
-  UBSAN_OPTIONS: suppressions=${{ github.workspace }}/misc/error_suppressions/ubsan.txt
+  ASAN_OPTIONS: color=always:print_suppressions=1:suppressions=${{ github.workspace }}/misc/error_suppressions/asan.txt
+  LSAN_OPTIONS: color=always:print_suppressions=1:suppressions=${{ github.workspace }}/misc/error_suppressions/lsan.txt
+  TSAN_OPTIONS: color=always:print_suppressions=1:suppressions=${{ github.workspace }}/misc/error_suppressions/tsan.txt
+  UBSAN_OPTIONS: color=always:print_suppressions=1:suppressions=${{ github.workspace }}/misc/error_suppressions/ubsan.txt
 
 jobs:
   build-linux:
