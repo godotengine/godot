@@ -25,6 +25,7 @@
 #include "SDL_events_c.h"
 #include "SDL_eventwatch_c.h"
 #include "../SDL_hints_c.h"
+#include "../audio/SDL_audio_c.h"
 #include "../timer/SDL_timer_c.h"
 #ifndef SDL_JOYSTICK_DISABLED
 #include "../joystick/SDL_joystick_c.h"
@@ -1423,11 +1424,6 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
     // Run any pending main thread callbacks
     SDL_RunMainThreadCallbacks();
 
-#ifdef SDL_PLATFORM_ANDROID
-    // Android event processing is independent of the video subsystem
-    Android_PumpEvents(0);
-#endif
-
     SDL_PumpEventMaintenance();
 
     if (push_sentinel && SDL_EventEnabled(SDL_EVENT_POLL_SENTINEL)) {
@@ -1542,7 +1538,7 @@ bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
             }
             delay = (expiration - now);
         }
-        Android_PumpEvents(delay);
+        //Android_PumpEvents(delay);
     }
 #else
     for (;;) {
