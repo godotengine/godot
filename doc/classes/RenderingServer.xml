@@ -4269,6 +4269,14 @@
 				If [code]true[/code], the viewport uses augmented or virtual reality technologies. See [XRInterface].
 			</description>
 		</method>
+		<method name="viewport_set_use_mipmaps">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="use_mipmaps" type="bool" />
+			<description>
+				If [code]true[/code], the viewport will generate mipmaps for the output [ViewportTexture].
+			</description>
+		</method>
 		<method name="viewport_set_vrs_mode">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
