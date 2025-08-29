@@ -897,6 +897,10 @@ void SceneTree::_main_window_focus_in() {
 }
 
 void SceneTree::_notification(int p_notification) {
+	if (!get_root()) {
+		return;
+	}
+
 	switch (p_notification) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			get_root()->propagate_notification(p_notification);
