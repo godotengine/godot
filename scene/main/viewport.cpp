@@ -1070,7 +1070,7 @@ void Viewport::set_use_mipmaps(bool p_use_mipmaps) {
 	RS::get_singleton()->viewport_set_use_mipmaps(viewport, p_use_mipmaps);
 }
 
-bool Viewport::is_using_mipmap() const {
+bool Viewport::is_using_mipmaps() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return use_mipmaps;
 }
@@ -5013,7 +5013,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_texture"), &Viewport::get_texture);
 
 	ClassDB::bind_method(D_METHOD("set_use_mipmaps", "enable"), &Viewport::set_use_mipmaps);
-	ClassDB::bind_method(D_METHOD("is_using_mipmaps"), &Viewport::is_using_mipmap);
+	ClassDB::bind_method(D_METHOD("is_using_mipmaps"), &Viewport::is_using_mipmaps);
 
 #if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	ClassDB::bind_method(D_METHOD("set_physics_object_picking", "enable"), &Viewport::set_physics_object_picking);
