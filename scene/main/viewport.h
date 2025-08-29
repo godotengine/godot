@@ -590,7 +590,7 @@ public:
 	float get_oversampling() const { return font_oversampling; }
 
 	void set_use_mipmaps(bool p_use_mipmaps);
-	bool get_use_mipmap() const;
+	bool is_using_mipmap() const;
 
 	void set_scaling_3d_mode(Scaling3DMode p_scaling_3d_mode);
 	Scaling3DMode get_scaling_3d_mode() const;

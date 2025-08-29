@@ -4133,7 +4133,7 @@ void TextureStorage::render_target_set_use_mipmaps(RID p_render_target, bool p_u
 	}
 }
 
-bool TextureStorage::render_target_get_use_mipmaps(RID p_render_target) const {
+bool TextureStorage::render_target_is_using_mipmaps(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL_V(rt, false);
 
@@ -4147,7 +4147,7 @@ void TextureStorage::render_target_gen_mipmaps(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
 
-	if (rt->use_mipmaps == false || rt->color_mipmaps.size() < 2) {
+	if (!rt->use_mipmaps || rt->color_mipmaps.size() < 2) {
 		return;
 	}
 

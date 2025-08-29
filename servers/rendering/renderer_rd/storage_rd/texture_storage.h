@@ -766,7 +766,7 @@ public:
 	virtual bool render_target_is_using_debanding(RID p_render_target) const override;
 
 	virtual void render_target_set_use_mipmaps(RID p_render_target, bool p_use_mipmaps) override;
-	virtual bool render_target_get_use_mipmaps(RID p_render_target) const override;
+	virtual bool render_target_is_using_mipmaps(RID p_render_target) const override;
 	virtual void render_target_gen_mipmaps(RID p_render_target) override;
 
 	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps);

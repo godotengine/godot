@@ -2170,7 +2170,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 					glTexImage2D(texture_target, l, rt->color_internal_format, width, height, 0, rt->color_format, rt->color_type, nullptr);
 				}
 
-				if (rt->use_mipmaps == false || (width == 1 && height == 1)) {
+				if (!rt->use_mipmaps || (width == 1 && height == 1)) {
 					break;
 				}
 
@@ -2785,7 +2785,7 @@ void TextureStorage::render_target_set_use_mipmaps(RID p_render_target, bool p_u
 	_update_render_target(rt);
 }
 
-bool TextureStorage::render_target_get_use_mipmaps(RID p_render_target) const {
+bool TextureStorage::render_target_is_using_mipmaps(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL_V(rt, false);
 
@@ -3205,7 +3205,7 @@ void TextureStorage::render_target_gen_mipmaps(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
 
-	if (rt->use_mipmaps == false) {
+	if (!rt->use_mipmaps) {
 		return;
 	}
 
