@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Node used for displaying a [Mesh] in 2D. A [MeshInstance2D] can be automatically created from an existing [Sprite2D] via a tool in the editor toolbar. Select the [Sprite2D] node, then choose [b]Sprite2D &gt; Convert to MeshInstance2D[/b] at the top of the 2D editor viewport.
+		[b]Note:[/b] Per-surface materials are not supported in [MeshInstance2D]. Instead, only the texture specified in [member texture] or the [CanvasItem] shader associated with the [MeshInstance2D] node will be used to render the mesh.
 	</description>
 	<tutorials>
 		<link title="2D meshes">$DOCS_URL/tutorials/2d/2d_meshes.html</link>
