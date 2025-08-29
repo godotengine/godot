@@ -48,7 +48,7 @@ private:
 	bool shuffle = false;
 	bool loop = true;
 	double fade_time = 0.3;
-
+	float stream_pitch[MAX_STREAMS] = { 1.0f };
 	int stream_count = 0;
 	Ref<AudioStream> audio_streams[MAX_STREAMS];
 	HashSet<AudioStreamPlaybackPlaylist *> playbacks;
@@ -65,6 +65,8 @@ public:
 	virtual bool has_loop() const override;
 	void set_list_stream(int p_stream_index, Ref<AudioStream> p_stream);
 	Ref<AudioStream> get_list_stream(int p_stream_index) const;
+	void set_stream_pitch(int p_stream_index, float p_pitch_scale);
+	float get_stream_pitch(int p_stream_index) const;
 
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
