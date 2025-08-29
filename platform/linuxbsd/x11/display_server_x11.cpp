@@ -2334,7 +2334,7 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 
 	DEBUG_LOG_X11("window_set_transient: %lu (%u), prev_parent=%u, parent=%u\n", wd_window.x11_window, p_window, prev_parent, p_parent);
 
-	ERR_FAIL_COND_MSG(wd_window.on_top, "Windows with the 'on top' can't become transient.");
+	ERR_FAIL_COND_MSG(wd_window.on_top, "Windows with the 'on top' flag can't become transient.");
 	if (p_parent == INVALID_WINDOW_ID) {
 		//remove transient
 
