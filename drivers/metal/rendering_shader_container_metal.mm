@@ -79,7 +79,7 @@ const MetalDeviceProfile *MetalDeviceProfile::get_profile(MetalDeviceProfile::Pl
 			} break;
 		}
 		res.features.mslVersionMajor = 3;
-		res.features.mslVersionMinor = 2;
+		res.features.mslVersionMinor = 1;
 	}
 
 	return &profiles.insert(key, res)->value;
