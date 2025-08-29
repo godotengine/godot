@@ -781,8 +781,8 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 				visible = true;
 
 				// Override our size, make sure it matches our required size and is created as a stereo target
-				Size2 xr_size = xr_interface->get_render_target_size();
-				_viewport_set_size(vp, xr_size.width, xr_size.height, xr_interface->get_view_count());
+				Vector3i vp_setup = xr_interface->get_viewport_setup(vp->render_target);
+				_viewport_set_size(vp, vp_setup.x, vp_setup.y, vp_setup.z);
 			} else {
 				// don't render anything
 				visible = false;
@@ -1167,6 +1167,22 @@ RID RendererViewport::viewport_get_render_target(RID p_viewport) const {
 	return viewport->render_target;
 }
 
+RID RendererViewport::viewport_get_for_render_target(RID p_render_target) const {
+	if (p_render_target.is_null()) {
+		return RID();
+	}
+
+	const LocalVector<RID> viewports = viewport_owner.get_owned_list();
+	for (const RID &viewport_rid : viewports) {
+		const Viewport *viewport = viewport_owner.get_or_null(viewport_rid);
+		if (viewport && viewport->render_target == p_render_target) {
+			return viewport_rid;
+		}
+	}
+
+	return RID();
+}
+
 RID RendererViewport::viewport_get_texture(RID p_viewport) const {
 	const Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL_V(viewport, RID());
@@ -1250,6 +1266,13 @@ void RendererViewport::viewport_set_scenario(RID p_viewport, RID p_scenario) {
 	if (viewport->use_occlusion_culling) {
 		RendererSceneOcclusionCull::get_singleton()->buffer_set_scenario(p_viewport, p_scenario);
 	}
+}
+
+RID RendererViewport::viewport_get_scenario(RID p_viewport) const {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL_V(viewport, RID());
+
+	return viewport->scenario;
 }
 
 void RendererViewport::viewport_attach_canvas(RID p_viewport, RID p_canvas) {

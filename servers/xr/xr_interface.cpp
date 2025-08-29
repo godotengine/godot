@@ -226,3 +226,15 @@ Array XRInterface::get_supported_environment_blend_modes() {
 	Array default_blend_modes = { XR_ENV_BLEND_MODE_OPAQUE };
 	return default_blend_modes;
 }
+
+Vector3i XRInterface::get_viewport_setup(RID p_render_target) const {
+	// For backwards compatibility
+	Vector3i result;
+
+	Size2 target_size = const_cast<XRInterface *>(this)->get_render_target_size();
+	result.x = target_size.x;
+	result.y = target_size.y;
+	result.z = const_cast<XRInterface *>(this)->get_view_count();
+
+	return result;
+}
