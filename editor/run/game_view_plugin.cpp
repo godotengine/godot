@@ -44,6 +44,7 @@
 #include "editor/gui/window_wrapper.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/run/embedded_process.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -188,6 +189,11 @@ void GameViewDebugger::set_camera_manipulate_mode(EditorDebuggerNode::CameraOver
 	if (EditorDebuggerNode::get_singleton()->get_camera_override() != EditorDebuggerNode::OVERRIDE_NONE) {
 		set_camera_override(true);
 	}
+}
+
+void GameViewDebugger::set_debug_draw_override(Viewport::DebugDraw p_mode) {
+	debug_draw_override = p_mode;
+	EditorDebuggerNode::get_singleton()->set_debug_draw_override(debug_draw_override);
 }
 
 void GameViewDebugger::reset_camera_2d_position() {
@@ -411,6 +417,9 @@ void GameView::_play_pressed() {
 	if (!window_wrapper->get_window_enabled()) {
 		screen_index_before_start = EditorNode::get_singleton()->get_editor_main_screen()->get_selected_index();
 	}
+
+	// Reset debug draw indication to Normal, as it doesn't persist across game restarts.
+	_debug_draw_override_menu_id_pressed(VIEW_DISPLAY_NORMAL);
 
 	if (embed_on_play && _get_embed_available() == EMBED_AVAILABLE) {
 		// It's important to disable the low power mode when unfocused because otherwise
@@ -734,6 +743,84 @@ void GameView::_camera_override_button_toggled(bool p_pressed) {
 	debugger->set_camera_override(p_pressed);
 }
 
+void GameView::_debug_draw_override_menu_id_pressed(int p_id) {
+	static const int display_options[] = {
+		VIEW_DISPLAY_NORMAL,
+		VIEW_DISPLAY_WIREFRAME,
+		VIEW_DISPLAY_OVERDRAW,
+		VIEW_DISPLAY_UNSHADED,
+		VIEW_DISPLAY_LIGHTING,
+		VIEW_DISPLAY_NORMAL_BUFFER,
+		VIEW_DISPLAY_DEBUG_SHADOW_ATLAS,
+		VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS,
+		VIEW_DISPLAY_DEBUG_VOXEL_GI_ALBEDO,
+		VIEW_DISPLAY_DEBUG_VOXEL_GI_LIGHTING,
+		VIEW_DISPLAY_DEBUG_VOXEL_GI_EMISSION,
+		VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE,
+		VIEW_DISPLAY_DEBUG_SSAO,
+		VIEW_DISPLAY_DEBUG_SSIL,
+		VIEW_DISPLAY_DEBUG_GI_BUFFER,
+		VIEW_DISPLAY_DEBUG_DISABLE_LOD,
+		VIEW_DISPLAY_DEBUG_PSSM_SPLITS,
+		VIEW_DISPLAY_DEBUG_DECAL_ATLAS,
+		VIEW_DISPLAY_DEBUG_SDFGI,
+		VIEW_DISPLAY_DEBUG_SDFGI_PROBES,
+		VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_DECALS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES,
+		VIEW_DISPLAY_DEBUG_OCCLUDERS,
+		VIEW_DISPLAY_MOTION_VECTORS,
+		VIEW_DISPLAY_INTERNAL_BUFFER,
+		VIEW_MAX
+	};
+	static const Viewport::DebugDraw debug_draw_modes[] = {
+		Viewport::DEBUG_DRAW_DISABLED,
+		Viewport::DEBUG_DRAW_WIREFRAME,
+		Viewport::DEBUG_DRAW_OVERDRAW,
+		Viewport::DEBUG_DRAW_UNSHADED,
+		Viewport::DEBUG_DRAW_LIGHTING,
+		Viewport::DEBUG_DRAW_NORMAL_BUFFER,
+		Viewport::DEBUG_DRAW_SHADOW_ATLAS,
+		Viewport::DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
+		Viewport::DEBUG_DRAW_VOXEL_GI_ALBEDO,
+		Viewport::DEBUG_DRAW_VOXEL_GI_LIGHTING,
+		Viewport::DEBUG_DRAW_VOXEL_GI_EMISSION,
+		Viewport::DEBUG_DRAW_SCENE_LUMINANCE,
+		Viewport::DEBUG_DRAW_SSAO,
+		Viewport::DEBUG_DRAW_SSIL,
+		Viewport::DEBUG_DRAW_GI_BUFFER,
+		Viewport::DEBUG_DRAW_DISABLE_LOD,
+		Viewport::DEBUG_DRAW_PSSM_SPLITS,
+		Viewport::DEBUG_DRAW_DECAL_ATLAS,
+		Viewport::DEBUG_DRAW_SDFGI,
+		Viewport::DEBUG_DRAW_SDFGI_PROBES,
+		Viewport::DEBUG_DRAW_CLUSTER_OMNI_LIGHTS,
+		Viewport::DEBUG_DRAW_CLUSTER_SPOT_LIGHTS,
+		Viewport::DEBUG_DRAW_CLUSTER_DECALS,
+		Viewport::DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
+		Viewport::DEBUG_DRAW_OCCLUDERS,
+		Viewport::DEBUG_DRAW_MOTION_VECTORS,
+		Viewport::DEBUG_DRAW_INTERNAL_BUFFER,
+	};
+
+	for (int idx = 0; display_options[idx] != VIEW_MAX; idx++) {
+		int id = display_options[idx];
+		int item_idx = debug_draw_override_menu->get_popup()->get_item_index(id);
+		if (item_idx != -1) {
+			debug_draw_override_menu->get_popup()->set_item_checked(item_idx, id == p_id);
+		}
+		item_idx = debug_draw_override_advanced_submenu->get_item_index(id);
+		if (item_idx != -1) {
+			debug_draw_override_advanced_submenu->set_item_checked(item_idx, id == p_id);
+		}
+
+		if (id == p_id) {
+			debugger->set_debug_draw_override(debug_draw_modes[idx]);
+		}
+	}
+}
+
 void GameView::_camera_override_menu_id_pressed(int p_id) {
 	PopupMenu *menu = camera_override_menu->get_popup();
 	if (p_id != CAMERA_RESET_2D && p_id != CAMERA_RESET_3D) {
@@ -772,6 +859,44 @@ void GameView::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Alt+RMB: Show list of all nodes at position clicked."));
+
+			const int item_count = debug_draw_override_advanced_submenu->get_item_count();
+			for (int i = 0; i < item_count; i++) {
+				const Array item_data = debug_draw_override_advanced_submenu->get_item_metadata(i);
+				if (item_data.is_empty()) {
+					continue;
+				}
+
+				SupportedRenderingMethods rendering_methods = item_data[0];
+				String base_tooltip = item_data[1];
+
+				bool disabled = false;
+				String disabled_tooltip;
+				switch (rendering_methods) {
+					case SupportedRenderingMethods::ALL:
+						break;
+					case SupportedRenderingMethods::FORWARD_PLUS_MOBILE:
+						disabled = OS::get_singleton()->get_current_rendering_method() == "gl_compatibility";
+						disabled_tooltip = TTR("This debug draw mode is not supported when using the Compatibility renderer.");
+						break;
+					case SupportedRenderingMethods::FORWARD_PLUS:
+						disabled = OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "mobile";
+						disabled_tooltip = TTR("This debug draw mode is not supported when using the Mobile or Compatibility renderers.");
+						break;
+				}
+
+				debug_draw_override_advanced_submenu->set_item_disabled(i, disabled);
+				String tooltip = TTR(base_tooltip);
+				if (disabled) {
+					if (tooltip.is_empty()) {
+						tooltip = disabled_tooltip;
+					} else {
+						tooltip += "\n\n" + disabled_tooltip;
+					}
+				}
+				debug_draw_override_advanced_submenu->set_item_tooltip(i, tooltip);
+			}
+
 			_update_ui();
 		} break;
 
@@ -796,6 +921,8 @@ void GameView::_notification(int p_what) {
 
 			camera_override_button->set_button_icon(get_editor_theme_icon(SNAME("Camera")));
 			camera_override_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			// Debug draw override is mostly relevant for 3D, so use a 3D-colored icon.
+			debug_draw_override_menu->set_button_icon(get_editor_theme_icon(SNAME("MeshInstance3D")));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -1146,6 +1273,26 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	camera_override_button->set_tooltip_text(TTRC("Override the in-game camera."));
 	camera_override_button->connect(SceneStringName(toggled), callable_mp(this, &GameView::_camera_override_button_toggled));
 
+	debug_draw_override_menu = memnew(MenuButton);
+	main_menu_hbox->add_child(debug_draw_override_menu);
+	debug_draw_override_menu->set_flat(false);
+	debug_draw_override_menu->set_theme_type_variation("FlatMenuButton");
+	debug_draw_override_menu->set_h_size_flags(SIZE_SHRINK_END);
+	debug_draw_override_menu->set_tooltip_text(TTRC("Debug Draw Options"));
+
+	PopupMenu *menu = debug_draw_override_menu->get_popup();
+	menu->set_hide_on_checkable_item_selection(false);
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_debug_draw_override_menu_id_pressed));
+	menu->add_radio_check_item(TTRC("Display Normal"), VIEW_DISPLAY_NORMAL);
+	menu->set_item_checked(menu->get_item_index(VIEW_DISPLAY_NORMAL), true);
+	menu->add_radio_check_item(TTRC("Display Wireframe"), VIEW_DISPLAY_WIREFRAME);
+	menu->add_radio_check_item(TTRC("Display Overdraw"), VIEW_DISPLAY_OVERDRAW);
+	menu->add_radio_check_item(TTRC("Display Lighting"), VIEW_DISPLAY_LIGHTING);
+	menu->add_radio_check_item(TTRC("Display Unshaded"), VIEW_DISPLAY_UNSHADED);
+	debug_draw_override_advanced_submenu = Node3DEditorViewport::get_advanced_debug_draw_menu();
+	debug_draw_override_advanced_submenu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_debug_draw_override_menu_id_pressed));
+	menu->add_submenu_node_item(TTRC("Display Advanced..."), debug_draw_override_advanced_submenu, VIEW_DISPLAY_ADVANCED);
+
 	camera_override_menu = memnew(MenuButton);
 	main_menu_hbox->add_child(camera_override_menu);
 	camera_override_menu->set_flat(false);
@@ -1153,7 +1300,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	camera_override_menu->set_h_size_flags(SIZE_SHRINK_END);
 	camera_override_menu->set_tooltip_text(TTRC("Camera Override Options"));
 
-	PopupMenu *menu = camera_override_menu->get_popup();
+	menu = camera_override_menu->get_popup();
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_camera_override_menu_id_pressed));
 	menu->add_item(TTRC("Reset 2D Camera"), CAMERA_RESET_2D);
 	menu->add_item(TTRC("Reset 3D Camera"), CAMERA_RESET_3D);
