@@ -19,6 +19,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_root_node">
+			<return type="void" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Makes [param node] root of the currently opened scene. Only works if the scene is empty. If the [param node] is a scene instance, an inheriting scene will be created.
+			</description>
+		</method>
 		<method name="close_scene">
 			<return type="int" enum="Error" />
 			<description>
@@ -401,6 +408,12 @@
 			<param index="0" name="scene_filepath" type="String" />
 			<description>
 				Reloads the scene at the given path.
+			</description>
+		</method>
+		<method name="remove_root_node">
+			<return type="void" />
+			<description>
+				Removes the currently edited scene.
 			</description>
 		</method>
 		<method name="restart_editor">
