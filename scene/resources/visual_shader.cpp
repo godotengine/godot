@@ -967,6 +967,30 @@ void VisualShader::set_node_position(Type p_type, int p_id, const Vector2 &p_pos
 	g->nodes[p_id].position = p_position;
 }
 
+bool VisualShader::has_node_builtins() const {
+	for (int i = 0; i < TYPE_MAX; i++) {
+		for (const KeyValue<int, Node> &E : graph[i].nodes) {
+			if (E.value.node->has_builtin()) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool VisualShader::has_node_embeds() const {
+	for (int i = 0; i < TYPE_MAX; i++) {
+		for (const KeyValue<int, Node> &E : graph[i].nodes) {
+			if (E.value.node->has_embed()) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 Vector2 VisualShader::get_node_position(Type p_type, int p_id) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, Vector2());
 	const Graph *g = &graph[p_type];
@@ -3133,6 +3157,7 @@ void VisualShader::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_node", "type", "node", "position", "id"), &VisualShader::add_node);
 	ClassDB::bind_method(D_METHOD("get_node", "type", "id"), &VisualShader::get_node);
+	ClassDB::bind_method(D_METHOD("has_node_builtins"), &VisualShader::has_node_builtins);
 
 	ClassDB::bind_method(D_METHOD("set_node_position", "type", "id", "position"), &VisualShader::set_node_position);
 	ClassDB::bind_method(D_METHOD("get_node_position", "type", "id"), &VisualShader::get_node_position);
