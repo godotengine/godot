@@ -137,6 +137,9 @@ struct [[nodiscard]] Vector3i {
 			x(0), y(0), z(0) {}
 	constexpr Vector3i(int32_t p_x, int32_t p_y, int32_t p_z) :
 			x(p_x), y(p_y), z(p_z) {}
+	template <typename V, std::enable_if_t<std::is_arithmetic_v<V>, int> = 0>
+	constexpr explicit Vector3i(V p_v) :
+			x(p_v), y(p_v), z(p_v) {}
 };
 
 int64_t Vector3i::length_squared() const {
