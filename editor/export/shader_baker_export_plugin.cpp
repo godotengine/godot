@@ -103,6 +103,11 @@ bool ShaderBakerExportPlugin::_begin_customize_resources(const Ref<EditorExportP
 		return false;
 	}
 
+	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
+		WARN_PRINT("Shader baker can't generate a compatible shader when run with --generate-spirv-debug-info. Restart the editor without this argument if you want to bake shaders.");
+		return false;
+	}
+
 	shader_cache_platform_name = p_platform->get_os_name();
 	shader_cache_renderer_name = RendererSceneRenderRD::get_singleton()->get_name();
 	tasks_processed = 0;
