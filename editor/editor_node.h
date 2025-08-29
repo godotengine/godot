@@ -528,7 +528,7 @@ private:
 
 	static void _print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich);
 	static void _print_handler_impl(const String &p_string, bool p_error, bool p_rich);
-	static void _resource_saved(Ref<Resource> p_resource, const String &p_path);
+	static void _resource_saved(Ref<Resource> p_resource, const String &p_path, bool p_need_to_update_cache = false);
 	static void _resource_loaded(Ref<Resource> p_resource, const String &p_path);
 
 	void _update_theme(bool p_skip_creation = false);
