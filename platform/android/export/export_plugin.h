@@ -279,7 +279,7 @@ public:
 
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override;
 
-	EditorExportPlatformAndroid();
+	virtual void initialize() override;
 
 	~EditorExportPlatformAndroid();
 };
