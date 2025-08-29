@@ -32,6 +32,7 @@
 
 #include "core/io/json.h"
 #include "core/io/plist.h"
+#include "core/os/time.h"
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -638,7 +639,9 @@ void EditorExportPlatformAppleEmbedded::_fix_config_file(const Ref<EditorExportP
 				}
 			}
 
-			strnew += lines[i].replace("$launch_screen_image_mode", value) + "\n";
+			strnew += lines[i].replace("$launch_screen_image_mode", value).replace("$launch_screen_image_file_name", launch_screen_image_file_name) + "\n";
+		} else if (lines[i].contains("$launch_screen_image_file_name")) {
+			strnew += lines[i].replace("$launch_screen_image_file_name", launch_screen_image_file_name) + "\n";
 		} else if (lines[i].contains("$launch_screen_background_color")) {
 			bool use_custom = p_preset->get("storyboard/use_custom_bg_color");
 			Color color = use_custom ? p_preset->get("storyboard/custom_bg_color") : get_project_setting(p_preset, "application/boot_splash/bg_color");
@@ -1908,6 +1911,9 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		return err;
 	}
 
+	// Generate a unique name for the launch screen to avoid caching.
+	launch_screen_image_file_name = "SplashImage_" + Time::get_singleton()->get_datetime_string_from_system().remove_chars("-T:");
+
 	//export rest of the files
 	int ret = unzGoToFirstFile(src_pkg_zip);
 	Vector<uint8_t> project_file_data;
@@ -1936,6 +1942,8 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		unzCloseCurrentFile(src_pkg_zip);
 
 		//write
+
+		file = file.replace("Images.xcassets/SplashImage.imageset", "Images.xcassets/" + launch_screen_image_file_name + ".imageset");
 
 		if (files_to_parse.has(file)) {
 			_fix_config_file(p_preset, data, config_data, p_debug);
@@ -2087,13 +2095,14 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 	}
 
 	{
-		String splash_image_path = binary_dir + "/Images.xcassets/SplashImage.imageset/";
+		String splash_image_path = binary_dir + "/Images.xcassets/" + launch_screen_image_file_name + ".imageset/";
 
 		Ref<DirAccess> launch_screen_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (launch_screen_da.is_null()) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not access the filesystem."));
 			return ERR_CANT_CREATE;
 		}
+		launch_screen_da->make_dir_recursive(splash_image_path);
 
 		print_line("Exporting launch screen storyboard");
 
