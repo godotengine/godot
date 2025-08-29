@@ -137,7 +137,7 @@ void RasterizerCanvasBaseGLES2::canvas_begin() {
 void RasterizerCanvasBaseGLES2::canvas_end() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	for (int i = 0; i < VS::ARRAY_MAX; i++) {
+	for (uint32_t i = 0; i < VS::ARRAY_MAX; i++) {
 		glDisableVertexAttribArray(i);
 	}
 
@@ -910,7 +910,7 @@ void RasterizerCanvasBaseGLES2::draw_lens_distortion_rect(const Rect2 &p_rect, f
 	// and cleanup
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	for (int i = 0; i < VS::ARRAY_MAX; i++) {
+	for (uint32_t i = 0; i < VS::ARRAY_MAX; i++) {
 		glDisableVertexAttribArray(i);
 	}
 }
