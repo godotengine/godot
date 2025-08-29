@@ -1309,7 +1309,6 @@
 		<member name="caret_type" type="int" setter="set_caret_type" getter="get_caret_type" enum="TextEdit.CaretType" default="0">
 			Set the type of caret to draw.
 		</member>
-		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="true">
 			If [code]true[/code], a right-click displays the context menu.
 		</member>
