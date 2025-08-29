@@ -8385,7 +8385,7 @@ void Node3DEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	snap_key_enabled = Input::get_singleton()->is_key_pressed(Key::CTRL);
+	snap_key_enabled = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 }
 
 void Node3DEditor::_sun_environ_settings_pressed() {
