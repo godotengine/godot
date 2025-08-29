@@ -3758,8 +3758,14 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		}
 	}
 
-	if (call_type.is_coroutine && !p_is_await && !p_is_root) {
-		push_error(vformat(R"*(Function "%s()" is a coroutine, so it must be called with "await".)*", p_call->function_name), p_call);
+	if (call_type.is_coroutine && !p_is_await) {
+		if (p_is_root) {
+#ifdef DEBUG_ENABLED
+			parser->push_warning(p_call, GDScriptWarning::MISSING_AWAIT);
+#endif // DEBUG_ENABLED
+		} else {
+			push_error(vformat(R"*(Function "%s()" is a coroutine, so it must be called with "await".)*", p_call->function_name), p_call);
+		}
 	}
 
 	p_call->set_datatype(call_type);
