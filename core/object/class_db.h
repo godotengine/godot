@@ -551,25 +551,25 @@ public:
 
 #endif // DEBUG_ENABLED
 
-#define GDREGISTER_CLASS(m_class)             \
-	if (m_class::_class_is_enabled) {         \
-		::ClassDB::register_class<m_class>(); \
+#define GDREGISTER_CLASS(m_class)               \
+	if constexpr (m_class::_class_is_enabled) { \
+		::ClassDB::register_class<m_class>();   \
 	}
 #define GDREGISTER_VIRTUAL_CLASS(m_class)         \
-	if (m_class::_class_is_enabled) {             \
+	if constexpr (m_class::_class_is_enabled) {   \
 		::ClassDB::register_class<m_class>(true); \
 	}
 #define GDREGISTER_ABSTRACT_CLASS(m_class)             \
-	if (m_class::_class_is_enabled) {                  \
+	if constexpr (m_class::_class_is_enabled) {        \
 		::ClassDB::register_abstract_class<m_class>(); \
 	}
 #define GDREGISTER_INTERNAL_CLASS(m_class)             \
-	if (m_class::_class_is_enabled) {                  \
+	if constexpr (m_class::_class_is_enabled) {        \
 		::ClassDB::register_internal_class<m_class>(); \
 	}
 
 #define GDREGISTER_RUNTIME_CLASS(m_class)             \
-	if (m_class::_class_is_enabled) {                 \
+	if constexpr (m_class::_class_is_enabled) {       \
 		::ClassDB::register_runtime_class<m_class>(); \
 	}
 
