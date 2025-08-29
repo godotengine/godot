@@ -677,7 +677,7 @@ bool EditorExportPlatform::_export_customize_dictionary(Dictionary &dict, LocalV
 					}
 
 					// If it was not replaced, go through and see if there is something to replace.
-					if (res.is_valid() && !res->get_path().is_resource_file() && _export_customize_object(res.ptr(), customize_resources_plugins), true) {
+					if (res.is_valid() && !res->get_path().is_resource_file() && _export_customize_object(res.ptr(), customize_resources_plugins)) {
 						changed = true;
 					}
 				}
@@ -724,7 +724,7 @@ bool EditorExportPlatform::_export_customize_array(Array &arr, LocalVector<Ref<E
 					}
 
 					// If it was not replaced, go through and see if there is something to replace.
-					if (res.is_valid() && !res->get_path().is_resource_file() && _export_customize_object(res.ptr(), customize_resources_plugins), true) {
+					if (res.is_valid() && !res->get_path().is_resource_file() && _export_customize_object(res.ptr(), customize_resources_plugins)) {
 						changed = true;
 					}
 				}
@@ -771,7 +771,7 @@ bool EditorExportPlatform::_export_customize_object(Object *p_object, LocalVecto
 					}
 
 					// If it was not replaced, go through and see if there is something to replace.
-					if (res.is_valid() && !res->get_path().is_resource_file() && _export_customize_object(res.ptr(), customize_resources_plugins), true) {
+					if (res.is_valid() && !res->get_path().is_resource_file() && _export_customize_object(res.ptr(), customize_resources_plugins)) {
 						changed = true;
 					}
 				}
@@ -780,16 +780,20 @@ bool EditorExportPlatform::_export_customize_object(Object *p_object, LocalVecto
 			case Variant::DICTIONARY: {
 				Dictionary d = p_object->get(E.name);
 				if (_export_customize_dictionary(d, customize_resources_plugins)) {
-					// May have been generated, so set back just in case
-					p_object->set(E.name, d);
+					if (p_object->get(E.name) != d) {
+						p_object->set(E.name, d);
+					}
+
 					changed = true;
 				}
 			} break;
 			case Variant::ARRAY: {
 				Array a = p_object->get(E.name);
 				if (_export_customize_array(a, customize_resources_plugins)) {
-					// May have been generated, so set back just in case
-					p_object->set(E.name, a);
+					if (p_object->get(E.name) != a) {
+						p_object->set(E.name, a);
+					}
+
 					changed = true;
 				}
 			} break;
