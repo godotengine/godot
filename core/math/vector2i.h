@@ -37,7 +37,12 @@ class String;
 struct Vector2;
 
 struct [[nodiscard]] Vector2i {
-	static const int AXIS_COUNT = 2;
+	static const Vector2i LEFT;
+	static const Vector2i RIGHT;
+	static const Vector2i UP;
+	static const Vector2i DOWN;
+
+	static constexpr int AXIS_COUNT = 2;
 
 	enum Axis {
 		AXIS_X,
@@ -149,6 +154,11 @@ struct [[nodiscard]] Vector2i {
 			x(p_x), y(p_y) {}
 	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
 };
+
+inline constexpr Vector2i Vector2i::LEFT = { -1, 0 };
+inline constexpr Vector2i Vector2i::RIGHT = { 1, 0 };
+inline constexpr Vector2i Vector2i::UP = { 0, -1 };
+inline constexpr Vector2i Vector2i::DOWN = { 0, 1 };
 
 constexpr Vector2i Vector2i::operator+(const Vector2i &p_v) const {
 	return Vector2i(x + p_v.x, y + p_v.y);

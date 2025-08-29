@@ -39,7 +39,20 @@ struct Vector2;
 struct Vector3i;
 
 struct [[nodiscard]] Vector3 {
-	static const int AXIS_COUNT = 3;
+	static const Vector3 LEFT;
+	static const Vector3 RIGHT;
+	static const Vector3 UP;
+	static const Vector3 DOWN;
+	static const Vector3 FORWARD;
+	static const Vector3 BACK;
+	static const Vector3 MODEL_LEFT;
+	static const Vector3 MODEL_RIGHT;
+	static const Vector3 MODEL_TOP;
+	static const Vector3 MODEL_BOTTOM;
+	static const Vector3 MODEL_FRONT;
+	static const Vector3 MODEL_REAR;
+
+	static constexpr int AXIS_COUNT = 3;
 
 	enum Axis {
 		AXIS_X,
@@ -195,6 +208,19 @@ struct [[nodiscard]] Vector3 {
 			x(p_x), y(p_y), z(p_z) {}
 };
 
+inline constexpr Vector3 Vector3::LEFT = { -1, 0, 0 };
+inline constexpr Vector3 Vector3::RIGHT = { 1, 0, 0 };
+inline constexpr Vector3 Vector3::UP = { 0, 1, 0 };
+inline constexpr Vector3 Vector3::DOWN = { 0, -1, 0 };
+inline constexpr Vector3 Vector3::FORWARD = { 0, 0, -1 };
+inline constexpr Vector3 Vector3::BACK = { 0, 0, 1 };
+inline constexpr Vector3 Vector3::MODEL_LEFT = { 1, 0, 0 };
+inline constexpr Vector3 Vector3::MODEL_RIGHT = { -1, 0, 0 };
+inline constexpr Vector3 Vector3::MODEL_TOP = { 0, 1, 0 };
+inline constexpr Vector3 Vector3::MODEL_BOTTOM = { 0, -1, 0 };
+inline constexpr Vector3 Vector3::MODEL_FRONT = { 0, 0, 1 };
+inline constexpr Vector3 Vector3::MODEL_REAR = { 0, 0, -1 };
+
 Vector3 Vector3::cross(const Vector3 &p_with) const {
 	Vector3 ret(
 			(y * p_with.z) - (z * p_with.y),
@@ -334,7 +360,7 @@ Vector3 Vector3::get_any_perpendicular() const {
 	// since it could be a different vector depending on the prior branching code Math::abs(x) <= Math::abs(y) && Math::abs(x) <= Math::abs(z).
 	// However, it would be reasonable to use any of the axes of the basis, as it is simpler to calculate.
 	ERR_FAIL_COND_V_MSG(is_zero_approx(), Vector3(0, 0, 0), "The Vector3 must not be zero.");
-	return cross((Math::abs(x) <= Math::abs(y) && Math::abs(x) <= Math::abs(z)) ? Vector3(1, 0, 0) : Vector3(0, 1, 0)).normalized();
+	return cross((Math::abs(x) <= Math::abs(y) && Math::abs(x) <= Math::abs(z)) ? Vector3::RIGHT : Vector3::UP).normalized();
 }
 
 /* Operators */
