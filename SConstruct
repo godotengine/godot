@@ -140,6 +140,7 @@ env.__class__.module_check_dependencies = methods.module_check_dependencies
 
 env["x86_libtheora_opt_gcc"] = False
 env["x86_libtheora_opt_vc"] = False
+env["PYTHON_BIN"] = sys.executable
 
 # avoid issues when building with different versions of python out of the same directory
 env.SConsignFile(File("#.sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL)).abspath)

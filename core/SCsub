@@ -3,8 +3,6 @@ from misc.utility.scons_hints import *
 
 import os
 
-import core_builders
-
 import methods
 
 Import("env")
@@ -169,60 +167,97 @@ env.core_sources += thirdparty_obj
 env.add_source_files(env.core_sources, "*.cpp")
 
 # Generate disabled classes
-env.CommandNoCache(
-    "disabled_classes.gen.h", env.Value(env.disabled_classes), env.Run(core_builders.disabled_class_builder)
+env.Command(
+    "disabled_classes.gen.h",
+    ["core_builders.py", *env.disabled_classes],
+    env.Run("$PYTHON_BIN ${SOURCES[0]} disabled_classes $TARGET ${SOURCES[1:]}"),
 )
 
 # Generate version info
-env.CommandNoCache(
+version_info = methods.get_version_info(env.module_version_string)
+version_cmd = (
+    "$PYTHON_BIN ${SOURCES[0]} version_info $TARGET --short_name ${SOURCES[1]} --name ${SOURCES[2]} "
+    + "--major ${SOURCES[3]} --minor ${SOURCES[4]} --patch ${SOURCES[5]} --status ${SOURCES[6]} "
+    + "--build ${SOURCES[7]} --website ${SOURCES[9]} --docs_branch ${SOURCES[10]}"
+)
+if version_info["module_config"]:  # Empty string would resolve to "0".
+    version_cmd += " --module_config ${SOURCES[8]}"
+
+env.Command(
     "version_generated.gen.h",
-    env.Value(methods.get_version_info(env.module_version_string)),
-    env.Run(core_builders.version_info_builder),
+    [
+        "core_builders.py",
+        env.Value(version_info["short_name"]),
+        env.Value(version_info["name"]),
+        env.Value(version_info["major"]),
+        env.Value(version_info["minor"]),
+        env.Value(version_info["patch"]),
+        env.Value(version_info["status"]),
+        env.Value(version_info["build"]),
+        env.Value(version_info["module_config"]),
+        env.Value(version_info["website"]),
+        env.Value(version_info["docs_branch"]),
+    ],
+    env.Run(version_cmd),
 )
 
 # Generate version hash
-gen_hash = env.CommandNoCache(
-    "version_hash.gen.cpp", env.Value(methods.get_git_info()), env.Run(core_builders.version_hash_builder)
+git_info = methods.get_git_info()
+git_cmd = "$PYTHON_BIN ${SOURCES[0]} git_info $TARGET --hash ${SOURCES[1]} --timestamp ${SOURCES[2]}"
+gen_hash = env.Command(
+    "version_hash.gen.cpp",
+    ["core_builders.py", env.Value(git_info["git_hash"]), env.Value(git_info["git_timestamp"])],
+    env.Run(git_cmd),
 )
 env.add_source_files(env.core_sources, gen_hash)
 
 # Generate AES256 script encryption key
-encryption_key = os.environ.get("SCRIPT_AES256_ENCRYPTION_KEY")
+encryption_cmd = "$PYTHON_BIN ${SOURCES[0]} encryption_key $TARGET"
+encryption_key = os.environ.get("SCRIPT_AES256_ENCRYPTION_KEY", "")
 encryption_key_var = "SCRIPT_AES256_ENCRYPTION_KEY"
-if encryption_key is None:
+if not encryption_key:
     # Fallback to the environment variable used by Godot on export.
     # This allows setting only one environment variable for both compiling and exporting.
-    encryption_key = os.environ.get("GODOT_SCRIPT_ENCRYPTION_KEY")
+    encryption_key = os.environ.get("GODOT_SCRIPT_ENCRYPTION_KEY", "")
     encryption_key_var = "GODOT_SCRIPT_ENCRYPTION_KEY"
 if encryption_key:
     print(
         f"\n*** IMPORTANT: Compiling Godot with custom `{encryption_key_var}` set as environment variable."
         "\n*** Make sure to use templates compiled with this key when exporting a project with encryption.\n"
     )
-gen_encrypt = env.CommandNoCache(
-    "script_encryption_key.gen.cpp",
-    env.Value(encryption_key),
-    env.Run(core_builders.encryption_key_builder),
+    encryption_cmd += " --key ${SOURCES[1]}"
+
+gen_encrypt = env.Command(
+    "script_encryption_key.gen.cpp", ["core_builders.py", env.Value(encryption_key)], env.Run(encryption_cmd)
 )
 env.add_source_files(env.core_sources, gen_encrypt)
 
 # Certificates
-env.CommandNoCache(
+certs_cmd = "$PYTHON_BIN ${SOURCES[0]} certs $TARGET ${SOURCES[1]} ${SOURCES[2]}"
+if env["system_certs_path"]:
+    certs_cmd += " --system ${SOURCES[3]}"
+env.Command(
     "#core/io/certs_compressed.gen.h",
-    ["#thirdparty/certs/ca-bundle.crt", env.Value(env["builtin_certs"]), env.Value(env["system_certs_path"])],
-    env.Run(core_builders.make_certs_header),
+    [
+        "core_builders.py",
+        "#thirdparty/certs/ca-bundle.crt",
+        env.Value(env["builtin_certs"]),
+        env.Value(env["system_certs_path"]),
+    ],
+    env.Run(certs_cmd),
 )
 
 # Authors
-env.CommandNoCache("#core/authors.gen.h", "#AUTHORS.md", env.Run(core_builders.make_authors_header))
+authors_cmd = "$PYTHON_BIN ${SOURCES[0]} authors $TARGET ${SOURCES[1]}"
+env.Command("#core/authors.gen.h", ["core_builders.py", "#AUTHORS.md"], env.Run(authors_cmd))
 
 # Donors
-env.CommandNoCache("#core/donors.gen.h", "#DONORS.md", env.Run(core_builders.make_donors_header))
+donors_cmd = "$PYTHON_BIN ${SOURCES[0]} donors $TARGET ${SOURCES[1]}"
+env.Command("#core/donors.gen.h", ["core_builders.py", "#DONORS.md"], env.Run(donors_cmd))
 
 # License
-env.CommandNoCache(
-    "#core/license.gen.h", ["#COPYRIGHT.txt", "#LICENSE.txt"], env.Run(core_builders.make_license_header)
-)
+license_cmd = "$PYTHON_BIN ${SOURCES[0]} license $TARGET ${SOURCES[1]} ${SOURCES[2]}"
+env.Command("#core/license.gen.h", ["core_builders.py", "#LICENSE.txt", "#COPYRIGHT.txt"], env.Run(license_cmd))
 
 # Chain load SCsubs
 SConscript("profiling/SCsub")
