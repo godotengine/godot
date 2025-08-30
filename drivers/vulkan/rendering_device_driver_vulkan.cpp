@@ -1940,6 +1940,11 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 		alloc_create_info.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 	}
 
+	if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
+		// We must set it right now or else vmaFindMemoryTypeIndexForBufferInfo will use wrong parameters.
+		alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+	}
+
 	if (image_size <= SMALL_ALLOCATION_MAX_SIZE) {
 		uint32_t mem_type_index = 0;
 		vmaFindMemoryTypeIndexForImageInfo(allocator, &create_info, &alloc_create_info, &mem_type_index);
@@ -1953,7 +1958,6 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	VmaAllocationInfo alloc_info = {};
 
 	if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
-		alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 		VkResult err = vmaCreateImage(allocator, &create_info, &alloc_create_info, &vk_image, &allocation, &alloc_info);
 		ERR_FAIL_COND_V_MSG(err, TextureID(), "vmaCreateImage failed with error " + itos(err) + ".");
 	} else {
@@ -2238,25 +2242,8 @@ void RenderingDeviceDriverVulkan::texture_get_copyable_layout(TextureID p_textur
 
 uint8_t *RenderingDeviceDriverVulkan::texture_map(TextureID p_texture, const TextureSubresource &p_subresource) {
 	const TextureInfo *tex_info = (const TextureInfo *)p_texture.id;
-
-	VkImageSubresource vk_subres = {};
-	vk_subres.aspectMask = (VkImageAspectFlags)(1 << p_subresource.aspect);
-	vk_subres.arrayLayer = p_subresource.layer;
-	vk_subres.mipLevel = p_subresource.mipmap;
-
-	VkSubresourceLayout vk_layout = {};
-	vkGetImageSubresourceLayout(vk_device, tex_info->vk_view_create_info.image, &vk_subres, &vk_layout);
-
 	void *data_ptr = nullptr;
-	VkResult err = vkMapMemory(
-			vk_device,
-			tex_info->allocation.info.deviceMemory,
-			tex_info->allocation.info.offset + vk_layout.offset,
-			vk_layout.size,
-			0,
-			&data_ptr);
-
-	vmaMapMemory(allocator, tex_info->allocation.handle, &data_ptr);
+	VkResult err = vmaMapMemory(allocator, tex_info->allocation.handle, &data_ptr);
 	ERR_FAIL_COND_V_MSG(err, nullptr, "vkMapMemory failed with error " + itos(err) + ".");
 	return (uint8_t *)data_ptr;
 }
