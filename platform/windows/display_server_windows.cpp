@@ -6160,7 +6160,7 @@ void DisplayServerWindows::_process_key_events() {
 					}
 
 					k->set_window_id(ke.window_id);
-					k->set_keyboard_id(active_keyboard_id);
+					k->set_device(active_keyboard_id);
 					if (keycode != Key::SHIFT) {
 						k->set_shift_pressed(ke.shift);
 					}
@@ -6195,7 +6195,7 @@ void DisplayServerWindows::_process_key_events() {
 
 				k->set_window_id(ke.window_id);
 				active_keyboard_id = (int64_t)ke.keyboard_id; // WM_KEYDOWN should be trusted to set active keyboard ID
-				k->set_keyboard_id(active_keyboard_id);
+				k->set_device(active_keyboard_id);
 				k->set_pressed(ke.uMsg == WM_KEYDOWN);
 
 				bool is_oem = (ke.wParam >= 0xB8) && (ke.wParam <= 0xE6);
