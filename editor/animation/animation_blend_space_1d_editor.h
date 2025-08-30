@@ -72,6 +72,7 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	LineEdit *point_name_edit = nullptr;
 	SpinBox *edit_value = nullptr;
 	Button *open_editor = nullptr;
+	VSeparator *open_editor_sep = nullptr;
 
 	int selected_point = -1;
 

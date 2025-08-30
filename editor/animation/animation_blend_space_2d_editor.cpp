@@ -425,8 +425,10 @@ void AnimationNodeBlendSpace2DEditor::_update_tool_erase() {
 		Ref<AnimationNode> an = blend_space->get_blend_point_node(selected_point);
 		if (AnimationTreeEditor::get_singleton()->can_edit(an)) {
 			open_editor->show();
+			open_editor_sep->show();
 		} else {
 			open_editor->hide();
+			open_editor_sep->hide();
 		}
 		if (!read_only) {
 			edit_hb->show();
@@ -1053,20 +1055,29 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 
 	top_hb->add_child(memnew(VSeparator));
 
-	top_hb->add_child(memnew(Label(TTR("Sync:"))));
+	top_hb->add_child(memnew(Label(TTR("Sync"))));
 	sync = memnew(CheckBox);
 	top_hb->add_child(sync);
 	sync->connect(SceneStringName(toggled), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
 
 	top_hb->add_child(memnew(VSeparator));
 
-	top_hb->add_child(memnew(Label(TTR("Blend:"))));
+	top_hb->add_child(memnew(Label(TTR("Blend"))));
 	interpolation = memnew(OptionButton);
 	top_hb->add_child(interpolation);
 	interpolation->connect(SceneStringName(item_selected), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
 
+	top_hb->add_spacer();
+
 	edit_hb = memnew(HBoxContainer);
 	top_hb->add_child(edit_hb);
+
+	open_editor = memnew(Button);
+	edit_hb->add_child(open_editor);
+	open_editor->set_text(TTR("Open Editor"));
+	open_editor->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_open_editor), CONNECT_DEFERRED);
+	open_editor_sep = memnew(VSeparator);
+	edit_hb->add_child(open_editor_sep);
 
 	point_name_edit = memnew(LineEdit);
 	edit_hb->add_child(point_name_edit);
@@ -1074,8 +1085,9 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	point_name_edit->set_placeholder("Name");
 	point_name_edit->connect(SceneStringName(text_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_edit_point_name));
 
-	edit_hb->add_child(memnew(Label(TTR("Position:"))));
+	edit_hb->add_child(memnew(VSeparator));
 
+	edit_hb->add_child(memnew(Label(TTR("Position"))));
 	edit_x = memnew(SpinBox);
 	edit_hb->add_child(edit_x);
 	edit_x->set_min(-1000);
@@ -1090,12 +1102,10 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	edit_y->set_max(1000);
 	edit_y->set_accessibility_name(TTRC("Blend X Value"));
 	edit_y->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_edit_point_pos));
-	open_editor = memnew(Button);
-	edit_hb->add_child(open_editor);
-	open_editor->set_text(TTR("Open Editor"));
-	open_editor->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_open_editor), CONNECT_DEFERRED);
+
 	edit_hb->hide();
 	open_editor->hide();
+	open_editor_sep->hide();
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
 	add_child(main_hb);
