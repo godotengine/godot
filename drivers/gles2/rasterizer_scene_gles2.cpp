@@ -2441,6 +2441,10 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 						}
 
 					} break;
+					case RasterizerStorageGLES2::Shader::Spatial::BLEND_MODE_PMALPHA: {
+						glBlendEquation(GL_FUNC_ADD);
+						glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+					} break;
 				}
 
 				prev_blend_mode = blend_mode;
