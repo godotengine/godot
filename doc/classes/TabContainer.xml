@@ -224,13 +224,13 @@
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
 		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="0">
-			Sets the position at which tabs will be placed. See [enum TabBar.AlignmentMode] for details.
+			The position at which tabs will be placed.
 		</member>
 		<member name="tab_focus_mode" type="int" setter="set_tab_focus_mode" getter="get_tab_focus_mode" enum="Control.FocusMode" default="2">
 			The focus access mode for the internal [TabBar] node.
 		</member>
 		<member name="tabs_position" type="int" setter="set_tabs_position" getter="get_tabs_position" enum="TabContainer.TabPosition" default="0">
-			Sets the position of the tab bar. See [enum TabPosition] for details.
+			The position of the tab bar.
 		</member>
 		<member name="tabs_rearrange_group" type="int" setter="set_tabs_rearrange_group" getter="get_tabs_rearrange_group" default="-1">
 			[TabContainer]s with the same rearrange group ID will allow dragging the tabs between them. Enable drag with [member drag_to_rearrange_enabled].
@@ -329,6 +329,9 @@
 		<theme_item name="side_margin" data_type="constant" type="int" default="8">
 			The space at the left or right edges of the tab bar, accordingly with the current [member tab_alignment].
 			The margin is ignored with [constant TabBar.ALIGNMENT_RIGHT] if the tabs are clipped (see [member clip_tabs]) or a popup has been set (see [method set_popup]). The margin is always ignored with [constant TabBar.ALIGNMENT_CENTER].
+		</theme_item>
+		<theme_item name="tab_separation" data_type="constant" type="int" default="0">
+			The space between tabs in the tab bar.
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
 			The font used to draw tab names.

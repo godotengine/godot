@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef THEME_OWNER_H
-#define THEME_OWNER_H
+#pragma once
 
 #include "core/object/object.h"
 #include "scene/resources/theme.h"
@@ -79,7 +78,4 @@ public:
 	int get_theme_default_font_size();
 
 	ThemeOwner(Node *p_holder) { holder = p_holder; }
-	~ThemeOwner() {}
 };
-
-#endif // THEME_OWNER_H

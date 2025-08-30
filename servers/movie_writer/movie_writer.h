@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MOVIE_WRITER_H
-#define MOVIE_WRITER_H
+#pragma once
 
 #include "core/io/image.h"
 #include "core/templates/local_vector.h"
@@ -44,6 +43,7 @@ class MovieWriter : public Object {
 
 	float cpu_time = 0.0f;
 	float gpu_time = 0.0f;
+	uint64_t encoding_time_usec = 0;
 
 	String project_name;
 
@@ -89,5 +89,3 @@ public:
 
 	void end();
 };
-
-#endif // MOVIE_WRITER_H

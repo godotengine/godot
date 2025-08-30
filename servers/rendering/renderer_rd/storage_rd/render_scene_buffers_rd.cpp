@@ -168,6 +168,8 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 
 	ERR_FAIL_COND_MSG(view_count == 0, "Must have at least 1 view");
 
+	vrs_mode = texture_storage->render_target_get_vrs_mode(render_target);
+
 	update_samplers();
 
 	// cleanout any old buffers we had.
@@ -194,7 +196,6 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 
 	// VRS (note, our vrs object will only be set if VRS is supported)
 	RID vrs_texture;
-	RS::ViewportVRSMode vrs_mode = texture_storage->render_target_get_vrs_mode(render_target);
 	if (vrs && vrs_mode != RS::VIEWPORT_VRS_DISABLED) {
 		vrs_texture = create_texture(RB_SCOPE_VRS, RB_TEXTURE, get_vrs_format(), get_vrs_usage_bits(), RD::TEXTURE_SAMPLES_1, vrs->get_vrs_texture_size(internal_size));
 	}
@@ -254,11 +255,20 @@ void RenderSceneBuffersRD::ensure_mfx(RendererRD::MFXSpatialEffect *p_effect) {
 	if (mfx_spatial_context) {
 		return;
 	}
+
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	RenderingDevice *rd = RD::get_singleton();
+
+	// Determine the output format of the render target.
+	RID dest = texture_storage->render_target_get_rd_texture(render_target);
+	RD::TextureFormat tf = rd->texture_get_format(dest);
+	RD::DataFormat output_format = tf.format;
+
 	RendererRD::MFXSpatialEffect::CreateParams params = {
 		.input_size = internal_size,
 		.output_size = target_size,
 		.input_format = base_data_format,
-		.output_format = RD::DATA_FORMAT_R8G8B8A8_UNORM,
+		.output_format = output_format,
 	};
 
 	mfx_spatial_context = p_effect->create_context(params);
@@ -325,9 +335,7 @@ RID RenderSceneBuffersRD::create_texture_from_format(const StringName &p_context
 	named_texture.is_unique = p_unique;
 	named_texture.texture = RD::get_singleton()->texture_create(p_texture_format, p_view);
 
-	Array arr;
-	arr.push_back(p_context);
-	arr.push_back(p_texture_name);
+	Array arr = { p_context, p_texture_name };
 	RD::get_singleton()->set_resource_name(named_texture.texture, String("RenderBuffer {0}/{1}").format(arr));
 
 	update_sizes(named_texture);
@@ -366,9 +374,7 @@ RID RenderSceneBuffersRD::create_texture_view(const StringName &p_context, const
 
 	view_texture.texture = RD::get_singleton()->texture_create_shared(p_view, named_texture.texture);
 
-	Array arr;
-	arr.push_back(p_context);
-	arr.push_back(p_view_name);
+	Array arr = { p_context, p_view_name };
 	RD::get_singleton()->set_resource_name(view_texture.texture, String("RenderBuffer View {0}/{1}").format(arr));
 
 	update_sizes(named_texture);
@@ -446,18 +452,19 @@ RID RenderSceneBuffersRD::get_texture_slice_view(const StringName &p_context, co
 	RID &slice = named_texture.slices[slice_key];
 	slice = RD::get_singleton()->texture_create_shared_from_slice(p_view, named_texture.texture, p_layer, p_mipmap, p_mipmaps, p_layers > 1 ? RD::TEXTURE_SLICE_2D_ARRAY : RD::TEXTURE_SLICE_2D, p_layers);
 
-	Array arr;
-	arr.push_back(p_context);
-	arr.push_back(p_texture_name);
-	arr.push_back(itos(p_layer));
-	arr.push_back(itos(p_layers));
-	arr.push_back(itos(p_mipmap));
-	arr.push_back(itos(p_mipmaps));
-	arr.push_back(itos(p_view.format_override));
-	arr.push_back(itos(p_view.swizzle_r));
-	arr.push_back(itos(p_view.swizzle_g));
-	arr.push_back(itos(p_view.swizzle_b));
-	arr.push_back(itos(p_view.swizzle_a));
+	Array arr = {
+		p_context,
+		p_texture_name,
+		itos(p_layer),
+		itos(p_layers),
+		itos(p_mipmap),
+		itos(p_mipmaps),
+		itos(p_view.format_override),
+		itos(p_view.swizzle_r),
+		itos(p_view.swizzle_g),
+		itos(p_view.swizzle_b),
+		itos(p_view.swizzle_a)
+	};
 	RD::get_singleton()->set_resource_name(slice, String("RenderBuffer {0}/{1}, layer {2}/{3}, mipmap {4}/{5}, view {6}/{7}/{8}/{9}/{10}").format(arr));
 
 	// and return our slice
@@ -704,6 +711,12 @@ RID RenderSceneBuffersRD::get_velocity_buffer(bool p_get_msaa, uint32_t p_layer)
 	}
 }
 
+RID RenderSceneBuffersRD::get_velocity_depth_buffer() {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	RID velocity_depth = texture_storage->render_target_get_override_velocity_depth(render_target);
+	return velocity_depth;
+}
+
 uint32_t RenderSceneBuffersRD::get_color_usage_bits(bool p_resolve, bool p_msaa, bool p_storage) {
 	DEV_ASSERT((!p_resolve && !p_msaa) || (p_resolve != p_msaa));
 
@@ -756,9 +769,9 @@ uint32_t RenderSceneBuffersRD::get_velocity_usage_bits(bool p_resolve, bool p_ms
 }
 
 RD::DataFormat RenderSceneBuffersRD::get_vrs_format() {
-	return RD::DATA_FORMAT_R8_UINT;
+	return RD::get_singleton()->vrs_get_format();
 }
 
 uint32_t RenderSceneBuffersRD::get_vrs_usage_bits() {
-	return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+	return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT;
 }

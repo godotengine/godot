@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VISUAL_SHADER_H
-#define VISUAL_SHADER_H
+#pragma once
 
 #include "core/string/string_builder.h"
 #include "core/templates/safe_refcount.h"
@@ -115,8 +114,6 @@ public:
 	};
 
 private:
-	Type current_type;
-
 	struct Node {
 		Ref<VisualShaderNode> node;
 		Vector2 position;
@@ -134,10 +131,13 @@ private:
 
 	TypedArray<Dictionary> _get_node_connections(Type p_type) const;
 
-	Vector2 graph_offset;
-
 	HashMap<String, int> modes;
 	HashSet<StringName> flags;
+
+	bool stencil_enabled = false;
+	HashMap<String, int> stencil_modes;
+	HashSet<StringName> stencil_flags;
+	int stencil_reference = 1;
 
 	HashMap<String, Varying> varyings;
 #ifdef TOOLS_ENABLED
@@ -154,12 +154,11 @@ private:
 			uint64_t port : 32;
 		};
 		uint64_t key = 0;
-		bool operator<(const ConnectionKey &p_key) const {
-			return key < p_key.key;
-		}
+		// This is used to apply default equal and hash methods for uint64_t to ConnectionKey.
+		operator uint64_t() const { return key; }
 	};
 
-	Error _write_node(Type p_type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<DefaultTextureParam> &r_def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &p_output_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const;
+	Error _write_node(Type p_type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<DefaultTextureParam> &r_def_tex_params, const HashMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const;
 
 	void _input_type_changed(Type p_type, int p_id);
 	bool has_func_name(RenderingServer::ShaderMode p_mode, const String &p_func_name) const;
@@ -177,9 +176,6 @@ protected:
 	virtual void reset_state() override;
 
 public: // internal methods
-	void set_shader_type(Type p_type);
-	Type get_shader_type() const;
-
 	enum {
 		NODE_ID_INVALID = -1,
 		NODE_ID_OUTPUT = 0,
@@ -246,8 +242,10 @@ public: // internal methods
 
 	virtual bool is_text_shader() const override;
 
+#ifndef DISABLE_DEPRECATED
 	void set_graph_offset(const Vector2 &p_offset);
 	Vector2 get_graph_offset() const;
+#endif
 
 	String generate_preview_shader(Type p_type, int p_node, int p_port, Vector<DefaultTextureParam> &r_default_tex_params) const;
 
@@ -793,8 +791,6 @@ public:
 
 	void set_description(const String &p_description);
 	String get_description() const;
-
-	VisualShaderNodeComment() {}
 };
 #endif
 
@@ -1007,5 +1003,3 @@ public:
 };
 
 extern String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name);
-
-#endif // VISUAL_SHADER_H

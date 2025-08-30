@@ -370,6 +370,18 @@ hb_buffer_t::add_info (const hb_glyph_info_t &glyph_info)
 
   len++;
 }
+void
+hb_buffer_t::add_info_and_pos (const hb_glyph_info_t &glyph_info,
+			       const hb_glyph_position_t &glyph_pos)
+{
+  if (unlikely (!ensure (len + 1))) return;
+
+  info[len] = glyph_info;
+  assert (have_positions);
+  pos[len] = glyph_pos;
+
+  len++;
+}
 
 
 void
@@ -518,7 +530,7 @@ void
 hb_buffer_t::merge_clusters_impl (unsigned int start,
 				  unsigned int end)
 {
-  if (cluster_level == HB_BUFFER_CLUSTER_LEVEL_CHARACTERS)
+  if (!HB_BUFFER_CLUSTER_LEVEL_IS_MONOTONE (cluster_level))
   {
     unsafe_to_break (start, end);
     return;
@@ -551,7 +563,7 @@ void
 hb_buffer_t::merge_out_clusters (unsigned int start,
 				 unsigned int end)
 {
-  if (cluster_level == HB_BUFFER_CLUSTER_LEVEL_CHARACTERS)
+  if (!HB_BUFFER_CLUSTER_LEVEL_IS_MONOTONE (cluster_level))
     return;
 
   if (unlikely (end - start < 2))
@@ -860,7 +872,7 @@ hb_buffer_destroy (hb_buffer_t *buffer)
  * @destroy: (nullable): A callback to call when @data is not needed anymore
  * @replace: Whether to replace an existing data with the same key
  *
- * Attaches a user-data key/data pair to the specified buffer. 
+ * Attaches a user-data key/data pair to the specified buffer.
  *
  * Return value: `true` if success, `false` otherwise
  *
@@ -1209,7 +1221,7 @@ hb_buffer_get_flags (const hb_buffer_t *buffer)
  * @cluster_level: The cluster level to set on the buffer
  *
  * Sets the cluster level of a buffer. The #hb_buffer_cluster_level_t
- * dictates one aspect of how HarfBuzz will treat non-base characters 
+ * dictates one aspect of how HarfBuzz will treat non-base characters
  * during shaping.
  *
  * Since: 0.9.42
@@ -1229,7 +1241,7 @@ hb_buffer_set_cluster_level (hb_buffer_t               *buffer,
  * @buffer: An #hb_buffer_t
  *
  * Fetches the cluster level of a buffer. The #hb_buffer_cluster_level_t
- * dictates one aspect of how HarfBuzz will treat non-base characters 
+ * dictates one aspect of how HarfBuzz will treat non-base characters
  * during shaping.
  *
  * Return value: The cluster level of @buffer
@@ -1983,7 +1995,7 @@ hb_buffer_add_codepoints (hb_buffer_t          *buffer,
  * @buffer: An #hb_buffer_t
  * @source: source #hb_buffer_t
  * @start: start index into source buffer to copy.  Use 0 to copy from start of buffer.
- * @end: end index into source buffer to copy.  Use @HB_FEATURE_GLOBAL_END to copy to end of buffer.
+ * @end: end index into source buffer to copy.  Use @UINT_MAX (or ((unsigned int) -1)) to copy to end of buffer.
  *
  * Append (part of) contents of another buffer to this buffer.
  *

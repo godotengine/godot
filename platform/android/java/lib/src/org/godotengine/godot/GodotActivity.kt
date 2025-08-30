@@ -39,6 +39,7 @@ import android.util.Log
 import androidx.annotation.CallSuper
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.FragmentActivity
+import org.godotengine.godot.utils.CommandLineFileParser
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
 
@@ -54,7 +55,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		private val TAG = GodotActivity::class.java.simpleName
 
 		@JvmStatic
-		protected val EXTRA_COMMAND_LINE_PARAMS = "command_line_params"
+		val EXTRA_COMMAND_LINE_PARAMS = "command_line_params"
 
 		@JvmStatic
 		protected val EXTRA_NEW_LAUNCH = "new_launch_requested"
@@ -73,9 +74,16 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 
 	@CallSuper
 	override fun onCreate(savedInstanceState: Bundle?) {
+		val assetsCommandLine = try {
+			CommandLineFileParser.parseCommandLine(assets.open("_cl_"))
+		} catch (ignored: Exception) {
+			mutableListOf()
+		}
+		commandLineParams.addAll(assetsCommandLine)
+
 		val params = intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
 		Log.d(TAG, "Starting intent $intent with parameters ${params.contentToString()}")
-		updateCommandLineParams(params ?: emptyArray())
+		commandLineParams.addAll(params ?: emptyArray())
 
 		super.onCreate(savedInstanceState)
 
@@ -107,12 +115,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 
 	protected fun triggerRebirth(bundle: Bundle?, intent: Intent) {
 		// Launch a new activity
-		val godot = godot
-		if (godot != null) {
-			godot.destroyAndKillProcess {
-				ProcessPhoenix.triggerRebirth(this, bundle, intent)
-			}
-		} else {
+		Godot.getInstance(applicationContext).destroyAndKillProcess {
 			ProcessPhoenix.triggerRebirth(this, bundle, intent)
 		}
 	}
@@ -159,8 +162,6 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		intent = newIntent
 
 		handleStartIntent(newIntent, false)
-
-		godotFragment?.onNewIntent(newIntent)
 	}
 
 	private fun handleStartIntent(intent: Intent, newLaunch: Boolean) {
@@ -216,13 +217,5 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 	}
 
 	@CallSuper
-	protected open fun updateCommandLineParams(args: Array<String>) {
-		// Update the list of command line params with the new args
-		commandLineParams.clear()
-		if (args.isNotEmpty()) {
-			commandLineParams.addAll(args)
-		}
-	}
-
-	final override fun getCommandLine() = commandLineParams
+	override fun getCommandLine(): MutableList<String> = commandLineParams
 }

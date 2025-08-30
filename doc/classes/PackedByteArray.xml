@@ -6,7 +6,7 @@
 	<description>
 		An array specifically designed to hold bytes. Packs data tightly, so it saves memory for large array sizes.
 		[PackedByteArray] also provides methods to encode/decode various types to/from bytes. The way values are encoded is an implementation detail and shouldn't be relied upon when interacting with external apps.
-		[b]Note:[/b] Packed arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate]. This is [i]not[/i] the case for built-in properties and methods. The returned packed array of these are a copies, and changing it will [i]not[/i] affect the original value. To update a built-in property you need to modify the returned array, and then assign it to the property again.
+		[b]Note:[/b] Packed arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate]. This is [i]not[/i] the case for built-in properties and methods. In these cases the returned packed array is a copy, and changing it will [i]not[/i] affect the original value. To update a built-in property of this type, modify the returned array and then assign it to the property again.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -54,6 +54,30 @@
 			<description>
 				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [param before] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
 				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
+			</description>
+		</method>
+		<method name="bswap16">
+			<return type="void" />
+			<param index="0" name="offset" type="int" default="0" />
+			<param index="1" name="count" type="int" default="-1" />
+			<description>
+				Swaps the byte order of [param count] 16-bit segments of the array starting at [param offset]. Swap is done in-place. If [param count] is less than zero, all segments to the end of array are processed, if processed data size is not a multiple of 2, the byte after the last processed 16-bit segment is not modified.
+			</description>
+		</method>
+		<method name="bswap32">
+			<return type="void" />
+			<param index="0" name="offset" type="int" default="0" />
+			<param index="1" name="count" type="int" default="-1" />
+			<description>
+				Swaps the byte order of [param count] 32-bit segments of the array starting at [param offset]. Swap is done in-place. If [param count] is less than zero, all segments to the end of array are processed, if processed data size is not a multiple of 4, bytes after the last processed 32-bit segment are not modified.
+			</description>
+		</method>
+		<method name="bswap64">
+			<return type="void" />
+			<param index="0" name="offset" type="int" default="0" />
+			<param index="1" name="count" type="int" default="-1" />
+			<description>
+				Swaps the byte order of [param count] 64-bit segments of the array starting at [param offset]. Swap is done in-place. If [param count] is less than zero, all segments to the end of array are processed, if processed data size is not a multiple of 8, bytes after the last processed 64-bit segment are not modified.
 			</description>
 		</method>
 		<method name="clear">
@@ -292,6 +316,13 @@
 				Encodes a [Variant] at the index of [param byte_offset] bytes. A sufficient space must be allocated, depending on the encoded variant's size. If [param allow_objects] is [code]false[/code], [Object]-derived values are not permitted and will instead be serialized as ID-only.
 			</description>
 		</method>
+		<method name="erase">
+			<return type="bool" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Removes the first occurrence of a value from the array and returns [code]true[/code]. If the value does not exist in the array, nothing happens and [code]false[/code] is returned. To remove an element by index, use [method remove_at] instead.
+			</description>
+		</method>
 		<method name="fill">
 			<return type="void" />
 			<param index="0" name="value" type="int" />
@@ -311,13 +342,24 @@
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the byte at the given [param index] in the array. This is the same as using the [code][][/code] operator ([code]array[index][/code]).
+				Returns the byte at the given [param index] in the array. If [param index] out-of-bounds or negative, this method fails and returns [code]0[/code].
+				This method is similar (but not identical) to the [code][][/code] operator. Most notably, when this method fails, it doesn't pause project execution if run from the editor.
 			</description>
 		</method>
 		<method name="get_string_from_ascii" qualifiers="const">
 			<return type="String" />
 			<description>
 				Converts ASCII/Latin-1 encoded array to [String]. Fast alternative to [method get_string_from_utf8] if the content is ASCII/Latin-1 only. Unlike the UTF-8 function this function maps every byte to a character in the array. Multibyte sequences will not be interpreted correctly. For parsing user input always use [method get_string_from_utf8]. This is the inverse of [method String.to_ascii_buffer].
+			</description>
+		</method>
+		<method name="get_string_from_multibyte_char" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="encoding" type="String" default="&quot;&quot;" />
+			<description>
+				Converts system multibyte code page encoded array to [String]. If conversion fails, empty string is returned. This is the inverse of [method String.to_multibyte_char_buffer].
+				The values permitted for [param encoding] are system dependent. If [param encoding] is empty string, system default encoding is used.
+				- For Windows, see [url=https://learn.microsoft.com/en-us/windows/win32/Intl/code-page-identifiers]Code Page Identifiers[/url] .NET names.
+				- For macOS and Linux/BSD, see [code]libiconv[/code] library documentation and [code]iconv --list[/code] for a list of supported encodings.
 			</description>
 		</method>
 		<method name="get_string_from_utf8" qualifiers="const">
@@ -329,13 +371,13 @@
 		<method name="get_string_from_utf16" qualifiers="const">
 			<return type="String" />
 			<description>
-				Converts UTF-16 encoded array to [String]. If the BOM is missing, system endianness is assumed. Returns empty string if source array is not valid UTF-16 string. This is the inverse of [method String.to_utf16_buffer].
+				Converts UTF-16 encoded array to [String]. If the BOM is missing, little-endianness is assumed. Returns empty string if source array is not valid UTF-16 string. This is the inverse of [method String.to_utf16_buffer].
 			</description>
 		</method>
 		<method name="get_string_from_utf32" qualifiers="const">
 			<return type="String" />
 			<description>
-				Converts UTF-32 encoded array to [String]. System endianness is assumed. Returns empty string if source array is not valid UTF-32 string. This is the inverse of [method String.to_utf32_buffer].
+				Converts UTF-32 encoded array to [String]. Returns empty string if source array is not valid UTF-32 string. This is the inverse of [method String.to_utf32_buffer].
 			</description>
 		</method>
 		<method name="get_string_from_wchar" qualifiers="const">
@@ -408,6 +450,7 @@
 			<param index="0" name="new_size" type="int" />
 			<description>
 				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size. Calling [method resize] once and assigning the new values is faster than adding new elements one by one.
+				Returns [constant OK] on success, or one of the following [enum Error] constants if this method fails: [constant ERR_INVALID_PARAMETER] if the size is negative, or [constant ERR_OUT_OF_MEMORY] if allocations fail. Use [method size] to find the actual size of the array after resize.
 			</description>
 		</method>
 		<method name="reverse">
@@ -454,6 +497,13 @@
 				Sorts the elements of the array in ascending order.
 			</description>
 		</method>
+		<method name="to_color_array" qualifiers="const">
+			<return type="PackedColorArray" />
+			<description>
+				Returns a copy of the data converted to a [PackedColorArray], where each block of 16 bytes has been converted to a [Color] variant.
+				[b]Note:[/b] The size of the input array must be a multiple of 16 (size of four 32-bit float variables). The size of the new array will be [code]byte_array.size() / 16[/code]. If the original data can't be converted to [Color] variants, the resulting data is undefined.
+			</description>
+		</method>
 		<method name="to_float32_array" qualifiers="const">
 			<return type="PackedFloat32Array" />
 			<description>
@@ -484,6 +534,27 @@
 				Returns a copy of the data converted to a [PackedInt64Array], where each block of 8 bytes has been converted to a signed 64-bit integer (C++ [code]int64_t[/code], Godot [int]).
 				The size of the input array must be a multiple of 8 (size of 64-bit integer). The size of the new array will be [code]byte_array.size() / 8[/code].
 				If the original data can't be converted to signed 64-bit integers, the resulting data is undefined.
+			</description>
+		</method>
+		<method name="to_vector2_array" qualifiers="const">
+			<return type="PackedVector2Array" />
+			<description>
+				Returns a copy of the data converted to a [PackedVector2Array], where each block of 8 bytes or 16 bytes (32-bit or 64-bit) has been converted to a [Vector2] variant.
+				[b]Note:[/b] The size of the input array must be a multiple of 8 or 16 (depending on the build settings, see [Vector2] for more details). The size of the new array will be [code]byte_array.size() / (8 or 16)[/code]. If the original data can't be converted to [Vector2] variants, the resulting data is undefined.
+			</description>
+		</method>
+		<method name="to_vector3_array" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<description>
+				Returns a copy of the data converted to a [PackedVector3Array], where each block of 12 or 24 bytes (32-bit or 64-bit) has been converted to a [Vector3] variant.
+				[b]Note:[/b] The size of the input array must be a multiple of 12 or 24 (depending on the build settings, see [Vector3] for more details). The size of the new array will be [code]byte_array.size() / (12 or 24)[/code]. If the original data can't be converted to [Vector3] variants, the resulting data is undefined.
+			</description>
+		</method>
+		<method name="to_vector4_array" qualifiers="const">
+			<return type="PackedVector4Array" />
+			<description>
+				Returns a copy of the data converted to a [PackedVector4Array], where each block of 16 or 32 bytes (32-bit or 64-bit) has been converted to a [Vector4] variant.
+				[b]Note:[/b] The size of the input array must be a multiple of 16 or 32 (depending on the build settings, see [Vector4] for more details). The size of the new array will be [code]byte_array.size() / (16 or 32)[/code]. If the original data can't be converted to [Vector4] variants, the resulting data is undefined.
 			</description>
 		</method>
 	</methods>

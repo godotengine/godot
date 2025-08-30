@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_RID_H
-#define TEST_RID_H
+#pragma once
 
 #include "core/os/thread.h"
 #include "core/templates/local_vector.h"
@@ -38,6 +37,7 @@
 
 #include "tests/test_macros.h"
 
+#ifdef THREADS_ENABLED
 #ifdef SANITIZERS_ENABLED
 #ifdef __has_feature
 #if __has_feature(thread_sanitizer)
@@ -46,7 +46,8 @@
 #elif defined(__SANITIZE_THREAD__)
 #define TSAN_ENABLED
 #endif
-#endif
+#endif // SANITIZERS_ENABLED
+#endif // THREADS_ENABLED
 
 #ifdef TSAN_ENABLED
 #include <sanitizer/tsan_interface.h>
@@ -114,6 +115,7 @@ TEST_CASE("[RID] 'get_local_index'") {
 	CHECK(RID::from_uint64(4'294'967'297).get_local_index() == 1);
 }
 
+#ifdef THREADS_ENABLED
 // This case would let sanitizers realize data races.
 // Additionally, on purely weakly ordered architectures, it would detect synchronization issues
 // if RID_Alloc failed to impose proper memory ordering and the test's threads are distributed
@@ -141,7 +143,7 @@ TEST_CASE("[RID_Owner] Thread safety") {
 			uint32_t target = (p_step / 2 + 1) * threads.size();
 			sync[buf_idx].fetch_add(1, std::memory_order_relaxed);
 			do {
-				std::this_thread::yield();
+				Thread::yield();
 			} while (sync[buf_idx].load(std::memory_order_relaxed) != target);
 		}
 
@@ -249,6 +251,6 @@ TEST_CASE("[RID_Owner] Thread safety") {
 		tester.test();
 	}
 }
-} // namespace TestRID
+#endif // THREADS_ENABLED
 
-#endif // TEST_RID_H
+} // namespace TestRID

@@ -28,8 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef METAL_FX_RD_H
-#define METAL_FX_RD_H
+#pragma once
+
+#if defined(METAL_ENABLED) && !defined(VISIONOS_ENABLED)
+#define METAL_MFXTEMPORAL_ENABLED
+#endif
 
 #ifdef METAL_ENABLED
 
@@ -73,10 +76,9 @@ class MFXSpatialEffect : public SpatialUpscaler {
 
 	PagedAllocator<CallbackArgs, true, 16> args_allocator;
 	static void callback(RDD *p_driver, RDD::CommandBufferID p_command_buffer, CallbackArgs *p_userdata);
-	String name = "MetalFX Spatial Upscale";
 
 public:
-	virtual String get_label() const final { return name; }
+	virtual const Span<char> get_label() const final { return "MetalFX Spatial Upscale"; }
 	virtual void ensure_context(Ref<RenderSceneBuffersRD> p_render_buffers) final;
 	virtual void process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_src, RID p_dst) final;
 
@@ -92,6 +94,8 @@ public:
 	MFXSpatialEffect();
 	~MFXSpatialEffect();
 };
+
+#ifdef METAL_MFXTEMPORAL_ENABLED
 
 struct MFXTemporalContext {
 #ifdef __OBJC__
@@ -175,8 +179,8 @@ public:
 	void process(MFXTemporalContext *p_ctx, Params p_params);
 };
 
+#endif
+
 } //namespace RendererRD
 
 #endif // METAL_ENABLED
-
-#endif // METAL_FX_RD_H

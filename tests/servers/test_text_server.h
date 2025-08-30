@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_TEXT_SERVER_H
-#define TEST_TEXT_SERVER_H
+#pragma once
 
 #ifdef TOOLS_ENABLED
 
@@ -73,10 +72,7 @@ TEST_SUITE("[TextServer]") {
 				ts->font_set_data_ptr(font2, _font_NotoSansThai_Regular, _font_NotoSansThai_Regular_size);
 				ts->font_set_allow_system_fallback(font2, false);
 
-				Array font;
-				font.push_back(font1);
-				font.push_back(font2);
-
+				Array font = { font1, font2 };
 				String test = U"คนอ้วน khon uan ראה";
 				//                 6^       17^
 
@@ -126,10 +122,7 @@ TEST_SUITE("[TextServer]") {
 				RID font2 = ts->create_font();
 				ts->font_set_data_ptr(font2, _font_Vazirmatn_Regular, _font_Vazirmatn_Regular_size);
 
-				Array font;
-				font.push_back(font1);
-				font.push_back(font2);
-
+				Array font = { font1, font2 };
 				String test = U"Arabic (اَلْعَرَبِيَّةُ, al-ʿarabiyyah)";
 				//                    7^      26^
 
@@ -183,11 +176,7 @@ TEST_SUITE("[TextServer]") {
 				ts->font_set_data_ptr(font3, _font_Vazirmatn_Regular, _font_Vazirmatn_Regular_size);
 				ts->font_set_allow_system_fallback(font3, false);
 
-				Array font;
-				font.push_back(font1);
-				font.push_back(font2);
-				font.push_back(font3);
-
+				Array font = { font1, font2, font3 };
 				{
 					RID ctx = ts->create_shaped_text();
 					CHECK_FALSE_MESSAGE(ctx == RID(), "Creating text buffer failed.");
@@ -508,7 +497,7 @@ TEST_SUITE("[TextServer]") {
 						{ U"test\r test", { 0, 5, 5, 10 } },
 						{ U"test\r test \r test", { 0, 5, 5, 12, 12, 17 } },
 					};
-					for (size_t j = 0; j < sizeof(cases) / sizeof(TestCase); j++) {
+					for (size_t j = 0; j < std::size(cases); j++) {
 						RID ctx = ts->create_shaped_text();
 						CHECK_FALSE_MESSAGE(ctx == RID(), "Creating text buffer failed.");
 						bool ok = ts->shaped_text_add_string(ctx, cases[j].text, font, 16);
@@ -528,11 +517,17 @@ TEST_SUITE("[TextServer]") {
 					struct TestCase {
 						String text;
 						PackedInt32Array breaks;
+						BitField<TextServer::LineBreakFlag> flags = TextServer::BREAK_NONE;
 					};
 					TestCase cases[] = {
-						{ U"test \rtest", { 0, 4, 6, 10 } },
-						{ U"test\r test", { 0, 4, 6, 10 } },
-						{ U"test\r test \r test", { 0, 4, 6, 10, 13, 17 } },
+						{ U"test \rtest", { 0, 4, 6, 10 }, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES },
+						{ U"test \rtest", { 0, 6, 6, 10 }, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_START_EDGE_SPACES },
+						{ U"test\r test", { 0, 4, 6, 10 }, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES },
+						{ U"test\r test", { 0, 4, 5, 10 }, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_END_EDGE_SPACES },
+						{ U"test\r test \r test", { 0, 4, 6, 10, 13, 17 }, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES },
+						{ U"test\r test \r test", { 0, 5, 6, 12, 13, 17 }, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_START_EDGE_SPACES },
+						{ U"test\r test \r test", { 0, 4, 5, 10, 12, 17 }, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_END_EDGE_SPACES },
+						{ U"test\r test \r test", { 0, 5, 5, 12, 12, 17 }, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND },
 					};
 					for (size_t j = 0; j < sizeof(cases) / sizeof(TestCase); j++) {
 						RID ctx = ts->create_shaped_text();
@@ -540,10 +535,10 @@ TEST_SUITE("[TextServer]") {
 						bool ok = ts->shaped_text_add_string(ctx, cases[j].text, font, 16);
 						CHECK_FALSE_MESSAGE(!ok, "Adding text to the buffer failed.");
 
-						PackedInt32Array breaks = ts->shaped_text_get_line_breaks(ctx, 90.0, 0, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_EDGE_SPACES);
+						PackedInt32Array breaks = ts->shaped_text_get_line_breaks(ctx, 90.0, 0, cases[j].flags);
 						CHECK_FALSE_MESSAGE(breaks != cases[j].breaks, "Invalid break points.");
 
-						breaks = ts->shaped_text_get_line_breaks_adv(ctx, { 90.0 }, 0, false, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_EDGE_SPACES);
+						breaks = ts->shaped_text_get_line_breaks_adv(ctx, { 90.0 }, 0, false, cases[j].flags);
 						CHECK_FALSE_MESSAGE(breaks != cases[j].breaks, "Invalid break points.");
 
 						ts->free_rid(ctx);
@@ -574,10 +569,7 @@ TEST_SUITE("[TextServer]") {
 				RID font2 = ts->create_font();
 				ts->font_set_data_ptr(font2, _font_NotoSansThai_Regular, _font_NotoSansThai_Regular_size);
 
-				Array font;
-				font.push_back(font1);
-				font.push_back(font2);
-
+				Array font = { font1, font2 };
 				RID ctx = ts->create_shaped_text();
 				CHECK_FALSE_MESSAGE(ctx == RID(), "Creating text buffer failed.");
 				bool ok = ts->shaped_text_add_string(ctx, test_1, font, 16);
@@ -591,6 +583,19 @@ TEST_SUITE("[TextServer]") {
 
 					CHECK_FALSE_MESSAGE(brks[2] != 5, "Invalid line break position.");
 					CHECK_FALSE_MESSAGE(brks[3] != 10, "Invalid line break position.");
+
+					CHECK_FALSE_MESSAGE(brks[4] != 10, "Invalid line break position.");
+					CHECK_FALSE_MESSAGE(brks[5] != 14, "Invalid line break position.");
+				}
+
+				brks = ts->shaped_text_get_line_breaks(ctx, 35.0, 0, TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES);
+				CHECK_FALSE_MESSAGE(brks.size() != 6, "Invalid line breaks number.");
+				if (brks.size() == 6) {
+					CHECK_FALSE_MESSAGE(brks[0] != 0, "Invalid line break position.");
+					CHECK_FALSE_MESSAGE(brks[1] != 4, "Invalid line break position.");
+
+					CHECK_FALSE_MESSAGE(brks[2] != 5, "Invalid line break position.");
+					CHECK_FALSE_MESSAGE(brks[3] != 9, "Invalid line break position.");
 
 					CHECK_FALSE_MESSAGE(brks[4] != 10, "Invalid line break position.");
 					CHECK_FALSE_MESSAGE(brks[5] != 14, "Invalid line break position.");
@@ -619,10 +624,7 @@ TEST_SUITE("[TextServer]") {
 				RID font2 = ts->create_font();
 				ts->font_set_data_ptr(font2, _font_Vazirmatn_Regular, _font_Vazirmatn_Regular_size);
 
-				Array font;
-				font.push_back(font1);
-				font.push_back(font2);
-
+				Array font = { font1, font2 };
 				String test_1 = U"الحمد";
 				String test_2 = U"الحمد test";
 				String test_3 = U"test test";
@@ -931,9 +933,7 @@ TEST_SUITE("[TextServer]") {
 				RID font1 = ts->create_font();
 				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
 
-				Array font;
-				font.push_back(font1);
-
+				Array font = { font1 };
 				RID ctx = ts->create_shaped_text();
 				CHECK_FALSE_MESSAGE(ctx == RID(), "Creating text buffer failed.");
 				bool ok = ts->shaped_text_add_string(ctx, "T", font, 16);
@@ -964,5 +964,3 @@ TEST_SUITE("[TextServer]") {
 }; // namespace TestTextServer
 
 #endif // TOOLS_ENABLED
-
-#endif // TEST_TEXT_SERVER_H

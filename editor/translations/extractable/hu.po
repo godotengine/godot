@@ -18,6 +18,15 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.4-dev\n"
 
+msgid "All Recognized"
+msgstr "Minden Felismert"
+
+msgid "Save"
+msgstr "Mentés"
+
+msgid "Clear"
+msgstr "Töröl"
+
 msgid "Open"
 msgstr "Megnyitás"
 
@@ -26,9 +35,6 @@ msgstr "Aktuális Mappa Kiválasztása"
 
 msgid "Select This Folder"
 msgstr "Válassza ezt a mappát"
-
-msgid "All Recognized"
-msgstr "Minden Felismert"
 
 msgid "Open a File"
 msgstr "Fálj Megnyitása"
@@ -41,9 +47,6 @@ msgstr "Könyvtár Megnyitása"
 
 msgid "Open a File or Directory"
 msgstr "Fájl vagy Könyvtár Megnyitása"
-
-msgid "Save"
-msgstr "Mentés"
 
 msgid "Save a File"
 msgstr "Fájl Mentése"
@@ -63,11 +66,11 @@ msgstr "Útvonal:"
 msgid "Refresh files."
 msgstr "Fájlok frissítése."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "A rejtett fájlok láthatóságának ki- és bekapcsolása."
-
 msgid "Directories & Files:"
 msgstr "Könyvtárak és Fájlok:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "A rejtett fájlok láthatóságának ki- és bekapcsolása."
 
 msgid "File:"
 msgstr "Fájl:"
@@ -101,9 +104,6 @@ msgstr "Beillesztés"
 
 msgid "Select All"
 msgstr "Összes Kijelölése"
-
-msgid "Clear"
-msgstr "Töröl"
 
 msgid "Undo"
 msgstr "Visszavonás"

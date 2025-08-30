@@ -28,14 +28,106 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_JSON_H
-#define TEST_JSON_H
+#pragma once
 
 #include "core/io/json.h"
 
 #include "thirdparty/doctest/doctest.h"
 
 namespace TestJSON {
+
+TEST_CASE("[JSON] Stringify single data types") {
+	CHECK(JSON::stringify(Variant()) == "null");
+	CHECK(JSON::stringify(false) == "false");
+	CHECK(JSON::stringify(true) == "true");
+	CHECK(JSON::stringify(0) == "0");
+	CHECK(JSON::stringify(12345) == "12345");
+	CHECK(JSON::stringify(0.75) == "0.75");
+	CHECK(JSON::stringify("test") == "\"test\"");
+	CHECK(JSON::stringify("\\\b\f\n\r\t\v\"") == "\"\\\\\\b\\f\\n\\r\\t\\v\\\"\"");
+}
+
+TEST_CASE("[JSON] Stringify arrays") {
+	CHECK(JSON::stringify(Array()) == "[]");
+
+	Array int_array;
+	for (int i = 0; i < 10; i++) {
+		int_array.push_back(i);
+	}
+	CHECK(JSON::stringify(int_array) == "[0,1,2,3,4,5,6,7,8,9]");
+
+	Array str_array;
+	str_array.push_back("Hello");
+	str_array.push_back("World");
+	str_array.push_back("!");
+	CHECK(JSON::stringify(str_array) == "[\"Hello\",\"World\",\"!\"]");
+
+	Array indented_array;
+	Array nested_array;
+	for (int i = 0; i < 5; i++) {
+		indented_array.push_back(i);
+		nested_array.push_back(i);
+	}
+	indented_array.push_back(nested_array);
+	CHECK(JSON::stringify(indented_array, "\t") == "[\n\t0,\n\t1,\n\t2,\n\t3,\n\t4,\n\t[\n\t\t0,\n\t\t1,\n\t\t2,\n\t\t3,\n\t\t4\n\t]\n]");
+
+	Array full_precision_array;
+	full_precision_array.push_back(0.123456789012345677);
+	CHECK(JSON::stringify(full_precision_array, "", true, true) == "[0.123456789012345677]");
+
+	ERR_PRINT_OFF
+	Array self_array;
+	self_array.push_back(self_array);
+	CHECK(JSON::stringify(self_array) == "[\"[...]\"]");
+	self_array.clear();
+
+	Array max_recursion_array;
+	for (int i = 0; i < Variant::MAX_RECURSION_DEPTH + 1; i++) {
+		Array next;
+		next.push_back(max_recursion_array);
+		max_recursion_array = next;
+	}
+	CHECK(JSON::stringify(max_recursion_array).contains("[...]"));
+	ERR_PRINT_ON
+}
+
+TEST_CASE("[JSON] Stringify dictionaries") {
+	CHECK(JSON::stringify(Dictionary()) == "{}");
+
+	Dictionary single_entry;
+	single_entry["key"] = "value";
+	CHECK(JSON::stringify(single_entry) == "{\"key\":\"value\"}");
+
+	Dictionary indented;
+	indented["key1"] = "value1";
+	indented["key2"] = 2;
+	CHECK(JSON::stringify(indented, "\t") == "{\n\t\"key1\": \"value1\",\n\t\"key2\": 2\n}");
+
+	Dictionary outer;
+	Dictionary inner;
+	inner["key"] = "value";
+	outer["inner"] = inner;
+	CHECK(JSON::stringify(outer) == "{\"inner\":{\"key\":\"value\"}}");
+
+	Dictionary full_precision_dictionary;
+	full_precision_dictionary["key"] = 0.123456789012345677;
+	CHECK(JSON::stringify(full_precision_dictionary, "", true, true) == "{\"key\":0.123456789012345677}");
+
+	ERR_PRINT_OFF
+	Dictionary self_dictionary;
+	self_dictionary["key"] = self_dictionary;
+	CHECK(JSON::stringify(self_dictionary) == "{\"key\":\"{...}\"}");
+	self_dictionary.clear();
+
+	Dictionary max_recursion_dictionary;
+	for (int i = 0; i < Variant::MAX_RECURSION_DEPTH + 1; i++) {
+		Dictionary next;
+		next["key"] = max_recursion_dictionary;
+		max_recursion_dictionary = next;
+	}
+	CHECK(JSON::stringify(max_recursion_dictionary).contains("{...:...}"));
+	ERR_PRINT_ON
+}
 
 // NOTE: The current JSON parser accepts many non-conformant strings such as
 // single-quoted strings, duplicate commas and trailing commas.
@@ -153,21 +245,13 @@ TEST_CASE("[JSON] Parsing escape sequences") {
 
 	JSON json;
 
-	TypedArray<String> valid_escapes;
-	valid_escapes.push_back("\";\"");
-	valid_escapes.push_back("\\;\\");
-	valid_escapes.push_back("/;/");
-	valid_escapes.push_back("b;\b");
-	valid_escapes.push_back("f;\f");
-	valid_escapes.push_back("n;\n");
-	valid_escapes.push_back("r;\r");
-	valid_escapes.push_back("t;\t");
+	TypedArray<String> valid_escapes = { "\";\"", "\\;\\", "/;/", "b;\b", "f;\f", "n;\n", "r;\r", "t;\t" };
 
 	SUBCASE("Basic valid escape sequences") {
 		for (int i = 0; i < valid_escapes.size(); i++) {
 			String valid_escape = valid_escapes[i];
-			String valid_escape_string = valid_escape.get_slice(";", 0);
-			String valid_escape_value = valid_escape.get_slice(";", 1);
+			String valid_escape_string = valid_escape.get_slicec(';', 0);
+			String valid_escape_value = valid_escape.get_slicec(';', 1);
 
 			String json_string = "\"\\";
 			json_string += valid_escape_string;
@@ -205,7 +289,7 @@ TEST_CASE("[JSON] Parsing escape sequences") {
 			bool skip = false;
 			for (int j = 0; j < valid_escapes.size(); j++) {
 				String valid_escape = valid_escapes[j];
-				String valid_escape_string = valid_escape.get_slice(";", 0);
+				String valid_escape_string = valid_escape.get_slicec(';', 0);
 				if (valid_escape_string[0] == i) {
 					skip = true;
 					break;
@@ -257,8 +341,8 @@ TEST_CASE("[JSON] Serialization") {
 		{ -1000.1234567890123456789, "-1000.12345678901" },
 		{ DBL_MAX, "179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.0" },
 		{ DBL_MAX - 1, "179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.0" },
-		{ pow(2, 53), "9007199254740992.0" },
-		{ -pow(2, 53), "-9007199254740992.0" },
+		{ std::pow(2, 53), "9007199254740992.0" },
+		{ -std::pow(2, 53), "-9007199254740992.0" },
 		{ 0.00000000000000011, "0.00000000000000011" },
 		{ -0.00000000000000011, "-0.00000000000000011" },
 		{ 1.0 / 3.0, "0.333333333333333" },
@@ -272,8 +356,8 @@ TEST_CASE("[JSON] Serialization") {
 		{ -1000.1234567890123456789, "-1000.12345678901238" },
 		{ DBL_MAX, "179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.0" },
 		{ DBL_MAX - 1, "179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.0" },
-		{ pow(2, 53), "9007199254740992.0" },
-		{ -pow(2, 53), "-9007199254740992.0" },
+		{ std::pow(2, 53), "9007199254740992.0" },
+		{ -std::pow(2, 53), "-9007199254740992.0" },
 		{ 0.00000000000000011, "0.00000000000000011" },
 		{ -0.00000000000000011, "-0.00000000000000011" },
 		{ 1.0 / 3.0, "0.333333333333333315" },
@@ -318,5 +402,3 @@ TEST_CASE("[JSON] Serialization") {
 	}
 }
 } // namespace TestJSON
-
-#endif // TEST_JSON_H

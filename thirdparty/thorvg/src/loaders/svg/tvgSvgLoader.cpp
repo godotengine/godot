@@ -200,7 +200,7 @@ static float _gradientToFloat(const SvgParser* svgParse, const char* str, bool& 
     isPercentage = false;
 
     if (strstr(str, "%")) {
-        parsedValue = parsedValue / 100.0;
+        parsedValue = parsedValue / 100.0f;
         isPercentage = true;
     }
     else if (strstr(str, "cm")) parsedValue *= PX_PER_CM;
@@ -225,7 +225,7 @@ static float _toOffset(const char* str)
     auto ptr = strstr(str, "%");
 
     if (ptr) {
-        parsedValue = parsedValue / 100.0;
+        parsedValue = parsedValue / 100.0f;
         if (end != ptr || (end + 1) != strEnd) return 0;
     } else if (end != strEnd) return 0;
 
@@ -402,6 +402,27 @@ static char* _idFromUrl(const char* url)
     }
 
     return strDuplicate(open, (close - open + 1));
+}
+
+
+static size_t _srcFromUrl(const char* url, char*& src)
+{
+    src = (char*)strchr(url, '(');
+    auto close = strchr(url, ')');
+    if (!src || !close || src >= close) return 0;
+
+    src = strchr(src, '\'');
+    if (!src || src >= close) return 0;
+    ++src;
+
+    close = strchr(src, '\'');
+    if (!close || close == src) return 0;
+    --close;
+
+    while (src < close && *src == ' ') ++src;
+    while (src < close && *close == ' ') --close;
+
+    return close - src + 1;
 }
 
 
@@ -2005,6 +2026,42 @@ static SvgNode* _createImageNode(SvgLoaderData* loader, SvgNode* parent, const c
 }
 
 
+static char* _unquote(const char* str)
+{
+    auto len = str ? strlen(str) : 0;
+    if (len >= 2 && str[0] == '\'' && str[len - 1] == '\'') return strDuplicate(str + 1, len - 2);
+    return strdup(str);
+}
+
+
+static bool _attrParseFontFace(void* data, const char* key, const char* value)
+{
+    if (!key || !value) return false;
+
+    key = _skipSpace(key, nullptr);
+    value = _skipSpace(value, nullptr);
+
+    auto loader = (SvgLoaderData*)data;
+    auto& font = loader->fonts.last();
+
+    if (!strcmp(key, "font-family")) {
+        if (font.name) free(font.name);
+        font.name = _unquote(value);
+    } else if (!strcmp(key, "src")) {
+        font.srcLen = _srcFromUrl(value, font.src);
+    }
+
+    return true;
+}
+
+
+static void _createFontFace(SvgLoaderData* loader, const char* buf, unsigned bufLength, parseAttributes func)
+{
+    loader->fonts.push(FontFace());
+    func(buf, bufLength, _attrParseFontFace, loader);
+}
+
+
 static SvgNode* _getDefsNode(SvgNode* node)
 {
     if (!node) return nullptr;
@@ -3311,6 +3368,13 @@ static void _svgLoaderParserXmlClose(SvgLoaderData* loader, const char* content,
         }
     }
 
+    for (unsigned int i = 0; i < sizeof(gradientTags) / sizeof(gradientTags[0]); i++) {
+        if (!strncmp(tagName, gradientTags[i].tag, sz)) {
+            loader->gradientStack.pop();
+            break;
+        }
+    }
+
     for (unsigned int i = 0; i < sizeof(graphicsTags) / sizeof(graphicsTags[0]); i++) {
         if (!strncmp(tagName, graphicsTags[i].tag, sz)) {
             loader->currentGraphicsNode = nullptr;
@@ -3395,20 +3459,23 @@ static void _svgLoaderParserXmlOpen(SvgLoaderData* loader, const char* content, 
     } else if ((gradientMethod = _findGradientFactory(tagName))) {
         SvgStyleGradient* gradient;
         gradient = gradientMethod(loader, attrs, attrsLength);
-        //FIXME: The current parsing structure does not distinguish end tags.
-        //       There is no way to know if the currently parsed gradient is in defs.
-        //       If a gradient is declared outside of defs after defs is set, it is included in the gradients of defs.
-        //       But finally, the loader has a gradient style list regardless of defs.
-        //       This is only to support this when multiple gradients are declared, even if no defs are declared.
-        //       refer to: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/defs
-        if (loader->def && loader->doc->node.doc.defs) {
-            loader->def->node.defs.gradients.push(gradient);
-        } else {
-            loader->gradients.push(gradient);
+        //Gradients do not allow nested declarations, so only the earliest declared Gradient is valid.
+        if (loader->gradientStack.count == 0) {
+            //FIXME: The current parsing structure does not distinguish end tags.
+            //       There is no way to know if the currently parsed gradient is in defs.
+            //       If a gradient is declared outside of defs after defs is set, it is included in the gradients of defs.
+            //       But finally, the loader has a gradient style list regardless of defs.
+            //       This is only to support this when multiple gradients are declared, even if no defs are declared.
+            //       refer to: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/defs
+            if (loader->def && loader->doc->node.doc.defs) {
+                loader->def->node.defs.gradients.push(gradient);
+            } else {
+                loader->gradients.push(gradient);
+            }
         }
-        loader->latestGradient = gradient;
+        if (!empty) loader->gradientStack.push(gradient);
     } else if (!strcmp(tagName, "stop")) {
-        if (!loader->latestGradient) {
+        if (loader->gradientStack.count == 0) {
             TVGLOG("SVG", "Stop element is used outside of the Gradient element");
             return;
         }
@@ -3416,9 +3483,9 @@ static void _svgLoaderParserXmlOpen(SvgLoaderData* loader, const char* content, 
         loader->svgParse->gradStop = {0.0f, 0, 0, 0, 255};
         loader->svgParse->flags = SvgStopStyleFlags::StopDefault;
         simpleXmlParseAttributes(attrs, attrsLength, _attrParseStops, loader);
-        loader->latestGradient->stops.push(loader->svgParse->gradStop);
-    } else if (!isIgnoreUnsupportedLogElements(tagName)) {
-        TVGLOG("SVG", "Unsupported elements used [Elements: %s]", tagName);
+        loader->gradientStack.last()->stops.push(loader->svgParse->gradStop);
+    } else {
+        if (!isIgnoreUnsupportedLogElements(tagName)) TVGLOG("SVG", "Unsupported elements used [Elements: %s]", tagName);
     }
 }
 
@@ -3452,6 +3519,8 @@ static void _svgLoaderParserXmlCssStyle(SvgLoaderData* loader, const char* conte
             TVGLOG("SVG", "Unsupported elements used in the internal CSS style sheets [Elements: %s]", tag);
         } else if (!strcmp(tag, "all")) {
             if ((node = _createCssStyleNode(loader, loader->cssStyle, attrs, attrsLength, simpleXmlParseW3CAttribute))) node->id = _copyId(name);
+        } else if (!strcmp(tag, "@font-face")) { //css at-rule specifying font
+            _createFontFace(loader, attrs, attrsLength, simpleXmlParseW3CAttribute);
         } else if (!isIgnoreUnsupportedLogElements(tag)) {
             TVGLOG("SVG", "Unsupported elements used in the internal CSS style sheets [Elements: %s]", tag);
         }
@@ -3826,7 +3895,7 @@ SvgLoader::SvgLoader() : ImageLoader(FileType::Svg)
 
 SvgLoader::~SvgLoader()
 {
-    this->done();
+    done();
     clear();
 }
 

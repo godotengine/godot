@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CAMERA_FEED_H
-#define CAMERA_FEED_H
+#pragma once
 
 #include "core/io/image.h"
 #include "core/math/transform_2d.h"
@@ -60,6 +59,8 @@ public:
 
 private:
 	int id; // unique id for this, for internal use in case feeds are removed
+	const StringName format_changed_signal_name = "format_changed";
+	const StringName frame_changed_signal_name = "frame_changed";
 
 protected:
 	struct FeedFormat {
@@ -129,5 +130,3 @@ public:
 
 VARIANT_ENUM_CAST(CameraFeed::FeedDataType);
 VARIANT_ENUM_CAST(CameraFeed::FeedPosition);
-
-#endif // CAMERA_FEED_H

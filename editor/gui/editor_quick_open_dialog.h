@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_QUICK_OPEN_DIALOG_H
-#define EDITOR_QUICK_OPEN_DIALOG_H
+#pragma once
 
-#include "core/templates/oa_hash_map.h"
+#include "core/templates/a_hash_map.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/margin_container.h"
 
 class Button;
 class CenterContainer;
@@ -106,23 +106,22 @@ protected:
 	void _notification(int p_what);
 
 private:
-	static constexpr int SHOW_ALL_FILES_THRESHOLD = 30;
 	static constexpr int MAX_HISTORY_SIZE = 20;
 
 	Vector<FuzzySearchResult> search_results;
 	Vector<StringName> base_types;
 	Vector<String> filepaths;
-	OAHashMap<String, StringName> filetypes;
+	AHashMap<String, StringName> filetypes;
 	Vector<QuickOpenResultCandidate> candidates;
 
-	OAHashMap<StringName, Vector<QuickOpenResultCandidate>> selected_history;
+	AHashMap<StringName, Vector<QuickOpenResultCandidate>> selected_history;
+	HashSet<String> history_set;
 
 	String query;
 	int selection_index = -1;
 	int num_visible_results = 0;
 	int max_total_results = 0;
 
-	bool showing_history = false;
 	bool never_opened = true;
 	Ref<ConfigFile> history_file;
 
@@ -143,14 +142,16 @@ private:
 	CheckButton *include_addons_toggle = nullptr;
 	CheckButton *fuzzy_search_toggle = nullptr;
 
-	OAHashMap<StringName, Ref<Texture2D>> file_type_icons;
+	AHashMap<StringName, Ref<Texture2D>> file_type_icons;
 
 	static QuickOpenDisplayMode get_adaptive_display_mode(const Vector<StringName> &p_base_types);
 
 	void _ensure_result_vector_capacity();
+	void _sort_filepaths(int p_max_results);
 	void _create_initial_results();
 	void _find_filepaths_in_folder(EditorFileSystemDirectory *p_directory, bool p_include_addons);
 
+	Vector<QuickOpenResultCandidate> *_get_history();
 	void _setup_candidate(QuickOpenResultCandidate &p_candidate, const String &p_filepath);
 	void _setup_candidate(QuickOpenResultCandidate &p_candidate, const FuzzySearchResult &p_result);
 	void _update_fuzzy_search_results();
@@ -176,8 +177,8 @@ private:
 	static void _bind_methods();
 };
 
-class QuickOpenResultGridItem : public VBoxContainer {
-	GDCLASS(QuickOpenResultGridItem, VBoxContainer)
+class QuickOpenResultGridItem : public MarginContainer {
+	GDCLASS(QuickOpenResultGridItem, MarginContainer)
 
 public:
 	QuickOpenResultGridItem();
@@ -188,12 +189,13 @@ public:
 	void remove_highlight();
 
 private:
+	VBoxContainer *vbc = nullptr;
 	TextureRect *thumbnail = nullptr;
 	HighlightedLabel *name = nullptr;
 };
 
-class QuickOpenResultListItem : public HBoxContainer {
-	GDCLASS(QuickOpenResultListItem, HBoxContainer)
+class QuickOpenResultListItem : public MarginContainer {
+	GDCLASS(QuickOpenResultListItem, MarginContainer)
 
 public:
 	QuickOpenResultListItem();
@@ -207,9 +209,7 @@ protected:
 	void _notification(int p_what);
 
 private:
-	static const int CONTAINER_MARGIN = 8;
-
-	MarginContainer *image_container = nullptr;
+	HBoxContainer *hbc = nullptr;
 	VBoxContainer *text_container = nullptr;
 
 	TextureRect *thumbnail = nullptr;
@@ -268,5 +268,3 @@ private:
 
 	void _search_box_text_changed(const String &p_query);
 };
-
-#endif // EDITOR_QUICK_OPEN_DIALOG_H

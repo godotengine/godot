@@ -85,6 +85,12 @@
 				If handtracking is enabled and motion range is supported, gets the currently configured motion range for [param hand].
 			</description>
 		</method>
+		<method name="get_session_state">
+			<return type="int" enum="OpenXRInterface.SessionState" />
+			<description>
+				Returns the current state of our OpenXR session.
+			</description>
+		</method>
 		<method name="is_action_set_active" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
@@ -103,7 +109,7 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if OpenXR's foveation extension is supported, the interface must be initialized before this returns a valid value.
-				[b]Note:[/b] This feature is only available on the compatibility renderer and currently only available on some stand alone headsets. For Vulkan set [member Viewport.vrs_mode] to [code]VRS_XR[/code] on desktop.
+				[b]Note:[/b] This feature is only available on the Compatibility renderer and currently only available on some stand alone headsets. For Vulkan set [member Viewport.vrs_mode] to [code]VRS_XR[/code] on desktop.
 			</description>
 		</method>
 		<method name="is_hand_interaction_supported" qualifiers="const">
@@ -128,6 +134,20 @@
 				Sets the given action set as active or inactive.
 			</description>
 		</method>
+		<method name="set_cpu_level">
+			<return type="void" />
+			<param index="0" name="level" type="int" enum="OpenXRInterface.PerfSettingsLevel" />
+			<description>
+				Sets the CPU performance level of the OpenXR device.
+			</description>
+		</method>
+		<method name="set_gpu_level">
+			<return type="void" />
+			<param index="0" name="level" type="int" enum="OpenXRInterface.PerfSettingsLevel" />
+			<description>
+				Sets the GPU performance level of the OpenXR device.
+			</description>
+		</method>
 		<method name="set_motion_range">
 			<return type="void" />
 			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
@@ -143,11 +163,11 @@
 		</member>
 		<member name="foveation_dynamic" type="bool" setter="set_foveation_dynamic" getter="get_foveation_dynamic" default="false">
 			Enable dynamic foveation adjustment, the interface must be initialized before this is accessible. If enabled foveation will automatically adjusted between low and [member foveation_level].
-			[b]Note:[/b] Only works on compatibility renderer.
+			[b]Note:[/b] Only works on the Compatibility renderer.
 		</member>
 		<member name="foveation_level" type="int" setter="set_foveation_level" getter="get_foveation_level" default="0">
 			Set foveation level from 0 (off) to 3 (high), the interface must be initialized before this is accessible.
-			[b]Note:[/b] Only works on compatibility renderer.
+			[b]Note:[/b] Only works on the Compatibility renderer.
 		</member>
 		<member name="render_target_size_multiplier" type="float" setter="set_render_target_size_multiplier" getter="get_render_target_size_multiplier" default="1.0">
 			The render size multiplier for the current HMD. Must be set before the interface has been initialized.
@@ -162,6 +182,22 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="cpu_level_changed">
+			<param index="0" name="sub_domain" type="int" />
+			<param index="1" name="from_level" type="int" />
+			<param index="2" name="to_level" type="int" />
+			<description>
+				Informs the device CPU performance level has changed in the specified subdomain.
+			</description>
+		</signal>
+		<signal name="gpu_level_changed">
+			<param index="0" name="sub_domain" type="int" />
+			<param index="1" name="from_level" type="int" />
+			<param index="2" name="to_level" type="int" />
+			<description>
+				Informs the device GPU performance level has changed in the specified subdomain.
+			</description>
+		</signal>
 		<signal name="instance_exiting">
 			<description>
 				Informs our OpenXR instance is exiting.
@@ -186,7 +222,7 @@
 		</signal>
 		<signal name="session_focussed">
 			<description>
-				Informs our OpenXR session now has focus.
+				Informs our OpenXR session now has focus, for example output is sent to the HMD and we're receiving XR input.
 			</description>
 		</signal>
 		<signal name="session_loss_pending">
@@ -199,13 +235,47 @@
 				Informs our OpenXR session is stopping.
 			</description>
 		</signal>
+		<signal name="session_synchronized">
+			<description>
+				Informs our OpenXR session has been synchronized.
+			</description>
+		</signal>
 		<signal name="session_visible">
 			<description>
-				Informs our OpenXR session is now visible (output is being sent to the HMD).
+				Informs our OpenXR session is now visible, for example output is sent to the HMD but we don't receive XR input.
 			</description>
 		</signal>
 	</signals>
 	<constants>
+		<constant name="SESSION_STATE_UNKNOWN" value="0" enum="SessionState">
+			The state of the session is unknown, we haven't tried setting up OpenXR yet.
+		</constant>
+		<constant name="SESSION_STATE_IDLE" value="1" enum="SessionState">
+			The initial state after the OpenXR session is created or after the session is destroyed.
+		</constant>
+		<constant name="SESSION_STATE_READY" value="2" enum="SessionState">
+			OpenXR is ready to begin our session. [signal session_begun] is emitted when we change to this state.
+		</constant>
+		<constant name="SESSION_STATE_SYNCHRONIZED" value="3" enum="SessionState">
+			The application has synched its frame loop with the runtime but we're not rendering anything. [signal session_synchronized] is emitted when we change to this state.
+		</constant>
+		<constant name="SESSION_STATE_VISIBLE" value="4" enum="SessionState">
+			The application has synched its frame loop with the runtime and we're rendering output to the user, however we receive no user input. [signal session_visible] is emitted when we change to this state.
+			[b]Note:[/b] This is the current state just before we get the focused state, whenever the user opens a system menu, switches to another application, or takes off their headset.
+		</constant>
+		<constant name="SESSION_STATE_FOCUSED" value="5" enum="SessionState">
+			The application has synched its frame loop with the runtime, we're rendering output to the user and we're receiving XR input. [signal session_focussed] is emitted when we change to this state.
+			[b]Note:[/b] This is the state OpenXR will be in when the user can fully interact with your game.
+		</constant>
+		<constant name="SESSION_STATE_STOPPING" value="6" enum="SessionState">
+			Our session is being stopped. [signal session_stopping] is emitted when we change to this state.
+		</constant>
+		<constant name="SESSION_STATE_LOSS_PENDING" value="7" enum="SessionState">
+			The session is about to be lost. [signal session_loss_pending] is emitted when we change to this state.
+		</constant>
+		<constant name="SESSION_STATE_EXITING" value="8" enum="SessionState">
+			The OpenXR instance is about to be destroyed and we're existing. [signal instance_exiting] is emitted when we change to this state.
+		</constant>
 		<constant name="HAND_LEFT" value="0" enum="Hand">
 			Left hand.
 		</constant>
@@ -234,7 +304,7 @@
 			The source of hand tracking is a controller, bone positions are inferred from controller inputs.
 		</constant>
 		<constant name="HAND_TRACKED_SOURCE_MAX" value="3" enum="HandTrackedSource">
-			Maximum value for the hand tracked source enum.
+			Represents the size of the [enum HandTrackedSource] enum.
 		</constant>
 		<constant name="HAND_JOINT_PALM" value="0" enum="HandJoints">
 			Palm joint.
@@ -255,67 +325,97 @@
 			Thumb tip joint.
 		</constant>
 		<constant name="HAND_JOINT_INDEX_METACARPAL" value="6" enum="HandJoints">
-			Index metacarpal joint.
+			Index finger metacarpal joint.
 		</constant>
 		<constant name="HAND_JOINT_INDEX_PROXIMAL" value="7" enum="HandJoints">
-			Index proximal joint.
+			Index finger phalanx proximal joint.
 		</constant>
 		<constant name="HAND_JOINT_INDEX_INTERMEDIATE" value="8" enum="HandJoints">
-			Index intermediate joint.
+			Index finger phalanx intermediate joint.
 		</constant>
 		<constant name="HAND_JOINT_INDEX_DISTAL" value="9" enum="HandJoints">
-			Index distal joint.
+			Index finger phalanx distal joint.
 		</constant>
 		<constant name="HAND_JOINT_INDEX_TIP" value="10" enum="HandJoints">
-			Index tip joint.
+			Index finger tip joint.
 		</constant>
 		<constant name="HAND_JOINT_MIDDLE_METACARPAL" value="11" enum="HandJoints">
-			Middle metacarpal joint.
+			Middle finger metacarpal joint.
 		</constant>
 		<constant name="HAND_JOINT_MIDDLE_PROXIMAL" value="12" enum="HandJoints">
-			Middle proximal joint.
+			Middle finger phalanx proximal joint.
 		</constant>
 		<constant name="HAND_JOINT_MIDDLE_INTERMEDIATE" value="13" enum="HandJoints">
-			Middle intermediate joint.
+			Middle finger phalanx intermediate joint.
 		</constant>
 		<constant name="HAND_JOINT_MIDDLE_DISTAL" value="14" enum="HandJoints">
-			Middle distal joint.
+			Middle finger phalanx distal joint.
 		</constant>
 		<constant name="HAND_JOINT_MIDDLE_TIP" value="15" enum="HandJoints">
-			Middle tip joint.
+			Middle finger tip joint.
 		</constant>
 		<constant name="HAND_JOINT_RING_METACARPAL" value="16" enum="HandJoints">
-			Ring metacarpal joint.
+			Ring finger metacarpal joint.
 		</constant>
 		<constant name="HAND_JOINT_RING_PROXIMAL" value="17" enum="HandJoints">
-			Ring proximal joint.
+			Ring finger phalanx proximal joint.
 		</constant>
 		<constant name="HAND_JOINT_RING_INTERMEDIATE" value="18" enum="HandJoints">
-			Ring intermediate joint.
+			Ring finger phalanx intermediate joint.
 		</constant>
 		<constant name="HAND_JOINT_RING_DISTAL" value="19" enum="HandJoints">
-			Ring distal joint.
+			Ring finger phalanx distal joint.
 		</constant>
 		<constant name="HAND_JOINT_RING_TIP" value="20" enum="HandJoints">
-			Ring tip joint.
+			Ring finger tip joint.
 		</constant>
 		<constant name="HAND_JOINT_LITTLE_METACARPAL" value="21" enum="HandJoints">
-			Little metacarpal joint.
+			Pinky finger metacarpal joint.
 		</constant>
 		<constant name="HAND_JOINT_LITTLE_PROXIMAL" value="22" enum="HandJoints">
-			Little proximal joint.
+			Pinky finger phalanx proximal joint.
 		</constant>
 		<constant name="HAND_JOINT_LITTLE_INTERMEDIATE" value="23" enum="HandJoints">
-			Little intermediate joint.
+			Pinky finger phalanx intermediate joint.
 		</constant>
 		<constant name="HAND_JOINT_LITTLE_DISTAL" value="24" enum="HandJoints">
-			Little distal joint.
+			Pinky finger phalanx distal joint.
 		</constant>
 		<constant name="HAND_JOINT_LITTLE_TIP" value="25" enum="HandJoints">
-			Little tip joint.
+			Pinky finger tip joint.
 		</constant>
 		<constant name="HAND_JOINT_MAX" value="26" enum="HandJoints">
-			Maximum value for the hand joint enum.
+			Represents the size of the [enum HandJoints] enum.
+		</constant>
+		<constant name="PERF_SETTINGS_LEVEL_POWER_SAVINGS" value="0" enum="PerfSettingsLevel">
+			The application has entered a non-XR section (head-locked / static screen), during which power savings are to be prioritized.
+		</constant>
+		<constant name="PERF_SETTINGS_LEVEL_SUSTAINED_LOW" value="1" enum="PerfSettingsLevel">
+			The application has entered a low and stable complexity section, during which reducing power is more important than occasional late rendering frames.
+		</constant>
+		<constant name="PERF_SETTINGS_LEVEL_SUSTAINED_HIGH" value="2" enum="PerfSettingsLevel">
+			The application has entered a high or dynamic complexity section, during which the XR Runtime strives for consistent XR compositing and frame rendering within a thermally sustainable range.
+		</constant>
+		<constant name="PERF_SETTINGS_LEVEL_BOOST" value="3" enum="PerfSettingsLevel">
+			The application has entered a section with very high complexity, during which the XR Runtime is allowed to step up beyond the thermally sustainable range.
+		</constant>
+		<constant name="PERF_SETTINGS_SUB_DOMAIN_COMPOSITING" value="0" enum="PerfSettingsSubDomain">
+			The compositing performance within the runtime has reached a new level.
+		</constant>
+		<constant name="PERF_SETTINGS_SUB_DOMAIN_RENDERING" value="1" enum="PerfSettingsSubDomain">
+			The application rendering performance has reached a new level.
+		</constant>
+		<constant name="PERF_SETTINGS_SUB_DOMAIN_THERMAL" value="2" enum="PerfSettingsSubDomain">
+			The temperature of the device has reached a new level.
+		</constant>
+		<constant name="PERF_SETTINGS_NOTIF_LEVEL_NORMAL" value="0" enum="PerfSettingsNotificationLevel">
+			The sub-domain has reached a level where no further actions other than currently applied are necessary.
+		</constant>
+		<constant name="PERF_SETTINGS_NOTIF_LEVEL_WARNING" value="1" enum="PerfSettingsNotificationLevel">
+			The sub-domain has reached an early warning level where the application should start proactive mitigation actions.
+		</constant>
+		<constant name="PERF_SETTINGS_NOTIF_LEVEL_IMPAIRED" value="2" enum="PerfSettingsNotificationLevel">
+			The sub-domain has reached a critical level where the application should start drastic mitigation actions.
 		</constant>
 		<constant name="HAND_JOINT_NONE" value="0" enum="HandJointFlags" is_bitfield="true">
 			No flags are set.

@@ -193,7 +193,7 @@ Point2 TextureProgressBar::unit_val_to_uv(float val) {
 	Point2 p = get_relative_center();
 
 	// Minimal version of Liang-Barsky clipping algorithm
-	float angle = (val * Math_TAU) - Math_PI * 0.5;
+	float angle = (val * Math::TAU) - Math::PI * 0.5;
 	Point2 dir = Vector2(Math::cos(angle), Math::sin(angle));
 	float t1 = 1.0;
 	float cp = 0.0;
@@ -424,11 +424,18 @@ void TextureProgressBar::draw_nine_patch_stretched(const Ref<Texture2D> &p_textu
 	p_texture->get_rect_region(dst_rect, src_rect, dst_rect, src_rect);
 
 	RID ci = get_canvas_item();
-	RS::get_singleton()->canvas_item_add_nine_patch(ci, dst_rect, src_rect, p_texture->get_rid(), topleft, bottomright, RS::NINE_PATCH_STRETCH, RS::NINE_PATCH_STRETCH, true, p_modulate);
+	RS::get_singleton()->canvas_item_add_nine_patch(ci, dst_rect, src_rect, p_texture->get_scaled_rid(), topleft, bottomright, RS::NINE_PATCH_STRETCH, RS::NINE_PATCH_STRETCH, true, p_modulate);
 }
 
 void TextureProgressBar::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_PROGRESS_INDICATOR);
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (under.is_valid()) {
 				if (nine_patch_stretch) {
@@ -629,6 +636,9 @@ Point2 TextureProgressBar::get_radial_center_offset() {
 }
 
 void TextureProgressBar::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name.begins_with("stretch_margin_") && !nine_patch_stretch) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}

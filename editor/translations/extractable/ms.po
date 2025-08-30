@@ -18,6 +18,15 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
+msgid "All Recognized"
+msgstr "Semua Dikenali"
+
+msgid "Save"
+msgstr "Simpan"
+
+msgid "Clear"
+msgstr "Kosongkan"
+
 msgid "Network"
 msgstr "Rangkaian"
 
@@ -30,9 +39,6 @@ msgstr "Pilih Folder Semasa"
 msgid "Select This Folder"
 msgstr "Pilih Folder Ini"
 
-msgid "All Recognized"
-msgstr "Semua Dikenali"
-
 msgid "Open a File"
 msgstr "Buka Fail"
 
@@ -44,9 +50,6 @@ msgstr "Buka Direktori"
 
 msgid "Open a File or Directory"
 msgstr "Buka Fail atau Direktori"
-
-msgid "Save"
-msgstr "Simpan"
 
 msgid "Save a File"
 msgstr "Simpan Fail"
@@ -66,11 +69,11 @@ msgstr "Laluan:"
 msgid "Refresh files."
 msgstr "Muat semula fail."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Togol keterlihatan fail tersembunyi."
-
 msgid "Directories & Files:"
 msgstr "Direktori & Fail:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Togol keterlihatan fail tersembunyi."
 
 msgid "File:"
 msgstr "Fail:"
@@ -104,9 +107,6 @@ msgstr "Tampal"
 
 msgid "Select All"
 msgstr "Pilih Semua"
-
-msgid "Clear"
-msgstr "Kosongkan"
 
 msgid "Undo"
 msgstr "Buat Asal"

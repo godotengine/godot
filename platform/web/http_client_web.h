@@ -28,16 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef HTTP_CLIENT_WEB_H
-#define HTTP_CLIENT_WEB_H
+#pragma once
 
 #include "core/io/http_client.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stddef.h>
 
 typedef enum {
 	GODOT_JS_FETCH_STATE_REQUESTING = 0,
@@ -104,5 +101,3 @@ public:
 	HTTPClientWeb();
 	~HTTPClientWeb();
 };
-
-#endif // HTTP_CLIENT_WEB_H

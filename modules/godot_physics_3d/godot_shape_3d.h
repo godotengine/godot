@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_SHAPE_3D_H
-#define GODOT_SHAPE_3D_H
+#pragma once
 
 #include "core/math/geometry_3d.h"
 #include "core/templates/local_vector.h"
@@ -120,7 +119,7 @@ class GodotWorldBoundaryShape3D : public GodotShape3D {
 public:
 	Plane get_plane() const;
 
-	virtual real_t get_volume() const override { return INFINITY; }
+	virtual real_t get_volume() const override { return Math::INF; }
 	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_WORLD_BOUNDARY; }
 	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const override;
 	virtual Vector3 get_support(const Vector3 &p_normal) const override;
@@ -173,7 +172,7 @@ class GodotSphereShape3D : public GodotShape3D {
 public:
 	real_t get_radius() const;
 
-	virtual real_t get_volume() const override { return 4.0 / 3.0 * Math_PI * radius * radius * radius; }
+	virtual real_t get_volume() const override { return 4.0 / 3.0 * Math::PI * radius * radius * radius; }
 
 	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_SPHERE; }
 
@@ -227,7 +226,7 @@ public:
 	_FORCE_INLINE_ real_t get_height() const { return height; }
 	_FORCE_INLINE_ real_t get_radius() const { return radius; }
 
-	virtual real_t get_volume() const override { return 4.0 / 3.0 * Math_PI * radius * radius * radius + (height - radius * 2.0) * Math_PI * radius * radius; }
+	virtual real_t get_volume() const override { return 4.0 / 3.0 * Math::PI * radius * radius * radius + (height - radius * 2.0) * Math::PI * radius * radius; }
 
 	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_CAPSULE; }
 
@@ -256,7 +255,7 @@ public:
 	_FORCE_INLINE_ real_t get_height() const { return height; }
 	_FORCE_INLINE_ real_t get_radius() const { return radius; }
 
-	virtual real_t get_volume() const override { return height * Math_PI * radius * radius; }
+	virtual real_t get_volume() const override { return height * Math::PI * radius * radius; }
 
 	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_CYLINDER; }
 
@@ -510,5 +509,3 @@ struct GodotMotionShape3D : public GodotShape3D {
 
 	GodotMotionShape3D() { configure(AABB()); }
 };
-
-#endif // GODOT_SHAPE_3D_H

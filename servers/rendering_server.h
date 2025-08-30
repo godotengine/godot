@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_SERVER_H
-#define RENDERING_SERVER_H
+#pragma once
 
 #include "core/io/image.h"
 #include "core/math/geometry_3d.h"
@@ -88,6 +87,8 @@ protected:
 	void _canvas_item_add_multiline_bind_compat_84523(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width = -1.0);
 	void _canvas_item_add_rect_bind_compat_84523(RID p_item, const Rect2 &p_rect, const Color &p_color);
 	void _canvas_item_add_circle_bind_compat_84523(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color);
+	void _instance_set_interpolated_bind_compat_104269(RID p_instance, bool p_interpolated);
+	void _instance_reset_physics_interpolation_bind_compat_104269(RID p_instance);
 
 	static void _bind_compatibility_methods();
 #endif
@@ -101,6 +102,8 @@ public:
 		ARRAY_WEIGHTS_SIZE = 4,
 		CANVAS_ITEM_Z_MIN = -4096,
 		CANVAS_ITEM_Z_MAX = 4096,
+		CANVAS_LAYER_MIN = -2147483648,
+		CANVAS_LAYER_MAX = 2147483647,
 		MAX_GLOW_LEVELS = 7,
 		MAX_CURSORS = 8,
 		MAX_2D_DIRECTIONAL_LIGHTS = 8,
@@ -184,6 +187,7 @@ public:
 		Image::Format format;
 		int64_t bytes;
 		String path;
+		TextureType type;
 	};
 
 	virtual void texture_debug_usage(List<TextureInfo> *r_info) = 0;
@@ -399,6 +403,7 @@ public:
 	virtual uint32_t mesh_surface_get_format_normal_tangent_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const;
 	virtual uint32_t mesh_surface_get_format_attribute_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const;
 	virtual uint32_t mesh_surface_get_format_skin_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const;
+	virtual uint32_t mesh_surface_get_format_index_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const;
 
 	/// Returns stride
 	virtual void mesh_surface_make_offsets_from_format(uint64_t p_format, int p_vertex_len, int p_index_len, uint32_t *r_offsets, uint32_t &r_vertex_element_size, uint32_t &r_normal_element_size, uint32_t &r_attrib_element_size, uint32_t &r_skin_element_size) const;
@@ -424,6 +429,7 @@ public:
 	virtual void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
 	virtual void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
 	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
+	virtual void mesh_surface_update_index_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) = 0;
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const = 0;
@@ -442,6 +448,20 @@ public:
 
 	virtual void mesh_surface_remove(RID p_mesh, int p_surface) = 0;
 	virtual void mesh_clear(RID p_mesh) = 0;
+
+	struct MeshInfo {
+		RID mesh;
+		String path;
+		uint32_t vertex_buffer_size = 0;
+		uint32_t attribute_buffer_size = 0;
+		uint32_t skin_buffer_size = 0;
+		uint32_t index_buffer_size = 0;
+		uint32_t blend_shape_buffer_size = 0;
+		uint32_t lod_index_buffers_size = 0;
+		uint64_t vertex_count = 0;
+	};
+
+	virtual void mesh_debug_usage(List<MeshInfo> *r_info) = 0;
 
 	/* MULTIMESH API */
 
@@ -857,6 +877,7 @@ public:
 	};
 
 	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, ParticlesCollisionHeightfieldResolution p_resolution) = 0; // For SDF and vector field.
+	virtual void particles_collision_set_height_field_mask(RID p_particles_collision, uint32_t p_heightfield_mask) = 0;
 
 	/* FOG VOLUME API */
 
@@ -1056,6 +1077,7 @@ public:
 	enum ViewportScreenSpaceAA {
 		VIEWPORT_SCREEN_SPACE_AA_DISABLED,
 		VIEWPORT_SCREEN_SPACE_AA_FXAA,
+		VIEWPORT_SCREEN_SPACE_AA_SMAA,
 		VIEWPORT_SCREEN_SPACE_AA_MAX,
 	};
 
@@ -1427,12 +1449,12 @@ public:
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask) = 0;
 	virtual void instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center) = 0;
 	virtual void instance_set_transform(RID p_instance, const Transform3D &p_transform) = 0;
-	virtual void instance_set_interpolated(RID p_instance, bool p_interpolated) = 0;
-	virtual void instance_reset_physics_interpolation(RID p_instance) = 0;
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id) = 0;
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight) = 0;
 	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material) = 0;
 	virtual void instance_set_visible(RID p_instance, bool p_visible) = 0;
+
+	virtual void instance_teleport(RID p_instance) = 0;
 
 	virtual void instance_set_custom_aabb(RID p_instance, AABB aabb) = 0;
 
@@ -1977,5 +1999,3 @@ VARIANT_ENUM_CAST(RenderingServer::Features);
 
 // Alias to make it easier to use.
 #define RS RenderingServer
-
-#endif // RENDERING_SERVER_H

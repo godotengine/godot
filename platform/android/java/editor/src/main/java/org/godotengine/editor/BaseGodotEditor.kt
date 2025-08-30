@@ -37,24 +37,42 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.*
+import android.os.Build
+import android.os.Bundle
+import android.os.Debug
+import android.os.Environment
+import android.os.Process
+import android.preference.PreferenceManager
 import android.util.Log
 import android.view.View
-import android.view.WindowManager
+import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.annotation.CallSuper
+import androidx.core.content.edit
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.isVisible
 import androidx.window.layout.WindowMetricsCalculator
+import org.godotengine.editor.embed.EmbeddedGodotGame
+import org.godotengine.editor.embed.GameMenuFragment
 import org.godotengine.editor.utils.signApk
 import org.godotengine.editor.utils.verifyApk
 import org.godotengine.godot.BuildConfig
 import org.godotengine.godot.GodotActivity
 import org.godotengine.godot.GodotLib
+import org.godotengine.godot.editor.utils.EditorUtils
+import org.godotengine.godot.editor.utils.GameMenuUtils
+import org.godotengine.godot.editor.utils.GameMenuUtils.GameEmbedMode
+import org.godotengine.godot.editor.utils.GameMenuUtils.fetchGameEmbedMode
 import org.godotengine.godot.error.Error
+import org.godotengine.godot.utils.DialogUtils
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
 import org.godotengine.godot.utils.isNativeXRDevice
-import java.util.*
+import org.godotengine.godot.xr.HybridMode
+import org.godotengine.godot.xr.getHybridAppLaunchMode
+import org.godotengine.godot.xr.HYBRID_APP_PANEL_CATEGORY
+import org.godotengine.godot.xr.HYBRID_APP_IMMERSIVE_CATEGORY
 import kotlin.math.min
 
 /**
@@ -64,32 +82,34 @@ import kotlin.math.min
  * Each derived activity runs in its own process, which enable up to have several instances of
  * the Godot engine up and running at the same time.
  */
-abstract class BaseGodotEditor : GodotActivity() {
+abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListener {
 
 	companion object {
 		private val TAG = BaseGodotEditor::class.java.simpleName
 
 		private const val WAIT_FOR_DEBUGGER = false
 
-		@JvmStatic
-		protected val EXTRA_PIP_AVAILABLE = "pip_available"
-		@JvmStatic
-		protected val EXTRA_LAUNCH_IN_PIP = "launch_in_pip_requested"
+		internal const val EXTRA_EDITOR_HINT = "editor_hint"
+		internal const val EXTRA_PROJECT_MANAGER_HINT = "project_manager_hint"
+		internal const val EXTRA_GAME_MENU_STATE = "game_menu_state"
+		internal const val EXTRA_IS_GAME_EMBEDDED = "is_game_embedded"
+		internal const val EXTRA_IS_GAME_RUNNING = "is_game_running"
 
-		// Command line arguments
+		// Command line arguments.
 		private const val FULLSCREEN_ARG = "--fullscreen"
 		private const val FULLSCREEN_ARG_SHORT = "-f"
-		internal const val EDITOR_ARG = "--editor"
-		internal const val EDITOR_ARG_SHORT = "-e"
-		internal const val EDITOR_PROJECT_MANAGER_ARG = "--project-manager"
-		internal const val EDITOR_PROJECT_MANAGER_ARG_SHORT = "-p"
-		internal const val BREAKPOINTS_ARG = "--breakpoints"
-		internal const val BREAKPOINTS_ARG_SHORT = "-b"
+		private const val EDITOR_ARG = "--editor"
+		private const val EDITOR_ARG_SHORT = "-e"
+		private const val EDITOR_PROJECT_MANAGER_ARG = "--project-manager"
+		private const val EDITOR_PROJECT_MANAGER_ARG_SHORT = "-p"
 		internal const val XR_MODE_ARG = "--xr-mode"
+		private const val SCENE_ARG = "--scene"
+		private const val PATH_ARG = "--path"
 
-		// Info for the various classes used by the editor
+		// Info for the various classes used by the editor.
 		internal val EDITOR_MAIN_INFO = EditorWindowInfo(GodotEditor::class.java, 777, "")
-		internal val RUN_GAME_INFO = EditorWindowInfo(GodotGame::class.java, 667, ":GodotGame", LaunchPolicy.AUTO, true)
+		internal val RUN_GAME_INFO = EditorWindowInfo(GodotGame::class.java, 667, ":GodotGame", LaunchPolicy.AUTO)
+		internal val EMBEDDED_RUN_GAME_INFO = EditorWindowInfo(EmbeddedGodotGame::class.java, 2667, ":EmbeddedGodotGame")
 		internal val XR_RUN_GAME_INFO = EditorWindowInfo(GodotXRGame::class.java, 1667, ":GodotXRGame")
 
 		/** Default behavior, means we check project settings **/
@@ -114,21 +134,54 @@ abstract class BaseGodotEditor : GodotActivity() {
 		private const val ANDROID_WINDOW_AUTO = 0
 		private const val ANDROID_WINDOW_SAME_AS_EDITOR = 1
 		private const val ANDROID_WINDOW_SIDE_BY_SIDE_WITH_EDITOR = 2
-		private const val ANDROID_WINDOW_SAME_AS_EDITOR_AND_LAUNCH_IN_PIP_MODE = 3
 
-		/**
-		 * Sets of constants to specify the Play window PiP mode.
-		 *
-		 * Should match the values in `editor/editor_settings.cpp'` for the
-		 * 'run/window_placement/play_window_pip_mode' setting.
-		 */
-		private const val PLAY_WINDOW_PIP_DISABLED = 0
-		private const val PLAY_WINDOW_PIP_ENABLED = 1
-		private const val PLAY_WINDOW_PIP_ENABLED_FOR_SAME_AS_EDITOR = 2
+		// Game menu constants.
+		internal const val KEY_GAME_MENU_ACTION = "key_game_menu_action"
+		internal const val KEY_GAME_MENU_ACTION_PARAM1 = "key_game_menu_action_param1"
+
+		internal const val GAME_MENU_ACTION_SET_SUSPEND = "setSuspend"
+		internal const val GAME_MENU_ACTION_NEXT_FRAME = "nextFrame"
+		internal const val GAME_MENU_ACTION_SET_NODE_TYPE = "setNodeType"
+		internal const val GAME_MENU_ACTION_SET_SELECT_MODE = "setSelectMode"
+		internal const val GAME_MENU_ACTION_SET_SELECTION_VISIBLE = "setSelectionVisible"
+		internal const val GAME_MENU_ACTION_SET_CAMERA_OVERRIDE = "setCameraOverride"
+		internal const val GAME_MENU_ACTION_SET_CAMERA_MANIPULATE_MODE = "setCameraManipulateMode"
+		internal const val GAME_MENU_ACTION_RESET_CAMERA_2D_POSITION = "resetCamera2DPosition"
+		internal const val GAME_MENU_ACTION_RESET_CAMERA_3D_POSITION = "resetCamera3DPosition"
+		internal const val GAME_MENU_ACTION_EMBED_GAME_ON_PLAY = "embedGameOnPlay"
+		internal const val GAME_MENU_ACTION_SET_DEBUG_MUTE_AUDIO = "setDebugMuteAudio"
+
+		private const val GAME_WORKSPACE = "Game"
+
+		internal const val SNACKBAR_SHOW_DURATION_MS = 5000L
+
+		private const val PREF_KEY_DONT_SHOW_GAME_RESUME_HINT = "pref_key_dont_show_game_resume_hint"
 	}
 
-	private val editorMessageDispatcher = EditorMessageDispatcher(this)
+	internal val editorMessageDispatcher = EditorMessageDispatcher(this)
 	private val editorLoadingIndicator: View? by lazy { findViewById(R.id.editor_loading_indicator) }
+
+	private val embeddedGameViewContainerWindow: View? by lazy { findViewById<View?>(R.id.embedded_game_view_container_window)?.apply {
+		setOnClickListener {
+			// Hide the game menu screen overlay.
+			it.isVisible = false
+		}
+
+		// Prevent the game menu screen overlay from hiding when clicking inside of the panel bounds.
+		findViewById<View?>(R.id.embedded_game_view_container)?.isClickable = true
+	} }
+	private val embeddedGameStateLabel: TextView? by lazy { findViewById<TextView?>(R.id.embedded_game_state_label)?.apply {
+		setOnClickListener {
+			godot?.runOnRenderThread {
+				GameMenuUtils.playMainScene()
+			}
+		}
+	} }
+	protected val gameMenuContainer: View? by lazy {
+		findViewById(R.id.game_menu_fragment_container)
+	}
+	protected var gameMenuFragment: GameMenuFragment? = null
+	protected val gameMenuState = Bundle()
 
 	override fun getGodotAppLayout() = R.layout.godot_editor_layout
 
@@ -139,20 +192,18 @@ abstract class BaseGodotEditor : GodotActivity() {
 	 *
 	 * The permissions in this set will be requested on demand based on use cases.
 	 */
-	private fun getExcludedPermissions(): MutableSet<String> {
+	@CallSuper
+	protected open fun getExcludedPermissions(): MutableSet<String> {
 		val excludedPermissions = mutableSetOf(
 			// The RECORD_AUDIO permission is requested when the "audio/driver/enable_input" project
 			// setting is enabled.
 			Manifest.permission.RECORD_AUDIO,
+			// The CAMERA permission is requested when `CameraFeed.feed_is_active` is enabled.
+			Manifest.permission.CAMERA,
+			// The REQUEST_INSTALL_PACKAGES permission is requested the first time we attempt to
+			// open an apk file.
+			Manifest.permission.REQUEST_INSTALL_PACKAGES,
 		)
-
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			excludedPermissions.add(
-				// The REQUEST_INSTALL_PACKAGES permission is requested the first time we attempt to
-				// open an apk file.
-				Manifest.permission.REQUEST_INSTALL_PACKAGES,
-			)
-		}
 
 		// XR runtime permissions should only be requested when the "xr/openxr/enabled" project setting
 		// is enabled.
@@ -171,9 +222,9 @@ abstract class BaseGodotEditor : GodotActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		installSplashScreen()
 
-		// Prevent the editor window from showing in the display cutout
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && getEditorWindowInfo() == EDITOR_MAIN_INFO) {
-			window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
+		val editorWindowInfo = getEditorWindowInfo()
+		if (editorWindowInfo == EDITOR_MAIN_INFO || editorWindowInfo == RUN_GAME_INFO) {
+			enableEdgeToEdge()
 		}
 
 		// We exclude certain permissions from the set we request at startup, as they'll be
@@ -187,18 +238,99 @@ abstract class BaseGodotEditor : GodotActivity() {
 		}
 
 		super.onCreate(savedInstanceState)
+
+		// Add the game menu bar.
+		setupGameMenuBar()
+	}
+
+	override fun onNewIntent(newIntent: Intent) {
+		if (newIntent.hasCategory(HYBRID_APP_PANEL_CATEGORY) || newIntent.hasCategory(HYBRID_APP_IMMERSIVE_CATEGORY)) {
+			val params = newIntent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
+			Log.d(TAG, "Received hybrid transition intent $newIntent with parameters ${params.contentToString()}")
+			// Override EXTRA_NEW_LAUNCH so the editor is not restarted
+			newIntent.putExtra(EXTRA_NEW_LAUNCH, false)
+
+			godot?.runOnRenderThread {
+				// Look for the scene and xr-mode arguments
+				var scene = ""
+				var xrMode = XR_MODE_DEFAULT
+				var path = ""
+				if (params != null) {
+					val sceneIndex = params.indexOf(SCENE_ARG)
+					if (sceneIndex != -1 && sceneIndex + 1 < params.size) {
+						scene = params[sceneIndex +1]
+					}
+
+					val xrModeIndex = params.indexOf(XR_MODE_ARG)
+					if (xrModeIndex != -1 && xrModeIndex + 1 < params.size) {
+						xrMode = params[xrModeIndex + 1]
+					}
+
+					val pathIndex = params.indexOf(PATH_ARG)
+					if (pathIndex != -1 && pathIndex + 1 < params.size) {
+						path = params[pathIndex + 1]
+					}
+				}
+
+				val sceneArgs = mutableSetOf(XR_MODE_ARG, xrMode).apply {
+					if (path.isNotEmpty() && scene.isEmpty()) {
+						add(PATH_ARG)
+						add(path)
+					}
+				}
+
+				Log.d(TAG, "Running scene $scene with arguments: $sceneArgs")
+				EditorUtils.runScene(scene, sceneArgs.toTypedArray())
+			}
+		}
+
+		super.onNewIntent(newIntent)
+	}
+
+	protected open fun shouldShowGameMenuBar() = gameMenuContainer != null
+
+	private fun setupGameMenuBar() {
+		if (shouldShowGameMenuBar()) {
+			var currentFragment = supportFragmentManager.findFragmentById(R.id.game_menu_fragment_container)
+			if (currentFragment !is GameMenuFragment) {
+				Log.v(TAG, "Creating game menu fragment instance")
+				currentFragment = GameMenuFragment().apply {
+					arguments = Bundle().apply {
+						putBundle(EXTRA_GAME_MENU_STATE, gameMenuState)
+					}
+				}
+				supportFragmentManager.beginTransaction()
+					.replace(R.id.game_menu_fragment_container, currentFragment, GameMenuFragment.TAG)
+					.commitNowAllowingStateLoss()
+			}
+
+			gameMenuFragment = currentFragment
+		}
 	}
 
 	override fun onGodotSetupCompleted() {
 		super.onGodotSetupCompleted()
 		val longPressEnabled = enableLongPressGestures()
 		val panScaleEnabled = enablePanAndScaleGestures()
+		val overrideVolumeButtonsEnabled = overrideVolumeButtons()
 
 		runOnUiThread {
 			// Enable long press, panning and scaling gestures
 			godotFragment?.godot?.renderView?.inputHandler?.apply {
 				enableLongPress(longPressEnabled)
 				enablePanningAndScalingGestures(panScaleEnabled)
+				setOverrideVolumeButtons(overrideVolumeButtonsEnabled)
+			}
+		}
+	}
+
+	private fun updateWindowAppearance() {
+		val editorWindowInfo = getEditorWindowInfo()
+		if (editorWindowInfo == EDITOR_MAIN_INFO || editorWindowInfo == RUN_GAME_INFO) {
+			godot?.apply {
+				enableImmersiveMode(isInImmersiveMode(), true)
+				enableEdgeToEdge(isInEdgeToEdgeMode(), true)
+				setSystemBarsAppearance()
 			}
 		}
 	}
@@ -208,20 +340,45 @@ abstract class BaseGodotEditor : GodotActivity() {
 		runOnUiThread {
 			// Hide the loading indicator
 			editorLoadingIndicator?.visibility = View.GONE
+			updateWindowAppearance()
 		}
 	}
 
-	@CallSuper
-	protected override fun updateCommandLineParams(args: Array<String>) {
-		val args = if (BuildConfig.BUILD_TYPE == "dev") {
-			args + "--benchmark"
-		} else {
-			args
+	override fun onResume() {
+		super.onResume()
+		updateWindowAppearance()
+
+		if (getEditorWindowInfo() == EDITOR_MAIN_INFO &&
+			godot?.isEditorHint() == true &&
+			(editorMessageDispatcher.hasEditorConnection(EMBEDDED_RUN_GAME_INFO) ||
+				editorMessageDispatcher.hasEditorConnection(RUN_GAME_INFO))) {
+			// If this is the editor window, and this is not the project manager, and we have a running game, then show
+			// a hint for how to resume the playing game.
+			val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+			if (!sharedPrefs.getBoolean(PREF_KEY_DONT_SHOW_GAME_RESUME_HINT, false)) {
+				DialogUtils.showSnackbar(
+					this,
+					getString(R.string.show_game_resume_hint),
+					SNACKBAR_SHOW_DURATION_MS,
+					getString(R.string.dont_show_again_message)
+				) {
+					sharedPrefs.edit {
+						putBoolean(PREF_KEY_DONT_SHOW_GAME_RESUME_HINT, true)
+					}
+				}
+			}
 		}
-		super.updateCommandLineParams(args);
 	}
 
-	protected open fun retrieveEditorWindowInfo(args: Array<String>): EditorWindowInfo {
+	override fun getCommandLine(): MutableList<String> {
+		val params = super.getCommandLine()
+		if (BuildConfig.BUILD_TYPE == "dev" && !params.contains("--benchmark")) {
+			params.add("--benchmark")
+		}
+		return params
+	}
+
+	protected fun retrieveEditorWindowInfo(args: Array<String>, gameEmbedMode: GameEmbedMode): EditorWindowInfo {
 		var hasEditor = false
 		var xrMode = XR_MODE_DEFAULT
 
@@ -235,16 +392,41 @@ abstract class BaseGodotEditor : GodotActivity() {
 			}
 		}
 
-		return if (hasEditor) {
-			EDITOR_MAIN_INFO
-		} else {
-			val openxrEnabled = xrMode == XR_MODE_ON ||
-				(xrMode == XR_MODE_DEFAULT && GodotLib.getGlobal("xr/openxr/enabled").toBoolean())
-			if (openxrEnabled && isNativeXRDevice(applicationContext)) {
-				XR_RUN_GAME_INFO
-			} else {
-				RUN_GAME_INFO
+		if (hasEditor) {
+			return EDITOR_MAIN_INFO
+		}
+
+		// Launching a game.
+		if (isNativeXRDevice(applicationContext)) {
+			if (xrMode == XR_MODE_ON) {
+				return XR_RUN_GAME_INFO
 			}
+
+			if ((xrMode == XR_MODE_DEFAULT && GodotLib.getGlobal("xr/openxr/enabled").toBoolean())) {
+				val hybridLaunchMode = getHybridAppLaunchMode()
+
+				return if (hybridLaunchMode == HybridMode.PANEL) {
+					RUN_GAME_INFO
+				} else {
+					XR_RUN_GAME_INFO
+				}
+			}
+
+			// Native XR devices don't support embed mode yet.
+			return RUN_GAME_INFO
+		}
+
+		// Project manager doesn't support embed mode.
+		if (godot?.isProjectManagerHint() == true) {
+			return RUN_GAME_INFO
+		}
+
+		// Check for embed mode launch.
+		val resolvedEmbedMode = resolveGameEmbedModeIfNeeded(gameEmbedMode)
+		return if (resolvedEmbedMode == GameEmbedMode.DISABLED) {
+			RUN_GAME_INFO
+		} else {
+			EMBEDDED_RUN_GAME_INFO
 		}
 	}
 
@@ -253,20 +435,21 @@ abstract class BaseGodotEditor : GodotActivity() {
 			RUN_GAME_INFO.windowId -> RUN_GAME_INFO
 			EDITOR_MAIN_INFO.windowId -> EDITOR_MAIN_INFO
 			XR_RUN_GAME_INFO.windowId -> XR_RUN_GAME_INFO
+			EMBEDDED_RUN_GAME_INFO.windowId -> EMBEDDED_RUN_GAME_INFO
 			else -> null
 		}
 	}
 
 	protected fun getNewGodotInstanceIntent(editorWindowInfo: EditorWindowInfo, args: Array<String>): Intent {
-		val updatedArgs = if (editorWindowInfo == EDITOR_MAIN_INFO &&
+		// If we're launching an editor window (project manager or editor) and we're in
+		// fullscreen mode, we want to remain in fullscreen mode.
+		// This doesn't apply to the play / game window since for that window fullscreen is
+		// controlled by the game logic.
+		val updatedArgs = if ((editorWindowInfo == EDITOR_MAIN_INFO || editorWindowInfo == RUN_GAME_INFO) &&
 			godot?.isInImmersiveMode() == true &&
 			!args.contains(FULLSCREEN_ARG) &&
 			!args.contains(FULLSCREEN_ARG_SHORT)
 		) {
-			// If we're launching an editor window (project manager or editor) and we're in
-			// fullscreen mode, we want to remain in fullscreen mode.
-			// This doesn't apply to the play / game window since for that window fullscreen is
-			// controlled by the game logic.
 			args + FULLSCREEN_ARG
 		} else {
 			args
@@ -278,40 +461,26 @@ abstract class BaseGodotEditor : GodotActivity() {
 			.putExtra(EXTRA_COMMAND_LINE_PARAMS, updatedArgs)
 
 		val launchPolicy = resolveLaunchPolicyIfNeeded(editorWindowInfo.launchPolicy)
-		val isPiPAvailable = if (editorWindowInfo.supportsPiPMode && hasPiPSystemFeature()) {
-			val pipMode = getPlayWindowPiPMode()
-			pipMode == PLAY_WINDOW_PIP_ENABLED ||
-				(pipMode == PLAY_WINDOW_PIP_ENABLED_FOR_SAME_AS_EDITOR &&
-					(launchPolicy == LaunchPolicy.SAME || launchPolicy == LaunchPolicy.SAME_AND_LAUNCH_IN_PIP_MODE))
-		} else {
-			false
-		}
-		newInstance.putExtra(EXTRA_PIP_AVAILABLE, isPiPAvailable)
-
-		var launchInPiP = false
 		if (launchPolicy == LaunchPolicy.ADJACENT) {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-				Log.v(TAG, "Adding flag for adjacent launch")
-				newInstance.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT)
-			}
-		} else if (launchPolicy == LaunchPolicy.SAME) {
-			launchInPiP = isPiPAvailable &&
-				(updatedArgs.contains(BREAKPOINTS_ARG) || updatedArgs.contains(BREAKPOINTS_ARG_SHORT))
-		} else if (launchPolicy == LaunchPolicy.SAME_AND_LAUNCH_IN_PIP_MODE) {
-			launchInPiP = isPiPAvailable
-		}
-
-		if (launchInPiP) {
-			Log.v(TAG, "Launching in PiP mode")
-			newInstance.putExtra(EXTRA_LAUNCH_IN_PIP, launchInPiP)
+			Log.v(TAG, "Adding flag for adjacent launch")
+			newInstance.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT)
 		}
 		return newInstance
 	}
 
-	override fun onNewGodotInstanceRequested(args: Array<String>): Int {
-		val editorWindowInfo = retrieveEditorWindowInfo(args)
+	final override fun onNewGodotInstanceRequested(args: Array<String>): Int {
+		val editorWindowInfo = retrieveEditorWindowInfo(args, fetchGameEmbedMode())
 
-		// Launch a new activity
+		// Check if this editor window is being terminated. If it's, delay the creation of a new instance until the
+		// termination is complete.
+		if (editorMessageDispatcher.isPendingForceQuit(editorWindowInfo)) {
+			Log.v(TAG, "Scheduling new launch after termination of ${editorWindowInfo.windowId}")
+			editorMessageDispatcher.runTaskAfterForceQuit(editorWindowInfo) {
+				onNewGodotInstanceRequested(args)
+			}
+			return editorWindowInfo.windowId
+		}
+
 		val sourceView = godotFragment?.view
 		val activityOptions = if (sourceView == null) {
 			null
@@ -322,6 +491,12 @@ abstract class BaseGodotEditor : GodotActivity() {
 		}
 
 		val newInstance = getNewGodotInstanceIntent(editorWindowInfo, args)
+		newInstance.apply {
+			putExtra(EXTRA_EDITOR_HINT, godot?.isEditorHint() == true)
+			putExtra(EXTRA_PROJECT_MANAGER_HINT, godot?.isProjectManagerHint() == true)
+			putExtra(EXTRA_GAME_MENU_STATE, gameMenuState)
+		}
+
 		if (editorWindowInfo.windowClassName == javaClass.name) {
 			Log.d(TAG, "Restarting ${editorWindowInfo.windowClassName} with parameters ${args.contentToString()}")
 			triggerRebirth(activityOptions?.toBundle(), newInstance)
@@ -344,7 +519,7 @@ abstract class BaseGodotEditor : GodotActivity() {
 		}
 
 		// Send an inter-process message to request the target editor window to force quit.
-		if (editorMessageDispatcher.requestForceQuit(editorWindowInfo.windowId)) {
+		if (editorMessageDispatcher.requestForceQuit(editorWindowInfo)) {
 			return true
 		}
 
@@ -390,6 +565,8 @@ abstract class BaseGodotEditor : GodotActivity() {
 	 */
 	protected open fun overrideOrientationRequest() = true
 
+	protected open fun overrideVolumeButtons() = false
+
 	/**
 	 * Enable long press gestures for the Godot Android editor.
 	 */
@@ -397,63 +574,57 @@ abstract class BaseGodotEditor : GodotActivity() {
 		java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/touchscreen/enable_long_press_as_right_click"))
 
 	/**
+	 * Disable scroll deadzone for the Godot Android editor.
+	 */
+	protected open fun disableScrollDeadzone() = true
+
+	/**
 	 * Enable pan and scale gestures for the Godot Android editor.
 	 */
 	protected open fun enablePanAndScaleGestures() =
 		java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/touchscreen/enable_pan_and_scale_gestures"))
 
-	/**
-	 * Retrieves the play window pip mode editor setting.
-	 */
-	private fun getPlayWindowPiPMode(): Int {
-		return try {
-			Integer.parseInt(GodotLib.getEditorSetting("run/window_placement/play_window_pip_mode"))
-		} catch (e: NumberFormatException) {
-			PLAY_WINDOW_PIP_ENABLED_FOR_SAME_AS_EDITOR
+	private fun resolveGameEmbedModeIfNeeded(embedMode: GameEmbedMode): GameEmbedMode {
+		return when (embedMode) {
+			GameEmbedMode.AUTO -> {
+				if (isInMultiWindowMode || isLargeScreen || isNativeXRDevice(applicationContext)) {
+					GameEmbedMode.DISABLED
+				} else {
+					GameEmbedMode.ENABLED
+				}
+			}
+
+			else -> embedMode
 		}
 	}
 
 	/**
 	 * If the launch policy is [LaunchPolicy.AUTO], resolve it into a specific policy based on the
 	 * editor setting or device and screen metrics.
-	 *
-	 * If the launch policy is [LaunchPolicy.SAME_AND_LAUNCH_IN_PIP_MODE] but PIP is not supported, fallback to the default
-	 * launch policy.
 	 */
 	private fun resolveLaunchPolicyIfNeeded(policy: LaunchPolicy): LaunchPolicy {
-		val inMultiWindowMode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			isInMultiWindowMode
-		} else {
-			false
-		}
-		val defaultLaunchPolicy = if (inMultiWindowMode || isLargeScreen) {
-			LaunchPolicy.ADJACENT
-		} else {
-			LaunchPolicy.SAME
-		}
-
 		return when (policy) {
 			LaunchPolicy.AUTO -> {
-				if (isNativeXRDevice(applicationContext)) {
-					// Native XR devices are more desktop-like and have support for launching adjacent
-					// windows. So we always want to launch in adjacent mode when auto is selected.
+				val defaultLaunchPolicy = if (isInMultiWindowMode || isLargeScreen || isNativeXRDevice(applicationContext)) {
 					LaunchPolicy.ADJACENT
 				} else {
-					try {
-						when (Integer.parseInt(GodotLib.getEditorSetting("run/window_placement/android_window"))) {
-							ANDROID_WINDOW_SAME_AS_EDITOR -> LaunchPolicy.SAME
-							ANDROID_WINDOW_SIDE_BY_SIDE_WITH_EDITOR -> LaunchPolicy.ADJACENT
-							ANDROID_WINDOW_SAME_AS_EDITOR_AND_LAUNCH_IN_PIP_MODE -> LaunchPolicy.SAME_AND_LAUNCH_IN_PIP_MODE
-							else -> {
-								// ANDROID_WINDOW_AUTO
-								defaultLaunchPolicy
-							}
+					LaunchPolicy.SAME
+				}
+
+				try {
+					when (Integer.parseInt(GodotLib.getEditorSetting("run/window_placement/android_window"))) {
+						ANDROID_WINDOW_SAME_AS_EDITOR -> LaunchPolicy.SAME
+						ANDROID_WINDOW_SIDE_BY_SIDE_WITH_EDITOR -> LaunchPolicy.ADJACENT
+
+						else -> {
+							// ANDROID_WINDOW_AUTO
+							defaultLaunchPolicy
 						}
-					} catch (e: NumberFormatException) {
-						Log.w(TAG, "Error parsing the Android window placement editor setting", e)
-						// Fall-back to the default launch policy
-						defaultLaunchPolicy
 					}
+				} catch (e: NumberFormatException) {
+					Log.w(TAG, "Error parsing the Android window placement editor setting", e)
+					// Fall-back to the default launch policy.
+					defaultLaunchPolicy
 				}
 			}
 
@@ -461,14 +632,6 @@ abstract class BaseGodotEditor : GodotActivity() {
 				policy
 			}
 		}
-	}
-
-	/**
-	 * Returns true the if the device supports picture-in-picture (PiP)
-	 */
-	protected open fun hasPiPSystemFeature(): Boolean {
-		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
-			packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
 	}
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -543,6 +706,7 @@ abstract class BaseGodotEditor : GodotActivity() {
 		return verifyApk(godot.fileAccessHandler, apkPath)
 	}
 
+	@CallSuper
 	override fun supportsFeature(featureTag: String): Boolean {
 		if (featureTag == "xr_editor") {
 			return isNativeXRDevice(applicationContext)
@@ -556,6 +720,202 @@ abstract class BaseGodotEditor : GodotActivity() {
 			return BuildConfig.FLAVOR == "picoos"
 		}
 
-        return false
+        return super.supportsFeature(featureTag)
     }
+
+	internal fun onEditorConnected(editorId: Int) {
+		Log.d(TAG, "Editor $editorId connected!")
+		when (editorId) {
+			EMBEDDED_RUN_GAME_INFO.windowId, RUN_GAME_INFO.windowId -> {
+				runOnUiThread {
+					embeddedGameViewContainerWindow?.isVisible = false
+				}
+			}
+
+			XR_RUN_GAME_INFO.windowId -> {
+				runOnUiThread {
+					updateEmbeddedGameView(gameRunning = true, gameEmbedded = false)
+				}
+			}
+		}
+	}
+
+	internal fun onEditorDisconnected(editorId: Int) {
+		Log.d(TAG, "Editor $editorId disconnected!")
+	}
+
+	private fun updateEmbeddedGameView(gameRunning: Boolean, gameEmbedded: Boolean) {
+		if (gameRunning) {
+			embeddedGameStateLabel?.apply {
+				setText(R.string.running_game_not_embedded_message)
+				setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, 0, 0)
+				isClickable = false
+			}
+		} else {
+			embeddedGameStateLabel?.apply{
+				setText(R.string.embedded_game_not_running_message)
+				setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, 0, R.drawable.play_48dp)
+				isClickable = true
+			}
+		}
+
+		gameMenuState.putBoolean(EXTRA_IS_GAME_EMBEDDED, gameEmbedded)
+		gameMenuState.putBoolean(EXTRA_IS_GAME_RUNNING, gameRunning)
+		gameMenuFragment?.refreshGameMenu(gameMenuState)
+	}
+
+	override fun onEditorWorkspaceSelected(workspace: String) {
+		if (workspace == GAME_WORKSPACE && shouldShowGameMenuBar()) {
+			if (editorMessageDispatcher.bringEditorWindowToFront(EMBEDDED_RUN_GAME_INFO) || editorMessageDispatcher.bringEditorWindowToFront(RUN_GAME_INFO)) {
+				return
+			}
+
+			val xrGameRunning = editorMessageDispatcher.hasEditorConnection(XR_RUN_GAME_INFO)
+			val gameEmbedMode = resolveGameEmbedModeIfNeeded(fetchGameEmbedMode())
+			runOnUiThread {
+				updateEmbeddedGameView(xrGameRunning, gameEmbedMode != GameEmbedMode.DISABLED)
+				embeddedGameViewContainerWindow?.isVisible = true
+			}
+		}
+	}
+
+	internal open fun bringSelfToFront() {
+		runOnUiThread {
+			Log.v(TAG, "Bringing self to front")
+			val relaunchIntent = Intent(intent)
+			// Don't restart.
+			relaunchIntent.putExtra(EXTRA_NEW_LAUNCH, false)
+			startActivity(relaunchIntent)
+		}
+	}
+
+	internal fun parseGameMenuAction(actionData: Bundle) {
+		val action = actionData.getString(KEY_GAME_MENU_ACTION) ?: return
+		when (action) {
+			GAME_MENU_ACTION_SET_SUSPEND -> {
+				val suspended = actionData.getBoolean(KEY_GAME_MENU_ACTION_PARAM1)
+				suspendGame(suspended)
+			}
+			GAME_MENU_ACTION_NEXT_FRAME -> {
+				dispatchNextFrame()
+			}
+			GAME_MENU_ACTION_SET_NODE_TYPE -> {
+				val nodeType = actionData.getSerializable(KEY_GAME_MENU_ACTION_PARAM1) as GameMenuFragment.GameMenuListener.NodeType?
+				if (nodeType != null) {
+					selectRuntimeNode(nodeType)
+				}
+			}
+			GAME_MENU_ACTION_SET_SELECTION_VISIBLE -> {
+				val enabled = actionData.getBoolean(KEY_GAME_MENU_ACTION_PARAM1)
+				toggleSelectionVisibility(enabled)
+			}
+			GAME_MENU_ACTION_SET_CAMERA_OVERRIDE -> {
+				val enabled = actionData.getBoolean(KEY_GAME_MENU_ACTION_PARAM1)
+				overrideCamera(enabled)
+			}
+			GAME_MENU_ACTION_SET_SELECT_MODE -> {
+				val selectMode = actionData.getSerializable(KEY_GAME_MENU_ACTION_PARAM1) as GameMenuFragment.GameMenuListener.SelectMode?
+				if (selectMode != null) {
+					selectRuntimeNodeSelectMode(selectMode)
+				}
+			}
+			GAME_MENU_ACTION_RESET_CAMERA_2D_POSITION -> {
+				reset2DCamera()
+			}
+			GAME_MENU_ACTION_RESET_CAMERA_3D_POSITION -> {
+				reset3DCamera()
+			}
+			GAME_MENU_ACTION_SET_CAMERA_MANIPULATE_MODE -> {
+				val mode = actionData.getSerializable(KEY_GAME_MENU_ACTION_PARAM1) as? GameMenuFragment.GameMenuListener.CameraMode?
+				if (mode != null) {
+					manipulateCamera(mode)
+				}
+			}
+			GAME_MENU_ACTION_EMBED_GAME_ON_PLAY -> {
+				val embedded = actionData.getBoolean(KEY_GAME_MENU_ACTION_PARAM1)
+				embedGameOnPlay(embedded)
+			}
+			GAME_MENU_ACTION_SET_DEBUG_MUTE_AUDIO -> {
+				val enabled = actionData.getBoolean(KEY_GAME_MENU_ACTION_PARAM1)
+				muteAudio(enabled)
+			}
+		}
+	}
+
+	override fun suspendGame(suspended: Boolean) {
+		gameMenuState.putBoolean(GAME_MENU_ACTION_SET_SUSPEND, suspended)
+		godot?.runOnRenderThread {
+			GameMenuUtils.setSuspend(suspended)
+		}
+	}
+
+	override fun dispatchNextFrame() {
+		godot?.runOnRenderThread {
+			GameMenuUtils.nextFrame()
+		}
+	}
+
+	override fun toggleSelectionVisibility(enabled: Boolean) {
+		gameMenuState.putBoolean(GAME_MENU_ACTION_SET_SELECTION_VISIBLE, enabled)
+		godot?.runOnRenderThread {
+			GameMenuUtils.setSelectionVisible(enabled)
+		}
+	}
+
+	override fun overrideCamera(enabled: Boolean) {
+		gameMenuState.putBoolean(GAME_MENU_ACTION_SET_CAMERA_OVERRIDE, enabled)
+		godot?.runOnRenderThread {
+			GameMenuUtils.setCameraOverride(enabled)
+		}
+	}
+
+	override fun selectRuntimeNode(nodeType: GameMenuFragment.GameMenuListener.NodeType) {
+		gameMenuState.putSerializable(GAME_MENU_ACTION_SET_NODE_TYPE, nodeType)
+		godot?.runOnRenderThread {
+			GameMenuUtils.setNodeType(nodeType.ordinal)
+		}
+	}
+
+	override fun selectRuntimeNodeSelectMode(selectMode: GameMenuFragment.GameMenuListener.SelectMode) {
+		gameMenuState.putSerializable(GAME_MENU_ACTION_SET_SELECT_MODE, selectMode)
+		godot?.runOnRenderThread {
+			GameMenuUtils.setSelectMode(selectMode.ordinal)
+		}
+	}
+
+	override fun reset2DCamera() {
+		godot?.runOnRenderThread {
+			GameMenuUtils.resetCamera2DPosition()
+		}
+	}
+
+	override fun reset3DCamera() {
+		godot?.runOnRenderThread {
+			GameMenuUtils.resetCamera3DPosition()
+		}
+	}
+
+	override fun manipulateCamera(mode: GameMenuFragment.GameMenuListener.CameraMode) {
+		gameMenuState.putSerializable(GAME_MENU_ACTION_SET_CAMERA_MANIPULATE_MODE, mode)
+		godot?.runOnRenderThread {
+			GameMenuUtils.setCameraManipulateMode(mode.ordinal)
+		}
+	}
+
+	override fun muteAudio(enabled: Boolean) {
+		gameMenuState.putBoolean(GAME_MENU_ACTION_SET_DEBUG_MUTE_AUDIO, enabled)
+		godot?.runOnRenderThread {
+			GameMenuUtils.setDebugMuteAudio(enabled)
+		}
+	}
+
+	override fun embedGameOnPlay(embedded: Boolean) {
+		gameMenuState.putBoolean(GAME_MENU_ACTION_EMBED_GAME_ON_PLAY, embedded)
+		godot?.runOnRenderThread {
+			val gameEmbedMode = if (embedded) GameEmbedMode.ENABLED else GameEmbedMode.DISABLED
+			GameMenuUtils.saveGameEmbedMode(gameEmbedMode)
+		}
+	}
+
+	override fun isGameEmbeddingSupported() = !isNativeXRDevice(applicationContext)
 }

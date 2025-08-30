@@ -4,7 +4,7 @@
 		Export preset configuration.
 	</brief_description>
 	<description>
-		Export preset configuration. Instances of [EditorExportPreset] by editor UI and intended to be used a read-only configuration passed to the [EditorExportPlatform] methods when exporting the project.
+		Represents the configuration of an export preset, as created by the editor's export dialog. An [EditorExportPreset] instance is intended to be used a read-only configuration passed to the [EditorExportPlatform] methods when exporting the project.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,37 +12,37 @@
 		<method name="are_advanced_options_enabled" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code], is "Advanced" toggle is enabled in the export dialog.
+				Returns [code]true[/code] if the "Advanced" toggle is enabled in the export dialog.
 			</description>
 		</method>
 		<method name="get_custom_features" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns string with a comma separated list of custom features.
+				Returns a comma-separated list of custom features added to this preset, as a string. See [url=$DOCS_URL/tutorials/export/feature_tags.html]Feature tags[/url] in the documentation for more information.
 			</description>
 		</method>
 		<method name="get_customized_files" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
-				Returns [Dictionary] of files selected in the "Resources" tab of the export dialog. Dictionary keys are file names and values are export mode - [code]"strip[/code], [code]"keep"[/code], or [code]"remove"[/code]. See also [method get_file_export_mode].
+				Returns a dictionary of files selected in the "Resources" tab of the export dialog. The dictionary's keys are file paths, and its values are the corresponding export modes: [code]"strip"[/code], [code]"keep"[/code], or [code]"remove"[/code]. See also [method get_file_export_mode].
 			</description>
 		</method>
 		<method name="get_customized_files_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns number of files selected in the "Resources" tab of the export dialog.
+				Returns the number of files selected in the "Resources" tab of the export dialog.
 			</description>
 		</method>
 		<method name="get_encrypt_directory" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code], PCK directory encryption is enabled in the export dialog.
+				Returns [code]true[/code] if PCK directory encryption is enabled in the export dialog.
 			</description>
 		</method>
 		<method name="get_encrypt_pck" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code], PCK encryption is enabled in the export dialog.
+				Returns [code]true[/code] if PCK encryption is enabled in the export dialog.
 			</description>
 		</method>
 		<method name="get_encryption_ex_filter" qualifiers="const">
@@ -118,13 +118,20 @@
 		<method name="get_preset_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns export preset name.
+				Returns this export preset's name.
+			</description>
+		</method>
+		<method name="get_project_setting">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the value of the setting identified by [param name] using export preset feature tag overrides instead of current OS features.
 			</description>
 		</method>
 		<method name="get_script_export_mode" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns script export mode.
+				Returns the export mode used by GDScript files. [code]0[/code] for "Text", [code]1[/code] for "Binary tokens", and [code]2[/code] for "Compressed binary tokens (smaller files)".
 			</description>
 		</method>
 		<method name="get_version" qualifiers="const">
@@ -140,26 +147,26 @@
 			<return type="bool" />
 			<param index="0" name="property" type="StringName" />
 			<description>
-				Returns [code]true[/code] if preset has specified property.
+				Returns [code]true[/code] if the preset has the property named [param property].
 			</description>
 		</method>
 		<method name="has_export_file">
 			<return type="bool" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Returns [code]true[/code] if specified file is exported.
+				Returns [code]true[/code] if the file at the specified [param path] will be exported.
 			</description>
 		</method>
 		<method name="is_dedicated_server" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if dedicated server export mode is selected in the export dialog.
+				Returns [code]true[/code] if the dedicated server export mode is selected in the export dialog.
 			</description>
 		</method>
 		<method name="is_runnable" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if "Runnable" toggle is enabled in the export dialog.
+				Returns [code]true[/code] if the "Runnable" toggle is enabled in the export dialog.
 			</description>
 		</method>
 	</methods>

@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "audio_driver_coreaudio.h"
+#import "audio_driver_coreaudio.h"
 
 #ifdef COREAUDIO_ENABLED
 
@@ -153,9 +153,9 @@ Error AudioDriverCoreAudio::init() {
 	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, kOutputBus, &strdesc, sizeof(strdesc));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-	int latency = Engine::get_singleton()->get_audio_output_latency();
+	uint32_t latency = Engine::get_singleton()->get_audio_output_latency();
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
-	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
+	buffer_frames = closest_power_of_2(latency * (uint32_t)mix_rate / (uint32_t)1000);
 
 #ifdef MACOS_ENABLED
 	result = AudioUnitSetProperty(audio_unit, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global, kOutputBus, &buffer_frames, sizeof(UInt32));
@@ -241,14 +241,15 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 
 	AudioBufferList bufferList;
 	bufferList.mNumberBuffers = 1;
-	bufferList.mBuffers[0].mData = ad->input_buf.ptrw();
+	bufferList.mBuffers[0].mData = nullptr;
 	bufferList.mBuffers[0].mNumberChannels = ad->capture_channels;
-	bufferList.mBuffers[0].mDataByteSize = ad->input_buf.size() * sizeof(int16_t);
+	bufferList.mBuffers[0].mDataByteSize = ad->buffer_size * sizeof(int16_t);
 
 	OSStatus result = AudioUnitRender(ad->input_unit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, &bufferList);
 	if (result == noErr) {
+		int16_t *data = (int16_t *)bufferList.mBuffers[0].mData;
 		for (unsigned int i = 0; i < inNumberFrames * ad->capture_channels; i++) {
-			int32_t sample = ad->input_buf[i] << 16;
+			int32_t sample = data[i] << 16;
 			ad->input_buffer_write(sample);
 
 			if (ad->capture_channels == 1) {
@@ -393,9 +394,6 @@ Error AudioDriverCoreAudio::init_input_device() {
 	UInt32 flag = 1;
 	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, kInputBus, &flag, sizeof(flag));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
-	flag = 0;
-	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Output, kOutputBus, &flag, sizeof(flag));
-	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 	UInt32 size;
 #ifdef MACOS_ENABLED
@@ -456,12 +454,11 @@ Error AudioDriverCoreAudio::init_input_device() {
 	result = AudioUnitSetProperty(input_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &strdesc, sizeof(strdesc));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-	int latency = Engine::get_singleton()->get_audio_output_latency();
+	uint32_t latency = Engine::get_singleton()->get_audio_output_latency();
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
-	capture_buffer_frames = closest_power_of_2(latency * capture_mix_rate / 1000);
+	capture_buffer_frames = closest_power_of_2(latency * (uint32_t)capture_mix_rate / (uint32_t)1000);
 
-	unsigned int buffer_size = capture_buffer_frames * capture_channels;
-	input_buf.resize(buffer_size);
+	buffer_size = capture_buffer_frames * capture_channels;
 
 	AURenderCallbackStruct callback;
 	memset(&callback, 0, sizeof(AURenderCallbackStruct));

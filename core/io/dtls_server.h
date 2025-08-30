@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DTLS_SERVER_H
-#define DTLS_SERVER_H
+#pragma once
 
 #include "core/io/net_socket.h"
 #include "core/io/packet_peer_dtls.h"
@@ -38,10 +37,10 @@ class DTLSServer : public RefCounted {
 	GDCLASS(DTLSServer, RefCounted);
 
 protected:
-	static DTLSServer *(*_create)(bool p_notify_postinitialize);
+	static inline DTLSServer *(*_create)(bool p_notify_postinitialize) = nullptr;
 	static void _bind_methods();
 
-	static bool available;
+	static inline bool available = false;
 
 public:
 	static bool is_available();
@@ -53,5 +52,3 @@ public:
 
 	DTLSServer() {}
 };
-
-#endif // DTLS_SERVER_H

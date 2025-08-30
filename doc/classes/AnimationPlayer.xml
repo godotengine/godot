@@ -90,7 +90,7 @@
 		<method name="has_section" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if an animation is currently playing with section.
+				Returns [code]true[/code] if an animation is currently playing with a section.
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
@@ -208,7 +208,7 @@
 		<method name="reset_section">
 			<return type="void" />
 			<description>
-				Resets the current section if section is set.
+				Resets the current section. Does nothing if a section has not been set.
 			</description>
 		</method>
 		<method name="seek">

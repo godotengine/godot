@@ -453,6 +453,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 		case SL::Node::NODE_TYPE_SHADER: {
 			SL::ShaderNode *pnode = (SL::ShaderNode *)p_node;
 
+			// Render modes.
+
 			for (int i = 0; i < pnode->render_modes.size(); i++) {
 				if (p_default_actions.render_mode_defines.has(pnode->render_modes[i]) && !used_rmode_defines.has(pnode->render_modes[i])) {
 					r_gen_code.defines.push_back(p_default_actions.render_mode_defines[pnode->render_modes[i]]);
@@ -467,6 +469,21 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					Pair<int *, int> &p = p_actions.render_mode_values[pnode->render_modes[i]];
 					*p.first = p.second;
 				}
+			}
+
+			// Stencil modes.
+
+			for (int i = 0; i < pnode->stencil_modes.size(); i++) {
+				if (p_actions.stencil_mode_values.has(pnode->stencil_modes[i])) {
+					Pair<int *, int> &p = p_actions.stencil_mode_values[pnode->stencil_modes[i]];
+					*p.first = p.second;
+				}
+			}
+
+			// Stencil reference value.
+
+			if (p_actions.stencil_reference && pnode->stencil_reference != -1) {
+				*p_actions.stencil_reference = pnode->stencil_reference;
 			}
 
 			// structs
@@ -686,28 +703,12 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				vcode += _prestr(varying.precision, ShaderLanguage::is_float_type(varying.type));
 				vcode += _typestr(varying.type);
 				vcode += " " + _mkid(varying_name);
-				uint32_t inc = 1U;
+				uint32_t inc = varying.get_size();
 
 				if (varying.array_size > 0) {
-					inc = (uint32_t)varying.array_size;
-
 					vcode += "[";
 					vcode += itos(varying.array_size);
 					vcode += "]";
-				}
-
-				switch (varying.type) {
-					case SL::TYPE_MAT2:
-						inc *= 2U;
-						break;
-					case SL::TYPE_MAT3:
-						inc *= 3U;
-						break;
-					case SL::TYPE_MAT4:
-						inc *= 4U;
-						break;
-					default:
-						break;
 				}
 
 				vcode += ";\n";
@@ -905,7 +906,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			if (p_default_actions.usage_defines.has(vnode->name) && !used_name_defines.has(vnode->name)) {
 				String define = p_default_actions.usage_defines[vnode->name];
 				if (define.begins_with("@")) {
-					define = p_default_actions.usage_defines[define.substr(1, define.length())];
+					define = p_default_actions.usage_defines[define.substr(1)];
 				}
 				r_gen_code.defines.push_back(define);
 				used_name_defines.insert(vnode->name);
@@ -1022,7 +1023,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			if (p_default_actions.usage_defines.has(anode->name) && !used_name_defines.has(anode->name)) {
 				String define = p_default_actions.usage_defines[anode->name];
 				if (define.begins_with("@")) {
-					define = p_default_actions.usage_defines[define.substr(1, define.length())];
+					define = p_default_actions.usage_defines[define.substr(1)];
 				}
 				r_gen_code.defines.push_back(define);
 				used_name_defines.insert(anode->name);
@@ -1479,8 +1480,10 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 	SL::ShaderCompileInfo info;
 	info.functions = ShaderTypes::get_singleton()->get_functions(p_mode);
 	info.render_modes = ShaderTypes::get_singleton()->get_modes(p_mode);
+	info.stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(p_mode);
 	info.shader_types = ShaderTypes::get_singleton()->get_types();
 	info.global_shader_uniform_type_func = _get_global_shader_uniform_type;
+	info.base_varying_index = actions.base_varying_index;
 
 	Error err = parser.compile(p_code, info);
 
@@ -1578,7 +1581,8 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 
 	shader = parser.get_shader();
 	function = nullptr;
-	_dump_node_code(shader, 1, r_gen_code, *p_actions, actions, false);
+	// Return value only relevant within nested calls.
+	_ALLOW_DISCARD_ _dump_node_code(shader, 1, r_gen_code, *p_actions, actions, false);
 
 	return OK;
 }

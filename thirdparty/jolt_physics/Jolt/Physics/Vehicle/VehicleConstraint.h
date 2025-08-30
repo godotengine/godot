@@ -32,7 +32,7 @@ public:
 	Vec3						mForward { 0, 0, 1 };						///< Vector indicating forward direction of the vehicle (in local space to the body)
 	float						mMaxPitchRollAngle = JPH_PI;				///< Defines the maximum pitch/roll angle (rad), can be used to avoid the car from getting upside down. The vehicle up direction will stay within a cone centered around the up axis with half top angle mMaxPitchRollAngle, set to pi to turn off.
 	Array<Ref<WheelSettings>>	mWheels;									///< List of wheels and their properties
-	Array<VehicleAntiRollBar>	mAntiRollBars;								///< List of anti rollbars and their properties
+	VehicleAntiRollBars			mAntiRollBars;								///< List of anti rollbars and their properties
 	Ref<VehicleControllerSettings> mController;								///< Defines how the vehicle can accelerate / decelerate
 
 protected:
@@ -161,6 +161,10 @@ public:
 	/// @param inWheelUp Unit vector that indicates up in model space of the wheel
 	RMat44						GetWheelWorldTransform(uint inWheelIndex, Vec3Arg inWheelRight, Vec3Arg inWheelUp) const;
 
+	/// Access to the vehicle's anti roll bars
+	const VehicleAntiRollBars &	GetAntiRollBars() const						{ return mAntiRollBars; }
+	VehicleAntiRollBars &		GetAntiRollBars()							{ return mAntiRollBars; }
+
 	/// Number of simulation steps between wheel collision tests when the vehicle is active. Default is 1. 0 = never, 1 = every step, 2 = every other step, etc.
 	/// Note that if a vehicle has multiple wheels and the number of steps > 1, the wheels will be tested in a round robin fashion.
 	/// If there are multiple vehicles, the tests will be spread out based on the BodyID of the vehicle.
@@ -214,7 +218,7 @@ private:
 	Vec3						mUp;										///< Local space up vector for the vehicle
 	Vec3						mWorldUp;									///< Vector indicating the world space up direction (used to limit vehicle pitch/roll)
 	Wheels						mWheels;									///< Wheel states of the vehicle
-	Array<VehicleAntiRollBar>	mAntiRollBars;								///< Anti rollbars of the vehicle
+	VehicleAntiRollBars			mAntiRollBars;								///< Anti rollbars of the vehicle
 	VehicleController *			mController;								///< Controls the acceleration / deceleration of the vehicle
 	bool						mIsActive = false;							///< If this constraint is active
 	uint						mNumStepsBetweenCollisionTestActive = 1;	///< Number of simulation steps between wheel collision tests when the vehicle is active

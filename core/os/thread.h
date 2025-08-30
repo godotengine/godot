@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#pragma once
+
 #include "platform_config.h"
 
 // Define PLATFORM_THREAD_OVERRIDE in your platform's `platform_config.h`
@@ -39,9 +41,6 @@
 #include "platform_thread.h"
 
 #else
-
-#ifndef THREAD_H
-#define THREAD_H
 
 #include "core/typedefs.h"
 
@@ -93,14 +92,9 @@ public:
 	};
 
 #if defined(__cpp_lib_hardware_interference_size) && !defined(ANDROID_ENABLED) // This would be OK with NDK >= 26.
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Winterference-size"
-#endif
+	GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Winterference-size")
 	static constexpr size_t CACHE_LINE_BYTES = std::hardware_destructive_interference_size;
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+	GODOT_GCC_WARNING_POP
 #else
 	// At a negligible memory cost, we use a conservatively high value.
 	static constexpr size_t CACHE_LINE_BYTES = 128;
@@ -124,6 +118,8 @@ private:
 
 public:
 	static void _set_platform_functions(const PlatformFunctions &p_functions);
+
+	_FORCE_INLINE_ static void yield() { std::this_thread::yield(); }
 
 	_FORCE_INLINE_ ID get_id() const { return id; }
 	// get the ID of the caller thread
@@ -207,7 +203,5 @@ public:
 };
 
 #endif // THREADS_ENABLED
-
-#endif // THREAD_H
 
 #endif // PLATFORM_THREAD_OVERRIDE

@@ -31,11 +31,12 @@
 #include "editor_profiler.h"
 
 #include "core/io/image.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/gui/editor_run_bar.h"
+#include "editor/run/editor_run_bar.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/flow_container.h"
 #include "scene/resources/image_texture.h"
 
 void EditorProfiler::_make_metric_ptrs(Metric &m) {
@@ -145,7 +146,7 @@ String EditorProfiler::_get_time_as_text(const Metric &m, float p_time, int p_ca
 
 Color EditorProfiler::_get_color_from_signature(const StringName &p_signature) const {
 	Color bc = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
-	double rot = ABS(double(p_signature.hash()) / double(0x7FFFFFFF));
+	double rot = Math::abs(double(p_signature.hash()) / double(0x7FFFFFFF));
 	Color c;
 	c.set_hsv(rot, bc.get_s(), bc.get_v());
 	return c.lerp(get_theme_color(SNAME("base_color"), EditorStringName(Editor)), 0.07);
@@ -434,7 +435,6 @@ void EditorProfiler::_autostart_toggled(bool p_toggled_on) {
 
 void EditorProfiler::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -658,67 +658,86 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 
 EditorProfiler::EditorProfiler() {
 	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->add_theme_constant_override(SNAME("separation"), 8 * EDSCALE);
 	add_child(hb);
+
+	FlowContainer *container = memnew(FlowContainer);
+	container->set_h_size_flags(SIZE_EXPAND_FILL);
+	container->add_theme_constant_override(SNAME("h_separation"), 8 * EDSCALE);
+	container->add_theme_constant_override(SNAME("v_separation"), 2 * EDSCALE);
+	hb->add_child(container);
+
 	activate = memnew(Button);
 	activate->set_toggle_mode(true);
 	activate->set_disabled(true);
 	activate->set_text(TTR("Start"));
 	activate->connect(SceneStringName(pressed), callable_mp(this, &EditorProfiler::_activate_pressed));
-	hb->add_child(activate);
+	container->add_child(activate);
 
 	clear_button = memnew(Button);
 	clear_button->set_text(TTR("Clear"));
 	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorProfiler::_clear_pressed));
 	clear_button->set_disabled(true);
-	hb->add_child(clear_button);
+	container->add_child(clear_button);
 
 	CheckBox *autostart_checkbox = memnew(CheckBox);
 	autostart_checkbox->set_text(TTR("Autostart"));
 	autostart_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false));
 	autostart_checkbox->connect(SceneStringName(toggled), callable_mp(this, &EditorProfiler::_autostart_toggled));
-	hb->add_child(autostart_checkbox);
+	container->add_child(autostart_checkbox);
 
-	hb->add_child(memnew(Label(TTR("Measure:"))));
+	HBoxContainer *hb_measure = memnew(HBoxContainer);
+	hb_measure->add_theme_constant_override(SNAME("separation"), 2 * EDSCALE);
+	container->add_child(hb_measure);
+
+	hb_measure->add_child(memnew(Label(TTR("Measure:"))));
 
 	display_mode = memnew(OptionButton);
+	display_mode->set_accessibility_name(TTRC("Measure:"));
 	display_mode->add_item(TTR("Frame Time (ms)"));
 	display_mode->add_item(TTR("Average Time (ms)"));
 	display_mode->add_item(TTR("Frame %"));
 	display_mode->add_item(TTR("Physics Frame %"));
 	display_mode->connect(SceneStringName(item_selected), callable_mp(this, &EditorProfiler::_combo_changed));
 
-	hb->add_child(display_mode);
+	hb_measure->add_child(display_mode);
 
-	hb->add_child(memnew(Label(TTR("Time:"))));
+	HBoxContainer *hb_time = memnew(HBoxContainer);
+	hb_time->add_theme_constant_override(SNAME("separation"), 2 * EDSCALE);
+	container->add_child(hb_time);
+
+	hb_time->add_child(memnew(Label(TTR("Time:"))));
 
 	display_time = memnew(OptionButton);
+	display_time->set_accessibility_name(TTRC("Time:"));
 	// TRANSLATORS: This is an option in the profiler to display the time spent in a function, including the time spent in other functions called by that function.
 	display_time->add_item(TTR("Inclusive"));
 	// TRANSLATORS: This is an option in the profiler to display the time spent in a function, exincluding the time spent in other functions called by that function.
 	display_time->add_item(TTR("Self"));
 	display_time->set_tooltip_text(TTR("Inclusive: Includes time from other functions called by this function.\nUse this to spot bottlenecks.\n\nSelf: Only count the time spent in the function itself, not in other functions called by that function.\nUse this to find individual functions to optimize."));
 	display_time->connect(SceneStringName(item_selected), callable_mp(this, &EditorProfiler::_combo_changed));
-
-	hb->add_child(display_time);
+	hb_time->add_child(display_time);
 
 	display_internal_profiles = memnew(CheckButton(TTR("Display internal functions")));
 	display_internal_profiles->set_visible(EDITOR_GET("debugger/profile_native_calls"));
 	display_internal_profiles->set_pressed(false);
 	display_internal_profiles->connect(SceneStringName(pressed), callable_mp(this, &EditorProfiler::_internal_profiles_pressed));
-	hb->add_child(display_internal_profiles);
+	container->add_child(display_internal_profiles);
 
-	hb->add_spacer();
+	HBoxContainer *hb_frame = memnew(HBoxContainer);
+	hb_frame->add_theme_constant_override(SNAME("separation"), 2 * EDSCALE);
+	hb_frame->set_v_size_flags(SIZE_SHRINK_BEGIN);
+	hb->add_child(hb_frame);
 
-	hb->add_child(memnew(Label(TTR("Frame #:"))));
+	hb_frame->add_child(memnew(Label(TTR("Frame #:"))));
 
 	cursor_metric_edit = memnew(SpinBox);
+	cursor_metric_edit->set_accessibility_name(TTRC("Frame #:"));
 	cursor_metric_edit->set_h_size_flags(SIZE_FILL);
 	cursor_metric_edit->set_value(0);
 	cursor_metric_edit->set_editable(false);
-	hb->add_child(cursor_metric_edit);
+	hb_frame->add_child(cursor_metric_edit);
 	cursor_metric_edit->connect(SceneStringName(value_changed), callable_mp(this, &EditorProfiler::_cursor_metric_changed));
-
-	hb->add_theme_constant_override("separation", 8 * EDSCALE);
 
 	h_split = memnew(HSplitContainer);
 	add_child(h_split);

@@ -40,6 +40,7 @@ sys_env.AddJSLibraries(
     [
         "js/libs/library_godot_audio.js",
         "js/libs/library_godot_display.js",
+        "js/libs/library_godot_emscripten.js",
         "js/libs/library_godot_fetch.js",
         "js/libs/library_godot_webmidi.js",
         "js/libs/library_godot_os.js",
@@ -54,6 +55,12 @@ sys_env.AddJSExterns(
     ]
 )
 
+sys_env.AddJSPost(
+    [
+        "js/patches/patch_em_gl.js",
+    ]
+)
+
 if env["javascript_eval"]:
     sys_env.AddJSLibraries(["js/libs/library_godot_javascript_singleton.js"])
 
@@ -61,8 +68,19 @@ for lib in sys_env["JS_LIBS"]:
     sys_env.Append(LINKFLAGS=["--js-library", lib.abspath])
 for js in sys_env["JS_PRE"]:
     sys_env.Append(LINKFLAGS=["--pre-js", js.abspath])
+for js in sys_env["JS_POST"]:
+    sys_env.Append(LINKFLAGS=["--post-js", js.abspath])
+
+# Add JS externs to Closure.
+sys_env["ENV"]["EMCC_CLOSURE_ARGS"] = sys_env["ENV"].get("EMCC_CLOSURE_ARGS", "")
 for ext in sys_env["JS_EXTERNS"]:
     sys_env["ENV"]["EMCC_CLOSURE_ARGS"] += " --externs " + ext.abspath
+sys_env["ENV"]["EMCC_CLOSURE_ARGS"] = sys_env["ENV"]["EMCC_CLOSURE_ARGS"].strip()
+
+if len(env["EXPORTED_FUNCTIONS"]):
+    sys_env.Append(LINKFLAGS=["-sEXPORTED_FUNCTIONS=" + repr(sorted(list(set(env["EXPORTED_FUNCTIONS"]))))])
+if len(env["EXPORTED_RUNTIME_METHODS"]):
+    sys_env.Append(LINKFLAGS=["-sEXPORTED_RUNTIME_METHODS=" + repr(sorted(list(set(env["EXPORTED_RUNTIME_METHODS"]))))])
 
 build = []
 build_targets = ["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm"]
@@ -82,7 +100,7 @@ if env["dlink_enabled"]:
     sys_env["LINKFLAGS"].remove("-fvisibility=hidden")
 
     # The main emscripten runtime, with exported standard libraries.
-    sys = sys_env.Program(build_targets, ["web_runtime.cpp"])
+    sys = sys_env.add_program(build_targets, ["web_runtime.cpp"])
 
     # The side library, containing all Godot code.
     wasm = env.add_program("#bin/godot.side${PROGSUFFIX}.wasm", web_files)
@@ -90,10 +108,11 @@ if env["dlink_enabled"]:
 else:
     # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
     sys_env.Append(LIBS=["idbfs.js"])
-    build = sys_env.Program(build_targets, web_files + ["web_runtime.cpp"])
+    build = sys_env.add_program(build_targets, web_files + ["web_runtime.cpp"])
 
 sys_env.Depends(build[0], sys_env["JS_LIBS"])
 sys_env.Depends(build[0], sys_env["JS_PRE"])
+sys_env.Depends(build[0], sys_env["JS_POST"])
 sys_env.Depends(build[0], sys_env["JS_EXTERNS"])
 
 engine = [
@@ -110,7 +129,9 @@ wrap_list = [
     build[0],
     js_engine,
 ]
-js_wrapped = env.Textfile("#bin/godot", [env.File(f) for f in wrap_list], TEXTFILESUFFIX="${PROGSUFFIX}.wrapped.js")
+js_wrapped = env.NoCache(
+    env.Textfile("#bin/godot", [env.File(f) for f in wrap_list], TEXTFILESUFFIX="${PROGSUFFIX}.wrapped.js")
+)
 
 # 0 - unwrapped js file (use wrapped one instead)
 # 1 - wasm file

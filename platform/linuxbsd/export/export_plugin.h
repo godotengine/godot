@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LINUXBSD_EXPORT_PLUGIN_H
-#define LINUXBSD_EXPORT_PLUGIN_H
+#pragma once
 
 #include "core/io/file_access.h"
-#include "editor/editor_settings.h"
 #include "editor/export/editor_export_platform_pc.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/resources/image_texture.h"
 
 class EditorExportPlatformLinuxBSD : public EditorExportPlatformPC {
@@ -83,7 +82,7 @@ public:
 
 	virtual Ref<Texture2D> get_run_icon() const override;
 	virtual bool poll_export() override;
-	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
+	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
 	virtual int get_options_count() const override;
 	virtual String get_option_label(int p_index) const override;
 	virtual String get_option_tooltip(int p_index) const override;
@@ -92,5 +91,3 @@ public:
 
 	EditorExportPlatformLinuxBSD();
 };
-
-#endif // LINUXBSD_EXPORT_PLUGIN_H

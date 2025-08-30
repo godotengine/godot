@@ -28,13 +28,43 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_DEVICE_COMMONS_H
-#define RENDERING_DEVICE_COMMONS_H
+#pragma once
 
 #include "core/object/object.h"
 #include "core/variant/type_info.h"
 
+#include <algorithm>
+
 #define STEPIFY(m_number, m_alignment) ((((m_number) + ((m_alignment) - 1)) / (m_alignment)) * (m_alignment))
+
+// This may one day be used in Godot for interoperability between C arrays, Vector and LocalVector.
+// (See https://github.com/godotengine/godot-proposals/issues/5144.)
+template <typename T>
+class VectorView {
+	const T *_ptr = nullptr;
+	const uint32_t _size = 0;
+
+public:
+	const T &operator[](uint32_t p_index) {
+		DEV_ASSERT(p_index < _size);
+		return _ptr[p_index];
+	}
+
+	_ALWAYS_INLINE_ const T *ptr() const { return _ptr; }
+	_ALWAYS_INLINE_ uint32_t size() const { return _size; }
+
+	VectorView() = default;
+	VectorView(const T &p_ptr) :
+			// With this one you can pass a single element very conveniently!
+			_ptr(&p_ptr),
+			_size(1) {}
+	VectorView(const T *p_ptr, uint32_t p_size) :
+			_ptr(p_ptr), _size(p_size) {}
+	VectorView(const Vector<T> &p_lv) :
+			_ptr(p_lv.ptr()), _size(p_lv.size()) {}
+	VectorView(const LocalVector<T> &p_lv) :
+			_ptr(p_lv.ptr()), _size(p_lv.size()) {}
+};
 
 class RenderingDeviceCommons : public Object {
 	////////////////////////////////////////////
@@ -270,6 +300,20 @@ public:
 		DATA_FORMAT_G16_B16_R16_3PLANE_422_UNORM,
 		DATA_FORMAT_G16_B16R16_2PLANE_422_UNORM,
 		DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM,
+		DATA_FORMAT_ASTC_4x4_SFLOAT_BLOCK, // HDR variant.
+		DATA_FORMAT_ASTC_5x4_SFLOAT_BLOCK, // HDR variant.
+		DATA_FORMAT_ASTC_5x5_SFLOAT_BLOCK, // HDR variant.
+		DATA_FORMAT_ASTC_6x5_SFLOAT_BLOCK, // HDR variant.
+		DATA_FORMAT_ASTC_6x6_SFLOAT_BLOCK, // HDR variant.
+		DATA_FORMAT_ASTC_8x5_SFLOAT_BLOCK, // HDR variant.
+		DATA_FORMAT_ASTC_8x6_SFLOAT_BLOCK, // HDR variant.
+		DATA_FORMAT_ASTC_8x8_SFLOAT_BLOCK, // HDR variant.
+		DATA_FORMAT_ASTC_10x5_SFLOAT_BLOCK, // HDR variant.
+		DATA_FORMAT_ASTC_10x6_SFLOAT_BLOCK, // HDR variant.
+		DATA_FORMAT_ASTC_10x8_SFLOAT_BLOCK, // HDR variant.
+		DATA_FORMAT_ASTC_10x10_SFLOAT_BLOCK, // HDR variant.
+		DATA_FORMAT_ASTC_12x10_SFLOAT_BLOCK, // HDR variant.
+		DATA_FORMAT_ASTC_12x12_SFLOAT_BLOCK, // HDR variant.
 		DATA_FORMAT_MAX,
 	};
 
@@ -377,6 +421,7 @@ public:
 		// Try to set this bit as much as possible. If you set it, validation doesn't complain
 		// and it works fine on mobile, then go ahead.
 		TEXTURE_USAGE_TRANSIENT_BIT = (1 << 11),
+		TEXTURE_USAGE_MAX_BIT = TEXTURE_USAGE_TRANSIENT_BIT,
 	};
 
 	struct TextureFormat {
@@ -533,6 +578,30 @@ public:
 		SHADER_STAGE_TESSELATION_CONTROL_BIT = (1 << SHADER_STAGE_TESSELATION_CONTROL),
 		SHADER_STAGE_TESSELATION_EVALUATION_BIT = (1 << SHADER_STAGE_TESSELATION_EVALUATION),
 		SHADER_STAGE_COMPUTE_BIT = (1 << SHADER_STAGE_COMPUTE),
+	};
+
+	enum ShaderLanguage {
+		SHADER_LANGUAGE_GLSL,
+		SHADER_LANGUAGE_HLSL,
+	};
+
+	enum ShaderLanguageVersion {
+		SHADER_LANGUAGE_VULKAN_VERSION_1_0 = (1 << 22),
+		SHADER_LANGUAGE_VULKAN_VERSION_1_1 = (1 << 22) | (1 << 12),
+		SHADER_LANGUAGE_VULKAN_VERSION_1_2 = (1 << 22) | (2 << 12),
+		SHADER_LANGUAGE_VULKAN_VERSION_1_3 = (1 << 22) | (3 << 12),
+		SHADER_LANGUAGE_VULKAN_VERSION_1_4 = (1 << 22) | (4 << 12),
+		SHADER_LANGUAGE_OPENGL_VERSION_4_5_0 = 450,
+	};
+
+	enum ShaderSpirvVersion {
+		SHADER_SPIRV_VERSION_1_0 = (1 << 16),
+		SHADER_SPIRV_VERSION_1_1 = (1 << 16) | (1 << 8),
+		SHADER_SPIRV_VERSION_1_2 = (1 << 16) | (2 << 8),
+		SHADER_SPIRV_VERSION_1_3 = (1 << 16) | (3 << 8),
+		SHADER_SPIRV_VERSION_1_4 = (1 << 16) | (4 << 8),
+		SHADER_SPIRV_VERSION_1_5 = (1 << 16) | (5 << 8),
+		SHADER_SPIRV_VERSION_1_6 = (1 << 16) | (6 << 8),
 	};
 
 	struct ShaderStageSPIRVData {
@@ -869,23 +938,22 @@ public:
 		LIMIT_SUBGROUP_MAX_SIZE,
 		LIMIT_SUBGROUP_IN_SHADERS, // Set flags using SHADER_STAGE_VERTEX_BIT, SHADER_STAGE_FRAGMENT_BIT, etc.
 		LIMIT_SUBGROUP_OPERATIONS,
-		LIMIT_VRS_TEXEL_WIDTH,
-		LIMIT_VRS_TEXEL_HEIGHT,
-		LIMIT_VRS_MAX_FRAGMENT_WIDTH,
-		LIMIT_VRS_MAX_FRAGMENT_HEIGHT,
-		LIMIT_METALFX_TEMPORAL_SCALER_MIN_SCALE,
+		LIMIT_METALFX_TEMPORAL_SCALER_MIN_SCALE = 46,
 		LIMIT_METALFX_TEMPORAL_SCALER_MAX_SCALE,
+		LIMIT_MAX_SHADER_VARYINGS,
 	};
 
 	enum Features {
 		SUPPORTS_MULTIVIEW,
-		SUPPORTS_FSR_HALF_FLOAT,
+		SUPPORTS_HALF_FLOAT,
 		SUPPORTS_ATTACHMENT_VRS,
 		SUPPORTS_METALFX_SPATIAL,
 		SUPPORTS_METALFX_TEMPORAL,
 		// If not supported, a fragment shader with only side effects (i.e., writes  to buffers, but doesn't output to attachments), may be optimized down to no-op by the GPU driver.
 		SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS,
 		SUPPORTS_BUFFER_DEVICE_ADDRESS,
+		SUPPORTS_IMAGE_ATOMIC_32_BIT,
+		SUPPORTS_VULKAN_MEMORY_MODEL,
 	};
 
 	enum SubgroupOperations {
@@ -919,7 +987,6 @@ protected:
 
 	static const uint32_t TEXTURE_SAMPLES_COUNT[TEXTURE_SAMPLES_MAX];
 
-	static uint32_t get_image_format_pixel_size(DataFormat p_format);
 	static void get_compressed_image_format_block_dimensions(DataFormat p_format, uint32_t &r_w, uint32_t &r_h);
 	uint32_t get_compressed_image_format_block_byte_size(DataFormat p_format) const;
 	static uint32_t get_compressed_image_format_pixel_rshift(DataFormat p_format);
@@ -940,18 +1007,24 @@ protected:
 
 	static uint32_t get_format_vertex_size(DataFormat p_format);
 
+public:
+	/*****************/
+	/**** TEXTURE ****/
+	/*****************/
+
+	static uint32_t get_image_format_pixel_size(DataFormat p_format);
+
 	/****************/
 	/**** SHADER ****/
 	/****************/
 
 	static const char *SHADER_STAGE_NAMES[SHADER_STAGE_MAX];
 
-public:
 	struct ShaderUniform {
 		UniformType type = UniformType::UNIFORM_TYPE_MAX;
 		bool writable = false;
 		uint32_t binding = 0;
-		BitField<ShaderStage> stages;
+		BitField<ShaderStage> stages = {};
 		uint32_t length = 0; // Size of arrays (in total elements), or ubos (in bytes * total elements).
 
 		bool operator!=(const ShaderUniform &p_other) const {
@@ -979,28 +1052,25 @@ public:
 	};
 
 	struct ShaderSpecializationConstant : public PipelineSpecializationConstant {
-		BitField<ShaderStage> stages;
+		BitField<ShaderStage> stages = {};
 
 		bool operator<(const ShaderSpecializationConstant &p_other) const { return constant_id < p_other.constant_id; }
 	};
 
-	struct ShaderDescription {
+	struct ShaderReflection {
 		uint64_t vertex_input_mask = 0;
 		uint32_t fragment_output_mask = 0;
 		bool is_compute = false;
+		bool has_multiview = false;
 		uint32_t compute_local_size[3] = {};
 		uint32_t push_constant_size = 0;
 
 		Vector<Vector<ShaderUniform>> uniform_sets;
 		Vector<ShaderSpecializationConstant> specialization_constants;
-		Vector<ShaderStage> stages;
+		Vector<ShaderStage> stages_vector;
+		BitField<ShaderStage> stages_bits = {};
+		BitField<ShaderStage> push_constant_stages = {};
 	};
 
-protected:
-	struct ShaderReflection : public ShaderDescription {
-		BitField<ShaderStage> stages;
-		BitField<ShaderStage> push_constant_stages;
-	};
+	static Error reflect_spirv(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection);
 };
-
-#endif // RENDERING_DEVICE_COMMONS_H

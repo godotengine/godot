@@ -383,14 +383,16 @@ void PListNode::store_text(String &p_stream, uint8_t p_indent) const {
 			p_stream += String("\t").repeat(p_indent);
 			p_stream += "<data>\n";
 			p_stream += String("\t").repeat(p_indent);
-			p_stream += data_string + "\n";
+			// Data should be Base64 (i.e. ASCII only).
+			p_stream += String::ascii(data_string) + "\n";
 			p_stream += String("\t").repeat(p_indent);
 			p_stream += "</data>\n";
 		} break;
 		case PList::PLNodeType::PL_NODE_TYPE_DATE: {
 			p_stream += String("\t").repeat(p_indent);
 			p_stream += "<date>";
-			p_stream += data_string;
+			// Data should be ISO 8601 (i.e. ASCII only).
+			p_stream += String::ascii(data_string);
 			p_stream += "</date>\n";
 		} break;
 		case PList::PLNodeType::PL_NODE_TYPE_STRING: {
@@ -523,11 +525,11 @@ Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_
 		} break;
 		case 0x10: {
 			node->data_type = PL_NODE_TYPE_INTEGER;
-			node->data_int = static_cast<int64_t>(read_bplist_var_size_int(p_file, pow(2, marker_size)));
+			node->data_int = static_cast<int64_t>(read_bplist_var_size_int(p_file, std::pow(2, marker_size)));
 		} break;
 		case 0x20: {
 			node->data_type = PL_NODE_TYPE_REAL;
-			node->data_int = static_cast<int64_t>(read_bplist_var_size_int(p_file, pow(2, marker_size)));
+			node->data_int = static_cast<int64_t>(read_bplist_var_size_int(p_file, std::pow(2, marker_size)));
 		} break;
 		case 0x30: {
 			node->data_type = PL_NODE_TYPE_DATE;
@@ -537,7 +539,7 @@ Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_
 		case 0x40: {
 			if (marker_size == 0x0F) {
 				uint8_t ext = p_file->get_8() & 0xF;
-				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
+				marker_size = read_bplist_var_size_int(p_file, std::pow(2, ext));
 			}
 			node->data_type = PL_NODE_TYPE_DATA;
 			PackedByteArray buf;
@@ -548,19 +550,19 @@ Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_
 		case 0x50: {
 			if (marker_size == 0x0F) {
 				uint8_t ext = p_file->get_8() & 0xF;
-				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
+				marker_size = read_bplist_var_size_int(p_file, std::pow(2, ext));
 			}
 			node->data_type = PL_NODE_TYPE_STRING;
-			node->data_string.resize(marker_size + 1);
+			node->data_string.resize_uninitialized(marker_size + 1);
 			p_file->get_buffer(reinterpret_cast<uint8_t *>(node->data_string.ptrw()), marker_size);
 		} break;
 		case 0x60: {
 			if (marker_size == 0x0F) {
 				uint8_t ext = p_file->get_8() & 0xF;
-				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
+				marker_size = read_bplist_var_size_int(p_file, std::pow(2, ext));
 			}
 			Char16String cs16;
-			cs16.resize(marker_size + 1);
+			cs16.resize_uninitialized(marker_size + 1);
 			for (uint64_t i = 0; i < marker_size; i++) {
 				cs16[i] = BSWAP16(p_file->get_16());
 			}
@@ -575,7 +577,7 @@ Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_
 		case 0xC0: {
 			if (marker_size == 0x0F) {
 				uint8_t ext = p_file->get_8() & 0xF;
-				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
+				marker_size = read_bplist_var_size_int(p_file, std::pow(2, ext));
 			}
 			uint64_t pos = p_file->get_position();
 
@@ -592,7 +594,7 @@ Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_
 		case 0xD0: {
 			if (marker_size == 0x0F) {
 				uint8_t ext = p_file->get_8() & 0xF;
-				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
+				marker_size = read_bplist_var_size_int(p_file, std::pow(2, ext));
 			}
 			uint64_t pos = p_file->get_position();
 
@@ -629,7 +631,7 @@ bool PList::load_file(const String &p_filename) {
 	unsigned char magic[8];
 	fb->get_buffer(magic, 8);
 
-	if (String((const char *)magic, 8) == "bplist00") {
+	if (String::ascii(Span((const char *)magic, 8)) == "bplist00") {
 		fb->seek_end(-26);
 		trailer.offset_size = fb->get_8();
 		trailer.ref_size = fb->get_8();
@@ -645,10 +647,8 @@ bool PList::load_file(const String &p_filename) {
 		Vector<uint8_t> array = FileAccess::get_file_as_bytes(p_filename, &err);
 		ERR_FAIL_COND_V(err != OK, false);
 
-		String ret;
-		ret.parse_utf8((const char *)array.ptr(), array.size());
 		String err_str;
-		bool ok = load_string(ret, err_str);
+		bool ok = load_string(String::utf8((const char *)array.ptr(), array.size()), err_str);
 		ERR_FAIL_COND_V_MSG(!ok, false, "PList: " + err_str);
 
 		return true;

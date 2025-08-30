@@ -33,7 +33,7 @@
 #include "core/input/input.h"
 #include "core/math/expression.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/theme/theme_db.h"
 
@@ -95,7 +95,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 			}
 			grabbing_spinner_dist_cache += diff_x * grabbing_spinner_speed;
 
-			if (!grabbing_spinner && ABS(grabbing_spinner_dist_cache) > 4 * grabbing_spinner_speed * EDSCALE) {
+			if (!grabbing_spinner && Math::abs(grabbing_spinner_dist_cache) > 4 * grabbing_spinner_speed * EDSCALE) {
 				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
 				grabbing_spinner = true;
 			}
@@ -187,9 +187,11 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				set_value(get_value() + get_step());
 				mousewheel_over_grabber = true;
+				accept_event();
 			} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 				set_value(get_value() - get_step());
 				mousewheel_over_grabber = true;
+				accept_event();
 			}
 		}
 	}
@@ -244,7 +246,7 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 				if (step < 1) {
 					double divisor = 1.0 / step;
 
-					if (trunc(divisor) == divisor) {
+					if (std::trunc(divisor) == divisor) {
 						step = 1.0;
 					}
 				}
@@ -376,7 +378,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 	TS->free_rid(num_rid);
 
 	if (!hide_slider) {
-		if (get_step() == 1) {
+		if (editing_integer) {
 			Ref<Texture2D> updown2 = read_only ? theme_cache.updown_disabled_icon : theme_cache.updown_icon;
 			int updown_vofs = (size.height - updown2->get_height()) / 2;
 			if (rtl) {
@@ -435,13 +437,11 @@ void EditorSpinSlider::_draw_spin_slider() {
 					grabber->set_texture(grabber_tex);
 				}
 
-				Vector2 scale = get_global_transform_with_canvas().get_scale();
-				grabber->set_scale(scale);
 				grabber->reset_size();
-				grabber->set_position((grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
+				grabber->set_position(grabber_rect.get_center() - grabber->get_size() * 0.5);
 
 				if (mousewheel_over_grabber) {
-					Input::get_singleton()->warp_mouse(grabber->get_position() + grabber_rect.size);
+					Input::get_singleton()->warp_mouse(grabber->get_global_position() + grabber_rect.size);
 				}
 
 				grabber_range = width;
@@ -453,10 +453,12 @@ void EditorSpinSlider::_draw_spin_slider() {
 void EditorSpinSlider::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			grabbing_spinner_speed = EditorSettings::get_singleton()->get("interface/inspector/float_drag_speed");
+			grabbing_spinner_speed = EDITOR_GET("interface/inspector/float_drag_speed");
 			_update_value_input_stylebox();
 		} break;
 
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_value_input_stylebox();
 		} break;
@@ -530,6 +532,19 @@ bool EditorSpinSlider::is_hiding_slider() const {
 	return hide_slider;
 }
 
+void EditorSpinSlider::set_editing_integer(bool p_editing_integer) {
+	if (p_editing_integer == editing_integer) {
+		return;
+	}
+
+	editing_integer = p_editing_integer;
+	queue_redraw();
+}
+
+bool EditorSpinSlider::is_editing_integer() const {
+	return editing_integer;
+}
+
 void EditorSpinSlider::set_label(const String &p_label) {
 	label = p_label;
 	queue_redraw();
@@ -553,8 +568,8 @@ void EditorSpinSlider::_evaluate_input_text() {
 	expr.instantiate();
 
 	// Convert commas ',' to dots '.' for French/German etc. keyboard layouts.
-	String text = value_input->get_text().replace(",", ".");
-	text = text.replace(";", ",");
+	String text = value_input->get_text().replace_char(',', '.');
+	text = text.replace_char(';', ',');
 	text = TS->parse_number(text);
 
 	Error err = expr->parse(text);
@@ -689,11 +704,15 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hide_slider", "hide_slider"), &EditorSpinSlider::set_hide_slider);
 	ClassDB::bind_method(D_METHOD("is_hiding_slider"), &EditorSpinSlider::is_hiding_slider);
 
+	ClassDB::bind_method(D_METHOD("set_editing_integer", "editing_integer"), &EditorSpinSlider::set_editing_integer);
+	ClassDB::bind_method(D_METHOD("is_editing_integer"), &EditorSpinSlider::is_editing_integer);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_slider"), "set_hide_slider", "is_hiding_slider");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editing_integer"), "set_editing_integer", "is_editing_integer");
 
 	ADD_SIGNAL(MethodInfo("grabbed"));
 	ADD_SIGNAL(MethodInfo("ungrabbed"));

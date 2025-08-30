@@ -28,30 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DISPLAY_SERVER_MACOS_H
-#define DISPLAY_SERVER_MACOS_H
+#pragma once
 
-#include "core/input/input.h"
-#include "servers/display_server.h"
+#include "display_server_macos_base.h"
 
 #if defined(GLES3_ENABLED)
 #include "gl_manager_macos_angle.h"
 #include "gl_manager_macos_legacy.h"
 #endif // GLES3_ENABLED
 
-#include "native_menu_macos.h"
+#import "native_menu_macos.h"
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#include "rendering_context_driver_vulkan_macos.h"
+#import "rendering_context_driver_vulkan_macos.h"
 #endif // VULKAN_ENABLED
 #if defined(METAL_ENABLED)
-#include "drivers/metal/rendering_context_driver_metal.h"
+#import "drivers/metal/rendering_context_driver_metal.h"
 #endif
 #endif // RD_ENABLED
 
+#define FontVariation __FontVariation
 #define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
 
 #import <AppKit/AppKit.h>
@@ -61,13 +60,21 @@
 #import <Foundation/Foundation.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
 
+@class GodotWindow;
+@class GodotContentView;
+@class GodotWindowDelegate;
+@class GodotButtonView;
+@class GodotEmbeddedView;
+@class CALayerHost;
+
 #undef BitMap
 #undef CursorShape
+#undef FontVariation
 
-class DisplayServerMacOS : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+class EmbeddedProcessMacOS;
 
-	_THREAD_SAFE_CLASS_
+class DisplayServerMacOS : public DisplayServerMacOSBase {
+	GDSOFTCLASS(DisplayServerMacOS, DisplayServerMacOSBase);
 
 public:
 	struct KeyEvent {
@@ -84,12 +91,14 @@ public:
 	};
 
 	struct WindowData {
-		id window_delegate;
-		id window_object;
-		id window_view;
-		id window_button_view;
+		GodotWindowDelegate *window_delegate;
+		GodotWindow *window_object;
+		GodotContentView *window_view;
+		GodotButtonView *window_button_view;
 
 		Vector<Vector2> mpath;
+
+		CGDirectDisplayID display_id = -1;
 
 		Point2i mouse_pos;
 		WindowResizeEdge edge = WINDOW_EDGE_MAX;
@@ -99,7 +108,8 @@ public:
 		Size2i size;
 		Vector2i wb_offset = Vector2i(14, 14);
 
-		NSRect last_frame_rect;
+		NSRect last_frame_rect = NSMakeRect(0, 0, 0, 0);
+		NSRect pre_zoom_rect = NSMakeRect(0, 0, 0, 0);
 
 		bool im_active = false;
 		Size2i im_position;
@@ -124,6 +134,8 @@ public:
 		bool on_top = false;
 		bool borderless = false;
 		bool resize_disabled = false;
+		bool no_min_btn = false;
+		bool no_max_btn = false;
 		bool no_focus = false;
 		bool is_popup = false;
 		bool mpass = false;
@@ -160,7 +172,6 @@ private:
 	Vector<KeyEvent> key_event_buffer;
 	int key_event_pos = 0;
 
-	id tts = nullptr;
 	id menu_delegate = nullptr;
 	NativeMenuMacOS *native_menu = nullptr;
 
@@ -169,17 +180,13 @@ private:
 
 	CGEventSourceRef event_source;
 	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
+	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
+	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
+	bool mouse_mode_override_enabled = false;
+	void _mouse_update_mode();
 
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;
-
-	struct LayoutInfo {
-		String name;
-		String code;
-	};
-	mutable Vector<LayoutInfo> kbd_layouts;
-	mutable int current_layout = 0;
-	mutable bool keyboard_layout_dirty = true;
 
 	WindowID window_mouseover_id = INVALID_WINDOW_ID;
 	WindowID last_focused_window = INVALID_WINDOW_ID;
@@ -227,12 +234,18 @@ private:
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 	void _push_input(const Ref<InputEvent> &p_event);
 	void _process_key_events();
-	void _update_keyboard_layouts() const;
-	static void _keyboard_layout_changed(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef user_info);
 
 	static NSCursor *_cursor_from_selector(SEL p_selector, SEL p_fallback = nil);
 
-	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb);
+	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, WindowID p_window_id);
+
+	struct EmbeddedProcessData {
+		EmbeddedProcessMacOS *process;
+		WindowData *wd = nullptr;
+		CALayer *layer_host = nil;
+	};
+	HashMap<OS::ProcessID, EmbeddedProcessData> embedded_processes;
+	void _window_update_display_id(WindowData *p_wd);
 
 public:
 	void menu_callback(id p_sender);
@@ -250,6 +263,7 @@ public:
 	void send_event(NSEvent *p_event);
 	void send_window_event(const WindowData &p_wd, WindowEvent p_event);
 	void release_pressed_events();
+	void sync_mouse_state();
 	void get_key_modifier_state(unsigned int p_macos_state, Ref<InputEventWithModifiers> r_state) const;
 	void update_mouse_pos(WindowData &p_wd, NSPoint p_location_in_window);
 	void push_to_key_event_buffer(const KeyEvent &p_event);
@@ -269,6 +283,10 @@ public:
 
 	bool is_always_on_top_recursive(WindowID p_window) const;
 
+	/**
+	 * Get the display ID of a window.
+	 */
+	uint32_t window_get_display_id(WindowID p_window) const;
 	void window_destroy(WindowID p_window);
 	void window_resize(WindowID p_window, int p_width, int p_height);
 	void window_set_custom_window_buttons(WindowData &p_wd, bool p_enabled);
@@ -281,15 +299,6 @@ public:
 	Callable _help_get_search_callback() const;
 	Callable _help_get_action_callback() const;
 
-	virtual bool tts_is_speaking() const override;
-	virtual bool tts_is_paused() const override;
-	virtual TypedArray<Dictionary> tts_get_voices() const override;
-
-	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
-	virtual void tts_pause() override;
-	virtual void tts_resume() override;
-	virtual void tts_stop() override;
-
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
 	virtual Color get_accent_color() const override;
@@ -299,24 +308,22 @@ public:
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
 
-	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
-	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) override;
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) override;
+	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) override;
 
 	virtual void beep() const override;
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
+	virtual void mouse_set_mode_override(MouseMode p_mode) override;
+	virtual MouseMode mouse_get_mode_override() const override;
+	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
+	virtual bool mouse_is_mode_override_enabled() const override;
 
 	bool update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, NSPoint &r_mpos, NSTimeInterval p_timestamp);
 	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
-
-	virtual void clipboard_set(const String &p_text) override;
-	virtual String clipboard_get() const override;
-	virtual Ref<Image> clipboard_get_image() const override;
-	virtual bool clipboard_has() const override;
-	virtual bool clipboard_has_image() const override;
 
 	virtual int get_screen_count() const override;
 	virtual int get_primary_screen() const override;
@@ -415,6 +422,11 @@ public:
 	virtual void window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Vector3i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const override;
 
+	virtual int accessibility_should_increase_contrast() const override;
+	virtual int accessibility_should_reduce_animation() const override;
+	virtual int accessibility_should_reduce_transparency() const override;
+	virtual int accessibility_screen_reader_active() const override;
+
 	virtual Point2i ime_get_selection() const override;
 	virtual String ime_get_text() const override;
 
@@ -425,15 +437,14 @@ public:
 
 	virtual bool get_swap_cancel_ok() override;
 
-	virtual int keyboard_get_layout_count() const override;
-	virtual int keyboard_get_current_layout() const override;
-	virtual void keyboard_set_current_layout(int p_index) override;
-	virtual String keyboard_get_layout_language(int p_index) const override;
-	virtual String keyboard_get_layout_name(int p_index) const override;
-	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
-	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
-	virtual void show_emoji_and_symbol_picker() const override;
+	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
+#ifdef TOOLS_ENABLED
+	Error embed_process_update(WindowID p_window, EmbeddedProcessMacOS *p_process);
+#endif
+	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
+	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
 
+	void _process_events(bool p_pump);
 	virtual void process_events() override;
 	virtual void force_process_and_drop_events() override;
 
@@ -461,5 +472,3 @@ public:
 	DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	~DisplayServerMacOS();
 };
-
-#endif // DISPLAY_SERVER_MACOS_H

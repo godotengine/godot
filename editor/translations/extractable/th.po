@@ -18,6 +18,15 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.3-rc\n"
 
+msgid "All Recognized"
+msgstr "ทุกนามสุกลที่รู้จัก"
+
+msgid "Save"
+msgstr "บันทึก"
+
+msgid "Clear"
+msgstr "เคลียร์"
+
 msgid "Add current color as a preset."
 msgstr "เพิ่มสีปัจจุบันเป็นพรีเซ็ต"
 
@@ -30,9 +39,6 @@ msgstr "เลือกโฟลเดอร์ปัจจุบัน"
 msgid "Select This Folder"
 msgstr "เลือกโฟลเดอร์นี้"
 
-msgid "All Recognized"
-msgstr "ทุกนามสุกลที่รู้จัก"
-
 msgid "Open a File"
 msgstr "เปิดไฟล์"
 
@@ -44,9 +50,6 @@ msgstr "เปิดโฟลเดอร์"
 
 msgid "Open a File or Directory"
 msgstr "เปิดไฟล์หรือโฟลเดอร์"
-
-msgid "Save"
-msgstr "บันทึก"
 
 msgid "Save a File"
 msgstr "บันทึกไฟล์"
@@ -66,11 +69,11 @@ msgstr "ตำแหน่ง:"
 msgid "Refresh files."
 msgstr "รีเฟรชไฟล์"
 
-msgid "Toggle the visibility of hidden files."
-msgstr "เปิด/ปิดการแสดงไฟล์ที่ซ่อน"
-
 msgid "Directories & Files:"
 msgstr "ไฟล์และโฟลเดอร์:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "เปิด/ปิดการแสดงไฟล์ที่ซ่อน"
 
 msgid "File:"
 msgstr "ไฟล์:"
@@ -104,9 +107,6 @@ msgstr "วาง"
 
 msgid "Select All"
 msgstr "เลือกทั้งหมด"
-
-msgid "Clear"
-msgstr "เคลียร์"
 
 msgid "Undo"
 msgstr "ยกเลิกการกระทำ"

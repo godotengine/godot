@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_SERVER_DEFAULT_H
-#define RENDERING_SERVER_DEFAULT_H
+#pragma once
 
 #include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
@@ -110,6 +109,9 @@ public:
 #endif
 
 #define WRITE_ACTION redraw_request();
+#define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread)
+#define ASYNC_COND_PUSH_AND_RET (Thread::get_caller_id() != server_thread)
+#define ASYNC_COND_PUSH_AND_SYNC (Thread::get_caller_id() != server_thread)
 
 #ifdef DEBUG_SYNC
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));
@@ -242,7 +244,15 @@ public:
 #define ServerName RendererMaterialStorage
 #define server_name RSG::material_storage
 
-	FUNCRIDSPLIT(shader)
+	virtual RID shader_create() override {
+		RID ret = RSG::material_storage->shader_allocate();
+		if (Thread::get_caller_id() == server_thread) {
+			RSG::material_storage->shader_initialize(ret, false);
+		} else {
+			command_queue.push(RSG::material_storage, &ServerName::shader_initialize, ret, false);
+		}
+		return ret;
+	}
 
 	virtual RID shader_create_from_code(const String &p_code, const String &p_path_hint = String()) override {
 		RID shader = RSG::material_storage->shader_allocate();
@@ -252,11 +262,11 @@ public:
 				command_queue.flush_if_pending();
 			}
 
-			RSG::material_storage->shader_initialize(shader);
+			RSG::material_storage->shader_initialize(shader, false);
 			RSG::material_storage->shader_set_code(shader, p_code);
 			RSG::material_storage->shader_set_path_hint(shader, p_path_hint);
 		} else {
-			command_queue.push(RSG::material_storage, &RendererMaterialStorage::shader_initialize, shader);
+			command_queue.push(RSG::material_storage, &RendererMaterialStorage::shader_initialize, shader, false);
 			command_queue.push(RSG::material_storage, &RendererMaterialStorage::shader_set_code, shader, p_code);
 			command_queue.push(RSG::material_storage, &RendererMaterialStorage::shader_set_path_hint, shader, p_path_hint);
 		}
@@ -359,6 +369,7 @@ public:
 	FUNC4(mesh_surface_update_vertex_region, RID, int, int, const Vector<uint8_t> &)
 	FUNC4(mesh_surface_update_attribute_region, RID, int, int, const Vector<uint8_t> &)
 	FUNC4(mesh_surface_update_skin_region, RID, int, int, const Vector<uint8_t> &)
+	FUNC4(mesh_surface_update_index_region, RID, int, int, const Vector<uint8_t> &)
 
 	FUNC3(mesh_surface_set_material, RID, int, RID)
 	FUNC2RC(RID, mesh_surface_get_material, RID, int)
@@ -377,6 +388,8 @@ public:
 
 	FUNC2(mesh_surface_remove, RID, int)
 	FUNC1(mesh_clear, RID)
+
+	FUNC1(mesh_debug_usage, List<MeshInfo> *)
 
 	/* MULTIMESH API */
 
@@ -618,6 +631,7 @@ public:
 	FUNC2(particles_collision_set_attractor_attenuation, RID, real_t)
 	FUNC2(particles_collision_set_field_texture, RID, RID)
 	FUNC1(particles_collision_height_field_update, RID)
+	FUNC2(particles_collision_set_height_field_mask, RID, uint32_t)
 	FUNC2(particles_collision_set_height_field_resolution, RID, ParticlesCollisionHeightfieldResolution)
 
 	/* FOG VOLUME */
@@ -880,12 +894,12 @@ public:
 	FUNC2(instance_set_layer_mask, RID, uint32_t)
 	FUNC3(instance_set_pivot_data, RID, float, bool)
 	FUNC2(instance_set_transform, RID, const Transform3D &)
-	FUNC2(instance_set_interpolated, RID, bool)
-	FUNC1(instance_reset_physics_interpolation, RID)
 	FUNC2(instance_attach_object_instance_id, RID, ObjectID)
 	FUNC3(instance_set_blend_shape_weight, RID, int, float)
 	FUNC3(instance_set_surface_override_material, RID, int, RID)
 	FUNC2(instance_set_visible, RID, bool)
+
+	FUNC1(instance_teleport, RID)
 
 	FUNC2(instance_set_custom_aabb, RID, AABB)
 
@@ -1186,5 +1200,3 @@ public:
 	RenderingServerDefault(bool p_create_thread = false);
 	~RenderingServerDefault();
 };
-
-#endif // RENDERING_SERVER_DEFAULT_H

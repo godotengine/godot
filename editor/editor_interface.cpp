@@ -32,27 +32,27 @@
 #include "editor_interface.compat.inc"
 
 #include "core/config/project_settings.h"
-#include "editor/create_dialog.h"
-#include "editor/editor_command_palette.h"
-#include "editor/editor_feature_profile.h"
+#include "editor/docks/filesystem_dock.h"
+#include "editor/docks/inspector_dock.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_resource_preview.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/filesystem_dock.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/gui/create_dialog.h"
 #include "editor/gui/editor_quick_open_dialog.h"
-#include "editor/gui/editor_run_bar.h"
-#include "editor/gui/editor_scene_tabs.h"
 #include "editor/gui/editor_toaster.h"
-#include "editor/gui/scene_tree_editor.h"
-#include "editor/inspector_dock.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
-#include "editor/property_selector.h"
+#include "editor/inspector/editor_preview_plugins.h"
+#include "editor/inspector/editor_resource_preview.h"
+#include "editor/inspector/property_selector.h"
+#include "editor/run/editor_run_bar.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/scene/editor_scene_tabs.h"
+#include "editor/scene/scene_tree_editor.h"
+#include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_feature_profile.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
-#include "plugins/editor_preview_plugins.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/box_container.h"
@@ -186,8 +186,8 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 		Vector3 ofs = aabb.get_center();
 		aabb.position -= ofs;
 		Transform3D xform;
-		xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI / 6);
-		xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI / 6) * xform.basis;
+		xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math::PI / 6);
+		xform.basis = Basis().rotated(Vector3(1, 0, 0), Math::PI / 6) * xform.basis;
 		AABB rot_aabb = xform.xform(aabb);
 		float m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
 		if (m == 0) {
@@ -230,9 +230,12 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 }
 
 void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, int p_preview_size) {
-	ERR_FAIL_NULL_MSG(p_scene, "The provided scene is null.");
+	if (!Engine::get_singleton()->is_editor_hint() || !DisplayServer::get_singleton()->window_can_draw()) {
+		return;
+	}
+	ERR_FAIL_COND_MSG(p_path.is_empty(), "Path is empty, cannot generate preview.");
+	ERR_FAIL_NULL_MSG(p_scene, "The provided scene is null, cannot generate preview.");
 	ERR_FAIL_COND_MSG(p_scene->is_inside_tree(), "The scene must not be inside the tree.");
-	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be called from the editor.");
 	ERR_FAIL_NULL_MSG(EditorNode::get_singleton(), "EditorNode doesn't exist.");
 
 	SubViewport *sub_viewport_node = memnew(SubViewport);
@@ -282,8 +285,8 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 	Vector3 center = scene_aabb.get_center();
 	float camera_size = scene_aabb.get_longest_axis_size();
 
-	const float cam_rot_x = -Math_PI / 4;
-	const float cam_rot_y = -Math_PI / 4;
+	const float cam_rot_x = -Math::PI / 4;
+	const float cam_rot_y = -Math::PI / 4;
 
 	camera->set_orthogonal(camera_size * 2.0, 0.0001, camera_size * 2.0);
 
@@ -295,8 +298,8 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 	camera->set_transform(xf);
 
 	Transform3D xform;
-	xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI / 6);
-	xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI / 6) * xform.basis;
+	xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math::PI / 6);
+	xform.basis = Basis().rotated(Vector3(1, 0, 0), Math::PI / 6) * xform.basis;
 
 	light->set_transform(xform * Transform3D().looking_at(Vector3(-2, -1, -1), Vector3(0, 1, 0)));
 	light2->set_transform(xform * Transform3D().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
@@ -647,8 +650,7 @@ void EditorInterface::open_scene_from_path(const String &scene_path, bool p_set_
 	if (EditorNode::get_singleton()->is_changing_scene()) {
 		return;
 	}
-
-	EditorNode::get_singleton()->open_request(scene_path, p_set_inherited);
+	EditorNode::get_singleton()->load_scene(scene_path, false, p_set_inherited);
 }
 
 void EditorInterface::reload_scene_from_path(const String &scene_path) {
@@ -667,12 +669,24 @@ PackedStringArray EditorInterface::get_open_scenes() const {
 	PackedStringArray ret;
 	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
 
-	int scns_amount = scenes.size();
-	for (int idx_scn = 0; idx_scn < scns_amount; idx_scn++) {
-		if (scenes[idx_scn].root == nullptr) {
+	for (EditorData::EditedScene &edited_scene : scenes) {
+		if (edited_scene.root == nullptr) {
 			continue;
 		}
-		ret.push_back(scenes[idx_scn].root->get_scene_file_path());
+		ret.push_back(edited_scene.root->get_scene_file_path());
+	}
+	return ret;
+}
+
+TypedArray<Node> EditorInterface::get_open_scene_roots() const {
+	TypedArray<Node> ret;
+	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
+
+	for (EditorData::EditedScene &edited_scene : scenes) {
+		if (edited_scene.root == nullptr) {
+			continue;
+		}
+		ret.push_back(edited_scene.root);
 	}
 	return ret;
 }
@@ -700,6 +714,10 @@ void EditorInterface::mark_scene_as_unsaved() {
 
 void EditorInterface::save_all_scenes() {
 	EditorNode::get_singleton()->save_all_scenes();
+}
+
+Error EditorInterface::close_scene() {
+	return EditorNode::get_singleton()->close_scene() ? OK : ERR_DOES_NOT_EXIST;
 }
 
 // Scene playback.
@@ -736,12 +754,11 @@ bool EditorInterface::is_movie_maker_enabled() const {
 	return EditorRunBar::get_singleton()->is_movie_maker_enabled();
 }
 
-#ifdef TOOLS_ENABLED
 void EditorInterface::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	const String pf = p_function;
 	if (p_idx == 0) {
 		if (pf == "set_main_screen_editor") {
-			for (String E : { "\"2D\"", "\"3D\"", "\"Script\"", "\"AssetLib\"" }) {
+			for (String E : { "\"2D\"", "\"3D\"", "\"Script\"", "\"Game\"", "\"AssetLib\"" }) {
 				r_options->push_back(E);
 			}
 		} else if (pf == "get_editor_viewport_3d") {
@@ -752,7 +769,6 @@ void EditorInterface::get_argument_options(const StringName &p_function, int p_i
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
 
 // Base.
 
@@ -830,11 +846,13 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorInterface::reload_scene_from_path);
 
 	ClassDB::bind_method(D_METHOD("get_open_scenes"), &EditorInterface::get_open_scenes);
+	ClassDB::bind_method(D_METHOD("get_open_scene_roots"), &EditorInterface::get_open_scene_roots);
 	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &EditorInterface::get_edited_scene_root);
 
 	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
 	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("save_all_scenes"), &EditorInterface::save_all_scenes);
+	ClassDB::bind_method(D_METHOD("close_scene"), &EditorInterface::close_scene);
 
 	ClassDB::bind_method(D_METHOD("mark_scene_as_unsaved"), &EditorInterface::mark_scene_as_unsaved);
 

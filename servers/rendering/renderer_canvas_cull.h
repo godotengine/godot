@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_CANVAS_CULL_H
-#define RENDERER_CANVAS_CULL_H
+#pragma once
 
 #include "core/templates/paged_allocator.h"
 #include "renderer_compositor.h"
@@ -185,7 +184,7 @@ public:
 	};
 
 	mutable RID_Owner<Canvas, true> canvas_owner;
-	RID_Owner<Item, true> canvas_item_owner;
+	RID_Owner<Item, true> canvas_item_owner{ 65536, 4194304 };
 	RID_Owner<RendererCanvasRender::Light, true> canvas_light_owner;
 
 	template <typename T>
@@ -412,5 +411,3 @@ public:
 	RendererCanvasCull();
 	~RendererCanvasCull();
 };
-
-#endif // RENDERER_CANVAS_CULL_H

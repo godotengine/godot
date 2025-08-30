@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_WAV_H
-#define AUDIO_STREAM_WAV_H
+#pragma once
 
 #include "servers/audio/audio_stream.h"
 
@@ -37,13 +36,8 @@
 
 class AudioStreamWAV;
 
-class AudioStreamPlaybackWAV : public AudioStreamPlayback {
-	GDCLASS(AudioStreamPlaybackWAV, AudioStreamPlayback);
-	enum {
-		MIX_FRAC_BITS = 13,
-		MIX_FRAC_LEN = (1 << MIX_FRAC_BITS),
-		MIX_FRAC_MASK = MIX_FRAC_LEN - 1,
-	};
+class AudioStreamPlaybackWAV : public AudioStreamPlaybackResampled {
+	GDCLASS(AudioStreamPlaybackWAV, AudioStreamPlaybackResampled);
 
 	struct IMA_ADPCM_State {
 		int16_t step_index = 0;
@@ -60,24 +54,25 @@ class AudioStreamPlaybackWAV : public AudioStreamPlayback {
 		qoa_desc desc = {};
 		uint32_t data_ofs = 0;
 		uint32_t frame_len = 0;
-		LocalVector<int16_t> dec;
+		TightLocalVector<int16_t> dec;
 		uint32_t dec_len = 0;
-		int64_t cache_pos = -1;
-		int16_t cache[2] = { 0, 0 };
-		int16_t cache_r[2] = { 0, 0 };
 	} qoa;
 
 	int64_t offset = 0;
-	int sign = 1;
+	int8_t sign = 1;
 	bool active = false;
 	friend class AudioStreamWAV;
 	Ref<AudioStreamWAV> base;
 
 	template <typename Depth, bool is_stereo, bool is_ima_adpcm, bool is_qoa>
-	void do_resample(const Depth *p_src, AudioFrame *p_dst, int64_t &p_offset, int32_t &p_increment, uint32_t p_amount, IMA_ADPCM_State *p_ima_adpcm, QOA_State *p_qoa);
+	void decode_samples(const Depth *p_src, AudioFrame *p_dst, int64_t &p_offset, int8_t &p_increment, uint32_t p_amount, IMA_ADPCM_State *p_ima_adpcm, QOA_State *p_qoa);
 
 	bool _is_sample = false;
 	Ref<AudioSamplePlayback> sample_playback;
+
+protected:
+	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) override;
+	virtual float get_stream_sampling_rate() override;
 
 public:
 	virtual void start(double p_from_pos = 0.0) override;
@@ -89,17 +84,12 @@ public:
 	virtual double get_playback_position() const override;
 	virtual void seek(double p_time) override;
 
-	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
-
 	virtual void tag_used_streams() override;
 
 	virtual void set_is_sample(bool p_is_sample) override;
 	virtual bool get_is_sample() const override;
 	virtual Ref<AudioSamplePlayback> get_sample_playback() const override;
 	virtual void set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) override;
-
-	AudioStreamPlaybackWAV();
-	~AudioStreamPlaybackWAV();
 };
 
 class AudioStreamWAV : public AudioStream {
@@ -125,18 +115,16 @@ public:
 private:
 	friend class AudioStreamPlaybackWAV;
 
-	enum {
-		DATA_PAD = 16 //padding for interpolation
-	};
-
 	Format format = FORMAT_8_BITS;
 	LoopMode loop_mode = LOOP_DISABLED;
 	bool stereo = false;
 	int loop_begin = 0;
 	int loop_end = 0;
 	int mix_rate = 44100;
-	LocalVector<uint8_t> data;
+	TightLocalVector<uint8_t> data;
 	uint32_t data_bytes = 0;
+
+	Dictionary tags;
 
 protected:
 	static void _bind_methods();
@@ -162,6 +150,9 @@ public:
 
 	void set_stereo(bool p_enable);
 	bool is_stereo() const;
+
+	void set_tags(const Dictionary &p_tags);
+	virtual Dictionary get_tags() const override;
 
 	virtual double get_length() const override; //if supported, otherwise return 0
 
@@ -283,7 +274,7 @@ public:
 			p_desc->lms[c].weights[3] = (1 << 14);
 		}
 
-		LocalVector<int16_t> data16;
+		TightLocalVector<int16_t> data16;
 		data16.resize(QOA_FRAME_LEN * p_desc->channels);
 
 		uint8_t *dst_ptr = dst_data.ptrw();
@@ -298,12 +289,7 @@ public:
 			dst_ptr += qoa_encode_frame(data16.ptr(), p_desc, frame_len, dst_ptr);
 		}
 	}
-
-	AudioStreamWAV();
-	~AudioStreamWAV();
 };
 
 VARIANT_ENUM_CAST(AudioStreamWAV::Format)
 VARIANT_ENUM_CAST(AudioStreamWAV::LoopMode)
-
-#endif // AUDIO_STREAM_WAV_H

@@ -30,6 +30,10 @@
 
 #include "character_body_3d.h"
 
+#ifndef DISABLE_DEPRECATED
+#include "servers/extensions/physics_server_3d_extension.h"
+#endif
+
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
@@ -251,7 +255,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 					// Avoid to move forward on a wall if floor_block_on_wall is true.
 					// Applies only when the motion angle is under 90 degrees,
 					// in order to avoid blocking lateral motion along a wall.
-					if (motion_angle < .5 * Math_PI) {
+					if (motion_angle < .5 * Math::PI) {
 						apply_default_sliding = false;
 						if (p_was_on_floor && !vel_dir_facing_up) {
 							// Cancel the motion.
@@ -601,7 +605,7 @@ void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResu
 			wall_normal = collision.normal;
 
 			// Don't apply wall velocity when the collider is a CharacterBody3D.
-			if (Object::cast_to<CharacterBody3D>(ObjectDB::get_instance(collision.collider_id)) == nullptr) {
+			if (ObjectDB::get_instance<CharacterBody3D>(collision.collider_id) == nullptr) {
 				_set_platform_data(collision);
 			}
 		}
@@ -639,11 +643,26 @@ void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResu
 }
 
 void CharacterBody3D::_set_platform_data(const PhysicsServer3D::MotionCollision &p_collision) {
+	PhysicsDirectBodyState3D *bs = PhysicsServer3D::get_singleton()->body_get_direct_state(p_collision.collider);
+	if (bs == nullptr) {
+		return;
+	}
+
 	platform_rid = p_collision.collider;
 	platform_object_id = p_collision.collider_id;
 	platform_velocity = p_collision.collider_velocity;
 	platform_angular_velocity = p_collision.collider_angular_velocity;
-	platform_layer = PhysicsServer3D::get_singleton()->body_get_collision_layer(platform_rid);
+
+#ifndef DISABLE_DEPRECATED
+	// Try to accommodate for any physics extensions that have yet to implement `PhysicsDirectBodyState3D::get_collision_layer`.
+	PhysicsDirectBodyState3DExtension *bs_ext = Object::cast_to<PhysicsDirectBodyState3DExtension>(bs);
+	if (bs_ext != nullptr && !GDVIRTUAL_IS_OVERRIDDEN_PTR(bs_ext, _get_collision_layer)) {
+		platform_layer = PhysicsServer3D::get_singleton()->body_get_collision_layer(p_collision.collider);
+	} else
+#endif
+	{
+		platform_layer = bs->get_collision_layer();
+	}
 }
 
 void CharacterBody3D::set_safe_margin(real_t p_margin) {
@@ -749,7 +768,7 @@ Ref<KinematicCollision3D> CharacterBody3D::_get_slide_collision(int p_bounce) {
 }
 
 Ref<KinematicCollision3D> CharacterBody3D::_get_last_slide_collision() {
-	if (motion_results.size() == 0) {
+	if (motion_results.is_empty()) {
 		return Ref<KinematicCollision3D>();
 	}
 	return _get_slide_collision(motion_results.size() - 1);
@@ -963,6 +982,9 @@ void CharacterBody3D::_bind_methods() {
 }
 
 void CharacterBody3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (motion_mode == MOTION_MODE_FLOATING) {
 		if (p_property.name.begins_with("floor_") || p_property.name == "up_direction" || p_property.name == "slide_on_ceiling") {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;

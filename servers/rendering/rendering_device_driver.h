@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_DEVICE_DRIVER_H
-#define RENDERING_DEVICE_DRIVER_H
+#pragma once
 
 // ***********************************************************************************
 // RenderingDeviceDriver - Design principles
@@ -50,37 +49,7 @@
 #include "core/variant/type_info.h"
 #include "servers/rendering/rendering_context_driver.h"
 #include "servers/rendering/rendering_device_commons.h"
-
-#include <algorithm>
-
-// This may one day be used in Godot for interoperability between C arrays, Vector and LocalVector.
-// (See https://github.com/godotengine/godot-proposals/issues/5144.)
-template <typename T>
-class VectorView {
-	const T *_ptr = nullptr;
-	const uint32_t _size = 0;
-
-public:
-	const T &operator[](uint32_t p_index) {
-		DEV_ASSERT(p_index < _size);
-		return _ptr[p_index];
-	}
-
-	_ALWAYS_INLINE_ const T *ptr() const { return _ptr; }
-	_ALWAYS_INLINE_ uint32_t size() const { return _size; }
-
-	VectorView() = default;
-	VectorView(const T &p_ptr) :
-			// With this one you can pass a single element very conveniently!
-			_ptr(&p_ptr),
-			_size(1) {}
-	VectorView(const T *p_ptr, uint32_t p_size) :
-			_ptr(p_ptr), _size(p_size) {}
-	VectorView(const Vector<T> &p_lv) :
-			_ptr(p_lv.ptr()), _size(p_lv.size()) {}
-	VectorView(const LocalVector<T> &p_lv) :
-			_ptr(p_lv.ptr()), _size(p_lv.size()) {}
-};
+#include "servers/rendering/rendering_shader_container.h"
 
 // These utilities help drivers avoid allocations.
 #define ALLOCA(m_size) ((m_size != 0) ? alloca(m_size) : nullptr)
@@ -238,7 +207,8 @@ public:
 		TEXTURE_LAYOUT_COPY_DST_OPTIMAL,
 		TEXTURE_LAYOUT_RESOLVE_SRC_OPTIMAL,
 		TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL,
-		TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL,
+		TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL,
+		TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL,
 		TEXTURE_LAYOUT_MAX
 	};
 
@@ -247,6 +217,11 @@ public:
 		TEXTURE_ASPECT_DEPTH = 1,
 		TEXTURE_ASPECT_STENCIL = 2,
 		TEXTURE_ASPECT_MAX
+	};
+
+	enum TextureUsageMethod {
+		TEXTURE_USAGE_VRS_FRAGMENT_SHADING_RATE_BIT = TEXTURE_USAGE_MAX_BIT << 1,
+		TEXTURE_USAGE_VRS_FRAGMENT_DENSITY_MAP_BIT = TEXTURE_USAGE_MAX_BIT << 2,
 	};
 
 	enum TextureAspectBits {
@@ -262,14 +237,14 @@ public:
 	};
 
 	struct TextureSubresourceLayers {
-		BitField<TextureAspectBits> aspect;
+		BitField<TextureAspectBits> aspect = {};
 		uint32_t mipmap = 0;
 		uint32_t base_layer = 0;
 		uint32_t layer_count = 0;
 	};
 
 	struct TextureSubresourceRange {
-		BitField<TextureAspectBits> aspect;
+		BitField<TextureAspectBits> aspect = {};
 		uint32_t base_mipmap = 0;
 		uint32_t mipmap_count = 0;
 		uint32_t base_layer = 0;
@@ -285,7 +260,7 @@ public:
 	};
 
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) = 0;
-	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil) = 0;
+	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil, uint32_t p_mipmaps) = 0;
 	// texture_create_shared_*() can only use original, non-view textures as original. RenderingDevice is responsible for ensuring that.
 	virtual TextureID texture_create_shared(TextureID p_original_texture, const TextureView &p_view) = 0;
 	virtual TextureID texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) = 0;
@@ -335,6 +310,8 @@ public:
 		PIPELINE_STAGE_ALL_GRAPHICS_BIT = (1 << 15),
 		PIPELINE_STAGE_ALL_COMMANDS_BIT = (1 << 16),
 		PIPELINE_STAGE_CLEAR_STORAGE_BIT = (1 << 17),
+		PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT = (1 << 22),
+		PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT = (1 << 23),
 	};
 
 	enum BarrierAccessBits {
@@ -356,28 +333,29 @@ public:
 		BARRIER_ACCESS_MEMORY_READ_BIT = (1 << 15),
 		BARRIER_ACCESS_MEMORY_WRITE_BIT = (1 << 16),
 		BARRIER_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT = (1 << 23),
-		BARRIER_ACCESS_RESOLVE_READ_BIT = (1 << 24),
-		BARRIER_ACCESS_RESOLVE_WRITE_BIT = (1 << 25),
+		BARRIER_ACCESS_FRAGMENT_DENSITY_MAP_ATTACHMENT_READ_BIT = (1 << 24),
+		BARRIER_ACCESS_RESOLVE_READ_BIT = (1 << 25),
+		BARRIER_ACCESS_RESOLVE_WRITE_BIT = (1 << 26),
 		BARRIER_ACCESS_STORAGE_CLEAR_BIT = (1 << 27),
 	};
 
 	struct MemoryBarrier {
-		BitField<BarrierAccessBits> src_access;
-		BitField<BarrierAccessBits> dst_access;
+		BitField<BarrierAccessBits> src_access = {};
+		BitField<BarrierAccessBits> dst_access = {};
 	};
 
 	struct BufferBarrier {
 		BufferID buffer;
-		BitField<BarrierAccessBits> src_access;
-		BitField<BarrierAccessBits> dst_access;
+		BitField<BarrierAccessBits> src_access = {};
+		BitField<BarrierAccessBits> dst_access = {};
 		uint64_t offset = 0;
 		uint64_t size = 0;
 	};
 
 	struct TextureBarrier {
 		TextureID texture;
-		BitField<BarrierAccessBits> src_access;
-		BitField<BarrierAccessBits> dst_access;
+		BitField<BarrierAccessBits> src_access = {};
+		BitField<BarrierAccessBits> dst_access = {};
 		TextureLayout prev_layout = TEXTURE_LAYOUT_UNDEFINED;
 		TextureLayout next_layout = TEXTURE_LAYOUT_UNDEFINED;
 		TextureSubresourceRange subresources;
@@ -487,31 +465,20 @@ public:
 	/**** SHADER ****/
 	/****************/
 
-	virtual String shader_get_binary_cache_key() = 0;
-	virtual Vector<uint8_t> shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) = 0;
-
 	struct ImmutableSampler {
 		UniformType type = UNIFORM_TYPE_MAX;
 		uint32_t binding = 0xffffffff; // Binding index as specified in shader.
 		LocalVector<ID> ids;
 	};
-	/** Creates a Pipeline State Object (PSO) out of the shader and all the input data it needs.
-	@param p_shader_binary		Shader binary bytecode (e.g. SPIR-V).
-	@param r_shader_desc		TBD.
-	@param r_name				TBD.
-	@param p_immutable_samplers	Immutable samplers can be embedded when creating the pipeline layout on the condition they
-								remain valid and unchanged, so they don't need to be specified when creating uniform sets.
-	@return						PSO resource for binding.
-	*/
-	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers) = 0;
+
+	// Creates a Pipeline State Object (PSO) out of the shader and all the input data it needs.
+	// Immutable samplers can be embedded when creating the pipeline layout on the condition they remain valid and unchanged, so they don't need to be
+	// specified when creating uniform sets PSO resource for binding.
+	virtual ShaderID shader_create_from_container(const Ref<RenderingShaderContainer> &p_shader_container, const Vector<ImmutableSampler> &p_immutable_samplers) = 0;
 	// Only meaningful if API_TRAIT_SHADER_CHANGE_INVALIDATION is SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH.
 	virtual uint32_t shader_get_layout_hash(ShaderID p_shader) { return 0; }
 	virtual void shader_free(ShaderID p_shader) = 0;
 	virtual void shader_destroy_modules(ShaderID p_shader) = 0;
-
-protected:
-	// An optional service to implementations.
-	Error _reflect_spirv(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection);
 
 public:
 	/*********************/
@@ -617,10 +584,10 @@ public:
 	};
 
 	struct AttachmentReference {
-		static const uint32_t UNUSED = 0xffffffff;
+		static constexpr uint32_t UNUSED = 0xffffffff;
 		uint32_t attachment = UNUSED;
 		TextureLayout layout = TEXTURE_LAYOUT_UNDEFINED;
-		BitField<TextureAspectBits> aspect;
+		BitField<TextureAspectBits> aspect = {};
 	};
 
 	struct Subpass {
@@ -629,19 +596,20 @@ public:
 		AttachmentReference depth_stencil_reference;
 		LocalVector<AttachmentReference> resolve_references;
 		LocalVector<uint32_t> preserve_attachments;
-		AttachmentReference vrs_reference;
+		AttachmentReference fragment_shading_rate_reference;
+		Size2i fragment_shading_rate_texel_size;
 	};
 
 	struct SubpassDependency {
 		uint32_t src_subpass = 0xffffffff;
 		uint32_t dst_subpass = 0xffffffff;
-		BitField<PipelineStageBits> src_stages;
-		BitField<PipelineStageBits> dst_stages;
-		BitField<BarrierAccessBits> src_access;
-		BitField<BarrierAccessBits> dst_access;
+		BitField<PipelineStageBits> src_stages = {};
+		BitField<PipelineStageBits> dst_stages = {};
+		BitField<BarrierAccessBits> src_access = {};
+		BitField<BarrierAccessBits> dst_access = {};
 	};
 
-	virtual RenderPassID render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count) = 0;
+	virtual RenderPassID render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count, AttachmentReference p_fragment_density_map_attachment) = 0;
 	virtual void render_pass_free(RenderPassID p_render_pass) = 0;
 
 	// ----- COMMANDS -----
@@ -657,7 +625,7 @@ public:
 	};
 
 	struct AttachmentClear {
-		BitField<TextureAspectBits> aspect;
+		BitField<TextureAspectBits> aspect = {};
 		uint32_t color_attachment = 0xffffffff;
 		RenderPassClearValue value;
 	};
@@ -787,6 +755,26 @@ public:
 		uint32_t max_instance_count = 0;
 	};
 
+	struct FragmentShadingRateCapabilities {
+		Size2i min_texel_size;
+		Size2i max_texel_size;
+		Size2i max_fragment_size;
+		bool pipeline_supported = false;
+		bool primitive_supported = false;
+		bool attachment_supported = false;
+	};
+
+	struct FragmentDensityMapCapabilities {
+		Size2i min_texel_size;
+		Size2i max_texel_size;
+		Size2i offset_granularity;
+		bool attachment_supported = false;
+		bool dynamic_attachment_supported = false;
+		bool non_subsampled_images_supported = false;
+		bool invocations_supported = false;
+		bool offset_supported = false;
+	};
+
 	enum ApiTrait {
 		API_TRAIT_HONORS_PIPELINE_BARRIERS,
 		API_TRAIT_SHADER_CHANGE_INVALIDATION,
@@ -828,10 +816,13 @@ public:
 	virtual uint64_t api_trait_get(ApiTrait p_trait);
 	virtual bool has_feature(Features p_feature) = 0;
 	virtual const MultiviewCapabilities &get_multiview_capabilities() = 0;
+	virtual const FragmentShadingRateCapabilities &get_fragment_shading_rate_capabilities() = 0;
+	virtual const FragmentDensityMapCapabilities &get_fragment_density_map_capabilities() = 0;
 	virtual String get_api_name() const = 0;
 	virtual String get_api_version() const = 0;
 	virtual String get_pipeline_cache_uuid() const = 0;
 	virtual const Capabilities &get_capabilities() const = 0;
+	virtual const RenderingShaderContainerFormat &get_shader_container_format() const = 0;
 
 	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const { return false; }
 
@@ -841,5 +832,3 @@ public:
 };
 
 using RDD = RenderingDeviceDriver;
-
-#endif // RENDERING_DEVICE_DRIVER_H

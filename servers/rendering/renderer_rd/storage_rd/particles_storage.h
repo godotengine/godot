@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PARTICLES_STORAGE_RD_H
-#define PARTICLES_STORAGE_RD_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
@@ -365,6 +364,7 @@ private:
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 
 		ParticlesShaderData() {}
 		virtual ~ParticlesShaderData();
@@ -404,6 +404,7 @@ private:
 		RID heightfield_texture;
 		RID heightfield_fb;
 		Size2i heightfield_fb_size;
+		uint32_t heightfield_mask = (1 << 20) - 1;
 
 		RS::ParticlesCollisionHeightfieldResolution heightfield_resolution = RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024;
 
@@ -581,6 +582,9 @@ public:
 	Vector3 particles_collision_get_extents(RID p_particles_collision) const;
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const override;
 	RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const;
+	virtual uint32_t particles_collision_get_height_field_mask(RID p_particles_collision) const override;
+	virtual void particles_collision_set_height_field_mask(RID p_particles_collision, uint32_t p_heightfield_mask) override;
+	virtual uint32_t particles_collision_get_cull_mask(RID p_particles_collision) const override;
 
 	Dependency *particles_collision_get_dependency(RID p_particles) const;
 
@@ -594,5 +598,3 @@ public:
 };
 
 } // namespace RendererRD
-
-#endif // PARTICLES_STORAGE_RD_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SKY_MATERIAL_H
-#define SKY_MATERIAL_H
+#pragma once
 
 #include "core/templates/rid.h"
 #include "scene/resources/material.h"
@@ -56,9 +55,11 @@ private:
 	float global_energy_multiplier = 1.0f;
 
 	static Mutex shader_mutex;
-	static RID shader_cache[2];
-	static void _update_shader();
+	static RID shader_cache[4];
+	static void _update_shader(bool p_use_debanding, bool p_use_sky_cover);
 	mutable bool shader_set = false;
+
+	RID get_shader_cache() const;
 
 protected:
 	static void _bind_methods();
@@ -129,7 +130,7 @@ private:
 
 	static Mutex shader_mutex;
 	static RID shader_cache[2];
-	static void _update_shader();
+	static void _update_shader(bool p_filter);
 	mutable bool shader_set = false;
 
 	bool filter = true;
@@ -165,7 +166,9 @@ class PhysicalSkyMaterial : public Material {
 
 private:
 	static Mutex shader_mutex;
-	static RID shader_cache[2];
+	static RID shader_cache[4];
+
+	RID get_shader_cache() const;
 
 	float rayleigh = 0.0f;
 	Color rayleigh_color;
@@ -178,7 +181,7 @@ private:
 	float energy_multiplier = 1.0f;
 	bool use_debanding = true;
 	Ref<Texture2D> night_sky;
-	static void _update_shader();
+	static void _update_shader(bool p_use_debanding, bool p_use_night_sky);
 	mutable bool shader_set = false;
 
 protected:
@@ -231,5 +234,3 @@ public:
 	PhysicalSkyMaterial();
 	~PhysicalSkyMaterial();
 };
-
-#endif // SKY_MATERIAL_H

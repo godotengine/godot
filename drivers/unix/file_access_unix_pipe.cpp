@@ -35,11 +35,12 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
-#include <errno.h>
 #include <fcntl.h>
+#include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <cerrno>
 
 Error FileAccessUnixPipe::open_existing(int p_rfd, int p_wfd, bool p_blocking) {
 	// Open pipe using handles created by pipe(fd) call in the OS.execute_with_pipe.
@@ -66,7 +67,7 @@ Error FileAccessUnixPipe::open_internal(const String &p_path, int p_mode_flags) 
 	path_src = p_path;
 	ERR_FAIL_COND_V_MSG(fd[0] >= 0 || fd[1] >= 0, ERR_ALREADY_IN_USE, "Pipe is already in use.");
 
-	path = String("/tmp/") + p_path.replace("pipe://", "").replace("/", "_");
+	path = String("/tmp/") + p_path.replace("pipe://", "").replace_char('/', '_');
 	const CharString path_utf8 = path.utf8();
 
 	struct stat st = {};
@@ -130,6 +131,14 @@ String FileAccessUnixPipe::get_path() const {
 
 String FileAccessUnixPipe::get_path_absolute() const {
 	return path_src;
+}
+
+uint64_t FileAccessUnixPipe::get_length() const {
+	ERR_FAIL_COND_V_MSG(fd[0] < 0, 0, "Pipe must be opened before use.");
+
+	int buf_rem = 0;
+	ERR_FAIL_COND_V(ioctl(fd[0], FIONREAD, &buf_rem) != 0, 0);
+	return buf_rem;
 }
 
 uint64_t FileAccessUnixPipe::get_buffer(uint8_t *p_dst, uint64_t p_length) const {

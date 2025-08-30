@@ -31,7 +31,6 @@
 #include "os_windows.h"
 
 #include "display_server_windows.h"
-#include "joypad_windows.h"
 #include "lang_table.h"
 #include "windows_terminal_logger.h"
 #include "windows_utils.h"
@@ -62,6 +61,24 @@
 #include <wbemcli.h>
 #include <wincrypt.h>
 
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_device.h"
+#endif
+
+#if defined(GLES3_ENABLED)
+#include "gl_manager_windows_native.h"
+#endif
+
+#if defined(VULKAN_ENABLED)
+#include "rendering_context_driver_vulkan_windows.h"
+#endif
+#if defined(D3D12_ENABLED)
+#include "drivers/d3d12/rendering_context_driver_d3d12.h"
+#endif
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
+#endif
+
 #ifdef DEBUG_ENABLED
 #pragma pack(push, before_imagehlp, 8)
 #include <imagehlp.h>
@@ -88,22 +105,17 @@ __declspec(dllexport) void NoHotPatch() {} // Disable Nahimic code injection.
 #define DWRITE_FONT_WEIGHT_SEMI_LIGHT (DWRITE_FONT_WEIGHT)350
 #endif
 
-#if defined(__GNUC__)
-// Workaround GCC warning from -Wcast-function-type.
-#define GetProcAddress (void *)GetProcAddress
-#endif
-
 static String fix_path(const String &p_path) {
 	String path = p_path;
 	if (p_path.is_relative_path()) {
 		Char16String current_dir_name;
 		size_t str_len = GetCurrentDirectoryW(0, nullptr);
-		current_dir_name.resize(str_len + 1);
+		current_dir_name.resize_uninitialized(str_len + 1);
 		GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
-		path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace("\\", "/").path_join(path);
+		path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/').path_join(path);
 	}
 	path = path.simplify_path();
-	path = path.replace("/", "\\");
+	path = path.replace_char('/', '\\');
 	if (path.size() >= MAX_PATH && !path.is_network_share_path() && !path.begins_with(R"(\\?\)")) {
 		path = R"(\\?\)" + path;
 	}
@@ -119,7 +131,7 @@ static String format_error_message(DWORD id) {
 
 	LocalFree(messageBuffer);
 
-	return msg.replace("\r", "").replace("\n", "");
+	return msg.remove_chars("\r\n");
 }
 
 void RedirectStream(const char *p_file_name, const char *p_mode, FILE *p_cpp_stream, const DWORD p_std_handle) {
@@ -182,7 +194,7 @@ bool OS_Windows::is_using_con_wrapper() const {
 			WCHAR proc_name[MAX_PATH];
 			DWORD len = MAX_PATH;
 			if (QueryFullProcessImageNameW(process, 0, &proc_name[0], &len)) {
-				String name = String::utf16((const char16_t *)&proc_name[0], len).replace("\\", "/").to_lower();
+				String name = String::utf16((const char16_t *)&proc_name[0], len).replace_char('\\', '/').to_lower();
 				if (name == exe_name) {
 					found_exe = true;
 				}
@@ -268,6 +280,7 @@ void OS_Windows::initialize() {
 	QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second);
 	QueryPerformanceCounter((LARGE_INTEGER *)&ticks_start);
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP
 	// set minimum resolution for periodic timers, otherwise Sleep(n) may wait at least as
 	//  long as the windows scheduler resolution (~16-30ms) even for calls like Sleep(1)
 	TIMECAPS time_caps;
@@ -279,6 +292,9 @@ void OS_Windows::initialize() {
 		delay_resolution = 1000;
 		timeBeginPeriod(1);
 	}
+#else
+	delay_resolution = 1000;
+#endif
 
 	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
@@ -361,7 +377,9 @@ void OS_Windows::finalize_core() {
 
 	FileAccessWindows::finalize();
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP
 	timeEndPeriod(1);
+#endif
 
 	memdelete(process_map);
 	NetSocketWinSock::cleanup();
@@ -482,22 +500,15 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 		}
 	}
 
-	typedef DLL_DIRECTORY_COOKIE(WINAPI * PAddDllDirectory)(PCWSTR);
-	typedef BOOL(WINAPI * PRemoveDllDirectory)(DLL_DIRECTORY_COOKIE);
-
-	PAddDllDirectory add_dll_directory = (PAddDllDirectory)GetProcAddress(GetModuleHandle("kernel32.dll"), "AddDllDirectory");
-	PRemoveDllDirectory remove_dll_directory = (PRemoveDllDirectory)GetProcAddress(GetModuleHandle("kernel32.dll"), "RemoveDllDirectory");
-
-	bool has_dll_directory_api = ((add_dll_directory != nullptr) && (remove_dll_directory != nullptr));
 	DLL_DIRECTORY_COOKIE cookie = nullptr;
 
 	String dll_path = fix_path(load_path);
 	String dll_dir = fix_path(ProjectSettings::get_singleton()->globalize_path(load_path.get_base_dir()));
-	if (p_data != nullptr && p_data->also_set_library_path && has_dll_directory_api) {
-		cookie = add_dll_directory((LPCWSTR)(dll_dir.utf16().get_data()));
+	if (p_data != nullptr && p_data->also_set_library_path) {
+		cookie = AddDllDirectory((LPCWSTR)(dll_dir.utf16().get_data()));
 	}
 
-	p_library_handle = (void *)LoadLibraryExW((LPCWSTR)(dll_path.utf16().get_data()), nullptr, (p_data != nullptr && p_data->also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
+	p_library_handle = (void *)LoadLibraryExW((LPCWSTR)(dll_path.utf16().get_data()), nullptr, (p_data != nullptr && p_data->also_set_library_path) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
 	if (!p_library_handle) {
 		if (p_data != nullptr && p_data->generate_temp_files) {
 			DirAccess::remove_absolute(load_path);
@@ -529,7 +540,7 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 #endif
 
 	if (cookie) {
-		remove_dll_directory(cookie);
+		RemoveDllDirectory(cookie);
 	}
 
 	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
@@ -585,7 +596,7 @@ String OS_Windows::get_distribution_name() const {
 }
 
 String OS_Windows::get_version() const {
-	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
+	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)(void *)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
 	if (version_ptr != nullptr) {
 		RTL_OSVERSIONINFOEXW fow;
 		ZeroMemory(&fow, sizeof(fow));
@@ -598,7 +609,7 @@ String OS_Windows::get_version() const {
 }
 
 String OS_Windows::get_version_alias() const {
-	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
+	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)(void *)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
 	if (version_ptr != nullptr) {
 		RTL_OSVERSIONINFOEXW fow;
 		ZeroMemory(&fow, sizeof(fow));
@@ -625,28 +636,10 @@ String OS_Windows::get_version_alias() const {
 						windows_string += "10";
 					}
 				}
-			} else if (fow.dwMajorVersion == 6 && fow.dwMinorVersion == 3) {
-				if (fow.wProductType != VER_NT_WORKSTATION) {
-					windows_string = "Server 2012 R2";
-				} else {
-					windows_string += "8.1";
-				}
-			} else if (fow.dwMajorVersion == 6 && fow.dwMinorVersion == 2) {
-				if (fow.wProductType != VER_NT_WORKSTATION) {
-					windows_string += "Server 2012";
-				} else {
-					windows_string += "8";
-				}
-			} else if (fow.dwMajorVersion == 6 && fow.dwMinorVersion == 1) {
-				if (fow.wProductType != VER_NT_WORKSTATION) {
-					windows_string = "Server 2008 R2";
-				} else {
-					windows_string += "7";
-				}
 			} else {
 				windows_string += "Unknown";
 			}
-			// Windows versions older than 7 cannot run Godot.
+			// Windows versions older than 10 cannot run Godot.
 
 			return vformat("%s (build %d)", windows_string, (int64_t)fow.dwBuildNumber);
 		}
@@ -710,7 +703,7 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 			BSTR object_name = SysAllocString(L"DriverName");
 			hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, nullptr, nullptr);
 			SysFreeString(object_name);
-			if (hr == S_OK) {
+			if (hr == S_OK && dn.vt == VT_BSTR) {
 				String d_name = String(V_BSTR(&dn));
 				if (d_name.is_empty()) {
 					object_name = SysAllocString(L"DriverProviderName");
@@ -726,8 +719,10 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 				object_name = SysAllocString(L"DriverProviderName");
 				hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, nullptr, nullptr);
 				SysFreeString(object_name);
-				if (hr == S_OK) {
+				if (hr == S_OK && dn.vt == VT_BSTR) {
 					driver_name = String(V_BSTR(&dn));
+				} else {
+					driver_name = "Unknown";
 				}
 			}
 
@@ -736,8 +731,10 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 			object_name = SysAllocString(L"DriverVersion");
 			hr = pnpSDriverObject[0]->Get(object_name, 0, &dv, nullptr, nullptr);
 			SysFreeString(object_name);
-			if (hr == S_OK) {
+			if (hr == S_OK && dv.vt == VT_BSTR) {
 				driver_version = String(V_BSTR(&dv));
+			} else {
+				driver_version = "Unknown";
 			}
 			for (ULONG i = 0; i < resultCount; i++) {
 				SAFE_RELEASE(pnpSDriverObject[i])
@@ -771,10 +768,10 @@ bool OS_Windows::get_user_prefers_integrated_gpu() const {
 		HMODULE kernel32 = GetModuleHandleW(L"kernel32.dll");
 		if (kernel32) {
 			using GetCurrentApplicationUserModelIdPtr = LONG(WINAPI *)(UINT32 * length, PWSTR id);
-			GetCurrentApplicationUserModelIdPtr GetCurrentApplicationUserModelId = (GetCurrentApplicationUserModelIdPtr)GetProcAddress(kernel32, "GetCurrentApplicationUserModelId");
+			GetCurrentApplicationUserModelIdPtr GetCurrentApplicationUserModelId = (GetCurrentApplicationUserModelIdPtr)(void *)GetProcAddress(kernel32, "GetCurrentApplicationUserModelId");
 
 			if (GetCurrentApplicationUserModelId) {
-				UINT32 length = sizeof(value_name) / sizeof(value_name[0]);
+				UINT32 length = std::size(value_name);
 				LONG result = GetCurrentApplicationUserModelId(&length, value_name);
 				if (result == ERROR_SUCCESS) {
 					is_packaged = true;
@@ -953,11 +950,209 @@ static void _append_to_pipe(char *p_bytes, int p_size, String *r_pipe, Mutex *p_
 		// Let's hope it's compatible with UTF-8.
 		(*r_pipe) += String::utf8(p_bytes, p_size);
 	} else {
-		(*r_pipe) += String(wchars.ptr(), total_wchars);
+		(*r_pipe) += String::utf16((char16_t *)wchars.ptr(), total_wchars);
 	}
 	if (p_pipe_mutex) {
 		p_pipe_mutex->unlock();
 	}
+}
+
+void OS_Windows::_init_encodings() {
+	encodings[""] = 0;
+	encodings["CP_ACP"] = 0;
+	encodings["CP_OEMCP"] = 1;
+	encodings["CP_MACCP"] = 2;
+	encodings["CP_THREAD_ACP"] = 3;
+	encodings["CP_SYMBOL"] = 42;
+	encodings["IBM037"] = 37;
+	encodings["IBM437"] = 437;
+	encodings["IBM500"] = 500;
+	encodings["ASMO-708"] = 708;
+	encodings["ASMO-449"] = 709;
+	encodings["DOS-710"] = 710;
+	encodings["DOS-720"] = 720;
+	encodings["IBM737"] = 737;
+	encodings["IBM775"] = 775;
+	encodings["IBM850"] = 850;
+	encodings["IBM852"] = 852;
+	encodings["IBM855"] = 855;
+	encodings["IBM857"] = 857;
+	encodings["IBM00858"] = 858;
+	encodings["IBM860"] = 860;
+	encodings["IBM861"] = 861;
+	encodings["DOS-862"] = 862;
+	encodings["IBM863"] = 863;
+	encodings["IBM864"] = 864;
+	encodings["IBM865"] = 865;
+	encodings["CP866"] = 866;
+	encodings["IBM869"] = 869;
+	encodings["IBM870"] = 870;
+	encodings["WINDOWS-874"] = 874;
+	encodings["CP875"] = 875;
+	encodings["SHIFT_JIS"] = 932;
+	encodings["GB2312"] = 936;
+	encodings["KS_C_5601-1987"] = 949;
+	encodings["BIG5"] = 950;
+	encodings["IBM1026"] = 1026;
+	encodings["IBM01047"] = 1047;
+	encodings["IBM01140"] = 1140;
+	encodings["IBM01141"] = 1141;
+	encodings["IBM01142"] = 1142;
+	encodings["IBM01143"] = 1143;
+	encodings["IBM01144"] = 1144;
+	encodings["IBM01145"] = 1145;
+	encodings["IBM01146"] = 1146;
+	encodings["IBM01147"] = 1147;
+	encodings["IBM01148"] = 1148;
+	encodings["IBM01149"] = 1149;
+	encodings["UTF-16"] = 1200;
+	encodings["UNICODEFFFE"] = 1201;
+	encodings["WINDOWS-1250"] = 1250;
+	encodings["WINDOWS-1251"] = 1251;
+	encodings["WINDOWS-1252"] = 1252;
+	encodings["WINDOWS-1253"] = 1253;
+	encodings["WINDOWS-1254"] = 1254;
+	encodings["WINDOWS-1255"] = 1255;
+	encodings["WINDOWS-1256"] = 1256;
+	encodings["WINDOWS-1257"] = 1257;
+	encodings["WINDOWS-1258"] = 1258;
+	encodings["JOHAB"] = 1361;
+	encodings["MACINTOSH"] = 10000;
+	encodings["X-MAC-JAPANESE"] = 10001;
+	encodings["X-MAC-CHINESETRAD"] = 10002;
+	encodings["X-MAC-KOREAN"] = 10003;
+	encodings["X-MAC-ARABIC"] = 10004;
+	encodings["X-MAC-HEBREW"] = 10005;
+	encodings["X-MAC-GREEK"] = 10006;
+	encodings["X-MAC-CYRILLIC"] = 10007;
+	encodings["X-MAC-CHINESESIMP"] = 10008;
+	encodings["X-MAC-ROMANIAN"] = 10010;
+	encodings["X-MAC-UKRAINIAN"] = 10017;
+	encodings["X-MAC-THAI"] = 10021;
+	encodings["X-MAC-CE"] = 10029;
+	encodings["X-MAC-ICELANDIC"] = 10079;
+	encodings["X-MAC-TURKISH"] = 10081;
+	encodings["X-MAC-CROATIAN"] = 10082;
+	encodings["UTF-32"] = 12000;
+	encodings["UTF-32BE"] = 12001;
+	encodings["X-CHINESE_CNS"] = 20000;
+	encodings["X-CP20001"] = 20001;
+	encodings["X_CHINESE-ETEN"] = 20002;
+	encodings["X-CP20003"] = 20003;
+	encodings["X-CP20004"] = 20004;
+	encodings["X-CP20005"] = 20005;
+	encodings["X-IA5"] = 20105;
+	encodings["X-IA5-GERMAN"] = 20106;
+	encodings["X-IA5-SWEDISH"] = 20107;
+	encodings["X-IA5-NORWEGIAN"] = 20108;
+	encodings["US-ASCII"] = 20127;
+	encodings["X-CP20261"] = 20261;
+	encodings["X-CP20269"] = 20269;
+	encodings["IBM273"] = 20273;
+	encodings["IBM277"] = 20277;
+	encodings["IBM278"] = 20278;
+	encodings["IBM280"] = 20280;
+	encodings["IBM284"] = 20284;
+	encodings["IBM285"] = 20285;
+	encodings["IBM290"] = 20290;
+	encodings["IBM297"] = 20297;
+	encodings["IBM420"] = 20420;
+	encodings["IBM423"] = 20423;
+	encodings["IBM424"] = 20424;
+	encodings["X-EBCDIC-KOREANEXTENDED"] = 20833;
+	encodings["IBM-THAI"] = 20838;
+	encodings["KOI8-R"] = 20866;
+	encodings["IBM871"] = 20871;
+	encodings["IBM880"] = 20880;
+	encodings["IBM905"] = 20905;
+	encodings["IBM00924"] = 20924;
+	encodings["EUC-JP"] = 20932;
+	encodings["X-CP20936"] = 20936;
+	encodings["X-CP20949"] = 20949;
+	encodings["CP1025"] = 21025;
+	encodings["KOI8-U"] = 21866;
+	encodings["ISO-8859-1"] = 28591;
+	encodings["ISO-8859-2"] = 28592;
+	encodings["ISO-8859-3"] = 28593;
+	encodings["ISO-8859-4"] = 28594;
+	encodings["ISO-8859-5"] = 28595;
+	encodings["ISO-8859-6"] = 28596;
+	encodings["ISO-8859-7"] = 28597;
+	encodings["ISO-8859-8"] = 28598;
+	encodings["ISO-8859-9"] = 28599;
+	encodings["ISO-8859-13"] = 28603;
+	encodings["ISO-8859-15"] = 28605;
+	encodings["X-EUROPA"] = 29001;
+	encodings["ISO-8859-8-I"] = 38598;
+	encodings["ISO-2022-JP"] = 50220;
+	encodings["CSISO2022JP"] = 50221;
+	encodings["ISO-2022-JP"] = 50222;
+	encodings["ISO-2022-KR"] = 50225;
+	encodings["X-CP50227"] = 50227;
+	encodings["EBCDIC-JP"] = 50930;
+	encodings["EBCDIC-US-JP"] = 50931;
+	encodings["EBCDIC-KR"] = 50933;
+	encodings["EBCDIC-CN-eXT"] = 50935;
+	encodings["EBCDIC-CN"] = 50936;
+	encodings["EBCDIC-US-CN"] = 50937;
+	encodings["EBCDIC-JP-EXT"] = 50939;
+	encodings["EUC-JP"] = 51932;
+	encodings["EUC-CN"] = 51936;
+	encodings["EUC-KR"] = 51949;
+	encodings["HZ-GB-2312"] = 52936;
+	encodings["GB18030"] = 54936;
+	encodings["X-ISCII-DE"] = 57002;
+	encodings["X-ISCII-BE"] = 57003;
+	encodings["X-ISCII-TA"] = 57004;
+	encodings["X-ISCII-TE"] = 57005;
+	encodings["X-ISCII-AS"] = 57006;
+	encodings["X-ISCII-OR"] = 57007;
+	encodings["X-ISCII-KA"] = 57008;
+	encodings["X-ISCII-MA"] = 57009;
+	encodings["X-ISCII-GU"] = 57010;
+	encodings["X-ISCII-PA"] = 57011;
+	encodings["UTF-7"] = 65000;
+	encodings["UTF-8"] = 65001;
+}
+
+String OS_Windows::multibyte_to_string(const String &p_encoding, const PackedByteArray &p_array) const {
+	const int *encoding = encodings.getptr(p_encoding.to_upper());
+	ERR_FAIL_NULL_V_MSG(encoding, String(), "Conversion failed: Unknown encoding");
+
+	LocalVector<wchar_t> wchars;
+	int total_wchars = MultiByteToWideChar(*encoding, 0, (const char *)p_array.ptr(), p_array.size(), nullptr, 0);
+	if (total_wchars == 0) {
+		DWORD err_code = GetLastError();
+		ERR_FAIL_V_MSG(String(), vformat("Conversion failed: %s", format_error_message(err_code)));
+	}
+	wchars.resize(total_wchars);
+	if (MultiByteToWideChar(*encoding, 0, (const char *)p_array.ptr(), p_array.size(), wchars.ptr(), total_wchars) == 0) {
+		DWORD err_code = GetLastError();
+		ERR_FAIL_V_MSG(String(), vformat("Conversion failed: %s", format_error_message(err_code)));
+	}
+
+	return String::utf16((const char16_t *)wchars.ptr(), wchars.size());
+}
+
+PackedByteArray OS_Windows::string_to_multibyte(const String &p_encoding, const String &p_string) const {
+	const int *encoding = encodings.getptr(p_encoding.to_upper());
+	ERR_FAIL_NULL_V_MSG(encoding, PackedByteArray(), "Conversion failed: Unknown encoding");
+
+	Char16String charstr = p_string.utf16();
+	PackedByteArray ret;
+	int total_mbchars = WideCharToMultiByte(*encoding, 0, (const wchar_t *)charstr.ptr(), charstr.size(), nullptr, 0, nullptr, nullptr);
+	if (total_mbchars == 0) {
+		DWORD err_code = GetLastError();
+		ERR_FAIL_V_MSG(PackedByteArray(), vformat("Conversion failed: %s", format_error_message(err_code)));
+	}
+
+	ret.resize(total_mbchars);
+	if (WideCharToMultiByte(*encoding, 0, (const wchar_t *)charstr.ptr(), charstr.size(), (char *)ret.ptrw(), ret.size(), nullptr, nullptr) == 0) {
+		DWORD err_code = GetLastError();
+		ERR_FAIL_V_MSG(PackedByteArray(), vformat("Conversion failed: %s", format_error_message(err_code)));
+	}
+
+	return ret;
 }
 
 Dictionary OS_Windows::get_memory_info() const {
@@ -973,7 +1168,7 @@ Dictionary OS_Windows::get_memory_info() const {
 	GetPerformanceInfo(&pref_info, sizeof(pref_info));
 
 	typedef void(WINAPI * PGetCurrentThreadStackLimits)(PULONG_PTR, PULONG_PTR);
-	PGetCurrentThreadStackLimits GetCurrentThreadStackLimits = (PGetCurrentThreadStackLimits)GetProcAddress(GetModuleHandleA("kernel32.dll"), "GetCurrentThreadStackLimits");
+	PGetCurrentThreadStackLimits GetCurrentThreadStackLimits = (PGetCurrentThreadStackLimits)(void *)GetProcAddress(GetModuleHandleA("kernel32.dll"), "GetCurrentThreadStackLimits");
 
 	ULONG_PTR LowLimit = 0;
 	ULONG_PTR HighLimit = 0;
@@ -1084,12 +1279,12 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
-	current_dir_name.resize(str_len + 1);
+	current_dir_name.resize_uninitialized(str_len + 1);
 	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 	if (current_dir_name.size() >= MAX_PATH) {
 		Char16String current_short_dir_name;
 		str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
-		current_short_dir_name.resize(str_len);
+		current_short_dir_name.resize_uninitialized(str_len);
 		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.size());
 		current_dir_name = current_short_dir_name;
 	}
@@ -1190,12 +1385,12 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
-	current_dir_name.resize(str_len + 1);
+	current_dir_name.resize_uninitialized(str_len + 1);
 	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 	if (current_dir_name.size() >= MAX_PATH) {
 		Char16String current_short_dir_name;
 		str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
-		current_short_dir_name.resize(str_len);
+		current_short_dir_name.resize_uninitialized(str_len);
 		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.size());
 		current_dir_name = current_short_dir_name;
 	}
@@ -1289,12 +1484,12 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
-	current_dir_name.resize(str_len + 1);
+	current_dir_name.resize_uninitialized(str_len + 1);
 	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 	if (current_dir_name.size() >= MAX_PATH) {
 		Char16String current_short_dir_name;
 		str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
-		current_short_dir_name.resize(str_len);
+		current_short_dir_name.resize_uninitialized(str_len);
 		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.size());
 		current_dir_name = current_short_dir_name;
 	}
@@ -1430,7 +1625,7 @@ Vector<String> OS_Windows::get_system_fonts() const {
 		hr = family_names->GetStringLength(index, &length);
 		ERR_CONTINUE(FAILED(hr));
 
-		name.resize(length + 1);
+		name.resize_uninitialized(length + 1);
 		hr = family_names->GetString(index, (WCHAR *)name.ptrw(), length + 1);
 		ERR_CONTINUE(FAILED(hr));
 
@@ -1443,10 +1638,7 @@ Vector<String> OS_Windows::get_system_fonts() const {
 	return ret;
 }
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#endif
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wnon-virtual-dtor") // Silence warning due to a COM API weirdness.
 
 class FallbackTextAnalysisSource : public IDWriteTextAnalysisSource {
 	LONG _cRef = 1;
@@ -1530,9 +1722,7 @@ public:
 	virtual ~FallbackTextAnalysisSource() {}
 };
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+GODOT_GCC_WARNING_POP
 
 String OS_Windows::_get_default_fontname(const String &p_font_name) const {
 	String font_name = p_font_name;
@@ -1673,7 +1863,7 @@ Vector<String> OS_Windows::get_system_font_path_for_text(const String &p_font_na
 		if (FAILED(hr)) {
 			continue;
 		}
-		String fpath = String::utf16((const char16_t *)&file_path[0]).replace("\\", "/");
+		String fpath = String::utf16((const char16_t *)&file_path[0]).replace_char('\\', '/');
 
 		WIN32_FIND_DATAW d;
 		HANDLE fnd = FindFirstFileW((LPCWSTR)&file_path[0], &d);
@@ -1752,7 +1942,7 @@ String OS_Windows::get_system_font_path(const String &p_font_name, int p_weight,
 		if (FAILED(hr)) {
 			continue;
 		}
-		String fpath = String::utf16((const char16_t *)&file_path[0]).replace("\\", "/");
+		String fpath = String::utf16((const char16_t *)&file_path[0]).replace_char('\\', '/');
 
 		WIN32_FIND_DATAW d;
 		HANDLE fnd = FindFirstFileW((LPCWSTR)&file_path[0], &d);
@@ -1772,7 +1962,7 @@ String OS_Windows::get_system_font_path(const String &p_font_name, int p_weight,
 String OS_Windows::get_executable_path() const {
 	WCHAR bufname[4096];
 	GetModuleFileNameW(nullptr, bufname, 4096);
-	String s = String::utf16((const char16_t *)bufname).replace("\\", "/");
+	String s = String::utf16((const char16_t *)bufname).replace_char('\\', '/');
 	return s;
 }
 
@@ -1989,14 +2179,14 @@ String OS_Windows::get_locale() const {
 		}
 
 		if (lang == wl->main_lang && sublang == wl->sublang) {
-			return String(wl->locale).replace("-", "_");
+			return String(wl->locale).replace_char('-', '_');
 		}
 
 		wl++;
 	}
 
 	if (!neutral.is_empty()) {
-		return String(neutral).replace("-", "_");
+		return String(neutral).replace_char('-', '_');
 	}
 
 	return "en";
@@ -2125,7 +2315,7 @@ uint64_t OS_Windows::get_embedded_pck_offset() const {
 
 String OS_Windows::get_config_path() const {
 	if (has_environment("APPDATA")) {
-		return get_environment("APPDATA").replace("\\", "/");
+		return get_environment("APPDATA").replace_char('\\', '/');
 	}
 	return ".";
 }
@@ -2138,7 +2328,7 @@ String OS_Windows::get_cache_path() const {
 	static String cache_path_cache;
 	if (cache_path_cache.is_empty()) {
 		if (has_environment("LOCALAPPDATA")) {
-			cache_path_cache = get_environment("LOCALAPPDATA").replace("\\", "/");
+			cache_path_cache = get_environment("LOCALAPPDATA").replace_char('\\', '/');
 		}
 		if (cache_path_cache.is_empty()) {
 			cache_path_cache = get_temp_path();
@@ -2168,12 +2358,12 @@ String OS_Windows::get_temp_path() const {
 			temp_path_cache = get_config_path();
 		}
 	}
-	return temp_path_cache;
+	return temp_path_cache.replace_char('\\', '/').trim_suffix("/");
 }
 
 // Get properly capitalized engine name for system paths
 String OS_Windows::get_godot_dir_name() const {
-	return String(VERSION_SHORT_NAME).capitalize();
+	return String(GODOT_VERSION_SHORT_NAME).capitalize();
 }
 
 String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
@@ -2209,19 +2399,21 @@ String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 	PWSTR szPath;
 	HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &szPath);
 	ERR_FAIL_COND_V(res != S_OK, String());
-	String path = String::utf16((const char16_t *)szPath).replace("\\", "/");
+	String path = String::utf16((const char16_t *)szPath).replace_char('\\', '/');
 	CoTaskMemFree(szPath);
 	return path;
 }
 
 String OS_Windows::get_user_data_dir(const String &p_user_dir) const {
-	return get_data_path().path_join(p_user_dir).replace("\\", "/");
+	return get_data_path().path_join(p_user_dir).replace_char('\\', '/');
 }
 
 String OS_Windows::get_unique_id() const {
 	HW_PROFILE_INFOA HwProfInfo;
 	ERR_FAIL_COND_V(!GetCurrentHwProfileA(&HwProfInfo), "");
-	return String((HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN);
+
+	// Note: Windows API returns a GUID with null termination.
+	return String::ascii(Span<char>(HwProfInfo.szHwProfileGuid, strnlen(HwProfInfo.szHwProfileGuid, HW_PROFILE_GUIDLEN)));
 }
 
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
@@ -2294,14 +2486,28 @@ String OS_Windows::get_system_ca_certificates() {
 		PackedByteArray pba;
 		pba.resize(size);
 		CryptBinaryToStringA(curr->pbCertEncoded, curr->cbCertEncoded, CRYPT_STRING_BASE64HEADER | CRYPT_STRING_NOCR, (char *)pba.ptrw(), &size);
-		certs += String((char *)pba.ptr(), size);
+		certs += String::ascii(Span((char *)pba.ptr(), size));
 		curr = CertEnumCertificatesInStore(cert_store, curr);
 	}
 	CertCloseStore(cert_store, 0);
 	return certs;
 }
 
-void OS_Windows::add_frame_delay(bool p_can_draw) {
+void OS_Windows::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
+	if (p_wake_for_events) {
+		uint64_t delay = get_frame_delay(p_can_draw);
+		if (delay == 0) {
+			return;
+		}
+
+		DisplayServer *ds = DisplayServer::get_singleton();
+		DisplayServerWindows *ds_win = Object::cast_to<DisplayServerWindows>(ds);
+		if (ds_win) {
+			MsgWaitForMultipleObjects(0, nullptr, false, Math::floor(double(delay) / 1000.0), QS_ALLINPUT);
+			return;
+		}
+	}
+
 	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
 	if (frame_delay) {
 		// Add fixed frame delay to decrease CPU/GPU usage. This doesn't take
@@ -2327,18 +2533,26 @@ void OS_Windows::add_frame_delay(bool p_can_draw) {
 		target_ticks += dynamic_delay;
 		uint64_t current_ticks = get_ticks_usec();
 
-		if (target_ticks > current_ticks + delay_resolution) {
-			uint64_t delay_time = target_ticks - current_ticks - delay_resolution;
-			// Make sure we always sleep for a multiple of delay_resolution to avoid overshooting.
-			// Refer to: https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleep#remarks
-			delay_time = (delay_time / delay_resolution) * delay_resolution;
-			if (delay_time > 0) {
-				delay_usec(delay_time);
+		if (!is_in_low_processor_usage_mode()) {
+			if (target_ticks > current_ticks + delay_resolution) {
+				uint64_t delay_time = target_ticks - current_ticks - delay_resolution;
+				// Make sure we always sleep for a multiple of delay_resolution to avoid overshooting.
+				// Refer to: https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleep#remarks
+				delay_time = (delay_time / delay_resolution) * delay_resolution;
+				if (delay_time > 0) {
+					delay_usec(delay_time);
+				}
 			}
-		}
-		// Busy wait for the remainder of time.
-		while (get_ticks_usec() < target_ticks) {
-			YieldProcessor();
+			// Busy wait for the remainder of time.
+			while (get_ticks_usec() < target_ticks) {
+				YieldProcessor();
+			}
+		} else {
+			// Use a more relaxed approach for low processor usage mode.
+			// This has worse frame pacing but is more power efficient.
+			if (current_ticks < target_ticks) {
+				delay_usec(target_ticks - current_ticks);
+			}
 		}
 
 		current_ticks = get_ticks_usec();
@@ -2346,18 +2560,115 @@ void OS_Windows::add_frame_delay(bool p_can_draw) {
 	}
 }
 
+#ifdef TOOLS_ENABLED
+bool OS_Windows::_test_create_rendering_device(const String &p_display_driver) const {
+	// Tests Rendering Device creation.
+
+	bool ok = false;
+#if defined(RD_ENABLED)
+	Error err;
+	RenderingContextDriver *rcd = nullptr;
+
+#if defined(VULKAN_ENABLED)
+	rcd = memnew(RenderingContextDriverVulkan);
+#endif
+#ifdef D3D12_ENABLED
+	if (rcd == nullptr) {
+		rcd = memnew(RenderingContextDriverD3D12);
+	}
+#endif
+	if (rcd != nullptr) {
+		err = rcd->initialize();
+		if (err == OK) {
+			RenderingDevice *rd = memnew(RenderingDevice);
+			err = rd->initialize(rcd);
+			memdelete(rd);
+			rd = nullptr;
+			if (err == OK) {
+				ok = true;
+			}
+		}
+		memdelete(rcd);
+		rcd = nullptr;
+	}
+#endif
+
+	return ok;
+}
+
+bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_driver) const {
+	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
+
+	WNDCLASSEXW wc_probe;
+	memset(&wc_probe, 0, sizeof(WNDCLASSEXW));
+	wc_probe.cbSize = sizeof(WNDCLASSEXW);
+	wc_probe.style = CS_OWNDC | CS_DBLCLKS;
+	wc_probe.lpfnWndProc = (WNDPROC)::DefWindowProcW;
+	wc_probe.cbClsExtra = 0;
+	wc_probe.cbWndExtra = 0;
+	wc_probe.hInstance = GetModuleHandle(nullptr);
+	wc_probe.hIcon = LoadIcon(nullptr, IDI_WINLOGO);
+	wc_probe.hCursor = nullptr;
+	wc_probe.hbrBackground = nullptr;
+	wc_probe.lpszMenuName = nullptr;
+	wc_probe.lpszClassName = L"Engine probe window";
+
+	if (!RegisterClassExW(&wc_probe)) {
+		return false;
+	}
+
+	HWND hWnd = CreateWindowExW(WS_EX_WINDOWEDGE, L"Engine probe window", L"", WS_OVERLAPPEDWINDOW, 0, 0, 800, 600, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
+	if (!hWnd) {
+		UnregisterClassW(L"Engine probe window", GetModuleHandle(nullptr));
+		return false;
+	}
+
+	bool ok = true;
+#ifdef GLES3_ENABLED
+	GLManagerNative_Windows *test_gl_manager_native = memnew(GLManagerNative_Windows);
+	if (test_gl_manager_native->window_create(DisplayServer::MAIN_WINDOW_ID, hWnd, GetModuleHandle(nullptr), 800, 600) == OK) {
+		RasterizerGLES3::make_current(true);
+	} else {
+		ok = false;
+	}
+#endif
+
+	MSG msg = {};
+	while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+		TranslateMessage(&msg);
+		DispatchMessageW(&msg);
+	}
+
+	if (ok) {
+		ok = _test_create_rendering_device(p_display_driver);
+	}
+
+#ifdef GLES3_ENABLED
+	if (test_gl_manager_native) {
+		memdelete(test_gl_manager_native);
+	}
+#endif
+
+	DestroyWindow(hWnd);
+	UnregisterClassW(L"Engine probe window", GetModuleHandle(nullptr));
+	return ok;
+}
+#endif
+
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	hInstance = _hInstance;
+
+	_init_encodings();
 
 	// Reset CWD to ensure long path is used.
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
-	current_dir_name.resize(str_len + 1);
+	current_dir_name.resize_uninitialized(str_len + 1);
 	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 
 	Char16String new_current_dir_name;
 	str_len = GetLongPathNameW((LPCWSTR)current_dir_name.get_data(), nullptr, 0);
-	new_current_dir_name.resize(str_len + 1);
+	new_current_dir_name.resize_uninitialized(str_len + 1);
 	GetLongPathNameW((LPCWSTR)current_dir_name.get_data(), (LPWSTR)new_current_dir_name.ptrw(), new_current_dir_name.size());
 
 	SetCurrentDirectoryW((LPCWSTR)new_current_dir_name.get_data());
@@ -2390,7 +2701,7 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	GetConsoleMode(stdoutHandle, &outMode);
 	outMode |= ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 	if (!SetConsoleMode(stdoutHandle, outMode)) {
-		// Windows 8.1 or below, or Windows 10 prior to Anniversary Update.
+		// Windows 10 prior to Anniversary Update.
 		print_verbose("Can't set the ENABLE_VIRTUAL_TERMINAL_PROCESSING Windows console mode. `print_rich()` will not work as expected.");
 	}
 

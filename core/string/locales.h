@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LOCALES_H
-#define LOCALES_H
+#pragma once
 
 // Windows has some weird locale identifiers which do not honor the ISO 639-1
 // standardized nomenclature. Whenever those don't conflict with existing ISO
@@ -1111,7 +1110,7 @@ static const char *script_list[][2] = {
 	{ "Meitei Mayek", "Mtei" },
 	{ "Multani", "Mult" },
 	{ "Myanmar / Burmese", "Mymr" },
-	{ "​Nag Mundari", "Nagm" },
+	{ "Nag Mundari", "Nagm" },
 	{ "Nandinagari", "Nand" },
 	{ "Old North Arabian", "Narb" },
 	{ "Nabataean", "Nbat" },
@@ -1195,5 +1194,3 @@ static const char *script_list[][2] = {
 	{ "Zanabazar Square", "Zanb" },
 	{ nullptr, nullptr }
 };
-
-#endif // LOCALES_H

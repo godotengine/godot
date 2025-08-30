@@ -181,13 +181,6 @@ namespace Godot.SourceGenerators
             };
         }
 
-        public static string NameWithTypeParameters(this INamedTypeSymbol symbol)
-        {
-            return symbol.IsGenericType ?
-                string.Concat(symbol.Name, "<", string.Join(", ", symbol.TypeParameters), ">") :
-                symbol.Name;
-        }
-
         private static SymbolDisplayFormat FullyQualifiedFormatOmitGlobal { get; } =
             SymbolDisplayFormat.FullyQualifiedFormat
                 .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted);
@@ -268,6 +261,8 @@ namespace Godot.SourceGenerators
 
         public static string SanitizeQualifiedNameForUniqueHint(this string qualifiedName)
             => qualifiedName
+                // AddSource() doesn't support @ prefix
+                .Replace("@", "")
                 // AddSource() doesn't support angle brackets
                 .Replace("<", "(Of ")
                 .Replace(">", ")");

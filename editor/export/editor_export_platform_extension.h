@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_EXPORT_PLATFORM_EXTENSION_H
-#define EDITOR_EXPORT_PLATFORM_EXTENSION_H
+#pragma once
 
 #include "editor_export_platform.h"
 #include "editor_export_preset.h"
@@ -80,8 +79,12 @@ public:
 	virtual String get_options_tooltip() const override;
 	GDVIRTUAL0RC(String, _get_options_tooltip);
 
-	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
-	GDVIRTUAL1RC(Ref<ImageTexture>, _get_option_icon, int);
+	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
+	GDVIRTUAL1RC(Ref<Texture2D>, _get_option_icon, int);
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL1RC_COMPAT(_get_option_icon_bind_compat_108825, Ref<ImageTexture>, _get_option_icon, int)
+#endif
 
 	virtual String get_option_label(int p_device) const override;
 	GDVIRTUAL1RC(String, _get_option_label, int);
@@ -151,5 +154,3 @@ public:
 	EditorExportPlatformExtension();
 	~EditorExportPlatformExtension();
 };
-
-#endif // EDITOR_EXPORT_PLATFORM_EXTENSION_H

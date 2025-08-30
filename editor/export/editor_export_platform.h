@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_EXPORT_PLATFORM_H
-#define EDITOR_EXPORT_PLATFORM_H
+#pragma once
 
 class EditorFileSystemDirectory;
 struct EditorProgress;
 
+#include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/zip_io.h"
 #include "core/os/shared_object.h"
@@ -78,7 +78,6 @@ public:
 		String text;
 	};
 
-private:
 	struct SavedData {
 		uint64_t ofs = 0;
 		uint64_t size = 0;
@@ -93,12 +92,20 @@ private:
 	};
 
 	struct PackData {
+		String path;
 		Ref<FileAccess> f;
 		Vector<SavedData> file_ofs;
 		EditorProgress *ep = nullptr;
 		Vector<SharedObject> *so_files = nullptr;
+		bool use_sparse_pck = false;
 	};
 
+	static bool _store_header(Ref<FileAccess> p_fd, bool p_enc, bool p_sparse, uint64_t &r_file_base_ofs, uint64_t &r_dir_base_ofs);
+	static bool _encrypt_and_store_directory(Ref<FileAccess> p_fd, PackData &p_pack_data, const Vector<uint8_t> &p_key, uint64_t p_seed, uint64_t p_file_base);
+	static Error _encrypt_and_store_data(Ref<FileAccess> p_fd, const String &p_path, const Vector<uint8_t> &p_data, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool &r_encrypt);
+	String _get_script_encryption_key(const Ref<EditorExportPreset> &p_preset) const;
+
+private:
 	struct ZipData {
 		void *zip = nullptr;
 		EditorProgress *ep = nullptr;
@@ -151,7 +158,6 @@ private:
 	bool _is_editable_ancestor(Node *p_root, Node *p_node);
 
 	String _export_customize(const String &p_path, LocalVector<Ref<EditorExportPlugin>> &customize_resources_plugins, LocalVector<Ref<EditorExportPlugin>> &customize_scenes_plugins, HashMap<String, FileExportCache> &export_cache, const String &export_base_path, bool p_force_save);
-	String _get_script_encryption_key(const Ref<EditorExportPreset> &p_preset) const;
 
 protected:
 	struct ExportNotifier {
@@ -202,7 +208,15 @@ protected:
 	Error _load_patches(const Vector<String> &p_patches);
 	void _unload_patches();
 
+	Ref<Image> _load_icon_or_splash_image(const String &p_path, Error *r_error) const;
+
+#ifndef DISABLE_DEPRECATED
+	static Vector<String> _get_forced_export_files_bind_compat_71542();
+	static void _bind_compatibility_methods();
+#endif
+
 public:
+	static Variant get_project_setting(const Ref<EditorExportPreset> &p_preset, const StringName &p_name);
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const = 0;
 
 	struct ExportOption {
@@ -279,7 +293,7 @@ public:
 
 	Dictionary get_internal_export_files(const Ref<EditorExportPreset> &p_preset, bool p_debug);
 
-	static Vector<String> get_forced_export_files();
+	static Vector<String> get_forced_export_files(const Ref<EditorExportPreset> &p_preset);
 
 	virtual bool fill_log_messages(RichTextLabel *p_log, Error p_err);
 
@@ -312,7 +326,7 @@ public:
 	virtual bool poll_export() { return false; }
 	virtual int get_options_count() const { return 0; }
 	virtual String get_options_tooltip() const { return ""; }
-	virtual Ref<ImageTexture> get_option_icon(int p_index) const;
+	virtual Ref<Texture2D> get_option_icon(int p_index) const;
 	virtual String get_option_label(int p_device) const { return ""; }
 	virtual String get_option_tooltip(int p_device) const { return ""; }
 	virtual String get_device_architecture(int p_device) const { return ""; }
@@ -334,11 +348,8 @@ public:
 	virtual void get_platform_features(List<String> *r_features) const = 0;
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {}
 	virtual String get_debug_protocol() const { return "tcp://"; }
-
-	EditorExportPlatform();
+	virtual HashMap<String, Variant> get_custom_project_settings(const Ref<EditorExportPreset> &p_preset) const { return HashMap<String, Variant>(); }
 };
 
 VARIANT_ENUM_CAST(EditorExportPlatform::ExportMessageType)
 VARIANT_BITFIELD_CAST(EditorExportPlatform::DebugFlags);
-
-#endif // EDITOR_EXPORT_PLATFORM_H

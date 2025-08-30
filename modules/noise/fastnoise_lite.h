@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FASTNOISE_LITE_H
-#define FASTNOISE_LITE_H
+#pragma once
 
 #include "noise.h"
 
-#include <thirdparty/noise/FastNoiseLite.h>
+#include "thirdparty/misc/FastNoiseLite.h"
 
 typedef fastnoiselite::FastNoiseLite _FastNoiseLite;
 
@@ -220,5 +219,3 @@ VARIANT_ENUM_CAST(FastNoiseLite::CellularDistanceFunction);
 VARIANT_ENUM_CAST(FastNoiseLite::CellularReturnType);
 VARIANT_ENUM_CAST(FastNoiseLite::DomainWarpType);
 VARIANT_ENUM_CAST(FastNoiseLite::DomainWarpFractalType);
-
-#endif // FASTNOISE_LITE_H

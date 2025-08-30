@@ -9,6 +9,10 @@
 		- To enter edit mode, click on the control with the mouse, see also [member keep_editing_on_text_submit].
 		- To exit edit mode, press [code]ui_text_submit[/code] or [code]ui_cancel[/code] (by default [kbd]Escape[/kbd]) actions.
 		- Check [method edit], [method unedit], [method is_editing], and [signal editing_toggled] for more information.
+		While entering text, it is possible to insert special characters using Unicode, OEM or Windows alt codes:
+		- To enter Unicode codepoints, hold [kbd]Alt[/kbd] and type the codepoint on the numpad. For example, to enter the character [code]á[/code] (U+00E1), hold [kbd]Alt[/kbd] and type [kbd]+E1[/kbd] on the numpad (the leading zeroes can be omitted).
+		- To enter OEM codepoints, hold [kbd]Alt[/kbd] and type the code on the numpad. For example, to enter the character [code]á[/code] (OEM 160), hold [kbd]Alt[/kbd] and type [code]160[/code] on the numpad.
+		- To enter Windows codepoints, hold [kbd]Alt[/kbd] and type the code on the numpad. For example, to enter the character [code]á[/code] (Windows 0225), hold [kbd]Alt[/kbd] and type [kbd]0[/kbd], [kbd]2[/kbd], [kbd]2[/kbd], [kbd]5[/kbd] on the numpad. The leading zero here must [b]not[/b] be omitted, as this is how Windows codepoints are distinguished from OEM codepoints.
 		[b]Important:[/b]
 		- Focusing the [LineEdit] with [code]ui_focus_next[/code] (by default [kbd]Tab[/kbd]) or [code]ui_focus_prev[/code] (by default [kbd]Shift + Tab[/kbd]) or [method Control.grab_focus] still enters edit mode (for compatibility).
 		[LineEdit] features many built-in shortcuts that are always available ([kbd]Ctrl[/kbd] here maps to [kbd]Cmd[/kbd] on macOS):
@@ -91,42 +95,58 @@
 				[codeblocks]
 				[gdscript]
 				func _ready():
-				    var menu = get_menu()
-				    # Remove all items after "Redo".
-				    menu.item_count = menu.get_item_index(MENU_REDO) + 1
-				    # Add custom items.
-				    menu.add_separator()
-				    menu.add_item("Insert Date", MENU_MAX + 1)
-				    # Connect callback.
-				    menu.id_pressed.connect(_on_item_pressed)
+					var menu = get_menu()
+					# Remove all items after "Redo".
+					menu.item_count = menu.get_item_index(MENU_REDO) + 1
+					# Add custom items.
+					menu.add_separator()
+					menu.add_item("Insert Date", MENU_MAX + 1)
+					# Connect callback.
+					menu.id_pressed.connect(_on_item_pressed)
 
 				func _on_item_pressed(id):
-				    if id == MENU_MAX + 1:
-				        insert_text_at_caret(Time.get_date_string_from_system())
+					if id == MENU_MAX + 1:
+						insert_text_at_caret(Time.get_date_string_from_system())
 				[/gdscript]
 				[csharp]
 				public override void _Ready()
 				{
-				    var menu = GetMenu();
-				    // Remove all items after "Redo".
-				    menu.ItemCount = menu.GetItemIndex(LineEdit.MenuItems.Redo) + 1;
-				    // Add custom items.
-				    menu.AddSeparator();
-				    menu.AddItem("Insert Date", LineEdit.MenuItems.Max + 1);
-				    // Add event handler.
-				    menu.IdPressed += OnItemPressed;
+					var menu = GetMenu();
+					// Remove all items after "Redo".
+					menu.ItemCount = menu.GetItemIndex(LineEdit.MenuItems.Redo) + 1;
+					// Add custom items.
+					menu.AddSeparator();
+					menu.AddItem("Insert Date", LineEdit.MenuItems.Max + 1);
+					// Add event handler.
+					menu.IdPressed += OnItemPressed;
 				}
 
 				public void OnItemPressed(int id)
 				{
-				    if (id == LineEdit.MenuItems.Max + 1)
-				    {
-				        InsertTextAtCaret(Time.GetDateStringFromSystem());
-				    }
+					if (id == LineEdit.MenuItems.Max + 1)
+					{
+						InsertTextAtCaret(Time.GetDateStringFromSystem());
+					}
 				}
 				[/csharp]
 				[/codeblocks]
 				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
+			</description>
+		</method>
+		<method name="get_next_composite_character_column" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the correct column at the end of a composite character like ❤️‍🩹 (mending heart; Unicode: [code]U+2764 U+FE0F U+200D U+1FA79[/code]) which is comprised of more than one Unicode code point, if the caret is at the start of the composite character. Also returns the correct column with the caret at mid grapheme and for non-composite characters.
+				[b]Note:[/b] To check at caret location use [code]get_next_composite_character_column(get_caret_column())[/code]
+			</description>
+		</method>
+		<method name="get_previous_composite_character_column" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the correct column at the start of a composite character like ❤️‍🩹 (mending heart; Unicode: [code]U+2764 U+FE0F U+200D U+1FA79[/code]) which is comprised of more than one Unicode code point, if the caret is at the end of the composite character. Also returns the correct column with the caret at mid grapheme and for non-composite characters.
+				[b]Note:[/b] To check at caret location use [code]get_previous_composite_character_column(get_caret_column())[/code]
 			</description>
 		</method>
 		<method name="get_scroll_offset" qualifiers="const">
@@ -242,6 +262,9 @@
 		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
 			Text alignment as defined in the [enum HorizontalAlignment] enum.
 		</member>
+		<member name="backspace_deletes_composite_character_enabled" type="bool" setter="set_backspace_deletes_composite_character_enabled" getter="is_backspace_deletes_composite_character_enabled" default="false">
+			If [code]true[/code] and [member caret_mid_grapheme] is [code]false[/code], backspace deletes an entire composite character such as ❤️‍🩹, instead of deleting part of the composite character.
+		</member>
 		<member name="caret_blink" type="bool" setter="set_caret_blink_enabled" getter="is_caret_blink_enabled" default="false">
 			If [code]true[/code], makes the caret blink.
 		</member>
@@ -252,7 +275,7 @@
 			The caret's column position inside the [LineEdit]. When set, the text may scroll to accommodate it.
 		</member>
 		<member name="caret_force_displayed" type="bool" setter="set_caret_force_displayed" getter="is_caret_force_displayed" default="false">
-			If [code]true[/code], the [LineEdit] will always show the caret, even if focus is lost.
+			If [code]true[/code], the [LineEdit] will always show the caret, even if not editing or focus is lost.
 		</member>
 		<member name="caret_mid_grapheme" type="bool" setter="set_caret_mid_grapheme_enabled" getter="is_caret_mid_grapheme_enabled" default="false">
 			Allow moving caret, selecting and removing the individual composite character components.
@@ -277,7 +300,7 @@
 			If [code]false[/code], existing text cannot be modified and new text cannot be added.
 		</member>
 		<member name="emoji_menu_enabled" type="bool" setter="set_emoji_menu_enabled" getter="is_emoji_menu_enabled" default="true">
-			If [code]false[/code], "Emoji and Symbols" menu is enabled.
+			If [code]true[/code], "Emoji and Symbols" menu is enabled.
 		</member>
 		<member name="expand_to_text_length" type="bool" setter="set_expand_to_text_length_enabled" getter="is_expand_to_text_length_enabled" default="false">
 			If [code]true[/code], the [LineEdit] width will increase to stay longer than the [member text]. It will [b]not[/b] compress if the [member text] is shortened.
@@ -295,7 +318,7 @@
 		<member name="max_length" type="int" setter="set_max_length" getter="get_max_length" default="0">
 			Maximum number of characters that can be entered inside the [LineEdit]. If [code]0[/code], there is no limit.
 			When a limit is defined, characters that would exceed [member max_length] are truncated. This happens both for existing [member text] contents when setting the max length, or for new text inserted in the [LineEdit], including pasting.
-			If any input text is truncated, the [signal text_change_rejected] signal is emitted with the truncated substring as parameter:
+			If any input text is truncated, the [signal text_change_rejected] signal is emitted with the truncated substring as a parameter:
 			[codeblocks]
 			[gdscript]
 			text = "Hello world"
@@ -304,7 +327,7 @@
 			max_length = 10
 			text += " goodbye"
 			# `text` becomes "Hello good".
-			# `text_change_rejected` is emitted with "bye" as parameter.
+			# `text_change_rejected` is emitted with "bye" as a parameter.
 			[/gdscript]
 			[csharp]
 			Text = "Hello world";
@@ -313,7 +336,7 @@
 			MaxLength = 10;
 			Text += " goodbye";
 			// `Text` becomes "Hello good".
-			// `text_change_rejected` is emitted with "bye" as parameter.
+			// `text_change_rejected` is emitted with "bye" as a parameter.
 			[/csharp]
 			[/codeblocks]
 		</member>
@@ -357,7 +380,10 @@
 			Base text writing direction.
 		</member>
 		<member name="virtual_keyboard_enabled" type="bool" setter="set_virtual_keyboard_enabled" getter="is_virtual_keyboard_enabled" default="true">
-			If [code]true[/code], the native virtual keyboard is shown when focused on platforms that support it.
+			If [code]true[/code], the native virtual keyboard is enabled on platforms that support it.
+		</member>
+		<member name="virtual_keyboard_show_on_focus" type="bool" setter="set_virtual_keyboard_show_on_focus" getter="get_virtual_keyboard_show_on_focus" default="true">
+			If [code]true[/code], the native virtual keyboard is shown on focus events on platforms that support it.
 		</member>
 		<member name="virtual_keyboard_type" type="int" setter="set_virtual_keyboard_type" getter="get_virtual_keyboard_type" enum="LineEdit.VirtualKeyboardType" default="0">
 			Specifies the type of virtual keyboard to show.

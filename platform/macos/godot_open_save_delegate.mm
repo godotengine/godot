@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "godot_open_save_delegate.h"
+#import "godot_open_save_delegate.h"
 
 @implementation GodotOpenSaveDelegate
 
@@ -119,12 +119,12 @@
 				Vector<String> tokens = p_filters[i].split(";");
 				if (tokens.size() >= 1) {
 					String flt = tokens[0].strip_edges();
-					String mime = (tokens.size() >= 2) ? tokens[2].strip_edges() : String();
+					String mime = (tokens.size() >= 3) ? tokens[2].strip_edges() : String();
 					int filter_slice_count = flt.get_slice_count(",");
 
 					NSMutableArray *type_filters = [[NSMutableArray alloc] init];
 					for (int j = 0; j < filter_slice_count; j++) {
-						String str = (flt.get_slice(",", j).strip_edges());
+						String str = (flt.get_slicec(',', j).strip_edges());
 						if (!str.is_empty()) {
 							if (@available(macOS 11, *)) {
 								UTType *ut = nullptr;
@@ -173,12 +173,12 @@
 			Vector<String> tokens = p_filters[0].split(";");
 			if (tokens.size() >= 1) {
 				String flt = tokens[0].strip_edges();
-				String mime = (tokens.size() >= 2) ? tokens[2] : String();
+				String mime = (tokens.size() >= 3) ? tokens[2] : String();
 				int filter_slice_count = flt.get_slice_count(",");
 
 				NSMutableArray *type_filters = [[NSMutableArray alloc] init];
 				for (int j = 0; j < filter_slice_count; j++) {
-					String str = (flt.get_slice(",", j).strip_edges());
+					String str = (flt.get_slicec(',', j).strip_edges());
 					if (!str.is_empty()) {
 						if (@available(macOS 11, *)) {
 							UTType *ut = nullptr;

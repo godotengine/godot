@@ -8,6 +8,8 @@ from pathlib import Path
 
 import platform_windows_builders
 
+from methods import redirect_emitter
+
 sources = []
 
 common_win = [
@@ -15,7 +17,6 @@ common_win = [
     "os_windows.cpp",
     "display_server_windows.cpp",
     "key_mapping_windows.cpp",
-    "joypad_windows.cpp",
     "tts_windows.cpp",
     "windows_terminal_logger.cpp",
     "windows_utils.cpp",
@@ -36,6 +37,20 @@ common_win_wrap = [
     "console_wrapper_windows.cpp",
 ]
 
+env_wrap = env.Clone()
+
+if env["arch"] == "x86_64":
+    env_cpp_check = env.Clone()
+    env_cpp_check.add_source_files(sources, ["cpu_feature_validation.c"])
+    if env.msvc:
+        if "/d2archSSE42" in env_cpp_check["CCFLAGS"]:
+            env_cpp_check["CCFLAGS"].remove("/d2archSSE42")
+        env.Append(LINKFLAGS=["/ENTRY:ShimMainCRTStartup"])
+    else:
+        if "-msse4.2" in env_cpp_check["CCFLAGS"]:
+            env_cpp_check["CCFLAGS"].remove("-msse4.2")
+        env.Append(LINKFLAGS=["-Wl,--entry=ShimMainCRTStartup"])
+
 
 def arrange_program_clean(prog):
     """
@@ -49,6 +64,7 @@ def arrange_program_clean(prog):
         Clean(prog, extra_files_to_clean)
 
 
+env["BUILDERS"]["RES"].emitter = redirect_emitter
 res_file = "godot_res.rc"
 res_target = "godot_res" + env["OBJSUFFIX"]
 res_obj = env.RES(res_target, res_file)
@@ -56,6 +72,9 @@ env.Depends(res_obj, "#core/version_generated.gen.h")
 
 env.add_source_files(sources, common_win)
 sources += res_obj
+
+if env["accesskit"] and not env.msvc:
+    sources += env.DEFLIB("uiautomationcore")
 
 prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
 arrange_program_clean(prog)
@@ -65,7 +84,6 @@ if env.msvc:
 
 # Build console wrapper app.
 if env["windows_subsystem"] == "gui":
-    env_wrap = env.Clone()
     res_wrap_file = "godot_res_wrap.rc"
     res_wrap_target = "godot_res_wrap" + env["OBJSUFFIX"]
     res_wrap_obj = env_wrap.RES(res_wrap_target, res_wrap_file)
@@ -109,7 +127,7 @@ if env["d3d12"]:
         # Whether these are loaded from arch-specific directory or not has to be known at build time.
         target_dir = arch_bin_dir if env["agility_sdk_multiarch"] else "#bin"
         for dll in agility_dlls:
-            env.Command(
+            env.CommandNoCache(
                 target_dir + "/" + dll,
                 env["agility_sdk_path"] + "/build/native/bin/" + agility_arch_subdir + "/" + dll,
                 Copy("$TARGET", "$SOURCE"),
@@ -118,13 +136,13 @@ if env["d3d12"]:
     # PIX
     if env["use_pix"]:
         pix_dll = "WinPixEventRuntime.dll"
-        env.Command(
+        env.CommandNoCache(
             "#bin/" + pix_dll,
             env["pix_path"] + "/bin/" + dxc_arch_subdir + "/" + pix_dll,
             Copy("$TARGET", "$SOURCE"),
         )
 
-if not os.getenv("VCINSTALLDIR"):
+if not env.msvc:
     if env["debug_symbols"]:
         env.AddPostAction(prog, env.Run(platform_windows_builders.make_debug_mingw))
         if env["windows_subsystem"] == "gui":

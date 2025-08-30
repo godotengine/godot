@@ -60,8 +60,9 @@ public:
     bool endComposite(RenderCompositor* cmp) override;
     void clearCompositors();
 
-    bool prepare(RenderEffect* effect) override;
-    bool effect(RenderCompositor* cmp, const RenderEffect* effect, bool direct) override;
+    void prepare(RenderEffect* effect, const Matrix& transform) override;
+    bool region(RenderEffect* effect) override;
+    bool render(RenderCompositor* cmp, const RenderEffect* effect, bool direct) override;
 
     static SwRenderer* gen();
     static bool init(uint32_t threads);

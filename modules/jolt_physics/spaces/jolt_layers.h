@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JOLT_LAYERS_H
-#define JOLT_LAYERS_H
+#pragma once
 
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
@@ -38,8 +37,6 @@
 
 #include "Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h"
 #include "Jolt/Physics/Collision/ObjectLayer.h"
-
-#include <stdint.h>
 
 class JoltLayers final
 		: public JPH::BroadPhaseLayerInterface,
@@ -68,5 +65,3 @@ public:
 	JPH::ObjectLayer to_object_layer(JPH::BroadPhaseLayer p_broad_phase_layer, uint32_t p_collision_layer, uint32_t p_collision_mask);
 	void from_object_layer(JPH::ObjectLayer p_encoded_layer, JPH::BroadPhaseLayer &r_broad_phase_layer, uint32_t &r_collision_layer, uint32_t &r_collision_mask) const;
 };
-
-#endif // JOLT_LAYERS_H

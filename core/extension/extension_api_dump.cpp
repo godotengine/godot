@@ -39,7 +39,7 @@
 #include "core/version.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_help.h"
+#include "editor/doc/editor_help.h"
 
 static String get_builtin_or_variant_type_name(const Variant::Type p_type) {
 	if (p_type == Variant::NIL) {
@@ -96,8 +96,7 @@ static String fix_doc_description(const String &p_bbcode) {
 	// Based on what EditorHelp does.
 
 	return p_bbcode.dedent()
-			.replace("\t", "")
-			.replace("\r", "")
+			.remove_chars("\t\r")
 			.strip_edges();
 }
 
@@ -107,16 +106,22 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 	{
 		//header
 		Dictionary header;
-		header["version_major"] = VERSION_MAJOR;
-		header["version_minor"] = VERSION_MINOR;
-#if VERSION_PATCH
-		header["version_patch"] = VERSION_PATCH;
+		header["version_major"] = GODOT_VERSION_MAJOR;
+		header["version_minor"] = GODOT_VERSION_MINOR;
+#if GODOT_VERSION_PATCH
+		header["version_patch"] = GODOT_VERSION_PATCH;
 #else
 		header["version_patch"] = 0;
 #endif
-		header["version_status"] = VERSION_STATUS;
-		header["version_build"] = VERSION_BUILD;
-		header["version_full_name"] = VERSION_FULL_NAME;
+		header["version_status"] = GODOT_VERSION_STATUS;
+		header["version_build"] = GODOT_VERSION_BUILD;
+		header["version_full_name"] = GODOT_VERSION_FULL_NAME;
+
+#if REAL_T_IS_DOUBLE
+		header["precision"] = "double";
+#else
+		header["precision"] = "single";
+#endif
 
 		api_dump["header"] = header;
 	}
@@ -278,43 +283,43 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 #define REAL_MEMBER_OFFSET(type, member) \
 	{                                    \
 		type,                            \
-				member,                  \
-				"float",                 \
-				sizeof(float),           \
-				"float",                 \
-				sizeof(float),           \
-				"double",                \
-				sizeof(double),          \
-				"double",                \
-				sizeof(double),          \
+		member,                          \
+		"float",                         \
+		sizeof(float),                   \
+		"float",                         \
+		sizeof(float),                   \
+		"double",                        \
+		sizeof(double),                  \
+		"double",                        \
+		sizeof(double),                  \
 	}
 
 #define INT32_MEMBER_OFFSET(type, member) \
 	{                                     \
 		type,                             \
-				member,                   \
-				"int32",                  \
-				sizeof(int32_t),          \
-				"int32",                  \
-				sizeof(int32_t),          \
-				"int32",                  \
-				sizeof(int32_t),          \
-				"int32",                  \
-				sizeof(int32_t),          \
+		member,                           \
+		"int32",                          \
+		sizeof(int32_t),                  \
+		"int32",                          \
+		sizeof(int32_t),                  \
+		"int32",                          \
+		sizeof(int32_t),                  \
+		"int32",                          \
+		sizeof(int32_t),                  \
 	}
 
 #define INT32_BASED_BUILTIN_MEMBER_OFFSET(type, member, member_type, member_elems) \
 	{                                                                              \
 		type,                                                                      \
-				member,                                                            \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
+		member,                                                                    \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
 	}
 
 #define REAL_BASED_BUILTIN_MEMBER_OFFSET(type, member, member_type, member_elems) \
@@ -970,14 +975,14 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					Array values;
 					List<StringName> enum_constant_list;
 					ClassDB::get_enum_constants(class_name, F, &enum_constant_list, true);
-					for (List<StringName>::Element *G = enum_constant_list.front(); G; G = G->next()) {
+					for (const StringName &enum_constant : enum_constant_list) {
 						Dictionary d3;
-						d3["name"] = String(G->get());
-						d3["value"] = ClassDB::get_integer_constant(class_name, G->get());
+						d3["name"] = String(enum_constant);
+						d3["value"] = ClassDB::get_integer_constant(class_name, enum_constant);
 
 						if (p_include_docs) {
 							for (const DocData::ConstantDoc &constant_doc : class_doc->constants) {
-								if (constant_doc.name == G->get()) {
+								if (constant_doc.name == enum_constant) {
 									d3["description"] = fix_doc_description(constant_doc.description);
 									break;
 								}
@@ -1048,9 +1053,8 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						}
 
 						Array arguments;
-						int i = 0;
-						for (List<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++i) {
-							const PropertyInfo &pinfo = *itr;
+						for (int64_t i = 0; i < mi.arguments.size(); ++i) {
+							const PropertyInfo &pinfo = mi.arguments[i];
 							Dictionary d3;
 
 							d3["name"] = pinfo.name;
@@ -1175,11 +1179,10 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 
 					Array arguments;
 
-					int i = 0;
-					for (List<PropertyInfo>::ConstIterator itr = F.arguments.begin(); itr != F.arguments.end(); ++itr, ++i) {
+					for (int64_t i = 0; i < F.arguments.size(); ++i) {
 						Dictionary d3;
-						d3["name"] = itr->name;
-						d3["type"] = get_property_info_type_name(*itr);
+						d3["name"] = F.arguments[i].name;
+						d3["type"] = get_property_info_type_name(F.arguments[i]);
 						if (F.get_argument_meta(i) > 0) {
 							d3["meta"] = get_type_meta_name((GodotTypeInfo::Metadata)F.get_argument_meta(i));
 						}
@@ -1340,16 +1343,16 @@ static bool compare_value(const String &p_path, const String &p_field, const Var
 	} else if (p_old_value.get_type() == Variant::DICTIONARY && p_new_value.get_type() == Variant::DICTIONARY) {
 		Dictionary old_dict = p_old_value;
 		Dictionary new_dict = p_new_value;
-		for (const Variant &key : old_dict.keys()) {
-			if (!new_dict.has(key)) {
+		for (const KeyValue<Variant, Variant> &kv : old_dict) {
+			if (!new_dict.has(kv.key)) {
 				failed = true;
-				print_error(vformat("Validate extension JSON: Error: Field '%s': %s was removed.", p_path, key));
+				print_error(vformat("Validate extension JSON: Error: Field '%s': %s was removed.", p_path, kv.key));
 				continue;
 			}
-			if (p_allow_name_change && key == "name") {
+			if (p_allow_name_change && kv.key == "name") {
 				continue;
 			}
-			if (!compare_value(path, key, old_dict[key], new_dict[key], p_allow_name_change)) {
+			if (!compare_value(path, kv.key, kv.value, new_dict[kv.key], p_allow_name_change)) {
 				failed = true;
 			}
 		}
@@ -1420,25 +1423,25 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 			bool optional = field.begins_with("*");
 			if (optional) {
 				// This is an optional field, but if exists it has to exist in both.
-				field = field.substr(1, field.length());
+				field = field.substr(1);
 			}
 
 			bool added = field.begins_with("+");
 			if (added) {
 				// Meaning this field must either exist or contents may not exist.
-				field = field.substr(1, field.length());
+				field = field.substr(1);
 			}
 
 			bool enum_values = field.begins_with("$");
 			if (enum_values) {
 				// Meaning this field is a list of enum values.
-				field = field.substr(1, field.length());
+				field = field.substr(1);
 			}
 
 			bool allow_name_change = field.begins_with("@");
 			if (allow_name_change) {
 				// Meaning that when structurally comparing the old and new value, the dictionary entry 'name' may change.
-				field = field.substr(1, field.length());
+				field = field.substr(1);
 			}
 
 			Variant old_value;
@@ -1598,8 +1601,8 @@ Error GDExtensionAPIDump::validate_extension_json_file(const String &p_path) {
 		int major = header["version_major"];
 		int minor = header["version_minor"];
 
-		ERR_FAIL_COND_V_MSG(major != VERSION_MAJOR, ERR_INVALID_DATA, vformat("JSON API dump is for a different engine version (%d) than this one (%d)", major, VERSION_MAJOR));
-		ERR_FAIL_COND_V_MSG(minor > VERSION_MINOR, ERR_INVALID_DATA, vformat("JSON API dump is for a newer version of the engine: %d.%d", major, minor));
+		ERR_FAIL_COND_V_MSG(major != GODOT_VERSION_MAJOR, ERR_INVALID_DATA, vformat("JSON API dump is for a different engine version (%d) than this one (%d)", major, GODOT_VERSION_MAJOR));
+		ERR_FAIL_COND_V_MSG(minor > GODOT_VERSION_MINOR, ERR_INVALID_DATA, vformat("JSON API dump is for a newer version of the engine: %d.%d", major, minor));
 	}
 
 	bool failed = false;

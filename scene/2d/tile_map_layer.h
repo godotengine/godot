@@ -28,12 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TILE_MAP_LAYER_H
-#define TILE_MAP_LAYER_H
+#pragma once
 
 #include "scene/resources/2d/tile_set.h"
 
+#ifndef NAVIGATION_2D_DISABLED
 class NavigationMeshSourceGeometryData2D;
+#endif // NAVIGATION_2D_DISABLED
 class TileSetAtlasSource;
 class TileMap;
 
@@ -98,12 +99,13 @@ public:
 class DebugQuadrant;
 #endif // DEBUG_ENABLED
 class RenderingQuadrant;
+class PhysicsQuadrant;
 
 struct CellData {
 	Vector2i coords;
 	TileMapCell cell;
 
-	// Debug.
+	// Debug
 	SelfList<CellData> debug_quadrant_list_element;
 
 	// Rendering.
@@ -111,8 +113,11 @@ struct CellData {
 	SelfList<CellData> rendering_quadrant_list_element;
 	LocalVector<LocalVector<RID>> occluders;
 
+#ifndef PHYSICS_2D_DISABLED
 	// Physics.
-	LocalVector<RID> bodies;
+	Ref<PhysicsQuadrant> physics_quadrant;
+	SelfList<CellData> physics_quadrant_list_element;
+#endif // PHYSICS_2D_DISABLED
 
 	// Navigation.
 	LocalVector<RID> navigation_regions;
@@ -135,7 +140,6 @@ struct CellData {
 		coords = p_other.coords;
 		cell = p_other.cell;
 		occluders = p_other.occluders;
-		bodies = p_other.bodies;
 		navigation_regions = p_other.navigation_regions;
 		scene = p_other.scene;
 		runtime_tile_data_cache = p_other.runtime_tile_data_cache;
@@ -144,11 +148,13 @@ struct CellData {
 	CellData(const CellData &p_other) :
 			debug_quadrant_list_element(this),
 			rendering_quadrant_list_element(this),
+#ifndef PHYSICS_2D_DISABLED
+			physics_quadrant_list_element(this),
+#endif // PHYSICS_2D_DISABLED
 			dirty_list_element(this) {
 		coords = p_other.coords;
 		cell = p_other.cell;
 		occluders = p_other.occluders;
-		bodies = p_other.bodies;
 		navigation_regions = p_other.navigation_regions;
 		scene = p_other.scene;
 		runtime_tile_data_cache = p_other.runtime_tile_data_cache;
@@ -157,6 +163,9 @@ struct CellData {
 	CellData() :
 			debug_quadrant_list_element(this),
 			rendering_quadrant_list_element(this),
+#ifndef PHYSICS_2D_DISABLED
+			physics_quadrant_list_element(this),
+#endif // PHYSICS_2D_DISABLED
 			dirty_list_element(this) {
 	}
 };
@@ -176,6 +185,11 @@ public:
 	Vector2i quadrant_coords;
 	SelfList<CellData>::List cells;
 	RID canvas_item;
+
+	RID physics_mesh;
+
+	// Used to deleted unused quadrants.
+	bool drawn_to = false;
 
 	SelfList<DebugQuadrant> dirty_quadrant_list_element;
 
@@ -220,6 +234,100 @@ public:
 	}
 };
 
+#ifndef PHYSICS_2D_DISABLED
+class PhysicsQuadrant : public RefCounted {
+	GDCLASS(PhysicsQuadrant, RefCounted);
+
+public:
+	struct PhysicsBodyKey {
+		int physics_layer = 0;
+		Vector2 linear_velocity;
+		real_t angular_velocity = 0.0;
+
+		bool one_way_collision = false;
+		real_t one_way_collision_margin = 0.0;
+
+		int64_t y_origin = 0; // This is only used if one_way_collision is on, to avoid merging polygons vertically in that case.
+
+		bool operator<(const PhysicsBodyKey &p_other) const {
+			if (physics_layer == p_other.physics_layer) {
+				if (linear_velocity == p_other.linear_velocity) {
+					if (angular_velocity == p_other.angular_velocity) {
+						if (one_way_collision == p_other.one_way_collision) {
+							if (one_way_collision && y_origin != p_other.y_origin) {
+								return y_origin < p_other.y_origin;
+							}
+							return one_way_collision_margin < p_other.one_way_collision_margin;
+						}
+						return one_way_collision < p_other.one_way_collision;
+					}
+					return angular_velocity < p_other.angular_velocity;
+				}
+				return linear_velocity < p_other.linear_velocity;
+			}
+			return physics_layer < p_other.physics_layer;
+		}
+
+		bool operator!=(const PhysicsBodyKey &p_other) const {
+			return !this->operator==(p_other);
+		}
+		bool operator==(const PhysicsBodyKey &p_other) const {
+			return physics_layer == p_other.physics_layer &&
+					linear_velocity == p_other.linear_velocity &&
+					angular_velocity == p_other.angular_velocity &&
+					one_way_collision == p_other.one_way_collision &&
+					one_way_collision_margin == p_other.one_way_collision_margin &&
+					(!one_way_collision || y_origin == p_other.y_origin);
+		}
+	};
+
+	struct PhysicsBodyKeyHasher {
+		static uint32_t hash(const PhysicsBodyKey &p_hash) {
+			uint32_t h = hash_murmur3_one_32(p_hash.physics_layer);
+			h = hash_murmur3_one_real(p_hash.linear_velocity.x);
+			h = hash_murmur3_one_real(p_hash.linear_velocity.y, h);
+			h = hash_murmur3_one_real(p_hash.angular_velocity, h);
+			if (p_hash.one_way_collision) {
+				h = hash_murmur3_one_32(p_hash.y_origin, h);
+			}
+			return h;
+		}
+	};
+
+	struct PhysicsBodyValue {
+		RID body;
+		Vector<Vector<Vector2>> polygons;
+	};
+
+	struct CoordsWorldComparator {
+		_ALWAYS_INLINE_ bool operator()(const Vector2 &p_a, const Vector2 &p_b) const {
+			// We sort the cells by their local coords, as it is needed by rendering.
+			if (p_a.y == p_b.y) {
+				return p_a.x > p_b.x;
+			} else {
+				return p_a.y < p_b.y;
+			}
+		}
+	};
+
+	Vector2i quadrant_coords;
+	SelfList<CellData>::List cells;
+
+	HashMap<PhysicsBodyKey, PhysicsBodyValue, PhysicsBodyKeyHasher> bodies;
+	LocalVector<Ref<ConvexPolygonShape2D>> shapes;
+
+	SelfList<PhysicsQuadrant> dirty_quadrant_list_element;
+
+	PhysicsQuadrant() :
+			dirty_quadrant_list_element(this) {
+	}
+
+	~PhysicsQuadrant() {
+		cells.clear();
+	}
+};
+#endif // PHYSICS_2D_DISABLED
+
 class TileMapLayer : public Node2D {
 	GDCLASS(TileMapLayer, Node2D);
 
@@ -254,6 +362,7 @@ public:
 		DIRTY_FLAGS_LAYER_RENDERING_QUADRANT_SIZE,
 		DIRTY_FLAGS_LAYER_COLLISION_ENABLED,
 		DIRTY_FLAGS_LAYER_USE_KINEMATIC_BODIES,
+		DIRTY_FLAGS_LAYER_PHYSICS_QUADRANT_SIZE,
 		DIRTY_FLAGS_LAYER_COLLISION_VISIBILITY_MODE,
 		DIRTY_FLAGS_LAYER_OCCLUSION_ENABLED,
 		DIRTY_FLAGS_LAYER_NAVIGATION_ENABLED,
@@ -288,6 +397,7 @@ private:
 
 	bool collision_enabled = true;
 	bool use_kinematic_bodies = false;
+	int physics_quadrant_size = 16;
 	DebugVisibilityMode collision_visibility_mode = DEBUG_VISIBILITY_MODE_DEFAULT;
 
 	bool occlusion_enabled = true;
@@ -324,13 +434,16 @@ private:
 	void _clear_runtime_update_tile_data_for_cell(CellData &r_cell_data);
 	void _update_cells_callback(bool p_force_cleanup);
 
+	// Coords to quadrant coords
+	Vector2i _coords_to_quadrant_coords(const Vector2i &p_coords, const int p_quadrant_size) const;
+
 	// Per-system methods.
 #ifdef DEBUG_ENABLED
 	HashMap<Vector2i, Ref<DebugQuadrant>> debug_quadrant_map;
-	Vector2i _coords_to_debug_quadrant_coords(const Vector2i &p_coords) const;
 	bool _debug_was_cleaned_up = false;
 	void _debug_update(bool p_force_cleanup);
-	void _debug_quadrants_update_cell(CellData &r_cell_data, SelfList<DebugQuadrant>::List &r_dirty_debug_quadrant_list);
+	void _debug_quadrants_update_cell(CellData &r_cell_data);
+	void _get_debug_quadrant_for_cell(const Vector2i &p_coords);
 #endif // DEBUG_ENABLED
 
 	HashMap<Vector2i, Ref<RenderingQuadrant>> rendering_quadrant_map;
@@ -344,16 +457,21 @@ private:
 	void _rendering_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data);
 #endif // DEBUG_ENABLED
 
+#ifndef PHYSICS_2D_DISABLED
+	HashMap<Vector2i, Ref<PhysicsQuadrant>> physics_quadrant_map;
 	HashMap<RID, Vector2i> bodies_coords; // Mapping for RID to coords.
 	bool _physics_was_cleaned_up = false;
 	void _physics_update(bool p_force_cleanup);
 	void _physics_notification(int p_what);
+	void _physics_quadrants_update_cell(CellData &r_cell_data, SelfList<PhysicsQuadrant>::List &r_dirty_physics_quadrant_list);
 	void _physics_clear_cell(CellData &r_cell_data);
 	void _physics_update_cell(CellData &r_cell_data);
 #ifdef DEBUG_ENABLED
-	void _physics_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data);
+	void _physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQuadrant &r_debug_quadrant);
 #endif // DEBUG_ENABLED
+#endif // PHYSICS_2D_DISABLED
 
+#ifndef NAVIGATION_2D_DISABLED
 	bool _navigation_was_cleaned_up = false;
 	void _navigation_update(bool p_force_cleanup);
 	void _navigation_notification(int p_what);
@@ -362,6 +480,7 @@ private:
 #ifdef DEBUG_ENABLED
 	void _navigation_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data);
 #endif // DEBUG_ENABLED
+#endif // NAVIGATION_2D_DISABLED
 
 	bool _scenes_was_cleaned_up = false;
 	void _scenes_update(bool p_force_cleanup);
@@ -423,7 +542,8 @@ public:
 	// Not exposed to users.
 	TileMapCell get_cell(const Vector2i &p_coords) const;
 
-	static void draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0), const TileData *p_tile_data_override = nullptr, real_t p_normalized_animation_offset = 0.0);
+	static void compute_transformed_tile_dest_rect(Rect2 &r_dest_rect, bool &r_transpose, const Vector2 &p_position, const Vector2 &p_dest_rect_size, const TileData *p_tile_data, int p_alternative_tile);
+	static void draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, const TileData *p_tile_data_override = nullptr, real_t p_normalized_animation_offset = 0.0);
 
 	////////////// Exposed functions //////////////
 
@@ -455,9 +575,11 @@ public:
 	void set_cells_terrain_connect(TypedArray<Vector2i> p_cells, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true);
 	void set_cells_terrain_path(TypedArray<Vector2i> p_path, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true);
 
+#ifndef PHYSICS_2D_DISABLED
 	// --- Physics helpers ---
 	bool has_body_rid(RID p_physics_body) const;
 	Vector2i get_coords_for_body_rid(RID p_physics_body) const; // For finding tiles from collision.
+#endif // PHYSICS_2D_DISABLED
 
 	// --- Runtime ---
 	void update_internals();
@@ -502,6 +624,8 @@ public:
 	bool is_using_kinematic_bodies() const;
 	void set_collision_visibility_mode(DebugVisibilityMode p_show_collision);
 	DebugVisibilityMode get_collision_visibility_mode() const;
+	void set_physics_quadrant_size(int p_size);
+	int get_physics_quadrant_size() const;
 
 	void set_occlusion_enabled(bool p_enabled);
 	bool is_occlusion_enabled() const;
@@ -514,17 +638,19 @@ public:
 	DebugVisibilityMode get_navigation_visibility_mode() const;
 
 private:
+#ifndef NAVIGATION_2D_DISABLED
 	static Callable _navmesh_source_geometry_parsing_callback;
 	static RID _navmesh_source_geometry_parser;
+#endif // NAVIGATION_2D_DISABLED
 
 public:
+#ifndef NAVIGATION_2D_DISABLED
 	static void navmesh_parse_init();
 	static void navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
+#endif // NAVIGATION_2D_DISABLED
 
 	TileMapLayer();
 	~TileMapLayer();
 };
 
 VARIANT_ENUM_CAST(TileMapLayer::DebugVisibilityMode);
-
-#endif // TILE_MAP_LAYER_H
