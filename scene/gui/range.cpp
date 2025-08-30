@@ -44,7 +44,7 @@ double Range::_snapped_r128(double p_value, double p_step) {
 	// R128 is fixed-precision with 64 bits after the decimal point, but double already uses 53 of those,
 	// so a step size finer than 2^-11 will lose precision, and in practice even 1e-3 can be problematic.
 	// By rescaling the value and step, we can shift precision into the higher bits (effectively turning R128 into a makeshift float).
-	const int decimals = 14 - Math::floor(std::log10(MAX(Math::abs(p_value), p_step)));
+	const int decimals = MIN(18, 14 - Math::floor(std::log10(MAX(Math::abs(p_value), p_step))));
 	const double scale = Math::pow(10.0, decimals);
 	p_value *= scale;
 	p_step *= scale;
