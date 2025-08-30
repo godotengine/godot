@@ -159,6 +159,7 @@ class InputEventKey : public InputEventWithModifiers {
 	Key key_label = Key::NONE;
 	uint32_t unicode = 0; ///unicode
 	KeyLocation location = KeyLocation::UNSPECIFIED;
+	int64_t keyboard_id = 0;
 
 	bool echo = false; /// true if this is an echo key
 
@@ -176,6 +177,9 @@ public:
 
 	void set_key_label(Key p_key_label);
 	Key get_key_label() const;
+
+	void set_keyboard_id(int64_t p_id);
+	int64_t get_keyboard_id() const;
 
 	void set_unicode(char32_t p_unicode);
 	char32_t get_unicode() const;

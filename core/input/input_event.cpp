@@ -360,6 +360,15 @@ Key InputEventKey::get_physical_keycode() const {
 	return physical_keycode;
 }
 
+void InputEventKey::set_keyboard_id(int64_t p_id) {
+	keyboard_id = p_id;
+	emit_changed();
+}
+
+int64_t InputEventKey::get_keyboard_id() const {
+	return keyboard_id;
+}
+
 void InputEventKey::set_unicode(char32_t p_unicode) {
 	unicode = p_unicode;
 	emit_changed();
@@ -633,6 +642,9 @@ void InputEventKey::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_key_label", "key_label"), &InputEventKey::set_key_label);
 	ClassDB::bind_method(D_METHOD("get_key_label"), &InputEventKey::get_key_label);
 
+	ClassDB::bind_method(D_METHOD("set_keyboard_id", "id"), &InputEventKey::set_keyboard_id);
+	ClassDB::bind_method(D_METHOD("get_keyboard_id"), &InputEventKey::get_keyboard_id);
+
 	ClassDB::bind_method(D_METHOD("set_unicode", "unicode"), &InputEventKey::set_unicode);
 	ClassDB::bind_method(D_METHOD("get_unicode"), &InputEventKey::get_unicode);
 
@@ -654,6 +666,7 @@ void InputEventKey::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "keycode"), "set_keycode", "get_keycode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "physical_keycode"), "set_physical_keycode", "get_physical_keycode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "key_label"), "set_key_label", "get_key_label");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "keyboard_id"), "set_keyboard_id", "get_keyboard_id");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "unicode"), "set_unicode", "get_unicode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "location", PROPERTY_HINT_ENUM, "Unspecified,Left,Right"), "set_location", "get_location");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "echo"), "set_echo", "is_echo");
