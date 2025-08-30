@@ -91,6 +91,10 @@ public:
 
 	float get_blend_point_position(int p_point) const;
 	Ref<AnimationRootNode> get_blend_point_node(int p_point) const;
+	void set_blend_point_name(int p_point, const String &p_name);
+	String get_blend_point_name(int p_point) const;
+	String get_blend_point_stored_name(int p_point) const;
+	int find_blend_point_by_name(const String &p_name) const;
 	void remove_blend_point(int p_point);
 	int get_blend_point_count() const;
 

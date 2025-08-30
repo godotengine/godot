@@ -72,6 +72,7 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	SpinBox *min_y_value = nullptr;
 
 	HBoxContainer *edit_hb = nullptr;
+	LineEdit *point_name_edit = nullptr;
 	SpinBox *edit_x = nullptr;
 	SpinBox *edit_y = nullptr;
 	Button *open_editor = nullptr;
@@ -115,9 +116,11 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 
 	void _tool_switch(int p_tool);
 	void _update_edited_point_pos();
+	void _update_edited_point_name();
 	void _update_tool_erase();
 	void _erase_selected();
 	void _edit_point_pos(double);
+	void _edit_point_name(const String &p_name);
 	void _open_editor();
 
 	void _auto_triangles_toggled();
@@ -142,6 +145,7 @@ protected:
 
 public:
 	static AnimationNodeBlendSpace2DEditor *get_singleton() { return singleton; }
+	void refresh_editor() { _update_space(); }
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
 	virtual void edit(const Ref<AnimationNode> &p_node) override;
 	AnimationNodeBlendSpace2DEditor();
