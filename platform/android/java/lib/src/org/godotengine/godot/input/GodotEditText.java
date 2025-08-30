@@ -221,7 +221,15 @@ public class GodotEditText extends EditText {
 	public boolean onKeyDown(final int keyCode, final KeyEvent keyEvent) {
 		/* Let SurfaceView get focus if back key is input. */
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			// Clear focus from EditText immediately
+			clearFocus();
+
+			// Transfer focus to render view
 			mRenderView.getView().requestFocus();
+
+			// Forward this back key event to the render view's input handler
+			// since we're no longer the focused view
+			return mRenderView.getInputHandler().onKeyDown(keyCode, keyEvent);
 		}
 
 		// When a hardware keyboard is connected, all key events come through so we can route them
@@ -245,6 +253,11 @@ public class GodotEditText extends EditText {
 		// directly to the engine.
 		// This is not the case when using a soft keyboard, requiring extra processing from this class.
 		if (hasHardwareKeyboard()) {
+			return mRenderView.getInputHandler().onKeyUp(keyCode, keyEvent);
+		}
+
+		// If this is a BACK key and we don't have focus anymore, forward to render view
+		if (keyCode == KeyEvent.KEYCODE_BACK && !hasFocus()) {
 			return mRenderView.getInputHandler().onKeyUp(keyCode, keyEvent);
 		}
 
