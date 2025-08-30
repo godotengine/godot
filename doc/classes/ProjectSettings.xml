@@ -3402,7 +3402,7 @@
 			[/codeblock]
 		</member>
 		<member name="threading/worker_pool/low_priority_thread_ratio" type="float" setter="" getter="" default="0.3">
-			The ratio of [WorkerThreadPool]'s threads that will be available to low-priority tasks. For example, if 10 threads are available and this value is set to [code]0.3[/code], no more than 3 low-priority tasks will be executed simultaneously. The actual value won't exceed [member threading/worker_pool/max_threads] minus one, but at least one worker thread will be avaliable to low-priority tasks.
+			The ratio of [WorkerThreadPool]'s threads that will be available to low-priority tasks. For example, if 10 threads are available and this value is set to [code]0.3[/code], no more than 3 low-priority tasks will be executed simultaneously. The actual value won't exceed [member threading/worker_pool/max_threads] minus one, but at least one worker thread will be available to low-priority tasks.
 		</member>
 		<member name="threading/worker_pool/max_threads" type="int" setter="" getter="" default="-1">
 			Maximum number of threads to be used by [WorkerThreadPool]. [code]-1[/code] means auto-detect, equal to the number of [i]logical[/i] CPU cores available (see [method OS.get_processor_count]).
