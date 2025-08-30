@@ -109,7 +109,9 @@ void TextEditor::set_edited_resource(const Ref<Resource> &p_res) {
 
 	Ref<JSON> json_file = edited_res;
 	if (json_file.is_valid()) {
+		json_file->reload_from_file();
 		code_editor->get_text_editor()->set_text(json_file->get_parsed_text());
+		json_file->connect_changed(callable_mp(this, &TextEditor::_update_text));
 	}
 
 	code_editor->get_text_editor()->clear_undo_history();
@@ -186,6 +188,14 @@ void TextEditor::reload_text() {
 
 	code_editor->update_line_and_column();
 	_validate_script();
+}
+
+void TextEditor::_update_text() {
+	Ref<JSON> json = edited_res;
+	if (json.is_valid()) {
+		code_editor->get_text_editor()->set_text(json->get_parsed_text());
+		_validate_script();
+	}
 }
 
 void TextEditor::_validate_script() {
