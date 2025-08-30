@@ -77,6 +77,7 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	SpinBox *edit_y = nullptr;
 	Button *open_editor = nullptr;
 	VSeparator *open_editor_sep = nullptr;
+	SpinBox *index_edit = nullptr;
 
 	int selected_point;
 	int selected_triangle;
@@ -123,6 +124,7 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	void _erase_selected();
 	void _edit_point_pos(double);
 	void _edit_point_name(const String &p_name);
+	void _edit_point_index(double);
 	void _open_editor();
 
 	void _auto_triangles_toggled();

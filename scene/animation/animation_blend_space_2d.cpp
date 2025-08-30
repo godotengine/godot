@@ -216,6 +216,35 @@ int AnimationNodeBlendSpace2D::get_blend_point_count() const {
 	return blend_points_used;
 }
 
+void AnimationNodeBlendSpace2D::reorder_blend_point(int p_from_index, int p_to_index) {
+	ERR_FAIL_INDEX(p_from_index, blend_points_used);
+	ERR_FAIL_INDEX(p_to_index, blend_points_used);
+
+	if (p_from_index == p_to_index) {
+		return;
+	}
+
+	// Update triangle indices for swap operation
+	for (int i = 0; i < triangles.size(); i++) {
+		for (int j = 0; j < 3; j++) {
+			int point_ref = triangles[i].points[j];
+
+			if (point_ref == p_from_index) {
+				triangles.write[i].points[j] = p_to_index;
+			} else if (point_ref == p_to_index) {
+				triangles.write[i].points[j] = p_from_index;
+			}
+		}
+	}
+
+	BlendPoint temp = blend_points[p_from_index];
+
+	blend_points[p_from_index] = blend_points[p_to_index];
+	blend_points[p_to_index] = temp;
+
+	emit_signal(SNAME("tree_changed"));
+}
+
 bool AnimationNodeBlendSpace2D::has_triangle(int p_x, int p_y, int p_z) const {
 	ERR_FAIL_INDEX_V(p_x, blend_points_used, false);
 	ERR_FAIL_INDEX_V(p_y, blend_points_used, false);
@@ -722,6 +751,7 @@ void AnimationNodeBlendSpace2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_blend_point_by_name", "name"), &AnimationNodeBlendSpace2D::find_blend_point_by_name);
 	ClassDB::bind_method(D_METHOD("remove_blend_point", "point"), &AnimationNodeBlendSpace2D::remove_blend_point);
 	ClassDB::bind_method(D_METHOD("get_blend_point_count"), &AnimationNodeBlendSpace2D::get_blend_point_count);
+	ClassDB::bind_method(D_METHOD("reorder_blend_point", "from_index", "to_index"), &AnimationNodeBlendSpace2D::reorder_blend_point);
 
 	ClassDB::bind_method(D_METHOD("add_triangle", "x", "y", "z", "at_index"), &AnimationNodeBlendSpace2D::add_triangle, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_triangle_point", "triangle", "point"), &AnimationNodeBlendSpace2D::get_triangle_point);

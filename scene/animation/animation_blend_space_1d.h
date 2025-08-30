@@ -98,6 +98,8 @@ public:
 	void remove_blend_point(int p_point);
 	int get_blend_point_count() const;
 
+	void reorder_blend_point(int p_from_index, int p_to_index);
+
 	void set_min_space(float p_min);
 	float get_min_space() const;
 

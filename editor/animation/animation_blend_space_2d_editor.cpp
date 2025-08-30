@@ -86,6 +86,7 @@ void AnimationNodeBlendSpace2DEditor::edit(const Ref<AnimationNode> &p_node) {
 	point_name_edit->set_editable(!read_only);
 	edit_x->set_editable(!read_only);
 	edit_y->set_editable(!read_only);
+	index_edit->set_editable(!read_only);
 	tool_triangle->set_disabled(read_only);
 	auto_triangles->set_disabled(read_only);
 	sync->set_disabled(read_only);
@@ -830,6 +831,9 @@ void AnimationNodeBlendSpace2DEditor::_update_edited_point_pos() {
 		updating = true;
 		edit_x->set_value(pos.x);
 		edit_y->set_value(pos.y);
+		index_edit->set_max(blend_space->get_blend_point_count() - 1);
+		index_edit->set_value(selected_point);
+		index_edit->set_editable(blend_space->get_blend_point_count() > 1 && !read_only);
 		updating = false;
 	}
 }
@@ -860,6 +864,32 @@ void AnimationNodeBlendSpace2DEditor::_edit_point_pos(double) {
 	undo_redo->add_do_method(this, "_update_edited_point_pos");
 	undo_redo->add_undo_method(this, "_update_edited_point_pos");
 	undo_redo->commit_action();
+	updating = false;
+
+	blend_space_draw->queue_redraw();
+}
+
+void AnimationNodeBlendSpace2DEditor::_edit_point_index(double p_index) {
+	if (updating || selected_point < 0 || selected_point >= blend_space->get_blend_point_count()) {
+		return;
+	}
+
+	int new_index = (int)p_index;
+	if (new_index < 0 || new_index >= blend_space->get_blend_point_count() || new_index == selected_point) {
+		return;
+	}
+
+	updating = true;
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Move BlendSpace2D Node Point"));
+
+	undo_redo->add_do_method(blend_space.ptr(), "reorder_blend_point", selected_point, new_index);
+	undo_redo->add_undo_method(blend_space.ptr(), "reorder_blend_point", new_index, selected_point);
+	undo_redo->add_do_method(this, "_update_space");
+	undo_redo->add_undo_method(this, "_update_space");
+	undo_redo->commit_action();
+
+	selected_point = new_index;
 	updating = false;
 
 	blend_space_draw->queue_redraw();
@@ -1084,6 +1114,18 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	point_name_edit->set_custom_minimum_size(Size2(130 * EDSCALE, 0));
 	point_name_edit->set_placeholder("Name");
 	point_name_edit->connect(SceneStringName(text_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_edit_point_name));
+
+	edit_hb->add_child(memnew(VSeparator));
+
+	edit_hb->add_child(memnew(Label(TTR("Index"))));
+	index_edit = memnew(SpinBox);
+	edit_hb->add_child(index_edit);
+	index_edit->set_min(0);
+	index_edit->set_step(1);
+	index_edit->set_allow_greater(false);
+	index_edit->set_allow_lesser(false);
+	index_edit->set_accessibility_name(TTRC("Blend Point Index"));
+	index_edit->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_edit_point_index));
 
 	edit_hb->add_child(memnew(VSeparator));
 

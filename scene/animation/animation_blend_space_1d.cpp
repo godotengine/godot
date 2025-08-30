@@ -94,6 +94,7 @@ void AnimationNodeBlendSpace1D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_blend_point_by_name", "name"), &AnimationNodeBlendSpace1D::find_blend_point_by_name);
 	ClassDB::bind_method(D_METHOD("remove_blend_point", "point"), &AnimationNodeBlendSpace1D::remove_blend_point);
 	ClassDB::bind_method(D_METHOD("get_blend_point_count"), &AnimationNodeBlendSpace1D::get_blend_point_count);
+	ClassDB::bind_method(D_METHOD("reorder_blend_point", "from_index", "to_index"), &AnimationNodeBlendSpace1D::reorder_blend_point);
 
 	ClassDB::bind_method(D_METHOD("set_min_space", "min_space"), &AnimationNodeBlendSpace1D::set_min_space);
 	ClassDB::bind_method(D_METHOD("get_min_space"), &AnimationNodeBlendSpace1D::get_min_space);
@@ -274,6 +275,22 @@ void AnimationNodeBlendSpace1D::remove_blend_point(int p_point) {
 
 int AnimationNodeBlendSpace1D::get_blend_point_count() const {
 	return blend_points_used;
+}
+
+void AnimationNodeBlendSpace1D::reorder_blend_point(int p_from_index, int p_to_index) {
+	ERR_FAIL_INDEX(p_from_index, blend_points_used);
+	ERR_FAIL_INDEX(p_to_index, blend_points_used);
+
+	if (p_from_index == p_to_index) {
+		return;
+	}
+
+	BlendPoint temp = blend_points[p_from_index];
+
+	blend_points[p_from_index] = blend_points[p_to_index];
+	blend_points[p_to_index] = temp;
+
+	emit_signal(SNAME("tree_changed"));
 }
 
 void AnimationNodeBlendSpace1D::set_min_space(float p_min) {

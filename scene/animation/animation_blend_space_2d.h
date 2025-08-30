@@ -110,6 +110,8 @@ public:
 	void remove_blend_point(int p_point);
 	int get_blend_point_count() const;
 
+	void reorder_blend_point(int p_from_index, int p_to_index);
+
 	bool has_triangle(int p_x, int p_y, int p_z) const;
 	void add_triangle(int p_x, int p_y, int p_z, int p_at_index = -1);
 	int get_triangle_point(int p_triangle, int p_point);

@@ -73,6 +73,7 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	SpinBox *edit_value = nullptr;
 	Button *open_editor = nullptr;
 	VSeparator *open_editor_sep = nullptr;
+	SpinBox *index_edit = nullptr;
 
 	int selected_point = -1;
 
@@ -116,6 +117,7 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	void _erase_selected();
 	void _edit_point_pos(double);
 	void _edit_point_name(const String &p_name);
+	void _edit_point_index(double);
 	void _open_editor();
 
 	EditorFileDialog *open_file = nullptr;
