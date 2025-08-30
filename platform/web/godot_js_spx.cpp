@@ -287,6 +287,10 @@ void gdspx_physic_set_collision_system_type(GdBool* is_collision_by_alpha) {
 	 physicMgr->set_collision_system_type(*is_collision_by_alpha);
 }
 EMSCRIPTEN_KEEPALIVE
+void gdspx_platform_set_stretch_mode(GdBool* enable) {
+	 platformMgr->set_stretch_mode(*enable);
+}
+EMSCRIPTEN_KEEPALIVE
 void gdspx_platform_set_window_position(GdVec2* pos) {
 	 platformMgr->set_window_position(*pos);
 }

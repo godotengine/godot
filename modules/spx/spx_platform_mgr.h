@@ -45,6 +45,9 @@ public:
 	String _get_persistant_data_dir();
 	
 public:
+	//Expose as few interfaces as possible to prevent misuse.
+	void set_stretch_mode(GdBool enable);
+
 	void set_window_position(GdVec2 pos);
 	GdVec2 get_window_position();
 	void set_window_size(GdInt width, GdInt height);
@@ -62,6 +65,7 @@ public:
 	GdString get_persistant_data_dir();
 	void set_persistant_data_dir(GdString path);
 	GdBool is_in_persistant_data_dir(GdString path);
+
 };
 
 #endif // SPX_OS_MGR_H

@@ -38,6 +38,18 @@ void SpxPlatformMgr::on_awake() {
 	persistant_data_dir = ::OS::get_singleton()->get_user_data_dir();
 }
 
+void SpxPlatformMgr::set_stretch_mode(GdBool enable) {
+    if (auto root = get_root()) {
+        auto target_mode = enable
+            ? Window::ContentScaleMode::CONTENT_SCALE_MODE_CANVAS_ITEMS
+            : Window::ContentScaleMode::CONTENT_SCALE_MODE_DISABLED;
+
+        if (root->get_content_scale_mode() != target_mode) {
+            root->set_content_scale_mode(target_mode);
+        }
+    }
+}
+
 void SpxPlatformMgr::set_window_position(GdVec2 pos) {
 	DisplayServer::get_singleton()->window_set_position(Size2i(pos.x, pos.y));
 }

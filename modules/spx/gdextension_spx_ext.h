@@ -257,6 +257,7 @@ typedef void (*GDExtensionSpxPhysicCheckTouchedCameraBoundaries)(GdObj obj, GdIn
 typedef void (*GDExtensionSpxPhysicCheckTouchedCameraBoundary)(GdObj obj,GdInt board_type, GdBool* ret_value);
 typedef void (*GDExtensionSpxPhysicSetCollisionSystemType)(GdBool is_collision_by_alpha);
 // SpxPlatform
+typedef void (*GDExtensionSpxPlatformSetStretchMode)(GdBool enable);
 typedef void (*GDExtensionSpxPlatformSetWindowPosition)(GdVec2 pos);
 typedef void (*GDExtensionSpxPlatformGetWindowPosition)(GdVec2* ret_value);
 typedef void (*GDExtensionSpxPlatformSetWindowSize)(GdInt width, GdInt height);
