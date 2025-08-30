@@ -4943,6 +4943,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			const BitField<WinKeyModifierMask> &mods = _get_mods();
 			if (raw->header.dwType == RIM_TYPEKEYBOARD) {
+				KeyEvent ke;
+				ke.window_id = window_id;
+				ke.keyboard_id = raw->header.hDevice;
 				if (raw->data.keyboard.VKey == VK_SHIFT) {
 					// If multiple Shifts are held down at the same time,
 					// Windows natively only sends a KEYUP for the last one to be released.
@@ -4953,23 +4956,21 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 							// A Shift is released, but another Shift is still held
 							ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 
-							KeyEvent ke;
 							ke.shift = false;
 							ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
 							ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
 							ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
 							ke.meta = mods.has_flag(WinKeyModifierMask::META);
 							ke.uMsg = WM_KEYUP;
-							ke.window_id = window_id;
 
 							ke.wParam = VK_SHIFT;
 							// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
 							// Bit 30 -> key was previously down, bit 31 -> key is being released.
 							ke.lParam = raw->data.keyboard.MakeCode << 16 | 1 << 30 | 1 << 31;
-							key_event_buffer[key_event_pos++] = ke;
 						}
 					}
 				}
+				key_event_buffer[key_event_pos++] = ke;
 			} else if (mouse_mode == MOUSE_MODE_CAPTURED && raw->header.dwType == RIM_TYPEMOUSE) {
 				Ref<InputEventMouseMotion> mm;
 				mm.instantiate();
@@ -6110,6 +6111,7 @@ void DisplayServerWindows::_process_activate_event(WindowID p_window_id) {
 void DisplayServerWindows::_process_key_events() {
 	for (int i = 0; i < key_event_pos; i++) {
 		KeyEvent &ke = key_event_buffer[i];
+		static int64_t active_keyboard_id = 0;
 		switch (ke.uMsg) {
 			case WM_CHAR: {
 				// Extended keys should only be processed as WM_KEYDOWN message.
@@ -6158,6 +6160,7 @@ void DisplayServerWindows::_process_key_events() {
 					}
 
 					k->set_window_id(ke.window_id);
+					k->set_device(active_keyboard_id);
 					if (keycode != Key::SHIFT) {
 						k->set_shift_pressed(ke.shift);
 					}
@@ -6191,6 +6194,8 @@ void DisplayServerWindows::_process_key_events() {
 				k.instantiate();
 
 				k->set_window_id(ke.window_id);
+				active_keyboard_id = (int64_t)ke.keyboard_id; // WM_KEYDOWN should be trusted to set active keyboard ID
+				k->set_device(active_keyboard_id);
 				k->set_pressed(ke.uMsg == WM_KEYDOWN);
 
 				bool is_oem = (ke.wParam >= 0xB8) && (ke.wParam <= 0xE6);
