@@ -284,7 +284,7 @@ bool GameViewDebugger::has_capture(const String &p_capture) const {
 GameViewDebugger::GameViewDebugger() {
 	EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &GameViewDebugger::_feature_profile_changed));
 
-	ED_SHORTCUT("editor/suspend_resume_embedded_project", TTRC("Suspend/Resume Embedded Project"), Key::F9);
+	ED_SHORTCUT("editor/suspend_resume_embedded_project", TTRC("Suspend/Resume Embedded Project. Forced pause at SceneTree level. It stops all processing, but you can still interact with the app."), Key::F9);
 	ED_SHORTCUT_OVERRIDE("editor/suspend_resume_embedded_project", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);
 
 	ED_SHORTCUT("editor/next_frame_embedded_project", TTRC("Next Frame"), Key::F10);
@@ -776,7 +776,7 @@ void GameView::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			suspend_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
+			suspend_button->set_button_icon(get_editor_theme_icon(SNAME("Suspend")));
 			next_frame_button->set_button_icon(get_editor_theme_icon(SNAME("NextFrame")));
 
 			node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_button_icon(get_editor_theme_icon(SNAME("InputEventJoypadMotion")));
