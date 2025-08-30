@@ -44,26 +44,17 @@ def _helper_module(name, path):
         setattr(parent_module, child_name, child_module)
 
 
-_helper_module("gles3_builders", "gles3_builders.py")
-_helper_module("glsl_builders", "glsl_builders.py")
 _helper_module("methods", "methods.py")
 _helper_module("platform_methods", "platform_methods.py")
+_helper_module("scu_builders", "scu_builders.py")
 _helper_module("version", "version.py")
-_helper_module("core.core_builders", "core/core_builders.py")
-_helper_module("main.main_builders", "main/main_builders.py")
 _helper_module("misc.utility.color", "misc/utility/color.py")
 
 # Local
-import gles3_builders
-import glsl_builders
 import methods
 import scu_builders
 from misc.utility.color import is_stderr_color, print_error, print_info, print_warning
 from platform_methods import architecture_aliases, architectures, compatibility_platform_aliases
-
-if ARGUMENTS.get("target", "editor") == "editor":
-    _helper_module("editor.editor_builders", "editor/editor_builders.py")
-    _helper_module("editor.template_builders", "editor/template_builders.py")
 
 # Scan possible build platforms
 
@@ -140,6 +131,7 @@ env.__class__.module_check_dependencies = methods.module_check_dependencies
 
 env["x86_libtheora_opt_gcc"] = False
 env["x86_libtheora_opt_vc"] = False
+env["PYTHON_BIN"] = sys.executable
 
 # avoid issues when building with different versions of python out of the same directory
 env.SConsignFile(File("#.sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL)).abspath)
@@ -1174,19 +1166,25 @@ env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 env["OBJPREFIX"] = env["object_prefix"]
 env["SHOBJPREFIX"] = env["object_prefix"]
 
+glsl_emitter = methods.generate_dependency_emitter("glsl_builders.py")
+gles3_emitter = methods.generate_dependency_emitter("gles3_builders.py")
+
 GLSL_BUILDERS = {
     "RD_GLSL": env.Builder(
-        action=env.Run(glsl_builders.build_rd_headers),
+        action=Action("$PYTHON_BIN glsl_builders.py rd_glsl $TARGET $SOURCE", "$GENCOMSTR"),
+        emitters=glsl_emitter,
         suffix="glsl.gen.h",
         src_suffix=".glsl",
     ),
     "GLSL_HEADER": env.Builder(
-        action=env.Run(glsl_builders.build_raw_headers),
+        action=Action("$PYTHON_BIN glsl_builders.py glsl_header $TARGET $SOURCE", "$GENCOMSTR"),
+        emitters=glsl_emitter,
         suffix="glsl.gen.h",
         src_suffix=".glsl",
     ),
     "GLES3_GLSL": env.Builder(
-        action=env.Run(gles3_builders.build_gles3_headers),
+        action=Action("$PYTHON_BIN gles3_builders.py gles3_glsl $TARGET $SOURCE", "$GENCOMSTR"),
+        emitters=gles3_emitter,
         suffix="glsl.gen.h",
         src_suffix=".glsl",
     ),

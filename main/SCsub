@@ -3,8 +3,6 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
-import main_builders
-
 env.main_sources = []
 
 env_main = env.Clone()
@@ -17,23 +15,23 @@ if env["steamapi"] and env.editor_build:
 if env["tests"]:
     env_main.Append(CPPDEFINES=["TESTS_ENABLED"])
 
-env_main.CommandNoCache(
-    "#main/splash.gen.h",
-    "#main/splash.png",
-    env.Run(main_builders.make_splash),
+env_main.Command(
+    "splash.gen.h",
+    ["main_builders.py", "splash.png"],
+    env.Run("$PYTHON_BIN ${SOURCES[0]} splash $TARGET ${SOURCES[1]}"),
 )
 
 if env_main.editor_build and not env_main["no_editor_splash"]:
-    env_main.CommandNoCache(
-        "#main/splash_editor.gen.h",
-        "#main/splash_editor.png",
-        env.Run(main_builders.make_splash_editor),
+    env_main.Command(
+        "splash_editor.gen.h",
+        ["main_builders.py", "splash_editor.png"],
+        env.Run("$PYTHON_BIN ${SOURCES[0]} splash_editor $TARGET ${SOURCES[1]}"),
     )
 
-env_main.CommandNoCache(
-    "#main/app_icon.gen.h",
-    "#main/app_icon.png",
-    env.Run(main_builders.make_app_icon),
+env_main.Command(
+    "app_icon.gen.h",
+    ["main_builders.py", "app_icon.png"],
+    env.Run("$PYTHON_BIN ${SOURCES[0]} app_icon $TARGET ${SOURCES[1]}"),
 )
 
 lib = env_main.add_library("main", env.main_sources)
