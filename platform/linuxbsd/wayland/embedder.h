@@ -472,7 +472,8 @@ private:
 	// FIXME: Ensure that no duplicate entries get added (VSet?)
 	LocalVector<RegistryGlobalInfo> registry_globals;
 	uint32_t godot_embedding_compositor_name = 0;
-	uint32_t wl_seat_name = 0;
+
+	LocalVector<uint32_t> wl_seat_names;
 
 	Thread proxy_thread;
 

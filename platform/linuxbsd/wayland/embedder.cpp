@@ -523,14 +523,16 @@ void WaylandEmbedder::cleanup_socket(int p_socket) {
 				}
 
 				if (object->interface == &wl_surface_interface) {
-					WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)registry_globals[wl_seat_name].data;
-					if (global_seat_data) {
-						if (global_seat_data->pointed_surface_id == global_id) {
-							global_seat_data->pointed_surface_id = INVALID_ID;
-						}
+					for (uint32_t wl_seat_name : wl_seat_names) {
+						WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)registry_globals[wl_seat_name].data;
+						if (global_seat_data) {
+							if (global_seat_data->pointed_surface_id == global_id) {
+								global_seat_data->pointed_surface_id = INVALID_ID;
+							}
 
-						if (global_seat_data->focused_surface_id == global_id) {
-							global_seat_data->focused_surface_id = INVALID_ID;
+							if (global_seat_data->focused_surface_id == global_id) {
+								global_seat_data->focused_surface_id = INVALID_ID;
+							}
 						}
 					}
 				}
@@ -1283,15 +1285,17 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 		ERR_FAIL_NULL_V(surface_data, MessageStatus::ERROR);
 
 		if (p_opcode == WL_SURFACE_DESTROY) {
-			WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)registry_globals[wl_seat_name].data;
-			ERR_FAIL_NULL_V(global_seat_data, MessageStatus::ERROR);
+			for (uint32_t wl_seat_name : wl_seat_names) {
+				WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)registry_globals[wl_seat_name].data;
+				ERR_FAIL_NULL_V(global_seat_data, MessageStatus::ERROR);
 
-			if (global_seat_data->pointed_surface_id == global_id) {
-				global_seat_data->pointed_surface_id = INVALID_ID;
-			}
+				if (global_seat_data->pointed_surface_id == global_id) {
+					global_seat_data->pointed_surface_id = INVALID_ID;
+				}
 
-			if (global_seat_data->focused_surface_id == global_id) {
-				global_seat_data->focused_surface_id = INVALID_ID;
+				if (global_seat_data->focused_surface_id == global_id) {
+					global_seat_data->focused_surface_id = INVALID_ID;
+				}
 			}
 		} else if (p_opcode == WL_SURFACE_COMMIT) {
 			if (surface_data->role_object_handle.is_valid()) {
@@ -1740,16 +1744,17 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 			XdgSurfaceData *xdg_surf_data = (XdgSurfaceData *)toplevel_data->xdg_surface_handle.get()->data;
 			ERR_FAIL_NULL_V(xdg_surf_data, MessageStatus::ERROR);
 
-			RegistryGlobalInfo &global_seat_info = registry_globals[wl_seat_name];
-			WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)global_seat_info.data;
+			for (uint32_t wl_seat_name : wl_seat_names) {
+				RegistryGlobalInfo &global_seat_info = registry_globals[wl_seat_name];
+				WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)global_seat_info.data;
 
-			if (global_seat_data->focused_surface_id != INVALID_ID) {
-				seat_name_leave_surface(wl_seat_name, global_seat_data->focused_surface_id);
+				if (global_seat_data->focused_surface_id != INVALID_ID) {
+					seat_name_leave_surface(wl_seat_name, global_seat_data->focused_surface_id);
+				}
+				global_seat_data->focused_surface_id = xdg_surf_data->wl_surface_id;
+
+				seat_name_enter_surface(wl_seat_name, xdg_surf_data->wl_surface_id);
 			}
-
-			global_seat_data->focused_surface_id = xdg_surf_data->wl_surface_id;
-
-			seat_name_enter_surface(wl_seat_name, xdg_surf_data->wl_surface_id);
 		} else if (p_opcode == GODOT_EMBEDDED_CLIENT_EMBEDDED_WINDOW_REQUEST_CLOSE) {
 			// xdg_toplevel::close
 			send_wayland_message(eclient->socket, eclient->embedded_window_id, 1, {});
@@ -1919,7 +1924,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 						// FIXME: Cleanup.
 						DEBUG_LOG_WAYLAND_EMBED("Allocating global wl_seat data.");
 						global_info.data = memnew(WaylandSeatGlobalData);
-						wl_seat_name = registry_globals.size();
+						wl_seat_names.push_back(registry_globals.size());
 					}
 
 					if (global_info.interface == &wl_drm_interface) {
