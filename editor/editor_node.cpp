@@ -4400,6 +4400,9 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		}
 	} else {
 		EditorUndoRedoManager::get_singleton()->clear_history(editor_data.get_current_edited_scene_history_id(), false);
+
+		Dictionary state = editor_data.restore_edited_scene_state(editor_selection, &editor_history);
+		callable_mp(this, &EditorNode::_set_main_scene_state).call_deferred(state, get_edited_scene()); // Do after everything else is done setting up.
 	}
 
 	dependency_errors.clear();
