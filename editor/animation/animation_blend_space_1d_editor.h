@@ -106,6 +106,10 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	Vector2 drag_from;
 	Vector2 drag_ofs;
 
+	Vector<Rect2> text_rects;
+	int editing_point = -1;
+	LineEdit *inline_editor = nullptr;
+
 	void _add_menu_type(int p_index);
 	void _add_animation_type(int p_index);
 	String _generate_unique_blend_point_name(Ref<AnimationNodeBlendSpace1D> p_blend_space, const String &p_base_name);
@@ -118,6 +122,10 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	void _edit_point_pos(double);
 	void _edit_point_name(const String &p_name);
 	void _edit_point_index(double);
+	void _start_inline_edit(int p_point);
+	void _finish_inline_edit();
+	void _finish_inline_edit_with_text(const String &p_text);
+	void _cancel_inline_edit();
 	void _open_editor();
 
 	EditorFileDialog *open_file = nullptr;

@@ -105,12 +105,20 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 	}
 
 	Ref<InputEventKey> k = p_event;
-	if (tool_select->is_pressed() && k.is_valid() && k->is_pressed() && k->get_keycode() == Key::KEY_DELETE && !k->is_echo()) {
-		if (selected_point != -1 || selected_triangle != -1) {
-			if (!read_only) {
-				_erase_selected();
-			}
+	if (k.is_valid() && k->is_pressed() && !k->is_echo()) {
+		if (k->get_keycode() == Key::ESCAPE && editing_point != -1) {
+			_cancel_inline_edit();
 			accept_event();
+			return;
+		}
+
+		if (tool_select->is_pressed() && k->get_keycode() == Key::KEY_DELETE) {
+			if (selected_point != -1 || selected_triangle != -1) {
+				if (!read_only) {
+					_erase_selected();
+				}
+				accept_event();
+			}
 		}
 	}
 
@@ -169,11 +177,28 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 	if (mb.is_valid() && mb->is_pressed() && tool_select->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		blend_space_draw->queue_redraw(); //update anyway
+
 		//try to see if a point can be selected
 		selected_point = -1;
 		selected_triangle = -1;
 		_update_tool_erase();
 
+		// Check if clicking on text areas first.
+		for (int i = 0; i < text_rects.size(); i++) {
+			if (text_rects[i].has_point(mb->get_position())) {
+				selected_point = i;
+				Ref<AnimationNode> node = blend_space->get_blend_point_node(i);
+				EditorNode::get_singleton()->push_item(node.ptr(), "", true);
+				dragging_selected_attempt = true;
+				drag_from = mb->get_position();
+				_update_tool_erase();
+				_update_edited_point_pos();
+				_update_edited_point_name();
+				return;
+			}
+		}
+
+		// Then check point positions.
 		for (int i = 0; i < points.size(); i++) {
 			if (points[i].distance_to(mb->get_position()) < 10 * EDSCALE) {
 				selected_point = i;
@@ -246,6 +271,17 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 	}
 
 	if (mb.is_valid() && !mb->is_pressed() && dragging_selected_attempt && mb->get_button_index() == MouseButton::LEFT) {
+		// Check if releasing over text without actual dragging - if so, start text editing instead.
+		if (!read_only && !dragging_selected) {
+			for (int i = 0; i < text_rects.size(); i++) {
+				if (text_rects[i].has_point(mb->get_position())) {
+					_start_inline_edit(i);
+					dragging_selected_attempt = false;
+					return;
+				}
+			}
+		}
+
 		if (dragging_selected) {
 			//move
 			Vector2 point = blend_space->get_blend_point_position(selected_point);
@@ -472,6 +508,9 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 		return;
 	}
 
+	// Clear text rectangles for fresh click detection.
+	text_rects.clear();
+
 	Color linecolor = get_theme_color(SceneStringName(font_color), SNAME("Label"));
 	Color linecolor_soft = linecolor;
 	linecolor_soft.a *= 0.5;
@@ -624,7 +663,23 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 				name_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 			}
 
-			blend_space_draw->draw_string(font, text_pos, name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, name_color);
+			// Don't draw text if currently being edited inline.
+			if (editing_point != i) {
+				blend_space_draw->draw_string(font, text_pos, name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, name_color);
+			}
+
+			// Store text rectangle for click detection.
+			if (text_rects.size() <= i) {
+				text_rects.resize(i + 1);
+			}
+
+			// Adjust text rect to match actual drawn text bounds.
+			Vector2 adjusted_pos = text_pos;
+			adjusted_pos.y -= font->get_ascent(font_size) + 2 * EDSCALE;
+			adjusted_pos.y += 2 * EDSCALE;
+			Vector2 adjusted_size = text_size;
+			adjusted_size.y -= 2 * EDSCALE;
+			text_rects.write[i] = Rect2(adjusted_pos, adjusted_size);
 		}
 	}
 
@@ -992,6 +1047,77 @@ void AnimationNodeBlendSpace2DEditor::_bind_methods() {
 
 	ClassDB::bind_method("_update_edited_point_pos", &AnimationNodeBlendSpace2DEditor::_update_edited_point_pos);
 	ClassDB::bind_method("_update_edited_point_name", &AnimationNodeBlendSpace2DEditor::_update_edited_point_name);
+}
+
+void AnimationNodeBlendSpace2DEditor::_start_inline_edit(int p_point) {
+	if (editing_point != -1 || p_point < 0 || p_point >= blend_space->get_blend_point_count()) {
+		return;
+	}
+
+	editing_point = p_point;
+	selected_point = p_point;
+
+	inline_editor = memnew(LineEdit);
+	blend_space_draw->add_child(inline_editor);
+
+	inline_editor->add_theme_color_override("font_color", get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
+	inline_editor->add_theme_color_override("font_selected_color", Color::named("white"));
+	inline_editor->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
+	inline_editor->add_theme_style_override("normal", memnew(StyleBoxEmpty));
+	inline_editor->add_theme_style_override("focus", memnew(StyleBoxEmpty));
+	inline_editor->set_flat(true);
+
+	inline_editor->set_text(blend_space->get_blend_point_stored_name(p_point));
+	inline_editor->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+
+	if (p_point < text_rects.size()) {
+		Rect2 text_rect = text_rects[p_point];
+		Vector2 editor_pos = text_rect.position;
+		editor_pos.y -= 6 * EDSCALE;
+		// Center the editor over the original text position
+		float editor_width = MAX(text_rect.size.x, 100 * EDSCALE);
+		editor_pos.x += (text_rect.size.x - editor_width) / 2.0;
+		inline_editor->set_position(editor_pos);
+		inline_editor->set_size(Vector2(editor_width, MAX(text_rect.size.y, 20 * EDSCALE)));
+	}
+
+	inline_editor->connect("text_submitted", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_finish_inline_edit_with_text));
+	inline_editor->connect("focus_exited", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_finish_inline_edit));
+
+	inline_editor->grab_focus();
+	inline_editor->select_all();
+
+	blend_space_draw->queue_redraw();
+}
+
+void AnimationNodeBlendSpace2DEditor::_finish_inline_edit() {
+	if (editing_point == -1 || !inline_editor) {
+		return;
+	}
+
+	String new_name = inline_editor->get_text();
+	_edit_point_name(new_name);
+
+	_cancel_inline_edit();
+}
+
+void AnimationNodeBlendSpace2DEditor::_finish_inline_edit_with_text(const String &p_text) {
+	if (editing_point == -1 || !inline_editor) {
+		return;
+	}
+
+	_edit_point_name(p_text);
+
+	_cancel_inline_edit();
+}
+
+void AnimationNodeBlendSpace2DEditor::_cancel_inline_edit() {
+	if (inline_editor) {
+		inline_editor->queue_free();
+		inline_editor = nullptr;
+	}
+	editing_point = -1;
+	blend_space_draw->queue_redraw();
 }
 
 AnimationNodeBlendSpace2DEditor *AnimationNodeBlendSpace2DEditor::singleton = nullptr;

@@ -111,6 +111,10 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	Vector2 drag_from;
 	Vector2 drag_ofs;
 
+	Vector<Rect2> text_rects;
+	int editing_point = -1;
+	LineEdit *inline_editor = nullptr;
+
 	Vector<int> making_triangle;
 
 	void _add_menu_type(int p_index);
@@ -125,6 +129,10 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	void _edit_point_pos(double);
 	void _edit_point_name(const String &p_name);
 	void _edit_point_index(double);
+	void _start_inline_edit(int p_point);
+	void _finish_inline_edit();
+	void _finish_inline_edit_with_text(const String &p_text);
+	void _cancel_inline_edit();
 	void _open_editor();
 
 	void _auto_triangles_toggled();
