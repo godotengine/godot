@@ -327,6 +327,10 @@ out vec3 tangent_interp;
 out vec3 binormal_interp;
 #endif
 
+#ifdef USE_BLOB_SHADOWS
+out highp vec3 blob_pixel_world_pos;
+#endif
+
 #if defined(USE_MATERIAL)
 
 /* clang-format off */
@@ -435,6 +439,10 @@ void main() {
 #endif //ubershader-runtime
 
 	highp mat4 local_projection = projection_matrix;
+
+#ifdef USE_BLOB_SHADOWS
+	blob_pixel_world_pos = (world_matrix * vec4(vertex.xyz, 1.0)).xyz;
+#endif
 
 //using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
@@ -699,6 +707,10 @@ in vec3 tangent_interp;
 in vec3 binormal_interp;
 #endif
 
+#ifdef USE_BLOB_SHADOWS
+in highp vec3 blob_pixel_world_pos;
+#endif
+
 in highp vec3 vertex_interp;
 in vec3 normal_interp;
 
@@ -882,6 +894,13 @@ layout(std140) uniform SpotLightData { // ubo:5
 
 uniform highp sampler2DShadow shadow_atlas; // texunit:-6
 
+#ifdef USE_BLOB_SHADOWS
+uniform vec4 blob_data_casters[MAX_BLOB_CASTERS];
+uniform vec4 blob_data_lights[MAX_BLOB_CASTERS];
+uniform int blob_data_num_casters;
+uniform float blob_cutoff_boost;
+#endif
+
 struct ReflectionData {
 	mediump vec4 box_extents;
 	mediump vec4 box_offset;
@@ -933,6 +952,172 @@ layout(location = 3) out float sss_buffer;
 
 in highp vec4 position_interp;
 uniform highp sampler2D depth_buffer; // texunit:-9
+
+#ifdef USE_BLOB_SHADOWS
+float blob_shadows_acos_fast(float x) {
+	// Lagarde 2014, \"Inverse trigonometric functions GPU optimization for AMD GCN architecture\"
+	// This is the approximation of degree 1, with a max absolute error of 9.0x10^-3
+	float y = abs(x);
+	float p = -0.1565827 * y + 1.570796;
+	p *= sqrt(1.0 - y);
+	const float pi = 3.14159265359;
+	return x >= 0.0 ? p : pi - p;
+}
+
+float blob_shadows_acos_fast_positive(float x) {
+	// Lagarde 2014, \"Inverse trigonometric functions GPU optimization for AMD GCN architecture\"
+	float p = -0.1565827 * x + 1.570796;
+	return p * sqrt(1.0 - x);
+}
+
+float blob_shadows_saturate(float x) {
+	return clamp(x, 0.0, 1.0);
+}
+
+float blob_shadows_spherical_caps_intersection(float cos_cap1, float cos_cap2, float cap2, float cos_distance) {
+	// Oat and Sander 2007, \"Ambient Aperture Lighting\"
+	// Approximation mentioned by Jimenez et al. 2016
+	float r1 = blob_shadows_acos_fast_positive(cos_cap1);
+	float r2 = cap2;
+	float d = blob_shadows_acos_fast(cos_distance);
+
+	// We work with cosine angles, replace the original paper's use of
+	// cos(min(r1, r2)_ with max(cos_cap1, cos_cap2)
+	// We also remove a multiplication by 2 * PI to simplify the computation
+	// since we divide by 2 * PI at the call site
+
+	if (min(r1, r2) <= max(r1, r2) - d) {
+		return 1.0 - max(cos_cap1, cos_cap2);
+	} else if (r1 + r2 <= d) {
+		return 0.0;
+	}
+
+	float delta = abs(r1 - r2);
+	float x = 1.0 - blob_shadows_saturate((d - delta) / max(r1 + r2 - delta, 0.0001));
+	// simplified smoothstep()
+	float area = (x * x) * (-2.0 * x + 3.0);
+	return area * (1.0 - max(cos_cap1, cos_cap2));
+}
+
+// Note that sphere.w is expected to be radius SQUARED.
+// Is cheaper to calculate this as a one off on CPU.
+float blob_shadows_directional_occlusion_sphere(in vec3 pos, in vec4 sphere, in vec4 cone) {
+	vec3 occluder = sphere.xyz - pos;
+	float occluder_length2 = dot(occluder, occluder);
+	vec3 occluder_dir = occluder * inversesqrt(occluder_length2);
+
+	float cos_phi = dot(occluder_dir, cone.xyz);
+	float cos_theta = sqrt(occluder_length2 / ((sphere.w) + occluder_length2));
+	float cos_cone = cos(cone.w);
+
+	return blob_shadows_spherical_caps_intersection(cos_theta, cos_cone, cone.w, cos_phi) / (1.0 - cos_cone);
+}
+
+float blob_shadows_directional_occlusion_sphere_CHEAP(in vec3 pos, in vec4 sphere, in vec4 cone) {
+	vec3 occluder = sphere.xyz - pos;
+
+	return length(occluder.xz);
+
+	float occluder_length2 = dot(occluder, occluder);
+	vec3 occluder_dir = occluder * inversesqrt(occluder_length2);
+
+	float cos_phi = dot(occluder_dir, cone.xyz);
+	return cos_phi;
+}
+
+// Note that sphere.w is expected to be radius SQUARED.
+// Is cheaper to calculate this as a one off on CPU.
+float blob_shadows_directional_occlusion_sphere_NEW(in vec3 pos, in vec4 sphere, in vec4 cone, in vec3 occluder_dir, in float occluder_length2) {
+	//vec3 occluder = sphere.xyz - pos;
+	//float occluder_length2 = dot(occluder, occluder);
+	//vec3 occluder_dir = occluder * inversesqrt(occluder_length2);
+
+	float cos_phi = dot(occluder_dir, cone.xyz);
+	float cos_theta = sqrt(occluder_length2 / ((sphere.w) + occluder_length2));
+	float cos_cone = cos(cone.w);
+
+	return blob_shadows_spherical_caps_intersection(cos_theta, cos_cone, cone.w, cos_phi) / (1.0 - cos_cone);
+}
+
+float blob_shadows_multi_shadow(vec3 pos) {
+	//return 1.0;
+	/*
+	// First find closest
+	int closest = 0;
+	float sl_closest = 99999999.0;
+	for (int i = 0; i < blob_data_num_casters; i++) {
+		vec3 offset = blob_data_casters[i].xyz - pos;
+		float sl = dot(offset, offset);
+		if (sl < sl_closest) {
+			sl_closest = sl;
+			closest = i;
+		}
+	}
+	int i = closest;
+	float shadow = 1.0;
+	vec3 cone_dir = normalize(blob_data_lights[i].xyz - blob_data_casters[i].xyz);
+	float modulate = blob_data_lights[i].w;
+	float sh = blob_shadows_directional_occlusion_sphere(pos, blob_data_casters[i], vec4(cone_dir, radians(45.0) * 0.5));
+	sh *= modulate;
+	sh = 1.0 - sh;
+	shadow *= sh;
+	return shadow;
+*/
+
+	//return 1.0;
+	float shadow = 1.0;
+
+	const float cone_angle = radians(45.0) * 0.5;
+
+	for (int i = 0; i < blob_data_num_casters; i++) {
+		vec4 cd = blob_data_casters[i];
+
+		//float cutoff = cd.w + 2.0;
+		float cutoff = cd.w + blob_cutoff_boost;
+		//float cutoff = cd.w;
+
+		//if (abs(cd.x - pos.x) > cutoff)
+		//{
+		//	continue;
+		//}
+
+		vec3 offset = cd.xyz - pos;
+		float sl = dot(offset, offset);
+
+		cutoff *= cutoff;
+		if (sl >= cutoff) {
+			continue;
+		}
+
+		/*
+		//if ((offset.y < -blob_data_casters[i].w) || (sl > (cutoff * cutoff))) {
+		if (sl > (cutoff * cutoff)) {
+			continue;
+		}
+		*/
+		vec4 ld = blob_data_lights[i];
+		//vec3 cone_dir = normalize(ld.xyz - cd.xyz);
+		//vec3 cone_dir = ld.xyz;
+
+		float modulate = ld.w;
+		modulate *= 1.0 - (sl / cutoff);
+
+		vec3 occluder_dir = offset * inversesqrt(sl);
+		float sh = blob_shadows_directional_occlusion_sphere_NEW(pos, blob_data_casters[i], vec4(ld.xyz, cone_angle), occluder_dir, sl);
+		//float sh = blob_shadows_directional_occlusion_sphere(pos, cd, vec4(cone_dir, radians(45.0) * 0.5));
+		//float sh = blob_shadows_directional_occlusion_sphere(pos, blob_data_casters[i], vec4(cone_dir, radians(blob_data_lights[i].w) * 0.5));
+
+		// Apply modulate before or after 1.0 -?
+		sh *= modulate;
+		sh = 1.0 - sh;
+
+		//shadow = max(shadow, sh);
+		shadow *= sh;
+	}
+
+	return shadow;
+}
+#endif // use blob shadows
 
 #ifdef USE_CONTACT_SHADOWS //ubershader-skip
 
@@ -1902,6 +2087,13 @@ void main() {
 	float sss_strength = 0.0;
 #endif
 
+#ifdef USE_BLOB_SHADOWS
+	float blob_shadow_total = blob_shadows_multi_shadow(blob_pixel_world_pos);
+#else
+	// Prevent shader compilation failure when we try to use "BLOB_SHADOW" builtin when blob shadows are off.
+	float blob_shadow_total = 1.0;
+#endif
+
 	{
 		/* clang-format off */
 
@@ -2450,6 +2642,18 @@ FRAGMENT_SHADER_CODE
 	frag_color.rgb += emission;
 #endif //ubershader-runtime
 #endif //SHADELESS //ubershader-runtime
+
+#ifdef USE_BLOB_SHADOWS
+	// Temporary position, move back in shader.
+	frag_color.rgb *= blob_shadow_total;
+	// frag_color.rgb = blob_pixel_world_pos;
+#endif
+
+	// Write to the final output once and only once.
+	// Use a temporary in the rest of the shader.
+	// This is for drivers that have a performance drop
+	// when the output is read during the shader.
+	frag_color_final = frag_color;
 
 #endif //USE_MULTIPLE_RENDER_TARGETS //ubershader-runtime
 
