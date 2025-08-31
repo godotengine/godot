@@ -184,6 +184,7 @@ layout(push_constant, std430) uniform Params {
 	bool sub_emitter_mode;
 	bool can_emit;
 	bool trail_pass;
+	bool local_trails;
 }
 params;
 
@@ -310,7 +311,10 @@ void main() {
 #ifdef USERDATA6_USED
 			PARTICLE.userdata6 = particles.data[src_idx].userdata6;
 #endif
+		} else if (params.local_trails && bool(PARTICLE.flags & PARTICLE_FLAG_TRAILED)) {
+			PARTICLE.xform = frame_history.data[0].emission_transform; // will set all starts to current node, but they cannot move from there.
 		}
+
 		if (!bool(particles.data[src_idx].flags & PARTICLE_FLAG_ACTIVE)) {
 			// Disable the entire trail if the parent is no longer active.
 			PARTICLE.flags = 0;

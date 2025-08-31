@@ -3129,6 +3129,14 @@
 				Sets the lifetime of each particle in the system. Equivalent to [member GPUParticles3D.lifetime].
 			</description>
 		</method>
+		<method name="particles_set_local_trails">
+			<return type="void" />
+			<param index="0" name="particles" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				Sets the local trails parameter of the particle system. Equivalent to [member GPUParticles3D.local_trails].
+			</description>
+		</method>
 		<method name="particles_set_mode">
 			<return type="void" />
 			<param index="0" name="particles" type="RID" />
