@@ -143,13 +143,13 @@
 		<member name="glow_hdr_scale" type="float" setter="set_glow_hdr_bleed_scale" getter="get_glow_hdr_bleed_scale" default="2.0">
 			The bleed scale of the HDR glow.
 		</member>
-		<member name="glow_hdr_threshold" type="float" setter="set_glow_hdr_bleed_threshold" getter="get_glow_hdr_bleed_threshold" default="1.0">
+		<member name="glow_hdr_threshold" type="float" setter="set_glow_hdr_bleed_threshold" getter="get_glow_hdr_bleed_threshold" default="0.0">
 			The lower threshold of the HDR glow. When using the Mobile rendering method (which only supports a lower dynamic range up to [code]2.0[/code]), this may need to be below [code]1.0[/code] for glow to be visible. A value of [code]0.9[/code] works well in this case. This value also needs to be decreased below [code]1.0[/code] when using glow in 2D, as 2D rendering is performed in SDR.
 		</member>
 		<member name="glow_intensity" type="float" setter="set_glow_intensity" getter="get_glow_intensity" default="0.3">
 			The overall brightness multiplier of the glow effect. When using the Mobile rendering method (which only supports a lower dynamic range up to [code]2.0[/code]), this should be increased to [code]1.5[/code] to compensate.
 		</member>
-		<member name="glow_levels/1" type="float" setter="set_glow_level" getter="get_glow_level" default="1.0">
+		<member name="glow_levels/1" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
 			The intensity of the 1st level of glow. This is the most "local" level (least blurry).
 			[b]Note:[/b] [member glow_levels/1] has no effect when using the Compatibility rendering method, due to this rendering method using a simpler glow implementation optimized for low-end devices.
 		</member>

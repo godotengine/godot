@@ -157,7 +157,7 @@ void SMAA::allocate_render_targets(Ref<RenderSceneBuffersRD> p_render_buffers) {
 	p_render_buffers->create_texture(RB_SCOPE_SMAA, RB_STENCIL, smaa.stencil_format, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, full_size, 1, 1, true, true);
 }
 
-void SMAA::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_color, RID p_dst_framebuffer) {
+void SMAA::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_color, RID p_dst_framebuffer, bool p_use_debanding) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -181,11 +181,7 @@ void SMAA::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_colo
 
 	smaa.blend_push_constant.inv_size[0] = inv_size.x;
 	smaa.blend_push_constant.inv_size[1] = inv_size.y;
-	if (debanding_mode == DEBANDING_MODE_8_BIT) {
-		smaa.blend_push_constant.flags |= SMAA_BLEND_FLAG_USE_8_BIT_DEBANDING;
-	} else if (debanding_mode == DEBANDING_MODE_10_BIT) {
-		smaa.blend_push_constant.flags |= SMAA_BLEND_FLAG_USE_10_BIT_DEBANDING;
-	}
+	smaa.blend_push_constant.use_debanding = p_use_debanding;
 
 	RID linear_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 

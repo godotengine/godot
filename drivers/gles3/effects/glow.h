@@ -49,7 +49,7 @@ private:
 
 	float glow_intensity = 1.0;
 	float glow_bloom = 0.0;
-	float glow_hdr_bleed_threshold = 1.0;
+	float glow_hdr_bleed_threshold = 0.0;
 	float glow_hdr_bleed_scale = 2.0;
 	float glow_hdr_luminance_cap = 12.0;
 
