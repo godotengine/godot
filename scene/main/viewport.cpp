@@ -1903,6 +1903,10 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 			MouseButtonMask button_mask = mouse_button_to_mask(mb->get_button_index());
 			if (!gui.mouse_focus_mask.is_empty() && !gui.mouse_focus_mask.has_flag(button_mask)) {
+				if (!gui.mouse_focus) {
+					return;
+				}
+
 				// Do not steal mouse focus and stuff while a focus mask without the current mouse button exists.
 				gui.mouse_focus_mask.set_flag(button_mask);
 			} else {
