@@ -253,7 +253,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 			if (!read_only) {
 				updating = true;
 				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-				undo_redo->create_action(TTR("Move Node Point"));
+				undo_redo->create_action(TTR("Move BlendSpace2D Node Point"));
 				undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_position", selected_point, point);
 				undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_position", selected_point, blend_space->get_blend_point_position(selected_point));
 				undo_redo->add_do_method(this, "_update_space");
@@ -771,7 +771,7 @@ void AnimationNodeBlendSpace2DEditor::_edit_point_pos(double) {
 	}
 	updating = true;
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Move Node Point"));
+	undo_redo->create_action(TTR("Move BlendSpace2D Node Point"));
 	undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_position", selected_point, Vector2(edit_x->get_value(), edit_y->get_value()));
 	undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_position", selected_point, blend_space->get_blend_point_position(selected_point));
 	undo_redo->add_do_method(this, "_update_space");
