@@ -322,6 +322,7 @@ void ColorPickerShapeRectangle::_hue_slider_draw() {
 
 void ColorPickerShapeRectangle::_initialize_controls() {
 	sv_square = memnew(Control);
+	sv_square->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	color_picker->shape_container->add_child(sv_square);
 	sv_square->connect(SceneStringName(gui_input), callable_mp(this, &ColorPickerShapeRectangle::_sv_square_input));
 	sv_square->connect(SceneStringName(draw), callable_mp(this, &ColorPickerShapeRectangle::_sv_square_draw));
@@ -357,8 +358,13 @@ void ColorPickerShapeRectangle::grab_focus() {
 }
 
 void ColorPickerShapeOKHSRectangle::_initialize_controls() {
+	rectangle_hb = memnew(HBoxContainer);
+	rectangle_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	color_picker->shape_container->add_child(rectangle_hb);
+
 	rectangle_margin = memnew(MarginContainer);
-	color_picker->shape_container->add_child(rectangle_margin);
+	rectangle_margin->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	rectangle_hb->add_child(rectangle_margin);
 
 	Ref<ShaderMaterial> material;
 	material.instantiate();
@@ -377,11 +383,12 @@ void ColorPickerShapeOKHSRectangle::_initialize_controls() {
 	connect_shape_focus(square_overlay);
 
 	value_slider = memnew(Control);
-	color_picker->shape_container->add_child(value_slider);
+	rectangle_hb->add_child(value_slider);
 	value_slider->connect(SceneStringName(gui_input), callable_mp(this, &ColorPickerShapeOKHSRectangle::_value_slider_input));
 	value_slider->connect(SceneStringName(draw), callable_mp(this, &ColorPickerShapeOKHSRectangle::_value_slider_draw));
 	connect_shape_focus(value_slider);
 
+	controls.append(rectangle_hb);
 	controls.append(rectangle_margin);
 	controls.append(square);
 	controls.append(square_overlay);
@@ -693,6 +700,7 @@ void ColorPickerShapeWheel::_wheel_uv_draw() {
 
 void ColorPickerShapeWheel::_initialize_controls() {
 	wheel_margin = memnew(MarginContainer);
+	wheel_margin->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_CENTER);
 	color_picker->shape_container->add_child(wheel_margin);
 
 	Ref<ShaderMaterial> material;
@@ -762,8 +770,12 @@ void ColorPickerShapeCircle::update_circle_cursor(const Vector2 &p_color_change_
 }
 
 void ColorPickerShapeCircle::_initialize_controls() {
+	circle_hb = memnew(HBoxContainer);
+	circle_hb->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_CENTER);
+	color_picker->shape_container->add_child(circle_hb);
+
 	circle_margin = memnew(MarginContainer);
-	color_picker->shape_container->add_child(circle_margin);
+	circle_hb->add_child(circle_margin);
 
 	Ref<ShaderMaterial> material;
 	material.instantiate();
@@ -782,11 +794,12 @@ void ColorPickerShapeCircle::_initialize_controls() {
 	connect_shape_focus(circle_overlay);
 
 	value_slider = memnew(Control);
-	color_picker->shape_container->add_child(value_slider);
+	circle_hb->add_child(value_slider);
 	value_slider->connect(SceneStringName(gui_input), callable_mp(this, &ColorPickerShapeCircle::_value_slider_input));
 	value_slider->connect(SceneStringName(draw), callable_mp(this, &ColorPickerShapeCircle::_value_slider_draw));
 	connect_shape_focus(value_slider);
 
+	controls.append(circle_hb);
 	controls.append(circle_margin);
 	controls.append(circle);
 	controls.append(circle_overlay);

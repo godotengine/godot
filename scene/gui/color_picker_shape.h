@@ -107,6 +107,7 @@ public:
 class ColorPickerShapeOKHSRectangle : public ColorPickerShape {
 	GDCLASS(ColorPickerShapeOKHSRectangle, ColorPickerShape);
 
+	HBoxContainer *rectangle_hb = nullptr;
 	MarginContainer *rectangle_margin = nullptr;
 
 protected:
@@ -197,6 +198,7 @@ class ColorPickerShapeCircle : public ColorPickerShape {
 	GDCLASS(ColorPickerShapeCircle, ColorPickerShape);
 
 protected:
+	HBoxContainer *circle_hb = nullptr;
 	MarginContainer *circle_margin = nullptr;
 	Control *circle = nullptr;
 	Control *circle_overlay = nullptr;

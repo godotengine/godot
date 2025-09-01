@@ -109,13 +109,13 @@ public:
 			ColorMode(p_color_picker) {}
 };
 
-class ColorModeLinear : public ColorMode {
+class ColorModeRAW : public ColorMode {
 public:
 	String labels[3] = { "R", "G", "B" };
 	float slider_max[3] = { 1, 1, 1 };
 	Ref<GradientTexture2D> rgb_texture[3];
 
-	virtual String get_name() const override { return ETR("Linear"); }
+	virtual String get_name() const override { return "RAW"; }
 
 	virtual float get_slider_step() const override { return 0.001; }
 	virtual float get_spinbox_arrow_step() const override { return 0.01; }
@@ -133,7 +133,7 @@ public:
 
 	virtual void slider_draw(int p_which) override;
 
-	ColorModeLinear(ColorPicker *p_color_picker) :
+	ColorModeRAW(ColorPicker *p_color_picker) :
 			ColorMode(p_color_picker) {}
 };
 
@@ -145,7 +145,7 @@ public:
 	float cached_saturation = 0.0;
 	Ref<GradientTexture2D> hue_texture;
 
-	virtual String get_name() const override { return "OKHSL"; }
+	virtual String get_name() const override { return "HSL"; }
 
 	virtual float get_slider_step() const override { return 1.0; }
 	virtual String get_slider_label(int idx) const override;
