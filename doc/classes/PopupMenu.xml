@@ -644,6 +644,9 @@
 		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="true">
 			If [code]true[/code], allows navigating [PopupMenu] with letter keys.
 		</member>
+		<member name="alt_shortcuts" type="int" setter="set_alt_shortcuts" getter="get_alt_shortcuts" enum="PopupMenu.AltShortcuts" default="0">
+			If enabled, shortcuts are represented as symbols instead of words (e.g. "⌃ ⎇ ⌦" instead of "Ctrl+Alt+Del").
+		</member>
 		<member name="hide_on_checkable_item_selection" type="bool" setter="set_hide_on_checkable_item_selection" getter="is_hide_on_checkable_item_selection" default="true">
 			If [code]true[/code], hides the [PopupMenu] when a checkbox or radio button is selected.
 		</member>
@@ -696,6 +699,17 @@
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="ALT_SHORTCUTS_AUTO" value="0" enum="AltShortcuts">
+			Shortcuts are represented as symbols on macOS and iOS, and as text on other platforms.
+		</constant>
+		<constant name="ALT_SHORTCUTS_ENABLED" value="1" enum="AltShortcuts">
+			shortcuts are represented as symbols.
+		</constant>
+		<constant name="ALT_SHORTCUTS_DISABLED" value="2" enum="AltShortcuts">
+			shortcuts are represented as text.
+		</constant>
+	</constants>
 	<theme_items>
 		<theme_item name="font_accelerator_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 0.8)">
 			The text [Color] used for shortcuts and accelerators that show next to the menu item name when defined. See [method get_item_accelerator] for more info on accelerators.
