@@ -75,6 +75,8 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	SpinBox *edit_x = nullptr;
 	SpinBox *edit_y = nullptr;
 	Button *open_editor = nullptr;
+	VSeparator *open_editor_sep = nullptr;
+	SpinBox *index_edit = nullptr;
 
 	int selected_point;
 	int selected_triangle;
@@ -109,16 +111,30 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	Vector2 drag_from;
 	Vector2 drag_ofs;
 
+	Vector<Rect2> text_rects;
+	int editing_point = -1;
+	LineEdit *inline_editor = nullptr;
+	float inline_editor_point_x = 0.0f;
+
 	Vector<int> making_triangle;
 
 	void _add_menu_type(int p_index);
 	void _add_animation_type(int p_index);
+	String _generate_unique_blend_point_name(Ref<AnimationNodeBlendSpace2D> p_blend_space, const String &p_base_name);
 
 	void _tool_switch(int p_tool);
 	void _update_edited_point_pos();
+	void _update_edited_point_name();
 	void _update_tool_erase();
 	void _erase_selected();
 	void _edit_point_pos(double);
+	void _edit_point_name(const String &p_name);
+	void _edit_point_index(double p_index);
+	void _start_inline_edit(int p_point);
+	void _finish_inline_edit();
+	void _finish_inline_edit_with_text(const String &p_text);
+	void _cancel_inline_edit();
+	void _inline_editor_text_changed(const String &p_text);
 	void _open_editor();
 
 	void _auto_triangles_toggled();
@@ -143,6 +159,7 @@ protected:
 
 public:
 	static AnimationNodeBlendSpace2DEditor *get_singleton() { return singleton; }
+	void refresh_editor() { _update_space(); }
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
 	virtual void edit(const Ref<AnimationNode> &p_node) override;
 	AnimationNodeBlendSpace2DEditor();
