@@ -2224,6 +2224,10 @@ void DisplayServerMacOS::window_set_max_size(const Size2i p_size, WindowID p_win
 	} else {
 		[wd.window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
 	}
+	bool no_max = _is_max_disabled(&wd);
+	[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!no_max];
+	[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(wd.no_min_btn && no_max)];
+	[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(wd.no_min_btn && no_max)];
 }
 
 Size2i DisplayServerMacOS::window_get_max_size(WindowID p_window) const {
@@ -2326,6 +2330,14 @@ Size2i DisplayServerMacOS::window_get_size_with_decorations(WindowID p_window) c
 	return Size2i(frame.size.width, frame.size.height) * screen_get_max_scale();
 }
 
+bool DisplayServerMacOS::_is_max_disabled(WindowData *p_wd) const {
+	bool no_max = p_wd->no_max_btn;
+	if (RenderingServer::get_singleton() && p_wd->max_size != Size2() && p_wd->max_size != RenderingServer::get_singleton()->get_maximum_viewport_size()) {
+		no_max = true;
+	}
+	return no_max;
+}
+
 void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -2362,10 +2374,11 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			if (wd.resize_disabled) { // Restore resize disabled.
 				[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskResizable];
 			}
+			bool no_max = _is_max_disabled(&wd);
 			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setEnabled:!wd.no_min_btn];
-			[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!wd.no_max_btn];
-			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
-			[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!no_max];
+			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(wd.no_min_btn && no_max)];
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(wd.no_min_btn && no_max)];
 			if (wd.min_size != Size2i()) {
 				Size2i size = wd.min_size / screen_get_max_scale();
 				[wd.window_object setContentMinSize:NSMakeSize(size.x, size.y)];
@@ -2391,6 +2404,10 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 					}
 				} else {
 					[wd.window_object zoom:nil];
+				}
+				if (wd.max_size != Size2i()) {
+					Size2i size = wd.max_size / screen_get_max_scale();
+					[wd.window_object setContentMaxSize:NSMakeSize(size.x, size.y)];
 				}
 			}
 		} break;
@@ -2423,6 +2440,7 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			}
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
+			[wd.window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
 			if (!NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
 				wd.pre_zoom_rect = [wd.window_object frame];
 				if (wd.borderless) {
@@ -2554,13 +2572,15 @@ void DisplayServerMacOS::window_set_custom_window_buttons(WindowData &p_wd, bool
 		[p_wd.window_button_view initButtons:window_buttons_spacing offset:NSMakePoint(p_wd.wb_offset.x, p_wd.wb_offset.y) rtl:is_rtl];
 		[p_wd.window_view addSubview:p_wd.window_button_view];
 
-		[[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(p_wd.no_min_btn && p_wd.no_max_btn)];
-		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(p_wd.no_min_btn && p_wd.no_max_btn)];
+		bool no_max = _is_max_disabled(&p_wd);
+		[[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(p_wd.no_min_btn && no_max)];
+		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(p_wd.no_min_btn && no_max)];
 	} else {
 		[p_wd.window_object setTitleVisibility:NSWindowTitleVisible];
 		[p_wd.window_object setTitlebarAppearsTransparent:NO];
-		[[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(p_wd.no_min_btn && p_wd.no_max_btn)];
-		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(p_wd.no_min_btn && p_wd.no_max_btn)];
+		bool no_max = _is_max_disabled(&p_wd);
+		[[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(p_wd.no_min_btn && no_max)];
+		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(p_wd.no_min_btn && no_max)];
 		[[p_wd.window_object standardWindowButton:NSWindowCloseButton] setHidden:NO];
 	}
 }
@@ -2574,15 +2594,17 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 	switch (p_flag) {
 		case WINDOW_FLAG_MINIMIZE_DISABLED: {
 			wd.no_min_btn = p_enabled;
+			bool no_max = _is_max_disabled(&wd);
 			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setEnabled:!p_enabled];
-			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
-			[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
+			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(wd.no_min_btn && no_max)];
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(wd.no_min_btn && no_max)];
 		} break;
 		case WINDOW_FLAG_MAXIMIZE_DISABLED: {
 			wd.no_max_btn = p_enabled;
-			[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!p_enabled];
-			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
-			[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
+			bool no_max = _is_max_disabled(&wd);
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!no_max];
+			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(wd.no_min_btn && no_max)];
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(wd.no_min_btn && no_max)];
 		} break;
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			wd.resize_disabled = p_enabled;
@@ -2594,10 +2616,11 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			} else {
 				[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskResizable];
 			}
+			bool no_max = _is_max_disabled(&wd);
 			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setEnabled:!wd.no_min_btn];
-			[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!wd.no_max_btn];
-			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
-			[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!no_max];
+			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(wd.no_min_btn && no_max)];
+			[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(wd.no_min_btn && no_max)];
 		} break;
 		case WINDOW_FLAG_EXTEND_TO_TITLE: {
 			NSRect rect = [wd.window_object frame];
@@ -2637,9 +2660,10 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 					[wd.window_object setBackgroundColor:[NSColor clearColor]];
 				}
 			} else {
+				bool no_max = _is_max_disabled(&wd);
 				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
 				[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setEnabled:!wd.no_min_btn];
-				[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!wd.no_max_btn];
+				[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!no_max];
 				[wd.window_object setHasShadow:YES];
 				if (wd.layered_window) {
 					// Note: transparent and not borderless - set alpha to non-zero value to ensure window shadow is rendered correctly.

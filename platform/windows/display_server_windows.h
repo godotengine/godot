@@ -309,6 +309,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool was_fullscreen_pre_min = false;
 		bool first_activation_done = false;
 		bool was_maximized = false;
+		bool will_maximize = false;
 		bool always_on_top = false;
 		bool no_focus = false;
 		bool exclusive = false;

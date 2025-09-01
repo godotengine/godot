@@ -2433,7 +2433,11 @@ void DisplayServerX11::_update_actions_hints(WindowID p_window) {
 					new_atoms.push_back(atoms[i]);
 				}
 			}
-			if (!wd.no_max_btn) {
+			bool no_max = wd.no_max_btn;
+			if (RenderingServer::get_singleton() && wd.max_size != Size2() && wd.max_size != RenderingServer::get_singleton()->get_maximum_viewport_size()) {
+				no_max = true;
+			}
+			if (!no_max) {
 				new_atoms.push_back(wm_act_max_horz);
 				new_atoms.push_back(wm_act_max_vert);
 			}
@@ -2545,6 +2549,7 @@ void DisplayServerX11::window_set_max_size(const Size2i p_size, WindowID p_windo
 	wd.max_size = p_size;
 
 	_update_size_hints(p_window);
+	_update_actions_hints(p_window);
 	XFlush(x11_display);
 }
 
