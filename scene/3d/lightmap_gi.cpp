@@ -382,6 +382,18 @@ void LightmapGIData::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHADOWMASK_MODE_OVERLAY);
 }
 
+void LightmapGIData::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+
+	if (p_property.name == "specular_strength") {
+		if (!_uses_packed_directional) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+}
+
 LightmapGIData::LightmapGIData() {
 	lightmap = RS::get_singleton()->lightmap_create();
 }
