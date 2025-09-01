@@ -764,7 +764,7 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 
 		for (Ref<TriangleMesh> collision_mesh : collision_meshes) {
 			if (collision_mesh.is_valid()) {
-				if (collision_mesh->intersect_ray(ray_from, ray_dir, rpos, rnorm)) {
+				if (collision_mesh->intersect_ray(ray_from, ray_dir, rpos, rnorm, nullptr, nullptr, true)) {
 					r_pos = gt.xform(rpos);
 					r_normal = gt.basis.xform(rnorm).normalized();
 					return true;

@@ -2562,7 +2562,7 @@ void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<Select
 				Transform3D gt = geo_instance->get_global_transform();
 				Transform3D ai = gt.affine_inverse();
 				Vector3 point, normal;
-				if (mesh_collision->intersect_ray(ai.xform(pos), ai.basis.xform(ray).normalized(), point, normal)) {
+				if (mesh_collision->intersect_ray(ai.xform(pos), ai.basis.xform(ray).normalized(), point, normal, nullptr, nullptr, true)) {
 					SelectResult res;
 					res.item = Object::cast_to<Node>(obj);
 					res.order = -pos.distance_to(gt.xform(point));
