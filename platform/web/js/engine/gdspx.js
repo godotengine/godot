@@ -521,6 +521,14 @@ gdspx_physic_set_collision_system_type(is_collision_by_alpha) {
 	FreeGdBool(_arg0); 
 
 }
+gdspx_platform_set_stretch_mode(enable) {
+	var _gdFuncPtr = Module._gdspx_platform_set_stretch_mode; 
+	
+	var _arg0 = ToGdBool(enable);
+	_gdFuncPtr(_arg0);
+	FreeGdBool(_arg0); 
+
+}
 gdspx_platform_set_window_position(pos) {
 	var _gdFuncPtr = Module._gdspx_platform_set_window_position; 
 	

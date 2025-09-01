@@ -226,6 +226,9 @@ static void gdextension_spx_physic_check_touched_camera_boundary(GdObj obj,GdInt
 static void gdextension_spx_physic_set_collision_system_type(GdBool is_collision_by_alpha) {
 	 physicMgr->set_collision_system_type(is_collision_by_alpha);
 }
+static void gdextension_spx_platform_set_stretch_mode(GdBool enable) {
+	 platformMgr->set_stretch_mode(enable);
+}
 static void gdextension_spx_platform_set_window_position(GdVec2 pos) {
 	 platformMgr->set_window_position(pos);
 }
@@ -821,6 +824,7 @@ void gdextension_spx_setup_interface() {
 	REGISTER_SPX_INTERFACE_FUNC(spx_physic_check_touched_camera_boundaries);
 	REGISTER_SPX_INTERFACE_FUNC(spx_physic_check_touched_camera_boundary);
 	REGISTER_SPX_INTERFACE_FUNC(spx_physic_set_collision_system_type);
+	REGISTER_SPX_INTERFACE_FUNC(spx_platform_set_stretch_mode);
 	REGISTER_SPX_INTERFACE_FUNC(spx_platform_set_window_position);
 	REGISTER_SPX_INTERFACE_FUNC(spx_platform_get_window_position);
 	REGISTER_SPX_INTERFACE_FUNC(spx_platform_set_window_size);
