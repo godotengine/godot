@@ -63,7 +63,9 @@ protected:
 
 	String value_label = "value";
 
-	void _add_blend_point(int p_index, const Ref<AnimationRootNode> &p_node);
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	StringName blend_position = "blend_position";
 	StringName closest = "closest";
@@ -72,12 +74,16 @@ protected:
 
 	bool sync = false;
 
-	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 	virtual void _tree_changed() override;
 	virtual void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name) override;
 	virtual void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node) override;
+
+#ifndef DISABLE_DEPRECATED
+	void _add_blend_point_bind_compat_110369(const Ref<AnimationRootNode> &p_node, float p_position, int p_at_index = -1);
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
@@ -85,14 +91,19 @@ public:
 
 	virtual void get_child_nodes(List<ChildNode> *r_child_nodes) override;
 
-	void add_blend_point(const Ref<AnimationRootNode> &p_node, float p_position, int p_at_index = -1);
+	void add_blend_point(const Ref<AnimationRootNode> &p_node, float p_position, int p_at_index = -1, const StringName &p_name = "");
 	void set_blend_point_position(int p_point, float p_position);
 	void set_blend_point_node(int p_point, const Ref<AnimationRootNode> &p_node);
 
 	float get_blend_point_position(int p_point) const;
 	Ref<AnimationRootNode> get_blend_point_node(int p_point) const;
+	void set_blend_point_name(int p_point, const StringName &p_name);
+	StringName get_blend_point_name(int p_point) const;
+	int find_blend_point_by_name(const StringName &p_name) const;
 	void remove_blend_point(int p_point);
 	int get_blend_point_count() const;
+
+	void reorder_blend_point(int p_from_index, int p_to_index);
 
 	void set_min_space(float p_min);
 	float get_min_space() const;
