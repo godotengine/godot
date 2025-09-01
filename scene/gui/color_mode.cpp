@@ -221,31 +221,31 @@ void ColorModeHSV::slider_draw(int p_which) {
 	}
 }
 
-String ColorModeLinear::get_slider_label(int idx) const {
+String ColorModeRAW::get_slider_label(int idx) const {
 	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), String(), "Couldn't get slider label.");
 	return labels[idx];
 }
 
-float ColorModeLinear::get_slider_max(int idx) const {
+float ColorModeRAW::get_slider_max(int idx) const {
 	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), 0, "Couldn't get slider max value.");
 	return slider_max[idx];
 }
 
-float ColorModeLinear::get_slider_value(int idx) const {
+float ColorModeRAW::get_slider_value(int idx) const {
 	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), 0, "Couldn't get slider value.");
 	Color color = color_picker->color_normalized.srgb_to_linear();
 	return color.components[idx];
 }
 
-float ColorModeLinear::get_alpha_slider_max() const {
+float ColorModeRAW::get_alpha_slider_max() const {
 	return 1;
 }
 
-float ColorModeLinear::get_alpha_slider_value() const {
+float ColorModeRAW::get_alpha_slider_value() const {
 	return color_picker->get_pick_color().a;
 }
 
-Color ColorModeLinear::get_color() const {
+Color ColorModeRAW::get_color() const {
 	Vector<float> values = color_picker->get_active_slider_values();
 	Color color;
 	for (int i = 0; i < 4; i++) {
@@ -254,7 +254,7 @@ Color ColorModeLinear::get_color() const {
 	return color.linear_to_srgb();
 }
 
-void ColorModeLinear::_greater_value_inputted() {
+void ColorModeRAW::_greater_value_inputted() {
 	HSlider **sliders = color_picker->sliders;
 	Color color_prev = color_picker->color;
 	Color linear_color = color_prev.srgb_to_linear();
@@ -274,7 +274,7 @@ void ColorModeLinear::_greater_value_inputted() {
 	color_picker->intensity_slider->set_value_no_signal(color_picker->intensity);
 }
 
-void ColorModeLinear::slider_draw(int p_which) {
+void ColorModeRAW::slider_draw(int p_which) {
 	Vector<Vector2> pos;
 	pos.resize(4);
 	Vector<Color> col;

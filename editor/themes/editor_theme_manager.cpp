@@ -1803,7 +1803,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_constant("sv_width", "ColorPicker", 256 * EDSCALE);
 		p_theme->set_constant("sv_height", "ColorPicker", 256 * EDSCALE);
 		p_theme->set_constant("h_width", "ColorPicker", 30 * EDSCALE);
-		p_theme->set_constant("label_width", "ColorPicker", 10 * EDSCALE);
+		p_theme->set_constant("label_width", "ColorPicker", 14 * EDSCALE);
 		p_theme->set_constant("center_slider_grabbers", "ColorPicker", 1);
 
 		p_theme->set_stylebox("sample_focus", "ColorPicker", p_config.button_style_focus);
@@ -1822,6 +1822,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_icon("bar_arrow", "ColorPicker", p_theme->get_icon(SNAME("ColorPickerBarArrow"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("picker_cursor", "ColorPicker", p_theme->get_icon(SNAME("PickerCursor"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("picker_cursor_bg", "ColorPicker", p_theme->get_icon(SNAME("PickerCursorBg"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("color_hex", "ColorPicker", p_theme->get_icon(SNAME("ColorPickerHex"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("color_script", "ColorPicker", p_theme->get_icon(SNAME("Script"), EditorStringName(EditorIcons)));
 
 		// ColorPickerButton.
