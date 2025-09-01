@@ -255,9 +255,9 @@ def configure(env: "SConsEnvironment"):
 
     env.Append(LINKFLAGS=["-rpath", "@executable_path/../Frameworks", "-rpath", "@executable_path"])
 
-    if env["metal"] and env["arch"] != "arm64":
-        print_warning("Target architecture '{}' does not support the Metal rendering driver".format(env["arch"]))
-        env["metal"] = False
+    #if env["metal"] and env["arch"] != "arm64":
+    #    print_warning("Target architecture '{}' does not support the Metal rendering driver".format(env["arch"]))
+    #    env["metal"] = False
 
     if env["metal"]:
         env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])

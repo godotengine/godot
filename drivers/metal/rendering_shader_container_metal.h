@@ -64,6 +64,7 @@ struct MetalDeviceProfile {
 		Apple7,
 		Apple8,
 		Apple9,
+		Metal3
 	};
 
 	enum class ArgumentBuffersTier : uint32_t {

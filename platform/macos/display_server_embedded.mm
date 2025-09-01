@@ -69,6 +69,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 
 #if defined(RD_ENABLED)
 #if defined(VULKAN_ENABLED)
+/*
 #if defined(__x86_64__)
 	bool fallback_to_vulkan = GLOBAL_GET("rendering/rendering_device/fallback_to_vulkan");
 	if (!fallback_to_vulkan) {
@@ -80,6 +81,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 	}
 #endif
+*/
 	if (rendering_driver == "vulkan") {
 		rendering_context = memnew(RenderingContextDriverVulkanMacOS);
 	}

@@ -32,6 +32,10 @@
 
 #import "rendering_device_driver_metal.h"
 
+#if (TARGET_OS_OSX && __MAC_OS_X_VERSION_MAX_ALLOWED >= 140000) || (TARGET_OS_IOS && __IPHONE_OS_VERSION_MAX_ALLOWED >= 170000)
+#define MTLGPUFamilyMetal3 (MTLGPUFamily)5001
+#endif
+
 @protocol MTLDeviceEx <MTLDevice>
 #if TARGET_OS_OSX && __MAC_OS_X_VERSION_MAX_ALLOWED < 130300
 - (void)setShouldMaximizeConcurrentCompilation:(BOOL)v;
@@ -60,8 +64,11 @@ Error RenderingContextDriverMetal::initialize() {
 	device.workarounds = Workarounds();
 
 	MetalDeviceProperties props(metal_device);
-	int version = (int)props.features.highestFamily - (int)MTLGPUFamilyApple1 + 1;
-	device.name = vformat("%s (Apple%d)", metal_device.name.UTF8String, version);
+	if (props.features.highestFamily == MTLGPUFamilyMetal3) {
+		device.name = vformat("%s (Metal3)", metal_device.name.UTF8String);
+	} else {
+		device.name = vformat("%s (Apple%d)", metal_device.name.UTF8String, (int)props.features.highestFamily - (int)MTLGPUFamilyApple1 + 1);
+	}
 
 	return OK;
 }

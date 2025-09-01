@@ -97,6 +97,12 @@
 #define MTLVertexFormatFloatRGB9E5 MTLVertexFormatInvalid
 #endif
 
+#ifdef __x86_64__
+// HACK: Some demos with R16Uint textures crash (at least on my AMD GPU).
+// TODO: Fix this probably.
+#define MTLPixelFormatR16Uint MTLVertexFormatInvalid
+#endif
+
 template <typename T>
 void clear(T *p_val, size_t p_count = 1) {
 	memset(p_val, 0, sizeof(T) * p_count);
@@ -380,7 +386,11 @@ void PixelFormats::initDataFormatCapabilities() {
 	addDataFormatDesc(R16_SNORM, R16Snorm, Invalid, ShortNormalized, Short2Normalized, 1, 1, 2, ColorFloat);
 	addDataFormatDesc(R16_USCALED, Invalid, Invalid, UShort, UShort2, 1, 1, 2, ColorFloat);
 	addDataFormatDesc(R16_SSCALED, Invalid, Invalid, Short, Short2, 1, 1, 2, ColorFloat);
+#ifndef __x86_64__
+    // HACK: Some demos with R16Uint textures crash (at least on my AMD GPU).
+	// TODO: Fix this probably.
 	addDataFormatDesc(R16_UINT, R16Uint, Invalid, UShort, UShort2, 1, 1, 2, ColorUInt16);
+#endif
 	addDataFormatDesc(R16_SINT, R16Sint, Invalid, Short, Short2, 1, 1, 2, ColorInt16);
 	addDataFormatDesc(R16_SFLOAT, R16Float, Invalid, Half, Half2, 1, 1, 2, ColorFloat);
 
@@ -613,7 +623,11 @@ void PixelFormats::initMTLPixelFormatCapabilities() {
 	// Ordinary 16-bit pixel formats
 	addMTLPixelFormatDesc(R16Unorm, Color16, RFWCMB);
 	addMTLPixelFormatDesc(R16Snorm, Color16, RFWCMB);
+#ifndef __x86_64__
+	// HACK: Some demos with R16Uint textures crash (at least on my AMD GPU).
+	// TODO: Fix this probably.
 	addMTLPixelFormatDesc(R16Uint, Color16, RWCM);
+#endif
 	addMTLPixelFormatDesc(R16Sint, Color16, RWCM);
 	addMTLPixelFormatDesc(R16Float, Color16, All);
 
