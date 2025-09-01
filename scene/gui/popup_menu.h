@@ -41,6 +41,14 @@ class PanelContainer;
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);
 
+public:
+	enum AltShortcuts {
+		ALT_SHORTCUTS_AUTO,
+		ALT_SHORTCUTS_ENABLED,
+		ALT_SHORTCUTS_DISABLED,
+	};
+
+private:
 	static HashMap<NativeMenu::SystemMenus, PopupMenu *> system_menus;
 
 	struct Item {
@@ -114,6 +122,7 @@ class PopupMenu : public Popup {
 	RID system_menu;
 	NativeMenu::SystemMenus system_menu_id = NativeMenu::INVALID_MENU_ID;
 	bool prefer_native = false;
+	AltShortcuts alt_shortcuts = ALT_SHORTCUTS_AUTO;
 
 	bool close_allowed = false;
 	bool activated_by_keyboard = false;
@@ -393,9 +402,14 @@ public:
 	void set_allow_search(bool p_allow);
 	bool get_allow_search() const;
 
+	void set_alt_shortcuts(AltShortcuts p_short);
+	AltShortcuts get_alt_shortcuts() const;
+
 	virtual void popup(const Rect2i &p_bounds = Rect2i()) override;
 	virtual void set_visible(bool p_visible) override;
 
 	PopupMenu();
 	~PopupMenu();
 };
+
+VARIANT_ENUM_CAST(PopupMenu::AltShortcuts);

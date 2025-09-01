@@ -85,6 +85,18 @@ String Shortcut::get_as_text() const {
 	return "None";
 }
 
+String Shortcut::get_as_text_alt() const {
+	for (int i = 0; i < events.size(); i++) {
+		Ref<InputEvent> ie = events[i];
+		// Return first shortcut which is valid
+		if (ie.is_valid()) {
+			return ie->as_text_alt();
+		}
+	}
+
+	return "None";
+}
+
 bool Shortcut::has_valid_event() const {
 	// Tests if there is ANY input event which is valid.
 	for (int i = 0; i < events.size(); i++) {
