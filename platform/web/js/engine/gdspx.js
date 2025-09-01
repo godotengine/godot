@@ -545,6 +545,82 @@ gdspx_physic_set_collision_system_type(is_collision_by_alpha) {
 	FreeGdBool(_arg0); 
 
 }
+gdspx_physic_set_global_gravity(gravity) {
+	var _gdFuncPtr = Module._gdspx_physic_set_global_gravity; 
+	
+	var _arg0 = ToGdFloat(gravity);
+	_gdFuncPtr(_arg0);
+	FreeGdFloat(_arg0); 
+
+}
+gdspx_physic_get_global_gravity() {
+	var _gdFuncPtr = Module._gdspx_physic_get_global_gravity; 
+	var _retValue = AllocGdFloat();
+	_gdFuncPtr(_retValue);
+	var _finalRetValue = ToJsFloat(_retValue);
+	FreeGdFloat(_retValue); 
+	return _finalRetValue
+}
+gdspx_physic_set_global_friction(friction) {
+	var _gdFuncPtr = Module._gdspx_physic_set_global_friction; 
+	
+	var _arg0 = ToGdFloat(friction);
+	_gdFuncPtr(_arg0);
+	FreeGdFloat(_arg0); 
+
+}
+gdspx_physic_get_global_friction() {
+	var _gdFuncPtr = Module._gdspx_physic_get_global_friction; 
+	var _retValue = AllocGdFloat();
+	_gdFuncPtr(_retValue);
+	var _finalRetValue = ToJsFloat(_retValue);
+	FreeGdFloat(_retValue); 
+	return _finalRetValue
+}
+gdspx_physic_set_global_air_drag(air_drag) {
+	var _gdFuncPtr = Module._gdspx_physic_set_global_air_drag; 
+	
+	var _arg0 = ToGdFloat(air_drag);
+	_gdFuncPtr(_arg0);
+	FreeGdFloat(_arg0); 
+
+}
+gdspx_physic_get_global_air_drag() {
+	var _gdFuncPtr = Module._gdspx_physic_get_global_air_drag; 
+	var _retValue = AllocGdFloat();
+	_gdFuncPtr(_retValue);
+	var _finalRetValue = ToJsFloat(_retValue);
+	FreeGdFloat(_retValue); 
+	return _finalRetValue
+}
+gdspx_physic_check_collision_rect(pos,size,collision_mask) {
+	var _gdFuncPtr = Module._gdspx_physic_check_collision_rect; 
+	var _retValue = AllocGdArray();
+	var _arg0 = ToGdVec2(pos);
+	var _arg1 = ToGdVec2(size);
+	var _arg2 = ToGdInt(collision_mask);
+	_gdFuncPtr(_arg0, _arg1, _arg2, _retValue);
+	FreeGdVec2(_arg0); 
+	FreeGdVec2(_arg1); 
+	FreeGdInt(_arg2); 
+	var _finalRetValue = ToJsArray(_retValue);
+	FreeGdArray(_retValue); 
+	return _finalRetValue
+}
+gdspx_physic_check_collision_circle(pos,radius,collision_mask) {
+	var _gdFuncPtr = Module._gdspx_physic_check_collision_circle; 
+	var _retValue = AllocGdArray();
+	var _arg0 = ToGdVec2(pos);
+	var _arg1 = ToGdFloat(radius);
+	var _arg2 = ToGdInt(collision_mask);
+	_gdFuncPtr(_arg0, _arg1, _arg2, _retValue);
+	FreeGdVec2(_arg0); 
+	FreeGdFloat(_arg1); 
+	FreeGdInt(_arg2); 
+	var _finalRetValue = ToJsArray(_retValue);
+	FreeGdArray(_retValue); 
+	return _finalRetValue
+}
 gdspx_platform_set_stretch_mode(enable) {
 	var _gdFuncPtr = Module._gdspx_platform_set_stretch_mode; 
 	
@@ -1704,6 +1780,106 @@ gdspx_sprite_add_impulse(obj,impulse) {
 	FreeGdObj(_arg0); 
 	FreeGdVec2(_arg1); 
 
+}
+gdspx_sprite_set_physics_mode(obj,mode) {
+	var _gdFuncPtr = Module._gdspx_sprite_set_physics_mode; 
+	
+	var _arg0 = ToGdObj(obj);
+	var _arg1 = ToGdInt(mode);
+	_gdFuncPtr(_arg0, _arg1);
+	FreeGdObj(_arg0); 
+	FreeGdInt(_arg1); 
+
+}
+gdspx_sprite_get_physics_mode(obj) {
+	var _gdFuncPtr = Module._gdspx_sprite_get_physics_mode; 
+	var _retValue = AllocGdInt();
+	var _arg0 = ToGdObj(obj);
+	_gdFuncPtr(_arg0, _retValue);
+	FreeGdObj(_arg0); 
+	var _finalRetValue = ToJsInt(_retValue);
+	FreeGdInt(_retValue); 
+	return _finalRetValue
+}
+gdspx_sprite_set_use_gravity(obj,enabled) {
+	var _gdFuncPtr = Module._gdspx_sprite_set_use_gravity; 
+	
+	var _arg0 = ToGdObj(obj);
+	var _arg1 = ToGdBool(enabled);
+	_gdFuncPtr(_arg0, _arg1);
+	FreeGdObj(_arg0); 
+	FreeGdBool(_arg1); 
+
+}
+gdspx_sprite_is_use_gravity(obj) {
+	var _gdFuncPtr = Module._gdspx_sprite_is_use_gravity; 
+	var _retValue = AllocGdBool();
+	var _arg0 = ToGdObj(obj);
+	_gdFuncPtr(_arg0, _retValue);
+	FreeGdObj(_arg0); 
+	var _finalRetValue = ToJsBool(_retValue);
+	FreeGdBool(_retValue); 
+	return _finalRetValue
+}
+gdspx_sprite_set_gravity_scale(obj,scale) {
+	var _gdFuncPtr = Module._gdspx_sprite_set_gravity_scale; 
+	
+	var _arg0 = ToGdObj(obj);
+	var _arg1 = ToGdFloat(scale);
+	_gdFuncPtr(_arg0, _arg1);
+	FreeGdObj(_arg0); 
+	FreeGdFloat(_arg1); 
+
+}
+gdspx_sprite_get_gravity_scale(obj) {
+	var _gdFuncPtr = Module._gdspx_sprite_get_gravity_scale; 
+	var _retValue = AllocGdFloat();
+	var _arg0 = ToGdObj(obj);
+	_gdFuncPtr(_arg0, _retValue);
+	FreeGdObj(_arg0); 
+	var _finalRetValue = ToJsFloat(_retValue);
+	FreeGdFloat(_retValue); 
+	return _finalRetValue
+}
+gdspx_sprite_set_drag(obj,drag) {
+	var _gdFuncPtr = Module._gdspx_sprite_set_drag; 
+	
+	var _arg0 = ToGdObj(obj);
+	var _arg1 = ToGdFloat(drag);
+	_gdFuncPtr(_arg0, _arg1);
+	FreeGdObj(_arg0); 
+	FreeGdFloat(_arg1); 
+
+}
+gdspx_sprite_get_drag(obj) {
+	var _gdFuncPtr = Module._gdspx_sprite_get_drag; 
+	var _retValue = AllocGdFloat();
+	var _arg0 = ToGdObj(obj);
+	_gdFuncPtr(_arg0, _retValue);
+	FreeGdObj(_arg0); 
+	var _finalRetValue = ToJsFloat(_retValue);
+	FreeGdFloat(_retValue); 
+	return _finalRetValue
+}
+gdspx_sprite_set_friction(obj,friction) {
+	var _gdFuncPtr = Module._gdspx_sprite_set_friction; 
+	
+	var _arg0 = ToGdObj(obj);
+	var _arg1 = ToGdFloat(friction);
+	_gdFuncPtr(_arg0, _arg1);
+	FreeGdObj(_arg0); 
+	FreeGdFloat(_arg1); 
+
+}
+gdspx_sprite_get_friction(obj) {
+	var _gdFuncPtr = Module._gdspx_sprite_get_friction; 
+	var _retValue = AllocGdFloat();
+	var _arg0 = ToGdObj(obj);
+	_gdFuncPtr(_arg0, _retValue);
+	FreeGdObj(_arg0); 
+	var _finalRetValue = ToJsFloat(_retValue);
+	FreeGdFloat(_retValue); 
+	return _finalRetValue
 }
 gdspx_sprite_set_collision_layer(obj,layer) {
 	var _gdFuncPtr = Module._gdspx_sprite_set_collision_layer; 

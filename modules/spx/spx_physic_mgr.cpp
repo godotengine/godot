@@ -30,6 +30,7 @@
 
 #include "spx_physic_mgr.h"
 
+#include "core/variant/typed_array.h"
 #include "gdextension_spx_ext.h"
 #include "scene/resources/world_2d.h"
 #include "servers/physics_server_2d.h"
@@ -40,11 +41,42 @@
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/physics/collision_shape_2d.h"
 #include "scene/main/window.h"
+#include "scene/resources/2d/circle_shape_2d.h"
 #include "scene/resources/2d/rectangle_shape_2d.h"
 #include "spx_engine.h"
 #include "spx_sprite_mgr.h"
 
 #define spriteMgr SpxEngine::get_singleton()->get_sprite()
+
+GdFloat SpxPhysicDefine::global_gravity = 1.0;
+GdFloat SpxPhysicDefine::global_friction = 1.0;
+GdFloat SpxPhysicDefine::global_air_drag = 1.0;
+void SpxPhysicDefine::set_global_gravity(GdFloat gravity) {
+	SpxPhysicDefine::global_gravity = gravity;
+}
+
+GdFloat SpxPhysicDefine::get_global_gravity() {
+	return SpxPhysicDefine::global_gravity;
+}
+
+void SpxPhysicDefine::set_global_friction(GdFloat friction) {
+	SpxPhysicDefine::global_friction = friction;
+}
+
+GdFloat SpxPhysicDefine::get_global_friction() {
+	return SpxPhysicDefine::global_friction;
+}
+
+void SpxPhysicDefine::set_global_air_drag(GdFloat air_drag) {
+	SpxPhysicDefine::global_air_drag = air_drag;
+}
+
+GdFloat SpxPhysicDefine::get_global_air_drag() {
+	return SpxPhysicDefine::global_air_drag	;
+}
+
+
+
 
 void SpxPhysicMgr::on_awake() {
 	SpxBaseMgr::on_awake();
@@ -154,4 +186,83 @@ GdBool SpxPhysicMgr::check_touched_camera_boundary(GdObj obj, GdInt board_type) 
 //
 void SpxPhysicMgr::set_collision_system_type(GdBool is_collision_by_alpha) {
 	this->is_collision_by_pixel = is_collision_by_alpha;
+}
+
+void SpxPhysicMgr::set_global_gravity(GdFloat gravity) {
+	SpxPhysicDefine::set_global_gravity(gravity);
+}
+
+GdFloat SpxPhysicMgr::get_global_gravity() {
+	return SpxPhysicDefine::get_global_gravity();
+}
+
+void SpxPhysicMgr::set_global_friction(GdFloat friction) {
+	SpxPhysicDefine::set_global_friction(friction);
+}
+
+GdFloat SpxPhysicMgr::get_global_friction() {
+	return SpxPhysicDefine::get_global_friction();
+}
+
+void SpxPhysicMgr::set_global_air_drag(GdFloat air_drag) {
+	SpxPhysicDefine::set_global_air_drag(air_drag);
+}
+
+GdFloat SpxPhysicMgr::get_global_air_drag() {
+	return SpxPhysicDefine::get_global_air_drag();
+}
+
+
+GdArray SpxPhysicMgr::_check_collision(RID shape, GdVec2 pos, GdInt collision_mask){
+	auto node = (Node2D *)get_root();
+	PhysicsDirectSpaceState2D *space_state = node->get_world_2d()->get_direct_space_state();
+	if (!space_state) {
+		return create_array(GD_ARRAY_TYPE_GDOBJ, 0);
+	}
+
+	GdVec2 flipped_pos = GdVec2{ pos.x, -pos.y };
+	Transform2D query_transform(0, flipped_pos);
+
+	PhysicsDirectSpaceState2D::ShapeParameters params;
+	params.shape_rid = shape;
+	params.transform = query_transform;
+	params.collision_mask = (uint32_t)collision_mask;
+	params.collide_with_areas = true;
+	params.collide_with_bodies = true;
+	params.motion = Vector2(0, 0);
+	params.margin = 0.0;
+
+	PhysicsDirectSpaceState2D::ShapeResult results[32];
+	int result_count = space_state->intersect_shape(params, results, 32);
+
+	Array resultIds;	
+	for (int i = 0; i < result_count; i++) {
+		Object *collider_obj = results[i].collider;
+		if (collider_obj) {
+			SpxSprite *sprite = dynamic_cast<SpxSprite *>(collider_obj);
+			if (sprite) {
+				resultIds.push_back(sprite->get_gid()); 
+			}
+		}
+	}
+	int valid_count = resultIds.size();
+	GdArray result_array = create_array(GD_ARRAY_TYPE_GDOBJ, valid_count);
+	for(int i=0; i < valid_count; i++){
+		auto val=(GdObj)resultIds.get(i);
+		set_array(result_array,i,val);
+	}
+	return result_array;
+}
+GdArray SpxPhysicMgr::check_collision_rect(GdVec2 pos, GdVec2 size,GdInt collision_mask) {
+	Ref<RectangleShape2D> rect_shape;
+	rect_shape.instantiate();
+	rect_shape->set_size(size);
+	return _check_collision(rect_shape->get_rid(), pos, collision_mask);
+}
+
+GdArray SpxPhysicMgr::check_collision_circle(GdVec2 pos, GdFloat radius,GdInt collision_mask) {
+	Ref<CircleShape2D> circle_shape;
+	circle_shape.instantiate();
+	circle_shape->set_radius(radius); 
+	return _check_collision(circle_shape->get_rid(), pos, collision_mask);
 }

@@ -654,6 +654,57 @@ void SpxSpriteMgr::add_impulse(GdObj obj, GdVec2 impulse) {
 	sprite->add_impulse(impulse);
 }
 
+
+void SpxSpriteMgr::set_physics_mode(GdObj obj, GdInt mode) {
+	check_and_get_sprite_v()
+	sprite->set_physics_mode(mode);
+}
+
+GdInt SpxSpriteMgr::get_physics_mode(GdObj obj) {
+	check_and_get_sprite_r(0)
+	return sprite->get_physics_mode();
+}
+
+void SpxSpriteMgr::set_use_gravity(GdObj obj, GdBool enabled) {
+	check_and_get_sprite_v()
+	sprite->set_use_gravity(enabled);
+}
+
+GdBool SpxSpriteMgr::is_use_gravity(GdObj obj) {
+	check_and_get_sprite_r(false)
+	return sprite->is_use_gravity();
+}
+
+void SpxSpriteMgr::set_gravity_scale(GdObj obj, GdFloat scale) {
+	check_and_get_sprite_v()
+	sprite->set_gravity_scale(scale);
+}
+
+GdFloat SpxSpriteMgr::get_gravity_scale(GdObj obj) {
+	check_and_get_sprite_r(1.0f)
+	return sprite->get_gravity_scale();
+}
+
+void SpxSpriteMgr::set_drag(GdObj obj, GdFloat drag) {
+	check_and_get_sprite_v()
+	sprite->set_drag(drag);
+}
+
+GdFloat SpxSpriteMgr::get_drag(GdObj obj) {
+	check_and_get_sprite_r(0.0f)
+	return sprite->get_drag();
+}
+
+void SpxSpriteMgr::set_friction(GdObj obj, GdFloat friction) {
+	check_and_get_sprite_v()
+	sprite->set_friction(friction);
+}
+
+GdFloat SpxSpriteMgr::get_friction(GdObj obj) {
+	check_and_get_sprite_r(0.0f)
+	return sprite->get_friction();
+}
+
 void SpxSpriteMgr::set_collision_layer(GdObj obj, GdInt layer) {
 	check_and_get_sprite_v()
 	sprite->set_collision_layer((uint32_t)layer);

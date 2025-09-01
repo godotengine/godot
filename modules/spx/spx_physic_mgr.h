@@ -34,6 +34,19 @@
 #include "gdextension_spx_ext.h"
 #include "spx_base_mgr.h"
 
+class SpxPhysicDefine{
+private:
+	static GdFloat global_gravity;
+	static GdFloat global_friction;
+	static GdFloat global_air_drag;
+public:
+	static void set_global_gravity(GdFloat gravity);
+	static GdFloat get_global_gravity();
+	static void set_global_friction(GdFloat friction);
+	static GdFloat get_global_friction();
+	static void set_global_air_drag(GdFloat air_drag);
+	static GdFloat get_global_air_drag();
+};
 
 class SpxPhysicMgr : SpxBaseMgr {
 	SPXCLASS(SpxPhysicMgr, SpxBaseMgr)
@@ -41,6 +54,9 @@ class SpxPhysicMgr : SpxBaseMgr {
 public:
 	bool is_collision_by_pixel;
 	void on_awake() override;
+
+	GdArray _check_collision(RID shape, GdVec2 pos, GdInt collision_mask);
+
 public:
 	virtual ~SpxPhysicMgr() = default; // Added virtual destructor to fix -Werror=non-virtual-dtor
 	GdObj raycast(GdVec2 from, GdVec2 to, GdInt collision_mask);
@@ -48,6 +64,17 @@ public:
 	GdInt check_touched_camera_boundaries(GdObj obj);
 	GdBool check_touched_camera_boundary(GdObj obj,GdInt board_type);
 	void set_collision_system_type(GdBool is_collision_by_alpha);
+	// configs
+	void set_global_gravity(GdFloat gravity);
+	GdFloat get_global_gravity();
+	void set_global_friction(GdFloat friction);
+	GdFloat get_global_friction();
+	void set_global_air_drag(GdFloat air_drag);
+	GdFloat get_global_air_drag();
+
+	// check collision
+	GdArray check_collision_rect(GdVec2 pos, GdVec2 size, GdInt collision_mask);
+	GdArray check_collision_circle(GdVec2 pos, GdFloat radius, GdInt collision_mask);
 };
 
 #endif // SPX_PHYSIC_MGR_H

@@ -232,6 +232,30 @@ static void gdextension_spx_physic_check_touched_camera_boundary(GdObj obj,GdInt
 static void gdextension_spx_physic_set_collision_system_type(GdBool is_collision_by_alpha) {
 	 physicMgr->set_collision_system_type(is_collision_by_alpha);
 }
+static void gdextension_spx_physic_set_global_gravity(GdFloat gravity) {
+	 physicMgr->set_global_gravity(gravity);
+}
+static void gdextension_spx_physic_get_global_gravity(GdFloat* ret_val) {
+	*ret_val = physicMgr->get_global_gravity();
+}
+static void gdextension_spx_physic_set_global_friction(GdFloat friction) {
+	 physicMgr->set_global_friction(friction);
+}
+static void gdextension_spx_physic_get_global_friction(GdFloat* ret_val) {
+	*ret_val = physicMgr->get_global_friction();
+}
+static void gdextension_spx_physic_set_global_air_drag(GdFloat air_drag) {
+	 physicMgr->set_global_air_drag(air_drag);
+}
+static void gdextension_spx_physic_get_global_air_drag(GdFloat* ret_val) {
+	*ret_val = physicMgr->get_global_air_drag();
+}
+static void gdextension_spx_physic_check_collision_rect(GdVec2 pos,GdVec2 size,GdInt collision_mask,GdArray* ret_val) {
+	*ret_val = physicMgr->check_collision_rect(pos, size, collision_mask);
+}
+static void gdextension_spx_physic_check_collision_circle(GdVec2 pos,GdFloat radius,GdInt collision_mask,GdArray* ret_val) {
+	*ret_val = physicMgr->check_collision_circle(pos, radius, collision_mask);
+}
 static void gdextension_spx_platform_set_stretch_mode(GdBool enable) {
 	 platformMgr->set_stretch_mode(enable);
 }
@@ -580,6 +604,36 @@ static void gdextension_spx_sprite_add_force(GdObj obj,GdVec2 force) {
 static void gdextension_spx_sprite_add_impulse(GdObj obj,GdVec2 impulse) {
 	 spriteMgr->add_impulse(obj, impulse);
 }
+static void gdextension_spx_sprite_set_physics_mode(GdObj obj,GdInt mode) {
+	 spriteMgr->set_physics_mode(obj, mode);
+}
+static void gdextension_spx_sprite_get_physics_mode(GdObj obj,GdInt* ret_val) {
+	*ret_val = spriteMgr->get_physics_mode(obj);
+}
+static void gdextension_spx_sprite_set_use_gravity(GdObj obj,GdBool enabled) {
+	 spriteMgr->set_use_gravity(obj, enabled);
+}
+static void gdextension_spx_sprite_is_use_gravity(GdObj obj,GdBool* ret_val) {
+	*ret_val = spriteMgr->is_use_gravity(obj);
+}
+static void gdextension_spx_sprite_set_gravity_scale(GdObj obj,GdFloat scale) {
+	 spriteMgr->set_gravity_scale(obj, scale);
+}
+static void gdextension_spx_sprite_get_gravity_scale(GdObj obj,GdFloat* ret_val) {
+	*ret_val = spriteMgr->get_gravity_scale(obj);
+}
+static void gdextension_spx_sprite_set_drag(GdObj obj,GdFloat drag) {
+	 spriteMgr->set_drag(obj, drag);
+}
+static void gdextension_spx_sprite_get_drag(GdObj obj,GdFloat* ret_val) {
+	*ret_val = spriteMgr->get_drag(obj);
+}
+static void gdextension_spx_sprite_set_friction(GdObj obj,GdFloat friction) {
+	 spriteMgr->set_friction(obj, friction);
+}
+static void gdextension_spx_sprite_get_friction(GdObj obj,GdFloat* ret_val) {
+	*ret_val = spriteMgr->get_friction(obj);
+}
 static void gdextension_spx_sprite_set_collision_layer(GdObj obj,GdInt layer) {
 	 spriteMgr->set_collision_layer(obj, layer);
 }
@@ -832,6 +886,14 @@ void gdextension_spx_setup_interface() {
 	REGISTER_SPX_INTERFACE_FUNC(spx_physic_check_touched_camera_boundaries);
 	REGISTER_SPX_INTERFACE_FUNC(spx_physic_check_touched_camera_boundary);
 	REGISTER_SPX_INTERFACE_FUNC(spx_physic_set_collision_system_type);
+	REGISTER_SPX_INTERFACE_FUNC(spx_physic_set_global_gravity);
+	REGISTER_SPX_INTERFACE_FUNC(spx_physic_get_global_gravity);
+	REGISTER_SPX_INTERFACE_FUNC(spx_physic_set_global_friction);
+	REGISTER_SPX_INTERFACE_FUNC(spx_physic_get_global_friction);
+	REGISTER_SPX_INTERFACE_FUNC(spx_physic_set_global_air_drag);
+	REGISTER_SPX_INTERFACE_FUNC(spx_physic_get_global_air_drag);
+	REGISTER_SPX_INTERFACE_FUNC(spx_physic_check_collision_rect);
+	REGISTER_SPX_INTERFACE_FUNC(spx_physic_check_collision_circle);
 	REGISTER_SPX_INTERFACE_FUNC(spx_platform_set_stretch_mode);
 	REGISTER_SPX_INTERFACE_FUNC(spx_platform_set_window_position);
 	REGISTER_SPX_INTERFACE_FUNC(spx_platform_get_window_position);
@@ -948,6 +1010,16 @@ void gdextension_spx_setup_interface() {
 	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_get_mass);
 	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_add_force);
 	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_add_impulse);
+	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_set_physics_mode);
+	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_get_physics_mode);
+	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_set_use_gravity);
+	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_is_use_gravity);
+	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_set_gravity_scale);
+	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_get_gravity_scale);
+	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_set_drag);
+	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_get_drag);
+	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_set_friction);
+	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_get_friction);
 	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_set_collision_layer);
 	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_get_collision_layer);
 	REGISTER_SPX_INTERFACE_FUNC(spx_sprite_set_collision_mask);
