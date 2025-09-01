@@ -100,7 +100,7 @@
 #ifdef __x86_64__
 // HACK: Some demos with R16Uint textures crash (at least on my AMD GPU).
 // TODO: Fix this probably.
-#define MTLPixelFormatR16Uint MTLVertexFormatInvalid
+#define MTLPixelFormatR16Uint MTLPixelFormatInvalid
 #endif
 
 template <typename T>
