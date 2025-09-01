@@ -4308,7 +4308,7 @@ void EditorNode::setup_color_picker(ColorPicker *p_picker) {
 	p_picker->set_editor_settings(EditorSettings::get_singleton());
 	int default_color_mode = EditorSettings::get_singleton()->get_project_metadata("color_picker", "color_mode", EDITOR_GET("interface/inspector/default_color_picker_mode"));
 	int picker_shape = EditorSettings::get_singleton()->get_project_metadata("color_picker", "picker_shape", EDITOR_GET("interface/inspector/default_color_picker_shape"));
-	bool show_intensity = EditorSettings::get_singleton()->get_project_metadata("color_picker", "show_intensity", EDITOR_GET("interface/inspector/color_picker_show_intensity"));
+	bool show_intensity = EDITOR_GET("interface/inspector/color_picker_show_intensity");
 
 	p_picker->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
 	p_picker->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);

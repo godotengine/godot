@@ -972,6 +972,7 @@ void ColorPicker::set_picker_shape(PickerShapeType p_shape) {
 	}
 #endif
 
+	_copy_normalized_to_hsv_okhsl();
 	_update_controls();
 	_update_color();
 }
