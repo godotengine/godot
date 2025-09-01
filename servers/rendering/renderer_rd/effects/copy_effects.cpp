@@ -53,8 +53,9 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 		Vector<String> blur_modes;
 		blur_modes.push_back("\n#define MODE_MIPMAP\n"); // BLUR_MIPMAP
 		blur_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n"); // BLUR_MODE_GAUSSIAN_BLUR
-		blur_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n"); // BLUR_MODE_GAUSSIAN_GLOW
-		blur_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n#define GLOW_USE_AUTO_EXPOSURE\n"); // BLUR_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE
+		blur_modes.push_back("\n#define MODE_GLOW_GATHER\n"); // BLUR_MODE_GAUSSIAN_GLOW_GATHER
+		blur_modes.push_back("\n#define MODE_GLOW_DOWNSAMPLE\n"); // BLUR_MODE_GAUSSIAN_GLOW_DOWNSAMPLE
+		blur_modes.push_back("\n#define MODE_GLOW_UPSAMPLE\n"); // BLUR_MODE_GAUSSIAN_GLOW_UPSAMPLE
 		blur_modes.push_back("\n#define MODE_COPY\n"); // BLUR_MODE_COPY
 		blur_modes.push_back("\n#define MODE_SET_COLOR\n"); // BLUR_MODE_SET_COLOR
 
@@ -65,6 +66,15 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 		for (int i = 0; i < BLUR_MODE_MAX; i++) {
 			blur_raster.pipelines[i].setup(blur_raster.shader.version_get_shader(blur_raster.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
 		}
+
+		RD::SamplerState sampler_state;
+		sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+		sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+		sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER;
+		sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER;
+		sampler_state.border_color = RD::SAMPLER_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+
+		blur_raster.glow_sampler = RD::get_singleton()->sampler_create(sampler_state);
 
 	} else {
 		// not used in clustered
@@ -308,6 +318,7 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 CopyEffects::~CopyEffects() {
 	if (prefer_raster_effects) {
 		blur_raster.shader.version_free(blur_raster.shader_version);
+		RD::get_singleton()->free(blur_raster.glow_sampler);
 		cubemap_downsampler.raster_shader.version_free(cubemap_downsampler.shader_version);
 		filter.raster_shader.version_free(filter.shader_version);
 		roughness.raster_shader.version_free(roughness.shader_version);
@@ -720,8 +731,8 @@ void CopyEffects::gaussian_blur_raster(RID p_source_rd_texture, RID p_dest_textu
 
 	BlurRasterMode blur_mode = BLUR_MODE_GAUSSIAN_BLUR;
 
-	blur_raster.push_constant.pixel_size[0] = 1.0 / float(p_size.x);
-	blur_raster.push_constant.pixel_size[1] = 1.0 / float(p_size.y);
+	blur_raster.push_constant.dest_pixel_size[0] = 1.0 / float(p_size.x);
+	blur_raster.push_constant.dest_pixel_size[1] = 1.0 / float(p_size.y);
 
 	// setup our uniforms
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
@@ -792,7 +803,7 @@ void CopyEffects::gaussian_glow(RID p_source_rd_texture, RID p_back_texture, con
 	RD::get_singleton()->compute_list_end();
 }
 
-void CopyEffects::gaussian_glow_raster(RID p_source_rd_texture, RID p_half_texture, RID p_dest_texture, float p_luminance_multiplier, const Size2i &p_size, float p_strength, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, RID p_auto_exposure, float p_auto_exposure_scale) {
+void CopyEffects::gaussian_glow_downsample_raster(RID p_source_rd_texture, RID p_dest_texture, float p_luminance_multiplier, const Size2i &p_size, float p_strength, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_threshold, float p_hdr_bleed_scale) {
 	ERR_FAIL_COND_MSG(!prefer_raster_effects, "Can't use the raster version of the gaussian glow with the clustered renderer.");
 
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
@@ -800,16 +811,14 @@ void CopyEffects::gaussian_glow_raster(RID p_source_rd_texture, RID p_half_textu
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	RID half_framebuffer = FramebufferCacheRD::get_singleton()->get_cache(p_half_texture);
 	RID dest_framebuffer = FramebufferCacheRD::get_singleton()->get_cache(p_dest_texture);
 
 	memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
 
-	BlurRasterMode blur_mode = p_first_pass && p_auto_exposure.is_valid() ? BLUR_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE : BLUR_MODE_GAUSSIAN_GLOW;
-	uint32_t base_flags = 0;
+	BlurRasterMode blur_mode = p_first_pass ? BLUR_MODE_GAUSSIAN_GLOW_GATHER : BLUR_MODE_GAUSSIAN_GLOW_DOWNSAMPLE;
 
-	blur_raster.push_constant.pixel_size[0] = 1.0 / float(p_size.x);
-	blur_raster.push_constant.pixel_size[1] = 1.0 / float(p_size.y);
+	blur_raster.push_constant.source_pixel_size[0] = 1.0 / float(p_size.x);
+	blur_raster.push_constant.source_pixel_size[1] = 1.0 / float(p_size.y);
 
 	blur_raster.push_constant.glow_strength = p_strength;
 	blur_raster.push_constant.glow_bloom = p_bloom;
@@ -819,45 +828,61 @@ void CopyEffects::gaussian_glow_raster(RID p_source_rd_texture, RID p_half_textu
 	blur_raster.push_constant.glow_white = 0; //actually unused
 	blur_raster.push_constant.glow_luminance_cap = p_luminance_cap;
 
-	blur_raster.push_constant.glow_auto_exposure_scale = p_auto_exposure_scale; //unused also
-
 	blur_raster.push_constant.luminance_multiplier = p_luminance_multiplier;
 
 	// setup our uniforms
-	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-
-	RD::Uniform u_source_rd_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_source_rd_texture }));
-	RD::Uniform u_half_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_half_texture }));
+	RD::Uniform u_source_rd_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ blur_raster.glow_sampler, p_source_rd_texture }));
 
 	RID shader = blur_raster.shader.version_get_shader(blur_raster.shader_version, blur_mode);
 	ERR_FAIL_COND(shader.is_null());
 
-	//HORIZONTAL
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(half_framebuffer);
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur_raster.pipelines[blur_mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(half_framebuffer)));
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(dest_framebuffer);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur_raster.pipelines[blur_mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(dest_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
-	if (p_auto_exposure.is_valid() && p_first_pass) {
-		RD::Uniform u_auto_exposure(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_auto_exposure }));
-		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 1, u_auto_exposure), 1);
-	}
 
-	blur_raster.push_constant.flags = base_flags | BLUR_FLAG_HORIZONTAL | (p_first_pass ? BLUR_FLAG_GLOW_FIRST_PASS : 0);
 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
 
 	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
 	RD::get_singleton()->draw_list_end();
+}
 
-	blur_mode = BLUR_MODE_GAUSSIAN_GLOW;
+void CopyEffects::gaussian_glow_upsample_raster(RID p_source_rd_texture, RID p_dest_texture, RID p_blend_texture, float p_luminance_multiplier, const Size2i &p_source_size, const Size2i &p_dest_size, float p_level, float p_base_strength) {
+	ERR_FAIL_COND_MSG(!prefer_raster_effects, "Can't use the raster version of the gaussian glow with the clustered renderer.");
 
-	shader = blur_raster.shader.version_get_shader(blur_raster.shader_version, blur_mode);
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+
+	RID dest_framebuffer = FramebufferCacheRD::get_singleton()->get_cache(p_dest_texture);
+
+	memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
+
+	BlurRasterMode blur_mode = BLUR_MODE_GAUSSIAN_GLOW_UPSAMPLE;
+
+	blur_raster.push_constant.source_pixel_size[0] = 1.0 / float(p_source_size.x);
+	blur_raster.push_constant.source_pixel_size[1] = 1.0 / float(p_source_size.y);
+	blur_raster.push_constant.dest_pixel_size[0] = 1.0 / float(p_dest_size.x);
+	blur_raster.push_constant.dest_pixel_size[1] = 1.0 / float(p_dest_size.y);
+	blur_raster.push_constant.luminance_multiplier = p_luminance_multiplier;
+	blur_raster.push_constant.level = p_level * 0.5;
+	blur_raster.push_constant.glow_strength = p_base_strength;
+
+	uint32_t spec_constant = p_level > 0.01 ? 1 : 0;
+
+	// setup our uniforms
+	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RD::Uniform u_source_rd_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_source_rd_texture }));
+	RD::Uniform u_blend_rd_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_blend_texture }));
+
+	RID shader = blur_raster.shader.version_get_shader(blur_raster.shader_version, blur_mode);
 	ERR_FAIL_COND(shader.is_null());
 
-	//VERTICAL
-	draw_list = RD::get_singleton()->draw_list_begin(dest_framebuffer);
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur_raster.pipelines[blur_mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(dest_framebuffer)));
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_half_texture), 0);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(dest_framebuffer);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur_raster.pipelines[blur_mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(dest_framebuffer), false, 0, spec_constant));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 1, u_blend_rd_texture), 1);
 
-	blur_raster.push_constant.flags = base_flags;
 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
 
 	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
@@ -912,8 +937,8 @@ void CopyEffects::make_mipmap_raster(RID p_source_rd_texture, RID p_dest_texture
 
 	BlurRasterMode mode = BLUR_MIPMAP;
 
-	blur_raster.push_constant.pixel_size[0] = 1.0 / float(p_size.x);
-	blur_raster.push_constant.pixel_size[1] = 1.0 / float(p_size.y);
+	blur_raster.push_constant.dest_pixel_size[0] = 1.0 / float(p_size.x);
+	blur_raster.push_constant.dest_pixel_size[1] = 1.0 / float(p_size.y);
 
 	// setup our uniforms
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
