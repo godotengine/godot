@@ -1384,6 +1384,9 @@ ProjectManager::ProjectManager() {
 		Control::set_root_layout_direction(pm_root_dir);
 		Window::set_root_layout_direction(pm_root_dir);
 
+		PopupMenu::AltShortcuts alt_short = EDITOR_GET("interface/editor/use_alt_shortcuts");
+		PopupMenu::set_default_alt_shortcuts(alt_short);
+
 		EditorThemeManager::initialize();
 		theme = EditorThemeManager::generate_theme();
 		DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
