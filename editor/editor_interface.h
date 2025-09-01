@@ -101,7 +101,7 @@ public:
 	// Editor tools.
 
 	EditorCommandPalette *get_command_palette() const;
-	EditorFileSystem *get_resource_file_system() const;
+	EditorFileSystem *get_resource_filesystem() const;
 	EditorPaths *get_editor_paths() const;
 	EditorResourcePreview *get_resource_previewer() const;
 	EditorSelection *get_selection() const;
