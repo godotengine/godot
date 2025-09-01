@@ -389,36 +389,8 @@ void DisplayServerEmbedded::window_set_drop_files_callback(const Callable &p_cal
 	// Not supported
 }
 
-void DisplayServerEmbedded::joy_add(int p_idx, const String &p_name) {
-	Joy *joy = joysticks.getptr(p_idx);
-	if (joy == nullptr) {
-		joysticks[p_idx] = Joy(p_name);
-		Input::get_singleton()->joy_connection_changed(p_idx, true, p_name);
-	}
-}
-
-void DisplayServerEmbedded::joy_del(int p_idx) {
-	if (joysticks.erase(p_idx)) {
-		Input::get_singleton()->joy_connection_changed(p_idx, false, String());
-	}
-}
-
 void DisplayServerEmbedded::process_events() {
 	Input *input = Input::get_singleton();
-	for (KeyValue<int, Joy> &kv : joysticks) {
-		uint64_t ts = input->get_joy_vibration_timestamp(kv.key);
-		if (ts > kv.value.timestamp) {
-			kv.value.timestamp = ts;
-			Vector2 strength = input->get_joy_vibration_strength(kv.key);
-			if (strength == Vector2()) {
-				EngineDebugger::get_singleton()->send_message("game_view:joy_stop", { kv.key });
-			} else {
-				float duration = input->get_joy_vibration_duration(kv.key);
-				EngineDebugger::get_singleton()->send_message("game_view:joy_start", { kv.key, duration, strength });
-			}
-		}
-	}
-
 	input->flush_buffered_events();
 }
 
