@@ -1235,6 +1235,7 @@ void RendererCanvasCull::canvas_item_add_multiline(RID p_item, const Vector<Poin
 		pline->primitive = RS::PRIMITIVE_LINES;
 		pline->polygon.create(Vector<int>(), p_points, colors);
 	} else {
+        WARN_PRINT("Batching is not suppoted for multilines with width (`p_width >= 0`).");
 		if (p_colors.size() == 1) {
 			Color color = p_colors[0];
 			for (int i = 0; i < p_points.size() >> 1; i++) {
