@@ -1572,7 +1572,7 @@ Environment::Environment() {
 	set_camera_feed_id(bg_camera_feed_id);
 
 	glow_levels.resize(7);
-	glow_levels.write[0] = 1.0;
+	glow_levels.write[0] = 0.0;
 	glow_levels.write[1] = 0.8;
 	glow_levels.write[2] = 0.4;
 	glow_levels.write[3] = 0.1;
