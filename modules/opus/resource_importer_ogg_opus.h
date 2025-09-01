@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  resource_importer_ogg_opus.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,37 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
 #include "audio_stream_ogg_opus.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_node.h"
-#include "resource_importer_ogg_opus.h"
+#include "core/io/resource_importer.h"
 
-static void _editor_init() {
-	Ref<ResourceImporterOggOpus> opus_importer;
-	opus_importer.instantiate();
-	ResourceFormatImporter::get_singleton()->add_importer(opus_importer);
-}
+class ResourceImporterOggOpus : public ResourceImporter {
+    GDCLASS(ResourceImporterOggOpus, ResourceImporter);
+
+protected:
+    static void _bind_methods();
+
+public:
+#ifdef TOOLS_ENABLED
+    virtual bool has_advanced_options() const override;
+    virtual void show_advanced_options(const String &p_path) override;
 #endif
 
-void initialize_opus_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-		GDREGISTER_CLASS(AudioStreamOggOpus);
-		GDREGISTER_CLASS(AudioStreamPlaybackOggOpus);
-	}
+    virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+    virtual String get_save_extension() const override;
+    virtual String get_resource_type() const override;
+    virtual String get_importer_name() const override;
+    virtual String get_visible_name() const override;
+    virtual int get_preset_count() const override;
+    virtual String get_preset_name(int p_idx) const override;
+    virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
+    virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
 
-#ifdef TOOLS_ENABLED
-	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		GDREGISTER_CLASS(ResourceImporterOggOpus);
-		EditorNode::add_init_callback(_editor_init);
-	}
-#endif
-}
+    virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
-void uninitialize_opus_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+    virtual bool can_import_threaded() const override { return true; }
+
+    ResourceImporterOggOpus();
+};
