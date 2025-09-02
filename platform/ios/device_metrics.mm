@@ -120,6 +120,16 @@
 			@"iPad16,4", // iPad Pro 11-inch M4
 			@"iPad16,5", // iPad Pro 13-inch M4
 			@"iPad16,6", // iPad Pro 13-inch M4
+			@"iPad15,3", // iPad Air M3
+			@"iPad15,4", // iPad Air M3
+			@"iPad15,5", // iPad Air M3
+			@"iPad15,6", // iPad Air M3
+			@"iPad15,7", // iPad 11th Gen
+			@"iPad15,8", // iPad 11th Gen
+			@"iPad17,1", // iPad Pro 11-inch M5
+			@"iPad17,2", // iPad Pro 11-inch M5
+			@"iPad17,3", // iPad Pro 13-inch M5
+			@"iPad17,4", // iPad Pro 13-inch M5
 		] : @264,
 		@[
 			@"iPhone3,1", // iPhone 4
@@ -202,6 +212,10 @@
 			@"iPhone17,3", // iPhone 16
 			@"iPhone17,4", // iPhone 16 Plus
 			@"iPhone17,5", // iPhone 16e
+			@"iPhone18,1", // iPhone 17 Pro
+			@"iPhone18,2", // iPhone 17 Pro Max
+			@"iPhone18,3", // iPhone 17
+			@"iPhone18,4", // iPhone Air
 		] : @460,
 		@[
 			@"iPhone13,1", // iPhone 12 Mini

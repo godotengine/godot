@@ -467,12 +467,16 @@ static const _ModelInfo _models[] = {
 	{ { "iPhone13,1", "iPhone13,2", "iPhone13,3", "iPhone13,4", "iPad13,1", "iPad13,2", "iPad13,18", "iPad13,19" }, "Apple A14 Bionic" },
 	{ { "iPad13,4", "iPad13,5", "iPad13,6", "iPad13,7", "iPad13,8", "iPad13,9", "iPad13,10", "iPad13,11", "iPad13,16", "iPad13,17" }, "Apple M1" },
 	{ { "iPhone14,2", "iPhone14,3", "iPhone14,4", "iPhone14,5", "iPhone14,6", "iPhone14,7", "iPhone14,8", "iPad14,1", "iPad14,2", "AppleTV14,1" }, "Apple A15 Bionic" },
-	{ { "iPhone15,2", "iPhone15,3", "iPhone15,4", "iPhone15,5" }, "Apple A16 Bionic" },
+	{ { "iPhone15,2", "iPhone15,3", "iPhone15,4", "iPhone15,5", "iPad15,7", "iPad15,8" }, "Apple A16 Bionic" },
 	{ { "iPad14,3", "iPad14,4", "iPad14,5", "iPad14,6", "iPad14,8", "iPad14,9", "iPad14,10", "iPad14,11", "RealityDevice14,1" }, "Apple M2" },
 	{ { "iPhone16,1", "iPhone16,2", "iPad16,1", "iPad16,2" }, "Apple A17 Pro" },
+	{ { "iPad15,3", "iPad15,4", "iPad15,5", "iPad15,6" }, "Apple M3" },
 	{ { "iPad16,3", "iPad16,4", "iPad16,5", "iPad16,6" }, "Apple M4" },
+	{ { "iPad17,1", "iPad17,2", "iPad17,3", "iPad17,4", "RealityDevice17,1" }, "Apple M5" },
 	{ { "iPhone17,3", "iPhone17,4", "iPhone17,5" }, "Apple A18" },
 	{ { "iPhone17,1", "iPhone17,2" }, "Apple A18 Pro" },
+	{ { "iPhone18,3" }, "Apple A19" },
+	{ { "iPhone18,1", "iPhone18,2", "iPhone18,4" }, "Apple A19 Pro" },
 };
 
 String OS_AppleEmbedded::get_processor_name() const {
