@@ -358,6 +358,9 @@ private:
 			float cos_spot_angle;
 			float inv_spot_attenuation;
 			float radius;
+
+			float area_width[3];
+			float area_height[3];
 		};
 
 		struct DirectLightPushConstant {
