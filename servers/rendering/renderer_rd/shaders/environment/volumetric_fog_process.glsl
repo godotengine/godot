@@ -695,7 +695,12 @@ void main() {
 
 								shadow_attenuation = mix(1.0 - area_lights.data[light_index].shadow_opacity, 1.0, exp(min(0.0, (pos.z - depth)) / inv_center_range * INV_FOG_FADE));
 							}
-							total_light += light * attenuation * shadow_attenuation * henyey_greenstein(dot(normalize(closest_point_on_light - view_pos), normalize(view_pos)), params.phase_g) * area_lights.data[light_index].volumetric_fog_energy;
+							vec3 light_rel_vec = closest_point_on_light - view_pos;
+							float cos_theta = 0.0;
+							if (dot(light_rel_vec, light_rel_vec) > EPSILON) {
+								cos_theta = dot(normalize(light_rel_vec), normalize(view_pos));
+							}
+							total_light += light * attenuation * shadow_attenuation * henyey_greenstein(cos_theta, params.phase_g) * area_lights.data[light_index].volumetric_fog_energy;
 						}
 					}
 				}
