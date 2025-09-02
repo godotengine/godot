@@ -319,8 +319,19 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 		}
 		String remaining_string = text_with_ime.substr(from);
 		text_line.data_buf->add_string(remaining_string, font, font_size, language);
+	}
+	if (!bidi_override_with_ime.is_empty()) {
+		TS->shaped_text_set_bidi_override(text_line.data_buf->get_rid(), bidi_override_with_ime);
+	}
 
-	} else {
+	if (!p_text_changed) {
+		// Update fonts.
+		RID r = text_line.data_buf->get_rid();
+		int spans = TS->shaped_get_span_count(r);
+		for (int i = 0; i < spans; i++) {
+			TS->shaped_set_span_update_font(r, i, font->get_rids(), font_size, font->get_opentype_features());
+		}
+
 		// Update inline object sizes.
 		for (int i = 0; i < text_line.data_buf->get_line_count(); i++) {
 			for (Variant key : text_line.data_buf->get_line_objects(i)) {
@@ -331,17 +342,6 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 				float width_ratio = info["width_ratio"];
 				text_line.data_buf->resize_object(info, Vector2(font_height * width_ratio, font_height), INLINE_ALIGNMENT_CENTER, 0);
 			}
-		}
-	}
-	if (!bidi_override_with_ime.is_empty()) {
-		TS->shaped_text_set_bidi_override(text_line.data_buf->get_rid(), bidi_override_with_ime);
-	}
-
-	if (!p_text_changed) {
-		RID r = text_line.data_buf->get_rid();
-		int spans = TS->shaped_get_span_count(r);
-		for (int i = 0; i < spans; i++) {
-			TS->shaped_set_span_update_font(r, i, font->get_rids(), font_size, font->get_opentype_features());
 		}
 	}
 
