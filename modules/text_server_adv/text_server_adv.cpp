@@ -2006,7 +2006,7 @@ _FORCE_INLINE_ void TextServerAdvanced::_font_clear_cache(FontAdvanced *p_font_d
 	p_font_data->supported_scripts.clear();
 }
 
-hb_font_t *TextServerAdvanced::_font_get_hb_handle(const RID &p_font_rid, int64_t p_size) const {
+hb_font_t *TextServerAdvanced::_font_get_hb_handle(const RID &p_font_rid, int64_t p_size, bool &r_is_color) const {
 	FontAdvanced *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL_V(fd, nullptr);
 
@@ -2015,6 +2015,11 @@ hb_font_t *TextServerAdvanced::_font_get_hb_handle(const RID &p_font_rid, int64_
 
 	FontForSizeAdvanced *ffsd = nullptr;
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size, ffsd), nullptr);
+#ifdef MODULE_FREETYPE_ENABLED
+	r_is_color = FT_HAS_COLOR(ffsd->face);
+#else
+	r_is_color = false;
+#endif
 
 	return ffsd->hb_handle;
 }
@@ -6527,7 +6532,8 @@ bool TextServerAdvanced::_shaped_text_update_justification_ops(const RID &p_shap
 }
 
 Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, const RID &p_font, int64_t p_font_size) {
-	hb_font_t *hb_font = _font_get_hb_handle(p_font, p_font_size);
+	bool color = false;
+	hb_font_t *hb_font = _font_get_hb_handle(p_font, p_font_size, color);
 	double scale = _font_get_scale(p_font, p_font_size);
 	bool subpos = (scale != 1.0) || (_font_get_subpixel_positioning(p_font) == SUBPIXEL_POSITIONING_ONE_HALF) || (_font_get_subpixel_positioning(p_font) == SUBPIXEL_POSITIONING_ONE_QUARTER) || (_font_get_subpixel_positioning(p_font) == SUBPIXEL_POSITIONING_AUTO && p_font_size <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE);
 	ERR_FAIL_NULL_V(hb_font, Glyph());
@@ -6535,7 +6541,7 @@ Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced *p_sd, char
 	hb_buffer_clear_contents(p_sd->hb_buffer);
 	hb_buffer_set_direction(p_sd->hb_buffer, p_direction);
 	hb_buffer_set_flags(p_sd->hb_buffer, (hb_buffer_flags_t)(HB_BUFFER_FLAG_DEFAULT));
-	hb_buffer_set_script(p_sd->hb_buffer, p_script);
+	hb_buffer_set_script(p_sd->hb_buffer, (p_script == HB_TAG('Z', 's', 'y', 'e')) ? HB_SCRIPT_COMMON : p_script);
 	hb_buffer_add_utf32(p_sd->hb_buffer, (const uint32_t *)&p_char, 1, 0, 1);
 
 	hb_shape(hb_font, p_sd->hb_buffer, nullptr, 0);
@@ -6740,9 +6746,17 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 	FontAdvanced *fd = _get_font_data(f);
 	ERR_FAIL_NULL(fd);
 	MutexLock lock(fd->mutex);
+	bool color = false;
 
 	Vector2i fss = _get_size(fd, fs);
-	hb_font_t *hb_font = _font_get_hb_handle(f, fs);
+	hb_font_t *hb_font = _font_get_hb_handle(f, fs, color);
+
+	if (p_script == HB_TAG('Z', 's', 'y', 'e') && !color) {
+		// Color emoji is requested, skip non-color font.
+		_shape_run(p_sd, p_start, p_end, p_script, p_direction, p_fonts, p_span, p_fb_index + 1, p_start, p_end, f);
+		return;
+	}
+
 	double scale = _font_get_scale(f, fs);
 	double sp_sp = p_sd->extra_spacing[SPACING_SPACE] + _font_get_spacing(f, SPACING_SPACE);
 	double sp_gl = p_sd->extra_spacing[SPACING_GLYPH] + _font_get_spacing(f, SPACING_GLYPH);
@@ -6763,7 +6777,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 	flags |= HB_BUFFER_FLAG_PRODUCE_SAFE_TO_INSERT_TATWEEL;
 #endif
 	hb_buffer_set_flags(p_sd->hb_buffer, (hb_buffer_flags_t)flags);
-	hb_buffer_set_script(p_sd->hb_buffer, p_script);
+	hb_buffer_set_script(p_sd->hb_buffer, (p_script == HB_TAG('Z', 's', 'y', 'e')) ? HB_SCRIPT_COMMON : p_script);
 
 	if (p_sd->spans[p_span].language.is_empty()) {
 		hb_language_t lang = hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1);
