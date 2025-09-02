@@ -102,3 +102,7 @@ private:
 extern os_log_t LOG_DRIVER;
 // Used for dynamic tracing.
 extern os_log_t LOG_INTERVALS;
+
+_FORCE_INLINE_ static uint32_t make_msl_version(uint32_t major, uint32_t minor = 0, uint32_t patch = 0) {
+	return (major * 10000) + (minor * 100) + patch;
+}
