@@ -663,6 +663,9 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 				}
 			}
 		}
+		// We don't want this setting to be exposed to the user, because it's not very useful outside of this method.
+		js.info.erase("mapping_handled");
+
 		_set_joypad_mapping(js, mapping);
 	} else {
 		js.connected = false;

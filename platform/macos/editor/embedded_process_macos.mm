@@ -97,19 +97,6 @@ void EmbeddedProcessMacOS::embed_process(OS::ProcessID p_pid) {
 	_try_embed_process();
 }
 
-void EmbeddedProcessMacOS::_joy_connection_changed(int p_index, bool p_connected) const {
-	if (!script_debugger) {
-		return;
-	}
-
-	if (p_connected) {
-		String name = Input::get_singleton()->get_joy_name(p_index);
-		script_debugger->send_message("embed:joy_add", { p_index, name });
-	} else {
-		script_debugger->send_message("embed:joy_del", { p_index });
-	}
-}
-
 void EmbeddedProcessMacOS::reset() {
 	if (!ds) {
 		ds = static_cast<DisplayServerMacOS *>(DisplayServer::get_singleton());
@@ -217,9 +204,6 @@ EmbeddedProcessMacOS::EmbeddedProcessMacOS() :
 	layer_host->set_focus_mode(FOCUS_ALL);
 	layer_host->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	layer_host->set_custom_minimum_size(Size2(100, 100));
-
-	Input *input = Input::get_singleton();
-	input->connect(SNAME("joy_connection_changed"), callable_mp(this, &EmbeddedProcessMacOS::_joy_connection_changed));
 
 	// This shortcut allows a user to forcibly release a captured mouse from within the editor, regardless of whether
 	// the embedded process has implemented support to release the cursor.
@@ -337,6 +321,13 @@ void LayerHost::gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 			return;
 		}
+	}
+
+	Ref<InputEventJoypadMotion> jm = p_event;
+	Ref<InputEventJoypadButton> jb = p_event;
+	if (jm.is_valid() || jb.is_valid()) {
+		accept_event();
+		return;
 	}
 
 	PackedByteArray data;

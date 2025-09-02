@@ -1539,6 +1539,11 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 		// Temporary solution for PopupMenus.
 		PopupMenu *menu = Object::cast_to<PopupMenu>(this);
 		if (menu) {
+			Ref<StyleBox> sb = menu->get_theme_stylebox(SceneStringName(panel));
+			if (sb.is_valid()) {
+				pos.y += sb->get_margin(SIDE_TOP);
+			}
+
 			tooltip = menu->get_tooltip(pos);
 		}
 
@@ -5203,7 +5208,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_canvas_cull_mask", "get_canvas_cull_mask");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "oversampling"), "set_use_oversampling", "is_using_oversampling");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling_override"), "set_oversampling_override", "get_oversampling_override");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling_override", PROPERTY_HINT_RANGE, "0,16,0.0001,or_greater"), "set_oversampling_override", "get_oversampling_override");
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
 	ADD_SIGNAL(MethodInfo("gui_focus_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
