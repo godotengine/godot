@@ -33,12 +33,20 @@ package org.godotengine.godot;
 import org.godotengine.godot.utils.ProcessPhoenix;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.WindowManager;
 
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
@@ -59,6 +67,8 @@ public abstract class FullScreenGodotApp extends FragmentActivity implements God
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		// Ensure edge-to-edge
+		EdgeToEdge.enable(this);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.godot_app_layout);
 
@@ -72,6 +82,24 @@ public abstract class FullScreenGodotApp extends FragmentActivity implements God
 			Log.v(TAG, "Creating new Godot fragment instance.");
 			godotFragment = initGodotInstance();
 			getSupportFragmentManager().beginTransaction().replace(R.id.godot_fragment_container, godotFragment).setPrimaryNavigationFragment(godotFragment).commitNowAllowingStateLoss();
+		}
+
+		if (!godotFragment.isImmersive()) {
+			View fragmentContainerView = findViewById(R.id.godot_fragment_container);
+			// Apply padding for the system bars and/or display cutout
+			ViewCompat.setOnApplyWindowInsetsListener(fragmentContainerView, (v, insets) -> {
+				int insetType = WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout();
+				Insets windowInsets = insets.getInsets(insetType);
+				v.setPadding(windowInsets.left, windowInsets.top, windowInsets.right, windowInsets.bottom);
+				return WindowInsetsCompat.CONSUMED;
+			});
+			// Set system bar appearance
+			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+				getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+			}
+			WindowInsetsControllerCompat controller = new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
+			controller.setAppearanceLightNavigationBars(false); // Default Background color is Black
+			controller.setAppearanceLightStatusBars(false);
 		}
 	}
 
