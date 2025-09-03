@@ -2897,7 +2897,7 @@ void EditorPropertyNodePath::_menu_option(int p_idx) {
 			const NodePath &np = _get_node_path();
 			edit->set_text(String(np));
 			edit->show();
-			callable_mp((Control *)edit, &Control::grab_focus).call_deferred();
+			callable_mp((Control *)edit, &Control::grab_focus).call_deferred(false);
 		} break;
 
 		case ACTION_SELECT: {

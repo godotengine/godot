@@ -363,7 +363,8 @@ void ProjectManager::_select_main_view(int p_id) {
 	if (current_main_view == MAIN_VIEW_PROJECTS && search_box->is_inside_tree()) {
 		// Automatically grab focus when the user moves from the Templates tab
 		// back to the Projects tab.
-		search_box->grab_focus();
+		// Needs to be deferred, otherwise the focus outline is always drawn.
+		callable_mp((Control *)search_box, &Control::grab_focus).call_deferred(true);
 	}
 
 	// The Templates tab's search field is focused on display in the asset

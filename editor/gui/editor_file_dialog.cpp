@@ -482,9 +482,9 @@ void EditorFileDialog::_post_popup() {
 	set_current_dir(current);
 
 	if (mode == FILE_MODE_SAVE_FILE) {
-		file->grab_focus();
+		file->grab_focus(true);
 	} else {
-		item_list->grab_focus();
+		item_list->grab_focus(true);
 	}
 
 	bool is_open_directory_mode = mode == FILE_MODE_OPEN_DIR;
