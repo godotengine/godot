@@ -2035,7 +2035,7 @@ void FileDialog::set_show_filename_filter(bool p_show) {
 		filename_filter->grab_focus();
 	} else {
 		if (filename_filter->has_focus()) {
-			callable_mp((Control *)file_list, &Control::grab_focus).call_deferred();
+			callable_mp((Control *)file_list, &Control::grab_focus).call_deferred(false);
 		}
 	}
 	show_filename_filter = p_show;

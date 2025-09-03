@@ -251,7 +251,7 @@ void Button::_notification(int p_what) {
 				style->draw(ci, Rect2(Point2(), size));
 			}
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				theme_cache.focus->draw(ci, Rect2(Point2(), size));
 			}
 
@@ -315,7 +315,7 @@ void Button::_notification(int p_what) {
 			switch (get_draw_mode()) {
 				case DRAW_NORMAL: {
 					// Focus colors only take precedence over normal state.
-					if (has_focus()) {
+					if (has_focus(true)) {
 						font_color = theme_cache.font_focus_color;
 						if (has_theme_color(SNAME("icon_focus_color"))) {
 							icon_modulate_color = theme_cache.icon_focus_color;

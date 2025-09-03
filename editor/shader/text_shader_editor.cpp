@@ -787,7 +787,7 @@ void TextShaderEditor::_menu_option(int p_option) {
 		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
-		callable_mp((Control *)code_editor->get_text_editor(), &Control::grab_focus).call_deferred();
+		callable_mp((Control *)code_editor->get_text_editor(), &Control::grab_focus).call_deferred(false);
 	}
 }
 
