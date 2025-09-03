@@ -118,12 +118,6 @@ struct CompositorServicesImmersiveSpace: Scene {
 		}
 	}
 
-	func startRenderLoop(_ layerRenderer: LayerRenderer) {
-		Task(executorPreference: RendererTaskExecutor.shared) {
-
-		}
-	}
-
 	var body: some Scene {
 		ImmersiveSpace(id: "ImmersiveSpace") {
 			CompositorLayer(configuration: ContentStageConfiguration()) { @MainActor layerRenderer in
