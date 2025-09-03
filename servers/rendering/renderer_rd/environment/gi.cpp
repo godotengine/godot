@@ -1965,9 +1965,6 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 			lights[idx].direction[2] = dir.z;
 			Vector3 pos = light_transform.origin;
 			pos.y *= y_mult;
-			/* if (type == RS::LIGHT_AREA) {
-				pos = inverse_transform.xform(light_transform.xform(Vector3(-area_size.x / 2.0, -area_size.y / 2.0, 0.0)));
-			}*/
 			lights[idx].position[0] = pos.x;
 			lights[idx].position[1] = pos.y;
 			lights[idx].position[2] = pos.z;
@@ -1989,8 +1986,6 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 					// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 					// We make this assumption to keep them easy to control.
 					lights[idx].energy *= 1.0 / Math::PI;
-				} else if (lights[idx].type == RS::LIGHT_AREA) {
-					lights[idx].energy *= 1.0 / (Math::PI * 2.0);
 				}
 			}
 
@@ -2003,20 +1998,6 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 			lights[idx].radius = RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_RANGE);
 			lights[idx].cos_spot_angle = Math::cos(Math::deg_to_rad(RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ANGLE)));
 			lights[idx].inv_spot_attenuation = 1.0f / RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
-			// TODO: dont commit yet, this is for SDFGI, and not yet implemented
-			/* if (lights[idx].type == RS::LIGHT_AREA) {
-				Vector3 area_vec_a = inverse_transform.basis.xform(light_transform.basis.xform(Vector3(1, 0, 0))).normalized() * area_size.x;
-				Vector3 area_vec_b = inverse_transform.basis.xform(light_transform.basis.xform(Vector3(0, 1, 0))).normalized() * area_size.y;
-
-				light_data.area_width[0] = area_vec_a.x;
-				light_data.area_width[1] = area_vec_a.y;
-				light_data.area_width[2] = area_vec_a.z;
-
-				light_data.area_height[0] = area_vec_b.x;
-				light_data.area_height[1] = area_vec_b.y;
-				light_data.area_height[2] = area_vec_b.z;
-				light_data.inv_spot_attenuation = 1.0 / (radius + Vector2(area_size.x, area_size.y).length() / 2.0); // center range
-			}*/
 			idx++;
 		}
 
