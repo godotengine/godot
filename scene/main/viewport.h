@@ -330,6 +330,9 @@ private:
 
 	void _update_viewport_path();
 
+	bool _can_hide_focus_state();
+	void _on_settings_changed();
+
 	SDFOversize sdf_oversize = SDF_OVERSIZE_120_PERCENT;
 	SDFScale sdf_scale = SDF_SCALE_50_PERCENT;
 
@@ -374,6 +377,7 @@ private:
 		Control *mouse_click_grabber = nullptr;
 		BitField<MouseButtonMask> mouse_focus_mask = MouseButtonMask::NONE;
 		Control *key_focus = nullptr;
+		bool hide_focus = false;
 		Control *mouse_over = nullptr;
 		LocalVector<Control *> mouse_over_hierarchy;
 		bool sending_mouse_enter_exit_notifications = false;
@@ -459,8 +463,8 @@ private:
 
 	void _gui_remove_focus_for_window(Node *p_window);
 	void _gui_unfocus_control(Control *p_control);
-	bool _gui_control_has_focus(const Control *p_control);
-	void _gui_control_grab_focus(Control *p_control);
+	bool _gui_control_has_focus(const Control *p_control, bool p_ignore_hidden_focus = false);
+	void _gui_control_grab_focus(Control *p_control, bool p_hide_focus = false);
 	void _gui_grab_click_focus(Control *p_control);
 	void _post_gui_grab_click_focus();
 	void _gui_accept_event();

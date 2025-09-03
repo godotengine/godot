@@ -317,7 +317,7 @@ void FoldableContainer::_notification(int p_what) {
 				_draw_flippable_stylebox(theme_cache.panel_style, panel_rect);
 			}
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				Rect2 focus_rect = folded ? title_rect : Rect2(Point2(), size);
 				_draw_flippable_stylebox(theme_cache.focus_style, focus_rect);
 			}
