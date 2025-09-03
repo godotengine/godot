@@ -364,7 +364,7 @@ void ColorPicker::finish_shaders() {
 }
 
 void ColorPicker::set_focus_on_line_edit() {
-	callable_mp((Control *)c_text, &Control::grab_focus).call_deferred();
+	callable_mp((Control *)c_text, &Control::grab_focus).call_deferred(false);
 }
 
 void ColorPicker::set_focus_on_picker_shape() {
@@ -1491,7 +1491,7 @@ void ColorPicker::_sample_draw() {
 
 	sample->draw_rect(rect_new, color);
 
-	if (display_old_color && !old_color.is_equal_approx(color) && sample->has_focus()) {
+	if (display_old_color && !old_color.is_equal_approx(color) && sample->has_focus(true)) {
 		RID ci = sample->get_canvas_item();
 		theme_cache.sample_focus->draw(ci, rect_old);
 	}
@@ -2663,7 +2663,7 @@ void ColorPresetButton::_notification(int p_what) {
 				WARN_PRINT("Unsupported StyleBox used for ColorPresetButton. Use StyleBoxFlat or StyleBoxTexture instead.");
 			}
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				RID ci = get_canvas_item();
 				theme_cache.focus_style->draw(ci, Rect2(Point2(), get_size()));
 			}

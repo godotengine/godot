@@ -2327,13 +2327,13 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 					if (p_item->cells[0].selected) {
 						if (is_row_hovered) {
-							if (has_focus()) {
+							if (has_focus(true)) {
 								theme_cache.hovered_selected_focus->draw(ci, row_rect);
 							} else {
 								theme_cache.hovered_selected->draw(ci, row_rect);
 							}
 						} else {
-							if (has_focus()) {
+							if (has_focus(true)) {
 								theme_cache.selected_focus->draw(ci, row_rect);
 							} else {
 								theme_cache.selected->draw(ci, row_rect);
@@ -2375,13 +2375,13 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					}
 					if (p_item->cells[i].selected) {
 						if (is_cell_hovered) {
-							if (has_focus()) {
+							if (has_focus(true)) {
 								theme_cache.hovered_selected_focus->draw(ci, r);
 							} else {
 								theme_cache.hovered_selected->draw(ci, r);
 							}
 						} else {
-							if (has_focus()) {
+							if (has_focus(true)) {
 								theme_cache.selected_focus->draw(ci, r);
 							} else {
 								theme_cache.selected->draw(ci, r);
@@ -2675,7 +2675,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				if (is_layout_rtl()) {
 					cell_rect.position.x = get_size().width - cell_rect.position.x - cell_rect.size.x;
 				}
-				if (has_focus()) {
+				if (has_focus(true)) {
 					theme_cache.cursor->draw(ci, cell_rect);
 				} else {
 					theme_cache.cursor_unfocus->draw(ci, cell_rect);
@@ -5080,7 +5080,7 @@ void Tree::_notification(int p_what) {
 
 			// Draw the focus outline last, so that it is drawn in front of the section headings.
 			// Otherwise, section heading backgrounds can appear to be in front of the focus outline when scrolling.
-			if (has_focus()) {
+			if (has_focus(true)) {
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, true);
 				theme_cache.focus_style->draw(ci, Rect2(Point2(), get_size()));
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, false);

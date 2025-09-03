@@ -531,6 +531,22 @@ void Viewport::_update_viewport_path() {
 	}
 }
 
+bool Viewport::_can_hide_focus_state() {
+	return Engine::get_singleton()->is_editor_hint() || !GLOBAL_GET_CACHED(bool, "gui/common/always_show_focus_state");
+}
+
+void Viewport::_on_settings_changed() {
+	if (!gui.hide_focus && _can_hide_focus_state()) {
+		return;
+	}
+
+	gui.hide_focus = false;
+	// Show previously hidden focus.
+	if (gui.key_focus) {
+		gui.key_focus->queue_redraw();
+	}
+}
+
 void Viewport::_notification(int p_what) {
 	ERR_MAIN_THREAD_GUARD;
 
@@ -1914,6 +1930,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.mouse_focus = gui_find_control(mpos);
 
 				if (!gui.mouse_focus) {
+					// Focus should be hidden on click even if the focus holder didn't change.
+					if (gui.key_focus && mb->get_button_index() == MouseButton::LEFT && _can_hide_focus_state()) {
+						gui.hide_focus = true;
+						gui.key_focus->queue_redraw();
+					}
+
 					return;
 				}
 
@@ -1946,8 +1968,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						if (control->_is_focusable()) {
 							// Grabbing unhovered focus can cause issues when mouse is dragged
 							// with another button held down.
-							if (control != gui.key_focus && gui.mouse_over_hierarchy.has(control)) {
-								control->grab_focus();
+							if (gui.mouse_over_hierarchy.has(control)) {
+								// Hide the focus when it comes from a click.
+								control->grab_focus(true);
 							}
 							break;
 						}
@@ -2301,6 +2324,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		if (from && p_event->is_pressed()) {
 			Control *next = nullptr;
+			bool show_focus = false;
 
 			Ref<InputEventJoypadMotion> joypadmotion_event = p_event;
 			if (joypadmotion_event.is_valid()) {
@@ -2308,10 +2332,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 				if (p_event->is_action_pressed(SNAME("ui_focus_next")) && input->is_action_just_pressed_by_event(SNAME("ui_focus_next"), p_event)) {
 					next = from->find_next_valid_focus();
+					show_focus = true;
 				}
 
 				if (p_event->is_action_pressed(SNAME("ui_focus_prev")) && input->is_action_just_pressed_by_event(SNAME("ui_focus_prev"), p_event)) {
 					next = from->find_prev_valid_focus();
+					show_focus = true;
 				}
 
 				if (p_event->is_action_pressed(SNAME("ui_accessibility_drag_and_drop")) && input->is_action_just_pressed_by_event(SNAME("ui_accessibility_drag_and_drop"), p_event)) {
@@ -2324,26 +2350,32 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 				if (p_event->is_action_pressed(SNAME("ui_up")) && input->is_action_just_pressed_by_event(SNAME("ui_up"), p_event)) {
 					next = from->_get_focus_neighbor(SIDE_TOP);
+					show_focus = true;
 				}
 
 				if (p_event->is_action_pressed(SNAME("ui_left")) && input->is_action_just_pressed_by_event(SNAME("ui_left"), p_event)) {
 					next = from->_get_focus_neighbor(SIDE_LEFT);
+					show_focus = true;
 				}
 
 				if (p_event->is_action_pressed(SNAME("ui_right")) && input->is_action_just_pressed_by_event(SNAME("ui_right"), p_event)) {
 					next = from->_get_focus_neighbor(SIDE_RIGHT);
+					show_focus = true;
 				}
 
 				if (p_event->is_action_pressed(SNAME("ui_down")) && input->is_action_just_pressed_by_event(SNAME("ui_down"), p_event)) {
 					next = from->_get_focus_neighbor(SIDE_BOTTOM);
+					show_focus = true;
 				}
 			} else {
 				if (p_event->is_action_pressed(SNAME("ui_focus_next"), true, true)) {
 					next = from->find_next_valid_focus();
+					show_focus = true;
 				}
 
 				if (p_event->is_action_pressed(SNAME("ui_focus_prev"), true, true)) {
 					next = from->find_prev_valid_focus();
+					show_focus = true;
 				}
 
 				if (p_event->is_action_pressed(SNAME("ui_accessibility_drag_and_drop"), true, true)) {
@@ -2356,23 +2388,32 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 				if (p_event->is_action_pressed(SNAME("ui_up"), true, true)) {
 					next = from->_get_focus_neighbor(SIDE_TOP);
+					show_focus = true;
 				}
 
 				if (p_event->is_action_pressed(SNAME("ui_left"), true, true)) {
 					next = from->_get_focus_neighbor(SIDE_LEFT);
+					show_focus = true;
 				}
 
 				if (p_event->is_action_pressed(SNAME("ui_right"), true, true)) {
 					next = from->_get_focus_neighbor(SIDE_RIGHT);
+					show_focus = true;
 				}
 
 				if (p_event->is_action_pressed(SNAME("ui_down"), true, true)) {
 					next = from->_get_focus_neighbor(SIDE_BOTTOM);
+					show_focus = true;
 				}
 			}
+
 			if (next) {
 				next->grab_focus();
 				set_input_as_handled();
+			} else if (show_focus && gui.hide_focus && gui.key_focus) {
+				// Show focus even it the holder didn't change, as visual feedback.
+				gui.hide_focus = false;
+				gui.key_focus->queue_redraw();
 			}
 		}
 	}
@@ -2655,18 +2696,26 @@ void Viewport::_gui_remove_focus_for_window(Node *p_window) {
 	}
 }
 
-bool Viewport::_gui_control_has_focus(const Control *p_control) {
-	return gui.key_focus == p_control;
+bool Viewport::_gui_control_has_focus(const Control *p_control, bool p_ignore_hidden_focus) {
+	return (!p_ignore_hidden_focus || !gui.hide_focus) && gui.key_focus == p_control;
 }
 
-void Viewport::_gui_control_grab_focus(Control *p_control) {
+void Viewport::_gui_control_grab_focus(Control *p_control, bool p_hide_focus) {
 	if (gui.key_focus && gui.key_focus == p_control) {
-		// No need for change.
+		// Only worry about the focus visibility change.
+		if (p_hide_focus != gui.hide_focus && _can_hide_focus_state()) {
+			gui.hide_focus = p_hide_focus;
+			p_control->queue_redraw();
+		}
 		return;
 	}
+
 	get_tree()->call_group("_viewports", "_gui_remove_focus_for_window", get_base_window());
 	if (p_control->is_inside_tree() && p_control->get_viewport() == this) {
 		gui.key_focus = p_control;
+		if (_can_hide_focus_state()) {
+			gui.hide_focus = p_hide_focus;
+		}
 		emit_signal(SNAME("gui_focus_changed"), p_control);
 		p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
 		p_control->queue_redraw();
@@ -5386,6 +5435,8 @@ Viewport::Viewport() {
 	// Viewports can thus inherit physics interpolation OFF, which is unexpected.
 	// Setting to ON allows each viewport to have a fresh interpolation state.
 	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_ON);
+
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Viewport::_on_settings_changed));
 }
 
 Viewport::~Viewport() {

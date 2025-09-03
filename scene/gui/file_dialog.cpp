@@ -421,9 +421,9 @@ void FileDialog::_save_confirm_pressed() {
 void FileDialog::_post_popup() {
 	ConfirmationDialog::_post_popup();
 	if (mode == FILE_MODE_SAVE_FILE) {
-		filename_edit->grab_focus();
+		filename_edit->grab_focus(true);
 	} else {
-		file_list->grab_focus();
+		file_list->grab_focus(true);
 	}
 
 	set_process_shortcut_input(true);
@@ -2035,7 +2035,7 @@ void FileDialog::set_show_filename_filter(bool p_show) {
 		filename_filter->grab_focus();
 	} else {
 		if (filename_filter->has_focus()) {
-			callable_mp((Control *)file_list, &Control::grab_focus).call_deferred();
+			callable_mp((Control *)file_list, &Control::grab_focus).call_deferred(false);
 		}
 	}
 	show_filename_filter = p_show;

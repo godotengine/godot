@@ -945,7 +945,7 @@ void TextEdit::_notification(int p_what) {
 				theme_cache.style_readonly->draw(ci, Rect2(Point2(), size));
 				draw_caret = is_drawing_caret_when_editable_disabled();
 			}
-			if (has_focus()) {
+			if (has_focus(true)) {
 				theme_cache.style_focus->draw(ci, Rect2(Point2(), size));
 			}
 
