@@ -105,7 +105,7 @@ void main() {
 #ifdef USE_GLOW
 	vec4 glow = get_glow_color(uv_interp) * glow_intensity;
 
-	// Just use softlight...
+	// Just use screen...
 	glow.rgb = clamp(glow.rgb, vec3(0.0f), vec3(1.0f));
 	color.rgb = max((color.rgb + glow.rgb) - (color.rgb * glow.rgb), vec3(0.0));
 #endif // USE_GLOW
