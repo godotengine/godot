@@ -30,9 +30,11 @@
 
 #include "rendering_shader_container_metal.h"
 
+#include "core/string/string_builder.h"
 #include "servers/rendering/rendering_device.h"
 
 #import "core/io/marshalls.h"
+#include "servers/rendering/rendering_shader_container.h"
 
 #import <Metal/Metal.h>
 #import <spirv.hpp>
@@ -118,6 +120,21 @@ Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, 
 	// Build the metallib binary.
 	{
 		List<String> args{ "-sdk", sdk, "metal", "-O3" };
+
+		// Compile metal shaders for the minimum supported target instead of the host machine
+		if (export_mode && !min_os_version.is_empty()) {
+			switch (device_profile->platform) {
+				case MetalDeviceProfile::Platform::macOS: {
+					args.push_back("-mmacosx-version-min=" + min_os_version);
+					break;
+				}
+				case MetalDeviceProfile::Platform::iOS: {
+					args.push_back("-mios-version-min=" + min_os_version);
+					break;
+				}
+			}
+		}
+
 		if (p_stage_data.is_position_invariant) {
 			args.push_back("-fpreserve-invariance");
 		}
@@ -693,7 +710,18 @@ Ref<RenderingShaderContainer> RenderingShaderContainerFormatMetal::create_contai
 	result.instantiate();
 	result->set_export_mode(export_mode);
 	result->set_device_profile(device_profile);
+	result->set_min_os_version(min_os_version);
 	return result;
+}
+
+String RenderingShaderContainerFormatMetal::get_customization_configuration_info() const {
+	StringBuilder builder = StringBuilder();
+	builder.append(RenderingShaderContainerFormat::get_customization_configuration_info());
+	if (export_mode && !min_os_version.is_empty()) {
+		builder.append("[MinOSVersion]");
+		builder.append(min_os_version);
+	}
+	return builder.as_string();
 }
 
 RenderingDeviceCommons::ShaderLanguageVersion RenderingShaderContainerFormatMetal::get_shader_language_version() const {
@@ -704,6 +732,6 @@ RenderingDeviceCommons::ShaderSpirvVersion RenderingShaderContainerFormatMetal::
 	return SHADER_SPIRV_VERSION_1_6;
 }
 
-RenderingShaderContainerFormatMetal::RenderingShaderContainerFormatMetal(const MetalDeviceProfile *p_device_profile, bool p_export) :
-		export_mode(p_export), device_profile(p_device_profile) {
+RenderingShaderContainerFormatMetal::RenderingShaderContainerFormatMetal(const MetalDeviceProfile *p_device_profile, bool p_export, const String &p_min_os_version) :
+		export_mode(p_export), min_os_version(p_min_os_version), device_profile(p_device_profile) {
 }
