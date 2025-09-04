@@ -2910,6 +2910,8 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					// Convert from Luminous Power to Luminous Intensity
 					if (l.type == RS::LIGHT_OMNI) {
 						l.energy *= 1.0 / (Math::PI * 4.0);
+					} else if (l.type == RS::LIGHT_AREA) {
+						l.energy *= 1.0 / (Math::PI * 2.0);
 					} else if (l.type == RS::LIGHT_SPOT) {
 						// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 						// We make this assumption to keep them easy to control.
@@ -2928,7 +2930,12 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 				Transform3D xform = light_storage->light_instance_get_base_transform(light_instance);
 
+				Vector2 area_size = RSG::light_storage->light_area_get_size(light);
+
 				Vector3 pos = to_probe_xform.xform(xform.origin);
+				if (l.type == RS::LIGHT_AREA) {
+					pos = to_probe_xform.xform(xform.xform(Vector3(-area_size.x / 2.0, -area_size.y / 2.0, 0.0)));
+				}
 				Vector3 dir = to_probe_xform.basis.xform(-xform.basis.get_column(2)).normalized();
 
 				l.position[0] = pos.x;
@@ -2940,6 +2947,25 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				l.direction[2] = dir.z;
 
 				l.has_shadow = RSG::light_storage->light_has_shadow(light);
+
+				if (l.type == RS::LIGHT_AREA) {
+					Vector3 area_vec_a = to_probe_xform.basis.xform(xform.basis.get_column(0).normalized() * area_size.x);
+					Vector3 area_vec_b = to_probe_xform.basis.xform(xform.basis.get_column(1).normalized() * area_size.y);
+
+					l.area_width[0] = area_vec_a.x;
+					l.area_width[1] = area_vec_a.y;
+					l.area_width[2] = area_vec_a.z;
+
+					l.area_height[0] = area_vec_b.x;
+					l.area_height[1] = area_vec_b.y;
+					l.area_height[2] = area_vec_b.z;
+					l.inv_spot_attenuation = 1.0 / (l.radius + Vector2(area_size.x, area_size.y).length() / 2.0); // center range
+					if (RSG::light_storage->light_area_get_normalize_energy(light)) {
+						// normalization to make larger lights output same amount of light as smaller lights with same energy
+						float surface_area = area_size.x * area_size.y;
+						l.energy /= surface_area;
+					}
+				}
 			}
 
 			RD::get_singleton()->buffer_update(gi->voxel_gi_lights_uniform, 0, sizeof(VoxelGILight) * light_count, gi->voxel_gi_lights);

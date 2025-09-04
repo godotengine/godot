@@ -280,6 +280,7 @@ void RendererSceneCull::_instance_pair(Instance *p_A, Instance *p_B) {
 	} else if (B->base_type == RS::INSTANCE_VOXEL_GI && A->base_type == RS::INSTANCE_LIGHT) {
 		InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(B->base_data);
 		voxel_gi->lights.insert(A);
+		// TODO: check if area light got added here
 	} else if (B->base_type == RS::INSTANCE_PARTICLES_COLLISION && A->base_type == RS::INSTANCE_PARTICLES) {
 		InstanceParticlesCollisionData *collision = static_cast<InstanceParticlesCollisionData *>(B->base_data);
 
@@ -3820,7 +3821,8 @@ void RendererSceneCull::render_probes() {
 							cache->radius != RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_RANGE) ||
 							cache->attenuation != RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_ATTENUATION) ||
 							cache->spot_angle != RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_SPOT_ANGLE) ||
-							cache->spot_attenuation != RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_SPOT_ATTENUATION)) {
+							cache->spot_attenuation != RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_SPOT_ATTENUATION) ||
+							cache->area_size != RSG::light_storage->light_area_get_size(instance->base)) {
 						cache_dirty = true;
 					}
 				}
@@ -3900,7 +3902,7 @@ void RendererSceneCull::render_probes() {
 					cache->attenuation = RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_ATTENUATION);
 					cache->spot_angle = RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_SPOT_ANGLE);
 					cache->spot_attenuation = RSG::light_storage->light_get_param(instance->base, RS::LIGHT_PARAM_SPOT_ATTENUATION);
-
+					cache->area_size = RSG::light_storage->light_area_get_size(instance->base);
 					idx++;
 				}
 				for (const Instance *instance : probe->owner->scenario->directional_lights) {
