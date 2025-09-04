@@ -18,6 +18,9 @@
 			[b]Note:[/b] Setting attenuation to [code]2.0[/code] or higher may result in distant objects receiving minimal light, even within range. For example, with a range of [code]4096[/code], an object at [code]100[/code] units is attenuated by a factor of [code]0.0001[/code]. With a default brightness of [code]1[/code], the light would not be visible at that distance.
 			[b]Note:[/b] Using negative or values higher than [code]10.0[/code] may lead to unexpected results.
 		</member>
+		<member name="area_normalize_energy" type="float" setter="set_param" getter="get_param" default="1.0">
+			Defines whether the energy is normalized (divided) by the surface area of the light. If set to [code]true[/code], changing the size does not affect the amount of total energy output, and does not dramatically affect the brightness of the scene.
+		</member>
 		<member name="area_range" type="float" setter="set_param" getter="get_param" default="5.0">
 			The range of the area in meters. This determines the maximum distance at which the area can still emit light relative to its surface, but also to its borders (which are positioned according to [member area_size]).
 		</member>
