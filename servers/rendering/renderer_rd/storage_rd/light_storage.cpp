@@ -158,6 +158,7 @@ void LightStorage::_light_initialize(RID p_light, RS::LightType p_type) {
 	light.param[RS::LIGHT_PARAM_SHADOW_BLUR] = 0;
 	light.param[RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
 	light.param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
+	light.param[RS::LIGHT_PARAM_AREA_NORMALIZE_ENERGY] = true;
 	light.param[RS::LIGHT_PARAM_INTENSITY] = p_type == RS::LIGHT_DIRECTIONAL ? 100000.0 : 1000.0;
 
 	light_owner.initialize_rid(p_light, light);
@@ -1049,11 +1050,13 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 			light_data.area_height[2] = area_vec_b.z;
 			light_data.inv_spot_attenuation = 1.0 / (radius + Vector2(area_size.x, area_size.y).length() / 2.0); // center range
 
-			// normalization to make larger lights output same amount of light as smaller lights with same energy
-			float surface_area = area_size.x * area_size.y;
-			light_data.color[0] /= surface_area;
-			light_data.color[1] /= surface_area;
-			light_data.color[2] /= surface_area;
+			if (light->param[RS::LIGHT_PARAM_AREA_NORMALIZE_ENERGY]) {
+				// normalization to make larger lights output same amount of light as smaller lights with same energy
+				float surface_area = area_size.x * area_size.y;
+				light_data.color[0] /= surface_area;
+				light_data.color[1] /= surface_area;
+				light_data.color[2] /= surface_area;
+			}
 		}
 		light_data.mask = light->cull_mask;
 
