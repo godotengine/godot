@@ -34,9 +34,6 @@
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/slider.h"
-#include "scene/gui/spin_box.h"
 
 class ConfirmationDialog;
 class MenuButton;
@@ -44,6 +41,13 @@ class Node3DEditorPlugin;
 class ButtonGroup;
 class EditorZoomWidget;
 class BaseButton;
+class CheckBox;
+class HSlider;
+class ItemList;
+class LineEdit;
+class SpinBox;
+class Tree;
+class TreeItem;
 
 class GridMapEditor : public VBoxContainer {
 	GDCLASS(GridMapEditor, VBoxContainer);
@@ -210,6 +214,9 @@ class GridMapEditor : public VBoxContainer {
 		RID instance;
 	};
 
+	VBoxContainer *item_palette_container = nullptr;
+	Tree *item_tree = nullptr;
+
 	ItemList *mesh_library_palette = nullptr;
 	Label *info_message = nullptr;
 
@@ -253,6 +260,16 @@ class GridMapEditor : public VBoxContainer {
 	bool do_input_action(Camera3D *p_camera, const Point2 &p_point, bool p_click);
 
 	friend class GridMapEditorPlugin;
+
+	struct ItemCategoryMapping {
+		AHashMap<StringName, HashSet<StringName>> category_to_category_children;
+		AHashMap<StringName, HashSet<int>> category_to_items;
+	};
+
+	void _on_item_tree_item_activated();
+
+	void _rebuild_item_tree();
+	void _add_child_categories_recursive(Tree *p_item_tree, TreeItem *p_ti_parent, const StringName &p_category, const ItemCategoryMapping &p_mapping);
 
 protected:
 	void _notification(int p_what);

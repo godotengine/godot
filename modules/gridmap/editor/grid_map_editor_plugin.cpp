@@ -43,10 +43,16 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/slider.h"
+#include "scene/gui/spin_box.h"
+#include "scene/gui/split_container.h"
+#include "scene/gui/tree.h"
 #include "scene/main/window.h"
 
 void GridMapEditor::_configure() {
@@ -975,48 +981,193 @@ void GridMapEditor::update_palette() {
 	search_box->set_editable(true);
 	info_message->hide();
 
-	Vector<int> ids;
-	ids = mesh_library->get_item_list();
+	TreeItem *ti_selected = item_tree->get_selected();
 
-	List<_CGMEItemSort> il;
-	for (int i = 0; i < ids.size(); i++) {
-		_CGMEItemSort is;
-		is.id = ids[i];
-		is.name = mesh_library->get_item_name(ids[i]);
-		il.push_back(is);
+	Vector<int> item_ids;
+	if (ti_selected) {
+		item_ids = ti_selected->get_metadata(0);
+	} else {
+		item_ids = mesh_library->get_item_list();
 	}
-	il.sort();
 
-	String filter = search_box->get_text().strip_edges();
+	const String searched_string = search_box->get_text().strip_edges().to_lower();
 
-	int item = 0;
+	// Sort alphabetically by item name.
+	List<_CGMEItemSort> items_sorted;
+	for (int item_id : item_ids) {
+		_CGMEItemSort is;
+		is.id = item_id;
+		is.name = mesh_library->get_item_name(item_id);
+		items_sorted.push_back(is);
+	}
+	items_sorted.sort();
 
-	for (_CGMEItemSort &E : il) {
-		int id = E.id;
-		String name = mesh_library->get_item_name(id);
-		Ref<Texture2D> preview = mesh_library->get_item_preview(id);
+	for (_CGMEItemSort &E : items_sorted) {
+		int item_id = E.id;
 
-		if (name.is_empty()) {
-			name = "#" + itos(id);
+		String item_name = mesh_library->get_item_name(item_id);
+		const StringName item_category = mesh_library->get_item_category(item_id);
+		const Ref<Texture2D> &item_preview = mesh_library->get_item_preview(item_id);
+
+		bool skip_item = false;
+
+		if (!searched_string.is_empty()) {
+			bool item_matches_search_string = false;
+
+			if (item_name.contains(searched_string)) {
+				item_matches_search_string = true;
+			}
+			if (!item_matches_search_string && String(item_category).contains(searched_string)) {
+				item_matches_search_string = true;
+			}
+
+			if (!item_matches_search_string) {
+				skip_item = true;
+			}
 		}
 
-		if (!filter.is_empty() && !filter.is_subsequence_ofn(name)) {
+		if (skip_item) {
 			continue;
 		}
 
-		mesh_library_palette->add_item("");
-		if (preview.is_valid()) {
-			mesh_library_palette->set_item_icon(item, preview);
-			mesh_library_palette->set_item_tooltip(item, name);
-		}
-		mesh_library_palette->set_item_text(item, name);
-		mesh_library_palette->set_item_metadata(item, id);
-
-		if (selected_palette == id) {
-			mesh_library_palette->select(item);
+		if (item_name.is_empty()) {
+			item_name = "#" + itos(item_id);
 		}
 
-		item++;
+		const int list_id = mesh_library_palette->add_item(item_name, item_preview);
+		mesh_library_palette->set_item_text(list_id, item_name);
+		mesh_library_palette->set_item_metadata(list_id, item_id);
+		if (item_preview.is_valid()) {
+			mesh_library_palette->set_item_icon(list_id, item_preview);
+			mesh_library_palette->set_item_tooltip(list_id, item_name);
+		}
+	}
+}
+
+void GridMapEditor::_on_item_tree_item_activated() {
+	TreeItem *ti_selected = item_tree->get_selected();
+	if (ti_selected) {
+		bool collapsed = ti_selected->is_collapsed();
+		ti_selected->set_collapsed(!collapsed);
+	}
+}
+
+void GridMapEditor::_rebuild_item_tree() {
+	ERR_FAIL_NULL(item_tree);
+
+	item_tree->clear();
+
+	if (mesh_library.is_null()) {
+		return;
+	}
+
+	const Vector<int> &item_ids = mesh_library->get_item_list();
+
+	item_tree->create_item();
+	TreeItem *tree_root = item_tree->get_root();
+	tree_root->set_text(0, "All");
+	tree_root->set_text(1, vformat("(%d)", item_ids.size()));
+	tree_root->set_metadata(0, item_ids);
+
+	LocalVector<StringName> root_categories;
+
+	AHashMap<StringName, HashSet<int>> category_to_items;
+	AHashMap<StringName, HashSet<StringName>> category_to_category_children;
+
+	for (int item_id = 0; item_id < item_ids.size(); item_id++) {
+		const StringName item_category = mesh_library->get_item_category(item_id);
+
+		Vector<String> item_categories = String(item_category).split("/", false);
+
+		String item_category_path;
+		for (int i = 0; i < item_categories.size(); i++) {
+			const String category = item_categories[i];
+
+			if (i == 0) {
+				if (!root_categories.has(category)) {
+					root_categories.push_back(category);
+				}
+			}
+
+			String parent_item_category_path = item_category_path;
+
+			item_category_path = item_category_path.path_join(category);
+
+			{
+				AHashMap<StringName, HashSet<int>>::Iterator existing = category_to_items.find(item_category_path);
+				if (!existing) {
+					existing = category_to_items.insert(item_category_path, HashSet<int>());
+				}
+				existing->value.insert(item_id);
+			}
+
+			{
+				{
+					AHashMap<StringName, HashSet<StringName>>::Iterator existing = category_to_category_children.find(parent_item_category_path);
+					if (!existing) {
+						existing = category_to_category_children.insert(parent_item_category_path, HashSet<StringName>());
+					}
+					existing->value.insert(item_category_path);
+				}
+				{
+					AHashMap<StringName, HashSet<StringName>>::Iterator existing = category_to_category_children.find(item_category_path);
+					if (!existing) {
+						category_to_category_children.insert(item_category_path, HashSet<StringName>());
+					}
+				}
+			}
+		}
+	}
+
+	ItemCategoryMapping item_mapping;
+	item_mapping.category_to_category_children = category_to_category_children;
+	item_mapping.category_to_items = category_to_items;
+
+	for (const StringName &root_category : root_categories) {
+		_add_child_categories_recursive(
+				item_tree,
+				tree_root,
+				root_category,
+				item_mapping);
+	}
+
+	update_palette();
+}
+
+void GridMapEditor::_add_child_categories_recursive(Tree *p_item_tree, TreeItem *p_ti_parent, const StringName &p_category, const GridMapEditor::ItemCategoryMapping &p_mapping) {
+	int category_user_count = 0;
+	Vector<int> category_items_meta;
+
+	{
+		const AHashMap<StringName, HashSet<int>>::ConstIterator category_items_kv = p_mapping.category_to_items.find(p_category);
+		if (category_items_kv) {
+			const HashSet<int> &category_items = category_items_kv->value;
+			category_user_count = category_items.size();
+
+			for (int item_id : category_items) {
+				category_items_meta.push_back(item_id);
+			}
+		}
+	}
+
+	TreeItem *ti_category = p_item_tree->create_item(p_ti_parent);
+	{
+		Vector<String> sub_categories = String(p_category).split("/", false);
+		ti_category->set_collapsed(true);
+		ti_category->set_text(0, vformat("%s", sub_categories[sub_categories.size() - 1]));
+		ti_category->set_metadata(0, category_items_meta);
+		ti_category->set_text(1, vformat("(%d)", category_user_count));
+	}
+
+	{
+		const AHashMap<StringName, HashSet<StringName>>::ConstIterator category_to_category_children_kv = p_mapping.category_to_category_children.find(p_category);
+		if (category_to_category_children_kv) {
+			const HashSet<StringName> &category_children = category_to_category_children_kv->value;
+
+			for (const StringName &category_child : category_children) {
+				_add_child_categories_recursive(p_item_tree, ti_category, category_child, p_mapping);
+			}
+		}
 	}
 }
 
@@ -1052,8 +1203,10 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	if (node) {
 		node->disconnect(SNAME("cell_size_changed"), callable_mp(this, &GridMapEditor::_draw_grids));
 		node->disconnect(CoreStringName(changed), callable_mp(this, &GridMapEditor::_update_mesh_library));
+		node->disconnect(CoreStringName(changed), callable_mp(this, &GridMapEditor::_rebuild_item_tree));
 		if (mesh_library.is_valid()) {
 			mesh_library->disconnect_changed(callable_mp(this, &GridMapEditor::update_palette));
+			mesh_library->disconnect_changed(callable_mp(this, &GridMapEditor::_rebuild_item_tree));
 			mesh_library = Ref<MeshLibrary>();
 		}
 	}
@@ -1090,7 +1243,10 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 
 	node->connect(SNAME("cell_size_changed"), callable_mp(this, &GridMapEditor::_draw_grids));
 	node->connect(CoreStringName(changed), callable_mp(this, &GridMapEditor::_update_mesh_library));
+	node->connect(CoreStringName(changed), callable_mp(this, &GridMapEditor::_rebuild_item_tree));
 	_update_mesh_library();
+
+	_rebuild_item_tree();
 }
 
 void GridMapEditor::update_grid() {
@@ -1305,6 +1461,7 @@ void GridMapEditor::_update_cursor_instance() {
 		// Make the cursor translucent so that it can be distinguished from already-placed tiles.
 		RenderingServer::get_singleton()->instance_geometry_set_transparency(cursor_instance, 0.5);
 	}
+
 	_update_cursor_transform();
 }
 
@@ -1581,7 +1738,7 @@ GridMapEditor::GridMapEditor() {
 
 	mesh_library_palette = memnew(ItemList);
 	mesh_library_palette->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	add_child(mesh_library_palette);
+	mesh_library_palette->set_h_size_flags(SIZE_EXPAND_FILL);
 	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
 	mesh_library_palette->connect(SceneStringName(gui_input), callable_mp(this, &GridMapEditor::_mesh_library_palette_input));
 	mesh_library_palette->connect(SceneStringName(item_selected), callable_mp(this, &GridMapEditor::_item_selected_cbk));
@@ -1595,6 +1752,45 @@ GridMapEditor::GridMapEditor() {
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	info_message->set_anchors_and_offsets_preset(PRESET_FULL_RECT, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 	mesh_library_palette->add_child(info_message);
+
+	{
+		item_palette_container = memnew(VBoxContainer);
+		item_palette_container->set_h_size_flags(SIZE_EXPAND_FILL);
+		item_palette_container->set_v_size_flags(SIZE_EXPAND_FILL);
+		add_child(item_palette_container);
+
+		ScrollContainer *item_tree_scrollcontainer = memnew(ScrollContainer);
+		item_tree_scrollcontainer->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+
+		VBoxContainer *scrollcontainer_vbox = memnew(VBoxContainer);
+		scrollcontainer_vbox->set_custom_minimum_size(Size2(256 * EDSCALE, 0));
+		scrollcontainer_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+		scrollcontainer_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
+		item_tree_scrollcontainer->add_child(scrollcontainer_vbox);
+
+		item_tree = memnew(Tree);
+		item_tree->set_select_mode(Tree::SelectMode::SELECT_SINGLE);
+		item_tree->connect(SNAME("item_activated"), callable_mp(this, &GridMapEditor::_on_item_tree_item_activated));
+		item_tree->connect(SceneStringName(item_selected), callable_mp(this, &GridMapEditor::update_palette));
+		item_tree->set_columns(2);
+		item_tree->set_column_expand(0, true);
+		item_tree->set_column_expand(1, false);
+		item_tree->set_column_custom_minimum_width(1, 64 * EDSCALE);
+		item_tree->set_h_size_flags(SIZE_EXPAND_FILL);
+		item_tree->set_v_size_flags(SIZE_EXPAND_FILL);
+		item_tree->set_hide_root(false);
+
+		scrollcontainer_vbox->add_child(item_tree);
+
+		HSplitContainer *hsplitcontainer = memnew(HSplitContainer);
+		hsplitcontainer->set_split_offset(256 * EDSCALE);
+		hsplitcontainer->set_h_size_flags(SIZE_EXPAND_FILL);
+		hsplitcontainer->set_v_size_flags(SIZE_EXPAND_FILL);
+		hsplitcontainer->add_child(item_tree_scrollcontainer);
+		hsplitcontainer->add_child(mesh_library_palette);
+
+		item_palette_container->add_child(hsplitcontainer);
+	}
 
 	edit_axis = Vector3::AXIS_Y;
 	edit_floor[0] = -1;
