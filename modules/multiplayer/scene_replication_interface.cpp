@@ -390,7 +390,7 @@ Error SceneReplicationInterface::_update_spawn_visibility(int p_peer, const Obje
 	ERR_FAIL_NULL_V(spawner, ERR_BUG);
 	ERR_FAIL_COND_V(!_has_authority(spawner), ERR_BUG);
 	ERR_FAIL_COND_V(!tracked_nodes.has(p_oid), ERR_BUG);
-	const HashSet<ObjectID> synchronizers = tracked_nodes[p_oid].synchronizers;
+	const HashSet<ObjectID> &synchronizers = tracked_nodes[p_oid].synchronizers;
 	bool is_visible = true;
 	for (const ObjectID &sid : synchronizers) {
 		MultiplayerSynchronizer *sync = get_id_as<MultiplayerSynchronizer>(sid);
@@ -494,7 +494,7 @@ Error SceneReplicationInterface::_make_spawn_packet(Node *p_node, MultiplayerSpa
 	// Prepare spawn state.
 	LocalVector<NodePath> state_props;
 	LocalVector<uint32_t> sync_ids;
-	const HashSet<ObjectID> synchronizers = tnode->synchronizers;
+	const HashSet<ObjectID> &synchronizers = tnode->synchronizers;
 	for (const ObjectID &sid : synchronizers) {
 		MultiplayerSynchronizer *sync = get_id_as<MultiplayerSynchronizer>(sid);
 		if (!_has_authority(sync)) {
