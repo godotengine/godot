@@ -2905,7 +2905,9 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const P
 	// If the rect width is equivalent for both src and dst and the x offset is 0, we can blit in a single memcpy.
 	// Else, we do a per-line copy.
 	if ((dest_rect.size.x == p_src->width) && (p_src->width == width) && (dest_rect.position.x == 0) && (src_rect.position.x == 0)) {
-		memcpy(dst_data_ptr, src_data_ptr, width * dest_rect.size.y * pixel_size);
+		const uint8_t *src = &src_data_ptr[(src_rect.position.y * p_src->width) * pixel_size];
+		uint8_t *dst = &dst_data_ptr[(dest_rect.position.y * width) * pixel_size];
+		memcpy(dst, src, width * dest_rect.size.y * pixel_size);
 	} else {
 		for (int i = 0; i < dest_rect.size.y; i++) {
 			const uint8_t *src = &src_data_ptr[((src_rect.position.y + i) * p_src->width + src_rect.position.x) * pixel_size];
