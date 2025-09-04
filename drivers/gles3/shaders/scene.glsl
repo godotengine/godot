@@ -2012,11 +2012,9 @@ void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 	float dist = length(closest_point_local_to_light - pos_local_to_light);
 
 	float light_length = max(0, dist);
-	float light_attenuation = get_omni_spot_attenuation(light_length, area_lights[idx].inv_radius, area_lights[idx].attenuation);
+	float light_attenuation = get_omni_spot_attenuation(light_length, area_lights[idx].inv_radius, area_lights[idx].attenuation - 2.0); // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
 
 	vec3 color = area_lights[idx].color;
-
-	light_attenuation = clamp(light_attenuation * shadow, 0.0, 1.0);
 
 	if (metallic < 1.0) {
 		diffuse_light += ltc_diffuse * color / (2.0 * M_PI) * light_attenuation;
