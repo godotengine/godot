@@ -353,6 +353,9 @@
 		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled" default="false">
 			If [code]true[/code], the viewport will not receive input events.
 		</member>
+		<member name="gui_drag_threshold" type="int" setter="set_drag_threshold" getter="get_drag_threshold" default="10">
+			The minimum distance the mouse cursor must move while pressed before a drag operation begins.
+		</member>
 		<member name="gui_embed_subwindows" type="bool" setter="set_embedding_subwindows" getter="is_embedding_subwindows" default="false">
 			If [code]true[/code], sub-windows (popups and dialogs) will be embedded inside application window as control-like nodes. If [code]false[/code], they will appear as separate windows handled by the operating system.
 		</member>
