@@ -211,7 +211,10 @@
 		<constant name="PARAM_INTENSITY" value="20" enum="Param">
 			Constant for accessing [member light_intensity_lumens] and [member light_intensity_lux]. Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code].
 		</constant>
-		<constant name="PARAM_MAX" value="21" enum="Param">
+		<constant name="PARAM_AREA_NORMALIZE_ENERGY" value="21" enum="Param">
+			Constant for accessing [member AreaLight3D.area_normalize_energy].
+		</constant>
+		<constant name="PARAM_MAX" value="22" enum="Param">
 			Represents the size of the [enum Param] enum.
 		</constant>
 		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">
