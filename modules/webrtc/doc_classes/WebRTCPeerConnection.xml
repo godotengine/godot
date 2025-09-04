@@ -9,7 +9,7 @@
 		- The peer that wants to initiate the connection ([code]A[/code] from now on) creates an offer and sends it to the other peer ([code]B[/code] from now on).
 		- [code]B[/code] receives the offer, generates an answer, and sends it to [code]A[/code].
 		- [code]A[/code] and [code]B[/code] then generate and exchange ICE candidates with each other.
-		After these steps, the connection should be established. Keep on reading or look into the tutorial for more information.
+		After these steps, the connection should be established. Keep on reading or look at the tutorial for more information.
 	</description>
 	<tutorials>
 	</tutorials>
