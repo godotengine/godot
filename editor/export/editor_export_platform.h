@@ -30,19 +30,19 @@
 
 #pragma once
 
-class EditorFileSystemDirectory;
-struct EditorProgress;
-
-#include "core/config/project_settings.h"
-#include "core/io/dir_access.h"
 #include "core/io/zip_io.h"
-#include "core/os/shared_object.h"
-#include "editor_export_preset.h"
-#include "scene/gui/rich_text_label.h"
-#include "scene/main/node.h"
-#include "scene/resources/image_texture.h"
+#include "core/os/os.h"
+#include "editor/export/editor_export_preset.h"
 
+class DirAccess;
 class EditorExportPlugin;
+class EditorFileSystemDirectory;
+class Image;
+class Node;
+class RichTextLabel;
+class Texture2D;
+struct EditorProgress;
+struct SharedObject;
 
 const String ENV_SCRIPT_ENCRYPTION_KEY = "GODOT_SCRIPT_ENCRYPTION_KEY";
 
@@ -216,6 +216,7 @@ protected:
 #endif
 
 public:
+	static String simplify_path(const String &p_path);
 	static Variant get_project_setting(const Ref<EditorExportPreset> &p_preset, const StringName &p_name);
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const = 0;
 

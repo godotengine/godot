@@ -30,6 +30,8 @@
 
 #include "editor_export_platform_extension.h"
 
+#include "scene/resources/image_texture.h"
+
 void EditorExportPlatformExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_config_error", "error_text"), &EditorExportPlatformExtension::set_config_error);
 	ClassDB::bind_method(D_METHOD("get_config_error"), &EditorExportPlatformExtension::get_config_error);

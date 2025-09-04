@@ -31,6 +31,8 @@
 #include "template_modifier.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/io/image.h"
 
 void TemplateModifier::ByteStream::save(uint8_t p_value, Vector<uint8_t> &r_bytes) const {
 	save(p_value, r_bytes, 1);
