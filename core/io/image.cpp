@@ -3071,13 +3071,13 @@ void Image::fill(const Color &p_color) {
 	ERR_FAIL_COND_MSG(is_compressed(), "Cannot fill in compressed image formats.");
 
 	uint8_t *dst_data_ptr = data.ptrw();
-
 	int pixel_size = get_format_pixel_size(format);
+	int64_t pixel_count = data.size() / pixel_size;
 
 	// Put first pixel with the format-aware API.
 	_set_color_at_ofs(dst_data_ptr, 0, p_color);
 
-	_repeat_pixel_over_subsequent_memory(dst_data_ptr, pixel_size, width * height);
+	_repeat_pixel_over_subsequent_memory(dst_data_ptr, pixel_size, pixel_count);
 }
 
 void Image::fill_rect(const Rect2i &p_rect, const Color &p_color) {

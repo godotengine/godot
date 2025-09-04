@@ -267,11 +267,15 @@ TEST_CASE("[Image] Modifying pixels of an image") {
 
 	// Fill image with color
 	image2->fill(Color(0.5, 0.5, 0.5, 0.5));
-	for (int y = 0; y < image2->get_height(); y++) {
-		for (int x = 0; x < image2->get_width(); x++) {
-			CHECK_MESSAGE(
-					image2->get_pixel(x, y).r > 0.49,
-					"fill() should colorize all pixels of the image.");
+	for (int m = 0; m < image2->get_mipmap_count(); m++) {
+		Ref<Image> mip_image = image2->get_image_from_mipmap(m);
+
+		for (int y = 0; y < mip_image->get_height(); y++) {
+			for (int x = 0; x < mip_image->get_width(); x++) {
+				CHECK_MESSAGE(
+						mip_image->get_pixel(x, y).r > 0.49,
+						"fill() should colorize all pixels of the image.");
+			}
 		}
 	}
 
