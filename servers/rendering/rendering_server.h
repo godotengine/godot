@@ -561,7 +561,6 @@ public:
 		LIGHT_PARAM_SHADOW_BLUR,
 		LIGHT_PARAM_TRANSMITTANCE_BIAS,
 		LIGHT_PARAM_INTENSITY,
-		LIGHT_PARAM_AREA_NORMALIZE_ENERGY,
 		LIGHT_PARAM_MAX
 	};
 
@@ -615,6 +614,7 @@ public:
 	virtual void light_directional_set_sky_mode(RID p_light, LightDirectionalSkyMode p_mode) = 0;
 
 	virtual void light_area_set_size(RID p_light, const Vector2 &p_size) = 0;
+	virtual void light_area_set_normalize_energy(RID p_light, bool p_enabled) = 0;
 
 	// Shadow atlas
 

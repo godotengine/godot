@@ -12,6 +12,12 @@
 		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
 	</tutorials>
 	<methods>
+		<method name="get_area_normalize_energy" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Getter for [member AreaLight3D.area_normalize_energy]. If [code]true[/code], the energy of an [AreaLight3D] is normalized by its area.
+			</description>
+		</method>
 		<method name="get_area_size" qualifiers="const">
 			<return type="Vector2" />
 			<description>
@@ -29,6 +35,13 @@
 			<param index="0" name="param" type="int" enum="Light3D.Param" />
 			<description>
 				Returns the value of the specified [enum Light3D.Param] parameter.
+			</description>
+		</method>
+		<method name="set_area_normalize_energy">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+				Setter for [member AreaLight3D.area_normalize_energy]. If [code]true[/code], the energy of an [AreaLight3D] is normalized by its area.
 			</description>
 		</method>
 		<method name="set_area_size">
@@ -211,10 +224,7 @@
 		<constant name="PARAM_INTENSITY" value="20" enum="Param">
 			Constant for accessing [member light_intensity_lumens] and [member light_intensity_lux]. Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code].
 		</constant>
-		<constant name="PARAM_AREA_NORMALIZE_ENERGY" value="21" enum="Param">
-			Constant for accessing [member AreaLight3D.area_normalize_energy].
-		</constant>
-		<constant name="PARAM_MAX" value="22" enum="Param">
+		<constant name="PARAM_MAX" value="21" enum="Param">
 			Represents the size of the [enum Param] enum.
 		</constant>
 		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">
