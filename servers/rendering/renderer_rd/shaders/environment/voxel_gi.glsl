@@ -40,6 +40,9 @@ cell_data;
 #define LIGHT_TYPE_DIRECTIONAL 0
 #define LIGHT_TYPE_OMNI 1
 #define LIGHT_TYPE_SPOT 2
+#define LIGHT_TYPE_AREA 3
+
+#define M_PI 3.14159265359
 
 #if defined(MODE_COMPUTE_LIGHT) || defined(MODE_DYNAMIC_LIGHTING)
 
@@ -57,6 +60,9 @@ struct Light {
 
 	vec3 direction;
 	bool has_shadow;
+
+	vec4 area_width;
+	vec4 area_height;
 };
 
 layout(set = 0, binding = 3, std140) uniform Lights {
@@ -275,7 +281,6 @@ void clip_segment(vec4 plane, vec3 begin, inout vec3 end) {
 bool compute_light_at_pos(uint index, vec3 pos, vec3 normal, inout vec3 light, inout vec3 light_dir) {
 	float attenuation;
 	vec3 light_pos;
-
 	if (!compute_light_vector(index, pos, attenuation, light_pos)) {
 		return false;
 	}
@@ -333,6 +338,254 @@ bool compute_light_at_pos(uint index, vec3 pos, vec3 normal, inout vec3 light, i
 	return true;
 }
 
+float integrate_edge_hill(vec3 p0, vec3 p1) {
+	// Approximation suggested by Hill and Heitz, calculating the integral of the spherical cosine distribution over the line between p0 and p1.
+	// Runs faster than the exact formula of Baum et al. (1989).
+	float cosTheta = dot(p0, p1);
+
+	float x = cosTheta;
+	float y = abs(x);
+	float a = 5.42031 + (3.12829 + 0.0902326 * y) * y;
+	float b = 3.45068 + (4.18814 + y) * y;
+	float theta_sintheta = a / b;
+
+	if (x < 0.0) {
+		theta_sintheta = M_PI * inversesqrt(1.0 - x * x) - theta_sintheta;
+	}
+	return theta_sintheta * cross(p0, p1).y;
+}
+
+float integrate_edge(vec3 p_proj0, vec3 p_proj1, vec3 p0, vec3 p1) {
+	float epsilon = 0.00001;
+	bool opposite_sides = dot(p_proj0, p_proj1) < -1.0 + epsilon;
+	if (opposite_sides) {
+		// calculate the point on the line p0 to p1 that is closest to the vertex (origin)
+		vec3 half_point_t = p0 + normalize(p1 - p0) * dot(p0, normalize(p0 - p1));
+		vec3 half_point = normalize(half_point_t);
+		return integrate_edge_hill(p_proj0, half_point) + integrate_edge_hill(half_point, p_proj1);
+	}
+	return integrate_edge_hill(p_proj0, p_proj1);
+}
+
+void clip_quad_to_horizon(inout vec3 L[5], out int vertex_count) {
+	// detect clipping config
+	int config = 0;
+	if (L[0].y > 0.0) {
+		config += 1;
+	}
+	if (L[1].y > 0.0) {
+		config += 2;
+	}
+	if (L[2].y > 0.0) {
+		config += 4;
+	}
+	if (L[3].y > 0.0) {
+		config += 8;
+	}
+
+	// clip
+	vertex_count = 0;
+
+	if (config == 0) {
+		// clip all
+	} else if (config == 1) // V1 clip V2 V3 V4
+	{
+		vertex_count = 3;
+		L[1] = -L[1].y * L[0] + L[0].y * L[1];
+		L[2] = -L[3].y * L[0] + L[0].y * L[3];
+	} else if (config == 2) // V2 clip V1 V3 V4
+	{
+		vertex_count = 3;
+		L[0] = -L[0].y * L[1] + L[1].y * L[0];
+		L[2] = -L[2].y * L[1] + L[1].y * L[2];
+	} else if (config == 3) // V1 V2 clip V3 V4
+	{
+		vertex_count = 4;
+		L[2] = -L[2].y * L[1] + L[1].y * L[2];
+		L[3] = -L[3].y * L[0] + L[0].y * L[3];
+	} else if (config == 4) // V3 clip V1 V2 V4
+	{
+		vertex_count = 3;
+		L[0] = -L[3].y * L[2] + L[2].y * L[3];
+		L[1] = -L[1].y * L[2] + L[2].y * L[1];
+	} else if (config == 5) // V1 V3 clip V2 V4) impossible
+	{
+		vertex_count = 0;
+	} else if (config == 6) // V2 V3 clip V1 V4
+	{
+		vertex_count = 4;
+		L[0] = -L[0].y * L[1] + L[1].y * L[0];
+		L[3] = -L[3].y * L[2] + L[2].y * L[3];
+	} else if (config == 7) // V1 V2 V3 clip V4
+	{
+		vertex_count = 5;
+		L[4] = -L[3].y * L[0] + L[0].y * L[3];
+		L[3] = -L[3].y * L[2] + L[2].y * L[3];
+	} else if (config == 8) // V4 clip V1 V2 V3
+	{
+		vertex_count = 3;
+		L[0] = -L[0].y * L[3] + L[3].y * L[0];
+		L[1] = -L[2].y * L[3] + L[3].y * L[2];
+		L[2] = L[3];
+	} else if (config == 9) // V1 V4 clip V2 V3
+	{
+		vertex_count = 4;
+		L[1] = -L[1].y * L[0] + L[0].y * L[1];
+		L[2] = -L[2].y * L[3] + L[3].y * L[2];
+	} else if (config == 10) // V2 V4 clip V1 V3) impossible
+	{
+		vertex_count = 0;
+	} else if (config == 11) // V1 V2 V4 clip V3
+	{
+		vertex_count = 5;
+		L[4] = L[3];
+		L[3] = -L[2].y * L[3] + L[3].y * L[2];
+		L[2] = -L[2].y * L[1] + L[1].y * L[2];
+	} else if (config == 12) // V3 V4 clip V1 V2
+	{
+		vertex_count = 4;
+		L[1] = -L[1].y * L[2] + L[2].y * L[1];
+		L[0] = -L[0].y * L[3] + L[3].y * L[0];
+	} else if (config == 13) // V1 V3 V4 clip V2
+	{
+		vertex_count = 5;
+		L[4] = L[3];
+		L[3] = L[2];
+		L[2] = -L[1].y * L[2] + L[2].y * L[1];
+		L[1] = -L[1].y * L[0] + L[0].y * L[1];
+	} else if (config == 14) // V2 V3 V4 clip V1
+	{
+		vertex_count = 5;
+		L[4] = -L[0].y * L[3] + L[3].y * L[0];
+		L[0] = -L[0].y * L[1] + L[1].y * L[0];
+	} else if (config == 15) // V1 V2 V3 V4
+	{
+		vertex_count = 4;
+	}
+
+	if (vertex_count == 3) {
+		L[3] = L[0];
+	}
+	if (vertex_count == 4) {
+		L[4] = L[0];
+	}
+}
+
+float ltc_evaluate_diff(vec3 vertex, vec3 normal, vec3 points[4]) {
+	// construct the orthonormal basis around the normal vector
+	vec3 x, z;
+	vec3 eye_vec = vec3(0.0, 0.0, -1.0);
+	z = -normalize(eye_vec - normal * dot(eye_vec, normal)); // expanding the angle between view and normal vector to 90 degrees, this gives a normal vector, unless view=normal. TODO: in that case, we have a problem.
+	x = cross(normal, z);
+
+	// rotate area light in (T1, normal, T2) basis
+	mat3 basis = transpose(mat3(x, normal, z));
+
+	vec3 L[5];
+	L[0] = basis * points[0];
+	L[1] = basis * points[1];
+	L[2] = basis * points[2];
+	L[3] = basis * points[3];
+
+	int n = 0;
+	clip_quad_to_horizon(L, n);
+	if (n == 0) {
+		return 0.0;
+	}
+
+	vec3 L_proj[5];
+	// project onto unit sphere
+	L_proj[0] = normalize(L[0]);
+	L_proj[1] = normalize(L[1]);
+	L_proj[2] = normalize(L[2]);
+	L_proj[3] = normalize(L[3]);
+	L_proj[4] = normalize(L[4]);
+
+	// Prevent abnormal values when the light goes through (or close to) the fragment
+	vec3 pnorm = normalize(cross(L_proj[0] - L_proj[1], L_proj[2] - L_proj[1]));
+	if (abs(dot(pnorm, L_proj[0])) < 1e-10) {
+		// we could just return black, but that would lead to some black pixels in front of the light.
+		// for global illumination that shouldn't cause any visual artifacts
+		return 0.0;
+	}
+
+	float I;
+	I = integrate_edge(L_proj[0], L_proj[1], L[0], L[1]);
+	I += integrate_edge(L_proj[1], L_proj[2], L[1], L[2]);
+	I += integrate_edge(L_proj[2], L_proj[3], L[2], L[3]);
+	if (n >= 4) {
+		I += integrate_edge(L_proj[3], L_proj[4], L[3], L[4]);
+	}
+	if (n == 5) {
+		I += integrate_edge(L_proj[4], L_proj[0], L[4], L[0]);
+	}
+
+	return abs(I);
+}
+
+// implementation of area lights with Linearly Transformed Cosines (LTC): https://eheitzresearch.wordpress.com/415-2/
+bool compute_area_light(uint index, vec3 pos, vec3 normal, inout vec3 light) {
+	float EPSILON = 1e-7f;
+	vec3 area_width = lights.data[index].area_width.xyz;
+	vec3 area_height = lights.data[index].area_height.xyz;
+	vec3 area_direction = lights.data[index].direction;
+	vec3 vertex = pos;
+
+	if (dot(area_width, area_width) < EPSILON || dot(area_height, area_height) < EPSILON) { // area is 0
+		return false;
+	}
+	if (dot(area_direction, vertex - lights.data[index].position) <= 0) {
+		return false; // vertex is behind light
+	}
+
+	float a_len = length(area_width);
+	float b_len = length(area_height);
+	vec3 area_width_norm = normalize(area_width);
+	vec3 area_height_norm = normalize(area_height);
+	float a_half_len = a_len / 2.0;
+	float b_half_len = b_len / 2.0;
+	vec3 light_center = lights.data[index].position + (area_width + area_height) / 2.0;
+	float inv_center_range = lights.data[index].inv_spot_attenuation;
+
+	mat4 light_mat = mat4(
+			vec4(area_width_norm, 0),
+			vec4(area_height_norm, 0),
+			vec4(-area_direction, 0),
+			vec4(light_center, 1));
+	mat4 light_mat_inv = inverse(light_mat);
+	vec3 pos_local_to_light = (light_mat_inv * vec4(vertex, 1)).xyz; // vertex in LIGHT SPACE
+	vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0); // LIGHT SPACE
+	vec3 closest_point_on_light = light_center + closest_point_local_to_light.x * area_width_norm + closest_point_local_to_light.y * area_height_norm; // VIEW SPACE
+	float dist = length(closest_point_on_light - vertex);
+
+	float light_length = max(1.0 / params.cell_size, dist);
+	if (light_length >= lights.data[index].radius) {
+		return false;
+	}
+	float attenuation = get_omni_attenuation(light_length * params.cell_size, 1.0 / (lights.data[index].radius * params.cell_size), lights.data[index].attenuation - 2.0); // LTC integral already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
+
+	if (attenuation < 0.01) {
+		return false;
+	}
+
+	vec3 points[4];
+	points[0] = lights.data[index].position - vertex;
+	points[1] = lights.data[index].position + area_width - vertex;
+	points[2] = lights.data[index].position + area_width + area_height - vertex;
+	points[3] = lights.data[index].position + area_height - vertex;
+
+	if (dot(normal, normal) < 0.04) { // length(normal) < 0.2
+		// if the normal is invalid, just assume, it faces the light to get full light
+		// in this case, the horizon clipping could actually be skipped, since it won't clip anything.
+		normal = -area_direction;
+	}
+	float ltc_diffuse = max(ltc_evaluate_diff(vertex, normal, points), 0);
+
+	light = lights.data[index].color * ltc_diffuse / (2.0 * M_PI) * attenuation * lights.data[index].energy;
+
+	return true;
+}
+
 #endif // MODE COMPUTE LIGHT
 
 void main() {
@@ -361,19 +614,29 @@ void main() {
 	vec3 accum = vec3(0.0);
 
 	for (uint i = 0; i < params.light_count; i++) {
-		vec3 light;
-		vec3 light_dir;
-		if (!compute_light_at_pos(i, pos, normal.xyz, light, light_dir)) {
-			continue;
-		}
+		if (lights.data[i].type != LIGHT_TYPE_AREA) {
+			vec3 light;
+			vec3 light_dir;
+			if (!compute_light_at_pos(i, pos, normal, light, light_dir)) {
+				continue;
+			}
 
-		light *= albedo.rgb;
+			light *= albedo.rgb;
 
-		if (length(normal) > 0.2) {
-			accum += max(0.0, dot(normal, -light_dir)) * light;
+			if (length(normal) > 0.2) {
+				accum += max(0.0, dot(normal, -light_dir)) * light;
+			} else {
+				//all directions
+				accum += light;
+			}
 		} else {
-			//all directions
+			vec3 light;
+			if (!compute_area_light(i, pos, normal, light)) {
+				continue;
+			}
+			light *= albedo.rgb;
 			accum += light;
+			// TODO: since horizon clipping and integration methods will be reused yet again, add them to their own shader file that can be inc'ed.
 		}
 	}
 
@@ -505,15 +768,26 @@ void main() {
 
 		vec3 accum = vec3(0.0);
 		for (uint i = 0; i < params.light_count; i++) {
-			vec3 light;
-			vec3 light_dir;
-			if (!compute_light_at_pos(i, vec3(pos) * params.pos_multiplier, normal, light, light_dir)) {
-				continue;
+			if (lights.data[i].type != LIGHT_TYPE_AREA) {
+				vec3 light;
+				vec3 light_dir;
+				if (!compute_light_at_pos(i, vec3(pos) * params.pos_multiplier, normal, light, light_dir)) {
+					continue;
+				}
+
+				light *= albedo.rgb;
+
+				accum += max(0.0, dot(normal, -light_dir)) * light;
+			} else {
+				vec3 light;
+				if (!compute_area_light(i, vec3(pos) * params.pos_multiplier, normal, light)) {
+					continue;
+				}
+				light *= albedo.rgb;
+				accum += light;
+
+				// TODO: since horizon clipping and integration methods will be reused yet again, add them to their own shader file that can be inc'ed.
 			}
-
-			light *= albedo.rgb;
-
-			accum += max(0.0, dot(normal, -light_dir)) * light;
 		}
 
 		accum += imageLoad(emission, uv_xy).xyz;

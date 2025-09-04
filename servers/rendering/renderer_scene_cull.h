@@ -781,6 +781,7 @@ public:
 			float spot_attenuation;
 			bool has_shadow;
 			RS::LightDirectionalSkyMode sky_mode;
+			Vector2 area_size;
 		};
 
 		Vector<LightCache> light_cache;
