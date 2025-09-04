@@ -1187,7 +1187,7 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	float dist = length(closest_point_local_to_light - pos_local_to_light);
 
 	float light_length = max(0, dist);
-	half light_attenuation = get_omni_attenuation(light_length, area_lights.data[idx].inv_radius, area_lights.data[idx].attenuation);
+	half light_attenuation = get_omni_attenuation(light_length, area_lights.data[idx].inv_radius, area_lights.data[idx].attenuation - 2.0); // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
 	half shadow = half(1.0);
 
 #ifndef SHADOWS_DISABLED
@@ -1309,8 +1309,6 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #endif
 
 	hvec3 color = hvec3(area_lights.data[idx].color);
-
-	light_attenuation = clamp(light_attenuation * shadow, half(0.0), half(1.0));
 
 	if (metallic < 1.0) {
 		diffuse_light += ltc_diffuse * color / half(2.0 * M_PI) * light_attenuation;
