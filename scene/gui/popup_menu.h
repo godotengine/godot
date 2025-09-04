@@ -115,10 +115,10 @@ class PopupMenu : public Popup {
 	NativeMenu::SystemMenus system_menu_id = NativeMenu::INVALID_MENU_ID;
 	bool prefer_native = false;
 
-	bool close_allowed = false;
 	bool activated_by_keyboard = false;
 
-	Timer *minimum_lifetime_timer = nullptr;
+	Timer *close_suspended_timer = nullptr;
+	bool close_was_suspended = false;
 	Timer *submenu_timer = nullptr;
 	List<Rect2> autohide_areas;
 	mutable Vector<Item> items;
@@ -128,9 +128,14 @@ class PopupMenu : public Popup {
 	int mouse_over = -1;
 	int prev_mouse_over = -1;
 	int submenu_over = -1;
+	int this_submenu_index = -1;
+	bool is_active_submenu_left = false;
+	Vector<Point2> active_submenu_target_line;
+	Vector2 last_submenu_item_mouse_relative;
+	float submenu_timer_popup_delay = 0.1;
 	String _get_accel_text(const Item &p_item) const;
 	int _get_mouse_over(const Point2 &p_over) const;
-	void _mouse_over_update(const Point2 &p_over);
+	void _mouse_over_update(const Point2 &p_over, const Vector2 &p_relative = Vector2());
 	virtual Size2 _get_contents_minimum_size() const override;
 
 	int _get_item_height(int p_idx) const;
@@ -143,6 +148,9 @@ class PopupMenu : public Popup {
 
 	void _activate_submenu(int p_over, bool p_by_keyboard = false);
 	void _submenu_timeout();
+	bool _is_mouse_moving_toward_submenu(const Vector2 &p_relative, bool is_submenu_left, const Vector2 &p_mouse_position, const Vector<Point2> &p_active_submenu_target_line) const;
+	void _close_or_suspend();
+	void _close_suspended_timeout();
 
 	uint64_t popup_time_msec = 0;
 	bool hide_on_item_selection = true;
@@ -215,7 +223,6 @@ class PopupMenu : public Popup {
 
 	void _draw_items();
 
-	void _minimum_lifetime_timeout();
 	void _close_pressed();
 	void _menu_changed();
 	void _input_from_window_internal(const Ref<InputEvent> &p_event);
@@ -224,6 +231,7 @@ class PopupMenu : public Popup {
 	int _get_item_checkable_type(int p_index) const;
 	void _native_popup(const Rect2i &p_rect);
 	String _atr(int p_idx, const String &p_text) const;
+	void _submenu_hidden();
 
 protected:
 	virtual void _pre_popup() override;
