@@ -53,8 +53,8 @@ function ToJsObj(ptr) {
     const high = dataView.getUint32(ptr + 4, true);  // 高32位
     //const int64Value = BigInt(high) << 32n | BigInt(low);
     return {
-        low : low,
-        high : high
+        low: low,
+        high: high
     };
 }
 
@@ -81,13 +81,12 @@ function ToJsInt(ptr) {
     const low = dataView.getUint32(ptr, true);  // 低32位
     const high = dataView.getUint32(ptr + 4, true);  // 高32位
     return {
-        low : low,
-        high : high
+        low: low,
+        high: high
     };
 }
-
 function AllocGdInt() {
-    return Module._gdspx_alloc_int(); 
+    return Module._gdspx_alloc_int();
 }
 
 function PrintGdInt(ptr) {
@@ -105,7 +104,7 @@ function ToGdFloat(value) {
 }
 
 function ToJsFloat(ptr) {
-    const HEAPF32 = Module.HEAPF32; 
+    const HEAPF32 = Module.HEAPF32;
     const floatIndex = ptr / 4;
     const floatValue = HEAPF32[floatIndex];
     return floatValue;
@@ -127,10 +126,10 @@ function FreeGdFloat(ptr) {
 function ToGdString(str) {
     const encoder = new TextEncoder();
     const stringBytes = encoder.encode(str);
-    const ptr = Module._cmalloc(stringBytes.length + 1); 
+    const ptr = Module._cmalloc(stringBytes.length + 1);
     Module.HEAPU8.set(stringBytes, ptr);
     Module.HEAPU8[ptr + stringBytes.length] = 0;
-    const gdstrPtr= Module._gdspx_new_string(ptr, stringBytes.length);
+    const gdstrPtr = Module._gdspx_new_string(ptr, stringBytes.length);
     Module._cfree(ptr);
     return gdstrPtr;
 }
@@ -146,7 +145,7 @@ function _toJsString(gdstrPtr, isFree) {
     const nonSharedBytes = stringBytes.slice();
     const decoder = new TextDecoder("utf-8")
     const result = decoder.decode(nonSharedBytes)
-    if(isFree) {
+    if (isFree) {
         Module._gdspx_free_cstr(ptr);
     }
     return result;
@@ -157,7 +156,7 @@ function AllocGdString() {
     return Module._gdspx_alloc_string();
 }
 function PrintGdString(ptr) {
-    console.log(_toJsString(gdstrPtr,false));
+    console.log(_toJsString(gdstrPtr, false));
 }
 
 function FreeGdString(ptr) {
@@ -313,4 +312,54 @@ function PrintGdRect2(ptr) {
 
 function FreeGdRect2(ptr) {
     Module._gdspx_free_rect2(ptr);
+}
+
+function ToGdArray(array) {
+    if (!array) {
+        throw new Error('Invalid array structure. Expected {type, count, data}');
+    }
+    const dataSize = array.length;
+    const dataPtr = Module._cmalloc(dataSize);
+    try {
+        Module.HEAPU8.set(array, dataPtr);
+        const gdArrayPtr = Module._gdspx_to_gd_array(dataPtr, dataSize);
+        return gdArrayPtr;
+    } finally {
+        Module._cfree(dataPtr);
+    }
+}
+
+function ToJsArray(gdArrayPtr) {
+    if (!gdArrayPtr) {
+        return null;
+    }
+    const outputSizePtr = Module._cmalloc(4);
+    try {
+        const serializedPtr = Module._gdspx_to_js_array(gdArrayPtr, outputSizePtr);
+        if (!serializedPtr) {
+            console.log("ToJsArray serializedPtr == null");
+            return null;
+        }
+        const outputSize = Module.HEAP32[outputSizePtr >> 2];
+        const data = new Uint8Array(outputSize);
+        data.set(Module.HEAPU8.subarray(serializedPtr, serializedPtr + outputSize));
+        Module._cfree(serializedPtr);
+        return data;
+    } finally {
+        Module._cfree(outputSizePtr);
+    }
+}
+
+
+function AllocGdArray() {
+    return Module._gdspx_alloc_array();
+}
+
+function PrintGdArray(ptr) {
+    const val = ToJsArray(ptr);
+    console.log(`Array: ${val}`);
+}
+
+function FreeGdArray(ptr) {
+    Module._gdspx_free_array(ptr);
 }
