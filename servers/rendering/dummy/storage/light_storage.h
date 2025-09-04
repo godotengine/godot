@@ -97,6 +97,8 @@ public:
 
 	virtual void light_area_set_size(RID p_light, const Vector2 &p_size) override {}
 	virtual Vector2 light_area_get_size(RID p_light) const override { return Vector2(); }
+	virtual void light_area_set_normalize_energy(RID p_light, bool p_enabled) override {}
+	virtual bool light_area_get_normalize_energy(RID p_light) const override { return true; }
 
 	virtual bool light_has_shadow(RID p_light) const override { return false; }
 	virtual bool light_has_projector(RID p_light) const override { return false; }

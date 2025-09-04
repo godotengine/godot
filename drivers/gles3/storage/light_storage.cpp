@@ -84,7 +84,6 @@ void LightStorage::_light_initialize(RID p_light, RS::LightType p_type) {
 	light.param[RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
 	light.param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
 	light.param[RS::LIGHT_PARAM_INTENSITY] = p_type == RS::LIGHT_DIRECTIONAL ? 100000.0 : 1000.0;
-	light.param[RS::LIGHT_PARAM_AREA_NORMALIZE_ENERGY] = true;
 
 	light_owner.initialize_rid(p_light, light);
 }
@@ -343,6 +342,16 @@ void LightStorage::light_area_set_size(RID p_light, const Vector2 &p_size) {
 Vector2 LightStorage::light_area_get_size(RID p_light) const {
 	const Light *light = light_owner.get_or_null(p_light);
 	return light->area_size;
+}
+
+void LightStorage::light_area_set_normalize_energy(RID p_light, bool p_enabled) {
+	Light *light = light_owner.get_or_null(p_light);
+	light->area_normalize_energy = p_enabled;
+}
+
+bool LightStorage::light_area_get_normalize_energy(RID p_light) const {
+	const Light *light = light_owner.get_or_null(p_light);
+	return light->area_normalize_energy;
 }
 
 RS::LightBakeMode LightStorage::light_get_bake_mode(RID p_light) {
