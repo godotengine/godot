@@ -662,7 +662,7 @@ void main() {
 						d = max(d, 1.0);
 
 						if (d * inv_center_range < 1.0) { // view_pos in range
-							float attenuation = get_omni_attenuation(d, area_lights.data[light_index].inv_radius, area_lights.data[light_index].attenuation);
+							float attenuation = get_omni_attenuation(d, area_lights.data[light_index].inv_radius, area_lights.data[light_index].attenuation - 2.0); // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
 							vec3 light_points[4];
 							light_points[0] = area_lights.data[light_index].position - view_pos;
 							light_points[1] = area_lights.data[light_index].position + area_width - view_pos;
@@ -671,7 +671,9 @@ void main() {
 							float solid_angle = quad_solid_angle(light_points);
 							float cosine = max(0.0, dot(area_direction, view_pos - area_lights.data[light_index].position)); // makes light only effective in front
 
-							attenuation *= solid_angle / M_TAU * cosine;
+							// normalize to have same energy as point lights
+							float normalization = 7.801015826317776; // inverse ratio of solid angle of a 1mx1m quad at 1m distance
+							attenuation *= solid_angle / M_TAU * normalization * cosine;
 							vec3 light = area_lights.data[light_index].color;
 
 							if (area_lights.data[light_index].shadow_opacity > 0.001) {
