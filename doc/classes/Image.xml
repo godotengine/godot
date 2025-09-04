@@ -446,6 +446,7 @@
 			<param index="2" name="interpolation" type="int" enum="Image.Interpolation" default="1" />
 			<description>
 				Resizes the image to the given [param width] and [param height]. New pixels are calculated using the [param interpolation] mode defined via [enum Interpolation] constants.
+				[b]Note:[/b] If the image's format is [constant FORMAT_RGBA4444], [constant FORMAT_RGB565], or [constant FORMAT_RGBE9995], it will be temporarily converted to either [constant FORMAT_RGBA8] or [constant FORMAT_RGBAH]. This can affect the quality of the resized image.
 			</description>
 		</method>
 		<method name="resize_to_po2">
