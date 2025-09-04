@@ -1957,7 +1957,7 @@ void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 		vec3 binormal, vec3 tangent, float anisotropy,
 #endif
 		inout vec3 diffuse_light, inout vec3 specular_light) {
-	float EPSILON = 1e-4f;
+	float EPSILON = 1e-7f;
 	vec3 area_width = area_lights[idx].area_width.xyz;
 	vec3 area_height = area_lights[idx].area_height.xyz;
 	vec3 area_direction = area_lights[idx].direction;
@@ -2015,6 +2015,7 @@ void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 	float light_attenuation = get_omni_spot_attenuation(light_length, area_lights[idx].inv_radius, area_lights[idx].attenuation - 2.0); // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
 
 	vec3 color = area_lights[idx].color;
+	light_attenuation *= shadow;
 
 	if (metallic < 1.0) {
 		diffuse_light += ltc_diffuse * color / (2.0 * M_PI) * light_attenuation;

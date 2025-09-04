@@ -1132,7 +1132,7 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 		hvec3 binormal, hvec3 tangent, half anisotropy,
 #endif
 		inout hvec3 diffuse_light, inout hvec3 specular_light) {
-	float EPSILON = 1e-4f;
+	float EPSILON = 1e-7f;
 	vec3 area_width = area_lights.data[idx].area_width;
 	vec3 area_height = area_lights.data[idx].area_height;
 	vec3 area_direction = area_lights.data[idx].direction;
@@ -1307,7 +1307,7 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 		}
 	}
 #endif
-
+	light_attenuation *= shadow;
 	hvec3 color = hvec3(area_lights.data[idx].color);
 
 	if (metallic < 1.0) {
