@@ -63,6 +63,15 @@ Vector2 Light3D::get_area_size() const {
 	return area_size;
 }
 
+void Light3D::set_area_normalize_energy(bool p_enabled) {
+	area_normalize_energy = p_enabled;
+	RS::get_singleton()->light_area_set_normalize_energy(light, p_enabled);
+}
+
+bool Light3D::get_area_normalize_energy() const {
+	return area_normalize_energy;
+}
+
 void Light3D::set_shadow(bool p_enable) {
 	shadow = p_enable;
 	RS::get_singleton()->light_set_shadow(light, p_enable);
@@ -402,6 +411,9 @@ void Light3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_area_size", "area_size"), &AreaLight3D::set_area_size);
 	ClassDB::bind_method(D_METHOD("get_area_size"), &AreaLight3D::get_area_size);
 
+	ClassDB::bind_method(D_METHOD("set_area_normalize_energy", "enable"), &AreaLight3D::set_area_normalize_energy);
+	ClassDB::bind_method(D_METHOD("get_area_normalize_energy"), &AreaLight3D::get_area_normalize_energy);
+
 	ADD_GROUP("Light", "light_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_intensity_lumens", PROPERTY_HINT_RANGE, "0,100000.0,0.01,or_greater,suffix:lm"), "set_param", "get_param", PARAM_INTENSITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_intensity_lux", PROPERTY_HINT_RANGE, "0,150000.0,0.01,or_greater,suffix:lx"), "set_param", "get_param", PARAM_INTENSITY);
@@ -461,7 +473,6 @@ void Light3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BLUR);
 	BIND_ENUM_CONSTANT(PARAM_TRANSMITTANCE_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_INTENSITY);
-	BIND_ENUM_CONSTANT(PARAM_AREA_NORMALIZE_ENERGY);
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 
 	BIND_ENUM_CONSTANT(BAKE_DISABLED);
@@ -505,6 +516,7 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_param(PARAM_SPOT_ANGLE, 45);
 	set_param(PARAM_SPOT_ATTENUATION, 1);
 	set_area_size(Vector2(1, 1));
+	set_area_normalize_energy(true);
 	set_param(PARAM_SHADOW_MAX_DISTANCE, 0);
 	set_param(PARAM_SHADOW_SPLIT_1_OFFSET, 0.1);
 	set_param(PARAM_SHADOW_SPLIT_2_OFFSET, 0.2);
@@ -517,7 +529,6 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 1.0);
 	set_param(PARAM_TRANSMITTANCE_BIAS, 0.05);
 	set_param(PARAM_SHADOW_FADE_START, 1);
-	set_param(PARAM_AREA_NORMALIZE_ENERGY, true);
 	// For OmniLight3D and SpotLight3D, specified in Lumens.
 	set_param(PARAM_INTENSITY, 1000.0);
 	set_temperature(6500.0); // Nearly white.
@@ -721,7 +732,7 @@ void AreaLight3D::_bind_methods() {
 	ADD_GROUP("Area", "area_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "area_range", PROPERTY_HINT_RANGE, "0,4096,0.001,or_greater,exp,suffix:m"), "set_param", "get_param", PARAM_RANGE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "area_attenuation", PROPERTY_HINT_RANGE, "-10,10,0.001,or_greater,or_less"), "set_param", "get_param", PARAM_ATTENUATION);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "area_normalize_energy"), "set_param", "get_param", PARAM_AREA_NORMALIZE_ENERGY);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "area_normalize_energy"), "set_area_normalize_energy", "get_area_normalize_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "area_size", PROPERTY_HINT_LINK, "suffix:m"), "set_area_size", "get_area_size");
 }
 
