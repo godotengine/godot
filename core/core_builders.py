@@ -11,7 +11,7 @@ def disabled_class_builder(target, source, env):
     with methods.generated_wrapper(str(target[0])) as file:
         for c in source[0].read():
             if cs := c.strip():
-                file.write(f"#define ClassDB_Disable_{cs} 1\n")
+                file.write(f"class {cs}; template <> struct is_class_enabled<{cs}> : std::false_type {{}};\n")
 
 
 # Generate version info
