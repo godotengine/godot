@@ -4800,9 +4800,6 @@ void DisplayServerX11::process_events() {
 		MutexLock mutex_lock(events_mutex);
 		events = polled_events;
 		polled_events.clear();
-
-		// Check for more pending events to avoid an extra frame delay.
-		_check_pending_events(events);
 	}
 
 	for (uint32_t event_index = 0; event_index < events.size(); ++event_index) {
