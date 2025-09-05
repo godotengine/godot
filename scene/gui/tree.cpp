@@ -891,6 +891,11 @@ TreeItem *TreeItem::create_child(int p_index) {
 		item_prev = last_child;
 	} else {
 		int idx = 0;
+		if (!children_cache.is_empty()) {
+			idx = MIN(children_cache.size() - 1, p_index);
+			item_next = children_cache[idx];
+			item_prev = item_next->prev;
+		}
 		while (item_next) {
 			if (idx == p_index) {
 				item_next->prev = ti;
@@ -917,9 +922,7 @@ TreeItem *TreeItem::create_child(int p_index) {
 		}
 	} else {
 		first_child = ti;
-		if (!children_cache.is_empty()) {
-			children_cache.insert(0, ti);
-		}
+		children_cache.insert(0, ti);
 	}
 
 	if (item_prev == last_child) {
@@ -2733,6 +2736,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 		int base_ofs = children_pos.y - theme_cache.offset.y + p_draw_ofs.y;
 		float prev_ofs = base_ofs;
 		float prev_hl_ofs = base_ofs;
+		bool has_sibling_selection = c && _is_sibling_branch_selected(c);
 
 		while (c) {
 			int child_h = -1;
@@ -2785,10 +2789,11 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 						more_prev_ofs = theme_cache.parent_hl_line_margin;
 						prev_hl_ofs = parent_bottom_y;
+						has_sibling_selection = _is_sibling_branch_selected(c);
 					} else if (p_item->is_selected(0)) {
 						// If parent item is selected (but this item is not), we draw the line using children highlight style.
 						// Siblings of the selected branch can be drawn with a slight offset and their vertical line must appear as highlighted.
-						if (_is_sibling_branch_selected(c)) {
+						if (has_sibling_selection) {
 							if (!is_no_space) {
 								if (htotal >= 0) {
 									RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(root_pos.x, root_pos.y + children_line_pixel_shift), Point2i(parent_pos.x + parent_line_width * 0.5 + children_line_pixel_shift, root_pos.y + children_line_pixel_shift), theme_cache.children_hl_line_color, children_line_width);
@@ -2808,7 +2813,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					} else {
 						// If nothing of the above is true, we draw the line using normal style.
 						// Siblings of the selected branch can be drawn with a slight offset and their vertical line must appear as highlighted.
-						if (_is_sibling_branch_selected(c)) {
+						if (has_sibling_selection) {
 							if (!is_no_space) {
 								if (htotal >= 0) {
 									RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(root_pos.x, root_pos.y + line_pixel_shift), Point2(parent_pos.x + theme_cache.parent_hl_line_margin, root_pos.y + line_pixel_shift), theme_cache.relationship_line_color, line_width);
