@@ -8,6 +8,13 @@ Add new entries at the end of the file.
 
 ## Changes between 4.4-stable and 4.5-stable
 
+GH-100516
+--------
+Validate extension JSON: Error: Field 'classes/EditorDebuggerSession/methods/set_breakpoint/arguments': size changed value in new API, from 3 to 7.
+Validate extension JSON: Error: Field 'classes/EngineDebugger/methods/insert_breakpoint/arguments': size changed value in new API, from 2 to 6.
+
+Added optional arguments for breakpoint settings. Compatibility method registered.
+
 GH-98194
 --------
 Validate extension JSON: Error: Field 'classes/DisplayServer/methods/file_dialog_show/arguments': size changed value in new API, from 7 to 8.
