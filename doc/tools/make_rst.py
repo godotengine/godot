@@ -1199,6 +1199,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         # Annotation descriptions
         if len(class_def.annotations) > 0:
             f.write(make_separator(True))
+            f.write(".. rst-class:: classref-descriptions-group\n\n")
             f.write(make_heading("Annotations", "-"))
 
             index = 0
