@@ -245,6 +245,7 @@ public:
 			//create root simplex
 			Simplex *root = memnew(Simplex(point_count + 0, point_count + 1, point_count + 2, point_count + 3));
 			root->SE = simplex_list.push_back(root);
+			root->grid_positions.reserve(ACCEL_GRID_SIZE * ACCEL_GRID_SIZE * ACCEL_GRID_SIZE);
 
 			for (uint32_t i = 0; i < ACCEL_GRID_SIZE; i++) {
 				for (uint32_t j = 0; j < ACCEL_GRID_SIZE; j++) {

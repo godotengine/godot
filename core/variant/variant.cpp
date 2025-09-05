@@ -1656,13 +1656,15 @@ String Variant::stringify(int recursion_count) const {
 			String str("{ ");
 
 			Vector<_VariantStrPair> pairs;
+			pairs.resize(d.size());
+			int idx = 0;
 
 			for (const KeyValue<Variant, Variant> &kv : d) {
 				_VariantStrPair sp;
 				sp.key = stringify_variant_clean(kv.key, recursion_count);
 				sp.value = stringify_variant_clean(kv.value, recursion_count);
 
-				pairs.push_back(sp);
+				pairs.set(idx++, sp);
 			}
 
 			for (int i = 0; i < pairs.size(); i++) {

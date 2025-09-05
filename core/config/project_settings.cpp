@@ -1423,8 +1423,10 @@ void ProjectSettings::save_scene_groups_cache() {
 			continue;
 		}
 		Array list;
+		list.resize(E.value.size());
+		int idx = 0;
 		for (const StringName &group : E.value) {
-			list.push_back(group);
+			list.set(idx++, group);
 		}
 		cf->set_value(E.key, "groups", list);
 	}
@@ -1518,10 +1520,12 @@ void ProjectSettings::_add_builtin_input_map() {
 
 		for (KeyValue<String, List<Ref<InputEvent>>> &E : builtins) {
 			Array events;
+			events.resize(E.value.size());
+			int idx = 0;
 
 			// Convert list of input events into array
 			for (const Ref<InputEvent> &event : E.value) {
-				events.push_back(event);
+				events.set(idx++, event);
 			}
 
 			Dictionary action;
