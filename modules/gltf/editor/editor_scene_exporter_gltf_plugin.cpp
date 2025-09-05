@@ -103,6 +103,7 @@ void SceneExporterGLTFPlugin::_export_scene_as_gltf(const String &p_file_path) {
 	Ref<GLTFState> state;
 	state.instantiate();
 	state->set_copyright(_export_settings->get_copyright());
+	state->set_external_data_mode(_export_settings->get_external_data_mode());
 	int32_t flags = 0;
 	flags |= EditorSceneFormatImporter::IMPORT_USE_NAMED_SKIN_BINDS;
 	state->set_bake_fps(_export_settings->get_bake_fps());
