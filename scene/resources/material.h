@@ -167,6 +167,7 @@ public:
 	};
 
 	enum TextureFilter {
+		TEXTURE_FILTER_DEFAULT = -1,
 		TEXTURE_FILTER_NEAREST,
 		TEXTURE_FILTER_LINEAR,
 		TEXTURE_FILTER_NEAREST_WITH_MIPMAPS,
@@ -569,7 +570,7 @@ private:
 	Transparency transparency = TRANSPARENCY_DISABLED;
 	ShadingMode shading_mode = SHADING_MODE_PER_PIXEL;
 
-	TextureFilter texture_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
+	TextureFilter texture_filter = TEXTURE_FILTER_DEFAULT;
 
 	Vector3 uv1_scale;
 	Vector3 uv1_offset;
@@ -876,7 +877,7 @@ public:
 	static void finish_shaders();
 	static void flush_changes();
 
-	static Ref<Material> get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard = false, bool p_billboard_y = false, bool p_msdf = false, bool p_no_depth = false, bool p_fixed_size = false, TextureFilter p_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, AlphaAntiAliasing p_alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF, RID *r_shader_rid = nullptr);
+	static Ref<Material> get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard = false, bool p_billboard_y = false, bool p_msdf = false, bool p_no_depth = false, bool p_fixed_size = false, TextureFilter p_filter = TEXTURE_FILTER_DEFAULT, AlphaAntiAliasing p_alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF, RID *r_shader_rid = nullptr);
 
 	virtual RID get_rid() const override;
 	virtual RID get_shader_rid() const override;
