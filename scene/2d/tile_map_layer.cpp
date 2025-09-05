@@ -70,10 +70,10 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 			// Free the quadrant.
 			Ref<DebugQuadrant> &debug_quadrant = kv.value;
 			if (debug_quadrant->canvas_item.is_valid()) {
-				rs->free(debug_quadrant->canvas_item);
+				rs->free_rid(debug_quadrant->canvas_item);
 			}
 			if (debug_quadrant->physics_mesh.is_valid()) {
-				rs->free(debug_quadrant->physics_mesh);
+				rs->free_rid(debug_quadrant->physics_mesh);
 			}
 		}
 		debug_quadrant_map.clear();
@@ -189,7 +189,7 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 		if (!debug_quadrant->drawn_to) {
 			// Free the quadrant.
 			if (ci.is_valid()) {
-				rs->free(ci);
+				rs->free_rid(ci);
 			}
 			debug_quadrant_map.erase(quadrant_coords);
 		}
@@ -238,7 +238,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 		for (const KeyValue<Vector2i, Ref<RenderingQuadrant>> &kv : rendering_quadrant_map) {
 			for (const RID &ci : kv.value->canvas_items) {
 				if (ci.is_valid()) {
-					rs->free(ci);
+					rs->free_rid(ci);
 				}
 			}
 			kv.value->cells.clear();
@@ -285,7 +285,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 
 				// First, clear the quadrant's canvas items.
 				for (RID &ci : rendering_quadrant->canvas_items) {
-					rs->free(ci);
+					rs->free_rid(ci);
 				}
 				rendering_quadrant->canvas_items.clear();
 
@@ -381,7 +381,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 				// Free the quadrant.
 				for (const RID &ci : rendering_quadrant->canvas_items) {
 					if (ci.is_valid()) {
-						rs->free(ci);
+						rs->free_rid(ci);
 					}
 				}
 				rendering_quadrant->cells.clear();
@@ -578,7 +578,7 @@ void TileMapLayer::_rendering_occluders_clear_cell(CellData &r_cell_data) {
 	// Free the occluders.
 	for (const LocalVector<RID> &polygons : r_cell_data.occluders) {
 		for (const RID &rid : polygons) {
-			rs->free(rid);
+			rs->free_rid(rid);
 		}
 	}
 	r_cell_data.occluders.clear();
@@ -591,7 +591,7 @@ void TileMapLayer::_rendering_occluders_update_cell(CellData &r_cell_data) {
 	for (uint32_t i = tile_set->get_occlusion_layers_count(); i < r_cell_data.occluders.size(); i++) {
 		for (const RID &occluder_id : r_cell_data.occluders[i]) {
 			if (occluder_id.is_valid()) {
-				rs->free(occluder_id);
+				rs->free_rid(occluder_id);
 			}
 		}
 	}
@@ -626,7 +626,7 @@ void TileMapLayer::_rendering_occluders_update_cell(CellData &r_cell_data) {
 					for (uint32_t i = tile_data->get_occluder_polygons_count(occlusion_layer_index); i < r_cell_data.occluders[occlusion_layer_index].size(); i++) {
 						RID occluder_id = occluders[i];
 						if (occluder_id.is_valid()) {
-							rs->free(occluder_id);
+							rs->free_rid(occluder_id);
 						}
 					}
 					occluders.resize(tile_data->get_occluder_polygons_count(occlusion_layer_index));
@@ -653,7 +653,7 @@ void TileMapLayer::_rendering_occluders_update_cell(CellData &r_cell_data) {
 						} else {
 							// Clear occluder.
 							if (occluder.is_valid()) {
-								rs->free(occluder);
+								rs->free_rid(occluder);
 								occluder = RID();
 							}
 						}
@@ -738,7 +738,7 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 			for (KeyValue<PhysicsQuadrant::PhysicsBodyKey, PhysicsQuadrant::PhysicsBodyValue> &kvbody : kv.value->bodies) {
 				if (kvbody.value.body.is_valid()) {
 					bodies_coords.erase(kvbody.value.body);
-					ps->free(kvbody.value.body);
+					ps->free_rid(kvbody.value.body);
 				}
 			}
 			kv.value->bodies.clear();
@@ -791,7 +791,7 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 					RID &body = kvbody.value.body;
 					if (body.is_valid()) {
 						bodies_coords.erase(body);
-						ps->free(body);
+						ps->free_rid(body);
 						body = RID();
 					}
 				}
@@ -914,7 +914,7 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 					RID &body = kv.value.body;
 					if (body.is_valid()) {
 						bodies_coords.erase(body);
-						ps->free(body);
+						ps->free_rid(body);
 					}
 				}
 				physics_quadrant->bodies.clear();
@@ -1267,7 +1267,7 @@ void TileMapLayer::_navigation_update(bool p_force_cleanup) {
 	if (tile_map_node) {
 		if (forced_cleanup) {
 			if (navigation_map_override.is_valid()) {
-				ns->free(navigation_map_override);
+				ns->free_rid(navigation_map_override);
 				navigation_map_override = RID();
 			}
 		} else {
@@ -1338,7 +1338,7 @@ void TileMapLayer::_navigation_clear_cell(CellData &r_cell_data) {
 		const RID &region = r_cell_data.navigation_regions[i];
 		if (region.is_valid()) {
 			ns->region_set_map(region, RID());
-			ns->free(region);
+			ns->free_rid(region);
 		}
 	}
 	r_cell_data.navigation_regions.clear();
@@ -1377,7 +1377,7 @@ void TileMapLayer::_navigation_update_cell(CellData &r_cell_data) {
 					RID &region = r_cell_data.navigation_regions[i];
 					if (region.is_valid()) {
 						ns->region_set_map(region, RID());
-						ns->free(region);
+						ns->free_rid(region);
 						region = RID();
 					}
 				}
@@ -1405,7 +1405,7 @@ void TileMapLayer::_navigation_update_cell(CellData &r_cell_data) {
 						// Clear region.
 						if (region.is_valid()) {
 							ns->region_set_map(region, RID());
-							ns->free(region);
+							ns->free_rid(region);
 							region = RID();
 						}
 					}

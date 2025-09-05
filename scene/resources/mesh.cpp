@@ -2361,7 +2361,7 @@ ArrayMesh::ArrayMesh() {
 ArrayMesh::~ArrayMesh() {
 	if (mesh.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(mesh);
+		RenderingServer::get_singleton()->free_rid(mesh);
 	}
 }
 ///////////////
@@ -2377,5 +2377,5 @@ PlaceholderMesh::PlaceholderMesh() {
 
 PlaceholderMesh::~PlaceholderMesh() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(rid);
+	RS::get_singleton()->free_rid(rid);
 }

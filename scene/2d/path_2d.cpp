@@ -127,11 +127,11 @@ void Path2D::_debug_free() {
 	ERR_FAIL_NULL(RS::get_singleton());
 
 	if (debug_instance.is_valid()) {
-		RS::get_singleton()->free(debug_instance);
+		RS::get_singleton()->free_rid(debug_instance);
 		debug_instance = RID();
 	}
 	if (debug_mesh_rid.is_valid()) {
-		RS::get_singleton()->free(debug_mesh_rid);
+		RS::get_singleton()->free_rid(debug_mesh_rid);
 		debug_mesh_rid = RID();
 	}
 }

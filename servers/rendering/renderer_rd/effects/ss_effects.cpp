@@ -366,7 +366,7 @@ SSEffects::~SSEffects() {
 		ssr_scale.shader.version_free(ssr_scale.shader_version);
 
 		if (ssr.ubo.is_valid()) {
-			RD::get_singleton()->free(ssr.ubo);
+			RD::get_singleton()->free_rid(ssr.ubo);
 		}
 	}
 
@@ -374,8 +374,8 @@ SSEffects::~SSEffects() {
 		// Cleanup SS downsampler
 		ss_effects.downsample_shader.version_free(ss_effects.downsample_shader_version);
 
-		RD::get_singleton()->free(ss_effects.mirror_sampler);
-		RD::get_singleton()->free(ss_effects.gather_constants_buffer);
+		RD::get_singleton()->free_rid(ss_effects.mirror_sampler);
+		RD::get_singleton()->free_rid(ss_effects.gather_constants_buffer);
 	}
 
 	{
@@ -385,8 +385,8 @@ SSEffects::~SSEffects() {
 		ssil.interleave_shader.version_free(ssil.interleave_shader_version);
 		ssil.importance_map_shader.version_free(ssil.importance_map_shader_version);
 
-		RD::get_singleton()->free(ssil.importance_map_load_counter);
-		RD::get_singleton()->free(ssil.projection_uniform_buffer);
+		RD::get_singleton()->free_rid(ssil.importance_map_load_counter);
+		RD::get_singleton()->free_rid(ssil.projection_uniform_buffer);
 	}
 
 	{
@@ -396,7 +396,7 @@ SSEffects::~SSEffects() {
 		ssao.interleave_shader.version_free(ssao.interleave_shader_version);
 		ssao.importance_map_shader.version_free(ssao.importance_map_shader_version);
 
-		RD::get_singleton()->free(ssao.importance_map_load_counter);
+		RD::get_singleton()->free_rid(ssao.importance_map_load_counter);
 	}
 
 	{
