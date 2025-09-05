@@ -36,6 +36,20 @@
 #include "spx_base_mgr.h"
 
 class SpxPen;
+
+struct DebugShape {
+	enum Type {
+		CIRCLE,
+		RECT
+	};
+	Type type;
+	GdVec2 position;
+	GdVec2 size;
+	GdFloat radius;
+	GdColor color;
+	Node2D *node;
+};
+
 class SpxExtMgr : SpxBaseMgr {
 	SPXCLASS(SpxExtMgr, SpxBaseMgr)
 public:
@@ -44,10 +58,14 @@ public:
 private:
 	RBMap<GdObj, SpxPen *> id_pens;
 	Node *pen_root;
+	
+	Vector<DebugShape> debug_shapes;
+	Node2D *debug_root;
 
 	static Mutex lock;
 private:
 	SpxPen *_get_pen(GdObj id);
+	void _clear_debug_shapes();
 
 public:
 	void on_awake() override;
@@ -80,6 +98,10 @@ public:
 	void change_pen_size_by(GdObj obj, GdFloat amount);
 	void set_pen_size_to(GdObj obj, GdFloat size);
 	void set_pen_stamp_texture(GdObj obj, GdString texture_path);
+
+	// debug
+	void debug_draw_circle(GdVec2 pos, GdFloat radius, GdColor color);
+	void debug_draw_rect(GdVec2 pos, GdVec2 size, GdColor color);
 };
 
 #endif // SPX_EXT_MGR_H

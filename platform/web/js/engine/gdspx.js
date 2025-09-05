@@ -379,6 +379,30 @@ gdspx_ext_set_pen_stamp_texture(obj,texture_path) {
 	FreeGdString(_arg1); 
 
 }
+gdspx_ext_debug_draw_circle(pos,radius,color) {
+	var _gdFuncPtr = Module._gdspx_ext_debug_draw_circle; 
+	
+	var _arg0 = ToGdVec2(pos);
+	var _arg1 = ToGdFloat(radius);
+	var _arg2 = ToGdColor(color);
+	_gdFuncPtr(_arg0, _arg1, _arg2);
+	FreeGdVec2(_arg0); 
+	FreeGdFloat(_arg1); 
+	FreeGdColor(_arg2); 
+
+}
+gdspx_ext_debug_draw_rect(pos,size,color) {
+	var _gdFuncPtr = Module._gdspx_ext_debug_draw_rect; 
+	
+	var _arg0 = ToGdVec2(pos);
+	var _arg1 = ToGdVec2(size);
+	var _arg2 = ToGdColor(color);
+	_gdFuncPtr(_arg0, _arg1, _arg2);
+	FreeGdVec2(_arg0); 
+	FreeGdVec2(_arg1); 
+	FreeGdColor(_arg2); 
+
+}
 gdspx_input_get_mouse_pos() {
 	var _gdFuncPtr = Module._gdspx_input_get_mouse_pos; 
 	var _retValue = AllocGdVec2();

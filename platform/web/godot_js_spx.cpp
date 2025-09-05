@@ -239,6 +239,14 @@ void gdspx_ext_set_pen_stamp_texture(GdObj* obj,GdString* texture_path) {
 	 extMgr->set_pen_stamp_texture(*obj, *texture_path);
 }
 EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_debug_draw_circle(GdVec2* pos,GdFloat* radius,GdColor* color) {
+	 extMgr->debug_draw_circle(*pos, *radius, *color);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_debug_draw_rect(GdVec2* pos,GdVec2* size,GdColor* color) {
+	 extMgr->debug_draw_rect(*pos, *size, *color);
+}
+EMSCRIPTEN_KEEPALIVE
 void gdspx_input_get_mouse_pos(GdVec2* ret_val) {
 	*ret_val = inputMgr->get_mouse_pos();
 }
