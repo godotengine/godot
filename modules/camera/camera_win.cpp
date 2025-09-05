@@ -570,10 +570,7 @@ BufferDecoder *CameraFeedWindows::_create_buffer_decoder() {
 // CameraWindows - Subclass for our camera server on windows
 
 void CameraWindows::update_feeds() {
-	// remove existing devices
-	for (int i = feeds.size() - 1; i >= 0; i--) {
-		remove_feed(feeds[i]);
-	};
+	remove_all_feeds();
 
 	// Create an attribute store to hold the search criteria.
 	IMFAttributes *source_attributes;
@@ -611,6 +608,13 @@ void CameraWindows::update_feeds() {
 	emit_signal(SNAME(CameraServer::feeds_updated_signal_name));
 }
 
+void CameraWindows::remove_all_feeds() {
+	// remove existing devices
+	for (int i = feeds.size() - 1; i >= 0; i--) {
+		remove_feed(feeds[i]);
+	}
+}
+
 CameraWindows::CameraWindows() {
 	// Initialize the Media Foundation platform.
 	HRESULT hr = MFStartup(MF_VERSION);
@@ -618,12 +622,19 @@ CameraWindows::CameraWindows() {
 }
 
 CameraWindows::~CameraWindows() {
+	remove_all_feeds();
 	MFShutdown();
 }
 
 void CameraWindows::set_monitoring_feeds(bool p_monitoring_feeds) {
-	monitoring_feeds = p_monitoring_feeds;
+	if (p_monitoring_feeds == monitoring_feeds) {
+		return;
+	}
+
+	CameraServer::set_monitoring_feeds(p_monitoring_feeds);
 	if (monitoring_feeds) {
 		update_feeds();
+	} else {
+		remove_all_feeds();
 	}
 }
