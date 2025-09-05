@@ -36,6 +36,7 @@
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/templates/pair.h"
+#include "core/variant/variant_struct.h"
 #include "core/version.h"
 
 #ifdef TOOLS_ENABLED
@@ -184,6 +185,9 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			{ Variant::NODE_PATH, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
 			{ Variant::RID, sizeof(uint64_t), sizeof(uint64_t), sizeof(uint64_t), sizeof(uint64_t) },
 			{ Variant::OBJECT, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
+#ifndef ENUMS_SHOULD_NOT_BREAK_APIS
+			{ Variant::STRUCT, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+#endif
 			{ Variant::CALLABLE, sizeof(Callable), sizeof(Callable), sizeof(Callable), sizeof(Callable) }, // Hardcoded align.
 			{ Variant::SIGNAL, sizeof(Signal), sizeof(Signal), sizeof(Signal), sizeof(Signal) }, // Hardcoded align.
 			{ Variant::DICTIONARY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
@@ -198,6 +202,9 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			{ Variant::PACKED_VECTOR3_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
 			{ Variant::PACKED_COLOR_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
 			{ Variant::PACKED_VECTOR4_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+#ifdef ENUMS_SHOULD_NOT_BREAK_APIS
+			{ Variant::STRUCT, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+#endif
 			{ Variant::VARIANT_MAX, sizeof(uint64_t) + sizeof(float) * 4, sizeof(uint64_t) + sizeof(float) * 4, sizeof(uint64_t) + sizeof(double) * 4, sizeof(uint64_t) + sizeof(double) * 4 },
 		};
 
@@ -226,6 +233,9 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 		static_assert(type_size_array[Variant::NODE_PATH][sizeof(void *)] == sizeof(NodePath), "Size of NodePath mismatch");
 		static_assert(type_size_array[Variant::RID][sizeof(void *)] == sizeof(RID), "Size of RID mismatch");
 		static_assert(type_size_array[Variant::OBJECT][sizeof(void *)] == sizeof(Object *), "Size of Object mismatch");
+#ifndef ENUMS_SHOULD_NOT_BREAK_APIS
+		static_assert(type_size_array[Variant::STRUCT][sizeof(void *)] == sizeof(VariantStruct), "Size of Struct mismatch");
+#endif
 		static_assert(type_size_array[Variant::CALLABLE][sizeof(void *)] == sizeof(Callable), "Size of Callable mismatch");
 		static_assert(type_size_array[Variant::SIGNAL][sizeof(void *)] == sizeof(Signal), "Size of Signal mismatch");
 		static_assert(type_size_array[Variant::DICTIONARY][sizeof(void *)] == sizeof(Dictionary), "Size of Dictionary mismatch");
@@ -240,6 +250,9 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 		static_assert(type_size_array[Variant::PACKED_VECTOR3_ARRAY][sizeof(void *)] == sizeof(PackedVector3Array), "Size of PackedVector3Array mismatch");
 		static_assert(type_size_array[Variant::PACKED_COLOR_ARRAY][sizeof(void *)] == sizeof(PackedColorArray), "Size of PackedColorArray mismatch");
 		static_assert(type_size_array[Variant::PACKED_VECTOR4_ARRAY][sizeof(void *)] == sizeof(PackedVector4Array), "Size of PackedVector4Array mismatch");
+#ifdef ENUMS_SHOULD_NOT_BREAK_APIS
+		static_assert(type_size_array[Variant::STRUCT][sizeof(void *)] == sizeof(VariantStruct), "Size of Struct mismatch");
+#endif
 		static_assert(type_size_array[Variant::VARIANT_MAX][sizeof(void *)] == sizeof(Variant), "Size of Variant mismatch");
 
 		Array core_type_sizes;
@@ -624,7 +637,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 		Array builtins;
 
 		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-			if (i == Variant::OBJECT) {
+			if (i == Variant::OBJECT || i == Variant::STRUCT) {
 				continue;
 			}
 

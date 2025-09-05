@@ -32,7 +32,10 @@
 
 #include "variant.h"
 
+#include "core/config/variant_struct_dev_settings.h" // (dev-note: should remove when squashed)
+
 #include "core/templates/simple_type.h"
+#include "core/variant/variant_struct.h"
 
 // For use when you want to access the internal pointer of a Variant directly.
 // Use with caution. You need to be sure that the type is correct.
@@ -120,6 +123,9 @@ public:
 				break;
 			case Variant::OBJECT:
 				init_object(v);
+				break;
+			case Variant::STRUCT:
+				init_struct(v);
 				break;
 			default:
 				break;
@@ -212,6 +218,9 @@ public:
 	_FORCE_INLINE_ static const Object **get_object(const Variant *v) { return (const Object **)&v->_get_obj().obj; }
 
 	_FORCE_INLINE_ static const ObjectID get_object_id(const Variant *v) { return v->_get_obj().id; }
+
+	_FORCE_INLINE_ static VariantStruct *get_struct(Variant *v) { return reinterpret_cast<VariantStruct *>(v->_data._mem); }
+	_FORCE_INLINE_ static const VariantStruct *get_struct(const Variant *v) { return reinterpret_cast<const VariantStruct *>(v->_data._mem); }
 
 	template <typename T>
 	_FORCE_INLINE_ static void init_generic(Variant *v) {
@@ -322,6 +331,10 @@ public:
 	_FORCE_INLINE_ static void init_object(Variant *v) {
 		object_reset_data(v);
 		v->type = Variant::OBJECT;
+	}
+	_FORCE_INLINE_ static void init_struct(Variant *v) {
+		memnew_placement(v->_data._mem, VariantStruct);
+		v->type = Variant::STRUCT;
 	}
 
 	_FORCE_INLINE_ static void clear(Variant *v) {
@@ -436,6 +449,8 @@ public:
 				return get_vector4_array(v);
 			case Variant::OBJECT:
 				return get_object(v);
+			case Variant::STRUCT:
+				return get_struct(v);
 			case Variant::VARIANT_MAX:
 				ERR_FAIL_V(nullptr);
 		}
@@ -522,6 +537,8 @@ public:
 				return get_vector4_array(v);
 			case Variant::OBJECT:
 				return get_object(v);
+			case Variant::STRUCT:
+				return get_struct(v);
 			case Variant::VARIANT_MAX:
 				ERR_FAIL_V(nullptr);
 		}
@@ -692,6 +709,14 @@ struct VariantGetInternalPtr<::RID> {
 	static const ::RID *get_ptr(const Variant *v) { return VariantInternal::get_rid(v); }
 };
 
+#ifndef ENUMS_SHOULD_NOT_BREAK_APIS
+template <>
+struct VariantGetInternalPtr<VariantStruct> {
+	static VariantStruct *get_ptr(Variant *v) { return VariantInternal::get_struct(v); }
+	static const VariantStruct *get_ptr(const Variant *v) { return VariantInternal::get_struct(v); }
+};
+#endif
+
 template <>
 struct VariantGetInternalPtr<Callable> {
 	static Callable *get_ptr(Variant *v) { return VariantInternal::get_callable(v); }
@@ -775,6 +800,14 @@ struct VariantGetInternalPtr<PackedVector4Array> {
 	static PackedVector4Array *get_ptr(Variant *v) { return VariantInternal::get_vector4_array(v); }
 	static const PackedVector4Array *get_ptr(const Variant *v) { return VariantInternal::get_vector4_array(v); }
 };
+
+#ifdef ENUMS_SHOULD_NOT_BREAK_APIS
+template <>
+struct VariantGetInternalPtr<VariantStruct> {
+	static VariantStruct *get_ptr(Variant *v) { return VariantInternal::get_struct(v); }
+	static const VariantStruct *get_ptr(const Variant *v) { return VariantInternal::get_struct(v); }
+};
+#endif
 
 template <typename T, typename = void>
 struct VariantInternalAccessor;
@@ -1046,6 +1079,12 @@ struct VariantInternalAccessor<Object *> {
 };
 
 template <>
+struct VariantInternalAccessor<VariantStruct> {
+	static _FORCE_INLINE_ const VariantStruct &get(const Variant *v) { return *VariantInternal::get_struct(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const VariantStruct &p_value) { *VariantInternal::get_struct(v) = p_value; }
+};
+
+template <>
 struct VariantInternalAccessor<Variant> {
 	static _FORCE_INLINE_ Variant &get(Variant *v) { return *v; }
 	static _FORCE_INLINE_ const Variant &get(const Variant *v) { return *v; }
@@ -1191,6 +1230,11 @@ struct VariantInitializer<PackedVector4Array> {
 template <>
 struct VariantInitializer<Object *> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_object(v); }
+};
+
+template <>
+struct VariantInitializer<VariantStruct> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_struct(v); }
 };
 
 template <typename T, typename = void>
