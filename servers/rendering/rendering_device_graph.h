@@ -75,8 +75,8 @@ public:
 			TYPE_SET_BLEND_CONSTANTS,
 			TYPE_SET_LINE_WIDTH,
 			TYPE_SET_PUSH_CONSTANT,
-			TYPE_SET_SCISSOR,
-			TYPE_SET_VIEWPORT,
+			TYPE_SET_SCISSORS,
+			TYPE_SET_VIEWPORTS,
 			TYPE_UNIFORM_SET_PREPARE_FOR_USE
 		};
 
@@ -598,12 +598,28 @@ private:
 		float width;
 	};
 
-	struct DrawListSetScissorInstruction : DrawListInstruction {
-		Rect2i rect;
+	struct DrawListSetScissorsInstruction : DrawListInstruction {
+		uint32_t rects_count = 0;
+
+		_FORCE_INLINE_ Rect2i *rects() {
+			return reinterpret_cast<Rect2i *>(&this[1]);
+		}
+
+		_FORCE_INLINE_ const Rect2i *rects() const {
+			return reinterpret_cast<const Rect2i *>(&this[1]);
+		}
 	};
 
-	struct DrawListSetViewportInstruction : DrawListInstruction {
-		Rect2i rect;
+	struct DrawListSetViewportsInstruction : DrawListInstruction {
+		uint32_t rects_count = 0;
+
+		_FORCE_INLINE_ Rect2i *rects() {
+			return reinterpret_cast<Rect2i *>(&this[1]);
+		}
+
+		_FORCE_INLINE_ const Rect2i *rects() const {
+			return reinterpret_cast<const Rect2i *>(&this[1]);
+		}
 	};
 
 	struct DrawListUniformSetPrepareForUseInstruction : DrawListInstruction {
@@ -804,8 +820,8 @@ public:
 	void add_draw_list_set_blend_constants(const Color &p_color);
 	void add_draw_list_set_line_width(float p_width);
 	void add_draw_list_set_push_constant(RDD::ShaderID p_shader, const void *p_data, uint32_t p_data_size);
-	void add_draw_list_set_scissor(Rect2i p_rect);
-	void add_draw_list_set_viewport(Rect2i p_rect);
+	void add_draw_list_set_scissors(VectorView<Rect2i> p_rects);
+	void add_draw_list_set_viewports(VectorView<Rect2i> p_rects);
 	void add_draw_list_uniform_set_prepare_for_use(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index);
 	void add_draw_list_usage(ResourceTracker *p_tracker, ResourceUsage p_usage);
 	void add_draw_list_usages(VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages);
