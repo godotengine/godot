@@ -94,7 +94,6 @@ private:
 	static thread_local inline DuplicateRemapCacheT *thread_duplicate_remap_cache = nullptr;
 
 	Variant _duplicate_recursive(const Variant &p_variant, const DuplicateParams &p_params, uint32_t p_usage = 0) const;
-	void _find_sub_resources(const Variant &p_variant, HashSet<Ref<Resource>> &p_resources_found);
 
 	// Only for binding the deep duplicate method, so it doesn't need actual members.
 	enum DeepDuplicateMode : int;
@@ -154,6 +153,7 @@ public:
 	static void _teardown_duplicate_from_variant();
 	Ref<Resource> duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache) const;
 	void configure_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache);
+	static void find_sub_resources(const Variant &p_variant, HashSet<Ref<Resource>> &p_resources_found);
 
 	void set_local_to_scene(bool p_enable);
 	bool is_local_to_scene() const;
