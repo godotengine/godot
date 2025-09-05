@@ -58,7 +58,6 @@
 #import <ApplicationServices/ApplicationServices.h>
 #import <CoreVideo/CoreVideo.h>
 #import <Foundation/Foundation.h>
-#import <IOKit/pwr_mgt/IOPMLib.h>
 
 @class GodotWindow;
 @class GodotContentView;
@@ -191,9 +190,6 @@ private:
 	WindowID window_mouseover_id = INVALID_WINDOW_ID;
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 	WindowID window_id_counter = MAIN_WINDOW_ID;
-	float display_max_scale = 1.f;
-	mutable Point2i origin;
-	mutable bool displays_arrangement_dirty = true;
 	bool is_resizing = false;
 
 	CursorShape cursor_shape = CURSOR_ARROW;
@@ -210,8 +206,6 @@ private:
 	IndicatorID indicator_id_counter = 0;
 	HashMap<IndicatorID, IndicatorData> indicators;
 
-	IOPMAssertionID screen_keep_on_assertion = kIOPMNullAssertionID;
-
 	Callable help_search_callback;
 	Callable help_action_callback;
 
@@ -226,9 +220,7 @@ private:
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
 	void _update_window_style(WindowData p_wd, WindowID p_window);
 
-	void _update_displays_arrangement() const;
-	Point2i _get_native_screen_position(int p_screen) const;
-	static void _displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplayChangeSummaryFlags flags, void *user_info);
+	virtual HashSet<CGWindowID> _get_exclude_windows() const override;
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
@@ -256,7 +248,6 @@ public:
 	WindowData &get_window(WindowID p_window);
 
 	NSImage *_convert_to_nsimg(Ref<Image> &p_image) const;
-	Point2i _get_screens_origin() const;
 
 	void set_menu_delegate(NSMenu *p_menu);
 
@@ -322,24 +313,6 @@ public:
 
 	bool update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, NSPoint &r_mpos, NSTimeInterval p_timestamp);
 	virtual void warp_mouse(const Point2i &p_position) override;
-	virtual Point2i mouse_get_position() const override;
-	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
-
-	virtual int get_screen_count() const override;
-	virtual int get_primary_screen() const override;
-	virtual int get_keyboard_focus_screen() const override;
-	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
-	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
-	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
-	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
-	virtual float screen_get_max_scale() const override;
-	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
-	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
-	virtual Color screen_get_pixel(const Point2i &p_position) const override;
-	virtual Ref<Image> screen_get_image(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
-	virtual Ref<Image> screen_get_image_rect(const Rect2i &p_rect) const override;
-	virtual void screen_set_keep_on(bool p_enable) override;
-	virtual bool screen_is_kept_on() const override;
 
 	virtual Vector<int> get_window_list() const override;
 

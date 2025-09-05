@@ -36,6 +36,7 @@
 #define FontVariation __FontVariation
 
 #import <AppKit/AppKit.h>
+#import <IOKit/pwr_mgt/IOPMLib.h>
 
 #undef FontVariation
 
@@ -52,20 +53,53 @@ class DisplayServerMacOSBase : public DisplayServer {
 	mutable int current_layout = 0;
 	mutable bool keyboard_layout_dirty = true;
 
+	IOPMAssertionID screen_keep_on_assertion = kIOPMNullAssertionID;
+
+	float display_max_scale = 1.f;
+	mutable Point2i origin;
+	mutable bool displays_arrangement_dirty = true;
+
 protected:
 	_THREAD_SAFE_CLASS_
 
 	void initialize_tts() const;
 
+	void _update_displays_arrangement() const;
+	Point2i _get_native_screen_position(int p_screen) const;
+	static void _displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplayChangeSummaryFlags flags, void *user_info);
+
+	virtual HashSet<CGWindowID> _get_exclude_windows() const { return HashSet<CGWindowID>(); }
+
 	void _update_keyboard_layouts() const;
 	static void _keyboard_layout_changed(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef user_info);
 
 public:
+	Point2i _get_screens_origin() const;
+
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
 	virtual Ref<Image> clipboard_get_image() const override;
 	virtual bool clipboard_has() const override;
 	virtual bool clipboard_has_image() const override;
+
+	virtual int get_screen_count() const override;
+	virtual int get_primary_screen() const override;
+	virtual int get_keyboard_focus_screen() const override;
+	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_max_scale() const override;
+	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual Color screen_get_pixel(const Point2i &p_position) const override;
+	virtual Ref<Image> screen_get_image(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual Ref<Image> screen_get_image_rect(const Rect2i &p_rect) const override;
+	virtual void screen_set_keep_on(bool p_enable) override;
+	virtual bool screen_is_kept_on() const override;
+
+	virtual Point2i mouse_get_position() const override;
+	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
 
 	virtual int keyboard_get_layout_count() const override;
 	virtual int keyboard_get_current_layout() const override;
