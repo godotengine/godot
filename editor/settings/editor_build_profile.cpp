@@ -301,8 +301,6 @@ const HashMap<EditorBuildProfile::BuildOption, LocalVector<String>> EditorBuildP
 			"RayCast3D",
 			"SoftBody3D",
 			"SpringArm3D",
-			"SpringBoneCollision3D",
-			"SpringBoneSimulator3D",
 			"VehicleWheel3D",
 	} },
 	{ BUILD_OPTION_TEXT_SERVER_ADVANCED, {

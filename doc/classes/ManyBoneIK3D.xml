@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ManyBoneIK3D" inherits="SkeletonModifier3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node for inverse kinematics which may modify more than one bone.
+	</brief_description>
+	<description>
+		Base class of [SkeletonModifier3D] that has some joint lists and applies inverse kinematics. This class has some struct, enum and helper methods which useful to solve the inverse kinematics.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_settings">
+			<return type="void" />
+			<description>
+				Clears all settings.
+			</description>
+		</method>
+		<method name="get_setting_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of the settings.
+			</description>
+		</method>
+		<method name="reset">
+			<return type="void" />
+			<description>
+				Resets a state with respect to the current bone pose.
+			</description>
+		</method>
+		<method name="set_setting_count">
+			<return type="void" />
+			<param index="0" name="count" type="int" />
+			<description>
+				Sets the number of the settings.
+			</description>
+		</method>
+	</methods>
+</class>
