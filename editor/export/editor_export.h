@@ -33,6 +33,8 @@
 #include "editor_export_platform.h"
 #include "editor_export_plugin.h"
 
+class Timer;
+
 class EditorExport : public Node {
 	GDCLASS(EditorExport, Node);
 
