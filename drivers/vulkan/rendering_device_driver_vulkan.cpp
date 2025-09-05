@@ -533,6 +533,8 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_VULKAN_MEMORY_MODEL_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_TEXTURE_COMPRESSION_ASTC_HDR_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_PRESENT_ID_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_PRESENT_WAIT_EXTENSION_NAME, false);
 
 	// We don't actually use this extension, but some runtime components on some platforms
 	// can and will fill the validation layers with useless info otherwise if not enabled.
@@ -761,6 +763,8 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		VkPhysicalDevice16BitStorageFeaturesKHR storage_feature = {};
 		VkPhysicalDeviceMultiviewFeatures multiview_features = {};
 		VkPhysicalDevicePipelineCreationCacheControlFeatures pipeline_cache_control_features = {};
+		VkPhysicalDevicePresentIdFeaturesKHR present_id_features = {};
+		VkPhysicalDevicePresentWaitFeaturesKHR present_wait_features = {};
 
 		const bool use_1_2_features = physical_device_properties.apiVersion >= VK_API_VERSION_1_2;
 		if (use_1_2_features) {
@@ -813,6 +817,18 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 			pipeline_cache_control_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES;
 			pipeline_cache_control_features.pNext = next_features;
 			next_features = &pipeline_cache_control_features;
+		}
+
+		if (enabled_device_extension_names.has(VK_KHR_PRESENT_ID_EXTENSION_NAME)) {
+			present_id_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_FEATURES_KHR;
+			present_id_features.pNext = next_features;
+			next_features = &present_id_features;
+		}
+
+		if (enabled_device_extension_names.has(VK_KHR_PRESENT_WAIT_EXTENSION_NAME)) {
+			present_wait_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_FEATURES_KHR;
+			present_wait_features.pNext = next_features;
+			next_features = &present_wait_features;
 		}
 
 		VkPhysicalDeviceFeatures2 device_features_2 = {};
@@ -880,6 +896,10 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 
 		if (enabled_device_extension_names.has(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME)) {
 			pipeline_cache_control_support = pipeline_cache_control_features.pipelineCreationCacheControl;
+		}
+
+		if (enabled_device_extension_names.has(VK_KHR_PRESENT_ID_EXTENSION_NAME) && enabled_device_extension_names.has(VK_KHR_PRESENT_WAIT_EXTENSION_NAME)) {
+			waitable_swapchain_support = present_id_features.presentId && present_wait_features.presentWait;
 		}
 
 		if (enabled_device_extension_names.has(VK_EXT_DEVICE_FAULT_EXTENSION_NAME)) {
@@ -1128,6 +1148,19 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		create_info_next = &pipeline_cache_control_features;
 	}
 
+	VkPhysicalDevicePresentIdFeaturesKHR present_id_features = {};
+	VkPhysicalDevicePresentWaitFeaturesKHR present_wait_features = {};
+	if (waitable_swapchain_support) {
+		present_id_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_FEATURES_KHR;
+		present_id_features.pNext = create_info_next;
+		present_id_features.presentId = VK_TRUE;
+		create_info_next = &present_id_features;
+		present_wait_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_FEATURES_KHR;
+		present_wait_features.pNext = create_info_next;
+		present_wait_features.presentWait = VK_TRUE;
+		create_info_next = &present_wait_features;
+	}
+
 	VkPhysicalDeviceFaultFeaturesEXT device_fault_features = {};
 	if (device_fault_support) {
 		device_fault_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT;
@@ -1220,6 +1253,9 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		device_functions.GetSwapchainImagesKHR = PFN_vkGetSwapchainImagesKHR(functions.GetDeviceProcAddr(vk_device, "vkGetSwapchainImagesKHR"));
 		device_functions.AcquireNextImageKHR = PFN_vkAcquireNextImageKHR(functions.GetDeviceProcAddr(vk_device, "vkAcquireNextImageKHR"));
 		device_functions.QueuePresentKHR = PFN_vkQueuePresentKHR(functions.GetDeviceProcAddr(vk_device, "vkQueuePresentKHR"));
+		if (waitable_swapchain_support) {
+			device_functions.WaitForPresentKHR = PFN_vkWaitForPresentKHR(functions.GetDeviceProcAddr(vk_device, "vkWaitForPresentKHR"));
+		}
 
 		if (enabled_device_extension_names.has(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME)) {
 			device_functions.CreateRenderPass2KHR = PFN_vkCreateRenderPass2KHR(functions.GetDeviceProcAddr(vk_device, "vkCreateRenderPass2KHR"));
@@ -2773,6 +2809,9 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		thread_local LocalVector<VkSwapchainKHR> swapchains;
 		thread_local LocalVector<uint32_t> image_indices;
 		thread_local LocalVector<VkResult> results;
+#if !defined(SWAPPY_FRAME_PACING_ENABLED)
+		thread_local LocalVector<uint64_t> present_ids;
+#endif
 		swapchains.clear();
 		image_indices.clear();
 
@@ -2802,6 +2841,18 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 			err = device_functions.QueuePresentKHR(device_queue.queue, &present_info);
 		}
 #else
+		VkPresentIdKHR present_id = {};
+		if (waitable_swapchain_support) {
+			present_ids.resize(swapchains.size());
+			++current_present_id;
+			for (uint64_t &id : present_ids) {
+				id = current_present_id;
+			}
+			present_id.sType = VK_STRUCTURE_TYPE_PRESENT_ID_KHR;
+			present_id.pPresentIds = present_ids.ptr();
+			present_id.swapchainCount = present_ids.size();
+			present_info.pNext = &present_id;
+		}
 		err = device_functions.QueuePresentKHR(device_queue.queue, &present_info);
 #endif
 
@@ -3511,6 +3562,72 @@ void RenderingDeviceDriverVulkan::swap_chain_free(SwapChainID p_swap_chain) {
 	}
 
 	memdelete(swap_chain);
+}
+
+Error RenderingDeviceDriverVulkan::swap_chain_wait_for_present(DisplayServer::WindowID p_window, SwapChainID p_swap_chain, uint32_t p_max_frame_delay) {
+	if (!waitable_swapchain_support) {
+		return ERR_UNAVAILABLE;
+	}
+
+	if (current_present_id <= p_max_frame_delay) {
+		return OK;
+	}
+
+	if (last_swapchain_occluded) {
+		// Last time we checked, we were occluded. Check again and early out.
+		// Otherwise we'll always timeout and that makes Alt+Tab back into the Editor very laggy.
+		if (DisplayServer::get_singleton()->_window_presentation_occluded(p_window)) {
+			return OK; // Still occluded.
+		} else {
+			last_swapchain_occluded = false;
+		}
+	}
+
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+
+	// IMPORTANT: Low timeouts (e.g. 100ms) may be hit by the Godot Editor when creating new windows
+	// (e.g. opening the menu) or when resizing.
+	//
+	// Additionally, if the window is fully hidden, a low timeout like 100ms may be hit permanently,
+	// causing us to spam the warning but the game will run at 10 FPS, which may be confused with the
+	// scene being heavy. Getting stuck at 1 FPS signals much more strongly that we hit a bug.
+	constexpr uint64_t wait_timeout = 1'000'000'000;
+	VkResult err = device_functions.WaitForPresentKHR(vk_device, swap_chain->vk_swapchain, current_present_id - p_max_frame_delay, wait_timeout);
+
+	if (err == VK_TIMEOUT) {
+		if (DisplayServer::get_singleton()->_window_presentation_occluded(p_window)) {
+			last_swapchain_occluded = true;
+			// The window is not presenting, thus it's normal to timeout. We swallow the warning
+			// in this case since it can be pretty common. A side effect of this is that Godot's
+			// framerate will be locked down to the timeout's framerate (e.g. 1 FPS).
+			// If this is an issue, user can either launch Godot with --pacing-mode-mask 0x1
+			// or set the latency mode to LATENCY_MODE_HIGH_THROUGHPUT.
+			//
+			// Unfortunately Vulkan cannot signal us when the window is occluded or it's
+			// impossible to present at the time.
+			// See https://github.com/KhronosGroup/Vulkan-Docs/issues/2530
+			print_verbose("vkWaitForPresentKHR timeout exceeded for expected reasons.") return ERR_TIMEOUT;
+		} else {
+			ERR_FAIL_COND_V_MSG(err, ERR_TIMEOUT, "vkWaitForPresentKHR timeout exceeded.");
+		}
+	} else if (err != VK_SUCCESS && err != VK_SUBOPTIMAL_KHR) {
+		ERR_FAIL_COND_V_MSG(err, FAILED, "vkWaitForPresentKHR failed with error " + itos(err) + ".");
+	}
+	return OK;
+}
+
+BitField<RDD::PacingMethod> RenderingDeviceDriverVulkan::get_available_pacing_methods() const {
+	BitField<PacingMethod> methods = 0;
+	methods.set_flag(PACING_METHOD_SEQUENTIAL_SYNC);
+	if (waitable_swapchain_support) {
+		methods.set_flag(PACING_METHOD_WAITABLE_SWAPCHAIN);
+	}
+#if defined(SWAPPY_FRAME_PACING_ENABLED)
+	if (swappy_frame_pacer_enable) {
+		methods.set_flag(PACING_METHOD_ANDROID_SWAPPY);
+	}
+#endif
+	return methods;
 }
 
 /*********************/
