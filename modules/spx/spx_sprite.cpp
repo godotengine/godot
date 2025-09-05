@@ -30,6 +30,7 @@
 
 #include "spx_sprite.h"
 
+#include "core/config/project_settings.h"
 #include "spx_base_mgr.h"
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/physics/area_2d.h"
@@ -41,6 +42,7 @@
 #include "scene/resources/2d/rectangle_shape_2d.h"
 #include "spx.h"
 #include "spx_engine.h"
+#include "spx_physic_mgr.h"
 #include "spx_res_mgr.h"
 #include "spx_sprite_mgr.h"
 #include "spx_camera_mgr.h"
@@ -98,6 +100,27 @@ void SpxSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("on_sprite_vfx_finished"), &SpxSprite::on_sprite_vfx_finished);
 	ClassDB::bind_method(D_METHOD("on_sprite_screen_exited"), &SpxSprite::on_sprite_screen_exited);
 	ClassDB::bind_method(D_METHOD("on_sprite_screen_entered"), &SpxSprite::on_sprite_screen_entered);
+
+	// Physics mode method binding (using int type to avoid enum binding issues)
+	ClassDB::bind_method(D_METHOD("set_physics_mode", "mode"), &SpxSprite::set_physics_mode);
+	ClassDB::bind_method(D_METHOD("get_physics_mode"), &SpxSprite::get_physics_mode);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_mode", PROPERTY_HINT_ENUM, "NoPhysics,Kinematic,Dynamic,Static"), "set_physics_mode", "get_physics_mode");
+	
+	// Gravity control
+	ClassDB::bind_method(D_METHOD("set_use_gravity", "enabled"), &SpxSprite::set_use_gravity);
+	ClassDB::bind_method(D_METHOD("is_use_gravity"), &SpxSprite::is_use_gravity);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_gravity"), "set_use_gravity", "is_use_gravity");
+	
+	ClassDB::bind_method(D_METHOD("set_gravity_scale", "scale"), &SpxSprite::set_gravity_scale);
+	ClassDB::bind_method(D_METHOD("get_gravity_scale"), &SpxSprite::get_gravity_scale);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale"), "set_gravity_scale", "get_gravity_scale");
+	
+	ClassDB::bind_method(D_METHOD("set_drag", "drag"), &SpxSprite::set_drag);
+	ClassDB::bind_method(D_METHOD("get_drag"), &SpxSprite::get_drag);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drag"), "set_drag", "get_drag");
+	ClassDB::bind_method(D_METHOD("set_friction", "friction"), &SpxSprite::set_friction);
+	ClassDB::bind_method(D_METHOD("get_friction"), &SpxSprite::get_friction);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "friction"), "set_friction", "get_friction");
 }
 
 void SpxSprite::on_destroy_call() {
@@ -107,6 +130,11 @@ void SpxSprite::on_destroy_call() {
 }
 
 SpxSprite::SpxSprite() {
+	// Get project gravity settings
+	_gravity = ProjectSettings::get_singleton()->get_setting("physics/2d/default_gravity", 980.0);
+	
+	// Default to NO_PHYSICS mode for backward compatibility
+	physics_mode = NO_PHYSICS;
 }
 
 SpxSprite::~SpxSprite() {
@@ -114,6 +142,10 @@ SpxSprite::~SpxSprite() {
 
 void SpxSprite::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_PHYSICS_PROCESS: {
+			_physics_process(get_physics_process_delta_time());
+			break;
+		}
 		case NOTIFICATION_PREDELETE: {
 			on_destroy_call();
 			break;
@@ -174,6 +206,7 @@ void SpxSprite::on_start() {
 		visible_notifier->connect("screen_exited", Callable(this, "on_sprite_screen_exited"));
 		visible_notifier->connect("screen_entered", Callable(this, "on_sprite_screen_entered"));
 	}
+	_update_physics_mode();
 }
 
 void SpxSprite::set_gid(GdObj id) {
@@ -571,26 +604,41 @@ GdBool SpxSprite::is_anim_flipped_v() const {
 }
 
 void SpxSprite::set_gravity(GdFloat gravity) {
-	// TODO
+	_gravity = gravity;
 }
 
 GdFloat SpxSprite::get_gravity() {
-	return 0;
+	return _gravity;
 }
 
 void SpxSprite::set_mass(GdFloat mass) {
+	mass_value = mass;
 }
 
 GdFloat SpxSprite::get_mass() {
-	return 0;
+	return mass_value;
 }
 
 void SpxSprite::add_force(GdVec2 force) {
-	return;
+	if (physics_mode == NO_PHYSICS || physics_mode == STATIC) {
+		return;  // These modes are not affected by forces
+	}
+	if (physics_mode == KINEMATIC) {
+		return;  // Kinematic mode is not affected by forces
+	}
+	
+	external_forces += Vector2(force.x, force.y);
 }
 
 void SpxSprite::add_impulse(GdVec2 impulse) {
-	return;
+	if (physics_mode == NO_PHYSICS || physics_mode == STATIC) {
+		return;  // These modes are not affected by forces
+	}
+	if (physics_mode == KINEMATIC) {
+		return;  // Kinematic mode is not affected by forces
+	}
+	
+	applied_forces += Vector2(impulse.x, impulse.y);
 }
 
 void SpxSprite::set_trigger_layer(GdInt layer) {
@@ -823,5 +871,157 @@ void SpxSprite::set_dynamic_frame_offset_enabled(GdBool enabled) {
 
 GdBool SpxSprite::is_dynamic_frame_offset_enabled() const {
 	return enable_dynamic_frame_offset;
+}
+
+// ============================================================================
+// Physics mode implementation
+// ============================================================================
+
+void SpxSprite::_physics_process(double delta) {
+	switch (physics_mode) {
+		case DYNAMIC:
+			_handle_dynamic_physics(delta);
+			move_and_slide();
+			break;
+		case KINEMATIC:
+			_handle_kinematic_physics(delta);
+			move_and_slide();
+			break;
+		case STATIC:
+			_handle_static_physics(delta);
+			// Don't call move_and_slide(), keep completely static
+			break;
+		case NO_PHYSICS:
+			_handle_no_physics(delta);
+			// Direct transform movement, no physics
+			break;
+	}
+}
+
+void SpxSprite::_handle_dynamic_physics(double delta) {
+	Vector2 vel = get_velocity();
+	
+	// Apply gravity
+	if (use_gravity && !is_on_floor()) {
+		vel.y += _gravity  * delta * gravity_scale * SpxPhysicDefine::get_global_gravity();
+	}
+	
+	// Apply forces
+	vel += applied_forces * delta / mass_value;
+	vel += external_forces * delta;
+	
+	// Apply drag
+	if (drag_value > 0) {
+		vel = vel.move_toward(Vector2(), drag_value * vel.length() * delta * SpxPhysicDefine::get_global_air_drag());
+	}
+	
+	// Ground friction
+	if (is_on_floor() && ABS(vel.x) > 0) {
+		vel.x = Math::move_toward(double(vel.x), 0.0,  delta*friction_value *  SpxPhysicDefine::get_global_friction());
+	}
+	
+	set_velocity(vel);
+	
+	// Clear single-frame forces
+	applied_forces = Vector2();
+}
+
+void SpxSprite::_handle_kinematic_physics(double delta) {
+	// Kinematic mode: only execute user-set movement
+	// velocity is controlled by user code, no modifications here
+}
+
+void SpxSprite::_handle_static_physics(double delta) {
+	// Static mode: force to remain stationary
+	set_velocity(Vector2());
+	external_forces = Vector2();
+	applied_forces = Vector2();
+}
+
+void SpxSprite::_handle_no_physics(double delta) {
+	// NoPhysics mode: direct transform movement
+	Vector2 vel = get_velocity();
+	if (vel != Vector2()) {
+		set_global_position(get_global_position() + vel * delta);
+	}
+	
+	// Clear all physics-related forces
+	external_forces = Vector2();
+	applied_forces = Vector2();
+}
+
+// Physics mode management methods
+void SpxSprite::set_physics_mode(GdInt mode) {
+	physics_mode = static_cast<PhysicsMode>(mode);
+	_update_physics_mode();
+}
+
+GdInt SpxSprite::get_physics_mode() const {
+	return static_cast<GdInt>(physics_mode);
+}
+
+void SpxSprite::set_use_gravity(GdBool enabled) {
+	use_gravity = enabled;
+}
+
+GdBool SpxSprite::is_use_gravity() const {
+	return use_gravity;
+}
+
+void SpxSprite::set_gravity_scale(GdFloat scale) {
+	gravity_scale = scale;
+}
+
+GdFloat SpxSprite::get_gravity_scale() const {
+	return gravity_scale;
+}
+
+void SpxSprite::set_drag(GdFloat drag) {
+	drag_value = drag;
+}
+
+GdFloat SpxSprite::get_drag() const {
+	return drag_value;
+}
+
+void SpxSprite::set_friction(GdFloat friction) {
+	friction_value = friction;
+}
+
+GdFloat SpxSprite::get_friction() const {
+	return friction_value;
+}
+
+void SpxSprite::_update_physics_mode() {
+	switch (physics_mode) {
+		case DYNAMIC:
+		case KINEMATIC:
+			_enable_collision();
+			set_physics_process(true);
+			break;
+		case STATIC:
+			_enable_collision();
+			set_physics_process(true);  // Need processing to clear any movement
+			break;
+		case NO_PHYSICS:
+			_disable_collision();
+			set_physics_process(true);  // Still need to process transform movement
+			break;
+	}
+}
+
+void SpxSprite::_enable_collision() {
+	collision_enabled = true;
+	if (collider2d != nullptr) {
+		collider2d->set_disabled(false);
+	}
+}
+
+void SpxSprite::_disable_collision() {
+	collision_enabled = false;
+	set_velocity(Vector2());  // Clear velocity to avoid move_and_slide effects
+	if (collider2d != nullptr) {
+		collider2d->set_disabled(true);
+	}
 }
 

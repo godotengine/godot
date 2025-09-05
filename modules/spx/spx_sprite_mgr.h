@@ -225,6 +225,17 @@ public:
 	void add_force(GdObj obj, GdVec2 force);
 	void add_impulse(GdObj obj, GdVec2 impulse);
 
+	void set_physics_mode(GdObj obj, GdInt mode);
+	GdInt get_physics_mode(GdObj obj);
+	void set_use_gravity(GdObj obj, GdBool enabled);
+	GdBool is_use_gravity(GdObj obj);
+	void set_gravity_scale(GdObj obj, GdFloat scale);
+	GdFloat get_gravity_scale(GdObj obj);
+	void set_drag(GdObj obj, GdFloat drag);
+	GdFloat get_drag(GdObj obj);
+	void set_friction(GdObj obj, GdFloat friction);
+	GdFloat get_friction(GdObj obj);
+
 	void set_collision_layer(GdObj obj, GdInt layer);
 	GdInt get_collision_layer(GdObj obj);
 	void set_collision_mask(GdObj obj, GdInt mask);

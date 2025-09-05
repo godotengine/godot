@@ -46,8 +46,29 @@ class VisibleOnScreenNotifier2D;
 class SpxSprite : public CharacterBody2D {
 	GDCLASS(SpxSprite, CharacterBody2D);
 
+public:
+	// Physics mode enumeration
+	enum PhysicsMode {
+		NO_PHYSICS = 0,    // Pure visual, no collision, best performance (current default)
+		KINEMATIC = 1,    // Code-controlled movement with collision detection
+		DYNAMIC = 2,      // Affected by physics, automatic gravity and collision
+		STATIC = 3,       // Static immovable, but has collision, affects other objects
+	};
+
 private:
 	GdObj gid;
+
+	// Physics mode related variables
+	PhysicsMode physics_mode = NO_PHYSICS;  // Current physics mode
+	bool use_gravity = true;                // Whether to use gravity
+	float gravity_scale = 1.0f;            // Gravity scale factor
+	float mass_value = 1.0f;               // Mass value
+	float drag_value = 0.0f;               // Drag coefficient
+	float friction_value = 300.0f;         // Ground friction coefficient
+	Vector2 external_forces = Vector2();   // External applied forces
+	Vector2 applied_forces = Vector2();    // Applied forces
+	bool collision_enabled = true;         // Whether collision is enabled
+	float _gravity = 980.0f;               // Gravity value (from ProjectSettings)
 
 	template <typename T>
 	T *get_component(Node *node, GdBool recursive = false);
@@ -77,6 +98,17 @@ private:
 protected:
 	void _notification(int p_what);
 	void _draw();
+
+	// Physics processing methods
+	void _physics_process(double delta);               // Main physics processing loop
+	void _handle_dynamic_physics(double delta);       // Dynamic mode processing
+	void _handle_kinematic_physics(double delta);     // Kinematic mode processing
+	void _handle_static_physics(double delta);        // Static mode processing
+	void _handle_no_physics(double delta);            // NoPhysics mode processing
+	void _update_physics_mode();                      // Update physics mode state
+	void _enable_collision();                         // Enable collision
+	void _disable_collision();                        // Disable collision
+
 	Ref<SpriteFrames> default_sprite_frames;
 	Ref<ShaderMaterial> default_material;
 	Area2D *area2d;
@@ -179,6 +211,17 @@ public:
 	GdBool is_dynamic_frame_offset_enabled() const;
 
 	// physics
+	void set_physics_mode(GdInt mode);
+	GdInt get_physics_mode() const;
+	void set_use_gravity(GdBool enabled);
+	GdBool is_use_gravity() const;
+	void set_gravity_scale(GdFloat scale);
+	GdFloat get_gravity_scale() const;
+	void set_drag(GdFloat drag);
+	GdFloat get_drag() const;
+	void set_friction(GdFloat friction);
+	GdFloat get_friction() const;
+
 	void set_gravity(GdFloat gravity);
 	GdFloat get_gravity();
 	void set_mass(GdFloat mass);

@@ -299,6 +299,38 @@ void gdspx_physic_set_collision_system_type(GdBool* is_collision_by_alpha) {
 	 physicMgr->set_collision_system_type(*is_collision_by_alpha);
 }
 EMSCRIPTEN_KEEPALIVE
+void gdspx_physic_set_global_gravity(GdFloat* gravity) {
+	 physicMgr->set_global_gravity(*gravity);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_physic_get_global_gravity(GdFloat* ret_val) {
+	*ret_val = physicMgr->get_global_gravity();
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_physic_set_global_friction(GdFloat* friction) {
+	 physicMgr->set_global_friction(*friction);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_physic_get_global_friction(GdFloat* ret_val) {
+	*ret_val = physicMgr->get_global_friction();
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_physic_set_global_air_drag(GdFloat* air_drag) {
+	 physicMgr->set_global_air_drag(*air_drag);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_physic_get_global_air_drag(GdFloat* ret_val) {
+	*ret_val = physicMgr->get_global_air_drag();
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_physic_check_collision_rect(GdVec2* pos,GdVec2* size,GdInt* collision_mask,GdArray* ret_val) {
+	*ret_val = physicMgr->check_collision_rect(*pos, *size, *collision_mask);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_physic_check_collision_circle(GdVec2* pos,GdFloat* radius,GdInt* collision_mask,GdArray* ret_val) {
+	*ret_val = physicMgr->check_collision_circle(*pos, *radius, *collision_mask);
+}
+EMSCRIPTEN_KEEPALIVE
 void gdspx_platform_set_stretch_mode(GdBool* enable) {
 	 platformMgr->set_stretch_mode(*enable);
 }
@@ -761,6 +793,46 @@ void gdspx_sprite_add_force(GdObj* obj,GdVec2* force) {
 EMSCRIPTEN_KEEPALIVE
 void gdspx_sprite_add_impulse(GdObj* obj,GdVec2* impulse) {
 	 spriteMgr->add_impulse(*obj, *impulse);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_sprite_set_physics_mode(GdObj* obj,GdInt* mode) {
+	 spriteMgr->set_physics_mode(*obj, *mode);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_sprite_get_physics_mode(GdObj* obj,GdInt* ret_val) {
+	*ret_val = spriteMgr->get_physics_mode(*obj);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_sprite_set_use_gravity(GdObj* obj,GdBool* enabled) {
+	 spriteMgr->set_use_gravity(*obj, *enabled);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_sprite_is_use_gravity(GdObj* obj,GdBool* ret_val) {
+	*ret_val = spriteMgr->is_use_gravity(*obj);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_sprite_set_gravity_scale(GdObj* obj,GdFloat* scale) {
+	 spriteMgr->set_gravity_scale(*obj, *scale);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_sprite_get_gravity_scale(GdObj* obj,GdFloat* ret_val) {
+	*ret_val = spriteMgr->get_gravity_scale(*obj);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_sprite_set_drag(GdObj* obj,GdFloat* drag) {
+	 spriteMgr->set_drag(*obj, *drag);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_sprite_get_drag(GdObj* obj,GdFloat* ret_val) {
+	*ret_val = spriteMgr->get_drag(*obj);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_sprite_set_friction(GdObj* obj,GdFloat* friction) {
+	 spriteMgr->set_friction(*obj, *friction);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_sprite_get_friction(GdObj* obj,GdFloat* ret_val) {
+	*ret_val = spriteMgr->get_friction(*obj);
 }
 EMSCRIPTEN_KEEPALIVE
 void gdspx_sprite_set_collision_layer(GdObj* obj,GdInt* layer) {
