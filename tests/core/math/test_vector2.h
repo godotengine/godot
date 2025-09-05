@@ -38,10 +38,18 @@ namespace TestVector2 {
 
 TEST_CASE("[Vector2] Constructor methods") {
 	constexpr Vector2 vector_empty = Vector2();
+	constexpr Vector2 vector_from_int_zero = Vector2(0);
+	constexpr Vector2 vector_from_float_zero = Vector2(0.0f);
 	constexpr Vector2 vector_zero = Vector2(0.0, 0.0);
 	static_assert(
 			vector_empty == vector_zero,
-			"Vector2 Constructor with no inputs should return a zero Vector2.");
+			"Default constructor Vector2() should create a zero Vector2.");
+	static_assert(
+			vector_from_int_zero == vector_zero,
+			"Vector2(int scalar) should create a zero Vector2 when scalar is 0.");
+	static_assert(
+			vector_from_float_zero == vector_zero,
+			"Vector2(float scalar) should create a zero Vector2 when scalar is 0.0f.");
 }
 
 TEST_CASE("[Vector2] Angle methods") {
