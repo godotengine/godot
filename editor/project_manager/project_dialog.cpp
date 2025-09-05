@@ -860,6 +860,23 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 			set_title(TTRC("Create New Project"));
 			set_ok_button_text(TTRC("Create"));
 
+			if (!rendering_device_checked) {
+				rendering_device_supported = DisplayServer::is_rendering_device_supported();
+
+				if (!rendering_device_supported) {
+					List<BaseButton *> buttons;
+					renderer_button_group->get_buttons(&buttons);
+					for (BaseButton *button : buttons) {
+						if (button->get_meta(SNAME("rendering_method")) == "gl_compatibility") {
+							button->set_pressed(true);
+							break;
+						}
+					}
+				}
+				_renderer_selected();
+				rendering_device_checked = true;
+			}
+
 			name_container->show();
 			install_path_container->hide();
 			renderer_container->show();
@@ -1042,12 +1059,6 @@ ProjectDialog::ProjectDialog() {
 		default_renderer_type = EditorSettings::get_singleton()->get_setting("project_manager/default_renderer");
 	}
 
-	rendering_device_supported = DisplayServer::is_rendering_device_supported();
-
-	if (!rendering_device_supported) {
-		default_renderer_type = "gl_compatibility";
-	}
-
 	Button *rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTRC("Forward+"));
@@ -1106,8 +1117,6 @@ ProjectDialog::ProjectDialog() {
 	rd_not_supported->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	rd_not_supported->set_visible(false);
 	renderer_container->add_child(rd_not_supported);
-
-	_renderer_selected();
 
 	l = memnew(Label);
 	l->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
