@@ -529,7 +529,9 @@ void vertex_shader(vec3 vertex_input,
 	vec2 clip_pos = clamp((gl_Position.xy / gl_Position.w) * 0.5 + 0.5, 0.0, 1.0);
 #endif
 
-	uvec2 cluster_pos = uvec2(clip_pos / scene_data.screen_pixel_size) >> implementation_data.cluster_shift;
+	uvec2 screen_size = uvec2(1.0 / scene_data.screen_pixel_size);
+	uvec2 screen_pixel = clamp(uvec2(clip_pos * vec2(screen_size)), uvec2(0), screen_size - uvec2(1));
+	uvec2 cluster_pos = screen_pixel >> implementation_data.cluster_shift;
 	uint cluster_offset = (implementation_data.cluster_width * cluster_pos.y + cluster_pos.x) * (implementation_data.max_cluster_element_count_div_32 + 32);
 	uint cluster_z = uint(clamp((-vertex_interp.z / scene_data.z_far) * 32.0, 0.0, 31.0));
 
