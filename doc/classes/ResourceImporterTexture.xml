@@ -71,7 +71,9 @@
 			It's recommended to enable mipmaps in 3D. However, in 2D, this should only be enabled if your project visibly benefits from having mipmaps enabled. If the camera never zooms out significantly, there won't be a benefit to enabling mipmaps but memory usage will increase.
 		</member>
 		<member name="mipmaps/limit" type="int" setter="" getter="" default="-1">
-			Unimplemented. This currently has no effect when changed.
+			Sets the maximal amount of mipmaps for a texture. The smaller the limit, the sharper the texture will appear from a distance. This can help alleviate the overbluring of distant images, especially ones with a low resolution.
+			If set to [code]-1[/code], the full mipmap chain will be generated. If [code]0[/code], no mipmaps will be generated.
+			[b]Note:[/b] This setting is ignored if [member mipmaps/generate] is [code]false[/code].
 		</member>
 		<member name="process/channel_remap/alpha" type="int" setter="" getter="" default="3">
 			Specifies the data source of the output image's alpha channel.
