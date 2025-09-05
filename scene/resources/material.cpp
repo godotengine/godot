@@ -446,6 +446,10 @@ Ref<Shader> ShaderMaterial::get_shader() const {
 }
 
 void ShaderMaterial::set_shader_parameter(const StringName &p_param, const Variant &p_value) {
+	if (!param_cache.has(p_param)) {
+		ERR_PRINT_ED(vformat("Shader parameter \'%s\' does not exist in base %s.", p_param, get_class_name()));
+	}
+
 	RID material_rid = _get_material();
 	if (p_value.get_type() == Variant::NIL) {
 		param_cache.erase(p_param);
