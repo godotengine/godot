@@ -616,7 +616,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/scene_tabs/show_thumbnail_on_hover", true);
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "interface/scene_tabs/maximum_width", 350, "0,9999,1", PROPERTY_USAGE_DEFAULT)
 	_initial_set("interface/scene_tabs/show_script_button", false, true);
-	_initial_set("interface/scene_tabs/restore_scenes_on_load", true, true);
 
 	// Multi Window
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/multi_window/enable", true, "");
