@@ -310,6 +310,12 @@ public:
 	EXBIND2(body_remove_shape, RID, int)
 	EXBIND1(body_clear_shapes, RID)
 
+	EXBIND4(body_set_shape_friction_override, RID, int, bool, real_t)
+	EXBIND4(body_set_shape_bounce_override, RID, int, bool, real_t)
+
+	EXBIND2RC(real_t, body_get_shape_friction_override, RID, int)
+	EXBIND2RC(real_t, body_get_shape_bounce_override, RID, int)
+
 	EXBIND2(body_attach_object_instance_id, RID, ObjectID)
 	EXBIND1RC(ObjectID, body_get_object_instance_id, RID)
 
