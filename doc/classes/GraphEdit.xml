@@ -5,9 +5,10 @@
 	</brief_description>
 	<description>
 		[GraphEdit] provides tools for creation, manipulation, and display of various graphs. Its main purpose in the engine is to power the visual programming systems, such as visual shaders, but it is also available for use in user projects.
-		[GraphEdit] by itself is only an empty container, representing an infinite grid where [GraphNode]s can be placed. Each [GraphNode] represents a node in the graph, a single unit of data in the connected scheme. [GraphEdit], in turn, helps to control various interactions with nodes and between nodes. When the user attempts to connect, disconnect, or delete a [GraphNode], a signal is emitted in the [GraphEdit], but no action is taken by default. It is the responsibility of the programmer utilizing this control to implement the necessary logic to determine how each request should be handled.
+		[GraphEdit] by itself is only an empty container, representing an infinite grid where [GraphElement]s can be placed. Each [GraphElement] represents a node in the graph, a single unit of data in the connected scheme. [GraphEdit], in turn, helps to control various interactions with nodes and between nodes. When the user attempts to connect [GraphPort]s, delete a [GraphNode], or undo a graph operation, a signal is emitted in the [GraphEdit], but no action is taken by default. It is the responsibility of the programmer utilizing this control to implement the necessary logic to determine how each request should be handled.
 		[b]Performance:[/b] It is greatly advised to enable low-processor usage mode (see [member OS.low_processor_usage_mode]) when using GraphEdits.
 		[b]Note:[/b] Keep in mind that [method Node.get_children] will also return the connection layer node named [code]_connection_layer[/code] due to technical limitations. This behavior may change in future releases.
+		See also: [GraphElement], [GraphPort], [GraphConnection]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -20,65 +21,56 @@
 				Virtual method which can be overridden to customize how connections are drawn.
 			</description>
 		</method>
-		<method name="_is_in_input_hotzone" qualifiers="virtual">
+		<method name="_is_in_port_hotzone" qualifiers="virtual">
 			<return type="bool" />
-			<param index="0" name="in_node" type="Object" />
-			<param index="1" name="in_port" type="int" />
-			<param index="2" name="mouse_position" type="Vector2" />
+			<param index="0" name="port" type="GraphPort" />
+			<param index="1" name="mouse_position" type="Vector2" />
 			<description>
-				Returns whether the [param mouse_position] is in the input hot zone.
-				By default, a hot zone is a [Rect2] positioned such that its center is at [param in_node].[method GraphNode.get_input_port_position]([param in_port]) (For output's case, call [method GraphNode.get_output_port_position] instead). The hot zone's width is twice the Theme Property [code]port_grab_distance_horizontal[/code], and its height is twice the [code]port_grab_distance_vertical[/code].
-				Below is a sample code to help get started:
-				[codeblock]
-				func _is_in_input_hotzone(in_node, in_port, mouse_position):
-					var port_size = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
-					var port_pos = in_node.get_position() + in_node.get_input_port_position(in_port) - port_size / 2
-					var rect = Rect2(port_pos, port_size)
-
-					return rect.has_point(mouse_position)
-				[/codeblock]
-			</description>
-		</method>
-		<method name="_is_in_output_hotzone" qualifiers="virtual">
-			<return type="bool" />
-			<param index="0" name="in_node" type="Object" />
-			<param index="1" name="in_port" type="int" />
-			<param index="2" name="mouse_position" type="Vector2" />
-			<description>
-				Returns whether the [param mouse_position] is in the output hot zone. For more information on hot zones, see [method _is_in_input_hotzone].
-				Below is a sample code to help get started:
-				[codeblock]
-				func _is_in_output_hotzone(in_node, in_port, mouse_position):
-					var port_size = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
-					var port_pos = in_node.get_position() + in_node.get_output_port_position(in_port) - port_size / 2
-					var rect = Rect2(port_pos, port_size)
-
-					return rect.has_point(mouse_position)
-				[/codeblock]
+				Returns whether the [param mouse_position] is in the [param port]'s hot zone.
+				By default, a hot zone is a [Rect2] positioned at center of the port and sized automatically, but its placement can be controlled using the following Theme Properties:
+				[code]hotzone_offset_h[/code] and [code]hotzone_offset_v[/code] control the hot zone's offset from the top left corner of the port, relative to its size.
+				[code]hotzone_extent_h_input[/code] and [code]hotzone_extent_v_input[/code] control the hot zone's size in pixels, if it is set as an input port.
+				[code]hotzone_extent_h_output[/code] and [code]hotzone_extent_v_output[/code] control the hot zone's size in pixels, if it is set as an output port.
+				[code]hotzone_extent_h_undirected[/code] and [code]hotzone_extent_v_undirected[/code] control the hot zone's size in pixels, if it is set as an undirected port.
 			</description>
 		</method>
 		<method name="_is_node_hover_valid" qualifiers="virtual">
 			<return type="bool" />
-			<param index="0" name="from_node" type="StringName" />
-			<param index="1" name="from_port" type="int" />
-			<param index="2" name="to_node" type="StringName" />
-			<param index="3" name="to_port" type="int" />
+			<param index="0" name="from_port" type="GraphPort" />
+			<param index="1" name="to_port" type="GraphPort" />
 			<description>
 				This virtual method can be used to insert additional error detection while the user is dragging a connection over a valid port.
 				Return [code]true[/code] if the connection is indeed valid or return [code]false[/code] if the connection is impossible. If the connection is impossible, no snapping to the port and thus no connection request to that port will happen.
 				In this example a connection to same node is suppressed:
 				[codeblocks]
 				[gdscript]
-				func _is_node_hover_valid(from, from_port, to, to_port):
-					return from != to
+				func _is_node_hover_valid(from_port, to_port):
+					return from.get_graph_node() != to.get_graph_node()
 				[/gdscript]
 				[csharp]
-				public override bool _IsNodeHoverValid(StringName fromNode, int fromPort, StringName toNode, int toPort)
+				public override bool _IsNodeHoverValid(GraphPort fromPort, GraphPort toPort)
 				{
-					return fromNode != toNode;
+					return fromNode.get_graph_node() != toNode.get_graph_node();
 				}
 				[/csharp]
 				[/codeblocks]
+			</description>
+		</method>
+		<method name="add_connection">
+			<return type="int" enum="Error" />
+			<param index="0" name="connection" type="GraphConnection" />
+			<description>
+				Adds a [GraphConnection] to the graph.
+				This connection must be between two [GraphPort]s, each of which should be referenced by a [GraphNode] that is a child of the [GraphEdit]. Alternatively, the [GraphPort] may be an independent node, in which case it must itself be a child of the [GraphEdit] (TODO: test!)
+				See [method GraphEdit.connect_nodes] for creating a new connection.
+			</description>
+		</method>
+		<method name="add_connections">
+			<return type="void" />
+			<param index="0" name="connections" type="GraphConnection[]" />
+			<description>
+				Adds a list of [GraphConnection]s to the graph.
+				Equivalent to calling [method GraphEdit.add_connection] on each element of the provided array.
 			</description>
 		</method>
 		<method name="add_valid_connection_type">
@@ -86,22 +78,41 @@
 			<param index="0" name="from_type" type="int" />
 			<param index="1" name="to_type" type="int" />
 			<description>
-				Allows the connection between two different port types. The port type is defined individually for the left and the right port of each slot with the [method GraphNode.set_slot] method.
-				See also [method is_valid_connection_type] and [method remove_valid_connection_type].
+				Allows the connection between two different port types.
+				Implicitly, connections made to input/output ports will use this type definition in only one direction. That is, [param from_type] will only be used for input ports, and [param to_type] will only be used for output ports. For undirected ports, this type binding is bidirectional. If bidirectionality is intended for directed ports, call this twice with the types flipped.
+				See also [method is_valid_connection_type], [method remove_valid_connection_type], [enum GraphPort.PortDirection].
 			</description>
 		</method>
-		<method name="add_valid_left_disconnect_type">
+		<method name="add_valid_input_disconnect_type">
 			<return type="void" />
 			<param index="0" name="type" type="int" />
 			<description>
-				Allows to disconnect nodes when dragging from the left port of the [GraphNode]'s slot if it has the specified type. See also [method remove_valid_left_disconnect_type].
+				Allows dragging from an input [GraphPort] attached to this node to trigger a disconnect if it has the specified [param type]. See also [method remove_valid_input_disconnect_type].
+				See also [enum GraphPort.PortDirection].
 			</description>
 		</method>
-		<method name="add_valid_right_disconnect_type">
+		<method name="add_valid_output_disconnect_type">
 			<return type="void" />
 			<param index="0" name="type" type="int" />
 			<description>
-				Allows to disconnect nodes when dragging from the right port of the [GraphNode]'s slot if it has the specified type. See also [method remove_valid_right_disconnect_type].
+				Allows dragging from an output [GraphPort] attached to this node to trigger a disconnect if it has the specified [param type]. See also [method remove_valid_output_disconnect_type].
+				See also [enum GraphPort.PortDirection].
+			</description>
+		</method>
+		<method name="are_nodes_connected" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="first_node" type="GraphNode" />
+			<param index="1" name="second_node" type="GraphNode" />
+			<description>
+				Returns true if this graph has a [GraphConnection] between any ports on the two nodes.
+			</description>
+		</method>
+		<method name="are_ports_connected" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="first_port" type="GraphPort" />
+			<param index="1" name="second_port" type="GraphPort" />
+			<description>
+				Returns true if this graph has a [GraphConnection] between the given ports.
 			</description>
 		</method>
 		<method name="arrange_nodes">
@@ -124,16 +135,28 @@
 				Removes all connections between nodes.
 			</description>
 		</method>
-		<method name="connect_node">
-			<return type="int" enum="Error" />
-			<param index="0" name="from_node" type="StringName" />
-			<param index="1" name="from_port" type="int" />
-			<param index="2" name="to_node" type="StringName" />
-			<param index="3" name="to_port" type="int" />
-			<param index="4" name="keep_alive" type="bool" default="false" />
+		<method name="clear_node_connections">
+			<return type="void" />
+			<param index="0" name="node" type="GraphNode" />
 			<description>
-				Create a connection between the [param from_port] of the [param from_node] [GraphNode] and the [param to_port] of the [param to_node] [GraphNode]. If the connection already exists, no connection is created.
-				Connections with [param keep_alive] set to [code]false[/code] may be deleted automatically if invalid during a redraw.
+				Removes all connections on any ports on the given node.
+			</description>
+		</method>
+		<method name="clear_port_connections">
+			<return type="void" />
+			<param index="0" name="port" type="GraphPort" />
+			<description>
+				Removes all connections on the given port.
+			</description>
+		</method>
+		<method name="connect_nodes">
+			<return type="GraphConnection" />
+			<param index="0" name="first_port" type="GraphPort" />
+			<param index="1" name="second_port" type="GraphPort" />
+			<param index="2" name="clear_if_invalid" type="bool" default="false" />
+			<description>
+				Creates a new [GraphConnection] between the given ports and adds it to the graph.
+				Connections with [param clear_if_invalid] set to [code]true[/code] may be deleted automatically if invalid during a redraw.
 			</description>
 		</method>
 		<method name="detach_graph_element_from_frame">
@@ -143,14 +166,12 @@
 				Detaches the [param element] [GraphElement] from the [GraphFrame] it is currently attached to.
 			</description>
 		</method>
-		<method name="disconnect_node">
+		<method name="disconnect_nodes">
 			<return type="void" />
-			<param index="0" name="from_node" type="StringName" />
-			<param index="1" name="from_port" type="int" />
-			<param index="2" name="to_node" type="StringName" />
-			<param index="3" name="to_port" type="int" />
+			<param index="0" name="first_port" type="GraphPort" />
+			<param index="1" name="second_port" type="GraphPort" />
 			<description>
-				Removes the connection between the [param from_port] of the [param from_node] [GraphNode] and the [param to_port] of the [param to_node] [GraphNode]. If the connection does not exist, no connection is removed.
+				Removes a [GraphConnection] between the given ports, if one exists.
 			</description>
 		</method>
 		<method name="force_connection_drag_end">
@@ -161,7 +182,7 @@
 				[b]Note:[/b] This method suppresses any other connection request signals apart from [signal connection_drag_ended].
 			</description>
 		</method>
-		<method name="get_attached_nodes_of_frame">
+		<method name="get_attached_nodes_of_frame" qualifiers="const">
 			<return type="StringName[]" />
 			<param index="0" name="frame" type="StringName" />
 			<description>
@@ -169,21 +190,11 @@
 			</description>
 		</method>
 		<method name="get_closest_connection_at_point" qualifiers="const">
-			<return type="Dictionary" />
+			<return type="GraphConnection" />
 			<param index="0" name="point" type="Vector2" />
 			<param index="1" name="max_distance" type="float" default="4.0" />
 			<description>
-				Returns the closest connection to the given point in screen space. If no connection is found within [param max_distance] pixels, an empty [Dictionary] is returned.
-				A connection is represented as a [Dictionary] in the form of:
-				[codeblock]
-				{
-					from_node: StringName,
-					from_port: int,
-					to_node: StringName,
-					to_port: int,
-					keep_alive: bool
-				}
-				[/codeblock]
+				Returns the closest connection to the given point in screen space. If no connection is found within [param max_distance] pixels, an invalid [GraphConnection] is returned.
 				For example, getting a connection at a given mouse position can be achieved like this:
 				[codeblocks]
 				[gdscript]
@@ -192,97 +203,120 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="get_connection_count">
-			<return type="int" />
-			<param index="0" name="from_node" type="StringName" />
-			<param index="1" name="from_port" type="int" />
+		<method name="get_connected_nodes" qualifiers="const">
+			<return type="GraphNode[]" />
+			<param index="0" name="node" type="GraphNode" />
 			<description>
-				Returns the number of connections from [param from_port] of [param from_node].
+				Returns an [Array] of all [GraphNode]s the given [param node] is connected to in the graph.
+			</description>
+		</method>
+		<method name="get_connected_ports" qualifiers="const">
+			<return type="GraphPort[]" />
+			<param index="0" name="port" type="GraphPort" />
+			<description>
+				Returns an [Array] of all [GraphPort]s the given [param port] is connected to in the graph.
+			</description>
+		</method>
+		<method name="get_connection_count_by_node" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="node" type="GraphNode" />
+			<description>
+				Returns the number of connections in the graph to the given [param node].
+			</description>
+		</method>
+		<method name="get_connection_count_by_port" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="port" type="GraphPort" />
+			<description>
+				Returns the number of connections in the graph to the given [param port].
 			</description>
 		</method>
 		<method name="get_connection_line" qualifiers="const">
 			<return type="PackedVector2Array" />
 			<param index="0" name="from_node" type="Vector2" />
 			<param index="1" name="to_node" type="Vector2" />
+			<param index="2" name="from_angle" type="int" />
+			<param index="3" name="to_angle" type="int" />
 			<description>
 				Returns the points which would make up a connection between [param from_node] and [param to_node].
 			</description>
 		</method>
-		<method name="get_connection_list_from_node" qualifiers="const">
-			<return type="Dictionary[]" />
-			<param index="0" name="node" type="StringName" />
+		<method name="get_connections_by_node" qualifiers="const">
+			<return type="GraphConnection[]" />
+			<param index="0" name="node" type="GraphNode" />
 			<description>
-				Returns an [Array] containing a list of all connections for [param node].
-				A connection is represented as a [Dictionary] in the form of:
-				[codeblock]
-				{
-					from_node: StringName,
-					from_port: int,
-					to_node: StringName,
-					to_port: int,
-					keep_alive: bool
-				}
-				[/codeblock]
-				[b]Example:[/b] Get all connections on a specific port:
-				[codeblock]
-				func get_connection_list_from_port(node, port):
-					var connections = get_connection_list_from_node(node)
-					var result = []
-					for connection in connections:
-						var dict = {}
-						if connection["from_node"] == node and connection["from_port"] == port:
-							dict["node"] = connection["to_node"]
-							dict["port"] = connection["to_port"]
-							dict["type"] = "left"
-							result.push_back(dict)
-						elif connection["to_node"] == node and connection["to_port"] == port:
-							dict["node"] = connection["from_node"]
-							dict["port"] = connection["from_port"]
-							dict["type"] = "right"
-							result.push_back(dict)
-					return result
-				[/codeblock]
+				Returns an [Array] of all [GraphConnection]s connected to [GraphPort]s on [param node].
+			</description>
+		</method>
+		<method name="get_connections_by_port" qualifiers="const">
+			<return type="GraphConnection[]" />
+			<param index="0" name="port" type="GraphPort" />
+			<description>
+				Returns an [Array] of all [GraphConnection]s connected to the given [param port].
 			</description>
 		</method>
 		<method name="get_connections_intersecting_with_rect" qualifiers="const">
-			<return type="Dictionary[]" />
+			<return type="GraphConnection[]" />
 			<param index="0" name="rect" type="Rect2" />
 			<description>
-				Returns an [Array] containing the list of connections that intersect with the given [Rect2].
-				A connection is represented as a [Dictionary] in the form of:
-				[codeblock]
-				{
-					from_node: StringName,
-					from_port: int,
-					to_node: StringName,
-					to_port: int,
-					keep_alive: bool
-				}
-				[/codeblock]
+				Returns an [Array] of all [GraphConnection]s that intersect with the given [Rect2].
 			</description>
 		</method>
-		<method name="get_element_frame">
+		<method name="get_element_frame" qualifiers="const">
 			<return type="GraphFrame" />
 			<param index="0" name="element" type="StringName" />
 			<description>
 				Returns the [GraphFrame] that contains the [GraphElement] with the given name.
 			</description>
 		</method>
-		<method name="get_menu_hbox">
+		<method name="get_filtered_connections_by_node" qualifiers="const">
+			<return type="GraphConnection[]" />
+			<param index="0" name="node" type="GraphNode" />
+			<param index="1" name="filter_direction" type="int" enum="GraphPort.PortDirection" />
+			<description>
+				Returns an [Array] of all [GraphConnection]s connected to [GraphPort]s that are both attached to the [param node] and match the filter direction.
+			</description>
+		</method>
+		<method name="get_first_connected_node" qualifiers="const">
+			<return type="GraphNode" />
+			<param index="0" name="port" type="GraphPort" />
+			<description>
+				Returns the first [GraphNode] the given [param port] is connected to, if one exists.
+			</description>
+		</method>
+		<method name="get_first_connected_port" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="port" type="GraphPort" />
+			<description>
+				Returns the first [GraphPort] the given [param port] is connected to, if one exists.
+			</description>
+		</method>
+		<method name="get_first_connection_by_port" qualifiers="const">
+			<return type="GraphConnection" />
+			<param index="0" name="port" type="GraphPort" />
+			<description>
+				Returns the first [GraphConnection] in the graph connected to the [param port], if one exists.
+			</description>
+		</method>
+		<method name="get_menu_hbox" qualifiers="const">
 			<return type="HBoxContainer" />
 			<description>
 				Gets the [HBoxContainer] that contains the zooming and grid snap controls in the top left of the graph. You can use this method to reposition the toolbar or to add your own custom controls to it.
 				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
-		<method name="is_node_connected">
+		<method name="is_node_connected" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="from_node" type="StringName" />
-			<param index="1" name="from_port" type="int" />
-			<param index="2" name="to_node" type="StringName" />
-			<param index="3" name="to_port" type="int" />
+			<param index="0" name="node" type="GraphNode" />
 			<description>
-				Returns [code]true[/code] if the [param from_port] of the [param from_node] [GraphNode] is connected to the [param to_port] of the [param to_node] [GraphNode].
+				Returns [code]true[/code] if any [GraphPort] attached to the [param node] has a connection in the graph.
+			</description>
+		</method>
+		<method name="is_port_connected" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="port" type="GraphPort" />
+			<description>
+				Returns [code]true[/code] if [param port] has any connections in the graph.
 			</description>
 		</method>
 		<method name="is_valid_connection_type" qualifiers="const">
@@ -290,8 +324,15 @@
 			<param index="0" name="from_type" type="int" />
 			<param index="1" name="to_type" type="int" />
 			<description>
-				Returns whether it's possible to make a connection between two different port types. The port type is defined individually for the left and the right port of each slot with the [method GraphNode.set_slot] method.
+				Returns whether it's possible to make a connection between two different port types.
 				See also [method add_valid_connection_type] and [method remove_valid_connection_type].
+			</description>
+		</method>
+		<method name="remove_connection">
+			<return type="void" />
+			<param index="0" name="connection" type="GraphConnection" />
+			<description>
+				Removes [param connection] from the graph. Should only be called with [GraphConnection]s in this graph.
 			</description>
 		</method>
 		<method name="remove_valid_connection_type">
@@ -299,33 +340,32 @@
 			<param index="0" name="from_type" type="int" />
 			<param index="1" name="to_type" type="int" />
 			<description>
-				Disallows the connection between two different port types previously allowed by [method add_valid_connection_type]. The port type is defined individually for the left and the right port of each slot with the [method GraphNode.set_slot] method.
-				See also [method is_valid_connection_type].
+				Disallows the connection between two different port types previously allowed by [method add_valid_connection_type].
+				See also [method add_valid_connection_type] and [method is_valid_connection_type].
 			</description>
 		</method>
-		<method name="remove_valid_left_disconnect_type">
+		<method name="remove_valid_input_disconnect_type">
 			<return type="void" />
 			<param index="0" name="type" type="int" />
 			<description>
-				Disallows to disconnect nodes when dragging from the left port of the [GraphNode]'s slot if it has the specified type. Use this to disable disconnection previously allowed with [method add_valid_left_disconnect_type].
+				Disallows dragging from an input [GraphPort] attached to this node to trigger a disconnect if it has the specified [param type]. Use this to disable disconnection previously allowed with [method add_valid_input_disconnect_type].
+				See also [enum GraphPort.PortDirection].
 			</description>
 		</method>
-		<method name="remove_valid_right_disconnect_type">
+		<method name="remove_valid_output_disconnect_type">
 			<return type="void" />
 			<param index="0" name="type" type="int" />
 			<description>
-				Disallows to disconnect nodes when dragging from the right port of the [GraphNode]'s slot if it has the specified type. Use this to disable disconnection previously allowed with [method add_valid_right_disconnect_type].
+				Disallows dragging from an output [GraphPort] attached to this node to trigger a disconnect if it has the specified [param type]. Use this to disable disconnection previously allowed with [method add_valid_output_disconnect_type].
+				See also [enum GraphPort.PortDirection].
 			</description>
 		</method>
 		<method name="set_connection_activity">
 			<return type="void" />
-			<param index="0" name="from_node" type="StringName" />
-			<param index="1" name="from_port" type="int" />
-			<param index="2" name="to_node" type="StringName" />
-			<param index="3" name="to_port" type="int" />
-			<param index="4" name="amount" type="float" />
+			<param index="0" name="connection" type="GraphConnection" />
+			<param index="1" name="amount" type="float" />
 			<description>
-				Sets the coloration of the connection between [param from_node]'s [param from_port] and [param to_node]'s [param to_port] with the color provided in the [theme_item activity] theme property. The color is linearly interpolated between the connection color and the activity color using [param amount] as weight.
+				Sets the coloration of the [param connection] with the color provided in the [theme_item activity] theme property. The color is linearly interpolated between the connection color and the activity color using [param amount] as weight.
 			</description>
 		</method>
 		<method name="set_selected">
@@ -337,6 +377,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="allow_self_connection" type="bool" setter="set_allow_self_connection" getter="is_self_connection_allowed" default="false">
+			If [code]true[/code], allows [GraphPort]s attached to the same [GraphNode] to be connected.
+		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="connection_lines_antialiased" type="bool" setter="set_connection_lines_antialiased" getter="is_connection_lines_antialiased" default="true">
 			If [code]true[/code], the lines between nodes will use antialiasing.
@@ -347,23 +390,16 @@
 		<member name="connection_lines_thickness" type="float" setter="set_connection_lines_thickness" getter="get_connection_lines_thickness" default="4.0">
 			The thickness of the lines between the nodes.
 		</member>
-		<member name="connections" type="Dictionary[]" setter="set_connections" getter="get_connection_list" default="[]">
-			The connections between [GraphNode]s.
-			A connection is represented as a [Dictionary] in the form of:
-			[codeblock]
-			{
-				from_node: StringName,
-				from_port: int,
-				to_node: StringName,
-				to_port: int,
-				keep_alive: bool
-			}
-			[/codeblock]
-			Connections with [code]keep_alive[/code] set to [code]false[/code] may be deleted automatically if invalid during a redraw.
-		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
+		<member name="graph_connections" type="GraphConnection[]" setter="set_connections" getter="get_connections" default="[]">
+			The [Array] of all [GraphConnection]s in the graph.
+		</member>
 		<member name="grid_pattern" type="int" setter="set_grid_pattern" getter="get_grid_pattern" enum="GraphEdit.GridPattern" default="0">
 			The pattern used for drawing the grid.
+		</member>
+		<member name="input_disconnects" type="bool" setter="set_input_disconnects" getter="is_input_disconnects_enabled" default="true">
+			If [code]true[/code], dragging from an input [GraphPort] will disconnect existing connections to the port. This feels like dragging the existing connection to a new location, rather than dragging out a new connection.
+			See also [enum GraphPort.PortDirection].
 		</member>
 		<member name="minimap_enabled" type="bool" setter="set_minimap_enabled" getter="is_minimap_enabled" default="true">
 			If [code]true[/code], the minimap is visible.
@@ -377,11 +413,14 @@
 		<member name="panning_scheme" type="int" setter="set_panning_scheme" getter="get_panning_scheme" enum="GraphEdit.PanningScheme" default="0">
 			Defines the control scheme for panning with mouse wheel.
 		</member>
-		<member name="right_disconnects" type="bool" setter="set_right_disconnects" getter="is_right_disconnects_enabled" default="false">
-			If [code]true[/code], enables disconnection of existing connections in the GraphEdit by dragging the right end.
-		</member>
 		<member name="scroll_offset" type="Vector2" setter="set_scroll_offset" getter="get_scroll_offset" default="Vector2(0, 0)">
 			The scroll offset.
+		</member>
+		<member name="scrollbar_hidden" type="bool" setter="set_scrollbar_hidden" getter="is_scrollbar_hidden" default="false">
+			If [code]true[/code], the horizontal and vertical scrollbars will not be shown.
+		</member>
+		<member name="separate_snapping_distances" type="bool" setter="set_separate_snapping_distances" getter="is_separate_snapping_distances" default="false">
+			If [code]true[/code], splits [member snapping_distance] into separate values for the x and y axes, exposed as [member snapping_distances].
 		</member>
 		<member name="show_arrange_button" type="bool" setter="set_show_arrange_button" getter="is_showing_arrange_button" default="true">
 			If [code]true[/code], the button to automatically arrange graph nodes is visible.
@@ -406,9 +445,19 @@
 		</member>
 		<member name="snapping_distance" type="int" setter="set_snapping_distance" getter="get_snapping_distance" default="20">
 			The snapping distance in pixels, also determines the grid line distance.
+			Hidden if [member separate_snapping_distances] is [code]true[/code].
+			Linked to [member snapping_distances]. Setting this property will set both the x and y values for separated snapping distances.
+		</member>
+		<member name="snapping_distances" type="Vector2i" setter="set_snapping_distances" getter="get_snapping_distances" default="Vector2i(20, 20)">
+			Same as [member snapping_distance], but with separate x and y axes.
+			Hidden if [member separate_snapping_distances] is [code]false[/code].
+			Linked to [member snapping_distance]. Setting this property's x axis is equivalent to [code]set_snapping_distance[/code].
 		</member>
 		<member name="snapping_enabled" type="bool" setter="set_snapping_enabled" getter="is_snapping_enabled" default="true">
 			If [code]true[/code], enables snapping.
+		</member>
+		<member name="type_colors" type="Dictionary[int, Color]" setter="set_type_colors" getter="get_type_colors" default="{}">
+			[Dictionary] of [Color]s used to draw [GraphPort]s by their port types.
 		</member>
 		<member name="type_names" type="Dictionary" setter="set_type_names" getter="get_type_names" default="{}">
 			[Dictionary] of human readable port type names.
@@ -438,36 +487,24 @@
 			</description>
 		</signal>
 		<signal name="connection_drag_started">
-			<param index="0" name="from_node" type="StringName" />
-			<param index="1" name="from_port" type="int" />
-			<param index="2" name="is_output" type="bool" />
+			<param index="0" name="from_port" type="GraphPort" />
+			<param index="1" name="is_output" type="bool" />
 			<description>
 				Emitted at the beginning of a connection drag.
 			</description>
 		</signal>
-		<signal name="connection_from_empty">
-			<param index="0" name="to_node" type="StringName" />
-			<param index="1" name="to_port" type="int" />
-			<param index="2" name="release_position" type="Vector2" />
-			<description>
-				Emitted when user drags a connection from an input port into the empty space of the graph.
-			</description>
-		</signal>
 		<signal name="connection_request">
-			<param index="0" name="from_node" type="StringName" />
-			<param index="1" name="from_port" type="int" />
-			<param index="2" name="to_node" type="StringName" />
-			<param index="3" name="to_port" type="int" />
+			<param index="0" name="from_port" type="GraphPort" />
+			<param index="1" name="to_port" type="GraphPort" />
 			<description>
-				Emitted to the GraphEdit when the connection between the [param from_port] of the [param from_node] [GraphNode] and the [param to_port] of the [param to_node] [GraphNode] is attempted to be created.
+				Emitted when a connection between [param from_port] and [param to_port] is attempted to be created.
 			</description>
 		</signal>
 		<signal name="connection_to_empty">
-			<param index="0" name="from_node" type="StringName" />
-			<param index="1" name="from_port" type="int" />
-			<param index="2" name="release_position" type="Vector2" />
+			<param index="0" name="from_port" type="GraphPort" />
+			<param index="1" name="release_position" type="Vector2" />
 			<description>
-				Emitted when user drags a connection from an output port into the empty space of the graph.
+				Emitted when user drags a connection between [param from_port] and empty space in the graph at [param release_position].
 			</description>
 		</signal>
 		<signal name="copy_nodes_request">
@@ -488,12 +525,9 @@
 			</description>
 		</signal>
 		<signal name="disconnection_request">
-			<param index="0" name="from_node" type="StringName" />
-			<param index="1" name="from_port" type="int" />
-			<param index="2" name="to_node" type="StringName" />
-			<param index="3" name="to_port" type="int" />
+			<param index="0" name="connection" type="GraphConnection" />
 			<description>
-				Emitted to the GraphEdit when the connection between [param from_port] of [param from_node] [GraphNode] and [param to_port] of [param to_node] [GraphNode] is attempted to be removed.
+				Emitted when the connection [param connection] is attempted to be removed.
 			</description>
 		</signal>
 		<signal name="duplicate_nodes_request">
@@ -592,12 +626,6 @@
 		</theme_item>
 		<theme_item name="connection_hover_thickness" data_type="constant" type="int" default="0">
 			Widen the line of the connection when the mouse is hovering over it by a percentage factor. A value of [code]0[/code] disables the highlight. A value of [code]100[/code] doubles the line width.
-		</theme_item>
-		<theme_item name="port_hotzone_inner_extent" data_type="constant" type="int" default="22">
-			The horizontal range within which a port can be grabbed (inner side).
-		</theme_item>
-		<theme_item name="port_hotzone_outer_extent" data_type="constant" type="int" default="26">
-			The horizontal range within which a port can be grabbed (outer side).
 		</theme_item>
 		<theme_item name="grid_toggle" data_type="icon" type="Texture2D">
 			The icon for the grid toggle button.
