@@ -1043,6 +1043,10 @@ OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
 	loggers.push_back(memnew(UnixTerminalLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
 
+#ifdef SDL_ENABLED
+	AudioDriverManager::add_driver(&driver_sdl);
+#endif
+
 #ifdef COREAUDIO_ENABLED
 	AudioDriverManager::add_driver(&audio_driver);
 #endif

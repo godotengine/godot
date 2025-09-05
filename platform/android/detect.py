@@ -245,3 +245,7 @@ def configure(env: "SConsEnvironment"):
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
         env.Append(LIBS=["GLESv3"])
+
+    if env["sdl"]:
+        env.Prepend(CPPEXTPATH=["#thirdparty/sdl/include"])
+        env.Append(CPPDEFINES=["SDL_ENABLED"])
