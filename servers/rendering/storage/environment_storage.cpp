@@ -582,8 +582,8 @@ void RendererEnvironmentStorage::environment_set_ssao(RID p_env, bool p_enable, 
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
-	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus" && p_enable) {
-		WARN_PRINT_ONCE_ED("Screen-space ambient occlusion (SSAO) can only be enabled when using the Forward+ renderer.");
+	if (OS::get_singleton()->get_current_rendering_method() == "mobile" && p_enable) {
+		WARN_PRINT_ONCE_ED("Screen-space ambient occlusion (SSAO) can only be enabled when using the Forward+ or Compatibility renderers.");
 	}
 #endif
 	env->ssao_enabled = p_enable;
