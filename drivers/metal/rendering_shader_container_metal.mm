@@ -28,11 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "rendering_shader_container_metal.h"
+#import "rendering_shader_container_metal.h"
 
-#include "servers/rendering/rendering_device.h"
+#import "metal_utils.h"
 
 #import "core/io/marshalls.h"
+#import "servers/rendering/rendering_device.h"
 
 #import <Metal/Metal.h>
 #import <spirv.hpp>
@@ -118,6 +119,11 @@ Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, 
 	// Build the metallib binary.
 	{
 		List<String> args{ "-sdk", sdk, "metal", "-O3" };
+
+		uint32_t maj = 0, min = 0;
+		parse_msl_version(mtl_reflection_data.msl_version, maj, min);
+		args.push_back(vformat("-std=metal%d.%d", maj, min));
+
 		if (p_stage_data.is_position_invariant) {
 			args.push_back("-fpreserve-invariance");
 		}
@@ -202,7 +208,7 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 	// MAJOR * 10000 + MINOR * 100
 	uint32_t msl_version = CompilerMSL::Options::make_msl_version(device_profile->features.mslVersionMajor, device_profile->features.mslVersionMinor);
 	msl_options.set_msl_version(device_profile->features.mslVersionMajor, device_profile->features.mslVersionMinor);
-	mtl_reflection_data.msl_version = msl_options.msl_version;
+	mtl_reflection_data.msl_version = msl_version;
 	msl_options.platform = device_profile->platform == MetalDeviceProfile::Platform::macOS ? CompilerMSL::Options::macOS : CompilerMSL::Options::iOS;
 
 	if (device_profile->platform == MetalDeviceProfile::Platform::iOS) {
