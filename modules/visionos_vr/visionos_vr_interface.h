@@ -75,15 +75,15 @@ private:
 	RD::Texture current_rasterization_rate_map;
 	RID current_rasterization_rate_map_id;
 
-	// tracker for our head
-	Ref<XRPositionalTracker> head;
+	// Head tracker
+	Ref<XRPositionalTracker> head_tracker;
 	Transform3D head_transform;
 	simd_float4x4 head_pose;
 
 	RenderingDevice *rendering_device = nullptr;
 	RenderingDeviceDriverMetal *rendering_device_driver_metal = nullptr;
 
-	void set_head_pose_from_arkit();
+	void set_head_pose_from_arkit(bool p_use_drawable);
 
 public:
 	static StringName name() { return "visionOS"; }

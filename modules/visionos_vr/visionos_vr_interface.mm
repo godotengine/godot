@@ -96,7 +96,7 @@ bool VisionOSVRInterface::initialize() {
 	rendering_device = RenderingDevice::get_singleton();
 	rendering_device_driver_metal = (RenderingDeviceDriverMetal *)rendering_device->get_device_driver();
 
-	// Initialize ARKit session
+	// ARKit session initialization
 	ar_session = ar_session_create();
 	ar_world_tracking_configuration_t world_tracking_configuration = ar_world_tracking_configuration_create();
 	world_tracking_provider = ar_world_tracking_provider_create(world_tracking_configuration);
@@ -107,19 +107,18 @@ bool VisionOSVRInterface::initialize() {
 
 	current_drawable = nullptr;
 
-	// reset our sensor data
+	// Head tracker initialization
 	head_pose = matrix_identity_float4x4;
 	head_transform.basis = Basis();
 	head_transform.origin = Vector3(0.0, 0.0, 0.0);
 
-	// we must create a tracker for our head
-	head.instantiate();
-	head->set_tracker_type(XRServer::TRACKER_HEAD);
-	head->set_tracker_name("head");
-	head->set_tracker_desc("Device head pose");
-	xr_server->add_tracker(head);
+	head_tracker.instantiate();
+	head_tracker->set_tracker_type(XRServer::TRACKER_HEAD);
+	head_tracker->set_tracker_name("head");
+	head_tracker->set_tracker_desc("Device head pose");
+	xr_server->add_tracker(head_tracker);
 
-	// make this our primary interface
+	// Make this our primary interface
 	xr_server->set_primary_interface(this);
 
 	initialized = true;
@@ -133,9 +132,9 @@ void VisionOSVRInterface::uninitialize() {
 
 	XRServer *xr_server = XRServer::get_singleton();
 	if (xr_server != nullptr) {
-		if (head.is_valid()) {
-			xr_server->remove_tracker(head);
-			head.unref();
+		if (head_tracker.is_valid()) {
+			xr_server->remove_tracker(head_tracker);
+			head_tracker.unref();
 		}
 
 		if (xr_server->get_primary_interface() == this) {
@@ -262,13 +261,20 @@ Size2 VisionOSVRInterface::get_render_target_size() {
 	return target_size;
 }
 
-void VisionOSVRInterface::set_head_pose_from_arkit() {
+void VisionOSVRInterface::set_head_pose_from_arkit(bool p_use_drawable) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_NULL_MSG(current_frame, "Current frame is nil, probably process() has not been called, using identity transform");
-	ERR_FAIL_NULL_MSG(current_drawable, "Current drawable is nil, probably process() has not been called, using identity transform");
+	if (p_use_drawable) {
+		ERR_FAIL_NULL_MSG(current_drawable, "Current drawable is nil, probably process() has not been called, using identity transform");
+	}
 
-	cp_frame_timing_t frame_timing = cp_drawable_get_frame_timing(current_drawable);
+	cp_frame_timing_t frame_timing;
+	if (p_use_drawable) {
+		frame_timing = cp_drawable_get_frame_timing(current_drawable);
+	} else {
+		frame_timing = cp_frame_predict_timing(current_frame);
+	}
 	CFTimeInterval presentation_time = cp_time_to_cf_time_interval(cp_frame_timing_get_presentation_time(frame_timing));
 	ar_device_anchor_query_status_t query_anchor_result = ar_world_tracking_provider_query_device_anchor_at_timestamp(world_tracking_provider, presentation_time, current_device_anchor);
 
@@ -282,6 +288,11 @@ void VisionOSVRInterface::set_head_pose_from_arkit() {
 	head_transform = MTL::simd_to_transform3D(head_pose);
 	tracking_state = XRInterface::XR_NORMAL_TRACKING;
 	tracking_confidence = XRPose::XR_TRACKING_CONFIDENCE_HIGH;
+
+	if (head_tracker.is_valid()) {
+		// Set our head position (in real space, reference frame and world scale is applied later)
+		head_tracker->set_pose("default", head_transform, Vector3(), Vector3(), tracking_confidence);
+	}
 }
 
 void VisionOSVRInterface::process() {
@@ -289,6 +300,10 @@ void VisionOSVRInterface::process() {
 		return;
 	}
 	current_frame = cp_layer_renderer_query_next_frame(layer_renderer);
+
+	// Set head pose before engine update, so scripts can access fresh head tracker data
+	set_head_pose_from_arkit(false);
+
 	cp_frame_start_update(current_frame);
 }
 
@@ -319,12 +334,8 @@ void VisionOSVRInterface::pre_render() {
 	}
 	ERR_FAIL_NULL_MSG(current_drawable, "Built-in drawable not found, aborting");
 
-	set_head_pose_from_arkit();
-
-	if (head.is_valid()) {
-		// Set our head position (in real space, reference frame and world scale is applied later)
-		head->set_pose("default", head_transform, Vector3(), Vector3(), tracking_confidence);
-	}
+	// Set head pose again to get closer presentation time prediction
+	set_head_pose_from_arkit(true);
 
 	if (current_device_anchor != nil) {
 		cp_drawable_set_device_anchor(current_drawable, current_device_anchor);
