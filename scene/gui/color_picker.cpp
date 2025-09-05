@@ -2162,7 +2162,7 @@ ColorPicker::ColorPicker() {
 	internal_margin->add_child(real_vbox);
 
 	shape_container = memnew(HBoxContainer);
-	shape_container->set_v_size_flags(SIZE_SHRINK_BEGIN);
+	shape_container->set_alignment(ALIGNMENT_CENTER);
 	real_vbox->add_child(shape_container);
 
 	sample_hbc = memnew(HBoxContainer);
