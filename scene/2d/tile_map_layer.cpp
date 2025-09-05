@@ -64,6 +64,9 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 
 	// Check if we should cleanup everything.
 	bool forced_cleanup = p_force_cleanup || !enabled || tile_set.is_null() || !is_visible_in_tree();
+	if (forced_cleanup && _debug_was_cleaned_up) {
+		return;
+	}
 
 	if (forced_cleanup) {
 		for (KeyValue<Vector2i, Ref<DebugQuadrant>> &kv : debug_quadrant_map) {
@@ -206,6 +209,9 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 
 	// Check if we should cleanup everything.
 	bool forced_cleanup = p_force_cleanup || !enabled || tile_set.is_null() || !is_visible_in_tree();
+	if (forced_cleanup && _rendering_was_cleaned_up) {
+		return;
+	}
 
 	// ----------- Layer level processing -----------
 	if (!forced_cleanup) {
@@ -234,7 +240,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 			(!is_y_sort_enabled() && dirty.flags[DIRTY_FLAGS_LAYER_RENDERING_QUADRANT_SIZE]);
 
 	// Free all quadrants.
-	if (forced_cleanup || quadrant_shape_changed) {
+	if (!_rendering_was_cleaned_up && (forced_cleanup || quadrant_shape_changed)) {
 		for (const KeyValue<Vector2i, Ref<RenderingQuadrant>> &kv : rendering_quadrant_map) {
 			for (const RID &ci : kv.value->canvas_items) {
 				if (ci.is_valid()) {
@@ -398,15 +404,23 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 			int index = -(int64_t)0x80000000; // Always must be drawn below children.
 
 			// Sort the quadrants coords per local coordinates.
-			RBMap<Vector2, Ref<RenderingQuadrant>, RenderingQuadrant::CoordsWorldComparator> local_to_map;
+			LocalVector<Pair<Vector2, Ref<RenderingQuadrant>>> sortable_quadrant_keys;
+			sortable_quadrant_keys.reserve(rendering_quadrant_map.size());
 			for (KeyValue<Vector2i, Ref<RenderingQuadrant>> &kv : rendering_quadrant_map) {
-				Ref<RenderingQuadrant> &rendering_quadrant = kv.value;
-				local_to_map[tile_set->map_to_local(rendering_quadrant->quadrant_coords)] = rendering_quadrant;
+				Vector2 local_coords = tile_set->map_to_local(kv.value->quadrant_coords);
+				sortable_quadrant_keys.push_back(Pair<Vector2, Ref<RenderingQuadrant>>(local_coords, kv.value));
 			}
+			struct PairedQuadrantSorter {
+				RenderingQuadrant::CoordsWorldComparator comparator;
+				_ALWAYS_INLINE_ bool operator()(const Pair<Vector2, Ref<RenderingQuadrant>> &p_a, const Pair<Vector2, Ref<RenderingQuadrant>> &p_b) const {
+					return comparator(p_a.first, p_b.first);
+				}
+			};
+			sortable_quadrant_keys.sort_custom<PairedQuadrantSorter>();
 
-			// Sort the quadrants.
-			for (const KeyValue<Vector2, Ref<RenderingQuadrant>> &E : local_to_map) {
-				for (const RID &ci : E.value->canvas_items) {
+			// Set the draw indices.
+			for (const Pair<Vector2, Ref<RenderingQuadrant>> &E : sortable_quadrant_keys) {
+				for (const RID &ci : E.second->canvas_items) {
 					RS::get_singleton()->canvas_item_set_draw_index(ci, index++);
 				}
 			}
@@ -429,14 +443,23 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 		}
 	}
 
+	// -----------
+	// Mark the rendering state as up to date.
+	_rendering_was_cleaned_up = forced_cleanup;
+
 	// ----------- Occluders processing -----------
-	if (forced_cleanup || !occlusion_enabled) {
+	bool cleanup_occlusion = forced_cleanup || !occlusion_enabled;
+	if (cleanup_occlusion && _occlusion_was_cleaned_up) {
+		return;
+	}
+
+	if (cleanup_occlusion) {
 		// Clean everything.
 		for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
 			_rendering_occluders_clear_cell(kv.value);
 		}
 	} else {
-		if (_rendering_was_cleaned_up || dirty.flags[DIRTY_FLAGS_TILE_SET]) {
+		if (_occlusion_was_cleaned_up || dirty.flags[DIRTY_FLAGS_TILE_SET]) {
 			// Update all cells.
 			for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
 				_rendering_occluders_update_cell(kv.value);
@@ -451,8 +474,8 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 	}
 
 	// -----------
-	// Mark the rendering state as up to date.
-	_rendering_was_cleaned_up = forced_cleanup || !occlusion_enabled;
+	// Mark the occlusion state as up to date.
+	_occlusion_was_cleaned_up = cleanup_occlusion;
 }
 
 void TileMapLayer::_rendering_notification(int p_what) {
@@ -721,6 +744,9 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 
 	// Check if we should cleanup everything.
 	bool forced_cleanup = p_force_cleanup || !enabled || !collision_enabled || !is_inside_tree() || tile_set.is_null();
+	if (forced_cleanup && _physics_was_cleaned_up) {
+		return;
+	}
 
 	// ----------- Quadrants processing -----------
 
@@ -732,7 +758,7 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 	bool quadrant_shape_changed = dirty.flags[DIRTY_FLAGS_TILE_SET] || dirty.flags[DIRTY_FLAGS_LAYER_PHYSICS_QUADRANT_SIZE];
 
 	// Free all quadrants.
-	if (forced_cleanup || quadrant_shape_changed) {
+	if (!_physics_was_cleaned_up && (forced_cleanup || quadrant_shape_changed)) {
 		for (const KeyValue<Vector2i, Ref<PhysicsQuadrant>> &kv : physics_quadrant_map) {
 			// Clear bodies.
 			for (KeyValue<PhysicsQuadrant::PhysicsBodyKey, PhysicsQuadrant::PhysicsBodyValue> &kvbody : kv.value->bodies) {
@@ -940,7 +966,7 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 
 	// -----------
 	// Mark the physics state as up to date.
-	_physics_was_cleaned_up = forced_cleanup || !occlusion_enabled;
+	_physics_was_cleaned_up = forced_cleanup;
 }
 
 void TileMapLayer::_physics_quadrants_update_cell(CellData &r_cell_data, SelfList<PhysicsQuadrant>::List &r_dirty_physics_quadrant_list) {
@@ -1260,6 +1286,9 @@ void TileMapLayer::_navigation_update(bool p_force_cleanup) {
 
 	// Check if we should cleanup everything.
 	bool forced_cleanup = p_force_cleanup || !enabled || !navigation_enabled || !is_inside_tree() || tile_set.is_null();
+	if (forced_cleanup && _navigation_was_cleaned_up) {
+		return;
+	}
 
 	// ----------- Layer level processing -----------
 	// All this processing is kept for compatibility with the TileMap node.
@@ -1531,6 +1560,9 @@ void TileMapLayer::_navigation_draw_cell_debug(const RID &p_canvas_item, const V
 void TileMapLayer::_scenes_update(bool p_force_cleanup) {
 	// Check if we should cleanup everything.
 	bool forced_cleanup = p_force_cleanup || !enabled || !is_inside_tree() || tile_set.is_null();
+	if (forced_cleanup && _scenes_was_cleaned_up) {
+		return;
+	}
 
 	if (forced_cleanup) {
 		// Clean everything.
@@ -1686,7 +1718,7 @@ void TileMapLayer::_build_runtime_update_tile_data(bool p_force_cleanup) {
 	}
 
 	// -----------
-	// Mark the navigation state as up to date.
+	// Mark the tile data state as up to date.
 	_runtime_update_tile_data_was_cleaned_up = forced_cleanup;
 }
 
