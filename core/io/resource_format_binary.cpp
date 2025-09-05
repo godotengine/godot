@@ -872,6 +872,9 @@ Error ResourceLoaderBinary::load() {
 				res->set(name, value);
 			}
 		}
+		if (res.is_valid()) {
+			res->notification(Resource::NOTIFICATION_RESOURCE_DESERIALIZED);
+		}
 
 		if (missing_resource) {
 			missing_resource->set_recording_properties(false);
