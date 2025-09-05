@@ -205,7 +205,7 @@ inline String enum_qualified_name_to_class_info_name(const String &p_qualified_n
 	};
 
 template <typename T>
-inline StringName __constant_get_enum_name(T param, const String &p_constant) {
+inline StringName __constant_get_enum_name(T param) {
 	return GetTypeInfo<T>::get_class_info().class_name;
 }
 
@@ -230,7 +230,7 @@ inline StringName __constant_get_enum_name(T param, const String &p_constant) {
 	};
 
 template <typename T>
-inline StringName __constant_get_bitfield_name(T param, const String &p_constant) {
+inline StringName __constant_get_bitfield_name(T param) {
 	return GetTypeInfo<BitField<T>>::get_class_info().class_name;
 }
 #define CLASS_INFO(m_type) (GetTypeInfo<m_type *>::get_class_info())
