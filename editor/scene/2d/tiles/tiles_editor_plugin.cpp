@@ -73,69 +73,86 @@ void TilesEditorUtils::_thread() {
 	while (!pattern_thread_exit.is_set()) {
 		pattern_preview_sem.wait();
 
+		// Process patterns in batches for efficiency
+		List<QueueItem> batch_items;
+
 		pattern_preview_mutex.lock();
 		if (pattern_preview_queue.is_empty()) {
 			pattern_preview_mutex.unlock();
 		} else {
-			QueueItem item = pattern_preview_queue.front()->get();
-			pattern_preview_queue.pop_front();
+			// Extract up to PATTERN_BATCH_SIZE items for batch processing
+			for (int i = 0; i < PATTERN_BATCH_SIZE && !pattern_preview_queue.is_empty(); i++) {
+				batch_items.push_back(pattern_preview_queue.front()->get());
+				pattern_preview_queue.pop_front();
+			}
 			pattern_preview_mutex.unlock();
 
 			int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 			thumbnail_size *= EDSCALE;
 			Vector2 thumbnail_size2 = Vector2(thumbnail_size, thumbnail_size);
 
-			if (item.pattern.is_valid() && !item.pattern->is_empty()) {
-				// Generate the pattern preview
-				SubViewport *viewport = memnew(SubViewport);
-				viewport->set_size(thumbnail_size2);
-				viewport->set_disable_input(true);
-				viewport->set_transparent_background(true);
-				viewport->set_update_mode(SubViewport::UPDATE_ONCE);
+			// Process all items in the batch
+			for (QueueItem &item : batch_items) {
+				if (item.pattern.is_valid() && !item.pattern->is_empty()) {
+					// Generate the pattern preview
+					SubViewport *viewport = memnew(SubViewport);
+					viewport->set_size(thumbnail_size2);
+					viewport->set_disable_input(true);
+					viewport->set_transparent_background(true);
+					viewport->set_update_mode(SubViewport::UPDATE_ONCE);
 
-				TileMapLayer *tile_map_layer = memnew(TileMapLayer);
-				tile_map_layer->set_tile_set(item.tile_set);
-				tile_map_layer->set_pattern(Vector2(), item.pattern);
-				viewport->add_child(tile_map_layer);
+					TileMapLayer *tile_map_layer = memnew(TileMapLayer);
+					tile_map_layer->set_tile_set(item.tile_set);
+					tile_map_layer->set_pattern(Vector2(), item.pattern);
+					viewport->add_child(tile_map_layer);
 
-				Rect2 encompassing_rect;
-				encompassing_rect.set_position(tile_map_layer->map_to_local(tile_map_layer->get_tile_map_layer_data().begin()->key));
-				for (KeyValue<Vector2i, CellData> kv : tile_map_layer->get_tile_map_layer_data()) {
-					Vector2i cell = kv.key;
-					Vector2 world_pos = tile_map_layer->map_to_local(cell);
-					encompassing_rect.expand_to(world_pos);
+					Rect2 encompassing_rect;
+					encompassing_rect.set_position(tile_map_layer->map_to_local(tile_map_layer->get_tile_map_layer_data().begin()->key));
+					for (KeyValue<Vector2i, CellData> kv : tile_map_layer->get_tile_map_layer_data()) {
+						Vector2i cell = kv.key;
+						Vector2 world_pos = tile_map_layer->map_to_local(cell);
+						encompassing_rect.expand_to(world_pos);
 
-					// Texture.
-					Ref<TileSetAtlasSource> atlas_source = item.tile_set->get_source(tile_map_layer->get_cell_source_id(cell));
-					if (atlas_source.is_valid()) {
-						Vector2i coords = tile_map_layer->get_cell_atlas_coords(cell);
-						int alternative = tile_map_layer->get_cell_alternative_tile(cell);
+						// Texture.
+						Ref<TileSetAtlasSource> atlas_source = item.tile_set->get_source(tile_map_layer->get_cell_source_id(cell));
+						if (atlas_source.is_valid()) {
+							Vector2i coords = tile_map_layer->get_cell_atlas_coords(cell);
+							int alternative = tile_map_layer->get_cell_alternative_tile(cell);
 
-						if (atlas_source->has_tile(coords) && atlas_source->has_alternative_tile(coords, alternative)) {
-							Vector2 center = world_pos - atlas_source->get_tile_data(coords, alternative)->get_texture_origin();
-							encompassing_rect.expand_to(center - atlas_source->get_tile_texture_region(coords).size / 2);
-							encompassing_rect.expand_to(center + atlas_source->get_tile_texture_region(coords).size / 2);
+							if (atlas_source->has_tile(coords) && atlas_source->has_alternative_tile(coords, alternative)) {
+								Vector2 center = world_pos - atlas_source->get_tile_data(coords, alternative)->get_texture_origin();
+								encompassing_rect.expand_to(center - atlas_source->get_tile_texture_region(coords).size / 2);
+								encompassing_rect.expand_to(center + atlas_source->get_tile_texture_region(coords).size / 2);
+							}
 						}
 					}
+
+					Vector2 scale = thumbnail_size2 / MAX(encompassing_rect.size.x, encompassing_rect.size.y);
+					tile_map_layer->set_scale(scale);
+					tile_map_layer->set_position(-(scale * encompassing_rect.get_center()) + thumbnail_size2 / 2);
+
+					// Add the viewport at the last moment to avoid rendering too early.
+					callable_mp((Node *)EditorNode::get_singleton(), &Node::add_child).call_deferred(viewport, false, Node::INTERNAL_MODE_DISABLED);
+
+					RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(this, &TilesEditorUtils::_preview_frame_started), Object::CONNECT_ONE_SHOT);
+
+					pattern_preview_done.wait();
+
+					Ref<Image> image = viewport->get_texture()->get_image();
+					Ref<ImageTexture> texture = ImageTexture::create_from_image(image);
+
+					// Cache the generated texture
+					String cache_key = String::num_int64(item.tile_set->get_instance_id()) + "_" + String::num_int64(item.pattern->get_instance_id());
+					{
+						MutexLock cache_lock(pattern_cache_mutex);
+						pattern_preview_cache[cache_key] = texture;
+					}
+
+					// Find the index for the given pattern. TODO: optimize.
+					item.callback.call(item.pattern, texture);
+
+					viewport->queue_free();
 				}
-
-				Vector2 scale = thumbnail_size2 / MAX(encompassing_rect.size.x, encompassing_rect.size.y);
-				tile_map_layer->set_scale(scale);
-				tile_map_layer->set_position(-(scale * encompassing_rect.get_center()) + thumbnail_size2 / 2);
-
-				// Add the viewport at the last moment to avoid rendering too early.
-				callable_mp((Node *)EditorNode::get_singleton(), &Node::add_child).call_deferred(viewport, false, Node::INTERNAL_MODE_DISABLED);
-
-				RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(this, &TilesEditorUtils::_preview_frame_started), Object::CONNECT_ONE_SHOT);
-
-				pattern_preview_done.wait();
-
-				Ref<Image> image = viewport->get_texture()->get_image();
-
-				// Find the index for the given pattern. TODO: optimize.
-				item.callback.call(item.pattern, ImageTexture::create_from_image(image));
-
-				viewport->queue_free();
 			}
 		}
 	}
@@ -145,11 +162,32 @@ void TilesEditorUtils::_thread() {
 void TilesEditorUtils::queue_pattern_preview(Ref<TileSet> p_tile_set, Ref<TileMapPattern> p_pattern, Callable p_callback) {
 	ERR_FAIL_COND(p_tile_set.is_null());
 	ERR_FAIL_COND(p_pattern.is_null());
+
+	// Generate cache key based on pattern content and tileset
+	String cache_key = String::num_int64(p_tile_set->get_instance_id()) + "_" + String::num_int64(p_pattern->get_instance_id());
+
+	// Check cache first
+	{
+		MutexLock cache_lock(pattern_cache_mutex);
+		const Ref<ImageTexture> *cached_texture = pattern_preview_cache.getptr(cache_key);
+		if (cached_texture) {
+			// Cache hit - call callback immediately with cached texture
+			p_callback.call(p_pattern, *cached_texture);
+			return;
+		}
+	}
+
+	// Cache miss - queue for generation
 	{
 		MutexLock lock(pattern_preview_mutex);
 		pattern_preview_queue.push_back({ p_tile_set, p_pattern, p_callback });
 	}
 	pattern_preview_sem.post();
+}
+
+void TilesEditorUtils::clear_pattern_preview_cache() {
+	MutexLock cache_lock(pattern_cache_mutex);
+	pattern_preview_cache.clear();
 }
 
 void TilesEditorUtils::set_sources_lists_current(int p_current) {
