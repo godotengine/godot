@@ -39,6 +39,7 @@ thread_local const HashSet<RID> *PhysicsDirectSpaceState2DExtension::exclude = n
 void PhysicsDirectSpaceState2DExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_body_excluded_from_query", "body"), &PhysicsDirectSpaceState2DExtension::is_body_excluded_from_query);
 
+	GDVIRTUAL_BIND(_intersect_ray_multiple, "from", "to", "collision_mask", "collide_with_bodies", "collide_with_areas", "hit_from_inside", "result", "max_results");
 	GDVIRTUAL_BIND(_intersect_ray, "from", "to", "collision_mask", "collide_with_bodies", "collide_with_areas", "hit_from_inside", "result");
 	GDVIRTUAL_BIND(_intersect_point, "position", "canvas_instance_id", "collision_mask", "collide_with_bodies", "collide_with_areas", "results", "max_results");
 	GDVIRTUAL_BIND(_intersect_shape, "shape_rid", "transform", "motion", "margin", "collision_mask", "collide_with_bodies", "collide_with_areas", "result", "max_results");
