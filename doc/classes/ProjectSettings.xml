@@ -1194,7 +1194,7 @@
 			Maximum undo/redo history size for [TextEdit] fields.
 		</member>
 		<member name="gui/fonts/dynamic_fonts/use_oversampling" type="bool" setter="" getter="" default="true">
-			If set to [code]true[/code] and [member display/window/stretch/mode] is set to [b]"canvas_items"[/b], font and [DPITexture] oversampling is enabled in the main window. Use [member Viewport.oversampling] to control oversampling in other viewports and windows.
+			If set to [code]true[/code] and [member display/window/stretch/mode] is set to [b]"canvas_items"[/b], font and [ImageTexture] oversampling is enabled in the main window. Use [member Viewport.oversampling] to control oversampling in other viewports and windows.
 		</member>
 		<member name="gui/theme/custom" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Theme] resource file to use for the project ([code].theme[/code] or generic [code].tres[/code]/[code].res[/code] extension).
