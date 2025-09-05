@@ -157,11 +157,30 @@ vec3 tonemap_agx(vec3 color) {
 	return color;
 }
 
+// Lottes 2016, "Advanced Techniques and Optimization of HDR Color Pipelines"
+vec3 tonemap_lottes(vec3 color) {
+	const vec3 a = vec3(1.6);
+	const vec3 d = vec3(0.977);
+	const vec3 hdrMax = vec3(8.0);
+	const vec3 midIn = vec3(0.18);
+	const vec3 midOut = vec3(0.267);
+
+	const vec3 b =
+	(-pow(midIn, a) + pow(hdrMax, a) * midOut) /
+	((pow(hdrMax, a * d) - pow(midIn, a * d)) * midOut);
+	const vec3 c =
+	(pow(hdrMax, a * d) * pow(midIn, a) - pow(hdrMax, a) * pow(midIn, a * d) * midOut) /
+	((pow(hdrMax, a * d) - pow(midIn, a * d)) * midOut);
+
+	return pow(color, a) / (pow(color, a * d) * b + c);
+}
+
 #define TONEMAPPER_LINEAR 0
 #define TONEMAPPER_REINHARD 1
 #define TONEMAPPER_FILMIC 2
 #define TONEMAPPER_ACES 3
 #define TONEMAPPER_AGX 4
+#define TONEMAPPER_LOTTES 5
 
 vec3 apply_tonemapping(vec3 color, float p_white) { // inputs are LINEAR
 	// Ensure color values passed to tonemappers are positive.
@@ -174,8 +193,10 @@ vec3 apply_tonemapping(vec3 color, float p_white) { // inputs are LINEAR
 		return tonemap_filmic(max(vec3(0.0f), color), p_white);
 	} else if (tonemapper == TONEMAPPER_ACES) {
 		return tonemap_aces(max(vec3(0.0f), color), p_white);
-	} else { // TONEMAPPER_AGX
+	} else if (tonmapper == TONEMAPPER_AGX) { // TONEMAPPER_AGX
 		return tonemap_agx(color);
+	} else { // TONEMAPPER_LOTTES
+		return tonemap_lottes(max(vec3(0.0f), color));
 	}
 }
 

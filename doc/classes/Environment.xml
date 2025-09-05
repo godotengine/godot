@@ -432,6 +432,10 @@
 			Uses a film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
 			[b]Note:[/b] [member tonemap_white] is fixed at a value of [code]16.29[/code], which makes [constant TONE_MAPPER_AGX] unsuitable for use with the Mobile rendering method.
 		</constant>
+		<constant name="TONE_MAPPER_LOTTES" value="4" enum="ToneMapper">
+			Uses a film-like tonemapping curve that tries to preserve contrast and detail in the midtones and highlights, good at maintaining color hue, while being a bit more punchy than AGX. Slower than [constant TONE_MAPPER_LINEAR].
+			[b]Note:[/b] This tonemapper, like [constant ENV_TONE_MAPPER_AGX], has a fixed white point.
+		</constant>
 		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0" enum="GlowBlendMode">
 			Additive glow blending mode. Mostly used for particles, glows (bloom), lens flare, bright sources.
 		</constant>
