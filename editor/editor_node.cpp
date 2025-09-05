@@ -4477,6 +4477,8 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	new_scene->set_scene_instance_state(Ref<SceneState>());
 
 	set_edited_scene(new_scene);
+	// When editor plugins load in, they might use node transforms during their own setup, so make sure they're up to date.
+	get_tree()->flush_transform_notifications();
 
 	String config_file_path = EditorPaths::get_singleton()->get_project_settings_dir().path_join(lpath.get_file() + "-editstate-" + lpath.md5_text() + ".cfg");
 	Ref<ConfigFile> editor_state_cf;
