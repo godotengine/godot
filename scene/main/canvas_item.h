@@ -332,6 +332,9 @@ public:
 	void draw_end_animation();
 
 	static CanvasItem *get_current_item_drawn();
+	static void set_current_item_drawn(CanvasItem *p_ci);
+
+	bool is_drawing() const { return drawing; }
 
 	/* RECT / TRANSFORM */
 
