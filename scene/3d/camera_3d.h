@@ -74,6 +74,8 @@ private:
 	real_t v_offset = 0.0;
 	real_t h_offset = 0.0;
 	KeepAspect keep_aspect = KEEP_HEIGHT;
+	RS::TransparencySortMode transparency_sort_mode = RS::TRANSPARENCY_SORT_DEFAULT;
+	Vector3 transparency_sort_axis = Vector3(0, 0, 1);
 
 	RID camera;
 	RID scenario_id;
@@ -205,6 +207,12 @@ public:
 	DopplerTracking get_doppler_tracking() const;
 
 	Vector3 get_doppler_tracked_velocity() const;
+
+	void set_transparency_sort_mode(RS::TransparencySortMode p_mode);
+	RS::TransparencySortMode get_transparency_sort_mode() const;
+
+	void set_transparency_sort_axis(const Vector3 &p_axis);
+	Vector3 get_transparency_sort_axis() const;
 
 #ifndef PHYSICS_3D_DISABLED
 	RID get_pyramid_shape_rid();
