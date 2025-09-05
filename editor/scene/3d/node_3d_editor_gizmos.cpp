@@ -889,6 +889,7 @@ EditorNode3DGizmo::EditorNode3DGizmo() {
 	billboard_handle = false;
 	hidden = false;
 	selected = false;
+	highlighted = false;
 	spatial_node = nullptr;
 	gizmo_plugin = nullptr;
 	selectable_icon_size = -1.0f;
@@ -1024,13 +1025,14 @@ Ref<StandardMaterial3D> EditorNode3DGizmoPlugin::get_material(const String &p_na
 		return materials[p_name][0];
 	}
 
-	int index = (p_gizmo->is_selected() ? 1 : 0) + (p_gizmo->is_editable() ? 2 : 0);
+	bool is_active = p_gizmo->is_selected() || p_gizmo->is_highlighted();
+	int index = (is_active ? 1 : 0) + (p_gizmo->is_editable() ? 2 : 0);
 
 	Ref<StandardMaterial3D> mat = materials[p_name][index];
 
 	bool on_top_mat = mat->get_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST);
 
-	if (!on_top_mat && current_state == ON_TOP && p_gizmo->is_selected()) {
+	if (!on_top_mat && current_state == ON_TOP && is_active) {
 		mat = mat->duplicate();
 		mat->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
 	}
