@@ -13,6 +13,9 @@
 		<member name="constant_id" type="int" setter="set_constant_id" getter="get_constant_id" default="0">
 			The identifier of the specialization constant. This is a value starting from [code]0[/code] and that increments for every different specialization constant for a given shader.
 		</member>
+		<member name="type" type="int" getter="get_type" enum="RenderingDevice.PipelineSpecializationConstantType" default="0">
+			The specialization constant's type. Corresponds to either [bool], [int] or [float].
+		</member>
 		<member name="value" type="Variant" setter="set_value" getter="get_value">
 			The specialization constant's value. Only [bool], [int] and [float] types are valid for specialization constants.
 		</member>
