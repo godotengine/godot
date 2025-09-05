@@ -31,16 +31,21 @@
 #include "visible_on_screen_notifier_3d_gizmo_plugin.h"
 
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/scene/3d/gizmos/gizmo_3d_helper.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/3d/visible_on_screen_notifier_3d.h"
 
 VisibleOnScreenNotifier3DGizmoPlugin::VisibleOnScreenNotifier3DGizmoPlugin() {
+	helper.instantiate();
 	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/visibility_notifier");
 	create_material("visibility_notifier_material", gizmo_color);
 	gizmo_color.a = 0.1;
 	create_material("visibility_notifier_solid_material", gizmo_color);
 	create_handle_material("handles");
+}
+
+VisibleOnScreenNotifier3DGizmoPlugin::~VisibleOnScreenNotifier3DGizmoPlugin() {
 }
 
 bool VisibleOnScreenNotifier3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -56,22 +61,7 @@ int VisibleOnScreenNotifier3DGizmoPlugin::get_priority() const {
 }
 
 String VisibleOnScreenNotifier3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	switch (p_id) {
-		case 0:
-			return "Size X";
-		case 1:
-			return "Size Y";
-		case 2:
-			return "Size Z";
-		case 3:
-			return "Pos X";
-		case 4:
-			return "Pos Y";
-		case 5:
-			return "Pos Z";
-	}
-
-	return "";
+	return helper->box_get_handle_name(p_id);
 }
 
 Variant VisibleOnScreenNotifier3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
@@ -79,56 +69,45 @@ Variant VisibleOnScreenNotifier3DGizmoPlugin::get_handle_value(const EditorNode3
 	return notifier->get_aabb();
 }
 
+void VisibleOnScreenNotifier3DGizmoPlugin::begin_handle_action(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) {
+	VisibleOnScreenNotifier3D *notifier = Object::cast_to<VisibleOnScreenNotifier3D>(p_gizmo->get_node_3d());
+	helper->initialize_handle_action(notifier->get_aabb().get_size(), p_gizmo->get_node_3d()->get_global_transform());
+}
+
 void VisibleOnScreenNotifier3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
 	VisibleOnScreenNotifier3D *notifier = Object::cast_to<VisibleOnScreenNotifier3D>(p_gizmo->get_node_3d());
 
-	Transform3D gt = notifier->get_global_transform();
-
-	Transform3D gi = gt.affine_inverse();
-
-	bool move = p_id >= 3;
-	p_id = p_id % 3;
+	Vector3 sg[2];
+	helper->get_segment(p_camera, p_point, sg);
 
 	AABB aabb = notifier->get_aabb();
-	Vector3 ray_from = p_camera->project_ray_origin(p_point);
-	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
+	int axis = p_id / 2;
+	int sign = p_id % 2 * -2 + 1;
 
-	Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 4096) };
+	float neg_end = aabb.position[axis];
+	float pos_end = aabb.position[axis] + aabb.size[axis];
 
-	Vector3 ofs = aabb.get_center();
+	Vector3 new_size = Vector3(aabb.size);
+	Vector3 new_position;
+	helper->box_set_handle(sg, p_id, new_size, new_position);
 
-	Vector3 axis;
-	axis[p_id] = 1.0;
-
-	if (move) {
-		Vector3 ra, rb;
-		Geometry3D::get_closest_points_between_segments(ofs - axis * 4096, ofs + axis * 4096, sg[0], sg[1], ra, rb);
-
-		float d = ra[p_id];
-		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
-			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
-		}
-
-		aabb.position[p_id] = d - 1.0 - aabb.size[p_id] * 0.5;
-		notifier->set_aabb(aabb);
-
+	// Adjust position
+	if (Input::get_singleton()->is_key_pressed(Key::ALT)) {
+		new_position = aabb.position + (aabb.get_size() - new_size) * 0.5;
 	} else {
-		Vector3 ra, rb;
-		Geometry3D::get_closest_points_between_segments(ofs, ofs + axis * 4096, sg[0], sg[1], ra, rb);
-
-		float d = ra[p_id] - ofs[p_id];
-		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
-			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
+		new_position = aabb.position;
+		if (sign > 0) {
+			pos_end = neg_end + new_size[axis];
+		} else {
+			neg_end = pos_end - new_size[axis];
+			new_position[axis] = neg_end;
 		}
-
-		if (d < 0.001) {
-			d = 0.001;
-		}
-		//resize
-		aabb.position[p_id] = (aabb.position[p_id] + aabb.size[p_id] * 0.5) - d;
-		aabb.size[p_id] = d * 2;
-		notifier->set_aabb(aabb);
 	}
+
+	AABB new_aabb;
+	new_aabb.position = new_position;
+	new_aabb.size = new_size;
+	notifier->set_aabb(new_aabb);
 }
 
 void VisibleOnScreenNotifier3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
@@ -161,23 +140,10 @@ void VisibleOnScreenNotifier3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		lines.push_back(b);
 	}
 
-	Vector<Vector3> handles;
-
-	for (int i = 0; i < 3; i++) {
-		Vector3 ax;
-		ax[i] = aabb.position[i] + aabb.size[i];
-		ax[(i + 1) % 3] = aabb.position[(i + 1) % 3] + aabb.size[(i + 1) % 3] * 0.5;
-		ax[(i + 2) % 3] = aabb.position[(i + 2) % 3] + aabb.size[(i + 2) % 3] * 0.5;
-		handles.push_back(ax);
-	}
-
-	Vector3 center = aabb.get_center();
-	for (int i = 0; i < 3; i++) {
-		Vector3 ax;
-		ax[i] = 1.0;
-		handles.push_back(center + ax);
-		lines.push_back(center);
-		lines.push_back(center + ax);
+	Vector<Vector3> handles = helper->box_get_handles(aabb.get_size());
+	// Offset handles to AABB center
+	for (int i = 0; i < handles.size(); i++) {
+		handles.write[i] = handles[i] + aabb.get_center();
 	}
 
 	Ref<Material> material = get_material("visibility_notifier_material", p_gizmo);
