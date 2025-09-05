@@ -4041,6 +4041,8 @@ String Node::_get_name_num_separator() {
 }
 
 Node::Node() {
+	_define_ancestry(AncestralClass::NODE);
+
 	orphan_node_count++;
 
 	// Default member initializer for bitfield is a C++20 extension, so:
