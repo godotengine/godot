@@ -183,6 +183,7 @@ public: // internal methods
 
 	void add_node(Type p_type, const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id);
 	void set_node_position(Type p_type, int p_id, const Vector2 &p_position);
+	int has_node_embeds() const;
 
 	void add_varying(const String &p_name, VaryingMode p_mode, VaryingType p_type);
 	void remove_varying(const String &p_name);
