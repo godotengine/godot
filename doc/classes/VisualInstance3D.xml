@@ -65,6 +65,7 @@
 		</member>
 		<member name="sorting_offset" type="float" setter="set_sorting_offset" getter="get_sorting_offset" default="0.0">
 			The amount by which the depth of this [VisualInstance3D] will be adjusted when sorting by depth. Uses the same units as the engine (which are typically meters). Adjusting it to a higher value will make the [VisualInstance3D] reliably draw on top of other [VisualInstance3D]s that are otherwise positioned at the same spot. To ensure it always draws on top of other objects around it (not positioned at the same spot), set the value to be greater than the distance between this [VisualInstance3D] and the other nearby [VisualInstance3D]s.
+			[b]Note:[/b] This is only effective on instances with transparent (alpha-blended) materials. Opaque or alpha scissor/hash sorting is not affected by [member sorting_offset], so it cannot resolve Z-fighting issues.
 		</member>
 		<member name="sorting_use_aabb_center" type="bool" setter="set_sorting_use_aabb_center" getter="is_sorting_use_aabb_center">
 			If [code]true[/code], the object is sorted based on the [AABB] center. The object will be sorted based on the global position otherwise.
