@@ -890,6 +890,44 @@ typedef void *(*GDExtensionInterfaceMemRealloc)(void *p_ptr, size_t p_bytes);
  */
 typedef void (*GDExtensionInterfaceMemFree)(void *p_ptr);
 
+/**
+ * @name mem_aligned_alloc
+ * @since 4.5
+ * 
+ * Allocates memory aligned to user input
+ * 
+ * @param p_bytes The amount of memory to allocate in bytes
+ * @param p_align The alignment of the memory block to allocate to the nearest byte
+ * 
+ * @return A pointer to the allocated aligned memory, or NULL if unsucessful
+ */
+typedef void *(*GDExtensionInterfaceMemAlignedAlloc)(size_t p_bytes, size_t p_align);
+
+/**
+ * @name mem_aligned_realloc
+ * @since 4.5
+ *
+ * Reallocates memory aligned to user input.
+ *
+ * @param p_ptr A pointer to the previously allocated aligned memory.
+ * @param p_bytes The number of bytes to resize the memory block to.
+ * @param p_prev_bytes The previous size of the memory block in bytes.
+ * @param p_align The alignment of the memory block to allocate to the nearest byte.
+ *
+ * @return A pointer to the allocated aligned memory, or NULL if unsuccessful.
+ */
+typedef void *(*GDExtensionInterfaceMemAlignedRealloc)(void *p_ptr, size_t p_bytes, size_t p_prev_bytes, size_t p_align);
+
+/**
+ * @name mem_aligned_free
+ * @since 4.5
+ *
+ * Frees memory allocated with `mem_aligned_alloc`.
+ *
+ * @param p_ptr A pointer to the previously allocated aligned memory.
+ */
+typedef void (*GDExtensionInterfaceMemAlignedFree)(void *p_ptr);
+
 /* INTERFACE: Godot Core */
 
 /**
