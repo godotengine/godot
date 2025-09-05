@@ -150,10 +150,8 @@ void FileAccessEncrypted::_close() {
 		ERR_FAIL_COND(CryptoCore::md5(data.ptr(), data.size(), hash) != OK); // Bug?
 
 		compressed.resize(len);
-		memset(compressed.ptrw(), 0, len);
-		for (int i = 0; i < data.size(); i++) {
-			compressed.write[i] = data[i];
-		}
+		memcpy(compressed.ptrw(), data.ptr(), data.size());
+		memset(compressed.ptrw() + data.size(), 0, len - data.size());
 
 		CryptoCore::AESContext ctx;
 		ctx.set_encode_key(key.ptrw(), 256);
