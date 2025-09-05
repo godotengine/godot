@@ -259,6 +259,8 @@ typedef void (*GDExtensionSpxExtSetPenTo)(GdObj obj, GdInt property, GdFloat val
 typedef void (*GDExtensionSpxExtChangePenSizeBy)(GdObj obj, GdFloat amount);
 typedef void (*GDExtensionSpxExtSetPenSizeTo)(GdObj obj, GdFloat size);
 typedef void (*GDExtensionSpxExtSetPenStampTexture)(GdObj obj, GdString texture_path);
+typedef void (*GDExtensionSpxExtDebugDrawCircle)(GdVec2 pos, GdFloat radius, GdColor color);
+typedef void (*GDExtensionSpxExtDebugDrawRect)(GdVec2 pos, GdVec2 size, GdColor color);
 // SpxInput
 typedef void (*GDExtensionSpxInputGetMousePos)(GdVec2* ret_value);
 typedef void (*GDExtensionSpxInputGetKey)(GdInt key, GdBool* ret_value);

@@ -187,6 +187,12 @@ static void gdextension_spx_ext_set_pen_size_to(GdObj obj,GdFloat size) {
 static void gdextension_spx_ext_set_pen_stamp_texture(GdObj obj,GdString texture_path) {
 	 extMgr->set_pen_stamp_texture(obj, texture_path);
 }
+static void gdextension_spx_ext_debug_draw_circle(GdVec2 pos,GdFloat radius,GdColor color) {
+	 extMgr->debug_draw_circle(pos, radius, color);
+}
+static void gdextension_spx_ext_debug_draw_rect(GdVec2 pos,GdVec2 size,GdColor color) {
+	 extMgr->debug_draw_rect(pos, size, color);
+}
 static void gdextension_spx_input_get_mouse_pos(GdVec2* ret_val) {
 	*ret_val = inputMgr->get_mouse_pos();
 }
@@ -811,6 +817,8 @@ void gdextension_spx_setup_interface() {
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_change_pen_size_by);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_pen_size_to);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_pen_stamp_texture);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_debug_draw_circle);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_debug_draw_rect);
 	REGISTER_SPX_INTERFACE_FUNC(spx_input_get_mouse_pos);
 	REGISTER_SPX_INTERFACE_FUNC(spx_input_get_key);
 	REGISTER_SPX_INTERFACE_FUNC(spx_input_get_mouse_state);

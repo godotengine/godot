@@ -33,11 +33,13 @@
 #include "core/math/color.h"
 #include "scene/2d/line_2d.h"
 #include "scene/2d/sprite_2d.h"
+#include "scene/2d/polygon_2d.h"
 #include "spx.h"
 #include "spx_engine.h"
 #include "spx_pen.h"
 #include "spx_res_mgr.h"
 #include "spx_sprite.h"
+#include <cmath>
 
 #define resMgr SpxEngine::get_singleton()->get_res()
 
@@ -55,6 +57,10 @@ void SpxExtMgr::on_awake() {
 	pen_root = memnew(Node2D);
 	pen_root->set_name("pen_root");
 	get_spx_root()->add_child(pen_root);
+	
+	debug_root = memnew(Node2D);
+	debug_root->set_name("debug_root");
+	get_spx_root()->add_child(debug_root);
 }
 
 void SpxExtMgr::on_start() {
@@ -63,6 +69,9 @@ void SpxExtMgr::on_start() {
 
 void SpxExtMgr::on_update(float delta) {
 	SpxBaseMgr::on_update(delta);
+	
+	_clear_debug_shapes();
+	
 	lock.lock();
 	for (auto mgr : id_pens) {
 		mgr.value->on_update(delta);
@@ -79,6 +88,12 @@ void SpxExtMgr::on_destroy() {
 	if (pen_root) {
 		pen_root->queue_free();
 		pen_root = nullptr;
+	}
+	
+	_clear_debug_shapes();
+	if (debug_root) {
+		debug_root->queue_free();
+		debug_root = nullptr;
 	}
 	lock.unlock();
 	SpxBaseMgr::on_destroy();
@@ -195,4 +210,74 @@ GdBool SpxExtMgr::is_paused() {
 
 void SpxExtMgr::next_frame() {
 	Spx::next_frame();
+}
+
+void SpxExtMgr::_clear_debug_shapes() {
+	for (const DebugShape& shape : debug_shapes) {
+		if (shape.node && shape.node->is_inside_tree()) {
+			shape.node->queue_free();
+		}
+	}
+	debug_shapes.clear();
+}
+
+void SpxExtMgr::debug_draw_circle(GdVec2 pos, GdFloat radius, GdColor color) {
+	if (!debug_root) {
+		return;
+	}
+
+	pos.y = -pos.y;
+	Line2D* circle = memnew(Line2D);
+	circle->set_default_color(color);
+	circle->set_width(2.0f);
+	
+	PackedVector2Array points;
+	int segments = MAX(16, (int)(radius * 0.8f));
+	for (int i = 0; i <= segments; i++) {
+		float angle = i * 6.283185f / segments;
+		points.append(Vector2(std::cos(angle) * radius, std::sin(angle) * radius));
+	}
+	circle->set_points(points);
+	circle->set_position(pos);
+	
+	debug_root->add_child(circle);
+	
+	DebugShape shape;
+	shape.type = DebugShape::CIRCLE;
+	shape.position = pos;
+	shape.radius = radius;
+	shape.color = color;
+	shape.node = circle;
+	debug_shapes.push_back(shape);
+}
+
+void SpxExtMgr::debug_draw_rect(GdVec2 pos, GdVec2 size, GdColor color) {
+	if (!debug_root) {
+		return;
+	}
+
+	Line2D* rect = memnew(Line2D);
+	rect->set_default_color(color);
+	rect->set_width(2.0f);
+	
+	pos.y = -pos.y;
+	size = size * 0.5;
+	PackedVector2Array points;
+	points.append(Vector2(-size.x, -size.y));
+	points.append(Vector2(size.x, -size.y));
+	points.append(Vector2(size.x, size.y));
+	points.append(Vector2(-size.x, size.y));
+	points.append(Vector2(-size.x, -size.y));
+	rect->set_points(points);
+	rect->set_position(pos);
+	
+	debug_root->add_child(rect);
+	
+	DebugShape shape;
+	shape.type = DebugShape::RECT;
+	shape.position = pos;
+	shape.size = size;
+	shape.color = color;
+	shape.node = rect;
+	debug_shapes.push_back(shape);
 }
