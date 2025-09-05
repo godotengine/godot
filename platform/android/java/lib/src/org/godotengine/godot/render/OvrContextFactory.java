@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  OvrWindowSurfaceFactory.java                                          */
+/*  OvrContextFactory.java                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,33 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.xr.ovr;
+package org.godotengine.godot.render;
 
-import org.godotengine.godot.gl.GLSurfaceView;
-
-import javax.microedition.khronos.egl.EGL10;
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.egl.EGLDisplay;
-import javax.microedition.khronos.egl.EGLSurface;
+import android.opengl.EGL14;
+import android.opengl.EGLConfig;
+import android.opengl.EGLContext;
+import android.opengl.EGLDisplay;
 
 /**
- * EGL window surface factory for the Oculus mobile VR SDK.
+ * EGL Context factory for the Oculus mobile VR SDK.
  */
-public class OvrWindowSurfaceFactory implements GLSurfaceView.EGLWindowSurfaceFactory {
-	private final static int[] SURFACE_ATTRIBS = {
-		EGL10.EGL_WIDTH, 16,
-		EGL10.EGL_HEIGHT, 16,
-		EGL10.EGL_NONE
+class OvrContextFactory implements GLSurfaceView.EGLContextFactory {
+	private static final int[] CONTEXT_ATTRIBS = {
+		EGL14.EGL_CONTEXT_CLIENT_VERSION, 3, EGL14.EGL_NONE
 	};
 
 	@Override
-	public EGLSurface createWindowSurface(EGL10 egl, EGLDisplay display, EGLConfig config,
-			Object nativeWindow) {
-		return egl.eglCreatePbufferSurface(display, config, SURFACE_ATTRIBS);
+	public EGLContext createContext(EGLDisplay display, EGLConfig eglConfig) {
+		return EGL14.eglCreateContext(display, eglConfig, EGL14.EGL_NO_CONTEXT, CONTEXT_ATTRIBS, 0);
 	}
 
 	@Override
-	public void destroySurface(EGL10 egl, EGLDisplay display, EGLSurface surface) {
-		egl.eglDestroySurface(display, surface);
+	public void destroyContext(EGLDisplay display, EGLContext context) {
+		EGL14.eglDestroyContext(display, context);
 	}
 }

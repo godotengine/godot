@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  java_godot_view_wrapper.h                                             */
+/*  RenderThread.kt                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,40 +28,63 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+@file:JvmName("RenderThread")
+package org.godotengine.godot.render
 
-#include "jni_utils.h"
+import android.view.SurfaceHolder
+import java.lang.ref.WeakReference
 
-#include "core/math/vector2.h"
+/**
+ * Base class for the OpenGL / Vulkan render thread implementations.
+ */
+internal abstract class RenderThread(tag: String) : Thread(tag) {
 
-#include <android/log.h>
-#include <jni.h>
+	/**
+	 * Queues an event on the render thread
+	 */
+	abstract fun queueEvent(event: Runnable)
 
-// Class that makes functions in java/src/org/godotengine/godot/GodotRenderView.java callable from C++
-class GodotJavaViewWrapper {
-private:
-	jclass _cls;
+	/**
+	 * Request the thread to exit and block until it's done.
+	 */
+	abstract fun requestExitAndWait()
 
-	jobject _godot_view;
+	/**
+	 * Invoked when the app resumes.
+	 */
+	abstract fun onResume()
 
-	jmethodID _can_capture_pointer = 0;
-	jmethodID _request_pointer_capture = 0;
-	jmethodID _release_pointer_capture = 0;
+	/**
+	 * Invoked when the app pauses.
+	 */
+	abstract fun onPause()
 
-	jmethodID _configure_pointer_icon = 0;
-	jmethodID _set_pointer_icon = 0;
+	abstract fun setRenderMode(renderMode: Renderer.RenderMode)
 
-public:
-	GodotJavaViewWrapper(jobject godot_view);
+	abstract fun getRenderMode(): Renderer.RenderMode
 
-	bool can_update_pointer_icon() const;
-	bool can_capture_pointer() const;
+	abstract fun requestRender()
 
-	void request_pointer_capture();
-	void release_pointer_capture();
+	/**
+	 * Invoked when the [android.view.Surface] has been created.
+	 */
+	open fun surfaceCreated(holder: SurfaceHolder, surfaceViewWeakRef: WeakReference<GLSurfaceView>? = null) { }
 
-	void configure_pointer_icon(int pointer_type, const String &image_path, const Vector2 &p_hotspot);
-	void set_pointer_icon(int pointer_type);
+	/**
+	 * Invoked following structural updates to [android.view.Surface].
+	 */
+	open fun surfaceChanged(holder: SurfaceHolder, width: Int, height: Int) { }
 
-	~GodotJavaViewWrapper();
-};
+	/**
+	 * Invoked when the [android.view.Surface] is no longer available.
+	 */
+	open fun surfaceDestroyed(holder: SurfaceHolder) { }
+
+	open fun setSeparateRenderThreadEnabled(enabled: Boolean) {}
+
+	open fun makeEglCurrent(windowId: Int): Boolean = false
+
+	open fun eglSwapBuffers(windowId: Int) {}
+
+	open fun releaseCurrentGLWindow(windowId: Int) {}
+}
