@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  spin_lock.h                                                           */
+/*  block_allocator.h                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,96 +30,43 @@
 
 #pragma once
 
-#include "core/os/thread.h"
 #include "core/typedefs.h"
 
-#ifdef THREADS_ENABLED
-
-// Note the implementations below avoid false sharing by ensuring their
-// sizes match the assumed cache line. We can't use align attributes
-// because these objects may end up unaligned in semi-tightly packed arrays.
-
-#ifdef _MSC_VER
-#include <intrin.h>
-#endif
-
-#if defined(__APPLE__)
-
-#include <os/lock.h>
-
-class SpinLock {
-	union {
-		mutable os_unfair_lock _lock = OS_UNFAIR_LOCK_INIT;
-		char aligner[Thread::CACHE_LINE_BYTES];
+/**
+ * Expands exponentially. Deleted elements are written into `free_list` in place of freed memory.
+ *
+ * [ 1     2        3         4  ]
+ *   |     |        |         |
+ *   1    2 3    4 5 6 7
+ * | * || * * || * * * * | | ... |
+ *
+ * See more here: https://github.com/godotengine/godot/pull/97016.
+ */
+class BlockAllocator {
+	struct FreeListElement {
+		FreeListElement *next = nullptr;
 	};
 
-public:
-	_ALWAYS_INLINE_ void lock() const {
-		os_unfair_lock_lock(&_lock);
-	}
+	size_t cur_block_size = 1;
+	uint8_t *current_pointer = nullptr;
+	uint8_t **blocks = nullptr;
 
-	_ALWAYS_INLINE_ void unlock() const {
-		os_unfair_lock_unlock(&_lock);
-	}
-};
-
-#else // __APPLE__
-
-#include <atomic>
-
-_ALWAYS_INLINE_ static void _cpu_pause() {
-#if defined(_MSC_VER)
-// ----- MSVC.
-#if defined(_M_ARM) || defined(_M_ARM64) // ARM.
-	__yield();
-#elif defined(_M_IX86) || defined(_M_X64) // x86.
-	_mm_pause();
-#endif
-#elif defined(__GNUC__) || defined(__clang__)
-// ----- GCC/Clang.
-#if defined(__i386__) || defined(__x86_64__) // x86.
-	__builtin_ia32_pause();
-#elif defined(__arm__) || defined(__aarch64__) // ARM.
-	asm volatile("yield");
-#elif defined(__powerpc__) // PowerPC.
-	asm volatile("or 27,27,27");
-#elif defined(__riscv) // RISC-V.
-	asm volatile(".insn i 0x0F, 0, x0, x0, 0x010");
-#endif
-#endif
-}
-
-static_assert(std::atomic_bool::is_always_lock_free);
-
-class SpinLock {
-	mutable std::atomic<bool> locked = ATOMIC_VAR_INIT(false);
+	FreeListElement *free_list = nullptr;
+	size_t total_elements = 0;
+	uint32_t structure_size = 0;
+	uint32_t blocks_count = 0;
+	void allocate_new_block(size_t p_block_size);
+	static uint32_t get_blocks_capacity(uint32_t p_blocks_size);
 
 public:
-	_ALWAYS_INLINE_ void lock() const {
-		while (true) {
-			bool expected = false;
-			if (locked.compare_exchange_weak(expected, true, std::memory_order_acquire, std::memory_order_relaxed)) {
-				break;
-			}
-			do {
-				_cpu_pause();
-			} while (locked.load(std::memory_order_relaxed));
-		}
-	}
+	_FORCE_INLINE_ bool is_initialized() { return blocks != nullptr; }
+	size_t get_total_elements();
+	uint32_t get_structure_size();
+	uint32_t get_total_blocks();
 
-	_ALWAYS_INLINE_ void unlock() const {
-		locked.store(false, std::memory_order_release);
-	}
+	void init(uint32_t p_structure_size, uint32_t p_start_size);
+	void *alloc();
+	void free(void *p_ptr);
+	void reset();
+	~BlockAllocator();
 };
-
-#endif // __APPLE__
-
-#else // THREADS_ENABLED
-
-class SpinLock {
-public:
-	void lock() const {}
-	void unlock() const {}
-};
-
-#endif // THREADS_ENABLED
