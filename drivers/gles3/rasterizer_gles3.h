@@ -45,6 +45,7 @@
 #include "storage/config.h"
 #include "storage/light_storage.h"
 #include "storage/material_storage.h"
+#include "storage/mesh_rasterizer_gles3.h"
 #include "storage/mesh_storage.h"
 #include "storage/particles_storage.h"
 #include "storage/texture_storage.h"
@@ -80,6 +81,8 @@ protected:
 	GLES3::FeedEffects *feed_effects = nullptr;
 	RasterizerCanvasGLES3 *canvas = nullptr;
 	RasterizerSceneGLES3 *scene = nullptr;
+	GLES3::MeshRasterizerGLES3 *mesh_rasterizer = nullptr;
+
 	static RasterizerGLES3 *singleton;
 
 	void _blit_render_target_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen &p_blit, bool p_first = true);
@@ -95,6 +98,7 @@ public:
 	RendererFog *get_fog() { return fog; }
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }
+	MeshRasterizer *get_mesh_rasterizer() { return mesh_rasterizer; }
 
 	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
 
