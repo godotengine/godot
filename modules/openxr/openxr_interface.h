@@ -57,6 +57,7 @@
 #include "extensions/openxr_hand_tracking_extension.h"
 #include "openxr_api.h"
 
+#include "servers/rendering/renderer_scene_render.h"
 #include "servers/xr/xr_controller_tracker.h"
 #include "servers/xr/xr_interface.h"
 
@@ -78,7 +79,7 @@ private:
 	Vector3 head_linear_velocity;
 	Vector3 head_angular_velocity;
 	XRPose::TrackingConfidence head_confidence;
-	Transform3D transform_for_view[2]; // We currently assume 2, but could be 4 for VARJO which we do not support yet
+	Transform3D transform_for_view[RendererSceneRender::MAX_RENDER_VIEWS];
 
 	XRVRS xr_vrs;
 
@@ -192,6 +193,7 @@ public:
 
 	virtual void process() override;
 	virtual void pre_render() override;
+	virtual Vector3i get_viewport_setup(RID p_render_target) const override;
 	bool pre_draw_viewport(RID p_render_target) override;
 	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
 	virtual void end_frame() override;
