@@ -213,6 +213,7 @@ public:
 private:
 	const MetalDeviceProfile *device_profile = nullptr;
 	bool export_mode = false;
+	String min_os_version;
 
 	Vector<UniformData> mtl_reflection_binding_set_uniforms_data; // compliment to reflection_binding_set_uniforms_data
 	Vector<SpecializationData> mtl_reflection_specialization_data; // compliment to reflection_specialization_data
@@ -224,6 +225,7 @@ public:
 
 	void set_export_mode(bool p_export_mode) { export_mode = p_export_mode; }
 	void set_device_profile(const MetalDeviceProfile *p_device_profile) { device_profile = p_device_profile; }
+	void set_min_os_version(const String &p_min_os_version) { min_os_version = p_min_os_version; }
 
 	struct MetalShaderReflection {
 		Vector<Vector<UniformData>> uniform_sets;
@@ -253,6 +255,7 @@ protected:
 
 class RenderingShaderContainerFormatMetal : public RenderingShaderContainerFormat {
 	bool export_mode = false;
+	String min_os_version;
 
 	const MetalDeviceProfile *device_profile = nullptr;
 
@@ -260,6 +263,7 @@ public:
 	virtual Ref<RenderingShaderContainer> create_container() const override;
 	virtual ShaderLanguageVersion get_shader_language_version() const override;
 	virtual ShaderSpirvVersion get_shader_spirv_version() const override;
-	RenderingShaderContainerFormatMetal(const MetalDeviceProfile *p_device_profile, bool p_export = false);
+	virtual String get_customization_configuration_info() const override;
+	RenderingShaderContainerFormatMetal(const MetalDeviceProfile *p_device_profile, bool p_export = false, const String &p_min_os_version = "");
 	virtual ~RenderingShaderContainerFormatMetal() = default;
 };
