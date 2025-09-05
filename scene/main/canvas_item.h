@@ -72,9 +72,6 @@ public:
 	};
 
 private:
-	mutable SelfList<Node>
-			xform_change;
-
 	RID canvas_item;
 	StringName canvas_group;
 
@@ -104,6 +101,7 @@ private:
 	bool use_parent_material = false;
 	bool notify_local_transform = false;
 	bool notify_transform = false;
+	bool xform_change_queued = false;
 	bool hide_clip_children = false;
 
 	ClipChildrenMode clip_children_mode = CLIP_CHILDREN_DISABLED;
@@ -355,6 +353,7 @@ public:
 		return canvas_item;
 	}
 
+	void set_xform_change_queued(bool p_queued);
 	void set_block_transform_notify(bool p_enable);
 	bool is_block_transform_notify_enabled() const;
 
