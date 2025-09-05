@@ -87,7 +87,6 @@ class ShaderEditorPlugin : public EditorPlugin {
 	ItemList *shader_list = nullptr;
 	TabContainer *shader_tabs = nullptr;
 
-	Button *button = nullptr;
 	MenuButton *file_menu = nullptr;
 	PopupMenu *context_menu = nullptr;
 
