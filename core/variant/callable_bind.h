@@ -34,11 +34,12 @@
 #include "core/variant/variant.h"
 
 class CallableCustomBind : public CallableCustom {
-	Callable callable;
-	Vector<Variant> binds;
-
 	static bool _equal_func(const CallableCustom *p_a, const CallableCustom *p_b);
 	static bool _less_func(const CallableCustom *p_a, const CallableCustom *p_b);
+
+protected:
+	Callable callable;
+	Vector<Variant> binds;
 
 public:
 	//for every type that inherits, these must always be the same for this type
@@ -61,6 +62,14 @@ public:
 
 	CallableCustomBind(const Callable &p_callable, const Vector<Variant> &p_binds);
 	virtual ~CallableCustomBind();
+};
+
+class CallableCustomPrebind : public CallableCustomBind {
+public:
+	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
+
+	CallableCustomPrebind(const Callable &p_callable, const Vector<Variant> &p_binds) :
+			CallableCustomBind(p_callable, p_binds) {}
 };
 
 class CallableCustomUnbind : public CallableCustom {
