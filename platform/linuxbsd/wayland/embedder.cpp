@@ -1766,12 +1766,6 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 	// Server-allocated objects are a bit annoying to handle for us. Right now we
 	// use an heuristic. See: https://ppaalanen.blogspot.com/2014/07/wayland-protocol-design-object-lifespan.html
 	if (strcmp(message.name, "destroy") == 0 || strcmp(message.name, "release") == 0) {
-		// TODO: More robust server-side destruction heuristic?
-		if (local_id & 0xff000000) {
-			DEBUG_LOG_WAYLAND_EMBED(vformat("!!!!!! Deallocating server object l0x%x", local_id));
-			client->delete_object(local_id);
-		}
-
 		if (shared_objects.has(object->interface)) {
 			// We must not delete shared objects.
 			client->delete_object(local_id);
@@ -1781,6 +1775,11 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 		if (global_id != INVALID_ID) {
 			send_wayland_message(compositor_socket, global_id, p_opcode, {});
 			object->destroyed = true;
+		}
+
+		if (local_id & 0xff000000) {
+			DEBUG_LOG_WAYLAND_EMBED(vformat("!!!!!! Deallocating server object l0x%x", local_id));
+			client->delete_object(local_id);
 		}
 
 		return MessageStatus::HANDLED;
