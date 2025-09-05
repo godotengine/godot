@@ -2261,6 +2261,14 @@
 				Makes the window specified by [param window_id] request attention, which is materialized by the window title and taskbar entry blinking until the window is focused. This usually has no visible effect if the window is currently focused. The exact behavior varies depending on the operating system.
 			</description>
 		</method>
+		<method name="window_set_color">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Sets the background color of the root window.
+				[b]Note:[/b] This method is implemented only on Android.
+			</description>
+		</method>
 		<method name="window_set_current_screen">
 			<return type="void" />
 			<param index="0" name="screen" type="int" />
