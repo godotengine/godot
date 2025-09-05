@@ -100,6 +100,7 @@ public:
 class CameraWindows : public CameraServer {
 private:
 	void update_feeds();
+	void remove_all_feeds();
 
 public:
 	CameraWindows();
