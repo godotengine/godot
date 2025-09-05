@@ -55,7 +55,7 @@ public:
 	virtual ~ResourceFormatSaver() {}
 };
 
-typedef void (*ResourceSavedCallback)(Ref<Resource> p_resource, const String &p_path);
+typedef void (*ResourceSavedCallback)(Ref<Resource> p_resource, const String &p_path, bool p_need_to_update_cache);
 typedef ResourceUID::ID (*ResourceSaverGetResourceIDForPath)(const String &p_path, bool p_generate);
 
 class ResourceSaver {
