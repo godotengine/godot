@@ -56,6 +56,8 @@ public:
 	bool is_on_floor_only() const;
 	bool is_on_wall() const;
 	bool is_on_wall_only() const;
+	bool is_on_wall_from_left() const;
+	bool is_on_wall_from_right() const;
 	bool is_on_ceiling() const;
 	bool is_on_ceiling_only() const;
 	const Vector2 &get_last_motion() const;
