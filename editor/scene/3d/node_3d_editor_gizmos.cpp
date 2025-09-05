@@ -39,6 +39,7 @@
 #include "scene/resources/3d/primitive_meshes.h"
 
 #define HANDLE_HALF_SIZE 9.5
+#define HANDLE_HALF_SIZE_SQUARED (HANDLE_HALF_SIZE * HANDLE_HALF_SIZE)
 
 bool EditorNode3DGizmo::is_editable() const {
 	ERR_FAIL_NULL_V(spatial_node, false);
@@ -611,7 +612,7 @@ void EditorNode3DGizmo::handles_intersect_ray(Camera3D *p_camera, const Vector2 
 		Vector3 hpos = t.xform(secondary_handles[i]);
 		Vector2 p = p_camera->unproject_position(hpos);
 
-		if (p.distance_to(p_point) < HANDLE_HALF_SIZE) {
+		if (p.distance_squared_to(p_point) < HANDLE_HALF_SIZE_SQUARED) {
 			real_t dp = p_camera->get_transform().origin.distance_to(hpos);
 			if (dp < min_d) {
 				min_d = dp;
@@ -635,7 +636,7 @@ void EditorNode3DGizmo::handles_intersect_ray(Camera3D *p_camera, const Vector2 
 		Vector3 hpos = t.xform(handles[i]);
 		Vector2 p = p_camera->unproject_position(hpos);
 
-		if (p.distance_to(p_point) < HANDLE_HALF_SIZE) {
+		if (p.distance_squared_to(p_point) < HANDLE_HALF_SIZE_SQUARED) {
 			real_t dp = p_camera->get_transform().origin.distance_to(hpos);
 			if (dp < min_d) {
 				min_d = dp;
