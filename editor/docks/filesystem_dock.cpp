@@ -2698,12 +2698,12 @@ void FileSystemDock::_resource_created() {
 		make_shader_dialog->config(fpath.path_join("new_shader"), false, false, 0);
 		make_shader_dialog->popup_centered();
 		return;
-	} else if (type_name == "VisualShader") {
-		make_shader_dialog->config(fpath.path_join("new_shader"), false, false, 1);
+	} else if (type_name == "ShaderInclude") {
+		make_shader_dialog->config(fpath.path_join("new_shader_include"), false, false, 1);
 		make_shader_dialog->popup_centered();
 		return;
-	} else if (type_name == "ShaderInclude") {
-		make_shader_dialog->config(fpath.path_join("new_shader_include"), false, false, 2);
+	} else if (type_name == "VisualShader") {
+		make_shader_dialog->config(fpath.path_join("new_shader"), false, false, 2);
 		make_shader_dialog->popup_centered();
 		return;
 	}
