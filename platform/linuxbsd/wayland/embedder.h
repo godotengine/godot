@@ -284,9 +284,8 @@ private:
 		uint32_t version = 0;
 		uint32_t compositor_name = 0;
 
-		// FIXME: Better name. This is a mapping between versions and their global
-		// objects, to be instanced.
-		HashMap<uint32_t, uint32_t> global_ids;
+		// Key is version.
+		HashMap<uint32_t, uint32_t> reusable_objects;
 
 		void *data = nullptr;
 	};

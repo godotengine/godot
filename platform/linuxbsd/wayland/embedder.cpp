@@ -1211,7 +1211,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 
 				client->registry_globals_instances[global_name].insert(new_local_id);
 
-				if (global_info.global_ids[version] == INVALID_ID) {
+				if (global_info.reusable_objects[version] == INVALID_ID) {
 					uint32_t header[2] = { REGISTRY_ID, (uint32_t)(msg_len << 16) };
 
 					body[0] = global_info.compositor_name;
@@ -1219,22 +1219,22 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 					DEBUG_LOG_WAYLAND_EMBED(vformat("Binding new global #%d iface %s ver %d", global_name, global_info.interface->name, version));
 
 					uint32_t new_gid = new_object(global_info.interface, version);
-					global_info.global_ids[version] = new_gid;
+					global_info.reusable_objects[version] = new_gid;
 					registry_globals_names[new_gid] = global_name;
 
 					send_raw_message(compositor_socket, { { header, sizeof header }, { body, body_len - WL_WORD_SIZE }, { &new_gid, sizeof new_gid } });
 				}
 
-				ERR_FAIL_COND_V(global_info.global_ids[version] == INVALID_ID, MessageStatus::ERROR);
+				ERR_FAIL_COND_V(global_info.reusable_objects[version] == INVALID_ID, MessageStatus::ERROR);
 
 				// FIXME: Consider simplifying the relationship between shared_objects and
 				// global_instances. global_instances is only a store for certain objects,
 				// akin to fake_objects, while shared_objects does the actual work of
 				// tracking which interface requires event mirroring.
-				shared_objects[global_info.interface] = global_info.global_ids[version];
-				instance = client->new_global_instance(new_local_id, global_info.global_ids[version], global_info.interface, version);
+				shared_objects[global_info.interface] = global_info.reusable_objects[version];
+				instance = client->new_global_instance(new_local_id, global_info.reusable_objects[version], global_info.interface, version);
 
-				DEBUG_LOG_WAYLAND_EMBED(vformat("Instancing global #%d iface %s ver %d new id l0x%x g0x%x", global_name, global_info.interface->name, version, new_local_id, global_info.global_ids[version]));
+				DEBUG_LOG_WAYLAND_EMBED(vformat("Instancing global #%d iface %s ver %d new id l0x%x g0x%x", global_name, global_info.interface->name, version, new_local_id, global_info.reusable_objects[version]));
 
 				// Some interfaces report their state as soon as they're bound. Since
 				// instances are handled by us, we need to track and report the relevant
@@ -1947,7 +1947,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 						uint32_t header[2] = { p_global_id, 0 };
 						header[1] = (sizeof header + body_len + sizeof xdg_wm_base_id) << 16; // opcode is 0.
 
-						registry_globals[new_global_name].global_ids[global_info.version] = xdg_wm_base_id;
+						registry_globals[new_global_name].reusable_objects[global_info.version] = xdg_wm_base_id;
 						registry_globals_names[xdg_wm_base_id] = new_global_name;
 
 						send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &xdg_wm_base_id, sizeof xdg_wm_base_id } });
@@ -1962,7 +1962,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 						uint32_t header[2] = { p_global_id, 0 };
 						header[1] = (sizeof header + body_len + sizeof wl_compositor_id) << 16; // opcode is 0.
 
-						registry_globals[new_global_name].global_ids[global_info.version] = wl_compositor_id;
+						registry_globals[new_global_name].reusable_objects[global_info.version] = wl_compositor_id;
 						registry_globals_names[wl_compositor_id] = new_global_name;
 
 						send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &wl_compositor_id, sizeof wl_compositor_id } });
@@ -1977,7 +1977,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 						uint32_t header[2] = { p_global_id, 0 };
 						header[1] = (sizeof header + body_len + sizeof wl_subcompositor_id) << 16; // opcode is 0.
 
-						registry_globals[new_global_name].global_ids[global_info.version] = wl_subcompositor_id;
+						registry_globals[new_global_name].reusable_objects[global_info.version] = wl_subcompositor_id;
 						registry_globals_names[wl_subcompositor_id] = new_global_name;
 
 						send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &wl_subcompositor_id, sizeof wl_subcompositor_id } });
