@@ -1022,12 +1022,6 @@ uniform highp mat4 world_transform;
 uniform highp uint instance_offset;
 uniform highp uint model_flags;
 
-/* clang-format off */
-
-#GLOBALS
-
-/* clang-format on */
-
 #define LIGHT_BAKE_DISABLED 0u
 #define LIGHT_BAKE_STATIC 1u
 #define LIGHT_BAKE_DYNAMIC 2u
@@ -1267,6 +1261,12 @@ layout(location = 3) out vec4 emission_output_buffer;
 layout(location = 0) out vec4 frag_color;
 
 #endif // !RENDER_MATERIAL
+
+/* clang-format off */
+
+#GLOBALS
+
+/* clang-format on */
 
 vec3 F0(float metallic, float specular, vec3 albedo) {
 	float dielectric = 0.16 * specular * specular;
