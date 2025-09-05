@@ -201,16 +201,16 @@ StringName::StringName(const StringName &p_name) {
 	}
 }
 
-StringName::StringName(const char *p_name, bool p_static) {
+StringName::StringName(const Span<char> p_name, bool p_static) {
 	_data = nullptr;
 
 	ERR_FAIL_COND(!configured);
 
-	if (!p_name || p_name[0] == 0) {
-		return; //empty, ignore
+	if (p_name.is_empty()) {
+		return;
 	}
 
-	const uint32_t hash = String::hash(p_name);
+	const uint32_t hash = String::hash(p_name.ptr(), p_name.size());
 	const uint32_t idx = hash & Table::TABLE_MASK;
 
 	MutexLock lock(Table::mutex);
@@ -238,7 +238,10 @@ StringName::StringName(const char *p_name, bool p_static) {
 	}
 
 	_data = Table::allocator.alloc();
-	_data->name = p_name;
+	// Note: String literals are UTF-8, not latin1. They overlap in the ASCII range.
+	// We make the assumption that they're latin1 for performance benefits since
+	// StringName should be in the ASCII range.
+	_data->name = String::latin1(p_name);
 	_data->refcount.init();
 	_data->static_count.set(p_static ? 1 : 0);
 	_data->hash = hash;
