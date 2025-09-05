@@ -461,9 +461,7 @@ private:
 	uint32_t main_toplevel_id = 0;
 	uint32_t xdg_wm_base_id = 0;
 
-	// FIXME: Add all shareable undestroyable objects (depending on version) to
-	// this map. They aren't many, most core stuff from old versions.
-	HashMap<const struct wl_interface *, uint32_t> shared_objects;
+	HashSet<uint32_t> shared_objects;
 
 	// Global id to name
 	HashMap<uint32_t, uint32_t> registry_globals_names;
