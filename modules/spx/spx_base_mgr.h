@@ -53,12 +53,31 @@ public:                               \
 
 #define NULL_OBJECT_ID 0
 
+// GdArray support
+#define GD_ARRAY_TYPE_UNKNOWN  0
+#define GD_ARRAY_TYPE_INT64    1
+#define GD_ARRAY_TYPE_FLOAT    2
+#define GD_ARRAY_TYPE_BOOL     3
+#define GD_ARRAY_TYPE_STRING   4
+#define GD_ARRAY_TYPE_BYTE     5
+#define GD_ARRAY_TYPE_GDOBJ    6
+
 class Window;
 class SceneTree;
 class SpxBaseMgr {
+private:
+	static void* _get_array(GdArray array, int64_t index, int type_size);
+
 public:
 	static GdString to_return_cstr(const String& ret_val);
 	static void free_return_cstr(GdString ret_val);
+	static GdArray create_array(int32_t type, int32_t size);
+	static void free_array(GdArray array);
+
+	template <typename T>
+	static void set_array(GdArray array, int64_t index, T value);
+	template <typename T>
+	static T* get_array(GdArray array, int64_t index);
 protected:
 	Node *owner;
 protected:
@@ -78,5 +97,18 @@ public:
 	virtual void on_resume();
 	virtual ~SpxBaseMgr() = default; // Added virtual destructor to fix -Werror=non-virtual-dtor
 };
+
+template <typename T>
+T *SpxBaseMgr::get_array(GdArray array, int64_t index) {
+	return static_cast<T*>(_get_array(array, index, sizeof(T)));
+}
+template <typename T>
+void SpxBaseMgr::set_array(GdArray array, int64_t index, T value) {
+	auto ptr = get_array<T>(array, index);
+	if (ptr == nullptr) {
+		return;
+	}
+	*ptr = value;
+}
 
 #endif // SPX_BASE_MGR_H

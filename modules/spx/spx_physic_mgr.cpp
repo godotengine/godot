@@ -30,6 +30,7 @@
 
 #include "spx_physic_mgr.h"
 
+#include "gdextension_spx_ext.h"
 #include "scene/resources/world_2d.h"
 #include "servers/physics_server_2d.h"
 #include "servers/physics_server_3d.h"

@@ -49,6 +49,8 @@ GdString SpxBaseMgr::to_return_cstr(const String& ret_val) {
 	return result;
 }
 
+
+
 Window *SpxBaseMgr::get_root() {
 	return SpxEngine::get_singleton()->get_root();
 }
@@ -92,4 +94,84 @@ void SpxBaseMgr::on_pause() {
 
 void SpxBaseMgr::on_resume() {
 	// Default implementation - override in derived classes if needed
+}
+
+
+GdArray SpxBaseMgr::create_array(int32_t type, int32_t size) {
+	if (size < 0) {
+		return nullptr;
+	}
+	
+	GdArray array = (GdArray)malloc(sizeof(GdArrayInfo));
+	if (!array) {
+		return nullptr;
+	}
+	
+	array->size = size;
+	array->type = type;
+	
+	if (size == 0) {
+		array->data = nullptr;
+		return array;
+	}
+	
+	size_t element_size = 0;
+	switch (type) {
+		case GD_ARRAY_TYPE_INT64:
+			element_size = sizeof(int64_t);
+			break;
+		case GD_ARRAY_TYPE_FLOAT:
+			element_size = sizeof(float);
+			break;
+		case GD_ARRAY_TYPE_BOOL:
+			element_size = sizeof(uint8_t); // Store as int64_t for alignment
+			break;
+		case GD_ARRAY_TYPE_STRING:
+			element_size = sizeof(char*);
+			break;
+		case GD_ARRAY_TYPE_BYTE:
+			element_size = sizeof(uint8_t);
+			break;
+		case GD_ARRAY_TYPE_GDOBJ:
+			element_size = sizeof(GdObj);
+			break;
+		default:
+			free(array);
+			return nullptr;
+	}
+	
+	array->data = malloc(size * element_size);
+	if (!array->data && size > 0) {
+		free(array);
+		return nullptr;
+	}
+	
+	return array;
+}
+
+void SpxBaseMgr::free_array(GdArray array) {
+	if (!array) {
+		return;
+	}
+	// Special handling for string arrays - need to free each string
+	if (array->type == GD_ARRAY_TYPE_STRING && array->data) {
+		char** strings = (char**)array->data;
+		for (int64_t i = 0; i < array->size; i++) {
+			if (strings[i]) {
+				free(strings[i]);
+			}
+		}
+	}
+	
+	if (array->data) {
+		free(array->data);
+	}
+	free(array);
+}
+
+void* SpxBaseMgr::_get_array(GdArray array, int64_t index, int type_size) {
+	if (!array || index < 0 || index >= array->size) {
+		return nullptr;
+	}
+	return static_cast<char*>(array->data) + (index * type_size);
 }
