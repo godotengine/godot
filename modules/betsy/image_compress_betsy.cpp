@@ -38,6 +38,7 @@
 #include "bc1.glsl.gen.h"
 #include "bc4.glsl.gen.h"
 #include "bc6h.glsl.gen.h"
+#include "rgb_to_rgba.glsl.gen.h"
 #include "servers/display_server.h"
 
 static Mutex betsy_mutex;
@@ -220,6 +221,37 @@ void BetsyCompressor::_init() {
 		cached_shaders[BETSY_SHADER_ALPHA_STITCH].pipeline = compress_rd->compute_pipeline_create(cached_shaders[BETSY_SHADER_ALPHA_STITCH].compiled);
 		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_ALPHA_STITCH].pipeline.is_null());
 	}
+
+	{
+		Ref<RDShaderFile> rgb_to_rgba_shader;
+		rgb_to_rgba_shader.instantiate();
+		Error err = rgb_to_rgba_shader->parse_versions_from_text(rgb_to_rgba_shader_glsl);
+
+		if (err != OK) {
+			rgb_to_rgba_shader->print_errors("Betsy RGB to RGBA shader");
+		}
+
+		// Float32.
+		cached_shaders[BETSY_SHADER_RGB_TO_RGBA_FLOAT].compiled = compress_rd->shader_create_from_spirv(rgb_to_rgba_shader->get_spirv_stages("version_float"));
+		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_FLOAT].compiled.is_null());
+
+		cached_shaders[BETSY_SHADER_RGB_TO_RGBA_FLOAT].pipeline = compress_rd->compute_pipeline_create(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_FLOAT].compiled);
+		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_FLOAT].pipeline.is_null());
+
+		// Float16.
+		cached_shaders[BETSY_SHADER_RGB_TO_RGBA_HALF].compiled = compress_rd->shader_create_from_spirv(rgb_to_rgba_shader->get_spirv_stages("version_half"));
+		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_HALF].compiled.is_null());
+
+		cached_shaders[BETSY_SHADER_RGB_TO_RGBA_HALF].pipeline = compress_rd->compute_pipeline_create(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_HALF].compiled);
+		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_HALF].pipeline.is_null());
+
+		// Unorm8.
+		cached_shaders[BETSY_SHADER_RGB_TO_RGBA_UINT8].compiled = compress_rd->shader_create_from_spirv(rgb_to_rgba_shader->get_spirv_stages("version_uint8"));
+		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_UINT8].compiled.is_null());
+
+		cached_shaders[BETSY_SHADER_RGB_TO_RGBA_UINT8].pipeline = compress_rd->compute_pipeline_create(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_UINT8].compiled);
+		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_UINT8].pipeline.is_null());
+	}
 }
 
 void BetsyCompressor::init() {
@@ -284,7 +316,9 @@ static int get_next_multiple(int n, int m) {
 	return n + (m - (n % m));
 }
 
-static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format) {
+static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format, bool &is_rgb) {
+	is_rgb = false;
+
 	switch (r_img->get_format()) {
 		case Image::FORMAT_L8:
 			r_img->convert(Image::FORMAT_RGBA8);
@@ -305,7 +339,7 @@ static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format) {
 			break;
 
 		case Image::FORMAT_RGB8:
-			r_img->convert(Image::FORMAT_RGBA8);
+			is_rgb = true;
 			r_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 			break;
 
@@ -322,7 +356,7 @@ static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format) {
 			break;
 
 		case Image::FORMAT_RGBH:
-			r_img->convert(Image::FORMAT_RGBAH);
+			is_rgb = true;
 			r_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 			break;
 
@@ -339,7 +373,7 @@ static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format) {
 			break;
 
 		case Image::FORMAT_RGBF:
-			r_img->convert(Image::FORMAT_RGBAF);
+			is_rgb = true;
 			r_format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
 			break;
 
@@ -411,7 +445,8 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		src_texture_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 	}
 
-	err = get_src_texture_format(r_img, src_texture_format.format);
+	bool needs_rgb_to_rgba = false;
+	err = get_src_texture_format(r_img, src_texture_format.format, needs_rgb_to_rgba);
 
 	if (err != OK) {
 		return err;
@@ -502,8 +537,105 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		}
 
 		// Create the textures on the GPU.
-		RID src_texture = compress_rd->texture_create(src_texture_format, RD::TextureView(), src_images);
+		RID src_texture;
 		RID dst_texture_primary = compress_rd->texture_create(dst_texture_format, RD::TextureView());
+
+		if (needs_rgb_to_rgba) {
+			// RGB textures cannot be sampled directly on most hardware, so we do a little trick involving a compute shader that
+			// takes the input data as a R-channel only textureArray with 3 layers and converts its data to RGBA.
+
+			BetsyShaderType rgb_shader_type = BETSY_SHADER_MAX;
+			RD::DataFormat rgb_source_format = RD::DATA_FORMAT_MAX;
+
+			switch (r_img->get_format()) {
+				case Image::FORMAT_RGB8:
+					rgb_shader_type = BETSY_SHADER_RGB_TO_RGBA_UINT8;
+					rgb_source_format = RD::DATA_FORMAT_R8_UNORM;
+					break;
+
+				case Image::FORMAT_RGBH:
+					rgb_shader_type = BETSY_SHADER_RGB_TO_RGBA_HALF;
+					rgb_source_format = RD::DATA_FORMAT_R16_SFLOAT;
+					break;
+
+				case Image::FORMAT_RGBF:
+					rgb_shader_type = BETSY_SHADER_RGB_TO_RGBA_FLOAT;
+					rgb_source_format = RD::DATA_FORMAT_R32_SFLOAT;
+					break;
+
+				default:
+					break;
+			}
+
+			RD::TextureFormat rgb_texture_format = src_texture_format;
+			rgb_texture_format.format = rgb_source_format;
+			rgb_texture_format.array_layers = 3;
+			rgb_texture_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+
+			RD::TextureFormat rgba_texture_format = src_texture_format;
+			rgba_texture_format.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+
+			// The source 'RGB' texture.
+			RID rgb_source_tex = compress_rd->texture_create(rgb_texture_format, RD::TextureView());
+			//RID rgb_source_tex = compress_rd->texture_buffer_create(width * height * 3, rgb_source_format, src_image_ptr[0].span());
+
+			{
+				const int64_t rgb_layer_size = width * height * RD::get_image_format_pixel_size(rgb_source_format);
+				int64_t rgb_offset = 0;
+
+				Vector<uint8_t> rgb_layer_data;
+				rgb_layer_data.resize(rgb_layer_size);
+
+				for (int layer_i = 0; layer_i < 3; layer_i++) {
+					memcpy(rgb_layer_data.ptrw(), src_image_ptr[0].ptr() + rgb_offset, rgb_layer_size);
+					compress_rd->_texture_initialize(rgb_source_tex, layer_i, rgb_layer_data);
+
+					rgb_offset += rgb_layer_size;
+				}
+			}
+
+			src_texture = compress_rd->texture_create(rgba_texture_format, RD::TextureView());
+
+			Vector<RD::Uniform> uniforms;
+			{
+				{
+					RD::Uniform u;
+					//u.uniform_type = RD::UNIFORM_TYPE_TEXTURE_BUFFER;
+					u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+					u.binding = 0;
+					u.append_id(rgb_source_tex);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 1;
+					u.append_id(src_texture);
+					uniforms.push_back(u);
+				}
+			}
+
+			BetsyShader &rgb_shader = cached_shaders[rgb_shader_type];
+
+			RID uniform_set = compress_rd->uniform_set_create(uniforms, rgb_shader.compiled, 0);
+			RD::ComputeListID compute_list = compress_rd->compute_list_begin();
+
+			compress_rd->compute_list_bind_compute_pipeline(compute_list, rgb_shader.pipeline);
+			compress_rd->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+
+			RGBToRGBAPushConstant push_constant;
+			push_constant.width = width;
+			push_constant.height = height;
+
+			compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(RGBToRGBAPushConstant));
+			compress_rd->compute_list_dispatch(compute_list, get_next_multiple(width, 8) / 8, get_next_multiple(height, 8) / 8, 1);
+
+			compress_rd->compute_list_end();
+
+			compress_rd->free(rgb_source_tex);
+		} else {
+			src_texture = compress_rd->texture_create(src_texture_format, RD::TextureView(), src_images);
+		}
 
 		{
 			Vector<RD::Uniform> uniforms;
