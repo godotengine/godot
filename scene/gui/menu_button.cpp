@@ -85,6 +85,16 @@ void MenuButton::show_popup() {
 		Transform2D xform = get_viewport()->get_popup_base_transform_native();
 		rect = xform.xform(rect);
 	}
+	Rect2i scr_usable = DisplayServer::get_singleton()->screen_get_usable_rect(get_window()->get_current_screen());
+	Size2i max_size;
+	if (scr_usable.has_area()) {
+		real_t max_h = scr_usable.get_end().y - rect.position.y;
+		real_t max_w = scr_usable.get_end().x - rect.position.x;
+		if (max_h >= 4 * rect.size.height && max_w >= rect.size.width) {
+			max_size = Size2i(max_w, max_h);
+		}
+	}
+	popup->set_max_size(max_size);
 	rect.size.height = 0;
 	popup->set_size(rect.size);
 	if (is_layout_rtl()) {
