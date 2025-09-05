@@ -319,6 +319,14 @@
 		</member>
 		<member name="linear_spring_z/stiffness" type="float" setter="set_param_z" getter="get_param_z" default="0.01">
 		</member>
+		<member name="local_frame_a_override/enabled" type="bool" setter="enable_local_frame_a_override" getter="local_frame_a_override_enabled" default="false">
+		</member>
+		<member name="local_frame_a_override/frame" type="Transform3D" setter="set_local_frame_a_override" getter="get_local_frame_a_override" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
+		</member>
+		<member name="local_frame_b_override/enabled" type="bool" setter="enable_local_frame_b_override" getter="local_frame_b_override_enabled" default="false">
+		</member>
+		<member name="local_frame_b_override/frame" type="Transform3D" setter="set_local_frame_b_override" getter="get_local_frame_b_override" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
+		</member>
 	</members>
 	<constants>
 		<constant name="PARAM_LINEAR_LOWER_LIMIT" value="0" enum="Param">
