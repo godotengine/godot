@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  dummy.h                                                               */
+/*  godot_keyboard_input_view.h                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,4 +30,10 @@
 
 #pragma once
 
-// #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
+@interface GDTKeyboardInputView : UITextView
+
+- (BOOL)becomeFirstResponderWithString:(NSString *)existingString cursorStart:(NSInteger)start cursorEnd:(NSInteger)end;
+
+@end

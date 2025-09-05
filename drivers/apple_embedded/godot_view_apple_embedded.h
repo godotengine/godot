@@ -55,7 +55,7 @@ class String;
 @property(strong, readonly, nonatomic) CALayer<GDTDisplayLayer> *renderingLayer;
 @property(assign, readonly, nonatomic) BOOL canRender;
 
-@property(assign, nonatomic) NSTimeInterval renderingInterval;
+@property(assign, nonatomic) float preferredFrameRate;
 
 // Can be extended by subclasses
 - (void)godot_commonInit;

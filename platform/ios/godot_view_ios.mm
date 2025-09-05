@@ -32,6 +32,7 @@
 
 #import "display_layer_ios.h"
 
+#include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 
 @interface GDTViewIOS ()
@@ -83,5 +84,11 @@ GODOT_CLANG_WARNING_POP
 @end
 
 GDTView *GDTViewCreate() {
-	return [GDTViewIOS new];
+	GDTViewIOS *view = [GDTViewIOS new];
+	if (GLOBAL_GET("display/window/ios/allow_high_refresh_rate")) {
+		view.preferredFrameRate = 120;
+	} else {
+		view.preferredFrameRate = 60;
+	}
+	return view;
 }
