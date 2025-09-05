@@ -75,8 +75,6 @@ void EmbeddedDebugger::_init_parse_message_handlers() {
 	parse_message_handlers["win_event"] = &EmbeddedDebugger::_msg_win_event;
 	parse_message_handlers["notification"] = &EmbeddedDebugger::_msg_notification;
 	parse_message_handlers["ime_update"] = &EmbeddedDebugger::_msg_ime_update;
-	parse_message_handlers["joy_add"] = &EmbeddedDebugger::_msg_joy_add;
-	parse_message_handlers["joy_del"] = &EmbeddedDebugger::_msg_joy_del;
 	parse_message_handlers["ds_state"] = &EmbeddedDebugger::_msg_ds_state;
 }
 
@@ -158,21 +156,6 @@ Error EmbeddedDebugger::_msg_notification(const Array &p_args) {
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(notification);
 	}
-	return OK;
-}
-
-Error EmbeddedDebugger::_msg_joy_add(const Array &p_args) {
-	ERR_FAIL_COND_V_MSG(p_args.size() != 2, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'joy_add' message.");
-	int idx = p_args[0];
-	String name = p_args[1];
-	ds->joy_add(idx, name);
-	return OK;
-}
-
-Error EmbeddedDebugger::_msg_joy_del(const Array &p_args) {
-	ERR_FAIL_COND_V_MSG(p_args.size() != 1, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'joy_del' message.");
-	int idx = p_args[0];
-	ds->joy_del(idx);
 	return OK;
 }
 

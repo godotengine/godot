@@ -1641,7 +1641,7 @@ void fragment() {)";
 		if (msdf_outline_size > 0.0) {
 			float cr = clamp(msdf_outline_size, 0.0, (msdf_pixel_range / 2.0) - 1.0) / msdf_pixel_range;
 			d = min(d, albedo_tex.a);
-			albedo_tex.a = clamp((d - 0.5 + cr) * px_size + 0.5, 0.0, 1.0);
+			albedo_tex.a = clamp((d - 0.5 + cr) * px_size, 0.0, 1.0);
 		} else {
 			albedo_tex.a = clamp((d - 0.5) * px_size + 0.5, 0.0, 1.0);
 		}

@@ -158,6 +158,8 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 	tohash.append(p_fragment_code ? p_fragment_code : "");
 	tohash.append("[Compute]");
 	tohash.append(p_compute_code ? p_compute_code : "");
+	tohash.append("[DebugInfo]");
+	tohash.append(Engine::get_singleton()->is_generate_spirv_debug_info_enabled() ? "1" : "0");
 
 	base_sha256 = tohash.as_string().sha256_text();
 }
@@ -437,7 +439,7 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 		f = FileAccess::open(_get_cache_file_path(p_version, p_group, api_safe_name, true), FileAccess::READ);
 	}
 
-	if (f.is_null()) {
+	if (f.is_null() && shader_cache_res_dir_valid) {
 		f = FileAccess::open(_get_cache_file_path(p_version, p_group, api_safe_name, false), FileAccess::READ);
 	}
 
@@ -539,8 +541,10 @@ void ShaderRD::_compile_version_start(Version *p_version, int p_group) {
 	p_version->dirty = false;
 
 #if ENABLE_SHADER_CACHE
-	if (_load_from_cache(p_version, p_group)) {
-		return;
+	if (shader_cache_user_dir_valid || shader_cache_res_dir_valid) {
+		if (_load_from_cache(p_version, p_group)) {
+			return;
+		}
 	}
 #endif
 
@@ -823,6 +827,7 @@ void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String 
 
 void ShaderRD::_initialize_cache() {
 	shader_cache_user_dir_valid = !shader_cache_user_dir.is_empty();
+	shader_cache_res_dir_valid = !shader_cache_res_dir.is_empty();
 	if (!shader_cache_user_dir_valid) {
 		return;
 	}

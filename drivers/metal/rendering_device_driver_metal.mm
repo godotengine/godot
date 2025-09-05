@@ -1137,6 +1137,11 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 			RDD::ShaderID(),
 			"Shader was generated with argument buffers, but device has limited support");
 
+	uint32_t msl_version = make_msl_version(device_properties->features.mslVersionMajor, device_properties->features.mslVersionMinor);
+	ERR_FAIL_COND_V_MSG(msl_version < mtl_reflection_data.msl_version,
+			RDD::ShaderID(),
+			"Shader was compiled with a newer version of Metal than is available on the device.");
+
 	MTLCompileOptions *options = [MTLCompileOptions new];
 	uint32_t major = mtl_reflection_data.msl_version / 10000;
 	uint32_t minor = (mtl_reflection_data.msl_version / 100) % 100;
