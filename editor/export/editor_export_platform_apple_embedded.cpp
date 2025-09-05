@@ -1785,7 +1785,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		"",
 		"",
 		"",
-		Vector<String>()
+		Vector<String>(),
 	};
 
 	config_data.plist_content += p_preset->get("application/additional_plist_content").operator String() + "\n";
