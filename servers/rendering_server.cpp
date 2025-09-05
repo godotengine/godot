@@ -2341,6 +2341,11 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("material_set_next_pass", "material", "next_material"), &RenderingServer::material_set_next_pass);
 
+	ClassDB::bind_method(D_METHOD("material_set_use_debanding", "enable"), &RenderingServer::material_set_use_debanding);
+	ClassDB::bind_method(D_METHOD("material_is_using_debanding"), &RenderingServer::material_is_using_debanding);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "material_use_debanding"), "material_set_use_debanding", "material_is_using_debanding");
+
 	BIND_CONSTANT(MATERIAL_RENDER_PRIORITY_MIN);
 	BIND_CONSTANT(MATERIAL_RENDER_PRIORITY_MAX);
 
