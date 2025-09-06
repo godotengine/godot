@@ -164,6 +164,9 @@ public:
 	void set_linear_stiffness(real_t p_linear_stiffness);
 	real_t get_linear_stiffness();
 
+	void set_shrinking_factor(real_t p_shrinking_factor);
+	real_t get_shrinking_factor();
+
 	void set_pressure_coefficient(real_t p_pressure_coefficient);
 	real_t get_pressure_coefficient();
 
@@ -179,7 +182,6 @@ public:
 
 	Vector3 get_point_transform(int p_point_index);
 
-	void pin_point_toggle(int p_point_index);
 	void pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath(), int p_insert_at = -1);
 	bool is_point_pinned(int p_point_index) const;
 
@@ -187,6 +189,11 @@ public:
 
 	void set_ray_pickable(bool p_ray_pickable);
 	bool is_ray_pickable() const;
+
+	void apply_impulse(int p_point_index, const Vector3 &p_impulse);
+	void apply_force(int p_point_index, const Vector3 &p_force);
+	void apply_central_impulse(const Vector3 &p_impulse);
+	void apply_central_force(const Vector3 &p_force);
 
 	SoftBody3D();
 	~SoftBody3D();

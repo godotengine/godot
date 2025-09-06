@@ -3,9 +3,14 @@ on:
   workflow_call:
 
 # Global Settings
-# SCONS_CACHE for windows must be set in the build environment
 env:
-  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes d3d12=yes strict_checks=yes "angle_libs=${{ github.workspace }}/" "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.15.1/"
+  SCONS_FLAGS: >-
+    dev_mode=yes
+    module_text_server_fb_enabled=yes
+    debug_symbols=no
+    d3d12=yes
+    "angle_libs=${{ github.workspace }}/"
+    "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.17.0/"
   SCONS_CACHE_MSVC_CONFIG: true
   PYTHONIOENCODING: utf8
 
@@ -19,37 +24,36 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Editor (target=editor, tests=yes)
+          - name: Editor (target=editor)
             cache-name: windows-editor
             target: editor
-            tests: true
-            # Skip debug symbols, they're way too big with MSVC.
-            sconsflags: debug_symbols=no vsproj=yes vsproj_gen_only=no windows_subsystem=console
+            scons-flags: >-
+              windows_subsystem=console
+              vsproj=yes
+              vsproj_gen_only=no
             bin: ./bin/godot.windows.editor.x86_64.exe
             compiler: msvc
 
-          - name: Editor w/ clang-cl (target=editor, tests=yes, use_llvm=yes)
+          - name: Editor w/ clang-cl (target=editor, use_llvm=yes)
             cache-name: windows-editor-clang
             target: editor
-            tests: true
-            sconsflags: debug_symbols=no windows_subsystem=console use_llvm=yes
+            scons-flags: >-
+              windows_subsystem=console
+              use_llvm=yes
             bin: ./bin/godot.windows.editor.x86_64.llvm.exe
             compiler: clang
 
-          - name: Template (target=template_release, tests=yes)
+          - name: Template (target=template_release)
             cache-name: windows-template
             target: template_release
-            tests: true
-            sconsflags: debug_symbols=no
             bin: ./bin/godot.windows.template_release.x86_64.console.exe
             compiler: msvc
 
-          - name: Template w/ GCC (target=template_release, tests=yes, use_mingw=yes)
+          - name: Template w/ GCC (target=template_release, use_mingw=yes)
             cache-name: windows-template-gcc
             # MinGW takes MUCH longer to compile; save time by only targeting Template.
             target: template_release
-            tests: true
-            sconsflags: debug_symbols=no use_mingw=yes
+            scons-flags: use_mingw=yes
             bin: ./bin/godot.windows.template_release.x86_64.console.exe
             compiler: gcc
 
@@ -86,20 +90,19 @@ jobs:
         uses: dsaltares/fetch-gh-release-asset@1.1.2
         with:
           repo: AccessKit/accesskit-c
-          version: tags/0.15.1
-          file: accesskit-c-0.15.1.zip
-          target: accesskit-c-0.15.1/accesskit_c.zip
+          version: tags/0.17.0
+          file: accesskit-c-0.17.0.zip
+          target: accesskit-c-0.17.0/accesskit_c.zip
 
       - name: Extract pre-built AccessKit
-        run: unzip -o accesskit-c-0.15.1/accesskit_c.zip
+        run: unzip -o accesskit-c-0.17.0/accesskit_c.zip
 
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }}
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
           platform: windows
           target: ${{ matrix.target }}
-          tests: ${{ matrix.tests }}
 
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save
@@ -119,7 +122,6 @@ jobs:
           name: ${{ matrix.cache-name }}
 
       - name: Unit tests
-        if: matrix.tests
         run: |
           ${{ matrix.bin }} --version
           ${{ matrix.bin }} --help

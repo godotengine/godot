@@ -39,6 +39,9 @@ class GDExtensionManager : public Object {
 	HashMap<String, Ref<GDExtension>> gdextension_map;
 	HashMap<String, String> gdextension_class_icon_paths;
 
+	bool startup_callback_called = false;
+	bool shutdown_callback_called = false;
+
 	static void _bind_methods();
 
 	static inline GDExtensionManager *singleton = nullptr;
@@ -54,6 +57,7 @@ public:
 
 private:
 	LoadStatus _load_extension_internal(const Ref<GDExtension> &p_extension, bool p_first_load);
+	void _finish_load_extension(const Ref<GDExtension> &p_extension);
 	LoadStatus _unload_extension_internal(const Ref<GDExtension> &p_extension);
 
 #ifdef TOOLS_ENABLED
@@ -85,6 +89,10 @@ public:
 	void load_extensions();
 	void reload_extensions();
 	bool ensure_extensions_loaded(const HashSet<String> &p_extensions);
+
+	void startup();
+	void shutdown();
+	void frame();
 
 	GDExtensionManager();
 	~GDExtensionManager();

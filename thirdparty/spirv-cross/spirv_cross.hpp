@@ -1054,6 +1054,7 @@ protected:
 		std::unordered_set<uint32_t> non_block_types;
 		std::unordered_map<uint32_t, PhysicalBlockMeta> physical_block_type_meta;
 		std::unordered_map<uint32_t, PhysicalBlockMeta *> access_chain_to_physical_block;
+		std::unordered_set<uint32_t> analyzed_type_ids;
 
 		void mark_aligned_access(uint32_t id, const uint32_t *args, uint32_t length);
 		PhysicalBlockMeta *find_block_meta(uint32_t id) const;
@@ -1071,6 +1072,22 @@ protected:
 	void find_function_local_luts(SPIRFunction &function, const AnalyzeVariableScopeAccessHandler &handler,
 	                              bool single_function);
 	bool may_read_undefined_variable_in_block(const SPIRBlock &block, uint32_t var);
+
+	struct GeometryEmitDisocveryHandler : OpcodeHandler
+	{
+		explicit GeometryEmitDisocveryHandler(Compiler &compiler_)
+		    : compiler(compiler_)
+		{
+		}
+		Compiler &compiler;
+
+		bool handle(spv::Op opcode, const uint32_t *args, uint32_t length) override;
+		bool begin_function_scope(const uint32_t *, uint32_t) override;
+		bool end_function_scope(const uint32_t *, uint32_t) override;
+		SmallVector<SPIRFunction *> function_stack;
+	};
+
+	void discover_geometry_emitters();
 
 	// Finds all resources that are written to from inside the critical section, if present.
 	// The critical section is delimited by OpBeginInvocationInterlockEXT and

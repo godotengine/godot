@@ -1212,8 +1212,13 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		return ERR_CANT_ACQUIRE_RESOURCE; //no emit, signals blocked
 	}
 
-	Callable *slot_callables = nullptr;
-	uint32_t *slot_flags = nullptr;
+	constexpr int MAX_SLOTS_ON_STACK = 5;
+	// Don't default initialize the Callable objects on the stack, just reserve the space - we'll memnew_placement() them later.
+	alignas(Callable) uint8_t slot_callable_stack[sizeof(Callable) * MAX_SLOTS_ON_STACK];
+	uint32_t slot_flags_stack[MAX_SLOTS_ON_STACK];
+
+	Callable *slot_callables = (Callable *)slot_callable_stack;
+	uint32_t *slot_flags = slot_flags_stack;
 	uint32_t slot_count = 0;
 
 	{
@@ -1234,11 +1239,13 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		// which is needed in certain edge cases; e.g., https://github.com/godotengine/godot/issues/73889.
 		Ref<RefCounted> rc = Ref<RefCounted>(Object::cast_to<RefCounted>(this));
 
+		if (s->slot_map.size() > MAX_SLOTS_ON_STACK) {
+			slot_callables = (Callable *)memalloc(sizeof(Callable) * s->slot_map.size());
+			slot_flags = (uint32_t *)memalloc(sizeof(uint32_t) * s->slot_map.size());
+		}
+
 		// Ensure that disconnecting the signal or even deleting the object
 		// will not affect the signal calling.
-		slot_callables = (Callable *)alloca(sizeof(Callable) * s->slot_map.size());
-		slot_flags = (uint32_t *)alloca(sizeof(uint32_t) * s->slot_map.size());
-
 		for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
 			memnew_placement(&slot_callables[slot_count], Callable(slot_kv.value.conn.callable));
 			slot_flags[slot_count] = slot_kv.value.conn.flags;
@@ -1306,6 +1313,11 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 
 	for (uint32_t i = 0; i < slot_count; ++i) {
 		slot_callables[i].~Callable();
+	}
+
+	if (slot_callables != (Callable *)slot_callable_stack) {
+		memfree(slot_callables);
+		memfree(slot_flags);
 	}
 
 	return err;
@@ -1924,6 +1936,7 @@ void Object::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONNECT_PERSIST);
 	BIND_ENUM_CONSTANT(CONNECT_ONE_SHOT);
 	BIND_ENUM_CONSTANT(CONNECT_REFERENCE_COUNTED);
+	BIND_ENUM_CONSTANT(CONNECT_APPEND_SOURCE_OBJECT);
 }
 
 void Object::set_deferred(const StringName &p_property, const Variant &p_value) {

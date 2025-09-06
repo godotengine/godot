@@ -41,6 +41,13 @@ if env["use_pix"]:
     env_d3d12_rdd.Append(CPPEXTPATH=[env["pix_path"] + "/Include"])
 
 
+# Direct composition.
+
+if "dcomp" in env.get("supported", []):
+    env_d3d12_rdd.Append(CPPDEFINES=["DCOMP_ENABLED"])
+    env.Append(CPPDEFINES=["DCOMP_ENABLED"])  # Used in header included in platform.
+
+
 # Mesa (SPIR-V to DXIL functionality).
 
 mesa_libs = env["mesa_libs"]
@@ -155,7 +162,9 @@ else:
         env.Append(CCFLAGS=["-Wno-unknown-pragmas"])
 
 # This is needed since rendering_device_d3d12.cpp needs to include some Mesa internals.
-env_d3d12_rdd.Prepend(CPPEXTPATH=mesa_private_inc_paths)
+# FIXME: Should be CPPEXTPATH, but doing so introduces an include-order bug when combined with
+# godot-nir-static; this necessitates warning macro wrappers. See #106376.
+env_d3d12_rdd.Prepend(CPPPATH=mesa_private_inc_paths)
 # For the same reason as above, the defines must be the same as in the 3rd-party code itself.
 env_d3d12_rdd.Append(CPPDEFINES=extra_defines)
 

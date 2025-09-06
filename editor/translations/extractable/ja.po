@@ -30,24 +30,14 @@ msgstr "画面から色を選択します。"
 msgid "Pick a color from the application window."
 msgstr "アプリケーション ウィンドウから色を選択します。"
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"色: #%s\n"
-"左クリック: カラーを適用\n"
-"右クリック: プリセットを削除"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"色: #%s\n"
-"左クリック: 色をセット"
-
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr "16進コード (「#ff0000」) または名前付きの色 (「red」) を入力します。"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Clear"
+msgstr "クリア"
 
 msgid "Select a picker shape."
 msgstr "ピッカーシェイプを選択"
@@ -76,9 +66,6 @@ msgstr "開く"
 
 msgid "Select Current Folder"
 msgstr "現在のフォルダーを選択"
-
-msgid "Save"
-msgstr "保存"
 
 msgid "Select This Folder"
 msgstr "このフォルダーを選択"
@@ -119,11 +106,11 @@ msgstr "パス:"
 msgid "Refresh files."
 msgstr "ファイルの一覧をリフレッシュする。"
 
-msgid "Toggle the visibility of hidden files."
-msgstr "隠しファイルの表示 / 非表示を切り替えます。"
-
 msgid "Directories & Files:"
 msgstr "ディレクトリとファイル:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "隠しファイルの表示 / 非表示を切り替えます。"
 
 msgid "File:"
 msgstr "ファイル:"
@@ -235,9 +222,6 @@ msgstr "貼り付け"
 
 msgid "Select All"
 msgstr "すべて選択"
-
-msgid "Clear"
-msgstr "クリア"
 
 msgid "Undo"
 msgstr "元に戻す"

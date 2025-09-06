@@ -30,36 +30,35 @@
 
 #pragma once
 
-#include "core/input/input.h"
-#include "servers/display_server.h"
-
-#if defined(GLES3_ENABLED)
-#include "embedded_gl_manager.h"
-#include "platform_gl.h"
-#endif // GLES3_ENABLED
-
-#if defined(RD_ENABLED)
-#include "servers/rendering/rendering_device.h"
-
-#if defined(VULKAN_ENABLED)
-#import "rendering_context_driver_vulkan_macos.h"
-#endif // VULKAN_ENABLED
-#if defined(METAL_ENABLED)
-#import "drivers/metal/rendering_context_driver_metal.h"
-#endif
-#endif // RD_ENABLED
+#include "display_server_macos_base.h"
 
 @class CAContext;
+@class CALayer;
+class GLManagerEmbedded;
+class RenderingContextDriver;
+class RenderingDevice;
 
-class DisplayServerEmbedded : public DisplayServer {
-	GDCLASS(DisplayServerEmbedded, DisplayServer)
+struct DisplayServerEmbeddedState {
+	/*! Default to a scale of 2.0, which is the most common. */
+	float screen_max_scale = 2.0f;
+	float screen_dpi = 96.0f;
+	/*! Scale for window displaying embedded content */
+	float screen_window_scale = 2.0f;
+	/*! The display ID of the window which is displaying the embedded process content. */
+	uint32_t display_id = -1;
 
-	_THREAD_SAFE_CLASS_
+	void serialize(PackedByteArray &r_data);
+	Error deserialize(const PackedByteArray &p_data);
 
-	struct {
-		float screen_max_scale = 1.0f;
-		float screen_dpi = 96.0f;
-	} state;
+	_FORCE_INLINE_ bool operator==(const DisplayServerEmbeddedState &p_other) const {
+		return screen_max_scale == p_other.screen_max_scale && screen_dpi == p_other.screen_dpi && display_id == p_other.display_id;
+	}
+};
+
+class DisplayServerEmbedded : public DisplayServerMacOSBase {
+	GDSOFTCLASS(DisplayServerEmbedded, DisplayServerMacOSBase)
+
+	DisplayServerEmbeddedState state;
 
 	NativeMenu *native_menu = nullptr;
 
@@ -70,13 +69,13 @@ class DisplayServerEmbedded : public DisplayServer {
 	HashMap<WindowID, Callable> input_event_callbacks;
 	HashMap<WindowID, Callable> input_text_callbacks;
 
-	float content_scale = 1.0f;
-
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 
-	CAContext *ca_context = nil;
+	bool transparent = false;
+
+	CAContext *ca_context = nullptr;
 	// Either be a CAMetalLayer or a CALayer depending on the rendering driver.
-	CALayer *layer = nil;
+	CALayer *layer = nullptr;
 #ifdef GLES3_ENABLED
 	GLManagerEmbedded *gl_manager = nullptr;
 #endif
@@ -141,6 +140,7 @@ public:
 	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
 	virtual bool mouse_is_mode_override_enabled() const override;
 
+	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
 
@@ -160,6 +160,7 @@ public:
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
@@ -222,8 +223,7 @@ public:
 	virtual CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
 
-	void update_state(const Dictionary &p_state);
-	void set_content_scale(float p_scale);
+	void set_state(const DisplayServerEmbeddedState &p_state);
 	virtual void swap_buffers() override;
 
 	DisplayServerEmbedded(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);

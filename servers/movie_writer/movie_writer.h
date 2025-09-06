@@ -43,6 +43,7 @@ class MovieWriter : public Object {
 
 	float cpu_time = 0.0f;
 	float gpu_time = 0.0f;
+	uint64_t encoding_time_usec = 0;
 
 	String project_name;
 

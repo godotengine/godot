@@ -30,6 +30,45 @@
 
 #include "range.h"
 
+#include "thirdparty/misc/r128.h"
+
+double Range::_snapped_r128(double p_value, double p_step) {
+	if (p_step == 0.0) {
+		return p_value;
+	}
+	if (p_value > (1e18 * p_step) || p_value < -(1e18 * p_step)) {
+		// If the value goes outside of the range R128 supports, fallback to normal snapping.
+		return Math::snapped(p_value, p_step);
+	}
+	// Rescale values to better utilize R128's range before snapping.
+	// R128 is fixed-precision with 64 bits after the decimal point, but double already uses 53 of those,
+	// so a step size finer than 2^-11 will lose precision, and in practice even 1e-3 can be problematic.
+	// By rescaling the value and step, we can shift precision into the higher bits (effectively turning R128 into a makeshift float).
+	const int decimals = 14 - Math::floor(std::log10(MAX(Math::abs(p_value), p_step)));
+	const double scale = Math::pow(10.0, decimals);
+	p_value *= scale;
+	p_step *= scale;
+	// All these lines are the equivalent of: p_value = Math::floor(p_value / p_step + 0.5) * p_step;
+	// Convert to String to force rounding to a decimal value (not a binary one).
+	String step_str = String::num(p_step);
+	String value_str = String::num(p_value);
+	R128 step_r128;
+	R128 value_r128;
+	const R128 half_r128 = R128(0.5);
+	r128FromString(&step_r128, step_str.ascii().get_data(), nullptr);
+	r128FromString(&value_r128, value_str.ascii().get_data(), nullptr);
+	r128Div(&value_r128, &value_r128, &step_r128);
+	r128Add(&value_r128, &value_r128, &half_r128);
+	r128Floor(&value_r128, &value_r128);
+	r128Mul(&value_r128, &value_r128, &step_r128);
+	if (scale != 1.0) {
+		const R128 scale_r128 = R128(scale);
+		r128Div(&value_r128, &value_r128, &scale_r128);
+	}
+	p_value = (double)value_r128;
+	return p_value;
+}
+
 PackedStringArray Range::get_configuration_warnings() const {
 	PackedStringArray warnings = Control::get_configuration_warnings();
 
@@ -135,8 +174,13 @@ void Range::set_value(double p_val) {
 }
 
 void Range::_set_value_no_signal(double p_val) {
-	if (shared->step > 0) {
-		p_val = Math::round((p_val - shared->min) / shared->step) * shared->step + shared->min;
+	shared->val = _calc_value(p_val, shared->step);
+}
+
+double Range::_calc_value(double p_val, double p_step) const {
+	if (p_step > 0) {
+		// Subtract min to support cases like min = 0.1, step = 0.2, snaps to 0.1, 0.3, 0.5, etc.
+		p_val = _snapped_r128(p_val - shared->min, p_step) + shared->min;
 	}
 
 	if (_rounded_values) {
@@ -150,12 +194,7 @@ void Range::_set_value_no_signal(double p_val) {
 	if (!shared->allow_lesser && p_val < shared->min) {
 		p_val = shared->min;
 	}
-
-	if (shared->val == p_val) {
-		return;
-	}
-
-	shared->val = p_val;
+	return p_val;
 }
 
 void Range::set_value_no_signal(double p_val) {
@@ -273,12 +312,12 @@ double Range::get_as_ratio() const {
 	if (shared->exp_ratio && get_min() >= 0) {
 		double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
 		double exp_max = Math::log(get_max()) / Math::log((double)2);
-		float value = CLAMP(get_value(), shared->min, shared->max);
+		double value = CLAMP(get_value(), shared->min, shared->max);
 		double v = Math::log(value) / Math::log((double)2);
 
 		return CLAMP((v - exp_min) / (exp_max - exp_min), 0, 1);
 	} else {
-		float value = CLAMP(get_value(), shared->min, shared->max);
+		double value = CLAMP(get_value(), shared->min, shared->max);
 		return CLAMP((value - get_min()) / (get_max() - get_min()), 0, 1);
 	}
 }

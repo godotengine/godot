@@ -1,14 +1,15 @@
-/* $Id: receivedata.c,v 1.10 2021/03/02 23:33:07 nanard Exp $ */
+/* $Id: receivedata.c,v 1.11 2025/05/25 21:56:49 nanard Exp $ */
 /* Project : miniupnp
  * Website : http://miniupnp.free.fr/
  * Author : Thomas Bernard
- * Copyright (c) 2011-2021 Thomas Bernard
+ * Copyright (c) 2011-2025 Thomas Bernard
  * This software is subject to the conditions detailed in the
  * LICENCE file provided in this distribution. */
 
 #include <stdio.h>
 #include <string.h>
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #else /* _WIN32 */

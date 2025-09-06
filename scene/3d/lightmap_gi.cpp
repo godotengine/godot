@@ -81,9 +81,8 @@ void LightmapGIData::clear_users() {
 }
 
 void LightmapGIData::_set_user_data(const Array &p_data) {
-	ERR_FAIL_COND(p_data.is_empty());
 	ERR_FAIL_COND((p_data.size() % 4) != 0);
-
+	users.clear();
 	for (int i = 0; i < p_data.size(); i += 4) {
 		add_user(p_data[i + 0], p_data[i + 1], p_data[i + 2], p_data[i + 3]);
 	}
@@ -1517,7 +1516,7 @@ void LightmapGI::_assign_lightmaps() {
 		NodePath user_path = light_data->get_user_path(i);
 		Node *node = get_node_or_null(user_path);
 		if (!node) {
-			missing_node_paths.push_back(user_path);
+			missing_node_paths.push_back(String(user_path));
 			continue;
 		}
 		int instance_idx = light_data->get_user_sub_instance(i);
@@ -1791,7 +1790,7 @@ PackedStringArray LightmapGI::get_configuration_warnings() const {
 		warnings.push_back(RTR("The lightmap has no baked shadowmask textures. Please rebake with the Shadowmask Mode set to anything other than None."));
 	}
 
-#elif defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
+#elif defined(ANDROID_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 	warnings.push_back(vformat(RTR("Lightmaps cannot be baked on %s. Rendering existing baked lightmaps will still work."), OS::get_singleton()->get_name()));
 #else
 	warnings.push_back(RTR("Lightmaps cannot be baked, as the `lightmapper_rd` module was disabled at compile-time. Rendering existing baked lightmaps will still work."));
@@ -1801,6 +1800,9 @@ PackedStringArray LightmapGI::get_configuration_warnings() const {
 }
 
 void LightmapGI::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "supersampling_factor" && !supersampling_enabled) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}

@@ -35,6 +35,8 @@ import android.util.Log
 import org.godotengine.godot.Godot
 import org.godotengine.godot.io.StorageScope
 import org.godotengine.godot.io.directory.DirectoryAccessHandler.AccessType.ACCESS_RESOURCES
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 /**
  * Handles files and directories access and manipulation for the Android platform
@@ -145,9 +147,10 @@ class DirectoryAccessHandler(context: Context) {
 
 	private val assetsDirAccess = AssetsDirectoryAccess(context)
 	private val fileSystemDirAccess = FilesystemDirectoryAccess(context, storageScopeIdentifier)
+	private val lock = ReentrantLock()
 
-	fun assetsFileExists(assetsPath: String) = assetsDirAccess.fileExists(assetsPath)
-	fun filesystemFileExists(path: String) = fileSystemDirAccess.fileExists(path)
+	fun assetsFileExists(assetsPath: String) = lock.withLock { assetsDirAccess.fileExists(assetsPath) }
+	fun filesystemFileExists(path: String) = lock.withLock { fileSystemDirAccess.fileExists(path) }
 
 	private fun hasDirId(accessType: AccessType, dirId: Int): Boolean {
 		return when (accessType) {
@@ -156,7 +159,7 @@ class DirectoryAccessHandler(context: Context) {
 		}
 	}
 
-	fun dirOpen(nativeAccessType: Int, path: String?): Int {
+	fun dirOpen(nativeAccessType: Int, path: String?): Int = lock.withLock {
 		if (path == null) {
 			return INVALID_DIR_ID
 		}
@@ -176,7 +179,7 @@ class DirectoryAccessHandler(context: Context) {
 		return dirAccessId
 	}
 
-	fun dirNext(dirAccessId: Int): String {
+	fun dirNext(dirAccessId: Int): String = lock.withLock {
 		val (accessType, dirId) = AccessType.fromDirAccessId(dirAccessId)
 		if (accessType == null || !hasDirId(accessType, dirId)) {
 			Log.w(TAG, "dirNext: Invalid dir id: $dirId")
@@ -189,7 +192,7 @@ class DirectoryAccessHandler(context: Context) {
 		}
 	}
 
-	fun dirClose(dirAccessId: Int) {
+	fun dirClose(dirAccessId: Int) = lock.withLock {
 		val (accessType, dirId) = AccessType.fromDirAccessId(dirAccessId)
 		if (accessType == null || !hasDirId(accessType, dirId)) {
 			Log.w(TAG, "dirClose: Invalid dir id: $dirId")
@@ -202,7 +205,7 @@ class DirectoryAccessHandler(context: Context) {
 		}
 	}
 
-	fun dirIsDir(dirAccessId: Int): Boolean {
+	fun dirIsDir(dirAccessId: Int): Boolean = lock.withLock {
 		val (accessType, dirId) = AccessType.fromDirAccessId(dirAccessId)
 		if (accessType == null || !hasDirId(accessType, dirId)) {
 			Log.w(TAG, "dirIsDir: Invalid dir id: $dirId")
@@ -215,7 +218,7 @@ class DirectoryAccessHandler(context: Context) {
 		}
 	}
 
-	fun isCurrentHidden(dirAccessId: Int): Boolean {
+	fun isCurrentHidden(dirAccessId: Int): Boolean = lock.withLock {
 		val (accessType, dirId) = AccessType.fromDirAccessId(dirAccessId)
 		if (accessType == null || !hasDirId(accessType, dirId)) {
 			return false
@@ -227,7 +230,7 @@ class DirectoryAccessHandler(context: Context) {
 		}
 	}
 
-	fun dirExists(nativeAccessType: Int, path: String?): Boolean {
+	fun dirExists(nativeAccessType: Int, path: String?): Boolean = lock.withLock {
 		if (path == null) {
 			return false
 		}
@@ -241,7 +244,7 @@ class DirectoryAccessHandler(context: Context) {
 		}
 	}
 
-	fun fileExists(nativeAccessType: Int, path: String?): Boolean {
+	fun fileExists(nativeAccessType: Int, path: String?): Boolean = lock.withLock {
 		if (path == null) {
 			return false
 		}
@@ -255,7 +258,7 @@ class DirectoryAccessHandler(context: Context) {
 		}
 	}
 
-	fun getDriveCount(nativeAccessType: Int): Int {
+	fun getDriveCount(nativeAccessType: Int): Int = lock.withLock {
 		val accessType = AccessType.fromNative(nativeAccessType) ?: return 0
 		return when(accessType) {
 			ACCESS_RESOURCES -> assetsDirAccess.getDriveCount()
@@ -263,7 +266,7 @@ class DirectoryAccessHandler(context: Context) {
 		}
 	}
 
-	fun getDrive(nativeAccessType: Int, drive: Int): String {
+	fun getDrive(nativeAccessType: Int, drive: Int): String = lock.withLock {
 		val accessType = AccessType.fromNative(nativeAccessType) ?: return ""
 		return when (accessType) {
 			ACCESS_RESOURCES -> assetsDirAccess.getDrive(drive)
@@ -271,7 +274,7 @@ class DirectoryAccessHandler(context: Context) {
 		}
 	}
 
-	fun makeDir(nativeAccessType: Int, dir: String?): Boolean {
+	fun makeDir(nativeAccessType: Int, dir: String?): Boolean = lock.withLock {
 		if (dir == null) {
 			return false
 		}
@@ -285,7 +288,7 @@ class DirectoryAccessHandler(context: Context) {
 		}
 	}
 
-	fun getSpaceLeft(nativeAccessType: Int): Long {
+	fun getSpaceLeft(nativeAccessType: Int): Long = lock.withLock {
 		val accessType = AccessType.fromNative(nativeAccessType) ?: return 0L
 		return when (accessType) {
 			ACCESS_RESOURCES -> assetsDirAccess.getSpaceLeft()
@@ -293,7 +296,7 @@ class DirectoryAccessHandler(context: Context) {
 		}
 	}
 
-	fun rename(nativeAccessType: Int, from: String, to: String): Boolean {
+	fun rename(nativeAccessType: Int, from: String, to: String): Boolean = lock.withLock {
 		val accessType = AccessType.fromNative(nativeAccessType) ?: return false
 		return when (accessType) {
 			ACCESS_RESOURCES -> assetsDirAccess.rename(from, to)
@@ -301,7 +304,7 @@ class DirectoryAccessHandler(context: Context) {
 		}
 	}
 
-	fun remove(nativeAccessType: Int, filename: String?): Boolean {
+	fun remove(nativeAccessType: Int, filename: String?): Boolean = lock.withLock {
 		if (filename == null) {
 			return false
 		}

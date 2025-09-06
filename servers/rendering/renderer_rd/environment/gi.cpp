@@ -2950,6 +2950,9 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 			Vector3i probe_size = gi->voxel_gi_get_octree_size(probe);
 
+			Vector3 ps = probe_size / gi->voxel_gi_get_bounds(probe).size;
+			float cell_size = (1.0 / MAX(MAX(ps.x, ps.y), ps.z)); // probe size relative to 1 unit in world space
+
 			VoxelGIPushConstant push_constant;
 
 			push_constant.limits[0] = probe_size.x;
@@ -2961,6 +2964,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 			push_constant.dynamic_range = gi->voxel_gi_get_dynamic_range(probe);
 			push_constant.light_count = light_count;
 			push_constant.aniso_strength = 0;
+			push_constant.cell_size = cell_size;
 
 			/*		print_line("probe update to version " + itos(last_probe_version));
 			print_line("propagation " + rtos(push_constant.propagation));
@@ -3130,6 +3134,9 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 				RendererSceneRenderRD::get_singleton()->_render_material(to_world_xform * xform, cm, true, RendererSceneRenderRD::get_singleton()->cull_argument, dynamic_maps[0].fb, Rect2i(Vector2i(), rect.size), exposure_normalization);
 
+				Vector3 ps = octree_size / gi->voxel_gi_get_bounds(probe).size;
+				float cell_size = (1.0 / MAX(MAX(ps.x, ps.y), ps.z)); // probe size relative to 1 unit in world space
+
 				VoxelGIDynamicPushConstant push_constant;
 				memset(&push_constant, 0, sizeof(VoxelGIDynamicPushConstant));
 				push_constant.limits[0] = octree_size.x;
@@ -3161,9 +3168,9 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				push_constant.prev_rect_size[1] = 0;
 				push_constant.on_mipmap = false;
 				push_constant.propagation = gi->voxel_gi_get_propagation(probe);
+				push_constant.cell_size = cell_size;
 				push_constant.pad[0] = 0;
 				push_constant.pad[1] = 0;
-				push_constant.pad[2] = 0;
 
 				//process lighting
 				RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
@@ -3366,6 +3373,31 @@ GI::GI() {
 }
 
 GI::~GI() {
+	if (voxel_gi_debug_shader_version.is_valid()) {
+		voxel_gi_debug_shader.version_free(voxel_gi_debug_shader_version);
+	}
+	if (voxel_gi_lighting_shader_version.is_valid()) {
+		voxel_gi_shader.version_free(voxel_gi_lighting_shader_version);
+	}
+	if (shader_version.is_valid()) {
+		shader.version_free(shader_version);
+	}
+	if (sdfgi_shader.debug_probes_shader.is_valid()) {
+		sdfgi_shader.debug_probes.version_free(sdfgi_shader.debug_probes_shader);
+	}
+	if (sdfgi_shader.debug_shader.is_valid()) {
+		sdfgi_shader.debug.version_free(sdfgi_shader.debug_shader);
+	}
+	if (sdfgi_shader.direct_light_shader.is_valid()) {
+		sdfgi_shader.direct_light.version_free(sdfgi_shader.direct_light_shader);
+	}
+	if (sdfgi_shader.integrate_shader.is_valid()) {
+		sdfgi_shader.integrate.version_free(sdfgi_shader.integrate_shader);
+	}
+	if (sdfgi_shader.preprocess_shader.is_valid()) {
+		sdfgi_shader.preprocess.version_free(sdfgi_shader.preprocess_shader);
+	}
+
 	singleton = nullptr;
 }
 
@@ -3511,20 +3543,26 @@ void GI::init(SkyRD *p_sky) {
 	{
 		//calculate tables
 		String defines = "\n#define SDFGI_OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
-		if (RendererSceneRenderRD::get_singleton()->is_vrs_supported()) {
-			defines += "\n#define USE_VRS\n";
+
+		Vector<ShaderRD::VariantDefine> variants;
+		for (uint32_t vrs = 0; vrs < 2; vrs++) {
+			String vrs_base = vrs ? "\n#define USE_VRS\n" : "";
+			Group group = vrs ? GROUP_VRS : GROUP_NORMAL;
+			bool default_enabled = vrs == 0;
+			variants.push_back(ShaderRD::VariantDefine(group, vrs_base + "\n#define USE_VOXEL_GI_INSTANCES\n", default_enabled)); // MODE_VOXEL_GI
+			variants.push_back(ShaderRD::VariantDefine(group, vrs_base + "\n#define USE_VOXEL_GI_INSTANCES\n#define SAMPLE_VOXEL_GI_NEAREST\n", default_enabled)); // MODE_VOXEL_GI_WITHOUT_SAMPLER
+			variants.push_back(ShaderRD::VariantDefine(group, vrs_base + "\n#define USE_SDFGI\n", default_enabled)); // MODE_SDFGI
+			variants.push_back(ShaderRD::VariantDefine(group, vrs_base + "\n#define USE_SDFGI\n\n#define USE_VOXEL_GI_INSTANCES\n", default_enabled)); // MODE_COMBINED
+			variants.push_back(ShaderRD::VariantDefine(group, vrs_base + "\n#define USE_SDFGI\n\n#define USE_VOXEL_GI_INSTANCES\n#define SAMPLE_VOXEL_GI_NEAREST\n", default_enabled)); // MODE_COMBINED_WITHOUT_SAMPLER
 		}
-		if (!RD::get_singleton()->sampler_is_format_supported_for_filter(RD::DATA_FORMAT_R8G8_UINT, RD::SAMPLER_FILTER_LINEAR)) {
-			defines += "\n#define SAMPLE_VOXEL_GI_NEAREST\n";
+
+		shader.initialize(variants, defines);
+
+		bool vrs_supported = RendererSceneRenderRD::get_singleton()->is_vrs_supported();
+		if (vrs_supported) {
+			shader.enable_group(GROUP_VRS);
 		}
 
-		Vector<String> gi_modes;
-
-		gi_modes.push_back("\n#define USE_VOXEL_GI_INSTANCES\n"); // MODE_VOXEL_GI
-		gi_modes.push_back("\n#define USE_SDFGI\n"); // MODE_SDFGI
-		gi_modes.push_back("\n#define USE_SDFGI\n\n#define USE_VOXEL_GI_INSTANCES\n"); // MODE_COMBINED
-
-		shader.initialize(gi_modes, defines);
 		shader_version = shader.version_create();
 
 		Vector<RD::PipelineSpecializationConstant> specialization_constants;
@@ -3551,8 +3589,10 @@ void GI::init(SkyRD *p_sky) {
 			specialization_constants.ptrw()[0].bool_value = (v & SHADER_SPECIALIZATION_HALF_RES) ? true : false;
 			specialization_constants.ptrw()[1].bool_value = (v & SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX) ? true : false;
 			specialization_constants.ptrw()[2].bool_value = (v & SHADER_SPECIALIZATION_USE_VRS) ? true : false;
+
+			int variant_base = vrs_supported ? MODE_MAX : 0;
 			for (int i = 0; i < MODE_MAX; i++) {
-				pipelines[v][i] = RD::get_singleton()->compute_pipeline_create(shader.version_get_shader(shader_version, i), specialization_constants);
+				pipelines[v][i] = RD::get_singleton()->compute_pipeline_create(shader.version_get_shader(shader_version, variant_base + i), specialization_constants);
 			}
 		}
 
@@ -3610,31 +3650,6 @@ void GI::free() {
 	}
 	if (sdfgi_ubo.is_valid()) {
 		RD::get_singleton()->free(sdfgi_ubo);
-	}
-
-	if (voxel_gi_debug_shader_version.is_valid()) {
-		voxel_gi_debug_shader.version_free(voxel_gi_debug_shader_version);
-	}
-	if (voxel_gi_lighting_shader_version.is_valid()) {
-		voxel_gi_shader.version_free(voxel_gi_lighting_shader_version);
-	}
-	if (shader_version.is_valid()) {
-		shader.version_free(shader_version);
-	}
-	if (sdfgi_shader.debug_probes_shader.is_valid()) {
-		sdfgi_shader.debug_probes.version_free(sdfgi_shader.debug_probes_shader);
-	}
-	if (sdfgi_shader.debug_shader.is_valid()) {
-		sdfgi_shader.debug.version_free(sdfgi_shader.debug_shader);
-	}
-	if (sdfgi_shader.direct_light_shader.is_valid()) {
-		sdfgi_shader.direct_light.version_free(sdfgi_shader.direct_light_shader);
-	}
-	if (sdfgi_shader.integrate_shader.is_valid()) {
-		sdfgi_shader.integrate.version_free(sdfgi_shader.integrate_shader);
-	}
-	if (sdfgi_shader.preprocess_shader.is_valid()) {
-		sdfgi_shader.preprocess.version_free(sdfgi_shader.preprocess_shader);
 	}
 
 	if (voxel_gi_lights) {
@@ -3889,7 +3904,15 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 		pipeline_specialization |= SHADER_SPECIALIZATION_USE_VRS;
 	}
 
-	Mode mode = (use_sdfgi && use_voxel_gi_instances) ? MODE_COMBINED : (use_sdfgi ? MODE_SDFGI : MODE_VOXEL_GI);
+	bool without_sampler = RD::get_singleton()->sampler_is_format_supported_for_filter(RD::DATA_FORMAT_R8G8_UINT, RD::SAMPLER_FILTER_LINEAR);
+	Mode mode;
+	if (use_sdfgi && use_voxel_gi_instances) {
+		mode = without_sampler ? MODE_COMBINED_WITHOUT_SAMPLER : MODE_COMBINED;
+	} else if (use_sdfgi) {
+		mode = MODE_SDFGI;
+	} else {
+		mode = without_sampler ? MODE_VOXEL_GI_WITHOUT_SAMPLER : MODE_VOXEL_GI;
+	}
 
 	for (uint32_t v = 0; v < p_view_count; v++) {
 		push_constant.view_index = v;
@@ -4062,7 +4085,9 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 				uniforms.push_back(u);
 			}
 
-			rbgi->uniform_set[v] = RD::get_singleton()->uniform_set_create(uniforms, shader.version_get_shader(shader_version, 0), 0);
+			bool vrs_supported = RendererSceneRenderRD::get_singleton()->is_vrs_supported();
+			int variant_base = vrs_supported ? MODE_MAX : 0;
+			rbgi->uniform_set[v] = RD::get_singleton()->uniform_set_create(uniforms, shader.version_get_shader(shader_version, variant_base), 0);
 		}
 
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, pipelines[pipeline_specialization][mode]);
@@ -4120,4 +4145,8 @@ void GI::debug_voxel_gi(RID p_voxel_gi, RD::DrawListID p_draw_list, RID p_frameb
 	ERR_FAIL_NULL(voxel_gi);
 
 	voxel_gi->debug(p_draw_list, p_framebuffer, p_camera_with_transform, p_lighting, p_emission, p_alpha);
+}
+
+void GI::enable_vrs_shader_group() {
+	shader.enable_group(GROUP_VRS);
 }

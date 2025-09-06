@@ -52,8 +52,10 @@
 #include "core/string/node_path.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
+#include "core/templates/pair.h"
 #include "core/templates/rid.h"
 #include "core/typedefs.h"
+#include "core/variant/callable.h"
 
 #ifdef _MSC_VER
 #include <intrin.h> // Needed for `__umulh` below.
@@ -324,6 +326,13 @@ struct HashMapHasherDefault {
 	template <typename T>
 	static _FORCE_INLINE_ uint32_t hash(const Ref<T> &p_ref) { return hash_one_uint64((uint64_t)p_ref.operator->()); }
 
+	template <typename F, typename S>
+	static _FORCE_INLINE_ uint32_t hash(const Pair<F, S> &p_pair) {
+		uint64_t h1 = hash(p_pair.first);
+		uint64_t h2 = hash(p_pair.second);
+		return hash_one_uint64((h1 << 32) | h2);
+	}
+
 	static _FORCE_INLINE_ uint32_t hash(const String &p_string) { return p_string.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const char *p_cstr) { return hash_djb2(p_cstr); }
 	static _FORCE_INLINE_ uint32_t hash(const wchar_t p_wchar) { return hash_fmix32(uint32_t(p_wchar)); }
@@ -334,6 +343,7 @@ struct HashMapHasherDefault {
 	static _FORCE_INLINE_ uint32_t hash(const StringName &p_string_name) { return p_string_name.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const NodePath &p_path) { return p_path.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const ObjectID &p_id) { return hash_one_uint64(p_id); }
+	static _FORCE_INLINE_ uint32_t hash(const Callable &p_callable) { return p_callable.hash(); }
 
 	static _FORCE_INLINE_ uint32_t hash(const uint64_t p_int) { return hash_one_uint64(p_int); }
 	static _FORCE_INLINE_ uint32_t hash(const int64_t p_int) { return hash_one_uint64(uint64_t(p_int)); }
@@ -379,6 +389,13 @@ struct HashMapHasherDefault {
 		h = hash_murmur3_one_real(p_vec.y, h);
 		h = hash_murmur3_one_real(p_vec.z, h);
 		h = hash_murmur3_one_real(p_vec.w, h);
+		return hash_fmix32(h);
+	}
+	static _FORCE_INLINE_ uint32_t hash(const Color &p_vec) {
+		uint32_t h = hash_murmur3_one_float(p_vec.r);
+		h = hash_murmur3_one_float(p_vec.g, h);
+		h = hash_murmur3_one_float(p_vec.b, h);
+		h = hash_murmur3_one_float(p_vec.a, h);
 		return hash_fmix32(h);
 	}
 	static _FORCE_INLINE_ uint32_t hash(const Rect2i &p_rect) {

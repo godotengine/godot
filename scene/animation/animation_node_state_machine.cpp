@@ -200,10 +200,12 @@ void AnimationNodeStateMachinePlayback::_set_current(AnimationNodeStateMachine *
 		return;
 	}
 
+	AnimationTree *tree = p_state_machine->process_state ? p_state_machine->process_state->tree : nullptr;
 	Ref<AnimationNodeStateMachine> anodesm = p_state_machine->find_node_by_path(current);
 	if (anodesm.is_null()) {
 		group_start_transition = Ref<AnimationNodeStateMachineTransition>();
 		group_end_transition = Ref<AnimationNodeStateMachineTransition>();
+		_signal_state_change(tree, current, true);
 		return;
 	}
 
@@ -247,6 +249,8 @@ void AnimationNodeStateMachinePlayback::_set_current(AnimationNodeStateMachine *
 		if (anodesm_end_size != group_end_size) {
 			ERR_PRINT_ED("There is a mismatch in the number of end transitions in and out of the Grouped AnimationNodeStateMachine on AnimationNodeStateMachine: " + base_path + current + ".");
 		}
+	} else {
+		_signal_state_change(tree, current, true);
 	}
 }
 
@@ -346,12 +350,35 @@ float AnimationNodeStateMachinePlayback::get_fading_pos() const {
 	return fading_pos;
 }
 
+bool _is_grouped_state_machine(const Ref<AnimationNodeStateMachine> p_node) {
+	return p_node.is_valid() && p_node->get_state_machine_type() == AnimationNodeStateMachine::STATE_MACHINE_TYPE_GROUPED;
+}
+
+void AnimationNodeStateMachinePlayback::_clear_fading(AnimationNodeStateMachine *p_state_machine, const StringName &p_state) {
+	if (!p_state.is_empty() && !_is_grouped_state_machine(p_state_machine->get_node(p_state))) {
+		_signal_state_change(p_state_machine->get_animation_tree(), p_state, false);
+	}
+	fading_from = StringName();
+	fadeing_from_nti = AnimationNode::NodeTimeInfo();
+}
+
+void AnimationNodeStateMachinePlayback::_signal_state_change(AnimationTree *p_animation_tree, const StringName &p_state, bool p_started) {
+	if (is_grouped && p_animation_tree && p_state != SceneStringName(Start) && p_state != SceneStringName(End)) {
+		AnimationNodeStateMachinePlayback *parent_playback = *_get_parent_playback(p_animation_tree);
+		if (parent_playback) {
+			String prefix = base_path.substr(base_path.rfind_char('/', base_path.length() - 2) + 1);
+			parent_playback->_signal_state_change(p_animation_tree, prefix + p_state, p_started);
+		}
+	}
+	emit_signal(p_started ? SceneStringName(state_started) : SceneStringName(state_finished), p_state);
+}
+
 void AnimationNodeStateMachinePlayback::_clear_path_children(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_test_only) {
 	List<AnimationNode::ChildNode> child_nodes;
 	p_state_machine->get_child_nodes(&child_nodes);
 	for (const AnimationNode::ChildNode &child_node : child_nodes) {
 		Ref<AnimationNodeStateMachine> anodesm = child_node.node;
-		if (anodesm.is_valid() && anodesm->get_state_machine_type() == AnimationNodeStateMachine::STATE_MACHINE_TYPE_GROUPED) {
+		if (_is_grouped_state_machine(anodesm)) {
 			Ref<AnimationNodeStateMachinePlayback> playback = p_tree->get(base_path + child_node.name + "/playback");
 			ERR_FAIL_COND(playback.is_null());
 			playback->_set_base_path(base_path + child_node.name + "/");
@@ -678,8 +705,8 @@ bool AnimationNodeStateMachinePlayback::_make_travel_path(AnimationTree *p_tree,
 	}
 }
 
-AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::process(const String &p_base_path, AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
-	AnimationNode::NodeTimeInfo nti = _process(p_base_path, p_state_machine, p_playback_info, p_test_only);
+AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
+	AnimationNode::NodeTimeInfo nti = _process(p_state_machine, p_playback_info, p_test_only);
 	start_request = StringName();
 	next_request = false;
 	stop_request = false;
@@ -687,9 +714,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::process(const Str
 	return nti;
 }
 
-AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const String &p_base_path, AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
-	_set_base_path(p_base_path);
-
+AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	AnimationTree *tree = p_state_machine->process_state->tree;
 
 	double p_time = p_playback_info.time;
@@ -789,7 +814,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 
 	if (teleport_request) {
 		teleport_request = false;
-		// Clear fadeing on teleport.
+		// Clear fading on teleport.
 		fading_from = StringName();
 		fadeing_from_nti = AnimationNode::NodeTimeInfo();
 		fading_pos = 0;
@@ -871,8 +896,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 
 		if (Animation::is_greater_or_equal_approx(fading_pos, fading_time)) {
 			// Finish fading.
-			fading_from = StringName();
-			fadeing_from_nti = AnimationNode::NodeTimeInfo();
+			_clear_fading(p_state_machine, fading_from);
 		}
 	}
 
@@ -932,8 +956,7 @@ bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationT
 				pi.weight = 0;
 				p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true, p_test_only);
 			}
-			fading_from = StringName();
-			fadeing_from_nti = AnimationNode::NodeTimeInfo();
+			_clear_fading(p_state_machine, current);
 			fading_time = 0;
 			fading_pos = 0;
 		}
@@ -998,9 +1021,8 @@ bool AnimationNodeStateMachinePlayback::_can_transition_to_next(AnimationTree *p
 				playback = playback->duplicate();
 			}
 			playback->_next_main();
-			// Then, fadeing should be end.
-			fading_from = StringName();
-			fadeing_from_nti = AnimationNode::NodeTimeInfo();
+			// Then, fading should end.
+			_clear_fading(p_state_machine, fading_from);
 			fading_pos = 0;
 		} else {
 			return true;
@@ -1194,6 +1216,9 @@ void AnimationNodeStateMachinePlayback::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_length"), &AnimationNodeStateMachinePlayback::get_current_length);
 	ClassDB::bind_method(D_METHOD("get_fading_from_node"), &AnimationNodeStateMachinePlayback::get_fading_from_node);
 	ClassDB::bind_method(D_METHOD("get_travel_path"), &AnimationNodeStateMachinePlayback::_get_travel_path);
+
+	ADD_SIGNAL(MethodInfo(SceneStringName(state_started), PropertyInfo(Variant::STRING_NAME, "state")));
+	ADD_SIGNAL(MethodInfo(SceneStringName(state_finished), PropertyInfo(Variant::STRING_NAME, "state")));
 }
 
 AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {
@@ -1611,12 +1636,13 @@ Vector2 AnimationNodeStateMachine::get_graph_offset() const {
 AnimationNode::NodeTimeInfo AnimationNodeStateMachine::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	Ref<AnimationNodeStateMachinePlayback> playback_new = get_parameter(playback);
 	ERR_FAIL_COND_V(playback_new.is_null(), AnimationNode::NodeTimeInfo());
+	playback_new->_set_base_path(node_state.get_base_path());
 	playback_new->_set_grouped(state_machine_type == STATE_MACHINE_TYPE_GROUPED);
 	if (p_test_only) {
 		playback_new = playback_new->duplicate(); // Don't process original when testing.
 	}
 
-	return playback_new->process(node_state.get_base_path(), this, p_playback_info, p_test_only);
+	return playback_new->process(this, p_playback_info, p_test_only);
 }
 
 String AnimationNodeStateMachine::get_caption() const {
@@ -1704,7 +1730,8 @@ bool AnimationNodeStateMachine::_get(const StringName &p_name, Variant &r_ret) c
 }
 
 void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) const {
-	List<StringName> names;
+	LocalVector<StringName> names;
+	names.reserve(states.size());
 	for (const KeyValue<StringName, State> &E : states) {
 		names.push_back(E.key);
 	}
@@ -1717,10 +1744,6 @@ void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) c
 
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "transitions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-
-	for (PropertyInfo &E : *p_list) {
-		_validate_property(E);
-	}
 }
 
 void AnimationNodeStateMachine::_validate_property(PropertyInfo &p_property) const {

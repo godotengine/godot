@@ -123,7 +123,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 						if (ref.is_valid()) {
 							if (Object::cast_to<JavaObject>(ref.ptr())) {
 								Ref<JavaObject> jo = ref;
-								jclass c = env->FindClass(cn.utf8().get_data());
+								jclass c = jni_find_class(env, cn.utf8().get_data());
 								if (!c || !env->IsInstanceOf(jo->instance, c)) {
 									arg_expected = Variant::OBJECT;
 								} else {
@@ -223,7 +223,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 							if (cn.begins_with("[L") && cn.ends_with(";")) {
 								cn = cn.substr(2, cn.length() - 3);
 							}
-							jclass c = env->FindClass(cn.utf8().get_data());
+							jclass c = jni_find_class(env, cn.utf8().get_data());
 							if (c) {
 								for (int j = 0; j < arr.size(); j++) {
 									Ref<JavaObject> jo = arr[j];
@@ -316,7 +316,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				argv[i].d = *p_args[i];
 			} break;
 			case ARG_NUMBER_CLASS_BIT | ARG_TYPE_BOOLEAN: {
-				jclass bclass = env->FindClass("java/lang/Boolean");
+				jclass bclass = jni_find_class(env, "java/lang/Boolean");
 				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(Z)V");
 				jvalue val;
 				val.z = (bool)(*p_args[i]);
@@ -325,7 +325,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				to_free.push_back(obj);
 			} break;
 			case ARG_NUMBER_CLASS_BIT | ARG_TYPE_BYTE: {
-				jclass bclass = env->FindClass("java/lang/Byte");
+				jclass bclass = jni_find_class(env, "java/lang/Byte");
 				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(B)V");
 				jvalue val;
 				val.b = (int)(*p_args[i]);
@@ -334,7 +334,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				to_free.push_back(obj);
 			} break;
 			case ARG_NUMBER_CLASS_BIT | ARG_TYPE_CHAR: {
-				jclass bclass = env->FindClass("java/lang/Character");
+				jclass bclass = jni_find_class(env, "java/lang/Character");
 				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(C)V");
 				jvalue val;
 				val.c = (int)(*p_args[i]);
@@ -343,7 +343,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				to_free.push_back(obj);
 			} break;
 			case ARG_NUMBER_CLASS_BIT | ARG_TYPE_SHORT: {
-				jclass bclass = env->FindClass("java/lang/Short");
+				jclass bclass = jni_find_class(env, "java/lang/Short");
 				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(S)V");
 				jvalue val;
 				val.s = (int)(*p_args[i]);
@@ -352,7 +352,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				to_free.push_back(obj);
 			} break;
 			case ARG_NUMBER_CLASS_BIT | ARG_TYPE_INT: {
-				jclass bclass = env->FindClass("java/lang/Integer");
+				jclass bclass = jni_find_class(env, "java/lang/Integer");
 				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(I)V");
 				jvalue val;
 				val.i = (int)(*p_args[i]);
@@ -361,7 +361,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				to_free.push_back(obj);
 			} break;
 			case ARG_NUMBER_CLASS_BIT | ARG_TYPE_LONG: {
-				jclass bclass = env->FindClass("java/lang/Long");
+				jclass bclass = jni_find_class(env, "java/lang/Long");
 				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(J)V");
 				jvalue val;
 				val.j = (int64_t)(*p_args[i]);
@@ -370,7 +370,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				to_free.push_back(obj);
 			} break;
 			case ARG_NUMBER_CLASS_BIT | ARG_TYPE_FLOAT: {
-				jclass bclass = env->FindClass("java/lang/Float");
+				jclass bclass = jni_find_class(env, "java/lang/Float");
 				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(F)V");
 				jvalue val;
 				val.f = (float)(*p_args[i]);
@@ -379,7 +379,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				to_free.push_back(obj);
 			} break;
 			case ARG_NUMBER_CLASS_BIT | ARG_TYPE_DOUBLE: {
-				jclass bclass = env->FindClass("java/lang/Double");
+				jclass bclass = jni_find_class(env, "java/lang/Double");
 				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(D)V");
 				jvalue val;
 				val.d = (double)(*p_args[i]);
@@ -572,7 +572,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 
 				if (p_args[i]->get_type() == Variant::ARRAY) {
 					Array arr = *p_args[i];
-					a = env->NewObjectArray(arr.size(), env->FindClass("java/lang/String"), nullptr);
+					a = env->NewObjectArray(arr.size(), jni_find_class(env, "java/lang/String"), nullptr);
 					for (int j = 0; j < arr.size(); j++) {
 						String s = arr[j];
 						jstring jStr = env->NewStringUTF(s.utf8().get_data());
@@ -581,7 +581,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 					}
 				} else if (p_args[i]->get_type() == Variant::PACKED_STRING_ARRAY) {
 					PackedStringArray arr = *p_args[i];
-					a = env->NewObjectArray(arr.size(), env->FindClass("java/lang/String"), nullptr);
+					a = env->NewObjectArray(arr.size(), jni_find_class(env, "java/lang/String"), nullptr);
 					for (int j = 0; j < arr.size(); j++) {
 						String s = arr[j];
 						jstring jStr = env->NewStringUTF(s.utf8().get_data());
@@ -595,7 +595,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			} break;
 			case ARG_ARRAY_BIT | ARG_TYPE_CALLABLE: {
 				Array arr = *p_args[i];
-				jobjectArray jarr = env->NewObjectArray(arr.size(), env->FindClass("org/godotengine/godot/variant/Callable"), nullptr);
+				jobjectArray jarr = env->NewObjectArray(arr.size(), jni_find_class(env, "org/godotengine/godot/variant/Callable"), nullptr);
 				for (int j = 0; j < arr.size(); j++) {
 					Variant callable = arr[j];
 					jobject jcallable = callable_to_jcallable(env, callable);
@@ -611,7 +611,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				if (cn.begins_with("[L") && cn.ends_with(";")) {
 					cn = cn.substr(2, cn.length() - 3);
 				}
-				jclass c = env->FindClass(cn.utf8().get_data());
+				jclass c = jni_find_class(env, cn.utf8().get_data());
 				if (c) {
 					Array arr = *p_args[i];
 					jobjectArray jarr = env->NewObjectArray(arr.size(), c, nullptr);
@@ -1470,7 +1470,7 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_priva
 	JNIEnv *env = get_jni_env();
 	ERR_FAIL_NULL_V(env, Ref<JavaClass>());
 
-	jclass bclass = env->FindClass(class_name_dots.replace_char('.', '/').utf8().get_data());
+	jclass bclass = jni_find_class(env, class_name_dots.replace_char('.', '/').utf8().get_data());
 	ERR_FAIL_NULL_V_MSG(bclass, Ref<JavaClass>(), vformat("Java class '%s' not found.", p_class));
 
 	jobjectArray constructors = (jobjectArray)env->CallObjectMethod(bclass, Class_getDeclaredConstructors);
@@ -1600,9 +1600,12 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_priva
 				if (_new != existing) {
 					this_valid = false;
 					break;
+				} else if ((_new == Variant::OBJECT || _new == Variant::ARRAY) && E->get().param_sigs[j] != mi.param_sigs[j]) {
+					this_valid = false;
+					break;
 				}
 				new_likeliness += new_l;
-				existing_likeliness = existing_l;
+				existing_likeliness += existing_l;
 			}
 
 			if (!this_valid) {
@@ -1696,7 +1699,7 @@ JavaClassWrapper::JavaClassWrapper() {
 	JNIEnv *env = get_jni_env();
 	ERR_FAIL_NULL(env);
 
-	jclass bclass = env->FindClass("java/lang/Class");
+	jclass bclass = jni_find_class(env, "java/lang/Class");
 	Class_getDeclaredConstructors = env->GetMethodID(bclass, "getDeclaredConstructors", "()[Ljava/lang/reflect/Constructor;");
 	Class_getDeclaredMethods = env->GetMethodID(bclass, "getDeclaredMethods", "()[Ljava/lang/reflect/Method;");
 	Class_getFields = env->GetMethodID(bclass, "getFields", "()[Ljava/lang/reflect/Field;");
@@ -1704,53 +1707,53 @@ JavaClassWrapper::JavaClassWrapper() {
 	Class_getSuperclass = env->GetMethodID(bclass, "getSuperclass", "()Ljava/lang/Class;");
 	env->DeleteLocalRef(bclass);
 
-	bclass = env->FindClass("java/lang/reflect/Constructor");
+	bclass = jni_find_class(env, "java/lang/reflect/Constructor");
 	Constructor_getParameterTypes = env->GetMethodID(bclass, "getParameterTypes", "()[Ljava/lang/Class;");
 	Constructor_getModifiers = env->GetMethodID(bclass, "getModifiers", "()I");
 	env->DeleteLocalRef(bclass);
 
-	bclass = env->FindClass("java/lang/reflect/Method");
+	bclass = jni_find_class(env, "java/lang/reflect/Method");
 	Method_getParameterTypes = env->GetMethodID(bclass, "getParameterTypes", "()[Ljava/lang/Class;");
 	Method_getReturnType = env->GetMethodID(bclass, "getReturnType", "()Ljava/lang/Class;");
 	Method_getName = env->GetMethodID(bclass, "getName", "()Ljava/lang/String;");
 	Method_getModifiers = env->GetMethodID(bclass, "getModifiers", "()I");
 	env->DeleteLocalRef(bclass);
 
-	bclass = env->FindClass("java/lang/reflect/Field");
+	bclass = jni_find_class(env, "java/lang/reflect/Field");
 	Field_getName = env->GetMethodID(bclass, "getName", "()Ljava/lang/String;");
 	Field_getModifiers = env->GetMethodID(bclass, "getModifiers", "()I");
 	Field_get = env->GetMethodID(bclass, "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
 	env->DeleteLocalRef(bclass);
 
-	bclass = env->FindClass("java/lang/Boolean");
+	bclass = jni_find_class(env, "java/lang/Boolean");
 	Boolean_booleanValue = env->GetMethodID(bclass, "booleanValue", "()Z");
 	env->DeleteLocalRef(bclass);
 
-	bclass = env->FindClass("java/lang/Byte");
+	bclass = jni_find_class(env, "java/lang/Byte");
 	Byte_byteValue = env->GetMethodID(bclass, "byteValue", "()B");
 	env->DeleteLocalRef(bclass);
 
-	bclass = env->FindClass("java/lang/Character");
+	bclass = jni_find_class(env, "java/lang/Character");
 	Character_characterValue = env->GetMethodID(bclass, "charValue", "()C");
 	env->DeleteLocalRef(bclass);
 
-	bclass = env->FindClass("java/lang/Short");
+	bclass = jni_find_class(env, "java/lang/Short");
 	Short_shortValue = env->GetMethodID(bclass, "shortValue", "()S");
 	env->DeleteLocalRef(bclass);
 
-	bclass = env->FindClass("java/lang/Integer");
+	bclass = jni_find_class(env, "java/lang/Integer");
 	Integer_integerValue = env->GetMethodID(bclass, "intValue", "()I");
 	env->DeleteLocalRef(bclass);
 
-	bclass = env->FindClass("java/lang/Long");
+	bclass = jni_find_class(env, "java/lang/Long");
 	Long_longValue = env->GetMethodID(bclass, "longValue", "()J");
 	env->DeleteLocalRef(bclass);
 
-	bclass = env->FindClass("java/lang/Float");
+	bclass = jni_find_class(env, "java/lang/Float");
 	Float_floatValue = env->GetMethodID(bclass, "floatValue", "()F");
 	env->DeleteLocalRef(bclass);
 
-	bclass = env->FindClass("java/lang/Double");
+	bclass = jni_find_class(env, "java/lang/Double");
 	Double_doubleValue = env->GetMethodID(bclass, "doubleValue", "()D");
 	env->DeleteLocalRef(bclass);
 }

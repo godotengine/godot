@@ -352,6 +352,9 @@ void SoftBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_linear_stiffness", "linear_stiffness"), &SoftBody3D::set_linear_stiffness);
 	ClassDB::bind_method(D_METHOD("get_linear_stiffness"), &SoftBody3D::get_linear_stiffness);
 
+	ClassDB::bind_method(D_METHOD("set_shrinking_factor", "shrinking_factor"), &SoftBody3D::set_shrinking_factor);
+	ClassDB::bind_method(D_METHOD("get_shrinking_factor"), &SoftBody3D::get_shrinking_factor);
+
 	ClassDB::bind_method(D_METHOD("set_pressure_coefficient", "pressure_coefficient"), &SoftBody3D::set_pressure_coefficient);
 	ClassDB::bind_method(D_METHOD("get_pressure_coefficient"), &SoftBody3D::get_pressure_coefficient);
 
@@ -362,6 +365,11 @@ void SoftBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_drag_coefficient"), &SoftBody3D::get_drag_coefficient);
 
 	ClassDB::bind_method(D_METHOD("get_point_transform", "point_index"), &SoftBody3D::get_point_transform);
+
+	ClassDB::bind_method(D_METHOD("apply_impulse", "point_index", "impulse"), &SoftBody3D::apply_impulse);
+	ClassDB::bind_method(D_METHOD("apply_force", "point_index", "force"), &SoftBody3D::apply_force);
+	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &SoftBody3D::apply_central_impulse);
+	ClassDB::bind_method(D_METHOD("apply_central_force", "force"), &SoftBody3D::apply_central_force);
 
 	ClassDB::bind_method(D_METHOD("set_point_pinned", "point_index", "pinned", "attachment_path", "insert_at"), &SoftBody3D::pin_point, DEFVAL(NodePath()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("is_point_pinned", "point_index"), &SoftBody3D::is_point_pinned);
@@ -377,8 +385,9 @@ void SoftBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "simulation_precision", PROPERTY_HINT_RANGE, "1,100,1"), "set_simulation_precision", "get_simulation_precision");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "total_mass", PROPERTY_HINT_RANGE, "0.01,10000,1"), "set_total_mass", "get_total_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_linear_stiffness", "get_linear_stiffness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shrinking_factor", PROPERTY_HINT_RANGE, "-1,1,0.01,or_less,or_greater"), "set_shrinking_factor", "get_shrinking_factor");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure_coefficient"), "set_pressure_coefficient", "get_pressure_coefficient");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_damping_coefficient", "get_damping_coefficient");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"), "set_damping_coefficient", "get_damping_coefficient");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drag_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_coefficient", "get_drag_coefficient");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ray_pickable"), "set_ray_pickable", "is_ray_pickable");
@@ -643,6 +652,14 @@ real_t SoftBody3D::get_linear_stiffness() {
 	return PhysicsServer3D::get_singleton()->soft_body_get_linear_stiffness(physics_rid);
 }
 
+void SoftBody3D::set_shrinking_factor(real_t p_shrinking_factor) {
+	PhysicsServer3D::get_singleton()->soft_body_set_shrinking_factor(physics_rid, p_shrinking_factor);
+}
+
+real_t SoftBody3D::get_shrinking_factor() {
+	return PhysicsServer3D::get_singleton()->soft_body_get_shrinking_factor(physics_rid);
+}
+
 real_t SoftBody3D::get_pressure_coefficient() {
 	return PhysicsServer3D::get_singleton()->soft_body_get_pressure_coefficient(physics_rid);
 }
@@ -671,8 +688,20 @@ Vector3 SoftBody3D::get_point_transform(int p_point_index) {
 	return PhysicsServer3D::get_singleton()->soft_body_get_point_global_position(physics_rid, p_point_index);
 }
 
-void SoftBody3D::pin_point_toggle(int p_point_index) {
-	pin_point(p_point_index, !(-1 != _has_pinned_point(p_point_index)));
+void SoftBody3D::apply_impulse(int p_point_index, const Vector3 &p_impulse) {
+	PhysicsServer3D::get_singleton()->soft_body_apply_point_impulse(physics_rid, p_point_index, p_impulse);
+}
+
+void SoftBody3D::apply_force(int p_point_index, const Vector3 &p_force) {
+	PhysicsServer3D::get_singleton()->soft_body_apply_point_force(physics_rid, p_point_index, p_force);
+}
+
+void SoftBody3D::apply_central_impulse(const Vector3 &p_impulse) {
+	PhysicsServer3D::get_singleton()->soft_body_apply_central_impulse(physics_rid, p_impulse);
+}
+
+void SoftBody3D::apply_central_force(const Vector3 &p_force) {
+	PhysicsServer3D::get_singleton()->soft_body_apply_central_force(physics_rid, p_force);
 }
 
 void SoftBody3D::pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path, int p_insert_at) {

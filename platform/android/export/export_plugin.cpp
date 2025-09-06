@@ -42,10 +42,10 @@
 #include "drivers/png/png_driver_common.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
 #include "editor/export/export_template_manager.h"
+#include "editor/file_system/editor_paths.h"
 #include "editor/import/resource_importer_texture_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/splash.gen.h"
 #include "scene/resources/image_texture.h"
@@ -279,7 +279,7 @@ static const int EXPORT_FORMAT_APK = 0;
 static const int EXPORT_FORMAT_AAB = 1;
 
 static const char *APK_ASSETS_DIRECTORY = "assets";
-static const char *AAB_ASSETS_DIRECTORY = "assetPacks/installTime/src/main/assets";
+static const char *AAB_ASSETS_DIRECTORY = "assetPackInstallTime/src/main/assets";
 
 static const int DEFAULT_MIN_SDK_VERSION = 24; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
 static const int DEFAULT_TARGET_SDK_VERSION = 35; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
@@ -625,6 +625,7 @@ bool EditorExportPlatformAndroid::_should_compress_asset(const String &p_path, c
 		".cfb", // Don't let small config files slow-down startup
 		".scn", // Binary scenes are usually already compressed
 		".ctex", // Streamable textures are usually already compressed
+		".pck", // Pack.
 		// Trailer for easier processing
 		nullptr
 	};
@@ -713,7 +714,8 @@ Vector<PluginConfigAndroid> EditorExportPlatformAndroid::get_plugins() {
 		Vector<String> plugins_filenames = list_gdap_files(plugins_dir);
 
 		if (!plugins_filenames.is_empty()) {
-			Ref<ConfigFile> config_file = memnew(ConfigFile);
+			Ref<ConfigFile> config_file;
+			config_file.instantiate();
 			for (int i = 0; i < plugins_filenames.size(); i++) {
 				PluginConfigAndroid config = PluginConfigAndroid::load_plugin_config(config_file, plugins_dir.path_join(plugins_filenames[i]));
 				if (config.valid_config) {
@@ -785,7 +787,7 @@ Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObj
 			String abi = abis[abi_index].abi;
 			String dst_path = String("lib").path_join(abi).path_join(p_so.path.get_file());
 			Vector<uint8_t> array = FileAccess::get_file_as_bytes(p_so.path);
-			Error store_err = store_in_apk(ed, dst_path, array);
+			Error store_err = store_in_apk(ed, dst_path, array, Z_NO_COMPRESSION);
 			ERR_FAIL_COND_V_MSG(store_err, store_err, "Cannot store in apk file '" + dst_path + "'.");
 		}
 	}
@@ -799,14 +801,25 @@ Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObj
 Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
 	APKExportData *ed = static_cast<APKExportData *>(p_userdata);
 
-	String path = p_path.simplify_path();
-	if (path.begins_with("uid://")) {
-		path = ResourceUID::uid_to_path(path).simplify_path();
-		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, path));
+	String simplified_path = p_path.simplify_path();
+	if (simplified_path.begins_with("uid://")) {
+		simplified_path = ResourceUID::uid_to_path(simplified_path).simplify_path();
+		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, simplified_path));
 	}
-	const String dst_path = path.replace_first("res://", "assets/");
 
-	store_in_apk(ed, dst_path, p_data, _should_compress_asset(path, p_data) ? Z_DEFLATED : 0);
+	Vector<uint8_t> enc_data;
+	EditorExportPlatform::SavedData sd;
+	Error err = _store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, enc_data, sd);
+	if (err != OK) {
+		return err;
+	}
+
+	const String dst_path = String("assets/") + simplified_path.trim_prefix("res://");
+	print_verbose("Saving project files from " + simplified_path + " into " + dst_path);
+	store_in_apk(ed, dst_path, enc_data, _should_compress_asset(simplified_path, enc_data) ? Z_DEFLATED : 0);
+
+	ed->pd.file_ofs.push_back(sd);
+
 	return OK;
 }
 
@@ -1037,54 +1050,118 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 	store_string_at_path(manifest_path, manifest_text);
 }
 
+bool EditorExportPlatformAndroid::_is_transparency_allowed(const Ref<EditorExportPreset> &p_preset) const {
+	return (bool)get_project_setting(p_preset, "display/window/per_pixel_transparency/allowed");
+}
+
 void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> &p_preset) {
 	const String themes_xml_path = ExportTemplateManager::get_android_build_directory(p_preset).path_join("res/values/themes.xml");
-	bool enable_swipe_to_dismiss = p_preset->get("gesture/swipe_to_dismiss");
 
 	if (!FileAccess::exists(themes_xml_path)) {
 		print_error("res/values/themes.xml does not exist.");
 		return;
 	}
 
-	String xml_content;
-	Ref<FileAccess> file = FileAccess::open(themes_xml_path, FileAccess::READ);
-	PackedStringArray lines = file->get_as_text().split("\n");
-	file->close();
+	bool transparency_allowed = _is_transparency_allowed(p_preset);
 
-	// Check if the themes.xml already contains <item name="android:windowSwipeToDismiss"> element.
-	// If found, update its value based on `enable_swipe_to_dismiss`.
-	bool found = false;
-	bool modified = false;
-	for (int i = 0; i < lines.size(); i++) {
-		String line = lines[i];
-		if (line.contains("<item name") && line.contains("\"android:windowSwipeToDismiss\">")) {
-			lines.set(i, vformat("		<item name=\"android:windowSwipeToDismiss\">%s</item>", bool_to_string(enable_swipe_to_dismiss)));
-			found = true;
-			modified = true;
-			break;
-		}
+	// Default/Reserved theme attributes.
+	Dictionary main_theme_attributes;
+	main_theme_attributes["android:windowSwipeToDismiss"] = bool_to_string(p_preset->get("gesture/swipe_to_dismiss"));
+	main_theme_attributes["android:windowIsTranslucent"] = bool_to_string(transparency_allowed);
+	if (transparency_allowed) {
+		main_theme_attributes["android:windowBackground"] = "@android:color/transparent";
+	} else {
+		main_theme_attributes["android:windowBackground"] = "#" + p_preset->get("screen/background_color").operator Color().to_html(false);
 	}
 
-	// If <item name="android:windowSwipeToDismiss"> is not found and `enable_swipe_to_dismiss` is false:
-	// Add a new <item> element before the closing </style> tag.
-	if (!found && !enable_swipe_to_dismiss) {
-		for (int i = 0; i < lines.size(); i++) {
-			if (lines[i].contains("</style>")) {
-				lines.insert(i, "		<item name=\"android:windowSwipeToDismiss\">false</item>");
-				modified = true;
-				break;
+	Dictionary splash_theme_attributes;
+	splash_theme_attributes["android:windowSplashScreenBackground"] = "@mipmap/icon_background";
+	splash_theme_attributes["windowSplashScreenAnimatedIcon"] = "@mipmap/icon_foreground";
+	splash_theme_attributes["postSplashScreenTheme"] = "@style/GodotAppMainTheme";
+	splash_theme_attributes["android:windowIsTranslucent"] = bool_to_string(transparency_allowed);
+
+	PackedStringArray reserved_splash_keys;
+	reserved_splash_keys.append("postSplashScreenTheme");
+	reserved_splash_keys.append("android:windowIsTranslucent");
+
+	Dictionary custom_theme_attributes = p_preset->get("gradle_build/custom_theme_attributes");
+
+	// Does not override default/reserved theme attributes; skips any duplicates from custom_theme_attributes.
+	for (const Variant &k : custom_theme_attributes.keys()) {
+		String key = k;
+		String value = custom_theme_attributes[k];
+		if (key.begins_with("[splash]")) {
+			String splash_key = key.trim_prefix("[splash]");
+			if (reserved_splash_keys.has(splash_key)) {
+				WARN_PRINT(vformat("Skipped custom_theme_attribute '%s'; this is a reserved attribute configured via other export options or project settings.", splash_key));
+			} else {
+				splash_theme_attributes[splash_key] = value;
+			}
+		} else {
+			if (main_theme_attributes.has(key)) {
+				WARN_PRINT(vformat("Skipped custom_theme_attribute '%s'; this is a reserved attribute configured via other export options or project settings.", key));
+			} else {
+				main_theme_attributes[key] = value;
 			}
 		}
 	}
 
-	// Reconstruct the XML content from the modified lines.
-	if (modified) {
-		xml_content = String("\n").join(lines);
-		store_string_at_path(themes_xml_path, xml_content);
-		print_verbose("Successfully modified " + themes_xml_path + ": " + "\n" + xml_content);
-	} else {
-		print_verbose("No changes needed for " + themes_xml_path);
+	Ref<FileAccess> file = FileAccess::open(themes_xml_path, FileAccess::READ);
+	PackedStringArray lines = file->get_as_text().split("\n");
+	file->close();
+
+	PackedStringArray new_lines;
+	bool inside_main_theme = false;
+	bool inside_splash_theme = false;
+
+	for (int i = 0; i < lines.size(); i++) {
+		String line = lines[i];
+
+		if (line.contains("<style name=\"GodotAppMainTheme\"")) {
+			inside_main_theme = true;
+			new_lines.append(line);
+			continue;
+		}
+		if (line.contains("<style name=\"GodotAppSplashTheme\"")) {
+			inside_splash_theme = true;
+			new_lines.append(line);
+			continue;
+		}
+
+		// Inject GodotAppMainTheme attributes.
+		if (inside_main_theme && line.contains("</style>")) {
+			for (const Variant &attribute : main_theme_attributes.keys()) {
+				String value = main_theme_attributes[attribute];
+				String item_line = vformat("		<item name=\"%s\">%s</item>", attribute, value);
+				new_lines.append(item_line);
+			}
+			new_lines.append(line); // Add </style> in the end.
+			inside_main_theme = false;
+			continue;
+		}
+
+		// Inject GodotAppSplashTheme attributes.
+		if (inside_splash_theme && line.contains("</style>")) {
+			for (const Variant &attribute : splash_theme_attributes.keys()) {
+				String value = splash_theme_attributes[attribute];
+				String item_line = vformat("		<item name=\"%s\">%s</item>", attribute, value);
+				new_lines.append(item_line);
+			}
+			new_lines.append(line); // Add </style> in the end.
+			inside_splash_theme = false;
+			continue;
+		}
+
+		// Add all other lines unchanged.
+		if (!inside_main_theme && !inside_splash_theme) {
+			new_lines.append(line);
+		}
 	}
+
+	// Reconstruct the XML content from the modified lines.
+	String xml_content = String("\n").join(new_lines);
+	store_string_at_path(themes_xml_path, xml_content);
+	print_verbose("Successfully modified " + themes_xml_path + ": " + "\n" + xml_content);
 }
 
 void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet) {
@@ -1918,6 +1995,10 @@ void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPres
 	r_features->push_back("etc2");
 	r_features->push_back("astc");
 
+	if (p_preset->get("shader_baker/enabled")) {
+		r_features->push_back("shader_baker");
+	}
+
 	Vector<ABI> abis = get_enabled_abis(p_preset);
 	for (int i = 0; i < abis.size(); ++i) {
 		r_features->push_back(abis[i].arch);
@@ -1999,6 +2080,11 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 					}
 				}
 			}
+		} else if (p_name == "gradle_build/custom_theme_attributes") {
+			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+			if (bool(p_preset->get("gradle_build/custom_theme_attributes")) && !gradle_build_enabled) {
+				return TTR("\"Use Gradle Build\" is required to add custom theme attributes.");
+			}
 		} else if (p_name == "package/show_in_android_tv") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
 			if (bool(p_preset->get("package/show_in_android_tv")) && !gradle_build_enabled) {
@@ -2013,6 +2099,13 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
 			if (!bool(p_preset->get("package/show_in_app_library")) && !gradle_build_enabled) {
 				return TTR("\"Use Gradle Build\" must be enabled to disable \"Show In App Library\".");
+			}
+		} else if (p_name == "shader_baker/enabled" && bool(p_preset->get("shader_baker/enabled"))) {
+			String export_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
+			if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+				return TTR("\"Shader Baker\" is not supported when using the Compatibility renderer.");
+			} else if (OS::get_singleton()->get_current_rendering_method() != export_renderer) {
+				return vformat(TTR("The editor is currently using a different renderer than what the target platform will use. \"Shader Baker\" won't be able to include core shaders. Switch to the \"%s\" renderer temporarily to fix this."), export_renderer);
 			}
 		}
 	}
@@ -2032,6 +2125,8 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	// This implies doing validation that the string is a proper int.
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/min_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", DEFAULT_MIN_SDK_VERSION)), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/target_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", DEFAULT_TARGET_SDK_VERSION)), "", false, true));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "gradle_build/custom_theme_attributes", PROPERTY_HINT_DICTIONARY_TYPE, "String;String"), Dictionary()));
 
 #ifndef DISABLE_DEPRECATED
 	Vector<PluginConfigAndroid> plugins_configs = get_plugins();
@@ -2080,15 +2175,19 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/opengl_debug"), false));
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "shader_baker/enabled"), false));
+
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,OpenXR"), XR_MODE_REGULAR, false, true));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "gesture/swipe_to_dismiss"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/immersive_mode"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/edge_to_edge"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_small"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_normal"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_large"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_xlarge"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "screen/background_color", PROPERTY_HINT_COLOR_NO_ALPHA), Color()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "user_data_backup/allow"), false));
 
@@ -2114,6 +2213,7 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 
 	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
 	if (p_option == "graphics/opengl_debug" ||
+			p_option == "gradle_build/custom_theme_attributes" ||
 			p_option == "command_line/extra_args" ||
 			p_option == "permissions/custom_permissions" ||
 			p_option == "keystore/debug" ||
@@ -2888,7 +2988,8 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 		valid = false;
 	}
 
-	if (p_preset->get("gradle_build/use_gradle_build")) {
+	bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+	if (gradle_build_enabled) {
 		String build_version_path = ExportTemplateManager::get_android_build_directory(p_preset).get_base_dir().path_join(".build_version");
 		Ref<FileAccess> f = FileAccess::open(build_version_path, FileAccess::READ);
 		if (f.is_valid()) {
@@ -2898,6 +2999,12 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 				err += vformat(TTR(MISMATCHED_VERSIONS_MESSAGE), installed_version, current_version);
 				err += "\n";
 			}
+		}
+	} else {
+		if (_is_transparency_allowed(p_preset)) {
+			// Warning only, so don't override `valid`.
+			err += vformat(TTR("\"Use Gradle Build\" is required for transparent background on Android"));
+			err += "\n";
 		}
 	}
 
@@ -2995,6 +3102,21 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 	if (immersive) {
 		command_line_strings.push_back("--fullscreen");
 	}
+
+	bool edge_to_edge = p_preset->get("screen/edge_to_edge");
+	if (edge_to_edge) {
+		command_line_strings.push_back("--edge_to_edge");
+	}
+
+	String background_color = "#" + p_preset->get("screen/background_color").operator Color().to_html(false);
+
+	// For Gradle build, _fix_themes_xml() sets background to transparent if _is_transparency_allowed().
+	// Overriding to transparent here too as it's used as fallback for system bar appearance.
+	if (_is_transparency_allowed(p_preset) && p_preset->get("gradle_build/use_gradle_build")) {
+		background_color = "#00000000";
+	}
+	command_line_strings.push_back("--background_color");
+	command_line_strings.push_back(background_color);
 
 	bool debug_opengl = p_preset->get("graphics/opengl_debug");
 	if (debug_opengl) {
@@ -3322,6 +3444,68 @@ Error EditorExportPlatformAndroid::export_project(const Ref<EditorExportPreset> 
 	return export_project_helper(p_preset, p_debug, p_path, export_format, should_sign, p_flags);
 }
 
+Error EditorExportPlatformAndroid::_generate_sparse_pck_metadata(const Ref<EditorExportPreset> &p_preset, PackData &p_pack_data, Vector<uint8_t> &r_data) {
+	Error err;
+	Ref<FileAccess> ftmp = FileAccess::create_temp(FileAccess::WRITE_READ, "export_index", "tmp", false, &err);
+	if (err != OK) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Could not create temporary file!"));
+		return err;
+	}
+	int64_t pck_start_pos = ftmp->get_position();
+	uint64_t file_base_ofs = 0;
+	uint64_t dir_base_ofs = 0;
+	EditorExportPlatform::_store_header(ftmp, p_preset->get_enc_pck() && p_preset->get_enc_directory(), true, file_base_ofs, dir_base_ofs);
+
+	// Write directory.
+	uint64_t dir_offset = ftmp->get_position();
+	ftmp->seek(dir_base_ofs);
+	ftmp->store_64(dir_offset - pck_start_pos);
+	ftmp->seek(dir_offset);
+
+	Vector<uint8_t> key;
+	if (p_preset->get_enc_pck() && p_preset->get_enc_directory()) {
+		String script_key = _get_script_encryption_key(p_preset);
+		key.resize(32);
+		if (script_key.length() == 64) {
+			for (int i = 0; i < 32; i++) {
+				int v = 0;
+				if (i * 2 < script_key.length()) {
+					char32_t ct = script_key[i * 2];
+					if (is_digit(ct)) {
+						ct = ct - '0';
+					} else if (ct >= 'a' && ct <= 'f') {
+						ct = 10 + ct - 'a';
+					}
+					v |= ct << 4;
+				}
+
+				if (i * 2 + 1 < script_key.length()) {
+					char32_t ct = script_key[i * 2 + 1];
+					if (is_digit(ct)) {
+						ct = ct - '0';
+					} else if (ct >= 'a' && ct <= 'f') {
+						ct = 10 + ct - 'a';
+					}
+					v |= ct;
+				}
+				key.write[i] = v;
+			}
+		}
+	}
+
+	if (!EditorExportPlatform::_encrypt_and_store_directory(ftmp, p_pack_data, key, p_preset->get_seed(), 0)) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Can't create encrypted file."));
+		return ERR_CANT_CREATE;
+	}
+
+	r_data.resize(ftmp->get_length());
+	ftmp->seek(0);
+	ftmp->get_buffer(r_data.ptrw(), r_data.size());
+	ftmp.unref();
+
+	return OK;
+}
+
 Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int export_format, bool should_sign, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
@@ -3449,7 +3633,22 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			if (p_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT)) {
 				err = export_project_files(p_preset, p_debug, ignore_apk_file, nullptr, &user_data, copy_gradle_so);
 			} else {
+				user_data.pd.path = "assets.sparsepck";
+				user_data.pd.use_sparse_pck = true;
 				err = export_project_files(p_preset, p_debug, rename_and_store_file_in_gradle_project, nullptr, &user_data, copy_gradle_so);
+
+				Vector<uint8_t> enc_data;
+				err = _generate_sparse_pck_metadata(p_preset, user_data.pd, enc_data);
+				if (err != OK) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Could not generate sparse pck metadata!"));
+					return err;
+				}
+
+				err = store_file_at_path(user_data.assets_directory + "/assets.sparsepck", enc_data);
+				if (err != OK) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Could not write PCK directory!"));
+					return err;
+				}
 			}
 			if (err != OK) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not export project files to gradle project."));
@@ -3498,9 +3697,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
 		}
 		String enabled_abi_string = join_abis(enabled_abis, "|", false);
-		String sign_flag = should_sign ? "true" : "false";
+		String sign_flag = bool_to_string(should_sign);
 		String zipalign_flag = "true";
-		String compress_native_libraries_flag = bool(p_preset->get("gradle_build/compress_native_libraries")) ? "true" : "false";
+		String compress_native_libraries_flag = bool_to_string(p_preset->get("gradle_build/compress_native_libraries"));
 
 		Vector<String> android_libraries;
 		Vector<String> android_dependencies;
@@ -3552,7 +3751,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String edition = has_dotnet_project ? "Mono" : "Standard";
 		String build_type = p_debug ? "Debug" : "Release";
 		if (export_format == EXPORT_FORMAT_AAB) {
-			String bundle_build_command = vformat("bundle%s", build_type);
+			String bundle_build_command = vformat("bundle%s%s", edition, build_type);
 			cmdline.push_back(bundle_build_command);
 		} else if (export_format == EXPORT_FORMAT_APK) {
 			String apk_build_command = vformat("assemble%s%s", edition, build_type);
@@ -3903,7 +4102,18 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			APKExportData ed;
 			ed.ep = &ep;
 			ed.apk = unaligned_apk;
+			ed.pd.path = "assets.sparsepck";
+			ed.pd.use_sparse_pck = true;
 			err = export_project_files(p_preset, p_debug, save_apk_file, nullptr, &ed, save_apk_so);
+
+			Vector<uint8_t> enc_data;
+			err = _generate_sparse_pck_metadata(p_preset, ed.pd, enc_data);
+			if (err != OK) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Could not generate sparse pck metadata!"));
+				return err;
+			}
+
+			store_in_apk(&ed, "assets/assets.sparsepck", enc_data, 0);
 		}
 	}
 

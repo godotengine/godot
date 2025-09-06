@@ -1045,7 +1045,7 @@ static void gdextension_string_operator_plus_eq_c32str(GDExtensionStringPtr p_se
 
 static GDExtensionInt gdextension_string_resize(GDExtensionStringPtr p_self, GDExtensionInt p_length) {
 	String *self = (String *)p_self;
-	return (*self).resize(p_length);
+	return (*self).resize_uninitialized(p_length);
 }
 
 static void gdextension_string_name_new_with_latin1_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionBool p_is_static) {
@@ -1277,11 +1277,13 @@ static GDExtensionVariantPtr gdextension_array_operator_index_const(GDExtensionC
 	return (GDExtensionVariantPtr)&self->operator[](p_index);
 }
 
+#ifndef DISABLE_DEPRECATED
 void gdextension_array_ref(GDExtensionTypePtr p_self, GDExtensionConstTypePtr p_from) {
 	Array *self = (Array *)p_self;
 	const Array *from = (const Array *)p_from;
-	self->_ref(*from);
+	self->Array::operator=(*from);
 }
+#endif // DISABLE_DEPRECATED
 
 void gdextension_array_set_typed(GDExtensionTypePtr p_self, GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstVariantPtr p_script) {
 	Array *self = reinterpret_cast<Array *>(p_self);
@@ -1798,7 +1800,9 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(packed_vector4_array_operator_index_const);
 	REGISTER_INTERFACE_FUNC(array_operator_index);
 	REGISTER_INTERFACE_FUNC(array_operator_index_const);
+#ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(array_ref);
+#endif // DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(array_set_typed);
 	REGISTER_INTERFACE_FUNC(dictionary_operator_index);
 	REGISTER_INTERFACE_FUNC(dictionary_operator_index_const);

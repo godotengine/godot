@@ -30,19 +30,31 @@
 
 #import "display_server_embedded.h"
 
+#if defined(GLES3_ENABLED)
+#import "embedded_gl_manager.h"
+#import "platform_gl.h"
+
+#import "drivers/gles3/rasterizer_gles3.h"
+#endif
+
+#if defined(RD_ENABLED)
+#import "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+#import "servers/rendering/rendering_device.h"
+
+#if defined(VULKAN_ENABLED)
+#import "rendering_context_driver_vulkan_macos.h"
+#endif // VULKAN_ENABLED
+#if defined(METAL_ENABLED)
+#import "drivers/metal/rendering_context_driver_metal.h"
+#endif
+#endif // RD_ENABLED
+
 #import "embedded_debugger.h"
 #import "macos_quartz_core_spi.h"
 
 #import "core/config/project_settings.h"
 #import "core/debugger/engine_debugger.h"
-
-#if defined(GLES3_ENABLED)
-#include "drivers/gles3/rasterizer_gles3.h"
-#endif
-
-#if defined(RD_ENABLED)
-#import "servers/rendering/renderer_rd/renderer_compositor_rd.h"
-#endif
+#import "core/io/marshalls.h"
 
 DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	EmbeddedDebugger::initialize(this);
@@ -85,7 +97,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 #if defined(GLES3_ENABLED)
 			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
 			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
-				WARN_PRINT("Your device seem not to support MoltenVK or Metal, switching to OpenGL 3.");
+				WARN_PRINT("Your device does not seem to support MoltenVK or Metal, switching to OpenGL 3.");
 				rendering_driver = "opengl3";
 				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
 				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
@@ -123,6 +135,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 		if (err != OK) {
 			ERR_FAIL_MSG("Could not create OpenGL context.");
 		}
+		gl_manager->set_vsync_enabled(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 	}
 #endif
 
@@ -176,15 +189,16 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 	}
 #endif
 
-	constexpr CGFloat CONTENT_SCALE = 2.0;
-	layer.contentsScale = CONTENT_SCALE;
+	CGFloat scale = screen_get_max_scale();
+	layer.contentsScale = scale;
 	layer.magnificationFilter = kCAFilterNearest;
 	layer.minificationFilter = kCAFilterNearest;
-	layer.opaque = NO; // Never opaque when embedded.
+	transparent = ((p_flags & WINDOW_FLAG_TRANSPARENT_BIT) == WINDOW_FLAG_TRANSPARENT_BIT);
+	layer.opaque = !(OS::get_singleton()->is_layered_allowed() && transparent);
 	layer.actions = @{ @"contents" : [NSNull null] }; // Disable implicit animations for contents.
 	// AppKit frames, bounds and positions are always in points.
 	CGRect bounds = CGRectMake(0, 0, p_resolution.width, p_resolution.height);
-	bounds = CGRectApplyAffineTransform(bounds, CGAffineTransformMakeScale(1.0 / CONTENT_SCALE, 1.0 / CONTENT_SCALE));
+	bounds = CGRectApplyAffineTransform(bounds, CGAffineTransformInvert(CGAffineTransformMakeScale(scale, scale)));
 	layer.bounds = bounds;
 
 	CGSConnectionID connection_id = CGSMainConnectionID();
@@ -306,6 +320,12 @@ bool DisplayServerEmbedded::mouse_is_mode_override_enabled() const {
 	return mouse_mode_override_enabled;
 }
 
+void DisplayServerEmbedded::warp_mouse(const Point2i &p_position) {
+	_THREAD_SAFE_METHOD_
+	Input::get_singleton()->set_mouse_position(p_position);
+	EngineDebugger::get_singleton()->send_message("game_view:warp_mouse", { p_position });
+}
+
 Point2i DisplayServerEmbedded::mouse_get_position() const {
 	_THREAD_SAFE_METHOD_
 
@@ -414,7 +434,10 @@ void DisplayServerEmbedded::_dispatch_input_events(const Ref<InputEvent> &p_even
 
 void DisplayServerEmbedded::send_input_event(const Ref<InputEvent> &p_event, WindowID p_id) const {
 	if (p_id != INVALID_WINDOW_ID) {
-		_window_callback(input_event_callbacks[p_id], p_event);
+		const Callable *cb = input_event_callbacks.getptr(p_id);
+		if (cb) {
+			_window_callback(*cb, p_event);
+		}
 	} else {
 		for (const KeyValue<WindowID, Callable> &E : input_event_callbacks) {
 			_window_callback(E.value, p_event);
@@ -453,19 +476,19 @@ bool DisplayServerEmbedded::has_feature(Feature p_feature) const {
 #endif
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_IME:
-			// case FEATURE_CUSTOM_CURSOR_SHAPE:
+		case FEATURE_CUSTOM_CURSOR_SHAPE:
 			// case FEATURE_HIDPI:
 			// case FEATURE_ICON:
 			// case FEATURE_MOUSE:
-			// case FEATURE_MOUSE_WARP:
+		case FEATURE_MOUSE_WARP:
 			// case FEATURE_NATIVE_DIALOG:
 			// case FEATURE_NATIVE_ICON:
 			// case FEATURE_WINDOW_TRANSPARENCY:
-			// case FEATURE_CLIPBOARD:
+		case FEATURE_CLIPBOARD:
 			// case FEATURE_KEEP_SCREEN_ON:
 			// case FEATURE_ORIENTATION:
 			// case FEATURE_VIRTUAL_KEYBOARD:
-			// case FEATURE_TEXT_TO_SPEECH:
+		case FEATURE_TEXT_TO_SPEECH:
 			// case FEATURE_TOUCHSCREEN:
 			return true;
 		default:
@@ -486,23 +509,66 @@ int DisplayServerEmbedded::get_primary_screen() const {
 }
 
 Point2i DisplayServerEmbedded::screen_get_position(int p_screen) const {
-	return Size2i();
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Point2i());
+
+	return Point2i(0, 0);
 }
 
 Size2i DisplayServerEmbedded::screen_get_size(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
+
 	return window_get_size(MAIN_WINDOW_ID);
 }
 
 Rect2i DisplayServerEmbedded::screen_get_usable_rect(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	return Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
 }
 
 int DisplayServerEmbedded::screen_get_dpi(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 72);
+
 	return 96;
+}
+
+float DisplayServerEmbedded::screen_get_scale(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	switch (p_screen) {
+		case SCREEN_WITH_MOUSE_FOCUS:
+		case SCREEN_WITH_KEYBOARD_FOCUS:
+		case SCREEN_PRIMARY:
+		case SCREEN_OF_MAIN_WINDOW:
+		case 0:
+			return state.screen_window_scale;
+		default:
+			return 1.0;
+	}
 }
 
 float DisplayServerEmbedded::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
 
 	p_screen = _get_screen_index(p_screen);
 	NSArray *screenArray = [NSScreen screens];
@@ -539,7 +605,10 @@ void DisplayServerEmbedded::window_set_title(const String &p_title, WindowID p_w
 }
 
 int DisplayServerEmbedded::window_get_current_screen(WindowID p_window) const {
-	return SCREEN_OF_MAIN_WINDOW;
+	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, INVALID_SCREEN);
+
+	return 0;
 }
 
 void DisplayServerEmbedded::window_set_current_screen(int p_screen, WindowID p_window) {
@@ -582,11 +651,11 @@ void DisplayServerEmbedded::window_set_size(const Size2i p_size, WindowID p_wind
 	[CATransaction begin];
 	[CATransaction setDisableActions:YES];
 
-	// TODO(sgc): Pass scale as argument from parent process.
-	constexpr CGFloat CONTENT_SCALE = 2.0;
+	CGFloat scale = screen_get_max_scale();
 	CGRect bounds = CGRectMake(0, 0, p_size.width, p_size.height);
-	bounds = CGRectApplyAffineTransform(bounds, CGAffineTransformMakeScale(1.0 / CONTENT_SCALE, 1.0 / CONTENT_SCALE));
+	bounds = CGRectApplyAffineTransform(bounds, CGAffineTransformInvert(CGAffineTransformMakeScale(scale, scale)));
 	layer.bounds = bounds;
+	layer.contentsScale = scale;
 
 #if defined(RD_ENABLED)
 	if (rendering_context) {
@@ -642,10 +711,16 @@ bool DisplayServerEmbedded::window_is_maximize_allowed(WindowID p_window) const 
 }
 
 void DisplayServerEmbedded::window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window) {
-	// Not supported
+	if (p_flag == WINDOW_FLAG_TRANSPARENT && p_window == MAIN_WINDOW_ID) {
+		transparent = p_enabled;
+		layer.opaque = !(OS::get_singleton()->is_layered_allowed() && transparent);
+	}
 }
 
 bool DisplayServerEmbedded::window_get_flag(WindowFlags p_flag, WindowID p_window) const {
+	if (p_flag == WINDOW_FLAG_TRANSPARENT && p_window == MAIN_WINDOW_ID) {
+		return transparent;
+	}
 	return false;
 }
 
@@ -685,20 +760,45 @@ void DisplayServerEmbedded::window_set_ime_position(const Point2i &p_pos, Window
 	ime_last_position = p_pos;
 }
 
-void DisplayServerEmbedded::update_state(const Dictionary &p_state) {
-	state.screen_max_scale = p_state["screen_get_max_scale"];
-}
+void DisplayServerEmbedded::set_state(const DisplayServerEmbeddedState &p_state) {
+	if (state == p_state) {
+		return;
+	}
 
-void DisplayServerEmbedded::set_content_scale(float p_scale) {
-	content_scale = p_scale;
+	uint32_t old_display_id = state.display_id;
+
+	state = p_state;
+
+	if (state.display_id != old_display_id) {
+#if defined(GLES3_ENABLED)
+		if (gl_manager) {
+			gl_manager->set_display_id(state.display_id);
+		}
+#endif
+	}
 }
 
 void DisplayServerEmbedded::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
-	// Not supported
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		gl_manager->set_vsync_enabled(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+	}
+#endif
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
+	}
+#endif
 }
 
 DisplayServer::VSyncMode DisplayServerEmbedded::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		return (gl_manager->is_vsync_enabled() ? DisplayServer::VSyncMode::VSYNC_ENABLED : DisplayServer::VSyncMode::VSYNC_DISABLED);
+	}
+#endif
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		return rendering_context->window_get_vsync_mode(p_window);
@@ -732,7 +832,14 @@ DisplayServer::CursorShape DisplayServerEmbedded::cursor_get_shape() const {
 }
 
 void DisplayServerEmbedded::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
-	WARN_PRINT_ONCE("Custom cursor images are not supported in embedded mode.");
+	PackedByteArray data;
+	if (p_cursor.is_valid()) {
+		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot);
+		if (image.is_valid()) {
+			data = image->save_png_to_buffer();
+		}
+	}
+	EngineDebugger::get_singleton()->send_message("game_view:cursor_set_custom_image", { data, p_shape, p_hotspot });
 }
 
 void DisplayServerEmbedded::swap_buffers() {
@@ -741,4 +848,31 @@ void DisplayServerEmbedded::swap_buffers() {
 		gl_manager->swap_buffers();
 	}
 #endif
+}
+
+void DisplayServerEmbeddedState::serialize(PackedByteArray &r_data) {
+	r_data.resize(16);
+
+	uint8_t *data = r_data.ptrw();
+	data += encode_float(screen_max_scale, data);
+	data += encode_float(screen_dpi, data);
+	data += encode_float(screen_window_scale, data);
+	data += encode_uint32(display_id, data);
+
+	// Assert we had enough space.
+	DEV_ASSERT(r_data.size() >= (data - r_data.ptrw()));
+}
+
+Error DisplayServerEmbeddedState::deserialize(const PackedByteArray &p_data) {
+	const uint8_t *data = p_data.ptr();
+
+	screen_max_scale = decode_float(data);
+	data += sizeof(float);
+	screen_dpi = decode_float(data);
+	data += sizeof(float);
+	screen_window_scale = decode_float(data);
+	data += sizeof(float);
+	display_id = decode_uint32(data);
+
+	return OK;
 }

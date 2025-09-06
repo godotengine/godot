@@ -40,6 +40,7 @@ private:
 	Thread thread;
 
 	SafeFlag exit_thread;
+	SafeFlag ac_enabled;
 	SafeFlag sr_enabled;
 	SafeFlag supported;
 
@@ -50,7 +51,7 @@ public:
 	~FreeDesktopAtSPIMonitor();
 
 	bool is_supported() { return supported.is_set(); }
-	bool is_active() { return sr_enabled.is_set(); }
+	bool is_active() { return sr_enabled.is_set() && ac_enabled.is_set(); }
 };
 
 #endif // DBUS_ENABLED

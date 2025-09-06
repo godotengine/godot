@@ -12,7 +12,7 @@ allprojects {
         mavenCentral()
         gradlePluginPortal()
         maven { url "https://plugins.gradle.org/m2/" }
-        maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/"}
+        maven { url "https://central.sonatype.com/repository/maven-snapshots/"}
 
         // Godot user plugins custom maven repos
         String[] mavenRepos = getGodotPluginsMavenRepos()
@@ -90,7 +90,7 @@ android {
         jvmTarget = versions.javaVersion
     }
 
-    assetPacks = [":assetPacksInstallTime"]
+    assetPacks = [":assetPackInstallTime"]
 
     namespace = 'com.godot.game'
 
@@ -101,7 +101,7 @@ android {
         }
 
         ndk {
-            debugSymbolLevel 'FULL'
+            debugSymbolLevel 'NONE'
             String[] export_abi_list = getExportEnabledABIs()
             abiFilters export_abi_list
         }
@@ -127,9 +127,11 @@ android {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
 
-        // 'doNotStrip' is enabled for development within Android Studio
+        // Debug symbols are kept for development within Android Studio.
         if (shouldNotStrip()) {
-            doNotStrip '**/*.so'
+            jniLibs {
+                keepDebugSymbols += '**/*.so'
+            }
         }
 
         jniLibs {
@@ -212,7 +214,9 @@ android {
     flavorDimensions 'edition'
 
     productFlavors {
-        standard {}
+        standard {
+            getIsDefault().set(true)
+        }
         mono {}
     }
 
@@ -269,8 +273,8 @@ task copyAndRenameBinary(type: Copy) {
  * Used to validate the version of the Java SDK used for the Godot gradle builds.
  */
 task validateJavaVersion {
-    if (JavaVersion.current() != versions.javaVersion) {
-        throw new GradleException("Invalid Java version ${JavaVersion.current()}. Version ${versions.javaVersion} is the required Java version for Godot gradle builds.")
+    if (!JavaVersion.current().isCompatibleWith(versions.javaVersion)) {
+        throw new GradleException("Invalid Java version ${JavaVersion.current()}. Version ${versions.javaVersion} is the minimum supported Java version for Godot gradle builds.")
     }
 }
 

@@ -37,8 +37,13 @@ using pixel_t = uint32_t;
 
 #define DASH_PATTERN_THRESHOLD 0.001f
 
-enum RenderUpdateFlag : uint8_t {None = 0, Path = 1, Color = 2, Gradient = 4, Stroke = 8, Transform = 16, Image = 32, GradientStroke = 64, Blend = 128, All = 255};
+enum RenderUpdateFlag : uint16_t {None = 0, Path = 1, Color = 2, Gradient = 4, Stroke = 8, Transform = 16, Image = 32, GradientStroke = 64, Blend = 128, Clip = 256, All = 0xffff};
 enum CompositionFlag : uint8_t {Invalid = 0, Opacity = 1, Blending = 2, Masking = 4, PostProcessing = 8};  //Composition Purpose
+
+static inline void operator|=(RenderUpdateFlag& a, const RenderUpdateFlag b)
+{
+    a = RenderUpdateFlag(uint16_t(a) | uint16_t(b));
+}
 
 //TODO: Move this in public header unifying with SwCanvas::Colorspace
 enum ColorSpace : uint8_t

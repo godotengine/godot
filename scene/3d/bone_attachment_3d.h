@@ -56,9 +56,6 @@ class BoneAttachment3D : public Node3D {
 
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
-	bool _get(const StringName &p_path, Variant &r_ret) const;
-	bool _set(const StringName &p_path, const Variant &p_value);
-	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
 
 	static void _bind_methods();
@@ -82,12 +79,12 @@ public:
 	void set_bone_idx(const int &p_idx);
 	int get_bone_idx() const;
 
-	void set_override_pose(bool p_override);
+	void set_override_pose(bool p_override_pose);
 	bool get_override_pose() const;
 
-	void set_use_external_skeleton(bool p_external_skeleton);
+	void set_use_external_skeleton(bool p_use_external_skeleton);
 	bool get_use_external_skeleton() const;
-	void set_external_skeleton(NodePath p_skeleton);
+	void set_external_skeleton(NodePath p_external_skeleton);
 	NodePath get_external_skeleton() const;
 
 	virtual void on_skeleton_update();

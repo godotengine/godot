@@ -106,7 +106,7 @@ Error EMWSPeer::connect_to_url(const String &p_url, Ref<TLSOptions> p_tls_option
 	if (peer_sock == -1) {
 		return FAILED;
 	}
-	in_buffer.resize(nearest_shift(inbound_buffer_size), max_queued_packets);
+	in_buffer.resize(nearest_shift((uint32_t)inbound_buffer_size), max_queued_packets);
 	packet_buffer.resize(inbound_buffer_size);
 	ready_state = STATE_CONNECTING;
 	return OK;

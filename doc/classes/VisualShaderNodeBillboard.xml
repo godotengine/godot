@@ -10,7 +10,7 @@
 	</tutorials>
 	<members>
 		<member name="billboard_type" type="int" setter="set_billboard_type" getter="get_billboard_type" enum="VisualShaderNodeBillboard.BillboardType" default="1">
-			Controls how the object faces the camera. See [enum BillboardType].
+			Controls how the object faces the camera.
 		</member>
 		<member name="keep_scale" type="bool" setter="set_keep_scale_enabled" getter="is_keep_scale_enabled" default="false">
 			If [code]true[/code], the shader will keep the scale set for the mesh. Otherwise, the scale is lost when billboarding.

@@ -68,6 +68,10 @@
 
 @implementation GodotContentView
 
+- (BOOL)acceptsFirstMouse:(NSEvent *)event {
+	return YES;
+}
+
 - (void)setFrameSize:(NSSize)newSize {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (ds && ds->has_window(window_id)) {
@@ -290,7 +294,7 @@
 	}
 
 	Char16String text;
-	text.resize([characters length] + 1);
+	text.resize_uninitialized([characters length] + 1);
 	[characters getCharacters:(unichar *)text.ptrw() range:NSMakeRange(0, [characters length])];
 
 	String u32text = String::utf16(text.ptr(), text.length());
@@ -676,7 +680,7 @@
 		if (!wd.im_active && length > 0 && keycode_has_unicode(KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true))) {
 			// Fallback unicode character handler used if IME is not active.
 			Char16String text;
-			text.resize([characters length] + 1);
+			text.resize_uninitialized([characters length] + 1);
 			[characters getCharacters:(unichar *)text.ptrw() range:NSMakeRange(0, [characters length])];
 
 			String u32text = String::utf16(text.ptr(), text.length());

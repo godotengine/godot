@@ -27,9 +27,11 @@
 #include "graph.hh"
 #include "../hb-ot-layout-gsubgpos.hh"
 #include "../OT/Layout/GSUB/ExtensionSubst.hh"
+#include "../OT/Layout/GSUB/SubstLookupSubTable.hh"
 #include "gsubgpos-context.hh"
 #include "pairpos-graph.hh"
 #include "markbasepos-graph.hh"
+#include "ligature-graph.hh"
 
 #ifndef GRAPH_GSUBGPOS_GRAPH_HH
 #define GRAPH_GSUBGPOS_GRAPH_HH
@@ -120,12 +122,10 @@ struct Lookup : public OT::Lookup
     unsigned type = lookupType;
     bool is_ext = is_extension (c.table_tag);
 
-    if (c.table_tag != HB_OT_TAG_GPOS)
+    if (c.table_tag != HB_OT_TAG_GPOS && c.table_tag != HB_OT_TAG_GSUB)
       return true;
 
-    if (!is_ext &&
-        type != OT::Layout::GPOS_impl::PosLookupSubTable::Type::Pair &&
-        type != OT::Layout::GPOS_impl::PosLookupSubTable::Type::MarkBase)
+    if (!is_ext && !is_supported_gpos_type(type, c) && !is_supported_gsub_type(type, c))
       return true;
 
     hb_vector_t<hb_pair_t<unsigned, hb_vector_t<unsigned>>> all_new_subtables;
@@ -144,21 +144,32 @@ struct Lookup : public OT::Lookup
 
         subtable_index = extension->get_subtable_index (c.graph, ext_subtable_index);
         type = extension->get_lookup_type ();
-        if (type != OT::Layout::GPOS_impl::PosLookupSubTable::Type::Pair
-            && type != OT::Layout::GPOS_impl::PosLookupSubTable::Type::MarkBase)
+        if (!is_supported_gpos_type(type, c) && !is_supported_gsub_type(type, c))
           continue;
       }
 
       hb_vector_t<unsigned> new_sub_tables;
-      switch (type)
-      {
-      case 2:
-        new_sub_tables = split_subtable<PairPos> (c, parent_index, subtable_index); break;
-      case 4:
-        new_sub_tables = split_subtable<MarkBasePos> (c, parent_index, subtable_index); break;
-      default:
-        break;
+
+      if (c.table_tag == HB_OT_TAG_GPOS) {
+        switch (type)
+        {
+        case 2:
+          new_sub_tables = split_subtable<PairPos> (c, parent_index, subtable_index); break;
+        case 4:
+          new_sub_tables = split_subtable<MarkBasePos> (c, parent_index, subtable_index); break;
+        default:
+          break;
+        }
+      } else if (c.table_tag == HB_OT_TAG_GSUB) {
+        switch (type)
+        {
+        case 4:
+          new_sub_tables = split_subtable<graph::LigatureSubst> (c, parent_index, subtable_index); break;
+        default:
+          break;
+        }
       }
+
       if (new_sub_tables.in_error ()) return false;
       if (!new_sub_tables) continue;
       hb_pair_t<unsigned, hb_vector_t<unsigned>>* entry = all_new_subtables.push ();
@@ -191,14 +202,14 @@ struct Lookup : public OT::Lookup
                        hb_vector_t<hb_pair_t<unsigned, hb_vector_t<unsigned>>>& subtable_ids)
   {
     bool is_ext = is_extension (c.table_tag);
-    auto& v = c.graph.vertices_[this_index];
+    auto* v = &c.graph.vertices_[this_index];
     fix_existing_subtable_links (c, this_index, subtable_ids);
 
     unsigned new_subtable_count = 0;
     for (const auto& p : subtable_ids)
       new_subtable_count += p.second.length;
 
-    size_t new_size = v.table_size ()
+    size_t new_size = v->table_size ()
                       + new_subtable_count * OT::Offset16::static_size;
     char* buffer = (char*) hb_calloc (1, new_size);
     if (!buffer) return false;
@@ -207,10 +218,10 @@ struct Lookup : public OT::Lookup
       hb_free (buffer);
      return false;
     }
-    hb_memcpy (buffer, v.obj.head, v.table_size());
+    hb_memcpy (buffer, v->obj.head, v->table_size());
 
-    v.obj.head = buffer;
-    v.obj.tail = buffer + new_size;
+    v->obj.head = buffer;
+    v->obj.tail = buffer + new_size;
 
     Lookup* new_lookup = (Lookup*) buffer;
 
@@ -226,21 +237,23 @@ struct Lookup : public OT::Lookup
         if (is_ext)
         {
           unsigned ext_id = create_extension_subtable (c, subtable_id, type);
-          c.graph.vertices_[subtable_id].add_parent (ext_id);
+          c.graph.vertices_[subtable_id].add_parent (ext_id, false);
           subtable_id = ext_id;
+          // the reference to v may have changed on adding a node, so reassign it.
+          v = &c.graph.vertices_[this_index];
         }
 
-        auto* link = v.obj.real_links.push ();
+        auto* link = v->obj.real_links.push ();
         link->width = 2;
         link->objidx = subtable_id;
         link->position = (char*) &new_lookup->subTable[offset_index++] -
                          (char*) new_lookup;
-        c.graph.vertices_[subtable_id].add_parent (this_index);
+        c.graph.vertices_[subtable_id].add_parent (this_index, false);
       }
     }
 
     // Repacker sort order depends on link order, which we've messed up so resort it.
-    v.obj.real_links.qsort ();
+    v->obj.real_links.qsort ();
 
     // The head location of the lookup has changed, invalidating the lookups map entry
     // in the context. Update the map.
@@ -326,7 +339,7 @@ struct Lookup : public OT::Lookup
 
     // Make extension point at the subtable.
     auto& ext_vertex = c.graph.vertices_[ext_index];
-    ext_vertex.add_parent (lookup_index);
+    ext_vertex.add_parent (lookup_index, false);
     if (!existing_ext_index)
       subtable_vertex.remap_parent (lookup_index, ext_index);
 
@@ -334,6 +347,19 @@ struct Lookup : public OT::Lookup
   }
 
  private:
+  bool is_supported_gsub_type(unsigned type, gsubgpos_graph_context_t& c) const {
+    return (c.table_tag == HB_OT_TAG_GSUB) && (
+      type == OT::Layout::GSUB_impl::SubstLookupSubTable::Type::Ligature
+    );
+  }
+
+  bool is_supported_gpos_type(unsigned type, gsubgpos_graph_context_t& c) const {
+   return (c.table_tag == HB_OT_TAG_GPOS) && (
+      type == OT::Layout::GPOS_impl::PosLookupSubTable::Type::Pair ||
+      type == OT::Layout::GPOS_impl::PosLookupSubTable::Type::MarkBase
+    );
+  }
+
   unsigned extension_type (hb_tag_t table_tag) const
   {
     switch (table_tag)

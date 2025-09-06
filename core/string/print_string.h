@@ -57,6 +57,7 @@ void remove_print_handler(const PrintHandlerList *p_handler);
 
 extern void __print_line(const String &p_string);
 extern void __print_line_rich(const String &p_string);
+extern void print_raw(const String &p_string);
 extern void print_error(const String &p_string);
 extern bool is_print_verbose_enabled();
 

@@ -39,7 +39,7 @@
 		<method name="get_format" qualifiers="const">
 			<return type="int" enum="Image.Format" />
 			<description>
-				Returns the format of the texture, one of [enum Image.Format].
+				Returns the format of the texture.
 			</description>
 		</method>
 		<method name="set_image">

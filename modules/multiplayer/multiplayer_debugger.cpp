@@ -195,7 +195,7 @@ void MultiplayerDebugger::RPCProfiler::init_node(const ObjectID p_node) {
 	}
 	rpc_node_data.insert(p_node, RPCNodeInfo());
 	rpc_node_data[p_node].node = p_node;
-	rpc_node_data[p_node].node_path = ObjectDB::get_instance<Node>(p_node)->get_path();
+	rpc_node_data[p_node].node_path = String(ObjectDB::get_instance<Node>(p_node)->get_path());
 }
 
 void MultiplayerDebugger::RPCProfiler::toggle(bool p_enable, const Array &p_opts) {

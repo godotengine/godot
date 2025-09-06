@@ -73,24 +73,29 @@ void EmbeddedDebugger::_init_parse_message_handlers() {
 	parse_message_handlers["mouse_set_mode"] = &EmbeddedDebugger::_msg_mouse_set_mode;
 	parse_message_handlers["event"] = &EmbeddedDebugger::_msg_event;
 	parse_message_handlers["win_event"] = &EmbeddedDebugger::_msg_win_event;
+	parse_message_handlers["notification"] = &EmbeddedDebugger::_msg_notification;
 	parse_message_handlers["ime_update"] = &EmbeddedDebugger::_msg_ime_update;
 	parse_message_handlers["joy_add"] = &EmbeddedDebugger::_msg_joy_add;
 	parse_message_handlers["joy_del"] = &EmbeddedDebugger::_msg_joy_del;
+	parse_message_handlers["ds_state"] = &EmbeddedDebugger::_msg_ds_state;
 }
 
 Error EmbeddedDebugger::_msg_window_size(const Array &p_args) {
+	ERR_FAIL_COND_V_MSG(p_args.size() != 1, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'window_size' message.");
 	Size2i size = p_args[0];
 	ds->window_set_size(size);
 	return OK;
 }
 
 Error EmbeddedDebugger::_msg_mouse_set_mode(const Array &p_args) {
+	ERR_FAIL_COND_V_MSG(p_args.size() != 1, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'mouse_set_mode' message.");
 	DisplayServer::MouseMode mode = p_args[0];
 	ds->mouse_set_mode(mode);
 	return OK;
 }
 
 Error EmbeddedDebugger::_msg_event(const Array &p_args) {
+	ERR_FAIL_COND_V_MSG(p_args.size() != 1, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'event' message.");
 	Input *input = Input::get_singleton();
 	if (!input) {
 		// Ignore if we've received an event before the process has initialized.
@@ -130,6 +135,7 @@ Error EmbeddedDebugger::_msg_event(const Array &p_args) {
 }
 
 Error EmbeddedDebugger::_msg_win_event(const Array &p_args) {
+	ERR_FAIL_COND_V_MSG(p_args.size() != 1, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'win_event' message.");
 	DisplayServer::WindowEvent win_event = p_args[0];
 	ds->send_window_event(win_event, DisplayServer::MAIN_WINDOW_ID);
 	if (win_event == DisplayServer::WindowEvent::WINDOW_EVENT_MOUSE_EXIT) {
@@ -146,6 +152,15 @@ Error EmbeddedDebugger::_msg_ime_update(const Array &p_args) {
 	return OK;
 }
 
+Error EmbeddedDebugger::_msg_notification(const Array &p_args) {
+	ERR_FAIL_COND_V_MSG(p_args.size() != 1, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'notification' message.");
+	int notification = p_args[0];
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(notification);
+	}
+	return OK;
+}
+
 Error EmbeddedDebugger::_msg_joy_add(const Array &p_args) {
 	ERR_FAIL_COND_V_MSG(p_args.size() != 2, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'joy_add' message.");
 	int idx = p_args[0];
@@ -158,6 +173,15 @@ Error EmbeddedDebugger::_msg_joy_del(const Array &p_args) {
 	ERR_FAIL_COND_V_MSG(p_args.size() != 1, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'joy_del' message.");
 	int idx = p_args[0];
 	ds->joy_del(idx);
+	return OK;
+}
+
+Error EmbeddedDebugger::_msg_ds_state(const Array &p_args) {
+	ERR_FAIL_COND_V_MSG(p_args.size() != 1, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'ds_state' message.");
+	PackedByteArray data = p_args[0];
+	DisplayServerEmbeddedState state;
+	state.deserialize(data);
+	ds->set_state(state);
 	return OK;
 }
 

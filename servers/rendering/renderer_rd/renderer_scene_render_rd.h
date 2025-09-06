@@ -39,6 +39,7 @@
 #ifdef METAL_ENABLED
 #include "servers/rendering/renderer_rd/effects/metal_fx.h"
 #endif
+#include "servers/rendering/renderer_rd/effects/smaa.h"
 #include "servers/rendering/renderer_rd/effects/tone_mapper.h"
 #include "servers/rendering/renderer_rd/effects/vrs.h"
 #include "servers/rendering/renderer_rd/environment/gi.h"
@@ -49,8 +50,9 @@
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_method.h"
+#include "servers/rendering/rendering_shader_library.h"
 
-class RendererSceneRenderRD : public RendererSceneRender {
+class RendererSceneRenderRD : public RendererSceneRender, public RenderingShaderLibrary {
 	friend RendererRD::SkyRD;
 	friend RendererRD::GI;
 
@@ -60,6 +62,7 @@ protected:
 	RendererRD::CopyEffects *copy_effects = nullptr;
 	RendererRD::DebugEffects *debug_effects = nullptr;
 	RendererRD::Luminance *luminance = nullptr;
+	RendererRD::SMAA *smaa = nullptr;
 	RendererRD::ToneMapper *tone_mapper = nullptr;
 	RendererRD::FSR *fsr = nullptr;
 	RendererRD::VRS *vrs = nullptr;
@@ -109,6 +112,14 @@ protected:
 	void _render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data);
 	void _post_process_subpass(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data);
 	void _disable_clear_request(const RenderDataRD *p_render_data);
+
+	_FORCE_INLINE_ bool _is_8bit_data_format(RD::DataFormat p_data_format) {
+		return p_data_format >= RD::DATA_FORMAT_R8_UNORM && p_data_format <= RD::DATA_FORMAT_A8B8G8R8_SRGB_PACK32;
+	}
+
+	_FORCE_INLINE_ bool _is_10bit_data_format(RD::DataFormat p_data_format) {
+		return p_data_format >= RD::DATA_FORMAT_A2R10G10B10_UNORM_PACK32 && p_data_format <= RD::DATA_FORMAT_A2B10G10R10_SINT_PACK32;
+	}
 
 	// needed for a single argument calls (material and uv2)
 	PagedArrayPool<RenderGeometryInstance *> cull_argument_pool;

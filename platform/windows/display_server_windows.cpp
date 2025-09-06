@@ -43,6 +43,10 @@
 #include "main/main.h"
 #include "scene/resources/texture.h"
 
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
+
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #if defined(VULKAN_ENABLED)
@@ -64,6 +68,7 @@
 #include <propkey.h>
 #include <propvarutil.h>
 #include <shellapi.h>
+#include <shellscalingapi.h>
 #include <shlwapi.h>
 #include <shobjidl.h>
 #include <wbemcli.h>
@@ -144,8 +149,9 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_STATUS_INDICATOR:
 		case FEATURE_WINDOW_EMBEDDING:
 		case FEATURE_WINDOW_DRAG:
-		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
 			return true;
+		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
+			return (os_ver.dwBuildNumber >= 19041); // Fully supported on Windows 10 Vibranium R1 (2004)+ only, captured as black rect on older versions.
 		case FEATURE_EMOJI_AND_SYMBOL_PICKER:
 			return (os_ver.dwBuildNumber >= 17134); // Windows 10 Redstone 4 (1803)+ only.
 #ifdef ACCESSKIT_ENABLED
@@ -615,7 +621,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 		if (dir.is_relative_path() || dir == ".") {
 			Char16String current_dir_name;
 			size_t str_len = GetCurrentDirectoryW(0, nullptr);
-			current_dir_name.resize(str_len + 1);
+			current_dir_name.resize_uninitialized(str_len + 1);
 			GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 			if (dir == ".") {
 				dir = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/');
@@ -1202,6 +1208,9 @@ Point2i DisplayServerWindows::screen_get_position(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Point2i());
+
 	EnumPosData data = { 0, p_screen, Point2() };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcPos, (LPARAM)&data);
 	return data.pos - _get_screens_origin();
@@ -1242,6 +1251,9 @@ Size2i DisplayServerWindows::screen_get_size(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
+
 	EnumSizeData data = { 0, p_screen, Size2() };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcSize, (LPARAM)&data);
 	return data.size;
@@ -1307,6 +1319,9 @@ Rect2i DisplayServerWindows::screen_get_usable_rect(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	EnumRectData data = { 0, p_screen, Rect2i() };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcUsableSize, (LPARAM)&data);
 	data.rect.position -= _get_screens_origin();
@@ -1319,35 +1334,12 @@ typedef struct {
 	int dpi;
 } EnumDpiData;
 
-enum _MonitorDpiType {
-	MDT_Effective_DPI = 0,
-	MDT_Angular_DPI = 1,
-	MDT_Raw_DPI = 2,
-	MDT_Default = MDT_Effective_DPI
-};
-
-static int QueryDpiForMonitor(HMONITOR hmon, _MonitorDpiType dpiType = MDT_Default) {
+static int QueryDpiForMonitor(HMONITOR hmon, MONITOR_DPI_TYPE dpiType = MDT_DEFAULT) {
 	int dpiX = 96, dpiY = 96;
 
-	static HMODULE Shcore = nullptr;
-	typedef HRESULT(WINAPI * GetDPIForMonitor_t)(HMONITOR hmonitor, _MonitorDpiType dpiType, UINT * dpiX, UINT * dpiY);
-	static GetDPIForMonitor_t getDPIForMonitor = nullptr;
-
-	if (Shcore == nullptr) {
-		Shcore = LoadLibraryW(L"Shcore.dll");
-		getDPIForMonitor = Shcore ? (GetDPIForMonitor_t)(void *)GetProcAddress(Shcore, "GetDpiForMonitor") : nullptr;
-
-		if ((Shcore == nullptr) || (getDPIForMonitor == nullptr)) {
-			if (Shcore) {
-				FreeLibrary(Shcore);
-			}
-			Shcore = (HMODULE)INVALID_HANDLE_VALUE;
-		}
-	}
-
 	UINT x = 0, y = 0;
-	if (hmon && (Shcore != (HMODULE)INVALID_HANDLE_VALUE)) {
-		HRESULT hr = getDPIForMonitor(hmon, dpiType /*MDT_Effective_DPI*/, &x, &y);
+	if (hmon) {
+		HRESULT hr = GetDpiForMonitor(hmon, dpiType, &x, &y);
 		if (SUCCEEDED(hr) && (x > 0) && (y > 0)) {
 			dpiX = (int)x;
 			dpiY = (int)y;
@@ -1385,6 +1377,9 @@ int DisplayServerWindows::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 72);
+
 	EnumDpiData data = { 0, p_screen, 72 };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcDpi, (LPARAM)&data);
 	return data.dpi;
@@ -1396,9 +1391,8 @@ Color DisplayServerWindows::screen_get_pixel(const Point2i &p_position) const {
 	POINT p;
 	p.x = pos.x;
 	p.y = pos.y;
-	if (win81p_LogicalToPhysicalPointForPerMonitorDPI) {
-		win81p_LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p);
-	}
+	LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p);
+
 	HDC dc = GetDC(nullptr);
 	if (dc) {
 		COLORREF col = GetPixel(dc, p.x, p.y);
@@ -1413,18 +1407,9 @@ Color DisplayServerWindows::screen_get_pixel(const Point2i &p_position) const {
 }
 
 Ref<Image> DisplayServerWindows::screen_get_image(int p_screen) const {
-	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Ref<Image>());
-
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Ref<Image>());
 
 	Point2i pos = screen_get_position(p_screen) + _get_screens_origin();
 	Size2i size = screen_get_size(p_screen);
@@ -1436,10 +1421,8 @@ Ref<Image> DisplayServerWindows::screen_get_image(int p_screen) const {
 	POINT p2;
 	p2.x = pos.x + size.x;
 	p2.y = pos.y + size.y;
-	if (win81p_LogicalToPhysicalPointForPerMonitorDPI) {
-		win81p_LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p1);
-		win81p_LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p2);
-	}
+	LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p1);
+	LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p2);
 
 	Ref<Image> img;
 	HDC dc = GetDC(nullptr);
@@ -1492,10 +1475,8 @@ Ref<Image> DisplayServerWindows::screen_get_image_rect(const Rect2i &p_rect) con
 	POINT p2;
 	p2.x = pos.x + size.x;
 	p2.y = pos.y + size.y;
-	if (win81p_LogicalToPhysicalPointForPerMonitorDPI) {
-		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p1);
-		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p2);
-	}
+	LogicalToPhysicalPointForPerMonitorDPI(0, &p1);
+	LogicalToPhysicalPointForPerMonitorDPI(0, &p2);
 
 	Ref<Image> img;
 	HDC dc = GetDC(0);
@@ -1541,6 +1522,9 @@ float DisplayServerWindows::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
+
 	EnumRefreshRateData data = { Vector<DISPLAYCONFIG_PATH_INFO>(), Vector<DISPLAYCONFIG_MODE_INFO>(), 0, p_screen, SCREEN_REFRESH_RATE_FALLBACK };
 
 	uint32_t path_count = 0;
@@ -1954,10 +1938,8 @@ Size2i DisplayServerWindows::window_get_title_size(const String &p_title, Window
 			ClientToScreen(wd.hWnd, (POINT *)&rect.left);
 			ClientToScreen(wd.hWnd, (POINT *)&rect.right);
 
-			if (win81p_PhysicalToLogicalPointForPerMonitorDPI) {
-				win81p_PhysicalToLogicalPointForPerMonitorDPI(nullptr, (POINT *)&rect.left);
-				win81p_PhysicalToLogicalPointForPerMonitorDPI(nullptr, (POINT *)&rect.right);
-			}
+			PhysicalToLogicalPointForPerMonitorDPI(nullptr, (POINT *)&rect.left);
+			PhysicalToLogicalPointForPerMonitorDPI(nullptr, (POINT *)&rect.right);
 
 			size.x += (rect.right - rect.left);
 			size.y = MAX(size.y, rect.bottom - rect.top);
@@ -2018,7 +2000,7 @@ void DisplayServerWindows::_update_window_mouse_passthrough(WindowID p_window) {
 int DisplayServerWindows::window_get_current_screen(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(!windows.has(p_window), -1);
+	ERR_FAIL_COND_V(!windows.has(p_window), INVALID_SCREEN);
 
 	EnumScreenData data = { 0, 0, MonitorFromWindow(windows[p_window].hWnd, MONITOR_DEFAULTTONEAREST) };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcScreen, (LPARAM)&data);
@@ -2029,12 +2011,16 @@ void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_wi
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	ERR_FAIL_INDEX(p_screen, get_screen_count());
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX(p_screen, screen_count);
 
 	if (window_get_current_screen(p_window) == p_screen) {
 		return;
 	}
 	const WindowData &wd = windows[p_window];
+
 	if (wd.parent_hwnd) {
 		print_line("Embedded window can't be moved to another screen.");
 		return;
@@ -2445,7 +2431,12 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 	wd.was_fullscreen_pre_min = false;
 
 	if (p_mode == WINDOW_MODE_MAXIMIZED && wd.borderless) {
-		p_mode = WINDOW_MODE_FULLSCREEN;
+		int cs = window_get_current_screen(p_window);
+		Rect2i full = Rect2i(screen_get_position(cs), screen_get_size(cs));
+		Rect2i usable = screen_get_usable_rect(cs);
+		if (full == usable) {
+			p_mode = WINDOW_MODE_FULLSCREEN;
+		}
 	}
 
 	if (wd.fullscreen && p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
@@ -2478,16 +2469,48 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		}
 	}
 
+	if ((wd.maximized || wd.was_maximized_pre_fs) && wd.borderless && p_mode != WINDOW_MODE_MINIMIZED && p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+		RECT rect;
+		if (wd.pre_fs_valid) {
+			rect = wd.pre_fs_rect;
+		} else {
+			rect.left = 0;
+			rect.right = wd.width;
+			rect.top = 0;
+			rect.bottom = wd.height;
+		}
+
+		ShowWindow(wd.hWnd, SW_RESTORE);
+		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, TRUE);
+	}
+
 	if (p_mode == WINDOW_MODE_WINDOWED) {
 		ShowWindow(wd.hWnd, SW_NORMAL);
 		wd.maximized = false;
 		wd.minimized = false;
 	}
 
-	if (p_mode == WINDOW_MODE_MAXIMIZED) {
+	if (p_mode == WINDOW_MODE_MAXIMIZED && !wd.borderless) {
 		ShowWindow(wd.hWnd, SW_MAXIMIZE);
 		wd.maximized = true;
 		wd.minimized = false;
+	}
+
+	if (p_mode == WINDOW_MODE_MAXIMIZED && wd.borderless) {
+		if (!was_fullscreen && !(wd.maximized && wd.borderless)) {
+			// Save non-fullscreen rect before entering fullscreen.
+			GetWindowRect(wd.hWnd, &wd.pre_fs_rect);
+			wd.pre_fs_valid = true;
+		}
+		ShowWindow(wd.hWnd, SW_NORMAL);
+		wd.maximized = true;
+		wd.minimized = false;
+
+		int cs = window_get_current_screen(p_window);
+		Rect2i usable = screen_get_usable_rect(cs);
+		Point2 pos = usable.position + _get_screens_origin();
+		Size2 size = usable.size;
+		MoveWindow(wd.hWnd, pos.x, pos.y, size.width, size.height, TRUE);
 	}
 
 	if (p_mode == WINDOW_MODE_MINIMIZED) {
@@ -2512,7 +2535,7 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		// Save previous maximized stare.
 		wd.was_maximized_pre_fs = wd.maximized;
 
-		if (!was_fullscreen) {
+		if (!was_fullscreen && !(wd.maximized && wd.borderless)) {
 			// Save non-fullscreen rect before entering fullscreen.
 			GetWindowRect(wd.hWnd, &wd.pre_fs_rect);
 			wd.pre_fs_valid = true;
@@ -3392,7 +3415,7 @@ static INT_PTR input_text_dialog_cmd_proc(HWND hWnd, UINT code, WPARAM wParam, L
 		ERR_FAIL_NULL_V(text_edit, false);
 
 		Char16String text;
-		text.resize(GetWindowTextLengthW(text_edit) + 1);
+		text.resize_uninitialized(GetWindowTextLengthW(text_edit) + 1);
 		GetWindowTextW(text_edit, (LPWSTR)text.get_data(), text.size());
 
 		const Callable *callback = (const Callable *)GetWindowLongPtrW(hWnd, GWLP_USERDATA);
@@ -3692,10 +3715,8 @@ String DisplayServerWindows::_get_keyboard_layout_display_name(const String &p_k
 	WCHAR buffer[MAX_PATH] = {};
 	DWORD buffer_size = MAX_PATH;
 	if (RegGetValueW(key, (LPCWSTR)p_klid.utf16().get_data(), L"Layout Display Name", RRF_RT_REG_SZ, nullptr, buffer, &buffer_size) == ERROR_SUCCESS) {
-		if (load_indirect_string) {
-			if (load_indirect_string(buffer, buffer, buffer_size, nullptr) == S_OK) {
-				ret = String::utf16((const char16_t *)buffer, buffer_size);
-			}
+		if (SHLoadIndirectString(buffer, buffer, buffer_size, nullptr) == S_OK) {
+			ret = String::utf16((const char16_t *)buffer, buffer_size);
 		}
 	} else {
 		if (RegGetValueW(key, (LPCWSTR)p_klid.utf16().get_data(), L"Layout Text", RRF_RT_REG_SZ, nullptr, buffer, &buffer_size) == ERROR_SUCCESS) {
@@ -3775,7 +3796,11 @@ void DisplayServerWindows::process_events() {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 
 	if (!drop_events) {
-		joypad->process_joypads();
+#ifdef SDL_ENABLED
+		if (joypad_sdl) {
+			joypad_sdl->process_events();
+		}
+#endif
 	}
 
 	_THREAD_SAFE_LOCK_
@@ -4251,6 +4276,19 @@ void DisplayServerWindows::window_start_drag(WindowID p_window) {
 	ScreenToClient(wd.hWnd, &coords);
 
 	SendMessage(wd.hWnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, MAKELPARAM(coords.x, coords.y));
+
+	for (int btn = (int)MouseButton::LEFT; btn <= (int)MouseButton::MB_XBUTTON2; btn++) {
+		if (Input::get_singleton()->is_mouse_button_pressed(MouseButton(btn))) {
+			Ref<InputEventMouseButton> mb;
+			mb.instantiate();
+			mb->set_window_id(p_window);
+			mb->set_pressed(false);
+			mb->set_button_index(MouseButton::LEFT);
+			mb->set_position(Vector2(coords.x, coords.y));
+			mb->set_global_position(mb->get_position());
+			Input::get_singleton()->parse_input_event(mb);
+		}
+	}
 }
 
 void DisplayServerWindows::window_start_resize(WindowResizeEdge p_edge, WindowID p_window) {
@@ -4301,18 +4339,25 @@ void DisplayServerWindows::window_start_resize(WindowResizeEdge p_edge, WindowID
 	}
 
 	SendMessage(wd.hWnd, WM_SYSCOMMAND, SC_SIZE | op, MAKELPARAM(coords.x, coords.y));
+
+	for (int btn = (int)MouseButton::LEFT; btn <= (int)MouseButton::MB_XBUTTON2; btn++) {
+		if (Input::get_singleton()->is_mouse_button_pressed(MouseButton(btn))) {
+			Ref<InputEventMouseButton> mb;
+			mb.instantiate();
+			mb->set_window_id(p_window);
+			mb->set_pressed(false);
+			mb->set_button_index(MouseButton::LEFT);
+			mb->set_position(Vector2(coords.x, coords.y));
+			mb->set_global_position(mb->get_position());
+			Input::get_singleton()->parse_input_event(mb);
+		}
+	}
 }
 
 void DisplayServerWindows::set_context(Context p_context) {
 }
 
 bool DisplayServerWindows::is_window_transparency_available() const {
-	BOOL dwm_enabled = true;
-	if (DwmIsCompositionEnabled(&dwm_enabled) == S_OK) { // Note: Always enabled on Windows 8+, this check can be removed after Windows 7 support is dropped.
-		if (!dwm_enabled) {
-			return false;
-		}
-	}
 #if defined(RD_ENABLED)
 	if (rendering_device && !rendering_device->is_composite_alpha_supported()) {
 		return false;
@@ -4668,7 +4713,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 	// Process window messages.
 	switch (uMsg) {
 		case WM_GETOBJECT: {
-			get_object_recieved = true;
+			get_object_received = true;
 		} break;
 		case WM_MENUCOMMAND: {
 			native_menu->_menu_activate(HMENU(lParam), (int)wParam);
@@ -5089,13 +5134,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
-			if ((tablet_get_current_driver() != "winink") || !winink_available) {
+			if (tablet_get_current_driver() != "winink") {
 				break;
 			}
 
 			uint32_t pointer_id = LOWORD(wParam);
 			POINTER_INPUT_TYPE pointer_type = PT_POINTER;
-			if (!win8p_GetPointerType(pointer_id, &pointer_type)) {
+			if (!GetPointerType(pointer_id, &pointer_type)) {
 				break;
 			}
 
@@ -5118,13 +5163,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
-			if ((tablet_get_current_driver() != "winink") || !winink_available) {
+			if (tablet_get_current_driver() != "winink") {
 				break;
 			}
 
 			uint32_t pointer_id = LOWORD(wParam);
 			POINTER_INPUT_TYPE pointer_type = PT_POINTER;
-			if (!win8p_GetPointerType(pointer_id, &pointer_type)) {
+			if (!GetPointerType(pointer_id, &pointer_type)) {
 				break;
 			}
 
@@ -5230,13 +5275,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
-			if ((tablet_get_current_driver() != "winink") || !winink_available) {
+			if (tablet_get_current_driver() != "winink") {
 				break;
 			}
 
 			uint32_t pointer_id = LOWORD(wParam);
 			POINTER_INPUT_TYPE pointer_type = PT_POINTER;
-			if (!win8p_GetPointerType(pointer_id, &pointer_type)) {
+			if (!GetPointerType(pointer_id, &pointer_type)) {
 				break;
 			}
 
@@ -5245,7 +5290,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			POINTER_PEN_INFO pen_info;
-			if (!win8p_GetPointerPenInfo(pointer_id, &pen_info)) {
+			if (!GetPointerPenInfo(pointer_id, &pen_info)) {
 				break;
 			}
 
@@ -5716,6 +5761,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				int screen_id = window_get_current_screen(window_id);
 				Size2i screen_size = screen_get_size(screen_id);
 				Point2i screen_position = screen_get_position(screen_id);
+				Rect2i usable = screen_get_usable_rect(screen_id);
 
 				window.maximized = false;
 				window.minimized = false;
@@ -5732,8 +5778,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						window.maximized_fs = true;
 						_update_window_style(window_id, false);
 					}
+					if (window.borderless && (screen_size != usable.size || screen_position != usable.position)) {
+						Point2 pos = usable.position + _get_screens_origin();
+						Size2 size = usable.size;
+						MoveWindow(window.hWnd, pos.x, pos.y, size.width, size.height, TRUE);
+					}
 				} else if (window_rect.position == screen_position && window_rect.size == screen_size) {
 					window.fullscreen = true;
+				} else if (window.borderless && usable.position == window_rect.position && usable.size == window_rect.size) {
+					window.maximized = true;
 				}
 
 				if (window.maximized_fs && !window.maximized) {
@@ -5963,9 +6016,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				return 0;
 			}
 
-		} break;
-		case WM_DEVICECHANGE: {
-			joypad->probe_joypads();
 		} break;
 		case WM_DESTROY: {
 #ifdef ACCESSKIT_ENABLED
@@ -6592,16 +6642,6 @@ GetImmersiveColorFromColorSetExPtr DisplayServerWindows::GetImmersiveColorFromCo
 GetImmersiveColorTypeFromNamePtr DisplayServerWindows::GetImmersiveColorTypeFromName = nullptr;
 GetImmersiveUserColorSetPreferencePtr DisplayServerWindows::GetImmersiveUserColorSetPreference = nullptr;
 
-// Windows Ink API.
-bool DisplayServerWindows::winink_available = false;
-GetPointerTypePtr DisplayServerWindows::win8p_GetPointerType = nullptr;
-GetPointerPenInfoPtr DisplayServerWindows::win8p_GetPointerPenInfo = nullptr;
-LogicalToPhysicalPointForPerMonitorDPIPtr DisplayServerWindows::win81p_LogicalToPhysicalPointForPerMonitorDPI = nullptr;
-PhysicalToLogicalPointForPerMonitorDPIPtr DisplayServerWindows::win81p_PhysicalToLogicalPointForPerMonitorDPI = nullptr;
-
-// Shell API,
-SHLoadIndirectStringPtr DisplayServerWindows::load_indirect_string = nullptr;
-
 Vector2i _get_device_ids(const String &p_device_name) {
 	if (p_device_name.is_empty()) {
 		return Vector2i();
@@ -6717,7 +6757,7 @@ void DisplayServerWindows::tablet_set_current_driver(const String &p_driver) {
 
 	String driver = p_driver;
 	if (driver == "auto") {
-		if (winink_available && !winink_disabled) {
+		if (!winink_disabled) {
 			driver = "winink";
 		} else if (wintab_available) {
 			driver = "wintab";
@@ -6795,14 +6835,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		FreeLibrary(nt_lib);
 	}
 
-	// Load Shell API.
-	HMODULE shellapi_lib = LoadLibraryW(L"shlwapi.dll");
-	if (shellapi_lib) {
-		load_indirect_string = (SHLoadIndirectStringPtr)(void *)GetProcAddress(shellapi_lib, "SHLoadIndirectString");
-	}
-
-	// Load UXTheme, available on Windows 10+ only.
-	if (os_ver.dwBuildNumber >= 10240) {
+	// Load UXTheme.
+	if (os_ver.dwBuildNumber >= 10240) { // Not available on Wine, use only if real Windows 10/11 detected.
 		HMODULE ux_theme_lib = LoadLibraryW(L"uxtheme.dll");
 		if (ux_theme_lib) {
 			ShouldAppsUseDarkMode = (ShouldAppsUseDarkModePtr)(void *)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(132));
@@ -6847,22 +6881,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	}
 
 	tablet_drivers.push_back("auto");
-
-	// Note: Windows Ink API for pen input, available on Windows 8+ only.
-	// Note: DPI conversion API, available on Windows 8.1+ only.
-	HMODULE user32_lib = LoadLibraryW(L"user32.dll");
-	if (user32_lib) {
-		win8p_GetPointerType = (GetPointerTypePtr)(void *)GetProcAddress(user32_lib, "GetPointerType");
-		win8p_GetPointerPenInfo = (GetPointerPenInfoPtr)(void *)GetProcAddress(user32_lib, "GetPointerPenInfo");
-		win81p_LogicalToPhysicalPointForPerMonitorDPI = (LogicalToPhysicalPointForPerMonitorDPIPtr)(void *)GetProcAddress(user32_lib, "LogicalToPhysicalPointForPerMonitorDPI");
-		win81p_PhysicalToLogicalPointForPerMonitorDPI = (PhysicalToLogicalPointForPerMonitorDPIPtr)(void *)GetProcAddress(user32_lib, "PhysicalToLogicalPointForPerMonitorDPI");
-
-		winink_available = win8p_GetPointerType && win8p_GetPointerPenInfo;
-	}
-
-	if (winink_available) {
-		tablet_drivers.push_back("winink");
-	}
+	tablet_drivers.push_back("winink");
 
 	// Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
 	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");
@@ -6904,17 +6923,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	}
 
 	if (OS::get_singleton()->is_hidpi_allowed()) {
-		HMODULE Shcore = LoadLibraryW(L"Shcore.dll");
-
-		if (Shcore != nullptr) {
-			typedef HRESULT(WINAPI * SetProcessDpiAwareness_t)(SHC_PROCESS_DPI_AWARENESS);
-
-			SetProcessDpiAwareness_t SetProcessDpiAwareness = (SetProcessDpiAwareness_t)(void *)GetProcAddress(Shcore, "SetProcessDpiAwareness");
-
-			if (SetProcessDpiAwareness) {
-				SetProcessDpiAwareness(SHC_PROCESS_SYSTEM_DPI_AWARE);
-			}
-		}
+		SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
 	}
 
 	HMODULE comctl32 = LoadLibraryW(L"comctl32.dll");
@@ -7198,7 +7207,14 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		ERR_FAIL_MSG("Failed to create main window.");
 	}
 
-	joypad = new JoypadWindows(&windows[MAIN_WINDOW_ID].hWnd);
+#ifdef SDL_ENABLED
+	joypad_sdl = memnew(JoypadSDL(windows[MAIN_WINDOW_ID].hWnd));
+	if (joypad_sdl->initialize() != OK) {
+		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
+		memdelete(joypad_sdl);
+		joypad_sdl = nullptr;
+	}
+#endif
 
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
@@ -7220,7 +7236,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			}
 
 			uint64_t delta = OS::get_singleton()->get_ticks_msec() - time_wait;
-			if (delta > 500 || get_object_recieved) {
+			if (delta > 500 || get_object_received) {
 				break;
 			}
 		}
@@ -7352,7 +7368,11 @@ DisplayServerWindows::~DisplayServerWindows() {
 		E->erase();
 	}
 
-	delete joypad;
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		memdelete(joypad_sdl);
+	}
+#endif
 	touch_state.clear();
 
 	cursors_cache.clear();

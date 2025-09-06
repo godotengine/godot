@@ -105,6 +105,9 @@ struct CellData {
 	Vector2i coords;
 	TileMapCell cell;
 
+	// Debug
+	SelfList<CellData> debug_quadrant_list_element;
+
 	// Rendering.
 	Ref<RenderingQuadrant> rendering_quadrant;
 	SelfList<CellData> rendering_quadrant_list_element;
@@ -143,6 +146,7 @@ struct CellData {
 	}
 
 	CellData(const CellData &p_other) :
+			debug_quadrant_list_element(this),
 			rendering_quadrant_list_element(this),
 #ifndef PHYSICS_2D_DISABLED
 			physics_quadrant_list_element(this),
@@ -157,6 +161,7 @@ struct CellData {
 	}
 
 	CellData() :
+			debug_quadrant_list_element(this),
 			rendering_quadrant_list_element(this),
 #ifndef PHYSICS_2D_DISABLED
 			physics_quadrant_list_element(this),
@@ -238,14 +243,20 @@ public:
 		int physics_layer = 0;
 		Vector2 linear_velocity;
 		real_t angular_velocity = 0.0;
+
 		bool one_way_collision = false;
 		real_t one_way_collision_margin = 0.0;
+
+		int64_t y_origin = 0; // This is only used if one_way_collision is on, to avoid merging polygons vertically in that case.
 
 		bool operator<(const PhysicsBodyKey &p_other) const {
 			if (physics_layer == p_other.physics_layer) {
 				if (linear_velocity == p_other.linear_velocity) {
 					if (angular_velocity == p_other.angular_velocity) {
 						if (one_way_collision == p_other.one_way_collision) {
+							if (one_way_collision && y_origin != p_other.y_origin) {
+								return y_origin < p_other.y_origin;
+							}
 							return one_way_collision_margin < p_other.one_way_collision_margin;
 						}
 						return one_way_collision < p_other.one_way_collision;
@@ -265,7 +276,8 @@ public:
 					linear_velocity == p_other.linear_velocity &&
 					angular_velocity == p_other.angular_velocity &&
 					one_way_collision == p_other.one_way_collision &&
-					one_way_collision_margin == p_other.one_way_collision_margin;
+					one_way_collision_margin == p_other.one_way_collision_margin &&
+					(!one_way_collision || y_origin == p_other.y_origin);
 		}
 	};
 
@@ -275,6 +287,9 @@ public:
 			h = hash_murmur3_one_real(p_hash.linear_velocity.x);
 			h = hash_murmur3_one_real(p_hash.linear_velocity.y, h);
 			h = hash_murmur3_one_real(p_hash.angular_velocity, h);
+			if (p_hash.one_way_collision) {
+				h = hash_murmur3_one_32(p_hash.y_origin, h);
+			}
 			return h;
 		}
 	};
@@ -527,6 +542,7 @@ public:
 	// Not exposed to users.
 	TileMapCell get_cell(const Vector2i &p_coords) const;
 
+	static void compute_transformed_tile_dest_rect(Rect2 &r_dest_rect, bool &r_transpose, const Vector2 &p_position, const Vector2 &p_dest_rect_size, const TileData *p_tile_data, int p_alternative_tile);
 	static void draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, const TileData *p_tile_data_override = nullptr, real_t p_normalized_animation_offset = 0.0);
 
 	////////////// Exposed functions //////////////

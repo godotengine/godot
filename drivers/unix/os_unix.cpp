@@ -131,6 +131,8 @@ static void _setup_clock() {
 }
 #endif
 
+struct sigaction old_action;
+
 static void handle_interrupt(int sig) {
 	if (!EngineDebugger::is_active()) {
 		return;
@@ -138,6 +140,11 @@ static void handle_interrupt(int sig) {
 
 	EngineDebugger::get_script_debugger()->set_depth(-1);
 	EngineDebugger::get_script_debugger()->set_lines_left(1);
+
+	// Ensure we call the old action if it was configured.
+	if (old_action.sa_handler && old_action.sa_handler != SIG_IGN && old_action.sa_handler != SIG_DFL) {
+		old_action.sa_handler(sig);
+	}
 }
 
 void OS_Unix::initialize_debugging() {
@@ -145,7 +152,7 @@ void OS_Unix::initialize_debugging() {
 		struct sigaction action;
 		memset(&action, 0, sizeof(action));
 		action.sa_handler = handle_interrupt;
-		sigaction(SIGINT, &action, nullptr);
+		sigaction(SIGINT, &action, &old_action);
 	}
 }
 
@@ -788,7 +795,7 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 
 	Ref<FileAccessUnixPipe> err_pipe;
 	err_pipe.instantiate();
-	err_pipe->open_existing(pipe_err[0], 0, p_blocking);
+	err_pipe->open_existing(pipe_err[0], -1, p_blocking);
 
 	ProcessInfo pi;
 	process_map_mutex.lock();
@@ -804,10 +811,14 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 #endif
 }
 
-int OS_Unix::_wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_options) {
+int OS_Unix::_wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_options, pid_t *r_pid) {
 	while (true) {
-		if (waitpid(p_pid, r_status, p_options) != -1) {
+		pid_t pid = waitpid(p_pid, r_status, p_options);
+		if (pid != -1) {
 			// Thread exited normally.
+			if (r_pid) {
+				*r_pid = pid;
+			}
 			return 0;
 		}
 		const int error = errno;
@@ -831,10 +842,14 @@ bool OS_Unix::_check_pid_is_running(const pid_t p_pid, int *r_status) const {
 		return false;
 	}
 
+	pid_t pid = -1;
 	int status = 0;
-	const int result = _wait_for_pid_completion(p_pid, &status, WNOHANG);
+	const int result = _wait_for_pid_completion(p_pid, &status, WNOHANG, &pid);
 	if (result == 0) {
 		// Thread is still running.
+		if (pi && pid == p_pid) {
+			pi->exit_code = WIFEXITED(status) ? WEXITSTATUS(status) : status;
+		}
 		return true;
 	}
 
@@ -845,7 +860,9 @@ bool OS_Unix::_check_pid_is_running(const pid_t p_pid, int *r_status) const {
 
 	if (pi) {
 		pi->is_running = false;
-		pi->exit_code = status;
+		if (pid == p_pid) {
+			pi->exit_code = status;
+		}
 	}
 
 	if (r_status) {
@@ -1113,8 +1130,8 @@ String OS_Unix::get_user_data_dir(const String &p_user_dir) const {
 String OS_Unix::get_executable_path() const {
 #ifdef __linux__
 	//fix for running from a symlink
-	char buf[256];
-	memset(buf, 0, 256);
+	char buf[PATH_MAX];
+	memset(buf, 0, PATH_MAX);
 	ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf));
 	String b;
 	if (len > 0) {
@@ -1204,32 +1221,34 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 	const char *cyan_bold = tty ? "\E[1;36m" : "";
 	const char *reset = tty ? "\E[0m" : "";
 
-	const char *indent = "";
+	const char *bold_color;
+	const char *normal_color;
 	switch (p_type) {
 		case ERR_WARNING:
-			indent = "     ";
-			logf_error("%sWARNING:%s %s\n", yellow_bold, yellow, err_details);
+			bold_color = yellow_bold;
+			normal_color = yellow;
 			break;
 		case ERR_SCRIPT:
-			indent = "          ";
-			logf_error("%sSCRIPT ERROR:%s %s\n", magenta_bold, magenta, err_details);
+			bold_color = magenta_bold;
+			normal_color = magenta;
 			break;
 		case ERR_SHADER:
-			indent = "          ";
-			logf_error("%sSHADER ERROR:%s %s\n", cyan_bold, cyan, err_details);
+			bold_color = cyan_bold;
+			normal_color = cyan;
 			break;
 		case ERR_ERROR:
 		default:
-			indent = "   ";
-			logf_error("%sERROR:%s %s\n", red_bold, red, err_details);
+			bold_color = red_bold;
+			normal_color = red;
 			break;
 	}
 
-	logf_error("%s%sat: %s (%s:%i)%s\n", gray, indent, p_function, p_file, p_line, reset);
+	logf_error("%s%s:%s %s\n", bold_color, error_type_string(p_type), normal_color, err_details);
+	logf_error("%s%sat: %s (%s:%i)%s\n", gray, error_type_indent(p_type), p_function, p_file, p_line, reset);
 
 	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
 		if (!backtrace->is_empty()) {
-			logf_error("%s%s%s\n", gray, backtrace->format(strlen(indent)).utf8().get_data(), reset);
+			logf_error("%s%s%s\n", gray, backtrace->format(strlen(error_type_indent(p_type))).utf8().get_data(), reset);
 		}
 	}
 }

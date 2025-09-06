@@ -318,6 +318,7 @@ public:
 	virtual Rect2i get_display_safe_area() const { return screen_get_usable_rect(); }
 
 	enum {
+		INVALID_SCREEN = -1,
 		SCREEN_WITH_MOUSE_FOCUS = -4,
 		SCREEN_WITH_KEYBOARD_FOCUS = -3,
 		SCREEN_PRIMARY = -2,
@@ -601,7 +602,6 @@ public:
 	};
 
 	enum AccessibilityPopupType {
-		POPUP_UNKNOWN,
 		POPUP_MENU,
 		POPUP_LIST,
 		POPUP_TREE,
@@ -610,7 +610,6 @@ public:
 
 	enum AccessibilityFlags {
 		FLAG_HIDDEN,
-		FLAG_LINKED,
 		FLAG_MULTISELECTABLE,
 		FLAG_REQUIRED,
 		FLAG_VISITED,
@@ -652,6 +651,20 @@ public:
 		LIVE_OFF,
 		LIVE_POLITE,
 		LIVE_ASSERTIVE,
+	};
+
+	enum AccessibilityScrollUnit {
+		SCROLL_UNIT_ITEM,
+		SCROLL_UNIT_PAGE,
+	};
+
+	enum AccessibilityScrollHint {
+		SCROLL_HINT_TOP_LEFT,
+		SCROLL_HINT_BOTTOM_RIGHT,
+		SCROLL_HINT_TOP_EDGE,
+		SCROLL_HINT_BOTTOM_EDGE,
+		SCROLL_HINT_LEFT_EDGE,
+		SCROLL_HINT_RIGHT_EDGE,
 	};
 
 	static AccessibilityMode accessibility_get_mode() { return accessibility_mode; }
@@ -982,6 +995,8 @@ VARIANT_ENUM_CAST(DisplayServer::AccessibilityFlags)
 VARIANT_ENUM_CAST(DisplayServer::AccessibilityLiveMode)
 VARIANT_ENUM_CAST(DisplayServer::AccessibilityPopupType)
 VARIANT_ENUM_CAST(DisplayServer::AccessibilityRole)
+VARIANT_ENUM_CAST(DisplayServer::AccessibilityScrollUnit)
+VARIANT_ENUM_CAST(DisplayServer::AccessibilityScrollHint)
 
 VARIANT_ENUM_CAST(DisplayServer::WindowEvent)
 VARIANT_ENUM_CAST(DisplayServer::Feature)

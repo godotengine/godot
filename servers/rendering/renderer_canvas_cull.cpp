@@ -1735,7 +1735,7 @@ void RendererCanvasCull::canvas_item_add_triangle_array(RID p_item, const Vector
 
 	polygon->texture = p_texture;
 
-	polygon->polygon.create(p_indices, p_points, p_colors, p_uvs, p_bones, p_weights);
+	polygon->polygon.create(p_indices, p_points, p_colors, p_uvs, p_bones, p_weights, p_count);
 
 	polygon->primitive = RS::PRIMITIVE_TRIANGLES;
 }
