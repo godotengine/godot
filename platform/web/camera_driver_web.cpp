@@ -106,13 +106,13 @@ void CameraDriverWeb::_on_get_cameras_callback(void *context, void *callback, co
 		info.index = device_dict[KEY_INDEX];
 		info.device_id = device_dict[KEY_ID];
 		info.label = device_dict[KEY_LABEL];
-        // Initialize capability with safe defaults to avoid uninitialized usage downstream.
-        {
-            CapabilityInfo capability = {};
-            capability.width = 0;
-            capability.height = 0;
-            info.capability = capability;
-        }
+		// Initialize capability with safe defaults to avoid uninitialized usage downstream.
+		{
+			CapabilityInfo capability = {};
+			capability.width = 0;
+			capability.height = 0;
+			info.capability = capability;
+		}
 
 		Variant v_caps_data = device_dict.get(KEY_CAPABILITIES, Variant());
 		if (v_caps_data.get_type() != Variant::DICTIONARY) {
