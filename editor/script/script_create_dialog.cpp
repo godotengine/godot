@@ -626,7 +626,7 @@ void ScriptCreateDialog::_update_dialog() {
 		validation_panel->set_message(MSG_ID_SCRIPT, TTR("Invalid inherited parent name or path."), EditorValidationPanel::MSG_ERROR);
 	}
 
-	if (validation_panel->is_valid() && !is_new_script_created) {
+	if (validation_panel->is_valid() && !is_new_script_created && load_enabled) {
 		validation_panel->set_message(MSG_ID_SCRIPT, TTR("File exists, it will be reused."), EditorValidationPanel::MSG_OK);
 	}
 
@@ -673,7 +673,7 @@ void ScriptCreateDialog::_update_dialog() {
 	parent_search_button->set_disabled(!is_new_file);
 	parent_browse_button->set_disabled(!is_new_file || !can_inherit_from_file);
 	template_inactive_message = "";
-	String button_text = is_new_file ? TTR("Create") : TTR("Load");
+	String button_text = (is_new_file || !load_enabled) ? TTR("Create") : TTR("Load");
 	set_ok_button_text(button_text);
 
 	if (is_new_file) {
