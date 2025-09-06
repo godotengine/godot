@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "camera_win.h"
-#include <strsafe.h>
 
 //////////////////////////////////////////////////////////////////////////
 // CameraFeedWindows - Subclass for our camera feed on windows
@@ -363,15 +362,20 @@ bool CameraFeedWindows::activate_feed() {
 			if (media_type_set) {
 				// Create media imf_source_reader
 				IMFAttributes *reader_attributes = nullptr;
-				hr = MFCreateAttributes(&reader_attributes, 1);
+				hr = MFCreateAttributes(&reader_attributes, 2);
 				if (SUCCEEDED(hr)) {
 					// Enable hardware acceleration if available
 					hr = reader_attributes->SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, TRUE);
+					// Hint to disconnect media source on shutdown to help unblock.
+					reader_attributes->SetUINT32(MF_SOURCE_READER_DISCONNECT_MEDIASOURCE_ON_SHUTDOWN, TRUE);
 
 					hr = MFCreateSourceReaderFromMediaSource(imf_media_source, reader_attributes, &imf_source_reader);
 					reader_attributes->Release();
 
 					if (SUCCEEDED(hr)) {
+						// Ensure we are reading the first video stream
+						imf_source_reader->SetStreamSelection(MF_SOURCE_READER_FIRST_VIDEO_STREAM, TRUE);
+
 						// Configure source reader to convert to RGB24
 						IMFMediaType *output_type = nullptr;
 						hr = MFCreateMediaType(&output_type);
@@ -429,6 +433,11 @@ bool CameraFeedWindows::activate_feed() {
 void CameraFeedWindows::deactivate_feed() {
 	if (worker != nullptr) {
 		active = false;
+		// Attempt to unblock ReadSample by deselecting and flushing the stream.
+		if (imf_source_reader) {
+			imf_source_reader->SetStreamSelection(MF_SOURCE_READER_FIRST_VIDEO_STREAM, FALSE);
+			imf_source_reader->Flush(MF_SOURCE_READER_FIRST_VIDEO_STREAM);
+		}
 		worker->join();
 		memdelete(worker);
 		worker = nullptr;
@@ -439,22 +448,28 @@ void CameraFeedWindows::deactivate_feed() {
 		buffer_decoder = nullptr;
 	}
 
-	if (imf_media_source != nullptr) {
-		imf_media_source->Release();
-		imf_media_source = nullptr;
-	}
-
+	// Release in safe order: reader first, then media source.
 	if (imf_source_reader != nullptr) {
 		imf_source_reader->Release();
 		imf_source_reader = nullptr;
+	}
+
+	if (imf_media_source != nullptr) {
+		imf_media_source->Release();
+		imf_media_source = nullptr;
 	}
 }
 
 void CameraFeedWindows::capture(CameraFeedWindows *feed) {
 	print_verbose("Camera feed is now streaming");
+	// Initialize COM on this worker thread to safely use MF objects here.
+	HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 	feed->active = true;
 	while (feed->active) {
 		feed->read();
+	}
+	if (SUCCEEDED(hr)) {
+		CoUninitialize();
 	}
 }
 
@@ -474,6 +489,7 @@ void CameraFeedWindows::read() {
 	);
 
 	if (FAILED(hr)) {
+		ERR_PRINT(vformat("ReadSample failed: 0x%08x", (uint32_t)hr));
 		return;
 	}
 
@@ -497,25 +513,30 @@ void CameraFeedWindows::read() {
 
 	// Process sample
 	if (pSample) {
-		IMFMediaBuffer *buffer;
-		hr = pSample->GetBufferByIndex(0, &buffer);
-		if (SUCCEEDED(hr)) {
+		IMFMediaBuffer *buffer = nullptr;
+		hr = pSample->ConvertToContiguousBuffer(&buffer);
+		if (SUCCEEDED(hr) && buffer) {
 			// Get image buffer
-			BYTE *data;
-			DWORD buffer_length;
-			buffer->Lock(&data, nullptr, &buffer_length);
+			BYTE *data = nullptr;
+			DWORD buffer_length = 0;
+			hr = buffer->Lock(&data, nullptr, &buffer_length);
+			if (SUCCEEDED(hr)) {
+				// Use buffer decoder to process the frame
+				StreamingBuffer streaming_buffer;
+				streaming_buffer.start = data;
+				streaming_buffer.length = buffer_length;
 
-			// Use buffer decoder to process the frame
-			StreamingBuffer streaming_buffer;
-			streaming_buffer.start = data;
-			streaming_buffer.length = buffer_length;
+				if (buffer_decoder) {
+					buffer_decoder->decode(streaming_buffer);
+				}
 
-			if (buffer_decoder) {
-				buffer_decoder->decode(streaming_buffer);
+				buffer->Unlock();
+			} else {
+				ERR_PRINT(vformat("IMFMediaBuffer::Lock failed: 0x%08x", (uint32_t)hr));
 			}
-
-			buffer->Unlock();
 			buffer->Release();
+		} else {
+			ERR_PRINT(vformat("ConvertToContiguousBuffer failed: 0x%08x", (uint32_t)hr));
 		}
 		pSample->Release();
 	}
