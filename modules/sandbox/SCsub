@@ -1,0 +1,150 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_sandbox = env_modules.Clone()
+
+# Enable exceptions for libriscv (required)
+env_sandbox.Append(CPPDEFINES=["RISCV_EXCEPTIONS_ENABLED"])
+if env["platform"] == "web":
+    # Force enable exceptions for Emscripten
+    env_sandbox.Append(CXXFLAGS=["-fexceptions"])
+    env_sandbox.Append(LINKFLAGS=["-fexceptions", "-s", "DISABLE_EXCEPTION_CATCHING=0"])
+elif env["platform"] != "windows" or env.get("use_mingw", False):
+    env_sandbox.Append(CXXFLAGS=["-fexceptions"])
+else:
+    env_sandbox.Append(CXXFLAGS=["/EHsc"])
+
+# Add compiler definitions for libriscv
+env_sandbox.Append(CPPDEFINES=["RISCV_SYSCALLS_MAX=600", "RISCV_BRK_MEMORY_SIZE=0x100000"])
+
+# Add include paths
+env_sandbox.Prepend(CPPPATH=["#modules/sandbox/thirdparty/libriscv/lib"])
+env_sandbox.Append(CPPPATH=["#modules/sandbox/src/", "#modules/sandbox/."])
+
+# Set C++20 standard and allow C99 designated initializers for libriscv
+if env["platform"] != "windows" or env.get("use_mingw", False):
+    cxx_flags = ["-std=c++20"]
+    # Only add -Wno-c99-designator if compiler supports it (newer GCC/Clang)
+    import subprocess
+
+    try:
+        # Test if the compiler supports -Wno-c99-designator
+        result = subprocess.run(
+            [env["CXX"], "-Wno-c99-designator", "-E", "-"], input="", text=True, capture_output=True, timeout=5
+        )
+        if result.returncode == 0:
+            cxx_flags.append("-Wno-c99-designator")
+    except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):
+        # If test fails, continue without the flag
+        pass
+    env_sandbox.Append(CXXFLAGS=cxx_flags)
+else:
+    env_sandbox.Append(CXXFLAGS=["/std:c++20"])
+
+# Platform-specific configurations
+if env["platform"] == "windows":
+    env_sandbox.Prepend(CPPPATH=["#modules/sandbox/thirdparty/libriscv/lib/libriscv/lib/win32"])
+    env_sandbox.Prepend(LIBS=["ws2_32"])  # for socket calls
+elif env["platform"] == "macos":
+    env_sandbox.Prepend(CPPPATH=["#modules/sandbox/thirdparty/libriscv/lib/libriscv/lib/macos"])
+    env_sandbox.Append(LINKFLAGS=["-framework", "Security"])
+elif env["platform"] == "web":
+    env_sandbox.Prepend(CPPPATH=["#modules/sandbox/thirdparty/libriscv/lib/libriscv/lib/linux"])
+    # Force disable exceptions in global environment to override for sandbox only
+    env["disable_exceptions"] = False
+elif env["platform"] == "linux" or env["platform"] == "android":
+    env_sandbox.Prepend(CPPPATH=["#modules/sandbox/thirdparty/libriscv/lib/libriscv/lib/linux"])
+
+# Add libriscv source files
+librisc_sources = [
+    # threaded fast-path:
+    "thirdparty/libriscv/lib/libriscv/threaded_dispatch.cpp",
+    "thirdparty/libriscv/lib/libriscv/threaded_inaccurate_dispatch.cpp",
+    "thirdparty/libriscv/lib/libriscv/cpu.cpp",
+    "thirdparty/libriscv/lib/libriscv/debug.cpp",
+    "thirdparty/libriscv/lib/libriscv/decode_bytecodes.cpp",
+    "thirdparty/libriscv/lib/libriscv/decoder_cache.cpp",
+    "thirdparty/libriscv/lib/libriscv/machine.cpp",
+    "thirdparty/libriscv/lib/libriscv/machine_defaults.cpp",
+    "thirdparty/libriscv/lib/libriscv/memory.cpp",
+    "thirdparty/libriscv/lib/libriscv/memory_elf.cpp",
+    "thirdparty/libriscv/lib/libriscv/memory_mmap.cpp",
+    "thirdparty/libriscv/lib/libriscv/memory_rw.cpp",
+    "thirdparty/libriscv/lib/libriscv/native_libc.cpp",
+    "thirdparty/libriscv/lib/libriscv/native_threads.cpp",
+    "thirdparty/libriscv/lib/libriscv/rv64i.cpp",
+    "thirdparty/libriscv/lib/libriscv/serialize.cpp",
+    # POSIX
+    "thirdparty/libriscv/lib/libriscv/posix/minimal.cpp",
+    "thirdparty/libriscv/lib/libriscv/posix/signals.cpp",
+    "thirdparty/libriscv/lib/libriscv/posix/threads.cpp",
+    "thirdparty/libriscv/lib/libriscv/util/crc32c.cpp",
+    # Binary translator
+    "thirdparty/libriscv/lib/libriscv/tr_api.cpp",
+    "thirdparty/libriscv/lib/libriscv/tr_emit.cpp",
+    "thirdparty/libriscv/lib/libriscv/tr_translate.cpp",
+]
+
+# Platform-specific libriscv sources
+if env["platform"] == "windows":
+    librisc_sources += [
+        "thirdparty/libriscv/lib/libriscv/win32/dlfcn.cpp",
+        "thirdparty/libriscv/lib/libriscv/win32/system_calls.cpp",
+        "thirdparty/libriscv/lib/libriscv/win32/tr_msvc.cpp",
+    ]
+else:
+    librisc_sources += [
+        "thirdparty/libriscv/lib/libriscv/linux/system_calls.cpp",
+        "thirdparty/libriscv/lib/libriscv/tr_compiler.cpp",
+    ]
+
+# Create thirdparty environment with disabled warnings for libriscv
+env_thirdparty = env_sandbox.Clone()
+env_thirdparty.disable_warnings()
+
+# Add libriscv sources to the build using thirdparty environment
+env_thirdparty.add_source_files(env.modules_sources, librisc_sources)
+
+# Add sandbox source files (now converted to Godot internal APIs)
+sandbox_sources = [
+    "register_types.cpp",
+    "src/sandbox_base.cpp",
+    "src/sandbox.cpp",
+    "src/guest_variant.cpp",
+    "src/sandbox_project_settings.cpp",
+    "src/sandbox_syscalls.cpp",
+    "src/sandbox_syscalls_2d.cpp",
+    "src/sandbox_syscalls_3d.cpp",
+    "src/sandbox_functions.cpp",
+    "src/sandbox_programs.cpp",
+    "src/sandbox_restrictions.cpp",
+    "src/sandbox_profiling.cpp",
+    "src/sandbox_debug.cpp",
+    "src/sandbox_exception.cpp",
+    "src/sandbox_globals.cpp",
+    "src/sandbox_generated_api.cpp",
+    "src/sandbox_shm.cpp",
+    "src/sandbox_bintr.cpp",
+    "src/override_libriscv.cpp",
+]
+
+# Add subdirectory sources using Glob
+import glob
+import os
+
+# Add sources from subdirectories
+for subdir in ["bintr", "cpp", "elf", "godot"]:
+    subdir_path = f"src/{subdir}"
+    if os.path.exists(subdir_path):
+        cpp_files = glob.glob(f"{subdir_path}/*.cpp")
+        for cpp_file in cpp_files:
+            # Convert to relative path from module root
+            rel_path = cpp_file.replace("\\", "/")
+            sandbox_sources.append(rel_path)
+
+env_sandbox.add_source_files(env.modules_sources, sandbox_sources)
+
+print("Sandbox module configured as pure Godot module (complete)")

@@ -1,0 +1,38 @@
+name: Build MacOS
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {arch: universal, precision: single, extension: ""}
+          - {arch: universal, precision: double, extension: ".double"}
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 1
+
+      - name: 🔗 GDExtension Build
+        uses: godotengine/godot-cpp-template/.github/actions/build@f9564a9c8115139b9624692d39e358291f6d76ce
+        with:
+          platform: macos
+          arch: ${{ matrix.arch }}
+          build-target-type: template_release
+          float-precision: ${{ matrix.precision }}
+          godot-cpp-directory: thirdparty/godot-cpp
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-sandbox-macos-${{ matrix.arch }}-${{ matrix.precision }}
+          path: |
+            ${{ github.workspace }}/bin/**/*.universal
+          if-no-files-found: error
+          retention-days: 10 # 90 days by default

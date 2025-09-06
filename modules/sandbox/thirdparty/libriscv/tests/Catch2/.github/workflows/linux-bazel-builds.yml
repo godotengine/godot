@@ -1,0 +1,24 @@
+name: Linux Builds (Bazel)
+
+on: [push, pull_request]
+
+jobs:
+  build_and_test_ubuntu:
+    name: Linux Ubuntu 22.04 Bazel build <GCC 11.2.0>
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        compilation_mode: [fastbuild, dbg, opt]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Mount Bazel cache
+      uses: actions/cache@v3
+      with:
+        path: "/home/runner/.cache/bazel"
+        key: bazel-ubuntu22-gcc11
+
+    - name: Build
+      run: bazelisk build --compilation_mode=${{matrix.compilation_mode}} //...

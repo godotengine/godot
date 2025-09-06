@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/fwsGonzo/tinyprintf.git
+	branch = master
+	commit = 6fdeec590af7b0d604dc44630ca85cb2be1f647f
+	parent = 11350b787b3328c284239a1b2e06ccddc19de576
+	method = merge
+	cmdver = 0.4.9

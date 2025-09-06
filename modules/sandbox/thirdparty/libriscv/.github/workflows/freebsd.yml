@@ -1,0 +1,27 @@
+name: FreeBSD 64-bit emulator build
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Emulator CLI
+    env:
+      MYTOKEN : "value1"
+      MYTOKEN2: "value2"
+    steps:
+    - uses: actions/checkout@v4
+    - name: Test in FreeBSD
+      id: test
+      uses: vmactions/freebsd-vm@v1
+      with:
+        envs: 'MYTOKEN MYTOKEN2'
+        usesh: true
+        prepare: |
+          pkg install -y git cmake
+
+        run: |
+          cd emulator
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+          ./build/rvlinux ../tests/unit/elf/zig-riscv64-hello-world

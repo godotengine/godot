@@ -1,0 +1,12 @@
+build --enable_platform_specific_config
+
+build:gcc9 --cxxopt=-std=c++2a
+build:gcc11 --cxxopt=-std=c++2a
+build:gcc13 --cxxopt=-std=c++2a
+build:clang13 --cxxopt=-std=c++17
+build:vs2019 --cxxopt=/std:c++17
+build:vs2022 --cxxopt=/std:c++17
+
+build:windows --config=vs2022
+build:linux --config=gcc11
+build:macos --cxxopt=-std=c++2b

@@ -1,0 +1,31 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "basic-tests",
+            "binaryDir": "build",
+            "installDir": "build/install",
+            "displayName": "Basic development build",
+            "description": "Enables development build with basic tests that are cheap to build and run",
+            "cacheVariables": {
+                "CMAKE_CXX_EXTENSIONS": "OFF",
+                "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CATCH_DEVELOPMENT_BUILD": "ON"
+            }
+        },
+        {
+            "name": "all-tests",
+            "inherits": "basic-tests",
+            "displayName": "Full development build",
+            "description": "Enables development build with examples and ALL tests",
+            "cacheVariables": {
+                "CATCH_BUILD_EXAMPLES": "ON",
+                "CATCH_BUILD_EXTRA_TESTS": "ON",
+                "CATCH_BUILD_SURROGATES": "ON",
+                "CATCH_ENABLE_CONFIGURE_TESTS": "ON",
+                "CATCH_ENABLE_CMAKE_HELPER_TESTS": "ON"
+            }
+        }
+    ]   
+}

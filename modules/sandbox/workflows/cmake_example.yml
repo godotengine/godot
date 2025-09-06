@@ -1,0 +1,74 @@
+name: CMake Example
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{github.workspace}}/program/cpp/cmake/example
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y gcc-12-riscv64-linux-gnu g++-12-riscv64-linux-gnu cmake
+
+    - name: Configure
+      env:
+        CC: riscv64-linux-gnu-gcc-12
+        CXX: riscv64-linux-gnu-g++-12
+      run: cmake -B ${{github.workspace}}/.build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=../toolchain.cmake
+
+    - name: Build the project
+      run: cmake --build ${{github.workspace}}/.build --parallel 6
+
+    - name: Verify the example program exists
+      working-directory: ${{github.workspace}}/.build
+      run: |
+        if [ ! -f example ]; then
+          echo "example program not found"
+          exit 1
+        fi
+
+  zig_build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{github.workspace}}/program/cpp/project
+    env:
+      CC: zig cc -target riscv64-linux-musl
+      CXX: zig c++ -target riscv64-linux-musl
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y git cmake zip wget xz-utils
+        git submodule update --init --recursive --depth=1
+        # Install Zig
+        wget https://ziglang.org/download/0.14.0/zig-linux-x86_64-0.14.0.tar.xz
+        tar -xf zig-linux-x86_64-0.14.0.tar.xz
+
+    - name: Build the example program
+      run: |
+        export PATH=$PWD/zig-linux-x86_64-0.14.0:$PATH
+        cmake -B build -DCMAKE_BUILD_TYPE=Release -DSTRIPPED=ON
+        cmake --build build --parallel 8
+
+    - name: Verify the example program exists
+      working-directory: ${{github.workspace}}/program/cpp/project/build
+      run: |
+        if [ ! -f sandbox_program.elf ]; then
+          echo "example program not found"
+          exit 1
+        fi

@@ -1,0 +1,50 @@
+name: Release
+on:
+  workflow_call:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: godot-sandbox-*
+          merge-multiple: true
+          path: godot-sandbox
+          name: godot-sandbox
+      - name: Download artifacts JIT
+        uses: actions/download-artifact@v4
+        with:
+          pattern: godot-jit-*
+          merge-multiple: true
+          path: sandbox
+          name: godot-jit
+      - name: Delete draft release(s)
+        uses: hugo19941994/delete-draft-releases@v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Archive
+        shell: sh
+        run: |
+          ls
+          mkdir -p godot-jit
+          mv sandbox/libgodot_riscv.* godot-jit/
+          zip -r "godot-sandbox.zip" godot-sandbox
+          zip -r "sandbox.zip" sandbox
+          zip -r "godot-sandbox-jit.zip" godot-jit
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Godot Sandbox Nightly
+          files: |
+            godot-sandbox.zip
+            godot-sandbox-jit.zip
+            sandbox.zip
+          generate_release_notes: true
+          draft: true
+          prerelease: true
+          fail_on_unmatched_files: true

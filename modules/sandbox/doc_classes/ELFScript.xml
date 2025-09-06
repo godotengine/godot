@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ELFScript" inherits="ScriptExtension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A container for binary ELF files that can be attached to and executed inside Sandbox nodes.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_content">
+			<return type="PackedByteArray" />
+			<description>
+				Returns the binary content of the program. This is the ELF binary data that can be executed by Godot Sandbox.
+			</description>
+		</method>
+		<method name="get_sandbox_for" qualifiers="const">
+			<return type="Sandbox" />
+			<param index="0" name="for_object" type="Object" />
+			<description>
+				Find a shared Sandbox instance associated with the given Object.
+			</description>
+		</method>
+		<method name="get_sandbox_objects" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns an Array of all Objects associated with the Sandbox instances that use this ELF script.
+			</description>
+		</method>
+	</methods>
+</class>

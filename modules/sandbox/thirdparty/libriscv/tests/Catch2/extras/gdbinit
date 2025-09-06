@@ -1,0 +1,16 @@
+#
+# This file provides a way to skip stepping into Catch code when debugging with gdb.
+#
+# With the gdb "skip" command you can tell gdb to skip files or functions during debugging.
+# see https://xaizek.github.io/2016-05-26/skipping-standard-library-in-gdb/ for an example
+#
+# Basically the following line tells gdb to skip all functions containing the
+# regexp "Catch", which matches the complete Catch namespace.
+# If you want to skip just some parts of the Catch code you can modify the
+# regexp accordingly.
+# 
+# If you want to permanently skip stepping into Catch code copy the following
+# line into your ~/.gdbinit file
+# 
+
+skip -rfu Catch

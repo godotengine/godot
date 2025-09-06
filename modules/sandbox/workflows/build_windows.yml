@@ -1,0 +1,42 @@
+name: Build Windows
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {arch: x86_32, precision: single}
+          - {arch: x86_32, precision: double}
+          - {arch: x86_64, precision: single}
+          - {arch: x86_64, precision: double}
+          - {arch: arm64, precision: single}
+          - {arch: arm64, precision: double}
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 1
+
+      - name: 🔗 GDExtension Build
+        uses: godotengine/godot-cpp-template/.github/actions/build@f9564a9c8115139b9624692d39e358291f6d76ce
+        with:
+          platform: windows
+          arch: ${{ matrix.arch }}
+          build-target-type: template_release
+          float-precision: ${{ matrix.precision }}
+          godot-cpp-directory: thirdparty/godot-cpp
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-sandbox-windows-${{ matrix.arch }}-${{ matrix.precision }}
+          path: |
+            ${{ github.workspace }}/bin/**/*.dll
+          if-no-files-found: error
+          retention-days: 10 # 90 days by default

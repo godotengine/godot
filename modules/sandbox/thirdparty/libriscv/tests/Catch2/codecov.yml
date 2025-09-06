@@ -1,0 +1,22 @@
+coverage:
+  precision: 2
+  round: nearest
+  range: "60...90"
+  status:
+    project:
+      default:
+        threshold: 2%
+    patch:
+      default:
+        target: 80%
+  ignore:
+    - "**/external/clara.hpp"
+    - "tests"
+
+
+codecov:
+  branch: devel
+  max_report_age: off
+
+comment:
+  layout: "diff"
