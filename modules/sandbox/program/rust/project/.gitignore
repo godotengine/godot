@@ -1,4 +1,0 @@
-# Rust ignore
-Cargo.lock
-target/
-*.elf
