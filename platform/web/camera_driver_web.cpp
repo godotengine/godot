@@ -63,7 +63,7 @@ int CameraDriverWeb::_get_max_or_direct(const Variant &p_val) {
 
 void CameraDriverWeb::_on_get_cameras_callback(void *context, void *callback, const char *json_ptr) {
 	if (!json_ptr) {
-		print_error("CameraDriverWeb::_on_get_cameras_callback: json_ptr is null");
+		ERR_PRINT("CameraDriverWeb::_on_get_cameras_callback: json_ptr is null");
 		return;
 	}
 	String json_string = String::utf8(json_ptr);
@@ -106,6 +106,13 @@ void CameraDriverWeb::_on_get_cameras_callback(void *context, void *callback, co
 		info.index = device_dict[KEY_INDEX];
 		info.device_id = device_dict[KEY_ID];
 		info.label = device_dict[KEY_LABEL];
+        // Initialize capability with safe defaults to avoid uninitialized usage downstream.
+        {
+            CapabilityInfo capability = {};
+            capability.width = 0;
+            capability.height = 0;
+            info.capability = capability;
+        }
 
 		Variant v_caps_data = device_dict.get(KEY_CAPABILITIES, Variant());
 		if (v_caps_data.get_type() != Variant::DICTIONARY) {
@@ -129,14 +136,15 @@ void CameraDriverWeb::_on_get_cameras_callback(void *context, void *callback, co
 
 		if (width <= 0 || height <= 0) {
 			WARN_PRINT("Could not extract valid width/height from capabilities structure.");
-			continue;
+			// Still include the device in the list; keep zeroed capabilities.
+			camera_info.push_back(info);
+		} else {
+			CapabilityInfo capability;
+			capability.width = width;
+			capability.height = height;
+			info.capability = capability;
+			camera_info.push_back(info);
 		}
-
-		CapabilityInfo capability;
-		capability.width = width;
-		capability.height = height;
-		info.capability = capability;
-		camera_info.push_back(info);
 	}
 
 	CameraDriverWeb_OnGetCamerasCallback on_get_cameras_callback = reinterpret_cast<CameraDriverWeb_OnGetCamerasCallback>(callback);
