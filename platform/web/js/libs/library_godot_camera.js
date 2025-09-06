@@ -322,13 +322,13 @@ const GodotCamera = {
 								GodotRuntime.heapCopy(HEAPU8, pixelData, dataPtr);
 
 								GodotCamera.sendGetPixelDataCallback(
-										callback,
-										context,
-										dataPtr,
-										pixelData.length,
-										_width,
-										_height,
-										null);
+									callback,
+									context,
+									dataPtr,
+									pixelData.length,
+									_width,
+									_height,
+									null);
 
 								GodotRuntime.free(dataPtr);
 							} catch (error) {
