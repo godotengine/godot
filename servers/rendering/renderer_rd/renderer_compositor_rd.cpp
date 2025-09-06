@@ -263,11 +263,6 @@ void RendererCompositorRD::set_boot_image_with_stretch(const Ref<Image> &p_image
 	RD::get_singleton()->free(sampler);
 }
 
-void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
-	RenderingServer::SplashStretchMode stretch_mode = RenderingServer::map_scaling_option_to_stretch_mode(p_scale);
-	set_boot_image_with_stretch(p_image, p_color, stretch_mode, p_use_filter);
-}
-
 RendererCompositorRD *RendererCompositorRD::singleton = nullptr;
 
 RendererCompositorRD::RendererCompositorRD() {
