@@ -340,7 +340,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 		}
 	}
 
-	if (has_focus()) {
+	if (has_focus(true)) {
 		Ref<StyleBox> focus = get_theme_stylebox(SNAME("focus"), SNAME("LineEdit"));
 		draw_style_box(focus, Rect2(Vector2(), size));
 	}
@@ -683,7 +683,7 @@ void EditorSpinSlider::_focus_entered() {
 	value_input->set_focus_next(find_next_valid_focus()->get_path());
 	value_input->set_focus_previous(find_prev_valid_focus()->get_path());
 	callable_mp((CanvasItem *)value_input_popup, &CanvasItem::show).call_deferred();
-	callable_mp((Control *)value_input, &Control::grab_focus).call_deferred();
+	callable_mp((Control *)value_input, &Control::grab_focus).call_deferred(false);
 	callable_mp(value_input, &LineEdit ::select_all).call_deferred();
 	emit_signal("value_focus_entered");
 }
