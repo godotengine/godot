@@ -4692,6 +4692,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	WindowID window_id = INVALID_WINDOW_ID;
 	bool window_created = false;
+	static HANDLE current_keyboard_id;
 
 	// Check whether window exists
 	// FIXME this is O(n), where n is the set of currently open windows and subwindows
@@ -4945,6 +4946,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			const BitField<WinKeyModifierMask> &mods = _get_mods();
 			if (raw->header.dwType == RIM_TYPEKEYBOARD) {
+				current_keyboard_id = raw->header.hDevice;
 				if (raw->data.keyboard.VKey == VK_SHIFT) {
 					// If multiple Shifts are held down at the same time,
 					// Windows natively only sends a KEYUP for the last one to be released.
@@ -4956,6 +4958,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 							ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 
 							KeyEvent ke;
+							ke.keyboard_id = current_keyboard_id;
 							ke.shift = false;
 							ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
 							ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
@@ -5922,6 +5925,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			const BitField<WinKeyModifierMask> &mods = _get_mods();
 
 			KeyEvent ke;
+			ke.keyboard_id = current_keyboard_id;
 			ke.shift = mods.has_flag(WinKeyModifierMask::SHIFT);
 			ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
 			ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
@@ -6115,77 +6119,83 @@ void DisplayServerWindows::_process_key_events() {
 		switch (ke.uMsg) {
 			case WM_CHAR: {
 				// Extended keys should only be processed as WM_KEYDOWN message.
-				if (!KeyMappingWindows::is_extended_key(ke.wParam) && ((i == 0 && ke.uMsg == WM_CHAR) || (i > 0 && key_event_buffer[i - 1].uMsg == WM_CHAR))) {
-					static char32_t prev_wc = 0;
-					char32_t unicode = ke.wParam;
-					if ((unicode & 0xfffffc00) == 0xd800) {
-						if (prev_wc != 0) {
-							ERR_PRINT("invalid utf16 surrogate input");
-						}
-						prev_wc = unicode;
-						break; // Skip surrogate.
-					} else if ((unicode & 0xfffffc00) == 0xdc00) {
-						if (prev_wc == 0) {
-							ERR_PRINT("invalid utf16 surrogate input");
-							break; // Skip invalid surrogate.
-						}
-						unicode = (prev_wc << 10UL) + unicode - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
-						prev_wc = 0;
-					} else {
-						prev_wc = 0;
-					}
-					Ref<InputEventKey> k;
-					k.instantiate();
-
-					UINT vk = MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK);
-					bool is_oem = (vk >= 0xB8) && (vk <= 0xE6);
-					Key keycode = KeyMappingWindows::get_keysym(vk);
-					Key key_label = keycode;
-					Key physical_keycode = KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24));
-
-					static BYTE keyboard_state[256];
-					memset(keyboard_state, 0, 256);
-					wchar_t chars[256] = {};
-					UINT extended_code = MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK_EX);
-					if (!(ke.lParam & (1 << 24)) && ToUnicodeEx(extended_code, (ke.lParam >> 16) & 0xFF, keyboard_state, chars, 255, 4, GetKeyboardLayout(0)) > 0) {
-						String keysym = String::utf16((char16_t *)chars, 255);
-						if (!keysym.is_empty()) {
-							char32_t unicode_value = keysym[0];
-							// For printable ASCII characters (0x20-0x7E), override the original keycode with the character value.
-							if (is_oem && Key::SPACE <= (Key)unicode_value && (Key)unicode_value <= Key::ASCIITILDE) {
-								keycode = fix_keycode(unicode_value, (Key)unicode_value);
-							}
-							key_label = fix_key_label(unicode_value, keycode);
-						}
-					}
-
-					k->set_window_id(ke.window_id);
-					if (keycode != Key::SHIFT) {
-						k->set_shift_pressed(ke.shift);
-					}
-					if (keycode != Key::ALT) {
-						k->set_alt_pressed(ke.alt);
-					}
-					if (keycode != Key::CTRL) {
-						k->set_ctrl_pressed(ke.control);
-					}
-					if (keycode != Key::META) {
-						k->set_meta_pressed(ke.meta);
-					}
-					k->set_pressed(true);
-					k->set_keycode(keycode);
-					k->set_physical_keycode(physical_keycode);
-					k->set_key_label(key_label);
-					k->set_unicode(fix_unicode(unicode));
-					if (k->get_unicode() && ke.altgr && windows[ke.window_id].ime_active) {
-						k->set_alt_pressed(false);
-						k->set_ctrl_pressed(false);
-					}
-
-					Input::get_singleton()->parse_input_event(k);
-				} else {
-					// Do nothing.
+				if (KeyMappingWindows::is_extended_key(ke.wParam)) {
+					break;
 				}
+
+				// Skip repeated WM_CHAR
+				if (i > 0 && (key_event_buffer[i - 1].uMsg != WM_CHAR)) {
+					break;
+				}
+
+				static char32_t prev_wc = 0;
+				char32_t unicode = ke.wParam;
+				if ((unicode & 0xfffffc00) == 0xd800) {
+					if (prev_wc != 0) {
+						ERR_PRINT("invalid utf16 surrogate input");
+					}
+					prev_wc = unicode;
+					break; // Skip surrogate.
+				} else if ((unicode & 0xfffffc00) == 0xdc00) {
+					if (prev_wc == 0) {
+						ERR_PRINT("invalid utf16 surrogate input");
+						break; // Skip invalid surrogate.
+					}
+					unicode = (prev_wc << 10UL) + unicode - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+					prev_wc = 0;
+				} else {
+					prev_wc = 0;
+				}
+				Ref<InputEventKey> k;
+				k.instantiate();
+
+				UINT vk = MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK);
+				bool is_oem = (vk >= 0xB8) && (vk <= 0xE6);
+				Key keycode = KeyMappingWindows::get_keysym(vk);
+				Key key_label = keycode;
+				Key physical_keycode = KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24));
+
+				static BYTE keyboard_state[256];
+				memset(keyboard_state, 0, 256);
+				wchar_t chars[256] = {};
+				UINT extended_code = MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK_EX);
+				if (!(ke.lParam & (1 << 24)) && ToUnicodeEx(extended_code, (ke.lParam >> 16) & 0xFF, keyboard_state, chars, 255, 4, GetKeyboardLayout(0)) > 0) {
+					String keysym = String::utf16((char16_t *)chars, 255);
+					if (!keysym.is_empty()) {
+						char32_t unicode_value = keysym[0];
+						// For printable ASCII characters (0x20-0x7E), override the original keycode with the character value.
+						if (is_oem && Key::SPACE <= (Key)unicode_value && (Key)unicode_value <= Key::ASCIITILDE) {
+							keycode = fix_keycode(unicode_value, (Key)unicode_value);
+						}
+						key_label = fix_key_label(unicode_value, keycode);
+					}
+				}
+
+				k->set_window_id(ke.window_id);
+				if (keycode != Key::SHIFT) {
+					k->set_shift_pressed(ke.shift);
+				}
+				if (keycode != Key::ALT) {
+					k->set_alt_pressed(ke.alt);
+				}
+				if (keycode != Key::CTRL) {
+					k->set_ctrl_pressed(ke.control);
+				}
+				if (keycode != Key::META) {
+					k->set_meta_pressed(ke.meta);
+				}
+				k->set_pressed(true);
+				k->set_keycode(keycode);
+				k->set_physical_keycode(physical_keycode);
+				k->set_key_label(key_label);
+				k->set_unicode(fix_unicode(unicode));
+				if (k->get_unicode() && ke.altgr && windows[ke.window_id].ime_active) {
+					k->set_alt_pressed(false);
+					k->set_ctrl_pressed(false);
+				}
+
+				Input::get_singleton()->parse_input_event(k);
+
 			} break;
 			case WM_KEYUP:
 			case WM_KEYDOWN: {
@@ -6266,7 +6276,13 @@ void DisplayServerWindows::_process_key_events() {
 
 				k->set_echo((ke.uMsg == WM_KEYDOWN && (ke.lParam & (1 << 30))));
 
-				Input::get_singleton()->parse_input_event(k);
+				// Send legacy input
+				// Input::get_singleton()->parse_input_event(k);
+
+				// Send raw input
+				Ref<InputEventKey> k_raw = k->duplicate();
+				k_raw->set_device((int64_t)ke.keyboard_id);
+				Input::get_singleton()->parse_input_event(k_raw);
 
 			} break;
 		}
