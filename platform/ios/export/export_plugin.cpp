@@ -112,7 +112,7 @@ HashMap<String, Variant> EditorExportPlatformIOS::get_custom_project_settings(co
 					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_COVER: {
 						value = "scaleAspectFill";
 					} break;
-					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_EXPAND: {
+					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_IGNORE: {
 						value = "scaleToFill";
 					} break;
 				}

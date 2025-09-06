@@ -1842,7 +1842,7 @@ public:
 		SPLASH_STRETCH_MODE_KEEP_WIDTH,
 		SPLASH_STRETCH_MODE_KEEP_HEIGHT,
 		SPLASH_STRETCH_MODE_COVER,
-		SPLASH_STRETCH_MODE_EXPAND,
+		SPLASH_STRETCH_MODE_IGNORE,
 	};
 
 	virtual void set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter = true) = 0;

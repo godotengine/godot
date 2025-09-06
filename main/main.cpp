@@ -3770,14 +3770,6 @@ void Main::setup_boot_logo() {
 	if (show_logo) { //boot logo!
 		const bool boot_logo_image = GLOBAL_DEF_BASIC("application/boot_splash/show_image", true);
 
-#ifndef DISABLE_DEPRECATED
-		// Check if we still have legacy project setting, map it to new project setting, then remove legacy setting.
-		if (globals->has_setting("application/boot_splash/fullsize")) {
-			globals->set_setting("application/boot_splash/stretch_mode", RenderingServer::map_scaling_option_to_stretch_mode(globals->get_setting("application/boot_splash/fullsize")));
-			globals->set_setting("application/boot_splash/fullsize", Variant());
-		}
-#endif
-
 		const RenderingServer::SplashStretchMode boot_stretch_mode = GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "application/boot_splash/stretch_mode", PROPERTY_HINT_ENUM, "Disabled,Keep,Keep Width,Keep Height,Cover,Expand"), 1);
 		const bool boot_logo_filter = GLOBAL_DEF_BASIC("application/boot_splash/use_filter", true);
 		String boot_logo_path = GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"), String());

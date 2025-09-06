@@ -1935,7 +1935,7 @@ Rect2 RenderingServer::get_splash_stretched_screen_rect(const Size2 &p_image_siz
 				screenrect.position.x = (p_window_size.width - screenrect.size.x) / 2;
 			}
 		} break;
-		case RenderingServer::SPLASH_STRETCH_MODE_EXPAND: {
+		case RenderingServer::SPLASH_STRETCH_MODE_IGNORE: {
 			screenrect.size.x = p_window_size.width;
 			screenrect.size.y = p_window_size.height;
 		} break;
@@ -3547,7 +3547,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_white_texture"), &RenderingServer::get_white_texture);
 
 	ClassDB::bind_method(D_METHOD("set_boot_image_with_stretch", "image", "color", "stretch_mode", "use_filter"), &RenderingServer::set_boot_image_with_stretch, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("set_boot_image", "image", "color", "p_scale", "use_filter"), &RenderingServer::set_boot_image, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("set_boot_image", "image", "color", "scale", "use_filter"), &RenderingServer::set_boot_image, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_default_clear_color"), &RenderingServer::get_default_clear_color);
 	ClassDB::bind_method(D_METHOD("set_default_clear_color", "color"), &RenderingServer::set_default_clear_color);
 
@@ -3572,7 +3572,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_KEEP_WIDTH);
 	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_KEEP_HEIGHT);
 	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_COVER);
-	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_EXPAND);
+	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_IGNORE);
 	BIND_ENUM_CONSTANT(RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS);
 	BIND_ENUM_CONSTANT(RENDERING_INFO_PIPELINE_COMPILATIONS_MESH);
 	BIND_ENUM_CONSTANT(RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE);
