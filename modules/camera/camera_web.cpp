@@ -30,35 +30,49 @@
 
 #include "camera_web.h"
 
-#include "core/io/json.h"
-
 void CameraFeedWeb::_on_get_pixeldata(void *context, const uint8_t *rawdata, const int length, const int p_width, const int p_height, const char *error) {
+	// Validate context first to avoid dereferencing null on error paths.
+	if (context == nullptr) {
+		ERR_PRINT("Camera feed error: Null context received.");
+		return;
+	}
+
 	CameraFeedWeb *feed = reinterpret_cast<CameraFeedWeb *>(context);
+
 	if (error) {
 		if (feed->is_active()) {
 			feed->deactivate_feed();
-		};
+		}
 		String error_str = String::utf8(error);
 		ERR_PRINT(vformat("Camera feed error from JS: %s", error_str));
 		return;
 	}
 
-	if (context == nullptr || rawdata == nullptr || length < 0 || p_width <= 0 || p_height <= 0) {
+	if (rawdata == nullptr || length < 0 || p_width <= 0 || p_height <= 0) {
 		if (feed->is_active()) {
 			feed->deactivate_feed();
-		};
+		}
 		ERR_PRINT("Camera feed error: Invalid pixel data received.");
 		return;
 	}
 
-	Vector<uint8_t> data = feed->data;
+	Vector<uint8_t> &data = feed->data;
 	Ref<Image> image = feed->image;
 
-	if (length != data.size()) {
-		int64_t size = Image::get_image_data_size(p_width, p_height, Image::FORMAT_RGBA8, false);
-		data.resize(length > size ? length : size);
+	const int64_t expected_size = Image::get_image_data_size(p_width, p_height, Image::FORMAT_RGBA8, false);
+	if (length < expected_size) {
+		if (feed->is_active()) {
+			feed->deactivate_feed();
+		}
+		ERR_PRINT("Camera feed error: Received pixel data smaller than expected.");
+		return;
 	}
-	memcpy(data.ptrw(), rawdata, length);
+
+	if (data.size() != expected_size) {
+		data.resize(expected_size);
+	}
+	// Copy exactly the expected size (ignore any trailing bytes in 'rawdata').
+	memcpy(data.ptrw(), rawdata, expected_size);
 
 	image->initialize_data(p_width, p_height, false, Image::FORMAT_RGBA8, data);
 	feed->set_rgb_image(image);

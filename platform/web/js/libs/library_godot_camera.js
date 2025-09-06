@@ -144,6 +144,13 @@ const GodotCamera = {
 				camera.permissionListener = null;
 				camera.permissionStatus = null;
 			}
+
+			// Null out references to help GC.
+			camera.animationFrameId = null;
+			camera.canvasContext = null;
+			camera.stream = null;
+			camera.video = null;
+			camera.canvas = null;
 		},
 
 		api: {
@@ -178,7 +185,6 @@ const GodotCamera = {
 						}));
 
 					stream.getTracks().forEach((track) => track.stop());
-					GodotCamera.api.stop();
 				} catch (error) {
 					result.error = error.message;
 				}
@@ -247,7 +253,7 @@ const GodotCamera = {
 						}
 						videoTrack.addEventListener('ended', () => {
 							GodotRuntime.print('Camera track ended, stopping stream');
-							GodotCamera.api.stop(deviceId);
+							GodotCamera.api.stop(cameraId);
 						});
 
 						if (navigator.permissions && navigator.permissions.query) {
@@ -261,7 +267,7 @@ const GodotCamera = {
 										if (camera.permissionListener) {
 											permissionStatus.removeEventListener('change', camera.permissionListener);
 										}
-										GodotCamera.api.stop(deviceId);
+										GodotCamera.api.stop(cameraId);
 										deniedCallback(context);
 									}
 								};
@@ -302,7 +308,7 @@ const GodotCamera = {
 
 						if (!stream || !stream.active) {
 							GodotRuntime.print('Stream is not active, stopping');
-							GodotCamera.api.stop(deviceId);
+							GodotCamera.api.stop(cameraId);
 							return;
 						}
 
@@ -316,14 +322,13 @@ const GodotCamera = {
 								GodotRuntime.heapCopy(HEAPU8, pixelData, dataPtr);
 
 								GodotCamera.sendGetPixelDataCallback(
-									callback,
-									context,
-									dataPtr,
-									pixelData.length,
-									_width,
-									_height,
-									null
-								);
+										callback,
+										context,
+										dataPtr,
+										pixelData.length,
+										_width,
+										_height,
+										null);
 
 								GodotRuntime.free(dataPtr);
 							} catch (error) {
@@ -331,7 +336,8 @@ const GodotCamera = {
 
 								if (error.name === 'SecurityError' || error.name === 'NotAllowedError') {
 									GodotRuntime.print('Security error, stopping stream:', error);
-									GodotCamera.api.stop(deviceId);
+									GodotCamera.api.stop(cameraId);
+									deniedCallback(context);
 								}
 								return;
 							}
@@ -343,6 +349,9 @@ const GodotCamera = {
 					camera.animationFrameId = requestAnimationFrame(captureFrame);
 				} catch (error) {
 					GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, error.message);
+					if (error && (error.name === 'SecurityError' || error.name === 'NotAllowedError')) {
+						deniedCallback(context);
+					}
 				}
 			},
 
