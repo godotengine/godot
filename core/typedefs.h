@@ -110,7 +110,6 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 #undef Error
 #undef OK
 #undef CONNECT_DEFERRED // override from Windows SDK, clashes with Object enum
-#undef MemoryBarrier
 #undef MONO_FONT
 #endif
 
