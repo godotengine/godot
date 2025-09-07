@@ -2045,8 +2045,9 @@ static String marked_documentation(const String &p_bbcode) {
 				int end_pos = line.find("]", pos);
 				if (end_pos != -1) {
 					String content = line.substr(pos + 1, end_pos - pos - 1);
-					// We only convert if it looks like a simple class name (no spaces, no special chars)
-					bool is_class_name = (content.find(" ") == -1 && content.find("=") == -1 && !content.is_empty() && content[0] >= 'A' && content[0] <= 'Z');
+					// We only convert if it looks like a simple class name (no spaces, no special chars).
+					// GDScript supports unicode characters as identifiers so we only exclude markers of other BBCode tags to avoid conflicts.
+					bool is_class_name = (content.find(" ") == -1 && content.find("=") == -1 && content.find("/") == -1 && !content.is_empty() && content != "url");
 					if (is_class_name) {
 						line = line.substr(0, pos) + "`" + content + "`" + line.substr(end_pos + 1);
 						pos += content.length() + 2;
