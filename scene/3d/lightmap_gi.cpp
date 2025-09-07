@@ -230,6 +230,20 @@ void LightmapGIData::update_shadowmask_mode(ShadowmaskMode p_mode) {
 	RS::get_singleton()->lightmap_set_shadowmask_mode(lightmap, (RSE::ShadowmaskMode)p_mode);
 }
 
+void LightmapGIData::set_texel_scale(float p_factor) {
+	RS::get_singleton()->lightmap_set_texel_scale(lightmap, p_factor);
+}
+
+float LightmapGIData::get_baked_texel_scale() const {
+	return baked_texel_scale;
+}
+
+void LightmapGIData::set_baked_texel_scale(float p_scale) {
+	baked_texel_scale = p_scale;
+
+	RS::get_singleton()->lightmap_set_baked_texel_scale(lightmap, p_scale);
+}
+
 LightmapGIData::ShadowmaskMode LightmapGIData::get_shadowmask_mode() const {
 	return (ShadowmaskMode)RS::get_singleton()->lightmap_get_shadowmask_mode(lightmap);
 }
@@ -362,12 +376,18 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_probe_data", "data"), &LightmapGIData::_set_probe_data);
 	ClassDB::bind_method(D_METHOD("_get_probe_data"), &LightmapGIData::_get_probe_data);
 
+	ClassDB::bind_method(D_METHOD("set_texel_scale", "baked_texel_scale"), &LightmapGIData::set_texel_scale);
+
+	ClassDB::bind_method(D_METHOD("set_baked_texel_scale", "baked_texel_scale"), &LightmapGIData::set_baked_texel_scale);
+	ClassDB::bind_method(D_METHOD("get_baked_texel_scale"), &LightmapGIData::get_baked_texel_scale);
+
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "lightmap_textures", PROPERTY_HINT_ARRAY_TYPE, "TextureLayered", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "set_lightmap_textures", "get_lightmap_textures");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "shadowmask_textures", PROPERTY_HINT_ARRAY_TYPE, "TextureLayered", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "set_shadowmask_textures", "get_shadowmask_textures");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uses_spherical_harmonics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_uses_spherical_harmonics", "is_using_spherical_harmonics");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "user_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_user_data", "_get_user_data");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "probe_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_probe_data", "_get_probe_data");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "_uses_packed_directional", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_uses_packed_directional", "_is_using_packed_directional");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "baked_texel_scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_baked_texel_scale", "get_baked_texel_scale");
 
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_light_texture", "light_texture"), &LightmapGIData::set_light_texture);
@@ -422,6 +442,7 @@ void LightmapGI::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &m
 				//READY TO BAKE! size hint could be computed if not found, actually..
 
 				MeshesFound mf;
+				mf.mi = mi;
 				mf.xform = get_global_transform().affine_inverse() * mi->get_global_transform();
 				mf.node_path = get_path_to(mi);
 				mf.subindex = -1;
@@ -1085,9 +1106,9 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	Vector<Lightmapper::MeshData> mesh_data;
 	Vector<LightsFound> lights_found;
 	Vector<Vector3> probes_found;
+	Vector<MeshesFound> meshes_found;
 	AABB bounds;
 	{
-		Vector<MeshesFound> meshes_found;
 		_find_meshes_and_lights(p_from_node ? p_from_node : get_parent(), meshes_found, lights_found, probes_found);
 
 		if (meshes_found.is_empty()) {
@@ -1689,10 +1710,18 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	}
 
 	gi_data->set_path(p_image_data_path, true);
+	gi_data->set_baked_texel_scale(texel_scale);
+
 	Error err = ResourceSaver::save(gi_data);
 
 	if (err != OK) {
 		return BAKE_ERROR_CANT_CREATE_IMAGE;
+	}
+
+	for (MeshesFound &mf : meshes_found) {
+		if (mf.mi) {
+			mf.mi->set_lightmap_baked_texel_scale(mf.lightmap_scale);
+		}
 	}
 
 	set_light_data(gi_data);
@@ -1801,6 +1830,7 @@ void LightmapGI::set_light_data(const Ref<LightmapGIData> &p_data) {
 			_assign_lightmaps();
 		}
 		light_data->update_shadowmask_mode(shadowmask_mode);
+		light_data->set_texel_scale(texel_scale);
 	}
 
 	update_gizmos();
@@ -1944,9 +1974,14 @@ float LightmapGI::get_bias() const {
 	return bias;
 }
 
-void LightmapGI::set_texel_scale(float p_multiplier) {
-	ERR_FAIL_COND(p_multiplier < (0.01 - CMP_EPSILON));
-	texel_scale = p_multiplier;
+void LightmapGI::set_texel_scale(float p_scale) {
+	ERR_FAIL_COND(p_scale < (0.01 - CMP_EPSILON));
+
+	if (light_data.is_valid()) {
+		light_data->set_texel_scale(p_scale);
+	}
+
+	texel_scale = p_scale;
 }
 
 float LightmapGI::get_texel_scale() const {

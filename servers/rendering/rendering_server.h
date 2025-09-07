@@ -434,6 +434,10 @@ public:
 	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) = 0;
 	virtual RSE::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) = 0;
 	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RSE::ShadowmaskMode p_mode) = 0;
+	virtual float lightmap_get_texel_scale(RID p_lightmap) = 0;
+	virtual void lightmap_set_texel_scale(RID p_lightmap, float p_scale) = 0;
+	virtual float lightmap_get_baked_texel_scale(RID p_lightmap) = 0;
+	virtual void lightmap_set_baked_texel_scale(RID p_lightmap, float p_scale) = 0;
 
 	/* PARTICLES API */
 
@@ -766,6 +770,8 @@ public:
 	virtual void instance_geometry_set_material_overlay(RID p_instance, RID p_material) = 0;
 	virtual void instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin, RSE::VisibilityRangeFadeMode p_fade_mode) = 0;
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice) = 0;
+	virtual void instance_geometry_set_lightmap_baked_texel_scale(RID p_instance, float p_scale) = 0;
+	virtual void instance_geometry_set_lightmap_texel_scale(RID p_instance, float p_scale) = 0;
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias) = 0;
 	virtual void instance_geometry_set_transparency(RID p_instance, float p_transparency) = 0;
 

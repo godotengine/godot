@@ -359,6 +359,7 @@ void MeshInstance3D::_notification(int p_what) {
 			}
 #endif
 			_resolve_skeleton_path();
+
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (mesh.is_valid()) {

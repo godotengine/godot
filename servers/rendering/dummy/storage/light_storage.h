@@ -205,6 +205,10 @@ public:
 	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) override {}
 	virtual RSE::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) override { return RSE::SHADOWMASK_MODE_NONE; }
 	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RSE::ShadowmaskMode p_mode) override {}
+	virtual float lightmap_get_texel_scale(RID p_lightmap) override { return 1.0; }
+	virtual void lightmap_set_texel_scale(RID p_lightmap, float p_scale) override {}
+	virtual float lightmap_get_baked_texel_scale(RID p_lightmap) override { return 1.0; }
+	virtual void lightmap_set_baked_texel_scale(RID p_lightmap, float p_scale) override {}
 
 	/* LIGHTMAP INSTANCE */
 

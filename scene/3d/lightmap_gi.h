@@ -38,6 +38,7 @@
 class CameraAttributes;
 class Light3D;
 class Mesh;
+class MeshInstance3D;
 class Sky;
 
 class LightmapGIData : public Resource {
@@ -70,6 +71,7 @@ private:
 	RID lightmap;
 	AABB bounds;
 	float baked_exposure = 1.0;
+	float baked_texel_scale = 1.0;
 	uint32_t lightprobe_hash = 0;
 
 	struct User {
@@ -117,6 +119,10 @@ public:
 
 	void update_shadowmask_mode(ShadowmaskMode p_mode);
 	ShadowmaskMode get_shadowmask_mode() const;
+
+	void set_texel_scale(float p_scale);
+	void set_baked_texel_scale(float p_scale);
+	float get_baked_texel_scale() const;
 
 	bool is_interior() const;
 	float get_baked_exposure() const;
@@ -223,6 +229,7 @@ private:
 	};
 
 	struct MeshesFound {
+		MeshInstance3D *mi = nullptr;
 		Transform3D xform;
 		NodePath node_path;
 		int32_t subindex = 0;
