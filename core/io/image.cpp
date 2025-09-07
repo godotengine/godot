@@ -4582,7 +4582,11 @@ void Image::renormalize_uint8(uint8_t *p_rgb) {
 
 void Image::renormalize_float(float *p_rgb) {
 	Vector3 n(p_rgb[0], p_rgb[1], p_rgb[2]);
+	n *= 2.0;
+	n -= Vector3(1, 1, 1);
 	n.normalize();
+	n += Vector3(1, 1, 1);
+	n *= 0.5;
 	p_rgb[0] = n.x;
 	p_rgb[1] = n.y;
 	p_rgb[2] = n.z;
@@ -4590,7 +4594,11 @@ void Image::renormalize_float(float *p_rgb) {
 
 void Image::renormalize_half(uint16_t *p_rgb) {
 	Vector3 n(Math::half_to_float(p_rgb[0]), Math::half_to_float(p_rgb[1]), Math::half_to_float(p_rgb[2]));
+	n *= 2.0;
+	n -= Vector3(1, 1, 1);
 	n.normalize();
+	n += Vector3(1, 1, 1);
+	n *= 0.5;
 	p_rgb[0] = Math::make_half_float(n.x);
 	p_rgb[1] = Math::make_half_float(n.y);
 	p_rgb[2] = Math::make_half_float(n.z);
