@@ -48,11 +48,6 @@
 
 #include <wrl/client.h>
 
-#if defined(_MSC_VER) && defined(MemoryBarrier)
-// Annoying define from winnt.h. Reintroduced by some of the headers above.
-#undef MemoryBarrier
-#endif
-
 GODOT_GCC_WARNING_PUSH
 GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
 GODOT_GCC_WARNING_IGNORE("-Wlogical-not-parentheses")
