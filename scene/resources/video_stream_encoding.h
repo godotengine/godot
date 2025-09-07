@@ -36,6 +36,10 @@ class VideoStreamEncoding : public Resource {
 	GDCLASS(VideoStreamEncoding, Resource);
 
 public:
+	virtual void bind_video_profile_metadata(RID p_profile) = 0;
+
+	virtual void decode_cluster() = 0;
+
 	virtual void parse_container_metadata(uint8_t *p_stream, uint64_t p_size) = 0;
 	virtual void parse_container_block(uint8_t *p_stream, uint64_t p_size) = 0;
 };

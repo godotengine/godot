@@ -848,6 +848,34 @@ public:
 		DYNAMIC_STATE_STENCIL_REFERENCE = (1 << 6),
 	};
 
+	/**********************/
+	/**** VIDEO CODING ****/
+	/**********************/
+
+	enum VideoCodecOperation {
+		VIDEO_OPERATION_DECODE_H264 = (1 << 0),
+		VIDEO_OPERATION_DECODE_H265 = (1 << 1),
+		VIDEO_OPERATION_DECODE_AV1 = (1 << 2),
+		VIDEO_OPERATION_DECODE_VP9 = (1 << 3),
+	};
+
+	enum ChromaSubsampling {
+		CHROMA_SUBSAMPLING_420,
+		CHROMA_SUBSAMPLING_422,
+		CHROMA_SUBSAMPLING_444,
+	};
+
+	struct VideoProfileState {
+		VideoCodecOperation operation;
+		uint32_t chroma_subsampling;
+		uint32_t luma_bit_depth;
+		uint32_t chroma_bit_depth;
+
+		// TODO is it worth not just embedding all 4 possible codecs here?
+		uint32_t h264_profile_idc;
+		uint32_t h264_picture_layout;
+	};
+
 	/**************/
 	/**** MISC ****/
 	/**************/

@@ -32,6 +32,7 @@
 #include "rendering_device.compat.inc"
 
 #include "rendering_device_binds.h"
+#include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/rendering_device_driver.h"
 #include "shader_include_db.h"
 
@@ -5566,6 +5567,33 @@ void RenderingDevice::compute_list_end() {
 	compute_list = ComputeList();
 }
 
+RID RenderingDevice::video_profile_create(uint32_t p_chroma_subsampling, uint32_t p_luma_bit_depth, uint32_t p_chroma_bit_depth) {
+	VideoProfileState profile_state = {};
+	profile_state.chroma_subsampling = p_chroma_subsampling;
+	profile_state.luma_bit_depth = p_luma_bit_depth;
+	profile_state.chroma_bit_depth = p_chroma_bit_depth;
+
+	// TODO set up owners
+	return RID();
+}
+
+void RenderingDevice::video_profile_bind_h264_decoding_metadata(RID p_profile, uint32_t p_std_profile, uint32_t p_picture_layout) {
+	// TODO obtain from RID
+	VideoProfileState profile_state = {};
+	profile_state.operation = VIDEO_OPERATION_DECODE_H264;
+	profile_state.h264_profile_idc = p_std_profile;
+	profile_state.h264_picture_layout = p_picture_layout;
+}
+
+void RenderingDevice::video_profile_bind_h265_decoding_metadata(RID p_profile, uint32_t p_std_profile) {
+}
+
+void RenderingDevice::video_profile_bind_av1_decoding_metadata(RID p_profile, uint32_t p_std_profile, bool p_film_grain_support) {
+}
+
+void RenderingDevice::video_profile_bind_vp9_decoding_metadata(RID p_profile, uint32_t p_std_profile) {
+}
+
 RenderingDevice::VideoCodingListID RenderingDevice::video_coding_list_begin(StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) {
 	ERR_RENDER_THREAD_GUARD_V(INVALID_ID);
 
@@ -5577,7 +5605,8 @@ RenderingDevice::VideoCodingListID RenderingDevice::video_coding_list_begin(StdV
 	RDD::CommandPoolID pool = driver->command_pool_create(decode_queue_family, RenderingDeviceDriver::COMMAND_BUFFER_TYPE_PRIMARY);
 	decode_buffer = driver->command_buffer_create(pool);
 
-	RDD::VideoSessionID video_session = driver->create_h264_session(RenderingDeviceDriver::CODING_DECODING, RenderingDeviceDriver::CHROMA_SUBSAMPLING_420, 0);
+	VideoProfileState profile_state = {};
+	RDD::VideoSessionID video_session = driver->video_session_create(profile_state, DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM);
 
 	driver->command_buffer_begin(decode_buffer);
 	driver->command_video_coding_begin(decode_buffer, video_session, p_sps, p_pps);
@@ -5622,13 +5651,13 @@ void RenderingDevice::video_coding_list_decode(VideoCodingListID p_list, Span<ui
 
 	Vector<uint8_t> block;
 	block.resize(p_src_buffer.size() + offset);
-	memcpy(block.ptrw() + offset, p_src_buffer.begin(), p_src_buffer.size());
+	memcpy(block.ptrw(), p_src_buffer.begin(), p_src_buffer.size());
 
 	RID buffer_id = RD::get_singleton()->storage_buffer_create(block.size(), block, RD::STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC, 0);
 	Buffer *buffer = storage_buffer_owner.get_or_null(buffer_id);
 	Texture *texture = texture_owner.get_or_null(video_coding_list.dst_texture);
 
-	driver->command_video_decode(decode_buffer, buffer->driver_id, p_std_h264_info, offset, texture->driver_id, p_array_layer);
+	driver->command_video_decode(decode_buffer, buffer->driver_id, p_std_h264_info, p_src_buffer.size(), texture->driver_id, p_array_layer);
 }
 
 void RenderingDevice::video_coding_list_encode(VideoCodingListID p_list) {

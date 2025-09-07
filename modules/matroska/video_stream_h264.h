@@ -41,14 +41,29 @@ class VideoStreamH264 : public VideoStreamEncoding {
 	GDCLASS(VideoStreamH264, VideoStreamEncoding);
 
 private:
+	uint32_t target_profile_idc;
+	uint32_t minimum_profile_idc;
+
+	uint32_t target_level_idc;
+
 	StdVideoH264SequenceParameterSet active_sps;
 	StdVideoH264PictureParameterSet active_pps;
 	Vector<StdVideoDecodeH264PictureInfo> slice_metadatas;
 	Vector<Span<uint8_t>> slice_spans;
 
+	RID video_profile;
+
 public:
-	void parse_container_metadata(uint8_t *p_stream, uint64_t p_size) override;
-	void parse_container_block(uint8_t *p_stream, uint64_t p_size) override;
+	uint8_t chroma_format;
+	uint8_t luma_bit_depth;
+	uint8_t chroma_bit_depth;
+
+	void bind_video_profile_metadata(RID p_profile) final override;
+
+	void decode_cluster() final override;
+
+	void parse_container_metadata(uint8_t *p_stream, uint64_t p_size) final override;
+	void parse_container_block(uint8_t *p_stream, uint64_t p_size) final override;
 
 	bool parse_nal_unit(uint8_t *p_stream);
 	StdVideoH264SequenceParameterSet parse_sequence_parameter_set(uint8_t *p_stream);
@@ -57,6 +72,4 @@ public:
 
 	uint64_t parse_ue(uint8_t *p_stream, uint8_t *shift, uint8_t *read);
 	int64_t parse_se(uint8_t *p_stream, uint8_t *shift, uint8_t *read);
-
-	void cool_stuff();
 };

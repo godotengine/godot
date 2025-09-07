@@ -744,40 +744,15 @@ public:
 	virtual void begin_segment(uint32_t p_frame_index, uint32_t p_frames_drawn) = 0;
 	virtual void end_segment() = 0;
 
-	/***************/
-	/**** VIDEO ****/
-	/***************/
-
-	enum CodingDirection {
-		CODING_DECODING,
-		CODING_ENCODING,
-	};
-
-	enum VideoCodec {
-		VIDEO_CODEC_H264,
-		VIDEO_CODEC_H265,
-		VIDEO_CODEC_AV1,
-		VIDEO_CODEC_VP9,
-	};
-
-	enum ChromaSubsampling {
-		CHROMA_SUBSAMPLING_420,
-		CHROMA_SUBSAMPLING_422,
-		CHROMA_SUBSAMPLING_444,
-	};
-
-	enum BitDepth {
-		BIT_DEPTH_8,
-		BIT_DEPTH_10,
-		BIT_DEPTH_12,
-	};
-
+	/**********************/
+	/**** VIDEO CODING ****/
+	/**********************/
 	DEFINE_ID(VideoSession);
 
-	virtual VideoSessionID create_h264_session(CodingDirection p_direction, ChromaSubsampling p_chroma_subsampling, uint8_t p_profile) = 0;
-	virtual VideoSessionID create_h265_session(CommandBufferID p_cmd_buffer, CodingDirection p_direction, ChromaSubsampling p_chroma_subsampling, uint8_t p_profile) = 0;
-	virtual VideoSessionID create_av1_session(CommandBufferID p_cmd_buffer, CodingDirection p_direction, ChromaSubsampling p_chroma_subsampling, uint8_t p_profile) = 0;
-	virtual VideoSessionID create_vp9_session(CommandBufferID p_cmd_buffer, CodingDirection p_direction, ChromaSubsampling p_chroma_subsampling, uint8_t p_profile) = 0;
+	virtual void video_profile_get_capabilities(const VideoProfileState &p_profile) = 0;
+	virtual void video_profile_get_format_properties(const VideoProfileState &p_profile) = 0;
+
+	virtual VideoSessionID video_session_create(const VideoProfileState &p_profile, DataFormat p_image_format) = 0;
 
 	virtual void command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) = 0;
 	virtual void command_video_control(CommandBufferID p_cmd_buffer) = 0;
