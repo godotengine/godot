@@ -43,6 +43,7 @@ class DependencyEditor : public AcceptDialog {
 
 	Tree *tree = nullptr;
 	Button *fixdeps = nullptr;
+	Label *warning_label = nullptr;
 
 	EditorFileDialog *search = nullptr;
 
@@ -58,6 +59,9 @@ class DependencyEditor : public AcceptDialog {
 	void _update_list();
 
 	void _update_file();
+
+protected:
+	void _notification(int p_what);
 
 public:
 	void edit(const String &p_path);
