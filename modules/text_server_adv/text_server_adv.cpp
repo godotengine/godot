@@ -1222,8 +1222,22 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 
 	HashMap<int32_t, FontGlyph>::Iterator E = fd->glyph_map.find(p_glyph);
 	if (E) {
-		r_glyph = E->value;
-		return E->value.found;
+		bool tx_valid = true;
+		if (E->value.texture_idx >= 0) {
+			if (E->value.texture_idx < fd->textures.size()) {
+				tx_valid = fd->textures[E->value.texture_idx].image.is_valid();
+			} else {
+				tx_valid = false;
+			}
+		}
+		if (tx_valid) {
+			r_glyph = E->value;
+			return E->value.found;
+#ifdef DEBUG_ENABLED
+		} else {
+			WARN_PRINT(vformat("Invalid texture cache for glyph %x in font %s, glyph will be re-rendered. Re-import this font to regenerate textures.", glyph_index, p_font_data->font_name));
+#endif
+		}
 	}
 
 	if (glyph_index == 0) { // Non graphical or invalid glyph, do not render.
