@@ -2085,6 +2085,34 @@ void LightStorage::lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMo
 	lm->shadowmask_mode = p_mode;
 }
 
+float LightStorage::lightmap_get_texel_scale(RID p_lightmap) {
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL_V(lm, 1.0);
+
+	return lm->texel_scale;
+}
+
+void LightStorage::lightmap_set_texel_scale(RID p_lightmap, float p_scale) {
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lm);
+
+	lm->texel_scale = p_scale;
+}
+
+float LightStorage::lightmap_get_baked_texel_scale(RID p_lightmap) {
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL_V(lm, 1.0);
+
+	return lm->baked_texel_scale;
+}
+
+void LightStorage::lightmap_set_baked_texel_scale(RID p_lightmap, float p_factor) {
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lm);
+
+	lm->baked_texel_scale = p_factor;
+}
+
 /* LIGHTMAP INSTANCE */
 
 RID LightStorage::lightmap_instance_create(RID p_lightmap) {

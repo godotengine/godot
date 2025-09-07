@@ -1841,6 +1841,57 @@ RID MaterialStorage::global_shader_uniforms_get_storage_buffer() const {
 	return global_shader_uniforms.buffer;
 }
 
+//An alternative way of allocating global shader uniforms.
+//Allocates a single variable and returns its position in the global shader uniform buffer.
+//Intended to be used for debug drawing purposes and should not be used for anything substantial.
+int32_t MaterialStorage::global_shader_parameters_unit_variable_allocate() {
+	int32_t pos = _global_shader_uniform_allocate(1);
+	ERR_FAIL_COND_V_MSG(pos < 0, -1, "Too many instances using shader instance variables. Increase buffer size in Project Settings.");
+	global_shader_uniforms.buffer_usage[pos].elements = 1;
+	return pos;
+}
+
+void MaterialStorage::global_shader_parameters_unit_variable_free(int32_t p_pos) {
+	ERR_FAIL_COND(p_pos < 0);
+	global_shader_uniforms.buffer_usage[p_pos].elements = 0;
+}
+
+void MaterialStorage::global_shader_parameters_unit_variable_update(int32_t p_pos, const Variant &p_value) {
+	ERR_FAIL_COND(p_pos < 0);
+	ERR_FAIL_COND_MSG(p_value.get_type() > Variant::COLOR, "Unsupported variant type."); //anything greater not supported
+
+	const ShaderLanguage::DataType datatype_from_value[Variant::COLOR + 1] = {
+		ShaderLanguage::TYPE_MAX, //nil
+		ShaderLanguage::TYPE_BOOL, //bool
+		ShaderLanguage::TYPE_INT, //int
+		ShaderLanguage::TYPE_FLOAT, //float
+		ShaderLanguage::TYPE_MAX, //string
+		ShaderLanguage::TYPE_VEC2, //vec2
+		ShaderLanguage::TYPE_IVEC2, //vec2i
+		ShaderLanguage::TYPE_VEC4, //rect2
+		ShaderLanguage::TYPE_IVEC4, //rect2i
+		ShaderLanguage::TYPE_VEC3, // vec3
+		ShaderLanguage::TYPE_IVEC3, //vec3i
+		ShaderLanguage::TYPE_MAX, //xform2d not supported here
+		ShaderLanguage::TYPE_VEC4, //vec4
+		ShaderLanguage::TYPE_IVEC4, //vec4i
+		ShaderLanguage::TYPE_VEC4, //plane
+		ShaderLanguage::TYPE_VEC4, //quat
+		ShaderLanguage::TYPE_MAX, //aabb not supported here
+		ShaderLanguage::TYPE_MAX, //basis not supported here
+		ShaderLanguage::TYPE_MAX, //xform not supported here
+		ShaderLanguage::TYPE_MAX, //projection not supported here
+		ShaderLanguage::TYPE_VEC4 //color
+	};
+
+	ShaderLanguage::DataType datatype = datatype_from_value[p_value.get_type()];
+
+	ERR_FAIL_COND_MSG(datatype == ShaderLanguage::TYPE_MAX, "Unsupported variant type.");
+
+	_fill_std140_variant_ubo_value(datatype, 0, p_value, (uint8_t *)&global_shader_uniforms.buffer_values[p_pos], true); //instances always use linear color in this renderer
+	_global_shader_uniform_mark_buffer_dirty(p_pos, 1);
+}
+
 int32_t MaterialStorage::global_shader_parameters_instance_allocate(RID p_instance) {
 	ERR_FAIL_COND_V(global_shader_uniforms.instance_buffer_pos.has(p_instance), -1);
 	int32_t pos = _global_shader_uniform_allocate(ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES);

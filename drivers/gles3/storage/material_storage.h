@@ -584,6 +584,10 @@ public:
 	virtual void global_shader_parameters_load_settings(bool p_load_textures = true) override;
 	virtual void global_shader_parameters_clear() override;
 
+	virtual int32_t global_shader_parameters_unit_variable_allocate() override;
+	virtual void global_shader_parameters_unit_variable_free(int32_t p_pos) override;
+	virtual void global_shader_parameters_unit_variable_update(int32_t p_pos, const Variant &p_value) override;
+
 	virtual int32_t global_shader_parameters_instance_allocate(RID p_instance) override;
 	virtual void global_shader_parameters_instance_free(RID p_instance) override;
 	virtual void global_shader_parameters_instance_update(RID p_instance, int p_index, const Variant &p_value, int p_flags_count = 0) override;

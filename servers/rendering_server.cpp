@@ -2685,8 +2685,11 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("lightmap_get_probe_capture_tetrahedra", "lightmap"), &RenderingServer::lightmap_get_probe_capture_tetrahedra);
 	ClassDB::bind_method(D_METHOD("lightmap_get_probe_capture_bsp_tree", "lightmap"), &RenderingServer::lightmap_get_probe_capture_bsp_tree);
 	ClassDB::bind_method(D_METHOD("lightmap_set_baked_exposure_normalization", "lightmap", "baked_exposure"), &RenderingServer::lightmap_set_baked_exposure_normalization);
-
 	ClassDB::bind_method(D_METHOD("lightmap_set_probe_capture_update_speed", "speed"), &RenderingServer::lightmap_set_probe_capture_update_speed);
+	ClassDB::bind_method(D_METHOD("lightmap_set_texel_scale", "lightmap", "scale"), &RenderingServer::lightmap_set_texel_scale);
+	ClassDB::bind_method(D_METHOD("lightmap_get_texel_scale", "lightmap"), &RenderingServer::lightmap_get_texel_scale);
+	ClassDB::bind_method(D_METHOD("lightmap_set_baked_texel_scale", "lightmap", "scale"), &RenderingServer::lightmap_set_baked_texel_scale);
+	ClassDB::bind_method(D_METHOD("lightmap_get_baked_texel_scale", "lightmap"), &RenderingServer::lightmap_get_baked_texel_scale);
 
 	/* PARTICLES API */
 
@@ -2976,6 +2979,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_OCCLUDERS);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_MOTION_VECTORS);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER);
+	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_VRS_DISABLED);
 	BIND_ENUM_CONSTANT(VIEWPORT_VRS_TEXTURE);
@@ -3205,6 +3209,8 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("instance_geometry_set_visibility_range", "instance", "min", "max", "min_margin", "max_margin", "fade_mode"), &RenderingServer::instance_geometry_set_visibility_range);
 	ClassDB::bind_method(D_METHOD("instance_geometry_set_lightmap", "instance", "lightmap", "lightmap_uv_scale", "lightmap_slice"), &RenderingServer::instance_geometry_set_lightmap);
 	ClassDB::bind_method(D_METHOD("instance_geometry_set_lod_bias", "instance", "lod_bias"), &RenderingServer::instance_geometry_set_lod_bias);
+	ClassDB::bind_method(D_METHOD("instance_geometry_set_lightmap_baked_texel_scale", "instance", "lightmap_baked_texel_scale"), &RenderingServer::instance_geometry_set_lightmap_baked_texel_scale);
+	ClassDB::bind_method(D_METHOD("instance_geometry_set_lightmap_texel_scale", "instance", "lightmap_texel_scale"), &RenderingServer::instance_geometry_set_lightmap_texel_scale);
 
 	ClassDB::bind_method(D_METHOD("instance_geometry_set_shader_parameter", "instance", "parameter", "value"), &RenderingServer::instance_geometry_set_shader_parameter);
 	ClassDB::bind_method(D_METHOD("instance_geometry_get_shader_parameter", "instance", "parameter"), &RenderingServer::instance_geometry_get_shader_parameter);

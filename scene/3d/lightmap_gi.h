@@ -33,6 +33,7 @@
 #include "core/templates/local_vector.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmapper.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 
 class Sky;
@@ -68,6 +69,7 @@ private:
 	RID lightmap;
 	AABB bounds;
 	float baked_exposure = 1.0;
+	float baked_texel_scale = 1.0;
 
 	struct User {
 		NodePath path;
@@ -114,6 +116,11 @@ public:
 
 	void update_shadowmask_mode(ShadowmaskMode p_mode);
 	ShadowmaskMode get_shadowmask_mode() const;
+
+	void set_texel_scale(float p_factor);
+
+	void set_baked_texel_scale(float p_factor);
+	float get_baked_texel_scale() const;
 
 	bool is_interior() const;
 	float get_baked_exposure() const;
@@ -213,6 +220,7 @@ private:
 	};
 
 	struct MeshesFound {
+		MeshInstance3D *mi;
 		Transform3D xform;
 		NodePath node_path;
 		int32_t subindex = 0;

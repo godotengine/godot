@@ -77,6 +77,10 @@ void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 			err = LightmapGI::BAKE_ERROR_NO_SCENE_ROOT;
 		}
 
+		if (err == LightmapGI::BAKE_ERROR_OK) {
+			EditorNode::get_singleton()->try_autosave();
+		}
+
 		bake_func_end(time_started);
 
 		switch (err) {
