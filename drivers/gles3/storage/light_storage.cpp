@@ -1321,6 +1321,34 @@ void LightStorage::lightmap_set_specular_intensity(RID p_lightmap, float p_inten
 	lightmap->specular_intensity = p_intensity;
 }
 
+float LightStorage::lightmap_get_texel_scale(RID p_lightmap) {
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL_V(lightmap, 1.0);
+
+	return lightmap->texel_scale;
+}
+
+void LightStorage::lightmap_set_texel_scale(RID p_lightmap, float p_scale) {
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lightmap);
+
+	lightmap->texel_scale = p_scale;
+}
+
+float LightStorage::lightmap_get_baked_texel_scale(RID p_lightmap) {
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL_V(lightmap, 1.0);
+
+	return lightmap->baked_texel_scale;
+}
+
+void LightStorage::lightmap_set_baked_texel_scale(RID p_lightmap, float p_scale) {
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lightmap);
+
+	lightmap->baked_texel_scale = p_scale;
+}
+
 /* LIGHTMAP INSTANCE */
 
 RID LightStorage::lightmap_instance_create(RID p_lightmap) {
