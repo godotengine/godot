@@ -1063,12 +1063,19 @@ void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 		total_read += read;
 		WARN_PRINT(vformat("Unhandled element with ID %x of size %d", id, size));
 	}
-
-	video_stream_encoding->cool_stuff();
 }
 
 void VideoStreamPlaybackMatroska::play() {
 	playing = true;
+
+	if (video_stream_encoding.is_null()) {
+		return;
+	}
+
+	RID video_profile = RD::get_singleton()->video_profile_create(0, 8, 8);
+	video_stream_encoding->bind_video_profile_metadata(video_profile);
+
+	video_stream_encoding->decode_cluster();
 }
 
 void VideoStreamPlaybackMatroska::stop() {

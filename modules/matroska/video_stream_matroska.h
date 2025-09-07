@@ -31,9 +31,9 @@
 #pragma once
 
 #include "core/io/resource_loader.h"
-#include "modules/matroska/video_stream_h264.h"
 #include "scene/resources/texture_rd.h"
 #include "scene/resources/video_stream.h"
+#include "scene/resources/video_stream_encoding.h"
 
 #define EBML_HEADER_ID 0x1A45DFA3
 #define EBML_VERSION_ID 0x4286
@@ -175,7 +175,7 @@ private:
 	Segment segment;
 	Vector<uint64_t> clusters;
 
-	Ref<VideoStreamH264> video_stream_encoding = nullptr;
+	Ref<VideoStreamEncoding> video_stream_encoding = nullptr;
 
 	uint width = 0;
 	uint height = 0;
