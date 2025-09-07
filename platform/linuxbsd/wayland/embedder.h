@@ -127,7 +127,13 @@ private:
 	struct WaylandObject {
 		const struct wl_interface *interface = nullptr;
 		int version = 0;
-		bool destroyed = false; // Inert, awaiting confirmation from server.
+
+		// Inert, awaiting confirmation from server.
+		bool destroyed = false;
+
+		// Other objects might depend on it and must not be destroyed.
+		bool shared = false;
+
 		WaylandObjectData *data = nullptr;
 	};
 
@@ -460,8 +466,6 @@ private:
 	uint32_t wl_subcompositor_id = 0;
 	uint32_t main_toplevel_id = 0;
 	uint32_t xdg_wm_base_id = 0;
-
-	HashSet<uint32_t> shared_objects;
 
 	// Global id to name
 	HashMap<uint32_t, uint32_t> registry_globals_names;

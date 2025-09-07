@@ -175,7 +175,7 @@ Error WaylandEmbedder::delete_object(uint32_t p_global_id) {
 	WaylandObject *object = get_object(p_global_id);
 	ERR_FAIL_NULL_V(object, ERR_DOES_NOT_EXIST);
 
-	if (shared_objects.has(p_global_id)) {
+	if (object->shared) {
 		ERR_FAIL_V_MSG(FAILED, vformat("Tried to delete shared object g0x%x.", p_global_id));
 	}
 
@@ -287,7 +287,7 @@ Error WaylandEmbedder::Client::delete_object(uint32_t p_local_id) {
 	WaylandObject *object = embedder->get_object(global_id);
 	ERR_FAIL_NULL_V(object, ERR_DOES_NOT_EXIST);
 
-	if (embedder->shared_objects.has(global_id)) {
+	if (object->shared) {
 		ERR_PRINT(vformat("Tried to delete shared object g0x%x.", global_id));
 		return ERR_INVALID_PARAMETER;
 	}
@@ -492,7 +492,7 @@ void WaylandEmbedder::cleanup_socket(int p_socket) {
 			continue;
 		}
 
-		if (shared_objects.has(global_id)) {
+		if (object->shared) {
 			continue;
 		}
 
@@ -1222,7 +1222,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 					global_info.reusable_objects[version] = new_gid;
 					registry_globals_names[new_gid] = global_name;
 
-					shared_objects.insert(new_gid);
+					get_object(new_gid)->shared = true;
 
 					send_raw_message(compositor_socket, { { header, sizeof header }, { body, body_len - WL_WORD_SIZE }, { &new_gid, sizeof new_gid } });
 				}
@@ -1762,7 +1762,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 	// Server-allocated objects are a bit annoying to handle for us. Right now we
 	// use an heuristic. See: https://ppaalanen.blogspot.com/2014/07/wayland-protocol-design-object-lifespan.html
 	if (strcmp(message.name, "destroy") == 0 || strcmp(message.name, "release") == 0) {
-		if (shared_objects.has(global_id)) {
+		if (object->shared) {
 			// We must not delete shared objects.
 			client->delete_object(local_id);
 			return MessageStatus::HANDLED;
@@ -1946,7 +1946,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 						// TODO: Put this logic in a method.
 						registry_globals[new_global_name].reusable_objects[global_info.version] = xdg_wm_base_id;
 						registry_globals_names[xdg_wm_base_id] = new_global_name;
-						shared_objects.insert(xdg_wm_base_id);
+						get_object(xdg_wm_base_id)->shared = true;
 
 						send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &xdg_wm_base_id, sizeof xdg_wm_base_id } });
 
@@ -1962,7 +1962,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 
 						registry_globals[new_global_name].reusable_objects[global_info.version] = wl_compositor_id;
 						registry_globals_names[wl_compositor_id] = new_global_name;
-						shared_objects.insert(wl_compositor_id);
+						get_object(wl_compositor_id)->shared = true;
 
 						send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &wl_compositor_id, sizeof wl_compositor_id } });
 
@@ -1978,7 +1978,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 
 						registry_globals[new_global_name].reusable_objects[global_info.version] = wl_subcompositor_id;
 						registry_globals_names[wl_subcompositor_id] = new_global_name;
-						shared_objects.insert(wl_subcompositor_id);
+						get_object(wl_subcompositor_id)->shared = true;
 
 						send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &wl_subcompositor_id, sizeof wl_subcompositor_id } });
 
@@ -2293,7 +2293,7 @@ Error WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *in
 		// otherwise passthrough every bind request and then the compositor takes care
 		// of everything.
 		// See: https://lore.freedesktop.org/wayland-devel/20190326121421.06732fd2@eldfell.localdomain/
-		if (shared_objects.has(global_id)) {
+		if (object->shared) {
 			bool handled = false;
 
 			for (KeyValue<int, Client> &pair : clients) {
@@ -2662,14 +2662,14 @@ Error WaylandEmbedder::init() {
 		uint32_t display_id = new_object(&wl_display_interface);
 		CRASH_COND(display_id != DISPLAY_ID);
 
-		shared_objects.insert(DISPLAY_ID);
+		get_object(DISPLAY_ID)->shared = true;
 	}
 
 	{
 		uint32_t registry_id = new_object(&wl_registry_interface);
 		CRASH_COND(registry_id != REGISTRY_ID);
 
-		shared_objects.insert(REGISTRY_ID);
+		get_object(REGISTRY_ID)->shared = true;
 	}
 
 	// wl_display::get_registry(n)
