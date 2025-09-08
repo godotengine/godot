@@ -41,7 +41,6 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme.h"
 #include "scene/gui/graph_edit.h"
-#include "scene/resources/dpi_texture.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
@@ -1726,7 +1725,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_constant("port_h_offset", "GraphNode", 1);
 			p_theme->set_constant("separation", "GraphNode", 1 * EDSCALE);
 
-			Ref<DPITexture> port_icon = p_theme->get_icon(SNAME("GuiGraphNodePort"), EditorStringName(EditorIcons));
+			Ref<ImageTexture> port_icon = p_theme->get_icon(SNAME("GuiGraphNodePort"), EditorStringName(EditorIcons));
 			// The true size is 24x24 This is necessary for sharp port icons at high zoom levels in GraphEdit (up to ~200%).
 			port_icon->set_size_override(Size2(12, 12));
 			p_theme->set_icon("port", "GraphNode", port_icon);
