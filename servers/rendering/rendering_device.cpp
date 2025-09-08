@@ -8242,6 +8242,7 @@ RenderingDevice::~RenderingDevice() {
 	finalize();
 
 	if (singleton == this) {
+		data_format_names.clear(); // Avoid orphan StringNames.
 		singleton = nullptr;
 	}
 }
