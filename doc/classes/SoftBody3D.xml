@@ -51,6 +51,12 @@
 				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
 			</description>
 		</method>
+		<method name="get_bounds" qualifiers="const">
+			<return type="AABB" />
+			<description>
+				Returns the [AABB] of the given soft body in global coordinates.
+			</description>
+		</method>
 		<method name="get_collision_exceptions">
 			<return type="PhysicsBody3D[]" />
 			<description>
@@ -75,6 +81,12 @@
 			<return type="RID" />
 			<description>
 				Returns the internal [RID] used by the [PhysicsServer3D] for this body.
+			</description>
+		</method>
+		<method name="get_point_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns total number of points on the given soft body.
 			</description>
 		</method>
 		<method name="get_point_transform">

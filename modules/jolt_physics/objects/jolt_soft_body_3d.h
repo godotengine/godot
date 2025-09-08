@@ -152,6 +152,7 @@ public:
 
 	Vector3 get_vertex_position(int p_index);
 	void set_vertex_position(int p_index, const Vector3 &p_position);
+	uint32_t get_vertex_count() const;
 
 	void pin_vertex(int p_index);
 	void unpin_vertex(int p_index);
