@@ -120,7 +120,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-24 19:04+0000\n"
+"PO-Revision-Date: 2025-08-26 18:03+0000\n"
 "Last-Translator: Javier <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/es/>\n"
@@ -129,7 +129,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.13\n"
 
 msgid "Application"
 msgstr "Aplicación"
@@ -180,7 +180,7 @@ msgid "Project Settings Override"
 msgstr "Anular Configuración del Proyecto"
 
 msgid "Main Loop Type"
-msgstr "Tipo de Bucle Principal"
+msgstr "Tipo de Loop Principal"
 
 msgid "Auto Accept Quit"
 msgstr "Auto Aceptar Salir"
@@ -213,7 +213,7 @@ msgid "Viewport Width"
 msgstr "Ancho del Viewport"
 
 msgid "Viewport Height"
-msgstr "Altura del Viewport"
+msgstr "Alto del Viewport"
 
 msgid "Mode"
 msgstr "Modo"
@@ -551,6 +551,9 @@ msgstr "Mundo"
 msgid "Map Use Async Iterations"
 msgstr "Uso de Iteraciones Asíncronas en el Mapa"
 
+msgid "Region Use Async Iterations"
+msgstr "Uso de Iteraciones Asíncronas de Región"
+
 msgid "Avoidance"
 msgstr "Evasión"
 
@@ -818,6 +821,9 @@ msgstr "Array de Datos"
 msgid "Max Pending Connections"
 msgstr "Máximo de Conexiones Pendientes"
 
+msgid "Neighbor Filter Enabled"
+msgstr "Filtro de Vecinos Habilitado"
+
 msgid "Region"
 msgstr "Región"
 
@@ -966,7 +972,7 @@ msgid "Easing"
 msgstr "Suavizar"
 
 msgid "Asset Library"
-msgstr "Librería de Assets"
+msgstr "Biblioteca de Recursos"
 
 msgid "Available URLs"
 msgstr "URLs Disponibles"
@@ -1283,6 +1289,9 @@ msgstr "Forzar Desactivación de Compresión de Mesh"
 msgid "Node"
 msgstr "Nodos"
 
+msgid "Node Type"
+msgstr "Tipo de Nodo"
+
 msgid "Script"
 msgstr "Script"
 
@@ -1416,7 +1425,7 @@ msgid "Use External"
 msgstr "Usar Externo"
 
 msgid "Loop Mode"
-msgstr "Modo Bucle"
+msgstr "Modo Loop"
 
 msgid "Keep Custom Tracks"
 msgstr "Mantener Pistas Personalizadas"
@@ -1471,6 +1480,9 @@ msgstr "Tipo de Raíz"
 
 msgid "Root Name"
 msgstr "Nombre de Raíz"
+
+msgid "Root Script"
+msgstr "Script Raíz"
 
 msgid "Apply Root Scale"
 msgstr "Aplicar Escala de Raíz"
@@ -1528,6 +1540,15 @@ msgstr "Importar Script"
 
 msgid "Materials"
 msgstr "Materiales"
+
+msgid "Extract"
+msgstr "Extraer"
+
+msgid "Extract Format"
+msgstr "Extraer Formato"
+
+msgid "Extract Path"
+msgstr "Extraer Ruta"
 
 msgid "Antialiasing"
 msgstr "Antialiasing"
@@ -1786,10 +1807,10 @@ msgid "Normalize"
 msgstr "Normalizar"
 
 msgid "Loop Begin"
-msgstr "Inicio del Bucle"
+msgstr "Inicio del Loop"
 
 msgid "Loop End"
-msgstr "Fin del Bucle"
+msgstr "Fin del Loop"
 
 msgid "Draw Label"
 msgstr "Mostrar Etiqueta"
@@ -2290,7 +2311,7 @@ msgid "Max Fuzzy Misses"
 msgstr "Máximo Errores Difusos"
 
 msgid "Include Addons"
-msgstr "Incluir Complementos"
+msgstr "Incluir Addons"
 
 msgid "Default Display Mode"
 msgstr "Modo Predeterminado de Visualización"
@@ -2751,6 +2772,9 @@ msgstr "Forma del Hueso"
 msgid "Path 3D Tilt Disk Size"
 msgstr "Tamaño del Disco de Inclinación de Path 3D"
 
+msgid "Lightmap GI Probe Size"
+msgstr "Tamaño de Sonda de GI de Lightmap"
+
 msgid "Primary Grid Steps"
 msgstr "Pasos Primarios de Cuadrícula"
 
@@ -2794,16 +2818,16 @@ msgid "Navigation Scheme"
 msgstr "Esquema de Navegación"
 
 msgid "Orbit Mouse Button"
-msgstr "Botón de Ratón para Orbitar"
+msgstr "Botón del Ratón para Orbitar"
 
 msgid "Pan Mouse Button"
-msgstr "Botón de Ratón para Panear"
+msgstr "Botón del Ratón para Desplazar"
 
 msgid "Zoom Mouse Button"
-msgstr "Botón de Ratón para Zoom"
+msgstr "Botón del Ratón para Zoom"
 
 msgid "Zoom Style"
-msgstr "Botón de Ratón para Zoom"
+msgstr "Estilo de Zoom"
 
 msgid "Emulate Numpad"
 msgstr "Emular Teclado Numérico"
@@ -3393,6 +3417,9 @@ msgstr "Interacción con la Ruta del Perfil"
 msgid "Eye Gaze Interaction"
 msgstr "Interacción por Mirada"
 
+msgid "Render Model"
+msgstr "Modelo de Renderizado"
+
 msgid "Binding Modifiers"
 msgstr "Modificadores de Enlace"
 
@@ -3736,10 +3763,142 @@ msgid "Always Track Local Variables"
 msgstr "Siempre Rastrear Variables Locales"
 
 msgid "Exclude Addons"
-msgstr "Excluir Complementos"
+msgstr "Excluir Addons"
 
 msgid "Renamed in Godot 4 Hint"
 msgstr "Renombrado en Godot 4 (Pista)"
+
+msgid "Unassigned Variable"
+msgstr "Variable No Asignada"
+
+msgid "Unassigned Variable Op Assign"
+msgstr "Op. de Asignación a Variable no Asignada"
+
+msgid "Unused Variable"
+msgstr "Variable No Utilizada"
+
+msgid "Unused Local Constant"
+msgstr "Constante Local No Utilizada"
+
+msgid "Unused Private Class Variable"
+msgstr "Variable de Clase Privada No Utilizada"
+
+msgid "Unused Parameter"
+msgstr "Parámetro No Utilizado"
+
+msgid "Unused Signal"
+msgstr "Señal No Utilizada"
+
+msgid "Shadowed Variable"
+msgstr "Variable Sombreada"
+
+msgid "Shadowed Variable Base Class"
+msgstr "Variable de Clase Base Sombreada"
+
+msgid "Shadowed Global Identifier"
+msgstr "Identificador Global Sombreado"
+
+msgid "Unreachable Code"
+msgstr "Código Inaccesible"
+
+msgid "Unreachable Pattern"
+msgstr "Patrón Inaccesible"
+
+msgid "Standalone Expression"
+msgstr "Expresión Independiente"
+
+msgid "Standalone Ternary"
+msgstr "Ternario Independiente"
+
+msgid "Incompatible Ternary"
+msgstr "Ternario Incompatible"
+
+msgid "Untyped Declaration"
+msgstr "Declaración Sin Tipo"
+
+msgid "Inferred Declaration"
+msgstr "Declaración Inferida"
+
+msgid "Unsafe Property Access"
+msgstr "Acceso a Propiedad Inseguro"
+
+msgid "Unsafe Method Access"
+msgstr "Acceso a Método Inseguro"
+
+msgid "Unsafe Cast"
+msgstr "Casteo Inseguro"
+
+msgid "Unsafe Call Argument"
+msgstr "Argumento de Llamada Inseguro"
+
+msgid "Unsafe Void Return"
+msgstr "Retorno Vacío Inseguro"
+
+msgid "Return Value Discarded"
+msgstr "Valor de Retorno Descartado"
+
+msgid "Static Called On Instance"
+msgstr "Llamado Estático En Instancia"
+
+msgid "Missing Tool"
+msgstr "Herramienta Ausente"
+
+msgid "Redundant Static Unload"
+msgstr "Descarga Estática Redundante"
+
+msgid "Redundant Await"
+msgstr "Espera Redundante"
+
+msgid "Assert Always True"
+msgstr "Aserción Siempre Verdadera"
+
+msgid "Assert Always False"
+msgstr "Aserción Siempre Falsa"
+
+msgid "Integer Division"
+msgstr "División Entera"
+
+msgid "Narrowing Conversion"
+msgstr "Conversión Reductora"
+
+msgid "Int As Enum Without Cast"
+msgstr "Int Como Enum Sin Casteo"
+
+msgid "Int As Enum Without Match"
+msgstr "Int Como Enum Sin Match"
+
+msgid "Enum Variable Without Default"
+msgstr "Variable Enum Sin Valor por Defecto"
+
+msgid "Empty File"
+msgstr "Archivo Vacío"
+
+msgid "Deprecated Keyword"
+msgstr "Palabra Clave Obsoleta"
+
+msgid "Confusable Identifier"
+msgstr "Identificador Confuso"
+
+msgid "Confusable Local Declaration"
+msgstr "Declaración Local Confusa"
+
+msgid "Confusable Local Usage"
+msgstr "Uso Local Confuso"
+
+msgid "Confusable Capture Reassignment"
+msgstr "Reasignación de Captura Confusa"
+
+msgid "Inference On Variant"
+msgstr "Inferencia en Variante"
+
+msgid "Native Method Override"
+msgstr "Anulación de Método Nativo"
+
+msgid "Get Node Default Without Onready"
+msgstr "Obtener Nodo Por Defecto Sin Onready"
+
+msgid "Onready With Export"
+msgstr "Onready Con Export"
 
 msgid "Language Server"
 msgstr "Servidor de Lenguaje"
@@ -3955,7 +4114,7 @@ msgid "Original Name"
 msgstr "Nombre Original"
 
 msgid "Loop"
-msgstr "Bucle"
+msgstr "Loop"
 
 msgid "Buffer"
 msgstr "Búfer"
@@ -4276,7 +4435,7 @@ msgid "Bar Beats"
 msgstr "Compases y Tiempos"
 
 msgid "Loop Offset"
-msgstr "Offset de Bucle"
+msgstr "Offset de Loop"
 
 msgid "Eye Height"
 msgstr "Altura Ocular"
@@ -4572,6 +4731,9 @@ msgstr "Actualización de Hueso"
 msgid "Tracker"
 msgstr "Rastreador"
 
+msgid "Make Local to Pose"
+msgstr "Hacer Local a Pose"
+
 msgid "Subject"
 msgstr "Asunto"
 
@@ -4796,6 +4958,9 @@ msgstr "Deslizar para Descartar"
 
 msgid "Immersive Mode"
 msgstr "Modo Inmersivo"
+
+msgid "Edge to Edge"
+msgstr "De Borde a Borde"
 
 msgid "Support Small"
 msgstr "Soporte Corto"
@@ -5138,6 +5303,9 @@ msgstr "Descripción de Uso de Volúmenes Extraíbles"
 
 msgid "Removable Volumes Usage Description Localized"
 msgstr "Descripción de Uso de Volúmenes Extraíbles Localizada"
+
+msgid "Min visionOS Version"
+msgstr "Versión Mínima de visionOS"
 
 msgid "Web"
 msgstr "Web"
@@ -5738,6 +5906,18 @@ msgstr "Simplificar Ruta"
 
 msgid "Simplify Epsilon"
 msgstr "Epsilon de Simplificación"
+
+msgid "Path Return Max Length"
+msgstr "Longitud Máxima de Retorno de Ruta"
+
+msgid "Path Return Max Radius"
+msgstr "Radio Máximo de Retorno de Ruta"
+
+msgid "Path Search Max Polygons"
+msgstr "Máximo de Polígonos para Búsqueda de Ruta"
+
+msgid "Path Search Max Distance"
+msgstr "Distancia Máxima de Búsqueda de Ruta"
 
 msgid "Avoidance Enabled"
 msgstr "Evasión Activada"
@@ -7296,7 +7476,7 @@ msgid "Fadeout Curve"
 msgstr "Curva de Fundido de Salida"
 
 msgid "Break Loop at End"
-msgstr "Romper Bucle al Final"
+msgstr "Romper Loop al Final"
 
 msgid "Auto Restart"
 msgstr "Reinicio Automático"
@@ -7745,6 +7925,27 @@ msgstr "Filtro de Nombres de Archivo"
 msgid "Use Native Dialog"
 msgstr "Usar diálogo nativo"
 
+msgid "Hidden Files Toggle Enabled"
+msgstr "Archivos Ocultos Activado"
+
+msgid "File Filter Toggle Enabled"
+msgstr "Filtro de Archivos Activado"
+
+msgid "File Sort Options Enabled"
+msgstr "Opciones de Ordenamiento de Archivos Habilitadas"
+
+msgid "Folder Creation Enabled"
+msgstr "Creación de Carpetas Habilitada"
+
+msgid "Favorites Enabled"
+msgstr "Favoritos Activados"
+
+msgid "Recent List Enabled"
+msgstr "Lista Reciente Habilitada"
+
+msgid "Layout Toggle Enabled"
+msgstr "Layout Habilitado"
+
 msgid "Last Wrap Alignment"
 msgstr "Alineación del Último Ajuste"
 
@@ -7855,6 +8056,9 @@ msgstr "Color de Tinte"
 
 msgid "Ignore Invalid Connection Type"
 msgstr "Ignorar Tipo de Conexión Inválido"
+
+msgid "Slots Focus Mode"
+msgstr "Modo de Enfoque de Ranuras"
 
 msgid "Select Mode"
 msgstr "Modo de Selección"
@@ -7968,7 +8172,7 @@ msgid "Shortcut Keys Enabled"
 msgstr "Atajos Activados"
 
 msgid "Middle Mouse Paste Enabled"
-msgstr "Pegar Con Botón Intermedio Ratón Activado"
+msgstr "Pegar con Botón Central del Ratón Activado"
 
 msgid "Selecting Enabled"
 msgstr "Selección Activada"
@@ -8129,6 +8333,9 @@ msgstr "Scroll Activo"
 msgid "Scroll Following"
 msgstr "Seguir el Scroll"
 
+msgid "Scroll Following Visible Characters"
+msgstr "Desplazamiento Siguiendo Caracteres Visibles"
+
 msgid "Tab Size"
 msgstr "Tamaño de Tabulación"
 
@@ -8191,6 +8398,9 @@ msgstr "Contador de Marcas"
 
 msgid "Ticks on Borders"
 msgstr "Marcas en los Bordes"
+
+msgid "Ticks Position"
+msgstr "Posición de las Marcas"
 
 msgid "Update on Text Changed"
 msgstr "Actualizar al Cambiar el Texto"
@@ -8761,7 +8971,7 @@ msgid "Current Screen"
 msgstr "Pantalla Actual"
 
 msgid "Mouse Passthrough Polygon"
-msgstr "Polígono de Traspaso de Ratón"
+msgstr "Polígono de Paso de Ratón"
 
 msgid "Wrap Controls"
 msgstr "Envolver Controles"
@@ -8785,7 +8995,7 @@ msgid "Popup Window"
 msgstr "Ventana Emergente"
 
 msgid "Mouse Passthrough"
-msgstr "Pasar el Ratón"
+msgstr "Paso de Ratón"
 
 msgid "Exclude From Capture"
 msgstr "Excluir de la Captura"
@@ -9310,7 +9520,7 @@ msgid "Particles Anim V Frames"
 msgstr "Animación de partículas Fotogramas V"
 
 msgid "Particles Anim Loop"
-msgstr "Bucle de Animación de Partículas"
+msgstr "Loop de Animación de Partículas"
 
 msgid "Effect Callback Type"
 msgstr "Tipo de Callback de Efecto"
@@ -9627,6 +9837,9 @@ msgstr "Shader"
 msgid "Depth Draw Mode"
 msgstr "Modo de Dibujo de Profundidad"
 
+msgid "Depth Test"
+msgstr "Test de Profundidad"
+
 msgid "Shading"
 msgstr "Sombreado"
 
@@ -9803,6 +10016,18 @@ msgstr "MSDF"
 
 msgid "Pixel Range"
 msgstr "Rango de Píxeles"
+
+msgid "Stencil"
+msgstr "Plantilla"
+
+msgid "Compare"
+msgstr "Comparar"
+
+msgid "Reference"
+msgstr "Referencia"
+
+msgid "Outline Thickness"
+msgstr "Grosor del Contorno"
 
 msgid "Convex Hull Downsampling"
 msgstr "Muestreo de Envoltura Convexa"
@@ -10124,6 +10349,12 @@ msgstr "Puerto de Salida para Previsualización"
 
 msgid "Modes"
 msgstr "Modos"
+
+msgid "Stencil Modes"
+msgstr "Modos de Plantilla"
+
+msgid "Stencil Flags"
+msgstr "Indicadores de Plantilla"
 
 msgid "Input Name"
 msgstr "Nombre de Entrada"
@@ -10502,6 +10733,9 @@ msgstr "Selector Central"
 
 msgid "Grabber Offset"
 msgstr "Desplazamiento del Selector"
+
+msgid "Tick Offset"
+msgstr "Desplazamiento de Marcas"
 
 msgid "Updown"
 msgstr "Reducción"
@@ -11049,6 +11283,9 @@ msgstr "Preconfiguración de Foco"
 msgid "Preset BG"
 msgstr "Preconfiguración PF"
 
+msgid "Horizontal Rule"
+msgstr "Regla Horizontal"
+
 msgid "Normal Font"
 msgstr "Fuente Normal"
 
@@ -11105,6 +11342,15 @@ msgstr "Alfa de Subrayado"
 
 msgid "Strikethrough Alpha"
 msgstr "Alfa de Tachado"
+
+msgid "Touch Dragger Color"
+msgstr "Color de Dragger Táctil"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "Color Presionado de Arrastrador Táctil"
+
+msgid "Touch Dragger Hover Color"
+msgstr "Color de Arrastrador Táctil al Pasar"
 
 msgid "H Touch Dragger"
 msgstr "H Dragger Táctil"
@@ -11400,6 +11646,21 @@ msgstr "Generador de Videos"
 msgid "Speaker Mode"
 msgstr "Modo Altavoz"
 
+msgid "Video Quality"
+msgstr "Calidad de Video"
+
+msgid "OGV"
+msgstr "OGV"
+
+msgid "Audio Quality"
+msgstr "Calidad de Audio"
+
+msgid "Encoding Speed"
+msgstr "Velocidad de Codificación"
+
+msgid "Keyframe Interval"
+msgstr "Intervalo de Fotogramas Clave"
+
 msgid "Movie File"
 msgstr "Archivo de Video"
 
@@ -11423,6 +11684,9 @@ msgstr "Identificadores unicos de Ruta"
 
 msgid "Path Owner IDs"
 msgstr "Identificadores de Propietario de Ruta"
+
+msgid "Path Length"
+msgstr "Longitud de Ruta"
 
 msgid "Default Cell Size"
 msgstr "Vista Previa Predeterminada"
@@ -11718,6 +11982,15 @@ msgstr "Niebla Desactivada"
 msgid "Specular Occlusion Disabled"
 msgstr "Oclusión Especular Desactivada"
 
+msgid "Read"
+msgstr "Lectura"
+
+msgid "Write"
+msgstr "Escritura"
+
+msgid "Write Depth Fail"
+msgstr "Fallo de Escritura de Profundidad"
+
 msgid "Light Only"
 msgstr "Solo Luz"
 
@@ -11739,6 +12012,36 @@ msgstr "Usar Pase a Mitad de Resolución"
 msgid "Use Quarter Res Pass"
 msgstr "Usar Pase de un Cuarto de Resolución"
 
+msgid "Float Comparison"
+msgstr "Comparación de Flotantes"
+
+msgid "Unused Constant"
+msgstr "Constante No Utilizada"
+
+msgid "Unused Function"
+msgstr "Función No Utilizada"
+
+msgid "Unused Struct"
+msgstr "Estructura No Utilizada"
+
+msgid "Unused Uniform"
+msgstr "Uniforme No Utilizado"
+
+msgid "Unused Varying"
+msgstr "Varying No Utilizado"
+
+msgid "Unused Local Variable"
+msgstr "Variable Local No Utilizada"
+
+msgid "Formatting Error"
+msgstr "Error de Formato"
+
+msgid "Device Limit Exceeded"
+msgstr "Límite de Dispositivos Excedido"
+
+msgid "Magic Position Write"
+msgstr "Escritura de Posición Mágica"
+
 msgid "Internal Size"
 msgstr "Tamaño Interno"
 
@@ -11749,7 +12052,7 @@ msgid "View Count"
 msgstr "Contador de Vistas"
 
 msgid "Render Loop Enabled"
-msgstr "Bucle de Renderización Activado"
+msgstr "Loop de Renderización Activado"
 
 msgid "VRAM Compression"
 msgstr "Compresión VRAM"
@@ -12035,6 +12338,9 @@ msgstr "Distribución de Subpixel LCD"
 
 msgid "Include Text Server Data"
 msgstr "Incluir Datos del Servidor de Texto"
+
+msgid "Line Breaking Strictness"
+msgstr "Rigidez de Salto de Línea"
 
 msgid "Has Tracking Data"
 msgstr "Tiene Datos de Seguimiento"

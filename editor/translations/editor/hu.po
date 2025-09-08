@@ -3021,9 +3021,6 @@ msgstr ""
 "Nem található futtatható exportállomány ehhez a platformhoz.\n"
 "Kérem adjon hozzá egy futtatható exportállományt az export menüben."
 
-msgid "Select Mode"
-msgstr "Kiválasztó Mód"
-
 msgid "Clear All"
 msgstr "Mind Bezárása"
 
@@ -3436,6 +3433,9 @@ msgstr "Kijelöltek csoportosítása"
 
 msgid "Ungroup Selected"
 msgstr "kijelölt csoportok szétbontása"
+
+msgid "Select Mode"
+msgstr "Kiválasztó Mód"
 
 msgid "Move Mode"
 msgstr "Mozgató Mód"

@@ -4025,9 +4025,6 @@ msgstr ""
 "Prosím pridajte spustiteľný \"preset\" v export menu alebo definujte "
 "existujúci \"preset\" ako spustiteľný."
 
-msgid "Select Mode"
-msgstr "Vybrať Režim"
-
 msgid "Show list of selectable nodes at position clicked."
 msgstr "Zobraziť zoznam vyberateľných nodov na klinutej pozícii."
 
@@ -4675,6 +4672,9 @@ msgstr ""
 "Scéna obsahuje\n"
 "WorldEnvironment.\n"
 "Náhľad vypnutý."
+
+msgid "Select Mode"
+msgstr "Vybrať Režim"
 
 msgid "Move Mode"
 msgstr "Režim presúvania"

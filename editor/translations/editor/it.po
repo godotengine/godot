@@ -116,13 +116,15 @@
 # Kero0x9 <tekken857@gmail.com>, 2025.
 # Alessio <alexio-dev@proton.me>, 2025.
 # SolarCTP <cochinageorge@gmail.com>, 2025.
+# Marco Giovanni Giuseppe <cerianino@libero.it>, 2025.
+# Daniel Colciaghi <danielcolciaghi@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-02 16:02+0000\n"
-"Last-Translator: SolarCTP <cochinageorge@gmail.com>\n"
+"PO-Revision-Date: 2025-08-26 18:02+0000\n"
+"Last-Translator: Daniel Colciaghi <danielcolciaghi@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -130,7 +132,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.13\n"
 
 msgid "Unset"
 msgstr "Non impostato"
@@ -704,6 +706,12 @@ msgstr "Punto"
 msgid "Open Editor"
 msgstr "Apri editor"
 
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
+
 msgid "Value"
 msgstr "Valore"
 
@@ -742,6 +750,15 @@ msgstr "Cancella i punti e i triangoli."
 
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Genera i triangoli di fusione automaticamente (invece che manualmente)"
+
+msgid "Max Y"
+msgstr "Max Y"
+
+msgid "Min Y"
+msgstr "Min Y"
+
+msgid "Min X"
+msgstr "Min X"
 
 msgid "Parameter Changed: %s"
 msgstr "Parametro modificato: %s"
@@ -942,6 +959,17 @@ msgstr "Salva la libreria di animazioni in un file: %s"
 
 msgid "Save Animation to File: %s"
 msgstr "Salva l'animazione in un file: %s"
+
+msgid ""
+"The file you selected is not a valid AnimationLibrary.\n"
+"\n"
+"If the animations you want are inside of this file, save them to a separate "
+"file first."
+msgstr ""
+"Il file selezionato non è un valido AniimationLibrary.\n"
+"\n"
+"Se le animazioni che vuoi sono all'interno di questo file, esportale prima in "
+"un file a parte."
 
 msgid "Some of the selected libraries were already added to the mixer."
 msgstr ""
@@ -2129,6 +2157,9 @@ msgstr "AnimationTree"
 
 msgid "Toggle AnimationTree Bottom Panel"
 msgstr "Commuta il pannello inferiore dell'AnimationTree"
+
+msgid "Title"
+msgstr "Titolo"
 
 msgid "Author"
 msgstr "Autore"
@@ -4838,6 +4869,9 @@ msgstr "Impossibile ricaricare una scena che non è mai stata salvata."
 msgid "Save & Reload"
 msgstr "Salva e ricarica"
 
+msgid "Stop running project before exiting the editor?"
+msgstr "Vuoi interrompere il progetto prima di uscire dall'editor?"
+
 msgid "Save modified resources before reloading?"
 msgstr "Salvare le risorse modificate prima di ricaricare?"
 
@@ -5010,6 +5044,9 @@ msgstr ""
 "La scena selezionata '%s' non è un file di scena. Sceglierne una valida?\n"
 "Potrai cambiarla in seguito da \"Impostazioni del progetto\" sotto la "
 "categoria \"Applicazione\"."
+
+msgid "User data dir '%s' is not valid. Change to a valid one?"
+msgstr "La cartella utente '%s' non è valida. Vuoi cambiarla con una valida?"
 
 msgid "Cannot run the script because it contains errors, check the output log."
 msgstr ""
@@ -5404,6 +5441,10 @@ msgstr "Ricarica dal disco"
 
 msgid "Ignore external changes"
 msgstr "Ignora le modifiche esterne"
+
+msgid "Project data folder (.godot) is missing. Please restart editor."
+msgstr ""
+"La cartella dati (.godot) non è esistente. Per favore riavviare l'editor."
 
 msgid "Restart"
 msgstr "Ricomincia"
@@ -7583,6 +7624,9 @@ msgstr "Nuova chiave:"
 msgid "New Value:"
 msgstr "Nuovo valore:"
 
+msgid "Reorder"
+msgstr "Riordina"
+
 msgid "(Nil) %s"
 msgstr "(Nullo) %s"
 
@@ -8523,6 +8567,9 @@ msgstr "Scala di visualizzazione"
 msgid "Network Mode"
 msgstr "Modalità di rete"
 
+msgid "Check for Updates"
+msgstr "Controlla per gli aggiornamenti"
+
 msgid "Directory Naming Convention"
 msgstr "Convenzione di denominazione per le cartelle"
 
@@ -8719,9 +8766,6 @@ msgstr "Esecuzione del progetto"
 msgid "Next Frame"
 msgstr "Prossimo frame"
 
-msgid "Select Mode"
-msgstr "Modalità selezione"
-
 msgid "Connection impossible to the game process."
 msgstr "Impossibile connettersi al processo del gioco."
 
@@ -8762,6 +8806,12 @@ msgstr ""
 msgid "Game embedding not available in single window mode."
 msgstr ""
 "L'incorporamento del gioco non è disponibile in modalità finestra singola."
+
+msgid "Unmute game audio."
+msgstr "Riattiva l'audio del gioco."
+
+msgid "Mute game audio."
+msgstr "Silenzia l'audio del gioco."
 
 msgid "Alt+RMB: Show list of all nodes at position clicked."
 msgstr ""
@@ -8876,6 +8926,9 @@ msgstr "Sostituisci i tag principali"
 
 msgid "Feature Tags"
 msgstr "Tag di funzionalità"
+
+msgid "Move Origin to Geometric Center"
+msgstr "Sposta l'Origine al Centro Geometrico"
 
 msgid "Create Polygon"
 msgstr "Crea un poligono"
@@ -11203,6 +11256,9 @@ msgstr ""
 "La scena contiene un\n"
 "WorldEnvironment\n"
 "Anteprima disabilitata."
+
+msgid "Select Mode"
+msgstr "Modalità selezione"
 
 msgid "Move Mode"
 msgstr "Modalità spostamento"
@@ -15247,9 +15303,6 @@ msgstr "Imposta la costante: %s"
 
 msgid "Invalid name for varying."
 msgstr "Nome non valido per un varying."
-
-msgid "Varying with that name is already exist."
-msgstr "Un varying con quel nome esiste già."
 
 msgid "Boolean type cannot be used with `%s` varying mode."
 msgstr "Il tipo booleano non può essere usato con la modalità di varying `%s`."
@@ -19710,12 +19763,6 @@ msgstr "La ricorsione non è consentita."
 
 msgid "Function '%s' can't be called from source code."
 msgstr "La funzione '%s' non può essere chiamata dal codice sorgente."
-
-msgid ""
-"Invalid argument for \"%s(%s)\" function: argument %d should be %s but is %s."
-msgstr ""
-"Argomento non valido per la funzione \"%s(%s)\": l'argomento %d dovrebbe "
-"essere %s ma è %s."
 
 msgid ""
 "Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."

@@ -3205,9 +3205,6 @@ msgstr ""
 "Sila tambah pratetap yang dapat dijalankan di menu Eksport atau tentukan "
 "pratetap yang ada sebagai yang dapat dijalankan."
 
-msgid "Select Mode"
-msgstr "Pilih Mod"
-
 msgid "Clear All"
 msgstr "Padam Semua"
 
@@ -3312,6 +3309,9 @@ msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr ""
 "Alt+RMB: Tunjukkan senarai semua nod pada kedudukan yang diklik, termasuk "
 "yang dikunci."
+
+msgid "Select Mode"
+msgstr "Pilih Mod"
 
 msgid "Move Mode"
 msgstr "Mod Alih"

@@ -7894,9 +7894,6 @@ msgstr ""
 "Lägg till en körbar förinställning i exportmenyn eller ställ in en befintlig "
 "förinställning som körbar."
 
-msgid "Select Mode"
-msgstr "Välj läge"
-
 msgid "Show list of selectable nodes at position clicked."
 msgstr "Visa lista över valbara noder på den klickade positionen."
 
@@ -10001,6 +9998,9 @@ msgstr ""
 "Scenen innehåller\n"
 "WorldEnvironment.\n"
 "Förhandsvisning avaktiverad."
+
+msgid "Select Mode"
+msgstr "Välj läge"
 
 msgid "Move Mode"
 msgstr "Flyttläge"
@@ -13846,9 +13846,6 @@ msgstr "Ställ in konstant: %s"
 
 msgid "Invalid name for varying."
 msgstr "Ogiltigt namn på varying."
-
-msgid "Varying with that name is already exist."
-msgstr "Varying med det namnet finns redan."
 
 msgid "Add Node(s) to Visual Shader"
 msgstr "Lägg till nod(er) i VisualShader"

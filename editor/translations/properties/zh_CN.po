@@ -74,7 +74,7 @@
 # BinotaLIU <me@binota.org>, 2020, 2021.
 # TakWolf <takwolf@foxmail.com>, 2020.
 # twoBornottwoB <305766341@qq.com>, 2021.
-# Magian <magian1127@gmail.com>, 2021.
+# Magian <magian1127@gmail.com>, 2021, 2025.
 # Weiduo Xie <xwditfr@gmail.com>, 2021.
 # suplife <2634557184@qq.com>, 2021, 2022, 2023.
 # luoji <564144019@qq.com>, 2021.
@@ -95,13 +95,14 @@
 # J_aphasiac <japhasiac@163.com>, 2025.
 # Myeongjin <aranet100@gmail.com>, 2025.
 # DE YU <delsin_yu@qq.com>, 2025.
+# lan123 <1283118891@qq.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2025-07-19 09:02+0000\n"
-"Last-Translator: Myeongjin <aranet100@gmail.com>\n"
+"PO-Revision-Date: 2025-08-19 15:02+0000\n"
+"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot-properties/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -109,7 +110,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.13\n"
 
 msgid "Application"
 msgstr "应用"
@@ -531,6 +532,9 @@ msgstr "世界"
 msgid "Map Use Async Iterations"
 msgstr "地图使用异步迭代"
 
+msgid "Region Use Async Iterations"
+msgstr "区块使用异步迭代"
+
 msgid "Avoidance"
 msgstr "避障"
 
@@ -797,6 +801,9 @@ msgstr "数据数组"
 
 msgid "Max Pending Connections"
 msgstr "最大挂起连接数"
+
+msgid "Neighbor Filter Enabled"
+msgstr "启用邻接过滤"
 
 msgid "Region"
 msgstr "区域"
@@ -1263,6 +1270,9 @@ msgstr "强制禁用网格压缩"
 msgid "Node"
 msgstr "节点"
 
+msgid "Node Type"
+msgstr "节点类型"
+
 msgid "Script"
 msgstr "脚本"
 
@@ -1452,6 +1462,9 @@ msgstr "根类型"
 msgid "Root Name"
 msgstr "根名称"
 
+msgid "Root Script"
+msgstr "根脚本"
+
 msgid "Apply Root Scale"
 msgstr "应用根缩放"
 
@@ -1459,7 +1472,7 @@ msgid "Root Scale"
 msgstr "根缩放"
 
 msgid "Import as Skeleton Bones"
-msgstr "作为骨架骨骼导入"
+msgstr "导入为骨架骨骼"
 
 msgid "Use Name Suffixes"
 msgstr "使用名称后缀"
@@ -1498,7 +1511,7 @@ msgid "Trimming"
 msgstr "修剪"
 
 msgid "Remove Immutable Tracks"
-msgstr "移除不可修改的轨道"
+msgstr "移除不变的轨道"
 
 msgid "Import Rest as Reset"
 msgstr "将放松姿势导入为重置动画"
@@ -1508,6 +1521,15 @@ msgstr "导入脚本"
 
 msgid "Materials"
 msgstr "材质"
+
+msgid "Extract"
+msgstr "提取"
+
+msgid "Extract Format"
+msgstr "提取格式"
+
+msgid "Extract Path"
+msgstr "提取路径"
 
 msgid "Antialiasing"
 msgstr "抗锯齿"
@@ -2731,6 +2753,9 @@ msgstr "骨骼形状"
 msgid "Path 3D Tilt Disk Size"
 msgstr "Path3D 倾斜盘大小"
 
+msgid "Lightmap GI Probe Size"
+msgstr "光照贴图 GI 探针大小"
+
 msgid "Primary Grid Steps"
 msgstr "主栅格步长"
 
@@ -3373,6 +3398,9 @@ msgstr "手部交互配置"
 msgid "Eye Gaze Interaction"
 msgstr "眼动交互"
 
+msgid "Render Model"
+msgstr "渲染模型"
+
 msgid "Binding Modifiers"
 msgstr "绑定修改器"
 
@@ -3720,6 +3748,138 @@ msgstr "排除插件"
 
 msgid "Renamed in Godot 4 Hint"
 msgstr "在Godot 4提示中重命名"
+
+msgid "Unassigned Variable"
+msgstr "未赋值变量"
+
+msgid "Unassigned Variable Op Assign"
+msgstr "未赋值变量赋值运算"
+
+msgid "Unused Variable"
+msgstr "未使用变量"
+
+msgid "Unused Local Constant"
+msgstr "未使用局部常量"
+
+msgid "Unused Private Class Variable"
+msgstr "未使用私有类变量"
+
+msgid "Unused Parameter"
+msgstr "未使用参数"
+
+msgid "Unused Signal"
+msgstr "未使用信号"
+
+msgid "Shadowed Variable"
+msgstr "遮蔽变量"
+
+msgid "Shadowed Variable Base Class"
+msgstr "遮蔽变量基类"
+
+msgid "Shadowed Global Identifier"
+msgstr "遮蔽全局标识符"
+
+msgid "Unreachable Code"
+msgstr "不可达代码"
+
+msgid "Unreachable Pattern"
+msgstr "不可达模式"
+
+msgid "Standalone Expression"
+msgstr "独立表达式"
+
+msgid "Standalone Ternary"
+msgstr "独立三目运算"
+
+msgid "Incompatible Ternary"
+msgstr "不兼容三目运算"
+
+msgid "Untyped Declaration"
+msgstr "无类型声明"
+
+msgid "Inferred Declaration"
+msgstr "推断声明"
+
+msgid "Unsafe Property Access"
+msgstr "不安全属性访问"
+
+msgid "Unsafe Method Access"
+msgstr "不安全方法访问"
+
+msgid "Unsafe Cast"
+msgstr "不安全转换"
+
+msgid "Unsafe Call Argument"
+msgstr "不安全调用参数"
+
+msgid "Unsafe Void Return"
+msgstr "不安全空返回"
+
+msgid "Return Value Discarded"
+msgstr "返回值丢弃"
+
+msgid "Static Called On Instance"
+msgstr "实例调用静态"
+
+msgid "Missing Tool"
+msgstr "缺失工具"
+
+msgid "Redundant Static Unload"
+msgstr "冗余静态卸载"
+
+msgid "Redundant Await"
+msgstr "冗余 Await"
+
+msgid "Assert Always True"
+msgstr "断言始终成立"
+
+msgid "Assert Always False"
+msgstr "断言始终失败"
+
+msgid "Integer Division"
+msgstr "整数除法"
+
+msgid "Narrowing Conversion"
+msgstr "收缩转换"
+
+msgid "Int As Enum Without Cast"
+msgstr "整型用作枚举不转换"
+
+msgid "Int As Enum Without Match"
+msgstr "整型用作枚举不匹配"
+
+msgid "Enum Variable Without Default"
+msgstr "枚举变量无默认值"
+
+msgid "Empty File"
+msgstr "空文件"
+
+msgid "Deprecated Keyword"
+msgstr "弃用关键字"
+
+msgid "Confusable Identifier"
+msgstr "易混淆标识符"
+
+msgid "Confusable Local Declaration"
+msgstr "易混淆局部声明"
+
+msgid "Confusable Local Usage"
+msgstr "易混淆局部使用"
+
+msgid "Confusable Capture Reassignment"
+msgstr "易混淆捕获重赋值"
+
+msgid "Inference On Variant"
+msgstr "Variant 推断"
+
+msgid "Native Method Override"
+msgstr "覆盖原生方法"
+
+msgid "Get Node Default Without Onready"
+msgstr "默认 get_node 无 onready"
+
+msgid "Onready With Export"
+msgstr "导出 onready"
 
 msgid "Language Server"
 msgstr "语言服务器"
@@ -4552,6 +4712,9 @@ msgstr "骨骼更新"
 msgid "Tracker"
 msgstr "追踪器"
 
+msgid "Make Local to Pose"
+msgstr "本地化到姿势"
+
 msgid "Subject"
 msgstr "对象"
 
@@ -4776,6 +4939,9 @@ msgstr "滑动关闭"
 
 msgid "Immersive Mode"
 msgstr "沉浸模式"
+
+msgid "Edge to Edge"
+msgstr "无边框"
 
 msgid "Support Small"
 msgstr "支持 Small"
@@ -5118,6 +5284,9 @@ msgstr "可移除卷使用描述"
 
 msgid "Removable Volumes Usage Description Localized"
 msgstr "可移除卷使用描述本地化"
+
+msgid "Min visionOS Version"
+msgstr "最低 visionOS 版本"
 
 msgid "Web"
 msgstr "Web"
@@ -5718,6 +5887,18 @@ msgstr "简化路径"
 
 msgid "Simplify Epsilon"
 msgstr "简化阈值"
+
+msgid "Path Return Max Length"
+msgstr "路径返回最大长度"
+
+msgid "Path Return Max Radius"
+msgstr "路径返回最大半径"
+
+msgid "Path Search Max Polygons"
+msgstr "路径搜索最大多边形数"
+
+msgid "Path Search Max Distance"
+msgstr "路径搜索最大距离"
 
 msgid "Avoidance Enabled"
 msgstr "启用避障"
@@ -7336,7 +7517,7 @@ msgid "Libraries"
 msgstr "库"
 
 msgid "Deterministic"
-msgstr "确定"
+msgstr "确定性"
 
 msgid "Reset on Save"
 msgstr "保存时重置"
@@ -7725,6 +7906,27 @@ msgstr "文件名筛选"
 msgid "Use Native Dialog"
 msgstr "使用原生对话框"
 
+msgid "Hidden Files Toggle Enabled"
+msgstr "启用隐藏文件开关"
+
+msgid "File Filter Toggle Enabled"
+msgstr "启用文件筛选开关"
+
+msgid "File Sort Options Enabled"
+msgstr "启用文件排序选项"
+
+msgid "Folder Creation Enabled"
+msgstr "启用文件夹创建"
+
+msgid "Favorites Enabled"
+msgstr "启用收藏"
+
+msgid "Recent List Enabled"
+msgstr "启用最近列表"
+
+msgid "Layout Toggle Enabled"
+msgstr "启用布局开关"
+
 msgid "Last Wrap Alignment"
 msgstr "最后行列对齐"
 
@@ -7835,6 +8037,9 @@ msgstr "着色颜色"
 
 msgid "Ignore Invalid Connection Type"
 msgstr "忽略无效连接类型"
+
+msgid "Slots Focus Mode"
+msgstr "槽位聚焦模式"
 
 msgid "Select Mode"
 msgstr "选择模式"
@@ -8109,6 +8314,9 @@ msgstr "滚动激活"
 msgid "Scroll Following"
 msgstr "滚动跟随"
 
+msgid "Scroll Following Visible Characters"
+msgstr "滚动跟随可见字符"
+
 msgid "Tab Size"
 msgstr "制表符大小"
 
@@ -8171,6 +8379,9 @@ msgstr "刻度数量"
 
 msgid "Ticks on Borders"
 msgstr "边界刻度"
+
+msgid "Ticks Position"
+msgstr "刻度位置"
 
 msgid "Update on Text Changed"
 msgstr "文本更改时更新"
@@ -9607,6 +9818,9 @@ msgstr "着色器"
 msgid "Depth Draw Mode"
 msgstr "深度绘制模式"
 
+msgid "Depth Test"
+msgstr "深度测试"
+
 msgid "Shading"
 msgstr "着色"
 
@@ -9783,6 +9997,18 @@ msgstr "MSDF"
 
 msgid "Pixel Range"
 msgstr "像素范围"
+
+msgid "Stencil"
+msgstr "模板"
+
+msgid "Compare"
+msgstr "比较"
+
+msgid "Reference"
+msgstr "参考"
+
+msgid "Outline Thickness"
+msgstr "轮廓粗细"
 
 msgid "Convex Hull Downsampling"
 msgstr "凸包降采样"
@@ -10104,6 +10330,12 @@ msgstr "预览输出端口"
 
 msgid "Modes"
 msgstr "模式"
+
+msgid "Stencil Modes"
+msgstr "模板模式"
+
+msgid "Stencil Flags"
+msgstr "模板标志"
 
 msgid "Input Name"
 msgstr "输入名称"
@@ -10482,6 +10714,9 @@ msgstr "抓取器居中"
 
 msgid "Grabber Offset"
 msgstr "抓取器偏移"
+
+msgid "Tick Offset"
+msgstr "刻度偏移"
 
 msgid "Updown"
 msgstr "上下"
@@ -11029,6 +11264,9 @@ msgstr "预设聚焦"
 msgid "Preset BG"
 msgstr "预设背景"
 
+msgid "Horizontal Rule"
+msgstr "水平线"
+
 msgid "Normal Font"
 msgstr "正常字体"
 
@@ -11085,6 +11323,15 @@ msgstr "下划线 Alpha"
 
 msgid "Strikethrough Alpha"
 msgstr "删除线 Alpha"
+
+msgid "Touch Dragger Color"
+msgstr "触摸拖动器颜色"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "触摸拖动器按下颜色"
+
+msgid "Touch Dragger Hover Color"
+msgstr "触摸拖动器悬停颜色"
 
 msgid "H Touch Dragger"
 msgstr "水平触摸拖动器"
@@ -11380,6 +11627,21 @@ msgstr "Movie Writer"
 msgid "Speaker Mode"
 msgstr "扬声器模式"
 
+msgid "Video Quality"
+msgstr "视频质量"
+
+msgid "OGV"
+msgstr "OGV"
+
+msgid "Audio Quality"
+msgstr "音频质量"
+
+msgid "Encoding Speed"
+msgstr "编码速度"
+
+msgid "Keyframe Interval"
+msgstr "关键帧间隔"
+
 msgid "Movie File"
 msgstr "电影文件"
 
@@ -11403,6 +11665,9 @@ msgstr "路径 RID"
 
 msgid "Path Owner IDs"
 msgstr "路径所有者 ID"
+
+msgid "Path Length"
+msgstr "路径长度"
 
 msgid "Default Cell Size"
 msgstr "默认单元格大小"
@@ -11698,6 +11963,15 @@ msgstr "禁用雾"
 msgid "Specular Occlusion Disabled"
 msgstr "禁用镜面反射遮蔽"
 
+msgid "Read"
+msgstr "读取"
+
+msgid "Write"
+msgstr "写入"
+
+msgid "Write Depth Fail"
+msgstr "写入深度失败"
+
 msgid "Light Only"
 msgstr "仅灯光"
 
@@ -11718,6 +11992,36 @@ msgstr "使用二分之一分辨率阶段"
 
 msgid "Use Quarter Res Pass"
 msgstr "使用四分之一分辨率阶段"
+
+msgid "Float Comparison"
+msgstr "浮点数比较"
+
+msgid "Unused Constant"
+msgstr "未使用常量"
+
+msgid "Unused Function"
+msgstr "未使用函数"
+
+msgid "Unused Struct"
+msgstr "未使用结构体"
+
+msgid "Unused Uniform"
+msgstr "未使用 Uniform"
+
+msgid "Unused Varying"
+msgstr "未使用 Varying"
+
+msgid "Unused Local Variable"
+msgstr "未使用局部变量"
+
+msgid "Formatting Error"
+msgstr "格式错误"
+
+msgid "Device Limit Exceeded"
+msgstr "超出设备限制"
+
+msgid "Magic Position Write"
+msgstr "POSITION 写入魔数"
 
 msgid "Internal Size"
 msgstr "内部大小"
@@ -12015,6 +12319,9 @@ msgstr "LCD 次像素布局"
 
 msgid "Include Text Server Data"
 msgstr "包括文本服务器数据"
+
+msgid "Line Breaking Strictness"
+msgstr "断行严格度"
 
 msgid "Has Tracking Data"
 msgstr "有跟踪数据"

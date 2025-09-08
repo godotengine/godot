@@ -95,7 +95,7 @@
 # Ettore Atalan <atalanttore@googlemail.com>, 2023, 2024, 2025.
 # Lars Bollmann <lars.bollmann@tu-dortmund.de>, 2023.
 # Benedikt Wicklein <benedikt.wicklein@gmail.com>, 2023.
-# Wuzzy <Wuzzy@disroot.org>, 2023.
+# Wuzzy <Wuzzy@disroot.org>, 2023, 2025.
 # Florian Baumer <florianbaumer98@gmail.com>, 2023.
 # Rob G <robert.gudat@web.de>, 2023.
 # oliver pecek <oliver.pecek@gmail.com>, 2023.
@@ -111,13 +111,15 @@
 # Fabian Donner <ThunderFD@users.noreply.github.com>, 2025.
 # terraquad <tq@terraquad.dev>, 2025.
 # linesgamer <linesgamer202@gmail.com>, 2025.
+# Timeo Buergler <buergler.timeo@gmail.com>, 2025.
+# gebirgsbaerbel <reichart.barbara@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-06-22 09:13+0000\n"
-"Last-Translator: linesgamer <linesgamer202@gmail.com>\n"
+"PO-Revision-Date: 2025-09-02 03:10+0000\n"
+"Last-Translator: Mirco Höhne <mirco.hoehne@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/de/>\n"
 "Language: de\n"
@@ -125,7 +127,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.13.1-dev\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -315,6 +317,12 @@ msgstr "Frame-Taktung"
 
 msgid "Android"
 msgstr "Android"
+
+msgid "Enable Frame Pacing"
+msgstr "Frame Pacing aktivieren"
+
+msgid "Swappy Mode"
+msgstr "Swappy Modus"
 
 msgid "Physics"
 msgstr "Physik"
@@ -541,6 +549,9 @@ msgstr "Welt"
 msgid "Map Use Async Iterations"
 msgstr "Map benutzt Async-Iterationen"
 
+msgid "Region Use Async Iterations"
+msgstr "Region benutzt Async-Iterationen"
+
 msgid "Avoidance"
 msgstr "Ausweichen"
 
@@ -621,6 +632,9 @@ msgstr "Veraltetes „Gerade gedrückt“-Verhalten"
 
 msgid "Sensors"
 msgstr "Sensoren"
+
+msgid "Enable Accelerometer"
+msgstr "Beschleunigungsmesser aktivieren"
 
 msgid "Enable Gravity"
 msgstr "Schwerkraft aktivieren"
@@ -804,6 +818,9 @@ msgstr "Datenliste"
 
 msgid "Max Pending Connections"
 msgstr "Maximale Anzahl hängender Verbindungen"
+
+msgid "Neighbor Filter Enabled"
+msgstr "Nachbarfilter aktiviert"
 
 msgid "Region"
 msgstr "Region"
@@ -1036,8 +1053,14 @@ msgstr "Ansprüche"
 msgid "Increased Memory Limit"
 msgstr "Erhöhtes Speicherlimit"
 
+msgid "Game Center"
+msgstr "Spielzentrum"
+
 msgid "Push Notifications"
 msgstr "Push-Benachrichtigungen"
+
+msgid "Additional"
+msgstr "Zusätzlich"
 
 msgid "Capabilities"
 msgstr "Fähigkeiten"
@@ -1050,6 +1073,9 @@ msgstr "Performance Gaming-Stufe"
 
 msgid "Performance A 12"
 msgstr "Performance A 12"
+
+msgid "Shader Baker"
+msgstr "Shader-Bäcker"
 
 msgid "Enabled"
 msgstr "Aktiviert"
@@ -1092,6 +1118,15 @@ msgstr "Tracking-Domänen"
 
 msgid "Icons"
 msgstr "Icons"
+
+msgid "Icon 1024 X 1024"
+msgstr "Icon 1024×1024"
+
+msgid "Icon 1024 X 1024 Dark"
+msgstr "Icon 1024×1024 dunkel"
+
+msgid "Icon 1024 X 1024 Tinted"
+msgstr "Icon 1024×1024 gefärbt"
 
 msgid "Export Console Wrapper"
 msgstr "Konsolenwrapper exportieren"
@@ -1147,6 +1182,9 @@ msgstr "Flach"
 msgid "Hide Slider"
 msgstr "Regler ausblenden"
 
+msgid "Editing Integer"
+msgstr "Integer bearbeiten"
+
 msgid "Zoom"
 msgstr "Zoom"
 
@@ -1183,6 +1221,12 @@ msgstr "Alle Knochenposen nach dem Import zurücksetzen"
 msgid "Keep Global Rest on Leftovers"
 msgstr "Globale Standardpose bei Resten beibehalten"
 
+msgid "Use Global Pose"
+msgstr "Globale Pose verwenden"
+
+msgid "Original Skeleton Name"
+msgstr "Ursprünglicher Skelettname"
+
 msgid "Fix Silhouette"
 msgstr "Silhouette korrigieren"
 
@@ -1213,6 +1257,15 @@ msgstr "Tangenten generieren"
 msgid "Generate LODs"
 msgstr "Generiere LODs"
 
+msgid "Generate Shadow Mesh"
+msgstr "Schatten-Mesh erzeugen"
+
+msgid "Generate Lightmap UV2"
+msgstr "Lightmap UV2 erzeugen"
+
+msgid "Generate Lightmap UV2 Texel Size"
+msgstr "Lightmap-UV2-Texelgröße erzeugen"
+
 msgid "Scale Mesh"
 msgstr "Mesh skalieren"
 
@@ -1224,6 +1277,9 @@ msgstr "Mesh-Kompression deaktivert erzwingen"
 
 msgid "Node"
 msgstr "Node"
+
+msgid "Node Type"
+msgstr "Node-Typ"
 
 msgid "Script"
 msgstr "Skript"
@@ -1414,6 +1470,9 @@ msgstr "Wurzeltyp"
 msgid "Root Name"
 msgstr "Wurzelname"
 
+msgid "Root Script"
+msgstr "Root-Skript"
+
 msgid "Apply Root Scale"
 msgstr "Root-Skalierung anwenden"
 
@@ -1422,6 +1481,12 @@ msgstr "Root-Skalierung"
 
 msgid "Import as Skeleton Bones"
 msgstr "Als Skelettknochen importieren"
+
+msgid "Use Name Suffixes"
+msgstr "Namenssuffixe benutzen"
+
+msgid "Use Node Type Suffixes"
+msgstr "Node-Typ-Suffixe benutzen"
 
 msgid "Meshes"
 msgstr "Meshes"
@@ -1465,6 +1530,15 @@ msgstr "Skript importieren"
 msgid "Materials"
 msgstr "Materialien"
 
+msgid "Extract"
+msgstr "Extrahieren"
+
+msgid "Extract Format"
+msgstr "Extraktionsformat"
+
+msgid "Extract Path"
+msgstr "Extraktionspfad"
+
 msgid "Antialiasing"
 msgstr "Antialiasing"
 
@@ -1488,6 +1562,9 @@ msgstr "System-Fallback erlauben"
 
 msgid "Force Autohinter"
 msgstr "Autohinter erzwingen"
+
+msgid "Modulate Color Glyphs"
+msgstr "Farbglyphen modulieren"
 
 msgid "Hinting"
 msgstr "Hinting"
@@ -1576,6 +1653,12 @@ msgstr "Hohe Qualität"
 msgid "Lossy Quality"
 msgstr "Verlustbehaftete Qualität"
 
+msgid "UASTC Level"
+msgstr "UASTC-Level"
+
+msgid "RDO Quality Loss"
+msgstr "RDO-Qualitätsverlust"
+
 msgid "HDR Compression"
 msgstr "HDR-Kompression"
 
@@ -1606,6 +1689,9 @@ msgstr "Grundskalierung"
 msgid "Saturation"
 msgstr "Sättigung"
 
+msgid "Color Map"
+msgstr "Color-Map"
+
 msgid "Normal Map"
 msgstr "Normal-Map"
 
@@ -1618,8 +1704,17 @@ msgstr "Normal Map-Quelle"
 msgid "Process"
 msgstr "Prozessierung"
 
+msgid "Red"
+msgstr "Rot"
+
+msgid "Green"
+msgstr "Grün"
+
 msgid "Blue"
 msgstr "Blau"
+
+msgid "Alpha"
+msgstr "Alpha"
 
 msgid "Fix Alpha Border"
 msgstr "Alpharand beheben"
@@ -1723,6 +1818,9 @@ msgstr "Löschbar"
 
 msgid "Selectable"
 msgstr "Auswählbar"
+
+msgid "Use Folding"
+msgstr "Einklappen benutzen"
 
 msgid "Base Type"
 msgstr "Basistyp"
@@ -1829,6 +1927,9 @@ msgstr "3D-Gizmos"
 msgid "Gizmo Colors"
 msgstr "Gizmofarben"
 
+msgid "Particles Emission Shape"
+msgstr "Partikel-Emissions-Shape"
+
 msgid "Interface"
 msgstr "Oberfläche"
 
@@ -1840,6 +1941,9 @@ msgstr "Threads verwenden"
 
 msgid "Localize Settings"
 msgstr "Einstellungen übersetzen"
+
+msgid "Dock Tab Style"
+msgstr "Dock-Tab-Stil"
 
 msgid "UI Layout Direction"
 msgstr "UI Layout-Richtung"
@@ -1853,8 +1957,14 @@ msgstr "Eigene Anzeigeskalierung"
 msgid "Editor Screen"
 msgstr "Bildschirm-Editor"
 
+msgid "Tablet Driver"
+msgstr "Tablet-Treiber"
+
 msgid "Project Manager Screen"
 msgstr "Bildschirm Projektmanager"
+
+msgid "Connection"
+msgstr "Verbindung"
 
 msgid "Check for Updates"
 msgstr "prüfe auf Updates"
@@ -1886,11 +1996,17 @@ msgstr "Quellcodeschriftart-spezifische Varianten"
 msgid "Font Antialiasing"
 msgstr "Schrift-Antialiasing"
 
+msgid "Font Hinting"
+msgstr "Schrift-Hinting"
+
 msgid "Font Subpixel Positioning"
 msgstr "Schriftart Subpixel-Rendering"
 
 msgid "Font Disable Embedded Bitmaps"
 msgstr "Schriftart eingebettete Bitmaps deaktivieren"
+
+msgid "Font Allow MSDF"
+msgstr "Schrift erlaubt MSDF"
 
 msgid "Main Font"
 msgstr "Hauptschriftart"
@@ -1943,6 +2059,9 @@ msgstr "V-Sync-Modus"
 msgid "Update Continuously"
 msgstr "Fortlaufend aktualisieren"
 
+msgid "Collapse Main Menu"
+msgstr "Hauptmenü einklappen"
+
 msgid "Show Scene Tree Root Selection"
 msgstr "Szenenbaumwurzel-Auswahl anzeigen"
 
@@ -1954,6 +2073,9 @@ msgstr "Docks"
 
 msgid "Scene Tree"
 msgstr "Szenenbaum"
+
+msgid "Ask Before Revoking Unique Name"
+msgstr "Fragen, bevor eindeutiger Name abgelehnt wird"
 
 msgid "Inspector"
 msgstr "Inspektor"
@@ -2012,6 +2134,9 @@ msgstr "Leerzeichen Vorgabe"
 msgid "Icon and Font Color"
 msgstr "Icon- und Schriftfarbe"
 
+msgid "Base Color"
+msgstr "Grundfarbe"
+
 msgid "Use System Accent Color"
 msgstr "System-Akzentfarbe nutzen"
 
@@ -2045,8 +2170,14 @@ msgstr "Eigenes Theme"
 msgid "Touchscreen"
 msgstr "Touchscreen"
 
+msgid "Enable Touch Optimizations"
+msgstr "Touch-Optimierungen aktivieren"
+
 msgid "Scale Gizmo Handles"
 msgstr "Gizmogriffe skalieren"
+
+msgid "Touch Actions Panel"
+msgstr "Touch-Aktionspanel"
 
 msgid "Scene Tabs"
 msgstr "Szenen-Tabs"
@@ -2080,6 +2211,9 @@ msgstr "Dateisystem"
 
 msgid "External Programs"
 msgstr "Externe Programme"
+
+msgid "Raster Image Editor"
+msgstr "Rasterbildbearbeitung"
 
 msgid "Vector Image Editor"
 msgstr "Vectorgrafik Editor"
@@ -2129,8 +2263,17 @@ msgstr "Dateidialog"
 msgid "Thumbnail Size"
 msgstr "Vorschaubildgröße"
 
+msgid "Quick Open Dialog"
+msgstr "Schnellöffnungsdialog"
+
 msgid "Max Results"
 msgstr "Max. Ergebnisse"
+
+msgid "Include Addons"
+msgstr "Addons einschließen"
+
+msgid "Default Display Mode"
+msgstr "Standard-Anzeigemodus"
 
 msgid "Blender"
 msgstr "Blender"
@@ -2171,11 +2314,20 @@ msgstr "Automatisch auf Auswahl vergrößern"
 msgid "Center Node on Reparent"
 msgstr "Node beim Umhängen zentrieren"
 
+msgid "Hide Filtered Out Parents"
+msgstr "Ausgefilterte Eltern verstecken"
+
+msgid "Accessibility Warnings"
+msgstr "Barrierefreiheitswarnungen"
+
 msgid "Always Show Folders"
 msgstr "Verzeichnisse immer anzeigen"
 
 msgid "TextFile Extensions"
 msgstr "TextFile-Erweiterungen"
+
+msgid "Other File Extensions"
+msgstr "Andere Dateierweiterungen"
 
 msgid "Property Editor"
 msgstr "Eigenschafteneditor"
@@ -2354,6 +2506,12 @@ msgstr "Skripte beim Speichern auto-neuladen und parsen"
 msgid "Open Dominant Script on Scene Change"
 msgstr "Dominantes Skript bei Szenenwechsel öffnen"
 
+msgid "Documentation"
+msgstr "Dokumentation"
+
+msgid "Enable Tooltips"
+msgstr "Tooltips aktivieren"
+
 msgid "Script List"
 msgstr "Skriptliste"
 
@@ -2368,6 +2526,9 @@ msgstr "Skript-Temperatur aktiviert"
 
 msgid "Script Temperature History Size"
 msgstr "Skript-Temperatur-Verlaufsgröße"
+
+msgid "Highlight Scene Scripts"
+msgstr "Szenenskripte hervorheben"
 
 msgid "Group Help Pages"
 msgstr "Hilfeseiten gruppieren"
@@ -2432,6 +2593,18 @@ msgstr "Hilfe"
 msgid "Show Help Index"
 msgstr "Hilfeindex anzeigen"
 
+msgid "Help Font Size"
+msgstr "Hilfsschriftgröße"
+
+msgid "Help Source Font Size"
+msgstr "Hilfsquellschriftgröße"
+
+msgid "Help Title Font Size"
+msgstr "Hilfstitelschriftgröße"
+
+msgid "Class Reference Examples"
+msgstr "Klassenreferenzbeispiele"
+
 msgid "Sort Functions Alphabetically"
 msgstr "Funktionen alphabetisch sortieren"
 
@@ -2444,8 +2617,20 @@ msgstr "Auswahldistanz"
 msgid "Palette Min Width"
 msgstr "Minimale Palettenbreite"
 
+msgid "Preview Size"
+msgstr "Vorschaugröße"
+
+msgid "Primary Grid Color"
+msgstr "Primäre Rasterfarbe"
+
+msgid "Secondary Grid Color"
+msgstr "Sekundäre Rasterfarbe"
+
 msgid "Selection Box Color"
 msgstr "Auswahlrechtecksfarbe"
+
+msgid "Active Selection Box Color"
+msgstr "Aktive Auswahlrechtecksfarbe"
 
 msgid "Instantiated"
 msgstr "Instanziiert"
@@ -2510,6 +2695,9 @@ msgstr "Ausgewählter Knochen"
 msgid "CSG"
 msgstr "CSG"
 
+msgid "GridMap Grid"
+msgstr "GridMap-Raster"
+
 msgid "Gizmo Settings"
 msgstr "Gizmo-Einstellungen"
 
@@ -2522,8 +2710,14 @@ msgstr "Knochen-Shape"
 msgid "Path 3D Tilt Disk Size"
 msgstr "Größe Path3D Tilt-Disk"
 
+msgid "Lightmap GI Probe Size"
+msgstr "Lightmap-GI-Probe-Größe"
+
 msgid "Primary Grid Steps"
 msgstr "Primäre Grid-Schritte"
+
+msgid "Grid Size"
+msgstr "Rastergröße"
 
 msgid "Grid Division Level Max"
 msgstr "Maximale Rasterteilung"
@@ -2548,6 +2742,9 @@ msgstr "X-Achse invertieren"
 
 msgid "Invert Y Axis"
 msgstr "Y-Achse invertieren"
+
+msgid "Navigation Scheme"
+msgstr "Navigationsschema"
 
 msgid "Emulate Numpad"
 msgstr "Numpad emulieren"
@@ -3331,6 +3528,24 @@ msgstr "Max. Call-Stack"
 
 msgid "Exclude Addons"
 msgstr "Addons ausschließen"
+
+msgid "Unused Local Constant"
+msgstr "Ungenutzte lokale Konstante"
+
+msgid "Unused Private Class Variable"
+msgstr "Ungenutzte private Klassenvariable"
+
+msgid "Unused Parameter"
+msgstr "Ungenutzter Parameter"
+
+msgid "Unused Signal"
+msgstr "Ungenutztes Signal"
+
+msgid "Shadowed Variable"
+msgstr "Schattenvariable"
+
+msgid "Shadowed Variable Base Class"
+msgstr "Schattenbariable der Basisklasse"
 
 msgid "Language Server"
 msgstr "Sprachserver"

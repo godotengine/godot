@@ -3,12 +3,12 @@
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
 # Rónán Quill <ronan085@gmail.com>, 2019, 2020.
-# Aindriú Mac Giolla Eoin <aindriu80@gmail.com>, 2024.
+# Aindriú Mac Giolla Eoin <aindriu80@gmail.com>, 2024, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2024-09-18 19:41+0000\n"
+"PO-Revision-Date: 2025-08-17 11:00+0000\n"
 "Last-Translator: Aindriú Mac Giolla Eoin <aindriu80@gmail.com>\n"
 "Language-Team: Irish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ga/>\n"
@@ -17,10 +17,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : (n>2 && n<7) ? 2 :(n>6 "
 "&& n<11) ? 3 : 4;\n"
-"X-Generator: Weblate 5.8-dev\n"
+"X-Generator: Weblate 5.13\n"
 
 msgid "Unset"
-msgstr "Díshocraigh"
+msgstr "Díshuiteáil"
 
 msgid "Physical"
 msgstr "Fisiciúil"
@@ -7663,9 +7663,6 @@ msgstr ""
 msgid "Project Run"
 msgstr "Rith an Tionscadail"
 
-msgid "Select Mode"
-msgstr "Roghnaigh Mód"
-
 msgid "Show list of selectable nodes at position clicked."
 msgstr "Taispeáin liosta de nóid inroghnaithe ag an suíomh cliceáil."
 
@@ -9833,6 +9830,9 @@ msgstr ""
 "Radharc ina bhfuil\n"
 "WorldEnvironment.\n"
 "Díchumasaíodh réamhamharc."
+
+msgid "Select Mode"
+msgstr "Roghnaigh Mód"
 
 msgid "Move Mode"
 msgstr "Bog Mód"
@@ -13657,9 +13657,6 @@ msgstr "Socraigh Tairiseach: %s"
 
 msgid "Invalid name for varying."
 msgstr "Ainm neamhbhailí le haghaidh athraithe."
-
-msgid "Varying with that name is already exist."
-msgstr "Tá éagsúlacht leis an ainm sin ann cheana féin."
 
 msgid "Add Node(s) to Visual Shader"
 msgstr "Cuir nód(anna) le Scáthóir Amhairc"
@@ -17495,12 +17492,6 @@ msgstr "Ní cheadaítear athchúrsa."
 
 msgid "Function '%s' can't be called from source code."
 msgstr "Ní féidir feidhm '%s' a ghlaoch ón gcód foinseach."
-
-msgid ""
-"Invalid argument for \"%s(%s)\" function: argument %d should be %s but is %s."
-msgstr ""
-"Argóint neamhbhailí le haghaidh fheidhm \"%s(%s)\": argóint %d ba chóir a "
-"bheith %s ach is %s."
 
 msgid ""
 "Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."
