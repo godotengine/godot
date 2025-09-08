@@ -1094,7 +1094,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				arg == "--display-driver" ||
 				arg == "--rendering-method" ||
 				arg == "--rendering-driver" ||
-				arg == "--xr-mode") {
+				arg == "--xr-mode" ||
+				arg == "-l" ||
+				arg == "--language") {
 			if (N) {
 				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(arg);
 				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(N->get());
@@ -3840,6 +3842,10 @@ void Main::setup_boot_logo() {
 
 String Main::get_rendering_driver_name() {
 	return rendering_driver;
+}
+
+String Main::get_locale_override() {
+	return locale;
 }
 
 // everything the main loop needs to know about frame timings
