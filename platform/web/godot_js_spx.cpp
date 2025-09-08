@@ -247,6 +247,30 @@ void gdspx_ext_debug_draw_rect(GdVec2* pos,GdVec2* size,GdColor* color) {
 	 extMgr->debug_draw_rect(*pos, *size, *color);
 }
 EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_open_draw_tiles() {
+	 extMgr->open_draw_tiles();
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_set_layer_index(GdInt* index) {
+	 extMgr->set_layer_index(*index);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_set_tile(GdString* texture_path) {
+	 extMgr->set_tile(*texture_path);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_place_tile(GdVec2* pos) {
+	 extMgr->place_tile(*pos);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_erase_tile(GdVec2* pos) {
+	 extMgr->erase_tile(*pos);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_close_draw_tiles() {
+	 extMgr->close_draw_tiles();
+}
+EMSCRIPTEN_KEEPALIVE
 void gdspx_input_get_mouse_pos(GdVec2* ret_val) {
 	*ret_val = inputMgr->get_mouse_pos();
 }

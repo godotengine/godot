@@ -1,3 +1,32 @@
+/**************************************************************************/
+/*  spx_draw_tiles.h                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef SPX_DRAW_TILES_H
 #define SPX_DRAW_TILES_H
@@ -8,6 +37,7 @@
 #include "scene/2d/tile_map.h"
 #include "scene/resources/2d/tile_set.h"
 #include "core/templates/hash_map.h"
+#include "spx_sprite.h"
 
 
 struct DrawContext {
@@ -73,7 +103,8 @@ private:
     Vector<TileAction> undo_stack;
     Vector<TileAction> redo_stack;
 
-    HashMap<Ref<Texture2D>, int> texture_source_ids;
+    HashMap<String, Ref<Texture2D>> path_cached_textures;
+    HashMap<Ref<Texture2D>, int> scaled_texture_source_ids;
     HashMap<Ref<Texture2D>, Ref<ImageTexture>> texture_scaled_cache;
     int next_source_id = 1;
 
@@ -81,6 +112,7 @@ private:
     int current_layer_index = 0;
     const String UNIQUE_LAYER_PREFIX = "spx_draw_tiles_layer_";
 
+    bool exit_editor = false;
     bool axis_dragging = false;
     bool tile_placing = false;
     static constexpr float drag_threshold = 10.0; 
@@ -104,8 +136,15 @@ public:
     SpxDrawTiles() = default;
     ~SpxDrawTiles() = default;
 
+    // spx interface
+    void set_sprite_index(GdInt index);
+    void set_sprite_texture(GdString texture_path);
+    void place_sprite(Vector2 pos);
+    void erase_sprite(Vector2 pos);
+
     void set_layer_index(int index);
     void set_texture(Ref<Texture2D> texture, bool with_collision = true);
+    void set_texture_path(const String &texture_path);
 
     void place_tile(Vector2i coords);
     void erase_tile(Vector2i coords);
@@ -117,11 +156,14 @@ public:
 
     void clear_all_layers();
 
+    void enter_editor_mode(){exit_editor = false;}
+    void exit_editor_mode(){exit_editor = true;}
+
 private:
     TileMapLayer* _get_or_create_layer(int layer_index);
     TileMapLayer* _get_layer(int layer_index);
     TileMapLayer* _create_layer(int layer_index);
-    int _get_or_create_source_id(Ref<Texture2D> texture, bool with_collision = true);
+    int _get_or_create_source_id(Ref<Texture2D> scaled_texture, bool with_collision = true);
     bool _create_tile(Ref<TileSetAtlasSource> atlas_source, const Vector2i &tile_coords, bool with_collision = true);
     Ref<ImageTexture> _get_scaled_texture(Ref<Texture2D> texture);
 

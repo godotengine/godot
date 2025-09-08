@@ -1,4 +1,33 @@
-#include "spx_draw_tiles.h"
+/**************************************************************************/
+/*  spx_draw_tiles.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 #include "core/os/keyboard.h"
 #include "servers/physics_server_2d.h"
 #include "scene/2d/sprite_2d.h"
@@ -8,7 +37,10 @@
 #include "core/io/resource_loader.h"
 #include "scene/resources/world_2d.h"
 #include "scene/gui/color_rect.h"
-
+#include "spx_draw_tiles.h"
+#include "spx_engine.h"
+#include "spx_ext_mgr.h"
+#include "spx_res_mgr.h"
 
 void LayerRenderer::_draw_axis(Node2D *parent_node, const DrawContext &ctx) {
 	Vector2 origin = ctx.layer_pos;
@@ -82,14 +114,21 @@ void LayerRenderer::draw(Node2D *parent_node, const DrawContext &ctx) {
 }
 
 void SpxDrawTiles::_bind_methods() {
-    ClassDB::bind_method(D_METHOD("set_texture", "texture", "with_collision"), &SpxDrawTiles::set_texture);
     ClassDB::bind_method(D_METHOD("set_layer_index", "index"), &SpxDrawTiles::set_layer_index);
+    ClassDB::bind_method(D_METHOD("set_texture", "texture", "with_collision"), &SpxDrawTiles::set_texture);
     ClassDB::bind_method(D_METHOD("place_tile", "coords"), &SpxDrawTiles::place_tile);
     ClassDB::bind_method(D_METHOD("erase_tile", "coords"), &SpxDrawTiles::erase_tile);
     ClassDB::bind_method(D_METHOD("undo"), &SpxDrawTiles::undo);
     ClassDB::bind_method(D_METHOD("redo"), &SpxDrawTiles::redo);
     ClassDB::bind_method(D_METHOD("handle_mouse_click", "pos", "erase"), &SpxDrawTiles::handle_mouse_click);
     ClassDB::bind_method(D_METHOD("clear_all_layers"), &SpxDrawTiles::clear_all_layers);
+    ClassDB::bind_method(D_METHOD("enter_editor_mode"), &SpxDrawTiles::enter_editor_mode);
+    ClassDB::bind_method(D_METHOD("exit_editor_mode"), &SpxDrawTiles::exit_editor_mode);
+
+    ClassDB::bind_method(D_METHOD("set_sprite_index", "index"), &SpxDrawTiles::set_sprite_index);
+    ClassDB::bind_method(D_METHOD("set_texture_path", "texture_path"), &SpxDrawTiles::set_texture_path);
+    ClassDB::bind_method(D_METHOD("place_sprite", "pos"), &SpxDrawTiles::place_sprite);
+    ClassDB::bind_method(D_METHOD("erase_sprite", "pos"), &SpxDrawTiles::erase_sprite);
 }
 
 void SpxDrawTiles::_notification(int p_what) {
@@ -111,6 +150,9 @@ void SpxDrawTiles::_ready() {
 }
 
 void SpxDrawTiles::_draw() {
+    if(exit_editor)
+        return;
+        
     TileMapLayer *layer = _get_layer(current_layer_index);
     if (!layer) 
         return;
@@ -130,6 +172,9 @@ void SpxDrawTiles::_draw() {
 }
 
 void SpxDrawTiles::input(const Ref<InputEvent> &event) {
+    if(exit_editor)
+        return;
+
     TileMapLayer *layer = _get_layer(current_layer_index);
     if (!layer) 
         return;
@@ -142,11 +187,10 @@ void SpxDrawTiles::input(const Ref<InputEvent> &event) {
                     axis_dragging = true;
                     drag_start = mouse_pos;
                     layer_start_pos = layer->get_global_position();
-                }else{
+                }else {
                     tile_placing = true;
                 }
-            }
-             else {
+            }else {
                 axis_dragging = false;
                 tile_placing = false;
             }
@@ -166,14 +210,46 @@ void SpxDrawTiles::input(const Ref<InputEvent> &event) {
     }
 }
 
+// spx interface
+
+void SpxDrawTiles::set_sprite_index(GdInt index) {
+    set_layer_index(index);
+}
+
+void SpxDrawTiles::set_sprite_texture(GdString texture_path) {
+    String path = SpxStr(texture_path);
+    Ref<Texture2D> tex;
+    if(path_cached_textures.has(path)){
+        tex = path_cached_textures[path];
+    } else {
+        tex = resMgr->load_texture(path, true);
+        if(!tex.is_null() && tex.is_valid())
+            path_cached_textures[path] = tex;
+    }                   
+
+    set_texture(tex);
+}
+
+void SpxDrawTiles::place_sprite(Vector2 pos) {
+    handle_mouse_click(pos * Vector2(1, -1), false);
+}
+
+void SpxDrawTiles::erase_sprite(Vector2 pos) {
+    handle_mouse_click(pos * Vector2(1, -1), true);
+}
+
+
 void SpxDrawTiles::set_layer_index(int index) {
+	if(exit_editor)
+        return;
+
     current_layer_index = index;
     _get_or_create_layer(index);
     queue_redraw();
 }
 
 void SpxDrawTiles::set_texture(Ref<Texture2D> texture, bool with_collision) {
-    if (texture.is_null()) 
+    if (exit_editor || texture.is_null()) 
         return;
 
     current_texture = _get_scaled_texture(texture);
@@ -181,8 +257,21 @@ void SpxDrawTiles::set_texture(Ref<Texture2D> texture, bool with_collision) {
     queue_redraw();
 }
 
+void SpxDrawTiles::set_texture_path(const String &texture_path) {
+    Ref<Texture2D> tex;
+    if(path_cached_textures.has(texture_path)){
+        tex = path_cached_textures[texture_path];
+    } else {
+        tex = ResourceLoader::load(texture_path);
+        if(!tex.is_null() && tex.is_valid())
+            path_cached_textures[texture_path] = tex;
+    }                   
+
+    set_texture(tex);
+}
+
 void SpxDrawTiles::place_tile(Vector2i coords) {
-    if (!current_texture.is_valid()) 
+    if (exit_editor || !tile_placing || !current_texture.is_valid()) 
         return;
 
     TileMapLayer *layer = _get_or_create_layer(current_layer_index);
@@ -198,6 +287,9 @@ void SpxDrawTiles::place_tile(Vector2i coords) {
 }
 
 void SpxDrawTiles::erase_tile(Vector2i coords) {
+    if(exit_editor)
+        return;
+
     TileMapLayer *layer = _get_layer(current_layer_index);
     if (!layer) 
         return;
@@ -213,6 +305,9 @@ void SpxDrawTiles::erase_tile(Vector2i coords) {
 }
 
 void SpxDrawTiles::undo() {
+    if(exit_editor)
+        return;
+
     if (undo_stack.is_empty()) 
         return;
 
@@ -226,6 +321,9 @@ void SpxDrawTiles::undo() {
 }
 
 void SpxDrawTiles::redo() {
+    if(exit_editor)
+        return;
+
     if (redo_stack.is_empty()) 
         return;
 
@@ -239,6 +337,9 @@ void SpxDrawTiles::redo() {
 }
 
 void SpxDrawTiles::handle_mouse_click(Vector2 pos, bool erase) {
+    if(exit_editor)
+        return;
+
     TileMapLayer *layer = _get_layer(current_layer_index);
     if(layer == nullptr) 
         return;
@@ -251,6 +352,9 @@ void SpxDrawTiles::handle_mouse_click(Vector2 pos, bool erase) {
 }
 
 void SpxDrawTiles::clear_all_layers() {
+    if(exit_editor)
+        return;
+
     _destroy_layers();
     _clear_cache();
     queue_redraw();
@@ -282,23 +386,23 @@ TileMapLayer *SpxDrawTiles::_create_layer(int layer_index) {
 	return layer;
 }
 
-int SpxDrawTiles::_get_or_create_source_id(Ref<Texture2D> texture, bool with_collision) {
-    if (!texture.is_valid()) {
+int SpxDrawTiles::_get_or_create_source_id(Ref<Texture2D> scaled_texture, bool with_collision) {
+    if (!scaled_texture.is_valid()) {
         print_error("Invalid texture!");
         return TileSet::INVALID_SOURCE;
     }
 
-    if (texture_source_ids.has(texture)) {
-        return texture_source_ids[texture];
+    if (scaled_texture_source_ids.has(scaled_texture)) {
+        return scaled_texture_source_ids[scaled_texture];
     }
 
-    if (CELL_SIZE.x > texture->get_size().x || CELL_SIZE.y > texture->get_size().y) {
+    if (CELL_SIZE.x > scaled_texture->get_size().x || CELL_SIZE.y > scaled_texture->get_size().y) {
         print_error("Tile size exceeds texture size!");
         return TileSet::INVALID_SOURCE;
     }
 
     int id = next_source_id++;
-    texture_source_ids[texture] = id;
+    scaled_texture_source_ids[scaled_texture] = id;
    
     shared_tile_set->add_physics_layer(0);
     shared_tile_set->set_physics_layer_collision_layer(0, 0xFFFF);
@@ -306,7 +410,7 @@ int SpxDrawTiles::_get_or_create_source_id(Ref<Texture2D> texture, bool with_col
  
     Ref<TileSetAtlasSource> atlas_source;
     atlas_source.instantiate();
-    atlas_source->set_texture(texture);
+    atlas_source->set_texture(scaled_texture);
     atlas_source->set_texture_region_size(CELL_SIZE);
     if(!_create_tile(atlas_source, Vector2i(0,0), with_collision)){
         print_error("Failed to create tile in atlas source!");
@@ -375,7 +479,7 @@ void SpxDrawTiles::_destroy_layers(){
 void SpxDrawTiles::_clear_cache() {
     undo_stack.clear();
     redo_stack.clear();
-    texture_source_ids.clear();
+    scaled_texture_source_ids.clear();
     texture_scaled_cache.clear();
 
     current_texture = nullptr;

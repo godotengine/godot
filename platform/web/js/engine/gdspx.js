@@ -403,6 +403,50 @@ gdspx_ext_debug_draw_rect(pos,size,color) {
 	FreeGdColor(_arg2); 
 
 }
+gdspx_ext_open_draw_tiles() {
+	var _gdFuncPtr = Module._gdspx_ext_open_draw_tiles; 
+	
+	_gdFuncPtr();
+
+}
+gdspx_ext_set_layer_index(index) {
+	var _gdFuncPtr = Module._gdspx_ext_set_layer_index; 
+	
+	var _arg0 = ToGdInt(index);
+	_gdFuncPtr(_arg0);
+	FreeGdInt(_arg0); 
+
+}
+gdspx_ext_set_tile(texture_path) {
+	var _gdFuncPtr = Module._gdspx_ext_set_tile; 
+	
+	var _arg0 = ToGdString(texture_path);
+	_gdFuncPtr(_arg0);
+	FreeGdString(_arg0); 
+
+}
+gdspx_ext_place_tile(pos) {
+	var _gdFuncPtr = Module._gdspx_ext_place_tile; 
+	
+	var _arg0 = ToGdVec2(pos);
+	_gdFuncPtr(_arg0);
+	FreeGdVec2(_arg0); 
+
+}
+gdspx_ext_erase_tile(pos) {
+	var _gdFuncPtr = Module._gdspx_ext_erase_tile; 
+	
+	var _arg0 = ToGdVec2(pos);
+	_gdFuncPtr(_arg0);
+	FreeGdVec2(_arg0); 
+
+}
+gdspx_ext_close_draw_tiles() {
+	var _gdFuncPtr = Module._gdspx_ext_close_draw_tiles; 
+	
+	_gdFuncPtr();
+
+}
 gdspx_input_get_mouse_pos() {
 	var _gdFuncPtr = Module._gdspx_input_get_mouse_pos; 
 	var _retValue = AllocGdVec2();
