@@ -1469,7 +1469,7 @@
 			Right-to-left layout direction.
 		</constant>
 		<constant name="LAYOUT_DIRECTION_SYSTEM_LOCALE" value="4" enum="LayoutDirection">
-			Automatic layout direction, determined from the system locale. Right-to-left layout direction is automatically used for languages that require it such as Arabic and Hebrew, but only if a valid translation file is loaded for the given language.. For all other languages (or if no valid translation file is found by Godot), left-to-right layout direction is used. If using [TextServerFallback] ([member ProjectSettings.internationalization/rendering/text_driver]), left-to-right layout direction is always used regardless of the language.
+			Automatic layout direction, determined from the system locale. Right-to-left layout direction is automatically used for languages that require it such as Arabic and Hebrew, but only if a valid translation file is loaded for the given language. For all other languages (or if no valid translation file is found by Godot), left-to-right layout direction is used. If using [TextServerFallback] ([member ProjectSettings.internationalization/rendering/text_driver]), left-to-right layout direction is always used regardless of the language.
 		</constant>
 		<constant name="LAYOUT_DIRECTION_MAX" value="5" enum="LayoutDirection">
 			Represents the size of the [enum LayoutDirection] enum.

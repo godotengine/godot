@@ -481,9 +481,10 @@ TextureStorage::TextureStorage() {
 		tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | (vrs_supported ? RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT : 0);
 		tformat.texture_type = RD::TEXTURE_TYPE_2D;
 
+		uint32_t pixel_size = RD::get_image_format_pixel_size(tformat.format);
 		Vector<uint8_t> pv;
-		pv.resize(4 * 4);
-		for (int i = 0; i < 4 * 4; i++) {
+		pv.resize(4 * 4 * pixel_size);
+		for (int i = 0; i < pv.size(); i++) {
 			pv.set(i, 0);
 		}
 

@@ -1503,7 +1503,8 @@ Error GLTFDocument::_decode_buffer_view(Ref<GLTFState> p_state, double *p_dst, c
 			}
 
 			double d = 0;
-
+			// 3.11. Implementations MUST use following equations to decode real floating-point value f from a normalized integer c and vise-versa.
+			// https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#animations
 			switch (p_component_type) {
 				case GLTFAccessor::COMPONENT_TYPE_NONE: {
 					ERR_FAIL_V_MSG(ERR_INVALID_DATA, "glTF: Failed to decode buffer view, component type not set.");
@@ -1511,7 +1512,7 @@ Error GLTFDocument::_decode_buffer_view(Ref<GLTFState> p_state, double *p_dst, c
 				case GLTFAccessor::COMPONENT_TYPE_SIGNED_BYTE: {
 					int8_t b = int8_t(*src);
 					if (p_normalized) {
-						d = (double(b) / 128.0);
+						d = MAX(double(b) / 127.0, -1.0);
 					} else {
 						d = double(b);
 					}
@@ -1527,7 +1528,7 @@ Error GLTFDocument::_decode_buffer_view(Ref<GLTFState> p_state, double *p_dst, c
 				case GLTFAccessor::COMPONENT_TYPE_SIGNED_SHORT: {
 					int16_t s = *(int16_t *)src;
 					if (p_normalized) {
-						d = (double(s) / 32768.0);
+						d = MAX(double(s) / 32767.0, -1.0);
 					} else {
 						d = double(s);
 					}
@@ -1628,7 +1629,7 @@ Vector<double> GLTFDocument::_decode_accessor(Ref<GLTFState> p_state, const GLTF
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT: {
 			if (a->accessor_type == GLTFAccessor::TYPE_MAT3) {
 				skip_every = 6;
-				skip_bytes = 4;
+				skip_bytes = 2;
 				element_size = 16; //override for this case
 			}
 		} break;
@@ -1724,7 +1725,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> p_state,
 	int64_t size = p_state->buffers[0].size();
 	const GLTFAccessor::GLTFAccessorType accessor_type = GLTFAccessor::TYPE_SCALAR;
 	GLTFAccessor::GLTFComponentType component_type;
-	if (max_index > 65535 || p_for_vertex) {
+	if (max_index > 65534 || p_for_vertex) {
 		component_type = GLTFAccessor::COMPONENT_TYPE_UNSIGNED_INT;
 	} else {
 		component_type = GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT;
@@ -2274,7 +2275,7 @@ GLTFAccessorIndex GLTFDocument::_encode_sparse_accessor_as_vec3(Ref<GLTFState> p
 	}
 	sparse_accessor->max = type_max;
 	sparse_accessor->min = type_min;
-	int64_t sparse_accessor_index_stride = max_changed_index > 65535 ? 4 : 2;
+	int64_t sparse_accessor_index_stride = max_changed_index > 65534 ? 4 : 2;
 
 	int64_t sparse_accessor_storage_size = changed_indices.size() * (sparse_accessor_index_stride + element_count * sizeof(float));
 	int64_t conventional_storage_size = p_attribs.size() * element_count * sizeof(float);
@@ -3051,7 +3052,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 				}
 			}
 			{
-				const Array &a = array[Mesh::ARRAY_WEIGHTS];
+				const PackedRealArray &a = array[Mesh::ARRAY_WEIGHTS];
 				const Vector<Vector3> &vertex_array = array[Mesh::ARRAY_VERTEX];
 				if ((a.size() / JOINT_GROUP_SIZE) == vertex_array.size()) {
 					int32_t vertex_count = vertex_array.size();
@@ -3340,13 +3341,14 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			Vector<int> indices_vec4_mapping;
 			if (mesh_prim.has("indices")) {
 				indices = _decode_accessor_as_ints(p_state, mesh_prim["indices"], false);
-				const int is = indices.size();
+				const int index_count = indices.size();
 
 				if (primitive == Mesh::PRIMITIVE_TRIANGLES) {
+					ERR_FAIL_COND_V_MSG(index_count % 3 != 0, ERR_PARSE_ERROR, "glTF import: Mesh " + itos(i) + " surface " + itos(j) + " in file " + p_state->filename + " is invalid. Indexed triangle meshes MUST have an index array with a size that is a multiple of 3, but got " + itos(index_count) + " indices.");
 					// Swap around indices, convert ccw to cw for front face.
 
 					int *w = indices.ptrw();
-					for (int k = 0; k < is; k += 3) {
+					for (int k = 0; k < index_count; k += 3) {
 						SWAP(w[k + 1], w[k + 2]);
 					}
 				}
@@ -3355,7 +3357,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				Vector<bool> used_indices;
 				used_indices.resize_initialized(orig_vertex_num);
 				bool *used_w = used_indices.ptrw();
-				for (int idx_i = 0; idx_i < is; idx_i++) {
+				for (int idx_i = 0; idx_i < index_count; idx_i++) {
 					ERR_FAIL_INDEX_V(indices_w[idx_i], orig_vertex_num, ERR_INVALID_DATA);
 					used_w[indices_w[idx_i]] = true;
 				}
@@ -3474,6 +3476,9 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				}
 				array[Mesh::ARRAY_BONES] = joints;
 			}
+			// glTF stores weights as a VEC4 array or multiple VEC4 arrays, but Godot's
+			// ArrayMesh uses a flat array of either 4 or 8 floats per vertex.
+			// Therefore, decode up to two glTF VEC4 arrays as float arrays.
 			if (a.has("WEIGHTS_0") && !a.has("WEIGHTS_1")) {
 				Vector<float> weights = _decode_accessor_as_floats(p_state, a["WEIGHTS_0"], true, indices_vec4_mapping);
 				ERR_FAIL_COND_V(weights.size() != 4 * vertex_num, ERR_INVALID_DATA);
@@ -3556,11 +3561,12 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				// Generate indices because they need to be swapped for CW/CCW.
 				const Vector<Vector3> &vertices = array[Mesh::ARRAY_VERTEX];
 				ERR_FAIL_COND_V(vertices.is_empty(), ERR_PARSE_ERROR);
-				const int vs = vertices.size();
-				indices.resize(vs);
+				const int vertex_count = vertices.size();
+				ERR_FAIL_COND_V_MSG(vertex_count % 3 != 0, ERR_PARSE_ERROR, "glTF import: Mesh " + itos(i) + " surface " + itos(j) + " in file " + p_state->filename + " is invalid. Non-indexed triangle meshes MUST have a vertex array with a size that is a multiple of 3, but got " + itos(vertex_count) + " vertices.");
+				indices.resize(vertex_count);
 				{
 					int *w = indices.ptrw();
-					for (int k = 0; k < vs; k += 3) {
+					for (int k = 0; k < vertex_count; k += 3) {
 						w[k] = k;
 						w[k + 1] = k + 2;
 						w[k + 2] = k + 1;
@@ -4353,6 +4359,7 @@ GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> p_state, Ref<Texture2
 }
 
 Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFTextureIndex p_texture, int p_texture_types) {
+	ERR_FAIL_COND_V_MSG(p_state->textures.is_empty(), Ref<Texture2D>(), "glTF import: Tried to read texture at index " + itos(p_texture) + ", but this glTF file does not contain any textures.");
 	ERR_FAIL_INDEX_V(p_texture, p_state->textures.size(), Ref<Texture2D>());
 	const GLTFImageIndex image = p_state->textures[p_texture]->get_src_image();
 	ERR_FAIL_INDEX_V(image, p_state->images.size(), Ref<Texture2D>());
@@ -4392,7 +4399,8 @@ GLTFTextureSamplerIndex GLTFDocument::_set_sampler_for_mode(Ref<GLTFState> p_sta
 }
 
 Ref<GLTFTextureSampler> GLTFDocument::_get_sampler_for_texture(Ref<GLTFState> p_state, const GLTFTextureIndex p_texture) {
-	ERR_FAIL_INDEX_V(p_texture, p_state->textures.size(), Ref<Texture2D>());
+	ERR_FAIL_COND_V_MSG(p_state->textures.is_empty(), Ref<GLTFTextureSampler>(), "glTF import: Tried to read sampler for texture at index " + itos(p_texture) + ", but this glTF file does not contain any textures.");
+	ERR_FAIL_INDEX_V(p_texture, p_state->textures.size(), Ref<GLTFTextureSampler>());
 	const GLTFTextureSamplerIndex sampler = p_state->textures[p_texture]->get_sampler();
 
 	if (sampler == -1) {
@@ -4850,10 +4858,13 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			if (mr.has("baseColorTexture")) {
 				const Dictionary &bct = mr["baseColorTexture"];
 				if (bct.has("index")) {
-					Ref<GLTFTextureSampler> bct_sampler = _get_sampler_for_texture(p_state, bct["index"]);
-					material->set_texture_filter(bct_sampler->get_filter_mode());
-					material->set_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT, bct_sampler->get_wrap_mode());
-					material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
+					const GLTFTextureIndex base_color_texture_index = bct["index"];
+					material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, _get_texture(p_state, base_color_texture_index, TEXTURE_TYPE_GENERIC));
+					const Ref<GLTFTextureSampler> bct_sampler = _get_sampler_for_texture(p_state, base_color_texture_index);
+					if (bct_sampler.is_valid()) {
+						material->set_texture_filter(bct_sampler->get_filter_mode());
+						material->set_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT, bct_sampler->get_wrap_mode());
+					}
 				}
 				if (!mr.has("baseColorFactor")) {
 					material->set_albedo(Color(1, 1, 1));
@@ -7777,9 +7788,12 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 			while (true) {
 				Vector3 scale;
 				Error err = p_godot_animation->try_scale_track_interpolate(p_godot_anim_track_index, time, &scale);
-				ERR_CONTINUE(err != OK);
-				p_gltf_node_track.scale_track.values.push_back(scale);
-				p_gltf_node_track.scale_track.times.push_back(time);
+				if (err == OK) {
+					p_gltf_node_track.scale_track.values.push_back(scale);
+					p_gltf_node_track.scale_track.times.push_back(time);
+				} else {
+					ERR_PRINT(vformat("Error interpolating animation %s scale track %d at time %f", p_godot_animation->get_name(), p_godot_anim_track_index, time));
+				}
 				if (last) {
 					break;
 				}
@@ -7812,9 +7826,12 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 			while (true) {
 				Vector3 scale;
 				Error err = p_godot_animation->try_position_track_interpolate(p_godot_anim_track_index, time, &scale);
-				ERR_CONTINUE(err != OK);
-				p_gltf_node_track.position_track.values.push_back(scale);
-				p_gltf_node_track.position_track.times.push_back(time);
+				if (err == OK) {
+					p_gltf_node_track.position_track.values.push_back(scale);
+					p_gltf_node_track.position_track.times.push_back(time);
+				} else {
+					ERR_PRINT(vformat("Error interpolating animation %s position track %d at time %f", p_godot_animation->get_name(), p_godot_anim_track_index, time));
+				}
 				if (last) {
 					break;
 				}
@@ -7847,9 +7864,12 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 			while (true) {
 				Quaternion rotation;
 				Error err = p_godot_animation->try_rotation_track_interpolate(p_godot_anim_track_index, time, &rotation);
-				ERR_CONTINUE(err != OK);
-				p_gltf_node_track.rotation_track.values.push_back(rotation);
-				p_gltf_node_track.rotation_track.times.push_back(time);
+				if (err == OK) {
+					p_gltf_node_track.rotation_track.values.push_back(rotation);
+					p_gltf_node_track.rotation_track.times.push_back(time);
+				} else {
+					ERR_PRINT(vformat("Error interpolating animation %s value rotation track %d at time %f", p_godot_animation->get_name(), p_godot_anim_track_index, time));
+				}
 				if (last) {
 					break;
 				}
@@ -7889,9 +7909,12 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 					while (true) {
 						Vector3 position;
 						Error err = p_godot_animation->try_position_track_interpolate(p_godot_anim_track_index, time, &position);
-						ERR_CONTINUE(err != OK);
-						p_gltf_node_track.position_track.values.push_back(position);
-						p_gltf_node_track.position_track.times.push_back(time);
+						if (err == OK) {
+							p_gltf_node_track.position_track.values.push_back(position);
+							p_gltf_node_track.position_track.times.push_back(time);
+						} else {
+							ERR_PRINT(vformat("Error interpolating animation %s value position track %d at time %f", p_godot_animation->get_name(), p_godot_anim_track_index, time));
+						}
 						if (last) {
 							break;
 						}
@@ -7922,9 +7945,12 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 					while (true) {
 						Quaternion rotation;
 						Error err = p_godot_animation->try_rotation_track_interpolate(p_godot_anim_track_index, time, &rotation);
-						ERR_CONTINUE(err != OK);
-						p_gltf_node_track.rotation_track.values.push_back(rotation);
-						p_gltf_node_track.rotation_track.times.push_back(time);
+						if (err == OK) {
+							p_gltf_node_track.rotation_track.values.push_back(rotation);
+							p_gltf_node_track.rotation_track.times.push_back(time);
+						} else {
+							ERR_PRINT(vformat("Error interpolating animation %s value rotation track %d at time %f", p_godot_animation->get_name(), p_godot_anim_track_index, time));
+						}
 						if (last) {
 							break;
 						}
@@ -7965,9 +7991,12 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 					while (true) {
 						Vector3 scale;
 						Error err = p_godot_animation->try_scale_track_interpolate(p_godot_anim_track_index, time, &scale);
-						ERR_CONTINUE(err != OK);
-						p_gltf_node_track.scale_track.values.push_back(scale);
-						p_gltf_node_track.scale_track.times.push_back(time);
+						if (err == OK) {
+							p_gltf_node_track.scale_track.values.push_back(scale);
+							p_gltf_node_track.scale_track.times.push_back(time);
+						} else {
+							ERR_PRINT(vformat("Error interpolating animation %s scale track %d at time %f", p_godot_animation->get_name(), p_godot_anim_track_index, time));
+						}
 						if (last) {
 							break;
 						}
@@ -8010,17 +8039,22 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 						Quaternion rotation;
 						Vector3 scale;
 						Error err = p_godot_animation->try_position_track_interpolate(p_godot_anim_track_index, time, &position);
-						ERR_CONTINUE(err != OK);
-						err = p_godot_animation->try_rotation_track_interpolate(p_godot_anim_track_index, time, &rotation);
-						ERR_CONTINUE(err != OK);
-						err = p_godot_animation->try_scale_track_interpolate(p_godot_anim_track_index, time, &scale);
-						ERR_CONTINUE(err != OK);
-						p_gltf_node_track.position_track.values.push_back(position);
-						p_gltf_node_track.position_track.times.push_back(time);
-						p_gltf_node_track.rotation_track.values.push_back(rotation);
-						p_gltf_node_track.rotation_track.times.push_back(time);
-						p_gltf_node_track.scale_track.values.push_back(scale);
-						p_gltf_node_track.scale_track.times.push_back(time);
+						if (err == OK) {
+							err = p_godot_animation->try_rotation_track_interpolate(p_godot_anim_track_index, time, &rotation);
+							if (err == OK) {
+								err = p_godot_animation->try_scale_track_interpolate(p_godot_anim_track_index, time, &scale);
+							}
+						}
+						if (err == OK) {
+							p_gltf_node_track.position_track.values.push_back(position);
+							p_gltf_node_track.position_track.times.push_back(time);
+							p_gltf_node_track.rotation_track.values.push_back(rotation);
+							p_gltf_node_track.rotation_track.times.push_back(time);
+							p_gltf_node_track.scale_track.values.push_back(scale);
+							p_gltf_node_track.scale_track.times.push_back(time);
+						} else {
+							ERR_PRINT(vformat("Error interpolating animation %s transform track %d at time %f", p_godot_animation->get_name(), p_godot_anim_track_index, time));
+						}
 						if (last) {
 							break;
 						}

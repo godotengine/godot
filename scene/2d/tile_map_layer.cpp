@@ -72,6 +72,9 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 			if (debug_quadrant->canvas_item.is_valid()) {
 				rs->free(debug_quadrant->canvas_item);
 			}
+			if (debug_quadrant->physics_mesh.is_valid()) {
+				rs->free(debug_quadrant->physics_mesh);
+			}
 		}
 		debug_quadrant_map.clear();
 		_debug_was_cleaned_up = true;
@@ -838,6 +841,7 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 							physics_body_key.angular_velocity = angular_velocity;
 							physics_body_key.one_way_collision = tile_data->is_collision_polygon_one_way(tile_set_physics_layer, polygon_index);
 							physics_body_key.one_way_collision_margin = tile_data->get_collision_polygon_one_way_margin(tile_set_physics_layer, polygon_index);
+							physics_body_key.y_origin = map_to_local(cell_data.coords).y;
 
 							if (!physics_quadrant->bodies.has(physics_body_key)) {
 								RID body = ps->body_create();

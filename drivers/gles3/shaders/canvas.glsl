@@ -609,9 +609,9 @@ void main() {
 		float d = msdf_median(msdf_sample.r, msdf_sample.g, msdf_sample.b);
 
 		if (outline_thickness > 0.0) {
-			float cr = clamp(outline_thickness, 0.0, px_range / 2.0) / px_range;
+			float cr = clamp(outline_thickness, 0.0, (px_range / 2.0) - 1.0) / px_range;
 			d = min(d, msdf_sample.a);
-			float a = clamp((d - 0.5 + cr) * px_size + 0.5, 0.0, 1.0);
+			float a = clamp((d - 0.5 + cr) * px_size, 0.0, 1.0);
 			color.a = a * color.a;
 		} else {
 			float a = clamp((d - 0.5) * px_size + 0.5, 0.0, 1.0);

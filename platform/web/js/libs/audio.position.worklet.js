@@ -29,22 +29,28 @@
 /**************************************************************************/
 
 class GodotPositionReportingProcessor extends AudioWorkletProcessor {
+	static get parameterDescriptors() {
+		return [
+			{
+				name: 'reset',
+				defaultValue: 0,
+				minValue: 0,
+				maxValue: 1,
+				automationRate: 'k-rate',
+			},
+		];
+	}
+
 	constructor(...args) {
 		super(...args);
 		this.position = 0;
-
-		this.port.onmessage = (event) => {
-			switch (event?.data?.type) {
-			case 'reset':
-				this.position = 0;
-				break;
-			default:
-				// Do nothing.
-			}
-		};
 	}
 
-	process(inputs, _outputs, _parameters) {
+	process(inputs, _outputs, parameters) {
+		if (parameters['reset'][0] > 0) {
+			this.position = 0;
+		}
+
 		if (inputs.length > 0) {
 			const input = inputs[0];
 			if (input.length > 0) {

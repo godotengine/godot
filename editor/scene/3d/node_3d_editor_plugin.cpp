@@ -1935,7 +1935,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 
 					// Transform gizmo
-					if (_transform_gizmo_select(_edit.mouse_pos)) {
+					if (transform_gizmo_visible && _transform_gizmo_select(_edit.mouse_pos)) {
 						break;
 					}
 
@@ -2203,7 +2203,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (spatial_editor->get_current_hover_gizmo().is_null() && !m->get_button_mask().has_flag(MouseButtonMask::LEFT) && _edit.gizmo.is_null()) {
+		if (transform_gizmo_visible && spatial_editor->get_current_hover_gizmo().is_null() && !m->get_button_mask().has_flag(MouseButtonMask::LEFT) && _edit.gizmo.is_null()) {
 			_transform_gizmo_select(_edit.mouse_pos, true);
 		}
 
@@ -2432,7 +2432,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, true);
 				_edit.gizmo = Ref<EditorNode3DGizmo>();
 			}
-			if (k->get_keycode() == Key::ESCAPE && !cursor.region_select) {
+			if (k->get_keycode() == Key::ESCAPE && !cursor.region_select && !k->is_echo()) {
 				_clear_selected();
 				return;
 			}
@@ -5664,6 +5664,7 @@ void Node3DEditorViewport::finish_transform() {
 	spatial_editor->update_transform_gizmo();
 	surface->queue_redraw();
 	set_process_input(false);
+	clicked = ObjectID();
 }
 
 // Register a shortcut and also add it as an input action with the same events.
@@ -8384,7 +8385,7 @@ void Node3DEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	snap_key_enabled = Input::get_singleton()->is_key_pressed(Key::CTRL);
+	snap_key_enabled = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 }
 
 void Node3DEditor::_sun_environ_settings_pressed() {

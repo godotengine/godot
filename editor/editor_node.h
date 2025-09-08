@@ -451,7 +451,7 @@ private:
 	bool immediate_dialog_confirmed = false;
 	bool restoring_scenes = false;
 	bool settings_overrides_changed = false;
-	bool unsaved_cache = true;
+	bool unsaved_cache = false;
 
 	bool requested_first_scan = false;
 	bool waiting_for_first_scan = true;

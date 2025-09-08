@@ -2739,6 +2739,7 @@ bool _validate_dotnet_tfm(const String &required_tfm, String &r_error) {
 		List<String> args;
 		args.push_back("build");
 		args.push_back(project_path);
+		args.push_back("/p:GodotTargetPlatform=android");
 		args.push_back("--getProperty:TargetFramework");
 
 		int exitcode;
@@ -2778,9 +2779,9 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 	err += TTR("Exporting to Android when using C#/.NET is experimental.") + "\n";
 
 	if (!gradle_build_enabled) {
-		// For template exports we only support .NET 8 because the template
-		// includes .jar dependencies that may only be compatible with .NET 8.
-		if (!_validate_dotnet_tfm("net8.0", err)) {
+		// For template exports we only support .NET 9 because the template
+		// includes .jar dependencies that may only be compatible with .NET 9.
+		if (!_validate_dotnet_tfm("net9.0", err)) {
 			r_error = err;
 			return false;
 		}
@@ -3751,7 +3752,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String edition = has_dotnet_project ? "Mono" : "Standard";
 		String build_type = p_debug ? "Debug" : "Release";
 		if (export_format == EXPORT_FORMAT_AAB) {
-			String bundle_build_command = vformat("bundle%s", build_type);
+			String bundle_build_command = vformat("bundle%s%s", edition, build_type);
 			cmdline.push_back(bundle_build_command);
 		} else if (export_format == EXPORT_FORMAT_APK) {
 			String apk_build_command = vformat("assemble%s%s", edition, build_type);

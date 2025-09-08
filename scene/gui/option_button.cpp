@@ -394,6 +394,7 @@ void OptionButton::add_separator(const String &p_text) {
 void OptionButton::clear() {
 	popup->clear();
 	set_text("");
+	set_button_icon(Ref<Texture2D>());
 	current = NONE_SELECTED;
 	_refresh_size_cache();
 }
@@ -410,7 +411,7 @@ void OptionButton::_select(int p_which, bool p_emit) {
 
 		current = NONE_SELECTED;
 		set_text("");
-		set_button_icon(nullptr);
+		set_button_icon(Ref<Texture2D>());
 	} else {
 		ERR_FAIL_INDEX(p_which, popup->get_item_count());
 

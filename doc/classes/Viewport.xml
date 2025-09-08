@@ -122,11 +122,21 @@
 			<description>
 				Returns the viewport's texture.
 				[b]Note:[/b] When trying to store the current texture (e.g. in a file), it might be completely black or outdated if used too early, especially when used in e.g. [method Node._ready]. To make sure the texture you get is correct, you can await [signal RenderingServer.frame_post_draw] signal.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func _ready():
-					await RenderingServer.frame_post_draw
-					$Viewport.get_texture().get_image().save_png("user://Screenshot.png")
-				[/codeblock]
+				    await RenderingServer.frame_post_draw
+				    $Viewport.get_texture().get_image().save_png("user://Screenshot.png")
+				[/gdscript]
+				[csharp]
+				public async override void _Ready()
+				{
+				    await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+				    var viewport = GetNode&lt;Viewport&gt;("Viewport");
+				    viewport.GetTexture().GetImage().SavePng("user://Screenshot.png");
+				}
+				[/csharp]
+				[/codeblocks]
 				[b]Note:[/b] When [member use_hdr_2d] is [code]true[/code] the returned texture will be an HDR image encoded in linear space.
 			</description>
 		</method>
@@ -366,7 +376,7 @@
 			See also [member ProjectSettings.rendering/anti_aliasing/quality/msaa_3d] and [method RenderingServer.viewport_set_msaa_3d].
 		</member>
 		<member name="oversampling" type="bool" setter="set_use_oversampling" getter="is_using_oversampling" default="true">
-			If [code]true[/code] and one of the following conditions is true: [member SubViewport.size_2d_override_stretch] and [member SubViewport.size_2d_override] are set, [member Window.content_scale_factor] is set and scaling is enabled, [member oversampling_override] is set, font and [SVGTexture] oversampling is enabled.
+			If [code]true[/code] and one of the following conditions are true: [member SubViewport.size_2d_override_stretch] and [member SubViewport.size_2d_override] are set, [member Window.content_scale_factor] is set and scaling is enabled, [member oversampling_override] is set, font and [DPITexture] oversampling are enabled.
 		</member>
 		<member name="oversampling_override" type="float" setter="set_oversampling_override" getter="get_oversampling_override" default="0.0">
 			If greater than zero, this value is used as the font oversampling factor, otherwise oversampling is equal to viewport scale.
@@ -449,7 +459,9 @@
 			See also [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding] and [method RenderingServer.viewport_set_use_debanding].
 		</member>
 		<member name="use_hdr_2d" type="bool" setter="set_use_hdr_2d" getter="is_using_hdr_2d" default="false">
-			If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ or Compatibility rendering method this will be an [code]RGBA16[/code] framebuffer, while when using the Mobile rendering method it will be an [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen). Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
+			If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ or Compatibility renderer, this will be an [code]RGBA16[/code] framebuffer. When using the Mobile renderer, it will be an [code]RGB10_A2[/code] framebuffer.
+			Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen).
+			Practically speaking, this means that the end result of the Viewport will not be clamped to the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
 		</member>
 		<member name="use_occlusion_culling" type="bool" setter="set_use_occlusion_culling" getter="is_using_occlusion_culling" default="false">
 			If [code]true[/code], [OccluderInstance3D] nodes will be usable for occlusion culling in 3D for this viewport. For the root viewport, [member ProjectSettings.rendering/occlusion_culling/use_occlusion_culling] must be set to [code]true[/code] instead.

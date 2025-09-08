@@ -144,11 +144,6 @@ public:
 	virtual Point2i mouse_get_position() const override;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
 
-	// MARK: - Joystick
-
-	void joy_add(int p_idx, const String &p_name);
-	void joy_del(int p_idx);
-
 	// MARK: - Window
 
 	virtual bool has_feature(Feature p_feature) const override;

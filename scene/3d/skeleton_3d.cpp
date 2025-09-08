@@ -295,7 +295,7 @@ void Skeleton3D::_notification(int p_what) {
 #if !defined(DISABLE_DEPRECATED) && !defined(PHYSICS_3D_DISABLED)
 			setup_simulator();
 #endif // _DISABLE_DEPRECATED && PHYSICS_3D_DISABLED
-			update_flags = UPDATE_FLAG_POSE;
+			update_flags |= UPDATE_FLAG_POSE;
 			_notification(NOTIFICATION_UPDATE_SKELETON);
 		} break;
 #ifdef TOOLS_ENABLED
@@ -929,7 +929,7 @@ void Skeleton3D::_make_dirty() {
 		return;
 	}
 	dirty = true;
-	_update_deferred();
+	_update_deferred(modifiers.is_empty() ? UPDATE_FLAG_POSE : (UpdateFlag)(UPDATE_FLAG_POSE | UPDATE_FLAG_MODIFIER));
 }
 
 void Skeleton3D::_update_deferred(UpdateFlag p_update_flag) {
