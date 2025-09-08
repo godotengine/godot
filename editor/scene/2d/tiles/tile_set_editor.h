@@ -43,6 +43,7 @@ class HBoxContainer;
 class SplitContainer;
 class EditorFileDialog;
 class EditorInspectorPlugin;
+class TileSetSourceItemList;
 
 class TileSetEditor : public MarginContainer {
 	GDCLASS(TileSetEditor, MarginContainer);
@@ -76,7 +77,7 @@ private:
 	MenuButton *sources_add_button = nullptr;
 	MenuButton *source_sort_button = nullptr;
 	MenuButton *sources_advanced_menu_button = nullptr;
-	ItemList *sources_list = nullptr;
+	TileSetSourceItemList *sources_list = nullptr;
 	Ref<Texture2D> missing_texture_texture;
 	void _source_selected(int p_source_index);
 	void _source_delete_pressed();

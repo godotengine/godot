@@ -327,6 +327,32 @@ TilesEditorUtils::~TilesEditorUtils() {
 	singleton = nullptr;
 }
 
+String TileSetSourceItemList::get_tooltip(const Point2 &p_pos) const {
+	int idx = get_item_at_position(p_pos);
+	if (tile_set.is_null() || idx == -1) {
+		return ItemList::get_tooltip(p_pos);
+	}
+	idx = get_item_metadata(idx);
+
+	Ref<TileSetAtlasSource> atlas = tile_set->get_source(idx);
+	if (atlas.is_valid() && atlas->get_texture().is_valid()) {
+		return vformat(TTR("Source ID: %d\nTexture path: %s"), idx, atlas->get_texture()->get_path());
+	}
+	return vformat(TTR("Source ID: %d"), idx);
+}
+
+TileSetSourceItemList::TileSetSourceItemList() {
+	set_fixed_icon_size(Size2(60, 60) * EDSCALE);
+	set_h_size_flags(SIZE_EXPAND_FILL);
+	set_v_size_flags(SIZE_EXPAND_FILL);
+	set_stretch_ratio(0.25);
+	set_custom_minimum_size(Size2(70, 0) * EDSCALE);
+	set_theme_type_variation("ItemListSecondary");
+	set_texture_filter(TEXTURE_FILTER_NEAREST);
+	set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	add_user_signal(MethodInfo("sort_request"));
+}
+
 void TileMapEditorPlugin::_tile_map_layer_changed() {
 	if (tile_map_changed_needs_update) {
 		return;
