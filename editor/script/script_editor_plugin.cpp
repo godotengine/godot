@@ -2525,12 +2525,6 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	if (p_resource.is_null()) {
 		return false;
 	}
-	// This is here to stop resource files of class JSON from getting confused
-	//	with json files and being opened in the text editor.
-	// See https://github.com/godotengine/godot/issues/109473
-	if (p_resource->get_class() == JSON::get_class_static() && p_resource->get_path().get_extension().to_lower() != "json") {
-		return false;
-	}
 
 	Ref<Script> scr = p_resource;
 
@@ -4651,7 +4645,11 @@ bool ScriptEditorPlugin::handles(Object *p_object) const {
 	}
 
 	if (Object::cast_to<JSON>(p_object)) {
-		return true;
+		// This is here to stop resource files of class JSON from getting confused
+		//      with json files and being opened in the text editor.
+		if (Object::cast_to<JSON>(p_object)->get_path().get_extension().to_lower() == "json") {
+			return true;
+		}
 	}
 
 	return p_object->is_class("Script");
