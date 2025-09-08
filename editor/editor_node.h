@@ -481,6 +481,7 @@ private:
 
 	String import_reload_fn;
 
+	HashSet<String> force_textfile_extensions;
 	HashSet<String> textfile_extensions;
 	HashSet<String> other_file_extensions;
 	HashSet<FileDialog *> file_dialogs;
