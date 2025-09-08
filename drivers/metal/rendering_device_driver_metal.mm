@@ -1135,12 +1135,17 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 	// We need to regenerate the shader if the cache is moved to an incompatible device.
 	ERR_FAIL_COND_V_MSG(device_properties->features.argument_buffers_tier < MTLArgumentBuffersTier2 && mtl_reflection_data.uses_argument_buffers(),
 			RDD::ShaderID(),
-			"Shader was generated with argument buffers, but device has limited support");
+			"Shader was compiled with argument buffers enabled, but this device does not support them");
 
 	uint32_t msl_version = make_msl_version(device_properties->features.mslVersionMajor, device_properties->features.mslVersionMinor);
 	ERR_FAIL_COND_V_MSG(msl_version < mtl_reflection_data.msl_version,
 			RDD::ShaderID(),
-			"Shader was compiled with a newer version of Metal than is available on the device.");
+			"Shader was compiled for a newer version of Metal");
+
+	MTLGPUFamily compiled_gpu_family = static_cast<MTLGPUFamily>(mtl_reflection_data.profile.gpu);
+	ERR_FAIL_COND_V_MSG(device_properties->features.highestFamily < compiled_gpu_family,
+			RDD::ShaderID(),
+			"Shader was generated for a newer Apple GPU");
 
 	MTLCompileOptions *options = [MTLCompileOptions new];
 	uint32_t major = mtl_reflection_data.msl_version / 10000;
@@ -1181,6 +1186,9 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 
 		MDLibrary *library = nil;
 		if (shader_data.library_size > 0) {
+			ERR_FAIL_COND_V_MSG(mtl_reflection_data.os_min_version > device_properties->os_version,
+					RDD::ShaderID(),
+					"Metal shader binary was generated for a newer target OS");
 			dispatch_data_t binary = dispatch_data_create(decompressed_code.ptr() + shader_data.source_size, shader_data.library_size, dispatch_get_main_queue(), DISPATCH_DATA_DESTRUCTOR_DEFAULT);
 			library = [MDLibrary newLibraryWithCacheEntry:cd
 												   device:device
