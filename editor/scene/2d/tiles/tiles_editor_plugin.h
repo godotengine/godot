@@ -107,6 +107,17 @@ public:
 	~TilesEditorUtils();
 };
 
+class TileSetSourceItemList : public ItemList {
+	GDCLASS(TileSetSourceItemList, ItemList);
+
+public:
+	Ref<TileSet> tile_set;
+
+	virtual String get_tooltip(const Point2 &p_pos) const override;
+
+	TileSetSourceItemList();
+};
+
 class TileMapEditorPlugin : public EditorPlugin {
 	GDCLASS(TileMapEditorPlugin, EditorPlugin);
 
