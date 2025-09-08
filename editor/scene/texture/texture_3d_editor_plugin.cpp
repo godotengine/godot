@@ -172,8 +172,8 @@ void Texture3DEditor::_update_gui() {
 	const String format_name = Image::get_format_name(format);
 
 	if (texture->has_mipmaps()) {
-		const int mip_count = Image::get_image_required_mipmaps(texture->get_width(), texture->get_height(), format);
-		const int memory = Image::get_image_data_size(texture->get_width(), texture->get_height(), format, true) * texture->get_depth();
+		const int mip_count = texture->get_mipmap_count();
+		const int memory = Image::get_image_data_size(texture->get_width(), texture->get_height(), format, mip_count) * texture->get_depth();
 
 		info->set_text(vformat(String::utf8("%d×%d×%d %s\n") + TTR("%s Mipmaps") + "\n" + TTR("Memory: %s"),
 				texture->get_width(),
@@ -184,7 +184,7 @@ void Texture3DEditor::_update_gui() {
 				String::humanize_size(memory)));
 
 	} else {
-		const int memory = Image::get_image_data_size(texture->get_width(), texture->get_height(), format, false) * texture->get_depth();
+		const int memory = Image::get_image_data_size(texture->get_width(), texture->get_height(), format, 0) * texture->get_depth();
 
 		info->set_text(vformat(String::utf8("%d×%d×%d %s\n") + TTR("No Mipmaps") + "\n" + TTR("Memory: %s"),
 				texture->get_width(),

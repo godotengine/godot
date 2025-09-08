@@ -44,6 +44,12 @@
 				Called when the number of layers in the [TextureLayered] is queried.
 			</description>
 		</method>
+		<method name="_get_mipmap_count" qualifiers="virtual required const">
+			<return type="int" />
+			<description>
+				Called when the amount of mipmaps in the [TextureLayered] is queried.
+			</description>
+		</method>
 		<method name="_get_width" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
@@ -85,6 +91,12 @@
 			<return type="int" />
 			<description>
 				Returns the number of referenced [Image]s.
+			</description>
+		</method>
+		<method name="get_mipmap_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the layers' mipmap count.
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
