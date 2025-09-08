@@ -749,10 +749,10 @@ public:
 	/**********************/
 	DEFINE_ID(VideoSession);
 
-	virtual void video_profile_get_capabilities(const VideoProfileState &p_profile) = 0;
-	virtual void video_profile_get_format_properties(const VideoProfileState &p_profile) = 0;
+	virtual void video_profile_get_capabilities(const VideoProfileState *p_profile) = 0;
+	virtual void video_profile_get_format_properties(const VideoProfileState *p_profile) = 0;
 
-	virtual VideoSessionID video_session_create(const VideoProfileState &p_profile, DataFormat p_image_format) = 0;
+	virtual VideoSessionID video_session_create(const VideoProfileState *p_profile, DataFormat p_image_format) = 0;
 
 	virtual void command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) = 0;
 	virtual void command_video_control(CommandBufferID p_cmd_buffer) = 0;

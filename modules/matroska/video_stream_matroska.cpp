@@ -1072,9 +1072,7 @@ void VideoStreamPlaybackMatroska::play() {
 		return;
 	}
 
-	RID video_profile = RD::get_singleton()->video_profile_create(0, 8, 8);
-	video_stream_encoding->bind_video_profile_metadata(video_profile);
-
+	video_stream_encoding->create_video_profile();
 	video_stream_encoding->decode_cluster();
 }
 

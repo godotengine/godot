@@ -34,18 +34,21 @@
 #include "core/string/print_string.h"
 #include "core/variant/variant.h"
 #include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_device_commons.h"
 
 // TODO make Godot versions of all Vulkan structs
 #include <vk_video/vulkan_video_codec_h264std.h>
 #include <vk_video/vulkan_video_codec_h264std_decode.h>
 #include <vulkan/vulkan_core.h>
 
-void VideoStreamH264::bind_video_profile_metadata(RID p_profile) {
-	RD::get_singleton()->video_profile_bind_h264_decoding_metadata(p_profile, target_profile_idc, VK_VIDEO_DECODE_H264_PICTURE_LAYOUT_PROGRESSIVE_KHR);
+RID VideoStreamH264::create_video_profile() {
+	video_profile = RD::get_singleton()->video_profile_create(chroma_subsampling, luma_bit_depth, chroma_bit_depth);
+	RD::get_singleton()->video_profile_bind_h264_decoding_metadata(video_profile, target_profile_idc, RenderingDeviceCommons::VIDEO_CODING_H264_PICTURE_LAYOUT_PROGRESSIVE);
+	return video_profile;
 }
 
 void VideoStreamH264::decode_cluster() {
-	RD::VideoCodingListID video_coding_list = RD::get_singleton()->video_coding_list_begin(active_sps, active_pps);
+	RD::VideoCodingListID video_coding_list = RD::get_singleton()->video_coding_list_begin(video_profile, active_sps, active_pps);
 	RD::get_singleton()->video_coding_list_bind_texure(video_coding_list, 1980, 1080, slice_spans.size());
 
 	for (uint64_t i = 0; i < slice_spans.size(); i++) {
@@ -60,8 +63,8 @@ void VideoStreamH264::parse_container_metadata(uint8_t *p_stream, uint64_t p_siz
 	uint8_t configuration_version = p_stream[0];
 	ERR_FAIL_COND_MSG(configuration_version > 1, vformat("AVCDecoderConfigurationRecord version (%d) is greater than 1", configuration_version));
 
-	target_profile_idc = p_stream[1];
-	minimum_profile_idc = p_stream[2];
+	target_profile_idc = RD::VideoCodingH264ProfileIdc(p_stream[1]);
+	minimum_profile_idc = RD::VideoCodingH264ProfileIdc(p_stream[2]);
 
 	target_level_idc = p_stream[3];
 
@@ -83,8 +86,19 @@ void VideoStreamH264::parse_container_metadata(uint8_t *p_stream, uint64_t p_siz
 		p_stream += 2 + pps_size;
 	}
 
-	if (target_level_idc == 100) {
-		chroma_format = p_stream[7] & 0b11;
+	if (target_profile_idc == RenderingDeviceCommons::VIDEO_CODING_H264_PROFILE_IDC_HIGH) {
+		uint8_t chroma_format = p_stream[7] & 0b11;
+		if (chroma_format == 0) {
+			chroma_subsampling = RenderingDeviceCommons::CHROMA_SUBSAMPLING_MONOCHROME;
+		} else if (chroma_format == 1) {
+			chroma_subsampling = RenderingDeviceCommons::CHROMA_SUBSAMPLING_420;
+		} else if (chroma_format == 2) {
+			chroma_subsampling = RenderingDeviceCommons::CHROMA_SUBSAMPLING_422;
+		} else if (chroma_format == 3) {
+			chroma_subsampling = RenderingDeviceCommons::CHROMA_SUBSAMPLING_444;
+			// TODO separate color plane flag
+		}
+
 		luma_bit_depth = (p_stream[8] & 0b111) + 8;
 		chroma_bit_depth = (p_stream[9] & 0b111) + 8;
 
@@ -100,10 +114,12 @@ void VideoStreamH264::parse_container_metadata(uint8_t *p_stream, uint64_t p_siz
 void VideoStreamH264::parse_container_block(uint8_t *p_stream, uint64_t p_size) {
 	// TODO figure out what's in the first 3 bytes
 	uint32_t data = (p_stream[0] << 16) | (p_stream[1] << 8) | (p_stream[2]);
-	print_line(vformat("leading bytes [%d, %d, %d] (), size %d", p_stream[0], p_stream[1], p_stream[2], data, p_size));
+	print_line(vformat("leading bytes [%d, %d, %d] (%d), size %d", p_stream[0], p_stream[1], p_stream[2], data, p_size));
 	if (parse_nal_unit(p_stream + 4)) {
-		Span<uint8_t> span = Span(p_stream, p_size);
-		slice_spans.push_back(span);
+		Vector<uint8_t> block;
+		block.resize(p_size);
+		memcpy(block.ptrw(), p_stream, p_size);
+		slice_spans.push_back(block);
 	}
 }
 
@@ -262,7 +278,7 @@ StdVideoH264SequenceParameterSet VideoStreamH264::parse_sequence_parameter_set(u
 StdVideoH264PictureParameterSet VideoStreamH264::parse_picture_parameter_set(uint8_t *p_stream) {
 	print_line("Extremely cool PPS");
 
-	StdVideoH264PictureParameterSet picture_parameter_set;
+	StdVideoH264PictureParameterSet picture_parameter_set = {};
 	uint8_t shift = 7;
 	uint8_t read = 0;
 
@@ -329,7 +345,7 @@ StdVideoH264PictureParameterSet VideoStreamH264::parse_picture_parameter_set(uin
 StdVideoDecodeH264PictureInfo VideoStreamH264::parse_slice_header(uint8_t *p_stream) {
 	print_line("Extremely cool slice header");
 
-	StdVideoDecodeH264PictureInfo slice_header;
+	StdVideoDecodeH264PictureInfo slice_header = {};
 	slice_header.seq_parameter_set_id = active_sps.seq_parameter_set_id;
 
 	uint8_t shift = 7;

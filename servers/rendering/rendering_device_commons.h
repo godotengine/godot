@@ -852,28 +852,42 @@ public:
 	/**** VIDEO CODING ****/
 	/**********************/
 
-	enum VideoCodecOperation {
+	enum VideoCodingOperation {
 		VIDEO_OPERATION_DECODE_H264 = (1 << 0),
 		VIDEO_OPERATION_DECODE_H265 = (1 << 1),
 		VIDEO_OPERATION_DECODE_AV1 = (1 << 2),
 		VIDEO_OPERATION_DECODE_VP9 = (1 << 3),
 	};
 
-	enum ChromaSubsampling {
-		CHROMA_SUBSAMPLING_420,
-		CHROMA_SUBSAMPLING_422,
-		CHROMA_SUBSAMPLING_444,
+	enum VideoCodingChromaSubsampling {
+		CHROMA_SUBSAMPLING_MONOCHROME = (1 << 0),
+		CHROMA_SUBSAMPLING_420 = (1 << 1),
+		CHROMA_SUBSAMPLING_422 = (1 << 2),
+		CHROMA_SUBSAMPLING_444 = (1 << 3),
+	};
+
+	enum VideoCodingH264ProfileIdc {
+		VIDEO_CODING_H264_PROFILE_IDC_BASELINE = 66,
+		VIDEO_CODING_H264_PROFILE_IDC_MAIN = 77,
+		VIDEO_CODING_H264_PROFILE_IDC_HIGH = 100,
+		VIDEO_CODING_H264_PROFILE_IDC_HIGH_PREDICTIVE = 244,
+	};
+
+	enum VideoCodingH264PictureLayout {
+		VIDEO_CODING_H264_PICTURE_LAYOUT_PROGRESSIVE = 0,
+		VIDEO_CODING_H264_PICTURE_LAYOUT_INTERLACED_INTERLEAVED = 1,
+		VIDEO_CODING_H264_PICTURE_LAYOUT_INTERLACED_SEPARATE_PLANES = 2,
 	};
 
 	struct VideoProfileState {
-		VideoCodecOperation operation;
-		uint32_t chroma_subsampling;
+		VideoCodingOperation operation;
+		VideoCodingChromaSubsampling chroma_subsampling;
 		uint32_t luma_bit_depth;
 		uint32_t chroma_bit_depth;
 
 		// TODO is it worth not just embedding all 4 possible codecs here?
-		uint32_t h264_profile_idc;
-		uint32_t h264_picture_layout;
+		VideoCodingH264ProfileIdc h264_profile_idc;
+		VideoCodingH264PictureLayout h264_picture_layout;
 	};
 
 	/**************/
