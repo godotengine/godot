@@ -1412,8 +1412,10 @@ private:
 	VideoCodingList video_coding_list;
 	RDD::CommandBufferID decode_buffer;
 
+	RID_Owner<VideoProfileState> video_profiles_owner;
+
 public:
-	VideoCodingListID video_coding_list_begin(StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps);
+	VideoCodingListID video_coding_list_begin(RID p_profile, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps);
 	void video_coding_list_bind_texure(VideoCodingListID p_list, uint32_t p_width, uint32_t p_height, uint64_t p_array_layers);
 	void video_coding_list_control(VideoCodingListID p_list);
 	void video_coding_list_decode(VideoCodingListID p_list, Span<uint8_t> p_src_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, uint32_t p_array_layer);
@@ -1422,9 +1424,9 @@ public:
 	void video_coding_list_end();
 
 public:
-	RID video_profile_create(uint32_t p_chroma_subsampling, uint32_t p_luma_bit_depth, uint32_t p_chroma_bit_depth);
+	RID video_profile_create(VideoCodingChromaSubsampling p_chroma_subsampling, uint32_t p_luma_bit_depth, uint32_t p_chroma_bit_depth);
 
-	void video_profile_bind_h264_decoding_metadata(RID p_profile, uint32_t p_std_profile, uint32_t p_picture_layout);
+	void video_profile_bind_h264_decoding_metadata(RID p_profile, VideoCodingH264ProfileIdc p_std_profile, VideoCodingH264PictureLayout p_picture_layout);
 	void video_profile_bind_h265_decoding_metadata(RID p_profile, uint32_t p_std_profile);
 	void video_profile_bind_av1_decoding_metadata(RID p_profile, uint32_t p_std_profile, bool p_film_grain_support);
 	void video_profile_bind_vp9_decoding_metadata(RID p_profile, uint32_t p_std_profile);

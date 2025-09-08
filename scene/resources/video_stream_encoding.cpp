@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  video_stream_h264.h                                                   */
+/*  video_stream_encoding.cpp                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,46 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "video_stream_encoding.h"
 
-#include "scene/resources/video_stream_encoding.h"
+RD::VideoCodingChromaSubsampling VideoStreamEncoding::get_chroma_subsampling() {
+	return chroma_subsampling;
+}
 
-#include <vk_video/vulkan_video_codec_h264std.h>
-#include <vk_video/vulkan_video_codec_h264std_decode.h>
+uint32_t VideoStreamEncoding::get_luma_bit_depth() {
+	return luma_bit_depth;
+}
 
-#include <cstdint>
-
-class VideoStreamH264 : public VideoStreamEncoding {
-	GDCLASS(VideoStreamH264, VideoStreamEncoding);
-
-private:
-	RD::VideoCodingH264ProfileIdc target_profile_idc;
-	RD::VideoCodingH264ProfileIdc minimum_profile_idc;
-
-	// TODO make an RD version
-	uint32_t target_level_idc;
-
-	// TODO make RD versions
-	StdVideoH264SequenceParameterSet active_sps;
-	StdVideoH264PictureParameterSet active_pps;
-	Vector<StdVideoDecodeH264PictureInfo> slice_metadatas;
-	Vector<Vector<uint8_t>> slice_spans;
-
-	RID video_profile;
-
-public:
-	RID create_video_profile() final override;
-
-	void decode_cluster() final override;
-
-	void parse_container_metadata(uint8_t *p_stream, uint64_t p_size) final override;
-	void parse_container_block(uint8_t *p_stream, uint64_t p_size) final override;
-
-	bool parse_nal_unit(uint8_t *p_stream);
-	StdVideoH264SequenceParameterSet parse_sequence_parameter_set(uint8_t *p_stream);
-	StdVideoH264PictureParameterSet parse_picture_parameter_set(uint8_t *p_stream);
-	StdVideoDecodeH264PictureInfo parse_slice_header(uint8_t *p_stream);
-
-	uint64_t parse_ue(uint8_t *p_stream, uint8_t *shift, uint8_t *read);
-	int64_t parse_se(uint8_t *p_stream, uint8_t *shift, uint8_t *read);
-};
+uint32_t VideoStreamEncoding::get_chroma_bit_depth() {
+	return chroma_bit_depth;
+}

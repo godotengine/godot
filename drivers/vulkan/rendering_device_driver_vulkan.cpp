@@ -31,6 +31,7 @@
 #include "rendering_device_driver_vulkan.h"
 
 #include "core/config/project_settings.h"
+#include "core/error/error_list.h"
 #include "core/string/print_string.h"
 #include "core/templates/local_vector.h"
 #include "servers/rendering/rendering_device_commons.h"
@@ -5777,30 +5778,58 @@ void RenderingDeviceDriverVulkan::end_segment() {
 	// Per-frame segments are not required in Vulkan.
 }
 
-void RenderingDeviceDriverVulkan::video_profile_get_capabilities(const VideoProfileState &p_profile) {
-	VkVideoProfileInfoKHR video_profile;
-	video_profile.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR;
+Error RenderingDeviceDriverVulkan::vk_video_profile_from_state(const VideoProfileState *p_profile, VkVideoProfileInfoKHR *r_profile) {
+	r_profile->sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR;
 
-	// TODO the enum values do not match actual values
-	video_profile.chromaSubsampling = p_profile.chroma_subsampling;
-	video_profile.lumaBitDepth = p_profile.luma_bit_depth;
-	video_profile.chromaBitDepth = p_profile.chroma_bit_depth;
+	r_profile->chromaSubsampling = p_profile->chroma_subsampling;
 
-	if (p_profile.operation == VIDEO_OPERATION_DECODE_H264) {
-		video_profile.videoCodecOperation = VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR;
-
-		VkVideoDecodeH264ProfileInfoKHR h264_profile = {};
-		h264_profile.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PROFILE_INFO_KHR;
-		h264_profile.stdProfileIdc = STD_VIDEO_H264_PROFILE_IDC_HIGH;
-		h264_profile.pictureLayout = VK_VIDEO_DECODE_H264_PICTURE_LAYOUT_PROGRESSIVE_KHR;
-
-		video_profile.pNext = &h264_profile;
+	// TODO this will fail for monochrome video
+	if (p_profile->luma_bit_depth == 8) {
+		r_profile->lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR;
+	} else if (p_profile->luma_bit_depth == 10) {
+		r_profile->lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_10_BIT_KHR;
+	} else if (p_profile->luma_bit_depth == 12) {
+		r_profile->lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_12_BIT_KHR;
+	} else {
+		return ERR_INVALID_PARAMETER;
 	}
+
+	if (p_profile->chroma_bit_depth == 8) {
+		r_profile->chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR;
+	} else if (p_profile->chroma_bit_depth == 10) {
+		r_profile->chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_10_BIT_KHR;
+	} else if (p_profile->chroma_bit_depth == 12) {
+		r_profile->chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_12_BIT_KHR;
+	} else {
+		return ERR_INVALID_PARAMETER;
+	}
+
+	if (p_profile->operation == VIDEO_OPERATION_DECODE_H264) {
+		// TODO don't use c-style memory management
+		VkVideoDecodeH264ProfileInfoKHR *h264_decode_profile = (VkVideoDecodeH264ProfileInfoKHR *)malloc(sizeof(VkVideoDecodeH264ProfileInfoKHR));
+		h264_decode_profile->sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PROFILE_INFO_KHR;
+		h264_decode_profile->pNext = nullptr;
+		h264_decode_profile->stdProfileIdc = StdVideoH264ProfileIdc(p_profile->h264_profile_idc);
+		h264_decode_profile->pictureLayout = VkVideoDecodeH264PictureLayoutFlagBitsKHR(p_profile->h264_picture_layout);
+
+		r_profile->pNext = h264_decode_profile;
+		r_profile->videoCodecOperation = VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR;
+	} else {
+		// TODO support H.265/AV1/VP9
+		return ERR_INVALID_PARAMETER;
+	}
+
+	return OK;
+}
+
+void RenderingDeviceDriverVulkan::video_profile_get_capabilities(const VideoProfileState *p_profile) {
+	VkVideoProfileInfoKHR video_profile = {};
+	vk_video_profile_from_state(p_profile, &video_profile);
 
 	VkVideoCapabilitiesKHR video_capabilities = {};
 	video_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR;
 
-	if (p_profile.operation == VIDEO_OPERATION_DECODE_H264) {
+	if (p_profile->operation == VIDEO_OPERATION_DECODE_H264) {
 		VkVideoDecodeCapabilitiesKHR decode_capabilities = {};
 		decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR;
 		video_capabilities.pNext = &decode_capabilities;
@@ -5817,25 +5846,9 @@ void RenderingDeviceDriverVulkan::video_profile_get_capabilities(const VideoProf
 	}
 }
 
-void RenderingDeviceDriverVulkan::video_profile_get_format_properties(const VideoProfileState &p_profile) {
-	VkVideoProfileInfoKHR video_profile;
-	video_profile.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR;
-
-	// TODO the enum values do not match actual values
-	video_profile.chromaSubsampling = p_profile.chroma_subsampling;
-	video_profile.lumaBitDepth = p_profile.luma_bit_depth;
-	video_profile.chromaBitDepth = p_profile.chroma_bit_depth;
-
-	if (p_profile.operation == VIDEO_OPERATION_DECODE_H264) {
-		video_profile.videoCodecOperation = VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR;
-
-		VkVideoDecodeH264ProfileInfoKHR h264_profile = {};
-		h264_profile.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PROFILE_INFO_KHR;
-		h264_profile.stdProfileIdc = STD_VIDEO_H264_PROFILE_IDC_HIGH;
-		h264_profile.pictureLayout = VK_VIDEO_DECODE_H264_PICTURE_LAYOUT_PROGRESSIVE_KHR;
-
-		video_profile.pNext = &h264_profile;
-	}
+void RenderingDeviceDriverVulkan::video_profile_get_format_properties(const VideoProfileState *p_profile) {
+	VkVideoProfileInfoKHR video_profile = {};
+	vk_video_profile_from_state(p_profile, &video_profile);
 
 	VkVideoProfileListInfoKHR video_profile_list;
 	video_profile_list.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR;
@@ -5880,25 +5893,9 @@ void RenderingDeviceDriverVulkan::video_profile_get_format_properties(const Vide
 	vkGetPhysicalDeviceVideoFormatPropertiesKHR(physical_device, &video_dst_format_info, &video_dst_formats_count, video_dst_formats.ptr());
 }
 
-RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const VideoProfileState &p_profile, DataFormat p_image_format) {
-	VkVideoProfileInfoKHR video_profile;
-	video_profile.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR;
-
-	// TODO the enum values do not match actual values
-	video_profile.chromaSubsampling = p_profile.chroma_subsampling;
-	video_profile.lumaBitDepth = p_profile.luma_bit_depth;
-	video_profile.chromaBitDepth = p_profile.chroma_bit_depth;
-
-	if (p_profile.operation == VIDEO_OPERATION_DECODE_H264) {
-		video_profile.videoCodecOperation = VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR;
-
-		VkVideoDecodeH264ProfileInfoKHR h264_profile = {};
-		h264_profile.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PROFILE_INFO_KHR;
-		h264_profile.stdProfileIdc = STD_VIDEO_H264_PROFILE_IDC_HIGH;
-		h264_profile.pictureLayout = VK_VIDEO_DECODE_H264_PICTURE_LAYOUT_PROGRESSIVE_KHR;
-
-		video_profile.pNext = &h264_profile;
-	}
+RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const VideoProfileState *p_profile, DataFormat p_image_format) {
+	VkVideoProfileInfoKHR video_profile = {};
+	vk_video_profile_from_state(p_profile, &video_profile);
 
 	CommandQueueFamilyID command_queue_family = command_queue_family_get(COMMAND_QUEUE_FAMILY_DECODE_BIT);
 	uint32_t command_queue_family_index = command_queue_family.id - 1;
@@ -5909,6 +5906,8 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 	extent.height = 1080;
 
 	VkExtensionProperties extension_properties = {};
+	strcpy(extension_properties.extensionName, VK_STD_VULKAN_VIDEO_CODEC_H264_DECODE_EXTENSION_NAME);
+	extension_properties.specVersion = 4194304;
 
 	// TODO picture formats
 	// TODO DPB slots, active reference pictures, pStdHeaderVersion
@@ -6041,13 +6040,13 @@ void RenderingDeviceDriverVulkan::command_video_control(CommandBufferID p_cmd_bu
 	vkCmdControlVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &cmd_control);
 }
 
-void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buffer, BufferID p_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, uint64_t p_buffer_range, TextureID p_texture, uint32_t p_array_layer) {
+void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buffer, BufferID p_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, uint64_t p_buffer_offset, TextureID p_texture, uint32_t p_array_layer) {
 	CommandBufferInfo *cmd_buffer_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	BufferInfo *buffer_info = (BufferInfo *)p_buffer.id;
 	TextureInfo *texture_info = (TextureInfo *)p_texture.id;
 
-	uint32_t slice_offset = 0;
-	VkVideoDecodeH264PictureInfoKHR h264_picture_info;
+	uint32_t slice_offset = p_buffer_offset;
+	VkVideoDecodeH264PictureInfoKHR h264_picture_info = {};
 	h264_picture_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PICTURE_INFO_KHR;
 	h264_picture_info.pNext = nullptr;
 	h264_picture_info.pStdPictureInfo = &p_std_h264_info;
@@ -6055,16 +6054,16 @@ void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buf
 	h264_picture_info.pSliceOffsets = &slice_offset;
 
 	// TODO what's this for?
-	VkOffset2D offset;
+	VkOffset2D offset = {};
 	offset.x = 0;
 	offset.y = 0;
 
 	// TODO is this the right way to make an extent?
-	VkExtent2D extent;
+	VkExtent2D extent = {};
 	extent.width = texture_info->vk_create_info.extent.width;
 	extent.height = texture_info->vk_create_info.extent.height;
 
-	VkVideoPictureResourceInfoKHR picture_info;
+	VkVideoPictureResourceInfoKHR picture_info = {};
 	picture_info.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
 	picture_info.pNext = nullptr;
 	picture_info.codedOffset = offset;
@@ -6073,13 +6072,13 @@ void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buf
 	picture_info.imageViewBinding = texture_info->vk_view;
 
 	// TODO setup reference slots
-	VkVideoDecodeInfoKHR decode_info;
+	VkVideoDecodeInfoKHR decode_info = {};
 	decode_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR;
 	decode_info.pNext = &h264_picture_info;
 	decode_info.flags = 0;
 	decode_info.srcBuffer = buffer_info->vk_buffer;
 	decode_info.srcBufferOffset = 0;
-	decode_info.srcBufferRange = p_buffer_range;
+	decode_info.srcBufferRange = buffer_info->size;
 	decode_info.dstPictureResource = picture_info;
 	decode_info.pSetupReferenceSlot = nullptr;
 	decode_info.referenceSlotCount = 0;

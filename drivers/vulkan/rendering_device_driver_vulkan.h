@@ -35,6 +35,7 @@
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"
 #include "drivers/vulkan/rendering_shader_container_vulkan.h"
 #include "servers/rendering/rendering_device_driver.h"
+#include <vulkan/vulkan_core.h>
 
 #ifdef DEBUG_ENABLED
 #ifndef _MSC_VER
@@ -661,10 +662,12 @@ public:
 	/**********************/
 	/**** VIDEO CODING ****/
 	/**********************/
-	virtual void video_profile_get_capabilities(const VideoProfileState &p_profile) override final;
-	virtual void video_profile_get_format_properties(const VideoProfileState &p_profile) override final;
+	Error vk_video_profile_from_state(const VideoProfileState *p_profile, VkVideoProfileInfoKHR *r_profile);
 
-	virtual VideoSessionID video_session_create(const VideoProfileState &p_profile, DataFormat p_image_format) override final;
+	virtual void video_profile_get_capabilities(const VideoProfileState *p_profile) override final;
+	virtual void video_profile_get_format_properties(const VideoProfileState *p_profile) override final;
+
+	virtual VideoSessionID video_session_create(const VideoProfileState *p_profile, DataFormat p_image_format) override final;
 
 	virtual void command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) override final;
 	virtual void command_video_control(CommandBufferID p_cmd_buffer) override final;
