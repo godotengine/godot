@@ -470,4 +470,30 @@ TEST_CASE("[Image] Convert image") {
 	CHECK_MESSAGE(image2->get_data() == image_data, "Image conversion to invalid type (Image::FORMAT_MAX + 1) should not alter image.");
 }
 
+TEST_CASE("[Image] Partial mipmaps") {
+	Ref<Image> image = memnew(Image(256, 256, Image::FORMAT_RGBA8, 3));
+	CHECK_MESSAGE(image->get_mipmap_count() == 3, "The image's mipmap count should be equal to 3.");
+
+	image->rotate_90(CLOCKWISE);
+	CHECK_MESSAGE(image->get_mipmap_count() == 3, "The image's mipmap count should be equal to 3.");
+	image->rotate_90(COUNTERCLOCKWISE);
+	CHECK_MESSAGE(image->get_mipmap_count() == 3, "The image's mipmap count should be equal to 3.");
+	image->rotate_180();
+	CHECK_MESSAGE(image->get_mipmap_count() == 3, "The image's mipmap count should be equal to 3.");
+
+	image->convert(Image::FORMAT_RGBAF);
+	CHECK_MESSAGE(image->get_mipmap_count() == 3, "The image's mipmap count should be equal to 3.");
+
+	image->clear_mipmaps();
+	CHECK_MESSAGE(image->get_mipmap_count() == 0, "The image's mipmap count should be equal to 0.");
+
+	image->generate_mipmaps(false, 1);
+	CHECK_MESSAGE(image->get_mipmap_count() == 1, "The image's mipmap count should be equal to 1.");
+
+	image->convert(Image::FORMAT_RGBA8);
+	image->generate_mipmaps(false, 3);
+	image->compress(Image::COMPRESS_ASTC);
+	CHECK_MESSAGE(image->get_mipmap_count() == 3, "The image's mipmap count should be equal to 3.");
+}
+
 } // namespace TestImage
