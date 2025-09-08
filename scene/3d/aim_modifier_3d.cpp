@@ -47,8 +47,6 @@ bool AimModifier3D::_set(const StringName &p_path, const Variant &p_value) {
 			set_primary_rotation_axis(which, static_cast<Vector3::Axis>((int)p_value));
 		} else if (what == "use_secondary_rotation") {
 			set_use_secondary_rotation(which, p_value);
-		} else if (what == "relative") {
-			set_relative(which, p_value);
 		} else {
 			return false;
 		}
@@ -72,8 +70,6 @@ bool AimModifier3D::_get(const StringName &p_path, Variant &r_ret) const {
 			r_ret = (int)get_primary_rotation_axis(which);
 		} else if (what == "use_secondary_rotation") {
 			r_ret = is_using_secondary_rotation(which);
-		} else if (what == "relative") {
-			r_ret = is_relative(which);
 		} else {
 			return false;
 		}
@@ -92,7 +88,6 @@ void AimModifier3D::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::BOOL, path + "use_euler"));
 		p_list->push_back(PropertyInfo(Variant::INT, path + "primary_rotation_axis", PROPERTY_HINT_ENUM, "X,Y,Z", rotation_usage));
 		p_list->push_back(PropertyInfo(Variant::BOOL, path + "use_secondary_rotation", PROPERTY_HINT_NONE, "", rotation_usage));
-		p_list->push_back(PropertyInfo(Variant::BOOL, path + "relative"));
 	}
 }
 
@@ -163,18 +158,6 @@ bool AimModifier3D::is_using_secondary_rotation(int p_index) const {
 	return setting->use_secondary_rotation;
 }
 
-void AimModifier3D::set_relative(int p_index, bool p_enabled) {
-	ERR_FAIL_INDEX(p_index, (int)settings.size());
-	AimModifier3DSetting *setting = static_cast<AimModifier3DSetting *>(settings[p_index]);
-	setting->relative = p_enabled;
-}
-
-bool AimModifier3D::is_relative(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), 0);
-	AimModifier3DSetting *setting = static_cast<AimModifier3DSetting *>(settings[p_index]);
-	return setting->relative;
-}
-
 void AimModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_forward_axis", "index", "axis"), &AimModifier3D::set_forward_axis);
 	ClassDB::bind_method(D_METHOD("get_forward_axis", "index"), &AimModifier3D::get_forward_axis);
@@ -184,8 +167,6 @@ void AimModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_primary_rotation_axis", "index"), &AimModifier3D::get_primary_rotation_axis);
 	ClassDB::bind_method(D_METHOD("set_use_secondary_rotation", "index", "enabled"), &AimModifier3D::set_use_secondary_rotation);
 	ClassDB::bind_method(D_METHOD("is_using_secondary_rotation", "index"), &AimModifier3D::is_using_secondary_rotation);
-	ClassDB::bind_method(D_METHOD("set_relative", "index", "enabled"), &AimModifier3D::set_relative);
-	ClassDB::bind_method(D_METHOD("is_relative", "index"), &AimModifier3D::is_relative);
 
 	ADD_ARRAY_COUNT("Settings", "setting_count", "set_setting_count", "get_setting_count", "settings/");
 }
@@ -212,7 +193,7 @@ void AimModifier3D::_process_aim(int p_index, Skeleton3D *p_skeleton, int p_appl
 	AimModifier3DSetting *setting = static_cast<AimModifier3DSetting *>(settings[p_index]);
 
 	// Prepare forward_vector and rest.
-	Transform3D src_bone_rest = setting->relative ? p_skeleton->get_bone_pose(p_apply_bone) : p_skeleton->get_bone_rest(p_apply_bone);
+	Transform3D src_bone_rest = p_skeleton->get_bone_rest(p_apply_bone);
 	Transform3D bone_rest_space;
 	int parent_bone = p_skeleton->get_bone_parent(p_apply_bone);
 	if (parent_bone < 0) {
