@@ -42,13 +42,13 @@
 
 class CameraFeedWindows : public CameraFeed {
 private:
-	// Format tracking structures
+	// Format tracking structures.
 	struct FormatKey {
 		int width;
 		int height;
 		int frame_numerator;
 		int frame_denominator;
-		bool is_rgb24; // Track if this was originally RGB24
+		bool is_rgb24; // Track if this was originally RGB24.
 
 		bool operator==(const FormatKey &other) const {
 			return width == other.width &&
