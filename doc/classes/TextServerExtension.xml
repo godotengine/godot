@@ -1388,6 +1388,13 @@
 				Draw the outline of the shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout). If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
+		<method name="_shaped_text_duplicate" qualifiers="virtual required">
+			<return type="RID" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Duplicates shaped text buffer.
+			</description>
+		</method>
 		<method name="_shaped_text_fit_to_width" qualifiers="virtual">
 			<return type="float" />
 			<param index="0" name="shaped" type="RID" />
@@ -1653,6 +1660,14 @@
 			<param index="2" name="skip_grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" />
 			<description>
 				Breaks text into words and returns array of character ranges. Use [param grapheme_flags] to set what characters are used for breaking.
+			</description>
+		</method>
+		<method name="_shaped_text_has_object" qualifiers="virtual required const">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="key" type="Variant" />
+			<description>
+				Returns [code]true[/code] if an object with [param key] is embedded in this shaped text buffer.
 			</description>
 		</method>
 		<method name="_shaped_text_hit_test_grapheme" qualifiers="virtual const">

@@ -58,6 +58,12 @@
 				Draw text into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
+		<method name="duplicate" qualifiers="const">
+			<return type="TextLine" />
+			<description>
+				Duplicates this [TextLine].
+			</description>
+		</method>
 		<method name="get_inferred_direction" qualifiers="const">
 			<return type="int" enum="TextServer.Direction" />
 			<description>
@@ -117,6 +123,13 @@
 			<return type="Vector2" />
 			<description>
 				Returns size of the bounding box of the text.
+			</description>
+		</method>
+		<method name="has_object" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="key" type="Variant" />
+			<description>
+				Returns [code]true[/code] if an object with [param key] is embedded in this line.
 			</description>
 		</method>
 		<method name="hit_test" qualifiers="const">

@@ -811,6 +811,7 @@ public:
 	MODBIND2R(RID, create_shaped_text, Direction, Orientation);
 
 	MODBIND1(shaped_text_clear, const RID &);
+	MODBIND1R(RID, shaped_text_duplicate, const RID &);
 
 	MODBIND2(shaped_text_set_direction, const RID &, Direction);
 	MODBIND1RC(Direction, shaped_text_get_direction, const RID &);
@@ -839,6 +840,7 @@ public:
 	MODBIND7R(bool, shaped_text_add_string, const RID &, const String &, const TypedArray<RID> &, int64_t, const Dictionary &, const String &, const Variant &);
 	MODBIND6R(bool, shaped_text_add_object, const RID &, const Variant &, const Size2 &, InlineAlignment, int64_t, double);
 	MODBIND5R(bool, shaped_text_resize_object, const RID &, const Variant &, const Size2 &, InlineAlignment, double);
+	MODBIND2RC(bool, shaped_text_has_object, const RID &, const Variant &);
 	MODBIND1RC(String, shaped_get_text, const RID &);
 
 	MODBIND1RC(int64_t, shaped_get_span_count, const RID &);

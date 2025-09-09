@@ -252,6 +252,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_create_shaped_text, "direction", "orientation");
 
 	GDVIRTUAL_BIND(_shaped_text_clear, "shaped");
+	GDVIRTUAL_BIND(_shaped_text_duplicate, "shaped");
 
 	GDVIRTUAL_BIND(_shaped_text_set_direction, "shaped", "direction");
 	GDVIRTUAL_BIND(_shaped_text_get_direction, "shaped");
@@ -280,6 +281,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_text_add_string, "shaped", "text", "fonts", "size", "opentype_features", "language", "meta");
 	GDVIRTUAL_BIND(_shaped_text_add_object, "shaped", "key", "size", "inline_align", "length", "baseline");
 	GDVIRTUAL_BIND(_shaped_text_resize_object, "shaped", "key", "size", "inline_align", "baseline");
+	GDVIRTUAL_BIND(_shaped_text_has_object, "shaped", "key");
 	GDVIRTUAL_BIND(_shaped_get_text, "shaped");
 
 	GDVIRTUAL_BIND(_shaped_get_span_count, "shaped");
@@ -1148,6 +1150,12 @@ void TextServerExtension::shaped_text_clear(const RID &p_shaped) {
 	GDVIRTUAL_CALL(_shaped_text_clear, p_shaped);
 }
 
+RID TextServerExtension::shaped_text_duplicate(const RID &p_shaped) {
+	RID ret;
+	GDVIRTUAL_CALL(_shaped_text_duplicate, p_shaped, ret);
+	return ret;
+}
+
 void TextServerExtension::shaped_text_set_direction(const RID &p_shaped, TextServer::Direction p_direction) {
 	GDVIRTUAL_CALL(_shaped_text_set_direction, p_shaped, p_direction);
 }
@@ -1243,6 +1251,12 @@ bool TextServerExtension::shaped_text_add_object(const RID &p_shaped, const Vari
 bool TextServerExtension::shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, double p_baseline) {
 	bool ret = false;
 	GDVIRTUAL_CALL(_shaped_text_resize_object, p_shaped, p_key, p_size, p_inline_align, p_baseline, ret);
+	return ret;
+}
+
+bool TextServerExtension::shaped_text_has_object(const RID &p_shaped, const Variant &p_key) const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_shaped_text_has_object, p_shaped, p_key, ret);
 	return ret;
 }
 

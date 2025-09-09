@@ -1418,6 +1418,13 @@
 				[param clip_l] and [param clip_r] are offsets relative to [param pos], going to the right in horizontal layout and downward in vertical layout. If [param clip_l] is not negative, glyphs starting before the offset are clipped. If [param clip_r] is not negative, glyphs ending after the offset are clipped.
 			</description>
 		</method>
+		<method name="shaped_text_duplicate">
+			<return type="RID" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Duplicates shaped text buffer.
+			</description>
+		</method>
 		<method name="shaped_text_fit_to_width">
 			<return type="float" />
 			<param index="0" name="shaped" type="RID" />
@@ -1685,6 +1692,14 @@
 			<param index="2" name="skip_grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" default="4" />
 			<description>
 				Breaks text into words and returns array of character ranges. Use [param grapheme_flags] to set what characters are used for breaking.
+			</description>
+		</method>
+		<method name="shaped_text_has_object" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="key" type="Variant" />
+			<description>
+				Returns [code]true[/code] if an object with [param key] is embedded in this shaped text buffer.
 			</description>
 		</method>
 		<method name="shaped_text_has_visible_chars" qualifiers="const">
