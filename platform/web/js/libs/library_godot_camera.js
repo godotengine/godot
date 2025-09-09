@@ -167,7 +167,7 @@ const GodotCamera = {
 				const result = { error: null, cameras: null };
 
 				try {
-					// request camera access permission
+					// request camera access permission.
 					const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
 					const getCapabilities = function (deviceId) {
 						const videoTrack = stream.getVideoTracks()
@@ -273,8 +273,8 @@ const GodotCamera = {
 								};
 								permissionStatus.addEventListener('change', camera.permissionListener);
 							} catch (e) {
-								// Some browsers don't support 'camera' permission query
-								// This is not critical - we can still use the camera
+								// Some browsers don't support 'camera' permission query.
+								// This is not critical - we can still use the camera.
 								GodotRuntime.print('Camera permission query not supported:', e.message);
 							}
 						}
@@ -282,7 +282,7 @@ const GodotCamera = {
 						camera.video.srcObject = camera.stream;
 						await camera.video.play();
 					} else {
-						// Use requested dimensions when stream already exists
+						// Use requested dimensions when stream already exists.
 						_width = width;
 						_height = height;
 					}
