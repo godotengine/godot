@@ -417,9 +417,21 @@ bool CameraFeedWindows::activate_feed() {
 						if (result) {
 							// Start reading.
 							worker = memnew(std::thread(capture, this));
+						} else {
+							ERR_PRINT(vformat("MFCreateSourceReaderFromMediaSource failed: 0x%08x", (uint32_t)hr));
+							// If another application is using the device, provide a human-readable hint.
+							if (hr == HRESULT_FROM_WIN32(ERROR_SHARING_VIOLATION)) {
+								ERR_PRINT("Check that no other applications are currently using the camera.");
+							}
 						}
 					}
 				}
+			}
+		} else {
+			ERR_PRINT(vformat("MFCreateDeviceSource failed: 0x%08x", (uint32_t)hr));
+			// If another application is using the device, provide a human-readable hint.
+			if (hr == HRESULT_FROM_WIN32(ERROR_SHARING_VIOLATION)) {
+				ERR_PRINT("Check that no other applications are currently using the camera.");
 			}
 		}
 	release_attributes:
