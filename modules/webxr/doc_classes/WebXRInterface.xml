@@ -166,7 +166,7 @@
 			A comma-seperated list of optional features used by [method XRInterface.initialize] when setting up the WebXR session.
 			If a user's browser or device doesn't support one of the given features, initialization will continue, but you won't be able to use the requested feature.
 			This doesn't have any effect on the interface when already initialized.
-			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url], or include other features like [code]"hand-tracking"[/code] to enable hand tracking.
+			See the MDN documentation on [url=https://developer.mozilla.org/en-US/docs/Web/API/XRSystem/requestSession#session_features]WebXR's session features[/url] for a list of possible values.
 		</member>
 		<member name="reference_space_type" type="String" setter="" getter="get_reference_space_type">
 			The reference space type (from the list of requested types set in the [member requested_reference_space_types] property), that was ultimately used by [method XRInterface.initialize] when setting up the WebXR session.
@@ -182,7 +182,7 @@
 			A comma-seperated list of required features used by [method XRInterface.initialize] when setting up the WebXR session.
 			If a user's browser or device doesn't support one of the given features, initialization will fail and [signal session_failed] will be emitted.
 			This doesn't have any effect on the interface when already initialized.
-			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url], or include other features like [code]"hand-tracking"[/code] to enable hand tracking.
+			See the MDN documentation on [url=https://developer.mozilla.org/en-US/docs/Web/API/XRSystem/requestSession#session_features]WebXR's session features[/url] for a list of possible values.
 		</member>
 		<member name="session_mode" type="String" setter="set_session_mode" getter="get_session_mode">
 			The session mode used by [method XRInterface.initialize] when setting up the WebXR session.
