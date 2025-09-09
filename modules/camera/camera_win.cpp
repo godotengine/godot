@@ -39,60 +39,60 @@ Ref<CameraFeedWindows> CameraFeedWindows::create(IMFActivate *imf_camera_device)
 	UINT32 len;
 	HRESULT hr;
 
-	// Get camera id
+	// Get camera ID.
 	wchar_t *camera_id = nullptr;
 	hr = imf_camera_device->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &camera_id, &len);
 	ERR_FAIL_COND_V_MSG(FAILED(hr), {}, "Unable to get camera id");
 	feed->device_id = camera_id;
 	CoTaskMemFree(camera_id);
 
-	// Get name
+	// Get name.
 	wchar_t *camera_name = nullptr;
 	hr = imf_camera_device->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &camera_name, &len);
-	ERR_FAIL_COND_V_MSG(FAILED(hr), {}, "Unable to get camera name");
+	ERR_FAIL_COND_V_MSG(FAILED(hr), {}, "Unable to get camera name.");
 	feed->name = camera_name;
 	CoTaskMemFree(camera_name);
 
-	// Get media imf_media_source
+	// Get media imf_media_source.
 	IMFMediaSource *imf_media_source = nullptr;
 	hr = imf_camera_device->ActivateObject(IID_PPV_ARGS(&imf_media_source));
-	ERR_FAIL_COND_V_MSG(FAILED(hr), {}, "Unable to activate device");
+	ERR_FAIL_COND_V_MSG(FAILED(hr), {}, "Unable to activate device.");
 
-	// Get information about device
+	// Get information about device.
 	IMFPresentationDescriptor *imf_presentation_descriptor = nullptr;
 	hr = imf_media_source->CreatePresentationDescriptor(&imf_presentation_descriptor);
 	if (FAILED(hr)) {
-		ERR_PRINT("Unable to create presentation descriptor");
+		ERR_PRINT("Unable to create presentation descriptor.");
 		imf_media_source->Release();
 		return {};
 	}
 
-	// Get information about video stream
+	// Get information about video stream.
 	BOOL _selected;
 	IMFStreamDescriptor *imf_stream_descriptor = nullptr;
 	hr = imf_presentation_descriptor->GetStreamDescriptorByIndex(0, &_selected, &imf_stream_descriptor);
 	if (FAILED(hr)) {
-		ERR_PRINT("Unable to get stream descriptor");
+		ERR_PRINT("Unable to get stream descriptor.");
 		imf_presentation_descriptor->Release();
 		imf_media_source->Release();
 		return {};
 	}
 
-	// Get information about supported media types
+	// Get information about supported media types.
 	IMFMediaTypeHandler *imf_media_type_handler = nullptr;
 	hr = imf_stream_descriptor->GetMediaTypeHandler(&imf_media_type_handler);
 	if (FAILED(hr)) {
-		ERR_PRINT("Unable to get media type handler");
+		ERR_PRINT("Unable to get media type handler.");
 		imf_stream_descriptor->Release();
 		imf_presentation_descriptor->Release();
 		imf_media_source->Release();
 		return {};
 	}
 
-	// Actually fill the feed formats
+	// Actually fill the feed formats.
 	feed->fill_formats(imf_media_type_handler);
 
-	// Release all COM objects
+	// Release all COM objects.
 	imf_media_type_handler->Release();
 	imf_stream_descriptor->Release();
 	imf_presentation_descriptor->Release();
@@ -103,43 +103,43 @@ Ref<CameraFeedWindows> CameraFeedWindows::create(IMFActivate *imf_camera_device)
 
 void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler) {
 	HRESULT hr;
-	// Get supported media types
+	// Get supported media types.
 	DWORD media_type_count = 0;
 	hr = imf_media_type_handler->GetMediaTypeCount(&media_type_count);
 	ERR_FAIL_COND_MSG(FAILED(hr), "Unable to get media type count");
 
-	// Track unique format combinations after RGB24 conversion
+	// Track unique format combinations after RGB24 conversion.
 	Vector<FormatKey> seen_formats;
 
-	// First pass: collect all formats and check for RGB24
+	// First pass: collect all formats and check for RGB24.
 	Vector<TempFormat> temp_formats;
 
 	for (DWORD i = 0; i < media_type_count; i++) {
-		// Get media type
+		// Get media type.
 		IMFMediaType *imf_media_type;
 		hr = imf_media_type_handler->GetMediaTypeByIndex(i, &imf_media_type);
-		ERR_CONTINUE_MSG(FAILED(hr), "Unable to get media type at index");
+		ERR_CONTINUE_MSG(FAILED(hr), "Unable to get media type at index.");
 
-		// Get video_format
+		// Get video_format.
 		GUID video_format;
 		hr = imf_media_type->GetGUID(MF_MT_SUBTYPE, &video_format);
 		if (FAILED(hr)) {
-			ERR_PRINT("Unable to get video format for media type");
+			ERR_PRINT("Unable to get video format for media type.");
 			imf_media_type->Release();
 			continue;
 		}
 
-		// Check if this format can be converted to RGB24
+		// Check if this format can be converted to RGB24.
 		bool supported_fmt = false;
 
-		// Formats directly supported by BufferDecoder
+		// Formats directly supported by BufferDecoder.
 		if (video_format == MFVideoFormat_RGB24 ||
 				video_format == MFVideoFormat_NV12 ||
 				video_format == MFVideoFormat_YUY2 ||
 				video_format == MFVideoFormat_MJPG) {
 			supported_fmt = true;
 		}
-		// Additional formats commonly supported by Media Foundation conversion
+		// Additional formats commonly supported by Media Foundation conversion.
 		else if (video_format == MFVideoFormat_RGB32 ||
 				video_format == MFVideoFormat_ARGB32 ||
 				video_format == MFVideoFormat_UYVY ||
@@ -149,17 +149,17 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 				video_format == MFVideoFormat_YV12) {
 			supported_fmt = true;
 		}
-		// H264 requires codec availability - exclude by default
-		// Users can install Media Feature Pack if needed
+		// H264 requires codec availability - exclude by default.
+		// Users can install Media Feature Pack if needed.
 
 		if (!supported_fmt) {
 			uint32_t format = video_format.Data1;
 			if (!warned_formats.has(format)) {
 				if (format <= 255) {
-					WARN_PRINT_ED(vformat("Skipping unsupported video format %d", format));
+					WARN_PRINT_ED(vformat("Skipping unsupported video format %d.", format));
 				} else {
 					uint8_t *chars = (uint8_t *)&format;
-					WARN_PRINT_ED(vformat("Skipping unsupported video format %c%c%c%c", chars[0], chars[1], chars[2], chars[3]));
+					WARN_PRINT_ED(vformat("Skipping unsupported video format %c%c%c%c.", chars[0], chars[1], chars[2], chars[3]));
 				}
 				warned_formats.append(format);
 			}
@@ -168,11 +168,11 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 			continue;
 		}
 
-		// Get image size
+		// Get image size.
 		UINT32 width, height = 0;
 		hr = MFGetAttributeSize(imf_media_type, MF_MT_FRAME_SIZE, &width, &height);
 		if (FAILED(hr)) {
-			ERR_PRINT("Unable to get frame size for media type");
+			ERR_PRINT("Unable to get frame size for media type.");
 			imf_media_type->Release();
 			continue;
 		}
@@ -180,18 +180,18 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 		UINT32 numerator, denominator = 0;
 		hr = MFGetAttributeRatio(imf_media_type, MF_MT_FRAME_RATE, &numerator, &denominator);
 		if (FAILED(hr)) {
-			ERR_PRINT("Unable to get frame rate for media type");
+			ERR_PRINT("Unable to get frame rate for media type.");
 			imf_media_type->Release();
 			continue;
 		}
 
-		// Store format information temporarily
+		// Store format information temporarily.
 		TempFormat temp;
 		temp.video_format = video_format;
 		temp.media_type_index = i;
 		temp.is_rgb24 = (video_format == MFVideoFormat_RGB24);
 
-		// Set format string
+		// Set format string.
 		FeedFormat format;
 		if (video_format == MFVideoFormat_RGB24) {
 			format.format = "RGB24";
@@ -227,7 +227,7 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 		imf_media_type->Release();
 	}
 
-	// Second pass: add formats prioritizing RGB24
+	// Second pass: add formats, prioritizing RGB24.
 	for (const TempFormat &temp : temp_formats) {
 		FormatKey key;
 		key.width = temp.format.width;
@@ -236,18 +236,17 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 		key.frame_denominator = temp.format.frame_denominator;
 		key.is_rgb24 = temp.is_rgb24;
 
-		// Check if this combination already exists
+		// Check if this combination already exists.
 		bool should_add = true;
 		for (const FormatKey &seen : seen_formats) {
 			if (seen == key) {
-				// If we already have this combination and it was RGB24, skip non-RGB24
+				// If we already have this combination and it was RGB24, skip non-RGB24.
 				if (seen.is_rgb24 && !temp.is_rgb24) {
 					should_add = false;
 					break;
-				}
-				// If we have non-RGB24 and this is RGB24, we'll replace it
-				else if (!seen.is_rgb24 && temp.is_rgb24) {
-					// Remove the existing non-RGB24 format
+				} else if (!seen.is_rgb24 && temp.is_rgb24) {
+					// If we have non-RGB24 and this is RGB24, we'll replace it
+					// Remove the existing non-RGB24 format.
 					for (int j = formats.size() - 1; j >= 0; j--) {
 						if (formats[j].width == key.width &&
 								formats[j].height == key.height &&
@@ -259,7 +258,7 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 							break;
 						}
 					}
-					// Update seen_formats
+					// Update seen_formats.
 					for (int j = 0; j < seen_formats.size(); j++) {
 						if (seen_formats[j] == key) {
 							seen_formats.write[j].is_rgb24 = true;
@@ -267,7 +266,7 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 						}
 					}
 				}
-				// Both are the same type, skip
+				// Both are the same type, skip.
 				else {
 					should_add = false;
 					break;
@@ -276,13 +275,13 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 		}
 
 		if (should_add) {
-			// Add to seen formats
+			// Add to seen formats.
 			seen_formats.append(key);
 
-			// Add format
-			this->formats.append(temp.format);
-			this->format_guids.append(temp.video_format);
-			this->format_mediatypes.append(temp.media_type_index);
+			// Add format.
+			formats.append(temp.format);
+			format_guids.append(temp.video_format);
+			format_mediatypes.append(temp.media_type_index);
 		}
 	}
 }
@@ -304,14 +303,14 @@ bool IMFMediaSource_set_media_type(IMFMediaSource *imf_media_source, uint32_t me
 		IMFStreamDescriptor *imf_stream_descriptor;
 		hr = imf_presentation_descriptor->GetStreamDescriptorByIndex(0, &_selected, &imf_stream_descriptor);
 		if (SUCCEEDED(hr)) {
-			// Get information about supported media types
+			// Get information about supported media types.
 			IMFMediaTypeHandler *imf_media_type_handler;
 			hr = imf_stream_descriptor->GetMediaTypeHandler(&imf_media_type_handler);
 			if (SUCCEEDED(hr)) {
 				IMFMediaType *imf_media_type;
 				hr = imf_media_type_handler->GetMediaTypeByIndex(media_type_index, &imf_media_type);
 				if (SUCCEEDED(hr)) {
-					// Set media type
+					// Set media type.
 					hr = imf_media_type_handler->SetCurrentMediaType(imf_media_type);
 					if (SUCCEEDED(hr)) {
 						result = true;
@@ -333,7 +332,7 @@ bool IMFMediaSource_set_media_type(IMFMediaSource *imf_media_source, uint32_t me
 
 bool CameraFeedWindows::activate_feed() {
 	ERR_FAIL_COND_V_MSG(selected_format == -1, false, "CameraFeed format needs to be set before activating.");
-	ERR_FAIL_INDEX_V_MSG(selected_format, formats.size(), false, "Invalid format index for CameraFeed");
+	ERR_FAIL_INDEX_V_MSG(selected_format, formats.size(), false, "Invalid format index for CameraFeed.");
 
 	bool result = false;
 	HRESULT hr;
@@ -354,17 +353,17 @@ bool CameraFeedWindows::activate_feed() {
 			goto release_attributes;
 		}
 
-		// Create media imf_media_source
+		// Create media imf_media_source.
 		hr = MFCreateDeviceSource(imf_attributes, &imf_media_source);
 		if (SUCCEEDED(hr)) {
 			bool media_type_set = IMFMediaSource_set_media_type(imf_media_source, format_mediatypes[selected_format]);
 
 			if (media_type_set) {
-				// Create media imf_source_reader
+				// Create media imf_source_reader.
 				IMFAttributes *reader_attributes = nullptr;
 				hr = MFCreateAttributes(&reader_attributes, 2);
 				if (SUCCEEDED(hr)) {
-					// Enable hardware acceleration if available
+					// Enable hardware acceleration if available.
 					hr = reader_attributes->SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, TRUE);
 					// Hint to disconnect media source on shutdown to help unblock.
 					reader_attributes->SetUINT32(MF_SOURCE_READER_DISCONNECT_MEDIASOURCE_ON_SHUTDOWN, TRUE);
@@ -373,17 +372,17 @@ bool CameraFeedWindows::activate_feed() {
 					reader_attributes->Release();
 
 					if (SUCCEEDED(hr)) {
-						// Ensure we are reading the first video stream
+						// Ensure we are reading the first video stream.
 						imf_source_reader->SetStreamSelection(MF_SOURCE_READER_FIRST_VIDEO_STREAM, TRUE);
 
-						// Configure source reader to convert to RGB24
+						// Configure source reader to convert to RGB24.
 						IMFMediaType *output_type = nullptr;
 						hr = MFCreateMediaType(&output_type);
 						if (SUCCEEDED(hr)) {
 							hr = output_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
 							hr = output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB24);
 
-							// Try to set RGB24 as output format
+							// Try to set RGB24 as output format.
 							hr = imf_source_reader->SetCurrentMediaType(
 									MF_SOURCE_READER_FIRST_VIDEO_STREAM,
 									nullptr,
@@ -392,10 +391,10 @@ bool CameraFeedWindows::activate_feed() {
 							if (SUCCEEDED(hr)) {
 								result = true;
 								use_mf_conversion = true;
-								// Create CopyBufferDecoder for MF-converted RGB24 data
+								// Create CopyBufferDecoder for MF-converted RGB24 data.
 								buffer_decoder = memnew(CopyBufferDecoder(this, CopyBufferDecoder::rgb));
 							} else {
-								// Fallback to manual conversion for formats that support it
+								// Fallback to manual conversion for formats that support it.
 								const GUID &video_format = format_guids[selected_format];
 								if (video_format == MFVideoFormat_MJPG ||
 										video_format == MFVideoFormat_NV12 ||
@@ -403,11 +402,11 @@ bool CameraFeedWindows::activate_feed() {
 										video_format == MFVideoFormat_RGB24) {
 									result = true;
 									use_mf_conversion = false;
-									// Create buffer decoder
+									// Create buffer decoder.
 									buffer_decoder = _create_buffer_decoder();
 								} else {
-									// Format not supported by either method
-									ERR_PRINT("Format not supported by Media Foundation conversion or manual decoder");
+									// Format not supported by either method.
+									ERR_PRINT("Format not supported by Media Foundation conversion or manual decoder.");
 									result = false;
 								}
 							}
@@ -416,7 +415,7 @@ bool CameraFeedWindows::activate_feed() {
 						}
 
 						if (result) {
-							// Start reading
+							// Start reading.
 							worker = memnew(std::thread(capture, this));
 						}
 					}
@@ -461,7 +460,7 @@ void CameraFeedWindows::deactivate_feed() {
 }
 
 void CameraFeedWindows::capture(CameraFeedWindows *feed) {
-	print_verbose("Camera feed is now streaming");
+	print_verbose("Camera feed is now streaming.");
 	// Initialize COM on this worker thread to safely use MF objects here.
 	HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 	feed->active = true;
@@ -493,7 +492,7 @@ void CameraFeedWindows::read() {
 		return;
 	}
 
-	// End of stream
+	// End of stream.
 	if (flags & MF_SOURCE_READERF_ENDOFSTREAM) {
 		print_verbose("\tEnd of stream");
 		active = false;
@@ -511,17 +510,17 @@ void CameraFeedWindows::read() {
 		print_verbose("\tStream tick");
 	}
 
-	// Process sample
+	// Process sample.
 	if (pSample) {
 		IMFMediaBuffer *buffer = nullptr;
 		hr = pSample->ConvertToContiguousBuffer(&buffer);
 		if (SUCCEEDED(hr) && buffer) {
-			// Get image buffer
+			// Get image buffer.
 			BYTE *data = nullptr;
 			DWORD buffer_length = 0;
 			hr = buffer->Lock(&data, nullptr, &buffer_length);
 			if (SUCCEEDED(hr)) {
-				// Use buffer decoder to process the frame
+				// Use buffer decoder to process the frame.
 				StreamingBuffer streaming_buffer;
 				streaming_buffer.start = data;
 				streaming_buffer.length = buffer_length;
@@ -571,7 +570,7 @@ bool CameraFeedWindows::set_format(int p_index, const Dictionary &p_parameters) 
 BufferDecoder *CameraFeedWindows::_create_buffer_decoder() {
 	const GUID &video_format = format_guids[selected_format];
 
-	// Only create decoder for formats that Media Foundation can't convert
+	// Only create decoder for formats that Media Foundation can't convert.
 	if (video_format == MFVideoFormat_MJPG) {
 		return memnew(JpegBufferDecoder(this));
 	} else if (video_format == MFVideoFormat_NV12) {
@@ -582,8 +581,8 @@ BufferDecoder *CameraFeedWindows::_create_buffer_decoder() {
 		return memnew(CopyBufferDecoder(this, CopyBufferDecoder::rgb));
 	}
 
-	// Default to null decoder for unsupported formats
-	// These formats will rely on Media Foundation conversion
+	// Default to null decoder for unsupported formats.
+	// These formats will rely on Media Foundation conversion.
 	return memnew(NullBufferDecoder(this));
 }
 
@@ -602,14 +601,14 @@ void CameraWindows::update_feeds() {
 		hr = source_attributes->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
 
 		if (SUCCEEDED(hr)) {
-			// Process devices
+			// Process devices.
 			UINT32 count = 0;
 			IMFActivate **devices;
 			hr = MFEnumDeviceSources(source_attributes, &devices, &count);
 			if (FAILED(hr)) {
 				ERR_PRINT("Error enumerating devices.");
 			} else {
-				// Create feeds for all supported media sources
+				// Create feeds for all supported media sources.
 				for (DWORD i = 0; i < count; i++) {
 					IMFActivate *device = devices[i];
 					Ref<CameraFeedWindows> feed = CameraFeedWindows::create(device);
@@ -630,7 +629,7 @@ void CameraWindows::update_feeds() {
 }
 
 void CameraWindows::remove_all_feeds() {
-	// remove existing devices
+	// remove existing devices.
 	for (int i = feeds.size() - 1; i >= 0; i--) {
 		remove_feed(feeds[i]);
 	}
@@ -639,7 +638,7 @@ void CameraWindows::remove_all_feeds() {
 CameraWindows::CameraWindows() {
 	// Initialize the Media Foundation platform.
 	HRESULT hr = MFStartup(MF_VERSION);
-	ERR_FAIL_COND_MSG(FAILED(hr), "Unable to initialize Media Foundation platform");
+	ERR_FAIL_COND_MSG(FAILED(hr), "Unable to initialize Media Foundation platform.");
 }
 
 CameraWindows::~CameraWindows() {
