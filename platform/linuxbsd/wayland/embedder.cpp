@@ -1112,8 +1112,10 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 		// routine.
 
 		// FIXME: Cleanup.
-		for (size_t global_name = 0; global_name < registry_globals.size(); ++global_name) {
-			RegistryGlobalInfo &global_info = registry_globals[global_name];
+		for (KeyValue<uint32_t, RegistryGlobalInfo> &pair : registry_globals) {
+			uint32_t global_name = pair.key;
+			RegistryGlobalInfo &global_info = pair.value;
+
 			const struct wl_interface *global_interface = global_info.interface;
 
 			if (client != main_client && (global_interface == &zxdg_decoration_manager_v1_interface || global_interface == &zxdg_exporter_v1_interface || global_interface == &zxdg_exporter_v2_interface || global_interface == &godot_embedding_compositor_interface)) {
@@ -1909,6 +1911,8 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 					DEBUG_LOG_WAYLAND_EMBED("Clamped global %s %d", interface_name, global_info.version);
 					global_info.compositor_name = global_name;
 
+					int new_global_name = registry_globals_counter++;
+
 					if (global_info.interface == &wl_shm_interface) {
 						// FIXME: Cleanup.
 						DEBUG_LOG_WAYLAND_EMBED("Allocating global wl_shm data.");
@@ -1919,7 +1923,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 						// FIXME: Cleanup.
 						DEBUG_LOG_WAYLAND_EMBED("Allocating global wl_seat data.");
 						global_info.data = memnew(WaylandSeatGlobalData);
-						wl_seat_names.push_back(registry_globals.size());
+						wl_seat_names.push_back(new_global_name);
 					}
 
 					if (global_info.interface == &wl_drm_interface) {
@@ -1928,10 +1932,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 						global_info.data = memnew(WaylandDrmGlobalData);
 					}
 
-					// FIXME: Ensure that no duplicate entries get added (VSet?)
-					registry_globals.push_back(global_info);
-
-					int new_global_name = registry_globals.size() - 1;
+					registry_globals[new_global_name] = global_info;
 
 					// We need some interfaces directly. It's better to bind a "copy" ourselves
 					// than to wait for the client to ask one. Since I'm lazy, we can exploit
@@ -2648,8 +2649,8 @@ Error WaylandEmbedder::init() {
 	control_global_info.interface = &godot_embedding_compositor_interface;
 	control_global_info.version = godot_embedding_compositor_interface.version;
 
-	registry_globals.push_back(control_global_info);
-	godot_embedding_compositor_name = registry_globals.size() - 1;
+	godot_embedding_compositor_name = registry_globals_counter++;
+	registry_globals[godot_embedding_compositor_name] = control_global_info;
 
 	{
 		uint32_t invalid_id = INVALID_ID;
