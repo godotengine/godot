@@ -503,6 +503,7 @@ private:
 
 	static size_t wl_array_word_offset(uint32_t p_size);
 	const static struct wl_interface *wl_interface_from_string(const char *name, size_t size);
+	static int wl_interface_get_destructor_opcode(const struct wl_interface *p_iface, uint32_t p_version);
 
 	static Error send_raw_message(int p_socket, std::initializer_list<struct iovec> p_vecs, const LocalVector<int> &p_fds = LocalVector<int>());
 

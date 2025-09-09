@@ -132,6 +132,22 @@ const struct wl_interface *WaylandEmbedder::wl_interface_from_string(const char 
 	return nullptr;
 }
 
+int WaylandEmbedder::wl_interface_get_destructor_opcode(const struct wl_interface *p_iface, uint32_t version) {
+	ERR_FAIL_NULL_V(p_iface, -1);
+
+	// FIXME: Figure out how to extract the destructor from the XML files. This
+	// value is not currently exposed by wayland-scanner.
+	for (int i = 0; i < p_iface->method_count; ++i) {
+		const struct wl_message &m = p_iface->methods[i];
+		uint32_t destructor_version = String::to_int(m.signature);
+		if (destructor_version <= version && (strcmp(m.name, "destroy") == 0 || strcmp(m.name, "release") == 0)) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 struct WaylandEmbedder::WaylandObject *WaylandEmbedder::get_object(uint32_t p_global_id) {
 	if (p_global_id == 0) {
 		return nullptr;
@@ -502,60 +518,49 @@ void WaylandEmbedder::cleanup_socket(int p_socket) {
 		E = E->prev();
 
 		WaylandObject *object = get_object(global_id);
-		if (object == nullptr) {
+		if (object == nullptr || object->interface == nullptr) {
 			continue;
 		}
 
+		DEBUG_LOG_WAYLAND_EMBED(vformat("Checking deletability of %s#g0x%x version %s", object->interface->name, global_id, object->version));
+
 		if (object->shared) {
+			DEBUG_LOG_WAYLAND_EMBED("Shared, skipping");
 			continue;
 		}
 
 		if (object->interface == &wl_callback_interface) {
 			// Those things self-destruct.
+			DEBUG_LOG_WAYLAND_EMBED("wl_callback self destructs.");
 			continue;
 		}
 
-		for (int opcode = 0; opcode < object->interface->method_count; ++opcode) {
-			const struct wl_message &message = object->interface->methods[opcode];
+		int destructor = wl_interface_get_destructor_opcode(object->interface, object->version);
+		if (destructor >= 0) {
+			DEBUG_LOG_WAYLAND_EMBED(vformat("Destroying %s#g0x%x", object->interface->name, global_id));
 
-			int destructor_version = String::to_int(message.signature);
-
-			DEBUG_LOG_WAYLAND_EMBED(vformat("!!!!!TEST iface %s msg %s parsed_ver %d obj_ver %d", object->interface->name, message.signature, destructor_version, object->version));
-
-			if (object->destroyed) {
-				DEBUG_LOG_WAYLAND_EMBED("Already destroyed.");
-				continue;
+			if (global_id & 0xff000000) {
+				E = E->prev();
+				delete_object(global_id);
 			}
 
-			// FIXME: Find a better way of destroying all relevant non-fake objects. The
-			// XML files have a "type" field, which can have a "destructor" value but it
-			// is currently not exposed to the generated C file.
-			if (object->version >= destructor_version && (strcmp(message.name, "destroy") == 0 || strcmp(message.name, "release") == 0)) {
-				if (global_id & 0xff000000) {
-					E = E->prev();
-					delete_object(global_id);
-				}
+			if (object->interface == &wl_surface_interface) {
+				for (uint32_t wl_seat_name : wl_seat_names) {
+					WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)registry_globals[wl_seat_name].data;
+					if (global_seat_data) {
+						if (global_seat_data->pointed_surface_id == global_id) {
+							global_seat_data->pointed_surface_id = INVALID_ID;
+						}
 
-				if (object->interface == &wl_surface_interface) {
-					for (uint32_t wl_seat_name : wl_seat_names) {
-						WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)registry_globals[wl_seat_name].data;
-						if (global_seat_data) {
-							if (global_seat_data->pointed_surface_id == global_id) {
-								global_seat_data->pointed_surface_id = INVALID_ID;
-							}
-
-							if (global_seat_data->focused_surface_id == global_id) {
-								global_seat_data->focused_surface_id = INVALID_ID;
-							}
+						if (global_seat_data->focused_surface_id == global_id) {
+							global_seat_data->focused_surface_id = INVALID_ID;
 						}
 					}
 				}
-
-				// ??????::destroy() / ??????::release() - yes this is not ideal.
-				send_wayland_message(compositor_socket, global_id, opcode, {});
-				object->destroyed = true;
-				break;
 			}
+
+			send_wayland_message(compositor_socket, global_id, destructor, {});
+			object->destroyed = true;
 		}
 
 		if (!object->destroyed) {
@@ -1198,20 +1203,9 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 				return MessageStatus::HANDLED;
 			}
 
-			bool can_destroy = false;
-
-			for (int i = 0; i < global_info.interface->method_count; ++i) {
-				const struct wl_message &m = global_info.interface->methods[i];
-				uint32_t destructor_version = String::to_int(m.signature);
-				if ((strcmp(m.name, "destroy") == 0 || strcmp(m.name, "release") == 0) && destructor_version <= version) {
-					can_destroy = true;
-					break;
-				}
-			}
-
 			WaylandObject *instance = nullptr;
 
-			if (can_destroy) {
+			if (wl_interface_get_destructor_opcode(global_info.interface, version) >= 0) {
 				DEBUG_LOG_WAYLAND_EMBED(vformat("Passthrough global bind #%d iface %s ver %d", global_name, global_info.interface->name, version));
 
 				if (!client->registry_globals_instances.has(global_name)) {
@@ -1982,9 +1976,11 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 						header[1] = (sizeof header + body_len + sizeof xdg_wm_base_id) << 16; // opcode is 0.
 
 						// TODO: Put this logic in a method.
-						registry_globals[new_global_name].reusable_objects[global_info.version] = xdg_wm_base_id;
-						registry_globals_names[xdg_wm_base_id] = new_global_name;
-						get_object(xdg_wm_base_id)->shared = true;
+						if (wl_interface_get_destructor_opcode(global_interface, global_info.version) < 0) {
+							registry_globals[new_global_name].reusable_objects[global_info.version] = xdg_wm_base_id;
+							registry_globals_names[xdg_wm_base_id] = new_global_name;
+							get_object(xdg_wm_base_id)->shared = true;
+						}
 
 						send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &xdg_wm_base_id, sizeof xdg_wm_base_id } });
 					} else if (global_interface == &wl_compositor_interface && wl_compositor_id == 0) {
@@ -1994,9 +1990,11 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 						uint32_t header[2] = { p_global_id, 0 };
 						header[1] = (sizeof header + body_len + sizeof wl_compositor_id) << 16; // opcode is 0.
 
-						registry_globals[new_global_name].reusable_objects[global_info.version] = wl_compositor_id;
-						registry_globals_names[wl_compositor_id] = new_global_name;
-						get_object(wl_compositor_id)->shared = true;
+						if (wl_interface_get_destructor_opcode(global_interface, global_info.version) < 0) {
+							registry_globals[new_global_name].reusable_objects[global_info.version] = wl_compositor_id;
+							registry_globals_names[wl_compositor_id] = new_global_name;
+							get_object(wl_compositor_id)->shared = true;
+						}
 
 						send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &wl_compositor_id, sizeof wl_compositor_id } });
 					} else if (global_interface == &wl_subcompositor_interface && wl_subcompositor_id == 0) {
@@ -2006,9 +2004,11 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 						uint32_t header[2] = { p_global_id, 0 };
 						header[1] = (sizeof header + body_len + sizeof wl_subcompositor_id) << 16; // opcode is 0.
 
-						registry_globals[new_global_name].reusable_objects[global_info.version] = wl_subcompositor_id;
-						registry_globals_names[wl_subcompositor_id] = new_global_name;
-						get_object(wl_subcompositor_id)->shared = true;
+						if (wl_interface_get_destructor_opcode(global_interface, global_info.version) < 0) {
+							registry_globals[new_global_name].reusable_objects[global_info.version] = wl_subcompositor_id;
+							registry_globals_names[wl_subcompositor_id] = new_global_name;
+							get_object(wl_subcompositor_id)->shared = true;
+						}
 
 						send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &wl_subcompositor_id, sizeof wl_subcompositor_id } });
 					}
