@@ -556,16 +556,31 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 								if (nowner != parent &&
 										parent->get_owner() != ret_nodes[0] &&
 										!parent->has_meta(META_EXPOSED_IN_INSTANCE) &&
-										!parent->has_meta(META_EXPOSED_IN_OWNER) &&
-										!parent->get_owner()->is_editable_instance(parent)) {
-									WARN_PRINT(vformat("Exposed parent path '%s' for node '%s' has vanished when instantiating: '%s'.",
-											String(node_paths[n.parent & FLAG_MASK]),
-											String(snames[n.name]),
-											get_path()));
-									old_parent_path = String(node_paths[n.parent & FLAG_MASK])
-															  .trim_prefix("./")
-															  .replace_char('/', '@');
-									parent = ret_nodes[0];
+										!parent->has_meta(META_EXPOSED_IN_OWNER)) {
+									bool in_editable_instance = false;
+									if (parent->get_owner()) {
+										NodePath rel_path = ret_nodes[0]->get_path_to(parent->get_owner());
+										for (const NodePath &p : editable_instances) {
+											if (p == rel_path) {
+												in_editable_instance = true;
+												break;
+											}
+										}
+									}
+
+									if (!in_editable_instance) {
+										if (node_paths.size() > 0) {
+											WARN_PRINT(vformat("Exposed parent path '%s' for node '%s' has vanished when instantiating: '%s'.",
+													String(node_paths[n.parent & FLAG_MASK]),
+													String(snames[n.name]),
+													get_path()));
+											old_parent_path = String(node_paths[n.parent & FLAG_MASK])
+																	  .trim_prefix("./")
+																	  .replace_char('/', '@');
+
+											parent = ret_nodes[0];
+										}
+									}
 								}
 							}
 						}

@@ -316,12 +316,46 @@ void SceneTreeEditor::_update_node_path(Node *p_node, bool p_recursive) {
 	}
 }
 
+void SceneTreeEditor::_update_exposed_nodes(Node *p_node,
+		TreeItem *p_parent,
+		bool p_force,
+		TreeItem *&p_last_inserted) {
+	int cc = p_node->get_child_count();
+
+	for (int i = 0; i < cc; i++) {
+		Node *child = p_node->get_child(i);
+
+		if (child->has_meta(META_EXPOSED_IN_OWNER) ||
+				child->has_meta(META_EXPOSED_IN_INSTANCE)) {
+			_update_node_subtree(child, p_parent, p_force);
+
+			if (auto CI = node_cache.get(child)) {
+				TreeItem *ti = CI->value.item;
+
+				if (p_last_inserted) {
+					ti->move_after(p_last_inserted);
+				} else {
+					ti->move_before(p_parent->get_first_child());
+				}
+
+				p_last_inserted = ti;
+			}
+
+		} else if (child->has_exposed_nodes()) {
+			_update_exposed_nodes(child, p_parent, p_force, p_last_inserted);
+
+		} else {
+			_update_node_subtree(child, p_parent, p_force);
+		}
+	}
+}
+
 void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, bool p_force) {
 	if (!p_node) {
 		return;
 	}
 
-	// Only owned nodes are editable, since nodes can create their own (manually owned) child nodes,
+	// Only owned nodes are editable or exposed, since nodes can create their own (manually owned) child nodes,
 	// which the editor needs not to know about.
 
 	bool part_of_subscene = false;
@@ -335,11 +369,8 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 			if (!I) {
 				node_cache.add(p_node, tree->create_item(p_parent, 0));
 			}
-			for (int i = 0; i < p_node->get_child_count(); i++) {
-				if (!get_scene_node()->is_editable_instance(p_node->get_child(i)->get_owner()) || p_node->get_child(i)->has_meta(META_EXPOSED_IN_INSTANCE)) {
-					_update_node_subtree(p_node->get_child(i), p_parent);
-				}
-			}
+			TreeItem *last_inserted = nullptr;
+			_update_exposed_nodes(p_node, p_parent, p_force, last_inserted);
 			node_cache.remove(p_node, p_node->get_parent() && p_node->get_parent()->get_scene_instance_load_placeholder());
 			return;
 		} else {
@@ -395,13 +426,12 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 				index = 0;
 			}
 		} else {
-			int scene_index = p_node->get_index(false);
-			int tree_index = p_node->get_tree_index();
-			if (p_node->get_parent() == EditorNode::get_singleton()->get_edited_scene() || tree_index < scene_index) {
-				index = scene_index;
-			} else {
-				index = tree_index;
-			}
+			index = p_node->get_index(false);
+
+			// Offset index if there are exposed nodes
+			int exposed_nodes = p_node->get_parent()->get_exposed_node_count(p_node->get_parent());
+			index += exposed_nodes;
+
 			item = tree->create_item(p_parent, index);
 		}
 
@@ -902,7 +932,7 @@ void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, Cached
 	if (p_I->value.item) {
 		if (p_parent->get_child_count() - 1 > p_I->value.index) {
 			if (p_I->value.index == -1) {
-				p_I->value.index = node->get_tree_index();
+				p_I->value.index = node->get_index();
 			}
 			TreeItem *neighbor_item = p_parent->get_child(CLAMP(p_I->value.index - 1, 0, p_parent->get_child_count() - 1));
 			if (p_I->value.index == 0) {

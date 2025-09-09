@@ -2811,6 +2811,11 @@ void SceneTreeDock::_toggle_editable_children(Node *p_node) {
 
 		for (Node *owned_node : owned) {
 			if (owned_node != p_node && owned_node != edited_scene && owned_node->get_owner() == edited_scene && owned_node->get_parent()->get_owner() != edited_scene) {
+				// Preserve children of exposed nodes
+				if (owned_node->get_parent()->has_meta(META_EXPOSED_IN_OWNER)) {
+					continue;
+				}
+
 				owned_nodes_array.push_back(owned_node);
 				paths_array.push_back(p_node->get_path_to(owned_node->get_parent()));
 				name_array.push_back(owned_node->get_name());

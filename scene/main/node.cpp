@@ -2815,16 +2815,6 @@ bool Node::is_part_of_edited_scene() const {
 	return Engine::get_singleton()->is_editor_hint() && is_inside_tree() && data.tree->get_edited_scene_root() &&
 			data.tree->get_edited_scene_root()->get_parent()->is_ancestor_of(this);
 }
-
-int Node::get_tree_index() const {
-	if (!data.parent || has_meta(META_EXPOSED_IN_INSTANCE)) {
-		return data.index;
-	}
-	data.parent->_update_children_cache();
-
-	int exposed_nodes = data.parent->get_exposed_node_count(data.parent);
-	return data.index + exposed_nodes;
-}
 #endif
 
 void Node::get_storable_properties(HashSet<StringName> &r_storable_properties) const {
