@@ -167,6 +167,7 @@ private:
 
 		// FIXME: Names suck.
 		AHashMap<uint32_t, HashSet<uint32_t>> registry_globals_instances;
+		HashSet<uint32_t> wl_registry_instances;
 
 		List<uint32_t> global_id_history;
 		AHashMap<uint32_t, GlobalIdInfo> global_ids;
@@ -289,6 +290,11 @@ private:
 		const struct wl_interface *interface = nullptr;
 		uint32_t version = 0;
 		uint32_t compositor_name = 0;
+
+		// The specs requires for us to ignore requests for destroyed global
+		// objects until all instances are gone, to avoid races.
+		bool destroyed = false;
+		int instance_counter = 0;
 
 		// Key is version.
 		HashMap<uint32_t, uint32_t> reusable_objects;
@@ -470,7 +476,6 @@ private:
 	// Global id to name
 	HashMap<uint32_t, uint32_t> registry_globals_names;
 
-	// FIXME: Ensure that no duplicate entries get added (VSet?)
 	HashMap<uint32_t, RegistryGlobalInfo> registry_globals;
 	uint32_t registry_globals_counter = 0;
 

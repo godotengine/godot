@@ -284,6 +284,10 @@ Error WaylandEmbedder::Client::delete_object(uint32_t p_local_id) {
 		return OK;
 	}
 
+	if (wl_registry_instances.has(p_local_id)) {
+		wl_registry_instances.erase(p_local_id);
+	}
+
 	WaylandObject *object = embedder->get_object(global_id);
 	ERR_FAIL_NULL_V(object, ERR_DOES_NOT_EXIST);
 
@@ -301,6 +305,16 @@ Error WaylandEmbedder::Client::delete_object(uint32_t p_local_id) {
 
 	uint32_t *global_name = embedder->registry_globals_names.getptr(global_id);
 	if (global_name) {
+		{
+			RegistryGlobalInfo &info = embedder->registry_globals[*global_name];
+			ERR_FAIL_COND_V_MSG(info.instance_counter == 0, ERR_BUG, "Instance counter inconsistency.");
+			--info.instance_counter;
+
+			if (info.destroyed && info.instance_counter == 0) {
+				embedder->registry_globals.erase(*global_name);
+			}
+		}
+
 		registry_globals_instances[*global_name].erase(p_local_id);
 	}
 
@@ -1101,6 +1115,17 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 	uint32_t *body = msg_data + 2;
 	size_t body_len = msg_len - (WL_WORD_SIZE * 2);
 
+	if (registry_globals_names.has(global_id)) {
+		int global_name = registry_globals_names[global_id];
+		ERR_FAIL_COND_V(!registry_globals.has(global_name), MessageStatus::ERROR);
+		RegistryGlobalInfo &global_info = registry_globals[global_name];
+
+		if (global_info.destroyed) {
+			DEBUG_LOG_WAYLAND_EMBED("Skipping request for destroyed global object");
+			return MessageStatus::HANDLED;
+		}
+	}
+
 	if (object->interface == &wl_display_interface && p_opcode == WL_DISPLAY_GET_REGISTRY) {
 		// The gist of this is that the registry is a global and the compositor can
 		// quite simply take for granted that a single client can access any global
@@ -1115,6 +1140,10 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 		for (KeyValue<uint32_t, RegistryGlobalInfo> &pair : registry_globals) {
 			uint32_t global_name = pair.key;
 			RegistryGlobalInfo &global_info = pair.value;
+
+			if (global_info.destroyed) {
+				continue;
+			}
 
 			const struct wl_interface *global_interface = global_info.interface;
 
@@ -1131,6 +1160,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 			send_wayland_event(client->socket, local_registry_id, wl_registry_interface, WL_REGISTRY_GLOBAL, args);
 		}
 
+		client->wl_registry_instances.insert(local_registry_id);
 		client->new_global_instance(local_registry_id, REGISTRY_ID, &wl_registry_interface, 1);
 
 		return MessageStatus::HANDLED;
@@ -1146,6 +1176,11 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 			uint32_t new_local_id_idx = 2 + wl_array_word_offset(interface_name_len) + 1;
 			uint32_t new_local_id = body[new_local_id_idx];
 
+			if (!registry_globals.has(global_name)) {
+				socket_error(client->socket, local_id, WL_DISPLAY_ERROR_INVALID_METHOD, vformat("Invalid global object #%d", global_name));
+				return MessageStatus::HANDLED;
+			}
+
 			RegistryGlobalInfo &global_info = registry_globals[global_name];
 			ERR_FAIL_NULL_V(global_info.interface, MessageStatus::ERROR);
 
@@ -1157,6 +1192,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 				}
 
 				client->registry_globals_instances[global_name].insert(new_local_id);
+				++global_info.instance_counter;
 				DEBUG_LOG_WAYLAND_EMBED("Bound embedded compositor interface.");
 				client->new_fake_object(new_local_id, &godot_embedding_compositor_interface, 1);
 				return MessageStatus::HANDLED;
@@ -1183,6 +1219,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 				}
 
 				client->registry_globals_instances[global_name].insert(new_local_id);
+				++global_info.instance_counter;
 
 				// Passthrough.
 				uint32_t instance_gid = client->new_object(new_local_id, global_info.interface, version);
@@ -1212,6 +1249,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 				}
 
 				client->registry_globals_instances[global_name].insert(new_local_id);
+				++global_info.instance_counter;
 
 				if (global_info.reusable_objects[version] == INVALID_ID) {
 					uint32_t header[2] = { REGISTRY_ID, (uint32_t)(msg_len << 16) };
@@ -1891,7 +1929,6 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 			}
 		}
 
-		// TODO: wl_registry::global_remove(u)
 		if (global_object->interface == &wl_registry_interface) {
 			if (p_opcode == WL_REGISTRY_GLOBAL) {
 				// [Event] wl_registry::global(usu).
@@ -1901,7 +1938,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 				const char *interface_name = (const char *)(body + 2);
 				uint32_t global_version = body[2 + wl_array_word_offset(interface_name_len)];
 
-				DEBUG_LOG_WAYLAND_EMBED("Global %s %d", interface_name, global_version);
+				DEBUG_LOG_WAYLAND_EMBED("Global c#%d %s %d", global_name, interface_name, global_version);
 
 				const struct wl_interface *global_interface = wl_interface_from_string(interface_name, interface_name_len);
 				if (global_interface) {
@@ -1950,11 +1987,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 						get_object(xdg_wm_base_id)->shared = true;
 
 						send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &xdg_wm_base_id, sizeof xdg_wm_base_id } });
-
-						return MessageStatus::HANDLED;
-					}
-
-					if (global_interface == &wl_compositor_interface && wl_compositor_id == 0) {
+					} else if (global_interface == &wl_compositor_interface && wl_compositor_id == 0) {
 						wl_compositor_id = new_object(&wl_compositor_interface, global_info.version);
 						DEBUG_LOG_WAYLAND_EMBED(vformat("Binding global wl_compositor as g0x%x version %d", wl_compositor_id, global_info.version));
 
@@ -1966,11 +1999,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 						get_object(wl_compositor_id)->shared = true;
 
 						send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &wl_compositor_id, sizeof wl_compositor_id } });
-
-						return MessageStatus::HANDLED;
-					}
-
-					if (global_interface == &wl_subcompositor_interface && wl_subcompositor_id == 0) {
+					} else if (global_interface == &wl_subcompositor_interface && wl_subcompositor_id == 0) {
 						wl_subcompositor_id = new_object(&wl_subcompositor_interface, global_info.version);
 						DEBUG_LOG_WAYLAND_EMBED(vformat("Binding global wl_subcompositor as g0x%x version %d", wl_subcompositor_id, global_info.version));
 
@@ -1982,14 +2011,69 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 						get_object(wl_subcompositor_id)->shared = true;
 
 						send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &wl_subcompositor_id, sizeof wl_subcompositor_id } });
+					}
 
+					DEBUG_LOG_WAYLAND_EMBED(vformat("Local global-object name l#%d", new_global_name));
+
+					if (clients.is_empty()) {
+						// Let's not waste time.
 						return MessageStatus::HANDLED;
 					}
+
+					// Notify all clients.
+					LocalVector<wl_argument> args;
+					args.push_back(wl_arg_uint(new_global_name));
+					args.push_back(wl_arg_string(interface_name));
+					args.push_back(wl_arg_uint(global_info.version));
+					for (KeyValue<int, Client> &pair : clients) {
+						Client &client = pair.value;
+						for (uint32_t local_registry_id : client.wl_registry_instances) {
+							send_wayland_event(client.socket, local_registry_id, wl_registry_interface, WL_REGISTRY_GLOBAL, args);
+						}
+					}
+
+					return MessageStatus::HANDLED;
 				} else {
 					DEBUG_LOG_WAYLAND_EMBED("Skipping unknown global %s %d.", interface_name, global_version);
 
 					return MessageStatus::HANDLED;
 				}
+			} else if (p_opcode == WL_REGISTRY_GLOBAL_REMOVE) {
+				uint32_t compositor_name = body[0];
+				uint32_t local_name = 0;
+				RegistryGlobalInfo *global_info = nullptr;
+
+				// FIXME: Use a map or something.
+				for (KeyValue<uint32_t, RegistryGlobalInfo> &pair : registry_globals) {
+					uint32_t name = pair.key;
+					RegistryGlobalInfo &info = pair.value;
+
+					if (info.compositor_name == compositor_name) {
+						local_name = name;
+						global_info = &info;
+						break;
+					}
+				}
+
+				ERR_FAIL_NULL_V(global_info, MessageStatus::ERROR);
+
+				if (global_info->instance_counter == 0) {
+					registry_globals.erase(local_name);
+				} else {
+					global_info->destroyed = true;
+				}
+
+				// Notify all clients.
+				LocalVector<wl_argument> args;
+				args.push_back(wl_arg_uint(local_name));
+				for (KeyValue<int, Client> &pair : clients) {
+					Client &client = pair.value;
+					for (uint32_t local_registry_id : client.wl_registry_instances) {
+						send_wayland_event(client.socket, local_registry_id, wl_registry_interface, WL_REGISTRY_GLOBAL_REMOVE, args);
+					}
+				}
+
+				return MessageStatus::HANDLED;
 			}
 		}
 
@@ -2354,7 +2438,12 @@ Error WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *in
 						free(copy);
 						handled = true;
 					}
-				} else {
+				} else if (interface == &wl_display_interface) {
+					// NOTE: The only shared non-global objects are `wl_display` and
+					// `wl_registry`, both of which require custom handlers. Additionally, of
+					// those only `wl_display` has client-specific handlers, which is what this
+					// branch manages.
+
 					LocalObjectHandle local_obj = LocalObjectHandle(&c, c.get_local_id(global_id));
 					if (!local_obj.is_valid()) {
 						continue;
