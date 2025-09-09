@@ -46,7 +46,7 @@ CameraDriverWeb *CameraDriverWeb::get_singleton() {
 	return singleton;
 }
 
-// Helper to extract 'max' from a capability dictionary or use direct value
+// Helper to extract 'max' from a capability dictionary or use direct value.
 int CameraDriverWeb::_get_max_or_direct(const Variant &p_val) {
 	if (p_val.get_type() == Variant::DICTIONARY) {
 		Dictionary d = p_val;
@@ -63,7 +63,7 @@ int CameraDriverWeb::_get_max_or_direct(const Variant &p_val) {
 
 void CameraDriverWeb::_on_get_cameras_callback(void *context, void *callback, const char *json_ptr) {
 	if (!json_ptr) {
-		ERR_PRINT("CameraDriverWeb::_on_get_cameras_callback: json_ptr is null");
+		ERR_PRINT("CameraDriverWeb::_on_get_cameras_callback: json_ptr is null.");
 		return;
 	}
 	String json_string = String::utf8(json_ptr);

@@ -86,7 +86,7 @@ void CameraFeedWeb::_on_denied_callback(void *context) {
 bool CameraFeedWeb::activate_feed() {
 	ERR_FAIL_COND_V_MSG(selected_format == -1, false, "CameraFeed format needs to be set before activating.");
 
-	// Initialize image when activating the feed
+	// Initialize image when activating the feed.
 	if (image.is_null()) {
 		image.instantiate();
 	}
@@ -105,7 +105,7 @@ bool CameraFeedWeb::activate_feed() {
 
 void CameraFeedWeb::deactivate_feed() {
 	CameraDriverWeb::get_singleton()->stop_stream(device_id);
-	// Release the image when deactivating the feed
+	// Release the image when deactivating the feed.
 	image.unref();
 	data.clear();
 }
