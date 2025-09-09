@@ -81,10 +81,16 @@ public:
 		bool uses_global_textures = false;
 		bool uses_fragment_time = false;
 		bool uses_vertex_time = false;
-		bool uses_screen_texture_mipmaps = false;
 		bool uses_screen_texture = false;
 		bool uses_depth_texture = false;
 		bool uses_normal_roughness_texture = false;
+
+		// Need to store this information CPU-side for GL.
+		//  Currently only storing screen and depth texture filters as normal-roughness is Forward+ only.
+		ShaderLanguage::TextureFilter screen_texture_filter = ShaderLanguage::TextureFilter::FILTER_DEFAULT;
+		ShaderLanguage::TextureRepeat screen_texture_repeat = ShaderLanguage::TextureRepeat::REPEAT_DEFAULT;
+		ShaderLanguage::TextureFilter depth_texture_filter = ShaderLanguage::TextureFilter::FILTER_DEFAULT;
+		ShaderLanguage::TextureRepeat depth_texture_repeat = ShaderLanguage::TextureRepeat::REPEAT_DEFAULT;
 	};
 
 	struct DefaultIdentifierActions {
