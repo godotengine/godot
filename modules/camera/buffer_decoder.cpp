@@ -222,37 +222,37 @@ Nv12BufferDecoder::Nv12BufferDecoder(CameraFeed *p_camera_feed) :
 }
 
 void Nv12BufferDecoder::decode(StreamingBuffer p_buffer) {
-	// NV12 format: Y plane followed by interleaved UV plane
-	// Create separate Y and UV images for YUV2 format
+	// NV12 format: Y plane followed by interleaved UV plane.
+	// Create separate Y and UV images for YUV2 format.
 	int y_size = width * height;
 	int uv_size = width * height / 2;
 
-	// Y image data
+	// Y image data.
 	data_y.resize(y_size);
 	uint8_t *y_dst = (uint8_t *)data_y.ptrw();
 
-	// UV image data (interleaved U and V)
+	// UV image data (interleaved U and V).
 	data_uv.resize(uv_size);
 	uint8_t *uv_dst = (uint8_t *)data_uv.ptrw();
 
 	memcpy(y_dst, p_buffer.start, y_size);
 	memcpy(uv_dst, (uint8_t *)p_buffer.start + y_size, uv_size);
 
-	// Create Y image
+	// Create Y image.
 	if (image_y.is_valid()) {
 		image_y->set_data(width, height, false, Image::FORMAT_L8, data_y);
 	} else {
 		image_y.instantiate(width, height, false, Image::FORMAT_L8, data_y);
 	}
 
-	// Create UV image (half resolution)
+	// Create UV image (half resolution).
 	if (image_uv.is_valid()) {
 		image_uv->set_data(width / 2, height / 2, false, Image::FORMAT_RG8, data_uv);
 	} else {
 		image_uv.instantiate(width / 2, height / 2, false, Image::FORMAT_RG8, data_uv);
 	}
 
-	// Set the YCbCr images
+	// Set the YCbCr images.
 	camera_feed->set_ycbcr_images(image_y, image_uv);
 }
 
