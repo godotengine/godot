@@ -4435,12 +4435,12 @@ Error WaylandThread::init() {
 #endif
 	}
 
-	if (!embedder_socket_path.is_empty()) {
-		OS::get_singleton()->set_environment("WAYLAND_DISPLAY", embedder_socket_path);
+	if (embedder_socket_path.is_empty()) {
+		wl_display = wl_display_connect(nullptr);
+	} else {
+		wl_display = wl_display_connect(embedder_socket_path.utf8().get_data());
 	}
 #endif // TOOLS_ENABLED
-
-	wl_display = wl_display_connect(nullptr);
 
 	ERR_FAIL_NULL_V_MSG(wl_display, ERR_CANT_CREATE, "Can't connect to a Wayland display.");
 
