@@ -553,10 +553,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 							} else if (n.owner == 0) {
 								// Check whether a node's parent is no longer exposed. This only matters within the Editor.
 								NODE_FROM_ID(nowner, n.owner);
-								if (nowner != parent &&
-										parent->get_owner() != ret_nodes[0] &&
-										!parent->has_meta(META_EXPOSED_IN_INSTANCE) &&
-										!parent->has_meta(META_EXPOSED_IN_OWNER)) {
+								if (nowner != parent && parent->get_owner() != ret_nodes[0] && !parent->has_meta(META_EXPOSED_IN_INSTANCE) && !parent->has_meta(META_EXPOSED_IN_OWNER)) {
 									bool in_editable_instance = false;
 									if (parent->get_owner()) {
 										NodePath rel_path = ret_nodes[0]->get_path_to(parent->get_owner());
@@ -570,10 +567,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 									if (!in_editable_instance) {
 										if (node_paths.size() > 0) {
-											WARN_PRINT(vformat("Exposed parent path '%s' for node '%s' has vanished when instantiating: '%s'.",
-													String(node_paths[n.parent & FLAG_MASK]),
-													String(snames[n.name]),
-													get_path()));
+											WARN_PRINT(vformat("Exposed parent path '%s' for node '%s' has vanished when instantiating: '%s'.", String(node_paths[n.parent & FLAG_MASK]), String(snames[n.name]), get_path()));
 											old_parent_path = String(node_paths[n.parent & FLAG_MASK])
 																	  .trim_prefix("./")
 																	  .replace_char('/', '@');

@@ -316,17 +316,13 @@ void SceneTreeEditor::_update_node_path(Node *p_node, bool p_recursive) {
 	}
 }
 
-void SceneTreeEditor::_update_exposed_nodes(Node *p_node,
-		TreeItem *p_parent,
-		bool p_force,
-		TreeItem *&p_last_inserted) {
+void SceneTreeEditor::_update_exposed_nodes(Node *p_node, TreeItem *p_parent, bool p_force, TreeItem *&p_last_inserted) {
 	int cc = p_node->get_child_count();
 
 	for (int i = 0; i < cc; i++) {
 		Node *child = p_node->get_child(i);
 
-		if (child->has_meta(META_EXPOSED_IN_OWNER) ||
-				child->has_meta(META_EXPOSED_IN_INSTANCE)) {
+		if (child->has_meta(META_EXPOSED_IN_OWNER) || child->has_meta(META_EXPOSED_IN_INSTANCE)) {
 			_update_node_subtree(child, p_parent, p_force);
 
 			if (auto CI = node_cache.get(child)) {
