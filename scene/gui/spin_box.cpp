@@ -86,9 +86,14 @@ Size2 SpinBox::get_minimum_size() const {
 
 void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 	double step = get_step();
-	String value = String::num(get_value(), Math::range_step_decimals(step));
+	const double current_value = get_value();
+	String value = String::num(current_value, Math::range_step_decimals(step));
 	if (is_localizing_numeral_system()) {
 		value = TS->format_number(value);
+	}
+
+	if (show_plus_sign && current_value >= 0.0) {
+		value = "+" + value;
 	}
 
 	if (p_only_update_if_value_changed && value == last_text_value) {
@@ -106,7 +111,7 @@ void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 	}
 
 	if (!accepted && update_on_text_changed && !line_edit->get_text().replace_char(',', '.').contains_char('.')) {
-		value = String::num(get_value(), 0);
+		value = String::num(current_value, 0);
 	}
 
 	line_edit->set_text_with_selection(value);
@@ -583,12 +588,37 @@ bool SpinBox::is_select_all_on_focus() const {
 }
 
 void SpinBox::set_editable(bool p_enabled) {
+	if (line_edit->is_editable() == p_enabled) {
+		return;
+	}
+
 	line_edit->set_editable(p_enabled);
 	queue_redraw();
 }
 
 bool SpinBox::is_editable() const {
 	return line_edit->is_editable();
+}
+
+void SpinBox::set_keep_editing_on_text_submit(bool p_enabled) {
+	line_edit->set_keep_editing_on_text_submit(p_enabled);
+}
+
+bool SpinBox::is_editing_kept_on_text_submit() const {
+	return line_edit->is_editing_kept_on_text_submit();
+}
+
+void SpinBox::set_show_plus_sign(bool p_enabled) {
+	if (show_plus_sign == p_enabled) {
+		return;
+	}
+
+	show_plus_sign = p_enabled;
+	_update_text();
+}
+
+bool SpinBox::is_showing_plus_sign() const {
+	return show_plus_sign;
 }
 
 void SpinBox::apply() {
@@ -638,6 +668,10 @@ void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_editable"), &SpinBox::is_editable);
 	ClassDB::bind_method(D_METHOD("set_update_on_text_changed", "enabled"), &SpinBox::set_update_on_text_changed);
 	ClassDB::bind_method(D_METHOD("get_update_on_text_changed"), &SpinBox::get_update_on_text_changed);
+	ClassDB::bind_method(D_METHOD("set_keep_editing_on_text_submit", "enabled"), &SpinBox::set_keep_editing_on_text_submit);
+	ClassDB::bind_method(D_METHOD("is_editing_kept_on_text_submit"), &SpinBox::is_editing_kept_on_text_submit);
+	ClassDB::bind_method(D_METHOD("set_show_plus_sign", "enabled"), &SpinBox::set_show_plus_sign);
+	ClassDB::bind_method(D_METHOD("is_showing_plus_sign"), &SpinBox::is_showing_plus_sign);
 	ClassDB::bind_method(D_METHOD("set_select_all_on_focus", "enabled"), &SpinBox::set_select_all_on_focus);
 	ClassDB::bind_method(D_METHOD("is_select_all_on_focus"), &SpinBox::is_select_all_on_focus);
 	ClassDB::bind_method(D_METHOD("apply"), &SpinBox::apply);
@@ -646,6 +680,8 @@ void SpinBox::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_on_text_changed"), "set_update_on_text_changed", "get_update_on_text_changed");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_editing_on_text_submit"), "set_keep_editing_on_text_submit", "is_editing_kept_on_text_submit");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_plus_sign"), "set_show_plus_sign", "is_showing_plus_sign");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step", PROPERTY_HINT_RANGE, "0,10000,0.0001,or_greater"), "set_custom_arrow_step", "get_custom_arrow_step");

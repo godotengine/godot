@@ -676,6 +676,9 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (!editing) {
+		if (k->is_action("ui_cancel")) {
+			deselect();
+		}
 		return;
 	}
 
@@ -875,7 +878,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	if (k->is_action_pressed("ui_text_submit")) {
 		emit_signal(SceneStringName(text_submitted), text);
 
-		if (editing && !keep_editing_on_text_submit) {
+		if (!keep_editing_on_text_submit) {
 			unedit();
 			emit_signal(SNAME("editing_toggled"), false);
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
@@ -888,10 +891,8 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (k->is_action("ui_cancel")) {
-		if (editing) {
-			unedit();
-			emit_signal(SNAME("editing_toggled"), false);
-		}
+		unedit();
+		emit_signal(SNAME("editing_toggled"), false);
 
 		accept_event();
 		return;
@@ -1611,6 +1612,10 @@ void LineEdit::_notification(int p_what) {
 			if (editing) {
 				unedit();
 				emit_signal(SNAME("editing_toggled"), false);
+			} else {
+				if (deselect_on_focus_loss_enabled) {
+					deselect();
+				}
 			}
 		} break;
 

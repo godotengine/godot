@@ -48,6 +48,7 @@ class SpinBox : public Range {
 	GDCLASS(SpinBox, Range);
 
 	SpinBoxLineEdit *line_edit = nullptr;
+	bool show_plus_sign = false;
 	bool update_on_text_changed = false;
 	bool accepted = true;
 
@@ -175,6 +176,12 @@ public:
 
 	void set_select_all_on_focus(bool p_enabled);
 	bool is_select_all_on_focus() const;
+
+	void set_keep_editing_on_text_submit(bool p_enabled);
+	bool is_editing_kept_on_text_submit() const;
+
+	void set_show_plus_sign(bool p_enabled);
+	bool is_showing_plus_sign() const;
 
 	void apply();
 	void set_custom_arrow_step(const double p_custom_arrow_step);

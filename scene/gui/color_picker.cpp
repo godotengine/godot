@@ -524,7 +524,6 @@ void ColorPicker::_slider_value_changed() {
 		color_normalized = modes[current_mode]->get_color();
 	}
 	_normalized_apply_intensity_to_color();
-	intensity_value->set_prefix(intensity < 0 ? "" : "+");
 
 	modes[current_mode]->_value_changed();
 
@@ -835,7 +834,6 @@ void ColorPicker::_update_color(bool p_update_sliders) {
 		alpha_slider->set_step(step);
 		alpha_slider->set_value(modes[current_mode]->get_alpha_slider_value());
 		intensity_slider->set_value(intensity);
-		intensity_value->set_prefix(intensity < 0 ? "" : "+");
 	}
 
 	_update_text_value();
@@ -2270,6 +2268,8 @@ ColorPicker::ColorPicker() {
 	intensity_slider->set_step(0.001);
 	intensity_value->set_allow_greater(true);
 	intensity_value->set_custom_arrow_step(1);
+	intensity_value->set_show_plus_sign(true);
+	intensity_value->set_keep_editing_on_text_submit(true);
 
 	hex_hbc = memnew(HBoxContainer);
 	hex_hbc->set_alignment(ALIGNMENT_BEGIN);

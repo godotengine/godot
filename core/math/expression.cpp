@@ -1476,7 +1476,12 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 	str_ofs = 0;
 	input_names = p_input_names;
 
-	expression = p_expression;
+	if (p_expression.begins_with("+") || p_expression.begins_with("*") || p_expression.begins_with("/")) {
+		expression = p_expression.substr(1);
+	} else {
+		expression = p_expression;
+	}
+
 	root = _parse_expression();
 
 	if (error_set) {
