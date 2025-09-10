@@ -263,7 +263,7 @@ typedef void (*GDExtensionSpxExtDebugDrawCircle)(GdVec2 pos, GdFloat radius, GdC
 typedef void (*GDExtensionSpxExtDebugDrawRect)(GdVec2 pos, GdVec2 size, GdColor color);
 typedef void (*GDExtensionSpxExtOpenDrawTiles)();
 typedef void (*GDExtensionSpxExtSetLayerIndex)(GdInt index);
-typedef void (*GDExtensionSpxExtSetTile)(GdString texture_path);
+typedef void (*GDExtensionSpxExtSetTile)(GdString texture_path, GdBool with_collision);
 typedef void (*GDExtensionSpxExtPlaceTiles)(GdArray positions);
 typedef void (*GDExtensionSpxExtPlaceTile)(GdVec2 pos);
 typedef void (*GDExtensionSpxExtEraseTile)(GdVec2 pos);

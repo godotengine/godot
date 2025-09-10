@@ -209,13 +209,12 @@ void SpxDrawTiles::input(const Ref<InputEvent> &event) {
 }
 
 // spx interface
-
 void SpxDrawTiles::set_sprite_index(GdInt index) {
     axis_flipped = true;
     set_layer_index(index);
 }
 
-void SpxDrawTiles::set_sprite_texture(GdString texture_path) {
+void SpxDrawTiles::set_sprite_texture(GdString texture_path, GdBool with_collision) {
     String path = SpxStr(texture_path);
     Ref<Texture2D> tex;
     if(path_cached_textures.has(path)){
@@ -226,10 +225,13 @@ void SpxDrawTiles::set_sprite_texture(GdString texture_path) {
             path_cached_textures[path] = tex;
     }                   
 
-    set_texture(tex);
+    set_texture(tex, with_collision);
 }
 
 void SpxDrawTiles::place_sprites(GdArray positions) {
+    if(!positions)
+        return;
+
     auto len = positions->size;
     tile_placing = len > 0;
     for(int i = 0; i < len; i += 2){

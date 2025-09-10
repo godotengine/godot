@@ -417,12 +417,14 @@ gdspx_ext_set_layer_index(index) {
 	FreeGdInt(_arg0); 
 
 }
-gdspx_ext_set_tile(texture_path) {
+gdspx_ext_set_tile(texture_path,with_collision) {
 	var _gdFuncPtr = Module._gdspx_ext_set_tile; 
 	
 	var _arg0 = ToGdString(texture_path);
-	_gdFuncPtr(_arg0);
+	var _arg1 = ToGdBool(with_collision);
+	_gdFuncPtr(_arg0, _arg1);
 	FreeGdString(_arg0); 
+	FreeGdBool(_arg1); 
 
 }
 gdspx_ext_place_tiles(positions) {

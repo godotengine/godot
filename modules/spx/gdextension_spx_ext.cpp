@@ -199,8 +199,8 @@ static void gdextension_spx_ext_open_draw_tiles() {
 static void gdextension_spx_ext_set_layer_index(GdInt index) {
 	 extMgr->set_layer_index(index);
 }
-static void gdextension_spx_ext_set_tile(GdString texture_path) {
-	 extMgr->set_tile(texture_path);
+static void gdextension_spx_ext_set_tile(GdString texture_path,GdBool with_collision) {
+	 extMgr->set_tile(texture_path, with_collision);
 }
 static void gdextension_spx_ext_place_tiles(GdArray positions) {
 	 extMgr->place_tiles(positions);

@@ -300,9 +300,9 @@ void SpxExtMgr::set_layer_index(GdInt index) {
 	});
 }
 
-void SpxExtMgr::set_tile(GdString texture_path) {
-	with_draw_tiles([this, &texture_path](){
-		draw_tiles->set_sprite_texture(texture_path);
+void SpxExtMgr::set_tile(GdString texture_path, GdBool with_collision) {
+	with_draw_tiles([this, &texture_path, with_collision](){
+		draw_tiles->set_sprite_texture(texture_path, with_collision);
 	});
 }
 

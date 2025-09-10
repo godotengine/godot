@@ -109,7 +109,7 @@ public:
 	// draw tiles 
 	void open_draw_tiles();
 	void set_layer_index(GdInt index);
-	void set_tile(GdString texture_path);
+	void set_tile(GdString texture_path, GdBool with_collision);
 	void place_tiles(GdArray positions);
     void place_tile(GdVec2 pos);
     void erase_tile(GdVec2 pos);
