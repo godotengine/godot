@@ -793,7 +793,9 @@ void RendererEnvironmentStorage::environment_set_adjustment(RID p_env, bool p_en
 	ERR_FAIL_NULL(env);
 
 	env->adjustments_enabled = p_enable;
-	env->adjustments_brightness = p_brightness;
+	// Scale brightness via the nonlinear sRGB transfer function to provide a
+	// somewhat perceptually uniform brightness adjustment.
+	env->adjustments_brightness = p_brightness < 0.04045f ? p_brightness * (1.0f / 12.92f) : Math::pow(float((p_brightness + 0.055f) * (1.0f / (1.055f))), 2.4f);
 	env->adjustments_contrast = p_contrast;
 	env->adjustments_saturation = p_saturation;
 	env->use_1d_color_correction = p_use_1d_color_correction;
