@@ -63,9 +63,6 @@ public:
 	const Color &get_debug_custom_color() const;
 	void set_debug_custom_color(const Color &p_color);
 
-	bool get_debug_show() const;
-	void set_debug_show(bool p_show);
-
 	Ref<StandardMaterial3D> get_debug_material();
 
 	Path3D();

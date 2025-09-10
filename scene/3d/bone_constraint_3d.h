@@ -83,8 +83,5 @@ public:
 
 	void clear_settings();
 
-	static double symmetrize_angle(double p_angle); // Helper to make angle 0->TAU become -PI->PI.
-	static double get_roll_angle(const Quaternion &p_rotation, const Vector3 &p_roll_axis);
-
 	~BoneConstraint3D();
 };

@@ -55,14 +55,16 @@ SpringBoneSimulator3DGizmoPlugin::SpringBoneSimulator3DGizmoPlugin() {
 
 shader_type spatial;
 render_mode unshaded, shadows_disabled;
+
 void vertex() {
 	if (!OUTPUT_IS_SRGB) {
-		COLOR.rgb = mix( pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb* (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)) );
+		COLOR.rgb = mix(pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb * (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)));
 	}
 	VERTEX = VERTEX;
 	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0);
 	POSITION.z = mix(POSITION.z, POSITION.w, 0.998);
 }
+
 void fragment() {
 	ALBEDO = COLOR.rgb;
 	ALPHA = COLOR.a;
@@ -145,8 +147,8 @@ Ref<ArrayMesh> SpringBoneSimulator3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_s
 
 				// Draw rotation axis vector if not ROTATION_AXIS_ALL.
 				if (j != joint_end || (j == joint_end && is_extended)) {
-					SpringBoneSimulator3D::RotationAxis rotation_axis = p_simulator->get_joint_rotation_axis(i, j);
-					if (rotation_axis != SpringBoneSimulator3D::ROTATION_AXIS_ALL) {
+					SkeletonModifier3D::RotationAxis rotation_axis = p_simulator->get_joint_rotation_axis(i, j);
+					if (rotation_axis != SkeletonModifier3D::ROTATION_AXIS_ALL) {
 						Vector3 axis_vector = p_simulator->get_joint_rotation_axis_vector(i, j);
 						if (!axis_vector.is_zero_approx()) {
 							float line_length = p_simulator->get_joint_radius(i, j - 1) * 2.0;
@@ -173,8 +175,8 @@ Ref<ArrayMesh> SpringBoneSimulator3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_s
 				surface_tool->set_weights(Vector<float>(weights));
 				if (j == 0) {
 					// Draw rotation axis vector if not ROTATION_AXIS_ALL.
-					SpringBoneSimulator3D::RotationAxis rotation_axis = p_simulator->get_joint_rotation_axis(i, j);
-					if (rotation_axis != SpringBoneSimulator3D::ROTATION_AXIS_ALL) {
+					SkeletonModifier3D::RotationAxis rotation_axis = p_simulator->get_joint_rotation_axis(i, j);
+					if (rotation_axis != SkeletonModifier3D::ROTATION_AXIS_ALL) {
 						Vector3 axis_vector = p_simulator->get_joint_rotation_axis_vector(i, j);
 						if (!axis_vector.is_zero_approx()) {
 							float line_length = p_simulator->get_joint_radius(i, j) * 2.0;
@@ -242,14 +244,16 @@ SpringBoneCollision3DGizmoPlugin::SpringBoneCollision3DGizmoPlugin() {
 
 shader_type spatial;
 render_mode unshaded, shadows_disabled;
+
 void vertex() {
 	if (!OUTPUT_IS_SRGB) {
-		COLOR.rgb = mix( pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb* (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)) );
+		COLOR.rgb = mix(pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb * (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)));
 	}
 	VERTEX = VERTEX;
 	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0);
 	POSITION.z = mix(POSITION.z, POSITION.w, 0.998);
 }
+
 void fragment() {
 	ALBEDO = COLOR.rgb;
 	ALPHA = COLOR.a;

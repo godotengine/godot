@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="JointLimitationCone3D" inherits="JointLimitation3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A cone shape limitation that interacts with [ChainIK3D].
+	</brief_description>
+	<description>
+		A cone shape limitation that interacts with [ChainIK3D].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="radius_range" type="float" setter="set_radius_range" getter="get_radius_range" default="0.25">
+			The size of the hole made by the cone.
+			[code]0[/code] is no hole, [code]0.5[/code] makes a hemisphere, and [code]1.0[/code] makes a sphere (no limitation).
+		</member>
+	</members>
+</class>
