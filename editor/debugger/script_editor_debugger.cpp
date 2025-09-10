@@ -912,13 +912,25 @@ void ScriptEditorDebugger::_msg_show_selection_limit_warning(uint64_t p_thread_i
 }
 
 void ScriptEditorDebugger::_msg_performance_profile_names(uint64_t p_thread_id, const Array &p_data) {
+	ERR_FAIL_COND(p_data.size() != 2);
+	Array name_data = p_data[0];
+	Array type_data = p_data[1];
+
 	Vector<StringName> monitors;
-	monitors.resize(p_data.size());
-	for (int i = 0; i < p_data.size(); i++) {
-		ERR_FAIL_COND(p_data[i].get_type() != Variant::STRING_NAME);
-		monitors.set(i, p_data[i]);
+	monitors.resize(name_data.size());
+	for (int i = 0; i < name_data.size(); i++) {
+		ERR_FAIL_COND(name_data[i].get_type() != Variant::STRING_NAME);
+		monitors.set(i, name_data[i]);
 	}
-	performance_profiler->update_monitors(monitors);
+
+	PackedInt32Array types;
+	types.resize(type_data.size());
+	for (int i = 0; i < type_data.size(); i++) {
+		ERR_FAIL_COND(type_data[i].get_type() != Variant::INT);
+		types.set(i, type_data[i]);
+	}
+
+	performance_profiler->update_monitors(monitors, types);
 }
 
 void ScriptEditorDebugger::_msg_filesystem_update_file(uint64_t p_thread_id, const Array &p_data) {
