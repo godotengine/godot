@@ -2878,7 +2878,7 @@
 			[b]Note:[/b] This property is only read when the project starts. To set the subsurface scattering scale at runtime, call [method RenderingServer.sub_surface_scattering_set_scale] instead.
 		</member>
 		<member name="rendering/environment/use_legacy_mode" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], will use the glow blending behavior from Godot 4.5 and earlier.
+			If [code]true[/code], will use the glow blending and adjustments behavior of Godot 4.5 and earlier.
 			[b]Note:[/b] While this setting restores previous glow blending behavior, the default values of glow blend mode, intensity, and levels have changed and may need to be manually set to their previous default values.
 			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
 		</member>
