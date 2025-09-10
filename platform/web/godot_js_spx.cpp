@@ -259,6 +259,10 @@ void gdspx_ext_set_tile(GdString* texture_path) {
 	 extMgr->set_tile(*texture_path);
 }
 EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_place_tiles(GdArray* positions) {
+	 extMgr->place_tiles(*positions);
+}
+EMSCRIPTEN_KEEPALIVE
 void gdspx_ext_place_tile(GdVec2* pos) {
 	 extMgr->place_tile(*pos);
 }

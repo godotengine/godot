@@ -41,13 +41,15 @@
 #include "spx_engine.h"
 #include "spx_ext_mgr.h"
 #include "spx_res_mgr.h"
+#include "spx_base_mgr.h"
 
 void LayerRenderer::_draw_axis(Node2D *parent_node, const DrawContext &ctx) {
 	Vector2 origin = ctx.layer_pos;
 
 	float axis_len = 100.0;
+    float flipped = ctx.axis_flipped ? -1 : 1;
 	parent_node->draw_line(origin, origin + Vector2(axis_len, 0), Color(1, 0, 0), ctx.axis_width);
-	parent_node->draw_line(origin, origin + Vector2(0, axis_len), Color(0, 1, 0), ctx.axis_width);
+	parent_node->draw_line(origin, origin + Vector2(0, axis_len * flipped), Color(0, 1, 0), ctx.axis_width);
 
 	Color origin_color = ctx.axis_dragging ? Color(1, 0, 0) : Color(1, 1, 0);
     float axis_width = 3 * ctx.axis_width;
@@ -124,11 +126,6 @@ void SpxDrawTiles::_bind_methods() {
     ClassDB::bind_method(D_METHOD("clear_all_layers"), &SpxDrawTiles::clear_all_layers);
     ClassDB::bind_method(D_METHOD("enter_editor_mode"), &SpxDrawTiles::enter_editor_mode);
     ClassDB::bind_method(D_METHOD("exit_editor_mode"), &SpxDrawTiles::exit_editor_mode);
-
-    ClassDB::bind_method(D_METHOD("set_sprite_index", "index"), &SpxDrawTiles::set_sprite_index);
-    ClassDB::bind_method(D_METHOD("set_texture_path", "texture_path"), &SpxDrawTiles::set_texture_path);
-    ClassDB::bind_method(D_METHOD("place_sprite", "pos"), &SpxDrawTiles::place_sprite);
-    ClassDB::bind_method(D_METHOD("erase_sprite", "pos"), &SpxDrawTiles::erase_sprite);
 }
 
 void SpxDrawTiles::_notification(int p_what) {
@@ -166,6 +163,7 @@ void SpxDrawTiles::_draw() {
        .set_layer_pos(layer->get_position())
        .set_mouse_pos(get_global_mouse_position())
        .set_current_texture(current_texture)
+       .set_flipped_axis(axis_flipped)
        .set_axis_dragging(axis_dragging);
 
     renderer.draw(this, ctx);
@@ -213,6 +211,7 @@ void SpxDrawTiles::input(const Ref<InputEvent> &event) {
 // spx interface
 
 void SpxDrawTiles::set_sprite_index(GdInt index) {
+    axis_flipped = true;
     set_layer_index(index);
 }
 
@@ -228,6 +227,18 @@ void SpxDrawTiles::set_sprite_texture(GdString texture_path) {
     }                   
 
     set_texture(tex);
+}
+
+void SpxDrawTiles::place_sprites(GdArray positions) {
+    auto len = positions->size;
+    tile_placing = len > 0;
+    for(int i = 0; i < len; i += 2){
+        auto x = *(SpxBaseMgr::get_array<float>(positions, i));
+        auto y = *(SpxBaseMgr::get_array<float>(positions, i + 1));
+    
+        place_sprite({x, y});
+    }
+    tile_placing = false;
 }
 
 void SpxDrawTiles::place_sprite(Vector2 pos) {
