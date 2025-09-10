@@ -980,6 +980,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	edit_hb->add_child(point_name_edit);
 	point_name_edit->set_custom_minimum_size(Size2(130 * EDSCALE, 0));
 	point_name_edit->set_placeholder("Name");
+	point_name_edit->set_tooltip_text(TTR("Name of the blend point.\nNames take precedence over indices when referencing."));
 	point_name_edit->connect(SceneStringName(text_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_edit_point_name));
 
 	edit_hb->add_child(memnew(VSeparator));
@@ -992,6 +993,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	index_edit->set_allow_greater(false);
 	index_edit->set_allow_lesser(false);
 	index_edit->set_accessibility_name(TTRC("Blend Point Index"));
+	index_edit->set_tooltip_text(TTR("Index of the blend point.\nValues outside of the valid range will be clamped to the nearest index."));
 	index_edit->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_edit_point_index));
 
 	edit_hb->add_child(memnew(VSeparator));
