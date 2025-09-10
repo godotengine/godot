@@ -51,19 +51,6 @@ class Performance : public Object {
 	double _physics_process_time;
 	double _navigation_process_time;
 
-	class MonitorCall {
-		Callable _callable;
-		Vector<Variant> _arguments;
-
-	public:
-		MonitorCall(Callable p_callable, Vector<Variant> p_arguments);
-		MonitorCall();
-		Variant call(bool &r_error, String &r_error_message);
-	};
-
-	HashMap<StringName, MonitorCall> _monitor_map;
-	uint64_t _monitor_modification_time;
-
 public:
 	enum Monitor {
 		TIME_FPS,
@@ -131,7 +118,8 @@ public:
 	enum MonitorType {
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_MEMORY,
-		MONITOR_TYPE_TIME
+		MONITOR_TYPE_TIME,
+		MONITOR_TYPE_PERCENTAGE
 	};
 
 	double get_monitor(Monitor p_monitor) const;
@@ -143,17 +131,35 @@ public:
 	void set_physics_process_time(double p_pt);
 	void set_navigation_process_time(double p_pt);
 
-	void add_custom_monitor(const StringName &p_id, const Callable &p_callable, const Vector<Variant> &p_args);
+	void add_custom_monitor(const StringName &p_id, const Callable &p_callable, const Vector<Variant> &p_args, MonitorType p_type);
 	void remove_custom_monitor(const StringName &p_id);
 	bool has_custom_monitor(const StringName &p_id);
 	Variant get_custom_monitor(const StringName &p_id);
 	TypedArray<StringName> get_custom_monitor_names();
+	TypedArray<int> get_custom_monitor_types();
 
 	uint64_t get_monitor_modification_time();
 
 	static Performance *get_singleton() { return singleton; }
 
 	Performance();
+
+private:
+	class MonitorCall {
+		MonitorType _type = MONITOR_TYPE_QUANTITY;
+		Callable _callable;
+		Vector<Variant> _arguments;
+
+	public:
+		MonitorCall(MonitorType p_type, Callable p_callable, Vector<Variant> p_arguments);
+		MonitorCall();
+		Variant call(bool &r_error, String &r_error_message);
+		MonitorType get_monitor_type();
+	};
+
+	HashMap<StringName, MonitorCall> _monitor_map;
+	uint64_t _monitor_modification_time;
 };
 
 VARIANT_ENUM_CAST(Performance::Monitor);
+VARIANT_ENUM_CAST(Performance::MonitorType);
