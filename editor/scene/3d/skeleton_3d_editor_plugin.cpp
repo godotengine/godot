@@ -444,7 +444,16 @@ void Skeleton3DEditor::insert_keys(const bool p_all_bones) {
 	if (!skeleton) {
 		return;
 	}
+	if (key_mod_button->is_pressed()) {
+		skeleton->connect(SceneStringName(skeleton_updated), callable_mp(this, &Skeleton3DEditor::_insert_keys).bind(p_all_bones), CONNECT_ONE_SHOT);
+		skeleton->force_update_deferred();
+		skeleton->notification(Skeleton3D::NOTIFICATION_UPDATE_SKELETON);
+	} else {
+		_insert_keys(p_all_bones);
+	}
+}
 
+void Skeleton3DEditor::_insert_keys(const bool p_all_bones) {
 	bool pos_enabled = key_loc_button->is_pressed();
 	bool rot_enabled = key_rot_button->is_pressed();
 	bool scl_enabled = key_scale_button->is_pressed();
@@ -1050,29 +1059,49 @@ void Skeleton3DEditor::create_editors() {
 	animation_hb->add_child(memnew(VSeparator));
 	animation_hb->hide();
 
+	key_mod_button = memnew(Button);
+	key_mod_button->set_theme_type_variation(SceneStringName(FlatButton));
+	key_mod_button->set_toggle_mode(true);
+	key_mod_button->set_pressed(editor_plugin->mod_pressed);
+	key_mod_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	key_mod_button->set_tooltip_text(TTR("Enable modified transform by SkeletonModifier3D."));
+	animation_hb->add_child(key_mod_button);
+	if (!key_mod_button->is_connected(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_mod_toggled))) {
+		key_mod_button->connect(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_mod_toggled));
+	}
+
 	key_loc_button = memnew(Button);
 	key_loc_button->set_theme_type_variation(SceneStringName(FlatButton));
 	key_loc_button->set_toggle_mode(true);
-	key_loc_button->set_pressed(false);
+	key_loc_button->set_pressed(editor_plugin->loc_pressed);
 	key_loc_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	key_loc_button->set_tooltip_text(TTR("Translation mask for inserting keys."));
 	animation_hb->add_child(key_loc_button);
+	if (!key_loc_button->is_connected(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_loc_toggled))) {
+		key_loc_button->connect(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_loc_toggled));
+	}
 
 	key_rot_button = memnew(Button);
 	key_rot_button->set_theme_type_variation(SceneStringName(FlatButton));
 	key_rot_button->set_toggle_mode(true);
-	key_rot_button->set_pressed(true);
+	key_rot_button->set_pressed(editor_plugin->rot_pressed);
 	key_rot_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	key_rot_button->set_tooltip_text(TTR("Rotation mask for inserting keys."));
 	animation_hb->add_child(key_rot_button);
+	if (!key_rot_button->is_connected(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_rot_toggled))) {
+		key_rot_button->connect(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_rot_toggled));
+	}
 
 	key_scale_button = memnew(Button);
 	key_scale_button->set_theme_type_variation(SceneStringName(FlatButton));
 	key_scale_button->set_toggle_mode(true);
-	key_scale_button->set_pressed(false);
+	key_scale_button->set_pressed(editor_plugin->scl_pressed);
 	key_scale_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	key_scale_button->set_tooltip_text(TTR("Scale mask for inserting keys."));
 	animation_hb->add_child(key_scale_button);
+	if (!key_scale_button->is_connected(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_scl_toggled))) {
+		key_scale_button->connect(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_scl_toggled));
+	}
 
 	key_insert_button = memnew(Button);
 	key_insert_button->set_theme_type_variation(SceneStringName(FlatButton));
@@ -1122,6 +1151,31 @@ void Skeleton3DEditor::create_editors() {
 	set_keyable(te->has_keying());
 }
 
+void Skeleton3DEditor::_mod_toggled(bool p_toggled_on) {
+	if (!editor_plugin) {
+		return;
+	}
+	editor_plugin->mod_pressed = p_toggled_on;
+}
+void Skeleton3DEditor::_loc_toggled(bool p_toggled_on) {
+	if (!editor_plugin) {
+		return;
+	}
+	editor_plugin->loc_pressed = p_toggled_on;
+}
+void Skeleton3DEditor::_rot_toggled(bool p_toggled_on) {
+	if (!editor_plugin) {
+		return;
+	}
+	editor_plugin->rot_pressed = p_toggled_on;
+}
+void Skeleton3DEditor::_scl_toggled(bool p_toggled_on) {
+	if (!editor_plugin) {
+		return;
+	}
+	editor_plugin->scl_pressed = p_toggled_on;
+}
+
 void Skeleton3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -1145,6 +1199,7 @@ void Skeleton3DEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			skeleton_options->set_button_icon(get_editor_theme_icon(SNAME("Skeleton3D")));
 			edit_mode_button->set_button_icon(get_editor_theme_icon(SNAME("ToolBoneSelect")));
+			key_mod_button->set_button_icon(get_editor_theme_icon(SNAME("SkeletonModifier")));
 			key_loc_button->set_button_icon(get_editor_theme_icon(SNAME("KeyPosition")));
 			key_rot_button->set_button_icon(get_editor_theme_icon(SNAME("KeyRotation")));
 			key_scale_button->set_button_icon(get_editor_theme_icon(SNAME("KeyScale")));
