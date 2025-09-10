@@ -707,6 +707,10 @@ float RendererSceneRender::environment_get_adjustments_brightness(RID p_env) con
 	return environment_storage.environment_get_adjustments_brightness(p_env);
 }
 
+float RendererSceneRender::environment_get_adjustments_brightness_legacy(RID p_env) const {
+	return environment_storage.environment_get_adjustments_brightness_legacy(p_env);
+}
+
 float RendererSceneRender::environment_get_adjustments_contrast(RID p_env) const {
 	return environment_storage.environment_get_adjustments_contrast(p_env);
 }

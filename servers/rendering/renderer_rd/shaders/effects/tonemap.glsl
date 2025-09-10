@@ -330,9 +330,6 @@ vec3 tonemap_agx(vec3 color) {
 }
 
 vec3 linear_to_srgb(vec3 color) {
-	// Clamping is not strictly necessary for floating point nonlinear sRGB encoding,
-	// but many cases that call this function need the result clamped.
-	color = clamp(color, vec3(0.0), vec3(1.0));
 	const vec3 a = vec3(0.055f);
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
 }
@@ -443,13 +440,35 @@ vec3 apply_glow(vec3 color, vec3 glow, float white) { // apply glow using the se
 	}
 }
 
-vec3 apply_bcs(vec3 color, vec3 bcs) {
-	color = mix(vec3(0.0f), color, bcs.x);
+vec3 apply_legacy_bcs(vec3 color, vec3 bcs) {
+	color = color * bcs.x;
 	color = mix(vec3(0.5f), color, bcs.y);
 	color = mix(vec3(dot(vec3(1.0f), color) * 0.33333f), color, bcs.z);
+	return color;
+}
+
+vec3 apply_bcs(vec3 color, vec3 bcs) {
+	// Apply brightness:
+	// Apply to relative luminance. This ensures that the hue and saturation of
+	// colors is not affected by the adjustment, but requires the multiplication
+	// to be performed on linear encoded values.
+	color = color * params.bcs.x;
+
+	// Apply contrast:
+	// Use the industry-standard "18% middle gray" as the pivot.
+	// This approximately matches Photoshop 26.1's camera raw filter behavior.
+	color = mix(vec3(0.18), color, params.bcs.y);
+
+	// Apply saturation:
+	// Luminance weights of the current primaries must be used to prevent blues from
+	// brightening when saturation is decreased and darkening when saturation is increased.
+	// This approach approximately matches Photoshop 26.1's camera raw filter behavior.
+	const vec3 rec709_luminance_weights = vec3(0.2126, 0.7152, 0.0722);
+	color = mix(vec3(dot(rec709_luminance_weights, color)), color, params.bcs.z);
 
 	return color;
 }
+
 #ifdef USE_1D_LUT
 vec3 apply_color_correction(vec3 color) {
 	color.r = texture(source_color_correction, vec2(color.r, 0.0f)).r;
@@ -920,6 +939,7 @@ void main() {
 	if (bool(params.flags & FLAG_USE_LEGACY_MODE)) {
 		// Legacy mode glow must be applied after linear_to_srgb.
 		if (convert_to_srgb) {
+			color.rgb = clamp(color.rgb, vec3(0.0), vec3(1.0));
 			color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
 		}
 
@@ -952,16 +972,22 @@ void main() {
 			color.rgb = apply_glow(color.rgb, glow, params.white);
 		}
 #endif
-
-		if (convert_to_srgb) {
-			color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
-		}
 	}
 
 	// Additional effects
 
-	if (bool(params.flags & FLAG_USE_BCS)) {
-		color.rgb = apply_bcs(color.rgb, params.bcs);
+	if (bool(params.flags & FLAG_USE_LEGACY_MODE)) {
+		if (bool(params.flags & FLAG_USE_BCS)) {
+			color.rgb = apply_legacy_bcs(color.rgb, params.bcs);
+		}
+	} else {
+		if (bool(params.flags & FLAG_USE_BCS)) {
+			color.rgb = apply_bcs(color.rgb, params.bcs);
+		}
+
+		if (convert_to_srgb) {
+			color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
+		}
 	}
 
 	if (bool(params.flags & FLAG_USE_COLOR_CORRECTION)) {
@@ -969,6 +995,7 @@ void main() {
 		if (!convert_to_srgb) {
 			color.rgb = linear_to_srgb(color.rgb);
 		}
+		color.rgb = clamp(color.rgb, vec3(0.0), vec3(1.0));
 		color.rgb = apply_color_correction(color.rgb);
 		// When convert_to_srgb is false, there is no need to convert back to
 		// linear because the color correction texture sampling does this for us.

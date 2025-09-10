@@ -687,7 +687,11 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		if (can_use_effects && p_render_data->environment.is_valid()) {
 			tonemap.use_bcs = environment_get_adjustments_enabled(p_render_data->environment);
-			tonemap.brightness = environment_get_adjustments_brightness(p_render_data->environment);
+			if (environment_use_legacy_mode) {
+				tonemap.brightness = environment_get_adjustments_brightness_legacy(p_render_data->environment);
+			} else {
+				tonemap.brightness = environment_get_adjustments_brightness(p_render_data->environment);
+			}
 			tonemap.contrast = environment_get_adjustments_contrast(p_render_data->environment);
 			tonemap.saturation = environment_get_adjustments_saturation(p_render_data->environment);
 			if (environment_get_adjustments_enabled(p_render_data->environment) && environment_get_color_correction(p_render_data->environment).is_valid()) {
@@ -929,7 +933,11 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 
 	if (can_use_effects && p_render_data->environment.is_valid()) {
 		tonemap.use_bcs = environment_get_adjustments_enabled(p_render_data->environment);
-		tonemap.brightness = environment_get_adjustments_brightness(p_render_data->environment);
+		if (environment_use_legacy_mode) {
+			tonemap.brightness = environment_get_adjustments_brightness_legacy(p_render_data->environment);
+		} else {
+			tonemap.brightness = environment_get_adjustments_brightness(p_render_data->environment);
+		}
 		tonemap.contrast = environment_get_adjustments_contrast(p_render_data->environment);
 		tonemap.saturation = environment_get_adjustments_saturation(p_render_data->environment);
 		if (environment_get_adjustments_enabled(p_render_data->environment) && environment_get_color_correction(p_render_data->environment).is_valid()) {

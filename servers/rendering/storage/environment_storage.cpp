@@ -793,7 +793,10 @@ void RendererEnvironmentStorage::environment_set_adjustment(RID p_env, bool p_en
 	ERR_FAIL_NULL(env);
 
 	env->adjustments_enabled = p_enable;
-	env->adjustments_brightness = p_brightness;
+	// Scaled brightness uses the nonlinear sRGB transfer function for a
+	// perceptually uniform brightness adjustment.
+	env->adjustments_brightness = p_brightness < 0.04045f ? p_brightness * (1.0f / 12.92f) : Math::pow(float((p_brightness + 0.055f) * (1.0f / (1.055f))), 2.4f);
+	env->adjustments_brightness_legacy = p_brightness;
 	env->adjustments_contrast = p_contrast;
 	env->adjustments_saturation = p_saturation;
 	env->use_1d_color_correction = p_use_1d_color_correction;
@@ -810,6 +813,12 @@ float RendererEnvironmentStorage::environment_get_adjustments_brightness(RID p_e
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 1.0);
 	return env->adjustments_brightness;
+}
+
+float RendererEnvironmentStorage::environment_get_adjustments_brightness_legacy(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 1.0);
+	return env->adjustments_brightness_legacy;
 }
 
 float RendererEnvironmentStorage::environment_get_adjustments_contrast(RID p_env) const {
