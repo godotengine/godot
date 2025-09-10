@@ -247,6 +247,10 @@ void gdspx_ext_debug_draw_rect(GdVec2* pos,GdVec2* size,GdColor* color) {
 	 extMgr->debug_draw_rect(*pos, *size, *color);
 }
 EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_open_draw_tiles_with_size(GdInt* tile_size) {
+	 extMgr->open_draw_tiles_with_size(*tile_size);
+}
+EMSCRIPTEN_KEEPALIVE
 void gdspx_ext_open_draw_tiles() {
 	 extMgr->open_draw_tiles();
 }
@@ -257,6 +261,14 @@ void gdspx_ext_set_layer_index(GdInt* index) {
 EMSCRIPTEN_KEEPALIVE
 void gdspx_ext_set_tile(GdString* texture_path,GdBool* with_collision) {
 	 extMgr->set_tile(*texture_path, *with_collision);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_set_layer_offset(GdInt* index,GdVec2* offset) {
+	 extMgr->set_layer_offset(*index, *offset);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_get_layer_offset(GdInt* index,GdVec2* ret_val) {
+	*ret_val = extMgr->get_layer_offset(*index);
 }
 EMSCRIPTEN_KEEPALIVE
 void gdspx_ext_place_tiles(GdArray* positions) {
@@ -277,6 +289,18 @@ void gdspx_ext_close_draw_tiles() {
 EMSCRIPTEN_KEEPALIVE
 void gdspx_ext_get_layer_point_path(GdVec2* p_from,GdVec2* p_to,GdArray* ret_val) {
 	*ret_val = extMgr->get_layer_point_path(*p_from, *p_to);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_exit_tilemap_editor_mode() {
+	 extMgr->exit_tilemap_editor_mode();
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_clear_pure_sprites() {
+	 extMgr->clear_pure_sprites();
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_create_pure_sprite(GdString* texture_path,GdVec2* pos,GdInt* zindex) {
+	 extMgr->create_pure_sprite(*texture_path, *pos, *zindex);
 }
 EMSCRIPTEN_KEEPALIVE
 void gdspx_input_get_mouse_pos(GdVec2* ret_val) {

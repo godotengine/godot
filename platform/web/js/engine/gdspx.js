@@ -403,6 +403,14 @@ gdspx_ext_debug_draw_rect(pos,size,color) {
 	FreeGdColor(_arg2); 
 
 }
+gdspx_ext_open_draw_tiles_with_size(tile_size) {
+	var _gdFuncPtr = Module._gdspx_ext_open_draw_tiles_with_size; 
+	
+	var _arg0 = ToGdInt(tile_size);
+	_gdFuncPtr(_arg0);
+	FreeGdInt(_arg0); 
+
+}
 gdspx_ext_open_draw_tiles() {
 	var _gdFuncPtr = Module._gdspx_ext_open_draw_tiles; 
 	
@@ -426,6 +434,26 @@ gdspx_ext_set_tile(texture_path,with_collision) {
 	FreeGdString(_arg0); 
 	FreeGdBool(_arg1); 
 
+}
+gdspx_ext_set_layer_offset(index,offset) {
+	var _gdFuncPtr = Module._gdspx_ext_set_layer_offset; 
+	
+	var _arg0 = ToGdInt(index);
+	var _arg1 = ToGdVec2(offset);
+	_gdFuncPtr(_arg0, _arg1);
+	FreeGdInt(_arg0); 
+	FreeGdVec2(_arg1); 
+
+}
+gdspx_ext_get_layer_offset(index) {
+	var _gdFuncPtr = Module._gdspx_ext_get_layer_offset; 
+	var _retValue = AllocGdVec2();
+	var _arg0 = ToGdInt(index);
+	_gdFuncPtr(_arg0, _retValue);
+	FreeGdInt(_arg0); 
+	var _finalRetValue = ToJsVec2(_retValue);
+	FreeGdVec2(_retValue); 
+	return _finalRetValue
 }
 gdspx_ext_place_tiles(positions) {
 	var _gdFuncPtr = Module._gdspx_ext_place_tiles; 
@@ -468,6 +496,30 @@ gdspx_ext_get_layer_point_path(p_from,p_to) {
 	var _finalRetValue = ToJsArray(_retValue);
 	FreeGdArray(_retValue); 
 	return _finalRetValue
+}
+gdspx_ext_exit_tilemap_editor_mode() {
+	var _gdFuncPtr = Module._gdspx_ext_exit_tilemap_editor_mode; 
+	
+	_gdFuncPtr();
+
+}
+gdspx_ext_clear_pure_sprites() {
+	var _gdFuncPtr = Module._gdspx_ext_clear_pure_sprites; 
+	
+	_gdFuncPtr();
+
+}
+gdspx_ext_create_pure_sprite(texture_path,pos,zindex) {
+	var _gdFuncPtr = Module._gdspx_ext_create_pure_sprite; 
+	
+	var _arg0 = ToGdString(texture_path);
+	var _arg1 = ToGdVec2(pos);
+	var _arg2 = ToGdInt(zindex);
+	_gdFuncPtr(_arg0, _arg1, _arg2);
+	FreeGdString(_arg0); 
+	FreeGdVec2(_arg1); 
+	FreeGdInt(_arg2); 
+
 }
 gdspx_input_get_mouse_pos() {
 	var _gdFuncPtr = Module._gdspx_input_get_mouse_pos; 
