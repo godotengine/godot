@@ -306,6 +306,12 @@ void SpxExtMgr::set_tile(GdString texture_path) {
 	});
 }
 
+void SpxExtMgr::place_tiles(GdArray positions) {
+	with_draw_tiles([this, positions](){
+		draw_tiles->place_sprites(positions);
+	});
+}
+
 void SpxExtMgr::place_tile(GdVec2 pos) {
 	with_draw_tiles([this, pos](){
 		draw_tiles->place_sprite(pos);

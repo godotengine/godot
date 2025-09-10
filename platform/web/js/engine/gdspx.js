@@ -425,6 +425,14 @@ gdspx_ext_set_tile(texture_path) {
 	FreeGdString(_arg0); 
 
 }
+gdspx_ext_place_tiles(positions) {
+	var _gdFuncPtr = Module._gdspx_ext_place_tiles; 
+	
+	var _arg0 = ToGdArray(positions);
+	_gdFuncPtr(_arg0);
+	FreeGdArray(_arg0); 
+
+}
 gdspx_ext_place_tile(pos) {
 	var _gdFuncPtr = Module._gdspx_ext_place_tile; 
 	

@@ -110,6 +110,7 @@ public:
 	void open_draw_tiles();
 	void set_layer_index(GdInt index);
 	void set_tile(GdString texture_path);
+	void place_tiles(GdArray positions);
     void place_tile(GdVec2 pos);
     void erase_tile(GdVec2 pos);
 	void close_draw_tiles();

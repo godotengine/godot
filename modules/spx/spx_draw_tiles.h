@@ -54,6 +54,7 @@ struct DrawContext {
     Rect2 used_rect;
     Ref<Texture2D> current_texture;
 
+    bool axis_flipped;
     bool axis_dragging;
 
     DrawContext& set_layer(TileMapLayer *layer) { map_layer = layer; return *this; }
@@ -66,6 +67,7 @@ struct DrawContext {
     DrawContext& set_mouse_pos(Vector2 pos) { mouse_pos = pos; return *this; }
 
     DrawContext& set_current_texture(Ref<Texture2D> tex) { current_texture = tex; return *this; }
+    DrawContext& set_flipped_axis(bool flipped) { axis_flipped = flipped; return *this; }
     DrawContext& set_axis_dragging(bool dragging) { axis_dragging = dragging; return *this; }
 };
 
@@ -113,6 +115,7 @@ private:
     const String UNIQUE_LAYER_PREFIX = "spx_draw_tiles_layer_";
 
     bool exit_editor = false;
+    bool axis_flipped = false;
     bool axis_dragging = false;
     bool tile_placing = false;
     static constexpr float drag_threshold = 10.0; 
@@ -139,6 +142,7 @@ public:
     // spx interface
     void set_sprite_index(GdInt index);
     void set_sprite_texture(GdString texture_path);
+    void place_sprites(GdArray positions);
     void place_sprite(Vector2 pos);
     void erase_sprite(Vector2 pos);
 

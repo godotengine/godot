@@ -202,6 +202,9 @@ static void gdextension_spx_ext_set_layer_index(GdInt index) {
 static void gdextension_spx_ext_set_tile(GdString texture_path) {
 	 extMgr->set_tile(texture_path);
 }
+static void gdextension_spx_ext_place_tiles(GdArray positions) {
+	 extMgr->place_tiles(positions);
+}
 static void gdextension_spx_ext_place_tile(GdVec2 pos) {
 	 extMgr->place_tile(pos);
 }
@@ -894,6 +897,7 @@ void gdextension_spx_setup_interface() {
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_open_draw_tiles);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_layer_index);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_tile);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_place_tiles);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_place_tile);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_erase_tile);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_close_draw_tiles);
