@@ -52,6 +52,7 @@
 #include "scene/gui/check_button.h"
 #include "scene/gui/code_edit.h"
 #include "scene/gui/color_picker.h"
+#include "scene/gui/color_picker_shape.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
@@ -1377,7 +1378,7 @@ void register_scene_types() {
 
 	if (RenderingServer::get_singleton()) {
 		// RenderingServer needs to exist for this to succeed.
-		ColorPicker::init_shaders();
+		ColorPickerShape::init_shaders();
 		GraphEdit::init_shaders();
 	}
 
@@ -1439,7 +1440,7 @@ void unregister_scene_types() {
 
 	ParticleProcessMaterial::finish_shaders();
 	CanvasItemMaterial::finish_shaders();
-	ColorPicker::finish_shaders();
+	ColorPickerShape::finish_shaders();
 	GraphEdit::finish_shaders();
 	SceneStringNames::free();
 
