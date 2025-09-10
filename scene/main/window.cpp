@@ -2935,9 +2935,8 @@ bool Window::is_layout_rtl() const {
 					String locale = OS::get_singleton()->get_locale();
 					return TS->is_locale_right_to_left(locale);
 				} else {
-					const Ref<Translation> &t = TranslationServer::get_singleton()->get_translation_object(TranslationServer::get_singleton()->get_locale());
-					String locale = t.is_valid() ? t->get_locale() : TranslationServer::get_singleton()->get_fallback_locale();
-					return TS->is_locale_right_to_left(locale);
+					Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(get_translation_domain());
+					return TS->is_locale_right_to_left(domain->get_locale());
 				}
 			}
 		}
@@ -2946,8 +2945,9 @@ bool Window::is_layout_rtl() const {
 			return true;
 		}
 #endif
+		const StringName domain_name = get_translation_domain();
 		Node *parent_node = get_parent();
-		while (parent_node) {
+		while (parent_node && parent_node->get_translation_domain() == domain_name) {
 			Control *parent_control = Object::cast_to<Control>(parent_node);
 			if (parent_control) {
 				return parent_control->is_layout_rtl();
@@ -2968,15 +2968,15 @@ bool Window::is_layout_rtl() const {
 			String locale = OS::get_singleton()->get_locale();
 			return TS->is_locale_right_to_left(locale);
 		} else {
-			String locale = TranslationServer::get_singleton()->get_tool_locale();
-			return TS->is_locale_right_to_left(locale);
+			Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(domain_name);
+			return TS->is_locale_right_to_left(domain->get_locale());
 		}
 	} else if (layout_dir == LAYOUT_DIRECTION_APPLICATION_LOCALE) {
 		if (GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
 			return true;
 		} else {
-			String locale = TranslationServer::get_singleton()->get_tool_locale();
-			return TS->is_locale_right_to_left(locale);
+			Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(get_translation_domain());
+			return TS->is_locale_right_to_left(domain->get_locale());
 		}
 	} else if (layout_dir == LAYOUT_DIRECTION_SYSTEM_LOCALE) {
 		if (GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {

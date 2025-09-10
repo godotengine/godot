@@ -305,8 +305,7 @@ StringName TranslationDomain::translate(const StringName &p_message, const Strin
 		return p_message;
 	}
 
-	const String &locale = locale_override.is_empty() ? TranslationServer::get_singleton()->get_locale() : locale_override;
-	StringName res = get_message_from_translations(locale, p_message, p_context);
+	StringName res = get_message_from_translations(get_locale(), p_message, p_context);
 
 	const String &fallback = TranslationServer::get_singleton()->get_fallback_locale();
 	if (!res && fallback.length() >= 2) {
@@ -324,8 +323,7 @@ StringName TranslationDomain::translate_plural(const StringName &p_message, cons
 		return p_n == 1 ? p_message : p_message_plural;
 	}
 
-	const String &locale = locale_override.is_empty() ? TranslationServer::get_singleton()->get_locale() : locale_override;
-	StringName res = get_message_from_translations(locale, p_message, p_message_plural, p_n, p_context);
+	StringName res = get_message_from_translations(get_locale(), p_message, p_message_plural, p_n, p_context);
 
 	const String &fallback = TranslationServer::get_singleton()->get_fallback_locale();
 	if (!res && fallback.length() >= 2) {
@@ -339,6 +337,10 @@ StringName TranslationDomain::translate_plural(const StringName &p_message, cons
 		return p_message_plural;
 	}
 	return res;
+}
+
+String TranslationDomain::get_locale() const {
+	return locale_override.is_empty() ? TranslationServer::get_singleton()->get_locale() : locale_override;
 }
 
 String TranslationDomain::get_locale_override() const {
@@ -462,6 +464,7 @@ void TranslationDomain::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationDomain::clear);
 	ClassDB::bind_method(D_METHOD("translate", "message", "context"), &TranslationDomain::translate, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("translate_plural", "message", "message_plural", "n", "context"), &TranslationDomain::translate_plural, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_locale"), &TranslationDomain::get_locale);
 	ClassDB::bind_method(D_METHOD("get_locale_override"), &TranslationDomain::get_locale_override);
 	ClassDB::bind_method(D_METHOD("set_locale_override", "locale"), &TranslationDomain::set_locale_override);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &TranslationDomain::is_enabled);

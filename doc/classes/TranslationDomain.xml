@@ -23,6 +23,12 @@
 				Removes all translations.
 			</description>
 		</method>
+		<method name="get_locale" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the current locale of the domain. This is the same as [method TranslationServer.get_locale] when the locale is not overridden by [method set_locale_override].
+			</description>
+		</method>
 		<method name="get_locale_override" qualifiers="const">
 			<return type="String" />
 			<description>
