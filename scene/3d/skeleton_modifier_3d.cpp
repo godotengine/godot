@@ -117,7 +117,7 @@ real_t SkeletonModifier3D::get_influence() const {
 }
 
 void SkeletonModifier3D::process_modification(double p_delta) {
-	if (!active) {
+	if (!is_inside_tree() || !active) {
 		return;
 	}
 	_process_modification(p_delta);
@@ -175,6 +175,29 @@ void SkeletonModifier3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(BONE_AXIS_MINUS_Y);
 	BIND_ENUM_CONSTANT(BONE_AXIS_PLUS_Z);
 	BIND_ENUM_CONSTANT(BONE_AXIS_MINUS_Z);
+
+	BIND_ENUM_CONSTANT(BONE_DIRECTION_PLUS_X);
+	BIND_ENUM_CONSTANT(BONE_DIRECTION_MINUS_X);
+	BIND_ENUM_CONSTANT(BONE_DIRECTION_PLUS_Y);
+	BIND_ENUM_CONSTANT(BONE_DIRECTION_MINUS_Y);
+	BIND_ENUM_CONSTANT(BONE_DIRECTION_PLUS_Z);
+	BIND_ENUM_CONSTANT(BONE_DIRECTION_MINUS_Z);
+	BIND_ENUM_CONSTANT(BONE_DIRECTION_FROM_PARENT);
+
+	BIND_ENUM_CONSTANT(SECONDARY_DIRECTION_NONE);
+	BIND_ENUM_CONSTANT(SECONDARY_DIRECTION_PLUS_X);
+	BIND_ENUM_CONSTANT(SECONDARY_DIRECTION_MINUS_X);
+	BIND_ENUM_CONSTANT(SECONDARY_DIRECTION_PLUS_Y);
+	BIND_ENUM_CONSTANT(SECONDARY_DIRECTION_MINUS_Y);
+	BIND_ENUM_CONSTANT(SECONDARY_DIRECTION_PLUS_Z);
+	BIND_ENUM_CONSTANT(SECONDARY_DIRECTION_MINUS_Z);
+	BIND_ENUM_CONSTANT(SECONDARY_DIRECTION_CUSTOM);
+
+	BIND_ENUM_CONSTANT(ROTATION_AXIS_X);
+	BIND_ENUM_CONSTANT(ROTATION_AXIS_Y);
+	BIND_ENUM_CONSTANT(ROTATION_AXIS_Z);
+	BIND_ENUM_CONSTANT(ROTATION_AXIS_ALL);
+	BIND_ENUM_CONSTANT(ROTATION_AXIS_CUSTOM);
 }
 
 Vector3 SkeletonModifier3D::get_vector_from_bone_axis(BoneAxis p_axis) {
@@ -246,7 +269,7 @@ Quaternion SkeletonModifier3D::get_local_pose_rotation(Skeleton3D *p_skeleton, i
 	if (parent < 0) {
 		return p_global_pose_rotation;
 	}
-	return p_skeleton->get_bone_global_pose(parent).basis.orthonormalized().inverse() * p_global_pose_rotation;
+	return (p_skeleton->get_bone_global_pose(parent).basis.get_rotation_quaternion().inverse() * p_global_pose_rotation).normalized();
 }
 
 Quaternion SkeletonModifier3D::get_from_to_rotation(const Vector3 &p_from, const Vector3 &p_to, const Quaternion &p_prev_rot) {
@@ -264,6 +287,47 @@ Quaternion SkeletonModifier3D::get_from_to_rotation(const Vector3 &p_from, const
 	return Quaternion(axis.normalized(), angle);
 }
 
+Quaternion SkeletonModifier3D::get_from_to_rotation_by_axis(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_axis) {
+	const double ALMOST_ONE = 1.0 - CMP_EPSILON;
+	double dot = p_from.dot(p_to);
+	if (dot > ALMOST_ONE) {
+		return Quaternion();
+	}
+	if (dot < -ALMOST_ONE) {
+		return Quaternion(p_axis, Math::PI);
+	}
+	double angle = p_from.angle_to(p_to);
+	Vector3 cross = p_from.cross(p_to);
+	if (std::signbit(cross.dot(p_axis))) {
+		angle = -angle;
+	}
+	return Quaternion(p_axis, angle);
+}
+
+Quaternion SkeletonModifier3D::get_swing(const Quaternion &p_rotation, const Vector3 &p_axis) {
+	if (p_axis.is_zero_approx()) {
+		return p_rotation;
+	}
+	Quaternion rot = p_rotation;
+	if (!rot.is_normalized()) {
+		rot.normalize();
+	}
+	Vector3 axis = p_axis.normalized();
+	const Vector3 v(rot.x, rot.y, rot.z);
+	const real_t proj_len = v.dot(axis);
+	const Vector3 twist_vec = axis * proj_len;
+	Quaternion twist(twist_vec.x, twist_vec.y, twist_vec.z, rot.w);
+	if (!twist.is_normalized()) {
+		if (Math::is_zero_approx(twist.length_squared())) {
+			return rot;
+		}
+		twist.normalize();
+	}
+	Quaternion swing = rot * twist.inverse();
+	swing.normalize();
+	return swing;
+}
+
 Vector3 SkeletonModifier3D::snap_vector_to_plane(const Vector3 &p_plane_normal, const Vector3 &p_vector) {
 	if (Math::is_zero_approx(p_plane_normal.length_squared())) {
 		return p_vector;
@@ -272,6 +336,58 @@ Vector3 SkeletonModifier3D::snap_vector_to_plane(const Vector3 &p_plane_normal, 
 	Vector3 normalized_vec = p_vector.normalized();
 	Vector3 normal = p_plane_normal.normalized();
 	return normalized_vec.slide(normal) * length;
+}
+
+double SkeletonModifier3D::symmetrize_angle(double p_angle) {
+	double angle = Math::fposmod(p_angle, Math::TAU);
+	return angle > Math::PI ? angle - Math::TAU : angle;
+}
+
+double SkeletonModifier3D::get_roll_angle(const Quaternion &p_rotation, const Vector3 &p_roll_axis) {
+	// Ensure roll axis is normalized.
+	Vector3 roll_axis = p_roll_axis.normalized();
+
+	// Project the quaternion rotation onto the roll axis.
+	// This gives us the component of rotation around that axis.
+	double dot = p_rotation.x * roll_axis.x +
+			p_rotation.y * roll_axis.y +
+			p_rotation.z * roll_axis.z;
+
+	// Create a quaternion representing just the roll component.
+	Quaternion roll_component;
+	roll_component.x = roll_axis.x * dot;
+	roll_component.y = roll_axis.y * dot;
+	roll_component.z = roll_axis.z * dot;
+	roll_component.w = p_rotation.w;
+
+	// Normalize this component.
+	double length = roll_component.length();
+	if (length > CMP_EPSILON) {
+		roll_component = roll_component / length;
+	} else {
+		return 0.0;
+	}
+
+	// Extract the angle.
+	double angle = 2.0 * Math::acos(CLAMP(roll_component.w, -1.0, 1.0));
+
+	// Determine the sign.
+	double direction = (roll_component.x * roll_axis.x + roll_component.y * roll_axis.y + roll_component.z * roll_axis.z > 0) ? 1.0 : -1.0;
+
+	return symmetrize_angle(angle * direction);
+}
+
+Vector3 SkeletonModifier3D::get_projected_normal(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_point) {
+	// Get nearest normal vector to p_point from the infinite line p_a to p_b.
+	const Vector3 dir = p_b - p_a;
+	const real_t denom = dir.length_squared();
+	if (Math::is_zero_approx(denom)) {
+		return Vector3();
+	}
+	const Vector3 w = p_point - p_a;
+	const real_t t = w.dot(dir) / denom;
+	const Vector3 h = p_a + dir * t;
+	return (p_point - h).normalized();
 }
 
 SkeletonModifier3D::SkeletonModifier3D() {
