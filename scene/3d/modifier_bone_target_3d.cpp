@@ -98,10 +98,6 @@ void ModifierBoneTarget3D::_bind_methods() {
 }
 
 void ModifierBoneTarget3D::_process_modification(double p_delta) {
-	if (!is_inside_tree()) {
-		return;
-	}
-
 	Skeleton3D *skeleton = get_skeleton();
 	if (!skeleton || bone < 0 || bone >= skeleton->get_bone_count()) {
 		return;

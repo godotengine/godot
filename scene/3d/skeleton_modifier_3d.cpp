@@ -117,7 +117,7 @@ real_t SkeletonModifier3D::get_influence() const {
 }
 
 void SkeletonModifier3D::process_modification(double p_delta) {
-	if (!active) {
+	if (!is_inside_tree() || !active) {
 		return;
 	}
 	_process_modification(p_delta);
