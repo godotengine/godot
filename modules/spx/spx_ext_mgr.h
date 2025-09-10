@@ -36,6 +36,7 @@
 #include "spx_base_mgr.h"
 
 class SpxPen;
+class SpxDrawTiles;
 
 struct DebugShape {
 	enum Type {
@@ -61,6 +62,8 @@ private:
 	
 	Vector<DebugShape> debug_shapes;
 	Node2D *debug_root;
+
+	SpxDrawTiles* draw_tiles = nullptr;
 
 	static Mutex lock;
 private:
@@ -102,6 +105,22 @@ public:
 	// debug
 	void debug_draw_circle(GdVec2 pos, GdFloat radius, GdColor color);
 	void debug_draw_rect(GdVec2 pos, GdVec2 size, GdColor color);
+
+	// draw tiles 
+	void open_draw_tiles();
+	void set_layer_index(GdInt index);
+	void set_tile(GdString texture_path);
+    void place_tile(GdVec2 pos);
+    void erase_tile(GdVec2 pos);
+	void close_draw_tiles();
+	template<typename Func>
+    void with_draw_tiles(Func f, const String error_msg = "The draw tiles node is null, first open it!!!") {
+        if (draw_tiles == nullptr) {
+            print_error(error_msg);
+            return;
+        }
+        f();
+    }
 };
 
 #endif // SPX_EXT_MGR_H

@@ -193,6 +193,24 @@ static void gdextension_spx_ext_debug_draw_circle(GdVec2 pos,GdFloat radius,GdCo
 static void gdextension_spx_ext_debug_draw_rect(GdVec2 pos,GdVec2 size,GdColor color) {
 	 extMgr->debug_draw_rect(pos, size, color);
 }
+static void gdextension_spx_ext_open_draw_tiles() {
+	 extMgr->open_draw_tiles();
+}
+static void gdextension_spx_ext_set_layer_index(GdInt index) {
+	 extMgr->set_layer_index(index);
+}
+static void gdextension_spx_ext_set_tile(GdString texture_path) {
+	 extMgr->set_tile(texture_path);
+}
+static void gdextension_spx_ext_place_tile(GdVec2 pos) {
+	 extMgr->place_tile(pos);
+}
+static void gdextension_spx_ext_erase_tile(GdVec2 pos) {
+	 extMgr->erase_tile(pos);
+}
+static void gdextension_spx_ext_close_draw_tiles() {
+	 extMgr->close_draw_tiles();
+}
 static void gdextension_spx_input_get_mouse_pos(GdVec2* ret_val) {
 	*ret_val = inputMgr->get_mouse_pos();
 }
@@ -873,6 +891,12 @@ void gdextension_spx_setup_interface() {
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_pen_stamp_texture);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_debug_draw_circle);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_debug_draw_rect);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_open_draw_tiles);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_layer_index);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_tile);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_place_tile);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_erase_tile);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_close_draw_tiles);
 	REGISTER_SPX_INTERFACE_FUNC(spx_input_get_mouse_pos);
 	REGISTER_SPX_INTERFACE_FUNC(spx_input_get_key);
 	REGISTER_SPX_INTERFACE_FUNC(spx_input_get_mouse_state);

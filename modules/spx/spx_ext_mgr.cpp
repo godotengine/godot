@@ -39,6 +39,7 @@
 #include "spx_pen.h"
 #include "spx_res_mgr.h"
 #include "spx_sprite.h"
+#include "spx_draw_tiles.h"
 #include <cmath>
 
 #define resMgr SpxEngine::get_singleton()->get_res()
@@ -280,4 +281,46 @@ void SpxExtMgr::debug_draw_rect(GdVec2 pos, GdVec2 size, GdColor color) {
 	shape.color = color;
 	shape.node = rect;
 	debug_shapes.push_back(shape);
+}
+
+
+void SpxExtMgr::open_draw_tiles() {
+    if (draw_tiles != nullptr) {
+        print_error("The draw tiles node already created");
+        return;
+    }
+
+    draw_tiles = memnew(SpxDrawTiles);
+    get_spx_root()->add_child(draw_tiles);
+}
+
+void SpxExtMgr::set_layer_index(GdInt index) {
+	with_draw_tiles([this, index](){
+		draw_tiles->set_sprite_index(index);
+	});
+}
+
+void SpxExtMgr::set_tile(GdString texture_path) {
+	with_draw_tiles([this, &texture_path](){
+		draw_tiles->set_sprite_texture(texture_path);
+	});
+}
+
+void SpxExtMgr::place_tile(GdVec2 pos) {
+	with_draw_tiles([this, pos](){
+		draw_tiles->place_sprite(pos);
+	});
+}
+
+void SpxExtMgr::erase_tile(GdVec2 pos) {
+	with_draw_tiles([this, pos](){
+		draw_tiles->erase_sprite(pos);
+	});
+}
+
+void SpxExtMgr::close_draw_tiles() {
+	if (draw_tiles != nullptr) {
+		draw_tiles->queue_free();
+		draw_tiles = nullptr;
+    }
 }
