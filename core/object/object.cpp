@@ -1650,6 +1650,19 @@ bool Object::_uses_signal_mutex() const {
 	return true;
 }
 
+String Object::_get_locale() const {
+	TranslationServer *ts = TranslationServer::get_singleton();
+	const StringName domain_name = get_translation_domain();
+	if (ts->has_domain(domain_name)) {
+		const Ref<TranslationDomain> domain = ts->get_or_add_domain(domain_name);
+		const String &overridden = domain->get_locale_override();
+		if (!overridden.is_empty()) {
+			return overridden;
+		}
+	}
+	return ts->get_locale();
+}
+
 void Object::_set_bind(const StringName &p_set, const Variant &p_value) {
 	set(p_set, p_value);
 }

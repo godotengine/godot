@@ -793,6 +793,9 @@ protected:
 
 	virtual bool _uses_signal_mutex() const;
 
+	// Internal helper to get the current locale, taking into account the translation domain.
+	String _get_locale() const;
+
 #ifdef TOOLS_ENABLED
 	struct VirtualMethodTracker {
 		void **method;

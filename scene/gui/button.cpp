@@ -600,7 +600,8 @@ void Button::_shape(Ref<TextParagraph> p_paragraph, String p_text) const {
 	} else {
 		p_paragraph->set_direction((TextServer::Direction)text_direction);
 	}
-	p_paragraph->add_string(p_text, font, font_size, language);
+	const String &lang = language.is_empty() ? _get_locale() : language;
+	p_paragraph->add_string(p_text, font, font_size, lang);
 	p_paragraph->set_text_overrun_behavior(overrun_behavior);
 }
 

@@ -136,6 +136,8 @@ int Label::get_line_height(int p_line) const {
 }
 
 void Label::_shape() const {
+	const String &lang = language.is_empty() ? _get_locale() : language;
+
 	Ref<StyleBox> style = theme_cache.normal_style;
 	int width = (get_size().width - style->get_minimum_size().width);
 
@@ -149,7 +151,7 @@ void Label::_shape() const {
 		}
 		paragraphs.clear();
 
-		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
+		String txt = (uppercase) ? TS->string_to_upper(xl_text, lang) : xl_text;
 		if (visible_chars >= 0 && visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			txt = txt.substr(0, visible_chars);
 		}
@@ -183,7 +185,7 @@ void Label::_shape() const {
 			ERR_FAIL_COND(font.is_null());
 
 			if (para.dirty) {
-				TS->shaped_text_add_string(para.text_rid, para.text, font->get_rids(), font_size, font->get_opentype_features(), language);
+				TS->shaped_text_add_string(para.text_rid, para.text, font->get_rids(), font_size, font->get_opentype_features(), lang);
 			} else {
 				int spans = TS->shaped_get_span_count(para.text_rid);
 				for (int i = 0; i < spans; i++) {
@@ -703,15 +705,14 @@ void Label::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			String new_text = atr(text);
-			if (new_text == xl_text) {
-				return; // Nothing new.
+			const String new_text = atr(text);
+			if (new_text != xl_text) {
+				xl_text = new_text;
+				if (visible_ratio < 1) {
+					visible_chars = get_total_character_count() * visible_ratio;
+				}
 			}
-			xl_text = new_text;
-			if (visible_ratio < 1) {
-				visible_chars = get_total_character_count() * visible_ratio;
-			}
-			text_dirty = true;
+			text_dirty = true; // Language update might change the appearance of some characters.
 
 			queue_accessibility_update();
 			queue_redraw();

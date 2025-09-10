@@ -43,7 +43,8 @@ void LinkButton::_shape() {
 		text_buf->set_direction((TextServer::Direction)text_direction);
 	}
 	TS->shaped_text_set_bidi_override(text_buf->get_rid(), structured_text_parser(st_parser, st_args, xl_text));
-	text_buf->add_string(xl_text, font, font_size, language);
+	const String &lang = language.is_empty() ? _get_locale() : language;
+	text_buf->add_string(xl_text, font, font_size, lang);
 
 	queue_accessibility_update();
 }

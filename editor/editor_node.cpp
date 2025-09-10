@@ -453,6 +453,10 @@ void EditorNode::_update_from_settings() {
 	String current_fallback_locale = GLOBAL_GET("internationalization/locale/fallback");
 	if (current_fallback_locale != TranslationServer::get_singleton()->get_fallback_locale()) {
 		TranslationServer::get_singleton()->set_fallback_locale(current_fallback_locale);
+		Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_main_domain();
+		if (!domain->is_enabled()) {
+			domain->set_locale_override(current_fallback_locale);
+		}
 		scene_root->propagate_notification(Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
 	}
 
@@ -4175,8 +4179,15 @@ void EditorNode::set_preview_locale(const String &p_locale) {
 	// Texts set in the editor could be identifiers that should never be translated.
 	// So we need to disable translation entirely.
 	Ref<TranslationDomain> main_domain = TranslationServer::get_singleton()->get_main_domain();
-	main_domain->set_enabled(!p_locale.is_empty());
-	main_domain->set_locale_override(p_locale);
+	if (p_locale.is_empty()) {
+		// Disable preview. Use the fallback locale.
+		main_domain->set_enabled(false);
+		main_domain->set_locale_override(TranslationServer::get_singleton()->get_fallback_locale());
+	} else {
+		// Preview a specific locale.
+		main_domain->set_enabled(true);
+		main_domain->set_locale_override(p_locale);
+	}
 
 	_translation_resources_changed();
 }
@@ -7574,7 +7585,10 @@ EditorNode::EditorNode() {
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorNode::_update_from_settings));
 	GDExtensionManager::get_singleton()->connect("extensions_reloaded", callable_mp(this, &EditorNode::_gdextensions_reloaded));
 
-	TranslationServer::get_singleton()->get_main_domain()->set_enabled(false);
+	Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_main_domain();
+	domain->set_enabled(false);
+	domain->set_locale_override(TranslationServer::get_singleton()->get_fallback_locale());
+
 	// Load settings.
 	if (!EditorSettings::get_singleton()) {
 		EditorSettings::create();
