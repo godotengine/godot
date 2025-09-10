@@ -776,6 +776,16 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Behavior: General
 	_initial_set("text_editor/behavior/general/empty_selection_clipboard", true);
 
+	PackedStringArray extensions;
+	if (ClassDB::class_exists("GDScript")) {
+		extensions.push_back("gd");
+	}
+	if (ClassDB::class_exists("CSharpScript")) {
+		extensions.push_back("cs");
+	}
+	extensions.push_back("gdshader");
+	_initial_set("text_editor/behavior/general/search_in_file_extensions", extensions);
+
 	// Behavior: Navigation
 	_initial_set("text_editor/behavior/navigation/move_caret_on_right_click", true, true);
 	_initial_set("text_editor/behavior/navigation/scroll_past_end_of_file", false, true);

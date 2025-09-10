@@ -35,6 +35,7 @@
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -573,21 +574,28 @@ HashSet<String> FindInFilesDialog::get_excludes() const {
 void FindInFilesDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (is_visible()) {
-				// Extensions might have changed in the meantime, we clean them and instance them again.
+			if (is_visible() && _extensions_dirty) {
+				// Refresh extension checkboxes when the settings changed.
 				for (int i = 0; i < _filters_container->get_child_count(); i++) {
 					_filters_container->get_child(i)->queue_free();
 				}
-				Array exts = GLOBAL_GET("editor/script/search_in_file_extensions");
-				for (int i = 0; i < exts.size(); ++i) {
+				const PackedStringArray extensions = EDITOR_GET("text_editor/behavior/general/search_in_file_extensions");
+				for (const String &ext : extensions) {
 					CheckBox *cb = memnew(CheckBox);
-					cb->set_text(exts[i]);
-					if (!_filters_preferences.has(exts[i])) {
-						_filters_preferences[exts[i]] = true;
+					cb->set_text(ext);
+					if (!_filters_preferences.has(ext)) {
+						_filters_preferences[ext] = true;
 					}
-					cb->set_pressed(_filters_preferences[exts[i]]);
+					cb->set_pressed(_filters_preferences[ext]);
 					_filters_container->add_child(cb);
 				}
+				_extensions_dirty = false;
+			}
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/behavior/general")) {
+				_extensions_dirty = true;
 			}
 		} break;
 	}

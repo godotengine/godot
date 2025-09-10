@@ -1348,6 +1348,9 @@
 		<member name="text_editor/behavior/general/empty_selection_clipboard" type="bool" setter="" getter="">
 			If [code]true[/code], copying or cutting without a selection is performed on all lines with a caret. Otherwise, copy and cut require a selection.
 		</member>
+		<member name="text_editor/behavior/general/search_in_file_extensions" type="PackedStringArray" setter="" getter="">
+			Text-based file extensions to include in the editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files.
+		</member>
 		<member name="text_editor/behavior/indent/auto_indent" type="bool" setter="" getter="">
 			If [code]true[/code], automatically indents code when pressing the [kbd]Enter[/kbd] key based on blocks above the new line.
 		</member>

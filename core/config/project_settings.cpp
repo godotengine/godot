@@ -603,6 +603,7 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 	handle_editor_setting_compat("editor/naming/node_name_num_separator", "naming/node_name_num_separator");
 	handle_editor_setting_compat("editor/naming/default_signal_callback_to_self_name", "naming/default_signal_callback_to_self_name");
 	handle_editor_setting_compat("editor/naming/default_signal_callback_name", "naming/default_signal_callback_name");
+	handle_editor_setting_compat("editor/script/search_in_file_extensions", "text_editor/behavior/general/search_in_file_extensions");
 #endif // DISABLE_DEPRECATED
 }
 
