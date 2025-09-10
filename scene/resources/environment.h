@@ -88,6 +88,11 @@ public:
 		GLOW_BLEND_MODE_MIX,
 	};
 
+	enum BrightnessScale {
+		BRIGHTNESS_SCALE_SRGB,
+		BRIGHTNESS_SCALE_LINEAR,
+	};
+
 private:
 	RID environment;
 
@@ -219,6 +224,8 @@ private:
 	float adjustment_saturation = 1.0;
 	bool use_1d_color_correction = true;
 	Ref<Texture> adjustment_color_correction;
+	BrightnessScale adjustment_brightness_scale = BrightnessScale::BRIGHTNESS_SCALE_SRGB;
+	bool adjustment_bcs_legacy = false;
 	void _update_adjustment();
 
 protected:
@@ -441,6 +448,10 @@ public:
 	float get_adjustment_saturation() const;
 	void set_adjustment_color_correction(Ref<Texture> p_color_correction);
 	Ref<Texture> get_adjustment_color_correction() const;
+	void set_adjustment_brightness_scale(BrightnessScale p_brightness_scale);
+	BrightnessScale get_adjustment_brightness_scale() const;
+	void set_adjustment_bcs_legacy(bool p_bcs_legacy);
+	bool get_adjustment_bcs_legacy() const;
 
 	Environment();
 	~Environment();
@@ -453,3 +464,4 @@ VARIANT_ENUM_CAST(Environment::ToneMapper)
 VARIANT_ENUM_CAST(Environment::SDFGIYScale)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
 VARIANT_ENUM_CAST(Environment::FogMode)
+VARIANT_ENUM_CAST(Environment::BrightnessScale)

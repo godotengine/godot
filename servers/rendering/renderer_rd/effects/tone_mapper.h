@@ -66,6 +66,7 @@ private:
 		TONEMAP_FLAG_USE_8_BIT_DEBANDING = (1 << 5),
 		TONEMAP_FLAG_USE_10_BIT_DEBANDING = (1 << 6),
 		TONEMAP_FLAG_CONVERT_TO_SRGB = (1 << 7),
+		TONEMAP_FLAG_BCS_LEGACY = (1 << 8),
 	};
 
 	struct TonemapPushConstant {
@@ -136,6 +137,7 @@ public:
 		float brightness = 1.0;
 		float contrast = 1.0;
 		float saturation = 1.0;
+		bool bcs_legacy = false;
 
 		bool use_color_correction = false;
 		bool use_1d_color_correction = false;

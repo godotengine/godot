@@ -68,6 +68,7 @@ layout(set = 3, binding = 0) uniform sampler3D source_color_correction;
 #define FLAG_USE_8_BIT_DEBANDING (1 << 5)
 #define FLAG_USE_10_BIT_DEBANDING (1 << 6)
 #define FLAG_CONVERT_TO_SRGB (1 << 7)
+#define FLAG_BCS_LEGACY (1 << 8)
 
 layout(push_constant, std430) uniform Params {
 	vec3 bcs;
@@ -329,11 +330,13 @@ vec3 tonemap_agx(vec3 color) {
 }
 
 vec3 linear_to_srgb(vec3 color) {
-	// Clamping is not strictly necessary for floating point nonlinear sRGB encoding,
-	// but many cases that call this function need the result clamped.
-	color = clamp(color, vec3(0.0), vec3(1.0));
 	const vec3 a = vec3(0.055f);
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
+}
+
+vec3 srgb_to_linear(vec3 color) {
+	const vec3 a = vec3(0.055f);
+	return mix(pow((color.rgb + a) * (1.0f / (vec3(1.0f) + a)), vec3(2.4f)), color.rgb * (1.0f / 12.92f), lessThan(color.rgb, vec3(0.04045f)));
 }
 
 #define TONEMAPPER_LINEAR 0
@@ -423,13 +426,6 @@ vec3 apply_glow(vec3 color, vec3 glow) { // apply glow using the selected blendi
 	}
 }
 
-vec3 apply_bcs(vec3 color, vec3 bcs) {
-	color = mix(vec3(0.0f), color, bcs.x);
-	color = mix(vec3(0.5f), color, bcs.y);
-	color = mix(vec3(dot(vec3(1.0f), color) * 0.33333f), color, bcs.z);
-
-	return color;
-}
 #ifdef USE_1D_LUT
 vec3 apply_color_correction(vec3 color) {
 	color.r = texture(source_color_correction, vec2(color.r, 0.0f)).r;
@@ -895,7 +891,40 @@ void main() {
 	// Additional effects
 
 	if (bool(params.flags & FLAG_USE_BCS)) {
-		color.rgb = apply_bcs(color.rgb, params.bcs);
+		if (bool(params.flags & FLAG_BCS_LEGACY)) {
+			// Legacy behavior applies these functions to RGB values that use
+			// encoding based on FLAG_CONVERT_TO_SRGB.
+			if (bool(params.flags & FLAG_CONVERT_TO_SRGB)) {
+				color.rgb = clamp(color.rgb, vec3(0.0), vec3(1.0));
+				color.rgb = linear_to_srgb(color.rgb);
+			}
+
+			color.rgb = color.rgb * params.bcs.x;
+			color.rgb = mix(vec3(0.5f), color.rgb, params.bcs.y);
+			color.rgb = mix(vec3(dot(vec3(1.0f), color.rgb) * (1.0f / 3.0f)), color.rgb, params.bcs.z);
+
+			if (bool(params.flags & FLAG_CONVERT_TO_SRGB)) {
+				color.rgb = srgb_to_linear(color.rgb);
+			}
+		} else {
+			// Apply brightness:
+			// Apply to relative luminance. This ensures that the hue and saturation of
+			// colors is not affected by the adjustment, but requires the multiplication
+			// to be performed on linear encoded values.
+			color.rgb = color.rgb * params.bcs.x;
+
+			// Apply contrast:
+			// Use the industry-standard "18% middle gray" as the pivot.
+			// This approximately matches Photoshop 26.1's camera raw filter behavior.
+			color.rgb = mix(vec3(0.18), color.rgb, params.bcs.y);
+
+			// Apply saturation:
+			// Luminance weights of the current primaries must be used to prevent blues from
+			// brightening when saturation is decreased and darkening when saturation is increased.
+			// This approach approximately matches Photoshop 26.1's camera raw filter behavior.
+			const vec3 rec709_luminance_weights = vec3(0.2126, 0.7152, 0.0722);
+			color.rgb = mix(vec3(dot(rec709_luminance_weights, color.rgb)), color.rgb, params.bcs.z);
+		}
 	}
 
 	if (bool(params.flags & FLAG_CONVERT_TO_SRGB) || bool(params.flags & FLAG_USE_COLOR_CORRECTION)) {
@@ -903,6 +932,7 @@ void main() {
 	}
 
 	if (bool(params.flags & FLAG_USE_COLOR_CORRECTION)) {
+		color.rgb = clamp(color.rgb, vec3(0.0), vec3(1.0));
 		color.rgb = apply_color_correction(color.rgb);
 		// When FLAG_CONVERT_TO_SRGB is false, there is no need to convert back to
 		// linear because the color correction texture sampling does this for us.

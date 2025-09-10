@@ -1066,6 +1066,25 @@ Ref<Texture> Environment::get_adjustment_color_correction() const {
 	return adjustment_color_correction;
 }
 
+void Environment::set_adjustment_brightness_scale(BrightnessScale p_brightness_scale) {
+	adjustment_brightness_scale = p_brightness_scale;
+	_update_adjustment();
+}
+
+Environment::BrightnessScale Environment::get_adjustment_brightness_scale() const {
+	return adjustment_brightness_scale;
+}
+
+void Environment::set_adjustment_bcs_legacy(bool p_bcs_legacy) {
+	adjustment_bcs_legacy = p_bcs_legacy;
+	_update_adjustment();
+	notify_property_list_changed();
+}
+
+bool Environment::get_adjustment_bcs_legacy() const {
+	return adjustment_bcs_legacy;
+}
+
 void Environment::_update_adjustment() {
 	RID color_correction = adjustment_color_correction.is_valid() ? adjustment_color_correction->get_rid() : RID();
 
@@ -1076,7 +1095,9 @@ void Environment::_update_adjustment() {
 			adjustment_contrast,
 			adjustment_saturation,
 			use_1d_color_correction,
-			color_correction);
+			color_correction,
+			RS::EnvironmentBrightnessScale(adjustment_brightness_scale),
+			adjustment_bcs_legacy);
 }
 
 // Private methods, constructor and destructor
@@ -1154,6 +1175,10 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	if (p_property.name == "background_intensity" && !GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (p_property.name == "adjustment_brightness_scale" && adjustment_bcs_legacy == true) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
@@ -1519,12 +1544,18 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_adjustment_saturation"), &Environment::get_adjustment_saturation);
 	ClassDB::bind_method(D_METHOD("set_adjustment_color_correction", "color_correction"), &Environment::set_adjustment_color_correction);
 	ClassDB::bind_method(D_METHOD("get_adjustment_color_correction"), &Environment::get_adjustment_color_correction);
+	ClassDB::bind_method(D_METHOD("set_adjustment_brightness_scale", "brightness_scale"), &Environment::set_adjustment_brightness_scale);
+	ClassDB::bind_method(D_METHOD("get_adjustment_brightness_scale"), &Environment::get_adjustment_brightness_scale);
+	ClassDB::bind_method(D_METHOD("set_adjustment_bcs_legacy", "bcs_legacy"), &Environment::set_adjustment_bcs_legacy);
+	ClassDB::bind_method(D_METHOD("get_adjustment_bcs_legacy"), &Environment::get_adjustment_bcs_legacy);
 
 	ADD_GROUP("Adjustments", "adjustment_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "adjustment_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_adjustment_enabled", "is_adjustment_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_brightness", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_brightness", "get_adjustment_brightness");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_contrast", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_contrast", "get_adjustment_contrast");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_saturation", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_saturation", "get_adjustment_saturation");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "adjustment_brightness_scale", PROPERTY_HINT_ENUM, "sRGB, Linear"), "set_adjustment_brightness_scale", "get_adjustment_brightness_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_brightness", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_greater"), "set_adjustment_brightness", "get_adjustment_brightness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_contrast", PROPERTY_HINT_RANGE, "0.75,1.25,0.005,or_greater,or_less"), "set_adjustment_contrast", "get_adjustment_contrast");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_saturation", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_greater,or_less"), "set_adjustment_saturation", "get_adjustment_saturation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "adjustment_bcs_legacy"), "set_adjustment_bcs_legacy", "get_adjustment_bcs_legacy");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "adjustment_color_correction", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D,Texture3D"), "set_adjustment_color_correction", "get_adjustment_color_correction");
 
 	// Constants
@@ -1564,6 +1595,9 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_50_PERCENT);
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_75_PERCENT);
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_100_PERCENT);
+
+	BIND_ENUM_CONSTANT(BRIGHTNESS_SCALE_SRGB);
+	BIND_ENUM_CONSTANT(BRIGHTNESS_SCALE_LINEAR);
 }
 
 Environment::Environment() {
