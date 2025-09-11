@@ -437,7 +437,9 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			if (col != Color()) {
 				for (int k = j - 1; k >= 0; k--) {
 					if (str[k] == '.') {
-						col = Color(); // Keyword, member & global func indexing not allowed.
+						// Keyword, member, & global func indexing not allowed,
+						// but don't reset color if prev was a number like "5."
+						col = (prev_type == NUMBER) ? col : Color();
 						break;
 					} else if (str[k] > 32) {
 						break;
