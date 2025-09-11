@@ -141,11 +141,11 @@ void Light3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, 
 			float cf_dot_lr = cfv.dot(gt.basis.get_column(0));
 			const float min_cos_angle = 0.001; // if cosine of angle between cam forward and the edited light axis is less than this, we don't move the gizmo at all to prevent unstable results
 
-			if (abs(cf_dot_lr) < 1.0 - min_cos_angle) {
+			if (Math::abs(cf_dot_lr) < 1.0 - min_cos_angle) {
 				float cf_dot_lf = cfv.dot(gt.basis.get_column(2));
 				float cf_dot_lu = cfv.dot(gt.basis.get_column(1));
 				Plane p;
-				if (abs(cf_dot_lf) > abs(cf_dot_lu)) { // we are looking directly onto the light, use light plane
+				if (Math::abs(cf_dot_lf) > Math::abs(cf_dot_lu)) { // we are looking directly onto the light, use light plane
 					p = Plane(gt.basis.get_column(2), gt.origin);
 				} else { // we see the light at an angle, use plane normal to light up
 					p = Plane(gt.basis.get_column(1), gt.origin);
@@ -172,11 +172,11 @@ void Light3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, 
 			float cf_dot_lu = cfv.dot(gt.basis.get_column(1));
 			const float min_cos_angle = 0.001; // if cosine of angle between cam forward and the edited light axis is less than this, we don't move the gizmo at all to prevent unstable results
 
-			if (abs(cf_dot_lu) < 1.0 - min_cos_angle) {
+			if (Math::abs(cf_dot_lu) < 1.0 - min_cos_angle) {
 				float cf_dot_lf = cfv.dot(gt.basis.get_column(2));
 				float cf_dot_lr = cfv.dot(gt.basis.get_column(0));
 				Plane p;
-				if (abs(cf_dot_lf) > abs(cf_dot_lr)) { // we are looking directly onto the light, use light plane
+				if (Math::abs(cf_dot_lf) > Math::abs(cf_dot_lr)) { // we are looking directly onto the light, use light plane
 					p = Plane(gt.basis.get_column(2), gt.origin);
 				} else { // we see the light at an angle, use plane normal to light right
 					p = Plane(gt.basis.get_column(0), gt.origin);
