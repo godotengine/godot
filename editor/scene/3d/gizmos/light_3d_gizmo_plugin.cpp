@@ -137,17 +137,29 @@ void Light3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, 
 			}
 
 		} else if (Object::cast_to<AreaLight3D>(light)) {
-			Plane lp = Plane(gt.basis.get_column(2), gt.origin);
+			Vector3 cfv = p_camera->get_transform().basis.get_column(2);
+			float cf_dot_lr = cfv.dot(gt.basis.get_column(0));
+			const float min_cos_angle = 0.001; // if cosine of angle between cam forward and the edited light axis is less than this, we don't move the gizmo at all to prevent unstable results
 
-			Vector3 inters;
-			if (lp.intersects_ray(ray_from, ray_dir, &inters)) {
-				Vector3 inv = gi.xform(inters);
+			if (abs(cf_dot_lr) < 1.0 - min_cos_angle) {
+				float cf_dot_lf = cfv.dot(gt.basis.get_column(2));
+				float cf_dot_lu = cfv.dot(gt.basis.get_column(1));
+				Plane p;
+				if (abs(cf_dot_lf) > abs(cf_dot_lu)) { // we are looking directly onto the light, use light plane
+					p = Plane(gt.basis.get_column(2), gt.origin);
+				} else { // we see the light at an angle, use plane normal to light up
+					p = Plane(gt.basis.get_column(1), gt.origin);
+				}
+				Vector3 inters;
+				if (p.intersects_ray(ray_from, ray_dir, &inters)) {
+					Vector3 inv = gi.xform(inters); // point local to light
 
-				float a = inv.x;
-				if (a >= 0) {
-					Vector2 area_size = light->get_area_size();
-					area_size.x = MAX(a * 2, 0.001);
-					light->set_area_size(area_size);
+					float a = inv.x;
+					if (a >= 0) {
+						Vector2 area_size = light->get_area_size();
+						area_size.x = MAX(a * 2, 0.001);
+						light->set_area_size(area_size);
+					}
 				}
 			}
 		}
@@ -156,17 +168,29 @@ void Light3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, 
 			float a = _find_closest_angle_to_half_pi_arc(s[0], s[1], light->get_param(Light3D::PARAM_RANGE), gt);
 			light->set_param(Light3D::PARAM_SPOT_ANGLE, CLAMP(a, 0.01, 89.99));
 		} else if (Object::cast_to<AreaLight3D>(light)) {
-			Plane cp = Plane(gt.basis.get_column(2), gt.origin);
+			Vector3 cfv = p_camera->get_transform().basis.get_column(2);
+			float cf_dot_lu = cfv.dot(gt.basis.get_column(1));
+			const float min_cos_angle = 0.001; // if cosine of angle between cam forward and the edited light axis is less than this, we don't move the gizmo at all to prevent unstable results
 
-			Vector3 inters;
-			if (cp.intersects_ray(ray_from, ray_dir, &inters)) {
-				Vector3 inv = gi.xform(inters);
+			if (abs(cf_dot_lu) < 1.0 - min_cos_angle) {
+				float cf_dot_lf = cfv.dot(gt.basis.get_column(2));
+				float cf_dot_lr = cfv.dot(gt.basis.get_column(0));
+				Plane p;
+				if (abs(cf_dot_lf) > abs(cf_dot_lr)) { // we are looking directly onto the light, use light plane
+					p = Plane(gt.basis.get_column(2), gt.origin);
+				} else { // we see the light at an angle, use plane normal to light right
+					p = Plane(gt.basis.get_column(0), gt.origin);
+				}
+				Vector3 inters;
+				if (p.intersects_ray(ray_from, ray_dir, &inters)) {
+					Vector3 inv = gi.xform(inters); // point local to light
 
-				float b = inv.y;
-				if (b >= 0) {
-					Vector2 area_size = light->get_area_size();
-					area_size.y = MAX(b * 2, 0.001);
-					light->set_area_size(area_size);
+					float b = inv.y;
+					if (b >= 0) {
+						Vector2 area_size = light->get_area_size();
+						area_size.y = MAX(b * 2, 0.001);
+						light->set_area_size(area_size);
+					}
 				}
 			}
 		}
