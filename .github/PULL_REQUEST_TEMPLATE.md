@@ -6,5 +6,5 @@ Relevant fixes are cherry-picked for stable branches as needed by maintainers.
 You can mention in the description if the change is compatible with `3.x`.
 
 To speed up the contribution process and avoid CI errors, please set up pre-commit hooks locally:
-https://docs.godotengine.org/en/latest/contributing/development/code_style_guidelines.html
+https://contributing.godotengine.org/en/latest/engine/guidelines/code_style.html
 -->
