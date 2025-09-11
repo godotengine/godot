@@ -599,6 +599,7 @@ void TextServer::_bind_methods() {
 	BIND_BITFIELD_FLAG(OVERRUN_ADD_ELLIPSIS);
 	BIND_BITFIELD_FLAG(OVERRUN_ENFORCE_ELLIPSIS);
 	BIND_BITFIELD_FLAG(OVERRUN_JUSTIFICATION_AWARE);
+	BIND_BITFIELD_FLAG(OVERRUN_SHORT_STRING_ELLIPSIS);
 
 	/* GraphemeFlag */
 	BIND_BITFIELD_FLAG(GRAPHEME_IS_VALID);
@@ -2372,12 +2373,12 @@ BitField<TextServer::TextOverrunFlag> TextServer::get_overrun_flags_from_behavio
 			overrun_flags.set_flag(OVERRUN_TRIM);
 			overrun_flags.set_flag(OVERRUN_TRIM_WORD_ONLY);
 			overrun_flags.set_flag(OVERRUN_ADD_ELLIPSIS);
-			overrun_flags.set_flag(OVERRUN_ENFORCE_ELLIPSIS);
+			overrun_flags.set_flag(OVERRUN_SHORT_STRING_ELLIPSIS);
 		} break;
 		case OVERRUN_TRIM_ELLIPSIS_FORCE: {
 			overrun_flags.set_flag(OVERRUN_TRIM);
 			overrun_flags.set_flag(OVERRUN_ADD_ELLIPSIS);
-			overrun_flags.set_flag(OVERRUN_ENFORCE_ELLIPSIS);
+			overrun_flags.set_flag(OVERRUN_SHORT_STRING_ELLIPSIS);
 		} break;
 		case OVERRUN_TRIM_WORD_ELLIPSIS:
 			overrun_flags.set_flag(OVERRUN_TRIM);
