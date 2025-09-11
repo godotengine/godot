@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GodotInstance" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="is_started">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="iteration">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="start">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

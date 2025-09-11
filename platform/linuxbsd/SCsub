@@ -13,6 +13,12 @@ common_linuxbsd = [
     "freedesktop_at_spi_monitor.cpp",
 ]
 
+libgodot_files = [
+    "libgodot_linuxbsd.cpp",
+]
+
+executable_files = ["godot_linuxbsd.cpp"]
+
 if env["use_sowrap"]:
     common_linuxbsd.append("xkbcommon-so_wrap.c")
 
@@ -35,7 +41,10 @@ if env["dbus"]:
     if env["use_sowrap"]:
         common_linuxbsd.append("dbus-so_wrap.c")
 
-prog = env.add_program("#bin/godot", ["godot_linuxbsd.cpp"] + common_linuxbsd)
+if env["library_type"] == "shared_library":
+    prog = env.add_shared_library("#bin/godot", common_linuxbsd + libgodot_files)
+else:
+    prog = env.add_program("#bin/godot", common_linuxbsd + executable_files)
 
 if env["debug_symbols"] and env["separate_debug_symbols"]:
     env.AddPostAction(prog, env.Run(platform_linuxbsd_builders.make_debug_linuxbsd))

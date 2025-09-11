@@ -243,7 +243,7 @@ def configure_msvc(env: "SConsEnvironment"):
     ## Build type
 
     # TODO: Re-evaluate the need for this / streamline with common config.
-    if env["target"] == "template_release":
+    if env["target"] == "template_release" and env["library_type"] == "executable":
         env.Append(LINKFLAGS=["/ENTRY:mainCRTStartup"])
 
     if env["windows_subsystem"] == "gui":
