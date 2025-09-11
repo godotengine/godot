@@ -217,7 +217,9 @@ Size2 EditorProperty::get_minimum_size() const {
 	Size2 ms;
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Tree"));
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Tree"));
-	ms.height = label.is_empty() ? 0 : font->get_height(font_size) + 4 * EDSCALE;
+	int separation = 4 * EDSCALE;
+	ms.height = label.is_empty() ? 0 : font->get_height(font_size) + separation;
+	int padding = int(EDITOR_GET("interface/theme/base_spacing")) * 2;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
@@ -234,23 +236,22 @@ Size2 EditorProperty::get_minimum_size() const {
 
 	if (keying) {
 		Ref<Texture2D> key = get_editor_theme_icon(SNAME("Key"));
-		ms.width += key->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
+		ms.width += key->get_width() + padding + separation + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 	}
 
 	if (deletable) {
 		Ref<Texture2D> key = get_editor_theme_icon(SNAME("Close"));
-		ms.width += key->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
+		ms.width += key->get_width() + padding + separation + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 	}
 
 	if (checkable) {
 		Ref<Texture2D> check = get_theme_icon(SNAME("checked"), SNAME("CheckBox"));
-		ms.width += check->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
+		ms.width += check->get_width() + padding + separation + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 	}
 
 	if (bottom_editor != nullptr && bottom_editor->is_visible()) {
 		ms.height += label.is_empty() ? 0 : get_theme_constant(SNAME("v_separation"));
 		Size2 bems = bottom_editor->get_combined_minimum_size();
-		//bems.width += get_constant("item_margin", "Tree");
 		ms.height += bems.height;
 		ms.width = MAX(ms.width, bems.width);
 	}
@@ -299,7 +300,9 @@ void EditorProperty::_notification(int p_what) {
 				int child_room = size.width * (1.0 - split_ratio);
 				Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Tree"));
 				int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Tree"));
-				int height = label.is_empty() ? 0 : font->get_height(font_size) + 4 * EDSCALE;
+				int separation = 4 * EDSCALE;
+				int height = label.is_empty() ? 0 : font->get_height(font_size) + separation;
+				int half_padding = EDITOR_GET("interface/theme/base_spacing");
 				bool no_children = true;
 
 				//compute room needed
@@ -317,6 +320,7 @@ void EditorProperty::_notification(int p_what) {
 					height = MAX(height, minsize.height);
 					no_children = false;
 				}
+				child_room = MAX(child_room, get_minimum_size().width);
 
 				if (no_children) {
 					text_size = size.width;
@@ -325,7 +329,7 @@ void EditorProperty::_notification(int p_what) {
 					text_size = 0;
 					rect = Rect2(1, 0, size.width - 1, height);
 				} else {
-					text_size = MAX(0, size.width - (child_room + 4 * EDSCALE));
+					text_size = MAX(0, size.width - (child_room + separation));
 					if (is_layout_rtl()) {
 						rect = Rect2(1, 0, child_room, height);
 					} else {
@@ -347,13 +351,14 @@ void EditorProperty::_notification(int p_what) {
 						key = get_editor_theme_icon(SNAME("Key"));
 					}
 
-					rect.size.x -= key->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
+					rect.size.x -= key->get_width() + half_padding + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 					if (is_layout_rtl()) {
-						rect.position.x += key->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
+						rect.position.x += key->get_width() + half_padding + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 					}
 
 					if (no_children) {
-						text_size -= key->get_width() + 4 * EDSCALE;
+						// Use full padding to avoid overlapping with the revert button.
+						text_size -= key->get_width() + half_padding * 2 + separation;
 					}
 				}
 
@@ -362,21 +367,21 @@ void EditorProperty::_notification(int p_what) {
 
 					close = get_editor_theme_icon(SNAME("Close"));
 
-					rect.size.x -= close->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
+					rect.size.x -= close->get_width() + half_padding + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 
 					if (is_layout_rtl()) {
-						rect.position.x += close->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
+						rect.position.x += close->get_width() + half_padding + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 					}
 
 					if (no_children) {
-						text_size -= close->get_width() + 4 * EDSCALE;
+						text_size -= close->get_width() + half_padding + separation;
 					}
 				}
 
 				// Account for the space needed on the outer side
 				// when any of the icons are visible.
 				if (keying || deletable) {
-					int separation = get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
+					separation = get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 					rect.size.x -= separation;
 
 					if (is_layout_rtl()) {
@@ -449,9 +454,8 @@ void EditorProperty::_notification(int p_what) {
 
 			int ofs = get_theme_constant(SNAME("font_offset"));
 			int text_limit = text_size - ofs;
-			int base_spacing = EDITOR_GET("interface/theme/base_spacing");
-			int padding = base_spacing * EDSCALE;
-			int half_padding = padding / 2;
+			int half_padding = EDITOR_GET("interface/theme/base_spacing");
+			int padding = half_padding * 2;
 
 			if (checkable) {
 				Ref<Texture2D> checkbox;
@@ -474,7 +478,7 @@ void EditorProperty::_notification(int p_what) {
 					color2.g *= 1.2;
 					color2.b *= 1.2;
 
-					Ref<StyleBox> sb_hover = get_theme_stylebox(SceneStringName(hover), "Button");
+					Ref<StyleBox> sb_hover = get_theme_stylebox(SceneStringName(hover), SceneStringName(FlatButton));
 					if (rtl) {
 						draw_style_box(sb_hover, Rect2(rtl_pos, check_rect.size));
 					} else {
@@ -486,7 +490,7 @@ void EditorProperty::_notification(int p_what) {
 				} else {
 					draw_texture(checkbox, check_rect.position + Point2(padding, size.height - checkbox->get_height()) / 2, color2);
 				}
-				int check_ofs = checkbox->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
+				int check_ofs = checkbox->get_width() + padding + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 				ofs += check_ofs;
 				text_limit -= check_ofs;
 			} else {
@@ -509,7 +513,7 @@ void EditorProperty::_notification(int p_what) {
 					color2.g *= 1.2;
 					color2.b *= 1.2;
 
-					Ref<StyleBox> sb_hover = get_theme_stylebox(SceneStringName(hover), "Button");
+					Ref<StyleBox> sb_hover = get_theme_stylebox(SceneStringName(hover), SceneStringName(FlatButton));
 					if (rtl) {
 						draw_style_box(sb_hover, Rect2(rtl_pos, revert_rect.size));
 					} else {
@@ -521,6 +525,7 @@ void EditorProperty::_notification(int p_what) {
 				} else {
 					draw_texture(reload_icon, revert_rect.position + Point2(padding, size.height - reload_icon->get_height()) / 2, color2);
 				}
+				text_limit -= half_padding;
 			} else {
 				revert_rect = Rect2();
 			}
@@ -571,7 +576,7 @@ void EditorProperty::_notification(int p_what) {
 					color2.g *= 1.2;
 					color2.b *= 1.2;
 
-					Ref<StyleBox> sb_hover = get_theme_stylebox(SceneStringName(hover), "Button");
+					Ref<StyleBox> sb_hover = get_theme_stylebox(SceneStringName(hover), SceneStringName(FlatButton));
 					if (rtl) {
 						draw_style_box(sb_hover, Rect2(rtl_pos, keying_rect.size));
 					} else {
@@ -608,7 +613,7 @@ void EditorProperty::_notification(int p_what) {
 					color2.g *= 1.2;
 					color2.b *= 1.2;
 
-					Ref<StyleBox> sb_hover = get_theme_stylebox(SceneStringName(hover), "Button");
+					Ref<StyleBox> sb_hover = get_theme_stylebox(SceneStringName(hover), SceneStringName(FlatButton));
 					if (rtl) {
 						draw_style_box(sb_hover, Rect2(rtl_pos, delete_rect.size));
 					} else {
@@ -642,6 +647,7 @@ void EditorProperty::_notification(int p_what) {
 				get_parent()->disconnect(SceneStringName(theme_changed), callable_mp(this, &EditorProperty::_update_property_bg));
 			}
 		} break;
+		case NOTIFICATION_MOUSE_EXIT_SELF:
 		case NOTIFICATION_MOUSE_EXIT: {
 			if (keying_hover || revert_hover || check_hover || delete_hover) {
 				keying_hover = false;
@@ -1982,8 +1988,8 @@ void EditorInspectorSection::_notification(int p_what) {
 				Ref<Texture2D> key = theme_cache.icon_gui_animation_key;
 				if (keying && key.is_valid()) {
 					Point2 key_position;
-					key_position.x = rtl ? (margin_end + 2 * EDSCALE) : (get_size().width - key->get_width() - margin_end - 2 * EDSCALE);
-					keying_rect = Rect2(key_position.x - 2 * EDSCALE, 0, key->get_width() + 4 * EDSCALE, header_height);
+					key_position.x = (rtl ? margin_end : (get_size().width - key->get_width() - margin_end)) - theme_cache.key_padding_size / 2;
+					keying_rect = Rect2(key_position.x - theme_cache.key_padding_size / 2, 0, key->get_width() + theme_cache.key_padding_size, header_height);
 
 					Color key_color(1, 1, 1);
 					if (keying_hover) {
@@ -1997,7 +2003,7 @@ void EditorInspectorSection::_notification(int p_what) {
 					key_position.y = (header_height - key->get_height()) / 2;
 
 					draw_texture(key, key_position, key_color);
-					margin_end += key->get_width() + 6 * EDSCALE;
+					margin_end += keying_rect.size.width + theme_cache.horizontal_separation;
 				} else {
 					keying_rect = Rect2();
 				}
@@ -3462,6 +3468,7 @@ void EditorInspector::initialize_section_theme(EditorInspectorSection::ThemeCach
 	p_cache.vertical_separation = p_control->get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
 	p_cache.inspector_margin = p_control->get_theme_constant(SNAME("inspector_margin"), EditorStringName(Editor));
 	p_cache.indent_size = p_control->get_theme_constant(SNAME("indent_size"), SNAME("EditorInspectorSection"));
+	p_cache.key_padding_size = int(EDITOR_GET("interface/theme/base_spacing")) * 2;
 
 	p_cache.warning_color = p_control->get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
 	p_cache.prop_subsection = p_control->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
@@ -3486,7 +3493,7 @@ void EditorInspector::initialize_section_theme(EditorInspectorSection::ThemeCach
 	p_cache.icon_gui_animation_key = p_control->get_editor_theme_icon(SNAME("Key"));
 
 	p_cache.indent_box = p_control->get_theme_stylebox(SNAME("indent_box"), SNAME("EditorInspectorSection"));
-	p_cache.key_hover = p_control->get_theme_stylebox(SceneStringName(hover), "Button");
+	p_cache.key_hover = p_control->get_theme_stylebox(SceneStringName(hover), SceneStringName(FlatButton));
 }
 
 void EditorInspector::initialize_category_theme(EditorInspectorCategory::ThemeCache &p_cache, Control *p_control) {
