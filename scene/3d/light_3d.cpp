@@ -739,7 +739,7 @@ void AreaLight3D::_bind_methods() {
 PackedStringArray AreaLight3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Light3D::get_configuration_warnings();
 
-	if (!has_shadow() && get_projector().is_valid()) {
+	if (get_projector().is_valid()) {
 		warnings.push_back(RTR("Projector texture is not yet implemented."));
 	}
 
