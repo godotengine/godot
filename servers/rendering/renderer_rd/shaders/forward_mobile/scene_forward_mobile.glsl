@@ -2178,7 +2178,7 @@ void main() {
 	uint area_light_count = sc_area_lights(8);
 	uvec2 area_indices = instances.data[draw_call.instance_index].area_lights;
 	for (uint i = 0; i < area_light_count; i++) {
-		uint light_index = (i > 3) ? ((area_indices.y >> ((i - 4) * 8)) & 0xFF) : ((area_indices.x >> (i * 8)) & 0xFF); // TODO: what is this?
+		uint light_index = (i > 3) ? ((area_indices.y >> ((i - 4) * 8)) & 0xFF) : ((area_indices.x >> (i * 8)) & 0xFF);
 		if (i > 0 && light_index == 0xFF) {
 			break;
 		}

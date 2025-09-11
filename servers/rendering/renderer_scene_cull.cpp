@@ -280,7 +280,6 @@ void RendererSceneCull::_instance_pair(Instance *p_A, Instance *p_B) {
 	} else if (B->base_type == RS::INSTANCE_VOXEL_GI && A->base_type == RS::INSTANCE_LIGHT) {
 		InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(B->base_data);
 		voxel_gi->lights.insert(A);
-		// TODO: check if area light got added here
 	} else if (B->base_type == RS::INSTANCE_PARTICLES_COLLISION && A->base_type == RS::INSTANCE_PARTICLES) {
 		InstanceParticlesCollisionData *collision = static_cast<InstanceParticlesCollisionData *>(B->base_data);
 

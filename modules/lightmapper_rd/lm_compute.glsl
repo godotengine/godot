@@ -567,7 +567,7 @@ float ltc_evaluate_diff(vec3 vertex, vec3 normal, vec3 points[4]) {
 	// construct the orthonormal basis around the normal vector
 	vec3 x, z;
 	vec3 eye_vec = vec3(0.0, 0.0, -1.0);
-	z = -normalize(eye_vec - normal * dot(eye_vec, normal)); // expanding the angle between view and normal vector to 90 degrees, this gives a normal vector, unless view=normal. TODO: in that case, we have a problem.
+	z = -normalize(eye_vec - normal * dot(eye_vec, normal)); // expanding the angle between view and normal vector to 90 degrees, this gives a normal vector
 	x = cross(normal, z);
 
 	// rotate area light in (T1, normal, T2) basis
