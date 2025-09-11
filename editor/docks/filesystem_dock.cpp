@@ -2020,6 +2020,7 @@ void FileSystemDock::_before_move(HashMap<String, ResourceUID::ID> &r_uids, Hash
 			}
 		} else {
 			EditorFileSystemDirectory *current_folder = EditorFileSystem::get_singleton()->get_filesystem_path(to_move[i].path);
+			ERR_CONTINUE(current_folder == nullptr);
 			List<EditorFileSystemDirectory *> folders;
 			folders.push_back(current_folder);
 			while (folders.front()) {
