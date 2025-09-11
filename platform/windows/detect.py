@@ -931,6 +931,6 @@ def check_d3d12_installed(env, suffix):
             "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
             "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
             "See the documentation for more information:\n\t"
-            "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
+            "https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html"
         )
         sys.exit(255)

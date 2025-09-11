@@ -56,7 +56,7 @@
 			Changing this import option only has an effect if a texture is detected as being used in 3D. Changing this to [b]Disabled[/b] then reimporting will not change the existing compress mode on a texture (if it's detected to be used in 3D), but choosing [b]VRAM Compressed[/b] or [b]Basis Universal[/b] will.
 		</member>
 		<member name="editor/convert_colors_with_editor_theme" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], converts the imported image's colors to match [member EditorSettings.interface/theme/icon_and_font_color]. This assumes the image uses the exact same colors as [url=$DOCS_URL/contributing/development/editor/creating_icons.html]Godot's own color palette for editor icons[/url], with the source file designed for a dark editor theme. This should be enabled for editor plugin icons and custom class icons, but should be left disabled otherwise.
+			If [code]true[/code], converts the imported image's colors to match [member EditorSettings.interface/theme/icon_and_font_color]. This assumes the image uses the exact same colors as [url=$DOCS_URL/engine_details/editor/creating_icons.html]Godot's own color palette for editor icons[/url], with the source file designed for a dark editor theme. This should be enabled for editor plugin icons and custom class icons, but should be left disabled otherwise.
 			[b]Note:[/b] Only available for SVG images.
 		</member>
 		<member name="editor/scale_with_editor_scale" type="bool" setter="" getter="" default="false">
