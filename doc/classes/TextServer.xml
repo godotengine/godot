@@ -2143,6 +2143,9 @@
 		<constant name="OVERRUN_JUSTIFICATION_AWARE" value="16" enum="TextOverrunFlag" is_bitfield="true">
 			Accounts for the text being justified before attempting to trim it (see [enum JustificationFlag]).
 		</constant>
+		<constant name="OVERRUN_SHORT_STRING_ELLIPSIS" value="32" enum="TextOverrunFlag" is_bitfield="true">
+			Determines whether the ellipsis should be added regardless of the string length, otherwise it is added only if the string is 6 characters or longer.
+		</constant>
 		<constant name="GRAPHEME_IS_VALID" value="1" enum="GraphemeFlag" is_bitfield="true">
 			Grapheme is supported by the font, and can be drawn.
 		</constant>
