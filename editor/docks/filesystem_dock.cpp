@@ -991,6 +991,9 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		// Display the favorites.
 		Vector<String> favorites_list = EditorSettings::get_singleton()->get_favorites();
 		for (const String &favorite : favorites_list) {
+			if (!favorite.begins_with("res://")) {
+				continue;
+			}
 			String text;
 			Ref<Texture2D> icon;
 			if (favorite == "res://") {
