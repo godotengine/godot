@@ -5512,7 +5512,11 @@ String String::sprintf(const Array &values, bool *error) const {
 					// Get basic number.
 					String str;
 					if (!as_unsigned) {
-						str = String::num_int64(Math::abs(value), base, capitalize);
+						if (value == INT64_MIN) { // INT64_MIN can't be represented as positive value.
+							str = String::num_int64(value, base, capitalize).trim_prefix("-");
+						} else {
+							str = String::num_int64(Math::abs(value), base, capitalize);
+						}
 					} else {
 						uint64_t uvalue = *((uint64_t *)&value);
 						// In unsigned hex, if the value fits in 32 bits, trim it down to that.
