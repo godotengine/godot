@@ -91,6 +91,12 @@ GODOT_MSVC_WARNING_POP
 #endif
 #endif
 
+// Runs constant sanity checks on the structure of the descriptor heap pools to catch implementation errors.
+#define D3D12_DESCRIPTOR_HEAP_VERIFICATION 0
+
+// Tracks additional information and prints information about the allocation of descriptor heaps.
+#define D3D12_DESCRIPTOR_HEAP_VERBOSE 0
+
 static const D3D12_RANGE VOID_RANGE = {};
 
 /*****************/
@@ -337,52 +343,253 @@ const RenderingDeviceDriverD3D12::D3D12Format RenderingDeviceDriverD3D12::RD_TO_
 	/* DATA_FORMAT_ASTC_12x12_SFLOAT_BLOCK */ {},
 };
 
-Error RenderingDeviceDriverD3D12::DescriptorsHeap::allocate(ID3D12Device *p_device, D3D12_DESCRIPTOR_HEAP_TYPE p_type, uint32_t p_descriptor_count, bool p_for_gpu) {
-	ERR_FAIL_COND_V(heap, ERR_ALREADY_EXISTS);
+Error RenderingDeviceDriverD3D12::CPUDescriptorsHeapPools::allocate(ID3D12Device *p_device, const D3D12_DESCRIPTOR_HEAP_DESC &p_desc, CPUDescriptorsHeapHandle &r_result) {
+	ERR_FAIL_COND_V(p_desc.NodeMask != 0 || p_desc.Flags != 0 || p_desc.Type >= D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES, ERR_INVALID_PARAMETER);
+
+	CPUDescriptorsHeapPool &pool = pools[p_desc.Type];
+	return pool.allocate(p_device, p_desc, r_result);
+}
+
+void RenderingDeviceDriverD3D12::CPUDescriptorsHeapPool::verify() {
+#if D3D12_DESCRIPTOR_HEAP_VERIFICATION
+	uint32_t last_size = std::numeric_limits<uint32_t>::max();
+	int block_count = 0;
+	for (SizeTableType::ValueType &index : free_blocks_by_size) {
+		DEV_ASSERT(!index.value.is_empty());
+		DEV_ASSERT(index.key <= last_size);
+
+		last_size = index.key;
+		for (uint32_t block_index : index.value) {
+			block_count++;
+			OffsetTableType::Iterator block = free_blocks_by_offset.find(block_index);
+			DEV_ASSERT(block != free_blocks_by_offset.end());
+			DEV_ASSERT(block->value.size == index.key && block->value.global_offset == block_index);
+		}
+	}
+
+	DEV_ASSERT(block_count == free_blocks_by_offset.size());
+#endif
+}
+
+Error RenderingDeviceDriverD3D12::CPUDescriptorsHeapPool::allocate(ID3D12Device *p_device, const D3D12_DESCRIPTOR_HEAP_DESC &p_desc, CPUDescriptorsHeapHandle &r_result) {
+	MutexLock lock(mutex);
+	verify();
+
+	SizeTableType::Iterator smallest_free_block = free_blocks_by_size.find_closest(p_desc.NumDescriptors);
+	OffsetTableType::Iterator block = free_blocks_by_offset.end();
+
+	if (smallest_free_block == free_blocks_by_size.end()) {
+		D3D12_DESCRIPTOR_HEAP_DESC descr_copy = p_desc;
+
+		// Allow for more than 1024 descriptor.
+		descr_copy.NumDescriptors = MAX(p_desc.NumDescriptors, 1024u);
+
+		ID3D12DescriptorHeap *heap;
+		HRESULT res = p_device->CreateDescriptorHeap(&descr_copy, IID_PPV_ARGS(&heap));
+		if (!SUCCEEDED(res)) {
+			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "CreateDescriptorHeap failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+		}
+
+		FreeBlockInfo new_block = { heap, current_offset, current_offset, descr_copy.NumDescriptors, current_nonce++ };
+		block = free_blocks_by_offset.insert(new_block.global_offset, new_block);
+
+		// Duplicate the size to prevent this block from being joined with the next one.
+		current_offset += descr_copy.NumDescriptors << 1;
+	} else {
+		uint32_t offset = smallest_free_block->value.front()->get();
+		block = free_blocks_by_offset.find(offset);
+		ERR_FAIL_COND_V_MSG(block == free_blocks_by_offset.end(), ERR_CANT_CREATE, "CreateDescriptorHeap failed to find free block.");
+
+		remove_from_size_map(block->value);
+	}
+
+	r_result = { block->value.heap, this, block->value.global_offset - block->value.base_offset, block->value.base_offset, p_desc.NumDescriptors, current_nonce++ };
+
+	ERR_FAIL_COND_V_MSG(block->value.size < p_desc.NumDescriptors, ERR_CANT_CREATE, "CreateDescriptorHeap failed to find a block with enough descriptors.");
+
+	if (block->value.size > p_desc.NumDescriptors) {
+		// Block is too big, split into two chunks. Use the end of the block.
+		r_result.offset += block->value.size - p_desc.NumDescriptors;
+
+		// Cut the end of the block.
+		block->value.size -= p_desc.NumDescriptors;
+		add_to_size_map(block->value);
+	} else {
+		// Block fits, remove from block list.
+		free_blocks_by_offset.erase(block->value.global_offset);
+	}
+
+	DEV_ASSERT(!free_blocks_by_offset.has(r_result.global_offset()));
+	verify();
+
+#if D3D12_DESCRIPTOR_HEAP_VERBOSE
+	print_line(vformat("PoolAlloc: 0x%08ux.0x%08ux.0x%08ux.0x%08ux.0x%08ux", (uint64_t)(r_result.pool), (uint64_t)(r_result.heap), r_result.global_offset(), r_result.count, r_result.nonce));
+#endif
+
+	return OK;
+}
+
+void RenderingDeviceDriverD3D12::CPUDescriptorsHeapPool::remove_from_size_map(const FreeBlockInfo &p_block) {
+	SizeTableType::Iterator smallest_free_block = free_blocks_by_size.find(p_block.size);
+	if (smallest_free_block == free_blocks_by_size.end()) {
+		return;
+	}
+
+	// Remove from free list if no block of this size is left.
+	smallest_free_block->value.erase(p_block.global_offset);
+	if (smallest_free_block->value.is_empty()) {
+		free_blocks_by_size.erase(p_block.size);
+	}
+}
+
+void RenderingDeviceDriverD3D12::CPUDescriptorsHeapPool::add_to_size_map(const FreeBlockInfo &p_block) {
+	SizeTableType::Iterator free_block = free_blocks_by_size.find(p_block.size);
+	if (free_block == free_blocks_by_size.end()) {
+		free_blocks_by_size.insert(p_block.size, { p_block.global_offset });
+	} else {
+		free_block->value.push_back(p_block.global_offset);
+	}
+}
+
+Error RenderingDeviceDriverD3D12::CPUDescriptorsHeapPool::release(const CPUDescriptorsHeapHandle &p_result) {
+	MutexLock lock(mutex);
+
+#if D3D12_DESCRIPTOR_HEAP_VERBOSE
+	print_line(vformat("PoolFree: 0x%08ux.0x%08ux.0x%08ux.0x%08ux.0x%08ux", (uint64_t)(result.pool), (uint64_t)(result.heap), result.global_offset(), result.count, result.nonce));
+#endif
+
+	verify();
+
+	uint32_t global_offset = p_result.global_offset();
+	OffsetTableType::Iterator previous = free_blocks_by_offset.find_closest(global_offset);
+	OffsetTableType::Iterator next = free_blocks_by_offset.find(global_offset + p_result.count);
+
+	if (previous != free_blocks_by_offset.end() && (previous->value.size + previous->key) != global_offset) {
+		// Make sure the previous block is contiguous to this one.
+		previous = free_blocks_by_offset.end();
+	}
+
+	// Fail if the offset has already been released.
+	ERR_FAIL_COND_V(free_blocks_by_offset.has(global_offset), ERR_INVALID_PARAMETER);
+
+	OffsetTableType::Iterator new_block = free_blocks_by_offset.end();
+	if (previous != free_blocks_by_offset.end() && next != free_blocks_by_offset.end()) {
+		// The released block connects two existing blocks.
+		remove_from_size_map(previous->value);
+		remove_from_size_map(next->value);
+
+		previous->value.size += next->value.size + p_result.count;
+		free_blocks_by_offset.erase(next->value.global_offset);
+		new_block = previous;
+	} else if (previous != free_blocks_by_offset.end()) {
+		// Connects to the previous block.
+		remove_from_size_map(previous->value);
+		previous->value.size += p_result.count;
+		new_block = previous;
+	} else if (next != free_blocks_by_offset.end()) {
+		// Connects to the next block.
+		remove_from_size_map(next->value);
+		free_blocks_by_offset.erase(next->value.global_offset);
+
+		next->value.global_offset -= p_result.count;
+		next->value.size += p_result.count;
+
+		DEV_ASSERT(!free_blocks_by_offset.has(next->value.global_offset));
+		new_block = free_blocks_by_offset.insert(next->value.global_offset, next->value);
+	} else {
+		// Connects to no block.
+		new_block = free_blocks_by_offset.insert(global_offset, FreeBlockInfo{ p_result.heap, global_offset, p_result.base_offset, p_result.count });
+	}
+
+	new_block->value.nonce = p_result.nonce;
+
+	add_to_size_map(new_block->value);
+	verify();
+
+	return OK;
+}
+
+RenderingDeviceDriverD3D12::CPUDescriptorsHeap::~CPUDescriptorsHeap() {
+	if (handle.pool) {
+		handle.pool->release(handle);
+	} else if (handle.heap && handle.offset == 0) {
+		handle.heap->Release();
+	}
+}
+
+RenderingDeviceDriverD3D12::CPUDescriptorsHeapWalker RenderingDeviceDriverD3D12::CPUDescriptorsHeap::make_walker() const {
+	RenderingDeviceDriverD3D12::CPUDescriptorsHeapWalker walker;
+	walker.handle_size = handle_size;
+	walker.handle_count = desc.NumDescriptors;
+	if (handle.heap) {
+#if defined(_MSC_VER) || !defined(_WIN32)
+		walker.first_cpu_handle = handle.heap->GetCPUDescriptorHandleForHeapStart();
+#else
+		handle.heap->GetCPUDescriptorHandleForHeapStart(&walker.first_cpu_handle);
+#endif
+	}
+
+	walker.first_cpu_handle.ptr += handle.offset * handle_size;
+	return walker;
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE RenderingDeviceDriverD3D12::CPUDescriptorsHeapWalker::get_curr_cpu_handle() {
+	ERR_FAIL_COND_V_MSG(is_at_eof(), D3D12_CPU_DESCRIPTOR_HANDLE(), "Heap walker is at EOF.");
+	return D3D12_CPU_DESCRIPTOR_HANDLE{ first_cpu_handle.ptr + handle_index * handle_size };
+}
+
+void RenderingDeviceDriverD3D12::CPUDescriptorsHeapWalker::advance(uint32_t p_count) {
+	ERR_FAIL_COND_MSG(handle_index + p_count > handle_count, "Would advance past EOF.");
+	handle_index += p_count;
+}
+
+Error RenderingDeviceDriverD3D12::CPUDescriptorsHeap::allocate(RenderingDeviceDriverD3D12 *p_driver, D3D12_DESCRIPTOR_HEAP_TYPE p_type, uint32_t p_descriptor_count) {
+	ERR_FAIL_COND_V(handle.heap, ERR_ALREADY_EXISTS);
 	ERR_FAIL_COND_V(p_descriptor_count == 0, ERR_INVALID_PARAMETER);
 
+	ID3D12Device *p_device = p_driver->device.Get();
 	handle_size = p_device->GetDescriptorHandleIncrementSize(p_type);
 
 	desc.Type = p_type;
 	desc.NumDescriptors = p_descriptor_count;
-	desc.Flags = p_for_gpu ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+	return p_driver->cpu_descriptor_pool.allocate(p_device, desc, handle);
+}
+
+Error RenderingDeviceDriverD3D12::GPUDescriptorsHeap::allocate(RenderingDeviceDriverD3D12 *p_driver, D3D12_DESCRIPTOR_HEAP_TYPE p_type, uint32_t p_descriptor_count) {
+	ERR_FAIL_COND_V(heap, ERR_ALREADY_EXISTS);
+	ERR_FAIL_COND_V(p_descriptor_count == 0, ERR_INVALID_PARAMETER);
+
+	ID3D12Device *p_device = p_driver->device.Get();
+	handle_size = p_device->GetDescriptorHandleIncrementSize(p_type);
+
+	desc.Type = p_type;
+	desc.NumDescriptors = p_descriptor_count;
+	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	HRESULT res = p_device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(heap.GetAddressOf()));
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "CreateDescriptorHeap failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	return OK;
 }
 
-RenderingDeviceDriverD3D12::DescriptorsHeap::Walker RenderingDeviceDriverD3D12::DescriptorsHeap::make_walker() const {
-	Walker walker;
+RenderingDeviceDriverD3D12::GPUDescriptorsHeapWalker RenderingDeviceDriverD3D12::GPUDescriptorsHeap::make_walker() const {
+	GPUDescriptorsHeapWalker walker;
 	walker.handle_size = handle_size;
 	walker.handle_count = desc.NumDescriptors;
 	if (heap) {
 #if defined(_MSC_VER) || !defined(_WIN32)
 		walker.first_cpu_handle = heap->GetCPUDescriptorHandleForHeapStart();
-		if ((desc.Flags & D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE)) {
-			walker.first_gpu_handle = heap->GetGPUDescriptorHandleForHeapStart();
-		}
+		walker.first_gpu_handle = heap->GetGPUDescriptorHandleForHeapStart();
 #else
 		heap->GetCPUDescriptorHandleForHeapStart(&walker.first_cpu_handle);
-		if ((desc.Flags & D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE)) {
-			heap->GetGPUDescriptorHandleForHeapStart(&walker.first_gpu_handle);
-		}
+		heap->GetGPUDescriptorHandleForHeapStart(&walker.first_gpu_handle);
 #endif
 	}
 	return walker;
 }
 
-void RenderingDeviceDriverD3D12::DescriptorsHeap::Walker::advance(uint32_t p_count) {
-	ERR_FAIL_COND_MSG(handle_index + p_count > handle_count, "Would advance past EOF.");
-	handle_index += p_count;
-}
-
-D3D12_CPU_DESCRIPTOR_HANDLE RenderingDeviceDriverD3D12::DescriptorsHeap::Walker::get_curr_cpu_handle() {
-	ERR_FAIL_COND_V_MSG(is_at_eof(), D3D12_CPU_DESCRIPTOR_HANDLE(), "Heap walker is at EOF.");
-	return D3D12_CPU_DESCRIPTOR_HANDLE{ first_cpu_handle.ptr + handle_index * handle_size };
-}
-
-D3D12_GPU_DESCRIPTOR_HANDLE RenderingDeviceDriverD3D12::DescriptorsHeap::Walker::get_curr_gpu_handle() {
+D3D12_GPU_DESCRIPTOR_HANDLE RenderingDeviceDriverD3D12::GPUDescriptorsHeapWalker::get_curr_gpu_handle() {
 	ERR_FAIL_COND_V_MSG(!first_gpu_handle.ptr, D3D12_GPU_DESCRIPTOR_HANDLE(), "Can't provide a GPU handle from a non-GPU descriptors heap.");
 	ERR_FAIL_COND_V_MSG(is_at_eof(), D3D12_GPU_DESCRIPTOR_HANDLE(), "Heap walker is at EOF.");
 	return D3D12_GPU_DESCRIPTOR_HANDLE{ first_gpu_handle.ptr + handle_index * handle_size };
@@ -2926,22 +3133,22 @@ RDD::FramebufferID RenderingDeviceDriverD3D12::_framebuffer_create(RenderPassID 
 	}
 
 	if (num_color) {
-		Error err = fb_info->rtv_heap.allocate(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, num_color, false);
+		Error err = fb_info->rtv_heap.allocate(this, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, num_color);
 		if (err) {
 			VersatileResource::free(resources_allocator, fb_info);
 			ERR_FAIL_V(FramebufferID());
 		}
 	}
-	DescriptorsHeap::Walker rtv_heap_walker = fb_info->rtv_heap.make_walker();
+	CPUDescriptorsHeapWalker rtv_heap_walker = fb_info->rtv_heap.make_walker();
 
 	if (num_depth_stencil) {
-		Error err = fb_info->dsv_heap.allocate(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, num_depth_stencil, false);
+		Error err = fb_info->dsv_heap.allocate(this, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, num_depth_stencil);
 		if (err) {
 			VersatileResource::free(resources_allocator, fb_info);
 			ERR_FAIL_V(FramebufferID());
 		}
 	}
-	DescriptorsHeap::Walker dsv_heap_walker = fb_info->dsv_heap.make_walker();
+	CPUDescriptorsHeapWalker dsv_heap_walker = fb_info->dsv_heap.make_walker();
 
 	fb_info->attachments_handle_inds.resize(p_attachments.size());
 	fb_info->attachments.reserve(num_color + num_depth_stencil);
@@ -3204,22 +3411,22 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 #endif
 
 	if (num_resource_descs) {
-		Error err = uniform_set_info->desc_heaps.resources.allocate(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, num_resource_descs, false);
+		Error err = uniform_set_info->desc_heaps.resources.allocate(this, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, num_resource_descs);
 		if (err) {
 			VersatileResource::free(resources_allocator, uniform_set_info);
 			ERR_FAIL_V(UniformSetID());
 		}
 	}
 	if (num_sampler_descs) {
-		Error err = uniform_set_info->desc_heaps.samplers.allocate(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, num_sampler_descs, false);
+		Error err = uniform_set_info->desc_heaps.samplers.allocate(this, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, num_sampler_descs);
 		if (err) {
 			VersatileResource::free(resources_allocator, uniform_set_info);
 			ERR_FAIL_V(UniformSetID());
 		}
 	}
 	struct {
-		DescriptorsHeap::Walker resources;
-		DescriptorsHeap::Walker samplers;
+		CPUDescriptorsHeapWalker resources;
+		CPUDescriptorsHeapWalker samplers;
 	} desc_heap_walkers;
 	desc_heap_walkers.resources = uniform_set_info->desc_heaps.resources.make_walker();
 	desc_heap_walkers.samplers = uniform_set_info->desc_heaps.samplers.make_walker();
@@ -3648,15 +3855,15 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 	}
 
 	struct {
-		DescriptorsHeap::Walker *resources = nullptr;
-		DescriptorsHeap::Walker *samplers = nullptr;
+		GPUDescriptorsHeapWalker *resources = nullptr;
+		GPUDescriptorsHeapWalker *samplers = nullptr;
 	} frame_heap_walkers;
 	frame_heap_walkers.resources = &frames[frame_idx].desc_heap_walkers.resources;
 	frame_heap_walkers.samplers = &frames[frame_idx].desc_heap_walkers.samplers;
 
 	struct {
-		DescriptorsHeap::Walker resources;
-		DescriptorsHeap::Walker samplers;
+		CPUDescriptorsHeapWalker resources;
+		CPUDescriptorsHeapWalker samplers;
 	} set_heap_walkers;
 	set_heap_walkers.resources = uniform_set_info->desc_heaps.resources.make_walker();
 	set_heap_walkers.samplers = uniform_set_info->desc_heaps.samplers.make_walker();
@@ -4530,7 +4737,7 @@ void RenderingDeviceDriverD3D12::command_next_render_subpass(CommandBufferID p_c
 	const Subpass &subpass = pass_info->subpasses[cmd_buf_info->render_pass_state.current_subpass];
 
 	D3D12_CPU_DESCRIPTOR_HANDLE *rtv_handles = ALLOCA_ARRAY(D3D12_CPU_DESCRIPTOR_HANDLE, subpass.color_references.size());
-	DescriptorsHeap::Walker rtv_heap_walker = fb_info->rtv_heap.make_walker();
+	CPUDescriptorsHeapWalker rtv_heap_walker = fb_info->rtv_heap.make_walker();
 	for (uint32_t i = 0; i < subpass.color_references.size(); i++) {
 		uint32_t attachment = subpass.color_references[i].attachment;
 		if (attachment == AttachmentReference::UNUSED) {
@@ -4565,7 +4772,7 @@ void RenderingDeviceDriverD3D12::command_next_render_subpass(CommandBufferID p_c
 
 	D3D12_CPU_DESCRIPTOR_HANDLE dsv_handle = {};
 	{
-		DescriptorsHeap::Walker dsv_heap_walker = fb_info->dsv_heap.make_walker();
+		CPUDescriptorsHeapWalker dsv_heap_walker = fb_info->dsv_heap.make_walker();
 		if (subpass.depth_stencil_reference.attachment != AttachmentReference::UNUSED) {
 			uint32_t ds_index = fb_info->attachments_handle_inds[subpass.depth_stencil_reference.attachment];
 			dsv_heap_walker.rewind();
@@ -4614,8 +4821,8 @@ void RenderingDeviceDriverD3D12::command_render_clear_attachments(CommandBufferI
 	const FramebufferInfo *fb_info = cmd_buf_info->render_pass_state.fb_info;
 	const RenderPassInfo *pass_info = cmd_buf_info->render_pass_state.pass_info;
 
-	DescriptorsHeap::Walker rtv_heap_walker = fb_info->rtv_heap.make_walker();
-	DescriptorsHeap::Walker dsv_heap_walker = fb_info->dsv_heap.make_walker();
+	CPUDescriptorsHeapWalker rtv_heap_walker = fb_info->rtv_heap.make_walker();
+	CPUDescriptorsHeapWalker dsv_heap_walker = fb_info->dsv_heap.make_walker();
 
 	for (uint32_t i = 0; i < p_attachment_clears.size(); i++) {
 		uint32_t attachment = UINT32_MAX;
@@ -5446,13 +5653,7 @@ void RenderingDeviceDriverD3D12::set_object_name(ObjectType p_type, ID p_driver_
 			_set_object_name(shader_info_in->root_signature.Get(), p_name);
 		} break;
 		case OBJECT_TYPE_UNIFORM_SET: {
-			const UniformSetInfo *uniform_set_info = (const UniformSetInfo *)p_driver_id.id;
-			if (uniform_set_info->desc_heaps.resources.get_heap()) {
-				_set_object_name(uniform_set_info->desc_heaps.resources.get_heap(), p_name + " resources heap");
-			}
-			if (uniform_set_info->desc_heaps.samplers.get_heap()) {
-				_set_object_name(uniform_set_info->desc_heaps.samplers.get_heap(), p_name + " samplers heap");
-			}
+			// Descriptor heaps are suballocated from bigger heaps and can therefore not be given unique names.
 		} break;
 		case OBJECT_TYPE_PIPELINE: {
 			const PipelineInfo *pipeline_info = (const PipelineInfo *)p_driver_id.id;
@@ -6047,16 +6248,16 @@ Error RenderingDeviceDriverD3D12::_initialize_frames(uint32_t p_frame_count) {
 
 	frames.resize(p_frame_count);
 	for (uint32_t i = 0; i < frames.size(); i++) {
-		err = frames[i].desc_heaps.resources.allocate(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, resource_descriptors_per_frame, true);
+		err = frames[i].desc_heaps.resources.allocate(this, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, resource_descriptors_per_frame);
 		ERR_FAIL_COND_V_MSG(err != OK, ERR_CANT_CREATE, "Creating the frame's RESOURCE descriptors heap failed.");
 
-		err = frames[i].desc_heaps.samplers.allocate(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, sampler_descriptors_per_frame, true);
+		err = frames[i].desc_heaps.samplers.allocate(this, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, sampler_descriptors_per_frame);
 		ERR_FAIL_COND_V_MSG(err != OK, ERR_CANT_CREATE, "Creating the frame's SAMPLER descriptors heap failed.");
 
-		err = frames[i].desc_heaps.aux.allocate(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, misc_descriptors_per_frame, false);
+		err = frames[i].desc_heaps.aux.allocate(this, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, misc_descriptors_per_frame);
 		ERR_FAIL_COND_V_MSG(err != OK, ERR_CANT_CREATE, "Creating the frame's AUX descriptors heap failed.");
 
-		err = frames[i].desc_heaps.rtv.allocate(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, misc_descriptors_per_frame, false);
+		err = frames[i].desc_heaps.rtv.allocate(this, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, misc_descriptors_per_frame);
 		ERR_FAIL_COND_V_MSG(err != OK, ERR_CANT_CREATE, "Creating the frame's RENDER TARGET descriptors heap failed.");
 
 		frames[i].desc_heap_walkers.resources = frames[i].desc_heaps.resources.make_walker();
