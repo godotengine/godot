@@ -66,27 +66,7 @@ static GDTViewController *mainViewController = nil;
 	return mainViewController;
 }
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-	// TODO: might be required to make an early return, so app wouldn't crash because of timeout.
-	// TODO: logo screen is not displayed while shaders are compiling
-	// DummyViewController(Splash/LoadingViewController) -> setup -> GodotViewController
-
-#if !defined(VISIONOS_ENABLED)
-	// Create a full-screen window
-	CGRect windowBounds = [[UIScreen mainScreen] bounds];
-	self.window = [[UIWindow alloc] initWithFrame:windowBounds];
-#else
-	self.window = [[UIWindow alloc] init];
-#endif
-
-	int err = apple_embedded_main(gargc, gargv);
-
-	if (err != 0) {
-		// bail, things did not go very well for us, should probably output a message on screen with our error code...
-		exit(0);
-		return NO;
-	}
-
+- (void)createViewController {
 	GDTViewController *viewController = [[GDTViewController alloc] init];
 	viewController.godotView.useCADisplayLink = bool(GLOBAL_DEF("display.iOS/use_cadisplaylink", true)) ? YES : NO;
 	viewController.godotView.renderingInterval = 1.0 / kRenderingFrequency;
@@ -96,13 +76,52 @@ static GDTViewController *mainViewController = nil;
 	// Show the window
 	[self.window makeKeyAndVisible];
 
+	mainViewController = viewController;
+}
+
+- (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)connectionOptions API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	if ([scene isKindOfClass:[UIWindowScene class]]) {
+#if !defined(VISIONOS_ENABLED)
+		UIWindowScene *window_scene = (UIWindowScene *)scene;
+		self.window = [[UIWindow alloc] initWithWindowScene:window_scene];
+#else
+		self.window = [[UIWindow alloc] init];
+#endif
+		[self createViewController];
+	}
+}
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+	// TODO: might be required to make an early return, so app wouldn't crash because of timeout.
+	// TODO: logo screen is not displayed while shaders are compiling
+	// DummyViewController(Splash/LoadingViewController) -> setup -> GodotViewController
+
+	int err = apple_embedded_main(gargc, gargv);
+
+	if (err != 0) {
+		// bail, things did not go very well for us, should probably output a message on screen with our error code...
+		exit(0);
+		return NO;
+	}
+
+	if (@available(iOS 13, tvOS 13, visionOS 1, *)) {
+		// NOP
+	} else {
+#if !defined(VISIONOS_ENABLED)
+		// Create a full-screen window
+		CGRect windowBounds = [[UIScreen mainScreen] bounds];
+		self.window = [[UIWindow alloc] initWithFrame:windowBounds];
+#else
+		self.window = [[UIWindow alloc] init];
+#endif
+		[self createViewController];
+	}
+
 	[[NSNotificationCenter defaultCenter]
 			addObserver:self
 			   selector:@selector(onAudioInterruption:)
 				   name:AVAudioSessionInterruptionNotification
 				 object:[AVAudioSession sharedInstance]];
-
-	mainViewController = viewController;
 
 	int sessionCategorySetting = GLOBAL_GET("audio/general/ios/session_category");
 
@@ -166,7 +185,15 @@ static GDTViewController *mainViewController = nil;
 // if you open the app list without switching to another app or open/close the
 // notification panel by swiping from the upper part of the screen.
 
+- (void)sceneDidDisconnect:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	OS_AppleEmbedded::get_singleton()->on_focus_out();
+}
+
 - (void)applicationWillResignActive:(UIApplication *)application {
+	OS_AppleEmbedded::get_singleton()->on_focus_out();
+}
+
+- (void)sceneWillResignActive:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
 	OS_AppleEmbedded::get_singleton()->on_focus_out();
 }
 
@@ -174,11 +201,23 @@ static GDTViewController *mainViewController = nil;
 	OS_AppleEmbedded::get_singleton()->on_focus_in();
 }
 
+- (void)sceneDidBecomeActive:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	OS_AppleEmbedded::get_singleton()->on_focus_in();
+}
+
 - (void)applicationDidEnterBackground:(UIApplication *)application {
 	OS_AppleEmbedded::get_singleton()->on_enter_background();
 }
 
+- (void)sceneDidEnterBackground:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	OS_AppleEmbedded::get_singleton()->on_enter_background();
+}
+
 - (void)applicationWillEnterForeground:(UIApplication *)application {
+	OS_AppleEmbedded::get_singleton()->on_exit_background();
+}
+
+- (void)sceneWillEnterForeground:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
 	OS_AppleEmbedded::get_singleton()->on_exit_background();
 }
 
