@@ -191,7 +191,7 @@ void LinkButton::_notification(int p_what) {
 
 			switch (get_draw_mode()) {
 				case DRAW_NORMAL: {
-					if (has_focus()) {
+					if (has_focus(true)) {
 						color = theme_cache.font_focus_color;
 					} else {
 						color = theme_cache.font_color;
@@ -222,7 +222,7 @@ void LinkButton::_notification(int p_what) {
 				} break;
 			}
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				Ref<StyleBox> style = theme_cache.focus;
 				style->draw(ci, Rect2(Point2(), size));
 			}
