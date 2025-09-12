@@ -341,6 +341,8 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 			}
 		}
 
+		bool deformable = bones.size() > 0 || blend_shapes.size() > 0;
+
 		if (bones.size() > 0 && weights.size() && bone_transform_vector.size() > 0) {
 			Vector3 *vertices_ptrw = vertices.ptrw();
 
@@ -482,7 +484,15 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 			PackedInt32Array new_indices;
 			new_indices.resize(index_count);
 
-			const int simplify_options = SurfaceTool::SIMPLIFY_LOCK_BORDER;
+			int simplify_options = 0;
+
+			// Lock geometric boundary in case the mesh is composed of multiple material subsets.
+			simplify_options |= SurfaceTool::SIMPLIFY_LOCK_BORDER;
+
+			if (deformable) {
+				// Improves appearance of deformable objects after deformation by using more regular tessellation.
+				simplify_options |= SurfaceTool::SIMPLIFY_REGULARIZE;
+			}
 
 			size_t new_index_count = SurfaceTool::simplify_with_attrib_func(
 					(unsigned int *)new_indices.ptrw(),
