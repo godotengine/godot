@@ -67,6 +67,9 @@ public:
 	float z_near = 0.0;
 	float z_far = 0.0;
 
+	RS::TransparencySortMode transparency_sort_mode;
+	Vector3 transparency_sort_axis = Vector3(0, 0, 1);
+
 	float lod_distance_multiplier = 0.0;
 	float screen_mesh_lod_threshold = 0.0;
 
