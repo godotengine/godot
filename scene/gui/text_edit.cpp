@@ -863,10 +863,15 @@ void TextEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
-		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (is_inside_tree()) {
 				_update_caches();
+				_update_wrap_at_column(true);
+			}
+		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (is_inside_tree()) {
+				_update_caches(true);
 				_update_wrap_at_column(true);
 			}
 		} break;
@@ -1444,7 +1449,8 @@ void TextEdit::_notification(int p_what) {
 
 									Ref<TextLine> tl;
 									tl.instantiate();
-									tl->add_string(txt, theme_cache.font, theme_cache.font_size);
+									const String &lang = TranslationServer::get_singleton()->get_or_add_domain(get_translation_domain())->get_locale();
+									tl->add_string(txt, theme_cache.font, theme_cache.font_size, lang);
 
 									int yofs = ofs_y + (row_height - tl->get_size().y) / 2;
 									if (theme_cache.outline_size > 0 && theme_cache.outline_color.a > 0) {
@@ -3357,7 +3363,8 @@ void TextEdit::_update_placeholder() {
 		placeholder_data_buf->set_direction((TextServer::Direction)text_direction);
 	}
 	placeholder_data_buf->set_preserve_control(draw_control_chars);
-	placeholder_data_buf->add_string(placeholder_translated, theme_cache.font, theme_cache.font_size, language);
+	const String &lang = language.is_empty() ? TranslationServer::get_singleton()->get_or_add_domain(get_translation_domain())->get_locale() : language;
+	placeholder_data_buf->add_string(placeholder_translated, theme_cache.font, theme_cache.font_size, lang);
 
 	placeholder_bidi_override = structured_text_parser(st_parser, st_args, placeholder_translated);
 	if (placeholder_bidi_override.is_empty()) {
@@ -3403,7 +3410,7 @@ void TextEdit::_update_theme_item_cache() {
 	}
 }
 
-void TextEdit::_update_caches() {
+void TextEdit::_update_caches(bool p_invalidate_all) {
 	/* Text properties. */
 	TextServer::Direction dir;
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
@@ -3411,11 +3418,16 @@ void TextEdit::_update_caches() {
 	} else {
 		dir = (TextServer::Direction)text_direction;
 	}
-	text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
+	const String &lang = language.is_empty() ? TranslationServer::get_singleton()->get_or_add_domain(get_translation_domain())->get_locale() : language;
+	text.set_direction_and_language(dir, lang);
 	text.set_draw_control_chars(draw_control_chars);
 	text.set_font(theme_cache.font);
 	text.set_font_size(theme_cache.font_size);
-	text.invalidate_font();
+	if (p_invalidate_all) {
+		text.invalidate_all();
+	} else {
+		text.invalidate_font();
+	}
 	_update_placeholder();
 
 	/* Syntax highlighting. */
@@ -3740,8 +3752,9 @@ void TextEdit::set_text_direction(Control::TextDirection p_text_direction) {
 		} else {
 			dir = (TextServer::Direction)text_direction;
 		}
-		text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
-		text.invalidate_font();
+		const String &lang = language.is_empty() ? TranslationServer::get_singleton()->get_or_add_domain(get_translation_domain())->get_locale() : language;
+		text.set_direction_and_language(dir, lang);
+		text.invalidate_all();
 		_update_placeholder();
 
 		if (menu_dir) {
@@ -3768,7 +3781,8 @@ void TextEdit::set_language(const String &p_language) {
 		} else {
 			dir = (TextServer::Direction)text_direction;
 		}
-		text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
+		const String &lang = language.is_empty() ? TranslationServer::get_singleton()->get_or_add_domain(get_translation_domain())->get_locale() : language;
+		text.set_direction_and_language(dir, lang);
 		text.invalidate_all();
 		_update_placeholder();
 		queue_accessibility_update();

@@ -30,6 +30,7 @@
 
 #include "foldable_container.h"
 
+#include "core/string/translation_server.h"
 #include "scene/resources/text_line.h"
 #include "scene/theme/theme_db.h"
 
@@ -488,7 +489,8 @@ void FoldableContainer::_shape() {
 	}
 	text_buf->set_horizontal_alignment(_get_actual_alignment());
 	text_buf->set_text_overrun_behavior(overrun_behavior);
-	text_buf->add_string(atr(title), font, font_size, language);
+	const String &lang = language.is_empty() ? TranslationServer::get_singleton()->get_or_add_domain(get_translation_domain())->get_locale() : language;
+	text_buf->add_string(atr(title), font, font_size, lang);
 }
 
 HorizontalAlignment FoldableContainer::_get_actual_alignment() const {
