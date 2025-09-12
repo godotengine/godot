@@ -99,5 +99,21 @@
 			- The skin contains the information necessary to bind this mesh onto this Skeleton3D. For every one of the internal bone IDs chosen by the 3D modeling software, it contains two things. Firstly, a matrix known as the Bind Pose Matrix, Inverse Bind Matrix, or IBM for short. Secondly, the [Skin] contains each bone's name (if [member skins/use_named_skins] is [code]true[/code]), or the bone's index within the [Skeleton3D] list (if [member skins/use_named_skins] is [code]false[/code]).
 			Together, this information is enough to tell Godot how to use the bone poses in the [Skeleton3D] node to render the mesh from each [MeshInstance3D]. Note that each [MeshInstance3D] may share binds, as is common in models exported from Blender, or each [MeshInstance3D] may use a separate [Skin] object, as is common in models exported from other tools such as Maya.
 		</member>
+		<member name="textures/filter" type="int" setter="" getter="" default="0">
+			Controls the texture filtering mode for the imported materials.
+			- 0 (Detect): Keeps the original texture filtering mode.
+			- 1 (Nearest): Nearest-neighbor filtering.
+			- 2 (Linear): Linear filtering.
+			- 3 (Nearest Mipmap): Nearest-neighbor filtering with mipmaps.
+			- 4 (Linear Mipmap): Linear filtering with mipmaps (trilinear).
+			- 5 (Nearest Mipmap Aniso): Nearest-neighbor filtering with mipmaps and anisotropic filtering.
+			- 6 (Linear Mipmap Aniso): Linear filtering with mipmaps and anisotropic filtering (trilinear anisotropic).
+		</member>
+		<member name="textures/repeat" type="int" setter="" getter="" default="0">
+			Controls the texture repeat mode for the imported materials.
+			- 0 (Detect): Keeps the original texture repeat mode.
+			- 1 (Enable): Enables texture repeat.
+			- 2 (Disable): Disables texture repeat.
+		</member>
 	</members>
 </class>
