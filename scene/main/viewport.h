@@ -680,6 +680,8 @@ public:
 	void gui_cancel_drag();
 	void gui_perform_drop_at(const Point2 &p_pos, Control *p_control = nullptr);
 
+	Control *gui_get_control_at_position(const Vector2 &p_global, bool ignore_subwindows = false);
+	Window *gui_get_window_at_position(const Vector2 &p_global);
 	Control *gui_find_control(const Point2 &p_global);
 
 	void set_sdf_oversize(SDFOversize p_sdf_oversize);
