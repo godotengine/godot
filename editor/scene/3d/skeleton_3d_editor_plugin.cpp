@@ -433,7 +433,16 @@ void Skeleton3DEditor::insert_keys(const bool p_all_bones) {
 	if (!skeleton) {
 		return;
 	}
+	if (key_mod_button->is_pressed()) {
+		skeleton->connect(SceneStringName(skeleton_updated), callable_mp(this, &Skeleton3DEditor::_insert_keys).bind(p_all_bones), CONNECT_ONE_SHOT);
+		skeleton->force_update_deferred();
+		skeleton->notification(Skeleton3D::NOTIFICATION_UPDATE_SKELETON);
+	} else {
+		_insert_keys(p_all_bones);
+	}
+}
 
+void Skeleton3DEditor::_insert_keys(const bool p_all_bones) {
 	bool pos_enabled = key_loc_button->is_pressed();
 	bool rot_enabled = key_rot_button->is_pressed();
 	bool scl_enabled = key_scale_button->is_pressed();
@@ -1040,6 +1049,14 @@ void Skeleton3DEditor::create_editors() {
 	animation_hb->add_child(memnew(VSeparator));
 	animation_hb->hide();
 
+	key_mod_button = memnew(Button);
+	key_mod_button->set_theme_type_variation(SceneStringName(FlatButton));
+	key_mod_button->set_toggle_mode(true);
+	key_mod_button->set_pressed(false);
+	key_mod_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	key_mod_button->set_tooltip_text(TTR("Enable modified transform by SkeletonModifier3D."));
+	animation_hb->add_child(key_mod_button);
+
 	key_loc_button = memnew(Button);
 	key_loc_button->set_theme_type_variation(SceneStringName(FlatButton));
 	key_loc_button->set_toggle_mode(true);
@@ -1135,6 +1152,7 @@ void Skeleton3DEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			skeleton_options->set_button_icon(get_editor_theme_icon(SNAME("Skeleton3D")));
 			edit_mode_button->set_button_icon(get_editor_theme_icon(SNAME("ToolBoneSelect")));
+			key_mod_button->set_button_icon(get_editor_theme_icon(SNAME("SkeletonModifier")));
 			key_loc_button->set_button_icon(get_editor_theme_icon(SNAME("KeyPosition")));
 			key_rot_button->set_button_icon(get_editor_theme_icon(SNAME("KeyRotation")));
 			key_scale_button->set_button_icon(get_editor_theme_icon(SNAME("KeyScale")));

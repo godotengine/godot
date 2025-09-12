@@ -143,6 +143,7 @@ class Skeleton3DEditor : public VBoxContainer {
 	bool edit_mode = false;
 
 	HBoxContainer *animation_hb = nullptr;
+	Button *key_mod_button = nullptr;
 	Button *key_loc_button = nullptr;
 	Button *key_rot_button = nullptr;
 	Button *key_scale_button = nullptr;
@@ -172,6 +173,7 @@ class Skeleton3DEditor : public VBoxContainer {
 	void reset_pose(const bool p_all_bones);
 	void pose_to_rest(const bool p_all_bones);
 
+	void _insert_keys(const bool p_all_bones);
 	void insert_keys(const bool p_all_bones);
 
 	void create_physical_skeleton();
