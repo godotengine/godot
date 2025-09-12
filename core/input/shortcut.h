@@ -51,6 +51,7 @@ public:
 	bool has_valid_event() const;
 
 	String get_as_text() const;
+	String get_as_text_alt() const;
 
 	static bool is_event_array_equal(const Array &p_event_array1, const Array &p_event_array2);
 };
