@@ -1027,6 +1027,9 @@
 		<member name="interface/inspector/horizontal_vector_types_editing" type="bool" setter="" getter="">
 			If [code]true[/code], [Vector3], [Vector3i], [Vector4], [Vector4i], [Rect2], [Rect2i], [Plane], and [Quaternion] properties are shown on a single line in the inspector instead of multiple lines. This is overall more compact, but it can be harder to view and edit large values without expanding the inspector horizontally.
 		</member>
+		<member name="interface/inspector/integer_drag_speed" type="float" setter="" getter="">
+			Base speed for increasing/decreasing integer values by dragging them in the inspector.
+		</member>
 		<member name="interface/inspector/max_array_dictionary_items_per_page" type="int" setter="" getter="">
 			The number of [Array] or [Dictionary] items to display on each "page" in the inspector. Higher values allow viewing more values per page, but take more time to load. This increased load time is noticeable when selecting nodes that have array or dictionary properties in the editor.
 		</member>
