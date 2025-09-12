@@ -496,6 +496,9 @@ Color Color::from_ok_hsv(float p_h, float p_s, float p_l, float p_alpha) {
 }
 
 float Color::get_ok_hsl_h() const {
+	if (r == 0.f && g == 0.f && b == 0.f) {
+		return 0.f;
+	}
 	ok_color::RGB rgb;
 	rgb.r = r;
 	rgb.g = g;
@@ -508,6 +511,9 @@ float Color::get_ok_hsl_h() const {
 }
 
 float Color::get_ok_hsl_s() const {
+	if (r == 0.f && g == 0.f && b == 0.f) {
+		return 0.f;
+	}
 	ok_color::RGB rgb;
 	rgb.r = r;
 	rgb.g = g;
@@ -520,6 +526,9 @@ float Color::get_ok_hsl_s() const {
 }
 
 float Color::get_ok_hsl_l() const {
+	if (r == 0.f && g == 0.f && b == 0.f) {
+		return 0.f;
+	}
 	ok_color::RGB rgb;
 	rgb.r = r;
 	rgb.g = g;
