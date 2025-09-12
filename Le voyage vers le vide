@@ -1,0 +1,45 @@
+# Player.gd
+extends CharacterBody3D
+
+@export var speed : float = 5.0
+@export var gravity : float = 9.8
+@export var jump_force : float = 4.0
+
+var velocity : Vector3 = Vector3.ZERO
+
+func _ready():
+    # Si tu veux capturer la souris ou configurer la caméra
+    Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+    # ou MOUSE_MODE_CAPTURED si tu veux que la souris ne bouge pas librement
+
+func _physics_process(delta: float) -> void:
+    var direction : Vector3 = Vector3.ZERO
+
+    # Lecture des entrées
+    if Input.is_action_pressed("move_forward"):
+        direction.z -= 1
+    if Input.is_action_pressed("move_back"):
+        direction.z += 1
+    if Input.is_action_pressed("move_left"):
+        direction.x -= 1
+    if Input.is_action_pressed("move_right"):
+        direction.x += 1
+
+    # Normaliser pour éviter la vitesse diagonale trop grande
+    if direction != Vector3.ZERO:
+        direction = direction.normalized()
+
+    # Deplacement horizontal
+    velocity.x = direction.x * speed
+    velocity.z = direction.z * speed
+
+    # Gravité (si pas au sol)
+    if not is_on_floor():
+        velocity.y -= gravity * delta
+    else:
+        # Permettre de sauter si tu veux
+        if Input.is_action_just_pressed("jump"):
+            velocity.y = jump_force
+
+    # Déplacement avec collision
+    velocity = move_and_slide(velocity, Vector3.UP)
