@@ -32,7 +32,6 @@
 
 #include "../misc/jolt_math_funcs.h"
 #include "../misc/jolt_type_conversions.h"
-#include "../shapes/jolt_custom_double_sided_shape.h"
 #include "../shapes/jolt_shape_3d.h"
 #include "../spaces/jolt_space_3d.h"
 
@@ -341,6 +340,7 @@ void JoltShapedObject3D::remove_shape(const JoltShape3D *p_shape) {
 	for (int i = shapes.size() - 1; i >= 0; i--) {
 		if (shapes[i].get_shape() == p_shape) {
 			shapes.remove_at(i);
+			_shape_removed(i);
 		}
 	}
 
@@ -350,6 +350,7 @@ void JoltShapedObject3D::remove_shape(const JoltShape3D *p_shape) {
 void JoltShapedObject3D::remove_shape(int p_index) {
 	ERR_FAIL_INDEX(p_index, (int)shapes.size());
 	shapes.remove_at(p_index);
+	_shape_removed(p_index);
 
 	_shapes_changed();
 }
