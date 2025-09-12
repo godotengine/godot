@@ -94,6 +94,7 @@
 			<description>
 				Returns a copy of this [Callable] with one or more arguments bound. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call]. See also [method unbind].
 				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
+				[b]Note:[/b] When calling methods that use static type hints, parameter types must match, including typed arrays/dictionaries. You may have to create explicitly typed arrays using [Array] and [Dictionary]'s typed constructors, as opposed to using the shorthand [code][][/code] and [code]{}[/code] syntaxes. Otherwise, the method won't be called and an error is printed.
 			</description>
 		</method>
 		<method name="bindv">
@@ -102,6 +103,7 @@
 			<description>
 				Returns a copy of this [Callable] with one or more arguments bound, reading them from an array. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call]. See also [method unbind].
 				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
+				[b]Note:[/b] When calling methods that use static type hints, parameter types must match, including typed arrays/dictionaries. You may have to create explicitly typed arrays using [Array] and [Dictionary]'s typed constructors, as opposed to using the shorthand [code][][/code] and [code]{}[/code] syntaxes. Otherwise, the method won't be called and an error is printed.
 			</description>
 		</method>
 		<method name="call" qualifiers="vararg const">
