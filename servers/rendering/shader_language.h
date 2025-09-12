@@ -165,6 +165,7 @@ public:
 		TK_ARG_INOUT,
 		TK_RENDER_MODE,
 		TK_STENCIL_MODE,
+		TK_BLEND_FACTORS,
 		TK_HINT_DEFAULT_WHITE_TEXTURE,
 		TK_HINT_DEFAULT_BLACK_TEXTURE,
 		TK_HINT_DEFAULT_TRANSPARENT_TEXTURE,
@@ -726,6 +727,7 @@ public:
 		Vector<StringName> render_modes;
 		Vector<StringName> stencil_modes;
 		int stencil_reference = -1;
+		Vector<StringName> blend_factors;
 
 		Vector<Function> vfunctions;
 		Vector<Constant> vconstants;
@@ -803,6 +805,7 @@ public:
 		COMPLETION_SHADER_TYPE,
 		COMPLETION_RENDER_MODE,
 		COMPLETION_STENCIL_MODE,
+		COMPLETION_BLEND_FACTORS,
 		COMPLETION_MAIN_FUNCTION,
 		COMPLETION_IDENTIFIER,
 		COMPLETION_FUNCTION_CALL,
