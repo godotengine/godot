@@ -86,6 +86,7 @@ public:
 	Dictionary req_godot_put_msg(const Dictionary &p_params) const;
 
 	// Internal requests
+	Vector<String> _extract_play_arguments(const Dictionary &p_args) const;
 	Dictionary _launch_process(const Dictionary &p_params) const;
 
 	// Events
