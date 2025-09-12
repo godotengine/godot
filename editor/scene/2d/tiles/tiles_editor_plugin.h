@@ -76,6 +76,13 @@ private:
 	SafeFlag pattern_thread_exit;
 	SafeFlag pattern_thread_exited;
 	Semaphore pattern_preview_done;
+
+	// Preview cache for faster loading
+	HashMap<String, Ref<ImageTexture>> pattern_preview_cache;
+	Mutex pattern_cache_mutex;
+
+	// Batch processing for efficiency
+	static const int PATTERN_BATCH_SIZE = 4;
 	void _preview_frame_started();
 	void _pattern_preview_done();
 	static void _thread_func(void *ud);
@@ -86,6 +93,7 @@ public:
 
 	// Pattern preview API.
 	void queue_pattern_preview(Ref<TileSet> p_tile_set, Ref<TileMapPattern> p_pattern, Callable p_callback);
+	void clear_pattern_preview_cache();
 
 	// To synchronize the atlas sources lists.
 	void set_sources_lists_current(int p_current);
