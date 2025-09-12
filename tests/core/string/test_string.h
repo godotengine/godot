@@ -1797,6 +1797,13 @@ TEST_CASE("[String] Path functions") {
 		CHECK(String(path[i]).simplify_path().get_base_dir().path_join(file[i]) == String(path[i]).simplify_path());
 	}
 
+	CHECK(String("res://test.png").has_extension("png"));
+	CHECK(String("res://test.PNG").has_extension("png"));
+	CHECK_FALSE(String("res://test.png").has_extension("jpg"));
+	CHECK_FALSE(String("res://test.png/README").has_extension("png"));
+	CHECK_FALSE(String("res://test.").has_extension("png"));
+	CHECK_FALSE(String("res://test").has_extension("png"));
+
 	static const char *file_name[3] = { "test.tscn", "test://.xscn", "?tes*t.scn" };
 	static const bool valid[3] = { true, false, false };
 	for (int i = 0; i < 3; i++) {
