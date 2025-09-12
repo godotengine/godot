@@ -502,8 +502,6 @@ void EditorFileSystem::_scan_filesystem() {
 	// On the first scan, the first_scan_root_dir is created in _first_scan_filesystem.
 	if (first_scan) {
 		sd = first_scan_root_dir;
-		// Will be updated on scan.
-		ResourceUID::get_singleton()->clear();
 		ResourceUID::scan_for_uid_on_startup = nullptr;
 		processed_files = memnew(HashSet<String>());
 	} else {
@@ -512,6 +510,10 @@ void EditorFileSystem::_scan_filesystem() {
 		sd->full_path = "res://";
 		nb_files_total = _scan_new_dir(sd, d);
 	}
+
+	// The file may be moved externally, and the uid will be invalid (removed) and then valid (added).
+	// Clear invalid cache entries here to prevent confusion during additions.
+	ResourceUID::get_singleton()->verify();
 
 	_process_file_system(sd, new_filesystem, sp, processed_files);
 
@@ -907,7 +909,16 @@ bool EditorFileSystem::_update_scan_actions() {
 					if (old_path != new_file_path && FileAccess::exists(old_path)) {
 						const ResourceUID::ID new_id = ResourceUID::get_singleton()->create_id_for_path(new_file_path);
 						ResourceUID::get_singleton()->add_id(new_id, new_file_path);
-						ResourceSaver::set_uid(new_file_path, new_id);
+
+						// Save the new uid to the corresponding file.
+						if (ResourceLoader::has_custom_uid_support(new_file_path)) {
+							ResourceSaver::set_uid(new_file_path, new_id);
+						} else {
+							Ref<FileAccess> f = FileAccess::open(new_file_path + ".uid", FileAccess::WRITE);
+							if (f.is_valid()) {
+								f->store_line(ResourceUID::get_singleton()->id_to_text(new_id));
+							}
+						}
 						WARN_PRINT(vformat("Duplicate UID detected for Resource at \"%s\".\nOld Resource path: \"%s\". The new file UID was changed automatically.", new_file_path, old_path));
 					} else {
 						// Re-assign the UID to file, just in case it was pulled from cache.
@@ -1229,7 +1240,9 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 		FileCache *fc = file_cache.getptr(path);
 		uint64_t mt = FileAccess::get_modified_time(path);
 
-		if (_can_import_file(scan_file)) {
+		bool is_imported = _can_import_file(scan_file);
+
+		if (is_imported) {
 			//is imported
 			uint64_t import_mt = FileAccess::get_modified_time(path + ".import");
 
@@ -1369,15 +1382,34 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 
 		if (fi->uid != ResourceUID::INVALID_ID) {
 			if (ResourceUID::get_singleton()->has_id(fi->uid)) {
-				// Restrict UID dupe warning to first-scan since we know there are no file moves going on yet.
-				if (first_scan) {
-					// Warn if we detect files with duplicate UIDs.
-					const String other_path = ResourceUID::get_singleton()->get_id_path(fi->uid);
-					if (other_path != path) {
-						WARN_PRINT(vformat("UID duplicate detected between %s and %s.", path, other_path));
+				// Warn if we detect files with duplicate UIDs.
+				const String other_path = ResourceUID::get_singleton()->get_id_path(fi->uid);
+				if (other_path != path) {
+					WARN_PRINT(vformat("Duplicate UID detected for Resource at \"%s\".\nOld Resource path: \"%s\". The new file UID was changed automatically.", path, other_path));
+					fi->uid = ResourceUID::get_singleton()->create_id_for_path(path);
+
+					ResourceUID::get_singleton()->add_id(fi->uid, path);
+
+					//  Save the new uid to the corresponding file.
+					if (is_imported) {
+						Ref<ConfigFile> cfg;
+						cfg.instantiate();
+						Error err = cfg->load(path + ".import");
+						if (err == OK) {
+							cfg->set_value("remap", "uid", ResourceUID::get_singleton()->id_to_text(fi->uid));
+							err = cfg->save(path + ".import");
+						}
+					} else {
+						if (ResourceLoader::has_custom_uid_support(path)) {
+							ResourceSaver::set_uid(path, fi->uid);
+						} else {
+							Ref<FileAccess> f = FileAccess::open(path + ".uid", FileAccess::WRITE);
+							if (f.is_valid()) {
+								f->store_line(ResourceUID::get_singleton()->id_to_text(fi->uid));
+							}
+						}
 					}
 				}
-				ResourceUID::get_singleton()->set_id(fi->uid, path);
 			} else {
 				ResourceUID::get_singleton()->add_id(fi->uid, path);
 			}
@@ -1691,6 +1723,10 @@ void EditorFileSystem::scan_changes() {
 	sources_changed.clear();
 	scanning_changes = true;
 	scanning_changes_done.clear();
+
+	// The file may be moved externally, and the uid will be invalid (removed) and then valid (added).
+	// Clear invalid cache entries here to prevent confusion during additions.
+	ResourceUID::get_singleton()->verify();
 
 	if (!use_threads) {
 		if (filesystem) {
