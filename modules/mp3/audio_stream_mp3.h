@@ -32,7 +32,7 @@
 
 #include "servers/audio/audio_stream.h"
 
-#include <minimp3_ex.h>
+#include "thirdparty/dr_libs/dr_mp3.h"
 
 class AudioStreamMP3;
 
@@ -47,7 +47,7 @@ class AudioStreamPlaybackMP3 : public AudioStreamPlaybackResampled {
 
 	bool looping_override = false;
 	bool looping = false;
-	mp3dec_ex_t mp3d = {};
+	drmp3 mp3d = {};
 	uint32_t frames_mixed = 0;
 	bool active = false;
 	int loops = 0;
@@ -58,6 +58,8 @@ class AudioStreamPlaybackMP3 : public AudioStreamPlaybackResampled {
 
 	bool _is_sample = false;
 	Ref<AudioSamplePlayback> sample_playback;
+
+	int _mix_frames_mp3(AudioFrame *p_buffer, int p_frames);
 
 protected:
 	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) override;
@@ -97,8 +99,6 @@ class AudioStreamMP3 : public AudioStream {
 	TightLocalVector<uint8_t> data;
 	uint32_t data_len = 0;
 
-	float sample_rate = 1.0;
-	int channels = 1;
 	float length = 0.0;
 	bool loop = false;
 	float loop_offset = 0.0;
