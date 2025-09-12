@@ -38,8 +38,39 @@
 #include "editor/file_system/editor_paths.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/label.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/font.h"
+
+static bool find_next_match(const String &line, const String &pattern, int from, bool match_case, bool whole_words, int &out_begin, int &out_end) {
+	int end = from;
+
+	while (true) {
+		int begin = match_case ? line.find(pattern, end) : line.findn(pattern, end);
+
+		if (begin == -1) {
+			return false;
+		}
+
+		end = begin + pattern.length();
+		out_begin = begin;
+		out_end = end;
+
+		if (whole_words) {
+			if (begin > 0 && (is_ascii_identifier_char(line[begin - 1]))) {
+				continue;
+			}
+			if (end < line.size() && (is_ascii_identifier_char(line[end]))) {
+				continue;
+			}
+		}
+
+		return true;
+	}
+}
+
+//--------------------------------------------------------------------------------
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
 	EditorLog *self = static_cast<EditorLog *>(p_self);
@@ -86,6 +117,14 @@ void EditorLog::_update_theme() {
 		log->add_theme_font_override("mono_font", mono_font);
 	}
 
+	if (search_prev_button) {
+		search_prev_button->set_button_icon(get_editor_theme_icon(SNAME("ArrowUp")));
+	}
+
+	if (search_next_button) {
+		search_next_button->set_button_icon(get_editor_theme_icon(SNAME("ArrowDown")));
+	}
+
 	// Disable padding for highlighted background/foreground to prevent highlights from overlapping on close lines.
 	// This also better matches terminal output, which does not use any form of padding.
 	log->add_theme_constant_override("text_highlight_h_padding", 0);
@@ -113,7 +152,6 @@ void EditorLog::_update_theme() {
 	copy_button->set_button_icon(get_editor_theme_icon(SNAME("ActionCopy")));
 	collapse_button->set_button_icon(get_editor_theme_icon(SNAME("CombineLines")));
 	show_search_button->set_button_icon(get_editor_theme_icon(SNAME("Search")));
-	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 	theme_cache.error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
 	theme_cache.error_icon = get_editor_theme_icon(SNAME("Error"));
@@ -128,6 +166,22 @@ void EditorLog::_editor_settings_changed() {
 		line_limit = new_line_limit;
 		_rebuild_log();
 	}
+}
+
+void EditorLog::set_whole_words(bool p_whole_word) {
+	_whole_words = p_whole_word;
+	if (search_mode && !search_box->get_text().is_empty()) {
+		_perform_classic_search(search_box->get_text());
+	}
+	_start_state_save_timer();
+}
+
+void EditorLog::set_match_case(bool p_match_case) {
+	_match_case = p_match_case;
+	if (search_mode && !search_box->get_text().is_empty()) {
+		_perform_classic_search(search_box->get_text());
+	}
+	_start_state_save_timer();
 }
 
 void EditorLog::_notification(int p_what) {
@@ -169,6 +223,9 @@ void EditorLog::_save_state() {
 
 	config->set_value(section, "collapse", collapse);
 	config->set_value(section, "show_search", search_box->is_visible());
+	config->set_value(section, "search_mode", search_mode);
+	config->set_value(section, "match_case", _match_case);
+	config->set_value(section, "whole_words", _whole_words);
 
 	config->save(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
 }
@@ -191,6 +248,13 @@ void EditorLog::_load_state() {
 	bool show_search = config->get_value(section, "show_search", true);
 	search_box->set_visible(show_search);
 	show_search_button->set_pressed(show_search);
+	search_mode = config->get_value(section, "search_mode", false);
+	search_mode_button->set_pressed(search_mode);
+	_match_case = config->get_value(section, "match_case", false);
+	_match_case_checkbox->set_pressed(_match_case);
+	_whole_words = config->get_value(section, "whole_words", false);
+	_whole_words_checkbox->set_pressed(_whole_words);
+	_on_search_mode_toggled(search_mode);
 
 	is_loading_state = false;
 }
@@ -267,7 +331,7 @@ void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
 	self->add_message(p_name, EditorLog::MSG_TYPE_EDITOR);
 }
 
-void EditorLog::_rebuild_log() {
+void EditorLog::_rebuild_log(const String &p_search_highlight) {
 	if (messages.is_empty()) {
 		return;
 	}
@@ -282,13 +346,13 @@ void EditorLog::_rebuild_log() {
 	for (start_message_index = messages.size() - 1; start_message_index >= 0; start_message_index--) {
 		LogMessage msg = messages[start_message_index];
 		if (collapse) {
-			if (_check_display_message(msg)) {
+			if (_check_display_message(msg, search_mode)) {
 				line_count++;
 			}
 		} else {
 			// If not collapsing, log each instance on a line.
 			for (int i = 0; i < msg.count; i++) {
-				if (_check_display_message(msg)) {
+				if (_check_display_message(msg, search_mode)) {
 					line_count++;
 				}
 			}
@@ -307,25 +371,32 @@ void EditorLog::_rebuild_log() {
 
 		if (collapse) {
 			// If collapsing, only log one instance of the message.
-			_add_log_line(msg);
+			_add_log_line(msg, false, msg_idx, 0, p_search_highlight);
 		} else {
 			// If not collapsing, log each instance on a line.
 			for (int i = initial_skip; i < msg.count; i++) {
 				initial_skip = 0;
-				_add_log_line(msg);
+				_add_log_line(msg, false, msg_idx, i, p_search_highlight);
 			}
 		}
 	}
 }
 
-bool EditorLog::_check_display_message(LogMessage &p_message) {
+bool EditorLog::_check_display_message(LogMessage &p_message, bool p_ignore_search_filter) {
 	bool filter_active = type_filter_map[p_message.type]->is_active();
-	String search_text = search_box->get_text();
-	bool search_match = search_text.is_empty() || p_message.text.containsn(search_text);
-	return filter_active && search_match;
+
+	if (p_ignore_search_filter || search_mode) {
+		// In search mode or when explicitly ignoring search filter, only apply type filters
+		return filter_active;
+	} else {
+		// In filter mode, apply both type and text search filters
+		String search_text = search_box->get_text();
+		bool search_match = search_text.is_empty() || p_message.text.containsn(search_text);
+		return filter_active && search_match;
+	}
 }
 
-void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
+void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous, int p_message_index, int p_display_instance, const String &p_search_highlight) {
 	if (!is_inside_tree()) {
 		// The log will be built all at once when it enters the tree and has its theme items.
 		return;
@@ -384,11 +455,16 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		log->pop();
 	}
 
-	if (p_message.type == MSG_TYPE_STD_RICH) {
-		log->append_text(p_message.text);
+	if (!p_search_highlight.is_empty()) {
+		_add_text_with_search_highlighting(p_message.text, p_search_highlight, p_message_index, p_display_instance);
 	} else {
-		log->add_text(p_message.text);
+		if (p_message.type == MSG_TYPE_STD_RICH) {
+			log->append_text(p_message.text);
+		} else {
+			log->add_text(p_message.text);
+		}
 	}
+
 	if (p_message.clear || p_message.type != MSG_TYPE_STD_RICH) {
 		log->pop_all(); // Pop all unclosed tags.
 	}
@@ -414,14 +490,269 @@ void EditorLog::_set_filter_active(bool p_active, MessageType p_message_type) {
 
 void EditorLog::_set_search_visible(bool p_visible) {
 	search_box->set_visible(p_visible);
+	search_mode_button->set_visible(p_visible);
+	search_nav_container->set_visible(p_visible && search_mode);
 	if (p_visible) {
 		search_box->grab_focus();
+	} else {
+		if (search_mode) {
+			_clear_search_highlights();
+		}
 	}
 	_start_state_save_timer();
 }
 
 void EditorLog::_search_changed(const String &p_text) {
-	_rebuild_log();
+	if (search_mode) {
+		// Classic search mode
+		_perform_classic_search(p_text);
+	} else {
+		// Filter mode (existing functionality)
+		_rebuild_log();
+	}
+}
+
+void EditorLog::_on_search_mode_toggled(bool p_pressed) {
+	search_mode = p_pressed;
+
+	if (search_mode) {
+		// Switch to classic search mode
+		search_mode_button->set_tooltip_text(TTR("Switch to Filter Mode"));
+		search_mode_button->set_button_icon(get_editor_theme_icon(SNAME("AnimationFilter")));
+		search_box->set_placeholder(TTR("Find"));
+		search_box->set_accessibility_name(TTRC("Find"));
+
+		// Show navigation buttons
+		search_nav_container->set_visible(search_box->is_visible());
+
+		// Perform search if there's text
+		String search_text = search_box->get_text();
+		if (!search_text.is_empty()) {
+			_perform_classic_search(search_text);
+		}
+	} else {
+		// Switch to filter mode
+		search_mode_button->set_tooltip_text(TTR("Switch to Search Mode"));
+		search_mode_button->set_button_icon(get_editor_theme_icon(SNAME("Search")));
+		search_box->set_placeholder(TTR("Filter Messages"));
+		search_box->set_accessibility_name(TTRC("Filter Messages"));
+
+		// Hide navigation buttons
+		search_nav_container->set_visible(false);
+
+		// Clear search highlights and rebuild log with filter
+		_clear_search_highlights();
+		_rebuild_log();
+	}
+
+	_start_state_save_timer();
+}
+
+void EditorLog::_perform_classic_search(const String &p_text) {
+	search_matches.clear();
+	current_search_index = -1;
+
+	if (p_text.is_empty()) {
+		_clear_search_highlights();
+		_update_search_navigation();
+		_rebuild_log();
+		return;
+	}
+
+	_find_search_matches(p_text);
+
+	if (!search_matches.is_empty()) {
+		current_search_index = 0;
+		bool original_scroll_follow = log->is_scroll_following();
+		log->set_scroll_follow(false);
+
+		_rebuild_log(p_text);
+
+		callable_mp(this, &EditorLog::_scroll_to_current_match_deferred)
+				.call_deferred(original_scroll_follow);
+	} else {
+		_rebuild_log(p_text);
+	}
+
+	_update_search_navigation();
+}
+void EditorLog::_find_search_matches(const String &p_search_text) {
+	int visible_paragraph_index = 0;
+	int start_message_index = 0;
+
+	for (int msg_idx = start_message_index; msg_idx < messages.size(); msg_idx++) {
+		LogMessage msg = messages[msg_idx];
+
+		if (!_check_display_message(msg, true)) {
+			continue;
+		}
+
+		int message_display_count = collapse ? 1 : msg.count;
+		Vector<int> match_positions = _find_matches_in_text(msg.text, p_search_text);
+
+		for (int display_instance = 0; display_instance < message_display_count; display_instance++) {
+			for (int match_pos : match_positions) {
+				SearchMatch match;
+				match.message_index = msg_idx;
+				match.visible_index = visible_paragraph_index;
+				match.text_position = match_pos;
+				match.display_instance = display_instance;
+				search_matches.push_back(match);
+			}
+			visible_paragraph_index++;
+		}
+	}
+}
+Vector<int> EditorLog::_find_matches_in_text(const String &p_text, const String &p_pattern) {
+	Vector<int> matches;
+	int pos = 0;
+	int match_begin, match_end;
+
+	while (find_next_match(p_text, p_pattern, pos, _match_case, _whole_words, match_begin, match_end)) {
+		matches.push_back(match_begin);
+		pos = match_end;
+	}
+
+	return matches;
+}
+
+void EditorLog::_add_text_with_search_highlighting(const String &p_text, const String &p_search_text, int p_message_index, int p_display_instance) {
+	if (p_search_text.is_empty()) {
+		log->add_text(p_text);
+		return;
+	}
+
+	Vector<int> match_positions;
+	int pos = 0;
+	int match_begin, match_end;
+	while (find_next_match(p_text, p_search_text, pos, _match_case, _whole_words, match_begin, match_end)) {
+		match_positions.push_back(match_begin);
+		pos = match_end;
+	}
+
+	if (match_positions.is_empty()) {
+		log->add_text(p_text);
+		return;
+	}
+
+	// Determine which match (if any) is the current one
+	int current_match_position = -1;
+	if (current_search_index >= 0 && current_search_index < search_matches.size()) {
+		const SearchMatch &current_match = search_matches[current_search_index];
+		if (current_match.message_index == p_message_index &&
+				current_match.display_instance == p_display_instance) {
+			current_match_position = current_match.text_position;
+		}
+	}
+
+	// Add text with highlights
+	int last_pos = 0;
+	for (int match_pos : match_positions) {
+		// Add text before match
+		if (match_pos > last_pos) {
+			log->add_text(p_text.substr(last_pos, match_pos - last_pos));
+		}
+
+		// Determine highlight color based on whether this is the current match
+		bool is_current_match = (match_pos == current_match_position);
+
+		if (is_current_match) {
+			// Highlight current match with orange/red color
+			log->push_bgcolor(Color(1.0, 0.5, 0.0, 0.7)); // Orange highlight for current match
+		} else {
+			// Highlight other matches with yellow color
+			log->push_bgcolor(Color(1.0, 1.0, 0.0, 0.3)); // Yellow highlight for other matches
+		}
+
+		log->add_text(p_text.substr(match_pos, p_search_text.length()));
+		log->pop(); // bgcolor
+
+		last_pos = match_pos + p_search_text.length();
+	}
+
+	// Add remaining text
+	if (last_pos < p_text.length()) {
+		log->add_text(p_text.substr(last_pos));
+	}
+}
+
+void EditorLog::_scroll_to_current_match() {
+	if (search_matches.is_empty() || current_search_index < 0 || current_search_index >= search_matches.size()) {
+		return;
+	}
+
+	const SearchMatch &match = search_matches[current_search_index];
+
+	// Wait for any pending updates to complete
+	if (log->get_pending_paragraphs() > 0) {
+		log->wait_until_finished();
+	}
+
+	// Use the visible_index directly - it represents the paragraph position
+	int target_paragraph = match.visible_index;
+
+	// Add some context above the target
+	target_paragraph = MAX(0, target_paragraph - 2);
+
+	// Get total paragraph count for validation
+	int paragraph_count = log->get_paragraph_count();
+
+	if (target_paragraph < paragraph_count) {
+		log->scroll_to_paragraph(target_paragraph);
+	}
+}
+
+void EditorLog::_scroll_to_current_match_deferred(bool p_restore_scroll_follow) {
+	_scroll_to_current_match();
+
+	// Restore the original scroll follow state
+	log->set_scroll_follow(p_restore_scroll_follow);
+}
+
+void EditorLog::_navigate_search_result(bool p_next) {
+	if (search_matches.is_empty()) {
+		return;
+	}
+	// Store the scroll follow state and disable it
+	bool original_scroll_follow = log->is_scroll_following();
+	log->set_scroll_follow(false);
+
+	if (p_next) {
+		current_search_index = (current_search_index + 1) % search_matches.size();
+	} else {
+		current_search_index = (current_search_index - 1 + search_matches.size()) % search_matches.size();
+	}
+	// Update the search navigation immediately
+	_update_search_navigation();
+
+	// Refresh the log with updated highlighting
+	String search_text = search_box->get_text();
+	if (!search_text.is_empty()) {
+		_rebuild_log(search_text);
+
+		// Use call_deferred to scroll after the log has been fully rebuilt
+		callable_mp(this, &EditorLog::_scroll_to_current_match_deferred).call_deferred(original_scroll_follow);
+	}
+}
+
+void EditorLog::_update_search_navigation() {
+	if (search_matches.is_empty()) {
+		search_results_label->set_text(TTR("No match"));
+		search_prev_button->set_disabled(true);
+		search_next_button->set_disabled(true);
+	} else {
+		String results_text = vformat(TTRN("%d of %d match", "%d of %d matches", search_matches.size()), current_search_index + 1, search_matches.size());
+		search_results_label->set_text(results_text);
+		search_prev_button->set_disabled(false);
+		search_next_button->set_disabled(false);
+	}
+}
+
+void EditorLog::_clear_search_highlights() {
+	// Simply rebuild the log without highlighting
+	if (search_mode && !search_box->get_text().is_empty()) {
+		_rebuild_log();
+	}
 }
 
 void EditorLog::_reset_message_counts() {
@@ -462,6 +793,11 @@ EditorLog::EditorLog() {
 	log->connect("meta_clicked", callable_mp(this, &EditorLog::_meta_clicked));
 	vb_left->add_child(log);
 
+	// Search container - holds both search box and mode toggle
+	HBoxContainer *search_container = memnew(HBoxContainer);
+	search_container->set_visible(true); // Will be controlled by show_search_button
+	vb_left->add_child(search_container);
+
 	// Search box
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -470,7 +806,68 @@ EditorLog::EditorLog() {
 	search_box->set_clear_button_enabled(true);
 	search_box->set_visible(true);
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorLog::_search_changed));
-	vb_left->add_child(search_box);
+	search_container->add_child(search_box);
+
+	// Search mode toggle button
+	search_mode_button = memnew(Button);
+	search_mode_button->set_theme_type_variation(SceneStringName(FlatButton));
+	search_mode_button->set_focus_mode(FOCUS_NONE);
+	search_mode_button->set_toggle_mode(true);
+	search_mode_button->set_pressed(false);
+	search_mode_button->set_tooltip_text(TTR("Switch to Search Mode"));
+	search_mode_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_on_search_mode_toggled));
+	search_container->add_child(search_mode_button);
+
+	// Search navigation container
+	search_nav_container = memnew(HBoxContainer);
+	search_nav_container->set_visible(false); // Hidden by default (filter mode)
+	vb_left->add_child(search_nav_container);
+
+	// Previous search result button
+	search_prev_button = memnew(Button);
+	search_prev_button->set_theme_type_variation(SceneStringName(FlatButton));
+	search_prev_button->set_focus_mode(FOCUS_NONE);
+	search_prev_button->set_tooltip_text(TTR("Previous Match"));
+	search_prev_button->set_shortcut(ED_SHORTCUT("editor/search_prev", TTRC("Previous Match"), Key::F3 | KeyModifierMask::SHIFT));
+	search_prev_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_navigate_search_result).bind(false));
+	search_nav_container->add_child(search_prev_button);
+
+	// Next search result button
+	search_next_button = memnew(Button);
+	search_next_button->set_theme_type_variation(SceneStringName(FlatButton));
+	search_next_button->set_focus_mode(FOCUS_NONE);
+	search_next_button->set_tooltip_text(TTR("Next Match"));
+	search_next_button->set_shortcut(ED_SHORTCUT("editor/search_next", TTRC("Next Match"), Key::F3));
+	search_next_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_navigate_search_result).bind(true));
+	search_nav_container->add_child(search_next_button);
+
+	// Search results label
+	search_results_label = memnew(Label);
+	search_results_label->set_text(TTR("No match"));
+	search_nav_container->add_child(search_results_label);
+
+	// Classic Search options
+	HBoxContainer *search_options = memnew(HBoxContainer);
+	search_options->set_h_size_flags(SIZE_EXPAND_FILL);
+	search_nav_container->add_child(search_options);
+
+	Control *right_align_spacer = memnew(Control);
+	right_align_spacer->set_h_size_flags(SIZE_EXPAND_FILL);
+	search_options->add_child(right_align_spacer);
+
+	_match_case_checkbox = memnew(CheckBox);
+	_match_case_checkbox->set_text(TTR("Match Case"));
+	_match_case_checkbox->set_focus_mode(FOCUS_NONE);
+	_match_case_checkbox->set_tooltip_text(TTR("Match case when searching"));
+	_match_case_checkbox->connect("toggled", callable_mp(this, &EditorLog::set_match_case));
+	search_options->add_child(_match_case_checkbox);
+
+	_whole_words_checkbox = memnew(CheckBox);
+	_whole_words_checkbox->set_text(TTR("Whole Words"));
+	_whole_words_checkbox->set_focus_mode(FOCUS_NONE);
+	_whole_words_checkbox->set_tooltip_text(TTR("Search for whole words only"));
+	_whole_words_checkbox->connect("toggled", callable_mp(this, &EditorLog::set_whole_words));
+	search_options->add_child(_whole_words_checkbox);
 
 	VBoxContainer *vb_right = memnew(VBoxContainer);
 	hb->add_child(vb_right);
