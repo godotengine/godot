@@ -1312,7 +1312,7 @@ void SpringBoneSimulator3D::_bind_methods() {
 	// To process manually.
 	ClassDB::bind_method(D_METHOD("reset"), &SpringBoneSimulator3D::reset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "external_force", PROPERTY_HINT_RANGE, "-99999,99999,or_greater,or_less,hide_slider,suffix:m/s"), "set_external_force", "get_external_force");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "external_force", PROPERTY_HINT_RANGE, "-99999,99999,or_greater,or_less,hide_control,suffix:m/s"), "set_external_force", "get_external_force");
 	ADD_ARRAY_COUNT("Settings", "setting_count", "set_setting_count", "get_setting_count", "settings/");
 
 	BIND_ENUM_CONSTANT(BONE_DIRECTION_PLUS_X);
