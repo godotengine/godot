@@ -172,6 +172,8 @@ protected:
 		bool force_opaque;
 	};
 
+	String launch_screen_image_file_name;
+
 	void _blend_and_rotate(Ref<Image> &p_dst, Ref<Image> &p_src, bool p_rot);
 
 	virtual Error _export_loading_screen_file(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) { return OK; }
