@@ -292,7 +292,7 @@
 			<param index="4" name="type_blocklist" type="StringName[]" default="[]" />
 			<description>
 				Pops up an editor dialog for creating an object.
-				The [param callback] must take a single argument of type [StringName] which will contain the type name of the selected object or be empty if no item is selected.
+				The [param callback] must take a single argument of type [String], which will contain the type name of the selected object (or the script path of the type, if the type is created from a script), or be an empty string if no item is selected.
 				The [param base_type] specifies the base type of objects to display. For example, if you set this to "Resource", all types derived from [Resource] will display in the create dialog.
 				The [param current_type] will be passed in the search box of the create dialog, and the specified type can be immediately selected when the dialog pops up. If the [param current_type] is not derived from [param base_type], there will be no result of the type in the dialog.
 				The [param dialog_title] allows you to define a custom title for the dialog. This is useful if you want to accurately hint the usage of the dialog. If the [param dialog_title] is an empty string, the dialog will use "Create New 'Base Type'" as the default title.
