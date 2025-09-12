@@ -72,19 +72,21 @@ public:
 				CallableCustomBind *ccb = dynamic_cast<CallableCustomBind *>(p_connection.callable.get_custom());
 				if (ccb) {
 					binds = ccb->get_binds();
-
-					// The source object may already be bound, ignore it to prevent display of the source object.
-					if ((flags & CONNECT_APPEND_SOURCE_OBJECT) && (source == binds[0])) {
-						binds.remove_at(0);
-					}
+					unbinds = ccb->get_unbound_arguments_count();
 
 					base_callable = ccb->get_callable();
 				}
 
 				CallableCustomUnbind *ccu = dynamic_cast<CallableCustomUnbind *>(p_connection.callable.get_custom());
 				if (ccu) {
+					ccu->get_bound_arguments(binds);
 					unbinds = ccu->get_unbinds();
 					base_callable = ccu->get_callable();
+				}
+
+				// The source object may already be bound, ignore it to prevent display of the source object.
+				if ((flags & CONNECT_APPEND_SOURCE_OBJECT) && (source == binds[0])) {
+					binds.remove_at(0);
 				}
 			} else {
 				base_callable = p_connection.callable;
@@ -93,17 +95,21 @@ public:
 		}
 
 		Callable get_callable() const {
-			if (unbinds > 0) {
-				return Callable(target, method).unbind(unbinds);
-			} else if (!binds.is_empty()) {
+			Callable callable = Callable(target, method);
+
+			if (!binds.is_empty()) {
 				const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * binds.size());
 				for (int i = 0; i < binds.size(); i++) {
 					argptrs[i] = &binds[i];
 				}
-				return Callable(target, method).bindp(argptrs, binds.size());
-			} else {
-				return Callable(target, method);
+				callable = callable.bindp(argptrs, binds.size());
 			}
+
+			if (unbinds > 0) {
+				callable = callable.unbind(unbinds);
+			}
+
+			return callable;
 		}
 	};
 
