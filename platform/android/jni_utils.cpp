@@ -86,7 +86,9 @@ String charsequence_to_string(JNIEnv *p_env, jobject p_charsequence) {
 	return result;
 }
 
-jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, bool force_jobject) {
+jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, bool force_jobject, int p_depth) {
+	ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, jvalret{}, "Variant is too deep! Bailing.");
+
 	jvalret v;
 
 	switch (p_type) {
@@ -185,7 +187,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 
 			for (int j = 0; j < keys.size(); j++) {
 				Variant var = dict[keys[j]];
-				jvalret valret = _variant_to_jvalue(env, var.get_type(), &var, true);
+				jvalret valret = _variant_to_jvalue(env, var.get_type(), &var, true, p_depth + 1);
 				env->SetObjectArrayElement(jvalues, j, valret.val.l);
 				if (valret.obj) {
 					env->DeleteLocalRef(valret.obj);
@@ -208,7 +210,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 
 			for (int j = 0; j < array.size(); j++) {
 				Variant var = array[j];
-				jvalret valret = _variant_to_jvalue(env, var.get_type(), &var, true);
+				jvalret valret = _variant_to_jvalue(env, var.get_type(), &var, true, p_depth + 1);
 				env->SetObjectArrayElement(arr, j, valret.val.l);
 				if (valret.obj) {
 					env->DeleteLocalRef(valret.obj);
@@ -297,7 +299,9 @@ String _get_class_name(JNIEnv *env, jclass cls, bool *array) {
 	return name;
 }
 
-Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
+Variant _jobject_to_variant(JNIEnv *env, jobject obj, int p_depth) {
+	ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, Variant(), "Variant is too deep! Bailing.");
+
 	if (obj == nullptr) {
 		return Variant();
 	}
@@ -434,7 +438,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 
 		for (int i = 0; i < objCount; i++) {
 			jobject jobj = env->GetObjectArrayElement(arr, i);
-			Variant v = _jobject_to_variant(env, jobj);
+			Variant v = _jobject_to_variant(env, jobj, p_depth + 1);
 			varr.push_back(v);
 			env->DeleteLocalRef(jobj);
 		}
@@ -448,13 +452,13 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 		jmethodID get_keys = env->GetMethodID(oclass, "get_keys", "()[Ljava/lang/String;");
 		jobjectArray arr = (jobjectArray)env->CallObjectMethod(obj, get_keys);
 
-		PackedStringArray keys = _jobject_to_variant(env, arr);
+		PackedStringArray keys = _jobject_to_variant(env, arr, p_depth + 1);
 		env->DeleteLocalRef(arr);
 
 		jmethodID get_values = env->GetMethodID(oclass, "get_values", "()[Ljava/lang/Object;");
 		arr = (jobjectArray)env->CallObjectMethod(obj, get_values);
 
-		Array vals = _jobject_to_variant(env, arr);
+		Array vals = _jobject_to_variant(env, arr, p_depth + 1);
 		env->DeleteLocalRef(arr);
 
 		for (int i = 0; i < keys.size(); i++) {
