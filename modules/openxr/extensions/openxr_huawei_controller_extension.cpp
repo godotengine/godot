@@ -31,8 +31,9 @@
 #include "openxr_huawei_controller_extension.h"
 
 #include "../action_map/openxr_interaction_profile_metadata.h"
+#include "../openxr_api.h"
 
-HashMap<String, bool *> OpenXRHuaweiControllerExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRHuaweiControllerExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_HUAWEI_CONTROLLER_INTERACTION_EXTENSION_NAME] = &available;
@@ -55,6 +56,7 @@ void OpenXRHuaweiControllerExtension::on_register_metadata() {
 			openxr_metadata->register_io_path(profile_path, "Grip pose", user_path, user_path + "/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
 			openxr_metadata->register_io_path(profile_path, "Aim pose", user_path, user_path + "/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
 			openxr_metadata->register_io_path(profile_path, "Palm pose", user_path, user_path + "/input/palm_ext/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
+			openxr_metadata->register_io_path(profile_path, "Grip surface pose", user_path, user_path + "/input/grip_surface/pose", XR_OPENXR_1_1_NAME, OpenXRAction::OPENXR_ACTION_POSE);
 
 			openxr_metadata->register_io_path(profile_path, "Home click", user_path, user_path + "/input/home/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
 			openxr_metadata->register_io_path(profile_path, "Back click", user_path, user_path + "/input/back/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
