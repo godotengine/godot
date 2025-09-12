@@ -302,7 +302,7 @@ void Light3D::_update_visibility() {
 
 void Light3D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			update_configuration_warnings();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED:
