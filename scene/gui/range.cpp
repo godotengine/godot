@@ -235,6 +235,8 @@ void Range::set_max(double p_max) {
 
 	shared->emit_changed();
 
+	update_configuration_warnings(); // Used for Slider symmetric_fill.
+
 	queue_accessibility_update();
 }
 
