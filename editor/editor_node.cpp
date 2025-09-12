@@ -3513,7 +3513,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 }
 
 String EditorNode::adjust_scene_name_casing(const String &p_root_name) {
-	switch (GLOBAL_GET("editor/naming/scene_name_casing").operator int()) {
+	switch (GLOBAL_EDITOR_GET("naming/scene_name_casing").operator int()) {
 		case SCENE_NAME_CASING_AUTO:
 			// Use casing of the root node.
 			break;
@@ -3530,7 +3530,7 @@ String EditorNode::adjust_scene_name_casing(const String &p_root_name) {
 }
 
 String EditorNode::adjust_script_name_casing(const String &p_file_name, ScriptLanguage::ScriptNameCasing p_auto_casing) {
-	int editor_casing = GLOBAL_GET("editor/naming/script_name_casing");
+	int editor_casing = GLOBAL_EDITOR_GET("naming/script_name_casing");
 	if (editor_casing == ScriptLanguage::SCRIPT_NAME_CASING_AUTO) {
 		// Use the script language's preferred casing.
 		editor_casing = p_auto_casing;

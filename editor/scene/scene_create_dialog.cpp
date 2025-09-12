@@ -286,7 +286,7 @@ SceneCreateDialog::SceneCreateDialog() {
 
 		root_name_edit = memnew(LineEdit);
 		gc->add_child(root_name_edit);
-		root_name_edit->set_tooltip_text(TTR("When empty, the root node name is derived from the scene name based on the \"editor/naming/node_name_casing\" project setting."));
+		root_name_edit->set_tooltip_text(TTR("When empty, the root node name is derived from the scene name based on the \"naming/node_name_casing\" editor setting."));
 		root_name_edit->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		root_name_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		root_name_edit->connect(SceneStringName(text_submitted), callable_mp(this, &SceneCreateDialog::accept_create).unbind(1));
