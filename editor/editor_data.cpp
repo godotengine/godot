@@ -695,6 +695,27 @@ bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, HashSet<Str
 	return false;
 }
 
+bool EditorData::_find_specified_instance(Node *p_root, Node *p_node, const String &p_instance_path) {
+	Ref<SceneState> ss;
+	if (p_node == p_root) {
+		ss = p_node->get_scene_inherited_state();
+	} else if (!p_node->get_scene_file_path().is_empty()) {
+		ss = p_node->get_scene_instance_state();
+	}
+
+	if (ss.is_valid() && ss->get_path() == p_instance_path) {
+		return true;
+	}
+
+	const int child_count = p_node->get_child_count();
+	for (int i = 0; i < child_count; i++) {
+		if (_find_specified_instance(p_root, p_node->get_child(i), p_instance_path)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool EditorData::check_and_update_scene(int p_idx) {
 	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), false);
 	if (!edited_scene[p_idx].root) {
@@ -738,6 +759,50 @@ bool EditorData::check_and_update_scene(int p_idx) {
 	}
 
 	return false;
+}
+
+void EditorData::update_scenes_with_instance(const String &p_instance_path) {
+	int scene_count = get_edited_scene_count();
+	LocalVector<int> scenes_to_reload;
+	scenes_to_reload.reserve(scene_count);
+
+	for (int i = 0; i < scene_count; i++) {
+		if (edited_scene[i].path == p_instance_path) {
+			continue;
+		}
+		if (!_find_specified_instance(edited_scene[i].root, edited_scene[i].root, p_instance_path)) {
+			continue;
+		}
+		scenes_to_reload.push_back(i);
+	}
+
+	int i = 0;
+	EditorProgress ep("update_scenes", TTR("Updating Scenes"), scenes_to_reload.size() * 2);
+	for (int idx : scenes_to_reload) {
+		Ref<PackedScene> pscene;
+		pscene.instantiate();
+
+		ep.step(TTR("Storing local changes..."), i * 2);
+		// Pack first, so it stores diffs to previous version of saved scene.
+		Error err = pscene->pack(edited_scene[idx].root);
+		ERR_FAIL_COND(err != OK);
+		ep.step(TTR("Updating scene..."), i * 2 + 1);
+		Node *new_scene = pscene->instantiate(PackedScene::GEN_EDIT_STATE_MAIN);
+		ERR_FAIL_NULL(new_scene);
+
+		new_scene->set_scene_file_path(edited_scene[idx].root->get_scene_file_path());
+		Node *old_root = edited_scene[idx].root;
+
+		if (idx == current_edited_scene) {
+			EditorNode::get_singleton()->set_edited_scene(new_scene);
+		} else {
+			edited_scene.write[idx].root = new_scene;
+		}
+		memdelete(old_root);
+
+		undo_redo_manager->clear_history(idx, undo_redo_manager->is_history_unsaved(idx));
+		i++;
+	}
 }
 
 int EditorData::get_edited_scene() const {
