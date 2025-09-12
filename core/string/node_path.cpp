@@ -116,6 +116,12 @@ bool NodePath::operator==(const NodePath &p_path) const {
 		return false;
 	}
 
+	if (data->hash_cache_valid && p_path.data->hash_cache_valid) {
+		if (data->hash_cache != p_path.data->hash_cache) {
+			return false;
+		}
+	}
+
 	if (data->absolute != p_path.data->absolute) {
 		return false;
 	}

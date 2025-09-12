@@ -144,7 +144,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	PopupMenu *state_machine_menu = nullptr;
 	PopupMenu *end_menu = nullptr;
 	PopupMenu *animations_menu = nullptr;
-	Vector<String> animations_to_add;
+	Vector<StringName> animations_to_add;
 	Vector<String> nodes_to_connect;
 
 	Vector2 add_node_pos;

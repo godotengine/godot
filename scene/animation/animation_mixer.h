@@ -76,7 +76,7 @@ public:
 	};
 
 	struct AnimationData {
-		String name;
+		StringName name;
 		Ref<Animation> animation;
 		StringName animation_library;
 		uint64_t last_update = 0;
@@ -91,7 +91,7 @@ public:
 		bool is_external_seeking = false;
 		Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
 		real_t weight = 0.0;
-		Vector<real_t> track_weights;
+		LocalVector<real_t> *track_weights = nullptr;
 	};
 
 	struct AnimationInstance {
@@ -106,12 +106,12 @@ protected:
 
 	TypedArray<StringName> _get_animation_library_list() const;
 	Vector<String> _get_animation_list() const {
-		List<StringName> animations;
+		LocalVector<StringName> animations;
 		get_animation_list(&animations);
 		Vector<String> ret;
-		while (animations.size()) {
-			ret.push_back(animations.front()->get());
-			animations.pop_front();
+		ret.resize(animations.size());
+		for (uint32_t i = 0; i < animations.size(); ++i) {
+			ret.write[i] = animations[i];
 		}
 		return ret;
 	}
@@ -151,6 +151,7 @@ protected:
 		int blend_idx = -1;
 		ObjectID object_id;
 		real_t total_weight = 0.0;
+		uint64_t animation_instance_weight_applied_at = 0;
 
 		TrackCache() = default;
 		TrackCache(const TrackCache &p_other) :
@@ -158,7 +159,8 @@ protected:
 				setup_pass(p_other.setup_pass),
 				type(p_other.type),
 				object_id(p_other.object_id),
-				total_weight(p_other.total_weight) {}
+				total_weight(p_other.total_weight),
+				animation_instance_weight_applied_at(p_other.animation_instance_weight_applied_at) {}
 
 		virtual ~TrackCache() {}
 	};
@@ -315,13 +317,14 @@ protected:
 	void _clear_playing_caches();
 	void _init_root_motion_cache();
 	bool _update_caches();
-	void _create_track_num_to_track_cache_for_animation(Ref<Animation> &p_animation);
+	void _create_track_num_to_track_cache_for_animation(const Ref<Animation> &p_animation);
 
 	/* ---- Audio ---- */
 	AudioServer::PlaybackType playback_type;
 
 	/* ---- Blending processor ---- */
 	LocalVector<AnimationInstance> animation_instances;
+	uint64_t animation_instance_weight_pass_counter = 0;
 	AHashMap<NodePath, int> track_map;
 	int track_count = 0;
 	bool deterministic = false;
@@ -401,17 +404,18 @@ public:
 	/* ---- Data lists ---- */
 	Dictionary *get_animation_libraries();
 
-	void get_animation_library_list(List<StringName> *p_animations) const;
+	void get_animation_library_list(LocalVector<StringName> *p_animations) const;
 	Ref<AnimationLibrary> get_animation_library(const StringName &p_name) const;
 	bool has_animation_library(const StringName &p_name) const;
 	StringName get_animation_library_name(const Ref<AnimationLibrary> &p_animation_library) const;
-	StringName find_animation_library(const Ref<Animation> &p_animation) const;
+	const StringName &find_animation_library(const Ref<Animation> &p_animation) const;
 	Error add_animation_library(const StringName &p_name, const Ref<AnimationLibrary> &p_animation_library);
 	void remove_animation_library(const StringName &p_name);
 	void rename_animation_library(const StringName &p_name, const StringName &p_new_name);
 
-	void get_animation_list(List<StringName> *p_animations) const;
-	Ref<Animation> get_animation(const StringName &p_name) const;
+	void get_animation_list(LocalVector<StringName> *p_animations, const bool p_sorted = true) const;
+	const Ref<Animation> &get_animation(const StringName &p_name) const;
+	const Ref<Animation> &get_animation_or_null(const StringName &p_name) const;
 	bool has_animation(const StringName &p_name) const;
 	StringName find_animation(const Ref<Animation> &p_animation) const;
 
@@ -454,7 +458,7 @@ public:
 	Vector3 get_root_motion_scale_accumulator() const;
 
 	/* ---- Blending processor ---- */
-	void make_animation_instance(const StringName &p_name, const PlaybackInfo p_playback_info);
+	void make_animation_instance(const StringName &p_name, const PlaybackInfo &p_playback_info);
 	void clear_animation_instances();
 	virtual void advance(double p_time);
 	virtual void clear_caches(); // Must be called by hand if an animation was modified after added.
@@ -491,7 +495,7 @@ class AnimatedValuesBackup : public RefCounted {
 	AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher> data;
 
 public:
-	void set_data(const AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher> p_data);
+	void set_data(const AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher> &p_data);
 	AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher> get_data() const;
 	void clear_data();
 

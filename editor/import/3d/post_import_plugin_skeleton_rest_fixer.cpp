@@ -167,7 +167,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 				while (nodes.size()) {
 					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-					List<StringName> anims;
+					LocalVector<StringName> anims;
 					ap->get_animation_list(&anims);
 					for (const StringName &name : anims) {
 						Ref<Animation> anim = ap->get_animation(name);
@@ -235,7 +235,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 			TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 			while (nodes.size()) {
 				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-				List<StringName> anims;
+				LocalVector<StringName> anims;
 				ap->get_animation_list(&anims);
 				for (const StringName &name : anims) {
 					if (String(name).contains_char('/')) {
@@ -398,7 +398,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 				while (nodes.size()) {
 					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-					List<StringName> anims;
+					LocalVector<StringName> anims;
 					ap->get_animation_list(&anims);
 					for (const StringName &name : anims) {
 						Ref<Animation> anim = ap->get_animation(name);
@@ -569,7 +569,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 					String general_skeleton_pathname = UNIQUE_NODE_PREFIX + profile_skeleton->get_name();
 					while (nodes.size()) {
 						AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-						List<StringName> anims;
+						LocalVector<StringName> anims;
 						ap->get_animation_list(&anims);
 						for (const StringName &name : anims) {
 							Ref<Animation> anim = ap->get_animation(name);
@@ -704,7 +704,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				while (nodes.size()) {
 					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
 					ERR_CONTINUE(!ap);
-					List<StringName> anims;
+					LocalVector<StringName> anims;
 					ap->get_animation_list(&anims);
 					for (const StringName &name : anims) {
 						Ref<Animation> anim = ap->get_animation(name);
@@ -836,7 +836,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 			TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 			while (nodes.size()) {
 				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-				List<StringName> anims;
+				LocalVector<StringName> anims;
 				ap->get_animation_list(&anims);
 				for (const StringName &name : anims) {
 					Ref<Animation> anim = ap->get_animation(name);
