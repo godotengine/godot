@@ -413,8 +413,17 @@ void SpxDrawTiles::init_path_finder(){
     path_finder->set_diagonal_mode(AStarGrid2D::DIAGONAL_MODE_NEVER);
     path_finder->set_cell_size(CELL_SIZE);
     path_finder->update();
+    
+    _set_point_solid();
 
-	_set_point_solid();
+    auto count = get_child_count();
+    for (int i = 0; i < count; i++) {
+       auto node = get_child(i);
+       auto layer = node ? Object::cast_to<TileMapLayer>(node) : nullptr;
+       if(layer){
+            layer->set_navigation_enabled(true);
+       }
+    }
 }
 
 Vector<Vector2> SpxDrawTiles::get_point_path(const Vector2 &p_from, const Vector2 &p_to, bool p_allow_partial_path) {
@@ -495,8 +504,9 @@ TileMapLayer *SpxDrawTiles::_create_layer(int layer_index) {
     layer->set_name(UNIQUE_LAYER_PREFIX + itos(layer_index));
     layer->set_z_index(layer_index);
     layer->set_z_as_relative(false);
+    layer->set_navigation_enabled(false);
     add_child(layer);
-	return layer;
+    return layer;
 }
 
 int SpxDrawTiles::_get_or_create_source_id(Ref<Texture2D> scaled_texture, bool with_collision) {
