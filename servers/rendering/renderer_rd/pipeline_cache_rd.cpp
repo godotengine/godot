@@ -76,7 +76,7 @@ void PipelineCacheRD::_clear() {
 		for (uint32_t i = 0; i < version_count; i++) {
 			//shader may be gone, so this may not be valid
 			if (RD::get_singleton()->render_pipeline_is_valid(versions[i].pipeline)) {
-				RD::get_singleton()->free(versions[i].pipeline);
+				RD::get_singleton()->free_rid(versions[i].pipeline);
 			}
 		}
 		version_count = 0;
