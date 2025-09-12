@@ -82,7 +82,7 @@ protected:
 
 public:
 	void reset();
-	void update_monitors(const Vector<StringName> &p_names);
+	void update_monitors(const Vector<StringName> &p_names, const PackedInt32Array &p_types);
 	void add_profile_frame(const Vector<float> &p_values);
 	List<float> *get_monitor_data(const StringName &p_name);
 	EditorPerformanceProfiler();
