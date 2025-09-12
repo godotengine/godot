@@ -646,6 +646,12 @@
 				Returns the frame count kept by the graphics API. Higher values result in higher input lag, but with more consistent throughput. For the main [RenderingDevice], frames are cycled (usually 3 with triple-buffered V-Sync enabled). However, local [RenderingDevice]s only have 1 frame.
 			</description>
 		</method>
+		<method name="get_latency_mode" qualifiers="const">
+			<return type="int" enum="RenderingDevice.LatencyMode" />
+			<description>
+				Returns the current latency mode used by this [RenderingDevice]. See [member ProjectSettings.rendering/rendering_device/vsync/latency_mode] for details.
+			</description>
+		</method>
 		<method name="get_memory_usage" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="type" type="int" enum="RenderingDevice.MemoryType" />
@@ -780,6 +786,13 @@
 			<description>
 				Returns the window width matching the graphics API context for the given window ID (in pixels). Despite the parameter being named [param screen], this returns the [i]window[/i] size. See also [method screen_get_height].
 				[b]Note:[/b] Only the main [RenderingDevice] returned by [method RenderingServer.get_rendering_device] has a width. If called on a local [RenderingDevice], this method prints an error and returns [constant INVALID_ID].
+			</description>
+		</method>
+		<method name="set_latency_mode">
+			<return type="void" />
+			<param index="0" name="p_latency_mode" type="int" enum="RenderingDevice.LatencyMode" />
+			<description>
+				Sets the current latency mode for this [RenderingDevice]. See [member ProjectSettings.rendering/rendering_device/vsync/latency_mode] for details.
 			</description>
 		</method>
 		<method name="set_resource_name">
@@ -2755,6 +2768,22 @@
 		</constant>
 		<constant name="DRAW_IGNORE_ALL" value="720640" enum="DrawFlags" is_bitfield="true">
 			Ignore the previous contents of all attachments.
+		</constant>
+		<constant name="LATENCY_MODE_LOW_EXTREME" value="0" enum="LatencyMode">
+			The engine is willing to sacrifice a considerable amount of FPS (frames per second) to achieve the lowest possible latency. It's generally recommended to use [constant LATENCY_MODE_LOW] instead, as the FPS cost tends to be too high. It is strongly recommended this setting should only be set by the end user in user settings, and not be shipped by default.
+			[b]Note:[/b] Actually receiving low latency is not guaranteed, as it depends on various factors such as system speed, scene complexity and driver support.
+			[b]Note:[/b] Consider using [constant DisplayServer.VSYNC_ADAPTIVE] to reduce jitter and stutter while in this mode.
+		</constant>
+		<constant name="LATENCY_MODE_LOW" value="1" enum="LatencyMode">
+			The engine is willing to sacrifice some amount of FPS (frames per second) to achieve a generably enjoyable and acceptable low latency experience. This is the recommended setting.
+			[b]Note:[/b] Actually receiving low latency is not guaranteed, as it depends on various factors such as system speed, scene complexity and driver support.
+			[b]Note:[/b] Consider using [constant DisplayServer.VSYNC_ADAPTIVE] to reduce jitter and stutter while in this mode.
+		</constant>
+		<constant name="LATENCY_MODE_MEDIUM" value="2" enum="LatencyMode">
+			The engine is not willing to sacrifice much FPS (frames per second), but still maintaining a decent amount of latency. This setting is best for slow systems, or scenes that are too complex to run at decent FPS in lower latency modes. It's also useful as a workaround if the user is experiencing pacing (jitter, stutter) problems with lower latency settings.
+		</constant>
+		<constant name="LATENCY_MODE_HIGH_THROUGHPUT" value="3" enum="LatencyMode">
+			The engine will prefer maximizing FPS (frames per second), with no consideration for latency. This setting is ideal for apps that have no user interaction, like servers or headless processes.
 		</constant>
 	</constants>
 </class>
