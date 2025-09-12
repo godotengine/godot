@@ -1818,6 +1818,7 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos, M
 
 	if (error_tree->is_anything_selected()) {
 		item_menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCopy")), TTR("Copy Error"), ACTION_COPY_ERROR);
+		item_menu->add_icon_item(get_editor_theme_icon(SNAME("ExternalLink")), TTR("Open Script Source"), ACTION_OPEN_SCRIPT_SOURCE);
 		item_menu->add_icon_item(get_editor_theme_icon(SNAME("ExternalLink")), TTR("Open C++ Source on GitHub"), ACTION_OPEN_SOURCE);
 	}
 
@@ -1855,7 +1856,6 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 
 			DisplayServer::get_singleton()->clipboard_set(text);
 		} break;
-
 		case ACTION_OPEN_SOURCE: {
 			TreeItem *ti = error_tree->get_selected();
 			while (ti->get_parent() != error_tree->get_root()) {
@@ -1889,6 +1889,21 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 			String git_ref = String(GODOT_VERSION_HASH).is_empty() ? String(GODOT_VERSION_NUMBER) + "-stable" : String(GODOT_VERSION_HASH);
 			OS::get_singleton()->shell_open(vformat("https://github.com/godotengine/godot/blob/%s/%s#L%d",
 					git_ref, file, line_number));
+		} break;
+		case ACTION_OPEN_SCRIPT_SOURCE: {
+			TreeItem *selected = error_tree->get_selected();
+
+			if (!selected) {
+				return;
+			}
+
+			Array meta = selected->get_metadata(0);
+			if (meta.is_empty()) {
+				return;
+			}
+
+			Ref<Script> s = ResourceLoader::load(String(meta[0]));
+			ScriptEditor::get_singleton()->edit(s, int(meta[1]) - 1, 0);
 		} break;
 		case ACTION_DELETE_BREAKPOINT: {
 			const TreeItem *selected = breakpoints_tree->get_selected();
