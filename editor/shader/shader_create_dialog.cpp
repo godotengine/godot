@@ -216,6 +216,18 @@ void fog() {
 	// a given FogVolume will still be used.
 }
 )";
+						break;
+					case Shader::MODE_MESH_RASTERIZER:
+						code += R"(
+void vertex() {
+	// Called for every vertex the material is visible on.
+}
+
+void fragment() {
+	// Called for every pixel the material is visible on.
+}
+)";
+						break;
 				}
 			}
 			text_shader->set_code(code.as_string());

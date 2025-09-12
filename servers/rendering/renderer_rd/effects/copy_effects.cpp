@@ -47,9 +47,8 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 	singleton = this;
 	prefer_raster_effects = p_prefer_raster_effects;
 
-	if (prefer_raster_effects) {
-		// init blur shader (on compute use copy shader)
-
+	// init blur shader (on compute use copy shader)
+	{
 		Vector<String> blur_modes;
 		blur_modes.push_back("\n#define MODE_MIPMAP\n"); // BLUR_MIPMAP
 		blur_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n"); // BLUR_MODE_GAUSSIAN_BLUR
@@ -64,12 +63,6 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 
 		for (int i = 0; i < BLUR_MODE_MAX; i++) {
 			blur_raster.pipelines[i].setup(blur_raster.shader.version_get_shader(blur_raster.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
-		}
-
-	} else {
-		// not used in clustered
-		for (int i = 0; i < BLUR_MODE_MAX; i++) {
-			blur_raster.pipelines[i].clear();
 		}
 	}
 
@@ -306,8 +299,8 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 }
 
 CopyEffects::~CopyEffects() {
+	blur_raster.shader.version_free(blur_raster.shader_version);
 	if (prefer_raster_effects) {
-		blur_raster.shader.version_free(blur_raster.shader_version);
 		cubemap_downsampler.raster_shader.version_free(cubemap_downsampler.shader_version);
 		filter.raster_shader.version_free(filter.shader_version);
 		roughness.raster_shader.version_free(roughness.shader_version);
@@ -899,8 +892,6 @@ void CopyEffects::make_mipmap(RID p_source_rd_texture, RID p_dest_texture, const
 }
 
 void CopyEffects::make_mipmap_raster(RID p_source_rd_texture, RID p_dest_texture, const Size2i &p_size) {
-	ERR_FAIL_COND_MSG(!prefer_raster_effects, "Can't use the raster version of mipmap with the clustered renderer.");
-
 	RID dest_framebuffer = FramebufferCacheRD::get_singleton()->get_cache(p_dest_texture);
 
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();

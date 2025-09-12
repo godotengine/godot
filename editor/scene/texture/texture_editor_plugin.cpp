@@ -42,6 +42,7 @@
 #include "scene/resources/compressed_texture.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/portable_compressed_texture.h"
+#include "scene/resources/rasterized_mesh_texture.h"
 #include "scene/resources/style_box_flat.h"
 
 constexpr const char *texture_2d_shader = R"(
@@ -126,6 +127,14 @@ static Image::Format get_texture_2d_format(const Ref<Texture2D> &p_texture) {
 	const Ref<PortableCompressedTexture2D> portable_compressed_texture = p_texture;
 	if (portable_compressed_texture.is_valid()) {
 		return portable_compressed_texture->get_format();
+	}
+
+	const Ref<RasterizedMeshTexture> mesh_texture = p_texture;
+	if (mesh_texture.is_valid()) {
+		Ref<Image> img = mesh_texture->get_image();
+		if (img.is_valid()) {
+			return img->get_format();
+		}
 	}
 
 	// AtlasTexture?
@@ -306,7 +315,7 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 }
 
 bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
-	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr || Object::cast_to<Image>(p_object) != nullptr;
+	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr || Object::cast_to<Image>(p_object) != nullptr || Object::cast_to<RasterizedMeshTexture>(p_object);
 }
 
 void EditorInspectorPluginTexture::parse_begin(Object *p_object) {

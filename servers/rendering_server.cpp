@@ -2329,6 +2329,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHADER_PARTICLES);
 	BIND_ENUM_CONSTANT(SHADER_SKY);
 	BIND_ENUM_CONSTANT(SHADER_FOG);
+	BIND_ENUM_CONSTANT(SHADER_MESH_RASTERIZER);
 	BIND_ENUM_CONSTANT(SHADER_MAX);
 
 	/* MATERIAL */
@@ -2489,6 +2490,33 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(MULTIMESH_TRANSFORM_3D);
 	BIND_ENUM_CONSTANT(MULTIMESH_INTERP_QUALITY_FAST);
 	BIND_ENUM_CONSTANT(MULTIMESH_INTERP_QUALITY_HIGH);
+
+	/* TEXTURE DRAWABLE API*/
+
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_BLEND_CLEAR);
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_BLEND_DISABLED);
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_BLEND_MIX);
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_BLEND_ADD);
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_BLEND_SUB);
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_BLEND_MUL);
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_BLEND_PREMULTIPLIED_ALPHA);
+
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_R8); // RD::DATA_FORMAT_R8_UNORM,
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RH); // RD::DATA_FORMAT_R16_SFLOAT,
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RF); // RD::DATA_FORMAT_R32_SFLOAT,
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RG8); // RD::DATA_FORMAT_R8G8_UNORM,
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGH); // RD::DATA_FORMAT_R16G16_SFLOAT,
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGF); // RD::DATA_FORMAT_R32G32_SFLOAT,
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB); // RD::DATA_FORMAT_R8G8B8A8_SRGB,
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBA8); // RD::DATA_FORMAT_R8G8B8A8_UNORM,
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBAH); // RD::DATA_FORMAT_R16G16B16A16_SFLOAT,
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBAF); // RD::DATA_FORMAT_R32G32B32A32_SFLOAT
+
+	ClassDB::bind_method(D_METHOD("texture_drawable_2d_create", "width", "height", "texture_format", "use_mipmaps"), &RenderingServer::texture_drawable_2d_create, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("texture_drawable_2d_layered_create", "width", "height", "layers", "layererd_type", "texture_format", "use_mipmaps"), &RenderingServer::texture_drawable_2d_layered_create, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("texture_drawable_generate_mipmaps", "texture_drawable", "layer"), &RenderingServer::texture_drawable_generate_mipmaps, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("texture_drawable_blit_mesh_advanced", "texture_drawable", "material", "mesh", "surface_index", "blend_mode", "clear_color", "layer"), &RenderingServer::texture_drawable_blit_mesh_advanced, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("texture_drawable_blit_texture_rect_region", "texture_drawable", "source_texture", "dst_rect", "src_rect", "modulate", "blend_mode", "clear_color", "layer"), &RenderingServer::texture_drawable_blit_texture_rect_region, DEFVAL(0));
 
 	/* SKELETON API */
 

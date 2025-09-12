@@ -35,6 +35,7 @@
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/storage/light_storage.h"
 #include "servers/rendering/storage/material_storage.h"
+#include "servers/rendering/storage/mesh_rasterizer.h"
 #include "servers/rendering/storage/mesh_storage.h"
 #include "servers/rendering/storage/particles_storage.h"
 #include "servers/rendering/storage/texture_storage.h"
@@ -86,6 +87,7 @@ public:
 	virtual RendererFog *get_fog() = 0;
 	virtual RendererCanvasRender *get_canvas() = 0;
 	virtual RendererSceneRender *get_scene() = 0;
+	virtual MeshRasterizer *get_mesh_rasterizer() = 0;
 
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) = 0;
 

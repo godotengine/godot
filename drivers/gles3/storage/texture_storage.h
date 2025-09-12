@@ -570,6 +570,9 @@ public:
 	uint32_t texture_get_depth(RID p_texture) const;
 	void texture_bind(RID p_texture, uint32_t p_texture_no);
 
+	Texture::Type texture_get_type(RID p_texture) const;
+	Size2i texture_2d_get_size(RID p_texture) override;
+
 	/* TEXTURE ATLAS API */
 
 	void update_texture_atlas();
@@ -617,6 +620,12 @@ public:
 	virtual void decal_instance_free(RID p_decal_instance) override {}
 	virtual void decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) override {}
 	virtual void decal_instance_set_sorting_offset(RID p_decal_instance, float p_sorting_offset) override {}
+
+	/* TEXTURE DRAWABLE API */
+
+	virtual void texture_drawable_2d_initialize(RID p_texture_drawable, int p_width, int p_height, RS::TextureDrawableFormat p_texture_format, bool p_use_mipmaps = false) override;
+	virtual void texture_drawable_2d_layered_initialize(RID p_texture_drawable, int p_width, int p_height, int p_layers, RS::TextureLayeredType p_layered_type, RS::TextureDrawableFormat p_texture_format, bool p_use_mipmaps = false) override;
+	virtual void texture_drawable_generate_mipmaps(RID p_texture_drawable, int p_layer = 0) override;
 
 	/* RENDER TARGET API */
 
