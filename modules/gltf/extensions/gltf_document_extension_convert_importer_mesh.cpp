@@ -32,6 +32,7 @@
 
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/multimesh_instance_3d.h"
 #include "scene/resources/3d/importer_mesh.h"
 
 void GLTFDocumentExtensionConvertImporterMesh::_copy_meta(Object *p_src_object, Object *p_dst_object) {
@@ -43,7 +44,25 @@ void GLTFDocumentExtensionConvertImporterMesh::_copy_meta(Object *p_src_object, 
 	}
 }
 
-MeshInstance3D *GLTFDocumentExtensionConvertImporterMesh::convert_importer_mesh_instance_3d(ImporterMeshInstance3D *p_importer_mesh_instance_3d) {
+Node3D *GLTFDocumentExtensionConvertImporterMesh::convert_importer_mesh_instance_3d(ImporterMeshInstance3D *p_importer_mesh_instance_3d) {
+	if (p_importer_mesh_instance_3d && p_importer_mesh_instance_3d->get_multimesh().is_valid()) {
+
+		Ref<MultiMesh> mm = p_importer_mesh_instance_3d->get_multimesh();
+		Ref<ImporterMesh> mesh = p_importer_mesh_instance_3d->get_mesh();
+
+		if (mesh.is_valid()) {
+			mm->set_mesh(mesh->get_mesh());
+		}
+
+		MultiMeshInstance3D *multimesh_instance_node_3d = memnew(MultiMeshInstance3D);
+		multimesh_instance_node_3d->set_multimesh(mm);
+		multimesh_instance_node_3d->set_name(p_importer_mesh_instance_3d->get_name());
+		_copy_meta(p_importer_mesh_instance_3d, multimesh_instance_node_3d);
+		p_importer_mesh_instance_3d->replace_by(multimesh_instance_node_3d);
+
+		return multimesh_instance_node_3d;
+	}
+
 	// Convert the node itself first.
 	MeshInstance3D *mesh_instance_node_3d = memnew(MeshInstance3D);
 	ERR_FAIL_NULL_V(p_importer_mesh_instance_3d, mesh_instance_node_3d);
@@ -54,6 +73,7 @@ MeshInstance3D *GLTFDocumentExtensionConvertImporterMesh::convert_importer_mesh_
 	mesh_instance_node_3d->set_visible(p_importer_mesh_instance_3d->is_visible());
 	p_importer_mesh_instance_3d->replace_by(mesh_instance_node_3d);
 	_copy_meta(p_importer_mesh_instance_3d, mesh_instance_node_3d);
+
 	// Convert the mesh data in the mesh resource.
 	Ref<ImporterMesh> importer_mesh = p_importer_mesh_instance_3d->get_mesh();
 	if (importer_mesh.is_valid()) {
