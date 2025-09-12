@@ -1925,7 +1925,7 @@ bool SceneTreeDock::_has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delet
 	if (ap) {
 		Node *root = ap->get_node(ap->get_root_node());
 		if (root && !p_to_delete.find(root)) {
-			List<StringName> anims;
+			LocalVector<StringName> anims;
 			ap->get_animation_list(&anims);
 
 			for (const StringName &E : anims) {
@@ -2180,7 +2180,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 		}
 
 		if (!points_to_other_animation_player) {
-			List<StringName> anims;
+			LocalVector<StringName> anims;
 			mixer->get_animation_list(&anims);
 			Node *root = mixer->get_node(mixer->get_root_node());
 
