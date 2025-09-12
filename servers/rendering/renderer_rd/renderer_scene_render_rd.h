@@ -39,6 +39,7 @@
 #ifdef METAL_ENABLED
 #include "servers/rendering/renderer_rd/effects/metal_fx.h"
 #endif
+#include "servers/rendering/renderer_rd/effects/resolve.h"
 #include "servers/rendering/renderer_rd/effects/smaa.h"
 #include "servers/rendering/renderer_rd/effects/tone_mapper.h"
 #include "servers/rendering/renderer_rd/effects/vrs.h"
@@ -66,6 +67,7 @@ protected:
 	RendererRD::ToneMapper *tone_mapper = nullptr;
 	RendererRD::FSR *fsr = nullptr;
 	RendererRD::VRS *vrs = nullptr;
+	RendererRD::Resolve *resolve_effects = nullptr;
 #ifdef METAL_ENABLED
 	RendererRD::MFXSpatialEffect *mfx_spatial = nullptr;
 #endif
@@ -108,7 +110,7 @@ protected:
 	void _render_buffers_ensure_screen_texture(const RenderDataRD *p_render_data);
 	void _render_buffers_copy_screen_texture(const RenderDataRD *p_render_data);
 	void _render_buffers_ensure_depth_texture(const RenderDataRD *p_render_data);
-	void _render_buffers_copy_depth_texture(const RenderDataRD *p_render_data);
+	void _render_buffers_copy_depth_texture(const RenderDataRD *p_render_data, bool p_use_msaa = false);
 	void _render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data);
 	void _post_process_subpass(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data);
 	void _disable_clear_request(const RenderDataRD *p_render_data);
