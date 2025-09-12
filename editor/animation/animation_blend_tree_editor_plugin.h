@@ -150,6 +150,9 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 
 	Ref<EditorInspectorPluginAnimationNodeAnimation> animation_node_inspector_plugin;
 
+	// Visual shader specific theme for using MSDF fonts (on AnimationTreeEditor) which reduce aliasing at higher zoom levels.
+	Ref<Theme> vs_msdf_fonts_theme;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -166,6 +169,7 @@ public:
 	virtual void edit(const Ref<AnimationNode> &p_node) override;
 
 	void update_graph();
+	void update_theme();
 
 	AnimationNodeBlendTreeEditor();
 };
