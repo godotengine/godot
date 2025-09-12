@@ -38,6 +38,10 @@
 		<member name="edit/trim" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], automatically trim the beginning and end of the audio if it's lower than -50 dB after normalization (see [member edit/normalize]). This prevents having files with silence at the beginning or end, which increases their size unnecessarily and adds latency to the moment they are played back. A fade-in/fade-out period of 500 samples is also used during trimming to avoid audible pops.
 		</member>
+		<member name="edit/volume_db" type="float" setter="" getter="" default="0.0">
+			Adjusts the audio's volume by this many decibels. Applied after normalization.
+			[b]Note:[/b] Clipping may occur with positive values. A warning will be shown if this happens.
+		</member>
 		<member name="force/8_bit" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], forces the imported audio to use 8-bit quantization if the source file is 16-bit or higher.
 			Enabling this is generally not recommended, as 8-bit quantization decreases audio quality significantly. If you need smaller file sizes, consider using Ogg Vorbis or MP3 audio instead.
