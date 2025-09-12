@@ -33,7 +33,7 @@
 #ifdef ACCESSKIT_ENABLED
 
 #include "core/templates/rid_owner.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #ifdef ACCESSKIT_DYNAMIC
 #ifdef LINUXBSD_ENABLED

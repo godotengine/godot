@@ -34,7 +34,7 @@
 #include "core/math/face3.h"
 #include "core/math/triangle_mesh.h"
 #include "scene/resources/material.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/resources/3d/shape_3d.h"
