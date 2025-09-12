@@ -37,8 +37,6 @@
 #include "gl_manager_macos_legacy.h"
 #endif // GLES3_ENABLED
 
-#import "native_menu_macos.h"
-
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
 
@@ -172,9 +170,6 @@ private:
 	Vector<KeyEvent> key_event_buffer;
 	int key_event_pos = 0;
 
-	id menu_delegate = nullptr;
-	NativeMenuMacOS *native_menu = nullptr;
-
 	Point2i im_selection;
 	String im_text;
 
@@ -192,8 +187,6 @@ private:
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	float display_max_scale = 1.f;
-	mutable Point2i origin;
-	mutable bool displays_arrangement_dirty = true;
 	bool is_resizing = false;
 
 	CursorShape cursor_shape = CURSOR_ARROW;
@@ -201,14 +194,6 @@ private:
 	HashMap<CursorShape, Vector<Variant>> cursors_cache;
 
 	HashMap<WindowID, WindowData> windows;
-
-	struct IndicatorData {
-		id delegate;
-		id item;
-	};
-
-	IndicatorID indicator_id_counter = 0;
-	HashMap<IndicatorID, IndicatorData> indicators;
 
 	IOPMAssertionID screen_keep_on_assertion = kIOPMNullAssertionID;
 
@@ -221,14 +206,8 @@ private:
 	};
 	List<MenuCall> deferred_menu_calls;
 
-	Callable system_theme_changed;
-
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
 	void _update_window_style(WindowData p_wd, WindowID p_window);
-
-	void _update_displays_arrangement() const;
-	Point2i _get_native_screen_position(int p_screen) const;
-	static void _displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplayChangeSummaryFlags flags, void *user_info);
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
@@ -250,13 +229,8 @@ private:
 public:
 	void menu_callback(id p_sender);
 
-	void emit_system_theme_changed();
-
 	bool has_window(WindowID p_window) const;
 	WindowData &get_window(WindowID p_window);
-
-	NSImage *_convert_to_nsimg(Ref<Image> &p_image) const;
-	Point2i _get_screens_origin() const;
 
 	void set_menu_delegate(NSMenu *p_menu);
 
@@ -299,19 +273,11 @@ public:
 	Callable _help_get_search_callback() const;
 	Callable _help_get_action_callback() const;
 
-	virtual bool is_dark_mode_supported() const override;
-	virtual bool is_dark_mode() const override;
-	virtual Color get_accent_color() const override;
-	virtual Color get_base_color() const override;
-	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
-
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
 
 	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) override;
 	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) override;
-
-	virtual void beep() const override;
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
@@ -422,11 +388,6 @@ public:
 	virtual void window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Vector3i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const override;
 
-	virtual int accessibility_should_increase_contrast() const override;
-	virtual int accessibility_should_reduce_animation() const override;
-	virtual int accessibility_should_reduce_transparency() const override;
-	virtual int accessibility_screen_reader_active() const override;
-
 	virtual Point2i ime_get_selection() const override;
 	virtual String ime_get_text() const override;
 
@@ -434,8 +395,6 @@ public:
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
-
-	virtual bool get_swap_cancel_ok() override;
 
 	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
 #ifdef TOOLS_ENABLED
@@ -453,14 +412,6 @@ public:
 
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
-
-	virtual IndicatorID create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) override;
-	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) override;
-	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) override;
-	virtual void status_indicator_set_menu(IndicatorID p_id, const RID &p_menu_rid) override;
-	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) override;
-	virtual Rect2 status_indicator_get_rect(IndicatorID p_id) const override;
-	virtual void delete_status_indicator(IndicatorID p_id) override;
 
 	virtual bool is_window_transparency_available() const override;
 
