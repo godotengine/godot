@@ -124,7 +124,6 @@ struct [[nodiscard]] Basis {
 	bool is_finite() const;
 
 	constexpr bool operator==(const Basis &p_matrix) const;
-	constexpr bool operator!=(const Basis &p_matrix) const;
 
 	_FORCE_INLINE_ Vector3 xform(const Vector3 &p_vector) const;
 	_FORCE_INLINE_ Vector3 xform_inv(const Vector3 &p_vector) const;
@@ -257,10 +256,6 @@ constexpr bool Basis::operator==(const Basis &p_matrix) const {
 	}
 
 	return true;
-}
-
-constexpr bool Basis::operator!=(const Basis &p_matrix) const {
-	return (!(*this == p_matrix));
 }
 
 _FORCE_INLINE_ void Basis::operator*=(const Basis &p_matrix) {
