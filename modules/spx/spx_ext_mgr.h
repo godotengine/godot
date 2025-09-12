@@ -109,11 +109,12 @@ public:
 	// draw tiles 
 	void open_draw_tiles();
 	void set_layer_index(GdInt index);
-	void set_tile(GdString texture_path);
+	void set_tile(GdString texture_path, GdBool with_collision);
 	void place_tiles(GdArray positions);
     void place_tile(GdVec2 pos);
     void erase_tile(GdVec2 pos);
 	void close_draw_tiles();
+	GdArray get_layer_point_path(GdVec2 p_from, GdVec2 p_to);
 	template<typename Func>
     void with_draw_tiles(Func f, const String error_msg = "The draw tiles node is null, first open it!!!") {
         if (draw_tiles == nullptr) {

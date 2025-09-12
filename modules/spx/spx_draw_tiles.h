@@ -37,6 +37,7 @@
 #include "scene/2d/tile_map.h"
 #include "scene/resources/2d/tile_set.h"
 #include "core/templates/hash_map.h"
+#include "core/math/a_star_grid_2d.h"
 #include "spx_sprite.h"
 
 
@@ -57,6 +58,8 @@ struct DrawContext {
     bool axis_flipped;
     bool axis_dragging;
 
+    mutable Vector<Vector2> hook_path;
+
     DrawContext& set_layer(TileMapLayer *layer) { map_layer = layer; return *this; }
     DrawContext& set_cell_size(Vector2i size) { cell_size = size; return *this; }
     DrawContext& set_grid_color(Color c) { grid_color = c; return *this; }
@@ -69,6 +72,7 @@ struct DrawContext {
     DrawContext& set_current_texture(Ref<Texture2D> tex) { current_texture = tex; return *this; }
     DrawContext& set_flipped_axis(bool flipped) { axis_flipped = flipped; return *this; }
     DrawContext& set_axis_dragging(bool dragging) { axis_dragging = dragging; return *this; }
+    DrawContext& set_a_star_path(Vector<Vector2>& path) { hook_path = path; path.clear(); return *this; }
 };
 
 class LayerRenderer{
@@ -79,6 +83,7 @@ private:
     void _draw_used_rect(Node2D *parent_node, const DrawContext &ctx); 
     void _draw_guide_rect(Node2D *parent_node, const DrawContext &ctx, Vector2 hover_pos); 
     void _draw_preview_texture(Node2D *parent_node, const DrawContext &ctx, Vector2 hover_pos); 
+    void _draw_a_star_path(Node2D *parent_node, const DrawContext &ctx); 
 public:
     LayerRenderer() = default;
     ~LayerRenderer() = default;
@@ -125,8 +130,11 @@ private:
     const Color GRID_COLOR{1.0, 1.0, 0.0, 0.5};
     static constexpr int GUIDE_RECT_RADIUS = 5;
     static constexpr float AXIS_WIDTH = 5;
-
     LayerRenderer renderer;
+
+    Rect2i search_region = Rect2i(Vector2i(-50, -50), Vector2i(100, 100));
+    Vector<Vector2> hook_path;
+    Ref<AStarGrid2D> path_finder; 
 
 protected:
     static void _bind_methods();
@@ -141,10 +149,12 @@ public:
 
     // spx interface
     void set_sprite_index(GdInt index);
-    void set_sprite_texture(GdString texture_path);
+    void set_sprite_texture(GdString texture_path, GdBool with_collision);
     void place_sprites(GdArray positions);
-    void place_sprite(Vector2 pos);
-    void erase_sprite(Vector2 pos);
+    void place_sprite(GdVec2 pos);
+    void erase_sprite(GdVec2 pos);
+
+    GdArray get_layer_point_path(GdVec2 p_from, GdVec2 p_to);
 
     void set_layer_index(int index);
     void set_texture(Ref<Texture2D> texture, bool with_collision = true);
@@ -163,6 +173,11 @@ public:
     void enter_editor_mode(){exit_editor = false;}
     void exit_editor_mode(){exit_editor = true;}
 
+	void init_path_finder();
+
+	Vector<Vector2> get_point_path(const Vector2 &p_from, const Vector2 &p_to, bool p_allow_partial_path = false);
+	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path = false);
+
 private:
     TileMapLayer* _get_or_create_layer(int layer_index);
     TileMapLayer* _get_layer(int layer_index);
@@ -173,6 +188,7 @@ private:
 
     void _destroy_layers();
     void _clear_cache();
+	void _set_point_solid();
 
     bool _apply_action(const TileAction &action, bool inverse);
 };

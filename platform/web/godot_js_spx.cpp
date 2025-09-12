@@ -255,8 +255,8 @@ void gdspx_ext_set_layer_index(GdInt* index) {
 	 extMgr->set_layer_index(*index);
 }
 EMSCRIPTEN_KEEPALIVE
-void gdspx_ext_set_tile(GdString* texture_path) {
-	 extMgr->set_tile(*texture_path);
+void gdspx_ext_set_tile(GdString* texture_path,GdBool* with_collision) {
+	 extMgr->set_tile(*texture_path, *with_collision);
 }
 EMSCRIPTEN_KEEPALIVE
 void gdspx_ext_place_tiles(GdArray* positions) {
@@ -273,6 +273,10 @@ void gdspx_ext_erase_tile(GdVec2* pos) {
 EMSCRIPTEN_KEEPALIVE
 void gdspx_ext_close_draw_tiles() {
 	 extMgr->close_draw_tiles();
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_get_layer_point_path(GdVec2* p_from,GdVec2* p_to,GdArray* ret_val) {
+	*ret_val = extMgr->get_layer_point_path(*p_from, *p_to);
 }
 EMSCRIPTEN_KEEPALIVE
 void gdspx_input_get_mouse_pos(GdVec2* ret_val) {

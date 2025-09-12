@@ -105,6 +105,16 @@ void LayerRenderer::_draw_preview_texture(Node2D *parent_node, const DrawContext
 	}
 }
 
+void LayerRenderer::_draw_a_star_path(Node2D *parent_node, const DrawContext &ctx) {
+    if(ctx.hook_path.is_empty())
+        return;
+
+    for(auto item : ctx.hook_path){
+        parent_node->draw_circle(item + ctx.cell_size / 2.0, 6.0, Color(1, 1, 1));
+    }
+    ctx.hook_path.clear();
+}
+
 void LayerRenderer::draw(Node2D *parent_node, const DrawContext &ctx) {
     Vector2 local_mouse = ctx.map_layer->to_local(ctx.mouse_pos);
 	Vector2i hover_coords = ctx.map_layer->local_to_map(local_mouse);
@@ -113,6 +123,7 @@ void LayerRenderer::draw(Node2D *parent_node, const DrawContext &ctx) {
     _draw_axis(parent_node, ctx);
 	_draw_grid(parent_node, ctx, hover_pos);
 	_draw_preview_texture(parent_node, ctx, hover_pos);
+    _draw_a_star_path(parent_node, ctx);
 }
 
 void SpxDrawTiles::_bind_methods() {
@@ -164,7 +175,8 @@ void SpxDrawTiles::_draw() {
        .set_mouse_pos(get_global_mouse_position())
        .set_current_texture(current_texture)
        .set_flipped_axis(axis_flipped)
-       .set_axis_dragging(axis_dragging);
+       .set_axis_dragging(axis_flipped)
+       .set_a_star_path(hook_path);
 
     renderer.draw(this, ctx);
 }
@@ -204,18 +216,22 @@ void SpxDrawTiles::input(const Ref<InputEvent> &event) {
         }else if(tile_placing) {
             handle_mouse_click(get_global_mouse_position(), Input::get_singleton()->is_key_pressed(Key::SHIFT));
         }
+
         queue_redraw();
+    }
+
+    if(Input::get_singleton()->is_key_pressed(Key::I)){
+        get_point_path({0,0}, get_global_mouse_position());
     }
 }
 
 // spx interface
-
 void SpxDrawTiles::set_sprite_index(GdInt index) {
     axis_flipped = true;
     set_layer_index(index);
 }
 
-void SpxDrawTiles::set_sprite_texture(GdString texture_path) {
+void SpxDrawTiles::set_sprite_texture(GdString texture_path, GdBool with_collision) {
     String path = SpxStr(texture_path);
     Ref<Texture2D> tex;
     if(path_cached_textures.has(path)){
@@ -226,10 +242,13 @@ void SpxDrawTiles::set_sprite_texture(GdString texture_path) {
             path_cached_textures[path] = tex;
     }                   
 
-    set_texture(tex);
+    set_texture(tex, with_collision);
 }
 
 void SpxDrawTiles::place_sprites(GdArray positions) {
+    if(!positions)
+        return;
+
     auto len = positions->size;
     tile_placing = len > 0;
     for(int i = 0; i < len; i += 2){
@@ -241,14 +260,24 @@ void SpxDrawTiles::place_sprites(GdArray positions) {
     tile_placing = false;
 }
 
-void SpxDrawTiles::place_sprite(Vector2 pos) {
+void SpxDrawTiles::place_sprite(GdVec2 pos) {
     handle_mouse_click(pos * Vector2(1, -1), false);
 }
 
-void SpxDrawTiles::erase_sprite(Vector2 pos) {
+void SpxDrawTiles::erase_sprite(GdVec2 pos) {
     handle_mouse_click(pos * Vector2(1, -1), true);
 }
 
+GdArray SpxDrawTiles::get_layer_point_path(GdVec2 p_from, GdVec2 p_to) {
+    auto path_points = get_point_path(p_from * Vector2(1, -1), p_to * Vector2(1, -1));
+    auto count = path_points.size();
+	GdArray result = SpxBaseMgr::create_array(GD_ARRAY_TYPE_FLOAT, count * 2);
+	for(auto i = 0; i < count; i++){
+		SpxBaseMgr::set_array(result, i, path_points[i].x);
+		SpxBaseMgr::set_array(result, i + 1, path_points[i].y);
+	}
+	return result;
+}
 
 void SpxDrawTiles::set_layer_index(int index) {
 	if(exit_editor)
@@ -369,6 +398,56 @@ void SpxDrawTiles::clear_all_layers() {
     _destroy_layers();
     _clear_cache();
     queue_redraw();
+}
+
+void SpxDrawTiles::init_path_finder(){
+    if(!path_finder.is_valid()){
+        path_finder.instantiate();
+    }
+
+    path_finder->set_region(search_region);
+    path_finder->set_diagonal_mode(AStarGrid2D::DIAGONAL_MODE_NEVER);
+    path_finder->set_cell_size(CELL_SIZE);
+    path_finder->update();
+
+	_set_point_solid();
+}
+
+Vector<Vector2> SpxDrawTiles::get_point_path(const Vector2 &p_from, const Vector2 &p_to, bool p_allow_partial_path) {
+    if (!path_finder.is_valid()) {
+        init_path_finder();
+    }
+
+    TileMapLayer *layer = _get_layer(current_layer_index);
+    if (!layer) {
+        return Vector<Vector2>();
+    }
+
+    auto world_to_cell = [&](const Vector2 &world_pos) -> Vector2i {
+        return layer->local_to_map(layer->to_local(world_pos));
+    };
+
+    Vector2i coords_from = world_to_cell(p_from);
+    Vector2i coords_to   = world_to_cell(p_to);
+
+    if (!path_finder->is_in_bounds(coords_from.x, coords_to.y) 
+        || !path_finder->is_in_bounds(coords_to.x, coords_to.y)) {
+
+        if (!p_allow_partial_path) {
+            return Vector<Vector2>();
+        }
+    }
+
+    hook_path = path_finder->get_point_path(coords_from, coords_to, p_allow_partial_path);
+    return hook_path;
+}
+
+TypedArray<Vector2i> SpxDrawTiles::get_id_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path){
+    if(path_finder.is_valid()){
+        return path_finder->get_id_path(p_from, p_to, p_allow_partial_path);
+    }
+
+    return TypedArray<Vector2i>();
 }
 
 TileMapLayer* SpxDrawTiles::_get_or_create_layer(int layer_index) {
@@ -496,6 +575,27 @@ void SpxDrawTiles::_clear_cache() {
     current_texture = nullptr;
     next_source_id = 1;
     current_layer_index = 0;
+}
+
+void SpxDrawTiles::_set_point_solid() {
+	for (int i = get_child_count() - 1; i >= 0; i--) {
+		Node *child = get_child(i);
+		TileMapLayer *layer = Object::cast_to<TileMapLayer>(child);
+		if (layer) {
+			auto cells = layer->get_used_cells();
+			for (int j = 0; j < cells.size(); j++) {
+				Vector2i cell = cells[j];
+				auto tile_data = layer->get_cell_tile_data(cell);
+				if (!tile_data) {
+					continue;
+				}
+				bool has_collision = tile_data->get_collision_polygons_count(0);
+				if (has_collision) {
+					path_finder->set_point_solid(cell, true);
+				}
+			}
+		}
+	}
 }
 
 bool SpxDrawTiles::_apply_action(const TileAction &action, bool inverse) {

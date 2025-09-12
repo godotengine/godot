@@ -300,9 +300,9 @@ void SpxExtMgr::set_layer_index(GdInt index) {
 	});
 }
 
-void SpxExtMgr::set_tile(GdString texture_path) {
-	with_draw_tiles([this, &texture_path](){
-		draw_tiles->set_sprite_texture(texture_path);
+void SpxExtMgr::set_tile(GdString texture_path, GdBool with_collision) {
+	with_draw_tiles([this, &texture_path, with_collision](){
+		draw_tiles->set_sprite_texture(texture_path, with_collision);
 	});
 }
 
@@ -324,9 +324,16 @@ void SpxExtMgr::erase_tile(GdVec2 pos) {
 	});
 }
 
+GdArray SpxExtMgr::get_layer_point_path(GdVec2 p_from, GdVec2 p_to){
+	with_draw_tiles([this, p_from, p_to](){
+		draw_tiles->get_layer_point_path(p_from, p_to);
+	});
+}
+
 void SpxExtMgr::close_draw_tiles() {
 	if (draw_tiles != nullptr) {
 		draw_tiles->queue_free();
 		draw_tiles = nullptr;
     }
 }
+
