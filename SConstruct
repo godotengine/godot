@@ -239,6 +239,7 @@ opts.Add(BoolVariable("disable_physics_3d", "Disable 3D physics nodes and server
 opts.Add(BoolVariable("disable_navigation_2d", "Disable 2D navigation features", False))
 opts.Add(BoolVariable("disable_navigation_3d", "Disable 3D navigation features", False))
 opts.Add(BoolVariable("disable_xr", "Disable XR nodes and server", False))
+opts.Add(BoolVariable("visual_shader", "Enable the VisualShader", True))
 opts.Add("build_profile", "Path to a file containing a feature build profile", "")
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
@@ -1012,6 +1013,11 @@ if env.editor_build:
     ]:
         if env[disable_opt]:
             unsupported_opts.append(disable_opt)
+
+    for required_opt in ["visual_shader"]:
+        if not env[required_opt]:
+            unsupported_opts.append(required_opt)
+
     if unsupported_opts != []:
         print_error(
             "The following build option(s) cannot be used for editor builds, but only for export template builds: {}.".format(
@@ -1037,6 +1043,8 @@ if env["disable_navigation_3d"]:
     env.Append(CPPDEFINES=["NAVIGATION_3D_DISABLED"])
 if env["disable_xr"]:
     env.Append(CPPDEFINES=["XR_DISABLED"])
+if env["visual_shader"]:
+    env.Append(CPPDEFINES=["VISUAL_SHADER_ENABLED"])
 if env["minizip"]:
     env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
 if env["brotli"]:
