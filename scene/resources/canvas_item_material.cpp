@@ -130,9 +130,13 @@ void CanvasItemMaterial::_update_shader() {
 		code += "		particle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);\n";
 		code += "	} else {\n";
 		code += "		particle_frame = mod(particle_frame, particle_total_frames);\n";
-		code += "	}";
+		code += "	}\n";
 		code += "	UV /= vec2(h_frames, v_frames);\n";
-		code += "	UV += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame + 0.5) / h_frames) / v_frames);\n";
+		// Calculating x offset below as `particle_frame / h_frames - frame_row`
+		// instead of `mod(particle_frame, h_frames) / h_frames` or `fract(particle_frame / h_frames)`
+		// as a workaround for faulty results (1.0 instead of 0.0) in some cases for Vulkan/OpenGL AMD Windows drivers (GH-110425).
+		code += "	float frame_row = floor((particle_frame + 0.5) / h_frames);\n";
+		code += "	UV += vec2(particle_frame / h_frames - frame_row, frame_row / v_frames);\n";
 		code += "}\n";
 	}
 
