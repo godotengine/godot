@@ -2323,58 +2323,71 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 		if (multicaret_edit_ignore_caret(i)) {
 			continue;
 		}
+		bool is_selection_mode = has_selection(i);
+
 		int caret_line = get_caret_line(i);
+		int caret_col = get_caret_column(i);
+		int start_line = caret_line;
+		int start_col = caret_col;
+		if (is_selection_mode) {
+			start_line = get_selection_line(i);
+			start_col = get_selection_column(i);
+		}
 
 		const String &insert_text = code_completion_options[code_completion_current_selected].insert_text;
 		const String &display_text = code_completion_options[code_completion_current_selected].display;
 
 		if (p_replace) {
 			// Find end of current section.
-			const String line = get_line(caret_line);
-			int caret_col = get_caret_column(i);
-			int caret_remove_line = caret_line;
+			const String line = get_line(start_line);
+			int caret_remove_line = start_line;
 
 			bool merge_text = true;
-			int in_string = is_in_string(caret_line, caret_col);
+			int in_string = is_in_string(start_line, start_col);
 			if (in_string != -1) {
-				Point2 string_end = get_delimiter_end_position(caret_line, caret_col);
+				Point2 string_end = get_delimiter_end_position(start_line, start_col);
 				if (string_end.x != -1) {
 					merge_text = false;
 					caret_remove_line = string_end.y;
-					caret_col = string_end.x - 1;
+					start_col = string_end.x - 1;
 				}
 			}
 
 			if (merge_text) {
-				for (; caret_col < line.length(); caret_col++) {
-					if (is_symbol(line[caret_col])) {
+				for (; start_col < line.length(); start_col++) {
+					if (is_symbol(line[start_col])) {
 						break;
 					}
 				}
 			}
 
 			// Replace.
-			remove_text(caret_line, get_caret_column(i) - code_completion_base.length(), caret_remove_line, caret_col);
+			remove_text(start_line, start_col - code_completion_base.length(), caret_remove_line, start_col);
 			insert_text_at_caret(insert_text, i);
 		} else {
 			// Get first non-matching char.
-			const String line = get_line(caret_line);
-			int caret_col = get_caret_column(i);
+			const String line = get_line(start_line);
 			int matching_chars = code_completion_base.length();
 			for (; matching_chars <= insert_text.length(); matching_chars++) {
-				if (caret_col >= line.length() || line[caret_col] != insert_text[matching_chars]) {
+				if (start_col >= line.length() || line[start_col] != insert_text[matching_chars]) {
 					break;
 				}
-				caret_col++;
+				start_col++;
 			}
 
 			// Remove base completion text.
-			remove_text(caret_line, get_caret_column(i) - code_completion_base.length(), caret_line, get_caret_column(i));
+			remove_text(start_line, start_col - code_completion_base.length(), start_line, start_col);
 
 			// Merge with text.
 			insert_text_at_caret(insert_text.substr(0, code_completion_base.length()), i);
-			set_caret_column(caret_col, false, i);
+			set_caret_column(start_col, false, i);
 			insert_text_at_caret(insert_text.substr(matching_chars), i);
+		}
+
+		// Move the cursor to the start line of the selection
+		if (start_line != caret_line) {
+			set_caret_line(start_line, false, true, -1, i);
+			caret_line = start_line;
 		}
 
 		// Handle merging of symbols eg strings, brackets.
