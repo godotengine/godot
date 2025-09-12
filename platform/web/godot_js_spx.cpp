@@ -275,6 +275,10 @@ void gdspx_ext_close_draw_tiles() {
 	 extMgr->close_draw_tiles();
 }
 EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_get_layer_point_path(GdVec2* p_from,GdVec2* p_to,GdArray* ret_val) {
+	*ret_val = extMgr->get_layer_point_path(*p_from, *p_to);
+}
+EMSCRIPTEN_KEEPALIVE
 void gdspx_input_get_mouse_pos(GdVec2* ret_val) {
 	*ret_val = inputMgr->get_mouse_pos();
 }

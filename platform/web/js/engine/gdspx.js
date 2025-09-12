@@ -457,6 +457,18 @@ gdspx_ext_close_draw_tiles() {
 	_gdFuncPtr();
 
 }
+gdspx_ext_get_layer_point_path(p_from,p_to) {
+	var _gdFuncPtr = Module._gdspx_ext_get_layer_point_path; 
+	var _retValue = AllocGdArray();
+	var _arg0 = ToGdVec2(p_from);
+	var _arg1 = ToGdVec2(p_to);
+	_gdFuncPtr(_arg0, _arg1, _retValue);
+	FreeGdVec2(_arg0); 
+	FreeGdVec2(_arg1); 
+	var _finalRetValue = ToJsArray(_retValue);
+	FreeGdArray(_retValue); 
+	return _finalRetValue
+}
 gdspx_input_get_mouse_pos() {
 	var _gdFuncPtr = Module._gdspx_input_get_mouse_pos; 
 	var _retValue = AllocGdVec2();

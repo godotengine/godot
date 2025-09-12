@@ -214,6 +214,9 @@ static void gdextension_spx_ext_erase_tile(GdVec2 pos) {
 static void gdextension_spx_ext_close_draw_tiles() {
 	 extMgr->close_draw_tiles();
 }
+static void gdextension_spx_ext_get_layer_point_path(GdVec2 p_from,GdVec2 p_to,GdArray* ret_val) {
+	*ret_val = extMgr->get_layer_point_path(p_from, p_to);
+}
 static void gdextension_spx_input_get_mouse_pos(GdVec2* ret_val) {
 	*ret_val = inputMgr->get_mouse_pos();
 }
@@ -901,6 +904,7 @@ void gdextension_spx_setup_interface() {
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_place_tile);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_erase_tile);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_close_draw_tiles);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_get_layer_point_path);
 	REGISTER_SPX_INTERFACE_FUNC(spx_input_get_mouse_pos);
 	REGISTER_SPX_INTERFACE_FUNC(spx_input_get_key);
 	REGISTER_SPX_INTERFACE_FUNC(spx_input_get_mouse_state);
