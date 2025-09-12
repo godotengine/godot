@@ -1674,6 +1674,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("gui/timers/tooltip_delay_sec.editor_hint", 0.5);
 #endif
 
+	GLOBAL_DEF("gui/common/drag_threshold", 10);
 	GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
 	GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);
 
