@@ -334,6 +334,7 @@ private:
 	void _file_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _tree_empty_click(const Vector2 &p_pos, MouseButton p_button);
 	void _tree_empty_selected();
+	void _tree_button_clicked(TreeItem *p_item, int p_column, int p_id, MouseButton p_button);
 
 	void _search(EditorFileSystemDirectory *p_path, List<FileInfo> *matches, int p_max_items);
 

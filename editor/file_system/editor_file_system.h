@@ -64,6 +64,7 @@ class EditorFileSystemDirectory : public Object {
 		bool import_valid = false;
 		String import_group_file;
 		Vector<String> deps;
+		bool has_sub_resources = false;
 		bool verified = false; //used for checking changes
 		// This is for script resources only.
 		struct ScriptClassInfo {
@@ -95,6 +96,7 @@ public:
 	StringName get_file_resource_script_class(int p_idx) const;
 	Vector<String> get_file_deps(int p_idx) const;
 	bool get_file_import_is_valid(int p_idx) const;
+	bool get_file_has_sub_resources(int p_idx) const;
 	uint64_t get_file_modified_time(int p_idx) const;
 	uint64_t get_file_import_modified_time(int p_idx) const;
 	String get_file_script_class_name(int p_idx) const; //used for scripts
@@ -222,6 +224,7 @@ class EditorFileSystem : public Node {
 		String import_md5;
 		Vector<String> import_dest_paths;
 		Vector<String> deps;
+		bool has_sub_resources = false;
 		bool import_valid = false;
 		String import_group_file;
 		ScriptClassInfo class_info;

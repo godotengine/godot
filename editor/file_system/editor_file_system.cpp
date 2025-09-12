@@ -51,8 +51,8 @@ EditorFileSystem *EditorFileSystem::singleton = nullptr;
 int EditorFileSystem::nb_files_total = 0;
 EditorFileSystem::ScannedDirectory *EditorFileSystem::first_scan_root_dir = nullptr;
 
-//the name is the version, to keep compatibility with different versions of Godot
-#define CACHE_FILE_NAME "filesystem_cache10"
+// The name is the version, to keep compatibility with different versions of Godot.
+#define CACHE_FILE_NAME "filesystem_cache11"
 
 int EditorFileSystemDirectory::find_file_index(const String &p_file) const {
 	for (int i = 0; i < files.size(); i++) {
@@ -156,6 +156,11 @@ Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
 bool EditorFileSystemDirectory::get_file_import_is_valid(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, files.size(), false);
 	return files[p_idx]->import_valid;
+}
+
+bool EditorFileSystemDirectory::get_file_has_sub_resources(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, files.size(), false);
+	return files[p_idx]->has_sub_resources;
 }
 
 uint64_t EditorFileSystemDirectory::get_file_modified_time(int p_idx) const {
@@ -438,8 +443,8 @@ void EditorFileSystem::_scan_filesystem() {
 
 				} else {
 					// The last section (deps) may contain the same splitter, so limit the maxsplit to 8 to get the complete deps.
-					Vector<String> split = l.split("::", true, 8);
-					ERR_CONTINUE(split.size() < 9);
+					Vector<String> split = l.split("::", true, 9);
+					ERR_CONTINUE(split.size() < 10);
 					String name = split[0];
 					String file;
 
@@ -451,11 +456,12 @@ void EditorFileSystem::_scan_filesystem() {
 					fc.resource_script_class = split[1].get_slicec('/', 1);
 					fc.uid = split[2].to_int();
 					fc.modification_time = split[3].to_int();
-					fc.import_modification_time = split[4].to_int();
-					fc.import_valid = split[5].to_int() != 0;
-					fc.import_group_file = split[6].strip_edges();
+					fc.has_sub_resources = split[4].to_int();
+					fc.import_modification_time = split[5].to_int();
+					fc.import_valid = split[6].to_int() != 0;
+					fc.import_group_file = split[7].strip_edges();
 					{
-						const Vector<String> &slices = split[7].split("<>");
+						const Vector<String> &slices = split[8].split("<>");
 						ERR_CONTINUE(slices.size() < 7);
 						fc.class_info.name = slices[0];
 						fc.class_info.extends = slices[1];
@@ -465,7 +471,7 @@ void EditorFileSystem::_scan_filesystem() {
 						fc.import_md5 = slices[5];
 						fc.import_dest_paths = slices[6].split("<*>");
 					}
-					fc.deps = split[8].strip_edges().split("<>", false);
+					fc.deps = split[9].strip_edges().split("<>", false);
 
 					file_cache[name] = fc;
 				}
@@ -1239,6 +1245,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				fi->uid = fc->uid;
 				fi->deps = fc->deps;
 				fi->modified_time = mt;
+				fi->has_sub_resources = fc->has_sub_resources;
 				fi->import_modified_time = import_mt;
 				fi->import_md5 = fc->import_md5;
 				fi->import_dest_paths = fc->import_dest_paths;
@@ -1304,6 +1311,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				fi->modified_time = mt;
 				fi->deps = fc->deps;
 				fi->import_modified_time = 0;
+				fi->has_sub_resources = fc->has_sub_resources;
 				fi->import_md5 = "";
 				fi->import_dest_paths = Vector<String>();
 				fi->import_valid = true;
@@ -1336,6 +1344,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				fi->uid = ResourceLoader::get_resource_uid(path);
 				fi->class_info = _get_global_script_class(fi->type, path);
 				fi->deps = _get_dependencies(path);
+				fi->has_sub_resources = ResourceLoader::has_sub_resources(path);
 				fi->modified_time = mt;
 				fi->import_modified_time = 0;
 				fi->import_md5 = "";
@@ -1841,6 +1850,7 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 		cache_string.append(type);
 		cache_string.append(itos(file_info->uid));
 		cache_string.append(itos(file_info->modified_time));
+		cache_string.append(itos(file_info->has_sub_resources));
 		cache_string.append(itos(file_info->import_modified_time));
 		cache_string.append(itos(file_info->import_valid));
 		cache_string.append(file_info->import_group_file);
@@ -2464,6 +2474,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			fi->class_info = _get_global_script_class(type, file);
 			fi->import_group_file = ResourceLoader::get_import_group_file(file);
 			fi->modified_time = FileAccess::get_modified_time(file);
+			fi->has_sub_resources = ResourceLoader::has_sub_resources(file);
 			fi->deps = _get_dependencies(file);
 			fi->import_valid = (type == "TextFile" || type == "OtherFile") ? true : ResourceLoader::is_import_valid(file);
 
