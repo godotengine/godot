@@ -4,7 +4,8 @@
 		A container that represents a basic element that can be placed inside a [GraphEdit] control.
 	</brief_description>
 	<description>
-		[GraphElement] allows to create custom elements for a [GraphEdit] graph. By default such elements can be selected, resized, and repositioned, but they cannot be connected. For a graph element that allows for connections see [GraphNode].
+		[GraphElement] is the base class for an interactable element of a [GraphEdit]. These elements can be selected, resized, and repositioned. They also emit signals when actions are performed on them, such as when a user attempts to delete the node.
+		For more fundamental graph nodes, see [GraphPort] and [GraphNode].
 	</description>
 	<tutorials>
 	</tutorials>
