@@ -32,6 +32,8 @@
 #include "rendering_device.compat.inc"
 
 #include "rendering_device_binds.h"
+#include "servers/rendering/rendering_device_commons.h"
+#include "servers/rendering/rendering_device_driver.h"
 #include "shader_include_db.h"
 
 #include "core/config/project_settings.h"
@@ -790,6 +792,9 @@ RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, Span<uint8_t> 
 	buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_FROM_BIT | RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_STORAGE_BIT);
 	if (p_usage.has_flag(STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT)) {
 		buffer.usage.set_flag(RDD::BUFFER_USAGE_INDIRECT_BIT);
+	}
+	if (p_usage.has_flag(STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC)) {
+		buffer.usage.set_flag(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT);
 	}
 	if (p_creation_bits.has_flag(BUFFER_CREATION_DEVICE_ADDRESS_BIT)) {
 #ifdef DEBUG_ENABLED
@@ -4408,6 +4413,7 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 	ERR_RENDER_THREAD_GUARD_V(INVALID_ID);
 
 	ERR_FAIL_COND_V_MSG(draw_list.active, INVALID_ID, "Only one draw list can be active at the same time.");
+	ERR_FAIL_COND_V_MSG(video_coding_list.active, INVALID_ID, "Cannot activate compute list while video coding list is active.");
 
 	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
 	ERR_FAIL_NULL_V(framebuffer, INVALID_ID);
@@ -5121,6 +5127,7 @@ RenderingDevice::ComputeListID RenderingDevice::compute_list_begin() {
 	ERR_RENDER_THREAD_GUARD_V(INVALID_ID);
 
 	ERR_FAIL_COND_V_MSG(compute_list.active, INVALID_ID, "Only one draw/compute list can be active at the same time.");
+	ERR_FAIL_COND_V_MSG(video_coding_list.active, INVALID_ID, "Cannot activate compute list while video coding list is active.");
 
 	compute_list.active = true;
 
@@ -5558,6 +5565,120 @@ void RenderingDevice::compute_list_end() {
 	draw_graph.add_compute_list_end();
 
 	compute_list = ComputeList();
+}
+
+RID RenderingDevice::video_profile_create(VideoCodingChromaSubsampling p_chroma_subsampling, uint32_t p_luma_bit_depth, uint32_t p_chroma_bit_depth) {
+	VideoProfileState profile_state = {};
+	profile_state.chroma_subsampling = p_chroma_subsampling;
+	profile_state.luma_bit_depth = p_luma_bit_depth;
+	profile_state.chroma_bit_depth = p_chroma_bit_depth;
+
+	RID id = video_profiles_owner.make_rid(profile_state);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
+}
+
+void RenderingDevice::video_profile_bind_h264_decoding_metadata(RID p_profile, VideoCodingH264ProfileIdc p_std_profile, VideoCodingH264PictureLayout p_picture_layout) {
+	VideoProfileState *profile_state = video_profiles_owner.get_or_null(p_profile);
+	ERR_FAIL_NULL(profile_state);
+
+	profile_state->operation = VIDEO_OPERATION_DECODE_H264;
+	profile_state->h264_profile_idc = p_std_profile;
+	profile_state->h264_picture_layout = p_picture_layout;
+}
+
+void RenderingDevice::video_profile_bind_h265_decoding_metadata(RID p_profile, uint32_t p_std_profile) {
+}
+
+void RenderingDevice::video_profile_bind_av1_decoding_metadata(RID p_profile, uint32_t p_std_profile, bool p_film_grain_support) {
+}
+
+void RenderingDevice::video_profile_bind_vp9_decoding_metadata(RID p_profile, uint32_t p_std_profile) {
+}
+
+RenderingDevice::VideoCodingListID RenderingDevice::video_coding_list_begin(RID p_profile, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) {
+	ERR_RENDER_THREAD_GUARD_V(INVALID_ID);
+
+	ERR_FAIL_COND_V_MSG(draw_list.active, INVALID_ID, "Cannot activate video coding list while draw list is active.");
+	ERR_FAIL_COND_V_MSG(compute_list.active, INVALID_ID, "Cannot activate video coding list while compute list is active.");
+
+	video_coding_list.active = true;
+
+	RDD::CommandPoolID pool = driver->command_pool_create(decode_queue_family, RenderingDeviceDriver::COMMAND_BUFFER_TYPE_PRIMARY);
+	decode_buffer = driver->command_buffer_create(pool);
+
+	VideoProfileState *profile_state = video_profiles_owner.get_or_null(p_profile);
+	ERR_FAIL_NULL_V(profile_state, INVALID_FORMAT_ID);
+
+	RDD::VideoSessionID video_session = driver->video_session_create(profile_state, DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM);
+
+	driver->command_buffer_begin(decode_buffer);
+	driver->command_video_coding_begin(decode_buffer, video_session, p_sps, p_pps);
+	driver->command_video_control(decode_buffer);
+
+	return ID_TYPE_VIDEO_CODING_LIST;
+}
+
+// TODO use capabilities from driver
+// TODO verify image dimensions are within capabilities
+// TODO maybe use mipmaps
+// TODO figure out what samples are
+// TODO figure out what view is for
+void RenderingDevice::video_coding_list_bind_texure(VideoCodingListID p_list, uint32_t p_width, uint32_t p_height, uint64_t p_array_layers) {
+	RenderingDeviceCommons::TextureFormat texture_format;
+	texture_format.format = RenderingDeviceCommons::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+	texture_format.width = p_width;
+	texture_format.height = p_height;
+	texture_format.depth = 0;
+	texture_format.array_layers = p_array_layers;
+	texture_format.mipmaps = 1;
+	texture_format.texture_type = RenderingDeviceCommons::TEXTURE_TYPE_2D_ARRAY;
+	//texture_format.samples = RenderingDeviceCommons::TEXTURE_SAMPLES_16; // TODO huh?
+	texture_format.usage_bits = RenderingDevice::TEXTURE_USAGE_VIDEO_DECODE_DST_BIT;
+	texture_format.shareable_formats.clear();
+	texture_format.is_resolve_buffer = false;
+	texture_format.is_discardable = false;
+
+	RD::TextureView view = {};
+
+	video_coding_list.dst_texture = texture_create(texture_format, view);
+}
+
+void RenderingDevice::video_coding_list_control(VideoCodingListID p_list) {
+	ERR_RENDER_THREAD_GUARD();
+}
+
+void RenderingDevice::video_coding_list_decode(VideoCodingListID p_list, Span<uint8_t> p_src_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, uint32_t p_array_layer) {
+	ERR_RENDER_THREAD_GUARD();
+
+	uint64_t offset = 128 - (p_src_buffer.size() % 128);
+
+	Vector<uint8_t> block;
+	block.resize(p_src_buffer.size() + offset);
+	memcpy(block.ptrw() + offset, p_src_buffer.begin(), p_src_buffer.size());
+
+	RID buffer_id = RD::get_singleton()->storage_buffer_create(block.size(), block, RD::STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC, 0);
+	Buffer *buffer = storage_buffer_owner.get_or_null(buffer_id);
+	Texture *texture = texture_owner.get_or_null(video_coding_list.dst_texture);
+
+	driver->command_video_decode(decode_buffer, buffer->driver_id, p_std_h264_info, offset, texture->driver_id, p_array_layer);
+}
+
+void RenderingDevice::video_coding_list_encode(VideoCodingListID p_list) {
+	ERR_RENDER_THREAD_GUARD();
+}
+
+void RenderingDevice::video_coding_list_end() {
+	ERR_RENDER_THREAD_GUARD();
+
+	ERR_FAIL_COND(!video_coding_list.active);
+	video_coding_list.active = false;
+	driver->command_video_coding_end(decode_buffer);
+	driver->command_buffer_end(decode_buffer);
+
+	video_coding_list = VideoCodingList();
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -6467,6 +6588,10 @@ void RenderingDevice::_end_frame() {
 		ERR_PRINT("Found open compute list at the end of the frame, this should never happen (further compute will likely not work).");
 	}
 
+	if (video_coding_list.active) {
+		ERR_PRINT("Found open video coding list at the end of the frame, this should never happen (further video coding will likely not work).");
+	}
+
 	// The command buffer must be copied into a stack variable as the driver workarounds can change the command buffer in use.
 	RDD::CommandBufferID command_buffer = frames[frame].command_buffer;
 	_submit_transfer_workers(command_buffer);
@@ -6771,6 +6896,11 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 		// Use main queue as the present queue.
 		present_queue = main_queue;
 		present_queue_family = main_queue_family;
+	}
+
+	decode_queue_family = driver->command_queue_family_get(RDD::COMMAND_QUEUE_FAMILY_DECODE_BIT);
+	if (decode_queue_family) {
+		decode_queue = driver->command_queue_create(decode_queue_family);
 	}
 
 	// Use the processor count as the max amount of transfer workers that can be created.

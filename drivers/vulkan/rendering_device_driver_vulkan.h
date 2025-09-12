@@ -35,6 +35,7 @@
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"
 #include "drivers/vulkan/rendering_shader_container_vulkan.h"
 #include "servers/rendering/rendering_device_driver.h"
+#include <vulkan/vulkan_core.h>
 
 #ifdef DEBUG_ENABLED
 #ifndef _MSC_VER
@@ -657,6 +658,21 @@ public:
 
 	virtual void begin_segment(uint32_t p_frame_index, uint32_t p_frames_drawn) override final;
 	virtual void end_segment() override final;
+
+	/**********************/
+	/**** VIDEO CODING ****/
+	/**********************/
+	Error vk_video_profile_from_state(const VideoProfileState *p_profile, VkVideoProfileInfoKHR *r_profile);
+
+	virtual void video_profile_get_capabilities(const VideoProfileState *p_profile) override final;
+	virtual void video_profile_get_format_properties(const VideoProfileState *p_profile) override final;
+
+	virtual VideoSessionID video_session_create(const VideoProfileState *p_profile, DataFormat p_image_format) override final;
+
+	virtual void command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) override final;
+	virtual void command_video_control(CommandBufferID p_cmd_buffer) override final;
+	virtual void command_video_decode(CommandBufferID p_cmd_buffer, BufferID p_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, uint64_t p_buffer_range, TextureID p_texture, uint32_t p_array_layer) override final;
+	virtual void command_video_coding_end(CommandBufferID p_cmd_buffer) override final;
 
 	/**************/
 	/**** MISC ****/

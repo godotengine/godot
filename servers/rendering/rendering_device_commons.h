@@ -421,7 +421,8 @@ public:
 		// Try to set this bit as much as possible. If you set it, validation doesn't complain
 		// and it works fine on mobile, then go ahead.
 		TEXTURE_USAGE_TRANSIENT_BIT = (1 << 11),
-		TEXTURE_USAGE_MAX_BIT = TEXTURE_USAGE_TRANSIENT_BIT,
+		TEXTURE_USAGE_VIDEO_DECODE_DST_BIT = (1 << 12),
+		TEXTURE_USAGE_MAX_BIT = TEXTURE_USAGE_VIDEO_DECODE_DST_BIT,
 	};
 
 	struct TextureFormat {
@@ -847,6 +848,48 @@ public:
 		DYNAMIC_STATE_STENCIL_REFERENCE = (1 << 6),
 	};
 
+	/**********************/
+	/**** VIDEO CODING ****/
+	/**********************/
+
+	enum VideoCodingOperation {
+		VIDEO_OPERATION_DECODE_H264 = (1 << 0),
+		VIDEO_OPERATION_DECODE_H265 = (1 << 1),
+		VIDEO_OPERATION_DECODE_AV1 = (1 << 2),
+		VIDEO_OPERATION_DECODE_VP9 = (1 << 3),
+	};
+
+	enum VideoCodingChromaSubsampling {
+		CHROMA_SUBSAMPLING_MONOCHROME = (1 << 0),
+		CHROMA_SUBSAMPLING_420 = (1 << 1),
+		CHROMA_SUBSAMPLING_422 = (1 << 2),
+		CHROMA_SUBSAMPLING_444 = (1 << 3),
+	};
+
+	enum VideoCodingH264ProfileIdc {
+		VIDEO_CODING_H264_PROFILE_IDC_BASELINE = 66,
+		VIDEO_CODING_H264_PROFILE_IDC_MAIN = 77,
+		VIDEO_CODING_H264_PROFILE_IDC_HIGH = 100,
+		VIDEO_CODING_H264_PROFILE_IDC_HIGH_PREDICTIVE = 244,
+	};
+
+	enum VideoCodingH264PictureLayout {
+		VIDEO_CODING_H264_PICTURE_LAYOUT_PROGRESSIVE = 0,
+		VIDEO_CODING_H264_PICTURE_LAYOUT_INTERLACED_INTERLEAVED = 1,
+		VIDEO_CODING_H264_PICTURE_LAYOUT_INTERLACED_SEPARATE_PLANES = 2,
+	};
+
+	struct VideoProfileState {
+		VideoCodingOperation operation;
+		VideoCodingChromaSubsampling chroma_subsampling;
+		uint32_t luma_bit_depth;
+		uint32_t chroma_bit_depth;
+
+		// TODO is it worth not just embedding all 4 possible codecs here?
+		VideoCodingH264ProfileIdc h264_profile_idc;
+		VideoCodingH264PictureLayout h264_picture_layout;
+	};
+
 	/**************/
 	/**** MISC ****/
 	/**************/
@@ -954,6 +997,7 @@ public:
 		SUPPORTS_BUFFER_DEVICE_ADDRESS,
 		SUPPORTS_IMAGE_ATOMIC_32_BIT,
 		SUPPORTS_VULKAN_MEMORY_MODEL,
+		SUPPORTS_VIDEO_ENCODE_DECODE,
 	};
 
 	enum SubgroupOperations {
