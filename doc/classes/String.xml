@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This is the built-in string Variant type (and the one used by GDScript). Strings may contain any number of Unicode characters, and expose methods useful for manipulating and generating strings. Strings are reference-counted and use a copy-on-write approach (every modification to a string returns a new [String]), so passing them around is cheap in resources.
-		Some string methods have corresponding variations. Variations suffixed with [code]n[/code] ([method countn], [method findn], [method replacen], etc.) are [b]case-insensitive[/b] (they make no distinction between uppercase and lowercase letters). Method variations prefixed with [code]r[/code] ([method rfind], [method rsplit], etc.) are reversed, and start from the end of the string, instead of the beginning.
+		Some string methods have corresponding variations. For example, string-comparison methods are [b]case-sensitive[/b] by default but have [b]case-insensitive[/b] variations suffixed with [code]n[/code] ([method countn], [method findn], [method replacen], etc.) which treat uppercase and lowercase letters as equal. Another example is method variations prefixed with [code]r[/code] ([method rfind], [method rsplit], etc.) where processing is reversed, starting from the end of the string instead of the beginning.
 		To convert any [Variant] to or from a string, see [method @GlobalScope.str], [method @GlobalScope.str_to_var], and [method @GlobalScope.var_to_str].
 		[b]Note:[/b] In a boolean context, a string will evaluate to [code]false[/code] if it is empty ([code]""[/code]). Otherwise, a string will always evaluate to [code]true[/code].
 	</description>
@@ -132,7 +132,7 @@
 			<return type="bool" />
 			<param index="0" name="what" type="String" />
 			<description>
-				Returns [code]true[/code] if the string contains [param what]. In GDScript, this corresponds to the [code]in[/code] operator.
+				Returns [code]true[/code] if the string contains [param what] (case-sensitive). In GDScript, this corresponds to the [code]in[/code] operator. See [method containsn] for a case-insensitive version.
 				[codeblocks]
 				[gdscript]
 				print("Node".contains("de")) # Prints true
@@ -144,15 +144,15 @@
 				GD.Print("team".Contains("I"));  // Prints False
 				[/csharp]
 				[/codeblocks]
-				If you need to know where [param what] is within the string, use [method find]. See also [method containsn].
+				If you need to know where [param what] is within the string, use [method find].
 			</description>
 		</method>
 		<method name="containsn" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="what" type="String" />
 			<description>
-				Returns [code]true[/code] if the string contains [param what], [b]ignoring case[/b].
-				If you need to know where [param what] is within the string, use [method findn]. See also [method contains].
+				Returns [code]true[/code] if the string contains [param what], [b]ignoring case[/b]. See [method contains] for a case-sensitive version.
+				If you need to know where [param what] is within the string, use [method findn].
 			</description>
 		</method>
 		<method name="count" qualifiers="const">
@@ -161,7 +161,7 @@
 			<param index="1" name="from" type="int" default="0" />
 			<param index="2" name="to" type="int" default="0" />
 			<description>
-				Returns the number of occurrences of the substring [param what] between [param from] and [param to] positions. If [param to] is 0, the search continues until the end of the string.
+				Returns the number of case-sensitive occurrences of the substring [param what] between [param from] and [param to] positions. If [param to] is 0, the search continues until the end of the string. See [method countn] for a case-insensitive version.
 			</description>
 		</method>
 		<method name="countn" qualifiers="const">
@@ -170,7 +170,7 @@
 			<param index="1" name="from" type="int" default="0" />
 			<param index="2" name="to" type="int" default="0" />
 			<description>
-				Returns the number of occurrences of the substring [param what] between [param from] and [param to] positions, [b]ignoring case[/b]. If [param to] is 0, the search continues until the end of the string.
+				Returns the number of occurrences of the substring [param what] between [param from] and [param to] positions, [b]ignoring case[/b]. If [param to] is 0, the search continues until the end of the string. See [method count] for a case-sensitive version.
 			</description>
 		</method>
 		<method name="dedent" qualifiers="const">
@@ -183,7 +183,7 @@
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Returns [code]true[/code] if the string ends with the given [param text]. See also [method begins_with].
+				Returns [code]true[/code] if the string ends with the given [param text] (case-sensitive). See also [method begins_with].
 			</description>
 		</method>
 		<method name="erase" qualifiers="const">
@@ -215,7 +215,7 @@
 			<param index="0" name="what" type="String" />
 			<param index="1" name="from" type="int" default="0" />
 			<description>
-				Returns the index of the [b]first[/b] occurrence of [param what] in this string, or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the end of the string.
+				Returns the index of the [b]first[/b] case-sensitive occurrence of [param what] in this string, or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the end of the string. See [method findn] for a case-insensitive version.
 				[codeblocks]
 				[gdscript]
 				print("Team".find("I")) # Prints -1
@@ -240,7 +240,7 @@
 			<param index="0" name="what" type="String" />
 			<param index="1" name="from" type="int" default="0" />
 			<description>
-				Returns the index of the [b]first[/b] [b]case-insensitive[/b] occurrence of [param what] in this string, or [code]-1[/code] if there are none. The starting search index can be specified with [param from], continuing to the end of the string.
+				Returns the index of the [b]first[/b] [b]case-insensitive[/b] occurrence of [param what] in this string, or [code]-1[/code] if there are none. The starting search index can be specified with [param from], continuing to the end of the string. See [method find] for a case-sensitive version.
 			</description>
 		</method>
 		<method name="format" qualifiers="const">
@@ -441,7 +441,7 @@
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order. This is not the same as [method contains].
+				Returns [code]true[/code] if all characters of this string can be found in [param text] (case-sensitive) in their original order. This is not the same as [method contains]. See [method is_subsequence_ofn] for a case-insensitive version.
 				[codeblock]
 				var text = "Wow, incredible!"
 
@@ -456,7 +456,7 @@
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order, [b]ignoring case[/b]. This is not the same as [method containsn].
+				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order, [b]ignoring case[/b]. This is not the same as [method containsn]. See [method is_subsequence_of] for a case-sensitive version.
 			</description>
 		</method>
 		<method name="is_valid_ascii_identifier" qualifiers="const">
@@ -624,14 +624,14 @@
 			<return type="bool" />
 			<param index="0" name="expr" type="String" />
 			<description>
-				Does a simple expression match (also called "glob" or "globbing"), where [code]*[/code] matches zero or more arbitrary characters and [code]?[/code] matches any single character except a period ([code].[/code]). An empty string or empty expression always evaluates to [code]false[/code].
+				Does a simple expression match (also called "glob" or "globbing"), where [code]*[/code] matches zero or more arbitrary characters and [code]?[/code] matches any single character except a period ([code].[/code]). String matching is case-sensitive. See [method matchn] for a case-insensitive version. An empty string or empty expression always evaluates to [code]false[/code].
 			</description>
 		</method>
 		<method name="matchn" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="expr" type="String" />
 			<description>
-				Does a simple [b]case-insensitive[/b] expression match, where [code]*[/code] matches zero or more arbitrary characters and [code]?[/code] matches any single character except a period ([code].[/code]). An empty string or empty expression always evaluates to [code]false[/code].
+				Does a simple [b]case-insensitive[/b] expression match, where [code]*[/code] matches zero or more arbitrary characters and [code]?[/code] matches any single character except a period ([code].[/code]). See [method match] for a case-sensitive version. An empty string or empty expression always evaluates to [code]false[/code].
 			</description>
 		</method>
 		<method name="md5_buffer" qualifiers="const">
@@ -790,7 +790,7 @@
 			<param index="0" name="what" type="String" />
 			<param index="1" name="forwhat" type="String" />
 			<description>
-				Replaces all occurrences of [param what] inside the string with the given [param forwhat].
+				Replaces all case-sensitive occurrences of [param what] inside the string with the given [param forwhat]. See [method replacen] for a case-insensitive version.
 			</description>
 		</method>
 		<method name="replace_char" qualifiers="const">
@@ -814,7 +814,7 @@
 			<param index="0" name="what" type="String" />
 			<param index="1" name="forwhat" type="String" />
 			<description>
-				Replaces all [b]case-insensitive[/b] occurrences of [param what] inside the string with the given [param forwhat].
+				Replaces all [b]case-insensitive[/b] occurrences of [param what] inside the string with the given [param forwhat]. See [method replace] for a case-sensitive version.
 			</description>
 		</method>
 		<method name="reverse" qualifiers="const">
@@ -828,7 +828,7 @@
 			<param index="0" name="what" type="String" />
 			<param index="1" name="from" type="int" default="-1" />
 			<description>
-				Returns the index of the [b]last[/b] occurrence of [param what] in this string, or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the beginning of the string. This method is the reverse of [method find].
+				Returns the index of the [b]last[/b] case-sensitive occurrence of [param what] in this string, or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the beginning of the string. This method is the reverse of [method find]. See [method rfindn] for a case-insensitive version.
 			</description>
 		</method>
 		<method name="rfindn" qualifiers="const">
@@ -836,7 +836,7 @@
 			<param index="0" name="what" type="String" />
 			<param index="1" name="from" type="int" default="-1" />
 			<description>
-				Returns the index of the [b]last[/b] [b]case-insensitive[/b] occurrence of [param what] in this string, or [code]-1[/code] if there are none. The starting search index can be specified with [param from], continuing to the beginning of the string. This method is the reverse of [method findn].
+				Returns the index of the [b]last[/b] [b]case-insensitive[/b] occurrence of [param what] in this string, or [code]-1[/code] if there are none. The starting search index can be specified with [param from], continuing to the beginning of the string. This method is the reverse of [method findn]. See [method rfind] for a case-sensitive version.
 			</description>
 		</method>
 		<method name="right" qualifiers="const">
