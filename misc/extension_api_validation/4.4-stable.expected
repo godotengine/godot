@@ -328,3 +328,9 @@ GH-108825
 Validate extension JSON: Error: Field 'classes/EditorExportPlatformExtension/methods/_get_option_icon/return_value': type changed value in new API, from "ImageTexture" to "Texture2D".
 
 Return type changed to allow returning both ImageTexture and DPITexture. Compatibility method registered.
+
+
+GH-109947
+---------
+Validate extension JSON: Error: Field 'classes/Image/methods/load_svg_from_buffer/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Image/methods/load_svg_from_string/arguments': size changed value in new API, from 2 to 3.
