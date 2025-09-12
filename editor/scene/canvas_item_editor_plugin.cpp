@@ -622,7 +622,6 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 		return;
 	}
 
-	const real_t grab_distance = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
 
 	Transform2D xform = p_canvas_xform;
@@ -4149,6 +4148,8 @@ void CanvasItemEditor::_update_editor_settings() {
 	real_t ruler_width_unscaled = EDITOR_GET("editors/2d/ruler_width");
 	ruler_font_size = MAX(get_theme_font_size(SNAME("rulers_size"), EditorStringName(EditorFonts)) * ruler_width_unscaled / 15.0, 8);
 	ruler_width_scaled = MAX(ruler_width_unscaled * EDSCALE, ruler_font_size * 2.0);
+
+	grab_distance = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 }
 
 void CanvasItemEditor::_project_settings_changed() {
@@ -4268,7 +4269,8 @@ void CanvasItemEditor::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorThemeManager::is_generated_theme_outdated() ||
 					EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning") ||
-					EditorSettings::get_singleton()->check_changed_settings_in_group("editors/2d")) {
+					EditorSettings::get_singleton()->check_changed_settings_in_group("editors/2d") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("editors/polygon_editor")) {
 				_update_editor_settings();
 				update_viewport();
 			}

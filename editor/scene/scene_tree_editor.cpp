@@ -706,7 +706,12 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 		return;
 	}
 
-	TreeItem *item = _find(tree->get_root(), p_node->get_path());
+	TreeItem *item;
+	if (I->value.item && I->value.item->get_metadata(0) == p_node->get_path()) {
+		item = I->value.item;
+	} else {
+		item = _find(tree->get_root(), p_node->get_path());
+	}
 
 	if (!item) {
 		return;
