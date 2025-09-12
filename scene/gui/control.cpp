@@ -2269,8 +2269,7 @@ Control::FocusBehaviorRecursive Control::get_focus_behavior_recursive() const {
 }
 
 bool Control::_is_focusable() const {
-	bool ac_enabled = is_inside_tree() && get_tree()->is_accessibility_enabled();
-	return (is_visible_in_tree() && ((get_focus_mode_with_override() == FOCUS_ALL) || (get_focus_mode_with_override() == FOCUS_CLICK) || (ac_enabled && get_focus_mode_with_override() == FOCUS_ACCESSIBILITY)));
+	return (is_visible_in_tree() && ((get_focus_mode_with_override() == FOCUS_ALL) || (get_focus_mode_with_override() == FOCUS_CLICK) || (get_focus_mode_with_override() == FOCUS_ACCESSIBILITY && is_inside_tree() && _is_accessibility_enabled())));
 }
 
 bool Control::_is_focus_mode_enabled() const {
@@ -2391,7 +2390,6 @@ Control *Control::find_next_valid_focus() const {
 	}
 
 	Control *from = const_cast<Control *>(this);
-	bool ac_enabled = get_tree() && get_tree()->is_accessibility_enabled();
 
 	// Index of the current `Control` subtree within the containing `Window`.
 	int window_next = -1;
@@ -2452,7 +2450,7 @@ Control *Control::find_next_valid_focus() const {
 			break;
 		}
 
-		if ((next_child->get_focus_mode_with_override() == FOCUS_ALL) || (ac_enabled && next_child->get_focus_mode_with_override() == FOCUS_ACCESSIBILITY)) {
+		if ((next_child->get_focus_mode_with_override() == FOCUS_ALL) || (_is_accessibility_enabled() && next_child->get_focus_mode_with_override() == FOCUS_ACCESSIBILITY)) {
 			return next_child;
 		}
 
@@ -2495,7 +2493,6 @@ Control *Control::find_prev_valid_focus() const {
 	}
 
 	Control *from = const_cast<Control *>(this);
-	bool ac_enabled = get_tree() && get_tree()->is_accessibility_enabled();
 
 	// Index of the current `Control` subtree within the containing `Window`.
 	int window_prev = -1;
@@ -2550,7 +2547,7 @@ Control *Control::find_prev_valid_focus() const {
 			}
 		}
 
-		if ((prev_child->get_focus_mode_with_override() == FOCUS_ALL) || (ac_enabled && prev_child->get_focus_mode_with_override() == FOCUS_ACCESSIBILITY)) {
+		if ((prev_child->get_focus_mode_with_override() == FOCUS_ALL) || (_is_accessibility_enabled() && prev_child->get_focus_mode_with_override() == FOCUS_ACCESSIBILITY)) {
 			return prev_child;
 		}
 
@@ -2727,13 +2724,11 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 		return; // Bye.
 	}
 
-	bool ac_enabled = get_tree() && get_tree()->is_accessibility_enabled();
-
 	Control *c = Object::cast_to<Control>(p_at);
 	Container *container = Object::cast_to<Container>(p_at);
 	bool in_container = container ? container->is_ancestor_of(this) : false;
 
-	if (c && c != this && ((c->get_focus_mode_with_override() == FOCUS_ALL) || (ac_enabled && c->get_focus_mode_with_override() == FOCUS_ACCESSIBILITY)) && !in_container && p_clamp.intersects(c->get_global_rect())) {
+	if (c && c != this && ((c->get_focus_mode_with_override() == FOCUS_ALL) || (_is_accessibility_enabled() && c->get_focus_mode_with_override() == FOCUS_ACCESSIBILITY)) && !in_container && p_clamp.intersects(c->get_global_rect())) {
 		Rect2 r_c = c->get_global_rect();
 		r_c = r_c.intersection(p_clamp);
 		real_t begin_d = p_dir.dot(r_c.get_position());
