@@ -407,8 +407,7 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (p_event->is_pressed() && slot_count > 0) {
-		bool ac_enabled = get_tree() && get_tree()->is_accessibility_enabled();
-		if ((ac_enabled && slots_focus_mode == Control::FOCUS_ACCESSIBILITY) || slots_focus_mode == Control::FOCUS_ALL) {
+		if ((_is_accessibility_enabled() && slots_focus_mode == Control::FOCUS_ACCESSIBILITY) || slots_focus_mode == Control::FOCUS_ALL) {
 			if (p_event->is_action("ui_up", true)) {
 				selected_slot--;
 				if (selected_slot < 0) {
