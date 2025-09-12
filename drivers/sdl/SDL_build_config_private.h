@@ -81,6 +81,7 @@
 #define SDL_PLATFORM_UNIX 1
 
 #define HAVE_STDIO_H 1
+#define HAVE_LIBC 1
 #define HAVE_LINUX_INPUT_H 1
 #define HAVE_POLL 1
 
