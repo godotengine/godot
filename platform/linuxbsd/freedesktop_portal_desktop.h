@@ -59,8 +59,12 @@ private:
 	static void append_dbus_dict_filters(DBusMessageIter *p_iter, const Vector<String> &p_filter_names, const Vector<String> &p_filter_exts, const Vector<String> &p_filter_mimes);
 	static void append_dbus_dict_string(DBusMessageIter *p_iter, const String &p_key, const String &p_value, bool p_as_byte_array = false);
 	static void append_dbus_dict_bool(DBusMessageIter *p_iter, const String &p_key, bool p_value);
+
 	static bool file_chooser_parse_response(DBusMessageIter *p_iter, const Vector<String> &p_names, const HashMap<String, String> &p_ids, bool &r_cancel, Vector<String> &r_urls, int &r_index, Dictionary &r_options);
 	static bool color_picker_parse_response(DBusMessageIter *p_iter, bool &r_cancel, Color &r_color);
+
+	static Error make_request_token(String &token);
+	bool send_request(DBusMessage *message, const String &token, String &response_path, String &response_filter);
 
 	struct ColorPickerData {
 		Callable callback;
@@ -107,7 +111,7 @@ private:
 	String theme_path;
 	Callable system_theme_changed;
 	void _system_theme_changed_callback();
-	bool _is_interface_supported(const char *p_iface);
+	bool _is_interface_supported(const char *p_iface, uint32_t minimum_version);
 
 	static void _thread_monitor(void *p_ud);
 
