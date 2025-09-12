@@ -174,3 +174,11 @@ Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_unique_name
 Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_use_named_skin_binds': is_const changed value in new API, from false to true.
 
 GLTFState getters made const. Compatibility methods registered.
+
+
+GH-112308
+---------
+Validate extension JSON: Error: Field 'classes/Animation/methods/get_length/return_value': meta changed value in new API, from "float" to "double".
+Validate extension JSON: Error: Field 'classes/Animation/methods/set_length/arguments/0': meta changed value in new API, from "float" to "double".
+
+Return type and parameter changed from real_t to double to match internals. No compatibility methods registered because GDExtension FFI already uses double.
