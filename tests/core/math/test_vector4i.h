@@ -37,10 +37,18 @@ namespace TestVector4i {
 
 TEST_CASE("[Vector4i] Constructor methods") {
 	constexpr Vector4i vector_empty = Vector4i();
+	constexpr Vector4i vector_from_int_zero = Vector4i(0);
+	constexpr Vector4i vector_from_float_half = Vector4i(0.5f);
 	constexpr Vector4i vector_zero = Vector4i(0, 0, 0, 0);
 	static_assert(
 			vector_empty == vector_zero,
-			"Vector4i Constructor with no inputs should return a zero Vector4i.");
+			"Default constructor Vector4i() should create a zero Vector4i.");
+	static_assert(
+			vector_from_int_zero == vector_zero,
+			"Vector4i(int scalar) should create a zero Vector4i when scalar is 0.");
+	static_assert(
+			vector_from_float_half == vector_zero,
+			"Vector4i(float scalar) should create a zero Vector4i when scalar < 1 (truncated to 0).");
 }
 
 TEST_CASE("[Vector4i] Axis methods") {
