@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TCPServer" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TCPServer" inherits="SocketServer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A TCP server.
 	</brief_description>
@@ -16,18 +16,6 @@
 				Returns the local port this server is listening to.
 			</description>
 		</method>
-		<method name="is_connection_available" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if a connection is available for taking.
-			</description>
-		</method>
-		<method name="is_listening" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if the server is currently listening for connections.
-			</description>
-		</method>
 		<method name="listen">
 			<return type="int" enum="Error" />
 			<param index="0" name="port" type="int" />
@@ -37,12 +25,6 @@
 				If [param bind_address] is set as [code]"*"[/code] (default), the server will listen on all available addresses (both IPv4 and IPv6).
 				If [param bind_address] is set as [code]"0.0.0.0"[/code] (for IPv4) or [code]"::"[/code] (for IPv6), the server will listen on all available addresses matching that IP type.
 				If [param bind_address] is set to any valid address (e.g. [code]"192.168.1.101"[/code], [code]"::1"[/code], etc.), the server will only listen on the interface with that address (or fail if no interface with the given address exists).
-			</description>
-		</method>
-		<method name="stop">
-			<return type="void" />
-			<description>
-				Stops listening.
 			</description>
 		</method>
 		<method name="take_connection">

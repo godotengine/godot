@@ -99,7 +99,7 @@ Error UDPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
 		ip_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
 	}
 
-	err = _sock->open(NetSocket::TYPE_UDP, ip_type);
+	err = _sock->open(NetSocket::Family::INET, NetSocket::TYPE_UDP, ip_type);
 
 	if (err != OK) {
 		return ERR_CANT_CREATE;
@@ -107,7 +107,8 @@ Error UDPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
 
 	_sock->set_blocking_enabled(false);
 	_sock->set_reuse_address_enabled(true);
-	err = _sock->bind(p_bind_address, p_port);
+	NetSocket::Address addr(p_bind_address, p_port);
+	err = _sock->bind(addr);
 
 	if (err != OK) {
 		stop();
@@ -117,9 +118,9 @@ Error UDPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
 }
 
 int UDPServer::get_local_port() const {
-	uint16_t local_port;
-	_sock->get_socket_address(nullptr, &local_port);
-	return local_port;
+	NetSocket::Address addr;
+	_sock->get_socket_address(&addr);
+	return addr.port();
 }
 
 bool UDPServer::is_listening() const {
