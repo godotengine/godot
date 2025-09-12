@@ -31,6 +31,7 @@
 #pragma once
 
 #include "audio_driver_opensl.h"
+#include "drivers/sdl/audio_driver_sdl.h"
 
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
@@ -61,6 +62,10 @@ private:
 	mutable String remote_fs_dir;
 
 	AudioDriverOpenSL audio_driver_android;
+
+#ifdef SDL_ENABLED
+	AudioDriverSDL driver_sdl;
+#endif
 
 	MainLoop *main_loop = nullptr;
 
