@@ -137,7 +137,7 @@ repos:
         entry: svgo
         files: \.svg$
         args: [--quiet, --config, misc/utility/svgo.config.mjs]
-        additional_dependencies: [svgo@3.3.2]
+        additional_dependencies: [svgo@4.0.0]
 
       - id: copyright-headers
         name: copyright-headers
