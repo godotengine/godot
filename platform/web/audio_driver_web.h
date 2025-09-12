@@ -54,6 +54,7 @@ private:
 	int buffer_length = 0;
 	int mix_rate = 0;
 	int channel_count = 0;
+	bool input_started = false;
 
 	WASM_EXPORT static void _state_change_callback(int p_state);
 	WASM_EXPORT static void _latency_update_callback(float p_latency);
