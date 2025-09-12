@@ -60,6 +60,7 @@ private:
 
 	TypedArray<uint64_t> inspected_object_ids;
 	int debugger_id = 0;
+	bool new_session = false;
 	bool updating_scene_tree = false;
 	bool scrolling_to_item = false;
 	bool notify_selection_queued = false;
@@ -91,6 +92,7 @@ public:
 
 	virtual Variant get_drag_data(const Point2 &p_point) override;
 
+	void set_new_session() { new_session = true; }
 	void update_icon_max_width();
 	String get_selected_path();
 	ObjectID get_selected_object();
