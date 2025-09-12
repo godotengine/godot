@@ -1024,8 +1024,12 @@ Size2 OpenXRInterface::get_render_target_size() {
 }
 
 uint32_t OpenXRInterface::get_view_count() {
-	// TODO set this based on our configuration
-	return 2;
+	if (openxr_api == nullptr) {
+		// Assume stereo
+		return 2;
+	} else {
+		return openxr_api->get_view_count();
+	}
 }
 
 void OpenXRInterface::_set_default_pos(Transform3D &p_transform, double p_world_scale, uint64_t p_eye) {
@@ -1237,6 +1241,14 @@ void OpenXRInterface::pre_render() {
 	}
 }
 
+Vector3i OpenXRInterface::get_viewport_setup(RID p_render_target) const {
+	if (openxr_api) {
+		return openxr_api->get_viewport_setup(p_render_target);
+	} else {
+		return Vector3i();
+	}
+}
+
 bool OpenXRInterface::pre_draw_viewport(RID p_render_target) {
 	if (openxr_api) {
 		return openxr_api->pre_draw_viewport(p_render_target);
@@ -1251,7 +1263,7 @@ Vector<BlitToScreen> OpenXRInterface::post_draw_viewport(RID p_render_target, co
 
 #ifndef ANDROID_ENABLED
 	// If separate HMD we should output one eye to screen
-	if (p_screen_rect != Rect2()) {
+	if (openxr_api && openxr_api->is_main_viewport(p_render_target) && p_screen_rect != Rect2()) {
 		BlitToScreen blit;
 
 		blit.render_target = p_render_target;
