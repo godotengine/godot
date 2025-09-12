@@ -196,8 +196,6 @@ public:
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
 	virtual const Variant get_rpc_config() const = 0;
-
-	Script() {}
 };
 
 class ScriptLanguage : public Object {
