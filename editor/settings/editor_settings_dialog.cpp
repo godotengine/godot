@@ -204,7 +204,6 @@ void EditorSettingsDialog::popup_edit_settings() {
 	inspector->get_inspector()->update_tree();
 
 	_update_shortcuts();
-	set_process_shortcut_input(true);
 
 	// Restore valid window bounds or pop up at default size.
 	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "editor_settings", Rect2());
@@ -226,7 +225,6 @@ void EditorSettingsDialog::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "editor_settings", Rect2(get_position(), get_size()));
-				set_process_shortcut_input(false);
 			}
 		} break;
 
@@ -275,24 +273,13 @@ void EditorSettingsDialog::_notification(int p_what) {
 void EditorSettingsDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed()) {
-		bool handled = false;
-
-		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
-			EditorNode::get_singleton()->undo();
-			handled = true;
+		EditorAcceptDialog::shortcut_input(p_event);
+		if (is_input_handled()) {
+			return;
 		}
 
-		if (ED_IS_SHORTCUT("ui_redo", p_event)) {
-			EditorNode::get_singleton()->redo();
-			handled = true;
-		}
-
-		if (k->is_match(InputEventKey::create_reference(KeyModifierMask::CMD_OR_CTRL | Key::F))) {
+		if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			_focus_current_search_box();
-			handled = true;
-		}
-
-		if (handled) {
 			set_input_as_handled();
 		}
 	}
