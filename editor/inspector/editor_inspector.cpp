@@ -1678,9 +1678,18 @@ void EditorInspectorCategory::_notification(int p_what) {
 			if (is_layout_rtl()) {
 				ofs = get_size().width - ofs - w;
 			}
-			float text_pos_y = font->get_ascent(font_size) + (get_size().height - font->get_height(font_size)) / 2 + v_margin_offset;
+
+			// Use TextLine so we have access to accurate font metrics. This way,
+			// we can ensure the line is vertically centered regardless of the font used
+			// or its size.
+			Ref<TextLine> tl;
+			tl.instantiate();
+			tl->add_string(label, font, font_size);
+			tl->set_width(w);
+			tl->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
+			float text_pos_y = (get_size().height - tl->get_size().height) / 2 + v_margin_offset;
 			Point2 text_pos = Point2(ofs, text_pos_y).round();
-			draw_string(font, text_pos, label, HORIZONTAL_ALIGNMENT_LEFT, w, font_size, theme_cache.font_color);
+			tl->draw(get_canvas_item(), text_pos, theme_cache.font_color);
 		} break;
 	}
 }
