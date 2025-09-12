@@ -79,8 +79,11 @@ Vector<String> ResourceLoader::get_recognized_extensions_for_type(const String &
 	List<String> exts;
 	::ResourceLoader::get_recognized_extensions_for_type(p_type, &exts);
 	Vector<String> ret;
+	ret.resize(exts.size());
+	int idx = 0;
+
 	for (const String &E : exts) {
-		ret.push_back(E);
+		ret.set(idx++, E);
 	}
 
 	return ret;
@@ -103,8 +106,11 @@ PackedStringArray ResourceLoader::get_dependencies(const String &p_path) {
 	::ResourceLoader::get_dependencies(p_path, &deps);
 
 	PackedStringArray ret;
+	ret.resize(deps.size());
+	int idx = 0;
+
 	for (const String &E : deps) {
-		ret.push_back(E);
+		ret.set(idx++, E);
 	}
 
 	return ret;
@@ -175,8 +181,11 @@ Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_r
 	List<String> exts;
 	::ResourceSaver::get_recognized_extensions(p_resource, &exts);
 	Vector<String> ret;
+	ret.resize(exts.size());
+	int idx = 0;
+
 	for (const String &E : exts) {
-		ret.push_back(E);
+		ret.set(idx++, E);
 	}
 	return ret;
 }
@@ -505,8 +514,11 @@ Vector<String> OS::get_video_adapter_driver_info() const {
 Vector<String> OS::get_cmdline_args() {
 	List<String> cmdline = ::OS::get_singleton()->get_cmdline_args();
 	Vector<String> cmdlinev;
+	cmdlinev.resize(cmdline.size());
+	int idx = 0;
+
 	for (const String &E : cmdline) {
-		cmdlinev.push_back(E);
+		cmdlinev.set(idx++, E);
 	}
 
 	return cmdlinev;
@@ -515,8 +527,11 @@ Vector<String> OS::get_cmdline_args() {
 Vector<String> OS::get_cmdline_user_args() {
 	List<String> cmdline = ::OS::get_singleton()->get_cmdline_user_args();
 	Vector<String> cmdlinev;
+	cmdlinev.resize(cmdline.size());
+	int idx = 0;
+
 	for (const String &E : cmdline) {
-		cmdlinev.push_back(E);
+		cmdlinev.set(idx++, E);
 	}
 
 	return cmdlinev;
@@ -538,8 +553,11 @@ bool OS::is_restart_on_exit_set() const {
 Vector<String> OS::get_restart_on_exit_arguments() const {
 	List<String> args = ::OS::get_singleton()->get_restart_on_exit_arguments();
 	Vector<String> args_vector;
+	args_vector.resize(args.size());
+	int idx = 0;
+
 	for (const String &arg : args) {
-		args_vector.push_back(arg);
+		args_vector.set(idx++, arg);
 	}
 
 	return args_vector;
@@ -966,9 +984,10 @@ TypedArray<PackedVector2Array> Geometry2D::decompose_polygon_in_convex(const Vec
 	Vector<Vector<Point2>> decomp = ::Geometry2D::decompose_polygon_in_convex(p_polygon);
 
 	TypedArray<PackedVector2Array> ret;
+	ret.resize(decomp.size());
 
-	for (int i = 0; i < decomp.size(); ++i) {
-		ret.push_back(decomp[i]);
+	for (int i = 0; i < decomp.size(); i++) {
+		ret.set(i, decomp[i]);
 	}
 	return ret;
 }
@@ -977,9 +996,10 @@ TypedArray<PackedVector2Array> Geometry2D::merge_polygons(const Vector<Vector2> 
 	Vector<Vector<Point2>> polys = ::Geometry2D::merge_polygons(p_polygon_a, p_polygon_b);
 
 	TypedArray<PackedVector2Array> ret;
+	ret.resize(polys.size());
 
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
+	for (int i = 0; i < polys.size(); i++) {
+		ret.set(i, polys[i]);
 	}
 	return ret;
 }
@@ -988,9 +1008,10 @@ TypedArray<PackedVector2Array> Geometry2D::clip_polygons(const Vector<Vector2> &
 	Vector<Vector<Point2>> polys = ::Geometry2D::clip_polygons(p_polygon_a, p_polygon_b);
 
 	TypedArray<PackedVector2Array> ret;
+	ret.resize(polys.size());
 
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
+	for (int i = 0; i < polys.size(); i++) {
+		ret.set(i, polys[i]);
 	}
 	return ret;
 }
@@ -999,9 +1020,10 @@ TypedArray<PackedVector2Array> Geometry2D::intersect_polygons(const Vector<Vecto
 	Vector<Vector<Point2>> polys = ::Geometry2D::intersect_polygons(p_polygon_a, p_polygon_b);
 
 	TypedArray<PackedVector2Array> ret;
+	ret.resize(polys.size());
 
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
+	for (int i = 0; i < polys.size(); i++) {
+		ret.set(i, polys[i]);
 	}
 	return ret;
 }
@@ -1010,9 +1032,10 @@ TypedArray<PackedVector2Array> Geometry2D::exclude_polygons(const Vector<Vector2
 	Vector<Vector<Point2>> polys = ::Geometry2D::exclude_polygons(p_polygon_a, p_polygon_b);
 
 	TypedArray<PackedVector2Array> ret;
+	ret.resize(polys.size());
 
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
+	for (int i = 0; i < polys.size(); i++) {
+		ret.set(i, polys[i]);
 	}
 	return ret;
 }
@@ -1021,9 +1044,10 @@ TypedArray<PackedVector2Array> Geometry2D::clip_polyline_with_polygon(const Vect
 	Vector<Vector<Point2>> polys = ::Geometry2D::clip_polyline_with_polygon(p_polyline, p_polygon);
 
 	TypedArray<PackedVector2Array> ret;
+	ret.resize(polys.size());
 
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
+	for (int i = 0; i < polys.size(); i++) {
+		ret.set(i, polys[i]);
 	}
 	return ret;
 }
@@ -1032,9 +1056,10 @@ TypedArray<PackedVector2Array> Geometry2D::intersect_polyline_with_polygon(const
 	Vector<Vector<Point2>> polys = ::Geometry2D::intersect_polyline_with_polygon(p_polyline, p_polygon);
 
 	TypedArray<PackedVector2Array> ret;
+	ret.resize(polys.size());
 
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
+	for (int i = 0; i < polys.size(); i++) {
+		ret.set(i, polys[i]);
 	}
 	return ret;
 }
@@ -1043,9 +1068,10 @@ TypedArray<PackedVector2Array> Geometry2D::offset_polygon(const Vector<Vector2> 
 	Vector<Vector<Point2>> polys = ::Geometry2D::offset_polygon(p_polygon, p_delta, ::Geometry2D::PolyJoinType(p_join_type));
 
 	TypedArray<PackedVector2Array> ret;
+	ret.resize(polys.size());
 
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
+	for (int i = 0; i < polys.size(); i++) {
+		ret.set(i, polys[i]);
 	}
 	return ret;
 }
@@ -1054,9 +1080,10 @@ TypedArray<PackedVector2Array> Geometry2D::offset_polyline(const Vector<Vector2>
 	Vector<Vector<Point2>> polys = ::Geometry2D::offset_polyline(p_polygon, p_delta, ::Geometry2D::PolyJoinType(p_join_type), ::Geometry2D::PolyEndType(p_end_type));
 
 	TypedArray<PackedVector2Array> ret;
+	ret.resize(polys.size());
 
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
+	for (int i = 0; i < polys.size(); i++) {
+		ret.set(i, polys[i]);
 	}
 	return ret;
 }
@@ -1065,8 +1092,9 @@ Dictionary Geometry2D::make_atlas(const Vector<Size2> &p_rects) {
 	Dictionary ret;
 
 	Vector<Size2i> rects;
+	rects.resize(p_rects.size());
 	for (int i = 0; i < p_rects.size(); i++) {
-		rects.push_back(p_rects[i]);
+		rects.set(i, p_rects[i]);
 	}
 
 	Vector<Point2i> result;
@@ -1075,8 +1103,9 @@ Dictionary Geometry2D::make_atlas(const Vector<Size2> &p_rects) {
 	::Geometry2D::make_atlas(rects, result, size);
 
 	Vector<Point2> r_result;
+	r_result.resize(result.size());
 	for (int i = 0; i < result.size(); i++) {
-		r_result.push_back(result[i]);
+		r_result.set(i, result[i]);
 	}
 
 	ret["points"] = r_result;
@@ -1160,7 +1189,7 @@ Vector<Vector3> Geometry3D::compute_convex_mesh_points(const TypedArray<Plane> &
 	Vector<Plane> planes_vec;
 	int size = p_planes.size();
 	planes_vec.resize(size);
-	for (int i = 0; i < size; ++i) {
+	for (int i = 0; i < size; i++) {
 		planes_vec.set(i, p_planes[i]);
 	}
 	Variant ret = ::Geometry3D::compute_convex_mesh_points(planes_vec.ptr(), size);
@@ -1624,9 +1653,11 @@ TypedArray<Dictionary> ClassDB::class_get_signal_list(const StringName &p_class,
 	List<MethodInfo> signals;
 	::ClassDB::get_signal_list(p_class, &signals, p_no_inheritance);
 	TypedArray<Dictionary> ret;
+	ret.resize(signals.size());
+	int idx = 0;
 
 	for (const MethodInfo &E : signals) {
-		ret.push_back(E.operator Dictionary());
+		ret.set(idx++, E.operator Dictionary());
 	}
 
 	return ret;
@@ -1636,8 +1667,11 @@ TypedArray<Dictionary> ClassDB::class_get_property_list(const StringName &p_clas
 	List<PropertyInfo> plist;
 	::ClassDB::get_property_list(p_class, &plist, p_no_inheritance);
 	TypedArray<Dictionary> ret;
+	ret.resize(plist.size());
+	int idx = 0;
+
 	for (const PropertyInfo &E : plist) {
-		ret.push_back(E.operator Dictionary());
+		ret.set(idx++, E.operator Dictionary());
 	}
 
 	return ret;
@@ -1689,14 +1723,16 @@ TypedArray<Dictionary> ClassDB::class_get_method_list(const StringName &p_class,
 	List<MethodInfo> methods;
 	::ClassDB::get_method_list(p_class, &methods, p_no_inheritance);
 	TypedArray<Dictionary> ret;
+	ret.resize(methods.size());
+	int idx = 0;
 
 	for (const MethodInfo &E : methods) {
 #ifdef DEBUG_ENABLED
-		ret.push_back(E.operator Dictionary());
+		ret.set(idx++, E.operator Dictionary());
 #else
 		Dictionary dict;
 		dict["name"] = E.name;
-		ret.push_back(dict);
+		ret.set(idx++, dict);
 #endif // DEBUG_ENABLED
 	}
 
@@ -1997,8 +2033,11 @@ Vector<String> Engine::get_singleton_list() const {
 	List<::Engine::Singleton> singletons;
 	::Engine::get_singleton()->get_singletons(&singletons);
 	Vector<String> ret;
+	ret.resize(singletons.size());
+	int idx = 0;
+
 	for (const ::Engine::Singleton &E : singletons) {
-		ret.push_back(E.name);
+		ret.set(idx++, E.name);
 	}
 	return ret;
 }

@@ -149,8 +149,10 @@ PackedStringArray IP::resolve_hostname_addresses(const String &p_hostname, Type 
 	}
 
 	PackedStringArray result;
+	result.resize(res.size());
+	int idx = 0;
 	for (const IPAddress &E : res) {
-		result.push_back(String(E));
+		result.set(idx++, String(E));
 	}
 	return result;
 }
@@ -255,11 +257,13 @@ void IP::clear_cache(const String &p_hostname) {
 }
 
 PackedStringArray IP::_get_local_addresses() const {
-	PackedStringArray addresses;
 	List<IPAddress> ip_addresses;
 	get_local_addresses(&ip_addresses);
+	PackedStringArray addresses;
+	addresses.resize(ip_addresses.size());
+	int idx = 0;
 	for (const IPAddress &E : ip_addresses) {
-		addresses.push_back(String(E));
+		addresses.set(idx++, String(E));
 	}
 
 	return addresses;

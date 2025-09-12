@@ -41,10 +41,11 @@ void Shortcut::set_events(const Array &p_events) {
 }
 
 void Shortcut::set_events_list(const List<Ref<InputEvent>> *p_events) {
-	events.clear();
+	events.resize(p_events->size());
+	int idx = 0;
 
 	for (const Ref<InputEvent> &ie : *p_events) {
-		events.push_back(ie);
+		events.set(idx++, ie);
 	}
 }
 

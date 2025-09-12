@@ -1543,8 +1543,10 @@ Vector<String> ResourceLoader::list_directory(const String &p_directory) {
 	}
 
 	Vector<String> ret;
+	ret.resize(files_found.size());
+	int idx = 0;
 	for (const String &f : files_found) {
-		ret.push_back(f);
+		ret.set(idx++, f);
 	}
 
 	return ret;
