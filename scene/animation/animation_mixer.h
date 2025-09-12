@@ -76,7 +76,7 @@ public:
 	};
 
 	struct AnimationData {
-		String name;
+		StringName name;
 		Ref<Animation> animation;
 		StringName animation_library;
 		uint64_t last_update = 0;
@@ -91,7 +91,7 @@ public:
 		bool is_external_seeking = false;
 		Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
 		real_t weight = 0.0;
-		Vector<real_t> track_weights;
+		LocalVector<real_t> *track_weights = nullptr;
 	};
 
 	struct AnimationInstance {
@@ -106,12 +106,12 @@ protected:
 
 	TypedArray<StringName> _get_animation_library_list() const;
 	Vector<String> _get_animation_list() const {
-		List<StringName> animations;
+		LocalVector<StringName> animations;
 		get_animation_list(&animations);
 		Vector<String> ret;
-		while (animations.size()) {
-			ret.push_back(animations.front()->get());
-			animations.pop_front();
+		ret.resize(animations.size());
+		for (StringName &E : animations) {
+			ret.push_back(E);
 		}
 		return ret;
 	}
@@ -400,17 +400,18 @@ public:
 	/* ---- Data lists ---- */
 	Dictionary *get_animation_libraries();
 
-	void get_animation_library_list(List<StringName> *p_animations) const;
+	void get_animation_library_list(LocalVector<StringName> *p_animations) const;
 	Ref<AnimationLibrary> get_animation_library(const StringName &p_name) const;
 	bool has_animation_library(const StringName &p_name) const;
 	StringName get_animation_library_name(const Ref<AnimationLibrary> &p_animation_library) const;
-	StringName find_animation_library(const Ref<Animation> &p_animation) const;
+	const StringName &find_animation_library(const Ref<Animation> &p_animation) const;
 	Error add_animation_library(const StringName &p_name, const Ref<AnimationLibrary> &p_animation_library);
 	void remove_animation_library(const StringName &p_name);
 	void rename_animation_library(const StringName &p_name, const StringName &p_new_name);
 
-	void get_animation_list(List<StringName> *p_animations) const;
-	Ref<Animation> get_animation(const StringName &p_name) const;
+	void get_animation_list(LocalVector<StringName> *p_animations, const bool p_sorted = true) const;
+	const Ref<Animation> &get_animation(const StringName &p_name) const;
+	const Ref<Animation> &get_animation_or_null(const StringName &p_name) const;
 	bool has_animation(const StringName &p_name) const;
 	StringName find_animation(const Ref<Animation> &p_animation) const;
 
@@ -453,7 +454,7 @@ public:
 	Vector3 get_root_motion_scale_accumulator() const;
 
 	/* ---- Blending processor ---- */
-	void make_animation_instance(const StringName &p_name, const PlaybackInfo p_playback_info);
+	void make_animation_instance(const StringName &p_name, const PlaybackInfo &p_playback_info);
 	void clear_animation_instances();
 	virtual void advance(double p_time);
 	virtual void clear_caches(); // Must be called by hand if an animation was modified after added.
@@ -490,7 +491,7 @@ class AnimatedValuesBackup : public RefCounted {
 	AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher> data;
 
 public:
-	void set_data(const AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher> p_data);
+	void set_data(const AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher> &p_data);
 	AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher> get_data() const;
 	void clear_data();
 

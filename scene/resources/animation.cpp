@@ -2765,7 +2765,7 @@ Animation::UpdateMode Animation::value_track_get_update_mode(int p_track) const 
 }
 
 template <typename T>
-void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices, bool p_is_backward) const {
+void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, LocalVector<int> *p_indices, bool p_is_backward) const {
 	int len = p_array.size();
 	if (len == 0) {
 		return;
@@ -2818,7 +2818,7 @@ void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, double
 	}
 }
 
-void Animation::track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices, Animation::LoopedFlag p_looped_flag) const {
+void Animation::track_get_key_indices_in_range(int p_track, double p_time, double p_delta, LocalVector<int> *p_indices, Animation::LoopedFlag p_looped_flag) const {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 
 	if (p_delta == 0) {
@@ -3850,10 +3850,6 @@ void Animation::set_length(real_t p_length) {
 	}
 	length = p_length;
 	emit_changed();
-}
-
-real_t Animation::get_length() const {
-	return length;
 }
 
 void Animation::set_loop_mode(Animation::LoopMode p_loop_mode) {
@@ -5483,7 +5479,7 @@ bool Animation::_fetch_compressed(uint32_t p_compressed_track, double p_time, Ve
 }
 
 template <uint32_t COMPONENTS>
-void Animation::_get_compressed_key_indices_in_range(uint32_t p_compressed_track, double p_time, double p_delta, List<int> *r_indices) const {
+void Animation::_get_compressed_key_indices_in_range(uint32_t p_compressed_track, double p_time, double p_delta, LocalVector<int> *r_indices) const {
 	ERR_FAIL_COND(!compression.enabled);
 	ERR_FAIL_UNSIGNED_INDEX(p_compressed_track, compression.bounds.size());
 
