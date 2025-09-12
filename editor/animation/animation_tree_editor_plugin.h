@@ -68,6 +68,10 @@ class AnimationTreeEditor : public VBoxContainer {
 
 	static Vector<String> get_animation_list();
 
+private:
+	// Visual shader specific theme for using MSDF fonts (on AnimationTreeEditor) which reduce aliasing at higher zoom levels.
+	Ref<Theme> vs_msdf_fonts_theme;
+
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
@@ -89,6 +93,9 @@ public:
 	void enter_editor(const String &p_path = "");
 	static AnimationTreeEditor *get_singleton() { return singleton; }
 	void edit(AnimationTree *p_tree);
+
+	void update_theme();
+
 	AnimationTreeEditor();
 };
 

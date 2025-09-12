@@ -35,9 +35,11 @@
 #include "animation_blend_tree_editor_plugin.h"
 #include "animation_state_machine_editor.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
@@ -271,10 +273,27 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	editor_base->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(editor_base);
 
+	vs_msdf_fonts_theme.instantiate();
+	update_theme();
+	set_theme(vs_msdf_fonts_theme);
+
 	add_plugin(memnew(AnimationNodeBlendTreeEditor));
 	add_plugin(memnew(AnimationNodeBlendSpace1DEditor));
 	add_plugin(memnew(AnimationNodeBlendSpace2DEditor));
 	add_plugin(memnew(AnimationNodeStateMachineEditor));
+}
+
+void AnimationTreeEditor::update_theme() {
+	Ref<Font> label_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_msdf", EditorStringName(EditorFonts));
+	Ref<Font> label_bold_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_bold_msdf", EditorStringName(EditorFonts));
+	vs_msdf_fonts_theme->set_font(SceneStringName(font), "Label", label_font);
+	vs_msdf_fonts_theme->set_font(SceneStringName(font), "GraphNodeTitleLabel", label_bold_font);
+	if (!EditorThemeManager::is_dark_theme()) {
+		// Override the color to white for light themes.
+		vs_msdf_fonts_theme->set_color(SceneStringName(font_color), "GraphNodeTitleLabel", Color(1, 1, 1));
+	}
+	vs_msdf_fonts_theme->set_font(SceneStringName(font), "LineEdit", label_font);
+	vs_msdf_fonts_theme->set_font(SceneStringName(font), "Button", label_font);
 }
 
 void AnimationTreeEditorPlugin::edit(Object *p_object) {
