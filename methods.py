@@ -722,8 +722,6 @@ def get_compiler_version(env):
                 "-prerelease",
                 "-products",
                 "*",
-                "-requires",
-                "Microsoft.Component.MSBuild",
                 "-utf8",
             ]
             version = subprocess.check_output(args, encoding="utf-8").strip()
