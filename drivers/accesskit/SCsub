@@ -13,4 +13,4 @@ if env["accesskit_sdk_path"] == "":
         env.add_source_files(env.drivers_sources, "dynwrappers/accesskit-dylib_wrap.c")
     if env["platform"] == "linuxbsd":
         env.add_source_files(env.drivers_sources, "dynwrappers/accesskit-so_wrap.c")
-    env.Prepend(CPPPATH=["#thirdparty/accesskit/include"])
+    env.Prepend(CPPEXTPATH=["#thirdparty/accesskit/include"])
