@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  dummy.swift                                                           */
+/*  app.swift                                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,4 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-import Foundation
+import SwiftUI
+import UIKit
+
+struct GodotSwiftUIViewController: UIViewControllerRepresentable {
+
+	func makeUIViewController(context: Context) -> GDTViewController {
+		let viewController = GDTViewController()
+		GDTAppDelegateService.viewController = viewController
+		return viewController
+	}
+
+	func updateUIViewController(_ uiViewController: GDTViewController, context: Context) {
+		// NOOP
+	}
+
+}
+
+@main
+struct SwiftUIApp: App {
+	@UIApplicationDelegateAdaptor(GDTApplicationDelegate.self) var appDelegate
+
+	var body: some Scene {
+		WindowGroup {
+			GodotSwiftUIViewController()
+				.ignoresSafeArea()
+		}
+	}
+}
