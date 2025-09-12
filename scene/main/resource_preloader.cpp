@@ -54,15 +54,17 @@ Array ResourcePreloader::_get_resources() const {
 	arr.resize(resources.size());
 	names.resize(resources.size());
 
-	RBSet<String> sorted_names;
-
+	String *ptrw = names.ptrw();
+	int i = 0;
 	for (const KeyValue<StringName, Ref<Resource>> &E : resources) {
-		sorted_names.insert(E.key);
+		ptrw[i] = E.key;
+		i++;
 	}
 
-	int i = 0;
-	for (const String &E : sorted_names) {
-		names.set(i, E);
+	names.sort();
+
+	i = 0;
+	for (const String &E : names) {
 		arr[i] = resources[E];
 		i++;
 	}
