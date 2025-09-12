@@ -152,6 +152,7 @@
 			<param index="3" name="duration" type="float" />
 			<param index="4" name="trans_type" type="int" enum="Tween.TransitionType" />
 			<param index="5" name="ease_type" type="int" enum="Tween.EaseType" />
+			<param index="6" name="curve" type="Curve" default="null" />
 			<description>
 				This method can be used for manual interpolation of a value, when you don't want [Tween] to do animating for you. It's similar to [method @GlobalScope.lerp], but with support for custom transition and easing.
 				[param initial_value] is the starting value of the interpolation.
@@ -212,6 +213,24 @@
 			<return type="void" />
 			<description>
 				Resumes a paused or stopped [Tween].
+			</description>
+		</method>
+		<method name="set_curve">
+			<return type="Tween" />
+			<param index="0" name="curve" type="Curve" />
+			<description>
+				Sets the default curve for [PropertyTweener]s and [MethodTweener]s appended after this method.
+				Before this method is called, the default curve is [code]null[/code].
+				Setting the curve will made the tween ignore the transition type and the ease type.
+				[codeblock]
+				var curve = Curve.new()
+				var tween = create_tween()
+				tween.tween_property(self, "position", Vector2(300, 0), 0.5) # Uses transition type and ease type.
+				tween.set_curve(curve)
+				tween.tween_property(self, "rotation_degrees", 45.0, 0.5) # Uses curve.
+				tween.set_curve(null)
+				tween.tween_property(self, "scale", Vector2(0.5, 0.5), 0.5) # Uses transition type and ease type.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_ease">
@@ -397,7 +416,7 @@
 			<param index="2" name="to" type="Variant" />
 			<param index="3" name="duration" type="float" />
 			<description>
-				Creates and appends a [MethodTweener]. This method is similar to a combination of [method tween_callback] and [method tween_property]. It calls a method over time with a tweened value provided as an argument. The value is tweened between [param from] and [param to] over the time specified by [param duration], in seconds. Use [method Callable.bind] to bind additional arguments for the call. You can use [method MethodTweener.set_ease] and [method MethodTweener.set_trans] to tweak the easing and transition of the value or [method MethodTweener.set_delay] to delay the tweening.
+				Creates and appends a [MethodTweener]. This method is similar to a combination of [method tween_callback] and [method tween_property]. It calls a method over time with a tweened value provided as an argument. The value is tweened between [param from] and [param to] over the time specified by [param duration], in seconds. Use [method Callable.bind] to bind additional arguments for the call. You can use [method MethodTweener.set_ease] and [method MethodTweener.set_trans] or [method MethodTweener.set_curve] to tweak the easing and transition of the value or [method MethodTweener.set_delay] to delay the tweening.
 				[b]Example:[/b] Making a 3D object look from one point to another point:
 				[codeblocks]
 				[gdscript]
