@@ -40,7 +40,11 @@
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	if (!read_only && grabber->is_visible()) {
 		Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
-		return TS->format_number(rtos(get_value())) + "\n\n" + vformat(TTR("Hold %s to round to integers.\nHold Shift for more precise changes."), find_keycode_name(key));
+		String tooltip = TS->format_number(rtos(get_value()));
+		if (!editing_integer) {
+			tooltip += "\n\n" + vformat(TTR("Hold %s to round to integers."), find_keycode_name(key));
+		}
+		return tooltip + "\nHold Shift for more precise changes.";
 	}
 	return TS->format_number(rtos(get_value()));
 }
@@ -109,7 +113,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 					pre_grab_value = get_max();
 				}
 
-				if (mm->is_command_or_control_pressed()) {
+				if (mm->is_command_or_control_pressed() && !editing_integer) {
 					// If control was just pressed, don't make the value do a huge jump in magnitude.
 					if (grabbing_spinner_dist_cache != 0) {
 						pre_grab_value += grabbing_spinner_dist_cache * get_step();
@@ -158,6 +162,7 @@ void EditorSpinSlider::_grab_end() {
 		if (grabbing_spinner) {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 			Input::get_singleton()->warp_mouse(grabbing_spinner_mouse_pos);
+			mouse_over_grabber = true;
 			queue_redraw();
 			grabbing_spinner = false;
 			emit_signal("ungrabbed");
@@ -207,7 +212,12 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 			grab_focus();
 			emit_signal("grabbed");
 		} else {
-			grabbing_grabber = false;
+			if (grabbing_grabber) {
+				grabbing_grabber = false;
+				if (!mouse_over_grabber) {
+					queue_redraw();
+				}
+			}
 			mousewheel_over_grabber = false;
 			emit_signal("ungrabbed");
 		}
@@ -377,75 +387,77 @@ void EditorSpinSlider::_draw_spin_slider() {
 	}
 	TS->free_rid(num_rid);
 
-	if (!hide_slider) {
-		if (editing_integer) {
-			Ref<Texture2D> updown2 = read_only ? theme_cache.updown_disabled_icon : theme_cache.updown_icon;
-			int updown_vofs = (size.height - updown2->get_height()) / 2;
-			if (rtl) {
-				updown_offset = sb->get_margin(SIDE_LEFT);
-			} else {
-				updown_offset = size.width - sb->get_margin(SIDE_RIGHT) - updown2->get_width();
-			}
-			Color c(1, 1, 1);
-			if (hover_updown) {
-				c *= Color(1.2, 1.2, 1.2);
-			}
-			draw_texture(updown2, Vector2(updown_offset, updown_vofs), c);
-			if (rtl) {
-				updown_offset += updown2->get_width();
-			}
-			if (grabber->is_visible()) {
-				grabber->hide();
-			}
+	if (hide_slider) {
+		return;
+	}
+
+	if (editing_integer && get_max() == get_min()) {
+		Ref<Texture2D> updown2 = read_only ? theme_cache.updown_disabled_icon : theme_cache.updown_icon;
+		int updown_vofs = (size.height - updown2->get_height()) / 2;
+		if (rtl) {
+			updown_offset = sb->get_margin(SIDE_LEFT);
 		} else {
-			const int grabber_w = 4 * EDSCALE;
-			const int width = size.width - sb->get_minimum_size().width - grabber_w;
-			const int ofs = sb->get_offset().x;
-			const int svofs = (size.height + vofs) / 2 - 1;
-			Color c = fc;
+			updown_offset = size.width - sb->get_margin(SIDE_RIGHT) - updown2->get_width();
+		}
+		Color c(1, 1, 1);
+		if (hover_updown) {
+			c *= Color(1.2, 1.2, 1.2);
+		}
+		draw_texture(updown2, Vector2(updown_offset, updown_vofs), c);
+		if (rtl) {
+			updown_offset += updown2->get_width();
+		}
+		if (grabber->is_visible()) {
+			grabber->hide();
+		}
+	} else {
+		const int grabber_w = 4 * EDSCALE;
+		const int width = size.width - sb->get_minimum_size().width - grabber_w;
+		const int ofs = sb->get_offset().x;
+		const int svofs = (size.height + vofs) / 2 - 1;
+		Color c = fc;
 
-			// Draw the horizontal slider's background.
-			c.a = 0.2;
-			draw_rect(Rect2(ofs, svofs + 1, width, 2 * EDSCALE), c);
+		// Draw the horizontal slider's background.
+		c.a = 0.2;
+		draw_rect(Rect2(ofs, svofs + 1, width, 2 * EDSCALE), c);
 
-			// Draw the horizontal slider's filled part on the left.
-			const int gofs = get_as_ratio() * width;
-			c.a = 0.45;
-			draw_rect(Rect2(ofs, svofs + 1, gofs, 2 * EDSCALE), c);
+		// Draw the horizontal slider's filled part on the left.
+		const int gofs = get_as_ratio() * width;
+		c.a = 0.45;
+		draw_rect(Rect2(ofs, svofs + 1, gofs, 2 * EDSCALE), c);
 
-			// Draw the horizontal slider's grabber.
-			c.a = 0.9;
-			const Rect2 grabber_rect = Rect2(ofs + gofs, svofs, grabber_w, 4 * EDSCALE);
-			draw_rect(grabber_rect, c);
+		// Draw the horizontal slider's grabber.
+		c.a = 0.9;
+		const Rect2 grabber_rect = Rect2(ofs + gofs, svofs, grabber_w, 4 * EDSCALE);
+		draw_rect(grabber_rect, c);
 
-			grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
+		grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
 
-			bool display_grabber = !read_only && (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
-			if (grabber->is_visible() != display_grabber) {
-				grabber->set_visible(display_grabber);
+		bool display_grabber = !read_only && (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
+		if (grabber->is_visible() != display_grabber) {
+			grabber->set_visible(display_grabber);
+		}
+
+		if (display_grabber) {
+			Ref<Texture2D> grabber_tex;
+			if (mouse_over_grabber || grabbing_grabber) {
+				grabber_tex = get_theme_icon(SNAME("grabber_highlight"), SNAME("HSlider"));
+			} else {
+				grabber_tex = get_theme_icon(SNAME("grabber"), SNAME("HSlider"));
 			}
 
-			if (display_grabber) {
-				Ref<Texture2D> grabber_tex;
-				if (mouse_over_grabber) {
-					grabber_tex = get_theme_icon(SNAME("grabber_highlight"), SNAME("HSlider"));
-				} else {
-					grabber_tex = get_theme_icon(SNAME("grabber"), SNAME("HSlider"));
-				}
-
-				if (grabber->get_texture() != grabber_tex) {
-					grabber->set_texture(grabber_tex);
-				}
-
-				grabber->reset_size();
-				grabber->set_position(grabber_rect.get_center() - grabber->get_size() * 0.5);
-
-				if (mousewheel_over_grabber) {
-					Input::get_singleton()->warp_mouse(grabber->get_global_position() + grabber_rect.size);
-				}
-
-				grabber_range = width;
+			if (grabber->get_texture() != grabber_tex) {
+				grabber->set_texture(grabber_tex);
 			}
+
+			grabber->reset_size();
+			grabber->set_position(grabber_rect.get_center() - grabber->get_size() * 0.5);
+
+			if (mousewheel_over_grabber) {
+				Input::get_singleton()->warp_mouse(grabber->get_global_position() + grabber_rect.size);
+			}
+
+			grabber_range = width;
 		}
 	}
 }
@@ -453,7 +465,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 void EditorSpinSlider::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			grabbing_spinner_speed = EDITOR_GET("interface/inspector/float_drag_speed");
+			grabbing_spinner_speed = editing_integer ? EDITOR_GET("interface/inspector/integer_drag_speed") : EDITOR_GET("interface/inspector/float_drag_speed");
 			_update_value_input_stylebox();
 		} break;
 
@@ -538,6 +550,7 @@ void EditorSpinSlider::set_editing_integer(bool p_editing_integer) {
 	}
 
 	editing_integer = p_editing_integer;
+	grabbing_spinner_speed = editing_integer ? EDITOR_GET("interface/inspector/integer_drag_speed") : EDITOR_GET("interface/inspector/float_drag_speed");
 	queue_redraw();
 }
 
