@@ -35,6 +35,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/texture_button.h"
 
 const String EditorPropertyVectorN::COMPONENT_LABELS[4] = { "x", "y", "z", "w" };
@@ -42,6 +43,9 @@ const String EditorPropertyVectorN::COMPONENT_LABELS[4] = { "x", "y", "z", "w" }
 void EditorPropertyVectorN::_set_read_only(bool p_read_only) {
 	for (EditorSpinSlider *spin : spin_sliders) {
 		spin->set_read_only(p_read_only);
+	}
+	if (swap_button) {
+		swap_button->set_visible(!p_read_only);
 	}
 }
 
@@ -79,7 +83,26 @@ void EditorPropertyVectorN::_value_changed(double val, const String &p_name) {
 			v.set(i, spin_sliders[i]->get_value());
 		}
 	}
+
+	_set_swap_visible(true);
 	emit_changed(get_edited_property(), v, linked->is_pressed() ? "" : p_name);
+}
+
+void EditorPropertyVectorN::_swap_value() {
+	double value = spin_sliders[0]->get_value();
+	spin_sliders[0]->set_value_no_signal(spin_sliders[1]->get_value());
+	spin_sliders[1]->set_value_no_signal(value);
+	_update_ratio();
+	// Emit change for both spin sliders.
+	_value_changed(spin_sliders[0]->get_value(), COMPONENT_LABELS[0]);
+	_value_changed(spin_sliders[1]->get_value(), COMPONENT_LABELS[1]);
+}
+
+void EditorPropertyVectorN::_set_swap_visible(bool p_visible) {
+	if (swap_button) {
+		bool is_equal = spin_sliders[0]->get_value() == spin_sliders[1]->get_value();
+		swap_button->set_visible(!is_equal && p_visible);
+	}
 }
 
 void EditorPropertyVectorN::update_property() {
@@ -136,6 +159,7 @@ void EditorPropertyVectorN::_notification(int p_what) {
 					_update_ratio();
 				}
 			}
+			_set_swap_visible(true);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -148,6 +172,14 @@ void EditorPropertyVectorN::_notification(int p_what) {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < component_count; i++) {
 				spin_sliders[i]->add_theme_color_override("label_color", colors[i]);
+			}
+
+			if (swap_button) {
+				if (horizontal) {
+					swap_button->set_button_icon(get_editor_theme_icon(SNAME("HSwap")));
+				} else {
+					swap_button->set_button_icon(get_editor_theme_icon(SNAME("VSwap")));
+				}
 			}
 		} break;
 	}
@@ -178,6 +210,11 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 		case Variant::VECTOR2:
 		case Variant::VECTOR2I:
 			component_count = 2;
+			swap_button = memnew(Button);
+			swap_button->set_tooltip_text(TTRC("Swap the values."));
+			swap_button->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+			swap_button->set_theme_type_variation(SceneStringName(FlatButton));
+			swap_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyVectorN::_swap_value));
 			break;
 
 		case Variant::VECTOR3:
@@ -194,25 +231,33 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 			ERR_PRINT("Not a Vector type.");
 			break;
 	}
-	bool horizontal = p_force_wide || p_horizontal;
+	horizontal = p_force_wide || p_horizontal;
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	BoxContainer *bc;
+	BoxContainer *value_bc;
 
 	if (p_force_wide) {
 		bc = memnew(HBoxContainer);
-		hb->add_child(bc);
+		value_bc = memnew(VBoxContainer);
+		value_bc->add_child(bc);
+		hb->add_child(value_bc);
 	} else if (horizontal) {
 		bc = memnew(HBoxContainer);
-		hb->add_child(bc);
+		value_bc = memnew(VBoxContainer);
+		value_bc->add_child(bc);
+		hb->add_child(value_bc);
 		set_bottom_editor(hb);
 	} else {
 		bc = memnew(VBoxContainer);
-		hb->add_child(bc);
+		value_bc = memnew(HBoxContainer);
+		value_bc->add_child(bc);
+		hb->add_child(value_bc);
 	}
 	bc->set_h_size_flags(SIZE_EXPAND_FILL);
+	value_bc->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	spin_sliders.resize(component_count);
 	EditorSpinSlider **spin = spin_sliders.ptrw();
@@ -247,6 +292,11 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 	if (!horizontal) {
 		set_label_reference(spin_sliders[0]); // Show text and buttons around this.
 	}
+
+	if (component_count == 2) {
+		value_bc->add_child(swap_button);
+	}
+
 }
 
 EditorPropertyVector2::EditorPropertyVector2(bool p_force_wide) :
