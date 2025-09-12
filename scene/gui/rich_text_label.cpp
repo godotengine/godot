@@ -5877,7 +5877,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					} else if (subtag[1] == "bottom" || subtag[1] == "b") {
 						alignment |= INLINE_ALIGNMENT_TO_BOTTOM;
 					}
-				} else if (subtag.size() > 0) {
+				} else if (!subtag.is_empty()) {
 					if (subtag[0] == "top" || subtag[0] == "t") {
 						alignment = INLINE_ALIGNMENT_TOP;
 					} else if (subtag[0] == "center" || subtag[0] == "c") {
@@ -5958,7 +5958,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 							} else if (subtag[1] == "bottom" || subtag[1] == "b") {
 								alignment |= INLINE_ALIGNMENT_TO_BOTTOM;
 							}
-						} else if (subtag.size() > 0) {
+						} else if (!subtag.is_empty()) {
 							if (subtag[0] == "top" || subtag[0] == "t") {
 								alignment = INLINE_ALIGNMENT_TOP;
 							} else if (subtag[0] == "center" || subtag[0] == "c") {
@@ -6026,18 +6026,18 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			Vector<String> subtag = fnt_ftr.split(",");
 			_normalize_subtags(subtag);
 
-			if (subtag.size() > 0) {
-				Ref<Font> font = theme_cache.normal_font;
-				DefaultFont def_font = RTL_NORMAL_FONT;
+			Ref<Font> font = theme_cache.normal_font;
+			DefaultFont def_font = RTL_NORMAL_FONT;
 
-				ItemFont *font_it = _find_font(current);
-				if (font_it) {
-					if (font_it->font.is_valid()) {
-						font = font_it->font;
-						def_font = font_it->def_font;
-					}
+			ItemFont *font_it = _find_font(current);
+			if (font_it) {
+				if (font_it->font.is_valid()) {
+					font = font_it->font;
+					def_font = font_it->def_font;
 				}
-				Dictionary features;
+			}
+			Dictionary features;
+			if (!subtag.is_empty()) {
 				for (int i = 0; i < subtag.size(); i++) {
 					Vector<String> subtag_a = subtag[i].split("=");
 					_normalize_subtags(subtag_a);
@@ -6048,19 +6048,19 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 						features[TS->name_to_tag(subtag_a[0])] = 1;
 					}
 				}
-
-				Ref<FontVariation> fc;
-				fc.instantiate();
-
-				fc->set_base_font(font);
-				fc->set_opentype_features(features);
-
-				if (def_font != RTL_CUSTOM_FONT) {
-					_push_def_font_var(def_font, fc);
-				} else {
-					push_font(fc);
-				}
 			}
+			Ref<FontVariation> fc;
+			fc.instantiate();
+
+			fc->set_base_font(font);
+			fc->set_opentype_features(features);
+
+			if (def_font != RTL_CUSTOM_FONT) {
+				_push_def_font_var(def_font, fc);
+			} else {
+				push_font(fc);
+			}
+
 			pos = brk_end + 1;
 			tag_stack.push_front(tag.substr(0, value_pos));
 
@@ -6070,6 +6070,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			Ref<Font> fc = ResourceLoader::load(fnt, "Font");
 			if (fc.is_valid()) {
 				push_font(fc);
+			} else {
+				push_font(theme_cache.normal_font);
 			}
 
 			pos = brk_end + 1;
@@ -6220,9 +6222,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 		} else if (tag.begins_with("outline_size=")) {
 			int fnt_size = _get_tag_value(tag).to_int();
-			if (fnt_size > 0) {
-				push_outline_size(fnt_size);
-			}
+			push_outline_size(MAX(0, fnt_size));
 			pos = brk_end + 1;
 			tag_stack.push_front("outline_size");
 
