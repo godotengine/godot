@@ -27,7 +27,7 @@ def get_opts():
         ("vulkan_sdk_path", "Path to the Vulkan SDK", ""),
         # APPLE_TOOLCHAIN_PATH Example: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain
         (("APPLE_TOOLCHAIN_PATH", "IOS_TOOLCHAIN_PATH"), "Path to the Apple toolchain", ""),
-        ("IOS_SDK_PATH", "Path to the iOS SDK", ""),
+        (("APPLE_SDK_PATH", "IOS_SDK_PATH"), "Path to the iOS SDK", ""),
         (("apple_target_triple", "ios_triple"), "Triple for the corresponding target Apple platform toolchain", ""),
         BoolVariable(("simulator", "ios_simulator"), "Build for Simulator", False),
         BoolVariable("generate_bundle", "Generate an APP bundle after building iOS/macOS binaries", False),
@@ -101,15 +101,16 @@ def configure(env: "SConsEnvironment"):
     ## Compile flags
 
     if env["simulator"]:
-        detect_darwin_sdk_path("iossimulator", env)
-        env.Append(ASFLAGS=["-mios-simulator-version-min=12.0"])
-        env.Append(CCFLAGS=["-mios-simulator-version-min=12.0"])
+        env["APPLE_PLATFORM"] = "iossimulator"
+        env.Append(ASFLAGS=["-mios-simulator-version-min=14.0"])
+        env.Append(CCFLAGS=["-mios-simulator-version-min=14.0"])
         env.Append(CPPDEFINES=["IOS_SIMULATOR"])
         env.extra_suffix = ".simulator" + env.extra_suffix
     else:
-        detect_darwin_sdk_path("ios", env)
-        env.Append(ASFLAGS=["-miphoneos-version-min=12.0"])
-        env.Append(CCFLAGS=["-miphoneos-version-min=12.0"])
+        env["APPLE_PLATFORM"] = "ios"
+        env.Append(ASFLAGS=["-miphoneos-version-min=14.0"])
+        env.Append(CCFLAGS=["-miphoneos-version-min=14.0"])
+    detect_darwin_sdk_path(env["APPLE_PLATFORM"], env)
 
     if env["arch"] == "x86_64":
         if not env["simulator"]:
@@ -121,7 +122,7 @@ def configure(env: "SConsEnvironment"):
             CCFLAGS=(
                 "-fobjc-arc -arch x86_64"
                 " -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks"
-                " -fasm-blocks -isysroot $IOS_SDK_PATH"
+                " -fasm-blocks -isysroot $APPLE_SDK_PATH"
             ).split()
         )
         env.Append(ASFLAGS=["-arch", "x86_64"])
@@ -131,7 +132,7 @@ def configure(env: "SConsEnvironment"):
                 "-fobjc-arc -arch arm64 -fmessage-length=0"
                 " -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits"
                 " -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies"
-                " -isysroot $IOS_SDK_PATH".split()
+                " -isysroot $APPLE_SDK_PATH".split()
             )
         )
         env.Append(ASFLAGS=["-arch", "arm64"])
@@ -141,8 +142,8 @@ def configure(env: "SConsEnvironment"):
 
     env.Prepend(
         CPPPATH=[
-            "$IOS_SDK_PATH/usr/include",
-            "$IOS_SDK_PATH/System/Library/Frameworks/AudioUnit.framework/Headers",
+            "$APPLE_SDK_PATH/usr/include",
+            "$APPLE_SDK_PATH/System/Library/Frameworks/AudioUnit.framework/Headers",
         ]
     )
 
@@ -157,9 +158,9 @@ def configure(env: "SConsEnvironment"):
         env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
         env.Prepend(
             CPPPATH=[
-                "$IOS_SDK_PATH/System/Library/Frameworks/Metal.framework/Headers",
-                "$IOS_SDK_PATH/System/Library/Frameworks/MetalFX.framework/Headers",
-                "$IOS_SDK_PATH/System/Library/Frameworks/QuartzCore.framework/Headers",
+                "$APPLE_SDK_PATH/System/Library/Frameworks/Metal.framework/Headers",
+                "$APPLE_SDK_PATH/System/Library/Frameworks/MetalFX.framework/Headers",
+                "$APPLE_SDK_PATH/System/Library/Frameworks/QuartzCore.framework/Headers",
             ]
         )
         env.Prepend(CPPEXTPATH=["#thirdparty/spirv-cross"])
@@ -176,6 +177,6 @@ def configure(env: "SConsEnvironment"):
         env.Append(CCFLAGS=["-Wno-module-import-in-extern-c"])
         env.Prepend(
             CPPPATH=[
-                "$IOS_SDK_PATH/System/Library/Frameworks/OpenGLES.framework/Headers",
+                "$APPLE_SDK_PATH/System/Library/Frameworks/OpenGLES.framework/Headers",
             ]
         )
