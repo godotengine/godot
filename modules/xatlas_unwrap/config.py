@@ -1,5 +1,5 @@
 def can_build(env, platform):
-    return env.editor_build
+    return not env["disable_3d"] and env.editor_build
 
 
 def configure(env):
