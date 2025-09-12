@@ -36,15 +36,6 @@
 #include "core/os/os.h"
 #include "core/string/locales.h"
 
-Vector<TranslationServer::LocaleScriptInfo> TranslationServer::locale_script_info;
-
-HashMap<String, String> TranslationServer::language_map;
-HashMap<String, String> TranslationServer::script_map;
-HashMap<String, String> TranslationServer::locale_rename_map;
-HashMap<String, String> TranslationServer::country_name_map;
-HashMap<String, String> TranslationServer::variant_map;
-HashMap<String, String> TranslationServer::country_rename_map;
-
 void TranslationServer::init_locale_info() {
 	// Init locale info.
 	language_map.clear();
@@ -110,6 +101,18 @@ void TranslationServer::init_locale_info() {
 	while (country_renames[idx][0] != nullptr) {
 		if (!String(country_renames[idx][1]).is_empty()) {
 			country_rename_map[country_renames[idx][0]] = country_renames[idx][1];
+		}
+		idx++;
+	}
+
+	// Init plural rules.
+	plural_rules_map.clear();
+	idx = 0;
+	while (plural_rules[idx][0] != nullptr) {
+		const Vector<String> rule_locs = String(plural_rules[idx][0]).split(" ");
+		const String rule = String(plural_rules[idx][1]);
+		for (const String &l : rule_locs) {
+			plural_rules_map[l] = rule;
 		}
 		idx++;
 	}
@@ -303,6 +306,26 @@ String TranslationServer::get_locale_name(const String &p_locale) const {
 		name = name + ", " + get_country_name(country_name);
 	}
 	return name;
+}
+
+String TranslationServer::get_plural_rules(const String &p_locale) const {
+	const String *rule = plural_rules_map.getptr(p_locale);
+	if (rule) {
+		return *rule;
+	}
+
+	Locale l = Locale(*this, p_locale, false);
+	if (!l.country.is_empty()) {
+		rule = plural_rules_map.getptr(l.language + "_" + l.country);
+		if (rule) {
+			return *rule;
+		}
+	}
+	rule = plural_rules_map.getptr(l.language);
+	if (rule) {
+		return *rule;
+	}
+	return String();
 }
 
 Vector<String> TranslationServer::get_all_languages() const {
@@ -584,6 +607,7 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_country_name", "country"), &TranslationServer::get_country_name);
 
 	ClassDB::bind_method(D_METHOD("get_locale_name", "locale"), &TranslationServer::get_locale_name);
+	ClassDB::bind_method(D_METHOD("get_plural_rules", "locale"), &TranslationServer::get_plural_rules);
 
 	ClassDB::bind_method(D_METHOD("translate", "message", "context"), &TranslationServer::translate, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("translate_plural", "message", "plural_message", "n", "context"), &TranslationServer::translate_plural, DEFVAL(StringName()));
