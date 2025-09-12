@@ -89,6 +89,7 @@ public:
     ~LayerRenderer() = default;
 
     void draw(Node2D *parent_node, const DrawContext & ctx);
+    void clear(Node2D *parent_node);
 };
 
 struct TileAction {
@@ -115,7 +116,7 @@ private:
     HashMap<Ref<Texture2D>, Ref<ImageTexture>> texture_scaled_cache;
     int next_source_id = 1;
 
-    const Vector2i CELL_SIZE = Vector2i(64, 64);
+    Vector2i CELL_SIZE = Vector2i(16, 16);
     int current_layer_index = 0;
     const String UNIQUE_LAYER_PREFIX = "spx_draw_tiles_layer_";
 
@@ -157,6 +158,8 @@ public:
     GdArray get_layer_point_path(GdVec2 p_from, GdVec2 p_to);
 
     void set_layer_index(int index);
+    void set_layer_offset(int index, Vector2 offset);
+    Vector2 get_layer_offset(int index);
     void set_texture(Ref<Texture2D> texture, bool with_collision = true);
     void set_texture_path(const String &texture_path);
 
@@ -171,13 +174,14 @@ public:
     void clear_all_layers();
 
     void enter_editor_mode(){exit_editor = false;}
-    void exit_editor_mode(){exit_editor = true;}
+    void exit_editor_mode();
 
 	void init_path_finder();
 
 	Vector<Vector2> get_point_path(const Vector2 &p_from, const Vector2 &p_to, bool p_allow_partial_path = false);
 	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path = false);
 
+    void set_tile_size(int size = 16);
 private:
     TileMapLayer* _get_or_create_layer(int layer_index);
     TileMapLayer* _get_layer(int layer_index);

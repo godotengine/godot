@@ -193,6 +193,9 @@ static void gdextension_spx_ext_debug_draw_circle(GdVec2 pos,GdFloat radius,GdCo
 static void gdextension_spx_ext_debug_draw_rect(GdVec2 pos,GdVec2 size,GdColor color) {
 	 extMgr->debug_draw_rect(pos, size, color);
 }
+static void gdextension_spx_ext_open_draw_tiles_with_size(GdInt tile_size) {
+	 extMgr->open_draw_tiles_with_size(tile_size);
+}
 static void gdextension_spx_ext_open_draw_tiles() {
 	 extMgr->open_draw_tiles();
 }
@@ -201,6 +204,12 @@ static void gdextension_spx_ext_set_layer_index(GdInt index) {
 }
 static void gdextension_spx_ext_set_tile(GdString texture_path,GdBool with_collision) {
 	 extMgr->set_tile(texture_path, with_collision);
+}
+static void gdextension_spx_ext_set_layer_offset(GdInt index,GdVec2 offset) {
+	 extMgr->set_layer_offset(index, offset);
+}
+static void gdextension_spx_ext_get_layer_offset(GdInt index,GdVec2* ret_val) {
+	*ret_val = extMgr->get_layer_offset(index);
 }
 static void gdextension_spx_ext_place_tiles(GdArray positions) {
 	 extMgr->place_tiles(positions);
@@ -216,6 +225,15 @@ static void gdextension_spx_ext_close_draw_tiles() {
 }
 static void gdextension_spx_ext_get_layer_point_path(GdVec2 p_from,GdVec2 p_to,GdArray* ret_val) {
 	*ret_val = extMgr->get_layer_point_path(p_from, p_to);
+}
+static void gdextension_spx_ext_exit_tilemap_editor_mode() {
+	 extMgr->exit_tilemap_editor_mode();
+}
+static void gdextension_spx_ext_clear_pure_sprites() {
+	 extMgr->clear_pure_sprites();
+}
+static void gdextension_spx_ext_create_pure_sprite(GdString texture_path,GdVec2 pos,GdInt zindex) {
+	 extMgr->create_pure_sprite(texture_path, pos, zindex);
 }
 static void gdextension_spx_input_get_mouse_pos(GdVec2* ret_val) {
 	*ret_val = inputMgr->get_mouse_pos();
@@ -897,14 +915,20 @@ void gdextension_spx_setup_interface() {
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_pen_stamp_texture);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_debug_draw_circle);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_debug_draw_rect);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_open_draw_tiles_with_size);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_open_draw_tiles);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_layer_index);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_tile);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_layer_offset);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_get_layer_offset);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_place_tiles);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_place_tile);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_erase_tile);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_close_draw_tiles);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_get_layer_point_path);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_exit_tilemap_editor_mode);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_clear_pure_sprites);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_create_pure_sprite);
 	REGISTER_SPX_INTERFACE_FUNC(spx_input_get_mouse_pos);
 	REGISTER_SPX_INTERFACE_FUNC(spx_input_get_key);
 	REGISTER_SPX_INTERFACE_FUNC(spx_input_get_mouse_state);

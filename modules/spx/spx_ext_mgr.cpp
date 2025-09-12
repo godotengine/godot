@@ -31,6 +31,7 @@
 #include "spx_ext_mgr.h"
 #include "core/input/input_event.h"
 #include "core/math/color.h"
+#include "gdextension_spx_ext.h"
 #include "scene/2d/line_2d.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/2d/polygon_2d.h"
@@ -62,6 +63,11 @@ void SpxExtMgr::on_awake() {
 	debug_root = memnew(Node2D);
 	debug_root->set_name("debug_root");
 	get_spx_root()->add_child(debug_root);
+
+	pure_sprite_root = memnew(Node2D);
+	pure_sprite_root->set_name("pure_sprite_root");
+	get_spx_root()->add_child(pure_sprite_root);
+	
 }
 
 void SpxExtMgr::on_start() {
@@ -97,6 +103,8 @@ void SpxExtMgr::on_destroy() {
 		debug_root = nullptr;
 	}
 	lock.unlock();
+	clear_pure_sprites();
+	pure_sprite_root = nullptr;
 	SpxBaseMgr::on_destroy();
 }
 
@@ -285,12 +293,31 @@ void SpxExtMgr::debug_draw_rect(GdVec2 pos, GdVec2 size, GdColor color) {
 
 
 void SpxExtMgr::open_draw_tiles() {
+	open_draw_tiles_with_size(16);// default tile_size = 16
+}
+
+void SpxExtMgr::set_layer_offset(GdInt index, GdVec2 offset){
+	if (draw_tiles == nullptr) {
+        print_error("The draw tiles not exist");
+        return;
+    }
+	draw_tiles->set_layer_offset(index, offset);
+
+}
+GdVec2 SpxExtMgr::get_layer_offset(GdInt index){
+	if (draw_tiles == nullptr) {
+        print_error("The draw tiles not exist");
+        return GdVec2();
+    }
+	return draw_tiles->get_layer_offset(index);
+}
+void SpxExtMgr::open_draw_tiles_with_size(GdInt tile_size) {
     if (draw_tiles != nullptr) {
         print_error("The draw tiles node already created");
         return;
     }
-
     draw_tiles = memnew(SpxDrawTiles);
+	draw_tiles->set_tile_size(tile_size);
     get_spx_root()->add_child(draw_tiles);
 }
 
@@ -335,5 +362,37 @@ void SpxExtMgr::close_draw_tiles() {
 		draw_tiles->queue_free();
 		draw_tiles = nullptr;
     }
+}
+
+void SpxExtMgr::exit_tilemap_editor_mode() {
+	if (draw_tiles != nullptr) {
+		draw_tiles->exit_editor_mode();
+		draw_tiles = nullptr;
+    }
+}
+void SpxExtMgr::clear_pure_sprites(){
+	pure_sprite_root->queue_free();
+}
+
+void SpxExtMgr::create_pure_sprite(GdString texture_path, GdVec2 pos, GdInt zindex){
+	if (pure_sprite_root == nullptr) {
+		return;
+	}
+	Sprite2D* sprite = memnew(Sprite2D);
+	auto path_str = SpxStr(texture_path);
+
+	Ref<Texture2D> texture = nullptr;
+	auto is_svg_mode = svgMgr->is_svg_file(path_str);
+	if (is_svg_mode){
+		int target_scale = 1;
+		texture = svgMgr->get_svg_image(path_str, target_scale);
+	}else{
+		texture = resMgr->load_texture(path_str, true);
+	}
+	sprite->set_texture(texture);
+	sprite->set_position(Vector2(pos.x,-pos.y));
+	sprite->set_name(path_str.get_file());
+	pure_sprite_root->add_child(sprite);
+	sprite->set_z_index(zindex);
 }
 

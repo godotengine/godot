@@ -105,6 +105,10 @@ void LayerRenderer::_draw_preview_texture(Node2D *parent_node, const DrawContext
 	}
 }
 
+void LayerRenderer::clear(Node2D *parent_node) {
+    RenderingServer::get_singleton()->canvas_item_clear(parent_node->get_canvas_item());
+}
+
 void LayerRenderer::_draw_a_star_path(Node2D *parent_node, const DrawContext &ctx) {
     if(ctx.hook_path.is_empty())
         return;
@@ -160,7 +164,7 @@ void SpxDrawTiles::_ready() {
 void SpxDrawTiles::_draw() {
     if(exit_editor)
         return;
-        
+    
     TileMapLayer *layer = _get_layer(current_layer_index);
     if (!layer) 
         return;
@@ -311,7 +315,7 @@ void SpxDrawTiles::set_texture_path(const String &texture_path) {
 }
 
 void SpxDrawTiles::place_tile(Vector2i coords) {
-    if (exit_editor || !tile_placing || !current_texture.is_valid()) 
+    if (exit_editor || !current_texture.is_valid()) 
         return;
 
     TileMapLayer *layer = _get_or_create_layer(current_layer_index);
@@ -459,6 +463,25 @@ TileMapLayer* SpxDrawTiles::_get_or_create_layer(int layer_index) {
     return layer;
 }
 
+Vector2 SpxDrawTiles::get_layer_offset(int layer_index) {
+    TileMapLayer *layer = _get_layer(layer_index);
+    if (!layer) {
+        return Vector2();
+    }
+    auto pos = layer->get_position();
+    pos.y = -pos.y;
+    return pos;
+}
+
+void SpxDrawTiles::set_layer_offset(int layer_index, Vector2 offset) {
+    TileMapLayer *layer = _get_layer(layer_index);
+    if (!layer) {
+        return;
+    }
+    offset.y = -offset.y;
+    layer->set_position(offset);
+}
+
 TileMapLayer* SpxDrawTiles::_get_layer(int layer_index) {
     String layer_name = UNIQUE_LAYER_PREFIX + itos(layer_index);
     auto layer_node = get_node_or_null(layer_name);                 
@@ -521,11 +544,12 @@ bool SpxDrawTiles::_create_tile(Ref<TileSetAtlasSource> atlas_source, const Vect
         return true;
 
     atlas_source->add_physics_layer(0);
+    auto halfSize = CELL_SIZE.x / 2;
     Vector<Vector2> collision_rect = {
-        Vector2(0, 0),
-        Vector2(CELL_SIZE.x, 0),
-        CELL_SIZE,
-        Vector2(0, CELL_SIZE.y)
+        Vector2(-halfSize, -halfSize),
+        Vector2(halfSize, -halfSize),
+        Vector2(halfSize,halfSize),
+        Vector2(-halfSize, halfSize)
     };
 
     tile_data->add_collision_polygon(0);
@@ -552,6 +576,15 @@ Ref<ImageTexture> SpxDrawTiles::_get_scaled_texture(Ref<Texture2D> texture) {
     texture_scaled_cache[texture] = scaled_tex;
 
     return scaled_tex;
+}
+
+void SpxDrawTiles::set_tile_size(int size){
+    CELL_SIZE = Vector2(size,size);
+}
+
+void SpxDrawTiles::exit_editor_mode(){
+    exit_editor = true;
+    renderer.clear(this);
 }
 
 void SpxDrawTiles::_destroy_layers(){

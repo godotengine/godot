@@ -65,6 +65,8 @@ private:
 
 	SpxDrawTiles* draw_tiles = nullptr;
 
+	Node *pure_sprite_root;
+
 	static Mutex lock;
 private:
 	SpxPen *_get_pen(GdObj id);
@@ -107,14 +109,18 @@ public:
 	void debug_draw_rect(GdVec2 pos, GdVec2 size, GdColor color);
 
 	// draw tiles 
+	void open_draw_tiles_with_size(GdInt tile_size);
 	void open_draw_tiles();
 	void set_layer_index(GdInt index);
 	void set_tile(GdString texture_path, GdBool with_collision);
+    void set_layer_offset(GdInt index, GdVec2 offset);
+    GdVec2 get_layer_offset(GdInt index);
 	void place_tiles(GdArray positions);
     void place_tile(GdVec2 pos);
     void erase_tile(GdVec2 pos);
 	void close_draw_tiles();
 	GdArray get_layer_point_path(GdVec2 p_from, GdVec2 p_to);
+	void exit_tilemap_editor_mode();
 	template<typename Func>
     void with_draw_tiles(Func f, const String error_msg = "The draw tiles node is null, first open it!!!") {
         if (draw_tiles == nullptr) {
@@ -123,6 +129,10 @@ public:
         }
         f();
     }
+
+	// create sprites
+	void clear_pure_sprites();
+	void create_pure_sprite(GdString texture_path, GdVec2 pos, GdInt zindex);
 };
 
 #endif // SPX_EXT_MGR_H
