@@ -93,5 +93,7 @@ public:
 	float get_applied_force() const;
 	float get_applied_torque() const;
 
+	real_t get_angle() const;
+
 	virtual void rebuild() override;
 };
