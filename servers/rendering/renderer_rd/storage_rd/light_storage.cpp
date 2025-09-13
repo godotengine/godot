@@ -1493,7 +1493,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		atlas->render_buffers.instantiate();
 	}
 
-	RD::get_singleton()->draw_command_begin_label("Reflection probe render");
+	RD::get_singleton()->draw_command_begin_label("Reflection Probe Render");
 
 	if (LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->size != 256) {
 		WARN_PRINT("ReflectionProbes set to UPDATE_ALWAYS must have an atlas size of 256. Please update the atlas size in the ProjectSettings.");

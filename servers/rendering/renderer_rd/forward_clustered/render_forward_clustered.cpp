@@ -2392,7 +2392,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT, p_render_data);
 	}
 
-	RD::get_singleton()->draw_command_begin_label("Copy framebuffer for SSIL");
+	RD::get_singleton()->draw_command_begin_label("Copy Framebuffer for SSIL");
 	if (using_ssil) {
 		RENDER_TIMESTAMP("Copy Final Framebuffer (SSIL)");
 		_copy_framebuffer_to_ssil(rb);
