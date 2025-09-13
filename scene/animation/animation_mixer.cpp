@@ -69,10 +69,7 @@ bool AnimationMixer::_set(const StringName &p_name, const Variant &p_value) {
 			al = get_animation_library(StringName());
 		}
 		al->add_animation(which, anim);
-	} else if (name.begins_with("libraries")) {
-#else
-	if (name.begins_with("libraries")) {
-#endif // DISABLE_DEPRECATED
+	} else if (name == "libraries") {
 		Dictionary d = p_value;
 		while (animation_libraries.size()) {
 			remove_animation_library(animation_libraries[0].name);
@@ -82,10 +79,28 @@ bool AnimationMixer::_set(const StringName &p_name, const Variant &p_value) {
 			add_animation_library(kv.key, lib);
 		}
 		emit_signal(SNAME("animation_libraries_updated"));
-
+	} else if (name.begins_with("libraries/")) {
+		String which = name.get_slicec('/', 1);
+		if (has_animation_library(which)) {
+			remove_animation_library(which);
+		}
+		add_animation_library(which, p_value);
+		emit_signal(SNAME("animation_libraries_updated"));
 	} else {
 		return false;
 	}
+#else
+	if (name.begins_with("libraries/")) {
+		String which = name.get_slicec('/', 1);
+		if (has_animation_library(which)) {
+			remove_animation_library(which);
+		}
+		add_animation_library(which, p_value);
+		emit_signal(SNAME("animation_libraries_updated"));
+	} else {
+		return false;
+	}
+#endif // DISABLE_DEPRECATED
 
 	return true;
 }
@@ -93,12 +108,13 @@ bool AnimationMixer::_set(const StringName &p_name, const Variant &p_value) {
 bool AnimationMixer::_get(const StringName &p_name, Variant &r_ret) const {
 	String name = p_name;
 
-	if (name.begins_with("libraries")) {
-		Dictionary d;
-		for (const AnimationLibraryData &lib : animation_libraries) {
-			d[lib.name] = lib.library;
+	if (name.begins_with("libraries/")) {
+		String which = name.get_slicec('/', 1);
+		if (has_animation_library(which)) {
+			r_ret = get_animation_library(which);
+		} else {
+			return false;
 		}
-		r_ret = d;
 	} else {
 		return false;
 	}
@@ -111,7 +127,10 @@ uint32_t AnimationMixer::_get_libraries_property_usage() const {
 }
 
 void AnimationMixer::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::DICTIONARY, PNAME("libraries"), PROPERTY_HINT_DICTIONARY_TYPE, "StringName;AnimationLibrary", _get_libraries_property_usage()));
+	for (uint32_t i = 0; i < animation_libraries.size(); i++) {
+		const String path = vformat("libraries/%s", animation_libraries[i].name);
+		p_list->push_back(PropertyInfo(Variant::OBJECT, path, PROPERTY_HINT_RESOURCE_TYPE, "AnimationLibrary", _get_libraries_property_usage()));
+	}
 }
 
 void AnimationMixer::_validate_property(PropertyInfo &p_property) const {
