@@ -379,7 +379,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Languages */
 
 	{
-		String lang_hint = "en";
+		String lang_hint = ";en/[en] English";
 		String host_lang = OS::get_singleton()->get_locale();
 
 		// Skip locales if Text server lack required features.
@@ -415,8 +415,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 				continue;
 			}
 
-			lang_hint += ",";
-			lang_hint += locale;
+			lang_hint += ";";
+			const String lang_name = TranslationServer::get_singleton()->get_locale_name(locale);
+			lang_hint += vformat("%s/[%s] %s", locale, locale, lang_name);
 
 			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
 			if (score > 0 && score >= best_score) {
