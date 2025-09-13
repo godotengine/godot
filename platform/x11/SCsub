@@ -10,7 +10,6 @@ common_x11 = [
     "crash_handler_x11.cpp",
     "os_x11.cpp",
     "key_mapping_x11.cpp",
-    "joypad_linux.cpp",
     "power_x11.cpp",
     "detect_prime.cpp",
 ]
