@@ -6647,11 +6647,11 @@ EditorNode::EditorNode() {
 	p->add_separator();
 
 #ifndef ANDROID_ENABLED
-	if (OS::get_singleton()->get_data_path() == OS::get_singleton()->get_config_path()) {
-		// Configuration and data folders are located in the same place (Windows/macOS)
+	if (EditorSettings::get_singleton()->get_data_dir() == EditorSettings::get_singleton()->get_settings_dir()) {
+		// Configuration and data folders are located in the same place.
 		p->add_item(TTR("Open Editor Data/Settings Folder"), SETTINGS_EDITOR_DATA_FOLDER);
 	} else {
-		// Separate configuration and data folders (Linux)
+		// Separate configuration and data folders.
 		p->add_item(TTR("Open Editor Data Folder"), SETTINGS_EDITOR_DATA_FOLDER);
 		p->add_item(TTR("Open Editor Settings Folder"), SETTINGS_EDITOR_CONFIG_FOLDER);
 	}
