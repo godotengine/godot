@@ -318,7 +318,7 @@ public:
 		float sorting_offset;
 		bool use_aabb_center;
 		float extra_margin;
-		uint32_t object_id;
+		ObjectID object_id;
 
 		float lod_begin;
 		float lod_end;
@@ -357,7 +357,6 @@ public:
 
 			extra_margin = 0;
 
-			object_id = 0;
 			visible = true;
 
 			occlusion_handle = 0;
@@ -685,7 +684,7 @@ public:
 		if (p_instance) {
 			return ((Instance *)p_instance)->object_id;
 		}
-		return 0;
+		return ObjectID();
 	}
 
 private:
@@ -696,7 +695,7 @@ public:
 	struct Ghost : RID_Data {
 		// all interactions with actual ghosts are indirect, as the ghost is part of the scenario
 		Scenario *scenario = nullptr;
-		uint32_t object_id = 0;
+		ObjectID object_id;
 		RGhostHandle rghost_handle = 0; // handle in occlusion system (or 0)
 		AABB aabb;
 		virtual ~Ghost() {
