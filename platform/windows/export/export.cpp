@@ -253,12 +253,31 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 	String rcedit_path = EditorSettings::get_singleton()->get("export/windows/rcedit");
 
 	if (rcedit_path != String() && !FileAccess::exists(rcedit_path)) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Could not find rcedit executable at \"%s\"."), rcedit_path));
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"),
+				vformat(TTR("Could not find rcedit executable at \"%s\"."), rcedit_path));
 		return ERR_FILE_NOT_FOUND;
 	}
 
+	// If no explicit path, try from PATH
 	if (rcedit_path == String()) {
-		rcedit_path = "rcedit"; // try to run rcedit from PATH
+		rcedit_path = "rcedit";
+
+		// --- Preflight Test ---
+		int pre_exit = 0;
+		List<String> help_args;
+		help_args.push_back("--help");
+
+		// child_id=nullptr, pipe=nullptr, exitcode=&pre_exit, read_stderr=false
+		Error pre_res = OS::get_singleton()->execute(
+				rcedit_path, help_args, true, nullptr, nullptr, &pre_exit, false);
+
+		if (pre_res != OK || pre_exit != 0) {
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"),
+					TTR("No rcedit found in PATH. Configure rcedit in the Editor Settings (Export > Windows > rcedit), or install it so it is available in PATH."));
+			return ERR_FILE_NOT_FOUND;
+		} else {
+			print_line("rcedit preflight check passed via PATH.");
+		}
 	}
 
 #ifndef WINDOWS_ENABLED
@@ -266,24 +285,44 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 	String wine_path = EditorSettings::get_singleton()->get("export/windows/wine");
 
 	if (wine_path != String() && !FileAccess::exists(wine_path)) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Could not find wine executable at \"%s\"."), wine_path));
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"),
+				vformat(TTR("Could not find wine executable at \"%s\"."), wine_path));
 		return ERR_FILE_NOT_FOUND;
 	}
-
 	if (wine_path == String()) {
-		wine_path = "wine"; // try to run wine from PATH
+		wine_path = "wine";
+
+		// --- Preflight Test for Wine ---
+		int wine_exit = 0;
+		List<String> wine_version_args;
+		wine_version_args.push_back("--version");
+
+		// child_id=nullptr, pipe=nullptr, exitcode=&wine_exit, read_stderr=false
+		Error wine_res = OS::get_singleton()->execute(
+				wine_path, wine_version_args, true, nullptr, nullptr, &wine_exit, false);
+
+		if (wine_res != OK || wine_exit != 0) {
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"),
+					TTR("No wine found in PATH. Configure wine in the Editor Settings (Export > Windows > wine), or install it so it is available in PATH."));
+			return ERR_FILE_NOT_FOUND;
+		} else {
+			print_line("wine preflight check passed via PATH.");
+		}
 	}
 #endif
 
+	// Prepare icon
 	String icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/icon"));
 	String tmp_icon_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("_rcedit.ico");
 	if (!icon_path.empty()) {
 		if (_process_icon(p_preset, icon_path, tmp_icon_path) != OK) {
-			add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Invalid icon file \"%s\"."), icon_path));
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"),
+					vformat(TTR("Invalid icon file \"%s\"."), icon_path));
 			icon_path = String();
 		}
 	}
 
+	// Metadata
 	String file_verion = p_preset->get("application/file_version");
 	String product_version = p_preset->get("application/product_version");
 	String company_name = p_preset->get("application/company_name");
@@ -293,6 +332,7 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 	String trademarks = p_preset->get("application/trademarks");
 	String comments = p_preset->get("application/comments");
 
+	// Arguments
 	List<String> args;
 	args.push_back(p_path);
 	if (icon_path != String()) {
@@ -332,29 +372,39 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 		args.push_back("LegalTrademarks");
 		args.push_back(trademarks);
 	}
+	if (comments != String()) {
+		args.push_back("--set-version-string");
+		args.push_back("Comments");
+		args.push_back(comments);
+	}
 
-#ifndef WINDOWS_ENABLED
-	// On non-Windows we need WINE to run rcedit
-	args.push_front(rcedit_path);
-	rcedit_path = wine_path;
+	// --- Execute rcedit ---
+	String exec_prog;
+	List<String> exec_args;
+
+#ifdef WINDOWS_ENABLED
+	exec_prog = rcedit_path;
+	exec_args = args;
+#else
+	exec_prog = EditorSettings::get_singleton()->get("export/windows/wine");
+	if (exec_prog == String()) {
+		exec_prog = "wine";
+	}
+	exec_args.push_back(rcedit_path);
+	for (const List<String>::Element *E = args.front(); E; E = E->next()) {
+		exec_args.push_back(E->get());
+	}
 #endif
 
-	String str;
-	Error err = OS::get_singleton()->execute(rcedit_path, args, true, nullptr, &str, nullptr, true);
+	int exit_code = 0;
+	String pipe; // wir erfassen stderr (read_stderr=true)
+	Error run_res = OS::get_singleton()->execute(
+			exec_prog, exec_args, true, nullptr, &pipe, &exit_code, /*read_stderr=*/true);
 
-	if (FileAccess::exists(tmp_icon_path)) {
-		DirAccess::remove_file_or_error(tmp_icon_path);
-	}
-
-	if (err != OK || (str.find("not found") != -1) || (str.find("not recognized") != -1)) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), TTR("Could not start rcedit executable. Configure rcedit path in the Editor Settings (Export > Windows > rcedit), or disable \"Application > Modify Resources\" in the export preset."));
-		return err;
-	}
-	print_line("rcedit (" + p_path + "): " + str);
-
-	if (str.find("Fatal error") != -1) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("rcedit failed to modify executable: %s."), str));
-		return FAILED;
+	if (run_res != OK || exit_code != 0) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"),
+				vformat(TTR("rcedit failed (code %d). Output:\n%s"), exit_code, pipe));
+		return ERR_CANT_OPEN;
 	}
 
 	return OK;
