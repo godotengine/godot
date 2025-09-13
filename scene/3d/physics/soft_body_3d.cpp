@@ -372,6 +372,7 @@ void SoftBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("apply_central_force", "force"), &SoftBody3D::apply_central_force);
 
 	ClassDB::bind_method(D_METHOD("set_point_pinned", "point_index", "pinned", "attachment_path", "insert_at"), &SoftBody3D::pin_point, DEFVAL(NodePath()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("pin_overlapping_points", "point_index", "pinned", "attachment_path", "insert_at"), &SoftBody3D::pin_overlapping_points, DEFVAL(NodePath()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("is_point_pinned", "point_index"), &SoftBody3D::is_point_pinned);
 
 	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &SoftBody3D::set_ray_pickable);
@@ -712,6 +713,29 @@ void SoftBody3D::pin_point(int p_point_index, bool pin, const NodePath &p_spatia
 	} else {
 		_remove_pinned_point(p_point_index);
 	}
+}
+
+void SoftBody3D::pin_overlapping_points(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path, int p_insert_at) {
+	ERR_FAIL_COND_MSG(!point_to_position.has(p_point_index), vformat("Invalid pin point index: %d", p_point_index));
+
+	const Vector<int> overlapping_points = get_overlapping_points(p_point_index);
+
+	for (int j = 0; j < overlapping_points.size(); ++j) {
+		pin_point(overlapping_points[j], pin, p_spatial_attachment_path, p_insert_at);
+	}
+}
+
+Vector<int> SoftBody3D::get_overlapping_points(int p_point_index) {
+	if (!point_to_position.has(p_point_index)) {
+		return Vector<int>();
+	}
+
+	const Vector3 point_position = point_to_position.get(p_point_index);
+	if (!overlapping_vertices.has(point_position)) {
+		return Vector<int>();
+	}
+
+	return overlapping_vertices.get(point_position);
 }
 
 void SoftBody3D::_pin_point_deferred(int p_point_index, bool pin, const NodePath p_spatial_attachment_path) {
