@@ -561,6 +561,10 @@
 		<member name="network/ssl/editor_ssl_certificates" type="String" setter="" getter="">
 			The SSL certificate bundle to use for HTTP requests made within the editor (e.g. from the AssetLib tab). If left empty, the [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]included Mozilla certificate bundle[/url] will be used.
 		</member>
+		<member name="network/ssl/enable_tls_v1.3" type="bool" setter="" getter="">
+			If [code]true[/code], enable TLSv1.3 negotiation.
+			[b]Note:[/b] Only supported when using Mbed TLS 3.0 or later (Linux distribution packages may be compiled against older system Mbed TLS packages), otherwise the maximum supported TLS version is always TLSv1.2.
+		</member>
 		<member name="project_manager/sorting_order" type="int" setter="" getter="">
 			The sorting order to use in the project manager. When changing the sorting order in the project manager, this setting is set permanently in the editor settings.
 		</member>

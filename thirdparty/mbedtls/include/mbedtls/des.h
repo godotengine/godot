@@ -14,12 +14,9 @@
  */
 #ifndef MBEDTLS_DES_H
 #define MBEDTLS_DES_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 #include "mbedtls/platform_util.h"
 
 #include <stddef.h>
@@ -30,10 +27,6 @@
 
 /** The data input has an invalid length. */
 #define MBEDTLS_ERR_DES_INVALID_INPUT_LENGTH              -0x0032
-
-/* MBEDTLS_ERR_DES_HW_ACCEL_FAILED is deprecated and should not be used. */
-/** DES hardware accelerator failed. */
-#define MBEDTLS_ERR_DES_HW_ACCEL_FAILED                   -0x0033
 
 #define MBEDTLS_DES_KEY_SIZE    8
 
@@ -53,7 +46,7 @@ extern "C" {
  *                 instead.
  */
 typedef struct mbedtls_des_context {
-    uint32_t sk[32];            /*!<  DES subkeys       */
+    uint32_t MBEDTLS_PRIVATE(sk)[32];            /*!<  DES subkeys       */
 }
 mbedtls_des_context;
 
@@ -65,7 +58,7 @@ mbedtls_des_context;
  *                 instead.
  */
 typedef struct mbedtls_des3_context {
-    uint32_t sk[96];            /*!<  3DES subkeys      */
+    uint32_t MBEDTLS_PRIVATE(sk)[96];            /*!<  3DES subkeys      */
 }
 mbedtls_des3_context;
 
