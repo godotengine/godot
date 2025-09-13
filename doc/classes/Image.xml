@@ -760,7 +760,10 @@
 		<constant name="FORMAT_ASTC_8x8_HDR" value="38" enum="Format">
 			Same format as [constant FORMAT_ASTC_8x8], but with the hint to let the GPU know it is used for HDR.
 		</constant>
-		<constant name="FORMAT_MAX" value="39" enum="Format">
+		<constant name="FORMAT_RGB10A2" value="39" enum="Format">
+			OpenGL texture format [code]RGBA[/code] with four components. Red, green, and blue have a bitdepth of 10, while alpha has a bitdepth of 2.
+		</constant>
+		<constant name="FORMAT_MAX" value="40" enum="Format">
 			Represents the size of the [enum Format] enum.
 		</constant>
 		<constant name="INTERPOLATE_NEAREST" value="0" enum="Interpolation">

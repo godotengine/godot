@@ -475,6 +475,11 @@ static inline Error _get_gl_uncompressed_format(const Ref<Image> &p_image, Image
 			r_gl_format = GL_RGB;
 			r_gl_type = GL_UNSIGNED_INT_5_9_9_9_REV;
 		} break;
+		case Image::FORMAT_RGB10A2: {
+			r_gl_internal_format = GL_RGB10_A2;
+			r_gl_format = GL_RGBA;
+			r_gl_type = GL_UNSIGNED_INT_2_10_10_10_REV;
+		} break;
 		default: {
 			return ERR_UNAVAILABLE;
 		}
@@ -2125,7 +2130,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		rt->color_format = GL_RGBA;
 		rt->color_type = GL_UNSIGNED_INT_2_10_10_10_REV;
 		rt->color_format_size = 4;
-		rt->image_format = Image::FORMAT_RGBA8;
+		rt->image_format = Image::FORMAT_RGB10A2;
 	}
 
 	glDisable(GL_SCISSOR_TEST);

@@ -174,6 +174,15 @@ struct [[nodiscard]] Color {
 		return E.i | (B.i << 18U) | (G.i << 9U) | (R.i & 511U);
 	}
 
+	_FORCE_INLINE_ uint32_t to_rgb10a2() const {
+		uint32_t rgba = 0;
+		rgba = uint32_t(CLAMP(r * 1023.0, 0, 1023));
+		rgba |= uint32_t(CLAMP(g * 1023.0, 0, 1023)) << 10;
+		rgba |= uint32_t(CLAMP(b * 1023.0, 0, 1023)) << 20;
+		rgba |= uint32_t(CLAMP(a * 3.0, 0, 3)) << 30;
+		return rgba;
+	}
+
 	_FORCE_INLINE_ Color blend(const Color &p_over) const {
 		Color res;
 		float sa = 1.0f - p_over.a;
@@ -217,6 +226,7 @@ struct [[nodiscard]] Color {
 	static Color from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
 	static Color from_ok_hsv(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
 	static Color from_rgbe9995(uint32_t p_rgbe);
+	static Color from_rgb10a2(uint32_t p_rgba);
 	static Color from_rgba8(int64_t p_r8, int64_t p_g8, int64_t p_b8, int64_t p_a8 = 255);
 
 	constexpr bool operator<(const Color &p_color) const; // Used in set keys.

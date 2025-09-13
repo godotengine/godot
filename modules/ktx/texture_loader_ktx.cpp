@@ -247,6 +247,9 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 				case GL_COMPRESSED_RGBA_ASTC_8x8_KHR:
 					format = Image::FORMAT_ASTC_8x8_HDR;
 					break;
+				case GL_RGB10_A2:
+					format = Image::FORMAT_RGB10A2;
+					break;
 				default:
 					ktxTexture_Destroy(ktx_texture);
 					ERR_FAIL_V_MSG(Ref<Resource>(), "Unsupported format " + itos(((ktxTexture1 *)ktx_texture)->glInternalformat) + " of KTX1 texture file.");
@@ -442,6 +445,9 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 					break;
 				case VK_FORMAT_ASTC_8x8_UNORM_BLOCK:
 					format = Image::FORMAT_ASTC_8x8_HDR;
+					break;
+				case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+					format = Image::FORMAT_RGB10A2;
 					break;
 				default:
 					ktxTexture_Destroy(ktx_texture);

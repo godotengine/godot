@@ -1278,6 +1278,10 @@ RID TextureStorage::texture_create_from_native_handle(RS::TextureType p_type, Im
 			format = RD::DATA_FORMAT_ASTC_8x8_SFLOAT_BLOCK;
 			break;
 
+		case Image::FORMAT_RGB10A2:
+			format = RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
+			break;
+
 		default:
 			// Arbitrary fallback.
 			format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
@@ -1432,35 +1436,8 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 #endif
 	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
 	ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
-	Ref<Image> image;
 
-	// Expand RGB10_A2 into RGBAH. This is needed for capturing viewport data
-	// when using the mobile renderer with HDR mode on.
-	if (tex->rd_format == RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32) {
-		Vector<uint8_t> new_data;
-		new_data.resize(data.size() * 2);
-		uint16_t *ndp = (uint16_t *)new_data.ptr();
-
-		uint32_t *ptr = (uint32_t *)data.ptr();
-		uint32_t num_pixels = data.size() / 4;
-
-		for (uint32_t ofs = 0; ofs < num_pixels; ofs++) {
-			uint32_t px = ptr[ofs];
-			uint32_t r = (px & 0x3FF);
-			uint32_t g = ((px >> 10) & 0x3FF);
-			uint32_t b = ((px >> 20) & 0x3FF);
-			uint32_t a = ((px >> 30) & 0x3);
-
-			ndp[ofs * 4 + 0] = Math::make_half_float(float(r) / 1023.0);
-			ndp[ofs * 4 + 1] = Math::make_half_float(float(g) / 1023.0);
-			ndp[ofs * 4 + 2] = Math::make_half_float(float(b) / 1023.0);
-			ndp[ofs * 4 + 3] = Math::make_half_float(float(a) / 3.0);
-		}
-		image = Image::create_from_data(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, new_data);
-	} else {
-		image = Image::create_from_data(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
-	}
-
+	Ref<Image> image = Image::create_from_data(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
 	if (image->is_empty()) {
 		const String &path_str = tex->path.is_empty() ? "with no path" : vformat("with path '%s'", tex->path);
 		ERR_FAIL_V_MSG(Ref<Image>(), vformat("Texture %s has no data.", path_str));
@@ -2254,6 +2231,13 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 
 		} break; // astc 8x8 HDR
+		case Image::FORMAT_RGB10A2: {
+			r_format.format = RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+		} break;
 
 		default: {
 		}
@@ -2660,6 +2644,14 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_ZERO;
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
+		case RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32: {
+			r_format.image_format = Image::FORMAT_RGB10A2;
+			r_format.rd_format = RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 		} break;
 
 		default: {
