@@ -108,7 +108,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	node->connect("stopped", callable_mp(this, &EditorDebuggerNode::_debugger_stopped).bind(id));
 	node->connect("stack_frame_selected", callable_mp(this, &EditorDebuggerNode::_stack_frame_selected).bind(id));
 	node->connect("error_selected", callable_mp(this, &EditorDebuggerNode::_error_selected).bind(id));
-	node->connect("breakpoint_selected", callable_mp(this, &EditorDebuggerNode::_error_selected).bind(id));
+	node->connect("breakpoint_selected", callable_mp(this, &EditorDebuggerNode::_breakpoint_selected).bind(id));
 	node->connect("clear_execution", callable_mp(this, &EditorDebuggerNode::_clear_execution));
 	node->connect("breaked", callable_mp(this, &EditorDebuggerNode::_breaked).bind(id));
 	node->connect("debug_data", callable_mp(this, &EditorDebuggerNode::_debug_data).bind(id));
@@ -159,6 +159,11 @@ void EditorDebuggerNode::_error_selected(const String &p_file, int p_line, int p
 		Ref<Script> s = ResourceLoader::load(p_file);
 		emit_signal(SNAME("goto_script_line"), s, p_line - 1);
 	}
+}
+
+void EditorDebuggerNode::_breakpoint_selected(const String &p_file, int p_line, int p_debugger) {
+	Ref<Script> s = ResourceLoader::load(p_file);
+	emit_signal(SNAME("goto_script_line"), s, p_line - 1);
 }
 
 void EditorDebuggerNode::_text_editor_stack_goto(const ScriptEditorDebugger *p_debugger) {
