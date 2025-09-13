@@ -199,7 +199,6 @@ Vector3 TriangleMesh::get_area_normal(const AABB &p_aabb) const {
 	int level = 0;
 
 	PoolVector<Triangle>::Read trianglesr = triangles.read();
-	PoolVector<Vector3>::Read verticesr = vertices.read();
 	PoolVector<BVH>::Read bvhr = bvh.read();
 
 	const Triangle *triangleptr = trianglesr.ptr();
