@@ -594,6 +594,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	bool read_only = false;
 	Node *root = nullptr;
 
+	AcceptDialog *read_only_dialog = nullptr;
+
 	MenuButton *edit = nullptr;
 
 	PanelContainer *main_panel = nullptr;
@@ -973,6 +975,10 @@ public:
 
 	/** If `p_from_mouse_event` is `true`, handle Shift key presses for precise snapping. */
 	void goto_next_step(bool p_from_mouse_event, bool p_timeline_only = false);
+
+	bool is_read_only() const;
+	bool is_global_library_read_only() const;
+	void popup_read_only_dialog();
 
 	MenuButton *get_edit_menu();
 	AnimationTrackEditor();

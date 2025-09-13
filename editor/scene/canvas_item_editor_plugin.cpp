@@ -4461,6 +4461,11 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
 	ERR_FAIL_COND_MSG(te->get_current_animation().is_null(), "Cannot insert animation key. No animation selected.");
 
+	bool is_read_only = te->is_read_only();
+	if (is_read_only) {
+		te->popup_read_only_dialog();
+		return;
+	}
 	te->make_insert_queue();
 	for (const KeyValue<Node *, Object *> &E : selection) {
 		CanvasItem *ci = Object::cast_to<CanvasItem>(E.key);
