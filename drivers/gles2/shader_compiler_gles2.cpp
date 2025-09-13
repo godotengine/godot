@@ -302,6 +302,10 @@ String ShaderCompilerGLES2::_dump_node_code(const SL::Node *p_node, int p_level,
 				}
 			}
 
+			int max_blobs = CLAMP((int)GLOBAL_GET("rendering/quality/blob_shadows/max_blobs"), 1, 256);
+			String max_blobs_string = "#define MAX_BLOB_CASTERS " + itos(max_blobs) + "\n";
+			r_gen_code.custom_defines.push_back(max_blobs_string.utf8());
+
 			int max_texture_uniforms = 0;
 			int max_uniforms = 0;
 
@@ -1121,6 +1125,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_SPATIAL].renames["UV2"] = "uv2_interp";
 	actions[VS::SHADER_SPATIAL].renames["COLOR"] = "color_interp";
 	actions[VS::SHADER_SPATIAL].renames["POINT_SIZE"] = "point_size";
+	actions[VS::SHADER_SPATIAL].renames["BLOB_SHADOW"] = "blob_shadow_total";
 	// gl_InstanceID and VERTEX_ID is not available in OpenGL ES 2.0
 	actions[VS::SHADER_SPATIAL].renames["INSTANCE_ID"] = "0";
 	actions[VS::SHADER_SPATIAL].renames["VERTEX_ID"] = "0";
@@ -1190,6 +1195,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_SPATIAL].usage_defines["INSTANCE_CUSTOM"] = "#define ENABLE_INSTANCE_CUSTOM\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["ALPHA_SCISSOR"] = "#define ALPHA_SCISSOR_USED\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
+	//actions[VS::SHADER_SPATIAL].usage_defines["BLOB_SHADOW"] = "#define USE_BLOB_SHADOWS\n";
 
 	actions[VS::SHADER_SPATIAL].usage_defines["SSS_STRENGTH"] = "#define ENABLE_SSS\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["TRANSMISSION"] = "#define TRANSMISSION_USED\n";
@@ -1248,6 +1254,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_SPATIAL].render_mode_defines["specular_toon"] = "#define SPECULAR_TOON\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["specular_disabled"] = "#define SPECULAR_DISABLED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["shadows_disabled"] = "#define SHADOWS_DISABLED\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["blob_shadows_disabled"] = "#define BLOB_SHADOWS_DISABLED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["ambient_light_disabled"] = "#define AMBIENT_LIGHT_DISABLED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["shadow_to_opacity"] = "#define USE_SHADOW_TO_OPACITY\n";
 
