@@ -32,7 +32,7 @@
 
 #include "animation_blend_tree.h"
 
-void AnimationNodeBlendSpace1D::get_parameter_list(List<PropertyInfo> *r_list) const {
+void AnimationNodeBlendSpace1D::get_parameter_list(LocalVector<PropertyInfo> *r_list) const {
 	AnimationNode::get_parameter_list(r_list);
 	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_position));
 	r_list->push_back(PropertyInfo(Variant::INT, closest, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
@@ -123,7 +123,7 @@ void AnimationNodeBlendSpace1D::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_MODE_DISCRETE_CARRY);
 }
 
-void AnimationNodeBlendSpace1D::get_child_nodes(List<ChildNode> *r_child_nodes) {
+void AnimationNodeBlendSpace1D::get_child_nodes(LocalVector<ChildNode> *r_child_nodes) {
 	for (int i = 0; i < blend_points_used; i++) {
 		ChildNode cn;
 		cn.name = itos(i);
@@ -277,7 +277,7 @@ void AnimationNodeBlendSpace1D::_add_blend_point(int p_index, const Ref<Animatio
 	}
 }
 
-AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
+AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only) {
 	if (!blend_points_used) {
 		return NodeTimeInfo();
 	}

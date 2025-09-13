@@ -30,7 +30,7 @@
 
 #include "animation_node_extension.h"
 
-AnimationNode::NodeTimeInfo AnimationNodeExtension::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
+AnimationNode::NodeTimeInfo AnimationNodeExtension::_process(const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only) {
 	PackedFloat32Array r_ret;
 
 	GDVIRTUAL_CALL(

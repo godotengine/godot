@@ -374,7 +374,7 @@ void AnimationNodeStateMachinePlayback::_signal_state_change(AnimationTree *p_an
 }
 
 void AnimationNodeStateMachinePlayback::_clear_path_children(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_test_only) {
-	List<AnimationNode::ChildNode> child_nodes;
+	LocalVector<AnimationNode::ChildNode> child_nodes;
 	p_state_machine->get_child_nodes(&child_nodes);
 	for (const AnimationNode::ChildNode &child_node : child_nodes) {
 		Ref<AnimationNodeStateMachine> anodesm = child_node.node;
@@ -1232,7 +1232,7 @@ AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {
 
 ///////////////////////////////////////////////////////
 
-void AnimationNodeStateMachine::get_parameter_list(List<PropertyInfo> *r_list) const {
+void AnimationNodeStateMachine::get_parameter_list(LocalVector<PropertyInfo> *r_list) const {
 	AnimationNode::get_parameter_list(r_list);
 	r_list->push_back(PropertyInfo(Variant::OBJECT, playback, PROPERTY_HINT_RESOURCE_TYPE, "AnimationNodeStateMachinePlayback", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ALWAYS_DUPLICATE)); // Don't store this object in .tres, it always needs to be made as unique object.
 	List<StringName> advance_conditions;
@@ -1370,7 +1370,7 @@ StringName AnimationNodeStateMachine::get_node_name(const Ref<AnimationNode> &p_
 	ERR_FAIL_V(StringName());
 }
 
-void AnimationNodeStateMachine::get_child_nodes(List<ChildNode> *r_child_nodes) {
+void AnimationNodeStateMachine::get_child_nodes(LocalVector<ChildNode> *r_child_nodes) {
 	Vector<StringName> nodes;
 
 	for (const KeyValue<StringName, State> &E : states) {
@@ -1633,7 +1633,7 @@ Vector2 AnimationNodeStateMachine::get_graph_offset() const {
 	return graph_offset;
 }
 
-AnimationNode::NodeTimeInfo AnimationNodeStateMachine::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
+AnimationNode::NodeTimeInfo AnimationNodeStateMachine::_process(const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only) {
 	Ref<AnimationNodeStateMachinePlayback> playback_new = get_parameter(playback);
 	ERR_FAIL_COND_V(playback_new.is_null(), AnimationNode::NodeTimeInfo());
 	playback_new->_set_base_path(node_state.get_base_path());

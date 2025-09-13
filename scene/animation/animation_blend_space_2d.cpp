@@ -33,7 +33,7 @@
 #include "animation_blend_tree.h"
 #include "core/math/geometry_2d.h"
 
-void AnimationNodeBlendSpace2D::get_parameter_list(List<PropertyInfo> *r_list) const {
+void AnimationNodeBlendSpace2D::get_parameter_list(LocalVector<PropertyInfo> *r_list) const {
 	AnimationNode::get_parameter_list(r_list);
 	r_list->push_back(PropertyInfo(Variant::VECTOR2, blend_position));
 	r_list->push_back(PropertyInfo(Variant::INT, closest, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
@@ -52,7 +52,7 @@ Variant AnimationNodeBlendSpace2D::get_parameter_default_value(const StringName 
 	}
 }
 
-void AnimationNodeBlendSpace2D::get_child_nodes(List<ChildNode> *r_child_nodes) {
+void AnimationNodeBlendSpace2D::get_child_nodes(LocalVector<ChildNode> *r_child_nodes) {
 	for (int i = 0; i < blend_points_used; i++) {
 		ChildNode cn;
 		cn.name = itos(i);
@@ -443,7 +443,7 @@ void AnimationNodeBlendSpace2D::_blend_triangle(const Vector2 &p_pos, const Vect
 	r_weights[2] = w;
 }
 
-AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
+AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only) {
 	_update_triangles();
 
 	if (!blend_points_used) {

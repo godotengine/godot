@@ -163,7 +163,7 @@ protected:
 	virtual void reset_state() override;
 
 public:
-	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
+	virtual void get_parameter_list(LocalVector<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 	virtual bool is_parameter_read_only(const StringName &p_parameter) const override;
 
@@ -180,7 +180,7 @@ public:
 	void set_node_position(const StringName &p_name, const Vector2 &p_position);
 	Vector2 get_node_position(const StringName &p_name) const;
 
-	virtual void get_child_nodes(List<ChildNode> *r_child_nodes) override;
+	virtual void get_child_nodes(LocalVector<ChildNode> *r_child_nodes) override;
 
 	bool has_transition(const StringName &p_from, const StringName &p_to) const;
 	bool has_transition_from(const StringName &p_from) const;
@@ -211,7 +211,7 @@ public:
 	void set_graph_offset(const Vector2 &p_offset);
 	Vector2 get_graph_offset() const;
 
-	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only = false) override;
 	virtual String get_caption() const override;
 
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) const override;

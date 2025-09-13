@@ -338,6 +338,23 @@ public:
 		return nullptr;
 	}
 
+	TValue &get_value_ref_or_add_default(const TKey &p_key, bool &r_was_added) {
+		uint32_t pos = 0;
+		uint32_t hash_pos = 0;
+		const uint32_t hashed_key = _hash(p_key);
+
+		// exists.
+		if (_lookup_pos_with_hash(p_key, pos, hash_pos, hashed_key)) {
+			r_was_added = false;
+			return elements[pos].value;
+		}
+
+		r_was_added = true;
+
+		int32_t idx = _insert_element(p_key, TValue(), hashed_key);
+		return elements[idx].value;
+	}
+
 	bool has(const TKey &p_key) const {
 		uint32_t _pos = 0;
 		uint32_t h_pos = 0;
