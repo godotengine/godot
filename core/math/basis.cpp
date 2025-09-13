@@ -186,7 +186,7 @@ Basis Basis::diagonalize() {
 		// Compute the rotation angle
 		real_t angle;
 		if (Math::is_equal_approx(rows[j][j], rows[i][i])) {
-			angle = Math_PI / 4;
+			angle = Math::PI / 4;
 		} else {
 			angle = 0.5f * Math::atan(2 * rows[i][j] / (rows[j][j] - rows[i][i]));
 		}
@@ -232,15 +232,9 @@ Basis Basis::from_scale(const Vector3 &p_scale) {
 // Multiplies the matrix from left by the scaling matrix: M -> S.M
 // See the comment for Basis::rotated for further explanation.
 void Basis::scale(const Vector3 &p_scale) {
-	rows[0][0] *= p_scale.x;
-	rows[0][1] *= p_scale.x;
-	rows[0][2] *= p_scale.x;
-	rows[1][0] *= p_scale.y;
-	rows[1][1] *= p_scale.y;
-	rows[1][2] *= p_scale.y;
-	rows[2][0] *= p_scale.z;
-	rows[2][1] *= p_scale.z;
-	rows[2][2] *= p_scale.z;
+	rows[0] *= p_scale.x;
+	rows[1] *= p_scale.y;
+	rows[2] *= p_scale.z;
 }
 
 Basis Basis::scaled(const Vector3 &p_scale) const {
@@ -252,7 +246,9 @@ Basis Basis::scaled(const Vector3 &p_scale) const {
 void Basis::scale_local(const Vector3 &p_scale) {
 	// performs a scaling in object-local coordinate system:
 	// M -> (M.S.Minv).M = M.S.
-	*this = scaled_local(p_scale);
+	rows[0] *= p_scale;
+	rows[1] *= p_scale;
+	rows[2] *= p_scale;
 }
 
 void Basis::scale_orthogonal(const Vector3 &p_scale) {
@@ -262,16 +258,16 @@ void Basis::scale_orthogonal(const Vector3 &p_scale) {
 Basis Basis::scaled_orthogonal(const Vector3 &p_scale) const {
 	Basis m = *this;
 	Vector3 s = Vector3(-1, -1, -1) + p_scale;
-	bool sign = signbit(s.x + s.y + s.z);
+	bool sign = std::signbit(s.x + s.y + s.z);
 	Basis b = m.orthonormalized();
 	s = b.xform_inv(s);
 	Vector3 dots;
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			dots[j] += s[i] * abs(m.get_column(i).normalized().dot(b.get_column(j)));
+			dots[j] += s[i] * Math::abs(m.get_column(i).normalized().dot(b.get_column(j)));
 		}
 	}
-	if (sign != signbit(dots.x + dots.y + dots.z)) {
+	if (sign != std::signbit(dots.x + dots.y + dots.z)) {
 		dots = -dots;
 	}
 	m.scale_local(Vector3(1, 1, 1) + dots);
@@ -283,7 +279,9 @@ real_t Basis::get_uniform_scale() const {
 }
 
 Basis Basis::scaled_local(const Vector3 &p_scale) const {
-	return (*this) * Basis::from_scale(p_scale);
+	Basis m = *this;
+	m.scale_local(p_scale);
+	return m;
 }
 
 Vector3 Basis::get_scale_abs() const {
@@ -477,7 +475,7 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 					if (rows[1][0] == 0 && rows[0][1] == 0 && rows[1][2] == 0 && rows[2][1] == 0 && rows[1][1] == 1) {
 						// return the simplest form (human friendlier in editor and scripts)
 						euler.x = 0;
-						euler.y = atan2(rows[0][2], rows[0][0]);
+						euler.y = std::atan2(rows[0][2], rows[0][0]);
 						euler.z = 0;
 					} else {
 						euler.x = Math::atan2(-rows[1][2], rows[2][2]);
@@ -486,12 +484,12 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 					}
 				} else {
 					euler.x = Math::atan2(rows[2][1], rows[1][1]);
-					euler.y = -Math_PI / 2.0f;
+					euler.y = -Math::PI / 2.0f;
 					euler.z = 0.0f;
 				}
 			} else {
 				euler.x = Math::atan2(rows[2][1], rows[1][1]);
-				euler.y = Math_PI / 2.0f;
+				euler.y = Math::PI / 2.0f;
 				euler.z = 0.0f;
 			}
 			return euler;
@@ -515,13 +513,13 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 					// It's -1
 					euler.x = -Math::atan2(rows[1][2], rows[2][2]);
 					euler.y = 0.0f;
-					euler.z = Math_PI / 2.0f;
+					euler.z = Math::PI / 2.0f;
 				}
 			} else {
 				// It's 1
 				euler.x = -Math::atan2(rows[1][2], rows[2][2]);
 				euler.y = 0.0f;
-				euler.z = -Math_PI / 2.0f;
+				euler.z = -Math::PI / 2.0f;
 			}
 			return euler;
 		}
@@ -542,22 +540,22 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 					// is this a pure X rotation?
 					if (rows[1][0] == 0 && rows[0][1] == 0 && rows[0][2] == 0 && rows[2][0] == 0 && rows[0][0] == 1) {
 						// return the simplest form (human friendlier in editor and scripts)
-						euler.x = atan2(-m12, rows[1][1]);
+						euler.x = std::atan2(-m12, rows[1][1]);
 						euler.y = 0;
 						euler.z = 0;
 					} else {
-						euler.x = asin(-m12);
-						euler.y = atan2(rows[0][2], rows[2][2]);
-						euler.z = atan2(rows[1][0], rows[1][1]);
+						euler.x = std::asin(-m12);
+						euler.y = std::atan2(rows[0][2], rows[2][2]);
+						euler.z = std::atan2(rows[1][0], rows[1][1]);
 					}
 				} else { // m12 == -1
-					euler.x = Math_PI * 0.5f;
-					euler.y = atan2(rows[0][1], rows[0][0]);
+					euler.x = Math::PI * 0.5f;
+					euler.y = std::atan2(rows[0][1], rows[0][0]);
 					euler.z = 0;
 				}
 			} else { // m12 == 1
-				euler.x = -Math_PI * 0.5f;
-				euler.y = -atan2(rows[0][1], rows[0][0]);
+				euler.x = -Math::PI * 0.5f;
+				euler.y = -std::atan2(rows[0][1], rows[0][0]);
 				euler.z = 0;
 			}
 
@@ -582,13 +580,13 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 					// It's -1
 					euler.x = Math::atan2(rows[2][1], rows[2][2]);
 					euler.y = 0.0f;
-					euler.z = -Math_PI / 2.0f;
+					euler.z = -Math::PI / 2.0f;
 				}
 			} else {
 				// It's 1
 				euler.x = Math::atan2(rows[2][1], rows[2][2]);
 				euler.y = 0.0f;
-				euler.z = Math_PI / 2.0f;
+				euler.z = Math::PI / 2.0f;
 			}
 			return euler;
 		} break;
@@ -608,13 +606,13 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 					euler.z = Math::atan2(-rows[0][1], rows[1][1]);
 				} else {
 					// It's -1
-					euler.x = -Math_PI / 2.0f;
+					euler.x = -Math::PI / 2.0f;
 					euler.y = Math::atan2(rows[0][2], rows[0][0]);
 					euler.z = 0;
 				}
 			} else {
 				// It's 1
-				euler.x = Math_PI / 2.0f;
+				euler.x = Math::PI / 2.0f;
 				euler.y = Math::atan2(rows[0][2], rows[0][0]);
 				euler.z = 0;
 			}
@@ -637,13 +635,13 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 				} else {
 					// It's -1
 					euler.x = 0;
-					euler.y = Math_PI / 2.0f;
+					euler.y = Math::PI / 2.0f;
 					euler.z = -Math::atan2(rows[0][1], rows[1][1]);
 				}
 			} else {
 				// It's 1
 				euler.x = 0;
-				euler.y = -Math_PI / 2.0f;
+				euler.y = -Math::PI / 2.0f;
 				euler.z = -Math::atan2(rows[0][1], rows[1][1]);
 			}
 			return euler;
@@ -699,24 +697,12 @@ bool Basis::is_equal_approx(const Basis &p_basis) const {
 	return rows[0].is_equal_approx(p_basis.rows[0]) && rows[1].is_equal_approx(p_basis.rows[1]) && rows[2].is_equal_approx(p_basis.rows[2]);
 }
 
+bool Basis::is_same(const Basis &p_basis) const {
+	return rows[0].is_same(p_basis.rows[0]) && rows[1].is_same(p_basis.rows[1]) && rows[2].is_same(p_basis.rows[2]);
+}
+
 bool Basis::is_finite() const {
 	return rows[0].is_finite() && rows[1].is_finite() && rows[2].is_finite();
-}
-
-bool Basis::operator==(const Basis &p_matrix) const {
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			if (rows[i][j] != p_matrix.rows[i][j]) {
-				return false;
-			}
-		}
-	}
-
-	return true;
-}
-
-bool Basis::operator!=(const Basis &p_matrix) const {
-	return (!(*this == p_matrix));
 }
 
 Basis::operator String() const {
@@ -790,8 +776,8 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 		if ((xx > yy) && (xx > zz)) { // rows[0][0] is the largest diagonal term.
 			if (xx < CMP_EPSILON) {
 				x = 0;
-				y = Math_SQRT12;
-				z = Math_SQRT12;
+				y = Math::SQRT12;
+				z = Math::SQRT12;
 			} else {
 				x = Math::sqrt(xx);
 				y = xy / x;
@@ -799,9 +785,9 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 			}
 		} else if (yy > zz) { // rows[1][1] is the largest diagonal term.
 			if (yy < CMP_EPSILON) {
-				x = Math_SQRT12;
+				x = Math::SQRT12;
 				y = 0;
-				z = Math_SQRT12;
+				z = Math::SQRT12;
 			} else {
 				y = Math::sqrt(yy);
 				x = xy / y;
@@ -809,8 +795,8 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 			}
 		} else { // rows[2][2] is the largest diagonal term so base result on this.
 			if (zz < CMP_EPSILON) {
-				x = Math_SQRT12;
-				y = Math_SQRT12;
+				x = Math::SQRT12;
+				y = Math::SQRT12;
 				z = 0;
 			} else {
 				z = Math::sqrt(zz);
@@ -819,7 +805,7 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 			}
 		}
 		r_axis = Vector3(x, y, z);
-		r_angle = Math_PI;
+		r_angle = Math::PI;
 		return;
 	}
 	// As we have reached here there are no singularities so we can handle normally.

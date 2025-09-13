@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef INPUT_H
-#define INPUT_H
+#pragma once
 
 #include "core/input/input_event.h"
 #include "core/object/object.h"
@@ -42,7 +41,7 @@ class Input : public Object {
 	GDCLASS(Input, Object);
 	_THREAD_SAFE_CLASS_
 
-	static Input *singleton;
+	static inline Input *singleton = nullptr;
 
 	static constexpr uint64_t MAX_EVENT = 32;
 
@@ -79,14 +78,12 @@ public:
 		CURSOR_MAX
 	};
 
-	enum {
-		JOYPADS_MAX = 16,
-	};
+	static constexpr int32_t JOYPADS_MAX = 16;
 
 	typedef void (*EventDispatchFunc)(const Ref<InputEvent> &p_event);
 
 private:
-	BitField<MouseButtonMask> mouse_button_mask;
+	BitField<MouseButtonMask> mouse_button_mask = MouseButtonMask::NONE;
 
 	RBSet<Key> key_label_pressed;
 	RBSet<Key> physical_keys_pressed;
@@ -112,6 +109,8 @@ private:
 		uint64_t pressed_process_frame = UINT64_MAX;
 		uint64_t released_physics_frame = UINT64_MAX;
 		uint64_t released_process_frame = UINT64_MAX;
+		ObjectID pressed_event_id;
+		ObjectID released_event_id;
 		bool exact = true;
 
 		struct DeviceState {
@@ -309,6 +308,8 @@ public:
 	bool is_action_pressed(const StringName &p_action, bool p_exact = false) const;
 	bool is_action_just_pressed(const StringName &p_action, bool p_exact = false) const;
 	bool is_action_just_released(const StringName &p_action, bool p_exact = false) const;
+	bool is_action_just_pressed_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact = false) const;
+	bool is_action_just_released_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact = false) const;
 	float get_action_strength(const StringName &p_action, bool p_exact = false) const;
 	float get_action_raw_strength(const StringName &p_action, bool p_exact = false) const;
 
@@ -403,5 +404,3 @@ public:
 
 VARIANT_ENUM_CAST(Input::MouseMode);
 VARIANT_ENUM_CAST(Input::CursorShape);
-
-#endif // INPUT_H

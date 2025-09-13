@@ -38,8 +38,8 @@
 #include "thirdparty/misc/nvapi_minimal.h"
 
 #include <dwmapi.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 #define WGL_CONTEXT_MAJOR_VERSION_ARB 0x2091
 #define WGL_CONTEXT_MINOR_VERSION_ARB 0x2092
@@ -49,11 +49,6 @@
 #define WGL_CONTEXT_CORE_PROFILE_BIT_ARB 0x00000001
 
 #define _WGL_CONTEXT_DEBUG_BIT_ARB 0x0001
-
-#if defined(__GNUC__)
-// Workaround GCC warning from -Wcast-function-type.
-#define GetProcAddress (void *)GetProcAddress
-#endif
 
 typedef HGLRC(APIENTRY *PFNWGLCREATECONTEXT)(HDC);
 typedef BOOL(APIENTRY *PFNWGLDELETECONTEXT)(HGLRC);
@@ -175,7 +170,7 @@ void GLManagerNative_Windows::_nvapi_setup_profile() {
 	// We need a name anyways, so let's use the engine name if an application name is not available
 	// (this is used mostly by the Project Manager)
 	if (app_profile_name.is_empty()) {
-		app_profile_name = VERSION_NAME;
+		app_profile_name = GODOT_VERSION_NAME;
 	}
 	String old_profile_name = app_profile_name + " Nvidia Profile";
 	Char16String app_profile_name_u16 = app_profile_name.utf16();
@@ -364,10 +359,10 @@ Error GLManagerNative_Windows::_create_context(GLWindow &win, GLDisplay &gl_disp
 	if (!module) {
 		return ERR_CANT_CREATE;
 	}
-	gd_wglCreateContext = (PFNWGLCREATECONTEXT)GetProcAddress(module, "wglCreateContext");
-	gd_wglMakeCurrent = (PFNWGLMAKECURRENT)GetProcAddress(module, "wglMakeCurrent");
-	gd_wglDeleteContext = (PFNWGLDELETECONTEXT)GetProcAddress(module, "wglDeleteContext");
-	gd_wglGetProcAddress = (PFNWGLGETPROCADDRESS)GetProcAddress(module, "wglGetProcAddress");
+	gd_wglCreateContext = (PFNWGLCREATECONTEXT)(void *)GetProcAddress(module, "wglCreateContext");
+	gd_wglMakeCurrent = (PFNWGLMAKECURRENT)(void *)GetProcAddress(module, "wglMakeCurrent");
+	gd_wglDeleteContext = (PFNWGLDELETECONTEXT)(void *)GetProcAddress(module, "wglDeleteContext");
+	gd_wglGetProcAddress = (PFNWGLGETPROCADDRESS)(void *)GetProcAddress(module, "wglGetProcAddress");
 	if (!gd_wglCreateContext || !gd_wglMakeCurrent || !gd_wglDeleteContext || !gd_wglGetProcAddress) {
 		return ERR_CANT_CREATE;
 	}

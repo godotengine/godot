@@ -168,6 +168,11 @@ RS::ShaderNativeSourceCode SkyRD::SkyShaderData::get_native_source_code() const 
 	return scene_singleton->sky.sky_shader.shader.version_get_native_source_code(version);
 }
 
+Pair<ShaderRD *, RID> SkyRD::SkyShaderData::get_native_shader_and_version() const {
+	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
+	return { &scene_singleton->sky.sky_shader.shader, version };
+}
+
 SkyRD::SkyShaderData::~SkyShaderData() {
 	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 	ERR_FAIL_NULL(scene_singleton);
@@ -777,9 +782,9 @@ void SkyRD::init() {
 		actions.renames["SCREEN_UV"] = "uv";
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["TIME"] = "params.time";
-		actions.renames["PI"] = _MKSTR(Math_PI);
-		actions.renames["TAU"] = _MKSTR(Math_TAU);
-		actions.renames["E"] = _MKSTR(Math_E);
+		actions.renames["PI"] = String::num(Math::PI);
+		actions.renames["TAU"] = String::num(Math::TAU);
+		actions.renames["E"] = String::num(Math::E);
 		actions.renames["HALF_RES_COLOR"] = "half_res_color";
 		actions.renames["QUARTER_RES_COLOR"] = "quarter_res_color";
 		actions.renames["RADIANCE"] = "radiance";
@@ -947,6 +952,15 @@ void SkyRD::set_texture_format(RD::DataFormat p_texture_format) {
 	texture_format = p_texture_format;
 }
 
+#if defined(MACOS_ENABLED) && defined(__x86_64__)
+void SkyRD::check_cubemap_array() {
+	if (OS::get_singleton()->get_current_rendering_driver_name() == "vulkan" && RenderingServer::get_singleton()->get_video_adapter_name().contains("Intel")) {
+		// Disable texture array reflections on macOS on Intel GPUs due to driver bugs.
+		sky_use_cubemap_array = false;
+	}
+}
+#endif
+
 SkyRD::~SkyRD() {
 	// cleanup anything created in init...
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
@@ -1051,7 +1065,7 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 	}
 
 	sky_scene_state.ubo.directional_light_count = 0;
-	if (shader_data->uses_light) {
+	if (shader_data->uses_light || (RendererSceneRenderRD::get_singleton()->environment_get_fog_enabled(p_render_data->environment) && RendererSceneRenderRD::get_singleton()->environment_get_fog_sun_scatter(p_render_data->environment) > 0.001)) {
 		const PagedArray<RID> &lights = *p_render_data->lights;
 		// Run through the list of lights in the scene and pick out the Directional Lights.
 		// This can't be done in RenderSceneRenderRD::_setup lights because that needs to be called
@@ -1093,15 +1107,7 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 				sky_light_data.enabled = true;
 
 				float angular_diameter = light_storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
-				if (angular_diameter > 0.0) {
-					// I know tan(0) is 0, but let's not risk it with numerical precision.
-					// Technically this will keep expanding until reaching the sun, but all we care about
-					// is expanding until we reach the radius of the near plane. There can't be more occluders than that.
-					angular_diameter = Math::tan(Math::deg_to_rad(angular_diameter));
-				} else {
-					angular_diameter = 0.0;
-				}
-				sky_light_data.size = angular_diameter;
+				sky_light_data.size = Math::deg_to_rad(angular_diameter);
 				sky_scene_state.ubo.directional_light_count++;
 				if (sky_scene_state.ubo.directional_light_count >= sky_scene_state.max_directional_lights) {
 					break;

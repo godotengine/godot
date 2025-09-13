@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SPRING_BONE_SIMULATOR_3D_H
-#define SPRING_BONE_SIMULATOR_3D_H
+#pragma once
 
 #include "scene/3d/skeleton_modifier_3d.h"
 
@@ -70,6 +69,7 @@ public:
 		ROTATION_AXIS_Y,
 		ROTATION_AXIS_Z,
 		ROTATION_AXIS_ALL,
+		ROTATION_AXIS_CUSTOM,
 	};
 
 	struct SpringBone3DVerletInfo {
@@ -85,6 +85,29 @@ public:
 		int bone = -1;
 
 		RotationAxis rotation_axis = ROTATION_AXIS_ALL;
+		Vector3 rotation_axis_vector = Vector3(1, 0, 0);
+		Vector3 get_rotation_axis_vector() const {
+			Vector3 ret;
+			switch (rotation_axis) {
+				case ROTATION_AXIS_X:
+					ret = Vector3(1, 0, 0);
+					break;
+				case ROTATION_AXIS_Y:
+					ret = Vector3(0, 1, 0);
+					break;
+				case ROTATION_AXIS_Z:
+					ret = Vector3(0, 0, 1);
+					break;
+				case ROTATION_AXIS_ALL:
+					ret = Vector3(0, 0, 0);
+					break;
+				case ROTATION_AXIS_CUSTOM:
+					ret = rotation_axis_vector;
+					break;
+			}
+			return ret;
+		}
+
 		float radius = 0.1;
 		float stiffness = 1.0;
 		float drag = 0.0;
@@ -126,6 +149,7 @@ public:
 		Ref<Curve> gravity_damping_curve;
 		Vector3 gravity_direction = Vector3(0, -1, 0);
 		RotationAxis rotation_axis = ROTATION_AXIS_ALL;
+		Vector3 rotation_axis_vector = Vector3(1, 0, 0);
 		Vector<SpringBone3DJointSetting *> joints;
 
 		// Cache into collisions.
@@ -142,18 +166,22 @@ public:
 
 protected:
 	Vector<SpringBone3DSetting *> settings;
+	Vector3 external_force;
 
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
-	void _validate_property(PropertyInfo &p_property) const;
+	void _validate_dynamic_prop(PropertyInfo &p_property) const;
 
 	void _notification(int p_what);
+
+	virtual void _validate_bone_names() override;
+	virtual void _skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) override;
 
 	static void _bind_methods();
 
 	virtual void _set_active(bool p_active) override;
-	virtual void _process_modification() override;
+	virtual void _process_modification(double p_delta) override;
 	void _init_joints(Skeleton3D *p_skeleton, SpringBone3DSetting *p_setting);
 	void _process_joints(double p_delta, Skeleton3D *p_skeleton, Vector<SpringBone3DJointSetting *> &p_joints, const LocalVector<ObjectID> &p_collisions, const Transform3D &p_center_transform, const Transform3D &p_inverted_center_transform, const Quaternion &p_inverted_center_rotation);
 
@@ -201,6 +229,8 @@ public:
 
 	void set_rotation_axis(int p_index, RotationAxis p_axis);
 	RotationAxis get_rotation_axis(int p_index) const;
+	void set_rotation_axis_vector(int p_index, const Vector3 &p_vector);
+	Vector3 get_rotation_axis_vector(int p_index) const;
 	void set_radius(int p_index, float p_radius);
 	float get_radius(int p_index) const;
 	void set_radius_damping_curve(int p_index, const Ref<Curve> &p_damping_curve);
@@ -235,6 +265,8 @@ public:
 
 	void set_joint_rotation_axis(int p_index, int p_joint, RotationAxis p_axis);
 	RotationAxis get_joint_rotation_axis(int p_index, int p_joint) const;
+	void set_joint_rotation_axis_vector(int p_index, int p_joint, const Vector3 &p_vector);
+	Vector3 get_joint_rotation_axis_vector(int p_index, int p_joint) const;
 	void set_joint_radius(int p_index, int p_joint, float p_radius);
 	float get_joint_radius(int p_index, int p_joint) const;
 	void set_joint_stiffness(int p_index, int p_joint, float p_stiffness);
@@ -269,11 +301,8 @@ public:
 
 	LocalVector<ObjectID> get_valid_collision_instance_ids(int p_index);
 
-	// Helper.
-	static Quaternion get_local_pose_rotation(Skeleton3D *p_skeleton, int p_bone, const Quaternion &p_global_pose_rotation);
-	static Quaternion get_from_to_rotation(const Vector3 &p_from, const Vector3 &p_to, const Quaternion &p_prev_rot);
-	static Vector3 snap_position_to_plane(const Transform3D &p_rest, RotationAxis p_axis, const Vector3 &p_position);
-	static Vector3 limit_length(const Vector3 &p_origin, const Vector3 &p_destination, float p_length);
+	void set_external_force(const Vector3 &p_force);
+	Vector3 get_external_force() const;
 
 	// To process manually.
 	void reset();
@@ -281,10 +310,10 @@ public:
 #ifdef TOOLS_ENABLED
 	virtual bool is_processed_on_saving() const override { return true; }
 #endif
+
+	~SpringBoneSimulator3D();
 };
 
 VARIANT_ENUM_CAST(SpringBoneSimulator3D::BoneDirection);
 VARIANT_ENUM_CAST(SpringBoneSimulator3D::CenterFrom);
 VARIANT_ENUM_CAST(SpringBoneSimulator3D::RotationAxis);
-
-#endif // SPRING_BONE_SIMULATOR_3D_H

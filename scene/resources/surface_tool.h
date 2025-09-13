@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SURFACE_TOOL_H
-#define SURFACE_TOOL_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 #include "scene/resources/mesh.h"
@@ -62,8 +61,6 @@ public:
 		Vector<float> weights;
 
 		bool operator==(const Vertex &p_vertex) const;
-
-		Vertex() {}
 	};
 
 	enum CustomFormat {
@@ -246,5 +243,3 @@ public:
 
 VARIANT_ENUM_CAST(SurfaceTool::CustomFormat)
 VARIANT_ENUM_CAST(SurfaceTool::SkinWeightCount)
-
-#endif // SURFACE_TOOL_H

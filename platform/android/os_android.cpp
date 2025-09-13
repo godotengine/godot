@@ -45,7 +45,7 @@
 #include "drivers/unix/file_access_unix.h"
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
-#include "editor/plugins/game_view_plugin.h"
+#include "editor/run/game_view_plugin.h"
 #endif
 #include "main/main.h"
 #include "scene/main/scene_tree.h"
@@ -315,7 +315,7 @@ String OS_Android::get_version() const {
 	}
 
 	// Handles stock Android.
-	String sdk_version = get_system_property("ro.build.version.sdk_int");
+	String sdk_version = get_system_property("ro.build.version.sdk");
 	String build = get_system_property("ro.build.version.incremental");
 	if (!sdk_version.is_empty()) {
 		if (!build.is_empty()) {
@@ -325,6 +325,14 @@ String OS_Android::get_version() const {
 	}
 
 	return "";
+}
+
+String OS_Android::get_version_alias() const {
+	String release = get_system_property("ro.build.version.release_or_codename");
+	String sdk_version = get_system_property("ro.build.version.sdk");
+	String build = get_system_property("ro.build.version.incremental");
+
+	return vformat("%s (SDK %s build %s)", release, sdk_version, build);
 }
 
 MainLoop *OS_Android::get_main_loop() const {
@@ -454,6 +462,9 @@ void OS_Android::_load_system_font_config() const {
 	Ref<XMLParser> parser;
 	parser.instantiate();
 
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	String root = String(getenv("ANDROID_ROOT")).path_join("fonts");
+
 	Error err = parser->open(String(getenv("ANDROID_ROOT")).path_join("/etc/fonts.xml"));
 	if (err == OK) {
 		bool in_font_node = false;
@@ -530,20 +541,22 @@ void OS_Android::_load_system_font_config() const {
 				if (in_font_node) {
 					fi.filename = parser->get_node_data().strip_edges();
 					fi.font_name = fn;
-					if (!fb.is_empty() && fn.is_empty()) {
-						fi.font_name = fb;
-						fi.priority = 2;
+					if (da->file_exists(root.path_join(fi.filename))) {
+						if (!fb.is_empty() && fn.is_empty()) {
+							fi.font_name = fb;
+							fi.priority = 2;
+						}
+						if (fi.font_name.is_empty()) {
+							fi.font_name = "sans-serif";
+							fi.priority = 5;
+						}
+						if (fi.font_name.ends_with("-condensed")) {
+							fi.stretch = 75;
+							fi.font_name = fi.font_name.trim_suffix("-condensed");
+						}
+						fonts.push_back(fi);
+						font_names.insert(fi.font_name);
 					}
-					if (fi.font_name.is_empty()) {
-						fi.font_name = "sans-serif";
-						fi.priority = 5;
-					}
-					if (fi.font_name.ends_with("-condensed")) {
-						fi.stretch = 75;
-						fi.font_name = fi.font_name.trim_suffix("-condensed");
-					}
-					fonts.push_back(fi);
-					font_names.insert(fi.font_name);
 				}
 			}
 			if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END) {

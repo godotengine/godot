@@ -281,30 +281,30 @@ void SwappyVk_uninjectTracer(const SwappyTracer* tracer);
  * Usage of this functionality is optional.
  */
 typedef struct SwappyVkFunctionProvider {
-    /**
-     * @brief Callback to initialize the function provider.
-     *
-     * This function is called by Swappy before any functions are requested.
-     * E.g. so you can call dlopen on the Vulkan library.
-     */
-    bool (*init)();
+  /**
+   * @brief Callback to initialize the function provider.
+   *
+   * This function is called by Swappy before any functions are requested.
+   * E.g. so you can call dlopen on the Vulkan library.
+   */
+  bool (*init)();
 
-    /**
-     * @brief Callback to get the address of a function.
-     *
-     * This function is called by Swappy to get the address of a Vulkan
-     * function.
-     * @param name The null-terminated name of the function.
-     */
-    void* (*getProcAddr)(const char* name);
+  /**
+   * @brief Callback to get the address of a function.
+   *
+   * This function is called by Swappy to get the address of a Vulkan
+   * function.
+   * @param name The null-terminated name of the function.
+   */
+  void* (*getProcAddr)(const char* name);
 
-    /**
-     * @brief Callback to close any resources owned by the function provider.
-     *
-     * This function is called by Swappy when no more functions will be
-     * requested, e.g. so you can call dlclose on the Vulkan library.
-     */
-    void (*close)();
+  /**
+   * @brief Callback to close any resources owned by the function provider.
+   *
+   * This function is called by Swappy when no more functions will be
+   * requested, e.g. so you can call dlclose on the Vulkan library.
+   */
+  void (*close)();
 } SwappyVkFunctionProvider;
 
 /**
@@ -384,7 +384,8 @@ void SwappyVk_enableStats(VkSwapchainKHR swapchain, bool enabled);
 
  * @see SwappyVk_enableStats.
  */
-void SwappyVk_recordFrameStart(VkQueue queue, VkSwapchainKHR swapchain, uint32_t image);
+void SwappyVk_recordFrameStart(VkQueue queue, VkSwapchainKHR swapchain,
+                               uint32_t image);
 
 /**
  * @brief Returns the stats collected, if statistics collection was toggled on.
@@ -396,11 +397,11 @@ void SwappyVk_recordFrameStart(VkQueue queue, VkSwapchainKHR swapchain, uint32_t
  * conditions.
  *
  * @param[in]  swapchain   - The swapchain for which stats are being queried.
- * @param      swappyStats - Pointer to a SwappyStats that will be populated with
- *                             the collected stats. Cannot be NULL.
+ * @param      swappyStats - Pointer to a SwappyStats that will be populated
+ * with the collected stats. Cannot be NULL.
  * @see SwappyStats
  */
-void SwappyVk_getStats(VkSwapchainKHR swapchain, SwappyStats *swappyStats);
+void SwappyVk_getStats(VkSwapchainKHR swapchain, SwappyStats* swappyStats);
 
 /**
  * @brief Clears the frame statistics collected so far.
@@ -412,6 +413,58 @@ void SwappyVk_getStats(VkSwapchainKHR swapchain, SwappyStats *swappyStats);
  * @param[in]  swapchain   - The swapchain for which stats are being cleared.
  */
 void SwappyVk_clearStats(VkSwapchainKHR swapchain);
+
+/**
+ * @brief Reset the swappy pacing mechanism
+ *
+ * In cases where the frame timing history is irrelevant (for example during
+ * scene/level transitions or after loading screens), calling this would
+ * remove all the history for frame pacing. Calling this entry point
+ * would reset the frame rate to the initial state at the end of the current
+ * frame. Then swappy would just pace as normal with fresh state from next
+ * frame. There are no error conditions associated with this call.
+ *
+ * @param[in]  swapchain   - The swapchain for which frame pacing is reset.
+ */
+void SwappyVk_resetFramePacing(VkSwapchainKHR swapchain);
+
+/**
+ * @brief Enable/Disable the swappy pacing mechanism
+ *
+ * By default frame pacing is enabled when swappy is used, however it can be
+ * disabled at runtime by calling `SwappyVk_enableFramePacing(swapchain,
+ * false)`. When the frame pacing is disabled, ::SwappyVk_enableBlockingWait
+ * will control whether
+ * ::SwappyVk_queuePresent will return immediately, or will block until the
+ * previous frame's GPU work is completed. All enabling/disabling effects take
+ * place from next frame. Once disabled, `SwappyVk_enableFramePacing(swapchain,
+ * true)` will enable frame pacing again with a fresh frame time state -
+ * equivalent of calling ::SwappyVk_resetFramePacing().
+ *
+ * @param[in]  swapchain   - The swapchain for which stats are being queried.
+ * @param      enable      - If true, enables frame pacing otherwise disables it
+ */
+void SwappyVk_enableFramePacing(VkSwapchainKHR swapchain, bool enable);
+
+/**
+ * @brief Enable/Disable blocking wait when frame-pacing is disabled
+ *
+ * By default ::SwappyVk_queuePresent will do a blocking wait until previous
+ * frame's GPU work is completed. However when frame pacing is disabled, calling
+ * `SwappyVk_enableBlockingWait(swapchain, false)` will ensure that
+ * ::SwappyVk_queuePresent returns without waiting for previous frame's GPU
+ * work. This behaviour impacts the GPU time returned in the
+ * ::SwappyPostWaitCallback callback. If the last frame's GPU work is done by
+ * the time ::SwappyVk_queuePresent for this frame is called, then the previous
+ * frame's GPU time will be returned otherwise `-1` will be delivered in the
+ * callback for the frame. This setting has no impact when frame pacing is
+ * enabled.
+ *
+ * @param[in]  swapchain   - The swapchain for which stats are being queried.
+ * @param      enable      - If true, ::SwappyVk_queuePresent will block until
+ * the previous frame's GPU work is complete.
+ */
+void SwappyVk_enableBlockingWait(VkSwapchainKHR swapchain, bool enable);
 
 #ifdef __cplusplus
 }  // extern "C"

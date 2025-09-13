@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SPRING_BONE_COLLISION_3D_H
-#define SPRING_BONE_COLLISION_3D_H
+#pragma once
 
 #include "scene/3d/skeleton_3d.h"
 
@@ -42,10 +41,13 @@ class SpringBoneCollision3D : public Node3D {
 	Vector3 position_offset;
 	Quaternion rotation_offset;
 
+	void _validate_bone_name();
+
 protected:
 	PackedStringArray get_configuration_warnings() const override;
 
 	void _validate_property(PropertyInfo &p_property) const;
+	void _notification(int p_what);
 	static void _bind_methods();
 
 	virtual Vector3 _collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current) const;
@@ -68,5 +70,3 @@ public:
 
 	Vector3 collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current) const;
 };
-
-#endif // SPRING_BONE_COLLISION_3D_H

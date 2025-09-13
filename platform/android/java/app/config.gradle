@@ -1,19 +1,21 @@
 ext.versions = [
-    androidGradlePlugin: '8.2.0',
-    compileSdk         : 34,
-    // Also update 'platform/android/export/export_plugin.cpp#OPENGL_MIN_SDK_VERSION'
-    minSdk             : 21,
+    androidGradlePlugin: '8.6.1',
+    compileSdk         : 35,
+    // Also update:
+    // - 'platform/android/export/export_plugin.cpp#DEFAULT_MIN_SDK_VERSION'
+    // - 'platform/android/detect.py#get_min_target_api()'
+    minSdk             : 24,
     // Also update 'platform/android/export/export_plugin.cpp#DEFAULT_TARGET_SDK_VERSION'
-    targetSdk          : 34,
-    buildTools         : '34.0.0',
-    kotlinVersion      : '1.9.20',
-    fragmentVersion    : '1.7.1',
+    targetSdk          : 35,
+    buildTools         : '35.0.0',
+    kotlinVersion      : '2.1.20',
+    fragmentVersion    : '1.8.6',
     nexusPublishVersion: '1.3.0',
     javaVersion        : JavaVersion.VERSION_17,
     // Also update 'platform/android/detect.py#get_ndk_version()' when this is updated.
-    ndkVersion         : '23.2.8568313',
+    ndkVersion         : '28.1.13356709',
     splashscreenVersion: '1.0.1',
-    openxrVendorsVersion: '3.1.2-stable'
+    openxrVendorsVersion: '4.1.1-stable'
 
 ]
 
@@ -69,25 +71,6 @@ ext.getExportTargetSdkVersion = { ->
     } catch (NumberFormatException ignored) {
         return versions.targetSdk
     }
-}
-
-ext.getGodotRenderingMethod = { ->
-    String renderingMethod = project.hasProperty("godot_rendering_method") ? project.property("godot_rendering_method") : ""
-    return renderingMethod
-}
-
-ext.getGodotEditorVersion = { ->
-    String editorVersion = project.hasProperty("godot_editor_version") ? project.property("godot_editor_version") : ""
-    if (editorVersion == null || editorVersion.isEmpty()) {
-        // Try the library version first
-        editorVersion = getGodotLibraryVersionName()
-
-        if (editorVersion.isEmpty()) {
-            // Fallback value.
-            editorVersion = "custom_build"
-        }
-    }
-    return editorVersion
 }
 
 ext.getGodotLibraryVersionCode = { ->
@@ -400,18 +383,18 @@ ext.shouldNotStrip = { ->
  * - https://stackoverflow.com/a/44704840
  */
 ext.shouldUseLegacyPackaging = { ->
-    int minSdk = getExportMinSdkVersion()
-    if (minSdk < 23) {
-        // Enforce the default behavior for compatibility with device running api < 23
-        return true
-    }
-
     String legacyPackagingFlag = project.hasProperty("compress_native_libraries") ? project.property("compress_native_libraries") : ""
     if (legacyPackagingFlag != null && !legacyPackagingFlag.isEmpty()) {
         return Boolean.parseBoolean(legacyPackagingFlag)
     }
 
-    // Default behavior for minSdk >= 23
+    if (getExportMinSdkVersion() <= 29) {
+        // Use legacy packaging for compatibility with device running api <= 29.
+        // See https://github.com/godotengine/godot/issues/108842 for reference.
+        return true
+    }
+
+    // Default behavior for minSdk > 29.
     return false
 }
 

@@ -33,7 +33,6 @@
 
 namespace OT {
 
-
 /* https://docs.microsoft.com/en-us/typography/opentype/spec/otvarcommonformats#tuplevariationheader */
 struct TupleVariationHeader
 {
@@ -53,7 +52,7 @@ struct TupleVariationHeader
   {
     const F2DOT14 *peak_tuple = nullptr;
     if (has_peak ())
-      peak_tuple = get_peak_tuple (axis_count).arrayZ;
+      peak_tuple = get_peak_tuple (axis_count);
     else
     {
       unsigned int index = get_index ();
@@ -68,8 +67,8 @@ struct TupleVariationHeader
 
     if (has_interm)
     {
-      start_tuple = get_start_tuple (axis_count).arrayZ;
-      end_tuple = get_end_tuple (axis_count).arrayZ;
+      start_tuple = get_start_tuple (axis_count);
+      end_tuple = get_end_tuple (axis_count);
     }
 
     for (unsigned i = 0; i < axis_count; i++)
@@ -98,60 +97,56 @@ struct TupleVariationHeader
     return true;
   }
 
+  HB_ALWAYS_INLINE
   double calculate_scalar (hb_array_t<const int> coords, unsigned int coord_count,
 			   const hb_array_t<const F2DOT14> shared_tuples,
-			   const hb_vector_t<hb_pair_t<int,int>> *shared_tuple_active_idx = nullptr) const
+			   hb_scalar_cache_t *shared_tuple_scalar_cache = nullptr) const
   {
+    unsigned tuple_index = tupleIndex;
+
     const F2DOT14 *peak_tuple;
 
-    unsigned start_idx = 0;
-    unsigned end_idx = coord_count;
-    unsigned step = 1;
+    bool has_interm = tuple_index & TuppleIndex::IntermediateRegion; // Inlined for performance
+    if (unlikely (has_interm))
+      shared_tuple_scalar_cache = nullptr;
 
-    if (has_peak ())
-      peak_tuple = get_peak_tuple (coord_count).arrayZ;
+    if (unlikely (tuple_index & TuppleIndex::EmbeddedPeakTuple)) // Inlined for performance
+    {
+      peak_tuple = get_peak_tuple (coord_count);
+      shared_tuple_scalar_cache = nullptr;
+    }
     else
     {
-      unsigned int index = get_index ();
+      unsigned int index = tuple_index & TuppleIndex::TupleIndexMask; // Inlined for performance
+
+      float scalar;
+      if (shared_tuple_scalar_cache &&
+	  shared_tuple_scalar_cache->get (index, &scalar))
+	return (double) scalar;
+
       if (unlikely ((index + 1) * coord_count > shared_tuples.length))
         return 0.0;
-      peak_tuple = shared_tuples.sub_array (coord_count * index, coord_count).arrayZ;
+      peak_tuple = shared_tuples.arrayZ + (coord_count * index);
 
-      if (shared_tuple_active_idx)
-      {
-	if (unlikely (index >= shared_tuple_active_idx->length))
-	  return 0.0;
-	auto _ = (*shared_tuple_active_idx).arrayZ[index];
-	if (_.second != -1)
-	{
-	  start_idx = _.first;
-	  end_idx = _.second + 1;
-	  step = _.second - _.first;
-	}
-	else if (_.first != -1)
-	{
-	  start_idx = _.first;
-	  end_idx = start_idx + 1;
-	}
-      }
     }
 
     const F2DOT14 *start_tuple = nullptr;
     const F2DOT14 *end_tuple = nullptr;
-    bool has_interm = has_intermediate ();
+
     if (has_interm)
     {
-      start_tuple = get_start_tuple (coord_count).arrayZ;
-      end_tuple = get_end_tuple (coord_count).arrayZ;
+      start_tuple = get_start_tuple (coord_count);
+      end_tuple = get_end_tuple (coord_count);
     }
 
     double scalar = 1.0;
-    for (unsigned int i = start_idx; i < end_idx; i += step)
+    for (unsigned int i = 0; i < coord_count; i++)
     {
       int peak = peak_tuple[i].to_int ();
       if (!peak) continue;
 
       int v = coords[i];
+      if (!v) { scalar = 0.0; break; }
       if (v == peak) continue;
 
       if (has_interm)
@@ -160,16 +155,18 @@ struct TupleVariationHeader
         int end = end_tuple[i].to_int ();
         if (unlikely (start > peak || peak > end ||
                       (start < 0 && end > 0 && peak))) continue;
-        if (v < start || v > end) return 0.0;
+        if (v < start || v > end) { scalar = 0.0; break; }
         if (v < peak)
         { if (peak != start) scalar *= (double) (v - start) / (peak - start); }
         else
         { if (peak != end) scalar *= (double) (end - v) / (end - peak); }
       }
-      else if (!v || v < hb_min (0, peak) || v > hb_max (0, peak)) return 0.0;
+      else if (v < hb_min (0, peak) || v > hb_max (0, peak)) { scalar = 0.0; break; }
       else
         scalar *= (double) v / peak;
     }
+    if (shared_tuple_scalar_cache)
+      shared_tuple_scalar_cache->set (get_index (), scalar);
     return scalar;
   }
 
@@ -194,12 +191,14 @@ struct TupleVariationHeader
 
   hb_array_t<const F2DOT14> get_all_tuples (unsigned axis_count) const
   { return StructAfter<UnsizedArrayOf<F2DOT14>> (tupleIndex).as_array ((has_peak () + has_intermediate () * 2) * axis_count); }
-  hb_array_t<const F2DOT14> get_peak_tuple (unsigned axis_count) const
-  { return get_all_tuples (axis_count).sub_array (0, axis_count); }
-  hb_array_t<const F2DOT14> get_start_tuple (unsigned axis_count) const
-  { return get_all_tuples (axis_count).sub_array (has_peak () * axis_count, axis_count); }
-  hb_array_t<const F2DOT14> get_end_tuple (unsigned axis_count) const
-  { return get_all_tuples (axis_count).sub_array (has_peak () * axis_count + axis_count, axis_count); }
+  const F2DOT14* get_all_tuples_base (unsigned axis_count) const
+  { return StructAfter<UnsizedArrayOf<F2DOT14>> (tupleIndex).arrayZ; }
+  const F2DOT14* get_peak_tuple (unsigned axis_count) const
+  { return get_all_tuples_base (axis_count); }
+  const F2DOT14* get_start_tuple (unsigned axis_count) const
+  { return get_all_tuples_base (axis_count) + has_peak () * axis_count; }
+  const F2DOT14* get_end_tuple (unsigned axis_count) const
+  { return get_all_tuples_base (axis_count) + has_peak () * axis_count + axis_count; }
 
   HBUINT16      varDataSize;    /* The size in bytes of the serialized
                                  * data for this tuple variation table. */
@@ -231,9 +230,9 @@ struct tuple_delta_t
   /* indices_length = point_count, indice[i] = 1 means point i is referenced */
   hb_vector_t<bool> indices;
 
-  hb_vector_t<double> deltas_x;
+  hb_vector_t<float> deltas_x;
   /* empty for cvar tuples */
-  hb_vector_t<double> deltas_y;
+  hb_vector_t<float> deltas_y;
 
   /* compiled data: header and deltas
    * compiled point data is saved in a hashmap within tuple_variations_t cause
@@ -299,9 +298,9 @@ struct tuple_delta_t
     return *this;
   }
 
-  tuple_delta_t& operator *= (double scalar)
+  tuple_delta_t& operator *= (float scalar)
   {
-    if (scalar == 1.0)
+    if (scalar == 1.0f)
       return *this;
 
     unsigned num = indices.length;
@@ -514,9 +513,9 @@ struct tuple_delta_t
   bool compile_deltas ()
   { return compile_deltas (indices, deltas_x, deltas_y, compiled_deltas); }
 
-  static bool compile_deltas (const hb_vector_t<bool> &point_indices,
-			      const hb_vector_t<double> &x_deltas,
-			      const hb_vector_t<double> &y_deltas,
+  static bool compile_deltas (hb_array_t<const bool> point_indices,
+			      hb_array_t<const float> x_deltas,
+			      hb_array_t<const float> y_deltas,
 			      hb_vector_t<unsigned char> &compiled_deltas /* OUT */)
   {
     hb_vector_t<int> rounded_deltas;
@@ -629,11 +628,11 @@ struct tuple_delta_t
           deltas_x.arrayZ[i] = infer_delta ((double) orig_points.arrayZ[i].x,
                                             (double) orig_points.arrayZ[prev].x,
                                             (double) orig_points.arrayZ[next].x,
-                                            deltas_x.arrayZ[prev], deltas_x.arrayZ[next]);
+                                            (double) deltas_x.arrayZ[prev], (double) deltas_x.arrayZ[next]);
           deltas_y.arrayZ[i] = infer_delta ((double) orig_points.arrayZ[i].y,
                                             (double) orig_points.arrayZ[prev].y,
                                             (double) orig_points.arrayZ[next].y,
-                                            deltas_y.arrayZ[prev], deltas_y.arrayZ[next]);
+                                            (double) deltas_y.arrayZ[prev], (double) deltas_y.arrayZ[next]);
           inferred_idxes.add (i);
           if (--unref_count == 0) goto no_more_gaps;
         }
@@ -692,7 +691,7 @@ struct tuple_delta_t
 
     if (ref_count == count) return true;
 
-    hb_vector_t<double> opt_deltas_x, opt_deltas_y;
+    hb_vector_t<float> opt_deltas_x, opt_deltas_y;
     bool is_comp_glyph_wo_deltas = (is_composite && ref_count == 0);
     if (is_comp_glyph_wo_deltas)
     {
@@ -841,6 +840,7 @@ struct tuple_delta_t
   { return (i >= end) ? start : (i + 1); }
 };
 
+template <typename OffType = HBUINT16>
 struct TupleVariationData
 {
   bool sanitize (hb_sanitize_context_t *c) const
@@ -875,7 +875,7 @@ struct TupleVariationData
 
     private:
     /* referenced point set->compiled point data map */
-    hb_hashmap_t<const hb_vector_t<bool>*, hb_vector_t<char>> point_data_map;
+    hb_hashmap_t<const hb_vector_t<bool>*, hb_vector_t<unsigned char>> point_data_map;
     /* referenced point set-> count map, used in finding shared points */
     hb_hashmap_t<const hb_vector_t<bool>*, unsigned> point_set_count_map;
 
@@ -883,11 +883,11 @@ struct TupleVariationData
      * shared_points_bytes is a pointer to some value in the point_data_map,
      * which will be freed during map destruction. Save it for serialization, so
      * no need to do find_shared_points () again */
-    hb_vector_t<char> *shared_points_bytes = nullptr;
+    hb_vector_t<unsigned char> *shared_points_bytes = nullptr;
 
-    /* total compiled byte size as TupleVariationData format, initialized to its
-     * min_size: 4 */
-    unsigned compiled_byte_size = 4;
+    /* total compiled byte size as TupleVariationData format, initialized to 0 */
+    unsigned compiled_byte_size = 0;
+    bool needs_padding = false;
 
     /* for gvar iup delta optimization: whether this is a composite glyph */
     bool is_composite = false;
@@ -1219,11 +1219,20 @@ struct TupleVariationData
     bool compile_bytes (const hb_map_t& axes_index_map,
                         const hb_map_t& axes_old_index_tag_map,
                         bool use_shared_points,
+                        bool is_gvar = false,
                         const hb_hashmap_t<const hb_vector_t<char>*, unsigned>* shared_tuples_idx_map = nullptr)
     {
+      // return true for empty glyph
+      if (!tuple_vars)
+        return true;
+
       // compile points set and store data in hashmap
       if (!compile_all_point_sets ())
         return false;
+
+      /* total compiled byte size as TupleVariationData format, initialized to its
+       * min_size: 4 */
+      compiled_byte_size += 4;
 
       if (use_shared_points)
       {
@@ -1235,7 +1244,7 @@ struct TupleVariationData
       for (auto& tuple: tuple_vars)
       {
         const hb_vector_t<bool>* points_set = &(tuple.indices);
-        hb_vector_t<char> *points_data;
+        hb_vector_t<unsigned char> *points_data;
         if (unlikely (!point_data_map.has (points_set, &points_data)))
           return false;
 
@@ -1253,6 +1262,13 @@ struct TupleVariationData
           return false;
         compiled_byte_size += tuple.compiled_tuple_header.length + points_data_length + tuple.compiled_deltas.length;
       }
+
+      if (is_gvar && (compiled_byte_size % 2))
+      {
+        needs_padding = true;
+        compiled_byte_size += 1;
+      }
+
       return true;
     }
 
@@ -1273,20 +1289,20 @@ struct TupleVariationData
       TRACE_SERIALIZE (this);
       if (is_gvar && shared_points_bytes)
       {
-        hb_bytes_t s (shared_points_bytes->arrayZ, shared_points_bytes->length);
+        hb_ubytes_t s (shared_points_bytes->arrayZ, shared_points_bytes->length);
         s.copy (c);
       }
 
       for (const auto& tuple: tuple_vars)
       {
         const hb_vector_t<bool>* points_set = &(tuple.indices);
-        hb_vector_t<char> *point_data;
+        hb_vector_t<unsigned char> *point_data;
         if (!point_data_map.has (points_set, &point_data))
           return_trace (false);
 
         if (!is_gvar || point_data != shared_points_bytes)
         {
-          hb_bytes_t s (point_data->arrayZ, point_data->length);
+          hb_ubytes_t s (point_data->arrayZ, point_data->length);
           s.copy (c);
         }
 
@@ -1295,7 +1311,7 @@ struct TupleVariationData
       }
 
       /* padding for gvar */
-      if (is_gvar && (compiled_byte_size % 2))
+      if (is_gvar && needs_padding)
       {
         HBUINT8 pad;
         pad = 0;
@@ -1313,7 +1329,7 @@ struct TupleVariationData
     {
       var_data_bytes = var_data_bytes_;
       var_data = var_data_bytes_.as<TupleVariationData> ();
-      index = 0;
+      tuples_left = var_data->tupleVarCount.get_count ();
       axis_count = axis_count_;
       current_tuple = &var_data->get_tuple_var_header ();
       data_offset = 0;
@@ -1332,30 +1348,41 @@ struct TupleVariationData
       return true;
     }
 
-    bool is_valid () const
+    bool is_valid ()
     {
-      return (index < var_data->tupleVarCount.get_count ()) &&
-             var_data_bytes.check_range (current_tuple, TupleVariationHeader::min_size) &&
-             var_data_bytes.check_range (current_tuple, hb_max (current_tuple->get_data_size (),
-                                                                current_tuple->get_size (axis_count)));
+      if (unlikely (tuples_left <= 0))
+	return false;
+
+      current_tuple_size = TupleVariationHeader::min_size;
+      if (unlikely (!var_data_bytes.check_range (current_tuple, current_tuple_size)))
+	return false;
+
+      current_tuple_size = current_tuple->get_size (axis_count);
+      if (unlikely (!var_data_bytes.check_range (current_tuple, current_tuple_size)))
+	return false;
+
+      return true;
     }
 
+    HB_ALWAYS_INLINE
     bool move_to_next ()
     {
       data_offset += current_tuple->get_data_size ();
-      current_tuple = &current_tuple->get_next (axis_count);
-      index++;
+      current_tuple = &StructAtOffset<TupleVariationHeader> (current_tuple, current_tuple_size);
+      tuples_left--;
       return is_valid ();
     }
 
+    // TODO: Make it return (sanitized) hb_bytes_t
     const HBUINT8 *get_serialized_data () const
     { return &(table_base+var_data->data) + data_offset; }
 
     private:
+    signed tuples_left;
     const TupleVariationData *var_data;
-    unsigned int index;
     unsigned int axis_count;
     unsigned int data_offset;
+    unsigned int current_tuple_size;
     const void *table_base;
 
     public:
@@ -1432,9 +1459,10 @@ struct TupleVariationData
   static bool decompile_deltas (const HBUINT8 *&p /* IN/OUT */,
 				hb_vector_t<T> &deltas /* IN/OUT */,
 				const HBUINT8 *end,
-				bool consume_all = false)
+				bool consume_all = false,
+				unsigned start = 0)
   {
-    return TupleValues::decompile (p, deltas, end, consume_all);
+    return TupleValues::decompile (p, deltas, end, consume_all, start);
   }
 
   bool has_data () const { return tupleVarCount; }
@@ -1505,15 +1533,16 @@ struct TupleVariationData
                                  * low 12 bits are the number of tuple variation tables
                                  * for this glyph. The number of tuple variation tables
                                  * can be any number between 1 and 4095. */
-  Offset16To<HBUINT8>
+  OffsetTo<HBUINT8, OffType>
                 data;           /* Offset from the start of the base table
                                  * to the serialized data. */
   /* TupleVariationHeader tupleVariationHeaders[] *//* Array of tuple variation headers. */
   public:
-  DEFINE_SIZE_MIN (4);
+  DEFINE_SIZE_MIN (2 + OffType::static_size);
 };
 
-using tuple_variations_t = TupleVariationData::tuple_variations_t;
+// TODO: Move tuple_variations_t to outside of TupleVariationData
+using tuple_variations_t = TupleVariationData<HBUINT16>::tuple_variations_t;
 struct item_variations_t
 {
   using region_t = const hb_hashmap_t<hb_tag_t, Triple>*;

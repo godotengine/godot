@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_DEVICE_DRIVER_VULKAN_H
-#define RENDERING_DEVICE_DRIVER_VULKAN_H
+#pragma once
 
 #include "core/templates/hash_map.h"
 #include "core/templates/paged_allocator.h"
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"
+#include "drivers/vulkan/rendering_shader_container_vulkan.h"
 #include "servers/rendering/rendering_device_driver.h"
 
 #ifdef DEBUG_ENABLED
@@ -54,6 +54,9 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 
 	struct CommandQueue;
 	struct SwapChain;
+	struct CommandBufferInfo;
+	struct RenderPassInfo;
+	struct Framebuffer;
 
 	struct Queue {
 		VkQueue queue = VK_NULL_HANDLE;
@@ -76,18 +79,6 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 		String supported_operations_desc() const;
 	};
 
-	struct VRSCapabilities {
-		bool pipeline_vrs_supported = false; // We can specify our fragment rate on a pipeline level.
-		bool primitive_vrs_supported = false; // We can specify our fragment rate on each drawcall.
-		bool attachment_vrs_supported = false; // We can provide a density map attachment on our framebuffer.
-
-		Size2i min_texel_size;
-		Size2i max_texel_size;
-		Size2i max_fragment_size;
-
-		Size2i texel_size; // The texel size we'll use
-	};
-
 	struct ShaderCapabilities {
 		bool shader_float16_is_supported = false;
 		bool shader_int8_is_supported = false;
@@ -107,6 +98,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 		PFN_vkAcquireNextImageKHR AcquireNextImageKHR = nullptr;
 		PFN_vkQueuePresentKHR QueuePresentKHR = nullptr;
 		PFN_vkCreateRenderPass2KHR CreateRenderPass2KHR = nullptr;
+		PFN_vkCmdEndRenderPass2KHR EndRenderPass2KHR = nullptr;
 
 		// Debug marker extensions.
 		PFN_vkCmdDebugMarkerBeginEXT CmdDebugMarkerBeginEXT = nullptr;
@@ -135,10 +127,14 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	RDD::Capabilities device_capabilities;
 	SubgroupCapabilities subgroup_capabilities;
 	MultiviewCapabilities multiview_capabilities;
-	VRSCapabilities vrs_capabilities;
+	FragmentShadingRateCapabilities fsr_capabilities;
+	FragmentDensityMapCapabilities fdm_capabilities;
 	ShaderCapabilities shader_capabilities;
 	StorageBufferCapabilities storage_buffer_capabilities;
+	RenderingShaderContainerFormatVulkan shader_container_format;
 	bool buffer_device_address_support = false;
+	bool vulkan_memory_model_support = false;
+	bool vulkan_memory_model_device_scope_support = false;
 	bool pipeline_cache_control_support = false;
 	bool device_fault_support = false;
 #if defined(VK_TRACK_DEVICE_MEMORY)
@@ -155,6 +151,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	Error _initialize_device_extensions();
 	Error _check_device_features();
 	Error _check_device_capabilities();
+	void _choose_vrs_capabilities();
 	Error _add_queue_create_info(LocalVector<VkDeviceQueueCreateInfo> &r_queue_create_info);
 	Error _initialize_device(const LocalVector<VkDeviceQueueCreateInfo> &p_queue_create_info);
 	Error _initialize_allocator();
@@ -231,7 +228,7 @@ public:
 
 public:
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) override final;
-	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil) override final;
+	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil, uint32_t p_mipmaps) override final;
 	virtual TextureID texture_create_shared(TextureID p_original_texture, const TextureView &p_view) override final;
 	virtual TextureID texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) override final;
 	virtual void texture_free(TextureID p_texture) override final;
@@ -309,7 +306,6 @@ public:
 	// ----- QUEUE -----
 private:
 	struct CommandQueue {
-		LocalVector<VkSemaphore> present_semaphores;
 		LocalVector<VkSemaphore> image_semaphores;
 		LocalVector<SwapChain *> image_semaphores_swap_chains;
 		LocalVector<uint32_t> pending_semaphores_for_execute;
@@ -318,7 +314,6 @@ private:
 		LocalVector<Pair<Fence *, uint32_t>> image_semaphores_for_fences;
 		uint32_t queue_family = 0;
 		uint32_t queue_index = 0;
-		uint32_t present_semaphore_index = 0;
 	};
 
 public:
@@ -332,6 +327,7 @@ private:
 	struct CommandPool {
 		VkCommandPool vk_command_pool = VK_NULL_HANDLE;
 		CommandBufferType buffer_type = COMMAND_BUFFER_TYPE_PRIMARY;
+		LocalVector<CommandBufferInfo *> command_buffers_created;
 	};
 
 public:
@@ -339,8 +335,16 @@ public:
 	virtual bool command_pool_reset(CommandPoolID p_cmd_pool) override final;
 	virtual void command_pool_free(CommandPoolID p_cmd_pool) override final;
 
+private:
 	// ----- BUFFER -----
 
+	struct CommandBufferInfo {
+		VkCommandBuffer vk_command_buffer = VK_NULL_HANDLE;
+		Framebuffer *active_framebuffer = nullptr;
+		RenderPassInfo *active_render_pass = nullptr;
+	};
+
+public:
 	virtual CommandBufferID command_buffer_create(CommandPoolID p_cmd_pool) override final;
 	virtual bool command_buffer_begin(CommandBufferID p_cmd_buffer) override final;
 	virtual bool command_buffer_begin_secondary(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, uint32_t p_subpass, FramebufferID p_framebuffer) override final;
@@ -359,6 +363,7 @@ private:
 		VkColorSpaceKHR color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 		TightLocalVector<VkImage> images;
 		TightLocalVector<VkImageView> image_views;
+		TightLocalVector<VkSemaphore> present_semaphores;
 		TightLocalVector<FramebufferID> framebuffers;
 		LocalVector<CommandQueue *> command_queues_acquired;
 		LocalVector<uint32_t> command_queues_acquired_semaphores;
@@ -382,6 +387,7 @@ public:
 	virtual void swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) override final;
 	virtual void swap_chain_free(SwapChainID p_swap_chain) override final;
 
+private:
 	/*********************/
 	/**** FRAMEBUFFER ****/
 	/*********************/
@@ -389,12 +395,16 @@ public:
 	struct Framebuffer {
 		VkFramebuffer vk_framebuffer = VK_NULL_HANDLE;
 
+		// Only filled in if the framebuffer uses a fragment density map with offsets. Unused otherwise.
+		uint32_t fragment_density_map_offsets_layers = 0;
+
 		// Only filled in by a framebuffer created by a swap chain. Unused otherwise.
 		VkImage swap_chain_image = VK_NULL_HANDLE;
 		VkImageSubresourceRange swap_chain_image_subresource_range = {};
 		bool swap_chain_acquired = false;
 	};
 
+public:
 	virtual FramebufferID framebuffer_create(RenderPassID p_render_pass, VectorView<TextureID> p_attachments, uint32_t p_width, uint32_t p_height) override final;
 	virtual void framebuffer_free(FramebufferID p_framebuffer) override final;
 
@@ -402,43 +412,6 @@ public:
 	/**** SHADER ****/
 	/****************/
 private:
-	struct ShaderBinary {
-		// Version 1: initial.
-		// Version 2: Added shader name.
-		// Version 3: Added writable.
-		// Version 4: 64-bit vertex input mask.
-		// Version 5: Add 4 bytes padding to align the Data struct after the change in version 4.
-		static const uint32_t VERSION = 5;
-
-		struct DataBinding {
-			uint32_t type = 0;
-			uint32_t binding = 0;
-			uint32_t stages = 0;
-			uint32_t length = 0; // Size of arrays (in total elements), or UBOs (in bytes * total elements).
-			uint32_t writable = 0;
-		};
-
-		struct SpecializationConstant {
-			uint32_t type = 0;
-			uint32_t constant_id = 0;
-			uint32_t int_value = 0;
-			uint32_t stage_flags = 0;
-		};
-
-		struct Data {
-			uint64_t vertex_input_mask = 0;
-			uint32_t fragment_output_mask = 0;
-			uint32_t specialization_constants_count = 0;
-			uint32_t is_compute = 0;
-			uint32_t compute_local_size[3] = {};
-			uint32_t set_count = 0;
-			uint32_t push_constant_size = 0;
-			uint32_t vk_push_constant_stages_mask = 0;
-			uint32_t stage_count = 0;
-			uint32_t shader_name_len = 0;
-		};
-	};
-
 	struct ShaderInfo {
 		VkShaderStageFlags vk_push_constant_stages = 0;
 		TightLocalVector<VkPipelineShaderStageCreateInfo> vk_stages_create_info;
@@ -447,9 +420,7 @@ private:
 	};
 
 public:
-	virtual String shader_get_binary_cache_key() override final;
-	virtual Vector<uint8_t> shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) override final;
-	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers) override final;
+	virtual ShaderID shader_create_from_container(const Ref<RenderingShaderContainer> &p_shader_container, const Vector<ImmutableSampler> &p_immutable_samplers) override final;
 	virtual void shader_free(ShaderID p_shader) override final;
 
 	virtual void shader_destroy_modules(ShaderID p_shader) override final;
@@ -572,9 +543,16 @@ public:
 	/**** RENDERING ****/
 	/*******************/
 
+private:
 	// ----- SUBPASS -----
 
-	virtual RenderPassID render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count) override final;
+	struct RenderPassInfo {
+		VkRenderPass vk_render_pass = VK_NULL_HANDLE;
+		bool uses_fragment_density_map_offsets = false;
+	};
+
+public:
+	virtual RenderPassID render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count, AttachmentReference p_fragment_density_map_attachment) override final;
 	virtual void render_pass_free(RenderPassID p_render_pass) override final;
 
 	// ----- COMMANDS -----
@@ -692,10 +670,13 @@ public:
 	virtual uint64_t api_trait_get(ApiTrait p_trait) override final;
 	virtual bool has_feature(Features p_feature) override final;
 	virtual const MultiviewCapabilities &get_multiview_capabilities() override final;
+	virtual const FragmentShadingRateCapabilities &get_fragment_shading_rate_capabilities() override final;
+	virtual const FragmentDensityMapCapabilities &get_fragment_density_map_capabilities() override final;
 	virtual String get_api_name() const override final;
 	virtual String get_api_version() const override final;
 	virtual String get_pipeline_cache_uuid() const override final;
 	virtual const Capabilities &get_capabilities() const override final;
+	virtual const RenderingShaderContainerFormat &get_shader_container_format() const override final;
 
 	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const override final;
 
@@ -709,7 +690,9 @@ private:
 			TextureInfo,
 			VertexFormatInfo,
 			ShaderInfo,
-			UniformSetInfo>;
+			UniformSetInfo,
+			RenderPassInfo,
+			CommandBufferInfo>;
 	PagedAllocator<VersatileResource, true> resources_allocator;
 
 	/******************/
@@ -720,5 +703,3 @@ public:
 };
 
 using VKC = RenderingContextDriverVulkan;
-
-#endif // RENDERING_DEVICE_DRIVER_VULKAN_H

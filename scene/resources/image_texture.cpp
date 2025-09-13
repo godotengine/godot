@@ -83,7 +83,13 @@ Ref<ImageTexture> ImageTexture::create_from_image(const Ref<Image> &p_image) {
 }
 
 void ImageTexture::set_image(const Ref<Image> &p_image) {
-	ERR_FAIL_COND_MSG(p_image.is_null() || p_image->is_empty(), "Invalid image");
+	if (p_image.is_null() || p_image->is_empty()) {
+		if (image_stored) {
+			ERR_PRINT("Invalid image");
+		}
+		return;
+	}
+
 	w = p_image->get_width();
 	h = p_image->get_height();
 	format = p_image->get_format();
@@ -197,8 +203,8 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 		int x = p_x * aw / w;
 		int y = p_y * ah / h;
 
-		x = CLAMP(x, 0, aw);
-		y = CLAMP(y, 0, ah);
+		x = CLAMP(x, 0, aw - 1);
+		y = CLAMP(y, 0, ah - 1);
 
 		return alpha_cache->get_bit(x, y);
 	}
@@ -233,8 +239,6 @@ void ImageTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update", "image"), &ImageTexture::update);
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &ImageTexture::set_size_override);
 }
-
-ImageTexture::ImageTexture() {}
 
 ImageTexture::~ImageTexture() {
 	if (texture.is_valid()) {
@@ -476,8 +480,13 @@ TypedArray<Image> ImageTexture3D::_get_images() const {
 }
 
 void ImageTexture3D::_set_images(const TypedArray<Image> &p_images) {
-	int new_layers = p_images.size();
-	ERR_FAIL_COND(new_layers == 0);
+	if (p_images.size() == 0) {
+		if (images_stored) {
+			ERR_PRINT("Invalid images");
+		}
+		return;
+	}
+
 	Ref<Image> img_base = p_images[0];
 	ERR_FAIL_COND(img_base.is_null());
 
@@ -506,6 +515,8 @@ void ImageTexture3D::_set_images(const TypedArray<Image> &p_images) {
 
 	Error err = _create(new_format, new_width, new_height, new_depth, new_mipmaps, p_images);
 	ERR_FAIL_COND(err != OK);
+
+	images_stored = true;
 }
 
 void ImageTexture3D::_bind_methods() {

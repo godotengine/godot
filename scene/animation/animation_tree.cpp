@@ -52,6 +52,9 @@ void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 
 Variant AnimationNode::get_parameter_default_value(const StringName &p_parameter) const {
 	Variant ret;
+	if (p_parameter == current_length || p_parameter == current_position || p_parameter == current_delta) {
+		return 0.0;
+	}
 	GDVIRTUAL_CALL(_get_parameter_default_value, p_parameter, ret);
 	return ret;
 }
@@ -77,7 +80,11 @@ void AnimationNode::set_parameter(const StringName &p_name, const Variant &p_val
 
 	const AHashMap<StringName, int>::Iterator it = property_cache.find(p_name);
 	if (it) {
-		process_state->tree->property_map.get_by_index(it->value).value.first = p_value;
+		Pair<Variant, bool> &prop = process_state->tree->property_map.get_by_index(it->value).value;
+		Variant value = p_value;
+		if (Animation::validate_type_match(prop.first, value)) {
+			prop.first = value;
+		}
 		return;
 	}
 
@@ -121,12 +128,10 @@ AnimationNode::NodeTimeInfo AnimationNode::get_node_time_info() const {
 void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	Dictionary cn;
 	if (GDVIRTUAL_CALL(_get_child_nodes, cn)) {
-		List<Variant> keys;
-		cn.get_key_list(&keys);
-		for (const Variant &E : keys) {
+		for (const KeyValue<Variant, Variant> &kv : cn) {
 			ChildNode child;
-			child.name = E;
-			child.node = cn[E];
+			child.name = kv.key;
+			child.node = kv.value;
 			r_child_nodes->push_back(child);
 		}
 	}
@@ -776,7 +781,7 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 			activity.push_back(a);
 		}
 		input_activity_map[p_base_path] = activity;
-		input_activity_map_get[String(p_base_path).substr(0, String(p_base_path).length() - 1)] = &input_activity_map[p_base_path];
+		input_activity_map_get[String(p_base_path).substr(0, String(p_base_path).length() - 1)] = input_activity_map.get_index(p_base_path);
 	}
 
 	List<PropertyInfo> plist;
@@ -894,15 +899,22 @@ void AnimationTree::_setup_animation_player() {
 	clear_caches();
 }
 
+// `libraries` is a dynamic property, so we can't use `_validate_property` to change it.
+uint32_t AnimationTree::_get_libraries_property_usage() const {
+	if (!animation_player.is_empty()) {
+		return PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
+	}
+	return PROPERTY_USAGE_DEFAULT;
+}
+
 void AnimationTree::_validate_property(PropertyInfo &p_property) const {
-	AnimationMixer::_validate_property(p_property);
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 
 	if (!animation_player.is_empty()) {
-		if (p_property.name == "root_node" || p_property.name.begins_with("libraries")) {
+		if (p_property.name == "root_node") {
 			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
-		}
-		if (p_property.name.begins_with("libraries")) {
-			p_property.usage &= ~PROPERTY_USAGE_STORAGE;
 		}
 	}
 }
@@ -923,7 +935,11 @@ bool AnimationTree::_set(const StringName &p_name, const Variant &p_value) {
 		if (is_inside_tree() && property_map[p_name].second) {
 			return false; // Prevent to set property by user.
 		}
-		property_map[p_name].first = p_value;
+		Pair<Variant, bool> &prop = property_map[p_name];
+		Variant value = p_value;
+		if (Animation::validate_type_match(prop.first, value)) {
+			prop.first = value;
+		}
 		return true;
 	}
 
@@ -963,17 +979,15 @@ real_t AnimationTree::get_connection_activity(const StringName &p_path, int p_co
 	if (!input_activity_map_get.has(p_path)) {
 		return 0;
 	}
-	const LocalVector<Activity> *activity = input_activity_map_get[p_path];
 
-	if (!activity || p_connection < 0 || p_connection >= (int64_t)activity->size()) {
+	int index = input_activity_map_get[p_path];
+	const LocalVector<Activity> &activity = input_activity_map.get_by_index(index).value;
+
+	if (p_connection < 0 || p_connection >= (int64_t)activity.size() || activity[p_connection].last_pass != process_pass) {
 		return 0;
 	}
 
-	if ((*activity)[p_connection].last_pass != process_pass) {
-		return 0;
-	}
-
-	return (*activity)[p_connection].activity;
+	return activity[p_connection].activity;
 }
 
 void AnimationTree::_bind_methods() {

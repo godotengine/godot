@@ -28,33 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_DICTIONARY_H
-#define TEST_DICTIONARY_H
+#pragma once
 
 #include "core/variant/typed_dictionary.h"
 #include "tests/test_macros.h"
 
 namespace TestDictionary {
-
-static inline Array build_array() {
-	return Array();
-}
-template <typename... Targs>
-static inline Array build_array(Variant item, Targs... Fargs) {
-	Array a = build_array(Fargs...);
-	a.push_front(item);
-	return a;
-}
-static inline Dictionary build_dictionary() {
-	return Dictionary();
-}
-template <typename... Targs>
-static inline Dictionary build_dictionary(Variant key, Variant item, Targs... Fargs) {
-	Dictionary d = build_dictionary(Fargs...);
-	d[key] = item;
-	return d;
-}
-
 TEST_CASE("[Dictionary] Assignment using bracket notation ([])") {
 	Dictionary map;
 	map["Hello"] = 0;
@@ -116,19 +95,18 @@ TEST_CASE("[Dictionary] List init") {
 	CHECK_EQ(tdict[5.0], Variant(2.0));
 }
 
-TEST_CASE("[Dictionary] get_key_lists()") {
+TEST_CASE("[Dictionary] get_key_list()") {
 	Dictionary map;
-	List<Variant> keys;
-	List<Variant> *ptr = &keys;
-	map.get_key_list(ptr);
+	LocalVector<Variant> keys;
+	keys = map.get_key_list();
 	CHECK(keys.is_empty());
 	map[1] = 3;
-	map.get_key_list(ptr);
+	keys = map.get_key_list();
 	CHECK(keys.size() == 1);
-	CHECK(int(keys.front()->get()) == 1);
+	CHECK(int(keys[0]) == 1);
 	map[2] = 4;
-	map.get_key_list(ptr);
-	CHECK(keys.size() == 3);
+	keys = map.get_key_list();
+	CHECK(keys.size() == 2);
 }
 
 TEST_CASE("[Dictionary] get_key_at_index()") {
@@ -204,9 +182,13 @@ TEST_CASE("[Dictionary] keys() and values()") {
 
 TEST_CASE("[Dictionary] Duplicate dictionary") {
 	// d = {1: {1: 1}, {2: 2}: [2], [3]: 3}
-	Dictionary k2 = build_dictionary(2, 2);
-	Array k3 = build_array(3);
-	Dictionary d = build_dictionary(1, build_dictionary(1, 1), k2, build_array(2), k3, 3);
+	Dictionary k2 = { { 2, 2 } };
+	Array k3 = { 3 };
+	Dictionary d = {
+		{ 1, Dictionary({ { 1, 1 } }) },
+		{ k2, Array({ 2 }) },
+		{ k3, 3 }
+	};
 
 	// Deep copy
 	Dictionary deep_d = d.duplicate(true);
@@ -324,9 +306,13 @@ TEST_CASE("[Dictionary] Duplicate recursive dictionary on keys") {
 
 TEST_CASE("[Dictionary] Hash dictionary") {
 	// d = {1: {1: 1}, {2: 2}: [2], [3]: 3}
-	Dictionary k2 = build_dictionary(2, 2);
-	Array k3 = build_array(3);
-	Dictionary d = build_dictionary(1, build_dictionary(1, 1), k2, build_array(2), k3, 3);
+	Dictionary k2 = { { 2, 2 } };
+	Array k3 = { 3 };
+	Dictionary d = {
+		{ 1, Dictionary({ { 1, 1 } }) },
+		{ k2, Array({ 2 }) },
+		{ k3, 3 }
+	};
 	uint32_t original_hash = d.hash();
 
 	// Modify dict change the hash
@@ -396,9 +382,9 @@ TEST_CASE("[Dictionary] Empty comparison") {
 }
 
 TEST_CASE("[Dictionary] Flat comparison") {
-	Dictionary d1 = build_dictionary(1, 1);
-	Dictionary d2 = build_dictionary(1, 1);
-	Dictionary other_d = build_dictionary(2, 1);
+	Dictionary d1 = { { 1, 1 } };
+	Dictionary d2 = { { 1, 1 } };
+	Dictionary other_d = { { 2, 1 } };
 
 	// test both operator== and operator!=
 	CHECK_EQ(d1, d1); // compare self
@@ -411,12 +397,12 @@ TEST_CASE("[Dictionary] Flat comparison") {
 
 TEST_CASE("[Dictionary] Nested dictionary comparison") {
 	// d1 = {1: {2: {3: 4}}}
-	Dictionary d1 = build_dictionary(1, build_dictionary(2, build_dictionary(3, 4)));
+	Dictionary d1 = { { 1, Dictionary({ { 2, Dictionary({ { 3, 4 } }) } }) } };
 
 	Dictionary d2 = d1.duplicate(true);
 
 	// other_d = {1: {2: {3: 0}}}
-	Dictionary other_d = build_dictionary(1, build_dictionary(2, build_dictionary(3, 0)));
+	Dictionary other_d = { { 1, Dictionary({ { 2, Dictionary({ { 3, 0 } }) } }) } };
 
 	// test both operator== and operator!=
 	CHECK_EQ(d1, d1); // compare self
@@ -429,12 +415,12 @@ TEST_CASE("[Dictionary] Nested dictionary comparison") {
 
 TEST_CASE("[Dictionary] Nested array comparison") {
 	// d1 = {1: [2, 3]}
-	Dictionary d1 = build_dictionary(1, build_array(2, 3));
+	Dictionary d1 = { { 1, { 2, 3 } } };
 
 	Dictionary d2 = d1.duplicate(true);
 
 	// other_d = {1: [2, 0]}
-	Dictionary other_d = build_dictionary(1, build_array(2, 0));
+	Dictionary other_d = { { 1, { 2, 0 } } };
 
 	// test both operator== and operator!=
 	CHECK_EQ(d1, d1); // compare self
@@ -546,11 +532,7 @@ TEST_CASE("[Dictionary] Order and find") {
 	d[12] = "twelve";
 	d["4"] = "four";
 
-	Array keys;
-	keys.append(4);
-	keys.append(8);
-	keys.append(12);
-	keys.append("4");
+	Array keys = { 4, 8, 12, "4" };
 
 	CHECK_EQ(d.keys(), keys);
 	CHECK_EQ(d.find_key("four"), Variant(4));
@@ -594,6 +576,45 @@ TEST_CASE("[Dictionary] Typed copying") {
 	d6.clear();
 }
 
-} // namespace TestDictionary
+TEST_CASE("[Dictionary] Iteration") {
+	Dictionary a1 = { { 1, 2 }, { 3, 4 }, { 5, 6 } };
+	Dictionary a2 = { { 1, 2 }, { 3, 4 }, { 5, 6 } };
 
-#endif // TEST_DICTIONARY_H
+	int idx = 0;
+
+	for (const KeyValue<Variant, Variant> &kv : (const Dictionary &)a1) {
+		CHECK_EQ(int(a2[kv.key]), int(kv.value));
+		idx++;
+	}
+
+	CHECK_EQ(idx, a1.size());
+
+	a1.clear();
+	a2.clear();
+}
+
+TEST_CASE("[Dictionary] Object value init") {
+	Object *a = memnew(Object);
+	Object *b = memnew(Object);
+	TypedDictionary<double, Object *> tdict = {
+		{ 0.0, a },
+		{ 5.0, b },
+	};
+	CHECK_EQ(tdict[0.0], Variant(a));
+	CHECK_EQ(tdict[5.0], Variant(b));
+	memdelete(a);
+	memdelete(b);
+}
+
+TEST_CASE("[Dictionary] RefCounted value init") {
+	Ref<RefCounted> a = memnew(RefCounted);
+	Ref<RefCounted> b = memnew(RefCounted);
+	TypedDictionary<double, Ref<RefCounted>> tdict = {
+		{ 0.0, a },
+		{ 5.0, b },
+	};
+	CHECK_EQ(tdict[0.0], Variant(a));
+	CHECK_EQ(tdict[5.0], Variant(b));
+}
+
+} // namespace TestDictionary

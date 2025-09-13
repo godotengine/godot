@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CODESIGN_H
-#define CODESIGN_H
+#pragma once
 
 // macOS code signature creation utility.
 //
@@ -114,6 +113,8 @@ public:
 /*************************************************************************/
 
 class CodeSignBlob : public RefCounted {
+	GDSOFTCLASS(CodeSignBlob, RefCounted);
+
 public:
 	virtual PackedByteArray get_hash_sha1() const = 0;
 	virtual PackedByteArray get_hash_sha256() const = 0;
@@ -351,5 +352,3 @@ class CodeSign {
 public:
 	static Error codesign(bool p_use_hardened_runtime, bool p_force, const String &p_path, const String &p_ent_path, String &r_error_msg);
 };
-
-#endif // CODESIGN_H

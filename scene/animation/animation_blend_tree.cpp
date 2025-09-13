@@ -55,7 +55,7 @@ Variant AnimationNodeAnimation::get_parameter_default_value(const StringName &p_
 	if (p_parameter == backward) {
 		return false;
 	}
-	return 0;
+	return 0.0;
 }
 
 AnimationNode::NodeTimeInfo AnimationNodeAnimation::get_node_time_info() const {
@@ -78,7 +78,7 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::get_node_time_info() const {
 }
 
 void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "animation" && get_editable_animation_list) {
+	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "animation" && get_editable_animation_list) {
 		Vector<String> names = get_editable_animation_list();
 		String anims;
 		for (int i = 0; i < names.size(); i++) {
@@ -438,10 +438,10 @@ Variant AnimationNodeOneShot::get_parameter_default_value(const StringName &p_pa
 	} else if (p_parameter == active || p_parameter == internal_active) {
 		return false;
 	} else if (p_parameter == time_to_restart) {
-		return -1;
-	} else {
-		return 0.0;
+		return -1.0;
 	}
+
+	return 0.0;
 }
 
 bool AnimationNodeOneShot::is_parameter_read_only(const StringName &p_parameter) const {
@@ -670,11 +670,18 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 
 	NodeTimeInfo os_nti = blend_input(1, pi, FILTER_PASS, true, p_test_only); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 
-	if (Animation::is_less_or_equal_approx(cur_fade_in_remaining, 0) && !do_start && !is_fading_out && Animation::is_less_or_equal_approx(os_nti.get_remain(break_loop_at_end), fade_out)) {
-		is_fading_out = true;
-		cur_fade_out_remaining = os_nti.get_remain(break_loop_at_end);
-		cur_fade_in_remaining = 0;
-		set_parameter(internal_active, false);
+	if (Animation::is_less_or_equal_approx(cur_fade_in_remaining, 0) && !do_start && !is_fading_out) {
+		// Predict time scale by difference of delta times to estimate input animation's remain time in self time scale.
+		// TODO: Time scale should be included into NodeTimeInfo for Godot 5.0.
+		double abs_os_delta = Math::abs(os_nti.delta);
+		double tscl = Math::is_zero_approx(abs_delta) || Math::is_zero_approx(abs_os_delta) || Math::is_equal_approx(abs_delta, abs_os_delta) ? 1.0 : (abs_delta / abs_os_delta);
+		double os_rem = os_nti.get_remain(break_loop_at_end) * tscl;
+		if (Animation::is_less_or_equal_approx(os_rem, fade_out)) {
+			is_fading_out = true;
+			cur_fade_out_remaining = os_rem + abs_delta;
+			cur_fade_in_remaining = 0;
+			set_parameter(internal_active, false);
+		}
 	}
 
 	if (!p_seek) {
@@ -686,11 +693,10 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 				set_parameter(time_to_restart, restart_sec);
 			}
 		}
-		double d = Math::abs(os_nti.delta);
 		if (!do_start) {
-			cur_fade_in_remaining = MAX(0, cur_fade_in_remaining - d); // Don't consider seeked delta by restart.
+			cur_fade_in_remaining = MAX(0, cur_fade_in_remaining - abs_delta); // Don't consider seeked delta by restart.
 		}
-		cur_fade_out_remaining = MAX(0, cur_fade_out_remaining - d);
+		cur_fade_out_remaining = MAX(0, cur_fade_out_remaining - abs_delta);
 	}
 
 	set_parameter(fade_in_remaining, cur_fade_in_remaining);
@@ -768,7 +774,7 @@ Variant AnimationNodeAdd2::get_parameter_default_value(const StringName &p_param
 		return ret;
 	}
 
-	return 0;
+	return 0.0;
 }
 
 String AnimationNodeAdd2::get_caption() const {
@@ -809,7 +815,7 @@ Variant AnimationNodeAdd3::get_parameter_default_value(const StringName &p_param
 		return ret;
 	}
 
-	return 0;
+	return 0.0;
 }
 
 String AnimationNodeAdd3::get_caption() const {
@@ -853,7 +859,7 @@ Variant AnimationNodeBlend2::get_parameter_default_value(const StringName &p_par
 		return ret;
 	}
 
-	return 0; // For blend amount.
+	return 0.0; // For blend amount.
 }
 
 String AnimationNodeBlend2::get_caption() const {
@@ -894,7 +900,7 @@ Variant AnimationNodeBlend3::get_parameter_default_value(const StringName &p_par
 		return ret;
 	}
 
-	return 0; // For blend amount.
+	return 0.0; // For blend amount.
 }
 
 String AnimationNodeBlend3::get_caption() const {
@@ -907,7 +913,7 @@ AnimationNode::NodeTimeInfo AnimationNodeBlend3::_process(const AnimationMixer::
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
 	pi.weight = MAX(0, -amount);
 	NodeTimeInfo nti0 = blend_input(0, pi, FILTER_IGNORE, sync, p_test_only);
-	pi.weight = 1.0 - ABS(amount);
+	pi.weight = 1.0 - Math::abs(amount);
 	NodeTimeInfo nti1 = blend_input(1, pi, FILTER_IGNORE, sync, p_test_only);
 	pi.weight = MAX(0, amount);
 	NodeTimeInfo nti2 = blend_input(2, pi, FILTER_IGNORE, sync, p_test_only);
@@ -934,7 +940,7 @@ Variant AnimationNodeSub2::get_parameter_default_value(const StringName &p_param
 		return ret;
 	}
 
-	return 0;
+	return 0.0;
 }
 
 String AnimationNodeSub2::get_caption() const {
@@ -1140,7 +1146,7 @@ Variant AnimationNodeTransition::get_parameter_default_value(const StringName &p
 	if (p_parameter == prev_xfading) {
 		return 0.0;
 	} else if (p_parameter == prev_index || p_parameter == current_index) {
-		return -1;
+		return (int)-1;
 	} else {
 		return String();
 	}
@@ -1667,10 +1673,24 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendTree::_process(const AnimationMixe
 	return _blend_node(output, "output", this, pi, FILTER_IGNORE, true, p_test_only, nullptr);
 }
 
-void AnimationNodeBlendTree::get_node_list(List<StringName> *r_list) {
+LocalVector<StringName> AnimationNodeBlendTree::get_node_list() const {
+	LocalVector<StringName> list;
+	list.reserve(nodes.size());
 	for (const KeyValue<StringName, Node> &E : nodes) {
-		r_list->push_back(E.key);
+		list.push_back(E.key);
 	}
+	list.sort_custom<StringName::AlphCompare>();
+	return list;
+}
+
+TypedArray<StringName> AnimationNodeBlendTree::get_node_list_as_typed_array() const {
+	TypedArray<StringName> typed_arr;
+	LocalVector<StringName> vec = get_node_list();
+	typed_arr.resize(vec.size());
+	for (uint32_t i = 0; i < vec.size(); i++) {
+		typed_arr[i] = vec[i];
+	}
+	return typed_arr;
 }
 
 void AnimationNodeBlendTree::set_graph_offset(const Vector2 &p_graph_offset) {
@@ -1827,6 +1847,7 @@ void AnimationNodeBlendTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_node", "name"), &AnimationNodeBlendTree::has_node);
 	ClassDB::bind_method(D_METHOD("connect_node", "input_node", "input_index", "output_node"), &AnimationNodeBlendTree::connect_node);
 	ClassDB::bind_method(D_METHOD("disconnect_node", "input_node", "input_index"), &AnimationNodeBlendTree::disconnect_node);
+	ClassDB::bind_method(D_METHOD("get_node_list"), &AnimationNodeBlendTree::get_node_list_as_typed_array);
 
 	ClassDB::bind_method(D_METHOD("set_node_position", "name", "position"), &AnimationNodeBlendTree::set_node_position);
 	ClassDB::bind_method(D_METHOD("get_node_position", "name"), &AnimationNodeBlendTree::get_node_position);

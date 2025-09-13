@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCRIPT_LANGUAGE_H
-#define SCRIPT_LANGUAGE_H
+#pragma once
 
 #include "core/doc_data.h"
 #include "core/io/resource.h"
+#include "core/object/script_backtrace.h"
 #include "core/object/script_instance.h"
 #include "core/templates/pair.h"
 #include "core/templates/safe_refcount.h"
@@ -102,6 +102,8 @@ public:
 	static void get_inheriters_list(const StringName &p_base_type, List<StringName> *r_classes);
 	static void save_global_classes();
 
+	static Vector<Ref<ScriptBacktrace>> capture_script_backtraces(bool p_include_variables = false);
+
 	static void init_languages();
 	static void finish_languages();
 	static bool are_languages_initialized();
@@ -132,6 +134,10 @@ protected:
 	Dictionary _get_script_constant_map();
 
 	void _set_debugger_break_language();
+
+	Variant _get_rpc_config_bind() const {
+		return get_rpc_config().duplicate(true);
+	}
 
 public:
 	virtual void reload_from_file() override;
@@ -189,20 +195,9 @@ public:
 
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
-	virtual Variant get_rpc_config() const = 0;
+	virtual const Variant get_rpc_config() const = 0;
 
 	Script() {}
-};
-
-class ScriptCodeCompletionCache {
-	static ScriptCodeCompletionCache *singleton;
-
-public:
-	static ScriptCodeCompletionCache *get_singleton() { return singleton; }
-
-	ScriptCodeCompletionCache();
-
-	virtual ~ScriptCodeCompletionCache() {}
 };
 
 class ScriptLanguage : public Object {
@@ -223,7 +218,6 @@ public:
 	/* EDITOR FUNCTIONS */
 	struct Warning {
 		int start_line = -1, end_line = -1;
-		int leftmost_column = -1, rightmost_column = -1;
 		int code;
 		String string_code;
 		String message;
@@ -247,6 +241,7 @@ public:
 		SCRIPT_NAME_CASING_PASCAL_CASE,
 		SCRIPT_NAME_CASING_SNAKE_CASE,
 		SCRIPT_NAME_CASING_KEBAB_CASE,
+		SCRIPT_NAME_CASING_CAMEL_CASE,
 	};
 
 	struct ScriptTemplate {
@@ -263,11 +258,11 @@ public:
 	};
 
 	void get_core_type_words(List<String> *p_core_type_words) const;
-	virtual void get_reserved_words(List<String> *p_words) const = 0;
+	virtual Vector<String> get_reserved_words() const = 0;
 	virtual bool is_control_flow_keyword(const String &p_string) const = 0;
-	virtual void get_comment_delimiters(List<String> *p_delimiters) const = 0;
-	virtual void get_doc_comment_delimiters(List<String> *p_delimiters) const = 0;
-	virtual void get_string_delimiters(List<String> *p_delimiters) const = 0;
+	virtual Vector<String> get_comment_delimiters() const = 0;
+	virtual Vector<String> get_doc_comment_delimiters() const = 0;
+	virtual Vector<String> get_string_delimiters() const = 0;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const { return Ref<Script>(); }
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) { return Vector<ScriptTemplate>(); }
 	virtual bool is_using_templates() { return false; }
@@ -505,5 +500,3 @@ public:
 	PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner);
 	~PlaceHolderScriptInstance();
 };
-
-#endif // SCRIPT_LANGUAGE_H

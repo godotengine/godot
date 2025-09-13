@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_OPEN_SAVE_DELEGATE_H
-#define GODOT_OPEN_SAVE_DELEGATE_H
+#pragma once
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
@@ -63,5 +62,3 @@
 - (void)setRootPath:(const String &)p_root_path;
 
 @end
-
-#endif // GODOT_OPEN_SAVE_DELEGATE_H

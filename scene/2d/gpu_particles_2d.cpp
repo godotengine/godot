@@ -41,7 +41,7 @@
 void GPUParticles2D::set_emitting(bool p_emitting) {
 	// Do not return even if `p_emitting == emitting` because `emitting` is just an approximation.
 
-	if (p_emitting && p_emitting != emitting && !use_fixed_seed) {
+	if (p_emitting && p_emitting != emitting && !use_fixed_seed && one_shot) {
 		set_seed(Math::rand());
 	}
 	if (p_emitting && one_shot) {
@@ -144,7 +144,22 @@ void GPUParticles2D::_update_particle_emission_transform() {
 }
 
 void GPUParticles2D::set_process_material(const Ref<Material> &p_material) {
+	if (process_material == p_material) {
+		return;
+	}
+
+	if (process_material.is_valid() && process_material->is_class("ParticleProcessMaterial")) {
+		process_material->disconnect("emission_shape_changed", callable_mp((CanvasItem *)this, &GPUParticles2D::queue_redraw));
+	}
+
 	process_material = p_material;
+
+	if (process_material.is_valid() && process_material->is_class("ParticleProcessMaterial")) {
+		process_material->connect("emission_shape_changed", callable_mp((CanvasItem *)this, &GPUParticles2D::queue_redraw));
+	}
+
+	queue_redraw();
+
 	Ref<ParticleProcessMaterial> pm = p_material;
 	if (pm.is_valid() && !pm->get_particle_flag(ParticleProcessMaterial::PARTICLE_FLAG_DISABLE_Z) && pm->get_gravity() == Vector3(0, -9.8, 0)) {
 		// Likely a new (3D) material, modify it to match 2D space
@@ -170,7 +185,7 @@ void GPUParticles2D::set_trail_enabled(bool p_enabled) {
 }
 
 void GPUParticles2D::set_trail_lifetime(double p_seconds) {
-	ERR_FAIL_COND(p_seconds < 0.01);
+	ERR_FAIL_COND(p_seconds < 0.01 - CMP_EPSILON);
 	trail_lifetime = p_seconds;
 	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_lifetime);
 	queue_redraw();
@@ -198,8 +213,11 @@ void GPUParticles2D::set_interp_to_end(float p_interp) {
 }
 
 #ifdef TOOLS_ENABLED
-void GPUParticles2D::set_show_visibility_rect(bool p_show_visibility_rect) {
-	show_visibility_rect = p_show_visibility_rect;
+void GPUParticles2D::set_show_gizmos(bool p_show_gizmos) {
+	if (show_gizmos == p_show_gizmos) {
+		return;
+	}
+	show_gizmos = p_show_gizmos;
 	queue_redraw();
 }
 #endif
@@ -370,11 +388,11 @@ PackedStringArray GPUParticles2D::get_configuration_warnings() const {
 		}
 	}
 
-	if (trail_enabled && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+	if (trail_enabled && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
 		warnings.push_back(RTR("Particle trails are only available when using the Forward+ or Mobile renderers."));
 	}
 
-	if (sub_emitter != NodePath() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+	if (sub_emitter != NodePath() && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
 		warnings.push_back(RTR("Particle sub-emitters are not available when using the Compatibility renderer."));
 	}
 
@@ -413,7 +431,7 @@ void GPUParticles2D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "seed" && !use_fixed_seed) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-	if (p_property.name == "emitting") {
+	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "emitting") {
 		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
 	}
 }
@@ -707,8 +725,9 @@ void GPUParticles2D::_notification(int p_what) {
 			RS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid);
 
 #ifdef TOOLS_ENABLED
-			if (show_visibility_rect) {
+			if (show_gizmos) {
 				draw_rect(visibility_rect, Color(0, 0.7, 0.9, 0.4), false);
+				_draw_emission_gizmo();
 			}
 #endif
 		} break;
@@ -783,6 +802,60 @@ void GPUParticles2D::_notification(int p_what) {
 		} break;
 	}
 }
+
+#ifdef TOOLS_ENABLED
+void GPUParticles2D::_draw_emission_gizmo() {
+	Ref<ParticleProcessMaterial> pm = process_material;
+	Color emission_ring_color = Color(0.8, 0.7, 0.4, 0.4);
+	if (pm.is_null()) {
+		return;
+	}
+	draw_set_transform(
+			Vector2(pm->get_emission_shape_offset().x, pm->get_emission_shape_offset().y),
+			0.0,
+			Vector2(pm->get_emission_shape_scale().x, pm->get_emission_shape_scale().y));
+
+	switch (pm->get_emission_shape()) {
+		case ParticleProcessMaterial::EmissionShape::EMISSION_SHAPE_BOX: {
+			Vector2 extents2d = Vector2(pm->get_emission_box_extents().x, pm->get_emission_box_extents().y);
+			draw_rect(Rect2(-extents2d, extents2d * 2.0), emission_ring_color, false);
+			break;
+		}
+		case ParticleProcessMaterial::EmissionShape::EMISSION_SHAPE_SPHERE:
+		case ParticleProcessMaterial::EmissionShape::EMISSION_SHAPE_SPHERE_SURFACE: {
+			draw_circle(Vector2(), pm->get_emission_sphere_radius(), emission_ring_color, false);
+			break;
+		}
+		case ParticleProcessMaterial::EmissionShape::EMISSION_SHAPE_RING: {
+			Vector3 ring_axis = pm->get_emission_ring_axis();
+			if (ring_axis.is_equal_approx(Vector3(0.0, 0.0, 1.0)) || ring_axis.is_zero_approx()) {
+				draw_circle(Vector2(), pm->get_emission_ring_inner_radius(), emission_ring_color, false);
+				draw_circle(Vector2(), pm->get_emission_ring_radius(), emission_ring_color, false);
+			} else {
+				Vector2 a = Vector2(pm->get_emission_ring_height() / -2.0, pm->get_emission_ring_radius() / -1.0);
+				Vector2 b = Vector2(-a.x, MIN(a.y + std::tan((90.0 - pm->get_emission_ring_cone_angle()) * 0.01745329) * pm->get_emission_ring_height(), 0.0));
+				Vector2 c = Vector2(b.x, -b.y);
+				Vector2 d = Vector2(a.x, -a.y);
+				if (ring_axis.is_equal_approx(Vector3(1.0, 0.0, 0.0))) {
+					Vector<Vector2> pos = { a, b, b, c, c, d, d, a };
+					draw_multiline(pos, emission_ring_color);
+				} else if (ring_axis.is_equal_approx(Vector3(0.0, 1.0, 0.0))) {
+					a = Vector2(a.y, a.x);
+					b = Vector2(b.y, b.x);
+					c = Vector2(c.y, c.x);
+					d = Vector2(d.y, d.x);
+					Vector<Vector2> pos = { a, b, b, c, c, d, d, a };
+					draw_multiline(pos, emission_ring_color);
+				}
+			}
+			break;
+		}
+		default: {
+			break;
+		}
+	}
+}
+#endif
 
 void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &GPUParticles2D::set_emitting);
@@ -887,7 +960,7 @@ void GPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime,Reverse Lifetime"), "set_draw_order", "get_draw_order");
 	ADD_GROUP("Trails", "trail_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled"), "set_trail_enabled", "is_trail_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_trail_enabled", "is_trail_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_lifetime", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater,suffix:s"), "set_trail_lifetime", "get_trail_lifetime");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_sections", PROPERTY_HINT_RANGE, "2,128,1"), "set_trail_sections", "get_trail_sections");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_section_subdivisions", PROPERTY_HINT_RANGE, "1,1024,1"), "set_trail_section_subdivisions", "get_trail_section_subdivisions");

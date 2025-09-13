@@ -45,7 +45,7 @@ void CPUParticles2D::set_emitting(bool p_emitting) {
 		return;
 	}
 
-	if (p_emitting && !use_fixed_seed) {
+	if (p_emitting && !use_fixed_seed && one_shot) {
 		set_seed(Math::rand());
 	}
 
@@ -116,7 +116,14 @@ void CPUParticles2D::set_use_local_coordinates(bool p_enable) {
 
 	// We only need NOTIFICATION_TRANSFORM_CHANGED
 	// when following an interpolated target.
+
+#ifdef TOOLS_ENABLED
+	set_notify_transform(_interpolation_data.interpolated_follow || (Engine::get_singleton()->is_editor_hint() && !local_coords));
+#else
 	set_notify_transform(_interpolation_data.interpolated_follow);
+#endif
+
+	queue_redraw();
 }
 
 void CPUParticles2D::set_speed_scale(double p_scale) {
@@ -474,14 +481,35 @@ void CPUParticles2D::set_emission_shape(EmissionShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, EMISSION_SHAPE_MAX);
 	emission_shape = p_shape;
 	notify_property_list_changed();
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		queue_redraw();
+	}
+#endif
 }
 
 void CPUParticles2D::set_emission_sphere_radius(real_t p_radius) {
+	if (p_radius == emission_sphere_radius) {
+		return;
+	}
 	emission_sphere_radius = p_radius;
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		queue_redraw();
+	}
+#endif
 }
 
 void CPUParticles2D::set_emission_rect_extents(Vector2 p_extents) {
+	if (p_extents == emission_rect_extents) {
+		return;
+	}
 	emission_rect_extents = p_extents;
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		queue_redraw();
+	}
+#endif
 }
 
 void CPUParticles2D::set_emission_points(const Vector<Vector2> &p_points) {
@@ -569,6 +597,16 @@ void CPUParticles2D::set_seed(uint32_t p_seed) {
 	seed = p_seed;
 }
 
+#ifdef TOOLS_ENABLED
+void CPUParticles2D::set_show_gizmos(bool p_show_gizmos) {
+	if (show_gizmos == p_show_gizmos) {
+		return;
+	}
+	show_gizmos = p_show_gizmos;
+	queue_redraw();
+}
+#endif
+
 uint32_t CPUParticles2D::get_seed() const {
 	return seed;
 }
@@ -578,7 +616,7 @@ void CPUParticles2D::request_particles_process(real_t p_requested_process_time) 
 }
 
 void CPUParticles2D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "emitting") {
+	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "emitting") {
 		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
 	}
 
@@ -637,7 +675,7 @@ static real_t rand_from_seed(uint32_t &seed) {
 }
 
 void CPUParticles2D::_update_internal() {
-	if (particles.size() == 0 || !is_visible_in_tree()) {
+	if (particles.is_empty() || !is_visible_in_tree()) {
 		_set_do_redraw(false);
 		return;
 	}
@@ -853,12 +891,12 @@ void CPUParticles2D::_particles_process(double p_delta) {
 					//do none
 				} break;
 				case EMISSION_SHAPE_SPHERE: {
-					real_t t = Math_TAU * rng->randf();
+					real_t t = Math::TAU * rng->randf();
 					real_t radius = emission_sphere_radius * rng->randf();
 					p.transform[2] = Vector2(Math::cos(t), Math::sin(t)) * radius;
 				} break;
 				case EMISSION_SHAPE_SPHERE_SURFACE: {
-					real_t s = rng->randf(), t = Math_TAU * rng->randf();
+					real_t s = rng->randf(), t = Math::TAU * rng->randf();
 					real_t radius = emission_sphere_radius * Math::sqrt(1.0 - s * s);
 					p.transform[2] = Vector2(Math::cos(t), Math::sin(t)) * radius;
 				} break;
@@ -975,7 +1013,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 			//orbit velocity
 			real_t orbit_amount = tex_orbit_velocity * Math::lerp(parameters_min[PARAM_ORBIT_VELOCITY], parameters_max[PARAM_ORBIT_VELOCITY], rand_from_seed(_seed));
 			if (orbit_amount != 0.0) {
-				real_t ang = orbit_amount * local_delta * Math_TAU;
+				real_t ang = orbit_amount * local_delta * Math::TAU;
 				// Not sure why the ParticleProcessMaterial code uses a clockwise rotation matrix,
 				// but we use -ang here to reproduce its behavior.
 				Transform2D rot = Transform2D(-ang, Vector2());
@@ -1029,7 +1067,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 			tex_hue_variation = curve_parameters[PARAM_HUE_VARIATION]->sample(tv);
 		}
 
-		real_t hue_rot_angle = (tex_hue_variation)*Math_TAU * Math::lerp(parameters_min[PARAM_HUE_VARIATION], parameters_max[PARAM_HUE_VARIATION], p.hue_rot_rand);
+		real_t hue_rot_angle = (tex_hue_variation)*Math::TAU * Math::lerp(parameters_min[PARAM_HUE_VARIATION], parameters_max[PARAM_HUE_VARIATION], p.hue_rot_rand);
 		real_t hue_rot_c = Math::cos(hue_rot_angle);
 		real_t hue_rot_s = Math::sin(hue_rot_angle);
 
@@ -1059,10 +1097,11 @@ void CPUParticles2D::_particles_process(double p_delta) {
 
 		if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
 			if (p.velocity.length() > 0.0) {
-				p.transform.columns[1] = p.velocity.normalized();
-				p.transform.columns[0] = p.transform.columns[1].orthogonal();
+				p.transform.columns[1] = p.velocity;
 			}
 
+			p.transform.columns[1] = p.transform.columns[1].normalized();
+			p.transform.columns[0] = p.transform.columns[1].orthogonal();
 		} else {
 			p.transform.columns[0] = Vector2(Math::cos(p.rotation), -Math::sin(p.rotation));
 			p.transform.columns[1] = Vector2(Math::sin(p.rotation), Math::cos(p.rotation));
@@ -1194,8 +1233,6 @@ void CPUParticles2D::_notification(int p_what) {
 
 			_refresh_interpolation_state();
 
-			set_physics_process_internal(emitting && _interpolation_data.interpolated_follow);
-
 			// If we are interpolated following, then reset physics interpolation
 			// when first appearing. This won't be called by canvas item, as in the
 			// following mode, is_physics_interpolated() is actually FALSE.
@@ -1224,6 +1261,13 @@ void CPUParticles2D::_notification(int p_what) {
 			}
 
 			RS::get_singleton()->canvas_item_add_multimesh(get_canvas_item(), multimesh, texrid);
+
+#ifdef TOOLS_ENABLED
+			if (show_gizmos) {
+				_draw_emission_gizmo();
+			}
+#endif
+
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -1245,6 +1289,11 @@ void CPUParticles2D::_notification(int p_what) {
 					_interpolation_data.global_xform_curr = get_global_transform();
 				}
 			}
+#ifdef TOOLS_ENABLED
+			if (!local_coords) {
+				queue_redraw();
+			}
+#endif
 		} break;
 
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
@@ -1254,6 +1303,30 @@ void CPUParticles2D::_notification(int p_what) {
 		} break;
 	}
 }
+
+#ifdef TOOLS_ENABLED
+void CPUParticles2D::_draw_emission_gizmo() {
+	Color emission_ring_color = Color(0.8, 0.7, 0.4, 0.4);
+	Transform2D gizmo_transform;
+	if (!local_coords) {
+		gizmo_transform = get_global_transform();
+	}
+
+	draw_set_transform_matrix(gizmo_transform);
+
+	switch (emission_shape) {
+		case CPUParticles2D::EMISSION_SHAPE_RECTANGLE:
+			draw_rect(Rect2(-emission_rect_extents, emission_rect_extents * 2.0), emission_ring_color, false);
+			break;
+		case CPUParticles2D::EMISSION_SHAPE_SPHERE:
+		case CPUParticles2D::EMISSION_SHAPE_SPHERE_SURFACE:
+			draw_circle(Vector2(), emission_sphere_radius, emission_ring_color, false);
+			break;
+		default:
+			break;
+	}
+}
+#endif
 
 void CPUParticles2D::convert_from_particles(Node *p_particles) {
 	GPUParticles2D *gpu_particles = Object::cast_to<GPUParticles2D>(p_particles);

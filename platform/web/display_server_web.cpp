@@ -305,18 +305,18 @@ int DisplayServerWeb::_mouse_button_callback(int p_pressed, int p_button, double
 	return true;
 }
 
-void DisplayServerWeb::mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers) {
+void DisplayServerWeb::mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers, double p_pressure) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_mouse_move_callback).call_deferred(p_x, p_y, p_rel_x, p_rel_y, p_modifiers);
+		callable_mp_static(DisplayServerWeb::_mouse_move_callback).call_deferred(p_x, p_y, p_rel_x, p_rel_y, p_modifiers, p_pressure);
 		return;
 	}
 #endif
 
-	_mouse_move_callback(p_x, p_y, p_rel_x, p_rel_y, p_modifiers);
+	_mouse_move_callback(p_x, p_y, p_rel_x, p_rel_y, p_modifiers, p_pressure);
 }
 
-void DisplayServerWeb::_mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers) {
+void DisplayServerWeb::_mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers, double p_pressure) {
 	BitField<MouseButtonMask> input_mask = Input::get_singleton()->get_mouse_button_mask();
 	// For motion outside the canvas, only read mouse movement if dragging
 	// started inside the canvas; imitating desktop app behavior.
@@ -332,6 +332,7 @@ void DisplayServerWeb::_mouse_move_callback(double p_x, double p_y, double p_rel
 
 	ev->set_position(pos);
 	ev->set_global_position(pos);
+	ev->set_pressure((float)p_pressure);
 
 	ev->set_relative(Vector2(p_rel_x, p_rel_y));
 	ev->set_relative_screen_position(ev->get_relative());
@@ -384,12 +385,10 @@ const char *DisplayServerWeb::godot2dom_cursor(DisplayServer::CursorShape p_shap
 }
 
 bool DisplayServerWeb::tts_is_speaking() const {
-	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return godot_js_tts_is_speaking();
 }
 
 bool DisplayServerWeb::tts_is_paused() const {
-	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return godot_js_tts_is_paused();
 }
 
@@ -424,13 +423,11 @@ void DisplayServerWeb::_update_voices_callback(const Vector<String> &p_voices) {
 }
 
 TypedArray<Dictionary> DisplayServerWeb::tts_get_voices() const {
-	ERR_FAIL_COND_V_MSG(!tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	godot_js_tts_get_voices(update_voices_callback);
 	return voices;
 }
 
 void DisplayServerWeb::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	if (p_interrupt) {
 		tts_stop();
 	}
@@ -447,17 +444,14 @@ void DisplayServerWeb::tts_speak(const String &p_text, const String &p_voice, in
 }
 
 void DisplayServerWeb::tts_pause() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	godot_js_tts_pause();
 }
 
 void DisplayServerWeb::tts_resume() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	godot_js_tts_resume();
 }
 
 void DisplayServerWeb::tts_stop() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	for (const KeyValue<int, CharString> &E : utterance_ids) {
 		tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, E.key);
 	}
@@ -640,18 +634,18 @@ Point2i DisplayServerWeb::mouse_get_position() const {
 }
 
 // Wheel
-int DisplayServerWeb::mouse_wheel_callback(double p_delta_x, double p_delta_y) {
+int DisplayServerWeb::mouse_wheel_callback(int p_delta_mode, double p_delta_x, double p_delta_y) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_mouse_wheel_callback).call_deferred(p_delta_x, p_delta_y);
+		callable_mp_static(DisplayServerWeb::_mouse_wheel_callback).call_deferred(p_delta_mode, p_delta_x, p_delta_y);
 		return true;
 	}
 #endif
 
-	return _mouse_wheel_callback(p_delta_x, p_delta_y);
+	return _mouse_wheel_callback(p_delta_mode, p_delta_x, p_delta_y);
 }
 
-int DisplayServerWeb::_mouse_wheel_callback(double p_delta_x, double p_delta_y) {
+int DisplayServerWeb::_mouse_wheel_callback(int p_delta_mode, double p_delta_x, double p_delta_y) {
 	if (!godot_js_display_canvas_is_focused() && !godot_js_is_ime_focused()) {
 		if (get_singleton()->cursor_inside_canvas) {
 			godot_js_display_canvas_focus();
@@ -671,20 +665,43 @@ int DisplayServerWeb::_mouse_wheel_callback(double p_delta_x, double p_delta_y) 
 	ev->set_ctrl_pressed(input->is_key_pressed(Key::CTRL));
 	ev->set_meta_pressed(input->is_key_pressed(Key::META));
 
+	enum DeltaMode {
+		DELTA_MODE_PIXEL = 0,
+		DELTA_MODE_LINE = 1,
+		DELTA_MODE_PAGE = 2,
+	};
+	const float MOUSE_WHEEL_PIXEL_FACTOR = 0.03f;
+	const float MOUSE_WHEEL_LINE_FACTOR = 0.3f;
+	const float MOUSE_WHEEL_PAGE_FACTOR = 1.0f;
+	float mouse_wheel_factor;
+
+	switch (p_delta_mode) {
+		case DELTA_MODE_PIXEL: {
+			mouse_wheel_factor = MOUSE_WHEEL_PIXEL_FACTOR;
+		} break;
+		case DELTA_MODE_LINE: {
+			mouse_wheel_factor = MOUSE_WHEEL_LINE_FACTOR;
+		} break;
+		case DELTA_MODE_PAGE: {
+			mouse_wheel_factor = MOUSE_WHEEL_PAGE_FACTOR;
+		} break;
+	}
+
 	if (p_delta_y < 0) {
 		ev->set_button_index(MouseButton::WHEEL_UP);
+		ev->set_factor(-p_delta_y * mouse_wheel_factor);
 	} else if (p_delta_y > 0) {
 		ev->set_button_index(MouseButton::WHEEL_DOWN);
+		ev->set_factor(p_delta_y * mouse_wheel_factor);
 	} else if (p_delta_x > 0) {
 		ev->set_button_index(MouseButton::WHEEL_LEFT);
+		ev->set_factor(p_delta_x * mouse_wheel_factor);
 	} else if (p_delta_x < 0) {
 		ev->set_button_index(MouseButton::WHEEL_RIGHT);
+		ev->set_factor(-p_delta_x * mouse_wheel_factor);
 	} else {
 		return false;
 	}
-
-	// Different browsers give wildly different delta values, and we can't
-	// interpret deltaMode, so use default value for wheel events' factor.
 
 	MouseButtonMask button_flag = mouse_button_to_mask(ev->get_button_index());
 	BitField<MouseButtonMask> button_mask = input->get_mouse_button_mask();
@@ -835,6 +852,12 @@ void DisplayServerWeb::gamepad_callback(int p_index, int p_connected, const char
 }
 
 void DisplayServerWeb::_gamepad_callback(int p_index, int p_connected, const String &p_id, const String &p_guid) {
+	if (p_connected) {
+		DisplayServerWeb::get_singleton()->gamepad_count += 1;
+	} else {
+		DisplayServerWeb::get_singleton()->gamepad_count -= 1;
+	}
+
 	Input *input = Input::get_singleton();
 	if (p_connected) {
 		input->joy_connection_changed(p_index, true, p_id, p_guid);
@@ -1086,7 +1109,6 @@ DisplayServer *DisplayServerWeb::create_func(const String &p_rendering_driver, W
 DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	r_error = OK; // Always succeeds for now.
 
-	tts = GLOBAL_GET("audio/general/text_to_speech");
 	native_menu = memnew(NativeMenu); // Dummy native menu.
 
 	// Ensure the canvas ID.
@@ -1199,7 +1221,7 @@ bool DisplayServerWeb::has_feature(Feature p_feature) const {
 		case FEATURE_VIRTUAL_KEYBOARD:
 			return godot_js_display_vk_available() != 0;
 		case FEATURE_TEXT_TO_SPEECH:
-			return tts && (godot_js_display_tts_available() != 0);
+			return godot_js_display_tts_available() != 0;
 		default:
 			return false;
 	}
@@ -1222,30 +1244,54 @@ int DisplayServerWeb::get_primary_screen() const {
 }
 
 Point2i DisplayServerWeb::screen_get_position(int p_screen) const {
-	return Point2i(); // TODO offsetX/Y?
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Point2i());
+
+	return Point2i(0, 0); // TODO offsetX/Y?
 }
 
 Size2i DisplayServerWeb::screen_get_size(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
+
 	int size[2];
 	godot_js_display_screen_size_get(size, size + 1);
 	return Size2(size[0], size[1]);
 }
 
 Rect2i DisplayServerWeb::screen_get_usable_rect(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	int size[2];
 	godot_js_display_window_size_get(size, size + 1);
 	return Rect2i(0, 0, size[0], size[1]);
 }
 
 int DisplayServerWeb::screen_get_dpi(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 72);
+
 	return godot_js_display_screen_dpi_get();
 }
 
 float DisplayServerWeb::screen_get_scale(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 1.0f);
+
 	return godot_js_display_pixel_ratio_get();
 }
 
 float DisplayServerWeb::screen_get_refresh_rate(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
+
 	return SCREEN_REFRESH_RATE_FALLBACK; // Web doesn't have much of a need for the screen refresh rate, and there's no native way to do so.
 }
 
@@ -1292,7 +1338,8 @@ void DisplayServerWeb::window_set_title(const String &p_title, WindowID p_window
 }
 
 int DisplayServerWeb::window_get_current_screen(WindowID p_window) const {
-	return 1;
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, INVALID_SCREEN);
+	return 0;
 }
 
 void DisplayServerWeb::window_set_current_screen(int p_screen, WindowID p_window) {
@@ -1414,8 +1461,11 @@ DisplayServer::VSyncMode DisplayServerWeb::window_get_vsync_mode(WindowID p_vsyn
 void DisplayServerWeb::process_events() {
 	process_keys();
 	Input::get_singleton()->flush_buffered_events();
-	if (godot_js_input_gamepad_sample() == OK) {
-		process_joypads();
+
+	if (gamepad_count > 0) {
+		if (godot_js_input_gamepad_sample() == OK) {
+			process_joypads();
+		}
 	}
 }
 

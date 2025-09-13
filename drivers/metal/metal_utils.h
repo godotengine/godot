@@ -28,10 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef METAL_UTILS_H
-#define METAL_UTILS_H
+#pragma once
 
 #import <os/log.h>
+
+#import <functional>
 
 #pragma mark - Boolean flags
 
@@ -102,4 +103,11 @@ extern os_log_t LOG_DRIVER;
 // Used for dynamic tracing.
 extern os_log_t LOG_INTERVALS;
 
-#endif // METAL_UTILS_H
+_FORCE_INLINE_ static uint32_t make_msl_version(uint32_t p_major, uint32_t p_minor = 0, uint32_t p_patch = 0) {
+	return (p_major * 10000) + (p_minor * 100) + p_patch;
+}
+
+_FORCE_INLINE_ static void parse_msl_version(uint32_t p_version, uint32_t &r_major, uint32_t &r_minor) {
+	r_major = p_version / 10000;
+	r_minor = (p_version % 10000) / 100;
+}

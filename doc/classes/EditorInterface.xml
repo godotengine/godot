@@ -19,6 +19,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="close_scene">
+			<return type="int" enum="Error" />
+			<description>
+				Closes the currently active scene, discarding any pending changes in the process. Returns [constant OK] on success or [constant ERR_DOES_NOT_EXIST] if there is no scene to close.
+			</description>
+		</method>
 		<method name="edit_node">
 			<return type="void" />
 			<param index="0" name="node" type="Node" />
@@ -101,7 +107,7 @@
 			<return type="float" />
 			<description>
 				Returns the actual scale of the editor UI ([code]1.0[/code] being 100% scale). This can be used to adjust position and dimensions of the UI added by plugins.
-				[b]Note:[/b] This value is set via the [code]interface/editor/display_scale[/code] and [code]interface/editor/custom_display_scale[/code] editor settings. Editor must be restarted for changes to be properly applied.
+				[b]Note:[/b] This value is set via the [member EditorSettings.interface/editor/display_scale] and [member EditorSettings.interface/editor/custom_display_scale] settings. The editor must be restarted for changes to be properly applied.
 			</description>
 		</method>
 		<method name="get_editor_settings" qualifiers="const">
@@ -156,10 +162,16 @@
 				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
+		<method name="get_open_scene_roots" qualifiers="const">
+			<return type="Node[]" />
+			<description>
+				Returns an array with references to the root nodes of the currently opened scenes.
+			</description>
+		</method>
 		<method name="get_open_scenes" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				Returns an [Array] with the file paths of the currently opened scenes.
+				Returns an array with the file paths of the currently opened scenes.
 			</description>
 		</method>
 		<method name="get_playing_scene" qualifiers="const">
@@ -344,14 +356,14 @@
 				[b]Example:[/b] Display the node selection dialog as soon as this node is added to the tree for the first time:
 				[codeblock]
 				func _ready():
-				    if Engine.is_editor_hint():
-				        EditorInterface.popup_node_selector(_on_node_selected, ["Button"])
+					if Engine.is_editor_hint():
+						EditorInterface.popup_node_selector(_on_node_selected, ["Button"])
 
 				func _on_node_selected(node_path):
-				    if node_path.is_empty():
-				        print("node selection canceled")
-				    else:
-				        print("selected ", node_path)
+					if node_path.is_empty():
+						print("node selection canceled")
+					else:
+						print("selected ", node_path)
 				[/codeblock]
 			</description>
 		</method>
@@ -365,14 +377,14 @@
 				Pops up an editor dialog for selecting properties from [param object]. The [param callback] must take a single argument of type [NodePath]. It is called on the selected property path (see [method NodePath.get_as_property_path]) or the empty path [code]^""[/code] if the dialog is canceled. If [param type_filter] is provided, the dialog will only show properties that match one of the listed [enum Variant.Type] values. If [param current_value] is provided, the property will be selected automatically in the property list, if it exists.
 				[codeblock]
 				func _ready():
-				    if Engine.is_editor_hint():
-				        EditorInterface.popup_property_selector(this, _on_property_selected, [TYPE_INT])
+					if Engine.is_editor_hint():
+						EditorInterface.popup_property_selector(this, _on_property_selected, [TYPE_INT])
 
 				func _on_property_selected(property_path):
-				    if property_path.is_empty():
-				        print("property selection canceled")
-				    else:
-				        print("selected ", property_path)
+					if property_path.is_empty():
+						print("property selection canceled")
+					else:
+						print("selected ", property_path)
 				[/codeblock]
 			</description>
 		</method>
@@ -438,7 +450,7 @@
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Sets the editor's current main screen to the one specified in [param name]. [param name] must match the title of the tab in question exactly (e.g. [code]2D[/code], [code]3D[/code], [code skip-lint]Script[/code], or [code]AssetLib[/code] for default tabs).
+				Sets the editor's current main screen to the one specified in [param name]. [param name] must match the title of the tab in question exactly (e.g. [code]2D[/code], [code]3D[/code], [code skip-lint]Script[/code], [code]Game[/code], or [code]AssetLib[/code] for default tabs).
 			</description>
 		</method>
 		<method name="set_plugin_enabled">

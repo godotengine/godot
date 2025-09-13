@@ -48,8 +48,19 @@
  */
 int mbedtls_aesni_has_support(unsigned int what)
 {
-    static int done = 0;
-    static unsigned int c = 0;
+    /* To avoid a race condition, tell the compiler that the assignment
+     * `done = 1` and the assignment to `c` may not be reordered.
+     * https://github.com/Mbed-TLS/mbedtls/issues/9840
+     *
+     * Note that we may also be worried about memory access reordering,
+     * but fortunately the x86 memory model is not too wild: stores
+     * from the same thread are observed consistently by other threads.
+     * (See example 8-1 in Sewell et al., "x86-TSO: A Rigorous and Usable
+     * Programmer’s Model for x86 Multiprocessors", CACM, 2010,
+     * https://www.cl.cam.ac.uk/~pes20/weakmemory/cacm.pdf)
+     */
+    static volatile int done = 0;
+    static volatile unsigned int c = 0;
 
     if (!done) {
 #if MBEDTLS_AESNI_HAVE_CODE == 2
@@ -489,7 +500,7 @@ int mbedtls_aesni_crypt_ecb(mbedtls_aes_context *ctx,
          "movdqu    %%xmm0, (%4)    \n\t" // export output
          :
          : "r" (ctx->nr), "r" (ctx->buf + ctx->rk_offset), "r" (mode), "r" (input), "r" (output)
-         : "memory", "cc", "xmm0", "xmm1");
+         : "memory", "cc", "xmm0", "xmm1", "0", "1");
 
 
     return 0;
@@ -679,7 +690,7 @@ static void aesni_setkey_enc_128(unsigned char *rk,
          AESKEYGENA(xmm0_xmm1, "0x36")      "call 1b \n\t"
          :
          : "r" (rk), "r" (key)
-         : "memory", "cc", "0");
+         : "memory", "cc", "xmm0", "xmm1", "0");
 }
 
 /*
@@ -737,7 +748,7 @@ static void aesni_setkey_enc_192(unsigned char *rk,
 
          :
          : "r" (rk), "r" (key)
-         : "memory", "cc", "0");
+         : "memory", "cc", "xmm0", "xmm1", "xmm2", "0");
 }
 #endif /* !MBEDTLS_AES_ONLY_128_BIT_KEY_LENGTH */
 
@@ -805,7 +816,7 @@ static void aesni_setkey_enc_256(unsigned char *rk,
          AESKEYGENA(xmm1_xmm2, "0x40")      "call 1b \n\t"
          :
          : "r" (rk), "r" (key)
-         : "memory", "cc", "0");
+         : "memory", "cc", "xmm0", "xmm1", "xmm2", "0");
 }
 #endif /* !MBEDTLS_AES_ONLY_128_BIT_KEY_LENGTH */
 

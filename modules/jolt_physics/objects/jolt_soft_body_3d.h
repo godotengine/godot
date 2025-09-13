@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JOLT_SOFT_BODY_3D_H
-#define JOLT_SOFT_BODY_3D_H
+#pragma once
 
 #include "jolt_object_3d.h"
 
@@ -65,6 +64,7 @@ class JoltSoftBody3D final : public JoltObject3D {
 	float pressure = 0.0f;
 	float linear_damping = 0.01f;
 	float stiffness_coefficient = 0.5f;
+	float shrinking_factor = 0.0f;
 
 	int simulation_precision = 5;
 
@@ -95,6 +95,7 @@ class JoltSoftBody3D final : public JoltObject3D {
 	void _pins_changed();
 	void _vertices_changed();
 	void _exceptions_changed();
+	void _motion_changed();
 
 public:
 	JoltSoftBody3D();
@@ -139,6 +140,9 @@ public:
 	float get_stiffness_coefficient() const;
 	void set_stiffness_coefficient(float p_coefficient);
 
+	float get_shrinking_factor() const;
+	void set_shrinking_factor(float p_shrinking_factor);
+
 	float get_pressure() const { return pressure; }
 	void set_pressure(float p_pressure);
 
@@ -167,6 +171,9 @@ public:
 	void unpin_all_vertices();
 
 	bool is_vertex_pinned(int p_index) const;
-};
 
-#endif // JOLT_SOFT_BODY_3D_H
+	void apply_vertex_impulse(int p_index, const Vector3 &p_impulse);
+	void apply_vertex_force(int p_index, const Vector3 &p_force);
+	void apply_central_impulse(const Vector3 &p_impulse);
+	void apply_central_force(const Vector3 &p_force);
+};

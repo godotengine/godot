@@ -36,8 +36,7 @@
 #define CHECK_END(arr, expected, what) ERR_FAIL_COND_V_MSG((uint32_t)arr.size() > (uint32_t)expected, false, String("Malformed ") + what + " message from script debugger, message too long. Expected size: " + itos(expected) + ", actual size: " + itos(arr.size()))
 
 Array DebuggerMarshalls::ScriptStackDump::serialize() {
-	Array arr;
-	arr.push_back(frames.size() * 3);
+	Array arr = { frames.size() * 3 };
 	for (const ScriptLanguage::StackInfo &frame : frames) {
 		arr.push_back(frame.file);
 		arr.push_back(frame.line);
@@ -64,10 +63,7 @@ bool DebuggerMarshalls::ScriptStackDump::deserialize(const Array &p_arr) {
 }
 
 Array DebuggerMarshalls::ScriptStackVariable::serialize(int max_size) {
-	Array arr;
-	arr.push_back(name);
-	arr.push_back(type);
-	arr.push_back(value.get_type());
+	Array arr = { name, type, value.get_type() };
 
 	Variant var = value;
 	if (value.get_type() == Variant::OBJECT && value.get_validated_object() == nullptr) {
@@ -99,20 +95,20 @@ bool DebuggerMarshalls::ScriptStackVariable::deserialize(const Array &p_arr) {
 }
 
 Array DebuggerMarshalls::OutputError::serialize() {
-	Array arr;
-	arr.push_back(hr);
-	arr.push_back(min);
-	arr.push_back(sec);
-	arr.push_back(msec);
-	arr.push_back(source_file);
-	arr.push_back(source_func);
-	arr.push_back(source_line);
-	arr.push_back(error);
-	arr.push_back(error_descr);
-	arr.push_back(warning);
 	unsigned int size = callstack.size();
+	Array arr = {
+		hr,
+		min,
+		sec, msec,
+		source_file,
+		source_func,
+		source_line,
+		error,
+		error_descr,
+		warning,
+		size * 3
+	};
 	const ScriptLanguage::StackInfo *r = callstack.ptr();
-	arr.push_back(size * 3);
 	for (int i = 0; i < callstack.size(); i++) {
 		arr.push_back(r[i].file);
 		arr.push_back(r[i].func);

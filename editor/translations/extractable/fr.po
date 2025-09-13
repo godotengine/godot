@@ -30,24 +30,37 @@ msgstr "Échantillonner une couleur depuis l'écran."
 msgid "Pick a color from the application window."
 msgstr "Échantillonner une couleur depuis la fenêtre de l'application."
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"Couleur : #%s\n"
-"Clic gauche : Appliquer la couleur\n"
-"Clic droit : Supprimer le préréglage"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"Couleur : #%s\n"
-"Clic gauche : Appliquer la couleur"
+msgid "Hex"
+msgstr "Hex"
 
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr "Entrez un code hexadécimal («#ff0000») ou le nom d'une couleur («red»)."
+
+msgid "The changes to this palette have not been saved to a file."
+msgstr ""
+"Les modifications de cette palette n'ont pas été enregistrées dans un fichier."
+
+msgid "Save"
+msgstr "Enregistrer"
+
+msgid "Save the current color palette to reuse later."
+msgstr ""
+"Enregistrer la palette de couleurs actuelle pour la réutiliser ultérieurement."
+
+msgid "Save the current color palette as a new to reuse later."
+msgstr ""
+"Enregistrer la palette de couleurs actuelle en tant que nouvelle palette pour "
+"la réutiliser ultérieurement."
+
+msgid "Load existing color palette."
+msgstr "Charger une palette de couleurs existante."
+
+msgid "Clear"
+msgstr "Vider"
+
+msgid "Clear the currently loaded color palettes in the picker."
+msgstr ""
+"Effacer les palettes de couleurs actuellement chargées dans le sélecteur."
 
 msgid "Select a picker shape."
 msgstr "Sélectionnez une forme de sélection."
@@ -55,8 +68,20 @@ msgstr "Sélectionnez une forme de sélection."
 msgid "Select a picker mode."
 msgstr "Sélectionnez un mode de sélection."
 
+msgid "Colorized Sliders"
+msgstr "Curseurs colorés"
+
 msgid "Hex code or named color"
 msgstr "Code hexadécimal ou nom de couleur"
+
+msgid "Swatches"
+msgstr "Nuances"
+
+msgid "Show all options available."
+msgstr "Voir toutes les options disponibles."
+
+msgid "Recent Colors"
+msgstr "Couleurs récentes"
 
 msgid "Add current color as a preset."
 msgstr "Ajouter la couleur courante comme préréglage."
@@ -89,11 +114,14 @@ msgstr "Ouvrir"
 msgid "Select Current Folder"
 msgstr "Sélectionner le dossier courant"
 
-msgid "Save"
-msgstr "Enregistrer"
-
 msgid "Select This Folder"
 msgstr "Sélectionner ce dossier"
+
+msgid "Open in File Manager"
+msgstr "Ouvrir dans le gestionnaire de fichiers"
+
+msgid "Show Package Contents"
+msgstr "Voir le contenu du paquet"
 
 msgid "You don't have permission to access contents of this folder."
 msgstr "Vous n'avez pas l'autorisation d'accéder au contenu de ce dossier."
@@ -131,14 +159,14 @@ msgstr "Chemin :"
 msgid "Refresh files."
 msgstr "Rafraîchir les fichiers."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Activer / désactiver la visibilité des fichiers cachés."
-
 msgid "Create a new folder."
 msgstr "Créer un nouveau dossier."
 
 msgid "Directories & Files:"
 msgstr "Répertoires et fichiers :"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Activer / désactiver la visibilité des fichiers cachés."
 
 msgid "File:"
 msgstr "Fichier :"
@@ -239,6 +267,9 @@ msgstr "Gluon de mots (WJ)"
 msgid "Soft Hyphen (SHY)"
 msgstr "Trait d'union conditionnel (SHY)"
 
+msgid "Emoji & Symbols"
+msgstr "Émojis et symboles"
+
 msgid "Cut"
 msgstr "Couper"
 
@@ -250,9 +281,6 @@ msgstr "Coller"
 
 msgid "Select All"
 msgstr "Tout sélectionner"
-
-msgid "Clear"
-msgstr "Vider"
 
 msgid "Undo"
 msgstr "Annuler"

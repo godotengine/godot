@@ -55,7 +55,7 @@ public class GodotLib {
 	/**
 	 * Invoked on the main thread to initialize Godot native layer.
 	 */
-	public static native boolean initialize(Activity activity,
+	public static native boolean initialize(
 			Godot p_instance,
 			AssetManager p_asset_manager,
 			GodotIO godotIO,
@@ -190,6 +190,15 @@ public class GodotLib {
 	public static native String getGlobal(String p_key);
 
 	/**
+	 * Used to get info about the current rendering system.
+	 *
+	 * @return A String array with two elements:
+	 *         [0] Rendering driver name.
+	 *         [1] Rendering method.
+	 */
+	public static native String[] getRendererInfo();
+
+	/**
 	 * Used to access Godot's editor settings.
 	 * @param settingKey Setting key
 	 * @return String value of the setting
@@ -258,6 +267,11 @@ public class GodotLib {
 	 * Invoked on the theme light/dark mode change.
 	 */
 	public static native void onNightModeChanged();
+
+	/**
+	 * Invoked on the hardware keyboard connected/disconnected.
+	 */
+	public static native void hardwareKeyboardConnected(boolean connected);
 
 	/**
 	 * Invoked on the file picker closed.

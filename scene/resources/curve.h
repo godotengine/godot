@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CURVE_H
-#define CURVE_H
+#pragma once
 
 #include "core/io/resource.h"
 
@@ -77,15 +76,15 @@ public:
 	void set_point_count(int p_count);
 
 	int add_point(Vector2 p_position,
-			real_t left_tangent = 0,
-			real_t right_tangent = 0,
-			TangentMode left_mode = TANGENT_FREE,
-			TangentMode right_mode = TANGENT_FREE);
+			real_t p_left_tangent = 0,
+			real_t p_right_tangent = 0,
+			TangentMode p_left_mode = TANGENT_FREE,
+			TangentMode p_right_mode = TANGENT_FREE);
 	int add_point_no_update(Vector2 p_position,
-			real_t left_tangent = 0,
-			real_t right_tangent = 0,
-			TangentMode left_mode = TANGENT_FREE,
-			TangentMode right_mode = TANGENT_FREE);
+			real_t p_left_tangent = 0,
+			real_t p_right_tangent = 0,
+			TangentMode p_left_mode = TANGENT_FREE,
+			TangentMode p_right_mode = TANGENT_FREE);
 	void remove_point(int p_index);
 	void clear_points();
 
@@ -127,10 +126,10 @@ public:
 	TangentMode get_point_left_mode(int p_index) const;
 	TangentMode get_point_right_mode(int p_index) const;
 
-	void update_auto_tangents(int i);
+	void update_auto_tangents(int p_index);
 
 	Array get_data() const;
-	void set_data(Array input);
+	void set_data(Array p_input);
 
 	void bake();
 	void _bake() const;
@@ -150,11 +149,12 @@ protected:
 private:
 	void mark_dirty();
 	int _add_point(Vector2 p_position,
-			real_t left_tangent = 0,
-			real_t right_tangent = 0,
-			TangentMode left_mode = TANGENT_FREE,
-			TangentMode right_mode = TANGENT_FREE);
-	void _remove_point(int p_index);
+			real_t p_left_tangent = 0,
+			real_t p_right_tangent = 0,
+			TangentMode p_left_mode = TANGENT_FREE,
+			TangentMode p_right_mode = TANGENT_FREE,
+			bool p_mark_dirty = true);
+	void _remove_point(int p_index, bool p_mark_dirty = true);
 
 	LocalVector<Point> _points;
 	mutable bool _baked_cache_dirty = false;
@@ -251,8 +251,6 @@ public:
 
 	PackedVector2Array tessellate(int p_max_stages = 5, real_t p_tolerance = 4) const; //useful for display
 	PackedVector2Array tessellate_even_length(int p_max_stages = 5, real_t p_length = 20.0) const; // Useful for baking.
-
-	Curve2D();
 };
 
 class Curve3D : public Resource {
@@ -360,8 +358,4 @@ public:
 
 	PackedVector3Array tessellate(int p_max_stages = 5, real_t p_tolerance = 4) const; // Useful for display.
 	PackedVector3Array tessellate_even_length(int p_max_stages = 5, real_t p_length = 0.2) const; // Useful for baking.
-
-	Curve3D();
 };
-
-#endif // CURVE_H

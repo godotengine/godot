@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VIDEO_STREAM_THEORA_H
-#define VIDEO_STREAM_THEORA_H
+#pragma once
 
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
@@ -52,8 +51,19 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	Point2i size;
 	Rect2i region;
 
+	float *audio_buffer = nullptr;
+	int audio_buffer_size = 0;
+	int audio_ptr_start = 0;
+	int audio_ptr_end = 0;
+
 	int buffer_data();
 	int queue_page(ogg_page *page);
+	int read_page(ogg_page *page);
+	int feed_pages();
+	double get_page_time(ogg_page *page);
+	int64_t seek_streams(double p_time, int64_t &video_granulepos, int64_t &audio_granulepos);
+	void find_streams(th_setup_info *&ts);
+	void read_headers(th_setup_info *&ts);
 	void video_write(th_ycbcr_buffer yuv);
 	double get_time() const;
 
@@ -61,7 +71,6 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	bool vorbis_eos = false;
 
 	ogg_sync_state oy;
-	ogg_page og;
 	ogg_stream_state vo;
 	ogg_stream_state to;
 	th_info ti;
@@ -72,19 +81,21 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	vorbis_block vb;
 	vorbis_comment vc;
 	th_pixel_fmt px_fmt;
-	double frame_duration;
+	double frame_duration = 0;
+	double stream_length = 0;
+	int64_t stream_data_offset = 0;
+	int64_t stream_data_size = 0;
 
-	int theora_p = 0;
-	int vorbis_p = 0;
 	int pp_level_max = 0;
 	int pp_level = 0;
 	int pp_inc = 0;
 
 	bool playing = false;
-	bool buffering = false;
 	bool paused = false;
 
 	bool dup_frame = false;
+	bool has_video = false;
+	bool has_audio = false;
 	bool video_ready = false;
 	bool video_done = false;
 	bool audio_done = false;
@@ -100,6 +111,20 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
 protected:
 	void clear();
+
+	_FORCE_INLINE_ bool send_audio() {
+		if (audio_ptr_end > 0) {
+			int mixed = mix_callback(mix_udata, &audio_buffer[audio_ptr_start * vi.channels], audio_ptr_end - audio_ptr_start);
+			audio_ptr_start += mixed;
+			if (audio_ptr_start == audio_ptr_end) {
+				audio_ptr_start = 0;
+				audio_ptr_end = 0;
+			} else {
+				return false;
+			}
+		}
+		return true;
+	}
 
 public:
 	virtual void play() override;
@@ -154,5 +179,3 @@ public:
 	virtual bool handles_type(const String &p_type) const override;
 	virtual String get_resource_type(const String &p_path) const override;
 };
-
-#endif // VIDEO_STREAM_THEORA_H

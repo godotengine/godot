@@ -115,37 +115,37 @@
 				var current_rotation
 
 				func _process(delta):
-				    if Input.is_action_just_pressed("animate"):
-				        current_rotation = get_quaternion()
-				        state_machine.travel("Animate")
-				    var velocity = current_rotation * animation_tree.get_root_motion_position() / delta
-				    set_velocity(velocity)
-				    move_and_slide()
+					if Input.is_action_just_pressed("animate"):
+						current_rotation = get_quaternion()
+						state_machine.travel("Animate")
+					var velocity = current_rotation * animation_tree.get_root_motion_position() / delta
+					set_velocity(velocity)
+					move_and_slide()
 				[/gdscript]
 				[/codeblocks]
 				By using this in combination with [method get_root_motion_rotation_accumulator], you can apply the root motion position more correctly to account for the rotation of the node.
 				[codeblocks]
 				[gdscript]
 				func _process(delta):
-				    if Input.is_action_just_pressed("animate"):
-				        state_machine.travel("Animate")
-				    set_quaternion(get_quaternion() * animation_tree.get_root_motion_rotation())
-				    var velocity = (animation_tree.get_root_motion_rotation_accumulator().inverse() * get_quaternion()) * animation_tree.get_root_motion_position() / delta
-				    set_velocity(velocity)
-				    move_and_slide()
+					if Input.is_action_just_pressed("animate"):
+						state_machine.travel("Animate")
+					set_quaternion(get_quaternion() * animation_tree.get_root_motion_rotation())
+					var velocity = (animation_tree.get_root_motion_rotation_accumulator().inverse() * get_quaternion()) * animation_tree.get_root_motion_position() / delta
+					set_velocity(velocity)
+					move_and_slide()
 				[/gdscript]
 				[/codeblocks]
-				If [member root_motion_local] is [code]true[/code], return the pre-multiplied translation value with the inverted rotation.
+				If [member root_motion_local] is [code]true[/code], returns the pre-multiplied translation value with the inverted rotation.
 				In this case, the code can be written as follows:
 				[codeblocks]
 				[gdscript]
 				func _process(delta):
-				    if Input.is_action_just_pressed("animate"):
-				        state_machine.travel("Animate")
-				    set_quaternion(get_quaternion() * animation_tree.get_root_motion_rotation())
-				    var velocity = get_quaternion() * animation_tree.get_root_motion_position() / delta
-				    set_velocity(velocity)
-				    move_and_slide()
+					if Input.is_action_just_pressed("animate"):
+						state_machine.travel("Animate")
+					set_quaternion(get_quaternion() * animation_tree.get_root_motion_rotation())
+					var velocity = get_quaternion() * animation_tree.get_root_motion_position() / delta
+					set_velocity(velocity)
+					move_and_slide()
 				[/gdscript]
 				[/codeblocks]
 			</description>
@@ -161,12 +161,12 @@
 				var prev_root_motion_position_accumulator
 
 				func _process(delta):
-				    if Input.is_action_just_pressed("animate"):
-				        state_machine.travel("Animate")
-				    var current_root_motion_position_accumulator = animation_tree.get_root_motion_position_accumulator()
-				    var difference = current_root_motion_position_accumulator - prev_root_motion_position_accumulator
-				    prev_root_motion_position_accumulator = current_root_motion_position_accumulator
-				    transform.origin += difference
+					if Input.is_action_just_pressed("animate"):
+						state_machine.travel("Animate")
+					var current_root_motion_position_accumulator = animation_tree.get_root_motion_position_accumulator()
+					var difference = current_root_motion_position_accumulator - prev_root_motion_position_accumulator
+					prev_root_motion_position_accumulator = current_root_motion_position_accumulator
+					transform.origin += difference
 				[/gdscript]
 				[/codeblocks]
 				However, if the animation loops, an unintended discrete change may occur, so this is only useful for some simple use cases.
@@ -182,9 +182,9 @@
 				[codeblocks]
 				[gdscript]
 				func _process(delta):
-				    if Input.is_action_just_pressed("animate"):
-				        state_machine.travel("Animate")
-				    set_quaternion(get_quaternion() * animation_tree.get_root_motion_rotation())
+					if Input.is_action_just_pressed("animate"):
+						state_machine.travel("Animate")
+					set_quaternion(get_quaternion() * animation_tree.get_root_motion_rotation())
 				[/gdscript]
 				[/codeblocks]
 			</description>
@@ -201,12 +201,12 @@
 				var prev_root_motion_rotation_accumulator
 
 				func _process(delta):
-				    if Input.is_action_just_pressed("animate"):
-				        state_machine.travel("Animate")
-				    var current_root_motion_rotation_accumulator = animation_tree.get_root_motion_rotation_accumulator()
-				    var difference = prev_root_motion_rotation_accumulator.inverse() * current_root_motion_rotation_accumulator
-				    prev_root_motion_rotation_accumulator = current_root_motion_rotation_accumulator
-				    transform.basis *=  Basis(difference)
+					if Input.is_action_just_pressed("animate"):
+						state_machine.travel("Animate")
+					var current_root_motion_rotation_accumulator = animation_tree.get_root_motion_rotation_accumulator()
+					var difference = prev_root_motion_rotation_accumulator.inverse() * current_root_motion_rotation_accumulator
+					prev_root_motion_rotation_accumulator = current_root_motion_rotation_accumulator
+					transform.basis *=  Basis(difference)
 				[/gdscript]
 				[/codeblocks]
 				However, if the animation loops, an unintended discrete change may occur, so this is only useful for some simple use cases.
@@ -225,12 +225,12 @@
 				var scale_accum = Vector3(1, 1, 1)
 
 				func _process(delta):
-				    if Input.is_action_just_pressed("animate"):
-				        current_scale = get_scale()
-				        scale_accum = Vector3(1, 1, 1)
-				        state_machine.travel("Animate")
-				    scale_accum += animation_tree.get_root_motion_scale()
-				    set_scale(current_scale * scale_accum)
+					if Input.is_action_just_pressed("animate"):
+						current_scale = get_scale()
+						scale_accum = Vector3(1, 1, 1)
+						state_machine.travel("Animate")
+					scale_accum += animation_tree.get_root_motion_scale()
+					set_scale(current_scale * scale_accum)
 				[/gdscript]
 				[/codeblocks]
 			</description>
@@ -245,12 +245,12 @@
 				var prev_root_motion_scale_accumulator
 
 				func _process(delta):
-				    if Input.is_action_just_pressed("animate"):
-				        state_machine.travel("Animate")
-				    var current_root_motion_scale_accumulator = animation_tree.get_root_motion_scale_accumulator()
-				    var difference = current_root_motion_scale_accumulator - prev_root_motion_scale_accumulator
-				    prev_root_motion_scale_accumulator = current_root_motion_scale_accumulator
-				    transform.basis = transform.basis.scaled(difference)
+					if Input.is_action_just_pressed("animate"):
+						state_machine.travel("Animate")
+					var current_root_motion_scale_accumulator = animation_tree.get_root_motion_scale_accumulator()
+					var difference = current_root_motion_scale_accumulator - prev_root_motion_scale_accumulator
+					prev_root_motion_scale_accumulator = current_root_motion_scale_accumulator
+					transform.basis = transform.basis.scaled(difference)
 				[/gdscript]
 				[/codeblocks]
 				However, if the animation loops, an unintended discrete change may occur, so this is only useful for some simple use cases.
@@ -317,7 +317,7 @@
 			This is used by the editor. If set to [code]true[/code], the scene will be saved with the effects of the reset animation (the animation with the key [code]"RESET"[/code]) applied as if it had been seeked to time 0, with the editor keeping the values that the scene had before saving.
 			This makes it more convenient to preview and edit animations in the editor, as changes to the scene will not be saved as long as they are set in the reset animation.
 		</member>
-		<member name="root_motion_local" type="bool" setter="set_root_motion_local" getter="is_root_motion_local">
+		<member name="root_motion_local" type="bool" setter="set_root_motion_local" getter="is_root_motion_local" default="false">
 			If [code]true[/code], [method get_root_motion_position] value is extracted as a local translation value before blending. In other words, it is treated like the translation is done after the rotation.
 		</member>
 		<member name="root_motion_track" type="NodePath" setter="set_root_motion_track" getter="get_root_motion_track" default="NodePath(&quot;&quot;)">
@@ -350,6 +350,7 @@
 			<param index="0" name="anim_name" type="StringName" />
 			<description>
 				Notifies when an animation starts playing.
+				[b]Note:[/b] This signal is not emitted if an animation is looping.
 			</description>
 		</signal>
 		<signal name="caches_cleared">

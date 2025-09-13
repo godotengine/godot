@@ -138,21 +138,20 @@ Error AudioDriverPulseAudio::detect_channels(bool input) {
 		}
 	}
 
-	char dev[1024];
 	if (device == "Default") {
-		strcpy(dev, input ? default_input_device.utf8().get_data() : default_output_device.utf8().get_data());
-	} else {
-		strcpy(dev, device.utf8().get_data());
+		device = input ? default_input_device : default_output_device;
 	}
-	print_verbose("PulseAudio: Detecting channels for device: " + String(dev));
+	print_verbose("PulseAudio: Detecting channels for device: " + device);
+
+	CharString device_utf8 = device.utf8();
 
 	// Now using the device name get the amount of channels
 	pa_status = 0;
 	pa_operation *pa_op;
 	if (input) {
-		pa_op = pa_context_get_source_info_by_name(pa_ctx, dev, &AudioDriverPulseAudio::pa_source_info_cb, (void *)this);
+		pa_op = pa_context_get_source_info_by_name(pa_ctx, device_utf8.get_data(), &AudioDriverPulseAudio::pa_source_info_cb, (void *)this);
 	} else {
-		pa_op = pa_context_get_sink_info_by_name(pa_ctx, dev, &AudioDriverPulseAudio::pa_sink_info_cb, (void *)this);
+		pa_op = pa_context_get_sink_info_by_name(pa_ctx, device_utf8.get_data(), &AudioDriverPulseAudio::pa_sink_info_cb, (void *)this);
 	}
 
 	if (pa_op) {
@@ -312,11 +311,11 @@ Error AudioDriverPulseAudio::init() {
 
 	String context_name;
 	if (Engine::get_singleton()->is_editor_hint()) {
-		context_name = VERSION_NAME " Editor";
+		context_name = GODOT_VERSION_NAME " Editor";
 	} else {
 		context_name = GLOBAL_GET("application/config/name");
 		if (context_name.is_empty()) {
-			context_name = VERSION_NAME " Project";
+			context_name = GODOT_VERSION_NAME " Project";
 		}
 	}
 

@@ -89,6 +89,7 @@ local.properties
 *.iml
 .gradletasknamecache
 project.properties
+platform/android/java/build/
 platform/android/java/*/.cxx/
 platform/android/java/*/build/
 platform/android/java/*/libs/
@@ -218,6 +219,9 @@ xcuserdata/
 *.xcodeproj/*
 !misc/misc/dist/ios_xcode/godot_ios.xcodeproj/project.pbxproj
 
+# Zed
+.zed/
+
 ##############################
 ### Visual Studio specific ###
 ##############################
@@ -262,6 +266,11 @@ bld/
 !thirdparty/**/x86/
 !thirdparty/**/arm/
 !thirdparty/**/arm64/
+
+thirdparty/swappy-frame-pacing/arm64-v8a/abi.json
+thirdparty/swappy-frame-pacing/armeabi-v7a/abi.json
+thirdparty/swappy-frame-pacing/x86/abi.json
+thirdparty/swappy-frame-pacing/x86_64/abi.json
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

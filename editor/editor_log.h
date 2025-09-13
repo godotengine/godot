@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_LOG_H
-#define EDITOR_LOG_H
+#pragma once
 
 #include "core/os/thread.h"
 #include "scene/gui/box_container.h"
@@ -88,13 +87,14 @@ private:
 		MessageType type;
 		Button *toggle_button = nullptr;
 
-		void initialize_button(const String &p_tooltip, Callable p_toggled_callback) {
+		void initialize_button(const String &p_name, const String &p_tooltip, Callable p_toggled_callback) {
 			toggle_button = memnew(Button);
 			toggle_button->set_toggle_mode(true);
 			toggle_button->set_pressed(true);
 			toggle_button->set_text(itos(message_count));
-			toggle_button->set_tooltip_text(TTR(p_tooltip));
-			toggle_button->set_focus_mode(FOCUS_NONE);
+			toggle_button->set_accessibility_name(TTRGET(p_name));
+			toggle_button->set_tooltip_text(TTRGET(p_tooltip));
+			toggle_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 			// When toggled call the callback and pass the MessageType this button is for.
 			toggle_button->connect(SceneStringName(toggled), p_toggled_callback.bind(type));
 		}
@@ -191,5 +191,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(EditorLog::MessageType);
-
-#endif // EDITOR_LOG_H

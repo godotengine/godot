@@ -102,7 +102,6 @@ static void _dashLineTo(SwDashStroke& dash, const Point* to, const Matrix& trans
 {
     Line cur = {dash.ptCur, *to};
     auto len = cur.length();
-
     if (tvg::zero(len)) {
         _outlineMoveTo(*dash.outline, &dash.ptCur, transform);
     //draw the current line fully
@@ -117,7 +116,7 @@ static void _dashLineTo(SwDashStroke& dash, const Point* to, const Matrix& trans
         }
     //draw the current line partially
     } else {
-        while (len - dash.curLen > 0.0001f) {
+        while (len - dash.curLen > DASH_PATTERN_THRESHOLD) {
             Line left, right;
             if (dash.curLen > 0) {
                 len -= dash.curLen;
@@ -178,7 +177,7 @@ static void _dashCubicTo(SwDashStroke& dash, const Point* ctrl1, const Point* ct
         }
     //draw the current line partially
     } else {
-        while ((len - dash.curLen) > 0.0001f) {
+        while ((len - dash.curLen) > DASH_PATTERN_THRESHOLD) {
             Bezier left, right;
             if (dash.curLen > 0) {
                 len -= dash.curLen;
@@ -543,7 +542,6 @@ void shapeDelOutline(SwShape* shape, SwMpool* mpool, uint32_t tid)
 void shapeReset(SwShape* shape)
 {
     rleReset(shape->rle);
-    rleReset(shape->strokeRle);
     shape->fastTrack = false;
     shape->bbox.reset();
 }

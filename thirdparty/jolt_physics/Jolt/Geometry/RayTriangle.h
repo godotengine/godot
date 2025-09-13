@@ -15,7 +15,7 @@ JPH_INLINE float RayTriangle(Vec3Arg inOrigin, Vec3Arg inDirection, Vec3Arg inV0
 
 	// Zero & one
 	Vec3 zero = Vec3::sZero();
-	Vec3 one = Vec3::sReplicate(1.0f);
+	Vec3 one = Vec3::sOne();
 
 	// Find vectors for two edges sharing inV0
 	Vec3 e1 = inV1 - inV0;
@@ -31,7 +31,7 @@ JPH_INLINE float RayTriangle(Vec3Arg inOrigin, Vec3Arg inDirection, Vec3Arg inV0
 	UVec4 det_near_zero = Vec3::sLess(det.Abs(), epsilon);
 
 	// When the determinant is near zero, set it to one to avoid dividing by zero
-	det = Vec3::sSelect(det, Vec3::sReplicate(1.0f), det_near_zero);
+	det = Vec3::sSelect(det, Vec3::sOne(), det_near_zero);
 
 	// Calculate distance from inV0 to ray origin
 	Vec3 s = inOrigin - inV0;
@@ -110,7 +110,7 @@ JPH_INLINE Vec4 RayTriangle4(Vec3Arg inOrigin, Vec3Arg inDirection, Vec4Arg inV0
 	UVec4 det_near_zero = Vec4::sLess(det, epsilon);
 
 	// Set components of the determinant to 1 that are near zero to avoid dividing by zero
-	det = Vec4::sSelect(det, Vec4::sReplicate(1.0f), det_near_zero);
+	det = Vec4::sSelect(det, Vec4::sOne(), det_near_zero);
 
 	// Calculate distance from inV0 to ray origin
 	Vec4 sx = inOrigin.SplatX() - inV0X;

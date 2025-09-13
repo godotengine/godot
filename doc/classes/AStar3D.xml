@@ -14,14 +14,14 @@
 		extends AStar3D
 
 		func _compute_cost(u, v):
-		    var u_pos = get_point_position(u)
-		    var v_pos = get_point_position(v)
-		    return abs(u_pos.x - v_pos.x) + abs(u_pos.y - v_pos.y) + abs(u_pos.z - v_pos.z)
+			var u_pos = get_point_position(u)
+			var v_pos = get_point_position(v)
+			return abs(u_pos.x - v_pos.x) + abs(u_pos.y - v_pos.y) + abs(u_pos.z - v_pos.z)
 
 		func _estimate_cost(u, v):
-		    var u_pos = get_point_position(u)
-		    var v_pos = get_point_position(v)
-		    return abs(u_pos.x - v_pos.x) + abs(u_pos.y - v_pos.y) + abs(u_pos.z - v_pos.z)
+			var u_pos = get_point_position(u)
+			var v_pos = get_point_position(v)
+			return abs(u_pos.x - v_pos.x) + abs(u_pos.y - v_pos.y) + abs(u_pos.z - v_pos.z)
 		[/gdscript]
 		[csharp]
 		using Godot;
@@ -29,20 +29,20 @@
 		[GlobalClass]
 		public partial class MyAStar3D : AStar3D
 		{
-		    public override float _ComputeCost(long fromId, long toId)
-		    {
-		        Vector3 fromPoint = GetPointPosition(fromId);
-		        Vector3 toPoint = GetPointPosition(toId);
+			public override float _ComputeCost(long fromId, long toId)
+			{
+				Vector3 fromPoint = GetPointPosition(fromId);
+				Vector3 toPoint = GetPointPosition(toId);
 
-		        return Mathf.Abs(fromPoint.X - toPoint.X) + Mathf.Abs(fromPoint.Y - toPoint.Y) + Mathf.Abs(fromPoint.Z - toPoint.Z);
-		    }
+				return Mathf.Abs(fromPoint.X - toPoint.X) + Mathf.Abs(fromPoint.Y - toPoint.Y) + Mathf.Abs(fromPoint.Z - toPoint.Z);
+			}
 
-		    public override float _EstimateCost(long fromId, long toId)
-		    {
-		        Vector3 fromPoint = GetPointPosition(fromId);
-		        Vector3 toPoint = GetPointPosition(toId);
-		        return Mathf.Abs(fromPoint.X - toPoint.X) + Mathf.Abs(fromPoint.Y - toPoint.Y) + Mathf.Abs(fromPoint.Z - toPoint.Z);
-		    }
+			public override float _EstimateCost(long fromId, long toId)
+			{
+				Vector3 fromPoint = GetPointPosition(fromId);
+				Vector3 toPoint = GetPointPosition(toId);
+				return Mathf.Abs(fromPoint.X - toPoint.X) + Mathf.Abs(fromPoint.Y - toPoint.Y) + Mathf.Abs(fromPoint.Z - toPoint.Z);
+			}
 		}
 		[/csharp]
 		[/codeblocks]
@@ -67,6 +67,15 @@
 			<param index="1" name="end_id" type="int" />
 			<description>
 				Called when estimating the cost between a point and the path's ending point.
+				Note that this function is hidden in the default [AStar3D] class.
+			</description>
+		</method>
+		<method name="_filter_neighbor" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="from_id" type="int" />
+			<param index="1" name="neighbor_id" type="int" />
+			<description>
+				Called when neighboring point enters processing and if [member neighbor_filter_enabled] is [code]true[/code]. If [code]true[/code] is returned the point will not be processed.
 				Note that this function is hidden in the default [AStar3D] class.
 			</description>
 		</method>
@@ -275,7 +284,7 @@
 			<description>
 				Returns an array with the points that are in the path found by AStar3D between the given points. The array is ordered from the starting point to the ending point of the path.
 				If there is no valid path to the target, and [param allow_partial_path] is [code]true[/code], returns a path to the point closest to the target that can be reached.
-				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty array and will print an error message.
+				[b]Note:[/b] This method is not thread-safe; it can only be used from a single [Thread] at a given time. Consider using [Mutex] to ensure exclusive access to one thread to avoid race conditions.
 				Additionally, when [param allow_partial_path] is [code]true[/code] and [param to_id] is disabled the search may take an unusually long time to finish.
 			</description>
 		</method>
@@ -318,7 +327,7 @@
 			<return type="void" />
 			<param index="0" name="num_nodes" type="int" />
 			<description>
-				Reserves space internally for [param num_nodes] points. Useful if you're adding a known large number of points at once, such as points on a grid. New capacity must be greater or equals to old capacity.
+				Reserves space internally for [param num_nodes] points. Useful if you're adding a known large number of points at once, such as points on a grid.
 			</description>
 		</method>
 		<method name="set_point_disabled">
@@ -346,4 +355,9 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="neighbor_filter_enabled" type="bool" setter="set_neighbor_filter_enabled" getter="is_neighbor_filter_enabled" default="false">
+			If [code]true[/code] enables the filtering of neighbors via [method _filter_neighbor].
+		</member>
+	</members>
 </class>

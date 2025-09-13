@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RECT2_H
-#define RECT2_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/math/vector2.h"
@@ -203,10 +202,11 @@ struct [[nodiscard]] Rect2 {
 	}
 
 	bool is_equal_approx(const Rect2 &p_rect) const;
+	bool is_same(const Rect2 &p_rect) const;
 	bool is_finite() const;
 
-	bool operator==(const Rect2 &p_rect) const { return position == p_rect.position && size == p_rect.size; }
-	bool operator!=(const Rect2 &p_rect) const { return position != p_rect.position || size != p_rect.size; }
+	constexpr bool operator==(const Rect2 &p_rect) const { return position == p_rect.position && size == p_rect.size; }
+	constexpr bool operator!=(const Rect2 &p_rect) const { return position != p_rect.position || size != p_rect.size; }
 
 	inline Rect2 grow(real_t p_amount) const {
 		Rect2 g = *this;
@@ -358,18 +358,19 @@ struct [[nodiscard]] Rect2 {
 		return position + size;
 	}
 
-	operator String() const;
+	explicit operator String() const;
 	operator Rect2i() const;
 
-	Rect2() {}
-	Rect2(real_t p_x, real_t p_y, real_t p_width, real_t p_height) :
+	Rect2() = default;
+	constexpr Rect2(real_t p_x, real_t p_y, real_t p_width, real_t p_height) :
 			position(Point2(p_x, p_y)),
 			size(Size2(p_width, p_height)) {
 	}
-	Rect2(const Point2 &p_pos, const Size2 &p_size) :
+	constexpr Rect2(const Point2 &p_pos, const Size2 &p_size) :
 			position(p_pos),
 			size(p_size) {
 	}
 };
 
-#endif // RECT2_H
+template <>
+struct is_zero_constructible<Rect2> : std::true_type {};

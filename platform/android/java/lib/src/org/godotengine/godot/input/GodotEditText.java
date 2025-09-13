@@ -173,7 +173,7 @@ public class GodotEditText extends EditText {
 
 					if (!TextUtils.isEmpty(acceptCharacters)) {
 						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-							edit.setKeyListener(DigitsKeyListener.getInstance(Locale.getDefault()));
+							edit.setKeyListener(DigitsKeyListener.getInstance(Locale.getDefault(), true, true));
 						} else {
 							edit.setKeyListener(DigitsKeyListener.getInstance(acceptCharacters));
 						}
@@ -265,13 +265,6 @@ public class GodotEditText extends EditText {
 	}
 
 	public boolean hasHardwareKeyboard() {
-		Configuration config = getResources().getConfiguration();
-		boolean hasHardwareKeyboardConfig = config.keyboard != Configuration.KEYBOARD_NOKEYS &&
-				config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
-		if (hasHardwareKeyboardConfig) {
-			return true;
-		}
-
 		return mRenderView.getInputHandler().hasHardwareKeyboard();
 	}
 

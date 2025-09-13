@@ -33,7 +33,7 @@
 #include "core/input/input.h"
 #include "core/math/expression.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/theme/theme_db.h"
 
@@ -95,7 +95,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 			}
 			grabbing_spinner_dist_cache += diff_x * grabbing_spinner_speed;
 
-			if (!grabbing_spinner && ABS(grabbing_spinner_dist_cache) > 4 * grabbing_spinner_speed * EDSCALE) {
+			if (!grabbing_spinner && Math::abs(grabbing_spinner_dist_cache) > 4 * grabbing_spinner_speed * EDSCALE) {
 				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
 				grabbing_spinner = true;
 			}
@@ -187,9 +187,11 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				set_value(get_value() + get_step());
 				mousewheel_over_grabber = true;
+				accept_event();
 			} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 				set_value(get_value() - get_step());
 				mousewheel_over_grabber = true;
+				accept_event();
 			}
 		}
 	}
@@ -244,7 +246,7 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 				if (step < 1) {
 					double divisor = 1.0 / step;
 
-					if (trunc(divisor) == divisor) {
+					if (std::trunc(divisor) == divisor) {
 						step = 1.0;
 					}
 				}
@@ -435,13 +437,11 @@ void EditorSpinSlider::_draw_spin_slider() {
 					grabber->set_texture(grabber_tex);
 				}
 
-				Vector2 scale = get_global_transform_with_canvas().get_scale();
-				grabber->set_scale(scale);
 				grabber->reset_size();
-				grabber->set_position((grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
+				grabber->set_position(grabber_rect.get_center() - grabber->get_size() * 0.5);
 
 				if (mousewheel_over_grabber) {
-					Input::get_singleton()->warp_mouse(grabber->get_position() + grabber_rect.size);
+					Input::get_singleton()->warp_mouse(grabber->get_global_position() + grabber_rect.size);
 				}
 
 				grabber_range = width;
@@ -453,10 +453,12 @@ void EditorSpinSlider::_draw_spin_slider() {
 void EditorSpinSlider::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			grabbing_spinner_speed = EditorSettings::get_singleton()->get("interface/inspector/float_drag_speed");
+			grabbing_spinner_speed = EDITOR_GET("interface/inspector/float_drag_speed");
 			_update_value_input_stylebox();
 		} break;
 
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_value_input_stylebox();
 		} break;
@@ -566,8 +568,8 @@ void EditorSpinSlider::_evaluate_input_text() {
 	expr.instantiate();
 
 	// Convert commas ',' to dots '.' for French/German etc. keyboard layouts.
-	String text = value_input->get_text().replace(",", ".");
-	text = text.replace(";", ",");
+	String text = value_input->get_text().replace_char(',', '.');
+	text = text.replace_char(';', ',');
 	text = TS->parse_number(text);
 
 	Error err = expr->parse(text);

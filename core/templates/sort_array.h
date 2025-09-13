@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SORT_ARRAY_H
-#define SORT_ARRAY_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/typedefs.h"
@@ -40,18 +39,13 @@
 		break;                                                        \
 	}
 
-template <typename T>
-struct _DefaultComparator {
-	_FORCE_INLINE_ bool operator()(const T &a, const T &b) const { return (a < b); }
-};
-
 #ifdef DEBUG_ENABLED
 #define SORT_ARRAY_VALIDATE_ENABLED true
 #else
 #define SORT_ARRAY_VALIDATE_ENABLED false
 #endif
 
-template <typename T, typename Comparator = _DefaultComparator<T>, bool Validate = SORT_ARRAY_VALIDATE_ENABLED>
+template <typename T, typename Comparator = Comparator<T>, bool Validate = SORT_ARRAY_VALIDATE_ENABLED>
 class SortArray {
 	enum {
 		INTROSORT_THRESHOLD = 16
@@ -60,21 +54,24 @@ class SortArray {
 public:
 	Comparator compare;
 
-	inline const T &median_of_3(const T &a, const T &b, const T &c) const {
+	inline int64_t median_of_3_index(const T *p_ptr, int64_t a_index, int64_t b_index, int64_t c_index) const {
+		const T &a = p_ptr[a_index];
+		const T &b = p_ptr[b_index];
+		const T &c = p_ptr[c_index];
 		if (compare(a, b)) {
 			if (compare(b, c)) {
-				return b;
+				return b_index;
 			} else if (compare(a, c)) {
-				return c;
+				return c_index;
 			} else {
-				return a;
+				return a_index;
 			}
 		} else if (compare(a, c)) {
-			return a;
+			return a_index;
 		} else if (compare(b, c)) {
-			return c;
+			return c_index;
 		} else {
-			return b;
+			return b_index;
 		}
 	}
 
@@ -168,29 +165,35 @@ public:
 		}
 	}
 
-	inline int64_t partitioner(int64_t p_first, int64_t p_last, T p_pivot, T *p_array) const {
+	inline int64_t partitioner(int64_t p_first, int64_t p_last, int64_t p_pivot, T *p_array) const {
 		const int64_t unmodified_first = p_first;
 		const int64_t unmodified_last = p_last;
+		const T *pivot_element_location = &p_array[p_pivot];
 
 		while (true) {
-			while (compare(p_array[p_first], p_pivot)) {
+			while (p_first != p_pivot && compare(p_array[p_first], *pivot_element_location)) {
 				if constexpr (Validate) {
 					ERR_BAD_COMPARE(p_first == unmodified_last - 1);
 				}
 				p_first++;
 			}
 			p_last--;
-			while (compare(p_pivot, p_array[p_last])) {
+			while (p_last != p_pivot && compare(*pivot_element_location, p_array[p_last])) {
 				if constexpr (Validate) {
 					ERR_BAD_COMPARE(p_last == unmodified_first);
 				}
 				p_last--;
 			}
 
-			if (!(p_first < p_last)) {
+			if (p_first >= p_last) {
 				return p_first;
 			}
 
+			if (pivot_element_location == &p_array[p_first]) {
+				pivot_element_location = &p_array[p_last];
+			} else if (pivot_element_location == &p_array[p_last]) {
+				pivot_element_location = &p_array[p_first];
+			}
 			SWAP(p_array[p_first], p_array[p_last]);
 			p_first++;
 		}
@@ -208,10 +211,7 @@ public:
 			int64_t cut = partitioner(
 					p_first,
 					p_last,
-					median_of_3(
-							p_array[p_first],
-							p_array[p_first + (p_last - p_first) / 2],
-							p_array[p_last - 1]),
+					median_of_3_index(p_array, p_first, p_first + (p_last - p_first) / 2, p_last - 1),
 					p_array);
 
 			introsort(cut, p_last, p_array, p_max_depth);
@@ -232,10 +232,7 @@ public:
 			int64_t cut = partitioner(
 					p_first,
 					p_last,
-					median_of_3(
-							p_array[p_first],
-							p_array[p_first + (p_last - p_first) / 2],
-							p_array[p_last - 1]),
+					median_of_3_index(p_array, p_first, p_first + (p_last - p_first) / 2, p_last - 1),
 					p_array);
 
 			if (cut <= p_nth) {
@@ -316,5 +313,3 @@ public:
 		introselect(p_first, p_nth, p_last, p_array, bitlog(p_last - p_first) * 2);
 	}
 };
-
-#endif // SORT_ARRAY_H

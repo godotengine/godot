@@ -37,7 +37,7 @@
 
 namespace {
 
-constexpr int DEFAULT_SOLVER_PRIORITY = 1;
+constexpr int JOINT_DEFAULT_SOLVER_PRIORITY = 1;
 
 } // namespace
 
@@ -118,7 +118,7 @@ JoltJoint3D::JoltJoint3D(const JoltJoint3D &p_old_joint, JoltBody3D *p_body_a, J
 		body_b->add_joint(this);
 	}
 
-	if (body_b == nullptr && JoltProjectSettings::use_joint_world_node_a()) {
+	if (body_b == nullptr && JoltProjectSettings::joint_world_node == JOLT_JOINT_WORLD_NODE_A) {
 		// The joint scene nodes will, when omitting one of the two body nodes, always pass in a
 		// null `body_b` to indicate it being the "world node", regardless of which body node you
 		// leave blank. So we need to correct for that if we wish to use the arguably more intuitive
@@ -173,11 +173,11 @@ void JoltJoint3D::set_enabled(bool p_enabled) {
 }
 
 int JoltJoint3D::get_solver_priority() const {
-	return DEFAULT_SOLVER_PRIORITY;
+	return JOINT_DEFAULT_SOLVER_PRIORITY;
 }
 
 void JoltJoint3D::set_solver_priority(int p_priority) {
-	if (p_priority != DEFAULT_SOLVER_PRIORITY) {
+	if (p_priority != JOINT_DEFAULT_SOLVER_PRIORITY) {
 		WARN_PRINT(vformat("Joint solver priority is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 	}
 }

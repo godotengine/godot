@@ -30,6 +30,7 @@
 
 #include "register_types.h"
 
+#include "../gltf/extensions/gltf_document_extension_convert_importer_mesh.h"
 #include "fbx_document.h"
 
 #ifdef TOOLS_ENABLED
@@ -53,18 +54,23 @@ static void _editor_init() {
 }
 #endif // TOOLS_ENABLED
 
+#define FBX_REGISTER_DOCUMENT_EXTENSION(m_doc_ext_class) \
+	Ref<m_doc_ext_class> extension_##m_doc_ext_class;    \
+	extension_##m_doc_ext_class.instantiate();           \
+	FBXDocument::register_gltf_document_extension(extension_##m_doc_ext_class);
+
 void initialize_fbx_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		GDREGISTER_CLASS(FBXDocument);
 		GDREGISTER_CLASS(FBXState);
+		bool is_editor = Engine::get_singleton()->is_editor_hint();
+		if (!is_editor) {
+			FBX_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionConvertImporterMesh);
+		}
 	}
 
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		// Editor-specific API.
-		ClassDB::APIType prev_api = ClassDB::get_current_api();
-		ClassDB::set_current_api(ClassDB::API_EDITOR);
-
 		GDREGISTER_CLASS(EditorSceneFormatImporterUFBX);
 
 		GLOBAL_DEF_RST_BASIC("filesystem/import/fbx2gltf/enabled", true);
@@ -72,7 +78,6 @@ void initialize_fbx_module(ModuleInitializationLevel p_level) {
 		GLOBAL_DEF_RST("filesystem/import/fbx2gltf/enabled.android", false);
 		GLOBAL_DEF_RST("filesystem/import/fbx2gltf/enabled.web", false);
 
-		ClassDB::set_current_api(prev_api);
 		EditorNode::add_init_callback(_editor_init);
 	}
 #endif // TOOLS_ENABLED
@@ -82,6 +87,5 @@ void uninitialize_fbx_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
-	// TODO: 20240118 // fire
-	// FBXDocument::unregister_all_gltf_document_extensions();
+	FBXDocument::unregister_all_gltf_document_extensions();
 }

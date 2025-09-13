@@ -88,6 +88,9 @@ void AudioListener3D::_notification(int p_what) {
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			_request_listener_update();
+			if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
+				velocity_tracker->update_position(get_global_transform().origin);
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_WORLD: {
@@ -140,15 +143,50 @@ bool AudioListener3D::is_current() const {
 	}
 }
 
+void AudioListener3D::set_doppler_tracking(DopplerTracking p_tracking) {
+	if (doppler_tracking == p_tracking) {
+		return;
+	}
+
+	doppler_tracking = p_tracking;
+	if (p_tracking != DOPPLER_TRACKING_DISABLED) {
+		velocity_tracker->set_track_physics_step(doppler_tracking == DOPPLER_TRACKING_PHYSICS_STEP);
+		if (is_inside_tree()) {
+			velocity_tracker->reset(get_global_transform().origin);
+		}
+	}
+}
+
+AudioListener3D::DopplerTracking AudioListener3D::get_doppler_tracking() const {
+	return doppler_tracking;
+}
+
 void AudioListener3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_current"), &AudioListener3D::make_current);
 	ClassDB::bind_method(D_METHOD("clear_current"), &AudioListener3D::clear_current);
 	ClassDB::bind_method(D_METHOD("is_current"), &AudioListener3D::is_current);
 	ClassDB::bind_method(D_METHOD("get_listener_transform"), &AudioListener3D::get_listener_transform);
+	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &AudioListener3D::set_doppler_tracking);
+	ClassDB::bind_method(D_METHOD("get_doppler_tracking"), &AudioListener3D::get_doppler_tracking);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
+
+	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_DISABLED);
+	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_IDLE_STEP);
+	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_PHYSICS_STEP);
+}
+
+Vector3 AudioListener3D::get_doppler_tracked_velocity() const {
+	if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
+		return velocity_tracker->get_tracked_linear_velocity();
+	} else {
+		return Vector3();
+	}
 }
 
 AudioListener3D::AudioListener3D() {
 	set_notify_transform(true);
+	velocity_tracker.instantiate();
 }
 
 AudioListener3D::~AudioListener3D() {

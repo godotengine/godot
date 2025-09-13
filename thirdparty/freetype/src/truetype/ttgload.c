@@ -4,7 +4,7 @@
  *
  *   TrueType Glyph Loader (body).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -353,7 +353,8 @@
     FT_Byte         c, count;
     FT_Vector       *vec, *vec_limit;
     FT_Pos          x, y;
-    FT_Short        *cont, *cont_limit, last;
+    FT_UShort       *cont, *cont_limit;
+    FT_Int          last;
 
 
     /* check that we can add the contours to the glyph */
@@ -372,7 +373,7 @@
     last = -1;
     for ( ; cont < cont_limit; cont++ )
     {
-      *cont = FT_NEXT_SHORT( p );
+      *cont = FT_NEXT_USHORT( p );
 
       if ( *cont <= last )
         goto Invalid_Outline;
@@ -418,10 +419,8 @@
       /* and thus allocate the bytecode array size by ourselves     */
       if ( n_ins )
       {
-        if ( FT_QNEW_ARRAY( exec->glyphIns, n_ins ) )
+        if ( FT_DUP( exec->glyphIns, p, n_ins ) )
           return error;
-
-        FT_MEM_COPY( exec->glyphIns, p, (FT_Long)n_ins );
 
         exec->glyphSize  = n_ins;
       }
@@ -432,7 +431,7 @@
     p += n_ins;
 
     /* reading the point tags */
-    flag       = (FT_Byte*)outline->tags;
+    flag       = outline->tags;
     flag_limit = flag + n_points;
 
     FT_ASSERT( flag );
@@ -465,7 +464,7 @@
 
     vec       = outline->points;
     vec_limit = vec + n_points;
-    flag      = (FT_Byte*)outline->tags;
+    flag      = outline->tags;
     x         = 0;
 
     for ( ; vec < vec_limit; vec++, flag++ )
@@ -499,7 +498,7 @@
 
     vec       = outline->points;
     vec_limit = vec + n_points;
-    flag      = (FT_Byte*)outline->tags;
+    flag      = outline->tags;
     y         = 0;
 
     for ( ; vec < vec_limit; vec++, flag++ )
@@ -532,8 +531,8 @@
       *flag  = (FT_Byte)( f & ON_CURVE_POINT );
     }
 
-    outline->n_points   = (FT_Short)n_points;
-    outline->n_contours = (FT_Short)n_contours;
+    outline->n_points   = (FT_UShort)n_points;
+    outline->n_contours = (FT_UShort)n_contours;
 
     load->cursor = p;
 
@@ -754,15 +753,13 @@
                    FT_UInt       start_point,
                    FT_UInt       start_contour )
   {
-    zone->n_points    = (FT_UShort)load->outline.n_points + 4 -
-                          (FT_UShort)start_point;
-    zone->n_contours  = load->outline.n_contours -
-                          (FT_Short)start_contour;
+    zone->n_points    = load->outline.n_points + 4 - (FT_UShort)start_point;
+    zone->n_contours  = load->outline.n_contours - (FT_UShort)start_contour;
     zone->org         = load->extra_points + start_point;
     zone->cur         = load->outline.points + start_point;
     zone->orus        = load->extra_points2 + start_point;
-    zone->tags        = (FT_Byte*)load->outline.tags + start_point;
-    zone->contours    = (FT_UShort*)load->outline.contours + start_contour;
+    zone->tags        = load->outline.tags + start_point;
+    zone->contours    = load->outline.contours + start_contour;
     zone->first_point = (FT_UShort)start_point;
   }
 
@@ -1046,7 +1043,7 @@
     current.points   = gloader->base.outline.points +
                          num_base_points;
     current.n_points = gloader->base.outline.n_points -
-                         (short)num_base_points;
+                         (FT_UShort)num_base_points;
 
     have_scale = FT_BOOL( subglyph->flags & ( WE_HAVE_A_SCALE     |
                                               WE_HAVE_AN_XY_SCALE |
@@ -1059,7 +1056,7 @@
     /* get offset */
     if ( !( subglyph->flags & ARGS_ARE_XY_VALUES ) )
     {
-      FT_UInt     num_points = (FT_UInt)gloader->base.outline.n_points;
+      FT_UInt     num_points = gloader->base.outline.n_points;
       FT_UInt     k = (FT_UInt)subglyph->arg1;
       FT_UInt     l = (FT_UInt)subglyph->arg2;
       FT_Vector*  p1;
@@ -1721,8 +1718,8 @@
         FT_List_Add( &loader->composites, node );
       }
 
-      start_point   = (FT_UInt)gloader->base.outline.n_points;
-      start_contour = (FT_UInt)gloader->base.outline.n_contours;
+      start_point   = gloader->base.outline.n_points;
+      start_contour = gloader->base.outline.n_contours;
 
       /* for each subglyph, read composite header */
       error = face->read_composite_glyph( loader );
@@ -1741,14 +1738,14 @@
       if ( FT_IS_NAMED_INSTANCE( FT_FACE( face ) ) ||
            FT_IS_VARIATION( FT_FACE( face ) )      )
       {
-        short        i, limit;
+        FT_UShort    i, limit;
         FT_SubGlyph  subglyph;
 
         FT_Outline  outline = { 0, 0, NULL, NULL, NULL, 0 };
         FT_Vector*  unrounded = NULL;
 
 
-        limit = (short)gloader->current.num_subglyphs;
+        limit = (FT_UShort)gloader->current.num_subglyphs;
 
         /* construct an outline structure for              */
         /* communication with `TT_Vary_Apply_Glyph_Deltas' */
@@ -1874,7 +1871,7 @@
           linear_hadvance = loader->linear;
           linear_vadvance = loader->vadvance;
 
-          num_base_points = (FT_UInt)gloader->base.outline.n_points;
+          num_base_points = gloader->base.outline.n_points;
 
           error = load_truetype_glyph( loader,
                                        (FT_UInt)subglyph->index,
@@ -1898,7 +1895,7 @@
             loader->vadvance = linear_vadvance;
           }
 
-          num_points = (FT_UInt)gloader->base.outline.n_points;
+          num_points = gloader->base.outline.n_points;
 
           if ( num_points == num_base_points )
             continue;
@@ -2313,7 +2310,7 @@
        *
        * 1) we have a `tricky' font that heavily relies on the interpreter to
        *    render glyphs correctly, for example DFKai-SB, or
-       * 2) FT_RENDER_MODE_MONO (i.e, monochome rendering) is requested.
+       * 2) FT_RENDER_MODE_MONO (i.e, monochrome rendering) is requested.
        *
        * In those cases, backward compatibility needs to be turned off to get
        * correct rendering.  The rendering is then completely up to the
@@ -2719,7 +2716,7 @@
          size->metrics->y_ppem < 24         )
       glyph->outline.flags |= FT_OUTLINE_HIGH_PRECISION;
 
-    FT_TRACE1(( "  subglyphs = %u, contours = %hd, points = %hd,"
+    FT_TRACE1(( "  subglyphs = %u, contours = %hu, points = %hu,"
                 " flags = 0x%.3x\n",
                 loader.gloader->base.num_subglyphs,
                 glyph->outline.n_contours,

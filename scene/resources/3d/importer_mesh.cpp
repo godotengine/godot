@@ -31,19 +31,15 @@
 #include "importer_mesh.h"
 
 #include "core/io/marshalls.h"
-#include "core/math/convex_hull.h"
 #include "core/math/random_pcg.h"
 #include "scene/resources/surface_tool.h"
 
-#include <cstdint>
+#ifndef PHYSICS_3D_DISABLED
+#include "core/math/convex_hull.h"
+#endif // PHYSICS_3D_DISABLED
 
 String ImporterMesh::validate_blend_shape_name(const String &p_name) {
-	String name = p_name;
-	const char *characters = ":";
-	for (const char *p = characters; *p; p++) {
-		name = name.replace(String::chr(*p), "_");
-	}
-	return name;
+	return p_name.replace_char(':', '_');
 }
 
 void ImporterMesh::add_blend_shape(const String &p_name) {
@@ -91,13 +87,11 @@ void ImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_a
 		s.blend_shape_data.push_back(bs);
 	}
 
-	List<Variant> lods;
-	p_lods.get_key_list(&lods);
-	for (const Variant &E : lods) {
-		ERR_CONTINUE(!E.is_num());
+	for (const KeyValue<Variant, Variant> &kv : p_lods) {
+		ERR_CONTINUE(!kv.key.is_num());
 		Surface::LOD lod;
-		lod.distance = E;
-		lod.indices = p_lods[E];
+		lod.distance = kv.key;
+		lod.indices = kv.value;
 		ERR_CONTINUE(lod.indices.is_empty());
 		s.lods.push_back(lod);
 	}
@@ -320,6 +314,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 		Vector<Vector2> uv2s = surfaces[i].arrays[RS::ARRAY_TEX_UV2];
 		Vector<int> bones = surfaces[i].arrays[RS::ARRAY_BONES];
 		Vector<float> weights = surfaces[i].arrays[RS::ARRAY_WEIGHTS];
+		Vector<Color> colors = surfaces[i].arrays[RS::ARRAY_COLOR];
 
 		unsigned int index_count = indices.size();
 		unsigned int vertex_count = vertices.size();
@@ -327,6 +322,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 		if (index_count == 0) {
 			continue; //no lods if no indices
 		}
+		ERR_FAIL_COND_MSG(index_count % 3 != 0, "ImporterMesh::generate_lods: Indexed triangle meshes MUST have an index array with a size that is a multiple of 3, but got " + itos(index_count) + " indices. Cannot generate LODs for this invalid mesh.");
 
 		const Vector3 *vertices_ptr = vertices.ptr();
 		const int *indices_ptr = indices.ptr();
@@ -374,6 +370,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 		const Vector2 *uvs_ptr = uvs.ptr();
 		const Vector2 *uv2s_ptr = uv2s.ptr();
 		const float *tangents_ptr = tangents.ptr();
+		const Color *colors_ptr = colors.ptr();
 
 		for (unsigned int j = 0; j < vertex_count; j++) {
 			const Vector3 &v = vertices_ptr[j];
@@ -391,7 +388,8 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 					bool is_tang_aligned = !tangents_ptr || (tangents_ptr[j * 4 + 3] < 0) == (tangents_ptr[idx.second * 4 + 3] < 0);
 					ERR_FAIL_INDEX(idx.second, normals.size());
 					bool is_normals_close = normals[idx.second].dot(n) > normal_merge_threshold;
-					if (is_uvs_close && is_uv2s_close && is_normals_close && is_tang_aligned) {
+					bool is_col_close = (!colors_ptr || colors_ptr[j].is_equal_approx(colors_ptr[idx.second]));
+					if (is_uvs_close && is_uv2s_close && is_normals_close && is_tang_aligned && is_col_close) {
 						vertex_remap.push_back(idx.first);
 						merged_normals[idx.first] += normals[idx.second];
 						merged_normals_counts[idx.first]++;
@@ -430,34 +428,60 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 		unsigned int merged_vertex_count = merged_vertices.size();
 		const Vector3 *merged_vertices_ptr = merged_vertices.ptr();
 		const int32_t *merged_indices_ptr = merged_indices.ptr();
+		Vector3 *merged_normals_ptr = merged_normals.ptr();
 
 		{
 			const int *counts_ptr = merged_normals_counts.ptr();
-			Vector3 *merged_normals_ptrw = merged_normals.ptr();
 			for (unsigned int j = 0; j < merged_vertex_count; j++) {
-				merged_normals_ptrw[j] /= counts_ptr[j];
+				merged_normals_ptr[j] /= counts_ptr[j];
 			}
 		}
-
-		const float normal_weights[3] = {
-			// Give some weight to normal preservation, may be worth exposing as an import setting
-			2.0f, 2.0f, 2.0f
-		};
 
 		Vector<float> merged_vertices_f32 = vector3_to_float32_array(merged_vertices_ptr, merged_vertex_count);
 		float scale = SurfaceTool::simplify_scale_func(merged_vertices_f32.ptr(), merged_vertex_count, sizeof(float) * 3);
 
+		const size_t attrib_count = 6; // 3 for normal + 3 for color (if present)
+
+		float attrib_weights[attrib_count] = {};
+
+		// Give some weight to normal preservation
+		attrib_weights[0] = attrib_weights[1] = attrib_weights[2] = 1.0f;
+
+		// Give some weight to colors but only if present to avoid redundant computations during simplification
+		if (colors_ptr) {
+			attrib_weights[3] = attrib_weights[4] = attrib_weights[5] = 1.0f;
+		}
+
+		LocalVector<float> merged_attribs;
+		merged_attribs.resize(merged_vertex_count * attrib_count);
+		float *merged_attribs_ptr = merged_attribs.ptr();
+
+		memset(merged_attribs_ptr, 0, merged_attribs.size() * sizeof(float));
+
+		for (unsigned int j = 0; j < merged_vertex_count; ++j) {
+			merged_attribs_ptr[j * attrib_count + 0] = merged_normals_ptr[j].x;
+			merged_attribs_ptr[j * attrib_count + 1] = merged_normals_ptr[j].y;
+			merged_attribs_ptr[j * attrib_count + 2] = merged_normals_ptr[j].z;
+
+			if (colors_ptr) {
+				unsigned int rj = vertex_inverse_remap[j];
+
+				merged_attribs_ptr[j * attrib_count + 3] = colors_ptr[rj].r;
+				merged_attribs_ptr[j * attrib_count + 4] = colors_ptr[rj].g;
+				merged_attribs_ptr[j * attrib_count + 5] = colors_ptr[rj].b;
+			}
+		}
+
 		unsigned int index_target = 12; // Start with the smallest target, 4 triangles
 		unsigned int last_index_count = 0;
 
-		const float max_mesh_error = FLT_MAX; // We don't want to limit by error, just by index target
+		const float max_mesh_error = 1.0f; // we only need LODs that can be selected by error threshold
 		float mesh_error = 0.0f;
 
 		while (index_target < index_count) {
 			PackedInt32Array new_indices;
 			new_indices.resize(index_count);
 
-			Vector<float> merged_normals_f32 = vector3_to_float32_array(merged_normals.ptr(), merged_normals.size());
 			const int simplify_options = SurfaceTool::SIMPLIFY_LOCK_BORDER;
 
 			size_t new_index_count = SurfaceTool::simplify_with_attrib_func(
@@ -465,9 +489,9 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 					(const uint32_t *)merged_indices_ptr, index_count,
 					merged_vertices_f32.ptr(), merged_vertex_count,
 					sizeof(float) * 3, // Vertex stride
-					merged_normals_f32.ptr(),
-					sizeof(float) * 3, // Attribute stride
-					normal_weights, 3,
+					merged_attribs_ptr,
+					sizeof(float) * attrib_count, // Attribute stride
+					attrib_weights, attrib_count,
 					nullptr, // Vertex lock
 					index_target,
 					max_mesh_error,
@@ -787,6 +811,7 @@ Vector<Face3> ImporterMesh::get_faces() const {
 	return faces;
 }
 
+#ifndef PHYSICS_3D_DISABLED
 Vector<Ref<Shape3D>> ImporterMesh::convex_decompose(const Ref<MeshConvexDecompositionSettings> &p_settings) const {
 	ERR_FAIL_NULL_V(Mesh::convex_decomposition_function, Vector<Ref<Shape3D>>());
 
@@ -874,7 +899,7 @@ Ref<ConvexPolygonShape3D> ImporterMesh::create_convex_shape(bool p_clean, bool p
 
 Ref<ConcavePolygonShape3D> ImporterMesh::create_trimesh_shape() const {
 	Vector<Face3> faces = get_faces();
-	if (faces.size() == 0) {
+	if (faces.is_empty()) {
 		return Ref<ConcavePolygonShape3D>();
 	}
 
@@ -892,10 +917,11 @@ Ref<ConcavePolygonShape3D> ImporterMesh::create_trimesh_shape() const {
 	shape->set_faces(face_points);
 	return shape;
 }
+#endif // PHYSICS_3D_DISABLED
 
 Ref<NavigationMesh> ImporterMesh::create_navigation_mesh() {
 	Vector<Face3> faces = get_faces();
-	if (faces.size() == 0) {
+	if (faces.is_empty()) {
 		return Ref<NavigationMesh>();
 	}
 

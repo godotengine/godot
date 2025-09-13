@@ -161,6 +161,16 @@ static inline mbedtls_md_type_t mbedtls_md_type_from_psa_alg(psa_algorithm_t psa
  * \param[out]  der_len     On success it contains the amount of valid data
  *                          (in bytes) written to \p der. It's undefined
  *                          in case of failure.
+ *
+ * \note                    The behavior is undefined if \p der is null,
+ *                          even if \p der_size is 0.
+ *
+ * \return                  0 if successful.
+ * \return                  #MBEDTLS_ERR_ASN1_BUF_TOO_SMALL if \p der_size
+ *                          is too small or if \p bits is larger than the
+ *                          largest supported curve.
+ * \return                  #MBEDTLS_ERR_ASN1_INVALID_DATA if one of the
+ *                          numbers in the signature is 0.
  */
 int mbedtls_ecdsa_raw_to_der(size_t bits, const unsigned char *raw, size_t raw_len,
                              unsigned char *der, size_t der_size, size_t *der_len);
@@ -177,6 +187,15 @@ int mbedtls_ecdsa_raw_to_der(size_t bits, const unsigned char *raw, size_t raw_l
  * \param[out]  raw_len     On success it is updated with the amount of valid
  *                          data (in bytes) written to \p raw. It's undefined
  *                          in case of failure.
+ *
+ * \return                  0 if successful.
+ * \return                  #MBEDTLS_ERR_ASN1_BUF_TOO_SMALL if \p raw_size
+ *                          is too small or if \p bits is larger than the
+ *                          largest supported curve.
+ * \return                  #MBEDTLS_ERR_ASN1_INVALID_DATA if the data in
+ *                          \p der is inconsistent with \p bits.
+ * \return                  An \c MBEDTLS_ERR_ASN1_xxx error code if
+ *                          \p der is malformed.
  */
 int mbedtls_ecdsa_der_to_raw(size_t bits, const unsigned char *der, size_t der_len,
                              unsigned char *raw, size_t raw_size, size_t *raw_len);

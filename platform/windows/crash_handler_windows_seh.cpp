@@ -31,6 +31,7 @@
 #include "crash_handler_windows.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/version.h"
@@ -41,6 +42,7 @@
 // Backtrace code based on: https://stackoverflow.com/questions/6205981/windows-c-stack-trace-from-a-running-app
 
 #include <algorithm>
+#include <cstdlib>
 #include <iterator>
 #include <string>
 #include <vector>
@@ -127,10 +129,13 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
+	if (OS::get_singleton()->is_crash_handler_silent()) {
+		std::_Exit(0);
+	}
+
 	String msg;
-	const ProjectSettings *proj_settings = ProjectSettings::get_singleton();
-	if (proj_settings) {
-		msg = proj_settings->get("debug/settings/crash_handler/message");
+	if (ProjectSettings::get_singleton()) {
+		msg = GLOBAL_GET("debug/settings/crash_handler/message");
 	}
 
 	// Tell MainLoop about the crash. This can be handled by users too in Node.
@@ -142,10 +147,10 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	print_error(vformat("%s: Program crashed", __FUNCTION__));
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
-	if (String(VERSION_HASH).is_empty()) {
-		print_error(vformat("Engine version: %s", VERSION_FULL_NAME));
+	if (String(GODOT_VERSION_HASH).is_empty()) {
+		print_error(vformat("Engine version: %s", GODOT_VERSION_FULL_NAME));
 	} else {
-		print_error(vformat("Engine version: %s (%s)", VERSION_FULL_NAME, VERSION_HASH));
+		print_error(vformat("Engine version: %s (%s)", GODOT_VERSION_FULL_NAME, GODOT_VERSION_HASH));
 	}
 	print_error(vformat("Dumping the backtrace. %s", msg));
 
@@ -220,10 +225,18 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 		}
 	} while (frame.AddrReturn.Offset != 0 && n < 256);
 
-	print_error("-- END OF BACKTRACE --");
+	print_error("-- END OF C++ BACKTRACE --");
 	print_error("================================================================");
 
 	SymCleanup(process);
+
+	for (const Ref<ScriptBacktrace> &backtrace : ScriptServer::capture_script_backtraces(false)) {
+		if (!backtrace->is_empty()) {
+			print_error(backtrace->format());
+			print_error(vformat("-- END OF %s BACKTRACE --", backtrace->get_language_name().to_upper()));
+			print_error("================================================================");
+		}
+	}
 
 	// Pass the exception to the OS
 	return EXCEPTION_CONTINUE_SEARCH;

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_UTILITIES_H
-#define RENDERER_UTILITIES_H
+#pragma once
 
 #include "servers/rendering_server.h"
 
@@ -51,6 +50,7 @@ public:
 		DEPENDENCY_CHANGED_LIGHT,
 		DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR,
 		DEPENDENCY_CHANGED_REFLECTION_PROBE,
+		DEPENDENCY_CHANGED_CULL_MASK,
 	};
 
 	void changed_notify(DependencyChangedNotification p_notification);
@@ -187,5 +187,3 @@ public:
 	virtual uint32_t get_maximum_shader_varyings() const = 0;
 	virtual uint64_t get_maximum_uniform_buffer_size() const = 0;
 };
-
-#endif // RENDERER_UTILITIES_H

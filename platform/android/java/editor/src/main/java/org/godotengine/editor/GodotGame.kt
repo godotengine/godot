@@ -37,11 +37,17 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.annotation.CallSuper
 import androidx.core.view.isVisible
 import org.godotengine.editor.embed.GameMenuFragment
-import org.godotengine.godot.utils.GameMenuUtils
+import org.godotengine.godot.GodotLib
+import org.godotengine.godot.editor.utils.GameMenuUtils
 import org.godotengine.godot.utils.ProcessPhoenix
+import org.godotengine.godot.utils.isHorizonOSDevice
 import org.godotengine.godot.utils.isNativeXRDevice
+import org.godotengine.godot.xr.HYBRID_APP_PANEL_FEATURE
+import org.godotengine.godot.xr.XRMode
+import org.godotengine.godot.xr.isHybridAppEnabled
 
 /**
  * Drives the 'run project' window of the Godot Editor.
@@ -81,8 +87,20 @@ open class GodotGame : BaseGodotGame() {
 		}
 	}
 
+	override fun getCommandLine(): MutableList<String> {
+		val updatedArgs = super.getCommandLine()
+		if (!updatedArgs.contains(XRMode.REGULAR.cmdLineArg)) {
+			updatedArgs.add(XRMode.REGULAR.cmdLineArg)
+		}
+		if (!updatedArgs.contains(XR_MODE_ARG)) {
+			updatedArgs.add(XR_MODE_ARG)
+			updatedArgs.add("off")
+		}
+		return updatedArgs
+	}
+
 	override fun enterPiPMode() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && hasPiPSystemFeature()) {
+		if (hasPiPSystemFeature()) {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 				val builder = PictureInPictureParams.Builder().setSourceRectHint(gameViewSourceRectHint)
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -100,8 +118,7 @@ open class GodotGame : BaseGodotGame() {
 	 * Returns true the if the device supports picture-in-picture (PiP).
 	 */
 	protected fun hasPiPSystemFeature(): Boolean {
-		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
-			packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
+		return packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
 	}
 
 	override fun shouldShowGameMenuBar(): Boolean {
@@ -122,8 +139,7 @@ open class GodotGame : BaseGodotGame() {
 	override fun onStop() {
 		super.onStop()
 
-		val isInPiPMode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode
-		if (isInPiPMode && !isFinishing) {
+		if (isInPictureInPictureMode && !isFinishing) {
 			// We get in this state when PiP is closed, so we terminate the activity.
 			finish()
 		}
@@ -206,6 +222,14 @@ open class GodotGame : BaseGodotGame() {
 		editorMessageDispatcher.dispatchGameMenuAction(EDITOR_MAIN_INFO, actionBundle)
 	}
 
+	override fun muteAudio(enabled: Boolean) {
+		val actionBundle = Bundle().apply {
+			putString(KEY_GAME_MENU_ACTION, GAME_MENU_ACTION_SET_DEBUG_MUTE_AUDIO)
+			putBoolean(KEY_GAME_MENU_ACTION_PARAM1, enabled)
+		}
+		editorMessageDispatcher.dispatchGameMenuAction(EDITOR_MAIN_INFO, actionBundle)
+	}
+
 	override fun embedGameOnPlay(embedded: Boolean) {
 		val actionBundle = Bundle().apply {
 			putString(KEY_GAME_MENU_ACTION, GAME_MENU_ACTION_EMBED_GAME_ON_PLAY)
@@ -220,7 +244,7 @@ open class GodotGame : BaseGodotGame() {
 
 	override fun isMinimizedButtonEnabled() = isTaskRoot && !isNativeXRDevice(applicationContext)
 
-	override fun isCloseButtonEnabled() = !isNativeXRDevice(applicationContext)
+	override fun isCloseButtonEnabled() = !isHorizonOSDevice(applicationContext)
 
 	override fun isPiPButtonEnabled() = hasPiPSystemFeature()
 
@@ -236,6 +260,21 @@ open class GodotGame : BaseGodotGame() {
 
 	override fun onGameMenuCollapsed(collapsed: Boolean) {
 		expandGameMenuButton?.isVisible = shouldShowGameMenuBar() && isMenuBarCollapsable() && collapsed
+	}
+
+	@CallSuper
+	override fun supportsFeature(featureTag: String): Boolean {
+		if (HYBRID_APP_PANEL_FEATURE == featureTag) {
+			// Check if openxr is enabled
+			if (!GodotLib.getGlobal("xr/openxr/enabled").toBoolean()) {
+				return false
+			}
+
+			// Check if hybrid is enabled
+			return isHybridAppEnabled()
+		}
+
+		return super.supportsFeature(featureTag)
 	}
 
 }

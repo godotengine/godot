@@ -187,6 +187,14 @@ struct CPAL
   hb_ot_name_id_t get_color_name_id (unsigned int color_index) const
   { return v1 ().get_color_name_id (this, color_index, numColors); }
 
+  hb_array_t<const BGRAColor> get_palette_colors (unsigned int palette_index) const
+  {
+    if (unlikely (palette_index >= numPalettes))
+      return hb_array_t<const BGRAColor> ();
+    unsigned int start_index = colorRecordIndicesZ[palette_index];
+    hb_array_t<const BGRAColor> all_colors ((this+colorRecordsZ).arrayZ, numColorRecords);
+    return all_colors.sub_array (start_index, numColors);
+  }
   unsigned int get_palette_colors (unsigned int  palette_index,
 				   unsigned int  start_offset,
 				   unsigned int *color_count, /* IN/OUT.  May be NULL. */

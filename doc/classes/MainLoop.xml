@@ -15,17 +15,17 @@
 		var time_elapsed = 0
 
 		func _initialize():
-		    print("Initialized:")
-		    print("  Starting time: %s" % str(time_elapsed))
+			print("Initialized:")
+			print("  Starting time: %s" % str(time_elapsed))
 
 		func _process(delta):
-		    time_elapsed += delta
-		    # Return true to end the main loop.
-		    return Input.get_mouse_button_mask() != 0 || Input.is_key_pressed(KEY_ESCAPE)
+			time_elapsed += delta
+			# Return true to end the main loop.
+			return Input.get_mouse_button_mask() != 0 || Input.is_key_pressed(KEY_ESCAPE)
 
 		func _finalize():
-		    print("Finalized:")
-		    print("  End time: %s" % str(time_elapsed))
+			print("Finalized:")
+			print("  End time: %s" % str(time_elapsed))
 		[/gdscript]
 		[csharp]
 		using Godot;
@@ -33,26 +33,26 @@
 		[GlobalClass]
 		public partial class CustomMainLoop : MainLoop
 		{
-		    private double _timeElapsed = 0;
+			private double _timeElapsed = 0;
 
-		    public override void _Initialize()
-		    {
-		        GD.Print("Initialized:");
-		        GD.Print($"  Starting Time: {_timeElapsed}");
-		    }
+			public override void _Initialize()
+			{
+				GD.Print("Initialized:");
+				GD.Print($"  Starting Time: {_timeElapsed}");
+			}
 
-		    public override bool _Process(double delta)
-		    {
-		        _timeElapsed += delta;
-		        // Return true to end the main loop.
-		        return Input.GetMouseButtonMask() != 0 || Input.IsKeyPressed(Key.Escape);
-		    }
+			public override bool _Process(double delta)
+			{
+				_timeElapsed += delta;
+				// Return true to end the main loop.
+				return Input.GetMouseButtonMask() != 0 || Input.IsKeyPressed(Key.Escape);
+			}
 
-		    private void _Finalize()
-		    {
-		        GD.Print("Finalized:");
-		        GD.Print($"  End Time: {_timeElapsed}");
-		    }
+			private void _Finalize()
+			{
+				GD.Print("Finalized:");
+				GD.Print($"  End Time: {_timeElapsed}");
+			}
 		}
 		[/csharp]
 		[/codeblocks]
@@ -76,18 +76,21 @@
 			<return type="bool" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called each physics frame with the time since the last physics frame as argument ([param delta], in seconds). Equivalent to [method Node._physics_process].
-				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
-				[b]Note:[/b] [param delta] will be larger than expected if running at a framerate lower than [member Engine.physics_ticks_per_second] / [member Engine.max_physics_steps_per_frame] FPS. This is done to avoid "spiral of death" scenarios where performance would plummet due to an ever-increasing number of physics steps per frame. This behavior affects both [method _process] and [method _physics_process]. As a result, avoid using [param delta] for time measurements in real-world seconds. Use the [Time] singleton's methods for this purpose instead, such as [method Time.get_ticks_usec].
+				Called each physics tick. [param delta] is the logical time between physics ticks in seconds and is equal to [member Engine.time_scale] / [member Engine.physics_ticks_per_second]. Equivalent to [method Node._physics_process].
+				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next step.
+				[b]Note:[/b] [method _physics_process] may be called up to [member Engine.max_physics_steps_per_frame] times per (idle) frame. This step limit may be reached when the engine is suffering performance issues.
+				[b]Note:[/b] Accumulated [param delta] may diverge from real world seconds.
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
 			<return type="bool" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called each process (idle) frame with the time since the last process frame as argument (in seconds). Equivalent to [method Node._process].
+				Called on each idle frame, prior to rendering, and after physics ticks have been processed. [param delta] is the time between frames in seconds. Equivalent to [method Node._process].
 				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
-				[b]Note:[/b] [param delta] will be larger than expected if running at a framerate lower than [member Engine.physics_ticks_per_second] / [member Engine.max_physics_steps_per_frame] FPS. This is done to avoid "spiral of death" scenarios where performance would plummet due to an ever-increasing number of physics steps per frame. This behavior affects both [method _process] and [method _physics_process]. As a result, avoid using [param delta] for time measurements in real-world seconds. Use the [Time] singleton's methods for this purpose instead, such as [method Time.get_ticks_usec].
+				[b]Note:[/b] When the engine is struggling and the frame rate is lowered, [param delta] will increase. When [param delta] is increased, it's capped at a maximum of [member Engine.time_scale] * [member Engine.max_physics_steps_per_frame] / [member Engine.physics_ticks_per_second]. As a result, accumulated [param delta] may not represent real world time.
+				[b]Note:[/b] When [code]--fixed-fps[/code] is enabled or the engine is running in Movie Maker mode (see [MovieWriter]), process [param delta] will always be the same for every frame, regardless of how much time the frame took to render.
+				[b]Note:[/b] Frame delta may be post-processed by [member OS.delta_smoothing] if this is enabled for the project.
 			</description>
 		</method>
 	</methods>

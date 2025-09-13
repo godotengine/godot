@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JOLT_AREA_3D_H
-#define JOLT_AREA_3D_H
+#pragma once
 
 #include "jolt_shaped_object_3d.h"
 
@@ -74,6 +73,12 @@ private:
 		ShapeIndexPair(int p_other, int p_self) :
 				other(p_other), self(p_self) {}
 
+		static uint32_t hash(const ShapeIndexPair &p_pair) {
+			uint32_t hash = hash_murmur3_one_32(p_pair.other);
+			hash = hash_murmur3_one_32(p_pair.self, hash);
+			return hash_fmix32(hash);
+		}
+
 		friend bool operator==(const ShapeIndexPair &p_lhs, const ShapeIndexPair &p_rhs) {
 			return (p_lhs.other == p_rhs.other) && (p_lhs.self == p_rhs.self);
 		}
@@ -81,6 +86,7 @@ private:
 
 	struct Overlap {
 		HashMap<ShapeIDPair, ShapeIndexPair, ShapeIDPair> shape_pairs;
+		HashMap<ShapeIndexPair, int, ShapeIndexPair> ref_counts;
 		LocalVector<ShapeIndexPair> pending_added;
 		LocalVector<ShapeIndexPair> pending_removed;
 		RID rid;
@@ -117,6 +123,8 @@ private:
 
 	virtual JPH::EMotionType _get_motion_type() const override { return JPH::EMotionType::Kinematic; }
 
+	bool _should_sleep() const { return !is_monitoring(); }
+
 	virtual void _add_to_space() override;
 
 	void _enqueue_call_queries();
@@ -132,12 +140,9 @@ private:
 	void _notify_body_entered(const JPH::BodyID &p_body_id);
 	void _notify_body_exited(const JPH::BodyID &p_body_id);
 
-	void _force_bodies_entered();
-	void _force_bodies_exited(bool p_remove);
+	void _remove_all_overlaps();
 
-	void _force_areas_entered();
-	void _force_areas_exited(bool p_remove);
-
+	void _update_sleeping();
 	void _update_group_filter();
 	void _update_default_gravity();
 
@@ -165,6 +170,10 @@ public:
 
 	bool has_area_monitor_callback() const { return area_monitor_callback.is_valid(); }
 	void set_area_monitor_callback(const Callable &p_callback);
+
+	bool is_monitoring_bodies() const { return has_body_monitor_callback(); }
+	bool is_monitoring_areas() const { return has_area_monitor_callback(); }
+	bool is_monitoring() const { return is_monitoring_bodies() || is_monitoring_areas(); }
 
 	bool is_monitorable() const { return monitorable; }
 	void set_monitorable(bool p_monitorable);
@@ -228,5 +237,3 @@ public:
 	virtual bool has_custom_center_of_mass() const override { return false; }
 	virtual Vector3 get_center_of_mass_custom() const override { return Vector3(); }
 };
-
-#endif // JOLT_AREA_3D_H

@@ -32,8 +32,9 @@
 
 #include "core/version.h"
 
-Mutex ParticleProcessMaterial::material_mutex;
+Mutex ParticleProcessMaterial::dirty_materials_mutex;
 SelfList<ParticleProcessMaterial>::List ParticleProcessMaterial::dirty_materials;
+Mutex ParticleProcessMaterial::shader_map_mutex;
 HashMap<ParticleProcessMaterial::MaterialKey, ParticleProcessMaterial::ShaderData, ParticleProcessMaterial::MaterialKey> ParticleProcessMaterial::shader_map;
 RBSet<String> ParticleProcessMaterial::min_max_properties;
 ParticleProcessMaterial::ShaderNames *ParticleProcessMaterial::shader_names = nullptr;
@@ -147,32 +148,43 @@ void ParticleProcessMaterial::finish_shaders() {
 }
 
 void ParticleProcessMaterial::_update_shader() {
+	if (!_is_initialized()) {
+		_mark_ready();
+	}
+
 	MaterialKey mk = _compute_key();
 	if (mk == current_key) {
 		return; // No update required in the end.
 	}
 
-	if (shader_map.has(current_key)) {
-		shader_map[current_key].users--;
-		if (shader_map[current_key].users == 0) {
-			// Deallocate shader, as it's no longer in use.
-			RS::get_singleton()->free(shader_map[current_key].shader);
-			shader_map.erase(current_key);
+	{
+		MutexLock lock(shader_map_mutex);
+		ShaderData *v = shader_map.getptr(current_key);
+		if (v) {
+			v->users--;
+			if (v->users == 0) {
+				// Deallocate shader, as it's no longer in use.
+				RS::get_singleton()->free(v->shader);
+				shader_map.erase(current_key);
+				shader_rid = RID();
+			}
 		}
-	}
 
-	current_key = mk;
+		current_key = mk;
 
-	if (shader_map.has(mk)) {
-		RS::get_singleton()->material_set_shader(_get_material(), shader_map[mk].shader);
-		shader_map[mk].users++;
-		return;
+		v = shader_map.getptr(mk);
+		if (v) {
+			shader_rid = v->shader;
+			RS::get_singleton()->material_set_shader(_get_material(), shader_rid);
+			v->users++;
+			return;
+		}
 	}
 
 	// No pre-existing shader, create one.
 
 	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
-	String code = "// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s ParticleProcessMaterial.\n\n";
+	String code = "// NOTE: Shader automatically converted from " GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG "'s ParticleProcessMaterial.\n\n";
 
 	code += "shader_type particles;\n";
 	code += "render_mode disable_velocity;\n";
@@ -1034,7 +1046,7 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "	{\n";
 		}
 		code += "		float vel_mag = length(VELOCITY);\n";
-		code += "		float vel_infl = clamp(dynamic_params.turb_influence * turbulence_influence, 0.0, 1.0);\n";
+		code += "		float vel_infl = clamp(dynamic_params.turb_influence * turbulence_influence, 0.0, 1.0) * (DELTA <= 0.0 ? 0.0 : 1.0);\n";
 		code += "		VELOCITY = mix(VELOCITY, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
 		code += "		vel_mag = length(controlled_displacement);\n";
 		code += "		controlled_displacement = mix(controlled_displacement, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
@@ -1121,9 +1133,16 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "		params.scale *= texture(scale_over_velocity_curve, vec2(0.0)).rgb;\n";
 		code += "	}\n";
 	}
-	code += "	TRANSFORM[0].xyz *= sign(params.scale.x) * max(abs(params.scale.x), 0.001);\n";
-	code += "	TRANSFORM[1].xyz *= sign(params.scale.y) * max(abs(params.scale.y), 0.001);\n";
-	code += "	TRANSFORM[2].xyz *= sign(params.scale.z) * max(abs(params.scale.z), 0.001);\n";
+	// A scale of 0 results in no emission at some emission amounts (including 3 and 6).
+	// `sign(scale)` is unsuitable, because sign(0) returns 0, nullifying the minimum value.
+	// The following evaluates to 1 when scale is 0, falling back to a positive minimum value.
+	code += "	float scale_sign_x = params.scale.x < 0.0 ? -1.0 : 1.0;\n";
+	code += "	float scale_sign_y = params.scale.y < 0.0 ? -1.0 : 1.0;\n";
+	code += "	float scale_sign_z = params.scale.z < 0.0 ? -1.0 : 1.0;\n";
+	code += "	float scale_minimum = 0.001;\n";
+	code += "	TRANSFORM[0].xyz *= scale_sign_x * max(abs(params.scale.x), scale_minimum);\n";
+	code += "	TRANSFORM[1].xyz *= scale_sign_y * max(abs(params.scale.y), scale_minimum);\n";
+	code += "	TRANSFORM[2].xyz *= scale_sign_z * max(abs(params.scale.z), scale_minimum);\n";
 	code += "\n";
 	code += "	CUSTOM.z = params.animation_offset + lifetime_percent * params.animation_speed;\n\n";
 
@@ -1169,19 +1188,34 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	}\n";
 	code += "}\n";
 
-	ShaderData shader_data;
-	shader_data.shader = RS::get_singleton()->shader_create();
-	shader_data.users = 1;
+	// We must create the shader outside the shader_map_mutex to avoid potential deadlocks with
+	// other tasks in the WorkerThreadPool simultaneously creating materials, which
+	// may also hold the shared shader_map_mutex lock.
+	RID new_shader = RS::get_singleton()->shader_create_from_code(code);
 
-	RS::get_singleton()->shader_set_code(shader_data.shader, code);
+	MutexLock lock(shader_map_mutex);
 
-	shader_map[mk] = shader_data;
+	ShaderData *v = shader_map.getptr(mk);
+	if (unlikely(v)) {
+		// We raced and managed to create the same key concurrently, so we'll free the shader we just created,
+		// given we know it isn't used, and use the winner.
+		RS::get_singleton()->free(new_shader);
+	} else {
+		ShaderData shader_data;
+		shader_data.shader = new_shader;
+		// ShaderData will be inserted with a users count of 0, but we
+		// increment unconditionally outside this if block, whilst still under lock.
+		v = &shader_map.insert(mk, shader_data)->value;
+	}
 
-	RS::get_singleton()->material_set_shader(_get_material(), shader_data.shader);
+	shader_rid = v->shader;
+	v->users++;
+
+	RS::get_singleton()->material_set_shader(_get_material(), shader_rid);
 }
 
 void ParticleProcessMaterial::flush_changes() {
-	MutexLock lock(material_mutex);
+	MutexLock lock(dirty_materials_mutex);
 
 	while (dirty_materials.first()) {
 		dirty_materials.first()->self()->_update_shader();
@@ -1194,7 +1228,7 @@ void ParticleProcessMaterial::_queue_shader_change() {
 		return;
 	}
 
-	MutexLock lock(material_mutex);
+	MutexLock lock(dirty_materials_mutex);
 
 	if (!element.in_list()) {
 		dirty_materials.add(&element);
@@ -1780,8 +1814,8 @@ void ParticleProcessMaterial::set_turbulence_noise_scale(float p_turbulence_nois
 	const float noise_frequency_when_slider_is_zero = 4.0;
 	const float max_slider_value = 10.0;
 	const float curve_exponent = 0.25;
-	const float curve_rescale = noise_frequency_when_slider_is_zero / pow(max_slider_value, curve_exponent);
-	float shader_turbulence_noise_scale = pow(p_turbulence_noise_scale, curve_exponent) * curve_rescale - noise_frequency_when_slider_is_zero;
+	const float curve_rescale = noise_frequency_when_slider_is_zero / std::pow(max_slider_value, curve_exponent);
+	float shader_turbulence_noise_scale = std::pow(p_turbulence_noise_scale, curve_exponent) * curve_rescale - noise_frequency_when_slider_is_zero;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_noise_scale, shader_turbulence_noise_scale);
 }
 
@@ -1829,9 +1863,14 @@ double ParticleProcessMaterial::get_lifetime_randomness() const {
 	return lifetime_randomness;
 }
 
+RID ParticleProcessMaterial::get_rid() const {
+	const_cast<ParticleProcessMaterial *>(this)->_update_shader();
+	return Material::get_rid();
+}
+
 RID ParticleProcessMaterial::get_shader_rid() const {
-	ERR_FAIL_COND_V(!shader_map.has(current_key), RID());
-	return shader_map[current_key].shader;
+	const_cast<ParticleProcessMaterial *>(this)->_update_shader();
+	return shader_rid;
 }
 
 void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const {
@@ -1875,18 +1914,6 @@ void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (!turbulence_enabled) {
-		if (p_property.name == "turbulence_noise_strength" ||
-				p_property.name == "turbulence_noise_scale" ||
-				p_property.name == "turbulence_noise_speed" ||
-				p_property.name == "turbulence_noise_speed_random" ||
-				p_property.name == "turbulence_influence_over_life" ||
-				p_property.name == "turbulence_influence" ||
-				p_property.name == "turbulence_initial_displacement") {
-			p_property.usage &= ~PROPERTY_USAGE_EDITOR;
-		}
-	}
-
 	if (p_property.name == "collision_friction" && collision_mode != COLLISION_RIGID) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
@@ -1897,15 +1924,18 @@ void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const
 	if ((p_property.name == "directional_velocity_min" || p_property.name == "directional_velocity_max") && !tex_parameters[PARAM_DIRECTIONAL_VELOCITY].is_valid()) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-	if ((p_property.name == "scale_over_velocity_min" || p_property.name == "scale_over_velocity_max") && !tex_parameters[PARAM_SCALE_OVER_VELOCITY].is_valid()) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if ((p_property.name == "orbit_velocity_min" || p_property.name == "orbit_velocity_max") && (!tex_parameters[PARAM_ORBIT_VELOCITY].is_valid() && !particle_flags[PARTICLE_FLAG_DISABLE_Z])) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
 
-	if (p_property.usage & PROPERTY_USAGE_EDITOR && (p_property.name.ends_with("_min") || p_property.name.ends_with("_max"))) {
-		p_property.usage &= ~PROPERTY_USAGE_EDITOR;
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if ((p_property.name == "scale_over_velocity_min" || p_property.name == "scale_over_velocity_max") && !tex_parameters[PARAM_SCALE_OVER_VELOCITY].is_valid()) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+		if ((p_property.name == "orbit_velocity_min" || p_property.name == "orbit_velocity_max") && (!tex_parameters[PARAM_ORBIT_VELOCITY].is_valid() && !particle_flags[PARTICLE_FLAG_DISABLE_Z])) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+
+		if (p_property.usage & PROPERTY_USAGE_EDITOR && (p_property.name.ends_with("_min") || p_property.name.ends_with("_max"))) {
+			p_property.usage &= ~PROPERTY_USAGE_EDITOR;
+		}
 	}
 }
 
@@ -2256,7 +2286,7 @@ void ParticleProcessMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "anim_offset_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_ANIM_OFFSET);
 
 	ADD_GROUP("Turbulence", "turbulence_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "turbulence_enabled"), "set_turbulence_enabled", "get_turbulence_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "turbulence_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_turbulence_enabled", "get_turbulence_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_strength", PROPERTY_HINT_RANGE, "0,20,0.01"), "set_turbulence_noise_strength", "get_turbulence_noise_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_scale", PROPERTY_HINT_RANGE, "0,10,0.001,or_greater"), "set_turbulence_noise_scale", "get_turbulence_noise_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "turbulence_noise_speed"), "set_turbulence_noise_speed", "get_turbulence_noise_speed");
@@ -2408,13 +2438,11 @@ ParticleProcessMaterial::ParticleProcessMaterial() :
 	set_color(Color(1, 1, 1, 1));
 
 	current_key.invalid_key = 1;
-
-	_mark_initialized(callable_mp(this, &ParticleProcessMaterial::_queue_shader_change), callable_mp(this, &ParticleProcessMaterial::_update_shader));
 }
 
 ParticleProcessMaterial::~ParticleProcessMaterial() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	MutexLock lock(material_mutex);
+	MutexLock lock(shader_map_mutex);
 
 	if (shader_map.has(current_key)) {
 		shader_map[current_key].users--;

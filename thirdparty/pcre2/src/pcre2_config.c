@@ -224,8 +224,8 @@ switch (what)
   XSTRING when PCRE2_PRERELEASE is not empty, an unwanted space is inserted.
   There are problems using an "obvious" approach like this:
 
-     XSTRING(PCRE2_MAJOR) "." XSTRING(PCRE_MINOR)
-     XSTRING(PCRE2_PRERELEASE) " " XSTRING(PCRE_DATE)
+     XSTRING(PCRE2_MAJOR) "." XSTRING(PCRE2_MINOR)
+     XSTRING(PCRE2_PRERELEASE) " " XSTRING(PCRE2_DATE)
 
   because, when PCRE2_PRERELEASE is empty, this leads to an attempted expansion
   of STRING(). The C standard states: "If (before argument substitution) any

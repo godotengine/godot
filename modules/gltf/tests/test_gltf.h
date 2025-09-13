@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_GLTF_H
-#define TEST_GLTF_H
+#pragma once
 
 #include "tests/test_macros.h"
 
@@ -37,9 +36,9 @@
 
 #include "core/os/os.h"
 #include "drivers/png/image_loader_png.h"
-#include "editor/editor_resource_preview.h"
 #include "editor/import/3d/resource_importer_scene.h"
 #include "editor/import/resource_importer_texture.h"
+#include "editor/inspector/editor_resource_preview.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/main/window.h"
@@ -71,12 +70,15 @@ static Node *gltf_import(const String &p_file) {
 
 	// Once editor import convert pngs to ctex, we will need to load it as ctex resource.
 	Ref<ResourceFormatLoaderCompressedTexture2D> resource_loader_stream_texture;
-	resource_loader_stream_texture.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
+	if (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
+		resource_loader_stream_texture.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
+	}
 
 	HashMap<StringName, Variant> options(21);
 	options["nodes/root_type"] = "";
 	options["nodes/root_name"] = "";
+	options["nodes/root_script"] = Variant();
 	options["nodes/apply_root_scale"] = true;
 	options["nodes/root_scale"] = 1.0;
 	options["meshes/ensure_tangents"] = true;
@@ -106,7 +108,10 @@ static Node *gltf_import(const String &p_file) {
 
 	ResourceImporterScene::remove_scene_importer(import_gltf);
 	ResourceFormatImporter::get_singleton()->remove_importer(import_texture);
-	ResourceLoader::remove_resource_format_loader(resource_loader_stream_texture);
+	if (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
+		ResourceLoader::remove_resource_format_loader(resource_loader_stream_texture);
+		resource_loader_stream_texture.unref();
+	}
 	return p_scene;
 }
 
@@ -162,5 +167,3 @@ void init(const String &p_test, const String &p_copy_target = String()) {
 } //namespace TestGltf
 
 #endif // TOOLS_ENABLED
-
-#endif // TEST_GLTF_H

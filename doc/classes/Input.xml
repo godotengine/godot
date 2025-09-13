@@ -51,6 +51,7 @@
 				Returns the acceleration in m/s² of the device's accelerometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
 				Note this method returns an empty [Vector3] when running from the editor even when your device has an accelerometer. You must export your project to a supported device to read values from the accelerometer.
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
+				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_accelerometer] must be enabled.
 			</description>
 		</method>
 		<method name="get_action_raw_strength" qualifiers="const">
@@ -89,7 +90,7 @@
 		<method name="get_current_cursor_shape" qualifiers="const">
 			<return type="int" enum="Input.CursorShape" />
 			<description>
-				Returns the currently assigned cursor shape (see [enum CursorShape]).
+				Returns the currently assigned cursor shape.
 			</description>
 		</method>
 		<method name="get_gravity" qualifiers="const">
@@ -97,6 +98,7 @@
 			<description>
 				Returns the gravity in m/s² of the device's accelerometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
+				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_gravity] must be enabled.
 			</description>
 		</method>
 		<method name="get_gyroscope" qualifiers="const">
@@ -104,6 +106,7 @@
 			<description>
 				Returns the rotation rate in rad/s around a device's X, Y, and Z axes of the gyroscope sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
+				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_gyroscope] must be enabled.
 			</description>
 		</method>
 		<method name="get_joy_axis" qualifiers="const">
@@ -111,7 +114,7 @@
 			<param index="0" name="device" type="int" />
 			<param index="1" name="axis" type="int" enum="JoyAxis" />
 			<description>
-				Returns the current value of the joypad axis at given index (see [enum JoyAxis]).
+				Returns the current value of the joypad axis at index [param axis].
 			</description>
 		</method>
 		<method name="get_joy_guid" qualifiers="const">
@@ -127,16 +130,14 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns a dictionary with extra platform-specific information about the device, e.g. the raw gamepad name from the OS or the Steam Input index.
-				On Windows, the dictionary contains the following fields:
-				[code]xinput_index[/code]: The index of the controller in the XInput system. Undefined for DirectInput devices.
-				[code]vendor_id[/code]: The USB vendor ID of the device.
-				[code]product_id[/code]: The USB product ID of the device.
-				On Linux:
-				[code]raw_name[/code]: The name of the controller as it came from the OS, before getting renamed by the godot controller database.
+				On Windows, Linux, and macOS, the dictionary contains the following fields:
+				[code]raw_name[/code]: The name of the controller as it came from the OS, before getting renamed by the controller database.
 				[code]vendor_id[/code]: The USB vendor ID of the device.
 				[code]product_id[/code]: The USB product ID of the device.
 				[code]steam_input_index[/code]: The Steam Input gamepad index, if the device is not a Steam Input device this key won't be present.
-				[b]Note:[/b] The returned dictionary is always empty on Web, iOS, Android, and macOS.
+				On Windows, the dictionary can have an additional field:
+				[code]xinput_index[/code]: The index of the controller in the XInput system. This key won't be present for devices not handled by XInput.
+				[b]Note:[/b] The returned dictionary is always empty on Android, iOS, visionOS, and Web.
 			</description>
 		</method>
 		<method name="get_joy_name">
@@ -177,6 +178,7 @@
 			<description>
 				Returns the magnetic field strength in micro-Tesla for all axes of the device's magnetometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
+				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_magnetometer] must be enabled.
 			</description>
 		</method>
 		<method name="get_mouse_button_mask" qualifiers="const">
@@ -208,7 +210,20 @@
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 				[b]Note:[/b] Returning [code]true[/code] does not imply that the action is [i]still[/i] pressed. An action can be pressed and released again rapidly, and [code]true[/code] will still be returned so as not to miss input.
 				[b]Note:[/b] Due to keyboard ghosting, [method is_action_just_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
-				[b]Note:[/b] During input handling (e.g. [method Node._input]), use [method InputEvent.is_action_pressed] instead to query the action state of the current event.
+				[b]Note:[/b] During input handling (e.g. [method Node._input]), use [method InputEvent.is_action_pressed] instead to query the action state of the current event. See also [method is_action_just_pressed_by_event].
+			</description>
+		</method>
+		<method name="is_action_just_pressed_by_event" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="action" type="StringName" />
+			<param index="1" name="event" type="InputEvent" />
+			<param index="2" name="exact_match" type="bool" default="false" />
+			<description>
+				Returns [code]true[/code] when the user has [i]started[/i] pressing the action event in the current frame or physics tick, and the first event that triggered action press in the current frame/physics tick was [param event]. It will only return [code]true[/code] on the frame or tick that the user pressed down the button.
+				This is useful for code that needs to run only once when an action is pressed, and the action is processed during input handling (e.g. [method Node._input]).
+				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
+				[b]Note:[/b] Returning [code]true[/code] does not imply that the action is [i]still[/i] pressed. An action can be pressed and released again rapidly, and [code]true[/code] will still be returned so as not to miss input.
+				[b]Note:[/b] Due to keyboard ghosting, [method is_action_just_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
 			</description>
 		</method>
 		<method name="is_action_just_released" qualifiers="const">
@@ -219,7 +234,19 @@
 				Returns [code]true[/code] when the user [i]stops[/i] pressing the action event in the current frame or physics tick. It will only return [code]true[/code] on the frame or tick that the user releases the button.
 				[b]Note:[/b] Returning [code]true[/code] does not imply that the action is [i]still[/i] not pressed. An action can be released and pressed again rapidly, and [code]true[/code] will still be returned so as not to miss input.
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
-				[b]Note:[/b] During input handling (e.g. [method Node._input]), use [method InputEvent.is_action_released] instead to query the action state of the current event.
+				[b]Note:[/b] During input handling (e.g. [method Node._input]), use [method InputEvent.is_action_released] instead to query the action state of the current event. See also [method is_action_just_released_by_event].
+			</description>
+		</method>
+		<method name="is_action_just_released_by_event" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="action" type="StringName" />
+			<param index="1" name="event" type="InputEvent" />
+			<param index="2" name="exact_match" type="bool" default="false" />
+			<description>
+				Returns [code]true[/code] when the user [i]stops[/i] pressing the action event in the current frame or physics tick, and the first event that triggered action release in the current frame/physics tick was [param event]. It will only return [code]true[/code] on the frame or tick that the user releases the button.
+				This is useful when an action is processed during input handling (e.g. [method Node._input]).
+				[b]Note:[/b] Returning [code]true[/code] does not imply that the action is [i]still[/i] not pressed. An action can be released and pressed again rapidly, and [code]true[/code] will still be returned so as not to miss input.
+				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
 		<method name="is_action_pressed" qualifiers="const">
@@ -243,7 +270,7 @@
 			<param index="0" name="device" type="int" />
 			<param index="1" name="button" type="int" enum="JoyButton" />
 			<description>
-				Returns [code]true[/code] if you are pressing the joypad button (see [enum JoyButton]).
+				Returns [code]true[/code] if you are pressing the joypad button at index [param button].
 			</description>
 		</method>
 		<method name="is_joy_known" keywords="is_gamepad_known, is_controller_known">
@@ -329,7 +356,7 @@
 			<param index="1" name="shape" type="int" enum="Input.CursorShape" default="0" />
 			<param index="2" name="hotspot" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Sets a custom mouse cursor image, which is only visible inside the game window. The hotspot can also be specified. Passing [code]null[/code] to the image parameter resets to the system cursor. See [enum CursorShape] for the list of shapes.
+				Sets a custom mouse cursor image, which is only visible inside the game window, for the given mouse [param shape]. The hotspot can also be specified. Passing [code]null[/code] to the image parameter resets to the system cursor.
 				[param image] can be either [Texture2D] or [Image] and its size must be lower than or equal to 256×256. To avoid rendering issues, sizes lower than or equal to 128×128 are recommended.
 				[param hotspot] must be within [param image]'s size.
 				[b]Note:[/b] [AnimatedTexture]s aren't supported as custom mouse cursors. If using an [AnimatedTexture], only the first frame will be displayed.
@@ -430,7 +457,7 @@
 			If [code]true[/code], sends touch input events when clicking or dragging the mouse. See also [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse].
 		</member>
 		<member name="mouse_mode" type="int" setter="set_mouse_mode" getter="get_mouse_mode" enum="Input.MouseMode">
-			Controls the mouse mode. See [enum MouseMode] for more information.
+			Controls the mouse mode.
 		</member>
 		<member name="use_accumulated_input" type="bool" setter="set_use_accumulated_input" getter="is_using_accumulated_input">
 			If [code]true[/code], similar input events sent by the operating system are accumulated. When input accumulation is enabled, all input events generated during a frame will be merged and emitted when the frame is done rendering. Therefore, this limits the number of input method calls per second to the rendering FPS.

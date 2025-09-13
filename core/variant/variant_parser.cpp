@@ -32,6 +32,7 @@
 
 #include "core/crypto/crypto_core.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_uid.h"
 #include "core/object/script_language.h"
 #include "core/string/string_buffer.h"
 
@@ -147,11 +148,12 @@ const char *VariantParser::tk_name[TK_MAX] = {
 
 static double stor_fix(const String &p_str) {
 	if (p_str == "inf") {
-		return INFINITY;
-	} else if (p_str == "inf_neg") {
-		return -INFINITY;
+		return Math::INF;
+	} else if (p_str == "-inf" || p_str == "inf_neg") {
+		// inf_neg kept for compatibility.
+		return -Math::INF;
 	} else if (p_str == "nan") {
-		return NAN;
+		return Math::NaN;
 	}
 	return -1;
 }
@@ -395,7 +397,10 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				}
 
 				if (p_stream->is_utf8()) {
-					str.parse_utf8(str.ascii(true).get_data());
+					// Re-interpret the string we built as ascii.
+					CharString string_as_ascii = str.ascii(true);
+					str.clear();
+					str.append_utf8(string_as_ascii);
 				}
 				if (string_name) {
 					r_token.type = TK_STRING_NAME;
@@ -411,22 +416,19 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				if (cchar <= 32) {
 					break;
 				}
-
-				if (cchar == '-' || (cchar >= '0' && cchar <= '9')) {
+				StringBuffer<> token_text;
+				if (cchar == '-') {
+					token_text += '-';
+					cchar = p_stream->get_char();
+				}
+				if (cchar >= '0' && cchar <= '9') {
 					//a number
-
-					StringBuffer<> num;
 #define READING_SIGN 0
 #define READING_INT 1
 #define READING_DEC 2
 #define READING_EXP 3
 #define READING_DONE 4
 					int reading = READING_INT;
-
-					if (cchar == '-') {
-						num += '-';
-						cchar = p_stream->get_char();
-					}
 
 					char32_t c = cchar;
 					bool exp_sign = false;
@@ -474,7 +476,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 						if (reading == READING_DONE) {
 							break;
 						}
-						num += c;
+						token_text += c;
 						c = p_stream->get_char();
 					}
 
@@ -483,17 +485,16 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 					r_token.type = TK_NUMBER;
 
 					if (is_float) {
-						r_token.value = num.as_double();
+						r_token.value = token_text.as_double();
 					} else {
-						r_token.value = num.as_int();
+						r_token.value = token_text.as_int();
 					}
 					return OK;
 				} else if (is_ascii_alphabet_char(cchar) || is_underscore(cchar)) {
-					StringBuffer<> id;
 					bool first = true;
 
 					while (is_ascii_alphabet_char(cchar) || is_underscore(cchar) || (!first && is_digit(cchar))) {
-						id += cchar;
+						token_text += cchar;
 						cchar = p_stream->get_char();
 						first = false;
 					}
@@ -501,7 +502,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 					p_stream->saved = cchar;
 
 					r_token.type = TK_IDENTIFIER;
-					r_token.value = id.as_string();
+					r_token.value = token_text.as_string();
 					return OK;
 				} else {
 					r_err_str = "Unexpected character";
@@ -698,11 +699,12 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 		} else if (id == "null" || id == "nil") {
 			value = Variant();
 		} else if (id == "inf") {
-			value = INFINITY;
-		} else if (id == "inf_neg") {
-			value = -INFINITY;
+			value = Math::INF;
+		} else if (id == "-inf" || id == "inf_neg") {
+			// inf_neg kept for compatibility.
+			value = -Math::INF;
 		} else if (id == "nan") {
-			value = NAN;
+			value = Math::NaN;
 		} else if (id == "Vector2") {
 			Vector<real_t> args;
 			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
@@ -1122,13 +1124,55 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				get_token(p_stream, token, line, r_err_str);
 				if (token.type == TK_STRING) {
 					String path = token.value;
-					Ref<Resource> res = ResourceLoader::load(path);
+					String uid_string;
+
+					get_token(p_stream, token, line, r_err_str);
+
+					if (path.begins_with("uid://")) {
+						uid_string = path;
+						path = "";
+					}
+					if (token.type == TK_COMMA) {
+						get_token(p_stream, token, line, r_err_str);
+						if (token.type != TK_STRING) {
+							r_err_str = "Expected string in Resource reference";
+							return ERR_PARSE_ERROR;
+						}
+						String extra_path = token.value;
+						if (extra_path.begins_with("uid://")) {
+							if (!uid_string.is_empty()) {
+								r_err_str = "Two uid:// paths in one Resource reference";
+								return ERR_PARSE_ERROR;
+							}
+							uid_string = extra_path;
+						} else {
+							if (!path.is_empty()) {
+								r_err_str = "Two non-uid paths in one Resource reference";
+								return ERR_PARSE_ERROR;
+							}
+							path = extra_path;
+						}
+						get_token(p_stream, token, line, r_err_str);
+					}
+
+					Ref<Resource> res;
+					if (!uid_string.is_empty()) {
+						ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(uid_string);
+						if (uid != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
+							const String id_path = ResourceUID::get_singleton()->get_id_path(uid);
+							if (!id_path.is_empty()) {
+								res = ResourceLoader::load(id_path);
+							}
+						}
+					}
+					if (res.is_null() && !path.is_empty()) {
+						res = ResourceLoader::load(path);
+					}
 					if (res.is_null()) {
-						r_err_str = "Can't load resource at path: " + path;
+						r_err_str = "Can't load resource at path: " + path + " with uid: " + uid_string;
 						return ERR_PARSE_ERROR;
 					}
 
-					get_token(p_stream, token, line, r_err_str);
 					if (token.type != TK_PARENTHESIS_CLOSE) {
 						r_err_str = "Expected ')'";
 						return ERR_PARSE_ERROR;
@@ -1736,7 +1780,8 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 				}
 				cs += c;
 			}
-			r_tag.name.parse_utf8(cs.get_data(), cs.length());
+			r_tag.name.clear();
+			r_tag.name.append_utf8(cs.get_data(), cs.length());
 		} else {
 			while (true) {
 				char32_t c = p_stream->get_char();
@@ -1755,7 +1800,7 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 				} else {
 					escaping = false;
 				}
-				r_tag.name += String::chr(c);
+				r_tag.name += c;
 			}
 		}
 
@@ -1900,7 +1945,7 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 				what = tk.value;
 
 			} else if (c != '=') {
-				what += String::chr(c);
+				what += c;
 			} else {
 				r_assign = what;
 				Token token;
@@ -1932,19 +1977,39 @@ Error VariantParser::parse(Stream *p_stream, Variant &r_ret, String &r_err_str, 
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
 
-static String rtos_fix(double p_value) {
-	if (p_value == 0.0) {
-		return "0"; //avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
-	} else if (isnan(p_value)) {
-		return "nan";
-	} else if (isinf(p_value)) {
-		if (p_value > 0) {
-			return "inf";
-		} else {
+// These two functions serialize floats or doubles using num_scientific to ensure
+// it can be read back in the same way (except collapsing -0 to 0, and NaN values).
+static String rtos_fix(float p_value, bool p_compat) {
+	if (p_value == 0.0f) {
+		return "0"; // Avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
+	} else if (p_compat) {
+		// Write old inf_neg for compatibility.
+		if (std::isinf(p_value) && p_value < 0.0f) {
 			return "inf_neg";
 		}
+	}
+	return String::num_scientific(p_value);
+}
+
+static String rtos_fix(double p_value, bool p_compat) {
+	if (p_value == 0.0) {
+		return "0"; // Avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
+	} else if (p_compat) {
+		// Write old inf_neg for compatibility.
+		if (std::isinf(p_value) && p_value < 0.0) {
+			return "inf_neg";
+		}
+	}
+	return String::num_scientific(p_value);
+}
+
+static String encode_resource_reference(const String &path) {
+	ResourceUID::ID uid = ResourceLoader::get_resource_uid(path);
+	if (uid != ResourceUID::INVALID_ID) {
+		return "Resource(\"" + ResourceUID::get_singleton()->id_to_text(uid) +
+				"\", \"" + path.c_escape_multiline() + "\")";
 	} else {
-		return rtoss(p_value);
+		return "Resource(\"" + path.c_escape_multiline() + "\")";
 	}
 }
 
@@ -1960,11 +2025,17 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			p_store_string_func(p_store_string_ud, itos(p_variant.operator int64_t()));
 		} break;
 		case Variant::FLOAT: {
-			String s = rtos_fix(p_variant.operator double());
-			if (s != "inf" && s != "inf_neg" && s != "nan") {
-				if (!s.contains_char('.') && !s.contains_char('e') && !s.contains_char('E')) {
-					s += ".0";
-				}
+			const double value = p_variant.operator double();
+			String s;
+			// Hack to avoid garbage digits when the underlying float is 32-bit.
+			if ((double)(float)value == value) {
+				s = rtos_fix((float)value, p_compat);
+			} else {
+				s = rtos_fix(value, p_compat);
+			}
+			// Append ".0" to floats to ensure they are float literals.
+			if (s != "inf" && s != "-inf" && s != "nan" && !s.contains_char('.') && !s.contains_char('e') && !s.contains_char('E')) {
+				s += ".0";
 			}
 			p_store_string_func(p_store_string_ud, s);
 		} break;
@@ -1977,7 +2048,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		// Math types.
 		case Variant::VECTOR2: {
 			Vector2 v = p_variant;
-			p_store_string_func(p_store_string_ud, "Vector2(" + rtos_fix(v.x) + ", " + rtos_fix(v.y) + ")");
+			p_store_string_func(p_store_string_ud, "Vector2(" + rtos_fix(v.x, p_compat) + ", " + rtos_fix(v.y, p_compat) + ")");
 		} break;
 		case Variant::VECTOR2I: {
 			Vector2i v = p_variant;
@@ -1985,7 +2056,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::RECT2: {
 			Rect2 aabb = p_variant;
-			p_store_string_func(p_store_string_ud, "Rect2(" + rtos_fix(aabb.position.x) + ", " + rtos_fix(aabb.position.y) + ", " + rtos_fix(aabb.size.x) + ", " + rtos_fix(aabb.size.y) + ")");
+			p_store_string_func(p_store_string_ud, "Rect2(" + rtos_fix(aabb.position.x, p_compat) + ", " + rtos_fix(aabb.position.y, p_compat) + ", " + rtos_fix(aabb.size.x, p_compat) + ", " + rtos_fix(aabb.size.y, p_compat) + ")");
 		} break;
 		case Variant::RECT2I: {
 			Rect2i aabb = p_variant;
@@ -1993,7 +2064,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::VECTOR3: {
 			Vector3 v = p_variant;
-			p_store_string_func(p_store_string_ud, "Vector3(" + rtos_fix(v.x) + ", " + rtos_fix(v.y) + ", " + rtos_fix(v.z) + ")");
+			p_store_string_func(p_store_string_ud, "Vector3(" + rtos_fix(v.x, p_compat) + ", " + rtos_fix(v.y, p_compat) + ", " + rtos_fix(v.z, p_compat) + ")");
 		} break;
 		case Variant::VECTOR3I: {
 			Vector3i v = p_variant;
@@ -2001,7 +2072,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::VECTOR4: {
 			Vector4 v = p_variant;
-			p_store_string_func(p_store_string_ud, "Vector4(" + rtos_fix(v.x) + ", " + rtos_fix(v.y) + ", " + rtos_fix(v.z) + ", " + rtos_fix(v.w) + ")");
+			p_store_string_func(p_store_string_ud, "Vector4(" + rtos_fix(v.x, p_compat) + ", " + rtos_fix(v.y, p_compat) + ", " + rtos_fix(v.z, p_compat) + ", " + rtos_fix(v.w, p_compat) + ")");
 		} break;
 		case Variant::VECTOR4I: {
 			Vector4i v = p_variant;
@@ -2009,15 +2080,15 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::PLANE: {
 			Plane p = p_variant;
-			p_store_string_func(p_store_string_ud, "Plane(" + rtos_fix(p.normal.x) + ", " + rtos_fix(p.normal.y) + ", " + rtos_fix(p.normal.z) + ", " + rtos_fix(p.d) + ")");
+			p_store_string_func(p_store_string_ud, "Plane(" + rtos_fix(p.normal.x, p_compat) + ", " + rtos_fix(p.normal.y, p_compat) + ", " + rtos_fix(p.normal.z, p_compat) + ", " + rtos_fix(p.d, p_compat) + ")");
 		} break;
 		case Variant::AABB: {
 			AABB aabb = p_variant;
-			p_store_string_func(p_store_string_ud, "AABB(" + rtos_fix(aabb.position.x) + ", " + rtos_fix(aabb.position.y) + ", " + rtos_fix(aabb.position.z) + ", " + rtos_fix(aabb.size.x) + ", " + rtos_fix(aabb.size.y) + ", " + rtos_fix(aabb.size.z) + ")");
+			p_store_string_func(p_store_string_ud, "AABB(" + rtos_fix(aabb.position.x, p_compat) + ", " + rtos_fix(aabb.position.y, p_compat) + ", " + rtos_fix(aabb.position.z, p_compat) + ", " + rtos_fix(aabb.size.x, p_compat) + ", " + rtos_fix(aabb.size.y, p_compat) + ", " + rtos_fix(aabb.size.z, p_compat) + ")");
 		} break;
 		case Variant::QUATERNION: {
 			Quaternion quaternion = p_variant;
-			p_store_string_func(p_store_string_ud, "Quaternion(" + rtos_fix(quaternion.x) + ", " + rtos_fix(quaternion.y) + ", " + rtos_fix(quaternion.z) + ", " + rtos_fix(quaternion.w) + ")");
+			p_store_string_func(p_store_string_ud, "Quaternion(" + rtos_fix(quaternion.x, p_compat) + ", " + rtos_fix(quaternion.y, p_compat) + ", " + rtos_fix(quaternion.z, p_compat) + ", " + rtos_fix(quaternion.w, p_compat) + ")");
 		} break;
 		case Variant::TRANSFORM2D: {
 			String s = "Transform2D(";
@@ -2027,7 +2098,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(m3.columns[i][j]);
+					s += rtos_fix(m3.columns[i][j], p_compat);
 				}
 			}
 
@@ -2041,7 +2112,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(m3.rows[i][j]);
+					s += rtos_fix(m3.rows[i][j], p_compat);
 				}
 			}
 
@@ -2056,11 +2127,11 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(m3.rows[i][j]);
+					s += rtos_fix(m3.rows[i][j], p_compat);
 				}
 			}
 
-			s = s + ", " + rtos_fix(t.origin.x) + ", " + rtos_fix(t.origin.y) + ", " + rtos_fix(t.origin.z);
+			s = s + ", " + rtos_fix(t.origin.x, p_compat) + ", " + rtos_fix(t.origin.y, p_compat) + ", " + rtos_fix(t.origin.z, p_compat);
 
 			p_store_string_func(p_store_string_ud, s + ")");
 		} break;
@@ -2072,7 +2143,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(t.columns[i][j]);
+					s += rtos_fix(t.columns[i][j], p_compat);
 				}
 			}
 
@@ -2082,7 +2153,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		// Misc types.
 		case Variant::COLOR: {
 			Color c = p_variant;
-			p_store_string_func(p_store_string_ud, "Color(" + rtos_fix(c.r) + ", " + rtos_fix(c.g) + ", " + rtos_fix(c.b) + ", " + rtos_fix(c.a) + ")");
+			p_store_string_func(p_store_string_ud, "Color(" + rtos_fix(c.r, p_compat) + ", " + rtos_fix(c.g, p_compat) + ", " + rtos_fix(c.b, p_compat) + ", " + rtos_fix(c.a, p_compat) + ")");
 		} break;
 		case Variant::STRING_NAME: {
 			String str = p_variant;
@@ -2128,22 +2199,21 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 			Ref<Resource> res = p_variant;
 			if (res.is_valid()) {
-				//is resource
 				String res_text;
 
-				//try external function
+				// Try external function.
 				if (p_encode_res_func) {
 					res_text = p_encode_res_func(p_encode_res_ud, res);
 				}
 
-				//try path because it's a file
+				// Try path, because it's a file.
 				if (res_text.is_empty() && res->get_path().is_resource_file()) {
-					//external resource
+					// External resource.
 					String path = res->get_path();
-					res_text = "Resource(\"" + path + "\")";
+					res_text = encode_resource_reference(path);
 				}
 
-				//could come up with some sort of text
+				// Could come up with some sort of text.
 				if (!res_text.is_empty()) {
 					p_store_string_func(p_store_string_ud, res_text);
 					break;
@@ -2191,7 +2261,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 						resource_text = p_encode_res_func(p_encode_res_ud, key_script);
 					}
 					if (resource_text.is_empty() && key_script->get_path().is_resource_file()) {
-						resource_text = "Resource(\"" + key_script->get_path() + "\")";
+						resource_text = encode_resource_reference(key_script->get_path());
 					}
 
 					if (!resource_text.is_empty()) {
@@ -2220,7 +2290,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 						resource_text = p_encode_res_func(p_encode_res_ud, value_script);
 					}
 					if (resource_text.is_empty() && value_script->get_path().is_resource_file()) {
-						resource_text = "Resource(\"" + value_script->get_path() + "\")";
+						resource_text = encode_resource_reference(value_script->get_path());
 					}
 
 					if (!resource_text.is_empty()) {
@@ -2244,8 +2314,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				ERR_PRINT("Max recursion reached");
 				p_store_string_func(p_store_string_ud, "{}");
 			} else {
-				List<Variant> keys;
-				dict.get_key_list(&keys);
+				LocalVector<Variant> keys = dict.get_key_list();
 				keys.sort_custom<StringLikeVariantOrder>();
 
 				if (keys.is_empty()) {
@@ -2256,11 +2325,12 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 					p_store_string_func(p_store_string_ud, "{\n");
 
-					for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-						write(E->get(), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
+					for (uint32_t i = 0; i < keys.size(); i++) {
+						const Variant &key = keys[i];
+						write(key, p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
 						p_store_string_func(p_store_string_ud, ": ");
-						write(dict[E->get()], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
-						if (E->next()) {
+						write(dict[key], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
+						if (i + 1 < keys.size()) {
 							p_store_string_func(p_store_string_ud, ",\n");
 						} else {
 							p_store_string_func(p_store_string_ud, "\n");
@@ -2292,7 +2362,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 						resource_text = p_encode_res_func(p_encode_res_ud, script);
 					}
 					if (resource_text.is_empty() && script->get_path().is_resource_file()) {
-						resource_text = "Resource(\"" + script->get_path() + "\")";
+						resource_text = encode_resource_reference(script->get_path());
 					}
 
 					if (!resource_text.is_empty()) {
@@ -2397,7 +2467,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				if (i > 0) {
 					p_store_string_func(p_store_string_ud, ", ");
 				}
-				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i]));
+				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i], p_compat));
 			}
 
 			p_store_string_func(p_store_string_ud, ")");
@@ -2412,7 +2482,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				if (i > 0) {
 					p_store_string_func(p_store_string_ud, ", ");
 				}
-				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i]));
+				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i], p_compat));
 			}
 
 			p_store_string_func(p_store_string_ud, ")");
@@ -2442,7 +2512,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				if (i > 0) {
 					p_store_string_func(p_store_string_ud, ", ");
 				}
-				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x) + ", " + rtos_fix(ptr[i].y));
+				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x, p_compat) + ", " + rtos_fix(ptr[i].y, p_compat));
 			}
 
 			p_store_string_func(p_store_string_ud, ")");
@@ -2457,7 +2527,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				if (i > 0) {
 					p_store_string_func(p_store_string_ud, ", ");
 				}
-				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x) + ", " + rtos_fix(ptr[i].y) + ", " + rtos_fix(ptr[i].z));
+				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x, p_compat) + ", " + rtos_fix(ptr[i].y, p_compat) + ", " + rtos_fix(ptr[i].z, p_compat));
 			}
 
 			p_store_string_func(p_store_string_ud, ")");
@@ -2472,7 +2542,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				if (i > 0) {
 					p_store_string_func(p_store_string_ud, ", ");
 				}
-				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].r) + ", " + rtos_fix(ptr[i].g) + ", " + rtos_fix(ptr[i].b) + ", " + rtos_fix(ptr[i].a));
+				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].r, p_compat) + ", " + rtos_fix(ptr[i].g, p_compat) + ", " + rtos_fix(ptr[i].b, p_compat) + ", " + rtos_fix(ptr[i].a, p_compat));
 			}
 
 			p_store_string_func(p_store_string_ud, ")");
@@ -2487,7 +2557,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				if (i > 0) {
 					p_store_string_func(p_store_string_ud, ", ");
 				}
-				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x) + ", " + rtos_fix(ptr[i].y) + ", " + rtos_fix(ptr[i].z) + ", " + rtos_fix(ptr[i].w));
+				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x, p_compat) + ", " + rtos_fix(ptr[i].y, p_compat) + ", " + rtos_fix(ptr[i].z, p_compat) + ", " + rtos_fix(ptr[i].w, p_compat));
 			}
 
 			p_store_string_func(p_store_string_ud, ")");

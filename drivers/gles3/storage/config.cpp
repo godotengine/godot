@@ -77,9 +77,9 @@ Config::Config() {
 	}
 #endif
 
-	bptc_supported = extensions.has("GL_ARB_texture_compression_bptc") || extensions.has("EXT_texture_compression_bptc");
-	astc_supported = extensions.has("GL_KHR_texture_compression_astc") || extensions.has("GL_OES_texture_compression_astc") || extensions.has("GL_KHR_texture_compression_astc_ldr") || extensions.has("GL_KHR_texture_compression_astc_hdr");
+	bptc_supported = extensions.has("GL_ARB_texture_compression_bptc") || extensions.has("GL_EXT_texture_compression_bptc");
 	astc_hdr_supported = extensions.has("GL_KHR_texture_compression_astc_hdr");
+	astc_supported = astc_hdr_supported || extensions.has("GL_KHR_texture_compression_astc") || extensions.has("GL_OES_texture_compression_astc") || extensions.has("GL_KHR_texture_compression_astc_ldr") || extensions.has("WEBGL_compressed_texture_astc");
 	astc_layered_supported = extensions.has("GL_KHR_texture_compression_astc_sliced_3d");
 
 	if (RasterizerGLES3::is_gles_over_gl()) {
@@ -101,7 +101,7 @@ Config::Config() {
 #else
 		s3tc_supported = extensions.has("GL_EXT_texture_compression_dxt1") || extensions.has("GL_EXT_texture_compression_s3tc") || extensions.has("WEBGL_compressed_texture_s3tc");
 #endif
-		rgtc_supported = extensions.has("GL_EXT_texture_compression_rgtc") || extensions.has("GL_ARB_texture_compression_rgtc") || extensions.has("EXT_texture_compression_rgtc");
+		rgtc_supported = extensions.has("GL_EXT_texture_compression_rgtc") || extensions.has("GL_ARB_texture_compression_rgtc");
 		srgb_framebuffer_supported = extensions.has("GL_EXT_sRGB_write_control");
 	}
 
@@ -185,6 +185,7 @@ Config::Config() {
 #endif
 
 	force_vertex_shading = GLOBAL_GET("rendering/shading/overrides/force_vertex_shading");
+	specular_occlusion = GLOBAL_GET("rendering/reflections/specular_occlusion/enabled");
 	use_nearest_mip_filter = GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter");
 
 	use_depth_prepass = bool(GLOBAL_GET("rendering/driver/depth_prepass/enable"));
@@ -211,7 +212,6 @@ Config::Config() {
 	//Adreno 3xx Compatibility
 	const String rendering_device_name = String::utf8((const char *)glGetString(GL_RENDERER));
 	if (rendering_device_name.left(13) == "Adreno (TM) 3") {
-		flip_xy_workaround = true;
 		disable_particles_workaround = true;
 
 		// ignore driver version 331+
@@ -226,10 +226,8 @@ Config::Config() {
 		// OpenGL ES 3.0 V@331.0 (GIT@35e467f, Ice9844a736) (Date:04/15/19)
 		// OpenGL ES 3.0 V@415.0 (GIT@d39f783, I79de86aa2c, 1591296226) (Date:06/04/20)
 		// OpenGL ES 3.0 V@0502.0 (GIT@09fef447e8, I1fe547a144, 1661493934) (Date:08/25/22)
-		String driver_version = gl_version.get_slice("V@", 1).get_slice(" ", 0);
+		String driver_version = gl_version.get_slice("V@", 1).get_slicec(' ', 0);
 		if (driver_version.is_valid_float() && driver_version.to_float() >= 331.0) {
-			flip_xy_workaround = false;
-
 			//TODO: also 'GPUParticles'?
 			//https://github.com/godotengine/godot/issues/92662#issuecomment-2161199477
 			//disable_particles_workaround = false;

@@ -132,6 +132,24 @@ internal abstract class DataAccess {
 			}
 		}
 
+		fun fileLastAccessed(storageScope: StorageScope, context: Context, path: String): Long {
+			return when(storageScope) {
+				StorageScope.APP -> FileData.fileLastAccessed(path)
+				StorageScope.ASSETS -> AssetData.fileLastAccessed(path)
+				StorageScope.SHARED -> MediaStoreData.fileLastAccessed(context, path)
+				StorageScope.UNKNOWN -> 0L
+			}
+		}
+
+		fun fileSize(storageScope: StorageScope, context: Context, path: String): Long {
+			return when(storageScope) {
+				StorageScope.APP -> FileData.fileSize(path)
+				StorageScope.ASSETS -> AssetData.fileSize(path)
+				StorageScope.SHARED -> MediaStoreData.fileSize(context, path)
+				StorageScope.UNKNOWN -> -1L
+			}
+		}
+
 		fun removeFile(storageScope: StorageScope, context: Context, path: String): Boolean {
 			return when(storageScope) {
 				StorageScope.APP -> FileData.delete(path)
@@ -198,7 +216,6 @@ internal abstract class DataAccess {
 		override fun seek(position: Long) {
 			try {
 				fileChannel.position(position)
-				endOfFile = position >= fileChannel.size()
 			} catch (e: Exception) {
 				Log.w(TAG, "Exception when seeking file $filePath.", e)
 			}
@@ -242,8 +259,8 @@ internal abstract class DataAccess {
 		override fun read(buffer: ByteBuffer): Int {
 			return try {
 				val readBytes = fileChannel.read(buffer)
-				endOfFile = readBytes == -1 || (fileChannel.position() >= fileChannel.size())
 				if (readBytes == -1) {
+					endOfFile = true
 					0
 				} else {
 					readBytes

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_CANVAS_RENDER_H
-#define RENDERER_CANVAS_RENDER_H
+#pragma once
 
 #include "servers/rendering/rendering_method.h"
 #include "servers/rendering_server.h"
@@ -131,7 +130,7 @@ public:
 	//easier wrap to avoid mistakes
 
 	typedef uint64_t PolygonID;
-	virtual PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>()) = 0;
+	virtual PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>(), int p_count = -1) = 0;
 	virtual void free_polygon(PolygonID p_polygon) = 0;
 
 	//also easier to wrap to avoid mistakes
@@ -139,8 +138,10 @@ public:
 		PolygonID polygon_id;
 		Rect2 rect_cache;
 
-		_FORCE_INLINE_ void create(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>()) {
+		_FORCE_INLINE_ void create(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>(), int p_count = -1) {
 			ERR_FAIL_COND(polygon_id != 0);
+			int count = p_count < 0 ? p_indices.size() : p_count * 3;
+			ERR_FAIL_COND(count > p_indices.size());
 			{
 				uint32_t pc = p_points.size();
 				const Vector2 *v2 = p_points.ptr();
@@ -149,7 +150,7 @@ public:
 					rect_cache.expand_to(v2[i]);
 				}
 			}
-			polygon_id = singleton->request_polygon(p_indices, p_points, p_colors, p_uvs, p_bones, p_weights);
+			polygon_id = singleton->request_polygon(p_indices, p_points, p_colors, p_uvs, p_bones, p_weights, count);
 		}
 
 		_FORCE_INLINE_ Polygon() { polygon_id = 0; }
@@ -557,5 +558,3 @@ public:
 		singleton = nullptr;
 	}
 };
-
-#endif // RENDERER_CANVAS_RENDER_H

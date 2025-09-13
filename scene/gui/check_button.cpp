@@ -85,6 +85,13 @@ Size2 CheckButton::get_minimum_size() const {
 
 void CheckButton::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_CHECK_BUTTON);
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -133,9 +140,9 @@ void CheckButton::_notification(int p_what) {
 			ofs.y = (get_size().height - tex_size.height) / 2 + theme_cache.check_v_offset;
 
 			if (is_pressed()) {
-				on_tex->draw_rect(ci, Rect2(ofs, _fit_icon_size(on_tex->get_size())));
+				on_tex->draw_rect(ci, Rect2(ofs, _fit_icon_size(on_tex->get_size())), false, theme_cache.button_checked_color);
 			} else {
-				off_tex->draw_rect(ci, Rect2(ofs, _fit_icon_size(off_tex->get_size())));
+				off_tex->draw_rect(ci, Rect2(ofs, _fit_icon_size(off_tex->get_size())), false, theme_cache.button_unchecked_color);
 			}
 		} break;
 	}
@@ -154,6 +161,9 @@ void CheckButton::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckButton, unchecked_mirrored);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckButton, checked_disabled_mirrored);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckButton, unchecked_disabled_mirrored);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CheckButton, button_checked_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CheckButton, button_unchecked_color);
 }
 
 CheckButton::CheckButton(const String &p_text) :

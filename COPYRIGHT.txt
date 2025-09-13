@@ -145,15 +145,27 @@ Copyright: 2001, Robert Penner
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat
 
-Files: servers/rendering/renderer_rd/shaders/ss_effects_downsample.glsl
- servers/rendering/renderer_rd/shaders/ssao_blur.glsl
- servers/rendering/renderer_rd/shaders/ssao_importance_map.glsl
- servers/rendering/renderer_rd/shaders/ssao_interleave.glsl
- servers/rendering/renderer_rd/shaders/ssao.glsl
- servers/rendering/renderer_rd/shaders/ssil_blur.glsl
- servers/rendering/renderer_rd/shaders/ssil_importance_map.glsl
- servers/rendering/renderer_rd/shaders/ssil_interleave.glsl
- servers/rendering/renderer_rd/shaders/ssil.glsl
+Files: servers/audio/effects/audio_effect_pitch_shift.cpp
+Copyright: 2014-present Godot Engine contributors
+ 2007-2014 Juan Linietsky, Ariel Manzur
+ 1999-2015 Stephan M. Bernsee <s.bernsee [AT] zynaptiq [DOT] com>
+License: Expat and WOL
+
+Files: ./servers/rendering/renderer_rd/shaders/effects/tonemap.glsl
+Comment: NVidia's FXAA 3.11, simplified by Simon Rodriguez
+Copyright: 2014-2015, NVIDIA CORPORATION
+ 2017 Simon Rodriguez
+License: BSD-3-clause and Expat
+
+Files: ./servers/rendering/renderer_rd/shaders/ss_effects_downsample.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao_blur.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao_importance_map.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao_interleave.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil_blur.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil_importance_map.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil_interleave.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil.glsl
 Comment: Intel ASSAO and related files
 Copyright: 2016, Intel Corporation
 License: Expat
@@ -161,6 +173,23 @@ License: Expat
 Files: servers/rendering/renderer_rd/shaders/effects/taa_resolve.glsl
 Comment: Temporal Anti-Aliasing resolve implementation
 Copyright: 2016, Panos Karabelas
+License: Expat
+
+Files: servers/rendering/renderer_rd/shaders/smaa_blending.glsl
+ servers/rendering/renderer_rd/shaders/smaa_weight_calculation.glsl
+ servers/rendering/renderer_rd/shaders/smaa_edge_detection.glsl
+ thirdparty/smaa/*
+Comment: Subpixel Morphological Antialiasing
+Copyright: 2013, Jorge Jimenez
+ 2013, Jose I. Echevarria
+ 2013, Belen Masia
+ 2013, Fernando Navarro
+ 2013, Diego Gutierrez
+License: Expat
+
+Files: thirdparty/accesskit/*
+Comment: AccessKit
+Copyright: 2023, The AccessKit Authors.
 License: Expat
 
 Files: thirdparty/amd-fsr/*
@@ -180,7 +209,7 @@ License: BSD-3-clause
 
 Files: thirdparty/astcenc/*
 Comment: Arm ASTC Encoder
-Copyright: 2011-2024, Arm Limited
+Copyright: 2011-2025, Arm Limited
 License: Apache-2.0
 
 Files: thirdparty/basis_universal/*
@@ -200,7 +229,7 @@ License: MPL-2.0
 
 Files: thirdparty/clipper2/*
 Comment: Clipper2
-Copyright: 2010-2024, Angus Johnson
+Copyright: 2010-2025, Angus Johnson
 License: BSL-1.0
 
 Files: thirdparty/cvtt/*
@@ -282,6 +311,12 @@ Comment: Graphite engine
 Copyright: 2010, SIL International
 License: Expat
 
+Files: thirdparty/grisu2/*
+Comment: Grisu2 float serialization algorithm
+Copyright: 2009, Florian Loitsch
+ 2018-2023, The simdjson authors
+License: Expat and Apache-2.0
+
 Files: thirdparty/harfbuzz/*
 Comment: HarfBuzz text shaping library
 Copyright: 2010-2022, Google, Inc.
@@ -313,15 +348,17 @@ Comment: Jolt Physics
 Copyright: 2021, Jorrit Rouwe
 License: Expat
 
-Files: thirdparty/jpeg-compressor/*
-Comment: jpeg-compressor
-Copyright: 2012, Rich Geldreich
-License: public-domain or Apache-2.0
-
 Files: thirdparty/libbacktrace/*
 Comment: libbacktrace
 Copyright: 2012-2021, Free Software Foundation, Inc.
 License: BSD-3-clause
+
+Files: thirdparty/libjpeg-turbo/*
+Comment: libjpeg-turbo
+Copyright: 2009-2024, D. R. Commander
+ 2015, Viktor Szathmáry.
+ 1991-2020, Thomas G. Lane, Guido Vollbeding
+License: BSD-3-clause and IJG
 
 Files: thirdparty/libktx/*
 Comment: KTX
@@ -360,7 +397,7 @@ License: BSD-3-clause
 
 Files: thirdparty/manifold/*
 Comment: Manifold
-Copyright: 2020-2024, The Manifold Authors
+Copyright: 2020-2025, The Manifold Authors
 License: Apache-2.0
 
 Files: thirdparty/mbedtls/*
@@ -385,7 +422,7 @@ License: CC0-1.0
 
 Files: thirdparty/miniupnpc/*
 Comment: MiniUPnP Project
-Copyright: 2005-2024, Thomas Bernard
+Copyright: 2005-2025, Thomas Bernard
 License: BSD-3-clause
 
 Files: thirdparty/minizip/*
@@ -486,12 +523,12 @@ License: BSD-2-clause
 
 Files: thirdparty/msdfgen/*
 Comment: Multi-channel signed distance field generator
-Copyright: 2014-2024, Viktor Chlumsky
+Copyright: 2014-2025, Viktor Chlumsky
 License: Expat
 
 Files: thirdparty/openxr/*
 Comment: OpenXR Loader
-Copyright: 2020-2023, The Khronos Group Inc.
+Copyright: 2020-2025, The Khronos Group Inc.
 License: Apache-2.0
 
 Files: thirdparty/pcre2/*
@@ -510,6 +547,16 @@ Comment: RVO2
 Copyright: 2016, University of North Carolina at Chapel Hill
 License: Apache-2.0
 
+Files: thirdparty/sdl/*
+Comment: SDL
+Copyright: 1997-2025, Sam Lantinga
+License: Zlib
+
+Files: thirdparty/sdl/hidapi/*
+Comment: hidapi
+Copyright: 2010, Alan Ott, Signal 11 Software
+License: BSD-3-Clause
+
 Files: thirdparty/spirv-cross/*
 Comment: SPIRV-Cross
 Copyright: 2015-2021, Arm Limited
@@ -518,6 +565,11 @@ License: Apache-2.0 or Expat
 Files: thirdparty/spirv-reflect/*
 Comment: SPIRV-Reflect
 Copyright: 2017-2022, Google Inc.
+License: Apache-2.0
+
+Files: thirdparty/swappy-frame-pacing/*
+Comment: Swappy
+Copyright: 2019, The Android Open Source Project
 License: Apache-2.0
 
 Files: thirdparty/thorvg/*
@@ -568,15 +620,15 @@ Copyright: 2008-2012, Kristian Høgsberg
 License: Expat
 
 Files: thirdparty/wayland-protocols/*
-Comment: Wayland protocols that add functionality not available in the core protocol
+Comment: Wayland protocols
 Copyright: 2008-2013, Kristian Høgsberg
   2010-2013, Intel Corporation
-  2013,      Rafael Antognolli
-  2013,      Jasper St. Pierre
-  2014,      Jonas Ådahl
-  2014,      Jason Ekstrand
+  2013, Rafael Antognolli
+  2013, Jasper St. Pierre
+  2014, Jonas Ådahl
+  2014, Jason Ekstrand
   2014-2015, Collabora, Ltd.
-  2015,      Red Hat Inc.
+  2015, Red Hat Inc.
 License: Expat
 
 Files: thirdparty/wslay/*
@@ -1672,6 +1724,42 @@ License: HarfBuzz
  ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
  PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
+License: IJG
+ The authors make NO WARRANTY or representation, either express or implied,
+ with respect to this software, its quality, accuracy, merchantability, or
+ fitness for a particular purpose.  This software is provided "AS IS", and you,
+ its user, assume the entire risk as to its quality and accuracy.
+ .
+ This software is copyright (C) 1991-2020, Thomas G. Lane, Guido Vollbeding.
+ All Rights Reserved except as specified below.
+ .
+ Permission is hereby granted to use, copy, modify, and distribute this
+ software (or portions thereof) for any purpose, without fee, subject to these
+ conditions:
+ (1) If any part of the source code for this software is distributed, then this
+ README file must be included, with this copyright and no-warranty notice
+ unaltered; and any additions, deletions, or changes to the original files
+ must be clearly indicated in accompanying documentation.
+ (2) If only executable code is distributed, then the accompanying
+ documentation must state that "this software is based in part on the work of
+ the Independent JPEG Group".
+ (3) Permission for use of this software is granted only if the user accepts
+ full responsibility for any undesirable consequences; the authors accept
+ NO LIABILITY for damages of any kind.
+ .
+ These conditions apply to any software derived from or based on the IJG code,
+ not just to the unmodified library.  If you use our work, you ought to
+ acknowledge us.
+ .
+ Permission is NOT granted for the use of any IJG author's name or company name
+ in advertising or publicity relating to this software or products derived from
+ it.  This software may be referred to only as "the Independent JPEG Group's
+ software".
+ .
+ We specifically permit and encourage the use of this software as the basis of
+ commercial products, provided that all warranty or liability claims are
+ assumed by the product vendor.
+
 License: MPL-2.0
  Mozilla Public License Version 2.0
  ==================================
@@ -2190,6 +2278,15 @@ License: Unlicense
  OTHER DEALINGS IN THE SOFTWARE.
  .
  For more information, please refer to <https://unlicense.org/>
+
+License: WOL
+                          The Wide Open License (WOL)
+ .
+ Permission to use, copy, modify, distribute and sell this software and its
+ documentation for any purpose is hereby granted without fee, provided that
+ the above copyright notice and this license appear in all source copies.
+ THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY OF
+ ANY KIND. See https://dspguru.com/wide-open-license/ for more information.
 
 License: Zlib
  This software is provided 'as-is', without any express or implied

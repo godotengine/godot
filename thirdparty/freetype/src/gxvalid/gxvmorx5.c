@@ -5,7 +5,7 @@
  *   TrueTypeGX/AAT morx table validation
  *   body for type5 (Contextual Glyph Insertion) subtable.
  *
- * Copyright (C) 2005-2023 by
+ * Copyright (C) 2005-2024 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *

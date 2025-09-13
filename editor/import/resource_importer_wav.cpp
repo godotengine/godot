@@ -98,6 +98,3 @@ Error ResourceImporterWAV::import(ResourceUID::ID p_source_id, const String &p_s
 	ResourceSaver::save(sample, p_save_path + ".sample");
 	return OK;
 }
-
-ResourceImporterWAV::ResourceImporterWAV() {
-}

@@ -38,10 +38,6 @@
 #ifndef PSA_CRYPTO_CONFIG_H
 #define PSA_CRYPTO_CONFIG_H
 
-/*
- * CBC-MAC is not yet supported via the PSA API in Mbed TLS.
- */
-//#define PSA_WANT_ALG_CBC_MAC                    1
 #define PSA_WANT_ALG_CBC_NO_PADDING             1
 #define PSA_WANT_ALG_CBC_PKCS7                  1
 #define PSA_WANT_ALG_CCM                        1
@@ -84,22 +80,12 @@
 #define PSA_WANT_ALG_TLS12_PSK_TO_MS            1
 #define PSA_WANT_ALG_TLS12_ECJPAKE_TO_PMS       1
 
-/* XTS is not yet supported via the PSA API in Mbed TLS.
- * Note: when adding support, also adjust include/mbedtls/config_psa.h */
-//#define PSA_WANT_ALG_XTS                        1
-
 #define PSA_WANT_ECC_BRAINPOOL_P_R1_256         1
 #define PSA_WANT_ECC_BRAINPOOL_P_R1_384         1
 #define PSA_WANT_ECC_BRAINPOOL_P_R1_512         1
 #define PSA_WANT_ECC_MONTGOMERY_255             1
 #define PSA_WANT_ECC_MONTGOMERY_448             1
 #define PSA_WANT_ECC_SECP_K1_192                1
-/*
- * SECP224K1 is buggy via the PSA API in Mbed TLS
- * (https://github.com/Mbed-TLS/mbedtls/issues/3541). Thus, do not enable it by
- * default.
- */
-//#define PSA_WANT_ECC_SECP_K1_224                1
 #define PSA_WANT_ECC_SECP_K1_256                1
 #define PSA_WANT_ECC_SECP_R1_192                1
 #define PSA_WANT_ECC_SECP_R1_224                1

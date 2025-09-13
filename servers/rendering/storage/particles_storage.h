@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PARTICLES_STORAGE_H
-#define PARTICLES_STORAGE_H
+#pragma once
 
 #include "servers/rendering_server.h"
 
@@ -122,6 +121,7 @@ public:
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const = 0;
 	virtual uint32_t particles_collision_get_height_field_mask(RID p_particles_collision) const = 0;
 	virtual void particles_collision_set_height_field_mask(RID p_particles_collision, uint32_t p_heightfield_mask) = 0;
+	virtual uint32_t particles_collision_get_cull_mask(RID p_particles_collision) const = 0;
 
 	//used from 2D and 3D
 	virtual RID particles_collision_instance_create(RID p_collision) = 0;
@@ -129,5 +129,3 @@ public:
 	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform) = 0;
 	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active) = 0;
 };
-
-#endif // PARTICLES_STORAGE_H

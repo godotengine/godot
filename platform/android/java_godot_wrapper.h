@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JAVA_GODOT_WRAPPER_H
-#define JAVA_GODOT_WRAPPER_H
+#pragma once
 
 #include "java_godot_view_wrapper.h"
 
@@ -43,9 +42,7 @@
 class GodotJavaWrapper {
 private:
 	jobject godot_instance;
-	jobject activity;
 	jclass godot_class;
-	jclass activity_class;
 
 	GodotJavaViewWrapper *godot_view = nullptr;
 
@@ -85,9 +82,10 @@ private:
 	jmethodID _enable_immersive_mode = nullptr;
 	jmethodID _is_in_immersive_mode = nullptr;
 	jmethodID _on_editor_workspace_selected = nullptr;
+	jmethodID _get_activity = nullptr;
 
 public:
-	GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_godot_instance);
+	GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance);
 	~GodotJavaWrapper();
 
 	jobject get_activity();
@@ -141,5 +139,3 @@ public:
 
 	void on_editor_workspace_selected(const String &p_workspace);
 };
-
-#endif // JAVA_GODOT_WRAPPER_H

@@ -89,8 +89,8 @@ Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const ui
 	float fw, fh;
 	picture->size(&fw, &fh);
 
-	uint32_t width = MAX(1, round(fw * p_scale));
-	uint32_t height = MAX(1, round(fh * p_scale));
+	uint32_t width = MAX(1, std::round(fw * p_scale));
+	uint32_t height = MAX(1, std::round(fh * p_scale));
 
 	const uint32_t max_dimension = 16384;
 	if (width > max_dimension || height > max_dimension) {
@@ -161,7 +161,7 @@ Error ImageLoaderSVG::load_image(Ref<Image> p_image, Ref<FileAccess> p_fileacces
 	p_fileaccess->get_buffer(buffer.ptrw(), buffer.size());
 
 	String svg;
-	Error err = svg.parse_utf8((const char *)buffer.ptr(), buffer.size());
+	Error err = svg.append_utf8((const char *)buffer.ptr(), buffer.size());
 	if (err != OK) {
 		return err;
 	}

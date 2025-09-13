@@ -34,28 +34,34 @@ name is available.
     Aaron Franke (aaronfranke)
     Aaron Pagano (aaronp64)
     Aaron Record (LightningAA)
+    Adam Johnston (a-johnston)
     Adam Scott (adamscott)
+    Æio Much (AeioMuch)
+    Alex Drozd (brno32)
     Alexander Hartmann (Alex2782)
     Alexander Holland (AlexHolly)
-    Alex Drozd (brno32)
     Alexey Khoroshavin (allkhor)
     Alfred Reinold Baudisch (alfredbaudisch)
     Alistair Leslie-Hughes (alesliehughes)
     Alket Rexhepi (alketii)
+    Allen Pestaluky (allenwp)
     Alvin Wong (alvinhochun)
     Andrea Catania (AndreaCatania)
     Andreia Gaita (shana)
+    Andrés Botero (0xafbf)
     Andrii Doroshenko (Xrayez)
     Andy Maloney (asmaloney)
     Andy Moss (MillionOstrich)
     Angad Kambli (angad-k)
     Anilforextra (AnilBK)
     Anish Bhobe (KidRigger)
+    Anish Mishra (syntaxerror247)
     Anni Ryynänen (anniryynanen)
     Anton Yabchinskiy (a12n)
     Anutrix
     Aren Villanueva (kurikaesu)
     Ariel Manzur (punto-)
+    arkology
     Arman Elgudzhyan (puchik)
     Arseny Kapoulkine (zeux)
     AThousandShips
@@ -64,6 +70,7 @@ name is available.
     Bastiaan Olij (BastiaanOlij)
     Ben Brookshire (sheepandshepherd)
     Benjamin Larsson (Nallebeorn)
+    Bernat Arlandis (berarma)
     Bernhard Liebl (poke1024)
     Bhuvan Vemula (Bhu1-V)
     bitsawer
@@ -71,6 +78,7 @@ name is available.
     BlueCube3310
     Bojidar Marinov (bojidar-bg)
     Brian Semrau (briansemrau)
+    BrotherShort
     Bruno Lourenço (MadEqua)
     Cameron Reikes (creikey)
     Camille Mohr-Daurat (pouleyKetchoupp)
@@ -94,7 +102,9 @@ name is available.
     David Cambré (Gallilus)
     David Sichma (DavidSichma)
     David Snopek (dsnopek)
+    demolke
     derammo
+    Dery Almas (deralmas)
     Dharkael (lupoDharkael)
     Dirk Steinmetz (rsjtdrjgfuzkfg)
     Dmitry Koteroff (Krakean)
@@ -118,6 +128,7 @@ name is available.
     Fabrice Cipolla (fabriceci)
     Ferenc Arn (tagcup)
     FireForge (fire-forge)
+    Florent Guiocheau (Flarkk)
     Florian Kothmeier (Dragoncraft89)
     follower
     foxydevloper
@@ -131,6 +142,7 @@ name is available.
     Gilles Roudiere (groud)
     Gordon MacPherson (RevoluPowered)
     Guilherme Felipe de C. G. da Silva (guilhermefelipecgs)
+    Guillaume Mouton (kiroxas)
     Hakim Rouatbi (hakro)
     Hanif Bin Ariffin (hbina)
     Haoyu Qiu (timothyqiu)
@@ -154,8 +166,10 @@ name is available.
     Jakub Grzesik (kubecz3k)
     Jakub Marcowski (Chubercik)
     James Buck (jbuck3)
+    Jamie Pate (jamie-pate)
     Jan Haller (Bromeon)
     Jason Knight (jasonwinterpixel)
+    Jayden Sipe (jaydensipe)
     Jean-Michel Bernard (jmb462)
     Jérôme Gully (Nutriz)
     Jia Jun Chai (SkyLucilfer)
@@ -173,27 +187,38 @@ name is available.
     Julien Nguyen (Blackiris)
     Jummit
     Justo Delgado (mrcdk)
+    K. S. Ernest (iFire) Lee (fire)
     karroffel
+    Kasper Arnklit Frandsen (Arnklit)
     Kassandra Pucher (PucklaJ)
     Kelly Thomas (KellyThomas)
+    Kit Bishop (kitbdev)
     kleonc
+    Koliur Rahman (dugramen)
     Kongfa Waroros (gongpha)
     Kostadin Damyanov (Max-Might)
-    K. S. Ernest (iFire) Lee (fire)
+    Koyper
     Kyle Eichlin (likeich)
+    Lander (lander-vr)
+    Lars Pettersson (larspet)
     lawnjelly
     Leon Krause (leonkrause)
     Liz Haas (27thLiz)
+    Logan Detrick (lodetrick)
+    Logan Lang (devloglogan)
     Lucien Menassol (Kanabenki)
+    Lukas Tenbrink (Ivorforce)
+    Luo Zhihao (beicause)
     Lyuma
     Maganty Rushyendra (mrushyendra)
     Magian (magian1127)
     Mai Lavelle (maiself)
+    Malcolm Anderson (Meorge)
     Malcolm Nixon (Malcolmnixon)
     Manuele Finocchiaro (m4nu3lf)
+    Marc Gilleron (Zylann)
     Marcel Admiraal (madmiraal)
     Marcelo Fernandez (marcelofg55)
-    Marc Gilleron (Zylann)
     Marcin Zawiejski (dragmz)
     Marcus Brummer (mbrlabs)
     Marcus Elg (MCrafterzz)
@@ -212,30 +237,33 @@ name is available.
     Masoud BH (masoudbh3)
     Mateo Kuruk Miccino (kuruk-mm)
     Matias N. Goldberg (darksylinc)
-    Matthew Murphy (mashumafi)
     Matthew (skyace65)
+    Matthew Murphy (mashumafi)
     Matthias Hölzl (hoelzl)
     Max Hilbrunner (mhilbrunner)
-    merumelu
     Meru Patel (Janglee123)
+    merumelu
     MewPurPur
     Michael Alexsander (YeldhamDev)
+    Michael Russkikh (Summersay415)
     Michał Iwańczuk (iwek7)
     MichiRecRoom (LikeLakers2)
     Micky (Mickeon)
-    Mikael Hermansson (mihe)
     Mika Viskari (miv391)
+    Mikael Hermansson (mihe)
     MinusKube
     MJacred
     Mounir Tohami (WhalesState)
     mrezai
     Muhammad Huri (CakHuri)
     muiroc
+    Muller-Castro
     myaaaaaaaaa
     Nathalie Galla (MurderVeggie)
     Nathan Franke (nathanfranke)
     Nathan Lovato (NathanLovato)
     Nathan Warden (NathanWarden)
+    Nazarii Yablonskyi (Nazarwadim)
     Nicholas Huelin (SirQuartz)
     Nikita Lita (nikitalita)
     Nils André-Chang (NilsIrl)
@@ -245,11 +273,12 @@ name is available.
     ocean (they/them) (anvilfolk)
     Omar El Sheikh (The-O-King)
     Ovnuniarchos
+    Pablo Andres Fuente (pafuent)
     Pascal Richter (ShyRed)
     passivestar
+    Patrick (firefly2442)
     Patrick Dawson (pkdawson)
     Patrick Exner (FlameLizard)
-    Patrick (firefly2442)
     patwork
     Paul Batty (Paulb23)
     Paul Joannon (paulloz)
@@ -262,7 +291,7 @@ name is available.
     Pieter-Jan Briers (PJB3005)
     Poommetee Ketson (Noshyaar)
     Przemysław Gołąb (n-pigeon)
-    Radiant (RadiantUwU)
+    Radiant (radiantgurl)
     Rafael M. G. (rafallus)
     Rafał Mikrut (qarmin)
     Raffaele Picca (RPicster)
@@ -277,17 +306,17 @@ name is available.
     Rhody Lugo (rraallvv)
     Ricardo Buring (rburing)
     Ricardo Subtil (Ev1lbl0w)
-    Riteo Siuga (Riteo)
-    Roberto F. Arroyo (robfram)
     Robert Yevdokimov (ryevdokimov)
+    Roberto F. Arroyo (robfram)
     Robin Hübner (profan)
     romulox-x
+    Rudolph Bester (Rudolph-B)
     Rune Smith (rune-scape)
     Ruslan Mustakov (endragor)
     Ryan Roden-Corrent (rrcore)
     Saniko (sanikoyes)
     santouits
-    SaracenOne
+    Saracen (SaracenOne)
     Septian Ganendra S. K. (sepTN)
     Sergey Minakov (naithar)
     sersoong
@@ -304,30 +333,35 @@ name is available.
     Swarnim Arun (minraws)
     TC (floppyhammer)
     TechnoPorg
+    tetrapod00
     Thaddeus Crews (Repiteo)
     Thakee Nathees (ThakeeNathees)
     thebestnom
     Theo Hallenius (TheoXD)
     Thomas ten Cate (ttencate)
+    Timo (toger5)
     Timo Schwarzer (timoschwarzer)
     Timothé Bonhoure (ajreckof)
-    Timo (toger5)
     Tomasz Chabora (KoBeWi)
+    Travis Lange (TCROC)
     trollodel
     Twarit Waikar (IronicallySerious)
     Umang Kalra (theoway)
+    V. Vamsi Krishna (vkbsb)
+    Victor Hampel (havi05)
     Vinzenz Feenstra (vinzenz)
     Vitika Soni (Vitika9)
-    박한얼 (volzhs)
-    V. Vamsi Krishna (vkbsb)
     Wilhem Barbier (nounoursheureux)
-    William Deurwaarder (williamd67)
     Will Nations (willnationsdev)
+    William Deurwaarder (williamd67)
     Wilson E. Alvarez (Rubonnek)
     Xavier Cho (mysticfall)
     Yaohua Xiong (xiongyaohua)
+    ydeltastar
+    Yevhen Babiichuk (dustdfg)
     yg2f (SuperUserNameMan)
     Yordan Dolchinkov (Jordyfel)
+    Yufeng Ying (YYF233333)
     Yuri Rubinsky (Chaosus)
     Yuri Sizov (YuriSizov)
     Zae Chao (zaevi)
@@ -336,6 +370,8 @@ name is available.
     Zi Ye (MajorMcDoom)
     ZuBsPaCe
     Дмитрий Сальников (DmitriySalnikov)
+    박한얼 (volzhs)
     忘忧の (Daylily-Zeleen)
+    神麤詭末 (scgm0)
     谢天 (jsjtxietian)
     风青山 (Rindbee)

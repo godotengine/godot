@@ -171,10 +171,25 @@ Error store_string_at_path(const String &p_path, const String &p_data) {
 // This method will be called ONLY when gradle build is enabled.
 Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
 	CustomExportData *export_data = static_cast<CustomExportData *>(p_userdata);
-	const String path = ResourceUID::ensure_path(p_path);
-	const String dst_path = path.replace_first("res://", export_data->assets_directory + "/");
-	print_verbose("Saving project files from " + path + " into " + dst_path);
-	Error err = store_file_at_path(dst_path, p_data);
+
+	String simplified_path = p_path.simplify_path();
+	if (simplified_path.begins_with("uid://")) {
+		simplified_path = ResourceUID::uid_to_path(simplified_path).simplify_path();
+		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, simplified_path));
+	}
+
+	Vector<uint8_t> enc_data;
+	EditorExportPlatform::SavedData sd;
+	Error err = _store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, enc_data, sd);
+	if (err != OK) {
+		return err;
+	}
+
+	const String dst_path = export_data->assets_directory + String("/") + simplified_path.trim_prefix("res://");
+	print_verbose("Saving project files from " + simplified_path + " into " + dst_path);
+	err = store_file_at_path(dst_path, enc_data);
+
+	export_data->pd.file_ofs.push_back(sd);
 	return err;
 }
 
@@ -194,10 +209,10 @@ String _android_xml_escape(const String &p_string) {
 }
 
 // Creates strings.xml files inside the gradle project for different locales.
-Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &project_name, const String &p_gradle_build_dir) {
-	print_verbose("Creating strings resources for supported locales for project " + project_name);
+Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &p_project_name, const String &p_gradle_build_dir, const Dictionary &p_appnames) {
+	print_verbose("Creating strings resources for supported locales for project " + p_project_name);
 	// Stores the string into the default values directory.
-	String processed_default_xml_string = vformat(GODOT_PROJECT_NAME_XML_STRING, _android_xml_escape(project_name));
+	String processed_default_xml_string = vformat(GODOT_PROJECT_NAME_XML_STRING, _android_xml_escape(p_project_name));
 	store_string_at_path(p_gradle_build_dir.path_join("res/values/godot_project_name_string.xml"), processed_default_xml_string);
 
 	// Searches the Gradle project res/ directory to find all supported locales
@@ -209,7 +224,6 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 		return ERR_CANT_OPEN;
 	}
 	da->list_dir_begin();
-	Dictionary appnames = GLOBAL_GET("application/config/name_localized");
 	while (true) {
 		String file = da->get_next();
 		if (file.is_empty()) {
@@ -221,8 +235,8 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 		}
 		String locale = file.replace("values-", "").replace("-r", "_");
 		String locale_directory = p_gradle_build_dir.path_join("res/" + file + "/godot_project_name_string.xml");
-		if (appnames.has(locale)) {
-			String locale_project_name = appnames[locale];
+		if (p_appnames.has(locale)) {
+			String locale_project_name = p_appnames[locale];
 			String processed_xml_string = vformat(GODOT_PROJECT_NAME_XML_STRING, _android_xml_escape(locale_project_name));
 			print_verbose("Storing project name for locale " + locale + " under " + locale_directory);
 			store_string_at_path(locale_directory, processed_xml_string);
@@ -246,7 +260,7 @@ String _get_gles_tag() {
 String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset) {
 	String manifest_screen_sizes = "    <supports-screens \n        tools:node=\"replace\"";
 	String sizes[] = { "small", "normal", "large", "xlarge" };
-	size_t num_sizes = sizeof(sizes) / sizeof(sizes[0]);
+	constexpr size_t num_sizes = std::size(sizes);
 	for (size_t i = 0; i < num_sizes; i++) {
 		String feature_name = vformat("screen/support_%s", sizes[i]);
 		String feature_support = bool_to_string(p_preset->get(feature_name));
@@ -258,7 +272,7 @@ String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset) {
 }
 
 String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug) {
-	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation"))));
+	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(p_export_platform->get_project_setting(p_preset, "display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
 			"        <activity android:name=\".GodotApp\" "
 			"tools:replace=\"android:screenOrientation,android:excludeFromRecents,android:resizeableActivity\" "
@@ -268,7 +282,7 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 			"android:resizeableActivity=\"%s\">\n",
 			bool_to_string(p_preset->get("package/exclude_from_recents")),
 			orientation,
-			bool_to_string(bool(GLOBAL_GET("display/window/size/resizable"))));
+			bool_to_string(bool(p_export_platform->get_project_setting(p_preset, "display/window/size/resizable"))));
 
 	manifest_activity_text += "            <intent-filter>\n"
 							  "                <action android:name=\"android.intent.action.MAIN\" />\n"
@@ -306,7 +320,7 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 	return manifest_activity_text;
 }
 
-String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_has_read_write_storage_permission, bool p_debug) {
+String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_has_read_write_storage_permission, bool p_debug, const Vector<MetadataInfo> &p_metadata) {
 	int app_category_index = (int)(p_preset->get("package/app_category"));
 	bool is_game = app_category_index == APP_CATEGORY_GAME;
 
@@ -330,6 +344,10 @@ String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, 
 	}
 	manifest_application_text += "        tools:ignore=\"GoogleAppIndexingWarning\">\n\n";
 
+	for (int i = 0; i < p_metadata.size(); i++) {
+		manifest_application_text += vformat("        <meta-data tools:node=\"replace\" android:name=\"%s\" android:value=\"%s\" />\n", p_metadata[i].name, p_metadata[i].value);
+	}
+
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	for (int i = 0; i < export_plugins.size(); i++) {
 		if (export_plugins[i]->supports_platform(p_export_platform)) {
@@ -344,4 +362,35 @@ String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, 
 	manifest_application_text += _get_activity_tag(p_export_platform, p_preset, p_debug);
 	manifest_application_text += "    </application>\n";
 	return manifest_application_text;
+}
+
+Error _store_temp_file(const String &p_simplified_path, const Vector<uint8_t> &p_data, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, Vector<uint8_t> &r_enc_data, EditorExportPlatform::SavedData &r_sd) {
+	Error err = OK;
+	Ref<FileAccess> ftmp = FileAccess::create_temp(FileAccess::WRITE_READ, "export", "tmp", false, &err);
+	if (err != OK) {
+		return err;
+	}
+	r_sd.path_utf8 = p_simplified_path.trim_prefix("res://").utf8();
+	r_sd.ofs = 0;
+	r_sd.size = p_data.size();
+	err = EditorExportPlatform::_encrypt_and_store_data(ftmp, p_simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, r_sd.encrypted);
+	if (err != OK) {
+		return err;
+	}
+
+	r_enc_data.resize(ftmp->get_length());
+	ftmp->seek(0);
+	ftmp->get_buffer(r_enc_data.ptrw(), r_enc_data.size());
+	ftmp.unref();
+
+	// Store MD5 of original file.
+	{
+		unsigned char hash[16];
+		CryptoCore::md5(p_data.ptr(), p_data.size(), hash);
+		r_sd.md5.resize(16);
+		for (int i = 0; i < 16; i++) {
+			r_sd.md5.write[i] = hash[i];
+		}
+	}
+	return OK;
 }

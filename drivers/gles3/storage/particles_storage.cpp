@@ -513,7 +513,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 
-	double new_phase = Math::fmod(p_particles->phase + (p_delta / p_particles->lifetime) * p_particles->speed_scale, 1.0);
+	double new_phase = Math::fmod(p_particles->phase + (p_delta / p_particles->lifetime), 1.0);
 
 	//update current frame
 	ParticlesFrameParams frame_params;
@@ -534,7 +534,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	p_particles->phase = new_phase;
 
 	frame_params.time = RSG::rasterizer->get_total_time();
-	frame_params.delta = p_delta * p_particles->speed_scale;
+	frame_params.delta = p_delta;
 	frame_params.random_seed = p_particles->random_seed;
 	frame_params.explosiveness = p_particles->explosiveness;
 	frame_params.randomness = p_particles->randomness;
@@ -868,10 +868,10 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 		particles->process_buffer_stride_cache = sizeof(float) * 4 * particles->num_attrib_arrays_cache;
 
 		PackedByteArray data;
-		data.resize_zeroed(particles->process_buffer_stride_cache * total_amount);
+		data.resize_initialized(particles->process_buffer_stride_cache * total_amount);
 
 		PackedByteArray instance_data;
-		instance_data.resize_zeroed(particles->instance_buffer_size_cache);
+		instance_data.resize_initialized(particles->instance_buffer_size_cache);
 
 		{
 			glGenVertexArrays(1, &particles->front_vertex_array);
@@ -1097,8 +1097,6 @@ void ParticlesStorage::update_particles() {
 			fixed_fps = particles->fixed_fps;
 		}
 
-		bool zero_time_scale = Engine::get_singleton()->get_time_scale() <= 0.0;
-
 		if (particles->clear && particles->pre_process_time > 0.0) {
 			double frame_time;
 			if (fixed_fps > 0) {
@@ -1115,37 +1113,27 @@ void ParticlesStorage::update_particles() {
 			}
 		}
 
+		double time_scale = MAX(particles->speed_scale, 0.0);
+
 		if (fixed_fps > 0) {
-			double frame_time;
-			double decr;
-			if (zero_time_scale) {
-				frame_time = 0.0;
-				decr = 1.0 / fixed_fps;
-			} else {
-				frame_time = 1.0 / fixed_fps;
-				decr = frame_time;
-			}
+			double frame_time = 1.0 / fixed_fps;
 			double delta = RSG::rasterizer->get_frame_delta_time();
 			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
 				delta = 0.1;
 			} else if (delta <= 0.0) { //unlikely but..
 				delta = 0.001;
 			}
-			double todo = particles->frame_remainder + delta;
+			double todo = particles->frame_remainder + delta * time_scale;
 
 			while (todo >= frame_time) {
 				_particles_process(particles, frame_time);
-				todo -= decr;
+				todo -= frame_time;
 			}
 
 			particles->frame_remainder = todo;
 
 		} else {
-			if (zero_time_scale) {
-				_particles_process(particles, 0.0);
-			} else {
-				_particles_process(particles, RSG::rasterizer->get_frame_delta_time());
-			}
+			_particles_process(particles, RSG::rasterizer->get_frame_delta_time() * time_scale);
 		}
 
 		if (particles->request_process_time > 0.0) {
@@ -1294,7 +1282,7 @@ GLuint ParticlesStorage::particles_collision_get_heightfield_framebuffer(RID p_p
 #ifdef DEBUG_ENABLED
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
-			WARN_PRINT("Could create heightmap texture status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
+			WARN_PRINT("Could not create heightmap texture, status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
 		}
 #endif
 		GLES3::Utilities::get_singleton()->texture_allocated_data(particles_collision->heightfield_texture, size.x * size.y * 4, "Particles collision heightfield texture");
@@ -1331,6 +1319,13 @@ void ParticlesStorage::particles_collision_set_cull_mask(RID p_particles_collisi
 	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL(particles_collision);
 	particles_collision->cull_mask = p_cull_mask;
+	particles_collision->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_CULL_MASK);
+}
+
+uint32_t ParticlesStorage::particles_collision_get_cull_mask(RID p_particles_collision) const {
+	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL_V(particles_collision, 0);
+	return particles_collision->cull_mask;
 }
 
 void ParticlesStorage::particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) {

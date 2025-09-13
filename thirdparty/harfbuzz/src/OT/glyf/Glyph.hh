@@ -102,17 +102,15 @@ struct Glyph
     if (unlikely (!points.resize (points.length + PHANTOM_COUNT))) return false;
     hb_array_t<contour_point_t> phantoms = points.as_array ().sub_array (points.length - PHANTOM_COUNT, PHANTOM_COUNT);
     {
+      // Duplicated code.
       int lsb = 0;
-      int h_delta = face->table.hmtx->get_leading_bearing_without_var_unscaled (gid, &lsb) ?
-                    (int) header->xMin - lsb : 0;
+      face->table.hmtx->get_leading_bearing_without_var_unscaled (gid, &lsb);
+      int h_delta = (int) header->xMin - lsb;
       HB_UNUSED int tsb = 0;
-      int v_orig  = (int) header->yMax +
 #ifndef HB_NO_VERTICAL
-                    ((void) face->table.vmtx->get_leading_bearing_without_var_unscaled (gid, &tsb), tsb)
-#else
-                    0
+      face->table.vmtx->get_leading_bearing_without_var_unscaled (gid, &tsb);
 #endif
-                    ;
+      int v_orig  = (int) header->yMax + tsb;
       unsigned h_adv = face->table.hmtx->get_advance_without_var_unscaled (gid);
       unsigned v_adv =
 #ifndef HB_NO_VERTICAL
@@ -251,7 +249,8 @@ struct Glyph
       composite_contours_p = nullptr;
     }
 
-    if (!get_points (font, glyf, all_points, &points_with_deltas, head_maxp_info_p, composite_contours_p, false, false))
+    hb_glyf_scratch_t scratch;
+    if (!get_points (font, glyf, all_points, scratch, &points_with_deltas, head_maxp_info_p, composite_contours_p, false, false))
       return false;
 
     // .notdef, set type to empty so we only update metrics and don't compile bytes for
@@ -305,6 +304,7 @@ struct Glyph
   template <typename accelerator_t>
   bool get_points (hb_font_t *font, const accelerator_t &glyf_accelerator,
 		   contour_point_vector_t &all_points /* OUT */,
+		   hb_glyf_scratch_t &scratch,
 		   contour_point_vector_t *points_with_deltas = nullptr, /* OUT */
 		   head_maxp_info_t * head_maxp_info = nullptr, /* OUT */
 		   unsigned *composite_contours = nullptr, /* OUT */
@@ -312,7 +312,7 @@ struct Glyph
 		   bool use_my_metrics = true,
 		   bool phantom_only = false,
 		   hb_array_t<const int> coords = hb_array_t<const int> (),
-		   hb_map_t *current_glyphs = nullptr,
+		   hb_scalar_cache_t *gvar_cache = nullptr,
 		   unsigned int depth = 0,
 		   unsigned *edge_count = nullptr) const
   {
@@ -322,20 +322,15 @@ struct Glyph
     if (unlikely (*edge_count > HB_MAX_GRAPH_EDGE_COUNT)) return false;
     (*edge_count)++;
 
-    hb_map_t current_glyphs_stack;
-    if (current_glyphs == nullptr)
-      current_glyphs = &current_glyphs_stack;
-
     if (head_maxp_info)
     {
       head_maxp_info->maxComponentDepth = hb_max (head_maxp_info->maxComponentDepth, depth);
     }
 
-    if (!coords)
+    if (!coords && font->has_nonzero_coords)
       coords = hb_array (font->coords, font->num_coords);
 
-    contour_point_vector_t stack_points;
-    contour_point_vector_t &points = type == SIMPLE ? all_points : stack_points;
+    contour_point_vector_t &points = type == SIMPLE ? all_points : scratch.comp_points;
     unsigned old_length = points.length;
 
     switch (type) {
@@ -361,25 +356,23 @@ struct Glyph
     if (unlikely (!points.resize (points.length + PHANTOM_COUNT))) return false;
     hb_array_t<contour_point_t> phantoms = points.as_array ().sub_array (points.length - PHANTOM_COUNT, PHANTOM_COUNT);
     {
+      // Duplicated code.
       int lsb = 0;
-      int h_delta = glyf_accelerator.hmtx->get_leading_bearing_without_var_unscaled (gid, &lsb) ?
-		    (int) header->xMin - lsb : 0;
+      glyf_accelerator.hmtx->get_leading_bearing_without_var_unscaled (gid, &lsb);
+      int h_delta = (int) header->xMin - lsb;
       HB_UNUSED int tsb = 0;
-      int v_orig  = (int) header->yMax +
 #ifndef HB_NO_VERTICAL
-		    ((void) glyf_accelerator.vmtx->get_leading_bearing_without_var_unscaled (gid, &tsb), tsb)
-#else
-		    0
+      glyf_accelerator.vmtx->get_leading_bearing_without_var_unscaled (gid, &tsb);
 #endif
-		    ;
+      int v_orig  = (int) header->yMax + tsb;
       unsigned h_adv = glyf_accelerator.hmtx->get_advance_without_var_unscaled (gid);
       unsigned v_adv =
 #ifndef HB_NO_VERTICAL
-		       glyf_accelerator.vmtx->get_advance_without_var_unscaled (gid)
+                       glyf_accelerator.vmtx->get_advance_without_var_unscaled (gid)
 #else
-		       - font->face->get_upem ()
+                       - font->face->get_upem ()
 #endif
-		       ;
+                       ;
       phantoms[PHANTOM_LEFT].x = h_delta;
       phantoms[PHANTOM_RIGHT].x = (int) h_adv + h_delta;
       phantoms[PHANTOM_TOP].y = v_orig;
@@ -387,37 +380,56 @@ struct Glyph
     }
 
 #ifndef HB_NO_VAR
-    if (coords)
-      glyf_accelerator.gvar->apply_deltas_to_points (gid,
-						     coords,
-						     points.as_array ().sub_array (old_length),
-						     phantom_only && type == SIMPLE);
+    if (hb_any (coords))
+    {
+#ifndef HB_NO_BEYOND_64K
+      if (glyf_accelerator.GVAR->has_data ())
+	glyf_accelerator.GVAR->apply_deltas_to_points (gid,
+						       coords,
+						       points.as_array ().sub_array (old_length),
+						       scratch,
+						       gvar_cache,
+						       phantom_only && type == SIMPLE);
+      else
+#endif
+	glyf_accelerator.gvar->apply_deltas_to_points (gid,
+						       coords,
+						       points.as_array ().sub_array (old_length),
+						       scratch,
+						       gvar_cache,
+						       phantom_only && type == SIMPLE);
+    }
 #endif
 
     // mainly used by CompositeGlyph calculating new X/Y offset value so no need to extend it
     // with child glyphs' points
     if (points_with_deltas != nullptr && depth == 0 && type == COMPOSITE)
     {
-      if (unlikely (!points_with_deltas->resize (points.length))) return false;
+      assert (old_length == 0);
       *points_with_deltas = points;
     }
 
+    float shift = 0;
     switch (type) {
     case SIMPLE:
       if (depth == 0 && head_maxp_info)
         head_maxp_info->maxPoints = hb_max (head_maxp_info->maxPoints, all_points.length - old_length - 4);
+      shift = phantoms[PHANTOM_LEFT].x;
       break;
     case COMPOSITE:
     {
+      hb_decycler_node_t decycler_node (scratch.decycler);
+
       unsigned int comp_index = 0;
       for (auto &item : get_composite_iterator ())
       {
 	hb_codepoint_t item_gid = item.get_gid ();
 
-        if (unlikely (current_glyphs->has (item_gid)))
+        if (unlikely (!decycler_node.visit (item_gid)))
+	{
+	  comp_index++;
 	  continue;
-
-	current_glyphs->add (item_gid);
+	}
 
 	unsigned old_count = all_points.length;
 
@@ -426,6 +438,7 @@ struct Glyph
 				       .get_points (font,
 						    glyf_accelerator,
 						    all_points,
+						    scratch,
 						    points_with_deltas,
 						    head_maxp_info,
 						    composite_contours,
@@ -433,13 +446,16 @@ struct Glyph
 						    use_my_metrics,
 						    phantom_only,
 						    coords,
-						    current_glyphs,
+						    gvar_cache,
 						    depth + 1,
 						    edge_count)))
 	{
-	  current_glyphs->del (item_gid);
+	  points.resize (old_length);
 	  return false;
 	}
+
+	// points might have been reallocated. Relocate phantoms.
+	phantoms = points.as_array ().sub_array (points.length - PHANTOM_COUNT, PHANTOM_COUNT);
 
 	auto comp_points = all_points.as_array ().sub_array (old_count);
 
@@ -455,7 +471,7 @@ struct Glyph
 	  item.get_transformation (matrix, default_trans);
 
 	  /* Apply component transformation & translation (with deltas applied) */
-	  item.transform_points (comp_points, matrix, points[comp_index]);
+	  item.transform_points (comp_points, matrix, points[old_length + comp_index]);
 	}
 
 	if (item.is_anchored () && !phantom_only)
@@ -476,12 +492,11 @@ struct Glyph
 
 	if (all_points.length > HB_GLYF_MAX_POINTS)
 	{
-	  current_glyphs->del (item_gid);
+	  points.resize (old_length);
 	  return false;
 	}
 
 	comp_index++;
-        current_glyphs->del (item_gid);
       }
 
       if (head_maxp_info && depth == 0)
@@ -492,9 +507,13 @@ struct Glyph
         head_maxp_info->maxComponentElements = hb_max (head_maxp_info->maxComponentElements, comp_index);
       }
       all_points.extend (phantoms);
+      shift = phantoms[PHANTOM_LEFT].x;
+      points.resize (old_length);
     } break;
     case EMPTY:
       all_points.extend (phantoms);
+      shift = phantoms[PHANTOM_LEFT].x;
+      points.resize (old_length);
       break;
     }
 
@@ -503,10 +522,9 @@ struct Glyph
       /* Undocumented rasterizer behavior:
        * Shift points horizontally by the updated left side bearing
        */
-      float v = -phantoms[PHANTOM_LEFT].x;
-      if (v)
+      if (shift)
         for (auto &point : all_points)
-	  point.x += v;
+	  point.x -= shift;
     }
 
     return !all_points.in_error ();

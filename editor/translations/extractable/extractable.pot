@@ -22,6 +22,10 @@ msgstr ""
 msgid "New Code Region"
 msgstr ""
 
+#: scene/gui/color_mode.h
+msgid "Linear"
+msgstr ""
+
 #: scene/gui/color_picker.cpp
 msgid "Pick a color from the screen."
 msgstr ""
@@ -31,20 +35,19 @@ msgid "Pick a color from the application window."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
+msgid "Alpha"
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
+msgid "Intensity"
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid "The changes to this palette have not been saved to a file."
+msgid "Expr"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Hex"
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -52,7 +55,27 @@ msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
+msgid "Load Color Palette"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Save Color Palette"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "The changes to this palette have not been saved to a file."
+msgstr ""
+
+#: scene/gui/color_picker.cpp scene/gui/file_dialog.cpp
+msgid "Save"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
 msgid "Save the current color palette to reuse later."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Save As"
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -60,11 +83,23 @@ msgid "Save the current color palette as a new to reuse later."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
+msgid "Load"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
 msgid "Load existing color palette."
+msgstr ""
+
+#: scene/gui/color_picker.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Clear"
 msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Clear the currently loaded color palettes in the picker."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Pick"
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -80,11 +115,15 @@ msgid "Colorized Sliders"
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid "Hex"
+msgid "Hexadecimal Values"
 msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Hex code or named color"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Swatches"
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -97,6 +136,58 @@ msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Screen Recording permission missing!"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid ""
+"Screen Recording permission is required to pick colors from the other "
+"application windows.\n"
+"Click here to request access..."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid ""
+"Color: %s\n"
+"LMB: Apply color"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid ""
+"Color: %s\n"
+"LMB: Apply color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Color: %s"
+msgstr ""
+
+#: scene/gui/color_picker_shape.h
+msgid "HSV Rectangle"
+msgstr ""
+
+#: scene/gui/color_picker_shape.h
+msgid "OK HS Rectangle"
+msgstr ""
+
+#: scene/gui/color_picker_shape.h
+msgid "OK HL Rectangle"
+msgstr ""
+
+#: scene/gui/color_picker_shape.h
+msgid "HSV Wheel"
+msgstr ""
+
+#: scene/gui/color_picker_shape.h
+msgid "VHS Circle"
+msgstr ""
+
+#: scene/gui/color_picker_shape.h
+msgid "OKHSL Circle"
 msgstr ""
 
 #: scene/gui/dialogs.cpp
@@ -131,10 +222,6 @@ msgstr ""
 
 #: scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
-msgstr ""
-
-#: scene/gui/file_dialog.cpp
-msgid "Save"
 msgstr ""
 
 #: scene/gui/file_dialog.cpp
@@ -194,11 +281,15 @@ msgid "Path:"
 msgstr ""
 
 #: scene/gui/file_dialog.cpp
+msgid "Drive"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
 msgid "Refresh files."
 msgstr ""
 
 #: scene/gui/file_dialog.cpp
-msgid "Toggle the visibility of hidden files."
+msgid "(Un)favorite current folder."
 msgstr ""
 
 #: scene/gui/file_dialog.cpp
@@ -206,7 +297,67 @@ msgid "Create a new folder."
 msgstr ""
 
 #: scene/gui/file_dialog.cpp
+msgid "Favorites:"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Recent:"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Toggle the visibility of hidden files."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "View items as a grid of thumbnails."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "View items as a list."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Toggle the visibility of the filter for file names."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Sort files"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Sort by Name (Ascending)"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Sort by Name (Descending)"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Sort by Type (Ascending)"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Sort by Type (Descending)"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Sort by Modified Time (Newest First)"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Sort by Modified Time (Oldest First)"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Filter:"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Filename Filter:"
 msgstr ""
 
 #: scene/gui/file_dialog.cpp
@@ -227,6 +378,14 @@ msgstr ""
 
 #: scene/gui/file_dialog.cpp
 msgid "Invalid extension, or empty filename."
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "connection to %s (%s) port %d"
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "connection from %s (%s) port %d"
 msgstr ""
 
 #: scene/gui/graph_edit.cpp
@@ -259,6 +418,62 @@ msgstr ""
 
 #: scene/gui/graph_edit.cpp
 msgid "Automatically arrange selected nodes."
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "graph node %s (%s)"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "slot %d of %d"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "input port, type: %s"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "input port, type: %d"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "no connections"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "output port, type: %s"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "output port, type: %d"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "currently selecting target port"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "has %d slots"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "Edit Input Port Connection"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "Edit Output Port Connection"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "Follow Input Port Connection"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid "Follow Output Port Connection"
+msgstr ""
+
+#: scene/gui/graph_node.cpp
+msgid ", in slot %d of graph node %s (%s)"
 msgstr ""
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -359,10 +574,6 @@ msgstr ""
 
 #: scene/gui/line_edit.cpp scene/gui/rich_text_label.cpp scene/gui/text_edit.cpp
 msgid "Select All"
-msgstr ""
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-msgid "Clear"
 msgstr ""
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp

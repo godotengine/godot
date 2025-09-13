@@ -4,7 +4,7 @@
  *
  *   FreeType Image cache (body).
  *
- * Copyright (C) 2000-2023 by
+ * Copyright (C) 2000-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -34,11 +34,7 @@
     FT_Memory  memory = cache->memory;
 
 
-    if ( inode->glyph )
-    {
-      FT_Done_Glyph( inode->glyph );
-      inode->glyph = NULL;
-    }
+    FT_Done_Glyph( inode->glyph );
 
     FTC_GNode_Done( FTC_GNODE( inode ), cache );
     FT_FREE( inode );
@@ -119,10 +115,9 @@
     {
     case FT_GLYPH_FORMAT_BITMAP:
       {
-        FT_BitmapGlyph  bitg;
+        FT_BitmapGlyph  bitg = (FT_BitmapGlyph)glyph;
 
 
-        bitg = (FT_BitmapGlyph)glyph;
         size = bitg->bitmap.rows * (FT_Offset)FT_ABS( bitg->bitmap.pitch ) +
                sizeof ( *bitg );
       }
@@ -130,10 +125,9 @@
 
     case FT_GLYPH_FORMAT_OUTLINE:
       {
-        FT_OutlineGlyph  outg;
+        FT_OutlineGlyph  outg = (FT_OutlineGlyph)glyph;
 
 
-        outg = (FT_OutlineGlyph)glyph;
         size = (FT_Offset)outg->outline.n_points *
                  ( sizeof ( FT_Vector ) + sizeof ( FT_Byte ) ) +
                (FT_Offset)outg->outline.n_contours * sizeof ( FT_Short ) +

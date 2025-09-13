@@ -19,7 +19,7 @@
 			<return type="bool" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns [code]true[/code] if the all child [SpringBoneCollision3D]s are contained in the collision list at [param index] in the settings.
+				Returns [code]true[/code] if all child [SpringBoneCollision3D]s are contained in the collision list at [param index] in the settings.
 			</description>
 		</method>
 		<method name="clear_collisions">
@@ -226,6 +226,15 @@
 				Returns the rotation axis at [param joint] in the bone chain's joint list.
 			</description>
 		</method>
+		<method name="get_joint_rotation_axis_vector" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<description>
+				Returns the rotation axis vector for the specified joint in the bone chain. This vector represents the axis around which the joint can rotate. It is determined based on the rotation axis set for the joint.
+				If [method get_joint_rotation_axis] is [constant ROTATION_AXIS_ALL], this method returns [code]Vector3(0, 0, 0)[/code].
+			</description>
+		</method>
 		<method name="get_joint_stiffness" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="index" type="int" />
@@ -267,6 +276,14 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the rotation axis of the bone chain.
+			</description>
+		</method>
+		<method name="get_rotation_axis_vector" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the rotation axis vector of the bone chain. This vector represents the axis around which the bone chain can rotate. It is determined based on the rotation axis set for the bone chain.
+				If [method get_rotation_axis] is [constant ROTATION_AXIS_ALL], this method returns [code]Vector3(0, 0, 0)[/code].
 			</description>
 		</method>
 		<method name="get_stiffness" qualifiers="const">
@@ -378,8 +395,8 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If sets [param enabled] to [code]true[/code], the all child [SpringBoneCollision3D]s are collided and [method set_exclude_collision_path] is enabled as an exclusion list at [param index] in the settings.
-				If sets [param enabled] to [code]false[/code], you need to manually register all valid collisions with [method set_collision_path].
+				If [param enabled] is [code]true[/code], all child [SpringBoneCollision3D]s are colliding and [method set_exclude_collision_path] is enabled as an exclusion list at [param index] in the settings.
+				If [param enabled] is [code]false[/code], you need to manually register all valid collisions with [method set_collision_path].
 			</description>
 		</method>
 		<method name="set_end_bone">
@@ -520,6 +537,19 @@
 			<param index="2" name="axis" type="int" enum="SpringBoneSimulator3D.RotationAxis" />
 			<description>
 				Sets the rotation axis at [param joint] in the bone chain's joint list when [method is_config_individual] is [code]true[/code].
+				The axes are based on the [method Skeleton3D.get_bone_rest]'s space, if [param axis] is [constant ROTATION_AXIS_CUSTOM], you can specify any axis.
+				[b]Note:[/b] The rotation axis and the forward vector shouldn't be colinear to avoid unintended rotation since [SpringBoneSimulator3D] does not factor in twisting forces.
+			</description>
+		</method>
+		<method name="set_joint_rotation_axis_vector">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<param index="2" name="vector" type="Vector3" />
+			<description>
+				Sets the rotation axis vector for the specified joint in the bone chain.
+				This vector is normalized by an internal process and represents the axis around which the bone chain can rotate.
+				If the vector length is [code]0[/code], it is considered synonymous with [constant ROTATION_AXIS_ALL].
 			</description>
 		</method>
 		<method name="set_joint_stiffness">
@@ -569,9 +599,19 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="axis" type="int" enum="SpringBoneSimulator3D.RotationAxis" />
 			<description>
-				Sets the rotation axis of the bone chain. If sets a specific axis, it acts like a hinge joint.
-				The value is cached in each joint setting in the joint list.
-				[b]Note:[/b] The rotation axis and the forward vector shouldn't be colinear to avoid unintended rotation since [SpringBoneSimulator3D] does not factor in twisting forces.
+				Sets the rotation axis of the bone chain. If set to a specific axis, it acts like a hinge joint. The value is cached in each joint setting in the joint list.
+				The axes are based on the [method Skeleton3D.get_bone_rest]'s space, if [param axis] is [constant ROTATION_AXIS_CUSTOM], you can specify any axis.
+				[b]Note:[/b] The rotation axis vector and the forward vector shouldn't be colinear to avoid unintended rotation since [SpringBoneSimulator3D] does not factor in twisting forces.
+			</description>
+		</method>
+		<method name="set_rotation_axis_vector">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="vector" type="Vector3" />
+			<description>
+				Sets the rotation axis vector of the bone chain. The value is cached in each joint setting in the joint list.
+				This vector is normalized by an internal process and represents the axis around which the bone chain can rotate.
+				If the vector length is [code]0[/code], it is considered synonymous with [constant ROTATION_AXIS_ALL].
 			</description>
 		</method>
 		<method name="set_stiffness">
@@ -594,6 +634,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="external_force" type="Vector3" setter="set_external_force" getter="get_external_force" default="Vector3(0, 0, 0)">
+			The constant force that always affected bones. It is equal to the result when the parent [Skeleton3D] moves at this speed in the opposite direction.
+			This is useful for effects such as wind and anti-gravity.
+		</member>
 		<member name="setting_count" type="int" setter="set_setting_count" getter="get_setting_count" default="0">
 			The number of settings.
 		</member>
@@ -642,6 +686,9 @@
 		</constant>
 		<constant name="ROTATION_AXIS_ALL" value="3" enum="RotationAxis">
 			Enumerated value for the unconstrained rotation.
+		</constant>
+		<constant name="ROTATION_AXIS_CUSTOM" value="4" enum="RotationAxis">
+			Enumerated value for an optional rotation axis. See also [method set_joint_rotation_axis_vector].
 		</constant>
 	</constants>
 </class>

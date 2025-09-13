@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PARTICLES_STORAGE_DUMMY_H
-#define PARTICLES_STORAGE_DUMMY_H
+#pragma once
 
 #include "servers/rendering/storage/particles_storage.h"
 
@@ -116,6 +115,7 @@ public:
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const override { return false; }
 	virtual uint32_t particles_collision_get_height_field_mask(RID p_particles_collision) const override { return 0; }
 	virtual void particles_collision_set_height_field_mask(RID p_particles_collision, uint32_t p_heightfield_mask) override {}
+	virtual uint32_t particles_collision_get_cull_mask(RID p_particles_collision) const override { return 0; }
 
 	virtual RID particles_collision_instance_create(RID p_collision) override { return RID(); }
 	virtual void particles_collision_instance_free(RID p_rid) override {}
@@ -126,5 +126,3 @@ public:
 };
 
 } // namespace RendererDummy
-
-#endif // PARTICLES_STORAGE_DUMMY_H

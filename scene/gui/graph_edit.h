@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GRAPH_EDIT_H
-#define GRAPH_EDIT_H
+#pragma once
 
+#include "core/variant/typed_dictionary.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/graph_frame.h"
 #include "scene/gui/graph_node.h"
@@ -199,6 +199,7 @@ private:
 	bool show_grid = true;
 	GridPattern grid_pattern = GRID_PATTERN_LINES;
 
+	bool keyboard_connecting = false;
 	bool connecting = false;
 	StringName connecting_from_node;
 	bool connecting_from_output = false;
@@ -226,6 +227,10 @@ private:
 	// Proper values set in constructor.
 	float zoom_min = 0.0;
 	float zoom_max = 0.0;
+
+	Vector2 min_scroll_offset;
+	Vector2 max_scroll_offset;
+	Vector2 scroll_offset;
 
 	bool box_selecting = false;
 	bool box_selection_mode_additive = false;
@@ -270,6 +275,7 @@ private:
 		float base_scale = 1.0;
 
 		Ref<StyleBox> panel;
+		Ref<StyleBox> panel_focus;
 		Color grid_major;
 		Color grid_minor;
 
@@ -304,6 +310,8 @@ private:
 	HashMap<StringName, HashSet<StringName>> frame_attached_nodes;
 	HashMap<StringName, StringName> linked_parent_map;
 
+	Dictionary type_names;
+
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
 
@@ -314,6 +322,7 @@ private:
 
 	void _graph_element_selected(Node *p_node);
 	void _graph_element_deselected(Node *p_node);
+	void _graph_element_visibility_changed(GraphElement *p_graph_element);
 	void _graph_element_resize_request(const Vector2 &p_new_minsize, Node *p_node);
 	void _graph_frame_autoshrink_changed(const Vector2 &p_new_minsize, GraphFrame *p_frame);
 	void _graph_element_moved(Node *p_node);
@@ -323,9 +332,9 @@ private:
 	void _ensure_node_order_from_root(const StringName &p_node);
 	void _ensure_node_order_from(Node *p_node);
 
-	void _update_scroll();
+	void _update_scrollbars();
 	void _update_scroll_offset();
-	void _scroll_moved(double);
+	void _scrollbar_moved(double);
 	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 	void _top_connection_layer_input(const Ref<InputEvent> &p_ev);
 
@@ -345,6 +354,7 @@ private:
 	TypedArray<Dictionary> _get_connection_list() const;
 	Dictionary _get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
 	TypedArray<Dictionary> _get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
+	TypedArray<Dictionary> _get_connection_list_from_node(const StringName &p_node) const;
 
 	Rect2 _compute_shrinked_frame_rect(const GraphFrame *p_frame);
 	void _set_drag_frame_attached_nodes(GraphFrame *p_frame, bool p_drag);
@@ -396,6 +406,8 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
+	void key_input(const Ref<InputEvent> &p_ev);
+
 	// This method has to be public (for undo redo).
 	// TODO: Find a better way to do this.
 	void _update_graph_frame(GraphFrame *p_frame);
@@ -404,6 +416,9 @@ public:
 	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, bool keep_alive = false);
 	bool is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	int get_connection_count(const StringName &p_node, int p_port);
+	GraphNode *get_input_connection_target(const StringName &p_node, int p_port);
+	GraphNode *get_output_connection_target(const StringName &p_node, int p_port);
+	String get_connections_description(const StringName &p_node, int p_port);
 	void disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 
 	void force_connection_drag_end();
@@ -412,6 +427,13 @@ public:
 	virtual PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to) const;
 	Ref<Connection> get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
 	List<Ref<Connection>> get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
+
+	bool is_keyboard_connecting() const { return keyboard_connecting; }
+	void start_keyboard_connecting(GraphNode *p_node, int p_in_port, int p_out_port);
+	void end_keyboard_connecting(GraphNode *p_node, int p_in_port, int p_out_port);
+
+	Dictionary get_type_names() const;
+	void set_type_names(const Dictionary &p_names);
 
 	virtual bool is_node_hover_valid(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 
@@ -517,5 +539,3 @@ public:
 
 VARIANT_ENUM_CAST(GraphEdit::PanningScheme);
 VARIANT_ENUM_CAST(GraphEdit::GridPattern);
-
-#endif // GRAPH_EDIT_H

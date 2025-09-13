@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESH_STORAGE_DUMMY_H
-#define MESH_STORAGE_DUMMY_H
+#pragma once
 
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/storage/mesh_storage.h"
@@ -104,6 +103,7 @@ public:
 	virtual void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
 	virtual void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
 	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
+	virtual void mesh_surface_update_index_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) override {}
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const override { return RID(); }
@@ -133,6 +133,7 @@ public:
 
 	virtual void mesh_surface_remove(RID p_mesh, int p_surface) override;
 	virtual void mesh_clear(RID p_mesh) override;
+	virtual void mesh_debug_usage(List<RS::MeshInfo> *r_info) override {}
 
 	/* MESH INSTANCE */
 
@@ -203,5 +204,3 @@ public:
 };
 
 } // namespace RendererDummy
-
-#endif // MESH_STORAGE_DUMMY_H

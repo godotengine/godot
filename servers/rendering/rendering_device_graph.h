@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_DEVICE_GRAPH_H
-#define RENDERING_DEVICE_GRAPH_H
+#pragma once
 
 #include "core/object/worker_thread_pool.h"
 #include "rendering_device_commons.h"
@@ -115,9 +114,9 @@ public:
 		int32_t buffer_barrier_count = 0;
 #endif
 		int32_t label_index = -1;
-		BitField<RDD::PipelineStageBits> previous_stages;
-		BitField<RDD::PipelineStageBits> next_stages;
-		BitField<RDD::PipelineStageBits> self_stages;
+		BitField<RDD::PipelineStageBits> previous_stages = {};
+		BitField<RDD::PipelineStageBits> next_stages = {};
+		BitField<RDD::PipelineStageBits> self_stages = {};
 	};
 
 	struct RecordedBufferCopy {
@@ -149,14 +148,17 @@ public:
 		RESOURCE_USAGE_STORAGE_IMAGE_READ_WRITE,
 		RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE,
 		RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE,
+		RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ,
+		RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ,
+		RESOURCE_USAGE_GENERAL,
 		RESOURCE_USAGE_MAX
 	};
 
 	struct ResourceTracker {
 		uint32_t reference_count = 0;
 		int64_t command_frame = -1;
-		BitField<RDD::PipelineStageBits> previous_frame_stages;
-		BitField<RDD::PipelineStageBits> current_frame_stages;
+		BitField<RDD::PipelineStageBits> previous_frame_stages = {};
+		BitField<RDD::PipelineStageBits> current_frame_stages = {};
 		int32_t read_full_command_list_index = -1;
 		int32_t read_slice_command_list_index = -1;
 		int32_t write_command_or_list_index = -1;
@@ -165,7 +167,7 @@ public:
 		int32_t compute_list_index = -1;
 		ResourceUsage compute_list_usage = RESOURCE_USAGE_NONE;
 		ResourceUsage usage = RESOURCE_USAGE_NONE;
-		BitField<RDD::BarrierAccessBits> usage_access;
+		BitField<RDD::BarrierAccessBits> usage_access = {};
 		RDD::BufferID buffer_driver_id;
 		RDD::TextureID texture_driver_id;
 		RDD::TextureSubresourceRange texture_subresources;
@@ -240,7 +242,7 @@ private:
 		LocalVector<uint8_t> data;
 		LocalVector<ResourceTracker *> command_trackers;
 		LocalVector<ResourceUsage> command_tracker_usages;
-		BitField<RDD::PipelineStageBits> stages;
+		BitField<RDD::PipelineStageBits> stages = {};
 		int32_t index = 0;
 
 		void clear() {
@@ -659,8 +661,8 @@ private:
 	};
 
 	struct BarrierGroup {
-		BitField<RDD::PipelineStageBits> src_stages;
-		BitField<RDD::PipelineStageBits> dst_stages;
+		BitField<RDD::PipelineStageBits> src_stages = {};
+		BitField<RDD::PipelineStageBits> dst_stages = {};
 		RDD::MemoryBarrier memory_barrier;
 		LocalVector<RDD::TextureBarrier> normalization_barriers;
 		LocalVector<RDD::TextureBarrier> transition_barriers;
@@ -752,7 +754,7 @@ private:
 	void _run_compute_list_command(RDD::CommandBufferID p_command_buffer, const uint8_t *p_instruction_data, uint32_t p_instruction_data_size);
 	void _get_draw_list_render_pass_and_framebuffer(const RecordedDrawListCommand *p_draw_list_command, RDD::RenderPassID &r_render_pass, RDD::FramebufferID &r_framebuffer);
 	void _run_draw_list_command(RDD::CommandBufferID p_command_buffer, const uint8_t *p_instruction_data, uint32_t p_instruction_data_size);
-	void _add_draw_list_begin(FramebufferCache *p_framebuffer_cache, RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<AttachmentOperation> p_attachment_operations, VectorView<RDD::RenderPassClearValue> p_attachment_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb, bool p_split_cmd_buffer);
+	void _add_draw_list_begin(FramebufferCache *p_framebuffer_cache, RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<AttachmentOperation> p_attachment_operations, VectorView<RDD::RenderPassClearValue> p_attachment_clear_values, BitField<RDD::PipelineStageBits> p_stages, uint32_t p_breadcrumb, bool p_split_cmd_buffer);
 	void _run_secondary_command_buffer_task(const SecondaryCommandBuffer *p_secondary);
 	void _wait_for_secondary_command_buffer_tasks();
 	void _run_render_commands(int32_t p_level, const RecordedCommandSort *p_sorted_commands, uint32_t p_sorted_commands_count, RDD::CommandBufferID &r_command_buffer, CommandBufferPool &r_command_buffer_pool, int32_t &r_current_label_index, int32_t &r_current_label_level);
@@ -785,8 +787,8 @@ public:
 	void add_compute_list_usage(ResourceTracker *p_tracker, ResourceUsage p_usage);
 	void add_compute_list_usages(VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages);
 	void add_compute_list_end();
-	void add_draw_list_begin(FramebufferCache *p_framebuffer_cache, Rect2i p_region, VectorView<AttachmentOperation> p_attachment_operations, VectorView<RDD::RenderPassClearValue> p_attachment_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb = 0, bool p_split_cmd_buffer = false);
-	void add_draw_list_begin(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<AttachmentOperation> p_attachment_operations, VectorView<RDD::RenderPassClearValue> p_attachment_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb = 0, bool p_split_cmd_buffer = false);
+	void add_draw_list_begin(FramebufferCache *p_framebuffer_cache, Rect2i p_region, VectorView<AttachmentOperation> p_attachment_operations, VectorView<RDD::RenderPassClearValue> p_attachment_clear_values, BitField<RDD::PipelineStageBits> p_stages, uint32_t p_breadcrumb = 0, bool p_split_cmd_buffer = false);
+	void add_draw_list_begin(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<AttachmentOperation> p_attachment_operations, VectorView<RDD::RenderPassClearValue> p_attachment_clear_values, BitField<RDD::PipelineStageBits> p_stages, uint32_t p_breadcrumb = 0, bool p_split_cmd_buffer = false);
 	void add_draw_list_bind_index_buffer(RDD::BufferID p_buffer, RDD::IndexBufferFormat p_format, uint32_t p_offset);
 	void add_draw_list_bind_pipeline(RDD::PipelineID p_pipeline, BitField<RDD::PipelineStageBits> p_pipeline_stage_bits);
 	void add_draw_list_bind_uniform_set(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index);
@@ -815,7 +817,7 @@ public:
 	void add_texture_update(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, VectorView<RecordedBufferToTextureCopy> p_buffer_copies, VectorView<ResourceTracker *> p_buffer_trackers = VectorView<ResourceTracker *>());
 	void add_capture_timestamp(RDD::QueryPoolID p_query_pool, uint32_t p_index);
 	void add_synchronization();
-	void begin_label(const String &p_label_name, const Color &p_color);
+	void begin_label(const Span<char> &p_label_name, const Color &p_color);
 	void end_label();
 	void end(bool p_reorder_commands, bool p_full_barriers, RDD::CommandBufferID &r_command_buffer, CommandBufferPool &r_command_buffer_pool);
 	static ResourceTracker *resource_tracker_create();
@@ -825,5 +827,3 @@ public:
 };
 
 using RDG = RenderingDeviceGraph;
-
-#endif // RENDERING_DEVICE_GRAPH_H

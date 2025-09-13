@@ -35,9 +35,9 @@ MBEDTLS_STATIC_ASSERT(PSA_KEY_ID_USER_MIN < PSA_KEY_ID_USER_MAX,
                       "Empty user key ID range");
 MBEDTLS_STATIC_ASSERT(PSA_KEY_ID_VENDOR_MIN < PSA_KEY_ID_VENDOR_MAX,
                       "Empty vendor key ID range");
-MBEDTLS_STATIC_ASSERT(MBEDTLS_PSA_KEY_ID_BUILTIN_MIN < MBEDTLS_PSA_KEY_ID_BUILTIN_MAX,
+MBEDTLS_STATIC_ASSERT(MBEDTLS_PSA_KEY_ID_BUILTIN_MIN <= MBEDTLS_PSA_KEY_ID_BUILTIN_MAX,
                       "Empty builtin key ID range");
-MBEDTLS_STATIC_ASSERT(PSA_KEY_ID_VOLATILE_MIN < PSA_KEY_ID_VOLATILE_MAX,
+MBEDTLS_STATIC_ASSERT(PSA_KEY_ID_VOLATILE_MIN <= PSA_KEY_ID_VOLATILE_MAX,
                       "Empty volatile key ID range");
 
 MBEDTLS_STATIC_ASSERT(PSA_KEY_ID_USER_MAX < PSA_KEY_ID_VENDOR_MIN ||
@@ -663,7 +663,7 @@ psa_status_t psa_reserve_free_key_slot(psa_key_id_t *volatile_key_id,
             /* Refresh slot_idx, for when the slot is not the original
              * selected_slot but rather unused_persistent_key_slot.  */
             slot_idx = selected_slot - global_data.key_slots;
-            *volatile_key_id = PSA_KEY_ID_VOLATILE_MIN + slot_idx;
+            *volatile_key_id = PSA_KEY_ID_VOLATILE_MIN + (psa_key_id_t) slot_idx;
         }
 #endif
         *p_slot = selected_slot;

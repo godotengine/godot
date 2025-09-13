@@ -4,7 +4,7 @@
  *
  *   FreeType internal cache interface (specification).
  *
- * Copyright (C) 2000-2023 by
+ * Copyright (C) 2000-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -86,6 +86,10 @@ FT_BEGIN_HEADER
 #define FTC_NODE_TOP_FOR_HASH( cache, hash )             \
         ftc_get_top_node_for_hash( ( cache ), ( hash ) )
 #endif
+
+  FT_LOCAL( void )
+  ftc_node_destroy( FTC_Node     node,
+                    FTC_Manager  manager );
 
 
   /*************************************************************************/

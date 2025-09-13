@@ -4,10 +4,12 @@ on:
 
 # Global Settings
 env:
-  # Used for the cache key. Add version suffix to force clean build.
-  GODOT_BASE_BRANCH: master
-  SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no use_closure_compiler=yes strict_checks=yes
-  EM_VERSION: 3.1.64
+  SCONS_FLAGS: >-
+    dev_mode=yes
+    tests=no
+    debug_symbols=no
+    use_closure_compiler=yes
+  EM_VERSION: 4.0.11
 
 jobs:
   web-template:
@@ -21,15 +23,13 @@ jobs:
           - name: Template w/ threads (target=template_release, threads=yes)
             cache-name: web-template
             target: template_release
-            sconsflags: threads=yes
-            tests: false
+            scons-flags: threads=yes
             artifact: true
 
           - name: Template w/o threads (target=template_release, threads=no)
             cache-name: web-nothreads-template
             target: template_release
-            sconsflags: threads=no
-            tests: false
+            scons-flags: threads=no
             artifact: true
 
     steps:
@@ -60,11 +60,9 @@ jobs:
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }}
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
           platform: web
           target: ${{ matrix.target }}
-          tests: ${{ matrix.tests }}
-          scons-cache-limit: 0.5
 
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save

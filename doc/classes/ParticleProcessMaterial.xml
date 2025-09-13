@@ -42,7 +42,7 @@
 			<return type="bool" />
 			<param index="0" name="particle_flag" type="int" enum="ParticleProcessMaterial.ParticleFlags" />
 			<description>
-				Returns [code]true[/code] if the specified particle flag is enabled. See [enum ParticleFlags] for options.
+				Returns [code]true[/code] if the specified particle flag is enabled.
 			</description>
 		</method>
 		<method name="set_param">
@@ -83,7 +83,7 @@
 			<param index="0" name="particle_flag" type="int" enum="ParticleProcessMaterial.ParticleFlags" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], enables the specified particle flag. See [enum ParticleFlags] for options.
+				Sets the [param particle_flag] to [param enable].
 			</description>
 		</method>
 	</methods>
@@ -222,7 +222,7 @@
 			The radius of the ring when using the emitter [constant EMISSION_SHAPE_RING].
 		</member>
 		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="ParticleProcessMaterial.EmissionShape" default="0">
-			Particles will be emitted inside this region. Use [enum EmissionShape] constants for values.
+			Particles will be emitted inside this region.
 		</member>
 		<member name="emission_shape_offset" type="Vector3" setter="set_emission_shape_offset" getter="get_emission_shape_offset" default="Vector3(0, 0, 0)">
 			The offset for the [member emission_shape], in local space.
