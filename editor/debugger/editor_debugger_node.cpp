@@ -154,7 +154,7 @@ void EditorDebuggerNode::_stack_frame_selected(int p_debugger) {
 }
 
 void EditorDebuggerNode::_error_selected(const String &p_file, int p_line, int p_debugger) {
-	// Prevents from opening/highligting every right/left mouse click on the Errors tab.
+	// Prevents from opening/highlighting every right/left mouse click on the Errors tab.
 	if (p_debugger != 0) {
 		Ref<Script> s = ResourceLoader::load(p_file);
 		emit_signal(SNAME("goto_script_line"), s, p_line - 1);
