@@ -277,6 +277,8 @@ private:
 
 	Usage usage;
 
+	bool allow_oq;
+
 	int shadow_atlas_size;
 	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
 
@@ -505,6 +507,9 @@ public:
 	void set_update_mode(UpdateMode p_mode);
 	UpdateMode get_update_mode() const;
 	Ref<ViewportTexture> get_texture() const;
+
+	void set_allow_occlusion_queries(bool p_allow);
+	bool get_allow_occlusion_queries() const;
 
 	void set_shadow_atlas_size(int p_size);
 	int get_shadow_atlas_size() const;
