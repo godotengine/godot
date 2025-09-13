@@ -271,6 +271,7 @@ private:
 
 	void _breakpoints_item_rmb_selected(const Vector2 &p_pos, MouseButton p_button);
 	void _error_tree_item_rmb_selected(const Vector2 &p_pos, MouseButton p_button);
+	void _error_tree_item_activated();
 	void _item_menu_id_pressed(int p_option);
 	void _tab_changed(int p_tab);
 

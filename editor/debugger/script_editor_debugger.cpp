@@ -1828,6 +1828,10 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos, M
 	}
 }
 
+void ScriptEditorDebugger::_error_tree_item_activated() {
+	this->_item_menu_id_pressed(ACTION_OPEN_SCRIPT_SOURCE);
+}
+
 void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 	switch (p_option) {
 		case ACTION_COPY_ERROR: {
@@ -2212,6 +2216,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		error_tree->set_allow_rmb_select(true);
 		error_tree->set_allow_reselect(true);
 		error_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_error_tree_item_rmb_selected));
+		error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_tree_item_activated));
 		errors_tab->add_child(error_tree);
 
 		item_menu = memnew(PopupMenu);
