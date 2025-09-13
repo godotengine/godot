@@ -896,11 +896,12 @@ Error VideoStreamPlaybackMatroska::parse_cluster(uint8_t *p_stream, uint32_t *r_
 				print_line(vformat("timestamp %d", timestamp));
 			}
 
-			uint8_t flags = *p_stream;
+			uint8_t flags = p_stream[0];
 			p_stream += 1;
 			frame_size -= 1;
 
 			if (target_track == 1 && video_stream_encoding.is_valid()) {
+				print_line(vformat("key: %s", (flags & (1 << 7)) > 0));
 				video_stream_encoding->parse_container_block(p_stream, frame_size);
 			}
 

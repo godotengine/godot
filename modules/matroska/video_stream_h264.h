@@ -41,7 +41,10 @@ class VideoStreamH264 : public VideoStreamEncoding {
 	GDCLASS(VideoStreamH264, VideoStreamEncoding);
 
 private:
-	RD::VideoCodingH264ProfileIdc target_profile_idc;
+	uint8_t *src = nullptr;
+	uint8_t shift = 7;
+
+	RD::VideoCodingH264ProfileIdc target_profile_idc = RenderingDeviceCommons::VIDEO_CODING_H264_PROFILE_IDC_MAIN;
 	RD::VideoCodingH264ProfileIdc minimum_profile_idc;
 
 	// TODO make an RD version
@@ -63,11 +66,12 @@ public:
 	void parse_container_metadata(uint8_t *p_stream, uint64_t p_size) final override;
 	void parse_container_block(uint8_t *p_stream, uint64_t p_size) final override;
 
-	bool parse_nal_unit(uint8_t *p_stream);
-	StdVideoH264SequenceParameterSet parse_sequence_parameter_set(uint8_t *p_stream);
-	StdVideoH264PictureParameterSet parse_picture_parameter_set(uint8_t *p_stream);
-	StdVideoDecodeH264PictureInfo parse_slice_header(uint8_t *p_stream);
+	bool parse_nal_unit(uint64_t p_size);
+	StdVideoH264SequenceParameterSet parse_sequence_parameter_set(uint64_t p_size);
+	StdVideoH264PictureParameterSet parse_picture_parameter_set(uint64_t p_size);
+	StdVideoDecodeH264PictureInfo parse_slice_header(uint64_t p_size, bool p_is_idr);
 
-	uint64_t parse_ue(uint8_t *p_stream, uint8_t *shift, uint8_t *read);
-	int64_t parse_se(uint8_t *p_stream, uint8_t *shift, uint8_t *read);
+	uint64_t read_bits(uint8_t p_amount);
+	uint64_t read_ue();
+	int64_t read_se();
 };

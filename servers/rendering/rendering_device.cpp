@@ -826,6 +826,52 @@ RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, Span<uint8_t> 
 	return id;
 }
 
+RID RenderingDevice::storage_buffer_create_video_session(uint32_t p_size_bytes, RID p_video_session, Span<uint8_t> p_data, BitField<StorageBufferUsage> p_usage, BitField<BufferCreationBits> p_creation_bits) {
+	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
+
+	Buffer buffer;
+	buffer.size = p_size_bytes;
+	buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_FROM_BIT | RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_STORAGE_BIT);
+	if (p_usage.has_flag(STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT)) {
+		buffer.usage.set_flag(RDD::BUFFER_USAGE_INDIRECT_BIT);
+	}
+	if (p_usage.has_flag(STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC)) {
+		buffer.usage.set_flag(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT);
+	}
+	if (p_creation_bits.has_flag(BUFFER_CREATION_DEVICE_ADDRESS_BIT)) {
+#ifdef DEBUG_ENABLED
+		ERR_FAIL_COND_V_MSG(!has_feature(SUPPORTS_BUFFER_DEVICE_ADDRESS), RID(),
+				"The GPU doesn't support buffer address flag.");
+#endif
+
+		buffer.usage.set_flag(RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT);
+	}
+
+	VideoProfileState *video_profile = video_profiles_owner.get_or_null(p_video_session);
+	ERR_FAIL_NULL_V(video_profile, RID());
+
+	buffer.driver_id = driver->buffer_create_video_session(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU, video_profile);
+	ERR_FAIL_COND_V(!buffer.driver_id, RID());
+
+	// Storage buffers are assumed to be mutable.
+	buffer.draw_tracker = RDG::resource_tracker_create();
+	buffer.draw_tracker->buffer_driver_id = buffer.driver_id;
+
+	if (p_data.size()) {
+		_buffer_initialize(&buffer, p_data);
+	}
+
+	_THREAD_SAFE_LOCK_
+	buffer_memory += buffer.size;
+	_THREAD_SAFE_UNLOCK_
+
+	RID id = storage_buffer_owner.make_rid(buffer);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
+}
+
 RID RenderingDevice::texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, Span<uint8_t> p_data) {
 	uint32_t element_size = get_format_vertex_size(p_format);
 	ERR_FAIL_COND_V_MSG(element_size == 0, RID(), "Format requested is not supported for texture buffers");
@@ -1352,6 +1398,173 @@ RID RenderingDevice::texture_create_shared_from_slice(const TextureView &p_view,
 	set_resource_name(id, "RID:" + itos(id.get_id()));
 #endif
 	_add_dependency(id, p_with_texture);
+
+	return id;
+}
+
+RID RenderingDevice::texture_create_video_session(const TextureFormat &p_format, const TextureView &p_view, RID p_video_profile) {
+	// Some adjustments will happen.
+	TextureFormat format = p_format;
+
+	if (format.shareable_formats.size()) {
+		ERR_FAIL_COND_V_MSG(!format.shareable_formats.has(format.format), RID(),
+				"If supplied a list of shareable formats, the current format must be present in the list");
+		ERR_FAIL_COND_V_MSG(p_view.format_override != DATA_FORMAT_MAX && !format.shareable_formats.has(p_view.format_override), RID(),
+				"If supplied a list of shareable formats, the current view format override must be present in the list");
+	}
+
+	ERR_FAIL_INDEX_V(format.texture_type, RDD::TEXTURE_TYPE_MAX, RID());
+
+	ERR_FAIL_COND_V_MSG(format.width < 1, RID(), "Width must be equal or greater than 1 for all textures");
+
+	if (format.texture_type != TEXTURE_TYPE_1D && format.texture_type != TEXTURE_TYPE_1D_ARRAY) {
+		ERR_FAIL_COND_V_MSG(format.height < 1, RID(), "Height must be equal or greater than 1 for 2D and 3D textures");
+	}
+
+	if (format.texture_type == TEXTURE_TYPE_3D) {
+		ERR_FAIL_COND_V_MSG(format.depth < 1, RID(), "Depth must be equal or greater than 1 for 3D textures");
+	}
+
+	ERR_FAIL_COND_V(format.mipmaps < 1, RID());
+
+	if (format.texture_type == TEXTURE_TYPE_1D_ARRAY || format.texture_type == TEXTURE_TYPE_2D_ARRAY || format.texture_type == TEXTURE_TYPE_CUBE_ARRAY || format.texture_type == TEXTURE_TYPE_CUBE) {
+		ERR_FAIL_COND_V_MSG(format.array_layers < 1, RID(),
+				"Number of layers must be equal or greater than 1 for arrays and cubemaps.");
+		ERR_FAIL_COND_V_MSG((format.texture_type == TEXTURE_TYPE_CUBE_ARRAY || format.texture_type == TEXTURE_TYPE_CUBE) && (format.array_layers % 6) != 0, RID(),
+				"Cubemap and cubemap array textures must provide a layer number that is multiple of 6");
+		ERR_FAIL_COND_V_MSG(((format.texture_type == TEXTURE_TYPE_CUBE_ARRAY || format.texture_type == TEXTURE_TYPE_CUBE)) && (format.width != format.height), RID(),
+				"Cubemap and cubemap array textures must have equal width and height.");
+		ERR_FAIL_COND_V_MSG(format.array_layers > driver->limit_get(LIMIT_MAX_TEXTURE_ARRAY_LAYERS), RID(), "Number of layers exceeds device maximum.");
+	} else {
+		format.array_layers = 1;
+	}
+
+	ERR_FAIL_INDEX_V(format.samples, TEXTURE_SAMPLES_MAX, RID());
+
+	ERR_FAIL_COND_V_MSG(format.usage_bits == 0, RID(), "No usage bits specified (at least one is needed)");
+
+	format.height = format.texture_type != TEXTURE_TYPE_1D && format.texture_type != TEXTURE_TYPE_1D_ARRAY ? format.height : 1;
+	format.depth = format.texture_type == TEXTURE_TYPE_3D ? format.depth : 1;
+
+	uint64_t size_max = 0;
+	switch (format.texture_type) {
+		case TEXTURE_TYPE_1D:
+		case TEXTURE_TYPE_1D_ARRAY:
+			size_max = driver->limit_get(LIMIT_MAX_TEXTURE_SIZE_1D);
+			break;
+		case TEXTURE_TYPE_2D:
+		case TEXTURE_TYPE_2D_ARRAY:
+			size_max = driver->limit_get(LIMIT_MAX_TEXTURE_SIZE_2D);
+			break;
+		case TEXTURE_TYPE_CUBE:
+		case TEXTURE_TYPE_CUBE_ARRAY:
+			size_max = driver->limit_get(LIMIT_MAX_TEXTURE_SIZE_CUBE);
+			break;
+		case TEXTURE_TYPE_3D:
+			size_max = driver->limit_get(LIMIT_MAX_TEXTURE_SIZE_3D);
+			break;
+		case TEXTURE_TYPE_MAX:
+			break;
+	}
+	ERR_FAIL_COND_V_MSG(format.width > size_max || format.height > size_max || format.depth > size_max, RID(), "Texture dimensions exceed device maximum.");
+
+	uint32_t required_mipmaps = get_image_required_mipmaps(format.width, format.height, format.depth);
+
+	ERR_FAIL_COND_V_MSG(required_mipmaps < format.mipmaps, RID(),
+			"Too many mipmaps requested for texture format and dimensions (" + itos(format.mipmaps) + "), maximum allowed: (" + itos(required_mipmaps) + ").");
+
+	{
+		// Validate that this image is supported for the intended use.
+		bool cpu_readable = (format.usage_bits & RDD::TEXTURE_USAGE_CPU_READ_BIT);
+		BitField<RDD::TextureUsageBits> supported_usage = driver->texture_get_usages_supported_by_format(format.format, cpu_readable);
+
+		String format_text = "'" + String(FORMAT_NAMES[format.format]) + "'";
+
+		if ((format.usage_bits & TEXTURE_USAGE_SAMPLING_BIT) && !supported_usage.has_flag(TEXTURE_USAGE_SAMPLING_BIT)) {
+			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as sampling texture.");
+		}
+		if ((format.usage_bits & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) && !supported_usage.has_flag(TEXTURE_USAGE_COLOR_ATTACHMENT_BIT)) {
+			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as color attachment.");
+		}
+		if ((format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) && !supported_usage.has_flag(TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
+			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as depth-stencil attachment.");
+		}
+		if ((format.usage_bits & TEXTURE_USAGE_STORAGE_BIT) && !supported_usage.has_flag(TEXTURE_USAGE_STORAGE_BIT)) {
+			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as storage image.");
+		}
+		if ((format.usage_bits & TEXTURE_USAGE_STORAGE_ATOMIC_BIT) && !supported_usage.has_flag(TEXTURE_USAGE_STORAGE_ATOMIC_BIT)) {
+			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as atomic storage image.");
+		}
+		if ((format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) && !supported_usage.has_flag(TEXTURE_USAGE_VRS_ATTACHMENT_BIT)) {
+			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as variable shading rate attachment.");
+		}
+	}
+
+	// Transfer and validate view info.
+
+	RDD::TextureView tv;
+	if (p_view.format_override == DATA_FORMAT_MAX) {
+		tv.format = format.format;
+	} else {
+		ERR_FAIL_INDEX_V(p_view.format_override, DATA_FORMAT_MAX, RID());
+		tv.format = p_view.format_override;
+	}
+	ERR_FAIL_INDEX_V(p_view.swizzle_r, TEXTURE_SWIZZLE_MAX, RID());
+	ERR_FAIL_INDEX_V(p_view.swizzle_g, TEXTURE_SWIZZLE_MAX, RID());
+	ERR_FAIL_INDEX_V(p_view.swizzle_b, TEXTURE_SWIZZLE_MAX, RID());
+	ERR_FAIL_INDEX_V(p_view.swizzle_a, TEXTURE_SWIZZLE_MAX, RID());
+	tv.swizzle_r = p_view.swizzle_r;
+	tv.swizzle_g = p_view.swizzle_g;
+	tv.swizzle_b = p_view.swizzle_b;
+	tv.swizzle_a = p_view.swizzle_a;
+
+	VideoProfileState *video_profile = video_profiles_owner.get_or_null(p_video_profile);
+	ERR_FAIL_NULL_V(video_profile, RID());
+
+	// Create.
+	Texture texture;
+	texture.driver_id = driver->texture_create_video_session(format, tv, video_profile);
+	ERR_FAIL_COND_V(!texture.driver_id, RID());
+	texture.type = format.texture_type;
+	texture.format = format.format;
+	texture.width = format.width;
+	texture.height = format.height;
+	texture.depth = format.depth;
+	texture.layers = format.array_layers;
+	texture.mipmaps = format.mipmaps;
+	texture.base_mipmap = 0;
+	texture.base_layer = 0;
+	texture.is_resolve_buffer = format.is_resolve_buffer;
+	texture.is_discardable = format.is_discardable;
+	texture.samples = format.samples;
+	texture.allowed_shared_formats = format.shareable_formats;
+	texture.has_initial_data = false;
+
+	if ((format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
+		texture.read_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT);
+		texture.barrier_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT);
+		if (format_has_stencil(format.format)) {
+			texture.barrier_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_STENCIL_BIT);
+		}
+	} else {
+		texture.read_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_COLOR_BIT);
+		texture.barrier_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_COLOR_BIT);
+	}
+
+	texture.bound = false;
+
+	// Textures are only assumed to be immutable if they have initial data and none of the other bits that indicate write usage are enabled.
+	bool texture_mutable_by_default = texture.usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_STORAGE_BIT | TEXTURE_USAGE_STORAGE_ATOMIC_BIT);
+	if (texture_mutable_by_default) {
+		_texture_make_mutable(&texture, RID());
+	}
+
+	texture_memory += driver->texture_get_allocation_size(texture.driver_id);
+
+	RID id = texture_owner.make_rid(texture);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
 
 	return id;
 }
@@ -5601,9 +5814,6 @@ void RenderingDevice::video_profile_bind_vp9_decoding_metadata(RID p_profile, ui
 RenderingDevice::VideoCodingListID RenderingDevice::video_coding_list_begin(RID p_profile, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) {
 	ERR_RENDER_THREAD_GUARD_V(INVALID_ID);
 
-	ERR_FAIL_COND_V_MSG(draw_list.active, INVALID_ID, "Cannot activate video coding list while draw list is active.");
-	ERR_FAIL_COND_V_MSG(compute_list.active, INVALID_ID, "Cannot activate video coding list while compute list is active.");
-
 	video_coding_list.active = true;
 
 	RDD::CommandPoolID pool = driver->command_pool_create(decode_queue_family, RenderingDeviceDriver::COMMAND_BUFFER_TYPE_PRIMARY);
@@ -5612,10 +5822,12 @@ RenderingDevice::VideoCodingListID RenderingDevice::video_coding_list_begin(RID 
 	VideoProfileState *profile_state = video_profiles_owner.get_or_null(p_profile);
 	ERR_FAIL_NULL_V(profile_state, INVALID_FORMAT_ID);
 
-	RDD::VideoSessionID video_session = driver->video_session_create(profile_state, DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM);
+	// TODO hardcoded image format
+	video_coding_list.video_profile = p_profile;
+	video_coding_list.video_session = driver->video_session_create(profile_state, DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM);
 
 	driver->command_buffer_begin(decode_buffer);
-	driver->command_video_coding_begin(decode_buffer, video_session, p_sps, p_pps);
+	driver->command_video_coding_begin(decode_buffer, video_coding_list.video_session, p_sps, p_pps);
 	driver->command_video_control(decode_buffer);
 
 	return ID_TYPE_VIDEO_CODING_LIST;
@@ -5627,23 +5839,39 @@ RenderingDevice::VideoCodingListID RenderingDevice::video_coding_list_begin(RID 
 // TODO figure out what samples are
 // TODO figure out what view is for
 void RenderingDevice::video_coding_list_bind_texure(VideoCodingListID p_list, uint32_t p_width, uint32_t p_height, uint64_t p_array_layers) {
-	RenderingDeviceCommons::TextureFormat texture_format;
-	texture_format.format = RenderingDeviceCommons::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
-	texture_format.width = p_width;
-	texture_format.height = p_height;
-	texture_format.depth = 0;
-	texture_format.array_layers = p_array_layers;
-	texture_format.mipmaps = 1;
-	texture_format.texture_type = RenderingDeviceCommons::TEXTURE_TYPE_2D_ARRAY;
-	//texture_format.samples = RenderingDeviceCommons::TEXTURE_SAMPLES_16; // TODO huh?
-	texture_format.usage_bits = RenderingDevice::TEXTURE_USAGE_VIDEO_DECODE_DST_BIT;
-	texture_format.shareable_formats.clear();
-	texture_format.is_resolve_buffer = false;
-	texture_format.is_discardable = false;
+	RenderingDeviceCommons::TextureFormat dst_format;
+	dst_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+	dst_format.width = p_width;
+	dst_format.height = p_height;
+	dst_format.depth = 0;
+	dst_format.array_layers = p_array_layers;
+	dst_format.mipmaps = 1;
+	dst_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+	//dst_format.samples = RenderingDeviceCommons::TEXTURE_SAMPLES_16; // TODO huh?
+	dst_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DST_BIT;
+	dst_format.shareable_formats.clear();
+	dst_format.is_resolve_buffer = false;
+	dst_format.is_discardable = false;
 
-	RD::TextureView view = {};
+	RD::TextureView dst_view = {};
 
-	video_coding_list.dst_texture = texture_create(texture_format, view);
+	RenderingDeviceCommons::TextureFormat dpb_format;
+	dpb_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+	dpb_format.width = p_width;
+	dpb_format.height = p_height;
+	dpb_format.depth = 0;
+	dpb_format.array_layers = p_array_layers;
+	dpb_format.mipmaps = 1;
+	dpb_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+	//dpb_format.samples = RenderingDeviceCommons::TEXTURE_SAMPLES_16; // TODO huh?
+	dpb_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DST_BIT;
+	dpb_format.shareable_formats.clear();
+	dpb_format.is_resolve_buffer = false;
+	dpb_format.is_discardable = false;
+
+	RD::TextureView dpb_view = {};
+
+	video_coding_list.dst_texture = texture_create_video_session(dst_format, dst_view, video_coding_list.video_profile);
 }
 
 void RenderingDevice::video_coding_list_control(VideoCodingListID p_list) {
@@ -5657,9 +5885,9 @@ void RenderingDevice::video_coding_list_decode(VideoCodingListID p_list, Span<ui
 
 	Vector<uint8_t> block;
 	block.resize(p_src_buffer.size() + offset);
-	memcpy(block.ptrw() + offset, p_src_buffer.begin(), p_src_buffer.size());
+	memset(block.ptrw(), 0, block.size());
 
-	RID buffer_id = RD::get_singleton()->storage_buffer_create(block.size(), block, RD::STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC, 0);
+	RID buffer_id = RD::get_singleton()->storage_buffer_create_video_session(block.size(), video_coding_list.video_profile, block, RD::STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC, 0);
 	Buffer *buffer = storage_buffer_owner.get_or_null(buffer_id);
 	Texture *texture = texture_owner.get_or_null(video_coding_list.dst_texture);
 
