@@ -437,9 +437,9 @@ int ShaderGLES3::_get_uniform(int p_which) const {
 void ShaderGLES3::_set_conditional(int p_which, bool p_value) {
 	ERR_FAIL_INDEX(p_which, conditional_count);
 	if (p_value) {
-		new_conditional_version.version |= (1 << p_which);
+		new_conditional_version.version |= (1 << (uint32_t)p_which);
 	} else {
-		new_conditional_version.version &= ~(1 << p_which);
+		new_conditional_version.version &= ~(uint32_t)(1 << (uint32_t)p_which);
 	}
 }
 

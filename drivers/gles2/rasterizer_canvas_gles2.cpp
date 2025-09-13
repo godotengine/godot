@@ -886,7 +886,7 @@ void RasterizerCanvasGLES2::render_batches(Item *p_current_clip, bool &r_reclip,
 										glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->index_id);
 									}
 
-									for (int k = 0; k < VS::ARRAY_MAX - 1; k++) {
+									for (int k = 0; k < (int)VS::ARRAY_MAX - 1; k++) {
 										if (s->attribs[k].enabled) {
 											glEnableVertexAttribArray(k);
 											glVertexAttribPointer(s->attribs[k].index, s->attribs[k].size, s->attribs[k].type, s->attribs[k].normalized, s->attribs[k].stride, CAST_INT_TO_UCHAR_PTR(s->attribs[k].offset));
@@ -913,7 +913,7 @@ void RasterizerCanvasGLES2::render_batches(Item *p_current_clip, bool &r_reclip,
 									}
 								}
 
-								for (int j = 1; j < VS::ARRAY_MAX - 1; j++) {
+								for (uint32_t j = 1; j < VS::ARRAY_MAX - 1; j++) {
 									glDisableVertexAttribArray(j);
 								}
 							}
@@ -983,7 +983,7 @@ void RasterizerCanvasGLES2::render_batches(Item *p_current_clip, bool &r_reclip,
 									glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->index_id);
 								}
 
-								for (int k = 0; k < VS::ARRAY_MAX - 1; k++) {
+								for (int k = 0; k < (int)VS::ARRAY_MAX - 1; k++) {
 									if (s->attribs[k].enabled) {
 										glEnableVertexAttribArray(k);
 										glVertexAttribPointer(s->attribs[k].index, s->attribs[k].size, s->attribs[k].type, s->attribs[k].normalized, s->attribs[k].stride, CAST_INT_TO_UCHAR_PTR(s->attribs[k].offset));
