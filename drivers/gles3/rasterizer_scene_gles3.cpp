@@ -2149,6 +2149,15 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 							}
 
 						} break;
+						case RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_PMALPHA: {
+							glBlendEquation(GL_FUNC_ADD);
+							if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
+								glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+							} else {
+								glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+							}
+
+						} break;
 					}
 
 					current_blend_mode = desired_blend_mode;
