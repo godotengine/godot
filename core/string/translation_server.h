@@ -83,6 +83,7 @@ class TranslationServer : public Object {
 	};
 
 	static HashMap<String, String> language_map;
+	static HashMap<String, String> native_locale_map;
 	static HashMap<String, String> script_map;
 	static HashMap<String, String> locale_rename_map;
 	static HashMap<String, String> country_name_map;
@@ -112,7 +113,9 @@ public:
 	Vector<String> get_all_countries() const;
 	String get_country_name(const String &p_country) const;
 
+	String _get_locale_name(const String &p_locale, bool p_native) const;
 	String get_locale_name(const String &p_locale) const;
+	String get_native_locale_name(const String &p_locale) const;
 
 	PackedStringArray get_loaded_locales() const;
 
