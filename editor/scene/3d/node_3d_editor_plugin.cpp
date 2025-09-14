@@ -5627,12 +5627,12 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 				if (final_axis.length() > CMP_EPSILON && final_axis.is_normalized() &&
 						!Math::is_nan(final_axis.x) && !Math::is_nan(final_axis.y) && !Math::is_nan(final_axis.z)) {
 					// snapping while arcballing feels weird, just add a message
-					String message = vformat(TTR("Arcball Rotating %s degrees."), String::num(Math::rad_to_deg(final_angle), snap_step_decimals));
+					String msg = vformat(TTR("Arcball Rotating %s degrees."), String::num(Math::rad_to_deg(final_angle), snap_step_decimals));
 					if (_edit.snap || spatial_editor->is_snap_enabled()) {
-						message += TTR(" (Snapping not supported in arcball mode)");
+						msg += TTR(" (Snapping not supported in arcball mode)");
 					}
 
-					set_message(message);
+					set_message(msg);
 					apply_transform(final_axis, final_angle);
 				}
 			} else {
