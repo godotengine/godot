@@ -169,9 +169,6 @@ public:
 		BUFFER_USAGE_VERTEX_BIT = (1 << 7),
 		BUFFER_USAGE_INDIRECT_BIT = (1 << 8),
 		BUFFER_USAGE_VIDEO_DECODE_SRC_BIT = (1 << 13),
-		BUFFER_USAGE_VIDEO_DECODE_DST_BIT = (1 << 14),
-		BUFFER_USAGE_VIDEO_ENCODE_SRC_BIT = (1 << 15),
-		BUFFER_USAGE_VIDEO_ENCODE_DST_BIT = (1 << 16),
 		BUFFER_USAGE_DEVICE_ADDRESS_BIT = (1 << 17),
 	};
 
@@ -756,9 +753,9 @@ public:
 
 	virtual VideoSessionID video_session_create(const VideoProfileState *p_profile, DataFormat p_image_format) = 0;
 
-	virtual void command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) = 0;
+	virtual void command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, TextureID p_dpb, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) = 0;
 	virtual void command_video_control(CommandBufferID p_cmd_buffer) = 0;
-	virtual void command_video_decode(CommandBufferID p_cmd_buffer, BufferID p_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, uint64_t p_buffer_offset, TextureID p_texture, uint32_t p_array_layer) = 0;
+	virtual void command_video_decode(CommandBufferID p_cmd_buffer, TextureID p_dpb, BufferID p_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, uint64_t p_buffer_offset, TextureID p_texture, uint32_t p_array_layer) = 0;
 	virtual void command_video_coding_end(CommandBufferID p_cmd_buffer) = 0;
 
 	/**************/

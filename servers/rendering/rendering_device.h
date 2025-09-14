@@ -1426,7 +1426,7 @@ public:
 	void video_coding_list_decode(VideoCodingListID p_list, Span<uint8_t> p_src_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, uint32_t p_array_layer);
 	void video_coding_list_encode(VideoCodingListID p_list);
 
-	void video_coding_list_end();
+	RID video_coding_list_end();
 
 public:
 	RID video_profile_create(VideoCodingChromaSubsampling p_chroma_subsampling, uint32_t p_luma_bit_depth, uint32_t p_chroma_bit_depth);

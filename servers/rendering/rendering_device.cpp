@@ -1524,6 +1524,7 @@ RID RenderingDevice::texture_create_video_session(const TextureFormat &p_format,
 	Texture texture;
 	texture.driver_id = driver->texture_create_video_session(format, tv, video_profile);
 	ERR_FAIL_COND_V(!texture.driver_id, RID());
+	texture.usage_flags = format.usage_bits;
 	texture.type = format.texture_type;
 	texture.format = format.format;
 	texture.width = format.width;
@@ -5826,8 +5827,25 @@ RenderingDevice::VideoCodingListID RenderingDevice::video_coding_list_begin(RID 
 	video_coding_list.video_profile = p_profile;
 	video_coding_list.video_session = driver->video_session_create(profile_state, DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM);
 
+	RenderingDeviceCommons::TextureFormat dpb_format;
+	dpb_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+	dpb_format.width = 1980;
+	dpb_format.height = 1080;
+	dpb_format.depth = 0;
+	dpb_format.array_layers = 17;
+	dpb_format.mipmaps = 1;
+	dpb_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+	//dpb_format.samples = RenderingDeviceCommons::TEXTURE_SAMPLES_16; // TODO huh?
+	dpb_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DPB_BIT;
+	dpb_format.shareable_formats.clear();
+	dpb_format.is_resolve_buffer = false;
+	dpb_format.is_discardable = false;
+
+	video_coding_list.dpb_texture = texture_create_video_session(dpb_format, RD::TextureView(), video_coding_list.video_profile);
+	Texture *dpb = texture_owner.get_or_null(video_coding_list.dpb_texture);
+
 	driver->command_buffer_begin(decode_buffer);
-	driver->command_video_coding_begin(decode_buffer, video_coding_list.video_session, p_sps, p_pps);
+	driver->command_video_coding_begin(decode_buffer, video_coding_list.video_session, dpb->driver_id, p_sps, p_pps);
 	driver->command_video_control(decode_buffer);
 
 	return ID_TYPE_VIDEO_CODING_LIST;
@@ -5843,35 +5861,17 @@ void RenderingDevice::video_coding_list_bind_texure(VideoCodingListID p_list, ui
 	dst_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
 	dst_format.width = p_width;
 	dst_format.height = p_height;
-	dst_format.depth = 0;
+	dst_format.depth = 1;
 	dst_format.array_layers = p_array_layers;
 	dst_format.mipmaps = 1;
 	dst_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 	//dst_format.samples = RenderingDeviceCommons::TEXTURE_SAMPLES_16; // TODO huh?
-	dst_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DST_BIT;
+	dst_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DST_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 	dst_format.shareable_formats.clear();
 	dst_format.is_resolve_buffer = false;
 	dst_format.is_discardable = false;
 
-	RD::TextureView dst_view = {};
-
-	RenderingDeviceCommons::TextureFormat dpb_format;
-	dpb_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
-	dpb_format.width = p_width;
-	dpb_format.height = p_height;
-	dpb_format.depth = 0;
-	dpb_format.array_layers = p_array_layers;
-	dpb_format.mipmaps = 1;
-	dpb_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
-	//dpb_format.samples = RenderingDeviceCommons::TEXTURE_SAMPLES_16; // TODO huh?
-	dpb_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DST_BIT;
-	dpb_format.shareable_formats.clear();
-	dpb_format.is_resolve_buffer = false;
-	dpb_format.is_discardable = false;
-
-	RD::TextureView dpb_view = {};
-
-	video_coding_list.dst_texture = texture_create_video_session(dst_format, dst_view, video_coding_list.video_profile);
+	video_coding_list.dst_texture = texture_create_video_session(dst_format, RD::TextureView(), video_coding_list.video_profile);
 }
 
 void RenderingDevice::video_coding_list_control(VideoCodingListID p_list) {
@@ -5881,6 +5881,7 @@ void RenderingDevice::video_coding_list_control(VideoCodingListID p_list) {
 void RenderingDevice::video_coding_list_decode(VideoCodingListID p_list, Span<uint8_t> p_src_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, uint32_t p_array_layer) {
 	ERR_RENDER_THREAD_GUARD();
 
+	Texture *dpb = texture_owner.get_or_null(video_coding_list.dpb_texture);
 	uint64_t offset = 128 - (p_src_buffer.size() % 128);
 
 	Vector<uint8_t> block;
@@ -5891,22 +5892,23 @@ void RenderingDevice::video_coding_list_decode(VideoCodingListID p_list, Span<ui
 	Buffer *buffer = storage_buffer_owner.get_or_null(buffer_id);
 	Texture *texture = texture_owner.get_or_null(video_coding_list.dst_texture);
 
-	driver->command_video_decode(decode_buffer, buffer->driver_id, p_std_h264_info, offset, texture->driver_id, p_array_layer);
+	driver->command_video_decode(decode_buffer, dpb->driver_id, buffer->driver_id, p_std_h264_info, offset, texture->driver_id, p_array_layer);
 }
 
 void RenderingDevice::video_coding_list_encode(VideoCodingListID p_list) {
 	ERR_RENDER_THREAD_GUARD();
 }
 
-void RenderingDevice::video_coding_list_end() {
-	ERR_RENDER_THREAD_GUARD();
-
-	ERR_FAIL_COND(!video_coding_list.active);
+RID RenderingDevice::video_coding_list_end() {
+	ERR_FAIL_COND_V(!video_coding_list.active, RID());
 	video_coding_list.active = false;
 	driver->command_video_coding_end(decode_buffer);
 	driver->command_buffer_end(decode_buffer);
 
+	RID dst_texture = video_coding_list.dst_texture;
 	video_coding_list = VideoCodingList();
+
+	return dst_texture;
 }
 
 #ifndef DISABLE_DEPRECATED

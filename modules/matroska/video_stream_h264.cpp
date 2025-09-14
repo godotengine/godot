@@ -44,19 +44,17 @@
 
 RID VideoStreamH264::create_video_profile() {
 	video_profile = RD::get_singleton()->video_profile_create(chroma_subsampling, luma_bit_depth, chroma_bit_depth);
-	RD::get_singleton()->video_profile_bind_h264_decoding_metadata(video_profile, target_profile_idc, RenderingDeviceCommons::VIDEO_CODING_H264_PICTURE_LAYOUT_PROGRESSIVE);
+	RD::get_singleton()->video_profile_bind_h264_decoding_metadata(video_profile, target_profile_idc, RD::VIDEO_CODING_H264_PICTURE_LAYOUT_PROGRESSIVE);
 	return video_profile;
 }
 
-void VideoStreamH264::decode_cluster() {
+RID VideoStreamH264::decode_cluster() {
 	RD::VideoCodingListID video_coding_list = RD::get_singleton()->video_coding_list_begin(video_profile, active_sps, active_pps);
 	RD::get_singleton()->video_coding_list_bind_texure(video_coding_list, 1980, 1080, slice_spans.size());
 
-	for (int64_t i = 0; i < slice_spans.size(); i++) {
-		RD::get_singleton()->video_coding_list_decode(video_coding_list, slice_spans[i], slice_metadatas[i], i);
-	}
+	RD::get_singleton()->video_coding_list_decode(video_coding_list, slice_spans[0], slice_metadatas[0], 0);
 
-	RD::get_singleton()->video_coding_list_end();
+	return RD::get_singleton()->video_coding_list_end();
 }
 
 // The Matroska "codec private" data for H264 is an AVCDecoderConfigurationRecord
@@ -94,16 +92,16 @@ void VideoStreamH264::parse_container_metadata(uint8_t *p_stream, uint64_t p_siz
 		shift = 7;
 	}
 
-	if (target_profile_idc == RenderingDeviceCommons::VIDEO_CODING_H264_PROFILE_IDC_HIGH) {
+	if (target_profile_idc == RD::VIDEO_CODING_H264_PROFILE_IDC_HIGH) {
 		uint8_t chroma_format = read_bits(8) & 0b11;
 		if (chroma_format == 0) {
-			chroma_subsampling = RenderingDeviceCommons::CHROMA_SUBSAMPLING_MONOCHROME;
+			chroma_subsampling = RD::CHROMA_SUBSAMPLING_MONOCHROME;
 		} else if (chroma_format == 1) {
-			chroma_subsampling = RenderingDeviceCommons::CHROMA_SUBSAMPLING_420;
+			chroma_subsampling = RD::CHROMA_SUBSAMPLING_420;
 		} else if (chroma_format == 2) {
-			chroma_subsampling = RenderingDeviceCommons::CHROMA_SUBSAMPLING_422;
+			chroma_subsampling = RD::CHROMA_SUBSAMPLING_422;
 		} else if (chroma_format == 3) {
-			chroma_subsampling = RenderingDeviceCommons::CHROMA_SUBSAMPLING_444;
+			chroma_subsampling = RD::CHROMA_SUBSAMPLING_444;
 		}
 
 		luma_bit_depth = (read_bits(8) & 0b111) + 8;
@@ -237,7 +235,14 @@ StdVideoH264SequenceParameterSet VideoStreamH264::parse_sequence_parameter_set(u
 		if (sequence_parameter_set.flags.seq_scaling_matrix_present_flag) {
 			uint64_t size = sequence_parameter_set.chroma_format_idc != STD_VIDEO_H264_CHROMA_FORMAT_IDC_444 ? 8 : 12;
 			for (uint64_t i = 0; i < size; i++) {
-				//TODO
+				bool present = read_bits(1) > 0;
+				if (present) {
+					if (i < 6) {
+						print_line("skipping 4x4 seq scaling lists");
+					} else {
+						print_line("skipping 8x8 seq scaling lists");
+					}
+				}
 			}
 		}
 	}

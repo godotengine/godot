@@ -61,7 +61,7 @@ private:
 public:
 	RID create_video_profile() final override;
 
-	void decode_cluster() final override;
+	RID decode_cluster() final override;
 
 	void parse_container_metadata(uint8_t *p_stream, uint64_t p_size) final override;
 	void parse_container_block(uint8_t *p_stream, uint64_t p_size) final override;

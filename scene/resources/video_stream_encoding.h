@@ -48,7 +48,7 @@ public:
 
 	virtual RID create_video_profile() = 0;
 
-	virtual void decode_cluster() = 0;
+	virtual RID decode_cluster() = 0;
 
 	virtual void parse_container_metadata(uint8_t *p_stream, uint64_t p_size) = 0;
 	virtual void parse_container_block(uint8_t *p_stream, uint64_t p_size) = 0;
