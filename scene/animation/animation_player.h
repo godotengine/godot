@@ -52,6 +52,8 @@ public:
 private:
 	AHashMap<StringName, StringName> animation_next_set; // For auto advance.
 
+	StringName finished_anim;
+
 	float speed_scale = 1.0;
 	double default_blend_time = 0.0;
 
