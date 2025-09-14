@@ -616,7 +616,7 @@ Ref<AudioStreamPlayback> AudioStreamWAV::instantiate_playback() {
 		uint32_t ffp = qoa_decode_header(data.ptr(), data_bytes, &sample->qoa.desc);
 		ERR_FAIL_COND_V(ffp != 8, Ref<AudioStreamPlaybackWAV>());
 		sample->qoa.frame_len = qoa_max_frame_size(&sample->qoa.desc);
-		int samples_len = (sample->qoa.desc.samples > QOA_FRAME_LEN ? QOA_FRAME_LEN : sample->qoa.desc.samples);
+		int samples_len = sample->qoa.desc.samples > QOA_FRAME_LEN ? QOA_FRAME_LEN : (sample->qoa.desc.samples + 1);
 		int dec_len = sample->qoa.desc.channels * samples_len;
 		sample->qoa.dec.resize(dec_len);
 	}
