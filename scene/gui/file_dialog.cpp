@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/keyboard.h"
+#include "core/string/print_string.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/flow_container.h"
@@ -1448,7 +1449,7 @@ void FileDialog::_change_dir(const String &p_new_dir) {
 	} else {
 		String old_dir = dir_access->get_current_dir();
 		dir_access->change_dir(p_new_dir);
-		if (!dir_access->get_current_dir(false).begins_with(root_prefix)) {
+		if (!dir_access->get_current_dir().begins_with(root_prefix)) {
 			dir_access->change_dir(old_dir);
 			return;
 		}
