@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/resource_loader.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/texture_rd.h"
 #include "scene/resources/video_stream.h"
 #include "scene/resources/video_stream_encoding.h"
@@ -180,8 +181,12 @@ private:
 	uint width = 0;
 	uint height = 0;
 
+	RID cluster;
+	Ref<Texture2DArrayRD> rd_cluster;
+
+	Ref<ImageTexture> image_texture;
+
 	bool playing = false;
-	Ref<Texture2DRD> texture;
 
 	uint64_t read_id(uint8_t *p_stream, uint32_t *r_read);
 	uint64_t read_size(uint8_t *p_stream, uint32_t *r_read);

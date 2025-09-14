@@ -546,6 +546,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 
 	// Required for video coding
 	_register_requested_device_extension(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME, false);
 	// Vulkan video extensions for hardware video processing
 	_register_requested_device_extension(VK_KHR_VIDEO_QUEUE_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_VIDEO_DECODE_QUEUE_EXTENSION_NAME, false);
@@ -1188,7 +1189,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		vulkan_1_1_features.variablePointersStorageBuffer = 0;
 		vulkan_1_1_features.variablePointers = 0;
 		vulkan_1_1_features.protectedMemory = 0;
-		vulkan_1_1_features.samplerYcbcrConversion = 0;
+		vulkan_1_1_features.samplerYcbcrConversion = 1;
 		vulkan_1_1_features.shaderDrawParameters = 0;
 		create_info_next = &vulkan_1_1_features;
 	} else {
@@ -2357,16 +2358,18 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_video_session(const T
 	if ((p_format.usage_bits & TEXTURE_USAGE_CAN_COPY_TO_BIT)) {
 		create_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	}
+	if ((p_format.usage_bits & TEXTURE_USAGE_VIDEO_DECODE_DST_BIT)) {
+		create_info.usage |= VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR;
+	}
+	if ((p_format.usage_bits & TEXTURE_USAGE_VIDEO_DECODE_DPB_BIT)) {
+		create_info.usage |= VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR;
+	}
 
 	create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
 	VkVideoProfileInfoKHR video_profile;
 	vk_video_profile_from_state(p_profile, &video_profile);
-
-	if (p_profile->operation == VIDEO_OPERATION_DECODE_H264) {
-		create_info.usage |= VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR;
-	}
 
 	VkVideoProfileListInfoKHR video_profile_list;
 	video_profile_list.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR;
@@ -2457,6 +2460,31 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_video_session(const T
 			image_view_create_info.pNext = &decode_mode;
 		}
 	}
+
+	VkSamplerYcbcrConversionCreateInfo ycbcr_sampler_create_info = {};
+	ycbcr_sampler_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO;
+	ycbcr_sampler_create_info.pNext = nullptr;
+	ycbcr_sampler_create_info.format = image_view_create_info.format;
+	ycbcr_sampler_create_info.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709;
+	ycbcr_sampler_create_info.ycbcrRange = VK_SAMPLER_YCBCR_RANGE_ITU_NARROW;
+	ycbcr_sampler_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+	ycbcr_sampler_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+	ycbcr_sampler_create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+	ycbcr_sampler_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+	ycbcr_sampler_create_info.xChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN;
+	ycbcr_sampler_create_info.yChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN;
+	ycbcr_sampler_create_info.chromaFilter = VK_FILTER_LINEAR;
+	ycbcr_sampler_create_info.forceExplicitReconstruction = false;
+
+	VkSamplerYcbcrConversion ycbcr_sampler;
+	vkCreateSamplerYcbcrConversionKHR(vk_device, &ycbcr_sampler_create_info, nullptr, &ycbcr_sampler);
+
+	VkSamplerYcbcrConversionInfo ycbcr_sampler_info;
+	ycbcr_sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO;
+	ycbcr_sampler_info.pNext = nullptr;
+	ycbcr_sampler_info.conversion = ycbcr_sampler;
+
+	image_view_create_info.pNext = &ycbcr_sampler_info;
 
 	VkImageView vk_image_view = VK_NULL_HANDLE;
 	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &vk_image_view);
@@ -6226,9 +6254,10 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 	return RDD::VideoSessionID(video_session);
 }
 
-void RenderingDeviceDriverVulkan::command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) {
+void RenderingDeviceDriverVulkan::command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, TextureID p_dpb, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) {
 	CommandBufferInfo *buffer_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	VkVideoSessionKHR video_session = (VkVideoSessionKHR)p_video_session.id;
+	TextureInfo *dpb = (TextureInfo *)p_dpb.id;
 
 	VkVideoDecodeH264SessionParametersAddInfoKHR h264_add_info = {};
 	h264_add_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_SESSION_PARAMETERS_ADD_INFO_KHR;
@@ -6258,13 +6287,30 @@ void RenderingDeviceDriverVulkan::command_video_coding_begin(CommandBufferID p_c
 	// TODO: base dpb size on H.264 level
 	// TODO: use a texture array as a dpb
 	TightLocalVector<VkVideoReferenceSlotInfoKHR> reference_slots;
-	reference_slots.resize(17);
+	reference_slots.resize(1);
 
 	for (uint64_t i = 0; i < reference_slots.size(); i++) {
+		VkOffset2D offset = {};
+		offset.x = 0;
+		offset.y = 0;
+
+		VkExtent2D extent = {};
+		extent.width = dpb->vk_create_info.extent.width;
+		extent.height = dpb->vk_create_info.extent.height;
+
+		// TODO make a valid dpb
+		VkVideoPictureResourceInfoKHR dpb_picture_info = {};
+		dpb_picture_info.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
+		dpb_picture_info.pNext = nullptr;
+		dpb_picture_info.codedOffset = offset;
+		dpb_picture_info.codedExtent = extent;
+		dpb_picture_info.baseArrayLayer = i;
+		dpb_picture_info.imageViewBinding = dpb->vk_view;
+
 		reference_slots[i].sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
 		reference_slots[i].pNext = nullptr;
 		reference_slots[i].slotIndex = i;
-		reference_slots[i].pPictureResource = nullptr;
+		reference_slots[i].pPictureResource = &dpb_picture_info;
 	}
 
 	VkVideoBeginCodingInfoKHR begin_cmd = {};
@@ -6273,7 +6319,7 @@ void RenderingDeviceDriverVulkan::command_video_coding_begin(CommandBufferID p_c
 	begin_cmd.flags = 0;
 	begin_cmd.videoSession = video_session;
 	begin_cmd.videoSessionParameters = session_parameters;
-	begin_cmd.referenceSlotCount = 17;
+	begin_cmd.referenceSlotCount = reference_slots.size();
 	begin_cmd.pReferenceSlots = reference_slots.ptr();
 
 	vkCmdBeginVideoCodingKHR(buffer_info->vk_command_buffer, &begin_cmd);
@@ -6290,8 +6336,9 @@ void RenderingDeviceDriverVulkan::command_video_control(CommandBufferID p_cmd_bu
 	vkCmdControlVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &cmd_control);
 }
 
-void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buffer, BufferID p_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, uint64_t p_buffer_offset, TextureID p_texture, uint32_t p_array_layer) {
+void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buffer, TextureID p_dpb, BufferID p_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, uint64_t p_buffer_offset, TextureID p_texture, uint32_t p_array_layer) {
 	CommandBufferInfo *cmd_buffer_info = (CommandBufferInfo *)p_cmd_buffer.id;
+	TextureInfo *dpb = (TextureInfo *)p_dpb.id;
 	BufferInfo *buffer_info = (BufferInfo *)p_buffer.id;
 	TextureInfo *texture_info = (TextureInfo *)p_texture.id;
 
@@ -6315,13 +6362,21 @@ void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buf
 
 	VkVideoPictureResourceInfoKHR picture_info = {};
 	picture_info.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
-	picture_info.pNext = &h264_picture_info;
+	picture_info.pNext = nullptr;
 	picture_info.codedOffset = offset;
 	picture_info.codedExtent = extent;
 	picture_info.baseArrayLayer = p_array_layer;
 	picture_info.imageViewBinding = texture_info->vk_view;
 
 	StdVideoDecodeH264ReferenceInfo h264_reference_info = {};
+	h264_reference_info.flags.top_field_flag = 0;
+	h264_reference_info.flags.bottom_field_flag = 0;
+	h264_reference_info.flags.used_for_long_term_reference = 0;
+	h264_reference_info.flags.is_non_existing = 0;
+
+	h264_reference_info.FrameNum = 0;
+	h264_reference_info.PicOrderCnt[0] = 0;
+	h264_reference_info.PicOrderCnt[1] = 0;
 
 	VkVideoDecodeH264DpbSlotInfoKHR h264_dpb_info = {};
 	h264_dpb_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_DPB_SLOT_INFO_KHR;
@@ -6330,12 +6385,12 @@ void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buf
 
 	// TODO make a valid dpb
 	VkVideoPictureResourceInfoKHR dpb_picture_info = {};
-	picture_info.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
-	picture_info.pNext = nullptr;
-	picture_info.codedOffset = offset;
-	picture_info.codedExtent = extent;
-	picture_info.baseArrayLayer = 0;
-	picture_info.imageViewBinding = texture_info->vk_view;
+	dpb_picture_info.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
+	dpb_picture_info.pNext = nullptr;
+	dpb_picture_info.codedOffset = offset;
+	dpb_picture_info.codedExtent = extent;
+	dpb_picture_info.baseArrayLayer = 0;
+	dpb_picture_info.imageViewBinding = dpb->vk_view;
 
 	VkVideoReferenceSlotInfoKHR reference_info = {};
 	reference_info.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
@@ -6353,7 +6408,7 @@ void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buf
 	decode_info.srcBufferRange = buffer_info->size;
 	decode_info.dstPictureResource = picture_info;
 	decode_info.pSetupReferenceSlot = &reference_info;
-	decode_info.referenceSlotCount = 1;
+	decode_info.referenceSlotCount = 0;
 	decode_info.pReferenceSlots = nullptr;
 
 	vkCmdDecodeVideoKHR(cmd_buffer_info->vk_command_buffer, &decode_info);

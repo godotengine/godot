@@ -1074,7 +1074,17 @@ void VideoStreamPlaybackMatroska::play() {
 	}
 
 	video_stream_encoding->create_video_profile();
-	video_stream_encoding->decode_cluster();
+	cluster = video_stream_encoding->decode_cluster();
+	sleep(1);
+
+	rd_cluster->set_texture_rd_rid(cluster);
+	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(cluster, 0);
+
+	Ref<Image> frame;
+	frame.instantiate();
+	frame->set_data(1980, 1080, false, Image::FORMAT_RGBAF, data);
+
+	image_texture->set_image(frame);
 }
 
 void VideoStreamPlaybackMatroska::stop() {
@@ -1109,11 +1119,11 @@ void VideoStreamPlaybackMatroska::seek(double p_time) {
 }
 
 Ref<Texture2D> VideoStreamPlaybackMatroska::get_texture() const {
-	return texture;
+	return image_texture;
 }
 
+// TODO
 void VideoStreamPlaybackMatroska::update(double p_delta) {
-	// TODO
 }
 
 int VideoStreamPlaybackMatroska::get_channels() const {
@@ -1130,7 +1140,8 @@ void VideoStreamPlaybackMatroska::set_audio_track(int p_idx) {
 }
 
 VideoStreamPlaybackMatroska::VideoStreamPlaybackMatroska() {
-	texture.instantiate();
+	rd_cluster.instantiate();
+	image_texture.instantiate();
 }
 
 Ref<Resource> ResourceFormatLoaderMatroska::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
