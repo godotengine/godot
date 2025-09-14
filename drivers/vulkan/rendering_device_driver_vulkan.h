@@ -321,6 +321,7 @@ private:
 
 public:
 	virtual CommandQueueID command_queue_create(CommandQueueFamilyID p_cmd_queue_family, bool p_identify_as_main_queue = false) override final;
+	virtual Error command_queue_execute(CommandQueueID p_cmd_queue, CommandBufferID p_cmd_buffer, FenceID p_fence) override final;
 	virtual Error command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) override final;
 	virtual void command_queue_free(CommandQueueID p_cmd_queue) override final;
 

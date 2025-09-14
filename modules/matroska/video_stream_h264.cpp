@@ -122,23 +122,22 @@ void VideoStreamH264::parse_container_block(uint8_t *p_stream, uint64_t p_size) 
 	src = p_stream;
 	shift = 7;
 
+	TightLocalVector<uint8_t> block;
+	block.resize(p_size);
+	memcpy(block.ptr(), src, p_size);
+
+	slice_spans.push_back(block);
+
 	uint64_t total_read = 0;
 	while (total_read < p_size) {
-		uint8_t *start = src;
-
 		uint64_t nal_size = read_bits(32);
 		print_line(vformat("NAL size %d", nal_size));
 
-		if (parse_nal_unit(nal_size)) {
-			TightLocalVector<uint8_t> block;
-			block.resize(nal_size + 4);
-			memcpy(block.ptr(), start, nal_size + 4);
-
-			slice_spans.push_back(block);
-		}
+		uint8_t *start = src;
+		parse_nal_unit(nal_size);
 
 		total_read += nal_size + 4;
-		src = start + nal_size + 4;
+		src = start + nal_size;
 		shift = 7;
 	}
 }
