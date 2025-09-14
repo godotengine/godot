@@ -692,6 +692,12 @@ void SceneImportSettingsDialog::_update_view_type_name() {
 			}
 		} break;
 	}
+
+	if (auto_orthogonal) {
+		// TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
+		name += " " + TTR("[auto]");
+	}
+
 	view_display_menu->set_text(name);
 	view_display_menu->reset_size();
 }
@@ -753,37 +759,42 @@ void SceneImportSettingsDialog::_view_menu_option(int p_option) {
 			cam_rot_y = 0;
 			cam_rot_x = Math::PI / 2.0;
 			view_type = VIEW_TYPE_TOP;
-			//_set_auto_orthogonal();
+			_set_auto_orthogonal();
 			_update_view_type_name();
 		} break;
 		case VIEW_BOTTOM: {
 			cam_rot_y = 0;
 			cam_rot_x = -Math::PI / 2.0;
 			view_type = VIEW_TYPE_BOTTOM;
+			_set_auto_orthogonal();
 			_update_view_type_name();
 		} break;
 		case VIEW_LEFT: {
 			cam_rot_x = 0;
 			cam_rot_y = Math::PI / 2.0;
 			view_type = VIEW_TYPE_LEFT;
+			_set_auto_orthogonal();
 			_update_view_type_name();
 		} break;
 		case VIEW_RIGHT: {
 			cam_rot_x = 0;
 			cam_rot_y = -Math::PI / 2.0;
 			view_type = VIEW_TYPE_RIGHT;
+			_set_auto_orthogonal();
 			_update_view_type_name();
 		} break;
 		case VIEW_FRONT: {
 			cam_rot_x = 0;
 			cam_rot_y = 0;
 			view_type = VIEW_TYPE_FRONT;
+			_set_auto_orthogonal();
 			_update_view_type_name();
 		} break;
 		case VIEW_REAR: {
 			cam_rot_x = 0;
 			cam_rot_y = Math::PI;
 			view_type = VIEW_TYPE_REAR;
+			_set_auto_orthogonal();
 			_update_view_type_name();
 		} break;
 		case VIEW_PERSPECTIVE: {
@@ -806,6 +817,12 @@ void SceneImportSettingsDialog::_view_menu_option(int p_option) {
 	}
 }
 
+void SceneImportSettingsDialog::_set_auto_orthogonal() {
+	if (!orthogonal && view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_AUTO_ORTHOGONAL))) {
+		_view_menu_option(VIEW_ORTHOGONAL);
+		auto_orthogonal = true;
+	}
+}
 
 void SceneImportSettingsDialog::_load_default_subresource_settings(HashMap<StringName, Variant> &settings, const String &p_type, const String &p_import_id, ResourceImporterScene::InternalImportCategory p_category) {
 	if (base_subresource_settings.has(p_type)) {
@@ -1311,7 +1328,7 @@ void SceneImportSettingsDialog::_on_light_rotate_switch_pressed() {
 	light2->set_as_top_level_keep_local(light_top_level);
 }
 
-void SceneImportSettingsDialog::_viewport_input(const Ref<InputEvent> &p_input) {
+void SceneImportSettingsDialog::_sinput(const Ref<InputEvent> &p_input) {
 	float *rot_x = &cam_rot_x;
 	float *rot_y = &cam_rot_y;
 	float *zoom = &cam_zoom;
@@ -1333,6 +1350,8 @@ void SceneImportSettingsDialog::_viewport_input(const Ref<InputEvent> &p_input) 
 		(*rot_y) -= mm->get_relative().x * 0.01 * EDSCALE;
 		(*rot_x) = CLAMP((*rot_x), -Math::PI / 2, Math::PI / 2);
 		_update_camera();
+		view_type = VIEW_TYPE_USER;
+		_update_view_type_name();
 	}
 	if (mm.is_valid() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
 		DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CursorShape::CURSOR_ARROW);
@@ -1365,6 +1384,31 @@ void SceneImportSettingsDialog::_viewport_input(const Ref<InputEvent> &p_input) 
 			(*zoom) = 10.0;
 		}
 		_update_camera();
+	}
+
+	Ref<InputEventKey> k = p_input;
+	if (k.is_valid()) {
+		if (!k->is_pressed()) {
+			return;
+		}
+		if (ED_IS_SHORTCUT("spatial_editor/bottom_view", p_input)) {
+			_view_menu_option(VIEW_BOTTOM);
+		}
+		if (ED_IS_SHORTCUT("spatial_editor/top_view", p_input)) {
+			_view_menu_option(VIEW_TOP);
+		}
+		if (ED_IS_SHORTCUT("spatial_editor/rear_view", p_input)) {
+			_view_menu_option(VIEW_REAR);
+		}
+		if (ED_IS_SHORTCUT("spatial_editor/front_view", p_input)) {
+			_view_menu_option(VIEW_FRONT);
+		}
+		if (ED_IS_SHORTCUT("spatial_editor/left_view", p_input)) {
+			_view_menu_option(VIEW_LEFT);
+		}
+		if (ED_IS_SHORTCUT("spatial_editor/right_view", p_input)) {
+			_view_menu_option(VIEW_RIGHT);
+		}
 	}
 }
 
@@ -1861,7 +1905,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	vp_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vp_container->set_custom_minimum_size(Size2(10, 10));
 	vp_container->set_stretch(true);
-	vp_container->connect(SceneStringName(gui_input), callable_mp(this, &SceneImportSettingsDialog::_viewport_input));
+	vp_container->connect(SceneStringName(gui_input), callable_mp(this, &SceneImportSettingsDialog::_sinput));
 	vp_vb->add_child(vp_container);
 
 	base_viewport = memnew(SubViewport);
@@ -1927,9 +1971,6 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	view_display_menu->set_h_size_flags(0);
 	view_display_menu->set_shortcut_context(this);
 	view_display_menu->set_accessibility_name(TTRC("View"));
-	// TODO: Remove name later
-	//view_display_menu->set_name(TTRC("View"));
-	view_display_menu->set_text(TTRC("View"));
 	vb_display_menu->add_child(view_display_menu);
 
 	view_display_menu->get_popup()->set_hide_on_checkable_item_selection(false);
@@ -1945,6 +1986,8 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	view_display_menu->get_popup()->add_radio_check_item(TTR("Perspective"), VIEW_PERSPECTIVE);
 	view_display_menu->get_popup()->add_radio_check_item(TTR("Orthogonal"), VIEW_ORTHOGONAL);
 	view_display_menu->get_popup()->set_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_PERSPECTIVE), true);
+	view_display_menu->get_popup()->add_check_item(TTR("Auto Orthogonal Enabled"), VIEW_AUTO_ORTHOGONAL);
+	view_display_menu->get_popup()->set_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_AUTO_ORTHOGONAL), true);
 
 	view_display_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &SceneImportSettingsDialog::_view_menu_option));
 	view_display_menu->set_disable_shortcuts(true);

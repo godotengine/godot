@@ -71,6 +71,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 		VIEW_PERSPECTIVE,
 		VIEW_ORTHOGONAL,
 		VIEW_SWITCH_PERSPECTIVE_ORTHOGONAL,
+		VIEW_AUTO_ORTHOGONAL,
 		VIEW_MAX
 	};
 
@@ -107,7 +108,9 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 
 	ViewType view_type;
 	void _view_menu_option(int p_option);
+	void _set_auto_orthogonal();
 	bool orthogonal;
+	bool auto_orthogonal;
 	MenuButton *view_display_menu = nullptr;
 
 	Button *light_1_switch = nullptr;
@@ -225,7 +228,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	void _on_light_2_switch_pressed();
 	void _on_light_rotate_switch_pressed();
 
-	void _viewport_input(const Ref<InputEvent> &p_input);
+	void _sinput(const Ref<InputEvent> &p_input);
 
 	HashMap<StringName, Variant> defaults;
 
