@@ -431,6 +431,14 @@
 		<member name="editors/3d/secondary_grid_color" type="Color" setter="" getter="">
 			The color to use for the secondary 3D grid. This is generally a less visible color than [member editors/3d/primary_grid_color]. The color's alpha channel affects the grid's opacity.
 		</member>
+		<member name="editors/3d/rotation/arcball_invert" type="bool" setter="" getter="">
+			If [code]true[/code], inverts the direction of arcball rotation in the 3D editor. This setting only affects the arcball rotation mode and does not apply to the default gizmo-based rotation.
+		</member>
+		<member name="editors/3d/rotation/rotation_gizmo_mode" type="int" setter="" getter="">
+			The rotation mode to use when rotating objects in the 3D editor.
+			- [b]Default:[/b] Uses the traditional gizmo-based rotation in camera view space.
+			- [b]Arcball:[/b] Uses arcball rotation for more intuitive free-form rotation in all axes. Note that snapping is not supported in arcball mode.
+		</member>
 		<member name="editors/3d/selection_box_color" type="Color" setter="" getter="">
 			The color to use for the selection box that surrounds selected nodes in the 3D editor viewport. The color's alpha channel influences the selection box's opacity.
 		</member>
