@@ -199,7 +199,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-07 17:17+0000\n"
+"PO-Revision-Date: 2025-09-14 10:01+0000\n"
 "Last-Translator: aioshiro <aioshiro57@proton.me>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot/"
 "fr/>\n"
@@ -2542,7 +2542,7 @@ msgid "Assets ZIP File"
 msgstr "Fichier ZIP de données"
 
 msgid "AssetLib"
-msgstr "Bibliothèque de ressources (AssetLib)"
+msgstr "AssetLib"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr ""
@@ -8257,6 +8257,9 @@ msgstr "Nouveau shader…"
 msgid "Size: %s"
 msgstr "Taille : %s"
 
+msgid "Invalid file or broken link."
+msgstr "Fichier invalide ou lien mort."
+
 msgid "Type: %s"
 msgstr "Type : %s"
 
@@ -8274,6 +8277,9 @@ msgstr "Longueur : %0.3f s"
 
 msgid "Advanced settings are always shown when searching."
 msgstr "Les paramètres avancés sont toujours affichés lors d’une recherche."
+
+msgid "Event Configured"
+msgstr "Évènement configuré"
 
 msgid "Configure"
 msgstr "Configurer"
@@ -8982,6 +8988,14 @@ msgstr "Le nom de l'étiquette ne peut pas être vide."
 
 msgid "Tag name can't contain spaces."
 msgstr "Le nom de l'étiquette ne peut pas contenir d'espace."
+
+msgid "Tag name can't begin or end with underscore."
+msgstr ""
+"Le nom de l'étiquette ne peut pas commencer ou finir avec un tiret du bas."
+
+msgid "Tag name can't contain consecutive underscores."
+msgstr ""
+"Le nom de l'étiquette ne peut pas contenir de tirets du bas consécutifs."
 
 msgid "These characters are not allowed in tags: %s."
 msgstr "Ces caractères ne sont pas autorisés dans les étiquettes : %s."
@@ -10377,7 +10391,7 @@ msgid "Replace Tiles with Proxies"
 msgstr "Remplace les Tuiles avec des Proxys"
 
 msgid "Extract TileMap layers as individual TileMapLayer nodes"
-msgstr "Extraire les calques de TileMap comme des nœuds de TileMapLayer"
+msgstr "Extraire les couches TileMap en nœuds TileMapLayer individuels"
 
 msgid "Can't edit multiple layers at once."
 msgstr "Impossible de modifier plusieurs calques simultanément."
@@ -11041,6 +11055,12 @@ msgstr "Changer la hauteur de la forme du cylindre"
 
 msgid "Change Separation Ray Shape Length"
 msgstr "Changer la longueur de la forme du rayon de séparation"
+
+msgid "Remove SoftBody3D pinned point %d"
+msgstr "Retirer le point %d épinglé du SoftBody3D"
+
+msgid "Add SoftBody3D pinned point %d"
+msgstr "Ajouter au SoftBody3D le point épinglé %d"
 
 msgid "Change Probe Size"
 msgstr "Changer la taille de la sonde"
@@ -16565,6 +16585,9 @@ msgstr "Modifier la constante : %s"
 msgid "Invalid name for varying."
 msgstr "Nom invalide pour un varying."
 
+msgid "Varying with that name already exists."
+msgstr "Un varying avec ce nom existe déjà."
+
 msgid "Boolean type cannot be used with `%s` varying mode."
 msgstr "Le type booléen ne peut être utilisé avec le mode varying « %s »."
 
@@ -18063,6 +18086,9 @@ msgstr "Un entier entre 0 et 2^32 - 1 était attendu."
 
 msgid "Expected a string of length 1 (a character)."
 msgstr "Une chaîne de caractères de longueur 1 (un caractère) était attendue."
+
+msgid "Range too big."
+msgstr "Intervalle trop grand."
 
 msgid "Cannot resize array."
 msgstr "Impossible de redimensionner le tableau."
@@ -21320,6 +21346,15 @@ msgstr "La récursivité n'est pas autorisée."
 msgid "Function '%s' can't be called from source code."
 msgstr "La fonction '%s' ne peut être appelée depuis le code source."
 
+msgid "No matching function for \"%s\" call:"
+msgstr "Pas de fonction correspondante pour l'appel de \"%s\" :"
+
+msgid ""
+"candidate function \"%s(%s)\" not viable, argument %d should be %s but is %s."
+msgstr ""
+"fonction candidate \"%s(%s)\" non valable, l'argument %d devrait être %s mais "
+"est %s."
+
 msgid ""
 "Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."
 msgstr ""
@@ -21574,6 +21609,9 @@ msgstr "Le cas par défaut ne doit être défini qu'une seule fois."
 
 msgid "'%s' must be placed within a '%s' block."
 msgstr "'%s' doit être placé à l'intérieur d'un bloc '%s'."
+
+msgid "Undefined identifier '%s' in a case label."
+msgstr "Identifiant indéfini '%s' dans une étiquette de cas."
 
 msgid "Expected an unsigned integer constant."
 msgstr "Un entier non signé constant était attendu."

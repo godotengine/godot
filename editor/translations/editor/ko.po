@@ -85,7 +85,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-07 17:17+0000\n"
+"PO-Revision-Date: 2025-09-13 12:37+0000\n"
 "Last-Translator: Myeongjin <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ko/>\n"
@@ -3628,7 +3628,7 @@ msgid ""
 "anymore."
 msgstr ""
 "이 파일 확장자는 편집기에서 인식되지 않습니다.\n"
-"이름을 변경하려면 운영 체제의 파일 탐색기를 사용하십시오.\n"
+"이름을 변경하려면 운영 체제의 파일 탐색기를 사용하세요.\n"
 "알 수 없는 확장자로 이름을 바꾸면 파일이 더 이상 편집기에 보여지지 않습니다."
 
 msgid "A file or folder with this name already exists."
@@ -7552,6 +7552,13 @@ msgstr "_로 시작하는 이름은 편집기 전용 메타데이터를 위해 �
 msgid "Property: %s"
 msgstr "속성: %s"
 
+msgid ""
+"Toggling the checkbox is disabled for Resource properties. Modify the "
+"property using the resource picker instead."
+msgstr ""
+"리소스 속성에 대해 체크박스를 토글할 수 없습니다. 대신 리소스 선택기를 사용하"
+"여 속성을 수정하세요."
+
 msgid "Unfavorite Property"
 msgstr "속성을 즐겨찾기에서 삭제"
 
@@ -7904,6 +7911,9 @@ msgstr "새 셰이더..."
 msgid "Size: %s"
 msgstr "크기: %s"
 
+msgid "Invalid file or broken link."
+msgstr "잘못된 파일 또는 끊어진 링크입니다."
+
 msgid "Type: %s"
 msgstr "타입: %s"
 
@@ -7921,6 +7931,9 @@ msgstr "길이: %0.3f초"
 
 msgid "Advanced settings are always shown when searching."
 msgstr "검색 시에는 고급 설정이 항상 보여집니다."
+
+msgid "Event Configured"
+msgstr "이벤트 구성됨"
 
 msgid "Configure"
 msgstr "구성"
@@ -8597,6 +8610,12 @@ msgstr "태그 이름은 비워둘 수 없습니다."
 
 msgid "Tag name can't contain spaces."
 msgstr "태그 이름은 공백을 포함할 수 없습니다."
+
+msgid "Tag name can't begin or end with underscore."
+msgstr "태그 이름은 밑줄로 시작하거나 끝날 수 없습니다."
+
+msgid "Tag name can't contain consecutive underscores."
+msgstr "태그 이름은 연속된 밑줄이 포함될 수 없습니다."
 
 msgid "These characters are not allowed in tags: %s."
 msgstr "다음 문자들을 태그에 넣을 수 없습니다: %s."
@@ -10586,6 +10605,12 @@ msgstr "원통 모양 높이 바꾸기"
 
 msgid "Change Separation Ray Shape Length"
 msgstr "구분 광선 모양 길이 바꾸기"
+
+msgid "Remove SoftBody3D pinned point %d"
+msgstr "SoftBody3D 고정된 점 %d 제거"
+
+msgid "Add SoftBody3D pinned point %d"
+msgstr "SoftBody3D 고정된 점 %d 추가"
 
 msgid "Change Probe Size"
 msgstr "프로브 크기 바꾸기"
@@ -15970,6 +15995,9 @@ msgstr "상수 설정: %s"
 msgid "Invalid name for varying."
 msgstr "올바르지 않은 varying 이름입니다."
 
+msgid "Varying with that name already exists."
+msgstr "해당 이름으로 된 varying이 이미 존재합니다."
+
 msgid "Boolean type cannot be used with `%s` varying mode."
 msgstr "Boolean 타입은 `%s` varying 모드와 같이 사용할 수 없습니다."
 
@@ -17382,6 +17410,9 @@ msgstr "0과 2^32 - 1 사이의 정수가 와야 합니다."
 msgid "Expected a string of length 1 (a character)."
 msgstr "길이가 1인 문자열(문자)이 와야 합니다."
 
+msgid "Range too big."
+msgstr "범위가 너무 큽니다."
+
 msgid "Cannot resize array."
 msgstr "배열의 크기를 조정할 수 없습니다."
 
@@ -18293,6 +18324,13 @@ msgstr "\"밀어서 해제\"를 활성화하려면 \"Gradle 빌드 사용\"이 �
 
 msgid "\"Use Gradle Build\" must be enabled to use the plugins."
 msgstr "플러그인을 사용하려면 \"Gradle 빌드 사용\"이 활성화되어야 합니다."
+
+msgid ""
+"\"Compress Native Libraries\" is only valid when \"Use Gradle Build\" is "
+"enabled."
+msgstr ""
+"\"네이티브 라이브러리 압축\"은 \"Gradle 빌드 사용\"이 활성화될 때에만 올바릅니"
+"다."
 
 msgid "\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled."
 msgstr "\"AAB 내보내기\"는 \"Gradle 빌드 사용\"이 활성화될 때에만 올바릅니다."
@@ -19399,7 +19437,7 @@ msgid ""
 "Check the node's inherited physics_interpolation_mode."
 msgstr ""
 "PhysicsBody2D는 SceneTree의 보간되지 않은 분기에서 제대로 작동하지 않습니다.\n"
-"노드의 상속된 physics_interpolation_mode를 확인하십시오."
+"노드의 상속된 physics_interpolation_mode를 확인하세요."
 
 msgid ""
 "Size changes to RigidBody2D will be overridden by the physics engine when "
@@ -19894,7 +19932,7 @@ msgid ""
 "Check the node's inherited physics_interpolation_mode."
 msgstr ""
 "PhysicsBody3D는 SceneTree의 보간되지 않은 분기에서 제대로 작동하지 않습니다.\n"
-"노드의 상속된 physics_interpolation_mode를 확인하십시오."
+"노드의 상속된 physics_interpolation_mode를 확인하세요."
 
 msgid ""
 "Scale changes to RigidBody3D will be overridden by the physics engine when "
@@ -19948,7 +19986,7 @@ msgid ""
 "A SpriteFrames resource must be created or set in the \"Sprite Frames\" "
 "property in order for AnimatedSprite3D to display frames."
 msgstr ""
-"AnimatedSprite3D가 프레임을 표시하려면 \"Sprite Frames\" 속성에서 "
+"AnimatedSprite3D가 프레임을 표시하려면 \"스프라이트 프레임\" 속성에서 "
 "SpriteFrames 리소스를 만들거나 설정해야 합니다."
 
 msgid ""
@@ -19958,11 +19996,10 @@ msgid ""
 "To resolve this, set the End distance to 0 or to a value greater than the "
 "Begin distance."
 msgstr ""
-"GeometryInstance3D의 가시성 범위 끝(End) 거리가 0이 아닌 값으로 설정되어 있지"
-"만 시작(Begin) 거리보다 낮게 설정되어 있습니다.\n"
+"GeometryInstance3D의 가시성 범위 끝 거리가 0이 아닌 값으로 설정되어 있지만 시"
+"작 거리보다 낮게 설정되어 있습니다.\n"
 "이 경우 GeometryInstance3D는 보이지 않게 됩니다.\n"
-"해결하려면 끝(End) 거리를 0으로 설정하거나 시작(Begin) 거리보다 큰 값으로 설정"
-"하십시오."
+"해결하려면 끝 거리를 0으로 설정하거나 시작 거리보다 큰 값으로 설정하세요."
 
 msgid ""
 "The GeometryInstance3D is configured to fade in smoothly over distance, but "
@@ -20079,7 +20116,7 @@ msgid ""
 msgstr ""
 "XR 셰이더가 프로젝트 설정에서 활성화되지 않았습니다. 스테레오스코픽 출력은 셰"
 "이더가 활성화되지 않으면 지원되지 않습니다. 스테레오스코픽 출력을 사용하려면 "
-"`xr/shaders/enabled`를 활성화하십시오."
+"`xr/shaders/enabled`를 활성화하세요."
 
 msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr "BlendTree 노드 '%s'에서, 애니메이션을 찾을 수 없음: '%s'"
@@ -20431,6 +20468,15 @@ msgstr "재귀는 허용되지 않습니다."
 
 msgid "Function '%s' can't be called from source code."
 msgstr "함수 '%s'는 소스 코드에서 호출할 수 없습니다."
+
+msgid "No matching function for \"%s\" call:"
+msgstr "\"%s\" 호출에 일치하는 함수가 없습니다:"
+
+msgid ""
+"candidate function \"%s(%s)\" not viable, argument %d should be %s but is %s."
+msgstr ""
+"후보 함수 \"%s(%s)\"는(은) 생존 가능하지 않습니다. 인수 %d는(은) %s이어야 하지"
+"만 %s입니다."
 
 msgid ""
 "Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."
