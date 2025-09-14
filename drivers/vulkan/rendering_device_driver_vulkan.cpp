@@ -3025,6 +3025,27 @@ RDD::CommandQueueID RenderingDeviceDriverVulkan::command_queue_create(CommandQue
 	return CommandQueueID(command_queue);
 }
 
+Error RenderingDeviceDriverVulkan::command_queue_execute(CommandQueueID p_cmd_queue, CommandBufferID p_cmd_buffer, FenceID p_fence) {
+	CommandQueue *command_queue = (CommandQueue *)p_cmd_queue.id;
+	Queue &device_queue = queue_families[command_queue->queue_family][command_queue->queue_index];
+
+	const CommandBufferInfo *rdd_command_buffer = (const CommandBufferInfo *)(p_cmd_buffer.id);
+	Fence *fence_info = (Fence *)p_fence.id;
+
+	VkSubmitInfo submit_info = {};
+	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submit_info.waitSemaphoreCount = 0;
+	submit_info.pWaitSemaphores = nullptr;
+	submit_info.commandBufferCount = 1;
+	submit_info.pCommandBuffers = &rdd_command_buffer->vk_command_buffer;
+	submit_info.signalSemaphoreCount = 0;
+	submit_info.pSignalSemaphores = nullptr;
+
+	vkQueueSubmit(device_queue.queue, 1, &submit_info, fence_info->vk_fence);
+
+	return OK;
+}
+
 Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) {
 	DEV_ASSERT(p_cmd_queue.id != 0);
 
@@ -6313,7 +6334,7 @@ void RenderingDeviceDriverVulkan::command_video_coding_begin(CommandBufferID p_c
 
 		reference_slots[i].sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
 		reference_slots[i].pNext = nullptr;
-		reference_slots[i].slotIndex = i;
+		reference_slots[i].slotIndex = -1;
 		reference_slots[i].pPictureResource = &dpb_picture_info;
 	}
 

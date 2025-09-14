@@ -1047,6 +1047,9 @@ void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 
 		if (id == EBML_HEADER_ID) {
 			Error err = parse_ebml_header(ptr, &read, &header);
+			if (err != OK) {
+				ERR_PRINT("error parsing ebml header");
+			}
 			ptr += read;
 			total_read += read;
 			continue;
@@ -1054,6 +1057,9 @@ void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 
 		if (id == MATROSKA_SEGMENT_ID) {
 			Error err = parse_segment(ptr, &read, &segment);
+			if (err != OK) {
+				ERR_PRINT("error parsing matroska segment");
+			}
 			ptr += read;
 			total_read += read;
 			break;
@@ -1075,14 +1081,12 @@ void VideoStreamPlaybackMatroska::play() {
 
 	video_stream_encoding->create_video_profile();
 	cluster = video_stream_encoding->decode_cluster();
-	sleep(1);
 
-	rd_cluster->set_texture_rd_rid(cluster);
 	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(cluster, 0);
 
 	Ref<Image> frame;
 	frame.instantiate();
-	frame->set_data(1980, 1080, false, Image::FORMAT_RGBAF, data);
+	frame->set_data(1980, 1080, false, Image::FORMAT_RGBA8, data);
 
 	image_texture->set_image(frame);
 }

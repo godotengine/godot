@@ -1540,17 +1540,8 @@ RID RenderingDevice::texture_create_video_session(const TextureFormat &p_format,
 	texture.allowed_shared_formats = format.shareable_formats;
 	texture.has_initial_data = false;
 
-	if ((format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
-		texture.read_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT);
-		texture.barrier_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT);
-		if (format_has_stencil(format.format)) {
-			texture.barrier_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_STENCIL_BIT);
-		}
-	} else {
-		texture.read_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_COLOR_BIT);
-		texture.barrier_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_COLOR_BIT);
-	}
-
+	texture.read_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_COLOR_BIT);
+	texture.barrier_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_COLOR_BIT);
 	texture.bound = false;
 
 	// Textures are only assumed to be immutable if they have initial data and none of the other bits that indicate write usage are enabled.
@@ -2231,16 +2222,40 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 		uint32_t h = tex->height;
 		uint32_t d = tex->depth;
 		for (uint32_t i = 0; i < tex->mipmaps; i++) {
-			RDD::BufferTextureCopyRegion copy_region;
-			copy_region.buffer_offset = mip_layouts[i].offset;
-			copy_region.texture_subresources.aspect = tex->read_aspect_flags;
-			copy_region.texture_subresources.mipmap = i;
-			copy_region.texture_subresources.base_layer = p_layer;
-			copy_region.texture_subresources.layer_count = 1;
-			copy_region.texture_region_size.x = w;
-			copy_region.texture_region_size.y = h;
-			copy_region.texture_region_size.z = d;
-			command_buffer_texture_copy_regions_vector.push_back(copy_region);
+			if (tex->format == RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM) {
+				RDD::BufferTextureCopyRegion luminance_region;
+				luminance_region.buffer_offset = mip_layouts[i].offset;
+				luminance_region.texture_subresources.aspect = RDD::TEXTURE_ASPECT_PLANE0_BIT;
+				luminance_region.texture_subresources.mipmap = i;
+				luminance_region.texture_subresources.base_layer = p_layer;
+				luminance_region.texture_subresources.layer_count = 1;
+				luminance_region.texture_region_size.x = w;
+				luminance_region.texture_region_size.y = h;
+				luminance_region.texture_region_size.z = d;
+				command_buffer_texture_copy_regions_vector.push_back(luminance_region);
+
+				RDD::BufferTextureCopyRegion chrominance_region;
+				chrominance_region.buffer_offset = mip_layouts[i].offset;
+				chrominance_region.texture_subresources.aspect = RDD::TEXTURE_ASPECT_PLANE1_BIT;
+				chrominance_region.texture_subresources.mipmap = i;
+				chrominance_region.texture_subresources.base_layer = p_layer;
+				chrominance_region.texture_subresources.layer_count = 1;
+				chrominance_region.texture_region_size.x = w / 2;
+				chrominance_region.texture_region_size.y = h / 2;
+				chrominance_region.texture_region_size.z = d;
+				command_buffer_texture_copy_regions_vector.push_back(chrominance_region);
+			} else {
+				RDD::BufferTextureCopyRegion copy_region;
+				copy_region.buffer_offset = mip_layouts[i].offset;
+				copy_region.texture_subresources.aspect = tex->read_aspect_flags;
+				copy_region.texture_subresources.mipmap = i;
+				copy_region.texture_subresources.base_layer = p_layer;
+				copy_region.texture_subresources.layer_count = 1;
+				copy_region.texture_region_size.x = w;
+				copy_region.texture_region_size.y = h;
+				copy_region.texture_region_size.z = d;
+				command_buffer_texture_copy_regions_vector.push_back(copy_region);
+			}
 
 			w = MAX(1u, w >> 1);
 			h = MAX(1u, h >> 1);
@@ -5788,9 +5803,6 @@ RID RenderingDevice::video_profile_create(VideoCodingChromaSubsampling p_chroma_
 	profile_state.chroma_bit_depth = p_chroma_bit_depth;
 
 	RID id = video_profiles_owner.make_rid(profile_state);
-#ifdef DEV_ENABLED
-	set_resource_name(id, "RID:" + itos(id.get_id()));
-#endif
 	return id;
 }
 
@@ -5902,8 +5914,13 @@ void RenderingDevice::video_coding_list_encode(VideoCodingListID p_list) {
 RID RenderingDevice::video_coding_list_end() {
 	ERR_FAIL_COND_V(!video_coding_list.active, RID());
 	video_coding_list.active = false;
+
 	driver->command_video_coding_end(decode_buffer);
 	driver->command_buffer_end(decode_buffer);
+
+	RDD::FenceID fence = driver->fence_create();
+	driver->command_queue_execute(decode_queue, decode_buffer, fence);
+	driver->fence_wait(fence);
 
 	RID dst_texture = video_coding_list.dst_texture;
 	video_coding_list = VideoCodingList();
