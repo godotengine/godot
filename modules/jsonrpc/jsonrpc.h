@@ -37,6 +37,7 @@ class JSONRPC : public Object {
 	GDCLASS(JSONRPC, Object)
 
 	HashMap<String, Callable> methods;
+	HashMap<int, Callable> response_handlers;
 
 protected:
 	static void _bind_methods();
@@ -66,7 +67,19 @@ public:
 	Variant process_action(const Variant &p_action, bool p_process_arr_elements = false);
 	String process_string(const String &p_input);
 
+	Variant process_request(const Dictionary &p_request_object);
+	void process_response(const Dictionary &p_response_object);
+
 	void set_method(const String &p_name, const Callable &p_callback);
+
+	/**
+	 * Registers a callback to be called when processing response objects.
+	 *
+	 * The callback should take one argument which corresponds to the `result`
+	 * field as per the JSON-RPC spec. The callback will not be called for
+	 * error responses.
+	 */
+	void set_response_handler(int p_id, const Callable &p_callback);
 };
 
 VARIANT_ENUM_CAST(JSONRPC::ErrorCode);

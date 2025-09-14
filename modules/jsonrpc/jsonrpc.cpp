@@ -95,51 +95,28 @@ Dictionary JSONRPC::make_request(const String &p_method, const Variant &p_params
 	return dict;
 }
 
+inline bool is_response(const Variant &p_obj) {
+	return p_obj.get_type() == Variant::DICTIONARY && !p_obj.operator Dictionary().has("method");
+}
+
 Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elements) {
-	Variant ret;
 	if (p_action.get_type() == Variant::DICTIONARY) {
-		Dictionary dict = p_action;
-		String method = dict.get("method", "");
-
-		Array args;
-		if (dict.has("params")) {
-			Variant params = dict.get("params", Variant());
-			if (params.get_type() == Variant::ARRAY) {
-				args = params;
-			} else {
-				args.push_back(params);
-			}
+		if (!is_response(p_action)) {
+			return process_request(p_action);
 		}
-
-		/// A Notification is a Request object without an "id" member.
-		bool is_notification = !dict.has("id");
-
-		Variant id;
-		if (!is_notification) {
-			id = dict["id"];
-
-			// Account for implementations that discern between int and float on the json serialization level, by using an int if there is a .0 fraction. See #100914
-			if (id.get_type() == Variant::FLOAT && id.operator float() == (float)(id.operator int())) {
-				id = id.operator int();
-			}
-		}
-
-		if (methods.has(method)) {
-			Variant call_ret = methods[method].callv(args);
-			ret = make_response(call_ret, id);
-		} else {
-			ret = make_response_error(JSONRPC::METHOD_NOT_FOUND, "Method not found: " + method, id);
-		}
-
-		/// The Server MUST NOT reply to a Notification
-		if (is_notification) {
-			ret = Variant();
-		}
+		process_response(p_action);
 	} else if (p_action.get_type() == Variant::ARRAY && p_process_arr_elements) {
 		Array arr = p_action;
 		if (!arr.is_empty()) {
 			Array arr_ret;
+
+			bool response_mode = is_response(arr[0]);
+
 			for (const Variant &var : arr) {
+				if (is_response(var) != response_mode) {
+					return make_response_error(JSONRPC::INVALID_REQUEST, "Batch Request with mixed response and request objects.");
+				}
+
 				Variant res = process_action(var);
 
 				if (res.get_type() != Variant::NIL) {
@@ -149,16 +126,78 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 
 			/// If there are no Response objects contained within the Response array as it is to be sent to the client, the server MUST NOT return an empty Array and should return nothing at all.
 			if (!arr_ret.is_empty()) {
-				ret = arr_ret;
+				return arr_ret;
 			}
 		} else {
 			/// If the batch rpc call itself fails to be recognized ... as an Array with at least one value, the response from the Server MUST be a single Response object.
-			ret = make_response_error(JSONRPC::INVALID_REQUEST, "Invalid Request");
+			return make_response_error(JSONRPC::INVALID_REQUEST, "Invalid Request");
 		}
 	} else {
-		ret = make_response_error(JSONRPC::INVALID_REQUEST, "Invalid Request");
+		return make_response_error(JSONRPC::INVALID_REQUEST, "Invalid Request");
+	}
+	return Variant();
+}
+
+Variant JSONRPC::process_request(const Dictionary &p_request_object) {
+	ERR_FAIL_COND_V(!p_request_object.has("method"), Variant());
+
+	Variant ret;
+	String method = p_request_object["method"];
+
+	Array args;
+	if (p_request_object.has("params")) {
+		Variant params = p_request_object["params"];
+		if (params.get_type() == Variant::ARRAY) {
+			args = params;
+		} else {
+			args.push_back(params);
+		}
+	}
+
+	/// A Notification is a Request object without an "id" member.
+	bool is_notification = !p_request_object.has("id");
+
+	Variant id;
+	if (!is_notification) {
+		id = p_request_object["id"];
+
+		// Account for implementations that discern between int and float on the json serialization level, by using an int if there is a .0 fraction. See #100914
+		if (id.get_type() == Variant::FLOAT && id.operator float() == (float)(id.operator int())) {
+			id = id.operator int();
+		}
+	}
+
+	if (methods.has(method)) {
+		Variant call_ret = methods[method].callv(args);
+		ret = make_response(call_ret, id);
+	} else {
+		ret = make_response_error(JSONRPC::METHOD_NOT_FOUND, "Method not found: " + method, id);
+	}
+
+	/// The Server MUST NOT reply to a Notification
+	if (is_notification) {
+		ret = Variant();
 	}
 	return ret;
+}
+
+void JSONRPC::process_response(const Dictionary &p_response_object) {
+	ERR_FAIL_COND_MSG(!p_response_object.has("id"), "JSONRPC: Received response object without id.");
+
+	const Variant id_var = p_response_object["id"];
+	ERR_FAIL_COND_MSG(!id_var.is_num(), "JSONRPC: No response handler registered for id: " + id_var.operator String());
+	const int id = id_var.operator int();
+	ERR_FAIL_COND_MSG(!response_handlers.has(id), "JSONRPC: No response handler registered for id: " + id_var.operator String());
+
+	if (p_response_object.has("result")) {
+		response_handlers[id].call(p_response_object["result"]);
+	} else if (p_response_object.has("error")) {
+		ERR_PRINT("JSONRPC: Received error response object: " + p_response_object["error"].to_json_string());
+	} else {
+		ERR_PRINT("JSONRPC: Received response object without 'result' or 'error' field.");
+	}
+
+	response_handlers.erase(id);
 }
 
 String JSONRPC::process_string(const String &p_input) {
@@ -182,4 +221,8 @@ String JSONRPC::process_string(const String &p_input) {
 
 void JSONRPC::set_method(const String &p_name, const Callable &p_callback) {
 	methods[p_name] = p_callback;
+}
+
+void JSONRPC::set_response_handler(int p_id, const Callable &p_callback) {
+	response_handlers[p_id] = p_callback;
 }
