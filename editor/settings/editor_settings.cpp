@@ -949,6 +949,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "editors/3d/manipulator_gizmo_size", 80, "16,160,1");
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/manipulator_gizmo_opacity", 0.9, "0,1,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
+	// 3D: Rotation
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/rotation/rotation_gizmo_mode", 0, "Default,Arcball")
+	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "editors/3d/rotation/arcball_invert", false, "")
+
 	// 2D
 	_initial_set("editors/2d/grid_color", Color(1.0, 1.0, 1.0, 0.07), true);
 	_initial_set("editors/2d/guides_color", Color(0.6, 0.0, 0.8), true);

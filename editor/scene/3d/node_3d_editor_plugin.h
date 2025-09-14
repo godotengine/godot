@@ -364,6 +364,11 @@ private:
 		TRANSFORM_XY,
 	};
 
+	enum RotationGizmoMode {
+		ROTATION_GIZMO_DEFAULT,
+		ROTATION_GIZMO_ARCBALL
+	};
+
 	struct EditData {
 		TransformMode mode;
 		TransformPlane plane;
@@ -521,6 +526,12 @@ private:
 	void update_transform(bool p_shift);
 	void update_transform_numeric();
 	void finish_transform();
+
+	// Arcball rotation helper functions
+	Vector3 _arcball_project_to_sphere(const Vector2 &p_point, real_t p_radius) const;
+	Quaternion _arcball_compute_rotation(const Vector2 &p_from, const Vector2 &p_to, real_t p_radius) const;
+	bool _is_arcball_mode_enabled() const;
+	bool _is_arcball_invert_enabled() const;
 
 	void register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode, bool p_physical = false);
 	void shortcut_changed_callback(const Ref<Shortcut> p_shortcut, const String &p_shortcut_path);
