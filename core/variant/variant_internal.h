@@ -28,10 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VARIANT_INTERNAL_H
-#define VARIANT_INTERNAL_H
+#pragma once
 
 #include "variant.h"
+
+#include "core/templates/simple_type.h"
 
 // For use when you want to access the internal pointer of a Variant directly.
 // Use with caution. You need to be sure that the type is correct.
@@ -220,7 +221,7 @@ public:
 	// Should be in the same order as Variant::Type for consistency.
 	// Those primitive and vector types don't need an `init_` method:
 	// Nil, bool, float, Vector2/i, Rect2/i, Vector3/i, Plane, Quat, RID.
-	// Object is a special case, handled via `object_assign_null`.
+	// Object is a special case, handled via `object_reset_data`.
 	_FORCE_INLINE_ static void init_string(Variant *v) {
 		memnew_placement(v->_data._mem, String);
 		v->type = Variant::STRING;
@@ -319,7 +320,7 @@ public:
 		v->type = Variant::PACKED_VECTOR4_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_object(Variant *v) {
-		object_assign_null(v);
+		object_reset_data(v);
 		v->type = Variant::OBJECT;
 	}
 
@@ -327,19 +328,28 @@ public:
 		v->clear();
 	}
 
-	static void object_assign(Variant *v, const Object *o); // Needs RefCounted, so it's implemented elsewhere.
-	static void refcounted_object_assign(Variant *v, const RefCounted *rc);
-
-	_FORCE_INLINE_ static void object_assign(Variant *v, const Variant *o) {
-		object_assign(v, o->_get_obj().obj);
+	_FORCE_INLINE_ static void object_assign(Variant *v, const Variant *vo) {
+		v->_get_obj().ref(vo->_get_obj());
 	}
 
-	_FORCE_INLINE_ static void object_assign_null(Variant *v) {
-		v->_get_obj().obj = nullptr;
-		v->_get_obj().id = ObjectID();
+	_FORCE_INLINE_ static void object_assign(Variant *v, Object *o) {
+		v->_get_obj().ref_pointer(o);
 	}
 
-	static void update_object_id(Variant *v) {
+	_FORCE_INLINE_ static void object_assign(Variant *v, const Object *o) {
+		v->_get_obj().ref_pointer(const_cast<Object *>(o));
+	}
+
+	template <typename T>
+	_FORCE_INLINE_ static void object_assign(Variant *v, const Ref<T> &r) {
+		v->_get_obj().ref(r);
+	}
+
+	_FORCE_INLINE_ static void object_reset_data(Variant *v) {
+		v->_get_obj() = Variant::ObjData();
+	}
+
+	_FORCE_INLINE_ static void update_object_id(Variant *v) {
 		const Object *o = v->_get_obj().obj;
 		if (o) {
 			v->_get_obj().id = o->get_instance_id();
@@ -519,9 +529,11 @@ public:
 	}
 };
 
+template <typename T, typename = void>
+struct VariantGetInternalPtr;
+
 template <typename T>
-struct VariantGetInternalPtr {
-};
+struct VariantGetInternalPtr<T, std::enable_if_t<!std::is_same_v<T, GetSimpleTypeT<T>>>> : VariantGetInternalPtr<GetSimpleTypeT<T>> {};
 
 template <>
 struct VariantGetInternalPtr<bool> {
@@ -529,68 +541,20 @@ struct VariantGetInternalPtr<bool> {
 	static const bool *get_ptr(const Variant *v) { return VariantInternal::get_bool(v); }
 };
 
-template <>
-struct VariantGetInternalPtr<int8_t> {
+template <typename T>
+struct VariantGetInternalPtr<T, std::enable_if_t<std::is_integral_v<T> || std::is_enum_v<T>>> {
 	static int64_t *get_ptr(Variant *v) { return VariantInternal::get_int(v); }
 	static const int64_t *get_ptr(const Variant *v) { return VariantInternal::get_int(v); }
 };
 
-template <>
-struct VariantGetInternalPtr<uint8_t> {
-	static int64_t *get_ptr(Variant *v) { return VariantInternal::get_int(v); }
-	static const int64_t *get_ptr(const Variant *v) { return VariantInternal::get_int(v); }
-};
-
-template <>
-struct VariantGetInternalPtr<int16_t> {
-	static int64_t *get_ptr(Variant *v) { return VariantInternal::get_int(v); }
-	static const int64_t *get_ptr(const Variant *v) { return VariantInternal::get_int(v); }
-};
-
-template <>
-struct VariantGetInternalPtr<uint16_t> {
-	static int64_t *get_ptr(Variant *v) { return VariantInternal::get_int(v); }
-	static const int64_t *get_ptr(const Variant *v) { return VariantInternal::get_int(v); }
-};
-
-template <>
-struct VariantGetInternalPtr<int32_t> {
-	static int64_t *get_ptr(Variant *v) { return VariantInternal::get_int(v); }
-	static const int64_t *get_ptr(const Variant *v) { return VariantInternal::get_int(v); }
-};
-
-template <>
-struct VariantGetInternalPtr<uint32_t> {
-	static int64_t *get_ptr(Variant *v) { return VariantInternal::get_int(v); }
-	static const int64_t *get_ptr(const Variant *v) { return VariantInternal::get_int(v); }
-};
-
-template <>
-struct VariantGetInternalPtr<int64_t> {
-	static int64_t *get_ptr(Variant *v) { return VariantInternal::get_int(v); }
-	static const int64_t *get_ptr(const Variant *v) { return VariantInternal::get_int(v); }
-};
-
-template <>
-struct VariantGetInternalPtr<uint64_t> {
-	static int64_t *get_ptr(Variant *v) { return VariantInternal::get_int(v); }
-	static const int64_t *get_ptr(const Variant *v) { return VariantInternal::get_int(v); }
-};
-
-template <>
-struct VariantGetInternalPtr<char32_t> {
+template <typename T>
+struct VariantGetInternalPtr<BitField<T>, std::enable_if_t<std::is_enum_v<T>>> {
 	static int64_t *get_ptr(Variant *v) { return VariantInternal::get_int(v); }
 	static const int64_t *get_ptr(const Variant *v) { return VariantInternal::get_int(v); }
 };
 
 template <>
 struct VariantGetInternalPtr<ObjectID> {
-	static int64_t *get_ptr(Variant *v) { return VariantInternal::get_int(v); }
-	static const int64_t *get_ptr(const Variant *v) { return VariantInternal::get_int(v); }
-};
-
-template <>
-struct VariantGetInternalPtr<Error> {
 	static int64_t *get_ptr(Variant *v) { return VariantInternal::get_int(v); }
 	static const int64_t *get_ptr(const Variant *v) { return VariantInternal::get_int(v); }
 };
@@ -812,9 +776,11 @@ struct VariantGetInternalPtr<PackedVector4Array> {
 	static const PackedVector4Array *get_ptr(const Variant *v) { return VariantInternal::get_vector4_array(v); }
 };
 
+template <typename T, typename = void>
+struct VariantInternalAccessor;
+
 template <typename T>
-struct VariantInternalAccessor {
-};
+struct VariantInternalAccessor<T, std::enable_if_t<!std::is_same_v<T, GetSimpleTypeT<T>>>> : VariantInternalAccessor<GetSimpleTypeT<T>> {};
 
 template <>
 struct VariantInternalAccessor<bool> {
@@ -822,22 +788,17 @@ struct VariantInternalAccessor<bool> {
 	static _FORCE_INLINE_ void set(Variant *v, bool p_value) { *VariantInternal::get_bool(v) = p_value; }
 };
 
-#define VARIANT_ACCESSOR_NUMBER(m_type)                                                                        \
-	template <>                                                                                                \
-	struct VariantInternalAccessor<m_type> {                                                                   \
-		static _FORCE_INLINE_ m_type get(const Variant *v) { return (m_type) * VariantInternal::get_int(v); }  \
-		static _FORCE_INLINE_ void set(Variant *v, m_type p_value) { *VariantInternal::get_int(v) = p_value; } \
-	};
+template <typename T>
+struct VariantInternalAccessor<T, std::enable_if_t<std::is_integral_v<T> || std::is_enum_v<T>>> {
+	static _FORCE_INLINE_ T get(const Variant *v) { return static_cast<T>(*VariantInternal::get_int(v)); }
+	static _FORCE_INLINE_ void set(Variant *v, T p_value) { *VariantInternal::get_int(v) = static_cast<int64_t>(p_value); }
+};
 
-VARIANT_ACCESSOR_NUMBER(int8_t)
-VARIANT_ACCESSOR_NUMBER(uint8_t)
-VARIANT_ACCESSOR_NUMBER(int16_t)
-VARIANT_ACCESSOR_NUMBER(uint16_t)
-VARIANT_ACCESSOR_NUMBER(int32_t)
-VARIANT_ACCESSOR_NUMBER(uint32_t)
-VARIANT_ACCESSOR_NUMBER(int64_t)
-VARIANT_ACCESSOR_NUMBER(uint64_t)
-VARIANT_ACCESSOR_NUMBER(char32_t)
+template <typename T>
+struct VariantInternalAccessor<BitField<T>, std::enable_if_t<std::is_enum_v<T>>> {
+	static _FORCE_INLINE_ BitField<T> get(const Variant *v) { return BitField<T>(static_cast<T>(*VariantInternal::get_int(v))); }
+	static _FORCE_INLINE_ void set(Variant *v, BitField<T> p_value) { *VariantInternal::get_int(v) = static_cast<int64_t>(p_value); }
+};
 
 template <>
 struct VariantInternalAccessor<ObjectID> {
@@ -860,7 +821,7 @@ struct VariantInternalAccessor<const T *> {
 template <>
 struct VariantInternalAccessor<IPAddress> {
 	static _FORCE_INLINE_ IPAddress get(const Variant *v) { return IPAddress(*VariantInternal::get_string(v)); }
-	static _FORCE_INLINE_ void set(Variant *v, IPAddress p_value) { *VariantInternal::get_string(v) = p_value; }
+	static _FORCE_INLINE_ void set(Variant *v, IPAddress p_value) { *VariantInternal::get_string(v) = String(p_value); }
 };
 
 template <>
@@ -1114,45 +1075,7 @@ struct VariantInternalAccessor<Vector<Variant>> {
 
 template <typename T>
 struct VariantInitializer {
-};
-
-template <>
-struct VariantInitializer<bool> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<bool>(v); }
-};
-
-#define INITIALIZER_INT(m_type)                                                                    \
-	template <>                                                                                    \
-	struct VariantInitializer<m_type> {                                                            \
-		static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<int64_t>(v); } \
-	};
-
-INITIALIZER_INT(uint8_t)
-INITIALIZER_INT(int8_t)
-INITIALIZER_INT(uint16_t)
-INITIALIZER_INT(int16_t)
-INITIALIZER_INT(uint32_t)
-INITIALIZER_INT(int32_t)
-INITIALIZER_INT(uint64_t)
-INITIALIZER_INT(int64_t)
-INITIALIZER_INT(char32_t)
-INITIALIZER_INT(Error)
-INITIALIZER_INT(ObjectID)
-INITIALIZER_INT(Vector2::Axis)
-INITIALIZER_INT(Vector2i::Axis)
-INITIALIZER_INT(Vector3::Axis)
-INITIALIZER_INT(Vector3i::Axis)
-INITIALIZER_INT(Vector4::Axis)
-INITIALIZER_INT(Vector4i::Axis)
-
-template <>
-struct VariantInitializer<double> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<double>(v); }
-};
-
-template <>
-struct VariantInitializer<float> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<double>(v); }
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<T>(v); }
 };
 
 template <>
@@ -1161,56 +1084,8 @@ struct VariantInitializer<String> {
 };
 
 template <>
-struct VariantInitializer<Vector2> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Vector2>(v); }
-};
-
-template <>
-struct VariantInitializer<Vector2i> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Vector2i>(v); }
-};
-
-template <>
-struct VariantInitializer<Rect2> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Rect2>(v); }
-};
-
-template <>
-struct VariantInitializer<Rect2i> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Rect2i>(v); }
-};
-
-template <>
-struct VariantInitializer<Vector3> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Vector3>(v); }
-};
-
-template <>
-struct VariantInitializer<Vector3i> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Vector3i>(v); }
-};
-template <>
-struct VariantInitializer<Vector4> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Vector4>(v); }
-};
-
-template <>
-struct VariantInitializer<Vector4i> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Vector4i>(v); }
-};
-template <>
 struct VariantInitializer<Transform2D> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_transform2d(v); }
-};
-
-template <>
-struct VariantInitializer<Plane> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Plane>(v); }
-};
-
-template <>
-struct VariantInitializer<Quaternion> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Quaternion>(v); }
 };
 
 template <>
@@ -1227,14 +1102,10 @@ template <>
 struct VariantInitializer<Transform3D> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_transform3d(v); }
 };
+
 template <>
 struct VariantInitializer<Projection> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_projection(v); }
-};
-
-template <>
-struct VariantInitializer<Color> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Color>(v); }
 };
 
 template <>
@@ -1245,11 +1116,6 @@ struct VariantInitializer<StringName> {
 template <>
 struct VariantInitializer<NodePath> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_node_path(v); }
-};
-
-template <>
-struct VariantInitializer<::RID> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<::RID>(v); }
 };
 
 template <>
@@ -1327,17 +1193,24 @@ struct VariantInitializer<Object *> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_object(v); }
 };
 
+template <typename T, typename = void>
+struct VariantDefaultInitializer;
+
 template <typename T>
-struct VariantDefaultInitializer {
-};
+struct VariantDefaultInitializer<T, std::enable_if_t<!std::is_same_v<T, GetSimpleTypeT<T>>>> : VariantDefaultInitializer<GetSimpleTypeT<T>> {};
 
 template <>
 struct VariantDefaultInitializer<bool> {
 	static _FORCE_INLINE_ void init(Variant *v) { *VariantInternal::get_bool(v) = false; }
 };
 
-template <>
-struct VariantDefaultInitializer<int64_t> {
+template <typename T>
+struct VariantDefaultInitializer<T, std::enable_if_t<std::is_integral_v<T> || std::is_enum_v<T>>> {
+	static _FORCE_INLINE_ void init(Variant *v) { *VariantInternal::get_int(v) = 0; }
+};
+
+template <typename T>
+struct VariantDefaultInitializer<BitField<T>, std::enable_if_t<std::is_enum_v<T>>> {
 	static _FORCE_INLINE_ void init(Variant *v) { *VariantInternal::get_int(v) = 0; }
 };
 
@@ -1575,5 +1448,3 @@ struct VariantTypeConstructor {
 		memnew_placement(r_value, T(*reinterpret_cast<Variant *>(p_variant)));
 	}
 };
-
-#endif // VARIANT_INTERNAL_H

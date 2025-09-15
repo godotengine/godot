@@ -4,7 +4,8 @@
 		The server responsible for language translations.
 	</brief_description>
 	<description>
-		The server that manages all language translations. Translations can be added to or removed from it.
+		The translation server is the API backend that manages all language translations.
+		Translations are stored in [TranslationDomain]s, which can be accessed by name. The most commonly used translation domain is the main translation domain. It always exists and can be accessed using an empty [StringName]. The translation server provides wrapper methods for accessing the main translation domain directly, without having to fetch the translation domain first. Custom translation domains are mainly for advanced usages like editor plugins. Names starting with [code]godot.[/code] are reserved for engine internals.
 	</description>
 	<tutorials>
 		<link title="Internationalizing games">$DOCS_URL/tutorials/i18n/internationalizing_games.html</link>
@@ -15,13 +16,13 @@
 			<return type="void" />
 			<param index="0" name="translation" type="Translation" />
 			<description>
-				Adds a [Translation] resource.
+				Adds a translation to the main translation domain.
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
-				Clears the server from all translations.
+				Removes all translations from the main translation domain.
 			</description>
 		</method>
 		<method name="compare_locales" qualifiers="const">
@@ -84,6 +85,13 @@
 				Returns a locale's language and its variant (e.g. [code]"en_US"[/code] would return [code]"English (United States)"[/code]).
 			</description>
 		</method>
+		<method name="get_or_add_domain">
+			<return type="TranslationDomain" />
+			<param index="0" name="domain" type="StringName" />
+			<description>
+				Returns the translation domain with the specified name. An empty translation domain will be created and added if it does not exist.
+			</description>
+		</method>
 		<method name="get_script_name" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="script" type="String" />
@@ -102,8 +110,14 @@
 			<return type="Translation" />
 			<param index="0" name="locale" type="String" />
 			<description>
-				Returns the [Translation] instance based on the [param locale] passed in.
-				It will return [code]null[/code] if there is no [Translation] instance that matches the [param locale].
+				Returns the [Translation] instance that best matches [param locale] in the main translation domain. Returns [code]null[/code] if there are no matches.
+			</description>
+		</method>
+		<method name="has_domain" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="domain" type="StringName" />
+			<description>
+				Returns [code]true[/code] if a translation domain with the specified name exists.
 			</description>
 		</method>
 		<method name="pseudolocalize" qualifiers="const">
@@ -111,19 +125,28 @@
 			<param index="0" name="message" type="StringName" />
 			<description>
 				Returns the pseudolocalized string based on the [param message] passed in.
+				[b]Note:[/b] This method always uses the main translation domain.
 			</description>
 		</method>
 		<method name="reload_pseudolocalization">
 			<return type="void" />
 			<description>
-				Reparses the pseudolocalization options and reloads the translation.
+				Reparses the pseudolocalization options and reloads the translation for the main translation domain.
+			</description>
+		</method>
+		<method name="remove_domain">
+			<return type="void" />
+			<param index="0" name="domain" type="StringName" />
+			<description>
+				Removes the translation domain with the specified name.
+				[b]Note:[/b] Trying to remove the main translation domain is an error.
 			</description>
 		</method>
 		<method name="remove_translation">
 			<return type="void" />
 			<param index="0" name="translation" type="Translation" />
 			<description>
-				Removes the given translation from the server.
+				Removes the given translation from the main translation domain.
 			</description>
 		</method>
 		<method name="set_locale">
@@ -137,8 +160,9 @@
 		<method name="standardize_locale" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="locale" type="String" />
+			<param index="1" name="add_defaults" type="bool" default="false" />
 			<description>
-				Returns a [param locale] string standardized to match known locales (e.g. [code]en-US[/code] would be matched to [code]en_US[/code]).
+				Returns a [param locale] string standardized to match known locales (e.g. [code]en-US[/code] would be matched to [code]en_US[/code]). If [param add_defaults] is [code]true[/code], the locale may have a default script or country added.
 			</description>
 		</method>
 		<method name="translate" qualifiers="const">
@@ -146,7 +170,8 @@
 			<param index="0" name="message" type="StringName" />
 			<param index="1" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Returns the current locale's translation for the given message (key) and context.
+				Returns the current locale's translation for the given message and context.
+				[b]Note:[/b] This method always uses the main translation domain.
 			</description>
 		</method>
 		<method name="translate_plural" qualifiers="const">
@@ -156,14 +181,15 @@
 			<param index="2" name="n" type="int" />
 			<param index="3" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Returns the current locale's translation for the given message (key), plural message and context.
+				Returns the current locale's translation for the given message, plural message and context.
 				The number [param n] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
+				[b]Note:[/b] This method always uses the main translation domain.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="pseudolocalization_enabled" type="bool" setter="set_pseudolocalization_enabled" getter="is_pseudolocalization_enabled" default="false">
-			If [code]true[/code], enables the use of pseudolocalization. See [member ProjectSettings.internationalization/pseudolocalization/use_pseudolocalization] for details.
+			If [code]true[/code], enables the use of pseudolocalization on the main translation domain. See [member ProjectSettings.internationalization/pseudolocalization/use_pseudolocalization] for details.
 		</member>
 	</members>
 </class>

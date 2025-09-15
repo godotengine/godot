@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TRANSLATION_SERVER_H
-#define TRANSLATION_SERVER_H
+#pragma once
 
 #include "core/string/translation.h"
+#include "core/string/translation_domain.h"
 
 class TranslationServer : public Object {
 	GDCLASS(TranslationServer, Object);
@@ -39,42 +39,20 @@ class TranslationServer : public Object {
 	String locale = "en";
 	String fallback;
 
-	HashSet<Ref<Translation>> translations;
-	Ref<Translation> tool_translation;
-	Ref<Translation> property_translation;
-	Ref<Translation> doc_translation;
-	Ref<Translation> extractable_translation;
+	Ref<TranslationDomain> main_domain;
+	Ref<TranslationDomain> editor_domain;
+	Ref<TranslationDomain> property_domain;
+	Ref<TranslationDomain> doc_domain;
+	HashMap<StringName, Ref<TranslationDomain>> custom_domains;
 
-	bool enabled = true;
+	mutable HashMap<String, int> locale_compare_cache;
 
-	bool pseudolocalization_enabled = false;
-	bool pseudolocalization_accents_enabled = false;
-	bool pseudolocalization_double_vowels_enabled = false;
-	bool pseudolocalization_fake_bidi_enabled = false;
-	bool pseudolocalization_override_enabled = false;
-	bool pseudolocalization_skip_placeholders_enabled = false;
-	float expansion_ratio = 0.0;
-	String pseudolocalization_prefix;
-	String pseudolocalization_suffix;
-
-	StringName tool_pseudolocalize(const StringName &p_message) const;
-	String get_override_string(String &p_message) const;
-	String double_vowels(String &p_message) const;
-	String replace_with_accented_string(String &p_message) const;
-	String wrap_with_fakebidi_characters(String &p_message) const;
-	String add_padding(const String &p_message, int p_length) const;
-	const char32_t *get_accented_version(char32_t p_character) const;
-	bool is_placeholder(String &p_message, int p_index) const;
-
-	static TranslationServer *singleton;
-	bool _load_translations(const String &p_from);
-	String _standardize_locale(const String &p_locale, bool p_add_defaults) const;
-
-	StringName _get_message_from_translations(const StringName &p_message, const StringName &p_context, const String &p_locale, bool plural, const String &p_message_plural = "", int p_n = 0) const;
+	static inline TranslationServer *singleton = nullptr;
 
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
+	String _standardize_locale_bind_compat_98972(const String &p_locale) const;
 	static void _bind_compatibility_methods();
 #endif
 
@@ -85,6 +63,24 @@ class TranslationServer : public Object {
 		HashSet<String> supported_countries;
 	};
 	static Vector<LocaleScriptInfo> locale_script_info;
+
+	struct Locale {
+		String language;
+		String script;
+		String country;
+		String variant;
+
+		bool operator==(const Locale &p_locale) const {
+			return (p_locale.language == language) &&
+					(p_locale.script == script) &&
+					(p_locale.country == country) &&
+					(p_locale.variant == variant);
+		}
+
+		explicit operator String() const;
+
+		Locale(const TranslationServer &p_server, const String &p_locale, bool p_add_defaults);
+	};
 
 	static HashMap<String, String> language_map;
 	static HashMap<String, String> script_map;
@@ -98,11 +94,13 @@ class TranslationServer : public Object {
 public:
 	_FORCE_INLINE_ static TranslationServer *get_singleton() { return singleton; }
 
-	void set_enabled(bool p_enabled) { enabled = p_enabled; }
-	_FORCE_INLINE_ bool is_enabled() const { return enabled; }
+	Ref<TranslationDomain> get_main_domain() const { return main_domain; }
+	Ref<TranslationDomain> get_editor_domain() const { return editor_domain; }
 
 	void set_locale(const String &p_locale);
 	String get_locale() const;
+	void set_fallback_locale(const String &p_locale);
+	String get_fallback_locale() const;
 	Ref<Translation> get_translation_object(const String &p_locale);
 
 	Vector<String> get_all_languages() const;
@@ -130,23 +128,20 @@ public:
 	void set_pseudolocalization_enabled(bool p_enabled);
 	void reload_pseudolocalization();
 
-	String standardize_locale(const String &p_locale) const;
+	String standardize_locale(const String &p_locale, bool p_add_defaults = false) const;
 
 	int compare_locales(const String &p_locale_a, const String &p_locale_b) const;
 
 	String get_tool_locale();
-	void set_tool_translation(const Ref<Translation> &p_translation);
-	Ref<Translation> get_tool_translation() const;
 	StringName tool_translate(const StringName &p_message, const StringName &p_context = "") const;
 	StringName tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
-	void set_property_translation(const Ref<Translation> &p_translation);
 	StringName property_translate(const StringName &p_message, const StringName &p_context = "") const;
-	void set_doc_translation(const Ref<Translation> &p_translation);
 	StringName doc_translate(const StringName &p_message, const StringName &p_context = "") const;
 	StringName doc_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
-	void set_extractable_translation(const Ref<Translation> &p_translation);
-	StringName extractable_translate(const StringName &p_message, const StringName &p_context = "") const;
-	StringName extractable_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
+
+	bool has_domain(const StringName &p_domain) const;
+	Ref<TranslationDomain> get_or_add_domain(const StringName &p_domain);
+	void remove_domain(const StringName &p_domain);
 
 	void setup();
 
@@ -160,5 +155,3 @@ public:
 
 	TranslationServer();
 };
-
-#endif // TRANSLATION_SERVER_H

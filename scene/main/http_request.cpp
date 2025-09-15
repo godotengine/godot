@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 #include "http_request.h"
-#include "core/io/compression.h"
+
 #include "scene/main/timer.h"
 
 Error HTTPRequest::_request() {
@@ -49,7 +49,8 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 	redirections = 0;
 
 	String scheme;
-	Error err = p_url.parse_url(scheme, url, port, request_string);
+	String fragment;
+	Error err = p_url.parse_url(scheme, url, port, request_string, fragment);
 	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Error parsing URL: '%s'.", p_url));
 
 	if (scheme == "https://") {
@@ -86,7 +87,7 @@ String HTTPRequest::get_header_value(const PackedStringArray &p_headers, const S
 
 	String lowwer_case_header_name = p_header_name.to_lower();
 	for (int i = 0; i < p_headers.size(); i++) {
-		if (p_headers[i].find(":") > 0) {
+		if (p_headers[i].find_char(':') > 0) {
 			Vector<String> parts = p_headers[i].split(":", false, 1);
 			if (parts.size() > 1 && parts[0].strip_edges().to_lower() == lowwer_case_header_name) {
 				value = parts[1].strip_edges();
@@ -239,8 +240,8 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 		String new_request;
 
 		for (const String &E : rheaders) {
-			if (E.containsn("Location: ")) {
-				new_request = E.substr(9, E.length()).strip_edges();
+			if (E.to_lower().begins_with("location: ")) {
+				new_request = E.substr(9).strip_edges();
 			}
 		}
 
@@ -634,7 +635,7 @@ void HTTPRequest::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_http_proxy", "host", "port"), &HTTPRequest::set_http_proxy);
 	ClassDB::bind_method(D_METHOD("set_https_proxy", "host", "port"), &HTTPRequest::set_https_proxy);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_FILE), "set_download_file", "get_download_file");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_FILE_PATH), "set_download_file", "get_download_file");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "download_chunk_size", PROPERTY_HINT_RANGE, "256,16777216,suffix:B"), "set_download_chunk_size", "get_download_chunk_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_threads"), "set_use_threads", "is_using_threads");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "accept_gzip"), "set_accept_gzip", "is_accepting_gzip");

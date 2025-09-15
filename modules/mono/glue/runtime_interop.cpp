@@ -48,7 +48,7 @@
 #include "core/string/string_name.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 #endif
 
 #ifdef __cplusplus
@@ -203,6 +203,11 @@ void godotsharp_internal_refcounted_disposed(Object *p_ptr, GCHandleIntPtr p_gch
 			CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
 			if (script_binding.inited) {
 				if (!script_binding.gchandle.is_released()) {
+					if (rc->get_reference_count() == 1 && script_binding.gchandle.is_weak()) {
+						// The GCHandle is just swapped, so get the swapped handle to release
+						// See: CSharpLanguage::_instance_binding_reference_callback(void *p_token, void *p_binding, GDExtensionBool p_reference)
+						p_gchandle_to_free = script_binding.gchandle.get_intptr();
+					}
 					CSharpLanguage::release_binding_gchandle_thread_safe(p_gchandle_to_free, script_binding);
 				}
 			}
@@ -557,6 +562,18 @@ godot_color godotsharp_color_from_ok_hsl(float p_h, float p_s, float p_l, float 
 	Color *dest = (Color *)&ret;
 	memnew_placement(dest, Color(Color::from_ok_hsl(p_h, p_s, p_l, p_alpha)));
 	return ret;
+}
+
+float godotsharp_color_get_ok_hsl_h(const Color *p_self) {
+	return p_self->get_ok_hsl_h();
+}
+
+float godotsharp_color_get_ok_hsl_s(const Color *p_self) {
+	return p_self->get_ok_hsl_s();
+}
+
+float godotsharp_color_get_ok_hsl_l(const Color *p_self) {
+	return p_self->get_ok_hsl_l();
 }
 
 // GDNative functions
@@ -922,7 +939,7 @@ bool godotsharp_variant_equals(const godot_variant *p_a, const godot_variant *p_
 
 void godotsharp_string_new_with_utf16_chars(String *r_dest, const char16_t *p_contents) {
 	memnew_placement(r_dest, String());
-	r_dest->parse_utf16(p_contents);
+	r_dest->append_utf16(p_contents);
 }
 
 // string_name.h
@@ -1098,6 +1115,20 @@ void godotsharp_array_make_read_only(Array *p_self) {
 	p_self->make_read_only();
 }
 
+void godotsharp_array_set_typed(Array *p_self, uint32_t p_elem_type, const StringName *p_elem_class_name, const Ref<CSharpScript> *p_elem_script) {
+	Variant elem_script_variant;
+	StringName elem_class_name = *p_elem_class_name;
+	if (p_elem_script && p_elem_script->is_valid()) {
+		elem_script_variant = Variant(p_elem_script->ptr());
+		elem_class_name = p_elem_script->ptr()->get_instance_base_type();
+	}
+	p_self->set_typed(p_elem_type, elem_class_name, p_elem_script->ptr());
+}
+
+bool godotsharp_array_is_typed(const Array *p_self) {
+	return p_self->is_typed();
+}
+
 void godotsharp_array_max(const Array *p_self, Variant *r_value) {
 	*r_value = p_self->max();
 }
@@ -1140,6 +1171,47 @@ void godotsharp_array_sort(Array *p_self) {
 
 void godotsharp_array_to_string(const Array *p_self, String *r_str) {
 	*r_str = Variant(*p_self).operator String();
+}
+
+void godotsharp_packed_byte_array_compress(const PackedByteArray *p_src, int p_mode, PackedByteArray *r_dst) {
+	if (p_src->size() > 0) {
+		Compression::Mode mode = (Compression::Mode)(p_mode);
+		r_dst->resize(Compression::get_max_compressed_buffer_size(p_src->size(), mode));
+		int result = Compression::compress(r_dst->ptrw(), p_src->ptr(), p_src->size(), mode);
+
+		result = result >= 0 ? result : 0;
+		r_dst->resize(result);
+	}
+}
+
+void godotsharp_packed_byte_array_decompress(const PackedByteArray *p_src, int64_t p_buffer_size, int p_mode, PackedByteArray *r_dst) {
+	int64_t buffer_size = p_buffer_size;
+	Compression::Mode mode = (Compression::Mode)(p_mode);
+
+	if (buffer_size <= 0) {
+		ERR_FAIL_MSG("Decompression buffer size must be greater than zero.");
+	}
+	if (p_src->size() == 0) {
+		ERR_FAIL_MSG("Compressed buffer size must be greater than zero.");
+	}
+
+	r_dst->resize(buffer_size);
+	int result = Compression::decompress(r_dst->ptrw(), buffer_size, p_src->ptr(), p_src->size(), mode);
+
+	result = result >= 0 ? result : 0;
+	r_dst->resize(result);
+}
+
+void godotsharp_packed_byte_array_decompress_dynamic(const PackedByteArray *p_src, int64_t p_max_output_size, int p_mode, PackedByteArray *r_dst) {
+	int64_t max_output_size = p_max_output_size;
+	Compression::Mode mode = (Compression::Mode)(p_mode);
+
+	int result = Compression::decompress_dynamic(r_dst, max_output_size, p_src->ptr(), p_src->size(), mode);
+
+	if (result != OK) {
+		r_dst->clear();
+		ERR_FAIL_MSG("Decompression failed.");
+	}
 }
 
 // Dictionary
@@ -1207,12 +1279,64 @@ void godotsharp_dictionary_make_read_only(Dictionary *p_self) {
 	p_self->make_read_only();
 }
 
+void godotsharp_dictionary_set_typed(Dictionary *p_self, uint32_t p_key_type, const StringName *p_key_class_name, const Ref<CSharpScript> *p_key_script, uint32_t p_value_type, const StringName *p_value_class_name, const Ref<CSharpScript> *p_value_script) {
+	Variant key_script_variant;
+	StringName key_class_name = *p_key_class_name;
+	if (p_key_script && p_key_script->is_valid()) {
+		key_script_variant = Variant(p_key_script->ptr());
+		key_class_name = p_key_script->ptr()->get_instance_base_type();
+	}
+	Variant value_script_variant;
+	StringName value_class_name = *p_value_class_name;
+	if (p_value_script && p_value_script->is_valid()) {
+		value_script_variant = Variant(p_value_script->ptr());
+		value_class_name = p_value_script->ptr()->get_instance_base_type();
+	}
+	p_self->set_typed(p_key_type, key_class_name, p_key_script->ptr(), p_value_type, value_class_name, p_value_script->ptr());
+}
+
+bool godotsharp_dictionary_is_typed_key(const Dictionary *p_self) {
+	return p_self->is_typed_key();
+}
+
+bool godotsharp_dictionary_is_typed_value(const Dictionary *p_self) {
+	return p_self->is_typed_value();
+}
+
+uint32_t godotsharp_dictionary_get_typed_key_builtin(const Dictionary *p_self) {
+	return p_self->get_typed_key_builtin();
+}
+
+uint32_t godotsharp_dictionary_get_typed_value_builtin(const Dictionary *p_self) {
+	return p_self->get_typed_value_builtin();
+}
+
+void godotsharp_dictionary_get_typed_key_class_name(const Dictionary *p_self, StringName *r_dest) {
+	memnew_placement(r_dest, StringName(p_self->get_typed_key_class_name()));
+}
+
+void godotsharp_dictionary_get_typed_value_class_name(const Dictionary *p_self, StringName *r_dest) {
+	memnew_placement(r_dest, StringName(p_self->get_typed_value_class_name()));
+}
+
+void godotsharp_dictionary_get_typed_key_script(const Dictionary *p_self, Variant *r_dest) {
+	memnew_placement(r_dest, Variant(p_self->get_typed_key_script()));
+}
+
+void godotsharp_dictionary_get_typed_value_script(const Dictionary *p_self, Variant *r_dest) {
+	memnew_placement(r_dest, Variant(p_self->get_typed_value_script()));
+}
+
 void godotsharp_dictionary_to_string(const Dictionary *p_self, String *r_str) {
 	*r_str = Variant(*p_self).operator String();
 }
 
 void godotsharp_string_simplify_path(const String *p_self, String *r_simplified_path) {
 	memnew_placement(r_simplified_path, String(p_self->simplify_path()));
+}
+
+void godotsharp_string_capitalize(const String *p_self, String *r_capitalized) {
+	memnew_placement(r_capitalized, String(p_self->capitalize()));
 }
 
 void godotsharp_string_to_camel_case(const String *p_self, String *r_camel_case) {
@@ -1225,6 +1349,10 @@ void godotsharp_string_to_pascal_case(const String *p_self, String *r_pascal_cas
 
 void godotsharp_string_to_snake_case(const String *p_self, String *r_snake_case) {
 	memnew_placement(r_snake_case, String(p_self->to_snake_case()));
+}
+
+void godotsharp_string_to_kebab_case(const String *p_self, String *r_kebab_case) {
+	memnew_placement(r_kebab_case, String(p_self->to_kebab_case()));
 }
 
 void godotsharp_node_path_get_as_property_path(const NodePath *p_ptr, NodePath *r_dest) {
@@ -1311,7 +1439,7 @@ void godotsharp_weakref(Object *p_ptr, Ref<RefCounted> *r_weak_ref) {
 
 	if (rc) {
 		Ref<RefCounted> r = rc;
-		if (!r.is_valid()) {
+		if (r.is_null()) {
 			return;
 		}
 
@@ -1489,6 +1617,9 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_callable_call,
 	(void *)godotsharp_callable_call_deferred,
 	(void *)godotsharp_color_from_ok_hsl,
+	(void *)godotsharp_color_get_ok_hsl_h,
+	(void *)godotsharp_color_get_ok_hsl_s,
+	(void *)godotsharp_color_get_ok_hsl_l,
 	(void *)godotsharp_method_bind_ptrcall,
 	(void *)godotsharp_method_bind_call,
 	(void *)godotsharp_variant_new_string_name,
@@ -1585,6 +1716,8 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_array_insert,
 	(void *)godotsharp_array_last_index_of,
 	(void *)godotsharp_array_make_read_only,
+	(void *)godotsharp_array_set_typed,
+	(void *)godotsharp_array_is_typed,
 	(void *)godotsharp_array_max,
 	(void *)godotsharp_array_min,
 	(void *)godotsharp_array_pick_random,
@@ -1596,6 +1729,9 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_array_slice,
 	(void *)godotsharp_array_sort,
 	(void *)godotsharp_array_to_string,
+	(void *)godotsharp_packed_byte_array_compress,
+	(void *)godotsharp_packed_byte_array_decompress,
+	(void *)godotsharp_packed_byte_array_decompress_dynamic,
 	(void *)godotsharp_dictionary_try_get_value,
 	(void *)godotsharp_dictionary_set_value,
 	(void *)godotsharp_dictionary_keys,
@@ -1610,11 +1746,22 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_dictionary_recursive_equal,
 	(void *)godotsharp_dictionary_remove_key,
 	(void *)godotsharp_dictionary_make_read_only,
+	(void *)godotsharp_dictionary_set_typed,
+	(void *)godotsharp_dictionary_is_typed_key,
+	(void *)godotsharp_dictionary_is_typed_value,
+	(void *)godotsharp_dictionary_get_typed_key_builtin,
+	(void *)godotsharp_dictionary_get_typed_value_builtin,
+	(void *)godotsharp_dictionary_get_typed_key_class_name,
+	(void *)godotsharp_dictionary_get_typed_value_class_name,
+	(void *)godotsharp_dictionary_get_typed_key_script,
+	(void *)godotsharp_dictionary_get_typed_value_script,
 	(void *)godotsharp_dictionary_to_string,
 	(void *)godotsharp_string_simplify_path,
+	(void *)godotsharp_string_capitalize,
 	(void *)godotsharp_string_to_camel_case,
 	(void *)godotsharp_string_to_pascal_case,
 	(void *)godotsharp_string_to_snake_case,
+	(void *)godotsharp_string_to_kebab_case,
 	(void *)godotsharp_node_path_get_as_property_path,
 	(void *)godotsharp_node_path_get_concatenated_names,
 	(void *)godotsharp_node_path_get_concatenated_subnames,

@@ -30,7 +30,6 @@
 
 #include "shape_3d.h"
 
-#include "core/os/os.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/mesh.h"
 #include "servers/physics_server_3d.h"
@@ -66,6 +65,38 @@ void Shape3D::set_margin(real_t p_margin) {
 	PhysicsServer3D::get_singleton()->shape_set_margin(shape, margin);
 }
 
+void Shape3D::set_debug_color(const Color &p_color) {
+	if (p_color == debug_color) {
+		return;
+	}
+
+	debug_color = p_color;
+#ifdef DEBUG_ENABLED
+	debug_properties_edited = true;
+#endif // DEBUG_ENABLED
+	_update_shape();
+}
+
+Color Shape3D::get_debug_color() const {
+	return debug_color;
+}
+
+void Shape3D::set_debug_fill(bool p_fill) {
+	if (p_fill == debug_fill) {
+		return;
+	}
+
+	debug_fill = p_fill;
+#ifdef DEBUG_ENABLED
+	debug_properties_edited = true;
+#endif // DEBUG_ENABLED
+	_update_shape();
+}
+
+bool Shape3D::get_debug_fill() const {
+	return debug_fill;
+}
+
 Ref<ArrayMesh> Shape3D::get_debug_mesh() {
 	if (debug_mesh_cache.is_valid()) {
 		return debug_mesh_cache;
@@ -73,29 +104,34 @@ Ref<ArrayMesh> Shape3D::get_debug_mesh() {
 
 	Vector<Vector3> lines = get_debug_mesh_lines();
 
-	debug_mesh_cache = Ref<ArrayMesh>(memnew(ArrayMesh));
+	debug_mesh_cache.instantiate();
 
 	if (!lines.is_empty()) {
-		//make mesh
-		Vector<Vector3> array;
-		array.resize(lines.size());
-		{
-			Vector3 *w = array.ptrw();
-			for (int i = 0; i < lines.size(); i++) {
-				w[i] = lines[i];
-			}
+		Vector<Color> colors;
+		colors.resize(lines.size());
+		colors.fill(debug_color);
+
+		Array lines_array;
+		lines_array.resize(Mesh::ARRAY_MAX);
+		lines_array[Mesh::ARRAY_VERTEX] = lines;
+		lines_array[Mesh::ARRAY_COLOR] = colors;
+
+		debug_mesh_cache->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, lines_array);
+
+		SceneTree *scene_tree = SceneTree::get_singleton();
+		if (scene_tree) {
+			debug_mesh_cache->surface_set_material(0, scene_tree->get_debug_collision_material());
 		}
 
-		Array arr;
-		arr.resize(Mesh::ARRAY_MAX);
-		arr[Mesh::ARRAY_VERTEX] = array;
-
-		SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
-
-		debug_mesh_cache->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, arr);
-
-		if (st) {
-			debug_mesh_cache->surface_set_material(0, st->get_debug_collision_material());
+		if (debug_fill) {
+			Ref<ArrayMesh> array_mesh = get_debug_arraymesh_faces(debug_color * Color(1.0, 1.0, 1.0, 0.0625));
+			if (array_mesh.is_valid() && array_mesh->get_surface_count() > 0) {
+				Array solid_array = array_mesh->surface_get_arrays(0);
+				debug_mesh_cache->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, solid_array);
+				if (scene_tree) {
+					debug_mesh_cache->surface_set_material(1, scene_tree->get_debug_collision_material());
+				}
+			}
 		}
 	}
 

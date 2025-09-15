@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GRAPH_NODE_H
-#define GRAPH_NODE_H
+#pragma once
 
 #include "scene/gui/graph_element.h"
 
@@ -67,6 +66,14 @@ class GraphNode : public GraphElement {
 		int final_size = 0;
 	};
 
+	enum CustomAccessibilityAction {
+		ACTION_CONNECT_INPUT,
+		ACTION_CONNECT_OUTPUT,
+		ACTION_FOLLOW_INPUT,
+		ACTION_FOLLOW_OUTPUT,
+	};
+	void _accessibility_action_slot(const Variant &p_data);
+
 	HBoxContainer *titlebar_hbox = nullptr;
 	Label *title_label = nullptr;
 
@@ -78,12 +85,18 @@ class GraphNode : public GraphElement {
 	HashMap<int, Slot> slot_table;
 	Vector<int> slot_y_cache;
 
+	Control::FocusMode slots_focus_mode = Control::FOCUS_ACCESSIBILITY;
+	int slot_count = 0;
+	int selected_slot = -1;
+
 	struct ThemeCache {
 		Ref<StyleBox> panel;
 		Ref<StyleBox> panel_selected;
+		Ref<StyleBox> panel_focus;
 		Ref<StyleBox> titlebar;
 		Ref<StyleBox> titlebar_selected;
 		Ref<StyleBox> slot;
+		Ref<StyleBox> slot_selected;
 
 		int separation = 0;
 		int port_h_offset = 0;
@@ -113,6 +126,9 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
+	virtual String get_accessibility_container_name(const Node *p_node) const override;
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
 	void set_title(const String &p_title);
 	String get_title() const;
 
@@ -164,6 +180,9 @@ public:
 	Color get_output_port_color(int p_port_idx);
 	int get_output_port_slot(int p_port_idx);
 
+	void set_slots_focus_mode(Control::FocusMode p_focus_mode);
+	Control::FocusMode get_slots_focus_mode() const;
+
 	virtual Size2 get_minimum_size() const override;
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
@@ -173,5 +192,3 @@ public:
 
 	GraphNode();
 };
-
-#endif // GRAPH_NODE_H

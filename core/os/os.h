@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OS_H
-#define OS_H
+#pragma once
 
 #include "core/config/engine.h"
-#include "core/io/image.h"
 #include "core/io/logger.h"
 #include "core/io/remote_filesystem_client.h"
 #include "core/os/time_enums.h"
@@ -40,8 +38,7 @@
 #include "core/templates/list.h"
 #include "core/templates/vector.h"
 
-#include <stdarg.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 class OS {
 	static OS *singleton;
@@ -64,15 +61,13 @@ class OS {
 	bool _stderr_enabled = true;
 	bool _writing_movie = false;
 	bool _in_editor = false;
+	bool _embedded_in_editor = false;
 
 	CompositeLogger *_logger = nullptr;
 
 	bool restart_on_exit = false;
 	List<String> restart_commandline;
 
-	// for the user interface we keep a record of the current display driver
-	// so we can retrieve the rendering drivers available
-	int _display_driver_id = -1;
 	String _current_rendering_driver_name;
 	String _current_rendering_method;
 	bool _is_gles_over_gl = false;
@@ -82,8 +77,8 @@ class OS {
 	// For tracking benchmark data
 	bool use_benchmark = false;
 	String benchmark_file;
-	HashMap<Pair<String, String>, uint64_t, PairHash<String, String>> benchmark_marks_from;
-	HashMap<Pair<String, String>, double, PairHash<String, String>> benchmark_marks_final;
+	HashMap<Pair<String, String>, uint64_t> benchmark_marks_from;
+	HashMap<Pair<String, String>, double> benchmark_marks_final;
 
 protected:
 	void _set_logger(CompositeLogger *p_logger);
@@ -95,7 +90,15 @@ public:
 	enum RenderThreadMode {
 		RENDER_THREAD_UNSAFE,
 		RENDER_THREAD_SAFE,
-		RENDER_SEPARATE_THREAD
+		RENDER_SEPARATE_THREAD,
+	};
+
+	enum StdHandleType {
+		STD_HANDLE_INVALID,
+		STD_HANDLE_CONSOLE,
+		STD_HANDLE_FILE,
+		STD_HANDLE_PIPE,
+		STD_HANDLE_UNKNOWN,
 	};
 
 protected:
@@ -104,15 +107,13 @@ protected:
 	friend int test_main(int argc, char *argv[]);
 
 	HasServerFeatureCallback has_server_feature_callback = nullptr;
-	RenderThreadMode _render_thread_mode = RENDER_THREAD_SAFE;
+	bool _separate_thread_render = false;
+	bool _silent_crash_handler = false;
 
 	// Functions used by Main to initialize/deinitialize the OS.
-	void add_logger(Logger *p_logger);
 
 	virtual void initialize() = 0;
 	virtual void initialize_joypads() = 0;
-
-	void set_display_driver_id(int p_display_driver_id) { _display_driver_id = p_display_driver_id; }
 
 	virtual void set_main_loop(MainLoop *p_main_loop) = 0;
 	virtual void delete_main_loop() = 0;
@@ -137,17 +138,20 @@ public:
 	String get_current_rendering_method() const { return _current_rendering_method; }
 	bool get_gles_over_gl() const { return _is_gles_over_gl; }
 
-	int get_display_driver_id() const { return _display_driver_id; }
-
 	virtual Vector<String> get_video_adapter_driver_info() const = 0;
 	virtual bool get_user_prefers_integrated_gpu() const { return false; }
 
-	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, Logger::ErrorType p_type = Logger::ERR_ERROR);
+	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, Logger::ErrorType p_type = Logger::ERR_ERROR, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces = {});
 	void print(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 	void print_rich(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 	void printerr(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 
-	virtual String get_stdin_string() = 0;
+	virtual String get_stdin_string(int64_t p_buffer_size = 1024) = 0;
+	virtual PackedByteArray get_stdin_buffer(int64_t p_buffer_size = 1024) = 0;
+
+	virtual StdHandleType get_stdin_type() const { return STD_HANDLE_UNKNOWN; }
+	virtual StdHandleType get_stdout_type() const { return STD_HANDLE_UNKNOWN; }
+	virtual StdHandleType get_stderr_type() const { return STD_HANDLE_UNKNOWN; }
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) = 0; // Should return cryptographically-safe random bytes.
 	virtual String get_system_ca_certificates() { return ""; } // Concatenated certificates in PEM format.
@@ -155,6 +159,8 @@ public:
 	virtual PackedStringArray get_connected_midi_inputs();
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
+
+	virtual Rect2 calculate_boot_screen_rect(const Size2 &p_window_size, const Size2 &p_imgrect_size) const;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
@@ -177,14 +183,15 @@ public:
 	void set_delta_smoothing(bool p_enabled);
 	bool is_delta_smoothing_enabled() const;
 
-	virtual Vector<String> get_system_fonts() const { return Vector<String>(); };
-	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const { return String(); };
-	virtual Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const { return Vector<String>(); };
+	virtual Vector<String> get_system_fonts() const { return Vector<String>(); }
+	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const { return String(); }
+	virtual Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const { return Vector<String>(); }
 	virtual String get_executable_path() const;
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) = 0;
 	virtual Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking = true) { return Dictionary(); }
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) = 0;
-	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) { return create_process(get_executable_path(), p_arguments, r_child_id); };
+	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) { return create_process(get_executable_path(), p_arguments, r_child_id); }
+	virtual Error open_with_program(const String &p_program_path, const List<String> &p_paths) { return create_process(p_program_path, p_paths); }
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
 	virtual bool is_process_running(const ProcessID &p_pid) const = 0;
@@ -199,11 +206,13 @@ public:
 	virtual String get_environment(const String &p_var) const = 0;
 	virtual void set_environment(const String &p_var, const String &p_value) const = 0;
 	virtual void unset_environment(const String &p_var) const = 0;
+	virtual void load_shell_environment() const {}
 
 	virtual String get_name() const = 0;
 	virtual String get_identifier() const;
 	virtual String get_distribution_name() const = 0;
 	virtual String get_version() const = 0;
+	virtual String get_version_alias() const { return get_version(); }
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
 	virtual List<String> get_cmdline_user_args() const { return _user_args; }
 	virtual List<String> get_cmdline_platform_args() const { return List<String>(); }
@@ -239,7 +248,8 @@ public:
 	virtual double get_unix_time() const;
 
 	virtual void delay_usec(uint32_t p_usec) const = 0;
-	virtual void add_frame_delay(bool p_can_draw);
+	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events);
+	virtual uint64_t get_frame_delay(bool p_can_draw) const;
 
 	virtual uint64_t get_ticks_usec() const = 0;
 	uint64_t get_ticks_msec() const;
@@ -254,6 +264,12 @@ public:
 	void set_stdout_enabled(bool p_enabled);
 	void set_stderr_enabled(bool p_enabled);
 
+	virtual void set_crash_handler_silent() { _silent_crash_handler = true; }
+	virtual bool is_crash_handler_silent() { return _silent_crash_handler; }
+
+	virtual String multibyte_to_string(const String &p_encoding, const PackedByteArray &p_array) const;
+	virtual PackedByteArray string_to_multibyte(const String &p_encoding, const String &p_string) const;
+
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }
 	virtual void initialize_debugging() {}
@@ -262,7 +278,7 @@ public:
 	virtual uint64_t get_static_memory_peak_usage() const;
 	virtual Dictionary get_memory_info() const;
 
-	RenderThreadMode get_render_thread_mode() const { return _render_thread_mode; }
+	bool is_separate_thread_rendering_enabled() const { return _separate_thread_render; }
 
 	virtual String get_locale() const;
 	String get_locale_language() const;
@@ -275,9 +291,11 @@ public:
 	virtual String get_data_path() const;
 	virtual String get_config_path() const;
 	virtual String get_cache_path() const;
+	virtual String get_temp_path() const;
 	virtual String get_bundle_resource_dir() const;
 	virtual String get_bundle_icon_path() const;
 
+	virtual String get_user_data_dir(const String &p_user_dir) const;
 	virtual String get_user_data_dir() const;
 	virtual String get_resource_dir() const;
 
@@ -295,6 +313,9 @@ public:
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
 	virtual Error move_to_trash(const String &p_path) { return FAILED; }
+
+	void create_lock_file();
+	void remove_lock_file();
 
 	virtual int get_exit_code() const;
 	// `set_exit_code` should only be used from `SceneTree` (or from a similar
@@ -334,6 +355,8 @@ public:
 
 	virtual Error setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path);
 
+	void add_logger(Logger *p_logger);
+
 	enum PreferredTextureFormat {
 		PREFERRED_TEXTURE_FORMAT_S3TC_BPTC,
 		PREFERRED_TEXTURE_FORMAT_ETC2_ASTC
@@ -345,8 +368,12 @@ public:
 	// This is invoked by the GDExtensionManager after loading GDExtensions specified by the project.
 	virtual void load_platform_gdextensions() const {}
 
+#ifdef TOOLS_ENABLED
+	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
+	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const { return true; }
+	virtual bool _test_create_rendering_device(const String &p_display_driver) const { return true; }
+#endif
+
 	OS();
 	virtual ~OS();
 };
-
-#endif // OS_H

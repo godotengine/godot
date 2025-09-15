@@ -28,14 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PHYSICS_SERVER_3D_WRAP_MT_H
-#define PHYSICS_SERVER_3D_WRAP_MT_H
+#pragma once
 
 #include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
 #include "servers/physics_server_3d.h"
+
+#define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread)
+#define ASYNC_COND_PUSH_AND_RET (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
+#define ASYNC_COND_PUSH_AND_SYNC (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
 
 #ifdef DEBUG_SYNC
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));
@@ -60,11 +63,13 @@ class PhysicsServer3DWrapMT : public PhysicsServer3D {
 	WorkerThreadPool::TaskID server_task_id = WorkerThreadPool::INVALID_TASK_ID;
 	bool exit = false;
 	bool create_thread = false;
+	SafeFlag doing_sync;
 
 	void _assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id);
 	void _thread_exit();
 	void _thread_step(real_t p_delta);
 	void _thread_loop();
+	void _thread_sync();
 
 public:
 #define ServerName PhysicsServer3D
@@ -226,6 +231,11 @@ public:
 	FUNC3(body_apply_force, RID, const Vector3 &, const Vector3 &);
 	FUNC2(body_apply_torque, RID, const Vector3 &);
 
+	FUNC3(soft_body_apply_point_impulse, RID, int, const Vector3 &);
+	FUNC3(soft_body_apply_point_force, RID, int, const Vector3 &);
+	FUNC2(soft_body_apply_central_impulse, RID, const Vector3 &);
+	FUNC2(soft_body_apply_central_force, RID, const Vector3 &);
+
 	FUNC2(body_add_constant_central_force, RID, const Vector3 &);
 	FUNC3(body_add_constant_force, RID, const Vector3 &, const Vector3 &);
 	FUNC2(body_add_constant_torque, RID, const Vector3 &);
@@ -304,6 +314,9 @@ public:
 
 	FUNC2(soft_body_set_linear_stiffness, RID, real_t);
 	FUNC1RC(real_t, soft_body_get_linear_stiffness, RID);
+
+	FUNC2(soft_body_set_shrinking_factor, RID, real_t);
+	FUNC1RC(real_t, soft_body_get_shrinking_factor, RID);
 
 	FUNC2(soft_body_set_pressure_coefficient, RID, real_t);
 	FUNC1RC(real_t, soft_body_get_pressure_coefficient, RID);
@@ -414,5 +427,3 @@ public:
 #ifdef DEBUG_ENABLED
 #undef MAIN_THREAD_SYNC_WARN
 #endif
-
-#endif // PHYSICS_SERVER_3D_WRAP_MT_H

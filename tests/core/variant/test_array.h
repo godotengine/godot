@@ -28,32 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_ARRAY_H
-#define TEST_ARRAY_H
+#pragma once
 
 #include "core/variant/array.h"
 #include "tests/test_macros.h"
 #include "tests/test_tools.h"
 
 namespace TestArray {
+TEST_CASE("[Array] initializer list") {
+	Array arr = { 0, 1, "test", true, { 0.0, 1.0 } };
+	CHECK(arr.size() == 5);
+	CHECK(arr[0] == Variant(0));
+	CHECK(arr[1] == Variant(1));
+	CHECK(arr[2] == Variant("test"));
+	CHECK(arr[3] == Variant(true));
+	CHECK(arr[4] == Variant({ 0.0, 1.0 }));
 
-static inline Array build_array() {
-	return Array();
-}
-template <typename... Targs>
-static inline Array build_array(Variant item, Targs... Fargs) {
-	Array a = build_array(Fargs...);
-	a.push_front(item);
-	return a;
-}
-static inline Dictionary build_dictionary() {
-	return Dictionary();
-}
-template <typename... Targs>
-static inline Dictionary build_dictionary(Variant key, Variant item, Targs... Fargs) {
-	Dictionary d = build_dictionary(Fargs...);
-	d[key] = item;
-	return d;
+	arr = { "reassign" };
+	CHECK(arr.size() == 1);
+	CHECK(arr[0] == Variant("reassign"));
+
+	TypedArray<int> typed_arr = { 0, 1, 2 };
+	CHECK(typed_arr.size() == 3);
+	CHECK(typed_arr[0] == Variant(0));
+	CHECK(typed_arr[1] == Variant(1));
+	CHECK(typed_arr[2] == Variant(2));
 }
 
 TEST_CASE("[Array] size(), clear(), and is_empty()") {
@@ -107,6 +106,14 @@ TEST_CASE("[Array] resize(), insert(), and erase()") {
 	CHECK(int(arr[0]) == 2);
 	arr.erase(2);
 	CHECK(int(arr[0]) == 1);
+	arr.resize(0);
+	CHECK(arr.size() == 0);
+	arr.insert(0, 8);
+	CHECK(arr.size() == 1);
+	arr.insert(1, 16);
+	CHECK(int(arr[1]) == 16);
+	arr.insert(-1, 3);
+	CHECK(int(arr[1]) == 3);
 }
 
 TEST_CASE("[Array] front() and back()") {
@@ -120,9 +127,7 @@ TEST_CASE("[Array] front() and back()") {
 }
 
 TEST_CASE("[Array] has() and count()") {
-	Array arr;
-	arr.push_back(1);
-	arr.push_back(1);
+	Array arr = { 1, 1 };
 	CHECK(arr.has(1));
 	CHECK(!arr.has(2));
 	CHECK(arr.count(1) == 2);
@@ -130,13 +135,20 @@ TEST_CASE("[Array] has() and count()") {
 }
 
 TEST_CASE("[Array] remove_at()") {
-	Array arr;
-	arr.push_back(1);
-	arr.push_back(2);
+	Array arr = { 1, 2 };
 	arr.remove_at(0);
 	CHECK(arr.size() == 1);
 	CHECK(int(arr[0]) == 2);
 	arr.remove_at(0);
+	CHECK(arr.size() == 0);
+
+	// Negative index.
+	arr.push_back(3);
+	arr.push_back(4);
+	arr.remove_at(-1);
+	CHECK(arr.size() == 1);
+	CHECK(int(arr[0]) == 3);
+	arr.remove_at(-1);
 	CHECK(arr.size() == 0);
 
 	// The array is now empty; try to use `remove_at()` again.
@@ -149,18 +161,12 @@ TEST_CASE("[Array] remove_at()") {
 }
 
 TEST_CASE("[Array] get()") {
-	Array arr;
-	arr.push_back(1);
+	Array arr = { 1 };
 	CHECK(int(arr.get(0)) == 1);
 }
 
 TEST_CASE("[Array] sort()") {
-	Array arr;
-
-	arr.push_back(3);
-	arr.push_back(4);
-	arr.push_back(2);
-	arr.push_back(1);
+	Array arr = { 3, 4, 2, 1 };
 	arr.sort();
 	int val = 1;
 	for (int i = 0; i < arr.size(); i++) {
@@ -187,12 +193,7 @@ TEST_CASE("[Array] push_front(), pop_front(), pop_back()") {
 TEST_CASE("[Array] pop_at()") {
 	ErrorDetector ed;
 
-	Array arr;
-	arr.push_back(2);
-	arr.push_back(4);
-	arr.push_back(6);
-	arr.push_back(8);
-	arr.push_back(10);
+	Array arr = { 2, 4, 6, 8, 10 };
 
 	REQUIRE(int(arr.pop_at(2)) == 6);
 	REQUIRE(arr.size() == 4);
@@ -247,13 +248,7 @@ TEST_CASE("[Array] max() and min()") {
 }
 
 TEST_CASE("[Array] slice()") {
-	Array array;
-	array.push_back(0);
-	array.push_back(1);
-	array.push_back(2);
-	array.push_back(3);
-	array.push_back(4);
-	array.push_back(5);
+	Array array = { 0, 1, 2, 3, 4, 5 };
 
 	Array slice0 = array.slice(0, 0);
 	CHECK(slice0.size() == 0);
@@ -333,7 +328,7 @@ TEST_CASE("[Array] slice()") {
 
 TEST_CASE("[Array] Duplicate array") {
 	// a = [1, [2, 2], {3: 3}]
-	Array a = build_array(1, build_array(2, 2), build_dictionary(3, 3));
+	Array a = { 1, { 2, 2 }, Dictionary({ { 3, 3 } }) };
 
 	// Deep copy
 	Array deep_a = a.duplicate(true);
@@ -396,7 +391,7 @@ TEST_CASE("[Array] Duplicate recursive array") {
 
 TEST_CASE("[Array] Hash array") {
 	// a = [1, [2, 2], {3: 3}]
-	Array a = build_array(1, build_array(2, 2), build_dictionary(3, 3));
+	Array a = { 1, { 2, 2 }, Dictionary({ { 3, 3 } }) };
 	uint32_t original_hash = a.hash();
 
 	a.push_back(1);
@@ -446,9 +441,9 @@ TEST_CASE("[Array] Empty comparison") {
 }
 
 TEST_CASE("[Array] Flat comparison") {
-	Array a1 = build_array(1);
-	Array a2 = build_array(1);
-	Array other_a = build_array(2);
+	Array a1 = { 1 };
+	Array a2 = { 1 };
+	Array other_a = { 2 };
 
 	// test both operator== and operator!=
 	CHECK_EQ(a1, a1); // compare self
@@ -461,12 +456,12 @@ TEST_CASE("[Array] Flat comparison") {
 
 TEST_CASE("[Array] Nested array comparison") {
 	// a1 = [[[1], 2], 3]
-	Array a1 = build_array(build_array(build_array(1), 2), 3);
+	Array a1 = { { { 1 }, 2 }, 3 };
 
 	Array a2 = a1.duplicate(true);
 
 	// other_a = [[[1, 0], 2], 3]
-	Array other_a = build_array(build_array(build_array(1, 0), 2), 3);
+	Array other_a = { { { 1, 0 }, 2 }, 3 };
 
 	// test both operator== and operator!=
 	CHECK_EQ(a1, a1); // compare self
@@ -479,12 +474,12 @@ TEST_CASE("[Array] Nested array comparison") {
 
 TEST_CASE("[Array] Nested dictionary comparison") {
 	// a1 = [{1: 2}, 3]
-	Array a1 = build_array(build_dictionary(1, 2), 3);
+	Array a1 = { Dictionary({ { 1, 2 } }), 3 };
 
 	Array a2 = a1.duplicate(true);
 
 	// other_a = [{1: 0}, 3]
-	Array other_a = build_array(build_dictionary(1, 0), 3);
+	Array other_a = { Dictionary({ { 1, 0 } }), 3 };
 
 	// test both operator== and operator!=
 	CHECK_EQ(a1, a1); // compare self
@@ -546,8 +541,8 @@ TEST_CASE("[Array] Recursive self comparison") {
 }
 
 TEST_CASE("[Array] Iteration") {
-	Array a1 = build_array(1, 2, 3);
-	Array a2 = build_array(1, 2, 3);
+	Array a1 = { 1, 2, 3 };
+	Array a2 = { 1, 2, 3 };
 
 	int idx = 0;
 	for (Variant &E : a1) {
@@ -570,10 +565,10 @@ TEST_CASE("[Array] Iteration") {
 }
 
 TEST_CASE("[Array] Iteration and modification") {
-	Array a1 = build_array(1, 2, 3);
-	Array a2 = build_array(2, 3, 4);
-	Array a3 = build_array(1, 2, 3);
-	Array a4 = build_array(1, 2, 3);
+	Array a1 = { 1, 2, 3 };
+	Array a2 = { 2, 3, 4 };
+	Array a3 = { 1, 2, 3 };
+	Array a4 = { 1, 2, 3 };
 	a3.make_read_only();
 
 	int idx = 0;
@@ -598,11 +593,8 @@ TEST_CASE("[Array] Iteration and modification") {
 }
 
 TEST_CASE("[Array] Typed copying") {
-	TypedArray<int> a1;
-	a1.push_back(1);
-
-	TypedArray<double> a2;
-	a2.push_back(1.0);
+	TypedArray<int> a1 = { 1 };
+	TypedArray<double> a2 = { 1.0 };
 
 	Array a3 = a1;
 	TypedArray<int> a4 = a3;
@@ -634,6 +626,22 @@ TEST_CASE("[Array] Typed copying") {
 	a6.clear();
 }
 
-} // namespace TestArray
+static bool _find_custom_callable(const Variant &p_val) {
+	return (int)p_val % 2 == 0;
+}
 
-#endif // TEST_ARRAY_H
+TEST_CASE("[Array] Test find_custom") {
+	Array a1 = { 1, 3, 4, 5, 8, 9 };
+	// Find first even number.
+	int index = a1.find_custom(callable_mp_static(_find_custom_callable));
+	CHECK_EQ(index, 2);
+}
+
+TEST_CASE("[Array] Test rfind_custom") {
+	Array a1 = { 1, 3, 4, 5, 8, 9 };
+	// Find last even number.
+	int index = a1.rfind_custom(callable_mp_static(_find_custom_callable));
+	CHECK_EQ(index, 4);
+}
+
+} // namespace TestArray

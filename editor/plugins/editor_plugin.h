@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_PLUGIN_H
-#define EDITOR_PLUGIN_H
+#pragma once
 
 #include "core/io/config_file.h"
+#include "editor/inspector/editor_context_menu_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/control.h"
 
@@ -53,7 +53,6 @@ class EditorToolAddons;
 class EditorTranslationParserPlugin;
 class EditorUndoRedoManager;
 class ScriptCreateDialog;
-class EditorContextMenuPlugin;
 
 class EditorPlugin : public Node {
 	GDCLASS(EditorPlugin, Node);
@@ -101,13 +100,6 @@ public:
 		AFTER_GUI_INPUT_PASS,
 		AFTER_GUI_INPUT_STOP,
 		AFTER_GUI_INPUT_CUSTOM,
-	};
-
-	enum ContextMenuSlot {
-		CONTEXT_SLOT_SCENE_TREE,
-		CONTEXT_SLOT_FILESYSTEM,
-		CONTEXT_SLOT_SCRIPT_EDITOR,
-		CONTEXT_SUBMENU_SLOT_FILESYSTEM_CREATE,
 	};
 
 protected:
@@ -188,8 +180,8 @@ public:
 	virtual void forward_3d_draw_over_viewport(Control *p_overlay);
 	virtual void forward_3d_force_draw_over_viewport(Control *p_overlay);
 
-	virtual String get_name() const;
-	virtual const Ref<Texture2D> get_icon() const;
+	virtual String get_plugin_name() const;
+	virtual const Ref<Texture2D> get_plugin_icon() const;
 	virtual String get_plugin_version() const;
 	virtual void set_plugin_version(const String &p_version);
 	virtual bool has_main_screen() const;
@@ -257,20 +249,16 @@ public:
 	void add_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
 	void remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
 
-	void add_context_menu_plugin(ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin);
-	void remove_context_menu_plugin(ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin);
+	void add_context_menu_plugin(EditorContextMenuPlugin::ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin);
+	void remove_context_menu_plugin(const Ref<EditorContextMenuPlugin> &p_plugin);
 
 	void enable_plugin();
 	void disable_plugin();
-
-	EditorPlugin() {}
-	virtual ~EditorPlugin() {}
 };
 
 VARIANT_ENUM_CAST(EditorPlugin::CustomControlContainer);
 VARIANT_ENUM_CAST(EditorPlugin::DockSlot);
 VARIANT_ENUM_CAST(EditorPlugin::AfterGUIInput);
-VARIANT_ENUM_CAST(EditorPlugin::ContextMenuSlot);
 
 typedef EditorPlugin *(*EditorPluginCreateFunc)();
 
@@ -304,5 +292,3 @@ public:
 		creation_funcs[creation_func_count++] = p_func;
 	}
 };
-
-#endif // EDITOR_PLUGIN_H

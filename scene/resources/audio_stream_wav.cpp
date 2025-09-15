@@ -30,8 +30,11 @@
 
 #include "audio_stream_wav.h"
 
-#include "core/io/file_access.h"
+#include "core/io/file_access_memory.h"
 #include "core/io/marshalls.h"
+
+const float TRIM_DB_LIMIT = -50;
+const int TRIM_FADE_OUT_FRAMES = 500;
 
 void AudioStreamPlaybackWAV::start(double p_from_pos) {
 	if (base->format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
@@ -53,6 +56,7 @@ void AudioStreamPlaybackWAV::start(double p_from_pos) {
 
 	sign = 1;
 	active = true;
+	begin_resample();
 }
 
 void AudioStreamPlaybackWAV::stop() {
@@ -68,7 +72,7 @@ int AudioStreamPlaybackWAV::get_loop_count() const {
 }
 
 double AudioStreamPlaybackWAV::get_playback_position() const {
-	return float(offset >> MIX_FRAC_BITS) / base->mix_rate;
+	return double(offset) / base->mix_rate;
 }
 
 void AudioStreamPlaybackWAV::seek(double p_time) {
@@ -83,20 +87,17 @@ void AudioStreamPlaybackWAV::seek(double p_time) {
 		p_time = max - 0.001;
 	}
 
-	offset = uint64_t(p_time * base->mix_rate) << MIX_FRAC_BITS;
+	offset = int64_t(p_time * base->mix_rate);
 }
 
 template <typename Depth, bool is_stereo, bool is_ima_adpcm, bool is_qoa>
-void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, int64_t &p_offset, int32_t &p_increment, uint32_t p_amount, IMA_ADPCM_State *p_ima_adpcm, QOA_State *p_qoa) {
+void AudioStreamPlaybackWAV::decode_samples(const Depth *p_src, AudioFrame *p_dst, int64_t &p_offset, int8_t &p_increment, uint32_t p_amount, IMA_ADPCM_State *p_ima_adpcm, QOA_State *p_qoa) {
 	// this function will be compiled branchless by any decent compiler
 
-	int32_t final = 0, final_r = 0, next = 0, next_r = 0;
+	int32_t final = 0, final_r = 0;
 	while (p_amount) {
 		p_amount--;
-		int64_t pos = p_offset >> MIX_FRAC_BITS;
-		if (is_stereo && !is_ima_adpcm && !is_qoa) {
-			pos <<= 1;
-		}
+		int64_t pos = p_offset << (is_stereo && !is_ima_adpcm && !is_qoa ? 1 : 0);
 
 		if (is_ima_adpcm) {
 			int64_t sample_pos = pos + p_ima_adpcm[0].window_ofs;
@@ -123,10 +124,8 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 					int16_t nibble, diff, step;
 
 					p_ima_adpcm[i].last_nibble++;
-					const uint8_t *src_ptr = (const uint8_t *)base->data;
-					src_ptr += AudioStreamWAV::DATA_PAD;
 
-					uint8_t nbb = src_ptr[(p_ima_adpcm[i].last_nibble >> 1) * (is_stereo ? 2 : 1) + i];
+					uint8_t nbb = p_src[(p_ima_adpcm[i].last_nibble >> 1) * (is_stereo ? 2 : 1) + i];
 					nibble = (p_ima_adpcm[i].last_nibble & 1) ? (nbb >> 4) : (nbb & 0xF);
 					step = _ima_adpcm_step_table[p_ima_adpcm[i].step_index];
 
@@ -174,83 +173,32 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 				final_r = p_ima_adpcm[1].predictor;
 			}
 
-		} else {
-			if (is_qoa) {
-				if (pos != p_qoa->cache_pos) { // Prevents triple decoding on lower mix rates.
-					for (int i = 0; i < 2; i++) {
-						// Sign operations prevent triple decoding on backward loops, maxing prevents pop.
-						uint32_t interp_pos = MIN(pos + (i * sign) + (sign < 0), p_qoa->desc.samples - 1);
-						uint32_t new_data_ofs = 8 + interp_pos / QOA_FRAME_LEN * p_qoa->frame_len;
+		} else if (is_qoa) {
+			uint32_t new_data_ofs = 8 + pos / QOA_FRAME_LEN * p_qoa->frame_len;
 
-						if (p_qoa->data_ofs != new_data_ofs) {
-							p_qoa->data_ofs = new_data_ofs;
-							const uint8_t *src_ptr = (const uint8_t *)base->data;
-							src_ptr += p_qoa->data_ofs + AudioStreamWAV::DATA_PAD;
-							qoa_decode_frame(src_ptr, p_qoa->frame_len, &p_qoa->desc, p_qoa->dec, &p_qoa->dec_len);
-						}
-
-						uint32_t dec_idx = (interp_pos % QOA_FRAME_LEN) * p_qoa->desc.channels;
-
-						if ((sign > 0 && i == 0) || (sign < 0 && i == 1)) {
-							final = p_qoa->dec[dec_idx];
-							p_qoa->cache[0] = final;
-							if (is_stereo) {
-								final_r = p_qoa->dec[dec_idx + 1];
-								p_qoa->cache_r[0] = final_r;
-							}
-						} else {
-							next = p_qoa->dec[dec_idx];
-							p_qoa->cache[1] = next;
-							if (is_stereo) {
-								next_r = p_qoa->dec[dec_idx + 1];
-								p_qoa->cache_r[1] = next_r;
-							}
-						}
-					}
-					p_qoa->cache_pos = pos;
-				} else {
-					final = p_qoa->cache[0];
-					if (is_stereo) {
-						final_r = p_qoa->cache_r[0];
-					}
-
-					next = p_qoa->cache[1];
-					if (is_stereo) {
-						next_r = p_qoa->cache_r[1];
-					}
-				}
-			} else {
-				final = p_src[pos];
-				if (is_stereo) {
-					final_r = p_src[pos + 1];
-				}
-
-				if constexpr (sizeof(Depth) == 1) { /* conditions will not exist anymore when compiled! */
-					final <<= 8;
-					if (is_stereo) {
-						final_r <<= 8;
-					}
-				}
-
-				if (is_stereo) {
-					next = p_src[pos + 2];
-					next_r = p_src[pos + 3];
-				} else {
-					next = p_src[pos + 1];
-				}
-
-				if constexpr (sizeof(Depth) == 1) {
-					next <<= 8;
-					if (is_stereo) {
-						next_r <<= 8;
-					}
-				}
+			if (p_qoa->data_ofs != new_data_ofs) {
+				p_qoa->data_ofs = new_data_ofs;
+				const uint8_t *ofs_src = (uint8_t *)p_src + p_qoa->data_ofs;
+				qoa_decode_frame(ofs_src, p_qoa->frame_len, &p_qoa->desc, p_qoa->dec.ptr(), &p_qoa->dec_len);
 			}
-			int32_t frac = int64_t(p_offset & MIX_FRAC_MASK);
 
-			final = final + ((next - final) * frac >> MIX_FRAC_BITS);
+			uint32_t dec_idx = pos % QOA_FRAME_LEN << (is_stereo ? 1 : 0);
+
+			final = p_qoa->dec[dec_idx];
 			if (is_stereo) {
-				final_r = final_r + ((next_r - final_r) * frac >> MIX_FRAC_BITS);
+				final_r = p_qoa->dec[dec_idx + 1];
+			}
+
+		} else {
+			final = p_src[pos];
+			if (is_stereo) {
+				final_r = p_src[pos + 1];
+			}
+			if constexpr (sizeof(Depth) == 1) { /* conditions will not exist anymore when compiled! */
+				final <<= 8;
+				if (is_stereo) {
+					final_r <<= 8;
+				}
 			}
 		}
 
@@ -266,15 +214,15 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 	}
 }
 
-int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
-	if (!base->data || !active) {
+int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
+	if (base->data.is_empty() || !active) {
 		for (int i = 0; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0, 0);
 		}
 		return 0;
 	}
 
-	int len = base->data_bytes;
+	uint32_t len = base->data_bytes;
 	switch (base->format) {
 		case AudioStreamWAV::FORMAT_8_BITS:
 			len /= 1;
@@ -294,13 +242,10 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 		len /= 2;
 	}
 
-	/* some 64-bit fixed point precaches */
-
-	int64_t loop_begin_fp = ((int64_t)base->loop_begin << MIX_FRAC_BITS);
-	int64_t loop_end_fp = ((int64_t)base->loop_end << MIX_FRAC_BITS);
-	int64_t length_fp = ((int64_t)len << MIX_FRAC_BITS);
-	int64_t begin_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_begin_fp : 0;
-	int64_t end_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_end_fp : length_fp;
+	int64_t loop_begin = base->loop_begin;
+	int64_t loop_end = base->loop_end;
+	int64_t begin_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_begin : 0;
+	int64_t end_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_end : len - 1;
 	bool is_stereo = base->stereo;
 
 	int32_t todo = p_frames;
@@ -309,13 +254,7 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 		sign = -1;
 	}
 
-	float base_rate = AudioServer::get_singleton()->get_mix_rate();
-	float srate = base->mix_rate;
-	srate *= p_rate_scale;
-	float playback_speed_scale = AudioServer::get_singleton()->get_playback_speed_scale();
-	float fincrement = (srate * playback_speed_scale) / base_rate;
-	int32_t increment = int32_t(MAX(fincrement * MIX_FRAC_LEN, 1));
-	increment *= sign;
+	int8_t increment = sign;
 
 	//looping
 
@@ -324,14 +263,13 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 
 	/* audio data */
 
-	uint8_t *dataptr = (uint8_t *)base->data;
-	const void *data = dataptr + AudioStreamWAV::DATA_PAD;
+	const uint8_t *data = base->data.ptr();
 	AudioFrame *dst_buff = p_buffer;
 
 	if (format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
 		if (loop_format != AudioStreamWAV::LOOP_DISABLED) {
-			ima_adpcm[0].loop_pos = loop_begin_fp >> MIX_FRAC_BITS;
-			ima_adpcm[1].loop_pos = loop_begin_fp >> MIX_FRAC_BITS;
+			ima_adpcm[0].loop_pos = loop_begin;
+			ima_adpcm[1].loop_pos = loop_begin;
 			loop_format = AudioStreamWAV::LOOP_FORWARD;
 		}
 	}
@@ -345,16 +283,16 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 		if (increment < 0) {
 			/* going backwards */
 
-			if (loop_format != AudioStreamWAV::LOOP_DISABLED && offset < loop_begin_fp) {
+			if (loop_format != AudioStreamWAV::LOOP_DISABLED && offset < loop_begin) {
 				/* loopstart reached */
 				if (loop_format == AudioStreamWAV::LOOP_PINGPONG) {
 					/* bounce ping pong */
-					offset = loop_begin_fp + (loop_begin_fp - offset);
+					offset = loop_begin + (loop_begin - offset);
 					increment = -increment;
 					sign *= -1;
 				} else {
 					/* go to loop-end */
-					offset = loop_end_fp - (loop_begin_fp - offset);
+					offset = loop_end - (loop_begin - offset);
 				}
 			} else {
 				/* check for sample not reaching beginning */
@@ -365,12 +303,12 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 			}
 		} else {
 			/* going forward */
-			if (loop_format != AudioStreamWAV::LOOP_DISABLED && offset >= loop_end_fp) {
+			if (loop_format != AudioStreamWAV::LOOP_DISABLED && offset >= loop_end) {
 				/* loopend reached */
 
 				if (loop_format == AudioStreamWAV::LOOP_PINGPONG) {
 					/* bounce ping pong */
-					offset = loop_end_fp - (offset - loop_end_fp);
+					offset = loop_end - (offset - loop_end);
 					increment = -increment;
 					sign *= -1;
 				} else {
@@ -380,16 +318,16 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 						for (int i = 0; i < 2; i++) {
 							ima_adpcm[i].step_index = ima_adpcm[i].loop_step_index;
 							ima_adpcm[i].predictor = ima_adpcm[i].loop_predictor;
-							ima_adpcm[i].last_nibble = loop_begin_fp >> MIX_FRAC_BITS;
+							ima_adpcm[i].last_nibble = loop_begin;
 						}
-						offset = loop_begin_fp;
+						offset = loop_begin;
 					} else {
-						offset = loop_begin_fp + (offset - loop_end_fp);
+						offset = loop_begin + (offset - loop_end);
 					}
 				}
 			} else {
 				/* no loop, check for end of sample */
-				if (offset >= length_fp) {
+				if (offset >= len) {
 					active = false;
 					break;
 				}
@@ -416,32 +354,32 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 		switch (base->format) {
 			case AudioStreamWAV::FORMAT_8_BITS: {
 				if (is_stereo) {
-					do_resample<int8_t, true, false, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
+					decode_samples<int8_t, true, false, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
 				} else {
-					do_resample<int8_t, false, false, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
+					decode_samples<int8_t, false, false, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
 				}
 			} break;
 			case AudioStreamWAV::FORMAT_16_BITS: {
 				if (is_stereo) {
-					do_resample<int16_t, true, false, false>((int16_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
+					decode_samples<int16_t, true, false, false>((int16_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
 				} else {
-					do_resample<int16_t, false, false, false>((int16_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
+					decode_samples<int16_t, false, false, false>((int16_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
 				}
 
 			} break;
 			case AudioStreamWAV::FORMAT_IMA_ADPCM: {
 				if (is_stereo) {
-					do_resample<int8_t, true, true, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
+					decode_samples<int8_t, true, true, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
 				} else {
-					do_resample<int8_t, false, true, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
+					decode_samples<int8_t, false, true, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
 				}
 
 			} break;
 			case AudioStreamWAV::FORMAT_QOA: {
 				if (is_stereo) {
-					do_resample<uint8_t, true, false, true>((uint8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
+					decode_samples<uint8_t, true, false, true>((uint8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
 				} else {
-					do_resample<uint8_t, false, false, true>((uint8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
+					decode_samples<uint8_t, false, false, true>((uint8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
 				}
 			} break;
 		}
@@ -459,6 +397,10 @@ int AudioStreamPlaybackWAV::mix(AudioFrame *p_buffer, float p_rate_scale, int p_
 		return mixed_frames;
 	}
 	return p_frames;
+}
+
+float AudioStreamPlaybackWAV::get_stream_sampling_rate() {
+	return base->mix_rate;
 }
 
 void AudioStreamPlaybackWAV::tag_used_streams() {
@@ -479,13 +421,8 @@ Ref<AudioSamplePlayback> AudioStreamPlaybackWAV::get_sample_playback() const {
 
 void AudioStreamPlaybackWAV::set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
 	sample_playback = p_playback;
-}
-
-AudioStreamPlaybackWAV::AudioStreamPlaybackWAV() {}
-
-AudioStreamPlaybackWAV::~AudioStreamPlaybackWAV() {
-	if (qoa.dec) {
-		memfree(qoa.dec);
+	if (sample_playback.is_valid()) {
+		sample_playback->stream_playback = Ref<AudioStreamPlayback>(this);
 	}
 }
 
@@ -540,6 +477,14 @@ bool AudioStreamWAV::is_stereo() const {
 	return stereo;
 }
 
+void AudioStreamWAV::set_tags(const Dictionary &p_tags) {
+	tags = p_tags;
+}
+
+Dictionary AudioStreamWAV::get_tags() const {
+	return tags;
+}
+
 double AudioStreamWAV::get_length() const {
 	int len = data_bytes;
 	switch (format) {
@@ -554,7 +499,7 @@ double AudioStreamWAV::get_length() const {
 			break;
 		case AudioStreamWAV::FORMAT_QOA:
 			qoa_desc desc = {};
-			qoa_decode_header((uint8_t *)data + DATA_PAD, data_bytes, &desc);
+			qoa_decode_header(data.ptr(), data_bytes, &desc);
 			len = desc.samples * desc.channels;
 			break;
 	}
@@ -572,39 +517,15 @@ bool AudioStreamWAV::is_monophonic() const {
 
 void AudioStreamWAV::set_data(const Vector<uint8_t> &p_data) {
 	AudioServer::get_singleton()->lock();
-	if (data) {
-		memfree(data);
-		data = nullptr;
-		data_bytes = 0;
-	}
 
-	int datalen = p_data.size();
-	if (datalen) {
-		const uint8_t *r = p_data.ptr();
-		int alloc_len = datalen + DATA_PAD * 2;
-		data = memalloc(alloc_len); //alloc with some padding for interpolation
-		memset(data, 0, alloc_len);
-		uint8_t *dataptr = (uint8_t *)data;
-		memcpy(dataptr + DATA_PAD, r, datalen);
-		data_bytes = datalen;
-	}
+	data = p_data;
+	data_bytes = p_data.size();
 
 	AudioServer::get_singleton()->unlock();
 }
 
 Vector<uint8_t> AudioStreamWAV::get_data() const {
-	Vector<uint8_t> pv;
-
-	if (data) {
-		pv.resize(data_bytes);
-		{
-			uint8_t *w = pv.ptrw();
-			uint8_t *dataptr = (uint8_t *)data;
-			memcpy(w, dataptr + DATA_PAD, data_bytes);
-		}
-	}
-
-	return pv;
+	return data;
 }
 
 Error AudioStreamWAV::save_to_wav(const String &p_path) {
@@ -639,7 +560,7 @@ Error AudioStreamWAV::save_to_wav(const String &p_path) {
 	}
 
 	String file_path = p_path;
-	if (!(file_path.substr(file_path.length() - 4, 4) == ".wav")) {
+	if (file_path.substr(file_path.length() - 4, 4).to_lower() != ".wav") {
 		file_path += ".wav";
 	}
 
@@ -663,8 +584,7 @@ Error AudioStreamWAV::save_to_wav(const String &p_path) {
 	file->store_32(sub_chunk_2_size); //Subchunk2Size
 
 	// Add data
-	Vector<uint8_t> stream_data = get_data();
-	const uint8_t *read_data = stream_data.ptr();
+	const uint8_t *read_data = data.ptr();
 	switch (format) {
 		case AudioStreamWAV::FORMAT_8_BITS:
 			for (unsigned int i = 0; i < data_bytes; i++) {
@@ -693,12 +613,12 @@ Ref<AudioStreamPlayback> AudioStreamWAV::instantiate_playback() {
 	sample->base = Ref<AudioStreamWAV>(this);
 
 	if (format == AudioStreamWAV::FORMAT_QOA) {
-		uint32_t ffp = qoa_decode_header((uint8_t *)data + DATA_PAD, data_bytes, &sample->qoa.desc);
+		uint32_t ffp = qoa_decode_header(data.ptr(), data_bytes, &sample->qoa.desc);
 		ERR_FAIL_COND_V(ffp != 8, Ref<AudioStreamPlaybackWAV>());
 		sample->qoa.frame_len = qoa_max_frame_size(&sample->qoa.desc);
 		int samples_len = (sample->qoa.desc.samples > QOA_FRAME_LEN ? QOA_FRAME_LEN : sample->qoa.desc.samples);
-		int alloc_len = sample->qoa.desc.channels * samples_len * sizeof(int16_t);
-		sample->qoa.dec = (int16_t *)memalloc(alloc_len);
+		int dec_len = sample->qoa.desc.channels * samples_len;
+		sample->qoa.dec.resize(dec_len);
 	}
 
 	return sample;
@@ -735,7 +655,559 @@ Ref<AudioSample> AudioStreamWAV::generate_sample() const {
 	return sample;
 }
 
+Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_stream_data, const Dictionary &p_options) {
+	// /* STEP 1, READ WAVE FILE */
+
+	Ref<FileAccessMemory> file;
+	file.instantiate();
+	Error err = file->open_custom(p_stream_data.ptr(), p_stream_data.size());
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<AudioStreamWAV>(), "Cannot create memfile for WAV file buffer.");
+
+	/* CHECK RIFF */
+	char riff[5];
+	riff[4] = 0;
+	file->get_buffer((uint8_t *)&riff, 4); //RIFF
+
+	if (riff[0] != 'R' || riff[1] != 'I' || riff[2] != 'F' || riff[3] != 'F') {
+		ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), vformat("Not a WAV file. File should start with 'RIFF', but found '%s', in file of size %d bytes", riff, file->get_length()));
+	}
+
+	/* GET FILESIZE */
+
+	// The file size in header is 8 bytes less than the actual size.
+	// See https://docs.fileformat.com/audio/wav/
+	const int FILE_SIZE_HEADER_OFFSET = 8;
+	uint32_t file_size_header = file->get_32() + FILE_SIZE_HEADER_OFFSET;
+	uint64_t file_size = file->get_length();
+	if (file_size != file_size_header) {
+		WARN_PRINT(vformat("File size %d is %s than the expected size %d.", file_size, file_size > file_size_header ? "larger" : "smaller", file_size_header));
+	}
+
+	/* CHECK WAVE */
+
+	char wave[5];
+	wave[4] = 0;
+	file->get_buffer((uint8_t *)&wave, 4); //WAVE
+
+	if (wave[0] != 'W' || wave[1] != 'A' || wave[2] != 'V' || wave[3] != 'E') {
+		ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), vformat("Not a WAV file. Header should contain 'WAVE', but found '%s', in file of size %d bytes", wave, file->get_length()));
+	}
+
+	// Let users override potential loop points from the WAV.
+	// We parse the WAV loop points only with "Detect From WAV" (0).
+	int import_loop_mode = p_options["edit/loop_mode"];
+
+	int format_bits = 0;
+	int format_channels = 0;
+
+	AudioStreamWAV::LoopMode loop_mode = AudioStreamWAV::LOOP_DISABLED;
+	uint16_t compression_code = 1;
+	bool format_found = false;
+	bool data_found = false;
+	int format_freq = 0;
+	int loop_begin = 0;
+	int loop_end = 0;
+	int frames = 0;
+
+	Vector<float> data;
+
+	HashMap<String, String> tag_map;
+
+	while (!file->eof_reached()) {
+		/* chunk */
+		char chunk_id[4];
+		file->get_buffer((uint8_t *)&chunk_id, 4); //RIFF
+
+		/* chunk size */
+		uint32_t chunksize = file->get_32();
+		uint32_t file_pos = file->get_position(); //save file pos, so we can skip to next chunk safely
+
+		if (file->eof_reached()) {
+			//ERR_PRINT("EOF REACH");
+			break;
+		}
+
+		if (chunk_id[0] == 'f' && chunk_id[1] == 'm' && chunk_id[2] == 't' && chunk_id[3] == ' ' && !format_found) {
+			/* IS FORMAT CHUNK */
+
+			//Issue: #7755 : Not a bug - usage of other formats (format codes) are unsupported in current importer version.
+			//Consider revision for engine version 3.0
+			compression_code = file->get_16();
+			if (compression_code != 1 && compression_code != 3) {
+				ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), "Format not supported for WAVE file (not PCM). Save WAVE files as uncompressed PCM or IEEE float instead.");
+			}
+
+			format_channels = file->get_16();
+			if (format_channels != 1 && format_channels != 2) {
+				ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), "Format not supported for WAVE file (not stereo or mono).");
+			}
+
+			format_freq = file->get_32(); //sampling rate
+
+			file->get_32(); // average bits/second (unused)
+			file->get_16(); // block align (unused)
+			format_bits = file->get_16(); // bits per sample
+
+			if (format_bits % 8 || format_bits == 0) {
+				ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), "Invalid amount of bits in the sample (should be one of 8, 16, 24 or 32).");
+			}
+
+			if (compression_code == 3 && format_bits % 32) {
+				ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), "Invalid amount of bits in the IEEE float sample (should be 32 or 64).");
+			}
+
+			/* Don't need anything else, continue */
+			format_found = true;
+		}
+
+		if (chunk_id[0] == 'd' && chunk_id[1] == 'a' && chunk_id[2] == 't' && chunk_id[3] == 'a' && !data_found) {
+			/* IS DATA CHUNK */
+			data_found = true;
+
+			if (!format_found) {
+				ERR_PRINT("'data' chunk before 'format' chunk found.");
+				break;
+			}
+
+			uint64_t remaining_bytes = file_size - file_pos;
+			frames = chunksize;
+			if (remaining_bytes < chunksize) {
+				WARN_PRINT("Data chunk size is smaller than expected. Proceeding with actual data size.");
+				frames = remaining_bytes;
+			}
+
+			ERR_FAIL_COND_V(format_channels == 0, Ref<AudioStreamWAV>());
+			frames /= format_channels;
+			frames /= (format_bits >> 3);
+
+			/*print_line("chunksize: "+itos(chunksize));
+			print_line("channels: "+itos(format_channels));
+			print_line("bits: "+itos(format_bits));
+			*/
+
+			data.resize(frames * format_channels);
+
+			if (compression_code == 1) {
+				if (format_bits == 8) {
+					for (int i = 0; i < frames * format_channels; i++) {
+						// 8 bit samples are UNSIGNED
+
+						data.write[i] = int8_t(file->get_8() - 128) / 128.f;
+					}
+				} else if (format_bits == 16) {
+					for (int i = 0; i < frames * format_channels; i++) {
+						//16 bit SIGNED
+
+						data.write[i] = int16_t(file->get_16()) / 32768.f;
+					}
+				} else {
+					for (int i = 0; i < frames * format_channels; i++) {
+						//16+ bits samples are SIGNED
+						// if sample is > 16 bits, just read extra bytes
+
+						uint32_t s = 0;
+						for (int b = 0; b < (format_bits >> 3); b++) {
+							s |= ((uint32_t)file->get_8()) << (b * 8);
+						}
+						s <<= (32 - format_bits);
+
+						data.write[i] = (int32_t(s) >> 16) / 32768.f;
+					}
+				}
+			} else if (compression_code == 3) {
+				if (format_bits == 32) {
+					for (int i = 0; i < frames * format_channels; i++) {
+						//32 bit IEEE Float
+
+						data.write[i] = file->get_float();
+					}
+				} else if (format_bits == 64) {
+					for (int i = 0; i < frames * format_channels; i++) {
+						//64 bit IEEE Float
+
+						data.write[i] = file->get_double();
+					}
+				}
+			}
+
+			// This is commented out due to some weird edge case seemingly in FileAccessMemory, doesn't seem to have any side effects though.
+			// if (file->eof_reached()) {
+			// 	ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), "Premature end of file.");
+			// }
+		}
+
+		if (import_loop_mode == 0 && chunk_id[0] == 's' && chunk_id[1] == 'm' && chunk_id[2] == 'p' && chunk_id[3] == 'l') {
+			// Loop point info!
+
+			/**
+			 *	Consider exploring next document:
+			 *		http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Docs/RIFFNEW.pdf
+			 *	Especially on page:
+			 *		16 - 17
+			 *	Timestamp:
+			 *		22:38 06.07.2017 GMT
+			 **/
+
+			for (int i = 0; i < 10; i++) {
+				file->get_32(); // i wish to know why should i do this... no doc!
+			}
+
+			// only read 0x00 (loop forward), 0x01 (loop ping-pong) and 0x02 (loop backward)
+			// Skip anything else because it's not supported, reserved for future uses or sampler specific
+			// from https://sites.google.com/site/musicgapi/technical-documents/wav-file-format#smpl (loop type values table)
+			int loop_type = file->get_32();
+			if (loop_type == 0x00 || loop_type == 0x01 || loop_type == 0x02) {
+				if (loop_type == 0x00) {
+					loop_mode = AudioStreamWAV::LOOP_FORWARD;
+				} else if (loop_type == 0x01) {
+					loop_mode = AudioStreamWAV::LOOP_PINGPONG;
+				} else if (loop_type == 0x02) {
+					loop_mode = AudioStreamWAV::LOOP_BACKWARD;
+				}
+				loop_begin = file->get_32();
+				loop_end = file->get_32();
+			}
+		}
+
+		if (chunk_id[0] == 'L' && chunk_id[1] == 'I' && chunk_id[2] == 'S' && chunk_id[3] == 'T') {
+			// RIFF 'LIST' chunk.
+			// See https://www.recordingblogs.com/wiki/list-chunk-of-a-wave-file
+
+			char list_id[4];
+			file->get_buffer((uint8_t *)&list_id, 4);
+			uint32_t end_of_chunk = file_pos + chunksize - 8;
+
+			if (list_id[0] == 'I' && list_id[1] == 'N' && list_id[2] == 'F' && list_id[3] == 'O') {
+				// 'INFO' list type.
+				// The size of an entry can be arbitrary.
+				while (file->get_position() < end_of_chunk) {
+					char info_id[4];
+					file->get_buffer((uint8_t *)&info_id, 4);
+
+					uint32_t text_size = file->get_32();
+					if (text_size == 0) {
+						continue;
+					}
+
+					Vector<char> text;
+					text.resize(text_size);
+					file->get_buffer((uint8_t *)&text[0], text_size);
+
+					// Skip padding byte if text_size is odd
+					if (text_size & 1) {
+						file->get_8();
+					}
+
+					// The data is always an ASCII string. ASCII is a subset of UTF-8.
+					String tag;
+					tag.append_utf8(&info_id[0], 4);
+
+					String tag_value;
+					tag_value.append_utf8(&text[0], text_size);
+
+					tag_map[tag] = tag_value;
+				}
+			}
+		}
+
+		// Move to the start of the next chunk. Note that RIFF requires a padding byte for odd
+		// chunk sizes.
+		file->seek(file_pos + chunksize + (chunksize & 1));
+	}
+
+	// STEP 2, APPLY CONVERSIONS
+
+	bool is16 = format_bits != 8;
+	int rate = format_freq;
+
+	/*
+	print_line("Input Sample: ");
+	print_line("\tframes: " + itos(frames));
+	print_line("\tformat_channels: " + itos(format_channels));
+	print_line("\t16bits: " + itos(is16));
+	print_line("\trate: " + itos(rate));
+	print_line("\tloop: " + itos(loop));
+	print_line("\tloop begin: " + itos(loop_begin));
+	print_line("\tloop end: " + itos(loop_end));
+	*/
+
+	//apply frequency limit
+
+	bool limit_rate = p_options["force/max_rate"];
+	int limit_rate_hz = p_options["force/max_rate_hz"];
+	if (limit_rate && rate > limit_rate_hz && rate > 0 && frames > 0) {
+		// resample!
+		int new_data_frames = (int)(frames * (float)limit_rate_hz / (float)rate);
+
+		Vector<float> new_data;
+		new_data.resize(new_data_frames * format_channels);
+		for (int c = 0; c < format_channels; c++) {
+			float frac = 0.0;
+			int ipos = 0;
+
+			for (int i = 0; i < new_data_frames; i++) {
+				// Cubic interpolation should be enough.
+
+				float y0 = data[MAX(0, ipos - 1) * format_channels + c];
+				float y1 = data[ipos * format_channels + c];
+				float y2 = data[MIN(frames - 1, ipos + 1) * format_channels + c];
+				float y3 = data[MIN(frames - 1, ipos + 2) * format_channels + c];
+
+				new_data.write[i * format_channels + c] = Math::cubic_interpolate(y1, y2, y0, y3, frac);
+
+				// update position and always keep fractional part within ]0...1]
+				// in order to avoid 32bit floating point precision errors
+
+				frac += (float)rate / (float)limit_rate_hz;
+				int tpos = (int)Math::floor(frac);
+				ipos += tpos;
+				frac -= tpos;
+			}
+		}
+
+		if (loop_mode) {
+			loop_begin = (int)(loop_begin * (float)new_data_frames / (float)frames);
+			loop_end = (int)(loop_end * (float)new_data_frames / (float)frames);
+		}
+
+		data = new_data;
+		rate = limit_rate_hz;
+		frames = new_data_frames;
+	}
+
+	bool normalize = p_options["edit/normalize"];
+
+	if (normalize) {
+		float max = 0.0;
+		for (int i = 0; i < data.size(); i++) {
+			float amp = Math::abs(data[i]);
+			if (amp > max) {
+				max = amp;
+			}
+		}
+
+		if (max > 0) {
+			float mult = 1.0 / max;
+			for (int i = 0; i < data.size(); i++) {
+				data.write[i] *= mult;
+			}
+		}
+	}
+
+	bool trim = p_options["edit/trim"];
+
+	if (trim && (loop_mode == AudioStreamWAV::LOOP_DISABLED) && format_channels > 0) {
+		int first = 0;
+		int last = (frames / format_channels) - 1;
+		bool found = false;
+		float limit = Math::db_to_linear(TRIM_DB_LIMIT);
+
+		for (int i = 0; i < data.size() / format_channels; i++) {
+			float amp_channel_sum = 0.0;
+			for (int j = 0; j < format_channels; j++) {
+				amp_channel_sum += Math::abs(data[(i * format_channels) + j]);
+			}
+
+			float amp = Math::abs(amp_channel_sum / (float)format_channels);
+
+			if (!found && amp > limit) {
+				first = i;
+				found = true;
+			}
+
+			if (found && amp > limit) {
+				last = i;
+			}
+		}
+
+		if (first < last) {
+			Vector<float> new_data;
+			new_data.resize((last - first) * format_channels);
+			for (int i = first; i < last; i++) {
+				float fade_out_mult = 1.0;
+
+				if (last - i < TRIM_FADE_OUT_FRAMES) {
+					fade_out_mult = ((float)(last - i - 1) / (float)TRIM_FADE_OUT_FRAMES);
+				}
+
+				for (int j = 0; j < format_channels; j++) {
+					new_data.write[((i - first) * format_channels) + j] = data[(i * format_channels) + j] * fade_out_mult;
+				}
+			}
+
+			data = new_data;
+			frames = data.size() / format_channels;
+		}
+	}
+
+	if (import_loop_mode >= 2) {
+		loop_mode = (AudioStreamWAV::LoopMode)(import_loop_mode - 1);
+		loop_begin = p_options["edit/loop_begin"];
+		loop_end = p_options["edit/loop_end"];
+		// Wrap around to max frames, so `-1` can be used to select the end, etc.
+		if (loop_begin < 0) {
+			loop_begin = CLAMP(loop_begin + frames, 0, frames - 1);
+		}
+		if (loop_end < 0) {
+			loop_end = CLAMP(loop_end + frames, 0, frames - 1);
+		}
+	}
+
+	int compression = p_options["compress/mode"];
+	bool force_mono = p_options["force/mono"];
+
+	if (force_mono && format_channels == 2) {
+		Vector<float> new_data;
+		new_data.resize(data.size() / 2);
+		for (int i = 0; i < frames; i++) {
+			new_data.write[i] = (data[i * 2 + 0] + data[i * 2 + 1]) / 2.0;
+		}
+
+		data = new_data;
+		format_channels = 1;
+	}
+
+	bool force_8_bit = p_options["force/8_bit"];
+	if (force_8_bit) {
+		is16 = false;
+	}
+
+	Vector<uint8_t> dst_data;
+	AudioStreamWAV::Format dst_format;
+
+	if (compression == 1) {
+		dst_format = AudioStreamWAV::FORMAT_IMA_ADPCM;
+		if (format_channels == 1) {
+			_compress_ima_adpcm(data, dst_data);
+		} else {
+			//byte interleave
+			Vector<float> left;
+			Vector<float> right;
+
+			int tframes = data.size() / 2;
+			left.resize(tframes);
+			right.resize(tframes);
+
+			for (int i = 0; i < tframes; i++) {
+				left.write[i] = data[i * 2 + 0];
+				right.write[i] = data[i * 2 + 1];
+			}
+
+			Vector<uint8_t> bleft;
+			Vector<uint8_t> bright;
+
+			_compress_ima_adpcm(left, bleft);
+			_compress_ima_adpcm(right, bright);
+
+			int dl = bleft.size();
+			dst_data.resize(dl * 2);
+
+			uint8_t *w = dst_data.ptrw();
+			const uint8_t *rl = bleft.ptr();
+			const uint8_t *rr = bright.ptr();
+
+			for (int i = 0; i < dl; i++) {
+				w[i * 2 + 0] = rl[i];
+				w[i * 2 + 1] = rr[i];
+			}
+		}
+
+	} else if (compression == 2) {
+		dst_format = AudioStreamWAV::FORMAT_QOA;
+
+		qoa_desc desc = {};
+		desc.samplerate = rate;
+		desc.samples = frames;
+		desc.channels = format_channels;
+
+		_compress_qoa(data, dst_data, &desc);
+	} else {
+		dst_format = is16 ? AudioStreamWAV::FORMAT_16_BITS : AudioStreamWAV::FORMAT_8_BITS;
+		dst_data.resize(data.size() * (is16 ? 2 : 1));
+		{
+			uint8_t *w = dst_data.ptrw();
+
+			int ds = data.size();
+			for (int i = 0; i < ds; i++) {
+				if (is16) {
+					int16_t v = CLAMP(data[i] * 32768, -32768, 32767);
+					encode_uint16(v, &w[i * 2]);
+				} else {
+					int8_t v = CLAMP(data[i] * 128, -128, 127);
+					w[i] = v;
+				}
+			}
+		}
+	}
+
+	Ref<AudioStreamWAV> sample;
+	sample.instantiate();
+	sample->set_data(dst_data);
+	sample->set_format(dst_format);
+	sample->set_mix_rate(rate);
+	sample->set_loop_mode(loop_mode);
+	sample->set_loop_begin(loop_begin);
+	sample->set_loop_end(loop_end);
+	sample->set_stereo(format_channels == 2);
+
+	if (!tag_map.is_empty()) {
+		// Used to make the metadata tags more unified across different AudioStreams.
+		// See https://www.recordingblogs.com/wiki/list-chunk-of-a-wave-file
+		// https://wiki.hydrogenaudio.org/index.php?title=Tag_Mapping#Mapping_Tables
+		HashMap<String, String> tag_id_remaps;
+		tag_id_remaps.reserve(15);
+		tag_id_remaps["IARL"] = "location";
+		tag_id_remaps["IART"] = "artist";
+		tag_id_remaps["ICMS"] = "organization";
+		tag_id_remaps["ICMT"] = "comment";
+		tag_id_remaps["ICNT"] = "releasecountry";
+		tag_id_remaps["ICOP"] = "copyright";
+		tag_id_remaps["ICRD"] = "date";
+		tag_id_remaps["IENC"] = "encodedby";
+		tag_id_remaps["IENG"] = "engineer";
+		tag_id_remaps["IFRM"] = "tracktotal";
+		tag_id_remaps["IGNR"] = "genre";
+		tag_id_remaps["IKEY"] = "keywords";
+		tag_id_remaps["ILNG"] = "language";
+		tag_id_remaps["IMED"] = "media";
+		tag_id_remaps["IMUS"] = "composer";
+		tag_id_remaps["INAM"] = "title";
+		tag_id_remaps["IPRD"] = "album";
+		tag_id_remaps["IPRO"] = "producer";
+		tag_id_remaps["IPRT"] = "tracknumber";
+		tag_id_remaps["ISBJ"] = "description";
+		tag_id_remaps["ISFT"] = "encoder";
+		tag_id_remaps["ISRF"] = "media";
+		tag_id_remaps["ITCH"] = "encodedby";
+		tag_id_remaps["ITRK"] = "tracknumber";
+		tag_id_remaps["IWRI"] = "author";
+		tag_id_remaps["TLEN"] = "length";
+		Dictionary tag_dictionary;
+		for (const KeyValue<String, String> &E : tag_map) {
+			HashMap<String, String>::ConstIterator remap = tag_id_remaps.find(E.key);
+			String tag_key = E.key;
+			if (remap) {
+				tag_key = remap->value;
+			}
+
+			tag_dictionary[tag_key] = E.value;
+		}
+		sample->set_tags(tag_dictionary);
+	}
+
+	return sample;
+}
+
+Ref<AudioStreamWAV> AudioStreamWAV::load_from_file(const String &p_path, const Dictionary &p_options) {
+	const Vector<uint8_t> stream_data = FileAccess::get_file_as_bytes(p_path);
+	ERR_FAIL_COND_V_MSG(stream_data.is_empty(), Ref<AudioStreamWAV>(), vformat("Cannot open file '%s'.", p_path));
+	return load_from_buffer(stream_data, p_options);
+}
+
 void AudioStreamWAV::_bind_methods() {
+	ClassDB::bind_static_method("AudioStreamWAV", D_METHOD("load_from_buffer", "stream_data", "options"), &AudioStreamWAV::load_from_buffer, DEFVAL(Dictionary()));
+	ClassDB::bind_static_method("AudioStreamWAV", D_METHOD("load_from_file", "path", "options"), &AudioStreamWAV::load_from_file, DEFVAL(Dictionary()));
+
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &AudioStreamWAV::set_data);
 	ClassDB::bind_method(D_METHOD("get_data"), &AudioStreamWAV::get_data);
 
@@ -757,6 +1229,9 @@ void AudioStreamWAV::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stereo", "stereo"), &AudioStreamWAV::set_stereo);
 	ClassDB::bind_method(D_METHOD("is_stereo"), &AudioStreamWAV::is_stereo);
 
+	ClassDB::bind_method(D_METHOD("set_tags", "tags"), &AudioStreamWAV::set_tags);
+	ClassDB::bind_method(D_METHOD("get_tags"), &AudioStreamWAV::get_tags);
+
 	ClassDB::bind_method(D_METHOD("save_to_wav", "path"), &AudioStreamWAV::save_to_wav);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_data", "get_data");
@@ -766,6 +1241,7 @@ void AudioStreamWAV::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_end"), "set_loop_end", "get_loop_end");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_rate"), "set_mix_rate", "get_mix_rate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stereo"), "set_stereo", "is_stereo");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "tags", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_tags", "get_tags");
 
 	BIND_ENUM_CONSTANT(FORMAT_8_BITS);
 	BIND_ENUM_CONSTANT(FORMAT_16_BITS);
@@ -776,14 +1252,4 @@ void AudioStreamWAV::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOOP_FORWARD);
 	BIND_ENUM_CONSTANT(LOOP_PINGPONG);
 	BIND_ENUM_CONSTANT(LOOP_BACKWARD);
-}
-
-AudioStreamWAV::AudioStreamWAV() {}
-
-AudioStreamWAV::~AudioStreamWAV() {
-	if (data) {
-		memfree(data);
-		data = nullptr;
-		data_bytes = 0;
-	}
 }

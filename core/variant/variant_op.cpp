@@ -466,6 +466,7 @@ void Variant::_register_variant_operators() {
 	register_string_modulo_op(Color, Variant::COLOR);
 	register_string_modulo_op(StringName, Variant::STRING_NAME);
 	register_string_modulo_op(NodePath, Variant::NODE_PATH);
+	register_string_modulo_op(::RID, Variant::RID);
 	register_string_modulo_op(Object, Variant::OBJECT);
 	register_string_modulo_op(Callable, Variant::CALLABLE);
 	register_string_modulo_op(Signal, Variant::SIGNAL);
@@ -980,6 +981,7 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorInDictionaryHas<Color>>(Variant::OP_IN, Variant::COLOR, Variant::DICTIONARY);
 	register_op<OperatorEvaluatorInDictionaryHas<StringName>>(Variant::OP_IN, Variant::STRING_NAME, Variant::DICTIONARY);
 	register_op<OperatorEvaluatorInDictionaryHas<NodePath>>(Variant::OP_IN, Variant::NODE_PATH, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<::RID>>(Variant::OP_IN, Variant::RID, Variant::DICTIONARY);
 	register_op<OperatorEvaluatorInDictionaryHasObject>(Variant::OP_IN, Variant::OBJECT, Variant::DICTIONARY);
 	register_op<OperatorEvaluatorInDictionaryHas<Callable>>(Variant::OP_IN, Variant::CALLABLE, Variant::DICTIONARY);
 	register_op<OperatorEvaluatorInDictionaryHas<Signal>>(Variant::OP_IN, Variant::SIGNAL, Variant::DICTIONARY);
@@ -1021,6 +1023,7 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorInArrayFind<Color, Array>>(Variant::OP_IN, Variant::COLOR, Variant::ARRAY);
 	register_op<OperatorEvaluatorInArrayFind<StringName, Array>>(Variant::OP_IN, Variant::STRING_NAME, Variant::ARRAY);
 	register_op<OperatorEvaluatorInArrayFind<NodePath, Array>>(Variant::OP_IN, Variant::NODE_PATH, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<::RID, Array>>(Variant::OP_IN, Variant::RID, Variant::ARRAY);
 	register_op<OperatorEvaluatorInArrayFindObject>(Variant::OP_IN, Variant::OBJECT, Variant::ARRAY);
 	register_op<OperatorEvaluatorInArrayFind<Callable, Array>>(Variant::OP_IN, Variant::CALLABLE, Variant::ARRAY);
 	register_op<OperatorEvaluatorInArrayFind<Signal, Array>>(Variant::OP_IN, Variant::SIGNAL, Variant::ARRAY);
@@ -1038,20 +1041,20 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorInArrayFind<PackedColorArray, Array>>(Variant::OP_IN, Variant::PACKED_COLOR_ARRAY, Variant::ARRAY);
 	register_op<OperatorEvaluatorInArrayFind<PackedVector4Array, Array>>(Variant::OP_IN, Variant::PACKED_VECTOR4_ARRAY, Variant::ARRAY);
 
-	register_op<OperatorEvaluatorInArrayFind<int, PackedByteArray>>(Variant::OP_IN, Variant::INT, Variant::PACKED_BYTE_ARRAY);
-	register_op<OperatorEvaluatorInArrayFind<float, PackedByteArray>>(Variant::OP_IN, Variant::FLOAT, Variant::PACKED_BYTE_ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<int64_t, PackedByteArray>>(Variant::OP_IN, Variant::INT, Variant::PACKED_BYTE_ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<double, PackedByteArray>>(Variant::OP_IN, Variant::FLOAT, Variant::PACKED_BYTE_ARRAY);
 
-	register_op<OperatorEvaluatorInArrayFind<int, PackedInt32Array>>(Variant::OP_IN, Variant::INT, Variant::PACKED_INT32_ARRAY);
-	register_op<OperatorEvaluatorInArrayFind<float, PackedInt32Array>>(Variant::OP_IN, Variant::FLOAT, Variant::PACKED_INT32_ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<int64_t, PackedInt32Array>>(Variant::OP_IN, Variant::INT, Variant::PACKED_INT32_ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<double, PackedInt32Array>>(Variant::OP_IN, Variant::FLOAT, Variant::PACKED_INT32_ARRAY);
 
-	register_op<OperatorEvaluatorInArrayFind<int, PackedInt64Array>>(Variant::OP_IN, Variant::INT, Variant::PACKED_INT64_ARRAY);
-	register_op<OperatorEvaluatorInArrayFind<float, PackedInt64Array>>(Variant::OP_IN, Variant::FLOAT, Variant::PACKED_INT64_ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<int64_t, PackedInt64Array>>(Variant::OP_IN, Variant::INT, Variant::PACKED_INT64_ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<double, PackedInt64Array>>(Variant::OP_IN, Variant::FLOAT, Variant::PACKED_INT64_ARRAY);
 
-	register_op<OperatorEvaluatorInArrayFind<int, PackedFloat32Array>>(Variant::OP_IN, Variant::INT, Variant::PACKED_FLOAT32_ARRAY);
-	register_op<OperatorEvaluatorInArrayFind<float, PackedFloat32Array>>(Variant::OP_IN, Variant::FLOAT, Variant::PACKED_FLOAT32_ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<int64_t, PackedFloat32Array>>(Variant::OP_IN, Variant::INT, Variant::PACKED_FLOAT32_ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<double, PackedFloat32Array>>(Variant::OP_IN, Variant::FLOAT, Variant::PACKED_FLOAT32_ARRAY);
 
-	register_op<OperatorEvaluatorInArrayFind<int, PackedFloat64Array>>(Variant::OP_IN, Variant::INT, Variant::PACKED_FLOAT64_ARRAY);
-	register_op<OperatorEvaluatorInArrayFind<float, PackedFloat64Array>>(Variant::OP_IN, Variant::FLOAT, Variant::PACKED_FLOAT64_ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<int64_t, PackedFloat64Array>>(Variant::OP_IN, Variant::INT, Variant::PACKED_FLOAT64_ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<double, PackedFloat64Array>>(Variant::OP_IN, Variant::FLOAT, Variant::PACKED_FLOAT64_ARRAY);
 
 	register_op<OperatorEvaluatorInArrayFind<String, PackedStringArray>>(Variant::OP_IN, Variant::STRING, Variant::PACKED_STRING_ARRAY);
 	register_op<OperatorEvaluatorInArrayFind<StringName, PackedStringArray>>(Variant::OP_IN, Variant::STRING_NAME, Variant::PACKED_STRING_ARRAY);

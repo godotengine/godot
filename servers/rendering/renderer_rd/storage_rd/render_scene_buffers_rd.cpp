@@ -31,8 +31,6 @@
 #include "render_scene_buffers_rd.h"
 #include "render_scene_buffers_rd.compat.inc"
 
-#include "core/config/project_settings.h"
-#include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 
 RenderSceneBuffersRD::RenderSceneBuffersRD() {
@@ -48,7 +46,7 @@ RenderSceneBuffersRD::~RenderSceneBuffersRD() {
 
 void RenderSceneBuffersRD::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_texture", "context", "name"), &RenderSceneBuffersRD::has_texture);
-	ClassDB::bind_method(D_METHOD("create_texture", "context", "name", "data_format", "usage_bits", "texture_samples", "size", "layers", "mipmaps", "unique"), &RenderSceneBuffersRD::create_texture);
+	ClassDB::bind_method(D_METHOD("create_texture", "context", "name", "data_format", "usage_bits", "texture_samples", "size", "layers", "mipmaps", "unique", "discardable"), &RenderSceneBuffersRD::create_texture);
 	ClassDB::bind_method(D_METHOD("create_texture_from_format", "context", "name", "format", "view", "unique"), &RenderSceneBuffersRD::_create_texture_from_format);
 	ClassDB::bind_method(D_METHOD("create_texture_view", "context", "name", "view_name", "view"), &RenderSceneBuffersRD::_create_texture_view);
 	ClassDB::bind_method(D_METHOD("get_texture", "context", "name"), &RenderSceneBuffersRD::get_texture);
@@ -104,7 +102,7 @@ void RenderSceneBuffersRD::free_named_texture(NamedTexture &p_named_texture) {
 void RenderSceneBuffersRD::update_samplers() {
 	float computed_mipmap_bias = texture_mipmap_bias;
 
-	if (use_taa || (scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2)) {
+	if (use_taa || (RS::scaling_3d_mode_type(scaling_3d_mode) == RS::VIEWPORT_SCALING_3D_TYPE_TEMPORAL)) {
 		// Use negative mipmap LOD bias when TAA or FSR2 is enabled to compensate for loss of sharpness.
 		// This restores sharpness in still images to be roughly at the same level as without TAA,
 		// but moving scenes will still be blurrier.
@@ -119,7 +117,7 @@ void RenderSceneBuffersRD::update_samplers() {
 
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	material_storage->samplers_rd_free(samplers);
-	samplers = material_storage->samplers_rd_allocate(computed_mipmap_bias);
+	samplers = material_storage->samplers_rd_allocate(computed_mipmap_bias, anisotropic_filtering_level);
 }
 
 void RenderSceneBuffersRD::cleanup() {
@@ -141,6 +139,13 @@ void RenderSceneBuffersRD::cleanup() {
 			weight_buffer.weight = RID();
 		}
 	}
+
+#ifdef METAL_ENABLED
+	if (mfx_spatial_context) {
+		memdelete(mfx_spatial_context);
+		mfx_spatial_context = nullptr;
+	}
+#endif
 }
 
 void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_config) {
@@ -157,86 +162,42 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 
 	fsr_sharpness = p_config->get_fsr_sharpness();
 	texture_mipmap_bias = p_config->get_texture_mipmap_bias();
+	anisotropic_filtering_level = p_config->get_anisotropic_filtering_level();
 	use_taa = p_config->get_use_taa();
 	use_debanding = p_config->get_use_debanding();
 
 	ERR_FAIL_COND_MSG(view_count == 0, "Must have at least 1 view");
+
+	vrs_mode = texture_storage->render_target_get_vrs_mode(render_target);
 
 	update_samplers();
 
 	// cleanout any old buffers we had.
 	cleanup();
 
-	// At least one of these is required to be supported.
-	RenderingDeviceCommons::DataFormat preferred_format[2] = { RD::DATA_FORMAT_D24_UNORM_S8_UINT, RD::DATA_FORMAT_D32_SFLOAT_S8_UINT };
-	if (can_be_storage) {
-		// Prefer higher precision on desktop.
-		preferred_format[0] = RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
-		preferred_format[1] = RD::DATA_FORMAT_D24_UNORM_S8_UINT;
-	}
+	// Create our color buffer.
+	const bool resolve_target = msaa_3d != RS::VIEWPORT_MSAA_DISABLED;
+	create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR, base_data_format, get_color_usage_bits(resolve_target, false, can_be_storage));
 
-	// create our 3D render buffers
-	{
-		// Create our color buffer(s)
-		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | (can_be_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : 0) | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-		usage_bits |= RD::TEXTURE_USAGE_INPUT_ATTACHMENT_BIT; // only needed when using subpasses in the mobile renderer
+	// TODO: Detect when it is safe to use RD::TEXTURE_USAGE_TRANSIENT_BIT for RB_TEX_DEPTH, RB_TEX_COLOR_MSAA and/or RB_TEX_DEPTH_MSAA.
+	// (it means we cannot sample from it, we cannot copy from/to it) to save VRAM (and maybe performance too).
 
-		// our internal texture should have MSAA support if applicable
-		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED) {
-			usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-		}
+	// Create our depth buffer.
+	create_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH, get_depth_format(resolve_target, false, can_be_storage), get_depth_usage_bits(resolve_target, false, can_be_storage));
 
-		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR, base_data_format, usage_bits);
-	}
-
-	// Create our depth buffer
-	{
-		// TODO Lazy create this in case we've got an external depth buffer
-
-		RD::DataFormat format;
-		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
-
-		if (msaa_3d == RS::VIEWPORT_MSAA_DISABLED) {
-			usage_bits |= RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-			format = RD::get_singleton()->texture_is_format_supported_for_usage(preferred_format[0], usage_bits) ? preferred_format[0] : preferred_format[1];
-		} else {
-			format = RD::DATA_FORMAT_R32_SFLOAT;
-			usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | (can_be_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
-		}
-
-		create_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH, format, usage_bits);
-	}
-
-	// Create our MSAA buffers
+	// Create our MSAA buffers.
 	if (msaa_3d == RS::VIEWPORT_MSAA_DISABLED) {
 		texture_samples = RD::TEXTURE_SAMPLES_1;
 	} else {
-		RD::DataFormat format = base_data_format;
-		uint32_t usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
-
-		const RD::TextureSamples ts[RS::VIEWPORT_MSAA_MAX] = {
-			RD::TEXTURE_SAMPLES_1,
-			RD::TEXTURE_SAMPLES_2,
-			RD::TEXTURE_SAMPLES_4,
-			RD::TEXTURE_SAMPLES_8,
-		};
-
-		texture_samples = ts[msaa_3d];
-
-		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA, format, usage_bits, texture_samples);
-
-		usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
-		format = RD::get_singleton()->texture_is_format_supported_for_usage(preferred_format[0], usage_bits) ? preferred_format[0] : preferred_format[1];
-
-		create_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA, format, usage_bits, texture_samples);
+		texture_samples = msaa_to_samples(msaa_3d);
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA, base_data_format, get_color_usage_bits(false, true, can_be_storage), texture_samples, Size2i(), 0, 1, true, true);
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA, get_depth_format(false, true, can_be_storage), get_depth_usage_bits(false, true, can_be_storage), texture_samples, Size2i(), 0, 1, true, true);
 	}
 
 	// VRS (note, our vrs object will only be set if VRS is supported)
 	RID vrs_texture;
-	RS::ViewportVRSMode vrs_mode = texture_storage->render_target_get_vrs_mode(render_target);
 	if (vrs && vrs_mode != RS::VIEWPORT_VRS_DISABLED) {
-		uint32_t usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
-		vrs_texture = create_texture(RB_SCOPE_VRS, RB_TEXTURE, RD::DATA_FORMAT_R8_UINT, usage_bits, RD::TEXTURE_SAMPLES_1, vrs->get_vrs_texture_size(internal_size));
+		vrs_texture = create_texture(RB_SCOPE_VRS, RB_TEXTURE, get_vrs_format(), get_vrs_usage_bits(), RD::TEXTURE_SAMPLES_1, vrs->get_vrs_texture_size(internal_size));
 	}
 
 	// (re-)configure any named buffers
@@ -279,9 +240,40 @@ void RenderSceneBuffersRD::set_texture_mipmap_bias(float p_texture_mipmap_bias) 
 	update_samplers();
 }
 
+void RenderSceneBuffersRD::set_anisotropic_filtering_level(RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level) {
+	anisotropic_filtering_level = p_anisotropic_filtering_level;
+
+	update_samplers();
+}
+
 void RenderSceneBuffersRD::set_use_debanding(bool p_use_debanding) {
 	use_debanding = p_use_debanding;
 }
+
+#ifdef METAL_ENABLED
+void RenderSceneBuffersRD::ensure_mfx(RendererRD::MFXSpatialEffect *p_effect) {
+	if (mfx_spatial_context) {
+		return;
+	}
+
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	RenderingDevice *rd = RD::get_singleton();
+
+	// Determine the output format of the render target.
+	RID dest = texture_storage->render_target_get_rd_texture(render_target);
+	RD::TextureFormat tf = rd->texture_get_format(dest);
+	RD::DataFormat output_format = tf.format;
+
+	RendererRD::MFXSpatialEffect::CreateParams params = {
+		.input_size = internal_size,
+		.output_size = target_size,
+		.input_format = base_data_format,
+		.output_format = output_format,
+	};
+
+	mfx_spatial_context = p_effect->create_context(params);
+}
+#endif
 
 // Named textures
 
@@ -291,7 +283,7 @@ bool RenderSceneBuffersRD::has_texture(const StringName &p_context, const String
 	return named_textures.has(key);
 }
 
-RID RenderSceneBuffersRD::create_texture(const StringName &p_context, const StringName &p_texture_name, const RD::DataFormat p_data_format, const uint32_t p_usage_bits, const RD::TextureSamples p_texture_samples, const Size2i p_size, const uint32_t p_layers, const uint32_t p_mipmaps, bool p_unique) {
+RID RenderSceneBuffersRD::create_texture(const StringName &p_context, const StringName &p_texture_name, const RD::DataFormat p_data_format, const uint32_t p_usage_bits, const RD::TextureSamples p_texture_samples, const Size2i p_size, const uint32_t p_layers, const uint32_t p_mipmaps, bool p_unique, bool p_discardable) {
 	// Keep some useful data, we use default values when these are 0.
 	Size2i size = p_size == Size2i(0, 0) ? internal_size : p_size;
 	uint32_t layers = p_layers == 0 ? view_count : p_layers;
@@ -311,6 +303,7 @@ RID RenderSceneBuffersRD::create_texture(const StringName &p_context, const Stri
 	tf.mipmaps = mipmaps;
 	tf.usage_bits = p_usage_bits;
 	tf.samples = p_texture_samples;
+	tf.is_discardable = p_discardable;
 
 	return create_texture_from_format(p_context, p_texture_name, tf, RD::TextureView(), p_unique);
 }
@@ -342,9 +335,7 @@ RID RenderSceneBuffersRD::create_texture_from_format(const StringName &p_context
 	named_texture.is_unique = p_unique;
 	named_texture.texture = RD::get_singleton()->texture_create(p_texture_format, p_view);
 
-	Array arr;
-	arr.push_back(p_context);
-	arr.push_back(p_texture_name);
+	Array arr = { p_context, p_texture_name };
 	RD::get_singleton()->set_resource_name(named_texture.texture, String("RenderBuffer {0}/{1}").format(arr));
 
 	update_sizes(named_texture);
@@ -383,9 +374,7 @@ RID RenderSceneBuffersRD::create_texture_view(const StringName &p_context, const
 
 	view_texture.texture = RD::get_singleton()->texture_create_shared(p_view, named_texture.texture);
 
-	Array arr;
-	arr.push_back(p_context);
-	arr.push_back(p_view_name);
+	Array arr = { p_context, p_view_name };
 	RD::get_singleton()->set_resource_name(view_texture.texture, String("RenderBuffer View {0}/{1}").format(arr));
 
 	update_sizes(named_texture);
@@ -463,18 +452,19 @@ RID RenderSceneBuffersRD::get_texture_slice_view(const StringName &p_context, co
 	RID &slice = named_texture.slices[slice_key];
 	slice = RD::get_singleton()->texture_create_shared_from_slice(p_view, named_texture.texture, p_layer, p_mipmap, p_mipmaps, p_layers > 1 ? RD::TEXTURE_SLICE_2D_ARRAY : RD::TEXTURE_SLICE_2D, p_layers);
 
-	Array arr;
-	arr.push_back(p_context);
-	arr.push_back(p_texture_name);
-	arr.push_back(itos(p_layer));
-	arr.push_back(itos(p_layers));
-	arr.push_back(itos(p_mipmap));
-	arr.push_back(itos(p_mipmaps));
-	arr.push_back(itos(p_view.format_override));
-	arr.push_back(itos(p_view.swizzle_r));
-	arr.push_back(itos(p_view.swizzle_g));
-	arr.push_back(itos(p_view.swizzle_b));
-	arr.push_back(itos(p_view.swizzle_a));
+	Array arr = {
+		p_context,
+		p_texture_name,
+		itos(p_layer),
+		itos(p_layers),
+		itos(p_mipmap),
+		itos(p_mipmaps),
+		itos(p_view.format_override),
+		itos(p_view.swizzle_r),
+		itos(p_view.swizzle_g),
+		itos(p_view.swizzle_b),
+		itos(p_view.swizzle_a)
+	};
 	RD::get_singleton()->set_resource_name(slice, String("RenderBuffer {0}/{1}, layer {2}/{3}, mipmap {4}/{5}, view {6}/{7}/{8}/{9}/{10}").format(arr));
 
 	// and return our slice
@@ -521,7 +511,7 @@ void RenderSceneBuffersRD::allocate_blur_textures() {
 	}
 
 	Size2i blur_size = internal_size;
-	if (scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2) {
+	if (RS::scaling_3d_mode_type(scaling_3d_mode) == RS::VIEWPORT_SCALING_3D_TYPE_TEMPORAL) {
 		// The blur texture should be as big as the target size when using an upscaler.
 		blur_size = target_size;
 	}
@@ -664,16 +654,12 @@ void RenderSceneBuffersRD::ensure_upscaled() {
 
 void RenderSceneBuffersRD::ensure_velocity() {
 	if (!has_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY)) {
-		uint32_t usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+		const bool msaa = msaa_3d != RS::VIEWPORT_MSAA_DISABLED;
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY, get_velocity_format(), get_velocity_usage_bits(msaa, false, can_be_storage));
 
-		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED) {
-			uint32_t msaa_usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
-			usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-
-			create_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY_MSAA, RD::DATA_FORMAT_R16G16_SFLOAT, msaa_usage_bits, texture_samples);
+		if (msaa) {
+			create_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY_MSAA, get_velocity_format(), get_velocity_usage_bits(false, msaa, can_be_storage), texture_samples);
 		}
-
-		create_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY, RD::DATA_FORMAT_R16G16_SFLOAT, usage_bits);
 	}
 }
 
@@ -723,4 +709,69 @@ RID RenderSceneBuffersRD::get_velocity_buffer(bool p_get_msaa, uint32_t p_layer)
 			return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY, p_layer, 0);
 		}
 	}
+}
+
+RID RenderSceneBuffersRD::get_velocity_depth_buffer() {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	RID velocity_depth = texture_storage->render_target_get_override_velocity_depth(render_target);
+	return velocity_depth;
+}
+
+uint32_t RenderSceneBuffersRD::get_color_usage_bits(bool p_resolve, bool p_msaa, bool p_storage) {
+	DEV_ASSERT((!p_resolve && !p_msaa) || (p_resolve != p_msaa));
+
+	uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_INPUT_ATTACHMENT_BIT;
+	if (p_msaa) {
+		usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+	} else if (p_resolve) {
+		usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | (p_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
+	} else {
+		usage_bits |= (p_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
+	}
+
+	return usage_bits;
+}
+
+RD::DataFormat RenderSceneBuffersRD::get_depth_format(bool p_resolve, bool p_msaa, bool p_storage) {
+	if (p_resolve) {
+		return RD::DATA_FORMAT_R32_SFLOAT;
+	} else {
+		const RenderingDeviceCommons::DataFormat preferred_formats[2] = {
+			p_storage ? RD::DATA_FORMAT_D32_SFLOAT_S8_UINT : RD::DATA_FORMAT_D24_UNORM_S8_UINT,
+			p_storage ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT
+		};
+
+		return RD::get_singleton()->texture_is_format_supported_for_usage(preferred_formats[0], get_depth_usage_bits(p_resolve, p_msaa, p_storage)) ? preferred_formats[0] : preferred_formats[1];
+	}
+}
+
+uint32_t RenderSceneBuffersRD::get_depth_usage_bits(bool p_resolve, bool p_msaa, bool p_storage) {
+	DEV_ASSERT((!p_resolve && !p_msaa) || (p_resolve != p_msaa));
+
+	uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
+	if (p_msaa) {
+		usage_bits |= RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+	} else if (p_resolve) {
+		usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | (p_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
+	} else {
+		usage_bits |= RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+	}
+
+	return usage_bits;
+}
+
+RD::DataFormat RenderSceneBuffersRD::get_velocity_format() {
+	return RD::DATA_FORMAT_R16G16_SFLOAT;
+}
+
+uint32_t RenderSceneBuffersRD::get_velocity_usage_bits(bool p_resolve, bool p_msaa, bool p_storage) {
+	return get_color_usage_bits(p_resolve, p_msaa, p_storage);
+}
+
+RD::DataFormat RenderSceneBuffersRD::get_vrs_format() {
+	return RD::get_singleton()->vrs_get_format();
+}
+
+uint32_t RenderSceneBuffersRD::get_vrs_usage_bits() {
+	return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT;
 }

@@ -363,24 +363,28 @@ window.addEventListener('load', () => {
 		btn.style.display = '';
 	}
 	if ('serviceWorker' in navigator) {
-		navigator.serviceWorker.register('service.worker.js').then(function (reg) {
-			if (reg.waiting) {
-				notifyUpdate(reg.waiting);
-			}
-			reg.addEventListener('updatefound', function () {
-				const update = reg.installing;
-				update.addEventListener('statechange', function () {
-					if (update.state === 'installed') {
-						// It's a new install, claim and perform aggressive caching.
-						if (!reg.active) {
-							update.postMessage('claim');
-						} else {
-							notifyUpdate(update);
+		try {
+			navigator.serviceWorker.register('service.worker.js').then(function (reg) {
+				if (reg.waiting) {
+					notifyUpdate(reg.waiting);
+				}
+				reg.addEventListener('updatefound', function () {
+					const update = reg.installing;
+					update.addEventListener('statechange', function () {
+						if (update.state === 'installed') {
+							// It's a new install, claim and perform aggressive caching.
+							if (!reg.active) {
+								update.postMessage('claim');
+							} else {
+								notifyUpdate(update);
+							}
 						}
-					}
+					});
 				});
 			});
-		});
+		} catch (e) {
+			console.error('Error while registering service worker:', e);
+		}
 	}
 
 	const missing = Engine.getMissingFeatures({
@@ -670,6 +674,10 @@ function startEditor(zip) {
 		}
 	}
 
+	const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+	// We need at least 6 free threads from the pool to start the editor.
+	// At least 4 more will be reserved for the godot thread pool (3 is the bare minimum with the multithreaded variant of the servers).
+	const concurrency = clamp(navigator.hardwareConcurrency ?? 1, 12, 24);
 	const editorConfig = {
 		'unloadAfterInit': false,
 		'onProgress': function progressFunction(current, total) {
@@ -696,6 +704,8 @@ function startEditor(zip) {
 		},
 		'onExecute': Execute,
 		'persistentPaths': persistentPaths,
+		'emscriptenPoolSize': concurrency,
+		'godotPoolSize': Math.floor(concurrency / 3), // Ensures at least 4 threads for the pool (see above).
 	};
 	editor = new Engine(editorConfig);
 
@@ -706,7 +716,7 @@ function startEditor(zip) {
 		} else if (typeof err === 'string') {
 			setStatusNotice(err);
 		} else {
-			setStatusNotice('An unknown error occured');
+			setStatusNotice('An unknown error occurred.');
 		}
 		setStatusMode('notice');
 		initializing = false;

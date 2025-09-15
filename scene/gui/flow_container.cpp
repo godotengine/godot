@@ -261,13 +261,14 @@ void FlowContainer::_resort() {
 	}
 	cached_size = (vertical ? ofs.x : ofs.y) + line_height;
 	cached_line_count = lines_data.size();
+	cached_line_max_child_count = lines_data.size() > 0 ? lines_data[0].child_count : 0;
 }
 
 Size2 FlowContainer::get_minimum_size() const {
 	Size2i minimum;
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = as_sortable_control(get_child(i), SortableVisbilityMode::VISIBLE);
+		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
 		if (!c) {
 			continue;
 		}
@@ -337,6 +338,10 @@ void FlowContainer::_validate_property(PropertyInfo &p_property) const {
 
 int FlowContainer::get_line_count() const {
 	return cached_line_count;
+}
+
+int FlowContainer::get_line_max_child_count() const {
+	return cached_line_max_child_count;
 }
 
 void FlowContainer::set_alignment(AlignmentMode p_alignment) {

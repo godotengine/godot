@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CSHARP_SCRIPT_H
-#define CSHARP_SCRIPT_H
+#pragma once
 
 #include "mono_gc_handle.h"
 #include "mono_gd/gd_mono.h"
@@ -67,6 +66,11 @@ public:
 		 * Name of the C# class.
 		 */
 		String class_name;
+
+		/**
+		 * Name of the native class this script derives from.
+		 */
+		StringName native_base_name;
 
 		/**
 		 * Path to the icon that will be used for this class by the editor.
@@ -238,6 +242,7 @@ public:
 	void set_source_code(const String &p_code) override;
 
 #ifdef TOOLS_ENABLED
+	virtual StringName get_doc_class_name() const override { return StringName(); } // TODO
 	virtual Vector<DocData::ClassDoc> get_documentation() const override {
 		// TODO
 		Vector<DocData::ClassDoc> docs;
@@ -494,11 +499,11 @@ public:
 	void finalize();
 
 	/* EDITOR FUNCTIONS */
-	void get_reserved_words(List<String> *p_words) const override;
+	Vector<String> get_reserved_words() const override;
 	bool is_control_flow_keyword(const String &p_keyword) const override;
-	void get_comment_delimiters(List<String> *p_delimiters) const override;
-	void get_doc_comment_delimiters(List<String> *p_delimiters) const override;
-	void get_string_delimiters(List<String> *p_delimiters) const override;
+	Vector<String> get_comment_delimiters() const override;
+	Vector<String> get_doc_comment_delimiters() const override;
+	Vector<String> get_string_delimiters() const override;
 	bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;
@@ -524,7 +529,7 @@ public:
 
 	/* SCRIPT GLOBAL CLASS FUNCTIONS */
 	virtual bool handles_global_class_type(const String &p_type) const override;
-	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const override;
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr, bool *r_is_abstract = nullptr, bool *r_is_tool = nullptr) const override;
 
 	/* DEBUGGER FUNCTIONS */
 	String debug_get_error() const override;
@@ -597,5 +602,3 @@ public:
 	void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
 	bool recognize(const Ref<Resource> &p_resource) const override;
 };
-
-#endif // CSHARP_SCRIPT_H

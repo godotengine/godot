@@ -30,7 +30,6 @@
 
 #include "shape_cast_3d.h"
 
-#include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics/collision_object_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 
@@ -172,8 +171,8 @@ void ShapeCast3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "collision_result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "", "get_collision_result");
 
 	ADD_GROUP("Collide With", "collide_with");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_areas", "is_collide_with_areas_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 
 	ADD_GROUP("Debug Shape", "debug_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_shape_custom_color"), "set_debug_shape_custom_color", "get_debug_shape_custom_color");
@@ -499,7 +498,7 @@ void ShapeCast3D::_update_debug_shape_vertices() {
 	debug_shape_vertices.clear();
 	debug_line_vertices.clear();
 
-	if (!shape.is_null()) {
+	if (shape.is_valid()) {
 		debug_shape_vertices.append_array(shape->get_debug_mesh_lines());
 		for (int i = 0; i < debug_shape_vertices.size(); i++) {
 			debug_shape_vertices.set(i, debug_shape_vertices[i] + Vector3(target_position * get_closest_collision_safe_fraction()));
@@ -546,12 +545,12 @@ void ShapeCast3D::_create_debug_shape() {
 	}
 
 	if (debug_mesh.is_null()) {
-		debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+		debug_mesh.instantiate();
 	}
 }
 
 void ShapeCast3D::_update_debug_shape_material(bool p_check_collision) {
-	if (!debug_material.is_valid()) {
+	if (debug_material.is_null()) {
 		Ref<StandardMaterial3D> material = memnew(StandardMaterial3D);
 		debug_material = material;
 

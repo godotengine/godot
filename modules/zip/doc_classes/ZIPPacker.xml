@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ZIPPacker" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		Allows the creation of zip files.
+		Allows the creation of ZIP files.
 	</brief_description>
 	<description>
-		This class implements a writer that allows storing the multiple blobs in a zip archive.
+		This class implements a writer that allows storing the multiple blobs in a ZIP archive. See also [ZIPReader] and [PCKPacker].
 		[codeblock]
+		# Create a ZIP archive with a single file at its root.
 		func write_zip_file():
-		    var writer := ZIPPacker.new()
-		    var err := writer.open("user://archive.zip")
-		    if err != OK:
-		        return err
-		    writer.start_file("hello.txt")
-		    writer.write_file("Hello World".to_utf8_buffer())
-		    writer.close_file()
+			var writer = ZIPPacker.new()
+			var err = writer.open("user://archive.zip")
+			if err != OK:
+				return err
+			writer.start_file("hello.txt")
+			writer.write_file("Hello World".to_utf8_buffer())
+			writer.close_file()
 
-		    writer.close()
-		    return OK
+			writer.close()
+			return OK
 		[/codeblock]
 	</description>
 	<tutorials>
@@ -61,6 +62,11 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="compression_level" type="int" setter="set_compression_level" getter="get_compression_level" default="-1">
+			The compression level used when [method start_file] is called. Use [enum ZIPPacker.CompressionLevel] as a reference.
+		</member>
+	</members>
 	<constants>
 		<constant name="APPEND_CREATE" value="0" enum="ZipAppend">
 			Create a new zip archive at the given path.
@@ -70,6 +76,18 @@
 		</constant>
 		<constant name="APPEND_ADDINZIP" value="2" enum="ZipAppend">
 			Add new files to the existing zip archive at the given path.
+		</constant>
+		<constant name="COMPRESSION_DEFAULT" value="-1" enum="CompressionLevel">
+			Start a file with the default Deflate compression level ([code]6[/code]). This is a good compromise between speed and file size.
+		</constant>
+		<constant name="COMPRESSION_NONE" value="0" enum="CompressionLevel">
+			Start a file with no compression. This is also known as the "Store" compression mode and is the fastest method of packing files inside a ZIP archive. Consider using this mode for files that are already compressed (such as JPEG, PNG, MP3, or Ogg Vorbis files).
+		</constant>
+		<constant name="COMPRESSION_FAST" value="1" enum="CompressionLevel">
+			Start a file with the fastest Deflate compression level ([code]1[/code]). This is fast to compress, but results in larger file sizes than [constant COMPRESSION_DEFAULT]. Decompression speed is generally unaffected by the chosen compression level.
+		</constant>
+		<constant name="COMPRESSION_BEST" value="9" enum="CompressionLevel">
+			Start a file with the best Deflate compression level ([code]9[/code]). This is slow to compress, but results in smaller file sizes than [constant COMPRESSION_DEFAULT]. Decompression speed is generally unaffected by the chosen compression level.
 		</constant>
 	</constants>
 </class>

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_POLYGON_H
-#define NAVIGATION_POLYGON_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/navigation_mesh.h"
@@ -51,7 +50,7 @@ class NavigationPolygon : public Resource {
 	// Navigation mesh
 	Ref<NavigationMesh> navigation_mesh;
 
-	real_t cell_size = NavigationDefaults2D::navmesh_cell_size;
+	real_t cell_size = NavigationDefaults2D::NAV_MESH_CELL_SIZE;
 	real_t border_size = 0.0f;
 
 	Rect2 baking_rect;
@@ -68,10 +67,11 @@ protected:
 	TypedArray<Vector<Vector2>> _get_outlines() const;
 
 public:
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	Rect2 _edit_get_rect() const;
 	bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
-#endif
+#endif // DEBUG_ENABLED
+
 	enum SamplePartitionType {
 		SAMPLE_PARTITION_CONVEX_PARTITION = 0,
 		SAMPLE_PARTITION_TRIANGULATE,
@@ -167,13 +167,8 @@ public:
 	void set_data(const Vector<Vector2> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<Vector<Vector2>> &p_outlines);
 	void get_data(Vector<Vector2> &r_vertices, Vector<Vector<int>> &r_polygons);
 	void get_data(Vector<Vector2> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<Vector<Vector2>> &r_outlines);
-
-	NavigationPolygon() {}
-	~NavigationPolygon() {}
 };
 
 VARIANT_ENUM_CAST(NavigationPolygon::SamplePartitionType);
 VARIANT_ENUM_CAST(NavigationPolygon::ParsedGeometryType);
 VARIANT_ENUM_CAST(NavigationPolygon::SourceGeometryMode);
-
-#endif // NAVIGATION_POLYGON_H

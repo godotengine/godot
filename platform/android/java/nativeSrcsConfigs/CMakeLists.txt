@@ -1,5 +1,5 @@
 # Non functional cmake build file used to provide Android Studio editor support to the project.
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.10)
 project(godot)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -21,4 +21,4 @@ target_include_directories(${PROJECT_NAME}
         ${ANDROID_ROOT_DIR}
         ${OPENXR_INCLUDE_DIR})
 
-add_definitions(-DUNIX_ENABLED -DVULKAN_ENABLED -DANDROID_ENABLED -DGLES3_ENABLED -DTOOLS_ENABLED)
+add_definitions(-DUNIX_ENABLED -DVULKAN_ENABLED -DANDROID_ENABLED -DGLES3_ENABLED -DTOOLS_ENABLED -DDEBUG_ENABLED)

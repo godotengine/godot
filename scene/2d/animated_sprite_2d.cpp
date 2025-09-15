@@ -56,7 +56,9 @@ Point2 AnimatedSprite2D::_edit_get_pivot() const {
 bool AnimatedSprite2D::_edit_use_pivot() const {
 	return true;
 }
+#endif // TOOLS_ENABLED
 
+#ifdef DEBUG_ENABLED
 Rect2 AnimatedSprite2D::_edit_get_rect() const {
 	return _get_rect();
 }
@@ -75,7 +77,7 @@ bool AnimatedSprite2D::_edit_use_rect() const {
 	}
 	return t.is_valid();
 }
-#endif
+#endif // DEBUG_ENABLED
 
 Rect2 AnimatedSprite2D::get_anchorable_rect() const {
 	return _get_rect();
@@ -111,10 +113,15 @@ Rect2 AnimatedSprite2D::_get_rect() const {
 }
 
 void AnimatedSprite2D::_validate_property(PropertyInfo &p_property) const {
-	if (!frames.is_valid()) {
+	if (frames.is_null()) {
 		return;
 	}
-
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		if (p_property.name == "frame" && playing) {
+			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
+		}
+		return;
+	}
 	if (p_property.name == "animation") {
 		List<StringName> names;
 		frames->get_animation_list(&names);
@@ -165,8 +172,19 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &p_property) const {
 
 void AnimatedSprite2D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			Rect2 dst_rect = _get_rect();
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_IMAGE);
+			DisplayServer::get_singleton()->accessibility_update_set_transform(ae, get_transform());
+			DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, dst_rect);
+		} break;
+
 		case NOTIFICATION_READY: {
-			if (!Engine::get_singleton()->is_editor_hint() && !frames.is_null() && frames->has_animation(autoplay)) {
+			if (!Engine::get_singleton()->is_editor_hint() && frames.is_valid() && frames->has_animation(autoplay)) {
 				play(autoplay);
 			}
 		} break;
@@ -191,7 +209,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 				int fc = frames->get_frame_count(animation);
 
 				int last_frame = fc - 1;
-				if (!signbit(speed)) {
+				if (!std::signbit(speed)) {
 					// Forwards.
 					if (frame_progress >= 1.0) {
 						if (frame >= last_frame) {
@@ -299,7 +317,7 @@ void AnimatedSprite2D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 
 		List<StringName> al;
 		frames->get_animation_list(&al);
-		if (al.size() == 0) {
+		if (al.is_empty()) {
 			set_animation(StringName());
 			autoplay = String();
 		} else {
@@ -323,7 +341,7 @@ Ref<SpriteFrames> AnimatedSprite2D::get_sprite_frames() const {
 }
 
 void AnimatedSprite2D::set_frame(int p_frame) {
-	set_frame_and_progress(p_frame, signbit(get_playing_speed()) ? 1.0 : 0.0);
+	set_frame_and_progress(p_frame, std::signbit(get_playing_speed()) ? 1.0 : 0.0);
 }
 
 int AnimatedSprite2D::get_frame() const {
@@ -485,7 +503,7 @@ void AnimatedSprite2D::play(const StringName &p_name, float p_custom_scale, bool
 		emit_signal(SceneStringName(animation_changed));
 	} else {
 		int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
-		bool is_backward = signbit(speed_scale * custom_speed_scale);
+		bool is_backward = std::signbit(speed_scale * custom_speed_scale);
 
 		if (p_from_end && is_backward && frame == 0 && frame_progress <= 0.0) {
 			set_frame_and_progress(end_frame, 1.0);
@@ -557,7 +575,7 @@ void AnimatedSprite2D::set_animation(const StringName &p_name) {
 		ERR_FAIL_MSG(vformat("There is no animation with name '%s'.", p_name));
 	}
 
-	if (signbit(get_playing_speed())) {
+	if (std::signbit(get_playing_speed())) {
 		set_frame_and_progress(frame_count - 1, 1.0);
 	} else {
 		set_frame_and_progress(0, 0.0);
@@ -593,7 +611,7 @@ void AnimatedSprite2D::get_argument_options(const StringName &p_function, int p_
 	}
 	Node2D::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 #ifndef DISABLE_DEPRECATED
 bool AnimatedSprite2D::_set(const StringName &p_name, const Variant &p_value) {
@@ -651,7 +669,6 @@ void AnimatedSprite2D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("animation_looped"));
 	ADD_SIGNAL(MethodInfo("animation_finished"));
 
-	ADD_GROUP("Animation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sprite_frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation", PROPERTY_HINT_ENUM, ""), "set_animation", "get_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "autoplay", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_autoplay", "get_autoplay");

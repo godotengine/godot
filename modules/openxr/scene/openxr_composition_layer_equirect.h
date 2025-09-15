@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_COMPOSITION_LAYER_EQUIRECT_H
-#define OPENXR_COMPOSITION_LAYER_EQUIRECT_H
+#pragma once
 
 #include <openxr/openxr.h>
 
@@ -38,12 +37,24 @@
 class OpenXRCompositionLayerEquirect : public OpenXRCompositionLayer {
 	GDCLASS(OpenXRCompositionLayerEquirect, OpenXRCompositionLayer);
 
-	XrCompositionLayerEquirect2KHR composition_layer;
+	XrCompositionLayerEquirect2KHR composition_layer = {
+		XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR, // type
+		nullptr, // next
+		0, // layerFlags
+		XR_NULL_HANDLE, // space
+		XR_EYE_VISIBILITY_BOTH, // eyeVisibility
+		{}, // subImage
+		{ { 0, 0, 0, 0 }, { 0, 0, 0 } }, // pose
+		1.0, // radius
+		Math::PI / 2.0, // centralHorizontalAngle
+		Math::PI / 4.0, // upperVerticalAngle
+		-Math::PI / 4.0, // lowerVerticalAngle
+	};
 
 	float radius = 1.0;
-	float central_horizontal_angle = Math_PI / 2.0;
-	float upper_vertical_angle = Math_PI / 4.0;
-	float lower_vertical_angle = Math_PI / 4.0;
+	float central_horizontal_angle = Math::PI / 2.0;
+	float upper_vertical_angle = Math::PI / 4.0;
+	float lower_vertical_angle = Math::PI / 4.0;
 	uint32_t fallback_segments = 10;
 
 protected:
@@ -76,5 +87,3 @@ public:
 	OpenXRCompositionLayerEquirect();
 	~OpenXRCompositionLayerEquirect();
 };
-
-#endif // OPENXR_COMPOSITION_LAYER_EQUIRECT_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_TRANSLATION_H
-#define TEST_TRANSLATION_H
+#pragma once
 
 #include "core/string/optimized_translation.h"
 #include "core/string/translation.h"
@@ -161,7 +160,7 @@ TEST_CASE("[TranslationCSV] CSV import") {
 
 	List<String> gen_files;
 
-	Error result = import_csv_translation->import(TestUtils::get_data_path("translations.csv"),
+	Error result = import_csv_translation->import(0, TestUtils::get_data_path("translations.csv"),
 			"", options, nullptr, &gen_files);
 	CHECK(result == OK);
 	CHECK(gen_files.size() == 4);
@@ -201,5 +200,3 @@ TEST_CASE("[TranslationCSV] CSV import") {
 #endif // TOOLS_ENABLED
 
 } // namespace TestTranslation
-
-#endif // TEST_TRANSLATION_H

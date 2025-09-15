@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FONT_H
-#define FONT_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/templates/lru.h"
-#include "core/templates/rb_map.h"
 #include "scene/resources/texture.h"
 #include "servers/text_server.h"
 
@@ -97,13 +95,19 @@ protected:
 
 	static void _bind_methods();
 
-	virtual void _update_rids_fb(const Ref<Font> &p_f, int p_depth) const;
+	virtual void _update_rids_fb(const Font *p_f, int p_depth) const;
 	virtual void _update_rids() const;
 	virtual void reset_state() override;
 
 #ifndef DISABLE_DEPRECATED
-	RID _find_variation_compat_80954(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D()) const;
-	RID _find_variation_compat_87668(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0) const;
+	void _draw_string_bind_compat_104872(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+	void _draw_multiline_string_bind_compat_104872(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_max_lines = -1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+	void _draw_string_outline_bind_compat_104872(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+	void _draw_multiline_string_outline_bind_compat_104872(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_max_lines = -1, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+	real_t _draw_char_bind_compat_104872(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1.0, 1.0, 1.0)) const;
+	real_t _draw_char_outline_bind_compat_104872(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0)) const;
+	RID _find_variation_bind_compat_80954(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D()) const;
+	RID _find_variation_bind_compat_87668(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0) const;
 	static void _bind_compatibility_methods();
 #endif
 
@@ -146,16 +150,16 @@ public:
 	virtual Size2 get_string_size(const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
 	virtual Size2 get_multiline_string_size(const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_max_lines = -1, BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
 
-	virtual void draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
-	virtual void draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_max_lines = -1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+	virtual void draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL, float p_oversampling = 0.0) const;
+	virtual void draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_max_lines = -1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL, float p_oversampling = 0.0) const;
 
-	virtual void draw_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
-	virtual void draw_multiline_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_max_lines = -1, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+	virtual void draw_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL, float p_oversampling = 0.0) const;
+	virtual void draw_multiline_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_max_lines = -1, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL, float p_oversampling = 0.0) const;
 
 	// Drawing char.
 	virtual Size2 get_char_size(char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE) const;
-	virtual real_t draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1.0, 1.0, 1.0)) const;
-	virtual real_t draw_char_outline(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0)) const;
+	virtual real_t draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1.0, 1.0, 1.0), float p_oversampling = 0.0) const;
+	virtual real_t draw_char_outline(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0), float p_oversampling = 0.0) const;
 
 	// Helper functions.
 	virtual bool has_char(char32_t p_char) const;
@@ -183,7 +187,7 @@ class FontFile : public Font {
 	// Font source data.
 	const uint8_t *data_ptr = nullptr;
 	size_t data_size = 0;
-	PackedByteArray data;
+	mutable PackedByteArray data;
 
 	TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	bool mipmaps = false;
@@ -194,10 +198,12 @@ class FontFile : public Font {
 	int fixed_size = 0;
 	TextServer::FixedSizeScaleMode fixed_size_scale_mode = TextServer::FIXED_SIZE_SCALE_DISABLE;
 	bool force_autohinter = false;
+	bool modulate_color_glyphs = false;
 	bool allow_system_fallback = true;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
-	real_t oversampling = 0.f;
+	bool keep_rounding_remainders = true;
+	double oversampling_override = 0.0;
 
 #ifndef DISABLE_DEPRECATED
 	real_t bmp_height = 0.0;
@@ -274,11 +280,17 @@ public:
 	virtual void set_force_autohinter(bool p_force_autohinter);
 	virtual bool is_force_autohinter() const;
 
+	virtual void set_modulate_color_glyphs(bool p_modulate);
+	virtual bool is_modulate_color_glyphs() const;
+
 	virtual void set_hinting(TextServer::Hinting p_hinting);
 	virtual TextServer::Hinting get_hinting() const;
 
 	virtual void set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel);
 	virtual TextServer::SubpixelPositioning get_subpixel_positioning() const;
+
+	virtual void set_keep_rounding_remainders(bool p_keep_rounding_remainders);
+	virtual bool get_keep_rounding_remainders() const;
 
 	virtual void set_oversampling(real_t p_oversampling);
 	virtual real_t get_oversampling() const;
@@ -468,7 +480,7 @@ class SystemFont : public Font {
 	mutable Ref<Font> theme_font;
 
 	Ref<FontFile> base_font;
-	Vector<int> face_indeces;
+	Vector<int> face_indices;
 	int ftr_weight = 0;
 	int ftr_stretch = 0;
 	int ftr_italic = 0;
@@ -477,10 +489,12 @@ class SystemFont : public Font {
 	bool mipmaps = false;
 	bool disable_embedded_bitmaps = true;
 	bool force_autohinter = false;
+	bool modulate_color_glyphs = false;
 	bool allow_system_fallback = true;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
-	real_t oversampling = 0.f;
+	bool keep_rounding_remainders = true;
+	double oversampling_override = 0.0;
 	bool msdf = false;
 	int msdf_pixel_range = 16;
 	int msdf_size = 48;
@@ -512,11 +526,17 @@ public:
 	virtual void set_force_autohinter(bool p_force_autohinter);
 	virtual bool is_force_autohinter() const;
 
+	virtual void set_modulate_color_glyphs(bool p_modulate);
+	virtual bool is_modulate_color_glyphs() const;
+
 	virtual void set_hinting(TextServer::Hinting p_hinting);
 	virtual TextServer::Hinting get_hinting() const;
 
 	virtual void set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel);
 	virtual TextServer::SubpixelPositioning get_subpixel_positioning() const;
+
+	virtual void set_keep_rounding_remainders(bool p_keep_rounding_remainders);
+	virtual bool get_keep_rounding_remainders() const;
 
 	virtual void set_oversampling(real_t p_oversampling);
 	virtual real_t get_oversampling() const;
@@ -552,5 +572,3 @@ public:
 	SystemFont();
 	~SystemFont();
 };
-
-#endif // FONT_H

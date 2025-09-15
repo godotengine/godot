@@ -34,27 +34,27 @@
 #include "core/variant/typed_array.h"
 
 static real_t heuristic_euclidean(const Vector2i &p_from, const Vector2i &p_to) {
-	real_t dx = (real_t)ABS(p_to.x - p_from.x);
-	real_t dy = (real_t)ABS(p_to.y - p_from.y);
+	real_t dx = (real_t)Math::abs(p_to.x - p_from.x);
+	real_t dy = (real_t)Math::abs(p_to.y - p_from.y);
 	return (real_t)Math::sqrt(dx * dx + dy * dy);
 }
 
 static real_t heuristic_manhattan(const Vector2i &p_from, const Vector2i &p_to) {
-	real_t dx = (real_t)ABS(p_to.x - p_from.x);
-	real_t dy = (real_t)ABS(p_to.y - p_from.y);
+	real_t dx = (real_t)Math::abs(p_to.x - p_from.x);
+	real_t dy = (real_t)Math::abs(p_to.y - p_from.y);
 	return dx + dy;
 }
 
 static real_t heuristic_octile(const Vector2i &p_from, const Vector2i &p_to) {
-	real_t dx = (real_t)ABS(p_to.x - p_from.x);
-	real_t dy = (real_t)ABS(p_to.y - p_from.y);
-	real_t F = Math_SQRT2 - 1;
+	real_t dx = (real_t)Math::abs(p_to.x - p_from.x);
+	real_t dy = (real_t)Math::abs(p_to.y - p_from.y);
+	real_t F = Math::SQRT2 - 1;
 	return (dx < dy) ? F * dx + dy : F * dy + dx;
 }
 
 static real_t heuristic_chebyshev(const Vector2i &p_from, const Vector2i &p_to) {
-	real_t dx = (real_t)ABS(p_to.x - p_from.x);
-	real_t dy = (real_t)ABS(p_to.y - p_from.y);
+	real_t dx = (real_t)Math::abs(p_to.x - p_from.x);
+	real_t dy = (real_t)Math::abs(p_to.y - p_from.y);
 	return MAX(dx, dy);
 }
 
@@ -491,11 +491,11 @@ void AStarGrid2D::_get_nbors(Point *p_point, LocalVector<Point *> &r_nbors) {
 	}
 }
 
-bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
+bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point, bool p_allow_partial_path) {
 	last_closest_point = nullptr;
 	pass++;
 
-	if (_get_solid_unchecked(p_end_point->id)) {
+	if (_get_solid_unchecked(p_end_point->id) && !p_allow_partial_path) {
 		return false;
 	}
 
@@ -503,6 +503,7 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 
 	LocalVector<Point *> open_list;
 	SortArray<Point *, SortPoints> sorter;
+	LocalVector<Point *> nbors;
 
 	p_begin_point->g_score = 0;
 	p_begin_point->f_score = _estimate_cost(p_begin_point->id, p_end_point->id);
@@ -528,7 +529,7 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 		open_list.remove_at(open_list.size() - 1);
 		p->closed_pass = pass; // Mark the point as closed.
 
-		LocalVector<Point *> nbors;
+		nbors.clear();
 		_get_nbors(p, nbors);
 
 		for (Point *e : nbors) {
@@ -647,7 +648,7 @@ Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vec
 	Point *begin_point = a;
 	Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point);
+	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
 	if (!found_route) {
 		if (!p_allow_partial_path || last_closest_point == nullptr) {
 			return Vector<Vector2>();
@@ -700,7 +701,7 @@ TypedArray<Vector2i> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const V
 	Point *begin_point = a;
 	Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point);
+	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
 	if (!found_route) {
 		if (!p_allow_partial_path || last_closest_point == nullptr) {
 			return TypedArray<Vector2i>();

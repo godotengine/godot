@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_BOTTOM_PANEL_H
-#define EDITOR_BOTTOM_PANEL_H
+#pragma once
 
 #include "scene/gui/panel_container.h"
 
@@ -37,8 +36,8 @@ class Button;
 class ConfigFile;
 class EditorToaster;
 class HBoxContainer;
-class LinkButton;
 class VBoxContainer;
+class ScrollContainer;
 
 class EditorBottomPanel : public PanelContainer {
 	GDCLASS(EditorBottomPanel, PanelContainer);
@@ -50,19 +49,26 @@ class EditorBottomPanel : public PanelContainer {
 	};
 
 	Vector<BottomPanelItem> items;
+	bool lock_panel_switching = false;
 
 	VBoxContainer *item_vbox = nullptr;
 	HBoxContainer *bottom_hbox = nullptr;
+	Button *left_button = nullptr;
+	Button *right_button = nullptr;
+	ScrollContainer *button_scroll = nullptr;
 	HBoxContainer *button_hbox = nullptr;
 	EditorToaster *editor_toaster = nullptr;
-	LinkButton *version_btn = nullptr;
+	Button *pin_button = nullptr;
 	Button *expand_button = nullptr;
 	Control *last_opened_control = nullptr;
 
-	void _switch_by_control(bool p_visible, Control *p_control);
-	void _switch_to_item(bool p_visible, int p_idx);
+	void _switch_by_control(bool p_visible, Control *p_control, bool p_ignore_lock = false);
+	void _switch_to_item(bool p_visible, int p_idx, bool p_ignore_lock = false);
+	void _pin_button_toggled(bool p_pressed);
 	void _expand_button_toggled(bool p_pressed);
-	void _version_button_pressed();
+	void _scroll(bool p_right);
+	void _update_scroll_buttons();
+	void _update_disabled_buttons();
 
 	bool _button_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
 
@@ -75,12 +81,11 @@ public:
 
 	Button *add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut = nullptr, bool p_at_front = false);
 	void remove_item(Control *p_item);
-	void make_item_visible(Control *p_item, bool p_visible = true);
+	void make_item_visible(Control *p_item, bool p_visible = true, bool p_ignore_lock = false);
 	void move_item_to_end(Control *p_item);
 	void hide_bottom_panel();
 	void toggle_last_opened_bottom_panel();
+	void set_expanded(bool p_expanded);
 
 	EditorBottomPanel();
 };
-
-#endif // EDITOR_BOTTOM_PANEL_H

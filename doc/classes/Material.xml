@@ -24,13 +24,13 @@
 				Only exposed for the purpose of overriding. You cannot call this function directly. Used internally to determine if [member render_priority] should be shown in the editor or not.
 			</description>
 		</method>
-		<method name="_get_shader_mode" qualifiers="virtual const">
+		<method name="_get_shader_mode" qualifiers="virtual required const">
 			<return type="int" enum="Shader.Mode" />
 			<description>
 				Only exposed for the purpose of overriding. You cannot call this function directly. Used internally by various editor tools.
 			</description>
 		</method>
-		<method name="_get_shader_rid" qualifiers="virtual const">
+		<method name="_get_shader_rid" qualifiers="virtual required const">
 			<return type="RID" />
 			<description>
 				Only exposed for the purpose of overriding. You cannot call this function directly. Used internally by various editor tools. Used to access the RID of the [Material]'s [Shader].
@@ -45,7 +45,7 @@
 		<method name="inspect_native_shader_code">
 			<return type="void" />
 			<description>
-				Only available when running in the editor. Opens a popup that visualizes the generated shader code, including all variants and internal shader code.
+				Only available when running in the editor. Opens a popup that visualizes the generated shader code, including all variants and internal shader code. See also [method Shader.inspect_native_shader_code].
 			</description>
 		</method>
 	</methods>
@@ -56,7 +56,7 @@
 			[b]Note:[/b] This only applies to [StandardMaterial3D]s and [ShaderMaterial]s with type "Spatial".
 		</member>
 		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority">
-			Sets the render priority for objects in 3D scenes. Higher priority objects will be sorted in front of lower priority objects. In other words, all objects with [member render_priority] [code]1[/code] will render before all objects with [member render_priority] [code]0[/code].
+			Sets the render priority for objects in 3D scenes. Higher priority objects will be sorted in front of lower priority objects. In other words, all objects with [member render_priority] [code]1[/code] will render on top of all objects with [member render_priority] [code]0[/code].
 			[b]Note:[/b] This only applies to [StandardMaterial3D]s and [ShaderMaterial]s with type "Spatial".
 			[b]Note:[/b] This will not impact how transparent objects are sorted relative to opaque objects or how dynamic meshes will be sorted relative to other opaque meshes. This is because all transparent objects are drawn after all opaque objects and all dynamic opaque meshes are drawn before other opaque meshes.
 		</member>

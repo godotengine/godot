@@ -28,19 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_METHOD_H
-#define RENDERING_METHOD_H
+#pragma once
 
 #include "servers/rendering/storage/render_scene_buffers.h"
 #include "servers/rendering_server.h"
 
-#ifdef _3D_DISABLED
+#ifdef XR_DISABLED
 // RendererSceneCull::render_camera is empty when 3D is disabled, but
 // it and RenderingMethod::render_camera have a parameter for XRInterface.
 #define XRInterface RefCounted
-#else // 3D enabled
+#else
 #include "servers/xr/xr_interface.h"
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 class RenderingMethod {
 public:
@@ -83,13 +82,13 @@ public:
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask) = 0;
 	virtual void instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center) = 0;
 	virtual void instance_set_transform(RID p_instance, const Transform3D &p_transform) = 0;
-	virtual void instance_set_interpolated(RID p_instance, bool p_interpolated) = 0;
-	virtual void instance_reset_physics_interpolation(RID p_instance) = 0;
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id) = 0;
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight) = 0;
 	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material) = 0;
 	virtual void instance_set_visible(RID p_instance, bool p_visible) = 0;
 	virtual void instance_geometry_set_transparency(RID p_instance, float p_transparency) = 0;
+
+	virtual void instance_teleport(RID p_instance) = 0;
 
 	virtual void instance_set_custom_aabb(RID p_instance, AABB p_aabb) = 0;
 
@@ -117,6 +116,11 @@ public:
 	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const = 0;
 	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &p_parameter) const = 0;
 	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &p_parameter) const = 0;
+
+	/* PIPELINES */
+
+	virtual void mesh_generate_pipelines(RID p_mesh, bool p_background_compilation) = 0;
+	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source) = 0;
 
 	/* SKY API */
 
@@ -163,6 +167,7 @@ public:
 	virtual void environment_set_bg_energy(RID p_env, float p_multiplier, float p_exposure_value) = 0;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
 	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient = RS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, RS::EnvironmentReflectionSource p_reflection_source = RS::ENV_REFLECTION_SOURCE_BG) = 0;
+	virtual void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) = 0;
 
 	virtual RS::EnvironmentBG environment_get_background(RID p_Env) const = 0;
 	virtual RID environment_get_sky(RID p_env) const = 0;
@@ -366,5 +371,3 @@ public:
 	RenderingMethod();
 	virtual ~RenderingMethod();
 };
-
-#endif // RENDERING_METHOD_H

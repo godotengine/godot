@@ -31,6 +31,7 @@
 #include "openxr_action_editor.h"
 
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 
 void OpenXRActionEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_do_set_name", "name"), &OpenXRActionEditor::_do_set_name);
@@ -41,12 +42,11 @@ void OpenXRActionEditor::_bind_methods() {
 }
 
 void OpenXRActionEditor::_theme_changed() {
-	rem_action->set_icon(get_theme_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
+	rem_action->set_button_icon(get_theme_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
 }
 
 void OpenXRActionEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			_theme_changed();
 		} break;
@@ -133,25 +133,31 @@ OpenXRActionEditor::OpenXRActionEditor(Ref<OpenXRAction> p_action) {
 
 	action_name = memnew(LineEdit);
 	action_name->set_text(action->get_name());
-	action_name->set_custom_minimum_size(Size2(150.0, 0.0));
+	action_name->set_tooltip_text(TTR("Internal name of the action. Some XR runtimes don't allow spaces or special characters."));
+	action_name->set_custom_minimum_size(Size2(150.0 * EDSCALE, 0.0));
 	action_name->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionEditor::_on_action_name_changed));
+	action_name->set_accessibility_name(TTRC("Action Name"));
 	add_child(action_name);
 
 	action_localized_name = memnew(LineEdit);
 	action_localized_name->set_text(action->get_localized_name());
-	action_localized_name->set_custom_minimum_size(Size2(150.0, 0.0));
+	action_localized_name->set_tooltip_text(TTR("Human-readable name of the action. This can be displayed to end users."));
+	action_localized_name->set_custom_minimum_size(Size2(150.0 * EDSCALE, 0.0));
 	action_localized_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	action_localized_name->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionEditor::_on_action_localized_name_changed));
+	action_localized_name->set_accessibility_name(TTRC("Action Localized Name"));
 	add_child(action_localized_name);
 
 	action_type_button = memnew(OptionButton);
+	action_type_button->set_tooltip_text(TTR("Type of the action"));
 	action_type_button->add_item("Bool", OpenXRAction::OPENXR_ACTION_BOOL);
 	action_type_button->add_item("Float", OpenXRAction::OPENXR_ACTION_FLOAT);
 	action_type_button->add_item("Vector2", OpenXRAction::OPENXR_ACTION_VECTOR2);
 	action_type_button->add_item("Pose", OpenXRAction::OPENXR_ACTION_POSE);
 	action_type_button->add_item("Haptic", OpenXRAction::OPENXR_ACTION_HAPTIC);
+	action_type_button->set_accessibility_name(TTRC("Action Type"));
 	action_type_button->select(int(action->get_action_type()));
-	action_type_button->set_custom_minimum_size(Size2(100.0, 0.0));
+	action_type_button->set_custom_minimum_size(Size2(100.0 * EDSCALE, 0.0));
 	action_type_button->connect(SceneStringName(item_selected), callable_mp(this, &OpenXRActionEditor::_on_item_selected));
 	add_child(action_type_button);
 

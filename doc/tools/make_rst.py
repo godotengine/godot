@@ -10,10 +10,10 @@ import xml.etree.ElementTree as ET
 from collections import OrderedDict
 from typing import Any, Dict, List, Optional, TextIO, Tuple, Union
 
-# Import hardcoded version information from version.py
-root_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
-sys.path.append(root_directory)  # Include the root directory
-import version  # noqa: E402
+sys.path.insert(0, root_directory := os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
+
+import version
+from misc.utility.color import Ansi, force_stderr_color, force_stdout_color
 
 # $DOCS_URL/path/to/page.html(#fragment-tag)
 GODOT_DOCS_PATTERN = re.compile(r"^\$DOCS_URL/(.*)\.html(#.*)?$")
@@ -59,6 +59,7 @@ BASE_STRINGS = [
     "value",
     "Getter",
     "This method should typically be overridden by the user to have any effect.",
+    "This method is required to be overridden when extending its base class.",
     "This method has no side effects. It doesn't modify any of the instance's member variables.",
     "This method accepts any number of arguments after the ones described here.",
     "This method is used to construct a type.",
@@ -66,16 +67,16 @@ BASE_STRINGS = [
     "This method describes a valid operator to use with this type as left-hand operand.",
     "This value is an integer composed as a bitmask of the following flags.",
     "No return value.",
-    "There is currently no description for this class. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
-    "There is currently no description for this signal. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
-    "There is currently no description for this enum. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
-    "There is currently no description for this constant. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
-    "There is currently no description for this annotation. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
-    "There is currently no description for this property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
-    "There is currently no description for this constructor. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
-    "There is currently no description for this method. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
-    "There is currently no description for this operator. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
-    "There is currently no description for this theme property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this class. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this signal. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this enum. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this constant. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this annotation. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this constructor. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this operator. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this theme property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
     "There are notable differences when using this API with C#. See :ref:`doc_c_sharp_differences` for more information.",
     "Deprecated:",
     "Experimental:",
@@ -89,8 +90,6 @@ BASE_STRINGS = [
     "[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details.",
 ]
 strings_l10n: Dict[str, str] = {}
-
-STYLES: Dict[str, str] = {}
 
 CLASS_GROUPS: Dict[str, str] = {
     "global": "Globals",
@@ -150,7 +149,7 @@ PACKED_ARRAY_TYPES: List[str] = [
     "PackedByteArray",
     "PackedColorArray",
     "PackedFloat32Array",
-    "Packedfloat64Array",
+    "PackedFloat64Array",
     "PackedInt32Array",
     "PackedInt64Array",
     "PackedStringArray",
@@ -699,31 +698,9 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    should_color = bool(args.color or sys.stdout.isatty() or os.environ.get("CI"))
-
-    # Enable ANSI escape code support on Windows 10 and later (for colored console output).
-    # <https://github.com/python/cpython/issues/73245>
-    if should_color and sys.stdout.isatty() and sys.platform == "win32":
-        try:
-            from ctypes import WinError, byref, windll  # type: ignore
-            from ctypes.wintypes import DWORD  # type: ignore
-
-            stdout_handle = windll.kernel32.GetStdHandle(DWORD(-11))
-            mode = DWORD(0)
-            if not windll.kernel32.GetConsoleMode(stdout_handle, byref(mode)):
-                raise WinError()
-            mode = DWORD(mode.value | 4)
-            if not windll.kernel32.SetConsoleMode(stdout_handle, mode):
-                raise WinError()
-        except Exception:
-            should_color = False
-
-    STYLES["red"] = "\x1b[91m" if should_color else ""
-    STYLES["green"] = "\x1b[92m" if should_color else ""
-    STYLES["yellow"] = "\x1b[93m" if should_color else ""
-    STYLES["bold"] = "\x1b[1m" if should_color else ""
-    STYLES["regular"] = "\x1b[22m" if should_color else ""
-    STYLES["reset"] = "\x1b[0m" if should_color else ""
+    if args.color:
+        force_stdout_color(True)
+        force_stderr_color(True)
 
     # Retrieve heading translations for the given language.
     if not args.dry_run and args.lang != "en":
@@ -834,16 +811,16 @@ def main() -> None:
     if state.script_language_parity_check.hit_count > 0:
         if not args.verbose:
             print(
-                f'{STYLES["yellow"]}{state.script_language_parity_check.hit_count} code samples failed parity check. Use --verbose to get more information.{STYLES["reset"]}'
+                f"{Ansi.YELLOW}{state.script_language_parity_check.hit_count} code samples failed parity check. Use --verbose to get more information.{Ansi.RESET}"
             )
         else:
             print(
-                f'{STYLES["yellow"]}{state.script_language_parity_check.hit_count} code samples failed parity check:{STYLES["reset"]}'
+                f"{Ansi.YELLOW}{state.script_language_parity_check.hit_count} code samples failed parity check:{Ansi.RESET}"
             )
 
             for class_name in state.script_language_parity_check.hit_map.keys():
                 class_hits = state.script_language_parity_check.hit_map[class_name]
-                print(f'{STYLES["yellow"]}- {len(class_hits)} hits in class "{class_name}"{STYLES["reset"]}')
+                print(f'{Ansi.YELLOW}- {len(class_hits)} hits in class "{class_name}"{Ansi.RESET}')
 
                 for context, error in class_hits:
                     print(f"  - {error} in {format_context_name(context)}")
@@ -853,24 +830,22 @@ def main() -> None:
 
     if state.num_warnings >= 2:
         print(
-            f'{STYLES["yellow"]}{state.num_warnings} warnings were found in the class reference XML. Please check the messages above.{STYLES["reset"]}'
+            f"{Ansi.YELLOW}{state.num_warnings} warnings were found in the class reference XML. Please check the messages above.{Ansi.RESET}"
         )
     elif state.num_warnings == 1:
         print(
-            f'{STYLES["yellow"]}1 warning was found in the class reference XML. Please check the messages above.{STYLES["reset"]}'
+            f"{Ansi.YELLOW}1 warning was found in the class reference XML. Please check the messages above.{Ansi.RESET}"
         )
 
     if state.num_errors >= 2:
         print(
-            f'{STYLES["red"]}{state.num_errors} errors were found in the class reference XML. Please check the messages above.{STYLES["reset"]}'
+            f"{Ansi.RED}{state.num_errors} errors were found in the class reference XML. Please check the messages above.{Ansi.RESET}"
         )
     elif state.num_errors == 1:
-        print(
-            f'{STYLES["red"]}1 error was found in the class reference XML. Please check the messages above.{STYLES["reset"]}'
-        )
+        print(f"{Ansi.RED}1 error was found in the class reference XML. Please check the messages above.{Ansi.RESET}")
 
     if state.num_warnings == 0 and state.num_errors == 0:
-        print(f'{STYLES["green"]}No warnings or errors found in the class reference XML.{STYLES["reset"]}')
+        print(f"{Ansi.GREEN}No warnings or errors found in the class reference XML.{Ansi.RESET}")
         if not args.dry_run:
             print(f"Wrote reStructuredText files for each class to: {args.output}")
     else:
@@ -881,12 +856,12 @@ def main() -> None:
 
 
 def print_error(error: str, state: State) -> None:
-    print(f'{STYLES["red"]}{STYLES["bold"]}ERROR:{STYLES["regular"]} {error}{STYLES["reset"]}')
+    print(f"{Ansi.RED}{Ansi.BOLD}ERROR:{Ansi.REGULAR} {error}{Ansi.RESET}")
     state.num_errors += 1
 
 
 def print_warning(warning: str, state: State) -> None:
-    print(f'{STYLES["yellow"]}{STYLES["bold"]}WARNING:{STYLES["regular"]} {warning}{STYLES["reset"]}')
+    print(f"{Ansi.YELLOW}{Ansi.BOLD}WARNING:{Ansi.REGULAR} {warning}{Ansi.RESET}")
     state.num_warnings += 1
 
 
@@ -911,7 +886,7 @@ def get_git_branch() -> str:
 def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: str) -> None:
     class_name = class_def.name
     with open(
-        os.devnull if dry_run else os.path.join(output_dir, f"class_{class_name.lower()}.rst"),
+        os.devnull if dry_run else os.path.join(output_dir, f"class_{sanitize_class_name(class_name, True)}.rst"),
         "w",
         encoding="utf-8",
         newline="\n",
@@ -937,7 +912,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         f.write(f".. XML source: {source_github_url}.\n\n")
 
         # Document reference id and header.
-        f.write(f".. _class_{class_name}:\n\n")
+        f.write(f".. _class_{sanitize_class_name(class_name)}:\n\n")
         f.write(make_heading(class_name, "=", False))
 
         f.write(make_deprecated_experimental(class_def, state))
@@ -947,15 +922,19 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         # Ascendants
         if class_def.inherits:
             inherits = class_def.inherits.strip()
-            f.write(f'**{translate("Inherits:")}** ')
+            f.write(f"**{translate('Inherits:')}** ")
             first = True
-            while inherits in state.classes:
+            while inherits is not None:
                 if not first:
                     f.write(" **<** ")
                 else:
                     first = False
 
                 f.write(make_type(inherits, state))
+
+                if inherits not in state.classes:
+                    break  # Parent unknown.
+
                 inode = state.classes[inherits].inherits
                 if inode:
                     inherits = inode.strip()
@@ -970,7 +949,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 inherited.append(c.name)
 
         if len(inherited):
-            f.write(f'**{translate("Inherited By:")}** ')
+            f.write(f"**{translate('Inherited By:')}** ")
             for i, child in enumerate(inherited):
                 if i > 0:
                     f.write(", ")
@@ -1000,7 +979,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             f.write(".. container:: contribute\n\n\t")
             f.write(
                 translate(
-                    "There is currently no description for this class. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                    "There is currently no description for this class. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                 )
                 + "\n\n"
             )
@@ -1037,13 +1016,11 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 type_rst = property_def.type_name.to_rst(state)
                 default = property_def.default_value
                 if default is not None and property_def.overrides:
-                    ref = (
-                        f":ref:`{property_def.overrides}<class_{property_def.overrides}_property_{property_def.name}>`"
-                    )
+                    ref = f":ref:`{property_def.overrides}<class_{sanitize_class_name(property_def.overrides)}_property_{property_def.name}>`"
                     # Not using translate() for now as it breaks table formatting.
                     ml.append((type_rst, property_def.name, f"{default} (overrides {ref})"))
                 else:
-                    ref = f":ref:`{property_def.name}<class_{class_name}_property_{property_def.name}>`"
+                    ref = f":ref:`{property_def.name}<class_{sanitize_class_name(class_name)}_property_{property_def.name}>`"
                     ml.append((type_rst, ref, default))
 
             format_table(f, ml, True)
@@ -1089,7 +1066,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
             ml = []
             for theme_item_def in class_def.theme_items.values():
-                ref = f":ref:`{theme_item_def.name}<class_{class_name}_theme_{theme_item_def.data_name}_{theme_item_def.name}>`"
+                ref = f":ref:`{theme_item_def.name}<class_{sanitize_class_name(class_name)}_theme_{theme_item_def.data_name}_{theme_item_def.name}>`"
                 ml.append((theme_item_def.type_name.to_rst(state), ref, theme_item_def.default_value))
 
             format_table(f, ml, True)
@@ -1110,7 +1087,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 # Create signal signature and anchor point.
 
-                signal_anchor = f"class_{class_name}_signal_{signal.name}"
+                signal_anchor = f"class_{sanitize_class_name(class_name)}_signal_{signal.name}"
                 f.write(f".. _{signal_anchor}:\n\n")
                 self_link = f":ref:`🔗<{signal_anchor}>`"
                 f.write(".. rst-class:: classref-signal\n\n")
@@ -1128,7 +1105,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
-                            "There is currently no description for this signal. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                            "There is currently no description for this signal. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                         )
                         + "\n\n"
                     )
@@ -1149,7 +1126,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 # Create enumeration signature and anchor point.
 
-                enum_anchor = f"enum_{class_name}_{e.name}"
+                enum_anchor = f"enum_{sanitize_class_name(class_name)}_{e.name}"
                 f.write(f".. _{enum_anchor}:\n\n")
                 self_link = f":ref:`🔗<{enum_anchor}>`"
                 f.write(".. rst-class:: classref-enumeration\n\n")
@@ -1162,7 +1139,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 for value in e.values.values():
                     # Also create signature and anchor point for each enum constant.
 
-                    f.write(f".. _class_{class_name}_constant_{value.name}:\n\n")
+                    f.write(f".. _class_{sanitize_class_name(class_name)}_constant_{value.name}:\n\n")
                     f.write(".. rst-class:: classref-enumeration-constant\n\n")
 
                     f.write(f"{e.type_name.to_rst(state)} **{value.name}** = ``{value.value}``\n\n")
@@ -1177,7 +1154,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this enum. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                                "There is currently no description for this enum. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1195,7 +1172,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             for constant in class_def.constants.values():
                 # Create constant signature and anchor point.
 
-                constant_anchor = f"class_{class_name}_constant_{constant.name}"
+                constant_anchor = f"class_{sanitize_class_name(class_name)}_constant_{constant.name}"
                 f.write(f".. _{constant_anchor}:\n\n")
                 self_link = f":ref:`🔗<{constant_anchor}>`"
                 f.write(".. rst-class:: classref-constant\n\n")
@@ -1212,7 +1189,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
-                            "There is currently no description for this constant. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                            "There is currently no description for this constant. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                         )
                         + "\n\n"
                     )
@@ -1235,7 +1212,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                     self_link = ""
                     if i == 0:
-                        annotation_anchor = f"class_{class_name}_annotation_{m.name}"
+                        annotation_anchor = f"class_{sanitize_class_name(class_name)}_annotation_{m.name}"
                         f.write(f".. _{annotation_anchor}:\n\n")
                         self_link = f" :ref:`🔗<{annotation_anchor}>`"
 
@@ -1252,7 +1229,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this annotation. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                                "There is currently no description for this annotation. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1276,7 +1253,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 # Create property signature and anchor point.
 
-                property_anchor = f"class_{class_name}_property_{property_def.name}"
+                property_anchor = f"class_{sanitize_class_name(class_name)}_property_{property_def.name}"
                 f.write(f".. _{property_anchor}:\n\n")
                 self_link = f":ref:`🔗<{property_anchor}>`"
                 f.write(".. rst-class:: classref-property\n\n")
@@ -1315,7 +1292,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
-                            "There is currently no description for this property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                            "There is currently no description for this property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                         )
                         + "\n\n"
                     )
@@ -1344,7 +1321,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                     self_link = ""
                     if i == 0:
-                        constructor_anchor = f"class_{class_name}_constructor_{m.name}"
+                        constructor_anchor = f"class_{sanitize_class_name(class_name)}_constructor_{m.name}"
                         f.write(f".. _{constructor_anchor}:\n\n")
                         self_link = f" :ref:`🔗<{constructor_anchor}>`"
 
@@ -1363,7 +1340,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this constructor. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                                "There is currently no description for this constructor. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1390,7 +1367,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         method_qualifier = ""
                         if m.name.startswith("_"):
                             method_qualifier = "private_"
-                        method_anchor = f"class_{class_name}_{method_qualifier}method_{m.name}"
+                        method_anchor = f"class_{sanitize_class_name(class_name)}_{method_qualifier}method_{m.name}"
                         f.write(f".. _{method_anchor}:\n\n")
                         self_link = f" :ref:`🔗<{method_anchor}>`"
 
@@ -1410,7 +1387,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this method. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                                "There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1431,7 +1408,9 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                     # Create operator signature and anchor point.
 
-                    operator_anchor = f"class_{class_name}_operator_{sanitize_operator_name(m.name, state)}"
+                    operator_anchor = (
+                        f"class_{sanitize_class_name(class_name)}_operator_{sanitize_operator_name(m.name, state)}"
+                    )
                     for parameter in m.parameters:
                         operator_anchor += f"_{parameter.type_name.type_name}"
                     f.write(f".. _{operator_anchor}:\n\n")
@@ -1452,7 +1431,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this operator. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                                "There is currently no description for this operator. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1473,7 +1452,9 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 # Create theme property signature and anchor point.
 
-                theme_item_anchor = f"class_{class_name}_theme_{theme_item_def.data_name}_{theme_item_def.name}"
+                theme_item_anchor = (
+                    f"class_{sanitize_class_name(class_name)}_theme_{theme_item_def.data_name}_{theme_item_def.name}"
+                )
                 f.write(f".. _{theme_item_anchor}:\n\n")
                 self_link = f":ref:`🔗<{theme_item_anchor}>`"
                 f.write(".. rst-class:: classref-themeproperty\n\n")
@@ -1495,7 +1476,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
-                            "There is currently no description for this theme property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                            "There is currently no description for this theme property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                         )
                         + "\n\n"
                     )
@@ -1511,13 +1492,13 @@ def make_type(klass: str, state: State) -> str:
 
     def resolve_type(link_type: str) -> str:
         if link_type in state.classes:
-            return f":ref:`{link_type}<class_{link_type}>`"
+            return f":ref:`{link_type}<class_{sanitize_class_name(link_type)}>`"
         else:
             print_error(f'{state.current_class}.xml: Unresolved type "{link_type}".', state)
             return f"``{link_type}``"
 
     if klass.endswith("[]"):  # Typed array, strip [] to link to contained type.
-        return f":ref:`Array<class_Array>`\\[{resolve_type(klass[:-len('[]')])}\\]"
+        return f":ref:`Array<class_Array>`\\[{resolve_type(klass[: -len('[]')])}\\]"
 
     if klass.startswith("Dictionary["):  # Typed dictionary, split elements to link contained types.
         parts = klass[len("Dictionary[") : -len("]")].partition(", ")
@@ -1529,7 +1510,7 @@ def make_type(klass: str, state: State) -> str:
 
 
 def make_enum(t: str, is_bitfield: bool, state: State) -> str:
-    p = t.find(".")
+    p = t.rfind(".")
     if p >= 0:
         c = t[0:p]
         e = t[p + 1 :]
@@ -1547,13 +1528,11 @@ def make_enum(t: str, is_bitfield: bool, state: State) -> str:
         if is_bitfield:
             if not state.classes[c].enums[e].is_bitfield:
                 print_error(f'{state.current_class}.xml: Enum "{t}" is not bitfield.', state)
-            return f"|bitfield|\\[:ref:`{e}<enum_{c}_{e}>`\\]"
+            return f"|bitfield|\\[:ref:`{e}<enum_{sanitize_class_name(c)}_{e}>`\\]"
         else:
-            return f":ref:`{e}<enum_{c}_{e}>`"
+            return f":ref:`{e}<enum_{sanitize_class_name(c)}_{e}>`"
 
-    # Don't fail for `Vector3.Axis`, as this enum is a special case which is expected not to be resolved.
-    if f"{c}.{e}" != "Vector3.Axis":
-        print_error(f'{state.current_class}.xml: Unresolved enum "{t}".', state)
+    print_error(f'{state.current_class}.xml: Unresolved enum "{t}".', state)
 
     return t
 
@@ -1574,7 +1553,7 @@ def make_method_signature(
     if isinstance(definition, MethodDef) and ref_type != "":
         if ref_type == "operator":
             op_name = definition.name.replace("<", "\\<")  # So operator "<" gets correctly displayed.
-            out += f":ref:`{op_name}<class_{class_def.name}_{ref_type}_{sanitize_operator_name(definition.name, state)}"
+            out += f":ref:`{op_name}<class_{sanitize_class_name(class_def.name)}_{ref_type}_{sanitize_operator_name(definition.name, state)}"
             for parameter in definition.parameters:
                 out += f"_{parameter.type_name.type_name}"
             out += ">`"
@@ -1582,9 +1561,9 @@ def make_method_signature(
             ref_type_qualifier = ""
             if definition.name.startswith("_"):
                 ref_type_qualifier = "private_"
-            out += f":ref:`{definition.name}<class_{class_def.name}_{ref_type_qualifier}{ref_type}_{definition.name}>`"
+            out += f":ref:`{definition.name}<class_{sanitize_class_name(class_def.name)}_{ref_type_qualifier}{ref_type}_{definition.name}>`"
         else:
-            out += f":ref:`{definition.name}<class_{class_def.name}_{ref_type}_{definition.name}>`"
+            out += f":ref:`{definition.name}<class_{sanitize_class_name(class_def.name)}_{ref_type}_{definition.name}>`"
     else:
         out += f"**{definition.name}**"
 
@@ -1685,6 +1664,7 @@ def make_footer() -> str:
     # Generate reusable abbreviation substitutions.
     # This way, we avoid bloating the generated rST with duplicate abbreviations.
     virtual_msg = translate("This method should typically be overridden by the user to have any effect.")
+    required_msg = translate("This method is required to be overridden when extending its base class.")
     const_msg = translate("This method has no side effects. It doesn't modify any of the instance's member variables.")
     vararg_msg = translate("This method accepts any number of arguments after the ones described here.")
     constructor_msg = translate("This method is used to construct a type.")
@@ -1697,6 +1677,7 @@ def make_footer() -> str:
 
     return (
         f".. |virtual| replace:: :abbr:`virtual ({virtual_msg})`\n"
+        f".. |required| replace:: :abbr:`required ({required_msg})`\n"
         f".. |const| replace:: :abbr:`const ({const_msg})`\n"
         f".. |vararg| replace:: :abbr:`vararg ({vararg_msg})`\n"
         f".. |constructor| replace:: :abbr:`constructor ({constructor_msg})`\n"
@@ -1772,13 +1753,15 @@ def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_
                 f.write("\n")
 
                 if group_name in CLASS_GROUPS_BASE:
-                    f.write(f"    class_{CLASS_GROUPS_BASE[group_name].lower()}\n")
+                    f.write(f"    class_{sanitize_class_name(CLASS_GROUPS_BASE[group_name], True)}\n")
 
                 for class_name in grouped_classes[group_name]:
-                    if group_name in CLASS_GROUPS_BASE and CLASS_GROUPS_BASE[group_name].lower() == class_name.lower():
+                    if group_name in CLASS_GROUPS_BASE and sanitize_class_name(
+                        CLASS_GROUPS_BASE[group_name], True
+                    ) == sanitize_class_name(class_name, True):
                         continue
 
-                    f.write(f"    class_{class_name.lower()}\n")
+                    f.write(f"    class_{sanitize_class_name(class_name, True)}\n")
 
                 f.write("\n")
 
@@ -1857,41 +1840,10 @@ def format_text_block(
     context: DefinitionBase,
     state: State,
 ) -> str:
-    # Linebreak + tabs in the XML should become two line breaks unless in a "codeblock"
-    pos = 0
-    while True:
-        pos = text.find("\n", pos)
-        if pos == -1:
-            break
-
-        pre_text = text[:pos]
-        indent_level = 0
-        while pos + 1 < len(text) and text[pos + 1] == "\t":
-            pos += 1
-            indent_level += 1
-        post_text = text[pos + 1 :]
-
-        # Handle codeblocks
-        if (
-            post_text.startswith("[codeblock]")
-            or post_text.startswith("[codeblock ")
-            or post_text.startswith("[gdscript]")
-            or post_text.startswith("[gdscript ")
-            or post_text.startswith("[csharp]")
-            or post_text.startswith("[csharp ")
-        ):
-            tag_text = post_text[1:].split("]", 1)[0]
-            tag_state = get_tag_and_args(tag_text)
-            result = format_codeblock(tag_state, post_text, indent_level, state)
-            if result is None:
-                return ""
-            text = f"{pre_text}{result[0]}"
-            pos += result[1] - indent_level
-
-        # Handle normal text
-        else:
-            text = f"{pre_text}\n\n{post_text}"
-            pos += 2 - indent_level
+    result = preformat_text_block(text, state)
+    if result is None:
+        return ""
+    text = result
 
     next_brac_pos = text.find("[")
     text = escape_rst(text, next_brac_pos)
@@ -2199,6 +2151,12 @@ def format_text_block(
                                         state,
                                     )
 
+                                elif class_def.properties[target_name].overrides is not None:
+                                    print_error(
+                                        f'{state.current_class}.xml: Invalid member reference "{link_target}" in {context_name}. The reference must point to the original definition, not to the override.',
+                                        state,
+                                    )
+
                             elif tag_state.name == "signal" and target_name not in class_def.signals:
                                 print_error(
                                     f'{state.current_class}.xml: Unresolved signal reference "{link_target}" in {context_name}.',
@@ -2259,7 +2217,9 @@ def format_text_block(
                         repl_text = target_name
                         if target_class_name != state.current_class:
                             repl_text = f"{target_class_name}.{target_name}"
-                        tag_text = f":ref:`{repl_text}<class_{target_class_name}{ref_type}_{target_name}>`"
+                        if tag_state.name == "method":
+                            repl_text = f"{repl_text}()"
+                        tag_text = f":ref:`{repl_text}<class_{sanitize_class_name(target_class_name)}{ref_type}_{target_name}>`"
                         escape_pre = True
                         escape_post = True
 
@@ -2441,6 +2401,56 @@ def format_text_block(
     return text
 
 
+def preformat_text_block(text: str, state: State) -> Optional[str]:
+    result = ""
+    codeblock_tag = ""
+    indent_level = 0
+
+    for line in text.splitlines():
+        stripped_line = line.lstrip("\t")
+        tab_count = len(line) - len(stripped_line)
+
+        if codeblock_tag:
+            if line == "":
+                result += "\n"
+                continue
+
+            if tab_count < indent_level:
+                print_error(f"{state.current_class}.xml: Invalid indentation.", state)
+                return None
+
+            if stripped_line.startswith("[/" + codeblock_tag):
+                result += stripped_line
+                codeblock_tag = ""
+            else:
+                # Remove extraneous tabs and replace remaining tabs with spaces.
+                result += "\n" + "    " * (tab_count - indent_level + 1) + stripped_line
+        else:
+            if (
+                stripped_line.startswith("[codeblock]")
+                or stripped_line.startswith("[codeblock ")
+                or stripped_line.startswith("[gdscript]")
+                or stripped_line.startswith("[gdscript ")
+                or stripped_line.startswith("[csharp]")
+                or stripped_line.startswith("[csharp ")
+            ):
+                if result:
+                    result += "\n"
+                result += stripped_line
+
+                tag_text = stripped_line[1:].split("]", 1)[0]
+                tag_state = get_tag_and_args(tag_text)
+                codeblock_tag = tag_state.name
+                indent_level = tab_count
+            else:
+                # A line break in XML should become two line breaks (unless in a code block).
+                if result:
+                    result += "\n\n"
+                result += stripped_line
+
+    return result
+
+
 def format_context_name(context: Union[DefinitionBase, None]) -> str:
     context_name: str = "unknown context"
     if context is not None:
@@ -2483,50 +2493,6 @@ def escape_rst(text: str, until_pos: int = -1) -> str:
     return text
 
 
-def format_codeblock(
-    tag_state: TagState, post_text: str, indent_level: int, state: State
-) -> Union[Tuple[str, int], None]:
-    end_pos = post_text.find("[/" + tag_state.name + "]")
-    if end_pos == -1:
-        print_error(
-            f"{state.current_class}.xml: Tag depth mismatch for [{tag_state.name}]: no closing [/{tag_state.name}].",
-            state,
-        )
-        return None
-
-    opening_formatted = tag_state.name
-    if len(tag_state.arguments) > 0:
-        opening_formatted += " " + tag_state.arguments
-
-    code_text = post_text[len(f"[{opening_formatted}]") : end_pos]
-    post_text = post_text[end_pos:]
-
-    # Remove extraneous tabs
-    code_pos = 0
-    while True:
-        code_pos = code_text.find("\n", code_pos)
-        if code_pos == -1:
-            break
-
-        to_skip = 0
-        while code_pos + to_skip + 1 < len(code_text) and code_text[code_pos + to_skip + 1] == "\t":
-            to_skip += 1
-
-        if to_skip > indent_level:
-            print_error(
-                f"{state.current_class}.xml: Four spaces should be used for indentation within [{tag_state.name}].",
-                state,
-            )
-
-        if len(code_text[code_pos + to_skip + 1 :]) == 0:
-            code_text = f"{code_text[:code_pos]}\n"
-            code_pos += 1
-        else:
-            code_text = f"{code_text[:code_pos]}\n    {code_text[code_pos + to_skip + 1 :]}"
-            code_pos += 5 - to_skip
-    return (f"\n[{opening_formatted}]{code_text}{post_text}", len(f"\n[{opening_formatted}]{code_text}"))
-
-
 def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_columns: bool = False) -> None:
     if len(data) == 0:
         return
@@ -2563,13 +2529,20 @@ def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_
         for i, text in enumerate(row):
             if column_sizes[i] == 0 and remove_empty_columns:
                 continue
-            row_text += f' {(text or "").ljust(column_sizes[i])} |'
+            row_text += f" {(text or '').ljust(column_sizes[i])} |"
         row_text += "\n"
 
         f.write(f"   {row_text}")
         f.write(f"   {sep}")
 
     f.write("\n")
+
+
+def sanitize_class_name(dirty_name: str, is_file_name=False) -> str:
+    if is_file_name:
+        return dirty_name.lower().replace('"', "").replace("/", "--")
+    else:
+        return dirty_name.replace('"', "").replace("/", "_").replace(".", "_")
 
 
 def sanitize_operator_name(dirty_name: str, state: State) -> str:

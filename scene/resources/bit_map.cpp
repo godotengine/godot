@@ -31,7 +31,6 @@
 #include "bit_map.h"
 #include "bit_map.compat.inc"
 
-#include "core/io/image_loader.h"
 #include "core/variant/typed_array.h"
 
 void BitMap::create(const Size2i &p_size) {
@@ -397,6 +396,7 @@ static float perpendicular_distance(const Vector2 &i, const Vector2 &start, cons
 		}
 	} else {
 		res = MIN(i.distance_to(start), i.distance_to(end));
+
 	}
 	return res;
 }
@@ -926,7 +926,6 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2i &p_rect, float p_epsilon, bool p_star_rdp) const {
 	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect);
 
-	Point2i from;
 	Ref<BitMap> fill;
 	fill.instantiate();
 	fill->create(get_size());
@@ -961,6 +960,7 @@ void BitMap::grow_mask(int p_pixels, const Rect2i &p_rect) {
 
 	bool bit_value = p_pixels > 0;
 	p_pixels = Math::abs(p_pixels);
+	const int pixels2 = p_pixels * p_pixels;
 
 	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect);
 
@@ -990,8 +990,8 @@ void BitMap::grow_mask(int p_pixels, const Rect2i &p_rect) {
 						}
 					}
 
-					float d = Point2(j, i).distance_to(Point2(x, y)) - CMP_EPSILON;
-					if (d > p_pixels) {
+					float d = Point2(j, i).distance_squared_to(Point2(x, y)) - CMP_EPSILON2;
+					if (d > pixels2) {
 						continue;
 					}
 
@@ -1130,5 +1130,3 @@ void BitMap::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 }
-
-BitMap::BitMap() {}

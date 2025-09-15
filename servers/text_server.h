@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXT_SERVER_H
-#define TEXT_SERVER_H
+#pragma once
 
+#include "core/io/image.h"
 #include "core/object/ref_counted.h"
-#include "core/os/os.h"
 #include "core/templates/rid.h"
 #include "core/variant/native_ptr.h"
 #include "core/variant/variant.h"
@@ -109,8 +108,16 @@ public:
 		BREAK_WORD_BOUND = 1 << 1,
 		BREAK_GRAPHEME_BOUND = 1 << 2,
 		BREAK_ADAPTIVE = 1 << 3,
+#ifndef DISABLE_DEPRECATED
 		BREAK_TRIM_EDGE_SPACES = 1 << 4,
+#else
+	// RESERVED = 1 << 4,
+#endif
 		BREAK_TRIM_INDENT = 1 << 5,
+		BREAK_TRIM_START_EDGE_SPACES = 1 << 6,
+		BREAK_TRIM_END_EDGE_SPACES = 1 << 7,
+
+		BREAK_TRIM_MASK = BREAK_TRIM_INDENT | BREAK_TRIM_START_EDGE_SPACES | BREAK_TRIM_END_EDGE_SPACES,
 	};
 
 	enum OverrunBehavior {
@@ -119,6 +126,8 @@ public:
 		OVERRUN_TRIM_WORD,
 		OVERRUN_TRIM_ELLIPSIS,
 		OVERRUN_TRIM_WORD_ELLIPSIS,
+		OVERRUN_TRIM_ELLIPSIS_FORCE,
+		OVERRUN_TRIM_WORD_ELLIPSIS_FORCE,
 	};
 
 	enum TextOverrunFlag {
@@ -220,6 +229,7 @@ public:
 	void _draw_hex_code_box_number(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const;
 
 protected:
+	double vp_oversampling = 0.0;
 	HashMap<char32_t, char32_t> diacritics_map;
 	void _diacritics_map_add(const String &p_from, char32_t p_to);
 	void _init_diacritics_map();
@@ -227,6 +237,10 @@ protected:
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
+	void _font_draw_glyph_bind_compat_104872(const RID &p_font, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1)) const;
+	void _font_draw_glyph_outline_bind_compat_104872(const RID &p_font, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1)) const;
+	void _shaped_text_draw_bind_compat_104872(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1)) const;
+	void _shaped_text_draw_outline_bind_compat_104872(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
 	PackedInt32Array _shaped_text_get_word_breaks_bind_compat_90732(const RID &p_shaped, BitField<TextServer::GraphemeFlag> p_grapheme_flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION) const;
 	static void _bind_compatibility_methods();
 #endif
@@ -243,6 +257,7 @@ public:
 	virtual String get_support_data_filename() const = 0;
 	virtual String get_support_data_info() const = 0;
 	virtual bool save_support_data(const String &p_filename) const = 0;
+	virtual PackedByteArray get_support_data() const = 0;
 
 	virtual bool is_locale_right_to_left(const String &p_locale) const = 0;
 
@@ -305,14 +320,22 @@ public:
 	virtual void font_set_allow_system_fallback(const RID &p_font_rid, bool p_allow_system_fallback) = 0;
 	virtual bool font_is_allow_system_fallback(const RID &p_font_rid) const = 0;
 
+	virtual void font_clear_system_fallback_cache() {}
+
 	virtual void font_set_force_autohinter(const RID &p_font_rid, bool p_force_autohinter) = 0;
 	virtual bool font_is_force_autohinter(const RID &p_font_rid) const = 0;
+
+	virtual void font_set_modulate_color_glyphs(const RID &p_font_rid, bool p_modulate) = 0;
+	virtual bool font_is_modulate_color_glyphs(const RID &p_font_rid) const = 0;
 
 	virtual void font_set_hinting(const RID &p_font_rid, Hinting p_hinting) = 0;
 	virtual Hinting font_get_hinting(const RID &p_font_rid) const = 0;
 
 	virtual void font_set_subpixel_positioning(const RID &p_font_rid, SubpixelPositioning p_subpixel) = 0;
 	virtual SubpixelPositioning font_get_subpixel_positioning(const RID &p_font_rid) const = 0;
+
+	virtual void font_set_keep_rounding_remainders(const RID &p_font_rid, bool p_keep_rounding_remainders) = 0;
+	virtual bool font_get_keep_rounding_remainders(const RID &p_font_rid) const = 0;
 
 	virtual void font_set_embolden(const RID &p_font_rid, double p_strength) = 0;
 	virtual double font_get_embolden(const RID &p_font_rid) const = 0;
@@ -335,6 +358,7 @@ public:
 	virtual TypedArray<Vector2i> font_get_size_cache_list(const RID &p_font_rid) const = 0;
 	virtual void font_clear_size_cache(const RID &p_font_rid) = 0;
 	virtual void font_remove_size_cache(const RID &p_font_rid, const Vector2i &p_size) = 0;
+	virtual TypedArray<Dictionary> font_get_size_cache_info(const RID &p_font_rid) const = 0;
 
 	virtual void font_set_ascent(const RID &p_font_rid, int64_t p_size, double p_ascent) = 0;
 	virtual double font_get_ascent(const RID &p_font_rid, int64_t p_size) const = 0;
@@ -401,8 +425,8 @@ public:
 	virtual void font_render_range(const RID &p_font, const Vector2i &p_size, int64_t p_start, int64_t p_end) = 0;
 	virtual void font_render_glyph(const RID &p_font_rid, const Vector2i &p_size, int64_t p_index) = 0;
 
-	virtual void font_draw_glyph(const RID &p_font, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1)) const = 0;
-	virtual void font_draw_glyph_outline(const RID &p_font, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1)) const = 0;
+	virtual void font_draw_glyph(const RID &p_font, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const = 0;
+	virtual void font_draw_glyph_outline(const RID &p_font, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const = 0;
 
 	virtual bool font_is_language_supported(const RID &p_font_rid, const String &p_language) const = 0;
 	virtual void font_set_language_support_override(const RID &p_font_rid, const String &p_language, bool p_supported) = 0;
@@ -422,8 +446,12 @@ public:
 	virtual Dictionary font_supported_feature_list(const RID &p_font_rid) const = 0;
 	virtual Dictionary font_supported_variation_list(const RID &p_font_rid) const = 0;
 
-	virtual double font_get_global_oversampling() const = 0;
-	virtual void font_set_global_oversampling(double p_oversampling) = 0;
+#ifndef DISABLE_DEPRECATED
+	virtual double font_get_global_oversampling() const { return 1.0; }
+	virtual void font_set_global_oversampling(double p_oversampling) {}
+#endif
+	virtual void reference_oversampling_level(double p_oversampling) {}
+	virtual void unreference_oversampling_level(double p_oversampling) {}
 
 	virtual Vector2 get_hex_code_box_size(int64_t p_size, int64_t p_index) const;
 	virtual void draw_hex_code_box(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const;
@@ -461,10 +489,23 @@ public:
 	virtual bool shaped_text_add_string(const RID &p_shaped, const String &p_text, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", const Variant &p_meta = Variant()) = 0;
 	virtual bool shaped_text_add_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int64_t p_length = 1, double p_baseline = 0.0) = 0;
 	virtual bool shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, double p_baseline = 0.0) = 0;
+	virtual String shaped_get_text(const RID &p_shaped) const = 0;
 
 	virtual int64_t shaped_get_span_count(const RID &p_shaped) const = 0;
 	virtual Variant shaped_get_span_meta(const RID &p_shaped, int64_t p_index) const = 0;
+	virtual Variant shaped_get_span_embedded_object(const RID &p_shaped, int64_t p_index) const = 0;
+	virtual String shaped_get_span_text(const RID &p_shaped, int64_t p_index) const = 0;
+	virtual Variant shaped_get_span_object(const RID &p_shaped, int64_t p_index) const = 0;
 	virtual void shaped_set_span_update_font(const RID &p_shaped, int64_t p_index, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features = Dictionary()) = 0;
+
+	virtual int64_t shaped_get_run_count(const RID &p_shaped) const = 0;
+	virtual String shaped_get_run_text(const RID &p_shaped, int64_t p_index) const = 0;
+	virtual Vector2i shaped_get_run_range(const RID &p_shaped, int64_t p_index) const = 0;
+	virtual RID shaped_get_run_font_rid(const RID &p_shaped, int64_t p_index) const = 0;
+	virtual int shaped_get_run_font_size(const RID &p_shaped, int64_t p_index) const = 0;
+	virtual String shaped_get_run_language(const RID &p_shaped, int64_t p_index) const = 0;
+	virtual Direction shaped_get_run_direction(const RID &p_shaped, int64_t p_index) const = 0;
+	virtual Variant shaped_get_run_object(const RID &p_shaped, int64_t p_index) const = 0;
 
 	virtual RID shaped_text_substr(const RID &p_shaped, int64_t p_start, int64_t p_length) const = 0; // Copy shaped substring (e.g. line break) without reshaping, but correctly reordered, preservers range.
 	virtual RID shaped_text_get_parent(const RID &p_shaped) const = 0;
@@ -530,9 +571,14 @@ public:
 	virtual int64_t shaped_text_prev_character_pos(const RID &p_shaped, int64_t p_pos) const;
 	virtual int64_t shaped_text_closest_character_pos(const RID &p_shaped, int64_t p_pos) const;
 
-	// The pen position is always placed on the baseline and moveing left to right.
-	virtual void shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1)) const;
-	virtual void shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+	// The pen position is always placed on the baseline and moving left to right.
+	virtual void shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
+	virtual void shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
+
+#ifdef DEBUG_ENABLED
+	void debug_print_glyph(int p_idx, const Glyph &p_glyph) const;
+	void shaped_text_debug_print(const RID &p_shaped) const;
+#endif
 
 	// Number conversion.
 	virtual String format_number(const String &p_string, const String &p_language = "") const = 0;
@@ -543,8 +589,8 @@ public:
 	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "", int64_t p_chars_per_line = 0) const = 0;
 	virtual PackedInt32Array string_get_character_breaks(const String &p_string, const String &p_language = "") const;
 
-	virtual int64_t is_confusable(const String &p_string, const PackedStringArray &p_dict) const { return -1; };
-	virtual bool spoof_check(const String &p_string) const { return false; };
+	virtual int64_t is_confusable(const String &p_string, const PackedStringArray &p_dict) const { return -1; }
+	virtual bool spoof_check(const String &p_string) const { return false; }
 
 	virtual String strip_diacritics(const String &p_string) const;
 	virtual bool is_valid_identifier(const String &p_string) const;
@@ -556,6 +602,8 @@ public:
 	virtual String string_to_title(const String &p_string, const String &p_language = "") const = 0;
 
 	TypedArray<Vector3i> parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
+
+	virtual void set_current_drawn_item_oversampling(double p_vp_oversampling) { vp_oversampling = p_vp_oversampling; }
 
 	virtual void cleanup() {}
 
@@ -578,8 +626,10 @@ struct Glyph {
 	float advance = 0.f; // Advance to the next glyph along baseline(x for horizontal layout, y for vertical).
 
 	RID font_rid; // Font resource.
-	int font_size = 0; // Font size;
+	int font_size = 0; // Font size.
 	int32_t index = 0; // Glyph index (font specific) or UTF-32 codepoint (for the invalid glyphs).
+
+	int span_index = -1;
 
 	bool operator==(const Glyph &p_a) const;
 	bool operator!=(const Glyph &p_a) const;
@@ -656,5 +706,3 @@ VARIANT_ENUM_CAST(TextServer::FixedSizeScaleMode);
 
 GDVIRTUAL_NATIVE_PTR(Glyph);
 GDVIRTUAL_NATIVE_PTR(CaretInfo);
-
-#endif // TEXT_SERVER_H

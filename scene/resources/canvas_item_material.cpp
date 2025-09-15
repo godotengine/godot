@@ -78,7 +78,7 @@ void CanvasItemMaterial::_update_shader() {
 	//must create a shader!
 
 	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
-	String code = "// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s CanvasItemMaterial.\n\n";
+	String code = "// NOTE: Shader automatically converted from " GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG "'s CanvasItemMaterial.\n\n";
 
 	code += "shader_type canvas_item;\nrender_mode ";
 	switch (blend_mode) {
@@ -157,9 +157,13 @@ void CanvasItemMaterial::flush_changes() {
 }
 
 void CanvasItemMaterial::_queue_shader_change() {
+	if (!_is_initialized()) {
+		return;
+	}
+
 	MutexLock lock(material_mutex);
 
-	if (_is_initialized() && !element.in_list()) {
+	if (!element.in_list()) {
 		dirty_materials.add(&element);
 	}
 }
@@ -274,6 +278,8 @@ void CanvasItemMaterial::_bind_methods() {
 
 CanvasItemMaterial::CanvasItemMaterial() :
 		element(this) {
+	_set_material(RS::get_singleton()->material_create());
+
 	set_particles_anim_h_frames(1);
 	set_particles_anim_v_frames(1);
 	set_particles_anim_loop(false);

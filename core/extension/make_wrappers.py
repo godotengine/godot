@@ -55,10 +55,10 @@ def generate_mod_version(argcount, const=False, returns=False):
 
 proto_ex = """
 #define EXBIND$VER($RETTYPE m_name$ARG) \\
-GDVIRTUAL$VER($RETTYPE_##m_name$ARG)\\
+GDVIRTUAL$VER_REQUIRED($RETTYPE_##m_name$ARG)\\
 virtual $RETVAL m_name($FUNCARGS) $CONST override { \\
     $RETPRE\\
-    GDVIRTUAL_REQUIRED_CALL(_##m_name$CALLARGS$RETREF);\\
+    GDVIRTUAL_CALL(_##m_name$CALLARGS$RETREF);\\
     $RETPOST\\
 }
 """
@@ -119,10 +119,7 @@ def generate_ex_version(argcount, const=False, returns=False):
 def run(target, source, env):
     max_versions = 12
 
-    txt = """
-#ifndef GDEXTENSION_WRAPPERS_GEN_H
-#define GDEXTENSION_WRAPPERS_GEN_H
-"""
+    txt = "#pragma once"
 
     for i in range(max_versions + 1):
         txt += "\n/* Extension Wrapper " + str(i) + " Arguments */\n"
@@ -137,8 +134,6 @@ def run(target, source, env):
         txt += generate_mod_version(i, False, True)
         txt += generate_mod_version(i, True, False)
         txt += generate_mod_version(i, True, True)
-
-    txt += "\n#endif\n"
 
     with open(str(target[0]), "w", encoding="utf-8", newline="\n") as f:
         f.write(txt)

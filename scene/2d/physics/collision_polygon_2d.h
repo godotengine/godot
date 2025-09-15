@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COLLISION_POLYGON_2D_H
-#define COLLISION_POLYGON_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 
@@ -65,7 +64,7 @@ protected:
 	static void _bind_methods();
 
 public:
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_use_rect() const override;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
@@ -92,5 +91,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(CollisionPolygon2D::BuildMode);
-
-#endif // COLLISION_POLYGON_2D_H

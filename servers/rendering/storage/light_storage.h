@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LIGHT_STORAGE_H
-#define LIGHT_STORAGE_H
+#pragma once
 
 #include "render_scene_buffers.h"
 #include "servers/rendering_server.h"
@@ -59,6 +58,8 @@ public:
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask) = 0;
 	virtual void light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) = 0;
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) = 0;
+	virtual void light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) = 0;
+	virtual uint32_t light_get_shadow_caster_mask(RID p_light) const = 0;
 	virtual void light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) = 0;
 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) = 0;
 
@@ -109,6 +110,7 @@ public:
 	virtual void reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) = 0;
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) = 0;
 	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity) = 0;
+	virtual void reflection_probe_set_blend_distance(RID p_probe, float p_blend_distance) = 0;
 	virtual void reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) = 0;
 	virtual void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) = 0;
 	virtual void reflection_probe_set_ambient_energy(RID p_probe, float p_energy) = 0;
@@ -173,6 +175,10 @@ public:
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) = 0;
 	virtual float lightmap_get_probe_capture_update_speed() const = 0;
 
+	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) = 0;
+	virtual RS::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) = 0;
+	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMode p_mode) = 0;
+
 	/* LIGHTMAP INSTANCE */
 
 	virtual RID lightmap_instance_create(RID p_lightmap) = 0;
@@ -186,13 +192,11 @@ public:
 
 	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_use_16_bits = true) = 0;
 	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) = 0;
-	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) = 0;
+	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_instance, float p_coverage, uint64_t p_light_version) = 0;
 
 	virtual void shadow_atlas_update(RID p_atlas) = 0;
 
 	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) = 0;
-	virtual int get_directional_light_shadow_size(RID p_light_intance) = 0;
+	virtual int get_directional_light_shadow_size(RID p_light_instance) = 0;
 	virtual void set_directional_shadow_count(int p_count) = 0;
 };
-
-#endif // LIGHT_STORAGE_H

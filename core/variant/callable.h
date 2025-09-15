@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CALLABLE_H
-#define CALLABLE_H
+#pragma once
 
 #include "core/object/object_id.h"
 #include "core/string/string_name.h"
-#include "core/templates/list.h"
 
 class Object;
 class Variant;
@@ -111,8 +109,9 @@ public:
 	CallableCustom *get_custom() const;
 	int get_argument_count(bool *r_is_valid = nullptr) const;
 	int get_bound_arguments_count() const;
-	void get_bound_arguments_ref(Vector<Variant> &r_arguments, int &r_argcount) const; // Internal engine use, the exposed one is below.
+	void get_bound_arguments_ref(Vector<Variant> &r_arguments) const; // Internal engine use, the exposed one is below.
 	Array get_bound_arguments() const;
+	int get_unbound_arguments_count() const;
 
 	uint32_t hash() const;
 
@@ -124,7 +123,7 @@ public:
 
 	void operator=(const Callable &p_callable);
 
-	operator String() const;
+	explicit operator String() const;
 
 	static Callable create(const Variant &p_variant, const StringName &p_method);
 
@@ -135,6 +134,10 @@ public:
 	Callable() {}
 	~Callable();
 };
+
+// Zero-constructing Callable initializes method and object to 0 (and thus empty).
+template <>
+struct is_zero_constructible<Callable> : std::true_type {};
 
 class CallableCustom {
 	friend class Callable;
@@ -158,7 +161,8 @@ public:
 	virtual const Callable *get_base_comparator() const;
 	virtual int get_argument_count(bool &r_is_valid) const;
 	virtual int get_bound_arguments_count() const;
-	virtual void get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const;
+	virtual void get_bound_arguments(Vector<Variant> &r_arguments) const;
+	virtual int get_unbound_arguments_count() const;
 
 	CallableCustom();
 	virtual ~CallableCustom() {}
@@ -186,12 +190,13 @@ public:
 	bool operator!=(const Signal &p_signal) const;
 	bool operator<(const Signal &p_signal) const;
 
-	operator String() const;
+	explicit operator String() const;
 
 	Error emit(const Variant **p_arguments, int p_argcount) const;
 	Error connect(const Callable &p_callable, uint32_t p_flags = 0);
 	void disconnect(const Callable &p_callable);
 	bool is_connected(const Callable &p_callable) const;
+	bool has_connections() const;
 
 	Array get_connections() const;
 	Signal(const Object *p_object, const StringName &p_name);
@@ -199,10 +204,12 @@ public:
 	Signal() {}
 };
 
+// Zero-constructing Signal initializes name and object to 0 (and thus empty).
+template <>
+struct is_zero_constructible<Signal> : std::true_type {};
+
 struct CallableComparator {
 	const Callable &func;
 
 	bool operator()(const Variant &p_l, const Variant &p_r) const;
 };
-
-#endif // CALLABLE_H

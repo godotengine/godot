@@ -46,7 +46,7 @@ layout(set = 1, binding = 2) uniform texture2D environment;
 #ifdef MODE_UNOCCLUDE
 
 layout(rgba32f, set = 1, binding = 0) uniform restrict image2DArray position;
-layout(rgba32f, set = 1, binding = 1) uniform restrict readonly image2DArray unocclude;
+layout(rgba32f, set = 1, binding = 1) uniform restrict image2DArray unocclude;
 
 #endif
 
@@ -60,7 +60,9 @@ layout(rgba16f, set = 1, binding = 4) uniform restrict image2DArray accum_light;
 
 #endif
 
-#ifdef MODE_BOUNCE_LIGHT
+#if defined(MODE_DIRECT_LIGHT) && defined(USE_SHADOWMASK)
+layout(rgba8, set = 1, binding = 5) uniform restrict writeonly image2DArray shadowmask;
+#elif defined(MODE_BOUNCE_LIGHT)
 layout(set = 1, binding = 5) uniform texture2D environment;
 #endif
 
@@ -71,7 +73,8 @@ layout(set = 1, binding = 1) uniform texture2DArray source_light;
 
 #ifdef MODE_DENOISE
 layout(set = 1, binding = 2) uniform texture2DArray source_normal;
-layout(set = 1, binding = 3) uniform DenoiseParams {
+layout(set = 1, binding = 3) uniform texture2DArray unocclude_mask;
+layout(set = 1, binding = 4) uniform DenoiseParams {
 	float spatial_bandwidth;
 	float light_bandwidth;
 	float albedo_bandwidth;
@@ -91,6 +94,7 @@ layout(push_constant, std430) uniform Params {
 
 	ivec2 region_ofs;
 	uint probe_count;
+	uint denoiser_range;
 }
 params;
 
@@ -152,7 +156,8 @@ uint trace_ray(vec3 p_from, vec3 p_to, bool p_any_hit, out float r_distance, out
 	vec3 dir_cell = normalize(rel_cell);
 	vec3 delta = min(abs(1.0 / dir_cell), bake_params.grid_size); // Use bake_params.grid_size as max to prevent infinity values.
 	ivec3 step = ivec3(sign(rel_cell));
-	vec3 side = (sign(rel_cell) * (vec3(icell) - from_cell) + (sign(rel_cell) * 0.5) + 0.5) * delta;
+	const vec3 init_next_cell = vec3(icell) + max(vec3(0), sign(step));
+	vec3 t_max = mix(vec3(0), (init_next_cell - from_cell) / dir_cell, notEqual(step, vec3(0))); // Distance to next boundary.
 
 	uint iters = 0;
 	while (all(greaterThanEqual(icell, ivec3(0))) && all(lessThan(icell, ivec3(bake_params.grid_size))) && (iters < 1000)) {
@@ -223,7 +228,6 @@ uint trace_ray(vec3 p_from, vec3 p_to, bool p_any_hit, out float r_distance, out
 									// Return early if any hit was requested.
 									return RAY_ANY;
 								}
-
 								vec3 position = p_from + dir * distance;
 								vec3 hit_cell = (position - bake_params.to_cell_offset) * bake_params.to_cell_size;
 								if (icell != ivec3(hit_cell)) {
@@ -240,6 +244,17 @@ uint trace_ray(vec3 p_from, vec3 p_to, bool p_any_hit, out float r_distance, out
 								}
 
 								if (distance < best_distance) {
+									switch (triangle.cull_mode) {
+										case CULL_DISABLED:
+											backface = false;
+											break;
+										case CULL_FRONT:
+											backface = !backface;
+											break;
+										case CULL_BACK: // Default behavior.
+											break;
+									}
+
 									hit = backface ? RAY_BACK : RAY_FRONT;
 									best_distance = distance;
 									r_distance = distance;
@@ -269,17 +284,16 @@ uint trace_ray(vec3 p_from, vec3 p_to, bool p_any_hit, out float r_distance, out
 		}
 
 		// There should be only one axis updated at a time for DDA to work properly.
-		bvec3 mask = bvec3(true, false, false);
-		float m = side.x;
-		if (side.y < m) {
-			m = side.y;
-			mask = bvec3(false, true, false);
+		if (t_max.x < t_max.y && t_max.x < t_max.z) {
+			icell.x += step.x;
+			t_max.x += delta.x;
+		} else if (t_max.y < t_max.z) {
+			icell.y += step.y;
+			t_max.y += delta.y;
+		} else {
+			icell.z += step.z;
+			t_max.z += delta.z;
 		}
-		if (side.z < m) {
-			mask = bvec3(false, false, true);
-		}
-		side += vec3(mask) * delta;
-		icell += ivec3(vec3(mask)) * step;
 		iters++;
 	}
 
@@ -290,6 +304,27 @@ uint trace_ray_closest_hit_triangle(vec3 p_from, vec3 p_to, out uint r_triangle,
 	float distance;
 	vec3 normal;
 	return trace_ray(p_from, p_to, false, distance, normal, r_triangle, r_barycentric);
+}
+
+uint trace_ray_closest_hit_triangle_albedo_alpha(vec3 p_from, vec3 p_to, out vec4 albedo_alpha, out vec3 hit_position) {
+	float distance;
+	vec3 normal;
+	uint tidx;
+	vec3 barycentric;
+
+	uint ret = trace_ray(p_from, p_to, false, distance, normal, tidx, barycentric);
+	if (ret != RAY_MISS) {
+		Vertex vert0 = vertices.data[triangles.data[tidx].indices.x];
+		Vertex vert1 = vertices.data[triangles.data[tidx].indices.y];
+		Vertex vert2 = vertices.data[triangles.data[tidx].indices.z];
+
+		vec3 uvw = vec3(barycentric.x * vert0.uv + barycentric.y * vert1.uv + barycentric.z * vert2.uv, float(triangles.data[tidx].slice));
+
+		albedo_alpha = textureLod(sampler2DArray(albedo_tex, linear_sampler), uvw, 0);
+		hit_position = barycentric.x * vert0.position + barycentric.y * vert1.position + barycentric.z * vert2.position;
+	}
+
+	return ret;
 }
 
 uint trace_ray_closest_hit_distance(vec3 p_from, vec3 p_to, out float r_distance, out vec3 r_normal) {
@@ -389,8 +424,11 @@ vec2 get_vogel_disk(float p_i, float p_rotation, float p_sample_count_sqrt) {
 	return vec2(cos(theta), sin(theta)) * r;
 }
 
-void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool p_soft_shadowing, out vec3 r_light, out vec3 r_light_dir, inout uint r_noise, float p_texel_size) {
+void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool p_soft_shadowing, out vec3 r_light, out vec3 r_light_dir, inout uint r_noise, float p_texel_size, out float r_shadow) {
+	const float EPSILON = 0.00001;
+
 	r_light = vec3(0.0f);
+	r_shadow = 0.0f;
 
 	vec3 light_pos;
 	float dist;
@@ -437,6 +475,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 	}
 
 	float penumbra = 0.0;
+	vec3 penumbra_color = vec3(0.0);
 	if (p_soft_shadowing) {
 		const bool use_soft_shadows = (light_data.size > 0.0);
 		const uint ray_count = AA_SAMPLES;
@@ -456,7 +495,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 		vec3 light_to_point_tan = normalize(cross(light_to_point, light_aux));
 		vec3 light_to_point_bitan = normalize(cross(light_to_point, light_to_point_tan));
 
-		uint hits = 0;
+		float aa_power = 0.0;
 		for (uint i = 0; i < ray_count; i++) {
 			// Create a random sample within the texel.
 			vec2 disk_sample = (halton_map[i] - vec2(0.5)) * p_texel_size * light_data.shadow_blur;
@@ -465,9 +504,14 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 			vec3 origin = p_position - disk_aligned;
 			vec3 light_dir = normalize(light_pos - origin);
 
+			float power = 0.0;
+			vec3 light_color = vec3(0.0);
+			uint power_accm = 0;
+			vec3 prev_pos = origin;
 			if (use_soft_shadows) {
 				uint soft_shadow_hits = 0;
 				for (uint j = 0; j < shadowing_ray_count; j++) {
+					origin = prev_pos;
 					// Optimization:
 					// Once already traced an important proportion of rays, if all are hits or misses,
 					// assume we're not in the penumbra so we can infer the rest would have the same result.
@@ -485,29 +529,128 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 
 					float a = randomize(r_noise) * 2.0 * PI;
 					float vogel_index = float(total_ray_count - 1 - (i * shadowing_ray_count + j)); // Start from (total_ray_count - 1) so we check the outer points first.
-					vec2 light_disk_sample = (get_vogel_disk(vogel_index, a, shadowing_ray_count_sqrt)) * soft_shadowing_disk_size * light_data.shadow_blur;
+					vec2 light_disk_sample = get_vogel_disk(vogel_index, a, shadowing_ray_count_sqrt) * soft_shadowing_disk_size * light_data.shadow_blur;
 					vec3 light_disk_to_point = normalize(light_to_point + light_disk_sample.x * light_to_point_tan + light_disk_sample.y * light_to_point_bitan);
+					float sample_penumbra = 0.0;
+					vec3 sample_penumbra_color = light_data.color.rgb;
+					bool sample_did_hit = false;
+
+					for (uint iter = 0; iter < bake_params.transparency_rays; iter++) {
+						vec4 hit_albedo = vec4(1.0);
+						vec3 hit_position;
+						// Offset the ray origin for AA, offset the light position for soft shadows.
+						uint ret = trace_ray_closest_hit_triangle_albedo_alpha(origin - light_disk_to_point * (bake_params.bias + length(disk_sample)), p_position - light_disk_to_point * dist, hit_albedo, hit_position);
+						if (ret == RAY_MISS) {
+							if (!sample_did_hit) {
+								sample_penumbra = 1.0;
+							}
+							soft_shadow_hits += 1;
+							break;
+						} else if (ret == RAY_FRONT || ret == RAY_BACK) {
+							bool contribute = ret == RAY_FRONT || !sample_did_hit;
+							if (!sample_did_hit) {
+								sample_penumbra = 1.0;
+								sample_did_hit = true;
+							}
+
+							soft_shadow_hits += 1;
+
+							if (contribute) {
+								sample_penumbra_color = mix(sample_penumbra_color, sample_penumbra_color * hit_albedo.rgb, hit_albedo.a);
+								sample_penumbra *= 1.0 - hit_albedo.a;
+							}
+							origin = hit_position + r_light_dir * bake_params.bias;
+
+							if (sample_penumbra - EPSILON <= 0) {
+								break;
+							}
+						}
+					}
+
+					power += sample_penumbra;
+					light_color += sample_penumbra_color;
+					power_accm++;
+				}
+
+			} else { // No soft shadows (size == 0).
+				float sample_penumbra = 0.0;
+				vec3 sample_penumbra_color = light_data.color.rgb;
+				bool sample_did_hit = false;
+				for (uint iter = 0; iter < bake_params.transparency_rays; iter++) {
+					vec4 hit_albedo = vec4(1.0);
+					vec3 hit_position;
 					// Offset the ray origin for AA, offset the light position for soft shadows.
-					if (trace_ray_any_hit(origin - light_disk_to_point * (bake_params.bias + length(disk_sample)), p_position - light_disk_to_point * dist) == RAY_MISS) {
-						soft_shadow_hits++;
+					uint ret = trace_ray_closest_hit_triangle_albedo_alpha(origin + light_dir * (bake_params.bias + length(disk_sample)), light_pos, hit_albedo, hit_position);
+					if (ret == RAY_MISS) {
+						if (!sample_did_hit) {
+							sample_penumbra = 1.0;
+						}
+						break;
+					} else if (ret == RAY_FRONT || ret == RAY_BACK) {
+						bool contribute = ret == RAY_FRONT || !sample_did_hit;
+						if (!sample_did_hit) {
+							sample_penumbra = 1.0;
+							sample_did_hit = true;
+						}
+
+						if (contribute) {
+							sample_penumbra_color = mix(sample_penumbra_color, sample_penumbra_color * hit_albedo.rgb, hit_albedo.a);
+							sample_penumbra *= 1.0 - hit_albedo.a;
+						}
+						origin = hit_position + r_light_dir * bake_params.bias;
+
+						if (sample_penumbra - EPSILON <= 0) {
+							break;
+						}
 					}
 				}
-				hits += soft_shadow_hits;
-			} else {
-				// Offset the ray origin based on the disk. Also increase the bias for further samples to avoid bleeding.
-				if (trace_ray_any_hit(origin + light_dir * (bake_params.bias + length(disk_sample)), light_pos) == RAY_MISS) {
-					hits++;
+				power = sample_penumbra;
+				light_color = sample_penumbra_color;
+				power_accm = 1;
+			}
+			aa_power += power / float(power_accm);
+			penumbra_color += light_color / float(power_accm);
+		}
+		penumbra = aa_power / ray_count;
+		penumbra_color /= ray_count;
+	} else { // No soft shadows and anti-aliasing (disabled via parameter).
+		bool did_hit = false;
+		penumbra = 0.0;
+		penumbra_color = light_data.color.rgb;
+		for (uint iter = 0; iter < bake_params.transparency_rays; iter++) {
+			vec4 hit_albedo = vec4(1.0);
+			vec3 hit_position;
+			uint ret = trace_ray_closest_hit_triangle_albedo_alpha(p_position + r_light_dir * bake_params.bias, light_pos, hit_albedo, hit_position);
+			if (ret == RAY_MISS) {
+				if (!did_hit) {
+					penumbra = 1.0;
+				}
+				break;
+			} else if (ret == RAY_FRONT || ret == RAY_BACK) {
+				bool contribute = (ret == RAY_FRONT || !did_hit);
+				if (!did_hit) {
+					penumbra = 1.0;
+					did_hit = true;
+				}
+
+				if (contribute) {
+					penumbra_color = mix(penumbra_color, penumbra_color * hit_albedo.rgb, hit_albedo.a);
+					penumbra *= 1.0 - hit_albedo.a;
+				}
+
+				p_position = hit_position + r_light_dir * bake_params.bias;
+
+				if (penumbra - EPSILON <= 0) {
+					break;
 				}
 			}
 		}
-		penumbra = float(hits) / float(total_ray_count);
-	} else {
-		if (trace_ray_any_hit(p_position + r_light_dir * bake_params.bias, light_pos) == RAY_MISS) {
-			penumbra = 1.0;
-		}
+
+		penumbra = clamp(penumbra, 0.0, 1.0);
 	}
 
-	r_light = light_data.color * light_data.energy * attenuation * penumbra;
+	r_shadow = penumbra;
+	r_light = light_data.energy * attenuation * penumbra * penumbra_color;
 }
 
 #endif
@@ -529,6 +672,7 @@ vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise, f
 	vec3 position = p_position;
 	vec3 ray_dir = p_ray_dir;
 	uint max_depth = max(bake_params.bounces, 1);
+	uint transparency_rays_left = bake_params.transparency_rays;
 	vec3 throughput = vec3(1.0);
 	vec3 light = vec3(0.0);
 	for (uint depth = 0; depth < max_depth; depth++) {
@@ -541,6 +685,8 @@ vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise, f
 			Vertex vert2 = vertices.data[triangles.data[tidx].indices.z];
 			vec3 uvw = vec3(barycentric.x * vert0.uv + barycentric.y * vert1.uv + barycentric.z * vert2.uv, float(triangles.data[tidx].slice));
 			position = barycentric.x * vert0.position + barycentric.y * vert1.position + barycentric.z * vert2.position;
+
+			vec3 prev_normal = ray_dir;
 
 			vec3 norm0 = vec3(vert0.normal_xy, vert0.normal_z);
 			vec3 norm1 = vec3(vert1.normal_xy, vert1.normal_z);
@@ -556,20 +702,37 @@ vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise, f
 			for (uint i = 0; i < bake_params.light_count; i++) {
 				vec3 light;
 				vec3 light_dir;
-				trace_direct_light(position, normal, i, false, light, light_dir, r_noise, p_texel_size);
+				float shadow;
+				trace_direct_light(position, normal, i, false, light, light_dir, r_noise, p_texel_size, shadow);
 				direct_light += light * lights.data[i].indirect_energy;
 			}
 
 			direct_light *= bake_params.exposure_normalization;
 #endif
 
-			vec3 albedo = textureLod(sampler2DArray(albedo_tex, linear_sampler), uvw, 0).rgb;
+			vec4 albedo_alpha = textureLod(sampler2DArray(albedo_tex, linear_sampler), uvw, 0).rgba;
 			vec3 emissive = textureLod(sampler2DArray(emission_tex, linear_sampler), uvw, 0).rgb;
 			emissive *= bake_params.exposure_normalization;
 
-			light += throughput * emissive;
-			throughput *= albedo;
-			light += throughput * direct_light * bake_params.bounce_indirect_energy;
+			light += throughput * emissive * albedo_alpha.a;
+			throughput = mix(throughput, throughput * albedo_alpha.rgb, albedo_alpha.a);
+			light += throughput * direct_light * bake_params.bounce_indirect_energy * albedo_alpha.a;
+
+			if (albedo_alpha.a < 1.0) {
+				transparency_rays_left -= 1;
+				depth -= 1;
+				if (transparency_rays_left <= 0) {
+					break;
+				}
+
+				// Either bounce off the transparent surface or keep going forward.
+				float pa = albedo_alpha.a * albedo_alpha.a;
+				if (randomize(r_noise) > pa) {
+					normal = prev_normal;
+				}
+
+				position += normal * bake_params.bias;
+			}
 
 			// Use Russian Roulette to determine a probability to terminate the bounce earlier as an optimization.
 			// <https://computergraphics.stackexchange.com/questions/2316/is-russian-roulette-really-the-answer>
@@ -587,9 +750,55 @@ vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise, f
 			// Look for the environment color and stop bouncing.
 			light += throughput * trace_environment_color(ray_dir);
 			break;
-		} else {
-			// Ignore any other trace results.
-			break;
+		} else if (trace_result == RAY_BACK) {
+			Vertex vert0 = vertices.data[triangles.data[tidx].indices.x];
+			Vertex vert1 = vertices.data[triangles.data[tidx].indices.y];
+			Vertex vert2 = vertices.data[triangles.data[tidx].indices.z];
+			vec3 uvw = vec3(barycentric.x * vert0.uv + barycentric.y * vert1.uv + barycentric.z * vert2.uv, float(triangles.data[tidx].slice));
+			position = barycentric.x * vert0.position + barycentric.y * vert1.position + barycentric.z * vert2.position;
+
+			vec4 albedo_alpha = textureLod(sampler2DArray(albedo_tex, linear_sampler), uvw, 0).rgba;
+
+			if (albedo_alpha.a > 1.0) {
+				break;
+			}
+
+			transparency_rays_left -= 1;
+			depth -= 1;
+			if (transparency_rays_left <= 0) {
+				break;
+			}
+
+			vec3 norm0 = vec3(vert0.normal_xy, vert0.normal_z);
+			vec3 norm1 = vec3(vert1.normal_xy, vert1.normal_z);
+			vec3 norm2 = vec3(vert2.normal_xy, vert2.normal_z);
+			vec3 normal = barycentric.x * norm0 + barycentric.y * norm1 + barycentric.z * norm2;
+
+			vec3 direct_light = vec3(0.0f);
+#ifdef USE_LIGHT_TEXTURE_FOR_BOUNCES
+			direct_light += textureLod(sampler2DArray(source_light, linear_sampler), uvw, 0.0).rgb;
+#else
+			// Trace the lights directly. Significantly more expensive but more accurate in scenarios
+			// where the lightmap texture isn't reliable.
+			for (uint i = 0; i < bake_params.light_count; i++) {
+				vec3 light;
+				vec3 light_dir;
+				float shadow;
+				trace_direct_light(position, normal, i, false, light, light_dir, r_noise, p_texel_size, shadow);
+				direct_light += light * lights.data[i].indirect_energy;
+			}
+
+			direct_light *= bake_params.exposure_normalization;
+#endif
+
+			vec3 emissive = textureLod(sampler2DArray(emission_tex, linear_sampler), uvw, 0).rgb;
+			emissive *= bake_params.exposure_normalization;
+
+			light += throughput * emissive * albedo_alpha.a;
+			throughput = mix(mix(throughput, throughput * albedo_alpha.rgb, albedo_alpha.a), vec3(0.0), albedo_alpha.a);
+			light += throughput * direct_light * bake_params.bounce_indirect_energy * albedo_alpha.a;
+
+			position += ray_dir * bake_params.bias;
 		}
 	}
 
@@ -614,7 +823,6 @@ void main() {
 #endif
 
 #ifdef MODE_DIRECT_LIGHT
-
 	vec3 normal = texelFetch(sampler2DArray(source_normal, linear_sampler), ivec3(atlas_pos, params.atlas_slice), 0).xyz;
 	if (length(normal) < 0.5) {
 		return; //empty texel, no process
@@ -626,10 +834,14 @@ void main() {
 		// Empty texel, try again.
 		neighbor_position.xyz = texelFetch(sampler2DArray(source_position, linear_sampler), ivec3(atlas_pos + ivec2(-1, 0), params.atlas_slice), 0).xyz;
 	}
-	float texel_size_world_space = distance(position, neighbor_position.xyz);
+	float texel_size_world_space = distance(position, neighbor_position.xyz) * bake_params.supersampling_factor;
 
 	vec3 light_for_texture = vec3(0.0);
 	vec3 light_for_bounces = vec3(0.0);
+
+#ifdef USE_SHADOWMASK
+	float shadowmask_value = 0.0f;
+#endif
 
 #ifdef USE_SH_LIGHTMAPS
 	vec4 sh_accum[4] = vec4[](
@@ -644,22 +856,39 @@ void main() {
 	for (uint i = 0; i < bake_params.light_count; i++) {
 		vec3 light;
 		vec3 light_dir;
-		trace_direct_light(position, normal, i, true, light, light_dir, noise, texel_size_world_space);
+		float shadow;
+		trace_direct_light(position, normal, i, true, light, light_dir, noise, texel_size_world_space, shadow);
 
 		if (lights.data[i].static_bake) {
 			light_for_texture += light;
 
 #ifdef USE_SH_LIGHTMAPS
-			// These coefficients include the factored out SH evaluation, diffuse convolution, and final application, as well as the BRDF 1/PI and the spherical monte carlo factor.
-			// LO: 1/(2*sqrtPI) * 1/(2*sqrtPI) * PI * PI * 1/PI = 0.25
-			// L1: sqrt(3/(4*pi)) * sqrt(3/(4*pi)) * (PI*2/3) * (2 * PI) * 1/PI = 1.0
-			// Note: This only works because we aren't scaling, rotating, or combing harmonics, we are just directing applying them in the shader.
+			// For L0, light needs to be attenuated by dot(normal, light_dir) else it is oversaturated when sampled later.
+			// For L1, light can't be attenuated by dot(normal, light_dir) since when sampling later, the dot product is done.
+			// The output of trace_direct_light() is already attenuated by dot(normal, light_dir).
+			// So L0 and L1 has the following relationship: L1 = L0 / dot(normal, light_dir).
 
+			// For L1 packing to work, there needs to be a defined ratio (4) between L0 and L1 values.
+			// This ratio is achieved with two coefficients c_l0 and c_l1, and ensuring that
+			// 4 = (c_l0 * LO) / (c_l1 * L1)
+
+			// For direct lights to look right, its effective "energy" needs to be 1 since it is not being integrated
+			// unlike indirect lighting.
+			// This binds c_l0 and c_l1 to the following relationship: 1 = c_l0 + c_l1
+
+			float attenuation = dot(normal, light_dir);
+
+			if (attenuation <= 0.0001) {
+				continue;
+			}
+
+			float c_l0 = 1 / (1 + 4 * attenuation);
+			float c_l1 = 1 - c_l0;
 			float c[4] = float[](
-					0.25, //l0
-					light_dir.y, //l1n1
-					light_dir.z, //l1n0
-					light_dir.x //l1p1
+					c_l0, //l0
+					c_l1 / attenuation * light_dir.y, //l1n1
+					c_l1 / attenuation * light_dir.z, //l1n0
+					c_l1 / attenuation * light_dir.x //l1p1
 			);
 
 			for (uint j = 0; j < 4; j++) {
@@ -669,6 +898,12 @@ void main() {
 		}
 
 		light_for_bounces += light * lights.data[i].indirect_energy;
+
+#ifdef USE_SHADOWMASK
+		if (lights.data[i].type == LIGHT_TYPE_DIRECTIONAL && i == bake_params.shadowmask_light_idx) {
+			shadowmask_value = max(shadowmask_value, shadow);
+		}
+#endif
 	}
 
 	light_for_bounces *= bake_params.exposure_normalization;
@@ -683,6 +918,10 @@ void main() {
 #else
 	light_for_texture *= bake_params.exposure_normalization;
 	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice), vec4(light_for_texture, 1.0));
+#endif
+
+#ifdef USE_SHADOWMASK
+	imageStore(shadowmask, ivec3(atlas_pos, params.atlas_slice), vec4(shadowmask_value, shadowmask_value, shadowmask_value, 1.0));
 #endif
 
 #endif
@@ -774,13 +1013,16 @@ void main() {
 
 	vec3 rays[4] = vec3[](tangent, bitangent, -tangent, -bitangent);
 	float min_d = 1e20;
+	float unocclude_mask = 0.0;
+
 	for (int i = 0; i < 4; i++) {
-		vec3 ray_to = base_pos + rays[i] * texel_size;
+		vec3 ray_to = base_pos + rays[i] * texel_size * params.denoiser_range;
 		float d;
 		vec3 norm;
 
 		if (trace_ray_closest_hit_distance(base_pos, ray_to, d, norm) == RAY_BACK) {
-			if (d < min_d) {
+			unocclude_mask = 1.0;
+			if (d <= texel_size && d < min_d) {
 				// This bias needs to be greater than the regular bias, because otherwise later, rays will go the other side when pointing back.
 				vertex_pos = base_pos + rays[i] * d + norm * bake_params.bias * 10.0;
 				min_d = d;
@@ -791,6 +1033,7 @@ void main() {
 	position_alpha.xyz = vertex_pos;
 
 	imageStore(position, ivec3(atlas_pos, params.atlas_slice), position_alpha);
+	imageStore(unocclude, ivec3(atlas_pos, params.atlas_slice), vec4(unocclude_mask, 0, 0, 0));
 
 #endif
 
@@ -821,7 +1064,6 @@ void main() {
 				0.488603 * ray_dir.x, //l1p1
 				1.092548 * ray_dir.x * ray_dir.y, //l2n2
 				1.092548 * ray_dir.y * ray_dir.z, //l2n1
-				//0.315392 * (ray_dir.x * ray_dir.x + ray_dir.y * ray_dir.y + 2.0 * ray_dir.z * ray_dir.z), //l20
 				0.315392 * (3.0 * ray_dir.z * ray_dir.z - 1.0), //l20
 				1.092548 * ray_dir.x * ray_dir.z, //l2p1
 				0.546274 * (ray_dir.x * ray_dir.x - ray_dir.y * ray_dir.y) //l2p2
@@ -852,41 +1094,33 @@ void main() {
 
 #ifdef MODE_DILATE
 
-	vec4 c = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos, params.atlas_slice), 0);
-	//sides first, as they are closer
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(-1, 0), params.atlas_slice), 0);
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(0, 1), params.atlas_slice), 0);
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(1, 0), params.atlas_slice), 0);
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(0, -1), params.atlas_slice), 0);
-	//endpoints second
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(-1, -1), params.atlas_slice), 0);
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(-1, 1), params.atlas_slice), 0);
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(1, -1), params.atlas_slice), 0);
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(1, 1), params.atlas_slice), 0);
+	const int max_radius = int(4.0 * bake_params.supersampling_factor);
+	const ivec2 directions[8] = ivec2[8](ivec2(-1, 0), ivec2(0, 1), ivec2(1, 0), ivec2(0, -1), ivec2(-1, -1), ivec2(-1, 1), ivec2(1, -1), ivec2(1, 1));
 
-	//far sides third
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(-2, 0), params.atlas_slice), 0);
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(0, 2), params.atlas_slice), 0);
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(2, 0), params.atlas_slice), 0);
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(0, -2), params.atlas_slice), 0);
+	vec4 texel_color = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos, params.atlas_slice), 0);
 
-	//far-mid endpoints
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(-2, -1), params.atlas_slice), 0);
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(-2, 1), params.atlas_slice), 0);
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(2, -1), params.atlas_slice), 0);
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(2, 1), params.atlas_slice), 0);
+	for (int radius = 1; radius <= max_radius; radius++) {
+		for (uint i = 0; i < 8; i++) {
+			const ivec2 sample_pos = atlas_pos + directions[i] * radius;
+			// Texture bounds check for robustness.
+			if (any(lessThan(sample_pos, ivec2(0))) ||
+					any(greaterThanEqual(sample_pos, textureSize(source_light, 0).xy))) {
+				continue;
+			}
 
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(-1, -2), params.atlas_slice), 0);
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(-1, 2), params.atlas_slice), 0);
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(1, -2), params.atlas_slice), 0);
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(1, 2), params.atlas_slice), 0);
-	//far endpoints
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(-2, -2), params.atlas_slice), 0);
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(-2, 2), params.atlas_slice), 0);
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(2, -2), params.atlas_slice), 0);
-	c = c.a > 0.5 ? c : texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos + ivec2(2, 2), params.atlas_slice), 0);
+			vec4 neighbor_color = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(sample_pos, params.atlas_slice), 0);
+			if (neighbor_color.a > 0.5) {
+				texel_color = neighbor_color;
+				break;
+			}
+		}
 
-	imageStore(dest_light, ivec3(atlas_pos, params.atlas_slice), c);
+		if (texel_color.a > 0.5) {
+			break;
+		}
+	}
+
+	imageStore(dest_light, ivec3(atlas_pos, params.atlas_slice), texel_color);
 
 #endif
 
@@ -983,6 +1217,7 @@ void main() {
 					vec3 search_rgb = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(search_pos, lightmap_slice), 0).rgb;
 					vec3 search_albedo = texelFetch(sampler2DArray(albedo_tex, linear_sampler), ivec3(search_pos, params.atlas_slice), 0).rgb;
 					vec3 search_normal = texelFetch(sampler2DArray(source_normal, linear_sampler), ivec3(search_pos, params.atlas_slice), 0).xyz;
+					float search_occlusion = texelFetch(sampler2DArray(unocclude_mask, linear_sampler), ivec3(search_pos, params.atlas_slice), 0).r;
 					float patch_square_dist = 0.0f;
 					for (int offset_y = -HALF_PATCH_WINDOW; offset_y <= HALF_PATCH_WINDOW; offset_y++) {
 						for (int offset_x = -HALF_PATCH_WINDOW; offset_x <= HALF_PATCH_WINDOW; offset_x++) {
@@ -1024,12 +1259,16 @@ void main() {
 					float normal_square_dist = dot(normal_delta, normal_delta);
 					weight *= exp(-normal_square_dist / TWO_SIGMA_NORMAL_SQUARE);
 
+					// Weight with occlusion.
+					weight *= 1.0 - search_occlusion;
+
 					denoised_rgb += weight * search_rgb;
 					sum_weights += weight;
 				}
 			}
 
-			denoised_rgb /= sum_weights;
+			// Avoid division by zero if no weights were accumulated.
+			denoised_rgb = sum_weights > EPSILON ? denoised_rgb / sum_weights : input_rgb;
 		} else {
 			// Ignore pixels where the normal is empty, just copy the light color.
 			denoised_rgb = input_light.rgb;

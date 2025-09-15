@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DEBUG_ADAPTER_PROTOCOL_H
-#define DEBUG_ADAPTER_PROTOCOL_H
+#pragma once
 
-#include "core/io/stream_peer.h"
+#include "core/debugger/debugger_marshalls.h"
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
 
 #include "debug_adapter_parser.h"
 #include "debug_adapter_types.h"
+#include "scene/debugger/scene_debugger.h"
 
 #define DAP_MAX_BUFFER_SIZE 4194304 // 4MB
 #define DAP_MAX_CLIENTS 8
@@ -67,13 +67,16 @@ struct DAPeer : RefCounted {
 
 	Error handle_data();
 	Error send_data();
-	String format_output(const Dictionary &p_params) const;
+	Vector<uint8_t> format_output(const Dictionary &p_params) const;
 };
 
 class DebugAdapterProtocol : public Object {
 	GDCLASS(DebugAdapterProtocol, Object)
 
 	friend class DebugAdapterParser;
+
+	using DAPVarID = int;
+	using DAPStackFrameID = int;
 
 private:
 	static DebugAdapterProtocol *singleton;
@@ -99,6 +102,16 @@ private:
 	void reset_stack_info();
 
 	int parse_variant(const Variant &p_var);
+	void parse_object(SceneDebuggerObject &p_obj);
+	const Variant parse_object_variable(const SceneDebuggerObject::SceneDebuggerProperty &p_property);
+	void parse_evaluation(DebuggerMarshalls::ScriptStackVariable &p_var);
+
+	ObjectID search_object_id(DAPVarID p_var_id);
+	bool request_remote_object(const ObjectID &p_object_id);
+	bool request_remote_evaluate(const String &p_eval, int p_stack_frame);
+
+	const DAP::Source &fetch_source(const String &p_path);
+	void update_source(const String &p_path);
 
 	bool _initialized = false;
 	bool _processing_breakpoint = false;
@@ -106,7 +119,7 @@ private:
 	bool _processing_stackdump = false;
 	int _remaining_vars = 0;
 	int _current_frame = 0;
-	uint64_t _request_timeout = 1000;
+	uint64_t _request_timeout = 5000;
 	bool _sync_breakpoints = false;
 
 	String _current_request;
@@ -114,10 +127,18 @@ private:
 
 	int breakpoint_id = 0;
 	int stackframe_id = 0;
-	int variable_id = 0;
+	DAPVarID variable_id = 0;
 	List<DAP::Breakpoint> breakpoint_list;
-	HashMap<DAP::StackFrame, List<int>, DAP::StackFrame> stackframe_list;
-	HashMap<int, Array> variable_list;
+	HashMap<String, DAP::Source> breakpoint_source_list;
+	List<DAP::StackFrame> stackframe_list;
+	HashMap<DAPStackFrameID, Vector<int>> scope_list;
+	HashMap<DAPVarID, Array> variable_list;
+
+	HashMap<ObjectID, DAPVarID> object_list;
+	HashSet<ObjectID> object_pending_set;
+
+	HashMap<String, DAP::Variable> eval_list;
+	HashSet<String> eval_pending_list;
 
 public:
 	friend class DebugAdapterServer;
@@ -152,5 +173,3 @@ public:
 	DebugAdapterProtocol();
 	~DebugAdapterProtocol();
 };
-
-#endif // DEBUG_ADAPTER_PROTOCOL_H

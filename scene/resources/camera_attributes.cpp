@@ -56,7 +56,7 @@ float CameraAttributes::get_exposure_sensitivity() const {
 void CameraAttributes::_update_exposure() {
 	float exposure_normalization = 1.0;
 	// Ignore physical properties if not using physical light units.
-	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+	if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 		exposure_normalization = calculate_exposure_normalization();
 	}
 
@@ -96,7 +96,10 @@ RID CameraAttributes::get_rid() const {
 }
 
 void CameraAttributes::_validate_property(PropertyInfo &p_property) const {
-	if (!GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units") && p_property.name == "exposure_sensitivity") {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+	if (!GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units") && p_property.name == "exposure_sensitivity") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		return;
 	}
@@ -253,6 +256,9 @@ void CameraAttributesPractical::_update_auto_exposure() {
 }
 
 void CameraAttributesPractical::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if ((!dof_blur_far_enabled && (p_property.name == "dof_blur_far_distance" || p_property.name == "dof_blur_far_transition")) ||
 			(!dof_blur_near_enabled && (p_property.name == "dof_blur_near_distance" || p_property.name == "dof_blur_near_transition"))) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
@@ -378,7 +384,7 @@ void CameraAttributesPhysical::_update_frustum() {
 	Vector2i sensor_size = Vector2i(36, 24); // Matches high-end DSLR, could be made variable if there is demand.
 	float CoC = sensor_size.length() / 1500.0;
 
-	frustum_fov = Math::rad_to_deg(2 * atan(sensor_size.height / (2 * frustum_focal_length)));
+	frustum_fov = Math::rad_to_deg(2 * std::atan(sensor_size.height / (2 * frustum_focal_length)));
 
 	// Based on https://en.wikipedia.org/wiki/Depth_of_field.
 	float u = MAX(frustum_focus_distance * 1000.0, frustum_focal_length + 1.0); // Focus distance expressed in mm and clamped to at least 1 mm away from lens.
@@ -439,15 +445,18 @@ void CameraAttributesPhysical::_update_auto_exposure() {
 	RS::get_singleton()->camera_attributes_set_auto_exposure(
 			get_rid(),
 			auto_exposure_enabled,
-			pow(2.0, auto_exposure_min) * (12.5 / exposure_sensitivity), // Convert from EV100 to Luminance
-			pow(2.0, auto_exposure_max) * (12.5 / exposure_sensitivity), // Convert from EV100 to Luminance
+			std::pow(2.0, auto_exposure_min) * (12.5 / exposure_sensitivity), // Convert from EV100 to Luminance
+			std::pow(2.0, auto_exposure_max) * (12.5 / exposure_sensitivity), // Convert from EV100 to Luminance
 			auto_exposure_speed,
 			auto_exposure_scale);
 	emit_changed();
 }
 
 void CameraAttributesPhysical::_validate_property(PropertyInfo &property) const {
-	if (!GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units") && (property.name == "exposure_aperture" || property.name == "exposure_shutter_speed")) {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+	if (!GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units") && (property.name == "exposure_aperture" || property.name == "exposure_shutter_speed")) {
 		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		return;
 	}
@@ -487,7 +496,7 @@ void CameraAttributesPhysical::_bind_methods() {
 	ADD_GROUP("Auto Exposure", "auto_exposure_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_min_exposure_value", PROPERTY_HINT_RANGE, "-16.0,16.0,0.01,or_greater,suffix:EV100"), "set_auto_exposure_min_exposure_value", "get_auto_exposure_min_exposure_value");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_max_exposure_value", PROPERTY_HINT_RANGE, "-16.0,16.0,0.01,or_greater,suffix:EV100"), "set_auto_exposure_max_exposure_value", "get_auto_exposure_max_exposure_value");
-};
+}
 
 CameraAttributesPhysical::CameraAttributesPhysical() {
 	_update_exposure();

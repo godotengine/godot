@@ -38,7 +38,7 @@
 #include "texture_storage.h"
 #include "utilities.h"
 
-#include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 using namespace GLES3;
 
@@ -223,6 +223,19 @@ void ParticlesStorage::particles_set_pre_process_time(RID p_particles, double p_
 	ERR_FAIL_NULL(particles);
 	particles->pre_process_time = p_time;
 }
+
+void ParticlesStorage::particles_request_process_time(RID p_particles, real_t p_request_process_time) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+	particles->request_process_time = p_request_process_time;
+}
+
+void ParticlesStorage::particles_set_seed(RID p_particles, uint32_t p_seed) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+	particles->random_seed = p_seed;
+}
+
 void ParticlesStorage::particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
@@ -287,13 +300,13 @@ void ParticlesStorage::particles_set_fractional_delta(RID p_particles, bool p_en
 
 void ParticlesStorage::particles_set_trails(RID p_particles, bool p_enable, double p_length) {
 	if (p_enable) {
-		WARN_PRINT_ONCE_ED("The GL Compatibility rendering backend does not support particle trails.");
+		WARN_PRINT_ONCE_ED("The Compatibility renderer does not support particle trails.");
 	}
 }
 
 void ParticlesStorage::particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) {
 	if (p_bind_poses.size() != 0) {
-		WARN_PRINT_ONCE_ED("The GL Compatibility rendering backend does not support particle trails.");
+		WARN_PRINT_ONCE_ED("The Compatibility renderer does not support particle trails.");
 	}
 }
 
@@ -357,12 +370,12 @@ void ParticlesStorage::particles_restart(RID p_particles) {
 
 void ParticlesStorage::particles_set_subemitter(RID p_particles, RID p_subemitter_particles) {
 	if (p_subemitter_particles.is_valid()) {
-		WARN_PRINT_ONCE_ED("The GL Compatibility rendering backend does not support particle sub-emitters.");
+		WARN_PRINT_ONCE_ED("The Compatibility renderer does not support particle sub-emitters.");
 	}
 }
 
 void ParticlesStorage::particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
-	WARN_PRINT_ONCE_ED("The GL Compatibility rendering backend does not support manually emitting particles.");
+	WARN_PRINT_ONCE_ED("The Compatibility renderer does not support manually emitting particles.");
 }
 
 void ParticlesStorage::particles_request_process(RID p_particles) {
@@ -500,14 +513,13 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 
-	double new_phase = Math::fmod(p_particles->phase + (p_delta / p_particles->lifetime) * p_particles->speed_scale, 1.0);
+	double new_phase = Math::fmod(p_particles->phase + (p_delta / p_particles->lifetime), 1.0);
 
 	//update current frame
 	ParticlesFrameParams frame_params;
 
 	if (p_particles->clear) {
 		p_particles->cycle_number = 0;
-		p_particles->random_seed = Math::rand();
 	} else if (new_phase < p_particles->phase) {
 		if (p_particles->one_shot) {
 			p_particles->emitting = false;
@@ -522,7 +534,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	p_particles->phase = new_phase;
 
 	frame_params.time = RSG::rasterizer->get_total_time();
-	frame_params.delta = p_delta * p_particles->speed_scale;
+	frame_params.delta = p_delta;
 	frame_params.random_seed = p_particles->random_seed;
 	frame_params.explosiveness = p_particles->explosiveness;
 	frame_params.randomness = p_particles->randomness;
@@ -645,7 +657,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 						attr.extents[2] = extents.z;
 					} break;
 					case RS::PARTICLES_COLLISION_TYPE_VECTOR_FIELD_ATTRACT: {
-						WARN_PRINT_ONCE_ED("Vector field particle attractors are not available in the GL Compatibility rendering backend.");
+						WARN_PRINT_ONCE_ED("Vector field particle attractors are not available in the Compatibility renderer.");
 					} break;
 					default: {
 					}
@@ -678,7 +690,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 						col.extents[2] = extents.z;
 					} break;
 					case RS::PARTICLES_COLLISION_TYPE_SDF_COLLIDE: {
-						WARN_PRINT_ONCE_ED("SDF Particle Colliders are not available in the GL Compatibility rendering backend.");
+						WARN_PRINT_ONCE_ED("SDF Particle Colliders are not available in the Compatibility renderer.");
 					} break;
 					case RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE: {
 						if (collision_heightmap_texture != 0) { //already taken
@@ -856,10 +868,10 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 		particles->process_buffer_stride_cache = sizeof(float) * 4 * particles->num_attrib_arrays_cache;
 
 		PackedByteArray data;
-		data.resize_zeroed(particles->process_buffer_stride_cache * total_amount);
+		data.resize_initialized(particles->process_buffer_stride_cache * total_amount);
 
 		PackedByteArray instance_data;
-		instance_data.resize_zeroed(particles->instance_buffer_size_cache);
+		instance_data.resize_initialized(particles->instance_buffer_size_cache);
 
 		{
 			glGenVertexArrays(1, &particles->front_vertex_array);
@@ -1085,8 +1097,6 @@ void ParticlesStorage::update_particles() {
 			fixed_fps = particles->fixed_fps;
 		}
 
-		bool zero_time_scale = Engine::get_singleton()->get_time_scale() <= 0.0;
-
 		if (particles->clear && particles->pre_process_time > 0.0) {
 			double frame_time;
 			if (fixed_fps > 0) {
@@ -1103,37 +1113,45 @@ void ParticlesStorage::update_particles() {
 			}
 		}
 
+		double time_scale = MAX(particles->speed_scale, 0.0);
+
 		if (fixed_fps > 0) {
-			double frame_time;
-			double decr;
-			if (zero_time_scale) {
-				frame_time = 0.0;
-				decr = 1.0 / fixed_fps;
-			} else {
-				frame_time = 1.0 / fixed_fps;
-				decr = frame_time;
-			}
+			double frame_time = 1.0 / fixed_fps;
 			double delta = RSG::rasterizer->get_frame_delta_time();
 			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
 				delta = 0.1;
 			} else if (delta <= 0.0) { //unlikely but..
 				delta = 0.001;
 			}
-			double todo = particles->frame_remainder + delta;
+			double todo = particles->frame_remainder + delta * time_scale;
 
 			while (todo >= frame_time) {
 				_particles_process(particles, frame_time);
-				todo -= decr;
+				todo -= frame_time;
 			}
 
 			particles->frame_remainder = todo;
 
 		} else {
-			if (zero_time_scale) {
-				_particles_process(particles, 0.0);
+			_particles_process(particles, RSG::rasterizer->get_frame_delta_time() * time_scale);
+		}
+
+		if (particles->request_process_time > 0.0) {
+			double frame_time;
+			if (fixed_fps > 0) {
+				frame_time = 1.0 / fixed_fps;
 			} else {
-				_particles_process(particles, RSG::rasterizer->get_frame_delta_time());
+				frame_time = 1.0 / 30.0;
 			}
+			float tmp_scale = particles->speed_scale;
+			particles->speed_scale = 1.0;
+			double todo = particles->request_process_time;
+			while (todo >= 0) {
+				_particles_process(particles, frame_time);
+				todo -= frame_time;
+			}
+			particles->speed_scale = tmp_scale;
+			particles->request_process_time = 0.0;
 		}
 
 		// Copy particles to instance buffer and pack Color/Custom.
@@ -1264,7 +1282,7 @@ GLuint ParticlesStorage::particles_collision_get_heightfield_framebuffer(RID p_p
 #ifdef DEBUG_ENABLED
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
-			WARN_PRINT("Could create heightmap texture status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
+			WARN_PRINT("Could not create heightmap texture, status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
 		}
 #endif
 		GLES3::Utilities::get_singleton()->texture_allocated_data(particles_collision->heightfield_texture, size.x * size.y * 4, "Particles collision heightfield texture");
@@ -1301,6 +1319,13 @@ void ParticlesStorage::particles_collision_set_cull_mask(RID p_particles_collisi
 	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL(particles_collision);
 	particles_collision->cull_mask = p_cull_mask;
+	particles_collision->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_CULL_MASK);
+}
+
+uint32_t ParticlesStorage::particles_collision_get_cull_mask(RID p_particles_collision) const {
+	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL_V(particles_collision, 0);
+	return particles_collision->cull_mask;
 }
 
 void ParticlesStorage::particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) {
@@ -1341,7 +1366,7 @@ void ParticlesStorage::particles_collision_set_attractor_attenuation(RID p_parti
 }
 
 void ParticlesStorage::particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) {
-	WARN_PRINT_ONCE_ED("The GL Compatibility rendering backend does not support SDF collisions in 3D particle shaders");
+	WARN_PRINT_ONCE_ED("The Compatibility renderer does not support SDF collisions in 3D particle shaders");
 }
 
 void ParticlesStorage::particles_collision_height_field_update(RID p_particles_collision) {
@@ -1400,6 +1425,18 @@ bool ParticlesStorage::particles_collision_is_heightfield(RID p_particles_collis
 	const ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL_V(particles_collision, false);
 	return particles_collision->type == RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE;
+}
+
+uint32_t ParticlesStorage::particles_collision_get_height_field_mask(RID p_particles_collision) const {
+	const ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL_V(particles_collision, false);
+	return particles_collision->heightfield_mask;
+}
+
+void ParticlesStorage::particles_collision_set_height_field_mask(RID p_particles_collision, uint32_t p_heightfield_mask) {
+	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL(particles_collision);
+	particles_collision->heightfield_mask = p_heightfield_mask;
 }
 
 Dependency *ParticlesStorage::particles_collision_get_dependency(RID p_particles_collision) const {

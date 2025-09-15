@@ -34,8 +34,6 @@
 
 #include "audio_stream_mp3.h"
 
-#include "core/io/file_access.h"
-
 int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	if (!active) {
 		return 0;
@@ -159,6 +157,9 @@ Ref<AudioSamplePlayback> AudioStreamPlaybackMP3::get_sample_playback() const {
 
 void AudioStreamPlaybackMP3::set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
 	sample_playback = p_playback;
+	if (sample_playback.is_valid()) {
+		sample_playback->stream_playback = Ref<AudioStreamPlayback>(this);
+	}
 }
 
 void AudioStreamPlaybackMP3::set_parameter(const StringName &p_name, const Variant &p_value) {
@@ -218,10 +219,9 @@ void AudioStreamMP3::clear_data() {
 
 void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 	int src_data_len = p_data.size();
-	const uint8_t *src_datar = p_data.ptr();
 
 	mp3dec_ex_t *mp3d = memnew(mp3dec_ex_t);
-	int err = mp3dec_ex_open_buf(mp3d, src_datar, src_data_len, MP3D_SEEK_TO_SAMPLE);
+	int err = mp3dec_ex_open_buf(mp3d, p_data.ptr(), src_data_len, MP3D_SEEK_TO_SAMPLE);
 	if (err || mp3d->info.hz == 0) {
 		memdelete(mp3d);
 		ERR_FAIL_MSG("Failed to decode mp3 file. Make sure it is a valid mp3 audio file.");
@@ -234,10 +234,7 @@ void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 	mp3dec_ex_close(mp3d);
 	memdelete(mp3d);
 
-	clear_data();
-
-	data.resize(src_data_len);
-	memcpy(data.ptrw(), src_datar, src_data_len);
+	data = p_data;
 	data_len = src_data_len;
 }
 
@@ -315,7 +312,24 @@ Ref<AudioSample> AudioStreamMP3::generate_sample() const {
 	return sample;
 }
 
+Ref<AudioStreamMP3> AudioStreamMP3::load_from_buffer(const Vector<uint8_t> &p_stream_data) {
+	Ref<AudioStreamMP3> mp3_stream;
+	mp3_stream.instantiate();
+	mp3_stream->set_data(p_stream_data);
+	ERR_FAIL_COND_V_MSG(mp3_stream->get_data().is_empty(), Ref<AudioStreamMP3>(), "MP3 decoding failed. Check that your data is a valid MP3 audio stream.");
+	return mp3_stream;
+}
+
+Ref<AudioStreamMP3> AudioStreamMP3::load_from_file(const String &p_path) {
+	const Vector<uint8_t> stream_data = FileAccess::get_file_as_bytes(p_path);
+	ERR_FAIL_COND_V_MSG(stream_data.is_empty(), Ref<AudioStreamMP3>(), vformat("Cannot open file '%s'.", p_path));
+	return load_from_buffer(stream_data);
+}
+
 void AudioStreamMP3::_bind_methods() {
+	ClassDB::bind_static_method("AudioStreamMP3", D_METHOD("load_from_buffer", "stream_data"), &AudioStreamMP3::load_from_buffer);
+	ClassDB::bind_static_method("AudioStreamMP3", D_METHOD("load_from_file", "path"), &AudioStreamMP3::load_from_file);
+
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &AudioStreamMP3::set_data);
 	ClassDB::bind_method(D_METHOD("get_data"), &AudioStreamMP3::get_data);
 

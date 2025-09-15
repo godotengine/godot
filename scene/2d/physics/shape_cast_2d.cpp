@@ -32,9 +32,8 @@
 
 #include "core/config/engine.h"
 #include "scene/2d/physics/collision_object_2d.h"
-#include "scene/2d/physics/physics_body_2d.h"
-#include "scene/resources/2d/circle_shape_2d.h"
-#include "servers/physics_2d/godot_physics_server_2d.h"
+#include "scene/resources/world_2d.h"
+#include "servers/physics_server_2d.h"
 
 void ShapeCast2D::set_target_position(const Vector2 &p_point) {
 	target_position = p_point;
@@ -475,8 +474,8 @@ void ShapeCast2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "collision_result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "", "get_collision_result");
 	ADD_GROUP("Collide With", "collide_with");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_areas", "is_collide_with_areas_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 }
 
 ShapeCast2D::ShapeCast2D() {

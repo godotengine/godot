@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "input_map.h"
+#include "input_map.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
@@ -36,15 +37,13 @@
 #include "core/os/os.h"
 #include "core/variant/typed_array.h"
 
-InputMap *InputMap::singleton = nullptr;
-
-int InputMap::ALL_DEVICES = -1;
-
 void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_action", "action"), &InputMap::has_action);
-	ClassDB::bind_method(D_METHOD("get_actions"), &InputMap::_get_actions);
-	ClassDB::bind_method(D_METHOD("add_action", "action", "deadzone"), &InputMap::add_action, DEFVAL(0.5f));
+	ClassDB::bind_method(D_METHOD("get_actions"), &InputMap::get_actions);
+	ClassDB::bind_method(D_METHOD("add_action", "action", "deadzone"), &InputMap::add_action, DEFVAL(DEFAULT_DEADZONE));
 	ClassDB::bind_method(D_METHOD("erase_action", "action"), &InputMap::erase_action);
+
+	ClassDB::bind_method(D_METHOD("get_action_description", "action"), &InputMap::get_action_description);
 
 	ClassDB::bind_method(D_METHOD("action_set_deadzone", "action", "deadzone"), &InputMap::action_set_deadzone);
 	ClassDB::bind_method(D_METHOD("action_get_deadzone", "action"), &InputMap::action_get_deadzone);
@@ -62,16 +61,15 @@ void InputMap::_bind_methods() {
  * matching action name (if possible).
  */
 String InputMap::suggest_actions(const StringName &p_action) const {
-	List<StringName> actions = get_actions();
 	StringName closest_action;
 	float closest_similarity = 0.0;
 
 	// Find the most action with the most similar name.
-	for (const StringName &action : actions) {
-		const float similarity = String(action).similarity(p_action);
+	for (const KeyValue<StringName, Action> &kv : input_map) {
+		const float similarity = String(kv.key).similarity(p_action);
 
 		if (similarity > closest_similarity) {
-			closest_action = action;
+			closest_action = kv.key;
 			closest_similarity = similarity;
 		}
 	}
@@ -105,7 +103,7 @@ void InputMap::get_argument_options(const StringName &p_function, int p_idx, Lis
 				continue;
 			}
 
-			String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
+			String name = pi.name.substr(pi.name.find_char('/') + 1);
 			r_options->push_back(name.quote());
 		}
 	}
@@ -115,7 +113,7 @@ void InputMap::get_argument_options(const StringName &p_function, int p_idx, Lis
 #endif
 
 void InputMap::add_action(const StringName &p_action, float p_deadzone) {
-	ERR_FAIL_COND_MSG(input_map.has(p_action), "InputMap already has action \"" + String(p_action) + "\".");
+	ERR_FAIL_COND_MSG(input_map.has(p_action), vformat("InputMap already has action \"%s\".", String(p_action)));
 	input_map[p_action] = Action();
 	static int last_id = 1;
 	input_map[p_action].id = last_id;
@@ -129,35 +127,22 @@ void InputMap::erase_action(const StringName &p_action) {
 	input_map.erase(p_action);
 }
 
-TypedArray<StringName> InputMap::_get_actions() {
+TypedArray<StringName> InputMap::get_actions() {
 	TypedArray<StringName> ret;
-	List<StringName> actions = get_actions();
-	if (actions.is_empty()) {
-		return ret;
-	}
 
-	for (const StringName &E : actions) {
-		ret.push_back(E);
+	ret.resize(input_map.size());
+
+	uint32_t i = 0;
+	for (const KeyValue<StringName, Action> &kv : input_map) {
+		ret[i] = kv.key;
+		i++;
 	}
 
 	return ret;
 }
 
-List<StringName> InputMap::get_actions() const {
-	List<StringName> actions = List<StringName>();
-	if (input_map.is_empty()) {
-		return actions;
-	}
-
-	for (const KeyValue<StringName, Action> &E : input_map) {
-		actions.push_back(E.key);
-	}
-
-	return actions;
-}
-
 List<Ref<InputEvent>>::Element *InputMap::_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool p_exact_match, bool *r_pressed, float *r_strength, float *r_raw_strength, int *r_event_index) const {
-	ERR_FAIL_COND_V(!p_event.is_valid(), nullptr);
+	ERR_FAIL_COND_V(p_event.is_null(), nullptr);
 
 	int i = 0;
 	for (List<Ref<InputEvent>>::Element *E = p_action.inputs.front(); E; E = E->next()) {
@@ -178,6 +163,25 @@ List<Ref<InputEvent>>::Element *InputMap::_find_event(Action &p_action, const Re
 
 bool InputMap::has_action(const StringName &p_action) const {
 	return input_map.has(p_action);
+}
+
+String InputMap::get_action_description(const StringName &p_action) const {
+	ERR_FAIL_COND_V_MSG(!input_map.has(p_action), String(), suggest_actions(p_action));
+
+	String ret;
+	const List<Ref<InputEvent>> &inputs = input_map[p_action].inputs;
+	for (Ref<InputEventKey> iek : inputs) {
+		if (iek.is_valid()) {
+			if (!ret.is_empty()) {
+				ret += RTR(" or ");
+			}
+			ret += iek->as_text();
+		}
+	}
+	if (ret.is_empty()) {
+		ret = RTR("Action has no bound inputs");
+	}
+	return ret;
 }
 
 float InputMap::action_get_deadzone(const StringName &p_action) {
@@ -253,8 +257,8 @@ bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName 
 
 int InputMap::event_get_index(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match) const {
 	int index = -1;
-	event_get_action_status(p_event, p_action, p_exact_match, nullptr, nullptr, nullptr, &index);
-	return index;
+	bool valid = event_get_action_status(p_event, p_action, p_exact_match, nullptr, nullptr, nullptr, &index);
+	return valid ? index : -1;
 }
 
 bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match, bool *r_pressed, float *r_strength, float *r_raw_strength, int *r_event_index) const {
@@ -303,10 +307,10 @@ void InputMap::load_from_project_settings() {
 			continue;
 		}
 
-		String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
+		String name = pi.name.substr(pi.name.find_char('/') + 1);
 
 		Dictionary action = GLOBAL_GET(pi.name);
-		float deadzone = action.has("deadzone") ? (float)action["deadzone"] : 0.5f;
+		float deadzone = action.has("deadzone") ? (float)action["deadzone"] : DEFAULT_DEADZONE;
 		Array events = action["events"];
 
 		add_action(name, deadzone);
@@ -327,89 +331,95 @@ struct _BuiltinActionDisplayName {
 
 static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 	/* clang-format off */
-    { "ui_accept",                                     TTRC("Accept") },
-    { "ui_select",                                     TTRC("Select") },
-    { "ui_cancel",                                     TTRC("Cancel") },
-    { "ui_focus_next",                                 TTRC("Focus Next") },
-    { "ui_focus_prev",                                 TTRC("Focus Prev") },
-    { "ui_left",                                       TTRC("Left") },
-    { "ui_right",                                      TTRC("Right") },
-    { "ui_up",                                         TTRC("Up") },
-    { "ui_down",                                       TTRC("Down") },
-    { "ui_page_up",                                    TTRC("Page Up") },
-    { "ui_page_down",                                  TTRC("Page Down") },
-    { "ui_home",                                       TTRC("Home") },
-    { "ui_end",                                        TTRC("End") },
-    { "ui_cut",                                        TTRC("Cut") },
-    { "ui_copy",                                       TTRC("Copy") },
-    { "ui_paste",                                      TTRC("Paste") },
-    { "ui_undo",                                       TTRC("Undo") },
-    { "ui_redo",                                       TTRC("Redo") },
-    { "ui_text_completion_query",                      TTRC("Completion Query") },
-    { "ui_text_newline",                               TTRC("New Line") },
-    { "ui_text_newline_blank",                         TTRC("New Blank Line") },
-    { "ui_text_newline_above",                         TTRC("New Line Above") },
-    { "ui_text_indent",                                TTRC("Indent") },
-    { "ui_text_dedent",                                TTRC("Dedent") },
-    { "ui_text_backspace",                             TTRC("Backspace") },
-    { "ui_text_backspace_word",                        TTRC("Backspace Word") },
-    { "ui_text_backspace_word.macos",                  TTRC("Backspace Word") },
-    { "ui_text_backspace_all_to_left",                 TTRC("Backspace all to Left") },
-    { "ui_text_backspace_all_to_left.macos",           TTRC("Backspace all to Left") },
-    { "ui_text_delete",                                TTRC("Delete") },
-    { "ui_text_delete_word",                           TTRC("Delete Word") },
-    { "ui_text_delete_word.macos",                     TTRC("Delete Word") },
-    { "ui_text_delete_all_to_right",                   TTRC("Delete all to Right") },
-    { "ui_text_delete_all_to_right.macos",             TTRC("Delete all to Right") },
-    { "ui_text_caret_left",                            TTRC("Caret Left") },
-    { "ui_text_caret_word_left",                       TTRC("Caret Word Left") },
-    { "ui_text_caret_word_left.macos",                 TTRC("Caret Word Left") },
-    { "ui_text_caret_right",                           TTRC("Caret Right") },
-    { "ui_text_caret_word_right",                      TTRC("Caret Word Right") },
-    { "ui_text_caret_word_right.macos",                TTRC("Caret Word Right") },
-    { "ui_text_caret_up",                              TTRC("Caret Up") },
-    { "ui_text_caret_down",                            TTRC("Caret Down") },
-    { "ui_text_caret_line_start",                      TTRC("Caret Line Start") },
-    { "ui_text_caret_line_start.macos",                TTRC("Caret Line Start") },
-    { "ui_text_caret_line_end",                        TTRC("Caret Line End") },
-    { "ui_text_caret_line_end.macos",                  TTRC("Caret Line End") },
-    { "ui_text_caret_page_up",                         TTRC("Caret Page Up") },
-    { "ui_text_caret_page_down",                       TTRC("Caret Page Down") },
-    { "ui_text_caret_document_start",                  TTRC("Caret Document Start") },
-    { "ui_text_caret_document_start.macos",            TTRC("Caret Document Start") },
-    { "ui_text_caret_document_end",                    TTRC("Caret Document End") },
-    { "ui_text_caret_document_end.macos",              TTRC("Caret Document End") },
-    { "ui_text_caret_add_below",                       TTRC("Caret Add Below") },
-    { "ui_text_caret_add_below.macos",                 TTRC("Caret Add Below") },
-    { "ui_text_caret_add_above",                       TTRC("Caret Add Above") },
-    { "ui_text_caret_add_above.macos",                 TTRC("Caret Add Above") },
-    { "ui_text_scroll_up",                             TTRC("Scroll Up") },
-    { "ui_text_scroll_up.macos",                       TTRC("Scroll Up") },
-    { "ui_text_scroll_down",                           TTRC("Scroll Down") },
-    { "ui_text_scroll_down.macos",                     TTRC("Scroll Down") },
-    { "ui_text_select_all",                            TTRC("Select All") },
-    { "ui_text_select_word_under_caret",               TTRC("Select Word Under Caret") },
-    { "ui_text_add_selection_for_next_occurrence",     TTRC("Add Selection for Next Occurrence") },
-    { "ui_text_skip_selection_for_next_occurrence",    TTRC("Skip Selection for Next Occurrence") },
-    { "ui_text_clear_carets_and_selection",            TTRC("Clear Carets and Selection") },
-    { "ui_text_toggle_insert_mode",                    TTRC("Toggle Insert Mode") },
-    { "ui_text_submit",                                TTRC("Submit Text") },
-    { "ui_graph_duplicate",                            TTRC("Duplicate Nodes") },
-    { "ui_graph_delete",                               TTRC("Delete Nodes") },
-    { "ui_filedialog_up_one_level",                    TTRC("Go Up One Level") },
-    { "ui_filedialog_refresh",                         TTRC("Refresh") },
-    { "ui_filedialog_show_hidden",                     TTRC("Show Hidden") },
-    { "ui_swap_input_direction ",                      TTRC("Swap Input Direction") },
-    { "",                                              ""}
+	{ "ui_accept",                                     TTRC("Accept") },
+	{ "ui_select",                                     TTRC("Select") },
+	{ "ui_cancel",                                     TTRC("Cancel") },
+	{ "ui_focus_next",                                 TTRC("Focus Next") },
+	{ "ui_focus_prev",                                 TTRC("Focus Prev") },
+	{ "ui_left",                                       TTRC("Left") },
+	{ "ui_right",                                      TTRC("Right") },
+	{ "ui_up",                                         TTRC("Up") },
+	{ "ui_down",                                       TTRC("Down") },
+	{ "ui_page_up",                                    TTRC("Page Up") },
+	{ "ui_page_down",                                  TTRC("Page Down") },
+	{ "ui_home",                                       TTRC("Home") },
+	{ "ui_end",                                        TTRC("End") },
+	{ "ui_cut",                                        TTRC("Cut") },
+	{ "ui_copy",                                       TTRC("Copy") },
+	{ "ui_paste",                                      TTRC("Paste") },
+	{ "ui_focus_mode",                                 TTRC("Toggle Tab Focus Mode") },
+	{ "ui_undo",                                       TTRC("Undo") },
+	{ "ui_redo",                                       TTRC("Redo") },
+	{ "ui_text_completion_query",                      TTRC("Completion Query") },
+	{ "ui_text_newline",                               TTRC("New Line") },
+	{ "ui_text_newline_blank",                         TTRC("New Blank Line") },
+	{ "ui_text_newline_above",                         TTRC("New Line Above") },
+	{ "ui_text_indent",                                TTRC("Indent") },
+	{ "ui_text_dedent",                                TTRC("Dedent") },
+	{ "ui_text_backspace",                             TTRC("Backspace") },
+	{ "ui_text_backspace_word",                        TTRC("Backspace Word") },
+	{ "ui_text_backspace_word.macos",                  TTRC("Backspace Word") },
+	{ "ui_text_backspace_all_to_left",                 TTRC("Backspace all to Left") },
+	{ "ui_text_backspace_all_to_left.macos",           TTRC("Backspace all to Left") },
+	{ "ui_text_delete",                                TTRC("Delete") },
+	{ "ui_text_delete_word",                           TTRC("Delete Word") },
+	{ "ui_text_delete_word.macos",                     TTRC("Delete Word") },
+	{ "ui_text_delete_all_to_right",                   TTRC("Delete all to Right") },
+	{ "ui_text_delete_all_to_right.macos",             TTRC("Delete all to Right") },
+	{ "ui_text_caret_left",                            TTRC("Caret Left") },
+	{ "ui_text_caret_word_left",                       TTRC("Caret Word Left") },
+	{ "ui_text_caret_word_left.macos",                 TTRC("Caret Word Left") },
+	{ "ui_text_caret_right",                           TTRC("Caret Right") },
+	{ "ui_text_caret_word_right",                      TTRC("Caret Word Right") },
+	{ "ui_text_caret_word_right.macos",                TTRC("Caret Word Right") },
+	{ "ui_text_caret_up",                              TTRC("Caret Up") },
+	{ "ui_text_caret_down",                            TTRC("Caret Down") },
+	{ "ui_text_caret_line_start",                      TTRC("Caret Line Start") },
+	{ "ui_text_caret_line_start.macos",                TTRC("Caret Line Start") },
+	{ "ui_text_caret_line_end",                        TTRC("Caret Line End") },
+	{ "ui_text_caret_line_end.macos",                  TTRC("Caret Line End") },
+	{ "ui_text_caret_page_up",                         TTRC("Caret Page Up") },
+	{ "ui_text_caret_page_down",                       TTRC("Caret Page Down") },
+	{ "ui_text_caret_document_start",                  TTRC("Caret Document Start") },
+	{ "ui_text_caret_document_start.macos",            TTRC("Caret Document Start") },
+	{ "ui_text_caret_document_end",                    TTRC("Caret Document End") },
+	{ "ui_text_caret_document_end.macos",              TTRC("Caret Document End") },
+	{ "ui_text_caret_add_below",                       TTRC("Caret Add Below") },
+	{ "ui_text_caret_add_below.macos",                 TTRC("Caret Add Below") },
+	{ "ui_text_caret_add_above",                       TTRC("Caret Add Above") },
+	{ "ui_text_caret_add_above.macos",                 TTRC("Caret Add Above") },
+	{ "ui_text_scroll_up",                             TTRC("Scroll Up") },
+	{ "ui_text_scroll_up.macos",                       TTRC("Scroll Up") },
+	{ "ui_text_scroll_down",                           TTRC("Scroll Down") },
+	{ "ui_text_scroll_down.macos",                     TTRC("Scroll Down") },
+	{ "ui_text_select_all",                            TTRC("Select All") },
+	{ "ui_text_select_word_under_caret",               TTRC("Select Word Under Caret") },
+	{ "ui_text_add_selection_for_next_occurrence",     TTRC("Add Selection for Next Occurrence") },
+	{ "ui_text_skip_selection_for_next_occurrence",    TTRC("Skip Selection for Next Occurrence") },
+	{ "ui_text_clear_carets_and_selection",            TTRC("Clear Carets and Selection") },
+	{ "ui_text_toggle_insert_mode",                    TTRC("Toggle Insert Mode") },
+	{ "ui_text_submit",                                TTRC("Submit Text") },
+	{ "ui_graph_duplicate",                            TTRC("Duplicate Nodes") },
+	{ "ui_graph_delete",                               TTRC("Delete Nodes") },
+	{ "ui_graph_follow_left",                          TTRC("Follow Input Port Connection") },
+	{ "ui_graph_follow_right",                         TTRC("Follow Output Port Connection") },
+	{ "ui_filedialog_up_one_level",                    TTRC("Go Up One Level") },
+	{ "ui_filedialog_refresh",                         TTRC("Refresh") },
+	{ "ui_filedialog_show_hidden",                     TTRC("Show Hidden") },
+	{ "ui_swap_input_direction ",                      TTRC("Swap Input Direction") },
+	{ "ui_unicode_start",                              TTRC("Start Unicode Character Input") },
+	{ "ui_colorpicker_delete_preset",                  TTRC("ColorPicker: Delete Preset") },
+	{ "ui_accessibility_drag_and_drop",                TTRC("Accessibility: Keyboard Drag and Drop") },
+	{ "",                                              ""}
 	/* clang-format on */
 };
 
 String InputMap::get_builtin_display_name(const String &p_name) const {
-	int len = sizeof(_builtin_action_display_names) / sizeof(_BuiltinActionDisplayName);
+	constexpr int len = std::size(_builtin_action_display_names);
 
 	for (int i = 0; i < len; i++) {
 		if (_builtin_action_display_names[i].name == p_name) {
-			return RTR(_builtin_action_display_names[i].display_name);
+			return _builtin_action_display_names[i].display_name;
 		}
 	}
 
@@ -485,6 +495,9 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventKey::create_reference(Key::END));
 	default_builtin_cache.insert("ui_end", inputs);
 
+	inputs = List<Ref<InputEvent>>();
+	default_builtin_cache.insert("ui_accessibility_drag_and_drop", inputs);
+
 	// ///// UI basic Shortcuts /////
 
 	inputs = List<Ref<InputEvent>>();
@@ -496,6 +509,10 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventKey::create_reference(Key::C | KeyModifierMask::CMD_OR_CTRL));
 	inputs.push_back(InputEventKey::create_reference(Key::INSERT | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_copy", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::M | KeyModifierMask::CTRL));
+	default_builtin_cache.insert("ui_focus_mode", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::V | KeyModifierMask::CMD_OR_CTRL));
@@ -517,12 +534,15 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	default_builtin_cache.insert("ui_text_completion_query", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(Key::ENTER));
-	inputs.push_back(InputEventKey::create_reference(Key::KP_ENTER));
+	inputs.push_back(InputEventKey::create_reference(KeyModifierMask::SHIFT | Key::TAB));
+	inputs.push_back(InputEventKey::create_reference(KeyModifierMask::SHIFT | Key::ENTER));
+	inputs.push_back(InputEventKey::create_reference(KeyModifierMask::SHIFT | Key::KP_ENTER));
 	default_builtin_cache.insert("ui_text_completion_accept", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::TAB));
+	inputs.push_back(InputEventKey::create_reference(Key::ENTER));
+	inputs.push_back(InputEventKey::create_reference(Key::KP_ENTER));
 	default_builtin_cache.insert("ui_text_completion_replace", inputs);
 
 	// Newlines
@@ -532,7 +552,6 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	default_builtin_cache.insert("ui_text_newline", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-
 	inputs.push_back(InputEventKey::create_reference(Key::ENTER | KeyModifierMask::CMD_OR_CTRL));
 	inputs.push_back(InputEventKey::create_reference(Key::KP_ENTER | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_newline_blank", inputs);
@@ -754,6 +773,10 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventKey::create_reference(Key::KP_ENTER));
 	default_builtin_cache.insert("ui_text_submit", inputs);
 
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::U | KeyModifierMask::CTRL | KeyModifierMask::SHIFT));
+	default_builtin_cache.insert("ui_unicode_start", inputs);
+
 	// ///// UI Graph Shortcuts /////
 
 	inputs = List<Ref<InputEvent>>();
@@ -763,6 +786,22 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE));
 	default_builtin_cache.insert("ui_graph_delete", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::LEFT | KeyModifierMask::CMD_OR_CTRL));
+	default_builtin_cache.insert("ui_graph_follow_left", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::LEFT | KeyModifierMask::ALT));
+	default_builtin_cache.insert("ui_graph_follow_left.macos", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::RIGHT | KeyModifierMask::CMD_OR_CTRL));
+	default_builtin_cache.insert("ui_graph_follow_right", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::RIGHT | KeyModifierMask::ALT));
+	default_builtin_cache.insert("ui_graph_follow_right.macos", inputs);
 
 	// ///// UI File Dialog Shortcuts /////
 	inputs = List<Ref<InputEvent>>();
@@ -780,6 +819,12 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::QUOTELEFT | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_swap_input_direction", inputs);
+
+	// ///// UI ColorPicker Shortcuts /////
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventJoypadButton::create_reference(JoyButton::X));
+	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE));
+	default_builtin_cache.insert("ui_colorpicker_delete_preset", inputs);
 
 	return default_builtin_cache;
 }
@@ -851,7 +896,7 @@ void InputMap::load_default() {
 }
 
 InputMap::InputMap() {
-	ERR_FAIL_COND_MSG(singleton, "Singleton in InputMap already exist.");
+	ERR_FAIL_COND_MSG(singleton, "Singleton in InputMap already exists.");
 	singleton = this;
 }
 

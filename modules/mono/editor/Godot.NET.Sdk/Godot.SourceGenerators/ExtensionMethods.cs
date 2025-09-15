@@ -155,11 +155,30 @@ namespace Godot.SourceGenerators
             };
         }
 
-        public static string NameWithTypeParameters(this INamedTypeSymbol symbol)
+        public static string GetAccessibilityKeyword(this INamedTypeSymbol namedTypeSymbol)
         {
-            return symbol.IsGenericType ?
-                string.Concat(symbol.Name, "<", string.Join(", ", symbol.TypeParameters), ">") :
-                symbol.Name;
+            if (namedTypeSymbol.DeclaredAccessibility == Accessibility.NotApplicable)
+            {
+                // Accessibility not specified. Get the default accessibility.
+                return namedTypeSymbol.ContainingSymbol switch
+                {
+                    null or INamespaceSymbol => "internal",
+                    ITypeSymbol { TypeKind: TypeKind.Class or TypeKind.Struct } => "private",
+                    ITypeSymbol { TypeKind: TypeKind.Interface } => "public",
+                    _ => "",
+                };
+            }
+
+            return namedTypeSymbol.DeclaredAccessibility switch
+            {
+                Accessibility.Private => "private",
+                Accessibility.Protected => "protected",
+                Accessibility.Internal => "internal",
+                Accessibility.ProtectedAndInternal => "private",
+                Accessibility.ProtectedOrInternal => "private",
+                Accessibility.Public => "public",
+                _ => "",
+            };
         }
 
         private static SymbolDisplayFormat FullyQualifiedFormatOmitGlobal { get; } =
@@ -242,6 +261,8 @@ namespace Godot.SourceGenerators
 
         public static string SanitizeQualifiedNameForUniqueHint(this string qualifiedName)
             => qualifiedName
+                // AddSource() doesn't support @ prefix
+                .Replace("@", "")
                 // AddSource() doesn't support angle brackets
                 .Replace("<", "(Of ")
                 .Replace(">", ")");
@@ -260,6 +281,12 @@ namespace Godot.SourceGenerators
 
         public static bool IsGodotGlobalClassAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.GlobalClassAttr;
+
+        public static bool IsGodotExportToolButtonAttribute(this INamedTypeSymbol symbol)
+            => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.ExportToolButtonAttr;
+
+        public static bool IsGodotToolAttribute(this INamedTypeSymbol symbol)
+            => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.ToolAttr;
 
         public static bool IsSystemFlagsAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.SystemFlagsAttr;

@@ -37,6 +37,8 @@
 
 WorkerThreadPool::Task *const WorkerThreadPool::ThreadData::YIELDING = (Task *)1;
 
+HashMap<StringName, WorkerThreadPool *> WorkerThreadPool::named_pools;
+
 void WorkerThreadPool::Task::free_template_userdata() {
 	ERR_FAIL_NULL(template_userdata);
 	ERR_FAIL_NULL(native_func_userdata);
@@ -63,20 +65,18 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		// Tasks must start with these at default values. They are free to set-and-forget otherwise.
 		set_current_thread_safe_for_nodes(false);
 		MessageQueue::set_thread_singleton_override(nullptr);
+
 		// Since the WorkerThreadPool is started before the script server,
 		// its pre-created threads can't have ScriptServer::thread_enter() called on them early.
 		// Therefore, we do it late at the first opportunity, so in case the task
 		// about to be run uses scripting, guarantees are held.
+		ScriptServer::thread_enter();
+
 		task_mutex.lock();
-		if (!curr_thread.ready_for_scripting && ScriptServer::are_languages_initialized()) {
-			task_mutex.unlock();
-			ScriptServer::thread_enter();
-			task_mutex.lock();
-			curr_thread.ready_for_scripting = true;
-		}
 		p_task->pool_thread_index = pool_thread_index;
 		prev_task = curr_thread.current_task;
 		curr_thread.current_task = p_task;
+		curr_thread.has_pump_task = p_task->is_pump_task;
 		if (p_task->pending_notify_yield_over) {
 			curr_thread.yield_is_over = true;
 		}
@@ -183,41 +183,60 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 
 void WorkerThreadPool::_thread_function(void *p_user) {
 	ThreadData *thread_data = (ThreadData *)p_user;
+	Thread::set_name(vformat("WorkerThread %d", thread_data->index));
+
 	while (true) {
 		Task *task_to_process = nullptr;
 		{
-			MutexLock lock(singleton->task_mutex);
-			if (singleton->exit_threads) {
-				return;
-			}
-			thread_data->signaled = false;
+			// Create the lock outside the inner loop so it isn't needlessly unlocked and relocked
+			//  when no task was found to process, and the loop is re-entered.
+			MutexLock lock(thread_data->pool->task_mutex);
 
-			if (singleton->task_queue.first()) {
-				task_to_process = singleton->task_queue.first()->self();
-				singleton->task_queue.remove(singleton->task_queue.first());
-			} else {
-				thread_data->cond_var.wait(lock);
-				DEV_ASSERT(singleton->exit_threads || thread_data->signaled);
+			while (true) {
+				bool exit = thread_data->pool->_handle_runlevel(thread_data, lock);
+				if (unlikely(exit)) {
+					return;
+				}
+
+				thread_data->signaled = false;
+
+				if (!thread_data->pool->task_queue.first()) {
+					// There wasn't a task available yet.
+					// Let's wait for the next notification, then recheck.
+					thread_data->cond_var.wait(lock);
+					continue;
+				}
+
+				// Got a task to process! Remove it from the queue, then break into the task handling section.
+				task_to_process = thread_data->pool->task_queue.first()->self();
+				thread_data->pool->task_queue.remove(thread_data->pool->task_queue.first());
+				break;
 			}
 		}
 
-		if (task_to_process) {
-			singleton->_process_task(task_to_process);
-		}
+		DEV_ASSERT(task_to_process);
+		thread_data->pool->_process_task(task_to_process);
 	}
 }
 
-void WorkerThreadPool::_post_tasks_and_unlock(Task **p_tasks, uint32_t p_count, bool p_high_priority) {
+void WorkerThreadPool::_post_tasks(Task **p_tasks, uint32_t p_count, bool p_high_priority, MutexLock<BinaryMutex> &p_lock, bool p_pump_task) {
 	// Fall back to processing on the calling thread if there are no worker threads.
 	// Separated into its own variable to make it easier to extend this logic
 	// in custom builds.
-	bool process_on_calling_thread = threads.size() == 0;
+
+	// Avoid calling pump tasks or low priority tasks from the calling thread.
+	bool process_on_calling_thread = threads.is_empty() && !p_pump_task;
 	if (process_on_calling_thread) {
-		task_mutex.unlock();
+		p_lock.temp_unlock();
 		for (uint32_t i = 0; i < p_count; i++) {
 			_process_task(p_tasks[i]);
 		}
+		p_lock.temp_relock();
 		return;
+	}
+
+	while (runlevel == RUNLEVEL_EXIT_LANGUAGES) {
+		control_cond_var.wait(p_lock);
 	}
 
 	uint32_t to_process = 0;
@@ -241,8 +260,6 @@ void WorkerThreadPool::_post_tasks_and_unlock(Task **p_tasks, uint32_t p_count, 
 	}
 
 	_notify_threads(caller_pool_thread, to_process, to_promote);
-
-	task_mutex.unlock();
 }
 
 void WorkerThreadPool::_notify_threads(const ThreadData *p_current_thread_data, uint32_t p_process_count, uint32_t p_promote_count) {
@@ -325,8 +342,9 @@ WorkerThreadPool::TaskID WorkerThreadPool::add_native_task(void (*p_func)(void *
 	return _add_task(Callable(), p_func, p_userdata, nullptr, p_high_priority, p_description);
 }
 
-WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description) {
-	task_mutex.lock();
+WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description, bool p_pump_task) {
+	MutexLock<BinaryMutex> lock(task_mutex);
+
 	// Get a free task
 	Task *task = task_allocator.alloc();
 	TaskID id = last_task++;
@@ -336,15 +354,50 @@ WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable,
 	task->native_func_userdata = p_userdata;
 	task->description = p_description;
 	task->template_userdata = p_template_userdata;
+	task->is_pump_task = p_pump_task;
 	tasks.insert(id, task);
 
-	_post_tasks_and_unlock(&task, 1, p_high_priority);
+#ifdef THREADS_ENABLED
+	if (p_pump_task) {
+		pump_task_count++;
+		int thread_count = get_thread_count();
+		if (pump_task_count >= thread_count) {
+			print_verbose(vformat("A greater number of dedicated threads were requested (%d) than threads available (%d). Please increase the number of available worker task threads. Recovering this session by spawning more worker task threads.", pump_task_count + 1, thread_count)); // +1 because we want to keep a Thread without any pump tasks free.
+
+			Thread::Settings settings;
+#ifdef __APPLE__
+			// The default stack size for new threads on Apple platforms is 512KiB.
+			// This is insufficient when using a library like SPIRV-Cross,
+			// which can generate deep stacks and result in a stack overflow.
+#ifdef DEV_ENABLED
+			// Debug builds need an even larger stack size.
+			settings.stack_size = 2 * 1024 * 1024; // 2 MiB
+#else
+			settings.stack_size = 1 * 1024 * 1024; // 1 MiB
+#endif
+#endif
+			// Re-sizing implies relocation, which is not supported for this array.
+			CRASH_COND_MSG(thread_count + 1 > (int)threads.get_capacity(), "Reserve trick for worker thread pool failed. Crashing.");
+			threads.resize_initialized(thread_count + 1);
+			threads[thread_count].index = thread_count;
+			threads[thread_count].pool = this;
+			threads[thread_count].thread.start(&WorkerThreadPool::_thread_function, &threads[thread_count], settings);
+			thread_ids.insert(threads[thread_count].thread.get_id(), thread_count);
+		}
+	}
+#endif
+
+	_post_tasks(&task, 1, p_high_priority, lock, p_pump_task);
 
 	return id;
 }
 
-WorkerThreadPool::TaskID WorkerThreadPool::add_task(const Callable &p_action, bool p_high_priority, const String &p_description) {
-	return _add_task(p_action, nullptr, nullptr, nullptr, p_high_priority, p_description);
+WorkerThreadPool::TaskID WorkerThreadPool::add_task(const Callable &p_action, bool p_high_priority, const String &p_description, bool p_pump_task) {
+	return _add_task(p_action, nullptr, nullptr, nullptr, p_high_priority, p_description, p_pump_task);
+}
+
+WorkerThreadPool::TaskID WorkerThreadPool::add_task_bind(const Callable &p_action, bool p_high_priority, const String &p_description) {
+	return _add_task(p_action, nullptr, nullptr, nullptr, p_high_priority, p_description, false);
 }
 
 bool WorkerThreadPool::is_task_completed(TaskID p_task_id) const {
@@ -445,22 +498,34 @@ void WorkerThreadPool::_unlock_unlockable_mutexes() {
 void WorkerThreadPool::_wait_collaboratively(ThreadData *p_caller_pool_thread, Task *p_task) {
 	// Keep processing tasks until the condition to stop waiting is met.
 
-#define IS_WAIT_OVER (unlikely(p_task == ThreadData::YIELDING) ? p_caller_pool_thread->yield_is_over : p_task->completed)
-
 	while (true) {
 		Task *task_to_process = nullptr;
 		bool relock_unlockables = false;
 		{
 			MutexLock lock(task_mutex);
+
 			bool was_signaled = p_caller_pool_thread->signaled;
 			p_caller_pool_thread->signaled = false;
 
-			if (IS_WAIT_OVER) {
-				if (unlikely(p_task == ThreadData::YIELDING)) {
-					p_caller_pool_thread->yield_is_over = false;
-				}
+			bool exit = _handle_runlevel(p_caller_pool_thread, lock);
+			if (unlikely(exit)) {
+				break;
+			}
 
-				if (!exit_threads && was_signaled) {
+			bool wait_is_over = false;
+			if (unlikely(p_task == ThreadData::YIELDING)) {
+				if (p_caller_pool_thread->yield_is_over) {
+					p_caller_pool_thread->yield_is_over = false;
+					wait_is_over = true;
+				}
+			} else {
+				if (p_task->completed) {
+					wait_is_over = true;
+				}
+			}
+
+			if (wait_is_over) {
+				if (was_signaled) {
 					// This thread was awaken for some additional reason, but it's about to exit.
 					// Let's find out what may be pending and forward the requests.
 					uint32_t to_process = task_queue.first() ? 1 : 0;
@@ -475,32 +540,37 @@ void WorkerThreadPool::_wait_collaboratively(ThreadData *p_caller_pool_thread, T
 				break;
 			}
 
-			if (!exit_threads) {
-				if (p_caller_pool_thread->current_task->low_priority && low_priority_task_queue.first()) {
-					if (_try_promote_low_priority_task()) {
-						_notify_threads(p_caller_pool_thread, 1, 0);
-					}
+			if (p_caller_pool_thread->current_task->low_priority && low_priority_task_queue.first()) {
+				if (_try_promote_low_priority_task()) {
+					_notify_threads(p_caller_pool_thread, 1, 0);
 				}
+			}
 
-				if (singleton->task_queue.first()) {
-					task_to_process = task_queue.first()->self();
+			if (p_caller_pool_thread->pool->task_queue.first()) {
+				task_to_process = task_queue.first()->self();
+				if ((p_task == ThreadData::YIELDING || p_caller_pool_thread->has_pump_task == true) && task_to_process->is_pump_task) {
+					task_to_process = nullptr;
+					_notify_threads(p_caller_pool_thread, 1, 0);
+				} else {
 					task_queue.remove(task_queue.first());
 				}
+			}
 
-				if (!task_to_process) {
-					p_caller_pool_thread->awaited_task = p_task;
+			if (!task_to_process) {
+				p_caller_pool_thread->awaited_task = p_task;
 
+				if (this == singleton) {
 					_unlock_unlockable_mutexes();
-					relock_unlockables = true;
-					p_caller_pool_thread->cond_var.wait(lock);
-
-					DEV_ASSERT(exit_threads || p_caller_pool_thread->signaled || IS_WAIT_OVER);
-					p_caller_pool_thread->awaited_task = nullptr;
 				}
+				relock_unlockables = true;
+
+				p_caller_pool_thread->cond_var.wait(lock);
+
+				p_caller_pool_thread->awaited_task = nullptr;
 			}
 		}
 
-		if (relock_unlockables) {
+		if (relock_unlockables && this == singleton) {
 			_lock_unlockable_mutexes();
 		}
 
@@ -510,10 +580,65 @@ void WorkerThreadPool::_wait_collaboratively(ThreadData *p_caller_pool_thread, T
 	}
 }
 
+void WorkerThreadPool::_switch_runlevel(Runlevel p_runlevel) {
+	DEV_ASSERT(p_runlevel > runlevel);
+	runlevel = p_runlevel;
+	memset(&runlevel_data, 0, sizeof(runlevel_data));
+	for (uint32_t i = 0; i < threads.size(); i++) {
+		threads[i].cond_var.notify_one();
+		threads[i].signaled = true;
+	}
+	control_cond_var.notify_all();
+}
+
+// Returns whether threads have to exit. This may perform the check about handling needed.
+bool WorkerThreadPool::_handle_runlevel(ThreadData *p_thread_data, MutexLock<BinaryMutex> &p_lock) {
+	bool exit = false;
+	switch (runlevel) {
+		case RUNLEVEL_NORMAL: {
+		} break;
+		case RUNLEVEL_PRE_EXIT_LANGUAGES: {
+			if (!p_thread_data->pre_exited_languages) {
+				if (!task_queue.first() && !low_priority_task_queue.first()) {
+					p_thread_data->pre_exited_languages = true;
+					runlevel_data.pre_exit_languages.num_idle_threads++;
+					control_cond_var.notify_all();
+				}
+			}
+		} break;
+		case RUNLEVEL_EXIT_LANGUAGES: {
+			if (!p_thread_data->exited_languages) {
+				p_lock.temp_unlock();
+				ScriptServer::thread_exit();
+				p_lock.temp_relock();
+				p_thread_data->exited_languages = true;
+				runlevel_data.exit_languages.num_exited_threads++;
+				control_cond_var.notify_all();
+			}
+		} break;
+		case RUNLEVEL_EXIT: {
+			exit = true;
+		} break;
+	}
+	return exit;
+}
+
 void WorkerThreadPool::yield() {
 	int th_index = get_thread_index();
 	ERR_FAIL_COND_MSG(th_index == -1, "This function can only be called from a worker thread.");
 	_wait_collaboratively(&threads[th_index], ThreadData::YIELDING);
+
+	task_mutex.lock();
+	if (runlevel < RUNLEVEL_EXIT_LANGUAGES) {
+		// If this long-lived task started before the scripting server was initialized,
+		// now is a good time to have scripting languages ready for the current thread.
+		// Otherwise, such a piece of setup won't happen unless another task has been
+		// run during the collaborative wait.
+		task_mutex.unlock();
+		ScriptServer::thread_enter();
+	} else {
+		task_mutex.unlock();
+	}
 }
 
 void WorkerThreadPool::notify_yield_over(TaskID p_task_id) {
@@ -543,7 +668,8 @@ WorkerThreadPool::GroupID WorkerThreadPool::_add_group_task(const Callable &p_ca
 		p_tasks = MAX(1u, threads.size());
 	}
 
-	task_mutex.lock();
+	MutexLock<BinaryMutex> lock(task_mutex);
+
 	Group *group = group_allocator.alloc();
 	GroupID id = last_task++;
 	group->max = p_elements;
@@ -578,7 +704,7 @@ WorkerThreadPool::GroupID WorkerThreadPool::_add_group_task(const Callable &p_ca
 
 	groups[id] = group;
 
-	_post_tasks_and_unlock(tasks_posted, p_tasks, p_high_priority);
+	_post_tasks(tasks_posted, p_tasks, p_high_priority, lock, false);
 
 	return id;
 }
@@ -620,9 +746,13 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 	{
 		Group *group = *groupp;
 
-		_unlock_unlockable_mutexes();
+		if (this == singleton) {
+			_unlock_unlockable_mutexes();
+		}
 		group->done_semaphore.wait();
-		_lock_unlockable_mutexes();
+		if (this == singleton) {
+			_lock_unlockable_mutexes();
+		}
 
 		uint32_t max_users = group->tasks_used + 1; // Add 1 because the thread waiting for it is also user. Read before to avoid another thread freeing task after increment.
 		uint32_t finished_users = group->finished.increment(); // fetch happens before inc, so increment later.
@@ -639,15 +769,24 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 #endif
 }
 
-int WorkerThreadPool::get_thread_index() {
+int WorkerThreadPool::get_thread_index() const {
 	Thread::ID tid = Thread::get_caller_id();
-	return singleton->thread_ids.has(tid) ? singleton->thread_ids[tid] : -1;
+	return thread_ids.has(tid) ? thread_ids[tid] : -1;
 }
 
-WorkerThreadPool::TaskID WorkerThreadPool::get_caller_task_id() {
+WorkerThreadPool::TaskID WorkerThreadPool::get_caller_task_id() const {
 	int th_index = get_thread_index();
-	if (th_index != -1 && singleton->threads[th_index].current_task) {
-		return singleton->threads[th_index].current_task->self;
+	if (th_index != -1 && threads[th_index].current_task) {
+		return threads[th_index].current_task->self;
+	} else {
+		return INVALID_TASK_ID;
+	}
+}
+
+WorkerThreadPool::GroupID WorkerThreadPool::get_caller_group_id() const {
+	int th_index = get_thread_index();
+	if (th_index != -1 && threads[th_index].current_task && threads[th_index].current_task->group) {
+		return threads[th_index].current_task->group->self;
 	} else {
 		return INVALID_TASK_ID;
 	}
@@ -681,6 +820,9 @@ void WorkerThreadPool::thread_exit_unlock_allowance_zone(uint32_t p_zone_id) {
 
 void WorkerThreadPool::init(int p_thread_count, float p_low_priority_task_ratio) {
 	ERR_FAIL_COND(threads.size() > 0);
+
+	runlevel = RUNLEVEL_NORMAL;
+
 	if (p_thread_count < 0) {
 		p_thread_count = OS::get_singleton()->get_default_thread_pool_size();
 	}
@@ -689,17 +831,56 @@ void WorkerThreadPool::init(int p_thread_count, float p_low_priority_task_ratio)
 
 	print_verbose(vformat("WorkerThreadPool: %d threads, %d max low-priority.", p_thread_count, max_low_priority_threads));
 
+#ifdef THREADS_ENABLED
+	// Reserve 5 threads in case we need separate threads for 1) 2D physics 2) 3D physics 3) rendering 4) GPU texture compression, 5) all other tasks.
+	// We cannot safely increase the Vector size at runtime, so reserve enough up front, but only launch those needed.
+	threads.reserve(5);
+#endif
 	threads.resize(p_thread_count);
+
+	Thread::Settings settings;
+#ifdef __APPLE__
+	// The default stack size for new threads on Apple platforms is 512KiB.
+	// This is insufficient when using a library like SPIRV-Cross,
+	// which can generate deep stacks and result in a stack overflow.
+#ifdef DEV_ENABLED
+	// Debug builds need an even larger stack size.
+	settings.stack_size = 2 * 1024 * 1024; // 2 MiB
+#else
+	settings.stack_size = 1 * 1024 * 1024; // 1 MiB
+#endif
+#endif
 
 	for (uint32_t i = 0; i < threads.size(); i++) {
 		threads[i].index = i;
-		threads[i].thread.start(&WorkerThreadPool::_thread_function, &threads[i]);
+		threads[i].pool = this;
+		threads[i].thread.start(&WorkerThreadPool::_thread_function, &threads[i], settings);
 		thread_ids.insert(threads[i].thread.get_id(), i);
 	}
 }
 
+void WorkerThreadPool::exit_languages_threads() {
+	if (threads.is_empty()) {
+		return;
+	}
+
+	MutexLock lock(task_mutex);
+
+	// Wait until all threads are idle.
+	_switch_runlevel(RUNLEVEL_PRE_EXIT_LANGUAGES);
+	while (runlevel_data.pre_exit_languages.num_idle_threads != threads.size()) {
+		control_cond_var.wait(lock);
+	}
+
+	// Wait until all threads have detached from scripting languages.
+	_switch_runlevel(RUNLEVEL_EXIT_LANGUAGES);
+	while (runlevel_data.exit_languages.num_exited_threads != threads.size()) {
+		control_cond_var.wait(lock);
+	}
+}
+
 void WorkerThreadPool::finish() {
-	if (threads.size() == 0) {
+	if (threads.is_empty()) {
 		return;
 	}
 
@@ -710,15 +891,10 @@ void WorkerThreadPool::finish() {
 			print_error("Task waiting was never re-claimed: " + E->self()->description);
 			E = E->next();
 		}
+
+		_switch_runlevel(RUNLEVEL_EXIT);
 	}
 
-	{
-		MutexLock lock(task_mutex);
-		exit_threads = true;
-	}
-	for (ThreadData &data : threads) {
-		data.cond_var.notify_one();
-	}
 	for (ThreadData &data : threads) {
 		data.thread.wait_to_finish();
 	}
@@ -734,20 +910,45 @@ void WorkerThreadPool::finish() {
 }
 
 void WorkerThreadPool::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_task", "action", "high_priority", "description"), &WorkerThreadPool::add_task, DEFVAL(false), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("add_task", "action", "high_priority", "description"), &WorkerThreadPool::add_task_bind, DEFVAL(false), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("is_task_completed", "task_id"), &WorkerThreadPool::is_task_completed);
 	ClassDB::bind_method(D_METHOD("wait_for_task_completion", "task_id"), &WorkerThreadPool::wait_for_task_completion);
+	ClassDB::bind_method(D_METHOD("get_caller_task_id"), &WorkerThreadPool::get_caller_task_id);
 
 	ClassDB::bind_method(D_METHOD("add_group_task", "action", "elements", "tasks_needed", "high_priority", "description"), &WorkerThreadPool::add_group_task, DEFVAL(-1), DEFVAL(false), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("is_group_task_completed", "group_id"), &WorkerThreadPool::is_group_task_completed);
 	ClassDB::bind_method(D_METHOD("get_group_processed_element_count", "group_id"), &WorkerThreadPool::get_group_processed_element_count);
 	ClassDB::bind_method(D_METHOD("wait_for_group_task_completion", "group_id"), &WorkerThreadPool::wait_for_group_task_completion);
+	ClassDB::bind_method(D_METHOD("get_caller_group_id"), &WorkerThreadPool::get_caller_group_id);
 }
 
-WorkerThreadPool::WorkerThreadPool() {
-	singleton = this;
+WorkerThreadPool *WorkerThreadPool::get_named_pool(const StringName &p_name) {
+	WorkerThreadPool **pool_ptr = named_pools.getptr(p_name);
+	if (pool_ptr) {
+		return *pool_ptr;
+	} else {
+		WorkerThreadPool *pool = memnew(WorkerThreadPool(false));
+		pool->init();
+		named_pools[p_name] = pool;
+		return pool;
+	}
+}
+
+WorkerThreadPool::WorkerThreadPool(bool p_singleton) {
+	if (p_singleton) {
+		singleton = this;
+	}
 }
 
 WorkerThreadPool::~WorkerThreadPool() {
 	finish();
+
+	if (this == singleton) {
+		singleton = nullptr;
+		for (KeyValue<StringName, WorkerThreadPool *> &E : named_pools) {
+			E.value->finish();
+			memdelete(E.value);
+		}
+		named_pools.clear();
+	}
 }

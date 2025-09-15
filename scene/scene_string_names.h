@@ -28,135 +28,136 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_STRING_NAMES_H
-#define SCENE_STRING_NAMES_H
+#pragma once
 
 #include "core/string/node_path.h"
 #include "core/string/string_name.h"
 
 class SceneStringNames {
-	friend void register_scene_types();
-	friend void unregister_scene_types();
+	inline static SceneStringNames *singleton = nullptr;
 
-	static SceneStringNames *singleton;
-
+public:
 	static void create() { singleton = memnew(SceneStringNames); }
 	static void free() {
 		memdelete(singleton);
 		singleton = nullptr;
 	}
 
-	SceneStringNames();
-
-public:
 	_FORCE_INLINE_ static SceneStringNames *get_singleton() { return singleton; }
 
-	StringName resized;
-	StringName draw;
-	StringName hidden;
-	StringName visibility_changed;
-	StringName input_event;
-	StringName gui_input;
-	StringName item_rect_changed;
-	StringName shader;
-	StringName tree_entered;
-	StringName tree_exiting;
-	StringName tree_exited;
-	StringName ready;
-	StringName size_flags_changed;
-	StringName minimum_size_changed;
-	StringName sleeping_state_changed;
-	StringName update;
-	StringName updated;
+	const StringName resized = "resized";
+	const StringName draw = "draw";
+	const StringName hidden = "hidden";
+	const StringName visibility_changed = "visibility_changed";
 
-	StringName line_separation;
-	StringName font;
-	StringName font_size;
-	StringName font_color;
+	const StringName input_event = "input_event";
+	const StringName gui_input = "gui_input";
+	const StringName window_input = "window_input";
 
-	StringName mouse_entered;
-	StringName mouse_exited;
-	StringName mouse_shape_entered;
-	StringName mouse_shape_exited;
-	StringName focus_entered;
-	StringName focus_exited;
+	const StringName tree_entered = "tree_entered";
+	const StringName tree_exiting = "tree_exiting";
+	const StringName tree_exited = "tree_exited";
+	const StringName ready = "ready";
+	const StringName _ready = "_ready";
 
-	StringName pre_sort_children;
-	StringName sort_children;
+	const StringName item_rect_changed = "item_rect_changed";
+	const StringName size_flags_changed = "size_flags_changed";
+	const StringName minimum_size_changed = "minimum_size_changed";
+	const StringName sleeping_state_changed = "sleeping_state_changed";
+	const StringName node_configuration_warning_changed = "node_configuration_warning_changed";
+	const StringName update = "update";
+	const StringName updated = "updated";
 
-	StringName finished;
-	StringName animation_finished;
-	StringName animation_changed;
-	StringName animation_started;
-	StringName RESET;
+	const StringName line_separation = "line_separation";
+	const StringName paragraph_separation = "paragraph_separation";
+	const StringName font = "font";
+	const StringName font_size = "font_size";
+	const StringName font_color = "font_color";
 
-	StringName pose_updated;
-	StringName skeleton_updated;
-	StringName bone_enabled_changed;
-	StringName show_rest_only_changed;
+	const StringName mouse_entered = "mouse_entered";
+	const StringName mouse_exited = "mouse_exited";
+	const StringName mouse_shape_entered = "mouse_shape_entered";
+	const StringName mouse_shape_exited = "mouse_shape_exited";
+	const StringName focus_entered = "focus_entered";
+	const StringName focus_exited = "focus_exited";
 
-	StringName body_shape_entered;
-	StringName body_entered;
-	StringName body_shape_exited;
-	StringName body_exited;
+	const StringName pre_sort_children = "pre_sort_children";
+	const StringName sort_children = "sort_children";
 
-	StringName area_shape_entered;
-	StringName area_shape_exited;
+	const StringName finished = "finished";
+	const StringName animation_finished = "animation_finished";
+	const StringName animation_changed = "animation_changed";
+	const StringName animation_started = "animation_started";
+	const StringName RESET = "RESET";
 
-	StringName _ready;
+	const StringName pose_updated = "pose_updated";
+	const StringName skeleton_updated = "skeleton_updated";
+	const StringName bone_enabled_changed = "bone_enabled_changed";
+	const StringName show_rest_only_changed = "show_rest_only_changed";
 
-	StringName screen_entered;
-	StringName screen_exited;
+	const StringName body_shape_entered = "body_shape_entered";
+	const StringName body_entered = "body_entered";
+	const StringName body_shape_exited = "body_shape_exited";
+	const StringName body_exited = "body_exited";
 
-	StringName _spatial_editor_group;
-	StringName _request_gizmo;
+	const StringName area_shape_entered = "area_shape_entered";
+	const StringName area_shape_exited = "area_shape_exited";
 
-	StringName offset;
-	StringName rotation_mode;
-	StringName rotate;
-	StringName v_offset;
-	StringName h_offset;
+	const StringName screen_entered = "screen_entered";
+	const StringName screen_exited = "screen_exited";
 
-	StringName area_entered;
-	StringName area_exited;
+	const StringName _spatial_editor_group = "_spatial_editor_group";
+	const StringName _request_gizmo = "_request_gizmo";
 
-	StringName frame_changed;
-	StringName texture_changed;
+	const StringName offset = "offset";
+	const StringName rotation_mode = "rotation_mode";
+	const StringName rotate = "rotate";
+	const StringName h_offset = "h_offset";
+	const StringName v_offset = "v_offset";
 
-	StringName autoplay;
-	StringName blend_times;
-	StringName speed;
+	const StringName area_entered = "area_entered";
+	const StringName area_exited = "area_exited";
 
-	NodePath path_pp;
+	const StringName frame_changed = "frame_changed";
+	const StringName texture_changed = "texture_changed";
 
-	StringName default_; // "default", conflict with C++ keyword.
+	const StringName autoplay = "autoplay";
+	const StringName blend_times = "blend_times";
+	const StringName speed = "speed";
 
-	StringName node_configuration_warning_changed;
+	const NodePath path_pp = NodePath("..");
 
-	StringName output;
+	const StringName default_ = "default"; // default would conflict with C++ keyword.
+	const StringName output = "output";
 
-	StringName Master;
+	const StringName Master = "Master"; // Audio bus name.
 
-	StringName window_input;
+	const StringName theme_changed = "theme_changed";
+	const StringName shader = "shader";
+	const StringName shader_overrides_group = "_shader_overrides_group_";
+	const StringName shader_overrides_group_active = "_shader_overrides_group_active_";
 
-	StringName theme_changed;
-	StringName shader_overrides_group;
-	StringName shader_overrides_group_active;
+	const StringName _custom_type_script = "_custom_type_script";
 
-	StringName pressed;
-	StringName id_pressed;
-	StringName toggled;
+	const StringName pressed = "pressed";
+	const StringName id_pressed = "id_pressed";
+	const StringName toggled = "toggled";
+	const StringName hover = "hover";
 
-	StringName panel;
+	const StringName panel = "panel";
+	const StringName item_selected = "item_selected";
+	const StringName confirmed = "confirmed";
 
-	StringName item_selected;
+	const StringName text_changed = "text_changed";
+	const StringName text_submitted = "text_submitted";
+	const StringName value_changed = "value_changed";
 
-	StringName confirmed;
+	const StringName Start = "Start";
+	const StringName End = "End";
+	const StringName state_started = "state_started";
+	const StringName state_finished = "state_finished";
 
-	StringName text_changed;
-	StringName value_changed;
+	const StringName FlatButton = "FlatButton";
 };
 
 #define SceneStringName(m_name) SceneStringNames::get_singleton()->m_name
-
-#endif // SCENE_STRING_NAMES_H

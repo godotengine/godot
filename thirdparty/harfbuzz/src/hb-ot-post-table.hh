@@ -290,7 +290,7 @@ struct post
     const Array16Of<HBUINT16> *glyphNameIndex = nullptr;
     hb_vector_t<uint32_t> index_to_offset;
     const uint8_t *pool = nullptr;
-    hb_atomic_ptr_t<uint16_t *> gids_sorted_by_name;
+    mutable hb_atomic_t<uint16_t *> gids_sorted_by_name;
   };
 
   bool has_data () const { return version.to_int (); }
@@ -301,7 +301,7 @@ struct post
     return_trace (c->check_struct (this) &&
 		  hb_barrier () &&
 		  (version.to_int () == 0x00010000 ||
-		   (version.to_int () == 0x00020000 && v2X.sanitize (c)) ||
+		   (version.to_int () == 0x00020000 && hb_barrier () && v2X.sanitize (c)) ||
 		   version.to_int () == 0x00030000));
   }
 

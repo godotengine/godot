@@ -43,6 +43,10 @@
 #include "core/io/xml_parser.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
+#ifdef TOOLS_ENABLED
+#include "editor/editor_node.h"
+#include "editor/run/game_view_plugin.h"
+#endif
 #include "main/main.h"
 #include "scene/main/scene_tree.h"
 #include "servers/rendering_server.h"
@@ -168,7 +172,7 @@ bool OS_Android::copy_dynamic_library(const String &p_library_path, const String
 	}
 
 	Ref<DirAccess> da_ref = DirAccess::create_for_path(p_library_path);
-	if (!da_ref.is_valid()) {
+	if (da_ref.is_null()) {
 		return false;
 	}
 
@@ -311,7 +315,7 @@ String OS_Android::get_version() const {
 	}
 
 	// Handles stock Android.
-	String sdk_version = get_system_property("ro.build.version.sdk_int");
+	String sdk_version = get_system_property("ro.build.version.sdk");
 	String build = get_system_property("ro.build.version.incremental");
 	if (!sdk_version.is_empty()) {
 		if (!build.is_empty()) {
@@ -323,6 +327,14 @@ String OS_Android::get_version() const {
 	return "";
 }
 
+String OS_Android::get_version_alias() const {
+	String release = get_system_property("ro.build.version.release_or_codename");
+	String sdk_version = get_system_property("ro.build.version.sdk");
+	String build = get_system_property("ro.build.version.incremental");
+
+	return vformat("%s (SDK %s build %s)", release, sdk_version, build);
+}
+
 MainLoop *OS_Android::get_main_loop() const {
 	return main_loop;
 }
@@ -331,6 +343,15 @@ void OS_Android::main_loop_begin() {
 	if (main_loop) {
 		main_loop->initialize();
 	}
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		GameViewPlugin *game_view_plugin = Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+		if (game_view_plugin != nullptr) {
+			game_view_plugin->connect("main_screen_changed", callable_mp_static(&OS_Android::_on_main_screen_changed));
+		}
+	}
+#endif
 }
 
 bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
@@ -353,6 +374,15 @@ bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
 }
 
 void OS_Android::main_loop_end() {
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		GameViewPlugin *game_view_plugin = Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+		if (game_view_plugin != nullptr) {
+			game_view_plugin->disconnect("main_screen_changed", callable_mp_static(&OS_Android::_on_main_screen_changed));
+		}
+	}
+#endif
+
 	if (main_loop) {
 		SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
 		if (scene_tree) {
@@ -361,6 +391,14 @@ void OS_Android::main_loop_end() {
 		main_loop->finalize();
 	}
 }
+
+#ifdef TOOLS_ENABLED
+void OS_Android::_on_main_screen_changed(const String &p_screen_name) {
+	if (OS_Android::get_singleton() != nullptr && OS_Android::get_singleton()->get_godot_java() != nullptr) {
+		OS_Android::get_singleton()->get_godot_java()->on_editor_workspace_selected(p_screen_name);
+	}
+}
+#endif
 
 void OS_Android::main_loop_focusout() {
 	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
@@ -413,16 +451,19 @@ String OS_Android::get_model_name() const {
 }
 
 String OS_Android::get_data_path() const {
-	return get_user_data_dir();
+	return OS::get_user_data_dir();
 }
 
-void OS_Android::_load_system_font_config() {
+void OS_Android::_load_system_font_config() const {
 	font_aliases.clear();
 	fonts.clear();
 	font_names.clear();
 
 	Ref<XMLParser> parser;
 	parser.instantiate();
+
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	String root = String(getenv("ANDROID_ROOT")).path_join("fonts");
 
 	Error err = parser->open(String(getenv("ANDROID_ROOT")).path_join("/etc/fonts.xml"));
 	if (err == OK) {
@@ -500,20 +541,22 @@ void OS_Android::_load_system_font_config() {
 				if (in_font_node) {
 					fi.filename = parser->get_node_data().strip_edges();
 					fi.font_name = fn;
-					if (!fb.is_empty() && fn.is_empty()) {
-						fi.font_name = fb;
-						fi.priority = 2;
+					if (da->file_exists(root.path_join(fi.filename))) {
+						if (!fb.is_empty() && fn.is_empty()) {
+							fi.font_name = fb;
+							fi.priority = 2;
+						}
+						if (fi.font_name.is_empty()) {
+							fi.font_name = "sans-serif";
+							fi.priority = 5;
+						}
+						if (fi.font_name.ends_with("-condensed")) {
+							fi.stretch = 75;
+							fi.font_name = fi.font_name.trim_suffix("-condensed");
+						}
+						fonts.push_back(fi);
+						font_names.insert(fi.font_name);
 					}
-					if (fi.font_name.is_empty()) {
-						fi.font_name = "sans-serif";
-						fi.priority = 5;
-					}
-					if (fi.font_name.ends_with("-condensed")) {
-						fi.stretch = 75;
-						fi.font_name = fi.font_name.trim_suffix("-condensed");
-					}
-					fonts.push_back(fi);
-					font_names.insert(fi.font_name);
 				}
 			}
 			if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END) {
@@ -541,7 +584,7 @@ void OS_Android::_load_system_font_config() {
 
 Vector<String> OS_Android::get_system_fonts() const {
 	if (!font_config_loaded) {
-		const_cast<OS_Android *>(this)->_load_system_font_config();
+		_load_system_font_config();
 	}
 	Vector<String> ret;
 	for (const String &E : font_names) {
@@ -552,7 +595,7 @@ Vector<String> OS_Android::get_system_fonts() const {
 
 Vector<String> OS_Android::get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale, const String &p_script, int p_weight, int p_stretch, bool p_italic) const {
 	if (!font_config_loaded) {
-		const_cast<OS_Android *>(this)->_load_system_font_config();
+		_load_system_font_config();
 	}
 	String font_name = p_font_name.to_lower();
 	if (font_aliases.has(font_name)) {
@@ -604,7 +647,7 @@ Vector<String> OS_Android::get_system_font_path_for_text(const String &p_font_na
 
 String OS_Android::get_system_font_path(const String &p_font_name, int p_weight, int p_stretch, bool p_italic) const {
 	if (!font_config_loaded) {
-		const_cast<OS_Android *>(this)->_load_system_font_config();
+		_load_system_font_config();
 	}
 	String font_name = p_font_name.to_lower();
 	if (font_aliases.has(font_name)) {
@@ -647,12 +690,12 @@ String OS_Android::get_executable_path() const {
 	return OS::get_executable_path();
 }
 
-String OS_Android::get_user_data_dir() const {
+String OS_Android::get_user_data_dir(const String &p_user_dir) const {
 	if (!data_dir_cache.is_empty()) {
 		return data_dir_cache;
 	}
 
-	String data_dir = godot_io_java->get_user_data_dir();
+	String data_dir = godot_io_java->get_user_data_dir(p_user_dir);
 	if (!data_dir.is_empty()) {
 		data_dir_cache = _remove_symlink(data_dir);
 		return data_dir_cache;
@@ -673,6 +716,19 @@ String OS_Android::get_cache_path() const {
 	if (!cache_dir.is_empty()) {
 		cache_dir_cache = _remove_symlink(cache_dir);
 		return cache_dir_cache;
+	}
+	return ".";
+}
+
+String OS_Android::get_temp_path() const {
+	if (!temp_dir_cache.is_empty()) {
+		return temp_dir_cache;
+	}
+
+	String temp_dir = godot_io_java->get_temp_dir();
+	if (!temp_dir.is_empty()) {
+		temp_dir_cache = _remove_symlink(temp_dir);
+		return temp_dir_cache;
 	}
 	return ".";
 }
@@ -751,7 +807,7 @@ void OS_Android::vibrate_handheld(int p_duration_ms, float p_amplitude) {
 }
 
 String OS_Android::get_config_path() const {
-	return get_user_data_dir().path_join("config");
+	return OS::get_user_data_dir().path_join("config");
 }
 
 void OS_Android::benchmark_begin_measure(const String &p_context, const String &p_what) {
@@ -863,6 +919,9 @@ Error OS_Android::create_process(const String &p_path, const List<String> &p_arg
 
 Error OS_Android::create_instance(const List<String> &p_arguments, ProcessID *r_child_id) {
 	int instance_id = godot_java->create_new_godot_instance(p_arguments);
+	if (instance_id == -1) {
+		return FAILED;
+	}
 	if (r_child_id) {
 		*r_child_id = instance_id;
 	}
@@ -881,7 +940,7 @@ String OS_Android::get_system_ca_certificates() {
 }
 
 Error OS_Android::setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) {
-	r_project_path = get_user_data_dir();
+	r_project_path = OS::get_user_data_dir();
 	Error err = OS_Unix::setup_remote_filesystem(p_server_host, p_port, p_password, r_project_path);
 	if (err == OK) {
 		remote_fs_dir = r_project_path;

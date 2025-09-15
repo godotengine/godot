@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+import sys
 
 Import("env")
 Import("env_modules")
@@ -24,11 +27,14 @@ elif env["platform"] == "linuxbsd":
     if env["x11"]:
         env_openxr.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_XLIB"])
 
-    if env["wayland"]:
-        env_openxr.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_WAYLAND"])
+    if env["wayland"] and env["opengl3"]:
+        env_openxr.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_EGL", "XRDEPENDENCIES_USE_GLAD"])
+        env_openxr.Prepend(CPPEXTPATH=["#thirdparty/glad"])
 
     # FIXME: Review what needs to be set for Android and macOS.
-    env_openxr.AppendUnique(CPPDEFINES=["HAVE_SECURE_GETENV"])
+    # FreeBSD uses non-standard getenv functions.
+    if not sys.platform.startswith("freebsd"):
+        env_openxr.AppendUnique(CPPDEFINES=["HAVE_SECURE_GETENV"])
 elif env["platform"] == "windows":
     env_openxr.AppendUnique(CPPDEFINES=["XR_OS_WINDOWS", "NOMINMAX", "XR_USE_PLATFORM_WIN32"])
 elif env["platform"] == "macos":
@@ -44,7 +50,7 @@ if env["builtin_openxr"]:
     thirdparty_dir = "#thirdparty/openxr"
 
     env_openxr.Prepend(
-        CPPPATH=[
+        CPPEXTPATH=[
             thirdparty_dir,
             thirdparty_dir + "/include",
             thirdparty_dir + "/src",
@@ -60,7 +66,7 @@ if env["builtin_openxr"]:
     if env["disable_exceptions"]:
         env_thirdparty.AppendUnique(CPPDEFINES=["XRLOADER_DISABLE_EXCEPTION_HANDLING", ("JSON_USE_EXCEPTION", 0)])
 
-    env_thirdparty.Append(CPPPATH=[thirdparty_dir + "/src/loader"])
+    env_thirdparty.Append(CPPEXTPATH=[thirdparty_dir + "/src/loader"])
 
     # add in external jsoncpp dependency
     thirdparty_jsoncpp_dir = thirdparty_dir + "/src/external/jsoncpp/src/lib_json/"

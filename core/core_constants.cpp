@@ -33,21 +33,20 @@
 #include "core/input/input_event.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
-#include "core/templates/hash_set.h"
 #include "core/variant/variant.h"
 
 struct _CoreConstant {
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	bool ignore_value_in_docs = false;
 	bool is_bitfield = false;
-#endif
+#endif // DEBUG_ENABLED
 	StringName enum_name;
 	const char *name = nullptr;
 	int64_t value = 0;
 
 	_CoreConstant() {}
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	_CoreConstant(const StringName &p_enum_name, const char *p_name, int64_t p_value, bool p_ignore_value_in_docs = false, bool p_is_bitfield = false) :
 			ignore_value_in_docs(p_ignore_value_in_docs),
 			is_bitfield(p_is_bitfield),
@@ -61,14 +60,14 @@ struct _CoreConstant {
 			name(p_name),
 			value(p_value) {
 	}
-#endif
+#endif // DEBUG_ENABLED
 };
 
 static Vector<_CoreConstant> _global_constants;
 static HashMap<StringName, int> _global_constants_map;
 static HashMap<StringName, Vector<_CoreConstant>> _global_enums;
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 
 #define BIND_CORE_CONSTANT(m_constant)                                                 \
 	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant)); \
@@ -250,7 +249,7 @@ static HashMap<StringName, Vector<_CoreConstant>> _global_enums;
 		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
 	}
 
-#endif
+#endif // DEBUG_ENABLED
 
 void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT(SIDE_LEFT);
@@ -677,6 +676,11 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_NODE_TYPE);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_HIDE_QUATERNION_EDIT);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_PASSWORD);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_TOOL_BUTTON);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_ONESHOT);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_GROUP_ENABLE);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_INPUT_NAME);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_FILE_PATH);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_MAX);
 
 	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_NONE);
@@ -722,6 +726,7 @@ void register_global_constants() {
 	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_VARARG);
 	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_STATIC);
 	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_OBJECT_CORE);
+	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_VIRTUAL_REQUIRED);
 	BIND_CORE_BITFIELD_FLAG(METHOD_FLAGS_DEFAULT);
 
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_NIL", Variant::NIL);
@@ -812,7 +817,7 @@ StringName CoreConstants::get_global_constant_enum(int p_idx) {
 	return _global_constants[p_idx].enum_name;
 }
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 bool CoreConstants::is_global_constant_bitfield(int p_idx) {
 	return _global_constants[p_idx].is_bitfield;
 }
@@ -828,7 +833,7 @@ bool CoreConstants::is_global_constant_bitfield(int p_idx) {
 bool CoreConstants::get_ignore_value_in_docs(int p_idx) {
 	return false;
 }
-#endif
+#endif // DEBUG_ENABLED
 
 const char *CoreConstants::get_global_constant_name(int p_idx) {
 	return _global_constants[p_idx].name;
@@ -858,3 +863,13 @@ void CoreConstants::get_enum_values(const StringName &p_enum, HashMap<StringName
 		(*p_values)[constant.name] = constant.value;
 	}
 }
+
+#ifdef TOOLS_ENABLED
+
+void CoreConstants::get_global_enums(List<StringName> *r_values) {
+	for (const KeyValue<StringName, Vector<_CoreConstant>> &global_enum : _global_enums) {
+		r_values->push_back(global_enum.key);
+	}
+}
+
+#endif

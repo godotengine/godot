@@ -18,11 +18,14 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.0-dev\n"
 
+msgid "All Recognized"
+msgstr "所有已知類型"
+
 msgid "Open"
 msgstr "開啟"
 
-msgid "All Recognized"
-msgstr "所有已知類型"
+msgid "Save"
+msgstr "儲存"
 
 msgid "Open a File"
 msgstr "開啟檔案"
@@ -35,9 +38,6 @@ msgstr "開啟資料夾"
 
 msgid "Open a File or Directory"
 msgstr "選擇資料夾/檔案"
-
-msgid "Save"
-msgstr "儲存"
 
 msgid "Save a File"
 msgstr "儲存檔案"

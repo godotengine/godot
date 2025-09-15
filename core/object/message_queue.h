@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESSAGE_QUEUE_H
-#define MESSAGE_QUEUE_H
+#pragma once
 
 #include "core/object/object_id.h"
 #include "core/os/thread_safe.h"
@@ -153,7 +152,7 @@ public:
 	bool is_flushing() const;
 	int get_max_buffer_usage() const;
 
-	CallQueue(Allocator *p_custom_allocator = 0, uint32_t p_max_pages = 8192, const String &p_error_text = String());
+	CallQueue(Allocator *p_custom_allocator = nullptr, uint32_t p_max_pages = 8192, const String &p_error_text = String());
 	virtual ~CallQueue();
 };
 
@@ -171,5 +170,3 @@ public:
 	MessageQueue();
 	~MessageQueue();
 };
-
-#endif // MESSAGE_QUEUE_H

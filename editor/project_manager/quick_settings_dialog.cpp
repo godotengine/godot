@@ -30,15 +30,13 @@
 
 #include "quick_settings_dialog.h"
 
-#include "core/config/project_settings.h"
 #include "core/string/translation_server.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 
@@ -49,6 +47,7 @@ void QuickSettingsDialog::_fetch_setting_values() {
 	editor_themes.clear();
 	editor_scales.clear();
 	editor_network_modes.clear();
+	editor_check_for_updates.clear();
 	editor_directory_naming_conventions.clear();
 
 	{
@@ -66,6 +65,8 @@ void QuickSettingsDialog::_fetch_setting_values() {
 				editor_scales = pi.hint_string.split(",");
 			} else if (pi.name == "network/connection/network_mode") {
 				editor_network_modes = pi.hint_string.split(",");
+			} else if (pi.name == "network/connection/check_for_updates") {
+				editor_check_for_updates = pi.hint_string.split(",");
 			} else if (pi.name == "project_manager/directory_naming_convention") {
 				editor_directory_naming_conventions = pi.hint_string.split(",");
 			}
@@ -98,6 +99,7 @@ void QuickSettingsDialog::_update_current_values() {
 			if (current_theme == theme_value) {
 				theme_option_button->set_text(current_theme);
 				theme_option_button->select(i);
+				theme_option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 				custom_theme_label->set_visible(current_theme == "Custom");
 			}
@@ -126,6 +128,22 @@ void QuickSettingsDialog::_update_current_values() {
 			if (current_network_mode == i) {
 				network_mode_option_button->set_text(network_mode_value);
 				network_mode_option_button->select(i);
+			}
+		}
+	}
+
+	// Check for updates options.
+	{
+		const int current_update_mode = EDITOR_GET("network/connection/check_for_updates");
+
+		for (int i = 0; i < editor_check_for_updates.size(); i++) {
+			const String &check_for_update_value = editor_check_for_updates[i];
+			if (current_update_mode == i) {
+				check_for_update_button->set_text(check_for_update_value);
+				check_for_update_button->select(i);
+
+				// Disables Check for Updates selection if Network mode is set to Offline.
+				check_for_update_button->set_disabled(!EDITOR_GET("network/connection/network_mode"));
 			}
 		}
 	}
@@ -160,7 +178,7 @@ void QuickSettingsDialog::_add_setting_control(const String &p_text, Control *p_
 #ifndef ANDROID_ENABLED
 void QuickSettingsDialog::_language_selected(int p_id) {
 	const String selected_language = language_option_button->get_item_metadata(p_id);
-	_set_setting_value("interface/editor/editor_language", selected_language, true);
+	_set_setting_value("interface/editor/editor_language", selected_language);
 }
 #endif
 
@@ -177,6 +195,13 @@ void QuickSettingsDialog::_scale_selected(int p_id) {
 
 void QuickSettingsDialog::_network_mode_selected(int p_id) {
 	_set_setting_value("network/connection/network_mode", p_id);
+
+	// Disables Check for Updates selection if Network mode is set to Offline.
+	check_for_update_button->set_disabled(!p_id);
+}
+
+void QuickSettingsDialog::_check_for_update_selected(int p_id) {
+	_set_setting_value("network/connection/check_for_updates", p_id);
 }
 
 void QuickSettingsDialog::_directory_naming_convention_selected(int p_id) {
@@ -192,7 +217,11 @@ void QuickSettingsDialog::_set_setting_value(const String &p_setting, const Vari
 		restart_required_label->show();
 
 		if (!restart_required_button) {
-			restart_required_button = add_button(TTR("Restart Now"), !GLOBAL_GET("gui/common/swap_cancel_ok"));
+			int ed_swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
+			if (ed_swap_cancel_ok == 0) {
+				ed_swap_cancel_ok = DisplayServer::get_singleton()->get_swap_cancel_ok() ? 2 : 1;
+			}
+			restart_required_button = add_button(TTRC("Restart Now"), ed_swap_cancel_ok != 2);
 			restart_required_button->connect(SceneStringName(pressed), callable_mp(this, &QuickSettingsDialog::_request_restart));
 		}
 	}
@@ -230,8 +259,8 @@ void QuickSettingsDialog::_bind_methods() {
 }
 
 QuickSettingsDialog::QuickSettingsDialog() {
-	set_title(TTR("Quick Settings"));
-	set_ok_button_text(TTR("Close"));
+	set_title(TTRC("Quick Settings"));
+	set_ok_button_text(TTRC("Close"));
 
 	VBoxContainer *main_vbox = memnew(VBoxContainer);
 	add_child(main_vbox);
@@ -251,6 +280,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 		// Language options.
 		{
 			language_option_button = memnew(OptionButton);
+			language_option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 			language_option_button->set_fit_to_longest_item(false);
 			language_option_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_language_selected));
 
@@ -261,7 +291,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				language_option_button->set_item_metadata(i, lang_value);
 			}
 
-			_add_setting_control(TTR("Language"), language_option_button);
+			_add_setting_control(TTRC("Language"), language_option_button);
 		}
 #endif
 
@@ -276,9 +306,9 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				theme_option_button->add_item(theme_value, i);
 			}
 
-			_add_setting_control(TTR("Interface Theme"), theme_option_button);
+			_add_setting_control(TTRC("Interface Theme"), theme_option_button);
 
-			custom_theme_label = memnew(Label(TTR("Custom preset can be further configured in the editor.")));
+			custom_theme_label = memnew(Label(TTRC("Custom preset can be further configured in the editor.")));
 			custom_theme_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 			custom_theme_label->set_custom_minimum_size(Size2(220, 0) * EDSCALE);
 			custom_theme_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
@@ -299,7 +329,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				scale_option_button->add_item(scale_value, i);
 			}
 
-			_add_setting_control(TTR("Display Scale"), scale_option_button);
+			_add_setting_control(TTRC("Display Scale"), scale_option_button);
 		}
 
 		// Network mode options.
@@ -313,7 +343,21 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				network_mode_option_button->add_item(network_mode_value, i);
 			}
 
-			_add_setting_control(TTR("Network Mode"), network_mode_option_button);
+			_add_setting_control(TTRC("Network Mode"), network_mode_option_button);
+		}
+
+		// Check for updates options.
+		{
+			check_for_update_button = memnew(OptionButton);
+			check_for_update_button->set_fit_to_longest_item(false);
+			check_for_update_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_check_for_update_selected));
+
+			for (int i = 0; i < editor_check_for_updates.size(); i++) {
+				const String &check_for_update_value = editor_check_for_updates[i];
+				check_for_update_button->add_item(check_for_update_value, i);
+			}
+
+			_add_setting_control(TTRC("Check for Updates"), check_for_update_button);
 		}
 
 		// Project directory naming options.
@@ -327,7 +371,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				directory_naming_convention_button->add_item(directory_naming_convention, i);
 			}
 
-			_add_setting_control(TTR("Directory Naming Convention"), directory_naming_convention_button);
+			_add_setting_control(TTRC("Directory Naming Convention"), directory_naming_convention_button);
 		}
 
 		_update_current_values();
@@ -335,7 +379,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 
 	// Restart required panel.
 	{
-		restart_required_label = memnew(Label(TTR("Settings changed! The project manager must be restarted for changes to take effect.")));
+		restart_required_label = memnew(Label(TTRC("Settings changed! The project manager must be restarted for changes to take effect.")));
 		restart_required_label->set_custom_minimum_size(Size2(560, 0) * EDSCALE);
 		restart_required_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 		restart_required_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);

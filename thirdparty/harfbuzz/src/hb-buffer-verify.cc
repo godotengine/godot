@@ -63,23 +63,24 @@ static bool
 buffer_verify_monotone (hb_buffer_t *buffer,
 			hb_font_t   *font)
 {
-  /* Check that clusters are monotone. */
-  if (buffer->cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES ||
-      buffer->cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS)
+  if (!HB_BUFFER_CLUSTER_LEVEL_IS_MONOTONE (buffer->cluster_level))
   {
-    bool is_forward = HB_DIRECTION_IS_FORWARD (hb_buffer_get_direction (buffer));
-
-    unsigned int num_glyphs;
-    hb_glyph_info_t *info = hb_buffer_get_glyph_infos (buffer, &num_glyphs);
-
-    for (unsigned int i = 1; i < num_glyphs; i++)
-      if (info[i-1].cluster != info[i].cluster &&
-	  (info[i-1].cluster < info[i].cluster) != is_forward)
-      {
-	buffer_verify_error (buffer, font, BUFFER_VERIFY_ERROR "clusters are not monotone.");
-	return false;
-      }
+    /* Cannot perform this check without monotone clusters. */
+    return true;
   }
+
+  bool is_forward = HB_DIRECTION_IS_FORWARD (hb_buffer_get_direction (buffer));
+
+  unsigned int num_glyphs;
+  hb_glyph_info_t *info = hb_buffer_get_glyph_infos (buffer, &num_glyphs);
+
+  for (unsigned int i = 1; i < num_glyphs; i++)
+    if (info[i-1].cluster != info[i].cluster &&
+	(info[i-1].cluster < info[i].cluster) != is_forward)
+    {
+      buffer_verify_error (buffer, font, BUFFER_VERIFY_ERROR "clusters are not monotone.");
+      return false;
+    }
 
   return true;
 }
@@ -92,8 +93,7 @@ buffer_verify_unsafe_to_break (hb_buffer_t  *buffer,
 			       unsigned int        num_features,
 			       const char * const *shapers)
 {
-  if (buffer->cluster_level != HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES &&
-      buffer->cluster_level != HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS)
+  if (!HB_BUFFER_CLUSTER_LEVEL_IS_MONOTONE (buffer->cluster_level))
   {
     /* Cannot perform this check without monotone clusters. */
     return true;
@@ -207,8 +207,7 @@ buffer_verify_unsafe_to_concat (hb_buffer_t        *buffer,
 				unsigned int        num_features,
 				const char * const *shapers)
 {
-  if (buffer->cluster_level != HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES &&
-      buffer->cluster_level != HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS)
+  if (!HB_BUFFER_CLUSTER_LEVEL_IS_MONOTONE (buffer->cluster_level))
   {
     /* Cannot perform this check without monotone clusters. */
     return true;
@@ -412,7 +411,7 @@ hb_buffer_t::verify (hb_buffer_t        *text_buffer,
 				   &len,
 				   HB_BUFFER_SERIALIZE_FORMAT_TEXT,
 				   HB_BUFFER_SERIALIZE_FLAG_NO_CLUSTERS);
-      buffer_verify_error (this, font, BUFFER_VERIFY_ERROR "text was: %s.", bytes.arrayZ);
+      buffer_verify_error (this, font, BUFFER_VERIFY_ERROR "text was: %s.", bytes.arrayZ ? bytes.arrayZ : "");
     }
 #endif
   }

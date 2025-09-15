@@ -4,6 +4,10 @@
 
 #VERSION_DEFINES
 
+#ifdef USE_VULKAN_MEMORY_MODEL
+#pragma use_vulkan_memory_model
+#endif
+
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 #define DENSITY_SCALE 1024.0
@@ -77,9 +81,11 @@ layout(r32ui, set = 1, binding = 4) uniform volatile uimage3D light_only_map;
 #endif
 
 #ifdef MATERIAL_UNIFORMS_USED
-layout(set = 2, binding = 0, std140) uniform MaterialUniforms{
+/* clang-format off */
+layout(set = 2, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
 } material;
+/* clang-format on */
 #endif
 
 #GLOBALS

@@ -28,15 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MATERIAL_STORAGE_GLES3_H
-#define MATERIAL_STORAGE_GLES3_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
-#include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/storage/material_storage.h"
@@ -260,13 +257,25 @@ struct SceneShaderData : public ShaderData {
 
 	enum DepthTest {
 		DEPTH_TEST_DISABLED,
-		DEPTH_TEST_ENABLED
+		DEPTH_TEST_ENABLED,
+		DEPTH_TEST_ENABLED_INVERTED,
 	};
 
-	enum Cull {
-		CULL_DISABLED,
-		CULL_FRONT,
-		CULL_BACK
+	enum StencilCompare {
+		STENCIL_COMPARE_LESS,
+		STENCIL_COMPARE_EQUAL,
+		STENCIL_COMPARE_LESS_OR_EQUAL,
+		STENCIL_COMPARE_GREATER,
+		STENCIL_COMPARE_NOT_EQUAL,
+		STENCIL_COMPARE_GREATER_OR_EQUAL,
+		STENCIL_COMPARE_ALWAYS,
+		STENCIL_COMPARE_MAX // not an actual operator, just the amount of operators
+	};
+
+	enum StencilFlags {
+		STENCIL_FLAG_READ = 1,
+		STENCIL_FLAG_WRITE = 2,
+		STENCIL_FLAG_WRITE_DEPTH_FAIL = 4,
 	};
 
 	enum AlphaAntiAliasing {
@@ -292,7 +301,12 @@ struct SceneShaderData : public ShaderData {
 	AlphaAntiAliasing alpha_antialiasing_mode;
 	DepthDraw depth_draw;
 	DepthTest depth_test;
-	Cull cull_mode;
+	RS::CullMode cull_mode;
+
+	StencilCompare stencil_compare;
+	uint32_t stencil_flags;
+	int32_t stencil_reference;
+	bool stencil_enabled;
 
 	bool uses_point_size;
 	bool uses_alpha;
@@ -314,6 +328,7 @@ struct SceneShaderData : public ShaderData {
 	bool uses_screen_texture_mipmaps;
 	bool uses_depth_texture;
 	bool uses_normal_texture;
+	bool uses_bent_normal_texture;
 	bool uses_time;
 	bool uses_vertex_time;
 	bool uses_fragment_time;
@@ -490,6 +505,7 @@ private:
 	mutable RID_Owner<Material, true> material_owner;
 
 	SelfList<Material>::List material_update_list;
+	HashSet<RID> dummy_embedded_set;
 
 public:
 	static MaterialStorage *get_singleton();
@@ -576,13 +592,13 @@ public:
 
 	/* SHADER API */
 
-	Shader *get_shader(RID p_rid) { return shader_owner.get_or_null(p_rid); };
-	bool owns_shader(RID p_rid) { return shader_owner.owns(p_rid); };
+	Shader *get_shader(RID p_rid) { return shader_owner.get_or_null(p_rid); }
+	bool owns_shader(RID p_rid) { return shader_owner.owns(p_rid); }
 
 	void _shader_make_dirty(Shader *p_shader);
 
 	virtual RID shader_allocate() override;
-	virtual void shader_initialize(RID p_rid) override;
+	virtual void shader_initialize(RID p_rid, bool p_embedded = true) override;
 	virtual void shader_free(RID p_rid) override;
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) override;
@@ -595,11 +611,14 @@ public:
 	virtual Variant shader_get_parameter_default(RID p_shader, const StringName &p_name) const override;
 
 	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override;
+	virtual void shader_embedded_set_lock() override {}
+	virtual const HashSet<RID> &shader_embedded_set_get() const override { return dummy_embedded_set; }
+	virtual void shader_embedded_set_unlock() override {}
 
 	/* MATERIAL API */
 
-	Material *get_material(RID p_rid) { return material_owner.get_or_null(p_rid); };
-	bool owns_material(RID p_rid) { return material_owner.owns(p_rid); };
+	Material *get_material(RID p_rid) { return material_owner.get_or_null(p_rid); }
+	bool owns_material(RID p_rid) { return material_owner.owns(p_rid); }
 
 	void _material_queue_update(Material *material, bool p_uniform, bool p_texture);
 	void _update_queued_materials();
@@ -618,6 +637,7 @@ public:
 
 	virtual bool material_is_animated(RID p_material) override;
 	virtual bool material_casts_shadows(RID p_material) override;
+	virtual RS::CullMode material_get_cull_mode(RID p_material) const override;
 
 	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override;
 
@@ -641,5 +661,3 @@ public:
 } // namespace GLES3
 
 #endif // GLES3_ENABLED
-
-#endif // MATERIAL_STORAGE_GLES3_H

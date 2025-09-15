@@ -28,21 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DOC_DATA_H
-#define DOC_DATA_H
+#pragma once
 
 #include "core/io/xml_parser.h"
 #include "core/variant/variant.h"
-
-struct ScriptMemberInfo {
-	PropertyInfo propinfo;
-	String doc_string;
-	StringName setter;
-	StringName getter;
-
-	bool has_default_value = false;
-	Variant default_value;
-};
 
 class DocData {
 public:
@@ -118,6 +107,8 @@ public:
 		bool is_experimental = false;
 		String experimental_message;
 		Vector<ArgumentDoc> arguments;
+		// NOTE: Only for GDScript for now. The rest argument is not saved to the XML file.
+		ArgumentDoc rest_argument;
 		Vector<int> errors_returned;
 		String keywords;
 		bool operator<(const MethodDoc &p_method) const {
@@ -125,7 +116,7 @@ public:
 				// Must be an operator or a constructor since there is no other overloading
 				if (name.left(8) == "operator") {
 					if (arguments.size() == p_method.arguments.size()) {
-						if (arguments.size() == 0) {
+						if (arguments.is_empty()) {
 							return false;
 						}
 						return arguments[0].type < p_method.arguments[0].type;
@@ -137,7 +128,7 @@ public:
 					// - 1. Default constructor: Foo()
 					// - 2. Copy constructor: Foo(Foo)
 					// - 3+. Other constructors Foo(Bar, ...) based on first argument's name
-					if (arguments.size() == 0 || p_method.arguments.size() == 0) { // 1.
+					if (arguments.is_empty() || p_method.arguments.is_empty()) { // 1.
 						return arguments.size() < p_method.arguments.size();
 					}
 					if (arguments[0].type == return_type || p_method.arguments[0].type == p_method.return_type) { // 2.
@@ -276,6 +267,7 @@ public:
 		String name;
 		String value;
 		bool is_value_valid = false;
+		String type;
 		String enumeration;
 		bool is_bitfield = false;
 		String description;
@@ -300,6 +292,10 @@ public:
 
 			if (p_dict.has("is_value_valid")) {
 				doc.is_value_valid = p_dict["is_value_valid"];
+			}
+
+			if (p_dict.has("type")) {
+				doc.type = p_dict["type"];
 			}
 
 			if (p_dict.has("enumeration")) {
@@ -351,6 +347,8 @@ public:
 			}
 
 			dict["is_value_valid"] = p_doc.is_value_valid;
+
+			dict["type"] = p_doc.type;
 
 			if (!p_doc.enumeration.is_empty()) {
 				dict["enumeration"] = p_doc.enumeration;
@@ -798,8 +796,8 @@ public:
 			if (p_dict.has("enums")) {
 				enums = p_dict["enums"];
 			}
-			for (int i = 0; i < enums.size(); i++) {
-				doc.enums[enums.get_key_at_index(i)] = EnumDoc::from_dict(enums.get_value_at_index(i));
+			for (const KeyValue<Variant, Variant> &kv : enums) {
+				doc.enums[kv.key] = EnumDoc::from_dict(kv.value);
 			}
 
 			Array properties;
@@ -981,10 +979,5 @@ public:
 
 	static void return_doc_from_retinfo(DocData::MethodDoc &p_method, const PropertyInfo &p_retinfo);
 	static void argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const PropertyInfo &p_arginfo);
-	static void property_doc_from_scriptmemberinfo(DocData::PropertyDoc &p_property, const ScriptMemberInfo &p_memberinfo);
 	static void method_doc_from_methodinfo(DocData::MethodDoc &p_method, const MethodInfo &p_methodinfo, const String &p_desc);
-	static void constant_doc_from_variant(DocData::ConstantDoc &p_const, const StringName &p_name, const Variant &p_value, const String &p_desc);
-	static void signal_doc_from_methodinfo(DocData::MethodDoc &p_signal, const MethodInfo &p_methodinfo, const String &p_desc);
 };
-
-#endif // DOC_DATA_H

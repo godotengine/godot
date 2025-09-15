@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_SCENE_OCCLUSION_CULL_H
-#define RENDERER_SCENE_OCCLUSION_CULL_H
+#pragma once
 
 #include "core/math/projection.h"
 #include "core/templates/local_vector.h"
@@ -72,7 +71,9 @@ public:
 				return false;
 			}
 
-			float min_depth = -closest_point_view.z * 0.95f;
+			// Force distance calculation to use double precision to avoid floating-point overflow for distant objects.
+			closest_point = closest_point - p_cam_position;
+			float min_depth = Math::sqrt((double)closest_point.x * (double)closest_point.x + (double)closest_point.y * (double)closest_point.y + (double)closest_point.z * (double)closest_point.z);
 
 			Vector2 rect_min = Vector2(FLT_MAX, FLT_MAX);
 			Vector2 rect_max = Vector2(FLT_MIN, FLT_MIN);
@@ -82,6 +83,11 @@ public:
 				Vector3 nc = Vector3(1, 1, 1) - c;
 				Vector3 corner = Vector3(p_bounds[0] * c.x + p_bounds[3] * nc.x, p_bounds[1] * c.y + p_bounds[4] * nc.y, p_bounds[2] * c.z + p_bounds[5] * nc.z);
 				Vector3 view = p_cam_inv_transform.xform(corner);
+
+				// When using an orthogonal camera, the closest point of an AABB to the camera is guaranteed to be a corner.
+				if (p_cam_projection.is_orthogonal()) {
+					min_depth = MIN(min_depth, -view.z);
+				}
 
 				Plane vp = Plane(view, 1.0);
 				Plane projected = p_cam_projection.xform4(vp);
@@ -192,7 +198,7 @@ public:
 		RID get_debug_texture();
 		const Size2i &get_occlusion_buffer_size() const { return occlusion_buffer_size; }
 
-		virtual ~HZBuffer(){};
+		virtual ~HZBuffer() {}
 	};
 
 	static RendererSceneOcclusionCull *get_singleton() { return singleton; }
@@ -230,11 +236,9 @@ public:
 
 	RendererSceneOcclusionCull() {
 		singleton = this;
-	};
+	}
 
 	virtual ~RendererSceneOcclusionCull() {
 		singleton = nullptr;
-	};
+	}
 };
-
-#endif // RENDERER_SCENE_OCCLUSION_CULL_H

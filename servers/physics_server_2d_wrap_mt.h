@@ -28,15 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PHYSICS_SERVER_2D_WRAP_MT_H
-#define PHYSICS_SERVER_2D_WRAP_MT_H
+#pragma once
 
-#include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
-#include "core/templates/safe_refcount.h"
 #include "servers/physics_server_2d.h"
+
+#define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread)
+#define ASYNC_COND_PUSH_AND_RET (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
+#define ASYNC_COND_PUSH_AND_SYNC (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
 
 #ifdef DEBUG_SYNC
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));
@@ -61,10 +62,12 @@ class PhysicsServer2DWrapMT : public PhysicsServer2D {
 	WorkerThreadPool::TaskID server_task_id = WorkerThreadPool::INVALID_TASK_ID;
 	bool exit = false;
 	bool create_thread = false;
+	SafeFlag doing_sync;
 
 	void _assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id);
 	void _thread_exit();
 	void _thread_loop();
+	void _thread_sync();
 
 public:
 #define ServerName PhysicsServer2D
@@ -340,5 +343,3 @@ public:
 #ifdef DEBUG_ENABLED
 #undef MAIN_THREAD_SYNC_WARN
 #endif
-
-#endif // PHYSICS_SERVER_2D_WRAP_MT_H

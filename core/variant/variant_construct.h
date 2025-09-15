@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VARIANT_CONSTRUCT_H
-#define VARIANT_CONSTRUCT_H
+#pragma once
 
 #include "variant.h"
 
@@ -38,8 +37,8 @@
 #include "core/io/compression.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "core/templates/a_hash_map.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/oa_hash_map.h"
 
 template <typename T>
 struct PtrConstruct {};
@@ -105,11 +104,11 @@ class VariantConstructor {
 	static _FORCE_INLINE_ void construct_helper(T &base, const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
 		r_error.error = Callable::CallError::CALL_OK;
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 		base = T(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...);
 #else
 		base = T(VariantCaster<P>::cast(*p_args[Is])...);
-#endif
+#endif // DEBUG_ENABLED
 	}
 
 	template <size_t... Is>
@@ -156,14 +155,14 @@ public:
 		if (p_args[0]->get_type() == Variant::NIL) {
 			VariantInternal::clear(&r_ret);
 			VariantTypeChanger<Object *>::change(&r_ret);
-			VariantInternal::object_assign_null(&r_ret);
+			VariantInternal::object_reset_data(&r_ret);
 			r_error.error = Callable::CallError::CALL_OK;
 		} else if (p_args[0]->get_type() == Variant::OBJECT) {
-			VariantInternal::clear(&r_ret);
 			VariantTypeChanger<Object *>::change(&r_ret);
 			VariantInternal::object_assign(&r_ret, p_args[0]);
 			r_error.error = Callable::CallError::CALL_OK;
 		} else {
+			VariantInternal::clear(&r_ret);
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
 			r_error.expected = Variant::OBJECT;
@@ -171,7 +170,6 @@ public:
 	}
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
-		VariantInternal::clear(r_ret);
 		VariantTypeChanger<Object *>::change(r_ret);
 		VariantInternal::object_assign(r_ret, p_args[0]);
 	}
@@ -203,13 +201,13 @@ public:
 
 		VariantInternal::clear(&r_ret);
 		VariantTypeChanger<Object *>::change(&r_ret);
-		VariantInternal::object_assign_null(&r_ret);
+		VariantInternal::object_reset_data(&r_ret);
 	}
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
 		VariantInternal::clear(r_ret);
 		VariantTypeChanger<Object *>::change(r_ret);
-		VariantInternal::object_assign_null(r_ret);
+		VariantInternal::object_reset_data(r_ret);
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		PtrConstruct<Object *>::construct(nullptr, base);
@@ -814,5 +812,3 @@ public:
 		return Variant::OBJECT;
 	}
 };
-
-#endif // VARIANT_CONSTRUCT_H

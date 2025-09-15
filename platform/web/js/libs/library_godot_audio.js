@@ -77,7 +77,7 @@ class Sample {
 	 * Creates a `Sample` based on the params. Will register it to the
 	 * `GodotAudio.samples` registry.
 	 * @param {SampleParams} params Base params
-	 * @param {SampleOptions} [options={{}}] Optional params
+	 * @param {SampleOptions | undefined} options Optional params.
 	 * @returns {Sample}
 	 */
 	static create(params, options = {}) {
@@ -98,7 +98,7 @@ class Sample {
 	/**
 	 * `Sample` constructor.
 	 * @param {SampleParams} params Base params
-	 * @param {SampleOptions} [options={{}}] Optional params
+	 * @param {SampleOptions | undefined} options Optional params.
 	 */
 	constructor(params, options = {}) {
 		/** @type {string} */
@@ -393,7 +393,7 @@ class SampleNode {
 	 * Creates a `SampleNode` based on the params. Will register the `SampleNode` to
 	 * the `GodotAudio.sampleNodes` regisery.
 	 * @param {SampleNodeParams} params Base params.
-	 * @param {SampleNodeOptions} options Optional params.
+	 * @param {SampleNodeOptions | undefined} options Optional params.
 	 * @returns {SampleNode}
 	 */
 	static create(params, options = {}) {
@@ -408,12 +408,12 @@ class SampleNode {
 	 * @returns {void}
 	 */
 	static delete(id) {
-		GodotAudio.sampleNodes.delete(id);
+		GodotAudio.deleteSampleNode(id);
 	}
 
 	/**
 	 * @param {SampleNodeParams} params Base params
-	 * @param {SampleNodeOptions} [options={{}}] Optional params
+	 * @param {SampleNodeOptions | undefined} options Optional params.
 	 */
 	constructor(params, options = {}) {
 		/** @type {string} */
@@ -460,7 +460,11 @@ class SampleNode {
 		const sampleNodeBus = this.getSampleNodeBus(bus);
 		sampleNodeBus.setVolume(options.volume);
 
-		this.connectPositionWorklet(options.start);
+		this.connectPositionWorklet(options.start).catch((err) => {
+			const newErr = new Error('Failed to create PositionWorklet.');
+			newErr.cause = err;
+			GodotRuntime.error(newErr);
+		});
 	}
 
 	/**
@@ -612,44 +616,35 @@ class SampleNode {
 	 * Sets up and connects the source to the GodotPositionReportingProcessor
 	 * If the worklet module is not loaded in, it will be added
 	 */
-	connectPositionWorklet(start) {
-		try {
-			this._positionWorklet = this.createPositionWorklet();
-			this._source.connect(this._positionWorklet);
-			if (start) {
-				this.start();
-			}
-		} catch (error) {
-			if (error?.name !== 'InvalidStateError') {
-				throw error;
-			}
-			const path = GodotConfig.locate_file('godot.audio.position.worklet.js');
-			GodotAudio.ctx.audioWorklet
-				.addModule(path)
-				.then(() => {
-					if (!this.isCanceled) {
-						this._positionWorklet = this.createPositionWorklet();
-						this._source.connect(this._positionWorklet);
-						if (start) {
-							this.start();
-						}
-					}
-				}).catch((addModuleError) => {
-					GodotRuntime.error('Failed to create PositionWorklet.', addModuleError);
-				});
+	async connectPositionWorklet(start) {
+		await GodotAudio.audioPositionWorkletPromise;
+		if (this.isCanceled) {
+			return;
+		}
+		this._source.connect(this.getPositionWorklet());
+		if (start) {
+			this.start();
 		}
 	}
 
 	/**
-	 * Creates the AudioWorkletProcessor used to track playback position.
+	 * Get a AudioWorkletProcessor
 	 * @returns {AudioWorkletNode}
 	 */
-	createPositionWorklet() {
-		const worklet = new AudioWorkletNode(
-			GodotAudio.ctx,
-			'godot-position-reporting-processor'
-		);
-		worklet.port.onmessage = (event) => {
+	getPositionWorklet() {
+		if (this._positionWorklet != null) {
+			return this._positionWorklet;
+		}
+		if (GodotAudio.audioPositionWorkletNodes.length > 0) {
+			this._positionWorklet = GodotAudio.audioPositionWorkletNodes.pop();
+		} else {
+			this._positionWorklet = new AudioWorkletNode(
+				GodotAudio.ctx,
+				'godot-position-reporting-processor'
+			);
+		}
+		this._playbackPosition = this.offset;
+		this._positionWorklet.port.onmessage = (event) => {
 			switch (event.data['type']) {
 			case 'position':
 				this._playbackPosition = (parseInt(event.data.data, 10) / this.getSample().sampleRate) + this.offset;
@@ -658,7 +653,12 @@ class SampleNode {
 				// Do nothing.
 			}
 		};
-		return worklet;
+
+		const resetParameter = this._positionWorklet.parameters.get('reset');
+		resetParameter.setValueAtTime(1, GodotAudio.ctx.currentTime);
+		resetParameter.setValueAtTime(0, GodotAudio.ctx.currentTime + 1);
+
+		return this._positionWorklet;
 	}
 
 	/**
@@ -688,6 +688,7 @@ class SampleNode {
 		if (this._positionWorklet) {
 			this._positionWorklet.disconnect();
 			this._positionWorklet.port.onmessage = null;
+			GodotAudio.audioPositionWorkletNodes.push(this._positionWorklet);
 			this._positionWorklet = null;
 		}
 
@@ -731,7 +732,10 @@ class SampleNode {
 		const pauseTime = this.isPaused
 			? this.pauseTime
 			: 0;
-		this.connectPositionWorklet();
+		if (this._positionWorklet != null) {
+			this._positionWorklet.port.postMessage({ type: 'clear' });
+			this._source.connect(this._positionWorklet);
+		}
 		this._source.start(this.startTime, this.offset + pauseTime);
 		this.isStarted = true;
 	}
@@ -741,6 +745,9 @@ class SampleNode {
 	 * @returns {void}
 	 */
 	_pause() {
+		if (!this.isStarted) {
+			return;
+		}
 		this.isPaused = true;
 		this.pauseTime = (GodotAudio.ctx.currentTime - this._sourceStartTime) / this.getPlaybackRate();
 		this._source.stop();
@@ -774,15 +781,9 @@ class SampleNode {
 			}
 
 			switch (self.getSample().loopMode) {
-			case 'disabled': {
-				const id = this.id;
+			case 'disabled':
 				self.stop();
-				if (GodotAudio.sampleFinishedCallback != null) {
-					const idCharPtr = GodotRuntime.allocString(id);
-					GodotAudio.sampleFinishedCallback(idCharPtr);
-					GodotRuntime.free(idCharPtr);
-				}
-			} break;
+				break;
 			case 'forward':
 			case 'backward':
 				self.restart();
@@ -868,7 +869,10 @@ class Bus {
 	 * @returns {void}
 	 */
 	static move(fromIndex, toIndex) {
-		const movedBus = GodotAudio.Bus.getBus(fromIndex);
+		const movedBus = GodotAudio.Bus.getBusOrNull(fromIndex);
+		if (movedBus == null) {
+			return;
+		}
 		const buses = GodotAudio.buses.filter((_, i) => i !== fromIndex);
 		// Inserts at index.
 		buses.splice(toIndex - 1, 0, movedBus);
@@ -1170,6 +1174,15 @@ const _GodotAudio = {
 		 */
 		sampleNodes: null,
 		SampleNode,
+		deleteSampleNode: (pSampleNodeId) => {
+			GodotAudio.sampleNodes.delete(pSampleNodeId);
+			if (GodotAudio.sampleFinishedCallback == null) {
+				return;
+			}
+			const sampleNodeIdPtr = GodotRuntime.allocString(pSampleNodeId);
+			GodotAudio.sampleFinishedCallback(sampleNodeIdPtr);
+			GodotRuntime.free(sampleNodeIdPtr);
+		},
 
 		// `Bus` class
 		/**
@@ -1196,6 +1209,11 @@ const _GodotAudio = {
 		driver: null,
 		interval: 0,
 
+		/** @type {Promise} */
+		audioPositionWorkletPromise: null,
+		/** @type {Array<AudioWorkletNode>} */
+		audioPositionWorkletNodes: null,
+
 		/**
 		 * Converts linear volume to Db.
 		 * @param {number} linear Linear value to convert.
@@ -1221,6 +1239,7 @@ const _GodotAudio = {
 			GodotAudio.sampleNodes = new Map();
 			GodotAudio.buses = [];
 			GodotAudio.busSolo = null;
+			GodotAudio.audioPositionWorkletNodes = [];
 
 			const opts = {};
 			// If mix_rate is 0, let the browser choose.
@@ -1262,6 +1281,10 @@ const _GodotAudio = {
 				onlatencyupdate(computed_latency);
 			}, 1000);
 			GodotOS.atexit(GodotAudio.close_async);
+
+			const path = GodotConfig.locate_file('godot.audio.position.worklet.js');
+			GodotAudio.audioPositionWorkletPromise = ctx.audioWorklet.addModule(path);
+
 			return ctx.destination.channelCount;
 		},
 
@@ -1340,7 +1363,7 @@ const _GodotAudio = {
 		 * @param {string} playbackObjectId The unique id of the sample playback
 		 * @param {string} streamObjectId The unique id of the stream
 		 * @param {number} busIndex Index of the bus currently binded to the sample playback
-		 * @param {SampleNodeOptions} startOptions Optional params
+		 * @param {SampleNodeOptions | undefined} startOptions Optional params.
 		 * @returns {void}
 		 */
 		start_sample: function (
@@ -1424,7 +1447,10 @@ const _GodotAudio = {
 		 * @returns {void}
 		 */
 		remove_sample_bus: function (index) {
-			const bus = GodotAudio.Bus.getBus(index);
+			const bus = GodotAudio.Bus.getBusOrNull(index);
+			if (bus == null) {
+				return;
+			}
 			bus.clear();
 		},
 
@@ -1454,8 +1480,17 @@ const _GodotAudio = {
 		 * @returns {void}
 		 */
 		set_sample_bus_send: function (busIndex, sendIndex) {
-			const bus = GodotAudio.Bus.getBus(busIndex);
-			bus.setSend(GodotAudio.Bus.getBus(sendIndex));
+			const bus = GodotAudio.Bus.getBusOrNull(busIndex);
+			if (bus == null) {
+				// Cannot send from an invalid bus.
+				return;
+			}
+			let targetBus = GodotAudio.Bus.getBusOrNull(sendIndex);
+			if (targetBus == null) {
+				// Send to master.
+				targetBus = GodotAudio.Bus.getBus(0);
+			}
+			bus.setSend(targetBus);
 		},
 
 		/**
@@ -1465,7 +1500,10 @@ const _GodotAudio = {
 		 * @returns {void}
 		 */
 		set_sample_bus_volume_db: function (busIndex, volumeDb) {
-			const bus = GodotAudio.Bus.getBus(busIndex);
+			const bus = GodotAudio.Bus.getBusOrNull(busIndex);
+			if (bus == null) {
+				return;
+			}
 			bus.setVolumeDb(volumeDb);
 		},
 
@@ -1476,7 +1514,10 @@ const _GodotAudio = {
 		 * @returns {void}
 		 */
 		set_sample_bus_solo: function (busIndex, enable) {
-			const bus = GodotAudio.Bus.getBus(busIndex);
+			const bus = GodotAudio.Bus.getBusOrNull(busIndex);
+			if (bus == null) {
+				return;
+			}
 			bus.solo(enable);
 		},
 
@@ -1487,7 +1528,10 @@ const _GodotAudio = {
 		 * @returns {void}
 		 */
 		set_sample_bus_mute: function (busIndex, enable) {
-			const bus = GodotAudio.Bus.getBus(busIndex);
+			const bus = GodotAudio.Bus.getBusOrNull(busIndex);
+			if (bus == null) {
+				return;
+			}
 			bus.mute(enable);
 		},
 	},
@@ -2136,7 +2180,7 @@ autoAddDeps(GodotAudioWorklet, '$GodotAudioWorklet');
 mergeInto(LibraryManager.library, GodotAudioWorklet);
 
 /*
- * The ScriptProcessorNode API, used when threads are disabled.
+ * The ScriptProcessorNode API, used as a fallback if AudioWorklet is not available.
  */
 const GodotAudioScript = {
 	$GodotAudioScript__deps: ['$GodotAudio'],

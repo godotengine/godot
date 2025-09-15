@@ -32,8 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/script_language.h"
-#include "editor/editor_file_system.h"
-#include "editor/editor_settings.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/gui/control.h"
 #include "scene/main/node.h"
 #include "scene/theme/theme_db.h"
@@ -51,7 +51,7 @@ void _add_nodes_suggestions(const Node *p_base, const Node *p_node, PackedString
 		return;
 	}
 
-	String path_relative_to_orig = p_base->get_path_to(p_node);
+	String path_relative_to_orig = String(p_base->get_path_to(p_node));
 
 	r_suggestions.push_back(quoted(path_relative_to_orig));
 
@@ -116,7 +116,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 					continue;
 				}
 
-				String name = prop.name.substr(prop.name.find("/") + 1, prop.name.length());
+				String name = prop.name.substr(prop.name.find_char('/') + 1);
 				suggestions.push_back(quoted(name));
 			}
 		} break;

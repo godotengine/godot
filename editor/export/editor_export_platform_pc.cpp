@@ -42,6 +42,9 @@ void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &
 		r_features->push_back("etc2");
 		r_features->push_back("astc");
 	}
+	if (p_preset->get("shader_baker/enabled")) {
+		r_features->push_back("shader_baker");
+	}
 	// PC platforms only have one architecture per export, since
 	// we export a single executable instead of a bundle.
 	r_features->push_back(p_preset->get("binary_format/architecture"));
@@ -58,6 +61,21 @@ void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) c
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc_bptc"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2_astc"), false));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "shader_baker/enabled"), false));
+}
+
+String EditorExportPlatformPC::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
+	if (p_name == "shader_baker/enabled" && bool(p_preset->get("shader_baker/enabled"))) {
+		String export_renderer = GLOBAL_GET("rendering/renderer/rendering_method");
+		if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+			return TTR("\"Shader Baker\" is not supported when using the Compatibility renderer.");
+		} else if (OS::get_singleton()->get_current_rendering_method() != export_renderer) {
+			return vformat(TTR("The editor is currently using a different renderer than what the target platform will use. \"Shader Baker\" won't be able to include core shaders. Switch to the \"%s\" renderer temporarily to fix this."), export_renderer);
+		}
+	}
+
+	return String();
 }
 
 String EditorExportPlatformPC::get_name() const {
@@ -194,7 +212,7 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 
 	int64_t embedded_pos;
 	int64_t embedded_size;
-	Error err = save_pack(p_preset, p_debug, pck_path, &so_files, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size);
+	Error err = save_pack(p_preset, p_debug, pck_path, &so_files, nullptr, nullptr, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size);
 	if (err == OK && p_preset->get("binary_format/embed_pck")) {
 		if (embedded_size >= 0x100000000 && String(p_preset->get("binary_format/architecture")).contains("32")) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."));
@@ -222,9 +240,15 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 				err = da->make_dir_recursive(target_path);
 				if (err == OK) {
 					err = da->copy_dir(src_path, target_path, -1, true);
+					if (err != OK) {
+						add_message(EXPORT_MESSAGE_ERROR, TTR("GDExtension"), vformat(TTR("Failed to copy shared object \"%s\"."), src_path));
+					}
 				}
 			} else {
 				err = da->copy(src_path, target_path);
+				if (err != OK) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("GDExtension"), vformat(TTR("Failed to copy shared object \"%s\"."), src_path));
+				}
 				if (err == OK) {
 					err = sign_shared_object(p_preset, p_debug, target_path);
 				}

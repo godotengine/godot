@@ -12,6 +12,10 @@
 		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
 	</tutorials>
 	<members>
+		<member name="advance_on_start" type="bool" setter="set_advance_on_start" getter="is_advance_on_start" default="false">
+			If [code]true[/code], on receiving a request to play an animation from the start, the first frame is not drawn, but only processed, and playback starts from the next frame.
+			See also the notes of [method AnimationPlayer.play].
+		</member>
 		<member name="animation" type="StringName" setter="set_animation" getter="get_animation" default="&amp;&quot;&quot;">
 			Animation to use as an output. It is one of the animations provided by [member AnimationTree.anim_player].
 		</member>

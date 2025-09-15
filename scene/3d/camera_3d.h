@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CAMERA_3D_H
-#define CAMERA_3D_H
+#pragma once
 
+#include "core/templates/interpolated_property.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
 #include "scene/resources/camera_attributes.h"
@@ -65,12 +65,12 @@ private:
 
 	ProjectionType mode = PROJECTION_PERSPECTIVE;
 
-	real_t fov = 75.0;
-	real_t size = 1.0;
-	Vector2 frustum_offset;
+	InterpolatedProperty<real_t> fov = 75.0;
+	InterpolatedProperty<real_t> size = 1.0;
+	InterpolatedProperty<Vector2> frustum_offset;
 	// _ prefix to avoid conflict with Windows defines.
-	real_t _near = 0.05;
-	real_t _far = 4000.0;
+	InterpolatedProperty<real_t> _near = 0.05;
+	InterpolatedProperty<real_t> _far = 4000.0;
 	real_t v_offset = 0.0;
 	real_t h_offset = 0.0;
 	KeepAspect keep_aspect = KEEP_HEIGHT;
@@ -95,27 +95,14 @@ private:
 	DopplerTracking doppler_tracking = DOPPLER_TRACKING_DISABLED;
 	Ref<VelocityTracker3D> velocity_tracker;
 
+#ifndef PHYSICS_3D_DISABLED
 	RID pyramid_shape;
 	Vector<Vector3> pyramid_shape_points;
+#endif // PHYSICS_3D_DISABLED
 
-	///////////////////////////////////////////////////////
-	// INTERPOLATION FUNCTIONS
-	void _physics_interpolation_ensure_transform_calculated(bool p_force = false) const;
-	void _physics_interpolation_ensure_data_flipped();
-
-	// These can be set by derived Camera3Ds, if they wish to do processing
-	// (while still allowing physics interpolation to function).
+	// These can be set by derived Cameras.
 	bool _desired_process_internal = false;
 	bool _desired_physics_process_internal = false;
-
-	mutable struct InterpolationData {
-		Transform3D xform_curr;
-		Transform3D xform_prev;
-		Transform3D xform_interpolated;
-		Transform3D camera_xform_interpolated; // After modification according to camera type.
-		uint32_t last_update_physics_tick = 0;
-		uint32_t last_update_frame = UINT32_MAX;
-	} _interpolation_data;
 
 	void _update_process_mode();
 
@@ -124,9 +111,6 @@ protected:
 	// This is because physics interpolation may need to request process modes additionally.
 	void set_desired_process_modes(bool p_process_internal, bool p_physics_process_internal);
 
-	// Opportunity for derived classes to interpolate extra attributes.
-	virtual void physics_interpolation_flip_data() {}
-
 	virtual void _physics_interpolated_changed() override;
 	virtual Transform3D _get_adjusted_camera_transform(const Transform3D &p_xform) const;
 	///////////////////////////////////////////////////////
@@ -134,6 +118,10 @@ protected:
 	void _update_camera();
 	virtual void _request_camera_update();
 	void _update_camera_mode();
+
+	virtual void fti_pump_property() override;
+	virtual void fti_update_servers_property() override;
+	virtual void fti_update_servers_xform() override;
 
 	void _notification(int p_what);
 	void _validate_property(PropertyInfo &p_property) const;
@@ -218,7 +206,9 @@ public:
 
 	Vector3 get_doppler_tracked_velocity() const;
 
+#ifndef PHYSICS_3D_DISABLED
 	RID get_pyramid_shape_rid();
+#endif // PHYSICS_3D_DISABLED
 
 	Camera3D();
 	~Camera3D();
@@ -227,5 +217,3 @@ public:
 VARIANT_ENUM_CAST(Camera3D::ProjectionType);
 VARIANT_ENUM_CAST(Camera3D::KeepAspect);
 VARIANT_ENUM_CAST(Camera3D::DopplerTracking);
-
-#endif // CAMERA_3D_H

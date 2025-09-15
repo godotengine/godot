@@ -16,6 +16,15 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.3-dev\n"
 
+msgid "All Recognized"
+msgstr "Todos Recoñecidos"
+
+msgid "Save"
+msgstr "Gardar"
+
+msgid "Clear"
+msgstr "Limpar"
+
 msgid "Open"
 msgstr "Abrir"
 
@@ -24,9 +33,6 @@ msgstr "Seleccionar Cartafol Actual"
 
 msgid "Select This Folder"
 msgstr "Seleccionar Este Cartafol"
-
-msgid "All Recognized"
-msgstr "Todos Recoñecidos"
 
 msgid "Open a File"
 msgstr "Abrir un Arquivo"
@@ -39,9 +45,6 @@ msgstr "Abrir un Directorio"
 
 msgid "Open a File or Directory"
 msgstr "Abrir un Arquivo ou Directorio"
-
-msgid "Save"
-msgstr "Gardar"
 
 msgid "Save a File"
 msgstr "Gardar un Arquivo"
@@ -61,11 +64,11 @@ msgstr "Ruta:"
 msgid "Refresh files."
 msgstr "Actualizar Arquivos."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Amosar/Ocultar arquivos ocultos."
-
 msgid "Directories & Files:"
 msgstr "Directorios e Arquivos:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Amosar/Ocultar arquivos ocultos."
 
 msgid "File:"
 msgstr "Arquivo:"
@@ -99,9 +102,6 @@ msgstr "Pegar"
 
 msgid "Select All"
 msgstr "Seleccionar Todo"
-
-msgid "Clear"
-msgstr "Limpar"
 
 msgid "Undo"
 msgstr "Desfacer"

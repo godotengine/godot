@@ -35,14 +35,18 @@
 #include "core/io/zip_io.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/export/editor_export.h"
-#include "editor/progress_dialog.h"
+#include "editor/export/editor_export_preset.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/gui/progress_dialog.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/link_button.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 #include "scene/main/http_request.h"
@@ -51,23 +55,29 @@ enum DownloadsAvailability {
 	DOWNLOADS_AVAILABLE,
 	DOWNLOADS_NOT_AVAILABLE_IN_OFFLINE_MODE,
 	DOWNLOADS_NOT_AVAILABLE_FOR_DEV_BUILDS,
+	DOWNLOADS_NOT_AVAILABLE_FOR_DOUBLE_BUILDS,
 };
 
 static DownloadsAvailability _get_downloads_availability() {
 	const int network_mode = EDITOR_GET("network/connection/network_mode");
-	if (network_mode == EditorSettings::NETWORK_OFFLINE) {
-		return DOWNLOADS_NOT_AVAILABLE_IN_OFFLINE_MODE;
-	}
 
 	// Downloadable export templates are only available for stable and official alpha/beta/RC builds
 	// (which always have a number following their status, e.g. "alpha1").
 	// Therefore, don't display download-related features when using a development version
 	// (whose builds aren't numbered).
-	if (String(VERSION_STATUS) == String("dev") ||
-			String(VERSION_STATUS) == String("alpha") ||
-			String(VERSION_STATUS) == String("beta") ||
-			String(VERSION_STATUS) == String("rc")) {
+	if (String(GODOT_VERSION_STATUS) == String("dev") ||
+			String(GODOT_VERSION_STATUS) == String("alpha") ||
+			String(GODOT_VERSION_STATUS) == String("beta") ||
+			String(GODOT_VERSION_STATUS) == String("rc")) {
 		return DOWNLOADS_NOT_AVAILABLE_FOR_DEV_BUILDS;
+	}
+
+#ifdef REAL_T_IS_DOUBLE
+	return DOWNLOADS_NOT_AVAILABLE_FOR_DOUBLE_BUILDS;
+#endif
+
+	if (network_mode == EditorSettings::NETWORK_OFFLINE) {
+		return DOWNLOADS_NOT_AVAILABLE_IN_OFFLINE_MODE;
 	}
 
 	return DOWNLOADS_AVAILABLE;
@@ -95,7 +105,7 @@ void ExportTemplateManager::_update_template_status() {
 	da->list_dir_end();
 
 	// Update the state of the current version.
-	String current_version = VERSION_FULL_CONFIG;
+	String current_version = GODOT_VERSION_FULL_CONFIG;
 	current_value->set_text(current_version);
 
 	if (templates.has(current_version)) {
@@ -263,7 +273,7 @@ void ExportTemplateManager::_refresh_mirrors() {
 	}
 	is_refreshing_mirrors = true;
 
-	String current_version = VERSION_FULL_CONFIG;
+	String current_version = GODOT_VERSION_FULL_CONFIG;
 	const String mirrors_metadata_url = "https://godotengine.org/mirrorlist/" + current_version + ".json";
 	request_mirrors->request(mirrors_metadata_url);
 }
@@ -278,11 +288,7 @@ void ExportTemplateManager::_refresh_mirrors_completed(int p_status, int p_code,
 		return;
 	}
 
-	String response_json;
-	{
-		const uint8_t *r = p_data.ptr();
-		response_json.parse_utf8((const char *)r, p_data.size());
-	}
+	String response_json = String::utf8((const char *)p_data.ptr(), p_data.size());
 
 	JSON json;
 	Error err = json.parse(response_json);
@@ -332,6 +338,14 @@ void ExportTemplateManager::_refresh_mirrors_completed(int p_status, int p_code,
 
 		_download_template(mirror_url, true);
 	}
+}
+
+void ExportTemplateManager::_force_online_mode() {
+	EditorSettings::get_singleton()->set_setting("network/connection/network_mode", EditorSettings::NETWORK_ONLINE);
+	EditorSettings::get_singleton()->notify_changes();
+	EditorSettings::get_singleton()->save();
+
+	popup_manager();
 }
 
 bool ExportTemplateManager::_humanize_http_status(HTTPRequest *p_request, String *r_status, int *r_downloaded_bytes, int *r_total_bytes) {
@@ -436,6 +450,13 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		}
 
 		String file = String::utf8(fname);
+
+		// Skip the __MACOSX directory created by macOS's built-in file zipper.
+		if (file.begins_with("__MACOSX")) {
+			ret = unzGoToNextFile(pkg);
+			continue;
+		}
+
 		if (file.ends_with("version.txt")) {
 			Vector<uint8_t> uncomp_data;
 			uncomp_data.resize(info.uncompressed_size);
@@ -446,8 +467,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 			ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", file));
 			unzCloseCurrentFile(pkg);
 
-			String data_str;
-			data_str.parse_utf8((const char *)uncomp_data.ptr(), uncomp_data.size());
+			String data_str = String::utf8((const char *)uncomp_data.ptr(), uncomp_data.size());
 			data_str = data_str.strip_edges();
 
 			// Version number should be of the form major.minor[.patch].status[.module_config]
@@ -511,7 +531,8 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 
 		String file = file_path.get_file();
 
-		if (file.size() == 0) {
+		// Skip the __MACOSX directory created by macOS's built-in file zipper.
+		if (file.is_empty() || file.begins_with("__MACOSX")) {
 			ret = unzGoToNextFile(pkg);
 			continue;
 		}
@@ -685,6 +706,8 @@ void ExportTemplateManager::popup_manager() {
 			if (!is_downloading_templates) {
 				_refresh_mirrors();
 			}
+
+			enable_online_hb->hide();
 		} break;
 
 		case DOWNLOADS_NOT_AVAILABLE_IN_OFFLINE_MODE: {
@@ -699,6 +722,8 @@ void ExportTemplateManager::popup_manager() {
 
 			download_current_button->set_disabled(true);
 			download_current_button->set_tooltip_text(TTR("Template downloading is disabled in offline mode."));
+
+			enable_online_hb->show();
 		} break;
 
 		case DOWNLOADS_NOT_AVAILABLE_FOR_DEV_BUILDS: {
@@ -713,7 +738,23 @@ void ExportTemplateManager::popup_manager() {
 
 			download_current_button->set_disabled(true);
 			download_current_button->set_tooltip_text(TTR("Official export templates aren't available for development builds."));
+
+			enable_online_hb->hide();
 		} break;
+
+		case DOWNLOADS_NOT_AVAILABLE_FOR_DOUBLE_BUILDS: {
+			current_missing_label->set_text(TTR("Export templates are missing. Install them from a file."));
+
+			mirrors_list->clear();
+			mirrors_list->add_item(TTR("No templates for double-precision builds"), 0);
+			mirrors_list->set_disabled(true);
+			mirrors_list->set_tooltip_text(TTR("Official export templates aren't available for double-precision builds."));
+
+			mirror_options_button->set_disabled(true);
+
+			download_current_button->set_disabled(true);
+			download_current_button->set_tooltip_text(TTR("Official export templates aren't available for double-precision builds."));
+		}
 	}
 
 	popup_centered(Size2(720, 280) * EDSCALE);
@@ -750,7 +791,7 @@ String ExportTemplateManager::get_android_source_zip(const Ref<EditorExportPrese
 		}
 	}
 
-	const String templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().path_join(VERSION_FULL_CONFIG);
+	const String templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().path_join(GODOT_VERSION_FULL_CONFIG);
 	return templates_dir.path_join("android_source.zip");
 }
 
@@ -762,7 +803,7 @@ String ExportTemplateManager::get_android_template_identifier(const Ref<EditorEx
 			return android_source_zip + String(" [") + FileAccess::get_md5(android_source_zip) + String("]");
 		}
 	}
-	return VERSION_FULL_CONFIG;
+	return GODOT_VERSION_FULL_CONFIG;
 }
 
 bool ExportTemplateManager::is_android_template_installed(const Ref<EditorExportPreset> &p_preset) {
@@ -876,19 +917,18 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 
 	ProgressDialog::get_singleton()->end_task("uncompress_src");
 	unzClose(pkg);
-
+	EditorFileSystem::get_singleton()->scan_changes();
 	return OK;
 }
 
 void ExportTemplateManager::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			current_value->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("main"), EditorStringName(EditorFonts)));
 			current_missing_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			current_installed_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 
-			mirror_options_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			mirror_options_button->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -951,6 +991,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	current_hb->add_child(current_label);
 
 	current_value = memnew(Label);
+	current_value->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	current_hb->add_child(current_value);
 
 	// Current version statuses.
@@ -978,6 +1019,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	current_installed_path = memnew(LineEdit);
 	current_installed_path->set_editable(false);
 	current_installed_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	current_installed_path->set_accessibility_name(TTRC("Installed Path"));
 	current_installed_hb->add_child(current_installed_path);
 
 #ifndef ANDROID_ENABLED
@@ -985,14 +1027,14 @@ ExportTemplateManager::ExportTemplateManager() {
 	current_open_button->set_text(TTR("Open Folder"));
 	current_open_button->set_tooltip_text(TTR("Open the folder containing installed templates for the current version."));
 	current_installed_hb->add_child(current_open_button);
-	current_open_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_open_template_folder).bind(VERSION_FULL_CONFIG));
+	current_open_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_open_template_folder).bind(GODOT_VERSION_FULL_CONFIG));
 #endif
 
 	current_uninstall_button = memnew(Button);
 	current_uninstall_button->set_text(TTR("Uninstall"));
 	current_uninstall_button->set_tooltip_text(TTR("Uninstall templates for the current version."));
 	current_installed_hb->add_child(current_uninstall_button);
-	current_uninstall_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_uninstall_template).bind(VERSION_FULL_CONFIG));
+	current_uninstall_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_uninstall_template).bind(GODOT_VERSION_FULL_CONFIG));
 
 	main_vb->add_child(memnew(HSeparator));
 
@@ -1013,6 +1055,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	download_install_hb->add_child(mirrors_label);
 
 	mirrors_list = memnew(OptionButton);
+	mirrors_list->set_accessibility_name(TTRC("Mirror"));
 	mirrors_list->set_custom_minimum_size(Size2(280, 0) * EDSCALE);
 	download_install_hb->add_child(mirrors_list);
 
@@ -1021,6 +1064,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	request_mirrors->connect("request_completed", callable_mp(this, &ExportTemplateManager::_refresh_mirrors_completed));
 
 	mirror_options_button = memnew(MenuButton);
+	mirror_options_button->set_accessibility_name(TTRC("Mirror Options"));
 	mirror_options_button->get_popup()->add_item(TTR("Open in Web Browser"), VISIT_WEB_MIRROR);
 	mirror_options_button->get_popup()->add_item(TTR("Copy Mirror URL"), COPY_MIRROR_URL);
 	download_install_hb->add_child(mirror_options_button);
@@ -1043,6 +1087,19 @@ ExportTemplateManager::ExportTemplateManager() {
 	install_file_button->set_tooltip_text(TTR("Install templates from a local file."));
 	install_file_hb->add_child(install_file_button);
 	install_file_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_install_file));
+
+	enable_online_hb = memnew(HBoxContainer);
+	install_options_vb->add_child(enable_online_hb);
+
+	Label *enable_online_label = memnew(Label);
+	enable_online_label->set_text(TTR("Online mode is needed to download the templates."));
+	enable_online_hb->add_child(enable_online_label);
+
+	LinkButton *enable_online_button = memnew(LinkButton);
+	enable_online_button->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	enable_online_button->set_text(TTR("Go Online"));
+	enable_online_hb->add_child(enable_online_button);
+	enable_online_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_force_online_mode));
 
 	// Templates are being downloaded; buttons unavailable.
 	download_progress_hb = memnew(HBoxContainer);

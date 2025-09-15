@@ -2,17 +2,15 @@
 #[modes]
 
 mode_background =
-mode_half_res = #define USE_HALF_RES_PASS
-mode_quarter_res = #define USE_QUARTER_RES_PASS
 mode_cubemap = #define USE_CUBEMAP_PASS
-mode_cubemap_half_res = #define USE_CUBEMAP_PASS \n#define USE_HALF_RES_PASS
-mode_cubemap_quarter_res = #define USE_CUBEMAP_PASS \n#define USE_QUARTER_RES_PASS
 
 #[specializations]
 
 USE_MULTIVIEW = false
 USE_INVERTED_Y = true
 APPLY_TONEMAPPING = true
+USE_QUARTER_RES_PASS = false
+USE_HALF_RES_PASS = false
 
 #[vertex]
 
@@ -143,8 +141,8 @@ vec4 fog_process(vec3 view, vec3 sky_color) {
 		vec4 sun_scatter = vec4(0.0);
 		float sun_total = 0.0;
 		for (uint i = 0u; i < directional_light_count; i++) {
-			vec3 light_color = directional_lights.data[i].color_size.xyz * directional_lights.data[i].direction_energy.w;
-			float light_amount = pow(max(dot(view, directional_lights.data[i].direction_energy.xyz), 0.0), 8.0);
+			vec3 light_color = srgb_to_linear(directional_lights.data[i].color_size.xyz) * directional_lights.data[i].direction_energy.w;
+			float light_amount = pow(max(dot(view, directional_lights.data[i].direction_energy.xyz), 0.0), 8.0) * M_PI;
 			fog_color += light_color * light_amount * fog_sun_scatter;
 		}
 	}
@@ -152,6 +150,32 @@ vec4 fog_process(vec3 view, vec3 sky_color) {
 	return vec4(fog_color, 1.0);
 }
 #endif // !DISABLE_FOG
+
+// Eberly approximations from https://seblagarde.wordpress.com/2014/12/01/inverse-trigonometric-functions-gpu-optimization-for-amd-gcn-architecture/.
+// input [-1, 1] and output [0, PI]
+float acos_approx(float p_x) {
+	float x = abs(p_x);
+	float res = -0.156583f * x + (M_PI / 2.0);
+	res *= sqrt(1.0f - x);
+	return (p_x >= 0.0) ? res : M_PI - res;
+}
+
+// Based on https://math.stackexchange.com/questions/1098487/atan2-faster-approximation
+// but using the Eberly coefficients from https://seblagarde.wordpress.com/2014/12/01/inverse-trigonometric-functions-gpu-optimization-for-amd-gcn-architecture/.
+float atan2_approx(float y, float x) {
+	float a = min(abs(x), abs(y)) / max(abs(x), abs(y));
+	float s = a * a;
+	float poly = 0.0872929f;
+	poly = -0.301895f + poly * s;
+	poly = 1.0f + poly * s;
+	poly = poly * a;
+
+	float r = abs(y) > abs(x) ? (M_PI / 2.0) - poly : poly;
+	r = x < 0.0 ? M_PI - r : r;
+	r = y < 0.0 ? -r : r;
+
+	return r;
+}
 
 void main() {
 	vec3 cube_normal;
@@ -173,7 +197,7 @@ void main() {
 
 	vec2 uv = gl_FragCoord.xy; // uv_interp * 0.5 + 0.5;
 
-	vec2 panorama_coords = vec2(atan(cube_normal.x, -cube_normal.z), acos(cube_normal.y));
+	vec2 panorama_coords = vec2(atan2_approx(cube_normal.x, -cube_normal.z), acos_approx(cube_normal.y));
 
 	if (panorama_coords.x < 0.0) {
 		panorama_coords.x += M_PI * 2.0;
@@ -212,9 +236,7 @@ void main() {
 #endif
 
 	{
-
 #CODE : SKY
-
 	}
 
 	color *= sky_energy_multiplier;

@@ -75,7 +75,7 @@ void ResourceImporterImageFont::get_import_options(const String &p_path, List<Im
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "scaling_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled (Integer),Enabled (Fractional)"), TextServer::FIXED_SIZE_SCALE_ENABLED));
 }
 
-Error ResourceImporterImageFont::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	print_verbose("Importing image font from: " + p_source_file);
 
 	int columns = p_options["columns"];
@@ -96,7 +96,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 
 	ERR_FAIL_COND_V_MSG(columns <= 0, ERR_FILE_CANT_READ, vformat("Columns (%d) must be positive.", columns));
 	ERR_FAIL_COND_V_MSG(rows <= 0, ERR_FILE_CANT_READ, vformat("Rows (%d) must be positive.", rows));
-	int count = columns * rows;
+	int remaining = columns * rows;
 	int chr_cell_width = (img->get_width() - img_margin.position.x - img_margin.size.x) / columns;
 	int chr_cell_height = (img->get_height() - img_margin.position.y - img_margin.size.y) / rows;
 	ERR_FAIL_COND_V_MSG(chr_cell_width <= 0 || chr_cell_height <= 0, ERR_FILE_CANT_READ, "Image margin too big.");
@@ -112,16 +112,18 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	font->set_multichannel_signed_distance_field(false);
 	font->set_fixed_size(chr_height);
 	font->set_subpixel_positioning(TextServer::SUBPIXEL_POSITIONING_DISABLED);
+	font->set_keep_rounding_remainders(true);
 	font->set_force_autohinter(false);
+	font->set_modulate_color_glyphs(false);
 	font->set_allow_system_fallback(false);
 	font->set_hinting(TextServer::HINTING_NONE);
-	font->set_oversampling(1.0f);
 	font->set_fallbacks(fallbacks);
 	font->set_texture_image(0, Vector2i(chr_height, 0), 0, img);
 	font->set_fixed_size_scale_mode(smode);
 
 	int32_t pos = 0;
 	for (const String &range : ranges) {
+		Vector<int32_t> list;
 		int32_t start = -1;
 		int32_t end = -1;
 		int chr_adv = 0;
@@ -158,7 +160,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 								c++; // Skip "+".
 								continue;
 							}
-						} else if (range[c] == '0' && (c <= range.length() - 2) && range[c + 1] == 'x') {
+						} else if (range[c] == '0' && (c <= range.length() - 2) && (range[c + 1] == 'x' || range[c + 1] == 'X')) {
 							// Read hexadecimal value, start.
 							token = String();
 							if (step == STEP_START_BEGIN) {
@@ -173,7 +175,12 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 								token = String();
 								if (step == STEP_START_BEGIN) {
 									start = range.unicode_at(c + 1);
-									step = STEP_END_BEGIN;
+									if ((c <= range.length() - 4) && (range[c + 3] == ',')) {
+										list.push_back(start);
+										step = STEP_START_BEGIN;
+									} else {
+										step = STEP_END_BEGIN;
+									}
 								} else {
 									end = range.unicode_at(c + 1);
 									step = STEP_ADVANCE_BEGIN;
@@ -199,7 +206,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 					case STEP_OFF_Y_BEGIN: {
 						// Read advance and offset.
 						if (range[c] == ' ') {
-							int next = range.find(" ", c + 1);
+							int next = range.find_char(' ', c + 1);
 							if (next < c) {
 								next = range.length();
 							}
@@ -225,7 +232,12 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 						} else {
 							if (step == STEP_START_READ_HEX) {
 								start = token.hex_to_int();
-								step = STEP_END_BEGIN;
+								if (range[c] == ',') {
+									list.push_back(start);
+									step = STEP_START_BEGIN;
+								} else {
+									step = STEP_END_BEGIN;
+								}
 							} else {
 								end = token.hex_to_int();
 								step = STEP_ADVANCE_BEGIN;
@@ -241,7 +253,12 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 						} else {
 							if (step == STEP_START_READ_DEC) {
 								start = token.to_int();
-								step = STEP_END_BEGIN;
+								if (range[c] == ',') {
+									list.push_back(start);
+									step = STEP_START_BEGIN;
+								} else {
+									step = STEP_END_BEGIN;
+								}
 							} else {
 								end = token.to_int();
 								step = STEP_ADVANCE_BEGIN;
@@ -266,6 +283,9 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 			if (end == -1) {
 				end = start;
 			}
+			if (!list.is_empty() && end != list[list.size() - 1]) {
+				list.push_back(end);
+			}
 
 			if (start == -1) {
 				WARN_PRINT(vformat("Invalid range: \"%s\"", range));
@@ -273,16 +293,32 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 			}
 		}
 
-		for (int32_t idx = MIN(start, end); idx <= MAX(start, end); idx++) {
-			ERR_FAIL_COND_V_MSG(pos >= count, ERR_CANT_CREATE, "Too many characters in range, should be " + itos(columns * rows));
-			int x = pos % columns;
-			int y = pos / columns;
-			font->set_glyph_advance(0, chr_height, idx, Vector2(chr_width + chr_adv, 0));
-			font->set_glyph_offset(0, Vector2i(chr_height, 0), idx, Vector2i(0, -0.5 * chr_height) + chr_off);
-			font->set_glyph_size(0, Vector2i(chr_height, 0), idx, Vector2(chr_width, chr_height));
-			font->set_glyph_uv_rect(0, Vector2i(chr_height, 0), idx, Rect2(img_margin.position.x + chr_cell_width * x + char_margin.position.x, img_margin.position.y + chr_cell_height * y + char_margin.position.y, chr_width, chr_height));
-			font->set_glyph_texture_idx(0, Vector2i(chr_height, 0), idx, 0);
-			pos++;
+		if (!list.is_empty()) {
+			ERR_FAIL_COND_V_MSG(list.size() > remaining, ERR_CANT_CREATE, vformat("Too many characters in range \"%s\", got %d but expected be %d.", range, list.size(), remaining));
+			for (int32_t idx : list) {
+				int x = pos % columns;
+				int y = pos / columns;
+				font->set_glyph_advance(0, chr_height, idx, Vector2(chr_width + chr_adv, 0));
+				font->set_glyph_offset(0, Vector2i(chr_height, 0), idx, Vector2i(0, -0.5 * chr_height) + chr_off);
+				font->set_glyph_size(0, Vector2i(chr_height, 0), idx, Vector2(chr_width, chr_height));
+				font->set_glyph_uv_rect(0, Vector2i(chr_height, 0), idx, Rect2(img_margin.position.x + chr_cell_width * x + char_margin.position.x, img_margin.position.y + chr_cell_height * y + char_margin.position.y, chr_width, chr_height));
+				font->set_glyph_texture_idx(0, Vector2i(chr_height, 0), idx, 0);
+				pos++;
+			}
+			remaining -= list.size();
+		} else {
+			ERR_FAIL_COND_V_MSG(Math::abs(end - start) > remaining, ERR_CANT_CREATE, vformat("Too many characters in range \"%s\", got %d but expected %d.", range, Math::abs(end - start), remaining));
+			for (int32_t idx = MIN(start, end); idx <= MAX(start, end); idx++) {
+				int x = pos % columns;
+				int y = pos / columns;
+				font->set_glyph_advance(0, chr_height, idx, Vector2(chr_width + chr_adv, 0));
+				font->set_glyph_offset(0, Vector2i(chr_height, 0), idx, Vector2i(0, -0.5 * chr_height) + chr_off);
+				font->set_glyph_size(0, Vector2i(chr_height, 0), idx, Vector2(chr_width, chr_height));
+				font->set_glyph_uv_rect(0, Vector2i(chr_height, 0), idx, Rect2(img_margin.position.x + chr_cell_width * x + char_margin.position.x, img_margin.position.y + chr_cell_height * y + char_margin.position.y, chr_width, chr_height));
+				font->set_glyph_texture_idx(0, Vector2i(chr_height, 0), idx, 0);
+				pos++;
+			}
+			remaining -= abs(end - start);
 		}
 	}
 	for (const String &kp : kern) {
@@ -342,7 +378,4 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save font to file \"" + p_save_path + ".res\".");
 	print_verbose("Done saving to: " + p_save_path + ".fontdata");
 	return OK;
-}
-
-ResourceImporterImageFont::ResourceImporterImageFont() {
 }

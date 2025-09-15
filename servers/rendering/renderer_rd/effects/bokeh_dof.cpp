@@ -30,10 +30,8 @@
 
 #include "bokeh_dof.h"
 #include "copy_effects.h"
-#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
-#include "servers/rendering/rendering_server_default.h"
 #include "servers/rendering/storage/camera_attributes_storage.h"
 
 using namespace RendererRD;
@@ -356,7 +354,7 @@ void BokehDOF::bokeh_dof_raster(const BokehBuffers &p_buffers, RID p_camera_attr
 			ERR_FAIL_COND(shader.is_null());
 
 			RID framebuffer = p_buffers.base_weight_fb;
-			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD);
+			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer);
 			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, bokeh.raster_pipelines[BOKEH_GEN_BLUR_SIZE].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(framebuffer)));
 			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_depth_texture), 0);
 
@@ -388,7 +386,7 @@ void BokehDOF::bokeh_dof_raster(const BokehBuffers &p_buffers, RID p_camera_attr
 			RID framebuffer = bokeh.push_constant.half_size ? p_buffers.half_fb[0] : p_buffers.secondary_fb;
 
 			// Pass 1
-			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD);
+			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer);
 			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, bokeh.raster_pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(framebuffer)));
 			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_base_texture), 0);
 			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 1, u_weight_texture0), 1);
@@ -412,7 +410,7 @@ void BokehDOF::bokeh_dof_raster(const BokehBuffers &p_buffers, RID p_camera_attr
 			RD::Uniform texture = bokeh.push_constant.half_size ? u_half_texture0 : u_secondary_texture;
 			RD::Uniform weight = bokeh.push_constant.half_size ? u_weight_texture2 : u_weight_texture1;
 
-			draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD);
+			draw_list = RD::get_singleton()->draw_list_begin(framebuffer);
 			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, bokeh.raster_pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(framebuffer)));
 			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, texture), 0);
 			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 1, weight), 1);
@@ -430,7 +428,7 @@ void BokehDOF::bokeh_dof_raster(const BokehBuffers &p_buffers, RID p_camera_attr
 
 				framebuffer = p_buffers.base_fb;
 
-				draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD);
+				draw_list = RD::get_singleton()->draw_list_begin(framebuffer);
 				RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, bokeh.raster_pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(framebuffer)));
 				RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_half_texture1), 0);
 				RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 1, u_weight_texture3), 1);
@@ -463,7 +461,7 @@ void BokehDOF::bokeh_dof_raster(const BokehBuffers &p_buffers, RID p_camera_attr
 
 			RID framebuffer = bokeh.push_constant.half_size ? p_buffers.half_fb[0] : p_buffers.secondary_fb;
 
-			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD);
+			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer);
 			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, bokeh.raster_pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(framebuffer)));
 			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_base_texture), 0);
 			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 1, u_weight_texture0), 1);
@@ -481,7 +479,7 @@ void BokehDOF::bokeh_dof_raster(const BokehBuffers &p_buffers, RID p_camera_attr
 
 				framebuffer = p_buffers.base_fb;
 
-				draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD);
+				draw_list = RD::get_singleton()->draw_list_begin(framebuffer);
 				RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, bokeh.raster_pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(framebuffer)));
 				RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_half_texture0), 0);
 				RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 1, u_weight_texture2), 1);

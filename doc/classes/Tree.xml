@@ -9,24 +9,24 @@
 		[codeblocks]
 		[gdscript]
 		func _ready():
-		    var tree = Tree.new()
-		    var root = tree.create_item()
-		    tree.hide_root = true
-		    var child1 = tree.create_item(root)
-		    var child2 = tree.create_item(root)
-		    var subchild1 = tree.create_item(child1)
-		    subchild1.set_text(0, "Subchild1")
+			var tree = Tree.new()
+			var root = tree.create_item()
+			tree.hide_root = true
+			var child1 = tree.create_item(root)
+			var child2 = tree.create_item(root)
+			var subchild1 = tree.create_item(child1)
+			subchild1.set_text(0, "Subchild1")
 		[/gdscript]
 		[csharp]
 		public override void _Ready()
 		{
-		    var tree = new Tree();
-		    TreeItem root = tree.CreateItem();
-		    tree.HideRoot = true;
-		    TreeItem child1 = tree.CreateItem(root);
-		    TreeItem child2 = tree.CreateItem(root);
-		    TreeItem subchild1 = tree.CreateItem(child1);
-		    subchild1.SetText(0, "Subchild1");
+			var tree = new Tree();
+			TreeItem root = tree.CreateItem();
+			tree.HideRoot = true;
+			TreeItem child1 = tree.CreateItem(root);
+			TreeItem child2 = tree.CreateItem(root);
+			TreeItem subchild1 = tree.CreateItem(child1);
+			subchild1.SetText(0, "Subchild1");
 		}
 		[/csharp]
 		[/codeblocks]
@@ -153,20 +153,20 @@
 				[codeblocks]
 				[gdscript]
 				func _ready():
-				    $Tree.item_edited.connect(on_Tree_item_edited)
+					$Tree.item_edited.connect(on_Tree_item_edited)
 
 				func on_Tree_item_edited():
-				    print($Tree.get_edited()) # This item just got edited (e.g. checked).
+					print($Tree.get_edited()) # This item just got edited (e.g. checked).
 				[/gdscript]
 				[csharp]
 				public override void _Ready()
 				{
-				    GetNode&lt;Tree&gt;("Tree").ItemEdited += OnTreeItemEdited;
+					GetNode&lt;Tree&gt;("Tree").ItemEdited += OnTreeItemEdited;
 				}
 
 				public void OnTreeItemEdited()
 				{
-				    GD.Print(GetNode&lt;Tree&gt;("Tree").GetEdited()); // This item just got edited (e.g. checked).
+					GD.Print(GetNode&lt;Tree&gt;("Tree").GetEdited()); // This item just got edited (e.g. checked).
 				}
 				[/csharp]
 				[/codeblocks]
@@ -341,6 +341,9 @@
 		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="true">
 			If [code]true[/code], allows navigating the [Tree] with letter keys through incremental search.
 		</member>
+		<member name="auto_tooltip" type="bool" setter="set_auto_tooltip" getter="is_auto_tooltip_enabled" default="true">
+			If [code]true[/code], tree items with no tooltip assigned display their text as their tooltip. See also [method TreeItem.get_tooltip_text] and [method TreeItem.get_button_tooltip_text].
+		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="column_titles_visible" type="bool" setter="set_column_titles_visible" getter="are_column_titles_visible" default="false">
 			If [code]true[/code], column titles are visible.
@@ -428,7 +431,8 @@
 		<signal name="item_collapsed">
 			<param index="0" name="item" type="TreeItem" />
 			<description>
-				Emitted when an item is collapsed by a click on the folding arrow.
+				Emitted when an item is expanded or collapsed by clicking on the folding arrow or through code.
+				[b]Note:[/b] Despite its name, this signal is also emitted when an item is expanded.
 			</description>
 		</signal>
 		<signal name="item_edited">
@@ -508,6 +512,15 @@
 		</theme_item>
 		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Text [Color] for a [constant TreeItem.CELL_MODE_CHECK] mode cell when it's non-editable (see [method TreeItem.set_editable]).
+		</theme_item>
+		<theme_item name="font_hovered_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			Text [Color] used when the item is hovered and not selected yet.
+		</theme_item>
+		<theme_item name="font_hovered_dimmed_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
+			Text [Color] used when the item is hovered, while a button of the same item is hovered as the same time.
+		</theme_item>
+		<theme_item name="font_hovered_selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Text [Color] used when the item is hovered and selected.
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the item.
@@ -645,6 +658,9 @@
 		<theme_item name="updown" data_type="icon" type="Texture2D">
 			The updown arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode cell.
 		</theme_item>
+		<theme_item name="button_hover" data_type="style" type="StyleBox">
+			[StyleBox] used when a button in the tree is hovered.
+		</theme_item>
 		<theme_item name="button_pressed" data_type="style" type="StyleBox">
 			[StyleBox] used when a button in the tree is pressed.
 		</theme_item>
@@ -665,6 +681,18 @@
 		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
 			The focused style for the [Tree], drawn on top of everything.
+		</theme_item>
+		<theme_item name="hovered" data_type="style" type="StyleBox">
+			[StyleBox] for the item being hovered, but not selected.
+		</theme_item>
+		<theme_item name="hovered_dimmed" data_type="style" type="StyleBox">
+			[StyleBox] for the item being hovered, while a button of the same item is hovered as the same time.
+		</theme_item>
+		<theme_item name="hovered_selected" data_type="style" type="StyleBox">
+			[StyleBox] for the hovered and selected items, used when the [Tree] is not being focused.
+		</theme_item>
+		<theme_item name="hovered_selected_focus" data_type="style" type="StyleBox">
+			[StyleBox] for the hovered and selected items, used when the [Tree] is being focused.
 		</theme_item>
 		<theme_item name="panel" data_type="style" type="StyleBox">
 			The background style for the [Tree].

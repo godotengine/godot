@@ -28,18 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SKELETON_MODIFIER_3D_H
-#define SKELETON_MODIFIER_3D_H
+#pragma once
 
 #include "scene/3d/node_3d.h"
 
 #include "scene/3d/skeleton_3d.h"
-#include "scene/animation/animation_mixer.h"
 
 class SkeletonModifier3D : public Node3D {
 	GDCLASS(SkeletonModifier3D, Node3D);
 
 	void rebind();
+
+public:
+	enum BoneAxis {
+		BONE_AXIS_PLUS_X,
+		BONE_AXIS_MINUS_X,
+		BONE_AXIS_PLUS_Y,
+		BONE_AXIS_MINUS_Y,
+		BONE_AXIS_PLUS_Z,
+		BONE_AXIS_MINUS_Z,
+	};
 
 protected:
 	bool active = true;
@@ -50,17 +58,24 @@ protected:
 
 	void _update_skeleton();
 	void _update_skeleton_path();
+	void _force_update_skeleton_skin();
 
 	virtual void _skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new);
+	virtual void _validate_bone_names();
+	GDVIRTUAL2(_skeleton_changed, Skeleton3D *, Skeleton3D *);
+	GDVIRTUAL0(_validate_bone_names);
 
-	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 	static void _bind_methods();
 
 	virtual void _set_active(bool p_active);
 
-	virtual void _process_modification();
+	virtual void _process_modification(double p_delta);
+	// TODO: In Godot 5, should obsolete old GDVIRTUAL0(_process_modification); and replace it with _process_modification_with_delta as GDVIRTUAL1(_process_modification, double).
+	GDVIRTUAL1(_process_modification_with_delta, double);
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL0(_process_modification);
+#endif
 
 public:
 	virtual PackedStringArray get_configuration_warnings() const override;
@@ -74,9 +89,23 @@ public:
 
 	Skeleton3D *get_skeleton() const;
 
-	void process_modification();
+	void process_modification(double p_delta);
+
+	// Utility APIs.
+	static Vector3 get_vector_from_bone_axis(BoneAxis p_axis);
+	static Vector3 get_vector_from_axis(Vector3::Axis p_axis);
+	static Vector3::Axis get_axis_from_bone_axis(BoneAxis p_axis);
+
+	static Vector3 limit_length(const Vector3 &p_origin, const Vector3 &p_destination, float p_length);
+	static Quaternion get_local_pose_rotation(Skeleton3D *p_skeleton, int p_bone, const Quaternion &p_global_pose_rotation);
+	static Quaternion get_from_to_rotation(const Vector3 &p_from, const Vector3 &p_to, const Quaternion &p_prev_rot);
+	static Vector3 snap_vector_to_plane(const Vector3 &p_plane_normal, const Vector3 &p_vector);
+
+#ifdef TOOLS_ENABLED
+	virtual bool is_processed_on_saving() const { return false; }
+#endif
 
 	SkeletonModifier3D();
 };
 
-#endif // SKELETON_MODIFIER_3D_H
+VARIANT_ENUM_CAST(SkeletonModifier3D::BoneAxis);

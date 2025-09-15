@@ -28,14 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VULKAN_HOOKS_H
-#define VULKAN_HOOKS_H
+#pragma once
 
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include "drivers/vulkan/godot_vulkan.h"
 
 class VulkanHooks {
 private:
@@ -50,5 +45,3 @@ public:
 	virtual void set_direct_queue_family_and_index(uint32_t p_queue_family_index, uint32_t p_queue_index) = 0;
 	static VulkanHooks *get_singleton() { return singleton; }
 };
-
-#endif // VULKAN_HOOKS_H

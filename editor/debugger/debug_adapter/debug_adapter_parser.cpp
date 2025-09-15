@@ -30,11 +30,12 @@
 
 #include "debug_adapter_parser.h"
 
+#include "editor/debugger/debug_adapter/debug_adapter_types.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/export/editor_export_platform.h"
-#include "editor/gui/editor_run_bar.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/run/editor_run_bar.h"
+#include "editor/script/script_editor_plugin.h"
 
 void DebugAdapterParser::_bind_methods() {
 	// Requests
@@ -143,10 +144,8 @@ Dictionary DebugAdapterParser::req_initialize(const Dictionary &p_params) const 
 		// Send all current breakpoints
 		List<String> breakpoints;
 		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);
-		for (List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
-			String breakpoint = E->get();
-
-			String path = breakpoint.left(breakpoint.find(":", 6)); // Skip initial part of path, aka "res://"
+		for (const String &breakpoint : breakpoints) {
+			String path = breakpoint.left(breakpoint.find_char(':', 6)); // Skip initial part of path, aka "res://"
 			int line = breakpoint.substr(path.size()).to_int();
 
 			DebugAdapterProtocol::get_singleton()->on_debug_breakpoint_toggled(path, line, true);
@@ -300,12 +299,11 @@ Dictionary DebugAdapterParser::req_threads(const Dictionary &p_params) const {
 	Dictionary response = prepare_success_response(p_params), body;
 	response["body"] = body;
 
-	Array arr;
 	DAP::Thread thread;
 
 	thread.id = 1; // Hardcoded because Godot only supports debugging one thread at the moment
 	thread.name = "Main";
-	arr.push_back(thread.to_json());
+	Array arr = { thread.to_json() };
 	body["threads"] = arr;
 
 	return response;
@@ -324,8 +322,7 @@ Dictionary DebugAdapterParser::req_stackTrace(const Dictionary &p_params) const 
 
 	Array arr;
 	DebugAdapterProtocol *dap = DebugAdapterProtocol::get_singleton();
-	for (const KeyValue<DAP::StackFrame, List<int>> &E : dap->stackframe_list) {
-		DAP::StackFrame sf = E.key;
+	for (DAP::StackFrame sf : dap->stackframe_list) {
 		if (!lines_at_one) {
 			sf.line--;
 		}
@@ -358,8 +355,8 @@ Dictionary DebugAdapterParser::req_setBreakpoints(const Dictionary &p_params) co
 	}
 
 	// If path contains \, it's a Windows path, so we need to convert it to /, and make the drive letter uppercase
-	if (source.path.contains("\\")) {
-		source.path = source.path.replace("\\", "/");
+	if (source.path.contains_char('\\')) {
+		source.path = source.path.replace_char('\\', '/');
 		source.path = source.path.substr(0, 1).to_upper() + source.path.substr(1);
 	}
 
@@ -371,6 +368,8 @@ Dictionary DebugAdapterParser::req_setBreakpoints(const Dictionary &p_params) co
 		lines.push_back(breakpoint.line + !lines_at_one);
 	}
 
+	// Always update the source checksum for the requested path, as it might have been modified externally.
+	DebugAdapterProtocol::get_singleton()->update_source(source.path);
 	Array updated_breakpoints = DebugAdapterProtocol::get_singleton()->update_breakpoints(source.path, lines);
 	body["breakpoints"] = updated_breakpoints;
 
@@ -382,13 +381,12 @@ Dictionary DebugAdapterParser::req_breakpointLocations(const Dictionary &p_param
 	response["body"] = body;
 	Dictionary args = p_params["arguments"];
 
-	Array locations;
 	DAP::BreakpointLocation location;
 	location.line = args["line"];
 	if (args.has("endLine")) {
 		location.endLine = args["endLine"];
 	}
-	locations.push_back(location.to_json());
+	Array locations = { location.to_json() };
 
 	body["breakpoints"] = locations;
 	return response;
@@ -402,15 +400,13 @@ Dictionary DebugAdapterParser::req_scopes(const Dictionary &p_params) const {
 	int frame_id = args["frameId"];
 	Array scope_list;
 
-	DAP::StackFrame frame;
-	frame.id = frame_id;
-	HashMap<DAP::StackFrame, List<int>, DAP::StackFrame>::Iterator E = DebugAdapterProtocol::get_singleton()->stackframe_list.find(frame);
+	HashMap<DebugAdapterProtocol::DAPStackFrameID, Vector<int>>::Iterator E = DebugAdapterProtocol::get_singleton()->scope_list.find(frame_id);
 	if (E) {
-		ERR_FAIL_COND_V(E->value.size() != 3, prepare_error_response(p_params, DAP::ErrorType::UNKNOWN));
-		List<int>::ConstIterator itr = E->value.begin();
-		for (int i = 0; i < 3; ++itr, ++i) {
+		const Vector<int> &scope_ids = E->value;
+		ERR_FAIL_COND_V(scope_ids.size() != 3, prepare_error_response(p_params, DAP::ErrorType::UNKNOWN));
+		for (int i = 0; i < 3; ++i) {
 			DAP::Scope scope;
-			scope.variablesReference = *itr;
+			scope.variablesReference = scope_ids[i];
 			switch (i) {
 				case 0:
 					scope.name = "Locals";
@@ -442,26 +438,34 @@ Dictionary DebugAdapterParser::req_variables(const Dictionary &p_params) const {
 		return Dictionary();
 	}
 
-	Dictionary response = prepare_success_response(p_params), body;
-	response["body"] = body;
-
 	Dictionary args = p_params["arguments"];
 	int variable_id = args["variablesReference"];
 
-	HashMap<int, Array>::Iterator E = DebugAdapterProtocol::get_singleton()->variable_list.find(variable_id);
+	if (HashMap<int, Array>::Iterator E = DebugAdapterProtocol::get_singleton()->variable_list.find(variable_id); E) {
+		Dictionary response = prepare_success_response(p_params);
+		Dictionary body;
+		response["body"] = body;
 
-	if (E) {
 		if (!DebugAdapterProtocol::get_singleton()->get_current_peer()->supportsVariableType) {
 			for (int i = 0; i < E->value.size(); i++) {
 				Dictionary variable = E->value[i];
 				variable.erase("type");
 			}
 		}
+
 		body["variables"] = E ? E->value : Array();
 		return response;
 	} else {
-		return Dictionary();
+		// If the requested variable is an object, it needs to be requested from the debuggee.
+		ObjectID object_id = DebugAdapterProtocol::get_singleton()->search_object_id(variable_id);
+
+		if (object_id.is_null()) {
+			return prepare_error_response(p_params, DAP::ErrorType::UNKNOWN);
+		}
+
+		DebugAdapterProtocol::get_singleton()->request_remote_object(object_id);
 	}
+	return Dictionary();
 }
 
 Dictionary DebugAdapterParser::req_next(const Dictionary &p_params) const {
@@ -479,16 +483,27 @@ Dictionary DebugAdapterParser::req_stepIn(const Dictionary &p_params) const {
 }
 
 Dictionary DebugAdapterParser::req_evaluate(const Dictionary &p_params) const {
-	Dictionary response = prepare_success_response(p_params), body;
-	response["body"] = body;
-
 	Dictionary args = p_params["arguments"];
+	String expression = args["expression"];
+	int frame_id = args.has("frameId") ? static_cast<int>(args["frameId"]) : DebugAdapterProtocol::get_singleton()->_current_frame;
 
-	String value = EditorDebuggerNode::get_singleton()->get_var_value(args["expression"]);
-	body["result"] = value;
-	body["variablesReference"] = 0;
+	if (HashMap<String, DAP::Variable>::Iterator E = DebugAdapterProtocol::get_singleton()->eval_list.find(expression); E) {
+		Dictionary response = prepare_success_response(p_params);
+		Dictionary body;
+		response["body"] = body;
 
-	return response;
+		DAP::Variable var = E->value;
+
+		body["result"] = var.value;
+		body["variablesReference"] = var.variablesReference;
+
+		// Since an evaluation can alter the state of the debuggee, they are volatile, and should only be used once
+		DebugAdapterProtocol::get_singleton()->eval_list.erase(E->key);
+		return response;
+	} else {
+		DebugAdapterProtocol::get_singleton()->request_remote_evaluate(expression, frame_id);
+	}
+	return Dictionary();
 }
 
 Dictionary DebugAdapterParser::req_godot_put_msg(const Dictionary &p_params) const {
@@ -575,8 +590,7 @@ Dictionary DebugAdapterParser::ev_stopped_breakpoint(const int &p_id) const {
 	body["reason"] = "breakpoint";
 	body["description"] = "Breakpoint";
 
-	Array breakpoints;
-	breakpoints.push_back(p_id);
+	Array breakpoints = { p_id };
 	body["hitBreakpointIds"] = breakpoints;
 
 	return event;

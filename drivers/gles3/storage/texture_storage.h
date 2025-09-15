@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXTURE_STORAGE_GLES3_H
-#define TEXTURE_STORAGE_GLES3_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
 #include "platform_gl.h"
 
 #include "config.h"
+#include "core/io/image.h"
 #include "core/os/os.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
@@ -126,6 +126,7 @@ enum DefaultGLTexture {
 	DEFAULT_GL_TEXTURE_3D_BLACK,
 	DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE,
 	DEFAULT_GL_TEXTURE_2D_UINT,
+	DEFAULT_GL_TEXTURE_EXT,
 	DEFAULT_GL_TEXTURE_MAX
 };
 
@@ -146,7 +147,7 @@ struct Texture {
 	RID self;
 
 	bool is_proxy = false;
-	bool is_external = false;
+	bool is_from_native_handle = false;
 	bool is_render_target = false;
 
 	RID proxy_to;
@@ -209,7 +210,7 @@ struct Texture {
 	void copy_from(const Texture &o) {
 		proxy_to = o.proxy_to;
 		is_proxy = o.is_proxy;
-		is_external = o.is_external;
+		is_from_native_handle = o.is_from_native_handle;
 		width = o.width;
 		height = o.height;
 		alloc_width = o.alloc_width;
@@ -346,6 +347,7 @@ struct RenderTarget {
 	GLuint backbuffer_fbo = 0;
 	GLuint backbuffer = 0;
 	GLuint backbuffer_depth = 0;
+	bool depth_has_stencil = true;
 
 	bool hdr = false; // For Compatibility this effects both 2D and 3D rendering!
 	GLuint color_internal_format = GL_RGBA8;
@@ -370,8 +372,11 @@ struct RenderTarget {
 	RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
 	bool reattach_textures = false;
 
+	Rect2i render_region;
+
 	struct RTOverridden {
 		bool is_overridden = false;
+		bool depth_has_stencil = false;
 		RID color;
 		RID depth;
 		RID velocity;
@@ -382,6 +387,7 @@ struct RenderTarget {
 			GLuint depth;
 			Size2i size;
 			Vector<GLuint> allocated_textures;
+			bool depth_has_stencil;
 		};
 		RBMap<uint32_t, FBOCacheEntry> fbo_cache;
 	} overridden;
@@ -476,8 +482,8 @@ public:
 
 	/* Canvas Texture API */
 
-	CanvasTexture *get_canvas_texture(RID p_rid) { return canvas_texture_owner.get_or_null(p_rid); };
-	bool owns_canvas_texture(RID p_rid) { return canvas_texture_owner.owns(p_rid); };
+	CanvasTexture *get_canvas_texture(RID p_rid) { return canvas_texture_owner.get_or_null(p_rid); }
+	bool owns_canvas_texture(RID p_rid) { return canvas_texture_owner.owns(p_rid); }
 
 	virtual RID canvas_texture_allocate() override;
 	virtual void canvas_texture_initialize(RID p_rid) override;
@@ -497,14 +503,12 @@ public:
 			return texture_owner.get_or_null(texture->proxy_to);
 		}
 		return texture;
-	};
-	bool owns_texture(RID p_rid) { return texture_owner.owns(p_rid); };
+	}
+	bool owns_texture(RID p_rid) { return texture_owner.owns(p_rid); }
 
 	void texture_2d_initialize_from_texture(RID p_texture, Texture &p_tex) {
 		texture_owner.initialize_rid(p_texture, p_tex);
 	}
-
-	virtual bool can_create_resources_async() const override;
 
 	virtual RID texture_allocate() override;
 	virtual void texture_free(RID p_rid) override;
@@ -512,13 +516,20 @@ public:
 	virtual void texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) override;
 	virtual void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) override;
 	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) override;
+	virtual void texture_external_initialize(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_initialize(RID p_texture, RID p_base) override; //all slices, then all the mipmaps, must be coherent
 
-	RID texture_create_external(Texture::Type p_type, Image::Format p_format, unsigned int p_image, int p_width, int p_height, int p_depth, int p_layers, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY);
+	virtual RID texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY) override;
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override;
+	virtual void texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) override;
+
+	Ref<Image> texture_2d_placeholder;
+	Vector<Ref<Image>> texture_2d_array_placeholder;
+	Vector<Ref<Image>> cubemap_placeholder;
+	Vector<Ref<Image>> texture_3d_placeholder;
 
 	//these two APIs can be used together or in combination with the others.
 	virtual void texture_2d_placeholder_initialize(RID p_texture) override;
@@ -582,7 +593,7 @@ public:
 
 	virtual RID decal_allocate() override;
 	virtual void decal_initialize(RID p_rid) override;
-	virtual void decal_free(RID p_rid) override{};
+	virtual void decal_free(RID p_rid) override {}
 
 	virtual void decal_set_size(RID p_decal, const Vector3 &p_size) override;
 	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) override;
@@ -611,8 +622,8 @@ public:
 
 	static GLuint system_fbo;
 
-	RenderTarget *get_render_target(RID p_rid) { return render_target_owner.get_or_null(p_rid); };
-	bool owns_render_target(RID p_rid) { return render_target_owner.owns(p_rid); };
+	RenderTarget *get_render_target(RID p_rid) { return render_target_owner.get_or_null(p_rid); }
+	bool owns_render_target(RID p_rid) { return render_target_owner.owns(p_rid); }
 
 	void check_backbuffer(RenderTarget *rt, const bool uses_screen_texture, const bool uses_depth_texture);
 
@@ -636,6 +647,8 @@ public:
 	virtual void render_target_do_msaa_resolve(RID p_render_target) override {}
 	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr_2d) override;
 	virtual bool render_target_is_using_hdr(RID p_render_target) const override;
+	virtual void render_target_set_use_debanding(RID p_render_target, bool p_use_debanding) override {}
+	virtual bool render_target_is_using_debanding(RID p_render_target) const override { return false; }
 
 	// new
 	void render_target_set_as_unused(RID p_render_target) override {
@@ -656,6 +669,7 @@ public:
 	GLuint render_target_get_fbo(RID p_render_target) const;
 	GLuint render_target_get_color(RID p_render_target) const;
 	GLuint render_target_get_depth(RID p_render_target) const;
+	bool render_target_get_depth_has_stencil(RID p_render_target) const;
 	void render_target_set_reattach_textures(RID p_render_target, bool p_reattach_textures) const;
 	bool render_target_is_reattach_textures(RID p_render_target) const;
 
@@ -678,12 +692,19 @@ public:
 	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) override {}
 	virtual RID render_target_get_vrs_texture(RID p_render_target) const override { return RID(); }
 
-	virtual void render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture) override;
+	virtual void render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture, RID p_velocity_depth_texture) override;
 	virtual RID render_target_get_override_color(RID p_render_target) const override;
 	virtual RID render_target_get_override_depth(RID p_render_target) const override;
 	virtual RID render_target_get_override_velocity(RID p_render_target) const override;
+	virtual RID render_target_get_override_velocity_depth(RID p_render_target) const override { return RID(); }
+
+	virtual void render_target_set_render_region(RID p_render_target, const Rect2i &p_render_region) override;
+	virtual Rect2i render_target_get_render_region(RID p_render_target) const override;
 
 	virtual RID render_target_get_texture(RID p_render_target) override;
+
+	virtual void render_target_set_velocity_target_size(RID p_render_target, const Size2i &p_target_size) override {}
+	virtual Size2i render_target_get_velocity_target_size(RID p_render_target) const override { return Size2i(); }
 
 	void bind_framebuffer(GLuint framebuffer) {
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -714,5 +735,3 @@ inline String TextureStorage::get_framebuffer_error(GLenum p_status) {
 } // namespace GLES3
 
 #endif // GLES3_ENABLED
-
-#endif // TEXTURE_STORAGE_GLES3_H

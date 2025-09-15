@@ -42,7 +42,7 @@
 			<return type="bool" />
 			<param index="0" name="particle_flag" type="int" enum="ParticleProcessMaterial.ParticleFlags" />
 			<description>
-				Returns [code]true[/code] if the specified particle flag is enabled. See [enum ParticleFlags] for options.
+				Returns [code]true[/code] if the specified particle flag is enabled.
 			</description>
 		</method>
 		<method name="set_param">
@@ -83,13 +83,14 @@
 			<param index="0" name="particle_flag" type="int" enum="ParticleProcessMaterial.ParticleFlags" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], enables the specified particle flag. See [enum ParticleFlags] for options.
+				Sets the [param particle_flag] to [param enable].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="alpha_curve" type="Texture2D" setter="set_alpha_curve" getter="get_alpha_curve">
 			The alpha value of each particle's color will be multiplied by this [CurveTexture] over its lifetime.
+			[b]Note:[/b] [member alpha_curve] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member alpha_curve] will have no visible effect.
 		</member>
 		<member name="angle_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's rotation will be animated along this [CurveTexture].
@@ -193,7 +194,7 @@
 		</member>
 		<member name="emission_curve" type="Texture2D" setter="set_emission_curve" getter="get_emission_curve">
 			Each particle's color will be multiplied by this [CurveTexture] over its lifetime.
-			[b]Note:[/b] This property won't have a visible effect unless the render material is marked as unshaded.
+			[b]Note:[/b] [member emission_curve] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member emission_curve] will have no visible effect.
 		</member>
 		<member name="emission_normal_texture" type="Texture2D" setter="set_emission_normal_texture" getter="get_emission_normal_texture">
 			Particle velocity and rotation will be set by sampling this texture at the same point as the [member emission_point_texture]. Used only in [constant EMISSION_SHAPE_DIRECTED_POINTS]. Can be created automatically from mesh or node by selecting "Create Emission Points from Mesh/Node" under the "Particles" tool in the toolbar.
@@ -221,7 +222,7 @@
 			The radius of the ring when using the emitter [constant EMISSION_SHAPE_RING].
 		</member>
 		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="ParticleProcessMaterial.EmissionShape" default="0">
-			Particles will be emitted inside this region. Use [enum EmissionShape] constants for values.
+			Particles will be emitted inside this region.
 		</member>
 		<member name="emission_shape_offset" type="Vector3" setter="set_emission_shape_offset" getter="get_emission_shape_offset" default="Vector3(0, 0, 0)">
 			The offset for the [member emission_shape], in local space.
@@ -345,6 +346,10 @@
 			The amount of particles to spawn from the subemitter node when the particle expires.
 			[b]Note:[/b] This value shouldn't exceed [member GPUParticles2D.amount] or [member GPUParticles3D.amount] defined on the [i]subemitter node[/i] (not the main node), relative to the subemitter's particle lifetime. If the number of particles is exceeded, no new particles will spawn from the subemitter until enough particles have expired.
 		</member>
+		<member name="sub_emitter_amount_at_start" type="int" setter="set_sub_emitter_amount_at_start" getter="get_sub_emitter_amount_at_start">
+			The amount of particles to spawn from the subemitter node when the particle spawns.
+			[b]Note:[/b] This value shouldn't exceed [member GPUParticles2D.amount] or [member GPUParticles3D.amount] defined on the [i]subemitter node[/i] (not the main node), relative to the subemitter's particle lifetime. If the number of particles is exceeded, no new particles will spawn from the subemitter until enough particles have expired.
+		</member>
 		<member name="sub_emitter_frequency" type="float" setter="set_sub_emitter_frequency" getter="get_sub_emitter_frequency">
 			The frequency at which particles should be emitted from the subemitter node. One particle will be spawned every [member sub_emitter_frequency] seconds.
 			[b]Note:[/b] This value shouldn't exceed [member GPUParticles2D.amount] or [member GPUParticles3D.amount] defined on the [i]subemitter node[/i] (not the main node), relative to the subemitter's particle lifetime. If the number of particles is exceeded, no new particles will spawn from the subemitter until enough particles have expired.
@@ -409,6 +414,14 @@
 			A pivot point used to calculate radial and orbital velocity of particles.
 		</member>
 	</members>
+	<signals>
+		<signal name="emission_shape_changed">
+			<description>
+				Emitted when this material's emission shape is changed in any way. This includes changes to [member emission_shape], [member emission_shape_scale], or [member emission_sphere_radius], and any other property that affects the emission shape's offset, size, scale, or orientation.
+				[b]Note:[/b] This signal is only emitted inside the editor for performance reasons.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="PARAM_INITIAL_LINEAR_VELOCITY" value="0" enum="Parameter">
 			Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set initial velocity properties.
@@ -513,7 +526,9 @@
 		</constant>
 		<constant name="SUB_EMITTER_AT_COLLISION" value="3" enum="SubEmitterMode">
 		</constant>
-		<constant name="SUB_EMITTER_MAX" value="4" enum="SubEmitterMode">
+		<constant name="SUB_EMITTER_AT_START" value="4" enum="SubEmitterMode">
+		</constant>
+		<constant name="SUB_EMITTER_MAX" value="5" enum="SubEmitterMode">
 			Represents the size of the [enum SubEmitterMode] enum.
 		</constant>
 		<constant name="COLLISION_DISABLED" value="0" enum="CollisionMode">

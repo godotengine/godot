@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef METHOD_BIND_H
-#define METHOD_BIND_H
+#pragma once
 
 #include "core/variant/binder_common.h"
 
@@ -53,9 +52,9 @@ class MethodBind {
 
 protected:
 	Variant::Type *argument_types = nullptr;
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	Vector<StringName> arg_names;
-#endif
+#endif // DEBUG_ENABLED
 	void _set_const(bool p_const);
 	void _set_static(bool p_static);
 	void _set_returns(bool p_returns);
@@ -90,26 +89,26 @@ public:
 	}
 
 	_FORCE_INLINE_ Variant::Type get_argument_type(int p_argument) const {
-		ERR_FAIL_COND_V(p_argument < -1 || p_argument > argument_count, Variant::NIL);
+		ERR_FAIL_COND_V(p_argument < -1 || p_argument >= argument_count, Variant::NIL);
 		return argument_types[p_argument + 1];
 	}
 
 	PropertyInfo get_argument_info(int p_argument) const;
 	PropertyInfo get_return_info() const;
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	void set_argument_names(const Vector<StringName> &p_names); // Set by ClassDB, can't be inferred otherwise.
 	Vector<StringName> get_argument_names() const;
 
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const = 0;
-#endif
+#endif // DEBUG_ENABLED
 
 	void set_hint_flags(uint32_t p_hint) { hint_flags = p_hint; }
 	uint32_t get_hint_flags() const { return hint_flags | (is_const() ? METHOD_FLAG_CONST : 0) | (is_vararg() ? METHOD_FLAG_VARARG : 0) | (is_static() ? METHOD_FLAG_STATIC : 0); }
 	_FORCE_INLINE_ StringName get_instance_class() const { return instance_class; }
 	_FORCE_INLINE_ void set_instance_class(const StringName &p_class) { instance_class = p_class; }
 
-	_FORCE_INLINE_ int get_argument_count() const { return argument_count; };
+	_FORCE_INLINE_ int get_argument_count() const { return argument_count; }
 
 #ifdef TOOLS_ENABLED
 	virtual bool is_valid() const { return true; }
@@ -143,8 +142,7 @@ public:
 template <typename Derived, typename T, typename R, bool should_returns>
 class MethodBindVarArgBase : public MethodBind {
 protected:
-	R(T::*method)
-	(const Variant **, int, Callable::CallError &);
+	R (T::*method)(const Variant **, int, Callable::CallError &);
 	MethodInfo method_info;
 
 public:
@@ -152,7 +150,7 @@ public:
 		if (p_arg < 0) {
 			return _gen_return_type_info();
 		} else if (p_arg < method_info.arguments.size()) {
-			return method_info.arguments.get(p_arg);
+			return method_info.arguments[p_arg];
 		} else {
 			return PropertyInfo(Variant::NIL, "arg_" + itos(p_arg), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT);
 		}
@@ -162,11 +160,11 @@ public:
 		return _gen_argument_type_info(p_arg).type;
 	}
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int) const override {
 		return GodotTypeInfo::METADATA_NONE;
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const override {
 		ERR_FAIL_MSG("Validated call can't be used with vararg methods. This is a bug.");
@@ -189,21 +187,20 @@ public:
 		Variant::Type *at = memnew_arr(Variant::Type, method_info.arguments.size() + 1);
 		at[0] = _gen_return_type_info().type;
 		if (method_info.arguments.size()) {
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 			Vector<StringName> names;
 			names.resize(method_info.arguments.size());
-#endif
-			int i = 0;
-			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++i) {
-				at[i + 1] = itr->type;
-#ifdef DEBUG_METHODS_ENABLED
-				names.write[i] = itr->name;
-#endif
+#endif // DEBUG_ENABLED
+			for (int64_t i = 0; i < method_info.arguments.size(); ++i) {
+				at[i + 1] = method_info.arguments[i].type;
+#ifdef DEBUG_ENABLED
+				names.write[i] = method_info.arguments[i].name;
+#endif // DEBUG_ENABLED
 			}
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 			set_argument_names(names);
-#endif
+#endif // DEBUG_ENABLED
 		}
 		argument_types = at;
 		if (p_return_nil_is_variant) {
@@ -259,11 +256,8 @@ class MethodBindVarArgTR : public MethodBindVarArgBase<MethodBindVarArgTR<T, R>,
 	friend class MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>;
 
 public:
-#if defined(SANITIZERS_ENABLED) && defined(__GNUC__) && !defined(__clang__)
-	// Workaround GH-66343 raised only with UBSAN, seems to be a false positive.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
+	GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wmaybe-uninitialized") // Workaround GH-66343 raised only with UBSAN, seems to be a false positive.
+
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 #ifdef TOOLS_ENABLED
 		ERR_FAIL_COND_V_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == MethodBind::get_instance_class(), Variant(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
@@ -271,9 +265,7 @@ public:
 		return (static_cast<T *>(p_object)->*MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>::method)(p_args, p_arg_count, r_error);
 	}
 
-#if defined(SANITIZERS_ENABLED) && defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+	GODOT_GCC_WARNING_POP
 
 	MethodBindVarArgTR(
 			R (T::*p_method)(const Variant **, int, Callable::CallError &),
@@ -329,12 +321,12 @@ protected:
 	}
 
 public:
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		return call_get_argument_metadata<P...>(p_arg);
 	}
 
-#endif
+#endif // DEBUG_ENABLED
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 #ifdef TOOLS_ENABLED
 		ERR_FAIL_COND_V_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == get_instance_class(), Variant(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
@@ -413,12 +405,12 @@ protected:
 	}
 
 public:
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		return call_get_argument_metadata<P...>(p_arg);
 	}
 
-#endif
+#endif // DEBUG_ENABLED
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 #ifdef TOOLS_ENABLED
 		ERR_FAIL_COND_V_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == get_instance_class(), Variant(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
@@ -480,8 +472,7 @@ template <typename T, typename R, typename... P>
 template <typename R, typename... P>
 #endif
 class MethodBindTR : public MethodBind {
-	R(MB_T::*method)
-	(P...);
+	R (MB_T::*method)(P...);
 
 protected:
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
@@ -503,7 +494,7 @@ protected:
 	}
 
 public:
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		if (p_arg >= 0) {
 			return call_get_argument_metadata<P...>(p_arg);
@@ -511,7 +502,7 @@ public:
 			return GetTypeInfo<R>::METADATA;
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 		Variant ret;
@@ -576,8 +567,7 @@ template <typename T, typename R, typename... P>
 template <typename R, typename... P>
 #endif
 class MethodBindTRC : public MethodBind {
-	R(MB_T::*method)
-	(P...) const;
+	R (MB_T::*method)(P...) const;
 
 protected:
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
@@ -599,7 +589,7 @@ protected:
 	}
 
 public:
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		if (p_arg >= 0) {
 			return call_get_argument_metadata<P...>(p_arg);
@@ -607,7 +597,7 @@ public:
 			return GetTypeInfo<R>::METADATA;
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 		Variant ret;
@@ -688,12 +678,12 @@ protected:
 	}
 
 public:
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		return call_get_argument_metadata<P...>(p_arg);
 	}
 
-#endif
+#endif // DEBUG_ENABLED
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 		(void)p_object; // unused
 		call_with_variant_args_static_dv(function, p_args, p_arg_count, r_error, get_default_arguments());
@@ -728,8 +718,7 @@ MethodBind *create_static_method_bind(void (*p_method)(P...)) {
 
 template <typename R, typename... P>
 class MethodBindTRS : public MethodBind {
-	R(*function)
-	(P...);
+	R (*function)(P...);
 
 protected:
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
@@ -751,7 +740,7 @@ protected:
 	}
 
 public:
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		if (p_arg >= 0) {
 			return call_get_argument_metadata<P...>(p_arg);
@@ -760,7 +749,7 @@ public:
 		}
 	}
 
-#endif
+#endif // DEBUG_ENABLED
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 		Variant ret;
 		call_with_variant_args_static_ret_dv(function, p_args, p_arg_count, ret, r_error, get_default_arguments());
@@ -790,5 +779,3 @@ MethodBind *create_static_method_bind(R (*p_method)(P...)) {
 	MethodBind *a = memnew((MethodBindTRS<R, P...>)(p_method));
 	return a;
 }
-
-#endif // METHOD_BIND_H

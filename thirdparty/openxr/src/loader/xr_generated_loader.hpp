@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, The Khronos Group Inc.
+// Copyright (c) 2017-2025 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 // SPDX-License-Identifier: Apache-2.0 OR MIT
@@ -6,7 +6,7 @@
 //     See loader_source_generator.py for modifications
 // ************************************************************
 
-// Copyright (c) 2017-2024, The Khronos Group Inc.
+// Copyright (c) 2017-2025 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -245,6 +245,10 @@ extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrApplyHapticFeedback(
 extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrStopHapticFeedback(
     XrSession                                   session,
     const XrHapticActionInfo*                   hapticActionInfo);
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrLocateSpaces(
+    XrSession                                   session,
+    const XrSpacesLocateInfo*                   locateInfo,
+    XrSpaceLocations*                           spaceLocations);
 #ifdef __cplusplus
 } // extern "C"
 #endif

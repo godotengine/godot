@@ -1,7 +1,10 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 import os
 from pathlib import Path
+
+import methods
 
 Import("env")
 
@@ -12,15 +15,15 @@ thirdparty_obj = []
 
 # DirectX Headers (must take precedence over Windows SDK's).
 
-env.Prepend(CPPPATH=["#thirdparty/directx_headers/include/directx"])
-env_d3d12_rdd.Prepend(CPPPATH=["#thirdparty/directx_headers/include/directx"])
-env_d3d12_rdd.Prepend(CPPPATH=["#thirdparty/directx_headers/include/dxguids"])
+env.Prepend(CPPEXTPATH=["#thirdparty/directx_headers/include/directx"])
+env_d3d12_rdd.Prepend(CPPEXTPATH=["#thirdparty/directx_headers/include/directx"])
+env_d3d12_rdd.Prepend(CPPEXTPATH=["#thirdparty/directx_headers/include/dxguids"])
 
 
 # Direct3D 12 Memory Allocator.
 
-env.Append(CPPPATH=["#thirdparty/d3d12ma"])
-env_d3d12_rdd.Append(CPPPATH=["#thirdparty/d3d12ma"])
+env.Append(CPPEXTPATH=["#thirdparty/d3d12ma"])
+env_d3d12_rdd.Append(CPPEXTPATH=["#thirdparty/d3d12ma"])
 
 
 # Agility SDK.
@@ -35,13 +38,28 @@ if env["agility_sdk_path"] != "" and os.path.exists(env["agility_sdk_path"]):
 
 if env["use_pix"]:
     env_d3d12_rdd.Append(CPPDEFINES=["PIX_ENABLED"])
-    env_d3d12_rdd.Append(CPPPATH=[env["pix_path"] + "/Include"])
+    env_d3d12_rdd.Append(CPPEXTPATH=[env["pix_path"] + "/Include"])
+
+
+# Direct composition.
+
+if "dcomp" in env.get("supported", []):
+    env_d3d12_rdd.Append(CPPDEFINES=["DCOMP_ENABLED"])
+    env.Append(CPPDEFINES=["DCOMP_ENABLED"])  # Used in header included in platform.
 
 
 # Mesa (SPIR-V to DXIL functionality).
 
-mesa_dir = (env["mesa_libs"] + "/godot-mesa").replace("\\", "/")
-mesa_gen_dir = (env["mesa_libs"] + "/godot-mesa/generated").replace("\\", "/")
+mesa_libs = env["mesa_libs"]
+if env.msvc and os.path.exists(env["mesa_libs"] + "-" + env["arch"] + "-msvc"):
+    mesa_libs = env["mesa_libs"] + "-" + env["arch"] + "-msvc"
+elif env["use_llvm"] and os.path.exists(env["mesa_libs"] + "-" + env["arch"] + "-llvm"):
+    mesa_libs = env["mesa_libs"] + "-" + env["arch"] + "-llvm"
+elif not env["use_llvm"] and os.path.exists(env["mesa_libs"] + "-" + env["arch"] + "-gcc"):
+    mesa_libs = env["mesa_libs"] + "-" + env["arch"] + "-gcc"
+
+mesa_dir = (mesa_libs + "/godot-mesa").replace("\\", "/")
+mesa_gen_dir = (mesa_libs + "/godot-mesa/generated").replace("\\", "/")
 mesa_absdir = Dir(mesa_dir).abspath
 mesa_gen_absdir = Dir(mesa_dir + "/generated").abspath
 
@@ -138,8 +156,14 @@ else:
     extra_defines += [
         "HAVE_STRUCT_TIMESPEC",
     ]
+    if methods.using_gcc(env) and methods.get_compiler_version(env)["major"] < 13:
+        # `region` & `endregion` not recognized as valid pragmas.
+        env_d3d12_rdd.Append(CCFLAGS=["-Wno-unknown-pragmas"])
+        env.Append(CCFLAGS=["-Wno-unknown-pragmas"])
 
 # This is needed since rendering_device_d3d12.cpp needs to include some Mesa internals.
+# FIXME: Should be CPPEXTPATH, but doing so introduces an include-order bug when combined with
+# godot-nir-static; this necessitates warning macro wrappers. See #106376.
 env_d3d12_rdd.Prepend(CPPPATH=mesa_private_inc_paths)
 # For the same reason as above, the defines must be the same as in the 3rd-party code itself.
 env_d3d12_rdd.Append(CPPDEFINES=extra_defines)

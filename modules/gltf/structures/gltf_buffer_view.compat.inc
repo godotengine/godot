@@ -51,6 +51,7 @@ bool GLTFBufferView::_get_indices_bind_compat_86907() {
 }
 
 void GLTFBufferView::_bind_compatibility_methods() {
+	// Non-const versions for compatibility.
 	ClassDB::bind_compatibility_method(D_METHOD("get_buffer"), &GLTFBufferView::_get_buffer_bind_compat_86907);
 	ClassDB::bind_compatibility_method(D_METHOD("get_byte_offset"), &GLTFBufferView::_get_byte_offset_bind_compat_86907);
 	ClassDB::bind_compatibility_method(D_METHOD("get_byte_length"), &GLTFBufferView::_get_byte_length_bind_compat_86907);

@@ -30,9 +30,9 @@
 
 #include "translation_po.h"
 
+#ifdef DEBUG_TRANSLATION_PO
 #include "core/io/file_access.h"
 
-#ifdef DEBUG_TRANSLATION_PO
 void TranslationPO::print_translation_map() {
 	Error err;
 	Ref<FileAccess> file = FileAccess::open("translation_map_print_test.txt", FileAccess::WRITE, &err);
@@ -53,8 +53,7 @@ void TranslationPO::print_translation_map() {
 
 		List<StringName> id_l;
 		inner_map.get_key_list(&id_l);
-		for (List<StringName>::Element *E2 = id_l.front(); E2; E2 = E2->next()) {
-			StringName id = E2->get();
+		for (const StringName &id : id_l) {
 			file->store_line("msgid: " + String::utf8(String(id).utf8()));
 			for (int i = 0; i < inner_map[id].size(); i++) {
 				file->store_line("msgstr[" + String::num_int64(i) + "]: " + String::utf8(String(inner_map[id][i]).utf8()));
@@ -86,20 +85,16 @@ Dictionary TranslationPO::_get_messages() const {
 void TranslationPO::_set_messages(const Dictionary &p_messages) {
 	// Construct translation_map from a Dictionary.
 
-	List<Variant> context_l;
-	p_messages.get_key_list(&context_l);
-	for (const Variant &ctx : context_l) {
-		const Dictionary &id_str_map = p_messages[ctx];
+	for (const KeyValue<Variant, Variant> &kv : p_messages) {
+		const Dictionary &id_str_map = kv.value;
 
 		HashMap<StringName, Vector<StringName>> temp_map;
-		List<Variant> id_l;
-		id_str_map.get_key_list(&id_l);
-		for (List<Variant>::Element *E2 = id_l.front(); E2; E2 = E2->next()) {
-			StringName id = E2->get();
-			temp_map[id] = id_str_map[id];
+		for (const KeyValue<Variant, Variant> &kv_id : id_str_map) {
+			StringName id = kv_id.key;
+			temp_map[id] = kv_id.value;
 		}
 
-		translation_map[ctx] = temp_map;
+		translation_map[kv.key] = temp_map;
 	}
 }
 
@@ -227,11 +222,11 @@ void TranslationPO::set_plural_rule(const String &p_plural_rule) {
 	// Set plural_forms and plural_rule.
 	// p_plural_rule passed in has the form "Plural-Forms: nplurals=2; plural=(n >= 2);".
 
-	int first_semi_col = p_plural_rule.find(";");
-	plural_forms = p_plural_rule.substr(p_plural_rule.find("=") + 1, first_semi_col - (p_plural_rule.find("=") + 1)).to_int();
+	int first_semi_col = p_plural_rule.find_char(';');
+	plural_forms = p_plural_rule.substr(p_plural_rule.find_char('=') + 1, first_semi_col - (p_plural_rule.find_char('=') + 1)).to_int();
 
-	int expression_start = p_plural_rule.find("=", first_semi_col) + 1;
-	int second_semi_col = p_plural_rule.rfind(";");
+	int expression_start = p_plural_rule.find_char('=', first_semi_col) + 1;
+	int second_semi_col = p_plural_rule.rfind_char(';');
 	plural_rule = p_plural_rule.substr(expression_start, second_semi_col - expression_start).strip_edges();
 
 	// Setup the cache to make evaluating plural rule faster later on.
@@ -246,7 +241,7 @@ void TranslationPO::add_message(const StringName &p_src_text, const StringName &
 	HashMap<StringName, Vector<StringName>> &map_id_str = translation_map[p_context];
 
 	if (map_id_str.has(p_src_text)) {
-		WARN_PRINT("Double translations for \"" + String(p_src_text) + "\" under the same context \"" + String(p_context) + "\" for locale \"" + get_locale() + "\".\nThere should only be one unique translation for a given string under the same context.");
+		WARN_PRINT(vformat("Double translations for \"%s\" under the same context \"%s\" for locale \"%s\".\nThere should only be one unique translation for a given string under the same context.", String(p_src_text), String(p_context), get_locale()));
 		map_id_str[p_src_text].set(0, p_xlated_text);
 	} else {
 		map_id_str[p_src_text].push_back(p_xlated_text);
@@ -254,12 +249,12 @@ void TranslationPO::add_message(const StringName &p_src_text, const StringName &
 }
 
 void TranslationPO::add_plural_message(const StringName &p_src_text, const Vector<String> &p_plural_xlated_texts, const StringName &p_context) {
-	ERR_FAIL_COND_MSG(p_plural_xlated_texts.size() != plural_forms, "Trying to add plural texts that don't match the required number of plural forms for locale \"" + get_locale() + "\"");
+	ERR_FAIL_COND_MSG(p_plural_xlated_texts.size() != plural_forms, vformat("Trying to add plural texts that don't match the required number of plural forms for locale \"%s\".", get_locale()));
 
 	HashMap<StringName, Vector<StringName>> &map_id_str = translation_map[p_context];
 
 	if (map_id_str.has(p_src_text)) {
-		WARN_PRINT("Double translations for \"" + p_src_text + "\" under the same context \"" + p_context + "\" for locale " + get_locale() + ".\nThere should only be one unique translation for a given string under the same context.");
+		WARN_PRINT(vformat("Double translations for \"%s\" under the same context \"%s\" for locale %s.\nThere should only be one unique translation for a given string under the same context.", p_src_text, p_context, get_locale()));
 		map_id_str[p_src_text].clear();
 	}
 
@@ -280,7 +275,7 @@ StringName TranslationPO::get_message(const StringName &p_src_text, const String
 	if (!translation_map.has(p_context) || !translation_map[p_context].has(p_src_text)) {
 		return StringName();
 	}
-	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].is_empty(), StringName(), "Source text \"" + String(p_src_text) + "\" is registered but doesn't have a translation. Please report this bug.");
+	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].is_empty(), StringName(), vformat("Source text \"%s\" is registered but doesn't have a translation. Please report this bug.", String(p_src_text)));
 
 	return translation_map[p_context][p_src_text][0];
 }
@@ -296,7 +291,7 @@ StringName TranslationPO::get_plural_message(const StringName &p_src_text, const
 	if (!translation_map.has(p_context) || !translation_map[p_context].has(p_src_text)) {
 		return StringName();
 	}
-	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].is_empty(), StringName(), "Source text \"" + String(p_src_text) + "\" is registered but doesn't have a translation. Please report this bug.");
+	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].is_empty(), StringName(), vformat("Source text \"%s\" is registered but doesn't have a translation. Please report this bug.", String(p_src_text)));
 
 	int plural_index = _get_plural_index(p_n);
 	ERR_FAIL_COND_V_MSG(plural_index < 0 || translation_map[p_context][p_src_text].size() < plural_index + 1, StringName(), "Plural index returned or number of plural translations is not valid. Please report this bug.");

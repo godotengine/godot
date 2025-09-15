@@ -42,6 +42,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_support_data_filename);
 	GDVIRTUAL_BIND(_get_support_data_info);
 	GDVIRTUAL_BIND(_save_support_data, "filename");
+	GDVIRTUAL_BIND(_get_support_data);
 
 	GDVIRTUAL_BIND(_is_locale_right_to_left, "locale");
 
@@ -103,15 +104,22 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_font_set_allow_system_fallback, "font_rid", "allow_system_fallback");
 	GDVIRTUAL_BIND(_font_is_allow_system_fallback, "font_rid");
+	GDVIRTUAL_BIND(_font_clear_system_fallback_cache);
 
 	GDVIRTUAL_BIND(_font_set_force_autohinter, "font_rid", "force_autohinter");
 	GDVIRTUAL_BIND(_font_is_force_autohinter, "font_rid");
+
+	GDVIRTUAL_BIND(_font_set_modulate_color_glyphs, "font_rid", "modulate");
+	GDVIRTUAL_BIND(_font_is_modulate_color_glyphs, "font_rid");
 
 	GDVIRTUAL_BIND(_font_set_hinting, "font_rid", "hinting");
 	GDVIRTUAL_BIND(_font_get_hinting, "font_rid");
 
 	GDVIRTUAL_BIND(_font_set_subpixel_positioning, "font_rid", "subpixel_positioning");
 	GDVIRTUAL_BIND(_font_get_subpixel_positioning, "font_rid");
+
+	GDVIRTUAL_BIND(_font_set_keep_rounding_remainders, "font_rid", "keep_rounding_remainders");
+	GDVIRTUAL_BIND(_font_get_keep_rounding_remainders, "font_rid");
 
 	GDVIRTUAL_BIND(_font_set_embolden, "font_rid", "strength");
 	GDVIRTUAL_BIND(_font_get_embolden, "font_rid");
@@ -128,12 +136,15 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_set_variation_coordinates, "font_rid", "variation_coordinates");
 	GDVIRTUAL_BIND(_font_get_variation_coordinates, "font_rid");
 
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_font_set_oversampling, "font_rid", "oversampling");
 	GDVIRTUAL_BIND(_font_get_oversampling, "font_rid");
+#endif
 
 	GDVIRTUAL_BIND(_font_get_size_cache_list, "font_rid");
 	GDVIRTUAL_BIND(_font_clear_size_cache, "font_rid");
 	GDVIRTUAL_BIND(_font_remove_size_cache, "font_rid", "size");
+	GDVIRTUAL_BIND(_font_get_size_cache_info, "font_rid");
 
 	GDVIRTUAL_BIND(_font_set_ascent, "font_rid", "size", "ascent");
 	GDVIRTUAL_BIND(_font_get_ascent, "font_rid", "size");
@@ -201,8 +212,12 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_render_range, "font_rid", "size", "start", "end");
 	GDVIRTUAL_BIND(_font_render_glyph, "font_rid", "size", "index");
 
-	GDVIRTUAL_BIND(_font_draw_glyph, "font_rid", "canvas", "size", "pos", "index", "color");
-	GDVIRTUAL_BIND(_font_draw_glyph_outline, "font_rid", "canvas", "size", "outline_size", "pos", "index", "color");
+	GDVIRTUAL_BIND(_font_draw_glyph, "font_rid", "canvas", "size", "pos", "index", "color", "oversampling");
+	GDVIRTUAL_BIND(_font_draw_glyph_outline, "font_rid", "canvas", "size", "outline_size", "pos", "index", "color", "oversampling");
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND_COMPAT(_font_draw_glyph_bind_compat_104872, "font_rid", "canvas", "size", "pos", "index", "color");
+	GDVIRTUAL_BIND_COMPAT(_font_draw_glyph_outline_bind_compat_104872, "font_rid", "canvas", "size", "outline_size", "pos", "index", "color");
+#endif
 
 	GDVIRTUAL_BIND(_font_is_language_supported, "font_rid", "language");
 	GDVIRTUAL_BIND(_font_set_language_support_override, "font_rid", "language", "supported");
@@ -222,8 +237,12 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_supported_feature_list, "font_rid");
 	GDVIRTUAL_BIND(_font_supported_variation_list, "font_rid");
 
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_font_get_global_oversampling);
 	GDVIRTUAL_BIND(_font_set_global_oversampling, "oversampling");
+#endif
+	GDVIRTUAL_BIND(_reference_oversampling_level, "oversampling");
+	GDVIRTUAL_BIND(_unreference_oversampling_level, "oversampling");
 
 	GDVIRTUAL_BIND(_get_hex_code_box_size, "size", "index");
 	GDVIRTUAL_BIND(_draw_hex_code_box, "canvas", "size", "pos", "index", "color");
@@ -261,10 +280,23 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_text_add_string, "shaped", "text", "fonts", "size", "opentype_features", "language", "meta");
 	GDVIRTUAL_BIND(_shaped_text_add_object, "shaped", "key", "size", "inline_align", "length", "baseline");
 	GDVIRTUAL_BIND(_shaped_text_resize_object, "shaped", "key", "size", "inline_align", "baseline");
+	GDVIRTUAL_BIND(_shaped_get_text, "shaped");
 
 	GDVIRTUAL_BIND(_shaped_get_span_count, "shaped");
 	GDVIRTUAL_BIND(_shaped_get_span_meta, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_span_embedded_object, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_span_text, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_span_object, "shaped", "index");
 	GDVIRTUAL_BIND(_shaped_set_span_update_font, "shaped", "index", "fonts", "size", "opentype_features");
+
+	GDVIRTUAL_BIND(_shaped_get_run_count, "shaped");
+	GDVIRTUAL_BIND(_shaped_get_run_text, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_run_range, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_run_font_rid, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_run_font_size, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_run_language, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_run_direction, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_run_object, "shaped", "index");
 
 	GDVIRTUAL_BIND(_shaped_text_substr, "shaped", "start", "length");
 	GDVIRTUAL_BIND(_shaped_text_get_parent, "shaped");
@@ -315,8 +347,12 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_text_hit_test_grapheme, "shaped", "coord");
 	GDVIRTUAL_BIND(_shaped_text_hit_test_position, "shaped", "coord");
 
-	GDVIRTUAL_BIND(_shaped_text_draw, "shaped", "canvas", "pos", "clip_l", "clip_r", "color");
-	GDVIRTUAL_BIND(_shaped_text_draw_outline, "shaped", "canvas", "pos", "clip_l", "clip_r", "outline_size", "color");
+	GDVIRTUAL_BIND(_shaped_text_draw, "shaped", "canvas", "pos", "clip_l", "clip_r", "color", "oversampling");
+	GDVIRTUAL_BIND(_shaped_text_draw_outline, "shaped", "canvas", "pos", "clip_l", "clip_r", "outline_size", "color", "oversampling");
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND_COMPAT(_shaped_text_draw_bind_compat_104872, "shaped", "canvas", "pos", "clip_l", "clip_r", "color");
+	GDVIRTUAL_BIND_COMPAT(_shaped_text_draw_outline_bind_compat_104872, "shaped", "canvas", "pos", "clip_l", "clip_r", "outline_size", "color");
+#endif
 
 	GDVIRTUAL_BIND(_shaped_text_get_grapheme_bounds, "shaped", "pos");
 	GDVIRTUAL_BIND(_shaped_text_next_grapheme_pos, "shaped", "pos");
@@ -352,29 +388,29 @@ void TextServerExtension::_bind_methods() {
 
 bool TextServerExtension::has_feature(Feature p_feature) const {
 	bool ret = false;
-	GDVIRTUAL_REQUIRED_CALL(_has_feature, p_feature, ret);
+	GDVIRTUAL_CALL(_has_feature, p_feature, ret);
 	return ret;
 }
 
 String TextServerExtension::get_name() const {
 	String ret = "Unknown";
-	GDVIRTUAL_REQUIRED_CALL(_get_name, ret);
+	GDVIRTUAL_CALL(_get_name, ret);
 	return ret;
 }
 
 int64_t TextServerExtension::get_features() const {
 	int64_t ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_features, ret);
+	GDVIRTUAL_CALL(_get_features, ret);
 	return ret;
 }
 
 void TextServerExtension::free_rid(const RID &p_rid) {
-	GDVIRTUAL_REQUIRED_CALL(_free_rid, p_rid);
+	GDVIRTUAL_CALL(_free_rid, p_rid);
 }
 
 bool TextServerExtension::has(const RID &p_rid) {
 	bool ret = false;
-	GDVIRTUAL_REQUIRED_CALL(_has, p_rid, ret);
+	GDVIRTUAL_CALL(_has, p_rid, ret);
 	return ret;
 }
 
@@ -399,6 +435,12 @@ String TextServerExtension::get_support_data_info() const {
 bool TextServerExtension::save_support_data(const String &p_filename) const {
 	bool ret = false;
 	GDVIRTUAL_CALL(_save_support_data, p_filename, ret);
+	return ret;
+}
+
+PackedByteArray TextServerExtension::get_support_data() const {
+	PackedByteArray ret;
+	GDVIRTUAL_CALL(_get_support_data, ret);
 	return ret;
 }
 
@@ -430,7 +472,7 @@ String TextServerExtension::tag_to_name(int64_t p_tag) const {
 
 RID TextServerExtension::create_font() {
 	RID ret;
-	GDVIRTUAL_REQUIRED_CALL(_create_font, ret);
+	GDVIRTUAL_CALL(_create_font, ret);
 	return ret;
 }
 
@@ -581,22 +623,22 @@ int64_t TextServerExtension::font_get_msdf_size(const RID &p_font_rid) const {
 }
 
 void TextServerExtension::font_set_fixed_size(const RID &p_font_rid, int64_t p_fixed_size) {
-	GDVIRTUAL_REQUIRED_CALL(_font_set_fixed_size, p_font_rid, p_fixed_size);
+	GDVIRTUAL_CALL(_font_set_fixed_size, p_font_rid, p_fixed_size);
 }
 
 int64_t TextServerExtension::font_get_fixed_size(const RID &p_font_rid) const {
 	int64_t ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_fixed_size, p_font_rid, ret);
+	GDVIRTUAL_CALL(_font_get_fixed_size, p_font_rid, ret);
 	return ret;
 }
 
 void TextServerExtension::font_set_fixed_size_scale_mode(const RID &p_font_rid, TextServer::FixedSizeScaleMode p_fixed_size_scale_mode) {
-	GDVIRTUAL_REQUIRED_CALL(_font_set_fixed_size_scale_mode, p_font_rid, p_fixed_size_scale_mode);
+	GDVIRTUAL_CALL(_font_set_fixed_size_scale_mode, p_font_rid, p_fixed_size_scale_mode);
 }
 
 TextServer::FixedSizeScaleMode TextServerExtension::font_get_fixed_size_scale_mode(const RID &p_font_rid) const {
 	FixedSizeScaleMode ret = FIXED_SIZE_SCALE_DISABLE;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_fixed_size_scale_mode, p_font_rid, ret);
+	GDVIRTUAL_CALL(_font_get_fixed_size_scale_mode, p_font_rid, ret);
 	return ret;
 }
 
@@ -610,6 +652,10 @@ bool TextServerExtension::font_is_allow_system_fallback(const RID &p_font_rid) c
 	return ret;
 }
 
+void TextServerExtension::font_clear_system_fallback_cache() {
+	GDVIRTUAL_CALL(_font_clear_system_fallback_cache);
+}
+
 void TextServerExtension::font_set_force_autohinter(const RID &p_font_rid, bool p_force_autohinter) {
 	GDVIRTUAL_CALL(_font_set_force_autohinter, p_font_rid, p_force_autohinter);
 }
@@ -617,6 +663,16 @@ void TextServerExtension::font_set_force_autohinter(const RID &p_font_rid, bool 
 bool TextServerExtension::font_is_force_autohinter(const RID &p_font_rid) const {
 	bool ret = false;
 	GDVIRTUAL_CALL(_font_is_force_autohinter, p_font_rid, ret);
+	return ret;
+}
+
+void TextServerExtension::font_set_modulate_color_glyphs(const RID &p_font_rid, bool p_modulate) {
+	GDVIRTUAL_CALL(_font_set_modulate_color_glyphs, p_font_rid, p_modulate);
+}
+
+bool TextServerExtension::font_is_modulate_color_glyphs(const RID &p_font_rid) const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_font_is_modulate_color_glyphs, p_font_rid, ret);
 	return ret;
 }
 
@@ -637,6 +693,16 @@ void TextServerExtension::font_set_subpixel_positioning(const RID &p_font_rid, T
 TextServer::SubpixelPositioning TextServerExtension::font_get_subpixel_positioning(const RID &p_font_rid) const {
 	TextServer::SubpixelPositioning ret = TextServer::SUBPIXEL_POSITIONING_DISABLED;
 	GDVIRTUAL_CALL(_font_get_subpixel_positioning, p_font_rid, ret);
+	return ret;
+}
+
+void TextServerExtension::font_set_keep_rounding_remainders(const RID &p_font_rid, bool p_keep_rounding_remainders) {
+	GDVIRTUAL_CALL(_font_set_keep_rounding_remainders, p_font_rid, p_keep_rounding_remainders);
+}
+
+bool TextServerExtension::font_get_keep_rounding_remainders(const RID &p_font_rid) const {
+	bool ret = true;
+	GDVIRTUAL_CALL(_font_get_keep_rounding_remainders, p_font_rid, ret);
 	return ret;
 }
 
@@ -695,96 +761,102 @@ void TextServerExtension::font_set_oversampling(const RID &p_font_rid, double p_
 }
 
 double TextServerExtension::font_get_oversampling(const RID &p_font_rid) const {
-	double ret = 0;
+	double ret = -1.0;
 	GDVIRTUAL_CALL(_font_get_oversampling, p_font_rid, ret);
 	return ret;
 }
 
 TypedArray<Vector2i> TextServerExtension::font_get_size_cache_list(const RID &p_font_rid) const {
 	TypedArray<Vector2i> ret;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_size_cache_list, p_font_rid, ret);
+	GDVIRTUAL_CALL(_font_get_size_cache_list, p_font_rid, ret);
 	return ret;
 }
 
 void TextServerExtension::font_clear_size_cache(const RID &p_font_rid) {
-	GDVIRTUAL_REQUIRED_CALL(_font_clear_size_cache, p_font_rid);
+	GDVIRTUAL_CALL(_font_clear_size_cache, p_font_rid);
 }
 
 void TextServerExtension::font_remove_size_cache(const RID &p_font_rid, const Vector2i &p_size) {
-	GDVIRTUAL_REQUIRED_CALL(_font_remove_size_cache, p_font_rid, p_size);
+	GDVIRTUAL_CALL(_font_remove_size_cache, p_font_rid, p_size);
+}
+
+TypedArray<Dictionary> TextServerExtension::font_get_size_cache_info(const RID &p_font_rid) const {
+	TypedArray<Dictionary> ret;
+	GDVIRTUAL_CALL(_font_get_size_cache_info, p_font_rid, ret);
+	return ret;
 }
 
 void TextServerExtension::font_set_ascent(const RID &p_font_rid, int64_t p_size, double p_ascent) {
-	GDVIRTUAL_REQUIRED_CALL(_font_set_ascent, p_font_rid, p_size, p_ascent);
+	GDVIRTUAL_CALL(_font_set_ascent, p_font_rid, p_size, p_ascent);
 }
 
 double TextServerExtension::font_get_ascent(const RID &p_font_rid, int64_t p_size) const {
 	double ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_ascent, p_font_rid, p_size, ret);
+	GDVIRTUAL_CALL(_font_get_ascent, p_font_rid, p_size, ret);
 	return ret;
 }
 
 void TextServerExtension::font_set_descent(const RID &p_font_rid, int64_t p_size, double p_descent) {
-	GDVIRTUAL_REQUIRED_CALL(_font_set_descent, p_font_rid, p_size, p_descent);
+	GDVIRTUAL_CALL(_font_set_descent, p_font_rid, p_size, p_descent);
 }
 
 double TextServerExtension::font_get_descent(const RID &p_font_rid, int64_t p_size) const {
 	double ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_descent, p_font_rid, p_size, ret);
+	GDVIRTUAL_CALL(_font_get_descent, p_font_rid, p_size, ret);
 	return ret;
 }
 
 void TextServerExtension::font_set_underline_position(const RID &p_font_rid, int64_t p_size, double p_underline_position) {
-	GDVIRTUAL_REQUIRED_CALL(_font_set_underline_position, p_font_rid, p_size, p_underline_position);
+	GDVIRTUAL_CALL(_font_set_underline_position, p_font_rid, p_size, p_underline_position);
 }
 
 double TextServerExtension::font_get_underline_position(const RID &p_font_rid, int64_t p_size) const {
 	double ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_underline_position, p_font_rid, p_size, ret);
+	GDVIRTUAL_CALL(_font_get_underline_position, p_font_rid, p_size, ret);
 	return ret;
 }
 
 void TextServerExtension::font_set_underline_thickness(const RID &p_font_rid, int64_t p_size, double p_underline_thickness) {
-	GDVIRTUAL_REQUIRED_CALL(_font_set_underline_thickness, p_font_rid, p_size, p_underline_thickness);
+	GDVIRTUAL_CALL(_font_set_underline_thickness, p_font_rid, p_size, p_underline_thickness);
 }
 
 double TextServerExtension::font_get_underline_thickness(const RID &p_font_rid, int64_t p_size) const {
 	double ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_underline_thickness, p_font_rid, p_size, ret);
+	GDVIRTUAL_CALL(_font_get_underline_thickness, p_font_rid, p_size, ret);
 	return ret;
 }
 
 void TextServerExtension::font_set_scale(const RID &p_font_rid, int64_t p_size, double p_scale) {
-	GDVIRTUAL_REQUIRED_CALL(_font_set_scale, p_font_rid, p_size, p_scale);
+	GDVIRTUAL_CALL(_font_set_scale, p_font_rid, p_size, p_scale);
 }
 
 double TextServerExtension::font_get_scale(const RID &p_font_rid, int64_t p_size) const {
 	double ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_scale, p_font_rid, p_size, ret);
+	GDVIRTUAL_CALL(_font_get_scale, p_font_rid, p_size, ret);
 	return ret;
 }
 
 int64_t TextServerExtension::font_get_texture_count(const RID &p_font_rid, const Vector2i &p_size) const {
 	int64_t ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_texture_count, p_font_rid, p_size, ret);
+	GDVIRTUAL_CALL(_font_get_texture_count, p_font_rid, p_size, ret);
 	return ret;
 }
 
 void TextServerExtension::font_clear_textures(const RID &p_font_rid, const Vector2i &p_size) {
-	GDVIRTUAL_REQUIRED_CALL(_font_clear_textures, p_font_rid, p_size);
+	GDVIRTUAL_CALL(_font_clear_textures, p_font_rid, p_size);
 }
 
 void TextServerExtension::font_remove_texture(const RID &p_font_rid, const Vector2i &p_size, int64_t p_texture_index) {
-	GDVIRTUAL_REQUIRED_CALL(_font_remove_texture, p_font_rid, p_size, p_texture_index);
+	GDVIRTUAL_CALL(_font_remove_texture, p_font_rid, p_size, p_texture_index);
 }
 
 void TextServerExtension::font_set_texture_image(const RID &p_font_rid, const Vector2i &p_size, int64_t p_texture_index, const Ref<Image> &p_image) {
-	GDVIRTUAL_REQUIRED_CALL(_font_set_texture_image, p_font_rid, p_size, p_texture_index, p_image);
+	GDVIRTUAL_CALL(_font_set_texture_image, p_font_rid, p_size, p_texture_index, p_image);
 }
 
 Ref<Image> TextServerExtension::font_get_texture_image(const RID &p_font_rid, const Vector2i &p_size, int64_t p_texture_index) const {
 	Ref<Image> ret;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_texture_image, p_font_rid, p_size, p_texture_index, ret);
+	GDVIRTUAL_CALL(_font_get_texture_image, p_font_rid, p_size, p_texture_index, ret);
 	return ret;
 }
 
@@ -800,77 +872,77 @@ PackedInt32Array TextServerExtension::font_get_texture_offsets(const RID &p_font
 
 PackedInt32Array TextServerExtension::font_get_glyph_list(const RID &p_font_rid, const Vector2i &p_size) const {
 	PackedInt32Array ret;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_glyph_list, p_font_rid, p_size, ret);
+	GDVIRTUAL_CALL(_font_get_glyph_list, p_font_rid, p_size, ret);
 	return ret;
 }
 
 void TextServerExtension::font_clear_glyphs(const RID &p_font_rid, const Vector2i &p_size) {
-	GDVIRTUAL_REQUIRED_CALL(_font_clear_glyphs, p_font_rid, p_size);
+	GDVIRTUAL_CALL(_font_clear_glyphs, p_font_rid, p_size);
 }
 
 void TextServerExtension::font_remove_glyph(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) {
-	GDVIRTUAL_REQUIRED_CALL(_font_remove_glyph, p_font_rid, p_size, p_glyph);
+	GDVIRTUAL_CALL(_font_remove_glyph, p_font_rid, p_size, p_glyph);
 }
 
 Vector2 TextServerExtension::font_get_glyph_advance(const RID &p_font_rid, int64_t p_size, int64_t p_glyph) const {
 	Vector2 ret;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_glyph_advance, p_font_rid, p_size, p_glyph, ret);
+	GDVIRTUAL_CALL(_font_get_glyph_advance, p_font_rid, p_size, p_glyph, ret);
 	return ret;
 }
 
 void TextServerExtension::font_set_glyph_advance(const RID &p_font_rid, int64_t p_size, int64_t p_glyph, const Vector2 &p_advance) {
-	GDVIRTUAL_REQUIRED_CALL(_font_set_glyph_advance, p_font_rid, p_size, p_glyph, p_advance);
+	GDVIRTUAL_CALL(_font_set_glyph_advance, p_font_rid, p_size, p_glyph, p_advance);
 }
 
 Vector2 TextServerExtension::font_get_glyph_offset(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const {
 	Vector2 ret;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_glyph_offset, p_font_rid, p_size, p_glyph, ret);
+	GDVIRTUAL_CALL(_font_get_glyph_offset, p_font_rid, p_size, p_glyph, ret);
 	return ret;
 }
 
 void TextServerExtension::font_set_glyph_offset(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, const Vector2 &p_offset) {
-	GDVIRTUAL_REQUIRED_CALL(_font_set_glyph_offset, p_font_rid, p_size, p_glyph, p_offset);
+	GDVIRTUAL_CALL(_font_set_glyph_offset, p_font_rid, p_size, p_glyph, p_offset);
 }
 
 Vector2 TextServerExtension::font_get_glyph_size(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const {
 	Vector2 ret;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_glyph_size, p_font_rid, p_size, p_glyph, ret);
+	GDVIRTUAL_CALL(_font_get_glyph_size, p_font_rid, p_size, p_glyph, ret);
 	return ret;
 }
 
 void TextServerExtension::font_set_glyph_size(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, const Vector2 &p_gl_size) {
-	GDVIRTUAL_REQUIRED_CALL(_font_set_glyph_size, p_font_rid, p_size, p_glyph, p_gl_size);
+	GDVIRTUAL_CALL(_font_set_glyph_size, p_font_rid, p_size, p_glyph, p_gl_size);
 }
 
 Rect2 TextServerExtension::font_get_glyph_uv_rect(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const {
 	Rect2 ret;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_glyph_uv_rect, p_font_rid, p_size, p_glyph, ret);
+	GDVIRTUAL_CALL(_font_get_glyph_uv_rect, p_font_rid, p_size, p_glyph, ret);
 	return ret;
 }
 
 void TextServerExtension::font_set_glyph_uv_rect(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, const Rect2 &p_uv_rect) {
-	GDVIRTUAL_REQUIRED_CALL(_font_set_glyph_uv_rect, p_font_rid, p_size, p_glyph, p_uv_rect);
+	GDVIRTUAL_CALL(_font_set_glyph_uv_rect, p_font_rid, p_size, p_glyph, p_uv_rect);
 }
 
 int64_t TextServerExtension::font_get_glyph_texture_idx(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const {
 	int64_t ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_glyph_texture_idx, p_font_rid, p_size, p_glyph, ret);
+	GDVIRTUAL_CALL(_font_get_glyph_texture_idx, p_font_rid, p_size, p_glyph, ret);
 	return ret;
 }
 
 void TextServerExtension::font_set_glyph_texture_idx(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, int64_t p_texture_idx) {
-	GDVIRTUAL_REQUIRED_CALL(_font_set_glyph_texture_idx, p_font_rid, p_size, p_glyph, p_texture_idx);
+	GDVIRTUAL_CALL(_font_set_glyph_texture_idx, p_font_rid, p_size, p_glyph, p_texture_idx);
 }
 
 RID TextServerExtension::font_get_glyph_texture_rid(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const {
 	RID ret;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_glyph_texture_rid, p_font_rid, p_size, p_glyph, ret);
+	GDVIRTUAL_CALL(_font_get_glyph_texture_rid, p_font_rid, p_size, p_glyph, ret);
 	return ret;
 }
 
 Size2 TextServerExtension::font_get_glyph_texture_size(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const {
 	Size2 ret;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_glyph_texture_size, p_font_rid, p_size, p_glyph, ret);
+	GDVIRTUAL_CALL(_font_get_glyph_texture_size, p_font_rid, p_size, p_glyph, ret);
 	return ret;
 }
 
@@ -906,31 +978,31 @@ Vector2 TextServerExtension::font_get_kerning(const RID &p_font_rid, int64_t p_s
 
 int64_t TextServerExtension::font_get_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_char, int64_t p_variation_selector) const {
 	int64_t ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_glyph_index, p_font_rid, p_size, p_char, p_variation_selector, ret);
+	GDVIRTUAL_CALL(_font_get_glyph_index, p_font_rid, p_size, p_char, p_variation_selector, ret);
 	return ret;
 }
 
 int64_t TextServerExtension::font_get_char_from_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_glyph_index) const {
 	int64_t ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_char_from_glyph_index, p_font_rid, p_size, p_glyph_index, ret);
+	GDVIRTUAL_CALL(_font_get_char_from_glyph_index, p_font_rid, p_size, p_glyph_index, ret);
 	return ret;
 }
 
 bool TextServerExtension::font_has_char(const RID &p_font_rid, int64_t p_char) const {
 	bool ret = false;
-	GDVIRTUAL_REQUIRED_CALL(_font_has_char, p_font_rid, p_char, ret);
+	GDVIRTUAL_CALL(_font_has_char, p_font_rid, p_char, ret);
 	return ret;
 }
 
 String TextServerExtension::font_get_supported_chars(const RID &p_font_rid) const {
 	String ret;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_supported_chars, p_font_rid, ret);
+	GDVIRTUAL_CALL(_font_get_supported_chars, p_font_rid, ret);
 	return ret;
 }
 
 PackedInt32Array TextServerExtension::font_get_supported_glyphs(const RID &p_font_rid) const {
 	PackedInt32Array ret;
-	GDVIRTUAL_REQUIRED_CALL(_font_get_supported_glyphs, p_font_rid, ret);
+	GDVIRTUAL_CALL(_font_get_supported_glyphs, p_font_rid, ret);
 	return ret;
 }
 
@@ -942,12 +1014,18 @@ void TextServerExtension::font_render_glyph(const RID &p_font_rid, const Vector2
 	GDVIRTUAL_CALL(_font_render_glyph, p_font_rid, p_size, p_index);
 }
 
-void TextServerExtension::font_draw_glyph(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const {
-	GDVIRTUAL_REQUIRED_CALL(_font_draw_glyph, p_font_rid, p_canvas, p_size, p_pos, p_index, p_color);
+void TextServerExtension::font_draw_glyph(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const {
+	GDVIRTUAL_CALL(_font_draw_glyph, p_font_rid, p_canvas, p_size, p_pos, p_index, p_color, p_oversampling);
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_CALL(_font_draw_glyph_bind_compat_104872, p_font_rid, p_canvas, p_size, p_pos, p_index, p_color);
+#endif
 }
 
-void TextServerExtension::font_draw_glyph_outline(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const {
-	GDVIRTUAL_REQUIRED_CALL(_font_draw_glyph_outline, p_font_rid, p_canvas, p_size, p_outline_size, p_pos, p_index, p_color);
+void TextServerExtension::font_draw_glyph_outline(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const {
+	GDVIRTUAL_CALL(_font_draw_glyph_outline, p_font_rid, p_canvas, p_size, p_outline_size, p_pos, p_index, p_color, p_oversampling);
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_CALL(_font_draw_glyph_outline_bind_compat_104872, p_font_rid, p_canvas, p_size, p_outline_size, p_pos, p_index, p_color);
+#endif
 }
 
 bool TextServerExtension::font_is_language_supported(const RID &p_font_rid, const String &p_language) const {
@@ -1024,14 +1102,22 @@ Dictionary TextServerExtension::font_supported_variation_list(const RID &p_font_
 	return ret;
 }
 
+#ifndef DISABLE_DEPRECATED
 double TextServerExtension::font_get_global_oversampling() const {
-	double ret = 0;
-	GDVIRTUAL_CALL(_font_get_global_oversampling, ret);
-	return ret;
+	return 1.0;
 }
 
 void TextServerExtension::font_set_global_oversampling(double p_oversampling) {
-	GDVIRTUAL_CALL(_font_set_global_oversampling, p_oversampling);
+	// NOP
+}
+#endif
+
+void TextServerExtension::reference_oversampling_level(double p_oversampling) {
+	GDVIRTUAL_CALL(_reference_oversampling_level, p_oversampling);
+}
+
+void TextServerExtension::unreference_oversampling_level(double p_oversampling) {
+	GDVIRTUAL_CALL(_unreference_oversampling_level, p_oversampling);
 }
 
 Vector2 TextServerExtension::get_hex_code_box_size(int64_t p_size, int64_t p_index) const {
@@ -1054,12 +1140,12 @@ void TextServerExtension::draw_hex_code_box(const RID &p_canvas, int64_t p_size,
 
 RID TextServerExtension::create_shaped_text(TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 	RID ret;
-	GDVIRTUAL_REQUIRED_CALL(_create_shaped_text, p_direction, p_orientation, ret);
+	GDVIRTUAL_CALL(_create_shaped_text, p_direction, p_orientation, ret);
 	return ret;
 }
 
 void TextServerExtension::shaped_text_clear(const RID &p_shaped) {
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_clear, p_shaped);
+	GDVIRTUAL_CALL(_shaped_text_clear, p_shaped);
 }
 
 void TextServerExtension::shaped_text_set_direction(const RID &p_shaped, TextServer::Direction p_direction) {
@@ -1144,47 +1230,119 @@ int64_t TextServerExtension::shaped_text_get_spacing(const RID &p_shaped, TextSe
 
 bool TextServerExtension::shaped_text_add_string(const RID &p_shaped, const String &p_text, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features, const String &p_language, const Variant &p_meta) {
 	bool ret = false;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_add_string, p_shaped, p_text, p_fonts, p_size, p_opentype_features, p_language, p_meta, ret);
+	GDVIRTUAL_CALL(_shaped_text_add_string, p_shaped, p_text, p_fonts, p_size, p_opentype_features, p_language, p_meta, ret);
 	return ret;
 }
 
 bool TextServerExtension::shaped_text_add_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, int64_t p_length, double p_baseline) {
 	bool ret = false;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_add_object, p_shaped, p_key, p_size, p_inline_align, p_length, p_baseline, ret);
+	GDVIRTUAL_CALL(_shaped_text_add_object, p_shaped, p_key, p_size, p_inline_align, p_length, p_baseline, ret);
 	return ret;
 }
 
 bool TextServerExtension::shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, double p_baseline) {
 	bool ret = false;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_resize_object, p_shaped, p_key, p_size, p_inline_align, p_baseline, ret);
+	GDVIRTUAL_CALL(_shaped_text_resize_object, p_shaped, p_key, p_size, p_inline_align, p_baseline, ret);
+	return ret;
+}
+
+String TextServerExtension::shaped_get_text(const RID &p_shaped) const {
+	String ret;
+	GDVIRTUAL_CALL(_shaped_get_text, p_shaped, ret);
 	return ret;
 }
 
 int64_t TextServerExtension::shaped_get_span_count(const RID &p_shaped) const {
 	int64_t ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_get_span_count, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_get_span_count, p_shaped, ret);
 	return ret;
 }
 
 Variant TextServerExtension::shaped_get_span_meta(const RID &p_shaped, int64_t p_index) const {
+	Variant ret;
+	GDVIRTUAL_CALL(_shaped_get_span_meta, p_shaped, p_index, ret);
+	return ret;
+}
+
+Variant TextServerExtension::shaped_get_span_embedded_object(const RID &p_shaped, int64_t p_index) const {
+	Variant ret;
+	GDVIRTUAL_CALL(_shaped_get_span_embedded_object, p_shaped, p_index, ret);
+	return ret;
+}
+
+String TextServerExtension::shaped_get_span_text(const RID &p_shaped, int64_t p_index) const {
+	String ret;
+	GDVIRTUAL_CALL(_shaped_get_span_text, p_shaped, p_index, ret);
+	return ret;
+}
+
+Variant TextServerExtension::shaped_get_span_object(const RID &p_shaped, int64_t p_index) const {
 	Variant ret = false;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_get_span_meta, p_shaped, p_index, ret);
+	GDVIRTUAL_CALL(_shaped_get_span_object, p_shaped, p_index, ret);
 	return ret;
 }
 
 void TextServerExtension::shaped_set_span_update_font(const RID &p_shaped, int64_t p_index, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features) {
-	GDVIRTUAL_REQUIRED_CALL(_shaped_set_span_update_font, p_shaped, p_index, p_fonts, p_size, p_opentype_features);
+	GDVIRTUAL_CALL(_shaped_set_span_update_font, p_shaped, p_index, p_fonts, p_size, p_opentype_features);
+}
+
+int64_t TextServerExtension::shaped_get_run_count(const RID &p_shaped) const {
+	int64_t ret = 0;
+	GDVIRTUAL_CALL(_shaped_get_run_count, p_shaped, ret);
+	return ret;
+}
+
+String TextServerExtension::shaped_get_run_text(const RID &p_shaped, int64_t p_index) const {
+	String ret;
+	GDVIRTUAL_CALL(_shaped_get_run_text, p_shaped, p_index, ret);
+	return ret;
+}
+
+Vector2i TextServerExtension::shaped_get_run_range(const RID &p_shaped, int64_t p_index) const {
+	Vector2i ret;
+	GDVIRTUAL_CALL(_shaped_get_run_range, p_shaped, p_index, ret);
+	return ret;
+}
+
+RID TextServerExtension::shaped_get_run_font_rid(const RID &p_shaped, int64_t p_index) const {
+	RID ret;
+	GDVIRTUAL_CALL(_shaped_get_run_font_rid, p_shaped, p_index, ret);
+	return ret;
+}
+
+int TextServerExtension::shaped_get_run_font_size(const RID &p_shaped, int64_t p_index) const {
+	int ret = 0;
+	GDVIRTUAL_CALL(_shaped_get_run_font_size, p_shaped, p_index, ret);
+	return ret;
+}
+
+String TextServerExtension::shaped_get_run_language(const RID &p_shaped, int64_t p_index) const {
+	String ret;
+	GDVIRTUAL_CALL(_shaped_get_run_language, p_shaped, p_index, ret);
+	return ret;
+}
+
+TextServer::Direction TextServerExtension::shaped_get_run_direction(const RID &p_shaped, int64_t p_index) const {
+	TextServer::Direction ret = TextServer::DIRECTION_LTR;
+	GDVIRTUAL_CALL(_shaped_get_run_direction, p_shaped, p_index, ret);
+	return ret;
+}
+
+Variant TextServerExtension::shaped_get_run_object(const RID &p_shaped, int64_t p_index) const {
+	Variant ret;
+	GDVIRTUAL_CALL(_shaped_get_run_object, p_shaped, p_index, ret);
+	return ret;
 }
 
 RID TextServerExtension::shaped_text_substr(const RID &p_shaped, int64_t p_start, int64_t p_length) const {
 	RID ret;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_substr, p_shaped, p_start, p_length, ret);
+	GDVIRTUAL_CALL(_shaped_text_substr, p_shaped, p_start, p_length, ret);
 	return ret;
 }
 
 RID TextServerExtension::shaped_text_get_parent(const RID &p_shaped) const {
 	RID ret;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_get_parent, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_parent, p_shaped, ret);
 	return ret;
 }
 
@@ -1202,7 +1360,7 @@ double TextServerExtension::shaped_text_tab_align(const RID &p_shaped, const Pac
 
 bool TextServerExtension::shaped_text_shape(const RID &p_shaped) {
 	bool ret = false;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_shape, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_shape, p_shaped, ret);
 	return ret;
 }
 
@@ -1220,31 +1378,31 @@ bool TextServerExtension::shaped_text_update_justification_ops(const RID &p_shap
 
 bool TextServerExtension::shaped_text_is_ready(const RID &p_shaped) const {
 	bool ret = false;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_is_ready, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_is_ready, p_shaped, ret);
 	return ret;
 }
 
 const Glyph *TextServerExtension::shaped_text_get_glyphs(const RID &p_shaped) const {
 	GDExtensionConstPtr<const Glyph> ret;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_get_glyphs, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_glyphs, p_shaped, ret);
 	return ret;
 }
 
 const Glyph *TextServerExtension::shaped_text_sort_logical(const RID &p_shaped) {
 	GDExtensionConstPtr<const Glyph> ret;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_sort_logical, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_sort_logical, p_shaped, ret);
 	return ret;
 }
 
 int64_t TextServerExtension::shaped_text_get_glyph_count(const RID &p_shaped) const {
 	int64_t ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_get_glyph_count, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_glyph_count, p_shaped, ret);
 	return ret;
 }
 
 Vector2i TextServerExtension::shaped_text_get_range(const RID &p_shaped) const {
 	Vector2i ret;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_get_range, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_range, p_shaped, ret);
 	return ret;
 }
 
@@ -1274,25 +1432,25 @@ PackedInt32Array TextServerExtension::shaped_text_get_word_breaks(const RID &p_s
 
 int64_t TextServerExtension::shaped_text_get_trim_pos(const RID &p_shaped) const {
 	int64_t ret = -1;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_get_trim_pos, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_trim_pos, p_shaped, ret);
 	return ret;
 }
 
 int64_t TextServerExtension::shaped_text_get_ellipsis_pos(const RID &p_shaped) const {
 	int64_t ret = -1;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_get_ellipsis_pos, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_ellipsis_pos, p_shaped, ret);
 	return ret;
 }
 
 const Glyph *TextServerExtension::shaped_text_get_ellipsis_glyphs(const RID &p_shaped) const {
 	GDExtensionConstPtr<const Glyph> ret;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_get_ellipsis_glyphs, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_ellipsis_glyphs, p_shaped, ret);
 	return ret;
 }
 
 int64_t TextServerExtension::shaped_text_get_ellipsis_glyph_count(const RID &p_shaped) const {
 	int64_t ret = -1;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_get_ellipsis_glyph_count, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_ellipsis_glyph_count, p_shaped, ret);
 	return ret;
 }
 
@@ -1302,61 +1460,61 @@ void TextServerExtension::shaped_text_overrun_trim_to_width(const RID &p_shaped_
 
 Array TextServerExtension::shaped_text_get_objects(const RID &p_shaped) const {
 	Array ret;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_get_objects, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_objects, p_shaped, ret);
 	return ret;
 }
 
 Rect2 TextServerExtension::shaped_text_get_object_rect(const RID &p_shaped, const Variant &p_key) const {
 	Rect2 ret;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_get_object_rect, p_shaped, p_key, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_object_rect, p_shaped, p_key, ret);
 	return ret;
 }
 
 Vector2i TextServerExtension::shaped_text_get_object_range(const RID &p_shaped, const Variant &p_key) const {
 	Vector2i ret;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_get_object_range, p_shaped, p_key, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_object_range, p_shaped, p_key, ret);
 	return ret;
 }
 
 int64_t TextServerExtension::shaped_text_get_object_glyph(const RID &p_shaped, const Variant &p_key) const {
 	int64_t ret = -1;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_get_object_glyph, p_shaped, p_key, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_object_glyph, p_shaped, p_key, ret);
 	return ret;
 }
 
 Size2 TextServerExtension::shaped_text_get_size(const RID &p_shaped) const {
 	Size2 ret;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_get_size, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_size, p_shaped, ret);
 	return ret;
 }
 
 double TextServerExtension::shaped_text_get_ascent(const RID &p_shaped) const {
 	double ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_get_ascent, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_ascent, p_shaped, ret);
 	return ret;
 }
 
 double TextServerExtension::shaped_text_get_descent(const RID &p_shaped) const {
 	double ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_get_descent, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_descent, p_shaped, ret);
 	return ret;
 }
 
 double TextServerExtension::shaped_text_get_width(const RID &p_shaped) const {
 	double ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_get_width, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_width, p_shaped, ret);
 	return ret;
 }
 
 double TextServerExtension::shaped_text_get_underline_position(const RID &p_shaped) const {
 	double ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_get_underline_position, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_underline_position, p_shaped, ret);
 	return ret;
 }
 
 double TextServerExtension::shaped_text_get_underline_thickness(const RID &p_shaped) const {
 	double ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_shaped_text_get_underline_thickness, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_underline_thickness, p_shaped, ret);
 	return ret;
 }
 
@@ -1400,18 +1558,28 @@ int64_t TextServerExtension::shaped_text_hit_test_position(const RID &p_shaped, 
 	return TextServer::shaped_text_hit_test_position(p_shaped, p_coords);
 }
 
-void TextServerExtension::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l, double p_clip_r, const Color &p_color) const {
-	if (GDVIRTUAL_CALL(_shaped_text_draw, p_shaped, p_canvas, p_pos, p_clip_l, p_clip_r, p_color)) {
+void TextServerExtension::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l, double p_clip_r, const Color &p_color, float p_oversampling) const {
+	if (GDVIRTUAL_CALL(_shaped_text_draw, p_shaped, p_canvas, p_pos, p_clip_l, p_clip_r, p_color, p_oversampling)) {
 		return;
 	}
-	TextServer::shaped_text_draw(p_shaped, p_canvas, p_pos, p_clip_l, p_clip_r, p_color);
+#ifndef DISABLE_DEPRECATED
+	if (GDVIRTUAL_CALL(_shaped_text_draw_bind_compat_104872, p_shaped, p_canvas, p_pos, p_clip_l, p_clip_r, p_color)) {
+		return;
+	}
+#endif
+	TextServer::shaped_text_draw(p_shaped, p_canvas, p_pos, p_clip_l, p_clip_r, p_color, p_oversampling);
 }
 
-void TextServerExtension::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l, double p_clip_r, int64_t p_outline_size, const Color &p_color) const {
-	if (GDVIRTUAL_CALL(_shaped_text_draw_outline, p_shaped, p_canvas, p_pos, p_clip_l, p_clip_r, p_outline_size, p_color)) {
+void TextServerExtension::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l, double p_clip_r, int64_t p_outline_size, const Color &p_color, float p_oversampling) const {
+	if (GDVIRTUAL_CALL(_shaped_text_draw_outline, p_shaped, p_canvas, p_pos, p_clip_l, p_clip_r, p_outline_size, p_color, p_oversampling)) {
 		return;
 	}
-	TextServer::shaped_text_draw_outline(p_shaped, p_canvas, p_pos, p_clip_l, p_clip_r, p_outline_size, p_color);
+#ifndef DISABLE_DEPRECATED
+	if (GDVIRTUAL_CALL(_shaped_text_draw_outline_bind_compat_104872, p_shaped, p_canvas, p_pos, p_clip_l, p_clip_r, p_outline_size, p_color)) {
+		return;
+	}
+#endif
+	TextServer::shaped_text_draw_outline(p_shaped, p_canvas, p_pos, p_clip_l, p_clip_r, p_outline_size, p_color, p_oversampling);
 }
 
 Vector2 TextServerExtension::shaped_text_get_grapheme_bounds(const RID &p_shaped, int64_t p_pos) const {

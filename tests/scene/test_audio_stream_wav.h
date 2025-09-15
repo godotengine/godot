@@ -28,19 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_AUDIO_STREAM_WAV_H
-#define TEST_AUDIO_STREAM_WAV_H
+#pragma once
 
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
 #include "scene/resources/audio_stream_wav.h"
 
 #include "tests/test_macros.h"
-
-#ifdef TOOLS_ENABLED
-#include "core/io/resource_loader.h"
-#include "editor/import/resource_importer_wav.h"
-#endif
 
 namespace TestAudioStreamWAV {
 
@@ -52,7 +46,7 @@ constexpr int WAV_COUNT = WAV_RATE;
 
 float gen_wav(float frequency, float wav_rate, int wav_number) {
 	// formula for generating a sin wave with given frequency.
-	return Math::sin((Math_TAU * frequency / wav_rate) * wav_number);
+	return Math::sin((Math::TAU * frequency / wav_rate) * wav_number);
 }
 
 /* Generates a 440Hz sin wave in channel 0 (mono channel or left stereo channel)
@@ -148,25 +142,8 @@ void run_test(String file_name, AudioStreamWAV::Format data_format, bool stereo,
 		Ref<FileAccess> wav_file = FileAccess::open(save_path, FileAccess::READ, &error);
 		REQUIRE(error == OK);
 
-#ifdef TOOLS_ENABLED
-		// The WAV importer can be used if enabled to check that the saved file is valid.
-		Ref<ResourceImporterWAV> wav_importer = memnew(ResourceImporterWAV);
-
-		List<ResourceImporter::ImportOption> options_list;
-		wav_importer->get_import_options("", &options_list);
-
-		HashMap<StringName, Variant> options_map;
-		for (const ResourceImporter::ImportOption &E : options_list) {
-			options_map[E.option.name] = E.default_value;
-		}
-		// Compressed streams can't be saved, disable compression.
-		options_map["compress/mode"] = 0;
-
-		REQUIRE(wav_importer->import(save_path, save_path, options_map, nullptr) == OK);
-
-		String load_path = save_path + "." + wav_importer->get_save_extension();
-		Ref<AudioStreamWAV> loaded_stream = ResourceLoader::load(load_path, "AudioStreamWAV", ResourceFormatImporter::CACHE_MODE_IGNORE, &error);
-		REQUIRE(error == OK);
+		Dictionary options;
+		Ref<AudioStreamWAV> loaded_stream = AudioStreamWAV::load_from_file(save_path, options);
 
 		CHECK(loaded_stream->get_format() == stream->get_format());
 		CHECK(loaded_stream->get_loop_mode() == stream->get_loop_mode());
@@ -177,7 +154,6 @@ void run_test(String file_name, AudioStreamWAV::Format data_format, bool stereo,
 		CHECK(loaded_stream->get_length() == stream->get_length());
 		CHECK(loaded_stream->is_monophonic() == stream->is_monophonic());
 		CHECK(loaded_stream->get_data() == stream->get_data());
-#endif
 	}
 }
 
@@ -241,5 +217,3 @@ TEST_CASE("[Audio][AudioStreamWAV] Saving IMA ADPCM is not supported") {
 }
 
 } // namespace TestAudioStreamWAV
-
-#endif // TEST_AUDIO_STREAM_WAV_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESH_STORAGE_GLES3_H
-#define MESH_STORAGE_GLES3_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
@@ -214,7 +213,7 @@ struct Skeleton {
 	bool use_2d = false;
 	int size = 0;
 	int height = 0;
-	Vector<float> data;
+	LocalVector<float> data;
 
 	bool dirty = false;
 	Skeleton *dirty_list = nullptr;
@@ -241,6 +240,7 @@ private:
 	mutable RID_Owner<Mesh, true> mesh_owner;
 
 	void _mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, MeshInstance::Surface *mis = nullptr);
+	void _mesh_surface_clear(Mesh *mesh, int p_surface);
 
 	/* Mesh Instance API */
 
@@ -248,6 +248,7 @@ private:
 
 	void _mesh_instance_clear(MeshInstance *mi);
 	void _mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint32_t p_surface);
+	void _mesh_instance_remove_surface(MeshInstance *mi, int p_surface);
 	void _blend_shape_bind_mesh_instance_buffer(MeshInstance *p_mi, uint32_t p_surface);
 	SelfList<MeshInstance>::List dirty_mesh_instance_weights;
 	SelfList<MeshInstance>::List dirty_mesh_instance_arrays;
@@ -280,8 +281,8 @@ public:
 
 	/* MESH API */
 
-	Mesh *get_mesh(RID p_rid) { return mesh_owner.get_or_null(p_rid); };
-	bool owns_mesh(RID p_rid) { return mesh_owner.owns(p_rid); };
+	Mesh *get_mesh(RID p_rid) { return mesh_owner.get_or_null(p_rid); }
+	bool owns_mesh(RID p_rid) { return mesh_owner.owns(p_rid); }
 
 	virtual RID mesh_allocate() override;
 	virtual void mesh_initialize(RID p_rid) override;
@@ -300,6 +301,7 @@ public:
 	virtual void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
 	virtual void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
 	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
+	virtual void mesh_surface_update_index_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) override;
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const override;
@@ -315,7 +317,10 @@ public:
 	virtual String mesh_get_path(RID p_mesh) const override;
 
 	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) override;
+
 	virtual void mesh_clear(RID p_mesh) override;
+	virtual void mesh_surface_remove(RID p_mesh, int p_surface) override;
+	virtual void mesh_debug_usage(List<RS::MeshInfo> *r_info) override {}
 
 	_FORCE_INLINE_ const RID *mesh_get_surface_count_and_materials(RID p_mesh, uint32_t &r_surface_count) {
 		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
@@ -443,8 +448,8 @@ public:
 
 	/* MESH INSTANCE API */
 
-	MeshInstance *get_mesh_instance(RID p_rid) { return mesh_instance_owner.get_or_null(p_rid); };
-	bool owns_mesh_instance(RID p_rid) { return mesh_instance_owner.owns(p_rid); };
+	MeshInstance *get_mesh_instance(RID p_rid) { return mesh_instance_owner.get_or_null(p_rid); }
+	bool owns_mesh_instance(RID p_rid) { return mesh_instance_owner.owns(p_rid); }
 
 	virtual RID mesh_instance_create(RID p_base) override;
 	virtual void mesh_instance_free(RID p_rid) override;
@@ -492,13 +497,13 @@ public:
 
 	/* MULTIMESH API */
 
-	MultiMesh *get_multimesh(RID p_rid) { return multimesh_owner.get_or_null(p_rid); };
-	bool owns_multimesh(RID p_rid) { return multimesh_owner.owns(p_rid); };
+	MultiMesh *get_multimesh(RID p_rid) { return multimesh_owner.get_or_null(p_rid); }
+	bool owns_multimesh(RID p_rid) { return multimesh_owner.owns(p_rid); }
 
 	virtual RID _multimesh_allocate() override;
 	virtual void _multimesh_initialize(RID p_rid) override;
 	virtual void _multimesh_free(RID p_rid) override;
-	virtual void _multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) override;
+	virtual void _multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false, bool p_use_indirect = false) override;
 	virtual int _multimesh_get_instance_count(RID p_multimesh) const override;
 
 	virtual void _multimesh_set_mesh(RID p_multimesh, RID p_mesh) override;
@@ -510,13 +515,15 @@ public:
 	virtual RID _multimesh_get_mesh(RID p_multimesh) const override;
 	virtual void _multimesh_set_custom_aabb(RID p_multimesh, const AABB &p_aabb) override;
 	virtual AABB _multimesh_get_custom_aabb(RID p_multimesh) const override;
-	virtual AABB _multimesh_get_aabb(RID p_multimesh) const override;
+	virtual AABB _multimesh_get_aabb(RID p_multimesh) override;
 
 	virtual Transform3D _multimesh_instance_get_transform(RID p_multimesh, int p_index) const override;
 	virtual Transform2D _multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const override;
 	virtual Color _multimesh_instance_get_color(RID p_multimesh, int p_index) const override;
 	virtual Color _multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const override;
 	virtual void _multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) override;
+	virtual RID _multimesh_get_command_buffer_rd_rid(RID p_multimesh) const override;
+	virtual RID _multimesh_get_buffer_rd_rid(RID p_multimesh) const override;
 	virtual Vector<float> _multimesh_get_buffer(RID p_multimesh) const override;
 
 	virtual void _multimesh_set_visible_instances(RID p_multimesh, int p_visible) override;
@@ -528,21 +535,25 @@ public:
 
 	_FORCE_INLINE_ RS::MultimeshTransformFormat multimesh_get_transform_format(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, RS::MULTIMESH_TRANSFORM_3D);
 		return multimesh->xform_format;
 	}
 
 	_FORCE_INLINE_ bool multimesh_uses_colors(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, false);
 		return multimesh->uses_colors;
 	}
 
 	_FORCE_INLINE_ bool multimesh_uses_custom_data(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, false);
 		return multimesh->uses_custom_data;
 	}
 
 	_FORCE_INLINE_ uint32_t multimesh_get_instances_to_draw(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, 0);
 		if (multimesh->visible_instances >= 0) {
 			return multimesh->visible_instances;
 		}
@@ -551,28 +562,32 @@ public:
 
 	_FORCE_INLINE_ GLuint multimesh_get_gl_buffer(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, 0);
 		return multimesh->buffer;
 	}
 
 	_FORCE_INLINE_ uint32_t multimesh_get_stride(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, 0);
 		return multimesh->stride_cache;
 	}
 
 	_FORCE_INLINE_ uint32_t multimesh_get_color_offset(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, 0);
 		return multimesh->color_offset_cache;
 	}
 
 	_FORCE_INLINE_ uint32_t multimesh_get_custom_data_offset(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, 0);
 		return multimesh->custom_data_offset_cache;
 	}
 
 	/* SKELETON API */
 
-	Skeleton *get_skeleton(RID p_rid) { return skeleton_owner.get_or_null(p_rid); };
-	bool owns_skeleton(RID p_rid) { return skeleton_owner.owns(p_rid); };
+	Skeleton *get_skeleton(RID p_rid) { return skeleton_owner.get_or_null(p_rid); }
+	bool owns_skeleton(RID p_rid) { return skeleton_owner.owns(p_rid); }
 
 	virtual RID skeleton_allocate() override;
 	virtual void skeleton_initialize(RID p_rid) override;
@@ -598,5 +613,3 @@ public:
 } // namespace GLES3
 
 #endif // GLES3_ENABLED
-
-#endif // MESH_STORAGE_GLES3_H

@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
+msgid "All Recognized"
+msgstr "所有可用类型"
+
 msgid "New Code Region"
 msgstr "新建代码区域"
 
@@ -27,24 +30,14 @@ msgstr "从屏幕中拾取颜色。"
 msgid "Pick a color from the application window."
 msgstr "从应用程序窗口中拾取颜色。"
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"颜色：#%s\n"
-"鼠标左键：应用颜色\n"
-"鼠标右键：移除预设"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"颜色：#%s\n"
-"鼠标左键：应用颜色"
-
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr "输入十六进制码（\"#ff0000\"）或颜色名称（\"red\"）。"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Clear"
+msgstr "清除"
 
 msgid "Select a picker shape."
 msgstr "选择选取器形状。"
@@ -80,9 +73,6 @@ msgstr "选择此文件夹"
 msgid "You don't have permission to access contents of this folder."
 msgstr "你无权访问此文件夹的内容。"
 
-msgid "All Recognized"
-msgstr "所有可用类型"
-
 msgid "All Files"
 msgstr "所有文件"
 
@@ -97,9 +87,6 @@ msgstr "打开目录"
 
 msgid "Open a File or Directory"
 msgstr "打开文件或目录"
-
-msgid "Save"
-msgstr "保存"
 
 msgid "Save a File"
 msgstr "保存文件"
@@ -119,11 +106,11 @@ msgstr "路径："
 msgid "Refresh files."
 msgstr "刷新文件。"
 
-msgid "Toggle the visibility of hidden files."
-msgstr "切换隐藏文件的可见性。"
-
 msgid "Directories & Files:"
 msgstr "目录与文件："
+
+msgid "Toggle the visibility of hidden files."
+msgstr "切换隐藏文件的可见性。"
 
 msgid "File:"
 msgstr "文件："
@@ -235,9 +222,6 @@ msgstr "粘贴"
 
 msgid "Select All"
 msgstr "全选"
-
-msgid "Clear"
-msgstr "清除"
 
 msgid "Undo"
 msgstr "撤销"

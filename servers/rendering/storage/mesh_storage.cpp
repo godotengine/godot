@@ -48,7 +48,7 @@ void RendererMeshStorage::multimesh_free(RID p_rid) {
 	_multimesh_free(p_rid);
 }
 
-void RendererMeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors, bool p_use_custom_data) {
+void RendererMeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors, bool p_use_custom_data, bool p_use_indirect) {
 	MultiMeshInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
 	if (mmi) {
 		mmi->_transform_format = p_transform_format;
@@ -63,12 +63,12 @@ void RendererMeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instanc
 		mmi->_stride = mmi->_vf_size_xform + mmi->_vf_size_color + mmi->_vf_size_data;
 
 		int size_in_floats = p_instances * mmi->_stride;
-		mmi->_data_curr.resize_zeroed(size_in_floats);
-		mmi->_data_prev.resize_zeroed(size_in_floats);
-		mmi->_data_interpolated.resize_zeroed(size_in_floats);
+		mmi->_data_curr.resize_initialized(size_in_floats);
+		mmi->_data_prev.resize_initialized(size_in_floats);
+		mmi->_data_interpolated.resize_initialized(size_in_floats);
 	}
 
-	_multimesh_allocate_data(p_multimesh, p_instances, p_transform_format, p_use_colors, p_use_custom_data);
+	_multimesh_allocate_data(p_multimesh, p_instances, p_transform_format, p_use_colors, p_use_custom_data, p_use_indirect);
 }
 
 int RendererMeshStorage::multimesh_get_instance_count(RID p_multimesh) const {
@@ -223,6 +223,14 @@ void RendererMeshStorage::multimesh_set_buffer(RID p_multimesh, const Vector<flo
 	_multimesh_set_buffer(p_multimesh, p_buffer);
 }
 
+RID RendererMeshStorage::multimesh_get_command_buffer_rd_rid(RID p_multimesh) const {
+	return _multimesh_get_command_buffer_rd_rid(p_multimesh);
+}
+
+RID RendererMeshStorage::multimesh_get_buffer_rd_rid(RID p_multimesh) const {
+	return _multimesh_get_buffer_rd_rid(p_multimesh);
+}
+
 Vector<float> RendererMeshStorage::multimesh_get_buffer(RID p_multimesh) const {
 	return _multimesh_get_buffer(p_multimesh);
 }
@@ -250,7 +258,20 @@ void RendererMeshStorage::multimesh_set_buffer_interpolated(RID p_multimesh, con
 void RendererMeshStorage::multimesh_set_physics_interpolated(RID p_multimesh, bool p_interpolated) {
 	MultiMeshInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
 	if (mmi) {
+		if (p_interpolated == mmi->interpolated) {
+			return;
+		}
+
 		mmi->interpolated = p_interpolated;
+
+		// If we are turning on physics interpolation, as a convenience,
+		// we want to get the current buffer data from the backend,
+		// and reset all the instances.
+		if (p_interpolated) {
+			mmi->_data_curr = _multimesh_get_buffer(p_multimesh);
+			mmi->_data_prev = mmi->_data_curr;
+			mmi->_data_interpolated = mmi->_data_curr;
+		}
 	}
 }
 
@@ -285,7 +306,7 @@ int RendererMeshStorage::multimesh_get_visible_instances(RID p_multimesh) const 
 	return _multimesh_get_visible_instances(p_multimesh);
 }
 
-AABB RendererMeshStorage::multimesh_get_aabb(RID p_multimesh) const {
+AABB RendererMeshStorage::multimesh_get_aabb(RID p_multimesh) {
 	return _multimesh_get_aabb(p_multimesh);
 }
 
@@ -329,6 +350,9 @@ void RendererMeshStorage::update_interpolation_tick(bool p_process) {
 
 			// ... and that both prev and current are the same, just in case of any interpolations.
 			mmi->_data_prev = mmi->_data_curr;
+
+			// Update the actual stable buffer to the backend.
+			_multimesh_set_buffer(rid, mmi->_data_interpolated);
 		}
 
 		if (!mmi) {

@@ -33,17 +33,16 @@
 #include "physics_server_3d.h"
 
 #include "core/config/project_settings.h"
-#include "core/string/print_string.h"
 #include "core/variant/typed_array.h"
 
 void PhysicsServer3DRenderingServerHandler::set_vertex(int p_vertex_id, const Vector3 &p_vertex) {
-	GDVIRTUAL_REQUIRED_CALL(_set_vertex, p_vertex_id, p_vertex);
+	GDVIRTUAL_CALL(_set_vertex, p_vertex_id, p_vertex);
 }
 void PhysicsServer3DRenderingServerHandler::set_normal(int p_vertex_id, const Vector3 &p_normal) {
-	GDVIRTUAL_REQUIRED_CALL(_set_normal, p_vertex_id, p_normal);
+	GDVIRTUAL_CALL(_set_normal, p_vertex_id, p_normal);
 }
 void PhysicsServer3DRenderingServerHandler::set_aabb(const AABB &p_aabb) {
-	GDVIRTUAL_REQUIRED_CALL(_set_aabb, p_aabb);
+	GDVIRTUAL_CALL(_set_aabb, p_aabb);
 }
 
 void PhysicsServer3DRenderingServerHandler::_bind_methods() {
@@ -139,6 +138,12 @@ void PhysicsDirectBodyState3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sleep_state", "enabled"), &PhysicsDirectBodyState3D::set_sleep_state);
 	ClassDB::bind_method(D_METHOD("is_sleeping"), &PhysicsDirectBodyState3D::is_sleeping);
 
+	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &PhysicsDirectBodyState3D::set_collision_layer);
+	ClassDB::bind_method(D_METHOD("get_collision_layer"), &PhysicsDirectBodyState3D::get_collision_layer);
+
+	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &PhysicsDirectBodyState3D::set_collision_mask);
+	ClassDB::bind_method(D_METHOD("get_collision_mask"), &PhysicsDirectBodyState3D::get_collision_mask);
+
 	ClassDB::bind_method(D_METHOD("get_contact_count"), &PhysicsDirectBodyState3D::get_contact_count);
 
 	ClassDB::bind_method(D_METHOD("get_contact_local_position", "contact_idx"), &PhysicsDirectBodyState3D::get_contact_local_position);
@@ -169,6 +174,8 @@ void PhysicsDirectBodyState3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sleeping"), "set_sleep_state", "is_sleeping");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer"), "set_collision_layer", "get_collision_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask"), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform"), "set_transform", "get_transform");
 }
 
@@ -356,7 +363,7 @@ void PhysicsShapeQueryParameters3D::_bind_methods() {
 /////////////////////////////////////
 
 Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Ref<PhysicsRayQueryParameters3D> &p_ray_query) {
-	ERR_FAIL_COND_V(!p_ray_query.is_valid(), Dictionary());
+	ERR_FAIL_COND_V(p_ray_query.is_null(), Dictionary());
 
 	RayResult result;
 	bool res = intersect_ray(p_ray_query->get_parameters(), result);
@@ -403,7 +410,7 @@ TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_point(const Ref<Phy
 }
 
 TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results) {
-	ERR_FAIL_COND_V(!p_shape_query.is_valid(), TypedArray<Dictionary>());
+	ERR_FAIL_COND_V(p_shape_query.is_null(), TypedArray<Dictionary>());
 
 	Vector<ShapeResult> sr;
 	sr.resize(p_max_results);
@@ -423,7 +430,7 @@ TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_shape(const Ref<Phy
 }
 
 Vector<real_t> PhysicsDirectSpaceState3D::_cast_motion(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query) {
-	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Vector<real_t>());
+	ERR_FAIL_COND_V(p_shape_query.is_null(), Vector<real_t>());
 
 	real_t closest_safe = 1.0f, closest_unsafe = 1.0f;
 	bool res = cast_motion(p_shape_query->get_parameters(), closest_safe, closest_unsafe);
@@ -438,7 +445,7 @@ Vector<real_t> PhysicsDirectSpaceState3D::_cast_motion(const Ref<PhysicsShapeQue
 }
 
 TypedArray<Vector3> PhysicsDirectSpaceState3D::_collide_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results) {
-	ERR_FAIL_COND_V(!p_shape_query.is_valid(), TypedArray<Vector3>());
+	ERR_FAIL_COND_V(p_shape_query.is_null(), TypedArray<Vector3>());
 
 	Vector<Vector3> ret;
 	ret.resize(p_max_results * 2);
@@ -456,7 +463,7 @@ TypedArray<Vector3> PhysicsDirectSpaceState3D::_collide_shape(const Ref<PhysicsS
 }
 
 Dictionary PhysicsDirectSpaceState3D::_get_rest_info(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query) {
-	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Dictionary());
+	ERR_FAIL_COND_V(p_shape_query.is_null(), Dictionary());
 
 	ShapeRestInfo sri;
 
@@ -652,7 +659,7 @@ void PhysicsTestMotionResult3D::_bind_methods() {
 ///////////////////////////////////////
 
 bool PhysicsServer3D::_body_test_motion(RID p_body, const Ref<PhysicsTestMotionParameters3D> &p_parameters, const Ref<PhysicsTestMotionResult3D> &p_result) {
-	ERR_FAIL_COND_V(!p_parameters.is_valid(), false);
+	ERR_FAIL_COND_V(p_parameters.is_null(), false);
 
 	MotionResult *result_ptr = nullptr;
 	if (p_result.is_valid()) {
@@ -877,6 +884,9 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("soft_body_set_linear_stiffness", "body", "stiffness"), &PhysicsServer3D::soft_body_set_linear_stiffness);
 	ClassDB::bind_method(D_METHOD("soft_body_get_linear_stiffness", "body"), &PhysicsServer3D::soft_body_get_linear_stiffness);
 
+	ClassDB::bind_method(D_METHOD("soft_body_set_shrinking_factor", "body", "shrinking_factor"), &PhysicsServer3D::soft_body_set_shrinking_factor);
+	ClassDB::bind_method(D_METHOD("soft_body_get_shrinking_factor", "body"), &PhysicsServer3D::soft_body_get_shrinking_factor);
+
 	ClassDB::bind_method(D_METHOD("soft_body_set_pressure_coefficient", "body", "pressure_coefficient"), &PhysicsServer3D::soft_body_set_pressure_coefficient);
 	ClassDB::bind_method(D_METHOD("soft_body_get_pressure_coefficient", "body"), &PhysicsServer3D::soft_body_get_pressure_coefficient);
 
@@ -894,6 +904,11 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("soft_body_pin_point", "body", "point_index", "pin"), &PhysicsServer3D::soft_body_pin_point);
 
 	ClassDB::bind_method(D_METHOD("soft_body_is_point_pinned", "body", "point_index"), &PhysicsServer3D::soft_body_is_point_pinned);
+
+	ClassDB::bind_method(D_METHOD("soft_body_apply_point_impulse", "body", "point_index", "impulse"), &PhysicsServer3D::soft_body_apply_point_impulse);
+	ClassDB::bind_method(D_METHOD("soft_body_apply_point_force", "body", "point_index", "force"), &PhysicsServer3D::soft_body_apply_point_force);
+	ClassDB::bind_method(D_METHOD("soft_body_apply_central_impulse", "body", "impulse"), &PhysicsServer3D::soft_body_apply_central_impulse);
+	ClassDB::bind_method(D_METHOD("soft_body_apply_central_force", "body", "force"), &PhysicsServer3D::soft_body_apply_central_force);
 
 	/* JOINT API */
 
@@ -1125,14 +1140,14 @@ PhysicsServer3D::PhysicsServer3D() {
 	singleton = this;
 
 	// World3D physics space
-	GLOBAL_DEF_BASIC("physics/3d/default_gravity", 9.8);
-	GLOBAL_DEF_BASIC("physics/3d/default_gravity_vector", Vector3(0, -1, 0));
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "physics/3d/default_gravity", PROPERTY_HINT_RANGE, U"-32,32,0.001,or_less,or_greater,suffix:m/s\u00B2"), 9.8);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::VECTOR3, "physics/3d/default_gravity_vector", PROPERTY_HINT_RANGE, "-10,10,0.001,or_less,or_greater"), Vector3(0, -1, 0));
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/default_linear_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), 0.1);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/default_angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), 0.1);
 
 	// PhysicsServer3D
-	GLOBAL_DEF("physics/3d/sleep_threshold_linear", 0.1);
-	GLOBAL_DEF("physics/3d/sleep_threshold_angular", Math::deg_to_rad(8.0));
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/sleep_threshold_linear", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater"), 0.1);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/sleep_threshold_angular", PROPERTY_HINT_RANGE, "0,90,0.1,radians_as_degrees"), Math::deg_to_rad(8.0));
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"), 0.5);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "physics/3d/solver/solver_iterations", PROPERTY_HINT_RANGE, "1,32,1,or_greater"), 16);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_recycle_radius", PROPERTY_HINT_RANGE, "0,0.1,0.001,or_greater"), 0.01);
@@ -1155,6 +1170,7 @@ void PhysicsServer3DManager::on_servers_changed() {
 	}
 	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, setting_property_name, PROPERTY_HINT_ENUM, physics_servers2));
 	ProjectSettings::get_singleton()->set_restart_if_changed(setting_property_name, true);
+	ProjectSettings::get_singleton()->set_as_basic(setting_property_name, true);
 }
 
 void PhysicsServer3DManager::_bind_methods() {
@@ -1201,7 +1217,9 @@ String PhysicsServer3DManager::get_server_name(int p_id) {
 }
 
 PhysicsServer3D *PhysicsServer3DManager::new_default_server() {
-	ERR_FAIL_COND_V(default_server_id == -1, nullptr);
+	if (default_server_id == -1) {
+		return nullptr;
+	}
 	Variant ret;
 	Callable::CallError ce;
 	physics_servers[default_server_id].create_callback.callp(nullptr, 0, ret, ce);

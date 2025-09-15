@@ -147,7 +147,7 @@
 			<return type="bool" />
 			<param index="0" name="agent" type="RID" />
 			<description>
-				Returns true if the map got changed the previous frame.
+				Returns [code]true[/code] if the map got changed the previous frame.
 			</description>
 		</method>
 		<method name="agent_set_avoidance_callback">
@@ -237,7 +237,7 @@
 			<param index="0" name="agent" type="RID" />
 			<param index="1" name="paused" type="bool" />
 			<description>
-				If [param paused] is true the specified [param agent] will not be processed, e.g. calculate avoidance velocities or receive avoidance callbacks.
+				If [param paused] is [code]true[/code] the specified [param agent] will not be processed. For example, it will not calculate avoidance velocities or receive avoidance callbacks.
 			</description>
 		</method>
 		<method name="agent_set_position">
@@ -339,7 +339,7 @@
 			<return type="int" />
 			<param index="0" name="process_info" type="int" enum="NavigationServer3D.ProcessInfo" />
 			<description>
-				Returns information about the current state of the NavigationServer. See [enum ProcessInfo] for a list of available states.
+				Returns information about the current state of the NavigationServer.
 			</description>
 		</method>
 		<method name="is_baking_navigation_mesh" qualifiers="const">
@@ -374,6 +374,14 @@
 			<param index="0" name="link" type="RID" />
 			<description>
 				Returns the enter cost of this [param link].
+			</description>
+		</method>
+		<method name="link_get_iteration_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Returns the current iteration ID of the navigation link. Every time the navigation link changes and synchronizes, the iteration ID increases. An iteration ID of [code]0[/code] means the navigation link has never synchronized.
+				[b]Note:[/b] The iteration ID will wrap around to [code]1[/code] after reaching its range limit.
 			</description>
 		</method>
 		<method name="link_get_map" qualifiers="const">
@@ -496,7 +504,7 @@
 				Create a new map.
 			</description>
 		</method>
-		<method name="map_force_update">
+		<method name="map_force_update" deprecated="This method is no longer supported, as it is incompatible with asynchronous updates. It can only be used in a single-threaded context, at your own risk.">
 			<return type="void" />
 			<param index="0" name="map" type="RID" />
 			<description>
@@ -532,7 +540,7 @@
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="to_point" type="Vector3" />
 			<description>
-				Returns the point closest to the provided [param to_point] on the navigation mesh surface.
+				Returns the navigation mesh surface point closest to the provided [param to_point] on the navigation [param map].
 			</description>
 		</method>
 		<method name="map_get_closest_point_normal" qualifiers="const">
@@ -540,7 +548,7 @@
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="to_point" type="Vector3" />
 			<description>
-				Returns the normal for the point returned by [method map_get_closest_point].
+				Returns the navigation mesh surface normal closest to the provided [param to_point] on the navigation [param map].
 			</description>
 		</method>
 		<method name="map_get_closest_point_owner" qualifiers="const">
@@ -548,7 +556,7 @@
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="to_point" type="Vector3" />
 			<description>
-				Returns the owner region RID for the point returned by [method map_get_closest_point].
+				Returns the owner region RID for the navigation mesh surface point closest to the provided [param to_point] on the navigation [param map].
 			</description>
 		</method>
 		<method name="map_get_closest_point_to_segment" qualifiers="const">
@@ -558,7 +566,8 @@
 			<param index="2" name="end" type="Vector3" />
 			<param index="3" name="use_collision" type="bool" default="false" />
 			<description>
-				Returns the closest point between the navigation surface and the segment.
+				Returns the navigation mesh surface point closest to the provided [param start] and [param end] segment on the navigation [param map].
+				If [param use_collision] is [code]true[/code], a closest point test is only done when the segment intersects with the navigation mesh surface.
 			</description>
 		</method>
 		<method name="map_get_edge_connection_margin" qualifiers="const">
@@ -604,7 +613,7 @@
 				Returns all navigation obstacle [RID]s that are currently assigned to the requested navigation [param map].
 			</description>
 		</method>
-		<method name="map_get_path" qualifiers="const">
+		<method name="map_get_path">
 			<return type="PackedVector3Array" />
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="origin" type="Vector3" />
@@ -640,18 +649,25 @@
 				Returns the map's up direction.
 			</description>
 		</method>
+		<method name="map_get_use_async_iterations" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns [code]true[/code] if the [param map] synchronization uses an async process that runs on a background thread.
+			</description>
+		</method>
 		<method name="map_get_use_edge_connections" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="map" type="RID" />
 			<description>
-				Returns true if the navigation [param map] allows navigation regions to use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
+				Returns [code]true[/code] if the navigation [param map] allows navigation regions to use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
 			</description>
 		</method>
 		<method name="map_is_active" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="map" type="RID" />
 			<description>
-				Returns true if the map is active.
+				Returns [code]true[/code] if the map is active.
 			</description>
 		</method>
 		<method name="map_set_active">
@@ -708,6 +724,14 @@
 			<param index="1" name="up" type="Vector3" />
 			<description>
 				Sets the map up direction.
+			</description>
+		</method>
+		<method name="map_set_use_async_iterations">
+			<return type="void" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] is [code]true[/code] the [param map] synchronization uses an async process that runs on a background thread.
 			</description>
 		</method>
 		<method name="map_set_use_edge_connections">
@@ -831,7 +855,7 @@
 			<param index="0" name="obstacle" type="RID" />
 			<param index="1" name="paused" type="bool" />
 			<description>
-				If [param paused] is true the specified [param obstacle] will not be processed, e.g. affect avoidance velocities.
+				If [param paused] is [code]true[/code] the specified [param obstacle] will not be processed. For example, it will no longer affect avoidance velocities.
 			</description>
 		</method>
 		<method name="obstacle_set_position">
@@ -886,12 +910,13 @@
 				[b]Performance:[/b] While convenient, reading data arrays from [Mesh] resources can affect the frame rate negatively. The data needs to be received from the GPU, stalling the [RenderingServer] in the process. For performance prefer the use of e.g. collision shapes or creating the data arrays entirely in code.
 			</description>
 		</method>
-		<method name="query_path" qualifiers="const">
+		<method name="query_path">
 			<return type="void" />
 			<param index="0" name="parameters" type="NavigationPathQueryParameters3D" />
 			<param index="1" name="result" type="NavigationPathQueryResult3D" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
 			<description>
-				Queries a path in a given navigation map. Start and target position and other parameters are defined through [NavigationPathQueryParameters3D]. Updates the provided [NavigationPathQueryResult3D] result object with the path among other results requested by the query.
+				Queries a path in a given navigation map. Start and target position and other parameters are defined through [NavigationPathQueryParameters3D]. Updates the provided [NavigationPathQueryResult3D] result object with the path among other results requested by the query. After the process is finished the optional [param callback] will be called.
 			</description>
 		</method>
 		<method name="region_bake_navigation_mesh" deprecated="This method is deprecated due to core threading changes. To upgrade existing code, first create a [NavigationMeshSourceGeometryData3D] resource. Use this resource with [method parse_source_geometry_data] to parse the [SceneTree] for nodes that should contribute to the navigation mesh baking. The [SceneTree] parsing needs to happen on the main thread. After the parsing is finished use the resource with [method bake_from_source_geometry_data] to bake a navigation mesh.">
@@ -906,6 +931,40 @@
 			<return type="RID" />
 			<description>
 				Creates a new region.
+			</description>
+		</method>
+		<method name="region_get_bounds" qualifiers="const">
+			<return type="AABB" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Returns the axis-aligned bounding box for the [param region]'s transformed navigation mesh.
+			</description>
+		</method>
+		<method name="region_get_closest_point" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="to_point" type="Vector3" />
+			<description>
+				Returns the navigation mesh surface point closest to the provided [param to_point] on the navigation [param region].
+			</description>
+		</method>
+		<method name="region_get_closest_point_normal" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="to_point" type="Vector3" />
+			<description>
+				Returns the navigation mesh surface normal closest to the provided [param to_point] on the navigation [param region].
+			</description>
+		</method>
+		<method name="region_get_closest_point_to_segment" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="start" type="Vector3" />
+			<param index="2" name="end" type="Vector3" />
+			<param index="3" name="use_collision" type="bool" default="false" />
+			<description>
+				Returns the navigation mesh surface point closest to the provided [param start] and [param end] segment on the navigation [param region].
+				If [param use_collision] is [code]true[/code], a closest point test is only done when the segment intersects with the navigation mesh surface.
 			</description>
 		</method>
 		<method name="region_get_connection_pathway_end" qualifiers="const">
@@ -943,6 +1002,14 @@
 			<param index="0" name="region" type="RID" />
 			<description>
 				Returns the enter cost of this [param region].
+			</description>
+		</method>
+		<method name="region_get_iteration_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Returns the current iteration ID of the navigation region. Every time the navigation region changes and synchronizes, the iteration ID increases. An iteration ID of [code]0[/code] means the navigation region has never synchronized.
+				[b]Note:[/b] The iteration ID will wrap around to [code]1[/code] after reaching its range limit.
 			</description>
 		</method>
 		<method name="region_get_map" qualifiers="const">
@@ -991,11 +1058,18 @@
 				Returns the travel cost of this [param region].
 			</description>
 		</method>
+		<method name="region_get_use_async_iterations" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Returns [code]true[/code] if the [param region] uses an async synchronization process that runs on a background thread.
+			</description>
+		</method>
 		<method name="region_get_use_edge_connections" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="region" type="RID" />
 			<description>
-				Returns true if the navigation [param region] is set to use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
+				Returns [code]true[/code] if the navigation [param region] is set to use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
 			</description>
 		</method>
 		<method name="region_owns_point" qualifiers="const">
@@ -1070,6 +1144,14 @@
 			<param index="1" name="travel_cost" type="float" />
 			<description>
 				Sets the [param travel_cost] for this [param region].
+			</description>
+		</method>
+		<method name="region_set_use_async_iterations">
+			<return type="void" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] is [code]true[/code] the [param region] uses an async synchronization process that runs on a background thread.
 			</description>
 		</method>
 		<method name="region_set_use_edge_connections">

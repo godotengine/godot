@@ -30,7 +30,6 @@
 
 #include "kinematic_collision_2d.h"
 
-#include "scene/2d/physics/character_body_2d.h"
 #include "scene/2d/physics/physics_body_2d.h"
 
 Vector2 KinematicCollision2D::get_position() const {
@@ -59,7 +58,7 @@ real_t KinematicCollision2D::get_depth() const {
 }
 
 Object *KinematicCollision2D::get_local_shape() const {
-	PhysicsBody2D *owner = Object::cast_to<PhysicsBody2D>(ObjectDB::get_instance(owner_id));
+	PhysicsBody2D *owner = ObjectDB::get_instance<PhysicsBody2D>(owner_id);
 	if (!owner) {
 		return nullptr;
 	}

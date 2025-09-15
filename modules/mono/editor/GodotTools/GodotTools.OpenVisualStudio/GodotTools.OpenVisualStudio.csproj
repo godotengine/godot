@@ -5,7 +5,6 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
-    <RuntimeIdentifier>win-x86</RuntimeIdentifier>
     <SelfContained>False</SelfContained>
     <RollForward>LatestMajor</RollForward>
   </PropertyGroup>

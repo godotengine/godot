@@ -17,12 +17,13 @@
 
 #include "md.h"
 
-#if defined(MBEDTLS_MD_CAN_SHA512) && !defined(MBEDTLS_ENTROPY_FORCE_SHA256)
+#if (defined(MBEDTLS_MD_CAN_SHA512) || defined(PSA_WANT_ALG_SHA_512)) && \
+    !defined(MBEDTLS_ENTROPY_FORCE_SHA256)
 #define MBEDTLS_ENTROPY_SHA512_ACCUMULATOR
 #define MBEDTLS_ENTROPY_MD  MBEDTLS_MD_SHA512
 #define MBEDTLS_ENTROPY_BLOCK_SIZE      64      /**< Block size of entropy accumulator (SHA-512) */
 #else
-#if defined(MBEDTLS_MD_CAN_SHA256)
+#if (defined(MBEDTLS_MD_CAN_SHA256) || defined(PSA_WANT_ALG_SHA_256))
 #define MBEDTLS_ENTROPY_SHA256_ACCUMULATOR
 #define MBEDTLS_ENTROPY_MD  MBEDTLS_MD_SHA256
 #define MBEDTLS_ENTROPY_BLOCK_SIZE      32      /**< Block size of entropy accumulator (SHA-256) */

@@ -28,15 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_SERVER_DEFAULT_H
-#define RENDERING_SERVER_DEFAULT_H
+#pragma once
 
 #include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
 #include "core/templates/hash_map.h"
 #include "renderer_canvas_cull.h"
-#include "renderer_scene_cull.h"
 #include "renderer_viewport.h"
 #include "rendering_server_globals.h"
 #include "servers/rendering/renderer_compositor.h"
@@ -111,6 +109,9 @@ public:
 #endif
 
 #define WRITE_ACTION redraw_request();
+#define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread)
+#define ASYNC_COND_PUSH_AND_RET (Thread::get_caller_id() != server_thread)
+#define ASYNC_COND_PUSH_AND_SYNC (Thread::get_caller_id() != server_thread)
 
 #ifdef DEBUG_SYNC
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));
@@ -129,32 +130,32 @@ public:
 #define ServerName RendererTextureStorage
 #define server_name RSG::texture_storage
 
-#define FUNCRIDTEX0(m_type)                                                                                   \
-	virtual RID m_type##_create() override {                                                                  \
-		RID ret = RSG::texture_storage->texture_allocate();                                                   \
-		if (Thread::get_caller_id() == server_thread || RSG::texture_storage->can_create_resources_async()) { \
-			RSG::texture_storage->m_type##_initialize(ret);                                                   \
-		} else {                                                                                              \
-			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret);      \
-		}                                                                                                     \
-		return ret;                                                                                           \
+#define FUNCRIDTEX0(m_type)                                                                              \
+	virtual RID m_type##_create() override {                                                             \
+		RID ret = RSG::texture_storage->texture_allocate();                                              \
+		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) { \
+			RSG::texture_storage->m_type##_initialize(ret);                                              \
+		} else {                                                                                         \
+			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret); \
+		}                                                                                                \
+		return ret;                                                                                      \
 	}
 
-#define FUNCRIDTEX1(m_type, m_type1)                                                                          \
-	virtual RID m_type##_create(m_type1 p1) override {                                                        \
-		RID ret = RSG::texture_storage->texture_allocate();                                                   \
-		if (Thread::get_caller_id() == server_thread || RSG::texture_storage->can_create_resources_async()) { \
-			RSG::texture_storage->m_type##_initialize(ret, p1);                                               \
-		} else {                                                                                              \
-			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret, p1);  \
-		}                                                                                                     \
-		return ret;                                                                                           \
+#define FUNCRIDTEX1(m_type, m_type1)                                                                         \
+	virtual RID m_type##_create(m_type1 p1) override {                                                       \
+		RID ret = RSG::texture_storage->texture_allocate();                                                  \
+		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) {     \
+			RSG::texture_storage->m_type##_initialize(ret, p1);                                              \
+		} else {                                                                                             \
+			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret, p1); \
+		}                                                                                                    \
+		return ret;                                                                                          \
 	}
 
 #define FUNCRIDTEX2(m_type, m_type1, m_type2)                                                                    \
 	virtual RID m_type##_create(m_type1 p1, m_type2 p2) override {                                               \
 		RID ret = RSG::texture_storage->texture_allocate();                                                      \
-		if (Thread::get_caller_id() == server_thread || RSG::texture_storage->can_create_resources_async()) {    \
+		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) {         \
 			RSG::texture_storage->m_type##_initialize(ret, p1, p2);                                              \
 		} else {                                                                                                 \
 			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret, p1, p2); \
@@ -162,10 +163,21 @@ public:
 		return ret;                                                                                              \
 	}
 
+#define FUNCRIDTEX3(m_type, m_type1, m_type2, m_type3)                                                               \
+	virtual RID m_type##_create(m_type1 p1, m_type2 p2, m_type3 p3) override {                                       \
+		RID ret = RSG::texture_storage->texture_allocate();                                                          \
+		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) {             \
+			RSG::texture_storage->m_type##_initialize(ret, p1, p2, p3);                                              \
+		} else {                                                                                                     \
+			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret, p1, p2, p3); \
+		}                                                                                                            \
+		return ret;                                                                                                  \
+	}
+
 #define FUNCRIDTEX6(m_type, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6)                                                \
 	virtual RID m_type##_create(m_type1 p1, m_type2 p2, m_type3 p3, m_type4 p4, m_type5 p5, m_type6 p6) override {               \
 		RID ret = RSG::texture_storage->texture_allocate();                                                                      \
-		if (Thread::get_caller_id() == server_thread || RSG::texture_storage->can_create_resources_async()) {                    \
+		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) {                         \
 			RSG::texture_storage->m_type##_initialize(ret, p1, p2, p3, p4, p5, p6);                                              \
 		} else {                                                                                                                 \
 			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret, p1, p2, p3, p4, p5, p6); \
@@ -177,11 +189,18 @@ public:
 	FUNCRIDTEX1(texture_2d, const Ref<Image> &)
 	FUNCRIDTEX2(texture_2d_layered, const Vector<Ref<Image>> &, TextureLayeredType)
 	FUNCRIDTEX6(texture_3d, Image::Format, int, int, int, bool, const Vector<Ref<Image>> &)
+	FUNCRIDTEX3(texture_external, int, int, uint64_t)
 	FUNCRIDTEX1(texture_proxy, RID)
+
+	// Called directly, not through the command queue.
+	virtual RID texture_create_from_native_handle(TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, TextureLayeredType p_layered_type = TEXTURE_LAYERED_2D_ARRAY) override {
+		return RSG::texture_storage->texture_create_from_native_handle(p_type, p_format, p_native_handle, p_width, p_height, p_depth, p_layers, p_layered_type);
+	}
 
 	//these go through command queue if they are in another thread
 	FUNC3(texture_2d_update, RID, const Ref<Image> &, int)
 	FUNC2(texture_3d_update, RID, const Vector<Ref<Image>> &)
+	FUNC4(texture_external_update, RID, int, int, uint64_t)
 	FUNC2(texture_proxy_update, RID, RID)
 
 	//these also go pass-through
@@ -225,7 +244,35 @@ public:
 #define ServerName RendererMaterialStorage
 #define server_name RSG::material_storage
 
-	FUNCRIDSPLIT(shader)
+	virtual RID shader_create() override {
+		RID ret = RSG::material_storage->shader_allocate();
+		if (Thread::get_caller_id() == server_thread) {
+			RSG::material_storage->shader_initialize(ret, false);
+		} else {
+			command_queue.push(RSG::material_storage, &ServerName::shader_initialize, ret, false);
+		}
+		return ret;
+	}
+
+	virtual RID shader_create_from_code(const String &p_code, const String &p_path_hint = String()) override {
+		RID shader = RSG::material_storage->shader_allocate();
+		bool using_server_thread = Thread::get_caller_id() == server_thread;
+		if (using_server_thread || RSG::rasterizer->can_create_resources_async()) {
+			if (using_server_thread) {
+				command_queue.flush_if_pending();
+			}
+
+			RSG::material_storage->shader_initialize(shader, false);
+			RSG::material_storage->shader_set_code(shader, p_code);
+			RSG::material_storage->shader_set_path_hint(shader, p_path_hint);
+		} else {
+			command_queue.push(RSG::material_storage, &RendererMaterialStorage::shader_initialize, shader, false);
+			command_queue.push(RSG::material_storage, &RendererMaterialStorage::shader_set_code, shader, p_code);
+			command_queue.push(RSG::material_storage, &RendererMaterialStorage::shader_set_path_hint, shader, p_path_hint);
+		}
+
+		return shader;
+	}
 
 	FUNC2(shader_set_code, RID, const String &)
 	FUNC2(shader_set_path_hint, RID, const String &)
@@ -242,6 +289,28 @@ public:
 	/* COMMON MATERIAL API */
 
 	FUNCRIDSPLIT(material)
+
+	virtual RID material_create_from_shader(RID p_next_pass, int p_render_priority, RID p_shader) override {
+		RID material = RSG::material_storage->material_allocate();
+		bool using_server_thread = Thread::get_caller_id() == server_thread;
+		if (using_server_thread || RSG::rasterizer->can_create_resources_async()) {
+			if (using_server_thread) {
+				command_queue.flush_if_pending();
+			}
+
+			RSG::material_storage->material_initialize(material);
+			RSG::material_storage->material_set_next_pass(material, p_next_pass);
+			RSG::material_storage->material_set_render_priority(material, p_render_priority);
+			RSG::material_storage->material_set_shader(material, p_shader);
+		} else {
+			command_queue.push(RSG::material_storage, &RendererMaterialStorage::material_initialize, material);
+			command_queue.push(RSG::material_storage, &RendererMaterialStorage::material_set_next_pass, material, p_next_pass);
+			command_queue.push(RSG::material_storage, &RendererMaterialStorage::material_set_render_priority, material, p_render_priority);
+			command_queue.push(RSG::material_storage, &RendererMaterialStorage::material_set_shader, material, p_shader);
+		}
+
+		return material;
+	}
 
 	FUNC2(material_set_shader, RID, RID)
 
@@ -263,10 +332,9 @@ public:
 	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces, int p_blend_shape_count = 0) override {
 		RID mesh = RSG::mesh_storage->mesh_allocate();
 
-		// TODO once we have RSG::mesh_storage, add can_create_resources_async and call here instead of texture_storage!!
-
-		if (Thread::get_caller_id() == server_thread || RSG::texture_storage->can_create_resources_async()) {
-			if (Thread::get_caller_id() == server_thread) {
+		bool using_server_thread = Thread::get_caller_id() == server_thread;
+		if (using_server_thread || RSG::rasterizer->can_create_resources_async()) {
+			if (using_server_thread) {
 				command_queue.flush_if_pending();
 			}
 			RSG::mesh_storage->mesh_initialize(mesh);
@@ -274,12 +342,14 @@ public:
 			for (int i = 0; i < p_surfaces.size(); i++) {
 				RSG::mesh_storage->mesh_add_surface(mesh, p_surfaces[i]);
 			}
+			RSG::scene->mesh_generate_pipelines(mesh, using_server_thread);
 		} else {
 			command_queue.push(RSG::mesh_storage, &RendererMeshStorage::mesh_initialize, mesh);
 			command_queue.push(RSG::mesh_storage, &RendererMeshStorage::mesh_set_blend_shape_count, mesh, p_blend_shape_count);
 			for (int i = 0; i < p_surfaces.size(); i++) {
 				command_queue.push(RSG::mesh_storage, &RendererMeshStorage::mesh_add_surface, mesh, p_surfaces[i]);
 			}
+			command_queue.push(RSG::scene, &RenderingMethod::mesh_generate_pipelines, mesh, true);
 		}
 
 		return mesh;
@@ -299,6 +369,7 @@ public:
 	FUNC4(mesh_surface_update_vertex_region, RID, int, int, const Vector<uint8_t> &)
 	FUNC4(mesh_surface_update_attribute_region, RID, int, int, const Vector<uint8_t> &)
 	FUNC4(mesh_surface_update_skin_region, RID, int, int, const Vector<uint8_t> &)
+	FUNC4(mesh_surface_update_index_region, RID, int, int, const Vector<uint8_t> &)
 
 	FUNC3(mesh_surface_set_material, RID, int, RID)
 	FUNC2RC(RID, mesh_surface_get_material, RID, int)
@@ -315,13 +386,16 @@ public:
 
 	FUNC2(mesh_set_shadow_mesh, RID, RID)
 
+	FUNC2(mesh_surface_remove, RID, int)
 	FUNC1(mesh_clear, RID)
+
+	FUNC1(mesh_debug_usage, List<MeshInfo> *)
 
 	/* MULTIMESH API */
 
 	FUNCRIDSPLIT(multimesh)
 
-	FUNC5(multimesh_allocate_data, RID, int, MultimeshTransformFormat, bool, bool)
+	FUNC6(multimesh_allocate_data, RID, int, MultimeshTransformFormat, bool, bool, bool)
 	FUNC1RC(int, multimesh_get_instance_count, RID)
 
 	FUNC2(multimesh_set_mesh, RID, RID)
@@ -342,6 +416,8 @@ public:
 	FUNC2RC(Color, multimesh_instance_get_custom_data, RID, int)
 
 	FUNC2(multimesh_set_buffer, RID, const Vector<float> &)
+	FUNC1RC(RID, multimesh_get_command_buffer_rd_rid, RID)
+	FUNC1RC(RID, multimesh_get_buffer_rd_rid, RID)
 	FUNC1RC(Vector<float>, multimesh_get_buffer, RID)
 
 	FUNC3(multimesh_set_buffer_interpolated, RID, const Vector<float> &, const Vector<float> &)
@@ -382,6 +458,7 @@ public:
 	FUNC2(light_set_cull_mask, RID, uint32_t)
 	FUNC5(light_set_distance_fade, RID, bool, float, float, float)
 	FUNC2(light_set_reverse_cull_face_mode, RID, bool)
+	FUNC2(light_set_shadow_caster_mask, RID, uint32_t)
 	FUNC2(light_set_bake_mode, RID, LightBakeMode)
 	FUNC2(light_set_max_sdfgi_cascade, RID, uint32_t)
 
@@ -397,6 +474,7 @@ public:
 
 	FUNC2(reflection_probe_set_update_mode, RID, ReflectionProbeUpdateMode)
 	FUNC2(reflection_probe_set_intensity, RID, float)
+	FUNC2(reflection_probe_set_blend_distance, RID, float)
 	FUNC2(reflection_probe_set_ambient_color, RID, const Color &)
 	FUNC2(reflection_probe_set_ambient_energy, RID, float)
 	FUNC2(reflection_probe_set_ambient_mode, RID, ReflectionProbeAmbientMode)
@@ -425,6 +503,10 @@ public:
 	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_tetrahedra, RID)
 	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_bsp_tree, RID)
 	FUNC1(lightmap_set_probe_capture_update_speed, float)
+
+	FUNC2(lightmap_set_shadowmask_textures, RID, RID)
+	FUNC1R(ShadowmaskMode, lightmap_get_shadowmask_mode, RID)
+	FUNC2(lightmap_set_shadowmask_mode, RID, ShadowmaskMode)
 
 	/* Shadow Atlas */
 	FUNC0R(RID, shadow_atlas_create)
@@ -503,8 +585,10 @@ public:
 	FUNC2(particles_set_lifetime, RID, double)
 	FUNC2(particles_set_one_shot, RID, bool)
 	FUNC2(particles_set_pre_process_time, RID, double)
+	FUNC2(particles_request_process_time, RID, real_t)
 	FUNC2(particles_set_explosiveness_ratio, RID, float)
 	FUNC2(particles_set_randomness_ratio, RID, float)
+	FUNC2(particles_set_seed, RID, uint32_t)
 	FUNC2(particles_set_custom_aabb, RID, const AABB &)
 	FUNC2(particles_set_speed_scale, RID, double)
 	FUNC2(particles_set_use_local_coordinates, RID, bool)
@@ -547,6 +631,7 @@ public:
 	FUNC2(particles_collision_set_attractor_attenuation, RID, real_t)
 	FUNC2(particles_collision_set_field_texture, RID, RID)
 	FUNC1(particles_collision_height_field_update, RID)
+	FUNC2(particles_collision_set_height_field_mask, RID, uint32_t)
 	FUNC2(particles_collision_set_height_field_resolution, RID, ParticlesCollisionHeightfieldResolution)
 
 	/* FOG VOLUME */
@@ -623,6 +708,7 @@ public:
 	FUNC2(viewport_set_scaling_3d_scale, RID, float)
 	FUNC2(viewport_set_fsr_sharpness, RID, float)
 	FUNC2(viewport_set_texture_mipmap_bias, RID, float)
+	FUNC2(viewport_set_anisotropic_filtering_level, RID, ViewportAnisotropicFiltering)
 
 	FUNC2(viewport_set_update_mode, RID, ViewportUpdateMode)
 	FUNC1RC(ViewportUpdateMode, viewport_get_update_mode, RID)
@@ -661,6 +747,7 @@ public:
 	FUNC2(viewport_set_screen_space_aa, RID, ViewportScreenSpaceAA)
 	FUNC2(viewport_set_use_taa, RID, bool)
 	FUNC2(viewport_set_use_debanding, RID, bool)
+	FUNC2(viewport_set_force_motion_vectors, RID, bool)
 	FUNC2(viewport_set_use_occlusion_culling, RID, bool)
 	FUNC1(viewport_set_occlusion_rays_per_thread, int)
 	FUNC1(viewport_set_occlusion_culling_build_quality, ViewportOcclusionCullingBuildQuality)
@@ -724,10 +811,8 @@ public:
 	FUNC2(environment_set_canvas_max_layer, RID, int)
 	FUNC6(environment_set_ambient_light, RID, const Color &, EnvironmentAmbientSource, float, float, EnvironmentReflectionSource)
 
-// FIXME: Disabled during Vulkan refactoring, should be ported.
-#if 0
 	FUNC2(environment_set_camera_feed_id, RID, int)
-#endif
+
 	FUNC6(environment_set_ssr, RID, bool, int, float, float, float)
 	FUNC1(environment_set_ssr_roughness_quality, EnvironmentSSRRoughnessQuality)
 
@@ -809,12 +894,12 @@ public:
 	FUNC2(instance_set_layer_mask, RID, uint32_t)
 	FUNC3(instance_set_pivot_data, RID, float, bool)
 	FUNC2(instance_set_transform, RID, const Transform3D &)
-	FUNC2(instance_set_interpolated, RID, bool)
-	FUNC1(instance_reset_physics_interpolation, RID)
 	FUNC2(instance_attach_object_instance_id, RID, ObjectID)
 	FUNC3(instance_set_blend_shape_weight, RID, int, float)
 	FUNC3(instance_set_surface_override_material, RID, int, RID)
 	FUNC2(instance_set_visible, RID, bool)
+
+	FUNC1(instance_teleport, RID)
 
 	FUNC2(instance_set_custom_aabb, RID, AABB)
 
@@ -891,6 +976,7 @@ public:
 	FUNC2(canvas_item_set_self_modulate, RID, const Color &)
 
 	FUNC2(canvas_item_set_draw_behind_parent, RID, bool)
+	FUNC2(canvas_item_set_use_identity_transform, RID, bool)
 
 	FUNC6(canvas_item_add_line, RID, const Point2 &, const Point2 &, const Color &, float, bool)
 	FUNC5(canvas_item_add_polyline, RID, const Vector<Point2> &, const Vector<Color> &, float, bool)
@@ -922,6 +1008,11 @@ public:
 	FUNC2(canvas_item_set_draw_index, RID, int)
 
 	FUNC2(canvas_item_set_material, RID, RID)
+
+	FUNC3(canvas_item_set_instance_shader_parameter, RID, const StringName &, const Variant &)
+	FUNC2RC(Variant, canvas_item_get_instance_shader_parameter, RID, const StringName &)
+	FUNC2RC(Variant, canvas_item_get_instance_shader_parameter_default_value, RID, const StringName &)
+	FUNC2C(canvas_item_get_instance_shader_parameter_list, RID, List<PropertyInfo> *)
 
 	FUNC2(canvas_item_set_use_parent_material, RID, bool)
 
@@ -1063,7 +1154,7 @@ public:
 
 	virtual void request_frame_drawn_callback(const Callable &p_callable) override;
 
-	virtual void draw(bool p_swap_buffers, double frame_step) override;
+	virtual void draw(bool p_present, double frame_step) override;
 	virtual void sync() override;
 	virtual bool has_changed() const override;
 	virtual void init() override;
@@ -1109,5 +1200,3 @@ public:
 	RenderingServerDefault(bool p_create_thread = false);
 	~RenderingServerDefault();
 };
-
-#endif // RENDERING_SERVER_DEFAULT_H

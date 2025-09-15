@@ -40,8 +40,6 @@ namespace CFF {
  */
 #define HB_OT_TAG_CFF2 HB_TAG('C','F','F','2')
 
-typedef CFFIndex<HBUINT32>  CFF2Index;
-
 typedef CFF2Index         CFF2CharStrings;
 typedef Subrs<HBUINT32>   CFF2Subrs;
 
@@ -64,9 +62,9 @@ struct CFF2FDSelect
   {
     switch (format)
     {
-    case 0: return format.static_size + u.format0.get_size (num_glyphs);
-    case 3: return format.static_size + u.format3.get_size ();
-    case 4: return format.static_size + u.format4.get_size ();
+    case 0: hb_barrier (); return format.static_size + u.format0.get_size (num_glyphs);
+    case 3: hb_barrier (); return format.static_size + u.format3.get_size ();
+    case 4: hb_barrier (); return format.static_size + u.format4.get_size ();
     default:return 0;
     }
   }
@@ -78,9 +76,9 @@ struct CFF2FDSelect
 
     switch (format)
     {
-    case 0: return u.format0.get_fd (glyph);
-    case 3: return u.format3.get_fd (glyph);
-    case 4: return u.format4.get_fd (glyph);
+    case 0: hb_barrier (); return u.format0.get_fd (glyph);
+    case 3: hb_barrier (); return u.format3.get_fd (glyph);
+    case 4: hb_barrier (); return u.format4.get_fd (glyph);
     default:return 0;
     }
   }
@@ -94,9 +92,9 @@ struct CFF2FDSelect
 
     switch (format)
     {
-    case 0: return_trace (u.format0.sanitize (c, fdcount));
-    case 3: return_trace (u.format3.sanitize (c, fdcount));
-    case 4: return_trace (u.format4.sanitize (c, fdcount));
+    case 0: hb_barrier (); return_trace (u.format0.sanitize (c, fdcount));
+    case 3: hb_barrier (); return_trace (u.format3.sanitize (c, fdcount));
+    case 4: hb_barrier (); return_trace (u.format4.sanitize (c, fdcount));
     default:return_trace (false);
     }
   }
@@ -407,7 +405,7 @@ struct cff2
 
       this->blob = sc.reference_table<cff2> (face);
 
-      /* setup for run-time santization */
+      /* setup for run-time sanitization */
       sc.init (this->blob);
       sc.start_processing ();
 
@@ -460,6 +458,8 @@ struct cff2
 	if (unlikely (!font_interp.interpret (*font))) goto fail;
 
 	const hb_ubytes_t privDictStr = StructAtOffsetOrNull<UnsizedByteStr> (cff2, font->privateDictInfo.offset, sc, font->privateDictInfo.size).as_ubytes (font->privateDictInfo.size);
+	if (unlikely (font->privateDictInfo.size &&
+		      privDictStr == (const unsigned char *) &Null (UnsizedByteStr))) goto fail;
 	cff2_priv_dict_interp_env_t env2 (privDictStr);
 	dict_interpreter_t<PRIVOPSET, PRIVDICTVAL, cff2_priv_dict_interp_env_t> priv_interp (env2);
 	privateDicts[i].init ();
@@ -482,6 +482,13 @@ struct cff2
       privateDicts.fini ();
       hb_blob_destroy (blob);
       blob = nullptr;
+
+      auto *scalars = cached_scalars_vector.get_acquire ();
+      if (scalars && cached_scalars_vector.cmpexch (scalars, nullptr))
+      {
+	scalars->fini ();
+	hb_free (scalars);
+      }
     }
 
     hb_vector_t<uint16_t> *create_glyph_to_sid_map () const
@@ -509,6 +516,8 @@ struct cff2
     hb_vector_t<cff2_font_dict_values_t>     fontDicts;
     hb_vector_t<PRIVDICTVAL>  privateDicts;
 
+    mutable hb_atomic_t<hb_vector_t<float> *> cached_scalars_vector;
+
     unsigned int	      num_glyphs = 0;
   };
 
@@ -519,8 +528,12 @@ struct cff2
     HB_INTERNAL bool get_extents (hb_font_t *font,
 				  hb_codepoint_t glyph,
 				  hb_glyph_extents_t *extents) const;
-    HB_INTERNAL bool paint_glyph (hb_font_t *font, hb_codepoint_t glyph, hb_paint_funcs_t *funcs, void *data, hb_color_t foreground) const;
+    HB_INTERNAL bool get_extents_at (hb_font_t *font,
+				     hb_codepoint_t glyph,
+				     hb_glyph_extents_t *extents,
+				     hb_array_t<const int> coords) const;
     HB_INTERNAL bool get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session) const;
+    HB_INTERNAL bool get_path_at (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session, hb_array_t<const int> coords) const;
   };
 
   struct accelerator_subset_t : accelerator_templ_t<cff2_private_dict_opset_subset_t, cff2_private_dict_values_subset_t>

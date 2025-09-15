@@ -5,13 +5,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-// TODO:
-//   Determine a proper way to emit the signal.
-//   'Emit(nameof(TheEvent))' creates a StringName every time and has the overhead of string marshaling.
-//   I haven't decided on the best option yet. Some possibilities:
-//     - Expose the generated StringName fields to the user, for use with 'Emit(...)'.
-//     - Generate a 'EmitSignalName' method for each event signal.
-
 namespace Godot.SourceGenerators
 {
     [Generator]
@@ -110,13 +103,13 @@ namespace Godot.SourceGenerators
                     source.Append("partial ");
                     source.Append(containingType.GetDeclarationKeyword());
                     source.Append(" ");
-                    source.Append(containingType.NameWithTypeParameters());
+                    source.Append(containingType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
                     source.Append("\n{\n");
                 }
             }
 
             source.Append("partial class ");
-            source.Append(symbol.NameWithTypeParameters());
+            source.Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
             source.Append("\n{\n");
 
             var members = symbol.GetMembers();
@@ -276,7 +269,7 @@ namespace Godot.SourceGenerators
                 source.Append(
                     $"    /// <inheritdoc cref=\"{signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal()}\"/>\n");
 
-                source.Append("    public event ")
+                source.Append($"    {signalDelegate.DelegateSymbol.GetAccessibilityKeyword()} event ")
                     .Append(signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal())
                     .Append(" @")
                     .Append(signalName)
@@ -288,6 +281,43 @@ namespace Godot.SourceGenerators
                     .Append(signalName)
                     .Append(" -= value;\n")
                     .Append("}\n");
+
+                // Generate EmitSignal{EventName} method to raise the event
+
+                var invokeMethodSymbol = signalDelegate.InvokeMethodData.Method;
+                int paramCount = invokeMethodSymbol.Parameters.Length;
+
+                string raiseMethodModifiers = signalDelegate.DelegateSymbol.ContainingType.IsSealed ?
+                    "private" :
+                    "protected";
+
+                source.Append($"    {raiseMethodModifiers} void EmitSignal{signalName}(");
+                for (int i = 0; i < paramCount; i++)
+                {
+                    var paramSymbol = invokeMethodSymbol.Parameters[i];
+                    source.Append($"{paramSymbol.Type.FullQualifiedNameIncludeGlobal()} @{paramSymbol.Name}");
+                    if (i < paramCount - 1)
+                    {
+                        source.Append(", ");
+                    }
+                }
+                source.Append(")\n");
+                source.Append("    {\n");
+                source.Append($"        EmitSignal(SignalName.{signalName}");
+                foreach (var paramSymbol in invokeMethodSymbol.Parameters)
+                {
+                    // Enums must be converted to the underlying type before they can be implicitly converted to Variant
+                    if (paramSymbol.Type.TypeKind == TypeKind.Enum)
+                    {
+                        var underlyingType = ((INamedTypeSymbol)paramSymbol.Type).EnumUnderlyingType!;
+                        source.Append($", ({underlyingType.FullQualifiedNameIncludeGlobal()})@{paramSymbol.Name}");
+                        continue;
+                    }
+
+                    source.Append($", @{paramSymbol.Name}");
+                }
+                source.Append(");\n");
+                source.Append("    }\n");
             }
 
             // Generate RaiseGodotClassSignalCallbacks

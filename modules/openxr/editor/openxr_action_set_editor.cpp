@@ -31,7 +31,14 @@
 #include "openxr_action_set_editor.h"
 
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_spin_slider.h"
+#include "editor/themes/editor_scale.h"
 #include "openxr_action_editor.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/panel_container.h"
+#include "scene/gui/text_edit.h"
 
 void OpenXRActionSetEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_do_set_name", "name"), &OpenXRActionSetEditor::_do_set_name);
@@ -46,21 +53,20 @@ void OpenXRActionSetEditor::_bind_methods() {
 
 void OpenXRActionSetEditor::_set_fold_icon() {
 	if (is_expanded) {
-		fold_btn->set_icon(get_theme_icon(SNAME("GuiTreeArrowDown"), EditorStringName(EditorIcons)));
+		fold_btn->set_button_icon(get_theme_icon(SNAME("GuiTreeArrowDown"), EditorStringName(EditorIcons)));
 	} else {
-		fold_btn->set_icon(get_theme_icon(SNAME("GuiTreeArrowRight"), EditorStringName(EditorIcons)));
+		fold_btn->set_button_icon(get_theme_icon(SNAME("GuiTreeArrowRight"), EditorStringName(EditorIcons)));
 	}
 }
 
 void OpenXRActionSetEditor::_theme_changed() {
 	_set_fold_icon();
-	add_action->set_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
-	rem_action_set->set_icon(get_theme_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
+	add_action->set_button_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
+	rem_action_set->set_button_icon(get_theme_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
 }
 
 void OpenXRActionSetEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			_theme_changed();
 			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("TabContainer")));
@@ -126,8 +132,8 @@ void OpenXRActionSetEditor::_do_set_localized_name(const String p_new_text) {
 	action_set_localized_name->set_text(p_new_text);
 }
 
-void OpenXRActionSetEditor::_on_action_set_priority_changed(const String p_new_text) {
-	int64_t value = p_new_text.to_int();
+void OpenXRActionSetEditor::_on_action_set_priority_changed(const double p_new_value) {
+	int64_t value = (int64_t)p_new_value;
 
 	if (action_set->get_priority() != value) {
 		undo_redo->create_action(TTR("Change Action Sets priority"));
@@ -142,7 +148,7 @@ void OpenXRActionSetEditor::_on_action_set_priority_changed(const String p_new_t
 
 void OpenXRActionSetEditor::_do_set_priority(int64_t p_value) {
 	action_set->set_priority(p_value);
-	action_set_priority->set_text(itos(p_value));
+	action_set_priority->set_value_no_signal(p_value);
 }
 
 void OpenXRActionSetEditor::_on_add_action() {
@@ -230,6 +236,7 @@ OpenXRActionSetEditor::OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, 
 	fold_btn = memnew(Button);
 	fold_btn->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
 	fold_btn->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionSetEditor::_on_toggle_expand));
+	fold_btn->set_accessibility_name(TTRC("Fold"));
 	fold_btn->set_flat(true);
 	panel_hb->add_child(fold_btn);
 
@@ -243,21 +250,30 @@ OpenXRActionSetEditor::OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, 
 
 	action_set_name = memnew(LineEdit);
 	action_set_name->set_text(action_set->get_name());
-	action_set_name->set_custom_minimum_size(Size2(150.0, 0.0));
+	action_set_name->set_tooltip_text(TTR("Internal name of the action. Some XR runtimes don't allow spaces or special characters."));
+	action_set_name->set_custom_minimum_size(Size2(150.0 * EDSCALE, 0.0));
 	action_set_name->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionSetEditor::_on_action_set_name_changed));
+	action_set_name->set_accessibility_name(TTRC("Action Set Name"));
 	action_set_hb->add_child(action_set_name);
 
 	action_set_localized_name = memnew(LineEdit);
 	action_set_localized_name->set_text(action_set->get_localized_name());
-	action_set_localized_name->set_custom_minimum_size(Size2(150.0, 0.0));
+	action_set_localized_name->set_tooltip_text(TTR("Human-readable name of the action set. This can be displayed to end users."));
+	action_set_localized_name->set_custom_minimum_size(Size2(150.0 * EDSCALE, 0.0));
 	action_set_localized_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	action_set_localized_name->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionSetEditor::_on_action_set_localized_name_changed));
+	action_set_localized_name->set_accessibility_name(TTRC("Action Set Localized Name"));
 	action_set_hb->add_child(action_set_localized_name);
 
-	action_set_priority = memnew(TextEdit);
-	action_set_priority->set_text(itos(action_set->get_priority()));
-	action_set_priority->set_custom_minimum_size(Size2(50.0, 0.0));
-	action_set_priority->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionSetEditor::_on_action_set_priority_changed));
+	action_set_priority = memnew(EditorSpinSlider);
+	action_set_priority->set_tooltip_text(TTR("Priority of the action set. If multiple action sets bind to the same input, the action set with the highest priority will be updated."));
+	action_set_priority->set_editing_integer(true);
+	action_set_priority->set_min(2147483647.0);
+	action_set_priority->set_min(-2147483648.0);
+	action_set_priority->set_value_no_signal(action_set->get_priority());
+	action_set_priority->set_custom_minimum_size(Size2(75.0 * EDSCALE, 0.0));
+	action_set_priority->connect(SceneStringName(value_changed), callable_mp(this, &OpenXRActionSetEditor::_on_action_set_priority_changed));
+	action_set_priority->set_accessibility_name(TTRC("Action Set Priority"));
 	action_set_hb->add_child(action_set_priority);
 
 	add_action = memnew(Button);

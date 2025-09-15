@@ -33,15 +33,15 @@
 #include "../multiplayer_synchronizer.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/scene_tree_editor.h"
-#include "editor/inspector_dock.h"
-#include "editor/property_selector.h"
+#include "editor/inspector/property_selector.h"
+#include "editor/scene/scene_tree_editor.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 
@@ -90,24 +90,6 @@ void ReplicationEditor::_pick_node_select_recursive(TreeItem *p_item, const Stri
 	while (c) {
 		_pick_node_select_recursive(c, p_filter, p_select_candidates);
 		c = c->get_next();
-	}
-}
-
-void ReplicationEditor::_pick_node_filter_input(const Ref<InputEvent> &p_ie) {
-	Ref<InputEventKey> k = p_ie;
-
-	if (k.is_valid()) {
-		switch (k->get_keycode()) {
-			case Key::UP:
-			case Key::DOWN:
-			case Key::PAGEUP:
-			case Key::PAGEDOWN: {
-				pick_node->get_scene_tree()->get_scene_tree()->gui_input(k);
-				pick_node->get_filter_line_edit()->accept_event();
-			} break;
-			default:
-				break;
-		}
 	}
 }
 
@@ -184,11 +166,9 @@ ReplicationEditor::ReplicationEditor() {
 
 	pick_node = memnew(SceneTreeDialog);
 	add_child(pick_node);
-	pick_node->register_text_enter(pick_node->get_filter_line_edit());
 	pick_node->set_title(TTR("Pick a node to synchronize:"));
 	pick_node->connect("selected", callable_mp(this, &ReplicationEditor::_pick_node_selected));
 	pick_node->get_filter_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &ReplicationEditor::_pick_node_filter_text_changed));
-	pick_node->get_filter_line_edit()->connect("gui_input", callable_mp(this, &ReplicationEditor::_pick_node_filter_input));
 
 	prop_selector = memnew(PropertySelector);
 	add_child(prop_selector);
@@ -255,8 +235,9 @@ ReplicationEditor::ReplicationEditor() {
 
 	np_line_edit = memnew(LineEdit);
 	np_line_edit->set_placeholder(":property");
+	np_line_edit->set_accessibility_name(TTRC("Path:"));
 	np_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
-	np_line_edit->connect("text_submitted", callable_mp(this, &ReplicationEditor::_np_text_submitted));
+	np_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &ReplicationEditor::_np_text_submitted));
 	hb->add_child(np_line_edit);
 
 	add_from_path_button = memnew(Button);
@@ -269,7 +250,7 @@ ReplicationEditor::ReplicationEditor() {
 	hb->add_child(vs);
 
 	pin = memnew(Button);
-	pin->set_theme_type_variation("FlatButton");
+	pin->set_theme_type_variation(SceneStringName(FlatButton));
 	pin->set_toggle_mode(true);
 	pin->set_tooltip_text(TTR("Pin replication editor"));
 	hb->add_child(pin);
@@ -294,6 +275,7 @@ ReplicationEditor::ReplicationEditor() {
 	vb->add_child(tree);
 
 	drop_label = memnew(Label);
+	drop_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	drop_label->set_text(TTR("Add properties using the options above, or\ndrag them from the inspector and drop them here."));
 	drop_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	drop_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
@@ -357,7 +339,7 @@ void ReplicationEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		return;
 	}
 
-	String path = root->get_path_to(node);
+	String path = String(root->get_path_to(node));
 	path += ":" + String(d["property"]);
 
 	_add_sync_property(path);
@@ -373,8 +355,8 @@ void ReplicationEditor::_notification(int p_what) {
 		}
 		case NOTIFICATION_ENTER_TREE: {
 			add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
-			add_pick_button->set_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
-			pin->set_icon(get_theme_icon(SNAME("Pin"), EditorStringName(EditorIcons)));
+			add_pick_button->set_button_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
+			pin->set_button_icon(get_theme_icon(SNAME("Pin"), EditorStringName(EditorIcons)));
 		} break;
 	}
 }
@@ -395,7 +377,7 @@ void ReplicationEditor::_add_pressed() {
 		return;
 	}
 
-	int idx = np_text.find(":");
+	int idx = np_text.find_char(':');
 	if (idx == -1) {
 		np_text = ".:" + np_text;
 	} else if (idx == 0) {
@@ -407,7 +389,7 @@ void ReplicationEditor::_add_pressed() {
 		return;
 	}
 
-	_add_sync_property(path);
+	_add_sync_property(String(path));
 }
 
 void ReplicationEditor::_np_text_submitted(const String &p_newtext) {
@@ -511,7 +493,7 @@ void ReplicationEditor::_update_config() {
 	tree->clear();
 	tree->create_item();
 	drop_label->set_visible(true);
-	if (!config.is_valid()) {
+	if (config.is_null()) {
 		return;
 	}
 	TypedArray<NodePath> props = config->get_properties();
@@ -574,7 +556,7 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 	Node *root_node = current && !current->get_root_path().is_empty() ? current->get_node(current->get_root_path()) : nullptr;
 	Ref<Texture2D> icon = _get_class_icon(root_node);
 	if (root_node) {
-		String path = prop.substr(0, prop.find(":"));
+		String path = prop.substr(0, prop.find_char(':'));
 		String subpath = prop.substr(path.size());
 		Node *node = root_node->get_node_or_null(path);
 		if (!node) {

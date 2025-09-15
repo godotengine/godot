@@ -37,21 +37,13 @@
 
 // TODO we could probably create a base class for this...
 
-GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_godot_instance) {
+GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance) {
 	godot_instance = p_env->NewGlobalRef(p_godot_instance);
-	activity = p_env->NewGlobalRef(p_activity);
 
 	// get info about our Godot class so we can get pointers and stuff...
-	godot_class = p_env->FindClass("org/godotengine/godot/Godot");
+	godot_class = jni_find_class(p_env, "org/godotengine/godot/Godot");
 	if (godot_class) {
 		godot_class = (jclass)p_env->NewGlobalRef(godot_class);
-	} else {
-		// this is a pretty serious fail.. bail... pointers will stay 0
-		return;
-	}
-	activity_class = p_env->FindClass("android/app/Activity");
-	if (activity_class) {
-		activity_class = (jclass)p_env->NewGlobalRef(activity_class);
 	} else {
 		// this is a pretty serious fail.. bail... pointers will stay 0
 		return;
@@ -64,9 +56,14 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_alert = p_env->GetMethodID(godot_class, "alert", "(Ljava/lang/String;Ljava/lang/String;)V");
 	_is_dark_mode_supported = p_env->GetMethodID(godot_class, "isDarkModeSupported", "()Z");
 	_is_dark_mode = p_env->GetMethodID(godot_class, "isDarkMode", "()Z");
+	_get_accent_color = p_env->GetMethodID(godot_class, "getAccentColor", "()I");
+	_get_base_color = p_env->GetMethodID(godot_class, "getBaseColor", "()I");
 	_get_clipboard = p_env->GetMethodID(godot_class, "getClipboard", "()Ljava/lang/String;");
 	_set_clipboard = p_env->GetMethodID(godot_class, "setClipboard", "(Ljava/lang/String;)V");
 	_has_clipboard = p_env->GetMethodID(godot_class, "hasClipboard", "()Z");
+	_show_dialog = p_env->GetMethodID(godot_class, "showDialog", "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)V");
+	_show_input_dialog = p_env->GetMethodID(godot_class, "showInputDialog", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+	_show_file_picker = p_env->GetMethodID(godot_class, "showFilePicker", "(Ljava/lang/String;Ljava/lang/String;I[Ljava/lang/String;)V");
 	_request_permission = p_env->GetMethodID(godot_class, "requestPermission", "(Ljava/lang/String;)Z");
 	_request_permissions = p_env->GetMethodID(godot_class, "requestPermissions", "()Z");
 	_get_granted_permissions = p_env->GetMethodID(godot_class, "getGrantedPermissions", "()[Ljava/lang/String;");
@@ -88,6 +85,8 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_verify_apk = p_env->GetMethodID(godot_class, "nativeVerifyApk", "(Ljava/lang/String;)I");
 	_enable_immersive_mode = p_env->GetMethodID(godot_class, "nativeEnableImmersiveMode", "(Z)V");
 	_is_in_immersive_mode = p_env->GetMethodID(godot_class, "isInImmersiveMode", "()Z");
+	_on_editor_workspace_selected = p_env->GetMethodID(godot_class, "nativeOnEditorWorkspaceSelected", "(Ljava/lang/String;)V");
+	_get_activity = p_env->GetMethodID(godot_class, "getActivity", "()Landroid/app/Activity;");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -99,12 +98,16 @@ GodotJavaWrapper::~GodotJavaWrapper() {
 	ERR_FAIL_NULL(env);
 	env->DeleteGlobalRef(godot_instance);
 	env->DeleteGlobalRef(godot_class);
-	env->DeleteGlobalRef(activity);
-	env->DeleteGlobalRef(activity_class);
 }
 
 jobject GodotJavaWrapper::get_activity() {
-	return activity;
+	if (_get_activity) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, nullptr);
+		jobject activity = env->CallObjectMethod(godot_instance, _get_activity);
+		return activity;
+	}
+	return nullptr;
 }
 
 GodotJavaViewWrapper *GodotJavaWrapper::get_godot_view() {
@@ -212,6 +215,37 @@ bool GodotJavaWrapper::is_dark_mode() {
 	}
 }
 
+// Convert ARGB to RGBA.
+static Color _argb_to_rgba(int p_color) {
+	int alpha = (p_color >> 24) & 0xFF;
+	int red = (p_color >> 16) & 0xFF;
+	int green = (p_color >> 8) & 0xFF;
+	int blue = p_color & 0xFF;
+	return Color(red / 255.0f, green / 255.0f, blue / 255.0f, alpha / 255.0f);
+}
+
+Color GodotJavaWrapper::get_accent_color() {
+	if (_get_accent_color) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, Color(0, 0, 0, 0));
+		int accent_color = env->CallIntMethod(godot_instance, _get_accent_color);
+		return _argb_to_rgba(accent_color);
+	} else {
+		return Color(0, 0, 0, 0);
+	}
+}
+
+Color GodotJavaWrapper::get_base_color() {
+	if (_get_base_color) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, Color(0, 0, 0, 0));
+		int base_color = env->CallIntMethod(godot_instance, _get_base_color);
+		return _argb_to_rgba(base_color);
+	} else {
+		return Color(0, 0, 0, 0);
+	}
+}
+
 bool GodotJavaWrapper::has_get_clipboard() {
 	return _get_clipboard != nullptr;
 }
@@ -265,6 +299,73 @@ bool GodotJavaWrapper::has_clipboard() {
 		return env->CallBooleanMethod(godot_instance, _has_clipboard);
 	} else {
 		return false;
+	}
+}
+
+Error GodotJavaWrapper::show_dialog(const String &p_title, const String &p_description, const Vector<String> &p_buttons) {
+	if (_show_input_dialog) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, ERR_UNCONFIGURED);
+		jstring j_title = env->NewStringUTF(p_title.utf8().get_data());
+		jstring j_description = env->NewStringUTF(p_description.utf8().get_data());
+		jobjectArray j_buttons = env->NewObjectArray(p_buttons.size(), jni_find_class(env, "java/lang/String"), nullptr);
+		for (int i = 0; i < p_buttons.size(); ++i) {
+			jstring j_button = env->NewStringUTF(p_buttons[i].utf8().get_data());
+			env->SetObjectArrayElement(j_buttons, i, j_button);
+			env->DeleteLocalRef(j_button);
+		}
+		env->CallVoidMethod(godot_instance, _show_dialog, j_title, j_description, j_buttons);
+		env->DeleteLocalRef(j_title);
+		env->DeleteLocalRef(j_description);
+		env->DeleteLocalRef(j_buttons);
+		return OK;
+	} else {
+		return ERR_UNCONFIGURED;
+	}
+}
+
+Error GodotJavaWrapper::show_input_dialog(const String &p_title, const String &p_message, const String &p_existing_text) {
+	if (_show_input_dialog) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, ERR_UNCONFIGURED);
+		jstring jStrTitle = env->NewStringUTF(p_title.utf8().get_data());
+		jstring jStrMessage = env->NewStringUTF(p_message.utf8().get_data());
+		jstring jStrExistingText = env->NewStringUTF(p_existing_text.utf8().get_data());
+		env->CallVoidMethod(godot_instance, _show_input_dialog, jStrTitle, jStrMessage, jStrExistingText);
+		env->DeleteLocalRef(jStrTitle);
+		env->DeleteLocalRef(jStrMessage);
+		env->DeleteLocalRef(jStrExistingText);
+		return OK;
+	} else {
+		return ERR_UNCONFIGURED;
+	}
+}
+
+Error GodotJavaWrapper::show_file_picker(const String &p_current_directory, const String &p_filename, int p_mode, const Vector<String> &p_filters) {
+	if (_show_file_picker) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, ERR_UNCONFIGURED);
+		jstring j_current_directory = env->NewStringUTF(p_current_directory.utf8().get_data());
+		jstring j_filename = env->NewStringUTF(p_filename.utf8().get_data());
+		jint j_mode = p_mode;
+		Vector<String> filters;
+		for (const String &E : p_filters) {
+			filters.append_array(E.get_slicec(';', 0).split(",")); // Add extensions.
+			filters.append_array(E.get_slicec(';', 2).split(",")); // Add MIME types.
+		}
+		jobjectArray j_filters = env->NewObjectArray(filters.size(), jni_find_class(env, "java/lang/String"), nullptr);
+		for (int i = 0; i < filters.size(); ++i) {
+			jstring j_filter = env->NewStringUTF(filters[i].utf8().get_data());
+			env->SetObjectArrayElement(j_filters, i, j_filter);
+			env->DeleteLocalRef(j_filter);
+		}
+		env->CallVoidMethod(godot_instance, _show_file_picker, j_current_directory, j_filename, j_mode, j_filters);
+		env->DeleteLocalRef(j_current_directory);
+		env->DeleteLocalRef(j_filename);
+		env->DeleteLocalRef(j_filters);
+		return OK;
+	} else {
+		return ERR_UNCONFIGURED;
 	}
 }
 
@@ -368,7 +469,7 @@ int GodotJavaWrapper::create_new_godot_instance(const List<String> &args) {
 	if (_create_new_godot_instance) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, 0);
-		jobjectArray jargs = env->NewObjectArray(args.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
+		jobjectArray jargs = env->NewObjectArray(args.size(), jni_find_class(env, "java/lang/String"), env->NewStringUTF(""));
 		int i = 0;
 		for (List<String>::ConstIterator itr = args.begin(); itr != args.end(); ++itr, ++i) {
 			jstring j_arg = env->NewStringUTF(itr->utf8().get_data());
@@ -483,5 +584,15 @@ bool GodotJavaWrapper::is_in_immersive_mode() {
 		return env->CallBooleanMethod(godot_instance, _is_in_immersive_mode);
 	} else {
 		return false;
+	}
+}
+
+void GodotJavaWrapper::on_editor_workspace_selected(const String &p_workspace) {
+	if (_on_editor_workspace_selected) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+
+		jstring j_workspace = env->NewStringUTF(p_workspace.utf8().get_data());
+		env->CallVoidMethod(godot_instance, _on_editor_workspace_selected, j_workspace);
 	}
 }

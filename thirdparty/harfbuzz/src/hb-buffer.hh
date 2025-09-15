@@ -32,7 +32,6 @@
 
 #include "hb.hh"
 #include "hb-unicode.hh"
-#include "hb-set-digest.hh"
 
 
 static_assert ((sizeof (hb_glyph_info_t) == 20), "");
@@ -52,6 +51,7 @@ enum hb_buffer_scratch_flags_t {
   HB_BUFFER_SCRATCH_FLAG_HAS_CGJ			= 0x00000010u,
   HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS		= 0x00000020u,
   HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE		= 0x00000040u,
+  HB_BUFFER_SCRATCH_FLAG_HAS_VARIATION_SELECTOR_FALLBACK= 0x00000080u,
 
   /* Reserved for shapers' internal use. */
   HB_BUFFER_SCRATCH_FLAG_SHAPER0			= 0x01000000u,
@@ -80,6 +80,7 @@ struct hb_buffer_t
   hb_codepoint_t replacement; /* U+FFFD or something else. */
   hb_codepoint_t invisible; /* 0 or something else. */
   hb_codepoint_t not_found; /* 0 or something else. */
+  hb_codepoint_t not_found_variation_selector; /* HB_CODEPOINT_INVALID or something else. */
 
   /*
    * Buffer contents
@@ -180,22 +181,24 @@ struct hb_buffer_t
     allocated_var_bits = 0;
   }
 
+  HB_ALWAYS_INLINE
   hb_glyph_info_t &cur (unsigned int i = 0) { return info[idx + i]; }
+  HB_ALWAYS_INLINE
   hb_glyph_info_t cur (unsigned int i = 0) const { return info[idx + i]; }
 
+  HB_ALWAYS_INLINE
   hb_glyph_position_t &cur_pos (unsigned int i = 0) { return pos[idx + i]; }
+  HB_ALWAYS_INLINE
   hb_glyph_position_t cur_pos (unsigned int i = 0) const { return pos[idx + i]; }
 
+  HB_ALWAYS_INLINE
   hb_glyph_info_t &prev ()      { return out_info[out_len ? out_len - 1 : 0]; }
+  HB_ALWAYS_INLINE
   hb_glyph_info_t prev () const { return out_info[out_len ? out_len - 1 : 0]; }
 
-  hb_set_digest_t digest () const
-  {
-    hb_set_digest_t d;
-    d.init ();
-    d.add_array (&info[0].codepoint, len, sizeof (info[0]));
-    return d;
-  }
+  template <typename set_t>
+  void collect_codepoints (set_t &d) const
+  { d.clear (); d.add_array (&info[0].codepoint, len, sizeof (info[0])); }
 
   HB_INTERNAL void similar (const hb_buffer_t &src);
   HB_INTERNAL void reset ();
@@ -226,6 +229,8 @@ struct hb_buffer_t
   HB_INTERNAL void add (hb_codepoint_t  codepoint,
 			unsigned int    cluster);
   HB_INTERNAL void add_info (const hb_glyph_info_t &glyph_info);
+  HB_INTERNAL void add_info_and_pos (const hb_glyph_info_t &glyph_info,
+				     const hb_glyph_position_t &glyph_pos);
 
   void reverse_range (unsigned start, unsigned end)
   {
@@ -405,6 +410,9 @@ struct hb_buffer_t
 			 bool interior = false,
 			 bool from_out_buffer = false)
   {
+    if (unlikely (end != (unsigned) -1 && end - start > 255))
+      return;
+
     end = hb_min (end, len);
 
     if (interior && !from_out_buffer && end - start < 2)

@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_MIXER_H
-#define ANIMATION_MIXER_H
+#pragma once
 
+#include "core/templates/a_hash_map.h"
 #include "scene/animation/tween.h"
 #include "scene/main/node.h"
 #include "scene/resources/animation.h"
@@ -85,6 +85,8 @@ public:
 	struct PlaybackInfo {
 		double time = 0.0;
 		double delta = 0.0;
+		double start = 0.0;
+		double end = 0.0;
 		bool seeked = false;
 		bool is_external_seeking = false;
 		Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
@@ -100,7 +102,7 @@ public:
 protected:
 	/* ---- Data lists ---- */
 	LocalVector<AnimationLibraryData> animation_libraries;
-	HashMap<StringName, AnimationData> animation_set; // HashMap<Library name + Animation name, AnimationData>
+	AHashMap<StringName, AnimationData> animation_set; // HashMap<Library name + Animation name, AnimationData>
 
 	TypedArray<StringName> _get_animation_library_list() const;
 	Vector<String> _get_animation_list() const {
@@ -146,6 +148,7 @@ protected:
 		uint64_t setup_pass = 0;
 		Animation::TrackType type = Animation::TrackType::TYPE_ANIMATION;
 		NodePath path;
+		int blend_idx = -1;
 		ObjectID object_id;
 		real_t total_weight = 0.0;
 
@@ -195,7 +198,6 @@ protected:
 		TrackCacheTransform() {
 			type = Animation::TYPE_POSITION_3D;
 		}
-		~TrackCacheTransform() {}
 	};
 
 	struct RootMotionCache {
@@ -216,7 +218,6 @@ protected:
 				shape_index(p_other.shape_index) {}
 
 		TrackCacheBlendShape() { type = Animation::TYPE_BLEND_SHAPE; }
-		~TrackCacheBlendShape() {}
 	};
 
 	struct TrackCacheValue : public TrackCache {
@@ -255,7 +256,6 @@ protected:
 
 	struct TrackCacheMethod : public TrackCache {
 		TrackCacheMethod() { type = Animation::TYPE_METHOD; }
-		~TrackCacheMethod() {}
 	};
 
 	// Audio stream information for each audio stream placed on the track.
@@ -267,7 +267,7 @@ protected:
 
 	// Audio track information for mixng and ending.
 	struct PlayingAudioTrackInfo {
-		HashMap<int, PlayingAudioStreamInfo> stream_info;
+		AHashMap<int, PlayingAudioStreamInfo> stream_info;
 		double length = 0.0;
 		double time = 0.0;
 		real_t volume = 0.0;
@@ -293,7 +293,6 @@ protected:
 		TrackCacheAudio() {
 			type = Animation::TYPE_AUDIO;
 		}
-		~TrackCacheAudio() {}
 	};
 
 	struct TrackCacheAnimation : public TrackCache {
@@ -302,11 +301,11 @@ protected:
 		TrackCacheAnimation() {
 			type = Animation::TYPE_ANIMATION;
 		}
-		~TrackCacheAnimation() {}
 	};
 
 	RootMotionCache root_motion_cache;
-	HashMap<Animation::TypeHash, TrackCache *> track_cache;
+	AHashMap<Animation::TypeHash, TrackCache *, HashHasher> track_cache;
+	AHashMap<Ref<Animation>, LocalVector<TrackCache *>> animation_track_num_to_track_cache;
 	HashSet<TrackCache *> playing_caches;
 	Vector<Node *> playing_audio_stream_players;
 
@@ -316,18 +315,20 @@ protected:
 	void _clear_playing_caches();
 	void _init_root_motion_cache();
 	bool _update_caches();
+	void _create_track_num_to_track_cache_for_animation(Ref<Animation> &p_animation);
 
 	/* ---- Audio ---- */
 	AudioServer::PlaybackType playback_type;
 
 	/* ---- Blending processor ---- */
 	LocalVector<AnimationInstance> animation_instances;
-	HashMap<NodePath, int> track_map;
+	AHashMap<NodePath, int> track_map;
 	int track_count = 0;
 	bool deterministic = false;
 
 	/* ---- Root motion accumulator for Skeleton3D ---- */
 	NodePath root_motion_track;
+	bool root_motion_local = false;
 	Vector3 root_motion_position = Vector3(0, 0, 0);
 	Quaternion root_motion_rotation = Quaternion(0, 0, 0, 1);
 	Vector3 root_motion_scale = Vector3(0, 0, 0);
@@ -337,6 +338,7 @@ protected:
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
+	virtual uint32_t _get_libraries_property_usage() const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
 	virtual void _validate_property(PropertyInfo &p_property) const;
@@ -357,14 +359,14 @@ protected:
 	virtual void _process_animation(double p_delta, bool p_update_only = false);
 
 	// For post process with retrieved key value during blending.
-	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
+	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant &p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
 	Variant post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
 	GDVIRTUAL5RC(Variant, _post_process_key_value, Ref<Animation>, int, Variant, ObjectID, int);
 
 	void _blend_init();
-	virtual bool _blend_pre_process(double p_delta, int p_track_count, const HashMap<NodePath, int> &p_track_map);
+	virtual bool _blend_pre_process(double p_delta, int p_track_count, const AHashMap<NodePath, int> &p_track_map);
 	virtual void _blend_capture(double p_delta);
-	void _blend_calc_total_weight(); // For undeterministic blending.
+	void _blend_calc_total_weight(); // For indeterministic blending.
 	void _blend_process(double p_delta, bool p_update_only = false);
 	void _blend_apply();
 	virtual void _blend_post_process();
@@ -384,7 +386,6 @@ protected:
 			step = 0.0;
 		}
 
-		CaptureCache() {}
 		~CaptureCache() {
 			clear();
 		}
@@ -403,6 +404,7 @@ public:
 	void get_animation_library_list(List<StringName> *p_animations) const;
 	Ref<AnimationLibrary> get_animation_library(const StringName &p_name) const;
 	bool has_animation_library(const StringName &p_name) const;
+	StringName get_animation_library_name(const Ref<AnimationLibrary> &p_animation_library) const;
 	StringName find_animation_library(const Ref<Animation> &p_animation) const;
 	Error add_animation_library(const StringName &p_name, const Ref<AnimationLibrary> &p_animation_library);
 	void remove_animation_library(const StringName &p_name);
@@ -439,6 +441,9 @@ public:
 	/* ---- Root motion accumulator for Skeleton3D ---- */
 	void set_root_motion_track(const NodePath &p_track);
 	NodePath get_root_motion_track() const;
+
+	void set_root_motion_local(bool p_enabled);
+	bool is_root_motion_local() const;
 
 	Vector3 get_root_motion_position() const;
 	Quaternion get_root_motion_rotation() const;
@@ -483,11 +488,11 @@ public:
 class AnimatedValuesBackup : public RefCounted {
 	GDCLASS(AnimatedValuesBackup, RefCounted);
 
-	HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> data;
+	AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher> data;
 
 public:
-	void set_data(const HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> p_data);
-	HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> get_data() const;
+	void set_data(const AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher> p_data);
+	AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher> get_data() const;
 	void clear_data();
 
 	AnimationMixer::TrackCache *get_cache_copy(AnimationMixer::TrackCache *p_cache) const;
@@ -498,5 +503,3 @@ public:
 VARIANT_ENUM_CAST(AnimationMixer::AnimationCallbackModeProcess);
 VARIANT_ENUM_CAST(AnimationMixer::AnimationCallbackModeMethod);
 VARIANT_ENUM_CAST(AnimationMixer::AnimationCallbackModeDiscrete);
-
-#endif // ANIMATION_MIXER_H

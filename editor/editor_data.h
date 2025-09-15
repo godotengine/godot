@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_DATA_H
-#define EDITOR_DATA_H
+#pragma once
 
 #include "core/templates/list.h"
 #include "scene/resources/texture.h"
@@ -37,7 +36,6 @@
 class ConfigFile;
 class EditorPlugin;
 class EditorUndoRedoManager;
-class EditorContextMenuPlugin;
 class PopupMenu;
 
 /**
@@ -125,22 +123,6 @@ public:
 		uint64_t last_checked_version = 0;
 	};
 
-	enum ContextMenuSlot {
-		CONTEXT_SLOT_SCENE_TREE,
-		CONTEXT_SLOT_FILESYSTEM,
-		CONTEXT_SLOT_SCRIPT_EDITOR,
-		CONTEXT_SUBMENU_SLOT_FILESYSTEM_CREATE,
-	};
-
-	inline static constexpr int CONTEXT_MENU_ITEM_ID_BASE = 1000;
-
-	struct ContextMenu {
-		int p_slot;
-		Ref<EditorContextMenuPlugin> plugin;
-	};
-
-	Vector<ContextMenu> context_menu_plugins;
-
 private:
 	Vector<EditorPlugin *> editor_plugins;
 	HashMap<StringName, EditorPlugin *> extension_editor_plugins;
@@ -164,7 +146,7 @@ private:
 
 	HashMap<StringName, String> _script_class_icon_paths;
 	HashMap<String, StringName> _script_class_file_to_path;
-	HashMap<Ref<Script>, Ref<Texture>> _script_icon_cache;
+	HashMap<String, Ref<Texture2D>> _script_icon_cache;
 
 	Ref<Texture2D> _load_script_icon(const String &p_path) const;
 
@@ -194,18 +176,6 @@ public:
 	void remove_extension_editor_plugin(const StringName &p_class_name);
 	bool has_extension_editor_plugin(const StringName &p_class_name);
 	EditorPlugin *get_extension_editor_plugin(const StringName &p_class_name);
-
-	// Context menu plugin.
-	void add_context_menu_plugin(ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin);
-	void remove_context_menu_plugin(ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin);
-	int match_context_menu_shortcut(ContextMenuSlot p_slot, const Ref<InputEvent> &p_event);
-
-	void add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const Vector<String> &p_paths);
-	void filesystem_options_pressed(ContextMenuSlot p_slot, int p_option, const Vector<String> &p_selected);
-	void scene_tree_options_pressed(ContextMenuSlot p_slot, int p_option, const List<Node *> &p_selected);
-	void script_editor_options_pressed(ContextMenuSlot p_slot, int p_option, const Ref<Resource> &p_script);
-	template <typename T>
-	void invoke_plugin_callback(ContextMenuSlot p_slot, int p_option, const T &p_arg);
 
 	void add_undo_redo_inspector_hook_callback(Callable p_callable); // Callbacks should have this signature: void (Object* undo_redo, Object *modified_object, String property, Variant new_value)
 	void remove_undo_redo_inspector_hook_callback(Callable p_callable);
@@ -270,7 +240,6 @@ public:
 	void notify_scene_saved(const String &p_path);
 
 	bool script_class_is_parent(const String &p_class, const String &p_inherits);
-	StringName script_class_get_base(const String &p_class) const;
 	Variant script_class_instance(const String &p_class);
 
 	Ref<Script> script_class_load_script(const String &p_class) const;
@@ -278,15 +247,15 @@ public:
 	StringName script_class_get_name(const String &p_path) const;
 	void script_class_set_name(const String &p_path, const StringName &p_class);
 
-	String script_class_get_icon_path(const String &p_class) const;
+	String script_class_get_icon_path(const String &p_class, bool *r_valid = nullptr) const;
 	void script_class_set_icon_path(const String &p_class, const String &p_icon_path);
 	void script_class_clear_icon_paths() { _script_class_icon_paths.clear(); }
-	void script_class_save_icon_paths();
+	void script_class_save_global_classes();
 	void script_class_load_icon_paths();
 
 	Ref<Texture2D> extension_class_get_icon(const String &p_class) const;
 
-	Ref<Texture2D> get_script_icon(const Ref<Script> &p_script);
+	Ref<Texture2D> get_script_icon(const String &p_script_path);
 	void clear_script_icon_cache();
 
 	EditorData();
@@ -317,10 +286,9 @@ class EditorSelection : public Object {
 
 	// Editor plugins which are related to selection.
 	List<Object *> editor_plugins;
-	List<Node *> selected_node_list;
+	List<Node *> top_selected_node_list;
 
 	void _update_node_list();
-	TypedArray<Node> _get_transformable_selected_nodes();
 	void _emit_change();
 
 protected:
@@ -345,18 +313,17 @@ public:
 	void update();
 	void clear();
 
-	// Returns all the selected nodes.
-	TypedArray<Node> get_selected_nodes();
 	// Returns only the top level selected nodes.
 	// That is, if the selection includes some node and a child of that node, only the parent is returned.
-	List<Node *> &get_selected_node_list();
+	const List<Node *> &get_top_selected_node_list();
+	// Same as get_top_selected_node_list but returns a copy in a TypedArray for binding to scripts.
+	TypedArray<Node> get_top_selected_nodes();
 	// Returns all the selected nodes (list version of "get_selected_nodes").
 	List<Node *> get_full_selected_node_list();
+	// Same as get_full_selected_node_list but returns a copy in a TypedArray for binding to scripts.
+	TypedArray<Node> get_selected_nodes();
 	// Returns the map of selected objects and their metadata.
 	HashMap<Node *, Object *> &get_selection() { return selection; }
 
-	EditorSelection();
 	~EditorSelection();
 };
-
-#endif // EDITOR_DATA_H

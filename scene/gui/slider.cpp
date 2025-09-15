@@ -30,7 +30,6 @@
 
 #include "slider.h"
 
-#include "core/os/keyboard.h"
 #include "scene/theme/theme_db.h"
 
 Size2 Slider::get_minimum_size() const {
@@ -74,7 +73,8 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				if (orientation == VERTICAL) {
 					set_as_ratio(1 - (((double)grab.pos - (grab_height / 2.0)) / max));
 				} else {
-					set_as_ratio(((double)grab.pos - (grab_width / 2.0)) / max);
+					double v = ((double)grab.pos - (grab_width / 2.0)) / max;
+					set_as_ratio(is_layout_rtl() ? 1 - v : v);
 				}
 				set_block_signals(false);
 				grab.active = true;
@@ -89,12 +89,12 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		} else if (scrollable) {
 			if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
-				if (get_focus_mode() != FOCUS_NONE) {
+				if (get_focus_mode_with_override() != FOCUS_NONE) {
 					grab_focus();
 				}
 				set_value(get_value() + get_step());
 			} else if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-				if (get_focus_mode() != FOCUS_NONE) {
+				if (get_focus_mode_with_override() != FOCUS_NONE) {
 					grab_focus();
 				}
 				set_value(get_value() - get_step());
@@ -113,6 +113,8 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			double motion = (orientation == VERTICAL ? mm->get_position().y : mm->get_position().x) - grab.pos;
 			if (orientation == VERTICAL) {
 				motion = -motion;
+			} else if (is_layout_rtl()) {
+				motion = -motion;
 			}
 			double areasize = orientation == VERTICAL ? size.height - grab_height : size.width - grab_width;
 			if (areasize <= 0) {
@@ -128,37 +130,45 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventJoypadButton> joypadbutton_event = p_event;
 	bool is_joypad_event = (joypadmotion_event.is_valid() || joypadbutton_event.is_valid());
 
-	if (!mm.is_valid() && !mb.is_valid()) {
+	if (mm.is_null() && mb.is_null()) {
 		if (p_event->is_action_pressed("ui_left", true)) {
 			if (orientation != HORIZONTAL) {
 				return;
 			}
 			if (is_joypad_event) {
-				if (!input->is_action_just_pressed("ui_left", true)) {
+				if (!input->is_action_just_pressed_by_event("ui_left", p_event, true)) {
 					return;
 				}
 				set_process_internal(true);
 			}
-			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+			if (is_layout_rtl()) {
+				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+			} else {
+				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+			}
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_right", true)) {
 			if (orientation != HORIZONTAL) {
 				return;
 			}
 			if (is_joypad_event) {
-				if (!input->is_action_just_pressed("ui_right", true)) {
+				if (!input->is_action_just_pressed_by_event("ui_right", p_event, true)) {
 					return;
 				}
 				set_process_internal(true);
 			}
-			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+			if (is_layout_rtl()) {
+				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+			} else {
+				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+			}
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_up", true)) {
 			if (orientation != VERTICAL) {
 				return;
 			}
 			if (is_joypad_event) {
-				if (!input->is_action_just_pressed("ui_up", true)) {
+				if (!input->is_action_just_pressed_by_event("ui_up", p_event, true)) {
 					return;
 				}
 				set_process_internal(true);
@@ -170,7 +180,7 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				return;
 			}
 			if (is_joypad_event) {
-				if (!input->is_action_just_pressed("ui_down", true)) {
+				if (!input->is_action_just_pressed_by_event("ui_down", p_event, true)) {
 					return;
 				}
 				set_process_internal(true);
@@ -203,11 +213,19 @@ void Slider::_notification(int p_what) {
 				gamepad_event_delay_ms = GAMEPAD_EVENT_REPEAT_RATE_MS + gamepad_event_delay_ms;
 				if (orientation == HORIZONTAL) {
 					if (input->is_action_pressed("ui_left")) {
-						set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+						if (is_layout_rtl()) {
+							set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+						} else {
+							set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+						}
 					}
 
 					if (input->is_action_pressed("ui_right")) {
-						set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+						if (is_layout_rtl()) {
+							set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+						} else {
+							set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+						}
 					}
 				} else if (orientation == VERTICAL) {
 					if (input->is_action_pressed("ui_down")) {
@@ -219,7 +237,13 @@ void Slider::_notification(int p_what) {
 					}
 				}
 			}
+		} break;
 
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SLIDER);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -275,7 +299,7 @@ void Slider::_notification(int p_what) {
 				double areasize = size.height - (theme_cache.center_grabber ? 0 : grabber->get_height());
 				int grabber_shift = theme_cache.center_grabber ? grabber->get_height() / 2 : 0;
 				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
-				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, size.height - areasize * ratio - grabber->get_height() / 2 + grabber_shift), Size2i(widget_width, areasize * ratio + grabber->get_height() / 2 - grabber_shift)));
+				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, Math::round(size.height - areasize * ratio - grabber->get_height() / 2 + grabber_shift)), Size2i(widget_width, Math::round(areasize * ratio + grabber->get_height() / 2 - grabber_shift))));
 
 				if (ticks > 1) {
 					int grabber_offset = (grabber->get_height() / 2 - tick->get_height() / 2);
@@ -284,7 +308,19 @@ void Slider::_notification(int p_what) {
 							continue;
 						}
 						int ofs = (i * areasize / (ticks - 1)) + grabber_offset - grabber_shift;
-						tick->draw(ci, Point2i((size.width - widget_width) / 2, ofs));
+
+						if (ticks_position == TICK_POSITION_BOTTOM_RIGHT || ticks_position == TICK_POSITION_BOTH) {
+							tick->draw(ci, Point2i(widget_width + (size.width - widget_width) / 2 + theme_cache.tick_offset, ofs));
+						}
+
+						if (ticks_position == TICK_POSITION_TOP_LEFT || ticks_position == TICK_POSITION_BOTH) {
+							Point2i pos = Point2i((size.width - widget_width) / 2 - tick->get_width() - theme_cache.tick_offset, ofs);
+							tick->draw_rect(ci, Rect2i(pos, Size2i(-tick->get_width(), tick->get_height())));
+						}
+
+						if (ticks_position == TICK_POSITION_CENTER) {
+							tick->draw(ci, Point2i((size.width - tick->get_width()) / 2 + theme_cache.tick_offset, ofs));
+						}
 					}
 				}
 				grabber->draw(ci, Point2i(size.width / 2 - grabber->get_width() / 2 + theme_cache.grabber_offset, size.height - ratio * areasize - grabber->get_height() + grabber_shift));
@@ -292,9 +328,15 @@ void Slider::_notification(int p_what) {
 				int widget_height = style->get_minimum_size().height;
 				double areasize = size.width - (theme_cache.center_grabber ? 0 : grabber->get_size().width);
 				int grabber_shift = theme_cache.center_grabber ? -grabber->get_width() / 2 : 0;
+				bool rtl = is_layout_rtl();
 
 				style->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(size.width, widget_height)));
-				grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(areasize * ratio + grabber->get_width() / 2 + grabber_shift, widget_height)));
+				int p = areasize * (rtl ? 1 - ratio : ratio) + grabber->get_width() / 2 + grabber_shift;
+				if (rtl) {
+					grabber_area->draw(ci, Rect2i(Point2i(p, (size.height - widget_height) / 2), Size2i(size.width - p, widget_height)));
+				} else {
+					grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(p, widget_height)));
+				}
 
 				if (ticks > 1) {
 					int grabber_offset = (grabber->get_width() / 2 - tick->get_width() / 2);
@@ -303,12 +345,33 @@ void Slider::_notification(int p_what) {
 							continue;
 						}
 						int ofs = (i * areasize / (ticks - 1)) + grabber_offset + grabber_shift;
-						tick->draw(ci, Point2i(ofs, (size.height - widget_height) / 2));
+
+						if (ticks_position == TICK_POSITION_BOTTOM_RIGHT || ticks_position == TICK_POSITION_BOTH) {
+							tick->draw(ci, Point2i(ofs, widget_height + (size.height - widget_height) / 2 + theme_cache.tick_offset));
+						}
+
+						if (ticks_position == TICK_POSITION_TOP_LEFT || ticks_position == TICK_POSITION_BOTH) {
+							Point2i pos = Point2i(ofs, (size.height - widget_height) / 2 - tick->get_height() - theme_cache.tick_offset);
+							tick->draw_rect(ci, Rect2i(pos, Size2i(tick->get_width(), -tick->get_height())));
+						}
+
+						if (ticks_position == TICK_POSITION_CENTER) {
+							tick->draw(ci, Point2i(ofs, (size.height - tick->get_height()) / 2 + theme_cache.tick_offset));
+						}
 					}
 				}
-				grabber->draw(ci, Point2i(ratio * areasize + grabber_shift, size.height / 2 - grabber->get_height() / 2 + theme_cache.grabber_offset));
+				grabber->draw(ci, Point2i((rtl ? 1 - ratio : ratio) * areasize + grabber_shift, size.height / 2 - grabber->get_height() / 2 + theme_cache.grabber_offset));
 			}
 		} break;
+	}
+}
+
+void Slider::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+	if (p_property.name == "ticks_position") {
+		p_property.hint_string = orientation == VERTICAL ? "Right,Left,Both,Center" : "Bottom,Top,Both,Center";
 	}
 }
 
@@ -337,12 +400,25 @@ bool Slider::get_ticks_on_borders() const {
 	return ticks_on_borders;
 }
 
+Slider::TickPosition Slider::get_ticks_position() const {
+	return ticks_position;
+}
+
 void Slider::set_ticks_on_borders(bool _tob) {
 	if (ticks_on_borders == _tob) {
 		return;
 	}
 
 	ticks_on_borders = _tob;
+	queue_redraw();
+}
+
+void Slider::set_ticks_position(TickPosition p_ticks_position) {
+	if (ticks_position == p_ticks_position) {
+		return;
+	}
+
+	ticks_position = p_ticks_position;
 	queue_redraw();
 }
 
@@ -375,6 +451,9 @@ void Slider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ticks_on_borders"), &Slider::get_ticks_on_borders);
 	ClassDB::bind_method(D_METHOD("set_ticks_on_borders", "ticks_on_border"), &Slider::set_ticks_on_borders);
 
+	ClassDB::bind_method(D_METHOD("get_ticks_position"), &Slider::get_ticks_position);
+	ClassDB::bind_method(D_METHOD("set_ticks_position", "ticks_on_border"), &Slider::set_ticks_position);
+
 	ClassDB::bind_method(D_METHOD("set_editable", "editable"), &Slider::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &Slider::is_editable);
 	ClassDB::bind_method(D_METHOD("set_scrollable", "scrollable"), &Slider::set_scrollable);
@@ -387,6 +466,12 @@ void Slider::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrollable"), "set_scrollable", "is_scrollable");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tick_count", PROPERTY_HINT_RANGE, "0,4096,1"), "set_ticks", "get_ticks");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ticks_on_borders"), "set_ticks_on_borders", "get_ticks_on_borders");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ticks_position", PROPERTY_HINT_ENUM), "set_ticks_position", "get_ticks_position");
+
+	BIND_ENUM_CONSTANT(TICK_POSITION_BOTTOM_RIGHT);
+	BIND_ENUM_CONSTANT(TICK_POSITION_TOP_LEFT);
+	BIND_ENUM_CONSTANT(TICK_POSITION_BOTH);
+	BIND_ENUM_CONSTANT(TICK_POSITION_CENTER);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Slider, slider_style, "slider");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Slider, grabber_area_style, "grabber_area");
@@ -399,6 +484,7 @@ void Slider::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, center_grabber);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, grabber_offset);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, tick_offset);
 }
 
 Slider::Slider(Orientation p_orientation) {

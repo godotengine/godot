@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDEXTENSION_LIBRARY_LOADER_H
-#define GDEXTENSION_LIBRARY_LOADER_H
+#pragma once
 
 #include <functional>
 
@@ -38,6 +37,8 @@
 #include "core/os/shared_object.h"
 
 class GDExtensionLibraryLoader : public GDExtensionLoader {
+	GDSOFTCLASS(GDExtensionLibraryLoader, GDExtensionLoader);
+
 	friend class GDExtensionManager;
 	friend class GDExtension;
 
@@ -77,8 +78,7 @@ public:
 	virtual void close_library() override;
 	virtual bool is_library_open() const override;
 	virtual bool has_library_changed() const override;
+	virtual bool library_exists() const override;
 
 	Error parse_gdextension_file(const String &p_path);
 };
-
-#endif // GDEXTENSION_LIBRARY_LOADER_H

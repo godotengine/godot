@@ -45,13 +45,15 @@
 			Minimum version of macOS required for this application to run on Intel Macs, in the [code]major.minor.patch[/code] or [code]major.minor[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
 		</member>
 		<member name="application/short_version" type="String" setter="" getter="">
-			Application version visible to the user, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]). Falls back to [member ProjectSettings.application/config/version] if left empty.
+			Application version visible to the user. Can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]). Falls back to [member ProjectSettings.application/config/version] if left empty.
+			[b]Note:[/b] This value is used for the [i]Identity &gt; Version[/i] value in the generated Xcode project.
 		</member>
 		<member name="application/signature" type="String" setter="" getter="">
 			A four-character creator code that is specific to the bundle. Optional.
 		</member>
 		<member name="application/version" type="String" setter="" getter="">
-			Machine-readable application version, in the [code]major.minor.patch[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]). This must be incremented on every new release pushed to the App Store.
+			Machine-readable application version in the [code]major.minor.patch[/code] format. Can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]). This must be incremented with every new release pushed to the App Store. Falls back to [member ProjectSettings.application/config/version] if left empty.
+			[b]Note:[/b] This value is used for the [i]Identity &gt; Build[/i] value in the generated Xcode project.
 		</member>
 		<member name="binary_format/architecture" type="String" setter="" getter="">
 			Application executable architecture.
@@ -74,6 +76,13 @@
 		</member>
 		<member name="codesign/custom_options" type="PackedStringArray" setter="" getter="">
 			Array of the additional command line arguments passed to the code signing tool.
+		</member>
+		<member name="codesign/entitlements/additional" type="String" setter="" getter="">
+			Additional data added to the root [code]&lt;dict&gt;[/code] section of the [url=https://developer.apple.com/documentation/bundleresources/entitlements].entitlements[/url] file. The value should be an XML section with pairs of key-value elements, for example:
+			[codeblock lang=text]
+			&lt;key&gt;key_name&lt;/key&gt;
+			&lt;string&gt;value&lt;/string&gt;
+			[/codeblock]
 		</member>
 		<member name="codesign/entitlements/address_book" type="bool" setter="" getter="">
 			Enable to allow access to contacts in the user's address book, if it's enabled you should also provide usage message in the [member privacy/address_book_usage_description] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_personal-information_addressbook]com.apple.security.personal-information.addressbook[/url].
@@ -687,6 +696,9 @@
 		</member>
 		<member name="privacy/tracking_enabled" type="bool" setter="" getter="">
 			Indicates whether your app uses data for tracking. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files]Privacy manifest files[/url].
+		</member>
+		<member name="shader_baker/enabled" type="bool" setter="" getter="">
+			If [code]true[/code], shaders will be compiled and embedded in the application. This option is only supported when using the Forward+ or Mobile renderers.
 		</member>
 		<member name="ssh_remote_deploy/cleanup_script" type="String" setter="" getter="">
 			Script code to execute on the remote host when app is finished.

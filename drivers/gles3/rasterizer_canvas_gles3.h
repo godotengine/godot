@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RASTERIZER_CANVAS_GLES3_H
-#define RASTERIZER_CANVAS_GLES3_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
@@ -54,29 +53,27 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 	_FORCE_INLINE_ void _update_transform_to_mat4(const Transform3D &p_transform, float *p_mat4);
 
 	enum {
+		INSTANCE_FLAGS_LIGHT_COUNT_SHIFT = 0, // 4 bits for light count.
 
-		FLAGS_INSTANCING_MASK = 0x7F,
-		FLAGS_INSTANCING_HAS_COLORS = (1 << 7),
-		FLAGS_INSTANCING_HAS_CUSTOM_DATA = (1 << 8),
+		INSTANCE_FLAGS_CLIP_RECT_UV = (1 << 4),
+		INSTANCE_FLAGS_TRANSPOSE_RECT = (1 << 5),
+		INSTANCE_FLAGS_USE_MSDF = (1 << 6),
+		INSTANCE_FLAGS_USE_LCD = (1 << 7),
 
-		FLAGS_CLIP_RECT_UV = (1 << 9),
-		FLAGS_TRANSPOSE_RECT = (1 << 10),
+		INSTANCE_FLAGS_NINEPACH_DRAW_CENTER = (1 << 8),
+		INSTANCE_FLAGS_NINEPATCH_H_MODE_SHIFT = 9,
+		INSTANCE_FLAGS_NINEPATCH_V_MODE_SHIFT = 11,
 
-		FLAGS_NINEPACH_DRAW_CENTER = (1 << 12),
+		INSTANCE_FLAGS_SHADOW_MASKED_SHIFT = 13, // 16 bits.
+	};
 
-		FLAGS_USE_SKELETON = (1 << 15),
-		FLAGS_NINEPATCH_H_MODE_SHIFT = 16,
-		FLAGS_NINEPATCH_V_MODE_SHIFT = 18,
-		FLAGS_LIGHT_COUNT_SHIFT = 20,
+	enum {
+		BATCH_FLAGS_INSTANCING_MASK = 0x7F,
+		BATCH_FLAGS_INSTANCING_HAS_COLORS = (1 << 7),
+		BATCH_FLAGS_INSTANCING_HAS_CUSTOM_DATA = (1 << 8),
 
-		FLAGS_DEFAULT_NORMAL_MAP_USED = (1 << 26),
-		FLAGS_DEFAULT_SPECULAR_MAP_USED = (1 << 27),
-
-		FLAGS_USE_MSDF = (1 << 28),
-		FLAGS_USE_LCD = (1 << 29),
-
-		FLAGS_FLIP_H = (1 << 30),
-		FLAGS_FLIP_V = (1 << 31),
+		BATCH_FLAGS_DEFAULT_NORMAL_MAP_USED = (1 << 9),
+		BATCH_FLAGS_DEFAULT_SPECULAR_MAP_USED = (1 << 10),
 	};
 
 	enum {
@@ -203,7 +200,7 @@ public:
 		PolygonID last_id = 0;
 	} polygon_buffers;
 
-	RendererCanvasRender::PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>()) override;
+	RendererCanvasRender::PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>(), int p_count = -1) override;
 	void free_polygon(PolygonID p_polygon) override;
 
 	struct InstanceData {
@@ -229,7 +226,7 @@ public:
 			};
 		};
 		uint32_t flags;
-		uint32_t specular_shininess;
+		uint32_t instance_uniforms_ofs;
 		uint32_t lights[4];
 	};
 
@@ -273,12 +270,15 @@ public:
 
 		RID material;
 		GLES3::CanvasMaterialData *material_data = nullptr;
-		CanvasShaderGLES3::ShaderVariant shader_variant = CanvasShaderGLES3::MODE_QUAD;
 		uint64_t vertex_input_mask = RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_FORMAT_COLOR | RS::ARRAY_FORMAT_TEX_UV;
+		uint64_t specialization = 0;
 
 		const Item::Command *command = nullptr;
 		Item::Command::Type command_type = Item::Command::TYPE_ANIMATION_SLICE; // Can default to any type that doesn't form a batch.
 		uint32_t primitive_points = 0;
+
+		uint32_t flags = 0;
+		uint32_t specular_shininess = 0.0;
 
 		bool lights_disabled = false;
 	};
@@ -345,7 +345,7 @@ public:
 	RID light_create() override;
 	void light_set_texture(RID p_rid, RID p_texture) override;
 	void light_set_use_shadow(RID p_rid, bool p_enable) override;
-	void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) override;
+	void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, const Rect2 &p_light_rect) override;
 	void light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) override;
 
 	void render_sdf(RID p_render_target, LightOccluderInstance *p_occluders) override;
@@ -375,9 +375,11 @@ public:
 
 	virtual void set_debug_redraw(bool p_enabled, double p_time, const Color &p_color) override {
 		if (p_enabled) {
-			WARN_PRINT_ONCE("Debug CanvasItem Redraw is not available yet when using the GL Compatibility backend.");
+			WARN_PRINT_ONCE("Debug CanvasItem Redraw is not available yet when using the Compatibility renderer.");
 		}
 	}
+
+	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source) override { return 0; }
 
 	static RasterizerCanvasGLES3 *get_singleton();
 	RasterizerCanvasGLES3();
@@ -385,5 +387,3 @@ public:
 };
 
 #endif // GLES3_ENABLED
-
-#endif // RASTERIZER_CANVAS_GLES3_H

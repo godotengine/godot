@@ -31,7 +31,6 @@
 #include "audio_stream_polyphonic.h"
 #include "audio_stream_polyphonic.compat.inc"
 
-#include "scene/main/scene_tree.h"
 #include "servers/audio_server.h"
 
 constexpr uint64_t ID_MASK = 0xFFFFFFFF;
@@ -217,6 +216,13 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 			: p_playback_type;
 
 	for (uint32_t i = 0; i < streams.size(); i++) {
+		if (streams[i].active.is_set() && streams[i].stream_playback->get_is_sample()) {
+			Ref<AudioSamplePlayback> active_sample_playback = streams[i].stream_playback->get_sample_playback();
+			if (active_sample_playback.is_null() || !AudioServer::get_singleton()->is_sample_playback_active(active_sample_playback)) {
+				streams[i].active.clear();
+			}
+		}
+
 		if (!streams[i].active.is_set()) {
 			// Can use this stream, as it's not active.
 			streams[i].stream = p_stream;
@@ -247,6 +253,11 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 				sp->volume_vector.write[2] = AudioFrame(linear_volume, linear_volume);
 				sp->volume_vector.write[3] = AudioFrame(linear_volume, linear_volume);
 				sp->bus = p_bus;
+
+				if (streams[i].stream_playback->get_sample_playback().is_valid()) {
+					AudioServer::get_singleton()->stop_playback_stream(sp);
+				}
+
 				streams[i].stream_playback->set_sample_playback(sp);
 				AudioServer::get_singleton()->start_sample_playback(sp);
 			}
@@ -259,6 +270,21 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 }
 
 AudioStreamPlaybackPolyphonic::Stream *AudioStreamPlaybackPolyphonic::_find_stream(int64_t p_id) {
+	uint32_t index = static_cast<uint64_t>(p_id) >> INDEX_SHIFT;
+	if (index >= streams.size()) {
+		return nullptr;
+	}
+	if (!streams[index].active.is_set()) {
+		return nullptr; // Not active, no longer exists.
+	}
+	int64_t id = static_cast<uint64_t>(p_id) & ID_MASK;
+	if (streams[index].id != id) {
+		return nullptr;
+	}
+	return &streams[index];
+}
+
+const AudioStreamPlaybackPolyphonic::Stream *AudioStreamPlaybackPolyphonic::_find_stream(int64_t p_id) const {
 	uint32_t index = static_cast<uint64_t>(p_id) >> INDEX_SHIFT;
 	if (index >= streams.size()) {
 		return nullptr;
@@ -290,7 +316,7 @@ void AudioStreamPlaybackPolyphonic::set_stream_pitch_scale(ID p_stream_id, float
 }
 
 bool AudioStreamPlaybackPolyphonic::is_stream_playing(ID p_stream_id) const {
-	return const_cast<AudioStreamPlaybackPolyphonic *>(this)->_find_stream(p_stream_id) != nullptr;
+	return _find_stream(p_stream_id) != nullptr;
 }
 
 void AudioStreamPlaybackPolyphonic::stop_stream(ID p_stream_id) {
@@ -315,6 +341,9 @@ Ref<AudioSamplePlayback> AudioStreamPlaybackPolyphonic::get_sample_playback() co
 
 void AudioStreamPlaybackPolyphonic::set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
 	sample_playback = p_playback;
+	if (sample_playback.is_valid()) {
+		sample_playback->stream_playback = Ref<AudioStreamPlayback>(this);
+	}
 }
 
 void AudioStreamPlaybackPolyphonic::_bind_methods() {

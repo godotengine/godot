@@ -173,7 +173,7 @@ void OpenXRDebugUtilsExtension::begin_debug_label_region(const char *p_label_nam
 
 	const XrDebugUtilsLabelEXT session_active_region_label = {
 		XR_TYPE_DEBUG_UTILS_LABEL_EXT, // type
-		NULL, // next
+		nullptr, // next
 		p_label_name, // labelName
 	};
 
@@ -199,7 +199,7 @@ void OpenXRDebugUtilsExtension::insert_debug_label(const char *p_label_name) {
 
 	const XrDebugUtilsLabelEXT session_active_region_label = {
 		XR_TYPE_DEBUG_UTILS_LABEL_EXT, // type
-		NULL, // next
+		nullptr, // next
 		p_label_name, // labelName
 	};
 

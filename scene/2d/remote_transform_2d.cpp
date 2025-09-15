@@ -51,7 +51,7 @@ void RemoteTransform2D::_update_remote() {
 		return;
 	}
 
-	Node2D *n = Object::cast_to<Node2D>(ObjectDB::get_instance(cache));
+	Node2D *n = ObjectDB::get_instance<Node2D>(cache);
 	if (!n) {
 		return;
 	}
@@ -117,7 +117,7 @@ void RemoteTransform2D::_notification(int p_what) {
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
 			if (cache.is_valid()) {
 				_update_remote();
-				Node2D *n = Object::cast_to<Node2D>(ObjectDB::get_instance(cache));
+				Node2D *n = ObjectDB::get_instance<Node2D>(cache);
 				if (n) {
 					n->reset_physics_interpolation();
 				}
@@ -211,7 +211,7 @@ void RemoteTransform2D::force_update_cache() {
 }
 
 PackedStringArray RemoteTransform2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	if (!has_node(remote_node) || !Object::cast_to<Node2D>(get_node(remote_node))) {
 		warnings.push_back(RTR("Path property must point to a valid Node2D node to work."));

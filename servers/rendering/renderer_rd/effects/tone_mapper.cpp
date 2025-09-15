@@ -123,7 +123,11 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 	tonemap.push_constant.flags |= p_settings.use_color_correction ? TONEMAP_FLAG_USE_COLOR_CORRECTION : 0;
 
 	tonemap.push_constant.flags |= p_settings.use_fxaa ? TONEMAP_FLAG_USE_FXAA : 0;
-	tonemap.push_constant.flags |= p_settings.use_debanding ? TONEMAP_FLAG_USE_DEBANDING : 0;
+	if (p_settings.debanding_mode == TonemapSettings::DEBANDING_MODE_8_BIT) {
+		tonemap.push_constant.flags |= TONEMAP_FLAG_USE_8_BIT_DEBANDING;
+	} else if (p_settings.debanding_mode == TonemapSettings::DEBANDING_MODE_10_BIT) {
+		tonemap.push_constant.flags |= TONEMAP_FLAG_USE_10_BIT_DEBANDING;
+	}
 	tonemap.push_constant.pixel_size[0] = 1.0 / p_settings.texture_size.x;
 	tonemap.push_constant.pixel_size[1] = 1.0 / p_settings.texture_size.y;
 
@@ -166,7 +170,7 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 	RID shader = tonemap.shader.version_get_shader(tonemap.shader_version, mode);
 	ERR_FAIL_COND(shader.is_null());
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dst_framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dst_framebuffer);
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, tonemap.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dst_framebuffer), false, RD::get_singleton()->draw_list_get_current_pass()));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_color), 0);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 1, u_exposure_texture), 1);
@@ -207,8 +211,11 @@ void ToneMapper::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_col
 	tonemap.push_constant.auto_exposure_scale = p_settings.auto_exposure_scale;
 
 	tonemap.push_constant.flags |= p_settings.use_color_correction ? TONEMAP_FLAG_USE_COLOR_CORRECTION : 0;
-
-	tonemap.push_constant.flags |= p_settings.use_debanding ? TONEMAP_FLAG_USE_DEBANDING : 0;
+	if (p_settings.debanding_mode == TonemapSettings::DEBANDING_MODE_8_BIT) {
+		tonemap.push_constant.flags |= TONEMAP_FLAG_USE_8_BIT_DEBANDING;
+	} else if (p_settings.debanding_mode == TonemapSettings::DEBANDING_MODE_10_BIT) {
+		tonemap.push_constant.flags |= TONEMAP_FLAG_USE_10_BIT_DEBANDING;
+	}
 	tonemap.push_constant.luminance_multiplier = p_settings.luminance_multiplier;
 
 	tonemap.push_constant.flags |= p_settings.convert_to_srgb ? TONEMAP_FLAG_CONVERT_TO_SRGB : 0;

@@ -30,8 +30,8 @@
 
 #include "gdextension_manager.h"
 
-#include "core/extension/gdextension_compat_hashes.h"
 #include "core/extension/gdextension_library_loader.h"
+#include "core/extension/gdextension_special_compat_hashes.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/object/script_language.h"
@@ -55,12 +55,22 @@ GDExtensionManager::LoadStatus GDExtensionManager::_load_extension_internal(cons
 		gdextension_class_icon_paths[kv.key] = kv.value;
 	}
 
+	return LOAD_STATUS_OK;
+}
+
+void GDExtensionManager::_finish_load_extension(const Ref<GDExtension> &p_extension) {
 #ifdef TOOLS_ENABLED
 	// Signals that a new extension is loaded so GDScript can register new class names.
 	emit_signal("extension_loaded", p_extension);
 #endif
 
-	return LOAD_STATUS_OK;
+	if (startup_callback_called) {
+		// Extension is loading after the startup callback has already been called,
+		// so we call it now for this extension to make sure it doesn't miss it.
+		if (p_extension->startup_callback) {
+			p_extension->startup_callback();
+		}
+	}
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::_unload_extension_internal(const Ref<GDExtension> &p_extension) {
@@ -68,6 +78,15 @@ GDExtensionManager::LoadStatus GDExtensionManager::_unload_extension_internal(co
 	// Signals that a new extension is unloading so GDScript can unregister class names.
 	emit_signal("extension_unloading", p_extension);
 #endif
+
+	if (!shutdown_callback_called) {
+		// Extension is unloading before the shutdown callback has been called,
+		// which means the engine hasn't shutdown yet but we want to make sure
+		// to call the shutdown callback so it doesn't miss it.
+		if (p_extension->shutdown_callback) {
+			p_extension->shutdown_callback();
+		}
+	}
 
 	if (level >= 0) { // Already initialized up to some level.
 		// Deinitialize down from current level.
@@ -80,10 +99,19 @@ GDExtensionManager::LoadStatus GDExtensionManager::_unload_extension_internal(co
 		gdextension_class_icon_paths.erase(kv.key);
 	}
 
+	// Clear main loop callbacks.
+	p_extension->startup_callback = nullptr;
+	p_extension->shutdown_callback = nullptr;
+	p_extension->frame_callback = nullptr;
+
 	return LOAD_STATUS_OK;
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::load_extension(const String &p_path) {
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return LOAD_STATUS_FAILED;
+	}
+
 	Ref<GDExtensionLibraryLoader> loader;
 	loader.instantiate();
 	return GDExtensionManager::get_singleton()->load_extension_with_loader(p_path, loader);
@@ -108,6 +136,8 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension_with_loader(co
 		return status;
 	}
 
+	_finish_load_extension(extension);
+
 	extension->set_path(p_path);
 	gdextension_map[p_path] = extension;
 	return LOAD_STATUS_OK;
@@ -118,6 +148,10 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 	ERR_FAIL_V_MSG(LOAD_STATUS_FAILED, "GDExtensions can only be reloaded in an editor build.");
 #else
 	ERR_FAIL_COND_V_MSG(!Engine::get_singleton()->is_extension_reloading_enabled(), LOAD_STATUS_FAILED, "GDExtension reloading is disabled.");
+
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return LOAD_STATUS_FAILED;
+	}
 
 	if (!gdextension_map.has(p_path)) {
 		return LOAD_STATUS_NOT_LOADED;
@@ -156,11 +190,19 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 
 	extension->finish_reload();
 
+	// Needs to come after reload is fully finished, so all objects using
+	// extension classes are in a consistent state.
+	_finish_load_extension(extension);
+
 	return LOAD_STATUS_OK;
 #endif
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::unload_extension(const String &p_path) {
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return LOAD_STATUS_FAILED;
+	}
+
 	if (!gdextension_map.has(p_path)) {
 		return LOAD_STATUS_NOT_LOADED;
 	}
@@ -207,14 +249,28 @@ String GDExtensionManager::class_get_icon_path(const String &p_class) const {
 }
 
 void GDExtensionManager::initialize_extensions(GDExtension::InitializationLevel p_level) {
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return;
+	}
+
 	ERR_FAIL_COND(int32_t(p_level) - 1 != level);
 	for (KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
 		E.value->initialize_library(p_level);
+
+		if (p_level == GDExtension::INITIALIZATION_LEVEL_EDITOR) {
+			for (const KeyValue<String, String> &kv : E.value->class_icon_paths) {
+				gdextension_class_icon_paths[kv.key] = kv.value;
+			}
+		}
 	}
 	level = p_level;
 }
 
 void GDExtensionManager::deinitialize_extensions(GDExtension::InitializationLevel p_level) {
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return;
+	}
+
 	ERR_FAIL_COND(int32_t(p_level) != level);
 	for (KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
 		E.value->deinitialize_library(p_level);
@@ -253,12 +309,16 @@ void GDExtensionManager::_reload_all_scripts() {
 #endif // TOOLS_ENABLED
 
 void GDExtensionManager::load_extensions() {
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return;
+	}
+
 	Ref<FileAccess> f = FileAccess::open(GDExtension::get_extension_list_config_file(), FileAccess::READ);
 	while (f.is_valid() && !f->eof_reached()) {
 		String s = f->get_line().strip_edges();
 		if (!s.is_empty()) {
 			LoadStatus err = load_extension(s);
-			ERR_CONTINUE_MSG(err == LOAD_STATUS_FAILED, "Error loading extension: " + s);
+			ERR_CONTINUE_MSG(err == LOAD_STATUS_FAILED, vformat("Error loading extension: '%s'.", s));
 		}
 	}
 
@@ -267,6 +327,9 @@ void GDExtensionManager::load_extensions() {
 
 void GDExtensionManager::reload_extensions() {
 #ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return;
+	}
 	bool reloaded = false;
 	for (const KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
 		if (!E.value->is_reloadable()) {
@@ -302,7 +365,8 @@ bool GDExtensionManager::ensure_extensions_loaded(const HashSet<String> &p_exten
 	for (const String &loaded_extension : loaded_extensions) {
 		if (!p_extensions.has(loaded_extension)) {
 			// The extension may not have a .gdextension file.
-			if (!FileAccess::exists(loaded_extension)) {
+			const Ref<GDExtension> extension = GDExtensionManager::get_singleton()->get_extension(loaded_extension);
+			if (!extension->get_loader()->library_exists()) {
 				extensions_removed.push_back(loaded_extension);
 			}
 		}
@@ -353,6 +417,37 @@ bool GDExtensionManager::ensure_extensions_loaded(const HashSet<String> &p_exten
 	return needs_restart;
 }
 
+void GDExtensionManager::startup() {
+	startup_callback_called = true;
+
+	for (const KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
+		const Ref<GDExtension> &extension = E.value;
+		if (extension->startup_callback) {
+			extension->startup_callback();
+		}
+	}
+}
+
+void GDExtensionManager::shutdown() {
+	shutdown_callback_called = true;
+
+	for (const KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
+		const Ref<GDExtension> &extension = E.value;
+		if (extension->shutdown_callback) {
+			extension->shutdown_callback();
+		}
+	}
+}
+
+void GDExtensionManager::frame() {
+	for (const KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
+		const Ref<GDExtension> &extension = E.value;
+		if (extension->frame_callback) {
+			extension->frame_callback();
+		}
+	}
+}
+
 GDExtensionManager *GDExtensionManager::get_singleton() {
 	return singleton;
 }
@@ -377,14 +472,12 @@ void GDExtensionManager::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("extension_unloading", PropertyInfo(Variant::OBJECT, "extension", PROPERTY_HINT_RESOURCE_TYPE, "GDExtension")));
 }
 
-GDExtensionManager *GDExtensionManager::singleton = nullptr;
-
 GDExtensionManager::GDExtensionManager() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 
 #ifndef DISABLE_DEPRECATED
-	GDExtensionCompatHashes::initialize();
+	GDExtensionSpecialCompatHashes::initialize();
 #endif
 }
 
@@ -393,6 +486,6 @@ GDExtensionManager::~GDExtensionManager() {
 		singleton = nullptr;
 	}
 #ifndef DISABLE_DEPRECATED
-	GDExtensionCompatHashes::finalize();
+	GDExtensionSpecialCompatHashes::finalize();
 #endif
 }

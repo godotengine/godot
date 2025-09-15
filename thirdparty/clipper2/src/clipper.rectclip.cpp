@@ -1,13 +1,12 @@
 /*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  8 September 2023                                                *
-* Website   :  http://www.angusj.com                                           *
-* Copyright :  Angus Johnson 2010-2023                                         *
+* Date      :  5 July 2024                                                     *
+* Website   :  https://www.angusj.com                                          *
+* Copyright :  Angus Johnson 2010-2024                                         *
 * Purpose   :  FAST rectangular clipping                                       *
-* License   :  http://www.boost.org/LICENSE_1_0.txt                            *
+* License   :  https://www.boost.org/LICENSE_1_0.txt                           *
 *******************************************************************************/
 
-#include <cmath>
 #include "clipper2/clipper.h"
 #include "clipper2/clipper.rectclip.h"
 
@@ -71,7 +70,7 @@ namespace Clipper2Lib {
     return pt1.y == pt2.y;
   }
 
-  inline bool GetSegmentIntersection(const Point64& p1,
+  bool GetSegmentIntersection(const Point64& p1,
     const Point64& p2, const Point64& p3, const Point64& p4, Point64& ip)
   {
     double res1 = CrossProduct(p1, p3, p4);
@@ -113,7 +112,7 @@ namespace Clipper2Lib {
     if ((res3 > 0) == (res4 > 0)) return false;
 
     // segments must intersect to get here
-    return GetIntersectPoint(p1, p2, p3, p4, ip);
+    return GetSegmentIntersectPt(p1, p2, p3, p4, ip);
   }
 
   inline bool GetIntersection(const Path64& rectPath,
@@ -125,7 +124,7 @@ namespace Clipper2Lib {
     {
     case Location::Left:
       if (GetSegmentIntersection(p, p2, rectPath[0], rectPath[3], ip)) return true;
-      else if ((p.y < rectPath[0].y) && GetSegmentIntersection(p, p2, rectPath[0], rectPath[1], ip))        
+      else if ((p.y < rectPath[0].y) && GetSegmentIntersection(p, p2, rectPath[0], rectPath[1], ip))
       {
         loc = Location::Top;
         return true;
@@ -180,7 +179,7 @@ namespace Clipper2Lib {
       else return false;
 
     default: // loc == rInside
-      if (GetSegmentIntersection(p, p2, rectPath[0], rectPath[3], ip)) 
+      if (GetSegmentIntersection(p, p2, rectPath[0], rectPath[3], ip))
       {
         loc = Location::Left;
         return true;
@@ -282,7 +281,7 @@ namespace Clipper2Lib {
   {
     if (op->edge) return;
     op->edge = &edge;
-    edge.push_back(op);
+    edge.emplace_back(op);
   }
 
   inline void UncoupleEdge(OutPt2* op)
@@ -320,18 +319,19 @@ namespace Clipper2Lib {
     // this method is only called by InternalExecute.
     // Later splitting & rejoining won't create additional op's,
     // though they will change the (non-storage) results_ count.
-    int curr_idx = static_cast<int>(results_.size()) - 1;
+    size_t curr_idx = results_.size();
     OutPt2* result;
-    if (curr_idx < 0 || start_new)
+    if (curr_idx == 0 || start_new)
     {
       result = &op_container_.emplace_back(OutPt2());
       result->pt = pt;
       result->next = result;
       result->prev = result;
-      results_.push_back(result);
+      results_.emplace_back(result);
     }
     else
     {
+      --curr_idx;
       OutPt2* prevOp = results_[curr_idx];
       if (prevOp->pt == pt)  return prevOp;
       result = &op_container_.emplace_back(OutPt2());
@@ -349,27 +349,27 @@ namespace Clipper2Lib {
   void RectClip64::AddCorner(Location prev, Location curr)
   {
     if (HeadingClockwise(prev, curr))
-      Add(rect_as_path_[static_cast<int>(prev)]);
+      Add(rect_as_path_[static_cast<size_t>(prev)]);
     else
-      Add(rect_as_path_[static_cast<int>(curr)]);
+      Add(rect_as_path_[static_cast<size_t>(curr)]);
   }
 
   void RectClip64::AddCorner(Location& loc, bool isClockwise)
   {
     if (isClockwise)
     {
-      Add(rect_as_path_[static_cast<int>(loc)]);
+      Add(rect_as_path_[static_cast<size_t>(loc)]);
       loc = GetAdjacentLocation(loc, true);
     }
     else
     {
       loc = GetAdjacentLocation(loc, false);
-      Add(rect_as_path_[static_cast<int>(loc)]);
+      Add(rect_as_path_[static_cast<size_t>(loc)]);
     }
   }
 
   void RectClip64::GetNextLocation(const Path64& path,
-    Location& loc, int& i, int highI)
+    Location& loc, size_t& i, size_t highI)
   {
     switch (loc)
     {
@@ -420,31 +420,52 @@ namespace Clipper2Lib {
         break; //inner loop
       }
       break;
-    } //switch          
+    } //switch
+  }
+
+  bool StartLocsAreClockwise(const std::vector<Location>& startlocs)
+  {
+    int result = 0;
+    for (size_t i = 1; i < startlocs.size(); ++i)
+    {
+      int d = static_cast<int>(startlocs[i]) - static_cast<int>(startlocs[i - 1]);
+      switch (d)
+      {
+        case -1: result -= 1; break;
+        case 1: result += 1; break;
+        case -3: result += 1; break;
+        case 3: result -= 1; break;
+      }
+    }
+    return result > 0;
   }
 
   void RectClip64::ExecuteInternal(const Path64& path)
   {
-    int i = 0, highI = static_cast<int>(path.size()) - 1;
+    if (path.size() < 1)
+      return;
+
+    size_t highI = path.size() - 1;
     Location prev = Location::Inside, loc;
     Location crossing_loc = Location::Inside;
     Location first_cross_ = Location::Inside;
     if (!GetLocation(rect_, path[highI], loc))
     {
-      i = highI - 1;
-      while (i >= 0 && !GetLocation(rect_, path[i], prev)) --i;
-      if (i < 0) 
+      size_t i = highI;
+      while (i > 0 && !GetLocation(rect_, path[i - 1], prev))
+        --i;
+      if (i == 0)
       {
         // all of path must be inside fRect
         for (const auto& pt : path) Add(pt);
         return;
       }
       if (prev == Location::Inside) loc = Location::Inside;
-      i = 0;
     }
-    Location startingLoc = loc;
+    Location starting_loc = loc;
 
     ///////////////////////////////////////////////////
+    size_t i = 0;
     while (i <= highI)
     {
       prev = loc;
@@ -454,12 +475,12 @@ namespace Clipper2Lib {
 
       if (i > highI) break;
       Point64 ip, ip2;
-      Point64 prev_pt = (i) ? 
-        path[static_cast<size_t>(i - 1)] : 
+      Point64 prev_pt = (i) ?
+        path[static_cast<size_t>(i - 1)] :
         path[highI];
 
       crossing_loc = loc;
-      if (!GetIntersection(rect_as_path_, 
+      if (!GetIntersection(rect_as_path_,
         path[i], prev_pt, crossing_loc, ip))
       {
         // ie remaining outside
@@ -467,10 +488,10 @@ namespace Clipper2Lib {
         {
           bool isClockw = IsClockwise(prev, loc, prev_pt, path[i], rect_mp_);
           do {
-            start_locs_.push_back(prev);
+            start_locs_.emplace_back(prev);
             prev = GetAdjacentLocation(prev, isClockw);
           } while (prev != loc);
-          crossing_loc = crossing_prev; // still not crossed 
+          crossing_loc = crossing_prev; // still not crossed
         }
         else if (prev != Location::Inside && prev != loc)
         {
@@ -492,7 +513,7 @@ namespace Clipper2Lib {
         if (first_cross_ == Location::Inside)
         {
           first_cross_ = crossing_loc;
-          start_locs_.push_back(prev);
+          start_locs_.emplace_back(prev);
         }
         else if (prev != crossing_loc)
         {
@@ -504,7 +525,7 @@ namespace Clipper2Lib {
       }
       else if (prev != Location::Inside)
       {
-        // passing right through rect. 'ip' here will be the second 
+        // passing right through rect. 'ip' here will be the second
         // intersect pt but we'll also need the first intersect pt (ip2)
         loc = prev;
         GetIntersection(rect_as_path_, prev_pt, path[i], loc, ip2);
@@ -514,7 +535,7 @@ namespace Clipper2Lib {
         if (first_cross_ == Location::Inside)
         {
           first_cross_ = loc;
-          start_locs_.push_back(prev);
+          start_locs_.emplace_back(prev);
         }
 
         loc = crossing_loc;
@@ -543,7 +564,7 @@ namespace Clipper2Lib {
     if (first_cross_ == Location::Inside)
     {
       // path never intersects
-      if (startingLoc != Location::Inside)
+      if (starting_loc != Location::Inside)
       {
         // path is outside rect
         // but being outside, it still may not contain rect
@@ -552,11 +573,13 @@ namespace Clipper2Lib {
         {
           // yep, the path does fully contain rect
           // so add rect to the solution
+          bool is_clockwise_path = StartLocsAreClockwise(start_locs_);
           for (size_t j = 0; j < 4; ++j)
           {
-            Add(rect_as_path_[j]);
+            size_t k = is_clockwise_path ? j : 3 - j; // reverses result path
+            Add(rect_as_path_[k]);
             // we may well need to do some splitting later, so
-            AddToEdge(edges_[j * 2], results_[0]);
+            AddToEdge(edges_[k * 2], results_[0]);
           }
         }
       }
@@ -589,8 +612,7 @@ namespace Clipper2Lib {
       OutPt2* op2 = op;
       do
       {
-        if (!CrossProduct(op2->prev->pt,
-          op2->pt, op2->next->pt))
+        if (IsCollinear(op2->prev->pt, op2->pt, op2->next->pt))
         {
           if (op2 == op)
           {
@@ -640,7 +662,7 @@ namespace Clipper2Lib {
     }
   }
 
-  void RectClip64::TidyEdges(int idx, OutPt2List& cw, OutPt2List& ccw)
+  void RectClip64::TidyEdges(size_t idx, OutPt2List& cw, OutPt2List& ccw)
   {
     if (ccw.empty()) return;
     bool isHorz = ((idx == 1) || (idx == 3));
@@ -648,7 +670,7 @@ namespace Clipper2Lib {
     size_t i = 0, j = 0;
     OutPt2* p1, * p2, * p1a, * p2a, * op, * op2;
 
-    while (i < cw.size()) 
+    while (i < cw.size())
     {
       p1 = cw[i];
       if (!p1 || p1->next == p1->prev)
@@ -727,7 +749,7 @@ namespace Clipper2Lib {
       if (!isRejoining)
       {
         size_t new_idx = results_.size();
-        results_.push_back(p1a);
+        results_.emplace_back(p1a);
         SetNewOwner(p1a, new_idx);
       }
 
@@ -825,8 +847,8 @@ namespace Clipper2Lib {
     OutPt2* op2 = op->next;
     while (op2 && op2 != op)
     {
-      if (CrossProduct(op2->prev->pt, 
-        op2->pt, op2->next->pt) == 0)
+      if (IsCollinear(op2->prev->pt,
+        op2->pt, op2->next->pt))
       {
         op = op2->prev;
         op2 = UnlinkOp(op2);
@@ -838,11 +860,11 @@ namespace Clipper2Lib {
     if (!op2) return Path64();
 
     Path64 result;
-    result.push_back(op->pt);
+    result.emplace_back(op->pt);
     op2 = op->next;
     while (op2 != op)
     {
-      result.push_back(op2->pt);
+      result.emplace_back(op2->pt);
       op2 = op2->next;
     }
     return result;
@@ -854,7 +876,7 @@ namespace Clipper2Lib {
     if (rect_.IsEmpty()) return result;
 
     for (const Path64& path : paths)
-    {      
+    {
       if (path.size() < 3) continue;
       path_bounds_ = GetBounds(path);
       if (!rect_.Intersects(path_bounds_))
@@ -862,20 +884,20 @@ namespace Clipper2Lib {
       else if (rect_.Contains(path_bounds_))
       {
         // the path must be completely inside rect_
-        result.push_back(path);
+        result.emplace_back(path);
         continue;
       }
 
       ExecuteInternal(path);
       CheckEdges();
-      for (int i = 0; i < 4; ++i)
+      for (size_t i = 0; i < 4; ++i)
         TidyEdges(i, edges_[i * 2], edges_[i * 2 + 1]);
-  
+
       for (OutPt2*& op :  results_)
       {
         Path64 tmp = GetPath(op);
         if (!tmp.empty())
-          result.emplace_back(tmp);
+          result.emplace_back(std::move(tmp));
       }
 
       //clean up after every loop
@@ -907,7 +929,7 @@ namespace Clipper2Lib {
       {
         Path64 tmp = GetPath(op);
         if (!tmp.empty())
-          result.emplace_back(tmp);
+          result.emplace_back(std::move(tmp));
       }
       results_.clear();
 
@@ -925,14 +947,14 @@ namespace Clipper2Lib {
     op_container_ = std::deque<OutPt2>();
     start_locs_.clear();
 
-    int i = 1, highI = static_cast<int>(path.size()) - 1;
+    size_t i = 1, highI = path.size() - 1;
 
     Location prev = Location::Inside, loc;
     Location crossing_loc;
     if (!GetLocation(rect_, path[0], loc))
     {
       while (i <= highI && !GetLocation(rect_, path[i], prev)) ++i;
-      if (i > highI) 
+      if (i > highI)
       {
         // all of path must be inside fRect
         for (const auto& pt : path) Add(pt);
@@ -953,7 +975,7 @@ namespace Clipper2Lib {
       Point64 prev_pt = path[static_cast<size_t>(i - 1)];
 
       crossing_loc = loc;
-      if (!GetIntersection(rect_as_path_, 
+      if (!GetIntersection(rect_as_path_,
         path[i], prev_pt, crossing_loc, ip))
       {
         // ie remaining outside
@@ -971,10 +993,10 @@ namespace Clipper2Lib {
       }
       else if (prev != Location::Inside)
       {
-        // passing right through rect. 'ip' here will be the second 
+        // passing right through rect. 'ip' here will be the second
         // intersect pt but we'll also need the first intersect pt (ip2)
         crossing_loc = prev;
-        GetIntersection(rect_as_path_, 
+        GetIntersection(rect_as_path_,
           prev_pt, path[i], crossing_loc, ip2);
         Add(ip2, true);
         Add(ip);
@@ -991,14 +1013,14 @@ namespace Clipper2Lib {
   {
     Path64 result;
     if (!op || op == op->next) return result;
-    op = op->next; // starting at path beginning 
-    result.push_back(op->pt);
+    op = op->next; // starting at path beginning
+    result.emplace_back(op->pt);
     OutPt2 *op2 = op->next;
     while (op2 != op)
     {
-      result.push_back(op2->pt);
+      result.emplace_back(op2->pt);
       op2 = op2->next;
-    }        
+    }
     return result;
   }
 

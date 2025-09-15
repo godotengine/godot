@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BASIS_H
-#define BASIS_H
+#pragma once
 
 #include "core/math/quaternion.h"
 #include "core/math/vector3.h"
@@ -41,11 +40,11 @@ struct [[nodiscard]] Basis {
 		Vector3(0, 0, 1)
 	};
 
-	_FORCE_INLINE_ const Vector3 &operator[](int p_axis) const {
-		return rows[p_axis];
+	constexpr const Vector3 &operator[](int p_row) const {
+		return rows[p_row];
 	}
-	_FORCE_INLINE_ Vector3 &operator[](int p_axis) {
-		return rows[p_axis];
+	constexpr Vector3 &operator[](int p_row) {
+		return rows[p_row];
 	}
 
 	void invert();
@@ -121,23 +120,24 @@ struct [[nodiscard]] Basis {
 	}
 
 	bool is_equal_approx(const Basis &p_basis) const;
+	bool is_same(const Basis &p_basis) const;
 	bool is_finite() const;
 
-	bool operator==(const Basis &p_matrix) const;
-	bool operator!=(const Basis &p_matrix) const;
+	constexpr bool operator==(const Basis &p_matrix) const;
+	constexpr bool operator!=(const Basis &p_matrix) const;
 
 	_FORCE_INLINE_ Vector3 xform(const Vector3 &p_vector) const;
 	_FORCE_INLINE_ Vector3 xform_inv(const Vector3 &p_vector) const;
 	_FORCE_INLINE_ void operator*=(const Basis &p_matrix);
 	_FORCE_INLINE_ Basis operator*(const Basis &p_matrix) const;
-	_FORCE_INLINE_ void operator+=(const Basis &p_matrix);
-	_FORCE_INLINE_ Basis operator+(const Basis &p_matrix) const;
-	_FORCE_INLINE_ void operator-=(const Basis &p_matrix);
-	_FORCE_INLINE_ Basis operator-(const Basis &p_matrix) const;
-	_FORCE_INLINE_ void operator*=(real_t p_val);
-	_FORCE_INLINE_ Basis operator*(real_t p_val) const;
-	_FORCE_INLINE_ void operator/=(real_t p_val);
-	_FORCE_INLINE_ Basis operator/(real_t p_val) const;
+	constexpr void operator+=(const Basis &p_matrix);
+	constexpr Basis operator+(const Basis &p_matrix) const;
+	constexpr void operator-=(const Basis &p_matrix);
+	constexpr Basis operator-(const Basis &p_matrix) const;
+	constexpr void operator*=(real_t p_val);
+	constexpr Basis operator*(real_t p_val) const;
+	constexpr void operator/=(real_t p_val);
+	constexpr Basis operator/(real_t p_val) const;
 
 	bool is_orthogonal() const;
 	bool is_orthonormal() const;
@@ -149,7 +149,7 @@ struct [[nodiscard]] Basis {
 	Basis slerp(const Basis &p_to, real_t p_weight) const;
 	void rotate_sh(real_t *p_values);
 
-	operator String() const;
+	explicit operator String() const;
 
 	/* create / set */
 
@@ -204,9 +204,12 @@ struct [[nodiscard]] Basis {
 				rows[0].z * p_m[0].y + rows[1].z * p_m[1].y + rows[2].z * p_m[2].y,
 				rows[0].z * p_m[0].z + rows[1].z * p_m[1].z + rows[2].z * p_m[2].z);
 	}
-	Basis(real_t p_xx, real_t p_xy, real_t p_xz, real_t p_yx, real_t p_yy, real_t p_yz, real_t p_zx, real_t p_zy, real_t p_zz) {
-		set(p_xx, p_xy, p_xz, p_yx, p_yy, p_yz, p_zx, p_zy, p_zz);
-	}
+	constexpr Basis(real_t p_xx, real_t p_xy, real_t p_xz, real_t p_yx, real_t p_yy, real_t p_yz, real_t p_zx, real_t p_zy, real_t p_zz) :
+			rows{
+				{ p_xx, p_xy, p_xz },
+				{ p_yx, p_yy, p_yz },
+				{ p_zx, p_zy, p_zz },
+			} {}
 
 	void orthonormalize();
 	Basis orthonormalized() const;
@@ -223,23 +226,42 @@ struct [[nodiscard]] Basis {
 
 	static Basis looking_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0), bool p_use_model_front = false);
 
-	Basis(const Quaternion &p_quaternion) { set_quaternion(p_quaternion); };
+	Basis(const Quaternion &p_quaternion) { set_quaternion(p_quaternion); }
 	Basis(const Quaternion &p_quaternion, const Vector3 &p_scale) { set_quaternion_scale(p_quaternion, p_scale); }
 
 	Basis(const Vector3 &p_axis, real_t p_angle) { set_axis_angle(p_axis, p_angle); }
 	Basis(const Vector3 &p_axis, real_t p_angle, const Vector3 &p_scale) { set_axis_angle_scale(p_axis, p_angle, p_scale); }
 	static Basis from_scale(const Vector3 &p_scale);
 
-	_FORCE_INLINE_ Basis(const Vector3 &p_x_axis, const Vector3 &p_y_axis, const Vector3 &p_z_axis) {
-		set_columns(p_x_axis, p_y_axis, p_z_axis);
-	}
+	constexpr Basis(const Vector3 &p_x_axis, const Vector3 &p_y_axis, const Vector3 &p_z_axis) :
+			rows{
+				{ p_x_axis.x, p_y_axis.x, p_z_axis.x },
+				{ p_x_axis.y, p_y_axis.y, p_z_axis.y },
+				{ p_x_axis.z, p_y_axis.z, p_z_axis.z },
+			} {}
 
-	_FORCE_INLINE_ Basis() {}
+	Basis() = default;
 
 private:
 	// Helper method.
 	void _set_diagonal(const Vector3 &p_diag);
 };
+
+constexpr bool Basis::operator==(const Basis &p_matrix) const {
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			if (rows[i][j] != p_matrix.rows[i][j]) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+constexpr bool Basis::operator!=(const Basis &p_matrix) const {
+	return (!(*this == p_matrix));
+}
 
 _FORCE_INLINE_ void Basis::operator*=(const Basis &p_matrix) {
 	set(
@@ -255,49 +277,49 @@ _FORCE_INLINE_ Basis Basis::operator*(const Basis &p_matrix) const {
 			p_matrix.tdotx(rows[2]), p_matrix.tdoty(rows[2]), p_matrix.tdotz(rows[2]));
 }
 
-_FORCE_INLINE_ void Basis::operator+=(const Basis &p_matrix) {
+constexpr void Basis::operator+=(const Basis &p_matrix) {
 	rows[0] += p_matrix.rows[0];
 	rows[1] += p_matrix.rows[1];
 	rows[2] += p_matrix.rows[2];
 }
 
-_FORCE_INLINE_ Basis Basis::operator+(const Basis &p_matrix) const {
+constexpr Basis Basis::operator+(const Basis &p_matrix) const {
 	Basis ret(*this);
 	ret += p_matrix;
 	return ret;
 }
 
-_FORCE_INLINE_ void Basis::operator-=(const Basis &p_matrix) {
+constexpr void Basis::operator-=(const Basis &p_matrix) {
 	rows[0] -= p_matrix.rows[0];
 	rows[1] -= p_matrix.rows[1];
 	rows[2] -= p_matrix.rows[2];
 }
 
-_FORCE_INLINE_ Basis Basis::operator-(const Basis &p_matrix) const {
+constexpr Basis Basis::operator-(const Basis &p_matrix) const {
 	Basis ret(*this);
 	ret -= p_matrix;
 	return ret;
 }
 
-_FORCE_INLINE_ void Basis::operator*=(real_t p_val) {
+constexpr void Basis::operator*=(real_t p_val) {
 	rows[0] *= p_val;
 	rows[1] *= p_val;
 	rows[2] *= p_val;
 }
 
-_FORCE_INLINE_ Basis Basis::operator*(real_t p_val) const {
+constexpr Basis Basis::operator*(real_t p_val) const {
 	Basis ret(*this);
 	ret *= p_val;
 	return ret;
 }
 
-_FORCE_INLINE_ void Basis::operator/=(real_t p_val) {
+constexpr void Basis::operator/=(real_t p_val) {
 	rows[0] /= p_val;
 	rows[1] /= p_val;
 	rows[2] /= p_val;
 }
 
-_FORCE_INLINE_ Basis Basis::operator/(real_t p_val) const {
+constexpr Basis Basis::operator/(real_t p_val) const {
 	Basis ret(*this);
 	ret /= p_val;
 	return ret;
@@ -322,5 +344,3 @@ real_t Basis::determinant() const {
 			rows[1][0] * (rows[0][1] * rows[2][2] - rows[2][1] * rows[0][2]) +
 			rows[2][0] * (rows[0][1] * rows[1][2] - rows[1][1] * rows[0][2]);
 }
-
-#endif // BASIS_H

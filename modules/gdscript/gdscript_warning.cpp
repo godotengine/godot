@@ -40,10 +40,10 @@ String GDScriptWarning::get_message() const {
 	switch (code) {
 		case UNASSIGNED_VARIABLE:
 			CHECK_SYMBOLS(1);
-			return vformat(R"(The variable "%s" was used before being assigned a value.)", symbols[0]);
+			return vformat(R"(The variable "%s" is used before being assigned a value.)", symbols[0]);
 		case UNASSIGNED_VARIABLE_OP_ASSIGN:
-			CHECK_SYMBOLS(1);
-			return vformat(R"(Using assignment with operation but the variable "%s" was not previously assigned a value.)", symbols[0]);
+			CHECK_SYMBOLS(2);
+			return vformat(R"(The variable "%s" is modified with the compound-assignment operator "%s=" but was not previously initialized.)", symbols[0], symbols[1]);
 		case UNUSED_VARIABLE:
 			CHECK_SYMBOLS(1);
 			return vformat(R"(The local variable "%s" is declared but never used in the block. If this is intended, prefix it with an underscore: "_%s".)", symbols[0], symbols[0]);
@@ -61,10 +61,13 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"(The signal "%s" is declared but never explicitly used in the class.)", symbols[0]);
 		case SHADOWED_VARIABLE:
 			CHECK_SYMBOLS(4);
-			return vformat(R"(The local %s "%s" is shadowing an already-declared %s at line %s.)", symbols[0], symbols[1], symbols[2], symbols[3]);
+			return vformat(R"(The local %s "%s" is shadowing an already-declared %s at line %s in the current class.)", symbols[0], symbols[1], symbols[2], symbols[3]);
 		case SHADOWED_VARIABLE_BASE_CLASS:
 			CHECK_SYMBOLS(4);
-			return vformat(R"(The local %s "%s" is shadowing an already-declared %s at the base class "%s".)", symbols[0], symbols[1], symbols[2], symbols[3]);
+			if (symbols.size() > 4) {
+				return vformat(R"(The local %s "%s" is shadowing an already-declared %s at line %s in the base class "%s".)", symbols[0], symbols[1], symbols[2], symbols[3], symbols[4]);
+			}
+			return vformat(R"(The local %s "%s" is shadowing an already-declared %s in the base class "%s".)", symbols[0], symbols[1], symbols[2], symbols[3]);
 		case SHADOWED_GLOBAL_IDENTIFIER:
 			CHECK_SYMBOLS(3);
 			return vformat(R"(The %s "%s" has the same name as a %s.)", symbols[0], symbols[1], symbols[2]);
@@ -76,7 +79,7 @@ String GDScriptWarning::get_message() const {
 		case STANDALONE_EXPRESSION:
 			return "Standalone expression (the line may have no effect).";
 		case STANDALONE_TERNARY:
-			return "Standalone ternary operator: the return value is being discarded.";
+			return "Standalone ternary operator (the return value is being discarded).";
 		case INCOMPATIBLE_TERNARY:
 			return "Values of the ternary operator are not mutually compatible.";
 		case UNTYPED_DECLARATION:
@@ -114,17 +117,17 @@ String GDScriptWarning::get_message() const {
 		case REDUNDANT_STATIC_UNLOAD:
 			return R"(The "@static_unload" annotation is redundant because the file does not have a class with static variables.)";
 		case REDUNDANT_AWAIT:
-			return R"("await" keyword not needed in this case, because the expression isn't a coroutine nor a signal.)";
+			return R"("await" keyword is unnecessary because the expression isn't a coroutine nor a signal.)";
 		case ASSERT_ALWAYS_TRUE:
 			return "Assert statement is redundant because the expression is always true.";
 		case ASSERT_ALWAYS_FALSE:
 			return "Assert statement will raise an error because the expression is always false.";
 		case INTEGER_DIVISION:
-			return "Integer division, decimal part will be discarded.";
+			return "Integer division. Decimal part will be discarded.";
 		case NARROWING_CONVERSION:
 			return "Narrowing conversion (float is converted to int and loses precision).";
 		case INT_AS_ENUM_WITHOUT_CAST:
-			return "Integer used when an enum value is expected. If this is intended cast the integer to the enum type.";
+			return "Integer used when an enum value is expected. If this is intended, cast the integer to the enum type using the \"as\" keyword.";
 		case INT_AS_ENUM_WITHOUT_MATCH:
 			CHECK_SYMBOLS(3);
 			return vformat(R"(Cannot %s %s as Enum "%s": no enum member has matching value.)", symbols[0], symbols[1], symbols[2]);
@@ -135,9 +138,7 @@ String GDScriptWarning::get_message() const {
 			return "Empty script file.";
 		case DEPRECATED_KEYWORD:
 			CHECK_SYMBOLS(2);
-			return vformat(R"(The "%s" keyword is deprecated and will be removed in a future release, please replace its uses by "%s".)", symbols[0], symbols[1]);
-		case RENAMED_IN_GODOT_4_HINT:
-			break; // Renamed identifier hint is taken care of by the GDScriptAnalyzer. No message needed here.
+			return vformat(R"(The "%s" keyword is deprecated and will be removed in a future release. Please replace it with "%s".)", symbols[0], symbols[1]);
 		case CONFUSABLE_IDENTIFIER:
 			CHECK_SYMBOLS(1);
 			return vformat(R"(The identifier "%s" has misleading characters and might be confused with something else.)", symbols[0]);
@@ -158,7 +159,7 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"*(The method "%s()" overrides a method from native class "%s". This won't be called by the engine and may not work as expected.)*", symbols[0], symbols[1]);
 		case GET_NODE_DEFAULT_WITHOUT_ONREADY:
 			CHECK_SYMBOLS(1);
-			return vformat(R"*(The default value is using "%s" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.)*", symbols[0]);
+			return vformat(R"*(The default value uses "%s" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.)*", symbols[0]);
 		case ONREADY_WITH_EXPORT:
 			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
 #ifndef DISABLE_DEPRECATED
@@ -182,10 +183,6 @@ int GDScriptWarning::get_default_value(Code p_code) {
 }
 
 PropertyInfo GDScriptWarning::get_property_info(Code p_code) {
-	// Making this a separate function in case a warning needs different PropertyInfo in the future.
-	if (p_code == Code::RENAMED_IN_GODOT_4_HINT) {
-		return PropertyInfo(Variant::BOOL, get_settings_path_from_code(p_code));
-	}
 	return PropertyInfo(Variant::INT, get_settings_path_from_code(p_code), PROPERTY_HINT_ENUM, "Ignore,Warn,Error");
 }
 
@@ -197,51 +194,50 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 	ERR_FAIL_COND_V(p_code < 0 || p_code >= WARNING_MAX, String());
 
 	static const char *names[] = {
-		"UNASSIGNED_VARIABLE",
-		"UNASSIGNED_VARIABLE_OP_ASSIGN",
-		"UNUSED_VARIABLE",
-		"UNUSED_LOCAL_CONSTANT",
-		"UNUSED_PRIVATE_CLASS_VARIABLE",
-		"UNUSED_PARAMETER",
-		"UNUSED_SIGNAL",
-		"SHADOWED_VARIABLE",
-		"SHADOWED_VARIABLE_BASE_CLASS",
-		"SHADOWED_GLOBAL_IDENTIFIER",
-		"UNREACHABLE_CODE",
-		"UNREACHABLE_PATTERN",
-		"STANDALONE_EXPRESSION",
-		"STANDALONE_TERNARY",
-		"INCOMPATIBLE_TERNARY",
-		"UNTYPED_DECLARATION",
-		"INFERRED_DECLARATION",
-		"UNSAFE_PROPERTY_ACCESS",
-		"UNSAFE_METHOD_ACCESS",
-		"UNSAFE_CAST",
-		"UNSAFE_CALL_ARGUMENT",
-		"UNSAFE_VOID_RETURN",
-		"RETURN_VALUE_DISCARDED",
-		"STATIC_CALLED_ON_INSTANCE",
-		"MISSING_TOOL",
-		"REDUNDANT_STATIC_UNLOAD",
-		"REDUNDANT_AWAIT",
-		"ASSERT_ALWAYS_TRUE",
-		"ASSERT_ALWAYS_FALSE",
-		"INTEGER_DIVISION",
-		"NARROWING_CONVERSION",
-		"INT_AS_ENUM_WITHOUT_CAST",
-		"INT_AS_ENUM_WITHOUT_MATCH",
-		"ENUM_VARIABLE_WITHOUT_DEFAULT",
-		"EMPTY_FILE",
-		"DEPRECATED_KEYWORD",
-		"RENAMED_IN_GODOT_4_HINT",
-		"CONFUSABLE_IDENTIFIER",
-		"CONFUSABLE_LOCAL_DECLARATION",
-		"CONFUSABLE_LOCAL_USAGE",
-		"CONFUSABLE_CAPTURE_REASSIGNMENT",
-		"INFERENCE_ON_VARIANT",
-		"NATIVE_METHOD_OVERRIDE",
-		"GET_NODE_DEFAULT_WITHOUT_ONREADY",
-		"ONREADY_WITH_EXPORT",
+		PNAME("UNASSIGNED_VARIABLE"),
+		PNAME("UNASSIGNED_VARIABLE_OP_ASSIGN"),
+		PNAME("UNUSED_VARIABLE"),
+		PNAME("UNUSED_LOCAL_CONSTANT"),
+		PNAME("UNUSED_PRIVATE_CLASS_VARIABLE"),
+		PNAME("UNUSED_PARAMETER"),
+		PNAME("UNUSED_SIGNAL"),
+		PNAME("SHADOWED_VARIABLE"),
+		PNAME("SHADOWED_VARIABLE_BASE_CLASS"),
+		PNAME("SHADOWED_GLOBAL_IDENTIFIER"),
+		PNAME("UNREACHABLE_CODE"),
+		PNAME("UNREACHABLE_PATTERN"),
+		PNAME("STANDALONE_EXPRESSION"),
+		PNAME("STANDALONE_TERNARY"),
+		PNAME("INCOMPATIBLE_TERNARY"),
+		PNAME("UNTYPED_DECLARATION"),
+		PNAME("INFERRED_DECLARATION"),
+		PNAME("UNSAFE_PROPERTY_ACCESS"),
+		PNAME("UNSAFE_METHOD_ACCESS"),
+		PNAME("UNSAFE_CAST"),
+		PNAME("UNSAFE_CALL_ARGUMENT"),
+		PNAME("UNSAFE_VOID_RETURN"),
+		PNAME("RETURN_VALUE_DISCARDED"),
+		PNAME("STATIC_CALLED_ON_INSTANCE"),
+		PNAME("MISSING_TOOL"),
+		PNAME("REDUNDANT_STATIC_UNLOAD"),
+		PNAME("REDUNDANT_AWAIT"),
+		PNAME("ASSERT_ALWAYS_TRUE"),
+		PNAME("ASSERT_ALWAYS_FALSE"),
+		PNAME("INTEGER_DIVISION"),
+		PNAME("NARROWING_CONVERSION"),
+		PNAME("INT_AS_ENUM_WITHOUT_CAST"),
+		PNAME("INT_AS_ENUM_WITHOUT_MATCH"),
+		PNAME("ENUM_VARIABLE_WITHOUT_DEFAULT"),
+		PNAME("EMPTY_FILE"),
+		PNAME("DEPRECATED_KEYWORD"),
+		PNAME("CONFUSABLE_IDENTIFIER"),
+		PNAME("CONFUSABLE_LOCAL_DECLARATION"),
+		PNAME("CONFUSABLE_LOCAL_USAGE"),
+		PNAME("CONFUSABLE_CAPTURE_REASSIGNMENT"),
+		PNAME("INFERENCE_ON_VARIANT"),
+		PNAME("NATIVE_METHOD_OVERRIDE"),
+		PNAME("GET_NODE_DEFAULT_WITHOUT_ONREADY"),
+		PNAME("ONREADY_WITH_EXPORT"),
 #ifndef DISABLE_DEPRECATED
 		"PROPERTY_USED_AS_FUNCTION",
 		"CONSTANT_USED_AS_FUNCTION",
@@ -249,7 +245,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 #endif
 	};
 
-	static_assert((sizeof(names) / sizeof(*names)) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
+	static_assert(std::size(names) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
 
 	return names[(int)p_code];
 }

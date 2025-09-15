@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VISUAL_SHADER_NODES_H
-#define VISUAL_SHADER_NODES_H
+#pragma once
 
-#include "scene/resources/compressed_texture.h"
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/visual_shader.h"
 
@@ -341,6 +339,9 @@ public:
 
 	void set_constant(const Quaternion &p_constant);
 	Quaternion get_constant() const;
+
+	void _set_constant_v4(const Vector4 &p_constant);
+	Vector4 _get_constant_v4() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
@@ -1353,6 +1354,8 @@ public:
 		FUNC_HSV2RGB,
 		FUNC_RGB2HSV,
 		FUNC_SEPIA,
+		FUNC_LINEAR_TO_SRGB,
+		FUNC_SRGB_TO_LINEAR,
 		FUNC_MAX,
 	};
 
@@ -3068,8 +3071,28 @@ public:
 	VisualShaderNodeRandomRange();
 };
 
+///////////////////////////////////////
+/// Remap
+///////////////////////////////////////
+
 class VisualShaderNodeRemap : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeRemap, VisualShaderNode);
+
+public:
+	enum OpType {
+		OP_TYPE_SCALAR,
+		OP_TYPE_VECTOR_2D,
+		OP_TYPE_VECTOR_2D_SCALAR,
+		OP_TYPE_VECTOR_3D,
+		OP_TYPE_VECTOR_3D_SCALAR,
+		OP_TYPE_VECTOR_4D,
+		OP_TYPE_VECTOR_4D_SCALAR,
+		OP_TYPE_MAX,
+	};
+
+protected:
+	OpType op_type = OP_TYPE_SCALAR;
+	static void _bind_methods();
 
 public:
 	virtual String get_caption() const override;
@@ -3082,12 +3105,25 @@ public:
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 
+	void set_op_type(OpType p_op_type);
+	OpType get_op_type() const;
+
+	virtual Vector<StringName> get_editable_properties() const override;
+
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	virtual Category get_category() const override { return CATEGORY_UTILITY; }
+	virtual Category get_category() const override {
+		if (op_type == OP_TYPE_SCALAR) {
+			return CATEGORY_SCALAR;
+		} else {
+			return CATEGORY_VECTOR;
+		}
+	}
 
 	VisualShaderNodeRemap();
 };
+
+VARIANT_ENUM_CAST(VisualShaderNodeRemap::OpType)
 
 class VisualShaderNodeRotationByAxis : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeRotationByAxis, VisualShaderNode);
@@ -3141,5 +3177,3 @@ public:
 
 	VisualShaderNodeReroute();
 };
-
-#endif // VISUAL_SHADER_NODES_H

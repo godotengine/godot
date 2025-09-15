@@ -48,6 +48,7 @@
 			<param index="2" name="dst" type="Vector2i" />
 			<description>
 				Copies [param src_rect] from [param src] image to this image at coordinates [param dst], clipped accordingly to both image bounds. This image and [param src] image [b]must[/b] have the same format. [param src_rect] with non-positive size is treated as empty.
+				[b]Note:[/b] The alpha channel data in [param src] will overwrite the corresponding data in this image at the target position. To blend alpha channels, use [method blend_rect] instead.
 			</description>
 		</method>
 		<method name="blit_rect_mask">
@@ -108,7 +109,7 @@
 			<return type="void" />
 			<param index="0" name="format" type="int" enum="Image.Format" />
 			<description>
-				Converts the image's format. See [enum Format] constants.
+				Converts this image's format to the given [param format].
 			</description>
 		</method>
 		<method name="copy_from">
@@ -125,7 +126,7 @@
 			<param index="2" name="use_mipmaps" type="bool" />
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<description>
-				Creates an empty image of given size and format. See [enum Format] constants. If [param use_mipmaps] is [code]true[/code], then generate mipmaps for this image. See the [method generate_mipmaps].
+				Creates an empty image of the given size and format. If [param use_mipmaps] is [code]true[/code], generates mipmaps for this image. See the [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="create_empty" qualifiers="static">
@@ -135,7 +136,7 @@
 			<param index="2" name="use_mipmaps" type="bool" />
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<description>
-				Creates an empty image of given size and format. See [enum Format] constants. If [param use_mipmaps] is [code]true[/code], then generate mipmaps for this image. See the [method generate_mipmaps].
+				Creates an empty image of the given size and format. If [param use_mipmaps] is [code]true[/code], generates mipmaps for this image. See the [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="create_from_data" qualifiers="static">
@@ -146,7 +147,7 @@
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<param index="4" name="data" type="PackedByteArray" />
 			<description>
-				Creates a new image of given size and format. See [enum Format] constants. Fills the image with the given raw data. If [param use_mipmaps] is [code]true[/code] then loads mipmaps for this image from [param data]. See [method generate_mipmaps].
+				Creates a new image of the given size and format. Fills the image with the given raw data. If [param use_mipmaps] is [code]true[/code], loads the mipmaps for this image from [param data]. See [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="crop">
@@ -174,7 +175,7 @@
 			<return type="int" enum="Image.UsedChannels" />
 			<param index="0" name="source" type="int" enum="Image.CompressSource" default="0" />
 			<description>
-				Returns the color channels used by this image, as one of the [enum UsedChannels] constants. If the image is compressed, the original [param source] must be specified.
+				Returns the color channels used by this image. If the image is compressed, the original [param source] must be specified.
 			</description>
 		</method>
 		<method name="fill">
@@ -233,7 +234,7 @@
 		<method name="get_format" qualifiers="const">
 			<return type="int" enum="Image.Format" />
 			<description>
-				Returns the image's format. See [enum Format] constants.
+				Returns this image's format.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
@@ -345,6 +346,14 @@
 				[b]Note:[/b] This method is only available in engine builds with the BMP module enabled. By default, the BMP module is enabled, but it can be disabled at build-time using the [code]module_bmp_enabled=no[/code] SCons option.
 			</description>
 		</method>
+		<method name="load_dds_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<description>
+				Loads an image from the binary contents of a DDS file.
+				[b]Note:[/b] This method is only available in engine builds with the DDS module enabled. By default, the DDS module is enabled, but it can be disabled at build-time using the [code]module_dds_enabled=no[/code] SCons option.
+			</description>
+		</method>
 		<method name="load_from_file" qualifiers="static">
 			<return type="Image" />
 			<param index="0" name="path" type="String" />
@@ -435,7 +444,7 @@
 			<param index="0" name="square" type="bool" default="false" />
 			<param index="1" name="interpolation" type="int" enum="Image.Interpolation" default="1" />
 			<description>
-				Resizes the image to the nearest power of 2 for the width and height. If [param square] is [code]true[/code] then set width and height to be the same. New pixels are calculated using the [param interpolation] mode defined via [enum Interpolation] constants.
+				Resizes the image to the nearest power of 2 for the width and height. If [param square] is [code]true[/code], sets width and height to be the same. New pixels are calculated using the [param interpolation] mode defined via [enum Interpolation] constants.
 			</description>
 		</method>
 		<method name="rgbe_to_srgb">
@@ -457,6 +466,21 @@
 				Rotates the image by [code]180[/code] degrees. The width and height of the image must be greater than [code]1[/code].
 			</description>
 		</method>
+		<method name="save_dds" qualifiers="const">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Saves the image as a DDS (DirectDraw Surface) file to [param path]. DDS is a container format that can store textures in various compression formats, such as DXT1, DXT5, or BC7. This function will return [constant ERR_UNAVAILABLE] if Godot was compiled without the DDS module.
+				[b]Note:[/b] The DDS module may be disabled in certain builds, which means [method save_dds] will return [constant ERR_UNAVAILABLE] when it is called from an exported project.
+			</description>
+		</method>
+		<method name="save_dds_to_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Saves the image as a DDS (DirectDraw Surface) file to a byte array. DDS is a container format that can store textures in various compression formats, such as DXT1, DXT5, or BC7. This function will return an empty byte array if Godot was compiled without the DDS module.
+				[b]Note:[/b] The DDS module may be disabled in certain builds, which means [method save_dds_to_buffer] will return an empty byte array when it is called from an exported project.
+			</description>
+		</method>
 		<method name="save_exr" qualifiers="const">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
@@ -471,7 +495,7 @@
 			<param index="0" name="grayscale" type="bool" default="false" />
 			<description>
 				Saves the image as an EXR file to a byte array. If [param grayscale] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return an empty byte array if Godot was compiled without the TinyEXR module.
-				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return an empty byte array when it is called from an exported project.
+				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr_to_buffer] will return an empty byte array when it is called from an exported project.
 			</description>
 		</method>
 		<method name="save_jpg" qualifiers="const">
@@ -510,7 +534,7 @@
 			<param index="1" name="lossy" type="bool" default="false" />
 			<param index="2" name="quality" type="float" default="0.75" />
 			<description>
-				Saves the image as a WebP (Web Picture) file to the file at [param path]. By default it will save lossless. If [param lossy] is true, the image will be saved lossy, using the [param quality] setting between 0.0 and 1.0 (inclusive). Lossless WebP offers more efficient compression than PNG.
+				Saves the image as a WebP (Web Picture) file to the file at [param path]. By default it will save lossless. If [param lossy] is [code]true[/code], the image will be saved lossy, using the [param quality] setting between [code]0.0[/code] and [code]1.0[/code] (inclusive). Lossless WebP offers more efficient compression than PNG.
 				[b]Note:[/b] The WebP format is limited to a size of 16383×16383 pixels, while PNG can save larger images.
 			</description>
 		</method>
@@ -519,7 +543,7 @@
 			<param index="0" name="lossy" type="bool" default="false" />
 			<param index="1" name="quality" type="float" default="0.75" />
 			<description>
-				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [param lossy] is true, the image will be saved lossy, using the [param quality] setting between 0.0 and 1.0 (inclusive). Lossless WebP offers more efficient compression than PNG.
+				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [param lossy] is [code]true[/code], the image will be saved lossy, using the [param quality] setting between [code]0.0[/code] and [code]1.0[/code] (inclusive). Lossless WebP offers more efficient compression than PNG.
 				[b]Note:[/b] The WebP format is limited to a size of 16383×16383 pixels, while PNG can save larger images.
 			</description>
 		</method>

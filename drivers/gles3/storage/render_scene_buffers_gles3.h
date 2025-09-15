@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDER_SCENE_BUFFERS_GLES3_H
-#define RENDER_SCENE_BUFFERS_GLES3_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
@@ -94,7 +93,7 @@ private:
 	void _clear_back_buffers();
 	void _clear_glow_buffers();
 
-	void _rt_attach_textures(GLuint p_color, GLuint p_depth, GLsizei p_samples, uint32_t p_view_count);
+	void _rt_attach_textures(GLuint p_color, GLuint p_depth, GLsizei p_samples, uint32_t p_view_count, bool p_depth_has_stencil);
 	GLuint _rt_get_cached_fbo(GLuint p_color, GLuint p_depth, GLsizei p_samples, uint32_t p_view_count);
 
 public:
@@ -103,9 +102,10 @@ public:
 	virtual void configure(const RenderSceneBuffersConfiguration *p_config) override;
 	void configure_for_probe(Size2i p_size);
 
-	virtual void set_fsr_sharpness(float p_fsr_sharpness) override{};
-	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override{};
-	virtual void set_use_debanding(bool p_use_debanding) override{};
+	virtual void set_anisotropic_filtering_level(RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level) override {}
+	virtual void set_fsr_sharpness(float p_fsr_sharpness) override {}
+	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override {}
+	virtual void set_use_debanding(bool p_use_debanding) override {}
 	void set_apply_color_adjustments_in_post(bool p_apply_in_post);
 
 	void free_render_buffer_data();
@@ -163,5 +163,3 @@ public:
 };
 
 #endif // GLES3_ENABLED
-
-#endif // RENDER_SCENE_BUFFERS_GLES3_H

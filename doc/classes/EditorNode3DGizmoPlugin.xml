@@ -54,7 +54,7 @@
 			<return type="EditorNode3DGizmo" />
 			<param index="0" name="for_node_3d" type="Node3D" />
 			<description>
-				Override this method to return a custom [EditorNode3DGizmo] for the spatial nodes of your choice, return [code]null[/code] for the rest of nodes. See also [method _has_gizmo].
+				Override this method to return a custom [EditorNode3DGizmo] for the 3D nodes of your choice, return [code]null[/code] for the rest of nodes. See also [method _has_gizmo].
 			</description>
 		</method>
 		<method name="_get_gizmo_name" qualifiers="virtual const">

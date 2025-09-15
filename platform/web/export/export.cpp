@@ -32,14 +32,15 @@
 
 #include "export_plugin.h"
 
-#include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
+#include "editor/settings/editor_settings.h"
 
 void register_web_exporter_types() {
 	GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformWeb);
 }
 
 void register_web_exporter() {
+	// TODO: Move to editor_settings.cpp
 	EDITOR_DEF("export/web/http_host", "localhost");
 	EDITOR_DEF("export/web/http_port", 8060);
 	EDITOR_DEF("export/web/use_tls", false);

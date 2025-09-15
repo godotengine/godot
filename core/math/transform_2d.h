@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TRANSFORM_2D_H
-#define TRANSFORM_2D_H
+#pragma once
 
 #include "core/math/math_funcs.h"
 #include "core/math/rect2.h"
@@ -39,24 +38,31 @@
 class String;
 
 struct [[nodiscard]] Transform2D {
-	// Warning #1: basis of Transform2D is stored differently from Basis. In terms of columns array, the basis matrix looks like "on paper":
+	// WARNING: The basis of Transform2D is stored differently from Basis.
+	// In terms of columns array, the basis matrix looks like "on paper":
 	// M = (columns[0][0] columns[1][0])
 	//     (columns[0][1] columns[1][1])
-	// This is such that the columns, which can be interpreted as basis vectors of the coordinate system "painted" on the object, can be accessed as columns[i].
-	// Note that this is the opposite of the indices in mathematical texts, meaning: $M_{12}$ in a math book corresponds to columns[1][0] here.
+	// This is such that the columns, which can be interpreted as basis vectors
+	// of the coordinate system "painted" on the object, can be accessed as columns[i].
+	// NOTE: This is the opposite of the indices in mathematical texts,
+	// meaning: $M_{12}$ in a math book corresponds to columns[1][0] here.
 	// This requires additional care when working with explicit indices.
 	// See https://en.wikipedia.org/wiki/Row-_and_column-major_order for further reading.
 
-	// Warning #2: 2D be aware that unlike 3D code, 2D code uses a left-handed coordinate system: Y-axis points down,
-	// and angle is measure from +X to +Y in a clockwise-fashion.
+	// WARNING: Be aware that unlike 3D code, 2D code uses a left-handed coordinate system:
+	// Y-axis points down, and angle is measure from +X to +Y in a clockwise-fashion.
 
-	Vector2 columns[3];
+	Vector2 columns[3] = {
+		{ 1, 0 },
+		{ 0, 1 },
+		{ 0, 0 },
+	};
 
 	_FORCE_INLINE_ real_t tdotx(const Vector2 &p_v) const { return columns[0][0] * p_v.x + columns[1][0] * p_v.y; }
 	_FORCE_INLINE_ real_t tdoty(const Vector2 &p_v) const { return columns[0][1] * p_v.x + columns[1][1] * p_v.y; }
 
-	const Vector2 &operator[](int p_idx) const { return columns[p_idx]; }
-	Vector2 &operator[](int p_idx) { return columns[p_idx]; }
+	constexpr const Vector2 &operator[](int p_idx) const { return columns[p_idx]; }
+	constexpr Vector2 &operator[](int p_idx) { return columns[p_idx]; }
 
 	void invert();
 	Transform2D inverse() const;
@@ -98,19 +104,20 @@ struct [[nodiscard]] Transform2D {
 	Transform2D orthonormalized() const;
 	bool is_conformal() const;
 	bool is_equal_approx(const Transform2D &p_transform) const;
+	bool is_same(const Transform2D &p_transform) const;
 	bool is_finite() const;
 
 	Transform2D looking_at(const Vector2 &p_target) const;
 
-	bool operator==(const Transform2D &p_transform) const;
-	bool operator!=(const Transform2D &p_transform) const;
+	constexpr bool operator==(const Transform2D &p_transform) const;
+	constexpr bool operator!=(const Transform2D &p_transform) const;
 
 	void operator*=(const Transform2D &p_transform);
 	Transform2D operator*(const Transform2D &p_transform) const;
-	void operator*=(real_t p_val);
-	Transform2D operator*(real_t p_val) const;
-	void operator/=(real_t p_val);
-	Transform2D operator/(real_t p_val) const;
+	constexpr void operator*=(real_t p_val);
+	constexpr Transform2D operator*(real_t p_val) const;
+	constexpr void operator/=(real_t p_val);
+	constexpr Transform2D operator/(real_t p_val) const;
 
 	Transform2D interpolate_with(const Transform2D &p_transform, real_t p_c) const;
 
@@ -123,32 +130,68 @@ struct [[nodiscard]] Transform2D {
 	_FORCE_INLINE_ Vector<Vector2> xform(const Vector<Vector2> &p_array) const;
 	_FORCE_INLINE_ Vector<Vector2> xform_inv(const Vector<Vector2> &p_array) const;
 
-	operator String() const;
+	explicit operator String() const;
 
-	Transform2D(real_t p_xx, real_t p_xy, real_t p_yx, real_t p_yy, real_t p_ox, real_t p_oy) {
-		columns[0][0] = p_xx;
-		columns[0][1] = p_xy;
-		columns[1][0] = p_yx;
-		columns[1][1] = p_yy;
-		columns[2][0] = p_ox;
-		columns[2][1] = p_oy;
-	}
+	constexpr Transform2D(real_t p_xx, real_t p_xy, real_t p_yx, real_t p_yy, real_t p_ox, real_t p_oy) :
+			columns{
+				{ p_xx, p_xy },
+				{ p_yx, p_yy },
+				{ p_ox, p_oy },
+			} {}
 
-	Transform2D(const Vector2 &p_x, const Vector2 &p_y, const Vector2 &p_origin) {
-		columns[0] = p_x;
-		columns[1] = p_y;
-		columns[2] = p_origin;
-	}
+	constexpr Transform2D(const Vector2 &p_x, const Vector2 &p_y, const Vector2 &p_origin) :
+			columns{ p_x, p_y, p_origin } {}
 
 	Transform2D(real_t p_rot, const Vector2 &p_pos);
 
 	Transform2D(real_t p_rot, const Size2 &p_scale, real_t p_skew, const Vector2 &p_pos);
 
-	Transform2D() {
-		columns[0][0] = 1.0;
-		columns[1][1] = 1.0;
-	}
+	Transform2D() = default;
 };
+
+constexpr bool Transform2D::operator==(const Transform2D &p_transform) const {
+	for (int i = 0; i < 3; i++) {
+		if (columns[i] != p_transform.columns[i]) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+constexpr bool Transform2D::operator!=(const Transform2D &p_transform) const {
+	for (int i = 0; i < 3; i++) {
+		if (columns[i] != p_transform.columns[i]) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+constexpr void Transform2D::operator*=(real_t p_val) {
+	columns[0] *= p_val;
+	columns[1] *= p_val;
+	columns[2] *= p_val;
+}
+
+constexpr Transform2D Transform2D::operator*(real_t p_val) const {
+	Transform2D ret(*this);
+	ret *= p_val;
+	return ret;
+}
+
+constexpr void Transform2D::operator/=(real_t p_val) {
+	columns[0] /= p_val;
+	columns[1] /= p_val;
+	columns[2] /= p_val;
+}
+
+constexpr Transform2D Transform2D::operator/(real_t p_val) const {
+	Transform2D ret(*this);
+	ret /= p_val;
+	return ret;
+}
 
 Vector2 Transform2D::basis_xform(const Vector2 &p_vec) const {
 	return Vector2(
@@ -246,5 +289,3 @@ Vector<Vector2> Transform2D::xform_inv(const Vector<Vector2> &p_array) const {
 	}
 	return array;
 }
-
-#endif // TRANSFORM_2D_H

@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009                *
- * by the Xiph.Org Foundation and contributors http://www.xiph.org/ *
+ * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009,2025           *
+ * by the Xiph.Org Foundation and contributors                      *
+ * https://www.xiph.org/                                            *
  *                                                                  *
  ********************************************************************
 
   function:
-    last mod: $Id: internal.h 17337 2010-07-19 16:08:54Z tterribe $
 
  ********************************************************************/
 #if !defined(_state_H)
@@ -229,7 +229,7 @@ typedef struct oc_theora_state          oc_theora_state;
 
 
 
-#define OC_MV(_x,_y)         ((oc_mv)((_x)&0xFF|(_y)<<8))
+#define OC_MV(_x,_y)         ((oc_mv)((_x)&0xFF|(_y)*256))
 #define OC_MV_X(_mv)         ((signed char)(_mv))
 #define OC_MV_Y(_mv)         ((_mv)>>8)
 #define OC_MV_ADD(_mv1,_mv2) \
@@ -523,7 +523,7 @@ void oc_idct8x8_c(ogg_int16_t _y[64],ogg_int16_t _x[64],int _last_zzi);
 void oc_state_frag_recon_c(const oc_theora_state *_state,ptrdiff_t _fragi,
  int _pli,ogg_int16_t _dct_coeffs[128],int _last_zzi,ogg_uint16_t _dc_quant);
 void oc_state_loop_filter_frag_rows_c(const oc_theora_state *_state,
- signed char _bv[256],int _refi,int _pli,int _fragy0,int _fragy_end);
+ signed char _bvarray[256],int _refi,int _pli,int _fragy0,int _fragy_end);
 void oc_restore_fpu_c(void);
 
 /*We need a way to call a few encoder functions without introducing a link-time

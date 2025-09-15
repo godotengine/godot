@@ -32,10 +32,11 @@
 
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "servers/rendering/rendering_server_globals.h"
 
 #include "extensions/openxr_eye_gaze_interaction.h"
 #include "extensions/openxr_hand_interaction_extension.h"
+#include "extensions/openxr_performance_settings_extension.h"
+#include "servers/rendering/renderer_compositor.h"
 
 #include <openxr/openxr.h>
 
@@ -43,12 +44,19 @@ void OpenXRInterface::_bind_methods() {
 	// lifecycle signals
 	ADD_SIGNAL(MethodInfo("session_begun"));
 	ADD_SIGNAL(MethodInfo("session_stopping"));
+	ADD_SIGNAL(MethodInfo("session_synchronized"));
 	ADD_SIGNAL(MethodInfo("session_focussed"));
 	ADD_SIGNAL(MethodInfo("session_visible"));
 	ADD_SIGNAL(MethodInfo("session_loss_pending"));
 	ADD_SIGNAL(MethodInfo("instance_exiting"));
 	ADD_SIGNAL(MethodInfo("pose_recentered"));
 	ADD_SIGNAL(MethodInfo("refresh_rate_changed", PropertyInfo(Variant::FLOAT, "refresh_rate")));
+
+	ADD_SIGNAL(MethodInfo("cpu_level_changed", PropertyInfo(Variant::INT, "sub_domain"), PropertyInfo(Variant::INT, "from_level"), PropertyInfo(Variant::INT, "to_level")));
+	ADD_SIGNAL(MethodInfo("gpu_level_changed", PropertyInfo(Variant::INT, "sub_domain"), PropertyInfo(Variant::INT, "from_level"), PropertyInfo(Variant::INT, "to_level")));
+
+	// State
+	ClassDB::bind_method(D_METHOD("get_session_state"), &OpenXRInterface::get_session_state);
 
 	// Display refresh rate
 	ClassDB::bind_method(D_METHOD("get_display_refresh_rate"), &OpenXRInterface::get_display_refresh_rate);
@@ -104,9 +112,23 @@ void OpenXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vrs_strength"), &OpenXRInterface::get_vrs_strength);
 	ClassDB::bind_method(D_METHOD("set_vrs_strength", "strength"), &OpenXRInterface::set_vrs_strength);
 
+	// Performance settings.
+	ClassDB::bind_method(D_METHOD("set_cpu_level", "level"), &OpenXRInterface::set_cpu_level);
+	ClassDB::bind_method(D_METHOD("set_gpu_level", "level"), &OpenXRInterface::set_gpu_level);
+
 	ADD_GROUP("Vulkan VRS", "vrs_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vrs_min_radius", PROPERTY_HINT_RANGE, "1.0,100.0,1.0"), "set_vrs_min_radius", "get_vrs_min_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vrs_strength", PROPERTY_HINT_RANGE, "0.1,10.0,0.1"), "set_vrs_strength", "get_vrs_strength");
+
+	BIND_ENUM_CONSTANT(SESSION_STATE_UNKNOWN);
+	BIND_ENUM_CONSTANT(SESSION_STATE_IDLE);
+	BIND_ENUM_CONSTANT(SESSION_STATE_READY);
+	BIND_ENUM_CONSTANT(SESSION_STATE_SYNCHRONIZED);
+	BIND_ENUM_CONSTANT(SESSION_STATE_VISIBLE);
+	BIND_ENUM_CONSTANT(SESSION_STATE_FOCUSED);
+	BIND_ENUM_CONSTANT(SESSION_STATE_STOPPING);
+	BIND_ENUM_CONSTANT(SESSION_STATE_LOSS_PENDING);
+	BIND_ENUM_CONSTANT(SESSION_STATE_EXITING);
 
 	BIND_ENUM_CONSTANT(HAND_LEFT);
 	BIND_ENUM_CONSTANT(HAND_RIGHT);
@@ -149,6 +171,19 @@ void OpenXRInterface::_bind_methods() {
 	BIND_ENUM_CONSTANT(HAND_JOINT_LITTLE_TIP);
 	BIND_ENUM_CONSTANT(HAND_JOINT_MAX);
 
+	BIND_ENUM_CONSTANT(PERF_SETTINGS_LEVEL_POWER_SAVINGS);
+	BIND_ENUM_CONSTANT(PERF_SETTINGS_LEVEL_SUSTAINED_LOW);
+	BIND_ENUM_CONSTANT(PERF_SETTINGS_LEVEL_SUSTAINED_HIGH);
+	BIND_ENUM_CONSTANT(PERF_SETTINGS_LEVEL_BOOST);
+
+	BIND_ENUM_CONSTANT(PERF_SETTINGS_SUB_DOMAIN_COMPOSITING);
+	BIND_ENUM_CONSTANT(PERF_SETTINGS_SUB_DOMAIN_RENDERING);
+	BIND_ENUM_CONSTANT(PERF_SETTINGS_SUB_DOMAIN_THERMAL);
+
+	BIND_ENUM_CONSTANT(PERF_SETTINGS_NOTIF_LEVEL_NORMAL);
+	BIND_ENUM_CONSTANT(PERF_SETTINGS_NOTIF_LEVEL_WARNING);
+	BIND_ENUM_CONSTANT(PERF_SETTINGS_NOTIF_LEVEL_IMPAIRED);
+
 	BIND_BITFIELD_FLAG(HAND_JOINT_NONE);
 	BIND_BITFIELD_FLAG(HAND_JOINT_ORIENTATION_VALID);
 	BIND_BITFIELD_FLAG(HAND_JOINT_ORIENTATION_TRACKED);
@@ -160,11 +195,11 @@ void OpenXRInterface::_bind_methods() {
 
 StringName OpenXRInterface::get_name() const {
 	return StringName("OpenXR");
-};
+}
 
 uint32_t OpenXRInterface::get_capabilities() const {
 	return XRInterface::XR_VR + XRInterface::XR_STEREO;
-};
+}
 
 PackedStringArray OpenXRInterface::get_suggested_tracker_names() const {
 	// These are hardcoded in OpenXR, note that they will only be available if added to our action map
@@ -287,6 +322,13 @@ void OpenXRInterface::_load_action_map() {
 			if (ip.is_valid()) {
 				openxr_api->interaction_profile_clear_bindings(ip);
 
+				for (Ref<OpenXRBindingModifier> xr_binding_modifier : xr_interaction_profile->get_binding_modifiers()) {
+					PackedByteArray bm = xr_binding_modifier->get_ip_modification();
+					if (!bm.is_empty()) {
+						openxr_api->interaction_profile_add_modifier(ip, bm);
+					}
+				}
+
 				Array xr_bindings = xr_interaction_profile->get_bindings();
 				for (int j = 0; j < xr_bindings.size(); j++) {
 					Ref<OpenXRIPBinding> xr_binding = xr_bindings[j];
@@ -300,9 +342,17 @@ void OpenXRInterface::_load_action_map() {
 						continue;
 					}
 
-					PackedStringArray paths = xr_binding->get_paths();
-					for (int k = 0; k < paths.size(); k++) {
-						openxr_api->interaction_profile_add_binding(ip, action->action_rid, paths[k]);
+					int binding_no = openxr_api->interaction_profile_add_binding(ip, action->action_rid, xr_binding->get_binding_path());
+					if (binding_no >= 0) {
+						for (Ref<OpenXRBindingModifier> xr_binding_modifier : xr_binding->get_binding_modifiers()) {
+							// Binding modifiers on bindings can be added to the interaction profile.
+							PackedByteArray bm = xr_binding_modifier->get_ip_modification();
+							if (!bm.is_empty()) {
+								openxr_api->interaction_profile_add_modifier(ip, bm);
+							}
+
+							// And possibly in the future on the binding itself, we're just preparing for that eventuality.
+						}
 					}
 				}
 
@@ -596,8 +646,8 @@ void OpenXRInterface::free_trackers() {
 void OpenXRInterface::free_interaction_profiles() {
 	ERR_FAIL_NULL(openxr_api);
 
-	for (int i = 0; i < interaction_profiles.size(); i++) {
-		openxr_api->interaction_profile_free(interaction_profiles[i]);
+	for (const RID &interaction_profile : interaction_profiles) {
+		openxr_api->interaction_profile_free(interaction_profile);
 	}
 	interaction_profiles.clear();
 }
@@ -614,7 +664,7 @@ bool OpenXRInterface::initialize_on_startup() const {
 
 bool OpenXRInterface::is_initialized() const {
 	return initialized;
-};
+}
 
 bool OpenXRInterface::initialize() {
 	XRServer *xr_server = XRServer::get_singleton();
@@ -690,6 +740,8 @@ Dictionary OpenXRInterface::get_system_info() {
 	if (openxr_api) {
 		dict[SNAME("XRRuntimeName")] = openxr_api->get_runtime_name();
 		dict[SNAME("XRRuntimeVersion")] = openxr_api->get_runtime_version();
+		dict[SNAME("OpenXRSystemName")] = openxr_api->get_system_name();
+		dict[SNAME("OpenXRVendorID")] = openxr_api->get_vendor_id();
 	}
 
 	return dict;
@@ -715,6 +767,8 @@ XRInterface::PlayAreaMode OpenXRInterface::get_play_area_mode() const {
 		return XRInterface::XR_PLAY_AREA_ROOMSCALE;
 	} else if (reference_space == XR_REFERENCE_SPACE_TYPE_STAGE) {
 		return XRInterface::XR_PLAY_AREA_STAGE;
+	} else if (reference_space == XR_REFERENCE_SPACE_TYPE_MAX_ENUM) {
+		return XRInterface::XR_PLAY_AREA_CUSTOM;
 	}
 
 	return XRInterface::XR_PLAY_AREA_UNKNOWN;
@@ -1040,6 +1094,14 @@ Projection OpenXRInterface::get_projection_for_view(uint32_t p_view, double p_as
 	return cm;
 }
 
+Rect2i OpenXRInterface::get_render_region() {
+	if (openxr_api) {
+		return openxr_api->get_render_region();
+	} else {
+		return Rect2i();
+	}
+}
+
 RID OpenXRInterface::get_color_texture() {
 	if (openxr_api) {
 		return openxr_api->get_color_texture();
@@ -1053,6 +1115,30 @@ RID OpenXRInterface::get_depth_texture() {
 		return openxr_api->get_depth_texture();
 	} else {
 		return RID();
+	}
+}
+
+RID OpenXRInterface::get_velocity_texture() {
+	if (openxr_api) {
+		return openxr_api->get_velocity_texture();
+	} else {
+		return RID();
+	}
+}
+
+RID OpenXRInterface::get_velocity_depth_texture() {
+	if (openxr_api) {
+		return openxr_api->get_velocity_depth_texture();
+	} else {
+		return RID();
+	}
+}
+
+Size2i OpenXRInterface::get_velocity_target_size() {
+	if (openxr_api) {
+		return openxr_api->get_velocity_target_size();
+	} else {
+		return Size2i();
 	}
 }
 
@@ -1136,6 +1222,12 @@ void OpenXRInterface::process() {
 
 	if (head.is_valid()) {
 		head->set_pose("default", head_transform, head_linear_velocity, head_angular_velocity, head_confidence);
+	}
+
+	if (reference_stage_changing) {
+		// Now that we have updated tracking information in our updated reference space, trigger our pose recentered signal.
+		emit_signal(SNAME("pose_recentered"));
+		reference_stage_changing = false;
 	}
 }
 
@@ -1221,15 +1313,10 @@ Array OpenXRInterface::get_supported_environment_blend_modes() {
 		return modes;
 	}
 
-	uint32_t count = 0;
-	const XrEnvironmentBlendMode *env_blend_modes = openxr_api->get_supported_environment_blend_modes(count);
+	const Vector<XrEnvironmentBlendMode> env_blend_modes = openxr_api->get_supported_environment_blend_modes();
 
-	if (!env_blend_modes) {
-		return modes;
-	}
-
-	for (uint32_t i = 0; i < count; i++) {
-		switch (env_blend_modes[i]) {
+	for (const XrEnvironmentBlendMode &env_blend_mode : env_blend_modes) {
+		switch (env_blend_mode) {
 			case XR_ENVIRONMENT_BLEND_MODE_OPAQUE:
 				modes.push_back(XR_ENV_BLEND_MODE_OPAQUE);
 				break;
@@ -1240,7 +1327,7 @@ Array OpenXRInterface::get_supported_environment_blend_modes() {
 				modes.push_back(XR_ENV_BLEND_MODE_ALPHA_BLEND);
 				break;
 			default:
-				WARN_PRINT("Unsupported blend mode found: " + String::num_int64(int64_t(env_blend_modes[i])));
+				WARN_PRINT(vformat("Unsupported blend mode found: %s.", String::num_int64(int64_t(env_blend_mode))));
 		}
 	}
 
@@ -1302,6 +1389,10 @@ void OpenXRInterface::on_state_visible() {
 	emit_signal(SNAME("session_visible"));
 }
 
+void OpenXRInterface::on_state_synchronized() {
+	emit_signal(SNAME("session_synchronized"));
+}
+
 void OpenXRInterface::on_state_focused() {
 	emit_signal(SNAME("session_focussed"));
 }
@@ -1318,12 +1409,20 @@ void OpenXRInterface::on_state_exiting() {
 	emit_signal(SNAME("instance_exiting"));
 }
 
-void OpenXRInterface::on_pose_recentered() {
-	emit_signal(SNAME("pose_recentered"));
+void OpenXRInterface::on_reference_space_change_pending() {
+	reference_stage_changing = true;
 }
 
 void OpenXRInterface::on_refresh_rate_changes(float p_new_rate) {
 	emit_signal(SNAME("refresh_rate_changed"), p_new_rate);
+}
+
+OpenXRInterface::SessionState OpenXRInterface::get_session_state() {
+	if (openxr_api) {
+		return (SessionState)openxr_api->get_session_state();
+	}
+
+	return SESSION_STATE_UNKNOWN;
 }
 
 /** Hand tracking. */
@@ -1383,9 +1482,10 @@ OpenXRInterface::HandTrackedSource OpenXRInterface::get_hand_tracking_source(con
 			case OpenXRHandTrackingExtension::OPENXR_SOURCE_CONTROLLER:
 				return HAND_TRACKED_SOURCE_CONTROLLER;
 			case OpenXRHandTrackingExtension::OPENXR_SOURCE_UNKNOWN:
+			case OpenXRHandTrackingExtension::OPENXR_SOURCE_NOT_TRACKED:
 				return HAND_TRACKED_SOURCE_UNKNOWN;
 			default:
-				ERR_FAIL_V_MSG(HAND_TRACKED_SOURCE_UNKNOWN, "Unknown hand tracking source returned by OpenXR");
+				ERR_FAIL_V_MSG(HAND_TRACKED_SOURCE_UNKNOWN, "Unknown hand tracking source (" + String::num_int64(source) + ") returned by OpenXR");
 		}
 	}
 
@@ -1393,7 +1493,7 @@ OpenXRInterface::HandTrackedSource OpenXRInterface::get_hand_tracking_source(con
 }
 
 BitField<OpenXRInterface::HandJointFlags> OpenXRInterface::get_hand_joint_flags(Hand p_hand, HandJoints p_joint) const {
-	BitField<OpenXRInterface::HandJointFlags> bits;
+	BitField<OpenXRInterface::HandJointFlags> bits = HAND_JOINT_NONE;
 
 	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
 	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
@@ -1473,6 +1573,11 @@ RID OpenXRInterface::get_vrs_texture() {
 		return RID();
 	}
 
+	RID density_map = openxr_api->get_density_map_texture();
+	if (density_map.is_valid()) {
+		return density_map;
+	}
+
 	PackedVector2Array eye_foci;
 
 	Size2 target_size = get_render_target_size();
@@ -1483,7 +1588,44 @@ RID OpenXRInterface::get_vrs_texture() {
 		eye_foci.push_back(openxr_api->get_eye_focus(v, aspect_ratio));
 	}
 
+	xr_vrs.set_vrs_render_region(get_render_region());
+
 	return xr_vrs.make_vrs_texture(target_size, eye_foci);
+}
+
+XRInterface::VRSTextureFormat OpenXRInterface::get_vrs_texture_format() {
+	if (!openxr_api) {
+		return XR_VRS_TEXTURE_FORMAT_UNIFIED;
+	}
+
+	RID density_map = openxr_api->get_density_map_texture();
+	if (density_map.is_valid()) {
+		return XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP;
+	}
+
+	return XR_VRS_TEXTURE_FORMAT_UNIFIED;
+}
+
+void OpenXRInterface::set_cpu_level(PerfSettingsLevel p_level) {
+	OpenXRPerformanceSettingsExtension *performance_settings_ext = OpenXRPerformanceSettingsExtension::get_singleton();
+	if (performance_settings_ext && performance_settings_ext->is_available()) {
+		performance_settings_ext->set_cpu_level(p_level);
+	}
+}
+
+void OpenXRInterface::set_gpu_level(PerfSettingsLevel p_level) {
+	OpenXRPerformanceSettingsExtension *performance_settings_ext = OpenXRPerformanceSettingsExtension::get_singleton();
+	if (performance_settings_ext && performance_settings_ext->is_available()) {
+		performance_settings_ext->set_gpu_level(p_level);
+	}
+}
+
+void OpenXRInterface::on_cpu_level_changed(PerfSettingsSubDomain p_sub_domain, PerfSettingsNotificationLevel p_from_level, PerfSettingsNotificationLevel p_to_level) {
+	emit_signal(SNAME("cpu_level_changed"), p_sub_domain, p_from_level, p_to_level);
+}
+
+void OpenXRInterface::on_gpu_level_changed(PerfSettingsSubDomain p_sub_domain, PerfSettingsNotificationLevel p_from_level, PerfSettingsNotificationLevel p_to_level) {
+	emit_signal(SNAME("gpu_level_changed"), p_sub_domain, p_from_level, p_to_level);
 }
 
 OpenXRInterface::OpenXRInterface() {

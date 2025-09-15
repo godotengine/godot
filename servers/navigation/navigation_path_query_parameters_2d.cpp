@@ -31,108 +31,139 @@
 #include "navigation_path_query_parameters_2d.h"
 
 void NavigationPathQueryParameters2D::set_pathfinding_algorithm(const NavigationPathQueryParameters2D::PathfindingAlgorithm p_pathfinding_algorithm) {
-	switch (p_pathfinding_algorithm) {
-		case PATHFINDING_ALGORITHM_ASTAR: {
-			parameters.pathfinding_algorithm = NavigationUtilities::PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR;
-		} break;
-		default: {
-			WARN_PRINT_ONCE("No match for used PathfindingAlgorithm - fallback to default");
-			parameters.pathfinding_algorithm = NavigationUtilities::PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR;
-		} break;
-	}
+	pathfinding_algorithm = p_pathfinding_algorithm;
 }
 
 NavigationPathQueryParameters2D::PathfindingAlgorithm NavigationPathQueryParameters2D::get_pathfinding_algorithm() const {
-	switch (parameters.pathfinding_algorithm) {
-		case NavigationUtilities::PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR:
-			return PATHFINDING_ALGORITHM_ASTAR;
-		default:
-			WARN_PRINT_ONCE("No match for used PathfindingAlgorithm - fallback to default");
-			return PATHFINDING_ALGORITHM_ASTAR;
-	}
+	return pathfinding_algorithm;
 }
 
 void NavigationPathQueryParameters2D::set_path_postprocessing(const NavigationPathQueryParameters2D::PathPostProcessing p_path_postprocessing) {
-	switch (p_path_postprocessing) {
-		case PATH_POSTPROCESSING_CORRIDORFUNNEL: {
-			parameters.path_postprocessing = NavigationUtilities::PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL;
-		} break;
-		case PATH_POSTPROCESSING_EDGECENTERED: {
-			parameters.path_postprocessing = NavigationUtilities::PathPostProcessing::PATH_POSTPROCESSING_EDGECENTERED;
-		} break;
-		default: {
-			WARN_PRINT_ONCE("No match for used PathPostProcessing - fallback to default");
-			parameters.path_postprocessing = NavigationUtilities::PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL;
-		} break;
-	}
+	path_postprocessing = p_path_postprocessing;
 }
 
 NavigationPathQueryParameters2D::PathPostProcessing NavigationPathQueryParameters2D::get_path_postprocessing() const {
-	switch (parameters.path_postprocessing) {
-		case NavigationUtilities::PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL:
-			return PATH_POSTPROCESSING_CORRIDORFUNNEL;
-		case NavigationUtilities::PathPostProcessing::PATH_POSTPROCESSING_EDGECENTERED:
-			return PATH_POSTPROCESSING_EDGECENTERED;
-		default:
-			WARN_PRINT_ONCE("No match for used PathPostProcessing - fallback to default");
-			return PATH_POSTPROCESSING_CORRIDORFUNNEL;
-	}
+	return path_postprocessing;
 }
 
-void NavigationPathQueryParameters2D::set_map(const RID &p_map) {
-	parameters.map = p_map;
+void NavigationPathQueryParameters2D::set_map(RID p_map) {
+	map = p_map;
 }
 
-const RID &NavigationPathQueryParameters2D::get_map() const {
-	return parameters.map;
+RID NavigationPathQueryParameters2D::get_map() const {
+	return map;
 }
 
-void NavigationPathQueryParameters2D::set_start_position(const Vector2 p_start_position) {
-	parameters.start_position = Vector3(p_start_position.x, 0.0, p_start_position.y);
+void NavigationPathQueryParameters2D::set_start_position(Vector2 p_start_position) {
+	start_position = p_start_position;
 }
 
 Vector2 NavigationPathQueryParameters2D::get_start_position() const {
-	return Vector2(parameters.start_position.x, parameters.start_position.z);
+	return start_position;
 }
 
-void NavigationPathQueryParameters2D::set_target_position(const Vector2 p_target_position) {
-	parameters.target_position = Vector3(p_target_position.x, 0.0, p_target_position.y);
+void NavigationPathQueryParameters2D::set_target_position(Vector2 p_target_position) {
+	target_position = p_target_position;
 }
 
 Vector2 NavigationPathQueryParameters2D::get_target_position() const {
-	return Vector2(parameters.target_position.x, parameters.target_position.z);
+	return target_position;
 }
 
 void NavigationPathQueryParameters2D::set_navigation_layers(uint32_t p_navigation_layers) {
-	parameters.navigation_layers = p_navigation_layers;
+	navigation_layers = p_navigation_layers;
 }
 
 uint32_t NavigationPathQueryParameters2D::get_navigation_layers() const {
-	return parameters.navigation_layers;
+	return navigation_layers;
 }
 
 void NavigationPathQueryParameters2D::set_metadata_flags(BitField<NavigationPathQueryParameters2D::PathMetadataFlags> p_flags) {
-	parameters.metadata_flags = (int64_t)p_flags;
+	metadata_flags = (int64_t)p_flags;
 }
 
 BitField<NavigationPathQueryParameters2D::PathMetadataFlags> NavigationPathQueryParameters2D::get_metadata_flags() const {
-	return (int64_t)parameters.metadata_flags;
+	return (int64_t)metadata_flags;
 }
 
 void NavigationPathQueryParameters2D::set_simplify_path(bool p_enabled) {
-	parameters.simplify_path = p_enabled;
+	simplify_path = p_enabled;
 }
 
 bool NavigationPathQueryParameters2D::get_simplify_path() const {
-	return parameters.simplify_path;
+	return simplify_path;
 }
 
 void NavigationPathQueryParameters2D::set_simplify_epsilon(real_t p_epsilon) {
-	parameters.simplify_epsilon = MAX(0.0, p_epsilon);
+	simplify_epsilon = MAX(0.0, p_epsilon);
 }
 
 real_t NavigationPathQueryParameters2D::get_simplify_epsilon() const {
-	return parameters.simplify_epsilon;
+	return simplify_epsilon;
+}
+
+void NavigationPathQueryParameters2D::set_included_regions(const TypedArray<RID> &p_regions) {
+	_included_regions.resize(p_regions.size());
+	for (uint32_t i = 0; i < _included_regions.size(); i++) {
+		_included_regions[i] = p_regions[i];
+	}
+}
+
+TypedArray<RID> NavigationPathQueryParameters2D::get_included_regions() const {
+	TypedArray<RID> r_regions;
+	r_regions.resize(_included_regions.size());
+	for (uint32_t i = 0; i < _included_regions.size(); i++) {
+		r_regions[i] = _included_regions[i];
+	}
+	return r_regions;
+}
+
+void NavigationPathQueryParameters2D::set_excluded_regions(const TypedArray<RID> &p_regions) {
+	_excluded_regions.resize(p_regions.size());
+	for (uint32_t i = 0; i < _excluded_regions.size(); i++) {
+		_excluded_regions[i] = p_regions[i];
+	}
+}
+
+TypedArray<RID> NavigationPathQueryParameters2D::get_excluded_regions() const {
+	TypedArray<RID> r_regions;
+	r_regions.resize(_excluded_regions.size());
+	for (uint32_t i = 0; i < _excluded_regions.size(); i++) {
+		r_regions[i] = _excluded_regions[i];
+	}
+	return r_regions;
+}
+
+void NavigationPathQueryParameters2D::set_path_return_max_length(float p_length) {
+	path_return_max_length = MAX(0.0, p_length);
+}
+
+float NavigationPathQueryParameters2D::get_path_return_max_length() const {
+	return path_return_max_length;
+}
+
+void NavigationPathQueryParameters2D::set_path_return_max_radius(float p_radius) {
+	path_return_max_radius = MAX(0.0, p_radius);
+}
+
+float NavigationPathQueryParameters2D::get_path_return_max_radius() const {
+	return path_return_max_radius;
+}
+
+void NavigationPathQueryParameters2D::set_path_search_max_polygons(int p_max_polygons) {
+	path_search_max_polygons = p_max_polygons;
+}
+
+int NavigationPathQueryParameters2D::get_path_search_max_polygons() const {
+	return path_search_max_polygons;
+}
+
+void NavigationPathQueryParameters2D::set_path_search_max_distance(float p_distance) {
+	path_search_max_distance = MAX(0.0, p_distance);
+}
+
+float NavigationPathQueryParameters2D::get_path_search_max_distance() const {
+	return path_search_max_distance;
 }
 
 void NavigationPathQueryParameters2D::_bind_methods() {
@@ -163,20 +194,45 @@ void NavigationPathQueryParameters2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_simplify_epsilon", "epsilon"), &NavigationPathQueryParameters2D::set_simplify_epsilon);
 	ClassDB::bind_method(D_METHOD("get_simplify_epsilon"), &NavigationPathQueryParameters2D::get_simplify_epsilon);
 
+	ClassDB::bind_method(D_METHOD("set_included_regions", "regions"), &NavigationPathQueryParameters2D::set_included_regions);
+	ClassDB::bind_method(D_METHOD("get_included_regions"), &NavigationPathQueryParameters2D::get_included_regions);
+
+	ClassDB::bind_method(D_METHOD("set_excluded_regions", "regions"), &NavigationPathQueryParameters2D::set_excluded_regions);
+	ClassDB::bind_method(D_METHOD("get_excluded_regions"), &NavigationPathQueryParameters2D::get_excluded_regions);
+
+	ClassDB::bind_method(D_METHOD("set_path_return_max_length", "length"), &NavigationPathQueryParameters2D::set_path_return_max_length);
+	ClassDB::bind_method(D_METHOD("get_path_return_max_length"), &NavigationPathQueryParameters2D::get_path_return_max_length);
+
+	ClassDB::bind_method(D_METHOD("set_path_return_max_radius", "radius"), &NavigationPathQueryParameters2D::set_path_return_max_radius);
+	ClassDB::bind_method(D_METHOD("get_path_return_max_radius"), &NavigationPathQueryParameters2D::get_path_return_max_radius);
+
+	ClassDB::bind_method(D_METHOD("set_path_search_max_polygons", "max_polygons"), &NavigationPathQueryParameters2D::set_path_search_max_polygons);
+	ClassDB::bind_method(D_METHOD("get_path_search_max_polygons"), &NavigationPathQueryParameters2D::get_path_search_max_polygons);
+
+	ClassDB::bind_method(D_METHOD("set_path_search_max_distance", "distance"), &NavigationPathQueryParameters2D::set_path_search_max_distance);
+	ClassDB::bind_method(D_METHOD("get_path_search_max_distance"), &NavigationPathQueryParameters2D::get_path_search_max_distance);
+
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "map"), "set_map", "get_map");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "start_position"), "set_start_position", "get_start_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "target_position"), "set_target_position", "get_target_position");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pathfinding_algorithm", PROPERTY_HINT_ENUM, "AStar"), "set_pathfinding_algorithm", "get_pathfinding_algorithm");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_postprocessing", PROPERTY_HINT_ENUM, "Corridorfunnel,Edgecentered"), "set_path_postprocessing", "get_path_postprocessing");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_postprocessing", PROPERTY_HINT_ENUM, "Corridorfunnel,Edgecentered,None"), "set_path_postprocessing", "get_path_postprocessing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "metadata_flags", PROPERTY_HINT_FLAGS, "Include Types,Include RIDs,Include Owners"), "set_metadata_flags", "get_metadata_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "simplify_path"), "set_simplify_path", "get_simplify_path");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "simplify_epsilon"), "set_simplify_epsilon", "get_simplify_epsilon");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "excluded_regions", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_excluded_regions", "get_excluded_regions");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "included_regions", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_included_regions", "get_included_regions");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_return_max_length"), "set_path_return_max_length", "get_path_return_max_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_return_max_radius"), "set_path_return_max_radius", "get_path_return_max_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_search_max_polygons"), "set_path_search_max_polygons", "get_path_search_max_polygons");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_search_max_distance"), "set_path_search_max_distance", "get_path_search_max_distance");
 
 	BIND_ENUM_CONSTANT(PATHFINDING_ALGORITHM_ASTAR);
 
 	BIND_ENUM_CONSTANT(PATH_POSTPROCESSING_CORRIDORFUNNEL);
 	BIND_ENUM_CONSTANT(PATH_POSTPROCESSING_EDGECENTERED);
+	BIND_ENUM_CONSTANT(PATH_POSTPROCESSING_NONE);
 
 	BIND_BITFIELD_FLAG(PATH_METADATA_INCLUDE_NONE);
 	BIND_BITFIELD_FLAG(PATH_METADATA_INCLUDE_TYPES);

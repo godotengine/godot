@@ -51,7 +51,7 @@ struct _IP_ResolverPrivate {
 			response.clear();
 			type = IP::TYPE_NONE;
 			hostname = "";
-		};
+		}
 
 		QueueItem() {
 			clear();
@@ -201,7 +201,7 @@ IPAddress IP::get_resolve_item_address(ResolverID p_id) const {
 	MutexLock lock(resolver->mutex);
 
 	if (resolver->queue[p_id].status.get() != IP::RESOLVER_STATUS_DONE) {
-		ERR_PRINT("Resolve of '" + resolver->queue[p_id].hostname + "'' didn't complete yet.");
+		ERR_PRINT(vformat("Resolve of '%s' didn't complete yet.", resolver->queue[p_id].hostname));
 		return IPAddress();
 	}
 
@@ -220,7 +220,7 @@ Array IP::get_resolve_item_addresses(ResolverID p_id) const {
 	MutexLock lock(resolver->mutex);
 
 	if (resolver->queue[p_id].status.get() != IP::RESOLVER_STATUS_DONE) {
-		ERR_PRINT("Resolve of '" + resolver->queue[p_id].hostname + "'' didn't complete yet.");
+		ERR_PRINT(vformat("Resolve of '%s' didn't complete yet.", resolver->queue[p_id].hostname));
 		return Array();
 	}
 
@@ -259,7 +259,7 @@ PackedStringArray IP::_get_local_addresses() const {
 	List<IPAddress> ip_addresses;
 	get_local_addresses(&ip_addresses);
 	for (const IPAddress &E : ip_addresses) {
-		addresses.push_back(E);
+		addresses.push_back(String(E));
 	}
 
 	return addresses;
@@ -324,8 +324,6 @@ void IP::_bind_methods() {
 	BIND_ENUM_CONSTANT(TYPE_ANY);
 }
 
-IP *IP::singleton = nullptr;
-
 IP *IP::get_singleton() {
 	return singleton;
 }
@@ -333,7 +331,7 @@ IP *IP::get_singleton() {
 IP *(*IP::_create)() = nullptr;
 
 IP *IP::create() {
-	ERR_FAIL_COND_V_MSG(singleton, nullptr, "IP singleton already exist.");
+	ERR_FAIL_COND_V_MSG(singleton, nullptr, "IP singleton already exists.");
 	ERR_FAIL_NULL_V(_create, nullptr);
 	return _create();
 }

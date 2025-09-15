@@ -66,14 +66,14 @@ static void smbFft(float *fftBuffer, long fftFrameSize, long sign)
 			*p2 = temp;
 		}
 	}
-	for (k = 0, le = 2; k < (long)(log((double)fftFrameSize) / log(2.) + .5); k++) {
+	for (k = 0, le = 2; k < (long)(std::log((double)fftFrameSize) / std::log(2.) + .5); k++) {
 		le <<= 1;
 		le2 = le >> 1;
 		ur = 1.0;
 		ui = 0.0;
-		arg = Math_PI / (le2 >> 1);
-		wr = cos(arg);
-		wi = sign * sin(arg);
+		arg = Math::PI / (le2 >> 1);
+		wr = std::cos(arg);
+		wi = sign * std::sin(arg);
 		for (j = 0; j < le2; j += 2) {
 			p1r = fftBuffer + j;
 			p1i = p1r + 1;
@@ -110,7 +110,7 @@ void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames
 	while (p_frame_count) {
 		int to_fill = fft_size * 2 - temporal_fft_pos;
 		to_fill = MIN(to_fill, p_frame_count);
-		const double to_fill_step = Math_TAU / (double)fft_size;
+		const double to_fill_step = Math::TAU / (double)fft_size;
 
 		float *fftw = temporal_fft.ptrw();
 		for (int i = 0; i < to_fill; i++) { //left and right buffers
@@ -145,8 +145,8 @@ void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames
 	}
 
 	//determine time of capture
-	double remainer_sec = (temporal_fft_pos / mix_rate); //subtract remainder from mix time
-	last_fft_time = time - uint64_t(remainer_sec * 1000000.0);
+	double remainder_sec = (temporal_fft_pos / mix_rate); //subtract remainder from mix time
+	last_fft_time = time - uint64_t(remainder_sec * 1000000.0);
 }
 
 void AudioEffectSpectrumAnalyzerInstance::_bind_methods() {

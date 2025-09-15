@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_OPENGL_EXTENSION_H
-#define OPENXR_OPENGL_EXTENSION_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
@@ -56,6 +55,7 @@ public:
 	virtual void cleanup_swapchain_graphics_data(void **p_swapchain_graphics_data) override;
 	virtual bool create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) override;
 	virtual RID get_texture(void *p_swapchain_graphics_data, int p_image_index) override;
+	virtual RID get_density_map(void *p_swapchain_graphics_data, int p_image_index) override { return RID(); }
 
 private:
 	static OpenXROpenGLExtension *singleton;
@@ -64,8 +64,17 @@ private:
 	static XrGraphicsBindingOpenGLWin32KHR graphics_binding_gl;
 #elif defined(ANDROID_ENABLED)
 	static XrGraphicsBindingOpenGLESAndroidKHR graphics_binding_gl;
-#else // Linux/X11
+#elif defined(LINUXBSD_ENABLED)
+#ifdef X11_ENABLED
 	static XrGraphicsBindingOpenGLXlibKHR graphics_binding_gl;
+#endif
+#if defined(EGL_ENABLED) && defined(WAYLAND_ENABLED)
+	static XrGraphicsBindingEGLMNDX graphics_binding_egl;
+
+	bool egl_extension_enabled = false;
+#endif
+#else
+#error "OpenXR with OpenGL isn't supported on this platform"
 #endif
 
 	struct SwapchainGraphicsData {
@@ -84,5 +93,3 @@ private:
 };
 
 #endif // GLES3_ENABLED
-
-#endif // OPENXR_OPENGL_EXTENSION_H

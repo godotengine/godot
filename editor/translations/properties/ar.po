@@ -241,15 +241,6 @@ msgstr "فئة الجلسة"
 msgid "Mix With Others"
 msgstr "ختلط مع الآخرين"
 
-msgid "Editor"
-msgstr "المحرّر"
-
-msgid "Script"
-msgstr "سكربت"
-
-msgid "Search in File Extensions"
-msgstr "البحث في امتدادات الملف"
-
 msgid "Subwindows"
 msgstr "النوافذ الفرعية"
 
@@ -735,6 +726,9 @@ msgstr "أظهر الوضع"
 
 msgid "Interface"
 msgstr "واجهة المستخدم"
+
+msgid "Editor"
+msgstr "المحرّر"
 
 msgid "Editor Language"
 msgstr "لغة المحرر"
@@ -1669,6 +1663,9 @@ msgstr "مسار المفتاح الخاص لSSH"
 msgid "Main Run Args"
 msgstr "معاملات المشهد الرئيس"
 
+msgid "Script"
+msgstr "سكربت"
+
 msgid "Templates Search Path"
 msgstr "مسار البحث عن القوالب"
 
@@ -1710,6 +1707,9 @@ msgstr "يشير"
 
 msgid "Android"
 msgstr "أندرويد"
+
+msgid "Search in File Extensions"
+msgstr "البحث في امتدادات الملف"
 
 msgid "Fullsize"
 msgstr "الحجم الكامل"

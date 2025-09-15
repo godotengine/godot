@@ -188,7 +188,7 @@ int Callable::get_argument_count(bool *r_is_valid) const {
 	if (is_custom()) {
 		bool valid = false;
 		return custom->get_argument_count(r_is_valid ? *r_is_valid : valid);
-	} else if (!is_null()) {
+	} else if (is_valid()) {
 		return get_object()->get_method_argument_count(method, r_is_valid);
 	} else {
 		if (r_is_valid) {
@@ -206,25 +206,31 @@ int Callable::get_bound_arguments_count() const {
 	}
 }
 
-void Callable::get_bound_arguments_ref(Vector<Variant> &r_arguments, int &r_argcount) const {
+void Callable::get_bound_arguments_ref(Vector<Variant> &r_arguments) const {
 	if (!is_null() && is_custom()) {
-		custom->get_bound_arguments(r_arguments, r_argcount);
+		custom->get_bound_arguments(r_arguments);
 	} else {
 		r_arguments.clear();
-		r_argcount = 0;
 	}
 }
 
 Array Callable::get_bound_arguments() const {
 	Vector<Variant> arr;
-	int ac;
-	get_bound_arguments_ref(arr, ac);
+	get_bound_arguments_ref(arr);
 	Array ret;
 	ret.resize(arr.size());
 	for (int i = 0; i < arr.size(); i++) {
 		ret[i] = arr[i];
 	}
 	return ret;
+}
+
+int Callable::get_unbound_arguments_count() const {
+	if (!is_null() && is_custom()) {
+		return custom->get_unbound_arguments_count();
+	} else {
+		return 0;
+	}
 }
 
 CallableCustom *Callable::get_custom() const {
@@ -315,31 +321,32 @@ bool Callable::operator<(const Callable &p_callable) const {
 }
 
 void Callable::operator=(const Callable &p_callable) {
+	CallableCustom *cleanup_ref = nullptr;
 	if (is_custom()) {
 		if (p_callable.is_custom()) {
 			if (custom == p_callable.custom) {
 				return;
 			}
 		}
-
-		if (custom->ref_count.unref()) {
-			memdelete(custom);
-			custom = nullptr;
-		}
+		cleanup_ref = custom;
+		custom = nullptr;
 	}
 
 	if (p_callable.is_custom()) {
 		method = StringName();
-		if (!p_callable.custom->ref_count.ref()) {
-			object = 0;
-		} else {
-			object = 0;
+		object = 0;
+		if (p_callable.custom->ref_count.ref()) {
 			custom = p_callable.custom;
 		}
 	} else {
 		method = p_callable.method;
 		object = p_callable.object;
 	}
+
+	if (cleanup_ref != nullptr && cleanup_ref->ref_count.unref()) {
+		memdelete(cleanup_ref);
+	}
+	cleanup_ref = nullptr;
 }
 
 Callable::operator String() const {
@@ -354,8 +361,12 @@ Callable::operator String() const {
 		if (base) {
 			String class_name = base->get_class();
 			Ref<Script> script = base->get_script();
-			if (script.is_valid() && script->get_path().is_resource_file()) {
-				class_name += "(" + script->get_path().get_file() + ")";
+			if (script.is_valid()) {
+				if (!script->get_global_name().is_empty()) {
+					class_name += "(" + script->get_global_name() + ")";
+				} else if (script->get_path().is_resource_file()) {
+					class_name += "(" + script->get_path().get_file() + ")";
+				}
 			}
 			return class_name + "::" + String(method);
 		} else {
@@ -463,9 +474,12 @@ int CallableCustom::get_bound_arguments_count() const {
 	return 0;
 }
 
-void CallableCustom::get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const {
-	r_arguments = Vector<Variant>();
-	r_argcount = 0;
+void CallableCustom::get_bound_arguments(Vector<Variant> &r_arguments) const {
+	r_arguments.clear();
+}
+
+int CallableCustom::get_unbound_arguments_count() const {
+	return 0;
 }
 
 CallableCustom::CallableCustom() {
@@ -543,6 +557,13 @@ bool Signal::is_connected(const Callable &p_callable) const {
 	ERR_FAIL_NULL_V(obj, false);
 
 	return obj->is_connected(name, p_callable);
+}
+
+bool Signal::has_connections() const {
+	Object *obj = get_object();
+	ERR_FAIL_NULL_V(obj, false);
+
+	return obj->has_connections(name);
 }
 
 Array Signal::get_connections() const {

@@ -30,8 +30,8 @@
 
 #include "editor_toaster.h"
 
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -108,14 +108,13 @@ void EditorToaster::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (vbox_container->is_visible()) {
-				main_button->set_icon(get_editor_theme_icon(SNAME("Notification")));
+				main_button->set_button_icon(get_editor_theme_icon(SNAME("Notification")));
 			} else {
-				main_button->set_icon(get_editor_theme_icon(SNAME("NotificationDisabled")));
+				main_button->set_button_icon(get_editor_theme_icon(SNAME("NotificationDisabled")));
 			}
-			disable_notifications_button->set_icon(get_editor_theme_icon(SNAME("NotificationDisabled")));
+			disable_notifications_button->set_button_icon(get_editor_theme_icon(SNAME("NotificationDisabled")));
 
 			// Styleboxes background.
 			info_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)));
@@ -134,9 +133,6 @@ void EditorToaster::_notification(int p_what) {
 
 			error_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)).lightened(0.03));
 			error_panel_style_progress->set_border_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-
-			main_button->queue_redraw();
-			disable_notifications_button->queue_redraw();
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -240,11 +236,12 @@ void EditorToaster::_auto_hide_or_free_toasts() {
 	}
 
 	if (toasts.is_empty()) {
-		main_button->set_tooltip_text(TTR("No notifications."));
+		main_button->set_tooltip_text(TTRC("No notifications."));
 		main_button->set_modulate(Color(0.5, 0.5, 0.5));
 		main_button->set_disabled(true);
+		set_process_internal(false);
 	} else {
-		main_button->set_tooltip_text(TTR("Show notifications."));
+		main_button->set_tooltip_text(TTRC("Show notifications."));
 		main_button->set_modulate(Color(1, 1, 1));
 		main_button->set_disabled(false);
 	}
@@ -311,9 +308,9 @@ void EditorToaster::_draw_progress(Control *panel) {
 void EditorToaster::_set_notifications_enabled(bool p_enabled) {
 	vbox_container->set_visible(p_enabled);
 	if (p_enabled) {
-		main_button->set_icon(get_editor_theme_icon(SNAME("Notification")));
+		main_button->set_button_icon(get_editor_theme_icon(SNAME("Notification")));
 	} else {
-		main_button->set_icon(get_editor_theme_icon(SNAME("NotificationDisabled")));
+		main_button->set_button_icon(get_editor_theme_icon(SNAME("NotificationDisabled")));
 	}
 	_update_disable_notifications_button();
 }
@@ -345,6 +342,7 @@ void EditorToaster::_repop_old() {
 Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_time, const String &p_tooltip) {
 	// Create the panel according to the severity.
 	PanelContainer *panel = memnew(PanelContainer);
+	panel->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	panel->set_tooltip_text(p_tooltip);
 	switch (p_severity) {
 		case SEVERITY_INFO:
@@ -361,6 +359,9 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 	}
 	panel->set_modulate(Color(1, 1, 1, 0));
 	panel->connect(SceneStringName(draw), callable_mp(this, &EditorToaster::_draw_progress).bind(panel));
+	panel->connect(SceneStringName(theme_changed), callable_mp(this, &EditorToaster::_toast_theme_changed).bind(panel));
+
+	Toast &toast = toasts[panel];
 
 	// Horizontal container.
 	HBoxContainer *hbox_container = memnew(HBoxContainer);
@@ -371,24 +372,32 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 	p_control->set_h_size_flags(SIZE_EXPAND_FILL);
 	hbox_container->add_child(p_control);
 
-	// Close button.
+	// Add buttons.
 	if (p_time > 0.0) {
+		Button *copy_button = memnew(Button);
+		copy_button->set_accessibility_name(TTRC("Copy"));
+		copy_button->set_flat(true);
+		copy_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::copy).bind(panel));
+		hbox_container->add_child(copy_button);
+
 		Button *close_button = memnew(Button);
+		close_button->set_accessibility_name(TTRC("Close"));
 		close_button->set_flat(true);
-		close_button->set_icon(get_editor_theme_icon(SNAME("Close")));
-		close_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::close).bind(panel));
-		close_button->connect(SceneStringName(theme_changed), callable_mp(this, &EditorToaster::_close_button_theme_changed).bind(close_button));
+		close_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::instant_close).bind(panel));
 		hbox_container->add_child(close_button);
+
+		toast.copy_button = copy_button;
+		toast.close_button = close_button;
 	}
 
-	toasts[panel].severity = p_severity;
+	toast.severity = p_severity;
 	if (p_time > 0.0) {
-		toasts[panel].duration = p_time;
-		toasts[panel].remaining_time = p_time;
+		toast.duration = p_time;
+		toast.remaining_time = p_time;
 	} else {
-		toasts[panel].duration = -1.0;
+		toast.duration = -1.0;
 	}
-	toasts[panel].popped = true;
+	toast.popped = true;
 	vbox_container->add_child(panel);
 	_auto_hide_or_free_toasts();
 	_update_vbox_position();
@@ -406,7 +415,7 @@ void EditorToaster::popup_str(const String &p_message, Severity p_severity, cons
 	// Since "_popup_str" adds nodes to the tree, and since the "add_child" method is not
 	// thread-safe, it's better to defer the call to the next cycle to be thread-safe.
 	is_processing_error = true;
-	MessageQueue::get_main_singleton()->push_callable(callable_mp(this, &EditorToaster::_popup_str).bind(p_message, p_severity, p_tooltip));
+	MessageQueue::get_main_singleton()->push_callable(callable_mp(this, &EditorToaster::_popup_str), p_message, p_severity, p_tooltip);
 	is_processing_error = false;
 }
 
@@ -427,25 +436,31 @@ void EditorToaster::_popup_str(const String &p_message, Severity p_severity, con
 		hb->add_theme_constant_override("separation", 0);
 
 		Label *label = memnew(Label);
+		label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		label->set_focus_mode(FOCUS_ACCESSIBILITY);
 		hb->add_child(label);
 
 		Label *count_label = memnew(Label);
+		count_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		hb->add_child(count_label);
 
 		control = popup(hb, p_severity, default_message_duration, p_tooltip);
-		toasts[control].message = p_message;
-		toasts[control].tooltip = p_tooltip;
-		toasts[control].count = 1;
-		toasts[control].message_label = label;
-		toasts[control].message_count_label = count_label;
+
+		Toast &toast = toasts[control];
+		toast.message = p_message;
+		toast.tooltip = p_tooltip;
+		toast.count = 1;
+		toast.message_label = label;
+		toast.message_count_label = count_label;
 	} else {
-		if (toasts[control].popped) {
-			toasts[control].count += 1;
+		Toast &toast = toasts[control];
+		if (toast.popped) {
+			toast.count += 1;
 		} else {
-			toasts[control].count = 1;
+			toast.count = 1;
 		}
-		toasts[control].remaining_time = toasts[control].duration;
-		toasts[control].popped = true;
+		toast.remaining_time = toast.duration;
+		toast.popped = true;
 		control->show();
 		vbox_container->move_child(control, vbox_container->get_child_count());
 		_auto_hide_or_free_toasts();
@@ -480,6 +495,19 @@ void EditorToaster::_popup_str(const String &p_message, Severity p_severity, con
 	vbox_container->reset_size();
 
 	is_processing_error = false;
+	set_process_internal(true);
+}
+
+void EditorToaster::_toast_theme_changed(Control *p_control) {
+	ERR_FAIL_COND(!toasts.has(p_control));
+
+	Toast &toast = toasts[p_control];
+	if (toast.close_button) {
+		toast.close_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
+	}
+	if (toast.copy_button) {
+		toast.copy_button->set_button_icon(get_editor_theme_icon(SNAME("ActionCopy")));
+	}
 }
 
 void EditorToaster::close(Control *p_control) {
@@ -488,11 +516,22 @@ void EditorToaster::close(Control *p_control) {
 	toasts[p_control].popped = false;
 }
 
-void EditorToaster::_close_button_theme_changed(Control *p_close_button) {
-	Button *close_button = Object::cast_to<Button>(p_close_button);
-	if (close_button) {
-		close_button->set_icon(get_editor_theme_icon(SNAME("Close")));
-	}
+void EditorToaster::instant_close(Control *p_control) {
+	close(p_control);
+	p_control->set_modulate(Color(1, 1, 1, 0));
+}
+
+void EditorToaster::copy(Control *p_control) {
+	ERR_FAIL_COND(!toasts.has(p_control));
+	DisplayServer::get_singleton()->clipboard_set(toasts[p_control].message);
+}
+
+void EditorToaster::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("push_toast", "message", "severity", "tooltip"), &EditorToaster::_popup_str, DEFVAL(EditorToaster::SEVERITY_INFO), DEFVAL(String()));
+
+	BIND_ENUM_CONSTANT(SEVERITY_INFO);
+	BIND_ENUM_CONSTANT(SEVERITY_WARNING);
+	BIND_ENUM_CONSTANT(SEVERITY_ERROR);
 }
 
 EditorToaster *EditorToaster::get_singleton() {
@@ -501,7 +540,6 @@ EditorToaster *EditorToaster::get_singleton() {
 
 EditorToaster::EditorToaster() {
 	set_notify_transform(true);
-	set_process_internal(true);
 
 	// VBox.
 	vbox_container = memnew(VBoxContainer);
@@ -540,7 +578,8 @@ EditorToaster::EditorToaster() {
 
 	// Main button.
 	main_button = memnew(Button);
-	main_button->set_tooltip_text(TTR("No notifications."));
+	main_button->set_accessibility_name(TTRC("Notifications:"));
+	main_button->set_tooltip_text(TTRC("No notifications."));
 	main_button->set_modulate(Color(0.5, 0.5, 0.5));
 	main_button->set_disabled(true);
 	main_button->set_theme_type_variation("FlatMenuButton");
@@ -556,7 +595,7 @@ EditorToaster::EditorToaster() {
 	add_child(disable_notifications_panel);
 
 	disable_notifications_button = memnew(Button);
-	disable_notifications_button->set_tooltip_text(TTR("Silence the notifications."));
+	disable_notifications_button->set_tooltip_text(TTRC("Silence the notifications."));
 	disable_notifications_button->set_flat(true);
 	disable_notifications_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::_set_notifications_enabled).bind(false));
 	disable_notifications_panel->add_child(disable_notifications_button);
@@ -566,7 +605,7 @@ EditorToaster::EditorToaster() {
 
 	eh.errfunc = _error_handler;
 	add_error_handler(&eh);
-};
+}
 
 EditorToaster::~EditorToaster() {
 	singleton = nullptr;

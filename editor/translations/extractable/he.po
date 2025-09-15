@@ -19,6 +19,15 @@ msgstr ""
 "% 10 == 0) ? 2 : 3));\n"
 "X-Generator: Weblate 5.4-dev\n"
 
+msgid "All Recognized"
+msgstr "כל המוכרים"
+
+msgid "Save"
+msgstr "שמירה"
+
+msgid "Clear"
+msgstr "ניקוי"
+
 msgid "Add current color as a preset."
 msgstr "הוספת הצבע הנוכחי לערכת הצבעים."
 
@@ -31,9 +40,6 @@ msgstr "פתיחה"
 msgid "Select Current Folder"
 msgstr "נא לבחור את התיקייה הנוכחית"
 
-msgid "All Recognized"
-msgstr "כל המוכרים"
-
 msgid "Open a File"
 msgstr "פתיחת קובץ"
 
@@ -45,9 +51,6 @@ msgstr "פתיחת תיקייה"
 
 msgid "Open a File or Directory"
 msgstr "פתיחת קובץ או תיקייה"
-
-msgid "Save"
-msgstr "שמירה"
 
 msgid "Save a File"
 msgstr "שמירת קובץ"
@@ -67,11 +70,11 @@ msgstr "נתיב:"
 msgid "Refresh files."
 msgstr "ריענון קבצים."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "הצג/הסתר קבצים מוסתרים."
-
 msgid "Directories & Files:"
 msgstr "תיקיות וקבצים:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "הצג/הסתר קבצים מוסתרים."
 
 msgid "File:"
 msgstr "קובץ:"
@@ -105,9 +108,6 @@ msgstr "הדבקה"
 
 msgid "Select All"
 msgstr "לבחור הכול"
-
-msgid "Clear"
-msgstr "ניקוי"
 
 msgid "Undo"
 msgstr "ביטול"

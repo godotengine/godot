@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 
@@ -7,9 +8,9 @@ import platform_linuxbsd_builders
 common_linuxbsd = [
     "crash_handler_linuxbsd.cpp",
     "os_linuxbsd.cpp",
-    "joypad_linux.cpp",
     "freedesktop_portal_desktop.cpp",
     "freedesktop_screensaver.cpp",
+    "freedesktop_at_spi_monitor.cpp",
 ]
 
 if env["use_sowrap"]:
@@ -29,10 +30,6 @@ if env["speechd"]:
 if env["fontconfig"]:
     if env["use_sowrap"]:
         common_linuxbsd.append("fontconfig-so_wrap.c")
-
-if env["udev"]:
-    if env["use_sowrap"]:
-        common_linuxbsd.append("libudev-so_wrap.c")
 
 if env["dbus"]:
     if env["use_sowrap"]:

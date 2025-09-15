@@ -85,7 +85,7 @@ void GradientTexture1D::_queue_update() {
 	callable_mp(this, &GradientTexture1D::update_now).call_deferred();
 }
 
-void GradientTexture1D::_update() {
+void GradientTexture1D::_update() const {
 	update_pending = false;
 
 	if (gradient.is_null()) {
@@ -172,14 +172,14 @@ RID GradientTexture1D::get_rid() const {
 }
 
 Ref<Image> GradientTexture1D::get_image() const {
-	const_cast<GradientTexture1D *>(this)->update_now();
+	update_now();
 	if (!texture.is_valid()) {
 		return Ref<Image>();
 	}
 	return RenderingServer::get_singleton()->texture_2d_get(texture);
 }
 
-void GradientTexture1D::update_now() {
+void GradientTexture1D::update_now() const {
 	if (update_pending) {
 		_update();
 	}
@@ -225,7 +225,7 @@ void GradientTexture2D::_queue_update() {
 	callable_mp(this, &GradientTexture2D::update_now).call_deferred();
 }
 
-void GradientTexture2D::_update() {
+void GradientTexture2D::_update() const {
 	update_pending = false;
 
 	if (gradient.is_null()) {
@@ -292,10 +292,7 @@ float GradientTexture2D::_get_gradient_offset_at(int x, int y) const {
 		pos.y = static_cast<float>(y) / (height - 1);
 	}
 	if (fill == Fill::FILL_LINEAR) {
-		Vector2 segment[2];
-		segment[0] = fill_from;
-		segment[1] = fill_to;
-		Vector2 closest = Geometry2D::get_closest_point_to_segment_uncapped(pos, &segment[0]);
+		const Vector2 closest = Geometry2D::get_closest_point_to_segment_uncapped(pos, fill_from, fill_to);
 		ofs = (closest - fill_from).length() / (fill_to - fill_from).length();
 		if ((closest - fill_from).dot(fill_to - fill_from) < 0) {
 			ofs *= -1;
@@ -405,14 +402,14 @@ RID GradientTexture2D::get_rid() const {
 }
 
 Ref<Image> GradientTexture2D::get_image() const {
-	const_cast<GradientTexture2D *>(this)->update_now();
+	update_now();
 	if (!texture.is_valid()) {
 		return Ref<Image>();
 	}
 	return RenderingServer::get_singleton()->texture_2d_get(texture);
 }
 
-void GradientTexture2D::update_now() {
+void GradientTexture2D::update_now() const {
 	if (update_pending) {
 		_update();
 	}

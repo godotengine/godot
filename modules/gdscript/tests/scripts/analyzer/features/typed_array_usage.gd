@@ -20,9 +20,7 @@ class Members:
 		Utils.check(str(two) == '[486]')
 		return true
 
-
-@warning_ignore("unsafe_method_access")
-@warning_ignore("return_value_discarded")
+@warning_ignore_start('unsafe_method_access', 'return_value_discarded')
 func test():
 	var untyped_basic = [459]
 	Utils.check(str(untyped_basic) == '[459]')
@@ -54,39 +52,39 @@ func test():
 	untyped_basic.push_back(430.0)
 	inferred_basic.push_back(263.0)
 	typed_basic.push_back(518.0)
-	Utils.check(str(empty_floats) == '[705, 430, 263, 518]')
-	Utils.check(str(untyped_basic) == '[705, 430, 263, 518]')
-	Utils.check(str(inferred_basic) == '[705, 430, 263, 518]')
-	Utils.check(str(typed_basic) == '[705, 430, 263, 518]')
+	Utils.check(str(empty_floats) == '[705.0, 430.0, 263.0, 518.0]')
+	Utils.check(str(untyped_basic) == '[705.0, 430.0, 263.0, 518.0]')
+	Utils.check(str(inferred_basic) == '[705.0, 430.0, 263.0, 518.0]')
+	Utils.check(str(typed_basic) == '[705.0, 430.0, 263.0, 518.0]')
 
 
 	const constant_float := 950.0
 	const constant_int := 170
 	var typed_float := 954.0
 	var filled_floats: Array[float] = [constant_float, constant_int, typed_float, empty_floats[1] + empty_floats[2]]
-	Utils.check(str(filled_floats) == '[950, 170, 954, 693]')
+	Utils.check(str(filled_floats) == '[950.0, 170.0, 954.0, 693.0]')
 	Utils.check(filled_floats.get_typed_builtin() == TYPE_FLOAT)
 
 	var casted_floats := [empty_floats[2] * 2] as Array[float]
-	Utils.check(str(casted_floats) == '[526]')
+	Utils.check(str(casted_floats) == '[526.0]')
 	Utils.check(casted_floats.get_typed_builtin() == TYPE_FLOAT)
 
 	var returned_floats = (func () -> Array[float]: return [554]).call()
-	Utils.check(str(returned_floats) == '[554]')
+	Utils.check(str(returned_floats) == '[554.0]')
 	Utils.check(returned_floats.get_typed_builtin() == TYPE_FLOAT)
 
 	var passed_floats = floats_identity([663.0 if randf() > 0.5 else 663.0])
-	Utils.check(str(passed_floats) == '[663]')
+	Utils.check(str(passed_floats) == '[663.0]')
 	Utils.check(passed_floats.get_typed_builtin() == TYPE_FLOAT)
 
 	var default_floats = (func (floats: Array[float] = [364.0]): return floats).call()
-	Utils.check(str(default_floats) == '[364]')
+	Utils.check(str(default_floats) == '[364.0]')
 	Utils.check(default_floats.get_typed_builtin() == TYPE_FLOAT)
 
 	var typed_int := 556
 	var converted_floats: Array[float] = [typed_int]
 	converted_floats.push_back(498)
-	Utils.check(str(converted_floats) == '[556, 498]')
+	Utils.check(str(converted_floats) == '[556.0, 498.0]')
 	Utils.check(converted_floats.get_typed_builtin() == TYPE_FLOAT)
 
 
@@ -95,7 +93,7 @@ func test():
 	Utils.check(constant_basic.get_typed_builtin() == TYPE_NIL)
 
 	const constant_floats: Array[float] = [constant_float - constant_basic[0] - constant_int]
-	Utils.check(str(constant_floats) == '[552]')
+	Utils.check(str(constant_floats) == '[552.0]')
 	Utils.check(constant_floats.get_typed_builtin() == TYPE_FLOAT)
 
 
@@ -103,15 +101,15 @@ func test():
 	untyped_basic = source_floats
 	var destination_floats: Array[float] = untyped_basic
 	destination_floats[0] -= 0.74
-	Utils.check(str(source_floats) == '[999]')
-	Utils.check(str(untyped_basic) == '[999]')
-	Utils.check(str(destination_floats) == '[999]')
+	Utils.check(str(source_floats) == '[999.0]')
+	Utils.check(str(untyped_basic) == '[999.0]')
+	Utils.check(str(destination_floats) == '[999.0]')
 	Utils.check(destination_floats.get_typed_builtin() == TYPE_FLOAT)
 
 
 	var duplicated_floats := empty_floats.duplicate().slice(2, 3)
 	duplicated_floats[0] *= 3
-	Utils.check(str(duplicated_floats) == '[789]')
+	Utils.check(str(duplicated_floats) == '[789.0]')
 	Utils.check(duplicated_floats.get_typed_builtin() == TYPE_FLOAT)
 
 
@@ -207,7 +205,7 @@ func test():
 
 	var a := A.new()
 	var typed_natives: Array[RefCounted] = [a]
-	var typed_scripts = Array(typed_natives, TYPE_OBJECT, "RefCounted", A)
+	var typed_scripts = Array(typed_natives, TYPE_OBJECT, 'RefCounted', A)
 	Utils.check(typed_scripts[0] == a)
 
 

@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef XML_PARSER_H
-#define XML_PARSER_H
+#pragma once
 
-#include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
@@ -127,5 +125,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(XMLParser::NodeType);
-
-#endif // XML_PARSER_H

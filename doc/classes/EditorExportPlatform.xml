@@ -42,6 +42,18 @@
 				Creates a PCK archive at [param path] for the specified [param preset].
 			</description>
 		</method>
+		<method name="export_pack_patch">
+			<return type="int" enum="Error" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<param index="3" name="patches" type="PackedStringArray" default="PackedStringArray()" />
+			<param index="4" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" default="0" />
+			<description>
+				Creates a patch PCK archive at [param path] for the specified [param preset], containing only the files that have changed since the last patch.
+				[b]Note:[/b] [param patches] is an optional override of the set of patches defined in the export preset. When empty the patches defined in the export preset will be used instead.
+			</description>
+		</method>
 		<method name="export_project">
 			<return type="int" enum="Error" />
 			<param index="0" name="preset" type="EditorExportPreset" />
@@ -62,7 +74,7 @@
 				Exports project files for the specified preset. This method can be used to implement custom export format, other than PCK and ZIP. One of the callbacks is called for each exported file.
 				[param save_cb] is called for all exported files and have the following arguments: [code]file_path: String[/code], [code]file_data: PackedByteArray[/code], [code]file_index: int[/code], [code]file_count: int[/code], [code]encryption_include_filters: PackedStringArray[/code], [code]encryption_exclude_filters: PackedStringArray[/code], [code]encryption_key: PackedByteArray[/code].
 				[param shared_cb] is called for exported native shared/static libraries and have the following arguments: [code]file_path: String[/code], [code]tags: PackedStringArray[/code], [code]target_folder: String[/code].
-				[b]Note:[/b] [code]file_index[/code] and [code]file_count[/code] are intended for progress tracking only and aren't necesserely unique and precise.
+				[b]Note:[/b] [code]file_index[/code] and [code]file_count[/code] are intended for progress tracking only and aren't necessarily unique and precise.
 			</description>
 		</method>
 		<method name="export_zip">
@@ -73,6 +85,18 @@
 			<param index="3" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" default="0" />
 			<description>
 				Create a ZIP archive at [param path] for the specified [param preset].
+			</description>
+		</method>
+		<method name="export_zip_patch">
+			<return type="int" enum="Error" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<param index="3" name="patches" type="PackedStringArray" default="PackedStringArray()" />
+			<param index="4" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" default="0" />
+			<description>
+				Create a patch ZIP archive at [param path] for the specified [param preset], containing only the files that have changed since the last patch.
+				[b]Note:[/b] [param patches] is an optional override of the set of patches defined in the export preset. When empty the patches defined in the export preset will be used instead.
 			</description>
 		</method>
 		<method name="find_export_template" qualifiers="const">
@@ -97,8 +121,17 @@
 		</method>
 		<method name="get_forced_export_files" qualifiers="static">
 			<return type="PackedStringArray" />
+			<param index="0" name="preset" type="EditorExportPreset" default="null" />
 			<description>
 				Returns array of core file names that always should be exported regardless of preset config.
+			</description>
+		</method>
+		<method name="get_internal_export_files">
+			<return type="Dictionary" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<description>
+				Returns additional files that should always be exported regardless of preset configuration, and are not part of the project source. The returned [Dictionary] contains filename keys ([String]) and their corresponding raw data ([PackedByteArray]).
 			</description>
 		</method>
 		<method name="get_message_category" qualifiers="const">
@@ -151,6 +184,15 @@
 				If [param embed] is [code]true[/code], PCK content is appended to the end of [param path] file and return [Dictionary] additionally include following keys: [code]embedded_start: int[/code] (embedded PCK offset) and [code]embedded_size: int[/code] (embedded PCK size).
 			</description>
 		</method>
+		<method name="save_pack_patch">
+			<return type="Dictionary" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<description>
+				Saves patch PCK archive and returns [Dictionary] with the following keys: [code]result: Error[/code], [code]so_files: Array[/code] (array of the shared/static objects which contains dictionaries with the following keys: [code]path: String[/code], [code]tags: PackedStringArray[/code], and [code]target_folder: String[/code]).
+			</description>
+		</method>
 		<method name="save_zip">
 			<return type="Dictionary" />
 			<param index="0" name="preset" type="EditorExportPreset" />
@@ -158,6 +200,15 @@
 			<param index="2" name="path" type="String" />
 			<description>
 				Saves ZIP archive and returns [Dictionary] with the following keys: [code]result: Error[/code], [code]so_files: Array[/code] (array of the shared/static objects which contains dictionaries with the following keys: [code]path: String[/code], [code]tags: PackedStringArray[/code], and [code]target_folder: String[/code]).
+			</description>
+		</method>
+		<method name="save_zip_patch">
+			<return type="Dictionary" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<description>
+				Saves patch ZIP archive and returns [Dictionary] with the following keys: [code]result: Error[/code], [code]so_files: Array[/code] (array of the shared/static objects which contains dictionaries with the following keys: [code]path: String[/code], [code]tags: PackedStringArray[/code], and [code]target_folder: String[/code]).
 			</description>
 		</method>
 		<method name="ssh_push_to_remote" qualifiers="const">
@@ -209,19 +260,19 @@
 			Message type for error messages that must be addressed and fail the export.
 		</constant>
 		<constant name="DEBUG_FLAG_DUMB_CLIENT" value="1" enum="DebugFlags" is_bitfield="true">
-			Flag is set if remotely debugged project is expected to use remote file system. If set, [method gen_export_flags] will add [code]--remove-fs[/code] and [code]--remote-fs-password[/code] (if password is set in the editor settings) command line arguments to the list.
+			Flag is set if the remotely debugged project is expected to use the remote file system. If set, [method gen_export_flags] will append [code]--remote-fs[/code] and [code]--remote-fs-password[/code] (if [member EditorSettings.filesystem/file_server/password] is defined) command line arguments to the returned list.
 		</constant>
 		<constant name="DEBUG_FLAG_REMOTE_DEBUG" value="2" enum="DebugFlags" is_bitfield="true">
-			Flag is set if remote debug is enabled. If set, [method gen_export_flags] will add [code]--remote-debug[/code] and [code]--breakpoints[/code] (if breakpoints are selected in the script editor or added by the plugin) command line arguments to the list.
+			Flag is set if remote debug is enabled. If set, [method gen_export_flags] will append [code]--remote-debug[/code] and [code]--breakpoints[/code] (if breakpoints are selected in the script editor or added by the plugin) command line arguments to the returned list.
 		</constant>
 		<constant name="DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST" value="4" enum="DebugFlags" is_bitfield="true">
 			Flag is set if remotely debugged project is running on the localhost. If set, [method gen_export_flags] will use [code]localhost[/code] instead of [member EditorSettings.network/debug/remote_host] as remote debugger host.
 		</constant>
 		<constant name="DEBUG_FLAG_VIEW_COLLISIONS" value="8" enum="DebugFlags" is_bitfield="true">
-			Flag is set if "Visible Collision Shapes" remote debug option is enabled. If set, [method gen_export_flags] will add [code]--debug-collisions[/code] command line arguments to the list.
+			Flag is set if the "Visible Collision Shapes" remote debug option is enabled. If set, [method gen_export_flags] will append the [code]--debug-collisions[/code] command line argument to the returned list.
 		</constant>
 		<constant name="DEBUG_FLAG_VIEW_NAVIGATION" value="16" enum="DebugFlags" is_bitfield="true">
-			Flag is set if Visible Navigation" remote debug option is enabled. If set, [method gen_export_flags] will add [code]--debug-navigation[/code] command line arguments to the list.
+			Flag is set if the "Visible Navigation" remote debug option is enabled. If set, [method gen_export_flags] will append the [code]--debug-navigation[/code] command line argument to the returned list.
 		</constant>
 	</constants>
 </class>

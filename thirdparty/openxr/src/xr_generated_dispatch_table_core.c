@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, The Khronos Group Inc.
+// Copyright (c) 2017-2025 The Khronos Group Inc.
 // Copyright (c) 2017-2019, Valve Corporation
 // Copyright (c) 2017-2019, LunarG, Inc.
 
@@ -8,7 +8,7 @@
 //     See utility_source_generator.py for modifications
 // ************************************************************
 
-// Copyright (c) 2017-2024, The Khronos Group Inc.
+// Copyright (c) 2017-2025 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -37,7 +37,7 @@
 extern "C" { 
 #endif
 // Helper function to populate an instance dispatch table
-void GeneratedXrPopulateDispatchTable(struct XrGeneratedDispatchTable *table,
+void GeneratedXrPopulateDispatchTableCore(struct XrGeneratedDispatchTableCore *table,
                                       XrInstance instance,
                                       PFN_xrGetInstanceProcAddr get_inst_proc_addr) {
 
@@ -95,6 +95,9 @@ void GeneratedXrPopulateDispatchTable(struct XrGeneratedDispatchTable *table,
     (get_inst_proc_addr(instance, "xrGetInputSourceLocalizedName", (PFN_xrVoidFunction*)&table->GetInputSourceLocalizedName));
     (get_inst_proc_addr(instance, "xrApplyHapticFeedback", (PFN_xrVoidFunction*)&table->ApplyHapticFeedback));
     (get_inst_proc_addr(instance, "xrStopHapticFeedback", (PFN_xrVoidFunction*)&table->StopHapticFeedback));
+
+    // ---- Core 1.1 commands
+    (get_inst_proc_addr(instance, "xrLocateSpaces", (PFN_xrVoidFunction*)&table->LocateSpaces));
 
     // ---- XR_EXT_debug_utils extension commands
     (get_inst_proc_addr(instance, "xrSetDebugUtilsObjectNameEXT", (PFN_xrVoidFunction*)&table->SetDebugUtilsObjectNameEXT));

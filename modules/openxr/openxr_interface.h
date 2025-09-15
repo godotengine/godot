@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_INTERFACE_H
-#define OPENXR_INTERFACE_H
+#pragma once
 
 // A note on multithreading and thread safety in OpenXR.
 //
@@ -70,6 +69,7 @@ class OpenXRInterface : public XRInterface {
 private:
 	OpenXRAPI *openxr_api = nullptr;
 	bool initialized = false;
+	bool reference_stage_changing = false;
 	XRInterface::TrackingStatus tracking_state;
 
 	// At a minimum we need a tracker for our head
@@ -182,8 +182,13 @@ public:
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
 
+	virtual Rect2i get_render_region() override;
+
 	virtual RID get_color_texture() override;
 	virtual RID get_depth_texture() override;
+	virtual RID get_velocity_texture() override;
+	virtual RID get_velocity_depth_texture() override;
+	virtual Size2i get_velocity_target_size() override;
 
 	virtual void process() override;
 	virtual void pre_render() override;
@@ -204,12 +209,28 @@ public:
 	void on_state_ready();
 	void on_state_visible();
 	void on_state_focused();
+	void on_state_synchronized();
 	void on_state_stopping();
 	void on_state_loss_pending();
 	void on_state_exiting();
-	void on_pose_recentered();
+	void on_reference_space_change_pending();
 	void on_refresh_rate_changes(float p_new_rate);
 	void tracker_profile_changed(RID p_tracker, RID p_interaction_profile);
+
+	/** Session */
+	enum SessionState { // Should mirror XrSessionState
+		SESSION_STATE_UNKNOWN = 0,
+		SESSION_STATE_IDLE = 1,
+		SESSION_STATE_READY = 2,
+		SESSION_STATE_SYNCHRONIZED = 3,
+		SESSION_STATE_VISIBLE = 4,
+		SESSION_STATE_FOCUSED = 5,
+		SESSION_STATE_STOPPING = 6,
+		SESSION_STATE_LOSS_PENDING = 7,
+		SESSION_STATE_EXITING = 8,
+	};
+
+	SessionState get_session_state();
 
 	/** Hand tracking. */
 	enum Hand {
@@ -285,15 +306,43 @@ public:
 	Vector3 get_hand_joint_angular_velocity(Hand p_hand, HandJoints p_joint) const;
 
 	virtual RID get_vrs_texture() override;
+	virtual VRSTextureFormat get_vrs_texture_format() override;
+
+	// Performance settings.
+	enum PerfSettingsLevel {
+		PERF_SETTINGS_LEVEL_POWER_SAVINGS,
+		PERF_SETTINGS_LEVEL_SUSTAINED_LOW,
+		PERF_SETTINGS_LEVEL_SUSTAINED_HIGH,
+		PERF_SETTINGS_LEVEL_BOOST,
+	};
+
+	enum PerfSettingsSubDomain {
+		PERF_SETTINGS_SUB_DOMAIN_COMPOSITING,
+		PERF_SETTINGS_SUB_DOMAIN_RENDERING,
+		PERF_SETTINGS_SUB_DOMAIN_THERMAL,
+	};
+
+	enum PerfSettingsNotificationLevel {
+		PERF_SETTINGS_NOTIF_LEVEL_NORMAL,
+		PERF_SETTINGS_NOTIF_LEVEL_WARNING,
+		PERF_SETTINGS_NOTIF_LEVEL_IMPAIRED,
+	};
+
+	void set_cpu_level(PerfSettingsLevel p_level);
+	void set_gpu_level(PerfSettingsLevel p_level);
+	void on_cpu_level_changed(PerfSettingsSubDomain p_sub_domain, PerfSettingsNotificationLevel p_from_level, PerfSettingsNotificationLevel p_to_level);
+	void on_gpu_level_changed(PerfSettingsSubDomain p_sub_domain, PerfSettingsNotificationLevel p_from_level, PerfSettingsNotificationLevel p_to_level);
 
 	OpenXRInterface();
 	~OpenXRInterface();
 };
 
+VARIANT_ENUM_CAST(OpenXRInterface::SessionState)
 VARIANT_ENUM_CAST(OpenXRInterface::Hand)
 VARIANT_ENUM_CAST(OpenXRInterface::HandMotionRange)
 VARIANT_ENUM_CAST(OpenXRInterface::HandTrackedSource)
 VARIANT_ENUM_CAST(OpenXRInterface::HandJoints)
+VARIANT_ENUM_CAST(OpenXRInterface::PerfSettingsLevel)
+VARIANT_ENUM_CAST(OpenXRInterface::PerfSettingsSubDomain)
+VARIANT_ENUM_CAST(OpenXRInterface::PerfSettingsNotificationLevel)
 VARIANT_BITFIELD_CAST(OpenXRInterface::HandJointFlags)
-
-#endif // OPENXR_INTERFACE_H

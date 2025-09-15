@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JAVA_GODOT_VIEW_WRAPPER_H
-#define JAVA_GODOT_VIEW_WRAPPER_H
+#pragma once
 
-#include "string_android.h"
+#include "jni_utils.h"
 
 #include "core/math/vector2.h"
 
@@ -66,5 +65,3 @@ public:
 
 	~GodotJavaViewWrapper();
 };
-
-#endif // JAVA_GODOT_VIEW_WRAPPER_H

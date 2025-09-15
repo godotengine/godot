@@ -35,7 +35,6 @@
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/resources/atlas_texture.h"
-#include "scene/resources/canvas_item_material.h"
 #include "scene/resources/font.h"
 #include "scene/resources/multimesh.h"
 #include "scene/resources/style_box.h"
@@ -44,7 +43,7 @@
 #define ERR_DRAW_GUARD \
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside this node's `_draw()`, functions connected to its `draw` signal, or when it receives NOTIFICATION_DRAW.")
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 bool CanvasItem::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	if (_edit_use_rect()) {
 		return _edit_get_rect().has_point(p_point);
@@ -52,11 +51,13 @@ bool CanvasItem::_edit_is_selected_on_click(const Point2 &p_point, double p_tole
 		return p_point.length() < p_tolerance;
 	}
 }
+#endif // DEBUG_ENABLED
 
+#ifdef TOOLS_ENABLED
 Transform2D CanvasItem::_edit_get_transform() const {
 	return Transform2D(_edit_get_rotation(), _edit_get_position() + _edit_get_pivot());
 }
-#endif
+#endif //TOOLS_ENABLED
 
 bool CanvasItem::is_visible_in_tree() const {
 	ERR_READ_THREAD_GUARD_V(false);
@@ -135,15 +136,23 @@ void CanvasItem::_redraw_callback() {
 		return;
 	}
 
-	RenderingServer::get_singleton()->canvas_item_clear(get_canvas_item());
+	RID ci = get_canvas_item();
+	RenderingServer::get_singleton()->canvas_item_clear(ci);
 	//todo updating = true - only allow drawing here
 	if (is_visible_in_tree()) {
 		drawing = true;
+		Ref<TextServer> ts = TextServerManager::get_singleton()->get_primary_interface();
+		if (ts.is_valid()) {
+			ts->set_current_drawn_item_oversampling(get_viewport()->get_oversampling());
+		}
 		current_item_drawn = this;
 		notification(NOTIFICATION_DRAW);
 		emit_signal(SceneStringName(draw));
 		GDVIRTUAL_CALL(_draw);
 		current_item_drawn = nullptr;
+		if (ts.is_valid()) {
+			ts->set_current_drawn_item_oversampling(0.0);
+		}
 		drawing = false;
 	}
 	//todo updating = false
@@ -182,6 +191,20 @@ Transform2D CanvasItem::get_global_transform() const {
 
 		global_transform = new_global;
 		_set_global_invalid(false);
+	}
+
+	return global_transform;
+}
+
+// Same as get_global_transform() but no reset for `global_invalid`.
+Transform2D CanvasItem::get_global_transform_const() const {
+	if (_is_global_invalid()) {
+		const CanvasItem *pi = get_parent_item();
+		if (pi) {
+			global_transform = pi->get_global_transform_const() * get_transform();
+		} else {
+			global_transform = get_transform();
+		}
 	}
 
 	return global_transform;
@@ -277,6 +300,13 @@ void CanvasItem::_exit_canvas() {
 
 void CanvasItem::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, !visible);
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			ERR_MAIN_THREAD_GUARD;
 			ERR_FAIL_COND(!is_inside_tree());
@@ -375,7 +405,7 @@ void CanvasItem::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
-			if (is_visible_in_tree() && is_physics_interpolated()) {
+			if (is_visible_in_tree() && is_physics_interpolated_and_enabled()) {
 				RenderingServer::get_singleton()->canvas_item_reset_physics_interpolation(canvas_item);
 			}
 		} break;
@@ -489,6 +519,7 @@ void CanvasItem::set_as_top_level(bool p_top_level) {
 	if (get_viewport()) {
 		get_viewport()->canvas_item_top_level_changed();
 	}
+	reset_physics_interpolation();
 }
 
 void CanvasItem::_top_level_changed() {
@@ -548,6 +579,60 @@ void CanvasItem::set_light_mask(int p_light_mask) {
 int CanvasItem::get_light_mask() const {
 	ERR_READ_THREAD_GUARD_V(0);
 	return light_mask;
+}
+
+const StringName *CanvasItem::_instance_shader_parameter_get_remap(const StringName &p_name) const {
+	StringName *r = instance_shader_parameter_property_remap.getptr(p_name);
+	if (!r) {
+		String s = p_name;
+		if (s.begins_with("instance_shader_parameters/")) {
+			StringName name = s.trim_prefix("instance_shader_parameters/");
+			instance_shader_parameter_property_remap[p_name] = name;
+			return instance_shader_parameter_property_remap.getptr(p_name);
+		}
+		return nullptr;
+	}
+	return r;
+}
+
+bool CanvasItem::_set(const StringName &p_name, const Variant &p_value) {
+	const StringName *r = _instance_shader_parameter_get_remap(p_name);
+	if (r) {
+		set_instance_shader_parameter(*r, p_value);
+		return true;
+	}
+	return false;
+}
+
+bool CanvasItem::_get(const StringName &p_name, Variant &r_ret) const {
+	const StringName *r = _instance_shader_parameter_get_remap(p_name);
+	if (r) {
+		r_ret = get_instance_shader_parameter(*r);
+		return true;
+	}
+
+	return false;
+}
+
+void CanvasItem::_get_property_list(List<PropertyInfo> *p_list) const {
+	List<PropertyInfo> pinfo;
+	RS::get_singleton()->canvas_item_get_instance_shader_parameter_list(get_canvas_item(), &pinfo);
+
+	for (PropertyInfo &pi : pinfo) {
+		bool has_def_value = false;
+		Variant def_value = RS::get_singleton()->canvas_item_get_instance_shader_parameter_default_value(get_canvas_item(), pi.name);
+		if (def_value.get_type() != Variant::NIL) {
+			has_def_value = true;
+		}
+		if (instance_shader_parameters.has(pi.name)) {
+			pi.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE | (has_def_value ? (PROPERTY_USAGE_CHECKABLE | PROPERTY_USAGE_CHECKED) : PROPERTY_USAGE_NONE);
+		} else {
+			pi.usage = PROPERTY_USAGE_EDITOR | (has_def_value ? PROPERTY_USAGE_CHECKABLE : PROPERTY_USAGE_NONE); // Do not save if not changed.
+		}
+
+		pi.name = "instance_shader_parameters/" + pi.name;
+		p_list->push_back(pi);
+	}
 }
 
 void CanvasItem::item_rect_changed(bool p_size_changed) {
@@ -674,7 +759,7 @@ void CanvasItem::draw_arc(const Vector2 &p_center, real_t p_radius, real_t p_sta
 	Point2 *points_ptr = points.ptrw();
 
 	// Clamp angle difference to full circle so arc won't overlap itself.
-	const real_t delta_angle = CLAMP(p_end_angle - p_start_angle, -Math_TAU, Math_TAU);
+	const real_t delta_angle = CLAMP(p_end_angle - p_start_angle, -Math::TAU, Math::TAU);
 	for (int i = 0; i < p_point_count; i++) {
 		real_t theta = (i / (p_point_count - 1.0f)) * delta_angle + p_start_angle;
 		points_ptr[i] = p_center + Vector2(Math::cos(theta), Math::sin(theta)) * p_radius;
@@ -747,7 +832,7 @@ void CanvasItem::draw_circle(const Point2 &p_pos, real_t p_radius, const Color &
 		points.resize(circle_segments + 1);
 
 		Vector2 *points_ptr = points.ptrw();
-		const real_t circle_point_step = Math_TAU / circle_segments;
+		const real_t circle_point_step = Math::TAU / circle_segments;
 
 		for (int i = 0; i < circle_segments; i++) {
 			float angle = i * circle_point_step;
@@ -890,54 +975,54 @@ void CanvasItem::draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Tex
 	RenderingServer::get_singleton()->canvas_item_add_multimesh(canvas_item, p_multimesh->get_rid(), texture_rid);
 }
 
-void CanvasItem::draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
+void CanvasItem::draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 	ERR_FAIL_COND(p_font.is_null());
 
-	p_font->draw_string(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_modulate, p_jst_flags, p_direction, p_orientation);
+	p_font->draw_string(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_modulate, p_jst_flags, p_direction, p_orientation, p_oversampling);
 }
 
-void CanvasItem::draw_multiline_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
+void CanvasItem::draw_multiline_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 	ERR_FAIL_COND(p_font.is_null());
 
-	p_font->draw_multiline_string(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_max_lines, p_modulate, p_brk_flags, p_jst_flags, p_direction, p_orientation);
+	p_font->draw_multiline_string(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_max_lines, p_modulate, p_brk_flags, p_jst_flags, p_direction, p_orientation, p_oversampling);
 }
 
-void CanvasItem::draw_string_outline(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
+void CanvasItem::draw_string_outline(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 	ERR_FAIL_COND(p_font.is_null());
 
-	p_font->draw_string_outline(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_size, p_modulate, p_jst_flags, p_direction, p_orientation);
+	p_font->draw_string_outline(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_size, p_modulate, p_jst_flags, p_direction, p_orientation, p_oversampling);
 }
 
-void CanvasItem::draw_multiline_string_outline(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, int p_size, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
+void CanvasItem::draw_multiline_string_outline(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, int p_size, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 	ERR_FAIL_COND(p_font.is_null());
 
-	p_font->draw_multiline_string_outline(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_max_lines, p_size, p_modulate, p_brk_flags, p_jst_flags, p_direction, p_orientation);
+	p_font->draw_multiline_string_outline(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_max_lines, p_size, p_modulate, p_brk_flags, p_jst_flags, p_direction, p_orientation, p_oversampling);
 }
 
-void CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, int p_font_size, const Color &p_modulate) const {
+void CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, int p_font_size, const Color &p_modulate, float p_oversampling) const {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 	ERR_FAIL_COND(p_char.length() != 1);
 	ERR_FAIL_COND(p_font.is_null());
 
-	p_font->draw_char(canvas_item, p_pos, p_char[0], p_font_size, p_modulate);
+	p_font->draw_char(canvas_item, p_pos, p_char[0], p_font_size, p_modulate, p_oversampling);
 }
 
-void CanvasItem::draw_char_outline(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, int p_font_size, int p_size, const Color &p_modulate) const {
+void CanvasItem::draw_char_outline(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, int p_font_size, int p_size, const Color &p_modulate, float p_oversampling) const {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 	ERR_FAIL_COND(p_char.length() != 1);
 	ERR_FAIL_COND(p_font.is_null());
 
-	p_font->draw_char_outline(canvas_item, p_pos, p_char[0], p_font_size, p_size, p_modulate);
+	p_font->draw_char_outline(canvas_item, p_pos, p_char[0], p_font_size, p_size, p_modulate, p_oversampling);
 }
 
 void CanvasItem::_notify_transform_deferred() {
@@ -982,6 +1067,24 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 
 void CanvasItem::_physics_interpolated_changed() {
 	RenderingServer::get_singleton()->canvas_item_set_interpolated(canvas_item, is_physics_interpolated());
+}
+
+void CanvasItem::set_canvas_item_use_identity_transform(bool p_enable) {
+	// Prevent sending item transforms to RenderingServer when using global coords.
+	_set_use_identity_transform(p_enable);
+
+	// Let RenderingServer know not to concatenate the parent transform during the render.
+	RenderingServer::get_singleton()->canvas_item_set_use_identity_transform(get_canvas_item(), p_enable);
+
+	if (is_inside_tree()) {
+		if (p_enable) {
+			// Make sure item is using identity transform in server.
+			RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), Transform2D());
+		} else {
+			// Make sure item transform is up to date in server if switching identity transform off.
+			RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), get_transform());
+		}
+	}
 }
 
 Rect2 CanvasItem::get_viewport_rect() const {
@@ -1080,6 +1183,26 @@ void CanvasItem::set_use_parent_material(bool p_use_parent_material) {
 	RS::get_singleton()->canvas_item_set_use_parent_material(canvas_item, p_use_parent_material);
 }
 
+void CanvasItem::set_instance_shader_parameter(const StringName &p_name, const Variant &p_value) {
+	if (p_value.get_type() == Variant::NIL) {
+		Variant def_value = RS::get_singleton()->canvas_item_get_instance_shader_parameter_default_value(get_canvas_item(), p_name);
+		RS::get_singleton()->canvas_item_set_instance_shader_parameter(get_canvas_item(), p_name, def_value);
+		instance_shader_parameters.erase(p_value);
+	} else {
+		instance_shader_parameters[p_name] = p_value;
+		if (p_value.get_type() == Variant::OBJECT) {
+			RID tex_id = p_value;
+			RS::get_singleton()->canvas_item_set_instance_shader_parameter(get_canvas_item(), p_name, tex_id);
+		} else {
+			RS::get_singleton()->canvas_item_set_instance_shader_parameter(get_canvas_item(), p_name, p_value);
+		}
+	}
+}
+
+Variant CanvasItem::get_instance_shader_parameter(const StringName &p_name) const {
+	return RS::get_singleton()->canvas_item_get_instance_shader_parameter(get_canvas_item(), p_name);
+}
+
 bool CanvasItem::get_use_parent_material() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return use_parent_material;
@@ -1138,6 +1261,38 @@ void CanvasItem::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
+PackedStringArray CanvasItem::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
+
+	if (clip_children_mode != CLIP_CHILDREN_DISABLED && is_inside_tree()) {
+		bool warned_about_ancestor_clipping = false;
+		bool warned_about_canvasgroup_ancestor = false;
+		Node *n = get_parent();
+		while (n) {
+			CanvasItem *as_canvas_item = Object::cast_to<CanvasItem>(n);
+			if (!warned_about_ancestor_clipping && as_canvas_item && as_canvas_item->clip_children_mode != CLIP_CHILDREN_DISABLED) {
+				warnings.push_back(vformat(RTR("Ancestor \"%s\" clips its children, so this node will not be able to clip its children."), as_canvas_item->get_name()));
+				warned_about_ancestor_clipping = true;
+			}
+
+			CanvasGroup *as_canvas_group = Object::cast_to<CanvasGroup>(n);
+			if (!warned_about_canvasgroup_ancestor && as_canvas_group) {
+				warnings.push_back(vformat(RTR("Ancestor \"%s\" is a CanvasGroup, so this node will not be able to clip its children."), as_canvas_group->get_name()));
+				warned_about_canvasgroup_ancestor = true;
+			}
+
+			// Only break out early once both warnings have been triggered, so
+			// that the user is aware of both possible reasons for clipping not working.
+			if (warned_about_ancestor_clipping && warned_about_canvasgroup_ancestor) {
+				break;
+			}
+			n = n->get_parent();
+		}
+	}
+
+	return warnings;
+}
+
 void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_top_level_raise_self"), &CanvasItem::_top_level_raise_self);
 
@@ -1158,7 +1313,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_edit_get_pivot"), &CanvasItem::_edit_get_pivot);
 	ClassDB::bind_method(D_METHOD("_edit_use_pivot"), &CanvasItem::_edit_use_pivot);
 	ClassDB::bind_method(D_METHOD("_edit_get_transform"), &CanvasItem::_edit_get_transform);
-#endif
+#endif //TOOLS_ENABLED
 
 	ClassDB::bind_method(D_METHOD("get_canvas_item"), &CanvasItem::get_canvas_item);
 
@@ -1213,12 +1368,12 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_primitive", "points", "colors", "uvs", "texture"), &CanvasItem::draw_primitive, DEFVAL(Ref<Texture2D>()));
 	ClassDB::bind_method(D_METHOD("draw_polygon", "points", "colors", "uvs", "texture"), &CanvasItem::draw_polygon, DEFVAL(PackedVector2Array()), DEFVAL(Ref<Texture2D>()));
 	ClassDB::bind_method(D_METHOD("draw_colored_polygon", "points", "color", "uvs", "texture"), &CanvasItem::draw_colored_polygon, DEFVAL(PackedVector2Array()), DEFVAL(Ref<Texture2D>()));
-	ClassDB::bind_method(D_METHOD("draw_string", "font", "pos", "text", "alignment", "width", "font_size", "modulate", "justification_flags", "direction", "orientation"), &CanvasItem::draw_string, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(Font::DEFAULT_FONT_SIZE), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
-	ClassDB::bind_method(D_METHOD("draw_multiline_string", "font", "pos", "text", "alignment", "width", "font_size", "max_lines", "modulate", "brk_flags", "justification_flags", "direction", "orientation"), &CanvasItem::draw_multiline_string, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(Font::DEFAULT_FONT_SIZE), DEFVAL(-1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
-	ClassDB::bind_method(D_METHOD("draw_string_outline", "font", "pos", "text", "alignment", "width", "font_size", "size", "modulate", "justification_flags", "direction", "orientation"), &CanvasItem::draw_string_outline, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(Font::DEFAULT_FONT_SIZE), DEFVAL(1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
-	ClassDB::bind_method(D_METHOD("draw_multiline_string_outline", "font", "pos", "text", "alignment", "width", "font_size", "max_lines", "size", "modulate", "brk_flags", "justification_flags", "direction", "orientation"), &CanvasItem::draw_multiline_string_outline, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(Font::DEFAULT_FONT_SIZE), DEFVAL(-1), DEFVAL(1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
-	ClassDB::bind_method(D_METHOD("draw_char", "font", "pos", "char", "font_size", "modulate"), &CanvasItem::draw_char, DEFVAL(Font::DEFAULT_FONT_SIZE), DEFVAL(Color(1.0, 1.0, 1.0)));
-	ClassDB::bind_method(D_METHOD("draw_char_outline", "font", "pos", "char", "font_size", "size", "modulate"), &CanvasItem::draw_char_outline, DEFVAL(Font::DEFAULT_FONT_SIZE), DEFVAL(-1), DEFVAL(Color(1.0, 1.0, 1.0)));
+	ClassDB::bind_method(D_METHOD("draw_string", "font", "pos", "text", "alignment", "width", "font_size", "modulate", "justification_flags", "direction", "orientation", "oversampling"), &CanvasItem::draw_string, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(Font::DEFAULT_FONT_SIZE), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_multiline_string", "font", "pos", "text", "alignment", "width", "font_size", "max_lines", "modulate", "brk_flags", "justification_flags", "direction", "orientation", "oversampling"), &CanvasItem::draw_multiline_string, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(Font::DEFAULT_FONT_SIZE), DEFVAL(-1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_string_outline", "font", "pos", "text", "alignment", "width", "font_size", "size", "modulate", "justification_flags", "direction", "orientation", "oversampling"), &CanvasItem::draw_string_outline, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(Font::DEFAULT_FONT_SIZE), DEFVAL(1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_multiline_string_outline", "font", "pos", "text", "alignment", "width", "font_size", "max_lines", "size", "modulate", "brk_flags", "justification_flags", "direction", "orientation", "oversampling"), &CanvasItem::draw_multiline_string_outline, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(Font::DEFAULT_FONT_SIZE), DEFVAL(-1), DEFVAL(1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_char", "font", "pos", "char", "font_size", "modulate", "oversampling"), &CanvasItem::draw_char, DEFVAL(Font::DEFAULT_FONT_SIZE), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_char_outline", "font", "pos", "char", "font_size", "size", "modulate", "oversampling"), &CanvasItem::draw_char_outline, DEFVAL(Font::DEFAULT_FONT_SIZE), DEFVAL(-1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("draw_mesh", "mesh", "texture", "transform", "modulate"), &CanvasItem::draw_mesh, DEFVAL(Transform2D()), DEFVAL(Color(1, 1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("draw_multimesh", "multimesh", "texture"), &CanvasItem::draw_multimesh);
 	ClassDB::bind_method(D_METHOD("draw_set_transform", "position", "rotation", "scale"), &CanvasItem::draw_set_transform, DEFVAL(0.0), DEFVAL(Size2(1.0, 1.0)));
@@ -1242,6 +1397,9 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CanvasItem::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CanvasItem::get_material);
 
+	ClassDB::bind_method(D_METHOD("set_instance_shader_parameter", "name", "value"), &CanvasItem::set_instance_shader_parameter);
+	ClassDB::bind_method(D_METHOD("get_instance_shader_parameter", "name"), &CanvasItem::get_instance_shader_parameter);
+
 	ClassDB::bind_method(D_METHOD("set_use_parent_material", "enable"), &CanvasItem::set_use_parent_material);
 	ClassDB::bind_method(D_METHOD("get_use_parent_material"), &CanvasItem::get_use_parent_material);
 
@@ -1253,7 +1411,7 @@ void CanvasItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("force_update_transform"), &CanvasItem::force_update_transform);
 
-	ClassDB::bind_method(D_METHOD("make_canvas_position_local", "screen_point"), &CanvasItem::make_canvas_position_local);
+	ClassDB::bind_method(D_METHOD("make_canvas_position_local", "viewport_point"), &CanvasItem::make_canvas_position_local);
 	ClassDB::bind_method(D_METHOD("make_input_local", "event"), &CanvasItem::make_input_local);
 
 	ClassDB::bind_method(D_METHOD("set_visibility_layer", "layer"), &CanvasItem::set_visibility_layer);
@@ -1536,6 +1694,8 @@ void CanvasItem::set_clip_children_mode(ClipChildrenMode p_clip_mode) {
 	}
 	clip_children_mode = p_clip_mode;
 
+	update_configuration_warnings();
+
 	if (Object::cast_to<CanvasGroup>(this) != nullptr) {
 		//avoid accidental bugs, make this not work on CanvasGroup
 		return;
@@ -1543,6 +1703,7 @@ void CanvasItem::set_clip_children_mode(ClipChildrenMode p_clip_mode) {
 
 	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CanvasGroupMode(clip_children_mode));
 }
+
 CanvasItem::ClipChildrenMode CanvasItem::get_clip_children_mode() const {
 	ERR_READ_THREAD_GUARD_V(CLIP_CHILDREN_DISABLED);
 	return clip_children_mode;

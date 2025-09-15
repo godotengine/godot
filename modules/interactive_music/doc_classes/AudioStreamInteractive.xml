@@ -119,7 +119,7 @@
 			<param index="0" name="from_clip" type="int" />
 			<param index="1" name="to_clip" type="int" />
 			<description>
-				Return true if a given transition exists (was added via [method add_transition]).
+				Returns [code]true[/code] if a given transition exists (was added via [method add_transition]).
 			</description>
 		</method>
 		<method name="is_transition_holding_previous" qualifiers="const">

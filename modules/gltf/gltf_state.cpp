@@ -35,6 +35,7 @@
 void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_used_extension", "extension_name", "required"), &GLTFState::add_used_extension);
 	ClassDB::bind_method(D_METHOD("append_data_to_buffers", "data", "deduplication"), &GLTFState::append_data_to_buffers);
+	ClassDB::bind_method(D_METHOD("append_gltf_node", "gltf_node", "godot_scene_node", "parent_node_index"), &GLTFState::append_gltf_node);
 
 	ClassDB::bind_method(D_METHOD("get_json"), &GLTFState::get_json);
 	ClassDB::bind_method(D_METHOD("set_json", "json"), &GLTFState::set_json);
@@ -396,8 +397,27 @@ String GLTFState::get_base_path() {
 	return base_path;
 }
 
-void GLTFState::set_base_path(String p_base_path) {
+void GLTFState::set_base_path(const String &p_base_path) {
 	base_path = p_base_path;
+	if (extract_path.is_empty()) {
+		extract_path = p_base_path;
+	}
+}
+
+String GLTFState::get_extract_path() {
+	return extract_path;
+}
+
+void GLTFState::set_extract_path(const String &p_extract_path) {
+	extract_path = p_extract_path;
+}
+
+String GLTFState::get_extract_prefix() {
+	return extract_prefix;
+}
+
+void GLTFState::set_extract_prefix(const String &p_extract_prefix) {
+	extract_prefix = p_extract_prefix;
 }
 
 String GLTFState::get_filename() const {
@@ -406,6 +426,9 @@ String GLTFState::get_filename() const {
 
 void GLTFState::set_filename(const String &p_filename) {
 	filename = p_filename;
+	if (extract_prefix.is_empty()) {
+		extract_prefix = p_filename.get_basename();
+	}
 }
 
 Variant GLTFState::get_additional_data(const StringName &p_extension_name) {
@@ -439,5 +462,18 @@ GLTFBufferViewIndex GLTFState::append_data_to_buffers(const Vector<uint8_t> &p_d
 	destination_buffer.append_array(p_data);
 	const int new_index = buffer_views.size();
 	buffer_views.push_back(buffer_view);
+	return new_index;
+}
+
+GLTFNodeIndex GLTFState::append_gltf_node(Ref<GLTFNode> p_gltf_node, Node *p_godot_scene_node, GLTFNodeIndex p_parent_node_index) {
+	p_gltf_node->set_parent(p_parent_node_index);
+	const GLTFNodeIndex new_index = nodes.size();
+	nodes.append(p_gltf_node);
+	scene_nodes.insert(new_index, p_godot_scene_node);
+	if (p_parent_node_index == -1) {
+		root_nodes.append(new_index);
+	} else if (p_parent_node_index < new_index) {
+		nodes.write[p_parent_node_index]->append_child_index(new_index);
+	}
 	return new_index;
 }

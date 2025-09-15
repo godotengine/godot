@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CONTROL_H
-#define CONTROL_H
+#pragma once
 
 #include "core/math/transform_2d.h"
 #include "core/object/gdvirtual.gen.inc"
-#include "core/templates/rid.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/timer.h"
 #include "scene/resources/theme.h"
@@ -49,7 +47,7 @@ class Control : public CanvasItem {
 
 #ifdef TOOLS_ENABLED
 	bool saving = false;
-#endif
+#endif //TOOLS_ENABLED
 
 public:
 	enum Anchor {
@@ -66,7 +64,14 @@ public:
 	enum FocusMode {
 		FOCUS_NONE,
 		FOCUS_CLICK,
-		FOCUS_ALL
+		FOCUS_ALL,
+		FOCUS_ACCESSIBILITY,
+	};
+
+	enum FocusBehaviorRecursive {
+		FOCUS_BEHAVIOR_INHERITED,
+		FOCUS_BEHAVIOR_DISABLED,
+		FOCUS_BEHAVIOR_ENABLED,
 	};
 
 	enum SizeFlags {
@@ -83,6 +88,12 @@ public:
 		MOUSE_FILTER_STOP,
 		MOUSE_FILTER_PASS,
 		MOUSE_FILTER_IGNORE
+	};
+
+	enum MouseBehaviorRecursive {
+		MOUSE_BEHAVIOR_INHERITED,
+		MOUSE_BEHAVIOR_DISABLED,
+		MOUSE_BEHAVIOR_ENABLED,
 	};
 
 	enum CursorShape {
@@ -141,9 +152,14 @@ public:
 
 	enum LayoutDirection {
 		LAYOUT_DIRECTION_INHERITED,
-		LAYOUT_DIRECTION_LOCALE,
+		LAYOUT_DIRECTION_APPLICATION_LOCALE,
 		LAYOUT_DIRECTION_LTR,
-		LAYOUT_DIRECTION_RTL
+		LAYOUT_DIRECTION_RTL,
+		LAYOUT_DIRECTION_SYSTEM_LOCALE,
+		LAYOUT_DIRECTION_MAX,
+#ifndef DISABLE_DEPRECATED
+		LAYOUT_DIRECTION_LOCALE = LAYOUT_DIRECTION_APPLICATION_LOCALE,
+#endif // DISABLE_DEPRECATED
 	};
 
 	enum TextDirection {
@@ -187,6 +203,8 @@ private:
 		real_t offset[4] = { 0.0, 0.0, 0.0, 0.0 };
 		real_t anchor[4] = { ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN };
 		FocusMode focus_mode = FOCUS_NONE;
+		FocusBehaviorRecursive focus_behavior_recursive = FOCUS_BEHAVIOR_INHERITED;
+		bool parent_focus_behavior_recursive_enabled = false;
 		GrowDirection h_grow = GROW_DIRECTION_END;
 		GrowDirection v_grow = GROW_DIRECTION_END;
 
@@ -196,8 +214,8 @@ private:
 
 		Point2 pos_cache;
 		Size2 size_cache;
-		Size2 minimum_size_cache;
-		bool minimum_size_valid = false;
+		mutable Size2 minimum_size_cache;
+		mutable bool minimum_size_valid = false;
 
 		Size2 last_minimum_size;
 		bool updating_last_minimum_size = false;
@@ -215,6 +233,8 @@ private:
 		// Input events and rendering.
 
 		MouseFilter mouse_filter = MOUSE_FILTER_STOP;
+		MouseBehaviorRecursive mouse_behavior_recursive = MOUSE_BEHAVIOR_INHERITED;
+		bool parent_mouse_behavior_recursive_enabled = true;
 		bool force_pass_scroll_events = true;
 
 		bool clip_contents = false;
@@ -229,6 +249,17 @@ private:
 		NodePath focus_prev;
 
 		ObjectID shortcut_context;
+
+		// Accessibility.
+
+		String accessibility_name;
+		String accessibility_description;
+		DisplayServer::AccessibilityLiveMode accessibility_live = DisplayServer::AccessibilityLiveMode::LIVE_OFF;
+
+		TypedArray<NodePath> accessibility_controls_nodes;
+		TypedArray<NodePath> accessibility_described_by_nodes;
+		TypedArray<NodePath> accessibility_labeled_by_nodes;
+		TypedArray<NodePath> accessibility_flow_to_nodes;
 
 		// Theming.
 
@@ -254,14 +285,15 @@ private:
 		// Internationalization.
 
 		LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
-		bool is_rtl_dirty = true;
-		bool is_rtl = false;
+		mutable bool is_rtl_dirty = true;
+		mutable bool is_rtl = false;
 
 		bool localize_numeral_system = true;
 
 		// Extra properties.
 
 		String tooltip;
+		AutoTranslateMode tooltip_auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 
 	} data;
 
@@ -294,7 +326,7 @@ private:
 	void _set_anchors_layout_preset(int p_preset);
 	int _get_anchors_layout_preset() const;
 
-	void _update_minimum_size_cache();
+	void _update_minimum_size_cache() const;
 	void _update_minimum_size();
 	void _size_changed();
 
@@ -307,10 +339,20 @@ private:
 
 	void _call_gui_input(const Ref<InputEvent> &p_event);
 
+	// Mouse Filter.
+
+	bool _is_mouse_filter_enabled() const;
+	void _update_mouse_behavior_recursive();
+	void _propagate_mouse_behavior_recursive_recursively(bool p_enabled, bool p_skip_non_inherited);
+
 	// Focus.
 
-	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, real_t p_min, real_t &r_closest_dist, Control **r_closest);
+	bool _is_focusable() const;
+	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_closest_dist_squared, Control **r_closest);
 	Control *_get_focus_neighbor(Side p_side, int p_count = 0);
+	bool _is_focus_mode_enabled() const;
+	void _update_focus_behavior_recursive();
+	void _propagate_focus_behavior_recursive_recursively(bool p_enabled, bool p_skip_non_inherited);
 
 	// Theming.
 
@@ -321,8 +363,6 @@ private:
 	// Extra properties.
 
 	static int root_layout_direction;
-
-	String get_tooltip_text() const;
 
 protected:
 	// Dynamic properties.
@@ -348,9 +388,11 @@ protected:
 	void _notification(int p_notification);
 	static void _bind_methods();
 
-#ifndef DISABLE_DEPRECATED
-	static void _bind_compatibility_methods();
-#endif
+	void _accessibility_action_foucs(const Variant &p_data);
+	void _accessibility_action_blur(const Variant &p_data);
+	void _accessibility_action_show_tooltip(const Variant &p_data);
+	void _accessibility_action_hide_tooltip(const Variant &p_data);
+	void _accessibility_action_scroll_into_view(const Variant &p_data);
 
 	// Exposed virtual methods.
 
@@ -363,6 +405,9 @@ protected:
 	GDVIRTUAL2RC(bool, _can_drop_data, Vector2, Variant)
 	GDVIRTUAL2(_drop_data, Vector2, Variant)
 	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
+
+	GDVIRTUAL0RC(String, _accessibility_get_contextual_info);
+	GDVIRTUAL1RC(String, _get_accessibility_container_name, const Node *)
 
 	GDVIRTUAL1(_gui_input, Ref<InputEvent>)
 
@@ -395,8 +440,6 @@ public:
 	virtual Size2 _edit_get_scale() const override;
 
 	virtual void _edit_set_rect(const Rect2 &p_edit_rect) override;
-	virtual Rect2 _edit_get_rect() const override;
-	virtual bool _edit_use_rect() const override;
 
 	virtual void _edit_set_rotation(real_t p_rotation) override;
 	virtual real_t _edit_get_rotation() const override;
@@ -407,7 +450,13 @@ public:
 	virtual bool _edit_use_pivot() const override;
 
 	virtual Size2 _edit_get_minimum_size() const override;
-#endif
+#endif //TOOLS_ENABLED
+
+#ifdef DEBUG_ENABLED
+	virtual Rect2 _edit_get_rect() const override;
+	virtual bool _edit_use_rect() const override;
+#endif // DEBUG_ENABLED
+
 	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true) override;
 
 	// Editor integration.
@@ -415,15 +464,14 @@ public:
 	static void set_root_layout_direction(int p_root_dir);
 
 	PackedStringArray get_configuration_warnings() const override;
+	PackedStringArray get_accessibility_configuration_warnings() const override;
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-#endif
+#endif //TOOLS_ENABLED
 
 	virtual bool is_text_field() const;
 
 	// Global relations.
-
-	bool is_top_level_control() const;
 
 	Control *get_parent_control() const;
 	Window *get_parent_window() const;
@@ -511,6 +559,10 @@ public:
 
 	void set_mouse_filter(MouseFilter p_filter);
 	MouseFilter get_mouse_filter() const;
+	MouseFilter get_mouse_filter_with_override() const;
+
+	void set_mouse_behavior_recursive(MouseBehaviorRecursive p_mouse_behavior_recursive);
+	MouseBehaviorRecursive get_mouse_behavior_recursive() const;
 
 	void set_force_pass_scroll_events(bool p_force_pass_scroll_events);
 	bool is_force_pass_scroll_events() const;
@@ -529,12 +581,17 @@ public:
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
 	void set_drag_preview(Control *p_control);
 	void force_drag(const Variant &p_data, Control *p_control);
+	void accessibility_drag();
+	void accessibility_drop();
 	bool is_drag_successful() const;
 
 	// Focus.
 
 	void set_focus_mode(FocusMode p_focus_mode);
 	FocusMode get_focus_mode() const;
+	FocusMode get_focus_mode_with_override() const;
+	void set_focus_behavior_recursive(FocusBehaviorRecursive p_focus_behavior_recursive);
+	FocusBehaviorRecursive get_focus_behavior_recursive() const;
 	bool has_focus() const;
 	void grab_focus();
 	void grab_click_focus();
@@ -551,6 +608,31 @@ public:
 	NodePath get_focus_next() const;
 	void set_focus_previous(const NodePath &p_prev);
 	NodePath get_focus_previous() const;
+
+	// Accessibility.
+
+	virtual String get_accessibility_container_name(const Node *p_node) const;
+
+	void set_accessibility_name(const String &p_name);
+	String get_accessibility_name() const;
+
+	void set_accessibility_description(const String &p_description);
+	String get_accessibility_description() const;
+
+	void set_accessibility_live(DisplayServer::AccessibilityLiveMode p_mode);
+	DisplayServer::AccessibilityLiveMode get_accessibility_live() const;
+
+	void set_accessibility_controls_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_controls_nodes() const;
+
+	void set_accessibility_described_by_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_described_by_nodes() const;
+
+	void set_accessibility_labeled_by_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_labeled_by_nodes() const;
+
+	void set_accessibility_flow_to_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_flow_to_nodes() const;
 
 	// Rendering.
 
@@ -602,9 +684,10 @@ public:
 	Color get_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	int get_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Variant get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	Variant get_used_theme_item(const String &p_full_name, const StringName &p_theme_type = StringName()) const;
 #ifdef TOOLS_ENABLED
 	Ref<Texture2D> get_editor_theme_icon(const StringName &p_name) const;
-#endif
+#endif //TOOLS_ENABLED
 
 	bool has_theme_icon_override(const StringName &p_name) const;
 	bool has_theme_stylebox_override(const StringName &p_name) const;
@@ -636,19 +719,27 @@ public:
 #ifndef DISABLE_DEPRECATED
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;
-#endif
+#endif //DISABLE_DEPRECATED
+
+	void set_tooltip_auto_translate_mode(AutoTranslateMode p_mode);
+	AutoTranslateMode get_tooltip_auto_translate_mode() const;
 
 	// Extra properties.
 
+	String get_tooltip_text() const;
 	void set_tooltip_text(const String &text);
 	virtual String get_tooltip(const Point2 &p_pos) const;
 	virtual Control *make_custom_tooltip(const String &p_text) const;
+
+	virtual String accessibility_get_contextual_info() const;
 
 	Control();
 	~Control();
 };
 
 VARIANT_ENUM_CAST(Control::FocusMode);
+VARIANT_ENUM_CAST(Control::FocusBehaviorRecursive);
+VARIANT_ENUM_CAST(Control::MouseBehaviorRecursive);
 VARIANT_BITFIELD_CAST(Control::SizeFlags);
 VARIANT_ENUM_CAST(Control::CursorShape);
 VARIANT_ENUM_CAST(Control::LayoutPreset);
@@ -665,5 +756,3 @@ VARIANT_ENUM_CAST(Control::TextDirection);
 #define SET_DRAG_FORWARDING_CDU(from, to) from->set_drag_forwarding(Callable(), callable_mp(this, &to::_can_drop_data_fw).bind(from), callable_mp(this, &to::_drop_data_fw).bind(from));
 #define SET_DRAG_FORWARDING_GCD(from, to) from->set_drag_forwarding(callable_mp(this, &to::get_drag_data_fw).bind(from), callable_mp(this, &to::can_drop_data_fw).bind(from), callable_mp(this, &to::drop_data_fw).bind(from));
 #define SET_DRAG_FORWARDING_GCDU(from, to) from->set_drag_forwarding(callable_mp(this, &to::_get_drag_data_fw).bind(from), callable_mp(this, &to::_can_drop_data_fw).bind(from), callable_mp(this, &to::_drop_data_fw).bind(from));
-
-#endif // CONTROL_H

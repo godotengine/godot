@@ -28,10 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_COMPLETION_H
-#define TEST_COMPLETION_H
+#pragma once
 
 #ifdef TOOLS_ENABLED
+
+#include "tests/test_macros.h"
+
+#include "../gdscript.h"
+#include "gdscript_test_runner.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
@@ -40,15 +44,11 @@
 #include "core/object/script_language.h"
 #include "core/variant/dictionary.h"
 #include "core/variant/variant.h"
-#include "gdscript_test_runner.h"
-#include "modules/modules_enabled.gen.h" // For mono.
+#include "editor/settings/editor_settings.h"
 #include "scene/resources/packed_scene.h"
-
-#include "../gdscript.h"
-#include "tests/test_macros.h"
-
-#include "editor/editor_settings.h"
 #include "scene/theme/theme_db.h"
+
+#include "modules/modules_enabled.gen.h" // For mono.
 
 namespace GDScriptTests {
 
@@ -160,6 +160,8 @@ static void test_directory(const String &p_dir) {
 				owner = scene->get_node(conf.get_value("input", "node_path", "."));
 			}
 
+			// The only requirement is for the script to be parsable, warnings and errors from the analyzer might happen and completion should still work.
+			ERR_PRINT_OFF;
 			if (owner != nullptr) {
 				// Remove the line which contains the sentinel char, to get a valid script.
 				Ref<GDScript> scr;
@@ -183,6 +185,8 @@ static void test_directory(const String &p_dir) {
 			}
 
 			GDScriptLanguage::get_singleton()->complete_code(code, res_path, owner, &options, forced, call_hint);
+			ERR_PRINT_ON;
+
 			String contains_excluded;
 			for (ScriptLanguage::CodeCompletionOption &option : options) {
 				for (const Dictionary &E : exclude) {
@@ -219,17 +223,54 @@ static void test_directory(const String &p_dir) {
 	}
 }
 
+static void setup_global_classes(const String &p_dir) {
+	Error err = OK;
+	Ref<DirAccess> dir = DirAccess::open(p_dir, &err);
+
+	if (err != OK) {
+		FAIL("Invalid test directory.");
+		return;
+	}
+
+	String path = dir->get_current_dir();
+
+	dir->list_dir_begin();
+	String next = dir->get_next();
+
+	while (!next.is_empty()) {
+		if (dir->current_is_dir() && next != "." && next != "..") {
+			setup_global_classes(path.path_join(next));
+		} else if (next.ends_with(".gd")) {
+			String base_type;
+			bool is_abstract;
+			bool is_tool;
+			String source_file = path.path_join(next);
+			String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(source_file, &base_type, nullptr, &is_abstract, &is_tool);
+			if (class_name.is_empty()) {
+				next = dir->get_next();
+				continue;
+			}
+			ERR_FAIL_COND_MSG(ScriptServer::is_global_class(class_name),
+					"Class name \"" + class_name + "\" from \"" + source_file + "\" is already used in \"" + ScriptServer::get_global_class_path(class_name) + "\".");
+
+			ScriptServer::add_global_class(class_name, base_type, GDScriptLanguage::get_singleton()->get_name(), source_file, is_abstract, is_tool);
+		}
+		next = dir->get_next();
+	}
+}
+
 TEST_SUITE("[Modules][GDScript][Completion]") {
 	TEST_CASE("[Editor] Check suggestion list") {
 		// Set all editor settings that code completion relies on.
 		EditorSettings::get_singleton()->set_setting("text_editor/completion/use_single_quotes", false);
 		init_language("modules/gdscript/tests/scripts");
 
+		setup_global_classes("modules/gdscript/tests/scripts/completion");
 		test_directory("modules/gdscript/tests/scripts/completion");
+
+		finish_language();
 	}
 }
 } // namespace GDScriptTests
 
 #endif
-
-#endif // TEST_COMPLETION_H

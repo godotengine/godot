@@ -31,14 +31,13 @@
 #include "os.h"
 
 #include "core/config/project_settings.h"
-#include "core/input/input.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/os/midi_driver.h"
 #include "core/version_generated.gen.h"
 
-#include <stdarg.h>
+#include <cstdarg>
 
 #ifdef MINGW_ENABLED
 #define MINGW_STDTHREAD_REDUNDANCY_WARNING
@@ -85,13 +84,13 @@ String OS::get_identifier() const {
 	return get_name().to_lower();
 }
 
-void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, Logger::ErrorType p_type) {
+void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, Logger::ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
 	if (!_stderr_enabled) {
 		return;
 	}
 
 	if (_logger) {
-		_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
+		_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type, p_script_backtraces);
 	}
 }
 
@@ -200,6 +199,14 @@ void OS::set_stderr_enabled(bool p_enabled) {
 	_stderr_enabled = p_enabled;
 }
 
+String OS::multibyte_to_string(const String &p_encoding, const PackedByteArray &p_array) const {
+	return String();
+}
+
+PackedByteArray OS::string_to_multibyte(const String &p_encoding, const String &p_string) const {
+	return PackedByteArray();
+}
+
 int OS::get_exit_code() const {
 	return _exit_code;
 }
@@ -215,12 +222,29 @@ String OS::get_locale() const {
 // Non-virtual helper to extract the 2 or 3-letter language code from
 // `get_locale()` in a way that's consistent for all platforms.
 String OS::get_locale_language() const {
-	return get_locale().left(3).replace("_", "");
+	return get_locale().left(3).remove_char('_');
 }
 
 // Embedded PCK offset.
 uint64_t OS::get_embedded_pck_offset() const {
 	return 0;
+}
+
+// Default boot screen rect scale mode is "Keep Aspect Centered"
+Rect2 OS::calculate_boot_screen_rect(const Size2 &p_window_size, const Size2 &p_imgrect_size) const {
+	Rect2 screenrect;
+	if (p_window_size.width > p_window_size.height) {
+		// Scale horizontally.
+		screenrect.size.y = p_window_size.height;
+		screenrect.size.x = p_imgrect_size.x * p_window_size.height / p_imgrect_size.y;
+		screenrect.position.x = (p_window_size.width - screenrect.size.x) / 2;
+	} else {
+		// Scale vertically.
+		screenrect.size.x = p_window_size.width;
+		screenrect.size.y = p_imgrect_size.y * p_window_size.width / p_imgrect_size.x;
+		screenrect.position.y = (p_window_size.height - screenrect.size.y) / 2;
+	}
+	return screenrect;
 }
 
 // Helper function to ensure that a dir name/path will be valid on the OS
@@ -230,7 +254,7 @@ String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_paths) const
 	if (p_allow_paths) {
 		// Dir separators are allowed, but disallow ".." to avoid going up the filesystem
 		invalid_chars.push_back("..");
-		safe_dir_name = safe_dir_name.replace("\\", "/").strip_edges();
+		safe_dir_name = safe_dir_name.replace_char('\\', '/').replace("//", "/").strip_edges();
 	} else {
 		invalid_chars.push_back("/");
 		invalid_chars.push_back("\\");
@@ -258,7 +282,7 @@ String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_paths) const
 // Get properly capitalized engine name for system paths
 String OS::get_godot_dir_name() const {
 	// Default to lowercase, so only override when different case is needed
-	return String(VERSION_SHORT_NAME).to_lower();
+	return String(GODOT_VERSION_SHORT_NAME).to_lower();
 }
 
 // OS equivalent of XDG_DATA_HOME
@@ -276,6 +300,10 @@ String OS::get_cache_path() const {
 	return ".";
 }
 
+String OS::get_temp_path() const {
+	return ".";
+}
+
 // Path to macOS .app bundle resources
 String OS::get_bundle_resource_dir() const {
 	return ".";
@@ -287,8 +315,26 @@ String OS::get_bundle_icon_path() const {
 }
 
 // OS specific path for user://
-String OS::get_user_data_dir() const {
+String OS::get_user_data_dir(const String &p_user_dir) const {
 	return ".";
+}
+
+String OS::get_user_data_dir() const {
+	String appname = get_safe_dir_name(GLOBAL_GET("application/config/name"));
+	if (!appname.is_empty()) {
+		bool use_custom_dir = GLOBAL_GET("application/config/use_custom_user_dir");
+		if (use_custom_dir) {
+			String custom_dir = get_safe_dir_name(GLOBAL_GET("application/config/custom_user_dir_name"), true);
+			if (custom_dir.is_empty()) {
+				custom_dir = appname;
+			}
+			return get_user_data_dir(custom_dir);
+		} else {
+			return get_user_data_dir(get_godot_dir_name().path_join("app_userdata").path_join(appname));
+		}
+	} else {
+		return get_user_data_dir(get_godot_dir_name().path_join("app_userdata").path_join("[unnamed project]"));
+	}
 }
 
 // Absolute path to res://
@@ -299,6 +345,23 @@ String OS::get_resource_dir() const {
 // Access system-specific dirs like Documents, Downloads, etc.
 String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ".";
+}
+
+void OS::create_lock_file() {
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return;
+	}
+
+	String lock_file_path = get_user_data_dir().path_join(".recovery_mode_lock");
+	Ref<FileAccess> lock_file = FileAccess::open(lock_file_path, FileAccess::WRITE);
+	if (lock_file.is_valid()) {
+		lock_file->close();
+	}
+}
+
+void OS::remove_lock_file() {
+	String lock_file_path = get_user_data_dir().path_join(".recovery_mode_lock");
+	DirAccess::remove_absolute(lock_file_path);
 }
 
 Error OS::shell_open(const String &p_uri) {
@@ -352,7 +415,7 @@ void OS::ensure_user_data_dir() {
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = da->make_dir_recursive(dd);
-	ERR_FAIL_COND_MSG(err != OK, "Error attempting to create data dir: " + dd + ".");
+	ERR_FAIL_COND_MSG(err != OK, vformat("Error attempting to create data dir: %s.", dd));
 }
 
 String OS::get_model_name() const {
@@ -405,6 +468,8 @@ bool OS::has_feature(const String &p_feature) {
 		return _in_editor;
 	} else if (p_feature == "editor_runtime") {
 		return !_in_editor;
+	} else if (p_feature == "embedded_in_editor") {
+		return _embedded_in_editor;
 	}
 #else
 	if (p_feature == "template") {
@@ -439,6 +504,11 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(__i386) || defined(__i386__) || defined(_M_IX86) || defined(_M_X64)
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
+#if defined(MACOS_ENABLED)
+	if (p_feature == "universal") {
+		return true;
+	}
+#endif
 	if (p_feature == "x86_64") {
 		return true;
 	}
@@ -452,6 +522,11 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
 #if defined(__aarch64__) || defined(_M_ARM64)
+#if defined(MACOS_ENABLED)
+	if (p_feature == "universal") {
+		return true;
+	}
+#endif
 	if (p_feature == "arm64") {
 		return true;
 	}
@@ -504,23 +579,32 @@ bool OS::has_feature(const String &p_feature) {
 	if (p_feature == "wasm") {
 		return true;
 	}
+#elif defined(__loongarch64)
+	if (p_feature == "loongarch64") {
+		return true;
+	}
 #endif
 
-#if defined(IOS_SIMULATOR)
+#if defined(IOS_SIMULATOR) || defined(VISIONOS_SIMULATOR)
 	if (p_feature == "simulator") {
 		return true;
 	}
 #endif
 
-#ifdef THREADS_ENABLED
 	if (p_feature == "threads") {
+#ifdef THREADS_ENABLED
 		return true;
-	}
 #else
-	if (p_feature == "nothreads") {
-		return true;
-	}
+		return false;
 #endif
+	}
+	if (p_feature == "nothreads") {
+#ifdef THREADS_ENABLED
+		return false;
+#else
+		return true;
+#endif
+	}
 
 	if (_check_internal_feature_support(p_feature)) {
 		return true;
@@ -579,7 +663,25 @@ void OS::close_midi_inputs() {
 	}
 }
 
-void OS::add_frame_delay(bool p_can_draw) {
+uint64_t OS::get_frame_delay(bool p_can_draw) const {
+	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
+
+	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
+	// previous frame time into account for a smoother result.
+	uint64_t dynamic_delay = 0;
+	if (is_in_low_processor_usage_mode() || !p_can_draw) {
+		dynamic_delay = get_low_processor_usage_mode_sleep_usec();
+	}
+	const int max_fps = Engine::get_singleton()->get_max_fps();
+	if (max_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {
+		// Override the low processor usage mode sleep delay if the target FPS is lower.
+		dynamic_delay = MAX(dynamic_delay, (uint64_t)(1000000 / max_fps));
+	}
+
+	return frame_delay + dynamic_delay;
+}
+
+void OS::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
 	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
 	if (frame_delay) {
 		// Add fixed frame delay to decrease CPU/GPU usage. This doesn't take

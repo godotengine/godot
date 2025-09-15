@@ -32,8 +32,7 @@
 
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
-#include "editor/editor_settings.h"
-#include "editor/editor_string_names.h"
+#include "editor/settings/editor_settings.h"
 
 void OpenXRSelectRuntime::_update_items() {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -55,10 +54,9 @@ void OpenXRSelectRuntime::_update_items() {
 	set_item_metadata(index, "");
 	index++;
 
-	Array keys = runtimes.keys();
-	for (int i = 0; i < keys.size(); i++) {
-		String key = keys[i];
-		String path = runtimes[key];
+	for (const KeyValue<Variant, Variant> &kv : runtimes) {
+		const String &key = kv.key;
+		const String &path = kv.value;
 		String adj_path = path.replace("~", home_folder);
 
 		if (da->file_exists(adj_path)) {
@@ -75,7 +73,7 @@ void OpenXRSelectRuntime::_update_items() {
 	select(current_runtime);
 }
 
-void OpenXRSelectRuntime::_item_selected(int p_which) {
+void OpenXRSelectRuntime::_on_item_selected(int p_which) {
 	OS *os = OS::get_singleton();
 
 	if (p_which == 0) {
@@ -95,11 +93,11 @@ void OpenXRSelectRuntime::_notification(int p_notification) {
 			_update_items();
 
 			// Connect signal
-			connect(SceneStringName(item_selected), callable_mp(this, &OpenXRSelectRuntime::_item_selected));
+			connect(SceneStringName(item_selected), callable_mp(this, &OpenXRSelectRuntime::_on_item_selected));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			// Disconnect signal
-			disconnect(SceneStringName(item_selected), callable_mp(this, &OpenXRSelectRuntime::_item_selected));
+			disconnect(SceneStringName(item_selected), callable_mp(this, &OpenXRSelectRuntime::_on_item_selected));
 		} break;
 	}
 }
@@ -119,6 +117,7 @@ OpenXRSelectRuntime::OpenXRSelectRuntime() {
 	default_runtimes["SteamVR"] = "~/.steam/steam/steamapps/common/SteamVR/steamxr_linux64.json";
 #endif
 
+	// TODO: Move to editor_settings.cpp
 	EDITOR_DEF_RST("xr/openxr/runtime_paths", default_runtimes);
 
 	set_flat(true);

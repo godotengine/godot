@@ -34,6 +34,14 @@
 		<link title="Animation documentation index">$DOCS_URL/tutorials/animation/index.html</link>
 	</tutorials>
 	<methods>
+		<method name="add_marker">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="time" type="float" />
+			<description>
+				Adds a marker to this Animation.
+			</description>
+		</method>
 		<method name="add_track">
 			<return type="int" />
 			<param index="0" name="type" type="int" enum="Animation.TrackType" />
@@ -271,10 +279,58 @@
 				Returns the index of the specified track. If the track is not found, return -1.
 			</description>
 		</method>
+		<method name="get_marker_at_time" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="time" type="float" />
+			<description>
+				Returns the name of the marker located at the given time.
+			</description>
+		</method>
+		<method name="get_marker_color" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the given marker's color.
+			</description>
+		</method>
+		<method name="get_marker_names" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns every marker in this Animation, sorted ascending by time.
+			</description>
+		</method>
+		<method name="get_marker_time" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the given marker's time.
+			</description>
+		</method>
+		<method name="get_next_marker" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="time" type="float" />
+			<description>
+				Returns the closest marker that comes after the given time. If no such marker exists, an empty string is returned.
+			</description>
+		</method>
+		<method name="get_prev_marker" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="time" type="float" />
+			<description>
+				Returns the closest marker that comes before the given time. If no such marker exists, an empty string is returned.
+			</description>
+		</method>
 		<method name="get_track_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the amount of tracks in the animation.
+			</description>
+		</method>
+		<method name="has_marker" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if this Animation contains a marker with the given name.
 			</description>
 		</method>
 		<method name="method_track_get_name" qualifiers="const">
@@ -293,6 +349,15 @@
 				Returns the arguments values to be called on a method track for a given key in a given track.
 			</description>
 		</method>
+		<method name="optimize">
+			<return type="void" />
+			<param index="0" name="allowed_velocity_err" type="float" default="0.01" />
+			<param index="1" name="allowed_angular_err" type="float" default="0.01" />
+			<param index="2" name="precision" type="int" default="3" />
+			<description>
+				Optimize the animation and all its tracks in-place. This will preserve only as many keys as are necessary to keep the animation within the specified bounds.
+			</description>
+		</method>
 		<method name="position_track_insert_key">
 			<return type="int" />
 			<param index="0" name="track_idx" type="int" />
@@ -309,6 +374,13 @@
 			<param index="2" name="backward" type="bool" default="false" />
 			<description>
 				Returns the interpolated position value at the given time (in seconds). The [param track_idx] must be the index of a 3D position track.
+			</description>
+		</method>
+		<method name="remove_marker">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes the marker with the given name from this Animation.
 			</description>
 		</method>
 		<method name="remove_track">
@@ -352,6 +424,14 @@
 			<param index="2" name="backward" type="bool" default="false" />
 			<description>
 				Returns the interpolated scale value at the given time (in seconds). The [param track_idx] must be the index of a 3D scale track.
+			</description>
+		</method>
+		<method name="set_marker_color">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Sets the given marker's color.
 			</description>
 		</method>
 		<method name="track_find_key" qualifiers="const">
@@ -594,7 +674,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="mode" type="int" enum="Animation.UpdateMode" />
 			<description>
-				Sets the update mode (see [enum UpdateMode]) of a value track.
+				Sets the update mode of a value track.
 			</description>
 		</method>
 	</methods>
@@ -607,9 +687,9 @@
 			[b]Note:[/b] Length is not delimited by the last key, as this one may be before or after the end to ensure correct interpolation and looping.
 		</member>
 		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="Animation.LoopMode" default="0">
-			Determines the behavior of both ends of the animation timeline during animation playback. This is used for correct interpolation of animation cycles, and for hinting the player that it must restart the animation.
+			Determines the behavior of both ends of the animation timeline during animation playback. This indicates whether and how the animation should be restarted, and is also used to correctly interpolate animation cycles.
 		</member>
-		<member name="step" type="float" setter="set_step" getter="get_step" default="0.0333333">
+		<member name="step" type="float" setter="set_step" getter="get_step" default="0.033333335">
 			The animation step value.
 		</member>
 	</members>

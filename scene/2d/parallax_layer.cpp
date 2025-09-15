@@ -118,12 +118,12 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, real_t p_s
 
 	if (mirroring.x) {
 		real_t den = mirroring.x * p_scale;
-		new_ofs.x -= den * ceil(new_ofs.x / den);
+		new_ofs.x -= den * std::ceil(new_ofs.x / den);
 	}
 
 	if (mirroring.y) {
 		real_t den = mirroring.y * p_scale;
-		new_ofs.y -= den * ceil(new_ofs.y / den);
+		new_ofs.y -= den * std::ceil(new_ofs.y / den);
 	}
 
 	set_position(new_ofs);
@@ -133,7 +133,7 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, real_t p_s
 }
 
 PackedStringArray ParallaxLayer::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	if (!Object::cast_to<ParallaxBackground>(get_parent())) {
 		warnings.push_back(RTR("ParallaxLayer node only works when set as child of a ParallaxBackground node."));

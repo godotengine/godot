@@ -28,8 +28,20 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="add_types" type="bool" />
 			<description>
-				If implemented, gets the dependencies of a given resource. If [param add_types] is [code]true[/code], paths should be appended [code]::TypeName[/code], where [code]TypeName[/code] is the class name of the dependency.
-				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just return [code]"Resource"[/code] for them.
+				Should return the dependencies for the resource at the given [param path]. Each dependency is a string composed of one to three sections separated by [code]::[/code], with trailing empty sections omitted:
+				- The first section should contain the UID if the resource has one. Otherwise, it should contain the file path.
+				- The second section should contain the class name of the dependency if [param add_types] is [code]true[/code]. Otherwise, it should be empty.
+				- The third section should contain the fallback path if the resource has a UID. Otherwise, it should be empty.
+				[codeblock]
+				func _get_dependencies(path, add_types):
+					return [
+						"uid://fqgvuwrkuixh::Script::res://script.gd",
+						"uid://fqgvuwrkuixh::::res://script.gd",
+						"res://script.gd::Script",
+						"res://script.gd",
+					]
+				[/codeblock]
+				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so [code]"Resource"[/code] can be used for the class name.
 			</description>
 		</method>
 		<method name="_get_recognized_extensions" qualifiers="virtual const">
@@ -57,6 +69,7 @@
 			<return type="int" />
 			<param index="0" name="path" type="String" />
 			<description>
+				Should return the unique ID for the resource associated with the given path. If this method is not overridden, a [code].uid[/code] file is generated along with the resource file, containing the unique ID.
 			</description>
 		</method>
 		<method name="_handles_type" qualifiers="virtual const">

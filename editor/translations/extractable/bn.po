@@ -18,11 +18,14 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Weblate 5.5-dev\n"
 
+msgid "All Recognized"
+msgstr "সব ফাইল পরিচিতি সম্পন্ন"
+
 msgid "Open"
 msgstr "খুলুন"
 
-msgid "All Recognized"
-msgstr "সব ফাইল পরিচিতি সম্পন্ন"
+msgid "Save"
+msgstr "সংরক্ষন করুন"
 
 msgid "Open a File"
 msgstr "একটি ফাইল খুলুন"
@@ -35,9 +38,6 @@ msgstr "পথ/ডিরেক্টরি খুলুন"
 
 msgid "Open a File or Directory"
 msgstr "ফাইল বা পথ/ডিরেক্টরি খুলুন"
-
-msgid "Save"
-msgstr "সংরক্ষন করুন"
 
 msgid "Save a File"
 msgstr "ফাইল সংরক্ষন করুন"

@@ -248,7 +248,7 @@ KTX_error_code ktxMemStream_read(ktxStream* str, void* dst, const ktx_size_t cou
 
     newpos = mem->pos + count;
     /* The first clause checks for overflow. */
-    if (newpos < mem->pos || (ktx_uint32_t)newpos > mem->used_size)
+    if (newpos < mem->pos || (ktx_size_t)newpos > mem->used_size)
         return KTX_FILE_UNEXPECTED_EOF;
 
     bytes = mem->robytes ? mem->robytes : mem->bytes;
@@ -282,7 +282,7 @@ KTX_error_code ktxMemStream_skip(ktxStream* str, const ktx_size_t count)
 
     newpos = mem->pos + count;
     /* The first clause checks for overflow. */
-    if (newpos < mem->pos || (ktx_uint32_t)newpos > mem->used_size)
+    if (newpos < mem->pos || (ktx_size_t)newpos > mem->used_size)
         return KTX_FILE_UNEXPECTED_EOF;
 
     mem->pos = newpos;
@@ -388,7 +388,7 @@ KTX_error_code ktxMemStream_setpos(ktxStream* str, ktx_off_t pos)
 
     assert(str->type == eStreamTypeMemory);
 
-    if (pos > (ktx_off_t)str->data.mem->alloc_size)
+    if (pos < 0 || (ktx_size_t)pos > str->data.mem->alloc_size)
         return KTX_INVALID_OPERATION;
 
     str->data.mem->pos = pos;

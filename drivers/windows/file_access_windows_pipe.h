@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FILE_ACCESS_WINDOWS_PIPE_H
-#define FILE_ACCESS_WINDOWS_PIPE_H
+#pragma once
 
 #ifdef WINDOWS_ENABLED
 
@@ -38,8 +37,10 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+
 class FileAccessWindowsPipe : public FileAccess {
-	HANDLE fd[2] = { 0, 0 };
+	GDSOFTCLASS(FileAccessWindowsPipe, FileAccess);
+	HANDLE fd[2] = { nullptr, nullptr };
 
 	mutable Error last_error = OK;
 
@@ -60,7 +61,7 @@ public:
 	virtual void seek(uint64_t p_position) override {}
 	virtual void seek_end(int64_t p_position = 0) override {}
 	virtual uint64_t get_position() const override { return 0; }
-	virtual uint64_t get_length() const override { return 0; }
+	virtual uint64_t get_length() const override;
 
 	virtual bool eof_reached() const override { return false; }
 
@@ -70,11 +71,13 @@ public:
 
 	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual void flush() override {}
-	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
+	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
 
 	virtual bool file_exists(const String &p_name) override { return false; }
 
 	uint64_t _get_modified_time(const String &p_file) override { return 0; }
+	virtual uint64_t _get_access_time(const String &p_file) override { return 0; }
+	virtual int64_t _get_size(const String &p_file) override { return -1; }
 	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override { return 0; }
 	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override { return ERR_UNAVAILABLE; }
 
@@ -90,5 +93,3 @@ public:
 };
 
 #endif // WINDOWS_ENABLED
-
-#endif // FILE_ACCESS_WINDOWS_PIPE_H

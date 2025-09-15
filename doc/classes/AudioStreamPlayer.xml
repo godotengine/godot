@@ -22,6 +22,7 @@
 			<description>
 				Returns the position in the [AudioStream] of the latest sound, in seconds. Returns [code]0.0[/code] if no sounds are playing.
 				[b]Note:[/b] The position is not always accurate, as the [AudioServer] does not mix audio every processed frame. To get more accurate results, add [method AudioServer.get_time_since_last_mix] to the returned position.
+				[b]Note:[/b] This method always returns [code]0.0[/code] if the [member stream] is an [AudioStreamInteractive], since it can have multiple clips playing at once.
 			</description>
 		</method>
 		<method name="get_stream_playback">
@@ -69,7 +70,7 @@
 			The maximum number of sounds this node can play at the same time. Calling [method play] after this value is reached will cut off the oldest sounds.
 		</member>
 		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" enum="AudioStreamPlayer.MixTarget" default="0">
-			The mix target channels, as one of the [enum MixTarget] constants. Has no effect when two speakers or less are detected (see [enum AudioServer.SpeakerMode]).
+			The mix target channels. Has no effect when two speakers or less are detected (see [enum AudioServer.SpeakerMode]).
 		</member>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
 			The audio's pitch and tempo, as a multiplier of the [member stream]'s sample rate. A value of [code]2.0[/code] doubles the audio's pitch, while a value of [code]0.5[/code] halves the pitch.
@@ -88,8 +89,12 @@
 			[b]Note:[/b] This property is automatically changed when exiting or entering the tree, or this node is paused (see [member Node.process_mode]).
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">
-			Volume of sound, in decibel. This is an offset of the [member stream]'s volume.
-			[b]Note:[/b] To convert between decibel and linear energy (like most volume sliders do), use [method @GlobalScope.db_to_linear] and [method @GlobalScope.linear_to_db].
+			Volume of sound, in decibels. This is an offset of the [member stream]'s volume.
+			[b]Note:[/b] To convert between decibel and linear energy (like most volume sliders do), use [member volume_linear], or [method @GlobalScope.db_to_linear] and [method @GlobalScope.linear_to_db].
+		</member>
+		<member name="volume_linear" type="float" setter="set_volume_linear" getter="get_volume_linear">
+			Volume of sound, as a linear value.
+			[b]Note:[/b] This member modifies [member volume_db] for convenience. The returned value is equivalent to the result of [method @GlobalScope.db_to_linear] on [member volume_db]. Setting this member is equivalent to setting [member volume_db] to the result of [method @GlobalScope.linear_to_db] on a value.
 		</member>
 	</members>
 	<signals>

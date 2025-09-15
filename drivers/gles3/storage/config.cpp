@@ -33,7 +33,6 @@
 #include "config.h"
 
 #include "../rasterizer_gles3.h"
-#include "texture_storage.h"
 
 #ifdef WEB_ENABLED
 #include <emscripten/html5_webgl.h>
@@ -78,18 +77,21 @@ Config::Config() {
 	}
 #endif
 
-	bptc_supported = extensions.has("GL_ARB_texture_compression_bptc") || extensions.has("EXT_texture_compression_bptc");
-	astc_supported = extensions.has("GL_KHR_texture_compression_astc") || extensions.has("GL_OES_texture_compression_astc") || extensions.has("GL_KHR_texture_compression_astc_ldr") || extensions.has("GL_KHR_texture_compression_astc_hdr");
-	astc_hdr_supported = extensions.has("GL_KHR_texture_compression_astc_ldr");
+	bptc_supported = extensions.has("GL_ARB_texture_compression_bptc") || extensions.has("GL_EXT_texture_compression_bptc");
+	astc_hdr_supported = extensions.has("GL_KHR_texture_compression_astc_hdr");
+	astc_supported = astc_hdr_supported || extensions.has("GL_KHR_texture_compression_astc") || extensions.has("GL_OES_texture_compression_astc") || extensions.has("GL_KHR_texture_compression_astc_ldr") || extensions.has("WEBGL_compressed_texture_astc");
 	astc_layered_supported = extensions.has("GL_KHR_texture_compression_astc_sliced_3d");
 
 	if (RasterizerGLES3::is_gles_over_gl()) {
 		float_texture_supported = true;
+		float_texture_linear_supported = true;
 		etc2_supported = false;
 		s3tc_supported = true;
 		rgtc_supported = true; //RGTC - core since OpenGL version 3.0
+		srgb_framebuffer_supported = true;
 	} else {
 		float_texture_supported = extensions.has("GL_EXT_color_buffer_float");
+		float_texture_linear_supported = extensions.has("GL_OES_texture_float_linear");
 		etc2_supported = true;
 #if defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
 		// Some Android devices report support for S3TC but we don't expect that and don't export the textures.
@@ -99,7 +101,8 @@ Config::Config() {
 #else
 		s3tc_supported = extensions.has("GL_EXT_texture_compression_dxt1") || extensions.has("GL_EXT_texture_compression_s3tc") || extensions.has("WEBGL_compressed_texture_s3tc");
 #endif
-		rgtc_supported = extensions.has("GL_EXT_texture_compression_rgtc") || extensions.has("GL_ARB_texture_compression_rgtc") || extensions.has("EXT_texture_compression_rgtc");
+		rgtc_supported = extensions.has("GL_EXT_texture_compression_rgtc") || extensions.has("GL_ARB_texture_compression_rgtc");
+		srgb_framebuffer_supported = extensions.has("GL_EXT_sRGB_write_control");
 	}
 
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &max_vertex_texture_image_units);
@@ -107,6 +110,11 @@ Config::Config() {
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, max_viewport_size);
 	glGetInteger64v(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_buffer_size);
+	GLint max_vertex_output;
+	glGetIntegerv(GL_MAX_VERTEX_OUTPUT_COMPONENTS, &max_vertex_output);
+	GLint max_fragment_input;
+	glGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS, &max_fragment_input);
+	max_shader_varyings = (uint32_t)MIN(max_vertex_output, max_fragment_input) / 4;
 
 	// sanity clamp buffer size to 16K..1MB
 	max_uniform_buffer_size = CLAMP(max_uniform_buffer_size, 16384, 1048576);
@@ -138,6 +146,7 @@ Config::Config() {
 	// These are GLES only
 	rt_msaa_supported = extensions.has("GL_EXT_multisampled_render_to_texture");
 	rt_msaa_multiview_supported = extensions.has("GL_OVR_multiview_multisampled_render_to_texture");
+	external_texture_supported = extensions.has("GL_OES_EGL_image_external_essl3");
 
 	if (multiview_supported) {
 		eglFramebufferTextureMultiviewOVR = (PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)eglGetProcAddress("glFramebufferTextureMultiviewOVR");
@@ -166,9 +175,17 @@ Config::Config() {
 			rt_msaa_multiview_supported = false;
 		}
 	}
+
+	if (external_texture_supported) {
+		eglEGLImageTargetTexture2DOES = (PFNEGLIMAGETARGETTEXTURE2DOESPROC)eglGetProcAddress("glEGLImageTargetTexture2DOES");
+		if (eglEGLImageTargetTexture2DOES == nullptr) {
+			external_texture_supported = false;
+		}
+	}
 #endif
 
-	force_vertex_shading = false; //GLOBAL_GET("rendering/quality/shading/force_vertex_shading");
+	force_vertex_shading = GLOBAL_GET("rendering/shading/overrides/force_vertex_shading");
+	specular_occlusion = GLOBAL_GET("rendering/reflections/specular_occlusion/enabled");
 	use_nearest_mip_filter = GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter");
 
 	use_depth_prepass = bool(GLOBAL_GET("rendering/driver/depth_prepass/enable"));
@@ -195,7 +212,6 @@ Config::Config() {
 	//Adreno 3xx Compatibility
 	const String rendering_device_name = String::utf8((const char *)glGetString(GL_RENDERER));
 	if (rendering_device_name.left(13) == "Adreno (TM) 3") {
-		flip_xy_workaround = true;
 		disable_particles_workaround = true;
 
 		// ignore driver version 331+
@@ -210,10 +226,8 @@ Config::Config() {
 		// OpenGL ES 3.0 V@331.0 (GIT@35e467f, Ice9844a736) (Date:04/15/19)
 		// OpenGL ES 3.0 V@415.0 (GIT@d39f783, I79de86aa2c, 1591296226) (Date:06/04/20)
 		// OpenGL ES 3.0 V@0502.0 (GIT@09fef447e8, I1fe547a144, 1661493934) (Date:08/25/22)
-		String driver_version = gl_version.get_slice("V@", 1).get_slice(" ", 0);
+		String driver_version = gl_version.get_slice("V@", 1).get_slicec(' ', 0);
 		if (driver_version.is_valid_float() && driver_version.to_float() >= 331.0) {
-			flip_xy_workaround = false;
-
 			//TODO: also 'GPUParticles'?
 			//https://github.com/godotengine/godot/issues/92662#issuecomment-2161199477
 			//disable_particles_workaround = false;
@@ -221,6 +235,13 @@ Config::Config() {
 	} else if (rendering_device_name == "PowerVR Rogue GE8320") {
 		disable_transform_feedback_shader_cache = true;
 	}
+
+	if (OS::get_singleton()->get_current_rendering_driver_name() == "opengl3_angle") {
+		polyfill_half2float = false;
+	}
+#ifdef WEB_ENABLED
+	polyfill_half2float = false;
+#endif
 }
 
 Config::~Config() {

@@ -26,7 +26,7 @@
 
 #ifdef _WIN32
     #include <malloc.h>
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__ZEPHYR__)
     #include <alloca.h>
 #else
     #include <stdlib.h>
@@ -475,14 +475,29 @@ bool simpleXmlParseW3CAttribute(const char* buf, unsigned bufLength, simpleXMLAt
     if (!buf) return false;
 
     end = buf + bufLength;
-    key = (char*)alloca(end - buf + 1);
-    val = (char*)alloca(end - buf + 1);
 
     if (buf == end) return true;
 
+    char* key_buf = (char*)malloc(end - buf + 1);
+    char* val_buf = (char*)malloc(end - buf + 1);
+
+    key = key_buf;
+    val = val_buf;
     do {
         char* sep = (char*)strchr(buf, ':');
         next = (char*)strchr(buf, ';');
+
+        if (auto src = strstr(buf, "src")) {//src tag from css font-face contains extra semicolon
+            if (src < sep) {
+                if (next + 1 < end) next = (char*)strchr(next + 1, ';');
+                else {
+                    free(key_buf);
+                    free(val_buf);
+                    return true;
+                }
+            }
+        }
+
         if (sep >= end) {
             next = nullptr;
             sep = nullptr;
@@ -492,13 +507,13 @@ bool simpleXmlParseW3CAttribute(const char* buf, unsigned bufLength, simpleXMLAt
         key[0] = '\0';
         val[0] = '\0';
 
-        if (next == nullptr && sep != nullptr) {
+        if (sep != nullptr && next == nullptr) {
             memcpy(key, buf, sep - buf);
             key[sep - buf] = '\0';
 
             memcpy(val, sep + 1, end - sep - 1);
             val[end - sep - 1] = '\0';
-        } else if (sep < next && sep != nullptr) {
+        } else if (sep != nullptr && sep < next) {
             memcpy(key, buf, sep - buf);
             key[sep - buf] = '\0';
 
@@ -522,8 +537,12 @@ bool simpleXmlParseW3CAttribute(const char* buf, unsigned bufLength, simpleXMLAt
             }
         }
 
+        if (!next) break;
         buf = next + 1;
-    } while (next != nullptr);
+    } while (true);
+
+    free(key_buf);
+    free(val_buf);
 
     return true;
 }

@@ -140,15 +140,15 @@ void Container::queue_sort() {
 	pending_sort = true;
 }
 
-Control *Container::as_sortable_control(Node *p_node, SortableVisbilityMode p_visibility_mode) const {
+Control *Container::as_sortable_control(Node *p_node, SortableVisibilityMode p_visibility_mode) const {
 	Control *c = Object::cast_to<Control>(p_node);
 	if (!c || c->is_set_as_top_level()) {
 		return nullptr;
 	}
-	if (p_visibility_mode == SortableVisbilityMode::VISIBLE && !c->is_visible()) {
+	if (p_visibility_mode == SortableVisibilityMode::VISIBLE && !c->is_visible()) {
 		return nullptr;
 	}
-	if (p_visibility_mode == SortableVisbilityMode::VISIBLE_IN_TREE && !c->is_visible_in_tree()) {
+	if (p_visibility_mode == SortableVisibilityMode::VISIBLE_IN_TREE && !c->is_visible_in_tree()) {
 		return nullptr;
 	}
 	return c;
@@ -184,9 +184,15 @@ Vector<int> Container::get_allowed_size_flags_vertical() const {
 
 void Container::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_CONTAINER);
+		} break;
+
 		case NOTIFICATION_RESIZED:
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_THEME_CHANGED: {
 			queue_sort();
 		} break;
 

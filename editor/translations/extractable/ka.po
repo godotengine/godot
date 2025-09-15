@@ -24,11 +24,11 @@ msgstr "ქსელი"
 msgid "Open"
 msgstr "გახსნა"
 
-msgid "Open a File"
-msgstr "ფაილის გახსნა"
-
 msgid "Save"
 msgstr "შენახვა"
+
+msgid "Open a File"
+msgstr "ფაილის გახსნა"
 
 msgid "Save a File"
 msgstr "ფაილის შენახვა"

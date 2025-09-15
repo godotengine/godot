@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VECTOR3_H
-#define VECTOR3_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
@@ -49,6 +48,7 @@ struct [[nodiscard]] Vector3 {
 	};
 
 	union {
+		// NOLINTBEGIN(modernize-use-default-member-init)
 		struct {
 			real_t x;
 			real_t y;
@@ -56,6 +56,7 @@ struct [[nodiscard]] Vector3 {
 		};
 
 		real_t coord[3] = { 0 };
+		// NOLINTEND(modernize-use-default-member-init)
 	};
 
 	_FORCE_INLINE_ const real_t &operator[](int p_axis) const {
@@ -130,6 +131,7 @@ struct [[nodiscard]] Vector3 {
 	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_with) const;
 	_FORCE_INLINE_ real_t dot(const Vector3 &p_with) const;
 	Basis outer(const Vector3 &p_with) const;
+	_FORCE_INLINE_ Vector3 get_any_perpendicular() const;
 
 	_FORCE_INLINE_ Vector3 abs() const;
 	_FORCE_INLINE_ Vector3 floor() const;
@@ -155,43 +157,42 @@ struct [[nodiscard]] Vector3 {
 	_FORCE_INLINE_ Vector3 reflect(const Vector3 &p_normal) const;
 
 	bool is_equal_approx(const Vector3 &p_v) const;
+	bool is_same(const Vector3 &p_v) const;
 	bool is_zero_approx() const;
 	bool is_finite() const;
 
 	/* Operators */
 
-	_FORCE_INLINE_ Vector3 &operator+=(const Vector3 &p_v);
-	_FORCE_INLINE_ Vector3 operator+(const Vector3 &p_v) const;
-	_FORCE_INLINE_ Vector3 &operator-=(const Vector3 &p_v);
-	_FORCE_INLINE_ Vector3 operator-(const Vector3 &p_v) const;
-	_FORCE_INLINE_ Vector3 &operator*=(const Vector3 &p_v);
-	_FORCE_INLINE_ Vector3 operator*(const Vector3 &p_v) const;
-	_FORCE_INLINE_ Vector3 &operator/=(const Vector3 &p_v);
-	_FORCE_INLINE_ Vector3 operator/(const Vector3 &p_v) const;
+	constexpr Vector3 &operator+=(const Vector3 &p_v);
+	constexpr Vector3 operator+(const Vector3 &p_v) const;
+	constexpr Vector3 &operator-=(const Vector3 &p_v);
+	constexpr Vector3 operator-(const Vector3 &p_v) const;
+	constexpr Vector3 &operator*=(const Vector3 &p_v);
+	constexpr Vector3 operator*(const Vector3 &p_v) const;
+	constexpr Vector3 &operator/=(const Vector3 &p_v);
+	constexpr Vector3 operator/(const Vector3 &p_v) const;
 
-	_FORCE_INLINE_ Vector3 &operator*=(real_t p_scalar);
-	_FORCE_INLINE_ Vector3 operator*(real_t p_scalar) const;
-	_FORCE_INLINE_ Vector3 &operator/=(real_t p_scalar);
-	_FORCE_INLINE_ Vector3 operator/(real_t p_scalar) const;
+	constexpr Vector3 &operator*=(real_t p_scalar);
+	constexpr Vector3 operator*(real_t p_scalar) const;
+	constexpr Vector3 &operator/=(real_t p_scalar);
+	constexpr Vector3 operator/(real_t p_scalar) const;
 
-	_FORCE_INLINE_ Vector3 operator-() const;
+	constexpr Vector3 operator-() const;
 
-	_FORCE_INLINE_ bool operator==(const Vector3 &p_v) const;
-	_FORCE_INLINE_ bool operator!=(const Vector3 &p_v) const;
-	_FORCE_INLINE_ bool operator<(const Vector3 &p_v) const;
-	_FORCE_INLINE_ bool operator<=(const Vector3 &p_v) const;
-	_FORCE_INLINE_ bool operator>(const Vector3 &p_v) const;
-	_FORCE_INLINE_ bool operator>=(const Vector3 &p_v) const;
+	constexpr bool operator==(const Vector3 &p_v) const;
+	constexpr bool operator!=(const Vector3 &p_v) const;
+	constexpr bool operator<(const Vector3 &p_v) const;
+	constexpr bool operator<=(const Vector3 &p_v) const;
+	constexpr bool operator>(const Vector3 &p_v) const;
+	constexpr bool operator>=(const Vector3 &p_v) const;
 
-	operator String() const;
+	explicit operator String() const;
 	operator Vector3i() const;
 
-	_FORCE_INLINE_ Vector3() {}
-	_FORCE_INLINE_ Vector3(real_t p_x, real_t p_y, real_t p_z) {
-		x = p_x;
-		y = p_y;
-		z = p_z;
-	}
+	constexpr Vector3() :
+			x(0), y(0), z(0) {}
+	constexpr Vector3(real_t p_x, real_t p_y, real_t p_z) :
+			x(p_x), y(p_y), z(p_z) {}
 };
 
 Vector3 Vector3::cross(const Vector3 &p_with) const {
@@ -326,53 +327,63 @@ Vector3 Vector3::direction_to(const Vector3 &p_to) const {
 	return ret;
 }
 
+Vector3 Vector3::get_any_perpendicular() const {
+	// Return the any perpendicular vector by cross product with the Vector3.RIGHT or Vector3.UP,
+	// whichever has the greater angle to the current vector with the sign of each element positive.
+	// The only essence is "to avoid being parallel to the current vector", and there is no mathematical basis for using Vector3.RIGHT and Vector3.UP,
+	// since it could be a different vector depending on the prior branching code Math::abs(x) <= Math::abs(y) && Math::abs(x) <= Math::abs(z).
+	// However, it would be reasonable to use any of the axes of the basis, as it is simpler to calculate.
+	ERR_FAIL_COND_V_MSG(is_zero_approx(), Vector3(0, 0, 0), "The Vector3 must not be zero.");
+	return cross((Math::abs(x) <= Math::abs(y) && Math::abs(x) <= Math::abs(z)) ? Vector3(1, 0, 0) : Vector3(0, 1, 0)).normalized();
+}
+
 /* Operators */
 
-Vector3 &Vector3::operator+=(const Vector3 &p_v) {
+constexpr Vector3 &Vector3::operator+=(const Vector3 &p_v) {
 	x += p_v.x;
 	y += p_v.y;
 	z += p_v.z;
 	return *this;
 }
 
-Vector3 Vector3::operator+(const Vector3 &p_v) const {
+constexpr Vector3 Vector3::operator+(const Vector3 &p_v) const {
 	return Vector3(x + p_v.x, y + p_v.y, z + p_v.z);
 }
 
-Vector3 &Vector3::operator-=(const Vector3 &p_v) {
+constexpr Vector3 &Vector3::operator-=(const Vector3 &p_v) {
 	x -= p_v.x;
 	y -= p_v.y;
 	z -= p_v.z;
 	return *this;
 }
 
-Vector3 Vector3::operator-(const Vector3 &p_v) const {
+constexpr Vector3 Vector3::operator-(const Vector3 &p_v) const {
 	return Vector3(x - p_v.x, y - p_v.y, z - p_v.z);
 }
 
-Vector3 &Vector3::operator*=(const Vector3 &p_v) {
+constexpr Vector3 &Vector3::operator*=(const Vector3 &p_v) {
 	x *= p_v.x;
 	y *= p_v.y;
 	z *= p_v.z;
 	return *this;
 }
 
-Vector3 Vector3::operator*(const Vector3 &p_v) const {
+constexpr Vector3 Vector3::operator*(const Vector3 &p_v) const {
 	return Vector3(x * p_v.x, y * p_v.y, z * p_v.z);
 }
 
-Vector3 &Vector3::operator/=(const Vector3 &p_v) {
+constexpr Vector3 &Vector3::operator/=(const Vector3 &p_v) {
 	x /= p_v.x;
 	y /= p_v.y;
 	z /= p_v.z;
 	return *this;
 }
 
-Vector3 Vector3::operator/(const Vector3 &p_v) const {
+constexpr Vector3 Vector3::operator/(const Vector3 &p_v) const {
 	return Vector3(x / p_v.x, y / p_v.y, z / p_v.z);
 }
 
-Vector3 &Vector3::operator*=(real_t p_scalar) {
+constexpr Vector3 &Vector3::operator*=(real_t p_scalar) {
 	x *= p_scalar;
 	y *= p_scalar;
 	z *= p_scalar;
@@ -382,50 +393,50 @@ Vector3 &Vector3::operator*=(real_t p_scalar) {
 // Multiplication operators required to workaround issues with LLVM using implicit conversion
 // to Vector3i instead for integers where it should not.
 
-_FORCE_INLINE_ Vector3 operator*(float p_scalar, const Vector3 &p_vec) {
+constexpr Vector3 operator*(float p_scalar, const Vector3 &p_vec) {
 	return p_vec * p_scalar;
 }
 
-_FORCE_INLINE_ Vector3 operator*(double p_scalar, const Vector3 &p_vec) {
+constexpr Vector3 operator*(double p_scalar, const Vector3 &p_vec) {
 	return p_vec * p_scalar;
 }
 
-_FORCE_INLINE_ Vector3 operator*(int32_t p_scalar, const Vector3 &p_vec) {
+constexpr Vector3 operator*(int32_t p_scalar, const Vector3 &p_vec) {
 	return p_vec * p_scalar;
 }
 
-_FORCE_INLINE_ Vector3 operator*(int64_t p_scalar, const Vector3 &p_vec) {
+constexpr Vector3 operator*(int64_t p_scalar, const Vector3 &p_vec) {
 	return p_vec * p_scalar;
 }
 
-Vector3 Vector3::operator*(real_t p_scalar) const {
+constexpr Vector3 Vector3::operator*(real_t p_scalar) const {
 	return Vector3(x * p_scalar, y * p_scalar, z * p_scalar);
 }
 
-Vector3 &Vector3::operator/=(real_t p_scalar) {
+constexpr Vector3 &Vector3::operator/=(real_t p_scalar) {
 	x /= p_scalar;
 	y /= p_scalar;
 	z /= p_scalar;
 	return *this;
 }
 
-Vector3 Vector3::operator/(real_t p_scalar) const {
+constexpr Vector3 Vector3::operator/(real_t p_scalar) const {
 	return Vector3(x / p_scalar, y / p_scalar, z / p_scalar);
 }
 
-Vector3 Vector3::operator-() const {
+constexpr Vector3 Vector3::operator-() const {
 	return Vector3(-x, -y, -z);
 }
 
-bool Vector3::operator==(const Vector3 &p_v) const {
+constexpr bool Vector3::operator==(const Vector3 &p_v) const {
 	return x == p_v.x && y == p_v.y && z == p_v.z;
 }
 
-bool Vector3::operator!=(const Vector3 &p_v) const {
+constexpr bool Vector3::operator!=(const Vector3 &p_v) const {
 	return x != p_v.x || y != p_v.y || z != p_v.z;
 }
 
-bool Vector3::operator<(const Vector3 &p_v) const {
+constexpr bool Vector3::operator<(const Vector3 &p_v) const {
 	if (x == p_v.x) {
 		if (y == p_v.y) {
 			return z < p_v.z;
@@ -435,7 +446,7 @@ bool Vector3::operator<(const Vector3 &p_v) const {
 	return x < p_v.x;
 }
 
-bool Vector3::operator>(const Vector3 &p_v) const {
+constexpr bool Vector3::operator>(const Vector3 &p_v) const {
 	if (x == p_v.x) {
 		if (y == p_v.y) {
 			return z > p_v.z;
@@ -445,7 +456,7 @@ bool Vector3::operator>(const Vector3 &p_v) const {
 	return x > p_v.x;
 }
 
-bool Vector3::operator<=(const Vector3 &p_v) const {
+constexpr bool Vector3::operator<=(const Vector3 &p_v) const {
 	if (x == p_v.x) {
 		if (y == p_v.y) {
 			return z <= p_v.z;
@@ -455,7 +466,7 @@ bool Vector3::operator<=(const Vector3 &p_v) const {
 	return x < p_v.x;
 }
 
-bool Vector3::operator>=(const Vector3 &p_v) const {
+constexpr bool Vector3::operator>=(const Vector3 &p_v) const {
 	if (x == p_v.x) {
 		if (y == p_v.y) {
 			return z >= p_v.z;
@@ -539,4 +550,5 @@ Vector3 Vector3::reflect(const Vector3 &p_normal) const {
 	return 2.0f * p_normal * dot(p_normal) - *this;
 }
 
-#endif // VECTOR3_H
+template <>
+struct is_zero_constructible<Vector3> : std::true_type {};
