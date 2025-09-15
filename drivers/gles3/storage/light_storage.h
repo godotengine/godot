@@ -187,7 +187,7 @@ struct Lightmap {
 	PackedColorArray point_sh;
 	PackedInt32Array tetrahedra;
 	PackedInt32Array bsp_tree;
-	float specular_strength = 1.0;
+	float specular_intensity = 1.0;
 
 	struct BSP {
 		static const int32_t EMPTY_LEAF = INT32_MIN;
