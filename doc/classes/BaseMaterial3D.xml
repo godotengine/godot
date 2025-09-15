@@ -66,7 +66,7 @@
 			If the texture appears unexpectedly too dark or too bright, check [member albedo_texture_force_srgb].
 		</member>
 		<member name="albedo_texture_force_srgb" type="bool" setter="set_flag" getter="get_flag" default="false" keywords="diffuse_texture_force_srgb">
-			If [code]true[/code], forces a conversion of the [member albedo_texture] from sRGB color space to linear color space. See also [member vertex_color_is_srgb].
+			If [code]true[/code], forces a conversion of the [member albedo_texture] from nonlinear sRGB encoding to linear encoding. See also [member vertex_color_is_srgb].
 			This should only be enabled when needed (typically when using a [ViewportTexture] as [member albedo_texture]). If [member albedo_texture_force_srgb] is [code]true[/code] when it shouldn't be, the texture will appear to be too dark. If [member albedo_texture_force_srgb] is [code]false[/code] when it shouldn't be, the texture will appear to be too bright.
 		</member>
 		<member name="albedo_texture_msdf" type="bool" setter="set_flag" getter="get_flag" default="false" keywords="diffuse_texture_force_srgb">
@@ -479,7 +479,7 @@
 			If [code]true[/code], triplanar mapping for [code]UV2[/code] is calculated in world space rather than object local space. See also [member uv2_triplanar].
 		</member>
 		<member name="vertex_color_is_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], vertex colors are considered to be stored in sRGB color space and are converted to linear color space during rendering. If [code]false[/code], vertex colors are considered to be stored in linear color space and are rendered as-is. See also [member albedo_texture_force_srgb].
+			If [code]true[/code], vertex colors are considered to be stored in nonlinear sRGB encoding and are converted to linear encoding during rendering. If [code]false[/code], vertex colors are considered to be stored in linear encoding and are rendered as-is. See also [member albedo_texture_force_srgb].
 			[b]Note:[/b] Only effective when using the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="vertex_color_use_as_albedo" type="bool" setter="set_flag" getter="get_flag" default="false">
@@ -705,7 +705,7 @@
 			Set [code]ALBEDO[/code] to the per-vertex color specified in the mesh.
 		</constant>
 		<constant name="FLAG_SRGB_VERTEX_COLOR" value="2" enum="Flags">
-			Vertex colors are considered to be stored in sRGB color space and are converted to linear color space during rendering. See also [member vertex_color_is_srgb].
+			Vertex colors are considered to be stored in nonlinear sRGB encoding and are converted to linear encoding during rendering. See also [member vertex_color_is_srgb].
 			[b]Note:[/b] Only effective when using the Forward+ and Mobile rendering methods.
 		</constant>
 		<constant name="FLAG_USE_POINT_SIZE" value="3" enum="Flags">
@@ -736,7 +736,7 @@
 			Use [code]UV2[/code] coordinates to look up from the [member emission_texture].
 		</constant>
 		<constant name="FLAG_ALBEDO_TEXTURE_FORCE_SRGB" value="12" enum="Flags">
-			Forces the shader to convert albedo from sRGB space to linear space. See also [member albedo_texture_force_srgb].
+			Forces the shader to convert albedo from nonlinear sRGB encoding to linear encoding. See also [member albedo_texture_force_srgb].
 		</constant>
 		<constant name="FLAG_DONT_RECEIVE_SHADOWS" value="13" enum="Flags">
 			Disables receiving shadows from other objects.
