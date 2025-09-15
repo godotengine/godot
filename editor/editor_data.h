@@ -248,9 +248,11 @@ public:
 
 	StringName script_class_get_name(const String &p_path) const;
 	void script_class_set_name(const String &p_path, const StringName &p_class);
+	void script_class_clear_name(const String &p_path);
 
 	String script_class_get_icon_path(const String &p_class, bool *r_valid = nullptr) const;
 	void script_class_set_icon_path(const String &p_class, const String &p_icon_path);
+	void script_class_clear_icon_path(const StringName &p_class);
 	void script_class_clear_icon_paths() { _script_class_icon_paths.clear(); }
 	void script_class_save_global_classes();
 	void script_class_load_icon_paths();

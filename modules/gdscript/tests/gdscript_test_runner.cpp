@@ -382,8 +382,8 @@ static bool generate_class_index_recursive(const String &p_dir) {
 			}
 			ERR_FAIL_COND_V_MSG(ScriptServer::is_global_class(class_name), false,
 					"Class name '" + class_name + "' from " + source_file + " is already used in " + ScriptServer::get_global_class_path(class_name));
-
-			ScriptServer::add_global_class(class_name, base_type, gdscript_name, source_file, is_abstract, is_tool);
+			ResourceUID::ID uid = ResourceLoader::get_resource_uid(source_file);
+			ScriptServer::add_global_class(class_name, base_type, gdscript_name, source_file, is_abstract, is_tool, uid);
 		}
 
 		next = dir->get_next();

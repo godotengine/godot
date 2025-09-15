@@ -857,6 +857,11 @@
 			If [code]true[/code], displays a warning toast message when saving a text-based scene or resource that is larger than 500 KiB on disk. This is typically caused by binary subresources being embedded as text, which results in slow and inefficient conversion to text. This in turn impacts scene saving and loading times.
 			This should usually be resolved by moving the embedded binary subresource to its own binary resource file ([code].res[/code] extension instead of [code].tres[/code]). This is the preferred approach. Alternatively, the entire scene can be saved with the binary [code].scn[/code] format as opposed to [code].tscn[/code], but this will make it less friendly to version control systems.
 		</member>
+		<member name="filesystem/on_scan/detect_mode" type="int" setter="" getter="">
+			This will affect the behavior of [method EditorFileSystem.scan_sources].
+			If set to [code]Force[/code], force detection of new files in directories during scanning, ignoring whether the directory timestamps have been updated.
+			If set to [code]Auto[/code], on file systems such as FAT32 or exFAT, or in projects managed by Git, the behavior is the same as setting it to [code]Force[/code]; otherwise, the timestamp of the directory's modification time will be used to determine whether to check for directory changes.
+		</member>
 		<member name="filesystem/quick_open_dialog/default_display_mode" type="int" setter="" getter="">
 			If set to [code]Adaptive[/code], the dialog opens in list view or grid view depending on the requested type. If set to [code]Last Used[/code], the display mode will always open the way you last used it.
 		</member>

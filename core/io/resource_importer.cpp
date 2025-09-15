@@ -489,11 +489,12 @@ void ResourceFormatImporter::add_importer(const Ref<ResourceImporter> &p_importe
 }
 
 void ResourceFormatImporter::get_importers_for_file(const String &p_file, List<Ref<ResourceImporter>> *r_importers) {
+	const String file = p_file.get_file();
 	for (int i = 0; i < importers.size(); i++) {
 		List<String> local_exts;
 		importers[i]->get_recognized_extensions(&local_exts);
 		for (const String &F : local_exts) {
-			if (p_file.right(F.length()).nocasecmp_to(F) == 0) {
+			if (file.right(F.length() + 1).nocasecmp_to("." + F) == 0) {
 				r_importers->push_back(importers[i]);
 				break;
 			}
@@ -510,12 +511,12 @@ void ResourceFormatImporter::get_importers(List<Ref<ResourceImporter>> *r_import
 Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_file(const String &p_file) const {
 	Ref<ResourceImporter> importer;
 	float priority = 0;
-
+	const String file = p_file.get_file();
 	for (int i = 0; i < importers.size(); i++) {
 		List<String> local_exts;
 		importers[i]->get_recognized_extensions(&local_exts);
 		for (const String &F : local_exts) {
-			if (p_file.right(F.length()).nocasecmp_to(F) == 0 && importers[i]->get_priority() > priority) {
+			if (file.right(F.length() + 1).nocasecmp_to("." + F) == 0 && importers[i]->get_priority() > priority) {
 				importer = importers[i];
 				priority = importers[i]->get_priority();
 				break;
