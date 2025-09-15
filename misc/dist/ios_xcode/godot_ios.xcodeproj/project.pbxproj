@@ -61,7 +61,7 @@
 			files = (
 				9039D3BE24C093AC0020482C /* MoltenVK.xcframework in Frameworks */,
 				DEADBEEF2F582BE20003B888 /* $binary.xcframework */,
-				$modules_buildphase
+				$modules_buildgrp
 				$additional_pbx_frameworks_build
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -134,6 +134,7 @@
 				D0BCFE3118AEBDA2004A7AAE /* Frameworks */,
 				D0BCFE3218AEBDA2004A7AAE /* Resources */,
 				90A13CD024AA68E500E8464F /* Embed Frameworks */,
+				AB9921CA2E2E77C60088C235 /* Firebase Crashlytics upload */,
 			);
 			buildRules = (
 			);
@@ -206,6 +207,30 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AB9921CA2E2E77C60088C235 /* Upload Crashlytics DYSM */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Info.plist",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
+				"$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)",
+				"",
+			);
+			name = "Upload Crashlytics DYSM";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Upload DYSM symbols to Crashlytics on build.\n\"Pods/FirebaseCrashlytics/run\"\n";
+        };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */

@@ -608,6 +608,18 @@ void EditorExportPlatformAppleEmbedded::_fix_config_file(const Ref<EditorExportP
 		} else if (lines[i].contains("$photolibrary_usage_description")) {
 			String description = p_preset->get("privacy/photolibrary_usage_description");
 			strnew += lines[i].replace("$photolibrary_usage_description", description) + "\n";
+		} else if (lines[i].contains("$app_attest_environment")) {
+			String appAttest = p_preset->get("entitlements/app_attest");
+
+			if (appAttest == "Disabled") {
+				strnew += lines[i].replace("$app_attest_environment", "") + "\n";
+				continue;
+			}
+
+			String appAtestEnviromentSetting = "<key>AppATTestEnvironment</key><string>";
+			appAtestEnviromentSetting += appAttest.toLower();
+			appAtestEnviromentSetting += "</string>";
+			strnew += lines[i].replace("$app_attest_environment", description) + "\n";
 		} else if (lines[i].contains("$plist_launch_screen_name")) {
 			String value = "<key>UILaunchStoryboardName</key>\n<string>Launch Screen</string>";
 			strnew += lines[i].replace("$plist_launch_screen_name", value) + "\n";
