@@ -1514,14 +1514,20 @@ void EditorFileDialog::_make_dir_confirm() {
 
 	Error err = dir_access->make_dir(stripped_dirname);
 	if (err == OK) {
+		if (access == ACCESS_RESOURCES) {
+			EditorFileSystem::get_singleton()->pending_scan_fs_changes(get_current_dir(), false);
+		} else {
+			// Check if it can be converted to res://.
+			String local_path = ProjectSettings::get_singleton()->localize_path(get_current_dir());
+			if (local_path.is_resource_file()) {
+				EditorFileSystem::get_singleton()->pending_scan_fs_changes(local_path, false);
+			}
+		}
 		dir_access->change_dir(stripped_dirname);
 		invalidate();
 		update_filters();
 		update_dir();
 		_push_history();
-		if (access != ACCESS_FILESYSTEM) {
-			EditorFileSystem::get_singleton()->scan_changes(); //we created a dir, so rescan changes
-		}
 	} else {
 		error_dialog->set_text(TTRC("Could not create folder."));
 		error_dialog->popup_centered(Size2(250, 50) * EDSCALE);
