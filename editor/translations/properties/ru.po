@@ -201,13 +201,14 @@
 # Сергей Казорин <kazorin@basealt.ru>, 2025.
 # Георгий <vidyakin_2007@mail.ru>, 2025.
 # sletego <sletego@users.noreply.hosted.weblate.org>, 2025.
+# DrSa1fer <thekucherenko@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-08-10 14:48+0000\n"
-"Last-Translator: sletego <sletego@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2025-09-11 09:52+0000\n"
+"Last-Translator: DrSa1fer <thekucherenko@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -216,7 +217,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Application"
 msgstr "Приложение"
@@ -4973,6 +4974,9 @@ msgstr "Каталог сборки Gradle"
 
 msgid "Android Source Template"
 msgstr "Шаблон исходных данных Android"
+
+msgid "Compress Native Libraries"
+msgstr "Сжатие нативных библиотек"
 
 msgid "Export Format"
 msgstr "Формат экспорта"

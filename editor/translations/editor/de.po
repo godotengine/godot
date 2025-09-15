@@ -132,7 +132,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-08-05 18:01+0000\n"
+"PO-Revision-Date: 2025-09-14 10:01+0000\n"
 "Last-Translator: Wuzzy <Wuzzy@disroot.org>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot/"
 "de/>\n"
@@ -141,7 +141,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "Nicht gesetzt"
@@ -8154,6 +8154,9 @@ msgstr "Neuer Shader..."
 msgid "Size: %s"
 msgstr "Größe: %s"
 
+msgid "Invalid file or broken link."
+msgstr "Ungültige Datei oder defekter Link."
+
 msgid "Type: %s"
 msgstr "Typ: %s"
 
@@ -8171,6 +8174,9 @@ msgstr "Dauer: %0.3fs"
 
 msgid "Advanced settings are always shown when searching."
 msgstr "Erweiterte Einstellungen werden bei der Suche immer angezeigt."
+
+msgid "Event Configured"
+msgstr "Ereignis konfiguriert"
 
 msgid "Configure"
 msgstr "Konfiguration"
@@ -8878,6 +8884,12 @@ msgstr "Tag-Namen dürfen nicht leer sein."
 
 msgid "Tag name can't contain spaces."
 msgstr "Tag-Name darf keine Leerzeichen enthalten."
+
+msgid "Tag name can't begin or end with underscore."
+msgstr "Tag-Name darf nicht mit Unterstrich anfangen oder enden."
+
+msgid "Tag name can't contain consecutive underscores."
+msgstr "Tag-Name darf keine aufeinander folgende Unterstriche enthalten."
 
 msgid "These characters are not allowed in tags: %s."
 msgstr "Diese Zeichen sind in Tags nicht gestattet: %s."
@@ -16451,6 +16463,9 @@ msgstr "Konstante festlegen: %s"
 msgid "Invalid name for varying."
 msgstr "Ungültiger Name für Varying."
 
+msgid "Varying with that name already exists."
+msgstr "Varying mit dem Namen existiert bereits."
+
 msgid "Boolean type cannot be used with `%s` varying mode."
 msgstr "Der Typ Boolean kann nicht mit dem Varying-Modus „%s“ verwendet werden."
 
@@ -17944,6 +17959,9 @@ msgstr "Ein Integer zwischen 0 und 2^32 - 1 wurde erwartet."
 msgid "Expected a string of length 1 (a character)."
 msgstr "Es wurde ein String der Länge 1 (ein Zeichen) erwartet."
 
+msgid "Range too big."
+msgstr "Bereich ist zu groß."
+
 msgid "Cannot resize array."
 msgstr "Größe des Arrays kann nicht geändert werden."
 
@@ -18890,6 +18908,13 @@ msgid "\"Use Gradle Build\" must be enabled to use the plugins."
 msgstr ""
 "„Gradle-Build verwenden“ muss aktiviert werden, um die Plugins nutzen zu "
 "können."
+
+msgid ""
+"\"Compress Native Libraries\" is only valid when \"Use Gradle Build\" is "
+"enabled."
+msgstr ""
+"„Native Bibliotheken komprimieren“ ist nur gültig, wenn „Gradle-Build "
+"verwenden“ aktiviert ist."
 
 msgid "\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled."
 msgstr ""
@@ -21166,6 +21191,15 @@ msgstr "Rekursion ist nicht erlaubt."
 
 msgid "Function '%s' can't be called from source code."
 msgstr "Funktion ‚%s‘ kann nicht aus dem Quelltext aufgerufen werden."
+
+msgid "No matching function for \"%s\" call:"
+msgstr "Keine passende Funktion für „%s“-Aufruf gefunden:"
+
+msgid ""
+"candidate function \"%s(%s)\" not viable, argument %d should be %s but is %s."
+msgstr ""
+"Kandidatenfunktion „%s(%s)“ ist nicht geeignet: Argument %d sollte %s sein, "
+"ist allerdings %s."
 
 msgid ""
 "Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."

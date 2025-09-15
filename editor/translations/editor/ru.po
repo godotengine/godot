@@ -231,7 +231,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-08-02 06:02+0000\n"
+"PO-Revision-Date: 2025-09-10 19:04+0000\n"
 "Last-Translator: Deniil <danpko@ya.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -241,7 +241,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "Не задано"
@@ -7818,6 +7818,13 @@ msgstr ""
 msgid "Property: %s"
 msgstr "Свойство: %s"
 
+msgid ""
+"Toggling the checkbox is disabled for Resource properties. Modify the "
+"property using the resource picker instead."
+msgstr ""
+"Для свойств ресурса функция переключения флажка отключена. Измените свойство, "
+"используя средство выбора ресурсов."
+
 msgid "Unfavorite Property"
 msgstr "Удалить свойство из избранных"
 
@@ -8178,6 +8185,9 @@ msgstr "Новый шейдер…"
 msgid "Size: %s"
 msgstr "Размер: %s"
 
+msgid "Invalid file or broken link."
+msgstr "Неверный файл или неработающая ссылка."
+
 msgid "Type: %s"
 msgstr "Тип: %s"
 
@@ -8195,6 +8205,9 @@ msgstr "Длина: %0.3fs"
 
 msgid "Advanced settings are always shown when searching."
 msgstr "При поиске всегда отображаются расширенные настройки."
+
+msgid "Event Configured"
+msgstr "Событие Настроено"
 
 msgid "Configure"
 msgstr "Конфигурация"
@@ -8883,6 +8896,12 @@ msgstr "Имя метки не может быть пустым."
 
 msgid "Tag name can't contain spaces."
 msgstr "Имя метки не может содержать пробелы."
+
+msgid "Tag name can't begin or end with underscore."
+msgstr "Имя тега не может начинаться или заканчиваться символом подчеркивания."
+
+msgid "Tag name can't contain consecutive underscores."
+msgstr "Имя тега не может содержать последовательные символы подчеркивания."
 
 msgid "These characters are not allowed in tags: %s."
 msgstr "Эти символы нельзя использовать в метках: %s."
@@ -10907,6 +10926,12 @@ msgstr "Изменить высоту цилиндра"
 
 msgid "Change Separation Ray Shape Length"
 msgstr "Изменить длину луча разделения"
+
+msgid "Remove SoftBody3D pinned point %d"
+msgstr "Удалить закрепленную точку SoftBody3D %d"
+
+msgid "Add SoftBody3D pinned point %d"
+msgstr "Добавить закрепленную точку SoftBody3D %d"
 
 msgid "Change Probe Size"
 msgstr "Изменить размер зонда"
@@ -16392,6 +16417,9 @@ msgstr "Задать константу: %s"
 msgid "Invalid name for varying."
 msgstr "Недопустимое имя вариации."
 
+msgid "Varying with that name already exists."
+msgstr "Вариант с таким названием уже существует."
+
 msgid "Boolean type cannot be used with `%s` varying mode."
 msgstr "Логический тип не может быть использован с режимом вариации `%s`."
 
@@ -17877,6 +17905,9 @@ msgstr "Ожидалось целое число от 0 до 2^32 - 1."
 msgid "Expected a string of length 1 (a character)."
 msgstr "Ожидается строка длиной 1 (символ)."
 
+msgid "Range too big."
+msgstr "Слишком большой диапазон."
+
 msgid "Cannot resize array."
 msgstr "Не удалось изменить размер массива."
 
@@ -18807,6 +18838,13 @@ msgid "\"Use Gradle Build\" must be enabled to use the plugins."
 msgstr ""
 "Для использования модулей необходимо включить опцию «Использовать сборку "
 "Gradle» (Use Gradle Build)."
+
+msgid ""
+"\"Compress Native Libraries\" is only valid when \"Use Gradle Build\" is "
+"enabled."
+msgstr ""
+"\"Сжатие собственных библиотек\" допустимо только при включенном параметре "
+"\"Use Gradle Build\"."
 
 msgid "\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled."
 msgstr ""
@@ -21033,6 +21071,15 @@ msgstr "Рекурсия запрещена."
 
 msgid "Function '%s' can't be called from source code."
 msgstr "Функцию «%s» нельзя вызвать из исходного кода."
+
+msgid "No matching function for \"%s\" call:"
+msgstr "Нет соответствующей функции для вызова \"%s\":"
+
+msgid ""
+"candidate function \"%s(%s)\" not viable, argument %d should be %s but is %s."
+msgstr ""
+"функция-кандидат \"%s(%s)\" нежизнеспособна, аргумент %d должен быть %s, но "
+"это %s."
 
 msgid ""
 "Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."

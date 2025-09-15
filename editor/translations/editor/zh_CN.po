@@ -113,7 +113,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2025-09-05 11:02+0000\n"
+"PO-Revision-Date: 2025-09-09 04:24+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hans/>\n"
@@ -122,7 +122,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.13.1-rc\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "未设置"
@@ -7399,6 +7399,11 @@ msgstr "以 _ 开头的名称已为编辑器元数据保留。"
 msgid "Property: %s"
 msgstr "属性：%s"
 
+msgid ""
+"Toggling the checkbox is disabled for Resource properties. Modify the "
+"property using the resource picker instead."
+msgstr "已禁用 Resource 资源复选框的开关。请使用资源拾取器修改属性。"
+
 msgid "Unfavorite Property"
 msgstr "取消收藏属性"
 
@@ -7744,6 +7749,9 @@ msgstr "新建着色器..."
 msgid "Size: %s"
 msgstr "大小：%s"
 
+msgid "Invalid file or broken link."
+msgstr "文件无效或链接失效。"
+
 msgid "Type: %s"
 msgstr "类型：%s"
 
@@ -7761,6 +7769,9 @@ msgstr "长度：%0.3fs"
 
 msgid "Advanced settings are always shown when searching."
 msgstr "搜索时始终显示高级设置。"
+
+msgid "Event Configured"
+msgstr "配置事件"
 
 msgid "Configure"
 msgstr "配置"
@@ -8406,6 +8417,12 @@ msgstr "标签名称不能为空。"
 
 msgid "Tag name can't contain spaces."
 msgstr "标签名称不能包含空格。"
+
+msgid "Tag name can't begin or end with underscore."
+msgstr "标签名称不能以下划线开头或结尾。"
+
+msgid "Tag name can't contain consecutive underscores."
+msgstr "标签名称不能包含连续的下划线。"
 
 msgid "These characters are not allowed in tags: %s."
 msgstr "标签中不允许使用以下字符：%s。"
@@ -10336,6 +10353,12 @@ msgstr "修改圆柱体高度"
 
 msgid "Change Separation Ray Shape Length"
 msgstr "修改分离射线形状长度"
+
+msgid "Remove SoftBody3D pinned point %d"
+msgstr "移除 SoftBody3D 固定点 %d"
+
+msgid "Add SoftBody3D pinned point %d"
+msgstr "添加 SoftBody3D 固定点 %d"
 
 msgid "Change Probe Size"
 msgstr "修改探针大小"
@@ -15629,6 +15652,9 @@ msgstr "设置常量：%s"
 msgid "Invalid name for varying."
 msgstr "Varying 名称无效。"
 
+msgid "Varying with that name already exists."
+msgstr "已存在使用该名称的 Varying。"
+
 msgid "Boolean type cannot be used with `%s` varying mode."
 msgstr "`%s` Varying 模式无法使用布尔类型。"
 
@@ -17006,6 +17032,9 @@ msgstr "预期为 0 到 2^32 -1 之间的整数。"
 msgid "Expected a string of length 1 (a character)."
 msgstr "预期为长度为 1 的字符串（单个字符）。"
 
+msgid "Range too big."
+msgstr "范围过大。"
+
 msgid "Cannot resize array."
 msgstr "无法调整数组大小。"
 
@@ -17886,6 +17915,11 @@ msgstr "必须启用“使用 Gradle 构建”才能启用“Swipe to dismiss”
 
 msgid "\"Use Gradle Build\" must be enabled to use the plugins."
 msgstr "必须启用“使用 Gradle 构建”才能使用插件。"
+
+msgid ""
+"\"Compress Native Libraries\" is only valid when \"Use Gradle Build\" is "
+"enabled."
+msgstr "“压缩原生库”只有在启用“使用 Gradle 构建”时才有效。"
 
 msgid "\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled."
 msgstr "“导出 AAB”只有在启用“使用 Gradle 构建”时才有效。"
@@ -19833,6 +19867,13 @@ msgstr "不允许递归。"
 
 msgid "Function '%s' can't be called from source code."
 msgstr "函数“%s”不能从源代码中调用。"
+
+msgid "No matching function for \"%s\" call:"
+msgstr "没有与“%s”调用匹配的函数："
+
+msgid ""
+"candidate function \"%s(%s)\" not viable, argument %d should be %s but is %s."
+msgstr "“%s(%s)”候选函数不满足条件，参数 %d 应该是 %s 但实际是 %s。"
 
 msgid ""
 "Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."

@@ -97,7 +97,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-07 17:17+0000\n"
+"PO-Revision-Date: 2025-09-10 01:28+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "pl/>\n"
@@ -7670,6 +7670,13 @@ msgstr "Nazwy zaczynające się od _ są zarezerwowane dla metadanych edytora."
 msgid "Property: %s"
 msgstr "Właściwość: %s"
 
+msgid ""
+"Toggling the checkbox is disabled for Resource properties. Modify the "
+"property using the resource picker instead."
+msgstr ""
+"Przełączanie pola wyboru jest wyłączone dla właściwości Resource. Zamiast "
+"tego zmodyfikuj właściwość używając wybieracza zasobów."
+
 msgid "Unfavorite Property"
 msgstr "Nie lub właściwości"
 
@@ -8030,6 +8037,9 @@ msgstr "Nowy Shader..."
 msgid "Size: %s"
 msgstr "Rozmiar: %s"
 
+msgid "Invalid file or broken link."
+msgstr "Nieprawidłowy plik lub uszkodzone łącze."
+
 msgid "Type: %s"
 msgstr "Typ: %s"
 
@@ -8047,6 +8057,9 @@ msgstr "Długość: %0.3fs"
 
 msgid "Advanced settings are always shown when searching."
 msgstr "Zaawansowane ustawienia są zawsze widoczne podczas wyszukiwania."
+
+msgid "Event Configured"
+msgstr "Zdarzenie skonfigurowane"
 
 msgid "Configure"
 msgstr "Konfiguruj"
@@ -8736,6 +8749,13 @@ msgstr "Nazwa tagu nie może być pusta."
 
 msgid "Tag name can't contain spaces."
 msgstr "Nazwa tagu nie może zawierać spacji."
+
+msgid "Tag name can't begin or end with underscore."
+msgstr "Nazwa tagu nie może zaczynać się lub kończyć znakiem podkreślenia."
+
+msgid "Tag name can't contain consecutive underscores."
+msgstr ""
+"Nazwa tagu nie może zawierać następujących po sobie znaków podkreślenia."
 
 msgid "These characters are not allowed in tags: %s."
 msgstr "Te znaki nie są dozwolone w tagach: %s."
@@ -10753,6 +10773,12 @@ msgstr "Zmień wysokość kształtu cylindra"
 
 msgid "Change Separation Ray Shape Length"
 msgstr "Zmień długość kształtu promienia oddzielającego"
+
+msgid "Remove SoftBody3D pinned point %d"
+msgstr "Usuń punkt przypięcia %d SoftBody3D"
+
+msgid "Add SoftBody3D pinned point %d"
+msgstr "Dodaj punkt przypięcia %d SoftBody3D"
 
 msgid "Change Probe Size"
 msgstr "Zmień rozmiar sondy"
@@ -16220,6 +16246,9 @@ msgstr "Ustaw stałą: %s"
 msgid "Invalid name for varying."
 msgstr "Niewłaściwa nazwa dla varying."
 
+msgid "Varying with that name already exists."
+msgstr "Varying o tej nazwie już istnieje."
+
 msgid "Boolean type cannot be used with `%s` varying mode."
 msgstr "Typ boolowski nie może być użyty z trybem varying `%s`."
 
@@ -17696,6 +17725,9 @@ msgstr "Oczekiwano liczby całkowitej pomiędzy 0 i 2^32 - 1."
 msgid "Expected a string of length 1 (a character)."
 msgstr "Oczekiwano ciągu znaków o długości 1 (znaku)."
 
+msgid "Range too big."
+msgstr "Zakres zbyt duży."
+
 msgid "Cannot resize array."
 msgstr "Nie można zmienić rozmiaru tablicy."
 
@@ -18629,6 +18661,13 @@ msgstr ""
 
 msgid "\"Use Gradle Build\" must be enabled to use the plugins."
 msgstr "Aby korzystać z wtyczek, należy włączyć opcję „Użyj kompilacji Gradle”."
+
+msgid ""
+"\"Compress Native Libraries\" is only valid when \"Use Gradle Build\" is "
+"enabled."
+msgstr ""
+"„Kompresuj biblioteki natywne” jest prawidłowe tylko wtedy, gdy włączona jest "
+"opcja „Użyj kompilacji Gradle”."
 
 msgid "\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled."
 msgstr ""
@@ -20852,6 +20891,15 @@ msgstr "Rekurencja jest niedozwolona."
 
 msgid "Function '%s' can't be called from source code."
 msgstr "Funkcja \"%s\" nie może być wywołana z kodu źródłowego."
+
+msgid "No matching function for \"%s\" call:"
+msgstr "Nie znaleziono pasującej funkcji dla wywołania \"%s\":"
+
+msgid ""
+"candidate function \"%s(%s)\" not viable, argument %d should be %s but is %s."
+msgstr ""
+"funkcja kandydująca \"%s(%s)\" nie pasuje, argument %d powinien być %s, ale "
+"jest %s."
 
 msgid ""
 "Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."
