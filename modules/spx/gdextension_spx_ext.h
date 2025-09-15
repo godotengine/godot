@@ -261,6 +261,7 @@ typedef void (*GDExtensionSpxExtSetPenSizeTo)(GdObj obj, GdFloat size);
 typedef void (*GDExtensionSpxExtSetPenStampTexture)(GdObj obj, GdString texture_path);
 typedef void (*GDExtensionSpxExtDebugDrawCircle)(GdVec2 pos, GdFloat radius, GdColor color);
 typedef void (*GDExtensionSpxExtDebugDrawRect)(GdVec2 pos, GdVec2 size, GdColor color);
+typedef void (*GDExtensionSpxExtDebugDrawLine)(GdVec2 from, GdVec2 to, GdColor color);
 typedef void (*GDExtensionSpxExtOpenDrawTilesWithSize)(GdInt tile_size);
 typedef void (*GDExtensionSpxExtOpenDrawTiles)();
 typedef void (*GDExtensionSpxExtSetLayerIndex)(GdInt index);
@@ -298,6 +299,7 @@ typedef void (*GDExtensionSpxPhysicSetGlobalAirDrag)(GdFloat air_drag);
 typedef void (*GDExtensionSpxPhysicGetGlobalAirDrag)(GdFloat* ret_value);
 typedef void (*GDExtensionSpxPhysicCheckCollisionRect)(GdVec2 pos, GdVec2 size, GdInt collision_mask, GdArray* ret_value);
 typedef void (*GDExtensionSpxPhysicCheckCollisionCircle)(GdVec2 pos, GdFloat radius, GdInt collision_mask, GdArray* ret_value);
+typedef void (*GDExtensionSpxPhysicRaycastWithDetails)(GdVec2 from, GdVec2 to,GdArray ignore_sprites,GdInt collision_mask,GdBool collide_with_areas,GdBool collide_with_bodies, GdArray* ret_value);
 // SpxPlatform
 typedef void (*GDExtensionSpxPlatformSetStretchMode)(GdBool enable);
 typedef void (*GDExtensionSpxPlatformSetWindowPosition)(GdVec2 pos);

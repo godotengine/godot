@@ -193,6 +193,9 @@ static void gdextension_spx_ext_debug_draw_circle(GdVec2 pos,GdFloat radius,GdCo
 static void gdextension_spx_ext_debug_draw_rect(GdVec2 pos,GdVec2 size,GdColor color) {
 	 extMgr->debug_draw_rect(pos, size, color);
 }
+static void gdextension_spx_ext_debug_draw_line(GdVec2 from,GdVec2 to,GdColor color) {
+	 extMgr->debug_draw_line(from, to, color);
+}
 static void gdextension_spx_ext_open_draw_tiles_with_size(GdInt tile_size) {
 	 extMgr->open_draw_tiles_with_size(tile_size);
 }
@@ -297,6 +300,9 @@ static void gdextension_spx_physic_check_collision_rect(GdVec2 pos,GdVec2 size,G
 }
 static void gdextension_spx_physic_check_collision_circle(GdVec2 pos,GdFloat radius,GdInt collision_mask,GdArray* ret_val) {
 	*ret_val = physicMgr->check_collision_circle(pos, radius, collision_mask);
+}
+static void gdextension_spx_physic_raycast_with_details(GdVec2 from,GdVec2 to,GdArray ignore_sprites,GdInt collision_mask,GdBool collide_with_areas,GdBool collide_with_bodies,GdArray* ret_val) {
+	*ret_val = physicMgr->raycast_with_details(from, to, ignore_sprites, collision_mask, collide_with_areas, collide_with_bodies);
 }
 static void gdextension_spx_platform_set_stretch_mode(GdBool enable) {
 	 platformMgr->set_stretch_mode(enable);
@@ -915,6 +921,7 @@ void gdextension_spx_setup_interface() {
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_pen_stamp_texture);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_debug_draw_circle);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_debug_draw_rect);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_debug_draw_line);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_open_draw_tiles_with_size);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_open_draw_tiles);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_layer_index);
@@ -950,6 +957,7 @@ void gdextension_spx_setup_interface() {
 	REGISTER_SPX_INTERFACE_FUNC(spx_physic_get_global_air_drag);
 	REGISTER_SPX_INTERFACE_FUNC(spx_physic_check_collision_rect);
 	REGISTER_SPX_INTERFACE_FUNC(spx_physic_check_collision_circle);
+	REGISTER_SPX_INTERFACE_FUNC(spx_physic_raycast_with_details);
 	REGISTER_SPX_INTERFACE_FUNC(spx_platform_set_stretch_mode);
 	REGISTER_SPX_INTERFACE_FUNC(spx_platform_set_window_position);
 	REGISTER_SPX_INTERFACE_FUNC(spx_platform_get_window_position);

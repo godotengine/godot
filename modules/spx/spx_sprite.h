@@ -120,6 +120,7 @@ protected:
 public:
 	AnimatedSprite2D *anim2d;
 	CollisionShape2D *get_trigger() { return trigger2d; }
+	Area2D *get_area2d() { return area2d; }
 	bool is_backdrop;
 public:
 	template <typename T>
