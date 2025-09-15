@@ -1,78 +1,56 @@
-# Godot Engine
+# Proof Of Concept
 
-<p align="center">
-  <a href="https://godotengine.org">
-    <img src="logo_outlined.svg" width="400" alt="Godot Engine logo">
-  </a>
-</p>
+	该分支用于概念验证，先于提案阶段的可行性探索，永远不会合并至主分支。高度实验性，请勿用于生产环境！！！
 
-## 2D and 3D cross-platform game engine
+合入该分支时应附带解决方案，且位于`solutions`中。
 
-**[Godot Engine](https://godotengine.org) is a feature-packed, cross-platform
-game engine to create 2D and 3D games from a unified interface.** It provides a
-comprehensive set of [common tools](https://godotengine.org/features), so that
-users can focus on making games without having to reinvent the wheel. Games can
-be exported with one click to a number of platforms, including the major desktop
-platforms (Linux, macOS, Windows), mobile platforms (Android, iOS), as well as
-Web-based platforms and [consoles](https://docs.godotengine.org/en/latest/tutorials/platform/consoles.html).
+## 当前阶段
+当前有两个主要目标
+- 数据驱动支持
+- 提供基于心流体验的用户操作模式
 
-## Free, open source and community-driven
+### 数据驱动支持
+受前端领域近年来声明式编程的启发，数据驱动旨在为godot引入一系列响应数据的机制，这也便于实现“开发即验证”的理念。
 
-Godot is completely free and open source under the very permissive [MIT license](https://godotengine.org/license).
-No strings attached, no royalties, nothing. The users' games are theirs, down
-to the last line of engine code. Godot's development is fully independent and
-community-driven, empowering users to help shape their engine to match their
-expectations. It is supported by the [Godot Foundation](https://godot.foundation/)
-not-for-profit.
+### 提供基于心流体验的用户操作模式
+- 专注
 
-Before being open sourced in [February 2014](https://github.com/godotengine/godot/commit/0b806ee0fc9097fa7bda7ac0109191c9c5e0a1ac),
-Godot had been developed by [Juan Linietsky](https://github.com/reduz) and
-[Ariel Manzur](https://github.com/punto-) (both still maintaining the project)
-for several years as an in-house engine, used to publish several work-for-hire
-titles.
+例如用户想创建一个下拉框组件，先将它的某种特定状态的画面表达出来，再通过逐步添加状态和响应代码来完成组件的定义过程，而不是在这个过程中频繁的切换上下文。
 
-![Screenshot of a 3D scene in the Godot Engine editor](https://raw.githubusercontent.com/godotengine/godot-design/master/screenshots/editor_tps_demo_1920x1080.jpg)
 
-## Getting the engine
-
-### Binary downloads
-
-Official binaries for the Godot editor and the export templates can be found
-[on the Godot website](https://godotengine.org/download).
-
-### Compiling from source
-
-[See the official docs](https://docs.godotengine.org/en/latest/contributing/development/compiling)
-for compilation instructions for every supported platform.
-
-## Community and contributing
-
-Godot is not only an engine but an ever-growing community of users and engine
-developers. The main community channels are listed [on the homepage](https://godotengine.org/community).
-
-The best way to get in touch with the core engine developers is to join the
-[Godot Contributors Chat](https://chat.godotengine.org).
-
-To get started contributing to the project, see the [contributing guide](CONTRIBUTING.md).
-This document also includes guidelines for reporting bugs.
-
-## Documentation and demos
-
-The official documentation is hosted on [Read the Docs](https://docs.godotengine.org).
-It is maintained by the Godot community in its own [GitHub repository](https://github.com/godotengine/godot-docs).
-
-The [class reference](https://docs.godotengine.org/en/latest/classes/)
-is also accessible from the Godot editor.
-
-We also maintain official demos in their own [GitHub repository](https://github.com/godotengine/godot-demo-projects)
-as well as a list of [awesome Godot community resources](https://github.com/godotengine/awesome-godot).
-
-There are also a number of other
-[learning resources](https://docs.godotengine.org/en/latest/community/tutorials.html)
-provided by the community, such as text and video tutorials, demos, etc.
-Consult the [community channels](https://godotengine.org/community)
-for more information.
-
-[![Code Triagers Badge](https://www.codetriage.com/godotengine/godot/badges/users.svg)](https://www.codetriage.com/godotengine/godot)
-[![Translate on Weblate](https://hosted.weblate.org/widgets/godot-engine/-/godot/svg-badge.svg)](https://hosted.weblate.org/engage/godot-engine/?utm_source=widget)
-[![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/godotengine/godot)](https://www.tickgit.com/browse?repo=github.com/godotengine/godot)
+### 功能清单
+- 图形模式
+	- 编辑器相机
+	- 弹性滚动条：整个空间最大包围框为滚动区域上限，滚动允许超出上限
+	- 导航器
+	- 拾取器
+	- 指示指向的重叠物体，允许出现重叠列表并精确选择
+	- Gizmos：操作手柄，允许对每个物体进行自定义
+	- Slice：用于指示一块矩形区域
+	- Frame / Group：TODO
+	- InputIndicator：Mouse，Touch
+		- 模拟设备的输入
+	- 排版布局
+	- 终端布局
+		- flow、flex、grid
+		- sticky
+	- 曲线工具重构
+- 数据管理
+	- DataProvider：采用订阅-发布模式来对数据进行分发
+		- 模拟数据库
+		- 自动爬取
+	- State：单例模式，表示整个终端系统的状态
+- 场景概念升级
+	- 参数、插槽
+- 快捷指令
+	- 场景树编辑器提供即时代码模式
+	- 快捷绑定：通过快捷键@进入即时绑定模式
+	- 快速数据模拟
+- 终端导航
+	- 可自定义的导航规则，默认单位是Frame
+	- 拓展：URL存储器
+- 工程管理
+	- 空间/项目、页面、组件、包
+- 导出器
+	- 特定模式的Web应用
+	- atlas导出：要求使用Slice
