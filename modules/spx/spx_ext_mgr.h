@@ -134,6 +134,13 @@ public:
         }
         f();
     }
+	template<typename Func>
+	void without_draw_tiles(Func f) {
+		if (draw_tiles == nullptr) {
+			open_draw_tiles();
+		}
+		f();
+	}
 
 	// create sprites
 	void clear_pure_sprites();
