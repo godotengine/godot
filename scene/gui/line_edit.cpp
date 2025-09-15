@@ -1256,7 +1256,7 @@ void LineEdit::_notification(int p_what) {
 						x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
 					}
 				} else {
-					x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+					x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width());
 				}
 			}
 
@@ -1414,7 +1414,7 @@ void LineEdit::_notification(int p_what) {
 						x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
 					}
 				} else {
-					x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+					x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width());
 				}
 
 				ofs_max -= r_icon->get_width();
@@ -1820,7 +1820,7 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 				x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
 			}
 		} else {
-			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width());
 		}
 	}
 
@@ -1878,7 +1878,7 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 				x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
 			}
 		} else {
-			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width());
 		}
 	}
 
@@ -2234,7 +2234,7 @@ void LineEdit::set_caret_column(int p_column) {
 				x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
 			}
 		} else {
-			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width());
 		}
 		ofs_max -= r_icon->get_width();
 	}
