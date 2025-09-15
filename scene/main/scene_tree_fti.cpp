@@ -480,7 +480,7 @@ void SceneTreeFTI::_update_dirty_nodes(Node *p_node, uint32_t p_current_half_fra
 	// Maybe replaced later by a more generic fast access method
 	// for children.
 	p_node->_update_children_cache();
-	Span<Node *> children = p_node->data.children_cache.span();
+	Span<Node *> children = p_node->data.children_source_cache.span();
 	uint32_t num_children = children.size();
 
 	// Not a Node3D.

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/hash_map.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
@@ -133,6 +134,9 @@ class SceneTreeEditor : public Control {
 	bool update_when_invisible = true;
 
 	int blocked;
+
+	// TODO: 何时移除
+	HashMap<Fragment *, TreeItem *> fragment_item_remap;
 
 	void _compute_hash(Node *p_node, uint64_t &hash);
 	void _reset();

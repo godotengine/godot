@@ -30,7 +30,12 @@
 
 #pragma once
 
+#include "core/object/object.h"
+#include "core/os/memory.h"
 #include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/templates/local_vector.h"
+#include "core/typedefs.h"
 #include "core/variant/typed_array.h"
 #include "scene/main/scene_tree.h"
 #include "scene/scene_string_names.h"
@@ -40,6 +45,7 @@ class Window;
 class SceneState;
 class Tween;
 class PropertyTweener;
+class Fragment;
 
 SAFE_FLAG_TYPE_PUN_GUARANTEES
 SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
@@ -48,6 +54,7 @@ class Node : public Object {
 	GDCLASS(Node, Object);
 
 	friend class SceneTreeFTI;
+	friend class Fragment;
 
 protected:
 	// During group processing, these are thread-safe.
@@ -128,11 +135,84 @@ public:
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
 	};
 
+	struct Anchor {
+		int index;
+		int node_index;
+		int anchor_index;
+
+		Node *node;
+		_FORCE_INLINE_ void put_node(Node *p_child, int p_index = 0, bool p_force_readable_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED) {
+			this->node->add_child(p_child, p_force_readable_name, p_internal);
+			this->node->move_child(p_child, this->index + p_index);
+		};
+		_FORCE_INLINE_ void take_node(int p_index, bool p_include_internal) {
+			int final_index = this->index - p_index;
+			if (final_index < 0) {
+				return;
+			}
+			this->node->remove_child(this->node->get_child(final_index, p_include_internal));
+		};
+	};
+
 	static int orphan_node_count;
 
 	void _update_process(bool p_enable, bool p_for_children);
 
 private:
+
+	template<bool in_source_tree>
+	class TreeOperationReader {
+		private:
+
+		Node &host;
+
+		public:
+		_FORCE_INLINE_ bool is_accessible_from_caller_thread() const {
+			return host.is_accessible_from_caller_thread();
+		}
+		_FORCE_INLINE_ StringName get_description() const {
+			return host.get_description();
+		}
+
+		TreeOperationReader(Node &p_host):host(p_host){};
+		Node *get_parent() const;
+		Node *get_child(int p_index, bool p_include_internal = true) const;
+		int get_child_count(bool p_include_internal = true) const;
+
+		_FORCE_INLINE_ int get_index(bool p_include_internal = true) const {
+			// p_include_internal = false doesn't make sense if the node is internal.
+			ERR_FAIL_COND_V_MSG(!p_include_internal && host.data.internal_mode != INTERNAL_MODE_DISABLED, -1, "Node is internal. Can't get index with 'include_internal' being false.");
+
+			int host_index = in_source_tree ? host.data.index_in_source_tree : host.data.index;
+			Node *host_parent = in_source_tree ? host.data.parent_in_source_tree : host.data.parent_in_target_tree;
+
+			if (!host_parent) {
+				return host_index;
+			}
+			host_parent->_update_children_cache();
+
+			if (!p_include_internal) {
+				return host_index;
+			} else {
+				switch (host.data.internal_mode) {
+					case INTERNAL_MODE_DISABLED: {
+						return host_parent->data.internal_children_front_count_cache + host_index;
+					} break;
+					case INTERNAL_MODE_FRONT: {
+						return host_index;
+					} break;
+					case INTERNAL_MODE_BACK: {
+						return host_parent->data.internal_children_front_count_cache + host_parent->data.external_children_count_cache + host.data.index;
+					} break;
+				}
+				return -1;
+			}
+		}
+	};
+
+	friend class TreeOperationReader<true>;
+	friend class TreeOperationReader<false>;
+
 	struct GroupData {
 		bool persistent = false;
 		SceneTree::Group *group = nullptr;
@@ -164,18 +244,30 @@ private:
 		Ref<SceneState> instance_state;
 		Ref<SceneState> inherited_state;
 
-		Node *parent = nullptr;
+		Node *parent_in_target_tree = nullptr;
+		Node *parent_in_source_tree = nullptr;
 		Node *owner = nullptr;
-		HashMap<StringName, Node *> children;
+		Fragment *fragment_root = nullptr;
+		Node *fragment_host = nullptr;
+		Node *host = nullptr;
+		HashMap<StringName, Node *> children_target;
+		HashMap<StringName, Node *> children_source;
+		HashMap<StringName, Fragment *> fragments;
 		mutable bool children_cache_dirty = true;
-		mutable LocalVector<Node *> children_cache;
+		mutable LocalVector<Node *> children_source_cache;
+		mutable LocalVector<Node *> children_target_cache;
+		mutable LocalVector<Fragment *> fragment_cache;
+		LocalVector<Anchor *> anchors;
 		HashMap<StringName, Node *> owned_unique_nodes;
 		bool unique_name_in_owner = false;
+		bool is_fragment = false;
+		bool is_virtual = false;
 		InternalMode internal_mode = INTERNAL_MODE_DISABLED;
 		mutable int internal_children_front_count_cache = 0;
 		mutable int internal_children_back_count_cache = 0;
 		mutable int external_children_count_cache = 0;
 		mutable int index = -1; // relative to front, normal or back.
+		mutable int index_in_source_tree = -1;
 		int32_t depth = -1;
 		int blocked = 0; // Safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
 		StringName name;
@@ -263,6 +355,7 @@ private:
 	} data;
 
 	Ref<MultiplayerAPI> multiplayer;
+	Fragment *fragment = nullptr;
 
 	String _get_tree_string_pretty(const String &p_prefix, bool p_last);
 	String _get_tree_string(const Node *p_node);
@@ -472,6 +565,9 @@ public:
 		NOTIFICATION_UNSUSPENDED = 9004
 	};
 
+	TreeOperationReader<false> target_tree_reader;
+	TreeOperationReader<true> source_tree_reader;
+
 	/* NODE/TREE */
 
 	StringName get_name() const;
@@ -484,8 +580,12 @@ public:
 	void add_sibling(Node *p_sibling, bool p_force_readable_name = false);
 	void remove_child(Node *p_child);
 
-	int get_child_count(bool p_include_internal = true) const;
-	Node *get_child(int p_index, bool p_include_internal = true) const;
+	_FORCE_INLINE_ int get_child_count(bool p_include_internal = true) const {
+		return target_tree_reader.get_child_count();
+	};
+	_FORCE_INLINE_ Node *get_child(int p_index, bool p_include_internal = true) const {
+		return target_tree_reader.get_child(p_index, p_include_internal);
+	};
 	TypedArray<Node> get_children(bool p_include_internal = true) const;
 	bool has_node(const NodePath &p_path) const;
 	Node *get_node(const NodePath &p_path) const;
@@ -495,8 +595,21 @@ public:
 	bool has_node_and_resource(const NodePath &p_path) const;
 	Node *get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
 
+	// TODO: 添加非空判断
+	_FORCE_INLINE_ void append_to(Node *p_parent, bool p_force_readable_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED) {
+		p_parent->add_child(this, p_force_readable_name, p_internal);
+	};
+	_FORCE_INLINE_ void move_to(int p_index) {
+		data.parent_in_target_tree->move_child(this, p_index);
+	};
+	_FORCE_INLINE_ void remove_self() {
+		data.parent_in_target_tree->remove_child(this);
+	};
+
 	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true);
-	Node *get_parent() const;
+	_FORCE_INLINE_ Node *get_parent() const {
+		return target_tree_reader.get_parent();
+	};
 	Node *find_parent(const String &p_pattern) const;
 
 	Window *get_window() const;
@@ -541,30 +654,13 @@ public:
 	bool is_unique_name_in_owner() const;
 
 	_FORCE_INLINE_ int get_index(bool p_include_internal = true) const {
-		// p_include_internal = false doesn't make sense if the node is internal.
-		ERR_FAIL_COND_V_MSG(!p_include_internal && data.internal_mode != INTERNAL_MODE_DISABLED, -1, "Node is internal. Can't get index with 'include_internal' being false.");
-		if (!data.parent) {
-			return data.index;
-		}
-		data.parent->_update_children_cache();
-
-		if (!p_include_internal) {
-			return data.index;
-		} else {
-			switch (data.internal_mode) {
-				case INTERNAL_MODE_DISABLED: {
-					return data.parent->data.internal_children_front_count_cache + data.index;
-				} break;
-				case INTERNAL_MODE_FRONT: {
-					return data.index;
-				} break;
-				case INTERNAL_MODE_BACK: {
-					return data.parent->data.internal_children_front_count_cache + data.parent->data.external_children_count_cache + data.index;
-				} break;
-			}
-			return -1;
-		}
+		return target_tree_reader.get_index(p_include_internal);
 	}
+
+	int get_index_in_fragment() const;
+	HashMap<StringName, Fragment*> get_fragments() const {
+		return data.fragments;
+	};
 
 	Ref<Tween> create_tween();
 
@@ -582,6 +678,71 @@ public:
 	void set_editable_instance(Node *p_node, bool p_editable);
 	bool is_editable_instance(const Node *p_node) const;
 	Node *get_deepest_editable_node(Node *p_start_node) const;
+
+	// _FORCE_INLINE_ Anchor* put_anchor() {
+	// 	Anchor *new_anchor = memnew(Anchor);
+	// 	new_anchor->node = this;
+	// 	new_anchor->node_index = data.children.size();
+	// 	new_anchor->anchor_index = data.anchors.size() + data.children.size();
+	// 	data.anchors.push_back(new_anchor);
+	// 	return new_anchor;
+	// };
+
+	// _FORCE_INLINE_ void take_anchor(Anchor *p_anchor) {
+	// 	int anchor_index = p_anchor->anchor_index;
+	// 	bool successed = data.anchors.erase(p_anchor);
+	// 	if (!successed) { return; }
+
+	// 	p_anchor->node = nullptr;
+	// 	for (Anchor *anchor : data.anchors) {
+	// 		if (anchor->anchor_index > anchor_index) {
+	// 			anchor->anchor_index--;
+	// 		}
+	// 	}
+	// };
+
+	// _FORCE_INLINE_ void move_anchor(Anchor *p_anchor, int p_anchor_index) {
+	// 	if (!data.anchors.has(p_anchor) || p_anchor->anchor_index == p_anchor_index) { return; }
+
+	// 	int start = MIN(p_anchor->anchor_index, p_anchor_index);
+	// 	int end = MAX(p_anchor->anchor_index, p_anchor_index);
+
+	// 	int offset = p_anchor->anchor_index > p_anchor_index ? 1 : -1; // 1 when move front, -1 when move back
+
+	// 	bool append_only = true;
+	// 	int diff = 0;
+	// 	for (Anchor *anchor : data.anchors) {
+	// 		if (anchor == p_anchor) { continue; }
+
+	// 		if (anchor->anchor_index >= p_anchor_index) {
+	// 			append_only = false;
+	// 			int new_diff = anchor->anchor_index - p_anchor_index;
+	// 			if (new_diff < diff) {
+	// 				diff = new_diff;
+	// 				p_anchor->node_index = anchor->node_index - diff;
+	// 			}
+	// 		}
+
+	// 		if (anchor->anchor_index >= start && anchor->anchor_index <= end) {
+	// 			anchor->anchor_index += offset;
+	// 			anchor->node_index = MAX(0, MIN(anchor->node_index + offset, data.children.size()));
+	// 		}
+	// 	}
+
+	// 	if (append_only) {
+	// 		p_anchor->anchor_index = data.anchors.size() + data.children.size();
+	// 	} else {
+	// 		p_anchor->anchor_index = p_anchor_index;
+	// 	}
+	// };
+	_FORCE_INLINE_ const LocalVector<Anchor*>& get_anchors() {
+		return data.anchors;
+	};
+
+	_FORCE_INLINE_ Fragment* get_fragment_root() { return data.fragment_root; };
+	_FORCE_INLINE_ void set_fragment_root(Fragment *p_fragment) { data.fragment_root = p_fragment; };
+
+	Fragment* as_fragment();
 
 #ifdef TOOLS_ENABLED
 	void set_property_pinned(const String &p_property, bool p_pinned);

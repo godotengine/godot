@@ -31,6 +31,9 @@
 #pragma once
 
 #include "core/io/resource.h"
+#include "core/os/memory.h"
+#include "core/string/node_path.h"
+#include "scene/main/fragment.h"
 #include "scene/main/node.h"
 
 class SceneState : public RefCounted {
@@ -42,6 +45,7 @@ class SceneState : public RefCounted {
 	Vector<NodePath> editable_instances;
 	mutable HashMap<NodePath, int> node_path_cache;
 	mutable HashMap<int, int> base_scene_node_remap;
+	mutable HashMap<NodePath, int> node_path_node_data_remap;
 
 	int base_scene_idx = -1;
 
@@ -58,6 +62,7 @@ class SceneState : public RefCounted {
 		int name = 0;
 		int instance = 0;
 		int index = 0;
+		int id = 0;
 
 		struct Property {
 			int name = 0;
@@ -86,9 +91,46 @@ class SceneState : public RefCounted {
 		Vector<int> binds;
 	};
 
+	struct FragmentStack {
+		int32_t stack_size = 0;
+		Vector<Fragment *> fragment_stacks;
+		Vector<const NodeData *> nd_stacks;
+		HashMap<Fragment *, const NodeData *> fragment_nd_remap;
+
+		Fragment* get_fragment(int p_stack_offset = 0) {
+			return fragment_stacks.get(fragment_stacks.size() - 1 + p_stack_offset);
+		};
+		void set_fragment(Fragment *fragment) {
+			fragment_stacks.set(fragment_stacks.size() - 1, fragment);
+		};
+
+		const NodeData* get_nd() {
+			return nd_stacks.get(nd_stacks.size() - 1);
+		};
+		void set_nd(const NodeData* p_nd) {
+			nd_stacks.set(nd_stacks.size() - 1, p_nd);
+		};
+
+		void map_fragment_nd(Fragment *fragment, const NodeData *nd) {
+			fragment_nd_remap[fragment] = nd;
+		}
+		const NodeData* get_nd_by_fragment(Fragment *fragment) {
+			return fragment_nd_remap[fragment];
+		}
+
+		void push_stack() {
+			fragment_stacks.push_back(nullptr);
+			nd_stacks.push_back(nullptr);
+		}
+		void pop_stack(int p_stacks = 1) {
+			fragment_stacks.resize(fragment_stacks.size() - p_stacks);
+			nd_stacks.resize(nd_stacks.size() - p_stacks);
+		}
+	};
+
 	Vector<ConnectionData> connections;
 
-	Error _parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map);
+	Error _parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map, FragmentStack &fragment_context);
 	Error _parse_connections(Node *p_owner, Node *p_node, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map);
 
 	String path;
@@ -107,6 +149,8 @@ public:
 
 private:
 	static InstantiationWarningNotify instantiation_warn_notify;
+	static void prepend_fragment_nd_recursively(Node *fragment, int p_parent, Vector<NodeData> &nodes, HashMap<StringName, int> &name_map, FragmentStack &fragment_context);
+
 #endif
 
 protected:
@@ -116,6 +160,7 @@ public:
 	enum {
 		FLAG_ID_IS_PATH = (1 << 30),
 		TYPE_INSTANTIATED = 0x7FFFFFFF,
+		FLAG_TYPE_IS_FRAGMENT = (1 << 30),
 		FLAG_INSTANCE_IS_PLACEHOLDER = (1 << 30),
 		FLAG_PATH_PROPERTY_IS_NODE = (1 << 30),
 		FLAG_PROP_NAME_MASK = FLAG_PATH_PROPERTY_IS_NODE - 1,
@@ -213,6 +258,8 @@ public:
 	bool remove_group_references(const StringName &p_name);
 	bool rename_group_references(const StringName &p_old_name, const StringName &p_new_name);
 	HashSet<StringName> get_all_groups();
+
+	void cache_node_data(int p_nd_id, int p_name, int p_parent);
 
 	virtual void set_last_modified_time(uint64_t p_time) { last_modified_time = p_time; }
 	uint64_t get_last_modified_time() const { return last_modified_time; }

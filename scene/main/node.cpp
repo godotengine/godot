@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "node.h"
+#include "core/templates/pair.h"
 #include "node.compat.inc"
 
 #include "core/config/project_settings.h"
@@ -43,6 +44,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "viewport.h"
+#include "fragment.h"
 
 int Node::orphan_node_count = 0;
 
@@ -94,8 +96,8 @@ void Node::_notification(int p_notification) {
 			if (data.tree->is_accessibility_supported() && !is_part_of_edited_scene()) {
 				data.tree->_accessibility_force_update();
 				data.tree->_accessibility_notify_change(this);
-				if (data.parent) {
-					data.tree->_accessibility_notify_change(data.parent);
+				if (data.parent_in_target_tree) {
+					data.tree->_accessibility_notify_change(data.parent_in_target_tree);
 				} else {
 					data.tree->_accessibility_notify_change(get_window()); // Root node.
 				}
@@ -103,8 +105,8 @@ void Node::_notification(int p_notification) {
 
 			// Update process mode.
 			if (data.process_mode == PROCESS_MODE_INHERIT) {
-				if (data.parent) {
-					data.process_owner = data.parent->data.process_owner;
+				if (data.parent_in_target_tree) {
+					data.process_owner = data.parent_in_target_tree->data.process_owner;
 				} else {
 					ERR_PRINT("The root node can't be set to Inherit process mode, reverting to Pausable instead.");
 					data.process_mode = PROCESS_MODE_PAUSABLE;
@@ -116,8 +118,8 @@ void Node::_notification(int p_notification) {
 
 			{ // Update threaded process mode.
 				if (data.process_thread_group == PROCESS_THREAD_GROUP_INHERIT) {
-					if (data.parent) {
-						data.process_thread_group_owner = data.parent->data.process_thread_group_owner;
+					if (data.parent_in_target_tree) {
+						data.process_thread_group_owner = data.parent_in_target_tree->data.process_thread_group_owner;
 					}
 
 					if (data.process_thread_group_owner) {
@@ -137,14 +139,14 @@ void Node::_notification(int p_notification) {
 
 			if (data.physics_interpolation_mode == PHYSICS_INTERPOLATION_MODE_INHERIT) {
 				bool interpolate = true; // Root node default is for interpolation to be on.
-				if (data.parent) {
-					interpolate = data.parent->is_physics_interpolated();
+				if (data.parent_in_target_tree) {
+					interpolate = data.parent_in_target_tree->is_physics_interpolated();
 				}
 				_propagate_physics_interpolated(interpolate);
 			}
 
 			// Update auto translate mode.
-			if (data.auto_translate_mode == AUTO_TRANSLATE_MODE_INHERIT && !data.parent) {
+			if (data.auto_translate_mode == AUTO_TRANSLATE_MODE_INHERIT && !data.parent_in_target_tree) {
 				ERR_PRINT("The root node can't be set to Inherit auto translate mode, reverting to Always instead.");
 				data.auto_translate_mode = AUTO_TRANSLATE_MODE_ALWAYS;
 			}
@@ -185,8 +187,8 @@ void Node::_notification(int p_notification) {
 					data.accessibility_element = RID();
 				}
 				data.tree->_accessibility_notify_change(this, true);
-				if (data.parent) {
-					data.tree->_accessibility_notify_change(data.parent);
+				if (data.parent_in_target_tree) {
+					data.tree->_accessibility_notify_change(data.parent_in_target_tree);
 				} else {
 					data.tree->_accessibility_notify_change(get_window()); // Root node.
 				}
@@ -282,13 +284,13 @@ void Node::_notification(int p_notification) {
 				n->_clean_up_owner(); // This will change data.owned. So it's impossible to loop over the list in the usual manner.
 			}
 
-			if (data.parent) {
-				data.parent->remove_child(this);
+			if (data.parent_in_target_tree) {
+				data.parent_in_target_tree->remove_child(this);
 			}
 
 			// kill children as cleanly as possible
-			while (data.children.size()) {
-				Node *child = data.children.last()->value; // begin from the end because its faster and more consistent with creation
+			while (data.children_source.size()) {
+				Node *child = data.children_source.last()->value; // begin from the end because its faster and more consistent with creation
 				memdelete(child);
 			}
 		} break;
@@ -304,7 +306,7 @@ void Node::_notification(int p_notification) {
 void Node::_propagate_ready() {
 	data.ready_notified = true;
 	data.blocked++;
-	for (KeyValue<StringName, Node *> &K : data.children) {
+	for (KeyValue<StringName, Node *> &K : data.children_source) {
 		K.value->_propagate_ready();
 	}
 
@@ -322,16 +324,16 @@ void Node::_propagate_ready() {
 void Node::_propagate_enter_tree() {
 	// this needs to happen to all children before any enter_tree
 
-	if (data.parent) {
-		data.tree = data.parent->data.tree;
-		data.depth = data.parent->data.depth + 1;
+	if (data.parent_in_target_tree) {
+		data.tree = data.parent_in_target_tree->data.tree;
+		data.depth = data.parent_in_target_tree->data.depth + 1;
 	} else {
 		data.depth = 1;
 	}
 
 	data.viewport = Object::cast_to<Viewport>(this);
-	if (!data.viewport && data.parent) {
-		data.viewport = data.parent->data.viewport;
+	if (!data.viewport && data.parent_in_target_tree) {
+		data.viewport = data.parent_in_target_tree->data.viewport;
 	}
 
 	for (KeyValue<StringName, GroupData> &E : data.grouped) {
@@ -346,16 +348,16 @@ void Node::_propagate_enter_tree() {
 
 	data.tree->node_added(this);
 
-	if (data.parent) {
+	if (data.parent_in_target_tree) {
 		Variant c = this;
 		const Variant *cptr = &c;
-		data.parent->emit_signalp(SNAME("child_entered_tree"), &cptr, 1);
+		data.parent_in_target_tree->emit_signalp(SNAME("child_entered_tree"), &cptr, 1);
 	}
 
 	data.blocked++;
 	//block while adding children
 
-	for (KeyValue<StringName, Node *> &K : data.children) {
+	for (KeyValue<StringName, Node *> &K : data.children_source) {
 		if (!K.value->is_inside_tree()) { // could have been added in enter_tree
 			K.value->_propagate_enter_tree();
 		}
@@ -379,7 +381,7 @@ void Node::_propagate_after_exit_tree() {
 
 	data.blocked++;
 
-	for (HashMap<StringName, Node *>::Iterator I = data.children.last(); I; --I) {
+	for (HashMap<StringName, Node *>::Iterator I = data.children_source.last(); I; --I) {
 		I->value->_propagate_after_exit_tree();
 	}
 
@@ -399,7 +401,7 @@ void Node::_propagate_exit_tree() {
 #endif
 	data.blocked++;
 
-	for (HashMap<StringName, Node *>::Iterator I = data.children.last(); I; --I) {
+	for (HashMap<StringName, Node *>::Iterator I = data.children_source.last(); I; --I) {
 		I->value->_propagate_exit_tree();
 	}
 
@@ -414,10 +416,10 @@ void Node::_propagate_exit_tree() {
 		data.tree->node_removed(this);
 	}
 
-	if (data.parent) {
+	if (data.parent_in_target_tree) {
 		Variant c = this;
 		const Variant *cptr = &c;
-		data.parent->emit_signalp(SNAME("child_exiting_tree"), &cptr, 1);
+		data.parent_in_target_tree->emit_signalp(SNAME("child_exiting_tree"), &cptr, 1);
 	}
 
 	// exit groups
@@ -463,7 +465,7 @@ void Node::_propagate_physics_interpolated(bool p_interpolated) {
 	update_configuration_warnings();
 
 	data.blocked++;
-	for (KeyValue<StringName, Node *> &K : data.children) {
+	for (KeyValue<StringName, Node *> &K : data.children_source) {
 		K.value->_propagate_physics_interpolated(p_interpolated);
 	}
 	data.blocked--;
@@ -475,7 +477,7 @@ void Node::_propagate_physics_interpolation_reset_requested(bool p_requested) {
 	}
 
 	data.blocked++;
-	for (KeyValue<StringName, Node *> &K : data.children) {
+	for (KeyValue<StringName, Node *> &K : data.children_source) {
 		K.value->_propagate_physics_interpolation_reset_requested(p_requested);
 	}
 	data.blocked--;
@@ -484,7 +486,7 @@ void Node::_propagate_physics_interpolation_reset_requested(bool p_requested) {
 void Node::move_child(Node *p_child, int p_index) {
 	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Moving child node positions inside the SceneTree is only allowed from the main thread. Use call_deferred(\"move_child\",child,index).");
 	ERR_FAIL_NULL(p_child);
-	ERR_FAIL_COND_MSG(p_child->data.parent != this, "Child is not a child of this node.");
+	ERR_FAIL_COND_MSG(p_child->data.parent_in_target_tree != this, "Child is not a child of this node.");
 
 	_update_children_cache();
 	// We need to check whether node is internal and move it only in the relevant node range.
@@ -499,12 +501,12 @@ void Node::move_child(Node *p_child, int p_index) {
 			p_index += data.internal_children_back_count_cache;
 		}
 		ERR_FAIL_INDEX_MSG(p_index, data.internal_children_back_count_cache, vformat("Invalid new child index: %d. Child is internal.", p_index));
-		_move_child(p_child, (int)data.children_cache.size() - data.internal_children_back_count_cache + p_index);
+		_move_child(p_child, (int)data.children_source_cache.size() - data.internal_children_back_count_cache + p_index);
 	} else {
 		if (p_index < 0) {
 			p_index += get_child_count(false);
 		}
-		ERR_FAIL_INDEX_MSG(p_index, (int)data.children_cache.size() + 1 - data.internal_children_front_count_cache - data.internal_children_back_count_cache, vformat("Invalid new child index: %d.", p_index));
+		ERR_FAIL_INDEX_MSG(p_index, (int)data.children_source_cache.size() + 1 - data.internal_children_front_count_cache - data.internal_children_back_count_cache, vformat("Invalid new child index: %d.", p_index));
 		_move_child(p_child, p_index + data.internal_children_front_count_cache);
 	}
 }
@@ -520,11 +522,11 @@ void Node::_move_child(Node *p_child, int p_index, bool p_ignore_end) {
 				p_index--;
 			}
 		} else if (p_child->data.internal_mode == INTERNAL_MODE_BACK) {
-			if (p_index == (int)data.children_cache.size()) {
+			if (p_index == (int)data.children_source_cache.size()) {
 				p_index--;
 			}
 		} else {
-			if (p_index == (int)data.children_cache.size() - data.internal_children_back_count_cache) {
+			if (p_index == (int)data.children_source_cache.size() - data.internal_children_back_count_cache) {
 				p_index--;
 			}
 		}
@@ -539,8 +541,8 @@ void Node::_move_child(Node *p_child, int p_index, bool p_ignore_end) {
 	int motion_from = MIN(p_index, child_index);
 	int motion_to = MAX(p_index, child_index);
 
-	data.children_cache.remove_at(child_index);
-	data.children_cache.insert(p_index, p_child);
+	data.children_source_cache.remove_at(child_index);
+	data.children_source_cache.insert(p_index, p_child);
 
 	if (data.tree) {
 		data.tree->tree_changed();
@@ -549,14 +551,38 @@ void Node::_move_child(Node *p_child, int p_index, bool p_ignore_end) {
 	data.blocked++;
 	//new pos first
 	for (int i = motion_from; i <= motion_to; i++) {
-		if (data.children_cache[i]->data.internal_mode == INTERNAL_MODE_DISABLED) {
-			data.children_cache[i]->data.index = i - data.internal_children_front_count_cache;
-		} else if (data.children_cache[i]->data.internal_mode == INTERNAL_MODE_BACK) {
-			data.children_cache[i]->data.index = i - data.internal_children_front_count_cache - data.external_children_count_cache;
+		if (data.children_source_cache[i]->data.internal_mode == INTERNAL_MODE_DISABLED) {
+			data.children_source_cache[i]->data.index = i - data.internal_children_front_count_cache;
+		} else if (data.children_source_cache[i]->data.internal_mode == INTERNAL_MODE_BACK) {
+			data.children_source_cache[i]->data.index = i - data.internal_children_front_count_cache - data.external_children_count_cache;
 		} else {
-			data.children_cache[i]->data.index = i;
+			data.children_source_cache[i]->data.index = i;
 		}
 	}
+
+	int offset = child_index > p_index ? 1 : -1;
+	int ignore_from = child_index > p_index ? 1 : 0;
+	int ignore_to = 1 - ignore_from;
+	for (KeyValue<StringName, Fragment *> kv: data.fragments) {
+		if (kv.value->data.index >= motion_from + ignore_from && kv.value->data.index <= motion_to + ignore_to) {
+			kv.value->data.index += offset;
+		}
+	}
+
+	// for (Anchor *anchor: data.anchors) {
+	// 	if (p_index > child_index) { // move back
+	// 		if (anchor->anchor_index > child_index) {
+	// 			anchor->anchor_index--;
+	// 		}
+	// 	}
+	// 	if (p_index < child_index) { // move front
+	// 		if (anchor->anchor_index >= p_index) {
+	// 			anchor->anchor_index+=offset;
+	// 		}
+	// 	}
+	// 	// if (anchor->node_index)
+	// 	anchor->node_index = MAX(0, MIN(anchor->node_index + offset, data.children_source.size()));
+	// }
 	// notification second
 	move_child_notify(p_child);
 	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
@@ -573,7 +599,7 @@ void Node::_propagate_groups_dirty() {
 		}
 	}
 
-	for (KeyValue<StringName, Node *> &K : data.children) {
+	for (KeyValue<StringName, Node *> &K : data.children_source) {
 		K.value->_propagate_groups_dirty();
 	}
 }
@@ -662,8 +688,8 @@ void Node::set_process_mode(ProcessMode p_mode) {
 	bool prev_enabled = _is_enabled();
 
 	if (p_mode == PROCESS_MODE_INHERIT) {
-		if (data.parent) {
-			data.process_owner = data.parent->data.process_owner;
+		if (data.parent_in_target_tree) {
+			data.process_owner = data.parent_in_target_tree->data.process_owner;
 		} else {
 			ERR_FAIL_MSG("The root node can't be set to Inherit process mode.");
 		}
@@ -716,7 +742,7 @@ void Node::_propagate_pause_notification(bool p_enable) {
 	}
 
 	data.blocked++;
-	for (KeyValue<StringName, Node *> &K : data.children) {
+	for (KeyValue<StringName, Node *> &K : data.children_source) {
 		K.value->_propagate_pause_notification(p_enable);
 	}
 	data.blocked--;
@@ -726,7 +752,7 @@ void Node::_propagate_suspend_notification(bool p_enable) {
 	notification(p_enable ? NOTIFICATION_SUSPENDED : NOTIFICATION_UNSUSPENDED);
 
 	data.blocked++;
-	for (KeyValue<StringName, Node *> &KV : data.children) {
+	for (KeyValue<StringName, Node *> &KV : data.children_source) {
 		KV.value->_propagate_suspend_notification(p_enable);
 	}
 	data.blocked--;
@@ -748,7 +774,7 @@ void Node::_propagate_process_owner(Node *p_owner, int p_pause_notification, int
 	}
 
 	data.blocked++;
-	for (KeyValue<StringName, Node *> &K : data.children) {
+	for (KeyValue<StringName, Node *> &K : data.children_source) {
 		Node *c = K.value;
 		if (c->data.process_mode == PROCESS_MODE_INHERIT) {
 			c->_propagate_process_owner(p_owner, p_pause_notification, p_enabled_notification);
@@ -762,7 +788,7 @@ void Node::set_multiplayer_authority(int p_peer_id, bool p_recursive) {
 	data.multiplayer_authority = p_peer_id;
 
 	if (p_recursive) {
-		for (KeyValue<StringName, Node *> &K : data.children) {
+		for (KeyValue<StringName, Node *> &K : data.children_source) {
 			K.value->set_multiplayer_authority(p_peer_id, true);
 		}
 	}
@@ -931,8 +957,8 @@ void Node::set_physics_interpolation_mode(PhysicsInterpolationMode p_mode) {
 
 	switch (p_mode) {
 		case PHYSICS_INTERPOLATION_MODE_INHERIT: {
-			if (is_inside_tree() && data.parent) {
-				interpolate = data.parent->is_physics_interpolated();
+			if (is_inside_tree() && data.parent_in_target_tree) {
+				interpolate = data.parent_in_target_tree->is_physics_interpolated();
 			}
 		} break;
 		case PHYSICS_INTERPOLATION_MODE_OFF: {
@@ -1069,7 +1095,7 @@ void Node::_remove_tree_from_process_thread_group() {
 		return; // May not be initialized yet.
 	}
 
-	for (KeyValue<StringName, Node *> &K : data.children) {
+	for (KeyValue<StringName, Node *> &K : data.children_source) {
 		if (K.value->data.process_thread_group != PROCESS_THREAD_GROUP_INHERIT) {
 			continue;
 		}
@@ -1094,7 +1120,7 @@ void Node::_add_tree_to_process_thread_group(Node *p_owner) {
 		data.process_group = &data.tree->default_process_group;
 	}
 
-	for (KeyValue<StringName, Node *> &K : data.children) {
+	for (KeyValue<StringName, Node *> &K : data.children_source) {
 		if (K.value->data.process_thread_group != PROCESS_THREAD_GROUP_INHERIT) {
 			continue;
 		}
@@ -1198,8 +1224,8 @@ void Node::set_process_thread_group(ProcessThreadGroup p_mode) {
 	data.process_thread_group = p_mode;
 
 	if (p_mode == PROCESS_THREAD_GROUP_INHERIT) {
-		if (data.parent) {
-			data.process_thread_group_owner = data.parent->data.process_thread_group_owner;
+		if (data.parent_in_target_tree) {
+			data.process_thread_group_owner = data.parent_in_target_tree->data.process_thread_group_owner;
 		} else {
 			data.process_thread_group_owner = nullptr;
 		}
@@ -1321,7 +1347,7 @@ void Node::set_auto_translate_mode(AutoTranslateMode p_mode) {
 		return;
 	}
 
-	if (p_mode == AUTO_TRANSLATE_MODE_INHERIT && data.tree && !data.parent) {
+	if (p_mode == AUTO_TRANSLATE_MODE_INHERIT && data.tree && !data.parent_in_target_tree) {
 		ERR_FAIL_MSG("The root node can't be set to Inherit auto translate mode.");
 	}
 
@@ -1344,10 +1370,10 @@ bool Node::can_auto_translate() const {
 
 	data.is_auto_translate_dirty = false;
 
-	Node *parent = data.parent;
+	Node *parent = data.parent_in_target_tree;
 	while (parent) {
 		if (parent->data.auto_translate_mode == AUTO_TRANSLATE_MODE_INHERIT) {
-			parent = parent->data.parent;
+			parent = parent->data.parent_in_target_tree;
 			continue;
 		}
 
@@ -1362,7 +1388,7 @@ StringName Node::get_translation_domain() const {
 	ERR_READ_THREAD_GUARD_V(StringName());
 
 	if (data.is_translation_domain_inherited && data.is_translation_domain_dirty) {
-		const_cast<Node *>(this)->_translation_domain = data.parent ? data.parent->get_translation_domain() : StringName();
+		const_cast<Node *>(this)->_translation_domain = data.parent_in_target_tree ? data.parent_in_target_tree->get_translation_domain() : StringName();
 		data.is_translation_domain_dirty = false;
 	}
 	return _translation_domain;
@@ -1393,7 +1419,7 @@ void Node::set_translation_domain_inherited() {
 }
 
 void Node::_propagate_translation_domain_dirty() {
-	for (KeyValue<StringName, Node *> &K : data.children) {
+	for (KeyValue<StringName, Node *> &K : data.children_source) {
 		Node *child = K.value;
 		if (child->data.is_translation_domain_inherited) {
 			child->data.is_translation_domain_dirty = true;
@@ -1433,9 +1459,9 @@ void Node::set_name(const StringName &p_name) {
 		}
 	}
 
-	if (data.parent) {
-		data.parent->_validate_child_name(this, true);
-		bool success = data.parent->data.children.replace_key(old_name, data.name);
+	if (data.parent_in_target_tree) {
+		data.parent_in_target_tree->_validate_child_name(this, true);
+		bool success = data.parent_in_target_tree->data.children_source.replace_key(old_name, data.name);
 		ERR_FAIL_COND_MSG(!success, "Renaming child in hashtable failed, this is a bug.");
 	}
 
@@ -1519,7 +1545,7 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 			//new unique name must be assigned
 			unique = false;
 		} else {
-			const Node *const *existing = data.children.getptr(p_child->data.name);
+			const Node *const *existing = data.children_source.getptr(p_child->data.name);
 			unique = !existing || *existing == p_child;
 		}
 
@@ -1584,7 +1610,7 @@ void Node::_generate_serial_child_name(const Node *p_child, StringName &name) co
 		name = p_child->get_class();
 	}
 
-	const Node *const *existing = data.children.getptr(name);
+	const Node *const *existing = data.children_source.getptr(name);
 	if (!existing || *existing == p_child) { // Unused, or is current node.
 		return;
 	}
@@ -1614,7 +1640,7 @@ void Node::_generate_serial_child_name(const Node *p_child, StringName &name) co
 	for (;;) {
 		StringName attempt = name_string + nums;
 
-		existing = data.children.getptr(attempt);
+		existing = data.children_source.getptr(attempt);
 		bool exists = existing != nullptr && *existing != p_child;
 
 		if (!exists) {
@@ -1640,7 +1666,16 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name, InternalM
 	//add a child node quickly, without name validation
 
 	p_child->data.name = p_name;
-	data.children.insert(p_name, p_child);
+	// if (p_child->data.is_fragment) {
+	// 	data.fragments.insert(p_child->data.name, p_child->as_fragment());
+	// } else {
+	// 	data.children_source.insert(p_name, p_child);
+	// }
+
+	data.children_source.insert(p_name, p_child);
+	if (!p_child->data.is_virtual) {
+		data.children_target.insert(p_name, p_child);
+	}
 
 	p_child->data.internal_mode = p_internal_mode;
 	switch (p_internal_mode) {
@@ -1655,11 +1690,27 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name, InternalM
 		} break;
 	}
 
-	p_child->data.parent = this;
+
+	p_child->data.parent_in_source_tree = this;
+	if (!data.is_virtual) {
+		p_child->data.parent_in_target_tree = this;
+	}
+
+	if (data.is_virtual) {
+		p_child->data.host = data.host;
+	} else {
+		p_child->data.host = this;
+	}
+
+	// TODO: living adding
+
+	// if (data.is_fragment && !p_child->data.is_fragment && data.fragment_host) {
+	// 	data.fragment_host->_add_child_nocheck(p_child, p_child->data.name);
+	// }
 
 	if (!data.children_cache_dirty && p_internal_mode == INTERNAL_MODE_DISABLED && data.internal_children_back_count_cache == 0) {
 		// Special case, also add to the cached children array since its cheap.
-		data.children_cache.push_back(p_child);
+		data.children_source_cache.push_back(p_child);
 	} else {
 		data.children_cache_dirty = true;
 	}
@@ -1682,7 +1733,11 @@ void Node::add_child(Node *p_child, bool p_force_readable_name, InternalMode p_i
 	ERR_THREAD_GUARD
 	ERR_FAIL_NULL(p_child);
 	ERR_FAIL_COND_MSG(p_child == this, vformat("Can't add child '%s' to itself.", p_child->get_name())); // adding to itself!
-	ERR_FAIL_COND_MSG(p_child->data.parent, vformat("Can't add child '%s' to '%s', already has a parent '%s'.", p_child->get_name(), get_name(), p_child->data.parent->get_name())); //Fail if node has a parent
+	if (data.is_fragment) {
+		ERR_FAIL_COND_MSG(p_child->data.fragment_root, vformat("Can't add child '%s' to '%s', already has a fragment root '%s'.", p_child->get_name(), get_name(), p_child->data.fragment_root->get_name())); //Fail if node has a fragment root
+	} else {
+		ERR_FAIL_COND_MSG(p_child->data.parent_in_target_tree, vformat("Can't add child '%s' to '%s', already has a parent '%s'.", p_child->get_name(), get_name(), p_child->data.parent_in_target_tree->get_name())); //Fail if node has a parent
+	}
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(p_child->is_ancestor_of(this), vformat("Can't add child '%s' to '%s' as it would result in a cyclic dependency since '%s' is already a parent of '%s'.", p_child->get_name(), get_name(), p_child->get_name(), get_name()));
 #endif
@@ -1704,19 +1759,19 @@ void Node::add_sibling(Node *p_sibling, bool p_force_readable_name) {
 	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Adding a sibling to a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"add_sibling\",node).");
 	ERR_FAIL_NULL(p_sibling);
 	ERR_FAIL_COND_MSG(p_sibling == this, vformat("Can't add sibling '%s' to itself.", p_sibling->get_name())); // adding to itself!
-	ERR_FAIL_NULL(data.parent);
-	ERR_FAIL_COND_MSG(data.parent->data.blocked > 0, "Parent node is busy setting up children, `add_sibling()` failed. Consider using `add_sibling.call_deferred(sibling)` instead.");
+	ERR_FAIL_NULL(data.parent_in_target_tree);
+	ERR_FAIL_COND_MSG(data.parent_in_target_tree->data.blocked > 0, "Parent node is busy setting up children, `add_sibling()` failed. Consider using `add_sibling.call_deferred(sibling)` instead.");
 
-	data.parent->add_child(p_sibling, p_force_readable_name, data.internal_mode);
-	data.parent->_update_children_cache();
-	data.parent->_move_child(p_sibling, get_index() + 1);
+	data.parent_in_target_tree->add_child(p_sibling, p_force_readable_name, data.internal_mode);
+	data.parent_in_target_tree->_update_children_cache();
+	data.parent_in_target_tree->_move_child(p_sibling, get_index() + 1);
 }
 
 void Node::remove_child(Node *p_child) {
 	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Removing children from a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"remove_child\",node).");
 	ERR_FAIL_NULL(p_child);
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy adding/removing children, `remove_child()` can't be called at this time. Consider using `remove_child.call_deferred(child)` instead.");
-	ERR_FAIL_COND(p_child->data.parent != this);
+	ERR_FAIL_COND(p_child->data.parent_in_target_tree != this);
 
 	/**
 	 *  Do not change the data.internal_children*cache counters here.
@@ -1737,11 +1792,30 @@ void Node::remove_child(Node *p_child) {
 	data.blocked--;
 
 	data.children_cache_dirty = true;
-	bool success = data.children.erase(p_child->data.name);
+	bool success = p_child->data.is_fragment ? data.fragments.erase(p_child->data.name) : data.children_source.erase(p_child->data.name);
 	ERR_FAIL_COND_MSG(!success, "Children name does not match parent name in hashtable, this is a bug.");
 
-	p_child->data.parent = nullptr;
-	p_child->data.index = -1;
+	int child_index = -1;
+
+	for (KeyValue<StringName, Fragment *> kv: data.fragments) {
+		if (kv.value->get_index() > child_index) {
+
+		}
+	}
+
+	if (data.is_fragment) {
+		p_child->data.fragment_root = nullptr;
+		child_index = p_child->data.index_in_source_tree;
+		p_child->data.index_in_source_tree = -1;
+	} else {
+		p_child->data.parent_in_target_tree = nullptr;
+		child_index = p_child->data.index;
+		p_child->data.index = -1;
+	}
+
+	// if (p_child->data.is_fragment) {
+
+	// }
 
 	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
 	emit_signal(SNAME("child_order_changed"));
@@ -1753,62 +1827,93 @@ void Node::remove_child(Node *p_child) {
 
 void Node::_update_children_cache_impl() const {
 	// Assign children
-	data.children_cache.resize(data.children.size());
+	data.children_source_cache.resize(data.children_source.size());
 	int idx = 0;
-	for (const KeyValue<StringName, Node *> &K : data.children) {
-		data.children_cache[idx] = K.value;
+	for (const KeyValue<StringName, Node *> &K : data.children_source) {
+		data.children_source_cache[idx] = K.value;
 		idx++;
 	}
 	// Sort them
-	data.children_cache.sort_custom<ComparatorByIndex>();
+	data.children_source_cache.sort_custom<ComparatorByIndex>();
+
+	if (data.is_fragment){
+		for (uint32_t i = 0; i < data.children_source_cache.size(); i++) {
+			data.children_source_cache[i]->data.index_in_source_tree = i;
+		}
+
+		data.children_cache_dirty = false;
+		return;
+	}
+
 	// Update indices
 	data.external_children_count_cache = 0;
 	data.internal_children_back_count_cache = 0;
 	data.internal_children_front_count_cache = 0;
 
-	for (uint32_t i = 0; i < data.children_cache.size(); i++) {
-		switch (data.children_cache[i]->data.internal_mode) {
+	for (uint32_t i = 0; i < data.children_source_cache.size(); i++) {
+		switch (data.children_source_cache[i]->data.internal_mode) {
 			case INTERNAL_MODE_DISABLED: {
-				data.children_cache[i]->data.index = data.external_children_count_cache++;
+				data.children_source_cache[i]->data.index = data.external_children_count_cache++;
 			} break;
 			case INTERNAL_MODE_FRONT: {
-				data.children_cache[i]->data.index = data.internal_children_front_count_cache++;
+				data.children_source_cache[i]->data.index = data.internal_children_front_count_cache++;
 			} break;
 			case INTERNAL_MODE_BACK: {
-				data.children_cache[i]->data.index = data.internal_children_back_count_cache++;
+				data.children_source_cache[i]->data.index = data.internal_children_back_count_cache++;
 			} break;
 		}
 	}
 	data.children_cache_dirty = false;
 }
 
-int Node::get_child_count(bool p_include_internal) const {
+template<bool in_source_tree>
+int Node::TreeOperationReader<in_source_tree>::get_child_count(bool p_include_internal) const {
 	ERR_THREAD_GUARD_V(0);
 	if (p_include_internal) {
-		return data.children.size();
+		if constexpr (in_source_tree) {
+			return host.data.children_source.size();
+		} else {
+			return host.data.children_target.size();
+		}
 	}
 
-	_update_children_cache();
-	return data.children_cache.size() - data.internal_children_front_count_cache - data.internal_children_back_count_cache;
+	host._update_children_cache();
+	if constexpr (in_source_tree) {
+		return host.data.children_source_cache.size() - host.data.internal_children_front_count_cache - host.data.internal_children_back_count_cache;
+	} else {
+		return host.data.children_target_cache.size() - host.data.internal_children_front_count_cache - host.data.internal_children_back_count_cache;
+	}
 }
 
-Node *Node::get_child(int p_index, bool p_include_internal) const {
+int Node::get_index_in_fragment() const {
+	if (data.fragment_root) {
+		data.fragment_root->_update_children_cache();
+	}
+	return data.index_in_source_tree;
+}
+
+template <bool in_source_tree>
+Node *Node::TreeOperationReader<in_source_tree>::get_child(int p_index, bool p_include_internal) const {
 	ERR_THREAD_GUARD_V(nullptr);
-	_update_children_cache();
+	host._update_children_cache();
+
+	LocalVector<Node *> &children_cache = in_source_tree
+		? host.data.children_source_cache
+		: host.data.children_target_cache;
 
 	if (p_include_internal) {
 		if (p_index < 0) {
-			p_index += data.children_cache.size();
+			p_index += children_cache.size();
 		}
-		ERR_FAIL_INDEX_V(p_index, (int)data.children_cache.size(), nullptr);
-		return data.children_cache[p_index];
+		ERR_FAIL_INDEX_V(p_index, (int)children_cache.size(), nullptr);
+		return children_cache[p_index];
 	} else {
 		if (p_index < 0) {
-			p_index += (int)data.children_cache.size() - data.internal_children_front_count_cache - data.internal_children_back_count_cache;
+			p_index += (int)children_cache.size() - host.data.internal_children_front_count_cache - host.data.internal_children_back_count_cache;
 		}
-		ERR_FAIL_INDEX_V(p_index, (int)data.children_cache.size() - data.internal_children_front_count_cache - data.internal_children_back_count_cache, nullptr);
-		p_index += data.internal_children_front_count_cache;
-		return data.children_cache[p_index];
+		ERR_FAIL_INDEX_V(p_index, (int)children_cache.size() - host.data.internal_children_front_count_cache - host.data.internal_children_back_count_cache, nullptr);
+		p_index += host.data.internal_children_front_count_cache;
+		return children_cache[p_index];
 	}
 }
 
@@ -1825,7 +1930,7 @@ TypedArray<Node> Node::get_children(bool p_include_internal) const {
 }
 
 Node *Node::_get_child_by_name(const StringName &p_name) const {
-	const Node *const *node = data.children.getptr(p_name);
+	const Node *const *node = data.children_source.getptr(p_name);
 	if (node) {
 		return const_cast<Node *>(*node);
 	} else {
@@ -1848,8 +1953,8 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 		current = const_cast<Node *>(this); //start from this
 	} else {
 		root = const_cast<Node *>(this);
-		while (root->data.parent) {
-			root = root->data.parent; //start from root
+		while (root->data.parent_in_target_tree) {
+			root = root->data.parent_in_target_tree; //start from root
 		}
 	}
 
@@ -1861,11 +1966,11 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 			next = current;
 
 		} else if (name == SNAME("..")) {
-			if (current == nullptr || !current->data.parent) {
+			if (current == nullptr || !current->data.parent_in_target_tree) {
 				return nullptr;
 			}
 
-			next = current->data.parent;
+			next = current->data.parent_in_target_tree;
 		} else if (current == nullptr) {
 			if (name == root->get_name()) {
 				next = root;
@@ -1882,7 +1987,7 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 			next = *unique;
 		} else {
 			next = nullptr;
-			const Node *const *node = current->data.children.getptr(name);
+			const Node *const *node = current->data.children_source.getptr(name);
 			if (node) {
 				next = const_cast<Node *>(*node);
 			} else {
@@ -1922,8 +2027,8 @@ Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned) 
 	ERR_THREAD_GUARD_V(nullptr);
 	ERR_FAIL_COND_V(p_pattern.is_empty(), nullptr);
 	_update_children_cache();
-	Node *const *cptr = data.children_cache.ptr();
-	int ccount = data.children_cache.size();
+	Node *const *cptr = data.children_source_cache.ptr();
+	int ccount = data.children_source_cache.size();
 	for (int i = 0; i < ccount; i++) {
 		if (p_owned && !cptr[i]->data.owner) {
 			continue;
@@ -1952,8 +2057,8 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 	TypedArray<Node> ret;
 	ERR_FAIL_COND_V(p_pattern.is_empty() && p_type.is_empty(), ret);
 	_update_children_cache();
-	Node *const *cptr = data.children_cache.ptr();
-	int ccount = data.children_cache.size();
+	Node *const *cptr = data.children_source_cache.ptr();
+	int ccount = data.children_source_cache.size();
 	for (int i = 0; i < ccount; i++) {
 		if (p_owned && !cptr[i]->data.owner) {
 			continue;
@@ -1986,10 +2091,10 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 void Node::reparent(Node *p_parent, bool p_keep_global_transform) {
 	ERR_THREAD_GUARD
 	ERR_FAIL_NULL(p_parent);
-	ERR_FAIL_NULL_MSG(data.parent, "Node needs a parent to be reparented.");
+	ERR_FAIL_NULL_MSG(data.parent_in_target_tree, "Node needs a parent to be reparented.");
 	ERR_FAIL_COND_MSG(p_parent == this, vformat("Can't reparent '%s' to itself.", p_parent->get_name()));
 
-	if (p_parent == data.parent) {
+	if (p_parent == data.parent_in_target_tree) {
 		return;
 	}
 
@@ -2018,7 +2123,7 @@ void Node::reparent(Node *p_parent, bool p_keep_global_transform) {
 		}
 	}
 
-	data.parent->remove_child(this);
+	data.parent_in_target_tree->remove_child(this);
 	p_parent->add_child(this);
 
 	// Reassign the old owner to those found nodes.
@@ -2029,18 +2134,23 @@ void Node::reparent(Node *p_parent, bool p_keep_global_transform) {
 	}
 }
 
-Node *Node::get_parent() const {
-	return data.parent;
+template<bool in_source_tree>
+Node *Node::TreeOperationReader<in_source_tree>::get_parent() const {
+	if constexpr (in_source_tree) {
+		return host.data.parent_in_source_tree;
+	} else {
+		return host.data.parent_in_target_tree;
+	}
 }
 
 Node *Node::find_parent(const String &p_pattern) const {
 	ERR_THREAD_GUARD_V(nullptr);
-	Node *p = data.parent;
+	Node *p = data.parent_in_target_tree;
 	while (p) {
 		if (p->data.name.operator String().match(p_pattern)) {
 			return p;
 		}
-		p = p->data.parent;
+		p = p->data.parent_in_target_tree;
 	}
 
 	return nullptr;
@@ -2074,12 +2184,12 @@ Window *Node::get_last_exclusive_window() const {
 
 bool Node::is_ancestor_of(const Node *p_node) const {
 	ERR_FAIL_NULL_V(p_node, false);
-	Node *p = p_node->data.parent;
+	Node *p = p_node->data.parent_in_target_tree;
 	while (p) {
 		if (p == this) {
 			return true;
 		}
-		p = p->data.parent;
+		p = p->data.parent_in_target_tree;
 	}
 
 	return false;
@@ -2104,7 +2214,7 @@ bool Node::is_greater_than(const Node *p_node) const {
 	while (n) {
 		ERR_FAIL_INDEX_V(idx, data.depth, false);
 		this_stack[idx--] = n->get_index();
-		n = n->data.parent;
+		n = n->data.parent_in_target_tree;
 	}
 
 	ERR_FAIL_COND_V(idx != -1, false);
@@ -2114,7 +2224,7 @@ bool Node::is_greater_than(const Node *p_node) const {
 		ERR_FAIL_INDEX_V(idx, p_node->data.depth, false);
 		that_stack[idx--] = n->get_index();
 
-		n = n->data.parent;
+		n = n->data.parent_in_target_tree;
 	}
 	ERR_FAIL_COND_V(idx != -1, false);
 	idx = 0;
@@ -2146,7 +2256,7 @@ void Node::get_owned_by(Node *p_by, List<Node *> *p_owned) {
 		p_owned->push_back(this);
 	}
 
-	for (KeyValue<StringName, Node *> &K : data.children) {
+	for (KeyValue<StringName, Node *> &K : data.children_source) {
 		K.value->get_owned_by(p_by, p_owned);
 	}
 }
@@ -2262,7 +2372,7 @@ Node *Node::find_common_parent_with(const Node *p_node) const {
 
 	while (n) {
 		visited.insert(n);
-		n = n->data.parent;
+		n = n->data.parent_in_target_tree;
 	}
 
 	const Node *common_parent = p_node;
@@ -2271,7 +2381,7 @@ Node *Node::find_common_parent_with(const Node *p_node) const {
 		if (visited.has(common_parent)) {
 			break;
 		}
-		common_parent = common_parent->data.parent;
+		common_parent = common_parent->data.parent_in_target_tree;
 	}
 
 	if (!common_parent) {
@@ -2294,7 +2404,7 @@ NodePath Node::get_path_to(const Node *p_node, bool p_use_unique_path) const {
 
 	while (n) {
 		visited.insert(n);
-		n = n->data.parent;
+		n = n->data.parent_in_target_tree;
 	}
 
 	const Node *common_parent = p_node;
@@ -2303,7 +2413,7 @@ NodePath Node::get_path_to(const Node *p_node, bool p_use_unique_path) const {
 		if (visited.has(common_parent)) {
 			break;
 		}
-		common_parent = common_parent->data.parent;
+		common_parent = common_parent->data.parent_in_target_tree;
 	}
 
 	ERR_FAIL_NULL_V(common_parent, NodePath()); //nodes not in the same tree
@@ -2324,7 +2434,7 @@ NodePath Node::get_path_to(const Node *p_node, bool p_use_unique_path) const {
 				break;
 			}
 			path.push_back(n->get_name());
-			n = n->data.parent;
+			n = n->data.parent_in_target_tree;
 		}
 
 		if (!is_detected) {
@@ -2338,7 +2448,7 @@ NodePath Node::get_path_to(const Node *p_node, bool p_use_unique_path) const {
 					up_count = 0;
 				}
 				up_count++;
-				n = n->data.parent;
+				n = n->data.parent_in_target_tree;
 			}
 
 			for (int i = 0; i < up_count; i++) {
@@ -2354,14 +2464,14 @@ NodePath Node::get_path_to(const Node *p_node, bool p_use_unique_path) const {
 
 		while (n != common_parent) {
 			path.push_back(n->get_name());
-			n = n->data.parent;
+			n = n->data.parent_in_target_tree;
 		}
 
 		n = this;
 
 		while (n != common_parent) {
 			path.push_back(up);
-			n = n->data.parent;
+			n = n->data.parent_in_target_tree;
 		}
 	}
 
@@ -2383,7 +2493,7 @@ NodePath Node::get_path() const {
 
 	while (n) {
 		path.push_back(n->get_name());
-		n = n->data.parent;
+		n = n->data.parent_in_target_tree;
 	}
 
 	path.reverse();
@@ -2493,9 +2603,9 @@ String Node::_get_tree_string_pretty(const String &p_prefix, bool p_last) {
 	String new_prefix = p_last ? String::utf8(" ┖╴") : String::utf8(" ┠╴");
 	_update_children_cache();
 	String return_tree = p_prefix + new_prefix + String(get_name()) + "\n";
-	for (uint32_t i = 0; i < data.children_cache.size(); i++) {
+	for (uint32_t i = 0; i < data.children_source_cache.size(); i++) {
 		new_prefix = p_last ? String::utf8("   ") : String::utf8(" ┃ ");
-		return_tree += data.children_cache[i]->_get_tree_string_pretty(p_prefix + new_prefix, i == data.children_cache.size() - 1);
+		return_tree += data.children_source_cache[i]->_get_tree_string_pretty(p_prefix + new_prefix, i == data.children_source_cache.size() - 1);
 	}
 	return return_tree;
 }
@@ -2507,8 +2617,8 @@ String Node::get_tree_string_pretty() {
 String Node::_get_tree_string(const Node *p_node) {
 	_update_children_cache();
 	String return_tree = String(p_node->get_path_to(this)) + "\n";
-	for (uint32_t i = 0; i < data.children_cache.size(); i++) {
-		return_tree += data.children_cache[i]->_get_tree_string(p_node);
+	for (uint32_t i = 0; i < data.children_source_cache.size(); i++) {
+		return_tree += data.children_source_cache[i]->_get_tree_string(p_node);
 	}
 	return return_tree;
 }
@@ -2520,7 +2630,7 @@ String Node::get_tree_string() {
 void Node::_propagate_reverse_notification(int p_notification) {
 	data.blocked++;
 
-	for (HashMap<StringName, Node *>::Iterator I = data.children.last(); I; --I) {
+	for (HashMap<StringName, Node *>::Iterator I = data.children_source.last(); I; --I) {
 		I->value->_propagate_reverse_notification(p_notification);
 	}
 
@@ -2537,7 +2647,7 @@ void Node::_propagate_deferred_notification(int p_notification, bool p_reverse) 
 		MessageQueue::get_singleton()->push_notification(this, p_notification);
 	}
 
-	for (KeyValue<StringName, Node *> &K : data.children) {
+	for (KeyValue<StringName, Node *> &K : data.children_source) {
 		K.value->_propagate_deferred_notification(p_notification, p_reverse);
 	}
 
@@ -2553,7 +2663,7 @@ void Node::propagate_notification(int p_notification) {
 	data.blocked++;
 	notification(p_notification);
 
-	for (KeyValue<StringName, Node *> &K : data.children) {
+	for (KeyValue<StringName, Node *> &K : data.children_source) {
 		K.value->propagate_notification(p_notification);
 	}
 	data.blocked--;
@@ -2567,7 +2677,7 @@ void Node::propagate_call(const StringName &p_method, const Array &p_args, const
 		callv(p_method, p_args);
 	}
 
-	for (KeyValue<StringName, Node *> &K : data.children) {
+	for (KeyValue<StringName, Node *> &K : data.children_source) {
 		K.value->propagate_call(p_method, p_args, p_parent_first);
 	}
 
@@ -2584,7 +2694,7 @@ void Node::_propagate_replace_owner(Node *p_owner, Node *p_by_owner) {
 	}
 
 	data.blocked++;
-	for (KeyValue<StringName, Node *> &K : data.children) {
+	for (KeyValue<StringName, Node *> &K : data.children_source) {
 		K.value->_propagate_replace_owner(p_owner, p_by_owner);
 	}
 	data.blocked--;
@@ -2886,7 +2996,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 	}
 
 	for (const Node *&E : hidden_roots) {
-		Node *parent = node->get_node(get_path_to(E->data.parent));
+		Node *parent = node->get_node(get_path_to(E->data.parent_in_target_tree));
 		if (!parent) {
 			memdelete(node);
 			return nullptr;
@@ -3151,7 +3261,7 @@ static void find_owned_by(Node *p_by, Node *p_node, List<Node *> *p_owned) {
 void Node::replace_by(Node *p_node, bool p_keep_groups) {
 	ERR_THREAD_GUARD
 	ERR_FAIL_NULL(p_node);
-	ERR_FAIL_COND(p_node->data.parent);
+	ERR_FAIL_COND(p_node->data.parent_in_target_tree);
 
 	List<Node *> owned = data.owned;
 	List<Node *> owned_by_owner;
@@ -3176,10 +3286,10 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 		_clean_up_owner();
 	}
 
-	Node *parent = data.parent;
+	Node *parent = data.parent_in_target_tree;
 	int index_in_parent = get_index(false);
 
-	if (data.parent) {
+	if (data.parent_in_target_tree) {
 		parent->remove_child(this);
 		parent->add_child(p_node);
 		parent->move_child(p_node, index_in_parent);
@@ -3301,11 +3411,19 @@ Node *Node::get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, 
 	return node;
 }
 
+Fragment* Node::as_fragment() {
+	if (data.is_fragment && fragment) {
+		return fragment;
+	}
+	fragment = Object::cast_to<Fragment>(this);
+	return fragment;
+}
+
 void Node::_set_tree(SceneTree *p_tree) {
 	SceneTree *tree_changed_a = nullptr;
 	SceneTree *tree_changed_b = nullptr;
 
-	//ERR_FAIL_COND(p_scene && data.parent && !data.parent->data.scene); //nobug if both are null
+	//ERR_FAIL_COND(p_scene && data.parent_in_target_tree && !data.parent_in_target_tree->data.scene); //nobug if both are null
 
 	if (data.tree) {
 		_propagate_exit_tree();
@@ -3317,7 +3435,7 @@ void Node::_set_tree(SceneTree *p_tree) {
 
 	if (data.tree) {
 		_propagate_enter_tree();
-		if (!data.parent || data.parent->data.ready_notified) { // No parent (root) or parent ready
+		if (!data.parent_in_target_tree || data.parent_in_target_tree->data.ready_notified) { // No parent (root) or parent ready
 			_propagate_ready(); //reverse_notification(NOTIFICATION_READY);
 		}
 
@@ -3466,7 +3584,7 @@ void Node::get_argument_options(const StringName &p_function, int p_idx, List<St
 
 void Node::clear_internal_tree_resource_paths() {
 	clear_internal_resource_paths();
-	for (KeyValue<StringName, Node *> &K : data.children) {
+	for (KeyValue<StringName, Node *> &K : data.children_source) {
 		K.value->clear_internal_tree_resource_paths();
 	}
 }
@@ -4040,7 +4158,7 @@ String Node::_get_name_num_separator() {
 	return " ";
 }
 
-Node::Node() {
+Node::Node(): target_tree_reader(*this), source_tree_reader(*this) {
 	orphan_node_count++;
 
 	// Default member initializer for bitfield is a C++20 extension, so:
@@ -4083,11 +4201,13 @@ Node::Node() {
 Node::~Node() {
 	data.grouped.clear();
 	data.owned.clear();
-	data.children.clear();
-	data.children_cache.clear();
+	data.children_source.clear();
+	data.children_source_cache.clear();
 
-	ERR_FAIL_COND(data.parent);
-	ERR_FAIL_COND(data.children_cache.size());
+	// if (data.fragment_root.)
+
+	ERR_FAIL_COND(data.parent_in_target_tree);
+	ERR_FAIL_COND(data.children_source_cache.size());
 
 	orphan_node_count--;
 }

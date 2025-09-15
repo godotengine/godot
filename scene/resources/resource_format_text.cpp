@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/missing_resource.h"
 #include "core/object/script_language.h"
+#include "packed_scene.h"
 #include "scene/property_utils.h"
 
 void ResourceLoaderText::_printerr() {
@@ -258,6 +259,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			}
 
 			int node_id = packed_scene->get_state()->add_node(parent, owner, type, name, instance, index);
+			// packed_scene->get_state()->cache_node_data(node_id, name, parent);
 
 			if (next_tag.fields.has("groups")) {
 				Array groups = next_tag.fields["groups"];

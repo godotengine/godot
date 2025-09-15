@@ -33,9 +33,14 @@
 #include "core/config/engine.h"
 #include "core/io/missing_resource.h"
 #include "core/io/resource_loader.h"
+#include "core/object/object.h"
+#include "core/os/memory.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
 #include "core/templates/local_vector.h"
 #include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
+#include "scene/main/fragment.h"
 #include "scene/main/instance_placeholder.h"
 #include "scene/main/missing_node.h"
 #include "scene/property_utils.h"
@@ -165,11 +170,31 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 	LocalVector<DeferredNodePathProperties> deferred_node_paths;
 
+	HashMap<const NodeData *, Fragment *> fragment_remap;
+	HashMap<const NodeData *, const NodeData *> host_remap;
+	HashMap<const NodeData *, Node *> nd_node_remap;
+
 	for (int i = 0; i < nc; i++) {
 		const NodeData &n = nd[i];
 
+		// if (i > 0) {
+		// 	ERR_FAIL_COND_V_MSG(n.parent == -1, nullptr, vformat("Invalid scene: node %s does not specify its parent node.", snames[n.name]));
+		// }
+
+		// const NodeData *pnd = nullptr;
+		// if (i > 0) {
+		// 	int pid = node_path_node_data_remap[node_paths[n.parent & FLAG_MASK]];
+		// 	pnd = &nd[pid];
+		// }
+
+		// bool is_pnd_fragment = i > 0 ? pnd->type & FLAG_TYPE_IS_FRAGMENT : false;
 		Node *parent = nullptr;
 		String old_parent_path;
+
+		// int p_nd_id = -1;
+		// if (pnd) {
+		// 	p_nd_id = is_pnd_fragment ? host_remap[pnd]->id : pnd->id;
+		// }
 
 		if (i > 0) {
 			ERR_FAIL_COND_V_MSG(n.parent == -1, nullptr, vformat("Invalid scene: node %s does not specify its parent node.", snames[n.name]));
@@ -187,6 +212,34 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			ERR_FAIL_COND_V_MSG(n.parent != -1, nullptr, vformat("Invalid scene: root node %s cannot specify a parent node.", snames[n.name]));
 			ERR_FAIL_COND_V_MSG(n.type == TYPE_INSTANTIATED && base_scene_idx < 0, nullptr, vformat("Invalid scene: root node %s in an instance, but there's no base scene.", snames[n.name]));
 		}
+
+		// if (n.type & FLAG_TYPE_IS_FRAGMENT) {
+		// 	if (pnd) {
+		// 		// TODO: 处理root为Fragment的情况
+		// 		if (is_pnd_fragment) {
+		// 			host_remap[&n] = host_remap[pnd];
+		// 		} else {
+		// 			host_remap[&n] = pnd;
+		// 		}
+		// 	}
+
+		// 	Fragment *fragment = memnew(Fragment);
+		// 	fragment->set_name(snames[n.name]);
+		// 	fragment_remap[&n] = fragment;
+		// 	// TODO: 处理root为Fragment的情况，此处host应为nullptr
+		// 	Node *host = nd_node_remap[host_remap[&n]];
+		// 	fragment->set_host(host);
+		// 	if (parent) {
+		// 		fragment->data.index = parent->get_child_count(false);
+		// 		parent->data.fragments[snames[n.name]] = fragment;
+		// 	}
+
+		// 	if (is_pnd_fragment) {
+		// 		fragment->append_to(fragment_remap[pnd]);
+		// 	}
+
+		// 	continue;
+		// }
 
 		Node *node = nullptr;
 		MissingNode *missing_node = nullptr;
@@ -528,11 +581,17 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			}
 		}
 
+		// if (pnd && pnd->type & FLAG_TYPE_IS_FRAGMENT) {
+		// 	node->append_to(fragment_remap[pnd]);
+		// }
+
 		if (missing_node) {
 			missing_node->set_recording_properties(false);
 		}
 
 		ret_nodes[i] = node;
+
+		// nd_node_remap[&n] = node;
 
 		if (node && gen_node_path_cache && ret_nodes[0]) {
 			NodePath n2 = ret_nodes[0]->get_path_to(node);
@@ -734,7 +793,46 @@ static int _vm_get_variant(const Variant &p_variant, HashMap<Variant, int, Varia
 	return idx;
 }
 
-Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map) {
+void SceneState::prepend_fragment_nd_recursively(Node *p_fragment, int p_parent, Vector<NodeData> &nodes, HashMap<StringName, int> &name_map, FragmentStack &fragment_context) {
+	Fragment *fragment = Object::cast_to<Fragment>(p_fragment);
+	LocalVector<Fragment *> ancestors = {fragment};
+
+	Node *visited_node = p_fragment->get_parent();
+	Fragment *visited_fragment = nullptr;
+	while (visited_node) {
+		visited_fragment = visited_node->as_fragment();
+
+		if (!visited_fragment || fragment_context.fragment_nd_remap.has(visited_fragment)) {
+			break;
+		}
+
+		ancestors.push_back(visited_fragment);
+		visited_node = visited_node->get_parent();
+	}
+
+	int parent = p_parent;
+	for (int i = ancestors.size() - 1; i >= 0; i--) {
+		int id = nodes.size();
+
+		Fragment *parent_fragment = ancestors[i]->get_parent()->as_fragment();
+		if (fragment_context.fragment_nd_remap.has(parent_fragment)) {
+			parent = fragment_context.fragment_nd_remap[parent_fragment]->id;
+		}
+
+		NodeData fragment_nd;
+		fragment_nd.parent = parent;
+		fragment_nd.name = _nm_get_string(ancestors[i]->get_name(), name_map);
+		fragment_nd.type = FLAG_TYPE_IS_FRAGMENT;
+		fragment_nd.id = id;
+		fragment_nd.index = -1;
+
+		nodes.push_back(fragment_nd);
+		fragment_context.map_fragment_nd(ancestors[i], &nodes[id]);
+	}
+
+}
+
+Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map, FragmentStack &fragment_context) {
 	// this function handles all the work related to properly packing scenes, be it
 	// instantiated or inherited.
 	// given the complexity of this process, an attempt will be made to properly
@@ -1041,13 +1139,27 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			nd.parent = p_parent_idx;
 		}
 
+		// if (p_node->get_fragment_root()) {
+		// 	if (!fragment_context.fragment_nd_remap.has(p_node->get_fragment_root())) {
+		// 		prepend_fragment_nd_recursively(p_node->get_fragment_root(), p_parent_idx, nodes, name_map, fragment_context);
+		// 	}
+
+		// 	nd.parent = fragment_context.fragment_nd_remap[p_node->get_fragment_root()]->id;
+		// }
+
+		// int idx = nodes.size();
+
+		// TODO: 考虑是否增加 FragmentNodeCache
+		// node_map[p_node] = idx;
+
+		// nd.id = idx;
 		parent_node = idx;
 		nodes.push_back(nd);
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *c = p_node->get_child(i);
-		Error err = _parse_node(p_owner, c, parent_node, name_map, variant_map, node_map, nodepath_map);
+		Error err = _parse_node(p_owner, c, parent_node, name_map, variant_map, node_map, nodepath_map, fragment_context);
 		if (err) {
 			return err;
 		}
@@ -1275,6 +1387,8 @@ Error SceneState::pack(Node *p_scene) {
 	HashMap<Node *, int> node_map;
 	HashMap<Node *, int> nodepath_map;
 
+	FragmentStack fragment_context;
+
 	// If using scene inheritance, pack the scene it inherits from.
 	if (scene->get_scene_inherited_state().is_valid()) {
 		String scene_path = scene->get_scene_inherited_state()->get_path();
@@ -1284,8 +1398,13 @@ Error SceneState::pack(Node *p_scene) {
 		}
 	}
 
+	fragment_context.push_stack();
+
 	// Instanced, only direct sub-scenes are supported of course.
-	Error err = _parse_node(scene, scene, -1, name_map, variant_map, node_map, nodepath_map);
+	Error err = _parse_node(scene, scene, -1, name_map, variant_map, node_map, nodepath_map, fragment_context);
+
+	fragment_context.pop_stack();
+
 	if (err) {
 		clear();
 		ERR_FAIL_V(err);
@@ -1727,6 +1846,9 @@ int SceneState::get_node_count() const {
 
 StringName SceneState::get_node_type(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, nodes.size(), StringName());
+	if (nodes[p_idx].type == FLAG_TYPE_IS_FRAGMENT) {
+		return "Fragment";
+	}
 	if (nodes[p_idx].type == TYPE_INSTANTIATED) {
 		return StringName();
 	}
@@ -2027,10 +2149,23 @@ int SceneState::add_node(int p_parent, int p_owner, int p_type, int p_name, int 
 	nd.name = p_name;
 	nd.instance = p_instance;
 	nd.index = p_index;
+	nd.id = nodes.size();
 
 	nodes.push_back(nd);
 
-	return nodes.size() - 1;
+	return nd.id;
+}
+
+void SceneState::cache_node_data(int p_node, int p_name, int p_parent) {
+	if (p_parent == -1) {
+		node_path_node_data_remap[NodePath(".")] = p_node;
+		return;
+	}
+
+	const NodePath &np = node_paths[p_parent & FLAG_MASK];
+	Vector<StringName> ns = np.get_names();
+	ns.append(StringName(names[p_name]));
+	node_path_node_data_remap[NodePath(ns, false)] = p_node;
 }
 
 void SceneState::add_node_property(int p_node, int p_name, int p_value, bool p_deferred_node_path) {

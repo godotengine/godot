@@ -32,6 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/script_language.h"
+#include "core/string/string_name.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/pair.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/node_dock.h"
@@ -47,6 +50,7 @@
 #include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/fragment.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
@@ -317,16 +321,74 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 			_move_node_children(I);
 		}
 	} else {
+		// TODO: 寻找并建立所有fragment祖先的关系
+		LocalVector<Fragment *> fragments;
+		Fragment *visited_fragment = p_node->get_fragment_root();
+		while(visited_fragment) {
+			if (fragment_item_remap.has(visited_fragment)) {
+				break;
+			}
+			fragments.push_back(visited_fragment);
+			visited_fragment = visited_fragment->get_fragment_root();
+		}
+
 		int index = -1;
 		// Check to see if there is a root node for us to reuse.
 		if (!p_parent) {
+			// TODO: 考虑root为fragment的情况
 			item = tree->get_root();
 			if (!item) {
 				item = tree->create_item(nullptr);
 				index = 0;
 			}
 		} else {
+			// TreeItem *direct_parent_item = p_parent;
 			index = p_node->get_index(false);
+			Fragment *fragment = nullptr;
+			for (KeyValue<StringName, Fragment*> kv : p_node->get_parent()->get_fragments()) {
+				if (kv.value->get_index() == index) {
+					fragment = kv.value;
+				}
+			}
+
+			if (p_node->get_fragment_root()) {
+				index = p_node->get_index_in_fragment();
+			}
+
+			if (fragment) {
+
+				TreeItem *fragment_item = tree->create_item(p_parent, index);
+
+				I = node_cache.add(p_node, fragment_item);
+				I->value.index = index;
+
+				_update_node(fragment, fragment_item, part_of_subscene);
+
+				I->value.dirty = false;
+				I->value.can_process = false;
+
+				for (int i = 0; i < fragment->get_child_count(false); i++) {
+					_update_node_subtree(fragment->get_child(i, false), fragment_item, true);
+				}
+				return;
+			}
+
+			// for (int i = fragments.size() - 1; i >= 0; i--) {
+			// 	// fragment的index如何解决？
+			// 	int fragment_index = fragments[i]->get_fragment_root() ? fragments[i]->get_index_in_fragment() : fragments[i]->get_index();
+			// 	TreeItem *parent_item = fragment_item_remap[fragments[i]->get_fragment_root()];
+			// 	TreeItem *fragment_item = tree->create_item(parent_item, fragment_index);
+
+			// 	_update_node(fragments[i], fragment_item, false);
+
+			// 	fragment_item_remap[fragments[i]] = fragment_item;
+			// 	direct_parent_item = fragment_item;
+			// }
+
+			// if (p_node->get_fragment_root()) {
+			// 	index = p_node->get_index_in_fragment();
+			// }
+
 			item = tree->create_item(p_parent, index);
 		}
 
@@ -390,6 +452,22 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 	p_item->remove_meta(SNAME("custom_color"));
 	p_item->clear_custom_color(0);
 	p_item->set_selectable(0, true);
+
+	if (!p_node->as_fragment()) {
+		p_item->set_text(0, p_node->get_name());
+		if (can_rename && !p_part_of_subscene) {
+			p_item->set_editable(0, true);
+		}
+
+		if (selected == p_node) {
+			if (!editor_selection) {
+				p_item->select(0);
+			}
+			p_item->set_as_cursor(0);
+		}
+
+		return;
+	}
 
 	p_item->set_text(0, p_node->get_name());
 	p_item->set_text_overrun_behavior(0, TextServer::OVERRUN_NO_TRIMMING);
