@@ -103,6 +103,93 @@ Error RemoteDebugger::_put_msg(const String &p_message, const Array &p_data) {
 	return err;
 }
 
+void RemoteDebugger::_get_input_map(ScriptLanguage *p_script_lang, int p_frame, PackedStringArray *p_names, Array *p_vals) const {
+	{
+		List<String> locals;
+		List<Variant> local_vals;
+		p_script_lang->debug_get_stack_level_locals(p_frame, &locals, &local_vals);
+		ERR_FAIL_COND(locals.size() != local_vals.size());
+
+		const List<Variant>::Element *V = local_vals.front();
+		for (const String &S : locals) {
+			const Variant &value = V->get();
+			p_names->push_back(S);
+			p_vals->push_back(value);
+			V = V->next();
+		}
+	}
+	{
+		List<String> globals;
+		List<Variant> global_vals;
+		p_script_lang->debug_get_globals(&globals, &global_vals);
+		ERR_FAIL_COND(globals.size() != global_vals.size());
+		const List<Variant>::Element *V = global_vals.front();
+		for (const String &S : globals) {
+			const Variant &value = V->get();
+			p_names->push_back(S);
+			p_vals->push_back(value);
+			V = V->next();
+		}
+	}
+
+	List<StringName> native_types;
+	ClassDB::get_class_list(&native_types);
+	for (const StringName &E : native_types) {
+		if (!ClassDB::is_class_exposed(E) || !Engine::get_singleton()->has_singleton(E) || Engine::get_singleton()->is_singleton_editor_only(E)) {
+			continue;
+		}
+
+		p_names->push_back(E);
+		p_vals->push_back(Engine::get_singleton()->get_singleton_object(E));
+	}
+
+	List<StringName> user_types;
+	ScriptServer::get_global_class_list(&user_types);
+	for (const StringName &S : user_types) {
+		String scr_path = ScriptServer::get_global_class_path(S);
+		Ref<Script> scr = ResourceLoader::load(scr_path, "Script");
+		ERR_CONTINUE_MSG(scr.is_null(), vformat("Could not load the global class %s from resource path: %s", S, scr_path));
+
+		p_names->push_back(S);
+		p_vals->push_back(scr);
+	}
+
+	ScriptInstance *instance = p_script_lang->debug_get_stack_level_instance(p_frame);
+	if (!instance) {
+		return;
+	}
+
+	List<PropertyInfo> pinfo;
+	Object *owner = instance->get_owner();
+	owner->get_property_list(&pinfo);
+	Script *script = Object::cast_to<Script>(owner->get_script());
+	if (script) {
+		// User-defined constants.
+		HashMap<StringName, Variant> constants;
+		script->get_constants(&constants);
+		for (KeyValue<StringName, Variant> &E : constants) {
+			p_names->push_back(E.key);
+			p_vals->push_back(E.value);
+		}
+
+		// User-defined static variables are in the properties of the script.
+		script->get_property_list(&pinfo);
+	}
+
+	for (const PropertyInfo &E : pinfo) {
+		if (E.usage & PROPERTY_USAGE_INTERNAL) {
+			continue;
+		}
+
+		bool valid = false;
+		Variant value = owner->get(E.name, &valid);
+		if (valid) {
+			p_names->push_back(E.name);
+			p_vals->push_back(value);
+		}
+	}
+}
+
 void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, bool p_editor_notify, ErrorHandlerType p_type) {
 	RemoteDebugger *rd = static_cast<RemoteDebugger *>(p_this);
 	if (rd->flushing && Thread::get_caller_id() == rd->flush_thread) { // Can't handle recursive errors during flush.
@@ -410,6 +497,60 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	ScriptLanguage *script_lang = script_debugger->get_break_language();
 	ERR_FAIL_NULL(script_lang);
 
+	{
+		const int frame = 0;
+		const String &source = script_lang->debug_get_stack_level_source(frame);
+		const int &line = script_lang->debug_get_stack_level_line(frame);
+
+		if (EngineDebugger::get_script_debugger()->is_breakpoint(line, source)) {
+			const HashMap<StringName, HashMap<int, Breakpoint>> &breakpoints = EngineDebugger::get_script_debugger()->get_breakpoints();
+			const Breakpoint &breakpoint = breakpoints[source][line];
+
+			if (!breakpoint.enabled) {
+				return;
+			}
+
+			if (!breakpoint.condition.is_empty()) {
+				PackedStringArray input_names;
+				Array input_vals;
+				_get_input_map(script_lang, frame, &input_names, &input_vals);
+
+				Expression expression;
+				if (expression.parse(breakpoint.condition, input_names) != OK) {
+					ERR_FAIL_MSG(vformat("Breakpoint's condition parse error in \"%s\": %s.", breakpoint.condition, expression.get_error_text()));
+				}
+
+				ScriptInstance *instance = script_lang->debug_get_stack_level_instance(frame);
+				const Variant return_val = expression.execute(input_vals, instance != nullptr ? instance->get_owner() : nullptr, false);
+				String error = expression.get_error_text();
+				if (!error.is_empty()) {
+					ERR_FAIL_MSG(vformat("Breakpoint's condition execution error in \"%s\": %s.", breakpoint.condition, error));
+				}
+
+				if (!return_val.booleanize()) {
+					return;
+				}
+			}
+
+			if (!breakpoint.print.is_empty()) {
+				PackedStringArray input_names;
+				Array input_vals;
+				_get_input_map(script_lang, frame, &input_names, &input_vals);
+
+				Dictionary input_dict;
+				for (int i = 0; i < input_names.size(); i++) {
+					input_dict[input_names[i]] = input_vals[i];
+				}
+
+				print_line_rich(breakpoint.print.format(input_dict));
+			}
+
+			if (!breakpoint.suspend) {
+				return;
+			}
+		}
+	}
+
 	Array msg = {
 		p_can_continue,
 		script_lang->debug_get_error(),
@@ -514,12 +655,13 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			} else if (command == "reload_all_scripts") {
 				reload_all_scripts = true;
 			} else if (command == "breakpoint") {
-				ERR_FAIL_COND(data.size() < 3);
-				bool set = data[2];
-				if (set) {
-					script_debugger->insert_breakpoint(data[1], data[0]);
+				ERR_FAIL_COND(data.size() < 7);
+				Breakpoint bp = Breakpoint(data[0], data[1], data[3], data[4], data[5], data[6]);
+				bool breakpointed = data[2];
+				if (breakpointed && bp.enabled) {
+					script_debugger->insert_breakpoint(bp.line, bp.source, bp);
 				} else {
-					script_debugger->remove_breakpoint(data[1], data[0]);
+					script_debugger->remove_breakpoint(bp.line, bp.source);
 				}
 
 			} else if (command == "set_skip_breakpoints") {
@@ -691,12 +833,13 @@ Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bo
 	} else if (p_cmd == "reload_all_scripts") {
 		reload_all_scripts = true;
 	} else if (p_cmd == "breakpoint") {
-		ERR_FAIL_COND_V(p_data.size() < 3, ERR_INVALID_DATA);
-		bool set = p_data[2];
-		if (set) {
-			script_debugger->insert_breakpoint(p_data[1], p_data[0]);
+		ERR_FAIL_COND_V(p_data.size() < 7, ERR_INVALID_DATA);
+		Breakpoint bp = Breakpoint(p_data[0], p_data[1], p_data[3], p_data[4], p_data[5], p_data[6]);
+		bool breakpointed = p_data[2];
+		if (breakpointed && bp.enabled) {
+			script_debugger->insert_breakpoint(bp.line, bp.source, bp);
 		} else {
-			script_debugger->remove_breakpoint(p_data[1], p_data[0]);
+			script_debugger->remove_breakpoint(bp.line, bp.source);
 		}
 
 	} else if (p_cmd == "set_skip_breakpoints") {

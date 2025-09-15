@@ -1717,6 +1717,8 @@ HashMap<StringName, Color> EditorSettings::get_godot2_text_editor_theme() {
 	colors["text_editor/theme/highlighting/warning_color"] = Color(1.0, 0.8, 0.4, 0.1);
 	colors["text_editor/theme/highlighting/bookmark_color"] = Color(0.08, 0.49, 0.98);
 	colors["text_editor/theme/highlighting/breakpoint_color"] = Color(0.9, 0.29, 0.3);
+	colors["text_editor/theme/highlighting/breakpoint_disabled_color"] = Color(0.62, 0.62, 0.62);
+	colors["text_editor/theme/highlighting/breakpoint_print_color"] = Color(0.816, 0.684, 0.213);
 	colors["text_editor/theme/highlighting/executing_line_color"] = Color(0.98, 0.89, 0.27);
 	colors["text_editor/theme/highlighting/code_folding_color"] = Color(0.8, 0.8, 0.8, 0.8);
 	colors["text_editor/theme/highlighting/folded_code_region_color"] = Color(0.68, 0.46, 0.77, 0.2);

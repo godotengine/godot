@@ -1393,6 +1393,8 @@ void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 
 void CodeEdit::set_line_as_breakpoint(int p_line, bool p_breakpointed) {
 	ERR_FAIL_INDEX(p_line, get_line_count());
 
+	bool toggled = p_breakpointed != is_line_breakpointed(p_line);
+
 	int mask = get_line_gutter_metadata(p_line, main_gutter);
 	set_line_gutter_metadata(p_line, main_gutter, p_breakpointed ? mask | MAIN_GUTTER_BREAKPOINT : mask & ~MAIN_GUTTER_BREAKPOINT);
 	if (p_breakpointed) {
@@ -1400,7 +1402,10 @@ void CodeEdit::set_line_as_breakpoint(int p_line, bool p_breakpointed) {
 	} else if (breakpointed_lines.has(p_line)) {
 		breakpointed_lines.erase(p_line);
 	}
-	emit_signal(SNAME("breakpoint_toggled"), p_line);
+
+	if (toggled) {
+		emit_signal(SNAME("breakpoint_toggled"), p_line);
+	}
 	queue_redraw();
 }
 
