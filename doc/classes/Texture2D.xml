@@ -48,10 +48,27 @@
 				[b]Note:[/b] This is only used in 2D rendering, not 3D.
 			</description>
 		</method>
+		<method name="_get_format" qualifiers="virtual const">
+			<return type="int" enum="Image.Format" />
+			<description>
+				Called when [method get_format] is called.
+			</description>
+		</method>
 		<method name="_get_height" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the [Texture2D]'s height is queried.
+			</description>
+		</method>
+		<method name="_get_image" qualifiers="virtual const">
+			<return type="Image" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_mipmap_count" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Called when [method get_mipmap_count] is called.
 			</description>
 		</method>
 		<method name="_get_width" qualifiers="virtual required const">
@@ -64,6 +81,12 @@
 			<return type="bool" />
 			<description>
 				Called when the presence of an alpha channel in the [Texture2D] is queried.
+			</description>
+		</method>
+		<method name="_has_mipmaps" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Called when [method has_mipmaps] is called.
 			</description>
 		</method>
 		<method name="_is_pixel_opaque" qualifiers="virtual const">
@@ -113,6 +136,12 @@
 				Draws a part of the texture using a [CanvasItem] with the [RenderingServer] API.
 			</description>
 		</method>
+		<method name="get_format" qualifiers="const">
+			<return type="int" enum="Image.Format" />
+			<description>
+				Returns the image format of the texture.
+			</description>
+		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -125,6 +154,12 @@
 				Returns an [Image] that is a copy of data from this [Texture2D] (a new [Image] is created each time). [Image]s can be accessed and manipulated directly.
 				[b]Note:[/b] This will return [code]null[/code] if this [Texture2D] is invalid.
 				[b]Note:[/b] This will fetch the texture data from the GPU, which might cause performance problems when overused. Avoid calling [method get_image] every frame, especially on large textures.
+			</description>
+		</method>
+		<method name="get_mipmap_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of mipmaps of the texture.
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
@@ -143,6 +178,12 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this [Texture2D] has an alpha channel.
+			</description>
+		</method>
+		<method name="has_mipmaps" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the texture has mipmaps.
 			</description>
 		</method>
 	</methods>
