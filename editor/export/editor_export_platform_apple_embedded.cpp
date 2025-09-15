@@ -1223,8 +1223,9 @@ void EditorExportPlatformAppleEmbedded::_add_assets_to_project(const String &p_o
 		String framework_id = "";
 
 		const AppleEmbeddedExportAsset &asset = p_additional_assets[i];
-		if (asset.is_pod)
+		if (asset.is_pod) {
 			continue;
+		}
 
 		String type;
 		if (asset.exported_path.ends_with(".framework")) {
@@ -2192,8 +2193,9 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		Dictionary dependencies;
 		for (int i = 0; i < assets.size(); ++i) {
 			const AppleEmbeddedExportAsset &asset = assets[i];
-			if (!asset.is_pod)
+			if (!asset.is_pod) {
 				continue;
+			}
 
 			Vector<String> parts = asset.exported_path.split(":");
 			String name = parts[0];
