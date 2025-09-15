@@ -517,7 +517,6 @@ void EditorAssetInstaller::_install_asset() {
 
 	ProgressDialog::get_singleton()->add_task("uncompress", TTR("Uncompressing Assets"), file_item_map.size());
 
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	for (int idx = 0; ret == UNZ_OK; ret = unzGoToNextFile(pkg), idx++) {
 		unz_file_info info;
 		char fname[16384];
@@ -545,7 +544,7 @@ void EditorAssetInstaller::_install_asset() {
 				target_path = target_path.substr(0, target_path.length() - 1);
 			}
 
-			da->make_dir_recursive(target_path);
+			EditorFileSystem::get_singleton()->make_dir_recursive(E->value, target_dir_path);
 		} else {
 			Vector<uint8_t> uncomp_data;
 			uncomp_data.resize(info.uncompressed_size);
@@ -555,7 +554,7 @@ void EditorAssetInstaller::_install_asset() {
 			unzCloseCurrentFile(pkg);
 
 			// Ensure that the target folder exists.
-			da->make_dir_recursive(target_path.get_base_dir());
+			EditorFileSystem::get_singleton()->make_dir_recursive(E->value.get_base_dir(), target_dir_path);
 
 			Ref<FileAccess> f = FileAccess::open(target_path, FileAccess::WRITE);
 			if (f.is_valid()) {
@@ -589,7 +588,7 @@ void EditorAssetInstaller::_install_asset() {
 		}
 	}
 
-	EditorFileSystem::get_singleton()->scan_changes();
+	EditorFileSystem::get_singleton()->pending_scan_fs_changes(target_dir_path, true);
 }
 
 void EditorAssetInstaller::set_asset_name(const String &p_asset_name) {

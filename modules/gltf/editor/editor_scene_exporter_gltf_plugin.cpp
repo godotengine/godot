@@ -30,6 +30,7 @@
 
 #include "editor_scene_exporter_gltf_plugin.h"
 
+#include "core/config/project_settings.h"
 #include "editor_scene_exporter_gltf_settings.h"
 
 #include "editor/editor_node.h"
@@ -126,5 +127,8 @@ void SceneExporterGLTFPlugin::_export_scene_as_gltf() {
 	if (err != OK) {
 		ERR_PRINT(vformat("glTF2 save scene error %s.", itos(err)));
 	}
-	EditorFileSystem::get_singleton()->scan_changes();
+	String local_path = ProjectSettings::get_singleton()->localize_path(export_path.get_base_dir());
+	if (local_path.is_resource_file()) {
+		EditorFileSystem::get_singleton()->pending_scan_fs_changes(local_path, false);
+	}
 }

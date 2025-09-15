@@ -54,21 +54,20 @@
 		<method name="scan">
 			<return type="void" />
 			<description>
-				Scan the filesystem for changes.
+				Scan the filesystem for changes. During the scan, the timestamps of the folders will be ignored, and the scan will always try to detect new changes to the folders.
 			</description>
 		</method>
 		<method name="scan_sources">
 			<return type="void" />
 			<description>
-				Check if the source of any imported resource changed.
+				Scan the filesystem for changes. The behavior is affected by [member EditorSettings.filesystem/on_scan/detect_mode].
 			</description>
 		</method>
 		<method name="update_file">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Add a file in an existing directory, or schedule file information to be updated on editor restart. Can be used to update text files saved by an external program.
-				This will not import the file. To reimport, call [method reimport_files] or [method scan] methods.
+				Immediately update the file information from the file to the memory cache, which may trigger further actions at the end of the frame.
 			</description>
 		</method>
 	</methods>

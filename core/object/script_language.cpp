@@ -280,10 +280,10 @@ void ScriptServer::init_languages() {
 
 			for (const Variant &script_class : script_classes) {
 				Dictionary c = script_class;
-				if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base") || !c.has("is_abstract") || !c.has("is_tool")) {
+				if (!c.has("class") || !c.has("language") || (!c.has("uid") && !c.has("path")) || !c.has("base") || !c.has("is_abstract") || !c.has("is_tool")) {
 					continue;
 				}
-				add_global_class(c["class"], c["base"], c["language"], c["path"], c["is_abstract"], c["is_tool"]);
+				add_global_class(c["class"], c["base"], c["language"], c["path"], c["is_abstract"], c["is_tool"], ResourceUID::get_singleton()->text_to_id(c["uid"]));
 			}
 			ProjectSettings::get_singleton()->clear("_global_script_classes");
 		}
@@ -292,10 +292,10 @@ void ScriptServer::init_languages() {
 		Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
 		for (const Variant &script_class : script_classes) {
 			Dictionary c = script_class;
-			if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base") || !c.has("is_abstract") || !c.has("is_tool")) {
+			if (!c.has("class") || !c.has("language") || (!c.has("uid") && !c.has("path")) || !c.has("base") || !c.has("is_abstract") || !c.has("is_tool")) {
 				continue;
 			}
-			add_global_class(c["class"], c["base"], c["language"], c["path"], c["is_abstract"], c["is_tool"]);
+			add_global_class(c["class"], c["base"], c["language"], c["path"], c["is_abstract"], c["is_tool"], ResourceUID::get_singleton()->text_to_id(c["uid"]));
 		}
 	}
 
@@ -404,23 +404,25 @@ void ScriptServer::global_classes_clear() {
 	inheriters_cache.clear();
 }
 
-void ScriptServer::add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path, bool p_is_abstract, bool p_is_tool) {
+void ScriptServer::add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path, bool p_is_abstract, bool p_is_tool, const ResourceUID::ID &p_uid) {
 	ERR_FAIL_COND_MSG(p_class == p_base || (global_classes.has(p_base) && get_global_class_native_base(p_base) == p_class), "Cyclic inheritance in script class.");
 	GlobalScriptClass *existing = global_classes.getptr(p_class);
 	if (existing) {
 		// Update an existing class (only set dirty if something changed).
-		if (existing->base != p_base || existing->path != p_path || existing->language != p_language) {
+		if (existing->base != p_base || existing->path != p_path || existing->language != p_language || existing->uid != p_uid) {
 			existing->base = p_base;
+			existing->uid = p_uid;
 			existing->path = p_path;
 			existing->language = p_language;
-			existing->is_abstract = p_is_abstract;
-			existing->is_tool = p_is_tool;
 			inheriters_cache_dirty = true;
 		}
+		existing->is_abstract = p_is_abstract;
+		existing->is_tool = p_is_tool;
 	} else {
 		// Add new class.
 		GlobalScriptClass g;
 		g.language = p_language;
+		g.uid = p_uid;
 		g.path = p_path;
 		g.base = p_base;
 		g.is_abstract = p_is_abstract;
@@ -488,6 +490,11 @@ StringName ScriptServer::get_global_class_language(const StringName &p_class) {
 	return global_classes[p_class].language;
 }
 
+ResourceUID::ID ScriptServer::get_global_class_uid(const String &p_class) {
+	ERR_FAIL_COND_V(!global_classes.has(p_class), ResourceUID::INVALID_ID);
+	return global_classes[p_class].uid;
+}
+
 String ScriptServer::get_global_class_path(const String &p_class) {
 	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
 	return global_classes[p_class].path;
@@ -531,16 +538,17 @@ void ScriptServer::get_global_class_list(LocalVector<StringName> &r_global_class
 	sorter.sort(&r_global_classes[r_global_classes.size() - global_classes.size()], global_classes.size());
 }
 
-void ScriptServer::save_global_classes() {
-	Dictionary class_icons;
-
-	Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
-	for (const Variant &script_class : script_classes) {
-		Dictionary d = script_class;
-		if (!d.has("name") || !d.has("icon")) {
-			continue;
+void ScriptServer::save_global_classes(const HashMap<StringName, String> &p_script_class_icon_paths) {
+	HashMap<StringName, String> script_class_icon_paths = p_script_class_icon_paths;
+	if (script_class_icon_paths.is_empty()) {
+		Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
+		for (const Variant &script_class : script_classes) {
+			Dictionary d = script_class;
+			if (!d.has("name") || !d.has("icon")) {
+				continue;
+			}
+			script_class_icon_paths[d["name"]] = d["icon"];
 		}
-		class_icons[d["name"]] = d["icon"];
 	}
 
 	LocalVector<StringName> gc;
@@ -548,12 +556,14 @@ void ScriptServer::save_global_classes() {
 	Array gcarr;
 	for (const StringName &class_name : gc) {
 		const GlobalScriptClass &global_class = global_classes[class_name];
+		String *icon = script_class_icon_paths.getptr(class_name);
 		Dictionary d;
 		d["class"] = class_name;
 		d["language"] = global_class.language;
+		d["uid"] = ResourceUID::get_singleton()->id_to_text(global_class.uid);
 		d["path"] = global_class.path;
 		d["base"] = global_class.base;
-		d["icon"] = class_icons.get(class_name, "");
+		d["icon"] = icon ? *icon : String();
 		d["is_abstract"] = global_class.is_abstract;
 		d["is_tool"] = global_class.is_tool;
 		gcarr.push_back(d);

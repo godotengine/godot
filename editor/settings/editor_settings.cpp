@@ -657,6 +657,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("filesystem/on_save/safe_save_on_backup_then_rename", true);
 	_initial_set("filesystem/on_save/warn_on_saving_large_text_resources", true);
 
+	// On scan
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "filesystem/on_scan/detect_mode", 0, "Auto,Force");
+
 	// EditorFileServer
 	_initial_set("filesystem/file_server/port", 6010);
 	_initial_set("filesystem/file_server/password", "");

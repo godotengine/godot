@@ -335,7 +335,7 @@ private:
 	void _push_to_history();
 
 	void _set_scanning_mode();
-	void _rescan();
+	void _rescan(const String &p_dir, bool p_recursive);
 
 	void _change_split_mode();
 	void _split_dragged(int p_offset);
