@@ -105,6 +105,7 @@
     <Compile Include="Core\Interfaces\IAwaitable.cs" />
     <Compile Include="Core\Interfaces\IAwaiter.cs" />
     <Compile Include="Core\Interfaces\ISerializationListener.cs" />
+    <Compile Include="Core\Logging.cs" />
     <Compile Include="Core\Mathf.cs" />
     <Compile Include="Core\MathfEx.cs" />
     <Compile Include="Core\NativeInterop\CustomUnsafe.cs" />
