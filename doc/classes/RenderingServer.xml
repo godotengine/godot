@@ -1242,7 +1242,7 @@
 			<param index="2" name="size" type="Vector2i" />
 			<description>
 				Generates and returns an [Image] containing the radiance map for the specified [param environment] RID's sky. This supports built-in sky material and custom sky shaders. If [param bake_irradiance] is [code]true[/code], the irradiance map is saved instead of the radiance map. The radiance map is used to render reflected light, while the irradiance map is used to render ambient light. See also [method sky_bake_panorama].
-				[b]Note:[/b] The image is saved in linear color space without any tonemapping performed, which means it will look too dark if viewed directly in an image editor.
+				[b]Note:[/b] The image is saved using linear encoding without any tonemapping performed, which means it will look too dark if viewed directly in an image editor.
 				[b]Note:[/b] [param size] should be a 2:1 aspect ratio for the generated panorama to have square pixels. For radiance maps, there is no point in using a height greater than [member Sky.radiance_size], as it won't increase detail. Irradiance maps only contain low-frequency data, so there is usually no point in going past a size of 128×64 pixels when saving an irradiance map.
 			</description>
 		</method>
@@ -3574,7 +3574,7 @@
 			<param index="3" name="size" type="Vector2i" />
 			<description>
 				Generates and returns an [Image] containing the radiance map for the specified [param sky] RID. This supports built-in sky material and custom sky shaders. If [param bake_irradiance] is [code]true[/code], the irradiance map is saved instead of the radiance map. The radiance map is used to render reflected light, while the irradiance map is used to render ambient light. See also [method environment_bake_panorama].
-				[b]Note:[/b] The image is saved in linear color space without any tonemapping performed, which means it will look too dark if viewed directly in an image editor. [param energy] values above [code]1.0[/code] can be used to brighten the resulting image.
+				[b]Note:[/b] The image is saved using linear encoding without any tonemapping performed, which means it will look too dark if viewed directly in an image editor. [param energy] values above [code]1.0[/code] can be used to brighten the resulting image.
 				[b]Note:[/b] [param size] should be a 2:1 aspect ratio for the generated panorama to have square pixels. For radiance maps, there is no point in using a height greater than [member Sky.radiance_size], as it won't increase detail. Irradiance maps only contain low-frequency data, so there is usually no point in going past a size of 128×64 pixels when saving an irradiance map.
 			</description>
 		</method>
@@ -3763,6 +3763,7 @@
 			<param index="1" name="srgb" type="bool" default="false" />
 			<description>
 				Returns the internal graphics handle for this texture object. For use when communicating with third-party APIs mostly with GDExtension.
+				[param srgb] should be [code]true[/code] when the texture uses nonlinear sRGB encoding and [code]false[/code] when the texture uses linear encoding.
 				[b]Note:[/b] This function returns a [code]uint64_t[/code] which internally maps to a [code]GLuint[/code] (OpenGL) or [code]VkImage[/code] (Vulkan).
 			</description>
 		</method>
@@ -3778,6 +3779,7 @@
 			<param index="1" name="srgb" type="bool" default="false" />
 			<description>
 				Returns a texture [RID] that can be used with [RenderingDevice].
+				[param srgb] should be [code]true[/code] when the texture uses nonlinear sRGB encoding and [code]false[/code] when the texture uses linear encoding.
 			</description>
 		</method>
 		<method name="texture_proxy_create" deprecated="ProxyTexture was removed in Godot 4.">
@@ -4243,8 +4245,8 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ or Compatibility renderer, this will be an [code]RGBA16[/code] framebuffer. When using the Mobile renderer, it will be an [code]RGB10_A2[/code] framebuffer.
-				Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen).
-				Practically speaking, this means that the end result of the Viewport will not be clamped to the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients. This setting has the same effect as [member Viewport.use_hdr_2d].
+				Additionally, 2D rendering will be performed on linear values and will be converted using the appropriate transfer function immediately before blitting to the screen (if the Viewport is attached to the screen).
+				Practically speaking, this means that the end result of the Viewport will not be clamped to the [code]0-1[/code] range and can be used in 3D rendering without color encoding adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients. This setting has the same effect as [member Viewport.use_hdr_2d].
 			</description>
 		</method>
 		<method name="viewport_set_use_occlusion_culling">

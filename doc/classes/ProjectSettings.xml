@@ -3145,7 +3145,7 @@
 			Sets the renderer that will be used by the project. Options are:
 			[b]forward_plus[/b] (Forward+): High-end renderer designed for desktop devices. Has a higher base overhead, but scales well with complex scenes. Not suitable for older devices or mobile.
 			[b]mobile[/b] (Mobile): Modern renderer designed for mobile devices. Has a lower base overhead than Forward+, but does not scale as well to large scenes with many elements.
-			[b]gl_compatibility[/b] (Compatibility): Low-end renderer designed for older devices. Based on the limitations of the OpenGL 3.3 / OpenGL ES 3.0 / WebGL 2 APIs.
+			[b]gl_compatibility[/b] (Compatibility): Low-end renderer designed for older devices. Based on the limitations of the OpenGL 3.3 / OpenGL ES 3.0 / WebGL 2 APIs. Lighting calculations are performed on nonlinear sRGB-encoded color data, which produces inaccurate results that may look acceptable for some games.
 			This can be overridden using the [code]--rendering-method &lt;method&gt;[/code] command line argument.
 			[b]Note:[/b] The actual rendering method may be automatically changed by the engine as a result of a fallback, or a user-specified command line argument. To get the actual rendering method that is used at runtime, use [method RenderingServer.get_current_rendering_method] instead of reading this project setting's value.
 		</member>
@@ -3376,8 +3376,8 @@
 		</member>
 		<member name="rendering/viewport/hdr_2d" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables [member Viewport.use_hdr_2d] on the root viewport. 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ or Compatibility renderer, this will be an [code]RGBA16[/code] framebuffer. When using the Mobile renderer, it will be an [code]RGB10_A2[/code] framebuffer.
-			Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen).
-			Practically speaking, this means that the end result of the Viewport will not be clamped to the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
+			Additionally, 2D rendering will be performed on linear values and will be converted using the appropriate transfer function immediately before blitting to the screen (if the Viewport is attached to the screen).
+			Practically speaking, this means that the end result of the Viewport will not be clamped to the [code]0-1[/code] range and can be used in 3D rendering without color encoding adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
 			[b]Note:[/b] This property is only read when the project starts. To toggle HDR 2D at runtime, set [member Viewport.use_hdr_2d] on the root [Viewport].
 		</member>
 		<member name="rendering/viewport/transparent_background" type="bool" setter="" getter="" default="false">
