@@ -657,6 +657,9 @@ private:
 
 	RID accessibility_text_root_element_nl;
 
+	/* Theme. */
+	Ref<StyleBox> _get_current_stylebox() const;
+
 	/*** Super internal Core API. Everything builds on it. ***/
 	bool text_changed_dirty = false;
 	void _text_changed();
