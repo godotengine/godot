@@ -62,6 +62,7 @@ struct PluginConfigAppleEmbedded {
 
 	inline static const char *DEPENDENCIES_SECTION = "dependencies";
 	inline static const char *DEPENDENCIES_LINKED_KEY = "linked";
+	inline static const char *DEPENDENCIES_PODS_KEY = "pods";
 	inline static const char *DEPENDENCIES_EMBEDDED_KEY = "embedded";
 	inline static const char *DEPENDENCIES_SYSTEM_KEY = "system";
 	inline static const char *DEPENDENCIES_CAPABILITIES_KEY = "capabilities";
@@ -101,6 +102,7 @@ struct PluginConfigAppleEmbedded {
 	Vector<String> linked_dependencies;
 	Vector<String> embedded_dependencies;
 	Vector<String> system_dependencies;
+	Vector<String> pods_dependencies;
 
 	Vector<String> files_to_copy;
 	Vector<String> capabilities;

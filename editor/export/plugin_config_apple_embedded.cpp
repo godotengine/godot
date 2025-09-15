@@ -193,11 +193,13 @@ PluginConfigAppleEmbedded PluginConfigAppleEmbedded::load_plugin_config(Ref<Conf
 
 	if (config_file->has_section(PluginConfigAppleEmbedded::DEPENDENCIES_SECTION)) {
 		Vector<String> linked_dependencies = config_file->get_value(PluginConfigAppleEmbedded::DEPENDENCIES_SECTION, PluginConfigAppleEmbedded::DEPENDENCIES_LINKED_KEY, Vector<String>());
+		Vector<String> pods_dependencies = config_file->get_value(PluginConfigAppleEmbedded::DEPENDENCIES_SECTION, PluginConfigAppleEmbedded::DEPENDENCIES_PODS_KEY, Vector<String>());
 		Vector<String> embedded_dependencies = config_file->get_value(PluginConfigAppleEmbedded::DEPENDENCIES_SECTION, PluginConfigAppleEmbedded::DEPENDENCIES_EMBEDDED_KEY, Vector<String>());
 		Vector<String> system_dependencies = config_file->get_value(PluginConfigAppleEmbedded::DEPENDENCIES_SECTION, PluginConfigAppleEmbedded::DEPENDENCIES_SYSTEM_KEY, Vector<String>());
 		Vector<String> files = config_file->get_value(PluginConfigAppleEmbedded::DEPENDENCIES_SECTION, PluginConfigAppleEmbedded::DEPENDENCIES_FILES_KEY, Vector<String>());
 
 		plugin_config.linked_dependencies = resolve_local_dependencies(config_base_dir, linked_dependencies);
+		plugin_config.pods_dependencies = pods_dependencies;
 		plugin_config.embedded_dependencies = resolve_local_dependencies(config_base_dir, embedded_dependencies);
 		plugin_config.system_dependencies = resolve_system_dependencies(system_dependencies);
 

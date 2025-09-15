@@ -138,6 +138,7 @@ private:
 		String exported_path;
 		bool is_framework = false; // framework is anything linked to the binary, otherwise it's a resource
 		bool should_embed = false;
+		bool is_pod = false;
 	};
 
 	String _get_additional_plist_content();
@@ -147,6 +148,7 @@ private:
 
 	Vector<ExportArchitecture> _get_supported_architectures() const;
 	Vector<String> _get_preset_architectures(const Ref<EditorExportPreset> &p_preset) const;
+	Error _export_cocoapods(const Ref<EditorExportPreset> &p_preset, const Vector<String> &p_dependencies, Vector<AppleEmbeddedExportAsset> &r_exported_assets);
 
 	void _check_xcframework_content(const String &p_path, int &r_total_libs, int &r_static_libs, int &r_dylibs, int &r_frameworks) const;
 	Error _convert_to_framework(const String &p_source, const String &p_destination, const String &p_id) const;
@@ -158,6 +160,7 @@ private:
 	Error _export_apple_embedded_plugins(const Ref<EditorExportPreset> &p_preset, AppleEmbeddedConfigData &p_config_data, const String &dest_dir, Vector<AppleEmbeddedExportAsset> &r_exported_assets, bool p_debug);
 
 	Error _export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_oneclick);
+	Error _generate_podfile(const String &platform, const String &platform_version, const String &target_name, const Dictionary &dependencies, const String dest_dir);
 
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const;
 
