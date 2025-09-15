@@ -271,12 +271,20 @@ void gdspx_ext_get_layer_offset(GdInt* index,GdVec2* ret_val) {
 	*ret_val = extMgr->get_layer_offset(*index);
 }
 EMSCRIPTEN_KEEPALIVE
-void gdspx_ext_place_tiles(GdArray* positions) {
-	 extMgr->place_tiles(*positions);
+void gdspx_ext_place_tiles(GdArray* positions,GdString* texture_path) {
+	 extMgr->place_tiles(*positions, *texture_path);
 }
 EMSCRIPTEN_KEEPALIVE
-void gdspx_ext_place_tile(GdVec2* pos) {
-	 extMgr->place_tile(*pos);
+void gdspx_ext_place_tiles_with_layer(GdArray* positions,GdString* texture_path,GdInt* layer_index) {
+	 extMgr->place_tiles_with_layer(*positions, *texture_path, *layer_index);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_place_tile(GdVec2* pos,GdString* texture_path) {
+	 extMgr->place_tile(*pos, *texture_path);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_place_tile_with_layer(GdVec2* pos,GdString* texture_path,GdInt* layer_index) {
+	 extMgr->place_tile_with_layer(*pos, *texture_path, *layer_index);
 }
 EMSCRIPTEN_KEEPALIVE
 void gdspx_ext_erase_tile(GdVec2* pos) {

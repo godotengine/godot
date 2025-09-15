@@ -455,20 +455,48 @@ gdspx_ext_get_layer_offset(index) {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-gdspx_ext_place_tiles(positions) {
+gdspx_ext_place_tiles(positions,texture_path) {
 	var _gdFuncPtr = Module._gdspx_ext_place_tiles; 
 	
 	var _arg0 = ToGdArray(positions);
-	_gdFuncPtr(_arg0);
+	var _arg1 = ToGdString(texture_path);
+	_gdFuncPtr(_arg0, _arg1);
 	FreeGdArray(_arg0); 
+	FreeGdString(_arg1); 
 
 }
-gdspx_ext_place_tile(pos) {
+gdspx_ext_place_tiles_with_layer(positions,texture_path,layer_index) {
+	var _gdFuncPtr = Module._gdspx_ext_place_tiles_with_layer; 
+	
+	var _arg0 = ToGdArray(positions);
+	var _arg1 = ToGdString(texture_path);
+	var _arg2 = ToGdInt(layer_index);
+	_gdFuncPtr(_arg0, _arg1, _arg2);
+	FreeGdArray(_arg0); 
+	FreeGdString(_arg1); 
+	FreeGdInt(_arg2); 
+
+}
+gdspx_ext_place_tile(pos,texture_path) {
 	var _gdFuncPtr = Module._gdspx_ext_place_tile; 
 	
 	var _arg0 = ToGdVec2(pos);
-	_gdFuncPtr(_arg0);
+	var _arg1 = ToGdString(texture_path);
+	_gdFuncPtr(_arg0, _arg1);
 	FreeGdVec2(_arg0); 
+	FreeGdString(_arg1); 
+
+}
+gdspx_ext_place_tile_with_layer(pos,texture_path,layer_index) {
+	var _gdFuncPtr = Module._gdspx_ext_place_tile_with_layer; 
+	
+	var _arg0 = ToGdVec2(pos);
+	var _arg1 = ToGdString(texture_path);
+	var _arg2 = ToGdInt(layer_index);
+	_gdFuncPtr(_arg0, _arg1, _arg2);
+	FreeGdVec2(_arg0); 
+	FreeGdString(_arg1); 
+	FreeGdInt(_arg2); 
 
 }
 gdspx_ext_erase_tile(pos) {

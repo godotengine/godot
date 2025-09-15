@@ -115,8 +115,10 @@ public:
 	void set_tile(GdString texture_path, GdBool with_collision);
     void set_layer_offset(GdInt index, GdVec2 offset);
     GdVec2 get_layer_offset(GdInt index);
-	void place_tiles(GdArray positions);
-    void place_tile(GdVec2 pos);
+	void place_tiles(GdArray positions, GdString texture_path);
+	void place_tiles_with_layer(GdArray positions, GdString texture_path, GdInt layer_index);
+    void place_tile(GdVec2 pos, GdString texture_path);
+    void place_tile_with_layer(GdVec2 pos, GdString texture_path, GdInt layer_index);
     void erase_tile(GdVec2 pos);
 	void close_draw_tiles();
 	GdArray get_layer_point_path(GdVec2 p_from, GdVec2 p_to);

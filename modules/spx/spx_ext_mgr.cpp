@@ -322,39 +322,51 @@ void SpxExtMgr::open_draw_tiles_with_size(GdInt tile_size) {
 }
 
 void SpxExtMgr::set_layer_index(GdInt index) {
-	with_draw_tiles([this, index](){
+	with_draw_tiles([&](){
 		draw_tiles->set_sprite_index(index);
 	});
 }
-
 void SpxExtMgr::set_tile(GdString texture_path, GdBool with_collision) {
-	with_draw_tiles([this, &texture_path, with_collision](){
+	with_draw_tiles([&](){
 		draw_tiles->set_sprite_texture(texture_path, with_collision);
 	});
 }
 
-void SpxExtMgr::place_tiles(GdArray positions) {
-	with_draw_tiles([this, positions](){
-		draw_tiles->place_sprites(positions);
+void SpxExtMgr::place_tiles(GdArray positions, GdString texture_path) {
+	with_draw_tiles([&](){
+		draw_tiles->place_sprites(positions, texture_path);
+	});
+}
+void SpxExtMgr::place_tiles_with_layer(GdArray positions, GdString texture_path, GdInt layer_index) {
+	with_draw_tiles([&](){
+		draw_tiles->place_sprites(positions, texture_path, layer_index);
 	});
 }
 
-void SpxExtMgr::place_tile(GdVec2 pos) {
-	with_draw_tiles([this, pos](){
-		draw_tiles->place_sprite(pos);
+void SpxExtMgr::place_tile(GdVec2 pos, GdString texture_path) {
+	with_draw_tiles([&](){
+		draw_tiles->place_sprite(pos, texture_path);
+	});
+}
+
+void SpxExtMgr::place_tile_with_layer(GdVec2 pos, GdString texture_path, GdInt layer_index) {
+	with_draw_tiles([&](){
+		draw_tiles->place_sprite(pos, texture_path, layer_index);
 	});
 }
 
 void SpxExtMgr::erase_tile(GdVec2 pos) {
-	with_draw_tiles([this, pos](){
+	with_draw_tiles([&](){
 		draw_tiles->erase_sprite(pos);
 	});
 }
 
 GdArray SpxExtMgr::get_layer_point_path(GdVec2 p_from, GdVec2 p_to){
-	with_draw_tiles([this, p_from, p_to](){
-		draw_tiles->get_layer_point_path(p_from, p_to);
-	});
+	if(draw_tiles != nullptr){
+		return draw_tiles->get_layer_point_path(p_from, p_to);
+	}
+
+	return nullptr;
 }
 
 void SpxExtMgr::close_draw_tiles() {
