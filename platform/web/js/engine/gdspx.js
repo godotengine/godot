@@ -403,6 +403,18 @@ gdspx_ext_debug_draw_rect(pos,size,color) {
 	FreeGdColor(_arg2); 
 
 }
+gdspx_ext_debug_draw_line(from,to,color) {
+	var _gdFuncPtr = Module._gdspx_ext_debug_draw_line; 
+	
+	var _arg0 = ToGdVec2(from);
+	var _arg1 = ToGdVec2(to);
+	var _arg2 = ToGdColor(color);
+	_gdFuncPtr(_arg0, _arg1, _arg2);
+	FreeGdVec2(_arg0); 
+	FreeGdVec2(_arg1); 
+	FreeGdColor(_arg2); 
+
+}
 gdspx_ext_open_draw_tiles_with_size(tile_size) {
 	var _gdFuncPtr = Module._gdspx_ext_open_draw_tiles_with_size; 
 	
@@ -763,6 +775,26 @@ gdspx_physic_check_collision_circle(pos,radius,collision_mask) {
 	FreeGdVec2(_arg0); 
 	FreeGdFloat(_arg1); 
 	FreeGdInt(_arg2); 
+	var _finalRetValue = ToJsArray(_retValue);
+	FreeGdArray(_retValue); 
+	return _finalRetValue
+}
+gdspx_physic_raycast_with_details(from,to,ignore_sprites,collision_mask,collide_with_areas,collide_with_bodies) {
+	var _gdFuncPtr = Module._gdspx_physic_raycast_with_details; 
+	var _retValue = AllocGdArray();
+	var _arg0 = ToGdVec2(from);
+	var _arg1 = ToGdVec2(to);
+	var _arg2 = ToGdArray(ignore_sprites);
+	var _arg3 = ToGdInt(collision_mask);
+	var _arg4 = ToGdBool(collide_with_areas);
+	var _arg5 = ToGdBool(collide_with_bodies);
+	_gdFuncPtr(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _retValue);
+	FreeGdVec2(_arg0); 
+	FreeGdVec2(_arg1); 
+	FreeGdArray(_arg2); 
+	FreeGdInt(_arg3); 
+	FreeGdBool(_arg4); 
+	FreeGdBool(_arg5); 
 	var _finalRetValue = ToJsArray(_retValue);
 	FreeGdArray(_retValue); 
 	return _finalRetValue

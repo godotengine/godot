@@ -48,14 +48,28 @@ public:
 	static GdFloat get_global_air_drag();
 };
 
+class SpxRaycastInfo{
+public:
+	GdBool collide;
+	GdObj sprite_gid;
+	GdVec2 position;
+	GdVec2 normal;
+public:
+    SpxRaycastInfo() = default;
+    ~SpxRaycastInfo() = default;
+	GdArray ToArray();
+};
+
 class SpxPhysicMgr : SpxBaseMgr {
 	SPXCLASS(SpxPhysicMgr, SpxBaseMgr)
+
+private:
+	GdArray _check_collision(RID shape, GdVec2 pos, GdInt collision_mask);
+	SpxRaycastInfo _raycast(GdVec2 from, GdVec2 to,GdArray ignore_sprites,GdInt collision_mask,GdBool collide_with_areas,GdBool collide_with_bodies);
 
 public:
 	bool is_collision_by_pixel;
 	void on_awake() override;
-
-	GdArray _check_collision(RID shape, GdVec2 pos, GdInt collision_mask);
 
 public:
 	virtual ~SpxPhysicMgr() = default; // Added virtual destructor to fix -Werror=non-virtual-dtor
@@ -75,6 +89,7 @@ public:
 	// check collision
 	GdArray check_collision_rect(GdVec2 pos, GdVec2 size, GdInt collision_mask);
 	GdArray check_collision_circle(GdVec2 pos, GdFloat radius, GdInt collision_mask);
+	GdArray raycast_with_details(GdVec2 from, GdVec2 to,GdArray ignore_sprites,GdInt collision_mask,GdBool collide_with_areas,GdBool collide_with_bodies);
 };
 
 #endif // SPX_PHYSIC_MGR_H

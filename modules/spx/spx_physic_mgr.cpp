@@ -30,6 +30,8 @@
 
 #include "spx_physic_mgr.h"
 
+
+#include "core/templates/hash_set.h"
 #include "core/variant/typed_array.h"
 #include "gdextension_spx_ext.h"
 #include "scene/resources/world_2d.h"
@@ -42,6 +44,7 @@
 #include "scene/2d/physics/collision_shape_2d.h"
 #include "scene/main/window.h"
 #include "scene/resources/2d/circle_shape_2d.h"
+#include "scene/2d/physics/area_2d.h"
 #include "scene/resources/2d/rectangle_shape_2d.h"
 #include "spx_engine.h"
 #include "spx_sprite_mgr.h"
@@ -51,6 +54,18 @@
 GdFloat SpxPhysicDefine::global_gravity = 1.0;
 GdFloat SpxPhysicDefine::global_friction = 1.0;
 GdFloat SpxPhysicDefine::global_air_drag = 1.0;
+
+GdArray SpxRaycastInfo::ToArray(){
+	GdArray result_array = SpxBaseMgr::create_array(GD_ARRAY_TYPE_INT64, 6);
+	SpxBaseMgr::set_array(result_array,0,(GdInt)collide);
+	SpxBaseMgr::set_array(result_array,1,(GdInt)sprite_gid);
+	SpxBaseMgr::set_array(result_array,2,spx_float_to_int(position.x));
+	SpxBaseMgr::set_array(result_array,3,spx_float_to_int(position.y));
+	SpxBaseMgr::set_array(result_array,4,spx_float_to_int(normal.x));
+	SpxBaseMgr::set_array(result_array,5,spx_float_to_int(normal.y));
+	return result_array;
+}
+
 void SpxPhysicDefine::set_global_gravity(GdFloat gravity) {
 	SpxPhysicDefine::global_gravity = gravity;
 }
@@ -82,6 +97,68 @@ void SpxPhysicMgr::on_awake() {
 	SpxBaseMgr::on_awake();
 	is_collision_by_pixel = true;
 }
+
+SpxRaycastInfo SpxPhysicMgr::_raycast(GdVec2 from, GdVec2 to,GdArray ignore_sprites,GdInt collision_mask,GdBool collide_with_areas,GdBool collide_with_bodies) {
+	SpxRaycastInfo info;
+	info.collide = false;
+	info.position = GdVec2{0, 0};
+	info.normal = GdVec2{0, 0};
+	info.sprite_gid = 0;
+
+	// invert y
+	GdVec2 current_from = GdVec2{from.x, -from.y};
+	GdVec2 target_to = GdVec2{to.x, -to.y};
+
+	HashSet<RID> ignore_set;
+	if(ignore_sprites && ignore_sprites->size > 0){
+		GdObj* sprite_data = (SpxBaseMgr::get_array<GdObj>(ignore_sprites, 0));
+		for (int i = 0; i < ignore_sprites->size; i++) {
+			auto obj = sprite_data[i];
+			auto sprite = spriteMgr->get_sprite(obj);
+			if(sprite != nullptr){
+				ignore_set.insert(sprite->get_rid());
+				auto trigger = sprite->get_area2d();
+				if(trigger != nullptr){
+					ignore_set.insert(trigger->get_rid());
+				}
+			}
+		}
+	}
+	PhysicsDirectSpaceState2D::RayResult result;
+	PhysicsDirectSpaceState2D::RayParameters params;
+	params.from = current_from;
+	params.to = target_to;
+	params.collision_mask = (uint32_t)collision_mask;
+	params.collide_with_areas = collide_with_areas;
+	params.collide_with_bodies = collide_with_bodies;
+	params.exclude = ignore_set;
+
+	auto node = (Node2D *)get_root();
+	PhysicsDirectSpaceState2D *space_state = node->get_world_2d()->get_direct_space_state();
+	if (!space_state) {
+		return info;
+	}
+
+	bool hit = space_state->intersect_ray(params, result);
+	if (!hit) {
+		return info;
+	}
+	SpxSprite *collider = dynamic_cast<SpxSprite *>(result.collider);
+	GdObj current_gid = collider ? collider->get_gid() : 0;
+	info.collide = true;
+	info.position = GdVec2{result.position.x, -result.position.y};
+	info.normal = GdVec2{result.normal.x, -result.normal.y};
+	info.sprite_gid = current_gid;
+	return info;
+}
+
+
+
+GdArray SpxPhysicMgr::raycast_with_details(GdVec2 from, GdVec2 to,GdArray ignore_sprites,GdInt collision_mask,GdBool collide_with_areas,GdBool collide_with_bodies){
+	SpxRaycastInfo info = _raycast(from, to, ignore_sprites, collision_mask, collide_with_areas, collide_with_bodies);
+	return info.ToArray();
+}
+
 GdObj SpxPhysicMgr::raycast(GdVec2 from, GdVec2 to, GdInt collision_mask) {
 	auto node = (Node2D *)get_root();
 	PhysicsDirectSpaceState2D *space_state = node->get_world_2d()->get_direct_space_state();

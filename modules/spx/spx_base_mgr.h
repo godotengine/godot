@@ -34,6 +34,7 @@
 #include "gdextension_spx_ext.h"
 #include "scene/2d/node_2d.h"
 #include "svg_mgr.h"
+#include "spx_utils.h"
 
 #define SPXCLASS(m_class, m_inherits) \
 public:                               \

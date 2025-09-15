@@ -291,6 +291,35 @@ void SpxExtMgr::debug_draw_rect(GdVec2 pos, GdVec2 size, GdColor color) {
 	debug_shapes.push_back(shape);
 }
 
+void SpxExtMgr::debug_draw_line(GdVec2 from, GdVec2 to, GdColor color) {
+	if (!debug_root) {
+		return;
+	}
+
+	// 翻转Y轴坐标
+	from.y = -from.y;
+	to.y = -to.y;
+
+	Line2D* line = memnew(Line2D);
+	line->set_default_color(color);
+	line->set_width(2.0f);
+	
+	PackedVector2Array points;
+	points.append(Vector2(0, 0));
+	points.append(Vector2(to.x - from.x, to.y - from.y));
+	line->set_points(points);
+	line->set_position(from);
+	
+	debug_root->add_child(line);
+	
+	DebugShape shape;
+	shape.type = DebugShape::LINE;
+	shape.position = from;
+	shape.to_position = to;
+	shape.color = color;
+	shape.node = line;
+	debug_shapes.push_back(shape);
+}
 
 void SpxExtMgr::open_draw_tiles() {
 	open_draw_tiles_with_size(16);// default tile_size = 16

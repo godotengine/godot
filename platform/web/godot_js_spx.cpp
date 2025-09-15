@@ -247,6 +247,10 @@ void gdspx_ext_debug_draw_rect(GdVec2* pos,GdVec2* size,GdColor* color) {
 	 extMgr->debug_draw_rect(*pos, *size, *color);
 }
 EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_debug_draw_line(GdVec2* from,GdVec2* to,GdColor* color) {
+	 extMgr->debug_draw_line(*from, *to, *color);
+}
+EMSCRIPTEN_KEEPALIVE
 void gdspx_ext_open_draw_tiles_with_size(GdInt* tile_size) {
 	 extMgr->open_draw_tiles_with_size(*tile_size);
 }
@@ -393,6 +397,10 @@ void gdspx_physic_check_collision_rect(GdVec2* pos,GdVec2* size,GdInt* collision
 EMSCRIPTEN_KEEPALIVE
 void gdspx_physic_check_collision_circle(GdVec2* pos,GdFloat* radius,GdInt* collision_mask,GdArray* ret_val) {
 	*ret_val = physicMgr->check_collision_circle(*pos, *radius, *collision_mask);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_physic_raycast_with_details(GdVec2* from,GdVec2* to,GdArray* ignore_sprites,GdInt* collision_mask,GdBool* collide_with_areas,GdBool* collide_with_bodies,GdArray* ret_val) {
+	*ret_val = physicMgr->raycast_with_details(*from, *to, *ignore_sprites, *collision_mask, *collide_with_areas, *collide_with_bodies);
 }
 EMSCRIPTEN_KEEPALIVE
 void gdspx_platform_set_stretch_mode(GdBool* enable) {

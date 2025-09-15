@@ -41,12 +41,14 @@ class SpxDrawTiles;
 struct DebugShape {
 	enum Type {
 		CIRCLE,
-		RECT
+		RECT,
+		LINE
 	};
 	Type type;
 	GdVec2 position;
 	GdVec2 size;
 	GdFloat radius;
+	GdVec2 to_position;
 	GdColor color;
 	Node2D *node;
 };
@@ -107,6 +109,7 @@ public:
 	// debug
 	void debug_draw_circle(GdVec2 pos, GdFloat radius, GdColor color);
 	void debug_draw_rect(GdVec2 pos, GdVec2 size, GdColor color);
+	void debug_draw_line(GdVec2 from, GdVec2 to, GdColor color);
 
 	// draw tiles 
 	void open_draw_tiles_with_size(GdInt tile_size);
