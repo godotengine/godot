@@ -617,9 +617,9 @@ void EditorExportPlatformAppleEmbedded::_fix_config_file(const Ref<EditorExportP
 			}
 
 			String appAtestEnviromentSetting = "<key>AppATTestEnvironment</key><string>";
-			appAtestEnviromentSetting += appAttest.toLower();
+			appAtestEnviromentSetting += appAttest.to_lower();
 			appAtestEnviromentSetting += "</string>";
-			strnew += lines[i].replace("$app_attest_environment", description) + "\n";
+			strnew += lines[i].replace("$app_attest_environment", appAtestEnviromentSetting) + "\n";
 		} else if (lines[i].contains("$plist_launch_screen_name")) {
 			String value = "<key>UILaunchStoryboardName</key>\n<string>Launch Screen</string>";
 			strnew += lines[i].replace("$plist_launch_screen_name", value) + "\n";

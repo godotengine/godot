@@ -110,6 +110,8 @@
 			&lt;string&gt;value&lt;/string&gt;
 			[/codeblock]
 		</member>
+		<member name="entitlements/app_attest" type="String" setter="" getter="">
+		</member>
 		<member name="entitlements/game_center" type="bool" setter="" getter="">
 			If [code]true[/code], allows access to Game Center features. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_developer_game-center]com.apple.developer.game-center[/url].
 		</member>
