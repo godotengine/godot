@@ -6,4 +6,4 @@ patch = 0
 status = "dev"
 module_config = ""
 website = "https://godotengine.org"
-docs = "4.6"
+docs = "latest"
