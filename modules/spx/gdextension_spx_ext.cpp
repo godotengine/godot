@@ -211,11 +211,17 @@ static void gdextension_spx_ext_set_layer_offset(GdInt index,GdVec2 offset) {
 static void gdextension_spx_ext_get_layer_offset(GdInt index,GdVec2* ret_val) {
 	*ret_val = extMgr->get_layer_offset(index);
 }
-static void gdextension_spx_ext_place_tiles(GdArray positions) {
-	 extMgr->place_tiles(positions);
+static void gdextension_spx_ext_place_tiles(GdArray positions,GdString texture_path) {
+	 extMgr->place_tiles(positions, texture_path);
 }
-static void gdextension_spx_ext_place_tile(GdVec2 pos) {
-	 extMgr->place_tile(pos);
+static void gdextension_spx_ext_place_tiles_with_layer(GdArray positions,GdString texture_path,GdInt layer_index) {
+	 extMgr->place_tiles_with_layer(positions, texture_path, layer_index);
+}
+static void gdextension_spx_ext_place_tile(GdVec2 pos,GdString texture_path) {
+	 extMgr->place_tile(pos, texture_path);
+}
+static void gdextension_spx_ext_place_tile_with_layer(GdVec2 pos,GdString texture_path,GdInt layer_index) {
+	 extMgr->place_tile_with_layer(pos, texture_path, layer_index);
 }
 static void gdextension_spx_ext_erase_tile(GdVec2 pos) {
 	 extMgr->erase_tile(pos);
@@ -922,7 +928,9 @@ void gdextension_spx_setup_interface() {
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_layer_offset);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_get_layer_offset);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_place_tiles);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_place_tiles_with_layer);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_place_tile);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_place_tile_with_layer);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_erase_tile);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_close_draw_tiles);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_get_layer_point_path);

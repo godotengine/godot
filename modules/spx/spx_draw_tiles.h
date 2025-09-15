@@ -89,7 +89,6 @@ public:
     ~LayerRenderer() = default;
 
     void draw(Node2D *parent_node, const DrawContext & ctx);
-    void clear(Node2D *parent_node);
 };
 
 struct TileAction {
@@ -120,7 +119,7 @@ private:
     int current_layer_index = 0;
     const String UNIQUE_LAYER_PREFIX = "spx_draw_tiles_layer_";
 
-    bool exit_editor = false;
+    bool exit_editor = true;
     bool axis_flipped = false;
     bool axis_dragging = false;
     bool tile_placing = false;
@@ -151,8 +150,10 @@ public:
     // spx interface
     void set_sprite_index(GdInt index);
     void set_sprite_texture(GdString texture_path, GdBool with_collision);
-    void place_sprites(GdArray positions);
-    void place_sprite(GdVec2 pos);
+    void place_sprites(GdArray positions, GdString texture_path);
+    void place_sprites(GdArray positions, GdString texture_path, GdInt layer_index);
+    void place_sprite(GdVec2 pos, GdString texture_path);
+    void place_sprite(GdVec2 pos, GdString texture_path, GdInt layer_index);
     void erase_sprite(GdVec2 pos);
 
     GdArray get_layer_point_path(GdVec2 p_from, GdVec2 p_to);
@@ -174,7 +175,7 @@ public:
     void clear_all_layers();
 
     void enter_editor_mode(){exit_editor = false;}
-    void exit_editor_mode();
+    void exit_editor_mode(){exit_editor = true; queue_redraw();};
 
 	void init_path_finder();
 
@@ -189,6 +190,9 @@ private:
     int _get_or_create_source_id(Ref<Texture2D> scaled_texture, bool with_collision = true);
     bool _create_tile(Ref<TileSetAtlasSource> atlas_source, const Vector2i &tile_coords, bool with_collision = true);
     Ref<ImageTexture> _get_scaled_texture(Ref<Texture2D> texture);
+
+    void _place_sprites(GdArray positions);
+    void _place_sprite(GdVec2 pos);
 
     void _destroy_layers();
     void _clear_cache();
