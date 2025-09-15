@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  image_loader_svg.h                                                    */
+/*  image.compat.inc                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,27 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef DISABLE_DEPRECATED
 
-#include "core/io/image_loader.h"
+Error Image::_load_svg_from_buffer_109947(const Vector<uint8_t> &p_array, float scale) {
+	return load_svg_from_buffer(p_array, scale, false);
+}
 
-class ImageLoaderSVG : public ImageFormatLoader {
-	static HashMap<Color, Color> forced_color_map;
+Error Image::_load_svg_from_string_109947(const String &p_svg_str, float scale) {
+	return load_svg_from_string(p_svg_str, scale, false);
+}
 
-	static void _replace_color_property(const HashMap<Color, Color> &p_color_map, const String &p_prefix, String &r_string);
+void Image::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("load_svg_from_buffer", "buffer", "scale"), &Image::_load_svg_from_buffer_109947, DEFVAL(1.0));
+	ClassDB::bind_compatibility_method(D_METHOD("load_svg_from_string", "svg_str", "scale"), &Image::_load_svg_from_string_109947, DEFVAL(1.0));
+}
 
-	static Ref<Image> load_mem_svg(const uint8_t *p_svg, int p_size, float p_scale, bool p_premult_alpha = false);
-
-public:
-	static void set_forced_color_map(const HashMap<Color, Color> &p_color_map);
-
-	static Error create_image_from_utf8_buffer(Ref<Image> p_image, const uint8_t *p_buffer, int p_buffer_size, float p_scale, bool p_upsample, bool p_output_premult_alpha = false);
-	static Error create_image_from_utf8_buffer(Ref<Image> p_image, const PackedByteArray &p_buffer, float p_scale, bool p_upsample, bool p_output_premult_alpha = false);
-
-	static Error create_image_from_string(Ref<Image> p_image, String p_string, float p_scale, bool p_upsample, const HashMap<Color, Color> &p_color_map);
-
-	virtual Error load_image(Ref<Image> p_image, Ref<FileAccess> p_fileaccess, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-
-	ImageLoaderSVG();
-};
+#endif // DISABLE_DEPRECATED

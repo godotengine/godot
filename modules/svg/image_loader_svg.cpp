@@ -67,17 +67,17 @@ void ImageLoaderSVG::_replace_color_property(const HashMap<Color, Color> &p_colo
 	}
 }
 
-Ref<Image> ImageLoaderSVG::load_mem_svg(const uint8_t *p_svg, int p_size, float p_scale) {
+Ref<Image> ImageLoaderSVG::load_mem_svg(const uint8_t *p_svg, int p_size, float p_scale, bool p_premult_alpha) {
 	Ref<Image> img;
 	img.instantiate();
 
-	Error err = create_image_from_utf8_buffer(img, p_svg, p_size, p_scale, false);
+	Error err = create_image_from_utf8_buffer(img, p_svg, p_size, p_scale, false, p_premult_alpha);
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<Image>(), vformat("ImageLoaderSVG: Failed to create SVG from buffer, error code %d.", err));
 
 	return img;
 }
 
-Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const uint8_t *p_buffer, int p_buffer_size, float p_scale, bool p_upsample) {
+Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const uint8_t *p_buffer, int p_buffer_size, float p_scale, bool p_upsample, bool p_output_premult_alpha) {
 	ERR_FAIL_COND_V_MSG(Math::is_zero_approx(p_scale), ERR_INVALID_PARAMETER, "ImageLoaderSVG: Can't load SVG with a scale of 0.");
 
 	std::unique_ptr<tvg::Picture> picture = tvg::Picture::gen();
@@ -107,7 +107,10 @@ Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const ui
 	Vector<uint8_t> buffer;
 	buffer.resize(sizeof(uint32_t) * width * height);
 
-	tvg::Result res = sw_canvas->target((uint32_t *)buffer.ptrw(), width, width, height, tvg::SwCanvas::ABGR8888S);
+	// Note that tvg::SwCanvas::ABGR8888 (premult alpha) is faster as ThorVG works in premult alpha and doesn't need change the alpha association after rendering
+	tvg::SwCanvas::Colorspace cs = p_output_premult_alpha ? tvg::SwCanvas::ABGR8888 : tvg::SwCanvas::ABGR8888S;
+
+	tvg::Result res = sw_canvas->target((uint32_t *)buffer.ptrw(), width, width, height, cs);
 	if (res != tvg::Result::Success) {
 		ERR_FAIL_V_MSG(FAILED, "ImageLoaderSVG: Couldn't set target on ThorVG canvas.");
 	}
@@ -134,8 +137,8 @@ Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const ui
 	return OK;
 }
 
-Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const PackedByteArray &p_buffer, float p_scale, bool p_upsample) {
-	return create_image_from_utf8_buffer(p_image, p_buffer.ptr(), p_buffer.size(), p_scale, p_upsample);
+Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const PackedByteArray &p_buffer, float p_scale, bool p_upsample, bool p_output_premult_alpha) {
+	return create_image_from_utf8_buffer(p_image, p_buffer.ptr(), p_buffer.size(), p_scale, p_upsample, p_output_premult_alpha);
 }
 
 Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, String p_string, float p_scale, bool p_upsample, const HashMap<Color, Color> &p_color_map) {

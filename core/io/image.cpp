@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "image.h"
+#include "image.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
@@ -3610,8 +3611,8 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_ktx_from_buffer", "buffer"), &Image::load_ktx_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_dds_from_buffer", "buffer"), &Image::load_dds_from_buffer);
 
-	ClassDB::bind_method(D_METHOD("load_svg_from_buffer", "buffer", "scale"), &Image::load_svg_from_buffer, DEFVAL(1.0));
-	ClassDB::bind_method(D_METHOD("load_svg_from_string", "svg_str", "scale"), &Image::load_svg_from_string, DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("load_svg_from_buffer", "buffer", "scale", "premult_alpha"), &Image::load_svg_from_buffer, DEFVAL(1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("load_svg_from_string", "svg_str", "scale", "premult_alpha"), &Image::load_svg_from_string, DEFVAL(1.0), DEFVAL(false));
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "_set_data", "_get_data");
 
@@ -4112,7 +4113,7 @@ Error Image::load_dds_from_buffer(const Vector<uint8_t> &p_array) {
 	return _load_from_buffer(p_array, _dds_mem_loader_func);
 }
 
-Error Image::load_svg_from_buffer(const Vector<uint8_t> &p_array, float scale) {
+Error Image::load_svg_from_buffer(const Vector<uint8_t> &p_array, float scale, bool p_premult_alpha) {
 	ERR_FAIL_NULL_V_MSG(
 			_svg_scalable_mem_loader_func,
 			ERR_UNAVAILABLE,
@@ -4122,7 +4123,7 @@ Error Image::load_svg_from_buffer(const Vector<uint8_t> &p_array, float scale) {
 
 	ERR_FAIL_COND_V(buffer_size == 0, ERR_INVALID_PARAMETER);
 
-	Ref<Image> image = _svg_scalable_mem_loader_func(p_array.ptr(), buffer_size, scale);
+	Ref<Image> image = _svg_scalable_mem_loader_func(p_array.ptr(), buffer_size, scale, p_premult_alpha);
 	ERR_FAIL_COND_V(image.is_null(), ERR_PARSE_ERROR);
 
 	copy_internals_from(image);
@@ -4130,8 +4131,8 @@ Error Image::load_svg_from_buffer(const Vector<uint8_t> &p_array, float scale) {
 	return OK;
 }
 
-Error Image::load_svg_from_string(const String &p_svg_str, float scale) {
-	return load_svg_from_buffer(p_svg_str.to_utf8_buffer(), scale);
+Error Image::load_svg_from_string(const String &p_svg_str, float scale, bool p_premult_alpha) {
+	return load_svg_from_buffer(p_svg_str.to_utf8_buffer(), scale, p_premult_alpha);
 }
 
 Error Image::load_ktx_from_buffer(const Vector<uint8_t> &p_array) {
