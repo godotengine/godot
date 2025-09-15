@@ -350,7 +350,7 @@ private:
 		PackedColorArray point_sh;
 		PackedInt32Array tetrahedra;
 		PackedInt32Array bsp_tree;
-		float specular_strength = 1.0;
+		float specular_intensity = 1.0;
 
 		struct BSP {
 			static const int32_t EMPTY_LEAF = INT32_MIN;
@@ -1016,8 +1016,8 @@ public:
 	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) override;
 	virtual RS::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) override;
 	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMode p_mode) override;
-	virtual float lightmap_get_specular_strength(RID p_lightmap) override;
-	virtual void lightmap_set_specular_strength(RID p_lightmap, float p_strength) override;
+	virtual float lightmap_get_specular_intensity(RID p_lightmap) override;
+	virtual void lightmap_set_specular_intensity(RID p_lightmap, float p_strength) override;
 
 	virtual float lightmap_get_probe_capture_update_speed() const override {
 		return lightmap_probe_capture_update_speed;

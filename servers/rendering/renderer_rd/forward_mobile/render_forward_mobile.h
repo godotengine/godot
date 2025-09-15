@@ -183,7 +183,7 @@ private:
 		float normal_xform[12];
 		float texture_size[2];
 		float exposure_normalization;
-		float specular_strength;
+		float specular_intensity;
 		float pad0;
 		uint32_t flags;
 		uint32_t pad1;

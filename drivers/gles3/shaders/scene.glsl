@@ -1383,7 +1383,7 @@ uniform lowp uint lightmap_slice;
 uniform highp vec4 lightmap_uv_scale;
 uniform float lightmap_exposure_normalization;
 uniform uint lightmap_shadowmask_mode;
-uniform float lightmap_specular_strength;
+uniform float lightmap_specular_intensity;
 
 #define SHADOWMASK_MODE_NONE uint(0)
 #define SHADOWMASK_MODE_REPLACE uint(1)
@@ -2326,7 +2326,7 @@ void main() {
 		sh_light += lm_light_l1p1 * n.x * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
 		ambient_light += sh_light;
 
-		if (lightmap_specular_strength > 0.0) {
+		if (lightmap_specular_intensity > 0.0) {
 			// Fake specular light to create some direct light specular lobes for directional lightmaps.
 			// https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/gdc2018-precomputedgiobalilluminationinfrostbite.pdf (slides 66-71)
 			vec3 l1_r = vec3(lm_light_l1p1.r, lm_light_l1n1.r, lm_light_l1_0.r);
@@ -2343,9 +2343,9 @@ void main() {
 			// Discard diffuse light from this fake light, as we're only interested in its specular light output.
 			vec3 diffuse_light_discarded = diffuse_light;
 
-			float specular_strength = length(l1) * lightmap_specular_strength * 150.0;
+			float specular_intensity = length(l1) * lightmap_specular_intensity * 150.0;
 
-			light_compute(normal, L_view, view, 0.0, sh_light, false, 1.0, f0, roughness, metallic, specular_strength, albedo, alpha, screen_uv,
+			light_compute(normal, L_view, view, 0.0, sh_light, false, 1.0, f0, roughness, metallic, specular_intensity, albedo, alpha, screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif

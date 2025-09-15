@@ -1747,7 +1747,7 @@ void main() {
 			sh_light += lm_light_l1p1 * n.x * lm_light_l0 * exposure_normalization * half(4.0);
 			ambient_light += sh_light;
 
-			if (lightmaps.data[ofs].specular_strength > 0.0) {
+			if (lightmaps.data[ofs].specular_intensity > 0.0) {
 				// Fake specular light to create some direct light specular lobes for directional lightmaps.
 				// https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/gdc2018-precomputedgiobalilluminationinfrostbite.pdf (slides 66-71)
 				hvec3 l1_r = hvec3(lm_light_l1p1.r, lm_light_l1n1.r, lm_light_l1_0.r);
@@ -1764,9 +1764,9 @@ void main() {
 				// Discard diffuse light from this fake light, as we're only interested in its specular light output.
 				hvec3 diffuse_light_discarded = diffuse_light;
 
-				float specular_strength = length(l1) * lightmaps.data[ofs].specular_strength * 10.0;
+				float specular_intensity = length(l1) * lightmaps.data[ofs].specular_intensity * 10.0;
 
-				light_compute(normal, L_view, view, saturateHalf(0.0), hvec3(sh_light), true, half(1.0), f0, roughness, metallic, half(specular_strength), albedo, alpha,
+				light_compute(normal, L_view, view, saturateHalf(0.0), hvec3(sh_light), true, half(1.0), f0, roughness, metallic, half(specular_intensity), albedo, alpha,
 						screen_uv, hvec3(1.0),
 #ifdef LIGHT_BACKLIGHT_USED
 						backlight,

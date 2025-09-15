@@ -218,7 +218,7 @@ struct Lightmap {
 	mat3 normal_xform;
 	vec2 light_texture_size;
 	float exposure_normalization;
-	float specular_strength;
+	float specular_intensity;
 	float pad0;
 	uint flags;
 	uint pad1;

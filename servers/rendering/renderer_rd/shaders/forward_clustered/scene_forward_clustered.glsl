@@ -1851,7 +1851,7 @@ void fragment_shader(in SceneData scene_data) {
 			sh_light += lm_light_l1p1 * n.x * (lm_light_l0 * en * 4.0);
 			ambient_light += sh_light;
 
-			if (lightmaps.data[ofs].specular_strength > 0.0) {
+			if (lightmaps.data[ofs].specular_intensity > 0.0) {
 				// Fake specular light to create some direct light specular lobes for directional lightmaps.
 				// https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/gdc2018-precomputedgiobalilluminationinfrostbite.pdf (slides 66-71)
 				vec3 l1_r = vec3(lm_light_l1p1.r, lm_light_l1n1.r, lm_light_l1_0.r);
@@ -1868,9 +1868,9 @@ void fragment_shader(in SceneData scene_data) {
 				// Discard diffuse light from this fake light, as we're only interested in its specular light output.
 				vec3 diffuse_light_discarded = diffuse_light;
 
-				float specular_strength = length(l1) * lightmaps.data[ofs].specular_strength * 10.0;
+				float specular_intensity = length(l1) * lightmaps.data[ofs].specular_intensity * 10.0;
 
-				light_compute(indirect_normal, L_view, normalize(view), 0.0, sh_light, false, 1.5, f0, roughness, metallic, specular_strength, albedo, alpha, screen_uv, energy_compensation,
+				light_compute(indirect_normal, L_view, normalize(view), 0.0, sh_light, false, 1.5, f0, roughness, metallic, specular_intensity, albedo, alpha, screen_uv, energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 						backlight,
 #endif

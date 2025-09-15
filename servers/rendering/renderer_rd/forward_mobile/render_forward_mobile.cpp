@@ -735,7 +735,7 @@ void RenderForwardMobile::_setup_lightmaps(const RenderDataRD *p_render_data, co
 		scene_state.lightmaps[i].pad0 = 0.0;
 		scene_state.lightmaps[i].pad1 = 0;
 		scene_state.lightmaps[i].pad2 = 0;
-		scene_state.lightmaps[i].specular_strength = light_storage->lightmap_get_specular_strength(lightmap);
+		scene_state.lightmaps[i].specular_intensity = light_storage->lightmap_get_specular_intensity(lightmap);
 	}
 	if (scene_state.lightmaps_used > 0) {
 		RD::get_singleton()->buffer_update(scene_state.lightmap_buffer, 0, sizeof(LightmapData) * scene_state.lightmaps_used, scene_state.lightmaps);
