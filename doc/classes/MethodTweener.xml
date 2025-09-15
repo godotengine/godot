@@ -11,6 +11,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="set_curve">
+			<return type="MethodTweener" />
+			<param index="0" name="curve" type="Curve" />
+			<description>
+				Sets the curve. If not set, the easing and transition from the [Tween] that contains this Tweener will be used.
+			</description>
+		</method>
 		<method name="set_delay">
 			<return type="MethodTweener" />
 			<param index="0" name="delay" type="float" />

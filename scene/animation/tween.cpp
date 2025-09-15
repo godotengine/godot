@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "tween.h"
+#include "tween.compat.inc"
 
 #include "scene/animation/easing_equations.h"
 #include "scene/main/node.h"
@@ -292,6 +293,15 @@ Tween::EaseType Tween::get_ease() const {
 	return default_ease;
 }
 
+Ref<Tween> Tween::set_curve(Ref<Curve> p_curve) {
+	default_curve = p_curve;
+	return this;
+}
+
+Ref<Curve> Tween::get_curve() const {
+	return default_curve;
+}
+
 Ref<Tween> Tween::parallel() {
 	parallel_enabled = true;
 	return this;
@@ -444,12 +454,25 @@ real_t Tween::run_equation(TransitionType p_trans_type, EaseType p_ease_type, re
 	return func(p_time, p_initial, p_delta, p_duration);
 }
 
-Variant Tween::interpolate_variant(const Variant &p_initial_val, const Variant &p_delta_val, double p_time, double p_duration, TransitionType p_trans, EaseType p_ease) {
+real_t Tween::run_equation_curve(Ref<Curve> p_curve, real_t p_time, real_t p_initial, real_t p_delta, real_t p_duration) {
+	if (p_duration == 0) {
+		// Special case to avoid dividing by 0 in equations.
+		return p_initial + p_delta;
+	}
+
+	return Math::lerp(p_initial, p_delta, p_curve->sample(p_time / p_duration));
+}
+
+Variant Tween::interpolate_variant(const Variant &p_initial_val, const Variant &p_delta_val, double p_time, double p_duration, TransitionType p_trans, EaseType p_ease, Ref<Curve> p_curve /* null */) {
 	ERR_FAIL_INDEX_V(p_trans, TransitionType::TRANS_MAX, Variant());
 	ERR_FAIL_INDEX_V(p_ease, EaseType::EASE_MAX, Variant());
 
 	Variant ret = Animation::add_variant(p_initial_val, p_delta_val);
-	ret = Animation::interpolate_variant(p_initial_val, ret, run_equation(p_trans, p_ease, p_time, 0.0, 1.0, p_duration), p_initial_val.is_string());
+	if (!p_curve.is_null()) {
+		ret = Animation::interpolate_variant(p_initial_val, ret, run_equation_curve(p_curve, p_time, 0.0, 1.0, p_duration), p_initial_val.is_string());
+	} else {
+		ret = Animation::interpolate_variant(p_initial_val, ret, run_equation(p_trans, p_ease, p_time, 0.0, 1.0, p_duration), p_initial_val.is_string());
+	}
 	return ret;
 }
 
@@ -489,11 +512,12 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "speed"), &Tween::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("set_trans", "trans"), &Tween::set_trans);
 	ClassDB::bind_method(D_METHOD("set_ease", "ease"), &Tween::set_ease);
+	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Tween::set_curve);
 
 	ClassDB::bind_method(D_METHOD("parallel"), &Tween::parallel);
 	ClassDB::bind_method(D_METHOD("chain"), &Tween::chain);
 
-	ClassDB::bind_static_method("Tween", D_METHOD("interpolate_value", "initial_value", "delta_value", "elapsed_time", "duration", "trans_type", "ease_type"), &Tween::interpolate_variant);
+	ClassDB::bind_static_method("Tween", D_METHOD("interpolate_value", "initial_value", "delta_value", "elapsed_time", "duration", "trans_type", "ease_type", "curve"), &Tween::interpolate_variant, DEFVAL(Ref<Curve>()));
 
 	ADD_SIGNAL(MethodInfo("step_finished", PropertyInfo(Variant::INT, "idx")));
 	ADD_SIGNAL(MethodInfo("loop_finished", PropertyInfo(Variant::INT, "loop_count")));
@@ -582,6 +606,11 @@ Ref<PropertyTweener> PropertyTweener::set_ease(Tween::EaseType p_ease) {
 	return this;
 }
 
+Ref<PropertyTweener> PropertyTweener::set_curve(Ref<Curve> p_curve) {
+	curve = p_curve;
+	return this;
+}
+
 Ref<PropertyTweener> PropertyTweener::set_custom_interpolator(const Callable &p_method) {
 	custom_method = p_method;
 	return this;
@@ -642,11 +671,11 @@ bool PropertyTweener::step(double &r_delta) {
 	double time = MIN(elapsed_time - delay, duration);
 	if (time < duration) {
 		if (custom_method.is_valid()) {
-			const Variant t = tween->interpolate_variant(0.0, 1.0, time, duration, trans_type, ease_type);
+			const Variant t = tween->interpolate_variant(0.0, 1.0, time, duration, trans_type, ease_type, curve);
 			double result = _get_custom_interpolated_value(t);
 			target_instance->set_indexed(property, Animation::interpolate_variant(initial_val, final_val, result));
 		} else {
-			target_instance->set_indexed(property, tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type));
+			target_instance->set_indexed(property, tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type, curve));
 		}
 		r_delta = 0;
 		return true;
@@ -671,6 +700,7 @@ void PropertyTweener::set_tween(const Ref<Tween> &p_tween) {
 	if (ease_type == Tween::EASE_MAX) {
 		ease_type = p_tween->get_ease();
 	}
+	curve = p_tween->get_curve();
 }
 
 void PropertyTweener::_bind_methods() {
@@ -679,6 +709,7 @@ void PropertyTweener::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("as_relative"), &PropertyTweener::as_relative);
 	ClassDB::bind_method(D_METHOD("set_trans", "trans"), &PropertyTweener::set_trans);
 	ClassDB::bind_method(D_METHOD("set_ease", "ease"), &PropertyTweener::set_ease);
+	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &PropertyTweener::set_curve);
 	ClassDB::bind_method(D_METHOD("set_custom_interpolator", "interpolator_method"), &PropertyTweener::set_custom_interpolator);
 	ClassDB::bind_method(D_METHOD("set_delay", "delay"), &PropertyTweener::set_delay);
 }
@@ -790,6 +821,11 @@ Ref<MethodTweener> MethodTweener::set_ease(Tween::EaseType p_ease) {
 	return this;
 }
 
+Ref<MethodTweener> MethodTweener::set_curve(Ref<Curve> p_curve) {
+	curve = p_curve;
+	return this;
+}
+
 bool MethodTweener::step(double &r_delta) {
 	if (finished) {
 		return false;
@@ -812,7 +848,7 @@ bool MethodTweener::step(double &r_delta) {
 	Variant current_val;
 	double time = MIN(elapsed_time - delay, duration);
 	if (time < duration) {
-		current_val = tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type);
+		current_val = tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type, curve);
 	} else {
 		current_val = final_val;
 	}
@@ -844,12 +880,14 @@ void MethodTweener::set_tween(const Ref<Tween> &p_tween) {
 	if (ease_type == Tween::EASE_MAX) {
 		ease_type = p_tween->get_ease();
 	}
+	curve = p_tween->get_curve();
 }
 
 void MethodTweener::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_delay", "delay"), &MethodTweener::set_delay);
 	ClassDB::bind_method(D_METHOD("set_trans", "trans"), &MethodTweener::set_trans);
 	ClassDB::bind_method(D_METHOD("set_ease", "ease"), &MethodTweener::set_ease);
+	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &MethodTweener::set_curve);
 }
 
 MethodTweener::MethodTweener(const Callable &p_callback, const Variant &p_from, const Variant &p_to, double p_duration) {
