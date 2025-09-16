@@ -54,7 +54,7 @@ StringName VisionOSVRInterface::get_name() const {
 }
 
 uint32_t VisionOSVRInterface::get_capabilities() const {
-	return XRInterface::XR_VR + XRInterface::XR_STEREO;
+	return XRInterface::XR_VR + XRInterface::XR_AR + XRInterface::XR_STEREO;
 }
 
 uint32_t VisionOSVRInterface::get_view_count() {
