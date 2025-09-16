@@ -699,7 +699,7 @@ static Vector<Vector2> retrieve_range_after_id(List<Vector2>::Element *start_ptr
 	return list;
 }
 
-static Vector4 generate_aabb_from_bbox(const PackedVector2Array &bbox) {
+static Vector4 generate_aabb(const PackedVector2Array &bbox) {
 	float min_x = INFINITY;
 	float min_y = INFINITY;
 	float max_x = -INFINITY;
@@ -797,24 +797,20 @@ static Variant polyline_intersections_sweep(const PackedVector2Array &pl1, const
 	return Variant::NIL; // No intersection
 }
 
-static void generate_aabbs_mbbox(const List<List<Vector2>::Element *> &mono_chain_lst, const PackedInt64Array &mono_chain_len_lst, Vector<PackedVector2Array> &res_bboxes, Vector<Pair<Vector4, const List<List<Vector2>::Element *>::Element *>> &res_aabbs) {
-	int idx = 0;
-	PackedVector2Array bbox;
+static Vector<Pair<Vector4, const List<List<Vector2>::Element *>::Element *>> generate_aabbs(const List<List<Vector2>::Element *> &mono_chain_lst) {
+	Vector<Pair<Vector4, const List<List<Vector2>::Element *>::Element *>> res_aabbs;
 	Pair<Vector4, const List<List<Vector2>::Element *>::Element *> aabb;
 	const List<List<Vector2>::Element *>::Element *iter_node = mono_chain_lst.front();
 	while (iter_node->next()) {
 		iter_node = iter_node->next();
-		if (mono_chain_len_lst[idx] > 2) {
-			bbox = generate_bbox_from_polyline(retrieve_list_from_id_range(iter_node->prev()->get(), iter_node->get()));
-		} else {
-			bbox = { iter_node->prev()->get()->get(), iter_node->get()->get() };
-		}
-		++idx;
-		res_bboxes.push_back(bbox);
 
-		aabb = Pair<Vector4, const List<List<Vector2>::Element *>::Element *>(generate_aabb_from_bbox(bbox), iter_node);
+		aabb = Pair<Vector4, const List<List<Vector2>::Element *>::Element *>(
+				generate_aabb(retrieve_list_from_id_range(iter_node->prev()->get(), iter_node->get())),
+				iter_node);
 		res_aabbs.push_back(aabb);
 	}
+
+	return res_aabbs;
 }
 
 // Returns an array of intersecting aabbs: (aabb1_idx, aabb9_idx)
@@ -888,10 +884,10 @@ static Vector<Vector2> monotonic_chain_rdp(Vector<Vector2> &pl, const float opti
 	List<List<Vector2>::Element *> mono_chain_lst = generate_mono_chains(result, mono_chain_len_lst);
 
 	// Find all possible intersections. Use AABBs to filter before doing precise checks.
-	Vector<PackedVector2Array> mono_chain_bbox_lst;
-	Vector<Pair<Vector4, const List<List<Vector2>::Element *>::Element *>> aabbs;
-	generate_aabbs_mbbox(mono_chain_lst, mono_chain_len_lst, mono_chain_bbox_lst, aabbs);
+	Vector<Pair<Vector4, const List<List<Vector2>::Element *>::Element *>> aabbs = generate_aabbs(mono_chain_lst);
 	Vector<Vector2i> aabb_collisions = find_intersections_sweep(aabbs);
+
+	Dictionary mono_chain_bbox_dict; // Store already created bbox's in case of future use
 
 	Vector<Vector<Pair<const List<List<Vector2>::Element *>::Element *, Vector2>>> possible_intersections;
 	for (Vector2i &aabb_collid : aabb_collisions) {
@@ -928,8 +924,13 @@ static Vector<Vector2> monotonic_chain_rdp(Vector<Vector2> &pl, const float opti
 			l2 = retrieve_range_after_id(ch1->get(), -split_idx);
 
 			// Step 6
-			// Need 3 points to create a bounding box
-			if (does_polyline_bboxes_collide(l1, mono_chain_bbox_lst[aabb_collid[1]])) { // Intersection Problem Checks
+			if (!mono_chain_bbox_dict.has(aabb_collid[1])) {
+				PackedVector2Array bbox = generate_bbox_from_polyline(
+						retrieve_list_from_id_range(ch2->prev()->get(), ch2->get()));
+				mono_chain_bbox_dict[aabb_collid[1]] = bbox;
+			}
+
+			if (does_polyline_bboxes_collide(l1, mono_chain_bbox_dict[aabb_collid[1]])) { // Intersection Problem Checks
 				// possible intersection between l1 and c2
 				Vector<Pair<const List<List<Vector2>::Element *>::Element *, Vector2>> intersection_vec;
 				intersection_vec.push_back(Pair<const List<List<Vector2>::Element *>::Element *, Vector2>(ch1, Vector2(1, split_idx)));
@@ -937,7 +938,7 @@ static Vector<Vector2> monotonic_chain_rdp(Vector<Vector2> &pl, const float opti
 				possible_intersections.push_back(intersection_vec);
 			}
 
-			if (does_polyline_bboxes_collide(l2, mono_chain_bbox_lst[aabb_collid[1]])) { // Intersection Problem Checks
+			if (does_polyline_bboxes_collide(l2, mono_chain_bbox_dict[aabb_collid[1]])) { // Intersection Problem Checks
 				// possible intersection between l2 and c2
 				Vector<Pair<const List<List<Vector2>::Element *>::Element *, Vector2>> intersection_vec;
 				intersection_vec.push_back(Pair<const List<List<Vector2>::Element *>::Element *, Vector2>(ch1, Vector2(2, split_idx)));
@@ -957,14 +958,20 @@ static Vector<Vector2> monotonic_chain_rdp(Vector<Vector2> &pl, const float opti
 			l2 = retrieve_range_after_id(ch2->get(), -split_idx);
 
 			// Step 6
-			if (does_polyline_bboxes_collide(l1, mono_chain_bbox_lst[aabb_collid[0]])) { // Intersection Problem Checks
+			if (!mono_chain_bbox_dict.has(aabb_collid[0])) {
+				PackedVector2Array bbox = generate_bbox_from_polyline(
+						retrieve_list_from_id_range(ch1->prev()->get(), ch1->get()));
+				mono_chain_bbox_dict[aabb_collid[0]] = bbox;
+			}
+
+			if (does_polyline_bboxes_collide(l1, mono_chain_bbox_dict[aabb_collid[0]])) { // Intersection Problem Checks
 				Vector<Pair<const List<List<Vector2>::Element *>::Element *, Vector2>> intersection_vec;
 				intersection_vec.push_back(Pair<const List<List<Vector2>::Element *>::Element *, Vector2>(ch2, Vector2(1, split_idx)));
 				intersection_vec.push_back(Pair<const List<List<Vector2>::Element *>::Element *, Vector2>(ch1, Vector2(0, 0)));
 				possible_intersections.push_back(intersection_vec);
 			}
 
-			if (does_polyline_bboxes_collide(l2, mono_chain_bbox_lst[aabb_collid[0]])) {
+			if (does_polyline_bboxes_collide(l2, mono_chain_bbox_dict[aabb_collid[0]])) {
 				Vector<Pair<const List<List<Vector2>::Element *>::Element *, Vector2>> intersection_vec;
 				intersection_vec.push_back(Pair<const List<List<Vector2>::Element *>::Element *, Vector2>(ch2, Vector2(2, split_idx)));
 				intersection_vec.push_back(Pair<const List<List<Vector2>::Element *>::Element *, Vector2>(ch1, Vector2(0, 0)));
