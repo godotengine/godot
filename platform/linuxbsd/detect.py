@@ -144,7 +144,7 @@ def configure(env: "SConsEnvironment"):
 
     if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
         env.extra_suffix += ".san"
-        env.Append(CCFLAGS=["-DSANITIZERS_ENABLED"])
+        env.Append(CPPDEFINES=["SANITIZERS_ENABLED"])
 
         if env["use_ubsan"]:
             env.Append(
