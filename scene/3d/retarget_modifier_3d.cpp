@@ -249,7 +249,7 @@ void RetargetModifier3D::remove_child_notify(Node *p_child) {
 
 void RetargetModifier3D::_validate_property(PropertyInfo &p_property) const {
 	if (use_global_pose) {
-		if (p_property.name == "enable_flags") {
+		if (p_property.name == "enable") {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
