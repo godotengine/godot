@@ -33,6 +33,7 @@
 
 #include "gdextension_spx_ext.h"
 #include "scene/2d/node_2d.h"
+#include "spx_path_finder.h"
 #include "spx_base_mgr.h"
 
 class SpxPen;
@@ -69,10 +70,16 @@ private:
 
 	Node *pure_sprite_root;
 
+	Ref<SpxPathFinder> path_finder;	
+
 	static Mutex lock;
 private:
 	SpxPen *_get_pen(GdObj id);
 	void _clear_debug_shapes();
+
+	//path finder
+	const GdVec2 default_grid_size{100, 100};
+	const GdVec2 default_cell_size{16, 16};
 
 public:
 	void on_awake() override;
@@ -124,7 +131,6 @@ public:
     void place_tile_with_layer(GdVec2 pos, GdString texture_path, GdInt layer_index);
     void erase_tile(GdVec2 pos);
 	void close_draw_tiles();
-	GdArray get_layer_point_path(GdVec2 p_from, GdVec2 p_to);
 	void exit_tilemap_editor_mode();
 	template<typename Func>
     void with_draw_tiles(Func f, const String error_msg = "The draw tiles node is null, first open it!!!") {
@@ -145,6 +151,11 @@ public:
 	// create sprites
 	void clear_pure_sprites();
 	void create_pure_sprite(GdString texture_path, GdVec2 pos, GdInt zindex);
+
+	// path finder
+	void setup_path_finder_with_size(GdVec2 grid_size, GdVec2 cell_size, GdBool with_debug);
+	void setup_path_finder();
+	GdArray find_path(GdVec2 p_from, GdVec2 p_to);
 };
 
 #endif // SPX_EXT_MGR_H
