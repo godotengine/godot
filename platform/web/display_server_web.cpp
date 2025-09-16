@@ -1004,7 +1004,7 @@ Vector<String> DisplayServerWeb::get_rendering_drivers_func() {
 
 // Clipboard
 void DisplayServerWeb::update_clipboard_callback(const char *p_text) {
-	String text = p_text;
+	String text = String::utf8(p_text);
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
