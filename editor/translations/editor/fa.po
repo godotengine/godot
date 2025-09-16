@@ -64,7 +64,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-06 20:46+0000\n"
+"PO-Revision-Date: 2025-09-10 19:04+0000\n"
 "Last-Translator: John Smith <pkafsharix@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
@@ -16563,6 +16563,13 @@ msgstr "نام پرونده نامعتبر است! ای‌پی‌کی اندرو
 msgid "Unsupported export format!"
 msgstr "چارچوب پشتیبانی نشدهٔ برون‌برد!"
 
+msgid ""
+"Trying to build from a gradle built template, but no version info for it "
+"exists. Please reinstall from the 'Project' menu."
+msgstr ""
+"در حال تلاش برای بیلد از قالبی ساخته‌شده با گریدل هستید، اما هیچ اطلاعات "
+"نسخه‌ای برای آن موجود نیست. لطفاً دوباره از منوی «پروژه» نصب کنید."
+
 msgid "Unable to overwrite res/*.xml files with project name."
 msgstr "امکان بازنویسی پرونده‌های res/*.xml با نام پروژه وجود ندارد."
 
@@ -17050,6 +17057,12 @@ msgstr ""
 "نخواهد کرد."
 
 msgid ""
+"Ancestor \"%s\" is a CanvasGroup, so this CanvasGroup will not function "
+"properly."
+msgstr ""
+"جد «%s» یک CanvasGroup است، بنابراین این CanvasGroup به درستی کار نخواهد کرد."
+
+msgid ""
 "Only one visible CanvasModulate is allowed per canvas.\n"
 "When there are more than one, only one of them will be active. Which one is "
 "undefined."
@@ -17214,6 +17227,15 @@ msgstr ""
 "یک گره PhysicalBone2D باید یک گره فرزند مبتنی بر Joint2D داشته باشد تا "
 "استخوان‌ها به هم متصل بمانند! لطفاً یک گره مبتنی بر Joint2D به عنوان فرزند به "
 "این گره اضافه کنید!"
+
+msgid ""
+"PhysicsBody2D will not work correctly on a non-interpolated branch of the "
+"SceneTree.\n"
+"Check the node's inherited physics_interpolation_mode."
+msgstr ""
+"PhysicsBody2D روی شاخه‌ای از SceneTree که بدون درونیابی است به‌درستی کار نخواهد "
+"کرد.\n"
+"حالت physics_interpolation_mode ارث‌بری‌شده از گره را بررسی کنید."
 
 msgid ""
 "Size changes to RigidBody2D will be overridden by the physics engine when "
@@ -17658,6 +17680,15 @@ msgid "Node A and Node B must be different PhysicsBody3Ds"
 msgstr "گره الف و گره ب باید PhysicsBody3Dهای متفاوت باشند"
 
 msgid ""
+"PhysicsBody3D will not work correctly on a non-interpolated branch of the "
+"SceneTree.\n"
+"Check the node's inherited physics_interpolation_mode."
+msgstr ""
+"PhysicsBody3D روی شاخه‌ای از SceneTree که بدون درونیابی است به‌درستی کار نخواهد "
+"کرد.\n"
+"حالت physics_interpolation_mode ارث‌بری‌شده از گره را بررسی کنید."
+
+msgid ""
 "Scale changes to RigidBody3D will be overridden by the physics engine when "
 "running.\n"
 "Please change the size in children collision shapes instead."
@@ -17932,6 +17963,19 @@ msgid "Button %d in %d x %d: alternative text must not be empty."
 msgstr "دکمه %d در %d × %d: متن جایگزین نباید خالی باشد."
 
 msgid ""
+"Ancestor \"%s\" clips its children, so this node will not be able to clip its "
+"children."
+msgstr ""
+"جد «%s» فرزندان خود را برش می‌دهد، بنابراین این گره قادر به برش فرزندانش "
+"نخواهد بود."
+
+msgid ""
+"Ancestor \"%s\" is a CanvasGroup, so this node will not be able to clip its "
+"children."
+msgstr ""
+"جد «%s» یک CanvasGroup است، بنابراین این گره قادر به برش فرزندانش نخواهد بود."
+
+msgid ""
 "This node was an instance of scene '%s', which was no longer available when "
 "this scene was loaded."
 msgstr ""
@@ -17993,6 +18037,9 @@ msgstr ""
 "یا فیزیک، رفتارهای متفاوتی از خود نشان دهند.\n"
 "توصیه می‌شود به جای استفاده از تایمر برای زمان‌های انتظار بسیار کم، از حلقه "
 "پردازش اسکریپت استفاده کنید."
+
+msgid "Drag-and-drop data"
+msgstr "داده کشیدن و رها کردن"
 
 msgid ""
 "The Viewport size must be greater than or equal to 2 pixels on both "
@@ -18323,6 +18370,9 @@ msgstr "حالت پیش‌فرض باید تنها یک‌بار تعریف شو
 msgid "'%s' must be placed within a '%s' block."
 msgstr "«%s» باید درون یک بلوک «%s» قرار گیرد."
 
+msgid "Undefined identifier '%s' in a case label."
+msgstr "شناسه «%s» در برچسب حالت تعریف نشده است."
+
 msgid "Expected an integer constant."
 msgstr "انتظار می‌رود که یک ثابت صحیح وارد شود."
 
@@ -18365,6 +18415,12 @@ msgid ""
 msgstr ""
 "انتظار می‌رفت یک شناسه پس از «%s» باشد که نوع سایه‌زن را مشخص کند. انواع معتبر: "
 "%s."
+
+msgid "Stencil mode reference value cannot be negative: '%s'."
+msgstr "شناسه «%s» در برچسب حالت تعریف نشده است."
+
+msgid "Stencil mode reference value cannot be greater than 255: '%s'."
+msgstr "مقدار مرجع حالت استنسیل نمی‌تواند بیشتر از ۲۵۵ باشد: «%s»."
 
 msgid "Expected a struct identifier."
 msgstr "شناسه ساختار انتظار می‌رفت."
@@ -18419,6 +18475,9 @@ msgstr "اشاره‌گر رنگ منبع فقط برای نوع‌های '%s'،
 
 msgid "Duplicated hint: '%s'."
 msgstr "راهنمای تکراری: '%s'."
+
+msgid "Hint '%s' should be preceded by '%s'."
+msgstr "راهنما «%s» باید پیش از «%s» قرار گیرد."
 
 msgid "Range hint is for '%s' and '%s' only."
 msgstr "اشاره‌گر بازه فقط برای '%s' و '%s' است."
