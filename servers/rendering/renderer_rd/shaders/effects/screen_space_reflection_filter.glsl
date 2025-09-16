@@ -6,143 +6,125 @@
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
-layout(rgba16f, set = 0, binding = 0) uniform restrict readonly image2D source_ssr;
-layout(r8, set = 0, binding = 1) uniform restrict readonly image2D source_radius;
-layout(rgba8, set = 1, binding = 0) uniform restrict readonly image2D source_normal;
-
-layout(rgba16f, set = 2, binding = 0) uniform restrict writeonly image2D dest_ssr;
-#ifndef VERTICAL_PASS
-layout(r8, set = 2, binding = 1) uniform restrict writeonly image2D dest_radius;
-#endif
-layout(r32f, set = 3, binding = 0) uniform restrict readonly image2D source_depth;
+layout(set = 0, binding = 0) uniform sampler2D source;
+layout(set = 0, binding = 1) uniform restrict writeonly image2D dest;
 
 layout(push_constant, std430) uniform Params {
-	vec4 proj_info;
-
-	bool orthogonal;
-	float edge_tolerance;
-	int increment;
-	uint view_index;
-
 	ivec2 screen_size;
-	bool vertical;
-	uint steps;
+	uint mip_level;
 }
 params;
 
-#include "screen_space_reflection_inc.glsl"
+shared vec4 cache[16][16];
 
-#define GAUSS_TABLE_SIZE 15
+const float WEIGHTS[7] = float[7](
+		0.07130343198685299,
+		0.1315141208431224,
+		0.18987923288883812,
+		0.21460642856237303,
+		0.18987923288883812,
+		0.1315141208431224,
+		0.07130343198685299);
 
-const float gauss_table[GAUSS_TABLE_SIZE + 1] = float[](
-		0.1847392078702266,
-		0.16595854345772326,
-		0.12031364177766891,
-		0.07038755277896766,
-		0.03322925565155569,
-		0.012657819729901945,
-		0.0038903040680094217,
-		0.0009646503390864025,
-		0.00019297087402915717,
-		0.000031139936308099136,
-		0.000004053309048174758,
-		4.255228059965837e-7,
-		3.602517634249573e-8,
-		2.4592560765896795e-9,
-		1.3534945386863618e-10,
-		0.0 //one more for interpolation
-);
-
-float gauss_weight(float p_val) {
-	float idxf;
-	float c = modf(max(0.0, p_val * float(GAUSS_TABLE_SIZE)), idxf);
-	int idx = int(idxf);
-	if (idx >= GAUSS_TABLE_SIZE + 1) {
-		return 0.0;
-	}
-
-	return mix(gauss_table[idx], gauss_table[idx + 1], c);
+float get_weight(vec4 c) {
+	return mix(clamp(params.mip_level * 0.2, 0.0, 1.0), 1.0, c.a);
 }
 
-#define M_PI 3.14159265359
+vec4 apply_gaus_horz(ivec2 local) {
+	vec4 c0 = cache[local.x - 3][local.y];
+	float w0 = WEIGHTS[0] * get_weight(c0);
 
-void do_filter(inout vec4 accum, inout float accum_radius, inout float divisor, ivec2 texcoord, ivec2 increment, vec3 p_pos, vec3 normal, float p_limit_radius) {
-	for (int i = 1; i < params.steps; i++) {
-		float d = float(i * params.increment);
-		ivec2 tc = texcoord + increment * i;
-		float depth = imageLoad(source_depth, tc).r;
-		vec3 view_pos = reconstructCSPosition(vec2(tc) + 0.5, depth);
-		vec3 view_normal = normalize(imageLoad(source_normal, tc).rgb * 2.0 - 1.0);
-		view_normal.y = -view_normal.y;
+	vec4 c1 = cache[local.x - 2][local.y];
+	float w1 = WEIGHTS[1] * get_weight(c1);
 
-		float r = imageLoad(source_radius, tc).r;
-		float radius = round(r * 255.0);
+	vec4 c2 = cache[local.x - 1][local.y];
+	float w2 = WEIGHTS[2] * get_weight(c2);
 
-		float angle_n = 1.0 - abs(dot(normal, view_normal));
-		if (angle_n > params.edge_tolerance) {
-			break;
-		}
+	vec4 c3 = cache[local.x][local.y];
+	float w3 = WEIGHTS[3] * get_weight(c3);
 
-		float angle = abs(dot(normal, normalize(view_pos - p_pos)));
+	vec4 c4 = cache[local.x + 1][local.y];
+	float w4 = WEIGHTS[4] * get_weight(c4);
 
-		if (angle > params.edge_tolerance) {
-			break;
-		}
+	vec4 c5 = cache[local.x + 2][local.y];
+	float w5 = WEIGHTS[5] * get_weight(c5);
 
-		if (d < radius) {
-			float w = gauss_weight(d / radius);
-			accum += imageLoad(source_ssr, tc) * w;
-#ifndef VERTICAL_PASS
-			accum_radius += r * w;
-#endif
-			divisor += w;
-		}
+	vec4 c6 = cache[local.x + 3][local.y];
+	float w6 = WEIGHTS[6] * get_weight(c6);
+
+	vec4 c = c0 * w0 + c1 * w1 + c2 * w2 + c3 * w3 + c4 * w4 + c5 * w5 + c6 * w6;
+	float w = w0 + w1 + w2 + w3 + w4 + w5 + w6;
+
+	if (w > 0.0) {
+		c /= w;
+	} else {
+		c = vec4(0.0);
 	}
+
+	return c;
+}
+
+shared vec4 temp_cache[8][16];
+
+vec4 apply_gaus_vert(ivec2 local) {
+	vec4 c0 = temp_cache[local.x][local.y - 3];
+	float w0 = WEIGHTS[0] * get_weight(c0);
+
+	vec4 c1 = temp_cache[local.x][local.y - 2];
+	float w1 = WEIGHTS[1] * get_weight(c1);
+
+	vec4 c2 = temp_cache[local.x][local.y - 1];
+	float w2 = WEIGHTS[2] * get_weight(c2);
+
+	vec4 c3 = temp_cache[local.x][local.y];
+	float w3 = WEIGHTS[3] * get_weight(c3);
+
+	vec4 c4 = temp_cache[local.x][local.y + 1];
+	float w4 = WEIGHTS[4] * get_weight(c4);
+
+	vec4 c5 = temp_cache[local.x][local.y + 2];
+	float w5 = WEIGHTS[5] * get_weight(c5);
+
+	vec4 c6 = temp_cache[local.x][local.y + 3];
+	float w6 = WEIGHTS[6] * get_weight(c6);
+
+	vec4 c = c0 * w0 + c1 * w1 + c2 * w2 + c3 * w3 + c4 * w4 + c5 * w5 + c6 * w6;
+	float w = w0 + w1 + w2 + w3 + w4 + w5 + w6;
+
+	if (w > 0.0) {
+		c /= w;
+	} else {
+		c = vec4(0.0);
+	}
+
+	return c;
+}
+
+vec4 get_sample(ivec2 pixel_pos) {
+	return textureLod(source, (vec2(pixel_pos) + 0.5) / params.screen_size, 0);
 }
 
 void main() {
-	// Pixel being shaded
-	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
+	ivec2 global = ivec2(gl_GlobalInvocationID.xy);
+	ivec2 local = ivec2(gl_LocalInvocationID.xy);
 
-	if (any(greaterThanEqual(ssC.xy, params.screen_size))) { //too large, do nothing
+	cache[local.x * 2 + 0][local.y * 2 + 0] = get_sample(global + local - 4 + ivec2(0, 0));
+	cache[local.x * 2 + 1][local.y * 2 + 0] = get_sample(global + local - 4 + ivec2(1, 0));
+	cache[local.x * 2 + 0][local.y * 2 + 1] = get_sample(global + local - 4 + ivec2(0, 1));
+	cache[local.x * 2 + 1][local.y * 2 + 1] = get_sample(global + local - 4 + ivec2(1, 1));
+
+	memoryBarrierShared();
+	barrier();
+
+	temp_cache[local.x][local.y * 2 + 0] = apply_gaus_horz(ivec2(local.x + 4, local.y * 2 + 0));
+	temp_cache[local.x][local.y * 2 + 1] = apply_gaus_horz(ivec2(local.x + 4, local.y * 2 + 1));
+
+	memoryBarrierShared();
+	barrier();
+
+	if (any(greaterThanEqual(global, params.screen_size))) {
 		return;
 	}
 
-	float base_contrib = gauss_table[0];
-
-	vec4 accum = imageLoad(source_ssr, ssC);
-
-	float accum_radius = imageLoad(source_radius, ssC).r;
-	float radius = accum_radius * 255.0;
-
-	float divisor = gauss_table[0];
-	accum *= divisor;
-	accum_radius *= divisor;
-#ifdef VERTICAL_PASS
-	ivec2 direction = ivec2(0, params.increment);
-#else
-	ivec2 direction = ivec2(params.increment, 0);
-#endif
-	float depth = imageLoad(source_depth, ssC).r;
-	vec3 pos = reconstructCSPosition(vec2(ssC.xy) + 0.5, depth);
-	vec3 normal = imageLoad(source_normal, ssC).xyz * 2.0 - 1.0;
-	normal = normalize(normal);
-	normal.y = -normal.y;
-
-	do_filter(accum, accum_radius, divisor, ssC.xy, direction, pos, normal, radius);
-	do_filter(accum, accum_radius, divisor, ssC.xy, -direction, pos, normal, radius);
-
-	if (divisor > 0.0) {
-		accum /= divisor;
-		accum_radius /= divisor;
-	} else {
-		accum = vec4(0.0);
-		accum_radius = 0.0;
-	}
-
-	imageStore(dest_ssr, ssC, accum);
-
-#ifndef VERTICAL_PASS
-	imageStore(dest_radius, ssC, vec4(accum_radius));
-#endif
+	imageStore(dest, global, apply_gaus_vert(local + ivec2(0, 4)));
 }

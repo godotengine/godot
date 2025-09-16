@@ -1311,6 +1311,7 @@ public:
 	PASS1RC(float, environment_get_ssr_fade_out, RID)
 	PASS1RC(float, environment_get_ssr_depth_tolerance, RID)
 
+	PASS1(environment_set_ssr_half_size, bool)
 	PASS1(environment_set_ssr_roughness_quality, RS::EnvironmentSSRRoughnessQuality)
 
 	// SSAO
