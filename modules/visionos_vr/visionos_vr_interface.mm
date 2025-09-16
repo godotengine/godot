@@ -77,7 +77,7 @@ bool VisionOSVRInterface::initialize() {
 	print_verbose("VisionOSVRInterface.initialize()");
 
 	if (initialized) {
-		ERR_PRINT("vision_vr_interface already initialized");
+		ERR_PRINT("VisionOSVRInterface already initialized");
 		return true;
 	}
 
