@@ -32,11 +32,12 @@
 #define SPX_AUDIO_H
 
 #include "core/templates/list.h"
+#include "core/templates/rb_map.h"
+#include "core/string/string_name.h"
 #include "gdextension_spx_ext.h"
-#include "scene/main/node.h"
 
 class AudioStreamPlayer2D;
-
+class Node;
 class SpxAudio {
 private:
 	RBMap<GdInt, AudioStreamPlayer2D *> aid_audios;
@@ -54,7 +55,7 @@ private:
 	void on_bus_dirty();
 	AudioStreamPlayer2D *_get_aid_audio(GdInt aid);
 public:
-	void on_create(GdObj id, Node *root);
+	void on_create(GdInt id, Node *root);
 	void on_destroy();
 	void on_update(float delta);
 
@@ -67,7 +68,7 @@ public:
 	void set_volume(GdFloat volume);
 	GdFloat get_volume();
 
-	void play(GdInt aid, GdString path);
+	void play(GdInt aid, GdString path, Node* owner = nullptr, GdFloat attenuation = 1.0f, GdFloat max_distance = 2000.0f);
 	void pause(GdInt aid);
 	void resume(GdInt aid);
 	void stop(GdInt aid);

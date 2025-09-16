@@ -35,7 +35,13 @@
 #include "scene/2d/audio_stream_player_2d.h"
 #include "spx_engine.h"
 #include "spx_res_mgr.h"
+#include "spx_camera_mgr.h"
+#include "spx_sprite_mgr.h"
+#include "spx_sprite.h"
+#include "scene/2d/camera_2d.h"
 
+#define cameraMgr SpxEngine::get_singleton()->get_camera()
+#define spriteMgr SpxEngine::get_singleton()->get_sprite()
 
 #define check_and_get_audio_v()                                               \
 	auto audio = _get_audio(obj);                                             \
@@ -186,10 +192,22 @@ GdFloat SpxAudioMgr::get_volume(GdObj obj) {
 }
 
 GdInt SpxAudioMgr::play(GdObj obj, GdString path) {
+	return play_with_attenuation(obj, path, 0, 2000, 1);
+}
+GdInt SpxAudioMgr::play_with_attenuation(GdObj obj, GdString path,GdObj owner_id, GdFloat attenuation ,GdFloat max_distance ) {
 	check_and_get_audio_r(0)
 	auto aid = ++g_audio_id;
 	aid_audios[aid] = audio;
-	audio->play(aid, path);
+	Node* owner = nullptr;
+	if (owner_id == -1) {
+		owner = static_cast<Node*>(cameraMgr->get_camera());
+	} else {
+		owner = static_cast<Node*>(spriteMgr->get_sprite(owner_id));
+	}
+	if(owner == nullptr){
+		owner = static_cast<Node*>(root);
+	}
+	audio->play(aid, path, owner, attenuation, max_distance);
 	return aid;
 }
 

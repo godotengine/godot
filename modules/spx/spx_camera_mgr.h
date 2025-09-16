@@ -44,10 +44,9 @@ public:
 
 private:
 	Camera2D *camera = nullptr;
-
 public:
 	void on_awake() override;
-
+	Camera2D * get_camera(){ return camera; }
 public:
 	GdVec2 get_camera_position();
 	void set_camera_position(GdVec2 position);
