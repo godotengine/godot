@@ -3588,15 +3588,14 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 			path = script_info["path"];
 		}
 
-		if (!FileAccess::exists(path)) {
-			if (script_editor_cache->has_section(path)) {
-				script_editor_cache->erase_section(path);
-			}
-			continue;
-		}
-		loaded_scripts.insert(path);
+		bool built_in = !path.is_resource_file();
 
-		if (extensions.find(path.get_extension())) {
+		if (extensions.find(path.get_extension()) || built_in) {
+			if (built_in) {
+				String res_path = path.get_slice("::", 0);
+				EditorNode::get_singleton()->load_scene_or_resource(res_path, false, false);
+			}
+
 			Ref<Resource> scr = ResourceLoader::load(path);
 			if (scr.is_null()) {
 				continue;
@@ -3614,6 +3613,8 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 				continue;
 			}
 		}
+
+		loaded_scripts.insert(path);
 
 		if (!script_info.is_empty()) {
 			ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(tab_container->get_tab_count() - 1));
@@ -3689,9 +3690,6 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
 		if (se) {
 			String path = se->get_edited_resource()->get_path();
-			if (!path.is_resource_file()) {
-				continue;
-			}
 
 			if (tab_container->get_current_tab_control() == tab_container->get_tab_control(i)) {
 				selected_script = path;
