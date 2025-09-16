@@ -332,12 +332,12 @@ void Variant::get_constructor_list(Type p_type, List<MethodInfo> *r_list) {
 
 	for (int i = 0; i < get_constructor_count(p_type); i++) {
 		int ac = get_constructor_argument_count(p_type, i);
-		mi.arguments.clear();
+		mi.arguments.resize(ac);
 		for (int j = 0; j < ac; j++) {
 			PropertyInfo arg;
 			arg.name = get_constructor_argument_name(p_type, i, j);
 			arg.type = get_constructor_argument_type(p_type, i, j);
-			mi.arguments.push_back(arg);
+			mi.arguments.set(j, arg);
 		}
 		r_list->push_back(mi);
 	}

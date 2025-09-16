@@ -576,8 +576,10 @@ Array Signal::get_connections() const {
 	obj->get_signal_connection_list(name, &connections);
 
 	Array arr;
+	arr.resize(connections.size());
+	int idx = 0;
 	for (const Object::Connection &E : connections) {
-		arr.push_back(E);
+		arr.set(idx++, E);
 	}
 	return arr;
 }

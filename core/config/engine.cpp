@@ -157,8 +157,9 @@ static Array array_from_info(const char *const *info_list) {
 
 static Array array_from_info_count(const char *const *info_list, int info_count) {
 	Array arr;
+	arr.resize(info_count);
 	for (int i = 0; i < info_count; i++) {
-		arr.push_back(String::utf8(info_list[i]));
+		arr.set(i, String::utf8(info_list[i]));
 	}
 	return arr;
 }
@@ -176,22 +177,24 @@ Dictionary Engine::get_author_info() const {
 
 TypedArray<Dictionary> Engine::get_copyright_info() const {
 	TypedArray<Dictionary> components;
+	components.resize(COPYRIGHT_INFO_COUNT);
 	for (int component_index = 0; component_index < COPYRIGHT_INFO_COUNT; component_index++) {
 		const ComponentCopyright &cp_info = COPYRIGHT_INFO[component_index];
 		Dictionary component_dict;
 		component_dict["name"] = String::utf8(cp_info.name);
 		Array parts;
+		parts.resize(cp_info.part_count);
 		for (int i = 0; i < cp_info.part_count; i++) {
 			const ComponentCopyrightPart &cp_part = cp_info.parts[i];
 			Dictionary part_dict;
 			part_dict["files"] = array_from_info_count(cp_part.files, cp_part.file_count);
 			part_dict["copyright"] = array_from_info_count(cp_part.copyright_statements, cp_part.copyright_count);
 			part_dict["license"] = String::utf8(cp_part.license);
-			parts.push_back(part_dict);
+			parts.set(i, part_dict);
 		}
 		component_dict["parts"] = parts;
 
-		components.push_back(component_dict);
+		components.set(component_index, component_dict);
 	}
 	return components;
 }
