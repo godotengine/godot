@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2025-08-17 11:00+0000\n"
+"PO-Revision-Date: 2025-09-14 10:01+0000\n"
 "Last-Translator: Aindriú Mac Giolla Eoin <aindriu80@gmail.com>\n"
 "Language-Team: Irish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ga/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : (n>2 && n<7) ? 2 :(n>6 "
 "&& n<11) ? 3 : 4;\n"
-"X-Generator: Weblate 5.13\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "Díshuiteáil"
@@ -195,6 +195,12 @@ msgstr "Ionchur MIDI ar chainéal=%s message=%s"
 msgid "Input Event with Shortcut=%s"
 msgstr "Teagmhas Ionchurtha le aicearra=%s"
 
+msgid " or "
+msgstr " nó "
+
+msgid "Action has no bound inputs"
+msgstr "Níl aon ionchur ceangailte ag an ngníomh"
+
 msgid "Accept"
 msgstr "Glac leis"
 
@@ -242,6 +248,9 @@ msgstr "Cóipeáil"
 
 msgid "Paste"
 msgstr "Greamaigh"
+
+msgid "Toggle Tab Focus Mode"
+msgstr "Mód Fócais Tab a Athrú"
 
 msgid "Undo"
 msgstr "Cealaigh"
@@ -360,6 +369,12 @@ msgstr "Nóid Dhúblacha"
 msgid "Delete Nodes"
 msgstr "Scrios Nóid"
 
+msgid "Follow Input Port Connection"
+msgstr "Lean an Nasc Port Ionchuir"
+
+msgid "Follow Output Port Connection"
+msgstr "Lean an Ceangal Calafoirt Aschuir"
+
 msgid "Go Up One Level"
 msgstr "Téigh Suas Leibhéal Amháin"
 
@@ -371,6 +386,15 @@ msgstr "Taispeáin Folaithe"
 
 msgid "Swap Input Direction"
 msgstr "Babhtáil Treo Ionchurtha"
+
+msgid "Start Unicode Character Input"
+msgstr "Tosaigh Ionchur Carachtar Unicode"
+
+msgid "ColorPicker: Delete Preset"
+msgstr "Roghnóir Dathanna: Scrios Réamhshocrú"
+
+msgid "Accessibility: Keyboard Drag and Drop"
+msgstr "Inrochtaineacht: Tarraing agus Scaoil an Méarchláir"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Ionchur neamhbhailí %d (gan rith) sa slonn"
@@ -471,6 +495,9 @@ msgstr "Cuir Pointe Bezier Leis"
 msgid "Move Bezier Points"
 msgstr "Bog Pointí Bezier"
 
+msgid "Scale Bezier Points"
+msgstr "Scála Pointí Bezier"
+
 msgid "Animation Duplicate Keys"
 msgstr "Eochracha Dúblacha Beochana"
 
@@ -560,6 +587,9 @@ msgstr "Scrios pointí."
 msgid "Enable snap and show grid."
 msgstr "Cumasaigh léim agus taispeáin greille."
 
+msgid "Grid Step"
+msgstr "Céim Eangaí"
+
 msgid "Sync:"
 msgstr "Sioncronaigh:"
 
@@ -569,8 +599,17 @@ msgstr "Cumasc:"
 msgid "Point"
 msgstr "Pointe"
 
+msgid "Blend Value"
+msgstr "Luach Cumaisc"
+
 msgid "Open Editor"
 msgstr "Oscail Eagarthóir"
+
+msgid "Min"
+msgstr "Íosmhéid"
+
+msgid "Max"
+msgstr "Uasmhéid"
 
 msgid "Value"
 msgstr "Luach"
@@ -610,6 +649,30 @@ msgstr "Scrios pointí agus triantáin."
 
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Gin triantáin chumaisc go huathoibríoch (in ionad de láimh)"
+
+msgid "Grid X Step"
+msgstr "Céim Eangach X"
+
+msgid "Grid Y Step"
+msgstr "Céim Y Eangach"
+
+msgid "Blend X Value"
+msgstr "Meascán Luach X"
+
+msgid "Max Y"
+msgstr "Uasmhéid Y"
+
+msgid "Y Value"
+msgstr "Uasmhéid Y"
+
+msgid "Min Y"
+msgstr "Íosmhéid Y"
+
+msgid "Min X"
+msgstr "Íosmhéid X"
+
+msgid "X Value"
+msgstr "Luach X"
 
 msgid "Parameter Changed: %s"
 msgstr "Athraíodh an paraiméadar: %s"
@@ -704,6 +767,24 @@ msgstr "Inbhéartaigh"
 msgid "Clear"
 msgstr "Glan"
 
+msgid "Start of Animation"
+msgstr "Tús na Beochana"
+
+msgid "End of Animation"
+msgstr "Deireadh na Beochana"
+
+msgid "Set Custom Timeline from Marker"
+msgstr "Socraigh Amchlár Saincheaptha ón Marcóir"
+
+msgid "Select Markers"
+msgstr "Roghnaigh Marcóirí"
+
+msgid "Start Marker"
+msgstr "Marcóir Tosaigh"
+
+msgid "End Marker"
+msgstr "Marcóir Deiridh"
+
 msgid "Library Name:"
 msgstr "Ainm na Leabharlainne:"
 
@@ -789,6 +870,42 @@ msgstr "Sábháil leabharlann beochana i gcomhad: %s"
 
 msgid "Save Animation to File: %s"
 msgstr "Sábháil Beochan i gComhad: %s"
+
+msgid ""
+"The file you selected is an imported scene from a 3D model such as glTF or "
+"FBX.\n"
+"\n"
+"In Godot, 3D models can be imported as either scenes or animation libraries, "
+"which is why they show up here.\n"
+"\n"
+"If you want to use animations from this 3D model, open the Advanced Import "
+"Settings\n"
+"dialog and save the animations using Actions... -> Set Animation Save Paths,\n"
+"or import the whole scene as a single AnimationLibrary in the Import dock."
+msgstr ""
+"Is radharc allmhairithe ó mhúnla 3T ar nós glTF nó FBX an comhad a roghnaigh "
+"tú.\n"
+"\n"
+"I Godot, is féidir samhlacha 3T a allmhairiú mar radhairc nó mar leabharlanna "
+"beochana, agus is é sin an fáth a thaispeántar iad anseo.\n"
+"\n"
+"Más mian leat beochana ón tsamhail 3T seo a úsáid, oscail an dialóg Socruithe "
+"Iompórtála Ardleibhéil\n"
+"agus sábháil na beochana ag baint úsáide as Gníomhartha... -> Socraigh Cosáin "
+"Sábháil Beochana,\n"
+"nó allmhairigh an radharc iomlán mar AnimationLibrary aonair sa duga "
+"Iompórtála."
+
+msgid ""
+"The file you selected is not a valid AnimationLibrary.\n"
+"\n"
+"If the animations you want are inside of this file, save them to a separate "
+"file first."
+msgstr ""
+"Ní AnimationLibrary bailí an comhad a roghnaigh tú.\n"
+"\n"
+"Más rud é go bhfuil na beochana atá uait taobh istigh den chomhad seo, "
+"sábháil iad i gcomhad ar leithligh ar dtús."
 
 msgid "Some of the selected libraries were already added to the mixer."
 msgstr ""
@@ -948,6 +1065,21 @@ msgstr "Ainm Beochana Dúblach:"
 msgid "Onion skinning requires a RESET animation."
 msgstr "Éilíonn skinning oinniún beochan ATHSHOCRAIGH."
 
+msgid "Play Animation Backwards"
+msgstr "Seinn Beochan Ar Ais"
+
+msgid "Play Animation Backwards from End"
+msgstr "Seinn Beochan Ar Ais Ón Deireadh"
+
+msgid "Pause/Stop Animation"
+msgstr "Sos/Stop Beochan"
+
+msgid "Play Animation from Start"
+msgstr "Seinn Beochan ón Tús"
+
+msgid "Play Animation"
+msgstr "Seinn Beochan"
+
 msgid "Animation position (in seconds)."
 msgstr "Suíomh beochana (i soicindí)."
 
@@ -1038,6 +1170,12 @@ msgstr "Amanna Cumaisc:"
 msgid "Next (Auto Queue):"
 msgstr "Ar Aghaidh (Scuaine Uathoibríoch):"
 
+msgid "Go to Next Keyframe"
+msgstr "Téigh go dtí an chéad Eochairfhráma Eile"
+
+msgid "Go to Previous Keyframe"
+msgstr "Téigh go dtí an Eochairfhráma Roimhe Seo"
+
 msgid "Toggle Animation Bottom Panel"
 msgstr "Scoránaigh an Painéal Bun Beochana"
 
@@ -1090,6 +1228,9 @@ msgstr ""
 "RMB: Cuir nód leis ag an suíomh cliceáil.\n"
 "Shift + LMB + Tarraing: Ceangail an nód roghnaithe le nód eile nó cruthaíonn "
 "sé nód nua má roghnaíonn tú limistéar gan nóid."
+
+msgid "Select and move nodes."
+msgstr "Roghnaigh agus bog nóid."
 
 msgid "Create new nodes."
 msgstr "Cruthaigh nóid nua."
@@ -1151,6 +1292,36 @@ msgstr "Athraigh Fad na beochana"
 msgid "Change Animation Loop"
 msgstr "Athraigh Lúb Beochana"
 
+msgid ""
+"Can't change loop mode on animation instanced from an imported scene.\n"
+"\n"
+"To change this animation's loop mode, navigate to the scene's Advanced Import "
+"settings and select the animation.\n"
+"You can then change the loop mode from the inspector menu."
+msgstr ""
+"Ní féidir an modh lúb a athrú ar bheochan a tionscnaíodh ó radharc "
+"allmhairithe.\n"
+"\n"
+"Chun modh lúb an bheochana seo a athrú, téigh chuig socruithe Iompórtála "
+"Ardleibhéil an radhairc agus roghnaigh an beochan.\n"
+"Ansin is féidir leat an modh lúb a athrú ón roghchlár cigire."
+
+msgid "Can't change loop mode on animation instanced from an imported resource."
+msgstr ""
+"Ní féidir mód lúb a athrú ar bheochan a eisíodh ó acmhainn allmhairithe."
+
+msgid ""
+"Can't change loop mode on animation embedded in another scene.\n"
+"\n"
+"You must open this scene and change the animation's loop mode from there."
+msgstr ""
+"Ní féidir mód lúb a athrú ar bheochan atá leabaithe i radharc eile.\n"
+"\n"
+"Ní mór duit an radharc seo a oscailt agus mód lúb na beochana a athrú as sin."
+
+msgid "Can't change loop mode on animation embedded in another resource."
+msgstr "Ní féidir mód lúb a athrú ar bheochan atá leabaithe in acmhainn eile."
+
 msgid "Property Track..."
 msgstr "Rian Maoine..."
 
@@ -1184,6 +1355,15 @@ msgstr "Fad beochana (frámaí)"
 msgid "Animation length (seconds)"
 msgstr "Fad beochana (soicindí)"
 
+msgid "Select a new track by type to add to this animation."
+msgstr "Roghnaigh rian nua de réir cineáil le cur leis an mbeochan seo."
+
+msgid "Filter Tracks"
+msgstr "Scag Rianta"
+
+msgid "Filter tracks by entering part of their node name or property."
+msgstr "Scag rianta trí chuid dá n-ainm nó dá maoin a iontráil."
+
 msgid "Animation Looping"
 msgstr "Lúbadh Beochana"
 
@@ -1201,6 +1381,9 @@ msgstr "Athraigh Conair an Amhráin"
 
 msgid "Toggle this track on/off."
 msgstr "Scoránaigh an rian seo ar/as."
+
+msgid "Select node in scene."
+msgstr "Roghnaigh nód sa radharc."
 
 msgid "Use Blend"
 msgstr "Úsáid Cumasc"
@@ -1298,6 +1481,9 @@ msgstr "Clamp Lúb Interp"
 msgid "Wrap Loop Interp"
 msgstr "Timfhilleadh Lúb Interp"
 
+msgid "Go to Definition"
+msgstr "Téigh go dtí an Sainmhíniú"
+
 msgid "Insert Key..."
 msgstr "Ionsáigh Eochair..."
 
@@ -1367,6 +1553,9 @@ msgstr ""
 
 msgid "property '%s'"
 msgstr "Maoin '%s'"
+
+msgid "Nearest FPS: %d"
+msgstr "An FPS is gaire: %d"
 
 msgid "Change Animation Step"
 msgstr "Athraigh Céim Beochana"
@@ -1532,14 +1721,53 @@ msgstr "Seinnteoir Neamhghníomhach"
 msgid "Warning: AnimationPlayer is inactive"
 msgstr "Rabhadh: Tá AnimationPlayer neamhghníomhach"
 
+msgid "Bezier Default Mode:"
+msgstr "Mód Réamhshocraithe Bezier:"
+
+msgid "Free"
+msgstr "Saor in aisce"
+
+msgid "Balanced"
+msgstr "Cothrom"
+
+msgid "Mirrored"
+msgstr "Scáthánaithe"
+
+msgid "Set the default behavior of new bezier keys."
+msgstr "Socraigh iompar réamhshocraithe eochracha bezier nua."
+
 msgid "Toggle between the bezier curve editor and track editor."
 msgstr "Scoránaigh idir an t-eagarthóir cuar bezier agus eagarthóir rian."
+
+msgid "Toggle method names"
+msgstr "Athraigh ainmneacha modhanna"
+
+msgid "Toggle function names in the track editor."
+msgstr "Athraigh ainmneacha feidhme san eagarthóir rianta."
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Ná taispeáin ach rianta ó nóid a roghnaíodh i gcrann."
 
+msgid ""
+"Sort tracks/groups alphabetically.\n"
+"If disabled, tracks are shown in the order they are added and can be "
+"reordered using drag-and-drop."
+msgstr ""
+"Sórtáil rianta/grúpaí in ord aibítre.\n"
+"Má tá sé díchumasaithe, taispeántar rianta san ord ina gcuirtear leis iad "
+"agus is féidir iad a athordú trí tharraingt agus scaoil."
+
 msgid "Group tracks by node or display them as plain list."
 msgstr "Grúpáil rianta de réir nód nó taispeáin iad mar liosta simplí."
+
+msgid "Apply snapping to timeline cursor."
+msgstr "Cuir snapáil i bhfeidhm ar chúrsóir an ama ama."
+
+msgid "Apply snapping to selected key(s)."
+msgstr "Cuir snapáil i bhfeidhm ar an eochrach/na heochracha roghnaithe."
+
+msgid "Apply snapping to the nearest integer FPS."
+msgstr "Cuir snapáil i bhfeidhm ar an slánuimhir FPS is gaire."
 
 msgid "Animation step value."
 msgstr "Luach céim beochana."
@@ -1550,8 +1778,20 @@ msgstr "Soicind"
 msgid "FPS"
 msgstr "CCT"
 
+msgid "Snap Mode"
+msgstr "Mód Snap"
+
+msgid "Zoom"
+msgstr "Zúmáil"
+
 msgid "Fit to panel"
 msgstr "Oiriúnaigh don phainéal"
+
+msgid "Auto Fit"
+msgstr "Oiriúnú Uathoibríoch"
+
+msgid "Auto Fit Bezier"
+msgstr "Feistiú Uathoibríoch Bezier"
 
 msgid "Edit"
 msgstr "Cuir in eagar"
@@ -1619,6 +1859,12 @@ msgstr "Beochan Ghlantacháin (gan aon chealú)..."
 msgid "Pick a node to animate:"
 msgstr "Roghnaigh nód le beochan:"
 
+msgid "Track Property"
+msgstr "Maoin Rianaithe"
+
+msgid "Method Key"
+msgstr "Eochair Mhodha"
+
 msgid "Use Bezier Curves"
 msgstr "Úsáid Cuaráin Bezier"
 
@@ -1660,6 +1906,9 @@ msgstr "Beochan(í) Glantacháin (NÍL UNDO!)"
 
 msgid "Clean-Up"
 msgstr "Glantachán"
+
+msgid "Scale Ratio"
+msgstr "Cóimheas Scála"
 
 msgid "Scale Ratio:"
 msgstr "Cóimheas Scála:"
@@ -1764,6 +2013,69 @@ msgstr "Cóipeáil an Roghnúchán"
 msgid "Animation Change Keyframe Time"
 msgstr "Athrú Beochana Eochairfhráma Ama"
 
+msgid "Marker name is read-only in the inspector."
+msgstr "Is féidir ainm an mharcóra a léamh amháin sa chigire."
+
+msgid ""
+"A marker's name can only be changed by right-clicking it in the animation "
+"editor and selecting \"Rename Marker\", in order to make sure that marker "
+"names are all unique."
+msgstr ""
+"Ní féidir ainm marcóra a athrú ach trí chliceáil ar dheis air san eagarthóir "
+"beochana agus \"Athainmnigh Marcóir\" a roghnú, chun a chinntiú go bhfuil "
+"ainmneacha na marcóirí uile uathúil."
+
+msgid "Insert Marker..."
+msgstr "Cuir Marcóir Isteach..."
+
+msgid "Rename Marker"
+msgstr "Athainmnigh Marcóir"
+
+msgid "Delete Marker(s)"
+msgstr "Scrios Marcóir(í)"
+
+msgid "Show All Marker Names"
+msgstr "Taispeáin Ainmneacha na Marcóirí Uile"
+
+msgid "Marker:"
+msgstr "Marcóir:"
+
+msgid "Animation Move Markers"
+msgstr "Marcóirí Bogtha Beochana"
+
+msgid "Animation Delete Markers"
+msgstr "Marcóirí Scriosta Beochana"
+
+msgid "Marker '%s' already exists!"
+msgstr "Tá an marcóir '%s' ann cheana féin!"
+
+msgid "Add Marker Key"
+msgstr "Cuir Eochair Marcóra leis"
+
+msgid "Empty marker names are not allowed."
+msgstr "Ní cheadaítear ainmneacha folamh marcóirí."
+
+msgid "Insert Marker"
+msgstr "Cuir Marcóir Isteach"
+
+msgid "Marker Name"
+msgstr "Ainm an Mharcóra"
+
+msgid "Marker Color"
+msgstr "Dath Marcóra"
+
+msgid "Change Marker Name:"
+msgstr "Athraigh Ainm an Mharcóra:"
+
+msgid "Edit Marker Color"
+msgstr "Cuir Dath an Mharcóra in Eagar"
+
+msgid "Multi Edit Marker Color"
+msgstr "Dath Marcóra Il-Eagarthóireachta"
+
+msgid "Animation Change Marker Time"
+msgstr "Am Marcóra Athraithe Beochana"
+
 msgid "Add Audio Track Clip"
 msgstr "Cuir Gearrthóg Rian Fuaime Leis"
 
@@ -1784,6 +2096,15 @@ msgstr "BeochanTreeName"
 
 msgid "Toggle AnimationTree Bottom Panel"
 msgstr "Scoránaigh BeochanTree Bottom Panel"
+
+msgid "Open asset details"
+msgstr "Oscail sonraí sócmhainne"
+
+msgid "Title"
+msgstr "Teideal"
+
+msgid "Category"
+msgstr "Catagóir"
 
 msgid "Author"
 msgstr "Údar"
@@ -2008,6 +2329,9 @@ msgstr "Tacaíocht"
 msgid "Assets ZIP File"
 msgstr "Comhad ZIP Sócmhainní"
 
+msgid "AssetLib"
+msgstr "Leabharlann Sócmhainní"
+
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr ""
 "Earráid agus comhad sócmhainne á oscailt le haghaidh \"%s\" (ní i bhformáid "
@@ -2078,14 +2402,23 @@ msgstr ""
 msgid "Contents of the asset:"
 msgstr "Inneachar na sócmhainne:"
 
+msgid "Source Files"
+msgstr "Comhaid Foinse"
+
 msgid "Installation preview:"
 msgstr "Réamhamharc suiteála:"
+
+msgid "Destination Files"
+msgstr "Comhaid Ceann Scríbe"
 
 msgid "Configure Asset Before Installing"
 msgstr "Cumraigh sócmhainn roimh shuiteáil"
 
 msgid "Audio Preview Play/Pause"
 msgstr "Seinn Réamhamhairc Fuaime / Sos"
+
+msgid "Play"
+msgstr "Seinn"
 
 msgid "Stop"
 msgstr "Stop"
@@ -2126,6 +2459,9 @@ msgstr "Scrios Maisíocht Bus"
 msgid "Drag & drop to rearrange."
 msgstr "Tarraing & scaoil chun athshocrú a dhéanamh."
 
+msgid "Track Name"
+msgstr "Ainm an Rian"
+
 msgid "Solo"
 msgstr "Níl ann ach"
 
@@ -2137,6 +2473,18 @@ msgstr "Seachbhóthar"
 
 msgid "Volume"
 msgstr "Imleabhar"
+
+msgid "Channel %d, Left VU"
+msgstr "Cainéal %d, VU Clé"
+
+msgid "Channel %d, Right VU"
+msgstr "Cainéal %d, VU ar dheis"
+
+msgid "Effects"
+msgstr "Éifeachtaí"
+
+msgid "Send"
+msgstr "Seol"
 
 msgid "Bus Options"
 msgstr "Roghanna Bus"
@@ -2371,8 +2719,29 @@ msgstr "Saincheap Cásanna Rith..."
 msgid "Set %s"
 msgstr "Socraigh %s"
 
+msgid "Set %s on %d objects"
+msgstr "Socraigh %s ar %d réad"
+
+msgid "Remote %s: %d"
+msgstr "%s iargúlta: %d"
+
+msgid "Remote %s (%d Selected)"
+msgstr "Cianda %s (%d Roghnaithe)"
+
+msgid "Session %d"
+msgstr "Seisiún %d"
+
 msgid "Debug"
 msgstr "Dífhabhtú"
+
+msgid ""
+"Some remote nodes were not selected, as the configured maximum selection is "
+"%d. This can be changed at \"debugger/max_node_selection\" in the Editor "
+"Settings."
+msgstr ""
+"Níor roghnaíodh roinnt nóid iargúlta, toisc gurb é %d an rogha uasta "
+"cumraithe. Is féidir é seo a athrú ag \"debugger/max_node_selection\" i "
+"Socruithe an Eagarthóra."
 
 msgid "Save Branch as Scene..."
 msgstr "Sábháil an Brainse mar Radharc..."
@@ -2404,6 +2773,15 @@ msgid ""
 msgstr ""
 "Ní gá ach nód amháin a roghnú chun an brainse a shábháil mar radharc, ach "
 "roghnaigh tú nóid %d."
+
+msgid "Expression to evaluate"
+msgstr "Slonn le meastóireacht"
+
+msgid "Clear on Run"
+msgstr "Glan ar Rith"
+
+msgid "Evaluate"
+msgstr "Déan measúnú"
 
 msgid "Updating assets on target device:"
 msgstr "Sócmhainní a nuashonrú ar an spriocghléas:"
@@ -2440,6 +2818,9 @@ msgstr "Roghnaigh mír amháin nó níos mó ón liosta chun an graf a thaispeá
 
 msgid "Start"
 msgstr "Tosaigh"
+
+msgid "Autostart"
+msgstr "Uaththosú"
 
 msgid "Measure:"
 msgstr "Beart:"
@@ -2571,6 +2952,9 @@ msgstr "RAM Físe"
 msgid "Skip Breakpoints"
 msgstr "Ná Bac le Brisphointí"
 
+msgid "Ignore Error Breaks"
+msgstr "Déan neamhaird de Shosanna Earráide"
+
 msgid "Thread:"
 msgstr "Snáithe:"
 
@@ -2589,6 +2973,9 @@ msgstr "Leathnaigh Gach Rud"
 msgid "Collapse All"
 msgstr "Laghdaigh Gach Rud"
 
+msgid "Evaluator"
+msgstr "Measúnóir"
+
 msgid "Profiler"
 msgstr "Próifíleoir"
 
@@ -2600,6 +2987,12 @@ msgstr "Liosta d'úsáid cuimhne físe de réir acmhainne:"
 
 msgid "Total:"
 msgstr "Iomlán:"
+
+msgid "Video RAM Total"
+msgstr "Iomlán RAM Físeáin"
+
+msgid "Refresh Video RAM"
+msgstr "Athnuachan RAM Físeáin"
 
 msgid "Export list to a CSV file"
 msgstr "Easpórtáil liosta go comhad CSV"
@@ -2644,6 +3037,9 @@ msgstr ""
 "Is é an t-inneall a thugann an modh seo.\n"
 "Is féidir é a shárú chun iompar tógtha a shaincheapadh."
 
+msgid "This method is required to be overridden when extending its base class."
+msgstr "Caithfear an modh seo a shárú agus a bhunrang á leathnú."
+
 msgid ""
 "This method has no side effects.\n"
 "It does not modify the object in any way."
@@ -2657,6 +3053,12 @@ msgid ""
 msgstr ""
 "Ní gá cás a ghlaoch ar an modh seo.\n"
 "Is féidir glaoch air go díreach ag baint úsáide as ainm an ranga."
+
+msgid "This method must be implemented to complete the abstract class."
+msgstr "Ní mór an modh seo a chur i bhfeidhm chun an rang teibí a chríochnú."
+
+msgid "Code snippet copied to clipboard."
+msgstr "Cóipeáladh an sleachta cóid chuig an ghearrthaisce."
 
 msgid "No return value."
 msgstr "Gan luach fillte."
@@ -2811,6 +3213,10 @@ msgstr "Deilbhíní"
 msgid "Styles"
 msgstr "Stíleanna"
 
+msgid "This theme property may be changed or removed in future versions."
+msgstr ""
+"Féadfar an mhaoin téama seo a athrú nó a bhaint i leaganacha amach anseo."
+
 msgid "There is currently no description for this theme property."
 msgstr "Níl aon chur síos ar an maoin téama seo faoi láthair."
 
@@ -2895,11 +3301,20 @@ msgstr "Eagarthóir"
 msgid "Click to copy."
 msgstr "Cliceáil chun cóipeáil."
 
+msgid "Click to open in browser."
+msgstr "Cliceáil chun oscailt sa bhrabhsálaí."
+
+msgid "Toggle Files Panel"
+msgstr "Painéal Comhad a Athrú"
+
 msgid "Scripts"
 msgstr "Scripteanna"
 
 msgid "No description available."
 msgstr "Níl cur síos ar fáil."
+
+msgid "This annotation may be changed or removed in future versions."
+msgstr "Féadfar an nóta seo a athrú nó a bhaint i leaganacha amach anseo."
 
 msgid "Open"
 msgstr "Oscailte"
@@ -2913,11 +3328,23 @@ msgstr "Oscail i mBainisteoir Comhad"
 msgid "Class"
 msgstr "Aicme"
 
+msgid "Enumeration"
+msgstr "Áireamh"
+
 msgid "Constant"
 msgstr "Tairiseach"
 
+msgid "Metadata"
+msgstr "Meiteashonraí"
+
+msgid "Setting"
+msgstr "Socrú"
+
 msgid "Property"
 msgstr "Maoin"
+
+msgid "Internal Property"
+msgstr "Maoin Inmheánach"
 
 msgid "This property can only be set in the Inspector."
 msgstr "Ní féidir an mhaoin seo a shocrú ach amháin sa Chigire."
@@ -2934,14 +3361,44 @@ msgstr "Comhartha"
 msgid "Annotation"
 msgstr "Anótáil"
 
+msgid "Local Constant"
+msgstr "Tairiseach Áitiúil"
+
+msgid "Local Variable"
+msgstr "Athróg Áitiúil"
+
+msgid "This variable may be changed or removed in future versions."
+msgstr "Féadfar an athróg seo a athrú nó a bhaint i leaganacha amach anseo."
+
+msgid "Text File"
+msgstr "Comhad Téacs"
+
 msgid "File"
 msgstr "Comhad"
 
 msgid "Path"
 msgstr "Cosán"
 
+msgid "Directory"
+msgstr "Eolaire"
+
+msgid "Invalid UID"
+msgstr "UID Neamhbhailí"
+
+msgid "This UID does not point to any valid Resource."
+msgstr "Ní dhíríonn an UID seo ar aon Acmhainn bhailí."
+
+msgid "Invalid path"
+msgstr "Cosán neamhbhailí"
+
+msgid "This path does not exist."
+msgstr "Níl an cosán seo ann."
+
 msgid "Search"
 msgstr "Cuardaigh"
+
+msgid "Search Documentation"
+msgstr "Cuardaigh Doiciméadú"
 
 msgid "Previous Match"
 msgstr "An Comhoiriúnú Roimhe Seo"
@@ -3034,11 +3491,20 @@ msgstr "Tá an rang seo marcáilte mar dhímheas."
 msgid "This class is marked as experimental."
 msgstr "Tá an rang seo marcáilte mar thurgnamhach."
 
+msgid "Matches the \"%s\" keyword."
+msgstr "Meaitseálann sé an eochairfhocal \"%s\"."
+
 msgid "This member is marked as deprecated."
 msgstr "Tá an ball seo marcáilte mar dhímheas."
 
 msgid "This member is marked as experimental."
 msgstr "Tá an ball seo marcáilte mar thurgnamhach."
+
+msgid "Open the %s dock."
+msgstr "Oscail an duga %s."
+
+msgid "Focus on the %s dock."
+msgstr "Dírigh ar an duga %s."
 
 msgid "%s - Godot Engine"
 msgstr "%s - Inneall Godot"
@@ -3049,8 +3515,14 @@ msgstr "Bog an duga seo ar dheis cluaisín amháin."
 msgid "Move this dock left one tab."
 msgstr "Bog an duga seo ar chlé cluaisín amháin."
 
+msgid "Move Tab Left"
+msgstr "Bog an cluaisín ar chlé"
+
 msgid "Dock Position"
 msgstr "Ionad na nDuganna"
+
+msgid "Move Tab Right"
+msgstr "Bog an cluaisín ar dheis"
 
 msgid "Make Floating"
 msgstr "Déan Snámh"
@@ -3066,6 +3538,9 @@ msgstr "Bog an duga seo go dtí an painéal bun."
 
 msgid "Close this dock."
 msgstr "Dún an duga seo."
+
+msgid "Link to: %s"
+msgstr "Nasc chuig: %s"
 
 msgid "Favorites:"
 msgstr "Ceanáin:"
@@ -3102,6 +3577,9 @@ msgstr "Earráid agus tú ag bogadh:"
 msgid "Error duplicating:"
 msgstr "Earráid agus dúbláil á dhéanamh:"
 
+msgid "Error duplicating directory:"
+msgstr "Earráid ag dúbláil an eolaire:"
+
 msgid "Unable to update dependencies for:"
 msgstr "Ní féidir spleáchais a nuashonrú le haghaidh:"
 
@@ -3134,6 +3612,9 @@ msgstr ""
 
 msgid "A file or folder with this name already exists."
 msgstr "Tá comhad nó fillteán leis an ainm seo ann cheana."
+
+msgid "Could not create base directory: %s"
+msgstr "Níorbh fhéidir an t-eolaire bonn a chruthú: %s"
 
 msgid ""
 "The following files or folders conflict with items in the target location "
@@ -3175,6 +3656,18 @@ msgstr "Fillteán dúblach:"
 
 msgid "Create Folder"
 msgstr "Cruthaigh Fillteán"
+
+msgid ""
+"Do you wish to convert these files to %s? (This operation cannot be undone!)"
+msgstr ""
+"Ar mhaith leat na comhaid seo a thiontú go %s? (Ní féidir an oibríocht seo a "
+"chealú!)"
+
+msgid "Could not create folder: %s"
+msgstr "Níorbh fhéidir fillteán a chruthú: %s"
+
+msgid "Open Scene"
+msgstr "Radharc Oscailte"
 
 msgid "New Inherited Scene"
 msgstr "Radharc Nua Oidhreachta"
@@ -3239,11 +3732,17 @@ msgstr "Cuir le Ceanáin"
 msgid "Remove from Favorites"
 msgstr "Bain ó Cheanáin"
 
+msgid "Convert to..."
+msgstr "Tiontaigh go..."
+
 msgid "Reimport"
 msgstr "Athiompórtáil"
 
 msgid "Open in Terminal"
 msgstr "Oscail i dTeirminéal"
+
+msgid "Open Folder in Terminal"
+msgstr "Oscail Fillteán i dTeirminéal"
 
 msgid "Show in File Manager"
 msgstr "Taispeáin i mBainisteoir Comhad"
@@ -3332,8 +3831,20 @@ msgstr "Téigh go dtí an chéad fhillteán/comhad roghnaithe eile."
 msgid "Change Split Mode"
 msgstr "Athraigh Mód Scoilte"
 
+msgid "Dock Placement"
+msgstr "Suíomh Duga"
+
 msgid "Filter Files"
 msgstr "Scag Comhaid"
+
+msgid "Directories"
+msgstr "Eolairí"
+
+msgid "Display Mode"
+msgstr "Mód Taispeána"
+
+msgid "Files"
+msgstr "Comhaid"
 
 msgid ""
 "Scanning Files,\n"
@@ -3341,6 +3852,9 @@ msgid ""
 msgstr ""
 "Comhaid á Scanadh,\n"
 "Fan, le do thoil..."
+
+msgid "Filesystem Scan"
+msgstr "Scanadh Córas Comhad"
 
 msgid "Overwrite"
 msgstr "Forscríobh"
@@ -3350,6 +3864,9 @@ msgstr "Coinnigh an Dá"
 
 msgid "Create Script"
 msgstr "Cruthaigh Script"
+
+msgid "Convert"
+msgstr "Tiontaigh"
 
 msgid "Scene Groups"
 msgstr "Grúpaí Radhairc"
@@ -3573,6 +4090,9 @@ msgstr "Airíonna an Scag"
 msgid "Manage object properties."
 msgstr "Bainistigh airíonna réada."
 
+msgid "Information"
+msgstr "Eolas"
+
 msgid "This cannot be undone. Are you sure?"
 msgstr "Ní féidir é seo a chealú. An bhfuil tú cinnte?"
 
@@ -3758,6 +4278,9 @@ msgstr "Fréamh an Radhairc Nua"
 msgid "Create Root Node:"
 msgstr "Cruthaigh Nód Fréimhe:"
 
+msgid "Favorite Nodes"
+msgstr "Nóid is Fearr Leat"
+
 msgid "Toggle the display of favorite nodes."
 msgstr "Scoránaigh taispeáint na nóid is fearr leat."
 
@@ -3821,6 +4344,15 @@ msgstr "Tá nód roghnaithe amháin de dhíth ar an oibríocht seo."
 msgid "Can't overwrite scene that is still open!"
 msgstr "Ní féidir an radharc atá fós ar oscailt a fhorscríobh!"
 
+msgid "Reset Position"
+msgstr "Athshocraigh an Suíomh"
+
+msgid "Reset Scale"
+msgstr "Athshocraigh an Scála"
+
+msgid "Reset Rotation"
+msgstr "Athshocraigh Rothlú"
+
 msgid ""
 "Couldn't save new scene. Likely dependencies (instances) couldn't be "
 "satisfied."
@@ -3836,6 +4368,9 @@ msgstr "Earráid agus radharc á dhúbláil chun é a shábháil."
 
 msgid "Instantiate Script"
 msgstr "Script Mheandarach"
+
+msgid "<unknown>"
+msgstr "<anaithnid>"
 
 msgid "Sub-Resources"
 msgstr "Fo-Acmhainní"
@@ -3867,6 +4402,12 @@ msgid ""
 msgstr ""
 "Má chumasaítear é, cruthóidh Reparent to New Node an nód nua i lár na nóid "
 "roghnaithe, más féidir."
+
+msgid "Hide Filtered Out Parents"
+msgstr "Folaigh Tuismitheoirí Scagtha Amach"
+
+msgid "Show Accessibility Warnings"
+msgstr "Taispeáin Rabhaidh Inrochtaineachta"
 
 msgid "All Scene Sub-Resources"
 msgstr "Gach Fo-Acmhainní Radhairc"
@@ -3993,6 +4534,9 @@ msgstr "Ceangail script nua nó script atá ann cheana leis an nód roghnaithe."
 msgid "Detach the script from the selected node."
 msgstr "Scar an script ón nód roghnaithe."
 
+msgid "Extend the script of the selected node."
+msgstr "Leathnaigh script an nóid roghnaithe."
+
 msgid "Extra scene options."
 msgstr "Roghanna radhairc breise."
 
@@ -4047,6 +4591,9 @@ msgstr "Cruthaigh %s Nua"
 msgid "Filter Messages"
 msgstr "Scag Teachtaireachtaí"
 
+msgid "Clear Log"
+msgstr "Glan an Log"
+
 msgid "Clear Output"
 msgstr "Glan Aschur"
 
@@ -4056,8 +4603,14 @@ msgstr ""
 "Laghdaigh teachtaireachtaí dúblacha in iontráil logála amháin. Taispeánann "
 "seo líon na dtarluithe."
 
+msgid "Show Search"
+msgstr "Taispeáin Cuardach"
+
 msgid "Focus Search/Filter Bar"
 msgstr "Barra Cuardaigh/Scagaire Fócais"
+
+msgid "Standard Messages"
+msgstr "Teachtaireachtaí Caighdeánacha"
 
 msgid "Toggle visibility of standard output messages."
 msgstr "Scoránaigh infheictheacht teachtaireachtaí caighdeánacha aschuir."
@@ -4071,11 +4624,39 @@ msgstr "Rabhaidh"
 msgid "Toggle visibility of warnings."
 msgstr "Scoránaigh infheictheacht rabhaidh."
 
+msgid "Editor Messages"
+msgstr "Teachtaireachtaí Eagarthóra"
+
 msgid "Toggle visibility of editor messages."
 msgstr "Scoránaigh infheictheacht teachtaireachtaí eagarthóra."
 
+msgid ""
+"The Android build template is already installed in this project and it won't "
+"be overwritten.\n"
+"Remove the \"%s\" directory manually before attempting this operation again."
+msgstr ""
+"Tá an teimpléad tógála Android suiteáilte cheana féin sa tionscadal seo agus "
+"ní dhéanfar é a athscríobh.\n"
+"Bain an eolaire \"%s\" de láimh sula ndéanann tú iarracht an oibríocht seo a "
+"dhéanamh arís."
+
+msgid ""
+"This will set up your project for gradle Android builds by installing the "
+"source template to \"%s\".\n"
+"Note that in order to make gradle builds instead of using pre-built APKs, the "
+"\"Use Gradle Build\" option should be enabled in the Android export preset."
+msgstr ""
+"Cuirfidh sé seo do thionscadal ar bun le haghaidh tógálacha Gradle Android "
+"tríd an teimpléad foinse a shuiteáil chuig \"%s\".\n"
+"Tabhair faoi deara, chun tógálacha Gradle a dhéanamh in ionad APKanna "
+"réamhthógtha a úsáid, gur cheart an rogha \"Úsáid Tógáil Gradle\" a chumasú "
+"sa réamhshocrú easpórtála Android."
+
 msgid "Unnamed Project"
 msgstr "Tionscadal Gan Ainm"
+
+msgid "Recovery Mode is enabled. Editor functionality has been restricted."
+msgstr "Tá Mód Aisghabhála cumasaithe. Tá feidhmiúlacht an eagarthóra srianta."
 
 msgid ""
 "Spins when the editor window redraws.\n"
@@ -4154,6 +4735,9 @@ msgstr "Radharc á Shábháil"
 
 msgid "Analyzing"
 msgstr "Anailís"
+
+msgid "Creating Thumbnail"
+msgstr "Mionsamhail á Chruthú"
 
 msgid "This operation can't be done without a tree root."
 msgstr "Ní féidir an oibríocht seo a dhéanamh gan fréamh crainn."
@@ -4346,6 +4930,25 @@ msgstr "Ní féidir radharc nár sábháladh riamh a athluchtú."
 msgid "Save & Reload"
 msgstr "Sábháil & Athlódáil"
 
+msgid "Save before reloading the scene?"
+msgstr "Sábháil sula n-athlódálfaidh tú an radharc?"
+
+msgid "Stop running project before reloading the current project?"
+msgstr ""
+"An bhfuil tú ag iarraidh an tionscadal a stopadh sula n-athlódálann tú an "
+"tionscadal reatha?"
+
+msgid "Stop & Reload"
+msgstr "Stop & Athlódáil"
+
+msgid "Stop running project before exiting the editor?"
+msgstr ""
+"An bhfuil tú ag iarraidh an tionscadal a stopadh sula n-imíonn tú as an "
+"eagarthóir?"
+
+msgid "Stop & Quit"
+msgstr "Stop & Scoir"
+
 msgid "Save modified resources before reloading?"
 msgstr "Sábháil acmhainní modhnaithe roimh athlódáil?"
 
@@ -4383,6 +4986,12 @@ msgstr "Ní féidir an oibríocht seo a dhéanamh gan radharc."
 
 msgid "Export Mesh Library"
 msgstr "Easpórtáil Leabharlann Mogalra"
+
+msgid "All scenes are already saved."
+msgstr "Tá na radhairc uile sábháilte cheana féin."
+
+msgid "Quick Open Color Palette..."
+msgstr "Pailéad Dathanna Oscailte go Tapa..."
 
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr ""
@@ -4461,11 +5070,66 @@ msgstr ""
 "Níl tacaíocht ilfhuinneog ar fáil toisc go bhfuil Interface > Multi Window > "
 "Enable díchumasaithe i socruithe an eagarthóra."
 
+msgid "No Recent Scenes"
+msgstr "Gan Radharcanna Le Déanaí"
+
 msgid "Clear Recent Scenes"
 msgstr "Glan Radhairc Le Déanaí"
 
 msgid "There is no defined scene to run."
 msgstr "Níl aon radharc sainithe le rith."
+
+msgid "Loading editor"
+msgstr "Ag lódáil an eagarthóir"
+
+msgid "Loading editor layout..."
+msgstr "Ag lódáil leagan amach an eagarthóra..."
+
+msgid "Loading docks..."
+msgstr "Ag luchtú dugaí..."
+
+msgid "Reopening scenes..."
+msgstr "Ag athoscailt radharcanna..."
+
+msgid "Loading central editor layout..."
+msgstr "Ag lódáil leagan amach an eagarthóra lárnaigh..."
+
+msgid "Loading plugin window layout..."
+msgstr "Ag lódáil leagan amach fuinneoige breiseáin..."
+
+msgid "Editor layout ready."
+msgstr "Leagan amach an eagarthóra réidh."
+
+msgid ""
+"No main scene has ever been defined. Select one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"Níor sainmhíníodh aon phríomhradharc riamh. Roghnaigh ceann?\n"
+"Is féidir leat é a athrú níos déanaí i \"Socruithe Tionscadail\" faoin "
+"gcatagóir 'feidhmchlár'."
+
+msgid ""
+"Selected scene '%s' does not exist. Select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"Níl an radharc roghnaithe '%s' ann. An bhfuil ceann bailí á roghnú agat?\n"
+"Is féidir leat é a athrú níos déanaí i \"Socruithe Tionscadail\" faoin "
+"gcatagóir 'feidhmchlár'."
+
+msgid ""
+"Selected scene '%s' is not a scene file. Select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"Ní comhad radhairc é an radharc roghnaithe '%s'. An bhfuil ceann bailí "
+"roghnaithe agat?\n"
+"Is féidir leat é a athrú níos déanaí i \"Socruithe Tionscadail\" faoin "
+"gcatagóir 'feidhmchlár'."
+
+msgid "User data dir '%s' is not valid. Change to a valid one?"
+msgstr "Níl an treoir sonraí úsáideora '%s' bailí. Athraigh go ceann bailí?"
 
 msgid "Cannot run the script because it contains errors, check the output log."
 msgstr ""
@@ -4481,6 +5145,13 @@ msgid ""
 msgstr ""
 "Ní féidir an script a rith toisc nach script uirlisí é (cuir an anótáil @tool "
 "ag an mbarr)."
+
+msgid ""
+"Cannot run the script because it's not a tool script (add the [Tool] "
+"attribute above the class definition)."
+msgstr ""
+"Ní féidir an script a rith mar nach script uirlisí é (cuir an tréith [Tool] "
+"os cionn sainmhíniú an ranga)."
 
 msgid "Cannot run the script because it's not a tool script."
 msgstr "Ní féidir an script a rith toisc nach script uirlisí é."
@@ -4562,6 +5233,12 @@ msgstr "Fón póca"
 
 msgid "Compatibility"
 msgstr "Comhoiriúnacht"
+
+msgid "%s (Overridden)"
+msgstr "%s (Sáraithe)"
+
+msgid "Main Menu"
+msgstr "Príomh-Roghchlár"
 
 msgid "Lock Selected Node(s)"
 msgstr "Cuir nód(anna) roghnaithe faoi ghlas"
@@ -4671,6 +5348,9 @@ msgstr "Easpórtáil..."
 msgid "Export"
 msgstr "Easpórtáil"
 
+msgid "Pack Project as ZIP..."
+msgstr "Pacáil an Tionscadail mar ZIP..."
+
 msgid "Install Android Build Template..."
 msgstr "Suiteáil Teimpléad Tógála Android..."
 
@@ -4685,6 +5365,9 @@ msgstr "Taiscéalaí Acmhainní Dílleachta..."
 
 msgid "Engine Compilation Configuration Editor..."
 msgstr "Eagarthóir Cumraíochta Tiomsúcháin Innill..."
+
+msgid "Upgrade Project Files..."
+msgstr "Uasghrádaigh Comhaid Tionscadail..."
 
 msgid "Reload Current Project"
 msgstr "Athluchtaigh an Tionscadal Reatha"
@@ -4777,8 +5460,14 @@ msgstr ""
 "roghnaítear Forward + anseo.\n"
 "- Ar an ardán gréasáin, úsáidtear an modh rindreáil Comhoiriúnachta i gcónaí."
 
+msgid "Rendering Method"
+msgstr "Modh Rindreála"
+
 msgid "Save & Restart"
 msgstr "Sábháil & Atosaigh"
+
+msgid "Update Mode"
+msgstr "Mód Nuashonraithe"
 
 msgid "Update Continuously"
 msgstr "Nuashonraigh go leanúnach"
@@ -4789,20 +5478,38 @@ msgstr "Nuashonraigh nuair a athraíodh é"
 msgid "Hide Update Spinner"
 msgstr "Folaigh Spinner Nuashonraithe"
 
+msgid "Open Scene Dock"
+msgstr "Oscail Duga Radharc"
+
 msgid "Import"
 msgstr "Iompórtáil"
+
+msgid "Open Import Dock"
+msgstr "Oscail Duga Iompórtála"
 
 msgid "FileSystem"
 msgstr "Córas Comhad"
 
+msgid "Open FileSystem Dock"
+msgstr "Oscail Duga an Chórais Chomhaid"
+
 msgid "Inspector"
 msgstr "Cigire"
+
+msgid "Open Inspector Dock"
+msgstr "Oscail Duga an Chigire"
 
 msgid "Node"
 msgstr "Nód"
 
+msgid "Open Node Dock"
+msgstr "Oscail Duga an Nóid"
+
 msgid "History"
 msgstr "Stair"
+
+msgid "Open History Dock"
+msgstr "Oscail Duga na Staire"
 
 msgid "Output"
 msgstr "Aschur"
@@ -4839,6 +5546,26 @@ msgstr "Easpórtáil Leabharlann"
 msgid "Open & Run a Script"
 msgstr "Oscail agus Rith Script"
 
+msgid "Files have been modified outside Godot"
+msgstr "Tá comhaid athraithe lasmuigh de Godot"
+
+msgid "The following files are newer on disk:"
+msgstr "Tá na comhaid seo a leanas níos nuaí ar an diosca:"
+
+msgid "What action should be taken?"
+msgstr "Cén gníomh ba chóir a dhéanamh?"
+
+msgid "Reload from disk"
+msgstr "Athlódáil ón diosca"
+
+msgid "Ignore external changes"
+msgstr "Déan neamhaird de na hathruithe seachtracha"
+
+msgid "Project data folder (.godot) is missing. Please restart editor."
+msgstr ""
+"Tá fillteán sonraí tionscadail (.godot) ar iarraidh. Atosaigh an t-eagarthóir "
+"le do thoil."
+
 msgid "Restart"
 msgstr "Atosaigh"
 
@@ -4860,6 +5587,9 @@ msgstr "Luchtaigh Earráidí"
 msgid "Select Current"
 msgstr "Roghnaigh An Sruth"
 
+msgid "Open Project Settings"
+msgstr "Oscail Socruithe an Tionscadail"
+
 msgid "Open 2D Editor"
 msgstr "Oscail Eagarthóir 2D"
 
@@ -4868,6 +5598,9 @@ msgstr "Oscail Eagarthóir 3D"
 
 msgid "Open Script Editor"
 msgstr "Oscail Eagarthóir Scripte"
+
+msgid "Open Game View"
+msgstr "Oscail Radharc Cluiche"
 
 msgid "Open Asset Library"
 msgstr "Leabharlann Sócmhainní Oscailte"
@@ -4956,6 +5689,12 @@ msgstr "Earráid Neamhaithnid"
 msgid "Export failed with error code %d."
 msgstr "Theip ar easpórtáil le cód earráide %d."
 
+msgid "Patch Creation"
+msgstr "Cruthú Paiste"
+
+msgid "Could not load patch pack with path \"%s\"."
+msgstr "Níorbh fhéidir an pacáiste paiste a luchtú leis an gcosán \"%s\"."
+
 msgid "Storing File: %s"
 msgstr "Comhad á stóráil: %s"
 
@@ -4965,6 +5704,29 @@ msgstr "Comhad á Stóráil:"
 msgid "No export template found at the expected path:"
 msgstr ""
 "Níor aimsíodh aon teimpléad easpórtála ag an gcosán a bhfuiltear ag súil leis:"
+
+msgid ""
+"Using user provided text server data, text display in the exported project "
+"might be broken if export template was built with different ICU version!"
+msgstr ""
+"Agus sonraí freastalaí téacs arna soláthar ag an úsáideoir á n-úsáid, "
+"d'fhéadfadh sé go mbeadh taispeáint téacs sa tionscadal onnmhairithe briste "
+"má tógadh an teimpléad onnmhairithe le leagan difriúil den ICU!"
+
+msgid ""
+"Using editor embedded text server data, text display in the exported project "
+"might be broken if export template was built with different ICU version!"
+msgstr ""
+"Agus sonraí freastalaí téacs leabaithe an eagarthóra á n-úsáid, d'fhéadfadh "
+"sé go mbeadh taispeáint téacs sa tionscadal onnmhairithe briste má tógadh an "
+"teimpléad onnmhairithe le leagan difriúil den ICU!"
+
+msgid ""
+"Missing text server data, text display in the exported project might be "
+"broken!"
+msgstr ""
+"Sonraí freastalaí téacs ar iarraidh, b'fhéidir go bhfuil taispeáint téacs sa "
+"tionscadal easpórtáilte briste!"
 
 msgid "ZIP Creation"
 msgstr "Cruthú ZIP"
@@ -4989,11 +5751,17 @@ msgstr ""
 msgid "Failed to export project files."
 msgstr "Theip ar easpórtáil comhad tionscadail."
 
+msgid "No files or changes to export."
+msgstr "Gan aon chomhaid ná athruithe le honnmhairiú."
+
 msgid "Can't create encrypted file."
 msgstr "Ní féidir comhad criptithe a chruthú."
 
 msgid "Save ZIP"
 msgstr "Sábháil ZIP"
+
+msgid "Failed to move temporary file \"%s\" to \"%s\"."
+msgstr "Theip ar an gcomhad sealadach \"%s\" a bhogadh go \"%s\"."
 
 msgid "App Store Team ID not specified."
 msgstr "Níor sonraíodh aitheantas Fhoireann App Store."
@@ -5009,6 +5777,19 @@ msgstr "Ba cheart cúis rochtana spáis diosca amháin ar a laghad a roghnú."
 
 msgid "At least one system boot time access reason should be selected."
 msgstr "Ba chóir cúis rochtana ama tosaithe córais amháin ar a laghad a roghnú."
+
+msgid "\"Shader Baker\" doesn't work with the Compatibility renderer."
+msgstr "Ní oibríonn \"Shader Baker\" leis an rindreálaí Comhoiriúnachta."
+
+msgid ""
+"The editor is currently using a different renderer than what the target "
+"platform will use. \"Shader Baker\" won't be able to include core shaders. "
+"Switch to \"%s\" renderer temporarily to fix this."
+msgstr ""
+"Tá an t-eagarthóir ag úsáid rindreálaí difriúil faoi láthair ná an ceann a "
+"úsáidfidh an t-ardán sprice. Ní bheidh \"Shader Baker\" in ann scáthláin "
+"lárnacha a áireamh. Athraigh go rindreálaí \"%s\" go sealadach chun seo a "
+"shocrú."
 
 msgid "Target folder does not exist or is inaccessible: \"%s\""
 msgstr "Níl an spriocfhillteán ann nó níl sé dorochtana: \"%s\""
@@ -5038,6 +5819,16 @@ msgstr "Theip ar chruthú na comhadlainne: \"%s\""
 
 msgid "Could not create and open the directory: \"%s\""
 msgstr "Níorbh fhéidir an chomhadlann a chruthú agus a oscailt: \"%s\""
+
+msgid "Apple Embedded Plugins"
+msgstr "Breiseáin Leabaithe Apple"
+
+msgid ""
+"Failed to export Apple Embedded plugins with code %d. Please check the output "
+"log."
+msgstr ""
+"Theip ar easpórtáil breiseáin Apple Embedded leis an gcód %d. Seiceáil an log "
+"aschuir le do thoil."
 
 msgid "Could not create a directory at path \"%s\"."
 msgstr "Níorbh fhéidir comhadlann a chruthú ag conair \"%s\"."
@@ -5090,6 +5881,18 @@ msgstr ""
 "Ní féidir .ipa a thógáil ach ar macOS. Ag fágáil tionscadal Xcode gan an "
 "pacáiste a thógáil."
 
+msgid ""
+"Exporting to an Apple Embedded platform when using C#/.NET is experimental "
+"and requires macOS."
+msgstr ""
+"Is turgnamhach é onnmhairiú chuig ardán Apple Embedded agus C#/.NET in úsáid "
+"agus teastaíonn macOS chuige."
+
+msgid ""
+"Exporting to an Apple Embedded platform when using C#/.NET is experimental."
+msgstr ""
+"Is turgnamhach é onnmhairiú chuig ardán Apple Embedded agus C#/.NET in úsáid."
+
 msgid "Custom debug template not found."
 msgstr "Níor aimsíodh teimpléad saincheaptha dífhabhtaithe."
 
@@ -5124,6 +5927,20 @@ msgstr "Theip ar shuiteáil, féach logchomhad an eagarthóra le haghaidh sonra�
 msgid "Running failed, see editor log for details."
 msgstr "Theip ar rith, féach logchomhad an eagarthóra le haghaidh sonraí."
 
+msgid "\"Shader Baker\" is not supported when using the Compatibility renderer."
+msgstr ""
+"Ní thacaítear le \"Shader Baker\" agus an rindreálaí Comhoiriúnachta in úsáid."
+
+msgid ""
+"The editor is currently using a different renderer than what the target "
+"platform will use. \"Shader Baker\" won't be able to include core shaders. "
+"Switch to the \"%s\" renderer temporarily to fix this."
+msgstr ""
+"Tá an t-eagarthóir ag úsáid rindreálaí difriúil faoi láthair ná an ceann a "
+"úsáidfidh an t-ardán sprice. Ní bheidh \"Shader Baker\" in ann scáthláin "
+"lárnacha a áireamh. Athraigh go dtí an rindreálaí \"%s\" go sealadach chun "
+"seo a shocrú."
+
 msgid ""
 "A texture format must be selected to export the project. Please select at "
 "least one texture format."
@@ -5150,6 +5967,12 @@ msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
 "Ar onnmhairí 32-giotán ní féidir leis an PCK leabaithe a bheith níos mó ná 4 "
 "GiB."
+
+msgid "GDExtension"
+msgstr "GDExtension"
+
+msgid "Failed to copy shared object \"%s\"."
+msgstr "Theip ar chóipeáil an réad comhroinnte \"%s\"."
 
 msgid "Plugin \"%s\" is not supported on \"%s\""
 msgstr "Ní thacaítear le breiseán \"%s\" ar \"%s\""
@@ -5276,9 +6099,26 @@ msgstr ""
 msgid "Export templates are missing. Install them from a file."
 msgstr "Tá teimpléid easpórtála ar iarraidh. Suiteáil iad ó chomhad."
 
+msgid "Not available in offline mode"
+msgstr "Ní féidir é a úsáid sa mhodh as líne"
+
+msgid "Template downloading is disabled in offline mode."
+msgstr "Tá íoslódáil teimpléid díchumasaithe i mód as líne."
+
+msgid "No templates for development builds"
+msgstr "Gan aon teimpléid le haghaidh tógálacha forbartha"
+
 msgid "Official export templates aren't available for development builds."
 msgstr ""
 "Níl teimpléid onnmhairithe oifigiúla ar fáil le haghaidh tógála forbartha."
+
+msgid "No templates for double-precision builds"
+msgstr "Gan aon teimpléid le haghaidh tógálacha cruinneas dúbailte"
+
+msgid "Official export templates aren't available for double-precision builds."
+msgstr ""
+"Níl teimpléid easpórtála oifigiúla ar fáil le haghaidh tógálacha cruinneas "
+"dúbailte."
 
 msgid "Uncompressing Android Build Sources"
 msgstr "Dí-chomhbhrú Foinsí Tógála Android"
@@ -5291,6 +6131,9 @@ msgstr "Leagan Reatha:"
 
 msgid "Export templates are installed and ready to be used."
 msgstr "Tá teimpléid easpórtála suiteáilte agus réidh le húsáid."
+
+msgid "Installed Path"
+msgstr "Cosán Suiteáilte"
 
 msgid "Open Folder"
 msgstr "Oscail Fillteán"
@@ -5306,6 +6149,12 @@ msgstr "Díshuiteáil teimpléid don leagan reatha."
 
 msgid "Download from:"
 msgstr "Íoslódáil ó:"
+
+msgid "Mirror"
+msgstr "Scáthán"
+
+msgid "Mirror Options"
+msgstr "Roghanna Scátháin"
 
 msgid "Open in Web Browser"
 msgstr "Oscail i mBrabhsálaí Gréasáin"
@@ -5328,6 +6177,9 @@ msgstr "Suiteáil ó Chomhad"
 
 msgid "Install templates from a local file."
 msgstr "Suiteáil teimpléid ó chomhad logánta."
+
+msgid "Online mode is needed to download the templates."
+msgstr "Tá mód ar líne ag teastáil chun na teimpléid a íoslódáil."
 
 msgid "Cancel the download of the templates."
 msgstr "Cealaigh íoslódáil na dteimpléad."
@@ -5352,10 +6204,24 @@ msgstr ""
 "B'fhéidir go bhfaighidh tú reo gearr eagarthóra nuair a chríochnaíonn siad."
 
 msgid ""
+"No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for "
+"your platform: %s"
+msgstr ""
+"Níor aimsíodh leabharlann \"%s\" le haghaidh GDExtension: \"%s\". Bratacha "
+"gnéithe féideartha do d'ardán: %s"
+
+msgid "Multiple \"%s\" libraries found for GDExtension: \"%s\": \"%s\"."
+msgstr ""
+"Fuarthas roinnt leabharlann \"%s\" le haghaidh GDExtension: \"%s\": \"%s\"."
+
+msgid ""
 "Target platform requires '%s' texture compression. Enable 'Import %s' to fix."
 msgstr ""
 "Tá comhbhrú uigeachta '%s' de dhíth ar an spriocardán. Cumasaigh 'Iompórtáil "
 "%s' le socrú."
+
+msgid "Show Project Setting"
+msgstr "Taispeáin Socrú an Tionscadail"
 
 msgid "Runnable"
 msgstr "Inrite"
@@ -5384,8 +6250,14 @@ msgstr "Acmhainní le heaspórtáil:"
 msgid "(Inherited)"
 msgstr "(Le hoidhreacht)"
 
+msgid "Delete patch '%s' from list?"
+msgstr "Scrios an paiste '%s' ón liosta?"
+
 msgid "Export With Debug"
 msgstr "Easpórtáil le Dífhabhtú"
+
+msgid "Export As Patch"
+msgstr "Easpórtáil Mar Phaiste"
 
 msgid "%s Export"
 msgstr "Easpórtáil %s"
@@ -5425,6 +6297,9 @@ msgstr "Roghanna"
 msgid "Resources"
 msgstr "Acmhainní"
 
+msgid "Export Mode"
+msgstr "Mód Easpórtála"
+
 msgid "Export all resources in the project"
 msgstr "Easpórtáil na hacmhainní go léir sa tionscadal"
 
@@ -5457,12 +6332,18 @@ msgstr "Radharcanna Stiallacha"
 msgid "Keep"
 msgstr "Coinnigh"
 
+msgid "Include Filters"
+msgstr "Cuir Scagairí san áireamh"
+
 msgid ""
 "Filters to export non-resource files/folders\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
 "Scagairí chun comhaid/fillteáin neamhacmhainne a easpórtáil\n"
 "(camóg-scartha, m.sh: *.json, *.txt, docs/*)"
+
+msgid "Exclude Filters"
+msgstr "Scagairí a Eisiamh"
 
 msgid ""
 "Filters to exclude files/folders from project\n"
@@ -5471,8 +6352,17 @@ msgstr ""
 "Scagairí chun comhaid / fillteáin a eisiamh ón tionscadal\n"
 "(camóg-scartha, m.sh: *.json, *.txt, docs/*)"
 
+msgid "Patches"
+msgstr "Paistí"
+
+msgid "Base Packs:"
+msgstr "Pacáistí Bunúsacha:"
+
 msgid "Godot Project Pack"
 msgstr "Pacáiste Tionscadail Godot"
+
+msgid "Add Pack"
+msgstr "Cuir Pacáiste leis"
 
 msgid "Features"
 msgstr "Gnéithe"
@@ -5513,6 +6403,9 @@ msgid "Invalid Encryption Key (must be 64 hexadecimal characters long)"
 msgstr ""
 "Eochair Chriptithe Neamhbhailí (ní mór 64 charachtar heicsidheachúlach a "
 "bheith ann)"
+
+msgid "Initialization vector seed"
+msgstr "Síol veicteora tosaithe"
 
 msgid ""
 "Note: Encryption key needs to be stored in the binary,\n"
@@ -5576,6 +6469,9 @@ msgstr "Easpórtáil Tionscadail"
 
 msgid "Manage Export Templates"
 msgstr "Bainistigh Teimpléid Easpórtála"
+
+msgid "Baking shaders"
+msgstr "Scáthadóirí bácála"
 
 msgid "Search Replacement For:"
 msgstr "Athsholáthar Cuardaigh le haghaidh:"
@@ -5646,6 +6542,12 @@ msgstr ""
 msgid "Cannot remove:"
 msgstr "Ní féidir an méid seo a leanas a bhaint:"
 
+msgid "Files to be deleted:"
+msgstr "Comhaid le scriosadh:"
+
+msgid "Dependencies of files to be deleted:"
+msgstr "Spleáchais na gcomhad atá le scriosadh:"
+
 msgid "Error loading:"
 msgstr "Earráid á luchtú:"
 
@@ -5676,11 +6578,44 @@ msgstr "Úinéireacht"
 msgid "Resources Without Explicit Ownership:"
 msgstr "Acmhainní Gan Úinéireacht Fhollasach:"
 
+msgid "Project initialization"
+msgstr "Túsú tionscadail"
+
+msgid "Scanning file structure..."
+msgstr "Struchtúr comhaid á scanadh..."
+
+msgid "Loading global class names..."
+msgstr "Ag lódáil ainmneacha ranga domhanda..."
+
+msgid "Verifying GDExtensions..."
+msgstr "Ag fíorú GDExtensions..."
+
+msgid "Creating autoload scripts..."
+msgstr "Ag cruthú scripteanna uathluchtaithe..."
+
+msgid "Initializing plugins..."
+msgstr "Ag tosú breiseán..."
+
+msgid "Starting file scan..."
+msgstr "Ag tosú scanadh comhad..."
+
+msgid "Scanning actions..."
+msgstr "Gníomhartha scanadh..."
+
 msgid "Some extensions need the editor to restart to take effect."
 msgstr "Ní mór don eagarthóir atosú chun éifeacht a thabhairt do roinnt síntí."
 
 msgid "ScanSources"
 msgstr "ScanFoinsí"
+
+msgid "Registering global classes..."
+msgstr "Ag clárú ranganna domhanda..."
+
+msgid "Updating scripts documentation"
+msgstr "Nuashonrú doiciméadachta scripteanna"
+
+msgid "Updating Scene Groups"
+msgstr "Nuashonrú Grúpaí Radharc"
 
 msgid ""
 "There are multiple importers for different types pointing to file %s, import "
@@ -5692,8 +6627,26 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "(Ath) Sócmhainní Iompórtála"
 
+msgid "Preparing files to reimport..."
+msgstr "Ag ullmhú comhaid le hathiompórtáil..."
+
+msgid "Executing pre-reimport operations..."
+msgstr "Ag déanamh oibríochtaí réamh-athiompórtála..."
+
 msgid "Import resources of type: %s"
 msgstr "Iompórtáil acmhainní de chineál: %s"
+
+msgid "Finalizing Asset Import..."
+msgstr "Ag críochnú allmhairiú sócmhainní..."
+
+msgid "Executing post-reimport operations..."
+msgstr "Ag déanamh oibríochtaí iar-ath-allmhairithe..."
+
+msgid "Copying files..."
+msgstr "Ag cóipeáil comhad..."
+
+msgid "Remapping dependencies..."
+msgstr "Athmhapáil spleáchais..."
 
 msgid "Go to Line"
 msgstr "Téigh go Líne"
@@ -5703,6 +6656,15 @@ msgstr "Uimhir Líne:"
 
 msgid "%d replaced."
 msgstr "%d curtha in ionad."
+
+msgid "Hide Replace"
+msgstr "Folaigh Athsholáthar"
+
+msgid "Show Replace"
+msgstr "Taispeáin Ionadaigh"
+
+msgid "Replace Mode"
+msgstr "Mód Athsholáthair"
 
 msgid "Find"
 msgstr "Aimsigh"
@@ -5733,6 +6695,13 @@ msgstr "Cluaisíní"
 msgid "Zoom factor"
 msgstr "Fachtóir zúmála"
 
+msgid ""
+"%sMouse wheel, %s/%s: Finetune\n"
+"%s: Reset"
+msgstr ""
+"%sRoth luiche, %s/%s: Finetune\n"
+"%s: Athshocraigh"
+
 msgid "Zoom In"
 msgstr "Zúmáil Isteach"
 
@@ -5741,6 +6710,9 @@ msgstr "Zúmáil Amach"
 
 msgid "Reset Zoom"
 msgstr "Athshocraigh Zúmáil"
+
+msgid "Zoom Factor"
+msgstr "Fachtóir Súmáil"
 
 msgid "Line and column numbers."
 msgstr "Uimhreacha líne agus colúin."
@@ -5756,6 +6728,12 @@ msgstr "Athrú"
 
 msgid "No results for \"%s\"."
 msgstr "Níl aon toradh ar \"%s\"."
+
+msgid "Script path: %s"
+msgstr "Cosán scripte: %s"
+
+msgid "The script will run in the editor."
+msgstr "Rithfidh an script san eagarthóir."
 
 msgid "The selected class can't be instantiated."
 msgstr "Ní féidir an rang roghnaithe a mheandarú."
@@ -5775,6 +6753,9 @@ msgstr "Lasáin:"
 msgctxt "Job Title"
 msgid "Project Manager"
 msgstr "Bainisteoir Tionscadail"
+
+msgid "Credits"
+msgstr "Creidmheasanna"
 
 msgid "Project Founders"
 msgstr "Bunaitheoirí an Tionscadail"
@@ -5809,17 +6790,32 @@ msgstr "Baill Platanam"
 msgid "Gold Members"
 msgstr "Baill Óir"
 
+msgid "Thank you for choosing Godot Engine!"
+msgstr "Go raibh maith agat as Inneall Godot a roghnú!"
+
 msgid "Name cannot be empty."
 msgstr "Ní féidir leis an ainm a bheith folamh."
 
+msgid "File name can't end with /."
+msgstr "Ní féidir le hainm comhaid críochnú le /."
+
+msgid "File name cannot be empty."
+msgstr "Ní féidir ainm comhaid a fhágáil folamh."
+
 msgid "Folder name cannot be empty."
 msgstr "Ní féidir ainm an fhillteáin a bheith folamh."
+
+msgid "File name contains invalid characters."
+msgstr "Tá carachtair neamhbhailí in ainm an chomhaid."
 
 msgid "Folder name contains invalid characters."
 msgstr "Tá carachtair neamhbhailí in ainm an fhillteáin."
 
 msgid "File name begins with a dot."
 msgstr "Tosaíonn ainm comhaid le ponc."
+
+msgid "Folder name begins with a dot."
+msgstr "Tosaíonn ainm an fhillteáin le ponc."
 
 msgid "File with that name already exists."
 msgstr "Tá an comhad leis an ainm sin ann cheana."
@@ -5831,6 +6827,19 @@ msgid "Using slashes in folder names will create subfolders recursively."
 msgstr ""
 "Trí úsáid a bhaint as slaiseanna in ainmneacha fillteáin, cruthófar "
 "fofhillteáin go hathchúrsach."
+
+msgid ""
+"Using slashes in path will create the file in subfolder, creating new "
+"subfolders if necessary."
+msgstr ""
+"Trí slaiseanna a úsáid sa chonair, cruthófar an comhad i bhfo-fhillteán, agus "
+"cruthófar fo-fhillteáin nua más gá."
+
+msgid "File name is valid."
+msgstr "Tá ainm an chomhaid bailí."
+
+msgid "Base path: %s"
+msgstr "Cosán bonn: %s"
 
 msgid "Folder name is valid."
 msgstr "Tá ainm an fhillteáin bailí."
@@ -5873,6 +6882,33 @@ msgstr "Comhpháirteanna"
 msgid "Licenses"
 msgstr "Ceadúnais"
 
+msgid ""
+"Scroll Left\n"
+"Hold Ctrl to scroll to the begin.\n"
+"Hold Shift to scroll one page."
+msgstr ""
+"Scrollaigh ar Chlé\n"
+"Coinnigh Ctrl chun scrollú go dtí an tús.\n"
+"Coinnigh Shift chun leathanach amháin a scrollú."
+
+msgid "Scroll Left"
+msgstr "Scrollaigh ar Chlé"
+
+msgid ""
+"Scroll Right\n"
+"Hold Ctrl to scroll to the end.\n"
+"Hold Shift to scroll one page."
+msgstr ""
+"Scrollaigh ar Dheis\n"
+"Coinnigh Ctrl chun scrollú go dtí an deireadh.\n"
+"Coinnigh Shift chun leathanach amháin a scrollú."
+
+msgid "Scroll Right"
+msgstr "Scrollaigh ar dheis"
+
+msgid "Pin Bottom Panel Switching"
+msgstr "Athrú Painéil Bun Bioráin"
+
 msgid "Expand Bottom Panel"
 msgstr "Leathnaigh an Painéal Bun"
 
@@ -5914,6 +6950,9 @@ msgstr ""
 
 msgid "Select This Folder"
 msgstr "Roghnaigh an fillteán seo"
+
+msgid "Show Package Contents"
+msgstr "Taispeáin Ábhar an Phacáiste"
 
 msgid "All Files"
 msgstr "Gach Comhad"
@@ -5967,6 +7006,9 @@ msgstr "Scoránaigh an Mód"
 msgid "Focus Path"
 msgstr "Conair Fócais"
 
+msgid "Focus Filter"
+msgstr "Scagaire Fócais"
+
 msgid "Move Favorite Up"
 msgstr "Bog an ceann is fearr leat suas"
 
@@ -5988,6 +7030,9 @@ msgstr "Athnuaigh comhaid."
 msgid "(Un)favorite current folder."
 msgstr "(Un)fillteán reatha is fearr leat."
 
+msgid "Current Drive"
+msgstr "Tiomántán Reatha"
+
 msgid "Create a new folder."
 msgstr "Cruthaigh fillteán nua."
 
@@ -5997,11 +7042,26 @@ msgstr "Comhadlanna & Comhaid:"
 msgid "Toggle the visibility of hidden files."
 msgstr "Scoránaigh infheictheacht na gcomhad folaithe."
 
+msgid "Sort files"
+msgstr "Sórtáil comhaid"
+
+msgid "Toggle the visibility of the filter for file names."
+msgstr "Athraigh infheictheacht an scagaire le haghaidh ainmneacha comhad."
+
 msgid "Preview:"
 msgstr "Réamhamharc:"
 
+msgid "Filter:"
+msgstr "Scagaire:"
+
+msgid "Filename Filter:"
+msgstr "Scagaire Ainm Comhaid:"
+
 msgid "File:"
 msgstr "Comhad:"
+
+msgid "File Type Filter"
+msgstr "Scagaire Cineál Comhaid"
 
 msgid ""
 "Remove the selected files? For safety only files and empty directories can be "
@@ -6020,6 +7080,42 @@ msgstr "Níor aimsíodh aon fho-acmhainní."
 msgid "Open a list of sub-resources."
 msgstr "Oscail liosta fo-acmhainní."
 
+msgid "Search files..."
+msgstr "Cuardaigh comhaid..."
+
+msgid "Select Resource"
+msgstr "Roghnaigh Acmhainn"
+
+msgid "Select Scene"
+msgstr "Roghnaigh Radharc"
+
+msgid "Fuzzy Search"
+msgstr "Cuardach Doiléir"
+
+msgid "Include approximate matches."
+msgstr "Cuir meaitseálacha garbha san áireamh."
+
+msgid "Addons"
+msgstr "Breiseáin"
+
+msgid "Include files from addons"
+msgstr "Cuir comhaid ó bhreiseáin san áireamh"
+
+msgid "No files found for this type"
+msgstr "Níor aimsíodh aon chomhaid don chineál seo"
+
+msgid "No results found"
+msgstr "Níor aimsíodh aon torthaí"
+
+msgid " (recently opened)"
+msgstr " (osclaíodh le déanaí)"
+
+msgid "Grid view"
+msgstr "Radharc eangaí"
+
+msgid "List view"
+msgstr "Radharc liosta"
+
 msgid ""
 "Hold %s to round to integers.\n"
 "Hold Shift for more precise changes."
@@ -6032,6 +7128,9 @@ msgstr "Gan fógraí."
 
 msgid "Show notifications."
 msgstr "Taispeáin fógraí."
+
+msgid "Notifications:"
+msgstr "Fógraí:"
 
 msgid "Silence the notifications."
 msgstr "Cuir na fógraí ina dtost."
@@ -6049,8 +7148,23 @@ msgstr ""
 "Dáta tiomantais Git: %s\n"
 "Cliceáil chun faisnéis an leagain a chóipeáil."
 
+msgid "Switch Layout"
+msgstr "Leagan Amach an Athraigh"
+
+msgid "Lock Panel"
+msgstr "Painéal Glasála"
+
+msgid "Switch Embedded Panel Position"
+msgstr "Athraigh Seasamh an Phainéil Leabaithe"
+
 msgid "Make this panel floating in the screen %d."
 msgstr "Cuir an painéal seo ar snámh sa scáileán %d."
+
+msgid "Make this panel floating."
+msgstr "Déan an painéal seo a shnámh."
+
+msgid "Right-click to open the screen selector."
+msgstr "Cliceáil ar dheis chun an roghnóir scáileáin a oscailt."
 
 msgid "Select Screen"
 msgstr "Roghnaigh Scáileán"
@@ -6069,6 +7183,9 @@ msgstr "Script Shaincheaptha á rith..."
 
 msgid "Couldn't load post-import script:"
 msgstr "Níorbh fhéidir script iariompórtála a luchtú:"
+
+msgid "Script is not a subtype of EditorScenePostImport:"
+msgstr "Ní fochineál de EditorScenePostImport an script:"
 
 msgid "Invalid/broken script for post-import (check console):"
 msgstr "Script neamhbhailí/briste le haghaidh iariompórtála (seiceáil consól):"
@@ -6216,6 +7333,12 @@ msgstr "Ábhair"
 msgid "Selected Animation Play/Pause"
 msgstr "Dráma Beochana Roghnaithe/Sos"
 
+msgid "Selected Animation Stop"
+msgstr "Stad Beochana Roghnaithe"
+
+msgid "Toggle Animation Skeleton Visibility"
+msgstr "Infheictheacht Chnámharlaigh Beochana a Athsholáthar"
+
 msgid "Rotate Lights With Model"
 msgstr "Rothlaigh soilse le samhail"
 
@@ -6361,6 +7484,9 @@ msgstr ""
 
 msgid "Configuration:"
 msgstr "Cumraíocht:"
+
+msgid "Add new font variation configuration."
+msgstr "Cuir cumraíocht athraitheachta cló nua leis."
 
 msgid "Clear Glyph List"
 msgstr "Glan Liosta Glyph"
@@ -6539,6 +7665,28 @@ msgstr ""
 "Ainmneacha ag tosú le _ in áirithe le haghaidh meiteashonraí eagarthóir "
 "amháin."
 
+msgid "Property: %s"
+msgstr "Maoin: %s"
+
+msgid ""
+"Toggling the checkbox is disabled for Resource properties. Modify the "
+"property using the resource picker instead."
+msgstr ""
+"Tá an bosca seiceála díchumasaithe le haghaidh airíonna Acmhainní. Athraigh "
+"an mhaoin ag baint úsáide as an roghnóir acmhainní ina ionad sin."
+
+msgid "Unfavorite Property"
+msgstr "Bain an Mhaoin as an bhFearr"
+
+msgid "Make this property be put back at its original place."
+msgstr "Cuir an mhaoin seo ar ais ina háit bhunaidh."
+
+msgid "Favorite Property"
+msgstr "Maoin is Fearr Leat"
+
+msgid "Make this property be placed at the top for all objects of this class."
+msgstr "Cuir an mhaoin seo ag barr gach réad den rang seo."
+
 msgid "Pin Value"
 msgstr "Luach bioráin"
 
@@ -6549,6 +7697,24 @@ msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
 "Pinning fórsaí luach é a shábháil fiú má tá sé comhionann leis an "
 "mainneachtain."
+
+msgid "Override for Project"
+msgstr "Sáraigh don Tionscadal"
+
+msgid "Delete Property"
+msgstr "Scrios an Mhaoin"
+
+msgid "Revert Value"
+msgstr "Luach Aisiompaithe"
+
+msgid "Category: %s"
+msgstr "Catagóir: %s"
+
+msgid "Unfavorite All"
+msgstr "Bain de na cinn is fearr leat"
+
+msgid "Section: %s"
+msgstr "Roinn: %s"
 
 msgid "On"
 msgstr "Maidir le"
@@ -6579,6 +7745,9 @@ msgstr "Athraigh Eagar Na Maoine le Réimír %s"
 msgid "Element %d: %s%d*"
 msgstr "Eilimint %d: %s%d*"
 
+msgid "Array: %s"
+msgstr "Eagar: %s"
+
 msgid "Insert New Before"
 msgstr "Ionsáigh Nua Roimh"
 
@@ -6599,6 +7768,21 @@ msgstr "Athraigh Méid an Eagair"
 
 msgid "New Size:"
 msgstr "Méid Nua:"
+
+msgid "First Page"
+msgstr "An Chéad Leathanach"
+
+msgid "Previous Page"
+msgstr "Leathanach Roimhe Seo"
+
+msgid "Page Number"
+msgstr "Uimhir Leathanaigh"
+
+msgid "Next Page"
+msgstr "An Leathanach Eile"
+
+msgid "Last Page"
+msgstr "Leathanach Deireanach"
 
 msgid "Element %s"
 msgstr "Eilimint %s"
@@ -6633,8 +7817,33 @@ msgstr "Cóipeáil Conair na Maoine"
 msgid "Edit Text:"
 msgstr "Cuir Téacs in Eagar:"
 
+msgid "Open Text Edit Dialog"
+msgstr "Oscail Dialóg Eagarthóireachta Téacs"
+
+msgid "Enum Options"
+msgstr "Roghanna Enum"
+
+msgid "Custom Value"
+msgstr "Luach Saincheaptha"
+
+msgid "Accept Custom Value Edit"
+msgstr "Glac le hEagarthóireacht Luach Saincheaptha"
+
+msgid "Cancel Custom Value Edit"
+msgstr "Cealaigh Eagarthóireacht Luach Saincheaptha"
+
 msgid "Locale"
 msgstr "Áitiúil"
+
+msgid "Toggle Display UID"
+msgstr "Aitheantóir Úsáideora Taispeána a Athrú"
+
+msgid ""
+"Toggles displaying between path and UID.\n"
+"The UID is the actual value of this property."
+msgstr ""
+"Athraíonn sé an taispeáint idir cosán agus UID.\n"
+"Is é an UID fíorluach na maoine seo."
 
 msgid "Renaming layer %d:"
 msgstr "Sraith %d á athainmniú:"
@@ -6653,6 +7862,9 @@ msgstr "Gan Sraitheanna Ainmnithe"
 
 msgid "Edit Layer Names"
 msgstr "Cuir Ainmneacha na Sraithe in Eagar"
+
+msgid "Layers"
+msgstr "Sraitheanna"
 
 msgid "<empty>"
 msgstr "<folamh>"
@@ -6675,14 +7887,23 @@ msgstr ""
 msgid "Temporary Euler"
 msgstr "Euler Sealadach"
 
+msgid "Temporary Euler %s"
+msgstr "Sealadach Euler %s"
+
 msgid "Assign..."
 msgstr "Sann..."
+
+msgid "Assign Node"
+msgstr "Sannadh Nód"
 
 msgid "Copy as Text"
 msgstr "Cóipeáil mar Théacs"
 
 msgid "Show Node in Tree"
 msgstr "Taispeáin Nód i gCrann"
+
+msgid "Node Path"
+msgstr "Cosán an Nóid"
 
 msgid "Invalid RID"
 msgstr "RID neamhbhailí"
@@ -6732,8 +7953,17 @@ msgstr "Eochair Nua:"
 msgid "New Value:"
 msgstr "Luach Nua:"
 
+msgid "Reorder"
+msgstr "Athordú"
+
 msgid "(Nil) %s"
 msgstr "(Neamhní) %s"
+
+msgid "%s%s (size %d)"
+msgstr "%s%s (méid %d)"
+
+msgid "%s (size %d)"
+msgstr "%s (méid %d)"
 
 msgid "Size:"
 msgstr "Méid:"
@@ -6780,20 +8010,35 @@ msgstr "Iniúchadh"
 msgid "Make Unique (Recursive)"
 msgstr "Déan Uathúil (Athchúrsach)"
 
+msgid "Paste as Unique"
+msgstr "Greamaigh mar Uathúil"
+
 msgid "Convert to %s"
 msgstr "Tiontaigh go %s"
 
 msgid "Select resources to make unique:"
 msgstr "Roghnaigh acmhainní chun uathúil a dhéanamh:"
 
+msgid "Duplicate resources"
+msgstr "Acmhainní dúblacha"
+
 msgid "New"
 msgstr "Nua"
+
+msgid "Assign Resource"
+msgstr "Sannadh Acmhainn"
+
+msgid "Quick Load"
+msgstr "Luchtú Tapa"
 
 msgid "New Shader..."
 msgstr "Scáthóir Nua..."
 
 msgid "Size: %s"
 msgstr "Méid: %s"
+
+msgid "Invalid file or broken link."
+msgstr "Comhad neamhbhailí nó nasc briste."
 
 msgid "Type: %s"
 msgstr "Cineál: %s"
@@ -6809,6 +8054,12 @@ msgstr "Fad: %0.1fs"
 
 msgid "Length: %0.3fs"
 msgstr "Fad: %0.3fs"
+
+msgid "Advanced settings are always shown when searching."
+msgstr "Taispeántar socruithe ardleibhéil i gcónaí agus cuardach á dhéanamh."
+
+msgid "Event Configured"
+msgstr "Imeacht Cumraithe"
 
 msgid "Configure"
 msgstr "Cumraigh"
@@ -6843,6 +8094,13 @@ msgstr ""
 
 msgid "Edit Plugin"
 msgstr "Cuir Breiseán in Eagar"
+
+msgid ""
+"Recovery mode is enabled. Enabled plugins will not run while this mode is "
+"active."
+msgstr ""
+"Tá an modh aisghabhála cumasaithe. Ní rithfidh breiseáin chumasaithe fad a "
+"bheidh an modh seo gníomhach."
 
 msgid "Installed Plugins:"
 msgstr "Breiseáin Suiteáilte:"
@@ -6941,6 +8199,13 @@ msgstr ""
 
 msgid "Script Name:"
 msgstr "Ainm scripte:"
+
+msgid ""
+"Optional. The name of the script file. If left empty, will default to the "
+"subfolder name."
+msgstr ""
+"Roghnach. Ainm an chomhaid scripte. Má fhágtar folamh é, úsáidfear ainm an "
+"fho-fhillteáin mar réamhshocrú."
 
 msgid "Activate now?"
 msgstr "Gníomhachtaigh anois?"
@@ -7074,6 +8339,9 @@ msgstr "Rindreáil tapa radhairc shimplí."
 msgid "Supports desktop, mobile + web platforms."
 msgstr "Tacaíochtaí deisce, soghluaiste + ardáin ghréasáin."
 
+msgid "Least advanced 3D graphics."
+msgstr "Grafaicí 3D is lú chun cinn."
+
 msgid "Intended for low-end/older devices."
 msgstr "Beartaithe le haghaidh feistí íseal-deireadh/níos sine."
 
@@ -7113,6 +8381,9 @@ msgstr "Earráid agus comhad pacáiste á oscailt, ní i bhformáid ZIP."
 msgid "The following files failed extraction from package:"
 msgstr "Theip ar na comhaid seo a leanas eastóscadh ón bpacáiste:"
 
+msgid "Couldn't duplicate project (error %d)."
+msgstr "Níorbh fhéidir an tionscadal a dhúbailt (earráid %d)."
+
 msgid ""
 "Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
@@ -7134,6 +8405,9 @@ msgstr "Cruthaigh Tionscadal Nua"
 msgid "Install Project:"
 msgstr "Suiteáil Tionscadal:"
 
+msgid "Duplicate Project"
+msgstr "Tionscadal Dúblach"
+
 msgid "Project Name:"
 msgstr "Ainm an Tionscadail:"
 
@@ -7146,6 +8420,15 @@ msgstr "Conair Suiteála Tionscadail:"
 msgid "Renderer:"
 msgstr "Rindreálaí:"
 
+msgid ""
+"RenderingDevice-based methods not available on this GPU:\n"
+"%s\n"
+"Please use the Compatibility renderer."
+msgstr ""
+"Modhanna bunaithe ar ghléasanna rindreála nach bhfuil ar fáil ar an GPU seo:\n"
+"%s\n"
+"Úsáid an rindreálaí comhoiriúnachta le do thoil."
+
 msgid "The renderer can be changed later, but scenes may need to be adjusted."
 msgstr ""
 "Is féidir an rindreálaí a athrú níos déanaí, ach b'fhéidir go gcaithfear "
@@ -7156,6 +8439,15 @@ msgstr "Meiteashonraí Rialaithe Leagain:"
 
 msgid "Git"
 msgstr "Git"
+
+msgid "Edit Now"
+msgstr "Cuir in Eagar Anois"
+
+msgid "Project Name"
+msgstr "Ainm an Tionscadail"
+
+msgid "Project Path"
+msgstr "Cosán Tionscadail"
 
 msgid "This project was last edited in a different Godot version: "
 msgstr "Cuireadh an tionscadal seo in eagar go deireanach i leagan Godot eile: "
@@ -7168,8 +8460,23 @@ msgstr ""
 msgid "Error: Project is missing on the filesystem."
 msgstr "Earráid: Tá an tionscadal ar iarraidh ar an gcóras comhad."
 
+msgid "Add to favorites"
+msgstr "Cuir le rogha pearsanta"
+
+msgid "Open in file manager"
+msgstr "Oscail i mbainisteoir comhad"
+
 msgid "Last edited timestamp"
 msgstr "Stampa ama is déanaí curtha in eagar"
+
+msgid "Unknown version"
+msgstr "Leagan anaithnid"
+
+msgid "Scanning"
+msgstr "Ag scanadh"
+
+msgid "Scanning for projects..."
+msgstr "Ag scanadh le haghaidh tionscadal..."
 
 msgid "Missing Project"
 msgstr "Tionscadal ar Iarraidh"
@@ -7398,6 +8705,50 @@ msgstr ""
 "Bain gach tionscadal atá ar iarraidh ón liosta?\n"
 "Ní dhéanfar inneachar na bhfillteán tionscadail a mhodhnú."
 
+msgid ""
+"It looks like Godot crashed when opening this project the last time. If "
+"you're having problems editing this project, you can try to open it in "
+"Recovery Mode."
+msgstr ""
+"Is cosúil gur thuairteáil Godot nuair a osclaíodh an tionscadal seo an uair "
+"dheireanach. Má bhíonn fadhbanna agat an tionscadal seo a chur in eagar, is "
+"féidir leat iarracht a dhéanamh é a oscailt i Mód Aisghabhála."
+
+msgid ""
+"Recovery Mode is a special mode that may help to recover projects that crash "
+"the engine during initialization. This mode temporarily disables the "
+"following features:"
+msgstr ""
+"Is mód speisialta é Mód Aisghabhála a d'fhéadfadh cabhrú le tionscadail a "
+"aisghabháil a chuireann isteach ar an inneall le linn an tosaithe. "
+"Díchumasaíonn an mód seo na gnéithe seo a leanas go sealadach:"
+
+msgid "Tool scripts"
+msgstr "Scripteanna uirlisí"
+
+msgid "Editor plugins"
+msgstr "Breiseáin eagarthóireachta"
+
+msgid "GDExtension addons"
+msgstr "Breiseáin GDExtension"
+
+msgid "Automatic scene restoring"
+msgstr "Athchóiriú uathoibríoch radhairc"
+
+msgid ""
+"This mode is intended only for basic editing to troubleshoot such issues, and "
+"therefore it will not be possible to run the project during this mode. It is "
+"also a good idea to make a backup of your project before proceeding."
+msgstr ""
+"Níl an modh seo beartaithe ach le haghaidh eagarthóireachta bunúsach chun "
+"fadhbanna den sórt sin a réiteach, agus dá bhrí sin ní bheidh sé indéanta an "
+"tionscadal a rith le linn an mhodha seo. Is dea-smaoineamh é freisin cúltaca "
+"de do thionscadal a dhéanamh sula dtéann tú ar aghaidh."
+
+msgid "Edit the project in Recovery Mode?"
+msgstr ""
+"An bhfuil tú ag iarraidh an tionscadal a chur in eagar i Mód Aisghabhála?"
+
 msgid "Couldn't load project at '%s'. It may be missing or corrupted."
 msgstr ""
 "Níorbh fhéidir an tionscadal a luchtú ag '%s'. D'fhéadfadh sé a bheith ar "
@@ -7409,11 +8760,20 @@ msgstr "Ní féidir ainm na clibe a bheith folamh."
 msgid "Tag name can't contain spaces."
 msgstr "Ní féidir spásanna a bheith in ainm na clibe."
 
+msgid "Tag name can't begin or end with underscore."
+msgstr "Ní féidir le hainm an chlib tosú ná críochnú le fo-líne."
+
+msgid "Tag name can't contain consecutive underscores."
+msgstr "Ní féidir fo-línte comhleanúnacha a bheith in ainm an chlib."
+
 msgid "These characters are not allowed in tags: %s."
 msgstr "Ní cheadaítear na carachtair seo i gclibeanna: %s."
 
 msgid "Tag name must be lowercase."
 msgstr "Ní mór ainm na clibe a bheith níos ísle."
+
+msgid "About Godot"
+msgstr "Maidir le Godot"
 
 msgid "Settings"
 msgstr "Socruithe"
@@ -7465,6 +8825,12 @@ msgstr ""
 msgid "Edit Project"
 msgstr "Cuir Tionscadal in Eagar"
 
+msgid "Edit in verbose mode"
+msgstr "Cuir in eagar i mód focal"
+
+msgid "Edit in recovery mode"
+msgstr "Cuir in eagar i mód aisghabhála"
+
 msgid "Run Project"
 msgstr "Rith Tionscadal"
 
@@ -7493,8 +8859,20 @@ msgstr "Roghnaigh Fillteán le Scanadh"
 msgid "Remove All"
 msgstr "Bain Gach Rud"
 
+msgid "Edit normally"
+msgstr "Cuir in eagar de ghnáth"
+
+msgid "Edit in Recovery Mode"
+msgstr "Cuir in Eagar i Mód Aisghabhála"
+
+msgid "Backup project first"
+msgstr "Cúltaca den tionscadal ar dtús"
+
 msgid "Convert Full Project"
 msgstr "Tiontaigh Tionscadal Iomlán"
+
+msgid "See Migration Guide"
+msgstr "Féach ar an Treoir Imirce"
 
 msgid ""
 "This option will perform full project conversion, updating scenes, resources "
@@ -7543,6 +8921,15 @@ msgid "Tags are capitalized automatically when displayed."
 msgstr ""
 "Déantar clibeanna a chaipitliú go huathoibríoch nuair a thaispeántar iad."
 
+msgid "New Tag Name"
+msgstr "Ainm Nua an Chlib"
+
+msgid "Create Tag"
+msgstr "Cruthaigh Clib"
+
+msgid "Project Tag: %s"
+msgstr "Clib Tionscadail: %s"
+
 msgid "Restart Now"
 msgstr "Atosaigh Anois"
 
@@ -7565,6 +8952,9 @@ msgstr "Scála Taispeána"
 msgid "Network Mode"
 msgstr "Mód Líonra"
 
+msgid "Check for Updates"
+msgstr "Seiceáil le haghaidh Nuashonruithe"
+
 msgid "Directory Naming Convention"
 msgstr "Coinbhinsiún Ainmniú Eolaire"
 
@@ -7575,8 +8965,50 @@ msgstr ""
 "Athraíodh na socruithe! Ní mór an bainisteoir tionscadail a atosú chun "
 "athruithe a chur i bhfeidhm."
 
+msgid ""
+"Different engine version may have minor differences in various Resources, "
+"like additional fields or removed properties. When upgrading the project to a "
+"new version, such changes can cause diffs when saving scenes or resources, or "
+"reimporting.\n"
+"\n"
+"This tool ensures that such changes are performed all at once. It will:\n"
+"- Regenerate UID cache\n"
+"- Load and re-save every text/binary Resource\n"
+"- Reimport every importable Resource\n"
+"\n"
+"Full upgrade will take considerable amount of time, but afterwards saving/"
+"reimporting any scene/resource should not cause unintended changes."
+msgstr ""
+"D’fhéadfadh difríochtaí beaga a bheith idir Acmhainní éagsúla i leaganacha "
+"éagsúla den inneall, amhail réimsí breise nó airíonna bainte. Agus an "
+"tionscadal á uasghrádú go leagan nua, is féidir le hathruithe den sórt sin "
+"difríochtaí a chruthú agus radhairc nó acmhainní á sábháil, nó á n-ath-"
+"allmhairiú.\n"
+"\n"
+"Cinntíonn an uirlis seo go ndéantar na hathruithe sin go léir ag an am "
+"céanna. Déanfaidh sé:\n"
+"- Taisce UID a athghiniúint\n"
+"- Gach Acmhainn téacs/dénártha a luchtú agus a athshábháil\n"
+"- Gach Acmhainn in-allmhairithe a ath-allmhairiú\n"
+"\n"
+"Tógfaidh uasghrádú iomlán go leor ama, ach níor cheart go mbeadh athruithe "
+"neamhbheartaithe mar thoradh ar aon radharc/acmhainn a shábháil/ath-"
+"allmhairiú ina dhiaidh sin."
+
 msgid "Restart & Upgrade"
 msgstr "Atosaigh agus Uasghrádaigh"
+
+msgid "Updating Project Scenes"
+msgstr "Radharcanna Tionscadail á Nuashonrú"
+
+msgid "Re-saving scene:"
+msgstr "Radharc á athshábháil:"
+
+msgid "Updating Project Resources"
+msgstr "Nuashonrú Acmhainní Tionscadail"
+
+msgid "Re-saving resource:"
+msgstr "Acmhainn á hathshábháil:"
 
 msgid "Play the project."
 msgstr "Seinn an tionscadal."
@@ -7611,8 +9043,62 @@ msgstr ""
 msgid "Could not start subprocess(es)!"
 msgstr "Níorbh fhéidir fophróiseas(es) a thosú!"
 
+msgid "Recovery Mode is enabled. Disable it to run the project."
+msgstr ""
+"Tá Mód Aisghabhála cumasaithe. Díchumasaigh é chun an tionscadal a rith."
+
+msgid ""
+"Autostart is enabled for the following profilers, which can have a "
+"performance impact:"
+msgstr ""
+"Tá an tosú uathoibríoch cumasaithe do na próifíleoirí seo a leanas, rud a "
+"d’fhéadfadh tionchar a imirt ar fheidhmíocht:"
+
 msgid "Network Profiler"
 msgstr "Próifíleoir Líonra"
+
+msgid "Click to open the first profiler for which autostart is enabled."
+msgstr ""
+"Cliceáil chun an chéad phróifíleoir a bhfuil uaththosú cumasaithe dó a "
+"oscailt."
+
+msgid "Recovery Mode"
+msgstr "Mód Aisghabhála"
+
+msgid ""
+"Godot opened the project in Recovery Mode, which is a special mode that can "
+"help recover projects that crash the engine upon initialization. The "
+"following features have been temporarily disabled:"
+msgstr ""
+"D’oscail Godot an tionscadal i Mód Aisghabhála, ar mód speisialta é a "
+"chabhróidh le tionscadail a aisghabháil a chuireann isteach ar an inneall "
+"nuair a thosaítear é. Tá na gnéithe seo a leanas díchumasaithe go sealadach:"
+
+msgid ""
+"If the project cannot be opened outside of this mode, then it's very likely "
+"any of these components is preventing this project from launching. This mode "
+"is intended only for basic editing to troubleshoot such issues, and therefore "
+"it is not possible to run a project in this mode."
+msgstr ""
+"Mura féidir an tionscadal a oscailt lasmuigh den mhodh seo, is dócha go "
+"bhfuil aon cheann de na comhpháirteanna seo ag cur cosc ar an tionscadal seo "
+"a sheoladh. Níl an modh seo beartaithe ach le haghaidh eagarthóireachta "
+"bunúsach chun fadhbanna den sórt sin a réiteach, agus dá bhrí sin ní féidir "
+"tionscadal a rith sa mhodh seo."
+
+msgid ""
+"To disable Recovery Mode, reload the project by pressing the Reload button "
+"next to the Recovery Mode banner, or by reopening the project normally."
+msgstr ""
+"Chun Mód Aisghabhála a dhíchumasú, athlódáil an tionscadal tríd an gcnaipe "
+"Athlódáil a bhrú in aice leis an meirge Mód Aisghabhála, nó tríd an "
+"tionscadal a athoscailt ar ghnáth."
+
+msgid "Disable recovery mode and reload the project."
+msgstr "Díchumasaigh an modh aisghabhála agus athlódáil an tionscadal."
+
+msgid "Recovery Mode is enabled. Click for more details."
+msgstr "Tá Mód Aisghabhála cumasaithe. Cliceáil le haghaidh tuilleadh sonraí."
 
 msgid "Run the project's default scene."
 msgstr "Rith radharc réamhshocraithe an tionscadail."
@@ -7630,17 +9116,35 @@ msgstr "Stop an tionscadal atá á reáchtáil faoi láthair."
 msgid "Stop Running Project"
 msgstr "Stop an Tionscadal Rith"
 
+msgid "Run Scene in Regular Mode"
+msgstr "Rith Radharc i Mód Rialta"
+
+msgid "Run Scene in XR Mode"
+msgstr "Rith Radharc i Mód XR"
+
 msgid "Run the currently edited scene."
 msgstr "Rith an radharc atá curtha in eagar faoi láthair."
 
 msgid "Run Current Scene"
 msgstr "Rith an Radharc Reatha"
 
+msgid "Run in Regular Mode"
+msgstr "Rith i Mód Rialta"
+
+msgid "Run in XR Mode"
+msgstr "Rith i Mód XR"
+
 msgid "Run a specific scene."
 msgstr "Rith radharc ar leith."
 
 msgid "Run Specific Scene"
 msgstr "Rith Radharc Ar Leith"
+
+msgid "Enable Movie Maker Mode"
+msgstr "Cumasaigh Mód Déantóra Scannán"
+
+msgid "Open Movie Maker Settings..."
+msgstr "Oscail Socruithe Déantóir Scannán..."
 
 msgid ""
 "Enable Movie Maker mode.\n"
@@ -7651,6 +9155,12 @@ msgstr ""
 "Beidh an tionscadal ar siúl ag FPS cobhsaí agus déanfar an t-aschur amhairc "
 "agus fuaime a thaifeadadh i gcomhad físe."
 
+msgid "No Remote Deploy export presets configured."
+msgstr "Níl aon réamhshocruithe easpórtála Imscaradh Cianda cumraithe."
+
+msgid "Remote Deploy"
+msgstr "Imscaradh Cianda"
+
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the Export menu or define an existing preset "
@@ -7660,11 +9170,184 @@ msgstr ""
 "Cuir réamhshocrú runnable sa roghchlár Easpórtáil nó sainmhínigh "
 "réamhshocraithe atá ann cheana féin mar runnable."
 
+msgid ""
+"Warning: The CPU architecture \"%s\" is not active in your export preset.\n"
+"\n"
+"Run \"Remote Deploy\" anyway?"
+msgstr ""
+"Rabhadh: Níl ailtireacht an LAP \"%s\" gníomhach i do réamhshocrú "
+"easpórtála.\n"
+"\n"
+"An bhfuil tú ag iarraidh \"Imscaradh Cianda\" a rith ar aon nós?"
+
+msgid "Deploy to First Device in List"
+msgstr "Imscaradh chuig an gCéad Ghléas sa Liosta"
+
+msgid "Deploy to Second Device in List"
+msgstr "Imscaradh chuig an Dara Gléas sa Liosta"
+
+msgid "Deploy to Third Device in List"
+msgstr "Imscaradh chuig an Tríú Gléas sa Liosta"
+
+msgid "Deploy to Fourth Device in List"
+msgstr "Imscaradh chuig an gCeathrú Gléas sa Liosta"
+
 msgid "Project Run"
 msgstr "Rith an Tionscadail"
 
+msgid "Suspend/Resume Embedded Project"
+msgstr "Cuir an tionscadal leabaithe ar fionraí/atosaigh"
+
+msgid "Next Frame"
+msgstr "An Chéad Fráma Eile"
+
+msgid "Connection impossible to the game process."
+msgstr "Nasc dodhéanta leis an bpróiseas cluiche."
+
+msgid "Game starting..."
+msgstr "Cluiche ag tosú..."
+
+msgid "Game running not embedded."
+msgstr "Níl an cluiche ag rith leabaithe."
+
+msgid "Press play to start the game."
+msgstr "Brúigh súgradh chun an cluiche a thosú."
+
+msgid "Embedding is disabled."
+msgstr "Tá leabú díchumasaithe."
+
+msgid ""
+"Game embedding not available on Wayland.\n"
+"Wayland can be disabled in the Editor Settings (Run > Platforms > Linux/*BSD "
+"> Prefer Wayland)."
+msgstr ""
+"Níl leabú cluichí ar fáil ar Wayland.\n"
+"Is féidir Wayland a dhíchumasú i Socruithe an Eagarthóra (Rith > Ardáin > "
+"Linux/*BSD > Is fearr leat Wayland)."
+
+msgid "Game embedding not available on your OS."
+msgstr "Níl leabú cluichí ar fáil ar do chóras oibriúcháin."
+
+msgid ""
+"Game embedding not available for the Display Server: '%s'.\n"
+"Display Server can be modified in the Project Settings (Display > Display "
+"Server > Driver)."
+msgstr ""
+"Níl leabú cluiche ar fáil don Fhreastalaí Taispeána: '%s'.\n"
+"Is féidir an Freastalaí Taispeána a mhodhnú i Socruithe an Tionscadail "
+"(Taispeáint > Freastalaí Taispeána > Tiománaí)."
+
+msgid "Game embedding not available when the game starts minimized."
+msgstr ""
+"Ní féidir leabú cluiche a dhéanamh nuair a thosaíonn an cluiche íoslaghdaithe."
+
+msgid ""
+"Consider overriding the window mode project setting with the editor feature "
+"tag to Windowed to use game embedding while leaving the exported project "
+"intact."
+msgstr ""
+"Smaoinigh ar an socrú tionscadail mód fuinneoige a shárú leis an gclib gné "
+"eagarthóra go Windowed chun leabú cluiche a úsáid agus an tionscadal "
+"onnmhairithe a fhágáil slán."
+
+msgid "Game embedding not available when the game starts maximized."
+msgstr "Ní féidir cluiche a leabú nuair a thosaíonn an cluiche uasmhéadaithe."
+
+msgid "Game embedding not available when the game starts in fullscreen."
+msgstr "Ní féidir cluiche a leabú nuair a thosaíonn an cluiche i lánscáileán."
+
+msgid "Game embedding not available in single window mode."
+msgstr "Níl leabú cluiche ar fáil i mód fuinneoige aonair."
+
+msgid "Unmute game audio."
+msgstr "Díbholg fuaim an chluiche."
+
+msgid "Mute game audio."
+msgstr "Balbhaigh fuaim an chluiche."
+
+msgid "Alt+RMB: Show list of all nodes at position clicked."
+msgstr ""
+"Alt+RMB: Taispeáin liosta de na nóid uile ag an suíomh ar cliceáladh orthu."
+
+msgid "Suspend"
+msgstr "Cuir ar fionraí"
+
+msgid "Input"
+msgstr "Ionchur"
+
+msgid "Allow game input."
+msgstr "Ceadaigh ionchur cluiche."
+
+msgid ""
+"Disable game input and allow to select Node2Ds, Controls, and manipulate the "
+"2D camera."
+msgstr ""
+"Díchumasaigh ionchur cluiche agus lig do Node2Danna a roghnú, rialuithe a "
+"úsáid, agus an ceamara 2T a ionramháil."
+
+msgid ""
+"Disable game input and allow to select Node3Ds and manipulate the 3D camera."
+msgstr ""
+"Díchumasaigh ionchur cluiche agus lig do Node3Danna a roghnú agus an ceamara "
+"3T a ionramháil."
+
+msgid "Toggle Selection Visibility"
+msgstr "Infheictheacht an Roghnúcháin a Athrú"
+
 msgid "Show list of selectable nodes at position clicked."
 msgstr "Taispeáin liosta de nóid inroghnaithe ag an suíomh cliceáil."
+
+msgid "Override the in-game camera."
+msgstr "Sáraigh an ceamara sa chluiche."
+
+msgid "Camera Override Options"
+msgstr "Roghanna Sáraithe Ceamara"
+
+msgid "Reset 2D Camera"
+msgstr "Athshocraigh an Ceamara 2T"
+
+msgid "Reset 3D Camera"
+msgstr "Athshocraigh an Ceamara 3T"
+
+msgid "Manipulate In-Game"
+msgstr "Ionramháil sa Chluiche"
+
+msgid "Manipulate From Editors"
+msgstr "Ionramháil ó Eagarthóirí"
+
+msgid ""
+"Embedded game size is based on project settings.\n"
+"The 'Keep Aspect' mode is used when the Game Workspace is smaller than the "
+"desired size."
+msgstr ""
+"Tá méid an chluiche leabaithe bunaithe ar shocruithe an tionscadail.\n"
+"Úsáidtear an mód 'Coinnigh Gné' nuair a bhíonn an Spás Oibre Cluiche níos lú "
+"ná an méid atá ag teastáil."
+
+msgid "Embedded game size is based on project settings."
+msgstr "Tá méid an chluiche leabaithe bunaithe ar shocruithe an tionscadail."
+
+msgid "Keep the aspect ratio of the embedded game."
+msgstr "Coinnigh cóimheas gné an chluiche leabaithe."
+
+msgid "Embedded game size stretches to fit the Game Workspace."
+msgstr ""
+"Síneann méid an chluiche leabaithe chun freastal ar an Spás Oibre Cluiche."
+
+msgid "Embedding Options"
+msgstr "Roghanna Leabaithe"
+
+msgid "Embed Game on Next Play"
+msgstr "Leabaigh Cluiche ar an gCéad Súgradh Eile"
+
+msgid "Make Game Workspace Floating on Next Play"
+msgstr "Déan Spás Oibre Cluiche a Shnámh ar an gCéad Súgradh Eile"
+
+msgid "Game Workspace"
+msgstr "Spás Oibre Cluiche"
+
+msgid "Game"
+msgstr "Cluiche"
 
 msgid "Clear All"
 msgstr "Glan gach rud"
@@ -7687,6 +9370,9 @@ msgstr "Clibeanna camóg-scartha, mar shampla: taispeántas, gaile, imeacht"
 msgid "Enable Multiple Instances"
 msgstr "Cumasaigh Ilchásanna"
 
+msgid "Number of Instances"
+msgstr "Líon na gCásanna"
+
 msgid "Override Main Run Args"
 msgstr "Sáraigh Príomh-Args Rith"
 
@@ -7698,6 +9384,9 @@ msgstr "Sáraigh na Príomhchlibeanna"
 
 msgid "Feature Tags"
 msgstr "Clibeanna Gné"
+
+msgid "Move Origin to Geometric Center"
+msgstr "Bog Bunús go Lár Geoiméadrach"
 
 msgid "Create Polygon"
 msgstr "Cruthaigh Polagán"
@@ -7711,6 +9400,12 @@ msgstr ""
 "LMB: Pointe Bogtha\n"
 "RMB: Scrios Pointe"
 
+msgid "Move center of gravity to geometric center."
+msgstr "Bog lár an domhantarraingthe go dtí an lár geoiméadrach."
+
+msgid "Move Geometric Center"
+msgstr "Bog Lár Geoiméadrach"
+
 msgid "Edit Polygon"
 msgstr "Cuir Polagán in Eagar"
 
@@ -7722,6 +9417,27 @@ msgstr "Cuir Polagán in Eagar (Bain Pointe)"
 
 msgid "Remove Polygon And Point"
 msgstr "Bain Polagán agus Pointe"
+
+msgid "Create Polygon Points"
+msgstr "Cruthaigh Pointí Polagáin"
+
+msgid "Edit Polygon Points"
+msgstr "Cuir Pointí Polagáin in Eagar"
+
+msgid "Delete Polygon Points"
+msgstr "Scrios Pointí Polagáin"
+
+msgid "Edit Camera2D Limits"
+msgstr "Cuir Teorainneacha Camera2D in Eagar"
+
+msgid "Snap Camera2D Limits to the Viewport"
+msgstr "Teorainneacha Snap Camera2D chuig an Radharcphoirt"
+
+msgid "Camera2D"
+msgstr "Ceamara2D"
+
+msgid "Snap the Limits to the Viewport"
+msgstr "Snap na Teorainneacha leis an Radharcphoirt"
 
 msgid "Create Occluder Polygon"
 msgstr "Cruthaigh Polagán Occluder"
@@ -7761,6 +9477,9 @@ msgstr "Rect infheictheachta a ghiniúint (ag fanacht le hionsamhlú cáithnín�
 
 msgid "Generating..."
 msgstr "Á Ghiniúint..."
+
+msgid "Loading emission mask requires ParticleProcessMaterial."
+msgstr "Éilíonn luchtú masc astaíochta ParticleProcessMaterial."
 
 msgid "GPUParticles2D"
 msgstr "GPUParticles2D"
@@ -7807,6 +9526,9 @@ msgstr "Dún an Cuar"
 msgid "Clear Curve Points"
 msgstr "Glan Pointí Cuar"
 
+msgid "Create Curve in Path2D"
+msgstr "Cruthaigh Cuar i Path2D"
+
 msgid "Select Points"
 msgstr "Roghnaigh Pointí"
 
@@ -7851,6 +9573,9 @@ msgstr "Scáthánaigh Láimhseáil Uillinneacha"
 
 msgid "Mirror Handle Lengths"
 msgstr "Faid Láimhseála Scátháin"
+
+msgid "Create Curve"
+msgstr "Cruthaigh Cuar"
 
 msgid "Set Target Position"
 msgstr "Socraigh Suíomh na Sprice"
@@ -7917,8 +9642,14 @@ msgstr "Cnámha"
 msgid "Move Points"
 msgstr "Bog Pointí"
 
+msgid "%s: Rotate"
+msgstr "%s: Rothlaigh"
+
 msgid "Shift: Move All"
 msgstr "Shift: Bog Gach Rud"
+
+msgid "%s + Shift: Scale"
+msgstr "%s + Aistriú: Scála"
 
 msgid "Move Polygon"
 msgstr "Bog Polagán"
@@ -7944,6 +9675,9 @@ msgstr "Meáchain Péint le déine sonraithe."
 
 msgid "Unpaint weights with specified intensity."
 msgstr "Meáchain unpaint le déine sonraithe."
+
+msgid "Strength"
+msgstr "Neart"
 
 msgid "Radius:"
 msgstr "Ga:"
@@ -7989,6 +9723,12 @@ msgstr "Greille Céim Y:"
 
 msgid "Sync Bones to Polygon"
 msgstr "Sioncronaigh Cnámha go Polagán"
+
+msgid "Toggle Polygon Bottom Panel"
+msgstr "Painéal Bun an Pholagáin a Athrú"
+
+msgid "Polygon"
+msgstr "Polagán"
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
@@ -8064,8 +9804,14 @@ msgstr "Geoiméadracht neamhbhailí, ní féidir occluder éadrom a chruthú."
 msgid "Create LightOccluder2D Sibling"
 msgstr "Cruthaigh Siblín LightOccluder2D"
 
+msgid "Sprite's region needs to be enabled in the inspector."
+msgstr "Ní mór réigiún Sprite a chumasú sa chigire."
+
 msgid "Sprite2D"
 msgstr "Sprite2D"
+
+msgid "Drag to Resize Region Rect"
+msgstr "Tarraing chun Méid an Réigiúin a Athrú Dronuilleogach"
 
 msgid "Simplification:"
 msgstr "Simpliú:"
@@ -8200,6 +9946,9 @@ msgstr "Snap Leathphicteilíní"
 msgid "Grid Snap"
 msgstr "Léim Ghreille"
 
+msgid "Subdivision"
+msgstr "Fo-roinn"
+
 msgid "Painting Tiles Property"
 msgstr "Péinteáil Tíleanna Maoin"
 
@@ -8276,17 +10025,35 @@ msgstr "Tíleanna péinte"
 msgid "Paste tiles"
 msgstr "Greamaigh tíleanna"
 
+msgid "Selection Tool"
+msgstr "Uirlis Roghnúcháin"
+
 msgid "Shift: Draw line."
 msgstr "Shift: Tarraing líne."
 
 msgid "Shift: Draw rectangle."
 msgstr "Shift: Tarraing dronuilleog."
 
+msgid "Paint Tool"
+msgstr "Uirlis Péinteála"
+
+msgid "Line Tool"
+msgstr "Uirlis Líne"
+
+msgid "Rect Tool"
+msgstr "Uirlis Dhreoch"
+
+msgid "Bucket Tool"
+msgstr "Uirlis Buicéad"
+
 msgid "Alternatively hold %s with other tools to pick tile."
 msgstr "Nó coinnigh %s le huirlisí eile chun tíl a phiocadh."
 
 msgid "Alternatively use RMB to erase tiles."
 msgstr "Nó bain úsáid as RMB chun tíleanna a scriosadh."
+
+msgid "Erase"
+msgstr "Scrios"
 
 msgid "Rotate Tile Left"
 msgstr "Rothlaigh tíl ar chlé"
@@ -8317,6 +10084,13 @@ msgstr "Scaipeadh:"
 
 msgid "Tiles"
 msgstr "Tíleanna"
+
+msgid ""
+"This TileMap's TileSet has no Tile Source configured. Go to the TileSet "
+"bottom panel to add one."
+msgstr ""
+"Níl aon Fhoinse Tíleanna cumraithe don TileSet seo. Téigh go dtí an painéal "
+"bun den TileSet chun ceann a chur leis."
 
 msgid "Sort sources"
 msgstr "Sórtáil foinsí"
@@ -8422,6 +10196,9 @@ msgstr "Aibhsigh Sraith TileMap Roghnaithe"
 
 msgid "Toggle grid visibility."
 msgstr "Scoránaigh infheictheacht na heangaí."
+
+msgid "Advanced settings."
+msgstr "Socruithe ardleibhéil."
 
 msgid "Automatically Replace Tiles with Proxies"
 msgstr "Cuir Proxies in ionad tíleanna go huathoibríoch"
@@ -8578,6 +10355,9 @@ msgstr "Coinnigh Ctrl a chruthú tíleanna il."
 
 msgid "Hold Shift to create big tiles."
 msgstr "Coinnigh Shift chun tíleanna móra a chruthú."
+
+msgid "Hold Shift to select multiple regions."
+msgstr "Coinnigh Shift síos chun réigiúin iolracha a roghnú."
 
 msgid ""
 "TileSet is in read-only mode. Make the resource unique to edit TileSet "
@@ -8870,6 +10650,9 @@ msgstr "Bain foinse"
 msgid "Add atlas source"
 msgstr "Cuir foinse atlas leis"
 
+msgid "Tile Sources"
+msgstr "Foinsí Tíleanna"
+
 msgid "Sort Sources"
 msgstr "Sórtáil Foinsí"
 
@@ -8954,6 +10737,12 @@ msgstr "Airíonna bailithe radharcanna:"
 msgid "Tile properties:"
 msgstr "Airíonna tílithe:"
 
+msgid "Eraser Tool"
+msgstr "Uirlis Scriosáin"
+
+msgid "Picker Tool"
+msgstr "Uirlis Roghnóra"
+
 msgid "TileMap"
 msgstr "Mapa Tíl"
 
@@ -9017,6 +10806,12 @@ msgstr "Athraigh Airde Cruth Sorcóir"
 msgid "Change Separation Ray Shape Length"
 msgstr "Athraigh Fad Cruth Ray Scaradh"
 
+msgid "Remove SoftBody3D pinned point %d"
+msgstr "Bain pointe bioráilte SoftBody3D %d"
+
+msgid "Add SoftBody3D pinned point %d"
+msgstr "Cuir pointe bioráin %d de SoftBody3D leis"
+
 msgid "Change Probe Size"
 msgstr "Athraigh Méid an Tóireadóra"
 
@@ -9066,6 +10861,47 @@ msgstr ""
 "Ní féidir cosán sábhála a chinneadh le haghaidh íomhánna mapa solais.\n"
 "Sábháil do radharc agus bain triail eile as."
 
+msgid ""
+"No meshes with lightmapping support to bake. Make sure they contain UV2 data "
+"and their Global Illumination property is set to Static."
+msgstr ""
+"Gan aon mhogaill le tacaíocht mapála solais le bácáil. Cinntigh go bhfuil "
+"sonraí UV2 iontu agus go bhfuil a n-airíonna Soilsiú Domhanda socraithe go "
+"Statach."
+
+msgid ""
+"To import a scene with lightmapping support, set Meshes > Light Baking to "
+"Static Lightmaps in the Import dock."
+msgstr ""
+"Chun radharc le tacaíocht mapála solais a allmhairiú, socraigh Meshes > Light "
+"Baking go Static Lightmaps sa duga Iompórtála."
+
+msgid ""
+"To enable lightmapping support on a primitive mesh, edit the PrimitiveMesh "
+"resource in the inspector and check Add UV2."
+msgstr ""
+"Chun tacaíocht do mhapáil solais a chumasú ar mhogalra primitive, cuir an "
+"acmhainn PrimitiveMesh in eagar sa chigire agus seiceáil Cuir UV2 leis."
+
+msgid ""
+"To enable lightmapping support on a CSG mesh, select the root CSG node and "
+"choose CSG > Bake Mesh Instance at the top of the 3D editor viewport.\n"
+"Select the generated MeshInstance3D node and choose Mesh > Unwrap UV2 for "
+"Lightmap/AO at the top of the 3D editor viewport."
+msgstr ""
+"Chun tacaíocht mapála solais a chumasú ar mhogalra CSG, roghnaigh an nód "
+"fréimhe CSG agus roghnaigh CSG > Bake Mesh Instance ag barr radharcphort an "
+"eagarthóra 3T.\n"
+"Roghnaigh an nód MeshInstance3D a gineadh agus roghnaigh Mesh > Unwrap UV2 "
+"for Lightmap/AO ag barr radharcphort an eagarthóra 3T."
+
+msgid ""
+"Failed creating lightmap images. Make sure the lightmap destination path is "
+"writable."
+msgstr ""
+"Theip ar chruthú íomhánna léarscáile solais. Cinntigh go bhfuil cosán ceann "
+"scríbe an léarscáile solais inscríofa."
+
 msgid "No editor scene root found."
 msgstr "Níor aimsíodh fréamh radhairc eagarthóra ar bith."
 
@@ -9082,6 +10918,15 @@ msgstr ""
 "an radharc a roinnt i níos mó rudaí ina ionad."
 
 msgid ""
+"Failed creating lightmap images. Make sure all meshes to bake have the "
+"Lightmap Size Hint property set high enough, and the LightmapGI's Texel Scale "
+"value is not too low."
+msgstr ""
+"Theip ar chruthú íomhánna léarscáile solais. Cinntigh go bhfuil an mhaoin "
+"Leid Méid Léarscáile Solais socraithe ard go leor i ngach mogalra atá le "
+"bácáil, agus nach bhfuil luach Scála Texel an LightmapGI ró-íseal."
+
+msgid ""
 "Failed fitting a lightmap image into an atlas. This should never happen and "
 "should be reported."
 msgstr ""
@@ -9091,11 +10936,30 @@ msgstr ""
 msgid "Bake Lightmaps"
 msgstr "Mapaí Solais Bácála"
 
+msgid "Lightmap baking is not supported on this GPU (%s)."
+msgstr "Ní thacaítear le bácáil léarscáileanna solais ar an GPU seo (%s)."
+
+msgid "Lightmaps cannot be baked on %s."
+msgstr "Ní féidir léarscáileanna solais a bhácáil ar %s."
+
+msgid ""
+"Lightmaps cannot be baked, as the `lightmapper_rd` module was disabled at "
+"compile-time."
+msgstr ""
+"Ní féidir léarscáileanna solais a bhácáil, mar gur díchumasaíodh an modúl "
+"`lightmapper_rd` ag am tiomsaithe."
+
 msgid "LightMap Bake"
 msgstr "Bácáil Mapa Solais"
 
 msgid "Select lightmap bake file:"
 msgstr "Roghnaigh comhad bácála mapa solais:"
+
+msgid "First Light"
+msgstr "An Chéad Solas"
+
+msgid "Second Light"
+msgstr "Dara Solas"
 
 msgid "Couldn't create a Trimesh collision shape."
 msgstr "Níorbh fhéidir cruth imbhuailte Trimesh a chruthú."
@@ -9223,6 +11087,9 @@ msgstr "Méid Imlíne:"
 msgid "Create Collision Shape"
 msgstr "Cruthaigh Cruth Imbhuailtí"
 
+msgid "Collision Shape Placement"
+msgstr "Socrú Cruth Imbhuailte"
+
 msgid "Sibling"
 msgstr "Siblín"
 
@@ -9285,6 +11152,30 @@ msgstr ""
 
 msgid "UV Channel Debug"
 msgstr "Dífhabhtú Cainéal UV"
+
+msgid "Create NavigationMesh"
+msgstr "Cruthaigh Mogalra Loingseoireachta"
+
+msgid ""
+"Before converting a rendering mesh to a navigation mesh, please verify:\n"
+"\n"
+"- The mesh is two-dimensional.\n"
+"- The mesh has no surface overlap.\n"
+"- The mesh has no self-intersection.\n"
+"- The mesh surfaces have indices.\n"
+"\n"
+"If the mesh does not fulfill these requirements, the pathfinding will be "
+"broken."
+msgstr ""
+"Sula ndéantar mogalra rindreála a thiontú go mogalra nascleanúna, deimhnigh "
+"le do thoil:\n"
+"\n"
+"- Go bhfuil an mogalra dháthoiseach.\n"
+"- Nach bhfuil aon fhorluí dromchla ag an mogalra.\n"
+"- Nach bhfuil aon trasnú féin ag an mogalra.\n"
+"- Go bhfuil innéacsanna ag dromchlaí an mhogalra.\n"
+"\n"
+"Mura gcomhlíonann an mogalra na ceanglais seo, bristear an aimsiú cosáin."
 
 msgid "Remove item %d?"
 msgstr "Bain mír %d?"
@@ -9442,6 +11333,9 @@ msgstr "Orthogonal Cúil"
 msgid "Rear Perspective"
 msgstr "Peirspictíocht Chúil"
 
+msgid "[auto]"
+msgstr "[uathoibríoch]"
+
 msgid "Locked"
 msgstr "Faoi Ghlas"
 
@@ -9472,6 +11366,20 @@ msgid ""
 msgstr ""
 "Tarraing agus scaoil chun ábhar aon nód geoiméadrachta a shárú.\n"
 "Coinnigh %s agus tú ag titim chun dromchla ar leith a shárú."
+
+msgid ""
+"This debug draw mode is not supported when using the Compatibility rendering "
+"method."
+msgstr ""
+"Ní thacaítear leis an modh tarraingthe dífhabhtaithe seo agus an modh "
+"rindreála Comhoiriúnachta in úsáid."
+
+msgid ""
+"This debug draw mode is not supported when using the Mobile or Compatibility "
+"rendering methods."
+msgstr ""
+"Ní thacaítear leis an modh tarraingthe dífhabhtaithe seo agus na modhanna "
+"rindreála Soghluaiste nó Comhoiriúnachta in úsáid."
 
 msgid "X: %s\n"
 msgstr "X: %s\n"
@@ -9596,20 +11504,57 @@ msgstr "Taispeáin Gan Scáthú"
 msgid "Directional Shadow Splits"
 msgstr "Scoilteanna Scáth Directional"
 
+msgid ""
+"Displays directional shadow splits in different colors to make adjusting "
+"split thresholds easier. \n"
+"Red: 1st split (closest to the camera), Green: 2nd split, Blue: 3rd split, "
+"Yellow: 4th split (furthest from the camera)"
+msgstr ""
+"Taispeánann sé scoilteanna scátha treorach i ndathanna difriúla chun go "
+"mbeidh sé níos éasca tairseacha scoilte a choigeartú. \n"
+" Dearg: 1ú scoilt (is gaire don cheamara), Glas: 2ú scoilt, Gorm: 3ú scoilt, "
+"Buí: 4ú scoilt (is faide ón gceamara)"
+
 msgid "Normal Buffer"
 msgstr "Gnáthmhaolán"
 
 msgid "Shadow Atlas"
 msgstr "Atlas Scáth"
 
+msgid ""
+"Displays the shadow atlas used for positional (omni/spot) shadow mapping.\n"
+"Requires a visible OmniLight3D or SpotLight3D node with shadows enabled to "
+"have a visible effect."
+msgstr ""
+"Taispeánann sé an t-atlas scátha a úsáidtear le haghaidh mapáil scátha suímh "
+"(omni/spot).\n"
+"Teastaíonn nód OmniLight3D nó SpotLight3D infheicthe le scáthanna cumasaithe "
+"chun éifeacht infheicthe a bheith aige."
+
 msgid "Directional Shadow Map"
 msgstr "Scáthmhapa Treorach"
+
+msgid ""
+"Displays the shadow map used for directional shadow mapping.\n"
+"Requires a visible DirectionalLight3D node with shadows enabled to have a "
+"visible effect."
+msgstr ""
+"Taispeánann sé an léarscáil scátha a úsáidtear le haghaidh mapáil scátha "
+"threorach.\n"
+"Éilíonn sé nód DirectionalLight3D infheicthe le scáthanna cumasaithe chun "
+"éifeacht infheicthe a bheith aige."
 
 msgid "Decal Atlas"
 msgstr "Decail Atlas"
 
 msgid "VoxelGI Lighting"
 msgstr "Soilsiú VoxelGI"
+
+msgid ""
+"Requires a visible VoxelGI node that has been baked to have a visible effect."
+msgstr ""
+"Éilíonn sé nód VoxelGI infheicthe atá bácáilte chun go mbeidh éifeacht "
+"infheicthe aige."
 
 msgid "VoxelGI Albedo"
 msgstr "VoxelGI Albedo"
@@ -9620,44 +11565,131 @@ msgstr "Astaíocht VoxelGI"
 msgid "SDFGI Cascades"
 msgstr "Cascáidí SDFGI"
 
+msgid "Requires SDFGI to be enabled in Environment to have a visible effect."
+msgstr ""
+"Éilíonn sé go mbeidh SDFGI cumasaithe sa Chomhshaol le go mbeidh éifeacht le "
+"feiceáil aige."
+
 msgid "SDFGI Probes"
 msgstr "Tástálacha SDFGI"
 
 msgid "Scene Luminance"
 msgstr "Luminance Radharc"
 
+msgid ""
+"Displays the scene luminance computed from the 3D buffer. This is used for "
+"Auto Exposure calculation.\n"
+"Requires Auto Exposure to be enabled in CameraAttributes to have a visible "
+"effect."
+msgstr ""
+"Taispeánann sé gile an radhairc arna ríomh ón maolán 3T. Úsáidtear é seo chun "
+"Nochtadh Uathoibríoch a ríomh.\n"
+"Éilíonn sé Nochtadh Uathoibríoch a bheith cumasaithe i CameraAttributes chun "
+"go mbeidh éifeacht infheicthe aige."
+
 msgid "SSAO"
 msgstr "SSAOName"
+
+msgid ""
+"Displays the screen-space ambient occlusion buffer. Requires SSAO to be "
+"enabled in Environment to have a visible effect."
+msgstr ""
+"Taispeánann sé maolán bac comhthimpeallach spáis scáileáin. Éilíonn sé SSAO a "
+"bheith cumasaithe sa Timpeallacht le go mbeidh éifeacht infheicthe aige."
 
 msgid "SSIL"
 msgstr "SSIL"
 
+msgid ""
+"Displays the screen-space indirect lighting buffer. Requires SSIL to be "
+"enabled in Environment to have a visible effect."
+msgstr ""
+"Taispeánann sé maolán soilsithe indírigh an spáis scáileáin. Éilíonn sé SSIL "
+"a bheith cumasaithe sa Timpeallacht le go mbeidh éifeacht infheicthe aige."
+
 msgid "VoxelGI/SDFGI Buffer"
 msgstr "Maolán VoxelGI/SDFGI"
+
+msgid "Requires SDFGI or VoxelGI to be enabled to have a visible effect."
+msgstr ""
+"Éilíonn sé SDFGI nó VoxelGI a bheith cumasaithe le go mbeidh éifeacht "
+"infheicthe aige."
 
 msgid "Disable Mesh LOD"
 msgstr "Díchumasaigh LOD mogalra"
 
+msgid ""
+"Renders all meshes with their highest level of detail regardless of their "
+"distance from the camera."
+msgstr ""
+"Rindreálann sé gach mogalra leis an leibhéal mionsonraí is airde is cuma cén "
+"fad atá acu ón gceamara."
+
 msgid "OmniLight3D Cluster"
 msgstr "Braisle OmniLight3D"
+
+msgid ""
+"Highlights tiles of pixels that are affected by at least one OmniLight3D."
+msgstr ""
+"Aibhsíonn sé tíleanna picteilíní a bhfuil tionchar ag OmniLight3D amháin ar a "
+"laghad orthu."
 
 msgid "SpotLight3D Cluster"
 msgstr "Braisle SpotLight3D"
 
+msgid ""
+"Highlights tiles of pixels that are affected by at least one SpotLight3D."
+msgstr ""
+"Aibhsíonn sé tíleanna picteilíní a bhfuil tionchar ag SpotLight3D amháin ar a "
+"laghad orthu."
+
 msgid "Decal Cluster"
 msgstr "Braisle Decal"
+
+msgid "Highlights tiles of pixels that are affected by at least one Decal."
+msgstr ""
+"Aibhsíonn sé tíleanna picteilíní a bhfuil tionchar ag Greamán amháin ar a "
+"laghad orthu."
 
 msgid "ReflectionProbe Cluster"
 msgstr "Braisle MhachnamhProbe"
 
+msgid ""
+"Highlights tiles of pixels that are affected by at least one ReflectionProbe."
+msgstr ""
+"Aibhsíonn sé tíleanna picteilíní a bhfuil tionchar ag ReflectionProbe amháin "
+"ar a laghad orthu."
+
 msgid "Occlusion Culling Buffer"
 msgstr "Maolán Cuilithe Occlusion"
+
+msgid ""
+"Represents occluders with black pixels. Requires occlusion culling to be "
+"enabled to have a visible effect."
+msgstr ""
+"Léiríonn sé bacainní le picteilíní dubha. Éilíonn sé go mbeidh deireadh a "
+"chur le bacainní cumasaithe le go mbeidh éifeacht infheicthe aige."
 
 msgid "Motion Vectors"
 msgstr "Veicteoirí Gluaisne"
 
+msgid ""
+"Represents motion vectors with colored lines in the direction of motion. Gray "
+"dots represent areas with no per-pixel motion."
+msgstr ""
+"Léiríonn sé veicteoirí gluaisne le línte daite i dtreo na gluaiseachta. "
+"Léiríonn poncanna liatha limistéir nach bhfuil aon ghluaiseacht in aghaidh an "
+"phicteilín iontu."
+
 msgid "Internal Buffer"
 msgstr "Maolán Inmheánach"
+
+msgid ""
+"Shows the scene rendered in linear colorspace before any tonemapping or post-"
+"processing."
+msgstr ""
+"Taispeánann sé an radharc a rindreáiltear i spás datha líneach roimh aon "
+"mhapáil toin nó iarphróiseáil."
 
 msgid "Display Advanced..."
 msgstr "Taispeáin Casta..."
@@ -9667,6 +11699,9 @@ msgstr "Féach ar an gComhshaol"
 
 msgid "View Gizmos"
 msgstr "Amharc ar Gizmos"
+
+msgid "View Transform Gizmo"
+msgstr "Féach ar Gizmo Claochlaithe"
 
 msgid "View Grid"
 msgstr "Amharc ar an nGreille"
@@ -9688,6 +11723,24 @@ msgstr "Cumasaigh Doppler"
 
 msgid "Cinematic Preview"
 msgstr "Réamhamharc Cineamatach"
+
+msgid "Viewport Orbit Modifier 1"
+msgstr "Modhnóir Fithis Radharcphoirt 1"
+
+msgid "Viewport Orbit Modifier 2"
+msgstr "Modhnóir Fithis Radharcphoirt 2"
+
+msgid "Viewport Pan Modifier 1"
+msgstr "Modhnóir Pan Radharcphoirt 1"
+
+msgid "Viewport Pan Modifier 2"
+msgstr "Modhnóir Pan Radharcphoirt 2"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "Modhnóir Súmáil Radharcphoirt 1"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "Modhnóir Súmáil Radharcphoirt 2"
 
 msgid "Freelook Left"
 msgstr "Freelook Ar Chlé"
@@ -9742,6 +11795,9 @@ msgstr "Tosaigh Rothlaigh Claochlú"
 
 msgid "Begin Scale Transformation"
 msgstr "Tosaigh Claochlú Scála"
+
+msgid "Reposition Using Collisions"
+msgstr "Athshuíomh ag Úsáid Imbhuailtí"
 
 msgid "Toggle Camera Preview"
 msgstr "Scoránaigh Réamhamharc an Cheamara"
@@ -9800,12 +11856,15 @@ msgid "Add Preview Environment to Scene"
 msgstr "Cuir Timpeallacht Réamhamhairc leis an Radharc"
 
 msgid "Drag: Rotate selected node around pivot."
-msgstr "Tarraing: Rothlaigh nód roghnaithe timpeall pivot."
+msgstr "Tarraing: Rothlaigh nód roghnaithe timpeall maighdeog."
 
 msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr ""
 "Alt + RMB: Taispeáin liosta de na nóid go léir ag an suíomh cliceáil, lena n-"
 "áirítear faoi ghlas."
+
+msgid "(Available in all modes.)"
+msgstr "(Ar fáil i ngach modh.)"
 
 msgid "Drag: Use snap."
 msgstr "Tarraing: Bain úsáid as snap."
@@ -9831,6 +11890,45 @@ msgstr ""
 "WorldEnvironment.\n"
 "Díchumasaíodh réamhamharc."
 
+msgid "Set Preview Sun Direction"
+msgstr "Socraigh Réamhamharc ar Threo na Gréine"
+
+msgid "Set Preview Sun Altitude"
+msgstr "Socraigh Réamhamharc Airde na Gréine"
+
+msgid "Set Preview Sun Azimuth"
+msgstr "Socraigh Réamhamharc Asamat na Gréine"
+
+msgid "Set Preview Sun Color"
+msgstr "Socraigh Réamhamharc ar Dhath na Gréine"
+
+msgid "Set Preview Sun Energy"
+msgstr "Socraigh Réamhamharc Fuinneamh na Gréine"
+
+msgid "Set Preview Sun Max Shadow Distance"
+msgstr "Socraigh Réamhamharc ar an nGrian Uasta Fad Scáth"
+
+msgid "Set Preview Environment Sky Color"
+msgstr "Socraigh Réamhamhairc Timpeallacht Dath na Spéire"
+
+msgid "Set Preview Environment Ground Color"
+msgstr "Socraigh Dath na Timpeallachta Réamhamhairc"
+
+msgid "Set Preview Environment Energy"
+msgstr "Socraigh Réamhamharc Comhshaol Fuinnimh"
+
+msgid "Set Preview Environment Ambient Occlusion"
+msgstr "Socraigh Réamhamharc Timpeallacht Oclú Comhthimpeallach"
+
+msgid "Set Preview Environment Glow"
+msgstr "Socraigh Glór Timpeallachta Réamhamhairc"
+
+msgid "Set Preview Environment Tonemap"
+msgstr "Socraigh Léarscáil Tone Timpeallachta Réamhamhairc"
+
+msgid "Set Preview Environment Global Illumination"
+msgstr "Socraigh Réamhamharc Timpeallacht Soilsiú Domhanda"
+
 msgid "Select Mode"
 msgstr "Roghnaigh Mód"
 
@@ -9854,6 +11952,9 @@ msgstr "Glasáil"
 msgid "Unlock selected node, allowing selection and movement."
 msgstr "Díghlasáil nód roghnaithe, ag ligean roghnú agus gluaiseacht."
 
+msgid "Unlock"
+msgstr "Díghlasáil"
+
 msgid ""
 "Groups the selected node with its children. This selects the parent when any "
 "child node is clicked in 2D and 3D view."
@@ -9870,6 +11971,12 @@ msgid ""
 msgstr ""
 "Díghrúpáil an nód roghnaithe óna leanaí. Beidh nóid leanaí ina míreanna "
 "aonair in amharc 2D agus 3D."
+
+msgid "Ungroup"
+msgstr "Díghrúpáil"
+
+msgid "LMB+Drag: Measure the distance between two points in 3D space."
+msgstr "LMB+Tarraing: Tomhais an fad idir dhá phointe i spás 3T."
 
 msgid "Ruler Mode"
 msgstr "Mód Rialóra"
@@ -9889,6 +11996,9 @@ msgstr ""
 "Má chuirtear nód DirectionalLight3D leis an radharc, díchumasaítear solas na "
 "gréine réamhamhairc."
 
+msgid "Toggle preview sunlight."
+msgstr "Réamhamharc solas na gréine a scoránaigh."
+
 msgid ""
 "Toggle preview environment.\n"
 "If a WorldEnvironment node is added to the scene, preview environment is "
@@ -9897,6 +12007,9 @@ msgstr ""
 "Scoránaigh an timpeallacht réamhamhairc.\n"
 "Má chuirtear nód WorldEnvironment leis an radharc, díchumasaítear "
 "timpeallacht réamhamhairc."
+
+msgid "Toggle preview environment."
+msgstr "Athraigh an timpeallacht réamhamhairc."
 
 msgid "Edit Sun and Environment settings."
 msgstr "Cuir socruithe Gréine agus Timpeallachta in eagar."
@@ -9993,6 +12106,9 @@ msgstr "GizmosName"
 
 msgid "View Origin"
 msgstr "Amharc ar Bhunús"
+
+msgid "Preview Translation"
+msgstr "Réamhamharc ar an Aistriúchán"
 
 msgid "Settings..."
 msgstr "Socruithe..."
@@ -10176,6 +12292,9 @@ msgstr "Níl aon limistéar in aghaidheanna na geoiméadrachta."
 msgid "The geometry doesn't contain any faces."
 msgstr "Níl aon aghaidheanna sa gheoiméadracht."
 
+msgid "Generation Time (sec)"
+msgstr "Am Giniúna (soic)"
+
 msgid "Create Emitter"
 msgstr "Cruthaigh Astaír"
 
@@ -10193,6 +12312,9 @@ msgstr "Pointí Dromchla + Gnáth (Dírithe)"
 
 msgid "A processor material of type 'ParticleProcessMaterial' is required."
 msgstr "Tá ábhar próiseálaí den chineál 'ParticleProcessMaterial' ag teastáil."
+
+msgid "Create Emission Points"
+msgstr "Cruthaigh Pointí Astaíochta"
 
 msgid "GPUParticles3D"
 msgstr "GPUParticles3D"
@@ -10245,6 +12367,12 @@ msgstr "Athshocraigh Pointe Rialúcháin"
 msgid "Reset Point Tilt"
 msgstr "Athshocraigh Pointe Tilt"
 
+msgid "Toggle Open/Closed Curve"
+msgstr "Cuar Oscailte/Dúnta a Athrú"
+
+msgid "Create Curve in Path3D"
+msgstr "Cruthaigh Cuar i Path3D"
+
 msgid "Shift+Click: Select multiple Points"
 msgstr "Shift + Cliceáil: Roghnaigh Pointí Il"
 
@@ -10278,8 +12406,26 @@ msgstr ""
 "Níl aon chosán nód fréimhe bailí ag AnimationMixer, mar sin ní féidir "
 "ainmneacha rianta a aisghabháil."
 
+msgid "Assign"
+msgstr "Sannadh"
+
+msgid "Bone Metadata"
+msgstr "Meiteashonraí Cnámh"
+
+msgid "Add Bone Metadata"
+msgstr "Cuir Meiteashonraí Cnámh leis"
+
 msgid "Set Bone Transform"
 msgstr "Socraigh Claochlú Cnámh"
+
+msgid "Modify metadata '%s' for bone '%s'"
+msgstr "Athraigh meiteashonraí '%s' don chnámh '%s'"
+
+msgid "Remove metadata '%s' from bone '%s'"
+msgstr "Bain meiteashonraí '%s' as cnámh '%s'"
+
+msgid "Add metadata '%s' to bone '%s'"
+msgstr "Cuir meiteashonraí '%s' leis an gcnámh '%s'"
 
 msgid "Set Bone Rest"
 msgstr "Socraigh Scíth Cnámh"
@@ -10302,6 +12448,12 @@ msgstr "Easpórtáil Próifíl Chnámharlaigh Mar..."
 
 msgid "Set Bone Parentage"
 msgstr "Socraigh Tuismíocht Cnámh"
+
+msgid "Revert Bone"
+msgstr "Fill ar ais cnámh"
+
+msgid "Revert"
+msgstr "Fill ar ais"
 
 msgid "Skeleton3D"
 msgstr "Cnámharlach3D"
@@ -10380,11 +12532,29 @@ msgstr "Cumraigh Snap"
 msgid "Grid Offset:"
 msgstr "Fritháireamh Greille:"
 
+msgid "X Offset"
+msgstr "Fritháireamh X"
+
+msgid "Y Offset"
+msgstr "Fritháireamh Y"
+
 msgid "Grid Step:"
 msgstr "Céim Greille:"
 
+msgid "X Step"
+msgstr "Céim X"
+
 msgid "Primary Line Every:"
 msgstr "Bunlíne Gach:"
+
+msgid "X Primary Step"
+msgstr "Céim Phríomhúil X"
+
+msgid "steps"
+msgstr "céimeanna"
+
+msgid "Y Primary Step"
+msgstr "Céim Phríomhúil Y"
 
 msgid "Rotation Offset:"
 msgstr "Fritháireamh rothlaithe:"
@@ -10427,7 +12597,7 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "Cruthaigh Treoracha Cothrománacha agus Ingearacha"
 
 msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr "Socraigh CanbhásItem \"%s\" Pivot Fritháireamh go (%d, %d)"
+msgstr "Socraigh CanbhásItem \"%s\" Maighdeog Fritháireamh go (%d, %d)"
 
 msgid "Rotate %d CanvasItems"
 msgstr "Rothlaigh %d CanbhásItems"
@@ -10487,10 +12657,23 @@ msgid "Alt+Drag: Scale selected node."
 msgstr "Alt+Drag: Scálaigh nód roghnaithe."
 
 msgid "V: Set selected node's pivot position."
-msgstr "V: Socraigh suíomh pivot nód roghnaithe."
+msgstr "V: Socraigh suíomh maighdeog nód roghnaithe."
 
 msgid "RMB: Add node at position clicked."
 msgstr "RMB: Cuir nód leis ag an suíomh cliceáil."
+
+msgid "Click to change object's pivot."
+msgstr "Cliceáil chun maighdeog an réada a athrú."
+
+msgid "Shift: Set temporary pivot."
+msgstr "Shift: Socraigh maighdeog sealadach."
+
+msgid ""
+"Click this button while holding Shift to put the temporary pivot in the "
+"center of the selected nodes."
+msgstr ""
+"Cliceáil an cnaipe seo agus Shift á choinneáil síos agat chun an maighdeog "
+"sealadach a chur i lár na nóid roghnaithe."
 
 msgid "Paste Pose"
 msgstr "Greamaigh Údar"
@@ -10533,6 +12716,9 @@ msgstr "Súmáil go 1600%"
 
 msgid "Shift: Scale proportionally."
 msgstr "Shift: Scála go comhréireach."
+
+msgid "Change Pivot"
+msgstr "Athraigh maighdeog"
 
 msgid "Pan Mode"
 msgstr "Mód Pan"
@@ -10798,6 +12984,9 @@ msgstr "Argóintí Comhartha Unbind:"
 msgid "Receiver Method:"
 msgstr "Modh glacadóra:"
 
+msgid "Receiver Method"
+msgstr "Modh Glacadóra"
+
 msgid "Deferred"
 msgstr "Iarchurtha"
 
@@ -10812,6 +13001,12 @@ msgstr "Urchar Amháin"
 
 msgid "Disconnects the signal after its first emission."
 msgstr "Dícheangail an comhartha tar éis a chéad astaíochta."
+
+msgid "Append Source"
+msgstr "Cuir Foinse leis"
+
+msgid "The source object is automatically sent when the signal is emitted."
+msgstr "Seoltar an réad foinse go huathoibríoch nuair a astaítear an comhartha."
 
 msgid "Cannot connect signal"
 msgstr "Ní féidir comhartha a cheangal"
@@ -10847,6 +13042,9 @@ msgstr ""
 
 msgid "Filter Signals"
 msgstr "Comharthaí Scagaire"
+
+msgid "Connections"
+msgstr "Naisc"
 
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr ""
@@ -10899,6 +13097,9 @@ msgstr "Éascaigh Amach"
 
 msgid "Smoothstep"
 msgstr "SmoothstepName"
+
+msgid "Snap Step"
+msgstr "Céim Snap"
 
 msgid "Play This Scene"
 msgstr "Seinn an radharc seo"
@@ -11107,6 +13308,9 @@ msgstr ""
 "Nuair a bhíonn siad gníomhach, athraíonn nóid Rialaithe ag gluaiseacht a n-"
 "ancaire in ionad a bhfritháireamh."
 
+msgid "Change Anchors"
+msgstr "Athraigh Ancairí"
+
 msgid "Sizing settings for children of a Container node."
 msgstr "Socruithe sizing do leanaí nód Coimeádán."
 
@@ -11162,8 +13366,14 @@ msgstr "Leithead na hÁise Thoir"
 msgid "Numeral Alignment"
 msgstr "Ailíniú Uimhriúil"
 
+msgid "Variation"
+msgstr "Éagsúlacht"
+
 msgid "Unable to preview font"
 msgstr "Ní féidir réamhamharc a dhéanamh ar an gcló"
+
+msgid "Toggle margins preview grid."
+msgstr "Athraigh an eangach réamhamhairc imeall."
 
 msgid "Styleboxes"
 msgstr "Boscaí Stíle"
@@ -11377,6 +13587,9 @@ msgstr ""
 "Is féidir leat cineál saincheaptha a chur leis nó cineál a iompórtáil lena "
 "míreanna ó théama eile."
 
+msgid "Rename Theme Type"
+msgstr "Athainmnigh Cineál Téama"
+
 msgid "Remove All Color Items"
 msgstr "Bain Gach Mír Datha"
 
@@ -11560,6 +13773,9 @@ msgstr ""
 "Pin an StyleBox seo mar phríomhstíl. Déanfaidh eagarthóireacht ar a airíonna "
 "na hairíonna céanna a nuashonrú i ngach Bosca Stíle eile den chineál seo."
 
+msgid "Pin this StyleBox as a main style."
+msgstr "Prínnigh an StyleBox seo mar phríomhstíl."
+
 msgid "Add Item Type"
 msgstr "Cuir Cineál Míre Leis"
 
@@ -11608,6 +13824,12 @@ msgstr "Socraigh Bunchineál"
 msgid "Add a type from a list of available types or create a new one."
 msgstr ""
 "Cuir cineál ó liosta de na cineálacha atá ar fáil nó cruthaigh ceann nua."
+
+msgid "Rename current type."
+msgstr "Athainmnigh an cineál reatha."
+
+msgid "Remove current type."
+msgstr "Bain an cineál reatha."
 
 msgid "Show Default"
 msgstr "Taispeáin Réamhshocrú"
@@ -11742,8 +13964,23 @@ msgstr ""
 msgid "Invalid file, not a PackedScene resource."
 msgstr "Comhad neamhbhailí, ní acmhainn PackedScene."
 
+msgid "Invalid PackedScene resource, could not instantiate it."
+msgstr "Acmhainn PackedScene neamhbhailí, níorbh fhéidir é a chruthú."
+
 msgid "Reload the scene to reflect its most actual state."
 msgstr "Athluchtaigh an radharc chun a staid is iarbhír a léiriú."
+
+msgid "Preview is not available for this shader mode."
+msgstr "Níl réamhamharc ar fáil don mhodh scáthaithe seo."
+
+msgid "Sphere"
+msgstr "Sféar"
+
+msgid "Box"
+msgstr "Bosca"
+
+msgid "Quad"
+msgstr "Ceathairéad"
 
 msgid "Hold Shift to scale around midpoint instead of moving."
 msgstr "Coinnigh Shift chun scála timpeall lárphointe in ionad bogadh."
@@ -11819,6 +14056,9 @@ msgstr ""
 "Líon íosta na ndigití don chuntar.\n"
 "Tá digití ar iarraidh padded le nialais tosaigh."
 
+msgid "Minimum number of digits for the counter."
+msgstr "An líon íosta digití don chuntar."
+
 msgid "Post-Process"
 msgstr "Iarphróiseas"
 
@@ -11879,6 +14119,9 @@ msgstr "Greamaigh Acmhainn"
 msgid "Load Resource"
 msgstr "Luchtaigh Acmhainn"
 
+msgid "ResourcePreloader"
+msgstr "Réamhluchtóir Acmhainní"
+
 msgid "Toggle ResourcePreloader Bottom Panel"
 msgstr "Scoránaigh AcmhainnPreloader Bottom Panel"
 
@@ -11906,6 +14149,12 @@ msgstr "Cuireadh carachtair neamhbhailí ainm nód fréimhe in ionad."
 msgid "Root Type:"
 msgstr "Cineál Fréimhe:"
 
+msgid "Other Type"
+msgstr "Cineál Eile"
+
+msgid "Select Node"
+msgstr "Roghnaigh Nód"
+
 msgid "Scene Name:"
 msgstr "Ainm an Radhairc:"
 
@@ -11929,6 +14178,15 @@ msgstr "Nód fréimhe bailí."
 msgid "Create New Scene"
 msgstr "Cruthaigh Radharc Nua"
 
+msgid ""
+"The root node of a scene is recommended to not be transformed, since "
+"instances of the scene will usually override this. Reset the transform and "
+"reload the scene to remove this warning."
+msgstr ""
+"Moltar gan nód fréimhe radhairc a chlaochlú, ós rud é go mbíonn samplaí den "
+"radharc i gceannas air seo de ghnáth. Athshocraigh an claochlú agus athlódáil "
+"an radharc chun an rabhadh seo a bhaint."
+
 msgid "Toggle Visible"
 msgstr "Scoránaigh Infheicthe"
 
@@ -11938,6 +14196,9 @@ msgstr "Díghlasáil Nód"
 msgid "Ungroup Children"
 msgstr "Leanaí Gan Ghrúpa"
 
+msgid "Revoke unique name for node \"%s\"?"
+msgstr "An ainm uathúil don nód \"%s\" a aisghairm?"
+
 msgid "Disable Scene Unique Name"
 msgstr "Díchumasaigh Ainm Uathúil an Radhairc"
 
@@ -11946,6 +14207,16 @@ msgstr "(Ag Nascadh Ó)"
 
 msgid "Node configuration warning:"
 msgstr "Rabhadh cumraíochta nód:"
+
+msgid ""
+"This node can be accessed from anywhere within the scene it belongs to by "
+"using the '%s' prefix in the node path."
+msgstr ""
+"Is féidir rochtain a fháil ar an nód seo ó áit ar bith laistigh den radharc "
+"lena mbaineann sé trí úsáid a bhaint as an réimír '%s' i gcosán an nóid."
+
+msgid "Click to disable this."
+msgstr "Cliceáil chun seo a dhíchumasú."
 
 msgid "Node has one connection."
 msgid_plural "Node has {num} connections."
@@ -11965,6 +14236,16 @@ msgstr[4] "Tá Nód sna grúpaí seo a leanas:"
 
 msgid "Click to show signals dock."
 msgstr "Cliceáil chun duga comharthaí a thaispeáint."
+
+msgid "Click to show groups dock."
+msgstr "Cliceáil chun duga na ngrúpaí a thaispeáint."
+
+msgid ""
+"This script can run in the editor.\n"
+"It is currently disabled due to recovery mode."
+msgstr ""
+"Is féidir an script seo a rith san eagarthóir. \n"
+"Tá sé díchumasaithe faoi láthair mar gheall ar mhodh aisghabhála."
 
 msgid "This script is currently running in the editor."
 msgstr "Tá an script seo á rith san eagarthóir faoi láthair."
@@ -11999,6 +14280,13 @@ msgstr ""
 msgid "\"%s\" is not a known filter."
 msgstr "Ní scagaire aitheanta é \"%s\"."
 
+msgid ""
+"Root nodes cannot be accessed as unique names in their own scene. Instantiate "
+"in another scene and set as unique name there."
+msgstr ""
+"Ní féidir rochtain a fháil ar nóid fréimhe mar ainmneacha uathúla ina radharc "
+"féin. Cruthaigh iad i radharc eile agus socraigh mar ainm uathúil ansin."
+
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Ainm nód neamhbhailí, ní cheadaítear na carachtair seo a leanas:"
 
@@ -12016,6 +14304,19 @@ msgstr "Crann Radharc (Nóid):"
 
 msgid "Node Configuration Warning!"
 msgstr "Rabhadh Cumraíochta Nód!"
+
+msgid "Revoke"
+msgstr "Cúlghairm"
+
+msgid "Don't Ask Again"
+msgstr "Ná fiafraigh arís"
+
+msgid ""
+"This dialog can also be enabled/disabled in the Editor Settings: Docks > "
+"Scene Tree > Ask Before Revoking Unique Name."
+msgstr ""
+"Is féidir an dialóg seo a chumasú/a dhíchumasú i Socruithe an Eagarthóra "
+"freisin: Dugaí > Crann Radharc > Fiafraigh Sula gCúlghairtear Ainm Uathúil."
 
 msgid "Allowed:"
 msgstr "Ceadaithe:"
@@ -12098,6 +14399,15 @@ msgstr "Seinn an beochan roghnaithe ón tús. (Shift + D)"
 msgid "Play selected animation from current pos. (D)"
 msgstr "Seinn beochan roghnaithe ó pos. reatha (D)"
 
+msgid "Load Sheet"
+msgstr "Luchtaigh Bileog"
+
+msgid "Empty Before"
+msgstr "Folmhaigh Roimh"
+
+msgid "Empty After"
+msgstr "Folmhaigh Tar éis"
+
 msgid "Delete Frame"
 msgstr "Scrios Fráma"
 
@@ -12179,8 +14489,20 @@ msgstr "Cothrománach"
 msgid "Vertical"
 msgstr "Ingearach"
 
+msgid "X Size"
+msgstr "Méid X"
+
+msgid "Y Size"
+msgstr "Méid Y"
+
 msgid "Separation"
 msgstr "Scaradh"
+
+msgid "X Separation"
+msgstr "Deighilt X"
+
+msgid "Y Separation"
+msgstr "Deighilt Y"
 
 msgid "Offset"
 msgstr "Fritháireamh"
@@ -12196,6 +14518,9 @@ msgstr "SpriteFrames"
 
 msgid "Toggle SpriteFrames Bottom Panel"
 msgstr "Scoránaigh Painéal Bun SpriteFrames"
+
+msgid "Toggle color channel preview selection."
+msgstr "Roghnú réamhamhairc cainéal datha a scoránaigh."
 
 msgid "Move GradientTexture2D Fill Point"
 msgstr "Bog GrádánTexture2D Pointe Líonta"
@@ -12230,11 +14555,29 @@ msgstr "Mód Léime:"
 msgid "Pixel Snap"
 msgstr "Snap Picteilíní"
 
+msgid "Offset X"
+msgstr "Fritháireamh X"
+
+msgid "Offset Y"
+msgstr "Fritháireamh Y"
+
 msgid "Step:"
 msgstr "Céim:"
 
+msgid "Step X"
+msgstr "Céim X"
+
+msgid "Step Y"
+msgstr "Céim Y"
+
 msgid "Separation:"
 msgstr "Scaradh:"
+
+msgid "Separation X"
+msgstr "Deighilt X"
+
+msgid "Separation Y"
+msgstr "Deighilt Y"
 
 msgid "Edit Region"
 msgstr "Cuir Réigiún in Eagar"
@@ -12253,6 +14596,31 @@ msgstr "Aimsigh:"
 
 msgid "Folder:"
 msgstr "Fillteán:"
+
+msgid "Select Folder"
+msgstr "Roghnaigh Fillteán"
+
+msgid "Includes:"
+msgstr "Áirítear:"
+
+msgid "Include the files with the following expressions. Use \",\" to separate."
+msgstr ""
+"Cuir na comhaid leis na habairtí seo a leanas san áireamh. Úsáid \",\" chun "
+"iad a dheighilt."
+
+msgid "example: scripts,scenes/*/test.gd"
+msgstr "sampla: scripteanna, radhairc/*/test.gd"
+
+msgid "Excludes:"
+msgstr "Ní áirítear:"
+
+msgid "Exclude the files with the following expressions. Use \",\" to separate."
+msgstr ""
+"Eisiamh na comhaid leis na habairtí seo a leanas. Úsáid \",\" chun iad a "
+"scaradh."
+
+msgid "example: res://addons,scenes/test/*.gd"
+msgstr "sampla: res://addons,scenes/test/*.gd"
 
 msgid "Filters:"
 msgstr "Scagairí:"
@@ -12278,6 +14646,9 @@ msgstr "Ionadaigh gach rud (gan cealaigh)"
 
 msgid "Searching..."
 msgstr "Ag cuardach..."
+
+msgid "Remove result"
+msgstr "Bain toradh"
 
 msgid "%d match in %d file"
 msgstr "%d comhoiriúnach i gcomhad %d"
@@ -12386,11 +14757,35 @@ msgstr "Tá cosán/ainm na scripte bailí."
 msgid "Will create a new script file."
 msgstr "Cruthóidh sé comhad scripte nua."
 
+msgid "Parent Name"
+msgstr "Ainm an Tuismitheora"
+
+msgid "Search Parent"
+msgstr "Cuardaigh Tuismitheoir"
+
+msgid "Select Parent"
+msgstr "Roghnaigh Tuismitheoir"
+
+msgid "Use Template"
+msgstr "Úsáid Teimpléad"
+
+msgid "Template"
+msgstr "Teimpléad"
+
 msgid "Built-in Script:"
 msgstr "Script Tógtha:"
 
+msgid "Select File"
+msgstr "Roghnaigh Comhad"
+
 msgid "Attach Node Script"
 msgstr "Ceangail Script nód"
+
+msgid "(truncated)"
+msgstr "(gearrtha)"
+
+msgid "Current value: "
+msgstr "Luach reatha: "
 
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr ""
@@ -12398,6 +14793,29 @@ msgstr ""
 
 msgid "Close and save changes?"
 msgstr "Dún agus sábháil athruithe?"
+
+msgid "Importing theme failed. File is not a text editor theme file (.tet)."
+msgstr ""
+"Theip ar an téama a iompórtáil. Ní comhad téama eagarthóra téacs (.tet) é an "
+"comhad."
+
+msgid ""
+"Importing theme failed. File name cannot be 'Default', 'Custom', or 'Godot 2'."
+msgstr ""
+"Theip ar an téama a iompórtáil. Ní féidir ainm an chomhaid a bheith "
+"'Réamhshocraithe', 'Saincheaptha', ná 'Godot 2'."
+
+msgid "Importing theme failed. Failed to copy theme file."
+msgstr "Theip ar an téama a iompórtáil. Theip ar chomhad an téama a chóipeáil."
+
+msgid ""
+"Saving theme failed. File name cannot be 'Default', 'Custom', or 'Godot 2'."
+msgstr ""
+"Theip ar an téama a shábháil. Ní féidir ainm an chomhaid a úsáid mar "
+"'Réamhshocrú', 'Saincheaptha', ná 'Godot 2'."
+
+msgid "Saving theme failed."
+msgstr "Theip ar an téama a shábháil."
 
 msgid "Error writing TextFile:"
 msgstr "Earráid agus Téacschomhad á scríobh:"
@@ -12431,6 +14849,9 @@ msgstr "Iompórtáil Téama"
 
 msgid "Save Theme As..."
 msgstr "Sábháil Téama Mar..."
+
+msgid "Make the script editor floating."
+msgstr "Cuir an t-eagarthóir scripte ar snámh."
 
 msgid "Open '%s' in Godot online documentation."
 msgstr "Oscail '%s' i gcáipéisíocht ar líne Godot."
@@ -12483,6 +14904,9 @@ msgstr "Bog Athluchtaigh Script Uirlisí"
 msgid "Copy Script Path"
 msgstr "Cóipeáil Conair na Scripte"
 
+msgid "Copy Script UID"
+msgstr "Cóipeáil Aitheantóir Úsáideora Scripte"
+
 msgid "History Previous"
 msgstr "Stair Roimhe Seo"
 
@@ -12498,8 +14922,14 @@ msgstr "Athluchtaigh Téama"
 msgid "Close All"
 msgstr "Dún Gach Rud"
 
+msgid "Close Tabs Below"
+msgstr "Dún na Cluaisíní Thíos"
+
 msgid "Close Docs"
 msgstr "Dún Docs"
+
+msgid "Site Search"
+msgstr "Cuardach Suímh"
 
 msgid "Search the reference documentation."
 msgstr "Cuardaigh na doiciméid tagartha."
@@ -12549,6 +14979,15 @@ msgstr "Gnáth- Théacs"
 msgid "JSON"
 msgstr "JSONName"
 
+msgid "Markdown"
+msgstr "Markdown"
+
+msgid "ConfigFile"
+msgstr "Comhad Cumraíochta"
+
+msgid "Script"
+msgstr "Script"
+
 msgid "Connections to method:"
 msgstr "Naisc leis an modh:"
 
@@ -12557,6 +14996,9 @@ msgstr "Foinse"
 
 msgid "Target"
 msgstr "Sprioc"
+
+msgid "Error at ([hint=Line %d, column %d]%d, %d[/hint]):"
+msgstr "Earráid ag ([hint=Líne %d, colún %d]%d, %d[/hint]):"
 
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
@@ -12591,6 +15033,9 @@ msgid "Can't drop nodes because script '%s' does not inherit Node."
 msgstr ""
 "Ní féidir nóid a scaoileadh toisc nach bhfaigheann script '%s' Nód le "
 "hoidhreacht."
+
+msgid "Emoji & Symbols"
+msgstr "Emoji & Siombailí"
 
 msgid "Pick Color"
 msgstr "Roghnaigh Dath"
@@ -12713,6 +15158,12 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "Tá gníomh leis an ainm '%s' ann cheana."
 
+msgid "Built-in actions are always shown when searching."
+msgstr "Taispeántar gníomhartha ionsuite i gcónaí agus cuardach á dhéanamh."
+
+msgid "Action %s"
+msgstr "Gníomh %s"
+
 msgid "Cannot Revert - Action is same as initial"
 msgstr "Ní féidir Filleadh - Is ionann gníomh agus gníomh tosaigh"
 
@@ -12751,6 +15202,9 @@ msgstr "Limistéar marbh"
 
 msgid "Invalid name."
 msgstr "Ainm neamhbhailí."
+
+msgid "Must be a valid Unicode identifier."
+msgstr "Ní mór gur aitheantóir Unicode bailí é."
 
 msgid "Must not collide with an existing engine class name."
 msgstr "Ní mór gan collide le hainm aicme innill atá ann cheana féin."
@@ -12797,8 +15251,20 @@ msgstr "Is cosán neamhbhailí é %s. Níl sé i gcosán acmhainne (res://)."
 msgid "Add Autoload"
 msgstr "Cuir Uathluchtaigh Leis"
 
+msgid "Autoload Path"
+msgstr "Cosán Uathluchtaithe"
+
+msgid "Set path or press \"Add\" to create a script."
+msgstr "Socraigh cosán nó brúigh \"Cuir leis\" chun script a chruthú."
+
+msgid "Select Autoload Path"
+msgstr "Roghnaigh Cosán Uathluchtaithe"
+
 msgid "Node Name:"
 msgstr "Ainm nód:"
+
+msgid "Autoloads"
+msgstr "Uathlódáil"
 
 msgid "Global Variable"
 msgstr "Athróg Dhomhanda"
@@ -12806,17 +15272,59 @@ msgstr "Athróg Dhomhanda"
 msgid "3D Engine"
 msgstr "Inneall 3D"
 
+msgid "Navigation (2D)"
+msgstr "Loingseoireacht (2T)"
+
+msgid "Navigation (3D)"
+msgstr "Loingseoireacht (3T)"
+
 msgid "XR"
 msgstr "XRName"
+
+msgid "OpenXR"
+msgstr "OpenXR"
+
+msgid "Wayland"
+msgstr "Wayland"
+
+msgid "X11"
+msgstr "X11"
 
 msgid "RenderingDevice"
 msgstr "RindreáilDevice"
 
+msgid "Forward+ Renderer"
+msgstr "Rindreálaí Ar Aghaidh+"
+
+msgid "Mobile Renderer"
+msgstr "Rindreálaí Soghluaiste"
+
 msgid "Vulkan"
 msgstr "Bolcán"
 
+msgid "D3D12"
+msgstr "D3D12"
+
+msgid "Metal"
+msgstr "Miotal"
+
 msgid "OpenGL"
 msgstr "OpenGLName"
+
+msgid "Physics Server (2D)"
+msgstr "Freastalaí Fisice (2T)"
+
+msgid "Godot Physics (2D)"
+msgstr "Fisic Godot (2T)"
+
+msgid "Physics Server (3D)"
+msgstr "Freastalaí Fisice (3T)"
+
+msgid "Godot Physics (3D)"
+msgstr "Fisic Godot (3T)"
+
+msgid "Jolt Physics"
+msgstr "Fisic Jolt"
 
 msgid "Text Server: Fallback"
 msgstr "Freastalaí Téacs: Fallback"
@@ -12839,8 +15347,65 @@ msgstr "Rindreáil Cló Réimse Fad Sínithe Il-chainéil"
 msgid "3D Nodes as well as RenderingServer access to 3D features."
 msgstr "Nóid 3D chomh maith le rochtain RenderingServer ar ghnéithe 3D."
 
+msgid "Navigation Server and capabilities for 2D."
+msgstr "Freastalaí Loingseoireachta agus cumais le haghaidh 2T."
+
+msgid "Navigation Server and capabilities for 3D."
+msgstr "Freastalaí Loingseoireachta agus cumais le haghaidh 3T."
+
 msgid "XR (AR and VR)."
 msgstr "XR (AR agus VR)."
+
+msgid "OpenXR standard implementation (requires XR to be enabled)."
+msgstr "Cur i bhfeidhm caighdeánach OpenXR (ní mór XR a bheith cumasaithe)."
+
+msgid "Wayland display (Linux only)."
+msgstr "Taispeántas Wayland (Linux amháin)."
+
+msgid "X11 display (Linux only)."
+msgstr "Taispeántas X11 (Linux amháin)."
+
+msgid ""
+"RenderingDevice based rendering (if disabled, the OpenGL backend is required)."
+msgstr ""
+"RindreáilRindreáil bunaithe ar ghléas (más díchumasaithe, tá an cúltaca "
+"OpenGL ag teastáil)."
+
+msgid "Forward+ renderer for advanced 3D graphics."
+msgstr "Rindreálaí Forward+ le haghaidh grafaicí 3T chun cinn."
+
+msgid "Mobile renderer for less advanced 3D graphics."
+msgstr ""
+"Rindreálaí soghluaiste le haghaidh grafaicí 3T nach bhfuil chomh forbartha."
+
+msgid "Vulkan backend of RenderingDevice."
+msgstr "Cúltaca Vulkan de RenderingDevice."
+
+msgid "Direct3D 12 backend of RenderingDevice."
+msgstr "Cúltaca Direct3D 12 de RenderingDevice."
+
+msgid "Metal backend of RenderingDevice (Apple arm64 only)."
+msgstr "Cúlra miotail RenderingDevice (Apple arm64 amháin)."
+
+msgid "OpenGL backend (if disabled, the RenderingDevice backend is required)."
+msgstr ""
+"Cúltaca OpenGL (má tá sé díchumasaithe, tá an cúltaca RenderingDevice ag "
+"teastáil)."
+
+msgid "Physics Server and capabilities for 2D."
+msgstr "Freastalaí Fisice agus cumais le haghaidh 2T."
+
+msgid "Godot Physics backend (2D)."
+msgstr "Cúltaca Fisice Godot (2T)."
+
+msgid "Physics Server and capabilities for 3D."
+msgstr "Freastalaí Fisice agus cumais le haghaidh 3T."
+
+msgid "Godot Physics backend (3D)."
+msgstr "Cúltaca Fisice Godot (3T)."
+
+msgid "Jolt Physics backend (3D only)."
+msgstr "Cúltaca Fisice Jolt (3T amháin)."
 
 msgid ""
 "Fallback implementation of Text Server\n"
@@ -12889,6 +15454,12 @@ msgstr ""
 msgid "General Features:"
 msgstr "Gnéithe Ginearálta:"
 
+msgid "Graphics and Rendering:"
+msgstr "Grafaicí agus Rindreáil:"
+
+msgid "Physics Systems:"
+msgstr "Córais Fisice:"
+
 msgid "Text Rendering and Font Options:"
 msgstr "Rindreáil Téacs agus Roghanna Cló:"
 
@@ -12901,6 +15472,28 @@ msgstr "Theip ar shábháil an chomhaid."
 msgid "Create a new profile?"
 msgstr "Cruthaigh próifíl nua?"
 
+msgid ""
+"This will scan all files in the current project to detect used classes.\n"
+"Note that the first scan may take a while, specially in larger projects."
+msgstr ""
+"Déanfaidh sé seo scanadh ar gach comhad sa tionscadal reatha chun na ranganna "
+"atá in úsáid a bhrath.\n"
+"Tabhair faoi deara go bhféadfadh tamall a bheith i gceist leis an gcéad "
+"scanadh, go háirithe i dtionscadail níos mó."
+
+msgid ""
+"Warning: Class detection for C# scripts is not currently available, and such "
+"files will be ignored."
+msgstr ""
+"Rabhadh: Níl braiteadh ranga ar fáil faoi láthair do scripteanna C#, agus "
+"déanfar neamhaird de chomhaid den sórt sin."
+
+msgid "Scanning Project for Used Classes"
+msgstr "Tionscadal Scanadh do Ranganna Úsáidte"
+
+msgid "Processing Classes Found"
+msgstr "Aicmí Próiseála aimsithe"
+
 msgid "Nodes and Classes:"
 msgstr "Nóid agus Ranganna:"
 
@@ -12909,6 +15502,9 @@ msgstr "Tá formáid an chomhaid '%s' neamhbhailí, á thobscor."
 
 msgid "Error saving profile to path: '%s'."
 msgstr "Earráid agus próifíl á sábháil go cosán: '%s'."
+
+msgid "Profile Path"
+msgstr "Cosán Próifíle"
 
 msgid "Profile:"
 msgstr "Próifíl:"
@@ -12953,6 +15549,9 @@ msgstr "Scag Orduithe"
 msgid "Filter by Name"
 msgstr "Scag de réir Ainm"
 
+msgid "Action Event"
+msgstr "Imeacht Gníomhaíochta"
+
 msgid "Clear all search filters."
 msgstr "Glan gach scagaire cuardaigh."
 
@@ -12973,6 +15572,9 @@ msgstr "Duga Iompórtála"
 
 msgid "History Dock"
 msgstr "Duga Staire"
+
+msgid "Game View"
+msgstr "Radharc Cluiche"
 
 msgid "Allows to view and edit 3D scenes."
 msgstr "Ceadaíonn sé radhairc 3D a fheiceáil agus a chur in eagar."
@@ -13009,6 +15611,11 @@ msgstr ""
 msgid "Provides an overview of the editor's and each scene's undo history."
 msgstr ""
 "Tugtar forbhreathnú ar stair chealúcháin an eagarthóra agus gach radhairc."
+
+msgid "Provides tools for selecting and debugging nodes at runtime."
+msgstr ""
+"Soláthraíonn sé uirlisí chun nóid a roghnú agus dífhabhtú a dhéanamh ag am "
+"rithe."
 
 msgid "(current)"
 msgstr "(reatha)"
@@ -13100,14 +15707,23 @@ msgstr "Roghnaigh an leagan amach atá ann cheana:"
 msgid "Or enter new layout name"
 msgstr "Nó cuir isteach ainm nua an leagain amach"
 
+msgid "New layout name"
+msgstr "Ainm leagan amach nua"
+
 msgid "Edit Built-in Action: %s"
 msgstr "Cuir Gníomh Ionsuite in Eagar: %s"
 
 msgid "Edit Shortcut: %s"
 msgstr "Cuir Aicearra in Eagar: %s"
 
+msgid "Primary"
+msgstr "Príomhúil"
+
 msgid "Common"
 msgstr "Coitianta"
+
+msgid "Event %d"
+msgstr "Imeacht %d"
 
 msgid "Editor Settings"
 msgstr "Socruithe an Eagarthóra"
@@ -13129,6 +15745,15 @@ msgstr "Aicearraí"
 
 msgid "Binding"
 msgstr "Ceangal"
+
+msgid "Overridden in project: %s"
+msgstr "Sáraithe sa tionscadal: %s"
+
+msgid "Go to the override in the Project Settings."
+msgstr "Téigh go dtí an sárú i Socruithe an Tionscadail."
+
+msgid "Remove this override."
+msgstr "Bain an sárú seo."
 
 msgid "Left Stick Left, Joystick 0 Left"
 msgstr "Bata Clé Ar Chlé, Luamhán stiúrtha 0 Ar Chlé"
@@ -13205,6 +15830,11 @@ msgstr "Gach Gléas"
 msgid "Device"
 msgstr "Gléas"
 
+msgid "Listening for Input. Hold %s to release focus."
+msgstr ""
+"Ag éisteacht le haghaidh ionchuir. Coinnigh %s síos chun an fócas a "
+"scaoileadh."
+
 msgid "Listening for Input"
 msgstr "Éisteacht le hIonchur"
 
@@ -13225,6 +15855,18 @@ msgstr "Cnaipí Joypad"
 
 msgid "Joypad Axes"
 msgstr "Aiseanna Joypad"
+
+msgctxt "Key Location"
+msgid "Unspecified"
+msgstr "Gan sonrú"
+
+msgctxt "Key Location"
+msgid "Left"
+msgstr "Clé"
+
+msgctxt "Key Location"
+msgid "Right"
+msgstr "Ceart"
 
 msgid "Event Configuration for \"%s\""
 msgstr "Cumraíocht teagmhais le haghaidh \"%s\""
@@ -13263,6 +15905,18 @@ msgstr "Lipéad Eochrach (Unicode, Cás-Neamhíogair)"
 msgid "Physical location"
 msgstr "Suíomh fisiciúil"
 
+msgid "Alt or Option key"
+msgstr "Eochair Alt nó Rogha"
+
+msgid "Shift key"
+msgstr "Eochair Shift"
+
+msgid "Control key"
+msgstr "Eochair rialaithe"
+
+msgid "Meta/Windows or Command key"
+msgstr "Eochair Meta/Windows nó Command"
+
 msgid "Add Project Setting"
 msgstr "Cuir Socrú Tionscadail Leis"
 
@@ -13292,6 +15946,9 @@ msgstr "Socruithe Tionscadail (project.godot)"
 
 msgid "Select a Setting or Type its Name"
 msgstr "Roghnaigh Socrú nó Clóscríobh a Ainm"
+
+msgid "Feature"
+msgstr "Gné"
 
 msgid "Changed settings will be applied to the editor after restarting."
 msgstr "Cuirfear socruithe athraithe i bhfeidhm ar an eagarthóir tar éis atosú."
@@ -13391,11 +16048,17 @@ msgstr "Sábháil Comhad"
 msgid "Open File in Inspector"
 msgstr "Oscail Comhad sa Chigire"
 
+msgid "Inspect Native Shader Code..."
+msgstr "Scrúdaigh Cód Scáthúcháin Dúchasach..."
+
 msgid "Close File"
 msgstr "Dún Comhad"
 
 msgid "Shader Editor"
 msgstr "Eagarthóir Scáthaigh"
+
+msgid "Make the shader editor floating."
+msgstr "Cuir an t-eagarthóir scáthaithe ar snámh."
 
 msgid "Toggle Shader Editor Bottom Panel"
 msgstr "Scoránaigh Painéal Bun Eagarthóir Shader"
@@ -13433,6 +16096,12 @@ msgstr "Is eochairfhocal teanga shader forchoimeádta é an t-ainm '%s'."
 
 msgid "Add Shader Global Parameter"
 msgstr "Cuir Paraiméadar Domhanda Shader Leis"
+
+msgid "Error at line %d:"
+msgstr "Earráid ag líne %d:"
+
+msgid "Error at line %d in include %s:%d:"
+msgstr "Earráid ag líne %d san áireamh %s:%d:"
 
 msgid "Warnings should be fixed to prevent errors."
 msgstr "Ba cheart rabhaidh a shocrú chun earráidí a chosc."
@@ -13510,12 +16179,24 @@ msgstr "SamplerName"
 msgid "[default]"
 msgstr "[réamhshocrú]"
 
+msgid "Expand output port"
+msgstr "Leathnaigh an port aschuir"
+
+msgid "Select preview port"
+msgstr "Roghnaigh port réamhamhairc"
+
 msgid ""
 "The 2D preview cannot correctly show the result retrieved from instance "
 "parameter."
 msgstr ""
 "Ní féidir leis an réamhamharc 2D an toradh a aisghabháil ó pharaiméadar ásc a "
 "thaispeáint i gceart."
+
+msgid "Copy Preview Shader Parameters From Material"
+msgstr "Cóipeáil Paraiméadair Scáthóra Réamhamhairc ó Ábhar"
+
+msgid "Paste Preview Shader Parameters To Material"
+msgstr "Greamaigh Paraiméadair Scáthlán Réamhamhairc chuig Ábhar"
 
 msgid "Add Input Port"
 msgstr "Cuir Port Ionchurtha Leis"
@@ -13634,6 +16315,9 @@ msgstr "Cumasaigh Laghdaigh Go hUathoibríoch"
 msgid "Enable Tint Color"
 msgstr "Cumasaigh Dath Tint"
 
+msgid "Edit Preview Parameter: %s"
+msgstr "Cuir Paraiméadar Réamhamhairc in Eagar: %s"
+
 msgid "Duplicate VisualShader Node(s)"
 msgstr "Dúblach VisualShader Node (í)"
 
@@ -13658,8 +16342,17 @@ msgstr "Socraigh Tairiseach: %s"
 msgid "Invalid name for varying."
 msgstr "Ainm neamhbhailí le haghaidh athraithe."
 
+msgid "Varying with that name already exists."
+msgstr "Tá athrú leis an ainm sin ann cheana féin."
+
+msgid "Boolean type cannot be used with `%s` varying mode."
+msgstr "Ní féidir cineál Booleánach a úsáid leis an mód athraitheach `%s`."
+
 msgid "Add Node(s) to Visual Shader"
 msgstr "Cuir nód(anna) le Scáthóir Amhairc"
+
+msgid "Hold %s Key To Swap Connections"
+msgstr "Coinnigh an eochair %s chun naisc a mhalartú"
 
 msgid "Vertex"
 msgstr "Stuaic"
@@ -13694,6 +16387,9 @@ msgstr "Bain Athrú"
 msgid "Show generated shader code."
 msgstr "Taispeáin cód shader ginte."
 
+msgid "Toggle shader preview."
+msgstr "Réamhamharc scáthaithe a scoránaigh."
+
 msgid "Generated Shader Code"
 msgstr "Cód Scáthóra Ginte"
 
@@ -13709,6 +16405,15 @@ msgstr "Ionsáigh Nód Nua"
 msgid "Insert New Reroute"
 msgstr "Ionsáigh Athródú Nua"
 
+msgid "Filter Parameters"
+msgstr "Paraiméadair Scagaire"
+
+msgid "Copy Parameters From Material"
+msgstr "Cóipeáil Paraiméadair Ó Ábhar"
+
+msgid "Paste Parameters To Material"
+msgstr "Greamaigh Paraiméadair chuig Ábhar"
+
 msgid "High-end node"
 msgstr "Nód ard-deireadh"
 
@@ -13717,6 +16422,12 @@ msgstr "Cruthaigh Nód Scáthaigh"
 
 msgid "Create Shader Varying"
 msgstr "Cruthaigh Scáthóir Éagsúil"
+
+msgid "Varying Type"
+msgstr "Cineál Éagsúil"
+
+msgid "Varying Mode"
+msgstr "Mód Éagsúil"
 
 msgid "Delete Shader Varying"
 msgstr "Scrios Scáthóir ag Athrú"
@@ -13733,11 +16444,17 @@ msgstr "Feidhm liathscála."
 msgid "Converts HSV vector to RGB equivalent."
 msgstr "Athraíonn veicteoir HSV go coibhéis RGB."
 
+msgid "Converts color from linear to sRGB color space."
+msgstr "Tiontaíonn sé dath ó spás datha líneach go spás datha sRGB."
+
 msgid "Converts RGB vector to HSV equivalent."
 msgstr "Athraíonn veicteoir RGB go coibhéis HSV."
 
 msgid "Sepia function."
 msgstr "Feidhm Sepia."
+
+msgid "Converts color from sRGB to linear color space."
+msgstr "Tiontaíonn sé dath ó sRGB go spás datha líneach."
 
 msgid "Burn operator."
 msgstr "Oibreoir dó."
@@ -13774,6 +16491,9 @@ msgstr "Paraiméadar datha."
 
 msgid "(Fragment/Light mode only) Derivative function."
 msgstr "(Blúire / Mód solais amháin) Feidhm dhíorthach."
+
+msgid "Derivative function."
+msgstr "Feidhm dhíorthach."
 
 msgid "Returns the boolean result of the %s comparison between two parameters."
 msgstr "Tuairisceáin toradh Boole na comparáide %s idir dhá pharaiméadar."
@@ -14022,6 +16742,12 @@ msgstr ""
 "(Blúire / Mód solais amháin) (Scalar) Díorthach i 'y' ag baint úsáide as "
 "difríocht áitiúil."
 
+msgid "(Scalar) Derivative in 'x' using local differencing."
+msgstr "Díorthach (Scálach) in 'x' ag baint úsáide as difreáil áitiúil."
+
+msgid "(Scalar) Derivative in 'y' using local differencing."
+msgstr "Díorthach (Scálach) in 'y' ag baint úsáide as difreáil áitiúil."
+
 msgid "Base-e Exponential."
 msgstr "Bonn-e Easpónantúil."
 
@@ -14074,6 +16800,9 @@ msgstr "Athraíonn cainníocht i gcéimeanna go radians."
 msgid "1.0 / scalar"
 msgstr "1.0 / scálach"
 
+msgid "Remaps a value from the input range to the output range."
+msgstr "Athmhapálann sé luach ón raon ionchuir go dtí an raon aschuir."
+
 msgid "Finds the nearest integer to the parameter."
 msgstr "Aimsíonn seo an slánuimhir is gaire don pharaiméadar."
 
@@ -14122,6 +16851,9 @@ msgid ""
 msgstr ""
 "(Blúire / Mód solais amháin) (Scalar) Suim an fhíordhíorthaigh in 'x' agus "
 "'y'."
+
+msgid "(Scalar) Sum of absolute derivative in 'x' and 'y'."
+msgstr "(Scálach) Suim an díorthaigh absalóidigh in 'x' agus 'y'."
 
 msgid "Returns the tangent of the parameter."
 msgstr "Tuairisceáin an tangent an paraiméadar."
@@ -14464,6 +17196,12 @@ msgstr ""
 "(Blúire / Mód solais amháin) (Veicteoir) Díorthach i 'y' ag baint úsáide as "
 "difríocht áitiúil."
 
+msgid "(Vector) Derivative in 'x' using local differencing."
+msgstr "Díorthach (Veicteoir) in 'x' ag baint úsáide as difreáil áitiúil."
+
+msgid "(Vector) Derivative in 'y' using local differencing."
+msgstr "Díorthach (Veicteoir) i 'y' ag baint úsáide as difreáil áitiúil."
+
 msgid "Returns the distance between two points."
 msgstr "Filleann sé an fad idir dhá phointe."
 
@@ -14520,6 +17258,16 @@ msgstr ""
 msgid "Returns the vector that points in the direction of refraction."
 msgstr "Tuairisceáin an veicteoir a léiríonn i dtreo athraonta."
 
+msgid "Remaps a vector from the input range to the output range."
+msgstr "Athmhapálann sé veicteoir ón raon ionchuir go dtí an raon aschuir."
+
+msgid ""
+"Remaps a vector from the input range to the output range. Ranges defined with "
+"scalars."
+msgstr ""
+"Athmhapálann sé veicteoir ón raon ionchuir go dtí an raon aschuir. "
+"Sainmhínítear raonta le scaláir."
+
 msgid ""
 "SmoothStep function( vector(edge0), vector(edge1), vector(x) ).\n"
 "\n"
@@ -14569,6 +17317,9 @@ msgid ""
 msgstr ""
 "(Blúire / Mód solais amháin) (Veicteoir) Suim an fhíordhíorthaigh in 'x' agus "
 "'y'."
+
+msgid "(Vector) Sum of absolute derivative in 'x' and 'y'."
+msgstr "(Veicteoir) Suim an díorthaigh absalóidigh in 'x' agus 'y'."
 
 msgid "Adds 2D vector to 2D vector."
 msgstr "Cuireann veicteoir 2D le veicteoir 2D."
@@ -14675,6 +17426,9 @@ msgstr ""
 "Is féidir naisc athródaithe faoi shaoirse a úsáid chun calafoirt ionchuir "
 "iolracha a nascadh le calafort aschuir aonair."
 
+msgid "[None]"
+msgstr "[Gan aon cheann]"
+
 msgid "Edit Visual Property: %s"
 msgstr "Cuir Amharc-Mhaoin in Eagar: %s"
 
@@ -14707,6 +17461,9 @@ msgstr "[Réamhshocrú]"
 msgid "Select a Locale"
 msgstr "Roghnaigh"
 
+msgid "Locale Filter"
+msgstr "Scagaire Logántais"
+
 msgid "Show All Locales"
 msgstr "Taispeáin Gach Logán"
 
@@ -14722,6 +17479,39 @@ msgstr "Tír"
 msgid "Variant"
 msgstr "Malairt"
 
+msgid "Previewing: %s"
+msgstr "Réamhamharc: %s"
+
+msgid "Disable Translation Preview"
+msgstr "Díchumasaigh Réamhamharc Aistriúcháin"
+
+msgid "Previewing translation. Click to disable."
+msgstr "Réamhamharc ar an aistriúchán. Cliceáil chun é a dhíchumasú."
+
+msgid "Add %d Translation"
+msgid_plural "Add %d Translations"
+msgstr[0] "Cuir %d Aistriúchán leis"
+msgstr[1] "Cuir %d Aistriúcháin leis"
+msgstr[2] "Cuir %d Aistriúcháin leis"
+msgstr[3] "Cuir %d Aistriúcháin leis"
+msgstr[4] "Cuir %d Aistriúcháin leis"
+
+msgid "Translation Resource Remap: Add %d Path"
+msgid_plural "Translation Resource Remap: Add %d Paths"
+msgstr[0] "Athmhapáil Acmhainne Aistriúchán: Cuir %d Cosán leis"
+msgstr[1] "Athmhapáil Acmhainne Aistriúcháin: Cuir %d Cosán leis"
+msgstr[2] "Athmhapáil Acmhainne Aistriúcháin: Cuir %d Cosán leis"
+msgstr[3] "Athmhapáil Acmhainne Aistriúcháin: Cuir %d Cosán leis"
+msgstr[4] "Athmhapáil Acmhainne Aistriúcháin: Cuir %d Cosán leis"
+
+msgid "Translation Resource Remap: Add %d Remap"
+msgid_plural "Translation Resource Remap: Add %d Remaps"
+msgstr[0] "Athmhapáil Acmhainne Aistriúchán: Cuir %d Athmhapáil leis"
+msgstr[1] "Athmhapáil Acmhainne Aistriúcháin: Cuir %d Athmhapáil leis"
+msgstr[2] "Athmhapáil Acmhainne Aistriúcháin: Cuir %d Athmhapáil leis"
+msgstr[3] "Athmhapáil Acmhainne Aistriúcháin: Cuir %d Athmhapáil leis"
+msgstr[4] "Athmhapáil Acmhainne Aistriúcháin: Cuir %d Athmhapáil leis"
+
 msgid "Change Resource Remap Language"
 msgstr "Athraigh Teanga Athmhapála Acmhainne"
 
@@ -14730,6 +17520,14 @@ msgstr "Bain Athmhapa Acmhainne"
 
 msgid "Remove Resource Remap Option"
 msgstr "Bain Rogha Athmhapála Acmhainne"
+
+msgid "Add %d file for POT generation"
+msgid_plural "Add %d files for POT generation"
+msgstr[0] "Cuir %d comhad leis le haghaidh giniúint POT"
+msgstr[1] "Cuir %d comhaid leis le haghaidh giniúint POT"
+msgstr[2] "Cuir %d comhaid leis le haghaidh giniúint POT"
+msgstr[3] "Cuir %d comhaid leis le haghaidh giniúint POT"
+msgstr[4] "Cuir %d comhaid leis le haghaidh giniúint POT"
 
 msgid "Remove file from POT generation"
 msgstr "Bain comhad ó ghiniúint POT"
@@ -14814,6 +17612,9 @@ msgstr "An bhfuil fonn ort an brainse %s a bhaint?"
 
 msgid "Do you want to remove the %s remote?"
 msgstr "An bhfuil fonn ort an cianda %s a bhaint?"
+
+msgid "Open Version Control Dock"
+msgstr "Oscail Duga Rialaithe Leagan"
 
 msgid "Toggle Version Control Bottom Panel"
 msgstr "Scoránaigh Painéal Bun Rialaithe Leagan"
@@ -14929,6 +17730,9 @@ msgstr "Tarraingt"
 msgid "Push"
 msgstr "Brúigh"
 
+msgid "Extra options"
+msgstr "Roghanna breise"
+
 msgid "Force Push"
 msgstr "Fórsáil Brúigh"
 
@@ -14961,6 +17765,68 @@ msgstr "Scoilt"
 msgid "Unified"
 msgstr "Aontaithe"
 
+msgid ""
+"The CSGShape3D has an empty shape.\n"
+"CSGShape3D empty shapes typically occur because the mesh is not manifold.\n"
+"A manifold mesh forms a solid object without gaps, holes, or loose edges.\n"
+"Each edge must be a member of exactly two faces."
+msgstr ""
+"Tá cruth folamh ag an CSGShape3D.\n"
+"De ghnáth, bíonn cruthanna folamha CSGShape3D ann toisc nach mogalra iomadúil "
+"atá ann.\n"
+"Cruthaíonn mogalra iomadúil réad soladach gan bhearnaí, poill ná imill "
+"scaoilte.\n"
+"Ní mór do gach imeall a bheith ina bhall de dhá aghaidh go díreach."
+
+msgid "CSG operation returned an empty array."
+msgstr "D’fhill an oibríocht CSG eagar folamh."
+
+msgid ""
+"Can not add a baked mesh as sibling for the scene root.\n"
+"Move the CSG root node below a parent node."
+msgstr ""
+"Ní féidir mogalra bácáilte a chur leis mar dheartháir/deirfiúr don fhréamh "
+"radhairc.\n"
+"Bog an nód fréimhe CSG faoi bhun nód tuismitheora."
+
+msgid "CSG operation returned an empty mesh."
+msgstr "D’fhill oibríocht CSG mogalra folamh."
+
+msgid "Create baked CSGShape3D Mesh Instance"
+msgstr "Cruthaigh Cás Mogaill CSGShape3D bácáilte"
+
+msgid ""
+"Can not add a baked collision shape as sibling for the scene root.\n"
+"Move the CSG root node below a parent node."
+msgstr ""
+"Ní féidir cruth imbhuailte bácáilte a chur leis mar dheartháir/deirfiúr don "
+"fhréamh radhairc.\n"
+"Bog an nód fréimhe CSG faoi bhun nód tuismitheora."
+
+msgid "CSG operation returned an empty shape."
+msgstr "D’fhill oibríocht CSG cruth folamh."
+
+msgid "Create baked CSGShape3D Collision Shape"
+msgstr "Cruthaigh Cruth Imbhuailte CSGHape3D bácáilte"
+
+msgid "CSG"
+msgstr "CSG"
+
+msgid "Bake Mesh Instance"
+msgstr "Cás Mogaill Bácáilte"
+
+msgid "Bake Collision Shape"
+msgstr "Cruth Imbhuailte Bácáilte"
+
+msgid "Change CSG Box Size"
+msgstr "Athraigh Méid Bosca CSG"
+
+msgid "Change CSG Cylinder Radius"
+msgstr "Athraigh Ga Sorcóir CSG"
+
+msgid "Change CSG Cylinder Height"
+msgstr "Athraigh Airde Sorcóra CSG"
+
 msgid "Change Torus Inner Radius"
 msgstr "Athraigh Ga Istigh Torus"
 
@@ -14970,11 +17836,42 @@ msgstr "Athraigh Ga Seachtrach Torus"
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Argóint cineál neamhbhailí a thiontú (), úsáid TYPE_* tairisigh."
 
+msgid "Expected an integer between 0 and 2^32 - 1."
+msgstr "Bhí súil le slánuimhir idir 0 agus 2^32 - 1."
+
+msgid "Expected a string of length 1 (a character)."
+msgstr "Bhíothas ag súil le teaghrán de fhad 1 (carachtar)."
+
+msgid "Range too big."
+msgstr "Raon ró-mhór."
+
 msgid "Cannot resize array."
 msgstr "Ní féidir méid an eagair a athrú."
 
 msgid "Step argument is zero!"
 msgstr "Is argóint Céim náid!"
+
+msgid "Not a script with an instance."
+msgstr "Ní script le sampla é."
+
+msgid "Not based on a script."
+msgstr "Ní bunaithe ar script."
+
+msgid "Not based on a resource file."
+msgstr "Ní bunaithe ar chomhad acmhainní."
+
+msgid "Invalid instance dictionary format (missing @path)."
+msgstr "Formáid fhoclóra sampla neamhbhailí (@path ar iarraidh)."
+
+msgid "Invalid instance dictionary format (can't load script at @path)."
+msgstr ""
+"Formáid fhoclóra sampla neamhbhailí (ní féidir an script a luchtú ag @path)."
+
+msgid "Invalid instance dictionary format (invalid script at @path)."
+msgstr "Formáid fhoclóra sampla neamhbhailí (script neamhbhailí ag @path)."
+
+msgid "Invalid instance dictionary (invalid subclasses)."
+msgstr "Foclóir samplaí neamhbhailí (fo-aicmí neamhbhailí)."
 
 msgid "Cannot instantiate GDScript class."
 msgstr "Ní féidir rang GDScript a mheandar."
@@ -15097,6 +17994,12 @@ msgstr "Cuir Ais Y in Eagar"
 msgid "Edit Z Axis"
 msgstr "Cuir Ais Z in Eagar"
 
+msgid "Keep Selection"
+msgstr "Coinnigh an Roghnú"
+
+msgid "Clear Rotation"
+msgstr "Rothlú Glan"
+
 msgid "GridMap Settings"
 msgstr "Socruithe Mapa Greille"
 
@@ -15115,11 +18018,35 @@ msgstr "Rothlaigh Y an Chúrsóra"
 msgid "Cursor Rotate Z"
 msgstr "Rothlaigh Cúrsóir Z"
 
+msgid "Change Grid Floor:"
+msgstr "Athraigh Urlár Eangaí:"
+
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"Athraigh Urlár na Greille:\n"
+"An tEitleán Roimhe Seo (%s)\n"
+"An Chéad Eitleán Eile (%s)"
+
 msgid "Filter Meshes"
 msgstr "Mogalraí Scag"
 
+msgid "View as Thumbnails"
+msgstr "Féach mar Mhionsamhlacha"
+
+msgid "View as List"
+msgstr "Féach mar Liosta"
+
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr "Tabhair acmhainn MeshLibrary don GridMap seo chun a mhogaill a úsáid."
+
+msgid "GridMap"
+msgstr "Léarscáil Ghreille"
+
+msgid "Toggle GridMap Bottom Panel"
+msgstr "Painéal Bun an GhreilleLéarscáileáin a Athrú"
 
 msgid "All Clips"
 msgstr "Gach Gearrthóg"
@@ -15247,11 +18174,17 @@ msgstr "Geoiméadracht neamh-occluding"
 msgid "Plot direct lighting"
 msgstr "Breacadh soilsiú díreach"
 
+msgid "Plot direct lighting %d%%"
+msgstr "Soilsiú díreach plota %d%%"
+
 msgid "Integrate indirect lighting"
 msgstr "Comhtháthaigh soilsiú indíreach"
 
 msgid "Integrate indirect lighting %d%%"
 msgstr "Comhtháthaigh soilsiú indíreach %d%%"
+
+msgid "Baking light probes"
+msgstr "Braiteoirí solais bácála"
 
 msgid "Integrating light probes %d%%"
 msgstr "Tóireadóirí solais %d%% á gcomhtháthú"
@@ -15271,6 +18204,20 @@ msgstr "Ní mór ainm ranga a bheith ina aitheantóir bailí"
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Ní leor bearta chun bearta díchódaithe, nó formáid neamhbhailí."
 
+msgid ""
+"Unable to load .NET runtime, no compatible version was found.\n"
+"Attempting to create/edit a project will lead to a crash.\n"
+"\n"
+"Please install the .NET SDK 8.0 or later from https://get.dot.net and restart "
+"Godot."
+msgstr ""
+"Ní féidir rith-am .NET a luchtú, níor aimsíodh aon leagan comhoiriúnach.\n"
+"Má dhéantar iarracht tionscadal a chruthú/a chur in eagar, tiocfaidh "
+"tuairteáil air.\n"
+"\n"
+"Suiteáil an .NET SDK 8.0 nó níos déanaí ó https://get.dot.net agus atosú "
+"Godot."
+
 msgid "Failed to load .NET runtime"
 msgstr "Níorbh fhéidir am rite .NET a luchtú"
 
@@ -15284,6 +18231,20 @@ msgstr ""
 msgid ".NET assemblies not found"
 msgstr "Ní bhfuarthas tionóil .NET"
 
+msgid ""
+"Unable to load .NET runtime, specifically hostfxr.\n"
+"Attempting to create/edit a project will lead to a crash.\n"
+"\n"
+"Please install the .NET SDK 8.0 or later from https://get.dot.net and restart "
+"Godot."
+msgstr ""
+"Ní féidir rith-am .NET a luchtú, go háirithe hostfxr.\n"
+"Má dhéantar iarracht tionscadal a chruthú/a chur in eagar, tiocfaidh "
+"tuairteáil air.\n"
+"\n"
+"Suiteáil an .NET SDK 8.0 nó níos déanaí ó https://get.dot.net agus atosú "
+"Godot."
+
 msgid "%d (%s)"
 msgstr "%d (%s)"
 
@@ -15294,9 +18255,15 @@ msgctxt "Network"
 msgid "Down"
 msgstr "An Dún"
 
+msgid "Incoming Bandwidth"
+msgstr "Bandaleithead Isteach"
+
 msgctxt "Network"
 msgid "Up"
 msgstr "Suas"
+
+msgid "Outgoing Bandwidth"
+msgstr "Bandaleithead Amach"
 
 msgid "Incoming RPC"
 msgstr "RPC isteach"
@@ -15448,11 +18415,56 @@ msgstr ""
 "Ní mór acmhainn NavigationPolygon a shocrú nó a chruthú chun go n-oibreoidh "
 "an nód seo."
 
+msgid "Start Position"
+msgstr "Seasamh Tosaigh"
+
+msgid "End Position"
+msgstr "Seasamh Deiridh"
+
 msgid "Change Start Position"
 msgstr "Athraigh an Suíomh Tosaigh"
 
 msgid "Change End Position"
 msgstr "Athraigh an Suíomh Deiridh"
+
+msgid "Set Obstacle Vertices"
+msgstr "Socraigh Buaicphointí na mBacainní"
+
+msgid "Edit Obstacle (Flip Winding)"
+msgstr "Cuir Constaicí in Eagar (Fillteán Smeach)"
+
+msgid "Edit Obstacle (Clear Vertices)"
+msgstr "Cuir Bac in Eagar (Glan na Buaicphointí)"
+
+msgid "Add Vertex"
+msgstr "Cuir Buaicphointe leis"
+
+msgid "Edit Vertex"
+msgstr "Cuir Buaicphointe in Eagar"
+
+msgid "Delete Vertex"
+msgstr "Scrios Buaicphointe"
+
+msgid "Flip Winding"
+msgstr "Foirceannadh Smeach"
+
+msgid "Clear Vertices"
+msgstr "Glan na Buaicphointí"
+
+msgid "Edit Obstacle (Add Vertex)"
+msgstr "Cuir Constaic in Eagar (Cuir Buaicphointe leis)"
+
+msgid "Edit Obstacle (Move Vertex)"
+msgstr "Cuir an Bacainn in Eagar (Bog an Buaicphointe)"
+
+msgid "Edit Obstacle (Remove Vertex)"
+msgstr "Cuir an Bacainn in Eagar (Bain an Buaicphointe)"
+
+msgid "Flip"
+msgstr "Smeach"
+
+msgid "Remove all vertices?"
+msgstr "Bain na buaicphointí go léir?"
 
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
@@ -15480,6 +18492,9 @@ msgstr ""
 "Ní féidir mogall nascleanúna a ghiniúint toisc gur iompórtáladh an acmhainn ó "
 "chineál eile."
 
+msgid "Bake"
+msgstr "Bácáil"
+
 msgid "Bake NavigationMesh"
 msgstr "Bácáil NascleanúintMesh"
 
@@ -15497,6 +18512,9 @@ msgstr "Glan NascleanúintMesh"
 msgid "Clears the internal NavigationMesh vertices and polygons."
 msgstr "Clears an vertices nascleanúint inmheánachMesh agus polagáin."
 
+msgid "Baking NavigationMesh ..."
+msgstr "Nascleanúint BácálaMogalra ..."
+
 msgid "Toggles whether the noise preview is computed in 3D space."
 msgstr "Scoránaigh cibé an ríomhtar an réamhamharc torainn i spás 3D."
 
@@ -15508,6 +18526,30 @@ msgstr "Athainmnigh Gníomhartha Ainm logánaithe"
 
 msgid "Change Action Type"
 msgstr "Athraigh Cineál Gnímh"
+
+msgid ""
+"Internal name of the action. Some XR runtimes don't allow spaces or special "
+"characters."
+msgstr ""
+"Ainm inmheánach an ghnímh. Ní cheadaítear spásanna ná carachtair speisialta i "
+"roinnt amanna rith XR."
+
+msgid "Action Name"
+msgstr "Ainm an Ghníomhaíochta"
+
+msgid "Human-readable name of the action. This can be displayed to end users."
+msgstr ""
+"Ainm an ghnímh atá inléite ag daoine. Is féidir é seo a thaispeáint "
+"d'úsáideoirí deiridh."
+
+msgid "Action Localized Name"
+msgstr "Ainm Áitiúil an Ghnímh"
+
+msgid "Type of the action"
+msgstr "Cineál an ghnímh"
+
+msgid "Action Type"
+msgstr "Cineál Gnímh"
 
 msgid "Remove action"
 msgstr "Bain gníomh"
@@ -15569,11 +18611,54 @@ msgstr "Cuir gníomh leis"
 msgid "Delete action"
 msgstr "Scrios gníomh"
 
+msgid "Fold"
+msgstr "Fill"
+
+msgid "Action Set Name"
+msgstr "Ainm an Tacair Ghníomhaíochta"
+
+msgid ""
+"Human-readable name of the action set. This can be displayed to end users."
+msgstr ""
+"Ainm atá inléite ag an duine ar an tsraith gníomhartha. Is féidir é seo a "
+"thaispeáint d'úsáideoirí deiridh."
+
+msgid "Action Set Localized Name"
+msgstr "Ainm Áitiúil an Tacair Ghníomhaíochta"
+
+msgid ""
+"Priority of the action set. If multiple action sets bind to the same input, "
+"the action set with the highest priority will be updated."
+msgstr ""
+"Tosaíocht an tacair ghníomhaíochta. Má cheanglaíonn tacair ghníomhaíochta "
+"iolracha leis an ionchur céanna, déanfar an tacar gníomhaíochta leis an "
+"tosaíocht is airde a nuashonrú."
+
+msgid "Action Set Priority"
+msgstr "Tosaíocht Socraithe Gníomhaíochta"
+
 msgid "Add action."
 msgstr "Cuir gníomh leis."
 
 msgid "Remove action set."
 msgstr "Bain tacar gníomhaíochta."
+
+msgid "Remove this binding modifier."
+msgstr "Bain an modhnóir ceangailteach seo."
+
+msgid "Remove binding modifier"
+msgstr "Bain an modhnóir ceangailteach"
+
+msgid "Add binding modifier"
+msgstr "Cuir modhnóir ceangailteach leis"
+
+msgid "Note: modifiers will only be applied if supported on the host system."
+msgstr ""
+"Nóta: ní chuirfear modhnóirí i bhfeidhm ach amháin má thacaítear leo ar an "
+"gcóras óstach."
+
+msgid "Binding modifiers for:"
+msgstr "Modhnóirí ceangailteach le haghaidh:"
 
 msgid "OpenXR Action Map"
 msgstr "Mapa Gníomhaíochta OpenXR"
@@ -15584,11 +18669,20 @@ msgstr "Scoránaigh Bunphainéal Mapa Gníomhaíochta OpenXR"
 msgid "Remove action from interaction profile"
 msgstr "Bain gníomh ón bpróifíl idirghníomhaíochta"
 
+msgid "Edit binding modifiers"
+msgstr "Cuir modhnóirí ceangailteacha in eagar"
+
+msgid "Note: This interaction profile requires extension %s support."
+msgstr "Nóta: Éilíonn an phróifíl idirghníomhaíochta seo tacaíocht síneadh %s."
+
 msgid "Add binding"
 msgstr "Cuir ceangal leis"
 
 msgid "Remove binding"
 msgstr "Bain ceangal"
+
+msgid "Note: This binding path requires extension %s support."
+msgstr "Nóta: Éilíonn an cosán ceangailteach seo tacaíocht síneadh %s."
 
 msgid "Pose"
 msgstr "Údar"
@@ -15599,11 +18693,18 @@ msgstr "Haptach"
 msgid "Unknown"
 msgstr "Neamhaithnid"
 
+msgid "Modifiers"
+msgstr "Modhnóirí"
+
 msgid "Select an action"
 msgstr "Roghnaigh gníomh"
 
 msgid "Select an interaction profile"
 msgstr "Roghnaigh próifíl idirghníomhaíochta"
+
+msgid "All interaction profiles have been added to the action map."
+msgstr ""
+"Tá na próifílí idirghníomhaíochta uile curtha leis an léarscáil gníomhaíochta."
 
 msgid "Choose an XR runtime."
 msgstr "Roghnaigh am rite XR."
@@ -15614,6 +18715,13 @@ msgid ""
 msgstr ""
 "Ní féidir an SubViewport céanna a úsáid le sraitheanna comhdhéanamh OpenXR "
 "iolracha. Glan é óna chiseal reatha ar dtús."
+
+msgid ""
+"Cannot set SubViewport on an OpenXR composition layer when using an Android "
+"surface."
+msgstr ""
+"Ní féidir SubViewport a shocrú ar shraith chomhdhéanamh OpenXR agus dromchla "
+"Android á úsáid."
 
 msgid "OpenXR composition layers must have an XROrigin3D node as their parent."
 msgstr ""
@@ -15632,6 +18740,11 @@ msgid ""
 msgstr ""
 "Ní oibreoidh polladh poll mar a bheifí ag súil leis mura bhfuil an t-ordú "
 "sórtála níos lú ná nialas."
+
+msgid "OpenXR visibility mask must have an XRCamera3D node as their parent."
+msgstr ""
+"Ní mór nód XRCamera3D a bheith mar thuismitheoir ag masc infheictheachta "
+"OpenXR."
 
 msgid "Package name is missing."
 msgstr "Tá ainm an phacáiste ar iarraidh."
@@ -15663,8 +18776,19 @@ msgstr "Eochair phoiblí neamhbhailí le haghaidh leathnú APK."
 msgid "Invalid package name:"
 msgstr "Ainm neamhbhailí an phacáiste:"
 
+msgid "\"Use Gradle Build\" is required to enable \"Swipe to dismiss\"."
+msgstr ""
+"Tá \"Úsáid Gradle Build\" riachtanach chun \"Swipe to dismiss\" a chumasú."
+
 msgid "\"Use Gradle Build\" must be enabled to use the plugins."
 msgstr "Ní mór \"Úsáid Gradle Build\" a chumasú chun na breiseáin a úsáid."
+
+msgid ""
+"\"Compress Native Libraries\" is only valid when \"Use Gradle Build\" is "
+"enabled."
+msgstr ""
+"Ní bhíonn \"Compress Native Leaflets\" bailí ach amháin nuair atá \"Use "
+"Gradle Build\" cumasaithe."
 
 msgid "\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled."
 msgstr ""
@@ -15704,6 +18828,26 @@ msgstr ""
 "Ní mór leagan \"Sprioc SDK\" a bheith níos mó nó cothrom le leagan \"Min "
 "SDK\"."
 
+msgid "\"Use Gradle Build\" is required to add custom theme attributes."
+msgstr ""
+"Tá \"Úsáid Gradle Build\" riachtanach chun tréithe téama saincheaptha a chur "
+"leis."
+
+msgid "\"Use Gradle Build\" must be enabled to enable \"Show In Android Tv\"."
+msgstr ""
+"Ní mór \"Úsáid Gradle Build\" a bheith cumasaithe chun \"Taispeáin in Android "
+"Tv\" a chumasú."
+
+msgid "\"Use Gradle Build\" must be enabled to enable \"Show As Launcher App\"."
+msgstr ""
+"Ní mór \"Úsáid Gradle Build\" a bheith cumasaithe chun \"Taispeáin mar Aip "
+"Lainseálaí\" a chumasú."
+
+msgid "\"Use Gradle Build\" must be enabled to disable \"Show In App Library\"."
+msgstr ""
+"Ní mór \"Úsáid Gradle Build\" a bheith cumasaithe chun \"Taispeáin i "
+"Leabharlann na nAipeanna\" a dhíchumasú."
+
 msgid "Exporting APK..."
 msgstr "APK á easpórtáil..."
 
@@ -15726,8 +18870,28 @@ msgid "Error: There was a problem validating the keystore username and password"
 msgstr ""
 "Earráid: Bhí fadhb ann ainm úsáideora agus pasfhocal an keystore a bhailíochtú"
 
+msgid ""
+"Unable to determine the C# project's TFM, it may be incompatible. The export "
+"template only supports '%s'. Make sure the project targets '%s' or consider "
+"using gradle builds instead."
+msgstr ""
+"Ní féidir TFM an tionscadail C# a chinneadh, b'fhéidir nach bhfuil sé "
+"comhoiriúnach. Ní thacaíonn an teimpléad easpórtála ach le '%s'. Cinntigh go "
+"bhfuil an tionscadal dírithe ar '%s' nó smaoinigh ar thógálacha gradle a "
+"úsáid ina ionad."
+
+msgid ""
+"C# project targets '%s' but the export template only supports '%s'. Consider "
+"using gradle builds instead."
+msgstr ""
+"Tá '%s' mar sprioc ag tionscadal C# ach ní thacaíonn an teimpléad easpórtála "
+"ach le '%s'. Smaoinigh ar úsáid a bhaint as tógálacha gradle ina ionad."
+
 msgid "Exporting to Android when using C#/.NET is experimental."
 msgstr "Tá onnmhairiú chuig Android agus C #/.NET á úsáid turgnamhach."
+
+msgid "Gradle build is not supported for the Android editor."
+msgstr "Ní thacaítear le tógáil Gradle don eagarthóir Android."
 
 msgid "Custom Android source template not found."
 msgstr "Níor aimsíodh teimpléad foinse Android saincheaptha."
@@ -15800,6 +18964,11 @@ msgstr "Comhadlann 'build-tools' ar iarraidh!"
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "Ní féidir ordú apksigner Android SDK a aimsiú."
 
+msgid "\"Use Gradle Build\" is required for transparent background on Android"
+msgstr ""
+"Tá \"Úsáid Gradle Build\" riachtanach le haghaidh cúlra trédhearcach ar "
+"Android"
+
 msgid ""
 "\"Target SDK\" %d is higher than the default version %d. This may work, but "
 "wasn't tested and may be unstable."
@@ -15824,6 +18993,45 @@ msgstr ""
 "phacáiste agus nuashonrófar é go \"%s\". Sonraigh ainm an phacáiste go "
 "sainráite más gá."
 
+msgid "AAB signing is not supported"
+msgstr "Ní thacaítear le síniú AAB"
+
+msgid "Signing debug APK..."
+msgstr "APK dífhabhtaithe á shíniú..."
+
+msgid "Signing release APK..."
+msgstr "Ag síniú an APK scaoilte..."
+
+msgid "Could not find debug keystore, unable to export."
+msgstr ""
+"Níorbh fhéidir an stór eochrach dífhabhtaithe a aimsiú, ní féidir é a "
+"onnmhairiú."
+
+msgid "Could not find release keystore, unable to export."
+msgstr ""
+"Níorbh fhéidir an stór eochrach scaoilte a aimsiú, ní féidir é a onnmhairiú."
+
+msgid "Unable to sign apk."
+msgstr "Ní féidir an apk a shíniú."
+
+msgid ""
+"All 'apksigner' tools located in Android SDK 'build-tools' directory failed "
+"to execute. Please check that you have the correct version installed for your "
+"target sdk version. The resulting APK is unsigned."
+msgstr ""
+"Theip ar aon uirlis 'apksigner' atá suite in eolaire 'build-tools' SDK "
+"Android a fhorghníomhú. Seiceáil le do thoil go bhfuil an leagan ceart "
+"suiteáilte agat do do leagan SDK sprice. Níl an APK mar thoradh air sin "
+"sínithe."
+
+msgid ""
+"'apksigner' could not be found. Please check that the command is available in "
+"the Android SDK build-tools directory. The resulting APK is unsigned."
+msgstr ""
+"Níorbh fhéidir 'apksigner' a aimsiú. Seiceáil le do thoil go bhfuil an t-ordú "
+"ar fáil in eolaire uirlisí tógála SDK Android. Níl an APK a eascraíonn as sin "
+"sínithe."
+
 msgid "Could not start apksigner executable."
 msgstr "Níorbh fhéidir inrite apksigner a thosú."
 
@@ -15836,6 +19044,18 @@ msgid ""
 msgstr ""
 "aschur: \n"
 "%s"
+
+msgid "Verifying APK..."
+msgstr "APK á fhíorú..."
+
+msgid "Unable to verify signed apk."
+msgstr "Ní féidir an apk sínithe a fhíorú."
+
+msgid "'apksigner' verification of APK failed."
+msgstr "Theip ar fhíorú 'apksigner' ar an APK."
+
+msgid "Could not create temporary file!"
+msgstr "Níorbh fhéidir comhad sealadach a chruthú!"
 
 msgid "Exporting for Android"
 msgstr "Easpórtáil le haghaidh Android"
@@ -15876,6 +19096,12 @@ msgstr ""
 msgid "Unable to overwrite res/*.xml files with project name."
 msgstr "Ní féidir comhaid res / * .xml a fhorscríobh le hainm an tionscadail."
 
+msgid "Could not generate sparse pck metadata!"
+msgstr "Níorbh fhéidir meiteashonraí pck gann a ghiniúint!"
+
+msgid "Could not write PCK directory!"
+msgstr "Níorbh fhéidir eolaire PCK a scríobh!"
+
 msgid "Could not export project files to gradle project."
 msgstr ""
 "Níorbh fhéidir comhaid tionscadail a easpórtáil go tionscadal grádaithe."
@@ -15894,6 +19120,12 @@ msgstr "Aschur á bhogadh"
 
 msgid "Unable to copy and rename export file:"
 msgstr "Ní féidir an comhad easpórtála a chóipeáil agus a athainmniú:"
+
+msgid "Debug export template not found: \"%s\"."
+msgstr "Teimpléad easpórtála dífhabhtaithe gan aimsiú: \"%s\"."
+
+msgid "Release export template not found: \"%s\"."
+msgstr "Níor aimsíodh teimpléad easpórtála eisiúna: \"%s\"."
 
 msgid "Creating APK..."
 msgstr "APK á chruthú..."
@@ -15922,6 +19154,9 @@ msgstr "APK á ailíniú..."
 msgid "Could not unzip temporary unaligned APK."
 msgstr "Níorbh fhéidir APK sealadach gan síniú a unzip."
 
+msgid "Metal renderer require iOS 14+."
+msgstr "Éilíonn rindreálaí miotail iOS 14+."
+
 msgid "Export Icons"
 msgstr "Easpórtáil Deilbhíní"
 
@@ -15934,11 +19169,32 @@ msgstr "Easpórtáil Scripte Dífhabhtaithe"
 msgid "Could not open file \"%s\"."
 msgstr "Níorbh fhéidir comhad \"%s\" a oscailt."
 
+msgid ""
+"Mismatching custom export template executable architecture: found \"%s\", "
+"expected \"%s\"."
+msgstr ""
+"Ailtireacht inrite teimpléid easpórtála saincheaptha neamh-mheaitseála: "
+"fuarthas \"%s\", bhíothas ag súil le \"%s\"."
+
 msgid "Debug Console Export"
 msgstr "Easpórtáil Consóil Dífhabhtaithe"
 
 msgid "Could not create console wrapper."
 msgstr "Níorbh fhéidir fillteán consóil a chruthú."
+
+msgid ""
+"Mismatching custom debug export template executable architecture: found "
+"\"%s\", expected \"%s\"."
+msgstr ""
+"Ailtireacht inrite teimpléid easpórtála dífhabhtaithe saincheaptha neamh-"
+"mheaitseála: fuarthas \"%s\", bhíothas ag súil le \"%s\"."
+
+msgid ""
+"Mismatching custom release export template executable architecture: found "
+"\"%s\", expected \"%s\"."
+msgstr ""
+"Ailtireacht inrite teimpléid easpórtála scaoileadh saincheaptha neamh-"
+"mheaitseála: fuarthas \"%s\", bhíothas ag súil le \"%s\"."
 
 msgid "Failed to open executable file \"%s\"."
 msgstr "Níorbh fhéidir comhad inrite \"%s\" a oscailt."
@@ -16190,6 +19446,14 @@ msgstr ""
 
 msgid "Could not created symlink \"%s\" -> \"%s\"."
 msgstr "Níorbh fhéidir nasc simplí \"%s\" a chruthú -> \"%s\"."
+
+msgid ""
+"Unable to set Unix permissions for executable \"%s\". Use \"chmod +x\" to set "
+"it after transferring the exported .app to macOS or Linux."
+msgstr ""
+"Ní féidir ceadanna Unix a shocrú don chomhad inrite \"%s\". Úsáid \"chmod "
+"+x\" chun é a shocrú tar éis an .app easpórtáilte a aistriú chuig macOS nó "
+"Linux."
 
 msgid "Could not open \"%s\"."
 msgstr "Níorbh fhéidir \"%s\" a oscailt."
@@ -16460,6 +19724,20 @@ msgstr ""
 "Sprite\" chun go mbeidh AnimatedSprite2D chun frámaí a thaispeáint."
 
 msgid ""
+"Ancestor \"%s\" clips its children, so this CanvasGroup will not function "
+"properly."
+msgstr ""
+"Gearrann an sinsear \"%s\" a chlann, mar sin ní fheidhmeoidh an CanvasGroup "
+"seo i gceart."
+
+msgid ""
+"Ancestor \"%s\" is a CanvasGroup, so this CanvasGroup will not function "
+"properly."
+msgstr ""
+"Is CanvasGroup é sinsear \"%s\", mar sin ní fheidhmeoidh an CanvasGroup seo i "
+"gceart."
+
+msgid ""
 "Only one visible CanvasModulate is allowed per canvas.\n"
 "When there are more than one, only one of them will be active. Which one is "
 "undefined."
@@ -16491,6 +19769,19 @@ msgstr ""
 "cumasaithe."
 
 msgid ""
+"Particle trails are only available when using the Forward+ or Mobile "
+"renderers."
+msgstr ""
+"Ní bhíonn rianta cáithníní ar fáil ach amháin nuair a bhíonn na rindreálaithe "
+"Forward+ nó Mobile in úsáid."
+
+msgid ""
+"Particle sub-emitters are not available when using the Compatibility renderer."
+msgstr ""
+"Ní bhíonn fo-astaitheoirí cáithníní ar fáil agus an rindreálaí "
+"Comhoiriúnachta in úsáid."
+
+msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
 msgstr ""
@@ -16518,6 +19809,28 @@ msgid ""
 msgstr ""
 "Ba chóir go mbeadh suíomh tosaithe NavigationLink2D difriúil ná an suíomh "
 "deiridh a bheith úsáideach."
+
+msgid "NavigationObstacle2D does not support negative or zero scaling."
+msgstr "Ní thacaíonn NavigationObstacle2D le scálú diúltach ná nialasach."
+
+msgid ""
+"The agent radius can only be scaled uniformly. The largest value along the "
+"two axes of the global scale will be used to scale the radius. This value may "
+"change in unexpected ways when the node is rotated."
+msgstr ""
+"Ní féidir ga an ghníomhaire a scálú ach go haonfhoirmeach. Úsáidfear an luach "
+"is mó feadh an dá ais den scála domhanda chun an ga a scálú. Féadfaidh an "
+"luach seo athrú ar bhealaí gan choinne nuair a rothlaítear an nód."
+
+msgid "Skew has no effect on the agent radius."
+msgstr "Níl aon éifeacht ag an gclaonadh ar gha an ghníomhaire."
+
+msgid ""
+"A NavigationPolygon resource must be set or created for this node to work. "
+"Please set a property or draw a polygon."
+msgstr ""
+"Ní mór acmhainn NavigationPolygon a shocrú nó a chruthú le go n-oibreoidh an "
+"nód seo. Socraigh airí nó tarraing polagán le do thoil."
 
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
@@ -16586,6 +19899,14 @@ msgstr ""
 "Ní mór cruth a chur ar fáil le go bhfeidhmeoidh CollisionShape2D. Cruthaigh "
 "acmhainn crutha dó le do thoil!"
 
+msgid ""
+"The CollisionShape2D node has limited editing options for polygon-based "
+"shapes. Consider using a CollisionPolygon2D node instead."
+msgstr ""
+"Tá roghanna eagarthóireachta teoranta ag an nód CollisionShape2D le haghaidh "
+"cruthanna bunaithe ar pholagáin. Smaoinigh ar nód CollisionPolygon2D a úsáid "
+"ina ionad."
+
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "Ní mór nód A agus Nód B a bheith FisiceBody2Ds"
 
@@ -16622,6 +19943,15 @@ msgstr ""
 "Ba chóir go mbeadh nód leanaí bunaithe ar Joint2D ag nód PhysicalBone2D chun "
 "cnámha a choinneáil ceangailte! Cuir nód Joint2D-bhunaithe mar leanbh leis an "
 "nód seo!"
+
+msgid ""
+"PhysicsBody2D will not work correctly on a non-interpolated branch of the "
+"SceneTree.\n"
+"Check the node's inherited physics_interpolation_mode."
+msgstr ""
+"Ní oibreoidh PhysicsBody2D i gceart ar bhrainse neamh-idirshuite den "
+"SceneTree.\n"
+"Seiceáil an modh fisic_idirshuite oidhreachta atá ag an nód."
 
 msgid ""
 "Size changes to RigidBody2D will be overridden by the physics engine when "
@@ -16703,6 +20033,12 @@ msgstr ""
 "cumasaithe don TileMap agus dá sraitheanna go léir."
 
 msgid ""
+"Forward axis and primary rotation axis must not be parallel in setting %s."
+msgstr ""
+"Ní mór don ais ar aghaidh agus don ais rothlaithe phríomhúil a bheith "
+"comhthreomhar agus %s á shocrú."
+
+msgid ""
 "External Skeleton3D node not set! Please set a path to an external Skeleton3D "
 "node."
 msgstr ""
@@ -16735,6 +20071,11 @@ msgstr ""
 "Éilíonn beochan CPUParticles3D úsáid StandardMaterial3D a bhfuil a Mód fógraí "
 "na gCáithnín socraithe do \"Clár fógraí na gCáithnín\"."
 
+msgid "Decals are only available when using the Forward+ or Mobile renderers."
+msgstr ""
+"Ní bhíonn greamáin ar fáil ach amháin nuair a úsáidtear na rindreálaithe "
+"Forward+ nó Mobile."
+
 msgid ""
 "The decal has no textures loaded into any of its texture properties, and will "
 "therefore not be visible."
@@ -16763,6 +20104,11 @@ msgstr ""
 "Níl aon ghiotaí cumasaithe ag Cull Mask decal, rud a chiallaíonn nach "
 "bpéinteálfaidh an decal rudaí ar aon chiseal.\n"
 "Chun é seo a réiteach, cumasaigh giota amháin ar a laghad i maoin Cull Mask."
+
+msgid "Fog Volumes are only visible when using the Forward+ renderer."
+msgstr ""
+"Ní bhíonn Toirte Ceo le feiceáil ach amháin nuair a bhíonn an rindreálaí "
+"Forward+ in úsáid."
 
 msgid ""
 "Fog Volumes need volumetric fog to be enabled in the scene's Environment in "
@@ -16807,6 +20153,13 @@ msgstr ""
 "bheith socraithe le haghaidh rindreáil cosáin."
 
 msgid ""
+"Particle sub-emitters are only available when using the Forward+ or Mobile "
+"renderers."
+msgstr ""
+"Ní bhíonn fo-astaitheoirí cáithníní ar fáil ach amháin nuair a bhíonn na "
+"rindreálaithe Forward+ nó Mobile in úsáid."
+
+msgid ""
 "The Bake Mask has no bits enabled, which means baking will not produce any "
 "collision for this GPUParticlesCollisionSDF3D.\n"
 "To resolve this, enable at least one bit in the Bake Mask property."
@@ -16821,6 +20174,13 @@ msgstr "Ní dhéanann scála solais difear do mhéid amhairc an tsolais."
 
 msgid "Projector texture only works with shadows active."
 msgstr "Ní oibríonn uigeacht teilgeora ach le scáthanna gníomhacha."
+
+msgid ""
+"Projector textures are not supported when using the Compatibility renderer "
+"yet. Support will be added in a future release."
+msgstr ""
+"Ní thacaítear le huigeachtaí teilgeora go fóill agus an rindreálaí "
+"Comhoiriúnachta in úsáid. Cuirfear tacaíocht leis in eisiúint amach anseo."
 
 msgid "A SpotLight3D with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
@@ -16852,6 +20212,49 @@ msgid "Generating Probe Acceleration Structures"
 msgstr "Struchtúir Luasghéaraithe Probe a Ghiniúint"
 
 msgid ""
+"Lightmaps can only be baked from a GPU that supports the RenderingDevice "
+"backends.\n"
+"Your GPU (%s) does not support RenderingDevice, as it does not support "
+"Vulkan, Direct3D 12, or Metal.\n"
+"Lightmap baking will not be available on this device, although rendering "
+"existing baked lightmaps will work."
+msgstr ""
+"Ní féidir léarscáileanna solais a bhácáil ach ó GPU a thacaíonn leis na "
+"cúlchríocha RenderingDevice.\n"
+"Ní thacaíonn do GPU (%s) le RenderingDevice, mar ní thacaíonn sé le Vulkan, "
+"Direct3D 12, ná Metal.\n"
+"Ní bheidh bácáil léarscáileanna solais ar fáil ar an ngléas seo, cé go n-"
+"oibreoidh rindreáil léarscáileanna solais bácáilte atá ann cheana féin."
+
+msgid ""
+"The lightmap has no baked shadowmask textures. Please rebake with the "
+"Shadowmask Mode set to anything other than None."
+msgstr ""
+"Níl aon uigeachtaí maisc scátha bácáilte ar an léarscáil solais. Déan "
+"athbhácáil leis an Mód Maisc Scátha socraithe go rud ar bith seachas Gan Aon "
+"cheann."
+
+msgid ""
+"Lightmaps cannot be baked on %s. Rendering existing baked lightmaps will "
+"still work."
+msgstr ""
+"Ní féidir léarscáileanna solais a bhácáil ar %s. Oibreoidh rindreáil "
+"léarscáileanna solais bácáilte atá ann cheana féin fós."
+
+msgid ""
+"Lightmaps cannot be baked, as the `lightmapper_rd` module was disabled at "
+"compile-time. Rendering existing baked lightmaps will still work."
+msgstr ""
+"Ní féidir léarscáileanna solais a bhácáil, toisc gur díchumasaíodh an modúl "
+"`lightmapper_rd` ag am tiomsaithe. Oibreoidh rindreáil léarscáileanna solais "
+"bácáilte atá ann cheana féin fós."
+
+msgid "Forward axis and primary rotation axis must not be parallel."
+msgstr ""
+"Ní mór don ais ar aghaidh agus don ais rothlaithe phríomhúil a bheith "
+"comhthreomhar."
+
+msgid ""
 "The NavigationAgent3D can be used only under a Node3D inheriting parent node."
 msgstr ""
 "Ní féidir an NavigationAgent3D a úsáid ach amháin faoi nód tuismitheora "
@@ -16863,6 +20266,25 @@ msgid ""
 msgstr ""
 "Ba chóir go mbeadh suíomh tosaithe NavigationLink3D difriúil ná an suíomh "
 "deiridh a bheith úsáideach."
+
+msgid ""
+"NavigationObstacle3D only takes global rotation around the y-axis into "
+"account. Rotations around the x-axis or z-axis might lead to unexpected "
+"results."
+msgstr ""
+"Ní chuireann NavigationObstacle3D ach rothlú domhanda timpeall an ais-y san "
+"áireamh. D’fhéadfadh torthaí gan choinne a bheith mar thoradh ar rothlaithe "
+"timpeall an ais-x nó an ais-z."
+
+msgid "NavigationObstacle3D does not support negative or zero scaling."
+msgstr "Ní thacaíonn NavigationObstacle3D le scálú diúltach ná nialasach."
+
+msgid ""
+"The agent radius can only be scaled uniformly. The largest scale value along "
+"the three axes will be used."
+msgstr ""
+"Ní féidir ga an ghníomhaire a scálú ach go haonfhoirmeach. Úsáidfear an luach "
+"scála is mó feadh na dtrí ais."
 
 msgid ""
 "Occlusion culling is disabled in the Project Settings, which means occlusion "
@@ -17049,6 +20471,15 @@ msgid "Node A and Node B must be different PhysicsBody3Ds"
 msgstr "Ní mór nód A agus Nód B a bheith fisice éagsúlaBody3Ds"
 
 msgid ""
+"PhysicsBody3D will not work correctly on a non-interpolated branch of the "
+"SceneTree.\n"
+"Check the node's inherited physics_interpolation_mode."
+msgstr ""
+"Ní oibreoidh PhysicsBody3D i gceart ar bhrainse neamh-idirshuite den "
+"SceneTree.\n"
+"Seiceáil an modh fisic_idirshuite oidhreachta atá ag an nód."
+
+msgid ""
 "Scale changes to RigidBody3D will be overridden by the physics engine when "
 "running.\n"
 "Please change the size in children collision shapes instead."
@@ -17085,10 +20516,16 @@ msgstr ""
 "Ní mór don mhaoin \"Conair Chianda\" nód bailí Node3D nó Node3D-díorthaithe a "
 "chur in iúl chun oibriú."
 
+msgid "There is no child Skeleton3D!"
+msgstr "Níl aon Skeleton3D leanbh ann!"
+
 msgid "Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D."
 msgstr ""
 "Nód creatlach3D gan a bheith socraithe! Ní mór do Chnámharlach Modifier3D a "
 "bheith ina leanbh de Chnámharlach3D."
+
+msgid "Parent node should be a SpringBoneSimulator3D node."
+msgstr "Ba chóir go mbeadh an nód tuismitheora ina nód SpringBoneSimulator3D."
 
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Sprite Frames\" "
@@ -17154,6 +20591,16 @@ msgid "Finishing Plot"
 msgstr "Breacadh Críochnaithe"
 
 msgid ""
+"VoxelGI nodes are not supported when using the Compatibility renderer yet. "
+"Support will be added in a future release."
+msgstr ""
+"Ní thacaítear le nóid VoxelGI go fóill agus an rindreálaí Comhoiriúnachta á "
+"úsáid. Cuirfear tacaíocht leis in eisiúint amach anseo."
+
+msgid "VoxelGI nodes are not supported when using the Dummy renderer."
+msgstr "Ní thacaítear le nóid VoxelGI agus an rindreálaí Dummy in úsáid."
+
+msgid ""
 "No VoxelGI data set, so this node is disabled. Bake static objects to enable "
 "GI."
 msgstr ""
@@ -17184,6 +20631,13 @@ msgstr ""
 "XROrigin3D mar thuismitheoir."
 
 msgid ""
+"XRCamera3D should have physics_interpolation_mode set to OFF in order to "
+"avoid jitter."
+msgstr ""
+"Ba chóir go mbeadh physics_interpolation_mode socraithe go OFF i XRCamera3D "
+"chun crith a sheachaint."
+
+msgid ""
 "XRNode3D may not function as expected without an XROrigin3D node as its "
 "parent."
 msgstr ""
@@ -17195,6 +20649,13 @@ msgstr "Níl aon ainm rianaire socraithe."
 
 msgid "No pose is set."
 msgstr "Níl aon údar socraithe."
+
+msgid ""
+"XRNode3D should have physics_interpolation_mode set to OFF in order to avoid "
+"jitter."
+msgstr ""
+"Ba chóir go mbeadh physics_interpolation_mode socraithe go OFF ag XRNode3D "
+"chun crith a sheachaint."
 
 msgid "XROrigin3D requires an XRCamera3D child node."
 msgstr "Éilíonn XROrigin3D nód leanaí XRCamera3D."
@@ -17230,6 +20691,15 @@ msgstr ""
 "Tá sé i gceist buttonGroup a úsáid ach amháin le cnaipí a bhfuil toggle_mode "
 "socraithe go fíor."
 
+msgid "The changes to this palette have not been saved to a file."
+msgstr "Níor sábháladh na hathruithe ar an pailéad seo i gcomhad."
+
+msgid "Execute an expression as a color."
+msgstr "Cuir léiriú i gcrích mar dhath."
+
+msgid "Load existing color palette."
+msgstr "Luchtaigh pailéad dathanna atá ann cheana féin."
+
 msgid "Switch between hexadecimal and code values."
 msgstr "Athraigh idir luachanna heicsidheachúlach agus códluachanna."
 
@@ -17250,6 +20720,31 @@ msgstr ""
 "Ní thaispeánfar an Leid Leid mar go bhfuil Scagaire Luiche an rialaithe "
 "socraithe chun \"Déan neamhaird\". Chun é seo a réiteach, socraigh an "
 "Scagaire Luiche go \"Stop\" nó \"Pas\"."
+
+msgid "Accessibility Name must not be empty, or contain only spaces."
+msgstr ""
+"Ní féidir Ainm Inrochtaineachta a bheith folamh, agus ní féidir ach spásanna "
+"a bheith ann."
+
+msgid "Accessibility Name must not include Node class name."
+msgstr "Ní féidir ainm ranga an Nóid a áireamh in Ainm Inrochtaineachta."
+
+msgid "Accessibility Name must not include control character."
+msgstr ""
+"Ní féidir carachtar rialaithe a bheith san áireamh in Ainm Inrochtaineachta."
+
+msgid "%s grabbed. Select target and use %s to drop, use %s to cancel."
+msgstr ""
+"%s gafa. Roghnaigh sprioc agus bain úsáid as %s chun í a scaoileadh, bain "
+"úsáid as %s chun í a chealú."
+
+msgid "%s can be dropped here. Use %s to drop, use %s to cancel."
+msgstr ""
+"Is féidir %s a ligean anuas anseo. Úsáid %s chun ligean anuas, úsáid %s chun "
+"cealú."
+
+msgid "%s can not be dropped here. Use %s to cancel."
+msgstr "Ní féidir %s a scaoileadh anseo. Úsáid %s chun cealú."
 
 msgid ""
 "Please be aware that GraphEdit and GraphNode will undergo extensive "
@@ -17272,6 +20767,24 @@ msgid ""
 msgstr ""
 "Ní thacaíonn an cló reatha le carachtar amháin nó níos mó a úsáidtear i "
 "dtéacs an Lipéid seo a rindreáil."
+
+msgid ""
+"The current theme style has shadows and/or rounded corners for popups, but "
+"those won't display correctly if \"display/window/per_pixel_transparency/"
+"allowed\" isn't enabled in the Project Settings, nor if it isn't supported."
+msgstr ""
+"Tá scáthanna agus/nó coirnéil chruinne sa stíl téama reatha le haghaidh "
+"fuinneoga aníos, ach ní thaispeánfar iad sin i gceart mura bhfuil \"display/"
+"window/per_pixel_transparency/allowed\" cumasaithe sna Socruithe Tionscadail, "
+"ná mura dtacaítear leis."
+
+msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater or equal to 0."
+msgstr ""
+"Má tá \"Eagarthóireacht Mhéadaithe\" cumasaithe, ní mór don \"Luach Íosta\" a "
+"bheith níos mó ná nó cothrom le 0."
+
+msgid "Image alternative text must not be empty."
+msgstr "Ní féidir téacs malartach íomhá a bheith folamh."
 
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
@@ -17299,6 +20812,26 @@ msgstr ""
 "Níl aon éifeacht ag cruth réamhshocraithe cúrsóir na luiche de "
 "SubViewportContainer.\n"
 "Smaoinigh ar é a fhágáil ag a luach tosaigh 'CURSOR_ARROW'."
+
+msgid "Cell %d x %d: either text or alternative text must not be empty."
+msgstr "Cill %d x %d: ní féidir téacs nó téacs malartach a bheith folamh."
+
+msgid "Button %d in %d x %d: alternative text must not be empty."
+msgstr "Cnaipe %d i %d x %d: ní féidir téacs malartach a bheith folamh."
+
+msgid ""
+"Ancestor \"%s\" clips its children, so this node will not be able to clip its "
+"children."
+msgstr ""
+"Gearrann sinsear \"%s\" a chlann, mar sin ní bheidh an nód seo in ann a "
+"chlann a ghearradh."
+
+msgid ""
+"Ancestor \"%s\" is a CanvasGroup, so this node will not be able to clip its "
+"children."
+msgstr ""
+"Is CanvasGroup é sinsear \"%s\", mar sin ní bheidh an nód seo in ann a chlann "
+"a bhearradh."
 
 msgid ""
 "This node was an instance of scene '%s', which was no longer available when "
@@ -17368,6 +20901,9 @@ msgstr ""
 "nó fisice.\n"
 "Smaoinigh ar lúb próisis scripte a úsáid seachas a bheith ag brath ar "
 "Uaineadóir le haghaidh tréimhsí feithimh an-íseal."
+
+msgid "Drag-and-drop data"
+msgstr "Sonraí tarraing-agus-scaoil"
 
 msgid ""
 "The Viewport size must be greater than or equal to 2 pixels on both "
@@ -17457,6 +20993,19 @@ msgstr "Úsáid Gach Dromchla"
 msgid "Surface Index"
 msgstr "Innéacs Dromchla"
 
+msgid "Division by zero error."
+msgstr "Roinnt faoi earráid nialasach."
+
+msgid "Modulo by zero error."
+msgstr "Modulo de réir earráide nialasach."
+
+msgid ""
+"Invalid number of arguments when calling stage function '%s', which expects "
+"%d argument(s)."
+msgstr ""
+"Líon neamhbhailí argóintí agus feidhm stáitse '%s' á glaoch, a bhfuiltear ag "
+"súil le %d argóint(í)."
+
 msgid ""
 "Invalid argument type when calling stage function '%s', type expected is '%s'."
 msgstr ""
@@ -17493,6 +21042,15 @@ msgstr "Ní cheadaítear athchúrsa."
 msgid "Function '%s' can't be called from source code."
 msgstr "Ní féidir feidhm '%s' a ghlaoch ón gcód foinseach."
 
+msgid "No matching function for \"%s\" call:"
+msgstr "Gan aon fheidhm chomhoiriúnach don ghlao \"%s\":"
+
+msgid ""
+"candidate function \"%s(%s)\" not viable, argument %d should be %s but is %s."
+msgstr ""
+"feidhm iarrthóra \"%s(%s)\" neamhbhailí, ba chóir go mbeadh argóint %d %s ach "
+"is %s í."
+
 msgid ""
 "Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."
 msgstr ""
@@ -17516,6 +21074,16 @@ msgstr "Bhíothas ag súil le ',' nó ')' tar éis argóint."
 
 msgid "Varying may not be assigned in the '%s' function."
 msgstr "Ní féidir athrú a shannadh san fheidhm \"%s\"."
+
+msgid "Varying with '%s' data type may only be assigned in the '%s' function."
+msgstr ""
+"Ní féidir athrú le cineál sonraí '%s' a shannadh ach amháin sa fheidhm '%s'."
+
+msgid ""
+"Varyings which assigned in '%s' function may not be reassigned in '%s' or "
+"'%s'."
+msgstr ""
+"Ní féidir athruithe a sannadh sa fheidhm '%s' a ath-shannadh i '%s' ná i '%s'."
 
 msgid "'%s' cannot be used within the '%s' processor function."
 msgstr "Ní féidir '%s' a úsáid laistigh d'fheidhm phróiseálaí '%s'."
@@ -17575,6 +21143,9 @@ msgstr "Bhíothas ag súil le tairiseach slánuimhir dhearfach."
 msgid "Invalid data type for the array."
 msgstr "Cineál sonraí neamhbhailí don eagar."
 
+msgid "Array size mismatch. Expected %d elements (found %d)."
+msgstr "Neamhoiriúnacht méid eagar. Bhí %d eilimintí ag súil leo (%d aimsithe)."
+
 msgid "Expected array initialization."
 msgstr "Táthar ag súil le tosaithe eagar."
 
@@ -17629,6 +21200,13 @@ msgstr ""
 
 msgid "Can't use function as identifier: '%s'."
 msgstr "Ní féidir an fheidhm a úsáid mar aitheantóir: '%s'."
+
+msgid "Varying with '%s' data type may only be used in the '%s' function."
+msgstr ""
+"Ní féidir athrú le cineál sonraí '%s' a úsáid ach amháin sa fheidhm '%s'."
+
+msgid "Varying '%s' must be assigned in the '%s' function first."
+msgstr "Ní mór '%s' éagsúil a shannadh sa fheidhm '%s' ar dtús."
 
 msgid "Only integer expressions are allowed for indexing."
 msgstr "Ní cheadaítear ach slonn slánuimhreacha le haghaidh innéacsú."
@@ -17710,11 +21288,20 @@ msgstr ""
 msgid "Expected a boolean expression."
 msgstr "Bhíothas ag súil le slonn Boole."
 
+msgid "Expected an integer or unsigned integer expression."
+msgstr "Bhíothas ag súil le slánuimhir nó le slánuimhir gan síniú."
+
 msgid "Default case must be defined only once."
 msgstr "Ní mór an cás réamhshocraithe a shainiú ach uair amháin."
 
 msgid "'%s' must be placed within a '%s' block."
 msgstr "Ní mór '%s' a chur laistigh de bhloc '%s'."
+
+msgid "Undefined identifier '%s' in a case label."
+msgstr "Aitheantóir neamhshainithe '%s' i lipéad cáis."
+
+msgid "Expected an unsigned integer constant."
+msgstr "Bhí tairiseach slánuimhir gan síniú ag súil leis."
 
 msgid "Expected an integer constant."
 msgstr "Bhíothas ag súil le tairiseach slánuimhir."
@@ -17728,14 +21315,23 @@ msgstr "Tá úsáid '%s' san fheidhm phróiseálaí '%s' mícheart."
 msgid "Expected '%s' with an expression of type '%s'."
 msgstr "Bhíothas ag súil le '%s' agus slonn den chineál '%s'."
 
+msgid "'%s' function cannot return a value."
+msgstr "Ní féidir leis an bhfeidhm '%s' luach a thabhairt ar ais."
+
 msgid "Expected return with an expression of type '%s'."
 msgstr "Bhíothas ag súil le haischur le slonn den chineál '%s'."
+
+msgid "Use of '%s' is not supported for the '%s' shader type."
+msgstr "Ní thacaítear le húsáid '%s' don chineál scáthaitheora '%s'."
 
 msgid "'%s' is not allowed outside of a loop or '%s' statement."
 msgstr "Ní cheadaítear '%s' taobh amuigh de lúb nó ráiteas '%s'."
 
 msgid "'%s' is not allowed outside of a loop."
 msgstr "Ní cheadaítear '%s' taobh amuigh de lúb."
+
+msgid "The middle expression is expected to have a boolean data type."
+msgstr "Táthar ag súil go mbeidh cineál sonraí Booleanach ag an léiriú lár."
 
 msgid "The left expression is expected to be a variable declaration."
 msgstr "Táthar ag súil gur dearbhú inathraithe a bheidh sa slonn ar chlé."
@@ -17762,6 +21358,15 @@ msgstr "Cineál scáthaithe neamhbhailí. Is iad na cineálacha bailí: %s"
 
 msgid "Unexpected token: '%s'."
 msgstr "Comhartha gan choinne: '%s'."
+
+msgid "Duplicated stencil mode reference value: '%s'."
+msgstr "Luach tagartha mód stensil dúblaithe: '%s'."
+
+msgid "Stencil mode reference value cannot be negative: '%s'."
+msgstr "Ní féidir luach tagartha mód stensil a bheith diúltach: '%s'."
+
+msgid "Stencil mode reference value cannot be greater than 255: '%s'."
+msgstr "Ní féidir luach tagartha mód an stensil a bheith níos mó ná 255: '%s'."
 
 msgid "Expected a struct identifier."
 msgstr "Bhíothas ag súil le haitheantóir struchtúr."
@@ -17834,8 +21439,29 @@ msgstr ""
 msgid "Duplicated hint: '%s'."
 msgstr "Leid dhúbailte: '%s'."
 
+msgid "Source color conversion disabled hint is for '%s', '%s'."
+msgstr "Leid atá ann maidir le tiontú dath foinse a dhíchumasú ná '%s', '%s'."
+
+msgid "Hint '%s' should be preceded by '%s'."
+msgstr "Leid: Ba chóir '%s' a chur roimh '%s'."
+
 msgid "Range hint is for '%s' and '%s' only."
 msgstr "Tá leid raoin ann do '%s' agus '%s' amháin."
+
+msgid "Expected a valid numeric expression."
+msgstr "Bhíothas ag súil le léiriú uimhriúil bailí."
+
+msgid "Expected a valid numeric expression after ','."
+msgstr "Bhíothas ag súil le léiriú uimhriúil bailí i ndiaidh ','."
+
+msgid "Enum hint is for '%s' only."
+msgstr "Leid enum le haghaidh '%s' amháin."
+
+msgid "Expected a string constant."
+msgstr "Bhíothas ag súil le tairiseach teaghráin."
+
+msgid "Expected ',' or ')' after string constant."
+msgstr "Bhíothas ag súil le ',' nó ')' i ndiaidh tairiseach teaghráin."
 
 msgid "Can only specify '%s' once."
 msgstr "Ní féidir '%s' a shonrú ach uair amháin."
@@ -17847,6 +21473,13 @@ msgid "Allowed instance uniform indices must be within [0..%d] range."
 msgstr ""
 "Ní mór innéacsanna aonfhoirmeacha ásc ceadaithe a bheith laistigh de raon "
 "[0..%d]."
+
+msgid ""
+"'hint_normal_roughness_texture' is only available when using the Forward+ "
+"renderer."
+msgstr ""
+"Níl 'hint_normal_roughness_texture' ar fáil ach amháin nuair a úsáidtear an "
+"rindreálaí Forward+."
 
 msgid "'hint_normal_roughness_texture' is not supported in '%s' shaders."
 msgstr "Ní thacaítear le 'hint_normal_roughness_texture' i shaders '%s'."
@@ -17933,6 +21566,11 @@ msgstr ""
 msgid "Expected an identifier after type."
 msgstr "Bhíothas ag súil le haitheantóir tar éis cineáil."
 
+msgid "'%s' qualifier cannot be used with a function return type."
+msgstr ""
+"Ní féidir an cáilitheoir '%s' a úsáid le cineál feidhme a thugann feidhm ar "
+"ais."
+
 msgid ""
 "The '%s' qualifier cannot be used within a function parameter declared with "
 "'%s'."
@@ -17964,18 +21602,46 @@ msgstr "Bhíothas ag súil le '{' chun tús a chur leis an bhfeidhm."
 msgid "Expected at least one '%s' statement in a non-void function."
 msgstr "Bhíothas ag súil le ráiteas amháin '%s' ar a laghad i bhfeidhm neamhní."
 
+msgid ""
+"Varying with integer data type must be declared with `%s` interpolation "
+"qualifier."
+msgstr ""
+"Ní mór athrú le cineál sonraí slánuimhir a dhearbhú le cáilitheoir "
+"idirshuíomh `%s`."
+
+msgid "Too many varyings used in shader (%d used, maximum supported is %d)."
+msgstr ""
+"An iomarca athraitheacha in úsáid sa scáthaitheoir (%d in úsáid, is é %d an t-"
+"uasmhéid a dtacaítear leis)."
+
 msgid "uniform buffer"
 msgstr "maolán aonfhoirmeach"
 
+msgid "Expected an identifier for stencil mode."
+msgstr "Bhíothas ag súil le haitheantóir don mhodh stensil."
+
 msgid "Expected an identifier for render mode."
 msgstr "Bhíothas ag súil le haitheantóir don mhodh rindreála."
+
+msgid "Duplicated stencil mode: '%s'."
+msgstr "Mód stensil dhúblaithe: '%s'."
 
 msgid "Duplicated render mode: '%s'."
 msgstr "Mód rindreála dúblach: '%s'."
 
 msgid ""
+"Redefinition of stencil mode: '%s'. The '%s' mode has already been set to "
+"'%s'."
+msgstr ""
+"Athshainiú ar mhodh stensil: '%s'. Tá an modh '%s' socraithe go '%s' cheana "
+"féin."
+
+msgid ""
 "Redefinition of render mode: '%s'. The '%s' mode has already been set to '%s'."
 msgstr "Athshainiú mód rindreála: '%s'. Tá mód '%s' socraithe go '%s' cheana."
+
+msgid "Invalid stencil mode: '%s'."
+msgstr "Mód stensil neamhbhailí: '%s'."
 
 msgid "Invalid render mode: '%s'."
 msgstr "Mód rindreála neamhbhailí: '%s'."
@@ -18014,11 +21680,17 @@ msgid "'##' must not appear at end of macro expansion."
 msgstr ""
 "Níor cheart '##' a bheith le feiceáil ag deireadh an mhacra-leathnaithe."
 
+msgid "Unmatched '%s' directive."
+msgstr "Treoir '%s' gan mheaitseáil."
+
 msgid "Missing condition."
 msgstr "Coinníoll ar iarraidh."
 
 msgid "Condition evaluation error."
 msgstr "Earráid mheastóireachta coinníoll."
+
+msgid "Invalid '%s' directive."
+msgstr "Treoir neamhbhailí '%s'."
 
 msgid "Shader include file does not exist:"
 msgstr "Níl an comhad san áireamh sa scáthóir:"
@@ -18038,6 +21710,9 @@ msgstr "Aimsíodh timthriallach"
 
 msgid "Shader max include depth exceeded."
 msgstr "Shader max san áireamh doimhneacht níos mó ná."
+
+msgid "Cannot use '%s' on built-in define."
+msgstr "Ní féidir '%s' a úsáid ar an sainmhíniú ionsuite."
 
 msgid "Macro expansion limit exceeded."
 msgstr "Sháraigh an teorainn leathnaithe macra."

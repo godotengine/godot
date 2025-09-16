@@ -62,7 +62,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-07 17:17+0000\n"
+"PO-Revision-Date: 2025-09-13 12:37+0000\n"
 "Last-Translator: Myeongjin <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ko/>\n"
@@ -170,10 +170,10 @@ msgid "Initial Screen"
 msgstr "초기 화면"
 
 msgid "Resizable"
-msgstr "크기 조절 가능한"
+msgstr "크기 조절 가능"
 
 msgid "Borderless"
-msgstr "테두리 없는"
+msgstr "테두리 없음"
 
 msgid "Always on Top"
 msgstr "항상 위에"
@@ -4823,6 +4823,9 @@ msgstr "Gradle 빌드 디렉터리"
 msgid "Android Source Template"
 msgstr "Android 소스 템플릿"
 
+msgid "Compress Native Libraries"
+msgstr "네이티브 라이브러리 압축"
+
 msgid "Export Format"
 msgstr "내보내기 형식"
 
@@ -6427,7 +6430,7 @@ msgid "Compositor"
 msgstr "컴포시터"
 
 msgid "Projection"
-msgstr "투상"
+msgstr "투영"
 
 msgid "Frustum Offset"
 msgstr "절두체 오프셋"
@@ -7436,10 +7439,10 @@ msgid "Explicit Elapse"
 msgstr "명시적 경과"
 
 msgid "Xfade Time"
-msgstr "X-페이드 시간"
+msgstr "X페이드 시간"
 
 msgid "Xfade Curve"
-msgstr "X-페이드 곡선"
+msgstr "X페이드 곡선"
 
 msgid "Allow Transition to Self"
 msgstr "자신으로의 전환 허용"
@@ -7463,7 +7466,7 @@ msgid "Sub Amount"
 msgstr "빼기 양"
 
 msgid "Seek Request"
-msgstr "보기 요청"
+msgstr "검색 요청"
 
 msgid "Current Index"
 msgstr "현재 인덱스"
@@ -7811,7 +7814,7 @@ msgid "Mouse"
 msgstr "마우스"
 
 msgid "Force Pass Scroll Events"
-msgstr "강제 스크롤 이벤트 패스"
+msgstr "강제 스크롤 이벤트 통과"
 
 msgid "Default Cursor Shape"
 msgstr "디폴트 커서 모양"
@@ -7826,7 +7829,7 @@ msgid "Controls Nodes"
 msgstr "제어 노드"
 
 msgid "Described by Nodes"
-msgstr "노드로 표현됨"
+msgstr "노드로 설명됨"
 
 msgid "Labeled by Nodes"
 msgstr "노드로 레이블 지정됨"
@@ -7835,7 +7838,7 @@ msgid "Flow to Nodes"
 msgstr "노드로의 흐름"
 
 msgid "Type Variation"
-msgstr "타입 바리에이션"
+msgstr "유형 변종"
 
 msgid "OK Button Text"
 msgstr "확인 버튼 텍스트"
@@ -7847,7 +7850,7 @@ msgid "Hide on OK"
 msgstr "확인 시 숨기기"
 
 msgid "Close on Escape"
-msgstr "Esc 시 닫기"
+msgstr "Escape 시 닫기"
 
 msgid "Autowrap"
 msgstr "자동 줄바꿈"
@@ -7856,7 +7859,7 @@ msgid "Cancel Button Text"
 msgstr "취소 버튼 텍스트"
 
 msgid "Mode Overrides Title"
-msgstr "모드가 제목을 정함"
+msgstr "모드가 제목을 덮어씀"
 
 msgid "Root Subfolder"
 msgstr "루트 하위 폴더"
@@ -8210,10 +8213,10 @@ msgid "Show Percentage"
 msgstr "백분율 보이기"
 
 msgid "Indeterminate"
-msgstr "미완료"
+msgstr "불확정"
 
 msgid "Preview Indeterminate"
-msgstr "미완료 미리보기"
+msgstr "불확정 미리보기"
 
 msgid "Min Value"
 msgstr "최솟값"
@@ -11694,13 +11697,13 @@ msgid "Obstacles Static Face Pushin Color"
 msgstr "장애물 정적 면 밀림 색상"
 
 msgid "Obstacles Static Edge Pushin Color"
-msgstr "장애물 정적 가장자리 밀어내기 색상"
+msgstr "장애물 정적 에지 밀어내기 색상"
 
 msgid "Obstacles Static Face Pushout Color"
 msgstr "장애물 정적 면 밀어내기 색상"
 
 msgid "Obstacles Static Edge Pushout Color"
-msgstr "장애물 정적 가장자리 밀어내기 색상"
+msgstr "장애물 정적 에지 밀어내기 색상"
 
 msgid "Enable Agents Radius"
 msgstr "에이전트 반경 활성화"

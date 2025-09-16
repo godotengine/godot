@@ -61,13 +61,14 @@
 # Damglador <vse.stopchanskyi@gmail.com>, 2025.
 # Volodymyr Mikhav <mihaw.wolodymyr@gmail.com>, 2025.
 # Максим Горпиніч <gorpinicmaksim5@gmail.com>, 2025.
+# Максим Горпиніч <gorpinicmaksim0@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-08-02 06:02+0000\n"
-"Last-Translator: Максим Горпиніч <gorpinicmaksim5@gmail.com>\n"
+"PO-Revision-Date: 2025-09-08 18:51+0000\n"
+"Last-Translator: Максим Горпиніч <gorpinicmaksim0@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -76,7 +77,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "Зняти"
@@ -7649,6 +7650,13 @@ msgstr "Назви, що починаються з _, зарезервовані
 msgid "Property: %s"
 msgstr "Нерухомість: %s"
 
+msgid ""
+"Toggling the checkbox is disabled for Resource properties. Modify the "
+"property using the resource picker instead."
+msgstr ""
+"Перемикання прапорця вимкнено для властивостей ресурсу. Натомість змініть "
+"властивість за допомогою засобу вибору ресурсу."
+
 msgid "Unfavorite Property"
 msgstr "Вилучити властивість з обраного"
 
@@ -8013,6 +8021,9 @@ msgstr "Новий шейдер..."
 msgid "Size: %s"
 msgstr "Розмір: %s"
 
+msgid "Invalid file or broken link."
+msgstr "Недійсний файл або непрацююче посилання."
+
 msgid "Type: %s"
 msgstr "Введіть: %s"
 
@@ -8030,6 +8041,9 @@ msgstr "Довжина: %0.3fs"
 
 msgid "Advanced settings are always shown when searching."
 msgstr "Розширені налаштування завжди відображаються під час пошуку."
+
+msgid "Event Configured"
+msgstr "Подія налаштована"
 
 msgid "Configure"
 msgstr "Конфігурація"
@@ -8718,6 +8732,12 @@ msgstr "Ім'я тегу не може бути порожнім."
 
 msgid "Tag name can't contain spaces."
 msgstr "Назва тегу не може містити пробілів."
+
+msgid "Tag name can't begin or end with underscore."
+msgstr "Назва тегу не може починатися або закінчуватися символом підкреслення."
+
+msgid "Tag name can't contain consecutive underscores."
+msgstr "Назва тегу не може містити послідовні символи підкреслення."
 
 msgid "These characters are not allowed in tags: %s."
 msgstr "Ці символи заборонені в тегах: %s."
@@ -10733,6 +10753,12 @@ msgstr "Змінити висоту форми циліндра"
 
 msgid "Change Separation Ray Shape Length"
 msgstr "Змінити довжину форми променя"
+
+msgid "Remove SoftBody3D pinned point %d"
+msgstr "Вилучити закріплену точку SoftBody3D %d"
+
+msgid "Add SoftBody3D pinned point %d"
+msgstr "Додати закріплену точку SoftBody3D %d"
 
 msgid "Change Probe Size"
 msgstr "Змінити розмір зонду"
@@ -16199,6 +16225,9 @@ msgstr "Встановити константу: %s"
 msgid "Invalid name for varying."
 msgstr "Некоректна назва для варіації."
 
+msgid "Varying with that name already exists."
+msgstr "Варіація з цією назвою вже існує."
+
 msgid "Boolean type cannot be used with `%s` varying mode."
 msgstr "Логічний тип не можна використовувати зі змінним режимом `%s`."
 
@@ -17671,6 +17700,9 @@ msgstr "Очікувалося ціле число від 0 до 2^32 - 1."
 msgid "Expected a string of length 1 (a character)."
 msgstr "Очікувався рядок довжиною 1 (один символ)."
 
+msgid "Range too big."
+msgstr "Занадто великий діапазон."
+
 msgid "Cannot resize array."
 msgstr "Неможливо змінити розмір масиву."
 
@@ -18602,6 +18634,13 @@ msgid "\"Use Gradle Build\" must be enabled to use the plugins."
 msgstr ""
 "Щоб використовувати плагіни, потрібно ввімкнути «Використовувати збірку "
 "Gradle»."
+
+msgid ""
+"\"Compress Native Libraries\" is only valid when \"Use Gradle Build\" is "
+"enabled."
+msgstr ""
+"Опція «Стиснути нативні бібліотеки» дійсна лише тоді, коли ввімкнено "
+"«Використовувати збірку Gradle»."
 
 msgid "\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled."
 msgstr ""
@@ -20840,6 +20879,14 @@ msgstr "Рекурсія не допускається."
 
 msgid "Function '%s' can't be called from source code."
 msgstr "Функцію '%s' не можна викликати з вихідного коду."
+
+msgid "No matching function for \"%s\" call:"
+msgstr "Немає відповідної функції для виклику \"%s\":"
+
+msgid ""
+"candidate function \"%s(%s)\" not viable, argument %d should be %s but is %s."
+msgstr ""
+"Функція-кандидат \"%s(%s)\" нежиттєздатна, аргумент %d має бути %s, але є %s."
 
 msgid ""
 "Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."
