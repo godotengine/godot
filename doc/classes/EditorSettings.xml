@@ -561,9 +561,6 @@
 		</member>
 		<member name="editors/bone_mapper/handle_colors/unset" type="Color" setter="" getter="">
 		</member>
-		<member name="editors/grid_map/palette_min_width" type="int" setter="" getter="">
-			Minimum width of GridMap's mesh palette side panel.
-		</member>
 		<member name="editors/grid_map/pick_distance" type="float" setter="" getter="">
 			The maximum distance at which tiles can be placed on a GridMap, relative to the camera position (in 3D units).
 		</member>
