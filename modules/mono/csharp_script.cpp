@@ -2847,7 +2847,7 @@ Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const
 		scr.instantiate();
 	}
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED)
 	Error err = scr->load_source_code(real_path);
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot load C# script file '" + real_path + "'.");
 #endif // DEBUG_ENABLED

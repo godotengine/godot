@@ -19,7 +19,7 @@
     <Authors>Godot Engine contributors</Authors>
 
     <PackageId>GodotSharp</PackageId>
-    <Version>4.5.0</Version>
+    <Version>4.6.0</Version>
     <PackageVersion>$(PackageVersion_GodotSharp)</PackageVersion>
     <RepositoryUrl>https://github.com/godotengine/godot/tree/master/modules/mono/glue/GodotSharp/GodotSharp</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
@@ -105,6 +105,7 @@
     <Compile Include="Core\Interfaces\IAwaitable.cs" />
     <Compile Include="Core\Interfaces\IAwaiter.cs" />
     <Compile Include="Core\Interfaces\ISerializationListener.cs" />
+    <Compile Include="Core\Logging.cs" />
     <Compile Include="Core\Mathf.cs" />
     <Compile Include="Core\MathfEx.cs" />
     <Compile Include="Core\NativeInterop\CustomUnsafe.cs" />
