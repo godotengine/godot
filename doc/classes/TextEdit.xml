@@ -1628,7 +1628,7 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="background_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+		<theme_item name="background_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)" deprecated="Use [theme_item normal] instead.">
 			Sets the background [Color] of this [TextEdit].
 		</theme_item>
 		<theme_item name="caret_background_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
