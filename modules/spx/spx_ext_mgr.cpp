@@ -342,7 +342,6 @@ GdVec2 SpxExtMgr::get_layer_offset(GdInt index){
 }
 void SpxExtMgr::open_draw_tiles_with_size(GdInt tile_size) {
     if (draw_tiles != nullptr) {
-        print_error("The draw tiles node already created");
         return;
     }
     draw_tiles = memnew(SpxDrawTiles);
@@ -351,35 +350,35 @@ void SpxExtMgr::open_draw_tiles_with_size(GdInt tile_size) {
 }
 
 void SpxExtMgr::set_layer_index(GdInt index) {
-	with_draw_tiles([&](){
+	without_draw_tiles([&](){
 		draw_tiles->set_sprite_index(index);
 	});
 }
 void SpxExtMgr::set_tile(GdString texture_path, GdBool with_collision) {
-	with_draw_tiles([&](){
+	without_draw_tiles([&](){
 		draw_tiles->set_sprite_texture(texture_path, with_collision);
 	});
 }
 
 void SpxExtMgr::place_tiles(GdArray positions, GdString texture_path) {
-	with_draw_tiles([&](){
+	without_draw_tiles([&](){
 		draw_tiles->place_sprites(positions, texture_path);
 	});
 }
 void SpxExtMgr::place_tiles_with_layer(GdArray positions, GdString texture_path, GdInt layer_index) {
-	with_draw_tiles([&](){
+	without_draw_tiles([&](){
 		draw_tiles->place_sprites(positions, texture_path, layer_index);
 	});
 }
 
 void SpxExtMgr::place_tile(GdVec2 pos, GdString texture_path) {
-	with_draw_tiles([&](){
+	without_draw_tiles([&](){
 		draw_tiles->place_sprite(pos, texture_path);
 	});
 }
 
 void SpxExtMgr::place_tile_with_layer(GdVec2 pos, GdString texture_path, GdInt layer_index) {
-	with_draw_tiles([&](){
+	without_draw_tiles([&](){
 		draw_tiles->place_sprite(pos, texture_path, layer_index);
 	});
 }
@@ -436,4 +435,3 @@ void SpxExtMgr::create_pure_sprite(GdString texture_path, GdVec2 pos, GdInt zind
 	pure_sprite_root->add_child(sprite);
 	sprite->set_z_index(zindex);
 }
-
