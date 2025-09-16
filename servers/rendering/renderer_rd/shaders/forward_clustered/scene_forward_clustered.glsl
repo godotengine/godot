@@ -2029,6 +2029,16 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 	}
 
+	//process ssr
+	if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR)) {
+#ifdef USE_MULTIVIEW
+		vec4 ssr = textureLod(sampler2DArray(ssr_buffer, SAMPLER_NEAREST_CLAMP), vec3(screen_uv, ViewIndex), 0.0);
+#else
+		vec4 ssr = textureLod(sampler2D(ssr_buffer, SAMPLER_NEAREST_CLAMP), screen_uv, 0.0);
+#endif // USE_MULTIVIEW
+		indirect_specular_light = indirect_specular_light * (1.0 - ssr.a) + ssr.rgb;
+	}
+
 	//finalize ambient light here
 	{
 		ambient_light *= ao;
