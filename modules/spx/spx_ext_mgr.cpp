@@ -389,14 +389,6 @@ void SpxExtMgr::erase_tile(GdVec2 pos) {
 	});
 }
 
-GdArray SpxExtMgr::get_layer_point_path(GdVec2 p_from, GdVec2 p_to){
-	if(draw_tiles != nullptr){
-		return draw_tiles->get_layer_point_path(p_from, p_to);
-	}
-
-	return nullptr;
-}
-
 void SpxExtMgr::close_draw_tiles() {
 	if (draw_tiles != nullptr) {
 		draw_tiles->queue_free();
@@ -434,4 +426,24 @@ void SpxExtMgr::create_pure_sprite(GdString texture_path, GdVec2 pos, GdInt zind
 	sprite->set_name(path_str.get_file());
 	pure_sprite_root->add_child(sprite);
 	sprite->set_z_index(zindex);
+}
+
+void SpxExtMgr::setup_path_finder_with_size(GdVec2 grid_size, GdVec2 cell_size, GdBool with_debug) {
+	if(path_finder.is_null() || !path_finder.is_valid()){
+		path_finder.instantiate();
+	}
+
+	path_finder->setup_grid_spx(grid_size, cell_size, with_debug);
+}
+
+void SpxExtMgr::setup_path_finder() {
+	setup_path_finder_with_size(default_grid_size, default_cell_size, false);
+}
+
+GdArray SpxExtMgr::find_path(GdVec2 p_from, GdVec2 p_to) {
+	if(path_finder.is_null() || !path_finder.is_valid()){
+		setup_path_finder();
+	}
+
+	return path_finder->find_path_spx(p_from, p_to);
 }
