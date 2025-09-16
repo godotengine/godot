@@ -4963,10 +4963,7 @@ void AnimationTrackEditor::_on_filter_updated(const String &p_filter) {
 void AnimationTrackEditor::_update_tracks() {
 	int selected = _get_track_selected();
 
-	while (track_vbox->get_child_count()) {
-		memdelete(track_vbox->get_child(0));
-	}
-
+	track_vbox->delete_all_children();
 	timeline->set_track_edit(nullptr);
 
 	track_edits.clear();

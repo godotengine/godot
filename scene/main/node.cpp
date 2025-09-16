@@ -1483,7 +1483,36 @@ String Node::prevalidate_child_name(Node *p_child, StringName p_name) {
 	_generate_serial_child_name(p_child, p_name);
 	return p_name;
 }
-#endif
+
+void Node::delete_all_children(bool p_include_internal, DeleteMode p_delete_mode) {
+	const uint32_t prev_size = data.children.size();
+	if (prev_size == 0) {
+		return;
+	}
+
+	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Removing children from a node inside the SceneTree is only allowed from the main thread. Consider using \"delete_all_children.call_deferred()\" instead.");
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy adding/removing children. `delete_all_children()` can't be called at this time. Consider using \"delete_all_children.call_deferred()\" instead.");
+
+	auto delete_mode = (p_delete_mode == DELETE_MODE_QUEUE_FREE)
+			? [](Node *c) { c->queue_free(); }
+			: [](Node *c) { memdelete(c); };
+
+	data.blocked++;
+	if (p_include_internal) {
+		_delete_all_children_impl<true>(delete_mode);
+	} else {
+		_delete_all_children_impl<false>(delete_mode);
+	}
+	data.blocked--;
+
+	if (data.children.size() != prev_size) {
+		data.children_cache_dirty = true;
+
+		notification(NOTIFICATION_CHILD_ORDER_CHANGED);
+		emit_signal(SNAME("child_order_changed"));
+	}
+}
+#endif // TOOLS_ENABLED
 
 String Node::adjust_name_casing(const String &p_name) {
 	switch (GLOBAL_GET("editor/naming/node_name_casing").operator int()) {

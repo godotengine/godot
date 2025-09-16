@@ -74,9 +74,7 @@ void OpenXRSelectInteractionProfileDialog::open(PackedStringArray p_do_not_inclu
 	ERR_FAIL_NULL(meta_data);
 
 	// Out with the old.
-	while (main_vb->get_child_count() > 1) {
-		memdelete(main_vb->get_child(1));
-	}
+	main_vb->delete_all_children();
 
 	PackedStringArray requested_extensions = OpenXRAPI::get_all_requested_extensions();
 

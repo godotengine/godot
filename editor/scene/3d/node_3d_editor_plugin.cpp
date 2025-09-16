@@ -4799,11 +4799,7 @@ void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) con
 void Node3DEditorViewport::_remove_preview_node() {
 	set_message("");
 	if (preview_node->get_parent()) {
-		for (int i = preview_node->get_child_count() - 1; i >= 0; i--) {
-			Node *node = preview_node->get_child(i);
-			node->queue_free();
-			preview_node->remove_child(node);
-		}
+		preview_node->delete_all_children(true, DELETE_MODE_QUEUE_FREE);
 		EditorNode::get_singleton()->get_scene_root()->remove_child(preview_node);
 	}
 }

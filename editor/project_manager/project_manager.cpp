@@ -930,9 +930,7 @@ LineEdit *ProjectManager::get_search_box() {
 // Project tag management.
 
 void ProjectManager::_manage_project_tags() {
-	for (int i = 0; i < project_tags->get_child_count(); i++) {
-		project_tags->get_child(i)->queue_free();
-	}
+	project_tags->delete_all_children(true, DELETE_MODE_QUEUE_FREE);
 
 	const ProjectList::Item item = project_list->get_selected_projects()[0];
 	current_project_tags = item.tags;

@@ -6875,12 +6875,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 			bool original_node_scene_instance_load_placeholder = original_node->get_scene_instance_load_placeholder();
 
 			// Delete all the remaining node children.
-			while (original_node->get_child_count()) {
-				Node *child = original_node->get_child(0);
-
-				original_node->remove_child(child);
-				child->queue_free();
-			}
+			original_node->delete_all_children(true, DELETE_MODE_QUEUE_FREE);
 
 			// Update the name to match
 			instantiated_node->set_name(original_node->get_name());
