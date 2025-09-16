@@ -97,6 +97,7 @@ private:
 	bool visible = true;
 	bool parent_visible_in_tree = false;
 	bool pending_update = false;
+	bool pending_lerp_reset = false;
 	bool top_level = false;
 	bool drawing = false;
 	bool block_transform_notify = false;

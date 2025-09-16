@@ -95,6 +95,14 @@ void CanvasItem::_handle_visibility_change(bool p_visible) {
 
 	if (p_visible) {
 		queue_redraw();
+
+		if (pending_lerp_reset) {
+			pending_lerp_reset = false;
+
+			if (is_physics_interpolated_and_enabled()) {
+				RenderingServer::get_singleton()->canvas_item_reset_physics_interpolation(canvas_item);
+			}
+		}
 	} else {
 		emit_signal(SceneStringName(hidden));
 	}
@@ -405,8 +413,12 @@ void CanvasItem::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
-			if (is_visible_in_tree() && is_physics_interpolated_and_enabled()) {
-				RenderingServer::get_singleton()->canvas_item_reset_physics_interpolation(canvas_item);
+			if (is_visible_in_tree()) {
+				if (is_physics_interpolated_and_enabled()) {
+					RenderingServer::get_singleton()->canvas_item_reset_physics_interpolation(canvas_item);
+				}
+			} else {
+				pending_lerp_reset = true;
 			}
 		} break;
 
