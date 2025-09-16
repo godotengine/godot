@@ -369,6 +369,11 @@ private:
 		ROTATION_GIZMO_ARCBALL
 	};
 
+	enum RotationBehavior {
+		ROTATION_BEHAVIOR_TRADITIONAL, // Classic Godot rotation (used for axis-specific and outside-sphere fallback)
+		ROTATION_BEHAVIOR_ARCBALL // Arcball rotation (used when inside sphere with arcball mode enabled)
+	};
+
 	struct EditData {
 		TransformMode mode;
 		TransformPlane plane;
@@ -380,6 +385,7 @@ private:
 		Point2 original_mouse_pos;
 		bool snap = false;
 		bool show_rotation_line = false;
+		RotationBehavior rotation_behavior = ROTATION_BEHAVIOR_TRADITIONAL; // Determines rotation behavior for this drag operation
 		Ref<EditorNode3DGizmo> gizmo;
 		int gizmo_handle = 0;
 		bool gizmo_handle_secondary = false;
@@ -532,7 +538,7 @@ private:
 	Quaternion _arcball_compute_rotation(const Vector2 &p_from, const Vector2 &p_to, real_t p_radius) const;
 	bool _is_arcball_mode_enabled() const;
 	bool _is_arcball_invert_enabled() const;
-	bool _is_arcball_outside_fallback_enabled() const;
+	RotationBehavior _determine_rotation_behavior() const;
 
 	void register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode, bool p_physical = false);
 	void shortcut_changed_callback(const Ref<Shortcut> p_shortcut, const String &p_shortcut_path);
