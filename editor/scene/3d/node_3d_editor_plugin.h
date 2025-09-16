@@ -532,6 +532,7 @@ private:
 	Quaternion _arcball_compute_rotation(const Vector2 &p_from, const Vector2 &p_to, real_t p_radius) const;
 	bool _is_arcball_mode_enabled() const;
 	bool _is_arcball_invert_enabled() const;
+	bool _is_arcball_outside_fallback_enabled() const;
 
 	void register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode, bool p_physical = false);
 	void shortcut_changed_callback(const Ref<Shortcut> p_shortcut, const String &p_shortcut_path);

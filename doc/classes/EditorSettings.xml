@@ -431,6 +431,9 @@
 		<member name="editors/3d/rotation/arcball_invert" type="bool" setter="" getter="">
 			If [code]true[/code], inverts the direction of arcball rotation in the 3D editor. This setting only affects the arcball rotation mode and does not apply to the default gizmo-based rotation.
 		</member>
+		<member name="editors/3d/rotation/arcball_outside_fallback" type="bool" setter="" getter="">
+			If [code]true[/code], dragging outside the arcball sphere will fall back to the traditional Godot rotation behavior instead of continuing to use arcball rotation. This provides a hybrid approach where the center area uses arcball rotation while the outer area uses traditional gizmo rotation.
+		</member>
 		<member name="editors/3d/rotation/rotation_gizmo_mode" type="int" setter="" getter="">
 			The rotation mode to use when rotating objects in the 3D editor.
 			- [b]Default:[/b] Uses the traditional gizmo-based rotation in camera view space.

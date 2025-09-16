@@ -1637,6 +1637,10 @@ bool Node3DEditorViewport::_is_arcball_invert_enabled() const {
 	return EDITOR_GET("editors/3d/rotation/arcball_invert");
 }
 
+bool Node3DEditorViewport::_is_arcball_outside_fallback_enabled() const {
+	return EDITOR_GET("editors/3d/rotation/arcball_outside_fallback");
+}
+
 void Node3DEditorViewport::_surface_mouse_enter() {
 	if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
 		return;
@@ -5593,47 +5597,101 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 
 			// if we're arcballing
 			if (_edit.plane == TRANSFORM_VIEW && _is_arcball_mode_enabled()) {
-				// calculate mouse movement in screen space
-				Vector2 mouse_delta = _edit.mouse_pos - _edit.original_mouse_pos;
+				// Check if we should use traditional rotation when outside the sphere
+				bool use_traditional_outside = false;
+				if (_is_arcball_outside_fallback_enabled()) {
+					// Check if current mouse position is outside the arcball sphere
+					Vector2 viewport_size = get_size();
+					Vector2 normalized_mouse = Vector2(
+							(2.0 * _edit.mouse_pos.x / viewport_size.x) - 1.0,
+							1.0 - (2.0 * _edit.mouse_pos.y / viewport_size.y));
+					real_t distance_squared = normalized_mouse.length_squared();
 
-				// get camera transform for proper coordinate mapping
-				Transform3D camera_transform = camera->get_global_transform();
-				Vector3 camera_right = camera_transform.basis.get_column(0).normalized();
-				Vector3 camera_up = camera_transform.basis.get_column(1).normalized();
+					// Use a more reasonable sphere radius (0.8 means fallback triggers at 80% of viewport radius)
+					// This matches typical arcball implementations where the sphere covers most of the viewport
 
-				// Scale factor for responsiveness - smaller values = more sensitive
-				real_t sensitivity = 0.005;
+					// not really working great right now.
 
-				// invert or not?
-				real_t invert_factor = _is_arcball_invert_enabled() ? -1.0 : 1.0;
+					real_t sphere_radius = 0.8;
+					real_t radius_squared = sphere_radius * sphere_radius;
 
-				// make the 2 rotation components based on moving mouse up/down and left/right
-				real_t horizontal_angle = invert_factor * mouse_delta.x * sensitivity;
-				real_t vertical_angle = invert_factor * mouse_delta.y * sensitivity;
-
-				// make separate rotations for each axis
-				Quaternion horizontal_rotation = Quaternion(camera_up, horizontal_angle);
-				Quaternion vertical_rotation = Quaternion(camera_right, vertical_angle);
-
-				// now combine the two rotations, we want horizontal first to make it feel natural
-				Quaternion combined_rotation = horizontal_rotation * vertical_rotation;
-
-				// convert back to axis-angle for apply_transform
-				Vector3 final_axis;
-				real_t final_angle;
-				combined_rotation.get_axis_angle(final_axis, final_angle);
-
-				// nan check
-				if (final_axis.length() > CMP_EPSILON && final_axis.is_normalized() &&
-						!Math::is_nan(final_axis.x) && !Math::is_nan(final_axis.y) && !Math::is_nan(final_axis.z)) {
-					// snapping while arcballing feels weird, just add a message
-					String msg = vformat(TTR("Arcball Rotating %s degrees."), String::num(Math::rad_to_deg(final_angle), snap_step_decimals));
-					if (_edit.snap || spatial_editor->is_snap_enabled()) {
-						msg += TTR(" (Snapping not supported in arcball mode)");
+					// If outside the sphere, trigger traditional rotation fallback
+					if (distance_squared > radius_squared) {
+						use_traditional_outside = true;
 					}
+				}
 
-					set_message(msg);
-					apply_transform(final_axis, final_angle);
+				if (use_traditional_outside) {
+					// Use traditional Godot rotation when outside sphere
+					Vector3 local_axis;
+					Vector3 global_axis = plane.normal;
+
+					// Calculate ray for current mouse position
+					Vector3 ray_pos = get_ray_pos(_edit.mouse_pos);
+					Vector3 ray = get_ray(_edit.mouse_pos);
+
+					Vector3 intersection;
+					if (plane.intersects_ray(ray_pos, ray, &intersection)) {
+						Vector3 click;
+						if (plane.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click)) {
+							// Calculate rotation angle using traditional method
+							Vector3 click_axis = (click - _edit.center).normalized();
+							Vector3 current_axis = (intersection - _edit.center).normalized();
+							real_t angle = click_axis.signed_angle_to(current_axis, global_axis);
+
+							if (_edit.snap || spatial_editor->is_snap_enabled()) {
+								angle = Math::snapped(Math::rad_to_deg(angle), spatial_editor->get_rotate_snap());
+								angle = Math::deg_to_rad(angle);
+							}
+
+							set_message(vformat(TTR("Rotating %s degrees."), String::num(Math::rad_to_deg(angle), snap_step_decimals)));
+							apply_transform(global_axis, angle);
+						}
+					}
+				} else {
+					// Standard arcball rotation when inside sphere or fallback disabled
+					// calculate mouse movement in screen space
+					Vector2 mouse_delta = _edit.mouse_pos - _edit.original_mouse_pos;
+
+					// get camera transform for proper coordinate mapping
+					Transform3D camera_transform = camera->get_global_transform();
+					Vector3 camera_right = camera_transform.basis.get_column(0).normalized();
+					Vector3 camera_up = camera_transform.basis.get_column(1).normalized();
+
+					// Scale factor for responsiveness - smaller values = more sensitive
+					real_t sensitivity = 0.005;
+
+					// invert or not?
+					real_t invert_factor = _is_arcball_invert_enabled() ? -1.0 : 1.0;
+
+					// make the 2 rotation components based on moving mouse up/down and left/right
+					real_t horizontal_angle = invert_factor * mouse_delta.x * sensitivity;
+					real_t vertical_angle = invert_factor * mouse_delta.y * sensitivity;
+
+					// make separate rotations for each axis
+					Quaternion horizontal_rotation = Quaternion(camera_up, horizontal_angle);
+					Quaternion vertical_rotation = Quaternion(camera_right, vertical_angle);
+
+					// now combine the two rotations, we want horizontal first to make it feel natural
+					Quaternion combined_rotation = horizontal_rotation * vertical_rotation;
+
+					// convert back to axis-angle for apply_transform
+					Vector3 final_axis;
+					real_t final_angle;
+					combined_rotation.get_axis_angle(final_axis, final_angle);
+
+					// nan check
+					if (final_axis.length() > CMP_EPSILON && final_axis.is_normalized() &&
+							!Math::is_nan(final_axis.x) && !Math::is_nan(final_axis.y) && !Math::is_nan(final_axis.z)) {
+						// snapping while arcballing feels weird, just add a message
+						String msg = vformat(TTR("Arcball Rotating %s degrees."), String::num(Math::rad_to_deg(final_angle), snap_step_decimals));
+						if (_edit.snap || spatial_editor->is_snap_enabled()) {
+							msg += TTR(" (Snapping not supported in arcball mode)");
+						}
+
+						set_message(msg);
+						apply_transform(final_axis, final_angle);
+					}
 				}
 			} else {
 				// OG Godot rotation behavior when we're not arcballing or for axis-specific rotations
