@@ -600,8 +600,6 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 	p_theme->set_stylebox("read_only", "CodeEdit", code_edit_stylebox);
 	p_theme->set_stylebox("focus", "CodeEdit", memnew(StyleBoxEmpty));
 
-	p_theme->set_color("background_color", "CodeEdit", Color(0, 0, 0, 0)); // Unset any color, we use a stylebox.
-
 	/* clang-format off */
 	p_theme->set_color("completion_background_color",     "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_background_color"));
 	p_theme->set_color("completion_selected_color",       "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_selected_color"));
