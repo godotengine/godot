@@ -1640,7 +1640,6 @@ bool Node3DEditorViewport::_is_arcball_invert_enabled() const {
 	return EDITOR_GET("editors/3d/rotation/arcball_invert");
 }
 
-
 Node3DEditorViewport::RotationBehavior Node3DEditorViewport::_determine_rotation_behavior() const {
 	if (!_is_arcball_mode_enabled()) {
 		return ROTATION_BEHAVIOR_TRADITIONAL;
