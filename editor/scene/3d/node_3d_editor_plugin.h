@@ -373,7 +373,6 @@ private:
 		ROTATION_BEHAVIOR_TRADITIONAL, // Classic Godot rotation (used for axis-specific and outside-sphere fallback)
 		ROTATION_BEHAVIOR_ARCBALL // Arcball rotation (used when inside sphere with arcball mode enabled)
 	};
-
 	struct EditData {
 		TransformMode mode;
 		TransformPlane plane;

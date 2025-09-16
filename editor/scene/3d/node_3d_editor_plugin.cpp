@@ -1499,7 +1499,6 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 
 		// figure out of we're arcballing or using the traditional way
 		_edit.rotation_behavior = _determine_rotation_behavior();
-
 		return true;
 	}
 
@@ -1640,6 +1639,7 @@ bool Node3DEditorViewport::_is_arcball_mode_enabled() const {
 bool Node3DEditorViewport::_is_arcball_invert_enabled() const {
 	return EDITOR_GET("editors/3d/rotation/arcball_invert");
 }
+
 
 Node3DEditorViewport::RotationBehavior Node3DEditorViewport::_determine_rotation_behavior() const {
 	if (!_is_arcball_mode_enabled()) {
