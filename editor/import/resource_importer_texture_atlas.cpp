@@ -67,7 +67,7 @@ bool ResourceImporterTextureAtlas::get_option_visibility(const String &p_path, c
 		return false;
 	} else if (p_option == "trim_alpha_border_from_region" && int(p_options["import_mode"]) != IMPORT_MODE_REGION) {
 		return false;
-	} else if (p_option == "star_rdp" && int(p_options["import_mode"]) != IMPORT_MODE_2D_MESH) {
+	} else if (p_option == "advanced_rdp" && int(p_options["import_mode"]) != IMPORT_MODE_2D_MESH) {
 		return false;
 	}
 
@@ -87,7 +87,7 @@ void ResourceImporterTextureAtlas::get_import_options(const String &p_path, List
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_mode", PROPERTY_HINT_ENUM, "Region,Mesh2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "crop_to_region"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "trim_alpha_border_from_region"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "star_rdp"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "advanced_rdp"), false));
 }
 
 String ResourceImporterTextureAtlas::get_option_group_file() const {
@@ -255,7 +255,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 			Ref<BitMap> bit_map;
 			bit_map.instantiate();
 			bit_map->create_from_image_alpha(image);
-			Vector<Vector<Vector2>> polygons = bit_map->clip_opaque_to_polygons(Rect2(Vector2(), image->get_size()), 2.0, options["star_rdp"]);
+			Vector<Vector<Vector2>> polygons = bit_map->clip_opaque_to_polygons(Rect2(Vector2(), image->get_size()), 2.0, options["advanced_rdp"]);
 
 			for (int j = 0; j < polygons.size(); j++) {
 				EditorAtlasPacker::Chart chart;

@@ -21,7 +21,7 @@
 			[b]Region:[/b] Imports the atlas in an [AtlasTexture] resource, which is rendered as a rectangle. This is fast to render, but transparent areas still have to be rendered if they can't be trimmed effectively by [member trim_alpha_border_from_region]. This can reduce performance when rendering large sprites on screen.
 			[b]Mesh:[/b] Imports the atlas as an [ArrayMesh] resource, keeping the original bitmap visible (but rendered as a polygon). This can be used to reduce fill rate when rendering large transparent sprites, at the cost of slower rendering if there are little to no transparent areas in the sprite.
 		</member>
-		<member name="star_rdp" type="bool" setter="" getter="" default="false">
+		<member name="advanced_rdp" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], a slower [url=https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm]Ramer Douglas Peuker Algorithm[/url] is used that does not self-intersect.
 			[b]Note:[/b] Only effective if [member import_mode] is [b]Mesh2D[/b].
 		</member>
