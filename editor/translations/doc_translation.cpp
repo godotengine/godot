@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_translation.h                                                  */
+/*  doc_translation.cpp                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,13 +28,38 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "doc_translation.h"
 
-#include "core/string/ustring.h"
-#include "core/templates/vector.h"
+#include "core/io/compression.h"
+#include "core/io/file_access_memory.h"
+#include "core/io/translation_loader_po.h"
+#include "core/string/translation_server.h"
+#include "editor/translations/doc_translations.gen.h"
 
-Vector<String> get_editor_locales();
-void load_editor_translations(const String &p_locale);
-void load_property_translations(const String &p_locale);
-void load_extractable_translations(const String &p_locale);
-Vector<Vector<String>> get_extractable_message_list();
+void load_doc_translations(const String &p_locale) {
+	const Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain("godot.documentation");
+
+	const DocTranslationList *dtl = _doc_translations;
+	while (dtl->data) {
+		if (dtl->lang == p_locale) {
+			Vector<uint8_t> data;
+			data.resize(dtl->uncomp_size);
+			const int64_t ret = Compression::decompress(data.ptrw(), dtl->uncomp_size, dtl->data, dtl->comp_size, Compression::MODE_DEFLATE);
+			ERR_FAIL_COND_MSG(ret == -1, "Compressed file is corrupt.");
+
+			Ref<FileAccessMemory> fa;
+			fa.instantiate();
+			fa->open_custom(data.ptr(), data.size());
+
+			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
+
+			if (tr.is_valid()) {
+				tr->set_locale(dtl->lang);
+				domain->add_translation(tr);
+				break;
+			}
+		}
+
+		dtl++;
+	}
+}

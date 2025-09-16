@@ -119,7 +119,7 @@
 #include "editor/project_manager/project_manager.h"
 #include "editor/register_editor_types.h"
 #include "editor/settings/editor_settings.h"
-#include "editor/translations/editor_translation.h"
+#include "editor/translations/doc_translation.h"
 
 #if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
 #include "main/splash_editor.gen.h"

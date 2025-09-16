@@ -49,6 +49,7 @@
 #include "editor/file_system/editor_paths.h"
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/project_manager/engine_update_label.h"
+#include "editor/translations/doc_translation.h"
 #include "editor/translations/editor_translation.h"
 #include "modules/regex/regex.h"
 #include "scene/gui/color_picker.h"
