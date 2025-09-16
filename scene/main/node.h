@@ -124,6 +124,13 @@ public:
 		AUTO_TRANSLATE_MODE_DISABLED,
 	};
 
+#ifdef TOOLS_ENABLED
+	enum DeleteMode {
+		DELETE_MODE_INSTANT_FREE,
+		DELETE_MODE_QUEUE_FREE,
+	};
+#endif // TOOLS_ENABLED
+
 	struct Comparator {
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
 	};
@@ -317,6 +324,40 @@ private:
 	}
 
 	void _update_children_cache_impl() const;
+
+#ifdef TOOLS_ENABLED
+	template <bool IncludeInternal, typename DeleteOp>
+	_FORCE_INLINE_ void _delete_all_children_impl(DeleteOp delete_op) {
+		HashMap<StringName, Node *> children = data.children;
+		data.children.clear();
+
+		for (const KeyValue<StringName, Node *> &K : children) {
+			Node *child = K.value;
+
+			if constexpr (!IncludeInternal) {
+				if (child->data.internal_mode != INTERNAL_MODE_DISABLED) {
+					data.children.insert(K.key, child);
+					continue;
+				}
+			}
+
+			child->_set_tree(nullptr);
+			remove_child_notify(child);
+			child->notification(NOTIFICATION_UNPARENTED);
+
+			child->data.parent = nullptr;
+			child->data.index = -1;
+
+			if (data.tree) {
+				child->_propagate_after_exit_tree();
+			}
+
+			delete_op(child);
+		}
+
+		children.clear();
+	}
+#endif // TOOLS_ENABLED
 
 	// Process group management
 	void _add_process_group();
@@ -588,6 +629,7 @@ public:
 	bool is_property_pinned(const StringName &p_property) const;
 	virtual StringName get_property_store_alias(const StringName &p_property) const;
 	bool is_part_of_edited_scene() const;
+	void delete_all_children(bool p_include_internal = true, DeleteMode p_delete_mode = DELETE_MODE_INSTANT_FREE);
 #else
 	bool is_part_of_edited_scene() const { return false; }
 #endif
