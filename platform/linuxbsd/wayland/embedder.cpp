@@ -1141,7 +1141,6 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 		// Note that the registry has already been allocated in the initialization
 		// routine.
 
-		// FIXME: Cleanup.
 		for (KeyValue<uint32_t, RegistryGlobalInfo> &pair : registry_globals) {
 			uint32_t global_name = pair.key;
 			RegistryGlobalInfo &global_info = pair.value;
@@ -1152,6 +1151,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 
 			const struct wl_interface *global_interface = global_info.interface;
 
+			// TODO: Make a global deny-list instead of chaining lots of conditions.
 			if (client != main_client && (global_interface == &zxdg_decoration_manager_v1_interface || global_interface == &zxdg_exporter_v1_interface || global_interface == &zxdg_exporter_v2_interface || global_interface == &godot_embedding_compositor_interface)) {
 				DEBUG_LOG_WAYLAND_EMBED(vformat("Skipped global announcement %s for embedded client.", global_interface->name));
 				continue;
@@ -2058,6 +2058,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 				ERR_FAIL_NULL_V(global_info, MessageStatus::ERROR);
 
 				if (global_info->instance_counter == 0) {
+					memdelete(global_info->data);
 					registry_globals.erase(local_name);
 				} else {
 					global_info->destroyed = true;

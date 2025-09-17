@@ -299,7 +299,7 @@ private:
 		// Key is version.
 		HashMap<uint32_t, uint32_t> reusable_objects;
 
-		void *data = nullptr;
+		WaylandObjectData *data = nullptr;
 	};
 
 	const static constexpr struct wl_interface *interfaces[] = {
