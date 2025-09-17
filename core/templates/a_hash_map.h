@@ -32,18 +32,15 @@
 
 #include "core/templates/hash_map.h"
 
-struct HashMapData {
-	union {
-		uint64_t data;
-		struct
-		{
-			uint32_t hash;
-			uint32_t hash_to_key;
-		};
-	};
+struct HashSplit {
+	uint8_t tag_hash;
+	uint32_t pos_hash;
+
+	HashSplit(uint8_t tag, uint32_t pos) :
+			tag_hash(tag), pos_hash(pos) {}
 };
 
-static_assert(sizeof(HashMapData) == 8);
+static_assert(sizeof(HashSplit) == 8);
 
 /**
  * An array-based implementation of a hash map. It is very efficient in terms of performance and
@@ -88,163 +85,192 @@ public:
 	// Must be a power of two.
 	static constexpr uint32_t INITIAL_CAPACITY = 16;
 	static constexpr uint32_t EMPTY_HASH = 0;
+	static constexpr uint8_t DELETED_HASH = 1;
+	static constexpr uint8_t HASH_MASK = 0b11111110;
 	static_assert(EMPTY_HASH == 0, "EMPTY_HASH must always be 0 for the memcpy() optimization.");
+	static_assert(DELETED_HASH == 1, "DELETED_HASH must always be 1");
+	static_assert(((EMPTY_HASH & HASH_MASK) == 0 && (DELETED_HASH & HASH_MASK) == 0), "HASH_MASK should mask EMPTY_HASH and DELETED_HASH");
 
 private:
 	typedef KeyValue<TKey, TValue> MapKeyValue;
 	MapKeyValue *elements = nullptr;
-	HashMapData *map_data = nullptr;
+	uint8_t *hash_vec = nullptr;
+	uint32_t *pos_vec = nullptr;
 
 	// Due to optimization, this is `capacity - 1`. Use + 1 to get normal capacity.
 	uint32_t capacity = 0;
 	uint32_t num_elements = 0;
+	uint32_t occupied_slots = 0;
 
 	uint32_t _hash(const TKey &p_key) const {
-		uint32_t hash = Hasher::hash(p_key);
-
-		if (unlikely(hash == EMPTY_HASH)) {
-			hash = EMPTY_HASH + 1;
-		}
-
-		return hash;
+		return Hasher::hash(p_key);
 	}
 
 	static _FORCE_INLINE_ uint32_t _get_resize_count(uint32_t p_capacity) {
 		return p_capacity ^ (p_capacity + 1) >> 2; // = get_capacity() * 0.75 - 1; Works only if p_capacity = 2^n - 1.
 	}
 
-	static _FORCE_INLINE_ uint32_t _get_probe_length(uint32_t p_pos, uint32_t p_hash, uint32_t p_local_capacity) {
-		const uint32_t original_pos = p_hash & p_local_capacity;
-		return (p_pos - original_pos + p_local_capacity + 1) & p_local_capacity;
+	static _FORCE_INLINE_ bool _valid_hash_mask(uint8_t hash) {
+		return hash & HASH_MASK;
 	}
 
-	bool _lookup_pos(const TKey &p_key, uint32_t &r_pos, uint32_t &r_hash_pos) const {
+	_FORCE_INLINE_ uint32_t _hash_to_pos(uint32_t p_hash) const {
+		return _hash_to_pos(p_hash, capacity);
+	}
+
+	_FORCE_INLINE_ static uint32_t _hash_to_pos(uint32_t p_hash, uint32_t capacity) {
+		return p_hash & capacity;
+	}
+
+	_FORCE_INLINE_ static uint8_t _hash_to_tag(uint32_t p_hash) {
+		return static_cast<uint8_t>(p_hash >> (sizeof(p_hash) - sizeof(uint8_t)));
+	}
+
+	_FORCE_INLINE_ HashSplit _hash_to_split(uint32_t p_hash) const {
+		uint8_t tag_hash = _hash_to_tag(p_hash);
+
+		if (unlikely(!_valid_hash_mask(tag_hash))) {
+			tag_hash = DELETED_HASH + 1;
+		}
+
+		return HashSplit(tag_hash, _hash_to_pos(p_hash));
+	}
+
+	_FORCE_INLINE_ bool _lookup_pos(const TKey &p_key, uint32_t &r_pos, uint32_t &r_hash_pos) const {
 		if (unlikely(elements == nullptr)) {
 			return false; // Failed lookups, no elements.
 		}
-		return _lookup_pos_with_hash(p_key, r_pos, r_hash_pos, _hash(p_key));
+		return _lookup_pos_with_hash(p_key, r_pos, r_hash_pos, _hash_to_split(_hash(p_key)));
 	}
 
-	bool _lookup_pos_with_hash(const TKey &p_key, uint32_t &r_pos, uint32_t &r_hash_pos, uint32_t p_hash) const {
+	bool _lookup_pos_with_hash(const TKey &p_key, uint32_t &r_pos, uint32_t &r_hash_pos, HashSplit split) const {
 		if (unlikely(elements == nullptr)) {
 			return false; // Failed lookups, no elements.
 		}
 
-		uint32_t pos = p_hash & capacity;
-		HashMapData data = map_data[pos];
-		if (data.hash == p_hash && Comparator::compare(elements[data.hash_to_key].key, p_key)) {
-			r_pos = data.hash_to_key;
-			r_hash_pos = pos;
-			return true;
-		}
+		uint32_t pos = split.pos_hash;
+		uint8_t tag = split.tag_hash;
+		bool found_invalid = false;
 
-		if (data.data == EMPTY_HASH) {
-			return false;
-		}
-
-		// A collision occurred.
-		pos = (pos + 1) & capacity;
-		uint32_t distance = 1;
 		while (true) {
-			data = map_data[pos];
-			if (data.hash == p_hash && Comparator::compare(elements[data.hash_to_key].key, p_key)) {
-				r_pos = data.hash_to_key;
+			uint8_t data_hash = hash_vec[pos];
+			if (data_hash == tag) {
+				uint32_t data_key = pos_vec[pos];
+				if (Comparator::compare(elements[data_key].key, p_key)) {
+					r_pos = data_key;
+					r_hash_pos = pos;
+					return true;
+				}
+			} else if (!found_invalid && !_valid_hash_mask(data_hash)) {
+				found_invalid = true;
 				r_hash_pos = pos;
-				return true;
 			}
 
-			if (data.data == EMPTY_HASH) {
-				return false;
-			}
-
-			if (distance > _get_probe_length(pos, data.hash, capacity)) {
+			if (data_hash == EMPTY_HASH) {
 				return false;
 			}
 
 			pos = (pos + 1) & capacity;
-			distance++;
 		}
 	}
 
-	uint32_t _insert_with_hash(uint32_t p_hash, uint32_t p_index) {
-		uint32_t pos = p_hash & capacity;
+	uint32_t _insert_with_hash(HashSplit split, uint32_t p_index) {
+		uint32_t pos = split.pos_hash;
+		uint8_t tag = split.tag_hash;
 
-		if (map_data[pos].data == EMPTY_HASH) {
-			uint64_t data = ((uint64_t)p_index << 32) | p_hash;
-			map_data[pos].data = data;
-			return pos;
-		}
-
-		uint32_t distance = 1;
-		pos = (pos + 1) & capacity;
-		HashMapData c_data;
-		c_data.hash = p_hash;
-		c_data.hash_to_key = p_index;
-
+#ifdef DEV_ENABLED
+		uint32_t distance = 0;
+#endif
 		while (true) {
-			if (map_data[pos].data == EMPTY_HASH) {
+			if (!_valid_hash_mask(hash_vec[pos])) {
 #ifdef DEV_ENABLED
 				if (unlikely(distance > 12)) {
 					WARN_PRINT("Excessive collision count (" +
 							itos(distance) + "), is the right hash function being used?");
 				}
 #endif
-				map_data[pos] = c_data;
+				hash_vec[pos] = tag;
+				pos_vec[pos] = p_index;
+
+				if (hash_vec[pos] != DELETED_HASH) {
+					occupied_slots++;
+				}
+
 				return pos;
 			}
 
-			// Not an empty slot, let's check the probing length of the existing one.
-			uint32_t existing_probe_len = _get_probe_length(pos, map_data[pos].hash, capacity);
-			if (existing_probe_len < distance) {
-				SWAP(c_data, map_data[pos]);
-				distance = existing_probe_len;
-			}
-
 			pos = (pos + 1) & capacity;
+#ifdef DEV_ENABLED
 			distance++;
+#endif
 		}
 	}
 
 	void _resize_and_rehash(uint32_t p_new_capacity) {
-		uint32_t real_old_capacity = capacity + 1;
 		// Capacity can't be 0 and must be 2^n - 1.
 		capacity = MAX(4u, p_new_capacity);
 		uint32_t real_capacity = next_power_of_2(capacity);
 		capacity = real_capacity - 1;
 
-		HashMapData *old_map_data = map_data;
+		uint8_t *old_hash_vec = hash_vec;
+		uint32_t *old_pos_vec = pos_vec;
 
-		map_data = reinterpret_cast<HashMapData *>(Memory::alloc_static_zeroed(sizeof(HashMapData) * real_capacity));
+		Memory::free_static(old_hash_vec);
+		Memory::free_static(old_pos_vec);
+
+		hash_vec = reinterpret_cast<uint8_t *>(Memory::alloc_static_zeroed(sizeof(uint8_t) * real_capacity));
+		pos_vec = reinterpret_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * real_capacity));
 		elements = reinterpret_cast<MapKeyValue *>(Memory::realloc_static(elements, sizeof(MapKeyValue) * (_get_resize_count(capacity) + 1)));
 
-		if (num_elements != 0) {
-			for (uint32_t i = 0; i < real_old_capacity; i++) {
-				HashMapData data = old_map_data[i];
-				if (data.data != EMPTY_HASH) {
-					_insert_with_hash(data.hash, data.hash_to_key);
-				}
-			}
-		}
+		occupied_slots = 0;
+		for (uint32_t i = 0; i < num_elements; i++) {
+			const TKey &key = elements[i].key;
+			uint32_t hash = _hash(key);
+			HashSplit split = _hash_to_split(hash);
 
-		Memory::free_static(old_map_data);
+			_insert_with_hash(split, i);
+		}
 	}
 
-	int32_t _insert_element(const TKey &p_key, const TValue &p_value, uint32_t p_hash) {
+	int32_t _insert_element(const TKey &p_key, const TValue &p_value, HashSplit split) {
 		if (unlikely(elements == nullptr)) {
 			// Allocate on demand to save memory.
 
 			uint32_t real_capacity = capacity + 1;
-			map_data = reinterpret_cast<HashMapData *>(Memory::alloc_static_zeroed(sizeof(HashMapData) * real_capacity));
+			hash_vec = reinterpret_cast<uint8_t *>(Memory::alloc_static_zeroed(sizeof(uint8_t) * real_capacity));
+			pos_vec = reinterpret_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * real_capacity));
 			elements = reinterpret_cast<MapKeyValue *>(Memory::alloc_static(sizeof(MapKeyValue) * (_get_resize_count(capacity) + 1)));
 		}
 
-		if (unlikely(num_elements > _get_resize_count(capacity))) {
-			_resize_and_rehash(capacity * 2);
+		if (unlikely(occupied_slots > _get_resize_count(capacity))) {
+			_resize_and_rehash(capacity * 4);
+			// `_resize_and_rehash` causes a capacity change, thus causing a need to resplit
+			split = _hash_to_split(_hash(p_key));
 		}
 
 		memnew_placement(&elements[num_elements], MapKeyValue(p_key, p_value));
 
-		_insert_with_hash(p_hash, num_elements);
+		_insert_with_hash(split, num_elements);
+		num_elements++;
+		return num_elements - 1;
+	}
+
+	int32_t _insert_element_to_index(const TKey &p_key, const TValue &p_value, HashSplit split, uint32_t pos) {
+		if (unlikely(elements == nullptr)) {
+			return _insert_element(p_key, p_value, split);
+		}
+
+		if (unlikely(occupied_slots > _get_resize_count(capacity))) {
+			return _insert_element(p_key, p_value, split);
+		}
+
+		if (hash_vec[pos] == EMPTY_HASH) {
+			occupied_slots++;
+		}
+
+		memnew_placement(&elements[num_elements], MapKeyValue(p_key, p_value));
+		hash_vec[pos] = split.tag_hash;
+		pos_vec[pos] = num_elements;
 		num_elements++;
 		return num_elements - 1;
 	}
@@ -253,12 +279,14 @@ private:
 		capacity = p_other.capacity;
 		uint32_t real_capacity = capacity + 1;
 		num_elements = p_other.num_elements;
+		occupied_slots = p_other.occupied_slots;
 
 		if (p_other.num_elements == 0) {
 			return;
 		}
 
-		map_data = reinterpret_cast<HashMapData *>(Memory::alloc_static(sizeof(HashMapData) * real_capacity));
+		hash_vec = reinterpret_cast<uint8_t *>(Memory::alloc_static(sizeof(uint8_t) * real_capacity));
+		pos_vec = reinterpret_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * real_capacity));
 		elements = reinterpret_cast<MapKeyValue *>(Memory::alloc_static(sizeof(MapKeyValue) * (_get_resize_count(capacity) + 1)));
 
 		if constexpr (std::is_trivially_copyable_v<TKey> && std::is_trivially_copyable_v<TValue>) {
@@ -271,7 +299,8 @@ private:
 			}
 		}
 
-		memcpy(map_data, p_other.map_data, sizeof(HashMapData) * real_capacity);
+		memcpy(hash_vec, p_other.hash_vec, sizeof(uint8_t) * real_capacity);
+		memcpy(pos_vec, p_other.pos_vec, sizeof(uint32_t) * real_capacity);
 	}
 
 public:
@@ -285,11 +314,11 @@ public:
 	}
 
 	void clear() {
-		if (elements == nullptr || num_elements == 0) {
+		if (elements == nullptr || occupied_slots == 0) {
 			return;
 		}
 
-		memset(map_data, EMPTY_HASH, (capacity + 1) * sizeof(HashMapData));
+		memset(hash_vec, EMPTY_HASH, (capacity + 1) * sizeof(uint8_t));
 		if constexpr (!(std::is_trivially_destructible_v<TKey> && std::is_trivially_destructible_v<TValue>)) {
 			for (uint32_t i = 0; i < num_elements; i++) {
 				elements[i].key.~TKey();
@@ -298,6 +327,7 @@ public:
 		}
 
 		num_elements = 0;
+		occupied_slots = 0;
 	}
 
 	TValue &get(const TKey &p_key) {
@@ -353,15 +383,7 @@ public:
 			return false;
 		}
 
-		uint32_t next_pos = (pos + 1) & capacity;
-		while (map_data[next_pos].hash != EMPTY_HASH && _get_probe_length(next_pos, map_data[next_pos].hash, capacity) != 0) {
-			SWAP(map_data[next_pos], map_data[pos]);
-
-			pos = next_pos;
-			next_pos = (next_pos + 1) & capacity;
-		}
-
-		map_data[pos].data = EMPTY_HASH;
+		hash_vec[pos] = DELETED_HASH;
 		elements[element_pos].key.~TKey();
 		elements[element_pos].value.~TValue();
 		num_elements--;
@@ -372,7 +394,7 @@ public:
 			memcpy(destination, source, sizeof(MapKeyValue));
 			uint32_t h_pos = 0;
 			_lookup_pos(elements[num_elements].key, pos, h_pos);
-			map_data[h_pos].hash_to_key = element_pos;
+			pos_vec[h_pos] = element_pos;
 		}
 
 		return true;
@@ -392,17 +414,18 @@ public:
 		const_cast<TKey &>(element.key) = p_new_key;
 
 		uint32_t next_pos = (pos + 1) & capacity;
-		while (map_data[next_pos].hash != EMPTY_HASH && _get_probe_length(next_pos, map_data[next_pos].hash, capacity) != 0) {
-			SWAP(map_data[next_pos], map_data[pos]);
+		while (hash_vec[next_pos] != EMPTY_HASH) {
+			SWAP(hash_vec[next_pos], hash_vec[pos]);
+			SWAP(pos_vec[next_pos], pos_vec[pos]);
 
 			pos = next_pos;
 			next_pos = (next_pos + 1) & capacity;
 		}
 
-		map_data[pos].data = EMPTY_HASH;
+		hash_vec[pos] = EMPTY_HASH;
 
 		uint32_t hash = _hash(p_new_key);
-		_insert_with_hash(hash, element_pos);
+		_insert_with_hash(_hash_to_split(hash), element_pos);
 
 		return true;
 	}
@@ -593,12 +616,13 @@ public:
 		uint32_t pos = 0;
 		uint32_t h_pos = 0;
 		uint32_t hash = _hash(p_key);
-		bool exists = _lookup_pos_with_hash(p_key, pos, h_pos, hash);
+		HashSplit split = _hash_to_split(hash);
+		bool exists = _lookup_pos_with_hash(p_key, pos, h_pos, split);
 
 		if (exists) {
 			return elements[pos].value;
 		} else {
-			pos = _insert_element(p_key, TValue(), hash);
+			pos = _insert_element(p_key, TValue(), split);
 			return elements[pos].value;
 		}
 	}
@@ -609,10 +633,11 @@ public:
 		uint32_t pos = 0;
 		uint32_t h_pos = 0;
 		uint32_t hash = _hash(p_key);
-		bool exists = _lookup_pos_with_hash(p_key, pos, h_pos, hash);
+		HashSplit split = _hash_to_split(hash);
+		bool exists = _lookup_pos_with_hash(p_key, pos, h_pos, split);
 
 		if (!exists) {
-			pos = _insert_element(p_key, p_value, hash);
+			pos = _insert_element_to_index(p_key, p_value, split, h_pos);
 		} else {
 			elements[pos].value = p_value;
 		}
@@ -623,7 +648,7 @@ public:
 	Iterator insert_new(const TKey &p_key, const TValue &p_value) {
 		DEV_ASSERT(!has(p_key));
 		uint32_t hash = _hash(p_key);
-		uint32_t pos = _insert_element(p_key, p_value, hash);
+		uint32_t pos = _insert_element(p_key, p_value, _hash_to_split(hash));
 		return Iterator(elements + pos, elements, elements + num_elements);
 	}
 
@@ -667,7 +692,7 @@ public:
 		reserve(p_other.size());
 		for (const KeyValue<TKey, TValue> &E : p_other) {
 			uint32_t hash = _hash(E.key);
-			_insert_element(E.key, E.value, hash);
+			_insert_element(E.key, E.value, _hash_to_split(hash));
 		}
 	}
 
@@ -686,7 +711,7 @@ public:
 		reserve(p_other.size());
 		for (const KeyValue<TKey, TValue> &E : p_other) {
 			uint32_t hash = _hash(E.key);
-			_insert_element(E.key, E.value, hash);
+			_insert_element(E.key, E.value, _hash_to_split(hash));
 		}
 	}
 
@@ -715,11 +740,13 @@ public:
 				}
 			}
 			Memory::free_static(elements);
-			Memory::free_static(map_data);
+			Memory::free_static(hash_vec);
+			Memory::free_static(pos_vec);
 			elements = nullptr;
 		}
 		capacity = INITIAL_CAPACITY - 1;
 		num_elements = 0;
+		occupied_slots = 0;
 	}
 
 	~AHashMap() {
