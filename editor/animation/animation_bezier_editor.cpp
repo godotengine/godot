@@ -307,12 +307,22 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			const String &lang = _get_locale();
 
 			if (has_focus(true)) {
-				draw_rect(Rect2(Point2(), get_size()), focus_color, false, Math::round(EDSCALE));
+				draw_rect(Rect2(Point2(1, 1), get_size() - Point2(1, 1)), focus_color, false, Math::round(EDSCALE));
+			}
+
+			int right_limit = get_size().width;
+
+			// Unavailable timeline.
+			{
+				int px = (editor->get_current_animation()->get_length() - timeline->get_value()) * timeline->get_zoom_scale() + timeline->get_name_limit();
+				px = MAX(px, timeline->get_name_limit());
+				Rect2 rect = Rect2(px, 0, right_limit - px, get_size().height);
+				if (rect.size.width > 0) {
+					draw_rect(rect, Color(0, 0, 0, 0.2));
+				}
 			}
 
 			draw_line(Point2(limit, 0), Point2(limit, get_size().height), v_line_color, Math::round(EDSCALE));
-
-			int right_limit = get_size().width;
 
 			track_v_scroll_max = v_separation;
 
