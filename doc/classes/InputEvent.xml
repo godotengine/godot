@@ -27,6 +27,12 @@
 				Returns a [String] representation of the event.
 			</description>
 		</method>
+		<method name="as_text_alt" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a [String] representation of the event, but keyboard key are represented as symbols instead of words (e.g, "⌃ ⎇ ⌦" instead of "Ctrl+Alt+Del")
+			</description>
+		</method>
 		<method name="get_action_strength" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="action" type="StringName" />
