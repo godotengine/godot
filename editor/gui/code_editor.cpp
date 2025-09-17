@@ -753,9 +753,9 @@ void FindReplaceBar::_bind_methods() {
 
 FindReplaceBar::FindReplaceBar() {
 	toggle_replace_button = memnew(Button);
+	toggle_replace_button->set_theme_type_variation(SceneStringName(FlatButton));
 	add_child(toggle_replace_button);
 	toggle_replace_button->set_accessibility_name(TTRC("Replace Mode"));
-	toggle_replace_button->set_flat(true);
 	toggle_replace_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	toggle_replace_button->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::_toggle_replace_pressed));
 
@@ -799,7 +799,7 @@ FindReplaceBar::FindReplaceBar() {
 	matches_label->hide();
 
 	find_prev = memnew(Button);
-	find_prev->set_flat(true);
+	find_prev->set_theme_type_variation(SceneStringName(FlatButton));
 	find_prev->set_disabled(results_count < 1);
 	find_prev->set_tooltip_text(TTRC("Previous Match"));
 	hbc_button_search->add_child(find_prev);
@@ -807,7 +807,7 @@ FindReplaceBar::FindReplaceBar() {
 	find_prev->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::search_prev));
 
 	find_next = memnew(Button);
-	find_next->set_flat(true);
+	find_next->set_theme_type_variation(SceneStringName(FlatButton));
 	find_next->set_disabled(results_count < 1);
 	find_next->set_tooltip_text(TTRC("Next Match"));
 	hbc_button_search->add_child(find_next);
@@ -852,7 +852,7 @@ FindReplaceBar::FindReplaceBar() {
 	selection_only->connect(SceneStringName(toggled), callable_mp(this, &FindReplaceBar::_search_options_changed));
 
 	hide_button = memnew(Button);
-	hide_button->set_flat(true);
+	hide_button->set_theme_type_variation(SceneStringName(FlatButton));
 	hide_button->set_tooltip_text(TTRC("Hide"));
 	hide_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	hide_button->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::_hide_bar));
@@ -1918,7 +1918,7 @@ CodeTextEditor::CodeTextEditor() {
 	error_column = 0;
 
 	toggle_files_button = memnew(Button);
-	toggle_files_button->set_flat(true);
+	toggle_files_button->set_theme_type_variation(SceneStringName(FlatButton));
 	toggle_files_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	toggle_files_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	toggle_files_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_toggle_files_pressed));
@@ -1961,7 +1961,8 @@ CodeTextEditor::CodeTextEditor() {
 	// Zoom
 	zoom_button = memnew(MenuButton);
 	status_bar->add_child(zoom_button);
-	zoom_button->set_flat(true);
+	zoom_button->set_flat(false);
+	zoom_button->set_theme_type_variation("FlatMenuButton");
 	zoom_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	zoom_button->set_text("100 %");
 	zoom_button->set_accessibility_name(TTRC("Zoom Factor"));

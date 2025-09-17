@@ -30,6 +30,8 @@
 
 #include "editor_resource_tooltip_plugins.h"
 
+#include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/themes/editor_scale.h"
@@ -72,8 +74,15 @@ VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p
 
 	{
 		Ref<FileAccess> f = FileAccess::open(p_resource_path, FileAccess::READ);
-		Label *label = memnew(Label(vformat(TTR("Size: %s"), String::humanize_size(f->get_length()))));
-		vb->add_child(label);
+		if (f.is_valid()) {
+			Label *label = memnew(Label(vformat(TTR("Size: %s"), String::humanize_size(f->get_length()))));
+			vb->add_child(label);
+		} else {
+			Label *label = memnew(Label(TTR("Invalid file or broken link.")));
+			label->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			vb->add_child(label);
+			return vb;
+		}
 	}
 
 	if (ResourceLoader::exists(p_resource_path)) {

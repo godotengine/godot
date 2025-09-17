@@ -120,6 +120,8 @@ protected:
 	virtual void _on_openxr_session_begun();
 	virtual void _on_openxr_session_stopping();
 
+	bool _should_register();
+
 	virtual Ref<Mesh> _create_fallback_mesh() = 0;
 
 	void update_fallback_mesh();

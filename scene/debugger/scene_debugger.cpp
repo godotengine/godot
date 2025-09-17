@@ -167,6 +167,26 @@ Error SceneDebugger::_msg_inspect_objects(const Array &p_args) {
 	return OK;
 }
 
+#ifndef DISABLE_DEPRECATED
+Error SceneDebugger::_msg_inspect_object(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	// Legacy compatibility: convert single object ID to new format, then send single object response.
+	Vector<ObjectID> ids;
+	ids.append(ObjectID(p_args[0].operator uint64_t()));
+
+	SceneDebuggerObject obj(ids[0]);
+	if (obj.id.is_null()) {
+		EngineDebugger::get_singleton()->send_message("scene:inspect_object", Array());
+		return OK;
+	}
+
+	Array arr;
+	obj.serialize(arr);
+	EngineDebugger::get_singleton()->send_message("scene:inspect_object", arr);
+	return OK;
+}
+#endif // DISABLE_DEPRECATED
+
 Error SceneDebugger::_msg_clear_selection(const Array &p_args) {
 	RuntimeNodeSelect::get_singleton()->_clear_selection();
 	return OK;
@@ -496,6 +516,9 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["request_scene_tree"] = _msg_request_scene_tree;
 	message_handlers["save_node"] = _msg_save_node;
 	message_handlers["inspect_objects"] = _msg_inspect_objects;
+#ifndef DISABLE_DEPRECATED
+	message_handlers["inspect_object"] = _msg_inspect_object;
+#endif // DISABLE_DEPRECATED
 	message_handlers["clear_selection"] = _msg_clear_selection;
 	message_handlers["suspend_changed"] = _msg_suspend_changed;
 	message_handlers["next_frame"] = _msg_next_frame;
@@ -1269,11 +1292,9 @@ void LiveEditor::_remove_node_func(const NodePath &p_at) {
 		return; //scene not editable
 	}
 
-	Vector<Node *> to_delete;
+	LocalVector<Node *> to_delete;
 
-	for (HashSet<Node *>::Iterator F = E->value.begin(); F; ++F) {
-		Node *n = *F;
-
+	for (const Node *n : E->value) {
 		if (base && !base->is_ancestor_of(n)) {
 			continue;
 		}
@@ -1286,8 +1307,8 @@ void LiveEditor::_remove_node_func(const NodePath &p_at) {
 		to_delete.push_back(n2);
 	}
 
-	for (int i = 0; i < to_delete.size(); i++) {
-		memdelete(to_delete[i]);
+	for (Node *node : to_delete) {
+		memdelete(node);
 	}
 }
 
@@ -1307,10 +1328,8 @@ void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_kee
 		return; //scene not editable
 	}
 
-	Vector<Node *> to_remove;
-	for (HashSet<Node *>::Iterator F = E->value.begin(); F; ++F) {
-		Node *n = *F;
-
+	LocalVector<Node *> to_remove;
+	for (Node *n : E->value) {
 		if (base && !base->is_ancestor_of(n)) {
 			continue;
 		}
@@ -1322,8 +1341,7 @@ void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_kee
 		to_remove.push_back(n);
 	}
 
-	for (int i = 0; i < to_remove.size(); i++) {
-		Node *n = to_remove[i];
+	for (Node *n : to_remove) {
 		Node *n2 = n->get_node(p_at);
 		n2->get_parent()->remove_child(n2);
 		live_edit_remove_list[n][p_keep_id] = n2;

@@ -289,13 +289,15 @@ void Skeleton3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_process_changed();
-			_make_dirty();
-			_make_modifiers_dirty();
-			force_update_all_dirty_bones();
 #if !defined(DISABLE_DEPRECATED) && !defined(PHYSICS_3D_DISABLED)
 			setup_simulator();
 #endif // _DISABLE_DEPRECATED && PHYSICS_3D_DISABLED
-			update_flags = UPDATE_FLAG_POSE;
+		} break;
+		case NOTIFICATION_POST_ENTER_TREE: {
+			_make_dirty();
+			_make_modifiers_dirty();
+			force_update_all_dirty_bones();
+			update_flags |= UPDATE_FLAG_POSE;
 			_notification(NOTIFICATION_UPDATE_SKELETON);
 		} break;
 #ifdef TOOLS_ENABLED
@@ -929,7 +931,7 @@ void Skeleton3D::_make_dirty() {
 		return;
 	}
 	dirty = true;
-	_update_deferred();
+	_update_deferred(modifiers.is_empty() ? UPDATE_FLAG_POSE : (UpdateFlag)(UPDATE_FLAG_POSE | UPDATE_FLAG_MODIFIER));
 }
 
 void Skeleton3D::_update_deferred(UpdateFlag p_update_flag) {

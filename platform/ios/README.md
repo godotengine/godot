@@ -12,7 +12,7 @@ project template used for packaging the iOS export templates.
 
 ## Documentation
 
-- [Compiling for iOS](https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_ios.html)
+- [Compiling for iOS](https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_ios.html)
   - Instructions on building this platform port from source.
 - [Exporting for iOS](https://docs.godotengine.org/en/latest/tutorials/export/exporting_for_ios.html)
   - Instructions on using the compiled export templates to export a project.

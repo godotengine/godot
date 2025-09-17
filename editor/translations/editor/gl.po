@@ -18,11 +18,12 @@
 # "Miguel A. Bouzada" <mbouzada@gmail.com>, 2025.
 # xuars <yago.rana.gayoso@gmail.com>, 2025.
 # Yago Raña Gayoso <yago.rana.gayoso@gmail.com>, 2025.
+# Julián Lacomba <julian_alberto93@yahoo.com.ar>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2025-07-19 09:02+0000\n"
+"PO-Revision-Date: 2025-08-26 18:03+0000\n"
 "Last-Translator: Yago Raña Gayoso <yago.rana.gayoso@gmail.com>\n"
 "Language-Team: Galician <https://hosted.weblate.org/projects/godot-engine/"
 "godot/gl/>\n"
@@ -30,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.13\n"
 
 msgid "Unset"
 msgstr "Desactivar"
@@ -138,7 +139,7 @@ msgid "Right Stick, Sony R3, Xbox R/RS"
 msgstr "Stick Dereito, Sony R3, Xbox R/RS"
 
 msgid "Left Shoulder, Sony L1, Xbox LB"
-msgstr "Botón do ombro esquerdo, Sony R1, Xbox RB"
+msgstr "Botón do ombro esquerdo, Sony L1, Xbox LB"
 
 msgid "Right Shoulder, Sony R1, Xbox RB"
 msgstr "Botón do ombro dereito, Sony R1, Xbox RB"
@@ -561,6 +562,12 @@ msgstr "Valor"
 
 msgid "Add Triangle"
 msgstr "Engadir Triángulo"
+
+msgid "Min X"
+msgstr "Min X"
+
+msgid "X Value"
+msgstr "Valor X"
 
 msgid "Edit Filters"
 msgstr "Editar Flitros"
@@ -3217,9 +3224,6 @@ msgstr ""
 "Engade uns axustes de exportación executables, ou define algún xa existente "
 "como executable."
 
-msgid "Select Mode"
-msgstr "Elixir Modo"
-
 msgid "Show list of selectable nodes at position clicked."
 msgstr ""
 "Amosa unha lista de nodos seleccionables na posición na que se fixo clic."
@@ -3541,6 +3545,9 @@ msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr ""
 "Alt+Clic Dereito: Amosa unha lista de nodos na posición na que se fixo clic, "
 "incluindo bloqueados."
+
+msgid "Select Mode"
+msgstr "Elixir Modo"
 
 msgid "Move Mode"
 msgstr "Mover Modo"

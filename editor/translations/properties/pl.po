@@ -98,12 +98,13 @@
 # Kordian Lipiecki <kordian.lipiecki4@gmail.com>, 2025.
 # Piotr Jurczak <piotr5jurczak@gmail.com>, 2025.
 # Karol1165 <kutkarol1165@gmail.com>, 2025.
+# Myeongjin <aranet100@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-10 03:20+0000\n"
+"PO-Revision-Date: 2025-09-10 19:04+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/pl/>\n"
@@ -113,7 +114,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Application"
 msgstr "Aplikacja"
@@ -535,6 +536,9 @@ msgstr "Świat"
 msgid "Map Use Async Iterations"
 msgstr "Użyj asynchronicznych iteracji mapy"
 
+msgid "Region Use Async Iterations"
+msgstr "Użyj asynchronicznych iteracji obszaru"
+
 msgid "Avoidance"
 msgstr "Omijanie"
 
@@ -801,6 +805,9 @@ msgstr "Tablica danych"
 
 msgid "Max Pending Connections"
 msgstr "Maks. liczba połączeń oczekujących"
+
+msgid "Neighbor Filter Enabled"
+msgstr "Włącz filtr sąsiadów"
 
 msgid "Region"
 msgstr "Obszar"
@@ -1267,11 +1274,14 @@ msgstr "Wymuś wyłączenie kompresji siatki"
 msgid "Node"
 msgstr "Węzeł"
 
+msgid "Node Type"
+msgstr "Typ węzła"
+
 msgid "Script"
 msgstr "Skrypt"
 
 msgid "Import"
-msgstr "Zaimportuj"
+msgstr "Importowanie"
 
 msgid "Skip Import"
 msgstr "Pomiń importowanie"
@@ -1456,6 +1466,9 @@ msgstr "Typ korzenia"
 msgid "Root Name"
 msgstr "Nazwa korzenia"
 
+msgid "Root Script"
+msgstr "Skrypt główny"
+
 msgid "Apply Root Scale"
 msgstr "Zastosuj skalę korzenia"
 
@@ -1512,6 +1525,15 @@ msgstr "Importuj skrypt"
 
 msgid "Materials"
 msgstr "Materiały"
+
+msgid "Extract"
+msgstr "Wyciągnij"
+
+msgid "Extract Format"
+msgstr "Format wyciągnięcia"
+
+msgid "Extract Path"
+msgstr "Ścieżka wyciągnięcia"
 
 msgid "Antialiasing"
 msgstr "Wygładzanie"
@@ -1589,7 +1611,7 @@ msgid "Face Index"
 msgstr "Indeks ściany"
 
 msgid "Transform"
-msgstr "Przekształcanie"
+msgstr "Przekształcenie"
 
 msgid "Create From"
 msgstr "Utwórz z"
@@ -2736,6 +2758,9 @@ msgstr "Kształt kości"
 msgid "Path 3D Tilt Disk Size"
 msgstr "Rozmiar dysku nachylenia Ścieżki 3D"
 
+msgid "Lightmap GI Probe Size"
+msgstr "Rozmiar sondy GI mapy światła"
+
 msgid "Primary Grid Steps"
 msgstr "Główne kroki siatki"
 
@@ -3378,6 +3403,9 @@ msgstr "Profil interakcji dłoni"
 msgid "Eye Gaze Interaction"
 msgstr "Interakcja wzrokowa"
 
+msgid "Render Model"
+msgstr "Renderowany model"
+
 msgid "Binding Modifiers"
 msgstr "Modyfikatory przypisania"
 
@@ -3725,6 +3753,138 @@ msgstr "Wyklucz dodatki"
 
 msgid "Renamed in Godot 4 Hint"
 msgstr "Wskazówka zmiany nazwy w Godot 4"
+
+msgid "Unassigned Variable"
+msgstr "Nieprzypisana zmienna"
+
+msgid "Unassigned Variable Op Assign"
+msgstr "Operacja przypisująca nieprzypisanej zmiennej"
+
+msgid "Unused Variable"
+msgstr "Nieużywana zmienna"
+
+msgid "Unused Local Constant"
+msgstr "Nieużywana stała lokalna"
+
+msgid "Unused Private Class Variable"
+msgstr "Nieużywana prywatna zmienna klasy"
+
+msgid "Unused Parameter"
+msgstr "Nieużywany parametr"
+
+msgid "Unused Signal"
+msgstr "Nieużywany sygnał"
+
+msgid "Shadowed Variable"
+msgstr "Przesłonięta zmienna"
+
+msgid "Shadowed Variable Base Class"
+msgstr "Przesłonięta zmienna klasy bazowej"
+
+msgid "Shadowed Global Identifier"
+msgstr "Przesłonięty globalny identyfikator"
+
+msgid "Unreachable Code"
+msgstr "Nieosiągalny kod"
+
+msgid "Unreachable Pattern"
+msgstr "Nieosiągalny wzorzec"
+
+msgid "Standalone Expression"
+msgstr "Samodzielne wyrażenie"
+
+msgid "Standalone Ternary"
+msgstr "Samodzielny operator trójargumentowy"
+
+msgid "Incompatible Ternary"
+msgstr "Niekompatybilny operator trójargumentowy"
+
+msgid "Untyped Declaration"
+msgstr "Deklaracja bez typu"
+
+msgid "Inferred Declaration"
+msgstr "Inferowana deklaracja"
+
+msgid "Unsafe Property Access"
+msgstr "Niebezpieczny dostęp do właściwości"
+
+msgid "Unsafe Method Access"
+msgstr "Niebezpieczny dostęp do metody"
+
+msgid "Unsafe Cast"
+msgstr "Niebezpieczne rzutowanie"
+
+msgid "Unsafe Call Argument"
+msgstr "Niebezpieczny argument wywołania"
+
+msgid "Unsafe Void Return"
+msgstr "Niebezpieczny zwrot niczego"
+
+msgid "Return Value Discarded"
+msgstr "Odrzucona wartość zwrotna"
+
+msgid "Static Called On Instance"
+msgstr "Statyczne wywołanie na instancji"
+
+msgid "Missing Tool"
+msgstr "Brakujący tryb narzędziowy"
+
+msgid "Redundant Static Unload"
+msgstr "Niepotrzebne zwalnianie statyczne"
+
+msgid "Redundant Await"
+msgstr "Niepotrzebne oczekiwanie"
+
+msgid "Assert Always True"
+msgstr "Zawsze prawdziwe zapewnienie"
+
+msgid "Assert Always False"
+msgstr "Zawsze fałszywe zapewnienie"
+
+msgid "Integer Division"
+msgstr "Dzielenie całkowite"
+
+msgid "Narrowing Conversion"
+msgstr "Konwersja zawężająca"
+
+msgid "Int As Enum Without Cast"
+msgstr "Liczba jako wyliczenie bez rzutowania"
+
+msgid "Int As Enum Without Match"
+msgstr "Liczba jako wyliczenie bez dopasowania"
+
+msgid "Enum Variable Without Default"
+msgstr "Zmienna wyliczenia bez domyślnej wartości"
+
+msgid "Empty File"
+msgstr "Pusty plik"
+
+msgid "Deprecated Keyword"
+msgstr "Przestarzałe słowo kluczowe"
+
+msgid "Confusable Identifier"
+msgstr "Mylny identyfikator"
+
+msgid "Confusable Local Declaration"
+msgstr "Mylna deklaracja lokalna"
+
+msgid "Confusable Local Usage"
+msgstr "Mylne użycie lokalne"
+
+msgid "Confusable Capture Reassignment"
+msgstr "Mylne ponowne przypisanie przechwyconej zmiennej"
+
+msgid "Inference On Variant"
+msgstr "Inferencja na wariancie"
+
+msgid "Native Method Override"
+msgstr "Nadpisanie metody natywnej"
+
+msgid "Get Node Default Without Onready"
+msgstr "Domyślna wartość get_node() bez @onready"
+
+msgid "Onready With Export"
+msgstr "Eksportowane @onready"
 
 msgid "Language Server"
 msgstr "Serwer języka"
@@ -4557,6 +4717,9 @@ msgstr "Aktualizacja kości"
 msgid "Tracker"
 msgstr "Tracker"
 
+msgid "Make Local to Pose"
+msgstr "Uczyń lokalne dla pozy"
+
 msgid "Subject"
 msgstr "Temat"
 
@@ -4781,6 +4944,9 @@ msgstr "Przesuń aby odrzucić"
 
 msgid "Immersive Mode"
 msgstr "Tryb Immersyjny"
+
+msgid "Edge to Edge"
+msgstr "Krawędź do krawędzi"
 
 msgid "Support Small"
 msgstr "Wspieraj małe"
@@ -5123,6 +5289,9 @@ msgstr "Opis użycia usuwalnych wolumenów"
 
 msgid "Removable Volumes Usage Description Localized"
 msgstr "Lokalizowany opis użycia usuwalnych wolumenów"
+
+msgid "Min visionOS Version"
+msgstr "Min. wersja visionOS"
 
 msgid "Web"
 msgstr "Przeglądarka (HTML5)"
@@ -5723,6 +5892,18 @@ msgstr "Uprość ścieżkę"
 
 msgid "Simplify Epsilon"
 msgstr "Epsilon uproszczenia"
+
+msgid "Path Return Max Length"
+msgstr "Maks. długość zwróconej ścieżki"
+
+msgid "Path Return Max Radius"
+msgstr "Maks. promień zwróconej ścieżki"
+
+msgid "Path Search Max Polygons"
+msgstr "Maks. wielokąty szukania ścieżki"
+
+msgid "Path Search Max Distance"
+msgstr "Maks. dystans szukania ścieżki"
 
 msgid "Avoidance Enabled"
 msgstr "Włącz omijanie"
@@ -7730,6 +7911,27 @@ msgstr "Filtr nazwy pliku"
 msgid "Use Native Dialog"
 msgstr "Użyj natywnego dialogu"
 
+msgid "Hidden Files Toggle Enabled"
+msgstr "Włącz przełączanie ukrytych plików"
+
+msgid "File Filter Toggle Enabled"
+msgstr "Włącz przełączanie filtru plików"
+
+msgid "File Sort Options Enabled"
+msgstr "Włącz opcje sortowania plików"
+
+msgid "Folder Creation Enabled"
+msgstr "Włącz tworzenie folderów"
+
+msgid "Favorites Enabled"
+msgstr "Włącz ulubione"
+
+msgid "Recent List Enabled"
+msgstr "Włącz listę ostatnich"
+
+msgid "Layout Toggle Enabled"
+msgstr "Włącz przełączanie układu"
+
 msgid "Last Wrap Alignment"
 msgstr "Wyrównanie ostatniego zawinięcia"
 
@@ -7840,6 +8042,9 @@ msgstr "Kolor zabarwienia"
 
 msgid "Ignore Invalid Connection Type"
 msgstr "Ignoruj niewłaściwy typ połączenia"
+
+msgid "Slots Focus Mode"
+msgstr "Tryb skupienia slotów"
 
 msgid "Select Mode"
 msgstr "Tryb zaznaczenia"
@@ -8114,6 +8319,9 @@ msgstr "Przewijanie aktywne"
 msgid "Scroll Following"
 msgstr "Podążaj przewijaniem"
 
+msgid "Scroll Following Visible Characters"
+msgstr "Przewijaj razem z widocznymi znakami"
+
 msgid "Tab Size"
 msgstr "Rozmiar tabulatora"
 
@@ -8176,6 +8384,9 @@ msgstr "Liczba znaczników"
 
 msgid "Ticks on Borders"
 msgstr "Znaczniki na brzegach"
+
+msgid "Ticks Position"
+msgstr "Położenie znaczników"
 
 msgid "Update on Text Changed"
 msgstr "Zaktualizuj przy zmianie tekstu"
@@ -9612,6 +9823,9 @@ msgstr "Shader"
 msgid "Depth Draw Mode"
 msgstr "Tryb rysowania głębi"
 
+msgid "Depth Test"
+msgstr "Test głębi"
+
 msgid "Shading"
 msgstr "Cieniowanie"
 
@@ -9788,6 +10002,18 @@ msgstr "MSDF"
 
 msgid "Pixel Range"
 msgstr "Zakres pikseli"
+
+msgid "Stencil"
+msgstr "Szablon"
+
+msgid "Compare"
+msgstr "Porównanie"
+
+msgid "Reference"
+msgstr "Odniesienie"
+
+msgid "Outline Thickness"
+msgstr "Grubość obrysu"
 
 msgid "Convex Hull Downsampling"
 msgstr "Próbkowanie w dół wypukłej powłoki"
@@ -10109,6 +10335,12 @@ msgstr "Port wyjścia do podglądu"
 
 msgid "Modes"
 msgstr "Tryby"
+
+msgid "Stencil Modes"
+msgstr "Tryby szablonu"
+
+msgid "Stencil Flags"
+msgstr "Flagi szablonu"
 
 msgid "Input Name"
 msgstr "Nazwa wejścia"
@@ -10487,6 +10719,9 @@ msgstr "Wyśrodkuj chwytak"
 
 msgid "Grabber Offset"
 msgstr "Przesunięcie chwytaka"
+
+msgid "Tick Offset"
+msgstr "Przesunięcie znacznika"
 
 msgid "Updown"
 msgstr "Góra/dół"
@@ -11034,6 +11269,9 @@ msgstr "Skupienie próbki"
 msgid "Preset BG"
 msgstr "Tło próbki"
 
+msgid "Horizontal Rule"
+msgstr "Linia pozioma"
+
 msgid "Normal Font"
 msgstr "Normalna czcionka"
 
@@ -11090,6 +11328,15 @@ msgstr "Alfa podkreślenia"
 
 msgid "Strikethrough Alpha"
 msgstr "Alfa przekreślenia"
+
+msgid "Touch Dragger Color"
+msgstr "Kolor dotykowego chwytaka"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "Kolor wciśniętego dotykowego chwytaka"
+
+msgid "Touch Dragger Hover Color"
+msgstr "Kolor najechanego dotykowego chwytaka"
 
 msgid "H Touch Dragger"
 msgstr "Poziomy dotykowy chwytak"
@@ -11385,6 +11632,21 @@ msgstr "Tworzenie filmów"
 msgid "Speaker Mode"
 msgstr "Tryb głośnika"
 
+msgid "Video Quality"
+msgstr "Jakość wideo"
+
+msgid "OGV"
+msgstr "OGV"
+
+msgid "Audio Quality"
+msgstr "Jakość audio"
+
+msgid "Encoding Speed"
+msgstr "Szybkość kodowania"
+
+msgid "Keyframe Interval"
+msgstr "Odstęp klatek kluczowych"
+
 msgid "Movie File"
 msgstr "Plik filmu"
 
@@ -11408,6 +11670,9 @@ msgstr "RIDy ścieżki"
 
 msgid "Path Owner IDs"
 msgstr "Identyfikatory właściciela ścieżki"
+
+msgid "Path Length"
+msgstr "Długość ścieżki"
 
 msgid "Default Cell Size"
 msgstr "Domyślny rozmiar komórki"
@@ -11703,6 +11968,15 @@ msgstr "Mgła wyłączona"
 msgid "Specular Occlusion Disabled"
 msgstr "Pochłanianie połysku wyłączone"
 
+msgid "Read"
+msgstr "Czytanie"
+
+msgid "Write"
+msgstr "Pisanie"
+
+msgid "Write Depth Fail"
+msgstr "Błąd zapisu głębokości"
+
 msgid "Light Only"
 msgstr "Tylko światło"
 
@@ -11723,6 +11997,36 @@ msgstr "Użyj przejścia z połową rozdzielczości"
 
 msgid "Use Quarter Res Pass"
 msgstr "Użyj przejścia z ćwiartką rozdzielczości"
+
+msgid "Float Comparison"
+msgstr "Porównywanie zmiennoprzecinkowe"
+
+msgid "Unused Constant"
+msgstr "Nieużywana stała"
+
+msgid "Unused Function"
+msgstr "Nieużywana funkcja"
+
+msgid "Unused Struct"
+msgstr "Nieużywana struktura"
+
+msgid "Unused Uniform"
+msgstr "Nieużywany uniform"
+
+msgid "Unused Varying"
+msgstr "Nieużywany varying"
+
+msgid "Unused Local Variable"
+msgstr "Nieużywana zmienna lokalna"
+
+msgid "Formatting Error"
+msgstr "Błąd formatowania"
+
+msgid "Device Limit Exceeded"
+msgstr "Przekroczono limit urządzeń"
+
+msgid "Magic Position Write"
+msgstr "Zapis magicznej pozycji"
 
 msgid "Internal Size"
 msgstr "Wewnętrzna wielkość"
@@ -12020,6 +12324,9 @@ msgstr "Układ podpikseli LCD"
 
 msgid "Include Text Server Data"
 msgstr "Dołącz dane serwera tekstów"
+
+msgid "Line Breaking Strictness"
+msgstr "Ścisłość łamania linii"
 
 msgid "Has Tracking Data"
 msgstr "Posiada dane śledzenia"

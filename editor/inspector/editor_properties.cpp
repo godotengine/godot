@@ -3591,8 +3591,8 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Varian
 struct EditorPropertyRangeHint {
 	bool or_greater = true;
 	bool or_less = true;
-	double min = -99999.0;
-	double max = 99999.0;
+	double min = 0.0;
+	double max = 0.0;
 	double step = 1.0;
 	String suffix;
 	bool exp_range = false;

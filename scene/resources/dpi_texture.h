@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  svg_texture.h                                                         */
+/*  dpi_texture.h                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -35,9 +35,9 @@
 
 class BitMap;
 
-class SVGTexture : public Texture2D {
-	GDCLASS(SVGTexture, Texture2D);
-	RES_BASE_EXTENSION("svgtex");
+class DPITexture : public Texture2D {
+	GDCLASS(DPITexture, Texture2D);
+	RES_BASE_EXTENSION("dpitex");
 
 	String source;
 	float base_scale = 1.0;
@@ -46,7 +46,7 @@ class SVGTexture : public Texture2D {
 	Size2 size_override;
 
 	struct ScalingLevel {
-		HashSet<SVGTexture *> textures;
+		HashSet<DPITexture *> textures;
 		int32_t refcount = 1;
 	};
 	static Mutex mutex;
@@ -69,7 +69,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	static Ref<SVGTexture> create_from_string(const String &p_source, float p_scale = 1.0, float p_saturation = 1.0, const Dictionary &p_color_map = Dictionary());
+	static Ref<DPITexture> create_from_string(const String &p_source, float p_scale = 1.0, float p_saturation = 1.0, const Dictionary &p_color_map = Dictionary());
 
 	void set_source(const String &p_source);
 	String get_source() const;
@@ -102,5 +102,5 @@ public:
 	static void reference_scaling_level(double p_scale);
 	static void unreference_scaling_level(double p_scale);
 
-	~SVGTexture();
+	~DPITexture();
 };

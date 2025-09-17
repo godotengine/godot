@@ -159,7 +159,11 @@ internal class FilesystemDirectoryAccess(private val context: Context, private v
 		}
 
 		val storageVolume = storageManager.storageVolumes[drive]
-		return storageVolume.getDescription(context)
+		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+			storageVolume.directory?.absolutePath ?: ""
+		} else {
+			""
+		}
 	}
 
 	override fun makeDir(dir: String): Boolean {

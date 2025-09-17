@@ -622,8 +622,8 @@ class Godot private constructor(val context: Context) {
 				}
 
 				override fun onEnd(animation: WindowInsetsAnimationCompat) {
-					// Fixes issue on Android 7 and 8 where immersive mode gets auto disabled after the keyboard is hidden.
-					if (useImmersive.get() && Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+					// Fixes an issue on Android 10 and older where immersive mode gets auto disabled after the keyboard is hidden on some devices.
+					if (useImmersive.get() && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
 						runOnHostThread {
 							enableImmersiveMode(true, true)
 						}

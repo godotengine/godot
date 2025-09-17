@@ -31,12 +31,12 @@
 #include "default_theme.h"
 
 #include "core/io/image.h"
+#include "scene/resources/dpi_texture.h"
 #include "scene/resources/font.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
-#include "scene/resources/svg_texture.h"
 #include "scene/resources/theme.h"
 #include "scene/scene_string_names.h"
 #include "scene/theme/default_theme_icons.gen.h"
@@ -79,8 +79,8 @@ static Ref<StyleBoxFlat> sb_expand(Ref<StyleBoxFlat> p_sbox, float p_left, float
 }
 
 // See also `editor_generate_icon()` in `editor/themes/editor_icons.cpp`.
-static Ref<SVGTexture> generate_icon(int p_index) {
-	return SVGTexture::create_from_string(default_theme_icons_sources[p_index], scale);
+static Ref<DPITexture> generate_icon(int p_index) {
+	return DPITexture::create_from_string(default_theme_icons_sources[p_index], scale);
 }
 
 static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {

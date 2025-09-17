@@ -593,10 +593,11 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 					String second = tx.substr(remaining_characters, -1);
 					l.text_buf->add_string(first, font, font_size, lang, it->rid);
 					l.text_buf->add_string(second, font, font_size, lang, it->rid);
+				} else {
+					l.text_buf->add_string(tx, font, font_size, lang, it->rid);
 				}
 				remaining_characters -= tx.length();
 
-				l.text_buf->add_string(tx, font, font_size, lang, it->rid);
 				txt += tx;
 				l.char_count += tx.length();
 			} break;

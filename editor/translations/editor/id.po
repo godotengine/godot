@@ -11,7 +11,7 @@
 # Khairul Hidayat <khairulcyber4rt@gmail.com>, 2016.
 # Reza Hidayat Bayu Prabowo <rh.bayu.prabowo@gmail.com>, 2018, 2019.
 # Romi Kusuma Bakti <romikusumab@gmail.com>, 2017, 2018, 2021.
-# Sofyan Sugianto <sofyanartem@gmail.com>, 2017-2018, 2019, 2020, 2021.
+# Sofyan Sugianto <sofyanartem@gmail.com>, 2017-2018, 2019, 2020, 2021, 2025.
 # Tito <ijavadroid@gmail.com>, 2018, 2023.
 # Tom My <tom.asadinawan@gmail.com>, 2017.
 # yursan9 <rizal.sagi@gmail.com>, 2016.
@@ -49,7 +49,7 @@
 # EngageIndo <engageindo@gmail.com>, 2023.
 # Septian Kurniawan <septgsk@outlook.com>, 2023.
 # Septian Ganendra Savero Kurniawan <septgsk@outlook.com>, 2023.
-# Septian Ganendra Savero Kurniawan <mail@init.id>, 2023, 2024.
+# Septian Ganendra Savero Kurniawan <mail@init.id>, 2023, 2024, 2025.
 # GID <ghavind12345@gmail.com>, 2023.
 # Luqman Firmansyah <luqm4n.firm4n@gmail.com>, 2023.
 # Bayu Satiyo <itsyuukunz@gmail.com>, 2023.
@@ -69,13 +69,16 @@
 # gio <toktegar28@gmail.com>, 2025.
 # Fungki <fungki4444@gmail.com>, 2025.
 # Muhammad Affan Fahrozi <m.affanfahrozi@protonmail.com>, 2025.
+# Belang Sumerlang <belangsumerlang@gmail.com>, 2025.
+# Wahyu Azizi <wahyuazizi03@gmail.com>, 2025.
+# Agung Adhinata <adhi0asta@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-24 19:04+0000\n"
-"Last-Translator: Muhammad Affan Fahrozi <m.affanfahrozi@protonmail.com>\n"
+"PO-Revision-Date: 2025-08-28 06:30+0000\n"
+"Last-Translator: Agung Adhinata <adhi0asta@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -83,7 +86,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.13\n"
 
 msgid "Unset"
 msgstr "Belum disetel"
@@ -261,6 +264,9 @@ msgstr "Input MIDI pada Channel=%s Pesan =%s"
 msgid "Input Event with Shortcut=%s"
 msgstr "Memasukkan Event dengan Pintasan=%s"
 
+msgid " or "
+msgstr " ·atau · "
+
 msgid "Action has no bound inputs"
 msgstr "Aksi tidak memiliki masukan yang terikat"
 
@@ -311,6 +317,9 @@ msgstr "Salin"
 
 msgid "Paste"
 msgstr "Tempel"
+
+msgid "Toggle Tab Focus Mode"
+msgstr "Beralih Mode Fokus Tab"
 
 msgid "Undo"
 msgstr "Batal"
@@ -429,6 +438,12 @@ msgstr "Duplikat Node"
 msgid "Delete Nodes"
 msgstr "Hapus Node"
 
+msgid "Follow Input Port Connection"
+msgstr "Ikuti Sambungan Port Masukan"
+
+msgid "Follow Output Port Connection"
+msgstr "Ikuti Sambungan Port Keluaran"
+
 msgid "Go Up One Level"
 msgstr "Naik Satu Tingkat"
 
@@ -443,6 +458,12 @@ msgstr "Tukar Arah Masukan"
 
 msgid "Start Unicode Character Input"
 msgstr "Mulai Input Karakter Unicode"
+
+msgid "ColorPicker: Delete Preset"
+msgstr "Pengambil Warna: Hapus Preset / Konfigurasi"
+
+msgid "Accessibility: Keyboard Drag and Drop"
+msgstr "Aksesibilitas: Seret dan Letakkan dengan Keyboard"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Masukkan tidak sah %d (tidak lulus) dalam ekspresi"
@@ -544,8 +565,14 @@ msgstr "Tambahkan Titik Bezier"
 msgid "Move Bezier Points"
 msgstr "Pindah Titik-titik Bezier"
 
+msgid "Scale Bezier Points"
+msgstr "Skalakan Titik Bézier"
+
 msgid "Animation Duplicate Keys"
 msgstr "Kunci Duplikat Animasi"
+
+msgid "Animation Cut Keys"
+msgstr "Kunci Potong Animasi"
 
 msgid "Animation Paste Keys"
 msgstr "Tempel Kunci Animasi"
@@ -631,6 +658,9 @@ msgstr "Hapus titik."
 msgid "Enable snap and show grid."
 msgstr "Izinkan snap dan tampilkan garis-garis kotak."
 
+msgid "Grid Step"
+msgstr "Ukuran Langkah Grid / Kisi-kisi"
+
 msgid "Sync:"
 msgstr "Sinkronisasi:"
 
@@ -640,8 +670,17 @@ msgstr "Campur:"
 msgid "Point"
 msgstr "Titik"
 
+msgid "Blend Value"
+msgstr "Nilai Pencampuran"
+
 msgid "Open Editor"
 msgstr "Buka Editor"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
 
 msgid "Value"
 msgstr "Nilai"
@@ -681,6 +720,33 @@ msgstr "Hapus titik-titik dan segi tiga."
 
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Buat segi tiga pembauran secara otomatis (sebagai ganti cara manual)"
+
+msgid "Grid X Step"
+msgstr "Langkah Grid Sumbu X"
+
+msgid "Grid Y Step"
+msgstr "Langkah Grid Sumbu Y"
+
+msgid "Blend X Value"
+msgstr "Nilai Pencampuran Sumbu X"
+
+msgid "Max Y"
+msgstr "Maks Y"
+
+msgid "Y Value"
+msgstr "Nilai Y"
+
+msgid "Min Y"
+msgstr "Min Y"
+
+msgid "Min X"
+msgstr "Min X"
+
+msgid "X Value"
+msgstr "Nilai X"
+
+msgid "Parameter Changed: %s"
+msgstr "Parameter Berubah: %s"
 
 msgid "Inspect Filters"
 msgstr "Periksa Filter"
@@ -722,6 +788,15 @@ msgstr "Jungkitkan Filter Nyala/Mati"
 msgid "Change Filter"
 msgstr "Ganti Filter"
 
+msgid "Fill Selected Filter Children"
+msgstr "Isi Filter Children yang dipilih"
+
+msgid "Invert Filter Selection"
+msgstr "Balik Seleksi Pilihan"
+
+msgid "Clear Filter Selection"
+msgstr "Bersihkan Seleksi Pilihan"
+
 msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
 "names."
@@ -753,8 +828,32 @@ msgstr "Tambah Node..."
 msgid "Enable Filtering"
 msgstr "Aktifkan Penyaringan"
 
+msgid "Fill Selected Children"
+msgstr "Isi Elemen Anak dari Filter yang Dipilih"
+
+msgid "Invert"
+msgstr "Balikkan"
+
 msgid "Clear"
 msgstr "Bersihkan"
+
+msgid "Start of Animation"
+msgstr "Awal dari Animasi"
+
+msgid "End of Animation"
+msgstr "Akhir dari Animasi"
+
+msgid "Set Custom Timeline from Marker"
+msgstr "Atur Linimasa Kustom dari Penanda (Marker)"
+
+msgid "Select Markers"
+msgstr "Pilih Penanda"
+
+msgid "Start Marker"
+msgstr "Mulai Penanda"
+
+msgid "End Marker"
+msgstr "Akhiri Penanda"
 
 msgid "Library Name:"
 msgstr "Nama Library:"
@@ -801,7 +900,7 @@ msgid ""
 "This animation library can't be saved because it does not belong to the "
 "edited scene. Make it unique first."
 msgstr ""
-"Library animasi ini tidak dapat disimpan karena tidak termasuk dalam adegan "
+"Library animasi ini tidak dapat disimpan karena tidak termasuk dalam skena "
 "yang diedit. Buatlah unik terlebih dahulu."
 
 msgid ""
@@ -821,7 +920,7 @@ msgid ""
 "This animation can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
 msgstr ""
-"Animasi ini tidak dapat disimpan karena tidak termasuk dalam adegan yang "
+"Animasi ini tidak dapat disimpan karena tidak termasuk dalam skena yang "
 "diedit. Buatlah unik terlebih dahulu."
 
 msgid ""
@@ -842,6 +941,56 @@ msgstr "Simpan Library Animasi ke File: %s"
 
 msgid "Save Animation to File: %s"
 msgstr "Simpan Animasi ke File: %s"
+
+msgid ""
+"The file you selected is an imported scene from a 3D model such as glTF or "
+"FBX.\n"
+"\n"
+"In Godot, 3D models can be imported as either scenes or animation libraries, "
+"which is why they show up here.\n"
+"\n"
+"If you want to use animations from this 3D model, open the Advanced Import "
+"Settings\n"
+"dialog and save the animations using Actions... -> Set Animation Save Paths,\n"
+"or import the whole scene as a single AnimationLibrary in the Import dock."
+msgstr ""
+"File yang Anda pilih adalah sebuah scene impor dari model 3D seperti glTF "
+"atau FBX.\n"
+"\n"
+"Di Godot, model 3D dapat diimpor sebagai scene atau sebagai perpustakaan "
+"animasi (animation library), itulah sebabnya model tersebut muncul di sini.\n"
+"\n"
+"Jika Anda ingin menggunakan animasi dari model 3D ini, buka dialog Advanced "
+"Import Setting\n"
+"dan simpan animasi menggunakan Actions... -> Set Animation Save Paths,\n"
+"atau impor seluruh scene sebagai satu AnimationLibrary di dock Import."
+
+msgid ""
+"The file you selected is not a valid AnimationLibrary.\n"
+"\n"
+"If the animations you want are inside of this file, save them to a separate "
+"file first."
+msgstr ""
+"Berkas yang Anda pilih bukan AnimationLibrary yang valid.\n"
+"\n"
+"Jika animasi yang Anda cari ada di berkas ini, simpan dulu animasi tersebut "
+"ke berkas terpisah."
+
+msgid "Some of the selected libraries were already added to the mixer."
+msgstr ""
+"Beberapa Perpustakaan yang dipilih sudah ditambahkan ke Penyampur (Mixer)."
+
+msgid "Add Animation Libraries"
+msgstr "Tambah Perpustakaan Animasi"
+
+msgid "Some Animation files were invalid."
+msgstr "Beberapa berkas animasi tidak valid."
+
+msgid "Some of the selected animations were already added to the library."
+msgstr "Beberapa dari animasi yang dipilih sudah ditambahkan ke perpustakaan."
+
+msgid "Load Animations into Library"
+msgstr "Muat Animasi ke Perpustakaan"
 
 msgid "Load Animation into Library: %s"
 msgstr "Muat Animasi ke Perpustakaan: %s"
@@ -891,11 +1040,44 @@ msgstr "[asing]"
 msgid "[imported]"
 msgstr "[diimpor]"
 
+msgid "Add animation to library."
+msgstr "Tambahkan Animasi ke Library."
+
+msgid "Load animation from file and add to library."
+msgstr "Muat animasi dari file dan tambahkan ke library."
+
+msgid "Paste animation to library from clipboard."
+msgstr "Tempelkan Animasi ke Library dari papan klip."
+
+msgid "Save animation library to resource on disk."
+msgstr "Simpan library animasi ke sumber daya di disk."
+
+msgid "Remove animation library."
+msgstr "Hapus library animasi."
+
+msgid "Copy animation to clipboard."
+msgstr "Salin animasi ke clipboard."
+
+msgid "Save animation to resource on disk."
+msgstr "Simpan animasi ke sumber daya pada disk."
+
+msgid "Remove animation from Library."
+msgstr "Hapus animasi dari Library."
+
 msgid "Edit Animation Libraries"
 msgstr "Edit Library Animasi"
 
+msgid "New Library"
+msgstr "Library Baru"
+
+msgid "Create new empty animation library."
+msgstr "Buat Library Animasi Baru / Kosong."
+
 msgid "Load Library"
 msgstr "Muat Library"
+
+msgid "Load animation library from disk."
+msgstr "Simpan library animasi ke sumber daya di disk."
 
 msgid "Resource"
 msgstr "Resource"
@@ -948,6 +1130,24 @@ msgstr "[Global] (buat)"
 msgid "Duplicated Animation Name:"
 msgstr "Nama Animasi Duplikat:"
 
+msgid "Onion skinning requires a RESET animation."
+msgstr "Fitur onion skinning membutuhkan animasi RESET."
+
+msgid "Play Animation Backwards"
+msgstr "Putar Animasi Mundur"
+
+msgid "Play Animation Backwards from End"
+msgstr "Mainkan Animasi Mundur dari akhir"
+
+msgid "Pause/Stop Animation"
+msgstr "Jeda/Hentikan Animasi"
+
+msgid "Play Animation from Start"
+msgstr "Mainkan Animasi terpilih dari awal"
+
+msgid "Play Animation"
+msgstr "Putar Animasi"
+
 msgid "Animation position (in seconds)."
 msgstr "Posisi Animasi (dalam detik)."
 
@@ -959,6 +1159,9 @@ msgstr "Perkakas Animasi"
 
 msgid "Animation"
 msgstr "Animasi"
+
+msgid "New..."
+msgstr "Baru..."
 
 msgid "Manage Animations..."
 msgstr "Mengelola Animasi..."
@@ -1035,11 +1238,26 @@ msgstr "Waktu Berbaur:"
 msgid "Next (Auto Queue):"
 msgstr "Selanjutnya (Antrian Otomatis):"
 
+msgid "Go to Next Keyframe"
+msgstr "Pergi ke Keyframe Berikutnya"
+
+msgid "Go to Previous Keyframe"
+msgstr "Pergi ke Keyframe Sebelumnya"
+
+msgid "Toggle Animation Bottom Panel"
+msgstr "Tampilkan/Sembunyikan Panel Bawah Animasi"
+
 msgid "Move Node"
 msgstr "Pindahkan Node"
 
 msgid "Transition exists!"
 msgstr "Transisi sudah ada!"
+
+msgid "Play/Travel to %s"
+msgstr "Putar/Pindah ke %s"
+
+msgid "Edit %s"
+msgstr "Ubah%s"
 
 msgid "Add Node and Transition"
 msgstr "Tambahkan Node dan Transisi"
@@ -1078,6 +1296,9 @@ msgstr ""
 "RMB: Menambahkan simpul pada posisi yang diklik.\n"
 "Shift+LMB+Seret: Menghubungkan node yang dipilih dengan node lain atau "
 "membuat node baru jika Anda memilih area tanpa node."
+
+msgid "Select and move nodes."
+msgstr "Pilih dan pindahkan node."
 
 msgid "Create new nodes."
 msgstr "Buat node baru."
@@ -1139,6 +1360,38 @@ msgstr "Ubah Panjang Animasi"
 msgid "Change Animation Loop"
 msgstr "Ubah Perulangan Animasi"
 
+msgid ""
+"Can't change loop mode on animation instanced from an imported scene.\n"
+"\n"
+"To change this animation's loop mode, navigate to the scene's Advanced Import "
+"settings and select the animation.\n"
+"You can then change the loop mode from the inspector menu."
+msgstr ""
+"Tidak bisa mengubah mode loop pada animasi yang di-instance dari scene hasil "
+"impor.\n"
+"\n"
+"Untuk mengubah mode loop animasi ini, buka Pengaturan Impor Lanjutan dari "
+"scene tersebut lalu pilih animasinya.\n"
+"Setelah itu, Anda bisa mengubah mode loop melalui menu Inspector."
+
+msgid "Can't change loop mode on animation instanced from an imported resource."
+msgstr ""
+"Tidak dapat mengubah mode loop pada animasi yang dibuat dari sumber yang "
+"diimpor."
+
+msgid ""
+"Can't change loop mode on animation embedded in another scene.\n"
+"\n"
+"You must open this scene and change the animation's loop mode from there."
+msgstr ""
+"Tidak dapat mengubah mode loop pada animasi yang disematkan di skena lain.\n"
+"\n"
+"Anda harus membuka skena ini dan mengubah mode loop animasi dari sana."
+
+msgid "Can't change loop mode on animation embedded in another resource."
+msgstr ""
+"Tidak dapat mengubah mode loop pada animasi yang tersemat pada sumber lain."
+
 msgid "Property Track..."
 msgstr "Trek Properti..."
 
@@ -1172,6 +1425,15 @@ msgstr "Panjang Animasi (frame)"
 msgid "Animation length (seconds)"
 msgstr "Panjang Animasi (detik)"
 
+msgid "Select a new track by type to add to this animation."
+msgstr "Pilih track baru berdasarkan tipe untuk ditambahkan ke animasi ini."
+
+msgid "Filter Tracks"
+msgstr "Filter Trek"
+
+msgid "Filter tracks by entering part of their node name or property."
+msgstr "Saring track dengan memasukkan sebagian nama node atau propertinya."
+
 msgid "Animation Looping"
 msgstr "Perulangan Animasi"
 
@@ -1189,6 +1451,9 @@ msgstr "Ubah Jalan Trek"
 
 msgid "Toggle this track on/off."
 msgstr "Alihkan track ini ke nyala/mati."
+
+msgid "Select node in scene."
+msgstr "Pilih node dalam scene."
 
 msgid "Use Blend"
 msgstr "Gunakan Blend"
@@ -1286,6 +1551,9 @@ msgstr "Interpolasi perulangan clamp"
 msgid "Wrap Loop Interp"
 msgstr "Interpolasi perulangan warp"
 
+msgid "Go to Definition"
+msgstr "Pergi ke Definition"
+
 msgid "Insert Key..."
 msgstr "Masukkan Kunci..."
 
@@ -1354,6 +1622,9 @@ msgstr ""
 msgid "property '%s'"
 msgstr "properti '%s'"
 
+msgid "Nearest FPS: %d"
+msgstr "FPS Terdekat:%d"
+
 msgid "Change Animation Step"
 msgstr "Ubah Langkah Animasi"
 
@@ -1399,7 +1670,7 @@ msgid "Track is not of type Node3D, can't insert key"
 msgstr "Trek bukan tipe Node3D, tidak dapat memasukkan kunci"
 
 msgid "Track is not of type MeshInstance3D, can't insert key"
-msgstr "Trek bukan tipe MeshInstance3D, tidak dapat memasukkan kunci"
+msgstr "Track bukan tipe dari MeshInstance3D, tidak dapat memasukkan kunci"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
@@ -1466,11 +1737,11 @@ msgid ""
 "enable \"Save To File\" and\n"
 "\"Keep Custom Tracks\"."
 msgstr ""
-"Animasi ini termasuk dalam adegan yang diimpor, jadi perubahan pada trek yang "
+"Animasi ini termasuk dalam skena yang diimpor, jadi perubahan pada trek yang "
 "diimpor tidak akan disimpan.\n"
 "\n"
-"Untuk memodifikasi animasi ini, buka pengaturan Impor Lanjutan adegan dan "
-"pilih animasi.\n"
+"Untuk memodifikasi animasi ini, buka Impor Lanjutan pada pengaturan skena "
+"lalu pilih animasinya.\n"
 "Beberapa opsi, termasuk perulangan, tersedia di sini. Untuk menambahkan trek "
 "khusus, aktifkan \"Simpan Ke File\" dan\n"
 "\"Simpan Trek Khusus\"."
@@ -1495,7 +1766,7 @@ msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Pilih node AnimationPlayer untuk membuat dan mengedit animasi."
 
 msgid "Imported Scene"
-msgstr "Adegan yang Diimpor"
+msgstr "Skena yang Diimpor"
 
 msgid "Warning: Editing imported animation"
 msgstr "Peringatan: Menyunting animasi yang diimpor"
@@ -1512,14 +1783,50 @@ msgstr "Player Nonaktif"
 msgid "Warning: AnimationPlayer is inactive"
 msgstr "Peringatan: AnimationPlayer tidak aktif"
 
+msgid "Bezier Default Mode:"
+msgstr "Mode Bawaan Bézier:"
+
+msgid "Free"
+msgstr "Bebas"
+
+msgid "Balanced"
+msgstr "Seimbang"
+
+msgid "Mirrored"
+msgstr "Cerminan"
+
+msgid "Set the default behavior of new bezier keys."
+msgstr "Atur perilaku bawaan untuk kunci Bézier baru."
+
 msgid "Toggle between the bezier curve editor and track editor."
 msgstr "Beralih antara editor kurva bezier dan editor trek."
+
+msgid "Toggle method names"
+msgstr "Beralih Mode"
+
+msgid "Toggle function names in the track editor."
+msgstr "Tampilkan/Sembunyikan nama fungsi di editor track."
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Hanya tampilkan track dari node terpilih dalam tree."
 
+msgid ""
+"Sort tracks/groups alphabetically.\n"
+"If disabled, tracks are shown in the order they are added and can be "
+"reordered using drag-and-drop."
+msgstr ""
+"Urutkan track/grup secara alfabetis.\n"
+"Jika dinonaktifkan, track ditampilkan sesuai urutan saat ditambahkan dan "
+"dapat diubah urutannya dengan seret-dan-lepas."
+
 msgid "Group tracks by node or display them as plain list."
 msgstr "Susun track berdasarkan node atau tampilkan sebagai daftar biasa."
+
+msgid "Apply snapping to timeline cursor."
+msgstr "Terapkan snapping pada kursor timeline."
+
+msgid "Apply snapping to selected key(s)."
+msgstr "Terapkan snapping pada kunci yang dipilih."
 
 msgid "Animation step value."
 msgstr "Nilai langkah animasi."
@@ -2976,7 +3283,7 @@ msgid "Folder..."
 msgstr "Folder..."
 
 msgid "Scene..."
-msgstr "Adegan..."
+msgstr "Skena..."
 
 msgid "Script..."
 msgstr "Skrip..."
@@ -3099,11 +3406,20 @@ msgstr "Simpan Keduanya"
 msgid "Create Script"
 msgstr "Buat Script"
 
+msgid "Scene Groups"
+msgstr "Grup Skena"
+
+msgid "This group belongs to another scene and can't be edited."
+msgstr "Grup ini milik skena lain dan tidak dapat diedit."
+
 msgid "Add to Group"
 msgstr "Tambahkan ke Grup"
 
 msgid "Remove from Group"
 msgstr "Hapus dari Grup"
+
+msgid "Convert to Scene Group"
+msgstr "Konversi ke Grup Skena"
 
 msgid "Rename Group"
 msgstr "Ubah Nama Grup"
@@ -3114,6 +3430,12 @@ msgstr "Nama:"
 msgid "Global"
 msgstr "Global"
 
+msgid "Rename references in all scenes"
+msgstr "Ganti semua referensi di semua skena"
+
+msgid "Delete references from all scenes"
+msgstr "Hapus referensi dari semua skena"
+
 msgid "Rename"
 msgstr "Ubah Nama"
 
@@ -3121,7 +3443,7 @@ msgid "The Beginning"
 msgstr "Permulaan"
 
 msgid "Scene"
-msgstr "Adegan"
+msgstr "Skena"
 
 msgid "%d Files"
 msgstr "%d Berkas"
@@ -3250,11 +3572,25 @@ msgstr "Kelompok"
 msgid "Select a single node to edit its signals and groups."
 msgstr "Pilih sebuah node untuk menyunting sinyal dan grup."
 
+msgid "No parent to instantiate the scenes at."
+msgstr "Tidak ada parent untuk menginstansi skena disana."
+
 msgid "Error loading scene from %s"
 msgstr "Error saat memuat skena dari %s"
 
 msgid "Error instantiating scene from %s"
-msgstr "Kesalahan menginstansiasi adegan dari %s"
+msgstr "Kesalahan menginstansiasi skena dari %s"
+
+msgid ""
+"Cannot instantiate the scene '%s' because the current scene exists within one "
+"of its nodes."
+msgstr ""
+"Tidak dapat menginstansi skena '%s' karena skena saat ini ada dalam salah "
+"satu node-nya."
+
+msgid "Instantiate Scene"
+msgid_plural "Instantiate Scenes"
+msgstr[0] "Instansi Skena"
 
 msgid "Replace with Branch Scene"
 msgstr "Ganti dengan Skena Cabang"
@@ -6049,9 +6385,6 @@ msgstr ""
 msgid "Project Run"
 msgstr "Jalankan Proyek"
 
-msgid "Select Mode"
-msgstr "Mode Seleksi"
-
 msgid "Show list of selectable nodes at position clicked."
 msgstr "Tampilkan daftar node yang dapat dipilih pada posisi yang diklik."
 
@@ -7358,6 +7691,9 @@ msgstr ""
 "Adegan berisi\n"
 "WorldEnvironment.\n"
 "Pratinjau dinonaktifkan."
+
+msgid "Select Mode"
+msgstr "Mode Seleksi"
 
 msgid "Move Mode"
 msgstr "Mode Pindah"
@@ -11240,8 +11576,38 @@ msgstr ""
 "Peringatan: Notarisasi dinonaktifkan. Proyek yang diekspor akan diblokir oleh "
 "Gatekeeper jika diunduh dari sumber yang tidak dikenal."
 
+msgid "Run on remote macOS system"
+msgstr "Jalankan pada Sistem macOS jarak jauh / remote"
+
+msgid "Run exported project on remote macOS system"
+msgstr "Jalankan projek yang di-ekspor pada Sistem macOS jarak jauh"
+
+msgid "Could not open template for export: \"%s\"."
+msgstr "Tidak dapat membuka templat untuk ekspor: \"%s\""
+
+msgid "Invalid export template: \"%s\"."
+msgstr "Templat ekspor tidak valid: \"%s\""
+
+msgid "Could not write file: \"%s\"."
+msgstr "Tidak dapat menulis berkas: \"%s\""
+
+msgid "Icon Creation"
+msgstr "Ikon Pembuatan"
+
+msgid "Could not read file: \"%s\"."
+msgstr "Tidak dapat membaca berkas: \"%s\"."
+
+msgid "Could not read HTML shell: \"%s\"."
+msgstr "Tidak dapat membaca shell HTML: \"%s\"."
+
 msgid "Run in Browser"
-msgstr "Jalankan di Peramban"
+msgstr "Jalankan di Peramban / Browser"
+
+msgid "Start HTTP Server"
+msgstr "Mulai Server HTTP"
+
+msgid "Re-export Project"
+msgstr "Ekspor ulang Projek"
 
 msgid "Stop HTTP Server"
 msgstr "Hentikan Server HTTP"
@@ -11249,8 +11615,59 @@ msgstr "Hentikan Server HTTP"
 msgid "Run exported HTML in the system's default browser."
 msgstr "Jalankan HTML yang diekspor dalam peramban baku sistem."
 
+msgid "Start the HTTP server."
+msgstr "Mulai Server HTTP."
+
+msgid "Export project again to account for updates."
+msgstr "Ekspor ulang proyek agar pembaruan diterapkan."
+
+msgid "Stop the HTTP server."
+msgstr "Hentikan Server HTTP."
+
+msgid "Could not create HTTP server directory: %s."
+msgstr "Tidak dapat menciptakan direktori server HTTP: %s."
+
+msgid "Error starting HTTP server: %d."
+msgstr "Kesalahan memulai server HTTP: %d."
+
+msgid "Resources Modification"
+msgstr "Modifikasi Resource / Sumber Daya"
+
+msgid "Icon size \"%d\" is missing."
+msgstr "Ukuran Ikon \"%d\" hilang / tidak ada."
+
+msgid "Failed to rename temporary file \"%s\"."
+msgstr "Tidak dapat menghapus berkas sementara: \"%s\"."
+
+msgid "Invalid icon path."
+msgstr "Jalur Ikon tidak valid."
+
+msgid "Invalid file version."
+msgstr "Versi file tidak valid."
+
+msgid "Invalid product version."
+msgstr "Versi produk tidak valid."
+
+msgid "Invalid icon file \"%s\"."
+msgstr "Tidak dapat ekspor berkas proyek \"%s\"."
+
+msgid "Could not find signtool executable at \"%s\"."
+msgstr "Tidak dapat menemukan file executable signtool di \"%s\"."
+
+msgid "Could not find osslsigncode executable at \"%s\"."
+msgstr "Tidak dapat menemukan file executable osslsigncode di \"%s\"."
+
 msgid "No identity found."
 msgstr "Identitas tidak ditemukan."
+
+msgid "Signtool failed to sign executable: %s."
+msgstr "Signtool gagal melakukan penandatanganan pada executable: %s."
+
+msgid "Failed to remove temporary file \"%s\"."
+msgstr "Tidak dapat menghapus berkas sementara \"%s\"."
+
+msgid "Run exported project on remote Windows system"
+msgstr "Jalankan projek yang di-ekspor pada Sistem Windows jarak jauh"
 
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -11288,6 +11705,12 @@ msgstr ""
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr ""
 "Polygon occluder untuk occluder ini kosong. Mohon gambar dulu sebuah poligon."
+
+msgid ""
+"NavigationLink2D start position should be different than the end position to "
+"be useful."
+msgstr ""
+"Posisi awal NavigationLink2D harus berbeda dari posisi akhir agar berguna."
 
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."

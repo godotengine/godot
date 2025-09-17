@@ -135,7 +135,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	EditorData *editor_data = nullptr;
 	EditorSelection *editor_selection = nullptr;
-	LocalVector<Node *> node_previous_selection;
+	LocalVector<ObjectID> node_previous_selection;
 	bool update_script_button_queued = false;
 
 	List<Node *> node_clipboard;

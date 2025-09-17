@@ -44,7 +44,7 @@
 			<param index="6" name="width" type="float" default="-1.0" />
 			<param index="7" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws an unfilled arc between the given angles with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). The larger the value of [param point_count], the smoother the curve. See also [method draw_circle].
+				Draws an unfilled arc between the given angles with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). The larger the value of [param point_count], the smoother the curve. [param center] is defined in local space. See also [method draw_circle].
 				If [param width] is negative, it will be ignored and the arc will be drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the arc will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 				The arc is drawn from [param start_angle] towards the value of [param end_angle] so in clockwise direction if [code]start_angle &lt; end_angle[/code] and counter-clockwise otherwise. Passing the same angles but in reversed order will produce the same arc. If absolute difference of [param start_angle] and [param end_angle] is greater than [constant @GDScript.TAU] radians, then a full circle arc is drawn (i.e. arc will not overlap itself).
 			</description>
@@ -58,7 +58,7 @@
 			<param index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="5" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draws a string first character using a custom font. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Draws a string first character using a custom font. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used. [param pos] is defined in local space.
 			</description>
 		</method>
 		<method name="draw_char_outline" qualifiers="const">
@@ -71,7 +71,7 @@
 			<param index="5" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="6" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draws a string first character outline using a custom font. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Draws a string first character outline using a custom font. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used. [param pos] is defined in local space.
 			</description>
 		</method>
 		<method name="draw_circle">
@@ -83,7 +83,7 @@
 			<param index="4" name="width" type="float" default="-1.0" />
 			<param index="5" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a circle. See also [method draw_arc], [method draw_polyline], and [method draw_polygon].
+				Draws a circle, with [param position] defined in local space. See also [method draw_arc], [method draw_polyline], and [method draw_polygon].
 				If [param filled] is [code]true[/code], the circle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the circle will be drawn as a stroke with the [param color] and [param width] specified.
 				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
@@ -97,7 +97,7 @@
 			<param index="2" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
 			<param index="3" name="texture" type="Texture2D" default="null" />
 			<description>
-				Draws a colored polygon of any number of points, convex or concave. Unlike [method draw_polygon], a single color must be specified for the whole polygon.
+				Draws a colored polygon of any number of points, convex or concave. The points in the [param points] array are defined in local space. Unlike [method draw_polygon], a single color must be specified for the whole polygon.
 				[b]Note:[/b] If you frequently redraw the same polygon with a large number of vertices, consider pre-calculating the triangulation with [method Geometry2D.triangulate_polygon] and using [method draw_mesh], [method draw_multimesh], or [method RenderingServer.canvas_item_add_triangle_array].
 			</description>
 		</method>
@@ -111,7 +111,7 @@
 			<param index="5" name="aligned" type="bool" default="true" />
 			<param index="6" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a dashed line from a 2D point to another, with a given color and width. See also [method draw_line], [method draw_multiline], and [method draw_polyline].
+				Draws a dashed line from a 2D point to another, with a given color and width. The [param from] and [param to] positions are defined in local space. See also [method draw_line], [method draw_multiline], and [method draw_polyline].
 				If [param width] is negative, then a two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the line parts will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 				[param dash] is the length of each dash in pixels, with the gap between each dash being the same length. If [param aligned] is [code]true[/code], the length of the first and last dashes may be shortened or lengthened to allow the line to begin and end at the precise points defined by [param from] and [param to]. Both ends are always symmetrical when [param aligned] is [code]true[/code]. If [param aligned] is [code]false[/code], all dashes will have the same length, but the line may appear incomplete at the end due to the dash length not dividing evenly into the line length. Only full dashes are drawn when [param aligned] is [code]false[/code].
 				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
@@ -131,7 +131,7 @@
 			<param index="2" name="src_rect" type="Rect2" />
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
-				Draws a textured rectangle region of the font texture with LCD subpixel anti-aliasing at a given position, optionally modulated by a color.
+				Draws a textured rectangle region of the font texture with LCD subpixel anti-aliasing at a given position, optionally modulated by a color. The [param rect] is defined in local space.
 				Texture is drawn using the following blend operation, blend mode of the [CanvasItemMaterial] is ignored:
 				[codeblock]
 				dst.r = texture.r * modulate.r * modulate.a + dst.r * (1.0 - texture.r * modulate.a);
@@ -149,7 +149,7 @@
 			<param index="3" name="width" type="float" default="-1.0" />
 			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a line from a 2D point to another, with a given color and width. It can be optionally antialiased. See also [method draw_dashed_line], [method draw_multiline], and [method draw_polyline].
+				Draws a line from a 2D point to another, with a given color and width. It can be optionally antialiased. The [param from] and [param to] positions are defined in local space. See also [method draw_dashed_line], [method draw_multiline], and [method draw_polyline].
 				If [param width] is negative, then a two-point primitive will be drawn instead of a four-point one. This means that when the CanvasItem is scaled, the line will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>
@@ -160,7 +160,7 @@
 			<param index="2" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
-				Draws a [Mesh] in 2D, using the provided texture. See [MeshInstance2D] for related documentation.
+				Draws a [Mesh] in 2D, using the provided texture. See [MeshInstance2D] for related documentation. The [param transform] is defined in local space.
 			</description>
 		</method>
 		<method name="draw_msdf_texture_rect_region">
@@ -173,7 +173,7 @@
 			<param index="5" name="pixel_range" type="float" default="4.0" />
 			<param index="6" name="scale" type="float" default="1.0" />
 			<description>
-				Draws a textured rectangle region of the multichannel signed distance field texture at a given position, optionally modulated by a color. See [member FontFile.multichannel_signed_distance_field] for more information and caveats about MSDF font rendering.
+				Draws a textured rectangle region of the multichannel signed distance field texture at a given position, optionally modulated by a color. The [param rect] is defined in local space. See [member FontFile.multichannel_signed_distance_field] for more information and caveats about MSDF font rendering.
 				If [param outline] is positive, each alpha channel value of pixel in region is set to maximum value of true distance in the [param outline] radius.
 				Value of the [param pixel_range] should the same that was used during distance field texture generation.
 			</description>
@@ -185,7 +185,7 @@
 			<param index="2" name="width" type="float" default="-1.0" />
 			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws multiple disconnected lines with a uniform [param width] and [param color]. Each line is defined by two consecutive points from [param points] array, i.e. i-th segment consists of [code]points[2 * i][/code], [code]points[2 * i + 1][/code] endpoints. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline] instead.
+				Draws multiple disconnected lines with a uniform [param width] and [param color]. Each line is defined by two consecutive points from [param points] array in local space, i.e. i-th segment consists of [code]points[2 * i][/code], [code]points[2 * i + 1][/code] endpoints. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline] instead.
 				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 				[b]Note:[/b] [param antialiased] is only effective if [param width] is greater than [code]0.0[/code].
 			</description>
@@ -197,7 +197,7 @@
 			<param index="2" name="width" type="float" default="-1.0" />
 			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws multiple disconnected lines with a uniform [param width] and segment-by-segment coloring. Each segment is defined by two consecutive points from [param points] array and a corresponding color from [param colors] array, i.e. i-th segment consists of [code]points[2 * i][/code], [code]points[2 * i + 1][/code] endpoints and has [code]colors[i][/code] color. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline_colors] instead.
+				Draws multiple disconnected lines with a uniform [param width] and segment-by-segment coloring. Each segment is defined by two consecutive points from [param points] array in local space and a corresponding color from [param colors] array, i.e. i-th segment consists of [code]points[2 * i][/code], [code]points[2 * i + 1][/code] endpoints and has [code]colors[i][/code] color. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline_colors] instead.
 				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 				[b]Note:[/b] [param antialiased] is only effective if [param width] is greater than [code]0.0[/code].
 			</description>
@@ -218,7 +218,7 @@
 			<param index="11" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<param index="12" name="oversampling" type="float" default="0.0" />
 			<description>
-				Breaks [param text] into lines and draws it using the specified [param font] at the [param pos] (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Breaks [param text] into lines and draws it using the specified [param font] at the [param pos] in local space (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_multiline_string_outline" qualifiers="const">
@@ -238,7 +238,7 @@
 			<param index="12" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<param index="13" name="oversampling" type="float" default="0.0" />
 			<description>
-				Breaks [param text] to the lines and draws text outline using the specified [param font] at the [param pos] (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Breaks [param text] to the lines and draws text outline using the specified [param font] at the [param pos] in local space (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_multimesh">
@@ -256,7 +256,7 @@
 			<param index="2" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
 			<param index="3" name="texture" type="Texture2D" default="null" />
 			<description>
-				Draws a solid polygon of any number of points, convex or concave. Unlike [method draw_colored_polygon], each point's color can be changed individually. See also [method draw_polyline] and [method draw_polyline_colors]. If you need more flexibility (such as being able to use bones), use [method RenderingServer.canvas_item_add_triangle_array] instead.
+				Draws a solid polygon of any number of points, convex or concave. Unlike [method draw_colored_polygon], each point's color can be changed individually. The [param points] array is defined in local space. See also [method draw_polyline] and [method draw_polyline_colors]. If you need more flexibility (such as being able to use bones), use [method RenderingServer.canvas_item_add_triangle_array] instead.
 				[b]Note:[/b] If you frequently redraw the same polygon with a large number of vertices, consider pre-calculating the triangulation with [method Geometry2D.triangulate_polygon] and using [method draw_mesh], [method draw_multimesh], or [method RenderingServer.canvas_item_add_triangle_array].
 			</description>
 		</method>
@@ -267,7 +267,7 @@
 			<param index="2" name="width" type="float" default="-1.0" />
 			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws interconnected line segments with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline] instead. See also [method draw_polygon].
+				Draws interconnected line segments with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). The [param points] array is defined in local space. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline] instead. See also [method draw_polygon].
 				If [param width] is negative, it will be ignored and the polyline will be drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the polyline will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>
@@ -278,7 +278,7 @@
 			<param index="2" name="width" type="float" default="-1.0" />
 			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws interconnected line segments with a uniform [param width], point-by-point coloring, and optional antialiasing (supported only for positive [param width]). Colors assigned to line points match by index between [param points] and [param colors], i.e. each line segment is filled with a gradient between the colors of the endpoints. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline_colors] instead. See also [method draw_polygon].
+				Draws interconnected line segments with a uniform [param width], point-by-point coloring, and optional antialiasing (supported only for positive [param width]). Colors assigned to line points match by index between [param points] and [param colors], i.e. each line segment is filled with a gradient between the colors of the endpoints. The [param points] array is defined in local space. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline_colors] instead. See also [method draw_polygon].
 				If [param width] is negative, it will be ignored and the polyline will be drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the polyline will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>
@@ -289,7 +289,7 @@
 			<param index="2" name="uvs" type="PackedVector2Array" />
 			<param index="3" name="texture" type="Texture2D" default="null" />
 			<description>
-				Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points for a triangle, and 4 points for a quad. If 0 points or more than 4 points are specified, nothing will be drawn and an error message will be printed. See also [method draw_line], [method draw_polyline], [method draw_polygon], and [method draw_rect].
+				Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points for a triangle, and 4 points for a quad. If 0 points or more than 4 points are specified, nothing will be drawn and an error message will be printed. The [param points] array is defined in local space. See also [method draw_line], [method draw_polyline], [method draw_polygon], and [method draw_rect].
 			</description>
 		</method>
 		<method name="draw_rect">
@@ -300,7 +300,7 @@
 			<param index="3" name="width" type="float" default="-1.0" />
 			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a rectangle. If [param filled] is [code]true[/code], the rectangle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the rectangle will be drawn as a stroke with the [param color] and [param width] specified. See also [method draw_texture_rect].
+				Draws a rectangle. If [param filled] is [code]true[/code], the rectangle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the rectangle will be drawn as a stroke with the [param color] and [param width] specified. The [param rect] is specified in local space. See also [method draw_texture_rect].
 				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
 				[b]Note:[/b] [param width] is only effective if [param filled] is [code]false[/code].
@@ -313,7 +313,7 @@
 			<param index="1" name="rotation" type="float" default="0.0" />
 			<param index="2" name="scale" type="Vector2" default="Vector2(1, 1)" />
 			<description>
-				Sets a custom transform for drawing via components. Anything drawn afterwards will be transformed by this.
+				Sets a custom local transform for drawing via components. Anything drawn afterwards will be transformed by this.
 				[b]Note:[/b] [member FontFile.oversampling] does [i]not[/i] take [param scale] into account. This means that scaling up/down will cause bitmap fonts and rasterized (non-MSDF) dynamic fonts to appear blurry or pixelated. To ensure text remains crisp regardless of scale, you can enable MSDF font rendering by enabling [member ProjectSettings.gui/theme/default_font_multichannel_signed_distance_field] (applies to the default project font only), or enabling [b]Multichannel Signed Distance Field[/b] in the import options of a DynamicFont for custom fonts. On system fonts, [member SystemFont.multichannel_signed_distance_field] can be enabled in the inspector.
 			</description>
 		</method>
@@ -321,7 +321,7 @@
 			<return type="void" />
 			<param index="0" name="xform" type="Transform2D" />
 			<description>
-				Sets a custom transform for drawing via matrix. Anything drawn afterwards will be transformed by this.
+				Sets a custom local transform for drawing via matrix. Anything drawn afterwards will be transformed by this.
 			</description>
 		</method>
 		<method name="draw_string" qualifiers="const">
@@ -338,7 +338,7 @@
 			<param index="9" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<param index="10" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draws [param text] using the specified [param font] at the [param pos] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Draws [param text] using the specified [param font] at the [param pos] in local space (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 				[b]Example:[/b] Draw "Hello world", using the project's default font:
 				[codeblocks]
 				[gdscript]
@@ -376,7 +376,7 @@
 			<param index="10" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<param index="11" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draws [param text] outline using the specified [param font] at the [param pos] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Draws [param text] outline using the specified [param font] at the [param pos] in local space (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_style_box">
@@ -384,7 +384,7 @@
 			<param index="0" name="style_box" type="StyleBox" />
 			<param index="1" name="rect" type="Rect2" />
 			<description>
-				Draws a styled rectangle.
+				Draws a styled rectangle. The [param rect] is defined in local space.
 			</description>
 		</method>
 		<method name="draw_texture">
@@ -393,7 +393,7 @@
 			<param index="1" name="position" type="Vector2" />
 			<param index="2" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
-				Draws a texture at a given position.
+				Draws a texture at a given position. The [param position] is defined in local space.
 			</description>
 		</method>
 		<method name="draw_texture_rect">
@@ -404,7 +404,7 @@
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="transpose" type="bool" default="false" />
 			<description>
-				Draws a textured rectangle at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped. See also [method draw_rect] and [method draw_texture_rect_region].
+				Draws a textured rectangle at a given position, optionally modulated by a color. The [param rect] is defined in local space. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped. See also [method draw_rect] and [method draw_texture_rect_region].
 			</description>
 		</method>
 		<method name="draw_texture_rect_region">
@@ -416,7 +416,7 @@
 			<param index="4" name="transpose" type="bool" default="false" />
 			<param index="5" name="clip_uv" type="bool" default="true" />
 			<description>
-				Draws a textured rectangle from a texture's region (specified by [param src_rect]) at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped. See also [method draw_texture_rect].
+				Draws a textured rectangle from a texture's region (specified by [param src_rect]) at a given position in local space, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped. See also [method draw_texture_rect].
 			</description>
 		</method>
 		<method name="force_update_transform">

@@ -755,7 +755,12 @@ Error GDScript::reload(bool p_keep_state) {
 		has_instances = instances.size();
 	}
 
-	ERR_FAIL_COND_V(!p_keep_state && has_instances, ERR_ALREADY_IN_USE);
+	// Check condition but reset flag before early return
+	if (!p_keep_state && has_instances) {
+		reloading = false; // Reset flag before returning
+
+		ERR_FAIL_V_MSG(ERR_ALREADY_IN_USE, "Cannot reload script while instances exist.");
+	}
 
 	String basedir = path;
 

@@ -106,7 +106,12 @@ TextureStorage::TextureStorage() {
 			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_BLACK], image);
 
 			Vector<Ref<Image>> images;
-			for (int i = 0; i < 6; i++) {
+			images.push_back(image);
+
+			default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_BLACK] = texture_allocate();
+			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_BLACK], images, RS::TEXTURE_LAYERED_2D_ARRAY);
+
+			for (int i = 0; i < 5; i++) {
 				images.push_back(image);
 			}
 			default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_BLACK] = texture_allocate();
@@ -132,6 +137,31 @@ TextureStorage::TextureStorage() {
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_TRANSPARENT] = texture_allocate();
 			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_TRANSPARENT], image);
+
+			Vector<Ref<Image>> images;
+			images.push_back(image);
+
+			default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_TRANSPARENT] = texture_allocate();
+			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_TRANSPARENT], images, RS::TEXTURE_LAYERED_2D_ARRAY);
+
+			for (int i = 0; i < 5; i++) {
+				images.push_back(image);
+			}
+
+			default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_TRANSPARENT] = texture_allocate();
+			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_TRANSPARENT], images, RS::TEXTURE_LAYERED_CUBEMAP);
+		}
+
+		{
+			Ref<Image> image = Image::create_empty(4, 4, false, Image::FORMAT_RGBA8);
+			image->fill(Color(0, 0, 0, 0));
+
+			Vector<Ref<Image>> images;
+			for (int i = 0; i < 4; i++) {
+				images.push_back(image);
+			}
+			default_gl_textures[DEFAULT_GL_TEXTURE_3D_TRANSPARENT] = texture_allocate();
+			texture_3d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_3D_TRANSPARENT], image->get_format(), 4, 4, 4, false, images);
 		}
 
 		{
@@ -789,7 +819,7 @@ void TextureStorage::texture_free(RID p_texture) {
 
 	texture_atlas_remove_texture(p_texture);
 
-	for (int i = 0; i < t->proxies.size(); i++) {
+	for (uint32_t i = 0; i < t->proxies.size(); i++) {
 		Texture *p = texture_owner.get_or_null(t->proxies[i]);
 		ERR_CONTINUE(!p);
 		p->proxy_to = RID();
@@ -1062,6 +1092,27 @@ void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 	tex->canvas_texture = nullptr;
 	tex->tex_id = 0;
 	proxy_to->proxies.push_back(p_texture);
+}
+
+void TextureStorage::texture_remap_proxies(RID p_from_texture, RID p_to_texture) {
+	Texture *from_tex = texture_owner.get_or_null(p_from_texture);
+	ERR_FAIL_NULL(from_tex);
+	ERR_FAIL_COND(from_tex->is_proxy);
+	Texture *to_tex = texture_owner.get_or_null(p_to_texture);
+	ERR_FAIL_NULL(to_tex);
+	ERR_FAIL_COND(to_tex->is_proxy);
+
+	if (from_tex == to_tex) {
+		return;
+	}
+
+	// Make a local copy, we're about to change the content of the original.
+	thread_local LocalVector<RID> proxies = from_tex->proxies;
+
+	// Now change them to our new texture.
+	for (RID &proxy : proxies) {
+		texture_proxy_update(proxy, p_to_texture);
+	}
 }
 
 void TextureStorage::texture_2d_placeholder_initialize(RID p_texture) {
@@ -2553,6 +2604,9 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 	ERR_FAIL_NULL(rt);
 	ERR_FAIL_COND(rt->direct_to_screen);
 
+	// Remember what our current color output is.
+	RID was_color_texture = render_target_get_texture(p_render_target);
+
 	rt->overridden.velocity = p_velocity_texture;
 
 	if (rt->overridden.color == p_color_texture && rt->overridden.depth == p_depth_texture) {
@@ -2560,6 +2614,11 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 	}
 
 	if (p_color_texture.is_null() && p_depth_texture.is_null()) {
+		// Set this back to our default textures.
+		if (was_color_texture.is_valid()) {
+			texture_remap_proxies(was_color_texture, rt->texture);
+		}
+
 		_clear_render_target(rt);
 		_update_render_target(rt);
 		return;
@@ -2573,6 +2632,12 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 	rt->overridden.depth = p_depth_texture;
 	rt->overridden.depth_has_stencil = p_depth_texture.is_null();
 	rt->overridden.is_overridden = true;
+
+	// Update to our new color output.
+	RID new_color_texture = render_target_get_texture(p_render_target);
+	if (was_color_texture.is_valid() && new_color_texture.is_valid()) {
+		texture_remap_proxies(was_color_texture, new_color_texture);
+	}
 
 	uint32_t hash_key = hash_murmur3_one_64(p_color_texture.get_id());
 	hash_key = hash_murmur3_one_64(p_depth_texture.get_id(), hash_key);

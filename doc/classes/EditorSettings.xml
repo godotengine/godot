@@ -561,9 +561,6 @@
 		</member>
 		<member name="editors/bone_mapper/handle_colors/unset" type="Color" setter="" getter="">
 		</member>
-		<member name="editors/grid_map/palette_min_width" type="int" setter="" getter="">
-			Minimum width of GridMap's mesh palette side panel.
-		</member>
 		<member name="editors/grid_map/pick_distance" type="float" setter="" getter="">
 			The maximum distance at which tiles can be placed on a GridMap, relative to the camera position (in 3D units).
 		</member>
@@ -870,7 +867,7 @@
 		</member>
 		<member name="interface/editor/editor_language" type="String" setter="" getter="">
 			The language to use for the editor interface.
-			Translations are provided by the community. If you spot a mistake, [url=$DOCS_URL/contributing/documentation/editor_and_docs_localization.html]contribute to editor translations on Weblate![/url]
+			Translations are provided by the community. If you spot a mistake, [url=https://contributing.godotengine.org/en/latest/documentation/translation/index.html]contribute to editor translations on Weblate![/url]
 		</member>
 		<member name="interface/editor/editor_screen" type="int" setter="" getter="">
 			The preferred monitor to display the editor. If [b]Auto[/b], the editor will remember the last screen it was displayed on across multiple sessions.
@@ -1578,7 +1575,7 @@
 			The GDScript syntax highlighter text color for node reference literals (e.g. [code]$"Sprite"[/code] and [code]%"Sprite"[/code]]).
 		</member>
 		<member name="text_editor/theme/highlighting/gdscript/string_name_color" type="Color" setter="" getter="">
-			The GDScript syntax highlighter text color for [StringName] literals (e.g. [code]&gt;"example"[/code]).
+			The GDScript syntax highlighter text color for [StringName] literals (e.g. [code]&amp;"example"[/code]).
 		</member>
 		<member name="text_editor/theme/highlighting/keyword_color" type="Color" setter="" getter="">
 			The script editor's non-control flow keyword color (used for keywords like [code]var[/code], [code]func[/code], [code]extends[/code], ...).

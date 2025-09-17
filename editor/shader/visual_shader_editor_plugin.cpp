@@ -1560,6 +1560,13 @@ void VisualShaderEditor::edit_shader(const Ref<Shader> &p_shader) {
 	}
 }
 
+void VisualShaderEditor::use_menu_bar_items(MenuButton *p_file_menu, Button *p_make_floating) {
+	p_file_menu->set_switch_on_hover(false);
+	toolbar_hflow->add_child(p_file_menu);
+	toolbar_hflow->move_child(p_file_menu, 2); // Toggle Files Panel button + separator.
+	toolbar_hflow->add_child(p_make_floating);
+}
+
 void VisualShaderEditor::apply_shaders() {
 	// Stub. TODO: Implement apply_shaders in visual shaders for parity with text shaders.
 }
@@ -1608,10 +1615,6 @@ void VisualShaderEditor::set_current_shader_type(VisualShader::Type p_type) {
 
 VisualShader::Type VisualShaderEditor::get_current_shader_type() const {
 	return current_type;
-}
-
-Control *VisualShaderEditor::get_top_bar() {
-	return toolbar;
 }
 
 void VisualShaderEditor::add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin) {
@@ -5999,7 +6002,7 @@ void VisualShaderEditor::_varying_validate() {
 		error += TTR("Invalid name for varying.");
 		has_error = true;
 	} else if (visual_shader->has_varying(varname)) {
-		error += TTR("Varying with that name is already exist.");
+		error += TTR("Varying with that name already exists.");
 		has_error = true;
 	}
 
@@ -6607,7 +6610,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	toolbar_panel->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE, PRESET_MODE_MINSIZE, 10);
 	toolbar_panel->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 
-	toolbar = memnew(HFlowContainer);
+	toolbar_hflow = memnew(HFlowContainer);
 	{
 		LocalVector<Node *> nodes;
 		for (int i = 0; i < graph->get_menu_hbox()->get_child_count(); i++) {
@@ -6617,16 +6620,16 @@ VisualShaderEditor::VisualShaderEditor() {
 
 		for (Node *node : nodes) {
 			graph->get_menu_hbox()->remove_child(node);
-			toolbar->add_child(node);
+			toolbar_hflow->add_child(node);
 		}
 
 		graph->get_menu_hbox()->hide();
-		toolbar_panel->add_child(toolbar);
+		toolbar_panel->add_child(toolbar_hflow);
 	}
 
 	VSeparator *vs = memnew(VSeparator);
-	toolbar->add_child(vs);
-	toolbar->move_child(vs, 0);
+	toolbar_hflow->add_child(vs);
+	toolbar_hflow->move_child(vs, 0);
 
 	custom_mode_box = memnew(CheckBox);
 	custom_mode_box->set_text(TTR("Custom"));
@@ -6660,31 +6663,33 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	edit_type = edit_type_standard;
 
-	toolbar->add_child(custom_mode_box);
-	toolbar->move_child(custom_mode_box, 0);
-	toolbar->add_child(edit_type_standard);
-	toolbar->move_child(edit_type_standard, 0);
-	toolbar->add_child(edit_type_particles);
-	toolbar->move_child(edit_type_particles, 0);
-	toolbar->add_child(edit_type_sky);
-	toolbar->move_child(edit_type_sky, 0);
-	toolbar->add_child(edit_type_fog);
-	toolbar->move_child(edit_type_fog, 0);
+	toolbar_hflow->add_child(custom_mode_box);
+	toolbar_hflow->move_child(custom_mode_box, 0);
+	toolbar_hflow->add_child(edit_type_standard);
+	toolbar_hflow->move_child(edit_type_standard, 0);
+	toolbar_hflow->add_child(edit_type_particles);
+	toolbar_hflow->move_child(edit_type_particles, 0);
+	toolbar_hflow->add_child(edit_type_sky);
+	toolbar_hflow->move_child(edit_type_sky, 0);
+	toolbar_hflow->add_child(edit_type_fog);
+	toolbar_hflow->move_child(edit_type_fog, 0);
 
 	add_node = memnew(Button);
-	add_node->set_flat(true);
+	add_node->set_theme_type_variation(SceneStringName(FlatButton));
 	add_node->set_text(TTR("Add Node..."));
-	toolbar->add_child(add_node);
-	toolbar->move_child(add_node, 0);
+	toolbar_hflow->add_child(add_node);
+	toolbar_hflow->move_child(add_node, 0);
 	add_node->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_show_members_dialog).bind(false, VisualShaderNode::PORT_TYPE_MAX, VisualShaderNode::PORT_TYPE_MAX));
 
 	graph->connect("graph_elements_linked_to_frame_request", callable_mp(this, &VisualShaderEditor::_nodes_linked_to_frame_request));
 	graph->connect("frame_rect_changed", callable_mp(this, &VisualShaderEditor::_frame_rect_changed));
 
 	varying_button = memnew(MenuButton);
+	varying_button->set_flat(false);
+	varying_button->set_theme_type_variation("FlatMenuButton");
 	varying_button->set_text(TTR("Manage Varyings"));
 	varying_button->set_switch_on_hover(true);
-	toolbar->add_child(varying_button);
+	toolbar_hflow->add_child(varying_button);
 
 	PopupMenu *varying_menu = varying_button->get_popup();
 	varying_menu->add_item(TTR("Add Varying"), int(VaryingMenuOptions::ADD));
@@ -6695,7 +6700,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	code_preview_button->set_theme_type_variation(SceneStringName(FlatButton));
 	code_preview_button->set_toggle_mode(true);
 	code_preview_button->set_tooltip_text(TTR("Show generated shader code."));
-	toolbar->add_child(code_preview_button);
+	toolbar_hflow->add_child(code_preview_button);
 	code_preview_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_show_preview_text));
 
 	shader_preview_button = memnew(Button);
@@ -6703,34 +6708,34 @@ VisualShaderEditor::VisualShaderEditor() {
 	shader_preview_button->set_toggle_mode(true);
 	shader_preview_button->set_tooltip_text(TTR("Toggle shader preview."));
 	shader_preview_button->set_pressed(true);
-	toolbar->add_child(shader_preview_button);
+	toolbar_hflow->add_child(shader_preview_button);
 	shader_preview_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_show_shader_preview));
 
 	Control *spacer = memnew(Control);
 	spacer->set_h_size_flags(Control::SIZE_EXPAND);
-	toolbar->add_child(spacer);
+	toolbar_hflow->add_child(spacer);
 
 	site_search = memnew(Button);
-	site_search->set_flat(true);
+	site_search->set_theme_type_variation(SceneStringName(FlatButton));
 	site_search->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_help_open));
 	site_search->set_text(TTR("Online Docs"));
 	site_search->set_tooltip_text(TTR("Open Godot online documentation."));
-	toolbar->add_child(site_search);
-	toolbar->add_child(memnew(VSeparator));
+	toolbar_hflow->add_child(site_search);
+	toolbar_hflow->add_child(memnew(VSeparator));
 
 	VSeparator *separator = memnew(VSeparator);
-	toolbar->add_child(separator);
-	toolbar->move_child(separator, 0);
+	toolbar_hflow->add_child(separator);
+	toolbar_hflow->move_child(separator, 0);
 
 	separator = memnew(VSeparator);
-	toolbar->add_child(separator);
-	toolbar->move_child(separator, 0);
+	toolbar_hflow->add_child(separator);
+	toolbar_hflow->move_child(separator, 0);
 
 	toggle_files_button = memnew(Button);
-	toggle_files_button->set_flat(true);
+	toggle_files_button->set_theme_type_variation(SceneStringName(FlatButton));
 	toggle_files_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_toggle_files_pressed));
-	toolbar->add_child(toggle_files_button);
-	toolbar->move_child(toggle_files_button, 0);
+	toolbar_hflow->add_child(toggle_files_button);
+	toolbar_hflow->move_child(toggle_files_button, 0);
 
 	///////////////////////////////////////
 	// CODE PREVIEW
@@ -7757,6 +7762,10 @@ VisualShaderEditor::VisualShaderEditor() {
 	panning_debounce_timer->set_wait_time(1.0);
 	panning_debounce_timer->connect("timeout", callable_mp(this, &VisualShaderEditor::save_editor_layout));
 	add_child(panning_debounce_timer);
+}
+
+VisualShaderEditor::~VisualShaderEditor() {
+	save_editor_layout();
 }
 
 class VisualShaderNodePluginInputEditor : public OptionButton {

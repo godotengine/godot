@@ -298,6 +298,12 @@ Variant Resource::_duplicate_recursive(const Variant &p_variant, const Duplicate
 							DEV_ASSERT(false);
 						}
 					}
+					if (should_duplicate) {
+						Ref<Script> scr = sr;
+						if (scr.is_valid()) {
+							should_duplicate = false;
+						}
+					}
 				}
 			}
 			if (should_duplicate) {

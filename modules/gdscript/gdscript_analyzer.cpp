@@ -1987,16 +1987,18 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 	}
 	p_function->resolved_body = true;
 
-	if (p_function->is_abstract) {
-		// Abstract functions don't have a body.
-		if (!p_function->body->statements.is_empty()) {
-			push_error(R"(Abstract function cannot have a body.)", p_function->body);
+	if (p_function->body->statements.is_empty()) {
+		// Non-abstract functions must have a body.
+		if (p_function->source_lambda != nullptr) {
+			push_error(R"(A lambda function must have a ":" followed by a body.)", p_function);
+		} else if (!p_function->is_abstract) {
+			push_error(R"(A function must either have a ":" followed by a body, or be marked as "@abstract".)", p_function);
 		}
 		return;
 	} else {
-		// Non-abstract functions must have a body.
-		if (p_function->body->statements.is_empty()) {
-			push_error(R"(A function must either have a ":" followed by a body, or be marked as "@abstract".)", p_function);
+		// Abstract functions must not have a body.
+		if (p_function->is_abstract) {
+			push_error(R"(An abstract function cannot have a body.)", p_function->body);
 			return;
 		}
 	}

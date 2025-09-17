@@ -322,6 +322,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 		if (index_count == 0) {
 			continue; //no lods if no indices
 		}
+		ERR_FAIL_COND_MSG(index_count % 3 != 0, "ImporterMesh::generate_lods: Indexed triangle meshes MUST have an index array with a size that is a multiple of 3, but got " + itos(index_count) + " indices. Cannot generate LODs for this invalid mesh.");
 
 		const Vector3 *vertices_ptr = vertices.ptr();
 		const int *indices_ptr = indices.ptr();

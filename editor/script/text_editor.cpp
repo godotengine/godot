@@ -626,6 +626,8 @@ TextEditor::TextEditor() {
 	edit_hb = memnew(HBoxContainer);
 
 	edit_menu = memnew(MenuButton);
+	edit_menu->set_flat(false);
+	edit_menu->set_theme_type_variation("FlatMenuButton");
 	edit_menu->set_shortcut_context(this);
 	edit_hb->add_child(edit_menu);
 	edit_menu->set_text(TTRC("Edit"));
@@ -681,6 +683,8 @@ TextEditor::TextEditor() {
 	set_syntax_highlighter(plain_highlighter);
 
 	search_menu = memnew(MenuButton);
+	search_menu->set_flat(false);
+	search_menu->set_theme_type_variation("FlatMenuButton");
 	search_menu->set_shortcut_context(this);
 	edit_hb->add_child(search_menu);
 	search_menu->set_text(TTRC("Search"));
@@ -696,6 +700,8 @@ TextEditor::TextEditor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
 
 	MenuButton *goto_menu = memnew(MenuButton);
+	goto_menu->set_flat(false);
+	goto_menu->set_theme_type_variation("FlatMenuButton");
 	goto_menu->set_shortcut_context(this);
 	edit_hb->add_child(goto_menu);
 	goto_menu->set_text(TTRC("Go To"));

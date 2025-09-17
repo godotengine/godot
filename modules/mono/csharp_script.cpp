@@ -1127,7 +1127,7 @@ void CSharpLanguage::release_binding_gchandle_thread_safe(GCHandleIntPtr p_gchan
 }
 
 CSharpLanguage::CSharpLanguage() {
-	ERR_FAIL_COND_MSG(singleton, "C# singleton already exist.");
+	ERR_FAIL_COND_MSG(singleton, "C# singleton already exists.");
 	singleton = this;
 }
 

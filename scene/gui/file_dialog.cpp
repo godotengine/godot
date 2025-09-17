@@ -1362,7 +1362,7 @@ void FileDialog::set_access(Access p_access) {
 		case ACCESS_FILESYSTEM: {
 			dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 #ifdef ANDROID_ENABLED
-			set_root_subfolder(OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DESKTOP));
+			set_current_dir(OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DESKTOP));
 #endif
 		} break;
 		case ACCESS_RESOURCES: {
@@ -2143,7 +2143,7 @@ FileDialog::FileDialog() {
 
 	favorite_button = memnew(Button);
 	favorite_button->set_theme_type_variation(SceneStringName(FlatButton));
-	favorite_button->set_tooltip_text(TTRC("(Un)favorite current folder."));
+	favorite_button->set_tooltip_text(ETR("(Un)favorite current folder."));
 	top_toolbar->add_child(favorite_button);
 	favorite_button->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::_favorite_pressed));
 
