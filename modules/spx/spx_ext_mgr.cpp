@@ -431,9 +431,8 @@ void SpxExtMgr::create_pure_sprite(GdString texture_path, GdVec2 pos, GdInt zind
 void SpxExtMgr::setup_path_finder_with_size(GdVec2 grid_size, GdVec2 cell_size, GdBool with_debug) {
 	if(path_finder.is_null() || !path_finder.is_valid()){
 		path_finder.instantiate();
+		path_finder->setup_grid_spx(grid_size, cell_size, with_debug);
 	}
-
-	path_finder->setup_grid_spx(grid_size, cell_size, with_debug);
 }
 
 void SpxExtMgr::setup_path_finder() {
