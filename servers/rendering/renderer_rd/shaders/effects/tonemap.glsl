@@ -406,17 +406,35 @@ vec3 apply_glow(vec3 color, vec3 glow) { // apply glow using the selected blendi
 	if (params.glow_mode == GLOW_MODE_ADD) {
 		return color + glow;
 	} else if (params.glow_mode == GLOW_MODE_SCREEN) {
-		// Needs color clamping.
-		glow.rgb = clamp(glow.rgb, vec3(0.0f), vec3(1.0f));
-		return max((color + glow) - (color * glow), vec3(0.0));
-	} else if (params.glow_mode == GLOW_MODE_SOFTLIGHT) {
-		// Needs color clamping.
-		glow.rgb = clamp(glow.rgb, vec3(0.0f), vec3(1.0f));
-		glow = glow * vec3(0.5f) + vec3(0.5f);
+		// Scale to [0, 1] range.
+		// Glow cannot be above 1.0 after scaling and should be non-negative
+		// to produce expected results. It is possible that glow can be negative
+		// if negative lights were used in the scene.
+		glow.rgb = clamp(glow.rgb, 0.0, params.white);
+		color.rgb /= params.white;
+		glow.rgb /= params.white;
 
+		color = (color + glow) - (color * glow);
+
+		// Scale back to full range
+		color.rgb *= params.white;
+		return color;
+	} else if (params.glow_mode == GLOW_MODE_SOFTLIGHT) {
+		// Scale to [0, 1] range.
+		// Glow cannot be above 1.0 after scaling and should be non-negative
+		// to produce expected results. It is possible that glow can be negative
+		// if negative lights were used in the scene.
+		glow.rgb = clamp(glow.rgb, 0.0, params.white);
+		color.rgb /= params.white;
+		glow.rgb /= params.white;
+
+		glow = glow * vec3(0.5f) + vec3(0.5f);
 		color.r = (glow.r <= 0.5f) ? (color.r - (1.0f - 2.0f * glow.r) * color.r * (1.0f - color.r)) : (((glow.r > 0.5f) && (color.r <= 0.25f)) ? (color.r + (2.0f * glow.r - 1.0f) * (4.0f * color.r * (4.0f * color.r + 1.0f) * (color.r - 1.0f) + 7.0f * color.r)) : (color.r + (2.0f * glow.r - 1.0f) * (sqrt(color.r) - color.r)));
 		color.g = (glow.g <= 0.5f) ? (color.g - (1.0f - 2.0f * glow.g) * color.g * (1.0f - color.g)) : (((glow.g > 0.5f) && (color.g <= 0.25f)) ? (color.g + (2.0f * glow.g - 1.0f) * (4.0f * color.g * (4.0f * color.g + 1.0f) * (color.g - 1.0f) + 7.0f * color.g)) : (color.g + (2.0f * glow.g - 1.0f) * (sqrt(color.g) - color.g)));
 		color.b = (glow.b <= 0.5f) ? (color.b - (1.0f - 2.0f * glow.b) * color.b * (1.0f - color.b)) : (((glow.b > 0.5f) && (color.b <= 0.25f)) ? (color.b + (2.0f * glow.b - 1.0f) * (4.0f * color.b * (4.0f * color.b + 1.0f) * (color.b - 1.0f) + 7.0f * color.b)) : (color.b + (2.0f * glow.b - 1.0f) * (sqrt(color.b) - color.b)));
+
+		// Scale back to full range
+		color.rgb *= params.white;
 		return color;
 	} else { //replace
 		return glow;
@@ -866,12 +884,20 @@ void main() {
 		color.rgb = do_fxaa(color.rgb, exposure, uv_interp);
 	}
 
-	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode == GLOW_MODE_MIX) {
+	if (bool(params.flags & FLAG_USE_GLOW)) {
 		vec3 glow = gather_glow(source_glow, uv_interp) * params.luminance_multiplier;
-		if (params.glow_map_strength > 0.001) {
-			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
+		if (params.glow_mode == GLOW_MODE_MIX) {
+			if (params.glow_map_strength > 0.001) {
+				glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
+			}
+			color.rgb = mix(color.rgb, glow, params.glow_intensity);
+		} else {
+			glow *= params.glow_intensity;
+			if (params.glow_map_strength > 0.001) {
+				glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
+			}
+			color.rgb = apply_glow(color.rgb, glow);
 		}
-		color.rgb = mix(color.rgb, glow, params.glow_intensity);
 	}
 #endif
 
@@ -881,23 +907,6 @@ void main() {
 	if (convert_to_srgb) {
 		color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
 	}
-#ifndef SUBPASS
-	// Glow
-	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode != GLOW_MODE_MIX) {
-		vec3 glow = gather_glow(source_glow, uv_interp) * params.glow_intensity * params.luminance_multiplier;
-		if (params.glow_map_strength > 0.001) {
-			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
-		}
-
-		// high dynamic range -> SRGB
-		glow = apply_tonemapping(glow, params.white);
-		if (convert_to_srgb) {
-			glow = linear_to_srgb(glow);
-		}
-
-		color.rgb = apply_glow(color.rgb, glow);
-	}
-#endif
 
 	// Additional effects
 

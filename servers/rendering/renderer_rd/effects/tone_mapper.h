@@ -114,7 +114,7 @@ public:
 			GLOW_MODE_MIX
 		};
 
-		GlowMode glow_mode = GLOW_MODE_ADD;
+		GlowMode glow_mode = GLOW_MODE_SCREEN;
 		float glow_intensity = 1.0;
 		float glow_map_strength = 0.0f;
 		float glow_levels[7] = { 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0 };
