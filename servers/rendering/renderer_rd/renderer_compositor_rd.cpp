@@ -159,11 +159,6 @@ void RendererCompositorRD::initialize() {
 
 		blit.sampler = RD::get_singleton()->sampler_create(RD::SamplerState());
 	}
-#if defined(MACOS_ENABLED) && defined(__x86_64__)
-	if (scene) {
-		scene->get_sky()->check_cubemap_array();
-	}
-#endif
 }
 
 uint64_t RendererCompositorRD::frame = 1;
