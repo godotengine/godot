@@ -435,6 +435,12 @@ int ShaderGLES3::_get_uniform(int p_which) const {
 }
 
 void ShaderGLES3::_set_conditional(int p_which, bool p_value) {
+	// Conditionals are limited to 32 bit on GLES3.
+	// Blowing this leads to nasty bugs, and we can't static assert
+	// easily without affecting GLES2 (which is already 64 bit).
+	// In the longterm, we may change to 64 bit on GLES3 too.
+	DEV_ASSERT(p_which < 32);
+
 	ERR_FAIL_INDEX(p_which, conditional_count);
 	if (p_value) {
 		new_conditional_version.version |= (1 << p_which);
