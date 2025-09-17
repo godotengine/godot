@@ -227,8 +227,8 @@ private:
 
 	Ref<VideoStreamEncoding> video_stream_encoding = nullptr;
 
-	uint width = 0;
-	uint height = 0;
+	uint32_t width = 0;
+	uint32_t height = 0;
 
 	RID cluster_rid;
 	Ref<ImageTexture> image_texture;
