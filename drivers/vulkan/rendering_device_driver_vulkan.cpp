@@ -6303,7 +6303,7 @@ void RenderingDeviceDriverVulkan::command_video_coding_begin(CommandBufferID p_c
 	parameter_info.sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_CREATE_INFO_KHR;
 	parameter_info.pNext = &h264_parameter_info;
 	parameter_info.flags = 0;
-	parameter_info.videoSessionParametersTemplate = nullptr;
+	parameter_info.videoSessionParametersTemplate = VK_NULL_HANDLE;
 	parameter_info.videoSession = video_session;
 
 	VkVideoSessionParametersKHR session_parameters;

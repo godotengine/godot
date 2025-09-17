@@ -196,7 +196,7 @@ void VideoStreamH264::parse_nal_unit(uint64_t p_size) {
 			target_dst_layer += 1;
 
 			String is_reference = nal_ref_idc != 0 ? "reference" : "non-reference";
-			print_line(vformat("Read %d/%d bytes of a %s slice header", src - start, p_size, is_reference));
+			print_line(vformat("Read %d/%d bytes of a %s slice header", (uint64_t)(src - start), p_size, is_reference));
 		} break;
 
 		case 5: {
@@ -213,7 +213,7 @@ void VideoStreamH264::parse_nal_unit(uint64_t p_size) {
 			RD::get_singleton()->video_coding_list_decode(video_coding_list, buffer, dst_texture, slice_info, target_dst_layer);
 			target_dst_layer += 1;
 
-			print_line(vformat("Read %d/%d bytes of an IDR slice header", src - start, p_size));
+			print_line(vformat("Read %d/%d bytes of an IDR slice header", (uint64_t)(src - start), p_size));
 		} break;
 
 		case 6: {
@@ -222,12 +222,12 @@ void VideoStreamH264::parse_nal_unit(uint64_t p_size) {
 
 		case 7: {
 			active_sps = parse_sequence_parameter_set(p_size - 1);
-			print_line(vformat("Read %d/%d bytes of an SPS", src - start, p_size));
+			print_line(vformat("Read %d/%d bytes of an SPS", (uint64_t)(src - start), p_size));
 		} break;
 
 		case 8: {
 			active_pps = parse_picture_parameter_set(p_size - 1);
-			print_line(vformat("Read %d/%d bytes of a PPS", src - start, p_size));
+			print_line(vformat("Read %d/%d bytes of a PPS", (uint64_t)(src - start), p_size));
 		} break;
 
 		default: {
