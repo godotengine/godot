@@ -32,7 +32,6 @@
 
 #include "core/error/error_macros.h"
 #include "core/string/print_string.h"
-#include "core/templates/local_vector.h"
 #include "core/variant/variant.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_device_commons.h"
@@ -45,20 +44,44 @@
 RID VideoStreamH264::create_video_profile() {
 	video_profile = RD::get_singleton()->video_profile_create(chroma_subsampling, luma_bit_depth, chroma_bit_depth);
 	RD::get_singleton()->video_profile_bind_h264_decoding_metadata(video_profile, target_profile_idc, RD::VIDEO_CODING_H264_PICTURE_LAYOUT_PROGRESSIVE);
+
+	RenderingDeviceCommons::TextureFormat dpb_format;
+	dpb_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+	dpb_format.width = 1980;
+	dpb_format.height = 1080;
+	dpb_format.depth = 0;
+	dpb_format.array_layers = 17;
+	dpb_format.mipmaps = 1;
+	dpb_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+	//dpb_format.samples = RenderingDeviceCommons::TEXTURE_SAMPLES_16; // TODO huh?
+	dpb_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DPB_BIT;
+	dpb_format.shareable_formats.clear();
+	dpb_format.is_resolve_buffer = false;
+	dpb_format.is_discardable = false;
+
+	dpb = RD::get_singleton()->texture_create_for_video_coding(dpb_format, RD::TextureView(), video_profile);
+
+	RenderingDeviceCommons::TextureFormat dst_format;
+	dst_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+	dst_format.width = 1980;
+	dst_format.height = 1080;
+	dst_format.depth = 1;
+	dst_format.array_layers = 120;
+	dst_format.mipmaps = 1;
+	dst_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+	//dst_format.samples = RenderingDeviceCommons::TEXTURE_SAMPLES_16; // TODO huh?
+	dst_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DST_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+	dst_format.shareable_formats.clear();
+	dst_format.is_resolve_buffer = false;
+	dst_format.is_discardable = false;
+
+	dst_texture = RD::get_singleton()->texture_create_for_video_coding(dst_format, RD::TextureView(), video_profile);
+
 	return video_profile;
 }
 
-RID VideoStreamH264::decode_cluster() {
-	RD::VideoCodingListID video_coding_list = RD::get_singleton()->video_coding_list_begin(video_profile, active_sps, active_pps);
-	RD::get_singleton()->video_coding_list_bind_texure(video_coding_list, 1980, 1080, slice_spans.size());
-
-	RD::get_singleton()->video_coding_list_decode(video_coding_list, slice_spans[0], slice_metadatas[0], 0);
-
-	return RD::get_singleton()->video_coding_list_end();
-}
-
 // The Matroska "codec private" data for H264 is an AVCDecoderConfigurationRecord
-void VideoStreamH264::parse_container_metadata(uint8_t *p_stream, uint64_t p_size) {
+void VideoStreamH264::parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) {
 	src = p_stream;
 	shift = 7;
 
@@ -76,7 +99,7 @@ void VideoStreamH264::parse_container_metadata(uint8_t *p_stream, uint64_t p_siz
 
 	uint8_t sps_sets = read_bits(8) & 0b11111;
 	for (uint8_t set = 0; set < sps_sets; set++) {
-		uint8_t *start = src;
+		const uint8_t *start = src;
 		uint16_t sps_size = read_bits(16);
 		parse_nal_unit(sps_size);
 		src = start + 2 + sps_size;
@@ -85,7 +108,7 @@ void VideoStreamH264::parse_container_metadata(uint8_t *p_stream, uint64_t p_siz
 
 	uint8_t pps_sets = read_bits(8);
 	for (uint8_t set = 0; set < pps_sets; set++) {
-		uint8_t *start = src;
+		const uint8_t *start = src;
 		uint16_t pps_size = read_bits(16);
 		parse_nal_unit(pps_size);
 		src = start + 2 + pps_size;
@@ -109,7 +132,7 @@ void VideoStreamH264::parse_container_metadata(uint8_t *p_stream, uint64_t p_siz
 
 		uint8_t sps_ext_sets = read_bits(8);
 		for (uint8_t set = 0; set < sps_ext_sets; set++) {
-			uint8_t *start = src;
+			const uint8_t *start = src;
 			uint16_t sps_ext_size = read_bits(16);
 			parse_nal_unit(sps_ext_size);
 			src = start + 2 + sps_ext_size;
@@ -117,33 +140,41 @@ void VideoStreamH264::parse_container_metadata(uint8_t *p_stream, uint64_t p_siz
 	}
 }
 
-void VideoStreamH264::parse_container_block(uint8_t *p_stream, uint64_t p_size) {
-	print_line(vformat("reading %d bytes", p_size));
-	src = p_stream;
+void VideoStreamH264::begin_cluster() {
+	print_line("----------BEGIN CLUSTER--------------------");
+	video_coding_list = RD::get_singleton()->video_coding_list_begin(video_profile, dpb, active_sps, active_pps);
+
+	target_dpb_layer = 0;
+	target_dst_layer = 0;
+}
+
+void VideoStreamH264::append_container_block(Vector<uint8_t> p_buffer) {
+	print_line(vformat("Block size [%d] bytes", p_buffer.size()));
+	src = p_buffer.ptr();
 	shift = 7;
 
-	TightLocalVector<uint8_t> block;
-	block.resize(p_size);
-	memcpy(block.ptr(), src, p_size);
-
-	slice_spans.push_back(block);
-
-	uint64_t total_read = 0;
-	while (total_read < p_size) {
+	int64_t total_read = 0;
+	while (total_read < p_buffer.size()) {
 		uint64_t nal_size = read_bits(32);
-		print_line(vformat("NAL size %d", nal_size));
+		const uint8_t *start = src;
 
-		uint8_t *start = src;
 		parse_nal_unit(nal_size);
-
 		total_read += nal_size + 4;
 		src = start + nal_size;
 		shift = 7;
 	}
+
+	print_line("--------------------------------------");
 }
 
-bool VideoStreamH264::parse_nal_unit(uint64_t p_size) {
-	uint8_t *start = src;
+RID VideoStreamH264::end_cluster() {
+	print_line("----------END CLUSTER--------------------");
+	RD::get_singleton()->video_coding_list_end();
+	return dst_texture;
+}
+
+void VideoStreamH264::parse_nal_unit(uint64_t p_size) {
+	const uint8_t *start = src;
 
 	uint8_t header = read_bits(8);
 	uint8_t nal_ref_idc = (header & 0b1100000) >> 5;
@@ -151,44 +182,58 @@ bool VideoStreamH264::parse_nal_unit(uint64_t p_size) {
 
 	switch (nal_unit_type) {
 		case 1: {
-			print_line("Extremely cool slice header");
-			print_line(vformat("is_reference = %s", nal_ref_idc != 0));
+			uint64_t buffer_size = p_size + 4;
+			buffer_size += 128 - (buffer_size % 128);
+			RID buffer = RD::get_singleton()->storage_buffer_create_video_session(buffer_size, video_profile, Span<uint8_t>(), RD::STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC);
+
+			RD::get_singleton()->buffer_update(buffer, 0, 4, &p_size);
+			RD::get_singleton()->buffer_update(buffer, 4, p_size, start);
+			RD::get_singleton()->_flush_and_stall_for_all_frames();
+
 			StdVideoDecodeH264PictureInfo slice_info = parse_slice_header(p_size - 1, false);
 			slice_info.flags.is_reference = nal_ref_idc != 0;
-			slice_metadatas.push_back(slice_info);
-			return true;
+			RD::get_singleton()->video_coding_list_decode(video_coding_list, buffer, dst_texture, slice_info, target_dst_layer);
+			target_dst_layer += 1;
+
+			String is_reference = nal_ref_idc != 0 ? "reference" : "non-reference";
+			print_line(vformat("Read %d/%d bytes of a %s slice header", src - start, p_size, is_reference));
 		} break;
 
 		case 5: {
-			print_line("Way cooler IDR slice header");
-			print_line(vformat("is_reference = %s", nal_ref_idc != 0));
+			uint64_t buffer_size = p_size + 4;
+			buffer_size += 128 - (buffer_size % 128);
+			RID buffer = RD::get_singleton()->storage_buffer_create_video_session(buffer_size, video_profile, Span<uint8_t>(), RD::STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC);
+
+			RD::get_singleton()->buffer_update(buffer, 0, 4, &p_size);
+			RD::get_singleton()->buffer_update(buffer, 4, p_size, start);
+			RD::get_singleton()->_flush_and_stall_for_all_frames();
+
 			StdVideoDecodeH264PictureInfo slice_info = parse_slice_header(p_size - 1, true);
 			slice_info.flags.is_reference = nal_ref_idc != 0;
-			slice_metadatas.push_back(slice_info);
-			return true;
-		}
+			RD::get_singleton()->video_coding_list_decode(video_coding_list, buffer, dst_texture, slice_info, target_dst_layer);
+			target_dst_layer += 1;
+
+			print_line(vformat("Read %d/%d bytes of an IDR slice header", src - start, p_size));
+		} break;
 
 		case 6: {
-			print_line("Skipping uncool supplemental enhancement information");
+			print_line(vformat("Skipping %d bytes of supplemental enhancement information", p_size));
 		} break;
 
 		case 7: {
-			print_line("Extremely cool SPS");
 			active_sps = parse_sequence_parameter_set(p_size - 1);
+			print_line(vformat("Read %d/%d bytes of an SPS", src - start, p_size));
 		} break;
 
 		case 8: {
-			print_line("Extremely cool PPS");
 			active_pps = parse_picture_parameter_set(p_size - 1);
+			print_line(vformat("Read %d/%d bytes of a PPS", src - start, p_size));
 		} break;
 
 		default: {
 			print_line(vformat("Unknown NAL unit type %d", nal_unit_type));
 		}
 	}
-
-	print_line(vformat("read %d/%d bytes", src - start, p_size));
-	return false;
 }
 
 StdVideoH264SequenceParameterSet VideoStreamH264::parse_sequence_parameter_set(uint64_t p_size) {

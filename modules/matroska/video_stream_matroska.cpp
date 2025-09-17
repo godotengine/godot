@@ -54,9 +54,9 @@ Ref<VideoStreamPlayback> VideoStreamMatroska::instantiate_playback() {
 	return stream_playback;
 }
 
-uint64_t VideoStreamPlaybackMatroska::read_id(uint8_t *p_stream, uint32_t *r_read) {
+uint64_t VideoStreamPlaybackMatroska::read_id() {
 	uint8_t octet_length = 0;
-	uint8_t byte = p_stream[0];
+	uint8_t byte = src[0];
 
 	bool found_marker = false;
 	for (uint8_t i = 0; i < 8; i++) {
@@ -68,23 +68,22 @@ uint64_t VideoStreamPlaybackMatroska::read_id(uint8_t *p_stream, uint32_t *r_rea
 	}
 
 	if (!found_marker) {
-		*r_read = 0;
+		ERR_PRINT("Failed to parse EBML ID");
 		return 0;
 	}
 
-	*r_read = octet_length;
-
 	uint64_t id = byte;
 	for (uint32_t i = 1; i < octet_length; i++) {
-		id = (id << 8) | p_stream[i];
+		id = (id << 8) | src[i];
 	}
 
+	src += octet_length;
 	return id;
 }
 
-uint64_t VideoStreamPlaybackMatroska::read_size(uint8_t *p_stream, uint32_t *r_read) {
+uint64_t VideoStreamPlaybackMatroska::read_size() {
 	uint8_t octet_length = 0;
-	uint8_t byte = p_stream[0];
+	uint8_t byte = src[0];
 
 	bool found_marker = false;
 	for (uint8_t i = 0; i < 8; i++) {
@@ -96,53 +95,47 @@ uint64_t VideoStreamPlaybackMatroska::read_size(uint8_t *p_stream, uint32_t *r_r
 	}
 
 	if (!found_marker) {
-		WARN_PRINT("failed parse");
-		*r_read = 1;
+		ERR_PRINT("Failed to parse EBML size");
 		return 1;
 	}
 
-	*r_read = octet_length;
-
 	uint64_t size = byte ^ (1 << (8 - octet_length));
 	for (uint32_t i = 1; i < octet_length; i++) {
-		size = (size << 8) | p_stream[i];
+		size = (size << 8) | src[i];
 	}
 
+	src += octet_length;
 	return size;
 }
 
-int64_t VideoStreamPlaybackMatroska::read_int(uint8_t *p_stream, uint32_t *r_read) {
-	uint64_t size = read_size(p_stream, r_read);
-	p_stream += *r_read;
-	*r_read += size;
+int64_t VideoStreamPlaybackMatroska::read_int() {
+	uint64_t size = read_size();
 
 	int64_t value = 0;
 	for (uint32_t i = 0; i < size; i++) {
-		value = (value << 8) | p_stream[i];
+		value = (value << 8) | src[i];
 	}
 
+	src += size;
 	return value;
 }
 
-uint64_t VideoStreamPlaybackMatroska::read_uint(uint8_t *p_stream, uint32_t *r_read) {
-	uint64_t size = read_size(p_stream, r_read);
-	p_stream += *r_read;
-	*r_read += size;
+uint64_t VideoStreamPlaybackMatroska::read_uint() {
+	uint64_t size = read_size();
 
 	uint64_t value = 0;
 	for (uint32_t i = 0; i < size; i++) {
-		value = (value << 8) | p_stream[i];
+		value = (value << 8) | src[i];
 	}
 
+	src += size;
 	return value;
 }
 
-double VideoStreamPlaybackMatroska::read_float(uint8_t *p_stream, uint32_t *r_read) {
-	uint64_t size = read_size(p_stream, r_read);
-	p_stream += *r_read;
-	*r_read += size;
+double VideoStreamPlaybackMatroska::read_float() {
+	uint64_t size = read_size();
 
-	char *src_big = (char *)p_stream;
+	char *src_big = (char *)src;
 	if (size == 4) {
 		char src_little[4];
 
@@ -150,8 +143,9 @@ double VideoStreamPlaybackMatroska::read_float(uint8_t *p_stream, uint32_t *r_re
 		src_little[1] = src_big[2];
 		src_little[2] = src_big[1];
 		src_little[3] = src_big[0];
+		src += size;
 
-		double value = 0;
+		float value = 0;
 		memcpy(&value, src_little, 4);
 		return value;
 	} else {
@@ -165,6 +159,7 @@ double VideoStreamPlaybackMatroska::read_float(uint8_t *p_stream, uint32_t *r_re
 		src_little[5] = src_big[2];
 		src_little[6] = src_big[1];
 		src_little[7] = src_big[0];
+		src += size;
 
 		double value = 0;
 		memcpy(&value, src_little, 8);
@@ -172,267 +167,202 @@ double VideoStreamPlaybackMatroska::read_float(uint8_t *p_stream, uint32_t *r_re
 	}
 }
 
-String VideoStreamPlaybackMatroska::read_string(uint8_t *p_stream, uint32_t *r_read) {
-	uint64_t size = read_size(p_stream, r_read);
-	char *src = (char *)(p_stream + *r_read);
-	*r_read += size;
+String VideoStreamPlaybackMatroska::read_string() {
+	uint64_t size = read_size();
 
-	TightLocalVector<char> buffer;
-	buffer.resize(size);
-	strncpy(buffer.ptr(), src, size);
+	Span<char> span = Span((const char *)src, size);
 
-	String ret;
-	ret.append_ascii(buffer);
-	return ret;
+	String str = String();
+	str.append_ascii(span);
+
+	src += size;
+	return str;
 }
 
-Error VideoStreamPlaybackMatroska::parse_ebml_header(uint8_t *p_stream, uint32_t *r_read, EbmlHeader *r_header) {
-	uint32_t read = 0;
+Error VideoStreamPlaybackMatroska::parse_ebml_header(EbmlHeader *r_header) {
+	int64_t header_size = read_size();
+	const uint8_t *header_start = src;
 
-	uint64_t header_size = read_size(p_stream, &read);
-	p_stream += read;
-	*r_read = read;
-
-	uint32_t total_read = 0;
-	while (total_read < header_size) {
-		uint64_t potential_id = read_id(p_stream, &read);
-		p_stream += read;
-		total_read += read;
+	while (src - header_start < header_size) {
+		uint64_t potential_id = read_id();
 
 		if (potential_id == EBML_VERSION_ID) {
-			r_header->version = read_uint(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			r_header->version = read_uint();
 			continue;
 		}
 
 		if (potential_id == EBML_READ_VERSION_ID) {
-			r_header->read_version = read_uint(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			r_header->read_version = read_uint();
 			continue;
 		}
 
 		if (potential_id == EBML_MAX_ID_LENGTH_ID) {
-			r_header->max_id_length = read_uint(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			r_header->max_id_length = read_uint();
 			continue;
 		}
 
 		if (potential_id == EBML_MAX_SIZE_LENGTH_ID) {
-			r_header->max_size_length = read_uint(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			r_header->max_size_length = read_uint();
 			continue;
 		}
 
 		if (potential_id == EBML_DOC_TYPE_ID) {
-			r_header->doc_type = read_string(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			r_header->doc_type = read_string();
 			continue;
 		}
 
 		if (potential_id == EBML_DOC_TYPE_VERSION_ID) {
-			r_header->doc_type_version = read_uint(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			r_header->doc_type_version = read_uint();
 			continue;
 		}
 
 		if (potential_id == EBML_DOC_TYPE_READ_VERSION_ID) {
-			r_header->doc_type_read_version = read_uint(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			r_header->doc_type_read_version = read_uint();
 			continue;
 		}
 
 		if (potential_id == EBML_DOC_TYPE_EXTENSION_ID) {
-			uint64_t size = read_size(p_stream, &read);
-			p_stream += read + size;
-			total_read += read + size;
+			uint64_t extension_size = read_size();
+			src += extension_size;
 			continue;
 		}
 
 		if (potential_id == EBML_DOC_TYPE_EXTENSION_NAME_ID) {
-			uint64_t size = read_size(p_stream, &read);
-			p_stream += read + size;
-			total_read += read + size;
+			String extension_name = read_string();
 			continue;
 		}
 
 		if (potential_id == EBML_DOC_TYPE_EXTENSION_VERSION_ID) {
-			uint64_t size = read_size(p_stream, &read);
-			p_stream += read + size;
-			total_read += read + size;
+			read_uint();
 			continue;
 		}
 
-		uint64_t size = read_size(p_stream, &read);
-		p_stream += read + size;
-		total_read += read + size;
+		uint64_t size = read_size();
+		src += size;
 		WARN_PRINT(vformat("Unhandled element with ID %x of size %d", potential_id, size));
 	}
-
-	*r_read += total_read;
 
 	return OK;
 }
 
-Error VideoStreamPlaybackMatroska::parse_segment(uint8_t *p_stream, uint32_t *r_read, Segment *r_segment) {
-	uint32_t read = 0;
+Error VideoStreamPlaybackMatroska::parse_segment(Segment *r_segment) {
+	int64_t segment_size = read_size();
+	const uint8_t *segment_start = src;
 
-	uint64_t segment_size = read_size(p_stream, &read);
-	p_stream += read;
-	*r_read += read;
-
-	r_segment->src = p_stream;
+	r_segment->start = src - origin;
 
 	bool use_seek_head = false;
-	uint32_t total_read = 0;
-	while (total_read < segment_size) {
-		uint64_t potential_id = read_id(p_stream, &read);
-		p_stream += read;
-		total_read += read;
+	while (src - segment_start < segment_size) {
+		uint64_t potential_id = read_id();
 
 		if (potential_id == MATROSKA_SEEK_HEAD_ID) {
-			parse_seek_head(p_stream, &read, &r_segment->seek_head);
-			p_stream += read;
-			total_read += read;
+			parse_seek_head(&r_segment->seek_head);
 			use_seek_head = true;
 			break;
 		}
 
 		if (potential_id == MATROSKA_SEGMENT_INFO_ID) {
-			parse_segment_info(p_stream, &read, &r_segment->info);
-			p_stream += read;
-			total_read += read;
+			parse_segment_info(&r_segment->info);
 			continue;
 		}
 
 		if (potential_id == MATROSKA_TRACKS_ID) {
-			parse_tracks(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			parse_tracks(r_segment->tracks);
 			continue;
 		}
 
 		if (potential_id == MATROSKA_CHAPTERS_ID) {
-			parse_chapters(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			parse_chapters();
 			continue;
 		}
 
 		if (potential_id == MATROSKA_CLUSTER_ID) {
-			parse_cluster(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			Cluster cluster;
+			parse_cluster(&cluster);
 			continue;
 		}
 
 		if (potential_id == MATROSKA_CUES_ID) {
-			parse_cues(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			parse_cues();
 			continue;
 		}
 
 		if (potential_id == MATROSKA_ATTACHEMENTS_ID) {
-			parse_attachments(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			parse_attachments();
 			continue;
 		}
 
 		if (potential_id == MATROSKA_TAGS_ID) {
-			parse_tags(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			parse_tags();
 			continue;
 		}
 
-		uint64_t size = read_size(p_stream, &read);
-		p_stream += read + size;
-		total_read += read + size;
+		uint64_t size = read_size();
+		src += size;
 		WARN_PRINT(vformat("Unhandled element with ID %x of size %d", potential_id, size));
 	}
 
 	if (use_seek_head) {
 		if (r_segment->seek_head.segment_info_position != 0) {
-			uint8_t *segment_info_start = r_segment->src + r_segment->seek_head.segment_info_position;
-			read_id(segment_info_start, &read);
-			parse_segment_info(segment_info_start + read, &read, &r_segment->info);
+			src = segment_start + r_segment->seek_head.segment_info_position;
+			read_id();
+			parse_segment_info(&r_segment->info);
 		}
 
 		if (r_segment->seek_head.tracks_position != 0) {
-			uint8_t *tracks_start = r_segment->src + r_segment->seek_head.tracks_position;
-			read_id(tracks_start, &read);
-			parse_tracks(tracks_start + read, &read);
+			src = segment_start + r_segment->seek_head.tracks_position;
+			read_id();
+			parse_tracks(r_segment->tracks);
 		}
 
 		if (r_segment->seek_head.cues_position != 0) {
-			uint8_t *cues_start = r_segment->src + r_segment->seek_head.cues_position;
-			read_id(cues_start, &read);
-			parse_cues(cues_start + read, &read);
+			src = segment_start + r_segment->seek_head.cues_position;
+			read_id();
+			parse_cues();
 
-			uint8_t *cluster_start = r_segment->src + clusters[0];
-			read_id(cluster_start, &read);
-			parse_cluster(cluster_start + read, &read);
+			for (Cluster &cluster : clusters) {
+				src = segment_start + cluster.position;
+				read_id();
+				parse_cluster(&cluster);
+			}
 		}
 
 		if (r_segment->seek_head.tags_position != 0) {
-			uint8_t *tags_start = r_segment->src + r_segment->seek_head.tags_position;
-			read_id(tags_start, &read);
-			parse_tags(tags_start + read, &read);
+			src = segment_start + r_segment->seek_head.tags_position;
+			read_id();
+			parse_tags();
 		}
 	}
 
-	*r_read += total_read;
-
+	src = segment_start + segment_size;
 	return OK;
 }
 
-Error VideoStreamPlaybackMatroska::parse_seek_head(uint8_t *p_stream, uint32_t *r_read, SeekHead *r_seak_head) {
-	uint32_t read = 0;
+Error VideoStreamPlaybackMatroska::parse_seek_head(SeekHead *r_seak_head) {
+	int64_t seek_head_size = read_size();
+	const uint8_t *seek_head_start = src;
 
-	uint64_t size = read_size(p_stream, &read);
-	p_stream += read;
-	*r_read += read + size;
+	while (src - seek_head_start < seek_head_size) {
+		uint64_t potential_id = read_id();
 
-	uint32_t total_read = 0;
-	while (total_read < size) {
-		uint64_t id = read_id(p_stream, &read);
-		p_stream += read;
-		total_read += read;
-
-		if (id == MATROSKA_SEEK_ID) {
-			uint64_t inner_size = read_size(p_stream, &read);
-			p_stream += read;
-			total_read += read + inner_size;
+		if (potential_id == MATROSKA_SEEK_ID) {
+			int64_t inner_size = read_size();
+			const uint8_t *seek_start = src;
 
 			struct {
 				uint64_t id = 0;
 				uint64_t position = 0;
 			} seek;
 
-			uint32_t inner_total_read = 0;
-			while (inner_total_read < inner_size) {
-				uint64_t inner_id = read_id(p_stream, &read);
-				p_stream += read;
-				inner_total_read += read;
+			while (src - seek_start < inner_size) {
+				uint64_t inner_id = read_id();
 
 				if (inner_id == MATROSKA_SEEK_TARGET_ID) {
-					seek.id = read_uint(p_stream, &read);
-					p_stream += read;
-					inner_total_read += read;
+					seek.id = read_uint();
 				}
 
 				if (inner_id == MATROSKA_SEEK_POSITION_ID) {
-					seek.position = read_uint(p_stream, &read);
-					p_stream += read;
-					inner_total_read += read;
+					seek.position = read_uint();
 				}
 			}
 
@@ -448,626 +378,518 @@ Error VideoStreamPlaybackMatroska::parse_seek_head(uint8_t *p_stream, uint32_t *
 		}
 	}
 
+	src = seek_head_start + seek_head_size;
 	return OK;
 }
 
-Error VideoStreamPlaybackMatroska::parse_segment_info(uint8_t *p_stream, uint32_t *r_read, SegmentInfo *r_segment_info) {
-	uint32_t read = 0;
+Error VideoStreamPlaybackMatroska::parse_segment_info(SegmentInfo *r_segment_info) {
+	int64_t segment_info_size = read_size();
+	const uint8_t *segment_info_start = src;
 
-	uint64_t size = read_size(p_stream, &read);
-	p_stream += read;
-	*r_read += read + size;
+	while (src - segment_info_start < segment_info_size) {
+		uint64_t id = read_id();
 
-	uint64_t total_read = 0;
-	while (total_read < size) {
-		uint64_t id = read_id(p_stream, &read);
-		p_stream += read;
-		total_read += read;
-
+		// TODO use CRC?
 		if (id == EBML_CRC32_ID) {
-			// CRC sizes are little-endian (unlike every other EBML int)
-			p_stream += 5;
-			total_read += 5;
+			uint64_t size = read_size();
+			src += size;
 			continue;
 		}
 
 		if (id == MATROSKA_SEGMENT_INFO_UUID_ID) {
-			uint64_t uuid_size = read_size(p_stream, &read);
-			p_stream += read + uuid_size;
-			total_read += read + uuid_size;
+			uint64_t uuid_size = read_size();
+			memcpy(r_segment_info->uuid, src, uuid_size);
+			src += uuid_size;
 			continue;
 		}
 
 		if (id == MATROSKA_SEGMENT_INFO_FILENAME_ID) {
-			r_segment_info->filename = read_string(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			r_segment_info->filename = read_string();
 			continue;
 		}
 
 		if (id == MATROSKA_SEGMENT_INFO_PREV_UUID_ID) {
-			uint64_t uuid_size = read_size(p_stream, &read);
-			p_stream += read + uuid_size;
-			total_read += read + uuid_size;
+			uint64_t uuid_size = read_size();
+			memcpy(r_segment_info->prev_uuid, src, uuid_size);
+			src += uuid_size;
 			continue;
 		}
 
 		if (id == MATROSKA_SEGMENT_INFO_PREV_FILENAME_ID) {
-			String filename = read_string(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			r_segment_info->prev_filename = read_string();
 			continue;
 		}
 
 		if (id == MATROSKA_SEGMENT_INFO_NEXT_UUID_ID) {
-			uint64_t uuid_size = read_size(p_stream, &read);
-			p_stream += read + uuid_size;
-			total_read += read + uuid_size;
+			uint64_t uuid_size = read_size();
+			memcpy(r_segment_info->next_uuid, src, uuid_size);
+			src += uuid_size;
 			continue;
 		}
 
 		if (id == MATROSKA_SEGMENT_INFO_NEXT_FILENAME_ID) {
-			String filename = read_string(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			r_segment_info->next_filename = read_string();
 			continue;
 		}
 
+		// TODO
 		if (id == MATROSKA_SEGMENT_INFO_FAMILY_ID) {
-			uint64_t family_size = read_size(p_stream, &read);
-			p_stream += read + family_size;
-			total_read += read + family_size;
+			uint64_t family_size = read_size();
+			src += family_size;
 			continue;
 		}
 
+		// TODO
 		if (id == MATROSKA_SEGMENT_INFO_CHAPTER_TRANSLATE_ID) {
-			uint64_t chapter_size = read_size(p_stream, &read);
-			p_stream += read + chapter_size;
-			total_read += read + chapter_size;
+			uint64_t chapter_size = read_size();
+			src += chapter_size;
 			continue;
 		}
 
 		if (id == MATROSKA_SEGMENT_INFO_TIME_SCALE_ID) {
-			r_segment_info->time_scale = read_uint(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			r_segment_info->time_scale = read_uint();
 			continue;
 		}
 
 		if (id == MATROSKA_SEGMENT_INFO_DURATION_ID) {
-			r_segment_info->duration = read_float(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			r_segment_info->duration = read_float();
 			continue;
 		}
 
+		// TODO
 		if (id == MATROSKA_SEGMENT_INFO_DATE_UTC_ID) {
-			uint64_t date_size = read_size(p_stream, &read);
-			p_stream += read + date_size;
-			total_read += read + date_size;
+			uint64_t date_size = read_size();
+			src += date_size;
 			continue;
 		}
 
 		if (id == MATROSKA_SEGMENT_INFO_TITLE_ID) {
-			String title = read_string(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			r_segment_info->title = read_string();
 			continue;
 		}
 
 		if (id == MATROSKA_SEGMENT_INFO_MUXING_APP_ID) {
-			r_segment_info->muxing_app = read_string(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			r_segment_info->muxing_app = read_string();
 			continue;
 		}
 
 		if (id == MATROSKA_SEGMENT_INFO_WRITING_APP_ID) {
-			r_segment_info->writing_app = read_string(p_stream, &read);
-			p_stream += read;
-			total_read += read;
+			r_segment_info->writing_app = read_string();
 			continue;
 		}
 
-		uint64_t inner_size = read_size(p_stream, &read);
-		p_stream += read + inner_size;
-		total_read += read + inner_size;
-		WARN_PRINT(vformat("Unhandled element with ID %x of size %d", id, size));
+		uint64_t skipped_size = read_size();
+		src += skipped_size;
+		WARN_PRINT(vformat("Unhandled element with ID %x of size %d", id, skipped_size));
 	}
 
+	src = segment_info_start + segment_info_size;
 	return OK;
 }
 
-Error VideoStreamPlaybackMatroska::parse_tracks(uint8_t *p_stream, uint32_t *r_read) {
-	uint32_t read = 0;
+Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
+	int64_t tracks_size = read_size();
+	const uint8_t *tracks_start = src;
 
-	uint64_t tracks_size = read_size(p_stream, &read);
-	p_stream += read;
-	*r_read += read + tracks_size;
+	while (src - tracks_start < tracks_size) {
+		uint64_t id = read_id();
 
-	uint64_t total_read = 0;
-	while (total_read < tracks_size) {
-		uint64_t id = read_id(p_stream, &read);
-		p_stream += read;
-		total_read += read;
-
+		// TODO use CRC
 		if (id == EBML_CRC32_ID) {
-			p_stream += 5;
-			total_read += 5;
+			uint64_t crc_size = read_size();
+			src += crc_size;
 			continue;
 		}
 
-		uint64_t track_number;
-
 		if (id == MATROSKA_TRACK_ENTRY_ID) {
-			uint64_t entry_size = read_size(p_stream, &read);
-			p_stream += read;
-			total_read += read + entry_size;
+			int64_t entry_size = read_size();
+			const uint8_t *entry_start = src;
 
-			uint64_t total_entry_read = 0;
-			while (total_entry_read < entry_size) {
-				uint64_t inner_id = read_id(p_stream, &read);
-				p_stream += read;
-				total_entry_read += read;
+			Track track = {};
+			while (src - entry_start < entry_size) {
+				uint64_t inner_id = read_id();
+
+				if (inner_id == 0xec) {
+					uint64_t void_size = read_size();
+					src += void_size;
+					continue;
+				}
 
 				if (inner_id == MATROSKA_TRACK_NUMBER_ID) {
-					track_number = read_uint(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line(vformat("Track number %d", track_number));
+					track.track_number = read_uint();
 					continue;
 				}
 
 				if (inner_id == MATROSKA_TRACK_UID_ID) {
-					uint64_t track_uuid = read_uint(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line(vformat("Track uuid %d", track_uuid));
+					track.track_uid = read_uint();
 					continue;
 				}
 
 				if (inner_id == MATROSKA_TRACK_TYPE) {
-					uint64_t track_type = read_uint(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					if (track_type == 1) {
-						print_line("Video Track");
-					} else if (track_type == 2) {
-						print_line("Audio Track");
-					} else {
-						print_line("Some Other Track", track_type);
+					uint64_t track_type = read_uint();
+					if (track_type != 1 && track_type != 2) {
+						print_line(vformat("Unknown track type %d", track_type));
 					}
 					continue;
 				}
 
 				if (inner_id == MATROSKA_TRACK_FLAG_ENABLED) {
-					uint64_t enabled = read_uint(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line(vformat("Enabled %d", enabled));
+					track.flag_enabled = read_uint();
 					continue;
 				}
 
 				if (inner_id == MATROSKA_TRACK_FLAG_DEFAULT) {
-					uint64_t flag_default = read_uint(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line(vformat("Default %d", flag_default));
+					track.flag_default = read_uint();
 					continue;
 				}
 
 				if (inner_id == MATROSKA_TRACK_FLAG_FORCED) {
-					uint64_t forced = read_uint(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line(vformat("Forced %d", forced));
+					track.flag_forced = read_uint();
 					continue;
 				}
 
 				if (inner_id == MATROSKA_TRACK_FLAG_HEARING_IMPAIRED) {
-					uint64_t hearing_impaired = read_uint(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line(vformat("Hearing Impaired %d", hearing_impaired));
+					track.flag_hearing_impaired = read_uint();
 					continue;
 				}
 
 				if (inner_id == MATROSKA_TRACK_FLAG_VISUAL_IMPAIRED) {
-					uint64_t visual_impaired = read_uint(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line(vformat("Visually Impaired %d", visual_impaired));
+					track.flag_visual_impaired = read_uint();
 					continue;
 				}
 
 				if (inner_id == MATROSKA_TRACK_FLAG_TEXT_DESCRIPTIONS) {
-					uint64_t text_descriptions = read_uint(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line(vformat("Text descriptions %d", text_descriptions));
+					track.flag_text_descriptions = read_uint();
 					continue;
 				}
 
 				if (inner_id == MATROSKA_TRACK_FLAG_ORIGINAL) {
-					uint64_t original = read_uint(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line(vformat("Original %d", original));
+					track.flag_original = read_uint();
 					continue;
 				}
 
 				if (inner_id == MATROSKA_TRACK_FLAG_COMMENTARY) {
-					uint64_t commentary = read_uint(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line(vformat("Commentary %d", commentary));
+					track.flag_commentary = read_uint();
 					continue;
 				}
 
 				if (inner_id == MATROSKA_TRACK_FLAG_LACING) {
-					uint64_t lacing = read_uint(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line(vformat("Lacing %d", lacing));
+					track.flag_lacing = read_uint();
 					continue;
 				}
 
 				if (inner_id == MATRSOKA_TRACK_DEFAULT_DURATION) {
-					uint64_t duration = read_uint(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line(vformat("Default duration %d", duration));
+					track.default_duration = read_uint();
 					continue;
 				}
 
 				if (inner_id == MATRSOKA_TRACK_DEFAULT_DECODED_FIELD_DURATION) {
-					uint64_t duration = read_uint(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line(vformat("Default field duration %d", duration));
+					track.default_decoded_field_duration = read_uint();
 					continue;
 				}
 
-				if (inner_id == MATRSOKA_TRACK_DEFAULT_DECODED_FIELD_DURATION) {
-					uint64_t duration = read_uint(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line(vformat("Default field duration %d", duration));
-					continue;
-				}
-
-				if (inner_id == 0x22b59c) {
-					String language = read_string(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line("language", language);
-					continue;
-				}
-
-				if (inner_id == 0x22B59D) {
-					String language = read_string(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line("language (bcp47)", language);
-					continue;
-				}
-
-				if (inner_id == 0xe0) {
-					uint64_t video_size = read_size(p_stream, &read);
-					p_stream += read + video_size;
-					total_entry_read += read + video_size;
-					width = 1920;
-					height = 1080;
-					print_line("video object");
-					continue;
-				}
-
-				if (inner_id == 0x63A2) {
-					uint64_t codec_size = read_size(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read + codec_size;
-					print_line("codec metadata", codec_size);
-					if (track_number == 1 && video_stream_encoding.is_valid()) {
-						video_stream_encoding->parse_container_metadata(p_stream, codec_size);
-					}
-
-					p_stream += codec_size;
-					continue;
-				}
-
-				if (inner_id == 0x56aa) {
-					uint64_t codec_delay = read_uint(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line(vformat("Codec delay %d", codec_delay));
-					continue;
-				}
-
-				if (inner_id == 0x56BB) {
-					uint64_t seek_pre_roll = read_uint(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line(vformat("Seek pre-roll %d", seek_pre_roll));
-					continue;
-				}
-
-				if (inner_id == 0xe1) {
-					uint64_t audio_size = read_size(p_stream, &read);
-					p_stream += read + audio_size;
-					total_entry_read += read + audio_size;
-					print_line("audio object");
-					continue;
-				}
-
-				if (inner_id == 0x86) {
-					String codec = read_string(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					if (codec == "V_MPEG4/ISO/AVC") {
-						video_stream_encoding = memnew(VideoStreamH264);
-					}
-					print_line(codec);
+				if (inner_id == 0x23314F) {
+					track.track_timestamp_scale = read_float();
 					continue;
 				}
 
 				if (inner_id == 0x55ee) {
-					uint64_t max_blocks = read_uint(p_stream, &read);
-					p_stream += read;
-					total_entry_read += read;
-					print_line("max blocks", max_blocks);
+					track.max_block_addition_id = read_uint();
 					continue;
 				}
 
-				// TODO fill in elements
-				// no clue what this element is
-				if (inner_id == 0xec) {
-					uint64_t ec_size = read_size(p_stream, &read);
-					p_stream += read + ec_size;
-					total_entry_read += read + ec_size;
+				// block additions mapping
+				if (inner_id == 0x41E4) {
+					uint64_t block_additions_size = read_size();
+					src += block_additions_size;
 					continue;
 				}
 
-				uint64_t inner_size = read_size(p_stream, &read);
-				p_stream += read + inner_size;
-				total_entry_read += read + inner_size;
+				if (inner_id == 0x536E) {
+					track.name = read_string();
+					continue;
+				}
+
+				// BCP47 language codes take priority over Matroska language codes
+				if (inner_id == 0x22b59c) {
+					String language = read_string();
+					if (track.language == "") {
+						track.language = language;
+					}
+					continue;
+				}
+
+				if (inner_id == 0x22B59D) {
+					track.language = read_string();
+					continue;
+				}
+
+				if (inner_id == 0x86) {
+					track.codec_id = read_string();
+					print_line(vformat("Track #%d (%s)", track.track_number, track.codec_id));
+					if (track.codec_id == "V_MPEG4/ISO/AVC") {
+						video_stream_encoding = memnew(VideoStreamH264);
+					}
+					continue;
+				}
+
+				if (inner_id == 0x63A2) {
+					uint64_t codec_size = read_size();
+					if (track.track_number == 1 && video_stream_encoding.is_valid()) {
+						video_stream_encoding->parse_container_metadata(src, codec_size);
+					}
+
+					src += codec_size;
+					continue;
+				}
+
+				if (inner_id == 0x258688) {
+					track.coded_name = read_string();
+					continue;
+				}
+
+				if (inner_id == 0x7446) {
+					track.attachment_link = read_uint();
+					continue;
+				}
+
+				if (inner_id == 0x56aa) {
+					track.codec_delay = read_uint();
+					continue;
+				}
+
+				if (inner_id == 0x56BB) {
+					track.seek_pre_roll = read_uint();
+					continue;
+				}
+
+				if (inner_id == 0x6624) {
+					uint64_t track_translate_size = read_size();
+					src += track_translate_size;
+					continue;
+				}
+
+				if (inner_id == 0xe0) {
+					uint64_t video_size = read_size();
+					src += video_size;
+					continue;
+				}
+
+				if (inner_id == 0xe1) {
+					uint64_t audio_size = read_size();
+					src += audio_size;
+					continue;
+				}
+
+				if (inner_id == 0xe2) {
+					uint64_t track_operation_size = read_size();
+					src += track_operation_size;
+					continue;
+				}
+
+				if (inner_id == 0x6D80) {
+					uint64_t content_encodings_size = read_size();
+					src += content_encodings_size;
+					continue;
+				}
+
+				uint64_t inner_size = read_size();
+				src += inner_size;
 				WARN_PRINT(vformat("Unhandled element with ID %x of size %d", inner_id, inner_size));
 			}
 
+			r_tracks.push_back(track);
 			continue;
 		}
 
-		uint64_t outer_size = read_size(p_stream, &read);
-		p_stream += read + outer_size;
-		total_read += read + outer_size;
+		uint64_t outer_size = read_size();
+		src += outer_size;
 		WARN_PRINT(vformat("Unhandled element with ID %x of size %d", id, outer_size));
 	}
 
+	src = tracks_start + tracks_size;
 	return OK;
 }
 
-Error VideoStreamPlaybackMatroska::parse_chapters(uint8_t *p_stream, uint32_t *r_read) {
-	uint32_t read = 0;
-
-	uint64_t size = read_size(p_stream, &read);
-	*r_read += read;
-	*r_read += size;
+Error VideoStreamPlaybackMatroska::parse_chapters() {
+	uint64_t chapters_size = read_size();
+	src += chapters_size;
 
 	return OK;
 }
 
-Error VideoStreamPlaybackMatroska::parse_cluster(uint8_t *p_stream, uint32_t *r_read) {
-	uint32_t read = 0;
+Error VideoStreamPlaybackMatroska::parse_cluster(Cluster *r_cluster) {
+	int64_t cluster_size = read_size();
+	const uint8_t *cluster_start = src;
 
-	uint64_t cluster_size = read_size(p_stream, &read);
-	p_stream += read;
-	*r_read += read + cluster_size;
+	Vector<Cluster::Block> blocks;
+	while (src - cluster_start < cluster_size) {
+		uint64_t id = read_id();
 
-	uint64_t total_read = 0;
-	while (total_read < cluster_size) {
-		uint64_t id = read_id(p_stream, &read);
-		p_stream += read;
-		total_read += read;
+		if (id == EBML_CRC32_ID) {
+			uint64_t crc_size = read_size();
+			src += crc_size;
+			continue;
+		}
 
 		if (id == 0xE7) {
-			uint64_t time = read_uint(p_stream, &read);
-			p_stream += read;
-			total_read += read;
-			print_line(vformat("cluster time %d", time));
+			r_cluster->time = read_uint();
 			continue;
 		}
 
 		if (id == 0xA3) {
-			uint64_t block_size = read_size(p_stream, &read);
-			uint64_t frame_size = block_size;
-			p_stream += read;
-			total_read += read + block_size;
+			Cluster::Block block = {};
 
-			uint64_t target_track = read_size(p_stream, &read);
-			p_stream += read;
-			frame_size -= read;
+			uint64_t block_size = read_size();
+			const uint8_t *block_start = src;
+
+			uint64_t target_track = read_size();
+
+			uint16_t timestamp = (src[0] << 8) | src[1];
+			src += 2;
+
 			if (target_track == 1) {
-				print_line("---------------------");
+				r_cluster->time_to_layer.insert(timestamp, r_cluster->time_to_layer.size());
 			}
 
-			uint16_t timestamp = (p_stream[0] << 8) | p_stream[1];
-			p_stream += 2;
-			frame_size -= 2;
+			//uint8_t flags = src[0];
+			src += 1;
+
 			if (target_track == 1) {
-				print_line(vformat("timestamp %d", timestamp));
+				block.position = src - origin;
+				block.size = block_size - (src - block_start);
+				r_cluster->blocks.append(block);
 			}
 
-			uint8_t flags = p_stream[0];
-			p_stream += 1;
-			frame_size -= 1;
-
-			if (target_track == 1 && video_stream_encoding.is_valid()) {
-				print_line(vformat("key: %s", (flags & (1 << 7)) > 0));
-				video_stream_encoding->parse_container_block(p_stream, frame_size);
-			}
-
-			p_stream += frame_size;
+			src = block_start + block_size;
 			continue;
 		}
 
-		ERR_PRINT(vformat("Unknown id %x", id));
-		uint64_t skipped_size = read_size(p_stream, &read);
-		p_stream += read + skipped_size;
-		total_read += read + skipped_size;
+		uint64_t skipped_size = read_size();
+		src += skipped_size;
+		WARN_PRINT(vformat("Unhandled element with ID %x of size %d", id, skipped_size));
 	}
 
+	src = cluster_start + cluster_size;
 	return OK;
 }
 
-Error VideoStreamPlaybackMatroska::parse_cues(uint8_t *p_stream, uint32_t *r_read) {
-	uint32_t read = 0;
+Error VideoStreamPlaybackMatroska::parse_cues() {
+	int64_t cues_size = read_size();
+	const uint8_t *cues_start = src;
 
-	uint64_t cues_size = read_size(p_stream, &read);
-	p_stream += read;
-	*r_read += read + cues_size;
-
-	uint64_t total_read = 0;
-	while (total_read < cues_size) {
-		uint64_t id = read_id(p_stream, &read);
-		p_stream += read;
-		total_read += read;
+	while (src - cues_start < cues_size) {
+		uint64_t id = read_id();
 
 		if (id == EBML_CRC32_ID) {
-			uint64_t crc_size = read_size(p_stream, &read);
-			p_stream += read + crc_size;
-			total_read += read + crc_size;
+			uint64_t crc_size = read_size();
+			src += crc_size;
 			continue;
 		}
 
 		if (id == 0xBB) {
-			uint64_t element_size = read_size(p_stream, &read);
-			p_stream += read;
-			total_read += read + element_size;
+			int64_t element_size = read_size();
+			const uint8_t *element_start = src;
 
-			uint64_t element_read = 0;
-			while (element_read < element_size) {
-				uint64_t element_id = read_id(p_stream, &read);
-				p_stream += read;
-				element_read += read;
+			Cluster cluster = {};
+			while (src - element_start < element_size) {
+				uint64_t element_id = read_id();
 
 				if (element_id == 0xB3) {
-					uint64_t time = read_uint(p_stream, &read);
-					p_stream += read;
-					element_read += read;
-					print_line(vformat("Cue Time %d", time));
+					cluster.time = read_uint();
 					continue;
 				}
 
 				if (element_id == 0xB7) {
-					uint64_t positions_size = read_size(p_stream, &read);
-					p_stream += read;
-					element_read += read + positions_size;
+					int64_t positions_size = read_size();
+					const uint8_t *positions_start = src;
 
-					uint64_t positions_read = 0;
-					while (positions_read < positions_size) {
-						uint64_t positions_id = read_id(p_stream, &read);
-						p_stream += read;
-						positions_read += read;
+					while (src - positions_start < positions_size) {
+						uint64_t positions_id = read_id();
 
 						if (positions_id == 0xF7) {
-							uint64_t track = read_uint(p_stream, &read);
-							p_stream += read;
-							positions_read += read;
-							print_line(vformat("target track %d", track));
+							cluster.target_track = read_uint();
 							continue;
 						}
 
 						if (positions_id == 0xF1) {
-							uint64_t position = read_uint(p_stream, &read);
-							p_stream += read;
-							positions_read += read;
-							print_line(vformat("target position %d", position));
-							clusters.push_back(position);
+							cluster.position = read_uint();
 							continue;
 						}
 
+						// TODO is relative position at all useful?
 						if (positions_id == 0xF0) {
-							uint64_t relative_position = read_uint(p_stream, &read);
-							p_stream += read;
-							positions_read += read;
-							print_line(vformat("relative position %d", relative_position));
+							read_uint();
 							continue;
 						}
 
-						ERR_PRINT(vformat("Missing id %x", element_id));
+						uint64_t skipped_size = read_size();
+						src += skipped_size;
+						ERR_PRINT(vformat("Missing id %x of size %d", element_id, skipped_size));
 					}
 
 					continue;
 				}
 
+				uint64_t skipped_size = read_size();
+				src += skipped_size;
 				ERR_PRINT(vformat("Missing id %x", element_id));
 			}
 
+			clusters.push_back(cluster);
 			continue;
 		}
 
-		uint64_t skipped_size = read_size(p_stream, &read);
-		p_stream += read + skipped_size;
-		total_read += read + skipped_size;
+		uint64_t skipped_size = read_size();
+		src += skipped_size;
 	}
 
+	src = cues_start + cues_size;
 	return OK;
 }
 
-Error VideoStreamPlaybackMatroska::parse_attachments(uint8_t *p_stream, uint32_t *r_read) {
-	uint32_t read = 0;
-
-	uint64_t size = read_size(p_stream, &read);
-	*r_read += read;
-	*r_read += size;
+Error VideoStreamPlaybackMatroska::parse_attachments() {
+	uint64_t attachements_size = read_size();
+	src += attachements_size;
 
 	return OK;
 }
 
-Error VideoStreamPlaybackMatroska::parse_tags(uint8_t *p_stream, uint32_t *r_read) {
-	uint32_t read = 0;
-
-	uint64_t size = read_size(p_stream, &read);
-	*r_read += read;
-	*r_read += size;
+Error VideoStreamPlaybackMatroska::parse_tags() {
+	uint64_t tags_size = read_size();
+	src += tags_size;
 
 	return OK;
 }
 
 void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
+	path = p_file;
 	Vector<uint8_t> buffer = FileAccess::get_file_as_bytes(p_file);
 
-	uint8_t *ptr = (uint8_t *)buffer.ptr();
-	uint32_t read = 0;
-	uint32_t total_read = 0;
+	origin = buffer.ptr();
+	src = buffer.ptr();
 
-	while (total_read < buffer.size()) {
-		uint64_t id = read_id(ptr, &read);
-		ptr += read;
-		total_read += read;
+	while (src - origin < buffer.size()) {
+		uint64_t id = read_id();
 
 		if (id == EBML_HEADER_ID) {
-			Error err = parse_ebml_header(ptr, &read, &header);
+			Error err = parse_ebml_header(&header);
 			if (err != OK) {
 				ERR_PRINT("error parsing ebml header");
 			}
-			ptr += read;
-			total_read += read;
 			continue;
 		}
 
 		if (id == MATROSKA_SEGMENT_ID) {
-			Error err = parse_segment(ptr, &read, &segment);
+			Error err = parse_segment(&segment);
 			if (err != OK) {
 				ERR_PRINT("error parsing matroska segment");
 			}
-			ptr += read;
-			total_read += read;
 			break;
 		}
 
-		uint64_t size = read_size(ptr, &read);
-		ptr += read;
-		total_read += read;
+		uint64_t size = read_size();
+		src += size;
 		WARN_PRINT(vformat("Unhandled element with ID %x of size %d", id, size));
 	}
 }
@@ -1080,15 +902,19 @@ void VideoStreamPlaybackMatroska::play() {
 	}
 
 	video_stream_encoding->create_video_profile();
-	cluster = video_stream_encoding->decode_cluster();
 
-	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(cluster, 0);
+	Error err;
+	Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ, &err);
 
-	Ref<Image> frame;
-	frame.instantiate();
-	frame->set_data(1980, 1080, false, Image::FORMAT_RGBA8, data);
+	Cluster cluster = clusters[0];
 
-	image_texture->set_image(frame);
+	video_stream_encoding->begin_cluster();
+	for (Cluster::Block block : cluster.blocks) {
+		file->seek(block.position);
+		Vector<uint8_t> frame = file->get_buffer(block.size);
+		video_stream_encoding->append_container_block(frame);
+	}
+	cluster_rid = video_stream_encoding->end_cluster();
 }
 
 void VideoStreamPlaybackMatroska::stop() {
@@ -1128,6 +954,13 @@ Ref<Texture2D> VideoStreamPlaybackMatroska::get_texture() const {
 
 // TODO
 void VideoStreamPlaybackMatroska::update(double p_delta) {
+	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(cluster_rid, 0);
+
+	Ref<Image> frame;
+	frame.instantiate();
+	frame->set_data(1980, 1080, false, Image::FORMAT_RGBA8, data);
+
+	image_texture->set_image(frame);
 }
 
 int VideoStreamPlaybackMatroska::get_channels() const {
@@ -1144,7 +977,6 @@ void VideoStreamPlaybackMatroska::set_audio_track(int p_idx) {
 }
 
 VideoStreamPlaybackMatroska::VideoStreamPlaybackMatroska() {
-	rd_cluster.instantiate();
 	image_texture.instantiate();
 }
 

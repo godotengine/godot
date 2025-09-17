@@ -6357,13 +6357,13 @@ void RenderingDeviceDriverVulkan::command_video_control(CommandBufferID p_cmd_bu
 	vkCmdControlVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &cmd_control);
 }
 
-void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buffer, TextureID p_dpb, BufferID p_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, uint64_t p_buffer_offset, TextureID p_texture, uint32_t p_array_layer) {
+void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buffer, TextureID p_dpb, BufferID p_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, TextureID p_texture, uint32_t p_array_layer) {
 	CommandBufferInfo *cmd_buffer_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	TextureInfo *dpb = (TextureInfo *)p_dpb.id;
 	BufferInfo *buffer_info = (BufferInfo *)p_buffer.id;
 	TextureInfo *texture_info = (TextureInfo *)p_texture.id;
 
-	uint32_t slice_offset = p_buffer_offset;
+	uint32_t slice_offset = 0;
 	VkVideoDecodeH264PictureInfoKHR h264_picture_info = {};
 	h264_picture_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PICTURE_INFO_KHR;
 	h264_picture_info.pNext = nullptr;
@@ -6395,6 +6395,7 @@ void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buf
 	h264_reference_info.flags.used_for_long_term_reference = 0;
 	h264_reference_info.flags.is_non_existing = 0;
 
+	// TODO
 	h264_reference_info.FrameNum = 0;
 	h264_reference_info.PicOrderCnt[0] = 0;
 	h264_reference_info.PicOrderCnt[1] = 0;
@@ -6404,7 +6405,7 @@ void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buf
 	h264_dpb_info.pNext = nullptr;
 	h264_dpb_info.pStdReferenceInfo = &h264_reference_info;
 
-	// TODO make a valid dpb
+	// TODO array layer
 	VkVideoPictureResourceInfoKHR dpb_picture_info = {};
 	dpb_picture_info.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
 	dpb_picture_info.pNext = nullptr;
@@ -6413,13 +6414,14 @@ void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buf
 	dpb_picture_info.baseArrayLayer = 0;
 	dpb_picture_info.imageViewBinding = dpb->vk_view;
 
+	// TODO slot index
 	VkVideoReferenceSlotInfoKHR reference_info = {};
 	reference_info.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
 	reference_info.pNext = &h264_dpb_info;
 	reference_info.slotIndex = 0;
 	reference_info.pPictureResource = &dpb_picture_info;
 
-	// TODO setup reference slots
+	// TODO reference slots
 	VkVideoDecodeInfoKHR decode_info = {};
 	decode_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR;
 	decode_info.pNext = &h264_picture_info;

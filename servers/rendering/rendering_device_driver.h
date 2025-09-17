@@ -761,7 +761,7 @@ public:
 
 	virtual void command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, TextureID p_dpb, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) = 0;
 	virtual void command_video_control(CommandBufferID p_cmd_buffer) = 0;
-	virtual void command_video_decode(CommandBufferID p_cmd_buffer, TextureID p_dpb, BufferID p_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, uint64_t p_buffer_offset, TextureID p_texture, uint32_t p_array_layer) = 0;
+	virtual void command_video_decode(CommandBufferID p_cmd_buffer, TextureID p_dpb, BufferID p_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, TextureID p_texture, uint32_t p_array_layer) = 0;
 	virtual void command_video_coding_end(CommandBufferID p_cmd_buffer) = 0;
 
 	/**************/

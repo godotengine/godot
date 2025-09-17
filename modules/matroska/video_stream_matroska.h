@@ -31,8 +31,8 @@
 #pragma once
 
 #include "core/io/resource_loader.h"
+#include "core/templates/hash_map.h"
 #include "scene/resources/image_texture.h"
-#include "scene/resources/texture_rd.h"
 #include "scene/resources/video_stream.h"
 #include "scene/resources/video_stream_encoding.h"
 
@@ -134,13 +134,13 @@ private:
 	};
 
 	struct SegmentInfo {
-		void *uuid;
+		uint8_t uuid[16];
 		String filename;
 
-		void *prev_uuid;
+		uint8_t prev_uuid[16];
 		String prev_filename;
 
-		void *next_uuid;
+		uint8_t next_uuid[16];
 		String next_filename;
 
 		// multiple
@@ -159,54 +159,101 @@ private:
 		String writing_app;
 	};
 
-	struct Tracks;
-	struct Chapters;
-	struct Clusters;
-	struct Cues;
-	struct Attachments;
-	struct Tags;
+	struct Track {
+		uint32_t track_number = 0;
+		uint64_t track_uid = 0;
+
+		bool flag_enabled = true;
+		bool flag_default = true;
+		bool flag_forced = false;
+		bool flag_hearing_impaired = false;
+		bool flag_visual_impaired = false;
+		bool flag_text_descriptions = false;
+		bool flag_original = false;
+		bool flag_commentary = false;
+		bool flag_lacing = false;
+
+		uint64_t default_duration = 0;
+		uint64_t default_decoded_field_duration = 0;
+
+		double track_timestamp_scale = 0.0;
+
+		uint64_t max_block_addition_id = 0;
+
+		String name = "";
+		String language = "";
+
+		String codec_id;
+		String coded_name;
+
+		uint64_t attachment_link = 0;
+
+		uint64_t codec_delay = 0;
+
+		uint64_t seek_pre_roll = 0;
+	};
+
+	struct Cluster {
+		uint64_t time;
+		uint64_t position;
+		uint64_t target_track;
+
+		HashMap<uint64_t, uint8_t> time_to_layer;
+
+		struct Block {
+			uint64_t position;
+			uint64_t size;
+		};
+
+		Vector<Block> blocks;
+	};
 
 	struct Segment {
-		uint8_t *src = nullptr;
+		uint64_t start = 0;
 
 		SeekHead seek_head;
 		SegmentInfo info;
+
+		Vector<Track> tracks;
 	};
 
 	Segment segment;
-	Vector<uint64_t> clusters;
+
+	Vector<Cluster> clusters;
+
+	String path;
+	const uint8_t *origin = nullptr;
+	const uint8_t *src = nullptr;
 
 	Ref<VideoStreamEncoding> video_stream_encoding = nullptr;
 
 	uint width = 0;
 	uint height = 0;
 
-	RID cluster;
-	Ref<Texture2DArrayRD> rd_cluster;
-
+	RID cluster_rid;
 	Ref<ImageTexture> image_texture;
 
 	bool playing = false;
 
-	uint64_t read_id(uint8_t *p_stream, uint32_t *r_read);
-	uint64_t read_size(uint8_t *p_stream, uint32_t *r_read);
+	uint64_t read_id();
+	uint64_t read_size();
 
-	int64_t read_int(uint8_t *p_stream, uint32_t *r_read);
-	uint64_t read_uint(uint8_t *p_stream, uint32_t *r_read);
-	double read_float(uint8_t *p_stream, uint32_t *r_read);
-	String read_string(uint8_t *p_stream, uint32_t *r_read);
+	int64_t read_int();
+	uint64_t read_uint();
+	double read_float();
+	String read_string();
 
-	Error parse_ebml_header(uint8_t *p_stream, uint32_t *r_read, EbmlHeader *r_header);
+	Error parse_ebml_header(EbmlHeader *r_header);
+	Error parse_segment(Segment *r_segment);
 
-	Error parse_segment(uint8_t *p_stream, uint32_t *r_read, Segment *r_segment);
-	Error parse_seek_head(uint8_t *p_stream, uint32_t *r_read, SeekHead *r_seak_head);
-	Error parse_segment_info(uint8_t *p_stream, uint32_t *r_read, SegmentInfo *r_segment_info);
-	Error parse_tracks(uint8_t *p_stream, uint32_t *r_read);
-	Error parse_chapters(uint8_t *p_stream, uint32_t *r_read);
-	Error parse_cluster(uint8_t *p_stream, uint32_t *r_read);
-	Error parse_cues(uint8_t *p_stream, uint32_t *r_read);
-	Error parse_attachments(uint8_t *p_stream, uint32_t *r_read);
-	Error parse_tags(uint8_t *p_stream, uint32_t *r_read);
+	Error parse_seek_head(SeekHead *r_seak_head);
+	Error parse_segment_info(SegmentInfo *r_segment_info);
+	Error parse_tracks(Vector<Track> r_tracks);
+	Error parse_chapters();
+	Error parse_cluster(Cluster *r_cluster);
+	Error parse_cues();
+	Error parse_attachments();
+	Error parse_tags();
 
 public:
 	void set_file(const String &p_file);
