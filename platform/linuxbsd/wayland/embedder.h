@@ -196,6 +196,8 @@ private:
 		WaylandObject *get_object(uint32_t p_local_id);
 		Error delete_object(uint32_t p_local_id);
 
+		Error bind_global_id(uint32_t p_global_id, uint32_t p_local_id);
+
 		uint32_t new_object(uint32_t p_local_id, const struct wl_interface *p_interface, int p_version = 1, WaylandObjectData *p_data = nullptr);
 		uint32_t new_server_object(uint32_t p_global_id, const struct wl_interface *p_interface, int p_version = 1, WaylandObjectData *p_data = nullptr);
 		WaylandObject *new_fake_object(uint32_t p_local_id, const struct wl_interface *p_interface, int p_version = 1, WaylandObjectData *p_data = nullptr);
@@ -575,6 +577,8 @@ private:
 	void cleanup_socket(int p_socket);
 
 	void sync();
+
+	uint32_t wl_registry_bind(uint32_t p_registry_id, uint32_t p_name, int p_version);
 
 	void seat_name_enter_surface(uint32_t p_seat_name, uint32_t p_global_surface_id);
 	void seat_name_leave_surface(uint32_t p_seat_name, uint32_t p_global_surface_id);

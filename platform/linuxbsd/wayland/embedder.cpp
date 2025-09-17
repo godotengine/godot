@@ -255,6 +255,20 @@ struct WaylandEmbedder::WaylandObject *WaylandEmbedder::Client::get_object(uint3
 	return embedder->get_object(get_global_id(p_local_id));
 }
 
+Error WaylandEmbedder::Client::bind_global_id(uint32_t p_global_id, uint32_t p_local_id) {
+	ERR_FAIL_COND_V(local_ids.has(p_global_id), ERR_ALREADY_EXISTS);
+	ERR_FAIL_COND_V(global_ids.has(p_local_id), ERR_ALREADY_EXISTS);
+
+	GlobalIdInfo gid_info;
+	gid_info.id = p_global_id;
+	gid_info.history_elem = global_id_history.push_back(p_global_id);
+	global_ids[p_local_id] = gid_info;
+
+	local_ids[p_global_id] = p_local_id;
+
+	return OK;
+}
+
 Error WaylandEmbedder::Client::delete_object(uint32_t p_local_id) {
 	if (fake_objects.has(p_local_id)) {
 #ifdef WAYLAND_EMBED_DEBUG_LOGS_ENABLED
@@ -352,12 +366,7 @@ uint32_t WaylandEmbedder::Client::new_object(uint32_t p_local_id, const struct w
 
 	uint32_t new_global_id = embedder->new_object(p_interface, p_version, p_data);
 
-	GlobalIdInfo gid_info;
-	gid_info.id = new_global_id;
-	gid_info.history_elem = global_id_history.push_back(new_global_id);
-	global_ids[p_local_id] = gid_info;
-
-	local_ids[new_global_id] = p_local_id;
+	bind_global_id(new_global_id, p_local_id);
 
 	return new_global_id;
 }
@@ -856,6 +865,48 @@ void WaylandEmbedder::sync() {
 	}
 }
 
+// Returns the gid for the newly bound object, or an existing shared object if
+// necessary.
+uint32_t WaylandEmbedder::wl_registry_bind(uint32_t p_registry_id, uint32_t p_name, int p_version) {
+	RegistryGlobalInfo &info = registry_globals[p_name];
+
+	uint32_t id = INVALID_ID;
+
+	if (wl_interface_get_destructor_opcode(info.interface, p_version) < 0) {
+		DEBUG_LOG_WAYLAND_EMBED(vformat("Binding instanced global %s %d", info.interface->name, p_version));
+
+		// Reusable object.
+		if (info.reusable_objects.has(p_version) && info.reusable_objects[p_version] != INVALID_ID) {
+			DEBUG_LOG_WAYLAND_EMBED("Already bound.");
+			return info.reusable_objects[p_version];
+		}
+
+		id = new_object(info.interface, p_version);
+		ERR_FAIL_COND_V(id == INVALID_ID, INVALID_ID);
+
+		info.reusable_objects[p_version] = id;
+		get_object(id)->shared = true;
+	} else {
+		DEBUG_LOG_WAYLAND_EMBED(vformat("Binding global %s as g0x%x version %d", info.interface->name, id, p_version));
+		id = new_object(info.interface, p_version);
+	}
+
+	ERR_FAIL_COND_V(id == INVALID_ID, INVALID_ID);
+
+	registry_globals_names[id] = p_name;
+
+	LocalVector<union wl_argument> args;
+	args.push_back(wl_arg_uint(info.compositor_name));
+	args.push_back(wl_arg_string(info.interface->name));
+	args.push_back(wl_arg_int(p_version));
+	args.push_back(wl_arg_new_id(id));
+
+	Error err = send_wayland_method(compositor_socket, p_registry_id, wl_registry_interface, WL_REGISTRY_BIND, args);
+	ERR_FAIL_COND_V_MSG(err != OK, INVALID_ID, "Error while sending bind request.");
+
+	return id;
+}
+
 void WaylandEmbedder::seat_name_enter_surface(uint32_t p_seat_name, uint32_t p_wl_surface_id) {
 	WaylandSurfaceData *surf_data = (WaylandSurfaceData *)get_object(p_wl_surface_id)->data;
 	CRASH_COND(surf_data == nullptr);
@@ -1176,7 +1227,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 			// [Request] wl_registry::bind(usun)
 			uint32_t global_name = body[0];
 			uint32_t interface_name_len = body[1];
-			const char *interface_name = (const char *)(body + 2);
+			//const char *interface_name = (const char *)(body + 2);
 			uint32_t version = body[2 + wl_array_word_offset(interface_name_len)];
 			uint32_t new_local_id_idx = 2 + wl_array_word_offset(interface_name_len) + 1;
 			uint32_t new_local_id = body[new_local_id_idx];
@@ -1205,65 +1256,30 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 
 			WaylandObject *instance = nullptr;
 
-			if (wl_interface_get_destructor_opcode(global_info.interface, version) >= 0) {
-				DEBUG_LOG_WAYLAND_EMBED(vformat("Passthrough global bind #%d iface %s ver %d", global_name, global_info.interface->name, version));
+			client->registry_globals_instances[global_name].insert(new_local_id);
+			++global_info.instance_counter;
 
-				if (!client->registry_globals_instances.has(global_name)) {
-					client->registry_globals_instances[global_name] = {};
-				}
+			if (!client->registry_globals_instances.has(global_name)) {
+				client->registry_globals_instances[global_name] = {};
+			}
 
-				client->registry_globals_instances[global_name].insert(new_local_id);
-				++global_info.instance_counter;
+			uint32_t bind_gid = wl_registry_bind(REGISTRY_ID, global_name, version);
+			if (bind_gid == INVALID_ID) {
+				socket_error(client->socket, local_id, WL_DISPLAY_ERROR_IMPLEMENTATION, "Bind failed.");
+				return MessageStatus::HANDLED;
+			}
 
-				// Passthrough.
-				uint32_t instance_gid = client->new_object(new_local_id, global_info.interface, version);
-				ERR_FAIL_COND_V(instance_gid == INVALID_ID, MessageStatus::HANDLED);
+			WaylandObject *bind_obj = get_object(bind_gid);
+			if (bind_obj == nullptr) {
+				socket_error(client->socket, local_id, WL_DISPLAY_ERROR_IMPLEMENTATION, "Bind failed.");
+				return MessageStatus::HANDLED;
+			}
 
-				instance = get_object(instance_gid);
-
-				registry_globals_names[instance_gid] = global_name;
-
-				LocalVector<union wl_argument> args;
-				union wl_argument arg;
-
-				args.push_back(wl_arg_uint(global_info.compositor_name));
-				args.push_back(wl_arg_string(interface_name));
-				args.push_back(wl_arg_uint(version));
-
-				arg.n = instance_gid;
-				args.push_back(arg);
-
-				send_wayland_method(compositor_socket, REGISTRY_ID, wl_registry_interface, WL_REGISTRY_BIND, args);
+			if (!bind_obj->shared) {
+				client->bind_global_id(bind_gid, new_local_id);
+				instance = bind_obj;
 			} else {
-				// Instance of a reusable object. For interfaces without a destructor
-				// method.
-
-				if (!client->registry_globals_instances.has(global_name)) {
-					client->registry_globals_instances[global_name] = {};
-				}
-
-				client->registry_globals_instances[global_name].insert(new_local_id);
-				++global_info.instance_counter;
-
-				if (global_info.reusable_objects[version] == INVALID_ID) {
-					uint32_t header[2] = { REGISTRY_ID, (uint32_t)(msg_len << 16) };
-
-					body[0] = global_info.compositor_name;
-
-					DEBUG_LOG_WAYLAND_EMBED(vformat("Binding new global #%d iface %s ver %d", global_name, global_info.interface->name, version));
-
-					uint32_t new_gid = new_object(global_info.interface, version);
-					global_info.reusable_objects[version] = new_gid;
-					registry_globals_names[new_gid] = global_name;
-
-					get_object(new_gid)->shared = true;
-
-					send_raw_message(compositor_socket, { { header, sizeof header }, { body, body_len - WL_WORD_SIZE }, { &new_gid, sizeof new_gid } });
-				}
-
-				ERR_FAIL_COND_V(global_info.reusable_objects[version] == INVALID_ID, MessageStatus::ERROR);
 				instance = client->new_global_instance(new_local_id, global_info.reusable_objects[version], global_info.interface, version);
-
 				DEBUG_LOG_WAYLAND_EMBED(vformat("Instancing global #%d iface %s ver %d new id l0x%x g0x%x", global_name, global_info.interface->name, version, new_local_id, global_info.reusable_objects[version]));
 
 				// Some interfaces report their state as soon as they're bound. Since
@@ -1834,7 +1850,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 	ERR_FAIL_NULL_V_MSG(global_object, MessageStatus::ERROR, "Compositor messages must always have a global object.");
 
 	uint32_t *body = msg_data + 2;
-	size_t body_len = msg_len - (WL_WORD_SIZE * 2);
+	//size_t body_len = msg_len - (WL_WORD_SIZE * 2);
 
 	// FIXME: Make sure that it makes sense to track this protocol. Not only it is
 	// old and getting deprecated, but I can't even get this code branch to hit
@@ -1966,51 +1982,16 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 					registry_globals[new_global_name] = global_info;
 
 					// We need some interfaces directly. It's better to bind a "copy" ourselves
-					// than to wait for the client to ask one. Since I'm lazy, we can exploit
-					// the fact that a bind request is the global event with the new id tacked on.
+					// than to wait for the client to ask one.
 					if (global_interface == &xdg_wm_base_interface && xdg_wm_base_id == 0) {
-						xdg_wm_base_id = new_object(&xdg_wm_base_interface, global_info.version);
-						DEBUG_LOG_WAYLAND_EMBED(vformat("Binding global xdg_wm_base as g0x%x version %d", xdg_wm_base_id, global_info.version));
-
-						uint32_t header[2] = { p_global_id, 0 };
-						header[1] = (sizeof header + body_len + sizeof xdg_wm_base_id) << 16; // opcode is 0.
-
-						// TODO: Put this logic in a method.
-						if (wl_interface_get_destructor_opcode(global_interface, global_info.version) < 0) {
-							registry_globals[new_global_name].reusable_objects[global_info.version] = xdg_wm_base_id;
-							registry_globals_names[xdg_wm_base_id] = new_global_name;
-							get_object(xdg_wm_base_id)->shared = true;
-						}
-
-						send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &xdg_wm_base_id, sizeof xdg_wm_base_id } });
+						xdg_wm_base_id = wl_registry_bind(p_global_id, new_global_name, global_info.version);
+						ERR_FAIL_COND_V(xdg_wm_base_id == INVALID_ID, MessageStatus::ERROR);
 					} else if (global_interface == &wl_compositor_interface && wl_compositor_id == 0) {
-						wl_compositor_id = new_object(&wl_compositor_interface, global_info.version);
-						DEBUG_LOG_WAYLAND_EMBED(vformat("Binding global wl_compositor as g0x%x version %d", wl_compositor_id, global_info.version));
-
-						uint32_t header[2] = { p_global_id, 0 };
-						header[1] = (sizeof header + body_len + sizeof wl_compositor_id) << 16; // opcode is 0.
-
-						if (wl_interface_get_destructor_opcode(global_interface, global_info.version) < 0) {
-							registry_globals[new_global_name].reusable_objects[global_info.version] = wl_compositor_id;
-							registry_globals_names[wl_compositor_id] = new_global_name;
-							get_object(wl_compositor_id)->shared = true;
-						}
-
-						send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &wl_compositor_id, sizeof wl_compositor_id } });
+						wl_compositor_id = wl_registry_bind(p_global_id, new_global_name, global_info.version);
+						ERR_FAIL_COND_V(wl_compositor_id == INVALID_ID, MessageStatus::ERROR);
 					} else if (global_interface == &wl_subcompositor_interface && wl_subcompositor_id == 0) {
-						wl_subcompositor_id = new_object(&wl_subcompositor_interface, global_info.version);
-						DEBUG_LOG_WAYLAND_EMBED(vformat("Binding global wl_subcompositor as g0x%x version %d", wl_subcompositor_id, global_info.version));
-
-						uint32_t header[2] = { p_global_id, 0 };
-						header[1] = (sizeof header + body_len + sizeof wl_subcompositor_id) << 16; // opcode is 0.
-
-						if (wl_interface_get_destructor_opcode(global_interface, global_info.version) < 0) {
-							registry_globals[new_global_name].reusable_objects[global_info.version] = wl_subcompositor_id;
-							registry_globals_names[wl_subcompositor_id] = new_global_name;
-							get_object(wl_subcompositor_id)->shared = true;
-						}
-
-						send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &wl_subcompositor_id, sizeof wl_subcompositor_id } });
+						wl_subcompositor_id = wl_registry_bind(p_global_id, new_global_name, global_info.version);
+						ERR_FAIL_COND_V(wl_subcompositor_id == INVALID_ID, MessageStatus::ERROR);
 					}
 
 					DEBUG_LOG_WAYLAND_EMBED(vformat("Local global-object name l#%d", new_global_name));
