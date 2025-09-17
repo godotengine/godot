@@ -274,14 +274,15 @@ TEST_CASE("[Variant] Assignment To Bool from Int,Float,String,Vec2,Vec2i,Vec3,Ve
 	rid_v = bool_v;
 	CHECK(rid_v.get_type() == Variant::BOOL);
 
-	Object obj_one = Object();
-	Variant object_v = &obj_one;
+	Object *obj_one = memnew(Object);
+	Variant object_v = obj_one;
 	bool_v = true;
 	object_v = bool_v;
 	CHECK(object_v == Variant(true));
 	bool_v = false;
 	object_v = bool_v;
 	CHECK(object_v.get_type() == Variant::BOOL);
+	memdelete(obj_one);
 }
 
 TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Vec3i Vec4,Vec4i,Rect2,Rect2i,Trans2d,Trans3d,Color,Call,Plane,Basis,AABB,Quant,Proj,RID,and Object") {
@@ -453,14 +454,15 @@ TEST_CASE("[Variant] Assignment To Int from Bool,Float,String,Vec2,Vec2i,Vec3,Ve
 	rid_v = int_v;
 	CHECK(rid_v.get_type() == Variant::INT);
 
-	Object obj_one = Object();
-	Variant object_v = &obj_one;
+	Object *obj_one = memnew(Object);
+	Variant object_v = obj_one;
 	int_v = 2;
 	object_v = int_v;
 	CHECK(object_v == Variant(2));
 	int_v = -3;
 	object_v = int_v;
 	CHECK(object_v.get_type() == Variant::INT);
+	memdelete(obj_one);
 }
 
 TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Vec3i,Vec4,Vec4i,Rect2,Rect2i,Trans2d,Trans3d,Color,Call,Plane,Basis,AABB,Quant,Proj,RID,and Object") {
@@ -632,14 +634,15 @@ TEST_CASE("[Variant] Assignment To Float from Bool,Int,String,Vec2,Vec2i,Vec3,Ve
 	rid_v = float_v;
 	CHECK(rid_v.get_type() == Variant::FLOAT);
 
-	Object obj_one = Object();
-	Variant object_v = &obj_one;
+	Object *obj_one = memnew(Object);
+	Variant object_v = obj_one;
 	float_v = 1.5f;
 	object_v = float_v;
 	CHECK(object_v == Variant(1.5f));
 	float_v = -4.6f;
 	object_v = float_v;
 	CHECK(object_v.get_type() == Variant::FLOAT);
+	memdelete(obj_one);
 }
 
 TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Vec3i,Vec4,Vec4i,Rect2,Rect2i,Trans2d,Trans3d,Color,Call,Plane,Basis,AABB,Quant,Proj,RID,and Object") {
@@ -811,14 +814,15 @@ TEST_CASE("[Variant] Assignment To String from Bool,Int,Float,Vec2,Vec2i,Vec3,Ve
 	rid_v = string_v;
 	CHECK(rid_v.get_type() == Variant::STRING);
 
-	Object obj_one = Object();
-	Variant object_v = &obj_one;
+	Object *obj_one = memnew(Object);
+	Variant object_v = obj_one;
 	string_v = "Hello";
 	object_v = string_v;
 	CHECK(object_v == Variant("Hello"));
 	string_v = "Hello there";
 	object_v = string_v;
 	CHECK(object_v.get_type() == Variant::STRING);
+	memdelete(obj_one);
 }
 
 TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Vec3i,Vec4,Vec4i,Rect2,Rect2i,Trans2d,Trans3d,Color,Call,Plane,Basis,AABB,Quant,Proj,RID,and Object") {
@@ -990,14 +994,15 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	rid_v = vec2_v;
 	CHECK(rid_v.get_type() == Variant::VECTOR2);
 
-	Object obj_one = Object();
-	Variant object_v = &obj_one;
+	Object *obj_one = memnew(Object);
+	Variant object_v = obj_one;
 	vec2_v = Vector2(2.2f, 3.5f);
 	object_v = vec2_v;
 	CHECK(object_v == Variant(Vector2(2.2f, 3.5f)));
 	vec2_v = Vector2(-5.4f, -7.9f);
 	object_v = vec2_v;
 	CHECK(object_v.get_type() == Variant::VECTOR2);
+	memdelete(obj_one);
 }
 
 TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Vec3i,Vec4,Vec4i,Rect2,Rect2i,Trans2d,Trans3d,Color,Call,Plane,Basis,AABB,Quant,Proj,RID,and Object") {
@@ -1169,14 +1174,15 @@ TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Ve
 	rid_v = vec2i_v;
 	CHECK(rid_v.get_type() == Variant::VECTOR2I);
 
-	Object obj_one = Object();
-	Variant object_v = &obj_one;
+	Object *obj_one = memnew(Object);
+	Variant object_v = obj_one;
 	vec2i_v = Vector2i(2, 3);
 	object_v = vec2i_v;
 	CHECK(object_v == Variant(Vector2i(2, 3)));
 	vec2i_v = Vector2i(-5, -7);
 	object_v = vec2i_v;
 	CHECK(object_v.get_type() == Variant::VECTOR2I);
+	memdelete(obj_one);
 }
 
 TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Vec3i,Vec4,Vec4i,Rect2,Rect2i,Trans2d,Trans3d,Color,Call,Plane,Basis,AABB,Quant,Proj,RID,and Object") {
@@ -1348,14 +1354,15 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 	rid_v = vec3_v;
 	CHECK(rid_v.get_type() == Variant::VECTOR3);
 
-	Object obj_one = Object();
-	Variant object_v = &obj_one;
+	Object *obj_one = memnew(Object);
+	Variant object_v = obj_one;
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
 	object_v = vec3_v;
 	CHECK(object_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
 	object_v = vec3_v;
 	CHECK(object_v.get_type() == Variant::VECTOR3);
+	memdelete(obj_one);
 }
 
 TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,Vec3 and Color") {
@@ -1527,14 +1534,15 @@ TEST_CASE("[Variant] Assignment To Vec3i from Bool,Int,Float,String,Vec2,Vec2i,V
 	rid_v = vec3i_v;
 	CHECK(rid_v.get_type() == Variant::VECTOR3I);
 
-	Object obj_one = Object();
-	Variant object_v = &obj_one;
+	Object *obj_one = memnew(Object);
+	Variant object_v = obj_one;
 	vec3i_v = Vector3i(2, 3, 5);
 	object_v = vec3i_v;
 	CHECK(object_v == Variant(Vector3i(2, 3, 5)));
 	vec3i_v = Vector3i(-5, -7, -2);
 	object_v = vec3i_v;
 	CHECK(object_v.get_type() == Variant::VECTOR3I);
+	memdelete(obj_one);
 }
 
 TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,Vec3,Vec3i,Vec4,Vec4i,Rect2,Rect2i,Trans2d,Trans3d,Color,Call,Plane,Basis,AABB,Quant,Proj,RID,and Object") {
@@ -1706,14 +1714,15 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	rid_v = col_v;
 	CHECK(rid_v.get_type() == Variant::COLOR);
 
-	Object obj_one = Object();
-	Variant object_v = &obj_one;
+	Object *obj_one = memnew(Object);
+	Variant object_v = obj_one;
 	col_v = Color(0.25f, 0.4f, 0.78f);
 	object_v = col_v;
 	CHECK(object_v == Variant(Color(0.25f, 0.4f, 0.78f)));
 	col_v = Color(0.33f, 0.75f, 0.21f);
 	object_v = col_v;
 	CHECK(object_v.get_type() == Variant::COLOR);
+	memdelete(obj_one);
 }
 
 TEST_CASE("[Variant] array initializer list") {
@@ -2103,24 +2112,26 @@ TEST_CASE("[Variant] Identity comparison") {
 	CHECK(packed_vector3_array.identity_compare(packed_vector3_array));
 	CHECK_FALSE(packed_vector3_array.identity_compare(PackedVector3Array()));
 
-	Object obj_one = Object();
-	Variant obj_one_var = &obj_one;
-	Object obj_two = Object();
-	Variant obj_two_var = &obj_two;
+	Object *obj_one = memnew(Object);
+	Variant obj_one_var = obj_one;
+	Object *obj_two = memnew(Object);
+	Variant obj_two_var = obj_two;
 	CHECK(obj_one_var.identity_compare(obj_one_var));
 	CHECK_FALSE(obj_one_var.identity_compare(obj_two_var));
+	memdelete(obj_two);
+	memdelete(obj_one);
 
 	Variant obj_null_one_var = Variant((Object *)nullptr);
 	Variant obj_null_two_var = Variant((Object *)nullptr);
 	CHECK(obj_null_one_var.identity_compare(obj_null_one_var));
 	CHECK(obj_null_one_var.identity_compare(obj_null_two_var));
 
-	Object *freed_one = new Object();
+	Object *freed_one = memnew(Object);
 	Variant freed_one_var = freed_one;
-	delete freed_one;
-	Object *freed_two = new Object();
+	memdelete(freed_one);
+	Object *freed_two = memnew(Object);
 	Variant freed_two_var = freed_two;
-	delete freed_two;
+	memdelete(freed_two);
 	CHECK_FALSE(freed_one_var.identity_compare(freed_two_var));
 }
 
