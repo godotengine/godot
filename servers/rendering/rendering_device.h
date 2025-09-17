@@ -399,7 +399,7 @@ public:
 	RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
 	RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_usage, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers, uint64_t p_mipmaps = 1);
 	RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D, uint32_t p_layers = 0);
-	RID texture_create_video_session(const TextureFormat &p_format, const TextureView &p_view, RID p_video_profile);
+	RID texture_create_for_video_coding(const TextureFormat &p_format, const TextureView &p_view, RID p_video_profile);
 	Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data);
 	Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer); // CPU textures will return immediately, while GPU textures will most likely force a flush
 	Error texture_get_data_async(RID p_texture, uint32_t p_layer, const Callable &p_callback);
@@ -1420,10 +1420,9 @@ private:
 	RID_Owner<VideoProfileState> video_profiles_owner;
 
 public:
-	VideoCodingListID video_coding_list_begin(RID p_profile, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps);
-	void video_coding_list_bind_texure(VideoCodingListID p_list, uint32_t p_width, uint32_t p_height, uint64_t p_array_layers);
+	VideoCodingListID video_coding_list_begin(RID p_profile, RID p_dpb, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps);
 	void video_coding_list_control(VideoCodingListID p_list);
-	void video_coding_list_decode(VideoCodingListID p_list, Span<uint8_t> p_src_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, uint32_t p_array_layer);
+	void video_coding_list_decode(VideoCodingListID p_list, RID p_src_buffer, RID p_dst_texture, StdVideoDecodeH264PictureInfo p_std_h264_info, uint32_t p_array_layer);
 	void video_coding_list_encode(VideoCodingListID p_list);
 
 	RID video_coding_list_end();

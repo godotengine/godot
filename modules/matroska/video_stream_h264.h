@@ -41,10 +41,10 @@ class VideoStreamH264 : public VideoStreamEncoding {
 	GDCLASS(VideoStreamH264, VideoStreamEncoding);
 
 private:
-	uint8_t *src = nullptr;
+	const uint8_t *src = nullptr;
 	uint8_t shift = 7;
 
-	RD::VideoCodingH264ProfileIdc target_profile_idc = RenderingDeviceCommons::VIDEO_CODING_H264_PROFILE_IDC_MAIN;
+	RD::VideoCodingH264ProfileIdc target_profile_idc = RenderingDeviceCommons::VIDEO_CODING_H264_PROFILE_IDC_HIGH;
 	RD::VideoCodingH264ProfileIdc minimum_profile_idc;
 
 	// TODO make an RD version
@@ -53,20 +53,28 @@ private:
 	// TODO make RD versions
 	StdVideoH264SequenceParameterSet active_sps;
 	StdVideoH264PictureParameterSet active_pps;
-	Vector<StdVideoDecodeH264PictureInfo> slice_metadatas;
-	Vector<Vector<uint8_t>> slice_spans;
 
 	RID video_profile;
+
+	// TODO: use a pool of dst textures
+	RID dpb;
+	RID dst_texture;
+
+	uint8_t target_dpb_layer = 0;
+	uint8_t target_dst_layer = 0;
+
+	RD::VideoCodingListID video_coding_list;
 
 public:
 	RID create_video_profile() final override;
 
-	RID decode_cluster() final override;
+	void parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) final override;
 
-	void parse_container_metadata(uint8_t *p_stream, uint64_t p_size) final override;
-	void parse_container_block(uint8_t *p_stream, uint64_t p_size) final override;
+	virtual void begin_cluster() final override;
+	virtual void append_container_block(Vector<uint8_t> p_block) final override;
+	virtual RID end_cluster() final override;
 
-	bool parse_nal_unit(uint64_t p_size);
+	void parse_nal_unit(uint64_t p_size);
 	StdVideoH264SequenceParameterSet parse_sequence_parameter_set(uint64_t p_size);
 	StdVideoH264PictureParameterSet parse_picture_parameter_set(uint64_t p_size);
 	StdVideoDecodeH264PictureInfo parse_slice_header(uint64_t p_size, bool p_is_idr);
