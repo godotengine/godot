@@ -3837,12 +3837,21 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	XLookupString(xkeyevent, str, 255, &keysym_unicode, nullptr);
 	XLookupString(&xkeyevent_no_mod, nullptr, 0, &keysym_keycode, nullptr);
 
+	// Get a normalized keysym (ignoring modifiers like Shift/Ctrl).
 	String keysym;
 #ifdef XKB_ENABLED
 	if (xkb_loaded_v08p) {
 		KeySym keysym_unicode_nm = 0; // keysym used to find unicode
 		XLookupString(&xkeyevent_no_mod, nullptr, 0, &keysym_unicode_nm, nullptr);
-		keysym = String::chr(xkb_keysym_to_utf32(xkb_keysym_to_upper(keysym_unicode_nm)));
+
+		// Unicode codepoint corresponding to the pressed key.
+		// Printable keys (letters, numbers, symbols) return a valid codepoint.
+		u_int32_t unicode_cp = xkb_keysym_to_utf32(xkb_keysym_to_upper(keysym_unicode_nm));
+
+		// Non-printable keys (Ctrl, Home, CapsLock, F1, etc.) return 0, so we skip them.
+		if (unicode_cp != 0) {
+			keysym = String::chr(unicode_cp);
+		}
 	}
 #endif
 
