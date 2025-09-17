@@ -877,10 +877,6 @@ void main() {
 
 	color.rgb = apply_tonemapping(color.rgb, params.white);
 
-	bool convert_to_srgb = bool(params.flags & FLAG_CONVERT_TO_SRGB);
-	if (convert_to_srgb) {
-		color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
-	}
 #ifndef SUBPASS
 	// Glow
 	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode != GLOW_MODE_MIX) {
@@ -891,9 +887,6 @@ void main() {
 
 		// high dynamic range -> SRGB
 		glow = apply_tonemapping(glow, params.white);
-		if (convert_to_srgb) {
-			glow = linear_to_srgb(glow);
-		}
 
 		color.rgb = apply_glow(color.rgb, glow);
 	}
@@ -905,13 +898,13 @@ void main() {
 		color.rgb = apply_bcs(color.rgb, params.bcs);
 	}
 
+	if (bool(params.flags & FLAG_CONVERT_TO_SRGB) || bool(params.flags & FLAG_USE_COLOR_CORRECTION)) {
+		color.rgb = linear_to_srgb(color.rgb);
+	}
+
 	if (bool(params.flags & FLAG_USE_COLOR_CORRECTION)) {
-		// apply_color_correction requires nonlinear sRGB encoding
-		if (!convert_to_srgb) {
-			color.rgb = linear_to_srgb(color.rgb);
-		}
 		color.rgb = apply_color_correction(color.rgb);
-		// When convert_to_srgb is false, there is no need to convert back to
+		// When FLAG_CONVERT_TO_SRGB is false, there is no need to convert back to
 		// linear because the color correction texture sampling does this for us.
 	}
 
