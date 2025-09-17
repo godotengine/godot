@@ -754,6 +754,8 @@ protected:
 
 	bool lightmap_bicubic_upscale = false;
 
+	bool environment_use_legacy_mode = false;
+
 	/* Sky */
 
 	struct SkyGlobals {
@@ -889,6 +891,8 @@ public:
 	_FORCE_INLINE_ bool is_using_physical_light_units() {
 		return use_physical_light_units;
 	}
+
+	void environment_set_use_legacy_mode(bool p_enable) override;
 
 	void positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) override;
 	void directional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) override;

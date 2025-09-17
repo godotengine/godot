@@ -174,6 +174,8 @@ private:
 	uint32_t volumetric_fog_depth = 128;
 	bool volumetric_fog_filter_active = true;
 
+	bool environment_use_legacy_mode = false;
+
 public:
 	static RendererSceneRenderRD *get_singleton() { return singleton; }
 
@@ -217,6 +219,8 @@ public:
 	_FORCE_INLINE_ bool is_using_physical_light_units() {
 		return use_physical_light_units;
 	}
+
+	void environment_set_use_legacy_mode(bool p_enable) override;
 
 	/* REFLECTION PROBE */
 
