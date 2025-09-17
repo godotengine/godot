@@ -7828,7 +7828,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	imported_anim_warning = memnew(Button);
 	imported_anim_warning->hide();
-	imported_anim_warning->set_text(TTR("Imported Scene"));
+	imported_anim_warning->set_text(TTR("Imported Animation"));
 	imported_anim_warning->set_tooltip_text(TTR("Warning: Editing imported animation"));
 	imported_anim_warning->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_show_imported_anim_warning));
 	bottom_hf->add_child(imported_anim_warning);
