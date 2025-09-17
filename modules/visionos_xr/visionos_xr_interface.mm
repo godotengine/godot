@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  visionos_vr_interface.mm                                              */
+/*  visionos_xr_interface.mm                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,7 +30,7 @@
 
 #ifdef VISIONOS_ENABLED
 
-#include "visionos_vr_interface.h"
+#include "visionos_xr_interface.h"
 
 #include "core/input/input.h"
 #include "core/os/os.h"
@@ -40,44 +40,44 @@
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server_globals.h"
 
-VisionOSVRInterface::VisionOSVRInterface() {}
+VisionOSXRInterface::VisionOSXRInterface() {}
 
-VisionOSVRInterface::~VisionOSVRInterface() {
+VisionOSXRInterface::~VisionOSXRInterface() {
 	// and make sure we cleanup if we haven't already
 	if (is_initialized()) {
 		uninitialize();
 	};
 }
 
-StringName VisionOSVRInterface::get_name() const {
-	return VisionOSVRInterface::name();
+StringName VisionOSXRInterface::get_name() const {
+	return VisionOSXRInterface::name();
 }
 
-uint32_t VisionOSVRInterface::get_capabilities() const {
+uint32_t VisionOSXRInterface::get_capabilities() const {
 	return XRInterface::XR_VR + XRInterface::XR_AR + XRInterface::XR_STEREO;
 }
 
-uint32_t VisionOSVRInterface::get_view_count() {
+uint32_t VisionOSXRInterface::get_view_count() {
 	return 2;
 }
 
-bool VisionOSVRInterface::get_viewports_are_hdr() {
+bool VisionOSXRInterface::get_viewports_are_hdr() {
 	return true;
 }
 
-XRInterface::TrackingStatus VisionOSVRInterface::get_tracking_status() const {
+XRInterface::TrackingStatus VisionOSXRInterface::get_tracking_status() const {
 	return tracking_state;
 }
 
-bool VisionOSVRInterface::is_initialized() const {
+bool VisionOSXRInterface::is_initialized() const {
 	return (initialized);
 }
 
-bool VisionOSVRInterface::initialize() {
-	print_verbose("VisionOSVRInterface.initialize()");
+bool VisionOSXRInterface::initialize() {
+	print_verbose("VisionOSXRInterface.initialize()");
 
 	if (initialized) {
-		ERR_PRINT("VisionOSVRInterface already initialized");
+		ERR_PRINT("VisionOSXRInterface already initialized");
 		return true;
 	}
 
@@ -85,10 +85,10 @@ bool VisionOSVRInterface::initialize() {
 	ERR_FAIL_NULL_V(xr_server, false);
 
 	String driver_name = OS::get_singleton()->get_current_rendering_driver_name().to_lower();
-	ERR_FAIL_COND_V_MSG(driver_name != "metal", false, "The visionOS VR interface requires the Metal rendering driver.");
+	ERR_FAIL_COND_V_MSG(driver_name != "metal", false, "The visionOS XR interface requires the Metal rendering driver.");
 
 	GDTRenderMode app_delegate_render_mode = GDTAppDelegateServiceVisionOS.renderMode;
-	ERR_FAIL_COND_V_MSG(app_delegate_render_mode != GDTRenderModeCompositorServices, false, "The visionOS VR interface requires GDTRenderModeCompositorServices render mode.");
+	ERR_FAIL_COND_V_MSG(app_delegate_render_mode != GDTRenderModeCompositorServices, false, "The visionOS XR interface requires GDTRenderModeCompositorServices render mode.");
 
 	layer_renderer = GDTAppDelegateServiceVisionOS.layerRenderer;
 	ERR_FAIL_NULL_V_MSG(layer_renderer, false, "GDTAppDelegateServiceVisionOS.layerRenderer not set");
@@ -125,7 +125,7 @@ bool VisionOSVRInterface::initialize() {
 	return initialized;
 }
 
-void VisionOSVRInterface::uninitialize() {
+void VisionOSXRInterface::uninitialize() {
 	if (!initialized) {
 		return;
 	}
@@ -146,28 +146,28 @@ void VisionOSVRInterface::uninitialize() {
 	}
 }
 
-Dictionary VisionOSVRInterface::get_system_info() {
+Dictionary VisionOSXRInterface::get_system_info() {
 	Dictionary dict;
 
-	dict[SNAME("XRRuntimeName")] = String("Godot visionOS VR interface");
+	dict[SNAME("XRRuntimeName")] = String("Godot visionOS XR interface");
 	dict[SNAME("XRRuntimeVersion")] = String("1.0");
 
 	return dict;
 }
 
-bool VisionOSVRInterface::supports_play_area_mode(XRInterface::PlayAreaMode p_mode) {
+bool VisionOSXRInterface::supports_play_area_mode(XRInterface::PlayAreaMode p_mode) {
 	return p_mode == XR_PLAY_AREA_ROOMSCALE;
 }
 
-XRInterface::PlayAreaMode VisionOSVRInterface::get_play_area_mode() const {
+XRInterface::PlayAreaMode VisionOSXRInterface::get_play_area_mode() const {
 	return XR_PLAY_AREA_ROOMSCALE;
 }
 
-bool VisionOSVRInterface::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
+bool VisionOSXRInterface::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
 	return p_mode == XR_PLAY_AREA_ROOMSCALE;
 }
 
-Transform3D VisionOSVRInterface::get_camera_transform() {
+Transform3D VisionOSXRInterface::get_camera_transform() {
 	_THREAD_SAFE_METHOD_
 
 	Transform3D camera_transform;
@@ -184,7 +184,7 @@ Transform3D VisionOSVRInterface::get_camera_transform() {
 	return camera_transform;
 }
 
-Transform3D VisionOSVRInterface::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
+Transform3D VisionOSXRInterface::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	_THREAD_SAFE_METHOD_
 
 	Transform3D eye_transform;
@@ -213,7 +213,7 @@ Transform3D VisionOSVRInterface::get_transform_for_view(uint32_t p_view, const T
 	return p_cam_transform * reference_frame * eye_transform;
 }
 
-Projection VisionOSVRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
+Projection VisionOSXRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
 	_THREAD_SAFE_METHOD_
 
 	Projection eye_projection;
@@ -232,7 +232,7 @@ Projection VisionOSVRInterface::get_projection_for_view(uint32_t p_view, double 
 	return eye_projection;
 }
 
-Rect2i VisionOSVRInterface::get_viewport_for_view(uint32_t p_view) {
+Rect2i VisionOSXRInterface::get_viewport_for_view(uint32_t p_view) {
 	_THREAD_SAFE_METHOD_
 
 	Rect2 viewport_rect;
@@ -250,7 +250,7 @@ Rect2i VisionOSVRInterface::get_viewport_for_view(uint32_t p_view) {
 	return viewport_rect;
 }
 
-Size2 VisionOSVRInterface::get_render_target_size() {
+Size2 VisionOSXRInterface::get_render_target_size() {
 	Size2 target_size;
 	if (!initialized) {
 		return target_size;
@@ -261,7 +261,7 @@ Size2 VisionOSVRInterface::get_render_target_size() {
 	return target_size;
 }
 
-void VisionOSVRInterface::set_head_pose_from_arkit(bool p_use_drawable) {
+void VisionOSXRInterface::set_head_pose_from_arkit(bool p_use_drawable) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_NULL_MSG(current_frame, "Current frame is nil, probably process() has not been called, using identity transform");
@@ -295,7 +295,7 @@ void VisionOSVRInterface::set_head_pose_from_arkit(bool p_use_drawable) {
 	}
 }
 
-void VisionOSVRInterface::process() {
+void VisionOSXRInterface::process() {
 	if (!initialized) {
 		return;
 	}
@@ -307,7 +307,7 @@ void VisionOSVRInterface::process() {
 	cp_frame_start_update(current_frame);
 }
 
-void VisionOSVRInterface::pre_render() {
+void VisionOSXRInterface::pre_render() {
 	_THREAD_SAFE_METHOD_
 
 	if (!initialized) {
@@ -344,13 +344,13 @@ void VisionOSVRInterface::pre_render() {
 	}
 }
 
-Vector<BlitToScreen> VisionOSVRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
+Vector<BlitToScreen> VisionOSXRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
 	_THREAD_SAFE_METHOD_
 	// We're overriding the color and depth textures, no need for screen blits
 	return Vector<BlitToScreen>();
 }
 
-void VisionOSVRInterface::encode_present(MDCommandBuffer *p_cmd_buffer) {
+void VisionOSXRInterface::encode_present(MDCommandBuffer *p_cmd_buffer) {
 	_THREAD_SAFE_METHOD_
 
 	if (!initialized) {
@@ -360,7 +360,7 @@ void VisionOSVRInterface::encode_present(MDCommandBuffer *p_cmd_buffer) {
 	cp_drawable_encode_present(current_drawable, p_cmd_buffer->get_command_buffer());
 }
 
-void VisionOSVRInterface::end_frame() {
+void VisionOSXRInterface::end_frame() {
 	_THREAD_SAFE_METHOD_
 
 	if (!initialized) {
@@ -370,7 +370,7 @@ void VisionOSVRInterface::end_frame() {
 	cp_frame_end_submission(current_frame);
 }
 
-RID VisionOSVRInterface::get_color_texture() {
+RID VisionOSXRInterface::get_color_texture() {
 	_THREAD_SAFE_METHOD_
 
 	if (!initialized) {
@@ -415,7 +415,7 @@ RID VisionOSVRInterface::get_color_texture() {
 	return current_color_texture_id;
 }
 
-RID VisionOSVRInterface::get_depth_texture() {
+RID VisionOSXRInterface::get_depth_texture() {
 	_THREAD_SAFE_METHOD_
 
 	if (!initialized) {
@@ -460,7 +460,7 @@ RID VisionOSVRInterface::get_depth_texture() {
 	return current_depth_texture_id;
 }
 
-RID VisionOSVRInterface::get_vrs_texture() {
+RID VisionOSXRInterface::get_vrs_texture() {
 	_THREAD_SAFE_METHOD_
 
 	if (!initialized) {
@@ -486,7 +486,7 @@ RID VisionOSVRInterface::get_vrs_texture() {
 	return current_rasterization_rate_map_id;
 }
 
-VisionOSVRInterface::VRSTextureFormat VisionOSVRInterface::get_vrs_texture_format() {
+VisionOSXRInterface::VRSTextureFormat VisionOSXRInterface::get_vrs_texture_format() {
 	return XR_VRS_TEXTURE_FORMAT_RASTERIZATION_RATE_MAP;
 }
 

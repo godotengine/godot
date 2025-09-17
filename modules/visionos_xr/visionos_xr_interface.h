@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  visionos_vr_interface.h                                               */
+/*  visionos_xr_interface.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -52,8 +52,8 @@
 	more advanced interfaces.
 */
 
-class VisionOSVRInterface : public XRInterface {
-	GDCLASS(VisionOSVRInterface, XRInterface);
+class VisionOSXRInterface : public XRInterface {
+	GDCLASS(VisionOSXRInterface, XRInterface);
 
 private:
 	bool initialized = false;
@@ -87,12 +87,12 @@ private:
 
 public:
 	static StringName name() { return "visionOS"; }
-	static Ref<VisionOSVRInterface> find_interface() {
+	static Ref<VisionOSXRInterface> find_interface() {
 		return XRServer::get_singleton()->find_interface(name());
 	}
 
-	VisionOSVRInterface();
-	~VisionOSVRInterface();
+	VisionOSXRInterface();
+	~VisionOSXRInterface();
 
 	virtual StringName get_name() const override;
 	virtual uint32_t get_capabilities() const override;

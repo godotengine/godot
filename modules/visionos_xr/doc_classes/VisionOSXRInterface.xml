@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisionOSVRInterface" inherits="XRInterface" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="VisionOSXRInterface" inherits="XRInterface" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		visionOS VR implementation for rendering in immersive mode.
+		visionOS XR implementation for rendering in immersive mode.
 	</brief_description>
 	<description>
-		This is a visionOS VR implementation for rendering in immersive mode.
+		This is a visionOS XR implementation for rendering in immersive mode. It uses the Compositor Services framework to render an Immersive scene. It supports the full and mixed immersive modes mode.
+
+		To use this module, you must set 'application/app_role' export setting to 'Immersive'. You can choose the immersion style using the 'application/immersion_style' export setting.
 
 		You must use the Metal rendering driver, and only the Mobile renderer is supported for now.
 
 		You can initialize this interface as follows:
+
 		[codeblock]
 		var interface = XRServer.find_interface("visionOS")
 		if interface and interface.initialize():

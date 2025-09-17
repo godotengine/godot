@@ -33,7 +33,7 @@
 #import "rendering_device_driver_metal.h"
 
 #if defined(VISIONOS_ENABLED)
-#include "modules/visionos_vr/visionos_vr_interface.h"
+#include "modules/visionos_xr/visionos_xr_interface.h"
 #import "platform/visionos/godot_app_delegate_service_visionos.h"
 #import <CompositorServices/CompositorServices.h>
 #endif
@@ -206,7 +206,7 @@ public:
 
 #if TARGET_OS_VISION
 class SurfaceCompositorServices : public RenderingContextDriverMetal::Surface {
-	// Return a dummy framebuffer so present() is called on it, which relays the call to VisionOSVRInterface
+	// Return a dummy framebuffer so present() is called on it, which relays the call to VisionOSXRInterface
 	MDFrameBuffer dummy_framebuffer;
 
 public:
@@ -232,7 +232,7 @@ public:
 	}
 
 	void present(MDCommandBuffer *p_cmd_buffer) override final {
-		Ref<VisionOSVRInterface> visionos_xr_interface = VisionOSVRInterface::find_interface();
+		Ref<VisionOSXRInterface> visionos_xr_interface = VisionOSXRInterface::find_interface();
 		ERR_FAIL_COND_MSG(!visionos_xr_interface.is_valid(), "visionOS VR interface not found or invalid");
 		visionos_xr_interface->encode_present(p_cmd_buffer);
 	}
