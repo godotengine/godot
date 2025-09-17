@@ -80,6 +80,9 @@ public:
 	Size2 shadow_atlas_pixel_size;
 	Size2 directional_shadow_pixel_size;
 
+	Size2 radiance_pixel_size;
+	Size2 reflection_atlas_pixel_size;
+
 	float time;
 	float time_step;
 
@@ -132,6 +135,9 @@ private:
 
 		float shadow_atlas_pixel_size[2];
 		float directional_shadow_pixel_size[2];
+
+		float radiance_pixel_size[2];
+		float reflection_atlas_pixel_size[2];
 
 		uint32_t directional_light_count;
 		float dual_paraboloid_side;
