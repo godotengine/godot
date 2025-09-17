@@ -169,6 +169,7 @@ void SpxPathFinder::setup_grid_spx(GdVec2 size, GdVec2 cell_size, GdBool with_de
 
 void SpxPathFinder::setup_grid(Vector2i size, Vector2i cell_size, bool with_debug) {
 	astar->set_region({-size / 2, size});
+    astar->set_diagonal_mode(AStarGrid2D::DIAGONAL_MODE_NEVER);
     astar->set_cell_size(cell_size);
     astar->update();
 
@@ -196,19 +197,27 @@ void SpxPathFinder::add_all_obstacles(Node *root) {
     if (!root) 
         return;
 
-    for (int i = 0; i < root->get_child_count(); i++) {
-        Node *child = root->get_child(i);
-        if (StaticBody2D *body = Object::cast_to<StaticBody2D>(child)) {
-            _process_static_obstacles(body);
-        } else if (SpxSprite *sprite = Object::cast_to<SpxSprite>(child)) {
-            if(sprite->get_physics_mode() == SpxSprite::PhysicsMode::STATIC)
-                _process_static_obstacles(sprite);
-        } else if (TileMapLayer *layer = Object::cast_to<TileMapLayer>(child)) {
-            _process_tilemap_obstacles(layer);
-        }
+    Vector<Node*> stack;
+    stack.push_back(root);
 
-        // stack or queue to improve
-        add_all_obstacles(child);
+    while(!stack.is_empty()){
+        Node *node = stack[stack.size() - 1];
+        stack.resize(stack.size() - 1);
+
+        for (int i = 0; i < node->get_child_count(); i++) {
+            Node *child = node->get_child(i);
+
+            if (StaticBody2D *body = Object::cast_to<StaticBody2D>(child)) {
+                _process_static_obstacles(body);
+            } else if (SpxSprite *sprite = Object::cast_to<SpxSprite>(child)) {
+                if(sprite->get_physics_mode() == SpxSprite::PhysicsMode::STATIC)
+                    _process_static_obstacles(sprite);
+            } else if (TileMapLayer *layer = Object::cast_to<TileMapLayer>(child)) {
+                _process_tilemap_obstacles(layer);
+            }
+
+            stack.push_back(child);
+        }
     }
 }
 
