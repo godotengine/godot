@@ -204,7 +204,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				[b]Example:[/b] Usa a scene instance as a tooltip:
+				[b]Example:[/b] Use a scene instance as a tooltip:
 				[codeblocks]
 				[gdscript]
 				func _make_custom_tooltip(for_text):
