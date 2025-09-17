@@ -1292,11 +1292,9 @@ void LiveEditor::_remove_node_func(const NodePath &p_at) {
 		return; //scene not editable
 	}
 
-	Vector<Node *> to_delete;
+	LocalVector<Node *> to_delete;
 
-	for (HashSet<Node *>::Iterator F = E->value.begin(); F; ++F) {
-		Node *n = *F;
-
+	for (const Node *n : E->value) {
 		if (base && !base->is_ancestor_of(n)) {
 			continue;
 		}
@@ -1309,8 +1307,8 @@ void LiveEditor::_remove_node_func(const NodePath &p_at) {
 		to_delete.push_back(n2);
 	}
 
-	for (int i = 0; i < to_delete.size(); i++) {
-		memdelete(to_delete[i]);
+	for (Node *node : to_delete) {
+		memdelete(node);
 	}
 }
 
@@ -1330,10 +1328,8 @@ void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_kee
 		return; //scene not editable
 	}
 
-	Vector<Node *> to_remove;
-	for (HashSet<Node *>::Iterator F = E->value.begin(); F; ++F) {
-		Node *n = *F;
-
+	LocalVector<Node *> to_remove;
+	for (Node *n : E->value) {
 		if (base && !base->is_ancestor_of(n)) {
 			continue;
 		}
@@ -1345,8 +1341,7 @@ void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_kee
 		to_remove.push_back(n);
 	}
 
-	for (int i = 0; i < to_remove.size(); i++) {
-		Node *n = to_remove[i];
+	for (Node *n : to_remove) {
 		Node *n2 = n->get_node(p_at);
 		n2->get_parent()->remove_child(n2);
 		live_edit_remove_list[n][p_keep_id] = n2;
