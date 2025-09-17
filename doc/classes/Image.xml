@@ -783,13 +783,13 @@
 			Performs Lanczos interpolation. This is the slowest image resizing mode, but it typically gives the best results, especially when downscaling images.
 		</constant>
 		<constant name="ALPHA_NONE" value="0" enum="AlphaMode">
-			Image does not have alpha.
+			Image is fully opaque. It does not store alpha data.
 		</constant>
 		<constant name="ALPHA_BIT" value="1" enum="AlphaMode">
-			Image stores alpha in a single bit.
+			Image stores either fully opaque or fully transparent pixels. Also known as punchthrough alpha.
 		</constant>
 		<constant name="ALPHA_BLEND" value="2" enum="AlphaMode">
-			Image uses alpha.
+			Image stores alpha data with values varying between [code]0.0[/code] and [code]1.0[/code].
 		</constant>
 		<constant name="COMPRESS_S3TC" value="0" enum="CompressMode">
 			Use S3TC compression.
