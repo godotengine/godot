@@ -224,6 +224,7 @@ typedef void (*GDExtensionSpxAudioSetPan)(GdObj obj, GdFloat pan);
 typedef void (*GDExtensionSpxAudioGetPan)(GdObj obj, GdFloat* ret_value);
 typedef void (*GDExtensionSpxAudioSetVolume)(GdObj obj, GdFloat volume);
 typedef void (*GDExtensionSpxAudioGetVolume)(GdObj obj, GdFloat* ret_value);
+typedef void (*GDExtensionSpxAudioPlayWithAttenuation)(GdObj obj, GdString path,GdObj owner_id, GdFloat attenuation ,GdFloat max_distance , GdInt* ret_value);
 typedef void (*GDExtensionSpxAudioPlay)(GdObj obj, GdString path, GdInt* ret_value);
 typedef void (*GDExtensionSpxAudioPause)(GdInt aid);
 typedef void (*GDExtensionSpxAudioResume)(GdInt aid);

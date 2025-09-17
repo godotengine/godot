@@ -88,6 +88,9 @@ static void gdextension_spx_audio_set_volume(GdObj obj,GdFloat volume) {
 static void gdextension_spx_audio_get_volume(GdObj obj,GdFloat* ret_val) {
 	*ret_val = audioMgr->get_volume(obj);
 }
+static void gdextension_spx_audio_play_with_attenuation(GdObj obj,GdString path,GdObj owner_id,GdFloat attenuation,GdFloat max_distance,GdInt* ret_val) {
+	*ret_val = audioMgr->play_with_attenuation(obj, path, owner_id, attenuation, max_distance);
+}
 static void gdextension_spx_audio_play(GdObj obj,GdString path,GdInt* ret_val) {
 	*ret_val = audioMgr->play(obj, path);
 }
@@ -898,6 +901,7 @@ void gdextension_spx_setup_interface() {
 	REGISTER_SPX_INTERFACE_FUNC(spx_audio_get_pan);
 	REGISTER_SPX_INTERFACE_FUNC(spx_audio_set_volume);
 	REGISTER_SPX_INTERFACE_FUNC(spx_audio_get_volume);
+	REGISTER_SPX_INTERFACE_FUNC(spx_audio_play_with_attenuation);
 	REGISTER_SPX_INTERFACE_FUNC(spx_audio_play);
 	REGISTER_SPX_INTERFACE_FUNC(spx_audio_pause);
 	REGISTER_SPX_INTERFACE_FUNC(spx_audio_resume);

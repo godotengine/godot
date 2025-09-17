@@ -89,6 +89,24 @@ gdspx_audio_get_volume(obj) {
 	FreeGdFloat(_retValue); 
 	return _finalRetValue
 }
+gdspx_audio_play_with_attenuation(obj,path,owner_id,attenuation,max_distance) {
+	var _gdFuncPtr = Module._gdspx_audio_play_with_attenuation; 
+	var _retValue = AllocGdInt();
+	var _arg0 = ToGdObj(obj);
+	var _arg1 = ToGdString(path);
+	var _arg2 = ToGdObj(owner_id);
+	var _arg3 = ToGdFloat(attenuation);
+	var _arg4 = ToGdFloat(max_distance);
+	_gdFuncPtr(_arg0, _arg1, _arg2, _arg3, _arg4, _retValue);
+	FreeGdObj(_arg0); 
+	FreeGdString(_arg1); 
+	FreeGdObj(_arg2); 
+	FreeGdFloat(_arg3); 
+	FreeGdFloat(_arg4); 
+	var _finalRetValue = ToJsInt(_retValue);
+	FreeGdInt(_retValue); 
+	return _finalRetValue
+}
 gdspx_audio_play(obj,path) {
 	var _gdFuncPtr = Module._gdspx_audio_play; 
 	var _retValue = AllocGdInt();

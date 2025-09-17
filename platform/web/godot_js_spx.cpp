@@ -107,6 +107,10 @@ void gdspx_audio_get_volume(GdObj* obj,GdFloat* ret_val) {
 	*ret_val = audioMgr->get_volume(*obj);
 }
 EMSCRIPTEN_KEEPALIVE
+void gdspx_audio_play_with_attenuation(GdObj* obj,GdString* path,GdObj* owner_id,GdFloat* attenuation,GdFloat* max_distance,GdInt* ret_val) {
+	*ret_val = audioMgr->play_with_attenuation(*obj, *path, *owner_id, *attenuation, *max_distance);
+}
+EMSCRIPTEN_KEEPALIVE
 void gdspx_audio_play(GdObj* obj,GdString* path,GdInt* ret_val) {
 	*ret_val = audioMgr->play(*obj, *path);
 }

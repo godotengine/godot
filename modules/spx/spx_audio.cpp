@@ -30,7 +30,9 @@
 
 #include "spx_audio.h"
 
+#include "gdextension_spx_ext.h"
 #include "scene/2d/audio_stream_player_2d.h"
+#include "scene/main/node.h"
 #include "spx_audio_mgr.h"
 #include "spx_engine.h"
 #include "spx_res_mgr.h"
@@ -118,13 +120,19 @@ void SpxAudio::on_update(float delta) {
 	}
 }
 
-void SpxAudio::play(GdInt aid, GdString path) {
+void SpxAudio::play(GdInt aid, GdString path, Node* owner, GdFloat attenuation, GdFloat max_distance) {
 	auto path_str = SpxStr(path);
 	Ref<AudioStream> stream = resMgr->load_audio(path_str);
 	auto audio = memnew(AudioStreamPlayer2D);
+	if(owner != nullptr){
+		owner->add_child(audio);
+	} else {
+		root->add_child(audio);
+	}
 	audio->set_bus(bus_name);
-	root->add_child(audio);
 	audio->set_stream(stream);
+	audio->set_max_distance(max_distance);
+	audio->set_attenuation(attenuation);
 	audio->play();
 	audio->set_name(path_str);
 	audio->set_pitch_scale(get_pitch());
