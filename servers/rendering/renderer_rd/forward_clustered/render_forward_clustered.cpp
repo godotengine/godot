@@ -5044,7 +5044,6 @@ RenderForwardClustered::RenderForwardClustered() {
 	_update_shader_quality_settings();
 	_update_global_pipeline_data_requirements_from_project();
 
-	resolve_effects = memnew(RendererRD::Resolve());
 	taa = memnew(RendererRD::TAA);
 	fsr2_effect = memnew(RendererRD::FSR2Effect);
 	ss_effects = memnew(RendererRD::SSEffects);
@@ -5081,11 +5080,6 @@ RenderForwardClustered::~RenderForwardClustered() {
 		motion_vectors_store = nullptr;
 	}
 #endif
-
-	if (resolve_effects != nullptr) {
-		memdelete(resolve_effects);
-		resolve_effects = nullptr;
-	}
 
 	RD::get_singleton()->free(shadow_sampler);
 	RSG::light_storage->directional_shadow_atlas_set_size(0);

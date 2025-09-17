@@ -412,7 +412,7 @@ void RendererSceneRenderRD::_render_buffers_ensure_depth_texture(const RenderDat
 	rb->create_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_DEPTH, RD::DATA_FORMAT_R32_SFLOAT, usage_bits, RD::TEXTURE_SAMPLES_1);
 }
 
-void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataRD *p_render_data) {
+void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataRD *p_render_data, bool p_use_msaa) {
 	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
 	ERR_FAIL_COND(rb.is_null());
 
@@ -433,7 +433,13 @@ void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataR
 			copy_effects->copy_to_rect(depth_texture, depth_back_texture, Rect2i(0, 0, size.x, size.y));
 		} else {
 			RID depth_back_fb = FramebufferCacheRD::get_singleton()->get_cache(depth_back_texture);
-			copy_effects->copy_to_fb_rect(depth_texture, depth_back_fb, Rect2i(0, 0, size.x, size.y));
+			if (p_use_msaa) {
+				static const int texture_multisamples[RS::VIEWPORT_MSAA_MAX] = { 1, 2, 4, 8 };
+
+				resolve_effects->resolve_depth_raster(rb->get_depth_msaa(v), depth_back_fb, texture_multisamples[rb->get_msaa_3d()]);
+			} else {
+				copy_effects->copy_to_fb_rect(depth_texture, depth_back_fb, Rect2i(0, 0, size.x, size.y));
+			}
 		}
 	}
 
@@ -1716,6 +1722,7 @@ void RendererSceneRenderRD::init() {
 #ifdef METAL_ENABLED
 	mfx_spatial = memnew(RendererRD::MFXSpatialEffect);
 #endif
+	resolve_effects = memnew(RendererRD::Resolve(!can_use_storage));
 }
 
 RendererSceneRenderRD::~RendererSceneRenderRD() {
@@ -1752,6 +1759,10 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 		memdelete(mfx_spatial);
 	}
 #endif
+
+	if (resolve_effects) {
+		memdelete(resolve_effects);
+	}
 
 	if (sky.sky_scene_state.uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky.sky_scene_state.uniform_set)) {
 		RD::get_singleton()->free(sky.sky_scene_state.uniform_set);
