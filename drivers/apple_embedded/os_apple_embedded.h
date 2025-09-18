@@ -53,7 +53,9 @@ private:
 	static HashMap<String, void *> dynamic_symbol_lookup_table;
 	friend void register_dynamic_symbol(char *name, void *address);
 
+#ifdef COREAUDIO_ENABLED
 	AudioDriverCoreAudio audio_driver;
+#endif
 
 	AppleEmbedded *apple_embedded = nullptr;
 

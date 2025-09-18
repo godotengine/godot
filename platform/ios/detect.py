@@ -31,6 +31,7 @@ def get_opts():
         (("apple_target_triple", "ios_triple"), "Triple for the corresponding target Apple platform toolchain", ""),
         BoolVariable(("simulator", "ios_simulator"), "Build for Simulator", False),
         BoolVariable("generate_bundle", "Generate an APP bundle after building iOS/macOS binaries", False),
+        BoolVariable("coreaudio_enabled", "Coreaudio Enabled", True),
     ]
 
 
@@ -147,7 +148,10 @@ def configure(env: "SConsEnvironment"):
     )
 
     env.Prepend(CPPPATH=["#platform/ios"])
-    env.Append(CPPDEFINES=["IOS_ENABLED", "APPLE_EMBEDDED_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
+    env.Append(CPPDEFINES=["IOS_ENABLED", "UNIX_ENABLED", "APPLE_EMBEDDED_ENABLED"])
+
+    if env["coreaudio_enabled"]:
+        env.Append(CPPDEFINES=["COREAUDIO_ENABLED"])
 
     if env["metal"] and env["simulator"]:
         print_warning("iOS Simulator does not support the Metal rendering driver")
