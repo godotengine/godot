@@ -243,6 +243,8 @@ struct MethodInfo {
 	Vector<Variant> default_arguments;
 	int return_val_metadata = 0;
 	Vector<int> arguments_metadata;
+	bool is_static = false;
+	uint64_t hash = 0;
 
 	int get_argument_meta(int p_arg) const {
 		ERR_FAIL_COND_V(p_arg < -1 || p_arg > arguments.size(), 0);
@@ -267,7 +269,8 @@ struct MethodInfo {
 			name(*reinterpret_cast<StringName *>(pinfo.name)),
 			return_val(PropertyInfo(pinfo.return_value)),
 			flags(pinfo.flags),
-			id(pinfo.id) {
+			id(pinfo.id),
+			is_static(pinfo.flags & GDEXTENSION_METHOD_FLAG_STATIC) {
 		for (uint32_t i = 0; i < pinfo.argument_count; i++) {
 			arguments.push_back(PropertyInfo(pinfo.arguments[i]));
 		}
