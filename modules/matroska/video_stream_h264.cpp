@@ -41,15 +41,15 @@
 #include <vk_video/vulkan_video_codec_h264std_decode.h>
 #include <vulkan/vulkan_core.h>
 
-RID VideoStreamH264::create_video_profile() {
-	video_profile = RD::get_singleton()->video_profile_create(chroma_subsampling, luma_bit_depth, chroma_bit_depth);
-	RD::get_singleton()->video_profile_bind_h264_decoding_metadata(video_profile, target_profile_idc, RD::VIDEO_CODING_H264_PICTURE_LAYOUT_PROGRESSIVE);
+RID VideoStreamH264::create_video_session(uint32_t p_width, uint32_t p_height) {
+	RD::get_singleton()->video_profile_get_capabilities(video_profile);
+	RD::get_singleton()->video_profile_get_format_properties(video_profile);
 
 	RenderingDeviceCommons::TextureFormat dpb_format;
 	dpb_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
-	dpb_format.width = 1980;
-	dpb_format.height = 1080;
-	dpb_format.depth = 0;
+	dpb_format.width = p_width;
+	dpb_format.height = p_height;
+	dpb_format.depth = 1;
 	dpb_format.array_layers = 17;
 	dpb_format.mipmaps = 1;
 	dpb_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
@@ -63,8 +63,8 @@ RID VideoStreamH264::create_video_profile() {
 
 	RenderingDeviceCommons::TextureFormat dst_format;
 	dst_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
-	dst_format.width = 1980;
-	dst_format.height = 1080;
+	dst_format.width = p_width;
+	dst_format.height = p_height;
 	dst_format.depth = 1;
 	dst_format.array_layers = 120;
 	dst_format.mipmaps = 1;
@@ -76,8 +76,7 @@ RID VideoStreamH264::create_video_profile() {
 	dst_format.is_discardable = false;
 
 	dst_texture = RD::get_singleton()->texture_create_for_video_coding(dst_format, RD::TextureView(), video_profile);
-
-	return video_profile;
+	return dst_texture;
 }
 
 // The Matroska "codec private" data for H264 is an AVCDecoderConfigurationRecord
@@ -90,6 +89,10 @@ void VideoStreamH264::parse_container_metadata(const uint8_t *p_stream, uint64_t
 
 	target_profile_idc = RD::VideoCodingH264ProfileIdc(read_bits(8));
 	minimum_profile_idc = RD::VideoCodingH264ProfileIdc(read_bits(8));
+
+	video_profile.operation = RD::VIDEO_OPERATION_DECODE_H264;
+	video_profile.h264_profile_idc = target_profile_idc;
+	video_profile.h264_picture_layout = RD::VIDEO_CODING_H264_PICTURE_LAYOUT_PROGRESSIVE;
 
 	target_level_idc = read_bits(8);
 
@@ -118,17 +121,17 @@ void VideoStreamH264::parse_container_metadata(const uint8_t *p_stream, uint64_t
 	if (target_profile_idc == RD::VIDEO_CODING_H264_PROFILE_IDC_HIGH) {
 		uint8_t chroma_format = read_bits(8) & 0b11;
 		if (chroma_format == 0) {
-			chroma_subsampling = RD::CHROMA_SUBSAMPLING_MONOCHROME;
+			video_profile.chroma_subsampling = RD::CHROMA_SUBSAMPLING_MONOCHROME;
 		} else if (chroma_format == 1) {
-			chroma_subsampling = RD::CHROMA_SUBSAMPLING_420;
+			video_profile.chroma_subsampling = RD::CHROMA_SUBSAMPLING_420;
 		} else if (chroma_format == 2) {
-			chroma_subsampling = RD::CHROMA_SUBSAMPLING_422;
+			video_profile.chroma_subsampling = RD::CHROMA_SUBSAMPLING_422;
 		} else if (chroma_format == 3) {
-			chroma_subsampling = RD::CHROMA_SUBSAMPLING_444;
+			video_profile.chroma_subsampling = RD::CHROMA_SUBSAMPLING_444;
 		}
 
-		luma_bit_depth = (read_bits(8) & 0b111) + 8;
-		chroma_bit_depth = (read_bits(8) & 0b111) + 8;
+		video_profile.luma_bit_depth = (read_bits(8) & 0b111) + 8;
+		video_profile.chroma_bit_depth = (read_bits(8) & 0b111) + 8;
 
 		uint8_t sps_ext_sets = read_bits(8);
 		for (uint8_t set = 0; set < sps_ext_sets; set++) {
@@ -182,12 +185,12 @@ void VideoStreamH264::parse_nal_unit(uint64_t p_size) {
 
 	switch (nal_unit_type) {
 		case 1: {
-			uint64_t buffer_size = p_size + 4;
+			uint64_t buffer_size = p_size;
 			buffer_size += 128 - (buffer_size % 128);
 			RID buffer = RD::get_singleton()->storage_buffer_create_video_session(buffer_size, video_profile, Span<uint8_t>(), RD::STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC);
 
-			RD::get_singleton()->buffer_update(buffer, 0, 4, &p_size);
-			RD::get_singleton()->buffer_update(buffer, 4, p_size, start);
+			//RD::get_singleton()->buffer_update(buffer, 0, 4, &p_size);
+			RD::get_singleton()->buffer_update(buffer, 0, p_size, start);
 			RD::get_singleton()->_flush_and_stall_for_all_frames();
 
 			StdVideoDecodeH264PictureInfo slice_info = parse_slice_header(p_size - 1, false);
@@ -200,12 +203,13 @@ void VideoStreamH264::parse_nal_unit(uint64_t p_size) {
 		} break;
 
 		case 5: {
-			uint64_t buffer_size = p_size + 4;
+			uint64_t buffer_size = p_size + 3;
 			buffer_size += 128 - (buffer_size % 128);
 			RID buffer = RD::get_singleton()->storage_buffer_create_video_session(buffer_size, video_profile, Span<uint8_t>(), RD::STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC);
 
-			RD::get_singleton()->buffer_update(buffer, 0, 4, &p_size);
-			RD::get_singleton()->buffer_update(buffer, 4, p_size, start);
+			uint8_t start_code[3] = { 0, 0, 1 };
+			RD::get_singleton()->buffer_update(buffer, 0, 3, &start_code);
+			RD::get_singleton()->buffer_update(buffer, 3, p_size, start);
 			RD::get_singleton()->_flush_and_stall_for_all_frames();
 
 			StdVideoDecodeH264PictureInfo slice_info = parse_slice_header(p_size - 1, true);
@@ -440,6 +444,9 @@ StdVideoDecodeH264PictureInfo VideoStreamH264::parse_slice_header(uint64_t p_siz
 
 	slice_header.flags.IdrPicFlag = p_is_idr;
 
+	// TODO support interlaced video
+	slice_header.flags.complementary_field_pair = false;
+
 	read_ue(); // first_mb_in_slice
 
 	uint64_t slice_type = read_ue();
@@ -497,23 +504,48 @@ StdVideoDecodeH264PictureInfo VideoStreamH264::parse_slice_header(uint64_t p_siz
 		read_bits(2); // colour_plane_id
 	}
 
-	slice_header.frame_num = read_ue(); // apparently is u(v)
+	uint64_t frame_num_size = active_sps.log2_max_frame_num_minus4 + 4;
+	slice_header.frame_num = read_bits(frame_num_size);
+	print_line(vformat("frame number %d", slice_header.frame_num));
 
 	if (!active_sps.flags.frame_mbs_only_flag) {
 		slice_header.flags.field_pic_flag = read_bits(1) > 0;
 		if (slice_header.flags.field_pic_flag) {
 			slice_header.flags.bottom_field_flag = read_bits(1) > 0;
+			print_line(vformat("Bottom field %s", slice_header.flags.bottom_field_flag));
 		}
 	}
 
 	if (slice_header.flags.IdrPicFlag) {
 		slice_header.idr_pic_id = read_ue();
+		prev_pic_order_cnt_lsb = 0;
+		prev_pic_order_cnt_msb = 0;
 	}
 
-	// TODO
-	slice_header.flags.complementary_field_pair = false;
-	slice_header.PicOrderCnt[0] = 0;
-	slice_header.PicOrderCnt[1] = 0;
+	uint64_t pic_order_cnt_msb = 0;
+	uint32_t pic_order_cnt_lsb = 0;
+	uint64_t max_pic_order_cnt_lsb = 1 << (active_sps.log2_max_pic_order_cnt_lsb_minus4 + 4);
+
+	if (active_sps.pic_order_cnt_type == STD_VIDEO_H264_POC_TYPE_0) {
+		uint64_t pic_order_cnt_lsb_size = active_sps.log2_max_pic_order_cnt_lsb_minus4 + 4;
+		pic_order_cnt_lsb = read_bits(pic_order_cnt_lsb_size);
+		print_line(vformat("pic order cnt lsb %d", pic_order_cnt_lsb));
+
+		if (pic_order_cnt_lsb < prev_pic_order_cnt_lsb && prev_pic_order_cnt_lsb - pic_order_cnt_lsb >= (max_pic_order_cnt_lsb / 2)) {
+			pic_order_cnt_msb = prev_pic_order_cnt_msb + max_pic_order_cnt_lsb;
+		} else if (pic_order_cnt_lsb > prev_pic_order_cnt_lsb && pic_order_cnt_lsb - prev_pic_order_cnt_lsb > (max_pic_order_cnt_lsb / 2)) {
+			pic_order_cnt_msb = prev_pic_order_cnt_msb - max_pic_order_cnt_lsb;
+		} else {
+			pic_order_cnt_msb = prev_pic_order_cnt_msb;
+		}
+	}
+
+	slice_header.PicOrderCnt[0] = pic_order_cnt_msb + pic_order_cnt_lsb;
+	slice_header.PicOrderCnt[1] = pic_order_cnt_msb + pic_order_cnt_lsb;
+
+	prev_pic_order_cnt_lsb = pic_order_cnt_lsb;
+	prev_pic_order_cnt_msb = pic_order_cnt_msb;
+
 	return slice_header;
 }
 

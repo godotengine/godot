@@ -826,7 +826,7 @@ RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, Span<uint8_t> 
 	return id;
 }
 
-RID RenderingDevice::storage_buffer_create_video_session(uint32_t p_size_bytes, RID p_video_session, Span<uint8_t> p_data, BitField<StorageBufferUsage> p_usage, BitField<BufferCreationBits> p_creation_bits) {
+RID RenderingDevice::storage_buffer_create_video_session(uint32_t p_size_bytes, const VideoProfile &p_profile, Span<uint8_t> p_data, BitField<StorageBufferUsage> p_usage, BitField<BufferCreationBits> p_creation_bits) {
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
 
 	Buffer buffer;
@@ -847,10 +847,7 @@ RID RenderingDevice::storage_buffer_create_video_session(uint32_t p_size_bytes, 
 		buffer.usage.set_flag(RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT);
 	}
 
-	VideoProfileState *video_profile = video_profiles_owner.get_or_null(p_video_session);
-	ERR_FAIL_NULL_V(video_profile, RID());
-
-	buffer.driver_id = driver->buffer_create_video_session(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU, video_profile);
+	buffer.driver_id = driver->buffer_create_video_session(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU, p_profile);
 	ERR_FAIL_COND_V(!buffer.driver_id, RID());
 
 	// Storage buffers are assumed to be mutable.
@@ -1402,7 +1399,7 @@ RID RenderingDevice::texture_create_shared_from_slice(const TextureView &p_view,
 	return id;
 }
 
-RID RenderingDevice::texture_create_for_video_coding(const TextureFormat &p_format, const TextureView &p_view, RID p_video_profile) {
+RID RenderingDevice::texture_create_for_video_coding(const TextureFormat &p_format, const TextureView &p_view, const VideoProfile &p_profile) {
 	// Some adjustments will happen.
 	TextureFormat format = p_format;
 
@@ -1518,12 +1515,9 @@ RID RenderingDevice::texture_create_for_video_coding(const TextureFormat &p_form
 	tv.swizzle_b = p_view.swizzle_b;
 	tv.swizzle_a = p_view.swizzle_a;
 
-	VideoProfileState *video_profile = video_profiles_owner.get_or_null(p_video_profile);
-	ERR_FAIL_NULL_V(video_profile, RID());
-
 	// Create.
 	Texture texture;
-	texture.driver_id = driver->texture_create_video_session(format, tv, video_profile);
+	texture.driver_id = driver->texture_create_video_session(format, tv, p_profile);
 	ERR_FAIL_COND_V(!texture.driver_id, RID());
 	texture.usage_flags = format.usage_bits;
 	texture.type = format.texture_type;
@@ -5794,35 +5788,7 @@ void RenderingDevice::compute_list_end() {
 	compute_list = ComputeList();
 }
 
-RID RenderingDevice::video_profile_create(VideoCodingChromaSubsampling p_chroma_subsampling, uint32_t p_luma_bit_depth, uint32_t p_chroma_bit_depth) {
-	VideoProfileState profile_state = {};
-	profile_state.chroma_subsampling = p_chroma_subsampling;
-	profile_state.luma_bit_depth = p_luma_bit_depth;
-	profile_state.chroma_bit_depth = p_chroma_bit_depth;
-
-	RID id = video_profiles_owner.make_rid(profile_state);
-	return id;
-}
-
-void RenderingDevice::video_profile_bind_h264_decoding_metadata(RID p_profile, VideoCodingH264ProfileIdc p_std_profile, VideoCodingH264PictureLayout p_picture_layout) {
-	VideoProfileState *profile_state = video_profiles_owner.get_or_null(p_profile);
-	ERR_FAIL_NULL(profile_state);
-
-	profile_state->operation = VIDEO_OPERATION_DECODE_H264;
-	profile_state->h264_profile_idc = p_std_profile;
-	profile_state->h264_picture_layout = p_picture_layout;
-}
-
-void RenderingDevice::video_profile_bind_h265_decoding_metadata(RID p_profile, uint32_t p_std_profile) {
-}
-
-void RenderingDevice::video_profile_bind_av1_decoding_metadata(RID p_profile, uint32_t p_std_profile, bool p_film_grain_support) {
-}
-
-void RenderingDevice::video_profile_bind_vp9_decoding_metadata(RID p_profile, uint32_t p_std_profile) {
-}
-
-RenderingDevice::VideoCodingListID RenderingDevice::video_coding_list_begin(RID p_profile, RID p_dpb, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) {
+RenderingDevice::VideoCodingListID RenderingDevice::video_coding_list_begin(const VideoProfile &p_profile, RID p_dpb, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) {
 	ERR_RENDER_THREAD_GUARD_V(INVALID_ID);
 
 	video_coding_list.active = true;
@@ -5830,12 +5796,8 @@ RenderingDevice::VideoCodingListID RenderingDevice::video_coding_list_begin(RID 
 	RDD::CommandPoolID pool = driver->command_pool_create(decode_queue_family, RenderingDeviceDriver::COMMAND_BUFFER_TYPE_PRIMARY);
 	decode_buffer = driver->command_buffer_create(pool);
 
-	VideoProfileState *profile_state = video_profiles_owner.get_or_null(p_profile);
-	ERR_FAIL_NULL_V(profile_state, INVALID_FORMAT_ID);
-
 	// TODO hardcoded image format
-	video_coding_list.video_profile = p_profile;
-	video_coding_list.video_session = driver->video_session_create(profile_state, DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM);
+	video_coding_list.video_session = driver->video_session_create(p_profile, DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM);
 
 	Texture *dpb = texture_owner.get_or_null(p_dpb);
 	ERR_FAIL_NULL_V(dpb, INVALID_FORMAT_ID);
@@ -5882,6 +5844,12 @@ RID RenderingDevice::video_coding_list_end() {
 	video_coding_list = VideoCodingList();
 
 	return dst_texture;
+}
+
+void RenderingDevice::video_profile_get_capabilities(const VideoProfile &p_profile) {
+}
+
+void RenderingDevice::video_profile_get_format_properties(const VideoProfile &p_profile) {
 }
 
 #ifndef DISABLE_DEPRECATED

@@ -31,22 +31,12 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "servers/rendering/rendering_device.h"
 
 class VideoStreamEncoding : public Resource {
 	GDCLASS(VideoStreamEncoding, Resource);
 
-protected:
-	RD::VideoCodingChromaSubsampling chroma_subsampling;
-	uint32_t luma_bit_depth;
-	uint32_t chroma_bit_depth;
-
 public:
-	RD::VideoCodingChromaSubsampling get_chroma_subsampling();
-	uint32_t get_luma_bit_depth();
-	uint32_t get_chroma_bit_depth();
-
-	virtual RID create_video_profile() = 0;
+	virtual RID create_video_session(uint32_t p_width, uint32_t p_height) = 0;
 
 	virtual void parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) = 0;
 

@@ -880,13 +880,12 @@ public:
 		VIDEO_CODING_H264_PICTURE_LAYOUT_INTERLACED_SEPARATE_PLANES = 2,
 	};
 
-	struct VideoProfileState {
+	struct VideoProfile {
 		VideoCodingOperation operation;
 		VideoCodingChromaSubsampling chroma_subsampling;
 		uint32_t luma_bit_depth;
 		uint32_t chroma_bit_depth;
 
-		// TODO is it worth not just embedding all 4 possible codecs here?
 		VideoCodingH264ProfileIdc h264_profile_idc;
 		VideoCodingH264PictureLayout h264_picture_layout;
 	};

@@ -32,6 +32,7 @@
 
 #include "scene/resources/video_stream_encoding.h"
 
+#include "servers/rendering/rendering_device.h"
 #include <vk_video/vulkan_video_codec_h264std.h>
 #include <vk_video/vulkan_video_codec_h264std_decode.h>
 
@@ -44,17 +45,22 @@ private:
 	const uint8_t *src = nullptr;
 	uint8_t shift = 7;
 
+	uint64_t prev_pic_order_cnt_lsb;
+	uint64_t prev_pic_order_cnt_msb;
+
 	RD::VideoCodingH264ProfileIdc target_profile_idc = RenderingDeviceCommons::VIDEO_CODING_H264_PROFILE_IDC_HIGH;
 	RD::VideoCodingH264ProfileIdc minimum_profile_idc;
 
 	// TODO make an RD version
 	uint32_t target_level_idc;
 
+	RD::VideoProfile video_profile = {};
+
 	// TODO make RD versions
 	StdVideoH264SequenceParameterSet active_sps;
 	StdVideoH264PictureParameterSet active_pps;
 
-	RID video_profile;
+	RID video_session;
 
 	// TODO: use a pool of dst textures
 	RID dpb;
@@ -66,7 +72,7 @@ private:
 	RD::VideoCodingListID video_coding_list;
 
 public:
-	RID create_video_profile() final override;
+	RID create_video_session(uint32_t p_width, uint32_t p_height) final override;
 
 	void parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) final override;
 

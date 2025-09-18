@@ -198,7 +198,7 @@ public:
 	};
 
 	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) override final;
-	virtual BufferID buffer_create_video_session(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, VideoProfileState *p_profile) override final;
+	virtual BufferID buffer_create_video_session(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, const VideoProfile &p_profile) override final;
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) override final;
 	virtual void buffer_free(BufferID p_buffer) override final;
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) override final;
@@ -233,7 +233,7 @@ public:
 	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil, uint32_t p_mipmaps) override final;
 	virtual TextureID texture_create_shared(TextureID p_original_texture, const TextureView &p_view) override final;
 	virtual TextureID texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) override final;
-	virtual TextureID texture_create_video_session(const TextureFormat &p_format, const TextureView &p_view, VideoProfileState *p_profile) override final;
+	virtual TextureID texture_create_video_session(const TextureFormat &p_format, const TextureView &p_view, const VideoProfile &p_profile) override final;
 	virtual void texture_free(TextureID p_texture) override final;
 	virtual uint64_t texture_get_allocation_size(TextureID p_texture) override final;
 	virtual void texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) override final;
@@ -665,12 +665,12 @@ public:
 	/**********************/
 	/**** VIDEO CODING ****/
 	/**********************/
-	Error vk_video_profile_from_state(const VideoProfileState *p_profile, VkVideoProfileInfoKHR *r_profile);
+	Error vk_video_profile_from_state(const VideoProfile &p_profile, VkVideoProfileInfoKHR *r_profile);
 
-	virtual void video_profile_get_capabilities(const VideoProfileState *p_profile) override final;
-	virtual void video_profile_get_format_properties(const VideoProfileState *p_profile) override final;
+	virtual void video_profile_get_capabilities(const VideoProfile &p_profile) override final;
+	virtual void video_profile_get_format_properties(const VideoProfile &p_profile) override final;
 
-	virtual VideoSessionID video_session_create(const VideoProfileState *p_profile, DataFormat p_image_format) override final;
+	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, DataFormat p_image_format) override final;
 
 	virtual void command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, TextureID p_dpb, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) override final;
 	virtual void command_video_control(CommandBufferID p_cmd_buffer) override final;

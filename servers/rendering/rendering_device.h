@@ -400,7 +400,7 @@ public:
 	RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
 	RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_usage, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers, uint64_t p_mipmaps = 1);
 	RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D, uint32_t p_layers = 0);
-	RID texture_create_for_video_coding(const TextureFormat &p_format, const TextureView &p_view, RID p_video_profile);
+	RID texture_create_for_video_coding(const TextureFormat &p_format, const TextureView &p_view, const VideoProfile &p_profile);
 	Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data);
 	Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer); // CPU textures will return immediately, while GPU textures will most likely force a flush
 	Error texture_get_data_async(RID p_texture, uint32_t p_layer, const Callable &p_callback);
@@ -986,7 +986,7 @@ public:
 	}
 
 	RID storage_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p_data = {}, BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0);
-	RID storage_buffer_create_video_session(uint32_t p_size_bytes, RID p_video_session, Span<uint8_t> p_data = {}, BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0);
+	RID storage_buffer_create_video_session(uint32_t p_size_bytes, const VideoProfile &p_profile, Span<uint8_t> p_data = {}, BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0);
 	RID _storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0) {
 		return storage_buffer_create(p_size_bytes, p_data, p_usage, p_creation_bits);
 	}
@@ -1418,10 +1418,8 @@ private:
 	VideoCodingList video_coding_list;
 	RDD::CommandBufferID decode_buffer;
 
-	RID_Owner<VideoProfileState> video_profiles_owner;
-
 public:
-	VideoCodingListID video_coding_list_begin(RID p_profile, RID p_dpb, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps);
+	VideoCodingListID video_coding_list_begin(const VideoProfile &p_profile, RID p_dpb, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps);
 	void video_coding_list_control(VideoCodingListID p_list);
 	void video_coding_list_decode(VideoCodingListID p_list, RID p_src_buffer, RID p_dst_texture, StdVideoDecodeH264PictureInfo p_std_h264_info, uint32_t p_array_layer);
 	void video_coding_list_encode(VideoCodingListID p_list);
@@ -1429,15 +1427,8 @@ public:
 	RID video_coding_list_end();
 
 public:
-	RID video_profile_create(VideoCodingChromaSubsampling p_chroma_subsampling, uint32_t p_luma_bit_depth, uint32_t p_chroma_bit_depth);
-
-	void video_profile_bind_h264_decoding_metadata(RID p_profile, VideoCodingH264ProfileIdc p_std_profile, VideoCodingH264PictureLayout p_picture_layout);
-	void video_profile_bind_h265_decoding_metadata(RID p_profile, uint32_t p_std_profile);
-	void video_profile_bind_av1_decoding_metadata(RID p_profile, uint32_t p_std_profile, bool p_film_grain_support);
-	void video_profile_bind_vp9_decoding_metadata(RID p_profile, uint32_t p_std_profile);
-
-	void video_profile_get_capabilities(RID p_profile);
-	void video_profile_get_format_properties(RID p_profile);
+	void video_profile_get_capabilities(const VideoProfile &p_profile);
+	void video_profile_get_format_properties(const VideoProfile &p_profile);
 
 private:
 	/*************************/

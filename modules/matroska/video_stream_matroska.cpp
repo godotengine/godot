@@ -613,7 +613,7 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 				// BCP47 language codes take priority over Matroska language codes
 				if (inner_id == 0x22b59c) {
 					String language = read_string();
-					if (track.language == "") {
+					if (track.language.is_empty()) {
 						track.language = language;
 					}
 					continue;
@@ -670,8 +670,26 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 				}
 
 				if (inner_id == 0xe0) {
-					uint64_t video_size = read_size();
-					src += video_size;
+					int64_t video_size = read_size();
+					const uint8_t *video_start = src;
+
+					while (src - video_start < video_size) {
+						uint64_t video_id = read_id();
+
+						if (video_id == 0xB0) {
+							width = read_uint();
+							print_line(vformat("width %d", width));
+							continue;
+						}
+
+						if (video_id == 0xBA) {
+							height = read_uint();
+							print_line(vformat("height %d", height));
+							continue;
+						}
+					}
+
+					src = video_start + video_size;
 					continue;
 				}
 
@@ -901,19 +919,19 @@ void VideoStreamPlaybackMatroska::play() {
 		return;
 	}
 
-	video_stream_encoding->create_video_profile();
+	cluster_rid = video_stream_encoding->create_video_session(width, height);
 
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ, &err);
 
 	Cluster cluster = clusters[0];
-
 	video_stream_encoding->begin_cluster();
-	for (Cluster::Block block : cluster.blocks) {
-		file->seek(block.position);
-		Vector<uint8_t> frame = file->get_buffer(block.size);
-		video_stream_encoding->append_container_block(frame);
-	}
+
+	Cluster::Block block = cluster.blocks[0];
+	file->seek(block.position);
+	Vector<uint8_t> frame = file->get_buffer(block.size);
+	video_stream_encoding->append_container_block(frame);
+
 	cluster_rid = video_stream_encoding->end_cluster();
 }
 
@@ -954,11 +972,12 @@ Ref<Texture2D> VideoStreamPlaybackMatroska::get_texture() const {
 
 // TODO
 void VideoStreamPlaybackMatroska::update(double p_delta) {
+	return;
 	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(cluster_rid, 0);
 
 	Ref<Image> frame;
 	frame.instantiate();
-	frame->set_data(1980, 1080, false, Image::FORMAT_RGBA8, data);
+	frame->set_data(width, height, true, Image::FORMAT_RGBA8, data);
 
 	image_texture->set_image(frame);
 }
