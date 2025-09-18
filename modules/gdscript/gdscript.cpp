@@ -92,6 +92,10 @@ void GDScriptNativeClass::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("new"), &GDScriptNativeClass::_new);
 }
 
+String GDScriptNativeClass::debug_get_type_name() {
+	return vformat("GDScriptNativeClass[%s]", get_name());
+}
+
 Variant GDScriptNativeClass::_new() {
 	Object *o = instantiate();
 	ERR_FAIL_NULL_V_MSG(o, Variant(), "Class type: '" + String(name) + "' is not instantiable.");
@@ -1374,29 +1378,22 @@ void GDScript::_save_orphaned_subclasses() {
 	}
 }
 
-#ifdef DEBUG_ENABLED
-String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
-	if (p_script.is_valid()) {
-		Ref<GDScript> gdscript = p_script;
-		if (gdscript.is_valid()) {
-			if (gdscript->get_local_name() != StringName()) {
-				return gdscript->get_local_name();
-			}
-			return gdscript->get_fully_qualified_name().get_file();
-		}
-
-		if (p_script->get_global_name() != StringName()) {
-			return p_script->get_global_name();
-		} else if (!p_script->get_path().is_empty()) {
-			return p_script->get_path().get_file();
-		} else if (!p_script->get_name().is_empty()) {
-			return p_script->get_name(); // Resource name.
-		}
+String GDScript::debug_get_script_name() const {
+	if (!is_script_valid()) {
+		return "<invalid script>";
 	}
 
-	return "<unknown script>";
+	String ret = get_global_name();
+	if (!ret.is_empty()) {
+		return ret;
+	}
+	ret = get_fully_qualified_name().get_file();
+	if (!ret.is_empty()) {
+		return ret;
+	}
+
+	return get_fully_qualified_name();
 }
-#endif
 
 String GDScript::canonicalize_path(const String &p_path) {
 	if (p_path.get_extension() == "gdc") {
@@ -1777,21 +1774,7 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 						static bool error_shown = false;
 						if (unlikely(!error_shown)) {
 							error_shown = true;
-
-							String elem_type;
-							if (arr.is_typed()) {
-								const Ref<Script> script_type = arr.get_typed_script();
-								if (script_type.is_valid() && script_type->is_script_valid()) {
-									elem_type = GDScript::debug_get_script_name(script_type);
-								} else if (!arr.get_typed_class_name().is_empty()) {
-									elem_type = arr.get_typed_class_name();
-								} else {
-									elem_type = Variant::get_type_name((Variant::Type)arr.get_typed_builtin());
-								}
-								elem_type = vformat("[%s]", elem_type);
-							}
-
-							String msg = vformat(R"*("_get_property_list()" should return "Array[Dictionary]", not "Array%s".)*", elem_type);
+							String msg = vformat(R"*("_get_property_list()" should return "Array[Dictionary]", not "%s".)*", ret.debug_get_type_name());
 							msg += " The old behavior is supported for compatibility and may be removed in the future.";
 							msg += " This message is printed once and will not be repeated for similar errors.";
 

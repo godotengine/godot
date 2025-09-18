@@ -352,6 +352,13 @@
 				Converts from decibels to linear energy (audio).
 			</description>
 		</method>
+		<method name="debug_get_type_string">
+			<return type="String" />
+			<param index="0" name="variable" type="Variant" />
+			<description>
+				Returns a descriptive name for the type of the passed [param variable]. Suitable for debug print statements.
+			</description>
+		</method>
 		<method name="deg_to_rad">
 			<return type="float" />
 			<param index="0" name="deg" type="float" />

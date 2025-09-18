@@ -183,45 +183,7 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 			String result;
 
 			if (dict.is_typed()) {
-				result += "Dictionary[";
-
-				Ref<Script> key_script = dict.get_typed_key_script();
-				if (key_script.is_valid()) {
-					if (key_script->get_global_name() != StringName()) {
-						result += key_script->get_global_name();
-					} else if (!key_script->get_path().get_file().is_empty()) {
-						result += key_script->get_path().get_file();
-					} else {
-						result += dict.get_typed_key_class_name();
-					}
-				} else if (dict.get_typed_key_class_name() != StringName()) {
-					result += dict.get_typed_key_class_name();
-				} else if (dict.is_typed_key()) {
-					result += Variant::get_type_name((Variant::Type)dict.get_typed_key_builtin());
-				} else {
-					result += "Variant";
-				}
-
-				result += ", ";
-
-				Ref<Script> value_script = dict.get_typed_value_script();
-				if (value_script.is_valid()) {
-					if (value_script->get_global_name() != StringName()) {
-						result += value_script->get_global_name();
-					} else if (!value_script->get_path().get_file().is_empty()) {
-						result += value_script->get_path().get_file();
-					} else {
-						result += dict.get_typed_value_class_name();
-					}
-				} else if (dict.get_typed_value_class_name() != StringName()) {
-					result += dict.get_typed_value_class_name();
-				} else if (dict.is_typed_value()) {
-					result += Variant::get_type_name((Variant::Type)dict.get_typed_value_builtin());
-				} else {
-					result += "Variant";
-				}
-
-				result += "](";
+				result += "Dictionary[" + dict.debug_get_key_type_name() + ", " + dict.debug_get_value_type_name() + "](";
 			}
 
 			if (dict.is_empty()) {
@@ -256,24 +218,7 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 			String result;
 
 			if (array.is_typed()) {
-				result += "Array[";
-
-				Ref<Script> script = array.get_typed_script();
-				if (script.is_valid()) {
-					if (script->get_global_name() != StringName()) {
-						result += script->get_global_name();
-					} else if (!script->get_path().get_file().is_empty()) {
-						result += script->get_path().get_file();
-					} else {
-						result += array.get_typed_class_name();
-					}
-				} else if (array.get_typed_class_name() != StringName()) {
-					result += array.get_typed_class_name();
-				} else {
-					result += Variant::get_type_name((Variant::Type)array.get_typed_builtin());
-				}
-
-				result += "](";
+				result += "Array[" + array.debug_get_value_type_name() + "](";
 			}
 
 			if (array.is_empty()) {
