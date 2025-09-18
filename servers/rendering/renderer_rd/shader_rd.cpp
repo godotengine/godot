@@ -222,6 +222,9 @@ void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, c
 	for (const StageTemplate::Chunk &chunk : p_template.chunks) {
 		switch (chunk.type) {
 			case StageTemplate::Chunk::TYPE_VERSION_DEFINES: {
+#if defined(METAL_ENABLED) && defined(IOS_SIMULATOR)
+				builder.append("#define SIMULATE_CUBEMAP_ARRAYS\n");
+#endif
 				builder.append("\n"); //make sure defines begin at newline
 				builder.append(general_defines.get_data());
 				builder.append(variant_defines[p_variant].text.get_data());

@@ -41,6 +41,9 @@ static String _mktab(int p_level) {
 
 static String _typestr(SL::DataType p_type) {
 	String type = ShaderLanguage::get_datatype_name(p_type);
+	if (p_type == ShaderLanguage::TYPE_SAMPLERCUBEARRAY) {
+		type += "Fix";
+	}
 	if (!RS::get_singleton()->is_low_end() && ShaderLanguage::is_sampler_type(p_type)) {
 		type = type.replace("sampler", "texture"); //we use textures instead of samplers in Vulkan GLSL
 	}
@@ -298,6 +301,10 @@ String ShaderCompiler::_get_sampler_name(ShaderLanguage::TextureFilter p_filter,
 		"SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT"
 	};
 	return String(name_mapping[p_filter + (p_repeat == ShaderLanguage::REPEAT_ENABLE ? ShaderLanguage::FILTER_DEFAULT : 0)]);
+}
+
+bool ShaderCompiler::_is_cube_map_array_function(const String &p_function_name) {
+	return p_function_name == "textureSize" || p_function_name == "texture" || p_function_name == "texture" || p_function_name == "textureLod" || p_function_name == "textureGrad";
 }
 
 void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const StringName &p_for_func, const HashMap<StringName, String> &p_func_code, String &r_to_add, HashSet<StringName> &added) {
@@ -1170,6 +1177,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					bool is_screen_texture = false;
 					bool texture_func_no_uv = false;
 					bool texture_func_returns_data = false;
+					bool cube_map_array_fix = false;
 
 					if (onode->op == SL::OP_STRUCT) {
 						code += _mkid(vnode->name);
@@ -1183,6 +1191,10 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 						if (is_internal_func) {
 							code += vnode->name;
+							if (_is_cube_map_array_function(vnode->name) && onode->arguments.size() > 1 && onode->arguments[1]->get_datatype() == SL::TYPE_SAMPLERCUBEARRAY) {
+								cube_map_array_fix = true;
+								code += "Fix";
+							}
 							is_texture_func = texture_functions.has(vnode->name);
 							texture_func_no_uv = (vnode->name == "textureSize" || vnode->name == "textureQueryLevels");
 							texture_func_returns_data = texture_func_no_uv || vnode->name == "textureQueryLod";
@@ -1322,7 +1334,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 									data_type_name = ShaderLanguage::get_datatype_name(onode->arguments[i]->get_datatype());
 								}
 
-								code += data_type_name + "(" + node_code + ", " + sampler_name + ")";
+								if (cube_map_array_fix) {
+									code += node_code + ", " + sampler_name;
+								} else {
+									code += data_type_name + "(" + node_code + ", " + sampler_name + ")";
+								}
 							} else if (actions.check_multiview_samplers && correct_texture_uniform && RS::get_singleton()->is_low_end()) {
 								// Texture function on low end hardware (i.e. OpenGL).
 								// We just need to know if the texture supports multiview.
