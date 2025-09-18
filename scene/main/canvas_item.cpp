@@ -317,8 +317,15 @@ void CanvasItem::_notification(int p_what) {
 
 				if (ci) {
 					parent_visible_in_tree = ci->is_visible_in_tree();
-					C = ci->children_items.push_back(this);
+
+					data.index_in_parent = ci->data.canvas_item_children.size();
+					ci->data.canvas_item_children.push_back(this);
 				} else {
+					if (data.index_in_parent != UINT32_MAX) {
+						data.index_in_parent = UINT32_MAX;
+						ERR_PRINT("CanvasItem ENTER_TREE detected without EXIT_TREE, recovering.");
+					}
+
 					CanvasLayer *cl = Object::cast_to<CanvasLayer>(parent);
 
 					if (cl) {
@@ -388,10 +395,27 @@ void CanvasItem::_notification(int p_what) {
 				get_tree()->xform_change_list.remove(&xform_change);
 			}
 			_exit_canvas();
-			if (C) {
-				Object::cast_to<CanvasItem>(get_parent())->children_items.erase(C);
-				C = nullptr;
+
+			CanvasItem *parent = Object::cast_to<CanvasItem>(get_parent());
+			if (parent) {
+				if (data.index_in_parent != UINT32_MAX) {
+					// Aliases
+					uint32_t c = data.index_in_parent;
+					LocalVector<CanvasItem *> &parent_children = parent->data.canvas_item_children;
+
+					parent_children.remove_at_unordered(c);
+
+					// After unordered remove, we need to inform the moved child
+					// what their new id is in the parent children list.
+					if (parent_children.size() > c) {
+						parent_children[c]->data.index_in_parent = c;
+					}
+				} else {
+					ERR_PRINT("CanvasItem index_in_parent unset at EXIT_TREE.");
+				}
 			}
+			data.index_in_parent = UINT32_MAX;
+
 			if (window) {
 				window->disconnect(SceneStringName(visibility_changed), callable_mp(this, &CanvasItem::_window_visibility_changed));
 				window = nullptr;
@@ -1057,11 +1081,11 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 		}
 	}
 
-	for (CanvasItem *ci : p_node->children_items) {
-		if (ci->top_level) {
-			continue;
+	for (uint32_t n = 0; n < p_node->data.canvas_item_children.size(); n++) {
+		CanvasItem *ci = p_node->data.canvas_item_children[n];
+		if (!ci->top_level) {
+			_notify_transform(ci);
 		}
-		_notify_transform(ci);
 	}
 }
 
@@ -1612,9 +1636,11 @@ void CanvasItem::_update_texture_filter_changed(bool p_propagate) {
 	_update_self_texture_filter(texture_filter_cache);
 
 	if (p_propagate) {
-		for (CanvasItem *E : children_items) {
-			if (!E->top_level && E->texture_filter == TEXTURE_FILTER_PARENT_NODE) {
-				E->_update_texture_filter_changed(true);
+		for (uint32_t n = 0; n < data.canvas_item_children.size(); n++) {
+			CanvasItem *ci = data.canvas_item_children[n];
+
+			if (!ci->top_level && ci->texture_filter == TEXTURE_FILTER_PARENT_NODE) {
+				ci->_update_texture_filter_changed(true);
 			}
 		}
 	}
@@ -1666,9 +1692,10 @@ void CanvasItem::_update_texture_repeat_changed(bool p_propagate) {
 	_update_self_texture_repeat(texture_repeat_cache);
 
 	if (p_propagate) {
-		for (CanvasItem *E : children_items) {
-			if (!E->top_level && E->texture_repeat == TEXTURE_REPEAT_PARENT_NODE) {
-				E->_update_texture_repeat_changed(true);
+		for (uint32_t n = 0; n < data.canvas_item_children.size(); n++) {
+			CanvasItem *ci = data.canvas_item_children[n];
+			if (!ci->top_level && ci->texture_repeat == TEXTURE_REPEAT_PARENT_NODE) {
+				ci->_update_texture_repeat_changed(true);
 			}
 		}
 	}
