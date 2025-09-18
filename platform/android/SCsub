@@ -67,6 +67,9 @@ elif env["arch"] == "x86_32":
 elif env["arch"] == "x86_64":
     lib_arch_dir = "x86_64"
     triple_target_dir = "x86_64-linux-android"
+elif env["arch"] == "rv64":
+    lib_arch_dir = "riscv64"
+    triple_target_dir = "riscv64-linux-android"
 else:
     print_warning("Architecture not suitable for embedding into APK; keeping .so at \\bin")
 

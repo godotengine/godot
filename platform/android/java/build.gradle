@@ -23,7 +23,7 @@ allprojects {
 }
 
 ext {
-    supportedAbis = ["arm32", "arm64", "x86_32", "x86_64"]
+    supportedAbis = ["arm32", "arm64", "x86_32", "x86_64", "rv64"]
     supportedFlavors = ["editor", "template"]
     supportedAndroidDistributions = ["android", "horizonos", "picoos"]
     supportedFlavorsBuildTypes = [

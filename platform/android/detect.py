@@ -68,7 +68,7 @@ def get_android_ndk_root(env: "SConsEnvironment"):
 
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
 def get_ndk_version():
-    return "28.1.13356709"
+    return "29.0.14033849"
 
 
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
@@ -92,9 +92,18 @@ def install_ndk_if_needed(env: "SConsEnvironment"):
         extension = ".bat" if os.name == "nt" else ""
         sdkmanager = os.path.join(sdk_root, "cmdline-tools", "latest", "bin", "sdkmanager" + extension)
         if os.path.exists(sdkmanager):
-            # Install the Android NDK
-            print("Installing Android NDK...")
+            # Format NDK version.
             ndk_download_args = "ndk;" + get_ndk_version()
+
+            # Accept licenses. `sdkmanager` expects it to be done as a separate command.
+            # Fixes issues with GitHub's CI not accepting by default.
+            print("Accepting Android SDK licenses...")
+            yessir_process = subprocess.Popen(["yes"], stdout=subprocess.PIPE)
+            subprocess.check_call([sdkmanager, "--licenses"], stdin=yessir_process.stdout)
+            yessir_process.kill()
+
+            # Install the Android NDK.
+            print("Installing Android NDK...")
             subprocess.check_call([sdkmanager, ndk_download_args])
         else:
             print_error(
@@ -116,15 +125,25 @@ def detect_swappy():
 
 def configure(env: "SConsEnvironment"):
     # Validate arch.
-    supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
+    supported_arches = ["x86_32", "x86_64", "arm32", "arm64", "rv64"]
     validate_arch(env["arch"], get_name(), supported_arches)
 
-    if get_min_sdk_version(env["ndk_platform"]) < get_min_target_api():
-        print_warning(
-            "Minimum supported Android target api is %d. Forcing target api %d."
-            % (get_min_target_api(), get_min_target_api())
-        )
-        env["ndk_platform"] = "android-" + str(get_min_target_api())
+    # Specific changes for correctly targeting RISC-V.
+    if env["arch"] == "rv64":
+        riscv_min_api_version = 35
+        if get_min_sdk_version(env["ndk_platform"]) < riscv_min_api_version:
+            print_warning(
+                "Minimum supported Android target api for RISC-V is %d. Forcing target api %d."
+                % (riscv_min_api_version, riscv_min_api_version)
+            )
+            env["ndk_platform"] = "android-" + str(riscv_min_api_version)
+    else:
+        if get_min_sdk_version(env["ndk_platform"]) < get_min_target_api():
+            print_warning(
+                "Minimum supported Android target api is %d. Forcing target api %d."
+                % (get_min_target_api(), get_min_target_api())
+            )
+            env["ndk_platform"] = "android-" + str(get_min_target_api())
 
     install_ndk_if_needed(env)
     ndk_root = env["ANDROID_NDK_ROOT"]
@@ -139,6 +158,8 @@ def configure(env: "SConsEnvironment"):
         target_triple = "i686-linux-android"
     elif env["arch"] == "x86_64":
         target_triple = "x86_64-linux-android"
+    elif env["arch"] == "rv64":
+        target_triple = "riscv64-linux-android"
 
     target_option = ["-target", target_triple + str(get_min_sdk_version(env["ndk_platform"]))]
     env.Append(ASFLAGS=[target_option, "-c"])
@@ -188,8 +209,9 @@ def configure(env: "SConsEnvironment"):
         CCFLAGS=(["-fpic", "-ffunction-sections", "-funwind-tables", "-fstack-protector-strong", "-fvisibility=hidden"])
     )
 
+    # No Swappy support for RISC-V.
     has_swappy = detect_swappy()
-    if not has_swappy:
+    if env["arch"] != "rv64" and not has_swappy:
         print_warning(
             "Swappy Frame Pacing not detected! It is strongly recommended you download it from https://github.com/godotengine/godot-swappy/releases and extract it so that the following files can be found:\n"
             + " thirdparty/swappy-frame-pacing/arm64-v8a/libswappy_static.a\n"
@@ -222,6 +244,9 @@ def configure(env: "SConsEnvironment"):
         env.Append(CPPDEFINES=["__ARM_ARCH_8A__"])
         if has_swappy:
             env.Append(LIBPATH=["#thirdparty/swappy-frame-pacing/arm64-v8a"])
+    elif env["arch"] == "rv64":
+        # G = General-purpose extensions, C = Compression extension (very common).
+        env.Append(CCFLAGS=["-march=rv64gc"])
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
 
@@ -237,7 +262,7 @@ def configure(env: "SConsEnvironment"):
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
-        if has_swappy:
+        if env["arch"] != "rv64" and has_swappy:
             env.Append(CPPDEFINES=["SWAPPY_FRAME_PACING_ENABLED"])
             env.Append(LIBS=["swappy_static"])
         if not env["use_volk"]:

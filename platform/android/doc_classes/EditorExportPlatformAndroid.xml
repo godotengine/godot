@@ -27,6 +27,9 @@
 		<member name="architectures/armeabi-v7a" type="bool" setter="" getter="">
 			If [code]true[/code], [code]arm32[/code] binaries are included into exported project.
 		</member>
+		<member name="architectures/riscv64" type="bool" setter="" getter="">
+			If [code]true[/code], [code]rv64[/code] binaries are included into exported project.
+		</member>
 		<member name="architectures/x86" type="bool" setter="" getter="">
 			If [code]true[/code], [code]x86_32[/code] binaries are included into exported project.
 		</member>

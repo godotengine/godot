@@ -672,6 +672,7 @@ Vector<EditorExportPlatformAndroid::ABI> EditorExportPlatformAndroid::get_abis()
 	abis.push_back(ABI("arm64-v8a", "arm64"));
 	abis.push_back(ABI("x86", "x86_32"));
 	abis.push_back(ABI("x86_64", "x86_64"));
+	abis.push_back(ABI("riscv64", "rv64"));
 	return abis;
 }
 

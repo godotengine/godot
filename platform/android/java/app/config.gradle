@@ -13,7 +13,7 @@ ext.versions = [
     nexusPublishVersion: '1.3.0',
     javaVersion        : JavaVersion.VERSION_17,
     // Also update 'platform/android/detect.py#get_ndk_version()' when this is updated.
-    ndkVersion         : '28.1.13356709',
+    ndkVersion         : '29.0.14033849',
     splashscreenVersion: '1.0.1',
     openxrVendorsVersion: '4.1.1-stable'
 
@@ -186,7 +186,7 @@ final String VALUE_SEPARATOR_REGEX = "\\|"
 ext.getExportEnabledABIs = { ->
     String enabledABIs = project.hasProperty("export_enabled_abis") ? project.property("export_enabled_abis") : ""
     if (enabledABIs == null || enabledABIs.isEmpty()) {
-        enabledABIs = "armeabi-v7a|arm64-v8a|x86|x86_64|"
+        enabledABIs = "armeabi-v7a|arm64-v8a|x86|x86_64|riscv64|"
     }
     Set<String> exportAbiFilter = []
     for (String abi_name : enabledABIs.split(VALUE_SEPARATOR_REGEX)) {
