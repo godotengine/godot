@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "gdextension_function_loader.h"
-#include "core/config/project_settings.h"
 #include "gdextension.h"
 
 Error GDExtensionFunctionLoader::open_library(const String &p_path) {

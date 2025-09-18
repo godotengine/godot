@@ -32,7 +32,6 @@
 
 #include "core/extension/gdextension_loader.h"
 #include "core/os/shared_object.h"
-#include <functional>
 
 class GDExtension;
 
