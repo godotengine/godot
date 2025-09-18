@@ -62,6 +62,10 @@ private:
 #endif
 
 	static bool gles_over_gl;
+	static bool glad_loaded;
+#ifdef GLAD_ENABLED
+	static GLADloadfunc gl_get_proc_addr;
+#endif
 
 protected:
 	GLES3::Config *config = nullptr;
@@ -112,6 +116,10 @@ public:
 	static RendererCompositor *_create_current() {
 		return memnew(RasterizerGLES3);
 	}
+
+#ifdef GLAD_ENABLED
+	static void preloadGL(GLADloadfunc p_load_func);
+#endif
 
 	static bool is_gles_over_gl() { return gles_over_gl; }
 	static void clear_depth(float p_depth);

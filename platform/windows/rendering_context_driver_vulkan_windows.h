@@ -33,7 +33,7 @@
 #ifdef VULKAN_ENABLED
 
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"
-#include "servers/rendering/rendering_native_surface.h"
+#include "platform/windows/rendering_native_surface_windows.h"
 
 class RenderingContextDriverVulkanWindows : public RenderingContextDriverVulkan {
 private:

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  libgodot_linuxbsd.cpp                                                 */
+/*  display_server_embedded_host_interface.cpp                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,43 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/extension/libgodot.h"
+#include "servers/display_server_embedded_host_interface.h"
 
-#include "core/extension/godot_instance.h"
-#include "main/main.h"
-
-#include "os_linuxbsd.h"
-
-static OS_LinuxBSD *os = nullptr;
-
-static GodotInstance *instance = nullptr;
-
-GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func, InvokeCallbackFunction p_async_func, ExecutorData p_async_data, InvokeCallbackFunction p_sync_func, ExecutorData p_sync_data, LogCallbackFunction p_log_func, LogCallbackData p_log_data, void *p_platform_data) {
-	ERR_FAIL_COND_V_MSG(instance != nullptr, nullptr, "Only one Godot Instance may be created.");
-
-	os = new OS_LinuxBSD();
-
-	Error err = Main::setup(p_argv[0], p_argc - 1, &p_argv[1], false);
-	if (err != OK) {
-		return nullptr;
-	}
-
-	instance = memnew(GodotInstance);
-	if (!instance->initialize(p_init_func)) {
-		memdelete(instance);
-		instance = nullptr;
-		return nullptr;
-	}
-
-	return (GDExtensionObjectPtr)instance;
+void DisplayServerEmbeddedHostInterface::_bind_methods() {
+	GDVIRTUAL_BIND(_cursor_get_shape);
+	GDVIRTUAL_BIND(_cursor_set_shape, "shape");
 }
 
-void libgodot_destroy_godot_instance(GDExtensionObjectPtr p_godot_instance) {
-	GodotInstance *godot_instance = (GodotInstance *)p_godot_instance;
-	if (instance == godot_instance) {
-		godot_instance->stop();
-		memdelete(godot_instance);
-		instance = nullptr;
-		Main::cleanup();
-	}
+Input::CursorShape DisplayServerEmbeddedHostInterface::cursor_get_shape() const {
+	Input::CursorShape cursor_shape;
+	GDVIRTUAL_CALL(_cursor_get_shape, cursor_shape);
+	return cursor_shape;
+}
+
+void DisplayServerEmbeddedHostInterface::cursor_set_shape(Input::CursorShape p_shape) {
+	GDVIRTUAL_CALL(_cursor_set_shape, p_shape);
 }

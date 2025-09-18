@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  libgodot_linuxbsd.cpp                                                 */
+/*  libgodot_windows.cpp                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -31,18 +31,25 @@
 #include "core/extension/libgodot.h"
 
 #include "core/extension/godot_instance.h"
+#include "core/io/libgodot_logger.h"
 #include "main/main.h"
 
-#include "os_linuxbsd.h"
+#include "os_windows.h"
 
-static OS_LinuxBSD *os = nullptr;
+static OS_Windows *os = nullptr;
 
 static GodotInstance *instance = nullptr;
 
 GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func, InvokeCallbackFunction p_async_func, ExecutorData p_async_data, InvokeCallbackFunction p_sync_func, ExecutorData p_sync_data, LogCallbackFunction p_log_func, LogCallbackData p_log_data, void *p_platform_data) {
 	ERR_FAIL_COND_V_MSG(instance != nullptr, nullptr, "Only one Godot Instance may be created.");
 
-	os = new OS_LinuxBSD();
+	os = new OS_Windows((HINSTANCE)p_platform_data);
+
+	if (p_log_func != nullptr && p_log_data != nullptr) {
+		LibGodotLogger *logger = memnew(LibGodotLogger);
+		logger->set_callback_function(p_log_func, p_log_data);
+		os->add_logger(logger);
+	}
 
 	Error err = Main::setup(p_argv[0], p_argc - 1, &p_argv[1], false);
 	if (err != OK) {

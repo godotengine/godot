@@ -3869,6 +3869,10 @@ void DisplayServerWindows::swap_buffers() {
 #endif
 }
 
+uint64_t DisplayServerWindows::get_native_window_id(WindowID p_id) const {
+	return 0;
+}
+
 void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	_THREAD_SAFE_METHOD_
 
@@ -6488,7 +6492,6 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			if (rendering_context->window_create(id, windows_surface) != OK) {
 				ERR_PRINT(vformat("Failed to create %s window.", rendering_driver));
 				memdelete(rendering_context);
-				memdelete(windows_surface);
 				rendering_context = nullptr;
 				windows.erase(id);
 				windows_surface = nullptr;

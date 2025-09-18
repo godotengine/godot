@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/object.h"
 #include "rendering_native_surface.h"
 #include "servers/display_server.h"
 
@@ -41,9 +42,11 @@ public:
 
 private:
 	HashMap<DisplayServer::WindowID, SurfaceID> window_surface_map;
+	HashMap<SurfaceID, DisplayServer::WindowID> surface_window_map;
 
 public:
 	SurfaceID surface_get_from_window(DisplayServer::WindowID p_window) const;
+	DisplayServer::WindowID window_get_from_surface(SurfaceID p_surface) const;
 	Error window_create(DisplayServer::WindowID p_window, Ref<RenderingNativeSurface> p_native_surface);
 	void window_set_size(DisplayServer::WindowID p_window, uint32_t p_width, uint32_t p_height);
 	void window_get_size(DisplayServer::WindowID p_window, uint32_t &r_width, uint32_t &r_height);

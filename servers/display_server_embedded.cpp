@@ -70,10 +70,9 @@ void DisplayServerEmbedded::_bind_methods() {
 	ClassDB::bind_static_method("DisplayServerEmbedded", D_METHOD("set_screen_get_scale_callback", "callback"), &DisplayServerEmbedded::set_screen_get_scale_callback);
 	ClassDB::bind_method(D_METHOD("resize_window", "size", "id"), &DisplayServerEmbedded::resize_window);
 	ClassDB::bind_method(D_METHOD("set_content_scale", "content_scale"), &DisplayServerEmbedded::set_content_scale);
-	ClassDB::bind_method(D_METHOD("touch_press", "idx", "x", "y", "pressed", "double_click", "window"), &DisplayServerEmbedded::touch_press);
-	ClassDB::bind_method(D_METHOD("touch_drag", "idx", "prev_x", "prev_y", "x", "y", "pressure", "tilt", "window"), &DisplayServerEmbedded::touch_drag);
 	ClassDB::bind_method(D_METHOD("touches_canceled", "idx", "window"), &DisplayServerEmbedded::touches_canceled);
-	ClassDB::bind_method(D_METHOD("key", "key", "char", "unshifted", "physical", "modifiers", "pressed", "window"), &DisplayServerEmbedded::key, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("set_host_interface", "host_interface"), &DisplayServerEmbedded::set_host_interface);
+	ClassDB::bind_method(D_METHOD("delete_host_interface"), &DisplayServerEmbedded::delete_host_interface);
 }
 
 DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
@@ -108,8 +107,17 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 		}
 
 		rendering_device = memnew(RenderingDevice);
-		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+#ifdef EXTERNAL_TARGET_ENABLED
+		bool monitored_frames = true;
+#else
+		bool monitored_frames = false;
+#endif
+		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID, monitored_frames);
 		rendering_device->screen_create(MAIN_WINDOW_ID);
+
+#ifdef EXTERNAL_TARGET_ENABLED
+		native_surface->setup_external_swapchain_callbacks();
+#endif
 
 		RendererCompositorRD::make_current();
 	}
@@ -250,6 +258,61 @@ void DisplayServerEmbedded::_window_callback(const Callable &p_callable, const V
 
 // MARK: - Input
 
+// MARK: Mouse
+
+void DisplayServerEmbedded::mouse_set_mode(MouseMode p_mode) {
+	mouse_mode = p_mode;
+}
+
+DisplayServer::MouseMode DisplayServerEmbedded::mouse_get_mode() const {
+	return mouse_mode;
+}
+
+Point2i DisplayServerEmbedded::mouse_get_position() const {
+	return mouse_position;
+}
+
+BitField<MouseButtonMask> DisplayServerEmbedded::mouse_get_button_state() const {
+	return mouse_button_state;
+}
+
+void DisplayServerEmbedded::mouse_button(int p_x, int p_y, MouseButton p_mouse_button_index, bool p_pressed, bool p_double_click, bool p_cancelled, DisplayServer::WindowID p_window) {
+	Ref<InputEventMouseButton> ev;
+	ev.instantiate();
+
+	ev->set_window_id(p_window);
+	ev->set_button_index(p_mouse_button_index);
+	ev->set_pressed(p_pressed);
+	ev->set_double_click(p_double_click);
+	ev->set_canceled(p_cancelled);
+	ev->set_position(Vector2(p_x, p_y));
+	mouse_position = Point2i(p_x, p_y);
+
+	if (ev->is_pressed()) {
+		mouse_button_state.set_flag(mouse_button_to_mask(ev->get_button_index()));
+	} else {
+		mouse_button_state.clear_flag(mouse_button_to_mask(ev->get_button_index()));
+	}
+	ev->set_button_mask(mouse_button_state);
+
+	perform_event(ev);
+}
+
+void DisplayServerEmbedded::mouse_motion(int p_prev_x, int p_prev_y, int p_x, int p_y, DisplayServer::WindowID p_window) {
+	Ref<InputEventMouseMotion> ev;
+	ev.instantiate();
+
+	ev->set_window_id(p_window);
+	ev->set_position(Vector2(p_x, p_y));
+
+	mouse_position = Point2i(p_x, p_y);
+
+	ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
+	ev->set_button_mask(mouse_button_state);
+
+	perform_event(ev);
+}
+
 // MARK: Touches
 
 void DisplayServerEmbedded::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click, DisplayServer::WindowID p_window) {
@@ -319,12 +382,12 @@ bool DisplayServerEmbedded::has_feature(Feature p_feature) const {
 			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
 		} break;
 #endif
-		// case FEATURE_CURSOR_SHAPE:
+		case FEATURE_CURSOR_SHAPE:
 		// case FEATURE_CUSTOM_CURSOR_SHAPE:
 		// case FEATURE_HIDPI:
 		// case FEATURE_ICON:
 		// case FEATURE_IME:
-		// case FEATURE_MOUSE:
+		case FEATURE_MOUSE:
 		// case FEATURE_MOUSE_WARP:
 		// case FEATURE_NATIVE_DIALOG:
 		// case FEATURE_NATIVE_ICON:
@@ -529,7 +592,7 @@ Size2i DisplayServerEmbedded::window_get_min_size(WindowID p_window) const {
 }
 
 void DisplayServerEmbedded::window_set_size(const Size2i p_size, WindowID p_window) {
-	// Not supported
+	window_sizes[p_window] = p_size;
 }
 
 Size2i DisplayServerEmbedded::window_get_size(WindowID p_window) const {
@@ -643,6 +706,24 @@ void DisplayServerEmbedded::swap_buffers() {
 #endif
 }
 
+uint64_t DisplayServerEmbedded::get_native_window_id(WindowID p_id) const {
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		return gl_manager->window_get_render_target(p_id);
+	}
+#endif
+	return 0;
+}
+
+bool DisplayServerEmbedded::is_rendering_flipped() const {
+	return false;
+}
+
+DisplayServer::WindowID DisplayServerEmbedded::get_native_surface_window_id(Ref<RenderingNativeSurface> p_native_surface) const {
+	ERR_FAIL_COND_V(!surface_to_window_id.has(p_native_surface), DisplayServer::INVALID_WINDOW_ID);
+	return surface_to_window_id[p_native_surface];
+}
+
 void DisplayServerEmbedded::gl_window_make_current(DisplayServer::WindowID p_window_id) {
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
@@ -650,4 +731,26 @@ void DisplayServerEmbedded::gl_window_make_current(DisplayServer::WindowID p_win
 	}
 	current_window = p_window_id;
 #endif
+}
+
+void DisplayServerEmbedded::set_host_interface(Ref<DisplayServerEmbeddedHostInterface> p_host_interface) {
+	host_interface = p_host_interface;
+}
+
+DisplayServer::CursorShape DisplayServerEmbedded::cursor_get_shape() const {
+	if (host_interface.is_valid()) {
+		return (DisplayServer::CursorShape)host_interface->cursor_get_shape();
+	}
+
+	ERR_FAIL_V_MSG(DisplayServer::CursorShape::CURSOR_ARROW, "No host interface set.");
+}
+
+void DisplayServerEmbedded::cursor_set_shape(CursorShape p_shape) {
+	if (host_interface.is_valid()) {
+		host_interface->cursor_set_shape((Input::CursorShape)p_shape);
+	}
+}
+
+void DisplayServerEmbedded::delete_host_interface() {
+	host_interface = nullptr;
 }

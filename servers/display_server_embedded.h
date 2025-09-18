@@ -71,6 +71,8 @@ class DisplayServerEmbedded : public DisplayServer {
 
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 
+	DisplayServer::MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
+
 	void perform_event(const Ref<InputEvent> &p_event);
 
 	static Ref<RenderingNativeSurface> native_surface;
@@ -93,6 +95,8 @@ class DisplayServerEmbedded : public DisplayServer {
 	~DisplayServerEmbedded();
 
 protected:
+	Ref<DisplayServerEmbeddedHostInterface> host_interface;
+
 	static void _bind_methods();
 
 public:
@@ -127,15 +131,25 @@ public:
 
 	// MARK: - Input
 
+	// MARK: Mouse
+	virtual void mouse_set_mode(MouseMode p_mode) override;
+	virtual MouseMode mouse_get_mode() const override;
+
+	virtual Point2i mouse_get_position() const override;
+	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
+
+	virtual void mouse_button(int p_x, int p_y, MouseButton p_mouse_button_index, bool p_pressed, bool p_double_click, bool p_cancelled, DisplayServer::WindowID p_window) override;
+	virtual void mouse_motion(int p_prev_x, int p_prev_y, int p_x, int p_y, DisplayServer::WindowID p_window) override;
+
 	// MARK: Touches and Apple Pencil
 
-	void touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click, DisplayServer::WindowID p_window);
-	void touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y, float p_pressure, Vector2 p_tilt, DisplayServer::WindowID p_window);
+	virtual void touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click, DisplayServer::WindowID p_window) override;
+	virtual void touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y, float p_pressure, Vector2 p_tilt, DisplayServer::WindowID p_window) override;
 	void touches_canceled(int p_idx, DisplayServer::WindowID p_window);
 
 	// MARK: Keyboard
 
-	void key(Key p_key, char32_t p_char, Key p_unshifted, Key p_physical, BitField<KeyModifierMask> p_modifiers, bool p_pressed, DisplayServer::WindowID p_window = MAIN_WINDOW_ID);
+	virtual void key(Key p_key, char32_t p_char, Key p_unshifted, Key p_physical, BitField<KeyModifierMask> p_modifiers, bool p_pressed, DisplayServer::WindowID p_window) override;
 
 	// MARK: -
 
@@ -211,5 +225,13 @@ public:
 	void resize_window(Size2i size, WindowID p_id);
 	void set_content_scale(float p_scale);
 	virtual void swap_buffers() override;
+	virtual uint64_t get_native_window_id(WindowID p_id = MAIN_WINDOW_ID) const override;
+	virtual bool is_rendering_flipped() const override;
+	virtual WindowID get_native_surface_window_id(Ref<RenderingNativeSurface> p_native_surface) const;
 	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id) override;
+
+	void set_host_interface(Ref<DisplayServerEmbeddedHostInterface> p_host_interface);
+	virtual CursorShape cursor_get_shape() const override;
+	virtual void cursor_set_shape(CursorShape p_shape) override;
+	void delete_host_interface();
 };

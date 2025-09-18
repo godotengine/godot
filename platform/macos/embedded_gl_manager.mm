@@ -304,6 +304,20 @@ void GLManagerEmbedded::set_vsync_enabled(bool p_enabled) {
 	}
 }
 
+uint64_t GLManagerEmbedded::get_fbo(DisplayServer::WindowID p_window_id) const {
+	if (current_window == p_window_id) {
+		return 0;
+	}
+
+	const GLWindowElement *el = windows.find(p_window_id);
+	if (el == nullptr) {
+		return 0;
+	}
+
+	const GLWindow &win = el->value();
+	return win.framebuffers[win.current_fb].fbo;
+}
+
 GLManagerEmbedded::GLManagerEmbedded() {
 	display_semaphore = dispatch_semaphore_create(BUFFER_COUNT);
 

@@ -211,6 +211,7 @@ opts.Add(
         ("executable", "static_library", "shared_library"),
     )
 )
+opts.Add(BoolVariable("external_target", "Enable external target rendering", False))
 opts.Add(
     BoolVariable(
         "dev_mode", "Alias for dev options: verbose=yes warnings=extra werror=yes tests=yes strict_checks=yes", False
@@ -336,6 +337,9 @@ if env["import_env_vars"]:
             env["ENV"][env_var] = os.environ[env_var]
 
 # Platform selection: validate input, and add options.
+
+if env["external_target"]:
+    env.Append(CPPDEFINES=["EXTERNAL_TARGET_ENABLED"])
 
 if env["library_type"] == "static_library":
     env.Append(CPPDEFINES=["LIBGODOT_ENABLED"])

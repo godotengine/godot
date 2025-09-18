@@ -45,6 +45,8 @@
 
 #include "drivers/vulkan/godot_vulkan.h"
 
+#undef MemoryBarrier
+
 // Design principles:
 // - Vulkan structs are zero-initialized and fields not requiring a non-zero value are omitted (except in cases where expresivity reasons apply).
 class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
@@ -53,7 +55,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	/*****************/
 
 	struct CommandQueue;
-	struct SwapChain;
+	class SwapChain;
 	struct CommandBufferInfo;
 	struct RenderPassInfo;
 	struct Framebuffer;
@@ -108,6 +110,8 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 
 		// Debug device fault.
 		PFN_vkGetDeviceFaultInfoEXT GetDeviceFaultInfoEXT = nullptr;
+
+		PFN_vkGetMemoryFdKHR GetMemoryFdKHR = nullptr;
 	};
 	// Debug marker extensions.
 	VkDebugReportObjectTypeEXT _convert_to_debug_report_objectType(VkObjectType p_object_type);
@@ -146,6 +150,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	uint8_t swappy_mode = 2; // See default value for display/window/frame_pacing/android/swappy_mode.
 #endif
 	DeviceFunctions device_functions;
+	VkPhysicalDeviceMemoryProperties memory_properties;
 
 	void _register_requested_device_extension(const CharString &p_extension_name, bool p_required);
 	Error _initialize_device_extensions();
@@ -153,6 +158,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	Error _check_device_capabilities();
 	void _choose_vrs_capabilities();
 	Error _add_queue_create_info(LocalVector<VkDeviceQueueCreateInfo> &r_queue_create_info);
+	Error _init_device_functions(VkDevice device);
 	Error _initialize_device(const LocalVector<VkDeviceQueueCreateInfo> &p_queue_create_info);
 	Error _initialize_allocator();
 	Error _initialize_pipeline_cache();
@@ -286,6 +292,7 @@ private:
 public:
 	virtual FenceID fence_create() override final;
 	virtual Error fence_wait(FenceID p_fence) override final;
+	virtual void frame_cleanup(FenceID p_fence) override final;
 	virtual void fence_free(FenceID p_fence) override final;
 
 	/********************/
@@ -356,11 +363,11 @@ public:
 	/********************/
 
 private:
-	struct SwapChain {
-		VkSwapchainKHR vk_swapchain = VK_NULL_HANDLE;
+	class SwapChain {
+	protected:
+		RenderingDeviceDriverVulkan *device_driver;
 		RenderingContextDriver::SurfaceID surface = RenderingContextDriver::SurfaceID();
 		VkFormat format = VK_FORMAT_UNDEFINED;
-		VkColorSpaceKHR color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 		TightLocalVector<VkImage> images;
 		TightLocalVector<VkImageView> image_views;
 		TightLocalVector<VkSemaphore> present_semaphores;
@@ -373,7 +380,517 @@ private:
 #ifdef ANDROID_ENABLED
 		uint64_t refresh_duration = 0;
 #endif
+		VkColorSpaceKHR color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+		BinaryMutex mutex;
+		TightLocalVector<bool> in_use;
+		int last_drawn_buffer = 0;
+		uint64_t version = 0;
+
+	public:
+		virtual VkSwapchainKHR get_swapchain_handle() const { return VK_NULL_HANDLE; }
+
+		RenderingContextDriver::SurfaceID get_surface() const { return surface; }
+
+		VkFormat get_format() const { return format; }
+
+		uint32_t get_number_of_images() const { return images.size(); }
+
+		VkImage get_image(uint32_t p_index) const { return images[p_index]; }
+
+		VkSemaphore get_present_semaphore(uint32_t p_index) const { return present_semaphores[p_index]; }
+
+		RenderPassID get_render_pass() const { return render_pass; }
+
+		int get_pre_transform_rotation_degrees() const { return pre_transform_rotation_degrees; }
+
+		uint32_t get_image_index() const { return image_index; }
+
+		void set_image_index(uint32_t p_image_index) {
+			ERR_FAIL_COND(p_image_index < 0);
+			image_index = p_image_index;
+		}
+
+		BinaryMutex &get_mutex() {
+			return mutex;
+		}
+
+		void set_frame_in_use(size_t p_index, bool p_in_use) {
+			if (images.size() == 0) {
+				return;
+			}
+
+			in_use[p_index] = p_in_use;
+		}
+
+		int get_last_drawn_buffer() {
+			return last_drawn_buffer;
+		}
+
+		void set_last_drawn_buffer(int p_last_drawn_buffer) {
+			last_drawn_buffer = p_last_drawn_buffer;
+		}
+
+		uint64_t get_version() const { return version; }
+
+		void set_color_space(VkColorSpaceKHR p_color_space) { color_space = p_color_space; }
+
+		virtual FramebufferID acquire_framebuffer(CommandQueue *p_command_queue, bool &r_resize_required) = 0;
+
+		virtual bool release_image_semaphore(CommandQueue *p_command_queue, uint32_t p_semaphore_index);
+
+		virtual Error resize(CommandQueueID p_cmd_queue, uint32_t p_desired_framebuffer_count) = 0;
+
+		virtual void release() = 0;
+
+		SwapChain(RenderingDeviceDriverVulkan *p_device_driver, RenderingContextDriver::SurfaceID p_surface, VkFormat p_format, VkColorSpaceKHR p_color_space, RenderPassInfo *p_render_pass) {
+			this->device_driver = p_device_driver;
+			this->surface = p_surface;
+			this->format = p_format;
+			this->color_space = p_color_space;
+			this->render_pass = RenderPassID(p_render_pass);
+		}
+
+		virtual ~SwapChain() = default;
 	};
+
+	class PresentableSwapChain : public SwapChain {
+		VkSwapchainKHR vk_swapchain = VK_NULL_HANDLE;
+
+	public:
+		virtual VkSwapchainKHR get_swapchain_handle() const override { return vk_swapchain; }
+
+		virtual FramebufferID acquire_framebuffer(CommandQueue *p_command_queue, bool &r_resize_required) override final;
+
+		virtual Error resize(CommandQueueID p_cmd_queue, uint32_t p_desired_framebuffer_count) override final;
+
+		virtual void release() override final;
+
+		PresentableSwapChain(
+				RenderingDeviceDriverVulkan *p_device_driver,
+				RenderingContextDriver::SurfaceID p_surface,
+				VkFormat p_format,
+				VkColorSpaceKHR p_color_space,
+				RenderPassInfo *p_render_pass) :
+				SwapChain(p_device_driver, p_surface, p_format, p_color_space, p_render_pass) {}
+	};
+
+#ifdef EXTERNAL_TARGET_ENABLED
+	class ExternalSwapChain : public SwapChain {
+		TightLocalVector<VkDeviceMemory> image_memories;
+		TightLocalVector<bool> externally_acquired;
+		TightLocalVector<uint64_t> external_handles;
+		TightLocalVector<bool> external_handle_transferred;
+		TightLocalVector<uint64_t> allocation_sizes;
+		TightLocalVector<uint32_t> memory_type_indices;
+		TightLocalVector<VkImageCreateInfo> image_create_infos;
+		uint32_t free_count = 0;
+		HashMap<uint32_t, VkImage> prev_acquired_images;
+		HashMap<uint32_t, VkDeviceMemory> prev_acquired_memory;
+
+		Callable images_created_callback;
+		Callable get_number_of_images_func;
+		Callable get_native_handle_func;
+		Callable get_allocation_size_func;
+		Callable get_memory_type_index_func;
+		Callable get_image_create_info_func;
+
+		Callable images_released_callback;
+
+	public:
+		void set_callbacks(Callable p_images_created, Callable p_images_released) {
+			images_created_callback = p_images_created;
+			images_released_callback = p_images_released;
+		}
+
+		uint64_t get_native_handle(int p_index) {
+			// This should only be called once for each id, after the external swapchain has been created.
+			// Calling this function transfers ownership of the native handle to the caller.
+			external_handle_transferred[p_index] = true;
+			return external_handles[p_index];
+		}
+
+		uint64_t get_allocation_size(int p_index) {
+			return allocation_sizes[p_index];
+		}
+
+		uint32_t get_memory_type_index(int p_index) {
+			return memory_type_indices[p_index];
+		}
+
+		uint64_t get_image_create_info(int p_index) {
+			return (uint64_t)&image_create_infos[p_index];
+		}
+
+		void release_image(int p_index) {
+			MutexLock lock(mutex);
+			ERR_FAIL_COND(!externally_acquired[p_index]);
+			ERR_FAIL_COND(in_use[p_index]);
+			externally_acquired[p_index] = false;
+			free_count += 1;
+		}
+
+		virtual FramebufferID acquire_framebuffer(CommandQueue *p_command_queue, bool &r_resize_required) override final;
+
+		int grab_image() {
+			MutexLock<BinaryMutex> lock(mutex);
+			int acquired_buffer = last_drawn_buffer;
+			if (acquired_buffer == -1) {
+				return -1;
+			}
+			if (in_use[acquired_buffer]) {
+				return -1;
+			}
+			if (free_count == 1) {
+				return -1;
+			}
+			if (externally_acquired[acquired_buffer]) {
+				return -1;
+			}
+			last_drawn_buffer = -1;
+			externally_acquired[acquired_buffer] = true;
+			free_count -= 1;
+			if (!prev_acquired_images.is_empty() || !prev_acquired_memory.is_empty()) {
+				for (KeyValue<uint32_t, VkImage> &E : prev_acquired_images) {
+					const VkImage &image = E.value;
+					vkDestroyImage(device_driver->vk_device, image, nullptr);
+				}
+				for (KeyValue<uint32_t, VkDeviceMemory> &E : prev_acquired_memory) {
+					const VkDeviceMemory &memory = E.value;
+					vkFreeMemory(device_driver->vk_device, memory, nullptr);
+				}
+				prev_acquired_images.clear();
+				prev_acquired_memory.clear();
+			}
+			return acquired_buffer;
+		}
+
+		virtual Error resize(CommandQueueID p_cmd_queue, uint32_t p_desired_framebuffer_count) override final;
+
+		virtual void release() override final;
+
+		ExternalSwapChain(
+				RenderingDeviceDriverVulkan *p_device_driver,
+				RenderingContextDriver::SurfaceID p_surface,
+				VkFormat p_format,
+				VkColorSpaceKHR p_color_space,
+				RenderPassInfo *p_render_pass) :
+				SwapChain(p_device_driver, p_surface, p_format, p_color_space, p_render_pass) {
+			get_number_of_images_func = Callable(new ExternalSwapChainGetNumberOfImages(this));
+			get_native_handle_func = Callable(new ExternalSwapChainGetNativeHandle(this));
+			get_allocation_size_func = Callable(new ExternalSwapChainGetAllocationSize(this));
+			get_memory_type_index_func = Callable(new ExternalSwapChainGetMemoryTypeIndex(this));
+			get_image_create_info_func = Callable(new ExternalSwapChainGetImageCreateInfo(this));
+		}
+	};
+
+	class ExternalSwapChainGetNumberOfImages : public CallableCustom {
+		ExternalSwapChain *swapchain = nullptr;
+
+	public:
+		virtual uint32_t hash() const override {
+			return (intptr_t)this;
+		}
+
+		virtual String get_as_text() const override {
+			return "<ExternalSwapChainGetNumberOfImages>";
+		}
+
+		static bool compare_equal_func(const CallableCustom *p_a, const CallableCustom *p_b) {
+			return p_a == p_b;
+		}
+
+		virtual CallableCustom::CompareEqualFunc get_compare_equal_func() const override {
+			return &ExternalSwapChainGetNumberOfImages::compare_equal_func;
+		}
+
+		static bool compare_less_func(const CallableCustom *p_a, const CallableCustom *p_b) {
+			return (void *)p_a < (void *)p_b;
+		}
+
+		virtual CallableCustom::CompareLessFunc get_compare_less_func() const override {
+			return &ExternalSwapChainGetNumberOfImages::compare_less_func;
+		}
+
+		bool is_valid() const override {
+			return true;
+		}
+
+		virtual ObjectID get_object() const override {
+			return ObjectID();
+		}
+
+		virtual int get_argument_count(bool &r_is_valid) const override {
+			r_is_valid = true;
+			return 0;
+		}
+
+		virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
+			r_return_value = Variant(swapchain->get_number_of_images());
+			r_call_error.error = Callable::CallError::CALL_OK;
+		}
+
+		ExternalSwapChainGetNumberOfImages(ExternalSwapChain *p_swapchain) :
+				CallableCustom() {
+			swapchain = p_swapchain;
+		}
+	};
+
+	class ExternalSwapChainGetNativeHandle : public CallableCustom {
+		ExternalSwapChain *swapchain = nullptr;
+		const int required_argument_count = 1;
+
+	public:
+		virtual uint32_t hash() const override {
+			return (intptr_t)this;
+		}
+
+		virtual String get_as_text() const override {
+			return "<ExternalSwapChainGetNativeHandle>";
+		}
+
+		static bool compare_equal_func(const CallableCustom *p_a, const CallableCustom *p_b) {
+			return p_a == p_b;
+		}
+
+		virtual CallableCustom::CompareEqualFunc get_compare_equal_func() const override {
+			return &ExternalSwapChainGetNativeHandle::compare_equal_func;
+		}
+
+		static bool compare_less_func(const CallableCustom *p_a, const CallableCustom *p_b) {
+			return (void *)p_a < (void *)p_b;
+		}
+
+		virtual CallableCustom::CompareLessFunc get_compare_less_func() const override {
+			return &ExternalSwapChainGetNativeHandle::compare_less_func;
+		}
+
+		bool is_valid() const override {
+			return true;
+		}
+
+		virtual ObjectID get_object() const override {
+			return ObjectID();
+		}
+
+		virtual int get_argument_count(bool &r_is_valid) const override {
+			r_is_valid = true;
+			return required_argument_count;
+		}
+
+		virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
+			if (p_argcount == 0) {
+				ERR_PRINT("ExternalSwapChainGetNativeHandle requires " + itos(required_argument_count) + " argument but none were given.");
+				r_return_value = -1;
+				r_call_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+			} else if (p_argcount > required_argument_count) {
+				ERR_PRINT("ExternalSwapChainGetNativeHandle requires " + itos(required_argument_count) + " argument but " + itos(p_argcount) + " were given.");
+				r_return_value = -1;
+				r_call_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			}
+
+			uint64_t p_index = (uint64_t)*p_arguments[0];
+			r_return_value = Variant(swapchain->get_native_handle(p_index));
+			r_call_error.error = Callable::CallError::CALL_OK;
+		}
+
+		ExternalSwapChainGetNativeHandle(ExternalSwapChain *p_swapchain) :
+				CallableCustom() {
+			swapchain = p_swapchain;
+		}
+	};
+
+	class ExternalSwapChainGetAllocationSize : public CallableCustom {
+		ExternalSwapChain *swapchain = nullptr;
+		const int required_argument_count = 1;
+
+	public:
+		virtual uint32_t hash() const override {
+			return (intptr_t)this;
+		}
+
+		virtual String get_as_text() const override {
+			return "<ExternalSwapChainGetAllocationSize>";
+		}
+
+		static bool compare_equal_func(const CallableCustom *p_a, const CallableCustom *p_b) {
+			return p_a == p_b;
+		}
+
+		virtual CallableCustom::CompareEqualFunc get_compare_equal_func() const override {
+			return &ExternalSwapChainGetAllocationSize::compare_equal_func;
+		}
+
+		static bool compare_less_func(const CallableCustom *p_a, const CallableCustom *p_b) {
+			return (void *)p_a < (void *)p_b;
+		}
+
+		virtual CallableCustom::CompareLessFunc get_compare_less_func() const override {
+			return &ExternalSwapChainGetAllocationSize::compare_less_func;
+		}
+
+		bool is_valid() const override {
+			return true;
+		}
+
+		virtual ObjectID get_object() const override {
+			return ObjectID();
+		}
+
+		virtual int get_argument_count(bool &r_is_valid) const override {
+			r_is_valid = true;
+			return required_argument_count;
+		}
+
+		virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
+			if (p_argcount == 0) {
+				ERR_PRINT("ExternalSwapChainGetAllocationSize requires " + itos(required_argument_count) + " argument but none were given.");
+				r_return_value = -1;
+				r_call_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+			} else if (p_argcount > required_argument_count) {
+				ERR_PRINT("ExternalSwapChainGetAllocationSize requires " + itos(required_argument_count) + " argument but " + itos(p_argcount) + " were given.");
+				r_return_value = -1;
+				r_call_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			}
+
+			uint64_t p_index = (uint64_t)*p_arguments[0];
+			r_return_value = Variant(swapchain->get_allocation_size(p_index));
+			r_call_error.error = Callable::CallError::CALL_OK;
+		}
+
+		ExternalSwapChainGetAllocationSize(ExternalSwapChain *p_swapchain) :
+				CallableCustom() {
+			swapchain = p_swapchain;
+		}
+	};
+
+	class ExternalSwapChainGetMemoryTypeIndex : public CallableCustom {
+		ExternalSwapChain *swapchain = nullptr;
+		const int required_argument_count = 1;
+
+	public:
+		virtual uint32_t hash() const override {
+			return (intptr_t)this;
+		}
+
+		virtual String get_as_text() const override {
+			return "<ExternalSwapChainGetMemoryTypeIndex>";
+		}
+
+		static bool compare_equal_func(const CallableCustom *p_a, const CallableCustom *p_b) {
+			return p_a == p_b;
+		}
+
+		virtual CallableCustom::CompareEqualFunc get_compare_equal_func() const override {
+			return &ExternalSwapChainGetMemoryTypeIndex::compare_equal_func;
+		}
+
+		static bool compare_less_func(const CallableCustom *p_a, const CallableCustom *p_b) {
+			return (void *)p_a < (void *)p_b;
+		}
+
+		virtual CallableCustom::CompareLessFunc get_compare_less_func() const override {
+			return &ExternalSwapChainGetMemoryTypeIndex::compare_less_func;
+		}
+
+		bool is_valid() const override {
+			return true;
+		}
+
+		virtual ObjectID get_object() const override {
+			return ObjectID();
+		}
+
+		virtual int get_argument_count(bool &r_is_valid) const override {
+			r_is_valid = true;
+			return required_argument_count;
+		}
+
+		virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
+			if (p_argcount == 0) {
+				ERR_PRINT("ExternalSwapChainGetMemoryTypeIndex requires " + itos(required_argument_count) + " argument but none were given.");
+				r_return_value = -1;
+				r_call_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+			} else if (p_argcount > required_argument_count) {
+				ERR_PRINT("ExternalSwapChainGetMemoryTypeIndex requires " + itos(required_argument_count) + " argument but " + itos(p_argcount) + " were given.");
+				r_return_value = -1;
+				r_call_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			}
+
+			uint64_t p_index = (uint64_t)*p_arguments[0];
+			r_return_value = Variant(swapchain->get_memory_type_index(p_index));
+			r_call_error.error = Callable::CallError::CALL_OK;
+		}
+
+		ExternalSwapChainGetMemoryTypeIndex(ExternalSwapChain *p_swapchain) :
+				CallableCustom() {
+			swapchain = p_swapchain;
+		}
+	};
+
+	class ExternalSwapChainGetImageCreateInfo : public CallableCustom {
+		ExternalSwapChain *swapchain = nullptr;
+		const int required_argument_count = 1;
+
+	public:
+		virtual uint32_t hash() const override {
+			return (intptr_t)this;
+		}
+
+		virtual String get_as_text() const override {
+			return "<ExternalSwapChainGetImageCreateInfo>";
+		}
+
+		static bool compare_equal_func(const CallableCustom *p_a, const CallableCustom *p_b) {
+			return p_a == p_b;
+		}
+
+		virtual CallableCustom::CompareEqualFunc get_compare_equal_func() const override {
+			return &ExternalSwapChainGetImageCreateInfo::compare_equal_func;
+		}
+
+		static bool compare_less_func(const CallableCustom *p_a, const CallableCustom *p_b) {
+			return (void *)p_a < (void *)p_b;
+		}
+
+		virtual CallableCustom::CompareLessFunc get_compare_less_func() const override {
+			return &ExternalSwapChainGetImageCreateInfo::compare_less_func;
+		}
+
+		bool is_valid() const override {
+			return true;
+		}
+
+		virtual ObjectID get_object() const override {
+			return ObjectID();
+		}
+
+		virtual int get_argument_count(bool &r_is_valid) const override {
+			r_is_valid = true;
+			return required_argument_count;
+		}
+
+		virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
+			if (p_argcount == 0) {
+				ERR_PRINT("ExternalSwapChainGetImageCreateInfo requires " + itos(required_argument_count) + " argument but none were given.");
+				r_return_value = -1;
+				r_call_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+			} else if (p_argcount > required_argument_count) {
+				ERR_PRINT("ExternalSwapChainGetImageCreateInfo requires " + itos(required_argument_count) + " argument but " + itos(p_argcount) + " were given.");
+				r_return_value = -1;
+				r_call_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			}
+
+			uint64_t p_index = (uint64_t)*p_arguments[0];
+			r_return_value = Variant(swapchain->get_image_create_info(p_index));
+			r_call_error.error = Callable::CallError::CALL_OK;
+		}
+
+		ExternalSwapChainGetImageCreateInfo(ExternalSwapChain *p_swapchain) :
+				CallableCustom() {
+			swapchain = p_swapchain;
+		}
+	};
+#endif
 
 	void _swap_chain_release(SwapChain *p_swap_chain);
 
@@ -385,7 +902,24 @@ public:
 	virtual int swap_chain_get_pre_rotation_degrees(SwapChainID p_swap_chain) override final;
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) override final;
 	virtual void swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) override final;
+#ifdef EXTERNAL_TARGET_ENABLED
+	virtual BinaryMutex *swap_chain_get_mutex(SwapChainID p_swap_chain) override final;
+	virtual void swap_chain_set_frame_in_use(SwapChainID p_swap_chain, size_t p_index, bool p_in_use) override final;
+	virtual int swap_chain_get_last_drawn_buffer(SwapChainID p_swap_chain) override final;
+	virtual void swap_chain_set_last_drawn_buffer(SwapChainID p_swap_chain, int p_buffer) override final;
+	virtual uint32_t swap_chain_get_image_index(SwapChainID p_swap_chain) override final;
+	virtual uint64_t swap_chain_get_version(SwapChainID p_swap_chain) override final;
+#endif
 	virtual void swap_chain_free(SwapChainID p_swap_chain) override final;
+
+#ifdef EXTERNAL_TARGET_ENABLED
+	void external_swap_chain_set_callbacks(SwapChainID p_swap_chain, Callable p_images_created, Callable p_images_released);
+	void external_swap_chain_release_image(SwapChainID p_swap_chain, uint32_t p_index);
+	VkImage external_swap_chain_get_image(SwapChainID p_swap_chain, uint32_t p_index);
+	int external_swap_chain_grab_image(SwapChainID p_swap_chain);
+
+	VkResult get_external_memory_handle(VkDevice p_device, VkDeviceMemory p_device_memory, uint64_t *p_exernal_handle_out);
+#endif
 
 private:
 	/*********************/

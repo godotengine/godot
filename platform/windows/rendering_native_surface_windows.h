@@ -59,6 +59,10 @@ public:
 		return instance;
 	}
 
+	virtual void *get_native_id() const override {
+		return (void *)window;
+	}
+
 	RenderingContextDriver *create_rendering_context(const String &p_driver_name) override;
 
 	RenderingNativeSurfaceWindows();

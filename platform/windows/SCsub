@@ -29,6 +29,10 @@ common_win = [
     "rendering_native_surface_windows.cpp",
 ]
 
+libgodot_files = [
+    "libgodot_windows.cpp",
+]
+
 if env.msvc:
     common_win += ["crash_handler_windows_seh.cpp"]
 else:
@@ -46,11 +50,11 @@ if env["arch"] == "x86_64":
     if env.msvc:
         if "/d2archSSE42" in env_cpp_check["CCFLAGS"]:
             env_cpp_check["CCFLAGS"].remove("/d2archSSE42")
-        env.Append(LINKFLAGS=["/ENTRY:ShimMainCRTStartup"])
+        env_cpp_check.Append(LINKFLAGS=["/ENTRY:ShimMainCRTStartup"])
     else:
         if "-msse4.2" in env_cpp_check["CCFLAGS"]:
             env_cpp_check["CCFLAGS"].remove("-msse4.2")
-        env.Append(LINKFLAGS=["-Wl,--entry=ShimMainCRTStartup"])
+        env_cpp_check.Append(LINKFLAGS=["-Wl,--entry=ShimMainCRTStartup"])
 
 
 def arrange_program_clean(prog):
@@ -78,36 +82,40 @@ if env["accesskit"] and not env.msvc:
     sources += env.DEFLIB("uiautomationcore")
 
 if env["library_type"] == "static_library":
-    prog = env.add_library("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
+    prog = env.add_library("#bin/godot", sources + libgodot_files)
     arrange_program_clean(prog)
 elif env["library_type"] == "shared_library":
-    prog = env.add_shared_library("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
+    prog = env.add_shared_library("#bin/godot", sources + libgodot_files)
+    env.Append(CPPDEFINES=["EMBEDDED"])
     arrange_program_clean(prog)
-else:
+else:  # building executable
     prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
     arrange_program_clean(prog)
 
-if env.msvc:
-    env.Depends(prog, "godot.natvis")
-
-# Build console wrapper app.
-if env["windows_subsystem"] == "gui":
-    res_wrap_file = "godot_res_wrap.rc"
-    res_wrap_target = "godot_res_wrap" + env["OBJSUFFIX"]
-    res_wrap_obj = env_wrap.RES(res_wrap_target, res_wrap_file)
-    env_wrap.Depends(res_wrap_obj, "#core/version_generated.gen.h")
-
     if env.msvc:
-        env_wrap.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
-        env_wrap.Append(LINKFLAGS=["version.lib"])
-    else:
-        env_wrap.Append(LINKFLAGS=["-Wl,--subsystem,console"])
-        env_wrap.Append(LIBS=["version"])
+        env.Depends(prog, "godot.natvis")
 
-    prog_wrap = env_wrap.add_program("#bin/godot", common_win_wrap + res_wrap_obj, PROGSUFFIX=env["PROGSUFFIX_WRAP"])
-    arrange_program_clean(prog_wrap)
-    env_wrap.Depends(prog_wrap, prog)
-    sources += common_win_wrap + res_wrap_obj
+    # Build console wrapper app.
+    if env["windows_subsystem"] == "gui":
+        env_wrap = env.Clone()
+        res_wrap_file = "godot_res_wrap.rc"
+        res_wrap_target = "godot_res_wrap" + env["OBJSUFFIX"]
+        res_wrap_obj = env_wrap.RES(res_wrap_target, res_wrap_file)
+        env_wrap.Depends(res_wrap_obj, "#core/version_generated.gen.h")
+
+        if env.msvc:
+            env_wrap.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+            env_wrap.Append(LINKFLAGS=["version.lib"])
+        else:
+            env_wrap.Append(LINKFLAGS=["-Wl,--subsystem,console"])
+            env_wrap.Append(LIBS=["version"])
+
+        prog_wrap = env_wrap.add_program(
+            "#bin/godot", common_win_wrap + res_wrap_obj, PROGSUFFIX=env["PROGSUFFIX_WRAP"]
+        )
+        arrange_program_clean(prog_wrap)
+        env_wrap.Depends(prog_wrap, prog)
+        sources += common_win_wrap + res_wrap_obj
 
 if env["d3d12"]:
     dxc_target_aliases = {

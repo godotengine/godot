@@ -1227,12 +1227,41 @@ void DisplayServer::swap_buffers() {
 	WARN_PRINT("Swap buffers not supported by this display server.");
 }
 
+uint64_t DisplayServer::get_native_window_id(WindowID p_id) const {
+	WARN_PRINT("Native window id not supported by this display server.");
+	return 0;
+}
+
+bool DisplayServer::is_rendering_flipped() const {
+	return true;
+}
+
 void DisplayServer::set_native_icon(const String &p_filename) {
 	WARN_PRINT("Native icon not supported by this display server.");
 }
 
 void DisplayServer::set_icon(const Ref<Image> &p_icon) {
 	WARN_PRINT("Icon not supported by this display server.");
+}
+
+void DisplayServer::mouse_button(int p_x, int p_y, MouseButton p_mouse_button_index, bool p_pressed, bool p_double_click, bool p_cancelled, DisplayServer::WindowID p_window) {
+	WARN_PRINT("Mouse button not supported by this display server.");
+}
+
+void DisplayServer::mouse_motion(int p_prev_x, int p_prev_y, int p_x, int p_y, DisplayServer::WindowID p_window) {
+	WARN_PRINT("Mouse motion not supported by this display server.");
+}
+
+void DisplayServer::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click, DisplayServer::WindowID p_window) {
+	WARN_PRINT("Touch press not supported by this display server.");
+}
+
+void DisplayServer::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y, float p_pressure, Vector2 p_tilt, DisplayServer::WindowID p_window) {
+	WARN_PRINT("Touch drag not supported by this display server.");
+}
+
+void DisplayServer::key(Key p_key, char32_t p_char, Key p_unshifted, Key p_physical, BitField<KeyModifierMask> p_modifiers, bool p_pressed, DisplayServer::WindowID p_window) {
+	WARN_PRINT("Key press not supported by this display server.");
 }
 
 DisplayServer::IndicatorID DisplayServer::create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) {
@@ -1613,6 +1642,12 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_native_icon", "filename"), &DisplayServer::set_native_icon);
 	ClassDB::bind_method(D_METHOD("set_icon", "image"), &DisplayServer::set_icon);
+
+	ClassDB::bind_method(D_METHOD("mouse_button", "x", "y", "mouse_button_index", "pressed", "double_click", "cancelled", "window"), &DisplayServer::mouse_button);
+	ClassDB::bind_method(D_METHOD("mouse_motion", "prev_x", "prev_y", "x", "y", "window"), &DisplayServer::mouse_motion);
+	ClassDB::bind_method(D_METHOD("touch_press", "idx", "x", "y", "pressed", "double_click", "window"), &DisplayServer::touch_press);
+	ClassDB::bind_method(D_METHOD("touch_drag", "idx", "prev_x", "prev_y", "x", "y", "pressure", "tilt", "window"), &DisplayServer::touch_drag);
+	ClassDB::bind_method(D_METHOD("key", "key", "char", "unshifted", "physical", "modifiers", "pressed", "window"), &DisplayServer::key);
 
 	ClassDB::bind_method(D_METHOD("create_status_indicator", "icon", "tooltip", "callback"), &DisplayServer::create_status_indicator);
 	ClassDB::bind_method(D_METHOD("status_indicator_set_icon", "id", "icon"), &DisplayServer::status_indicator_set_icon);

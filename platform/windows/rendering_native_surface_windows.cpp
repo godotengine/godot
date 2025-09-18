@@ -31,22 +31,30 @@
 #include "rendering_native_surface_windows.h"
 #include "rendering_context_driver_vulkan_windows.h"
 
+#if defined(D3D12_ENABLED)
+#include "drivers/d3d12/rendering_context_driver_d3d12.h"
+#endif
+
+#if defined(VULKAN_ENABLED)
+#include "platform/windows/rendering_context_driver_vulkan_windows.h"
+#endif
+
 void RenderingNativeSurfaceWindows::_bind_methods() {
 	ClassDB::bind_static_method("RenderingNativeSurfaceWindows", D_METHOD("create_api", "hwnd", "instance"), &RenderingNativeSurfaceWindows::create_api);
 }
 
-Ref<RenderingNativeSurfaceWindows> RenderingNativeSurfaceWindows::create(GDExtensionConstPtr<const void> p_window, GDExtensionConstPtr<const void> p_instance) {
+Ref<RenderingNativeSurfaceWindows> RenderingNativeSurfaceWindows::create_api(GDExtensionConstPtr<const void> p_window, GDExtensionConstPtr<const void> p_instance) {
 	return RenderingNativeSurfaceWindows::create((HWND)p_window.operator const void *(), (HINSTANCE)p_instance.operator const void *());
 }
 
 Ref<RenderingNativeSurfaceWindows> RenderingNativeSurfaceWindows::create(HWND p_window, HINSTANCE p_instance) {
 	Ref<RenderingNativeSurfaceWindows> result = memnew(RenderingNativeSurfaceWindows);
-	result->window(p_window);
-	result->instance(p_instance);
+	result->window = p_window;
+	result->instance = p_instance;
 	return result;
 }
 
-RenderingContextDriver *RenderingNativeSurfaceWayland::create_rendering_context(const String &p_driver_name) {
+RenderingContextDriver *RenderingNativeSurfaceWindows::create_rendering_context(const String &p_driver_name) {
 #if defined(VULKAN_ENABLED)
 	if (p_driver_name == "vulkan") {
 		return memnew(RenderingContextDriverVulkanWindows);

@@ -45,6 +45,10 @@ public:
 	RenderingNativeSurface();
 	~RenderingNativeSurface();
 
+#ifdef EXTERNAL_TARGET_ENABLED
+	virtual void setup_external_swapchain_callbacks();
+#endif
+
 	virtual RenderingContextDriver *create_rendering_context(const String &p_driver_name) = 0;
 
 	virtual GLManager *create_gl_manager(const String &p_driver_name) { return nullptr; }

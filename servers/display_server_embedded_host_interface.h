@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  libgodot_linuxbsd.cpp                                                 */
+/*  display_server_embedded_host_interface.h                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,43 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/extension/libgodot.h"
+#pragma once
 
-#include "core/extension/godot_instance.h"
-#include "main/main.h"
+#include "core/input/input.h"
+#include "core/object/ref_counted.h"
 
-#include "os_linuxbsd.h"
+class DisplayServerEmbeddedHostInterface : public RefCounted {
+	GDCLASS(DisplayServerEmbeddedHostInterface, RefCounted);
 
-static OS_LinuxBSD *os = nullptr;
+protected:
+	static void _bind_methods();
 
-static GodotInstance *instance = nullptr;
+public:
+	GDVIRTUAL0RC(Input::CursorShape, _cursor_get_shape);
+	GDVIRTUAL1(_cursor_set_shape, Input::CursorShape);
 
-GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func, InvokeCallbackFunction p_async_func, ExecutorData p_async_data, InvokeCallbackFunction p_sync_func, ExecutorData p_sync_data, LogCallbackFunction p_log_func, LogCallbackData p_log_data, void *p_platform_data) {
-	ERR_FAIL_COND_V_MSG(instance != nullptr, nullptr, "Only one Godot Instance may be created.");
-
-	os = new OS_LinuxBSD();
-
-	Error err = Main::setup(p_argv[0], p_argc - 1, &p_argv[1], false);
-	if (err != OK) {
-		return nullptr;
-	}
-
-	instance = memnew(GodotInstance);
-	if (!instance->initialize(p_init_func)) {
-		memdelete(instance);
-		instance = nullptr;
-		return nullptr;
-	}
-
-	return (GDExtensionObjectPtr)instance;
-}
-
-void libgodot_destroy_godot_instance(GDExtensionObjectPtr p_godot_instance) {
-	GodotInstance *godot_instance = (GodotInstance *)p_godot_instance;
-	if (instance == godot_instance) {
-		godot_instance->stop();
-		memdelete(godot_instance);
-		instance = nullptr;
-		Main::cleanup();
-	}
-}
+	virtual Input::CursorShape cursor_get_shape() const;
+	virtual void cursor_set_shape(Input::CursorShape p_shape);
+};
