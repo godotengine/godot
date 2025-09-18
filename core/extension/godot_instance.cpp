@@ -33,8 +33,6 @@
 #include "main/main.h"
 #include "servers/display_server.h"
 
-#define GODOT_INSTANCE_LOG(...) print_line(__VA_ARGS__)
-
 void GodotInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start"), &GodotInstance::start);
 	ClassDB::bind_method(D_METHOD("is_started"), &GodotInstance::is_started);
@@ -48,7 +46,7 @@ GodotInstance::~GodotInstance() {
 }
 
 bool GodotInstance::initialize(GDExtensionInitializationFunction p_init_func) {
-	GODOT_INSTANCE_LOG("Godot Instance initialization");
+	print_verbose("Godot Instance initialization");
 	GDExtensionManager *gdextension_manager = GDExtensionManager::get_singleton();
 	GDExtensionConstPtr<const GDExtensionInitializationFunction> ptr((const GDExtensionInitializationFunction *)&p_init_func);
 	GDExtensionManager::LoadStatus status = gdextension_manager->load_extension_from_function("libgodot://main", ptr);
@@ -56,7 +54,7 @@ bool GodotInstance::initialize(GDExtensionInitializationFunction p_init_func) {
 }
 
 bool GodotInstance::start() {
-	GODOT_INSTANCE_LOG("GodotInstance::start()");
+	print_verbose("GodotInstance::start()");
 	Error err = Main::setup2();
 	if (err != OK) {
 		return false;
@@ -78,7 +76,7 @@ bool GodotInstance::iteration() {
 }
 
 void GodotInstance::stop() {
-	GODOT_INSTANCE_LOG("GodotInstance::stop()");
+	print_verbose("GodotInstance::stop()");
 	if (started) {
 		OS::get_singleton()->get_main_loop()->finalize();
 	}
