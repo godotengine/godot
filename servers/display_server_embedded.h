@@ -30,37 +30,35 @@
 
 #pragma once
 
-#include "display_server_macos_base.h"
+#include "core/input/input.h"
+#include "servers/display_server.h"
 
-@class CAContext;
-@class CALayer;
-class GLManagerEmbedded;
-class RenderingContextDriver;
-class RenderingDevice;
+#if defined(RD_ENABLED)
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+#include "servers/rendering/rendering_device.h"
+#endif
 
-struct DisplayServerEmbeddedState {
-	/*! Default to a scale of 2.0, which is the most common. */
-	float screen_max_scale = 2.0f;
-	float screen_dpi = 96.0f;
-	/*! Scale for window displaying embedded content */
-	float screen_window_scale = 2.0f;
-	/*! The display ID of the window which is displaying the embedded process content. */
-	uint32_t display_id = -1;
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
 
-	void serialize(PackedByteArray &r_data);
-	Error deserialize(const PackedByteArray &p_data);
+#include "servers/rendering/gl_manager.h"
+#endif // GLES3_ENABLED
 
-	_FORCE_INLINE_ bool operator==(const DisplayServerEmbeddedState &p_other) const {
-		return screen_max_scale == p_other.screen_max_scale && screen_dpi == p_other.screen_dpi && display_id == p_other.display_id;
-	}
-};
+class DisplayServerEmbedded : public DisplayServer {
+	GDCLASS(DisplayServerEmbedded, DisplayServer)
 
-class DisplayServerEmbedded : public DisplayServerMacOSBase {
-	GDSOFTCLASS(DisplayServerEmbedded, DisplayServerMacOSBase)
+	_THREAD_SAFE_CLASS_
 
-	DisplayServerEmbeddedState state;
-
+#if defined(RD_ENABLED)
+	RenderingContextDriver *rendering_context = nullptr;
+	RenderingDevice *rendering_device = nullptr;
+#endif
+#if defined(GLES3_ENABLED)
+	GLManager *gl_manager = nullptr;
+#endif
 	NativeMenu *native_menu = nullptr;
+
+	DisplayServer::ScreenOrientation screen_orientation;
 
 	HashMap<WindowID, ObjectID> window_attached_instance_id;
 
@@ -69,47 +67,44 @@ class DisplayServerEmbedded : public DisplayServerMacOSBase {
 	HashMap<WindowID, Callable> input_event_callbacks;
 	HashMap<WindowID, Callable> input_text_callbacks;
 
+	float content_scale = 1.0f;
+
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 
-	bool transparent = false;
+	void perform_event(const Ref<InputEvent> &p_event);
 
-	CAContext *ca_context = nullptr;
-	// Either be a CAMetalLayer or a CALayer depending on the rendering driver.
-	CALayer *layer = nullptr;
-#ifdef GLES3_ENABLED
-	GLManagerEmbedded *gl_manager = nullptr;
+	static Ref<RenderingNativeSurface> native_surface;
+	HashMap<WindowID, Ref<RenderingNativeSurface>> window_surfaces;
+	HashMap<Ref<RenderingNativeSurface>, WindowID> surface_to_window_id;
+	HashMap<WindowID, Size2i> window_sizes;
+
+#if defined(GLES3_ENABLED)
+	WindowID current_window = INVALID_WINDOW_ID;
 #endif
 
-#if defined(RD_ENABLED)
-	RenderingContextDriver *rendering_context = nullptr;
-	RenderingDevice *rendering_device = nullptr;
-#endif
+	Point2i mouse_position;
+	BitField<MouseButtonMask> mouse_button_state;
 
-	String rendering_driver;
+	static inline Callable screen_get_dpi_callback;
+	static inline Callable screen_get_size_callback;
+	static inline Callable screen_get_scale_callback;
 
-	Point2i ime_last_position;
-	Point2i im_selection;
-	String im_text;
+	DisplayServerEmbedded(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
+	~DisplayServerEmbedded();
 
-	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
-	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
-	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
-	bool mouse_mode_override_enabled = false;
-	void _mouse_update_mode();
-
-	CursorShape cursor_shape = CURSOR_ARROW;
-
-	struct Joy {
-		String name;
-		uint64_t timestamp = 0;
-
-		Joy() = default;
-		Joy(const String &p_name) :
-				name(p_name) {}
-	};
-	HashMap<int, Joy> joysticks;
+protected:
+	static void _bind_methods();
 
 public:
+	String rendering_driver;
+
+	static DisplayServerEmbedded *get_singleton();
+
+	static void set_native_surface(Ref<RenderingNativeSurface> p_native_handle);
+	static void set_screen_get_dpi_callback(Callable p_callback);
+	static void set_screen_get_size_callback(Callable p_callback);
+	static void set_screen_get_scale_callback(Callable p_callback);
+
 	static void register_embedded_driver();
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
@@ -130,21 +125,19 @@ public:
 	void send_window_event(DisplayServer::WindowEvent p_event, DisplayServer::WindowID p_id = MAIN_WINDOW_ID) const;
 	void _window_callback(const Callable &p_callable, const Variant &p_arg) const;
 
-	virtual void beep() const override;
+	// MARK: - Input
 
-	// MARK: - Mouse
-	virtual void mouse_set_mode(MouseMode p_mode) override;
-	virtual MouseMode mouse_get_mode() const override;
-	virtual void mouse_set_mode_override(MouseMode p_mode) override;
-	virtual MouseMode mouse_get_mode_override() const override;
-	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
-	virtual bool mouse_is_mode_override_enabled() const override;
+	// MARK: Touches and Apple Pencil
 
-	virtual void warp_mouse(const Point2i &p_position) override;
-	virtual Point2i mouse_get_position() const override;
-	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
+	void touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click, DisplayServer::WindowID p_window);
+	void touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y, float p_pressure, Vector2 p_tilt, DisplayServer::WindowID p_window);
+	void touches_canceled(int p_idx, DisplayServer::WindowID p_window);
 
-	// MARK: - Window
+	// MARK: Keyboard
+
+	void key(Key p_key, char32_t p_char, Key p_unshifted, Key p_physical, BitField<KeyModifierMask> p_modifiers, bool p_pressed, DisplayServer::WindowID p_window = MAIN_WINDOW_ID);
+
+	// MARK: -
 
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
@@ -153,14 +146,20 @@ public:
 	virtual int get_primary_screen() const override;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
-	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
+
+	virtual WindowID create_native_window(Ref<RenderingNativeSurface> p_native_window) override;
+	virtual bool is_native_window(WindowID p_id) override;
+	virtual void delete_native_window(WindowID p_id) override;
+
+	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const override;
@@ -204,23 +203,13 @@ public:
 
 	virtual bool can_any_window_draw() const override;
 
-	virtual void window_set_ime_active(const bool p_active, WindowID p_window = MAIN_WINDOW_ID) override;
-	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID) override;
-
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
 
-	void update_im_text(const Point2i &p_selection, const String &p_text);
-	virtual Point2i ime_get_selection() const override;
-	virtual String ime_get_text() const override;
+	virtual bool is_touchscreen_available() const override;
 
-	virtual void cursor_set_shape(CursorShape p_shape) override;
-	virtual CursorShape cursor_get_shape() const override;
-	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
-
-	void set_state(const DisplayServerEmbeddedState &p_state);
+	void resize_window(Size2i size, WindowID p_id);
+	void set_content_scale(float p_scale);
 	virtual void swap_buffers() override;
-
-	DisplayServerEmbedded(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
-	~DisplayServerEmbedded();
+	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id) override;
 };

@@ -38,6 +38,7 @@
 #include "storage/mesh_storage.h"
 #include "storage/particles_storage.h"
 #include "storage/texture_storage.h"
+#include "storage/utilities.h"
 
 #include "core/config/project_settings.h"
 #include "core/templates/sort_array.h"
@@ -1048,7 +1049,7 @@ Ref<Image> RasterizerSceneGLES3::sky_bake_panorama(RID p_sky, float p_energy, bo
 
 	GLuint rad_fbo = 0;
 	glGenFramebuffers(1, &rad_fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, rad_fbo);
+	FramebufferBinding binding(GL_FRAMEBUFFER, rad_fbo);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rad_tex, 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, sky->radiance);
@@ -1059,7 +1060,7 @@ Ref<Image> RasterizerSceneGLES3::sky_bake_panorama(RID p_sky, float p_energy, bo
 
 	copy_effects->copy_cube_to_panorama(p_bake_irradiance ? float(sky->mipmap_count) : 0.0);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	binding.reset();
 	glDeleteFramebuffers(1, &rad_fbo);
 	// Create a dummy texture so we can use texture_2d_get.
 	RID tex_rid = GLES3::TextureStorage::get_singleton()->texture_allocate();
@@ -2193,7 +2194,7 @@ void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, 
 	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, PASS_MODE_SHADOW);
 	render_list[RENDER_LIST_SECONDARY].sort_by_key();
 
-	glBindFramebuffer(GL_FRAMEBUFFER, shadow_fb);
+	FramebufferBinding binding(GL_FRAMEBUFFER, shadow_fb);
 	glViewport(atlas_rect.position.x, atlas_rect.position.y, atlas_rect.size.x, atlas_rect.size.y);
 
 	GLuint global_buffer = GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_uniform_buffer();
@@ -2233,7 +2234,6 @@ void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, 
 	scene_state.enable_gl_depth_draw(true);
 	glDisable(GL_CULL_FACE);
 	scene_state.cull_mode = RS::CULL_MODE_DISABLED;
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 }
 
 void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingMethod::RenderInfo *r_render_info) {
@@ -3780,7 +3780,7 @@ void RasterizerSceneGLES3::render_particle_collider_heightfield(RID p_collider, 
 
 	RENDER_TIMESTAMP("Render Collider Heightfield");
 
-	glBindFramebuffer(GL_FRAMEBUFFER, fb);
+	FramebufferBinding binding(GL_FRAMEBUFFER, fb);
 	glViewport(0, 0, fb_size.width, fb_size.height);
 
 	GLuint global_buffer = GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_uniform_buffer();
@@ -3805,7 +3805,6 @@ void RasterizerSceneGLES3::render_particle_collider_heightfield(RID p_collider, 
 	_render_list_template<PASS_MODE_SHADOW>(&render_list_params, &render_data, 0, render_list[RENDER_LIST_SECONDARY].elements.size());
 
 	glColorMask(1, 1, 1, 1);
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 }
 
 void RasterizerSceneGLES3::_render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, GLuint p_framebuffer, const Rect2i &p_region) {
@@ -3826,7 +3825,7 @@ void RasterizerSceneGLES3::_render_uv2(const PagedArray<RenderGeometryInstance *
 	RENDER_TIMESTAMP("Render 3D Material");
 
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, p_framebuffer);
+		FramebufferBinding binding(GL_FRAMEBUFFER, p_framebuffer);
 		glViewport(p_region.position.x, p_region.position.y, p_region.size.x, p_region.size.y);
 
 		GLuint global_buffer = GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_uniform_buffer();
@@ -3887,7 +3886,6 @@ void RasterizerSceneGLES3::_render_uv2(const PagedArray<RenderGeometryInstance *
 
 		GLuint db = GL_COLOR_ATTACHMENT0;
 		glDrawBuffers(1, &db);
-		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	}
 }
 
@@ -3984,14 +3982,13 @@ void RasterizerSceneGLES3::_render_buffers_debug_draw(Ref<RenderSceneBuffersGLES
 			}
 
 			// Set back to FBO
-			glBindFramebuffer(GL_FRAMEBUFFER, p_fbo);
+			FramebufferBinding binding(GL_FRAMEBUFFER, p_fbo);
 			Size2i size = p_render_buffers->get_internal_size();
 			glViewport(0, 0, size.width, size.height);
 			glBindTexture(GL_TEXTURE_2D, shadow_atlas_texture);
 
 			copy_effects->copy_to_rect(Rect2(Vector2(), Vector2(0.5, 0.5)));
 			glBindTexture(GL_TEXTURE_2D, 0);
-			glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 		}
 	}
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS) {

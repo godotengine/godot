@@ -42,8 +42,8 @@ RenderingContextDriver::SurfaceID RenderingContextDriver::surface_get_from_windo
 	}
 }
 
-Error RenderingContextDriver::window_create(DisplayServer::WindowID p_window, const void *p_platform_data) {
-	SurfaceID surface = surface_create(p_platform_data);
+Error RenderingContextDriver::window_create(DisplayServer::WindowID p_window, Ref<RenderingNativeSurface> p_native_surface) {
+	SurfaceID surface = surface_create(p_native_surface);
 	if (surface != 0) {
 		window_surface_map[p_window] = surface;
 		return OK;
@@ -56,6 +56,14 @@ void RenderingContextDriver::window_set_size(DisplayServer::WindowID p_window, u
 	SurfaceID surface = surface_get_from_window(p_window);
 	if (surface) {
 		surface_set_size(surface, p_width, p_height);
+	}
+}
+
+void RenderingContextDriver::window_get_size(DisplayServer::WindowID p_window, uint32_t &r_width, uint32_t &r_height) {
+	SurfaceID surface = surface_get_from_window(p_window);
+	if (surface) {
+		r_width = surface_get_width(surface);
+		r_height = surface_get_height(surface);
 	}
 }
 

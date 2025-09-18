@@ -30,13 +30,20 @@
 
 #include "register_driver_types.h"
 
+#include "core/object/class_db.h"
 #include "drivers/png/image_loader_png.h"
 #include "drivers/png/resource_saver_png.h"
+
+#include "drivers/vulkan/rendering_native_surface_vulkan.h"
 
 static Ref<ImageLoaderPNG> image_loader_png;
 static Ref<ResourceSaverPNG> resource_saver_png;
 
 void register_core_driver_types() {
+#ifdef VULKAN_ENABLED
+	GDREGISTER_ABSTRACT_CLASS(RenderingNativeSurfaceVulkan)
+#endif
+
 	image_loader_png.instantiate();
 	ImageLoader::add_image_format_loader(image_loader_png);
 

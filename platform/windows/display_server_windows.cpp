@@ -49,6 +49,8 @@
 
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
+#include "rendering_native_surface_windows.h"
+
 #if defined(VULKAN_ENABLED)
 #include "rendering_context_driver_vulkan_windows.h"
 #endif
@@ -6462,37 +6464,41 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		GetClientRect(wd.hWnd, &real_client_rect);
 
 #ifdef RD_ENABLED
+		Ref<RenderingNativeSurfaceWindows> windows_surface = nullptr;
+#if defined(VULKAN_ENABLED) || defined(D3D12_ENABLED)
+		if (rendering_driver == "vulkan" || rendering_driver == "d3d12") {
+			windows_surface = RenderingNativeSurfaceWindows::create(wd.hWnd, hInstance);
+		}
+#endif
+		if (!rendering_context) {
+			if (windows_surface.is_valid()) {
+				rendering_context = windows_surface->create_rendering_context(rendering_driver);
+			}
+
+			if (rendering_context) {
+				if (rendering_context->initialize() != OK) {
+					memdelete(rendering_context);
+					rendering_context = nullptr;
+					return INVALID_WINDOW_ID;
+				}
+			}
+		}
+
 		if (rendering_context) {
-			union {
-#ifdef VULKAN_ENABLED
-				RenderingContextDriverVulkanWindows::WindowPlatformData vulkan;
-#endif
-#ifdef D3D12_ENABLED
-				RenderingContextDriverD3D12::WindowPlatformData d3d12;
-#endif
-			} wpd;
-#ifdef VULKAN_ENABLED
-			if (rendering_driver == "vulkan") {
-				wpd.vulkan.window = wd.hWnd;
-				wpd.vulkan.instance = hInstance;
-			}
-#endif
-#ifdef D3D12_ENABLED
-			if (rendering_driver == "d3d12") {
-				wpd.d3d12.window = wd.hWnd;
-			}
-#endif
-			if (rendering_context->window_create(id, &wpd) != OK) {
+			if (rendering_context->window_create(id, windows_surface) != OK) {
 				ERR_PRINT(vformat("Failed to create %s window.", rendering_driver));
 				memdelete(rendering_context);
+				memdelete(windows_surface);
 				rendering_context = nullptr;
 				windows.erase(id);
+				windows_surface = nullptr;
 				return INVALID_WINDOW_ID;
 			}
 
 			rendering_context->window_set_size(id, real_client_rect.right - real_client_rect.left - off_x, real_client_rect.bottom - real_client_rect.top);
 			rendering_context->window_set_vsync_mode(id, p_vsync_mode);
 			wd.context_created = true;
+			windows_surface = nullptr;
 		}
 #endif
 

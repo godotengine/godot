@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rendering_context_driver_vulkan_macos.mm                              */
+/*  gl_manager.h                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,42 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "rendering_context_driver_vulkan_macos.h"
+#pragma once
 
-#ifdef VULKAN_ENABLED
-
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan_metal.h>
+#if defined(GLES3_ENABLED)
+// These must come first to avoid windows.h mess.
+#include "platform_gl.h"
 #endif
 
-const char *RenderingContextDriverVulkanMacOS::_get_platform_surface_extension() const {
-	return VK_EXT_METAL_SURFACE_EXTENSION_NAME;
-}
+#include "core/error/error_macros.h"
+#include "servers/display_server.h"
+#include "servers/rendering/rendering_native_surface.h"
 
-RenderingContextDriver::SurfaceID RenderingContextDriverVulkanMacOS::surface_create(const void *p_platform_data) {
-	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
+class GLManager {
+public:
+	virtual Error open_display(void *p_display) = 0;
+	virtual Error window_create(DisplayServer::WindowID p_window_id, Ref<RenderingNativeSurface> p_native_surface, int p_width, int p_height) = 0;
+	virtual void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) = 0;
+	virtual void window_destroy(DisplayServer::WindowID p_window_id) = 0;
+	virtual Size2i window_get_size(DisplayServer::WindowID p_id) = 0;
+	virtual int window_get_render_target(DisplayServer::WindowID p_window_id) const = 0;
+	virtual int window_get_color_texture(DisplayServer::WindowID p_id) const = 0;
+	virtual void release_current() = 0;
+	virtual void swap_buffers() = 0;
 
-	VkMetalSurfaceCreateInfoEXT create_info = {};
-	create_info.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
-	create_info.pLayer = *wpd->layer_ptr;
+	virtual void window_make_current(DisplayServer::WindowID p_window_id) = 0;
 
-	VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
-	VkResult err = vkCreateMetalSurfaceEXT(instance_get(), &create_info, get_allocation_callbacks(VK_OBJECT_TYPE_SURFACE_KHR), &vk_surface);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, SurfaceID());
+	virtual void set_use_vsync(bool p_use) = 0;
+	virtual bool is_using_vsync() const = 0;
 
-	Surface *surface = memnew(Surface);
-	surface->vk_surface = vk_surface;
-	return SurfaceID(surface);
-}
+	virtual Error initialize(void *p_native_display = nullptr) = 0;
 
-RenderingContextDriverVulkanMacOS::RenderingContextDriverVulkanMacOS() {
-	// Does nothing.
-}
-
-RenderingContextDriverVulkanMacOS::~RenderingContextDriverVulkanMacOS() {
-	// Does nothing.
-}
-
-#endif // VULKAN_ENABLED
+	GLManager() {}
+	virtual ~GLManager() {}
+};

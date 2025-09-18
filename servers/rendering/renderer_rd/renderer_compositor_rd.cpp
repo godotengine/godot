@@ -185,12 +185,12 @@ void RendererCompositorRD::finalize() {
 	RD::get_singleton()->free(blit.sampler);
 }
 
-void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, DisplayServer::WindowID p_screen, bool p_use_filter) {
 	if (p_image.is_null() || p_image->is_empty()) {
 		return;
 	}
 
-	Error err = RD::get_singleton()->screen_prepare_for_drawing(DisplayServer::MAIN_WINDOW_ID);
+	Error err = RD::get_singleton()->screen_prepare_for_drawing(p_screen);
 	if (err != OK) {
 		// Window is minimized and does not have valid swapchain, skip drawing without printing errors.
 		return;
@@ -218,7 +218,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 		uset = RD::get_singleton()->uniform_set_create(uniforms, blit.shader.version_get_shader(blit.shader_version, BLIT_MODE_NORMAL), 0);
 	}
 
-	Size2 window_size = DisplayServer::get_singleton()->window_get_size();
+	Size2 window_size = DisplayServer::get_singleton()->window_get_size(p_screen);
 
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
 	Rect2 screenrect;
@@ -232,7 +232,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	screenrect.position /= window_size;
 	screenrect.size /= window_size;
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(DisplayServer::MAIN_WINDOW_ID, p_color);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(p_screen, p_color);
 
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blit.pipelines[BLIT_MODE_NORMAL_ALPHA]);
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);

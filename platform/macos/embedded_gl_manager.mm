@@ -148,13 +148,11 @@ void GLManagerEmbedded::window_resize(DisplayServer::WindowID p_window_id, int p
 		glBindTexture(GL_TEXTURE_RECTANGLE, 0);
 	}
 	win.current_fb = 0;
-	GLES3::TextureStorage::system_fbo = win.framebuffers[win.current_fb].fbo;
 	win.is_valid = true;
 }
 
 void GLManagerEmbedded::GLWindow::destroy_framebuffers() {
 	is_valid = false;
-	GLES3::TextureStorage::system_fbo = 0;
 
 	for (FrameBuffer &fb : framebuffers) {
 		if (fb.fbo) {
@@ -246,7 +244,6 @@ void GLManagerEmbedded::swap_buffers() {
 	win.layer.contents = (__bridge id)win.framebuffers[win.current_fb].surface;
 	[CATransaction commit];
 	win.current_fb = (win.current_fb + 1) % BUFFER_COUNT;
-	GLES3::TextureStorage::system_fbo = win.framebuffers[win.current_fb].fbo;
 }
 
 Error GLManagerEmbedded::initialize() {

@@ -44,7 +44,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#import "rendering_context_driver_vulkan_apple_embedded.h"
+#import "drivers/apple/rendering_context_driver_vulkan_apple.h"
 #endif
 #endif
 

@@ -7,17 +7,32 @@ from platform_methods import combine_libs_apple_embedded
 
 Import("env")
 
-ios_lib = [
+
+common_ios_lib_files = [
+    "os_ios.mm",
+]
+
+ios_lib_files = [
     "device_metrics.mm",
     "display_layer_ios.mm",
     "display_server_ios.mm",
     "godot_view_ios.mm",
     "main_ios.mm",
-    "os_ios.mm",
+    "view_controller.mm",
+    "godot_view_renderer.mm",
+    "keyboard_input_view.mm",
+]
+
+ios_libgodot_files = [
+    "libgodot_ios.mm",
 ]
 
 env_ios = env.Clone()
-ios_lib = env_ios.add_library("ios", ios_lib)
+
+if env["library_type"] != "executable":
+    ios_lib = env_ios.add_library("ios", common_ios_lib_files + ios_libgodot_files)
+else:
+    ios_lib = env_ios.add_library("ios", common_ios_lib_files + ios_lib_files)
 
 # (iOS) Enable module support
 env_ios.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])

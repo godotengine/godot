@@ -37,8 +37,9 @@
 
 #include "core/templates/local_vector.h"
 #include "servers/display_server.h"
+#include "servers/rendering/gl_manager.h"
 
-class EGLManager {
+class EGLManager : public GLManager {
 private:
 	// An EGL-side representation of a display with its own rendering
 	// context.
@@ -94,24 +95,27 @@ private:
 public:
 	int display_get_native_visual_id(void *p_display);
 
-	Error open_display(void *p_display);
+	Error open_display(void *p_display) override;
 	Error window_create(DisplayServer::WindowID p_window_id, void *p_display, void *p_native_window, int p_width, int p_height);
+	Error window_create(DisplayServer::WindowID p_window_id, Ref<RenderingNativeSurface> p_native_surface, int p_width, int p_height) override;
+	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) override {}
+	void window_destroy(DisplayServer::WindowID p_window_id) override;
+	int window_get_render_target(DisplayServer::WindowID p_window_id) const override { return 0; }
+	int window_get_color_texture(DisplayServer::WindowID p_id) const override { return 0; }
+	Size2i window_get_size(DisplayServer::WindowID p_id) override;
+	void release_current() override;
+	void swap_buffers() override;
 
-	void window_destroy(DisplayServer::WindowID p_window_id);
+	void window_make_current(DisplayServer::WindowID p_window_id) override;
 
-	void release_current();
-	void swap_buffers();
-
-	void window_make_current(DisplayServer::WindowID p_window_id);
-
-	void set_use_vsync(bool p_use);
-	bool is_using_vsync() const;
+	void set_use_vsync(bool p_use) override;
+	bool is_using_vsync() const override;
 
 	EGLContext get_context(DisplayServer::WindowID p_window_id);
 	EGLDisplay get_display(DisplayServer::WindowID p_window_id);
 	EGLConfig get_config(DisplayServer::WindowID p_window_id);
 
-	Error initialize(void *p_native_display = nullptr);
+	Error initialize(void *p_native_display = nullptr) override;
 
 	EGLManager();
 	virtual ~EGLManager();

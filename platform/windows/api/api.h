@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rendering_context_driver_vulkan_macos.h                               */
+/*  api.h                                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,26 +30,7 @@
 
 #pragma once
 
-#ifdef VULKAN_ENABLED
-
-#include "drivers/vulkan/rendering_context_driver_vulkan.h"
-
-#import <QuartzCore/CAMetalLayer.h>
-
-class RenderingContextDriverVulkanMacOS : public RenderingContextDriverVulkan {
-private:
-	virtual const char *_get_platform_surface_extension() const override final;
-
-protected:
-	SurfaceID surface_create(const void *p_platform_data) override final;
-
-public:
-	struct WindowPlatformData {
-		CAMetalLayer *const *layer_ptr;
-	};
-
-	RenderingContextDriverVulkanMacOS();
-	~RenderingContextDriverVulkanMacOS();
-};
-
-#endif // VULKAN_ENABLED
+void register_core_windows_api();
+void unregister_core_windows_api();
+void register_windows_api();
+void unregister_windows_api();

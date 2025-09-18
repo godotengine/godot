@@ -30,7 +30,7 @@
 
 #include "embedded_debugger.h"
 
-#include "display_server_embedded.h"
+#include "display_server_macos_embedded.h"
 
 #include "core/debugger/engine_debugger.h"
 #include "core/input/input_event_codec.h"
@@ -39,7 +39,7 @@
 HashMap<String, EmbeddedDebugger::ParseMessageFunc> EmbeddedDebugger::parse_message_handlers;
 #endif
 
-EmbeddedDebugger::EmbeddedDebugger(DisplayServerEmbedded *p_ds) {
+EmbeddedDebugger::EmbeddedDebugger(DisplayServerMacOSEmbedded *p_ds) {
 	singleton = this;
 
 #ifdef DEBUG_ENABLED
@@ -55,7 +55,7 @@ EmbeddedDebugger::~EmbeddedDebugger() {
 	singleton = nullptr;
 }
 
-void EmbeddedDebugger::initialize(DisplayServerEmbedded *p_ds) {
+void EmbeddedDebugger::initialize(DisplayServerMacOSEmbedded *p_ds) {
 	if (EngineDebugger::is_active()) {
 		memnew(EmbeddedDebugger(p_ds));
 	}

@@ -604,6 +604,18 @@ DisplayServer::WindowID DisplayServer::create_sub_window(WindowMode p_mode, VSyn
 	ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Sub-windows not supported by this display server.");
 }
 
+DisplayServer::WindowID DisplayServer::create_native_window(Ref<RenderingNativeSurface> p_native_window) {
+	ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Native windows not supported by this display server.");
+}
+
+bool DisplayServer::is_native_window(DisplayServer::WindowID p_id) {
+	ERR_FAIL_V_MSG(false, "Native windows not supported by this display server.");
+}
+
+void DisplayServer::delete_native_window(DisplayServer::WindowID p_id) {
+	ERR_FAIL_MSG("Native windows not supported by this display server.");
+}
+
 void DisplayServer::show_window(WindowID p_id) {
 	ERR_FAIL_MSG("Sub-windows not supported by this display server.");
 }

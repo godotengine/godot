@@ -96,7 +96,7 @@ public:
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }
 
-	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
+	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, DisplayServer::WindowID p_screen, bool p_use_filter = true);
 
 	void initialize();
 	void begin_frame(double frame_step);

@@ -1201,7 +1201,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 		GLuint temp_color_texture;
 		glGenTextures(1, &temp_color_texture);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, temp_framebuffer);
+		FramebufferBinding binding(GL_FRAMEBUFFER, temp_framebuffer);
 
 		glBindTexture(GL_TEXTURE_2D, temp_color_texture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->alloc_width, texture->alloc_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
@@ -1227,7 +1227,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 
 		glReadPixels(0, 0, texture->alloc_width, texture->alloc_height, GL_RGBA, GL_UNSIGNED_BYTE, &w[0]);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+		binding.reset();
 		glDeleteTextures(1, &temp_color_texture);
 		glDeleteFramebuffers(1, &temp_framebuffer);
 
@@ -1276,7 +1276,7 @@ Ref<Image> TextureStorage::texture_2d_layer_get(RID p_texture, int p_layer) cons
 	GLuint temp_color_texture;
 	glGenTextures(1, &temp_color_texture);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, temp_framebuffer);
+	FramebufferBinding binding(GL_FRAMEBUFFER, temp_framebuffer);
 
 	glBindTexture(GL_TEXTURE_2D, temp_color_texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->alloc_width, texture->alloc_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
@@ -1302,7 +1302,7 @@ Ref<Image> TextureStorage::texture_2d_layer_get(RID p_texture, int p_layer) cons
 
 	glReadPixels(0, 0, texture->alloc_width, texture->alloc_height, GL_RGBA, GL_UNSIGNED_BYTE, &w[0]);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	binding.reset();
 	glDeleteTextures(1, &temp_color_texture);
 	glDeleteFramebuffers(1, &temp_framebuffer);
 
@@ -1388,7 +1388,7 @@ Vector<Ref<Image>> TextureStorage::texture_3d_get(RID p_texture) const {
 	GLuint temp_color_texture;
 	glGenTextures(1, &temp_color_texture);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, temp_framebuffer);
+	FramebufferBinding binding(GL_FRAMEBUFFER, temp_framebuffer);
 
 	glBindTexture(GL_TEXTURE_2D, temp_color_texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->alloc_width, texture->alloc_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
@@ -1408,7 +1408,7 @@ Vector<Ref<Image>> TextureStorage::texture_3d_get(RID p_texture) const {
 
 	Vector<Ref<Image>> ret = _texture_3d_read_framebuffer(texture);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	binding.reset();
 	glDeleteTextures(1, &temp_color_texture);
 	glDeleteFramebuffers(1, &temp_framebuffer);
 
@@ -1934,6 +1934,8 @@ void TextureStorage::update_texture_atlas() {
 	CopyEffects *copy_effects = CopyEffects::get_singleton();
 	ERR_FAIL_NULL(copy_effects);
 
+	FramebufferBinding binding(GL_FRAMEBUFFER);
+
 	if (!texture_atlas.dirty) {
 		return; //nothing to do
 	}
@@ -2098,7 +2100,7 @@ void TextureStorage::update_texture_atlas() {
 			copy_effects->copy_to_rect(t->uv_rect);
 		}
 	}
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	binding.reset();
 }
 
 /* DECAL API */
@@ -2143,17 +2145,17 @@ AABB TextureStorage::decal_get_aabb(RID p_decal) const {
 
 /* RENDER TARGET API */
 
-GLuint TextureStorage::system_fbo = 0;
-
 void TextureStorage::_update_render_target(RenderTarget *rt) {
 	// do not allocate a render target with no size
 	if (rt->size.x <= 0 || rt->size.y <= 0) {
 		return;
 	}
 
+	FramebufferBinding binding(GL_FRAMEBUFFER);
+
 	// do not allocate a render target that is attached to the screen
 	if (rt->direct_to_screen) {
-		rt->fbo = system_fbo;
+		rt->fbo = DisplayServer::get_singleton()->window_get_native_handle(DisplayServer::OPENGL_FBO, rt->direct_to_screen_id);
 		return;
 	}
 
@@ -2314,7 +2316,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
+	binding.reset();
 }
 
 void TextureStorage::_create_render_target_backbuffer(RenderTarget *rt) {
@@ -2344,14 +2346,13 @@ void TextureStorage::_create_render_target_backbuffer(RenderTarget *rt) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, count - 1);
 
 		glGenFramebuffers(1, &rt->backbuffer_fbo);
-		glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
+		FramebufferBinding binding(GL_FRAMEBUFFER, rt->backbuffer_fbo);
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, 0);
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
 			WARN_PRINT_ONCE("Cannot allocate mipmaps for canvas screen blur. Status: " + get_framebuffer_error(status));
-			glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
 			return;
 		}
 		GLES3::Utilities::get_singleton()->texture_allocated_data(rt->backbuffer, texture_size_bytes, "Render target backbuffer color texture");
@@ -2737,7 +2738,7 @@ bool TextureStorage::render_target_get_transparent(RID p_render_target) const {
 	return rt->is_transparent;
 }
 
-void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen) {
+void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen, DisplayServer::WindowID p_direct_to_screen_id) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
 
@@ -2748,6 +2749,7 @@ void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, boo
 	// those functions change how they operate depending on the value of DIRECT_TO_SCREEN
 	_clear_render_target(rt);
 	rt->direct_to_screen = p_direct_to_screen;
+	rt->direct_to_screen_id = p_direct_to_screen_id;
 	if (rt->direct_to_screen) {
 		rt->overridden.color = RID();
 		rt->overridden.depth = RID();
@@ -2877,11 +2879,10 @@ void TextureStorage::render_target_do_clear_request(RID p_render_target) {
 	if (!rt->clear_requested) {
 		return;
 	}
-	glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
+	FramebufferBinding binding(GL_FRAMEBUFFER, rt->fbo);
 
 	glClearBufferfv(GL_COLOR, 0, rt->clear_color.components);
 	rt->clear_requested = false;
-	glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
 }
 
 GLuint TextureStorage::render_target_get_fbo(RID p_render_target) const {
@@ -3149,7 +3150,7 @@ void TextureStorage::render_target_sdf_process(RID p_render_target) {
 
 	GLuint temp_fb;
 	glGenFramebuffers(1, &temp_fb);
-	glBindFramebuffer(GL_FRAMEBUFFER, temp_fb);
+	FramebufferBinding binding(GL_FRAMEBUFFER, temp_fb);
 
 	// Load
 	CanvasSdfShaderGLES3::ShaderVariant variant = shrink ? CanvasSdfShaderGLES3::MODE_LOAD_SHRINK : CanvasSdfShaderGLES3::MODE_LOAD;
@@ -3223,7 +3224,7 @@ void TextureStorage::render_target_sdf_process(RID p_render_target) {
 	copy_effects->draw_screen_triangle();
 
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
+	binding.reset();
 	glDeleteFramebuffers(1, &temp_fb);
 	glDisable(GL_SCISSOR_TEST);
 }

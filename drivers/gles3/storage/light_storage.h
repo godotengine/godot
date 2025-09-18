@@ -40,6 +40,7 @@
 #include "drivers/gles3/storage/texture_storage.h"
 #include "servers/rendering/storage/light_storage.h"
 #include "servers/rendering/storage/utilities.h"
+#include "utilities.h"
 
 namespace GLES3 {
 
@@ -783,7 +784,7 @@ public:
 			return atlas->debug_fbo;
 		}
 		glGenFramebuffers(1, &atlas->debug_fbo);
-		glBindFramebuffer(GL_FRAMEBUFFER, atlas->debug_fbo);
+		FramebufferBinding binding(GL_FRAMEBUFFER, atlas->debug_fbo);
 
 		if (atlas->debug_texture == 0) {
 			atlas->debug_texture = shadow_atlas_get_debug_texture(p_atlas);
@@ -793,8 +794,6 @@ public:
 		glBindTexture(GL_TEXTURE_2D, atlas->debug_texture);
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, atlas->debug_texture, 0);
-
-		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
 		return atlas->debug_fbo;
 	}

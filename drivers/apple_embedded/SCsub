@@ -3,6 +3,26 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
+common_files = [
+    "apple_embedded.mm",
+    "display_server_apple_embedded.mm",
+    "godot_view_apple_embedded.mm",
+    "godot_view_renderer.mm",
+    "key_mapping_apple_embedded.mm",
+    "keyboard_input_view.mm",
+    "main_utilities.mm",
+    "os_apple_embedded.mm",
+    "tts_apple_embedded.mm",
+]
+
+executable_files = [
+    "app_delegate_service.mm",
+    "godot_app_delegate.mm",
+    "view_controller.mm",
+]
+
+libgodot_files = []
+
 env_apple_embedded = env.Clone()
 
 # Enable module support
@@ -13,4 +33,7 @@ vulkan_dir = "#thirdparty/vulkan"
 env_apple_embedded.Prepend(CPPPATH=[vulkan_dir, vulkan_dir + "/include"])
 
 # Driver source files
-env_apple_embedded.add_source_files(env.drivers_sources, "*.mm")
+if env["library_type"] != "executable":
+    env_apple_embedded.add_source_files(env.drivers_sources, common_files + libgodot_files)
+else:
+    env_apple_embedded.add_source_files(env.drivers_sources, common_files + executable_files)

@@ -76,7 +76,7 @@ public:
 	RendererCanvasRender *get_canvas() override { return &canvas; }
 	RendererSceneRender *get_scene() override { return &scene; }
 
-	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) override {}
+	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, DisplayServer::WindowID p_screen, bool p_use_filter = true) override {}
 
 	void initialize() override {}
 	void begin_frame(double frame_step) override {

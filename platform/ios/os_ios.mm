@@ -31,6 +31,7 @@
 #import "os_ios.h"
 
 #import "display_server_ios.h"
+#include "servers/display_server_embedded.h"
 
 #ifdef IOS_ENABLED
 
@@ -40,7 +41,10 @@ OS_IOS *OS_IOS::get_singleton() {
 
 OS_IOS::OS_IOS() :
 		OS_AppleEmbedded() {
+#ifndef LIBGODOT_ENABLED
 	DisplayServerIOS::register_ios_driver();
+#endif
+	DisplayServerEmbedded::register_embedded_driver();
 }
 
 OS_IOS::~OS_IOS() {

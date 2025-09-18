@@ -348,7 +348,7 @@ void ResourceFormatLoaderShader::get_dependencies(const String &p_path, List<Str
 
 	String str;
 	if (buffer.size() > 0) {
-		error = str.parse_utf8((const char *)buffer.ptr(), buffer.size());
+		error = str.append_utf8((const char *)buffer.ptr(), buffer.size());
 		ERR_FAIL_COND_MSG(error, "Cannot parse shader: " + p_path);
 	}
 
