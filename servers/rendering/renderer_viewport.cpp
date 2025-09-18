@@ -192,6 +192,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				// Fall back to bilinear scaling.
 				WARN_PRINT_ONCE("FSR 3D resolution scaling is not designed for downsampling. Falling back to bilinear 3D resolution scaling.");
 				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
+				scaling_type = RS::scaling_3d_mode_type(scaling_3d_mode);
 			}
 
 			if (scaling_3d_is_not_bilinear && !upscaler_available) {
@@ -199,6 +200,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				// Fall back to bilinear scaling.
 				WARN_PRINT_ONCE("FSR 3D resolution scaling is not available. Falling back to bilinear 3D resolution scaling.");
 				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
+				scaling_type = RS::scaling_3d_mode_type(scaling_3d_mode);
 			}
 
 			if (use_taa && (scaling_type == RS::VIEWPORT_SCALING_3D_TYPE_TEMPORAL)) {
