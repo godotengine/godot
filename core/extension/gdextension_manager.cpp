@@ -118,7 +118,7 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension(const String &
 	return load_extension_with_loader(p_path, loader);
 }
 
-GDExtensionManager::LoadStatus GDExtensionManager::load_function_extension(const String &p_path, GDExtensionConstPtr<const GDExtensionInitializationFunction> p_init_func) {
+GDExtensionManager::LoadStatus GDExtensionManager::load_extension_from_function(const String &p_path, GDExtensionConstPtr<const GDExtensionInitializationFunction> p_init_func) {
 	Ref<GDExtensionFunctionLoader> func_loader;
 	func_loader.instantiate();
 	func_loader->set_initialization_function((GDExtensionInitializationFunction) * (p_init_func.data));
@@ -462,7 +462,7 @@ GDExtensionManager *GDExtensionManager::get_singleton() {
 
 void GDExtensionManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_extension", "path"), &GDExtensionManager::load_extension);
-	ClassDB::bind_method(D_METHOD("load_function_extension", "path", "init_func"), &GDExtensionManager::load_function_extension);
+	ClassDB::bind_method(D_METHOD("load_extension_from_function", "path", "init_func"), &GDExtensionManager::load_extension_from_function);
 	ClassDB::bind_method(D_METHOD("reload_extension", "path"), &GDExtensionManager::reload_extension);
 	ClassDB::bind_method(D_METHOD("unload_extension", "path"), &GDExtensionManager::unload_extension);
 	ClassDB::bind_method(D_METHOD("is_extension_loaded", "path"), &GDExtensionManager::is_extension_loaded);
