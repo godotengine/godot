@@ -2486,6 +2486,11 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(Dictionary, make_read_only, sarray(), varray());
 	bind_method(Dictionary, is_read_only, sarray(), varray());
 	bind_method(Dictionary, recursive_equal, sarray("dictionary", "recursion_count"), varray());
+
+	/* Struct */
+
+	bind_method(VariantStruct, is_empty, sarray(), varray());
+	bind_method(VariantStruct, duplicate, sarray("deep"), varray(false));
 }
 
 static void _register_variant_builtin_methods_array() {

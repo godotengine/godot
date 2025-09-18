@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/config/variant_struct_dev_settings.h" // (dev-note: should remove when squashed)
+
 /* This is a C class header, you can copy it and use it directly in your own binders.
  * Together with the JSON file, you should be able to generate any binder.
  */
@@ -81,6 +83,9 @@ typedef enum {
 	GDEXTENSION_VARIANT_TYPE_NODE_PATH,
 	GDEXTENSION_VARIANT_TYPE_RID,
 	GDEXTENSION_VARIANT_TYPE_OBJECT,
+#ifndef ENUMS_SHOULD_NOT_BREAK_APIS
+	GDEXTENSION_VARIANT_TYPE_STRUCT,
+#endif
 	GDEXTENSION_VARIANT_TYPE_CALLABLE,
 	GDEXTENSION_VARIANT_TYPE_SIGNAL,
 	GDEXTENSION_VARIANT_TYPE_DICTIONARY,
@@ -98,6 +103,9 @@ typedef enum {
 	GDEXTENSION_VARIANT_TYPE_PACKED_COLOR_ARRAY,
 	GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR4_ARRAY,
 
+#ifdef ENUMS_SHOULD_NOT_BREAK_APIS
+	GDEXTENSION_VARIANT_TYPE_STRUCT,
+#endif
 	GDEXTENSION_VARIANT_TYPE_VARIANT_MAX
 } GDExtensionVariantType;
 

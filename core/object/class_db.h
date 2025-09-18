@@ -99,6 +99,7 @@ class ClassDB {
 	friend class Object;
 
 public:
+	typedef const StructDefinition *(*StructDefinitionGetter)();
 	enum APIType {
 		API_CORE,
 		API_EDITOR,
@@ -133,6 +134,7 @@ public:
 		};
 
 		HashMap<StringName, EnumInfo> enum_map;
+		HashMap<StringName, StructDefinitionGetter> struct_map;
 		HashMap<StringName, MethodInfo> signal_map;
 		List<PropertyInfo> property_list;
 		HashMap<StringName, PropertyInfo> property_map;
@@ -511,6 +513,9 @@ public:
 	static void get_enum_constants(const StringName &p_class, const StringName &p_enum, List<StringName> *p_constants, bool p_no_inheritance = false);
 	static bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 	static bool is_enum_bitfield(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
+
+	static void bind_struct(const StringName &p_class, const StringName &p_name, StructDefinitionGetter p_definition);
+	static const StructDefinition *get_struct(const StringName &p_class, const StringName &p_name);
 
 	static void set_method_error_return_values(const StringName &p_class, const StringName &p_method, const Vector<Error> &p_values);
 	static Vector<Error> get_method_error_return_values(const StringName &p_class, const StringName &p_method);

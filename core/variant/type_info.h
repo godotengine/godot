@@ -145,6 +145,24 @@ struct GetTypeInfo<ObjectID> {
 	}
 };
 
+//struct
+template <>
+struct GetTypeInfo<VariantStruct> {
+	static const Variant::Type VARIANT_TYPE = Variant::STRUCT;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::STRUCT, String(), PROPERTY_HINT_NONE);
+	}
+};
+template <typename T>
+struct GetTypeInfo<T, std::enable_if_t<std::is_base_of_v<VariantStruct, T>>> {
+	static const Variant::Type VARIANT_TYPE = Variant::STRUCT;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::STRUCT, String(), PROPERTY_HINT_NONE);
+	}
+};
+
 //for variant
 template <>
 struct GetTypeInfo<Variant> {

@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/config/variant_struct_dev_settings.h" // (dev-note: should remove when squashed)
+
 #include "core/core_string_names.h"
 #include "core/input/input_enums.h"
 #include "core/io/ip_address.h"
@@ -65,6 +67,8 @@
 
 class Object;
 class RefCounted;
+class StructDefinition;
+class VariantStruct;
 
 template <typename T>
 class Ref;
@@ -121,6 +125,9 @@ public:
 		NODE_PATH,
 		RID,
 		OBJECT,
+#ifndef ENUMS_SHOULD_NOT_BREAK_APIS
+		STRUCT,
+#endif
 		CALLABLE,
 		SIGNAL,
 		DICTIONARY,
@@ -138,6 +145,9 @@ public:
 		PACKED_COLOR_ARRAY,
 		PACKED_VECTOR4_ARRAY,
 
+#ifdef ENUMS_SHOULD_NOT_BREAK_APIS
+		STRUCT,
+#endif
 		VARIANT_MAX
 	};
 
@@ -307,6 +317,9 @@ private:
 		true, //NODE_PATH,
 		false, //RID,
 		true, //OBJECT,
+#ifndef ENUMS_SHOULD_NOT_BREAK_APIS
+		true, //STRUCT
+#endif
 		true, //CALLABLE,
 		true, //SIGNAL,
 		true, //DICTIONARY,
@@ -323,6 +336,10 @@ private:
 		true, //PACKED_VECTOR3_ARRAY,
 		true, //PACKED_COLOR_ARRAY,
 		true, //PACKED_VECTOR4_ARRAY,
+
+#ifdef ENUMS_SHOULD_NOT_BREAK_APIS
+		true, //STRUCT
+#endif
 	};
 
 	_FORCE_INLINE_ void clear() {
@@ -409,7 +426,11 @@ public:
 		return type == STRING || type == STRING_NAME;
 	}
 	_FORCE_INLINE_ bool is_array() const {
+#ifdef ENUMS_SHOULD_NOT_BREAK_APIS
+		return type >= ARRAY && type <= PACKED_VECTOR4_ARRAY;
+#else
 		return type >= ARRAY;
+#endif
 	}
 	bool is_shared() const;
 	bool is_zero() const;
@@ -459,6 +480,9 @@ public:
 	operator ::RID() const;
 
 	operator Object *() const;
+#ifndef ENUMS_SHOULD_NOT_BREAK_APIS
+	operator VariantStruct() const;
+#endif
 
 	operator Callable() const;
 	operator Signal() const;
@@ -476,6 +500,10 @@ public:
 	operator PackedVector2Array() const;
 	operator PackedColorArray() const;
 	operator PackedVector4Array() const;
+
+#ifdef ENUMS_SHOULD_NOT_BREAK_APIS
+	operator VariantStruct() const;
+#endif
 
 	operator Vector<::RID>() const;
 	operator Vector<Plane>() const;
@@ -528,6 +556,10 @@ public:
 	Variant(const NodePath &p_node_path);
 	Variant(const ::RID &p_rid);
 	Variant(const Object *p_object);
+#ifndef ENUMS_SHOULD_NOT_BREAK_APIS
+	Variant(const VariantStruct &p_struct);
+	Variant(VariantStruct &&p_struct);
+#endif
 	Variant(const Callable &p_callable);
 	Variant(const Signal &p_signal);
 	Variant(const Dictionary &p_dictionary);
@@ -544,6 +576,11 @@ public:
 	Variant(const PackedVector3Array &p_vector3_array);
 	Variant(const PackedColorArray &p_color_array);
 	Variant(const PackedVector4Array &p_vector4_array);
+
+#ifdef ENUMS_SHOULD_NOT_BREAK_APIS
+	Variant(const VariantStruct &p_struct);
+	Variant(VariantStruct &&p_struct);
+#endif
 
 	Variant(const Vector<::RID> &p_array); // helper
 	Variant(const Vector<Plane> &p_array); // helper
