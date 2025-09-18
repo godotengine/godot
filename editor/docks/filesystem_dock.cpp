@@ -2670,6 +2670,8 @@ int FileSystemDock::_get_menu_option_from_key(const Ref<InputEventKey> &p_key) {
 		return FILE_MENU_COPY_ABSOLUTE_PATH;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/copy_uid", p_key)) {
 		return FILE_MENU_COPY_UID;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/create_resource", p_key)) {
+		return FILE_MENU_NEW_RESOURCE;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/delete", p_key)) {
 		return FILE_MENU_REMOVE;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_key)) {
@@ -4160,6 +4162,7 @@ FileSystemDock::FileSystemDock() {
 	ED_SHORTCUT("filesystem_dock/copy_path", TTRC("Copy Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 	ED_SHORTCUT("filesystem_dock/copy_absolute_path", TTRC("Copy Absolute Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::C);
 	ED_SHORTCUT("filesystem_dock/copy_uid", TTRC("Copy UID"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | KeyModifierMask::SHIFT | Key::C);
+	ED_SHORTCUT("filesystem_dock/create_resource", TTRC("New Resource..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::R);
 	ED_SHORTCUT("filesystem_dock/duplicate", TTRC("Duplicate..."), KeyModifierMask::CMD_OR_CTRL | Key::D);
 	ED_SHORTCUT("filesystem_dock/delete", TTRC("Delete"), Key::KEY_DELETE);
 	ED_SHORTCUT("filesystem_dock/rename", TTRC("Rename..."), Key::F2);
