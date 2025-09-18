@@ -130,6 +130,7 @@ struct VariantUtilityFunctions {
 	static String str(const Variant **p_args, int p_arg_count, Callable::CallError &r_error);
 	static String error_string(Error error);
 	static String type_string(Variant::Type p_type);
+	static String get_debug_type_string(const Variant &p_var);
 	static void print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error);
 	static void print_rich(const Variant **p_args, int p_arg_count, Callable::CallError &r_error);
 	static void _print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error);

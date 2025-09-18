@@ -985,6 +985,34 @@ String Object::to_string() {
 	return "<" + get_class() + "#" + itos(get_instance_id()) + ">";
 }
 
+String Object::debug_get_class_name() {
+	String obj_class_name = get_class_name();
+	String obj_subscript;
+	Ref<Script> obj_as_script = Object::cast_to<Script>(this);
+	String fmt;
+	if (obj_as_script.is_valid()) {
+		fmt = "%s[%s]";
+		obj_subscript = obj_as_script->debug_get_script_name();
+	} else {
+		Ref<Script> scr = get_script();
+		if (scr.is_null()) {
+			return obj_class_name;
+		}
+		String global_name = scr->get_global_name();
+		if (!global_name.is_empty()) {
+			return global_name;
+		}
+		fmt = "%s(%s)";
+		obj_subscript = scr->debug_get_script_name();
+	}
+
+	if (obj_subscript.is_empty()) {
+		obj_subscript = "?";
+	}
+
+	return vformat(fmt, obj_class_name, obj_subscript);
+}
+
 void Object::set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance) {
 	//this function is not meant to be used in any of these ways
 	ERR_FAIL_COND(p_script.is_null());

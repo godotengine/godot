@@ -958,6 +958,10 @@ String VariantUtilityFunctions::type_string(Variant::Type p_type) {
 	return Variant::get_type_name(p_type);
 }
 
+String VariantUtilityFunctions::get_debug_type_string(const Variant &p_var) {
+	return p_var.debug_get_type_name();
+}
+
 void VariantUtilityFunctions::print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 	print_line(join_string(p_args, p_arg_count));
 	r_error.error = Callable::CallError::CALL_OK;
@@ -1751,6 +1755,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDVARARGS(str, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(error_string, sarray("error"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(type_string, sarray("type"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(get_debug_type_string, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(print, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(print_rich, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printerr, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);

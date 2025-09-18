@@ -38,6 +38,7 @@
 
 class Callable;
 class StringName;
+class String;
 class Variant;
 
 struct ArrayPrivate;
@@ -196,6 +197,7 @@ public:
 	uint32_t get_typed_builtin() const;
 	StringName get_typed_class_name() const;
 	Variant get_typed_script() const;
+	String get_contained_type_name() const;
 
 	void make_read_only();
 	bool is_read_only() const;

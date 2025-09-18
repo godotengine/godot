@@ -846,6 +846,7 @@ public:
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
 
 	const StringName &get_class_name() const;
+	virtual String debug_get_class_name();
 
 	StringName get_class_name_for_extension(const GDExtension *p_library) const;
 

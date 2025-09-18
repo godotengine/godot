@@ -543,7 +543,7 @@ double PropertyTweener::_get_custom_interpolated_value(const Variant &p_value) {
 	if (ce.error != Callable::CallError::CALL_OK) {
 		ERR_FAIL_V_MSG(false, "Error calling custom method from PropertyTweener: " + Variant::get_callable_error_text(custom_method, &argptr, 1, ce) + ".");
 	} else if (result.get_type() != Variant::FLOAT) {
-		ERR_FAIL_V_MSG(false, vformat("Wrong return type in PropertyTweener custom method. Expected float, got %s.", Variant::get_type_name(result.get_type())));
+		ERR_FAIL_V_MSG(false, vformat("Wrong return type in PropertyTweener custom method. Expected float, got %s.", result.debug_get_type_name()));
 	}
 	return result;
 }
