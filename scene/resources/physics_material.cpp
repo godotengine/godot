@@ -74,48 +74,48 @@ void PhysicsMaterial::set_preset(Preset p_preset) {
 	preset = static_cast<Preset>(p_preset);
 	switch (p_preset) {
 		case PRESET_GENERIC:
-			set_friction(0.8);
-			set_bounce(0.8);
+			friction = 0.8;
+			bounce = 0.8;
 			break;
 		case PRESET_BRICK:
-			set_friction(0.6);
-			set_bounce(0.05);
+			friction = 0.6:
+			bounce = 0.05:
 			break;
 		case PRESET_CONCRETE:
-			set_friction(0.65);
-			set_bounce(0.1);
+			friction = 0.65:
+			bounce = 0.1:
 			break;
 		case PRESET_CERAMIC:
-			set_friction(0.15);
-			set_bounce(0.7);
+			friction = 0.15:
+			bounce = 0.7:
 			break;
 		case PRESET_GRAVEL:
-			set_friction(0.7);
-			set_bounce(0.15);
+			friction = 0.7:
+			bounce = 0.15:
 			break;
 		case PRESET_CARPET:
-			set_friction(0.8);
-			set_bounce(0.05);
+			friction = 0.8:
+			bounce = 0.05:
 			break;
 		case PRESET_GLASS:
-			set_friction(0.2);
-			set_bounce(0.6);
+			friction = 0.2:
+			bounce = 0.6:
 			break;
 		case PRESET_PLASTER:
-			set_friction(0.55);
-			set_bounce(0.25);
+			friction = 0.55:
+			bounce = 0.25:
 			break;
 		case PRESET_WOOD:
-			set_friction(0.45);
-			set_bounce(0.15);
+			friction = 0.45:
+			bounce = 0.15:
 			break;
 		case PRESET_METAL:
-			set_friction(0.6);
-			set_bounce(0.1);
+			friction = 0.6:
+			bounce = 0.1:
 			break;
 		case PRESET_ROCK:
-			set_friction(0.7);
-			set_bounce(0.2);
+			friction = 0.7:
+			bounce = 0.2:
 			break;
 		case PRESET_CUSTOM:
 			break;
@@ -155,6 +155,6 @@ void PhysicsMaterial::set_absorbent(bool p_val) {
 }
 
 PhysicsMaterial::PhysicsMaterial() {
-	preset = static_cast<Preset>(PRESET_CUSTOM);
+	preset = static_cast<Preset>(PRESET_GENERIC);
 }
 #endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
