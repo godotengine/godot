@@ -43,7 +43,9 @@ OS_IOS::OS_IOS() :
 	DisplayServerIOS::register_ios_driver();
 }
 
-OS_IOS::~OS_IOS() {}
+OS_IOS::~OS_IOS() {
+	AudioDriverManager::reset();
+}
 
 String OS_IOS::get_name() const {
 	return "iOS";
