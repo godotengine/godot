@@ -44,6 +44,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="init_func" type="const GDExtensionInitializationFunction*" />
 			<description>
+				Loads an already-in-address-space extension by unique name and initialization function. The [param path] needs to be unique and start with libgodot://. Returns [constant LOAD_STATUS_OK] if successful.
 			</description>
 		</method>
 		<method name="reload_extension">

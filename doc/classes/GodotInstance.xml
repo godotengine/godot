@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GodotInstance" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Provides access to an embedded Godot instance.
 	</brief_description>
 	<description>
+		GodotInstance represents a running Godot instance that is controlled from an outside codebase, without a perpetual main loop. It is created by the C API libgodot_create_godot_instance. Only one may be created per process.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,16 +12,19 @@
 		<method name="is_started">
 			<return type="bool" />
 			<description>
+				Returns true if this instance has been fully started.
 			</description>
 		</method>
 		<method name="iteration">
 			<return type="bool" />
 			<description>
+				Runs a single iteration of the main loop. Returns true if the engine is attempting to quit.
 			</description>
 		</method>
 		<method name="start">
 			<return type="bool" />
 			<description>
+				Finishes this instance's startup sequence. Returns true on success.
 			</description>
 		</method>
 	</methods>
