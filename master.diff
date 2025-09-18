@@ -1,0 +1,516 @@
+diff --git a/doc/classes/CharacterBody2D.xml b/doc/classes/CharacterBody2D.xml
+index 574b7f3496..48835bbbab 100644
+--- a/doc/classes/CharacterBody2D.xml
++++ b/doc/classes/CharacterBody2D.xml
+@@ -137,6 +137,12 @@
+ 				Returns [code]true[/code] if the body collided only with a wall on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code]. The [member up_direction] and [member floor_max_angle] are used to determine whether a surface is "wall" or not.
+ 			</description>
+ 		</method>
++		<method name="move_and_push">
++			<return type="bool" />
++			<description>
++				Internally calls [method move_and_slide] and works with dependent functions. Additionally, if the body collides with a rigid body, it will apply an impulse to the collider and push it along the collision normal. Scales the impulse with [member velocity], [member collision_push_multiplier], and the bounce value of the rigid body's Physics Material.
++			</description>
++		</method>
+ 		<method name="move_and_slide">
+ 			<return type="bool" />
+ 			<description>
+@@ -149,6 +155,9 @@
+ 		</method>
+ 	</methods>
+ 	<members>
++		<member name="collision_push_multiplier" type="float" setter="set_collision_push_multiplier" getter="get_collision_push_multiplier" default="1.0">
++			Used to scale the amount of force imparted onto a RigidBody2D when [method move_and_push] is used.
++		</member>
+ 		<member name="floor_block_on_wall" type="bool" setter="set_floor_block_on_wall_enabled" getter="is_floor_block_on_wall_enabled" default="true">
+ 			If [code]true[/code], the body will be able to move on the floor only. This option avoids to be able to walk on walls, it will however allow to slide down along them.
+ 		</member>
+diff --git a/doc/classes/CharacterBody3D.xml b/doc/classes/CharacterBody3D.xml
+index 9252e05b35..2f78711a6a 100644
+--- a/doc/classes/CharacterBody3D.xml
++++ b/doc/classes/CharacterBody3D.xml
+@@ -129,6 +129,12 @@
+ 				Returns [code]true[/code] if the body collided only with a wall on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code]. The [member up_direction] and [member floor_max_angle] are used to determine whether a surface is "wall" or not.
+ 			</description>
+ 		</method>
++		<method name="move_and_push">
++			<return type="bool" />
++			<description>
++				Internally calls [method move_and_slide] and works with dependent functions. Additionally, if the body collides with a rigid body, it will apply an impulse to the collider and push it along the collision normal. Scales the impulse with [member velocity], [member collision_push_multiplier], and the bounce value of the rigid body's Physics Material.
++			</description>
++		</method>
+ 		<method name="move_and_slide">
+ 			<return type="bool" />
+ 			<description>
+@@ -140,6 +146,9 @@
+ 		</method>
+ 	</methods>
+ 	<members>
++		<member name="collision_push_multiplier" type="float" setter="set_collision_push_multiplier" getter="get_collision_push_multiplier" default="1.0">
++			Used to scale the amount of force applied onto a RigidBody2D when [method move_and_push] is used.
++		</member>
+ 		<member name="floor_block_on_wall" type="bool" setter="set_floor_block_on_wall_enabled" getter="is_floor_block_on_wall_enabled" default="true">
+ 			If [code]true[/code], the body will be able to move on the floor only. This option avoids to be able to walk on walls, it will however allow to slide down along them.
+ 		</member>
+diff --git a/doc/classes/PhysicsMaterial.xml b/doc/classes/PhysicsMaterial.xml
+index 03cbfb4ce7..9323d91291 100644
+--- a/doc/classes/PhysicsMaterial.xml
++++ b/doc/classes/PhysicsMaterial.xml
+@@ -19,8 +19,48 @@
+ 		<member name="friction" type="float" setter="set_friction" getter="get_friction" default="1.0">
+ 			The body's friction. Values range from [code]0[/code] (frictionless) to [code]1[/code] (maximum friction).
+ 		</member>
++		<member name="preset" type="int" setter="set_preset" getter="get_preset" enum="PhysicsMaterial.Preset" default="11">
++		</member>
+ 		<member name="rough" type="bool" setter="set_rough" getter="is_rough" default="false">
+ 			If [code]true[/code], the physics engine will use the friction of the object marked as "rough" when two objects collide. If [code]false[/code], the physics engine will use the lowest friction of all colliding objects instead. If [code]true[/code] for both colliding objects, the physics engine will use the highest friction.
+ 		</member>
+ 	</members>
++	<constants>
++		<constant name="PRESET_GENERIC" value="0" enum="Preset">
++			Approximates rubber. Friction set to 0.8 and bounce set to 0.8.
++		</constant>
++		<constant name="PRESET_BRICK" value="1" enum="Preset">
++			Approximates brick. Friction set to 0.6 and bounce set to 0.05.
++		</constant>
++		<constant name="PRESET_CONCRETE" value="2" enum="Preset">
++			Approximates concrete. Friction set to 0.65 and bounce set to 0.1.
++		</constant>
++		<constant name="PRESET_CERAMIC" value="3" enum="Preset">
++			Approximates ceramic. Friction set to 0.15 and bounce set to 0.7.
++		</constant>
++		<constant name="PRESET_GRAVEL" value="4" enum="Preset">
++			Approximates gravel. Friction set to 0.7 and bounce set to 0.15.
++		</constant>
++		<constant name="PRESET_CARPET" value="5" enum="Preset">
++			Approximates carpet. Friction set to 0.8 and bounce set to 0.05.
++		</constant>
++		<constant name="PRESET_GLASS" value="6" enum="Preset">
++			Approximates glass. Friction set to 0.2 and bounce set to 0.6.
++		</constant>
++		<constant name="PRESET_PLASTER" value="7" enum="Preset">
++			Approximates plaster. Friction set to 0.55 and bounce set to 0.25.
++		</constant>
++		<constant name="PRESET_WOOD" value="8" enum="Preset">
++			Approximates wood. Friction set to 0.45 and bounce set to 0.15.
++		</constant>
++		<constant name="PRESET_METAL" value="9" enum="Preset">
++			Approximates metal. Friction set to 0.6 and bounce set to 0.1.
++		</constant>
++		<constant name="PRESET_ROCK" value="10" enum="Preset">
++			Approximates rock. Friction set to 0.7 and bounce set to 0.2.
++		</constant>
++		<constant name="PRESET_CUSTOM" value="11" enum="Preset">
++			Doesn't approximate anything. Material converts to Custom when settings of a preset are altered.
++		</constant>
++	</constants>
+ </class>
+diff --git a/modules/betsy/config.py b/modules/betsy/config.py
+index eb565b85b9..81137a0295 100644
+--- a/modules/betsy/config.py
++++ b/modules/betsy/config.py
+@@ -1,6 +1,5 @@
+ def can_build(env, platform):
+     return env.editor_build
+ 
+-
+ def configure(env):
+     pass
+diff --git a/scene/2d/physics/character_body_2d.cpp b/scene/2d/physics/character_body_2d.cpp
+index c1804c6483..09e61ad522 100644
+--- a/scene/2d/physics/character_body_2d.cpp
++++ b/scene/2d/physics/character_body_2d.cpp
+@@ -113,6 +113,29 @@ bool CharacterBody2D::move_and_slide() {
+ 	return motion_results.size() > 0;
+ }
+ 
++bool CharacterBody2D::move_and_push() {
++	bool collided = move_and_slide();
++	if (collided) {
++		// Gets all colliders and checks if they are RigidBody2D
++		for (int i = 0; i < get_slide_collision_count(); i++) {
++			const PhysicsServer2D::MotionResult &result = motion_results[i];
++			Object *collider_obj = ObjectDB::get_instance(result.collider_id);
++			RigidBody2D *rigid_body = Object::cast_to<RigidBody2D>(collider_obj);
++			// Rigid body gets an impulse applied to it based on collision position and normal
++			if (rigid_body) {
++				Ref<PhysicsMaterial> phys_material = rigid_body->get_physics_material_override();
++				// Scale impulse by character's relative velocity multiplier
++				Vector2 impulse = -result.collision_normal * (get_real_velocity() - result.collider_velocity).length() * collision_push_multiplier;
++				if (phys_material.is_valid()) {
++					impulse *= phys_material->get_bounce();
++				}
++				rigid_body->apply_impulse(impulse, result.collision_point - rigid_body->get_global_position());
++			}
++		}
++	}
++	return collided;
++}
++
+ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_floor) {
+ 	Vector2 motion = velocity * p_delta;
+ 	Vector2 motion_slide_up = motion.slide(up_direction);
+@@ -679,8 +702,17 @@ void CharacterBody2D::_validate_property(PropertyInfo &p_property) const {
+ 	}
+ }
+ 
++void CharacterBody2D::set_collision_push_multiplier(real_t p_multiplier) {
++	collision_push_multiplier = p_multiplier;
++}
++
++real_t CharacterBody2D::get_collision_push_multiplier() const {
++	return collision_push_multiplier;
++}
++
+ void CharacterBody2D::_bind_methods() {
+ 	ClassDB::bind_method(D_METHOD("move_and_slide"), &CharacterBody2D::move_and_slide);
++	ClassDB::bind_method(D_METHOD("move_and_push"), &CharacterBody2D::move_and_push);
+ 	ClassDB::bind_method(D_METHOD("apply_floor_snap"), &CharacterBody2D::apply_floor_snap);
+ 
+ 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &CharacterBody2D::set_velocity);
+@@ -717,6 +749,9 @@ void CharacterBody2D::_bind_methods() {
+ 	ClassDB::bind_method(D_METHOD("set_platform_on_leave", "on_leave_apply_velocity"), &CharacterBody2D::set_platform_on_leave);
+ 	ClassDB::bind_method(D_METHOD("get_platform_on_leave"), &CharacterBody2D::get_platform_on_leave);
+ 
++	ClassDB::bind_method(D_METHOD("set_collision_push_multiplier", "multiplier"), &CharacterBody2D::set_collision_push_multiplier);
++	ClassDB::bind_method(D_METHOD("get_collision_push_multiplier"), &CharacterBody2D::get_collision_push_multiplier);
++
+ 	ClassDB::bind_method(D_METHOD("is_on_floor"), &CharacterBody2D::is_on_floor);
+ 	ClassDB::bind_method(D_METHOD("is_on_floor_only"), &CharacterBody2D::is_on_floor_only);
+ 	ClassDB::bind_method(D_METHOD("is_on_ceiling"), &CharacterBody2D::is_on_ceiling);
+@@ -754,6 +789,7 @@ void CharacterBody2D::_bind_methods() {
+ 	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_wall_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_platform_wall_layers", "get_platform_wall_layers");
+ 
+ 	ADD_GROUP("Collision", "");
++	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_push_multiplier", PROPERTY_HINT_NONE, "suffix:", PROPERTY_USAGE_DEFAULT), "set_collision_push_multiplier", "get_collision_push_multiplier");
+ 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001,suffix:px"), "set_safe_margin", "get_safe_margin");
+ 
+ 	BIND_ENUM_CONSTANT(MOTION_MODE_GROUNDED);
+diff --git a/scene/2d/physics/character_body_2d.h b/scene/2d/physics/character_body_2d.h
+index 5c7f44b711..0ca61802aa 100644
+--- a/scene/2d/physics/character_body_2d.h
++++ b/scene/2d/physics/character_body_2d.h
+@@ -32,6 +32,7 @@
+ 
+ #include "scene/2d/physics/kinematic_collision_2d.h"
+ #include "scene/2d/physics/physics_body_2d.h"
++#include "scene/2d/physics/rigid_body_2d.h"
+ 
+ class CharacterBody2D : public PhysicsBody2D {
+ 	GDCLASS(CharacterBody2D, PhysicsBody2D);
+@@ -47,6 +48,7 @@ public:
+ 		PLATFORM_ON_LEAVE_DO_NOTHING,
+ 	};
+ 	bool move_and_slide();
++	bool move_and_push();
+ 	void apply_floor_snap();
+ 
+ 	const Vector2 &get_velocity() const;
+@@ -109,6 +111,9 @@ public:
+ 	void set_platform_on_leave(PlatformOnLeave p_on_leave_velocity);
+ 	PlatformOnLeave get_platform_on_leave() const;
+ 
++	void set_collision_push_multiplier(real_t p_multiplier);
++	real_t get_collision_push_multiplier() const;
++
+ 	CharacterBody2D();
+ 
+ private:
+@@ -125,6 +130,7 @@ private:
+ 	real_t floor_max_angle = Math::deg_to_rad((real_t)45.0);
+ 	real_t floor_snap_length = 1;
+ 	real_t wall_min_slide_angle = Math::deg_to_rad((real_t)15.0);
++	real_t collision_push_multiplier = 1.0;
+ 	Vector2 up_direction = Vector2(0.0, -1.0);
+ 	uint32_t platform_floor_layers = UINT32_MAX;
+ 	uint32_t platform_wall_layers = 0;
+diff --git a/scene/3d/physics/character_body_3d.cpp b/scene/3d/physics/character_body_3d.cpp
+index a1869a2965..50adac1b0e 100644
+--- a/scene/3d/physics/character_body_3d.cpp
++++ b/scene/3d/physics/character_body_3d.cpp
+@@ -134,6 +134,32 @@ bool CharacterBody3D::move_and_slide() {
+ 	return motion_results.size() > 0;
+ }
+ 
++bool CharacterBody3D::move_and_push() {
++	bool collided = move_and_slide();
++	if (collided) {
++		// Gets all colliders and checks if they are RigidBody3D
++		for (int i = 0; i < get_slide_collision_count(); i++) {
++			const PhysicsServer3D::MotionResult &result = motion_results[i];
++			for (int j = 0; j < result.collision_count; j++) {
++				const PhysicsServer3D::MotionCollision &collision = result.collisions[j];
++				Object *collider_obj = ObjectDB::get_instance(collision.collider_id);
++				RigidBody3D *rigid_body = Object::cast_to<RigidBody3D>(collider_obj);
++				// Rigid body gets an impulse applied to it based on collision position and normal
++				if (rigid_body) {
++					Ref<PhysicsMaterial> material = rigid_body->get_physics_material_override();
++					// Scale impulse by character's relative velocity multiplier
++					Vector3 impulse = -collision.normal * (get_real_velocity() - collision.collider_velocity).length() * collision_push_multiplier;
++					if (!material.is_null()) {
++						impulse *= material->get_bounce();
++					}
++					rigid_body->apply_impulse(impulse);
++				}
++			}
++		}
++	}
++	return collided;
++}
++
+ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_floor) {
+ 	Vector3 motion = velocity * p_delta;
+ 	Vector3 motion_slide_up = motion.slide(up_direction);
+@@ -863,8 +889,17 @@ void CharacterBody3D::_notification(int p_what) {
+ 	}
+ }
+ 
++void CharacterBody3D::set_collision_push_multiplier(real_t p_multiplier) {
++	collision_push_multiplier = p_multiplier;
++}
++
++real_t CharacterBody3D::get_collision_push_multiplier() const {
++	return collision_push_multiplier;
++}
++
+ void CharacterBody3D::_bind_methods() {
+ 	ClassDB::bind_method(D_METHOD("move_and_slide"), &CharacterBody3D::move_and_slide);
++	ClassDB::bind_method(D_METHOD("move_and_push"), &CharacterBody3D::move_and_push);
+ 	ClassDB::bind_method(D_METHOD("apply_floor_snap"), &CharacterBody3D::apply_floor_snap);
+ 
+ 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &CharacterBody3D::set_velocity);
+@@ -901,6 +936,9 @@ void CharacterBody3D::_bind_methods() {
+ 	ClassDB::bind_method(D_METHOD("set_platform_on_leave", "on_leave_apply_velocity"), &CharacterBody3D::set_platform_on_leave);
+ 	ClassDB::bind_method(D_METHOD("get_platform_on_leave"), &CharacterBody3D::get_platform_on_leave);
+ 
++	ClassDB::bind_method(D_METHOD("set_collision_push_multiplier", "multiplier"), &CharacterBody3D::set_collision_push_multiplier);
++	ClassDB::bind_method(D_METHOD("get_collision_push_multiplier"), &CharacterBody3D::get_collision_push_multiplier);
++
+ 	ClassDB::bind_method(D_METHOD("is_on_floor"), &CharacterBody3D::is_on_floor);
+ 	ClassDB::bind_method(D_METHOD("is_on_floor_only"), &CharacterBody3D::is_on_floor_only);
+ 	ClassDB::bind_method(D_METHOD("is_on_ceiling"), &CharacterBody3D::is_on_ceiling);
+@@ -939,6 +977,7 @@ void CharacterBody3D::_bind_methods() {
+ 	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_wall_layers", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_platform_wall_layers", "get_platform_wall_layers");
+ 
+ 	ADD_GROUP("Collision", "");
++	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_push_multiplier", PROPERTY_HINT_NONE, "suffix:", PROPERTY_USAGE_DEFAULT), "set_collision_push_multiplier", "get_collision_push_multiplier");
+ 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001,suffix:m"), "set_safe_margin", "get_safe_margin");
+ 
+ 	BIND_ENUM_CONSTANT(MOTION_MODE_GROUNDED);
+diff --git a/scene/3d/physics/character_body_3d.h b/scene/3d/physics/character_body_3d.h
+index 34c70d648e..1b7ee0d6b4 100644
+--- a/scene/3d/physics/character_body_3d.h
++++ b/scene/3d/physics/character_body_3d.h
+@@ -32,6 +32,7 @@
+ 
+ #include "scene/3d/physics/kinematic_collision_3d.h"
+ #include "scene/3d/physics/physics_body_3d.h"
++#include "scene/3d/physics/rigid_body_3d.h"
+ 
+ class CharacterBody3D : public PhysicsBody3D {
+ 	GDCLASS(CharacterBody3D, PhysicsBody3D);
+@@ -47,6 +48,7 @@ public:
+ 		PLATFORM_ON_LEAVE_DO_NOTHING,
+ 	};
+ 	bool move_and_slide();
++	bool move_and_push();
+ 	void apply_floor_snap();
+ 
+ 	const Vector3 &get_velocity() const;
+@@ -111,6 +113,9 @@ public:
+ 	void set_platform_on_leave(PlatformOnLeave p_on_leave_velocity);
+ 	PlatformOnLeave get_platform_on_leave() const;
+ 
++	void set_collision_push_multiplier(real_t p_multiplier);
++	real_t get_collision_push_multiplier() const;
++
+ 	CharacterBody3D();
+ 
+ private:
+@@ -149,6 +154,7 @@ private:
+ 	real_t floor_snap_length = 0.1;
+ 	real_t floor_max_angle = Math::deg_to_rad((real_t)45.0);
+ 	real_t wall_min_slide_angle = Math::deg_to_rad((real_t)15.0);
++	real_t collision_push_multiplier = 1.0;
+ 	Vector3 up_direction = Vector3(0.0, 1.0, 0.0);
+ 	Vector3 velocity;
+ 	Vector3 floor_normal;
+diff --git a/scene/resources/physics_material.cpp b/scene/resources/physics_material.cpp
+index cd762a5813..5a55a5df5e 100644
+--- a/scene/resources/physics_material.cpp
++++ b/scene/resources/physics_material.cpp
+@@ -32,6 +32,9 @@
+ 
+ #if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
+ void PhysicsMaterial::_bind_methods() {
++	ClassDB::bind_method(D_METHOD("set_preset", "preset"), &PhysicsMaterial::set_preset);
++	ClassDB::bind_method(D_METHOD("get_preset"), &PhysicsMaterial::get_preset);
++
+ 	ClassDB::bind_method(D_METHOD("set_friction", "friction"), &PhysicsMaterial::set_friction);
+ 	ClassDB::bind_method(D_METHOD("get_friction"), &PhysicsMaterial::get_friction);
+ 
+@@ -44,29 +47,111 @@ void PhysicsMaterial::_bind_methods() {
+ 	ClassDB::bind_method(D_METHOD("set_absorbent", "absorbent"), &PhysicsMaterial::set_absorbent);
+ 	ClassDB::bind_method(D_METHOD("is_absorbent"), &PhysicsMaterial::is_absorbent);
+ 
++	ADD_PROPERTY(PropertyInfo(Variant::INT, "preset", PROPERTY_HINT_ENUM, "Generic,Brick,Concrete,Ceramic,Gravel,Carpet,Glass,Plaster,Wood,Metal,Rock,Custom"), "set_preset", "get_preset");
+ 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "friction", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"), "set_friction", "get_friction");
+ 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rough"), "set_rough", "is_rough");
+ 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bounce", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"), "set_bounce", "get_bounce");
+ 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "absorbent"), "set_absorbent", "is_absorbent");
++
++	BIND_ENUM_CONSTANT(PRESET_GENERIC);
++	BIND_ENUM_CONSTANT(PRESET_BRICK);
++	BIND_ENUM_CONSTANT(PRESET_CONCRETE);
++	BIND_ENUM_CONSTANT(PRESET_CERAMIC);
++	BIND_ENUM_CONSTANT(PRESET_GRAVEL);
++	BIND_ENUM_CONSTANT(PRESET_CARPET);
++	BIND_ENUM_CONSTANT(PRESET_GLASS);
++	BIND_ENUM_CONSTANT(PRESET_PLASTER);
++	BIND_ENUM_CONSTANT(PRESET_WOOD);
++	BIND_ENUM_CONSTANT(PRESET_METAL);
++	BIND_ENUM_CONSTANT(PRESET_ROCK);
++	BIND_ENUM_CONSTANT(PRESET_CUSTOM);
++}
++
++void PhysicsMaterial::set_preset(Preset p_preset) {
++	if (preset == p_preset && p_preset != PRESET_CUSTOM) {
++		return;
++	}
++	preset = static_cast<Preset>(p_preset);
++	switch (p_preset) {
++		case PRESET_GENERIC:
++			friction = 0.8;
++			bounce = 0.8;
++			break;
++		case PRESET_BRICK:
++			friction = 0.6;
++			bounce = 0.05;
++			break;
++		case PRESET_CONCRETE:
++			friction = 0.65;
++			bounce = 0.1;
++			break;
++		case PRESET_CERAMIC:
++			friction = 0.15;
++			bounce = 0.7;
++			break;
++		case PRESET_GRAVEL:
++			friction = 0.7;
++			bounce = 0.15;
++			break;
++		case PRESET_CARPET:
++			friction = 0.8;
++			bounce = 0.05;
++			break;
++		case PRESET_GLASS:
++			friction = 0.2;
++			bounce = 0.6;
++			break;
++		case PRESET_PLASTER:
++			friction = 0.55;
++			bounce = 0.25;
++			break;
++		case PRESET_WOOD:
++			friction = 0.45;
++			bounce = 0.15;
++			break;
++		case PRESET_METAL:
++			friction = 0.6;
++			bounce = 0.1;
++			break;
++		case PRESET_ROCK:
++			friction = 0.7;
++			bounce = 0.2;
++			break;
++		default:
++			break;
++	}
++	emit_changed();
++}
++
++PhysicsMaterial::Preset PhysicsMaterial::get_preset() const {
++	return preset;
+ }
+ 
+ void PhysicsMaterial::set_friction(real_t p_val) {
+ 	friction = p_val;
++	preset = static_cast<Preset>(PRESET_CUSTOM);
+ 	emit_changed();
+ }
+ 
+ void PhysicsMaterial::set_rough(bool p_val) {
+ 	rough = p_val;
++	preset = static_cast<Preset>(PRESET_CUSTOM);
+ 	emit_changed();
+ }
+ 
+ void PhysicsMaterial::set_bounce(real_t p_val) {
+ 	bounce = p_val;
++	preset = static_cast<Preset>(PRESET_CUSTOM);
+ 	emit_changed();
+ }
+ 
+ void PhysicsMaterial::set_absorbent(bool p_val) {
+ 	absorbent = p_val;
++	preset = static_cast<Preset>(PRESET_CUSTOM);
+ 	emit_changed();
+ }
++
++PhysicsMaterial::PhysicsMaterial() {
++	preset = static_cast<Preset>(PRESET_CUSTOM);
++}
+ #endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
+diff --git a/scene/resources/physics_material.h b/scene/resources/physics_material.h
+index 7fe7e477fe..dc5e482a97 100644
+--- a/scene/resources/physics_material.h
++++ b/scene/resources/physics_material.h
+@@ -38,15 +38,37 @@ class PhysicsMaterial : public Resource {
+ 	OBJ_SAVE_TYPE(PhysicsMaterial);
+ 	RES_BASE_EXTENSION("phymat");
+ 
++public:
++	enum Preset {
++		PRESET_GENERIC,
++		PRESET_BRICK,
++		PRESET_CONCRETE,
++		PRESET_CERAMIC,
++		PRESET_GRAVEL,
++		PRESET_CARPET,
++		PRESET_GLASS,
++		PRESET_PLASTER,
++		PRESET_WOOD,
++		PRESET_METAL,
++		PRESET_ROCK,
++		PRESET_CUSTOM
++	};
++
++private:
+ 	real_t friction = 1.0;
+ 	bool rough = false;
+ 	real_t bounce = 0.0;
+ 	bool absorbent = false;
+ 
++	Preset preset;
++
+ protected:
+ 	static void _bind_methods();
+ 
+ public:
++	void set_preset(Preset p_preset);
++	Preset get_preset() const;
++
+ 	void set_friction(real_t p_val);
+ 	_FORCE_INLINE_ real_t get_friction() const { return friction; }
+ 
+@@ -66,5 +88,10 @@ public:
+ 	_FORCE_INLINE_ real_t computed_bounce() const {
+ 		return absorbent ? -bounce : bounce;
+ 	}
++
++	PhysicsMaterial();
+ };
++
++VARIANT_ENUM_CAST(PhysicsMaterial::Preset);
++
+ #endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
