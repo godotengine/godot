@@ -95,6 +95,7 @@ bool VisionOSXRInterface::initialize() {
 
 	rendering_device = RenderingDevice::get_singleton();
 	rendering_device_driver_metal = (RenderingDeviceDriverMetal *)rendering_device->get_device_driver();
+	pixel_formats = &rendering_device_driver_metal->get_pixel_formats();
 
 	// ARKit session initialization
 	ar_session = ar_session_create();
@@ -382,35 +383,19 @@ RID VisionOSXRInterface::get_color_texture() {
 	}
 
 	ERR_FAIL_NULL_V_MSG(current_drawable, RID(), "Current drawable is nil, probably pre_render() has not been called");
+
 	id<MTLTexture> color_texture = cp_drawable_get_color_texture(current_drawable, 0);
-
-	PixelFormats pixel_formats = rendering_device_driver_metal->get_pixel_formats();
-
-	RD::Texture texture;
-	texture.driver_id = rid::make(color_texture);
-	ERR_FAIL_COND_V(!texture.driver_id, RID());
-	texture.type = MTL::texture_type_from_metal(color_texture.textureType);
-	texture.format = pixel_formats.getDataFormat(color_texture.pixelFormat);
-	texture.width = color_texture.width;
-	texture.height = color_texture.height;
-	texture.depth = color_texture.depth;
-	texture.layers = color_texture.arrayLength;
-	texture.mipmaps = color_texture.mipmapLevelCount;
-	texture.base_mipmap = 0;
-	texture.base_layer = 0;
-	texture.usage_flags = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
-	texture.samples = MTL::texture_samples_from_metal(color_texture.sampleCount);
-	texture.is_resolve_buffer = false;
-	texture.has_initial_data = false;
-
-	texture.draw_tracker = RDG::resource_tracker_create();
-	texture.draw_tracker->texture_driver_id = texture.driver_id;
-	texture.draw_tracker->texture_subresources = texture.barrier_range();
-	texture.draw_tracker->texture_usage = texture.usage_flags;
-	texture.draw_tracker->reference_count = 1;
-
-	current_color_texture = texture;
-	current_color_texture_id = rendering_device->texture_owner.make_rid(current_color_texture);
+	current_color_texture_id = rendering_device->texture_create_from_extension(
+			MTL::texture_type_from_metal(color_texture.textureType),
+			pixel_formats->getDataFormat(color_texture.pixelFormat),
+			MTL::texture_samples_from_metal(color_texture.sampleCount),
+			RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT,
+			(uint64_t)color_texture,
+			color_texture.width,
+			color_texture.height,
+			color_texture.depth,
+			color_texture.arrayLength,
+			color_texture.mipmapLevelCount);
 
 	return current_color_texture_id;
 }
@@ -429,33 +414,17 @@ RID VisionOSXRInterface::get_depth_texture() {
 	ERR_FAIL_NULL_V_MSG(current_drawable, RID(), "Current drawable is nil, probably pre_render() has not been called");
 	id<MTLTexture> depth_texture = cp_drawable_get_depth_texture(current_drawable, 0);
 
-	PixelFormats pixel_formats = rendering_device_driver_metal->get_pixel_formats();
-
-	RD::Texture texture;
-	texture.driver_id = rid::make(depth_texture);
-	ERR_FAIL_COND_V(!texture.driver_id, RID());
-	texture.type = MTL::texture_type_from_metal(depth_texture.textureType);
-	texture.format = pixel_formats.getDataFormat(depth_texture.pixelFormat);
-	texture.width = depth_texture.width;
-	texture.height = depth_texture.height;
-	texture.depth = depth_texture.depth;
-	texture.layers = depth_texture.arrayLength;
-	texture.mipmaps = depth_texture.mipmapLevelCount;
-	texture.base_mipmap = 0;
-	texture.base_layer = 0;
-	texture.usage_flags = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-	texture.samples = MTL::texture_samples_from_metal(depth_texture.sampleCount);
-	texture.is_resolve_buffer = false;
-	texture.has_initial_data = false;
-
-	texture.draw_tracker = RDG::resource_tracker_create();
-	texture.draw_tracker->texture_driver_id = texture.driver_id;
-	texture.draw_tracker->texture_subresources = texture.barrier_range();
-	texture.draw_tracker->texture_usage = texture.usage_flags;
-	texture.draw_tracker->reference_count = 1;
-
-	current_depth_texture = texture;
-	current_depth_texture_id = rendering_device->texture_owner.make_rid(current_depth_texture);
+	current_depth_texture_id = rendering_device->texture_create_from_extension(
+			MTL::texture_type_from_metal(depth_texture.textureType),
+			pixel_formats->getDataFormat(depth_texture.pixelFormat),
+			MTL::texture_samples_from_metal(depth_texture.sampleCount),
+			RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT,
+			(uint64_t)depth_texture,
+			depth_texture.width,
+			depth_texture.height,
+			depth_texture.depth,
+			depth_texture.arrayLength,
+			depth_texture.mipmapLevelCount);
 
 	return current_depth_texture_id;
 }

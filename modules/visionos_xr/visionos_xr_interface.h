@@ -82,6 +82,7 @@ private:
 
 	RenderingDevice *rendering_device = nullptr;
 	RenderingDeviceDriverMetal *rendering_device_driver_metal = nullptr;
+	PixelFormats *pixel_formats = nullptr;
 
 	void set_head_pose_from_arkit(bool p_use_drawable);
 
