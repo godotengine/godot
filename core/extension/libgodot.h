@@ -50,7 +50,7 @@ typedef struct {
 
 /**
  * @name libgodot_create_godot_instance
- * @since 4.4
+ * @since 4.6
  *
  * Creates a new Godot instance.
  *
@@ -65,7 +65,7 @@ LIBGODOT_API GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, cha
 
 /**
  * @name libgodot_destroy_godot_instance
- * @since 4.4
+ * @since 4.6
  *
  * Destroys an existing Godot instance.
  *
