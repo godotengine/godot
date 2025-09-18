@@ -102,6 +102,7 @@ public:
 	Error get_resource_import_info(const String &p_path, StringName &r_type, ResourceUID::ID &r_uid, String &r_import_group_file) const;
 
 	ResourceFormatImporter();
+	~ResourceFormatImporter();
 };
 
 class ResourceImporter : public RefCounted {

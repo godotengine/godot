@@ -523,13 +523,17 @@ protected:                                                                      
 	}                                                                                                                                       \
                                                                                                                                             \
 public:                                                                                                                                     \
-	static void initialize_class() {                                                                                                        \
+	static void initialize_class(bool deinit = false) {                                                                                     \
 		static bool initialized = false;                                                                                                    \
+		if (deinit) {                                                                                                                       \
+			initialized = false;                                                                                                            \
+			return;                                                                                                                         \
+		}                                                                                                                                   \
 		if (initialized) {                                                                                                                  \
 			return;                                                                                                                         \
 		}                                                                                                                                   \
 		m_inherits::initialize_class();                                                                                                     \
-		_add_class_to_classdb(get_class_static(), super_type::get_class_static());                                                          \
+		_add_class_to_classdb(get_class_static(), super_type::get_class_static(), m_class::initialize_class);                               \
 		if (m_class::_get_bind_methods() != m_inherits::_get_bind_methods()) {                                                              \
 			_bind_methods();                                                                                                                \
 		}                                                                                                                                   \
@@ -763,7 +767,7 @@ protected:
 	friend class ClassDB;
 	friend class PlaceholderExtensionInstance;
 
-	static void _add_class_to_classdb(const StringName &p_class, const StringName &p_inherits);
+	static void _add_class_to_classdb(const StringName &p_class, const StringName &p_inherits, void (*p_deinit_func)(bool deinit) = nullptr);
 	static void _get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator);
 
 	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
@@ -780,7 +784,8 @@ protected:
 #endif
 
 public: // Should be protected, but bug in clang++.
-	static void initialize_class();
+	static void initialize_class(bool deinit = false);
+
 	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
 
 public:

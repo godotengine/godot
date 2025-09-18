@@ -676,3 +676,8 @@ EditorRunBar::EditorRunBar() {
 	write_movie_button->set_tooltip_text(TTRC("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
 	write_movie_button->set_accessibility_name(TTRC("Enable Movie Maker Mode"));
 }
+
+EditorRunBar::~EditorRunBar() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}

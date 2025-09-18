@@ -1668,12 +1668,16 @@ Variant Object::_get_indexed_bind(const NodePath &p_name) const {
 	return get_indexed(p_name.get_as_property_path().get_subnames());
 }
 
-void Object::initialize_class() {
+void Object::initialize_class(bool deinit) {
 	static bool initialized = false;
+	if (deinit) {
+		initialized = false;
+		return;
+	}
 	if (initialized) {
 		return;
 	}
-	_add_class_to_classdb(get_class_static(), StringName());
+	_add_class_to_classdb(get_class_static(), StringName(), Object::initialize_class);
 	_bind_methods();
 	_bind_compatibility_methods();
 	initialized = true;
@@ -1749,8 +1753,8 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 	}
 }
 
-void Object::_add_class_to_classdb(const StringName &p_class, const StringName &p_inherits) {
-	ClassDB::_add_class(p_class, p_inherits);
+void Object::_add_class_to_classdb(const StringName &p_class, const StringName &p_inherits, void (*p_deinit_func)(bool deinit)) {
+	ClassDB::_add_class(p_class, p_inherits, p_deinit_func);
 }
 
 void Object::_get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator) {
@@ -2506,7 +2510,12 @@ void ObjectDB::remove_instance(Object *p_object) {
 }
 
 void ObjectDB::setup() {
-	//nothing to do now
+	spin_lock.lock();
+	slot_count = 0;
+	slot_max = 0;
+	object_slots = nullptr;
+	validator_counter = 0;
+	spin_lock.unlock();
 }
 
 void ObjectDB::cleanup() {
@@ -2547,7 +2556,10 @@ void ObjectDB::cleanup() {
 
 	if (object_slots) {
 		memfree(object_slots);
+		object_slots = nullptr;
 	}
-
+	slot_count = 0;
+	slot_max = 0;
+	validator_counter = 0;
 	spin_lock.unlock();
 }

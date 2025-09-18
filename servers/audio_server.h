@@ -155,7 +155,7 @@ public:
 	virtual void set_sample_bus_mute(int p_bus, bool p_enable) {}
 
 	AudioDriver() {}
-	virtual ~AudioDriver() {}
+	virtual ~AudioDriver();
 };
 
 class AudioDriverManager {

@@ -83,4 +83,5 @@ public:
 	void connect_presets_runnable_updated(const Callable &p_target);
 
 	EditorExport();
+	~EditorExport();
 };

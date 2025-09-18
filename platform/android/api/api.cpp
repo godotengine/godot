@@ -118,4 +118,9 @@ JavaClassWrapper::JavaClassWrapper() {
 	singleton = this;
 }
 
+JavaClassWrapper::~JavaClassWrapper() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}
+
 #endif

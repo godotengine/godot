@@ -44,6 +44,8 @@ NavigationMeshGenerator::NavigationMeshGenerator() {
 }
 
 NavigationMeshGenerator::~NavigationMeshGenerator() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
 }
 
 void NavigationMeshGenerator::bake(const Ref<NavigationMesh> &p_navigation_mesh, Node *p_root_node) {

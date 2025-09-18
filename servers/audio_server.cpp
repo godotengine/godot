@@ -58,6 +58,12 @@ void AudioDriver::set_singleton() {
 	singleton = this;
 }
 
+AudioDriver::~AudioDriver() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}
+
 void AudioDriver::audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time) {
 	if (p_update_mix_time) {
 		update_mix_time(p_frames);

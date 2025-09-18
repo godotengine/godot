@@ -163,7 +163,7 @@ public:
 		bool is_runtime = false;
 		// The bool argument indicates the need to postinitialize.
 		Object *(*creation_func)(bool) = nullptr;
-
+		void (*deinit_func)(bool deinit) = nullptr;
 		ClassInfo() {}
 		~ClassInfo() {}
 	};
@@ -219,7 +219,7 @@ public:
 	static APIType current_api;
 	static HashMap<APIType, uint32_t> api_hashes_cache;
 
-	static void _add_class(const StringName &p_class, const StringName &p_inherits);
+	static void _add_class(const StringName &p_class, const StringName &p_inherits, void (*p_deinit_func)(bool deinit) = nullptr);
 
 	static HashMap<StringName, HashMap<StringName, Variant>> default_values;
 	static HashSet<StringName> default_values_cached;

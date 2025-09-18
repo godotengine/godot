@@ -1285,6 +1285,11 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	EditorInspector::add_inspector_plugin(animation_node_inspector_plugin);
 }
 
+AnimationNodeBlendTreeEditor::~AnimationNodeBlendTreeEditor() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}
+
 // EditorPluginAnimationNodeAnimation
 
 void AnimationNodeAnimationEditor::_open_set_custom_timeline_from_marker_dialog() {

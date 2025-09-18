@@ -173,6 +173,7 @@ public:
 	void set_dock_tab_icon(Control *p_dock, const Ref<Texture2D> &p_icon);
 
 	EditorDockManager();
+	~EditorDockManager();
 };
 
 class EditorDockDragHint : public Control {

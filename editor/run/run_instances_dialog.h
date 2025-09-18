@@ -102,4 +102,5 @@ public:
 
 	static RunInstancesDialog *get_singleton() { return singleton; }
 	RunInstancesDialog();
+	~RunInstancesDialog();
 };

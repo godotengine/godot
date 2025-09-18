@@ -170,4 +170,5 @@ public:
 	static DynamicFontImportSettingsDialog *get_singleton();
 
 	DynamicFontImportSettingsDialog();
+	~DynamicFontImportSettingsDialog();
 };

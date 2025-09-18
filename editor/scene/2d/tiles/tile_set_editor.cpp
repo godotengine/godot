@@ -974,6 +974,11 @@ TileSetEditor::TileSetEditor() {
 	EditorNode::get_editor_data().add_undo_redo_inspector_hook_callback(callable_mp(this, &TileSetEditor::_undo_redo_inspector_callback));
 }
 
+TileSetEditor::~TileSetEditor() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}
+
 void TileSourceInspectorPlugin::_show_id_edit_dialog(Object *p_for_source) {
 	if (!id_edit_dialog) {
 		id_edit_dialog = memnew(ConfirmationDialog);

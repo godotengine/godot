@@ -1072,3 +1072,8 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 
 	singleton = this;
 }
+
+EditorFeatureProfileManager::~EditorFeatureProfileManager() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}
