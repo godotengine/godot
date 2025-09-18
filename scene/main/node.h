@@ -378,6 +378,9 @@ protected:
 	void _call_unhandled_input(const Ref<InputEvent> &p_event);
 	void _call_unhandled_key_input(const Ref<InputEvent> &p_event);
 
+	bool _is_accessibility_enabled() const;
+	bool _is_accessibility_supported() const;
+
 	void _validate_property(PropertyInfo &p_property) const;
 
 	Variant _get_node_rpc_config_bind() const {
