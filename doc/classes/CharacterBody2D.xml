@@ -147,6 +147,12 @@
 				Returns [code]true[/code] if the body collided, otherwise, returns [code]false[/code].
 			</description>
 		</method>
+		<method name="move_and_push">
+			<return type="bool" />
+			<description>
+				Calls [method move_and_slide]. After [method move_and_slide] is called it checks to see if CharacterBody2D is colliding with RigidBody2D. If node collides with RigidBody2D it imparts an impulse to the RigidBody2D. Scales with [member collision_push_multiplier], velocity of CharacterBody2D and RigidBody2D's Physical Material bounce value.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="floor_block_on_wall" type="bool" setter="set_floor_block_on_wall_enabled" getter="is_floor_block_on_wall_enabled" default="true">
@@ -166,6 +172,9 @@
 		<member name="floor_stop_on_slope" type="bool" setter="set_floor_stop_on_slope_enabled" getter="is_floor_stop_on_slope_enabled" default="true">
 			If [code]true[/code], the body will not slide on slopes when calling [method move_and_slide] when the body is standing still.
 			If [code]false[/code], the body will slide on floor's slopes when [member velocity] applies a downward force.
+		</member>
+		<member name="collision_push_multiplier" type="float" setter="set_collision_push_multiplier" getter="get_collision_push_multiplier" default="1.0'">
+			Scales the amount of force imparted onto a RigidBody2D when [method move_and_push] is called.
 		</member>
 		<member name="max_slides" type="int" setter="set_max_slides" getter="get_max_slides" default="4">
 			Maximum number of times the body can change direction before it stops when calling [method move_and_slide]. Must be greater than zero.
