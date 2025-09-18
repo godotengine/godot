@@ -35,9 +35,6 @@ void PhysicsMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_preset", "preset"), &PhysicsMaterial::set_preset);
 	ClassDB::bind_method(D_METHOD("get_preset"), &PhysicsMaterial::get_preset);
 
-	ClassDB::bind_method(D_METHOD("set_preset", "preset"), &PhysicsMaterial::set_preset);
-	ClassDB::bind_method(D_METHOD("get_preset"), &PhysicsMaterial::get_preset);
-
 	ClassDB::bind_method(D_METHOD("set_friction", "friction"), &PhysicsMaterial::set_friction);
 	ClassDB::bind_method(D_METHOD("get_friction"), &PhysicsMaterial::get_friction);
 
@@ -50,7 +47,6 @@ void PhysicsMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_absorbent", "absorbent"), &PhysicsMaterial::set_absorbent);
 	ClassDB::bind_method(D_METHOD("is_absorbent"), &PhysicsMaterial::is_absorbent);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "preset", PROPERTY_HINT_ENUM, "Generic,Brick,Concrete,Ceramic,Gravel,Carpet,Glass,Plaster,Wood,Metal,Rock,Custom"), "set_preset", "get_preset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "preset", PROPERTY_HINT_ENUM, "Generic,Brick,Concrete,Ceramic,Gravel,Carpet,Glass,Plaster,Wood,Metal,Rock,Custom"), "set_preset", "get_preset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "friction", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"), "set_friction", "get_friction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rough"), "set_rough", "is_rough");
@@ -122,7 +118,6 @@ void PhysicsMaterial::set_preset(Preset p_preset) {
 			bounce = 0.2;
 			break;
 		default:
-			set_preset(PRESET_CUSTOM);
 			break;
 	}
 	emit_changed();
@@ -146,7 +141,6 @@ void PhysicsMaterial::set_rough(bool p_val) {
 
 void PhysicsMaterial::set_bounce(real_t p_val) {
 	bounce = p_val;
-	preset = static_cast<Preset>(PRESET_CUSTOM);
 	preset = static_cast<Preset>(PRESET_CUSTOM);
 	emit_changed();
 }

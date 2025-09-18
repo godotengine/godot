@@ -149,10 +149,7 @@ bool CharacterBody3D::move_and_push() {
 					Ref<PhysicsMaterial> material = rigid_body->get_physics_material_override();
 					// Scale impulse by character's relative velocity multiplier
 					Vector3 impulse = -collision.normal * (get_real_velocity() - collision.collider_velocity).length() * collision_push_multiplier;
-<<<<<<< HEAD
 					if (!material.is_null()) {
-=======
->>>>>>> 4ac43b99cd (Added move_and_push() for CharacterBod					if (material != nullptr) {y3D)
 						impulse *= material->get_bounce();
 					}
 					rigid_body->apply_impulse(impulse);
