@@ -7160,6 +7160,48 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 		case MENU_VIEW_CAMERA_SETTINGS: {
 			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size() + Size2(50, 50));
 		} break;
+		case MENU_VIEW_CAMERA_SNAPSHOT: {
+			SubViewport *viewport = get_editor_viewport(0)->get_viewport_node();
+			if (!viewport) {
+				return;
+			}
+
+			Camera3D *editor_camera = viewport->get_camera_3d();
+			if (!editor_camera) {
+				return;
+			}
+
+			Node *root = get_tree()->get_edited_scene_root();
+			if (!root) {
+				WARN_PRINT("No active scene is currently open. Cannot create camera from view.");
+				return;
+			}
+
+			int suffix = 1;
+			String base_name = "ViewCamera3D";
+			String final_name = base_name;
+			while (root->has_node(final_name)) {
+				final_name = base_name + "_" + itos(suffix++);
+			}
+
+			Camera3D *view_camera = memnew(Camera3D);
+			view_camera->set_global_transform(editor_camera->get_global_transform());
+			view_camera->set_fov(editor_camera->get_fov());
+			view_camera->set_near(editor_camera->get_near());
+			view_camera->set_far(editor_camera->get_far());
+			view_camera->set_name(final_name);
+
+			undo_redo->create_action(TTR("View Camera Snapshot"));
+			undo_redo->add_do_method(root, "add_child", view_camera);
+			undo_redo->add_do_method(view_camera, "set_owner", root);
+			undo_redo->add_undo_method(root, "remove_child", view_camera);
+			undo_redo->commit_action();
+
+			if (editor_selection) {
+				editor_selection->clear();
+				editor_selection->add_node(view_camera);
+			}
+		} break;
 		case MENU_SNAP_TO_FLOOR: {
 			snap_selected_nodes_to_floor();
 		} break;
@@ -8483,6 +8525,8 @@ void Node3DEditor::_update_theme() {
 	view_layout_menu->get_popup()->set_item_icon(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), get_editor_theme_icon(SNAME("Panels3Alt")));
 	view_layout_menu->get_popup()->set_item_icon(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), get_editor_theme_icon(SNAME("Panels4")));
 
+	view_layout_menu->get_popup()->set_item_icon(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_CAMERA_SNAPSHOT), get_editor_theme_icon(SNAME("CameraSnapshot")));
+
 	sun_button->set_button_icon(get_editor_theme_icon(SNAME("PreviewSun")));
 	environ_button->set_button_icon(get_editor_theme_icon(SNAME("PreviewEnvironment")));
 	sun_environ_settings->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
@@ -9560,6 +9604,10 @@ Node3DEditor::Node3DEditor() {
 
 	p->add_separator();
 	p->add_submenu_node_item(TTRC("Preview Translation"), memnew(EditorTranslationPreviewMenu));
+
+	p->add_separator();
+	p->add_item("Create Camera from View", MENU_VIEW_CAMERA_SNAPSHOT);
+	p->set_item_tooltip(p->get_item_index(MENU_VIEW_CAMERA_SNAPSHOT), "Spawns a Camera3D from the current editor view.");
 
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/settings", TTRC("Settings...")), MENU_VIEW_CAMERA_SETTINGS);
