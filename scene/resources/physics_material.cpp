@@ -151,6 +151,8 @@ void PhysicsMaterial::set_absorbent(bool p_val) {
 }
 
 PhysicsMaterial::PhysicsMaterial() {
-	set_preset(PRESET_GENERIC);
+	preset = PRESET_GENERIC;
+	friction = 0.8;
+	bounce = 0.8;
 }
 #endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
