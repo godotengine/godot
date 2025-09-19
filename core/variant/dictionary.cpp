@@ -299,6 +299,12 @@ void Dictionary::_ref(const Dictionary &p_from) const {
 	_p = p_from._p;
 }
 
+void Dictionary::reserve(int64_t p_new_capacity) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
+	ERR_FAIL_COND_MSG(p_new_capacity < 0 || p_new_capacity > UINT32_MAX, "New capacity must be non-negative and less than or equal to UINT32_MAX.");
+	_p->variant_map.reserve(p_new_capacity);
+}
+
 void Dictionary::clear() {
 	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
 	_p->variant_map.clear();
