@@ -141,7 +141,7 @@
 		<method name="move_and_push">
 			<return type="bool" />
 			<description>
-				Calls [method move_and_slide]. After [method move_and_slide] is called it checks to see if CharacterBody2D is colliding with RigidBody2D. If node collides with RigidBody2D it imparts an impulse to the RigidBody2D. Scales with [member collision_push_multiplier], velocity of CharacterBody2D and RigidBody2D's Physical Material bounce value.
+				Calls [method move_and_slide]. After [method move_and_slide] is called, it checks to see if CharacterBody3D is colliding with a [RigidBody3D]. If the CharacterBody3D collides with a RigidBody3D, it applies an impulse to the RigidBody3D. Scales with [member collision_push_multiplier], the CharacterBody3D's velocity and RigidBody3D's [member PhysicsMaterial.bounce] property.
 			</description>
 		</method>
 	</methods>
