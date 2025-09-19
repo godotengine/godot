@@ -144,7 +144,7 @@ bool CharacterBody3D::move_and_push() {
 				const PhysicsServer3D::MotionCollision &collision = result.collisions[j];
 				Object *collider_obj = ObjectDB::get_instance(collision.collider_id);
 				RigidBody3D *rigid_body = Object::cast_to<RigidBody3D>(collider_obj);
-				// Rigid body gets an impulse applied to it based on collision position and normal
+				// Rigid body gets an impulse applied to it based on collision position and normal.
 				if (rigid_body) {
 					Ref<PhysicsMaterial> material = rigid_body->get_physics_material_override();
 					// Scale impulse by character's relative velocity multiplier.
