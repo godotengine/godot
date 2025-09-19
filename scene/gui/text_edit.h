@@ -686,6 +686,10 @@ private:
 	void _move_caret_document_end(bool p_select);
 	bool _clear_carets_and_selection();
 
+#ifdef TOOLS_ENABLED
+	void _editor_settings_changed();
+#endif
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
