@@ -50,6 +50,7 @@
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/project_manager/engine_update_label.h"
 #include "editor/translations/editor_translation.h"
+#include "main/main.h"
 #include "modules/regex/regex.h"
 #include "scene/gui/color_picker.h"
 #include "scene/main/node.h"
@@ -79,7 +80,7 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 		emit_signal(SNAME("settings_changed"));
 
 		if (p_name == SNAME("interface/editor/editor_language")) {
-			setup_language();
+			setup_language(false);
 		}
 	}
 	return true;
@@ -1288,7 +1289,7 @@ void EditorSettings::create() {
 
 		print_verbose("EditorSettings: Load OK!");
 
-		singleton->setup_language();
+		singleton->setup_language(true);
 		singleton->setup_network();
 		singleton->load_favorites_and_recent_dirs();
 		singleton->update_text_editor_themes_list();
@@ -1315,13 +1316,19 @@ fail:
 	singleton->set_path(config_file_path, true);
 	singleton->save_changed_setting = true;
 	singleton->_load_defaults(extra_config);
-	singleton->setup_language();
+	singleton->setup_language(true);
 	singleton->setup_network();
 	singleton->update_text_editor_themes_list();
 }
 
-void EditorSettings::setup_language() {
+void EditorSettings::setup_language(bool p_initial_setup) {
 	String lang = _EDITOR_GET("interface/editor/editor_language");
+	if (p_initial_setup) {
+		String lang_ov = Main::get_locale_override();
+		if (!lang_ov.is_empty()) {
+			lang = lang_ov;
+		}
+	}
 
 	if (lang == "en") {
 		TranslationServer::get_singleton()->set_locale(lang);
