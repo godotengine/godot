@@ -548,11 +548,6 @@ void WaylandEmbedder::cleanup_socket(int p_socket) {
 		if (destructor >= 0) {
 			DEBUG_LOG_WAYLAND_EMBED(vformat("Destroying %s#g0x%x", object->interface->name, global_id));
 
-			if (global_id & 0xff000000) {
-				E = E->prev();
-				delete_object(global_id);
-			}
-
 			if (object->interface == &wl_surface_interface) {
 				for (uint32_t wl_seat_name : wl_seat_names) {
 					WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)registry_globals[wl_seat_name].data;
@@ -570,9 +565,15 @@ void WaylandEmbedder::cleanup_socket(int p_socket) {
 
 			send_wayland_message(compositor_socket, global_id, destructor, {});
 			object->destroyed = true;
+
+			if (global_id & 0xff000000) {
+				E = E->prev();
+				delete_object(global_id);
+				object = nullptr;
+			}
 		}
 
-		if (!object->destroyed) {
+		if (object && !object->destroyed) {
 			ERR_PRINT(vformat("Unreferenced object %s g0x%x (leak!)", object->interface->name, global_id));
 		}
 	}
