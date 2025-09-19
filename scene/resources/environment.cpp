@@ -1194,6 +1194,10 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "adjustment_brightness_scale" && adjustment_bcs_legacy == true) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
+
+	if (p_property.name == "adjustment_bcs_legacy") { // Hidden for this test PR
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
 }
 
 #ifndef DISABLE_DEPRECATED
