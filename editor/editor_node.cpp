@@ -4326,9 +4326,11 @@ void EditorNode::setup_color_picker(ColorPicker *p_picker) {
 	int default_color_mode = EditorSettings::get_singleton()->get_project_metadata("color_picker", "color_mode", EDITOR_GET("interface/inspector/default_color_picker_mode"));
 	int picker_shape = EditorSettings::get_singleton()->get_project_metadata("color_picker", "picker_shape", EDITOR_GET("interface/inspector/default_color_picker_shape"));
 	bool show_intensity = EDITOR_GET("interface/inspector/color_picker_show_intensity");
+	bool colorize_sliders = EDITOR_GET("interface/inspector/color_picker_colorize_sliders");
 
 	p_picker->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
 	p_picker->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
+	p_picker->add_theme_constant_override("colorize_sliders", colorize_sliders);
 	p_picker->set_edit_intensity(show_intensity);
 
 	p_picker->set_quick_open_callback(callable_mp(this, &EditorNode::_palette_quick_open_dialog));

@@ -118,11 +118,10 @@ void ColorPicker::_notification(int p_what) {
 			_update_drop_down_arrow(btn_recent_preset->is_pressed(), btn_recent_preset);
 			btn_add_preset->set_button_icon(theme_cache.add_preset);
 			menu_btn->set_button_icon(theme_cache.menu_option);
-			btn_mode->set_button_icon(theme_cache.menu_option);
 
 			btn_pick->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
 			btn_shape->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
-			btn_mode->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
+			menu_btn->set_custom_minimum_size(Size2(btn_preset->get_minimum_size().height, 0));
 
 			{
 				int i = 0;
@@ -139,15 +138,40 @@ void ColorPicker::_notification(int p_what) {
 				btn_shape->set_button_icon(shape_popup->get_item_icon(get_current_shape_index()));
 			}
 
-			for (int i = 0; i < MODE_SLIDER_COUNT; i++) {
-				labels[i]->set_custom_minimum_size(Size2(theme_cache.label_width, 0));
-				sliders[i]->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
+			Size2 slider_arrow_size = (theme_cache.bar_arrow->get_size() * 0.5).round();
+			Ref<StyleBox> slider_style;
+			if (theme_cache.colorize_sliders) {
+				Ref<StyleBoxEmpty> empty_style;
+				empty_style.instantiate();
+
+				slider_style = empty_style;
+			} else {
+				slider_style = get_theme_stylebox("slider", "HSlider")->duplicate();
+				slider_arrow_size.height = Math::round(slider_style->get_minimum_size().height * 0.5);
 			}
-			alpha_label->set_custom_minimum_size(Size2(theme_cache.label_width, 0));
+
+			for (int i = 0; i < MODE_SLIDER_COUNT; i++) {
+				sliders[i]->begin_bulk_theme_override();
+				sliders[i]->add_theme_icon_override("grabber", theme_cache.bar_arrow);
+				sliders[i]->add_theme_icon_override("grabber_highlight", theme_cache.bar_arrow);
+				sliders[i]->add_theme_constant_override("grabber_offset", slider_arrow_size.height);
+				sliders[i]->add_theme_style_override("slider", slider_style);
+				sliders[i]->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
+				sliders[i]->end_bulk_theme_override();
+				labels[i]->set_custom_minimum_size(Size2(theme_cache.label_width, 0));
+			}
+
+			alpha_slider->begin_bulk_theme_override();
+			alpha_slider->add_theme_icon_override("grabber", theme_cache.bar_arrow);
+			alpha_slider->add_theme_icon_override("grabber_highlight", theme_cache.bar_arrow);
+			alpha_slider->add_theme_constant_override("grabber_offset", slider_arrow_size.height);
+			alpha_slider->add_theme_style_override("slider", slider_style);
 			alpha_slider->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
+			alpha_slider->end_bulk_theme_override();
+			alpha_label->set_custom_minimum_size(Size2(theme_cache.label_width, 0));
 			intensity_label->set_custom_minimum_size(Size2(theme_cache.label_width, 0));
 
-			for (int i = 0; i < MODE_BUTTON_COUNT; i++) {
+			for (int i = 0; i < MODE_MAX; i++) {
 				mode_btns[i]->begin_bulk_theme_override();
 				mode_btns[i]->add_theme_style_override(SceneStringName(pressed), theme_cache.mode_button_pressed);
 				mode_btns[i]->add_theme_style_override(CoreStringName(normal), theme_cache.mode_button_normal);
@@ -155,18 +179,24 @@ void ColorPicker::_notification(int p_what) {
 				mode_btns[i]->end_bulk_theme_override();
 			}
 
+			text_type->set_button_icon(text_is_constructor ? theme_cache.color_script : theme_cache.color_hex);
+
+			int margin = MAX(theme_cache.content_margin, 0);
 			internal_margin->begin_bulk_theme_override();
-			internal_margin->add_theme_constant_override(SNAME("margin_bottom"), theme_cache.content_margin);
-			internal_margin->add_theme_constant_override(SNAME("margin_left"), theme_cache.content_margin);
-			internal_margin->add_theme_constant_override(SNAME("margin_right"), theme_cache.content_margin);
-			internal_margin->add_theme_constant_override(SNAME("margin_top"), theme_cache.content_margin);
+			internal_margin->add_theme_constant_override(SNAME("margin_bottom"), margin);
+			internal_margin->add_theme_constant_override(SNAME("margin_left"), margin);
+			internal_margin->add_theme_constant_override(SNAME("margin_right"), margin);
+			internal_margin->add_theme_constant_override(SNAME("margin_top"), margin);
 			internal_margin->end_bulk_theme_override();
 
-			_reset_sliders_theme();
+			Size2 cursor_size = (theme_cache.picker_cursor->get_size() * 0.5).round();
+			shape_container->add_theme_constant_override(SNAME("separation"), cursor_size.width);
+			shape_vbc->add_theme_constant_override(SNAME("separation"), cursor_size.height);
 
-			hex_label->set_custom_minimum_size(Size2(38 * theme_cache.base_scale, 0));
-			// Adjust for the width of the "script" icon.
-			text_type->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
+			slider_gc->begin_bulk_theme_override();
+			slider_gc->add_theme_constant_override("v_separation", slider_arrow_size.height);
+			slider_gc->add_theme_constant_override("h_separation", slider_arrow_size.width);
+			slider_gc->end_bulk_theme_override();
 
 			_update_presets();
 			_update_recent_presets();
@@ -551,6 +581,7 @@ void ColorPicker::add_shape(ColorPickerShape *p_shape) {
 
 void ColorPicker::create_slider(GridContainer *gc, int idx) {
 	Label *lbl = memnew(Label);
+	lbl->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	lbl->set_v_size_flags(SIZE_SHRINK_CENTER);
 	lbl->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	gc->add_child(lbl);
@@ -640,7 +671,7 @@ void ColorPicker::set_palette_saved_callback(const Callable &p_palette_saved) {
 	palette_saved_callback = p_palette_saved;
 }
 
-#endif
+#endif // TOOLS_ENABLED
 
 HSlider *ColorPicker::get_slider(int p_idx) {
 	ERR_FAIL_INDEX_V(p_idx, MODE_MAX, nullptr);
@@ -731,32 +762,6 @@ bool ColorPicker::_select_from_recent_preset_hbc(const Color &p_color) {
 		}
 	}
 	return false;
-}
-
-void ColorPicker::_reset_sliders_theme() {
-	Ref<StyleBoxFlat> style_box_flat(memnew(StyleBoxFlat));
-	style_box_flat->set_content_margin(SIDE_TOP, 16 * theme_cache.base_scale);
-	style_box_flat->set_bg_color(Color(0.2, 0.23, 0.31).lerp(Color(0, 0, 0, 1), 0.3).clamp());
-
-	for (int i = 0; i < MODE_SLIDER_COUNT; i++) {
-		sliders[i]->begin_bulk_theme_override();
-		sliders[i]->add_theme_icon_override(SNAME("grabber"), theme_cache.bar_arrow);
-		sliders[i]->add_theme_icon_override(SNAME("grabber_highlight"), theme_cache.bar_arrow);
-		sliders[i]->add_theme_constant_override(SNAME("grabber_offset"), 8 * theme_cache.base_scale);
-		if (!colorize_sliders) {
-			sliders[i]->add_theme_style_override(SNAME("slider"), style_box_flat);
-		}
-		sliders[i]->end_bulk_theme_override();
-	}
-
-	alpha_slider->begin_bulk_theme_override();
-	alpha_slider->add_theme_icon_override(SNAME("grabber"), theme_cache.bar_arrow);
-	alpha_slider->add_theme_icon_override(SNAME("grabber_highlight"), theme_cache.bar_arrow);
-	alpha_slider->add_theme_constant_override(SNAME("grabber_offset"), 8 * theme_cache.base_scale);
-	if (!colorize_sliders) {
-		alpha_slider->add_theme_style_override(SNAME("slider"), style_box_flat);
-	}
-	alpha_slider->end_bulk_theme_override();
 }
 
 void ColorPicker::_html_submitted(const String &p_html) {
@@ -927,15 +932,11 @@ void ColorPicker::_update_recent_presets() {
 void ColorPicker::_text_type_toggled() {
 	text_is_constructor = !text_is_constructor;
 	if (text_is_constructor) {
-		hex_label->set_text(ETR("Expr"));
-		text_type->set_text("");
 		text_type->set_button_icon(theme_cache.color_script);
 
 		c_text->set_tooltip_text(RTR("Execute an expression as a color."));
 	} else {
-		hex_label->set_text(ETR("Hex"));
-		text_type->set_text("#");
-		text_type->set_button_icon(nullptr);
+		text_type->set_button_icon(theme_cache.color_hex);
 
 		c_text->set_tooltip_text(ETR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
 	}
@@ -1123,16 +1124,6 @@ void ColorPicker::_update_drop_down_arrow(const bool &p_is_btn_pressed, Button *
 		p_btn_preset->set_button_icon(theme_cache.expanded_arrow);
 	} else {
 		p_btn_preset->set_button_icon(theme_cache.folded_arrow);
-	}
-}
-
-void ColorPicker::_set_mode_popup_value(ColorModeType p_mode) {
-	ERR_FAIL_INDEX(p_mode, MODE_MAX + 1);
-
-	if (p_mode == MODE_MAX) {
-		set_colorize_sliders(!colorize_sliders);
-	} else {
-		set_color_mode(p_mode);
 	}
 }
 
@@ -1343,14 +1334,7 @@ void ColorPicker::set_color_mode(ColorModeType p_mode) {
 		return;
 	}
 
-	mode_popup->set_item_checked(current_mode, false);
-	mode_popup->set_item_checked(p_mode, true);
-
-	if (p_mode < MODE_BUTTON_COUNT) {
-		mode_btns[p_mode]->set_pressed(true);
-	} else if (current_mode < MODE_BUTTON_COUNT) {
-		mode_btns[current_mode]->set_pressed(false);
-	}
+	mode_btns[p_mode]->set_pressed(true);
 
 	current_mode = p_mode;
 
@@ -1372,39 +1356,6 @@ ColorPicker::ColorModeType ColorPicker::get_color_mode() const {
 	return current_mode;
 }
 
-void ColorPicker::set_colorize_sliders(bool p_colorize_sliders) {
-	if (colorize_sliders == p_colorize_sliders) {
-		return;
-	}
-
-	colorize_sliders = p_colorize_sliders;
-	mode_popup->set_item_checked(MODE_MAX + 1, colorize_sliders);
-
-	if (colorize_sliders) {
-		Ref<StyleBoxEmpty> style_box_empty(memnew(StyleBoxEmpty));
-
-		for (int i = 0; i < MODE_SLIDER_COUNT; i++) {
-			sliders[i]->add_theme_style_override("slider", style_box_empty);
-		}
-
-		alpha_slider->add_theme_style_override("slider", style_box_empty);
-	} else {
-		Ref<StyleBoxFlat> style_box_flat(memnew(StyleBoxFlat));
-		style_box_flat->set_content_margin(SIDE_TOP, 16 * theme_cache.base_scale);
-		style_box_flat->set_bg_color(Color(0.2, 0.23, 0.31).lerp(Color(0, 0, 0, 1), 0.3).clamp());
-
-		for (int i = 0; i < MODE_SLIDER_COUNT; i++) {
-			sliders[i]->add_theme_style_override("slider", style_box_flat);
-		}
-
-		alpha_slider->add_theme_style_override("slider", style_box_flat);
-	}
-}
-
-bool ColorPicker::is_colorizing_sliders() const {
-	return colorize_sliders;
-}
-
 void ColorPicker::set_deferred_mode(bool p_enabled) {
 	deferred_mode_enabled = p_enabled;
 }
@@ -1417,16 +1368,10 @@ void ColorPicker::_update_text_value() {
 	if (text_is_constructor || !is_color_valid_hex(color)) {
 		String t = "Color" + color_to_string(color, edit_alpha && color.a < 1, true);
 
-		text_type->set_text("");
-		text_type->set_button_icon(theme_cache.color_script);
 		text_type->set_disabled(!is_color_valid_hex(color));
-		hex_label->set_text(ETR("Expr"));
 		c_text->set_text(t);
 	} else {
-		text_type->set_text("#");
-		text_type->set_button_icon(nullptr);
 		text_type->set_disabled(false);
-		hex_label->set_text(ETR("Hex"));
 		c_text->set_text(color.to_html(edit_alpha && color.a < 1));
 	}
 }
@@ -1484,7 +1429,7 @@ void ColorPicker::_sample_draw() {
 			sample->set_focus_mode(FOCUS_NONE);
 		}
 
-		if (is_color_overbright(color)) {
+		if (is_color_overbright(old_color)) {
 			// Draw an indicator to denote that the old color is "overbright" and can't be displayed accurately in the preview.
 			sample->draw_texture(theme_cache.overbright_indicator, Point2());
 		}
@@ -1505,18 +1450,18 @@ void ColorPicker::_sample_draw() {
 
 	if (is_color_overbright(color)) {
 		// Draw an indicator to denote that the new color is "overbright" and can't be displayed accurately in the preview.
-		sample->draw_texture(theme_cache.overbright_indicator, Point2(sample->get_size().width * 0.5, 0));
+		sample->draw_texture(theme_cache.overbright_indicator, Point2(display_old_color ? sample->get_size().width * 0.5 : 0, 0));
 	}
 }
 
 void ColorPicker::_slider_draw(int p_which) {
-	if (colorize_sliders) {
+	if (theme_cache.colorize_sliders) {
 		modes[current_mode]->slider_draw(p_which);
 	}
 }
 
 void ColorPicker::_alpha_slider_draw() {
-	if (!colorize_sliders) {
+	if (!theme_cache.colorize_sliders) {
 		return;
 	}
 	Vector<Vector2> pos;
@@ -2132,6 +2077,8 @@ void ColorPicker::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, ColorPicker, picker_focus_circle);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ColorPicker, focused_not_editing_cursor_color);
 
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ColorPicker, colorize_sliders);
+
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, menu_option);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, screen_picker);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, expanded_arrow);
@@ -2149,12 +2096,12 @@ void ColorPicker::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, picker_cursor);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, picker_cursor_bg);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_hue);
-
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_hex);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_script);
 
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_normal, "tab_unselected", "TabContainer");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_pressed, "tab_selected", "TabContainer");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_hover, "tab_selected", "TabContainer");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_hover, "tab_hovered", "TabContainer");
 
 	ADD_CLASS_DEPENDENCY("LineEdit");
 	ADD_CLASS_DEPENDENCY("MenuButton");
@@ -2165,22 +2112,25 @@ ColorPicker::ColorPicker() {
 	internal_margin = memnew(MarginContainer);
 	add_child(internal_margin, false, INTERNAL_MODE_FRONT);
 
-	VBoxContainer *real_vbox = memnew(VBoxContainer);
+	real_vbox = memnew(VBoxContainer);
 	internal_margin->add_child(real_vbox);
+
+	shape_vbc = memnew(VBoxContainer);
+	real_vbox->add_child(shape_vbc);
 
 	shape_container = memnew(HBoxContainer);
 	shape_container->set_v_size_flags(SIZE_SHRINK_BEGIN);
-	real_vbox->add_child(shape_container);
+	shape_vbc->add_child(shape_container);
 
 	sample_hbc = memnew(HBoxContainer);
-	real_vbox->add_child(sample_hbc);
+	shape_vbc->add_child(sample_hbc);
 
 	btn_pick = memnew(Button);
 	btn_pick->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	btn_pick->set_accessibility_name(ETR("Pick"));
 	sample_hbc->add_child(btn_pick);
 
-	sample = memnew(TextureRect);
+	sample = memnew(Control);
 	sample_hbc->add_child(sample);
 	sample->set_h_size_flags(SIZE_EXPAND_FILL);
 	sample->connect(SceneStringName(gui_input), callable_mp(this, &ColorPicker::_sample_input));
@@ -2219,12 +2169,15 @@ ColorPicker::ColorPicker() {
 	add_mode(memnew(ColorModeLinear(this)));
 	add_mode(memnew(ColorModeOKHSL(this)));
 
+	VBoxContainer *mode_vbc = memnew(VBoxContainer);
+	real_vbox->add_child(mode_vbc);
+
 	mode_hbc = memnew(HBoxContainer);
-	real_vbox->add_child(mode_hbc);
+	mode_vbc->add_child(mode_hbc);
 
 	mode_group.instantiate();
 
-	for (int i = 0; i < MODE_BUTTON_COUNT; i++) {
+	for (int i = 0; i < MODE_MAX; i++) {
 		mode_btns[i] = memnew(Button);
 		mode_hbc->add_child(mode_btns[i]);
 		mode_btns[i]->set_focus_mode(FOCUS_ALL);
@@ -2236,33 +2189,9 @@ ColorPicker::ColorPicker() {
 	}
 	mode_btns[0]->set_pressed(true);
 
-	btn_mode = memnew(MenuButton);
-	btn_mode->set_flat(false);
-	mode_hbc->add_child(btn_mode);
-	btn_mode->set_toggle_mode(true);
-	btn_mode->set_accessibility_name(ETR("Select a picker mode."));
-	btn_mode->set_tooltip_text(ETR("Select a picker mode."));
-	btn_mode->set_focus_mode(FOCUS_ALL);
-
-	mode_popup = btn_mode->get_popup();
-	{
-		int i = 0;
-		for (const ColorMode *mode : modes) {
-			mode_popup->add_radio_check_item(mode->get_name(), i);
-			i++;
-		}
-	}
-	mode_popup->add_separator();
-	mode_popup->add_check_item(ETR("Colorized Sliders"), MODE_MAX);
-	mode_popup->set_item_checked(current_mode, true);
-	mode_popup->set_item_checked(MODE_MAX + 1, true);
-	mode_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ColorPicker::_set_mode_popup_value));
-	mode_popup->connect("about_to_popup", callable_mp(this, &ColorPicker::_block_input_on_popup_show));
-	mode_popup->connect(SNAME("popup_hide"), callable_mp(this, &ColorPicker::_enable_input_on_popup_hide));
-
 	slider_gc = memnew(GridContainer);
 
-	real_vbox->add_child(slider_gc);
+	mode_vbc->add_child(slider_gc);
 	slider_gc->set_h_size_flags(SIZE_EXPAND_FILL);
 	slider_gc->set_columns(3);
 
@@ -2281,14 +2210,12 @@ ColorPicker::ColorPicker() {
 	hex_hbc = memnew(HBoxContainer);
 	hex_hbc->set_alignment(ALIGNMENT_BEGIN);
 	real_vbox->add_child(hex_hbc);
-	hex_label = memnew(Label(ETR("Hex")));
-	hex_hbc->add_child(hex_label);
 
 	text_type = memnew(Button);
+	text_type->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	hex_hbc->add_child(text_type);
 	text_type->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	text_type->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
-	text_type->set_text("#");
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		text_type->set_tooltip_text(TTRC("Switch between hexadecimal and code values."));
@@ -2343,6 +2270,7 @@ ColorPicker::ColorPicker() {
 	menu_btn = memnew(MenuButton);
 	menu_btn->set_flat(false);
 	menu_btn->set_focus_mode(FOCUS_ALL);
+	menu_btn->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	menu_btn->set_tooltip_text(ETR("Show all options available."));
 	menu_btn->connect("about_to_popup", callable_mp(this, &ColorPicker::_update_menu_items));
 	palette_box->add_child(menu_btn);
@@ -2715,7 +2643,4 @@ ColorPresetButton::ColorPresetButton(Color p_color, int p_size, bool p_recent) {
 	set_custom_minimum_size(Size2(p_size, p_size));
 	set_accessibility_name(vformat(atr(ETR("Color: %s")), color_to_string(p_color, p_color.a < 1)));
 	set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-}
-
-ColorPresetButton::~ColorPresetButton() {
 }

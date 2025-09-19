@@ -75,7 +75,6 @@ public:
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	ColorPresetButton(Color p_color, int p_size, bool p_recent);
-	~ColorPresetButton();
 };
 
 class ColorPicker : public VBoxContainer {
@@ -152,8 +151,8 @@ public:
 	static const int MODE_SLIDER_COUNT = 3;
 
 	enum SLIDER_EXTRA {
-		SLIDER_INTENSITY = MODE_SLIDER_COUNT,
-		SLIDER_ALPHA,
+		SLIDER_ALPHA = MODE_SLIDER_COUNT,
+		SLIDER_INTENSITY,
 
 		SLIDER_MAX
 	};
@@ -185,8 +184,6 @@ private:
 	const float GAMEPAD_EVENT_REPEAT_RATE_MS = 1.0 / 30;
 	float gamepad_event_delay_ms = DEFAULT_GAMEPAD_EVENT_DELAY_MS;
 
-	static constexpr int MODE_BUTTON_COUNT = 3;
-
 	bool slider_theme_modified = true;
 
 	LocalVector<ColorMode *> modes;
@@ -206,9 +203,11 @@ private:
 	MenuButton *menu_btn = nullptr;
 	PopupMenu *options_menu = nullptr;
 
+	VBoxContainer *real_vbox = nullptr;
 	MarginContainer *internal_margin = nullptr;
+	VBoxContainer *shape_vbc = nullptr;
 	HBoxContainer *shape_container = nullptr;
-	TextureRect *sample = nullptr;
+	Control *sample = nullptr;
 	VBoxContainer *swatches_vbc = nullptr;
 	GridContainer *preset_container = nullptr;
 	HBoxContainer *recent_preset_hbc = nullptr;
@@ -219,15 +218,12 @@ private:
 	Button *btn_preset = nullptr;
 	Button *btn_recent_preset = nullptr;
 	PopupMenu *shape_popup = nullptr;
-	PopupMenu *mode_popup = nullptr;
 	MenuButton *btn_shape = nullptr;
 	HBoxContainer *mode_hbc = nullptr;
 	HBoxContainer *sample_hbc = nullptr;
 	GridContainer *slider_gc = nullptr;
 	HBoxContainer *hex_hbc = nullptr;
-	Label *hex_label = nullptr;
-	MenuButton *btn_mode = nullptr;
-	Button *mode_btns[MODE_BUTTON_COUNT];
+	Button *mode_btns[MODE_MAX];
 	Ref<ButtonGroup> mode_group;
 	ColorPresetButton *selected_recent_preset = nullptr;
 	Ref<ButtonGroup> preset_group;
@@ -266,7 +262,6 @@ private:
 	bool text_is_constructor = false;
 	PickerShapeType current_shape = SHAPE_HSV_RECTANGLE;
 	ColorModeType current_mode = MODE_RGB;
-	bool colorize_sliders = true;
 
 	const int PRESET_COLUMN_COUNT = 9;
 	int prev_preset_size = 0;
@@ -318,7 +313,8 @@ private:
 		int sv_width = 0;
 		int h_width = 0;
 
-		bool center_slider_grabbers = true;
+		bool colorize_sliders = 0;
+		bool center_slider_grabbers = false;
 
 		Ref<StyleBox> picker_focus_rectangle;
 		Ref<StyleBox> picker_focus_circle;
@@ -342,6 +338,7 @@ private:
 		Ref<Texture2D> picker_cursor_bg;
 		Ref<Texture2D> color_hue;
 
+		Ref<Texture2D> color_hex;
 		Ref<Texture2D> color_script;
 
 		/* Mode buttons */
@@ -358,7 +355,6 @@ private:
 	void _copy_color_to_normalized_and_intensity();
 
 	void create_slider(GridContainer *gc, int idx);
-	void _reset_sliders_theme();
 	void _html_submitted(const String &p_html);
 	void _slider_drag_started();
 	void _slider_value_changed();
@@ -405,8 +401,6 @@ private:
 
 	void _show_hide_preset(const bool &p_is_btn_pressed, Button *p_btn_preset, Container *p_preset_container);
 	void _update_drop_down_arrow(const bool &p_is_btn_pressed, Button *p_btn_preset);
-
-	void _set_mode_popup_value(ColorModeType p_mode);
 
 	Variant _get_drag_data_fw(const Point2 &p_point, Control *p_from_control);
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) const;
@@ -473,9 +467,6 @@ public:
 
 	void set_color_mode(ColorModeType p_mode);
 	ColorModeType get_color_mode() const;
-
-	void set_colorize_sliders(bool p_colorize_sliders);
-	bool is_colorizing_sliders() const;
 
 	void set_deferred_mode(bool p_enabled);
 	bool is_deferred_mode() const;

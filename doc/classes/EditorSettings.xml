@@ -992,6 +992,9 @@
 			If [code]true[/code], automatically unfolds Inspector property groups containing modified values when opening a scene for the first time. Only affects scenes without saved folding preferences and only unfolds groups with properties that have been changed from their default values.
 			[b]Note:[/b] This setting only works in specific scenarios: when opening a scene brought in from another project, or when opening a new scene that already has modified properties (e.g., from version control). Duplicated scenes are not considered foreign, so this setting will not affect them.
 		</member>
+		<member name="interface/inspector/color_picker_colorize_sliders" type="bool" setter="" getter="">
+			If [code]true[/code], colorize the sliders in the [ColorPicker]s opened in the editor.
+		</member>
 		<member name="interface/inspector/color_picker_show_intensity" type="bool" setter="" getter="">
 			If [code]true[/code], show the intensity slider in the [ColorPicker]s opened in the editor.
 		</member>

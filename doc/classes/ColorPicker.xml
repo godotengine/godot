@@ -158,10 +158,13 @@
 		<theme_item name="center_slider_grabbers" data_type="constant" type="int" default="1">
 			Overrides the [theme_item Slider.center_grabber] theme property of the sliders.
 		</theme_item>
+		<theme_item name="colorize_sliders" data_type="constant" type="int" default="1">
+			If [code]true[/code], the color mode sliders will be colorized.
+		</theme_item>
 		<theme_item name="h_width" data_type="constant" type="int" default="30">
 			The width of the hue selection slider.
 		</theme_item>
-		<theme_item name="label_width" data_type="constant" type="int" default="10">
+		<theme_item name="label_width" data_type="constant" type="int" default="16">
 			The minimum width of the color labels next to sliders.
 		</theme_item>
 		<theme_item name="margin" data_type="constant" type="int" default="4">
@@ -179,11 +182,14 @@
 		<theme_item name="bar_arrow" data_type="icon" type="Texture2D">
 			The texture for the arrow grabber.
 		</theme_item>
+		<theme_item name="color_hex" data_type="icon" type="Texture2D">
+			The icon displayed when the hex [LineEdit] is using hexadecimal input mode.
+		</theme_item>
 		<theme_item name="color_hue" data_type="icon" type="Texture2D">
 			Custom texture for the hue selection slider on the right.
 		</theme_item>
 		<theme_item name="color_script" data_type="icon" type="Texture2D">
-			The icon for the button that switches color text to hexadecimal.
+			The icon displayed when the hex [LineEdit] is using expression input mode.
 		</theme_item>
 		<theme_item name="expanded_arrow" data_type="icon" type="Texture2D">
 			The icon for color preset drop down menu when expanded.
