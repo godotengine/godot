@@ -124,7 +124,7 @@ bool CharacterBody2D::move_and_push() {
 			// Rigid body gets an impulse applied to it based on collision position and normal.
 			if (rigid_body) {
 				Ref<PhysicsMaterial> phys_material = rigid_body->get_physics_material_override();
-				// Scale impulse by character's relative velocity multiplier
+				// Scale impulse by character's relative velocity multiplier.
 				Vector2 impulse = -result.collision_normal * (get_real_velocity() - result.collider_velocity).length() * collision_push_multiplier;
 				if (phys_material.is_valid()) {
 					impulse *= phys_material->get_bounce();
