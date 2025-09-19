@@ -389,8 +389,8 @@ float RendererSceneRender::environment_get_tonemap_contrast(RID p_env) const {
 	return environment_storage.environment_get_tonemap_contrast(p_env);
 }
 
-RendererEnvironmentStorage::TonemapParameters RendererSceneRender::environment_get_tonemap_parameters(RID p_env) const {
-	return environment_storage.environment_get_tonemap_parameters(p_env);
+RendererEnvironmentStorage::TonemapParameters RendererSceneRender::environment_get_tonemap_parameters(RID p_env, float output_max_value) const {
+	return environment_storage.environment_get_tonemap_parameters(p_env, output_max_value);
 }
 
 // Fog

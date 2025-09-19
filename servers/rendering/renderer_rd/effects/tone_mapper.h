@@ -91,8 +91,11 @@ private:
 		float white; //  4 - 88
 		float auto_exposure_scale; //  4 - 104
 		float luminance_multiplier; //  4 - 108
+		float output_max_value; // 4 - 100
 
 		uint32_t pad2; // 4 - 112
+		uint32_t pad3; // 4 - 112
+		uint32_t pad4; // 4 - 112
 	};
 
 	/* tonemap actually writes to a framebuffer, which is
