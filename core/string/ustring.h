@@ -32,6 +32,8 @@
 
 // Note: _GODOT suffix added to header guard to avoid conflict with ICU header.
 
+#include <optional>
+
 #include "core/string/char_utils.h" // IWYU pragma: export
 #include "core/templates/cowdata.h"
 #include "core/templates/vector.h"
@@ -39,6 +41,7 @@
 #include "core/variant/array.h"
 
 class String;
+struct FormatSpec;
 template <typename T>
 class CharStringT;
 
@@ -303,6 +306,7 @@ class [[nodiscard]] String {
 	int _count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const;
 	int _count(const char *p_string, int p_from, int p_to, bool p_case_insensitive) const;
 	String _separate_compound_words() const;
+	Error _append_formatted_without_padding(const FormatSpec &p_format_spec, const Variant &p_value);
 
 public:
 	enum {
@@ -441,7 +445,7 @@ public:
 	String sprintf(const Span<Variant> &values, bool *error) const;
 	String quote(const String &quotechar = "\"") const;
 	String unquote() const;
-	static String num(double p_num, int p_decimals = -1);
+	static String num(double p_num, int p_decimals = -1, bool remove_extra_trailing_zeroes = true);
 	static String num_scientific(double p_num);
 	static String num_scientific(float p_num);
 	static String num_real(double p_num, bool p_trailing = true);
@@ -569,6 +573,15 @@ public:
 		return string;
 	}
 
+	// String-formats `p_value` according to `p_format_spec`.
+	// If `p_value` cannot be formatted according to this format spec, return error.
+	Error append_formatted(const FormatSpec &p_format_spec, const Variant &p_value);
+	static String formatted(const FormatSpec &p_format_spec, const Variant &p_value) {
+		String string;
+		string.append_formatted(p_format_spec, p_value);
+		return string;
+	}
+
 	static uint32_t hash(const char32_t *p_cstr, int p_len); /* hash the string */
 	static uint32_t hash(const char32_t *p_cstr); /* hash the string */
 	static uint32_t hash(const wchar_t *p_cstr, int p_len); /* hash the string */
@@ -611,6 +624,7 @@ public:
 	String c_escape_multiline() const;
 	String c_unescape() const;
 	String json_escape() const;
+	String regex_escape() const;
 	Error parse_url(String &r_scheme, String &r_host, int &r_port, String &r_path, String &r_fragment) const;
 
 	String property_name_encode() const;
@@ -714,6 +728,184 @@ struct FileNoCaseComparator {
 	bool operator()(const String &p_a, const String &p_b) const {
 		return p_a.filenocasecmp_to(p_b) < 0;
 	}
+};
+
+// Specifies how a given value should be string-formatted. See FormatSpec documentation for context
+// and semantics.
+struct ValueFormatOptions {
+	// Minimum field width, including prefixes, separators, and other formatting characters.
+	int min_width = 0;
+
+	enum struct Alignment {
+		DEFAULT, // Default per formatted value type. Right for numbers, left for other types.
+		LEFT, // '<'
+		RIGHT, // '>'
+		CENTER, // '^'
+		PAD_AFTER_SIGN, // '='. For numbers, pad after the sign and before the number.
+	};
+	Alignment align_type = Alignment::DEFAULT;
+	char32_t align_pad = ' ';
+
+	enum struct SignType {
+		MINUS_ONLY, // '-'. Show sign only for negative numbers. Default.
+		PLUS_MINUS, // '+'. Always show sign.
+		SPACE_MINUS, // ' '. Show space for positive numbers, sign for negative numbers.
+	};
+	SignType sign_type = SignType::MINUS_ONLY;
+
+	// Add '0b', '0o', '0x', '0X' prefixes for binary, octal, hexadecimal types.
+	bool use_base_prefix = false; // '#'
+
+	// Separate floats and decimals by groups of 3 digits, binary, octal, hex by 4 digits.
+	// group_separator == nullopt means no grouping.
+	std::optional<char32_t> group_separator = std::nullopt;
+
+	// For Float type, precision is the number of digits to be displayed _after_ the decimal point. Default 6.
+	// For FloatSigFig type, precision is the number of digits before _and_ after the decimal point.
+	// For String type, precision is the maximum field size.
+	// For int types, precision is not allowed.
+	// Nullopt precision indicates precision is not specified (use defaults).
+	std::optional<uint8_t> precision = std::nullopt;
+
+	enum struct Type {
+		// Types have '_T' ending because the Windows compiler defines some all cap types like CHAR.
+		DEFAULT, // Default per argument type.
+		STRING_T, // 's'
+		CHAR_T, // 'c'
+		DECIMAL_T, // 'd'
+		BINARY_T, // 'b'
+		OCTAL_T, // 'o'
+		HEX_T, // 'x'
+		HEX_UPPER_T, // 'X'
+		FLOAT_T, // 'f'
+		FLOAT_SIG_FIG_T, // 'h'  Float but with precision meaning significant figures.
+		// TODO: Consider adding support for GENERAL, SCIENTIFIC when they have precision handling formatters in String.
+		VECTOR_T, // 'v'
+	};
+	Type format_type = Type::DEFAULT;
+
+	// Whether this format is for a Vector element.
+	// This lets us print floats differently when Vector's real_t is float and not double.
+	bool is_vector_element = false;
+};
+
+// FormatSpec specifies a configuration for string-formatting a value.
+// This can be used to directly format values with `FormatSpec::format`, or within
+// `String::format` substitution fields. This configuration can be generated via
+// FormatSpec::parse(format_spec) using a configuration string of the following form:
+//
+// format_spec ::= [[fill]align][sign]["#"]["0"][width][grouping]["." precision][type]
+// fill        ::= <any character>
+// align       ::= "<" | ">" | "^" | "="
+// sign        ::= "+" | "-" | " "
+// width       ::= digit+
+// grouping    ::= "_" | "," | "."
+// precision   ::= digit+
+// type        ::= "s" | "c" | "d" | "b" | "o" | "x" | "X" | "f" | "h" | "v" [velement]
+// velement    ::= "[" <any character>+ "]"
+//
+// If a valid `align` value is specified, it can be preceded by a `fill` character that
+// can be any character and defaults to a space if omitted.
+//
+// The meaning of the various alignment options are as follows:
+// '<': Forces the field to be left-aligned within the available space (default for most values).
+// '>': Forces the field to be right-aligned within the available space (default for numbers).
+// '^': Forces the field to be centered within the available space.
+// '=': Forces the padding to be placed after the sign (if any) but before the digits.
+//
+// Note that unless a minimum field width is defined, the field width will always be
+// the same size as the data to fill it, so that the alignment option has no meaning in
+// this case.
+//
+// The `sign` option is only valid for number types and can be one of the following:
+// '+': Indicates that a sign should be used for both positive as well as negative numbers.
+// '-': Indicates that a sign should be used only for negative numbers (default).
+// ' ': Indicates that a leading space should be used on positive numbers, and a
+//      minus sign on negative numbers.
+//
+// The '#' option causes the 'alternate form' to be used for the conversion.
+// For integers in binary, octal, or hexadecimal output, this option adds the
+// respective prefix "0b", "0o", "0x", "0X" to the output value.
+//
+// When no explicit alignment is given, preceding the width field by a '0' character
+// enables sign-aware zero-padding for numbers. This is equivalent to a fill character
+// of '0' with an alignment type of '='.
+//
+// `width` is a decimal integer defining the minimum total field width, including
+// any prefixes, separators, and other formatting characters. If not specified, then
+// the field width will be determined by the content.
+//
+// The `precision` is a decimal integer indicating how many digits should be displayed
+// after the decimal point for presentation type 'f', or before and after the decimal
+// point for presentation type 'h'. For string presentation types the field indicates
+// the maximum field size - in other words, how many characters will be used from the
+// start of the field content. `precision` is not supported for integer presentation
+// types.
+//
+// The `type` determines how the data should be presented.
+//
+// The available string presentation types are:
+// 's': String format. This is the default type for strings and may be omitted.
+// None: the same as 's'.
+//
+// The available integer presentation types are:
+// 'd': Decimal integer. Outputs the number in base 10.
+// 'b': Binary format. Outputs the number in base 2.
+// 'o': Octal format. Outputs the number in base 8.
+// 'x': Hex format. Outputs the number in base 16, using lower-case letters for
+//      digits above 9.
+// 'X': Hex format. Outputs the number in base 16, using upper-case letters for
+//      digits above 9. If '#' is specified, the prefix '0x' will be upper-cased
+//      to '0X' as well.
+// 'c': Character. Converts the integer to the corresponding unicode character
+//      before printing.
+// None: The same as 'd'.
+//
+// The available float presentation types are:
+// 'f': Fixed-point notation. For a given precision `p`, formats the number as
+//      a decimal number with at most p digits following the decimal point but
+//      with trailing 0's removed except for a zero in the tenth's digit.
+//      With no precision given, uses a precision of 6 digits.
+// 'h': Fixed-point notation but with precision specifying significant figures.
+//      For a given precision `p`, formats the number with `p` digits combined
+//      before and after the decimal point. This precision is only used to
+//      limit the number of digits following the decimal point, not to zero
+//      out any digits preceding the decimal point. For example, 1234.5678
+//      printed with a precision of 6 will print "1234.57", whereas printing
+//      12345678.9 with a precision of 6 will print "12345679".
+// None: The same as 'f'.
+//
+// Vector presentation types:
+// 'v': Formats the vector as a set of values e.g. "(value1, value2)".
+//      If `velement` is specified, it is interpreted as another format spec
+//      that will be used to format each vector element value. For example,
+//      'v[,]' applied to Vector2i(12345, 67890) will produce "(12,345, 67,890)".
+//      Options applied to the vector and options applied to its elements are
+//      independent. So for example, both the vector and its elements can have
+//      a specified width. e.g. '20v[5x]'.
+// None: The same as 'v'.
+//
+// Note that this configuration mostly follows the Python format specification
+// mini-language (https://docs.python.org/3/library/string.html#formatspec).
+struct FormatSpec : public ValueFormatOptions {
+	// Implementation detail:
+	// FormatSpec holds two sets of formatting values.
+	// - The primary format values, held directly via the superclass ValueFormatOptions fields.
+	// - The vector element format values, held in the vector_element_format field.
+	//   This is used to format the individual elements when formatting a Vector-typed value.
+
+	FormatSpec() = default;
+	FormatSpec(const FormatSpec &other) = default;
+	FormatSpec &operator=(const FormatSpec &other) = default;
+	FormatSpec(const ValueFormatOptions &base);
+	FormatSpec &operator=(const ValueFormatOptions &base);
+
+	// Parses a format spec string into a FormatSpec struct. See the format string specification above.
+	// If p_format_spec_text is invalid, r_error = true, and an error message is returned via r_error_msg.
+	static FormatSpec parse(const String &p_format_spec_text, bool *r_error = nullptr, String *r_error_msg = nullptr);
+
+	// For a VECTOR spec, this specifies the format of each vector element.
+	ValueFormatOptions vector_element_format;
 };
 
 /* end of namespace */
