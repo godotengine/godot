@@ -234,7 +234,7 @@ void SpxDrawTiles::place_sprites(GdArray positions, GdString texture_path) {
 void SpxDrawTiles::place_sprites(GdArray positions, GdString texture_path, GdInt index) {
     set_layer_index(index);
     set_sprite_texture(texture_path, true);
-    _place_sprites(positions);
+    _place_sprites_bulk(positions);
 }
 
 void SpxDrawTiles::place_sprite(GdVec2 pos, GdString texture_path) {
@@ -310,16 +310,29 @@ void SpxDrawTiles::erase_sprite(GdVec2 pos) {
     handle_mouse_click(pos * Vector2(1, -1), true);
 }
 
-void SpxDrawTiles::_place_sprites(GdArray positions) {
-    if(!positions)
+void SpxDrawTiles::_place_sprites_bulk(GdArray positions) {
+    if (!positions)
         return;
 
+    TileMapLayer *layer = _get_layer(current_layer_index);
+    if (layer == nullptr)
+        return;
+
+    int source_id = _get_or_create_source_id(current_texture);
+    Vector2i atlas_coord(0,0);
+
     auto len = positions->size;
-    for(int i = 0; i < len; i += 2){
+    for (int i = 0; i + 1 < len; i += 2) {
         auto x = *(SpxBaseMgr::get_array<float>(positions, i));
         auto y = *(SpxBaseMgr::get_array<float>(positions, i + 1));
-    
-        _place_sprite({x, y});
+
+        Vector2 pos = {x, y};
+        pos *= Vector2(1, -1);
+
+        Vector2 local_pos = layer->to_local(pos);
+        Vector2i coords = layer->local_to_map(local_pos);
+
+        layer->set_cell(coords, source_id, atlas_coord, 0);
     }
 }
 
