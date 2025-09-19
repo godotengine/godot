@@ -1604,7 +1604,9 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 				client->embedded_window_id = 0;
 			}
 
-			send_wayland_message(compositor_socket, data->wl_subsurface_id, WL_SUBSURFACE_DESTROY, {});
+			if (data->wl_subsurface_id != INVALID_ID) {
+				send_wayland_message(compositor_socket, data->wl_subsurface_id, WL_SUBSURFACE_DESTROY, {});
+			}
 
 			client->delete_object(local_id);
 
