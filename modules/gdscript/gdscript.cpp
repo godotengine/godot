@@ -743,10 +743,19 @@ void GDScript::_restore_old_static_data() {
 #endif
 
 Error GDScript::reload(bool p_keep_state) {
-	if (reloading) {
-		return OK;
+	// Recursive reloads on the same thread are ok, since they should reload the same info..
+	// This may occur if a resource loading task calls reload, and the analyzer encounters a preload()
+	// which causes a cycle requiring the inner task to load the same script while it's in the process of being parsed.
+	// some inner reload should terminate the recursion once all preloads have been loaded once....
+	Thread::ID expected = 0;
+	Thread::ID tid = Thread::get_caller_id();
+	bool not_reloading = reloading_thread.compare_exchange_strong(expected, tid);
+	// expected is replaced with the existing value of `reloading_thread`
+	if (!not_reloading && expected != tid) {
+		print_line(String::num_int64(Thread::get_caller_id()) + " already reloading on thread " + String::num_int64(reloading_thread) + " " + get_path());
+		// TODO: can we wait for the other reload to finish since it's guaranteed to be another thread? It shouldn't cause a deadlock right?
+		return ERR_BUSY;
 	}
-	reloading = true;
 
 	bool has_instances;
 	{
@@ -757,7 +766,7 @@ Error GDScript::reload(bool p_keep_state) {
 
 	// Check condition but reset flag before early return
 	if (!p_keep_state && has_instances) {
-		reloading = false; // Reset flag before returning
+		reloading_thread = 0; // Reset flag before returning
 
 		ERR_FAIL_V_MSG(ERR_ALREADY_IN_USE, "Cannot reload script while instances exist.");
 	}
@@ -775,7 +784,7 @@ Error GDScript::reload(bool p_keep_state) {
 	// Loading a template, don't parse.
 #ifdef TOOLS_ENABLED
 	if (EditorPaths::get_singleton() && basedir.begins_with(EditorPaths::get_singleton()->get_project_script_templates_dir())) {
-		reloading = false;
+		reloading_thread = 0;
 		return OK;
 	}
 #endif
@@ -830,7 +839,7 @@ Error GDScript::reload(bool p_keep_state) {
 		}
 		// TODO: Show all error messages.
 		_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_errors().front()->get().line, ("Parse Error: " + parser.get_errors().front()->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
-		reloading = false;
+		reloading_thread = 0;
 		return ERR_PARSE_ERROR;
 	}
 
@@ -847,8 +856,13 @@ Error GDScript::reload(bool p_keep_state) {
 			_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), e->get().line, ("Parse Error: " + e->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 			e = e->next();
 		}
-		reloading = false;
+		reloading_thread = 0;
 		return ERR_PARSE_ERROR;
+	}
+
+	// If this happens then the analyzer called reload() again and the rest of the work is already done
+	if (reloading_thread == 0 && is_valid()) {
+		return OK;
 	}
 
 	can_run = ScriptServer::is_scripting_enabled() || parser.is_tool();
@@ -863,10 +877,10 @@ Error GDScript::reload(bool p_keep_state) {
 			if (EngineDebugger::is_active()) {
 				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), compiler.get_error_line(), "Parser Error: " + compiler.get_error());
 			}
-			reloading = false;
+			reloading_thread = 0;
 			return ERR_COMPILATION_FAILED;
 		} else {
-			reloading = false;
+			reloading_thread = 0;
 			return err;
 		}
 	}
@@ -905,7 +919,7 @@ Error GDScript::reload(bool p_keep_state) {
 	}
 #endif
 
-	reloading = false;
+	reloading_thread = 0;
 	return OK;
 }
 
