@@ -74,8 +74,8 @@ void PhysicsMaterial::set_preset(Preset p_preset) {
 	preset = static_cast<Preset>(p_preset);
 	switch (p_preset) {
 		case PRESET_GENERIC:
-			friction = 0.8;
-			bounce = 0.8;
+			friction = 1.0;
+			bounce = 0.0;
 			break;
 		case PRESET_BRICK:
 			friction = 0.6;
