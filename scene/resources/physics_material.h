@@ -37,7 +37,7 @@ class PhysicsMaterial : public Resource {
 	GDCLASS(PhysicsMaterial, Resource);
 	OBJ_SAVE_TYPE(PhysicsMaterial);
 	RES_BASE_EXTENSION("phymat");
-	
+
 private:
 	real_t friction = 1.0;
 	bool rough = false;
