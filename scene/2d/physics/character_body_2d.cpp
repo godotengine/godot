@@ -116,7 +116,7 @@ bool CharacterBody2D::move_and_slide() {
 bool CharacterBody2D::move_and_push() {
 	bool collided = move_and_slide();
 	if (collided) {
-		// Gets all colliders and checks if they are RigidBody2D
+		// Gets all colliders and checks if they are RigidBody2D.
 		for (int i = 0; i < get_slide_collision_count(); i++) {
 			const PhysicsServer2D::MotionResult &result = motion_results[i];
 			Object *collider_obj = ObjectDB::get_instance(result.collider_id);
