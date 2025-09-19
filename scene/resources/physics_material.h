@@ -38,20 +38,20 @@ class PhysicsMaterial : public Resource {
 	OBJ_SAVE_TYPE(PhysicsMaterial);
 	RES_BASE_EXTENSION("phymat");
 
-enum Preset {
-	PRESET_GENERIC,
-	PRESET_BRICK,
-	PRESET_CONCRETE,
-	PRESET_CERAMIC,
-	PRESET_GRAVEL,
-	PRESET_CARPET,
-	PRESET_GLASS,
-	PRESET_PLASTER,
-	PRESET_WOOD,
-	PRESET_METAL,
-	PRESET_ROCK,
-	PRESET_CUSTOM
-};
+	enum Preset {
+		PRESET_GENERIC,
+		PRESET_BRICK,
+		PRESET_CONCRETE,
+		PRESET_CERAMIC,
+		PRESET_GRAVEL,
+		PRESET_CARPET,
+		PRESET_GLASS,
+		PRESET_PLASTER,
+		PRESET_WOOD,
+		PRESET_METAL,
+		PRESET_ROCK,
+		PRESET_CUSTOM
+	};
 
 private:
 	real_t friction = 1.0;
@@ -60,6 +60,7 @@ private:
 	bool absorbent = false;
 
 	Preset preset;
+
 protected:
 	static void _bind_methods();
 
