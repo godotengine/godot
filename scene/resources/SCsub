@@ -33,3 +33,5 @@ env.Depends(scene_obj, thirdparty_obj)
 SConscript("2d/SCsub")
 if not env["disable_3d"]:
     SConscript("3d/SCsub")
+if env["visual_shader"]:
+    SConscript("visual_shader/SCsub")

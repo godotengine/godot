@@ -36,7 +36,7 @@
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/shader_include.h"
-#include "scene/resources/visual_shader.h"
+#include "scene/resources/visual_shader/visual_shader.h"
 #include "servers/rendering/shader_types.h"
 
 enum ShaderType {
