@@ -137,7 +137,7 @@ bool CharacterBody3D::move_and_slide() {
 bool CharacterBody3D::move_and_push() {
 	bool collided = move_and_slide();
 	if (collided) {
-		// Gets all colliders and checks if they are RigidBody3D
+		// Gets all colliders and checks if they are RigidBody3D.
 		for (int i = 0; i < get_slide_collision_count(); i++) {
 			const PhysicsServer3D::MotionResult &result = motion_results[i];
 			for (int j = 0; j < result.collision_count; j++) {
