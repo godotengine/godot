@@ -129,7 +129,10 @@ public:
 	void place_tiles_with_layer(GdArray positions, GdString texture_path, GdInt layer_index);
     void place_tile(GdVec2 pos, GdString texture_path);
     void place_tile_with_layer(GdVec2 pos, GdString texture_path, GdInt layer_index);
-    void erase_tile(GdVec2 pos);
+	void erase_tile(GdVec2 pos);
+    void erase_tile_with_layer(GdVec2 pos, GdInt layer_index);
+    GdString get_tile(GdVec2 pos);
+    GdString get_tile_with_layer(GdVec2 pos, GdInt layer_index);
 	void close_draw_tiles();
 	void exit_tilemap_editor_mode();
 	template<typename Func>

@@ -100,6 +100,7 @@ struct TileAction {
     int alternative_tile;
 };
 
+
 class SpxDrawTiles : public Node2D {
     GDCLASS(SpxDrawTiles, Node2D);
 
@@ -113,6 +114,9 @@ private:
     HashMap<String, Ref<Texture2D>> path_cached_textures;
     HashMap<Ref<Texture2D>, int> scaled_texture_source_ids;
     HashMap<Ref<Texture2D>, Ref<ImageTexture>> texture_scaled_cache;
+    HashMap<Ref<ImageTexture>, String> scaled_texture_path;
+    HashMap<int, TileMapLayer*> layer_map;
+    int max_layer_index = -1;
     int next_source_id = 1;
 
     Vector2i CELL_SIZE = Vector2i(16, 16);
@@ -154,7 +158,10 @@ public:
     void place_sprites(GdArray positions, GdString texture_path, GdInt layer_index);
     void place_sprite(GdVec2 pos, GdString texture_path);
     void place_sprite(GdVec2 pos, GdString texture_path, GdInt layer_index);
+    void erase_sprite(GdVec2 pos, GdInt layer_index);
     void erase_sprite(GdVec2 pos);
+    GdString get_sprite(GdVec2 pos, GdInt layer_index);
+    GdString get_sprite(GdVec2 pos);
 
     GdArray get_layer_point_path(GdVec2 p_from, GdVec2 p_to);
 
@@ -190,6 +197,7 @@ private:
     int _get_or_create_source_id(Ref<Texture2D> scaled_texture, bool with_collision = true);
     bool _create_tile(Ref<TileSetAtlasSource> atlas_source, const Vector2i &tile_coords, bool with_collision = true);
     Ref<ImageTexture> _get_scaled_texture(Ref<Texture2D> texture);
+    String _get_tile_texture_path(TileMapLayer* layer, const Vector2i& pos);
 
     void _place_sprites(GdArray positions);
     void _place_sprite(GdVec2 pos);

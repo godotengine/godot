@@ -389,6 +389,26 @@ void SpxExtMgr::erase_tile(GdVec2 pos) {
 	});
 }
 
+void SpxExtMgr::erase_tile_with_layer(GdVec2 pos, GdInt layer_index) {
+	with_draw_tiles([&](){
+		draw_tiles->erase_sprite(pos, layer_index);
+	});
+}
+
+GdString SpxExtMgr::get_tile(GdVec2 pos){
+	if(draw_tiles != nullptr)
+		return draw_tiles->get_sprite(pos);
+	
+	return SpxReturnStr("");	
+}
+
+GdString SpxExtMgr::get_tile_with_layer(GdVec2 pos, GdInt layer_index) {
+	if(draw_tiles != nullptr)
+		return draw_tiles->get_sprite(pos, layer_index);
+	
+	return SpxReturnStr("");
+}
+
 void SpxExtMgr::close_draw_tiles() {
 	if (draw_tiles != nullptr) {
 		draw_tiles->queue_free();

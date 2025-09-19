@@ -247,10 +247,54 @@ void SpxDrawTiles::place_sprite(GdVec2 pos, GdString texture_path, GdInt index) 
     _place_sprite(pos);
 }
 
+void SpxDrawTiles::erase_sprite(GdVec2 pos, GdInt layer_index) {
+    auto flipped_pos = pos * Vector2(1, -1);
+
+    auto erase_at_layer = [&](TileMapLayer* layer) {
+        if (!layer) return;
+
+        Vector2 local_pos = layer->to_local(flipped_pos);
+        Vector2i coords = layer->local_to_map(local_pos);
+        layer->erase_cell(coords);
+    };
+
+    if(layer_index != -1){
+        if(layer_map.has(layer_index)){
+            erase_at_layer(layer_map[layer_index]);
+        }
+        return;
+    }
+
+    for (auto& item : layer_map) {
+        erase_at_layer(item.value);
+    }
+}
+
+GdString SpxDrawTiles::get_sprite(GdVec2 pos, GdInt layer_index) {
+    auto flipped_pos = pos * Vector2(1, -1);
+
+    if(layer_index == -1){
+        layer_index = max_layer_index;
+    }
+
+    if(layer_map.has(layer_index)){
+        auto layer = layer_map[layer_index];
+        Vector2 local_pos = layer->to_local(flipped_pos);
+        Vector2i coords = layer->local_to_map(local_pos);
+        return SpxReturnStr(_get_tile_texture_path(layer, coords));
+    }
+
+    return SpxReturnStr("");
+    
+}
+
+GdString SpxDrawTiles::get_sprite(GdVec2 pos) {
+	return get_sprite(pos, current_layer_index);
+}
 
 void SpxDrawTiles::set_sprite_texture(GdString texture_path, GdBool with_collision) {
-    String path = SpxStr(texture_path);
-    Ref<Texture2D> tex;
+	String path = SpxStr(texture_path);
+	Ref<Texture2D> tex;
     if(path_cached_textures.has(path)){
         tex = path_cached_textures[path];
     } else {
@@ -507,6 +551,8 @@ TileMapLayer *SpxDrawTiles::_create_layer(int layer_index) {
     layer->set_z_index(layer_index);
     layer->set_z_as_relative(false);
     layer->set_navigation_enabled(false);
+    layer_map[layer_index] = layer;
+    max_layer_index = MAX(layer_index, max_layer_index);
     add_child(layer);
     return layer;
 }
@@ -587,7 +633,30 @@ Ref<ImageTexture> SpxDrawTiles::_get_scaled_texture(Ref<Texture2D> texture) {
     scaled_tex = scaled_tex->create_from_image(img);
     texture_scaled_cache[texture] = scaled_tex;
 
+    for(auto& item : path_cached_textures){
+        if(item.value == texture){
+            scaled_texture_path[scaled_tex] = item.key;
+            break;
+        }
+    }
+
     return scaled_tex;
+}
+
+String SpxDrawTiles::_get_tile_texture_path(TileMapLayer *layer, const Vector2i &pos) {
+	if (!layer) return "";
+
+    int source_id = layer->get_cell_source_id(pos);
+
+    if(source_id != TileSet::INVALID_SOURCE){
+        for(auto& item : scaled_texture_source_ids){
+            if(item.value == source_id){
+                return scaled_texture_path[item.key];
+            }
+        }
+    }
+
+    return "";
 }
 
 void SpxDrawTiles::set_tile_size(int size){
@@ -615,6 +684,9 @@ void SpxDrawTiles::_clear_cache() {
     current_texture = nullptr;
     next_source_id = 1;
     current_layer_index = 0;
+
+    layer_map.clear();
+    max_layer_index = -1;
 }
 
 void SpxDrawTiles::_set_point_solid() {

@@ -274,6 +274,9 @@ typedef void (*GDExtensionSpxExtPlaceTilesWithLayer)(GdArray positions, GdString
 typedef void (*GDExtensionSpxExtPlaceTile)(GdVec2 pos, GdString texture_path);
 typedef void (*GDExtensionSpxExtPlaceTileWithLayer)(GdVec2 pos, GdString texture_path, GdInt layer_index);
 typedef void (*GDExtensionSpxExtEraseTile)(GdVec2 pos);
+typedef void (*GDExtensionSpxExtEraseTileWithLayer)(GdVec2 pos, GdInt layer_index);
+typedef void (*GDExtensionSpxExtGetTile)(GdVec2 pos, GdString* ret_value);
+typedef void (*GDExtensionSpxExtGetTileWithLayer)(GdVec2 pos, GdInt layer_index, GdString* ret_value);
 typedef void (*GDExtensionSpxExtCloseDrawTiles)();
 typedef void (*GDExtensionSpxExtExitTilemapEditorMode)();
 typedef void (*GDExtensionSpxExtClearPureSprites)();
