@@ -3055,7 +3055,7 @@ D3D12_UNORDERED_ACCESS_VIEW_DESC RenderingDeviceDriverD3D12::_make_ranged_uav_fo
 		} break;
 		case D3D12_UAV_DIMENSION_TEXTURE3D: {
 			uav_desc.Texture3D.MipSlice = mip;
-			uav_desc.Texture3D.WSize >>= p_mipmap_offset;
+			uav_desc.Texture3D.WSize = MAX(uav_desc.Texture3D.WSize >> p_mipmap_offset, 1U);
 		} break;
 		default:
 			break;
