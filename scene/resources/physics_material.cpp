@@ -151,6 +151,6 @@ void PhysicsMaterial::set_absorbent(bool p_val) {
 }
 
 PhysicsMaterial::PhysicsMaterial() {
-	preset = static_cast<Preset>(PRESET_GENERIC);
+	set_preset(PRESET_GENERIC);
 }
 #endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
