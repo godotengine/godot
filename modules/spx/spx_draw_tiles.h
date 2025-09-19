@@ -199,7 +199,7 @@ private:
     Ref<ImageTexture> _get_scaled_texture(Ref<Texture2D> texture);
     String _get_tile_texture_path(TileMapLayer* layer, const Vector2i& pos);
 
-    void _place_sprites(GdArray positions);
+    void _place_sprites_bulk(GdArray positions);
     void _place_sprite(GdVec2 pos);
 
     void _destroy_layers();
