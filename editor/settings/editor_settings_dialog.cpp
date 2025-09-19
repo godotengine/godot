@@ -518,6 +518,11 @@ void EditorSettingsDialog::_update_shortcuts() {
 		}
 	}
 
+	String prev_selected_shortcut;
+	if (shortcuts->get_selected()) {
+		prev_selected_shortcut = shortcuts->get_selected()->get_text(0);
+	}
+
 	shortcuts->clear();
 
 	TreeItem *root = shortcuts->create_item();
@@ -557,6 +562,9 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 		TreeItem *item = _create_shortcut_treeitem(common_section, action_name, action_name, action_events, !same_as_defaults, true, collapse);
 		item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED); // `ui_*` input action names are untranslatable identifiers.
+		if (!prev_selected_shortcut.is_empty() && action_name == prev_selected_shortcut) {
+			item->select(0);
+		}
 	}
 
 	// Editor Shortcuts
@@ -616,7 +624,14 @@ void EditorSettingsDialog::_update_shortcuts() {
 		bool same_as_defaults = Shortcut::is_event_array_equal(original, shortcuts_array);
 		bool collapse = !collapsed.has(E) || (collapsed.has(E) && collapsed[E]);
 
-		_create_shortcut_treeitem(section, E, sc->get_name(), shortcuts_array, !same_as_defaults, false, collapse);
+		TreeItem *shortcut_item = _create_shortcut_treeitem(section, E, sc->get_name(), shortcuts_array, !same_as_defaults, false, collapse);
+		if (!prev_selected_shortcut.is_empty() && sc->get_name() == prev_selected_shortcut) {
+			shortcut_item->select(0);
+		}
+	}
+
+	if (!prev_selected_shortcut.is_empty()) {
+		shortcuts->ensure_cursor_is_visible();
 	}
 
 	// remove sections with no shortcuts
