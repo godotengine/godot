@@ -40,7 +40,7 @@ static OS_LinuxBSD *os = nullptr;
 static GodotInstance *instance = nullptr;
 static bool ever_initialized = false;
 
-GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func, LibGodotExtensionParameter *p_params) {
+GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func) {
 	ERR_FAIL_COND_V_MSG(instance != nullptr, nullptr, "Only one Godot Instance may be created at a time.");
 
 	ERR_FAIL_COND_V_MSG(ever_initialized, nullptr, "Only one Godot Instance may be created per process.");
