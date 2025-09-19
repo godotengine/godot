@@ -299,6 +299,18 @@ void gdspx_ext_erase_tile(GdVec2* pos) {
 	 extMgr->erase_tile(*pos);
 }
 EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_erase_tile_with_layer(GdVec2* pos,GdInt* layer_index) {
+	 extMgr->erase_tile_with_layer(*pos, *layer_index);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_get_tile(GdVec2* pos,GdString* ret_val) {
+	*ret_val = extMgr->get_tile(*pos);
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_get_tile_with_layer(GdVec2* pos,GdInt* layer_index,GdString* ret_val) {
+	*ret_val = extMgr->get_tile_with_layer(*pos, *layer_index);
+}
+EMSCRIPTEN_KEEPALIVE
 void gdspx_ext_close_draw_tiles() {
 	 extMgr->close_draw_tiles();
 }

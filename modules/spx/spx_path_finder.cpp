@@ -108,6 +108,7 @@ void SpxPathFinder::_process_rectangle_shape(Node2D *owner, CollisionShape2D *sh
 }
 
 void SpxPathFinder::_process_static_obstacles(Node2D *body) {
+
     for (int j = 0; j < body->get_child_count(); j++) {
         Node *child = body->get_child(j);
 
@@ -121,7 +122,6 @@ void SpxPathFinder::_process_tilemap_obstacles(TileMapLayer *layer, int p_layer_
     if (!layer) 
         return;
 
-    print_line("process tilemap obstacles...");
     Array used_cells = layer->get_used_cells();
     Vector2 tile_size = layer->get_tile_set()->get_tile_size();
 
@@ -144,11 +144,8 @@ void SpxPathFinder::_process_tilemap_obstacles(TileMapLayer *layer, int p_layer_
         Vector2i start = _world_to_cell(cell_global - tile_size / 2);
         Vector2i end   = _world_to_cell(cell_global + tile_size / 2);
 
-        for (int x = start.x; x <= end.x; x++) {
-            for (int y = start.y; y <= end.y; y++) {
-                astar->set_point_solid(Vector2i(x, y), true);
-            }
-        }
+        Rect2i rect(start, end - start + Vector2i(1, 1));
+        astar->fill_solid_region(rect, true);
     } 
 }
 
@@ -169,8 +166,9 @@ void SpxPathFinder::setup_grid_spx(GdVec2 size, GdVec2 cell_size, GdBool with_de
 
 void SpxPathFinder::setup_grid(Vector2i size, Vector2i cell_size, bool with_debug) {
 	astar->set_region({-size / 2, size});
-    astar->set_diagonal_mode(AStarGrid2D::DIAGONAL_MODE_NEVER);
     astar->set_cell_size(cell_size);
+    astar->set_diagonal_mode(AStarGrid2D::DIAGONAL_MODE_NEVER);
+    astar->set_jumping_enabled(true);
     astar->update();
 
     Node* root = nullptr;

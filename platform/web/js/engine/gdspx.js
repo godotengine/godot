@@ -537,6 +537,38 @@ gdspx_ext_erase_tile(pos) {
 	FreeGdVec2(_arg0); 
 
 }
+gdspx_ext_erase_tile_with_layer(pos,layer_index) {
+	var _gdFuncPtr = Module._gdspx_ext_erase_tile_with_layer; 
+	
+	var _arg0 = ToGdVec2(pos);
+	var _arg1 = ToGdInt(layer_index);
+	_gdFuncPtr(_arg0, _arg1);
+	FreeGdVec2(_arg0); 
+	FreeGdInt(_arg1); 
+
+}
+gdspx_ext_get_tile(pos) {
+	var _gdFuncPtr = Module._gdspx_ext_get_tile; 
+	var _retValue = AllocGdString();
+	var _arg0 = ToGdVec2(pos);
+	_gdFuncPtr(_arg0, _retValue);
+	FreeGdVec2(_arg0); 
+	var _finalRetValue = ToJsString(_retValue);
+	FreeGdString(_retValue); 
+	return _finalRetValue
+}
+gdspx_ext_get_tile_with_layer(pos,layer_index) {
+	var _gdFuncPtr = Module._gdspx_ext_get_tile_with_layer; 
+	var _retValue = AllocGdString();
+	var _arg0 = ToGdVec2(pos);
+	var _arg1 = ToGdInt(layer_index);
+	_gdFuncPtr(_arg0, _arg1, _retValue);
+	FreeGdVec2(_arg0); 
+	FreeGdInt(_arg1); 
+	var _finalRetValue = ToJsString(_retValue);
+	FreeGdString(_retValue); 
+	return _finalRetValue
+}
 gdspx_ext_close_draw_tiles() {
 	var _gdFuncPtr = Module._gdspx_ext_close_draw_tiles; 
 	

@@ -232,6 +232,15 @@ static void gdextension_spx_ext_place_tile_with_layer(GdVec2 pos,GdString textur
 static void gdextension_spx_ext_erase_tile(GdVec2 pos) {
 	 extMgr->erase_tile(pos);
 }
+static void gdextension_spx_ext_erase_tile_with_layer(GdVec2 pos,GdInt layer_index) {
+	 extMgr->erase_tile_with_layer(pos, layer_index);
+}
+static void gdextension_spx_ext_get_tile(GdVec2 pos,GdString* ret_val) {
+	*ret_val = extMgr->get_tile(pos);
+}
+static void gdextension_spx_ext_get_tile_with_layer(GdVec2 pos,GdInt layer_index,GdString* ret_val) {
+	*ret_val = extMgr->get_tile_with_layer(pos, layer_index);
+}
 static void gdextension_spx_ext_close_draw_tiles() {
 	 extMgr->close_draw_tiles();
 }
@@ -949,6 +958,9 @@ void gdextension_spx_setup_interface() {
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_place_tile);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_place_tile_with_layer);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_erase_tile);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_erase_tile_with_layer);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_get_tile);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_get_tile_with_layer);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_close_draw_tiles);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_exit_tilemap_editor_mode);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_clear_pure_sprites);
