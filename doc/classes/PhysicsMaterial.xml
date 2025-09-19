@@ -9,6 +9,9 @@
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="preset" type="int" setter="set_preset" getter="get_preset" default="0">
+			Default values for friction and bounce. Approximates real life materials.
+		</member>
 		<member name="absorbent" type="bool" setter="set_absorbent" getter="is_absorbent" default="false">
 			If [code]true[/code], subtracts the bounciness from the colliding object's bounciness instead of adding it.
 		</member>
@@ -23,4 +26,42 @@
 			If [code]true[/code], the physics engine will use the friction of the object marked as "rough" when two objects collide. If [code]false[/code], the physics engine will use the lowest friction of all colliding objects instead. If [code]true[/code] for both colliding objects, the physics engine will use the highest friction.
 		</member>
 	</members>
+	<constants>
+		<constant name="PRESET_GENERIC" value="0" enum="preset">
+			Friction is 0.8 and bounce is 0.8 - approximates a rubber material.
+		</constant>
+		<constant name="PRESET_BRICK" value="1" enum="preset">
+			Friction is 0.6 and bounce is 0.05
+		</constant>
+		<constant name="PRESET_CONCRETE" value="2" enum="preset">
+			Friction is 0.65 and bounce is 0.1
+		</constant>
+		<constant name="PRESET_CERAMIC" value="3" enum="preset">
+			Friction is 0.15 and bounce is 0.7
+		</constant>
+		<constant name="PRESET_GRAVEL" value="4" enum="preset">
+			Friction is 0.7 and bounce is 0.15
+		</constant>
+		<constant name="PRESET_CARPET" value="5" enum="preset">
+			Friction is 0.8 and bounce is 0.05
+		</constant>
+		<constant name="PRESET_GLASS" value="6" enum="preset">
+			Friction is 0.2 and bounce is 0.6
+		</constant>
+		<constant name="PRESET_PLASTER" value="7" enum="preset">
+			Friction is 0.55 and bounce is 0.25
+		</constant>
+		<constant name="PRESET_WOOD" value="8" enum="preset">
+			Friction is 0.45 and bounce is 0.15
+		</constant>
+		<constant name="PRESET_METAL" value="9" enum="preset">
+			Friction is 0.6 and bounce is 0.1
+		</constant>
+		<constant name="PRESET_ROCK" value="10" enum="preset">
+			Friction is 0.7 and bounce is 0.2
+		</constant>
+		<constant name="PRESET_CUSTOM" value="11" enum="preset">
+			No default settings. If changes are made to other presets the [member preset] is changed to [code skip-lint]PRESET_CUSTOM[/code].
+		</constant>
+	</constants>
 </class>
