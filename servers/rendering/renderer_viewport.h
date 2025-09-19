@@ -239,6 +239,7 @@ public:
 	void viewport_set_clear_mode(RID p_viewport, RS::ViewportClearMode p_clear_mode);
 
 	RID viewport_get_render_target(RID p_viewport) const;
+	RID viewport_get_for_render_target(RID p_render_target) const;
 	RID viewport_get_texture(RID p_viewport) const;
 	RID viewport_get_occluder_debug_texture(RID p_viewport) const;
 
@@ -253,6 +254,7 @@ public:
 
 	void viewport_attach_camera(RID p_viewport, RID p_camera);
 	void viewport_set_scenario(RID p_viewport, RID p_scenario);
+	RID viewport_get_scenario(RID p_viewport) const;
 	void viewport_attach_canvas(RID p_viewport, RID p_canvas);
 	void viewport_remove_canvas(RID p_viewport, RID p_canvas);
 	void viewport_set_canvas_transform(RID p_viewport, RID p_canvas, const Transform2D &p_offset);

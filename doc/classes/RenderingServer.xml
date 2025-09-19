@@ -3875,6 +3875,14 @@
 				[b]Note:[/b] The equivalent node is [Viewport].
 			</description>
 		</method>
+		<method name="viewport_get_for_render_target" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="render_target" type="RID" />
+			<description>
+				Returns the RID of the viewport that uses this render target.
+				[b]Warning:[/b] Calling this from any thread other than the rendering thread will be detrimental to performance.
+			</description>
+		</method>
 		<method name="viewport_get_measured_render_time_cpu" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="viewport" type="RID" />
@@ -3919,6 +3927,14 @@
 			<param index="0" name="viewport" type="RID" />
 			<description>
 				Returns the render target for the viewport.
+			</description>
+		</method>
+		<method name="viewport_get_scenario" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Returns the scenario for the viewport.
+				[b]Warning:[/b] Calling this from any thread other than the rendering thread will be detrimental to performance.
 			</description>
 		</method>
 		<method name="viewport_get_texture" qualifiers="const">

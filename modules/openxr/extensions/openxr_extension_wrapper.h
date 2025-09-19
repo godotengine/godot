@@ -123,8 +123,18 @@ public:
 	virtual void on_sync_actions(); // `on_sync_actions` is called right after we sync our action sets.
 	virtual void on_pre_render(); // `on_pre_render` is called right before we start rendering our XR viewports.
 	virtual void on_main_swapchains_created(); // `on_main_swapchains_created` is called right after our main swapchains are (re)created.
-	virtual void on_pre_draw_viewport(RID p_render_target); // `on_pre_draw_viewport` is called right before we start rendering this viewport
-	virtual void on_post_draw_viewport(RID p_render_target); // `on_port_draw_viewport` is called right after we start rendering this viewport (note that on Vulkan draw commands may only be queued)
+
+	virtual bool owns_viewport(RID p_render_target) { return false; } // override and return true if our wrapper fully handles this viewport.
+	virtual bool on_pre_draw_viewport(RID p_render_target); // `on_pre_draw_viewport` is called right before we start rendering this viewport, if we own this viewport, only we receive this. If no extension owns the viewport (e.g. main XR viewport), all extensions receive this.
+	virtual uint32_t get_viewport_view_count() { return 0; } // Only called if we own this viewport, return view count.
+	virtual Size2i get_viewport_size() { return Size2i(); } // Only called if we own this viewport, return viewport size.
+	virtual bool get_view_transform(uint32_t p_view, XrTime p_display_time, Transform3D &r_transform) { return false; } // Only called if we own this viewport, return view transform.
+	virtual bool get_view_projection(uint32_t p_view, double p_z_near, double p_z_far, XrTime p_display_time, Projection &r_projection) { return false; } // Only called if we own this viewport, return view projection.
+	virtual XrSwapchain get_color_swapchain() { return XR_NULL_HANDLE; } // Only called if we own this viewport, return color swapchain.
+	virtual RID get_color_texture() { return RID(); } // Only called if we own this viewport, return color texture.
+	virtual RID get_depth_texture() { return RID(); } // Only called if we own this viewport, return depth texture.
+	virtual void on_post_draw_viewport(RID p_render_target); // `on_port_draw_viewport` is called right after we start rendering this viewport (note that on Vulkan draw commands may only be queued).
+	virtual void on_end_frame() {};
 
 	GDVIRTUAL0(_on_register_metadata);
 	GDVIRTUAL0(_on_before_instance_created);

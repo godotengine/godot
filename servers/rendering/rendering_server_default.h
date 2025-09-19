@@ -714,6 +714,7 @@ public:
 	FUNC1RC(ViewportUpdateMode, viewport_get_update_mode, RID)
 
 	FUNC1RC(RID, viewport_get_render_target, RID)
+	FUNC1RC(RID, viewport_get_for_render_target, RID)
 	FUNC1RC(RID, viewport_get_texture, RID)
 
 	FUNC2(viewport_set_disable_2d, RID, bool)
@@ -724,6 +725,7 @@ public:
 
 	FUNC2(viewport_attach_camera, RID, RID)
 	FUNC2(viewport_set_scenario, RID, RID)
+	FUNC1RC(RID, viewport_get_scenario, RID)
 	FUNC2(viewport_attach_canvas, RID, RID)
 
 	FUNC2(viewport_remove_canvas, RID, RID)

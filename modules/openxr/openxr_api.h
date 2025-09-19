@@ -76,6 +76,13 @@ public:
 		RID get_density_map();
 	};
 
+	enum OpenXRSwapChainTypes {
+		OPENXR_SWAPCHAIN_COLOR,
+		OPENXR_SWAPCHAIN_DEPTH,
+		// OPENXR_SWAPCHAIN_VELOCITY,
+		OPENXR_SWAPCHAIN_MAX
+	};
+
 private:
 	// our singleton
 	static OpenXRAPI *singleton;
@@ -145,12 +152,6 @@ private:
 	XrSystemGraphicsProperties graphics_properties;
 
 	LocalVector<XrViewConfigurationView> view_configuration_views;
-
-	enum OpenXRSwapChainTypes {
-		OPENXR_SWAPCHAIN_COLOR,
-		OPENXR_SWAPCHAIN_DEPTH,
-		OPENXR_SWAPCHAIN_MAX
-	};
 
 	int64_t color_swapchain_format = 0;
 	int64_t depth_swapchain_format = 0;
@@ -257,12 +258,14 @@ private:
 	bool is_reference_space_supported(XrReferenceSpaceType p_reference_space);
 	bool setup_play_space();
 	bool setup_view_space();
+	void destroy_session();
+
+	// swap chains
 	bool load_supported_swapchain_formats();
 	bool is_swapchain_format_supported(int64_t p_swapchain_format);
 	bool obtain_swapchain_formats();
 	bool create_main_swapchains(Size2i p_size);
 	void free_main_swapchains();
-	void destroy_session();
 
 	// action map
 	struct Tracker { // Trackers represent tracked physical objects such as controllers, pucks, etc.
@@ -340,6 +343,8 @@ private:
 		double render_target_size_multiplier = 1.0;
 		uint64_t frame = 0;
 		Rect2i render_region;
+
+		OpenXRExtensionWrapper *render_target_wrapper = nullptr;
 
 		LocalVector<XrView> views;
 		LocalVector<XrCompositionLayerProjectionView> projection_views;
@@ -466,9 +471,11 @@ public:
 	void set_form_factor(XrFormFactor p_form_factor);
 	XrFormFactor get_form_factor() const { return form_factor; }
 
-	uint32_t get_view_count();
+	const XrViewConfigurationType *get_supported_view_configuration_types(uint32_t &count);
 	void set_view_configuration(XrViewConfigurationType p_view_configuration);
 	XrViewConfigurationType get_view_configuration() const { return view_configuration; }
+	XrViewConfigurationView get_view_configuration_view(uint32_t p_index) const;
+	XrView get_view(uint32_t p_index) const;
 
 	bool set_requested_reference_space(XrReferenceSpaceType p_requested_reference_space);
 	XrReferenceSpaceType get_requested_reference_space() const { return requested_reference_space; }
@@ -493,15 +500,21 @@ public:
 
 	XrHandTrackerEXT get_hand_tracker(int p_hand_index);
 
-	Size2 get_recommended_target_size();
+	Size2 get_recommended_target_size() const;
 	XRPose::TrackingConfidence get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
+	Vector3i get_viewport_setup(RID p_render_target) const;
+	uint32_t get_view_count();
+	uint32_t get_main_view_count() const;
 	bool get_view_transform(uint32_t p_view, Transform3D &r_transform);
 	bool get_view_projection(uint32_t p_view, double p_z_near, double p_z_far, Projection &p_camera_matrix);
 	Vector2 get_eye_focus(uint32_t p_view, float p_aspect);
 	bool process();
 
 	void pre_render();
+	bool is_main_viewport(RID p_render_target);
 	bool pre_draw_viewport(RID p_render_target);
+	void set_projection_image(uint32_t p_view, uint32_t p_image_index, Size2i p_size, XrSwapchain p_color_swapchain, XrSwapchain p_depth_swapchain);
+	void set_view_depth(uint32_t p_view, double p_z_near, double p_z_far);
 	XrSwapchain get_color_swapchain();
 	RID get_color_texture();
 	RID get_depth_texture();
