@@ -78,49 +78,49 @@ void PhysicsMaterial::set_preset(Preset p_preset) {
 			bounce = 0.8;
 			break;
 		case PRESET_BRICK:
-			friction = 0.6:
-			bounce = 0.05:
+			friction = 0.6;
+			bounce = 0.05;
 			break;
 		case PRESET_CONCRETE:
-			friction = 0.65:
-			bounce = 0.1:
+			friction = 0.65;
+			bounce = 0.1;
 			break;
 		case PRESET_CERAMIC:
-			friction = 0.15:
-			bounce = 0.7:
+			friction = 0.15;
+			bounce = 0.7;
 			break;
 		case PRESET_GRAVEL:
-			friction = 0.7:
-			bounce = 0.15:
+			friction = 0.7;
+			bounce = 0.15;
 			break;
 		case PRESET_CARPET:
-			friction = 0.8:
-			bounce = 0.05:
+			friction = 0.8;
+			bounce = 0.05;
 			break;
 		case PRESET_GLASS:
-			friction = 0.2:
-			bounce = 0.6:
+			friction = 0.2;
+			bounce = 0.6;
 			break;
 		case PRESET_PLASTER:
-			friction = 0.55:
-			bounce = 0.25:
+			friction = 0.55;
+			bounce = 0.25;
 			break;
 		case PRESET_WOOD:
-			friction = 0.45:
-			bounce = 0.15:
+			friction = 0.45;
+			bounce = 0.15;
 			break;
 		case PRESET_METAL:
-			friction = 0.6:
-			bounce = 0.1:
+			friction = 0.6;
+			bounce = 0.1;
 			break;
 		case PRESET_ROCK:
-			friction = 0.7:
-			bounce = 0.2:
+			friction = 0.7;
+			bounce = 0.2;
 			break;
 		case PRESET_CUSTOM:
 			break;
 		default:
-			set_preset(PRESET_CUSTOM)
+			set_preset(PRESET_CUSTOM);
 			break;
 	}
 	emit_changed();
