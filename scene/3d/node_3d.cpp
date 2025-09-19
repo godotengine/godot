@@ -108,12 +108,15 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 		return;
 	}
 
-	for (Node3D *&E : data.children) {
-		if (E->data.top_level) {
-			continue; //don't propagate to a top_level
+	for (uint32_t n = 0; n < data.node3d_children.size(); n++) {
+		Node3D *s = data.node3d_children[n];
+
+		// Don't propagate to a toplevel.
+		if (!s->data.top_level) {
+			s->_propagate_transform_changed(p_origin);
 		}
-		E->_propagate_transform_changed(p_origin);
 	}
+
 #ifdef TOOLS_ENABLED
 	if ((!data.gizmos.is_empty() || data.notify_transform) && !data.ignore_notification && !xform_change.in_list()) {
 #else
@@ -148,9 +151,11 @@ void Node3D::_notification(int p_what) {
 			}
 
 			if (data.parent) {
-				data.C = data.parent->data.children.push_back(this);
-			} else {
-				data.C = nullptr;
+				data.index_in_parent = data.parent->data.node3d_children.size();
+				data.parent->data.node3d_children.push_back(this);
+			} else if (data.index_in_parent != UINT32_MAX) {
+				data.index_in_parent = UINT32_MAX;
+				ERR_PRINT("Node3D ENTER_TREE detected without EXIT_TREE, recovering.");
 			}
 
 			if (data.top_level && !Engine::get_singleton()->is_editor_hint()) {
@@ -202,11 +207,27 @@ void Node3D::_notification(int p_what) {
 			if (xform_change.in_list()) {
 				get_tree()->xform_change_list.remove(&xform_change);
 			}
-			if (data.C) {
-				data.parent->data.children.erase(data.C);
+
+			if (data.parent) {
+				if (data.index_in_parent != UINT32_MAX) {
+					// Aliases
+					uint32_t c = data.index_in_parent;
+					LocalVector<Node3D *> &parent_children = data.parent->data.node3d_children;
+
+					parent_children.remove_at_unordered(c);
+
+					// After unordered remove, we need to inform the moved child
+					// what their new id is in the parent children list.
+					if (parent_children.size() > c) {
+						parent_children[c]->data.index_in_parent = c;
+					}
+				} else {
+					ERR_PRINT("Node3D index_in_parent unset at EXIT_TREE.");
+				}
 			}
+			data.index_in_parent = UINT32_MAX;
+
 			data.parent = nullptr;
-			data.C = nullptr;
 			_update_visibility_parent(true);
 			_disable_client_physics_interpolation();
 		} break;
@@ -1070,11 +1091,12 @@ void Node3D::_propagate_visibility_changed() {
 	}
 #endif
 
-	for (Node3D *c : data.children) {
-		if (!c || !c->data.visible) {
-			continue;
+	for (uint32_t n = 0; n < data.node3d_children.size(); n++) {
+		Node3D *s = data.node3d_children[n];
+
+		if (s->data.visible) {
+			s->_propagate_visibility_changed();
 		}
-		c->_propagate_visibility_changed();
 	}
 }
 
@@ -1307,7 +1329,7 @@ void Node3D::_update_visibility_parent(bool p_update_root) {
 		RS::get_singleton()->instance_set_visibility_parent(vi->get_instance(), data.visibility_parent);
 	}
 
-	for (Node3D *c : data.children) {
+	for (Node3D *c : data.node3d_children) {
 		c->_update_visibility_parent(false);
 	}
 }

@@ -1345,6 +1345,7 @@ void EditorPropertyDictionary::update_property() {
 					}
 					new_prop->set_read_only(true);
 					new_prop->set_selectable(false);
+					new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
 					new_prop->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 					new_prop->set_draw_background(false);
 					new_prop->set_use_folding(is_using_folding());

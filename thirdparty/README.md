@@ -679,7 +679,7 @@ Patches:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: 0.24 (7b2d4f4c817aea55d74dcd65d9763ac2ca608026, 2025)
+- Version: 0.25 (6daea4695c48338363b08022d2fb15deaef6ac09, 2025)
 - License: MIT
 
 Files extracted from upstream repository:
@@ -1157,7 +1157,7 @@ Files extracted from upstream source:
 # wayland-protocols
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
-- Version: 1.33 (54346071a5f211f2c482889f2c8ee3b5ecda63ab, 2024)
+- Version: 1.45 (54346071a5f211f2c482889f2c8ee3b5ecda63ab, 2025)
 - License: MIT
 
 Files extracted from upstream source:

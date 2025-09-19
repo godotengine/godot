@@ -5461,7 +5461,7 @@ String String::lpad(int min_length, const String &character) const {
 //   "fish %s pie" % "frog"
 //   "fish %s %d pie" % ["frog", 12]
 // In case of an error, the string returned is the error description and "error" is true.
-String String::sprintf(const Array &values, bool *error) const {
+String String::sprintf(const Span<Variant> &values, bool *error) const {
 	static const String ZERO("0");
 	static const String SPACE(" ");
 	static const String MINUS("-");
@@ -5470,7 +5470,7 @@ String String::sprintf(const Array &values, bool *error) const {
 	String formatted;
 	char32_t *self = (char32_t *)get_data();
 	bool in_format = false;
-	int value_index = 0;
+	uint64_t value_index = 0;
 	int min_chars = 0;
 	int min_decimals = 0;
 	bool in_decimals = false;

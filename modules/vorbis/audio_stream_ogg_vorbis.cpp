@@ -462,7 +462,7 @@ void AudioStreamOggVorbis::maybe_update_info() {
 		int equals = c.find_char('=');
 
 		if (equals == -1) {
-			WARN_PRINT("Invalid comment in Ogg Vorbis file.");
+			WARN_PRINT(vformat(R"(Invalid comment in Ogg Vorbis file "%s", should contain '=': "%s".)", get_path(), c));
 			continue;
 		}
 
