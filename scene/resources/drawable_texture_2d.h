@@ -92,4 +92,45 @@ public:
 	~DrawableTexture2D();
 };
 
+class DrawableTextureArray : public TextureLayered {
+	GDCLASS(DrawableTextureArray, TextureLayered);
+
+	LayeredType layered_type;
+
+	mutable RID texture;
+	DrawableTexture2D::DrawableFormat format = DrawableTexture2D::DRAWABLE_FORMAT_RGBA8;
+
+	RID default_material;
+
+	int width = 0;
+	int height = 0;
+	int layers = 0;
+	bool mipmaps = false;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual Image::Format get_format() const override;
+	virtual int get_width() const override;
+	virtual int get_height() const override;
+	virtual int get_layers() const override;
+	virtual bool has_mipmaps() const override;
+	virtual LayeredType get_layered_type() const override;
+
+	TypedArray<Image> _get_images() const;
+	virtual Ref<Image> get_layer_data(int p_layer) const override;
+
+	virtual RID get_rid() const override;
+
+	void setup(int p_width, int p_height, DrawableTexture2D::DrawableFormat p_format, int p_layers, LayeredType p_layer_type, bool p_use_mipmaps = false);
+
+	void blit_rect_layers(const Vector<int> &p_layers, const Rect2i p_rect, const TypedArray<Texture2D> &p_sources, const Color &p_modulate = Color(1, 1, 1), int p_mipmap = 0, const Ref<Material> &p_material = Ref<Material>());
+
+	void generate_mipmaps();
+
+	DrawableTextureArray();
+	~DrawableTextureArray();
+};
+
 VARIANT_ENUM_CAST(DrawableTexture2D::DrawableFormat)

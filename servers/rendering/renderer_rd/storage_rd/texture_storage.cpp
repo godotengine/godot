@@ -1352,6 +1352,125 @@ void TextureStorage::texture_drawable_initialize(RID p_texture, int p_width, int
 	texture_owner.initialize_rid(p_texture, texture);
 }
 
+void TextureStorage::texture_drawable_layered_initialize(RID p_texture, int p_width, int p_height, RS::TextureDrawableFormat p_format, int p_layers, RS::TextureLayeredType p_layered_type, bool p_with_mipmaps) {
+	ERR_FAIL_COND(p_layers == 0);
+
+	ERR_FAIL_COND(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP && p_layers != 6);
+	ERR_FAIL_COND(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP_ARRAY && (p_layers < 6 || (p_layers % 6) != 0));
+
+	// GUARDRAIL: Bad Widths/Heights
+	ERR_FAIL_COND_MSG(p_width <= 0 || p_height <= 0, "Drawable Texture Width or Height cannot be less than 1.");
+	ERR_FAIL_COND_MSG(p_width >= 16384 || p_height >= 16384, "Drawable Texture Width or Height cannot be greater than 16383.");
+
+	TextureToRDFormat ret_format;
+
+	Image::Format format;
+	switch (p_format) {
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBA8:
+			format = Image::FORMAT_RGBA8;
+			break;
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB:
+			format = Image::FORMAT_RGBA8;
+			break;
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBAH:
+			format = Image::FORMAT_RGBAH;
+			break;
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBAF:
+			format = Image::FORMAT_RGBAF;
+			break;
+		default:
+			format = Image::FORMAT_RGBA8;
+	}
+
+	Ref<Image> image = Image::create_empty(p_width, p_height, p_with_mipmaps, format);
+	image->fill(Color(1, 1, 1, 1));
+	Ref<Image> valid_image = _validate_texture_format(image, ret_format);
+
+	Texture texture;
+
+	texture.type = TextureStorage::TYPE_LAYERED;
+	texture.layered_type = p_layered_type;
+	switch (p_layered_type) {
+		case RS::TEXTURE_LAYERED_2D_ARRAY: {
+			texture.rd_type = RD::TEXTURE_TYPE_2D_ARRAY;
+		} break;
+		case RS::TEXTURE_LAYERED_CUBEMAP: {
+			texture.rd_type = RD::TEXTURE_TYPE_CUBE;
+		} break;
+		case RS::TEXTURE_LAYERED_CUBEMAP_ARRAY: {
+			texture.rd_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
+		} break;
+		default:
+			ERR_FAIL(); // Shouldn't happen, silence warnings.
+	}
+
+	texture.width = p_width;
+	texture.height = p_height;
+	texture.layers = p_layers;
+	texture.mipmaps = image->get_mipmap_count() + 1;
+	texture.depth = 1;
+	texture.format = image->get_format();
+	texture.validated_format = image->get_format();
+
+	texture.rd_format = ret_format.format;
+	texture.rd_format_srgb = ret_format.format_srgb;
+
+	RD::TextureFormat rd_format;
+	RD::TextureView rd_view;
+	{ //attempt register
+		rd_format.format = texture.rd_format;
+		rd_format.width = texture.width;
+		rd_format.height = texture.height;
+		rd_format.depth = 1;
+		rd_format.array_layers = texture.layers;
+		rd_format.mipmaps = texture.mipmaps;
+		rd_format.texture_type = texture.rd_type;
+		rd_format.samples = RD::TEXTURE_SAMPLES_1;
+		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+		if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
+			rd_format.shareable_formats.push_back(texture.rd_format);
+			rd_format.shareable_formats.push_back(texture.rd_format_srgb);
+		}
+	}
+	{
+		rd_view.swizzle_r = ret_format.swizzle_r;
+		rd_view.swizzle_g = ret_format.swizzle_g;
+		rd_view.swizzle_b = ret_format.swizzle_b;
+		rd_view.swizzle_a = ret_format.swizzle_a;
+	}
+	Vector<Vector<uint8_t>> data_slices;
+	for (int i = 0; i < p_layers; i++) {
+		Vector<uint8_t> data = image->get_data(); //use image data
+		data_slices.push_back(data);
+	}
+	texture.rd_texture = RD::get_singleton()->texture_create(rd_format, rd_view, data_slices);
+	ERR_FAIL_COND(texture.rd_texture.is_null());
+	if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
+		rd_view.format_override = texture.rd_format_srgb;
+		texture.rd_texture_srgb = RD::get_singleton()->texture_create_shared(rd_view, texture.rd_texture);
+		if (texture.rd_texture_srgb.is_null()) {
+			RD::get_singleton()->free_rid(texture.rd_texture);
+			ERR_FAIL_COND(texture.rd_texture_srgb.is_null());
+		}
+	}
+
+	// Used for Drawable Textures.
+	for (int l = 0; l < texture.layers; l++) {
+		for (int m = 0; m < texture.mipmaps; m++) {
+			texture.cached_rd_slices.append(RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), texture.rd_texture, l, m));
+		}
+	}
+
+	//used for 2D, overridable
+	texture.width_2d = texture.width;
+	texture.height_2d = texture.height;
+	texture.is_render_target = false;
+	texture.rd_view = rd_view;
+	texture.is_proxy = false;
+
+	texture_owner.initialize_rid(p_texture, texture);
+}
+
 // Note: We make some big assumptions about format and usage. If developers need more control,
 // they should use RD::texture_create_from_extension() instead.
 RID TextureStorage::texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers, RS::TextureLayeredType p_layered_type) {
@@ -1801,6 +1920,141 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 	RD::get_singleton()->draw_command_end_label();
 }
 
+void TextureStorage::texture_drawable_layered_blit_rect_layers(RID p_texture, const Vector<int> &p_layers, const Rect2i &p_rect, RID p_material, const Color &p_modulate, const TypedArray<RID> &p_source_textures, int p_to_mipmap) {
+	ERR_FAIL_COND_MSG(!tex_blit_shader.initialized, "Texture Blit shader & materials not yet initialized");
+	ERR_FAIL_COND_MSG(p_layers.size() == 0, "Blit Rect Layers layer array must contain at least 1 texture");
+	const RID default_tex_rid = texture_rd_get_default(DEFAULT_RD_TEXTURE_BLACK);
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+
+	RendererRD::MaterialStorage::TexBlitMaterialData *m = static_cast<RendererRD::MaterialStorage::TexBlitMaterialData *>(material_storage->material_get_data(p_material, RendererRD::MaterialStorage::SHADER_TYPE_TEXTURE_BLIT));
+	if (!m) {
+		m = static_cast<RendererRD::MaterialStorage::TexBlitMaterialData *>(material_storage->material_get_data(tex_blit_shader.default_material, RendererRD::MaterialStorage::SHADER_TYPE_TEXTURE_BLIT));
+	}
+	// GUARDRAIL:: p_material MUST BE ShaderType TextureBlit
+	ERR_FAIL_NULL(m);
+
+	RendererRD::MaterialStorage::TexBlitShaderData *shader_data = m->shader_data;
+	ERR_FAIL_NULL(shader_data);
+	material_storage->_update_queued_materials();
+	RID shaderRD = tex_blit_shader.shader.version_get_shader(shader_data->version, p_source_textures.size() - 1);
+
+	RID tar_textures[4];
+	Texture *src_textures[4];
+
+	RID uniform_texture_set;
+	int TEX_BLIT_MATERIAL_SET = 1;
+	int TEX_BLIT_TEXTURE_SET = 0;
+	LocalVector<RD::Uniform> texture_uniforms;
+	texture_uniforms.clear();
+	Texture *tex = get_texture(p_texture);
+	ERR_FAIL_COND_MSG(!tex, "Drawable Texture target cannot be null");
+	ERR_FAIL_COND_MSG(tex->type != TextureType::TYPE_LAYERED, "Drawable Texture Array Target is not Layered!");
+	ERR_FAIL_COND_MSG(p_to_mipmap >= tex->mipmaps, vformat("Drawable Texture Target does not have %s mipmap level", p_to_mipmap));
+
+	int i = 0;
+	while (i < 4) {
+		// Load Target Textures
+		if (i < p_layers.size()) {
+			ERR_FAIL_COND_MSG(p_layers[i] >= tex->layers || p_layers[i] < 0, vformat("Drawable Texture Array Target does not have %s layer", p_layers[i]));
+			tar_textures[i] = tex->cached_rd_slices[i * tex->mipmaps + p_to_mipmap];
+		}
+
+		// Load and bind source textures, load default Black if source is bad.
+		RD::Uniform u;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+		u.binding = i;
+		if (i < p_source_textures.size()) {
+			src_textures[i] = get_texture(p_source_textures[i]);
+			if (!src_textures[i]) {
+				u.append_id(default_tex_rid);
+			} else {
+				u.append_id(src_textures[i]->rd_texture);
+			}
+		} else {
+			u.append_id(default_tex_rid);
+		}
+		texture_uniforms.push_back(u);
+
+		i += 1;
+	}
+
+	// Calculates the Rects Offset & Size in UV space for Shader to scale Vertex Quad correctly
+	Vector2i size = texture_2d_get_size(p_texture);
+	Vector2 offset = Vector2(float(p_rect.position.x) / size.x, float(p_rect.position.y) / size.y);
+	Vector2 rect_size = Vector2(float(p_rect.size.x) / size.x, float(p_rect.size.y) / size.y);
+
+	// Select Pipeline based on # of targets.
+	RID tex_blit_fb;
+	PipelineCacheRD *pipeline;
+	switch (p_layers.size()) {
+		case 1:
+			tex_blit_fb = FramebufferCacheRD::get_singleton()->get_cache(tar_textures[0]);
+			pipeline = &shader_data->pipelines[0];
+			break;
+		case 2:
+			tex_blit_fb = FramebufferCacheRD::get_singleton()->get_cache(tar_textures[0], tar_textures[1]);
+			pipeline = &shader_data->pipelines[1];
+			break;
+		case 3:
+			tex_blit_fb = FramebufferCacheRD::get_singleton()->get_cache(tar_textures[0], tar_textures[1], tar_textures[2]);
+			pipeline = &shader_data->pipelines[2];
+			break;
+		case 4:
+			tex_blit_fb = FramebufferCacheRD::get_singleton()->get_cache(tar_textures[0], tar_textures[1], tar_textures[2], tar_textures[3]);
+			pipeline = &shader_data->pipelines[3];
+			break;
+		default:
+			tex_blit_fb = FramebufferCacheRD::get_singleton()->get_cache(tar_textures[0], tar_textures[1], tar_textures[2], tar_textures[3]);
+			pipeline = &shader_data->pipelines[3];
+	}
+
+	// Bind uniforms via push_constant
+	TexBlitPushConstant push_constant;
+	memset(&push_constant, 0, sizeof(TexBlitPushConstant));
+
+	push_constant.offset[0] = offset.x;
+	push_constant.offset[1] = offset.y;
+	push_constant.size[0] = rect_size.x;
+	push_constant.size[1] = rect_size.y;
+	push_constant.modulate[0] = p_modulate.r;
+	push_constant.modulate[1] = p_modulate.g;
+	push_constant.modulate[2] = p_modulate.b;
+	push_constant.modulate[3] = p_modulate.a;
+	push_constant.convert_to_srgb = tex->drawable_type == RS::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB;
+	push_constant.time = RSG::rasterizer->get_total_time();
+
+	Rect2i tex_blit_rr = Rect2i();
+
+	RD::get_singleton()->draw_command_begin_label("Blit Rect");
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(tex_blit_fb, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0u, tex_blit_rr);
+
+	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(tex_blit_fb);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, pipeline->get_render_pipeline(RD::INVALID_ID, fb_format, false, 0));
+
+	material_storage->samplers_rd_get_default().append_uniforms(texture_uniforms, 4);
+
+	uniform_texture_set = UniformSetCacheRD::get_singleton()->get_cache_vec(shaderRD, TEX_BLIT_TEXTURE_SET, texture_uniforms);
+
+	{
+		// Push Constants
+		RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(TexBlitPushConstant));
+
+		// Material Uniforms
+		if (m->uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(m->uniform_set)) { // Material may not have a uniform set.
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, m->uniform_set, TEX_BLIT_MATERIAL_SET);
+		}
+
+		// Texture Uniforms
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_texture_set, TEX_BLIT_TEXTURE_SET);
+	}
+
+	// DRAW!!
+	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 6u);
+
+	RD::get_singleton()->draw_list_end();
+	RD::get_singleton()->draw_command_end_label();
+}
+
 //these two APIs can be used together or in combination with the others.
 void TextureStorage::texture_2d_placeholder_initialize(RID p_texture) {
 	texture_2d_initialize(p_texture, texture_2d_placeholder);
@@ -1932,23 +2186,28 @@ void TextureStorage::texture_drawable_generate_mipmaps(RID p_texture) {
 	ERR_FAIL_NULL(copy_effects);
 
 	uint32_t mipmaps = tex->mipmaps;
+	uint32_t layers = tex->layers;
 	int width = tex->width;
 	int height = tex->height;
 
-	RID source = tex->rd_texture;
-	RID dest = tex->cached_rd_slices[0];
+	int curr_cache = 0;
+	for (uint32_t l = 0; l < layers; l++) {
+		RID source = tex->rd_texture;
+		RID dest = tex->cached_rd_slices[curr_cache];
 
-	for (uint32_t m = 1; m < mipmaps; m++) {
-		width = MAX(1, width >> 1);
-		height = MAX(1, height >> 1);
+		for (uint32_t m = 1; m < mipmaps; m++) {
+			width = MAX(1, width >> 1);
+			height = MAX(1, height >> 1);
 
-		source = dest;
-		dest = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), source, 0, m, 1, RD::TEXTURE_SLICE_2D);
+			source = dest;
+			curr_cache += 1;
+			dest = tex->cached_rd_slices[curr_cache];
 
-		if (copy_effects->get_raster_effects().has_flag(CopyEffects::RASTER_EFFECT_COPY)) {
-			copy_effects->make_mipmap_raster(source, dest, Size2i(width, height));
-		} else {
-			copy_effects->make_mipmap(source, dest, Size2i(width, height));
+			if (copy_effects->get_raster_effects().has_flag(CopyEffects::RASTER_EFFECT_COPY)) {
+				copy_effects->make_mipmap_raster(source, dest, Size2i(width, height));
+			} else {
+				copy_effects->make_mipmap(source, dest, Size2i(width, height));
+			}
 		}
 	}
 }

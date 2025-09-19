@@ -149,6 +149,7 @@ public:
 	virtual RID texture_external_create(int p_width, int p_height, uint64_t p_external_buffer = 0) = 0;
 	virtual RID texture_proxy_create(RID p_base) = 0;
 	virtual RID texture_drawable_create(int p_width, int p_height, TextureDrawableFormat p_format, const Color &p_color = Color(1, 1, 1, 1), bool p_with_mipmaps = false) = 0;
+	virtual RID texture_drawable_layered_create(int p_width, int p_height, TextureDrawableFormat p_format, int p_layers, TextureLayeredType p_layered_type, bool p_with_mipmaps = false) = 0;
 
 	virtual RID texture_create_from_native_handle(TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, TextureLayeredType p_layered_type = TEXTURE_LAYERED_2D_ARRAY) = 0;
 
@@ -158,6 +159,7 @@ public:
 	virtual void texture_proxy_update(RID p_texture, RID p_proxy_to) = 0;
 
 	virtual void texture_drawable_blit_rect(const TypedArray<RID> &p_textures, const Rect2i &p_rect, RID p_material, const Color &p_modulate, const TypedArray<RID> &p_source_textures, int p_to_mipmap = 0) = 0;
+	virtual void texture_drawable_layered_blit_rect_layers(RID p_texture, const Vector<int> &p_layers, const Rect2i &p_rect, RID p_material, const Color &p_modulate, const TypedArray<RID> &p_source_textures, int p_to_mipmap = 0) = 0;
 
 	// These two APIs can be used together or in combination with the others.
 	virtual RID texture_2d_placeholder_create() = 0;

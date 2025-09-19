@@ -214,6 +214,7 @@ public:
 	FUNCRIDTEX3(texture_external, int, int, uint64_t)
 	FUNCRIDTEX1(texture_proxy, RID)
 	FUNCRIDTEX5(texture_drawable, int, int, TextureDrawableFormat, const Color &, bool)
+	FUNCRIDTEX6(texture_drawable_layered, int, int, TextureDrawableFormat, int, TextureLayeredType, bool)
 
 	// Called directly, not through the command queue.
 	virtual RID texture_create_from_native_handle(TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, TextureLayeredType p_layered_type = TEXTURE_LAYERED_2D_ARRAY) override {
@@ -227,6 +228,7 @@ public:
 	FUNC2(texture_proxy_update, RID, RID)
 
 	FUNC6(texture_drawable_blit_rect, const TypedArray<RID> &, const Rect2i &, RID, const Color &, const TypedArray<RID> &, int)
+	FUNC7(texture_drawable_layered_blit_rect_layers, RID, const Vector<int> &, const Rect2i &, RID, const Color &, const TypedArray<RID> &, int)
 
 	//these also go pass-through
 	FUNCRIDTEX0(texture_2d_placeholder)

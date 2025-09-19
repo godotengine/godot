@@ -2330,12 +2330,14 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_proxy_create", "base"), &RenderingServer::texture_proxy_create);
 	ClassDB::bind_method(D_METHOD("texture_create_from_native_handle", "type", "format", "native_handle", "width", "height", "depth", "layers", "layered_type"), &RenderingServer::texture_create_from_native_handle, DEFVAL(1), DEFVAL(TEXTURE_LAYERED_2D_ARRAY));
 	ClassDB::bind_method(D_METHOD("texture_drawable_create", "width", "height", "format", "color", "with_mipmaps"), &RenderingServer::texture_drawable_create, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("texture_drawable_layered_create", "width", "height", "format", "layers", "layered_type", "with_mipmaps"), &RenderingServer::texture_drawable_layered_create, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("texture_2d_update", "texture", "image", "layer"), &RenderingServer::texture_2d_update);
 	ClassDB::bind_method(D_METHOD("texture_3d_update", "texture", "data"), &RenderingServer::_texture_3d_update);
 	ClassDB::bind_method(D_METHOD("texture_proxy_update", "texture", "proxy_to"), &RenderingServer::texture_proxy_update);
 
 	ClassDB::bind_method(D_METHOD("texture_drawable_blit_rect", "textures", "rect", "material", "modulate", "source_textures", "to_mipmap"), &RenderingServer::texture_drawable_blit_rect, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("texture_drawable_layered_blit_rect_layers", "texture", "layers", "rect", "material", "modulate", "source_textures", "to_mipmap"), &RenderingServer::texture_drawable_layered_blit_rect_layers, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("texture_2d_placeholder_create"), &RenderingServer::texture_2d_placeholder_create);
 	ClassDB::bind_method(D_METHOD("texture_2d_layered_placeholder_create", "layered_type"), &RenderingServer::texture_2d_layered_placeholder_create);
