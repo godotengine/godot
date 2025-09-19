@@ -61,7 +61,7 @@
 			Friction is 0.7 and bounce is 0.2
 		</constant>
 		<constant name="PRESET_CUSTOM" value="11" enum="preset">
-			No default settings. If changes are made to other presets the [member preset] is changed to [code]PRESET_CUSTOM[/code].
+			No default settings. If changes are made to other presets the [member preset] is changed to [code skip-lint]PRESET_CUSTOM[/code].
 		</constant>
 	</constants>
 </class>
