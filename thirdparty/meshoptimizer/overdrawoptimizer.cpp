@@ -10,24 +10,24 @@
 namespace meshopt
 {
 
-static void calculateSortData(float* sort_data, const unsigned int* indices, size_t index_count, const float* vertex_positions, size_t vertex_positions_stride, const unsigned int* clusters, size_t cluster_count)
+static void calculateSortData(float* sort_data, const unsigned int* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, const unsigned int* clusters, size_t cluster_count)
 {
 	size_t vertex_stride_float = vertex_positions_stride / sizeof(float);
 
 	float mesh_centroid[3] = {};
 
-	for (size_t i = 0; i < index_count; ++i)
+	for (size_t i = 0; i < vertex_count; ++i)
 	{
-		const float* p = vertex_positions + vertex_stride_float * indices[i];
+		const float* p = vertex_positions + vertex_stride_float * i;
 
 		mesh_centroid[0] += p[0];
 		mesh_centroid[1] += p[1];
 		mesh_centroid[2] += p[2];
 	}
 
-	mesh_centroid[0] /= index_count;
-	mesh_centroid[1] /= index_count;
-	mesh_centroid[2] /= index_count;
+	mesh_centroid[0] /= float(vertex_count);
+	mesh_centroid[1] /= float(vertex_count);
+	mesh_centroid[2] /= float(vertex_count);
 
 	for (size_t cluster = 0; cluster < cluster_count; ++cluster)
 	{
@@ -306,7 +306,7 @@ void meshopt_optimizeOverdraw(unsigned int* destination, const unsigned int* ind
 
 	// fill sort data
 	float* sort_data = allocator.allocate<float>(cluster_count);
-	calculateSortData(sort_data, indices, index_count, vertex_positions, vertex_positions_stride, clusters, cluster_count);
+	calculateSortData(sort_data, indices, index_count, vertex_positions, vertex_count, vertex_positions_stride, clusters, cluster_count);
 
 	// sort clusters using sort data
 	unsigned short* sort_keys = allocator.allocate<unsigned short>(cluster_count);
