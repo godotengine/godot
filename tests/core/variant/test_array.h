@@ -644,4 +644,28 @@ TEST_CASE("[Array] Test rfind_custom") {
 	CHECK_EQ(index, 4);
 }
 
+TEST_CASE("[Array] Typed object pointer init") {
+	Object *a = memnew(Object);
+	Object *b = memnew(Object);
+	TypedArray<Object *> tarr = {
+		a,
+		b,
+	};
+	CHECK_EQ(tarr[0], Variant(a));
+	CHECK_EQ(tarr[1], Variant(b));
+	memdelete(a);
+	memdelete(b);
+}
+
+TEST_CASE("[Array] Typed refCounted init") {
+	Ref<RefCounted> a = memnew(RefCounted);
+	Ref<RefCounted> b = memnew(RefCounted);
+	TypedArray<Ref<RefCounted>> tarr = {
+		a,
+		b,
+	};
+	CHECK_EQ(tarr[0], Variant(a));
+	CHECK_EQ(tarr[1], Variant(b));
+}
+
 } // namespace TestArray
