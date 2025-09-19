@@ -967,6 +967,37 @@ void VisualShader::set_node_position(Type p_type, int p_id, const Vector2 &p_pos
 	g->nodes[p_id].position = p_position;
 }
 
+// Returns 0 if no embeds, 1 if external embeds, 2 if builtin embeds
+int VisualShader::has_node_embeds() const {
+	bool external_embeds = false;
+	for (int i = 0; i < TYPE_MAX; i++) {
+		for (const KeyValue<int, Node> &E : graph[i].nodes) {
+			List<PropertyInfo> props;
+			E.value.node->get_property_list(&props);
+			// For classes that inherit from VisualShaderNode, the class properties start at the 12th, and the last value is always 'script'
+			for (int j = 12; j < props.size() - 1; j++) {
+				// VisualShaderNodeCustom cannot have embeds
+				if (props.get(j).name == "VisualShaderNodeCustom") {
+					break;
+				}
+				// Ref<Resource> properties get classed as type Variant::Object
+				if (props.get(j).type == Variant::OBJECT) {
+					Ref<Resource> res = E.value.node->get(props.get(j).name);
+					if (res.is_valid()) {
+						if (res->is_built_in()) {
+							return 2;
+						} else {
+							external_embeds = true;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return external_embeds;
+}
+
 Vector2 VisualShader::get_node_position(Type p_type, int p_id) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, Vector2());
 	const Graph *g = &graph[p_type];
