@@ -977,7 +977,7 @@ void CharacterBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_wall_layers", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_platform_wall_layers", "get_platform_wall_layers");
 
 	ADD_GROUP("Collision", "");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_push_multiplier", PROPERTY_HINT_NONE, "suffix:", PROPERTY_USAGE_DEFAULT), "set_collision_push_multiplier", "get_collision_push_multiplier");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_push_multiplier", PROPERTY_HINT_NONE, "0.0,2.0,0.001,or_greater", PROPERTY_USAGE_DEFAULT), "set_collision_push_multiplier", "get_collision_push_multiplier");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001,suffix:m"), "set_safe_margin", "get_safe_margin");
 
 	BIND_ENUM_CONSTANT(MOTION_MODE_GROUNDED);
