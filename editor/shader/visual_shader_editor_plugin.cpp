@@ -1668,7 +1668,7 @@ void VisualShaderEditor::add_custom_type(const String &p_name, const String &p_t
 	ao.is_native = !p_type.is_empty();
 
 	bool begin = false;
-	String root = p_category.split("/")[0];
+	String root = p_category.get_slicec('/', 0);
 
 	for (int i = 0; i < add_options.size(); i++) {
 		if (add_options[i].is_custom) {

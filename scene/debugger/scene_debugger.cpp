@@ -647,10 +647,11 @@ void SceneDebugger::_set_object_property(ObjectID p_id, const String &p_property
 		return;
 	}
 
-	String prop_name = p_property;
+	String prop_name;
 	if (p_property.begins_with("Members/")) {
-		Vector<String> ss = p_property.split("/");
-		prop_name = ss[ss.size() - 1];
+		prop_name = p_property.get_slicec('/', p_property.get_slice_count("/") - 1);
+	} else {
+		prop_name = p_property;
 	}
 
 	Variant value;

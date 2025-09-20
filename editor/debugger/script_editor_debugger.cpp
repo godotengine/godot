@@ -1879,7 +1879,7 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 			}
 
 			// Parse back the `file:line @ method()` string.
-			const Vector<String> file_line_number = ci->get_text(1).split("@")[0].strip_edges().split(":");
+			const Vector<String> file_line_number = ci->get_text(1).get_slicec('@', 0).strip_edges().split(":");
 			ERR_FAIL_COND_MSG(file_line_number.size() < 2, "Incorrect C++ source stack trace file:line format (please report).");
 			const String &file = file_line_number[0];
 			const int line_number = file_line_number[1].to_int();

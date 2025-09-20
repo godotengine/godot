@@ -97,13 +97,12 @@ public:
 				name(p_name), mode(p_mode), type(p_type) {}
 
 		bool from_string(const String &p_str) {
-			Vector<String> arr = p_str.split(",");
-			if (arr.size() != 2) {
+			if (p_str.get_slice_count(",") != 2) {
 				return false;
 			}
 
-			mode = (VaryingMode)arr[0].to_int();
-			type = (VaryingType)arr[1].to_int();
+			mode = (VaryingMode)p_str.get_slicec(',', 0).to_int();
+			type = (VaryingType)p_str.get_slicec(',', 1).to_int();
 
 			return true;
 		}

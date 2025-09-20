@@ -773,9 +773,8 @@ const LSP::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const LSP::TextDocu
 	String path = get_file_path(p_doc_pos.textDocument.uri);
 	if (const ExtendGDScriptParser *parser = get_parse_result(path)) {
 		String symbol_identifier = p_symbol_name;
-		Vector<String> identifier_parts = symbol_identifier.split("(");
-		if (identifier_parts.size()) {
-			symbol_identifier = identifier_parts[0];
+		if (symbol_identifier.get_slice_count("(") > 0) {
+			symbol_identifier = symbol_identifier.get_slicec('(', 0);
 		}
 
 		LSP::Position pos = p_doc_pos.position;
