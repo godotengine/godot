@@ -564,7 +564,7 @@ Ref<ConvexPolygonShape3D> Mesh::create_convex_shape(bool p_clean, bool p_simplif
 		Geometry3D::MeshData md;
 		Error err = ConvexHullComputer::convex_hull(vertices, md);
 		if (err == OK) {
-			shape->set_points(md.vertices);
+			shape->set_points(Vector<Vector3>(md.vertices));
 			return shape;
 		} else {
 			ERR_PRINT("Convex shape cleaning failed, falling back to simpler process.");
