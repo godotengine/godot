@@ -350,7 +350,7 @@ void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderData
 		return;
 	}
 
-	RD::get_singleton()->draw_command_begin_label("Copy screen texture");
+	RD::get_singleton()->draw_command_begin_label("Copy Screen Texture");
 
 	StringName texture_name;
 	bool can_use_storage = _render_buffers_can_be_storage();
@@ -421,7 +421,7 @@ void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataR
 		return;
 	}
 
-	RD::get_singleton()->draw_command_begin_label("Copy depth texture");
+	RD::get_singleton()->draw_command_begin_label("Copy Depth Texture");
 
 	bool can_use_storage = _render_buffers_can_be_storage();
 	Size2i size = rb->get_internal_size();
@@ -547,7 +547,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes)) {
 		RENDER_TIMESTAMP("Auto exposure");
 
-		RD::get_singleton()->draw_command_begin_label("Auto exposure");
+		RD::get_singleton()->draw_command_begin_label("Auto Exposure");
 
 		Ref<RendererRD::Luminance::LuminanceBuffers> luminance_buffers = luminance->get_luminance_buffers(rb);
 

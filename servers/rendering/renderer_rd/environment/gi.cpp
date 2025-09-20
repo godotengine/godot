@@ -1238,7 +1238,7 @@ void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
 }
 
 void GI::SDFGI::update_light() {
-	RD::get_singleton()->draw_command_begin_label("SDFGI Update dynamic Light");
+	RD::get_singleton()->draw_command_begin_label("SDFGI Update Dynamic Light");
 
 	for (uint32_t i = 0; i < cascades.size(); i++) {
 		RD::get_singleton()->buffer_copy(cascades[i].solid_cell_dispatch_buffer_storage, cascades[i].solid_cell_dispatch_buffer_call, 0, 0, sizeof(uint32_t) * 4);
