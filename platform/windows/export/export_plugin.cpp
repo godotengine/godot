@@ -1094,7 +1094,7 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 #undef CLEANUP_AND_RETURN
 }
 
-EditorExportPlatformWindows::EditorExportPlatformWindows() {
+void EditorExportPlatformWindows::initialize() {
 	if (EditorNode::get_singleton()) {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);

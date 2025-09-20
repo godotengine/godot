@@ -33,13 +33,17 @@
 #include "logo_svg.gen.h"
 #include "run_icon_svg.gen.h"
 
+#include "editor/editor_node.h"
+
 Vector<String> EditorExportPlatformIOS::device_types({ "iPhone", "iPad" });
 
-EditorExportPlatformIOS::EditorExportPlatformIOS() :
-		EditorExportPlatformAppleEmbedded(_ios_logo_svg, _ios_run_icon_svg) {
+void EditorExportPlatformIOS::initialize() {
+	if (EditorNode::get_singleton()) {
+		EditorExportPlatformAppleEmbedded::_initialize(_ios_logo_svg, _ios_run_icon_svg);
 #ifdef MACOS_ENABLED
-	_start_remote_device_poller_thread();
+		_start_remote_device_poller_thread();
 #endif
+	}
 }
 
 EditorExportPlatformIOS::~EditorExportPlatformIOS() {
