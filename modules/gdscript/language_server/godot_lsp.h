@@ -665,6 +665,11 @@ struct DocumentOnTypeFormattingOptions {
 	}
 };
 
+enum class LanguageId {
+	GDSCRIPT,
+	OTHER,
+};
+
 struct TextDocumentItem {
 	/**
 	 * The text document's URI.
@@ -674,7 +679,7 @@ struct TextDocumentItem {
 	/**
 	 * The text document's language identifier.
 	 */
-	String languageId;
+	LanguageId languageId;
 
 	/**
 	 * The version number of this document (it will increase after each
@@ -689,18 +694,17 @@ struct TextDocumentItem {
 
 	void load(const Dictionary &p_dict) {
 		uri = p_dict["uri"];
-		languageId = p_dict["languageId"];
 		version = p_dict["version"];
 		text = p_dict["text"];
-	}
 
-	Dictionary to_json() const {
-		Dictionary dict;
-		dict["uri"] = uri;
-		dict["languageId"] = languageId;
-		dict["version"] = version;
-		dict["text"] = text;
-		return dict;
+		// Clients should use "gdscript" as language id, but we can't enforce it. The Rider integration
+		// in particular uses "gd" at the time of writing. We normalize the id to make it easier to work with.
+		String rawLanguageId = p_dict["languageId"];
+		if (rawLanguageId == "gdscript" || rawLanguageId == "gd") {
+			languageId = LanguageId::GDSCRIPT;
+		} else {
+			languageId = LanguageId::OTHER;
+		}
 	}
 };
 
@@ -1717,16 +1721,8 @@ struct FileOperations {
  * Workspace specific server capabilities
  */
 struct Workspace {
-	/**
-	 * The server is interested in file notifications/requests.
-	 */
-	FileOperations fileOperations;
-
 	Dictionary to_json() const {
 		Dictionary dict;
-
-		dict["fileOperations"] = fileOperations.to_json();
-
 		return dict;
 	}
 };
