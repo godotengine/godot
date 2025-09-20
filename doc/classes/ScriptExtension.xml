@@ -147,7 +147,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="_instance_create" qualifiers="virtual required const">
+		<method name="_instance_create" qualifiers="virtual required">
 			<return type="void*" />
 			<param index="0" name="for_object" type="Object" />
 			<description>
@@ -186,7 +186,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="_placeholder_instance_create" qualifiers="virtual required const">
+		<method name="_placeholder_instance_create" qualifiers="virtual required">
 			<return type="void*" />
 			<param index="0" name="for_object" type="Object" />
 			<description>
