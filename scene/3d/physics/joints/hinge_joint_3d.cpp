@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "hinge_joint_3d.h"
+#include "core/error/error_macros.h"
 
 void HingeJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &HingeJoint3D::set_param);
@@ -36,6 +37,7 @@ void HingeJoint3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_flag", "flag", "enabled"), &HingeJoint3D::set_flag);
 	ClassDB::bind_method(D_METHOD("get_flag", "flag"), &HingeJoint3D::get_flag);
+	ClassDB::bind_method(D_METHOD("get_angle"), &HingeJoint3D::get_angle);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "params/bias", PROPERTY_HINT_RANGE, "0.00,0.99,0.01"), "set_param", "get_param", PARAM_BIAS);
 
@@ -93,6 +95,11 @@ void HingeJoint3D::set_flag(Flag p_flag, bool p_value) {
 bool HingeJoint3D::get_flag(Flag p_flag) const {
 	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
 	return flags[p_flag];
+}
+
+real_t HingeJoint3D::get_angle() const {
+	ERR_FAIL_COND_V(!is_configured(), 0.0);
+	return PhysicsServer3D::get_singleton()->hinge_joint_get_angle(get_rid());
 }
 
 void HingeJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
