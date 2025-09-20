@@ -2206,6 +2206,7 @@ void DisplayServerWindows::window_set_max_size(const Size2i p_size, WindowID p_w
 		return;
 	}
 	wd.max_size = p_size;
+	_update_window_style(p_window);
 }
 
 Size2i DisplayServerWindows::window_get_max_size(WindowID p_window) const {
@@ -2396,8 +2397,12 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 
 	DWORD style = 0;
 	DWORD style_ex = 0;
+	bool no_max = wd.no_max_btn;
+	if (RenderingServer::get_singleton() && wd.max_size != Size2() && wd.max_size != RenderingServer::get_singleton()->get_maximum_viewport_size()) {
+		no_max = true;
+	}
 
-	_get_window_style(p_window == MAIN_WINDOW_ID, wd.initialized, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.no_min_btn, wd.no_max_btn, wd.minimized, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, wd.parent_hwnd, style, style_ex);
+	_get_window_style(p_window == MAIN_WINDOW_ID, wd.initialized, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.no_min_btn, no_max, wd.minimized, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, wd.parent_hwnd, style, style_ex);
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
@@ -2429,6 +2434,7 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 
 	bool was_fullscreen = wd.fullscreen;
 	wd.was_fullscreen_pre_min = false;
+	wd.will_maximize = (p_mode == WINDOW_MODE_MAXIMIZED);
 
 	if (p_mode == WINDOW_MODE_MAXIMIZED && wd.borderless) {
 		int cs = window_get_current_screen(p_window);
@@ -4782,7 +4788,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					min_max_info->ptMinTrackSize.x = windows[window_id].min_size.x + decor.x;
 					min_max_info->ptMinTrackSize.y = windows[window_id].min_size.y + decor.y;
 				}
-				if (windows[window_id].max_size != Size2()) {
+				if (windows[window_id].max_size != Size2() && !(windows[window_id].maximized || windows[window_id].maximized_fs || windows[window_id].will_maximize)) {
 					min_max_info->ptMaxTrackSize.x = windows[window_id].max_size.x + decor.x;
 					min_max_info->ptMaxTrackSize.y = windows[window_id].max_size.y + decor.y;
 				}
