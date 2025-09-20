@@ -409,6 +409,7 @@ void CharacterBody2D::_set_collision_direction(const PhysicsServer2D::MotionResu
 		_set_platform_data(p_result);
 	} else if (motion_mode == MOTION_MODE_GROUNDED && p_result.get_angle(-up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
 		on_ceiling = true;
+		ceiling_normal = p_result.collision_normal;
 	} else {
 		on_wall = true;
 		wall_normal = p_result.collision_normal;
@@ -479,6 +480,10 @@ const Vector2 &CharacterBody2D::get_floor_normal() const {
 
 const Vector2 &CharacterBody2D::get_wall_normal() const {
 	return wall_normal;
+}
+
+const Vector2 &CharacterBody2D::get_ceiling_normal() const {
+	return ceiling_normal;
 }
 
 const Vector2 &CharacterBody2D::get_last_motion() const {
@@ -725,6 +730,7 @@ void CharacterBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_on_wall_only"), &CharacterBody2D::is_on_wall_only);
 	ClassDB::bind_method(D_METHOD("get_floor_normal"), &CharacterBody2D::get_floor_normal);
 	ClassDB::bind_method(D_METHOD("get_wall_normal"), &CharacterBody2D::get_wall_normal);
+	ClassDB::bind_method(D_METHOD("get_ceiling_normal"), &CharacterBody2D::get_ceiling_normal);
 	ClassDB::bind_method(D_METHOD("get_last_motion"), &CharacterBody2D::get_last_motion);
 	ClassDB::bind_method(D_METHOD("get_position_delta"), &CharacterBody2D::get_position_delta);
 	ClassDB::bind_method(D_METHOD("get_real_velocity"), &CharacterBody2D::get_real_velocity);
