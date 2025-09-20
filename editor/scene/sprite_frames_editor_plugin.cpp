@@ -2008,7 +2008,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hbc_animlist->add_child(anim_loop);
 
 	anim_speed = memnew(SpinBox);
-	anim_speed->set_suffix(TTR("FPS"));
+	anim_speed->set_format(TTR("%s FPS"));
 	anim_speed->set_min(0);
 	anim_speed->set_max(120);
 	anim_speed->set_step(0.01);
@@ -2167,7 +2167,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hbc_frame_duration->add_child(label);
 
 	frame_duration = memnew(SpinBox);
-	frame_duration->set_prefix(String::utf8("×"));
+	frame_duration->set_format(U"×%s");
 	frame_duration->set_min(SPRITE_FRAME_MINIMUM_DURATION); // Avoid zero div.
 	frame_duration->set_max(10);
 	frame_duration->set_step(0.01);
@@ -2433,7 +2433,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_size_x->set_h_size_flags(SIZE_EXPAND_FILL);
 	split_sheet_size_x->set_min(1);
 	split_sheet_size_x->set_step(1);
-	split_sheet_size_x->set_suffix("px");
+	split_sheet_size_x->set_format("%s px");
 	split_sheet_size_x->set_select_all_on_focus(true);
 	split_sheet_size_x->set_accessibility_name(TTRC("X Size"));
 	split_sheet_size_x->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_SIZE));
@@ -2442,7 +2442,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_size_y->set_h_size_flags(SIZE_EXPAND_FILL);
 	split_sheet_size_y->set_min(1);
 	split_sheet_size_y->set_step(1);
-	split_sheet_size_y->set_suffix("px");
+	split_sheet_size_y->set_format("%s px");
 	split_sheet_size_y->set_select_all_on_focus(true);
 	split_sheet_size_y->set_accessibility_name(TTRC("Y Size"));
 	split_sheet_size_y->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_SIZE));
@@ -2463,7 +2463,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_sep_x = memnew(SpinBox);
 	split_sheet_sep_x->set_min(0);
 	split_sheet_sep_x->set_step(1);
-	split_sheet_sep_x->set_suffix("px");
+	split_sheet_sep_x->set_format("%s px");
 	split_sheet_sep_x->set_select_all_on_focus(true);
 	split_sheet_sep_x->set_accessibility_name(TTRC("X Separation"));
 	split_sheet_sep_x->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
@@ -2471,7 +2471,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_sep_y = memnew(SpinBox);
 	split_sheet_sep_y->set_min(0);
 	split_sheet_sep_y->set_step(1);
-	split_sheet_sep_y->set_suffix("px");
+	split_sheet_sep_y->set_format("%s px");
 	split_sheet_sep_y->set_select_all_on_focus(true);
 	split_sheet_sep_y->set_accessibility_name(TTRC("Y Separation"));
 	split_sheet_sep_y->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
@@ -2492,7 +2492,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_offset_x = memnew(SpinBox);
 	split_sheet_offset_x->set_min(0);
 	split_sheet_offset_x->set_step(1);
-	split_sheet_offset_x->set_suffix("px");
+	split_sheet_offset_x->set_format("%s px");
 	split_sheet_offset_x->set_select_all_on_focus(true);
 	split_sheet_offset_x->set_accessibility_name(TTRC("X Offset"));
 	split_sheet_offset_x->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
@@ -2500,7 +2500,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_offset_y = memnew(SpinBox);
 	split_sheet_offset_y->set_min(0);
 	split_sheet_offset_y->set_step(1);
-	split_sheet_offset_y->set_suffix("px");
+	split_sheet_offset_y->set_format("%s px");
 	split_sheet_offset_y->set_select_all_on_focus(true);
 	split_sheet_offset_y->set_accessibility_name(TTRC("Y Offset"));
 	split_sheet_offset_y->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
