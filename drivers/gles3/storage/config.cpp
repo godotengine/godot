@@ -90,6 +90,7 @@ Config::Config() {
 		s3tc_supported = true;
 		rgtc_supported = true; //RGTC - core since OpenGL version 3.0
 		srgb_framebuffer_supported = true;
+		unorm16_texture_supported = true;
 	} else {
 		float_texture_supported = extensions.has("GL_EXT_color_buffer_float");
 		float_texture_linear_supported = extensions.has("GL_OES_texture_float_linear");
@@ -104,6 +105,7 @@ Config::Config() {
 #endif
 		rgtc_supported = extensions.has("GL_EXT_texture_compression_rgtc") || extensions.has("GL_ARB_texture_compression_rgtc");
 		srgb_framebuffer_supported = extensions.has("GL_EXT_sRGB_write_control");
+		unorm16_texture_supported = extensions.has("GL_EXT_texture_norm16");
 	}
 
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &max_vertex_texture_image_units);
