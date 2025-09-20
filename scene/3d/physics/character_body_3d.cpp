@@ -95,20 +95,52 @@ bool CharacterBody3D::move_and_slide() {
 	last_motion = Vector3();
 
 	if (!current_platform_velocity.is_zero_approx()) {
-		PhysicsServer3D::MotionParameters parameters(get_global_transform(), current_platform_velocity * delta, margin);
-		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
+		// Compute exact per-frame displacement of the contact point under rigid motion.
+		// Fallback to Euler when we can't read the platform state.
+		Vector3 platform_point_disp = current_platform_velocity * delta;
 
-		parameters.exclude_bodies.insert(platform_rid);
-		if (platform_object_id.is_valid()) {
-			parameters.exclude_objects.insert(platform_object_id);
+		if (platform_rid.is_valid()) {
+			if (platform_object_id.is_null() || ObjectDB::get_instance(platform_object_id)) {
+				if (PhysicsDirectBodyState3D *pbs = PhysicsServer3D::get_singleton()->body_get_direct_state(platform_rid)) {
+					const Transform3D pt = pbs->get_transform();
+					const Vector3 origin = pt.origin;
+					const Vector3 r = gt.origin - origin; // From platform origin to character.
+					const Vector3 v0 = pbs->get_linear_velocity(); // Platform origin linear velocity.
+					const Vector3 w = pbs->get_angular_velocity(); // Platform angular velocity.
+
+					const real_t w_len = w.length();
+					if (w_len > CMP_EPSILON) {
+						const Vector3 k = w / w_len; // Unit axis.
+						const real_t theta = w_len * delta;
+						const real_t c = Math::cos(theta);
+						const real_t s = Math::sin(theta);
+
+						// Rodrigues: R r = r*c + (k×r)*s + k*(k·r)*(1 - c)
+						const Vector3 Rr = r * c + k.cross(r) * s + k * (k.dot(r)) * (1.0 - c);
+						platform_point_disp = v0 * delta + (Rr - r); // v0*dt + (R - I)r
+					} else {
+						platform_point_disp = v0 * delta;
+					}
+				}
+			}
 		}
 
-		PhysicsServer3D::MotionResult floor_result;
-		if (move_and_collide(parameters, floor_result, false, false)) {
-			motion_results.push_back(floor_result);
+		if (!platform_point_disp.is_zero_approx()) {
+			PhysicsServer3D::MotionParameters parameters(get_global_transform(), platform_point_disp, margin);
+			parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
-			CollisionState result_state;
-			_set_collision_direction(floor_result, result_state);
+			parameters.exclude_bodies.insert(platform_rid);
+			if (platform_object_id.is_valid()) {
+				parameters.exclude_objects.insert(platform_object_id);
+			}
+
+			PhysicsServer3D::MotionResult floor_result;
+			if (move_and_collide(parameters, floor_result, false, false)) {
+				motion_results.push_back(floor_result);
+
+				CollisionState result_state;
+				_set_collision_direction(floor_result, result_state);
+			}
 		}
 	}
 
