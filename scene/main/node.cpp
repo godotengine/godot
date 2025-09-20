@@ -1752,6 +1752,13 @@ void Node::remove_child(Node *p_child) {
 }
 
 void Node::_update_children_cache_impl() const {
+#ifdef DEBUG_ENABLED
+	if (unlikely(data.updating_cache)) {
+		ERR_FAIL_MSG("Node::_update_children_cache_impl() was called recursively, this is a bug.");
+	}
+	data.updating_cache = true;
+#endif
+
 	// Assign children
 	data.children_cache.resize(data.children.size());
 	int idx = 0;
@@ -1780,6 +1787,10 @@ void Node::_update_children_cache_impl() const {
 		}
 	}
 	data.children_cache_dirty = false;
+
+#ifdef DEBUG_ENABLED
+	data.updating_cache = false;
+#endif
 }
 
 int Node::get_child_count(bool p_include_internal) const {
@@ -2087,6 +2098,7 @@ bool Node::is_ancestor_of(const Node *p_node) const {
 
 bool Node::is_greater_than(const Node *p_node) const {
 	ERR_FAIL_NULL_V(p_node, false);
+	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), "is_greater_than can only be called from the main thread.", false);
 	ERR_FAIL_COND_V(!data.tree, false);
 	ERR_FAIL_COND_V(!p_node->data.tree, false);
 
@@ -2489,7 +2501,9 @@ void Node::print_tree() {
 	print_line(_get_tree_string(this));
 }
 
-String Node::_get_tree_string_pretty(const String &p_prefix, bool p_last) {
+String Node::_get_tree_string_pretty(const String &p_prefix, bool p_last) const {
+	ERR_FAIL_COND_V(!Thread::is_main_thread(), "");
+
 	String new_prefix = p_last ? String::utf8(" ┖╴") : String::utf8(" ┠╴");
 	_update_children_cache();
 	String return_tree = p_prefix + new_prefix + String(get_name()) + "\n";
@@ -2504,7 +2518,9 @@ String Node::get_tree_string_pretty() {
 	return _get_tree_string_pretty("", true);
 }
 
-String Node::_get_tree_string(const Node *p_node) {
+String Node::_get_tree_string(const Node *p_node) const {
+	ERR_FAIL_COND_V(!Thread::is_main_thread(), "");
+
 	_update_children_cache();
 	String return_tree = String(p_node->get_path_to(this)) + "\n";
 	for (uint32_t i = 0; i < data.children_cache.size(); i++) {
