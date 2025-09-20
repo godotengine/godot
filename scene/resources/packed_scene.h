@@ -263,7 +263,7 @@ public:
 
 	virtual void reload_from_file() override;
 
-	virtual void set_path(const String &p_path, bool p_take_over = false) override;
+	virtual void set_path(const String &p_path, bool p_take_over = false, bool p_lock_cache = true) override;
 	virtual void set_path_cache(const String &p_path) override;
 
 #ifdef TOOLS_ENABLED

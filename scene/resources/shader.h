@@ -81,7 +81,7 @@ public:
 	//void set_mode(Mode p_mode);
 	virtual Mode get_mode() const;
 
-	virtual void set_path(const String &p_path, bool p_take_over = false) override;
+	virtual void set_path(const String &p_path, bool p_take_over = false, bool p_lock_cache = true) override;
 	void set_include_path(const String &p_path);
 
 	void set_code(const String &p_code);

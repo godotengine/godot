@@ -79,7 +79,7 @@ public:
 
 	void set_size_override(const Size2i &p_size);
 
-	virtual void set_path(const String &p_path, bool p_take_over = false) override;
+	virtual void set_path(const String &p_path, bool p_take_over = false, bool p_lock_cache = true) override;
 
 	~ImageTexture();
 };
@@ -118,7 +118,7 @@ public:
 	virtual Ref<Image> get_layer_data(int p_layer) const override;
 
 	virtual RID get_rid() const override;
-	virtual void set_path(const String &p_path, bool p_take_over = false) override;
+	virtual void set_path(const String &p_path, bool p_take_over = false, bool p_lock_cache = true) override;
 
 	ImageTextureLayered(LayeredType p_layered_type);
 	~ImageTextureLayered();
@@ -157,7 +157,7 @@ public:
 	virtual Vector<Ref<Image>> get_data() const override;
 
 	virtual RID get_rid() const override;
-	virtual void set_path(const String &p_path, bool p_take_over = false) override;
+	virtual void set_path(const String &p_path, bool p_take_over = false, bool p_lock_cache = true) override;
 
 	ImageTexture3D();
 	~ImageTexture3D();
