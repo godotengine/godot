@@ -30,15 +30,15 @@
 
 #include "dpi_texture.h"
 
-#include "core/io/image_loader.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/bit_map.h"
-#include "scene/resources/placeholder_textures.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
 #ifdef MODULE_SVG_ENABLED
 #include "modules/svg/image_loader_svg.h"
+#else
+#include "core/io/image_loader.h"
 #endif
 
 Mutex DPITexture::mutex;
@@ -89,6 +89,7 @@ Ref<DPITexture> DPITexture::create_from_string(const String &p_source, float p_s
 	dpi_texture->set_base_scale(p_scale);
 	dpi_texture->set_saturation(p_saturation);
 	dpi_texture->set_color_map(p_color_map);
+	dpi_texture->_update_texture();
 	return dpi_texture;
 }
 
@@ -97,7 +98,7 @@ void DPITexture::set_source(const String &p_source) {
 		return;
 	}
 	source = p_source;
-	_update_texture();
+	_request_update();
 }
 
 String DPITexture::get_source() const {
@@ -105,13 +106,13 @@ String DPITexture::get_source() const {
 }
 
 void DPITexture::set_base_scale(float p_scale) {
+	p_scale = MAX(0.01, p_scale);
 	if (base_scale == p_scale) {
 		return;
 	}
-	ERR_FAIL_COND(p_scale <= 0.0);
 
 	base_scale = p_scale;
-	_update_texture();
+	_request_update();
 }
 
 float DPITexture::get_base_scale() const {
@@ -119,12 +120,13 @@ float DPITexture::get_base_scale() const {
 }
 
 void DPITexture::set_saturation(float p_saturation) {
+	p_saturation = CLAMP(p_saturation, 0.0, 1.0);
 	if (saturation == p_saturation) {
 		return;
 	}
 
 	saturation = p_saturation;
-	_update_texture();
+	_request_update();
 }
 
 float DPITexture::get_saturation() const {
@@ -140,7 +142,7 @@ void DPITexture::set_color_map(const Dictionary &p_color_map) {
 	for (const Variant *E = color_map.next(); E; E = color_map.next(E)) {
 		cmap[*E] = color_map[*E];
 	}
-	_update_texture();
+	_request_update();
 }
 
 Dictionary DPITexture::get_color_map() const {
@@ -196,12 +198,13 @@ RID DPITexture::_load_at_scale(double p_scale, bool p_set_size) const {
 	if (err != OK) {
 		return RID();
 	}
-#else
-	img = Image::create_empty(Math::round(16 * p_scale * base_scale), Math::round(16 * p_scale * base_scale), false, Image::FORMAT_RGBA8);
-#endif
 	if (saturation != 1.0) {
 		img->adjust_bcs(1.0, 1.0, saturation);
 	}
+	img->fix_alpha_edges();
+#else
+	img = Image::create_empty(Math::round(16 * p_scale * base_scale), Math::round(16 * p_scale * base_scale), false, Image::FORMAT_RGBA8);
+#endif
 
 	Size2 current_size = size;
 	if (p_set_size) {
@@ -241,9 +244,28 @@ void DPITexture::_clear() {
 	alpha_cache.unref();
 }
 
+void DPITexture::force_update_texture() {
+	_update_texture();
+}
+
 void DPITexture::_update_texture() {
+	if (!update_requested) {
+		return;
+	}
+
 	_clear();
 	emit_changed();
+
+	update_requested = false;
+}
+
+void DPITexture::_request_update() {
+	if (update_requested) {
+		return;
+	}
+
+	update_requested = true;
+	callable_mp(this, &DPITexture::_update_texture).call_deferred();
 }
 
 Ref<Image> DPITexture::get_image() const {
@@ -365,6 +387,7 @@ void DPITexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_color_map"), &DPITexture::get_color_map);
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &DPITexture::set_size_override);
 	ClassDB::bind_method(D_METHOD("get_scaled_rid"), &DPITexture::get_scaled_rid);
+	ClassDB::bind_method(D_METHOD("force_update_texture"), &DPITexture::force_update_texture);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "_source", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_STORAGE), "set_source", "get_source");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "base_scale", PROPERTY_HINT_RANGE, "0.01,10.0,0.01"), "set_base_scale", "get_base_scale");

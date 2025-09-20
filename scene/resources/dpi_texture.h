@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/templates/lru.h"
 #include "scene/resources/texture.h"
 
 class BitMap;
@@ -44,6 +43,7 @@ class DPITexture : public Texture2D {
 	float saturation = 1.0;
 	Dictionary color_map;
 	Size2 size_override;
+	bool update_requested = false;
 
 	struct ScalingLevel {
 		HashSet<DPITexture *> textures;
@@ -62,6 +62,7 @@ class DPITexture : public Texture2D {
 	void _remove_scale(double p_scale);
 	RID _ensure_scale(double p_scale) const;
 	RID _load_at_scale(double p_scale, bool p_set_size) const;
+	void _request_update();
 	void _update_texture();
 	void _clear();
 
@@ -82,6 +83,8 @@ public:
 
 	void set_saturation(float p_saturation);
 	float get_saturation() const;
+
+	void force_update_texture();
 
 	Ref<Image> get_image() const override;
 
