@@ -157,12 +157,18 @@ public:
 		TK_PERIOD,
 		TK_UNIFORM,
 		TK_UNIFORM_GROUP,
+		TK_BUFFER,
 		TK_INSTANCE,
 		TK_GLOBAL,
 		TK_VARYING,
 		TK_ARG_IN,
 		TK_ARG_OUT,
 		TK_ARG_INOUT,
+		TK_BUFFER_RESTRICT,
+		TK_BUFFER_SET,
+		TK_BUFFER_BIND,
+		TK_BUFFER_BIND_NAME,
+		TK_BUFFER_FORMAT,
 		TK_RENDER_MODE,
 		TK_STENCIL_MODE,
 		TK_HINT_DEFAULT_WHITE_TEXTURE,
@@ -240,6 +246,7 @@ public:
 		TYPE_SAMPLERCUBEARRAY,
 		TYPE_SAMPLEREXT,
 		TYPE_STRUCT,
+		TYPE_BUFFER,
 		TYPE_MAX
 	};
 
@@ -382,6 +389,7 @@ public:
 			NODE_TYPE_ARRAY,
 			NODE_TYPE_ARRAY_CONSTRUCT,
 			NODE_TYPE_STRUCT,
+			NODE_TYPE_BUFFER,
 		};
 
 		Type type;
@@ -572,6 +580,7 @@ public:
 		DataPrecision precision = PRECISION_DEFAULT;
 		DataType datatype = TYPE_VOID;
 		int array_size = 0;
+		int owner_index = -1;
 		StringName struct_name;
 		StringName name;
 		Node *owner = nullptr;
@@ -593,6 +602,12 @@ public:
 		List<MemberNode *> members;
 		StructNode() :
 				Node(NODE_TYPE_STRUCT) {}
+	};
+
+	struct BufferNode : public Node {
+		List<MemberNode *> members;
+		BufferNode() :
+				Node(NODE_TYPE_BUFFER) {}
 	};
 
 	struct ShaderNode : public Node {
@@ -718,10 +733,36 @@ public:
 			}
 		};
 
+		struct Buffer {
+			StringName name; // variable name
+			enum BufferIOQualifier {
+				BUFFER_NONE,
+				BUFFER_IN,
+				BUFFER_OUT,
+				BUFFER_UNIFORM,
+			};
+
+			enum BufferFormat {
+				BUFFORMAT_PACKED, // unsupported apparently
+				BUFFORMAT_SHARED, // ^
+				BUFFORMAT_STD140,
+				BUFFORMAT_STD430,
+			};
+			BufferIOQualifier io_qual = BUFFER_NONE;
+			BufferFormat format = BUFFORMAT_STD140;
+			StringName name_bind; // name of the actual buffer
+			bool restrict = false;
+			int binding = -1;
+			int set = -1;
+			BufferNode *shader_buffer = nullptr;
+		};
+
 		HashMap<StringName, Constant> constants;
 		HashMap<StringName, Varying> varyings;
 		HashMap<StringName, Uniform> uniforms;
 		HashMap<StringName, Struct> structs;
+		HashMap<StringName, Buffer> buffers;
+		HashMap<StringName, MemberNode *> unnamed_buffer_members;
 		HashMap<StringName, Function> functions;
 		Vector<StringName> render_modes;
 		Vector<StringName> stencil_modes;
@@ -730,6 +771,7 @@ public:
 		Vector<Function> vfunctions;
 		Vector<Constant> vconstants;
 		Vector<Struct> vstructs;
+		Vector<Buffer> unnamed_buffers;
 
 		ShaderNode() :
 				Node(NODE_TYPE_SHADER) {}
@@ -810,6 +852,8 @@ public:
 		COMPLETION_INDEX,
 		COMPLETION_STRUCT,
 		COMPLETION_HINT,
+		COMPLETION_BUFFER_IO,
+		COMPLETION_BUFFER_FORMAT
 	};
 
 	struct Token {
@@ -832,6 +876,9 @@ public:
 	static DataInterpolation get_token_interpolation(TokenType p_type);
 	static bool is_token_precision(TokenType p_type);
 	static bool is_token_arg_qual(TokenType p_type);
+	static bool is_token_buffer_qual(TokenType p_type);
+	static bool is_token_buffer_layout(TokenType p_type);
+	static bool is_name_used(ShaderNode *shader, StringName name);
 	static DataPrecision get_token_precision(TokenType p_type);
 	static String get_precision_name(DataPrecision p_type);
 	static String get_interpolation_name(DataInterpolation p_interpolation);
@@ -1021,6 +1068,7 @@ private:
 	HashMap<StringName, Usage> used_constants;
 	HashMap<StringName, Usage> used_varyings;
 	HashMap<StringName, Usage> used_uniforms;
+	HashMap<StringName, Usage> used_buffers;
 	HashMap<StringName, Usage> used_functions;
 	HashMap<StringName, Usage> used_structs;
 	HashMap<ShaderWarning::Code, HashMap<StringName, Usage> *> warnings_check_map;
@@ -1121,6 +1169,8 @@ private:
 		IDENTIFIER_LOCAL_VAR,
 		IDENTIFIER_BUILTIN_VAR,
 		IDENTIFIER_CONSTANT,
+		IDENTIFIER_BUFFER,
+		IDENTIFIER_BUFFER_FIELD,
 		IDENTIFIER_MAX,
 	};
 
@@ -1275,4 +1325,45 @@ public:
 
 	ShaderLanguage();
 	~ShaderLanguage();
+
+	static Variant shader_datatype_to_variant(ShaderLanguage::DataType type) {
+		switch (type) {
+			case TYPE_BOOL:
+				return Variant(false);
+			case TYPE_INT:
+			case TYPE_UINT:
+				return Variant(0);
+			case TYPE_FLOAT:
+				return Variant(0.0f);
+			case TYPE_VEC2:
+				return Variant(Vector2());
+			case TYPE_VEC3:
+				return Variant(Vector3());
+			case TYPE_VEC4:
+				return Variant(Vector4());
+			case TYPE_UVEC2:
+			case TYPE_IVEC2:
+				return Variant(Vector2i());
+			case TYPE_UVEC3:
+			case TYPE_IVEC3:
+				return Variant(Vector3i());
+			case TYPE_UVEC4:
+			case TYPE_IVEC4:
+				return Variant(Vector4i());
+			case TYPE_BVEC2:
+				return Variant(TypedArray<bool>({false, false}));
+			case TYPE_BVEC3:
+				return Variant(TypedArray<bool>({false, false, false}));
+			case TYPE_BVEC4:
+				return Variant(TypedArray<bool>({false, false, false, false}));
+			case TYPE_MAT2:
+				return Variant(Array({Vector2(), Vector2()}));
+			case TYPE_MAT3:
+				return Variant(Array({Vector3(), Vector3(), Vector3()}));
+			case TYPE_MAT4:
+				return Variant(Array({Vector4(), Vector4(), Vector4(), Vector4()}));
+			default:
+				return Variant();
+		}
+	}
 };

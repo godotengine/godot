@@ -115,6 +115,8 @@ static int _get_datatype_alignment(SL::DataType p_type) {
 			return 16;
 		case SL::TYPE_STRUCT:
 			return 0;
+		case SL::TYPE_BUFFER:
+			return 0;
 		case SL::TYPE_MAX: {
 			ERR_FAIL_V(0);
 		}
@@ -446,6 +448,67 @@ static String _get_global_shader_uniform_from_type_and_index(const String &p_buf
 	}
 }
 
+// helper function for calculating offsets for buffers
+uint32_t get_offset(SL::MemberNode *m, uint32_t &offset, const SL::ShaderNode *shader, SL::ShaderNode::Buffer::BufferFormat format = SL::ShaderNode::Buffer::BUFFORMAT_STD140) {
+	int d_alignment;
+	int d_size;
+	uint32_t local_offset;
+	if (m->datatype == SL::TYPE_STRUCT) {
+		for (SL::MemberNode *st_m : shader->structs[m->struct_name].shader_struct->members) {
+			_ALLOW_DISCARD_ get_offset(st_m, local_offset, shader);
+		}
+		if (m->array_size > 0) {
+			int size = local_offset * m->array_size;
+			int mod = (16 * m->array_size);
+			if ((size % mod) != 0) {
+				size += mod - (size % mod);
+			}
+			d_size = size;
+			d_alignment = 16;
+		} else {
+			d_size = local_offset;
+			d_alignment = 0;
+		}
+	} else {
+		if (m->array_size > 0) {
+			int size = ShaderLanguage::get_datatype_size(m->datatype) * m->array_size;
+			int mod = (16 * m->array_size);
+			if ((size % mod) != 0) {
+				size += mod - (size % mod);
+			}
+			d_size = size;
+			d_alignment = 16;
+		} else {
+			d_size = ShaderLanguage::get_datatype_size(m->datatype);
+			d_alignment = _get_datatype_alignment(m->datatype);
+		}
+	}
+
+	int align = offset % d_alignment;
+
+	if (align != 0) {
+		offset += d_alignment - align;
+	}
+
+	uint32_t retval = offset;
+	offset += d_size;
+	return retval;
+}
+
+
+
+TypedDictionary<StringName, Variant> fill_struct_dict(const SL::ShaderNode::Struct &in_struct, const HashMap<StringName, SL::ShaderNode::Struct> &structs) {
+	TypedDictionary<StringName, Variant> output;
+	for (SL::MemberNode *st_mem : in_struct.shader_struct->members) {
+		if (st_mem->datatype == SL::TYPE_STRUCT) {
+			output[st_mem->name] = fill_struct_dict(structs[st_mem->struct_name], structs);
+		} else {
+			output[st_mem->name] = SL::shader_datatype_to_variant(st_mem->datatype);
+		}
+	}
+	return output;
+}
+
 String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning, bool p_use_scope) {
 	String code;
 
@@ -549,7 +612,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			uniform_alignments.resize(max_uniforms);
 			uniform_defines.resize(max_uniforms);
 			bool uses_uniforms = false;
-
+			int last_texture_binding = -1; // negative 1 means no texture buffers
 			Vector<StringName> uniform_names;
 
 			for (const KeyValue<StringName, SL::ShaderNode::Uniform> &E : pnode->uniforms) {
@@ -579,7 +642,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				if (SL::is_sampler_type(uniform.type)) {
 					// Texture layouts are different for OpenGL GLSL and Vulkan GLSL
 					if (!RS::get_singleton()->is_low_end()) {
-						ucode = "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(actions.base_texture_binding_index + uniform.texture_binding) + ") ";
+						last_texture_binding = actions.base_texture_binding_index + uniform.texture_binding;
+						ucode = "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(last_texture_binding) + ") ";
 					}
 					ucode += "uniform ";
 				}
@@ -671,6 +735,139 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			if (r_gen_code.uniform_total_size % 16 != 0) { //UBO sizes must be multiples of 16
 				r_gen_code.uniform_total_size += 16 - (r_gen_code.uniform_total_size % 16);
+			}
+
+			// buffers
+
+			// use the base texture binding index if no textures were bound
+			int buffer_binding_index = last_texture_binding == -1 ? actions.base_texture_binding_index : last_texture_binding + 1;
+
+			Vector<SL::ShaderNode::Buffer> buffers;
+
+			// get all named buffers
+
+			for (const KeyValue<StringName, SL::ShaderNode::Buffer> &E : pnode->buffers) {
+				buffers.push_back(E.value);
+			}
+
+			// get all unnamed buffers
+			for (const SL::ShaderNode::Buffer &E : pnode->unnamed_buffers) {
+				buffers.push_back(E);
+			}
+			int ubuf_count = 0;
+			for (const SL::ShaderNode::Buffer &buf : buffers) {
+				String buffer_code;
+				bool is_uniform = false;
+
+				//specify layout
+				buffer_code += "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(buffer_binding_index) + ", ";
+				buffer_binding_index++;
+
+				StringName buffer_format;
+
+				switch (buf.format) {
+					case SL::ShaderNode::Buffer::BUFFORMAT_PACKED: {
+						buffer_code += "packed) ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFORMAT_SHARED: {
+						buffer_code += "shared) ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFORMAT_STD140: {
+						buffer_code += "std140) ";
+						buffer_format = "std140";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFORMAT_STD430: {
+						buffer_code += "std430) ";
+						buffer_format = "std430";
+					} break;
+				}
+
+				if (buf.restrict) {
+					buffer_code += "restrict ";
+				}
+
+				switch (buf.io_qual) {
+					case SL::ShaderNode::Buffer::BUFFER_NONE: {
+						buffer_code += "buffer ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFER_IN: {
+						buffer_code += "readonly buffer ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFER_OUT: {
+						buffer_code += "writeonly buffer ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFER_UNIFORM: {
+						buffer_code += "uniform ";
+						is_uniform = true;
+					} break;
+				}
+
+				if (buf.name_bind.is_empty()) {
+					if (buf.name.is_empty()) {
+						buffer_code += "userBuffer_" + itos(ubuf_count++);
+					} else {
+						buffer_code += "userBuffer_" + buf.name;
+					}
+				} else {
+					buffer_code += buf.name_bind;
+				}
+
+				buffer_code += " {\n";
+
+				GeneratedCode::Buffer buffer;
+				buffer.name = buf.name;
+				buffer.bufName = buf.name_bind;
+				buffer.format = buffer_format;
+				TypedDictionary<StringName, Dictionary> buffer_structs;
+				uint32_t total_offset = 0;
+				for (SL::MemberNode *m : buf.shader_buffer->members) {
+					uint32_t offset = 0;
+					if (m->datatype == SL::TYPE_STRUCT) {
+						buffer_code += _mkid(m->struct_name);
+						if (!buffer_structs.has(m->struct_name)) {
+							buffer_structs[m->struct_name] = fill_struct_dict(shader->structs[m->struct_name], shader->structs);
+						}
+					} else {
+						buffer_code += _prestr(m->precision);
+						buffer_code += _typestr(m->datatype);
+					}
+					// calculate the offset of the member
+					offset = get_offset(m, total_offset, shader);
+
+					buffer_code += " ";
+
+					// double underscore is reserved by glsl
+					buffer_code += String(m->name).replace("__", "_dus_");
+
+					if (m->array_size != 0) {
+						buffer_code += "[";
+						if (m->array_size > 0) {
+							buffer_code += itos(m->array_size);
+						}
+						buffer_code += "]";
+					}
+
+					buffer_code += ";\n";
+					buffer.member_offsets.push_back(offset);
+					buffer.members.push_back(*m);
+				}
+				buffer_code += "} " + String(buf.name).replace("__", "_dus_");
+				buffer_code += ";\n";
+
+				for (int j = 0; j < STAGE_MAX; j++) {
+					r_gen_code.stage_globals[j] += buffer_code;
+				}
+
+				if (is_uniform) {
+					if (total_offset % 16 != 0) { //UBO sizes must be multiples of 16
+						total_offset += 16 - (total_offset % 16);
+					}
+					buffer.total_size = total_offset;
+					r_gen_code.uniform_buffers.push_back(buffer);
+				} else {
+					buffer.total_size = total_offset;
+					r_gen_code.storage_buffers.push_back(buffer);
+				}
 			}
 
 			uint32_t index = p_default_actions.base_varying_index;
@@ -958,6 +1155,10 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						}
 					}
 
+				} else if (shader->buffers.has(vnode->name)) {
+					code += String(shader->buffers[vnode->name].name).replace("__", "_dus_");
+				} else if (shader->unnamed_buffer_members.has(vnode->name)) {
+					code += String(vnode->name).replace("__", "_dus_");
 				} else {
 					if (use_fragment_varying) {
 						code = "frag_to_light.";
@@ -1058,10 +1259,14 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						}
 					}
 				} else {
-					if (use_fragment_varying) {
-						code = "frag_to_light.";
+					if (shader->unnamed_buffer_members.has(anode->name)) {
+						code += String(anode->name).replace("__", "_dus_");
+					} else {
+						if (use_fragment_varying) {
+							code = "frag_to_light.";
+						}
+						code += _mkid(anode->name);
 					}
-					code += _mkid(anode->name);
 				}
 			}
 
@@ -1450,6 +1655,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			String name;
 			if (mnode->basetype == SL::TYPE_STRUCT) {
 				name = _mkid(mnode->name);
+			} else if (mnode->basetype == SL::TYPE_BUFFER) {
+				name = String(mnode->name).replace("__", "_dus_");
 			} else {
 				name = mnode->name;
 			}
@@ -1465,6 +1672,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				code += ".";
 				code += _dump_node_code(mnode->call_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning, false);
 			}
+		} break;
+		case SL::Node::NODE_TYPE_BUFFER: {
 		} break;
 	}
 
