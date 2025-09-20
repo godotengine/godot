@@ -2769,7 +2769,6 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 	}
 
 	bool inspector_only = editor_history.is_current_inspector_only();
-	current = current_obj;
 
 	if (!current_obj) {
 		SceneTreeDock::get_singleton()->set_selected(nullptr);
@@ -8520,18 +8519,6 @@ EditorNode::EditorNode() {
 	file_export_lib->add_option(TTR("Apply MeshInstance Transforms"), Vector<String>(), false);
 	gui_base->add_child(file_export_lib);
 
-	file_script = memnew(EditorFileDialog);
-	file_script->set_title(TTR("Open & Run a Script"));
-	file_script->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-	file_script->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-	List<String> sexts;
-	ResourceLoader::get_recognized_extensions_for_type("Script", &sexts);
-	for (const String &E : sexts) {
-		file_script->add_filter("*." + E);
-	}
-	gui_base->add_child(file_script);
-	file_script->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));
-
 	file_pack_zip = memnew(EditorFileDialog);
 	file_pack_zip->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));
 	file_pack_zip->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
@@ -8733,7 +8720,6 @@ EditorNode::EditorNode() {
 	EditorTranslationParser::get_singleton()->add_parser(packed_scene_translation_parser_plugin, EditorTranslationParser::STANDARD);
 
 	_edit_current();
-	current = nullptr;
 	saving_resource = Ref<Resource>();
 
 	set_process(true);
