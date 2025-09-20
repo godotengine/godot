@@ -251,6 +251,9 @@
 		<member name="docks/scene_tree/hide_filtered_out_parents" type="bool" setter="" getter="">
 			If [code]true[/code], the scene tree dock will only show nodes that match the filter, without showing parents that don't. This settings can also be changed in the Scene dock's top menu.
 		</member>
+		<member name="docks/scene_tree/preserve_selection_when_filtering" type="bool" setter="" getter="">
+			If [code]true[/code], selected nodes will remain selected when applying filters in the scene tree, even if they don't match the filter criteria. If [code]false[/code], nodes that don't match the filter will be deselected. This setting can also be changed in the Scene dock's top menu.
+		</member>
 		<member name="docks/scene_tree/start_create_dialog_fully_expanded" type="bool" setter="" getter="">
 			If [code]true[/code], the Create dialog (Create New Node/Create New Resource) will start with all its sections expanded. Otherwise, sections will be collapsed until the user starts searching (which will automatically expand sections as needed).
 		</member>
