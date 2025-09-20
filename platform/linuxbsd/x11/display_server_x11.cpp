@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "display_server_x11.h"
+#include "os_linuxbsd.h"
 
 #ifdef X11_ENABLED
 
@@ -7397,7 +7398,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 	if (dbus_ok) {
 		screensaver = memnew(FreeDesktopScreenSaver);
-		portal_desktop = memnew(FreeDesktopPortalDesktop);
+		portal_desktop = ((OS_LinuxBSD *)OS::get_singleton())->get_portal_desktop();
 		atspi_monitor = memnew(FreeDesktopAtSPIMonitor);
 	}
 #endif // DBUS_ENABLED
@@ -7537,9 +7538,6 @@ DisplayServerX11::~DisplayServerX11() {
 #ifdef DBUS_ENABLED
 	if (screensaver) {
 		memdelete(screensaver);
-	}
-	if (portal_desktop) {
-		memdelete(portal_desktop);
 	}
 	if (atspi_monitor) {
 		memdelete(atspi_monitor);
