@@ -832,7 +832,8 @@ void RenderingDeviceDriverMetal::command_pipeline_barrier(
 		BitField<PipelineStageBits> p_dst_stages,
 		VectorView<MemoryAccessBarrier> p_memory_barriers,
 		VectorView<BufferBarrier> p_buffer_barriers,
-		VectorView<TextureBarrier> p_texture_barriers) {
+		VectorView<TextureBarrier> p_texture_barriers,
+		VectorView<AccelerationStructureBarrier> p_acceleration_structure_barriers) {
 	WARN_PRINT_ONCE("not implemented");
 }
 
@@ -1300,7 +1301,7 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 	}
 
 	MDShader *shader = nullptr;
-	if (is_compute) {
+	if (pipeline_type == PIPELINE_TYPE_COMPUTE) {
 		const RSCM::StageData &stage_data = mtl_shaders[0];
 
 		MDComputeShader *cs = new MDComputeShader(
@@ -2460,6 +2461,73 @@ RDD::PipelineID RenderingDeviceDriverMetal::compute_pipeline_create(ShaderID p_s
 	}
 
 	return PipelineID(pipeline);
+}
+
+#pragma mark - Raytracing
+
+// ----- ACCELERATION STRUCTURE -----
+
+RDD::AccelerationStructureID RenderingDeviceDriverMetal::blas_create(BufferID p_vertex_buffer, uint64_t p_vertex_offset, VertexFormatID p_vertex_format, uint32_t p_vertex_count, BufferID p_index_buffer, IndexBufferFormat p_index_format, uint64_t p_index_offset_bytes, uint32_t p_index_coun, BitField<GeometryBits> p_geometry_bits) {
+	// TODO
+	ERR_FAIL_V_MSG(AccelerationStructureID(), "Unimplemented!");
+}
+
+uint32_t RenderingDeviceDriverMetal::tlas_instances_buffer_get_size_bytes(uint32_t p_instance_count) {
+	ERR_FAIL_V_MSG(0, "Unimplemented!");
+}
+
+void RenderingDeviceDriverMetal::tlas_instances_buffer_fill(BufferID p_instances_buffer, const LocalVector<AccelerationStructureID> &p_blases, const Vector<Transform3D> &p_transforms) {
+	// TODO
+	ERR_FAIL_MSG("Unimplemented!");
+}
+
+RDD::AccelerationStructureID RenderingDeviceDriverMetal::tlas_create(BufferID p_instance_buffer) {
+	// TODO
+	ERR_FAIL_V_MSG(AccelerationStructureID(), "Unimplemented!");
+}
+
+void RenderingDeviceDriverMetal::acceleration_structure_free(RDD::AccelerationStructureID p_acceleration_structure) {
+	// TODO
+	ERR_FAIL_MSG("Unimplemented!");
+}
+
+uint32_t RenderingDeviceDriverMetal::acceleration_structure_get_scratch_size_bytes(AccelerationStructureID p_acceleration_structure) {
+	// TODO
+	ERR_FAIL_V_MSG(0, "Unimplemented!");
+}
+
+// ----- PIPELINE -----
+
+RDD::RaytracingPipelineID RenderingDeviceDriverMetal::raytracing_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) {
+	// TODO
+	ERR_FAIL_V_MSG(RaytracingPipelineID(), "Unimplemented!");
+}
+
+void RenderingDeviceDriverMetal::raytracing_pipeline_free(RDD::RaytracingPipelineID p_pipeline) {
+	// TODO
+	ERR_FAIL_MSG("Unimplemented!");
+}
+
+// ----- COMMANDS -----
+
+void RenderingDeviceDriverMetal::command_build_acceleration_structure(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) {
+	// TODO
+	ERR_FAIL_MSG("Unimplemented!");
+}
+
+void RenderingDeviceDriverMetal::command_bind_raytracing_pipeline(CommandBufferID p_cmd_buffer, RaytracingPipelineID p_pipeline) {
+	// TODO
+	ERR_FAIL_MSG("Unimplemented!");
+}
+
+void RenderingDeviceDriverMetal::command_bind_raytracing_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
+	// TODO
+	ERR_FAIL_MSG("Unimplemented!");
+}
+
+void RenderingDeviceDriverMetal::command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height) {
+	// TODO
+	ERR_FAIL_MSG("Unimplemented!");
 }
 
 #pragma mark - Queries
