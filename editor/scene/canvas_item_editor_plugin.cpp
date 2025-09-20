@@ -5939,11 +5939,7 @@ void CanvasItemEditorViewport::_remove_preview() {
 		canvas_item_editor->update_viewport();
 	}
 	if (preview_node->get_parent()) {
-		for (int i = preview_node->get_child_count() - 1; i >= 0; i--) {
-			Node *node = preview_node->get_child(i);
-			node->queue_free();
-			preview_node->remove_child(node);
-		}
+		preview_node->delete_all_children(true, DELETE_MODE_QUEUE_FREE);
 		EditorNode::get_singleton()->get_scene_root()->remove_child(preview_node);
 
 		label->hide();

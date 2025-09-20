@@ -4698,21 +4698,12 @@ void EditorInspector::update_property(const String &p_prop) {
 
 void EditorInspector::_clear(bool p_hide_plugins) {
 	begin_vbox->hide();
-	while (begin_vbox->get_child_count()) {
-		memdelete(begin_vbox->get_child(0));
-	}
-
 	favorites_section->hide();
-	while (favorites_vbox->get_child_count()) {
-		memdelete(favorites_vbox->get_child(0));
-	}
-	while (favorites_groups_vbox->get_child_count()) {
-		memdelete(favorites_groups_vbox->get_child(0));
-	}
 
-	while (main_vbox->get_child_count()) {
-		memdelete(main_vbox->get_child(0));
-	}
+	begin_vbox->delete_all_children();
+	favorites_vbox->delete_all_children();
+	favorites_groups_vbox->delete_all_children();
+	main_vbox->delete_all_children();
 
 	property_selected = StringName();
 	property_focusable = -1;
