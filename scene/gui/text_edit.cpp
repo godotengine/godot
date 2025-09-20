@@ -44,6 +44,10 @@
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/settings/editor_settings.h"
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 ///                            TEXT                                         ///
 ///////////////////////////////////////////////////////////////////////////////
@@ -730,6 +734,12 @@ void TextEdit::_accessibility_action_scroll_into_view(const Variant &p_data, int
 	}
 }
 
+#ifdef TOOLS_ENABLED
+void TextEdit::_editor_settings_changed() {
+	set_middle_mouse_paste_enabled(EDITOR_GET("text_editor/behavior/general/middle_mouse_paste"));
+}
+#endif
+
 void TextEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_EXIT_TREE:
@@ -840,6 +850,14 @@ void TextEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint() && !is_part_of_edited_scene()) {
+				set_middle_mouse_paste_enabled(EDITOR_GET("text_editor/behavior/general/middle_mouse_paste"));
+				if (!EditorSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &TextEdit::_editor_settings_changed))) {
+					EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextEdit::_editor_settings_changed));
+				}
+			}
+#endif
 			_update_caches();
 			if (caret_pos_dirty) {
 				callable_mp(this, &TextEdit::_emit_caret_changed).call_deferred();
