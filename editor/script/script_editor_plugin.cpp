@@ -2626,7 +2626,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 					se->ensure_focus();
 				}
 
-				if (p_line > 0) {
+				if (p_line >= 0) {
 					se->goto_line(p_line, p_col);
 				}
 			}
