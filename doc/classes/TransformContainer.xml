@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TransformContainer" inherits="Container" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Applies a transformation (offset, rotation, and scale) to child controls.
+	</brief_description>
+	<description>
+		[TransformContainer] transforms all of its child [Control] nodes according to its transform properties. The control is first stretched to its full rectangle (like in [MarginContainer]) and then the transformation is applied on top. It's possible to freely offset, scale, and rotate the node, making it useful for animations.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="transform_offset" type="Vector2" setter="set_transform_offset" getter="get_transform_offset" default="Vector2(0, 0)">
+			Position offset applied to this container's child controls. If [member transform_offset_relative_to_size] is [code]true[/code], the offset is relative to the container's [member Control.size].
+		</member>
+		<member name="transform_offset_relative_to_size" type="bool" setter="set_transform_offset_relative_to_size" getter="is_transform_offset_relative_to_size" default="false">
+			If [code]true[/code], [member transform_offset] is relative to the child node's [member Control.size], otherwise it represents absolute pixel values.
+		</member>
+		<member name="transform_pivot" type="Vector2" setter="set_transform_pivot" getter="get_transform_pivot" default="Vector2(0, 0)">
+			Pivot used for [member transform_rotation] and [member transform_scale]. If [member transform_pivot_relative_to_size] is [code]true[/code], the pivot is relative to the node's size, otherwise it represents absolute pixel values.
+		</member>
+		<member name="transform_pivot_relative_to_size" type="bool" setter="set_transform_pivot_relative_to_size" getter="is_transform_pivot_relative_to_size" default="true">
+			If [code]true[/code], [member transform_pivot] is relative to the node's [member Control.size], otherwise it represents absolute pixel values.
+		</member>
+		<member name="transform_rotation" type="float" setter="set_transform_rotation" getter="get_transform_rotation" default="0.0">
+			Rotation applied to this container's child controls. The rotation pivot is defined by [member transform_pivot].
+		</member>
+		<member name="transform_rotation_degrees" type="float" setter="set_transform_rotation_degrees" getter="get_transform_rotation_degrees">
+			Helper property to access [member transform_rotation] in degrees instead of radians.
+		</member>
+		<member name="transform_scale" type="Vector2" setter="set_transform_scale" getter="get_transform_scale" default="Vector2(1, 1)">
+			Scale applied to this container's child controls. The scale pivot is defined by [member transform_pivot].
+		</member>
+	</members>
+</class>
