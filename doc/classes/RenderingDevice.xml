@@ -1071,6 +1071,20 @@
 				[b]Note:[/b] The existing [param texture] requires the [constant TEXTURE_USAGE_CAN_UPDATE_BIT] to be updatable.
 			</description>
 		</method>
+		<method name="texture_update_partial">
+			<return type="int" enum="Error" />
+			<param index="0" name="texture" type="RID" />
+			<param index="1" name="dst_layer" type="int" />
+			<param index="2" name="dst_mipmap" type="int" />
+			<param index="3" name="dst_pos" type="Vector3i" />
+			<param index="4" name="data_dimensions" type="Vector3i" />
+			<param index="5" name="data" type="PackedByteArray" />
+			<description>
+				Updates a part of the data of the texture specified by the [param texture] with the data. The [param data] is assumed to be a texture data with the same data format as the [param texture], and has the dimensions specified by [param data_dimensions] and the mipmaps is [code]1[/code] (no mipmaps).
+				[b]Note:[/b] Updating textures is forbidden during creation of a draw or compute list.
+				[b]Note:[/b] The existing [param texture] requires the [constant TEXTURE_USAGE_CAN_UPDATE_BIT] to be updatable.
+			</description>
+		</method>
 		<method name="uniform_buffer_create">
 			<return type="RID" />
 			<param index="0" name="size_bytes" type="int" />
