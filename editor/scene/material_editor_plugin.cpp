@@ -464,7 +464,7 @@ Ref<Resource> StandardMaterial3DConversionPlugin::convert(const Ref<Resource> &p
 	Ref<Shader> shader;
 	shader.instantiate();
 
-	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
+	String code = mat->get_shader_code();
 
 	shader->set_code(code);
 
@@ -511,7 +511,7 @@ Ref<Resource> ORMMaterial3DConversionPlugin::convert(const Ref<Resource> &p_reso
 	Ref<Shader> shader;
 	shader.instantiate();
 
-	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
+	String code = mat->get_shader_code();
 
 	shader->set_code(code);
 
