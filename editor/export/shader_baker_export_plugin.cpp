@@ -31,6 +31,7 @@
 #include "shader_baker_export_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "scene/3d/label_3d.h"
