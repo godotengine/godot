@@ -307,20 +307,23 @@ String OpenXRAPI::get_default_action_map_resource_name() {
 	return name;
 }
 
-String OpenXRAPI::get_error_string(XrResult result) const {
-	if (XR_SUCCEEDED(result)) {
+String OpenXRAPI::get_error_string(XrResult p_result) const {
+	if (XR_SUCCEEDED(p_result)) {
 		return String("Succeeded");
 	}
 
 	if (instance == XR_NULL_HANDLE) {
-		Array args = { Variant(result) };
+		Array args = { Variant(p_result) };
 		return String("Error code {0}").format(args);
 	}
 
 	char resultString[XR_MAX_RESULT_STRING_SIZE];
-	xrResultToString(instance, result, resultString);
-
-	return String(resultString);
+	XrResult result = xrResultToString(instance, p_result, resultString);
+	if (XR_FAILED(result)) {
+		XR_ENUM_SWITCH(XrResult, p_result);
+	} else {
+		return String(resultString);
+	}
 }
 
 String OpenXRAPI::get_swapchain_format_name(int64_t p_swapchain_format) const {
@@ -2831,6 +2834,22 @@ Transform3D OpenXRAPI::transform_from_pose(const XrPosef &p_pose) {
 	Vector3 origin(p_pose.position.x, p_pose.position.y, p_pose.position.z);
 
 	return Transform3D(basis, origin);
+}
+
+XrPosef OpenXRAPI::pose_from_transform(const Transform3D &p_transform) {
+	XrPosef pose;
+
+	Quaternion q(p_transform.basis);
+	pose.orientation.x = q.x;
+	pose.orientation.y = q.y;
+	pose.orientation.z = q.z;
+	pose.orientation.w = q.w;
+
+	pose.position.x = p_transform.origin.x;
+	pose.position.y = p_transform.origin.y;
+	pose.position.z = p_transform.origin.z;
+
+	return pose;
 }
 
 template <typename T>
