@@ -2228,8 +2228,19 @@ void Object::reset_internal_extension(ObjectGDExtension *p_extension) {
 #endif
 
 void Object::_construct_object(bool p_reference) {
-	type_is_reference = p_reference;
+	_block_signals = false;
+	_can_translate = true;
+	_emitting = false;
+
+	// ObjectDB::add_instance relies on AncestralClass::REF_COUNTED
+	// being already set in the case of references.
+	_ancestry = p_reference ? (uint32_t)AncestralClass::REF_COUNTED : 0;
+
 	_instance_id = ObjectDB::add_instance(this);
+
+#ifdef TOOLS_ENABLED
+	_edited = false;
+#endif
 
 #ifdef DEBUG_ENABLED
 	_lock_index.init(1);
