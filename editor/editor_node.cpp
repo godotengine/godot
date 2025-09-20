@@ -4300,8 +4300,16 @@ void EditorNode::_set_current_scene_nocheck(int p_idx) {
 		callable_mp(this, &EditorNode::_set_main_scene_state).call_deferred(state, get_edited_scene()); // Do after everything else is done setting up.
 	}
 
+	if (EDITOR_GET("interface/scene_tabs/auto_select_current_scene_file")) {
+		callable_mp(this, &EditorNode::_nav_to_selected_scene).call_deferred(p_idx);
+	}
+
 	_update_undo_redo_allowed();
 	_update_unsaved_cache();
+}
+
+void EditorNode::_nav_to_selected_scene(int p_idx) const {
+	FileSystemDock::get_singleton()->navigate_to_path(editor_data.get_scene_path(p_idx));
 }
 
 void EditorNode::setup_color_picker(ColorPicker *p_picker) {
