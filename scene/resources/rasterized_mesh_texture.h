@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rendering_server_globals.h                                            */
+/*  rasterized_mesh_texture.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,45 +30,63 @@
 
 #pragma once
 
-#include "servers/rendering/environment/renderer_fog.h"
-#include "servers/rendering/environment/renderer_gi.h"
-#include "servers/rendering/renderer_canvas_cull.h"
-#include "servers/rendering/renderer_canvas_render.h"
-#include "servers/rendering/rendering_method.h"
-#include "servers/rendering/storage/camera_attributes_storage.h"
-#include "servers/rendering/storage/light_storage.h"
-#include "servers/rendering/storage/material_storage.h"
-#include "servers/rendering/storage/mesh_rasterizer.h"
-#include "servers/rendering/storage/mesh_storage.h"
-#include "servers/rendering/storage/particles_storage.h"
-#include "servers/rendering/storage/texture_storage.h"
-#include "servers/rendering/storage/utilities.h"
+#include "scene/resources/texture.h"
 
-class RendererCanvasCull;
-class RendererViewport;
-class RenderingMethod;
+class Mesh;
+class Material;
 
-class RenderingServerGlobals {
+class RasterizedMeshTexture : public Texture2D {
+	GDCLASS(RasterizedMeshTexture, Texture2D);
+
+	Size2i size = Size2i(256, 256);
+	int surface_index = 0;
+	Color clear_color = Color(0, 0, 0, 0);
+	Ref<Mesh> mesh;
+	Ref<Material> material;
+	RS::TextureDrawableFormat texture_format = RS::TEXTURE_DRAWABLE_FORMAT_RGBA8;
+	bool generate_mipmaps = false;
+
+	mutable RID texture;
+
+	bool texture_dirty = true;
+
+	bool update_queued = false;
+
+	void queue_update();
+
+protected:
+	static void _bind_methods();
+
 public:
-	static bool threaded;
+	int get_width() const override;
+	int get_height() const override;
+	bool has_alpha() const override;
+	RID get_rid() const override;
 
-	static RendererUtilities *utilities;
-	static RendererLightStorage *light_storage;
-	static RendererMaterialStorage *material_storage;
-	static RendererMeshStorage *mesh_storage;
-	static RendererParticlesStorage *particles_storage;
-	static RendererTextureStorage *texture_storage;
-	static RendererGI *gi;
-	static RendererFog *fog;
-	static RendererCameraAttributes *camera_attributes;
-	static RendererCanvasRender *canvas_render;
-	static RendererCompositor *rasterizer;
+	Ref<Image> get_image() const override;
 
-	static RendererCanvasCull *canvas;
-	static RendererViewport *viewport;
-	static RenderingMethod *scene;
+	void set_width(int p_width);
+	void set_height(int p_height);
 
-	static MeshRasterizer *mesh_rasterizer;
+	void set_mesh(const Ref<Mesh> &p_mesh);
+	Ref<Mesh> get_mesh() const;
+
+	void set_clear_color(const Color &p_color);
+	Color get_clear_color() const;
+
+	void set_material(const Ref<Material> &p_material);
+	Ref<Material> get_material() const;
+
+	void set_surface_index(int p_surface_index);
+	int get_surface_index() const;
+
+	void set_texture_format(RS::TextureDrawableFormat p_texture_format);
+	RS::TextureDrawableFormat get_texture_format() const;
+
+	void set_generate_mipmaps(bool p_generate_mipmaps);
+	bool is_generating_mipmaps() const;
+
+	void force_draw();
+
+	~RasterizedMeshTexture();
 };
-
-#define RSG RenderingServerGlobals
