@@ -296,39 +296,96 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 	// Get image data
 	uint8_t *data = nullptr;
 	int len = 0;
-	int32_t pixel_stride, row_stride;
+	int32_t pixel_stride, y_row_stride, uv_row_stride;
 	FeedFormat format = feed->get_format();
 	int width = format.width;
 	int height = format.height;
 	switch (format.pixel_format) {
-		case AIMAGE_FORMAT_YUV_420_888:
+		case AIMAGE_FORMAT_YUV_420_888: {
+			AImage_getPlaneRowStride(image, 0, &y_row_stride);
 			AImage_getPlaneData(image, 0, &data, &len);
 			if (len <= 0) {
 				return;
 			}
 			if (len != data_y.size()) {
-				int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_R8, false);
-				data_y.resize(len > size ? len : size);
+				int64_t expected_y_size = Image::get_image_data_size(width, height, Image::FORMAT_R8, false);
+				data_y.resize(len > expected_y_size ? len : expected_y_size);
 			}
 			memcpy(data_y.ptrw(), data, len);
 
 			AImage_getPlanePixelStride(image, 1, &pixel_stride);
-			AImage_getPlaneRowStride(image, 1, &row_stride);
+			AImage_getPlaneRowStride(image, 1, &uv_row_stride);
 			AImage_getPlaneData(image, 1, &data, &len);
 			if (len <= 0) {
 				return;
 			}
+			int uv_width = width / 2;
+			int uv_height = height / 2;
+			int64_t expected_uv_size = Image::get_image_data_size(uv_width, uv_height, Image::FORMAT_RG8, false);
 			if (len != data_uv.size()) {
-				int64_t size = Image::get_image_data_size(width / 2, height / 2, Image::FORMAT_RG8, false);
-				data_uv.resize(len > size ? len : size);
+				data_uv.resize(len > expected_uv_size ? len : expected_uv_size);
 			}
 			memcpy(data_uv.ptrw(), data, len);
 
-			image_y->initialize_data(width, height, false, Image::FORMAT_R8, data_y);
-			image_uv->initialize_data(width / 2, height / 2, false, Image::FORMAT_RG8, data_uv);
+			if (y_row_stride == width) {
+				image_y->initialize_data(width, height, false, Image::FORMAT_R8, data_y);
+			} else {
+				Vector<uint8_t> packed_y;
+				packed_y.resize(width * height);
+				for (int y = 0; y < height; y++) {
+					memcpy(packed_y.ptrw() + y * width, data_y.ptr() + y * y_row_stride, width);
+				}
+				image_y->initialize_data(width, height, false, Image::FORMAT_R8, packed_y);
+			}
+
+			Vector<uint8_t> packed_uv;
+			packed_uv.resize(uv_width * uv_height * 2);
+
+			if (pixel_stride == 2) {
+				int64_t required_uv_len = (int64_t)(uv_height - 1) * uv_row_stride + uv_width * pixel_stride;
+				if (len < required_uv_len) {
+					return;
+				}
+				uint8_t *packed_uv_ptr = packed_uv.ptrw();
+				const uint8_t *uv_src = data_uv.ptr();
+				int row_bytes = uv_width * 2;
+				for (int y = 0; y < uv_height; y++) {
+					memcpy(packed_uv_ptr + y * row_bytes, uv_src + y * uv_row_stride, row_bytes);
+				}
+			} else {
+				int32_t v_pixel_stride;
+				int32_t v_row_stride;
+				uint8_t *v_data = nullptr;
+				int v_len = 0;
+				AImage_getPlanePixelStride(image, 2, &v_pixel_stride);
+				AImage_getPlaneRowStride(image, 2, &v_row_stride);
+				AImage_getPlaneData(image, 2, &v_data, &v_len);
+				if (v_len <= 0) {
+					return;
+				}
+				int64_t required_u_len = (int64_t)(uv_height - 1) * uv_row_stride + uv_width * pixel_stride;
+				int64_t required_v_len = (int64_t)(uv_height - 1) * v_row_stride + uv_width * v_pixel_stride;
+				if (len < required_u_len || v_len < required_v_len) {
+					return;
+				}
+				uint8_t *dst = packed_uv.ptrw();
+				const uint8_t *u_src = data_uv.ptr();
+				for (int y = 0; y < uv_height; y++) {
+					const uint8_t *u_row = u_src + y * uv_row_stride;
+					const uint8_t *v_row = v_data + y * v_row_stride;
+					for (int x = 0; x < uv_width; x++) {
+						int dst_index = (y * uv_width + x) * 2;
+						dst[dst_index + 0] = u_row[x * pixel_stride];
+						dst[dst_index + 1] = v_row[x * v_pixel_stride];
+					}
+				}
+			}
+
+			image_uv->initialize_data(uv_width, uv_height, false, Image::FORMAT_RG8, packed_uv);
 
 			feed->set_ycbcr_images(image_y, image_uv);
 			break;
+		}
 		case AIMAGE_FORMAT_RGBA_8888:
 			AImage_getPlaneData(image, 0, &data, &len);
 			if (len <= 0) {
