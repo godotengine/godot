@@ -21,6 +21,13 @@
 				[b]Note:[/b] When using threaded rendering this method synchronizes the rendering thread. Calling it often may have a negative impact on performance.
 			</description>
 		</method>
+		<method name="capture_positions" qualifiers="const">
+			<return type="PackedVector2Array" />
+			<description>
+				Returns a list of positions of all existing particles.
+				[b]Note:[/b] When using threaded rendering this method synchronizes the rendering thread. Calling it often may have a negative impact on performance.
+			</description>
+		</method>
 		<method name="convert_from_particles">
 			<return type="void" />
 			<param index="0" name="particles" type="Node" />
