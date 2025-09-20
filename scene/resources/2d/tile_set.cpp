@@ -5882,6 +5882,7 @@ bool TileSetScenesCollectionSource::_set(const StringName &p_name, const Variant
 			if (!has_scene_tile_id(scene_id)) {
 				create_scene_tile(p_value, scene_id);
 			}
+			set_scene_tile_display_placeholder(scene_id, true);
 
 			return true;
 		}
