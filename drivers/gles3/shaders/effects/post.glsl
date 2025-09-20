@@ -103,11 +103,26 @@ void main() {
 #endif
 
 #ifdef USE_GLOW
+	float glow_white = white;
+#ifdef USE_LUMINANCE_MULTIPLIER
+	glow_white = glow_white * luminance_multiplier;
+#endif
+
 	vec4 glow = get_glow_color(uv_interp) * glow_intensity;
 
-	// Just use softlight...
-	glow.rgb = clamp(glow.rgb, vec3(0.0f), vec3(1.0f));
-	color.rgb = max((color.rgb + glow.rgb) - (color.rgb * glow.rgb), vec3(0.0));
+	// Always use screen blend mode with this rendering method.
+	// Scale to [0, 1] range.
+	// Glow cannot be above 1.0 after scaling and should be non-negative
+	// to produce expected results. It is possible that glow can be negative
+	// if negative lights were used in the scene.
+	glow.rgb = clamp(glow.rgb, 0.0, glow_white);
+	color.rgb /= glow_white;
+	glow.rgb /= glow_white;
+
+	color.rgb = (color.rgb + glow.rgb) - (color.rgb * glow.rgb);
+
+	// Scale back to full range
+	color.rgb *= glow_white;
 #endif // USE_GLOW
 
 #ifdef USE_LUMINANCE_MULTIPLIER
