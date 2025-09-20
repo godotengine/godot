@@ -73,6 +73,10 @@ real_t CircleShape2D::get_enclosing_radius() const {
 	return radius;
 }
 
+bool CircleShape2D::contains_point(const Vector2 &p_point) const {
+	return p_point.length_squared() < radius * radius;
+}
+
 void CircleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	Vector<Vector2> points;
 	points.resize(24);
