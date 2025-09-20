@@ -125,18 +125,18 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 
 	/* Engine types. */
 	const Color type_color = EDITOR_GET("text_editor/theme/highlighting/engine_type_color");
-	List<StringName> types;
-	ClassDB::get_class_list(&types);
-	for (const StringName &E : types) {
-		highlighter->add_keyword_color(E, type_color);
+	LocalVector<StringName> types;
+	ClassDB::get_class_list(types);
+	for (const StringName &type : types) {
+		highlighter->add_keyword_color(type, type_color);
 	}
 
 	/* User types. */
 	const Color usertype_color = EDITOR_GET("text_editor/theme/highlighting/user_type_color");
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
-	for (const StringName &E : global_classes) {
-		highlighter->add_keyword_color(E, usertype_color);
+	LocalVector<StringName> global_classes;
+	ScriptServer::get_global_class_list(global_classes);
+	for (const StringName &class_name : global_classes) {
+		highlighter->add_keyword_color(class_name, usertype_color);
 	}
 
 	/* Autoloads. */
