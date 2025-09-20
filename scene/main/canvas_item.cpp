@@ -366,8 +366,9 @@ void CanvasItem::_notification(int p_what) {
 			_update_texture_filter_changed(false);
 			_update_texture_repeat_changed(false);
 
-			if (!block_transform_notify && !xform_change.in_list()) {
-				get_tree()->xform_change_list.add(&xform_change);
+			if (!block_transform_notify && !xform_change_queued) {
+				set_xform_change_queued(true);
+				get_tree()->xform_canvas_item_change_list.push_back(this);
 			}
 
 			if (get_viewport()) {
@@ -391,8 +392,9 @@ void CanvasItem::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			ERR_MAIN_THREAD_GUARD;
 
-			if (xform_change.in_list()) {
-				get_tree()->xform_change_list.remove(&xform_change);
+			if (xform_change_queued) {
+				set_xform_change_queued(false);
+				get_tree()->xform_canvas_item_change_list.erase(this);
 			}
 			_exit_canvas();
 
@@ -1050,8 +1052,9 @@ void CanvasItem::draw_char_outline(const Ref<Font> &p_font, const Point2 &p_pos,
 }
 
 void CanvasItem::_notify_transform_deferred() {
-	if (is_inside_tree() && notify_transform && !xform_change.in_list()) {
-		get_tree()->xform_change_list.add(&xform_change);
+	if (is_inside_tree() && notify_transform && !xform_change_queued) {
+		set_xform_change_queued(true);
+		get_tree()->xform_canvas_item_change_list.push_back(this);
 	}
 }
 
@@ -1062,17 +1065,18 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 	 * notification anyway).
 	 */
 
-	if (/*p_node->xform_change.in_list() &&*/ p_node->_is_global_invalid()) {
+	if (p_node->_is_global_invalid()) {
 		return; //nothing to do
 	}
 
 	p_node->_set_global_invalid(true);
 
-	if (p_node->notify_transform && !p_node->xform_change.in_list()) {
+	if (p_node->notify_transform && !p_node->xform_change_queued) {
 		if (!p_node->block_transform_notify) {
 			if (p_node->is_inside_tree()) {
 				if (is_accessible_from_caller_thread()) {
-					get_tree()->xform_change_list.add(&p_node->xform_change);
+					p_node->set_xform_change_queued(true);
+					get_tree()->xform_canvas_item_change_list.push_back(p_node);
 				} else {
 					// Should be rare, but still needs to be handled.
 					callable_mp(p_node, &CanvasItem::_notify_transform_deferred).call_deferred();
@@ -1164,6 +1168,10 @@ RID CanvasItem::get_viewport_rid() const {
 	ERR_READ_THREAD_GUARD_V(RID());
 	ERR_FAIL_COND_V(!is_inside_tree(), RID());
 	return get_viewport()->get_viewport_rid();
+}
+
+void CanvasItem::set_xform_change_queued(bool p_queued) {
+	xform_change_queued = p_queued;
 }
 
 void CanvasItem::set_block_transform_notify(bool p_enable) {
@@ -1270,11 +1278,12 @@ Vector2 CanvasItem::get_local_mouse_position() const {
 void CanvasItem::force_update_transform() {
 	ERR_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
-	if (!xform_change.in_list()) {
+	if (!xform_change_queued) {
 		return;
 	}
 
-	get_tree()->xform_change_list.remove(&xform_change);
+	set_xform_change_queued(false);
+	get_tree()->xform_canvas_item_change_list.erase(this);
 
 	notification(NOTIFICATION_TRANSFORM_CHANGED);
 }
@@ -1753,8 +1762,7 @@ CanvasItem::TextureRepeat CanvasItem::get_texture_repeat_in_tree() const {
 	return (TextureRepeat)texture_repeat_cache;
 }
 
-CanvasItem::CanvasItem() :
-		xform_change(this) {
+CanvasItem::CanvasItem() {
 	canvas_item = RenderingServer::get_singleton()->canvas_item_create();
 }
 

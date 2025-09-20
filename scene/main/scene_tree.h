@@ -44,6 +44,7 @@ class Node;
 #ifndef _3D_DISABLED
 class Node3D;
 #endif
+class CanvasItem;
 class Window;
 class Material;
 class Mesh;
@@ -253,7 +254,10 @@ private:
 	friend class Node3D;
 	friend class Viewport;
 
-	SelfList<Node>::List xform_change_list;
+#ifndef _3D_DISABLED
+	LocalVector<Node3D *> xform_3d_change_list;
+#endif
+	LocalVector<CanvasItem *> xform_canvas_item_change_list;
 
 #ifdef DEBUG_ENABLED // No live editor in release build.
 	friend class LiveEditor;

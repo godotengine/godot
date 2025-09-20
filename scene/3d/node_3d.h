@@ -95,7 +95,6 @@ private:
 		uint64_t timeout_physics_tick = 0;
 	};
 
-	mutable SelfList<Node> xform_change;
 	SelfList<Node3D> _client_physics_interpolation_node_3d_list;
 
 	// This Data struct is to avoid namespace pollution in derived classes.
@@ -133,6 +132,7 @@ private:
 		bool ignore_notification : 1;
 		bool notify_local_transform : 1;
 		bool notify_transform : 1;
+		bool xform_change_queued : 1;
 
 		bool visible : 1;
 		bool disable_scale : 1;
@@ -268,6 +268,7 @@ public:
 	Vector3 get_global_rotation() const;
 	Vector3 get_global_rotation_degrees() const;
 
+	void set_xform_change_queued(bool p_queued);
 	void set_transform(const Transform3D &p_transform);
 	void set_basis(const Basis &p_basis);
 	void set_quaternion(const Quaternion &p_quaternion);

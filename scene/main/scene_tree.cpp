@@ -192,13 +192,24 @@ void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
 void SceneTree::flush_transform_notifications() {
 	_THREAD_SAFE_METHOD_
 
-	SelfList<Node> *n = xform_change_list.first();
-	while (n) {
-		Node *node = n->self();
-		SelfList<Node> *nx = n->next();
-		xform_change_list.remove(n);
-		n = nx;
-		node->notification(NOTIFICATION_TRANSFORM_CHANGED);
+#ifndef _3D_DISABLED
+	if (xform_3d_change_list.size() > 0) {
+		for (Node3D *node : xform_3d_change_list) {
+			node->notification(NOTIFICATION_TRANSFORM_CHANGED);
+			node->set_xform_change_queued(false);
+		}
+
+		xform_3d_change_list.clear();
+	}
+#endif
+
+	if (xform_canvas_item_change_list.size() > 0) {
+		for (CanvasItem *node : xform_canvas_item_change_list) {
+			node->notification(NOTIFICATION_TRANSFORM_CHANGED);
+			node->set_xform_change_queued(false);
+		}
+
+		xform_canvas_item_change_list.clear();
 	}
 }
 

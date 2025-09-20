@@ -74,12 +74,13 @@ Node3DGizmo::Node3DGizmo() {
 
 void Node3D::_notify_dirty() {
 #ifdef TOOLS_ENABLED
-	if ((!data.gizmos.is_empty() || data.notify_transform) && !data.ignore_notification && !xform_change.in_list()) {
+	if ((!data.gizmos.is_empty() || data.notify_transform) && !data.ignore_notification && !data.xform_change_queued) {
 #else
-	if (data.notify_transform && !data.ignore_notification && !xform_change.in_list()) {
+	if (data.notify_transform && !data.ignore_notification && !data.xform_change_queued) {
 
 #endif
-		get_tree()->xform_change_list.add(&xform_change);
+		set_xform_change_queued(true);
+		get_tree()->xform_3d_change_list.push_back(this);
 	}
 }
 
@@ -98,8 +99,9 @@ void Node3D::_update_rotation_and_scale() const {
 }
 
 void Node3D::_propagate_transform_changed_deferred() {
-	if (is_inside_tree() && !xform_change.in_list()) {
-		get_tree()->xform_change_list.add(&xform_change);
+	if (is_inside_tree() && !data.xform_change_queued) {
+		set_xform_change_queued(true);
+		get_tree()->xform_3d_change_list.push_back(this);
 	}
 }
 
@@ -118,12 +120,13 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 	}
 
 #ifdef TOOLS_ENABLED
-	if ((!data.gizmos.is_empty() || data.notify_transform) && !data.ignore_notification && !xform_change.in_list()) {
+	if ((!data.gizmos.is_empty() || data.notify_transform) && !data.ignore_notification && !data.xform_change_queued) {
 #else
-	if (data.notify_transform && !data.ignore_notification && !xform_change.in_list()) {
+	if (data.notify_transform && !data.ignore_notification && !data.xform_change_queued) {
 #endif
 		if (likely(is_accessible_from_caller_thread())) {
-			get_tree()->xform_change_list.add(&xform_change);
+			set_xform_change_queued(true);
+			get_tree()->xform_3d_change_list.push_back(this);
 		} else {
 			// This should very rarely happen, but if it does at least make sure the notification is received eventually.
 			callable_mp(this, &Node3D::_propagate_transform_changed_deferred).call_deferred();
@@ -204,8 +207,9 @@ void Node3D::_notification(int p_what) {
 			}
 
 			notification(NOTIFICATION_EXIT_WORLD, true);
-			if (xform_change.in_list()) {
-				get_tree()->xform_change_list.remove(&xform_change);
+			if (data.xform_change_queued) {
+				set_xform_change_queued(false);
+				get_tree()->xform_3d_change_list.erase(this);
 			}
 
 			if (data.parent) {
@@ -387,6 +391,10 @@ void Node3D::fti_notify_node_changed(bool p_transform_changed) {
 	if (is_inside_tree()) {
 		get_tree()->get_scene_tree_fti().node_3d_notify_changed(*this, p_transform_changed);
 	}
+}
+
+void Node3D::set_xform_change_queued(bool p_queued) {
+	data.xform_change_queued = p_queued;
 }
 
 void Node3D::set_transform(const Transform3D &p_transform) {
@@ -1293,10 +1301,11 @@ bool Node3D::is_local_transform_notification_enabled() const {
 void Node3D::force_update_transform() {
 	ERR_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
-	if (!xform_change.in_list()) {
+	if (!data.xform_change_queued) {
 		return; //nothing to update
 	}
-	get_tree()->xform_change_list.remove(&xform_change);
+	set_xform_change_queued(false);
+	get_tree()->xform_3d_change_list.erase(this);
 
 	notification(NOTIFICATION_TRANSFORM_CHANGED);
 }
@@ -1545,7 +1554,7 @@ void Node3D::_bind_methods() {
 }
 
 Node3D::Node3D() :
-		xform_change(this), _client_physics_interpolation_node_3d_list(this) {
+		_client_physics_interpolation_node_3d_list(this) {
 	// Default member initializer for bitfield is a C++20 extension, so:
 
 	data.top_level = false;
@@ -1554,6 +1563,7 @@ Node3D::Node3D() :
 	data.ignore_notification = false;
 	data.notify_local_transform = false;
 	data.notify_transform = false;
+	data.xform_change_queued = false;
 
 	data.visible = true;
 	data.disable_scale = false;
