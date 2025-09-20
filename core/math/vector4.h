@@ -32,6 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/math/math_defs.h"
+#include "core/templates/hashfuncs.h"
 #include "core/typedefs.h"
 
 class String;
@@ -145,6 +146,14 @@ struct [[nodiscard]] Vector4 {
 
 	explicit operator String() const;
 	operator Vector4i() const;
+
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_real(x);
+		h = hash_murmur3_one_real(y, h);
+		h = hash_murmur3_one_real(z, h);
+		h = hash_murmur3_one_real(w, h);
+		return hash_fmix32(h);
+	}
 
 	constexpr Vector4() :
 			x(0), y(0), z(0), w(0) {}
