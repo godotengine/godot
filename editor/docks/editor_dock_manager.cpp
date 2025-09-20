@@ -1004,6 +1004,10 @@ void EditorDockManager::register_dock_slot(DockSlot p_dock_slot, TabContainer *p
 	EditorNode::get_singleton()->get_gui_base()->add_child(dock_drag_rects[p_dock_slot]);
 }
 
+int EditorDockManager::get_hsplit_count() const {
+	return hsplits.size();
+}
+
 int EditorDockManager::get_vsplit_count() const {
 	return vsplits.size();
 }
