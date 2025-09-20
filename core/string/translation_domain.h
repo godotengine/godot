@@ -83,6 +83,7 @@ public:
 	StringName translate(const StringName &p_message, const StringName &p_context) const;
 	StringName translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const;
 
+	String get_locale() const;
 	String get_locale_override() const;
 	void set_locale_override(const String &p_locale);
 

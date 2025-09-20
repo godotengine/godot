@@ -332,7 +332,7 @@ private:
 	Array st_args;
 
 	void _clear();
-	void _update_caches();
+	void _update_caches(bool p_invalidate_all = false);
 
 	void _close_ime_window();
 	void _update_ime_window_position();
