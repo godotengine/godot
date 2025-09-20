@@ -31,44 +31,11 @@
 package org.godotengine.godot;
 
 import org.godotengine.godot.input.GodotInputHandler;
-import org.godotengine.godot.utils.DeviceUtils;
 
 import android.view.SurfaceView;
 
 public interface GodotRenderView {
 	SurfaceView getView();
 
-	/**
-	 * Starts the thread that will drive Godot's rendering.
-	 */
-	void startRenderer();
-
-	/**
-	 * Queues a runnable to be run on the rendering thread.
-	 */
-	void queueOnRenderThread(Runnable event);
-
-	void onActivityPaused();
-
-	void onActivityStopped();
-
-	void onActivityResumed();
-
-	void onActivityStarted();
-
-	void onActivityDestroyed();
-
 	GodotInputHandler getInputHandler();
-
-	void configurePointerIcon(int pointerType, String imagePath, float hotSpotX, float hotSpotY);
-
-	void setPointerIcon(int pointerType);
-
-	/**
-	 * @return true if pointer capture is supported.
-	 */
-	default boolean canCapturePointer() {
-		// Pointer capture is not supported on native XR devices.
-		return !DeviceUtils.isNativeXRDevice(getView().getContext()) && getInputHandler().canCapturePointer();
-	}
 }
