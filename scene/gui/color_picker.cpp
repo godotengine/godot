@@ -54,6 +54,11 @@
 #include "scene/theme/theme_db.h"
 #include "thirdparty/misc/ok_color_shader.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_node.h"
+#include "editor/gui/editor_quick_open_dialog.h"
+#endif // TOOLS_ENABLED
+
 static inline bool is_color_overbright(const Color &color) {
 	return (color.r > 1.0) || (color.g > 1.0) || (color.b > 1.0);
 }
@@ -630,10 +635,6 @@ void ColorPicker::set_editor_settings(Object *p_editor_settings) {
 
 	_update_presets();
 	_update_recent_presets();
-}
-
-void ColorPicker::set_quick_open_callback(const Callable &p_file_selected) {
-	quick_open_callback = p_file_selected;
 }
 
 void ColorPicker::set_palette_saved_callback(const Callable &p_palette_saved) {
@@ -1776,12 +1777,10 @@ void ColorPicker::_options_menu_cbk(int p_which) {
 
 #ifdef TOOLS_ENABLED
 		case MenuOption::MENU_QUICKLOAD:
-			if (quick_open_callback.is_valid()) {
-				file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
-				quick_open_callback.call_deferred();
-			}
+			EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog({ "ColorPalette" }, callable_mp(this, &ColorPicker::_quick_open_palette_file_selected));
 			break;
 #endif // TOOLS_ENABLED
+
 		case MenuOption::MENU_CLEAR: {
 			PackedColorArray colors = get_presets();
 			for (Color c : colors) {
