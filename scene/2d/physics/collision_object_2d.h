@@ -33,6 +33,7 @@
 #include "scene/2d/node_2d.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/2d/shape_2d.h"
+#include "scene/resources/physics_material.h"
 #include "servers/physics_server_2d.h"
 
 class CollisionObject2D : public Node2D {
@@ -72,6 +73,8 @@ private:
 		bool disabled = false;
 		bool one_way_collision = false;
 		real_t one_way_collision_margin = 0.0;
+
+		Ref<PhysicsMaterial> material;
 	};
 
 	int total_subshapes = 0;
@@ -146,6 +149,9 @@ public:
 	void shape_owner_set_disabled(uint32_t p_owner, bool p_disabled);
 	bool is_shape_owner_disabled(uint32_t p_owner) const;
 
+	void shape_owner_set_physics_material(uint32_t p_owner, const Ref<PhysicsMaterial> &p_material);
+	Ref<PhysicsMaterial> shape_owner_get_physics_material(uint32_t p_owner) const;
+
 	void shape_owner_set_one_way_collision(uint32_t p_owner, bool p_enable);
 	bool is_shape_owner_one_way_collision_enabled(uint32_t p_owner) const;
 
@@ -168,6 +174,8 @@ public:
 	PackedStringArray get_configuration_warnings() const override;
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
+
+	_FORCE_INLINE_ bool is_area() const { return area; }
 
 	CollisionObject2D();
 	~CollisionObject2D();

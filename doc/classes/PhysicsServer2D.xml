@@ -469,11 +469,27 @@
 				Returns the [RID] of the shape with the given index in the body's array of shapes.
 			</description>
 		</method>
+		<method name="body_get_shape_bounce_override" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<description>
+				Returns the bounciness override for the shape or [constant @GDScript.NAN] if no override is set.
+			</description>
+		</method>
 		<method name="body_get_shape_count" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="body" type="RID" />
 			<description>
 				Returns the number of shapes added to the body.
+			</description>
+		</method>
+		<method name="body_get_shape_friction_override" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<description>
+				Returns the friction override for the shape or [constant @GDScript.NAN] if no override is set.
 			</description>
 		</method>
 		<method name="body_get_shape_transform" qualifiers="const">
@@ -655,6 +671,16 @@
 				Sets the one-way collision properties of the body's shape with the given index. If [param enable] is [code]true[/code], the one-way collision direction given by the shape's local upward axis [code]body_get_shape_transform(body, shape_idx).y[/code] will be used to ignore collisions with the shape in the opposite direction, and to ensure depenetration of kinematic bodies happens in this direction.
 			</description>
 		</method>
+		<method name="body_set_shape_bounce_override">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<param index="2" name="enable" type="bool" />
+			<param index="3" name="bounce" type="float" default="0.0" />
+			<description>
+				Sets the bounce for the shape if [param enable] is [code]true[/code], resets to the body's value if [code]false[/code]. A negative value of [param bounce] is equivalent to enabling [member PhysicsMaterial.absorbent].
+			</description>
+		</method>
 		<method name="body_set_shape_disabled">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
@@ -662,6 +688,16 @@
 			<param index="2" name="disabled" type="bool" />
 			<description>
 				Sets the disabled property of the body's shape with the given index. If [param disabled] is [code]true[/code], then the shape will be ignored in all collision detection.
+			</description>
+		</method>
+		<method name="body_set_shape_friction_override">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<param index="2" name="enable" type="bool" />
+			<param index="3" name="friction" type="float" default="0.0" />
+			<description>
+				Sets the friction for the shape if [param enable] is [code]true[/code], resets to the body's value if [code]false[/code]. A negative value of [param friction] is equivalent to enabling [member PhysicsMaterial.rough].
 			</description>
 		</method>
 		<method name="body_set_shape_transform">
