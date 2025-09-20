@@ -100,6 +100,7 @@
 #include "editor/export/project_zip_packer.h"
 #include "editor/export/register_exporters.h"
 #include "editor/export/shader_baker_export_plugin.h"
+#include "editor/extension/extension_source_code_manager.h"
 #include "editor/file_system/dependency_editor.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_about.h"
@@ -7781,6 +7782,8 @@ EditorNode::EditorNode() {
 
 	EditorContextMenuPluginManager::create();
 
+	ExtensionSourceCodeManager::create();
+
 	// Used for previews.
 	FileDialog::get_icon_func = _file_dialog_get_icon;
 	FileDialog::register_func = _file_dialog_register;
@@ -8876,6 +8879,7 @@ EditorNode::~EditorNode() {
 	EditorTranslationParser::get_singleton()->clean_parsers();
 	ResourceImporterScene::clean_up_importer_plugins();
 	EditorContextMenuPluginManager::cleanup();
+	ExtensionSourceCodeManager::cleanup();
 
 	remove_print_handler(&print_handler);
 	EditorHelp::cleanup_doc();
