@@ -10,6 +10,7 @@ USE_LUMINANCE_MULTIPLIER = false
 USE_BCS = false
 USE_COLOR_CORRECTION = false
 USE_1D_LUT = false
+BCS_LEGACY = false
 
 #[vertex]
 layout(location = 0) in vec2 vertex_attrib;
@@ -81,16 +82,6 @@ vec3 apply_color_correction(vec3 color) {
 #endif // USE_1D_LUT
 #endif // USE_COLOR_CORRECTION
 
-#ifdef USE_BCS
-vec3 apply_bcs(vec3 color) {
-	color = mix(vec3(0.0), color, brightness);
-	color = mix(vec3(0.5), color, contrast);
-	color = mix(vec3(dot(vec3(1.0), color) * 0.33333), color, saturation);
-
-	return color;
-}
-#endif
-
 in vec2 uv_interp;
 
 layout(location = 0) out vec4 frag_color;
@@ -115,12 +106,44 @@ void main() {
 #endif
 
 	color.rgb = srgb_to_linear(color.rgb);
+
 	color.rgb = apply_tonemapping(color.rgb, white);
-	color.rgb = linear_to_srgb(color.rgb);
 
 #ifdef USE_BCS
-	color.rgb = apply_bcs(color.rgb);
-#endif
+
+#ifdef BCS_LEGACY
+	// Legacy behavior applies these functions to RGB values that use
+	// nonlinear sRGB encoding.
+	color.rgb = linear_to_srgb(color.rgb);
+
+	color.rgb = color.rgb * brightness;
+	color.rgb = mix(vec3(0.5f), color.rgb, contrast);
+	color.rgb = mix(vec3(dot(vec3(1.0f), color.rgb) * (1.0f / 3.0f)), color.rgb, saturation);
+#else
+	// Apply brightness:
+	// Apply to relative luminance. This ensures that the hue and saturation of
+	// colors is not affected by the adjustment, but requires the multiplication
+	// to be performed on linear encoded values.
+	color.rgb = color.rgb * brightness;
+
+	// Apply contrast:
+	// Use the industry-standard "18% middle gray" as the pivot.
+	// This approximately matches Photoshop 26.1's camera raw filter behavior.
+	color.rgb = mix(vec3(0.18), color.rgb, contrast);
+
+	// Apply saturation:
+	// Luminance weights of the current primaries must be used to prevent blues from
+	// brightening when saturation is decreased and darkening when saturation is increased.
+	// This approach approximately matches Photoshop 26.1's camera raw filter behavior.
+	const vec3 rec709_luminance_weights = vec3(0.2126, 0.7152, 0.0722);
+	color.rgb = mix(vec3(dot(rec709_luminance_weights, color.rgb)), color.rgb, saturation);
+
+	color.rgb = linear_to_srgb(color.rgb);
+#endif // BCS_LEGACY
+
+#else
+	color.rgb = linear_to_srgb(color.rgb);
+#endif // USE_BCS
 
 #ifdef USE_COLOR_CORRECTION
 	color.rgb = apply_color_correction(color.rgb);

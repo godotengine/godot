@@ -1359,7 +1359,7 @@ public:
 	PASS1(environment_set_sdfgi_frames_to_update_light, RS::EnvironmentSDFGIFramesToUpdateLight)
 
 	// Adjustment
-	PASS7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
+	PASS9(environment_set_adjustment, RID, bool, float, float, float, bool, RID, RS::EnvironmentBrightnessScale, bool)
 
 	PASS1RC(bool, environment_get_adjustments_enabled, RID)
 	PASS1RC(float, environment_get_adjustments_brightness, RID)
@@ -1367,6 +1367,8 @@ public:
 	PASS1RC(float, environment_get_adjustments_saturation, RID)
 	PASS1RC(bool, environment_get_use_1d_color_correction, RID)
 	PASS1RC(RID, environment_get_color_correction, RID)
+	PASS1RC(RS::EnvironmentBrightnessScale, environment_get_adjustments_brightness_scale, RID)
+	PASS1RC(bool, environment_get_adjustments_bcs_legacy, RID)
 
 	PASS3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
 

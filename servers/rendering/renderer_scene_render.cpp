@@ -695,8 +695,8 @@ RS::EnvironmentSDFGIYScale RendererSceneRender::environment_get_sdfgi_y_scale(RI
 
 // Adjustments
 
-void RendererSceneRender::environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) {
-	environment_storage.environment_set_adjustment(p_env, p_enable, p_brightness, p_contrast, p_saturation, p_use_1d_color_correction, p_color_correction);
+void RendererSceneRender::environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction, RS::EnvironmentBrightnessScale p_brightness_scale, bool p_bcs_legacy) {
+	environment_storage.environment_set_adjustment(p_env, p_enable, p_brightness, p_contrast, p_saturation, p_use_1d_color_correction, p_color_correction, p_brightness_scale, p_bcs_legacy);
 }
 
 bool RendererSceneRender::environment_get_adjustments_enabled(RID p_env) const {
@@ -705,6 +705,10 @@ bool RendererSceneRender::environment_get_adjustments_enabled(RID p_env) const {
 
 float RendererSceneRender::environment_get_adjustments_brightness(RID p_env) const {
 	return environment_storage.environment_get_adjustments_brightness(p_env);
+}
+
+float RendererSceneRender::environment_get_adjustments_brightness_scaled(RID p_env) const {
+	return environment_storage.environment_get_adjustments_brightness_scaled(p_env);
 }
 
 float RendererSceneRender::environment_get_adjustments_contrast(RID p_env) const {
@@ -721,4 +725,12 @@ bool RendererSceneRender::environment_get_use_1d_color_correction(RID p_env) con
 
 RID RendererSceneRender::environment_get_color_correction(RID p_env) const {
 	return environment_storage.environment_get_color_correction(p_env);
+}
+
+RS::EnvironmentBrightnessScale RendererSceneRender::environment_get_adjustments_brightness_scale(RID p_env) const {
+	return environment_storage.environment_get_adjustments_brightness_scale(p_env);
+}
+
+bool RendererSceneRender::environment_get_adjustments_bcs_legacy(RID p_env) const {
+	return environment_storage.environment_get_adjustments_bcs_legacy(p_env);
 }
