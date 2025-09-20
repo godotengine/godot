@@ -437,6 +437,8 @@ void MDCommandBuffer::_render_set_dirty_state() {
 							   withRange:NSMakeRange(first, p_binding_count)];
 	}
 
+	render.resource_tracker.encode(render.encoder);
+
 	render.dirty.clear();
 }
 
@@ -480,24 +482,33 @@ void MDCommandBuffer::render_set_blend_constants(const Color &p_constants) {
 	}
 }
 
-void BoundUniformSet::merge_into(ResourceUsageMap &p_dst) const {
-	for (KeyValue<StageResourceUsage, ResourceVector> const &keyval : usage_to_resources) {
-		ResourceVector *resources = p_dst.getptr(keyval.key);
+void ResourceTracker::merge_from(const ResourceUsageMap &p_from) {
+	for (KeyValue<StageResourceUsage, ResourceVector> const &keyval : p_from) {
+		ResourceVector *resources = _current.getptr(keyval.key);
 		if (resources == nullptr) {
-			resources = &p_dst.insert(keyval.key, ResourceVector())->value;
+			resources = &_current.insert(keyval.key, ResourceVector())->value;
 		}
 		// Reserve space for the new resources, assuming they are all added.
 		resources->reserve(resources->size() + keyval.value.size());
 
 		uint32_t i = 0, j = 0;
-		__unsafe_unretained id<MTLResource> *resources_ptr = resources->ptr();
-		const __unsafe_unretained id<MTLResource> *keyval_ptr = keyval.value.ptr();
+		MTLResourceUnsafe *resources_ptr = resources->ptr();
+		const MTLResourceUnsafe *keyval_ptr = keyval.value.ptr();
 		// 2-way merge.
 		while (i < resources->size() && j < keyval.value.size()) {
 			if (resources_ptr[i] < keyval_ptr[j]) {
 				i++;
 			} else if (resources_ptr[i] > keyval_ptr[j]) {
-				resources->insert(i, keyval_ptr[j]);
+				ResourceUsageEntry *existing = nullptr;
+				if ((existing = _previous.getptr(keyval_ptr[j])) == nullptr) {
+					existing = &_previous.insert(keyval_ptr[j], keyval.key)->value;
+					resources->insert(i, keyval_ptr[j]);
+				} else {
+					if (existing->usage != keyval.key) {
+						existing->usage |= keyval.key;
+						resources->insert(i, keyval_ptr[j]);
+					}
+				}
 				i++;
 				j++;
 			} else {
@@ -507,9 +518,82 @@ void BoundUniformSet::merge_into(ResourceUsageMap &p_dst) const {
 		}
 		// Append the remaining resources.
 		for (; j < keyval.value.size(); j++) {
-			resources->push_back(keyval_ptr[j]);
+			ResourceUsageEntry *existing = nullptr;
+			if ((existing = _previous.getptr(keyval_ptr[j])) == nullptr) {
+				existing = &_previous.insert(keyval_ptr[j], keyval.key)->value;
+				resources->push_back(keyval_ptr[j]);
+			} else {
+				if (existing->usage != keyval.key) {
+					existing->usage |= keyval.key;
+					resources->push_back(keyval_ptr[j]);
+				}
+			}
 		}
 	}
+}
+
+void ResourceTracker::encode(id<MTLRenderCommandEncoder> __unsafe_unretained p_enc) {
+	for (KeyValue<StageResourceUsage, ResourceVector> const &keyval : _current) {
+		if (keyval.value.is_empty()) {
+			continue;
+		}
+
+		MTLResourceUsage vert_usage = resource_usage_for_stage(keyval.key, RDD::ShaderStage::SHADER_STAGE_VERTEX);
+		MTLResourceUsage frag_usage = resource_usage_for_stage(keyval.key, RDD::ShaderStage::SHADER_STAGE_FRAGMENT);
+		if (vert_usage == frag_usage) {
+			[p_enc useResources:keyval.value.ptr() count:keyval.value.size() usage:vert_usage stages:MTLRenderStageVertex | MTLRenderStageFragment];
+		} else {
+			if (vert_usage != 0) {
+				[p_enc useResources:keyval.value.ptr() count:keyval.value.size() usage:vert_usage stages:MTLRenderStageVertex];
+			}
+			if (frag_usage != 0) {
+				[p_enc useResources:keyval.value.ptr() count:keyval.value.size() usage:frag_usage stages:MTLRenderStageFragment];
+			}
+		}
+	}
+
+	// Keep the keys for now and clear the vectors to reduce churn.
+	for (KeyValue<StageResourceUsage, ResourceVector> &v : _current) {
+		v.value.clear();
+	}
+}
+
+void ResourceTracker::encode(id<MTLComputeCommandEncoder> __unsafe_unretained p_enc) {
+	for (KeyValue<StageResourceUsage, ResourceVector> const &keyval : _current) {
+		if (keyval.value.is_empty()) {
+			continue;
+		}
+		MTLResourceUsage usage = resource_usage_for_stage(keyval.key, RDD::ShaderStage::SHADER_STAGE_COMPUTE);
+		if (usage != 0) {
+			[p_enc useResources:keyval.value.ptr() count:keyval.value.size() usage:usage];
+		}
+	}
+
+	// Keep the keys for now and clear the vectors to reduce churn.
+	for (KeyValue<StageResourceUsage, ResourceVector> &v : _current) {
+		v.value.clear();
+	}
+}
+
+void ResourceTracker::reset() {
+	// Keep the keys for now, as they are likely to be used repeatedly.
+	for (KeyValue<MTLResourceUnsafe, ResourceUsageEntry> &v : _previous) {
+		if (v.value.usage == ResourceUnused) {
+			v.value.unused++;
+			if (v.value.unused >= RESOURCE_UNUSED_CLEANUP_COUNT) {
+				_scratch.push_back(v.key);
+			}
+		} else {
+			v.value = ResourceUnused;
+			v.value.unused = 0;
+		}
+	}
+
+	// Clear up resources that weren't used for the last pass.
+	for (const MTLResourceUnsafe &res : _scratch) {
+		_previous.erase(res);
+	}
+	_scratch.clear();
 }
 
 void MDCommandBuffer::_render_bind_uniform_sets() {
@@ -951,35 +1035,12 @@ void MDCommandBuffer::RenderState::reset() {
 	blend_constants.reset();
 	vertex_buffers.clear();
 	vertex_offsets.clear();
-	// Keep the keys, as they are likely to be used again.
-	for (KeyValue<StageResourceUsage, LocalVector<__unsafe_unretained id<MTLResource>>> &kv : resource_usage) {
-		kv.value.clear();
-	}
+	resource_tracker.reset();
 }
 
 void MDCommandBuffer::RenderState::end_encoding() {
 	if (encoder == nil) {
 		return;
-	}
-
-	// Bind all resources.
-	for (KeyValue<StageResourceUsage, ResourceVector> const &keyval : resource_usage) {
-		if (keyval.value.is_empty()) {
-			continue;
-		}
-
-		MTLResourceUsage vert_usage = resource_usage_for_stage(keyval.key, RDD::ShaderStage::SHADER_STAGE_VERTEX);
-		MTLResourceUsage frag_usage = resource_usage_for_stage(keyval.key, RDD::ShaderStage::SHADER_STAGE_FRAGMENT);
-		if (vert_usage == frag_usage) {
-			[encoder useResources:keyval.value.ptr() count:keyval.value.size() usage:vert_usage stages:MTLRenderStageVertex | MTLRenderStageFragment];
-		} else {
-			if (vert_usage != 0) {
-				[encoder useResources:keyval.value.ptr() count:keyval.value.size() usage:vert_usage stages:MTLRenderStageVertex];
-			}
-			if (frag_usage != 0) {
-				[encoder useResources:keyval.value.ptr() count:keyval.value.size() usage:frag_usage stages:MTLRenderStageFragment];
-			}
-		}
 	}
 
 	[encoder endEncoding];
@@ -991,17 +1052,6 @@ void MDCommandBuffer::RenderState::end_encoding() {
 void MDCommandBuffer::ComputeState::end_encoding() {
 	if (encoder == nil) {
 		return;
-	}
-
-	// Bind all resources.
-	for (KeyValue<StageResourceUsage, ResourceVector> const &keyval : resource_usage) {
-		if (keyval.value.is_empty()) {
-			continue;
-		}
-		MTLResourceUsage usage = resource_usage_for_stage(keyval.key, RDD::ShaderStage::SHADER_STAGE_COMPUTE);
-		if (usage != 0) {
-			[encoder useResources:keyval.value.ptr() count:keyval.value.size() usage:usage];
-		}
 	}
 
 	[encoder endEncoding];
@@ -1025,6 +1075,8 @@ void MDCommandBuffer::_compute_set_dirty_state() {
 							  atIndex:compute.push_constant_bindings[0]];
 		}
 	}
+
+	compute.resource_tracker.encode(compute.encoder);
 
 	compute.dirty.clear();
 }
@@ -1061,10 +1113,7 @@ void MDCommandBuffer::ComputeState::reset() {
 	uniform_sets.clear();
 	uniform_set_mask = 0;
 	push_constant_data_len = 0;
-	// Keep the keys, as they are likely to be used again.
-	for (KeyValue<StageResourceUsage, LocalVector<__unsafe_unretained id<MTLResource>>> &kv : resource_usage) {
-		kv.value.clear();
-	}
+	resource_tracker.reset();
 }
 
 void MDCommandBuffer::compute_bind_uniform_set(RDD::UniformSetID p_uniform_set, RDD::ShaderID p_shader, uint32_t p_set_index) {
@@ -1172,7 +1221,9 @@ void MDUniformSet::bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandB
 	id<MTLRenderCommandEncoder> __unsafe_unretained enc = p_state.encoder;
 	id<MTLDevice> __unsafe_unretained device = enc.device;
 
-	BoundUniformSet &bus = bound_uniform_set(p_shader, device, p_state.resource_usage, p_set_index);
+	BoundUniformSet &bus = bound_uniform_set(p_shader, device, p_set_index);
+
+	p_state.resource_tracker.merge_from(bus.usage_to_resources);
 
 	// Set the buffer for the vertex stage.
 	{
@@ -1384,7 +1435,8 @@ void MDUniformSet::bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandB
 	id<MTLComputeCommandEncoder> enc = p_state.encoder;
 	id<MTLDevice> device = enc.device;
 
-	BoundUniformSet &bus = bound_uniform_set(p_shader, device, p_state.resource_usage, p_set_index);
+	BoundUniformSet &bus = bound_uniform_set(p_shader, device, p_set_index);
+	p_state.resource_tracker.merge_from(bus.usage_to_resources);
 
 	uint32_t const *offset = set_info.offsets.getptr(RDD::SHADER_STAGE_COMPUTE);
 	if (offset) {
@@ -1526,17 +1578,16 @@ void MDUniformSet::bind_uniforms(MDShader *p_shader, MDCommandBuffer::ComputeSta
 	}
 }
 
-BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevice> p_device, ResourceUsageMap &p_resource_usage, uint32_t p_set_index) {
+BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevice> p_device, uint32_t p_set_index) {
 	BoundUniformSet *sus = bound_uniforms.getptr(p_shader);
 	if (sus != nullptr) {
-		sus->merge_into(p_resource_usage);
 		return *sus;
 	}
 
 	UniformSet const &set = p_shader->sets[p_set_index];
 
-	HashMap<id<MTLResource>, StageResourceUsage> bound_resources;
-	auto add_usage = [&bound_resources](id<MTLResource> __unsafe_unretained res, RDD::ShaderStage stage, MTLResourceUsage usage) {
+	HashMap<MTLResourceUnsafe, StageResourceUsage> bound_resources;
+	auto add_usage = [&bound_resources](MTLResourceUnsafe res, RDD::ShaderStage stage, MTLResourceUsage usage) {
 		StageResourceUsage *sru = bound_resources.getptr(res);
 		if (sru == nullptr) {
 			bound_resources.insert(res, stage_resource_usage(stage, usage));
@@ -1681,7 +1732,7 @@ BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevic
 	}
 
 	ResourceUsageMap usage_to_resources;
-	for (KeyValue<id<MTLResource>, StageResourceUsage> const &keyval : bound_resources) {
+	for (KeyValue<MTLResourceUnsafe, StageResourceUsage> const &keyval : bound_resources) {
 		ResourceVector *resources = usage_to_resources.getptr(keyval.value);
 		if (resources == nullptr) {
 			resources = &usage_to_resources.insert(keyval.value, ResourceVector())->value;
@@ -1693,9 +1744,7 @@ BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevic
 	}
 
 	BoundUniformSet bs = { .buffer = enc_buffer, .usage_to_resources = usage_to_resources };
-	bound_uniforms.insert(p_shader, bs);
-	bs.merge_into(p_resource_usage);
-	return bound_uniforms.get(p_shader);
+	return bound_uniforms.insert(p_shader, bs)->value;
 }
 
 MTLFmtCaps MDSubpass::getRequiredFmtCapsForAttachmentAt(uint32_t p_index) const {
