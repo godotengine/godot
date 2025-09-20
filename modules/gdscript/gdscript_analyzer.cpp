@@ -2051,7 +2051,7 @@ void GDScriptAnalyzer::decide_suite_type(GDScriptParser::Node *p_suite, GDScript
 	}
 }
 
-void GDScriptAnalyzer::resolve_suite(GDScriptParser::SuiteNode *p_suite) {
+void GDScriptAnalyzer::resolve_suite(GDScriptParser::SuiteNode *p_suite, bool p_is_root) {
 	for (int i = 0; i < p_suite->statements.size(); i++) {
 		GDScriptParser::Node *stmt = p_suite->statements[i];
 		// Apply annotations.
@@ -2060,7 +2060,7 @@ void GDScriptAnalyzer::resolve_suite(GDScriptParser::SuiteNode *p_suite) {
 			E->apply(parser, stmt, nullptr); // TODO: Provide `p_class`.
 		}
 
-		resolve_node(stmt);
+		resolve_node(stmt, p_is_root);
 		resolve_pending_lambda_bodies();
 		decide_suite_type(p_suite, stmt);
 	}
@@ -2423,7 +2423,7 @@ void GDScriptAnalyzer::resolve_match_branch(GDScriptParser::MatchBranchNode *p_m
 	}
 
 	if (p_match_branch->guard_body) {
-		resolve_suite(p_match_branch->guard_body);
+		resolve_suite(p_match_branch->guard_body, false);
 	}
 
 	resolve_suite(p_match_branch->block);
