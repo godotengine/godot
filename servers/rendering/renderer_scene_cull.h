@@ -432,6 +432,8 @@ public:
 		Instance *lightmap = nullptr;
 		Rect2 lightmap_uv_scale;
 		int lightmap_slice_index;
+		float lightmap_baked_texel_scale;
+		float lightmap_texel_scale;
 		uint32_t lightmap_cull_index;
 		Vector<Color> lightmap_sh; //spherical harmonic
 
@@ -572,6 +574,8 @@ public:
 
 			lightmap_slice_index = 0;
 			lightmap = nullptr;
+			lightmap_baked_texel_scale = 1.0;
+			lightmap_texel_scale = 1.0;
 			lightmap_cull_index = 0;
 			lod_bias = 1.0;
 			ignore_occlusion_culling = false;
@@ -1059,6 +1063,8 @@ public:
 	virtual void instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin, RS::VisibilityRangeFadeMode p_fade_mode);
 
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index);
+	virtual void instance_geometry_set_lightmap_baked_texel_scale(RID p_instance, float p_scale);
+	virtual void instance_geometry_set_lightmap_texel_scale(RID p_instance, float p_scale);
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias);
 
 	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &p_parameter, const Variant &p_value);

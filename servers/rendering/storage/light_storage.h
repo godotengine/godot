@@ -178,6 +178,10 @@ public:
 	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) = 0;
 	virtual RS::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) = 0;
 	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMode p_mode) = 0;
+	virtual float lightmap_get_texel_scale(RID p_lightmap) = 0;
+	virtual void lightmap_set_texel_scale(RID p_lightmap, float p_scale) = 0;
+	virtual float lightmap_get_baked_texel_scale(RID p_lightmap) = 0;
+	virtual void lightmap_set_baked_texel_scale(RID p_lightmap, float p_scale) = 0;
 
 	/* LIGHTMAP INSTANCE */
 
