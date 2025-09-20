@@ -1805,15 +1805,17 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				const StringName native_type = _global_names_ptr[native_type_idx];
 
 				Array array;
+				array.set_typed(builtin_type, native_type, *script_type);
 				array.resize(argc);
 				for (int i = 0; i < argc; i++) {
-					array[i] = *(instruction_args[i]);
+					// Use .set instead of operator[] to handle type conversion / validation.
+					array.set(i, *(instruction_args[i]));
 				}
 
 				GET_INSTRUCTION_ARG(dst, argc);
 				*dst = Variant(); // Clear potential previous typed array.
 
-				*dst = Array(array, builtin_type, native_type, *script_type);
+				*dst = array;
 
 				ip += 4;
 			}
@@ -1864,18 +1866,20 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				const StringName value_native_type = _global_names_ptr[value_native_type_idx];
 
 				Dictionary dict;
+				dict.set_typed(key_builtin_type, key_native_type, *key_script_type, value_builtin_type, value_native_type, *value_script_type);
 
 				for (int i = 0; i < argc; i++) {
 					GET_INSTRUCTION_ARG(k, i * 2 + 0);
 					GET_INSTRUCTION_ARG(v, i * 2 + 1);
-					dict[*k] = *v;
+					// Use .set instead of operator[] to handle type conversion / validation.
+					dict.set(*k, *v);
 				}
 
 				GET_INSTRUCTION_ARG(dst, argc * 2);
 
 				*dst = Variant(); // Clear potential previous typed dictionary.
 
-				*dst = Dictionary(dict, key_builtin_type, key_native_type, *key_script_type, value_builtin_type, value_native_type, *value_script_type);
+				*dst = dict;
 
 				ip += 6;
 			}
