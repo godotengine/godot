@@ -133,6 +133,9 @@
 		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates" default="false">
 			If [code]true[/code], particles use the parent node's coordinate space (known as local coordinates). This will cause particles to move and rotate along the [GPUParticles3D] node (and its parents) when it is moved or rotated. If [code]false[/code], particles use global coordinates; they will not move or rotate along the [GPUParticles3D] node (and its parents) when it is moved or rotated.
 		</member>
+		<member name="local_trails" type="bool" setter="set_local_trails" getter="get_local_trails" default="false">
+			If [code]true[/code], particles use the parent node's coordinate space (known as local coordinates) for the trail origin. This means the trails will always start from the transform of the [GPUParticles3D] node.
+		</member>
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot" default="false">
 			If [code]true[/code], only the number of particles equal to [member amount] will be emitted.
 		</member>
