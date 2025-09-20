@@ -177,10 +177,10 @@ class [[nodiscard]] CharStringT {
 public:
 	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
-	_FORCE_INLINE_ const T *get_data() const { return ptr() ? ptr() : &_null; }
+	_FORCE_INLINE_ const T *get_data() const { return size() ? ptr() : &_null; }
 
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
-	_FORCE_INLINE_ int length() const { return ptr() ? size() - 1 : 0; }
+	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
 	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
 	_FORCE_INLINE_ operator Span<T>() const { return Span(ptr(), length()); }
@@ -297,10 +297,10 @@ public:
 
 	_FORCE_INLINE_ char32_t *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char32_t *ptr() const { return _cowdata.ptr(); }
-	_FORCE_INLINE_ const char32_t *get_data() const { return ptr() ? ptr() : &_null; }
+	_FORCE_INLINE_ const char32_t *get_data() const { return size() ? ptr() : &_null; }
 
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
-	_FORCE_INLINE_ int length() const { return ptr() ? size() - 1 : 0; }
+	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
 	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
 	_FORCE_INLINE_ operator Span<char32_t>() const { return Span(ptr(), length()); }
@@ -316,6 +316,11 @@ public:
 	/// Resizes the string. The given size must include the null terminator.
 	/// New characters are not initialized, and should be set by the caller.
 	Error resize_uninitialized(int64_t p_size) { return _cowdata.resize<false>(p_size); }
+
+	Error reserve(int64_t p_size) {
+		ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
+		return _cowdata.reserve(p_size);
+	}
 
 	_FORCE_INLINE_ const char32_t &operator[](int p_index) const {
 		if (unlikely(p_index == _cowdata.size())) {
