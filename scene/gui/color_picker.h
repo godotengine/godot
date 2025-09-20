@@ -237,7 +237,6 @@ private:
 	void _req_permission();
 
 #ifdef TOOLS_ENABLED
-	Callable quick_open_callback;
 	Callable palette_saved_callback;
 #endif // TOOLS_ENABLED
 
@@ -423,7 +422,6 @@ protected:
 public:
 #ifdef TOOLS_ENABLED
 	void set_editor_settings(Object *p_editor_settings);
-	void set_quick_open_callback(const Callable &p_file_selected);
 	void set_palette_saved_callback(const Callable &p_palette_saved);
 
 	void _quick_open_palette_file_selected(const String &p_path);
