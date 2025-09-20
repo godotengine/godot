@@ -39,47 +39,17 @@
 #include "core/variant/dictionary.h"
 
 struct ArrayPrivate {
-	SafeRefCount refcount;
 	Vector<Variant> array;
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
-	ContainerTypeValidate typed;
+	mutable ContainerTypeValidate typed;
 
 	ArrayPrivate() {}
 	ArrayPrivate(std::initializer_list<Variant> p_init) :
 			array(p_init) {}
+	~ArrayPrivate() {
+		memdelete_notnull(read_only);
+	}
 };
-
-void Array::_ref(const Array &p_from) const {
-	ArrayPrivate *_fp = p_from._p;
-
-	ERR_FAIL_NULL(_fp); // Should NOT happen.
-
-	if (_fp == _p) {
-		return; // whatever it is, nothing to do here move along
-	}
-
-	bool success = _fp->refcount.ref();
-
-	ERR_FAIL_COND(!success); // should really not happen either
-
-	_unref();
-
-	_p = _fp;
-}
-
-void Array::_unref() const {
-	if (!_p) {
-		return;
-	}
-
-	if (_p->refcount.unref()) {
-		if (_p->read_only) {
-			memdelete(_p->read_only);
-		}
-		memdelete(_p);
-	}
-	_p = nullptr;
-}
 
 Array::Iterator Array::begin() {
 	return Iterator(_p->array.ptrw(), _p->read_only);
@@ -204,10 +174,7 @@ uint32_t Array::recursive_hash(int recursion_count) const {
 }
 
 void Array::operator=(const Array &p_array) {
-	if (this == &p_array) {
-		return;
-	}
-	_ref(p_array);
+	_p = p_array._p;
 }
 
 void Array::assign(const Array &p_array) {
@@ -863,8 +830,7 @@ const void *Array::id() const {
 }
 
 Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
-	_p = memnew(ArrayPrivate);
-	_p->refcount.init();
+	_p = SharedPtr<ArrayPrivate>::make();
 	set_typed(p_type, p_class_name, p_script);
 	assign(p_from);
 }
@@ -876,7 +842,7 @@ void Array::set_typed(const ContainerType &p_element_type) {
 void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
-	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
+	ERR_FAIL_COND_MSG(_p.refcount().get() > 1, "Type can only be set when array has no more than one user.");
 	ERR_FAIL_COND_MSG(_p->typed.type != Variant::NIL, "Type can only be set once.");
 	ERR_FAIL_COND_MSG(p_class_name != StringName() && p_type != Variant::OBJECT, "Class names can only be set for type OBJECT");
 	Ref<Script> script = p_script;
@@ -940,22 +906,15 @@ Span<Variant> Array::span() const {
 	return _p->array.span();
 }
 
-Array::Array(const Array &p_from) {
-	_p = nullptr;
-	_ref(p_from);
-}
+Array::Array(const Array &p_from) :
+		_p(p_from._p) {}
 
 Array::Array(std::initializer_list<Variant> p_init) {
-	_p = memnew(ArrayPrivate);
-	_p->refcount.init();
-	_p->array = Vector<Variant>(p_init);
+	_p = SharedPtr<ArrayPrivate>::make(p_init);
 }
 
 Array::Array() {
-	_p = memnew(ArrayPrivate);
-	_p->refcount.init();
+	_p = SharedPtr<ArrayPrivate>::make();
 }
 
-Array::~Array() {
-	_unref();
-}
+Array::~Array() {}
