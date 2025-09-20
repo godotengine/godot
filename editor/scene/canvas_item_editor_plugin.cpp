@@ -43,6 +43,7 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
+#include "editor/plugins/editor_plugin_list.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
@@ -4073,14 +4074,8 @@ void CanvasItemEditor::_draw_viewport() {
 	RID ci = viewport->get_canvas_item();
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(ci, Transform2D());
 
-	EditorPluginList *over_plugin_list = EditorNode::get_singleton()->get_editor_plugins_over();
-	if (!over_plugin_list->is_empty()) {
-		over_plugin_list->forward_canvas_draw_over_viewport(viewport);
-	}
-	EditorPluginList *force_over_plugin_list = EditorNode::get_singleton()->get_editor_plugins_force_over();
-	if (!force_over_plugin_list->is_empty()) {
-		force_over_plugin_list->forward_canvas_force_draw_over_viewport(viewport);
-	}
+	EditorNode::get_singleton()->get_editor_plugins_over()->forward_canvas_draw_over_viewport(viewport);
+	EditorNode::get_singleton()->get_editor_plugins_force_over()->forward_canvas_force_draw_over_viewport(viewport);
 
 	if (show_rulers) {
 		_draw_rulers();
