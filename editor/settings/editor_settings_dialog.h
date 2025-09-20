@@ -30,8 +30,8 @@
 
 #pragma once
 
+#include "editor/gui/editor_accept_dialog.h"
 #include "editor/inspector/editor_inspector.h"
-#include "scene/gui/dialogs.h"
 
 class CheckButton;
 class EditorEventSearchBar;
@@ -44,8 +44,8 @@ class TextureRect;
 class Tree;
 class TreeItem;
 
-class EditorSettingsDialog : public AcceptDialog {
-	GDCLASS(EditorSettingsDialog, AcceptDialog);
+class EditorSettingsDialog : public EditorAcceptDialog {
+	GDCLASS(EditorSettingsDialog, EditorAcceptDialog);
 
 	bool updating = false;
 
