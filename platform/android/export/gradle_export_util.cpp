@@ -175,7 +175,7 @@ Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_
 	String simplified_path = p_path.simplify_path();
 	if (simplified_path.begins_with("uid://")) {
 		simplified_path = ResourceUID::uid_to_path(simplified_path).simplify_path();
-		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, simplified_path));
+		PRINT_VERBOSE(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, simplified_path));
 	}
 
 	Vector<uint8_t> enc_data;
@@ -186,7 +186,7 @@ Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_
 	}
 
 	const String dst_path = export_data->assets_directory + String("/") + simplified_path.trim_prefix("res://");
-	print_verbose("Saving project files from " + simplified_path + " into " + dst_path);
+	PRINT_VERBOSE("Saving project files from " + simplified_path + " into " + dst_path);
 	err = store_file_at_path(dst_path, enc_data);
 
 	export_data->pd.file_ofs.push_back(sd);
@@ -210,7 +210,7 @@ String _android_xml_escape(const String &p_string) {
 
 // Creates strings.xml files inside the gradle project for different locales.
 Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &p_project_name, const String &p_gradle_build_dir, const Dictionary &p_appnames) {
-	print_verbose("Creating strings resources for supported locales for project " + p_project_name);
+	PRINT_VERBOSE("Creating strings resources for supported locales for project " + p_project_name);
 	// Stores the string into the default values directory.
 	String processed_default_xml_string = vformat(GODOT_PROJECT_NAME_XML_STRING, _android_xml_escape(p_project_name));
 	store_string_at_path(p_gradle_build_dir.path_join("res/values/godot_project_name_string.xml"), processed_default_xml_string);
@@ -238,7 +238,7 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 		if (p_appnames.has(locale)) {
 			String locale_project_name = p_appnames[locale];
 			String processed_xml_string = vformat(GODOT_PROJECT_NAME_XML_STRING, _android_xml_escape(locale_project_name));
-			print_verbose("Storing project name for locale " + locale + " under " + locale_directory);
+			PRINT_VERBOSE("Storing project name for locale " + locale + " under " + locale_directory);
 			store_string_at_path(locale_directory, processed_xml_string);
 		} else {
 			// TODO: Once the legacy build system is deprecated we don't need to have xml files for this else branch
