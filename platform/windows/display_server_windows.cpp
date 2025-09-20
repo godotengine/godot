@@ -4354,6 +4354,25 @@ void DisplayServerWindows::window_start_resize(WindowResizeEdge p_edge, WindowID
 	}
 }
 
+void DisplayServerWindows::window_show_system_menu(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	HMENU system_menu = GetSystemMenu(wd.hWnd, false);
+
+	POINT coords;
+	GetCursorPos(&coords);
+
+	// Retrieve menu identifier for later.
+	int menu_ident = TrackPopupMenu(system_menu, TPM_LEFTALIGN | TPM_TOPALIGN, coords.x, coords.y, 0, wd.hWnd, 0);
+
+	if (menu_ident != 0) {
+		SendMessage(wd.hWnd, WM_SYSCOMMAND, menu_ident, 0);
+	}
+
+}
+
 void DisplayServerWindows::set_context(Context p_context) {
 }
 

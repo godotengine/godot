@@ -539,6 +539,8 @@ public:
 
 	virtual void window_start_resize(WindowResizeEdge p_edge, WindowID p_window = MAIN_WINDOW_ID) {}
 
+	virtual void window_show_system_menu(WindowID p_window = MAIN_WINDOW_ID) {}
+
 	// Accessibility.
 
 	enum AccessibilityMode {
