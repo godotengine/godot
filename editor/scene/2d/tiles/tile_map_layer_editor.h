@@ -47,6 +47,7 @@
 
 class TileMapLayer;
 class TileMapLayerEditor;
+class TileSetSourceItemList;
 
 class TileMapLayerSubEditorPlugin : public Object {
 protected:
@@ -176,7 +177,7 @@ private:
 	Label *missing_source_label = nullptr;
 	Label *invalid_source_label = nullptr;
 
-	ItemList *sources_list = nullptr;
+	TileSetSourceItemList *sources_list = nullptr;
 	MenuButton *source_sort_button = nullptr;
 
 	Ref<Texture2D> missing_atlas_texture_icon;
