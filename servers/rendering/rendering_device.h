@@ -67,6 +67,7 @@ private:
 public:
 	typedef int64_t DrawListID;
 	typedef int64_t ComputeListID;
+	typedef int64_t VideoCodingListID;
 
 	typedef void (*InvalidationCallback)(void *);
 
@@ -103,6 +104,7 @@ public:
 		ID_TYPE_VERTEX_FORMAT,
 		ID_TYPE_DRAW_LIST,
 		ID_TYPE_COMPUTE_LIST = 4,
+		ID_TYPE_VIDEO_CODING_LIST = 5,
 		ID_TYPE_MAX,
 		ID_BASE_SHIFT = 58, // 5 bits for ID types.
 		ID_MASK = (ID_BASE_SHIFT - 1),
@@ -398,6 +400,7 @@ public:
 	RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
 	RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_usage, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers, uint64_t p_mipmaps = 1);
 	RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D, uint32_t p_layers = 0);
+	RID texture_create_for_video_coding(const TextureFormat &p_format, const TextureView &p_view, RID p_video_profile);
 	Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data);
 	Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer); // CPU textures will return immediately, while GPU textures will most likely force a flush
 	Error texture_get_data_async(RID p_texture, uint32_t p_layer, const Callable &p_callback);
@@ -793,6 +796,7 @@ public:
 
 	enum StorageBufferUsage {
 		STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT = (1 << 0),
+		STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC = (1 << 1),
 	};
 
 	RID vertex_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p_data = {}, BitField<BufferCreationBits> p_creation_bits = 0);
@@ -982,6 +986,7 @@ public:
 	}
 
 	RID storage_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p_data = {}, BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0);
+	RID storage_buffer_create_video_session(uint32_t p_size_bytes, RID p_video_session, Span<uint8_t> p_data = {}, BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0);
 	RID _storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0) {
 		return storage_buffer_create(p_size_bytes, p_data, p_usage, p_creation_bits);
 	}
@@ -1396,6 +1401,45 @@ public:
 	void compute_list_end();
 
 private:
+	/****************************/
+	/**** VIDEO CODING LISTS ****/
+	/****************************/
+
+	struct VideoCodingList {
+		bool active = false;
+
+		RID video_profile;
+		RDD::VideoSessionID video_session;
+
+		RID dst_texture;
+		RID dpb_texture;
+	};
+
+	VideoCodingList video_coding_list;
+	RDD::CommandBufferID decode_buffer;
+
+	RID_Owner<VideoProfileState> video_profiles_owner;
+
+public:
+	VideoCodingListID video_coding_list_begin(RID p_profile, RID p_dpb, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps);
+	void video_coding_list_control(VideoCodingListID p_list);
+	void video_coding_list_decode(VideoCodingListID p_list, RID p_src_buffer, RID p_dst_texture, StdVideoDecodeH264PictureInfo p_std_h264_info, uint32_t p_array_layer);
+	void video_coding_list_encode(VideoCodingListID p_list);
+
+	RID video_coding_list_end();
+
+public:
+	RID video_profile_create(VideoCodingChromaSubsampling p_chroma_subsampling, uint32_t p_luma_bit_depth, uint32_t p_chroma_bit_depth);
+
+	void video_profile_bind_h264_decoding_metadata(RID p_profile, VideoCodingH264ProfileIdc p_std_profile, VideoCodingH264PictureLayout p_picture_layout);
+	void video_profile_bind_h265_decoding_metadata(RID p_profile, uint32_t p_std_profile);
+	void video_profile_bind_av1_decoding_metadata(RID p_profile, uint32_t p_std_profile, bool p_film_grain_support);
+	void video_profile_bind_vp9_decoding_metadata(RID p_profile, uint32_t p_std_profile);
+
+	void video_profile_get_capabilities(RID p_profile);
+	void video_profile_get_format_properties(RID p_profile);
+
+private:
 	/*************************/
 	/**** TRANSFER WORKER ****/
 	/*************************/
@@ -1466,9 +1510,11 @@ private:
 	RDD::CommandQueueFamilyID main_queue_family;
 	RDD::CommandQueueFamilyID transfer_queue_family;
 	RDD::CommandQueueFamilyID present_queue_family;
+	RDD::CommandQueueFamilyID decode_queue_family;
 	RDD::CommandQueueID main_queue;
 	RDD::CommandQueueID transfer_queue;
 	RDD::CommandQueueID present_queue;
+	RDD::CommandQueueID decode_queue;
 
 	/**************************/
 	/**** FRAME MANAGEMENT ****/

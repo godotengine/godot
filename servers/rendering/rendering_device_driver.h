@@ -51,6 +51,8 @@
 #include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/rendering_shader_container.h"
 
+#include "thirdparty/vulkan/include/vk_video/vulkan_video_codec_h264std_decode.h"
+
 // These utilities help drivers avoid allocations.
 #define ALLOCA(m_size) ((m_size != 0) ? alloca(m_size) : nullptr)
 #define ALLOCA_ARRAY(m_type, m_count) ((m_type *)ALLOCA(sizeof(m_type) * (m_count)))
@@ -166,6 +168,7 @@ public:
 		BUFFER_USAGE_INDEX_BIT = (1 << 6),
 		BUFFER_USAGE_VERTEX_BIT = (1 << 7),
 		BUFFER_USAGE_INDIRECT_BIT = (1 << 8),
+		BUFFER_USAGE_VIDEO_DECODE_SRC_BIT = (1 << 13),
 		BUFFER_USAGE_DEVICE_ADDRESS_BIT = (1 << 17),
 	};
 
@@ -174,6 +177,7 @@ public:
 	};
 
 	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) = 0;
+	virtual BufferID buffer_create_video_session(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, VideoProfileState *p_profile) = 0;
 	// Only for a buffer with BUFFER_USAGE_TEXEL_BIT.
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) = 0;
 	virtual void buffer_free(BufferID p_buffer) = 0;
@@ -216,6 +220,8 @@ public:
 		TEXTURE_ASPECT_COLOR = 0,
 		TEXTURE_ASPECT_DEPTH = 1,
 		TEXTURE_ASPECT_STENCIL = 2,
+		TEXTURE_ASPECT_PLANE0 = 4,
+		TEXTURE_ASPECT_PLANE1 = 5,
 		TEXTURE_ASPECT_MAX
 	};
 
@@ -228,6 +234,8 @@ public:
 		TEXTURE_ASPECT_COLOR_BIT = (1 << TEXTURE_ASPECT_COLOR),
 		TEXTURE_ASPECT_DEPTH_BIT = (1 << TEXTURE_ASPECT_DEPTH),
 		TEXTURE_ASPECT_STENCIL_BIT = (1 << TEXTURE_ASPECT_STENCIL),
+		TEXTURE_ASPECT_PLANE0_BIT = (1 << TEXTURE_ASPECT_PLANE0),
+		TEXTURE_ASPECT_PLANE1_BIT = (1 << TEXTURE_ASPECT_PLANE1),
 	};
 
 	struct TextureSubresource {
@@ -264,6 +272,7 @@ public:
 	// texture_create_shared_*() can only use original, non-view textures as original. RenderingDevice is responsible for ensuring that.
 	virtual TextureID texture_create_shared(TextureID p_original_texture, const TextureView &p_view) = 0;
 	virtual TextureID texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) = 0;
+	virtual TextureID texture_create_video_session(const TextureFormat &p_format, const TextureView &p_view, VideoProfileState *p_profile) = 0;
 	virtual void texture_free(TextureID p_texture) = 0;
 	virtual uint64_t texture_get_allocation_size(TextureID p_texture) = 0;
 	virtual void texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) = 0;
@@ -312,6 +321,8 @@ public:
 		PIPELINE_STAGE_CLEAR_STORAGE_BIT = (1 << 17),
 		PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT = (1 << 22),
 		PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT = (1 << 23),
+		PIPELINE_STAGE_2_VIDEO_DECODE_BIT = (1 << 26),
+		PIPELINE_STAGE_2_VIDEO_ENCODE_BIT = (1 << 27),
 	};
 
 	enum BarrierAccessBits {
@@ -394,7 +405,9 @@ public:
 	enum CommandQueueFamilyBits {
 		COMMAND_QUEUE_FAMILY_GRAPHICS_BIT = 0x1,
 		COMMAND_QUEUE_FAMILY_COMPUTE_BIT = 0x2,
-		COMMAND_QUEUE_FAMILY_TRANSFER_BIT = 0x4
+		COMMAND_QUEUE_FAMILY_TRANSFER_BIT = 0x4,
+		COMMAND_QUEUE_FAMILY_DECODE_BIT = 0x20,
+		COMMAND_QUEUE_FAMILY_ENCODE_BIT = 0x40,
 	};
 
 	// The requested command queue family must support all specified bits or it'll fail to return a valid family otherwise. If a valid surface is specified, the queue must support presenting to it.
@@ -404,6 +417,7 @@ public:
 	// ----- QUEUE -----
 
 	virtual CommandQueueID command_queue_create(CommandQueueFamilyID p_cmd_queue_family, bool p_identify_as_main_queue = false) = 0;
+	virtual Error command_queue_execute(CommandQueueID p_cmd_queue, CommandBufferID p_cmd_buffer, FenceID p_fence) = 0;
 	virtual Error command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) = 0;
 	virtual void command_queue_free(CommandQueueID p_cmd_queue) = 0;
 
@@ -734,6 +748,21 @@ public:
 
 	virtual void begin_segment(uint32_t p_frame_index, uint32_t p_frames_drawn) = 0;
 	virtual void end_segment() = 0;
+
+	/**********************/
+	/**** VIDEO CODING ****/
+	/**********************/
+	DEFINE_ID(VideoSession);
+
+	virtual void video_profile_get_capabilities(const VideoProfileState *p_profile) = 0;
+	virtual void video_profile_get_format_properties(const VideoProfileState *p_profile) = 0;
+
+	virtual VideoSessionID video_session_create(const VideoProfileState *p_profile, DataFormat p_image_format) = 0;
+
+	virtual void command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, TextureID p_dpb, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) = 0;
+	virtual void command_video_control(CommandBufferID p_cmd_buffer) = 0;
+	virtual void command_video_decode(CommandBufferID p_cmd_buffer, TextureID p_dpb, BufferID p_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, TextureID p_texture, uint32_t p_array_layer) = 0;
+	virtual void command_video_coding_end(CommandBufferID p_cmd_buffer) = 0;
 
 	/**************/
 	/**** MISC ****/
