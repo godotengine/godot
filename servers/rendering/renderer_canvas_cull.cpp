@@ -132,6 +132,7 @@ void RendererCanvasCull::_collect_ysort_children(RendererCanvasCull::Item *p_can
 			child_items[i]->ysort_modulate = p_modulate;
 			child_items[i]->ysort_index = r_index;
 			child_items[i]->ysort_parent_abs_z_index = p_z;
+			child_items[i]->ysort_visibility_layer = p_canvas_item->ysort_visibility_layer & child_items[i]->visibility_layer;
 
 			if (!child_items[i]->repeat_source) {
 				child_items[i]->repeat_size = p_canvas_item->repeat_size;
@@ -164,7 +165,10 @@ int RendererCanvasCull::_count_ysort_children(RendererCanvasCull::Item *p_canvas
 		if (child_items[i]->visible) {
 			ysort_children_count++;
 			if (child_items[i]->sort_y) {
-				ysort_children_count += _count_ysort_children(child_items[i]);
+				if (child_items[i]->ysort_children_count == -1) {
+					child_items[i]->ysort_children_count = _count_ysort_children(child_items[i]);
+				}
+				ysort_children_count += child_items[i]->ysort_children_count;
 			}
 		}
 	}
@@ -437,6 +441,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			ci->ysort_modulate = Color(1, 1, 1, 1) / ci->modulate;
 			ci->ysort_index = 0;
 			ci->ysort_parent_abs_z_index = parent_z;
+			ci->ysort_visibility_layer = ci->visibility_layer;
 			child_items[0] = ci;
 			int i = 1;
 			_collect_ysort_children(ci, p_material_owner, Color(1, 1, 1, 1), child_items, i, p_z);
@@ -445,7 +450,9 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			sorter.sort(child_items, child_item_count);
 
 			for (i = 0; i < child_item_count; i++) {
-				_cull_canvas_item(child_items[i], final_xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, child_items[i]->ysort_parent_abs_z_index, r_z_list, r_z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner, true, p_canvas_cull_mask, child_items[i]->repeat_size, child_items[i]->repeat_times, child_items[i]->repeat_source_item);
+				if (child_items[i]->ysort_visibility_layer & p_canvas_cull_mask) {
+					_cull_canvas_item(child_items[i], final_xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, child_items[i]->ysort_parent_abs_z_index, r_z_list, r_z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner, true, p_canvas_cull_mask, child_items[i]->repeat_size, child_items[i]->repeat_times, child_items[i]->repeat_source_item);
+				}
 			}
 		} else {
 			RendererCanvasRender::Item *canvas_group_from = nullptr;

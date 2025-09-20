@@ -57,6 +57,7 @@ public:
 		Transform2D ysort_xform; // Relative to y-sorted subtree's root item (identity for such root). Its `origin.y` is used for sorting.
 		int ysort_index;
 		int ysort_parent_abs_z_index; // Absolute Z index of parent. Only populated and used when y-sorting.
+		uint32_t ysort_visibility_layer;
 		uint32_t visibility_layer = 0xffffffff;
 
 		Vector<Item *> child_items;
