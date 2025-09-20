@@ -1546,6 +1546,8 @@ void Node3D::_bind_methods() {
 
 Node3D::Node3D() :
 		xform_change(this), _client_physics_interpolation_node_3d_list(this) {
+	_define_ancestry(AncestralClass::NODE_3D);
+
 	// Default member initializer for bitfield is a C++20 extension, so:
 
 	data.top_level = false;
