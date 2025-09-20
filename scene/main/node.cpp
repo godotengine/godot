@@ -91,6 +91,7 @@ void Node::_notification(int p_notification) {
 			ERR_FAIL_NULL(get_viewport());
 			ERR_FAIL_NULL(data.tree);
 
+#ifdef ACCESSKIT_ENABLED
 			if (data.tree->is_accessibility_supported() && !is_part_of_edited_scene()) {
 				data.tree->_accessibility_force_update();
 				data.tree->_accessibility_notify_change(this);
@@ -100,6 +101,7 @@ void Node::_notification(int p_notification) {
 					data.tree->_accessibility_notify_change(get_window()); // Root node.
 				}
 			}
+#endif // ACCESSKIT_ENABLED
 
 			// Update process mode.
 			if (data.process_mode == PROCESS_MODE_INHERIT) {
@@ -179,6 +181,7 @@ void Node::_notification(int p_notification) {
 			ERR_FAIL_NULL(get_viewport());
 			ERR_FAIL_NULL(data.tree);
 
+#ifdef ACCESSKIT_ENABLED
 			if (data.tree->is_accessibility_supported() && !is_part_of_edited_scene()) {
 				if (data.accessibility_element.is_valid()) {
 					DisplayServer::get_singleton()->accessibility_free_element(data.accessibility_element);
@@ -191,6 +194,7 @@ void Node::_notification(int p_notification) {
 					data.tree->_accessibility_notify_change(get_window()); // Root node.
 				}
 			}
+#endif // ACCESSKIT_ENABLED
 
 			data.tree->nodes_in_tree_count--;
 			orphan_node_count++;
@@ -3675,6 +3679,32 @@ void Node::notify_thread_safe(int p_notification) {
 	}
 }
 
+bool Node::_is_accessibility_enabled() const {
+#ifdef ACCESSKIT_ENABLED
+	if (data.tree) {
+		return data.tree->is_accessibility_enabled();
+	}
+
+	ERR_FAIL_NULL_V(SceneTree::get_singleton(), false);
+	return SceneTree::get_singleton()->is_accessibility_enabled();
+#else
+	return false;
+#endif // ACCESSKIT_ENABLED
+}
+
+bool Node::_is_accessibility_supported() const {
+#ifdef ACCESSKIT_ENABLED
+	if (data.tree) {
+		return data.tree->is_accessibility_supported();
+	}
+
+	ERR_FAIL_NULL_V(SceneTree::get_singleton(), false);
+	return SceneTree::get_singleton()->is_accessibility_supported();
+#else
+	return false;
+#endif // ACCESSKIT_ENABLED
+}
+
 RID Node::get_focused_accessibility_element() const {
 	RID id;
 	if (GDVIRTUAL_CALL(_get_focused_accessibility_element, id)) {
@@ -3685,9 +3715,11 @@ RID Node::get_focused_accessibility_element() const {
 }
 
 void Node::queue_accessibility_update() {
+#ifdef ACCESSKIT_ENABLED
 	if (is_inside_tree() && !is_part_of_edited_scene()) {
 		data.tree->_accessibility_notify_change(this);
 	}
+#endif // ACCESSKIT_ENABLED
 }
 
 RID Node::get_accessibility_element() const {
