@@ -32,6 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/3d/audio_listener_3d.h"
 
 AudioListener3DGizmoPlugin::AudioListener3DGizmoPlugin() {
@@ -52,5 +53,8 @@ int AudioListener3DGizmoPlugin::get_priority() const {
 
 void AudioListener3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	const Ref<Material> icon = get_material("audio_listener_3d_icon", p_gizmo);
-	p_gizmo->add_unscaled_billboard(icon, 0.05);
+	const real_t icon_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/icon_size");
+
+	p_gizmo->clear();
+	p_gizmo->add_unscaled_billboard(icon, icon_size);
 }
