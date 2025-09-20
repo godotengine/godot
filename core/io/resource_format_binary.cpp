@@ -1511,6 +1511,68 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	return OK;
 }
 
+bool ResourceFormatLoaderBinary::has_sub_resources(const String &p_path) const {
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(file.is_null(), false, vformat("Resource file \"%s\" not found."));
+
+	uint8_t header[4];
+	file->get_buffer(header, 4);
+	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
+		// Compressed.
+		Ref<FileAccessCompressed> fac;
+		fac.instantiate();
+		Error err = fac->open_after_magic(file);
+		ERR_FAIL_COND_V_MSG(err != OK, false, vformat("Cannot open file \"%s\".", p_path));
+		file = fac;
+	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
+		// Not normal.
+		ERR_FAIL_V_MSG(false, vformat("Unrecognized binary resource file \"%s\".", p_path));
+	}
+
+	bool big_endian = file->get_32();
+	bool use_real64 = file->get_32();
+
+	file->set_big_endian(big_endian != 0); // Read big endian if saved as big endian.
+
+	uint32_t ver_major = file->get_32();
+	uint32_t ver_minor = file->get_32();
+	uint32_t ver_format = file->get_32();
+
+	if (ver_format > FORMAT_VERSION || ver_major > GODOT_VERSION_MAJOR) {
+		ERR_FAIL_V_MSG(false, vformat("File \"%s\" can't be loaded, as it uses a format version (%d) or engine version (%d.%d) which are not supported by your engine version (%s).", p_path, ver_format, ver_major, ver_minor, GODOT_VERSION_BRANCH));
+	}
+
+	file->seek(file->get_position() + file->get_32()); // Type
+
+	file->get_64(); // importmd_ofs
+	uint32_t flags = file->get_32();
+
+	file->get_64(); // UID
+
+	if (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_SCRIPT_CLASS) {
+		file->seek(file->get_position() + file->get_32()); // Script class
+	}
+
+	for (int i = 0; i < ResourceFormatSaverBinaryInstance::RESERVED_FIELDS; i++) {
+		file->get_32();
+	}
+
+	uint32_t string_table_size = file->get_32();
+	for (uint32_t i = 0; i < string_table_size; i++) {
+		file->seek(file->get_position() + file->get_32());
+	}
+
+	uint32_t ext_resources_size = file->get_32();
+	for (uint32_t i = 0; i < ext_resources_size; i++) {
+		file->seek(file->get_position() + file->get_32()); // Type
+		file->seek(file->get_position() + file->get_32()); // Path
+		if (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_UIDS) {
+			file->get_64(); // UID
+		}
+	}
+	return file->get_32() > 1; // First sub-resource is self.
+}
+
 void ResourceFormatLoaderBinary::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_MSG(f.is_null(), vformat("Cannot open file '%s'.", p_path));
