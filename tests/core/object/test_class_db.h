@@ -718,12 +718,12 @@ void add_exposed_classes(Context &r_context) {
 
 		// Add signals
 
-		const HashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
+		const HashMap<StringName, MethodInfo *> &signal_map = class_info->signal_map;
 
-		for (const KeyValue<StringName, MethodInfo> &K : signal_map) {
+		for (const KeyValue<StringName, MethodInfo *> &K : signal_map) {
 			SignalData signal;
 
-			const MethodInfo &method_info = signal_map.get(K.key);
+			const MethodInfo &method_info = *signal_map.get(K.key);
 
 			signal.name = method_info.name;
 			TEST_FAIL_COND(!String(signal.name).is_valid_ascii_identifier(),
@@ -782,14 +782,14 @@ void add_exposed_classes(Context &r_context) {
 				TEST_FAIL_COND(String(constant_name).contains("::"),
 						"Enum constant contains '::', check bindings to remove the scope: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
-				int64_t *value = class_info->constant_map.getptr(constant_name);
+				int64_t **value = class_info->constant_map.getptr(constant_name);
 				TEST_FAIL_COND(!value, "Missing enum constant value: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
 				constants.erase(constant_name);
 
 				ConstantData constant;
 				constant.name = constant_name;
-				constant.value = *value;
+				constant.value = **value;
 
 				enum_.constants.push_back(constant);
 			}
@@ -804,12 +804,12 @@ void add_exposed_classes(Context &r_context) {
 			TEST_FAIL_COND(constant_name.contains("::"),
 					"Constant contains '::', check bindings to remove the scope: '",
 					String(class_name), ".", constant_name, "'.");
-			int64_t *value = class_info->constant_map.getptr(StringName(E));
+			int64_t **value = class_info->constant_map.getptr(StringName(E));
 			TEST_FAIL_COND(!value, "Missing constant value: '", String(class_name), ".", String(constant_name), "'.");
 
 			ConstantData constant;
 			constant.name = constant_name;
-			constant.value = *value;
+			constant.value = **value;
 
 			exposed_class.constants.push_back(constant);
 		}
