@@ -2475,7 +2475,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::RIGHT) {
+		if (b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::RIGHT && tool != TOOL_SCENE_PAINT) {
 			add_node_menu->clear();
 			add_node_menu->add_icon_item(get_editor_theme_icon(SNAME("Add")), TTRC("Add Node Here..."), ADD_NODE);
 			add_node_menu->add_icon_item(get_editor_theme_icon(SNAME("Instance")), TTRC("Instantiate Scene Here..."), ADD_INSTANCE);
@@ -4094,6 +4094,10 @@ void CanvasItemEditor::_draw_viewport() {
 	_draw_message();
 }
 
+void CanvasItemEditor::get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, bool p_allow_locked) {
+	_get_canvas_items_at_pos(p_pos, r_items, p_allow_locked);
+}
+
 void CanvasItemEditor::update_viewport() {
 	_update_scrollbars();
 	viewport->queue_redraw();
@@ -4106,6 +4110,7 @@ void CanvasItemEditor::set_current_tool(Tool p_tool) {
 void CanvasItemEditor::_update_editor_settings() {
 	button_center_view->set_button_icon(get_editor_theme_icon(SNAME("CenterView")));
 	select_button->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
+	scene_paint_button->set_button_icon(get_editor_theme_icon(SNAME("Paint")));
 	select_sb->set_texture(get_editor_theme_icon(SNAME("EditorRect2D")));
 	list_select_button->set_button_icon(get_editor_theme_icon(SNAME("ListSelect")));
 	move_button->set_button_icon(get_editor_theme_icon(SNAME("ToolMove")));
@@ -4434,7 +4439,7 @@ void CanvasItemEditor::_button_toggle_grid_snap(bool p_status) {
 }
 
 void CanvasItemEditor::_button_tool_select(int p_index) {
-	Button *tb[TOOL_MAX] = { select_button, list_select_button, move_button, scale_button, rotate_button, pivot_button, pan_button, ruler_button };
+	Button *tb[TOOL_MAX] = { select_button, scene_paint_button, list_select_button, move_button, scale_button, rotate_button, pivot_button, pan_button, ruler_button };
 	for (int i = 0; i < TOOL_MAX; i++) {
 		tb[i]->set_pressed(i == p_index);
 	}
@@ -4455,6 +4460,7 @@ void CanvasItemEditor::_button_tool_select(int p_index) {
 
 	viewport->queue_redraw();
 	_update_cursor();
+	emit_signal("canvas_item_tool_changed", tool);
 }
 
 void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, bool p_scale, bool p_on_existing) {
@@ -4991,6 +4997,7 @@ void CanvasItemEditor::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
 	ADD_SIGNAL(MethodInfo("item_group_status_changed"));
+	ADD_SIGNAL(MethodInfo("canvas_item_tool_changed", PropertyInfo(Variant::INT, "tool")));
 }
 
 Dictionary CanvasItemEditor::get_state() const {
@@ -5464,6 +5471,15 @@ CanvasItemEditor::CanvasItemEditor() {
 	select_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/select_mode", TTRC("Select Mode"), Key::Q, true));
 	select_button->set_shortcut_context(this);
 	select_button->set_accessibility_name(TTRC("Select Mode"));
+
+	scene_paint_button = memnew(Button);
+	scene_paint_button->set_theme_type_variation(SceneStringName(FlatButton));
+	main_menu_hbox->add_child(scene_paint_button);
+	scene_paint_button->set_toggle_mode(true);
+	scene_paint_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_SCENE_PAINT));
+	scene_paint_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/scene_paint_mode", TTRC("Scene Paint Mode"), Key::B, true));
+	scene_paint_button->set_shortcut_context(this);
+	scene_paint_button->set_accessibility_name(TTRC("Scene Paint Mode"));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
