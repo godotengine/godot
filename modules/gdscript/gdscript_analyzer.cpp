@@ -1954,12 +1954,52 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 				push_error(vformat(R"(The function signature doesn't match the parent. Parent signature is "%s".)", parent_signature), p_function);
 			}
+
+			// Mark the function as an override if the check succeeds.
+			p_function->is_override = true;
+
+			// Then if we don't see the @override annotation, raise a warning.
+			if (!p_function->has_override_annot) {
+				// Resolve the name of the base class that owns the overridden for error reporting
+				StringName base_class_name{ "**UnknownNativeClass**" };
+
+				const GDScriptParser::DataType *cur_base_type = &base_type;
+				while (cur_base_type) {
+					if (cur_base_type->kind == GDScriptParser::DataType::Kind::NATIVE) {
+						MethodInfo base_method_info;
+						if (ClassDB::get_method_info(cur_base_type->native_type, function_name, &base_method_info)) {
+							base_class_name = cur_base_type->native_type;
+						}
+						break; // Break unconditionally since this method should always give us the appropriate native class name.
+					} else {
+						const GDScriptParser::ClassNode *base_class = base_type.class_type;
+						if (base_class->has_function(function_name)) {
+							if (base_class->identifier) {
+								base_class_name = base_class->identifier->name;
+							} else {
+								base_class_name = "**UnidentifiedClass**";
+							}
+							break;
+						}
+						cur_base_type = &base_class->base_type;
+					}
+				}
+
+				parser->push_warning(p_function, GDScriptWarning::IMPLICIT_FUNCTION_OVERRIDE, function_name, base_class_name);
+			}
+
 #ifdef DEBUG_ENABLED
 			if (native_base != StringName()) {
 				parser->push_warning(p_function, GDScriptWarning::NATIVE_METHOD_OVERRIDE, function_name, native_base);
 			}
 #endif // DEBUG_ENABLED
 		}
+
+		// If a function with `@override` doesn't override anything, raise an error.
+		if (p_function->has_override_annot && !p_function->is_override) {
+			push_error(vformat(R"(The function %s has the @override annotation, but does not override anything.)", function_name), p_function);
+		}
+
 #endif // TOOLS_ENABLED
 	}
 

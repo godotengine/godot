@@ -147,7 +147,7 @@ func test_unsafe_void_return() -> void:
 	@warning_ignore("unsafe_method_access", "unsafe_void_return")
 	return variant_func().f()
 
-@warning_ignore("native_method_override")
+@warning_ignore("native_method_override", "implicit_function_override")
 func get_class():
 	pass
 
