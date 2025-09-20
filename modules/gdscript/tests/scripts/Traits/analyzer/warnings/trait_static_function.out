@@ -1,0 +1,2 @@
+GDTEST_OK
+~~ WARNING at line 8: (UNUSED_STATIC_OVERRIDING_TRAIT) Overridden static without using "static" keyword.
