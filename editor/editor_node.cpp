@@ -456,6 +456,26 @@ void EditorNode::_update_from_settings() {
 		scene_root->propagate_notification(Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
 	}
 
+	// Enable HDR if requested and available.
+	bool force_hdr_2d = false;
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HDR) && RD::get_singleton() && RD::get_singleton()->has_feature(RD::Features::SUPPORTS_HDR_OUTPUT)) {
+		bool hdr_enabled = GLOBAL_GET("display/window/hdr/enabled");
+		bool prefer_high_precision = GLOBAL_GET("display/window/hdr/prefer_high_precision");
+		bool auto_adjust_reference_luminance = GLOBAL_GET("display/window/hdr/auto_adjust_reference_luminance");
+		float reference_luminance = GLOBAL_GET("display/window/hdr/reference_luminance");
+		bool auto_adjust_max_luminance = GLOBAL_GET("display/window/hdr/auto_adjust_max_luminance");
+		float max_luminance = GLOBAL_GET("display/window/hdr/max_luminance");
+
+		DisplayServer::get_singleton()->window_set_hdr_output_enabled(hdr_enabled);
+		DisplayServer::get_singleton()->window_set_hdr_output_prefer_high_precision(prefer_high_precision);
+		DisplayServer::get_singleton()->window_set_hdr_output_auto_adjust_reference_luminance(auto_adjust_reference_luminance);
+		DisplayServer::get_singleton()->window_set_hdr_output_reference_luminance(reference_luminance);
+		DisplayServer::get_singleton()->window_set_hdr_output_auto_adjust_max_luminance(auto_adjust_max_luminance);
+		DisplayServer::get_singleton()->window_set_hdr_output_max_luminance(max_luminance);
+
+		force_hdr_2d = hdr_enabled;
+	}
+
 	RS::DOFBokehShape dof_shape = RS::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape")));
 	RS::get_singleton()->camera_attributes_set_dof_blur_bokeh_shape(dof_shape);
 	RS::DOFBlurQuality dof_quality = RS::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality")));
@@ -516,8 +536,12 @@ void EditorNode::_update_from_settings() {
 	get_viewport()->set_use_debanding(use_debanding);
 
 	bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
-	scene_root->set_use_hdr_2d(use_hdr_2d);
-	get_viewport()->set_use_hdr_2d(use_hdr_2d);
+	scene_root->set_use_hdr_2d(use_hdr_2d || force_hdr_2d);
+	get_viewport()->set_use_hdr_2d(use_hdr_2d || force_hdr_2d);
+
+	const bool tonemap_to_window = GLOBAL_GET("rendering/viewport/tonemap_to_window");
+	scene_root->set_tonemap_to_window(tonemap_to_window);
+	get_viewport()->set_tonemap_to_window(tonemap_to_window);
 
 	float mesh_lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
 	scene_root->set_mesh_lod_threshold(mesh_lod_threshold);
