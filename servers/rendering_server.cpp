@@ -3749,7 +3749,7 @@ void RenderingServer::init() {
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/limits/spatial_indexer/threaded_cull_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"), 1000);
 
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/limits/cluster_builder/max_clustered_elements", PROPERTY_HINT_RANGE, "32,8192,1"), 512);
-
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/limits/cluster_builder/cluster_size", PROPERTY_HINT_ENUM, String::utf8("32×32 (Fastest on Complex Scenes),64×64 (Faster on Complex Scenes),128×128 (Faster on Simple Scenes),256×256 (Fastest on Simple Scenes)")), 1);
 	// OpenGL limits
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/limits/opengl/max_renderable_elements", PROPERTY_HINT_RANGE, "1024,65536,1"), 65536);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/limits/opengl/max_renderable_lights", PROPERTY_HINT_RANGE, "2,256,1"), 32);

@@ -66,6 +66,7 @@ class RenderSceneBuffersRD : public RenderSceneBuffers {
 private:
 	bool can_be_storage = true;
 	uint32_t max_cluster_elements = 512;
+	RS::ClusterSize cluster_size = RS::CLUSTER_SIZE_64;
 	RD::DataFormat base_data_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 	RendererRD::VRS *vrs = nullptr;
 	uint64_t auto_exposure_version = 1;
@@ -185,7 +186,9 @@ public:
 	void set_can_be_storage(const bool p_can_be_storage) { can_be_storage = p_can_be_storage; }
 	bool get_can_be_storage() const { return can_be_storage; }
 	void set_max_cluster_elements(const uint32_t p_max_elements) { max_cluster_elements = p_max_elements; }
-	uint32_t get_max_cluster_elements() { return max_cluster_elements; }
+	uint32_t get_max_cluster_elements() const { return max_cluster_elements; }
+	void set_cluster_size(RS::ClusterSize p_cluster_size) { cluster_size = p_cluster_size; }
+	RS::ClusterSize get_cluster_size() const { return cluster_size; }
 	void set_base_data_format(const RD::DataFormat p_base_data_format) { base_data_format = p_base_data_format; }
 	RD::DataFormat get_base_data_format() const { return base_data_format; }
 	void set_vrs(RendererRD::VRS *p_vrs) { vrs = p_vrs; }
