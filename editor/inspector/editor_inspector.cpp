@@ -781,6 +781,7 @@ void EditorProperty::_update_property_bg() {
 			add_theme_style_override("bg_selected", get_theme_stylebox("sub_inspector_property_bg" + itos(count_subinspectors), EditorStringName(EditorStyles)));
 			add_theme_style_override("bg", get_theme_stylebox("sub_inspector_property_bg" + itos(count_subinspectors), EditorStringName(EditorStyles)));
 			add_theme_color_override("property_color", get_theme_color(SNAME("sub_inspector_property_color"), EditorStringName(EditorStyles)));
+			add_theme_color_override("readonly_color", get_theme_color(SNAME("sub_inspector_property_color"), EditorStringName(EditorStyles)));
 			bottom_editor->add_theme_style_override(SceneStringName(panel), get_theme_stylebox("sub_inspector_bg" + itos(count_subinspectors), EditorStringName(EditorStyles)));
 		} else {
 			bottom_editor->add_theme_style_override(SceneStringName(panel), get_theme_stylebox("sub_inspector_bg_no_border", EditorStringName(EditorStyles)));
@@ -789,6 +790,7 @@ void EditorProperty::_update_property_bg() {
 		remove_theme_style_override("bg_selected");
 		remove_theme_style_override("bg");
 		remove_theme_color_override("property_color");
+		remove_theme_color_override("readonly_color");
 	}
 	end_bulk_theme_override();
 	queue_redraw();
