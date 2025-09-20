@@ -269,6 +269,27 @@ struct PtrToArg<const T *> {
 	}
 };
 
+// This is for RequiredPtr.
+
+template <class T>
+struct PtrToArg<RequiredPtr<T>> {
+	typedef T *EncodeT;
+
+	_FORCE_INLINE_ static RequiredPtr<T> convert(const void *p_ptr) {
+		if (p_ptr == nullptr) {
+			// Should we show an error?
+			GODOT_DEPRECATED_BEGIN
+			return RequiredPtr<T>::err_return();
+			GODOT_DEPRECATED_END
+		}
+		return RequiredPtr<T>(*reinterpret_cast<T *const *>(p_ptr));
+	}
+
+	_FORCE_INLINE_ static void encode(const RequiredPtr<T> &p_var, void *p_ptr) {
+		*((T **)p_ptr) = p_var._internal_ptr();
+	}
+};
+
 // This is for ObjectID.
 
 template <>
