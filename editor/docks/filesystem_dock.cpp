@@ -2674,6 +2674,16 @@ int FileSystemDock::_get_menu_option_from_key(const Ref<InputEventKey> &p_key) {
 		return FILE_MENU_COPY_UID;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/delete", p_key)) {
 		return FILE_MENU_REMOVE;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/new_folder", p_key)) {
+		return FILE_MENU_NEW_FOLDER;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/new_scene", p_key)) {
+		return FILE_MENU_NEW_SCENE;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/new_script", p_key)) {
+		return FILE_MENU_NEW_SCRIPT;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/new_resource", p_key)) {
+		return FILE_MENU_NEW_RESOURCE;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/new_textfile", p_key)) {
+		return FILE_MENU_NEW_TEXTFILE;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_key)) {
 		return FILE_MENU_RENAME;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/show_in_explorer", p_key)) {
@@ -4164,6 +4174,11 @@ FileSystemDock::FileSystemDock() {
 	ED_SHORTCUT("filesystem_dock/copy_uid", TTRC("Copy UID"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | KeyModifierMask::SHIFT | Key::C);
 	ED_SHORTCUT("filesystem_dock/duplicate", TTRC("Duplicate..."), KeyModifierMask::CMD_OR_CTRL | Key::D);
 	ED_SHORTCUT("filesystem_dock/delete", TTRC("Delete"), Key::KEY_DELETE);
+	ED_SHORTCUT("filesystem_dock/new_folder", TTRC("New Folder..."), Key::NONE);
+	ED_SHORTCUT("filesystem_dock/new_scene", TTRC("New Scene..."), Key::NONE);
+	ED_SHORTCUT("filesystem_dock/new_script", TTRC("New Script..."), Key::NONE);
+	ED_SHORTCUT("filesystem_dock/new_resource", TTRC("New Resource..."), Key::NONE);
+	ED_SHORTCUT("filesystem_dock/new_textfile", TTRC("New TextFile..."), Key::NONE);
 	ED_SHORTCUT("filesystem_dock/rename", TTRC("Rename..."), Key::F2);
 	ED_SHORTCUT_OVERRIDE("filesystem_dock/rename", "macos", Key::ENTER);
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
