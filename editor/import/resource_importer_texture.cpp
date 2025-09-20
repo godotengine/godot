@@ -258,6 +258,7 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 
 	// Maximum bound is the highest allowed value for lossy compression (the lowest common denominator).
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/size_limit", PROPERTY_HINT_RANGE, "0,16383,1"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/resize_interpolation_mode", PROPERTY_HINT_ENUM, "Nearest,Bilinear,Cubic,Trilinear,Lanczos"), 4 /* Lanczos */));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "detect_3d/compress_to", PROPERTY_HINT_ENUM, "Disabled,VRAM Compressed,Basis Universal"), (p_preset == PRESET_DETECT) ? 1 : 0));
 
@@ -730,6 +731,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 	const bool hdr_as_srgb = p_options["process/hdr_as_srgb"];
 	const bool hdr_clamp_exposure = p_options["process/hdr_clamp_exposure"];
 	int size_limit = p_options["process/size_limit"];
+	Image::Interpolation resize_interpolation_mode = Image::Interpolation((int)p_options["process/resize_interpolation_mode"]);
 
 	const Image::BasisUniversalPackerParams basisu_params = {
 		p_options["compress/uastc_level"],
@@ -830,7 +832,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 					// Only warn if downsizing occurred when the user did not explicitly request it.
 					WARN_PRINT(vformat("%s: Texture was downsized on import as its width (%d pixels) exceeded the importable size limit (%d pixels).", p_source_file, target_image->get_width(), size_limit));
 				}
-				target_image->resize(new_width, new_height, Image::INTERPOLATE_CUBIC);
+				target_image->resize(new_width, new_height, resize_interpolation_mode);
 			} else {
 				int new_height = size_limit;
 				int new_width = target_image->get_width() * new_height / target_image->get_height();
@@ -839,7 +841,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 					// Only warn if downsizing occurred when the user did not explicitly request it.
 					WARN_PRINT(vformat("%s: Texture was downsized on import as its height (%d pixels) exceeded the importable size limit (%d pixels).", p_source_file, target_image->get_height(), size_limit));
 				}
-				target_image->resize(new_width, new_height, Image::INTERPOLATE_CUBIC);
+				target_image->resize(new_width, new_height, resize_interpolation_mode);
 			}
 
 			if (normal == 1) {
