@@ -60,7 +60,8 @@ private:
 
 	struct SwapchainGraphicsData {
 		bool is_multiview;
-		Vector<RID> texture_rids;
+		LocalVector<RID> texture_rd_rids;
+		LocalVector<RID> texture_rids;
 	};
 
 	bool check_graphics_api_support();
