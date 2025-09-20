@@ -1080,7 +1080,11 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 
 					files->set_item_metadata(-1, bd);
 					files->set_item_selectable(-1, false);
-					files->set_item_icon_modulate(-1, editor_is_dark_theme ? inherited_folder_color : inherited_folder_color * ITEM_COLOR_SCALE);
+					if (!editor_is_dark_theme && inherited_folder_color != default_folder_color) {
+						files->set_item_icon_modulate(-1, inherited_folder_color * ITEM_COLOR_SCALE);
+					} else {
+						files->set_item_icon_modulate(-1, inherited_folder_color);
+					}
 				}
 
 				bool reversed = file_sort == FileSortOption::FILE_SORT_NAME_REVERSE;
@@ -1094,7 +1098,10 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 					files->add_item(dname, folder_icon, true);
 					files->set_item_metadata(-1, dpath);
 					Color this_folder_color = has_custom_color ? folder_colors[assigned_folder_colors[dpath]] : inherited_folder_color;
-					files->set_item_icon_modulate(-1, editor_is_dark_theme ? this_folder_color : this_folder_color * ITEM_COLOR_SCALE);
+					if (!editor_is_dark_theme && this_folder_color != default_folder_color) {
+						this_folder_color *= ITEM_COLOR_SCALE;
+					}
+					files->set_item_icon_modulate(-1, this_folder_color);
 
 					if (previous_selection.has(dname)) {
 						files->select(files->get_item_count() - 1, false);
