@@ -39,6 +39,12 @@
 #define MAIN_THREAD_SYNC_CHECK
 #endif
 
+// Macros for wrapping multithreaded server calls.
+// - FUNC{n} is a straightforward call with no return type that takes n arguments.
+// - FUNC{n}R is a call to a method with a return type.
+// - FUNC{n}S is a call to a method that requires synchronization with the main thread.
+// - FUNC{n}C is const, indicating that the method does not mutate internal server state.
+
 #define FUNC0R(m_r, m_type)                                                     \
 	virtual m_r m_type() override {                                             \
 		if (ASYNC_COND_PUSH_AND_RET) {                                          \
