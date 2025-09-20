@@ -259,6 +259,7 @@ private:
 	real_t ruler_width_scaled = 16.0;
 	int ruler_font_size = 8;
 	Point2 node_create_position;
+	real_t grab_distance = 0.0;
 
 	MenuOption last_option;
 
