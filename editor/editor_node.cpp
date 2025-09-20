@@ -4296,7 +4296,7 @@ void EditorNode::_set_current_scene_nocheck(int p_idx) {
 	_update_title();
 	callable_mp(scene_tabs, &EditorSceneTabs::update_scene_tabs).call_deferred();
 
-	if (tabs_to_close.is_empty()) {
+	if (tabs_to_close.is_empty() && !restoring_scenes) {
 		callable_mp(this, &EditorNode::_set_main_scene_state).call_deferred(state, get_edited_scene()); // Do after everything else is done setting up.
 	}
 
