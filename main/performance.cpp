@@ -141,6 +141,12 @@ int Performance::_get_node_count() const {
 	return sml->get_node_count();
 }
 
+int Performance::_get_orphan_node_count() const {
+	const int total_node_count = Node::total_node_count.get();
+	const int orphan_node_count = total_node_count - _get_node_count();
+	return orphan_node_count;
+}
+
 String Performance::get_monitor_name(Monitor p_monitor) const {
 	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, String());
 	static const char *names[MONITOR_MAX] = {
@@ -240,7 +246,7 @@ double Performance::get_monitor(Monitor p_monitor) const {
 		case OBJECT_NODE_COUNT:
 			return _get_node_count();
 		case OBJECT_ORPHAN_NODE_COUNT:
-			return Node::orphan_node_count;
+			return _get_orphan_node_count();
 		case RENDER_TOTAL_OBJECTS_IN_FRAME:
 			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME);
 		case RENDER_TOTAL_PRIMITIVES_IN_FRAME:
