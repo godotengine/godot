@@ -2485,6 +2485,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("multimesh_set_physics_interpolation_quality", "multimesh", "quality"), &RenderingServer::multimesh_set_physics_interpolation_quality);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_reset_physics_interpolation", "multimesh", "index"), &RenderingServer::multimesh_instance_reset_physics_interpolation);
 
+	BIND_ENUM_CONSTANT(MULTIMESH_TRANSFORM_NONE);
 	BIND_ENUM_CONSTANT(MULTIMESH_TRANSFORM_2D);
 	BIND_ENUM_CONSTANT(MULTIMESH_TRANSFORM_3D);
 	BIND_ENUM_CONSTANT(MULTIMESH_INTERP_QUALITY_FAST);

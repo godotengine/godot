@@ -4751,10 +4751,13 @@
 		<constant name="BLEND_SHAPE_MODE_RELATIVE" value="1" enum="BlendShapeMode">
 			Blend shapes are relative to base weight.
 		</constant>
-		<constant name="MULTIMESH_TRANSFORM_2D" value="0" enum="MultimeshTransformFormat">
+		<constant name="MULTIMESH_TRANSFORM_NONE" value="0" enum="MultimeshTransformFormat">
+			Use [TransformNone] to not store MultiMesh transform (color or custom must be enabled).
+		</constant>
+		<constant name="MULTIMESH_TRANSFORM_2D" value="1" enum="MultimeshTransformFormat">
 			Use [Transform2D] to store MultiMesh transform.
 		</constant>
-		<constant name="MULTIMESH_TRANSFORM_3D" value="1" enum="MultimeshTransformFormat">
+		<constant name="MULTIMESH_TRANSFORM_3D" value="2" enum="MultimeshTransformFormat">
 			Use [Transform3D] to store MultiMesh transform.
 		</constant>
 		<constant name="MULTIMESH_INTERP_QUALITY_FAST" value="0" enum="MultimeshPhysicsInterpolationQuality">

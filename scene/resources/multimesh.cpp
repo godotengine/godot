@@ -420,6 +420,7 @@ void MultiMesh::_bind_methods() {
 	ADD_GROUP("Physics Interpolation", "physics_interpolation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_interpolation_quality", PROPERTY_HINT_ENUM, "Fast,High"), "set_physics_interpolation_quality", "get_physics_interpolation_quality");
 
+	BIND_ENUM_CONSTANT(TRANSFORM_NONE);
 	BIND_ENUM_CONSTANT(TRANSFORM_2D);
 	BIND_ENUM_CONSTANT(TRANSFORM_3D);
 

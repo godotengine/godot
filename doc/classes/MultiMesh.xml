@@ -138,7 +138,7 @@
 		<member name="transform_array" type="PackedVector3Array" setter="_set_transform_array" getter="_get_transform_array" deprecated="Accessing this property is very slow. Use [method set_instance_transform] and [method get_instance_transform] instead.">
 			Array containing each [Transform3D] value used by all instances of this mesh, as a [PackedVector3Array]. Each transform is divided into 4 [Vector3] values corresponding to the transforms' [code]x[/code], [code]y[/code], [code]z[/code], and [code]origin[/code].
 		</member>
-		<member name="transform_format" type="int" setter="set_transform_format" getter="get_transform_format" enum="MultiMesh.TransformFormat" default="0">
+		<member name="transform_format" type="int" setter="set_transform_format" getter="get_transform_format" enum="MultiMesh.TransformFormat" default="1">
 			Format of transform used to transform mesh, either 2D or 3D.
 		</member>
 		<member name="use_colors" type="bool" setter="set_use_colors" getter="is_using_colors" default="false">
@@ -152,10 +152,12 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="TRANSFORM_2D" value="0" enum="TransformFormat">
+		<constant name="TRANSFORM_NONE" value="0" enum="TransformFormat">
+		</constant>
+		<constant name="TRANSFORM_2D" value="1" enum="TransformFormat">
 			Use this when using 2D transforms.
 		</constant>
-		<constant name="TRANSFORM_3D" value="1" enum="TransformFormat">
+		<constant name="TRANSFORM_3D" value="2" enum="TransformFormat">
 			Use this when using 3D transforms.
 		</constant>
 		<constant name="INTERP_QUALITY_FAST" value="0" enum="PhysicsInterpolationQuality">
