@@ -104,6 +104,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _node_changed(const StringName &p_node_name);
 
 	String current_node_rename_text;
+	bool graph_update_queued;
 	bool updating;
 
 	void _connection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index);
@@ -166,6 +167,7 @@ public:
 	virtual void edit(const Ref<AnimationNode> &p_node) override;
 
 	void update_graph();
+	void update_graph_immediately();
 
 	AnimationNodeBlendTreeEditor();
 };
