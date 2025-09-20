@@ -128,9 +128,11 @@ class PopupMenu : public Popup {
 	int mouse_over = -1;
 	int prev_mouse_over = -1;
 	int submenu_over = -1;
+	int active_submenu_index = -1;
+	float submenu_timer_popup_delay;
 	String _get_accel_text(const Item &p_item) const;
 	int _get_mouse_over(const Point2 &p_over) const;
-	void _mouse_over_update(const Point2 &p_over);
+	void _mouse_over_update(const Point2 &p_over, const Vector2 &p_relative = Vector2());
 	virtual Size2 _get_contents_minimum_size() const override;
 
 	int _get_item_height(int p_idx) const;

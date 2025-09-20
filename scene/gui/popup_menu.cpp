@@ -348,6 +348,9 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	if (submenu_popup->is_visible()) {
 		return; // Already visible.
 	}
+	active_submenu_index = p_over;
+	// Ensure mouse inputs to parent menu are not inhibited by the submenu in exclusive mode.
+	submenu_popup->get_window()->set_exclusive(false);
 
 	const float win_scale = get_content_scale_factor();
 
@@ -384,26 +387,21 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	}
 
 	submenu_popup->set_position(submenu_pos);
-
-	PopupMenu *submenu_pum = Object::cast_to<PopupMenu>(submenu_popup);
-	if (!submenu_pum) {
-		submenu_popup->popup();
-		return;
-	}
-
-	submenu_pum->activated_by_keyboard = p_by_keyboard;
+	submenu_popup->activated_by_keyboard = p_by_keyboard;
 
 	// If not triggered by the mouse, start the popup with its first enabled item focused.
 	if (p_by_keyboard) {
-		for (int i = 0; i < submenu_pum->get_item_count(); i++) {
-			if (!submenu_pum->is_item_disabled(i)) {
-				submenu_pum->set_focused_item(i);
+		for (int i = 0; i < submenu_popup->get_item_count(); i++) {
+			if (!submenu_popup->is_item_disabled(i)) {
+				submenu_popup->set_focused_item(i);
 				break;
 			}
 		}
 	}
-
-	submenu_pum->popup();
+	submenu_popup->popup();
+	// Unpredictably, some submenus won't show even after popup without a process_frame.
+	// This will call _activate_submenu until the popup becomes visible, which occasionally takes two more calls.
+	get_tree()->connect("process_frame", callable_mp(this, &PopupMenu::_activate_submenu).bind(p_over, p_by_keyboard), CONNECT_ONE_SHOT);
 
 	// Set autohide areas.
 
@@ -415,19 +413,19 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 		DisplayServer::get_singleton()->window_set_popup_safe_rect(submenu_popup->get_window_id(), safe_area);
 	}
 
-	this_rect.position -= submenu_pum->get_position(); // Make the position of the parent popup relative to submenu popup.
+	this_rect.position -= submenu_popup->get_position(); // Make the position of the parent popup relative to submenu popup.
 	this_rect.size.width -= panel_ofs_start.x + panel_ofs_end.x;
 	this_rect.size.height -= panel_ofs_end.y + (theme_cache.panel_style->get_margin(SIDE_TOP) + theme_cache.panel_style->get_margin(SIDE_BOTTOM)) * win_scale;
 
 	// Autohide area above the submenu item.
-	submenu_pum->clear_autohide_areas();
-	submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y - theme_cache.panel_style->get_margin(SIDE_TOP) * win_scale,
+	submenu_popup->clear_autohide_areas();
+	submenu_popup->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y - theme_cache.panel_style->get_margin(SIDE_TOP) * win_scale,
 			this_rect.size.x, scaled_ofs_cache + scroll_offset + theme_cache.panel_style->get_margin(SIDE_TOP) * win_scale - theme_cache.v_separation / 2));
 
 	// If there is an area below the submenu item, add an autohide area there.
 	if (scaled_ofs_cache + scaled_height_cache + scroll_offset <= control->get_size().height * win_scale) {
 		const int from = scaled_ofs_cache + scaled_height_cache + scroll_offset + theme_cache.v_separation / 2;
-		submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y + from, this_rect.size.x, this_rect.size.y - from));
+		submenu_popup->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y + from, this_rect.size.x, this_rect.size.y - from));
 	}
 }
 
@@ -458,8 +456,6 @@ void PopupMenu::_submenu_timeout() {
 	if (mouse_over == submenu_over) {
 		_activate_submenu(mouse_over);
 	}
-
-	submenu_over = -1;
 }
 
 void PopupMenu::_input_from_window(const Ref<InputEvent> &p_event) {
@@ -713,7 +709,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 		if (mouse_over == -1 && !item_clickable_area.has_point(m->get_position())) {
 			return;
 		}
-		_mouse_over_update(m->get_position());
+		_mouse_over_update(m->get_position(), m->get_relative());
 	}
 
 	Ref<InputEventKey> k = p_event;
@@ -759,24 +755,39 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void PopupMenu::_mouse_over_update(const Point2 &p_over) {
-	int over = _get_mouse_over(p_over);
-	int id = (over < 0 || items[over].separator || items[over].disabled) ? -1 : (items[over].id >= 0 ? items[over].id : over);
-
+void PopupMenu::_mouse_over_update(const Point2 &p_over, const Vector2 &p_relative) {
+	int over_index = _get_mouse_over(p_over);
+	int id = (over_index < 0 || items[over_index].separator || items[over_index].disabled) ? -1 : (items[over_index].id >= 0 ? items[over_index].id : over_index);
 	if (id < 0) {
 		mouse_over = -1;
+		submenu_timer->stop();
+		submenu_over = -1;
 		queue_accessibility_update();
 		control->queue_redraw();
 		return;
 	}
-
-	if (!is_scrolling && items[over].submenu && submenu_over != over) {
-		submenu_over = over;
-		submenu_timer->start();
+	if (items[over_index].submenu) {
+		if (!is_scrolling && (submenu_over != over_index || active_submenu_index != over_index)) {
+			active_submenu_index = -1; // Allows entering again if was equal to over_index.
+			submenu_over = over_index;
+			Vector2 ur_quadrant_1 = Vector2(2, 5).normalized();
+			Vector2 ul_quadrant_1 = Vector2(-5, 2).normalized();
+			Vector2 ur_quadrant_2 = Vector2(5, 2).normalized();
+			Vector2 ul_quadrant_2 = Vector2(-2, 5).normalized();
+			bool is_moving_right = false;
+			// If the mouse moves right within +/- 68 degrees (twice arctan of 2/5) from horizontal.
+			if ((ur_quadrant_1.dot(p_relative.normalized()) > 0 && ul_quadrant_1.dot(p_relative.normalized()) < 0) || (ur_quadrant_2.dot(p_relative.normalized()) > 0 && ul_quadrant_2.dot(p_relative.normalized()) < 0)) {
+				is_moving_right = true;
+			}
+			submenu_timer->start(is_moving_right ? submenu_timer_popup_delay * 3.0 : submenu_timer_popup_delay);
+		}
+	} else {
+		submenu_timer->stop();
+		submenu_over = -1;
 	}
 
-	if (over != mouse_over) {
-		mouse_over = over;
+	if (over_index != mouse_over) {
+		mouse_over = over_index;
 		queue_accessibility_update();
 		control->queue_redraw();
 	}
@@ -2887,7 +2898,7 @@ void PopupMenu::set_submenu_popup_delay(float p_time) {
 	if (p_time <= 0) {
 		p_time = 0.01;
 	}
-
+	submenu_timer_popup_delay = p_time;
 	submenu_timer->set_wait_time(p_time);
 }
 
