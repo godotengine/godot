@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  translation_loader_po.h                                               */
+/*  plural_rules.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,20 +30,41 @@
 
 #pragma once
 
-#include "core/io/file_access.h"
-#include "core/io/resource_loader.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/lru.h"
 
-class TranslationLoaderPO : public ResourceFormatLoader {
+class Expression;
+
+class PluralRules : public Object {
+	GDSOFTCLASS(PluralRules, Object);
+
+	mutable LRUCache<int, int> cache;
+
+	// These two fields are initialized in the constructor.
+	const int nplurals;
+	const String plural;
+
+	// Cache temporary variables related to `evaluate()` to make it faster.
+	class EQNode : public RefCounted {
+	public:
+		String regex;
+		Ref<EQNode> left;
+		Ref<EQNode> right;
+	};
+	Ref<EQNode> equi_tests;
+	Ref<Expression> expr;
+
+	int _find_unquoted(const String &p_src, char32_t p_chr) const;
+	int _eq_test(const Array &p_input_val, const Ref<EQNode> &p_node, const Variant &p_result) const;
+	void _cache_plural_tests(const String &p_plural_rule, Ref<EQNode> &p_node);
+
+	PluralRules(int p_nplurals, const String &p_plural);
+
 public:
-	static Ref<Resource> load_translation(Ref<FileAccess> f, Error *r_error = nullptr);
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-	virtual bool handles_type(const String &p_type) const override;
-	virtual String get_resource_type(const String &p_path) const override;
+	int evaluate(int p_n) const;
 
-	// Treat translations as text/binary files, do not generate a `*.{po,mo}.uid` file.
-	virtual ResourceUID::ID get_resource_uid(const String &p_path) const override { return ResourceUID::INVALID_ID; }
-	virtual bool has_custom_uid_support() const override { return true; }
+	int get_nplurals() const { return nplurals; }
+	String get_plural() const { return plural; }
 
-	TranslationLoaderPO() {}
+	static PluralRules *parse(const String &p_rules);
 };
