@@ -1668,6 +1668,9 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 							case BODY_TYPE_AREA:
 								mesh_physics_mode = MeshPhysicsMode::MESH_PHYSICS_AREA_ONLY;
 								break;
+							case BODY_TYPE_COLLISION_ONLY:
+								mesh_physics_mode = MeshPhysicsMode::MESH_PHYSICS_COLLIDERS_ONLY;
+								break;
 						}
 					}
 				}
@@ -1684,7 +1687,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 					}
 
 					if (shapes.size()) {
-						CollisionObject3D *base = nullptr;
+						Node *base = nullptr;
 						switch (mesh_physics_mode) {
 							case MESH_PHYSICS_MESH_AND_STATIC_COLLIDER: {
 								StaticBody3D *col = memnew(StaticBody3D);
@@ -1744,10 +1747,16 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								base = area;
 
 							} break;
+							case MESH_PHYSICS_COLLIDERS_ONLY:
+								base = p_node;
+								break;
 						}
 
-						base->set_collision_layer(node_settings["physics/layer"]);
-						base->set_collision_mask(node_settings["physics/mask"]);
+						CollisionObject3D *colbase = Object::cast_to<CollisionObject3D>(base);
+						if (colbase != nullptr) {
+							colbase->set_collision_layer(node_settings["physics/layer"]);
+							colbase->set_collision_mask(node_settings["physics/mask"]);
+						}
 
 						for (const Ref<Shape3D> &E : shapes) {
 							CollisionShape3D *cshape = memnew(CollisionShape3D);
@@ -2117,7 +2126,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate/physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/navmesh", PROPERTY_HINT_ENUM, "Disabled,Mesh + NavMesh,NavMesh Only"), 0));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/body_type", PROPERTY_HINT_ENUM, "Static,Dynamic,Area"), 0));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/body_type", PROPERTY_HINT_ENUM, "Static,Dynamic,Area,Collision Only", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex,Simple Convex,Trimesh,Box,Sphere,Cylinder,Capsule,Automatic", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 7));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "physics/physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
@@ -2261,6 +2270,11 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 					p_options["generate/physics"].operator bool();
 
 			if (p_option.contains("physics/")) {
+				if (p_option.contains("physics/layer") || p_option.contains("physics/mask")) {
+					// hide if only generating collision shapes
+					return generate_physics && p_options["physics/body_type"] != Variant(BODY_TYPE_COLLISION_ONLY);
+				}
+
 				// Show if need to generate collisions.
 				return generate_physics;
 			}
