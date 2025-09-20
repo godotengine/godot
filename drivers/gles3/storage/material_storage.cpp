@@ -545,6 +545,33 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 	}
 }
 
+static GLenum get_blend_factor_by_name(const StringName &name) {
+	static const int BLEND_FACTOR_MAX = 15;
+	static const Pair<const char *, GLenum> BLEND_FACTOR_NAMES[BLEND_FACTOR_MAX] = {
+		{ "zero", GL_ZERO },
+		{ "one", GL_ONE },
+		{ "src_color", GL_SRC_COLOR },
+		{ "one_minus_src_color", GL_ONE_MINUS_SRC_COLOR },
+		{ "dst_color", GL_DST_COLOR },
+		{ "one_minus_dst_color", GL_ONE_MINUS_DST_COLOR },
+		{ "src_alpha", GL_SRC_ALPHA },
+		{ "one_minus_src_alpha", GL_ONE_MINUS_SRC_ALPHA },
+		{ "dst_alpha", GL_DST_ALPHA },
+		{ "one_minus_dst_alpha", GL_ONE_MINUS_DST_ALPHA },
+		{ "constant_color", GL_CONSTANT_COLOR },
+		{ "one_minus_constant_color", GL_ONE_MINUS_CONSTANT_COLOR },
+		{ "constant_alpha", GL_CONSTANT_ALPHA },
+		{ "one_minus_constant_alpha", GL_ONE_MINUS_CONSTANT_ALPHA },
+		{ "src_alpha_saturate", GL_SRC_ALPHA_SATURATE },
+	};
+	for (int i = 0; i < BLEND_FACTOR_MAX; i++) {
+		if (name == StringName(BLEND_FACTOR_NAMES[i].first)) {
+			return BLEND_FACTOR_NAMES[i].second;
+		}
+	}
+	ERR_FAIL_V_MSG(GL_ZERO, vformat("Illegal blend factor name '%s'", name));
+}
+
 ///////////////////////////////////////////////////////////////////////////
 // ShaderData
 
@@ -2608,6 +2635,7 @@ void CanvasShaderData::set_code(const String &p_code) {
 	ubo_size = 0;
 	uniforms.clear();
 
+	uses_blend_factors = false;
 	uses_screen_texture = false;
 	uses_screen_texture_mipmaps = false;
 	uses_sdf = false;
@@ -2623,6 +2651,7 @@ void CanvasShaderData::set_code(const String &p_code) {
 
 	// Actual enum set further down after compilation.
 	int blend_modei = BLEND_MODE_MIX;
+	Vector<StringName> blend_factor_names;
 
 	ShaderCompiler::IdentifierActions actions;
 	actions.entry_point_stages["vertex"] = ShaderCompiler::STAGE_VERTEX;
@@ -2641,6 +2670,7 @@ void CanvasShaderData::set_code(const String &p_code) {
 	actions.usage_flag_pointers["CUSTOM0"] = &uses_custom0;
 	actions.usage_flag_pointers["CUSTOM1"] = &uses_custom1;
 
+	actions.blend_factors = &blend_factor_names;
 	actions.uniforms = &uniforms;
 	Error err = MaterialStorage::get_singleton()->shaders.compiler_canvas.compile(RS::SHADER_CANVAS_ITEM, code, &actions, path, gen_code);
 	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
@@ -2650,6 +2680,13 @@ void CanvasShaderData::set_code(const String &p_code) {
 	}
 
 	blend_mode = BlendMode(blend_modei);
+	if (blend_factor_names.size() == 4) {
+		uses_blend_factors = true;
+		for (int i = 0; i < 4; i++) {
+			blend_factors[i] = get_blend_factor_by_name(blend_factor_names[i]);
+		}
+	}
+
 	uses_screen_texture = gen_code.uses_screen_texture;
 	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
 
@@ -2925,6 +2962,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	uses_alpha = false;
 	uses_alpha_clip = false;
 	uses_blend_alpha = false;
+	uses_blend_factors = false;
 	uses_depth_prepass_alpha = false;
 	uses_discard = false;
 	uses_roughness = false;
@@ -2968,6 +3006,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	int blend_modei = BLEND_MODE_MIX;
 	int depth_test_disabledi = 0;
 	int depth_test_invertedi = 0;
+	Vector<StringName> blend_factor_names;
 	int alpha_antialiasing_modei = ALPHA_ANTIALIASING_OFF;
 	int cull_modei = RS::CULL_MODE_BACK;
 	int depth_drawi = DEPTH_DRAW_OPAQUE;
@@ -3061,6 +3100,7 @@ void SceneShaderData::set_code(const String &p_code) {
 
 	actions.stencil_reference = &stencil_referencei;
 
+	actions.blend_factors = &blend_factor_names;
 	actions.uniforms = &uniforms;
 
 	Error err = MaterialStorage::get_singleton()->shaders.compiler_scene.compile(RS::SHADER_SPATIAL, code, &actions, path, gen_code);
@@ -3071,6 +3111,12 @@ void SceneShaderData::set_code(const String &p_code) {
 	}
 
 	blend_mode = BlendMode(blend_modei);
+	if (blend_factor_names.size() == 4) {
+		uses_blend_factors = true;
+		for (int i = 0; i < 4; i++) {
+			blend_factors[i] = get_blend_factor_by_name(blend_factor_names[i]);
+		}
+	}
 	alpha_antialiasing_mode = AlphaAntiAliasing(alpha_antialiasing_modei);
 	depth_draw = DepthDraw(depth_drawi);
 	if (depth_test_disabledi) {
