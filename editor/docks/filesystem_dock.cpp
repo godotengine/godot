@@ -2891,12 +2891,16 @@ Control *FileSystemDock::create_tooltip_for_path(const String &p_path) const {
 
 	const String type = ResourceLoader::get_resource_type(p_path);
 	Control *tooltip = EditorResourceTooltipPlugin::make_default_tooltip(p_path);
+	Control *default_tooltip = tooltip;
 
 	for (const Ref<EditorResourceTooltipPlugin> &plugin : tooltip_plugins) {
 		if (plugin->handles(type)) {
 			tooltip = plugin->make_tooltip_for_path(p_path, EditorResourcePreview::get_singleton()->get_preview_metadata(p_path), tooltip);
 		}
 	}
+
+	// Editor description tooltip goes last, just like Node's editor description.
+	EditorResourceTooltipPlugin::append_editor_description_tooltip(p_path, default_tooltip);
 	return tooltip;
 }
 

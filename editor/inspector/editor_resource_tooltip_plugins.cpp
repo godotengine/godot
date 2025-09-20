@@ -93,6 +93,23 @@ VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p
 	return vb;
 }
 
+void EditorResourceTooltipPlugin::append_editor_description_tooltip(const String &p_resource_path, Control *p_base) {
+	if (ResourceLoader::exists(p_resource_path)) {
+		String editor_description = ResourceLoader::load(p_resource_path)->get_editor_description();
+		if (!editor_description.is_empty()) {
+			String tooltip;
+			const PackedInt32Array boundaries = TS->string_get_word_breaks(editor_description, "", 80);
+			for (int i = 0; i < boundaries.size(); i += 2) {
+				const int start = boundaries[i];
+				const int end = boundaries[i + 1];
+				tooltip += "\n" + editor_description.substr(start, end - start + 1).rstrip("\n");
+			}
+			Label *label = memnew(Label(tooltip));
+			p_base->add_child(label);
+		}
+	}
+}
+
 void EditorResourceTooltipPlugin::request_thumbnail(const String &p_path, TextureRect *p_for_control) const {
 	ERR_FAIL_NULL(p_for_control);
 	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, const_cast<EditorResourceTooltipPlugin *>(this), "_thumbnail_ready", p_for_control->get_instance_id());
