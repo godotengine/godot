@@ -322,7 +322,7 @@ public:
 
 	virtual void query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result, const Callable &p_callback = Callable()) override;
 
-	COMMAND_1(free, RID, p_object);
+	COMMAND_1(free_rid, RID, p_object);
 
 	virtual void set_active(bool p_active) override;
 

@@ -335,7 +335,7 @@ Light2D::Light2D() {
 
 Light2D::~Light2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(canvas_light);
+	RenderingServer::get_singleton()->free_rid(canvas_light);
 }
 
 //////////////////////////////

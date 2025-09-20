@@ -1585,33 +1585,33 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Typed
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(albedo_alpha_tex, 0);
 		Ref<Image> img = Image::create_from_data(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
-		RD::get_singleton()->free(albedo_alpha_tex);
+		RD::get_singleton()->free_rid(albedo_alpha_tex);
 		ret.push_back(img);
 	}
 
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(normal_tex, 0);
 		Ref<Image> img = Image::create_from_data(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
-		RD::get_singleton()->free(normal_tex);
+		RD::get_singleton()->free_rid(normal_tex);
 		ret.push_back(img);
 	}
 
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(orm_tex, 0);
 		Ref<Image> img = Image::create_from_data(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
-		RD::get_singleton()->free(orm_tex);
+		RD::get_singleton()->free_rid(orm_tex);
 		ret.push_back(img);
 	}
 
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(emission_tex, 0);
 		Ref<Image> img = Image::create_from_data(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBAH, data);
-		RD::get_singleton()->free(emission_tex);
+		RD::get_singleton()->free_rid(emission_tex);
 		ret.push_back(img);
 	}
 
-	RD::get_singleton()->free(depth_write_tex);
-	RD::get_singleton()->free(depth_tex);
+	RD::get_singleton()->free_rid(depth_write_tex);
+	RD::get_singleton()->free_rid(depth_tex);
 
 	return ret;
 }
@@ -1765,7 +1765,7 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 	}
 
 	if (sky.sky_scene_state.uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky.sky_scene_state.uniform_set)) {
-		RD::get_singleton()->free(sky.sky_scene_state.uniform_set);
+		RD::get_singleton()->free_rid(sky.sky_scene_state.uniform_set);
 	}
 
 	if (is_dynamic_gi_supported()) {
