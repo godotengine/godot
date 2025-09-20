@@ -1690,7 +1690,7 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 				file->set_current_file(String());
 			}
 		}
-	} else if (!p_resource->get_path().is_empty()) {
+	} else if (!p_resource->get_path().get_base_dir().is_empty()) {
 		file->set_current_path(p_resource->get_path());
 		if (!extensions.is_empty()) {
 			const String ext = p_resource->get_path().get_extension().to_lower();
