@@ -258,7 +258,7 @@ TEST_CASE("[Projection] Jitter offset") {
 	CHECK(proj[3] == offsetted[3]);
 }
 
-TEST_CASE("[Projection] Adjust znear") {
+TEST_CASE("[Projection] Adjust znear zfar") {
 	Projection persp = Projection::create_perspective(90, 0.5, 1, 50, false);
 	Projection adjusted = persp.perspective_znear_adjusted(2);
 
@@ -267,12 +267,12 @@ TEST_CASE("[Projection] Adjust znear") {
 	CHECK(adjusted[2].is_equal_approx(Vector4(persp[2][0], persp[2][1], -1.083333, persp[2][3])));
 	CHECK(adjusted[3].is_equal_approx(Vector4(persp[3][0], persp[3][1], -4.166666, persp[3][3])));
 
-	persp.adjust_perspective_znear(2);
+	persp.adjust_perspective_znear_zfar(2, 60);
 
 	CHECK(persp[0] == adjusted[0]);
 	CHECK(persp[1] == adjusted[1]);
-	CHECK(persp[2] == adjusted[2]);
-	CHECK(persp[3] == adjusted[3]);
+	CHECK(persp[2].is_equal_approx(Vector4(adjusted[2][0], adjusted[2][1], -1.068965, adjusted[2][3])));
+	CHECK(persp[3].is_equal_approx(Vector4(adjusted[3][0], adjusted[3][1], -4.137931, adjusted[3][3])));
 }
 
 TEST_CASE("[Projection] Set light bias") {
@@ -283,6 +283,23 @@ TEST_CASE("[Projection] Set light bias") {
 	CHECK(proj[1] == Vector4(0, 0.5, 0, 0));
 	CHECK(proj[2] == Vector4(0, 0, 0.5, 0));
 	CHECK(proj[3] == Vector4(0.5, 0.5, 0.5, 1));
+}
+
+TEST_CASE("[Projection] Adjust fov") {
+	Projection persp = Projection::create_perspective(90, 0.5, 1, 50, false);
+	Projection adjusted = persp.perspective_fov_adjusted(45);
+
+	CHECK(adjusted[0].is_equal_approx(Vector4(2.0 / 0.414214, persp[0][1], persp[0][2], persp[0][3])));
+	CHECK(adjusted[1].is_equal_approx(Vector4(persp[1][0], 1.0 / 0.414214, persp[1][2], persp[1][3])));
+	CHECK(adjusted[2] == persp[2]);
+	CHECK(adjusted[3] == persp[3]);
+
+	persp.adjust_perspective_fov(45);
+
+	CHECK(persp[0] == adjusted[0]);
+	CHECK(persp[1] == adjusted[1]);
+	CHECK(persp[2] == adjusted[2]);
+	CHECK(persp[3] == adjusted[3]);
 }
 
 TEST_CASE("[Projection] Depth correction") {
