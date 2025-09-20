@@ -296,6 +296,7 @@ private:
 	void _update_name();
 	void _compute_edit(const Point2 &p_point);
 	void _clear_selected();
+	bool _is_rotation_arc_visible() const;
 	void _select_clicked(bool p_allow_locked);
 	ObjectID _select_ray(const Point2 &p_pos) const;
 	void _find_items_at_pos(const Point2 &p_pos, Vector<_RayResult> &r_results, bool p_include_locked);
@@ -375,6 +376,7 @@ private:
 		Point2 original_mouse_pos;
 		bool snap = false;
 		bool show_rotation_line = false;
+		bool is_trackball = false;
 		Ref<EditorNode3DGizmo> gizmo;
 		int gizmo_handle = 0;
 		bool gizmo_handle_secondary = false;
@@ -390,6 +392,13 @@ private:
 		double numeric_input = 0.0;
 		bool numeric_negate = false;
 		int numeric_next_decimal = 0;
+
+		Vector3 rotation_axis;
+		double accumulated_rotation_angle = 0.0;
+		double display_rotation_angle = 0.0;
+		Vector3 initial_click_vector;
+		Vector3 previous_rotation_vector;
+		bool gizmo_initiated = false;
 	} _edit;
 
 	struct Cursor {
@@ -447,6 +456,7 @@ private:
 	int zoom_failed_attempts_count = 0;
 
 	RID move_gizmo_instance[3], move_plane_gizmo_instance[3], rotate_gizmo_instance[4], scale_gizmo_instance[3], scale_plane_gizmo_instance[3], axis_gizmo_instance[3];
+	RID trackball_sphere_instance;
 
 	String last_message;
 	String message;
@@ -687,12 +697,15 @@ private:
 	Vector3 grid_camera_last_update_position;
 
 	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[4], scale_gizmo[3], scale_plane_gizmo[3], axis_gizmo[3];
+	Ref<ArrayMesh> trackball_sphere_gizmo;
 	Ref<StandardMaterial3D> gizmo_color[3];
 	Ref<StandardMaterial3D> plane_gizmo_color[3];
-	Ref<ShaderMaterial> rotate_gizmo_color[3];
+	Ref<ShaderMaterial> rotate_gizmo_color[4];
 	Ref<StandardMaterial3D> gizmo_color_hl[3];
 	Ref<StandardMaterial3D> plane_gizmo_color_hl[3];
-	Ref<ShaderMaterial> rotate_gizmo_color_hl[3];
+	Ref<ShaderMaterial> rotate_gizmo_color_hl[4];
+	Ref<StandardMaterial3D> trackball_sphere_material;
+	Ref<StandardMaterial3D> trackball_sphere_material_hl;
 
 	Ref<Node3DGizmo> current_hover_gizmo;
 	int current_hover_gizmo_handle;
@@ -969,6 +982,7 @@ public:
 	Ref<ArrayMesh> get_rotate_gizmo(int idx) const { return rotate_gizmo[idx]; }
 	Ref<ArrayMesh> get_scale_gizmo(int idx) const { return scale_gizmo[idx]; }
 	Ref<ArrayMesh> get_scale_plane_gizmo(int idx) const { return scale_plane_gizmo[idx]; }
+	Ref<ArrayMesh> get_trackball_sphere_gizmo() const { return trackball_sphere_gizmo; }
 
 	void update_grid();
 	void update_transform_gizmo();
