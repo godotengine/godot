@@ -182,6 +182,18 @@ private:
 	Error _buffer_initialize(Buffer *p_buffer, Span<uint8_t> p_data, uint32_t p_required_align = 32);
 
 	void update_perf_report();
+
+public:
+	enum LatencyMode {
+		LATENCY_MODE_LOW_EXTREME,
+		LATENCY_MODE_LOW,
+		LATENCY_MODE_MEDIUM,
+		LATENCY_MODE_HIGH_THROUGHPUT,
+	};
+
+private:
+	LatencyMode latency_mode = LATENCY_MODE_LOW;
+
 	// Flag for batching descriptor sets.
 	bool descriptor_set_batching = true;
 	// When true, the final draw call that copies our offscreen result into the Swapchain is put into its
@@ -1560,6 +1572,8 @@ private:
 	TightLocalVector<Frame> frames;
 	uint64_t frames_drawn = 0;
 
+	BitField<PacingMethod> available_pacing_methods = 0xFF;
+
 	// Whenever logic/physics request a graphics operation (not just deleting a resource) that requires
 	// us to flush all graphics commands, we must set frames_pending_resources_for_processing = frames.size().
 	// This is important for when the user requested for the logic loop to still be updated while
@@ -1623,6 +1637,30 @@ public:
 	uint64_t limit_get(Limit p_limit) const;
 
 	void swap_buffers(bool p_present);
+
+	void set_latency_mode(LatencyMode p_latency_mode);
+	LatencyMode get_latency_mode() const;
+
+	/// Uses Waitable Swapchains to wait for a swapchain to be released. This reduces latency.
+	///
+	/// If waitable swapchains are not supported, p_sequential_sync controls a fallback method
+	/// where we stall for previous frames to prevent the CPU from going too far ahead.
+	/// This fallback improves latency, but not as good as waitable swapchains.
+	void _wait_for_present(bool p_sequential_sync);
+
+	/// Caller can provide a mask that gets AND'ed against RenderingDeviceDriver::get_available_pacing_methods()
+	/// This prevents Godot from using certain pacing methods; which is useful for debugging malfunctioning
+	/// pacing; or seeing how pacing would behave in other systems that do not support better methods.
+	/// See PacingMethod for the relevant bit combinations.
+	void _restrict_available_pacing_methods(uint8_t mask);
+
+	/// Returns the current PacingMethod in use. Note that PACING_METHOD_SEQUENTIAL_SYNC requires
+	/// higher level integration, and that higher level may decide to not use SEQUENTIAL_SYNC.
+	PacingMethod get_current_pacing_method(bool p_sequential_sync) const;
+
+	bool _should_capture_frame_pacing_timings() const;
+
+	static bool should_capture_frame_pacing_timings();
 
 	uint32_t get_frame_delay() const;
 
@@ -1746,6 +1784,7 @@ VARIANT_ENUM_CAST(RenderingDevice::MemoryType)
 VARIANT_ENUM_CAST(RenderingDevice::Features)
 VARIANT_ENUM_CAST(RenderingDevice::BreadcrumbMarker)
 VARIANT_BITFIELD_CAST(RenderingDevice::DrawFlags);
+VARIANT_ENUM_CAST(RenderingDevice::LatencyMode)
 
 #ifndef DISABLE_DEPRECATED
 VARIANT_BITFIELD_CAST(RenderingDevice::BarrierMask);
