@@ -861,6 +861,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Use a similar color to the 2D editor selection.
 	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d/selection_box_color", Color(1.0, 0.5, 0), "", PROPERTY_USAGE_DEFAULT)
 	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d/active_selection_box_color", Color(1.5, 0.75, 0, 1.0), "", PROPERTY_USAGE_DEFAULT)
+
+	// Screen-space selection outline
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "editors/3d/selection_outline/enabled", true, "", PROPERTY_USAGE_DEFAULT)
+	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d/selection_outline/color", Color(1.0, 0.5, 0), "", PROPERTY_USAGE_DEFAULT)
+	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d/selection_outline/active_color", Color(1.5, 0.75, 0, 1.0), "", PROPERTY_USAGE_DEFAULT)
+	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/selection_outline/thickness", 1.0, "0.5,10.0,0.1", PROPERTY_USAGE_DEFAULT)
+
+	// Gizmos
 	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/instantiated", Color(0.7, 0.7, 0.7, 0.6), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/joint", Color(0.5, 0.8, 1), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/aabb", Color(0.28, 0.8, 0.82), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
