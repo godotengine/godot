@@ -226,6 +226,7 @@ private:
 	Button *_close_button = nullptr;
 	ProgressBar *_progress_bar = nullptr;
 	HashMap<String, TreeItem *> _file_items;
+	HashMap<TreeItem *, int> _file_items_results_count;
 	HashMap<TreeItem *, Result> _result_items;
 	bool _with_replace = false;
 
