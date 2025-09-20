@@ -26,6 +26,7 @@ common_win = [
     "wgl_detect_version.cpp",
     "rendering_context_driver_vulkan_windows.cpp",
     "drop_target_windows.cpp",
+    "libgodot_windows.cpp",
 ]
 
 if env.msvc:
@@ -39,7 +40,7 @@ common_win_wrap = [
 
 env_wrap = env.Clone()
 
-if env["arch"] == "x86_64":
+if env["arch"] == "x86_64" and env["library_type"] == "executable":
     env_cpp_check = env.Clone()
     env_cpp_check.add_source_files(sources, ["cpu_feature_validation.c"])
     if env.msvc:
@@ -76,7 +77,10 @@ sources += res_obj
 if env["accesskit"] and not env.msvc:
     sources += env.DEFLIB("uiautomationcore")
 
-prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
+if env["library_type"] == "shared_library":
+    prog = env.add_shared_library("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
+else:
+    prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
 arrange_program_clean(prog)
 
 if env.msvc:
