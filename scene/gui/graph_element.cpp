@@ -247,4 +247,6 @@ void GraphElement::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("position_offset_changed"));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphElement, resizer);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphElement, minimap_panel);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphElement, minimap_panel_selected);
 }
