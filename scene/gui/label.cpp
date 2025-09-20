@@ -262,12 +262,12 @@ void Label::_shape() const {
 					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
 					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
 					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
+					overrun_flags.set_flag(TextServer::OVERRUN_SHORT_STRING_ELLIPSIS);
 				} break;
 				case TextServer::OVERRUN_TRIM_ELLIPSIS_FORCE: {
 					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
 					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
+					overrun_flags.set_flag(TextServer::OVERRUN_SHORT_STRING_ELLIPSIS);
 				} break;
 				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
 					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
