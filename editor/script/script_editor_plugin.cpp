@@ -4461,17 +4461,19 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	script_back = memnew(Button);
 	script_back->set_theme_type_variation(SceneStringName(FlatButton));
-	script_back->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_back));
-	menu_hb->add_child(script_back);
-	script_back->set_disabled(true);
 	script_back->set_tooltip_text(TTRC("Go to previous edited document."));
+	script_back->set_shortcut(ED_GET_SHORTCUT("script_editor/history_previous"));
+	script_back->set_disabled(true);
+	menu_hb->add_child(script_back);
+	script_back->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_back));
 
 	script_forward = memnew(Button);
 	script_forward->set_theme_type_variation(SceneStringName(FlatButton));
-	script_forward->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_forward));
-	menu_hb->add_child(script_forward);
-	script_forward->set_disabled(true);
 	script_forward->set_tooltip_text(TTRC("Go to next edited document."));
+	script_forward->set_shortcut(ED_GET_SHORTCUT("script_editor/history_next"));
+	script_forward->set_disabled(true);
+	menu_hb->add_child(script_forward);
+	script_forward->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_forward));
 
 	menu_hb->add_child(memnew(VSeparator));
 
