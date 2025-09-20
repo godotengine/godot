@@ -793,6 +793,8 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 
+	FramebufferBinding binding(GL_FRAMEBUFFER);
+
 	if (particles->draw_order != RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
 		return;
 	}
@@ -835,7 +837,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	}
 
 	glEnable(GL_RASTERIZER_DISCARD);
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	binding.reset();
 	_particles_update_instance_buffer(particles, axis, p_up_axis);
 	glDisable(GL_RASTERIZER_DISCARD);
 }
@@ -1025,7 +1027,6 @@ void ParticlesStorage::update_particles() {
 
 	RENDER_TIMESTAMP("Update GPUParticles");
 	glEnable(GL_RASTERIZER_DISCARD);
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
 	GLuint global_buffer = GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_uniform_buffer();
 
@@ -1277,7 +1278,7 @@ GLuint ParticlesStorage::particles_collision_get_heightfield_framebuffer(RID p_p
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 
 		glGenFramebuffers(1, &particles_collision->heightfield_fb);
-		glBindFramebuffer(GL_FRAMEBUFFER, particles_collision->heightfield_fb);
+		FramebufferBinding binding(GL_FRAMEBUFFER, particles_collision->heightfield_fb);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, particles_collision->heightfield_texture, 0);
 #ifdef DEBUG_ENABLED
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -1290,7 +1291,6 @@ GLuint ParticlesStorage::particles_collision_get_heightfield_framebuffer(RID p_p
 		particles_collision->heightfield_fb_size = size;
 
 		glBindTexture(GL_TEXTURE_2D, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	}
 
 	return particles_collision->heightfield_fb;

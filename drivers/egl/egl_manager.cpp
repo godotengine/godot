@@ -248,6 +248,11 @@ int EGLManager::display_get_native_visual_id(void *p_display) {
 	return native_visual_id;
 }
 
+Error EGLManager::window_create(DisplayServer::WindowID p_window_id, Ref<RenderingNativeSurface> p_native_surface, int p_width, int p_height) {
+	ERR_FAIL_COND_V_MSG(!p_native_surface.is_valid(), FAILED, "Invalid native surface");
+	return window_create(p_window_id, nullptr, p_native_surface->get_native_id(), p_width, p_height);
+}
+
 Error EGLManager::window_create(DisplayServer::WindowID p_window_id, void *p_display, void *p_native_window, int p_width, int p_height) {
 	int gldisplay_id = _get_gldisplay_id(p_display);
 	ERR_FAIL_COND_V(gldisplay_id < 0, ERR_CANT_CREATE);
@@ -334,6 +339,10 @@ void EGLManager::window_destroy(DisplayServer::WindowID p_window_id) {
 		eglDestroySurface(gldisplay.egl_display, glwindow.egl_surface);
 		glwindow.egl_surface = nullptr;
 	}
+}
+
+Size2i EGLManager::window_get_size(DisplayServer::WindowID p_id) {
+	return Size2i();
 }
 
 void EGLManager::release_current() {

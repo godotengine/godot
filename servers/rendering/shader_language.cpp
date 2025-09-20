@@ -3154,7 +3154,7 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "textureSize", TYPE_IVEC3, { TYPE_ISAMPLER3D, TYPE_INT, TYPE_VOID }, { "sampler", "lod" }, TAG_GLOBAL, false },
 	{ "textureSize", TYPE_IVEC3, { TYPE_USAMPLER3D, TYPE_INT, TYPE_VOID }, { "sampler", "lod" }, TAG_GLOBAL, false },
 	{ "textureSize", TYPE_IVEC2, { TYPE_SAMPLERCUBE, TYPE_INT, TYPE_VOID }, { "sampler", "lod" }, TAG_GLOBAL, false },
-	{ "textureSize", TYPE_IVEC2, { TYPE_SAMPLERCUBEARRAY, TYPE_INT, TYPE_VOID }, { "sampler", "lod" }, TAG_GLOBAL, false },
+	{ "textureSize", TYPE_IVEC3, { TYPE_SAMPLERCUBEARRAY, TYPE_INT, TYPE_VOID }, { "sampler", "lod" }, TAG_GLOBAL, false },
 
 	// texture
 

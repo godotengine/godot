@@ -32,7 +32,7 @@
 
 #import "dir_access_macos.h"
 #ifdef DEBUG_ENABLED
-#import "display_server_embedded.h"
+#import "display_server_macos_embedded.h"
 #endif
 #import "display_server_macos.h"
 #import "godot_application.h"
@@ -1248,9 +1248,9 @@ void OS_MacOS_Embedded::run() {
 		ret = Main::start();
 	}
 
-	DisplayServerEmbedded *ds = Object::cast_to<DisplayServerEmbedded>(DisplayServer::get_singleton());
+	DisplayServerMacOSEmbedded *ds = Object::cast_to<DisplayServerMacOSEmbedded>(DisplayServer::get_singleton());
 	if (!ds) {
-		ERR_FAIL_MSG("DisplayServerEmbedded is not initialized.");
+		ERR_FAIL_MSG("DisplayServerMacOSEmbedded is not initialized.");
 	}
 
 	if (ds && ret == EXIT_SUCCESS && main_loop) {
@@ -1287,7 +1287,7 @@ void OS_MacOS_Embedded::run() {
 
 OS_MacOS_Embedded::OS_MacOS_Embedded(const char *p_execpath, int p_argc, char **p_argv) :
 		OS_MacOS(p_execpath, p_argc, p_argv) {
-	DisplayServerEmbedded::register_embedded_driver();
+	DisplayServerMacOSEmbedded::register_embedded_driver();
 }
 
 #endif

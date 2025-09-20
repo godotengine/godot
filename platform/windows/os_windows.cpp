@@ -30,7 +30,11 @@
 
 #include "os_windows.h"
 
+#ifdef EMBEDDED
+#include "servers/display_server_embedded.h"
+#else
 #include "display_server_windows.h"
+#endif
 #include "lang_table.h"
 #include "windows_terminal_logger.h"
 #include "windows_utils.h"
@@ -596,6 +600,9 @@ String OS_Windows::get_distribution_name() const {
 }
 
 String OS_Windows::get_version() const {
+#ifdef EMBEDDED
+	return "";
+#else
 	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)(void *)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
 	if (version_ptr != nullptr) {
 		RTL_OSVERSIONINFOEXW fow;
@@ -606,9 +613,11 @@ String OS_Windows::get_version() const {
 		}
 	}
 	return "";
+#endif
 }
 
 String OS_Windows::get_version_alias() const {
+#ifndef EMBEDDED
 	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)(void *)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
 	if (version_ptr != nullptr) {
 		RTL_OSVERSIONINFOEXW fow;
@@ -644,6 +653,7 @@ String OS_Windows::get_version_alias() const {
 			return vformat("%s (build %d)", windows_string, (int64_t)fow.dwBuildNumber);
 		}
 	}
+#endif
 
 	return "";
 }
@@ -2580,12 +2590,14 @@ void OS_Windows::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
 			return;
 		}
 
+#ifndef EMBEDDED
 		DisplayServer *ds = DisplayServer::get_singleton();
 		DisplayServerWindows *ds_win = Object::cast_to<DisplayServerWindows>(ds);
 		if (ds_win) {
 			MsgWaitForMultipleObjects(0, nullptr, false, Math::floor(double(delay) / 1000.0), QS_ALLINPUT);
 			return;
 		}
+#endif
 	}
 
 	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
@@ -2769,7 +2781,11 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	AudioDriverManager::add_driver(&driver_xaudio2);
 #endif
 
+#ifdef EMBEDDED
+	DisplayServerEmbedded::register_embedded_driver();
+#else
 	DisplayServerWindows::register_windows_driver();
+#endif
 
 	// Enable ANSI escape code support on Windows 10 v1607 (Anniversary Update) and later.
 	// This lets the engine and projects use ANSI escape codes to color text just like on macOS and Linux.

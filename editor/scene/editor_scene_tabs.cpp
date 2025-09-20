@@ -463,3 +463,8 @@ EditorSceneTabs::EditorSceneTabs() {
 	tab_preview->set_position(Point2(2, 2) * EDSCALE);
 	tab_preview_panel->add_child(tab_preview);
 }
+
+EditorSceneTabs::~EditorSceneTabs() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}

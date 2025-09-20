@@ -4,6 +4,8 @@
 
 #VERSION_DEFINES
 
+#include "../metal_simulator_inc.glsl"
+
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 #define MAX_CASCADES 8
@@ -41,7 +43,7 @@ layout(rgba32i, set = 0, binding = 13) uniform restrict iimage2D lightprobe_aver
 layout(rgba16f, set = 0, binding = 14) uniform restrict writeonly image2DArray lightprobe_ambient_texture;
 
 #ifdef USE_CUBEMAP_ARRAY
-layout(set = 1, binding = 0) uniform textureCubeArray sky_irradiance;
+layout(set = 1, binding = 0) uniform textureCubeArrayFix sky_irradiance;
 #else
 layout(set = 1, binding = 0) uniform textureCube sky_irradiance;
 #endif
@@ -272,7 +274,7 @@ void main() {
 			vec3 sky_dir = cross(sky_quat.xyz, ray_dir);
 			sky_dir = ray_dir + ((sky_dir * sky_quat.w) + cross(sky_quat.xyz, sky_dir)) * 2.0;
 #ifdef USE_CUBEMAP_ARRAY
-			light.rgb = textureLod(samplerCubeArray(sky_irradiance, linear_sampler_mipmaps), vec4(sky_dir, 0.0), 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
+			light.rgb = textureLodFix(sky_irradiance, linear_sampler_mipmaps, vec4(sky_dir, 0.0), 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
 #else
 			light.rgb = textureLod(samplerCube(sky_irradiance, linear_sampler_mipmaps), sky_dir, 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
 #endif

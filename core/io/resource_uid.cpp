@@ -379,4 +379,7 @@ ResourceUID::~ResourceUID() {
 	if (crypto != nullptr) {
 		memdelete((CryptoCore::RandomGenerator *)crypto);
 	}
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 }

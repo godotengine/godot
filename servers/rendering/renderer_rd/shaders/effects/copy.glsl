@@ -4,6 +4,8 @@
 
 #VERSION_DEFINES
 
+#include "../metal_simulator_inc.glsl"
+
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 #define FLAG_HORIZONTAL (1 << 0)
@@ -41,7 +43,7 @@ layout(push_constant, std430) uniform Params {
 params;
 
 #ifdef MODE_CUBEMAP_ARRAY_TO_PANORAMA
-layout(set = 0, binding = 0) uniform samplerCubeArray source_color;
+layout(set = 0, binding = 0) uniform samplerCubeArrayFix source_color;
 #elif defined(MODE_CUBEMAP_TO_PANORAMA)
 layout(set = 0, binding = 0) uniform samplerCube source_color;
 #elif !defined(MODE_SET_COLOR)
@@ -95,10 +97,17 @@ void main() {
 	vec2 quad_center_uv = clamp(vec2(params.section.xy + gl_GlobalInvocationID.xy + gl_LocalInvocationID.xy - 3.5) / params.section.zw, vec2(0.5 / params.section.zw), vec2(1.0 - 1.5 / params.section.zw));
 	uint dest_index = gl_LocalInvocationID.x * 2 + gl_LocalInvocationID.y * 2 * 16;
 
+#ifdef MODE_CUBEMAP_ARRAY_TO_PANORAMA
+	local_cache[dest_index] = textureLodFix(source_color, quad_center_uv, 0);
+	local_cache[dest_index + 1] = textureLodFix(source_color, quad_center_uv + vec2(1.0 / params.section.z, 0.0), 0);
+	local_cache[dest_index + 16] = textureLodFix(source_color, quad_center_uv + vec2(0.0, 1.0 / params.section.w), 0);
+	local_cache[dest_index + 16 + 1] = textureLodFix(source_color, quad_center_uv + vec2(1.0 / params.section.zw), 0);
+#else
 	local_cache[dest_index] = textureLod(source_color, quad_center_uv, 0);
 	local_cache[dest_index + 1] = textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.z, 0.0), 0);
 	local_cache[dest_index + 16] = textureLod(source_color, quad_center_uv + vec2(0.0, 1.0 / params.section.w), 0);
 	local_cache[dest_index + 16 + 1] = textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.zw), 0);
+#endif
 
 #ifdef MODE_GLOW
 	if (bool(params.flags & FLAG_GLOW_FIRST_PASS)) {
@@ -208,7 +217,11 @@ void main() {
 		if (bool(params.flags & FLAG_FLIP_Y)) {
 			uv.y = 1.0 - uv.y;
 		}
+#ifdef MODE_CUBEMAP_ARRAY_TO_PANORAMA
+		color = textureLodFix(source_color, uv, 0.0);
+#else
 		color = textureLod(source_color, uv, 0.0);
+#endif
 
 	} else {
 		color = texelFetch(source_color, pos + params.section.xy, 0);
@@ -273,6 +286,8 @@ void main() {
 
 #ifdef MODE_CUBEMAP_TO_PANORAMA
 	vec4 color = textureLod(source_color, normal, params.camera_z_far); //the biggest the lod the least the acne
+#elif defined(MODE_CUBEMAP_ARRAY_TO_PANORAMA)
+	vec4 color = textureLodFix(source_color, vec4(normal, params.camera_z_far), 0.0); //the biggest the lod the least the acne
 #else
 	vec4 color = textureLod(source_color, vec4(normal, params.camera_z_far), 0.0); //the biggest the lod the least the acne
 #endif

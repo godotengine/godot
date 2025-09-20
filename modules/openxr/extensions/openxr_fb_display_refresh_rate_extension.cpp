@@ -43,6 +43,8 @@ OpenXRDisplayRefreshRateExtension::OpenXRDisplayRefreshRateExtension() {
 
 OpenXRDisplayRefreshRateExtension::~OpenXRDisplayRefreshRateExtension() {
 	display_refresh_rate_ext = false;
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
 }
 
 HashMap<String, bool *> OpenXRDisplayRefreshRateExtension::get_requested_extensions() {

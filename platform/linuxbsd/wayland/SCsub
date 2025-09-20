@@ -99,6 +99,7 @@ source_files = [
     "display_server_wayland.cpp",
     "key_mapping_xkb.cpp",
     "wayland_thread.cpp",
+    "rendering_native_surface_wayland.cpp",
 ]
 
 if env["use_sowrap"]:

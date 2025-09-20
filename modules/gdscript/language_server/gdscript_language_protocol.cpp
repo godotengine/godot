@@ -400,6 +400,11 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	workspace->root = ProjectSettings::get_singleton()->get_resource_path();
 }
 
+GDScriptLanguageProtocol::~GDScriptLanguageProtocol() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}
+
 #undef SET_DOCUMENT_METHOD
 #undef SET_COMPLETION_METHOD
 #undef SET_WORKSPACE_METHOD

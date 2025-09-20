@@ -396,6 +396,11 @@ RunInstancesDialog::RunInstancesDialog() {
 	instance_tree->connect("item_edited", callable_mp(this, &RunInstancesDialog::_start_instance_timer));
 }
 
+RunInstancesDialog::~RunInstancesDialog() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}
+
 bool RunInstancesDialog::InstanceData::overrides_run_args() const {
 	return item->is_checked(COLUMN_OVERRIDE_ARGS);
 }

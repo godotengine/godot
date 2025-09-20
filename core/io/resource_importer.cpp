@@ -566,6 +566,12 @@ ResourceFormatImporter::ResourceFormatImporter() {
 	singleton = this;
 }
 
+ResourceFormatImporter::~ResourceFormatImporter() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}
+
 //////////////
 
 void ResourceImporter::get_build_dependencies(const String &p_path, HashSet<String> *r_dependencies) {

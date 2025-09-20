@@ -1200,6 +1200,7 @@ public:
 	int screen_get_height(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
 	int screen_get_pre_rotation_degrees(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
 	FramebufferFormatID screen_get_framebuffer_format(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
+	RDD::SwapChainID screen_get_swapchain(DisplayServer::WindowID p_screen);
 	Error screen_free(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
 
 	/*************************/
@@ -1556,9 +1557,254 @@ private:
 
 	uint32_t max_timestamp_query_elements = 0;
 
-	int frame = 0;
-	TightLocalVector<Frame> frames;
-	uint64_t frames_drawn = 0;
+	class Frames {
+	protected:
+		int frame = 0;
+		TightLocalVector<Frame> frames;
+		uint64_t frames_drawn = 0;
+		RenderingDeviceDriver *driver = nullptr;
+
+	public:
+		int get_frame_index() const {
+			return frame;
+		}
+
+		void set_frame_index(int p_index) {
+			frame = p_index;
+		}
+
+		uint32_t get_number_of_frames() const {
+			return frames.size();
+		}
+
+		bool is_empty() const {
+			return frames.is_empty();
+		}
+
+		Frame query_current_frame() const {
+			return frames[frame];
+		}
+
+		Frame &get_current_frame() {
+			return frames[frame];
+		}
+
+		Frame &get_frame(uint32_t p_index) {
+			return frames[p_index];
+		}
+
+		uint64_t get_frames_drawn() const {
+			return frames_drawn;
+		}
+
+		void set_frames_drawn(uint64_t p_frames_drawn) {
+			frames_drawn = p_frames_drawn;
+		}
+
+		void increment_frames_drawn() {
+			frames_drawn++;
+		}
+
+		virtual void resize(uint32_t p_size) = 0;
+
+		void clear() {
+			frames.clear();
+		}
+
+		virtual void frame_wait(uint32_t p_index) = 0;
+
+		virtual void update(bool p_frame_completed) = 0;
+
+		virtual void initialize() = 0;
+
+		Frames() {}
+		Frames(RenderingDeviceDriver *p_driver) {
+			driver = p_driver;
+		}
+		virtual ~Frames() = default;
+	};
+
+	class DefaultFrames : public Frames {
+	public:
+		virtual void resize(uint32_t p_size) override final {
+			frames.resize(p_size);
+		}
+
+		virtual void frame_wait(uint32_t p_index) override final {
+			driver->fence_wait(frames[p_index].fence);
+			driver->frame_cleanup(frames[p_index].fence);
+		}
+
+		virtual void update(bool p_frame_completed) override final {}
+
+		virtual void initialize() override final {}
+
+		DefaultFrames(RenderingDeviceDriver *p_driver) :
+				Frames(p_driver) {}
+	};
+
+#ifdef EXTERNAL_TARGET_ENABLED
+	class MonitoredFrames;
+
+	struct FenceData {
+		int frame_index = 0;
+		HashMap<DisplayServer::WindowID, uint32_t> window_buffers;
+		HashMap<DisplayServer::WindowID, uint64_t> swapchain_versions;
+		ConditionVariable fence_set_cond;
+		ConditionVariable fence_waited_cond;
+		BinaryMutex fence_mutex;
+		bool fence_set = false;
+		bool fence_waited = false;
+		MonitoredFrames *context;
+		bool frame_completed = true;
+	};
+
+	class MonitoredFrames : public Frames {
+		Thread monitor_thread;
+		TightLocalVector<FenceData> fence_data;
+		RenderingDevice *context;
+		bool stop_fence_callback = false;
+
+		static void _monitor(MonitoredFrames *p_context) {
+			int frame_to_wait = 0;
+
+			bool stop = false;
+			while (!stop) {
+				{
+					MutexLock lock(p_context->fence_data[frame_to_wait].fence_mutex);
+					while (!p_context->fence_data[frame_to_wait].fence_set) {
+						p_context->fence_data[frame_to_wait].fence_set_cond.wait(lock);
+
+						if (stop) {
+							return;
+						}
+					}
+					p_context->fence_data[frame_to_wait].fence_set = false;
+				}
+
+				p_context->driver->fence_wait(p_context->frames[frame_to_wait].fence);
+
+				if (p_context->fence_data[frame_to_wait].frame_completed) {
+					{
+						MutexLock lock(p_context->fence_data[frame_to_wait].fence_mutex);
+
+						for (KeyValue<DisplayServer::WindowID, uint32_t> &E : p_context->fence_data[frame_to_wait].window_buffers) {
+							const DisplayServer::WindowID &id = E.key;
+							const uint32_t &buffer = E.value;
+
+							const RDD::SwapChainID swapchain_id = p_context->context->screen_swap_chains.find(id)->value;
+
+							MutexLock<BinaryMutex> external_lock(*p_context->driver->swap_chain_get_mutex(swapchain_id));
+
+							if (p_context->fence_data[frame_to_wait].swapchain_versions[id] == p_context->driver->swap_chain_get_version(swapchain_id)) {
+								p_context->driver->swap_chain_set_last_drawn_buffer(swapchain_id, buffer);
+								p_context->driver->swap_chain_set_frame_in_use(swapchain_id, buffer, false);
+							}
+						}
+						p_context->fence_data[frame_to_wait].window_buffers.clear();
+						p_context->fence_data[frame_to_wait].swapchain_versions.clear();
+
+						p_context->fence_data[frame_to_wait].fence_waited = false;
+						p_context->fence_data[frame_to_wait].fence_waited_cond.notify_all();
+					}
+
+					frame_to_wait += 1;
+					frame_to_wait %= p_context->fence_data.size();
+				} else {
+					MutexLock lock(p_context->fence_data[frame_to_wait].fence_mutex);
+
+					p_context->fence_data[frame_to_wait].fence_waited = false;
+					p_context->fence_data[frame_to_wait].fence_waited_cond.notify_all();
+				}
+
+				stop = p_context->stop_fence_callback;
+			}
+		}
+
+	public:
+		virtual void resize(uint32_t p_size) override final {
+			frames.resize(p_size);
+			fence_data.resize(p_size);
+		}
+
+		virtual void frame_wait(uint32_t p_index) override final {
+			MutexLock lock(fence_data[frame].fence_mutex);
+
+			while (fence_data[frame].fence_waited) {
+				fence_data[frame].fence_waited_cond.wait(lock);
+			}
+
+			driver->frame_cleanup(frames[p_index].fence);
+		}
+
+		virtual void update(bool p_frame_completed) override final {
+			MutexLock lock(fence_data[frame].fence_mutex);
+			while (fence_data[frame].fence_waited) {
+				fence_data[frame].fence_waited_cond.wait(lock);
+			}
+
+			fence_data[frame].context = this;
+			fence_data[frame].frame_index = frame;
+			fence_data[frame].frame_completed = p_frame_completed;
+
+			fence_data[frame].window_buffers.clear();
+
+			if (p_frame_completed) {
+				for (KeyValue<DisplayServer::WindowID, RDD::SwapChainID> &E : context->screen_swap_chains) {
+					const DisplayServer::WindowID &id = E.key;
+					const RDD::SwapChainID &swapchain_id = E.value;
+
+					MutexLock external_lock(*driver->swap_chain_get_mutex(swapchain_id));
+
+					fence_data[frame].window_buffers.insert(id, driver->swap_chain_get_image_index(swapchain_id));
+				}
+
+				{
+					fence_data[frame].swapchain_versions.clear();
+					for (KeyValue<DisplayServer::WindowID, RDD::SwapChainID> &E : context->screen_swap_chains) {
+						const DisplayServer::WindowID &id = E.key;
+						const RDD::SwapChainID swapchain_id = E.value;
+
+						MutexLock external_lock(*driver->swap_chain_get_mutex(swapchain_id));
+
+						fence_data[frame].swapchain_versions.insert(id, driver->swap_chain_get_version(swapchain_id));
+					}
+				}
+			}
+
+			fence_data[frame].fence_waited = true;
+			fence_data[frame].fence_set = true;
+			fence_data[frame].fence_set_cond.notify_all();
+		}
+
+		virtual void initialize() override final {
+			monitor_thread.start([](void *p_user) {
+				MonitoredFrames::_monitor((MonitoredFrames *)p_user);
+			},
+					this);
+		}
+
+		MonitoredFrames() {}
+		MonitoredFrames(RenderingDeviceDriver *p_driver, RenderingDevice *p_context) :
+				Frames(p_driver) {
+			context = p_context;
+		}
+
+		~MonitoredFrames() {
+			stop_fence_callback = true;
+
+			for (uint32_t i = 0; i < fence_data.size(); i++) {
+				MutexLock lock(fence_data[i].fence_mutex);
+				fence_data[i].fence_set = true;
+				fence_data[i].fence_set_cond.notify_all();
+			}
+
+			monitor_thread.wait_to_finish();
+		}
+	};
+#endif
+
+	Frames *frames;
 
 	// Whenever logic/physics request a graphics operation (not just deleting a resource) that requires
 	// us to flush all graphics commands, we must set frames_pending_resources_for_processing = frames.size().
@@ -1578,7 +1824,7 @@ private:
 
 protected:
 	void execute_chained_cmds(bool p_present_swap_chain,
-			RenderingDeviceDriver::FenceID p_draw_fence,
+			RenderingDeviceDriver::FenceID p_fence,
 			RenderingDeviceDriver::SemaphoreID p_dst_draw_semaphore_to_signal);
 
 public:
@@ -1598,7 +1844,11 @@ public:
 #endif
 
 public:
-	Error initialize(RenderingContextDriver *p_context, DisplayServer::WindowID p_main_window = DisplayServer::INVALID_WINDOW_ID);
+	Error initialize(RenderingContextDriver *p_context, DisplayServer::WindowID p_main_window = DisplayServer::INVALID_WINDOW_ID, bool p_monitored_frames = false);
+
+	RenderingContextDriver *get_context();
+	RenderingDeviceDriver *get_driver();
+
 	void finalize();
 
 	void _set_max_fps(int p_max_fps);

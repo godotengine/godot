@@ -38,7 +38,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#import "rendering_context_driver_vulkan_apple_embedded.h"
+#import "drivers/apple/rendering_context_driver_vulkan_apple.h"
 
 #include "drivers/vulkan/godot_vulkan.h"
 #endif // VULKAN_ENABLED
@@ -63,6 +63,9 @@ class DisplayServerAppleEmbedded : public DisplayServer {
 #if defined(RD_ENABLED)
 	RenderingContextDriver *rendering_context = nullptr;
 	RenderingDevice *rendering_device = nullptr;
+#endif
+#if defined(GLES3_ENABLED)
+	GLManager *gl_manager = nullptr;
 #endif
 	NativeMenu *native_menu = nullptr;
 

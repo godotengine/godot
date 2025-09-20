@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rendering_context_driver_vulkan_macos.h                               */
+/*  display_server_embedded_host_interface.h                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,26 +30,19 @@
 
 #pragma once
 
-#ifdef VULKAN_ENABLED
+#include "core/input/input.h"
+#include "core/object/ref_counted.h"
 
-#include "drivers/vulkan/rendering_context_driver_vulkan.h"
-
-#import <QuartzCore/CAMetalLayer.h>
-
-class RenderingContextDriverVulkanMacOS : public RenderingContextDriverVulkan {
-private:
-	virtual const char *_get_platform_surface_extension() const override final;
+class DisplayServerEmbeddedHostInterface : public RefCounted {
+	GDCLASS(DisplayServerEmbeddedHostInterface, RefCounted);
 
 protected:
-	SurfaceID surface_create(const void *p_platform_data) override final;
+	static void _bind_methods();
 
 public:
-	struct WindowPlatformData {
-		CAMetalLayer *const *layer_ptr;
-	};
+	GDVIRTUAL0RC(Input::CursorShape, _cursor_get_shape);
+	GDVIRTUAL1(_cursor_set_shape, Input::CursorShape);
 
-	RenderingContextDriverVulkanMacOS();
-	~RenderingContextDriverVulkanMacOS();
+	virtual Input::CursorShape cursor_get_shape() const;
+	virtual void cursor_set_shape(Input::CursorShape p_shape);
 };
-
-#endif // VULKAN_ENABLED

@@ -90,6 +90,7 @@ public:
 	static AnimationTreeEditor *get_singleton() { return singleton; }
 	void edit(AnimationTree *p_tree);
 	AnimationTreeEditor();
+	~AnimationTreeEditor();
 };
 
 class AnimationTreeEditorPlugin : public EditorPlugin {

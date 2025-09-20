@@ -30,8 +30,10 @@
 
 #import "apple_embedded.h"
 
+#ifndef LIBGODOT_ENABLED
 #import "app_delegate_service.h"
 #import "view_controller.h"
+#endif
 
 #import <CoreHaptics/CoreHaptics.h>
 #import <UIKit/UIKit.h>
@@ -159,6 +161,7 @@ void AppleEmbedded::stop_haptic_engine() {
 }
 
 void AppleEmbedded::alert(const char *p_alert, const char *p_title) {
+#ifndef LIBGODOT_ENABLED
 	NSString *title = [NSString stringWithUTF8String:p_title];
 	NSString *message = [NSString stringWithUTF8String:p_alert];
 
@@ -171,6 +174,7 @@ void AppleEmbedded::alert(const char *p_alert, const char *p_title) {
 	[alert addAction:button];
 
 	[GDTAppDelegateService.viewController presentViewController:alert animated:YES completion:nil];
+#endif
 }
 
 String AppleEmbedded::get_model() const {

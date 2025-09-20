@@ -3699,7 +3699,7 @@ bool TextureStorage::render_target_get_transparent(RID p_render_target) const {
 	return rt->is_transparent;
 }
 
-void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, bool p_value) {
+void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, bool p_value, DisplayServer::WindowID p_direct_to_screen_id) {
 }
 
 bool TextureStorage::render_target_get_direct_to_screen(RID p_render_target) const {

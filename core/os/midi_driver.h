@@ -102,7 +102,7 @@ public:
 	static MIDIDriver *get_singleton();
 
 	MIDIDriver();
-	virtual ~MIDIDriver() = default;
+	virtual ~MIDIDriver();
 
 	virtual Error open() = 0;
 	virtual void close() = 0;

@@ -134,4 +134,5 @@ public:
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
 	virtual void edit(const Ref<AnimationNode> &p_node) override;
 	AnimationNodeBlendSpace1DEditor();
+	~AnimationNodeBlendSpace1DEditor();
 };

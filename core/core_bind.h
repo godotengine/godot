@@ -86,6 +86,12 @@ public:
 	Vector<String> list_directory(const String &p_directory);
 
 	ResourceLoader() { singleton = this; }
+
+	~ResourceLoader() {
+		if (singleton == this) {
+			singleton = nullptr;
+		}
+	}
 };
 
 class ResourceSaver : public Object {
@@ -118,6 +124,12 @@ public:
 	ResourceUID::ID get_resource_id_for_path(const String &p_path, bool p_generate = false);
 
 	ResourceSaver() { singleton = this; }
+
+	~ResourceSaver() {
+		if (singleton == this) {
+			singleton = nullptr;
+		}
+	}
 };
 
 class Logger : public RefCounted {
@@ -383,6 +395,12 @@ public:
 	TypedArray<Point2i> bresenham_line(const Point2i &p_from, const Point2i &p_to);
 
 	Geometry2D() { singleton = this; }
+
+	~Geometry2D() {
+		if (singleton == this) {
+			singleton = nullptr;
+		}
+	}
 };
 
 class Geometry3D : public Object {
@@ -414,6 +432,12 @@ public:
 	Vector<int32_t> tetrahedralize_delaunay(const Vector<Vector3> &p_points);
 
 	Geometry3D() { singleton = this; }
+
+	~Geometry3D() {
+		if (singleton == this) {
+			singleton = nullptr;
+		}
+	}
 };
 
 class Marshalls : public Object {
@@ -640,6 +664,12 @@ public:
 #endif
 
 	Engine() { singleton = this; }
+
+	~Engine() {
+		if (singleton == this) {
+			singleton = nullptr;
+		}
+	}
 };
 
 class EngineDebugger : public Object {

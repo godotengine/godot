@@ -62,6 +62,10 @@ private:
 #endif
 
 	static bool gles_over_gl;
+	static bool glad_loaded;
+#ifdef GLAD_ENABLED
+	static GLADloadfunc gl_get_proc_addr;
+#endif
 
 protected:
 	GLES3::Config *config = nullptr;
@@ -96,7 +100,7 @@ public:
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }
 
-	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
+	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, DisplayServer::WindowID p_screen, bool p_use_filter = true);
 
 	void initialize();
 	void begin_frame(double frame_step);
@@ -112,6 +116,10 @@ public:
 	static RendererCompositor *_create_current() {
 		return memnew(RasterizerGLES3);
 	}
+
+#ifdef GLAD_ENABLED
+	static void preloadGL(GLADloadfunc p_load_func);
+#endif
 
 	static bool is_gles_over_gl() { return gles_over_gl; }
 	static void clear_depth(float p_depth);

@@ -32,7 +32,11 @@
 
 #include "core/os/os.h"
 
+#include "drivers/vulkan/rendering_native_surface_vulkan.h"
 #include "rendering_context_driver_vulkan_windows.h"
+
+#include "drivers/vulkan/rendering_native_surface_vulkan.h"
+#include "rendering_native_surface_windows.h"
 
 #include "drivers/vulkan/godot_vulkan.h"
 
@@ -51,21 +55,22 @@ RenderingContextDriverVulkanWindows::~RenderingContextDriverVulkanWindows() {
 	// Does nothing.
 }
 
-RenderingContextDriver::SurfaceID RenderingContextDriverVulkanWindows::surface_create(const void *p_platform_data) {
-	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
+RenderingContextDriver::SurfaceID RenderingContextDriverVulkanWindows::surface_create(Ref<RenderingNativeSurface> p_native_surface) {
+	Ref<RenderingNativeSurfaceWindows> windows_native_surface = Object::cast_to<RenderingNativeSurfaceWindows>(*p_native_surface);
+	ERR_FAIL_COND_V(windows_native_surface.is_null(), SurfaceID());
 
 	VkWin32SurfaceCreateInfoKHR create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-	create_info.hinstance = wpd->instance;
-	create_info.hwnd = wpd->window;
+	create_info.hinstance = windows_native_surface->get_instance();
+	create_info.hwnd = windows_native_surface->get_window_handle();
 
 	VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
 	VkResult err = vkCreateWin32SurfaceKHR(instance_get(), &create_info, get_allocation_callbacks(VK_OBJECT_TYPE_SURFACE_KHR), &vk_surface);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, SurfaceID());
 
-	Surface *surface = memnew(Surface);
-	surface->vk_surface = vk_surface;
-	return SurfaceID(surface);
+	Ref<RenderingNativeSurfaceVulkan> vulkan_surface = RenderingNativeSurfaceVulkan::create(vk_surface);
+	RenderingContextDriver::SurfaceID result = RenderingContextDriverVulkan::surface_create(vulkan_surface);
+	return result;
 }
 
 #endif // WINDOWS_ENABLED && VULKAN_ENABLED

@@ -1901,6 +1901,11 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	open_file->connect("file_selected", callable_mp(this, &AnimationNodeStateMachineEditor::_file_opened));
 }
 
+AnimationNodeStateMachineEditor::~AnimationNodeStateMachineEditor() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}
+
 void EditorAnimationMultiTransitionEdit::add_transition(const StringName &p_from, const StringName &p_to, Ref<AnimationNodeStateMachineTransition> p_transition) {
 	Transition tr;
 	tr.from = p_from;

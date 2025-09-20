@@ -39,6 +39,7 @@
 #define DEBUG_LOG_WAYLAND(...)
 #endif
 
+#include "rendering_native_surface_wayland.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #ifdef VULKAN_ENABLED
@@ -1937,9 +1938,16 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	}
 
 #ifdef RD_ENABLED
+	Ref<RenderingNativeSurfaceWayland> wayland_surface;
 #ifdef VULKAN_ENABLED
 	if (rendering_driver == "vulkan") {
-		rendering_context = memnew(RenderingContextDriverVulkanWayland);
+		wayland_surface = RenderingNativeSurfaceWayland::create(
+				wayland_thread.get_wl_display(),
+				nullptr);
+	}
+
+	if (wayland_surface.is_valid()) {
+		rendering_context = wayland_surface->create_rendering_context(rendering_driver);
 	}
 #endif // VULKAN_ENABLED
 

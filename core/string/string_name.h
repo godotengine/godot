@@ -180,6 +180,12 @@ public:
 #endif
 	~StringName() {
 		if (likely(configured) && _data) { //only free if configured
+#ifdef LIBGODOT_ENABLED
+			// LibGodot does not clean up StringNames on destroy_godot_instance, so we need to explicitly avoid calling unref() at static StringName destruction
+			if (_data->static_count.get() > 0) {
+				return;
+			}
+#endif
 			unref();
 		}
 	}

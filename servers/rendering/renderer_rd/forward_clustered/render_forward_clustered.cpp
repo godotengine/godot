@@ -5049,7 +5049,9 @@ RenderForwardClustered::RenderForwardClustered() {
 	ss_effects = memnew(RendererRD::SSEffects);
 #ifdef METAL_MFXTEMPORAL_ENABLED
 	motion_vectors_store = memnew(RendererRD::MotionVectorsStore);
+#if !defined(IOS_SIMULATOR)
 	mfx_temporal_effect = memnew(RendererRD::MFXTemporalEffect);
+#endif
 #endif
 }
 
@@ -5113,4 +5115,7 @@ RenderForwardClustered::~RenderForwardClustered() {
 		RD::get_singleton()->free(sdfgi_framebuffer_size_cache.begin()->value);
 		sdfgi_framebuffer_size_cache.remove(sdfgi_framebuffer_size_cache.begin());
 	}
+
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
 }

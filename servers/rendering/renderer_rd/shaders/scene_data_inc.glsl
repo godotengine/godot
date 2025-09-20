@@ -3,6 +3,8 @@
 // This enables us to use this UBO in our main scene render shaders but also in
 // effects that need access to this data.
 
+#include "metal_simulator_inc.glsl"
+
 #define SCENE_DATA_FLAGS_USE_AMBIENT_LIGHT (1 << 0)
 #define SCENE_DATA_FLAGS_USE_AMBIENT_CUBEMAP (1 << 1)
 #define SCENE_DATA_FLAGS_USE_REFLECTION_CUBEMAP (1 << 2)
