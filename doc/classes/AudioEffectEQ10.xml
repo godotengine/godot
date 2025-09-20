@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectEQ10" inherits="AudioEffectEQ" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Adds a 10-band equalizer audio effect to an Audio bus. Gives you control over frequencies from 31 Hz to 16000 Hz.
+		Adds a 10-band equalizer audio effect. Gives you control over frequencies from 31 Hz to 16000 Hz.
 		Each frequency can be modulated between -60/+24 dB.
 	</brief_description>
 	<description>
