@@ -35,13 +35,14 @@
 # Cheesymoon Brainstorms <alexsergiuhd@gmail.com>, 2025.
 # GREEN MONSTER <racovitavvalentin@gmail.com>, 2025.
 # Alin Gheorghe <yovngra@gmail.com>, 2025.
+# SimonMaracine <simonmaracine@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-04 16:11+0000\n"
-"Last-Translator: Alin Gheorghe <yovngra@gmail.com>\n"
+"PO-Revision-Date: 2025-08-06 12:28+0000\n"
+"Last-Translator: SimonMaracine <simonmaracine@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -50,7 +51,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 5.10.3-dev\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 msgid "Unset"
 msgstr "Nesetat"
@@ -224,6 +225,12 @@ msgstr "Intrare MIDI pe Canalul=%s Mesajul=%s"
 msgid "Input Event with Shortcut=%s"
 msgstr "Eveniment Intrare cu Scurtatura=%s"
 
+msgid " or "
+msgstr " sau "
+
+msgid "Action has no bound inputs"
+msgstr "Acțiunea nu are input-uri legate"
+
 msgid "Accept"
 msgstr "Acceptați"
 
@@ -278,14 +285,23 @@ msgstr "Revenire"
 msgid "Redo"
 msgstr "Reîntoarcere"
 
+msgid "Completion Query"
+msgstr "Interogare de completare"
+
 msgid "New Line"
 msgstr "Linie Nouă"
+
+msgid "New Blank Line"
+msgstr "Linie goală nouă"
 
 msgid "New Line Above"
 msgstr "Linie Nouă Deasupra"
 
 msgid "Indent"
 msgstr "Alineat"
+
+msgid "Dedent"
+msgstr "Deindentare"
 
 msgid "Delete"
 msgstr "Ștergeți"
@@ -295,6 +311,42 @@ msgstr "Șterge cuvânt"
 
 msgid "Delete all to Right"
 msgstr "Șterge tot la Dreapta"
+
+msgid "Caret Left"
+msgstr "Cursor stânga"
+
+msgid "Caret Word Left"
+msgstr "Cursor cuvânt stânga"
+
+msgid "Caret Right"
+msgstr "Cursor dreapta"
+
+msgid "Caret Word Right"
+msgstr "Cursor cuvânt dreapta"
+
+msgid "Caret Up"
+msgstr "Cursor sus"
+
+msgid "Caret Down"
+msgstr "Cursor jos"
+
+msgid "Caret Line Start"
+msgstr "Cursor linie start"
+
+msgid "Caret Line End"
+msgstr "Cursor linie sfârșit"
+
+msgid "Caret Page Up"
+msgstr "Cursor pagină sus"
+
+msgid "Caret Page Down"
+msgstr "Cursor pagină jos"
+
+msgid "Caret Document Start"
+msgstr "Cursor document început"
+
+msgid "Caret Document End"
+msgstr "Cursor document sfârșit"
 
 msgid "Caret Add Below"
 msgstr "Caret Adăugați dedesubt"
@@ -2718,9 +2770,6 @@ msgstr "Rulează scena editată."
 msgid "Network Profiler"
 msgstr "Analizator Network"
 
-msgid "Select Mode"
-msgstr "Selectare mod"
-
 msgid "Create Polygon"
 msgstr "Crează poligon"
 
@@ -3041,6 +3090,9 @@ msgstr ""
 
 msgid "(Available in all modes.)"
 msgstr "(Disponibile in toate modurile.)"
+
+msgid "Select Mode"
+msgstr "Selectare mod"
 
 msgid "Move Mode"
 msgstr "Mod Mutare"

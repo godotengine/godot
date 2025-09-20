@@ -48,13 +48,14 @@
 # saman balahang <saman.balahang.2012@gmail.com>, 2024.
 # Parham Nasehi <www.ganiscotg.com@gmail.com>, 2025.
 # Mahan Khalili <mkh-user@users.noreply.hosted.weblate.org>, 2025.
+# ali zia <sampadpars@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-13 14:02+0000\n"
-"Last-Translator: Atur <aturaseman9@gmail.com>\n"
+"PO-Revision-Date: 2025-08-03 07:02+0000\n"
+"Last-Translator: ali zia <sampadpars@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/fa/>\n"
 "Language: fa\n"
@@ -215,7 +216,7 @@ msgid "Audio"
 msgstr "صدا"
 
 msgid "Buses"
-msgstr "باس ها"
+msgstr "غول ها"
 
 msgid "Default Bus Layout"
 msgstr "چیدمان پیش‌فرض باس"

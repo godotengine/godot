@@ -182,7 +182,6 @@ public:
 
 	Vector3 get_point_transform(int p_point_index);
 
-	void pin_point_toggle(int p_point_index);
 	void pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath(), int p_insert_at = -1);
 	bool is_point_pinned(int p_point_index) const;
 

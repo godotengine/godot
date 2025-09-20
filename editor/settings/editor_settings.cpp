@@ -50,6 +50,7 @@
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/project_manager/engine_update_label.h"
 #include "editor/translations/editor_translation.h"
+#include "main/main.h"
 #include "modules/regex/regex.h"
 #include "scene/gui/color_picker.h"
 #include "scene/main/node.h"
@@ -79,7 +80,7 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 		emit_signal(SNAME("settings_changed"));
 
 		if (p_name == SNAME("interface/editor/editor_language")) {
-			setup_language();
+			setup_language(false);
 		}
 	}
 	return true;
@@ -851,7 +852,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// GridMap
 	// GridMapEditor
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/grid_map/pick_distance", 5000.0, "1,8192,0.1,or_greater");
-	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "editors/grid_map/palette_min_width", 230, "100,500,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "editors/grid_map/preview_size", 64, "16,128,1")
 
 	// 3D
@@ -999,6 +999,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/animation/confirm_insert_track", true, true);
 	_initial_set("editors/animation/default_create_bezier_tracks", false, true);
 	_initial_set("editors/animation/default_create_reset_tracks", true, true);
+	_initial_set("editors/animation/insert_at_current_time", false, true);
 	_initial_set("editors/animation/onion_layers_past_color", Color(1, 0, 0));
 	_initial_set("editors/animation/onion_layers_future_color", Color(0, 1, 0));
 
@@ -1289,7 +1290,7 @@ void EditorSettings::create() {
 
 		print_verbose("EditorSettings: Load OK!");
 
-		singleton->setup_language();
+		singleton->setup_language(true);
 		singleton->setup_network();
 		singleton->load_favorites_and_recent_dirs();
 		singleton->update_text_editor_themes_list();
@@ -1316,13 +1317,19 @@ fail:
 	singleton->set_path(config_file_path, true);
 	singleton->save_changed_setting = true;
 	singleton->_load_defaults(extra_config);
-	singleton->setup_language();
+	singleton->setup_language(true);
 	singleton->setup_network();
 	singleton->update_text_editor_themes_list();
 }
 
-void EditorSettings::setup_language() {
+void EditorSettings::setup_language(bool p_initial_setup) {
 	String lang = _EDITOR_GET("interface/editor/editor_language");
+	if (p_initial_setup) {
+		String lang_ov = Main::get_locale_override();
+		if (!lang_ov.is_empty()) {
+			lang = lang_ov;
+		}
+	}
 
 	if (lang == "en") {
 		TranslationServer::get_singleton()->set_locale(lang);

@@ -1539,6 +1539,11 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 		// Temporary solution for PopupMenus.
 		PopupMenu *menu = Object::cast_to<PopupMenu>(this);
 		if (menu) {
+			Ref<StyleBox> sb = menu->get_theme_stylebox(SceneStringName(panel));
+			if (sb.is_valid()) {
+				pos.y += sb->get_margin(SIDE_TOP);
+			}
+
 			tooltip = menu->get_tooltip(pos);
 		}
 
@@ -2612,6 +2617,7 @@ void Viewport::_gui_update_mouse_over() {
 	// Send Mouse Exit notifications.
 	for (int exit_control_index : needs_exit) {
 		gui.mouse_over_hierarchy[exit_control_index]->notification(Control::NOTIFICATION_MOUSE_EXIT);
+		gui.mouse_over_hierarchy[exit_control_index]->emit_signal(SceneStringName(mouse_exited));
 	}
 
 	// Update the mouse over hierarchy.
@@ -2623,6 +2629,7 @@ void Viewport::_gui_update_mouse_over() {
 	// Send Mouse Enter notifications.
 	for (int i = needs_enter.size() - 1; i >= 0; i--) {
 		needs_enter[i]->notification(Control::NOTIFICATION_MOUSE_ENTER);
+		needs_enter[i]->emit_signal(SceneStringName(mouse_entered));
 	}
 
 	gui.sending_mouse_enter_exit_notifications = false;
@@ -3294,6 +3301,7 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 			for (int i = over_ancestors.size() - 1; i >= 0; i--) {
 				gui.mouse_over_hierarchy.push_back(over_ancestors[i]);
 				over_ancestors[i]->notification(Control::NOTIFICATION_MOUSE_ENTER);
+				over_ancestors[i]->emit_signal(SceneStringName(mouse_entered));
 			}
 
 			// Send Mouse Enter Self notification.
@@ -3385,6 +3393,7 @@ void Viewport::_drop_mouse_over(Control *p_until_control) {
 	for (int i = gui.mouse_over_hierarchy.size() - 1; i >= notification_until; i--) {
 		if (gui.mouse_over_hierarchy[i]->is_inside_tree()) {
 			gui.mouse_over_hierarchy[i]->notification(Control::NOTIFICATION_MOUSE_EXIT);
+			gui.mouse_over_hierarchy[i]->emit_signal(SceneStringName(mouse_exited));
 		}
 	}
 	gui.mouse_over_hierarchy.resize(notification_until);
@@ -5203,7 +5212,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_canvas_cull_mask", "get_canvas_cull_mask");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "oversampling"), "set_use_oversampling", "is_using_oversampling");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling_override"), "set_oversampling_override", "get_oversampling_override");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling_override", PROPERTY_HINT_RANGE, "0,16,0.0001,or_greater"), "set_oversampling_override", "get_oversampling_override");
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
 	ADD_SIGNAL(MethodInfo("gui_focus_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Control")));

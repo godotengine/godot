@@ -4,7 +4,7 @@ The `scripts/` folder contains integration tests in the form of GDScript files
 and output files.
 
 See the
-[Integration tests for GDScript documentation](https://docs.godotengine.org/en/latest/contributing/development/core_and_modules/unit_testing.html#integration-tests-for-gdscript)
+[Integration tests for GDScript documentation](https://docs.godotengine.org/en/latest/engine_details/architecture/unit_testing.html#integration-tests-for-gdscript)
 for information about creating and running GDScript integration tests.
 
 # GDScript Autocompletion tests
@@ -13,7 +13,7 @@ The `script/completion` folder contains test for the GDScript autocompletion.
 
 Each test case consists of at least one `.gd` file, which contains the code, and one `.cfg` file, which contains expected results and configuration. Inside of the GDScript file the character `➡` represents the cursor position, at which autocompletion is invoked.
 
-The script files won't be parsable GDScript since it contains an invalid char and and often the code is not complete during autocompletion. To allow for a valid base when used with a scene, the
+The script files won't be parsable GDScript since it contains an invalid char and often the code is not complete during autocompletion. To allow for a valid base when used with a scene, the
 runner will remove the line which contains `➡`. Therefore the scripts need to be valid if this line is removed, otherwise the test might behave in unexpected ways. This may for example require
 adding an additional `pass` statement.
 

@@ -5664,6 +5664,7 @@ void Node3DEditorViewport::finish_transform() {
 	spatial_editor->update_transform_gizmo();
 	surface->queue_redraw();
 	set_process_input(false);
+	clicked = ObjectID();
 }
 
 // Register a shortcut and also add it as an input action with the same events.
@@ -8384,7 +8385,7 @@ void Node3DEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	snap_key_enabled = Input::get_singleton()->is_key_pressed(Key::CTRL);
+	snap_key_enabled = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 }
 
 void Node3DEditor::_sun_environ_settings_pressed() {

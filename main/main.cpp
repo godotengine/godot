@@ -1094,7 +1094,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				arg == "--display-driver" ||
 				arg == "--rendering-method" ||
 				arg == "--rendering-driver" ||
-				arg == "--xr-mode") {
+				arg == "--xr-mode" ||
+				arg == "-l" ||
+				arg == "--language") {
 			if (N) {
 				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(arg);
 				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(N->get());
@@ -3842,6 +3844,10 @@ String Main::get_rendering_driver_name() {
 	return rendering_driver;
 }
 
+String Main::get_locale_override() {
+	return locale;
+}
+
 // everything the main loop needs to know about frame timings
 static MainTimerSync main_timer_sync;
 
@@ -4561,8 +4567,13 @@ int Main::start() {
 				sml->add_current_scene(scene);
 
 #ifdef MACOS_ENABLED
+#ifndef TOOLS_ENABLED
+				if ((FileAccess::exists(OS::get_singleton()->get_bundle_resource_dir().path_join("Assets.car")) && !OS::get_singleton()->get_bundle_icon_name().is_empty()) || (!OS::get_singleton()->get_bundle_icon_path().is_empty())) {
+					has_icon = true; // Bundle has embedded icon, do not override with project icon.
+				}
+#endif
 				String mac_icon_path = GLOBAL_GET("application/config/macos_native_icon");
-				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_ICON) && !mac_icon_path.is_empty()) {
+				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_ICON) && !mac_icon_path.is_empty() && !has_icon) {
 					DisplayServer::get_singleton()->set_native_icon(mac_icon_path);
 					has_icon = true;
 				}

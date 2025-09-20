@@ -1900,6 +1900,7 @@ void FileSystemDock::_convert_dialog_action() {
 			for (const String &target : cached_valid_conversion_targets) {
 				if (conversion_id == selected_conversion_id && conversion->converts_to() == target) {
 					Ref<Resource> converted_res = conversion->convert(res);
+					ERR_FAIL_COND(converted_res.is_null());
 					ERR_FAIL_COND(res.is_null());
 					converted_resources.push_back(converted_res);
 					resources_to_erase_history_for.insert(res);
@@ -1924,6 +1925,8 @@ void FileSystemDock::_convert_dialog_action() {
 		Ref<Resource> original_resource = selected_resources.get(i);
 		Ref<Resource> new_resource = converted_resources.get(i);
 
+		// Notify plugins that the original resource is removed.
+		emit_signal(SNAME("file_removed"), original_resource->get_path());
 		// Overwrite the path.
 		new_resource->set_path(original_resource->get_path(), true);
 

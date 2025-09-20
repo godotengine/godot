@@ -228,6 +228,7 @@ def configure(env: "SConsEnvironment"):
     # Link flags
 
     env.Append(LINKFLAGS=["-Wl,--gc-sections", "-Wl,--no-undefined", "-Wl,-z,now"])
+    env.Append(LINKFLAGS=["-Wl,--build-id"])
     env.Append(LINKFLAGS=["-Wl,-soname,libgodot_android.so"])
 
     env.Prepend(CPPPATH=["#platform/android"])

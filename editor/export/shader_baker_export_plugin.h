@@ -38,7 +38,7 @@ class ShaderBakerExportPluginPlatform : public RefCounted {
 	GDCLASS(ShaderBakerExportPluginPlatform, RefCounted);
 
 public:
-	virtual RenderingShaderContainerFormat *create_shader_container_format(const Ref<EditorExportPlatform> &p_platform) = 0;
+	virtual RenderingShaderContainerFormat *create_shader_container_format(const Ref<EditorExportPlatform> &p_platform, const Ref<EditorExportPreset> &p_preset) = 0;
 	virtual bool matches_driver(const String &p_driver) = 0;
 	virtual ~ShaderBakerExportPluginPlatform() {}
 };
@@ -82,7 +82,7 @@ protected:
 
 	virtual String get_name() const override;
 	virtual bool _is_active(const Vector<String> &p_features) const;
-	virtual bool _initialize_container_format(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features);
+	virtual bool _initialize_container_format(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features, const Ref<EditorExportPreset> &p_preset);
 	virtual void _cleanup_container_format();
 	virtual bool _initialize_cache_directory();
 	virtual bool _begin_customize_resources(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) override;

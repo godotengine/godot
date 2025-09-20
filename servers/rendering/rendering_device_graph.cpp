@@ -81,6 +81,8 @@ String RenderingDeviceGraph::_usage_to_string(ResourceUsage p_usage) {
 			return "Attachment Color Read Write";
 		case RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE:
 			return "Attachment Depth Stencil Read Write";
+		case RESOURCE_USAGE_GENERAL:
+			return "General";
 		default:
 			ERR_FAIL_V_MSG("Invalid", vformat("Invalid resource usage %d.", p_usage));
 	}
@@ -108,6 +110,7 @@ bool RenderingDeviceGraph::_is_write_usage(ResourceUsage p_usage) {
 		case RESOURCE_USAGE_STORAGE_IMAGE_READ_WRITE:
 		case RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE:
 		case RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE:
+		case RESOURCE_USAGE_GENERAL:
 			return true;
 		default:
 			DEV_ASSERT(false && "Invalid resource tracker usage.");
@@ -138,6 +141,8 @@ RDD::TextureLayout RenderingDeviceGraph::_usage_to_image_layout(ResourceUsage p_
 			return RDD::TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL;
 		case RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ:
 			return RDD::TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL;
+		case RESOURCE_USAGE_GENERAL:
+			return RDD::TEXTURE_LAYOUT_GENERAL;
 		case RESOURCE_USAGE_NONE:
 			return RDD::TEXTURE_LAYOUT_UNDEFINED;
 		default:
@@ -186,6 +191,8 @@ RDD::BarrierAccessBits RenderingDeviceGraph::_usage_to_access_bits(ResourceUsage
 			return RDD::BARRIER_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT;
 		case RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ:
 			return RDD::BARRIER_ACCESS_FRAGMENT_DENSITY_MAP_ATTACHMENT_READ_BIT;
+		case RESOURCE_USAGE_GENERAL:
+			return RDD::BarrierAccessBits(RDD::BARRIER_ACCESS_MEMORY_READ_BIT | RDD::BARRIER_ACCESS_MEMORY_WRITE_BIT);
 		default:
 			DEV_ASSERT(false && "Invalid usage.");
 			return RDD::BarrierAccessBits(0);
@@ -1311,7 +1318,7 @@ void RenderingDeviceGraph::_group_barriers_for_render_commands(RDD::CommandBuffe
 		return;
 	}
 
-	const VectorView<RDD::MemoryBarrier> memory_barriers = !is_memory_barrier_empty ? barrier_group.memory_barrier : VectorView<RDD::MemoryBarrier>();
+	const VectorView<RDD::MemoryAccessBarrier> memory_barriers = !is_memory_barrier_empty ? barrier_group.memory_barrier : VectorView<RDD::MemoryAccessBarrier>();
 	const VectorView<RDD::TextureBarrier> texture_barriers = barrier_group.normalization_barriers.is_empty() ? barrier_group.transition_barriers : barrier_group.normalization_barriers;
 #if USE_BUFFER_BARRIERS
 	const VectorView<RDD::BufferBarrier> buffer_barriers = !are_buffer_barriers_empty ? barrier_group.buffer_barriers : VectorView<RDD::BufferBarrier>();
@@ -1323,7 +1330,7 @@ void RenderingDeviceGraph::_group_barriers_for_render_commands(RDD::CommandBuffe
 
 	bool separate_texture_barriers = !barrier_group.normalization_barriers.is_empty() && !barrier_group.transition_barriers.is_empty();
 	if (separate_texture_barriers) {
-		driver->command_pipeline_barrier(p_command_buffer, barrier_group.src_stages, barrier_group.dst_stages, VectorView<RDD::MemoryBarrier>(), VectorView<RDD::BufferBarrier>(), barrier_group.transition_barriers);
+		driver->command_pipeline_barrier(p_command_buffer, barrier_group.src_stages, barrier_group.dst_stages, VectorView<RDD::MemoryAccessBarrier>(), VectorView<RDD::BufferBarrier>(), barrier_group.transition_barriers);
 	}
 }
 

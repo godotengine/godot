@@ -965,33 +965,6 @@ void FreeDesktopPortalDesktop::_system_theme_changed_callback() {
 }
 
 FreeDesktopPortalDesktop::FreeDesktopPortalDesktop() {
-#ifdef SOWRAP_ENABLED
-#ifdef DEBUG_ENABLED
-	int dylibloader_verbose = 1;
-#else
-	int dylibloader_verbose = 0;
-#endif
-	unsupported = (initialize_dbus(dylibloader_verbose) != 0);
-#else
-	unsupported = false;
-#endif
-
-	if (unsupported) {
-		return;
-	}
-
-	bool ver_ok = false;
-	int version_major = 0;
-	int version_minor = 0;
-	int version_rev = 0;
-	dbus_get_version(&version_major, &version_minor, &version_rev);
-	ver_ok = (version_major == 1 && version_minor >= 10) || (version_major > 1); // 1.10.0
-	print_verbose(vformat("PortalDesktop: DBus %d.%d.%d detected.", version_major, version_minor, version_rev));
-	if (!ver_ok) {
-		print_verbose("PortalDesktop: Unsupported DBus library version!");
-		unsupported = true;
-	}
-
 	DBusError err;
 	dbus_error_init(&err);
 	monitor_connection = dbus_bus_get(DBUS_BUS_SESSION, &err);

@@ -92,7 +92,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-17 22:02+0000\n"
+"PO-Revision-Date: 2025-08-14 17:49+0000\n"
 "Last-Translator: Sven Slootweg <admin@cryto.net>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
@@ -282,6 +282,9 @@ msgstr "Invoergebeurtenis met sneltoets=%s"
 
 msgid " or "
 msgstr " of "
+
+msgid "Action has no bound inputs"
+msgstr "Actie heeft geen gebonden invoer"
 
 msgid "Accept"
 msgstr "Aanvaarden"
@@ -6018,9 +6021,6 @@ msgstr ""
 "Geen uitvoerbare exporteer preset gevonden voor dit platform.\n"
 "Voeg een uitvoerbare preset toe in het exportmenu."
 
-msgid "Select Mode"
-msgstr "Selecteermodus"
-
 msgid "Show list of selectable nodes at position clicked."
 msgstr "Toont een lijst van selecteerbare nodes op de aangeklikte positie."
 
@@ -6837,6 +6837,9 @@ msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr ""
 "Alt+RMB: Toont een lijst van alle nodes op de aangeklikte positie, inclusief "
 "vergrendeld."
+
+msgid "Select Mode"
+msgstr "Selecteermodus"
 
 msgid "Move Mode"
 msgstr "Verplaatsingsmodus"

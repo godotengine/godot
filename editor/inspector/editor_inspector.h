@@ -414,6 +414,7 @@ class EditorInspectorSection : public Container {
 		int vertical_separation = 0;
 		int inspector_margin = 0;
 		int indent_size = 0;
+		int key_padding_size = 0;
 
 		Color warning_color;
 		Color prop_subsection;

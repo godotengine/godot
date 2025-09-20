@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+if __name__ != "__main__":
+    raise SystemExit(f'Utility script "{__file__}" should not be used as a module!')
+
+import argparse
 import os
 import shutil
 import subprocess
@@ -9,6 +13,14 @@ import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
 
 from misc.utility.color import Ansi, color_print
+
+parser = argparse.ArgumentParser(description="Install D3D12 dependencies for Windows platforms.")
+parser.add_argument(
+    "--mingw_prefix",
+    default=os.getenv("MINGW_PREFIX", ""),
+    help="Explicitly specify a path containing the MinGW bin folder.",
+)
+args = parser.parse_args()
 
 # Base Godot dependencies path
 # If cross-compiling (no LOCALAPPDATA), we install in `bin`
@@ -74,10 +86,11 @@ print("Mesa NIR installed successfully.\n")
 # MinGW needs DLLs converted with dlltool.
 # We rely on finding gendef/dlltool to detect if we have MinGW.
 # Check existence of needed tools for generating mingw library.
-gendef = shutil.which("gendef") or ""
-dlltool = shutil.which("dlltool") or ""
-if dlltool == "":
-    dlltool = shutil.which("x86_64-w64-mingw32-dlltool") or ""
+pathstr = os.environ.get("PATH", "")
+if args.mingw_prefix:
+    pathstr = os.path.join(args.mingw_prefix, "bin") + os.pathsep + pathstr
+gendef = shutil.which("x86_64-w64-mingw32-gendef", path=pathstr) or shutil.which("gendef", path=pathstr) or ""
+dlltool = shutil.which("x86_64-w64-mingw32-dlltool", path=pathstr) or shutil.which("dlltool", path=pathstr) or ""
 has_mingw = gendef != "" and dlltool != ""
 
 color_print(f"{Ansi.BOLD}[2/3] WinPixEventRuntime")
@@ -107,7 +120,9 @@ if has_mingw:
     )
     os.chdir(cwd)
 else:
-    print("MinGW wasn't found, so only MSVC support is provided for WinPixEventRuntime.")
+    print(
+        'MinGW support requires "dlltool" and "gendef" dependencies, so only MSVC support is provided for WinPixEventRuntime. Did you forget to provide a `--mingw_prefix`?'
+    )
 print(f"WinPixEventRuntime {pix_version} installed successfully.\n")
 
 # DirectX 12 Agility SDK

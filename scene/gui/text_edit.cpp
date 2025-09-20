@@ -319,8 +319,19 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 		}
 		String remaining_string = text_with_ime.substr(from);
 		text_line.data_buf->add_string(remaining_string, font, font_size, language);
+	}
+	if (!bidi_override_with_ime.is_empty()) {
+		TS->shaped_text_set_bidi_override(text_line.data_buf->get_rid(), bidi_override_with_ime);
+	}
 
-	} else {
+	if (!p_text_changed) {
+		// Update fonts.
+		RID r = text_line.data_buf->get_rid();
+		int spans = TS->shaped_get_span_count(r);
+		for (int i = 0; i < spans; i++) {
+			TS->shaped_set_span_update_font(r, i, font->get_rids(), font_size, font->get_opentype_features());
+		}
+
 		// Update inline object sizes.
 		for (int i = 0; i < text_line.data_buf->get_line_count(); i++) {
 			for (Variant key : text_line.data_buf->get_line_objects(i)) {
@@ -333,22 +344,11 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 			}
 		}
 	}
-	if (!bidi_override_with_ime.is_empty()) {
-		TS->shaped_text_set_bidi_override(text_line.data_buf->get_rid(), bidi_override_with_ime);
-	}
-
-	if (!p_text_changed) {
-		RID r = text_line.data_buf->get_rid();
-		int spans = TS->shaped_get_span_count(r);
-		for (int i = 0; i < spans; i++) {
-			TS->shaped_set_span_update_font(r, i, font->get_rids(), font_size, font->get_opentype_features());
-		}
-	}
 
 	// Apply tab align.
 	if (tab_size > 0) {
 		Vector<float> tabs;
-		tabs.push_back(font->get_char_size(' ', font_size).width * tab_size);
+		tabs.push_back(MAX(1, (font->get_char_size(' ', font_size).width + font->get_spacing(TextServer::SPACING_SPACE)) * tab_size));
 		text_line.data_buf->tab_align(tabs);
 	}
 
@@ -394,7 +394,7 @@ void TextEdit::Text::invalidate_all_lines() {
 		if (tab_size_dirty) {
 			if (tab_size > 0) {
 				Vector<float> tabs;
-				tabs.push_back(font->get_char_size(' ', font_size).width * tab_size);
+				tabs.push_back(MAX(1, (font->get_char_size(' ', font_size).width + font->get_spacing(TextServer::SPACING_SPACE)) * tab_size));
 				text[i].data_buf->tab_align(tabs);
 			}
 		}
@@ -3366,7 +3366,7 @@ void TextEdit::_update_placeholder() {
 
 	if (get_tab_size() > 0) {
 		Vector<float> tabs;
-		tabs.push_back(theme_cache.font->get_char_size(' ', theme_cache.font_size).width * get_tab_size());
+		tabs.push_back(MAX(1, (theme_cache.font->get_char_size(' ', theme_cache.font_size).width + theme_cache.font->get_spacing(TextServer::SPACING_SPACE)) * get_tab_size()));
 		placeholder_data_buf->tab_align(tabs);
 	}
 

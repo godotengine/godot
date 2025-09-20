@@ -3505,9 +3505,6 @@ msgstr ""
 "ไม่มีพรีเซ็ตส่งออกที่สามารถรันเกมได้ของแพลตฟอร์มนี้\n"
 "กรุณาเพิ่มพรีเซ็ตส่งออกที่รันเกมได้ในเมนูส่งออกหรือทำให้พรีเซ็ตเดิมสามารถรันได้"
 
-msgid "Select Mode"
-msgstr "โหมดเลือก"
-
 msgid "Clear All"
 msgstr "ล้างทั้งหมด"
 
@@ -4203,6 +4200,9 @@ msgstr "ไม่สามารถหาชั้นแข็งที่จะ
 
 msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr "Alt+RMB: แสดงรายการโหนดทั้งหมดที่ตำแหน่งคลิก รวมถึงโหนดที่ถูกล็อก"
+
+msgid "Select Mode"
+msgstr "โหมดเลือก"
 
 msgid "Move Mode"
 msgstr "โหมดเคลื่อนย้าย"

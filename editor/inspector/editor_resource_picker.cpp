@@ -484,8 +484,11 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin_for_resource(edited_resource);
 				ERR_FAIL_INDEX(to_type, conversions.size());
 
-				edited_resource = conversions[to_type]->convert(edited_resource);
-				_resource_changed();
+				Ref<Resource> converted_resource = conversions[to_type]->convert(edited_resource);
+				if (converted_resource.is_valid()) {
+					edited_resource = converted_resource;
+					_resource_changed();
+				}
 				break;
 			}
 
@@ -778,10 +781,19 @@ bool EditorResourcePicker::_is_type_valid(const String &p_type_name, const HashS
 }
 
 bool EditorResourcePicker::_is_custom_type_script() const {
-	Ref<Script> resource_as_script = edited_resource;
+	EditorProperty *editor_property = Object::cast_to<EditorProperty>(get_parent());
+	if (!editor_property) {
+		return false;
+	}
 
-	if (resource_as_script.is_valid() && resource_owner && resource_owner->has_meta(SceneStringName(_custom_type_script))) {
-		return true;
+	// Check if the property being edited is 'script'.
+	if (editor_property->get_edited_property() == CoreStringName(script)) {
+		// If there's currently a valid script assigned and the owning Node/Resource also has a custom type script assigned, then
+		// the currently assigned script is either the custom type script itself or an extension of it.
+		Ref<Script> resource_as_script = edited_resource;
+		if (resource_as_script.is_valid() && resource_owner && resource_owner->has_meta(SceneStringName(_custom_type_script))) {
+			return true;
+		}
 	}
 
 	return false;

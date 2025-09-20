@@ -1065,13 +1065,14 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 #endif
 
 	if (data.size()) {
+		const bool use_general_in_copy_queues = driver->api_trait_get(RDD::API_TRAIT_USE_GENERAL_IN_COPY_QUEUES);
+		const RDD::TextureLayout dst_layout = use_general_in_copy_queues ? RDD::TEXTURE_LAYOUT_GENERAL : RDD::TEXTURE_LAYOUT_COPY_DST_OPTIMAL;
 		for (uint32_t i = 0; i < format.array_layers; i++) {
-			_texture_initialize(id, i, data[i], immediate_flush);
+			_texture_initialize(id, i, data[i], dst_layout, immediate_flush);
 		}
 
 		if (texture.draw_tracker != nullptr) {
-			// Draw tracker can assume the texture will be in copy destination.
-			texture.draw_tracker->usage = RDG::RESOURCE_USAGE_COPY_TO;
+			texture.draw_tracker->usage = use_general_in_copy_queues ? RDG::RESOURCE_USAGE_GENERAL : RDG::RESOURCE_USAGE_COPY_TO;
 		}
 	}
 
@@ -1420,7 +1421,7 @@ uint32_t RenderingDevice::_texture_alignment(Texture *p_texture) const {
 	return least_common_multiple(alignment, driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT));
 }
 
-Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, bool p_immediate_flush) {
+Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, RDD::TextureLayout p_dst_layout, bool p_immediate_flush) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL_V(texture, ERR_INVALID_PARAMETER);
 
@@ -1454,7 +1455,6 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 	TransferWorker *transfer_worker = nullptr;
 	const uint8_t *read_ptr = p_data.ptr();
 	uint8_t *write_ptr = nullptr;
-	const RDD::TextureLayout copy_dst_layout = driver->api_trait_get(RDD::API_TRAIT_USE_GENERAL_IN_COPY_QUEUES) ? RDD::TEXTURE_LAYOUT_GENERAL : RDD::TEXTURE_LAYOUT_COPY_DST_OPTIMAL;
 	for (uint32_t pass = 0; pass < 2; pass++) {
 		const bool copy_pass = (pass == 1);
 		if (copy_pass) {
@@ -1477,7 +1477,7 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 				tb.texture = texture->driver_id;
 				tb.dst_access = RDD::BARRIER_ACCESS_COPY_WRITE_BIT;
 				tb.prev_layout = RDD::TEXTURE_LAYOUT_UNDEFINED;
-				tb.next_layout = copy_dst_layout;
+				tb.next_layout = p_dst_layout;
 				tb.subresources.aspect = texture->barrier_aspect_flags;
 				tb.subresources.mipmap_count = texture->mipmaps;
 				tb.subresources.base_layer = p_layer;
@@ -1524,7 +1524,7 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 					copy_region.texture_subresources.layer_count = 1;
 					copy_region.texture_offset = Vector3i(0, 0, z);
 					copy_region.texture_region_size = Vector3i(logic_width, logic_height, 1);
-					driver->command_copy_buffer_to_texture(transfer_worker->command_buffer, transfer_worker->staging_buffer, texture->driver_id, copy_dst_layout, copy_region);
+					driver->command_copy_buffer_to_texture(transfer_worker->command_buffer, transfer_worker->staging_buffer, texture->driver_id, p_dst_layout, copy_region);
 				}
 
 				staging_local_offset += to_allocate;
@@ -1543,7 +1543,7 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 				RDD::TextureBarrier tb;
 				tb.texture = texture->driver_id;
 				tb.src_access = RDD::BARRIER_ACCESS_COPY_WRITE_BIT;
-				tb.prev_layout = copy_dst_layout;
+				tb.prev_layout = p_dst_layout;
 				tb.next_layout = RDD::TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				tb.subresources.aspect = texture->barrier_aspect_flags;
 				tb.subresources.mipmap_count = texture->mipmaps;
@@ -8407,4 +8407,5 @@ static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_STORAGE_IMAGE_READ,
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_STORAGE_IMAGE_READ_WRITE, RDG::RESOURCE_USAGE_STORAGE_IMAGE_READ_WRITE));
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE, RDG::RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE));
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE, RDG::RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE));
+static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_GENERAL, RDG::RESOURCE_USAGE_GENERAL));
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_MAX, RDG::RESOURCE_USAGE_MAX));

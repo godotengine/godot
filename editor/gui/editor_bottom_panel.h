@@ -69,6 +69,7 @@ class EditorBottomPanel : public PanelContainer {
 	void _scroll(bool p_right);
 	void _update_scroll_buttons();
 	void _update_disabled_buttons();
+	void _ensure_control_visible(ObjectID p_id);
 
 	bool _button_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
 

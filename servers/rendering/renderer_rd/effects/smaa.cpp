@@ -181,6 +181,11 @@ void SMAA::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_colo
 
 	smaa.blend_push_constant.inv_size[0] = inv_size.x;
 	smaa.blend_push_constant.inv_size[1] = inv_size.y;
+	if (debanding_mode == DEBANDING_MODE_8_BIT) {
+		smaa.blend_push_constant.flags |= SMAA_BLEND_FLAG_USE_8_BIT_DEBANDING;
+	} else if (debanding_mode == DEBANDING_MODE_10_BIT) {
+		smaa.blend_push_constant.flags |= SMAA_BLEND_FLAG_USE_10_BIT_DEBANDING;
+	}
 
 	RID linear_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 

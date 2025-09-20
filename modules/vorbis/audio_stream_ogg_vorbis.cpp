@@ -467,7 +467,7 @@ void AudioStreamOggVorbis::maybe_update_info() {
 		if (equals == -1) {
 #ifdef TOOLS_ENABLED
 			// Not formatted like VAR=VALUE, this is an invalid comment.
-			WARN_PRINT("Invalid comment in Ogg Vorbis file.");
+			WARN_PRINT(vformat(R"(Invalid comment in Ogg Vorbis file "%s", should contain '=': "%s".)", get_path(), c));
 #endif
 			continue;
 		}

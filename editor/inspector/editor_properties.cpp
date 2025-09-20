@@ -177,7 +177,11 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 
 	// Set tooltip so that the full text is displayed in a tooltip if hovered.
 	// This is useful when using a narrow inspector, as the text can be trimmed otherwise.
-	text->set_tooltip_text(get_tooltip_string(text->get_text()));
+	if (text->is_secret()) {
+		text->set_tooltip_text(get_tooltip_string(text->get_placeholder()));
+	} else {
+		text->set_tooltip_text(get_tooltip_string(text->get_text()));
+	}
 
 	if (string_name) {
 		emit_changed(get_edited_property(), StringName(p_string));
@@ -192,7 +196,11 @@ void EditorPropertyText::update_property() {
 	if (text->get_text() != s) {
 		int caret = text->get_caret_column();
 		text->set_text(s);
-		text->set_tooltip_text(get_tooltip_string(s));
+		if (text->is_secret()) {
+			text->set_tooltip_text(get_tooltip_string(text->get_placeholder()));
+		} else {
+			text->set_tooltip_text(get_tooltip_string(s));
+		}
 		text->set_caret_column(caret);
 	}
 	text->set_editable(!is_read_only());
@@ -3591,8 +3599,8 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Varian
 struct EditorPropertyRangeHint {
 	bool or_greater = true;
 	bool or_less = true;
-	double min = -99999.0;
-	double max = 99999.0;
+	double min = 0.0;
+	double max = 0.0;
 	double step = 1.0;
 	String suffix;
 	bool exp_range = false;

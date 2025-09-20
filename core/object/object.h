@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/disabled_classes.gen.h"
 #include "core/extension/gdextension_interface.h"
 #include "core/object/message_queue.h"
 #include "core/object/object_id.h"
@@ -134,9 +133,6 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR,
 	PROPERTY_USAGE_NO_EDITOR = PROPERTY_USAGE_STORAGE,
 };
-
-// Respective values are defined by disabled_classes.gen.h
-#define GD_IS_CLASS_ENABLED(m_class) m_class::_class_is_enabled
 
 #define ADD_SIGNAL(m_signal) ::ClassDB::add_signal(get_class_static(), m_signal)
 #define ADD_PROPERTY(m_property, m_setter, m_getter) ::ClassDB::add_property(get_class_static(), m_property, StringName(m_setter), StringName(m_getter))
@@ -498,7 +494,6 @@ private:                                                                        
 	friend class ::ClassDB;                                                                                                                 \
                                                                                                                                             \
 public:                                                                                                                                     \
-	static constexpr bool _class_is_enabled = !bool(GD_IS_DEFINED(ClassDB_Disable_##m_class)) && m_inherits::_class_is_enabled;             \
 	virtual const StringName *_get_class_namev() const override {                                                                           \
 		return &get_class_static();                                                                                                         \
 	}                                                                                                                                       \
@@ -587,6 +582,29 @@ public:
 		CONNECT_INHERITED = 32, // Used in editor builds.
 	};
 
+	// Store on each object a bitfield to quickly test whether it is derived from some "key" classes
+	// that are commonly tested in performance sensitive code.
+	// Ensure unsigned to bitpack.
+	enum class AncestralClass : unsigned int {
+		REF_COUNTED = 1 << 0,
+		NODE = 1 << 1,
+		RESOURCE = 1 << 2,
+		SCRIPT = 1 << 3,
+
+		CANVAS_ITEM = 1 << 4,
+		CONTROL = 1 << 5,
+		NODE_2D = 1 << 6,
+		COLLISION_OBJECT_2D = 1 << 7,
+		AREA_2D = 1 << 8,
+
+		NODE_3D = 1 << 9,
+		VISUAL_INSTANCE_3D = 1 << 10,
+		GEOMETRY_INSTANCE_3D = 1 << 11,
+		COLLISION_OBJECT_3D = 1 << 12,
+		PHYSICS_BODY_3D = 1 << 13,
+		MESH_INSTANCE_3D = 1 << 14,
+	};
+
 	struct Connection {
 		::Signal signal;
 		Callable callable;
@@ -628,16 +646,19 @@ private:
 #ifdef DEBUG_ENABLED
 	SafeRefCount _lock_index;
 #endif // DEBUG_ENABLED
-	bool _block_signals = false;
 	int _predelete_ok = 0;
 	ObjectID _instance_id;
 	bool _predelete();
 	void _initialize();
 	void _postinitialize();
-	bool _can_translate = true;
-	bool _emitting = false;
+
+	uint32_t _ancestry : 15;
+
+	bool _block_signals : 1;
+	bool _can_translate : 1;
+	bool _emitting : 1;
 #ifdef TOOLS_ENABLED
-	bool _edited = false;
+	bool _edited : 1;
 	uint32_t _edited_version = 0;
 	HashSet<String> editor_section_folding;
 #endif
@@ -663,7 +684,6 @@ private:
 	_FORCE_INLINE_ void _construct_object(bool p_reference);
 
 	friend class RefCounted;
-	bool type_is_reference = false;
 
 	BinaryMutex _instance_binding_mutex;
 	struct InstanceBinding {
@@ -769,6 +789,7 @@ protected:
 	static void _get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator);
 
 	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
+	void _define_ancestry(AncestralClass p_class) { _ancestry |= (uint32_t)p_class; }
 
 	virtual bool _uses_signal_mutex() const;
 
@@ -786,8 +807,6 @@ public: // Should be protected, but bug in clang++.
 	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
 
 public:
-	static constexpr bool _class_is_enabled = true;
-
 	void notify_property_list_changed();
 
 	static void *get_class_ptr_static() {
@@ -844,6 +863,8 @@ public:
 		return (p_class == "Object");
 	}
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
+
+	bool has_ancestry(AncestralClass p_class) const { return _ancestry & (uint32_t)p_class; }
 
 	const StringName &get_class_name() const;
 
@@ -1003,7 +1024,7 @@ public:
 
 	void clear_internal_resource_paths();
 
-	_ALWAYS_INLINE_ bool is_ref_counted() const { return type_is_reference; }
+	_ALWAYS_INLINE_ bool is_ref_counted() const { return has_ancestry(AncestralClass::REF_COUNTED); }
 
 	void cancel_free();
 

@@ -727,6 +727,12 @@ SkyRD::SkyRD() {
 	roughness_layers = GLOBAL_GET("rendering/reflections/sky_reflections/roughness_layers");
 	sky_ggx_samples_quality = GLOBAL_GET("rendering/reflections/sky_reflections/ggx_samples");
 	sky_use_cubemap_array = GLOBAL_GET("rendering/reflections/sky_reflections/texture_array_reflections");
+#if defined(MACOS_ENABLED) && defined(__x86_64__)
+	if (OS::get_singleton()->get_current_rendering_driver_name() == "vulkan" && RenderingDevice::get_singleton()->get_device_name().contains("Intel")) {
+		// Disable texture array reflections on macOS on Intel GPUs due to driver bugs.
+		sky_use_cubemap_array = false;
+	}
+#endif
 }
 
 void SkyRD::init() {
@@ -951,15 +957,6 @@ void sky() {
 void SkyRD::set_texture_format(RD::DataFormat p_texture_format) {
 	texture_format = p_texture_format;
 }
-
-#if defined(MACOS_ENABLED) && defined(__x86_64__)
-void SkyRD::check_cubemap_array() {
-	if (OS::get_singleton()->get_current_rendering_driver_name() == "vulkan" && RenderingServer::get_singleton()->get_video_adapter_name().contains("Intel")) {
-		// Disable texture array reflections on macOS on Intel GPUs due to driver bugs.
-		sky_use_cubemap_array = false;
-	}
-}
-#endif
 
 SkyRD::~SkyRD() {
 	// cleanup anything created in init...
