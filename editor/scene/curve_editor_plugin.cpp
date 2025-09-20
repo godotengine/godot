@@ -54,6 +54,7 @@ CurveEdit::CurveEdit() {
 
 void CurveEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_selected_index", "index"), &CurveEdit::set_selected_index);
+	ADD_SIGNAL(MethodInfo(SNAME("curve_changed")));
 }
 
 void CurveEdit::set_curve(Ref<Curve> p_curve) {
@@ -415,12 +416,29 @@ void CurveEdit::use_preset(int p_preset_id) {
 	undo_redo->commit_action();
 }
 
+void CurveEdit::set_curve_data(Array p_undo_data, Vector4 p_undo_range) {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Scale Curve Range"));
+	undo_redo->add_do_method(*curve, "_set_data", curve->get_data());
+	undo_redo->add_do_method(*curve, "set_min_domain", curve->get_min_domain());
+	undo_redo->add_do_method(*curve, "set_max_domain", curve->get_max_domain());
+	undo_redo->add_do_method(*curve, "set_min_value", curve->get_min_value());
+	undo_redo->add_do_method(*curve, "set_max_value", curve->get_max_value());
+	undo_redo->add_undo_method(*curve, "_set_data", p_undo_data);
+	undo_redo->add_undo_method(*curve, "set_min_domain", p_undo_range[0]);
+	undo_redo->add_undo_method(*curve, "set_max_domain", p_undo_range[1]);
+	undo_redo->add_undo_method(*curve, "set_min_value", p_undo_range[2]);
+	undo_redo->add_undo_method(*curve, "set_max_value", p_undo_range[3]);
+	undo_redo->commit_action();
+}
+
 void CurveEdit::_curve_changed() {
 	queue_redraw();
 	// Point count can change in case of undo.
 	if (selected_index >= curve->get_point_count()) {
 		set_selected_index(-1);
 	}
+	emit_signal(SNAME("curve_changed"));
 }
 
 int CurveEdit::get_point_at(const Vector2 &p_pos) const {
@@ -823,7 +841,7 @@ void CurveEdit::_redraw() {
 
 	for (int i = 0; i <= grid_steps.x; ++i) {
 		real_t x = curve->get_min_domain() + i * step_size.x;
-		draw_string(font, get_view_pos(Vector2(x, curve->get_min_value())) + Vector2(pad, font_height - pad), String::num(x, 2), HORIZONTAL_ALIGNMENT_CENTER, -1, font_size, text_color);
+		draw_string(font, get_view_pos(Vector2(x, curve->get_min_value())) + Vector2(pad, font_height - pad), String::num(x, 2), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
 	}
 
 	for (int i = 0; i <= grid_steps.y; ++i) {
@@ -960,8 +978,56 @@ void CurveEditor::_on_preset_item_selected(int p_preset_id) {
 	curve_editor_rect->use_preset(p_preset_id);
 }
 
+void CurveEditor::_curve_changed() {
+	Ref<Curve> curve = curve_editor_rect->get_curve();
+	scale_spins[SCALE_MIN_DOMAIN]->set_value_no_signal(curve->get_min_domain());
+	scale_spins[SCALE_MAX_DOMAIN]->set_value_no_signal(curve->get_max_domain());
+	scale_spins[SCALE_MIN_VALUE]->set_value_no_signal(curve->get_min_value());
+	scale_spins[SCALE_MAX_VALUE]->set_value_no_signal(curve->get_max_value());
+}
+
+void CurveEditor::_scale_curve(double p_value, int p_index) {
+	switch (p_index) {
+		case SCALE_MIN_DOMAIN: {
+			if (scale_spins[SCALE_MAX_DOMAIN]->get_value() - p_value < 0.01) {
+				scale_spins[SCALE_MAX_DOMAIN]->set_value_no_signal(p_value + 0.01);
+			}
+			curve_editor_rect->get_curve()->remap_domain(p_value, scale_spins[SCALE_MAX_DOMAIN]->get_value());
+		} break;
+		case SCALE_MAX_DOMAIN: {
+			if (p_value - scale_spins[SCALE_MIN_DOMAIN]->get_value() < 0.01) {
+				scale_spins[SCALE_MIN_DOMAIN]->set_value_no_signal(p_value - 0.01);
+			}
+			curve_editor_rect->get_curve()->remap_domain(scale_spins[SCALE_MIN_DOMAIN]->get_value(), p_value);
+		} break;
+		case SCALE_MIN_VALUE: {
+			if (scale_spins[SCALE_MAX_VALUE]->get_value() - p_value < 0.01) {
+				scale_spins[SCALE_MAX_VALUE]->set_value_no_signal(p_value + 0.01);
+			}
+			curve_editor_rect->get_curve()->remap_value(p_value, scale_spins[SCALE_MAX_VALUE]->get_value());
+		} break;
+		case SCALE_MAX_VALUE: {
+			if (p_value - scale_spins[SCALE_MIN_VALUE]->get_value() < 0.01) {
+				scale_spins[SCALE_MIN_VALUE]->set_value_no_signal(p_value - 0.01);
+			}
+			curve_editor_rect->get_curve()->remap_value(scale_spins[SCALE_MIN_VALUE]->get_value(), p_value);
+		} break;
+	}
+}
+
+void CurveEditor::_scale_start() {
+	Ref<Curve> curve = curve_editor_rect->get_curve();
+	curve_data = curve->get_data();
+	curve_range = Vector4(curve->get_min_domain(), curve->get_max_domain(), curve->get_min_value(), curve->get_max_value());
+}
+
+void CurveEditor::_scale_end() {
+	curve_editor_rect->set_curve_data(curve_data, curve_range);
+}
+
 void CurveEditor::set_curve(const Ref<Curve> &p_curve) {
 	curve_editor_rect->set_curve(p_curve);
+	_curve_changed();
 }
 
 void CurveEditor::_notification(int p_what) {
@@ -976,6 +1042,11 @@ void CurveEditor::_notification(int p_what) {
 			p->add_icon_item(get_editor_theme_icon(SNAME("CurveIn")), TTR("Ease In"), CurveEdit::PRESET_EASE_IN);
 			p->add_icon_item(get_editor_theme_icon(SNAME("CurveOut")), TTR("Ease Out"), CurveEdit::PRESET_EASE_OUT);
 			p->add_icon_item(get_editor_theme_icon(SNAME("CurveInOut")), TTR("Smoothstep"), CurveEdit::PRESET_SMOOTHSTEP);
+
+			scale_spins[0]->add_theme_color_override("label_color", get_theme_color(SNAME("property_color_x"), EditorStringName(Editor)));
+			scale_spins[1]->add_theme_color_override("label_color", get_theme_color(SNAME("property_color_y"), EditorStringName(Editor)));
+			scale_spins[2]->add_theme_color_override("label_color", get_theme_color(SNAME("property_color_z"), EditorStringName(Editor)));
+			scale_spins[3]->add_theme_color_override("label_color", get_theme_color(SNAME("property_color_w"), EditorStringName(Editor)));
 		} break;
 		case NOTIFICATION_READY: {
 			Ref<Curve> curve = curve_editor_rect->get_curve();
@@ -1020,7 +1091,28 @@ CurveEditor::CurveEditor() {
 	presets_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &CurveEditor::_on_preset_item_selected));
 
 	curve_editor_rect = memnew(CurveEdit);
+	curve_editor_rect->connect(SNAME("curve_changed"), callable_mp(this, &CurveEditor::_curve_changed));
 	add_child(curve_editor_rect);
+
+	scale_spin_container = memnew(HBoxContainer);
+	scale_spin_container->set_alignment(ALIGNMENT_CENTER);
+	const char *labels[SCALE_MAX] = { "xx", "xy", "yx", "yy" };
+	for (int i = 0; i < SCALE_MAX; i++) {
+		scale_spins.push_back(memnew(EditorSpinSlider));
+		scale_spins[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		scale_spins[i]->set_hide_slider(true);
+		scale_spins[i]->set_step(0.01);
+		scale_spins[i]->set_allow_greater(true);
+		scale_spins[i]->set_allow_lesser(true);
+		scale_spins[i]->set_label(labels[i]);
+		scale_spins[i]->connect(SceneStringName(value_changed), callable_mp(this, &CurveEditor::_scale_curve).bind(i));
+		scale_spins[i]->connect(SNAME("grabbed"), callable_mp(this, &CurveEditor::_scale_start));
+		scale_spins[i]->connect(SNAME("ungrabbed"), callable_mp(this, &CurveEditor::_scale_end));
+		scale_spins[i]->connect(SNAME("value_focus_entered"), callable_mp(this, &CurveEditor::_scale_start));
+		scale_spins[i]->connect(SNAME("value_focus_exited"), callable_mp(this, &CurveEditor::_scale_end));
+		scale_spin_container->add_child(scale_spins[i]);
+	}
+	add_child(scale_spin_container);
 
 	// Some empty space below. Not a part of the curve editor so it can't draw in it.
 	Control *empty_space = memnew(Control);
