@@ -162,7 +162,7 @@ void EditorSpinSlider::_grab_end() {
 			grabbing_spinner = false;
 			emit_signal("ungrabbed");
 		} else {
-			_focus_entered();
+			_focus_entered(true);
 		}
 
 		grabbing_spinner_attempt = false;
@@ -204,7 +204,7 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 				grabbing_ratio = get_as_ratio();
 				grabbing_from = grabber->get_transform().xform(mb->get_position()).x;
 			}
-			grab_focus();
+			grab_focus(true);
 			emit_signal("grabbed");
 		} else {
 			grabbing_grabber = false;
@@ -340,7 +340,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 		}
 	}
 
-	if (has_focus()) {
+	if (has_focus(true)) {
 		Ref<StyleBox> focus = get_theme_stylebox(SNAME("focus"), SNAME("LineEdit"));
 		draw_style_box(focus, Rect2(Vector2(), size));
 	}
@@ -672,7 +672,7 @@ bool EditorSpinSlider::is_grabbing() const {
 	return grabbing_grabber || grabbing_spinner;
 }
 
-void EditorSpinSlider::_focus_entered() {
+void EditorSpinSlider::_focus_entered(bool p_hide_focus) {
 	if (read_only) {
 		return;
 	}
@@ -683,7 +683,7 @@ void EditorSpinSlider::_focus_entered() {
 	value_input->set_focus_next(find_next_valid_focus()->get_path());
 	value_input->set_focus_previous(find_prev_valid_focus()->get_path());
 	callable_mp((CanvasItem *)value_input_popup, &CanvasItem::show).call_deferred();
-	callable_mp((Control *)value_input, &Control::grab_focus).call_deferred();
+	callable_mp((Control *)value_input, &Control::grab_focus).call_deferred(p_hide_focus);
 	callable_mp(value_input, &LineEdit ::select_all).call_deferred();
 	emit_signal("value_focus_entered");
 }

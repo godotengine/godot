@@ -448,7 +448,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 
 	Size2 s = blend_space_draw->get_size();
 
-	if (blend_space_draw->has_focus()) {
+	if (blend_space_draw->has_focus(true)) {
 		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 		blend_space_draw->draw_rect(Rect2(Point2(), s), color, false);
 	}

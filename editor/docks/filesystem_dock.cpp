@@ -775,13 +775,13 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 			item = item->get_next();
 		}
 		if (p_grab_focus) {
-			tree->grab_focus();
+			tree->grab_focus(true);
 		}
 	} else {
 		(*directory_ptr)->select(0);
 		_update_file_list(false);
 		if (p_grab_focus) {
-			files->grab_focus();
+			files->grab_focus(true);
 		}
 	}
 	tree->ensure_cursor_is_visible();
@@ -1397,7 +1397,7 @@ void FileSystemDock::_update_history() {
 
 	if (tree->is_visible()) {
 		_update_tree(get_uncollapsed_paths());
-		tree->grab_focus();
+		tree->grab_focus(true);
 	}
 
 	if (file_list_vb->is_visible()) {
@@ -3537,7 +3537,7 @@ void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos, MouseButton p_button
 	if (p_button != MouseButton::RIGHT) {
 		return;
 	}
-	tree->grab_focus();
+	tree->grab_focus(true);
 
 	// Right click is pressed in the tree.
 	Vector<String> paths = _tree_get_selected(false);
