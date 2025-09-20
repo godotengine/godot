@@ -703,6 +703,7 @@ public:
 
 	FUNC3(viewport_attach_to_screen, RID, const Rect2 &, int)
 	FUNC2(viewport_set_render_direct_to_screen, RID, bool)
+	FUNC2(viewport_set_tonemap_to_screen, RID, bool)
 
 	FUNC2(viewport_set_scaling_3d_mode, RID, ViewportScaling3DMode)
 	FUNC2(viewport_set_scaling_3d_scale, RID, float)
@@ -825,9 +826,10 @@ public:
 	FUNC13(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, EnvironmentGlowBlendMode, float, float, float, float, RID)
 	FUNC1(environment_glow_set_use_bicubic_upscale, bool)
 
-	FUNC4(environment_set_tonemap, RID, EnvironmentToneMapper, float, float)
+	FUNC5(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, float)
+	FUNC2(environment_set_max_value, RID, float)
 
-	FUNC7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
+	FUNC9(environment_set_adjustment, RID, bool, float, float, float, bool, RID, EnvironmentBrightnessScale, bool)
 
 	FUNC11(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float, float, EnvironmentFogMode)
 

@@ -114,11 +114,16 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 	}
 
 	tonemap.push_constant.tonemapper = p_settings.tonemap_mode;
+	tonemap.push_constant.tonemap_a = p_settings.tonemap_a;
+	tonemap.push_constant.tonemap_b = p_settings.tonemap_b;
+	tonemap.push_constant.tonemap_c = p_settings.tonemap_c;
+	tonemap.push_constant.tonemap_d = p_settings.tonemap_d;
 	tonemap.push_constant.flags |= p_settings.use_auto_exposure ? TONEMAP_FLAG_USE_AUTO_EXPOSURE : 0;
 	tonemap.push_constant.exposure = p_settings.exposure;
 	tonemap.push_constant.white = p_settings.white;
 	tonemap.push_constant.auto_exposure_scale = p_settings.auto_exposure_scale;
 	tonemap.push_constant.luminance_multiplier = p_settings.luminance_multiplier;
+	tonemap.push_constant.output_max_value = MAX(p_settings.max_value, 1.0f);
 
 	tonemap.push_constant.flags |= p_settings.use_color_correction ? TONEMAP_FLAG_USE_COLOR_CORRECTION : 0;
 
@@ -132,6 +137,7 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 	tonemap.push_constant.pixel_size[1] = 1.0 / p_settings.texture_size.y;
 
 	tonemap.push_constant.flags |= p_settings.convert_to_srgb ? TONEMAP_FLAG_CONVERT_TO_SRGB : 0;
+	tonemap.push_constant.flags |= p_settings.bcs_legacy ? TONEMAP_FLAG_BCS_LEGACY : 0;
 
 	if (p_settings.view_count > 1) {
 		// Use USE_MULTIVIEW versions
@@ -205,10 +211,15 @@ void ToneMapper::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_col
 	}
 
 	tonemap.push_constant.tonemapper = p_settings.tonemap_mode;
+	tonemap.push_constant.tonemap_a = p_settings.tonemap_a;
+	tonemap.push_constant.tonemap_b = p_settings.tonemap_b;
+	tonemap.push_constant.tonemap_c = p_settings.tonemap_c;
+	tonemap.push_constant.tonemap_d = p_settings.tonemap_d;
 	tonemap.push_constant.flags |= p_settings.use_auto_exposure ? TONEMAP_FLAG_USE_AUTO_EXPOSURE : 0;
 	tonemap.push_constant.exposure = p_settings.exposure;
 	tonemap.push_constant.white = p_settings.white;
 	tonemap.push_constant.auto_exposure_scale = p_settings.auto_exposure_scale;
+	tonemap.push_constant.output_max_value = MAX(p_settings.max_value, 1.0f);
 
 	tonemap.push_constant.flags |= p_settings.use_color_correction ? TONEMAP_FLAG_USE_COLOR_CORRECTION : 0;
 	if (p_settings.debanding_mode == TonemapSettings::DEBANDING_MODE_8_BIT) {
@@ -219,6 +230,7 @@ void ToneMapper::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_col
 	tonemap.push_constant.luminance_multiplier = p_settings.luminance_multiplier;
 
 	tonemap.push_constant.flags |= p_settings.convert_to_srgb ? TONEMAP_FLAG_CONVERT_TO_SRGB : 0;
+	tonemap.push_constant.flags |= p_settings.bcs_legacy ? TONEMAP_FLAG_BCS_LEGACY : 0;
 
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 	RID default_mipmap_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);

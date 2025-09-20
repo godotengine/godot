@@ -414,19 +414,12 @@ void RenderForwardMobile::update() {
 
 /* Render functions */
 
-float RenderForwardMobile::_render_buffers_get_luminance_multiplier() {
-	// On mobile renderer we need to multiply source colors by 2 due to using a UNORM buffer
-	// and multiplying by the output color during 3D rendering by 0.5
-	return 2.0;
-}
-
-RD::DataFormat RenderForwardMobile::_render_buffers_get_color_format() {
+RD::DataFormat RenderForwardMobile::_render_buffers_get_preferred_color_format() {
 	// Using 32bit buffers enables AFBC on mobile devices which should have a definite performance improvement (MALI G710 and newer support this on 64bit RTs)
 	return RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
 }
 
 bool RenderForwardMobile::_render_buffers_can_be_storage() {
-	// Using 32bit buffers enables AFBC on mobile devices which should have a definite performance improvement (MALI G710 and newer support this on 64bit RTs)
 	// Doesn't support storage
 	return false;
 }
@@ -997,8 +990,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	bool draw_sky = false;
 	bool draw_sky_fog_only = false;
 	// We invert luminance_multiplier for sky so that we can combine it with exposure value.
-	float inverse_luminance_multiplier = 1.0 / _render_buffers_get_luminance_multiplier();
-	float sky_luminance_multiplier = inverse_luminance_multiplier;
+	float inverse_luminance_multiplier = 1.0 / rb->get_luminance_multiplier();
+	float sky_luminance_multiplier = 1.0 / 2.0; // Hardcoded since sky always uses LDR in the mobile renderer
 	float sky_brightness_multiplier = 1.0;
 
 	Color clear_color = p_default_bg_color;
@@ -1117,6 +1110,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		base_specialization.scene_use_ambient_cubemap = use_ambient_cubemap;
 		base_specialization.scene_use_reflection_cubemap = use_reflection_cubemap;
 		base_specialization.scene_roughness_limiter_enabled = p_render_data->render_buffers.is_valid() && screen_space_roughness_limiter_is_active();
+		base_specialization.luminance_multiplier = p_render_data->render_buffers.is_valid() ? p_render_data->render_buffers->get_luminance_multiplier() : 1.0;
 	}
 
 	{
@@ -2193,7 +2187,9 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 		}
 	}
 
-	p_render_data->scene_data->update_ubo(scene_state.uniform_buffers[p_index], get_debug_draw_mode(), env, reflection_probe_instance, p_render_data->camera_attributes, p_pancake_shadows, p_screen_size, p_default_bg_color, _render_buffers_get_luminance_multiplier(), p_opaque_render_buffers, false);
+	float luminance_multiplier = p_render_data->render_buffers.is_valid() ? p_render_data->render_buffers->get_luminance_multiplier() : 1.0;
+
+	p_render_data->scene_data->update_ubo(scene_state.uniform_buffers[p_index], get_debug_draw_mode(), env, reflection_probe_instance, p_render_data->camera_attributes, p_pancake_shadows, p_screen_size, p_default_bg_color, luminance_multiplier, p_opaque_render_buffers, false);
 }
 
 /// RENDERING ///
@@ -3132,7 +3128,6 @@ void RenderForwardMobile::_mesh_compile_pipelines_for_surface(const SurfacePipel
 	pipeline_key.wireframe = false;
 
 	const bool multiview_enabled = p_global.use_multiview && scene_shader.is_multiview_shader_group_enabled();
-	const RD::DataFormat buffers_color_format = _render_buffers_get_color_format();
 	const bool buffers_can_be_storage = _render_buffers_can_be_storage();
 	const uint32_t vrs_iterations = p_global.use_vrs ? 2 : 1;
 
@@ -3146,6 +3141,7 @@ void RenderForwardMobile::_mesh_compile_pipelines_for_surface(const SurfacePipel
 		for (uint32_t use_post_pass = post_pass_start; use_post_pass < post_pass_iterations; use_post_pass++) {
 			const uint32_t hdr_iterations = use_post_pass ? hdr_target_iterations : (hdr_start + 1);
 			for (uint32_t use_hdr = hdr_start; use_hdr < hdr_iterations; use_hdr++) {
+				const RD::DataFormat buffers_color_format = use_hdr ? RD::DATA_FORMAT_R16G16B16A16_SFLOAT : RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
 				pipeline_key.version = SceneShaderForwardMobile::SHADER_VERSION_COLOR_PASS;
 				pipeline_key.framebuffer_format_id = _get_color_framebuffer_format_for_pipeline(buffers_color_format, buffers_can_be_storage, RD::TextureSamples(p_global.texture_samples), RD::TextureSamples(p_global.target_samples), use_vrs, use_post_pass, use_hdr, 1);
 				_mesh_compile_pipeline_for_surface(p_surface.shader, p_surface.mesh_surface, p_surface.instanced, p_source, pipeline_key, r_pipeline_pairs);
@@ -3330,7 +3326,7 @@ void RenderForwardMobile::_update_shader_quality_settings() {
 RenderForwardMobile::RenderForwardMobile() {
 	singleton = this;
 
-	sky.set_texture_format(_render_buffers_get_color_format());
+	sky.set_texture_format(_render_buffers_get_preferred_color_format());
 
 	String defines;
 

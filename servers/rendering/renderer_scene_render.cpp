@@ -361,8 +361,12 @@ int RendererSceneRender::environment_get_camera_feed_id(RID p_env) const {
 
 // Tonemap
 
-void RendererSceneRender::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) {
-	environment_storage.environment_set_tonemap(p_env, p_tone_mapper, p_exposure, p_white);
+void RendererSceneRender::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, float p_contrast) {
+	environment_storage.environment_set_tonemap(p_env, p_tone_mapper, p_exposure, p_white, p_contrast);
+}
+
+void RendererSceneRender::environment_set_max_value(RID p_env, float p_max_value) {
+	environment_storage.environment_set_max_value(p_env, p_max_value);
 }
 
 RS::EnvironmentToneMapper RendererSceneRender::environment_get_tone_mapper(RID p_env) const {
@@ -375,6 +379,18 @@ float RendererSceneRender::environment_get_exposure(RID p_env) const {
 
 float RendererSceneRender::environment_get_white(RID p_env) const {
 	return environment_storage.environment_get_white(p_env);
+}
+
+float RendererSceneRender::environment_get_max_value(RID p_env) const {
+	return environment_storage.environment_get_max_value(p_env);
+}
+
+float RendererSceneRender::environment_get_tonemap_contrast(RID p_env) const {
+	return environment_storage.environment_get_tonemap_contrast(p_env);
+}
+
+RendererEnvironmentStorage::TonemapParameters RendererSceneRender::environment_get_tonemap_parameters(RID p_env, float output_max_value) const {
+	return environment_storage.environment_get_tonemap_parameters(p_env, output_max_value);
 }
 
 // Fog
@@ -695,8 +711,8 @@ RS::EnvironmentSDFGIYScale RendererSceneRender::environment_get_sdfgi_y_scale(RI
 
 // Adjustments
 
-void RendererSceneRender::environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) {
-	environment_storage.environment_set_adjustment(p_env, p_enable, p_brightness, p_contrast, p_saturation, p_use_1d_color_correction, p_color_correction);
+void RendererSceneRender::environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction, RS::EnvironmentBrightnessScale p_brightness_scale, bool p_bcs_legacy) {
+	environment_storage.environment_set_adjustment(p_env, p_enable, p_brightness, p_contrast, p_saturation, p_use_1d_color_correction, p_color_correction, p_brightness_scale, p_bcs_legacy);
 }
 
 bool RendererSceneRender::environment_get_adjustments_enabled(RID p_env) const {
@@ -705,6 +721,10 @@ bool RendererSceneRender::environment_get_adjustments_enabled(RID p_env) const {
 
 float RendererSceneRender::environment_get_adjustments_brightness(RID p_env) const {
 	return environment_storage.environment_get_adjustments_brightness(p_env);
+}
+
+float RendererSceneRender::environment_get_adjustments_brightness_scaled(RID p_env) const {
+	return environment_storage.environment_get_adjustments_brightness_scaled(p_env);
 }
 
 float RendererSceneRender::environment_get_adjustments_contrast(RID p_env) const {
@@ -721,4 +741,12 @@ bool RendererSceneRender::environment_get_use_1d_color_correction(RID p_env) con
 
 RID RendererSceneRender::environment_get_color_correction(RID p_env) const {
 	return environment_storage.environment_get_color_correction(p_env);
+}
+
+RS::EnvironmentBrightnessScale RendererSceneRender::environment_get_adjustments_brightness_scale(RID p_env) const {
+	return environment_storage.environment_get_adjustments_brightness_scale(p_env);
+}
+
+bool RendererSceneRender::environment_get_adjustments_bcs_legacy(RID p_env) const {
+	return environment_storage.environment_get_adjustments_bcs_legacy(p_env);
 }

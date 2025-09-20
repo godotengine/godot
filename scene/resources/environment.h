@@ -88,6 +88,11 @@ public:
 		GLOW_BLEND_MODE_MIX,
 	};
 
+	enum BrightnessScale {
+		BRIGHTNESS_SCALE_SRGB,
+		BRIGHTNESS_SCALE_LINEAR,
+	};
+
 private:
 	RID environment;
 
@@ -115,6 +120,7 @@ private:
 	ToneMapper tone_mapper = TONE_MAPPER_LINEAR;
 	float tonemap_exposure = 1.0;
 	float tonemap_white = 1.0;
+	float tonemap_contrast = 1.25; // Default to approximately Blender's AgX contrast
 	void _update_tonemap();
 
 	// SSR
@@ -167,7 +173,7 @@ private:
 	float glow_strength = 1.0;
 	float glow_mix = 0.05;
 	float glow_bloom = 0.0;
-	GlowBlendMode glow_blend_mode = GLOW_BLEND_MODE_SOFTLIGHT;
+	GlowBlendMode glow_blend_mode = GLOW_BLEND_MODE_SCREEN;
 	float glow_hdr_bleed_threshold = 1.0;
 	float glow_hdr_bleed_scale = 2.0;
 	float glow_hdr_luminance_cap = 12.0;
@@ -219,6 +225,8 @@ private:
 	float adjustment_saturation = 1.0;
 	bool use_1d_color_correction = true;
 	Ref<Texture> adjustment_color_correction;
+	BrightnessScale adjustment_brightness_scale = BrightnessScale::BRIGHTNESS_SCALE_SRGB;
+	bool adjustment_bcs_legacy = false;
 	void _update_adjustment();
 
 protected:
@@ -271,6 +279,8 @@ public:
 	float get_tonemap_exposure() const;
 	void set_tonemap_white(float p_white);
 	float get_tonemap_white() const;
+	void set_tonemap_contrast(float p_contrast);
+	float get_tonemap_contrast() const;
 
 	// SSR
 	void set_ssr_enabled(bool p_enabled);
@@ -441,6 +451,10 @@ public:
 	float get_adjustment_saturation() const;
 	void set_adjustment_color_correction(Ref<Texture> p_color_correction);
 	Ref<Texture> get_adjustment_color_correction() const;
+	void set_adjustment_brightness_scale(BrightnessScale p_brightness_scale);
+	BrightnessScale get_adjustment_brightness_scale() const;
+	void set_adjustment_bcs_legacy(bool p_bcs_legacy);
+	bool get_adjustment_bcs_legacy() const;
 
 	Environment();
 	~Environment();
@@ -453,3 +467,4 @@ VARIANT_ENUM_CAST(Environment::ToneMapper)
 VARIANT_ENUM_CAST(Environment::SDFGIYScale)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
 VARIANT_ENUM_CAST(Environment::FogMode)
+VARIANT_ENUM_CAST(Environment::BrightnessScale)

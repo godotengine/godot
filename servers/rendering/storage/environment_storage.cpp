@@ -203,12 +203,19 @@ int RendererEnvironmentStorage::environment_get_camera_feed_id(RID p_env) const 
 
 // Tonemap
 
-void RendererEnvironmentStorage::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) {
+void RendererEnvironmentStorage::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, float p_contrast) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 	env->exposure = p_exposure;
 	env->tone_mapper = p_tone_mapper;
 	env->white = p_white;
+	env->tonemap_contrast = p_contrast;
+}
+
+void RendererEnvironmentStorage::environment_set_max_value(RID p_env, float p_max_value) {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL(env);
+	env->max_value = p_max_value;
 }
 
 RS::EnvironmentToneMapper RendererEnvironmentStorage::environment_get_tone_mapper(RID p_env) const {
@@ -226,7 +233,110 @@ float RendererEnvironmentStorage::environment_get_exposure(RID p_env) const {
 float RendererEnvironmentStorage::environment_get_white(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 1.0);
-	return env->white;
+
+	if (env->tone_mapper == RS::ENV_TONE_MAPPER_LINEAR) {
+		return env->max_value;
+	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_REINHARD) {
+		// The Reinhard tonemapper is not designed to have a white parameter
+		// that is less than the output max value. This is especially important
+		// in the variable Extended Dynamic Range (EDR) paradigm where the
+		// output max value may change to be greater or less than the white
+		// parameter, depending on the available dynamic range.
+		return MAX(env->max_value, env->white);
+	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_AGX) {
+		// Instead of constraining to output_max_value, constrain to 2.0 to ensure
+		// the desired non-uniform scaling behavior in the shoulder
+		// and maintain that behavior by multiplying by output_max_value.
+		// 2.0 is the minimum required for good behavior with Mobile rendering method.
+		float agx_white = MAX(env->white, 2.0);
+		return agx_white * env->max_value;
+	} else {
+		return env->white;
+	}
+}
+
+float RendererEnvironmentStorage::environment_get_max_value(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 1.0);
+	return env->max_value;
+}
+
+float RendererEnvironmentStorage::environment_get_tonemap_contrast(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 1.0);
+	return env->tonemap_contrast;
+}
+
+RendererEnvironmentStorage::TonemapParameters RendererEnvironmentStorage::environment_get_tonemap_parameters(RID p_env, float output_max_value) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, TonemapParameters());
+
+	float white = environment_get_white(p_env);
+
+	if (env->tone_mapper == RS::ENV_TONE_MAPPER_LINEAR) {
+		// Linear has no tonemapping parameters
+	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_REINHARD) {
+		float reinhard_white = MAX(white, output_max_value);
+		env->tonemap_parameters.tonemap_a = (reinhard_white * reinhard_white) / output_max_value;
+	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_FILMIC) {
+		// exposure bias: input scale (color *= bias, white *= bias) to make the brightness consistent with other tonemappers
+		// also useful to scale the input to the range that the tonemapper is designed for (some require very high input values)
+		// has no effect on the curve's general shape or visual properties
+		// These constants must match those in the shader code.
+		const float exposure_bias = 2.0f;
+		const float A = 0.22f * exposure_bias * exposure_bias; // bias baked into constants for performance
+		const float B = 0.30f * exposure_bias;
+		const float C = 0.10f;
+		const float D = 0.20f;
+		const float E = 0.01f;
+		const float F = 0.30f;
+
+		float white_tonemapped = ((white * (A * white + C * B) + D * E) / (white * (A * white + B) + D * F)) - E / F;
+		env->tonemap_parameters.tonemap_a = white_tonemapped;
+	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_ACES) {
+		// These constants must match those in the shader code.
+		const float exposure_bias = 1.8f;
+		const float A = 0.0245786f;
+		const float B = 0.000090537f;
+		const float C = 0.983729f;
+		const float D = 0.432951f;
+		const float E = 0.238081f;
+
+		white *= exposure_bias;
+		float white_tonemapped = (white * (white + A) - B) / (white * (C * white + D) + E);
+		env->tonemap_parameters.tonemap_a = white_tonemapped;
+	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_AGX) {
+		// Calculate allenwp tonemapping curve parameters on the CPU to improve shader performance.
+		// Source and details: https://allenwp.com/blog/2025/05/29/allenwp-tonemapping-curve/
+
+		// These constants must match the those in the shader code.
+		// 18% "middle gray" is perceptually 50% of the brightness of reference white.
+		const float awp_crossover_point = 0.18;
+		// When output_max_value and/or awp_crossover_point are no longer constant, awp_shoulder_max can
+		// be calculated on the CPU and passed in as tonemap_parameters.tonemap_e
+		const float awp_shoulder_max = output_max_value - awp_crossover_point;
+
+		// Constrained and adjusted for HDR in environment_get_white.
+		float awp_high_clip = white;
+
+		// awp_toe_a is a solution generated by Mathematica that ensures intersection at awp_crossover_point
+		float awp_toe_a = ((1.0 / awp_crossover_point) - 1.0) * pow(awp_crossover_point, env->tonemap_contrast);
+		// Slope formula is simply the derivative of the toe function with an input of awp_crossover_point
+		float awp_slope_denom = pow(awp_crossover_point, env->tonemap_contrast) + awp_toe_a;
+		float awp_slope = (env->tonemap_contrast * pow(awp_crossover_point, env->tonemap_contrast - 1.0) * awp_toe_a) / (awp_slope_denom * awp_slope_denom);
+
+		float awp_w = awp_high_clip - awp_crossover_point;
+		awp_w = awp_w * awp_w;
+		awp_w = awp_w / awp_shoulder_max;
+		awp_w = awp_w * awp_slope;
+
+		env->tonemap_parameters.tonemap_a = env->tonemap_contrast;
+		env->tonemap_parameters.tonemap_b = awp_toe_a;
+		env->tonemap_parameters.tonemap_c = awp_slope;
+		env->tonemap_parameters.tonemap_d = awp_w;
+	}
+
+	return env->tonemap_parameters;
 }
 
 // Fog
@@ -495,7 +605,7 @@ float RendererEnvironmentStorage::environment_get_glow_mix(RID p_env) const {
 
 RS::EnvironmentGlowBlendMode RendererEnvironmentStorage::environment_get_glow_blend_mode(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, RS::ENV_GLOW_BLEND_MODE_SOFTLIGHT);
+	ERR_FAIL_NULL_V(env, RS::ENV_GLOW_BLEND_MODE_SCREEN);
 	return env->glow_blend_mode;
 }
 
@@ -782,7 +892,7 @@ RS::EnvironmentSDFGIYScale RendererEnvironmentStorage::environment_get_sdfgi_y_s
 
 // Adjustments
 
-void RendererEnvironmentStorage::environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) {
+void RendererEnvironmentStorage::environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction, RS::EnvironmentBrightnessScale p_brightness_scale, bool p_bcs_legacy) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 
@@ -792,6 +902,8 @@ void RendererEnvironmentStorage::environment_set_adjustment(RID p_env, bool p_en
 	env->adjustments_saturation = p_saturation;
 	env->use_1d_color_correction = p_use_1d_color_correction;
 	env->color_correction = p_color_correction;
+	env->adjustments_brightness_scale = p_brightness_scale;
+	env->adjustments_bcs_legacy = p_bcs_legacy;
 }
 
 bool RendererEnvironmentStorage::environment_get_adjustments_enabled(RID p_env) const {
@@ -804,6 +916,22 @@ float RendererEnvironmentStorage::environment_get_adjustments_brightness(RID p_e
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 1.0);
 	return env->adjustments_brightness;
+}
+
+float RendererEnvironmentStorage::environment_get_adjustments_brightness_scaled(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 1.0);
+	float brightness = env->adjustments_brightness;
+
+	if (env->adjustments_bcs_legacy) {
+		return brightness;
+	} else {
+		if (env->adjustments_brightness_scale == RS::ENV_ADJUSTMENT_BRIGHTNESS_SCALE_SRGB) {
+			return brightness < 0.04045f ? brightness * (1.0f / 12.92f) : Math::pow(float((brightness + 0.055f) * (1.0f / (1.055f))), 2.4f);
+		} else { // RS::ENV_ADJUSTMENT_BRIGHTNESS_LINEAR
+			return brightness;
+		}
+	}
 }
 
 float RendererEnvironmentStorage::environment_get_adjustments_contrast(RID p_env) const {
@@ -828,4 +956,16 @@ RID RendererEnvironmentStorage::environment_get_color_correction(RID p_env) cons
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, RID());
 	return env->color_correction;
+}
+
+RS::EnvironmentBrightnessScale RendererEnvironmentStorage::environment_get_adjustments_brightness_scale(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, RS::EnvironmentBrightnessScale::ENV_ADJUSTMENT_BRIGHTNESS_SCALE_SRGB);
+	return env->adjustments_brightness_scale;
+}
+
+bool RendererEnvironmentStorage::environment_get_adjustments_bcs_legacy(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, false);
+	return env->adjustments_bcs_legacy;
 }

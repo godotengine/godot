@@ -2364,8 +2364,12 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		tonemap_ubo.exposure = environment_get_exposure(render_data.environment);
 		tonemap_ubo.white = environment_get_white(render_data.environment);
 		tonemap_ubo.tonemapper = int32_t(environment_get_tone_mapper(render_data.environment));
-
-		tonemap_ubo.brightness = environment_get_adjustments_brightness(render_data.environment);
+		RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(render_data.environment, 1.0);
+		tonemap_ubo.tonemap_a = params.tonemap_a;
+		tonemap_ubo.tonemap_b = params.tonemap_b;
+		tonemap_ubo.tonemap_c = params.tonemap_c;
+		tonemap_ubo.tonemap_d = params.tonemap_d;
+		tonemap_ubo.brightness = environment_get_adjustments_brightness_scaled(render_data.environment);
 		tonemap_ubo.contrast = environment_get_adjustments_contrast(render_data.environment);
 		tonemap_ubo.saturation = environment_get_adjustments_saturation(render_data.environment);
 	}
@@ -2804,6 +2808,10 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 		RID color_correction_texture = environment_get_color_correction(p_render_data->environment);
 		if (use_bcs) {
 			bcs_spec_constants |= PostShaderGLES3::USE_BCS;
+
+			if (environment_get_adjustments_bcs_legacy(p_render_data->environment)) {
+				bcs_spec_constants |= PostShaderGLES3::BCS_LEGACY;
+			}
 
 			if (color_correction_texture.is_valid()) {
 				bcs_spec_constants |= PostShaderGLES3::USE_COLOR_CORRECTION;
