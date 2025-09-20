@@ -225,6 +225,11 @@ class AnimationTimelineEdit : public Range {
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
 
+	Rect2 timeline_resize_rect;
+	float timeline_resize_from = 0.0f;
+	float timeline_resize_at = 0.0f;
+	bool resizing_timeline = false;
+
 	bool dragging_timeline = false;
 	bool dragging_hsize = false;
 	float dragging_hsize_from = 0.0f;
