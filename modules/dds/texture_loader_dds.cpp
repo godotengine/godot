@@ -51,7 +51,7 @@ DDSFormat _dxgi_to_dds_format(uint32_t p_dxgi_format) {
 			return DDS_RG32F;
 		}
 		case DXGI_R10G10B10A2_UNORM: {
-			return DDS_RGB10A2;
+			return DDS_BGR10A2;
 		}
 		case DXGI_R8G8B8A8_UNORM:
 		case DXGI_R8G8B8A8_UNORM_SRGB: {
@@ -261,48 +261,18 @@ static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format
 
 			} break;
 			case DDS_RGB10A2: {
-				// To RGBA8.
+				// To RGB10A2.
 				int colcount = size / 4;
 
 				for (int i = 0; i < colcount; i++) {
-					int ofs = i * 4;
-
-					uint32_t w32 = uint32_t(wb[ofs + 0]) | (uint32_t(wb[ofs + 1]) << 8) | (uint32_t(wb[ofs + 2]) << 16) | (uint32_t(wb[ofs + 3]) << 24);
+					uint32_t w32 = ((uint32_t *)wb)[i];
 
 					// This method follows the 'standard' way of decoding 10-bit dds files,
 					// which means the ones created with DirectXTex will be loaded incorrectly.
-					uint8_t a = (w32 & 0xc0000000) >> 24;
-					uint8_t r = (w32 & 0x3ff) >> 2;
-					uint8_t g = (w32 & 0xffc00) >> 12;
-					uint8_t b = (w32 & 0x3ff00000) >> 22;
+					uint32_t r = (w32 & 0x3FF00000) >> 20;
+					uint32_t b = (w32 & 0x3FF) << 20;
 
-					wb[ofs + 0] = r;
-					wb[ofs + 1] = g;
-					wb[ofs + 2] = b;
-					wb[ofs + 3] = a == 0xc0 ? 255 : a; // 0xc0 should be opaque.
-				}
-
-			} break;
-			case DDS_BGR10A2: {
-				// To RGBA8.
-				int colcount = size / 4;
-
-				for (int i = 0; i < colcount; i++) {
-					int ofs = i * 4;
-
-					uint32_t w32 = uint32_t(wb[ofs + 0]) | (uint32_t(wb[ofs + 1]) << 8) | (uint32_t(wb[ofs + 2]) << 16) | (uint32_t(wb[ofs + 3]) << 24);
-
-					// This method follows the 'standard' way of decoding 10-bit dds files,
-					// which means the ones created with DirectXTex will be loaded incorrectly.
-					uint8_t a = (w32 & 0xc0000000) >> 24;
-					uint8_t r = (w32 & 0x3ff00000) >> 22;
-					uint8_t g = (w32 & 0xffc00) >> 12;
-					uint8_t b = (w32 & 0x3ff) >> 2;
-
-					wb[ofs + 0] = r;
-					wb[ofs + 1] = g;
-					wb[ofs + 2] = b;
-					wb[ofs + 3] = a == 0xc0 ? 255 : a; // 0xc0 should be opaque.
+					((uint32_t *)wb)[i] = (w32 & 0xC00FFC00) | b | r;
 				}
 
 			} break;

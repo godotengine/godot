@@ -351,6 +351,10 @@ static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format) {
 			r_format = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
 			break;
 
+		case Image::FORMAT_RGB10A2:
+			r_format = RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
+			break;
+
 		default: {
 			return ERR_UNAVAILABLE;
 		}

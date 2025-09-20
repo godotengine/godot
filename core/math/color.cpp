@@ -475,6 +475,14 @@ Color Color::from_rgbe9995(uint32_t p_rgbe) {
 	return Color(rd, gd, bd, 1.0f);
 }
 
+Color Color::from_rgb10a2(uint32_t p_rgba) {
+	float r = (p_rgba & 0x3FF) / 1023.0;
+	float g = ((p_rgba >> 10) & 0x3FF) / 1023.0;
+	float b = ((p_rgba >> 20) & 0x3FF) / 1023.0;
+	float a = ((p_rgba >> 30) & 0x3) / 3.0;
+	return Color(r, g, b, a);
+}
+
 Color Color::from_rgba8(int64_t p_r8, int64_t p_g8, int64_t p_b8, int64_t p_a8) {
 	return Color(p_r8 / 255.0f, p_g8 / 255.0f, p_b8 / 255.0f, p_a8 / 255.0f);
 }
