@@ -711,6 +711,7 @@ class EditorInspector : public ScrollContainer {
 	HashMap<StringName, HashMap<StringName, DocCacheInfo>> doc_cache;
 	HashSet<StringName> restart_request_props;
 	HashMap<String, String> custom_property_descriptions;
+	HashMap<String, String> doc_property_class_remaps;
 
 	HashMap<ObjectID, int> scroll_cache;
 
@@ -828,6 +829,8 @@ public:
 
 	void add_custom_property_description(const String &p_class, const String &p_property, const String &p_description);
 	String get_custom_property_description(const String &p_property) const;
+
+	void remap_doc_property_class(const String &p_property_prefix, const String &p_class);
 
 	void set_object_class(const String &p_class);
 	String get_object_class() const;
