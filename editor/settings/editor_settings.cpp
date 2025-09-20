@@ -999,6 +999,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/animation/confirm_insert_track", true, true);
 	_initial_set("editors/animation/default_create_bezier_tracks", false, true);
 	_initial_set("editors/animation/default_create_reset_tracks", true, true);
+	_initial_set("editors/animation/insert_at_current_time", false, true);
 	_initial_set("editors/animation/onion_layers_past_color", Color(1, 0, 0));
 	_initial_set("editors/animation/onion_layers_future_color", Color(0, 1, 0));
 
