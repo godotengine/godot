@@ -141,6 +141,22 @@ void EditorScenePostImport::init(const String &p_source_file) {
 
 ///////////////////////////////////////////////////////
 
+Dictionary EditorScenePostImportPlugin::get_option_values() const {
+	ERR_FAIL_COND_V_MSG(current_options == nullptr && current_options_dict == nullptr, Dictionary(), "get_option_value called from a function where option values are not available.");
+	Dictionary ret;
+	if (current_options_dict) {
+		for (const KeyValue<Variant, Variant> &E : *current_options_dict) {
+			ret[E.key] = E.value;
+		}
+	}
+	if (current_options) {
+		for (const KeyValue<StringName, Variant> &elem : *current_options) {
+			ret[elem.key] = elem.value;
+		}
+	}
+	return ret;
+}
+
 Variant EditorScenePostImportPlugin::get_option_value(const StringName &p_name) const {
 	ERR_FAIL_COND_V_MSG(current_options == nullptr && current_options_dict == nullptr, Variant(), "get_option_value called from a function where option values are not available.");
 	ERR_FAIL_COND_V_MSG(current_options && !current_options->has(p_name), Variant(), "get_option_value called with unexisting option argument: " + String(p_name));
@@ -217,6 +233,7 @@ void EditorScenePostImportPlugin::post_process(Node *p_scene, const HashMap<Stri
 
 void EditorScenePostImportPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_option_value", "name"), &EditorScenePostImportPlugin::get_option_value);
+	ClassDB::bind_method(D_METHOD("get_option_values"), &EditorScenePostImportPlugin::get_option_values);
 
 	ClassDB::bind_method(D_METHOD("add_import_option", "name", "value"), &EditorScenePostImportPlugin::add_import_option);
 	ClassDB::bind_method(D_METHOD("add_import_option_advanced", "type", "name", "default_value", "hint", "hint_string", "usage_flags"), &EditorScenePostImportPlugin::add_import_option_advanced, DEFVAL(PROPERTY_HINT_NONE), DEFVAL(""), DEFVAL(PROPERTY_USAGE_DEFAULT));
