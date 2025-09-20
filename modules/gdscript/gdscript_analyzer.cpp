@@ -1713,7 +1713,7 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 			Variant::construct(argument_info.type, converted_to, &converted_from, 1, call_error);
 
 			if (call_error.error != Callable::CallError::CALL_OK) {
-				push_error(vformat(R"(Cannot convert argument %d of annotation "%s" from "%s" to "%s".)", i + 1, p_annotation->name, Variant::get_type_name(value.get_type()), Variant::get_type_name(argument_info.type)), argument);
+				push_error(vformat(R"(Cannot convert argument %d of annotation "%s" from "%s" to "%s".)", i + 1, p_annotation->name, value.debug_get_type_name(), Variant::get_type_name(argument_info.type)), argument);
 				return;
 			}
 
@@ -3118,8 +3118,8 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 				} else {
 					push_error(vformat(R"(Invalid operands to operator %s, %s and %s.)",
 									   Variant::get_operator_name(p_binary_op->variant_op),
-									   Variant::get_type_name(p_binary_op->left_operand->reduced_value.get_type()),
-									   Variant::get_type_name(p_binary_op->right_operand->reduced_value.get_type())),
+									   p_binary_op->left_operand->reduced_value.debug_get_type_name(),
+									   p_binary_op->right_operand->reduced_value.debug_get_type_name()),
 							p_binary_op);
 				}
 			}

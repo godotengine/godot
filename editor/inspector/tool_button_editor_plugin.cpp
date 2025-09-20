@@ -35,7 +35,7 @@ void EditorInspectorToolButtonPlugin::_call_action(const Variant &p_object, cons
 	ERR_FAIL_NULL_MSG(object, vformat(R"(Failed to get property "%s" on a previously freed instance.)", p_property));
 
 	const Variant value = object->get(p_property);
-	ERR_FAIL_COND_MSG(value.get_type() != Variant::CALLABLE, vformat(R"(The value of property "%s" is %s, but Callable was expected.)", p_property, Variant::get_type_name(value.get_type())));
+	ERR_FAIL_COND_MSG(value.get_type() != Variant::CALLABLE, vformat(R"(The value of property "%s" is %s, but Callable was expected.)", p_property, value.debug_get_type_name()));
 
 	const Callable callable = value;
 	ERR_FAIL_COND_MSG(!callable.is_valid(), vformat(R"(Tool button action "%s" is an invalid callable.)", callable));

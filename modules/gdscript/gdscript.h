@@ -51,6 +51,7 @@ protected:
 
 public:
 	_FORCE_INLINE_ const StringName &get_name() const { return name; }
+	String debug_get_class_name() override;
 	Variant _new();
 	Object *instantiate();
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
@@ -231,9 +232,7 @@ protected:
 	static void _bind_methods();
 
 public:
-#ifdef DEBUG_ENABLED
-	static String debug_get_script_name(const Ref<Script> &p_script);
-#endif
+	String debug_get_script_name() const override;
 
 	static String canonicalize_path(const String &p_path);
 	_FORCE_INLINE_ static bool is_canonically_equal_paths(const String &p_path_a, const String &p_path_b) {

@@ -88,6 +88,10 @@ void GDScriptNativeClass::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("new"), &GDScriptNativeClass::_new);
 }
 
+String GDScriptNativeClass::debug_get_class_name() {
+	return vformat("GDScriptNativeClass(%s)", get_name());
+}
+
 Variant GDScriptNativeClass::_new() {
 	Object *o = instantiate();
 	ERR_FAIL_NULL_V_MSG(o, Variant(), "Class type: '" + String(name) + "' is not instantiable.");
@@ -1468,29 +1472,22 @@ void GDScript::_save_orphaned_subclasses(ClearData *p_clear_data) {
 	}
 }
 
-#ifdef DEBUG_ENABLED
-String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
-	if (p_script.is_valid()) {
-		Ref<GDScript> gdscript = p_script;
-		if (gdscript.is_valid()) {
-			if (gdscript->get_local_name() != StringName()) {
-				return gdscript->get_local_name();
-			}
-			return gdscript->get_fully_qualified_name().get_file();
-		}
-
-		if (p_script->get_global_name() != StringName()) {
-			return p_script->get_global_name();
-		} else if (!p_script->get_path().is_empty()) {
-			return p_script->get_path().get_file();
-		} else if (!p_script->get_name().is_empty()) {
-			return p_script->get_name(); // Resource name.
-		}
+String GDScript::debug_get_script_name() const {
+	if (!is_valid()) {
+		return "<invalid script>";
 	}
 
-	return "<unknown script>";
+	String ret = Script::debug_get_script_name();
+	if (!ret.is_empty()) {
+		return ret;
+	}
+	ret = get_fully_qualified_name().get_file();
+	if (!ret.is_empty()) {
+		return ret;
+	}
+
+	return get_fully_qualified_name();
 }
-#endif
 
 String GDScript::canonicalize_path(const String &p_path) {
 	if (p_path.get_extension() == "gdc") {

@@ -154,7 +154,7 @@ void InstancePlaceholder::set_value_on_instance(InstancePlaceholder *p_placehold
 				return;
 			}
 			// Internal array types match but setting failed? This is strange, so let's print a warning!
-			WARN_PRINT(vformat("Array Property '%s' with type '%s' could not be set when creating instance of '%s'.", p_set.name, Variant::get_type_name(Variant::Type(current_array.get_typed_builtin())), p_placeholder->get_name()));
+			WARN_PRINT(vformat("Array Property '%s' with type '%s' could not be set when creating instance of '%s'.", p_set.name, current_array.get_contained_type_name(), p_placeholder->get_name()));
 		}
 		// Arrays are not the same internal type. This should be happening because we have a NodePath Array,
 		// but the instance wants a Node Array.

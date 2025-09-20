@@ -124,6 +124,8 @@ public:
 	Variant get_typed_value_script() const;
 	const ContainerTypeValidate &get_key_validator() const;
 	const ContainerTypeValidate &get_value_validator() const;
+	String get_key_type_name() const;
+	String get_value_type_name() const;
 
 	void make_read_only();
 	bool is_read_only() const;
