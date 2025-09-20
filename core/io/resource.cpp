@@ -663,6 +663,21 @@ void Resource::reset_local_to_scene() {
 Node *(*Resource::_get_local_scene_func)() = nullptr;
 void (*Resource::_update_configuration_warning)() = nullptr;
 
+void Resource::set_editor_description(const String &p_editor_description) {
+	if (p_editor_description == get_editor_description()) {
+		return;
+	}
+	if (p_editor_description.is_empty()) {
+		remove_meta("_editor_description_");
+	} else {
+		set_meta("_editor_description_", p_editor_description);
+	}
+}
+
+String Resource::get_editor_description() const {
+	return get_meta("_editor_description_", String());
+}
+
 void Resource::set_as_translation_remapped(bool p_remapped) {
 	if (remapped_list.in_list() == p_remapped) {
 		return;
@@ -721,6 +736,8 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_local_scene"), &Resource::get_local_scene);
 	ClassDB::bind_method(D_METHOD("setup_local_to_scene"), &Resource::setup_local_to_scene);
 	ClassDB::bind_method(D_METHOD("reset_state"), &Resource::reset_state);
+	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Resource::set_editor_description);
+	ClassDB::bind_method(D_METHOD("get_editor_description"), &Resource::get_editor_description);
 
 	ClassDB::bind_method(D_METHOD("set_id_for_path", "path", "id"), &Resource::set_id_for_path);
 	ClassDB::bind_method(D_METHOD("get_id_for_path", "path"), &Resource::get_id_for_path);
@@ -750,6 +767,9 @@ void Resource::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_scene_unique_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_unique_id", "get_scene_unique_id");
+
+	ADD_GROUP("Resource", "");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_EDITOR), "set_editor_description", "get_editor_description");
 
 	GDVIRTUAL_BIND(_setup_local_to_scene);
 	GDVIRTUAL_BIND(_get_rid);

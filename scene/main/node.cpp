@@ -2616,16 +2616,19 @@ String Node::get_scene_file_path() const {
 
 void Node::set_editor_description(const String &p_editor_description) {
 	ERR_THREAD_GUARD
-	if (data.editor_description == p_editor_description) {
+	if (p_editor_description == get_editor_description()) {
 		return;
 	}
-
-	data.editor_description = p_editor_description;
+	if (p_editor_description.is_empty()) {
+		remove_meta("_editor_description_");
+	} else {
+		set_meta("_editor_description_", p_editor_description);
+	}
 	emit_signal(SNAME("editor_description_changed"), this);
 }
 
 String Node::get_editor_description() const {
-	return data.editor_description;
+	return get_meta("_editor_description_", String());
 }
 
 void Node::set_editable_instance(Node *p_node, bool p_editable) {
@@ -4010,7 +4013,7 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_auto_translate_mode", "get_auto_translate_mode");
 
 	ADD_GROUP("Editor Description", "editor_");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT), "set_editor_description", "get_editor_description");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_EDITOR), "set_editor_description", "get_editor_description");
 
 	GDVIRTUAL_BIND(_process, "delta");
 	GDVIRTUAL_BIND(_physics_process, "delta");

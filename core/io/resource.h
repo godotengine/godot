@@ -176,6 +176,9 @@ public:
 
 #endif
 
+	void set_editor_description(const String &p_editor_description);
+	String get_editor_description() const;
+
 	void set_as_translation_remapped(bool p_remapped);
 
 	virtual RID get_rid() const; // Some resources may offer conversion to RID.
