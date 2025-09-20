@@ -1778,23 +1778,24 @@ void TileMapLayer::_update_cells_callback(bool p_force_cleanup) {
 	GDVIRTUAL_CALL(_update_cells, dirty_cell_positions, forced_cleanup);
 }
 
-TileSet::TerrainsPattern TileMapLayer::_get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const RBSet<TerrainConstraint> &p_constraints, TileSet::TerrainsPattern p_current_pattern) const {
+TileSet::TerrainsPattern TileMapLayer::_get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const HashSet<TerrainConstraint, TerrainConstraint> &p_constraints, TileSet::TerrainsPattern p_current_pattern, const RBSet<TileSet::TerrainsPattern> &p_pattern_set) const {
 	if (tile_set.is_null()) {
 		return TileSet::TerrainsPattern();
 	}
-	// Returns all tiles compatible with the given constraints.
-	RBMap<TileSet::TerrainsPattern, int> terrain_pattern_score;
-	RBSet<TileSet::TerrainsPattern> pattern_set = tile_set->get_terrains_pattern_set(p_terrain_set);
-	ERR_FAIL_COND_V(pattern_set.is_empty(), TileSet::TerrainsPattern());
-	for (TileSet::TerrainsPattern &terrain_pattern : pattern_set) {
+	ERR_FAIL_COND_V(p_pattern_set.is_empty(), TileSet::TerrainsPattern());
+
+	int min_score = INT32_MAX;
+	TileSet::TerrainsPattern min_score_pattern = p_current_pattern;
+
+	for (const TileSet::TerrainsPattern &terrain_pattern : p_pattern_set) {
 		int score = 0;
 
 		// Check the center bit constraint.
 		TerrainConstraint terrain_constraint = TerrainConstraint(tile_set, p_position, terrain_pattern.get_terrain());
-		const RBSet<TerrainConstraint>::Element *in_set_constraint_element = p_constraints.find(terrain_constraint);
+		HashSet<TerrainConstraint, TerrainConstraint>::Iterator in_set_constraint_element = p_constraints.find(terrain_constraint);
 		if (in_set_constraint_element) {
-			if (in_set_constraint_element->get().get_terrain() != terrain_constraint.get_terrain()) {
-				score += in_set_constraint_element->get().get_priority();
+			if (in_set_constraint_element->get_terrain() != terrain_constraint.get_terrain()) {
+				score += in_set_constraint_element->get_priority();
 			}
 		} else if (p_current_pattern.get_terrain() != terrain_pattern.get_terrain()) {
 			continue; // Ignore a pattern that cannot keep bits without constraints unmodified.
@@ -1809,8 +1810,8 @@ TileSet::TerrainsPattern TileMapLayer::_get_best_terrain_pattern_for_constraints
 				TerrainConstraint terrain_bit_constraint = TerrainConstraint(tile_set, p_position, bit, terrain_pattern.get_terrain_peering_bit(bit));
 				in_set_constraint_element = p_constraints.find(terrain_bit_constraint);
 				if (in_set_constraint_element) {
-					if (in_set_constraint_element->get().get_terrain() != terrain_bit_constraint.get_terrain()) {
-						score += in_set_constraint_element->get().get_priority();
+					if (in_set_constraint_element->get_terrain() != terrain_bit_constraint.get_terrain()) {
+						score += in_set_constraint_element->get_priority();
 					}
 				} else if (p_current_pattern.get_terrain_peering_bit(bit) != terrain_pattern.get_terrain_peering_bit(bit)) {
 					invalid_pattern = true; // Ignore a pattern that cannot keep bits without constraints unmodified.
@@ -1822,29 +1823,22 @@ TileSet::TerrainsPattern TileMapLayer::_get_best_terrain_pattern_for_constraints
 			continue;
 		}
 
-		terrain_pattern_score[terrain_pattern] = score;
-	}
-
-	// Compute the minimum score.
-	TileSet::TerrainsPattern min_score_pattern = p_current_pattern;
-	int min_score = INT32_MAX;
-	for (KeyValue<TileSet::TerrainsPattern, int> E : terrain_pattern_score) {
-		if (E.value < min_score) {
-			min_score_pattern = E.key;
-			min_score = E.value;
+		if (score < min_score) {
+			min_score = score;
+			min_score_pattern = terrain_pattern;
 		}
 	}
 
 	return min_score_pattern;
 }
 
-RBSet<TerrainConstraint> TileMapLayer::_get_terrain_constraints_from_added_pattern(const Vector2i &p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const {
+HashSet<TerrainConstraint, TerrainConstraint> TileMapLayer::_get_terrain_constraints_from_added_pattern(const Vector2i &p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const {
 	if (tile_set.is_null()) {
-		return RBSet<TerrainConstraint>();
+		return HashSet<TerrainConstraint, TerrainConstraint>();
 	}
 
 	// Compute the constraints needed from the surrounding tiles.
-	RBSet<TerrainConstraint> output;
+	HashSet<TerrainConstraint, TerrainConstraint> output;
 	output.insert(TerrainConstraint(tile_set, p_position, p_terrains_pattern.get_terrain()));
 
 	for (uint32_t i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
@@ -1858,15 +1852,15 @@ RBSet<TerrainConstraint> TileMapLayer::_get_terrain_constraints_from_added_patte
 	return output;
 }
 
-RBSet<TerrainConstraint> TileMapLayer::_get_terrain_constraints_from_painted_cells_list(const RBSet<Vector2i> &p_painted, int p_terrain_set, bool p_ignore_empty_terrains) const {
+HashSet<TerrainConstraint, TerrainConstraint> TileMapLayer::_get_terrain_constraints_from_painted_cells_list(const HashSet<Vector2i> &p_painted, int p_terrain_set, bool p_ignore_empty_terrains) const {
 	if (tile_set.is_null()) {
-		return RBSet<TerrainConstraint>();
+		return HashSet<TerrainConstraint, TerrainConstraint>();
 	}
 
-	ERR_FAIL_INDEX_V(p_terrain_set, tile_set->get_terrain_sets_count(), RBSet<TerrainConstraint>());
+	ERR_FAIL_INDEX_V(p_terrain_set, tile_set->get_terrain_sets_count(), {});
 
 	// Build a set of dummy constraints to get the constrained points.
-	RBSet<TerrainConstraint> dummy_constraints;
+	HashSet<TerrainConstraint, TerrainConstraint> dummy_constraints;
 	for (const Vector2i &E : p_painted) {
 		for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) { // Iterates over neighbor bits.
 			TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
@@ -1877,7 +1871,7 @@ RBSet<TerrainConstraint> TileMapLayer::_get_terrain_constraints_from_painted_cel
 	}
 
 	// For each constrained point, we get all overlapping tiles, and select the most adequate terrain for it.
-	RBSet<TerrainConstraint> constraints;
+	HashSet<TerrainConstraint, TerrainConstraint> constraints;
 	for (const TerrainConstraint &E_constraint : dummy_constraints) {
 		HashMap<int, int> terrain_count;
 
@@ -2311,13 +2305,15 @@ Rect2 TileMapLayer::get_rect(bool &r_changed) const {
 	return rect_cache;
 }
 
-HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_constraints(const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> &p_constraints) const {
+HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_constraints(const Vector<Vector2i> &p_to_replace, int p_terrain_set, const HashSet<TerrainConstraint, TerrainConstraint> &p_constraints) const {
 	if (tile_set.is_null()) {
 		return HashMap<Vector2i, TileSet::TerrainsPattern>();
 	}
 
+	RBSet<TileSet::TerrainsPattern> pattern_set = tile_set->get_terrains_pattern_set(p_terrain_set);
+
 	// Copy the constraints set.
-	RBSet<TerrainConstraint> constraints = p_constraints;
+	HashSet<TerrainConstraint, TerrainConstraint> constraints = p_constraints;
 
 	// Output map.
 	HashMap<Vector2i, TileSet::TerrainsPattern> output;
@@ -2340,10 +2336,10 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_constrain
 				}
 			}
 		}
-		TileSet::TerrainsPattern pattern = _get_best_terrain_pattern_for_constraints(p_terrain_set, coords, constraints, current_pattern);
+		TileSet::TerrainsPattern pattern = _get_best_terrain_pattern_for_constraints(p_terrain_set, coords, constraints, current_pattern, pattern_set);
 
 		// Update the constraint set with the new ones.
-		RBSet<TerrainConstraint> new_constraints = _get_terrain_constraints_from_added_pattern(coords, p_terrain_set, pattern);
+		HashSet<TerrainConstraint, TerrainConstraint> new_constraints = _get_terrain_constraints_from_added_pattern(coords, p_terrain_set, pattern);
 		for (const TerrainConstraint &E_constraint : new_constraints) {
 			if (constraints.has(E_constraint)) {
 				constraints.erase(E_constraint);
@@ -2365,8 +2361,8 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_connect(c
 
 	// Build list and set of tiles that can be modified (painted and their surroundings).
 	Vector<Vector2i> can_modify_list;
-	RBSet<Vector2i> can_modify_set;
-	RBSet<Vector2i> painted_set;
+	HashSet<Vector2i> can_modify_set;
+	HashSet<Vector2i> painted_set;
 	for (int i = p_coords_array.size() - 1; i >= 0; i--) {
 		const Vector2i &coords = p_coords_array[i];
 		can_modify_list.push_back(coords);
@@ -2388,7 +2384,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_connect(c
 	}
 
 	// Build a set, out of the possibly modified tiles, of the one with a center bit that is set (or will be) to the painted terrain.
-	RBSet<Vector2i> cells_with_terrain_center_bit;
+	HashSet<Vector2i> cells_with_terrain_center_bit;
 	for (Vector2i coords : can_modify_set) {
 		bool connect = false;
 		if (painted_set.has(coords)) {
@@ -2414,7 +2410,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_connect(c
 		}
 	}
 
-	RBSet<TerrainConstraint> constraints;
+	HashSet<TerrainConstraint, TerrainConstraint> constraints;
 
 	// Add new constraints from the path drawn.
 	for (Vector2i coords : p_coords_array) {
@@ -2488,8 +2484,8 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_path(cons
 
 	// Build list and set of tiles that can be modified (painted and their surroundings).
 	Vector<Vector2i> can_modify_list;
-	RBSet<Vector2i> can_modify_set;
-	RBSet<Vector2i> painted_set;
+	HashSet<Vector2i> can_modify_set;
+	HashSet<Vector2i> painted_set;
 	for (int i = p_coords_array.size() - 1; i >= 0; i--) {
 		const Vector2i &coords = p_coords_array[i];
 		can_modify_list.push_back(coords);
@@ -2510,7 +2506,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_path(cons
 		}
 	}
 
-	RBSet<TerrainConstraint> constraints;
+	HashSet<TerrainConstraint, TerrainConstraint> constraints;
 
 	// Add new constraints from the path drawn.
 	for (Vector2i coords : p_coords_array) {
@@ -2543,8 +2539,8 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_pattern(c
 
 	// Build list and set of tiles that can be modified (painted and their surroundings).
 	Vector<Vector2i> can_modify_list;
-	RBSet<Vector2i> can_modify_set;
-	RBSet<Vector2i> painted_set;
+	HashSet<Vector2i> can_modify_set;
+	HashSet<Vector2i> painted_set;
 	for (int i = p_coords_array.size() - 1; i >= 0; i--) {
 		const Vector2i &coords = p_coords_array[i];
 		can_modify_list.push_back(coords);
@@ -2566,12 +2562,12 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_pattern(c
 	}
 
 	// Add constraint by the new ones.
-	RBSet<TerrainConstraint> constraints;
+	HashSet<TerrainConstraint, TerrainConstraint> constraints;
 
 	// Add new constraints from the path drawn.
 	for (Vector2i coords : p_coords_array) {
 		// Constraints on the center bit.
-		RBSet<TerrainConstraint> added_constraints = _get_terrain_constraints_from_added_pattern(coords, p_terrain_set, p_terrains_pattern);
+		HashSet<TerrainConstraint, TerrainConstraint> added_constraints = _get_terrain_constraints_from_added_pattern(coords, p_terrain_set, p_terrains_pattern);
 		for (TerrainConstraint c : added_constraints) {
 			c.set_priority(10);
 			constraints.insert(c);
