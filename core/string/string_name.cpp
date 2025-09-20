@@ -201,61 +201,8 @@ StringName::StringName(const StringName &p_name) {
 	}
 }
 
-StringName::StringName(const char *p_name, bool p_static) {
-	_data = nullptr;
-
-	ERR_FAIL_COND(!configured);
-
-	if (!p_name || p_name[0] == 0) {
-		return; //empty, ignore
-	}
-
-	const uint32_t hash = String::hash(p_name);
-	const uint32_t idx = hash & Table::TABLE_MASK;
-
-	MutexLock lock(Table::mutex);
-	_data = Table::table[idx];
-
-	while (_data) {
-		// compare hash first
-		if (_data->hash == hash && _data->name == p_name) {
-			break;
-		}
-		_data = _data->next;
-	}
-
-	if (_data && _data->refcount.ref()) {
-		// exists
-		if (p_static) {
-			_data->static_count.increment();
-		}
-#ifdef DEBUG_ENABLED
-		if (unlikely(debug_stringname)) {
-			_data->debug_references++;
-		}
-#endif
-		return;
-	}
-
-	_data = Table::allocator.alloc();
-	_data->name = p_name;
-	_data->refcount.init();
-	_data->static_count.set(p_static ? 1 : 0);
-	_data->hash = hash;
-	_data->next = Table::table[idx];
-	_data->prev = nullptr;
-
-#ifdef DEBUG_ENABLED
-	if (unlikely(debug_stringname)) {
-		// Keep in memory, force static.
-		_data->refcount.ref();
-		_data->static_count.increment();
-	}
-#endif
-	if (Table::table[idx]) {
-		Table::table[idx]->prev = _data;
-	}
-	Table::table[idx] = _data;
+StringName::StringName(const char *p_name, bool p_static) :
+		StringName(String(p_name), p_static) {
 }
 
 StringName::StringName(const String &p_name, bool p_static) {

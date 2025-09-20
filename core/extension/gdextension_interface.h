@@ -1968,6 +1968,7 @@ typedef GDExtensionInt (*GDExtensionInterfaceStringResize)(GDExtensionStringPtr 
 /**
  * @name string_name_new_with_latin1_chars
  * @since 4.2
+ * @deprecated in Godot 4.6. Construct StringName from String instead.
  *
  * Creates a StringName from a Latin-1 encoded C string.
  *
@@ -1987,6 +1988,7 @@ typedef void (*GDExtensionInterfaceStringNameNewWithLatin1Chars)(GDExtensionUnin
 /**
  * @name string_name_new_with_utf8_chars
  * @since 4.2
+ * @deprecated in Godot 4.6. Construct StringName from String instead.
  *
  * Creates a StringName from a UTF-8 encoded C string.
  *
@@ -1998,6 +2000,7 @@ typedef void (*GDExtensionInterfaceStringNameNewWithUtf8Chars)(GDExtensionUninit
 /**
  * @name string_name_new_with_utf8_chars_and_len
  * @since 4.2
+ * @deprecated in Godot 4.6. Construct StringName from String instead.
  *
  * Creates a StringName from a UTF-8 encoded string with a given number of characters.
  *
