@@ -158,3 +158,8 @@ def configure(env: "SConsEnvironment"):
     if env["opengl3"]:
         print_warning("The visionOS platform does not support the OpenGL rendering driver")
         env["opengl3"] = False
+
+    if env["sdl"]:
+        env.Prepend(CPPEXTPATH=["#thirdparty/sdl/include"])
+        env.Append(CPPDEFINES=["SDL_ENABLED"])
+        # env.Append(LINKFLAGS=["-framework", "ForceFeedback"])

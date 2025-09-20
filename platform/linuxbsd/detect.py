@@ -398,6 +398,7 @@ def configure(env: "SConsEnvironment"):
 
     if env["sdl"]:
         if env["builtin_sdl"]:
+            env.Prepend(CPPEXTPATH=["#thirdparty/sdl/include"])
             env.Append(CPPDEFINES=["SDL_ENABLED"])
         elif os.system("pkg-config --exists sdl3") == 0:  # 0 means found
             env.ParseConfig("pkg-config sdl3 --cflags --libs")
