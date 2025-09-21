@@ -67,6 +67,8 @@ public:
 };
 
 class RenderingDeviceCommons : public Object {
+	GDSOFTCLASS(RenderingDeviceCommons, Object);
+
 	////////////////////////////////////////////
 	// PUBLIC STUFF
 	// Exposed by RenderingDevice, and shared

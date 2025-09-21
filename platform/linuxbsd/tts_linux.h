@@ -45,6 +45,7 @@
 #endif
 
 class TTS_Linux : public Object {
+	GDSOFTCLASS(TTS_Linux, Object);
 	_THREAD_SAFE_CLASS_
 
 	List<DisplayServer::TTSUtterance> queue;

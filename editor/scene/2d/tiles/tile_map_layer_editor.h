@@ -49,6 +49,8 @@ class TileMapLayer;
 class TileMapLayerEditor;
 
 class TileMapLayerSubEditorPlugin : public Object {
+	GDSOFTCLASS(TileMapLayerSubEditorPlugin, Object);
+
 protected:
 	ObjectID edited_tile_map_layer_id;
 	TileMapLayer *_get_edited_layer() const;
