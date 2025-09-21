@@ -335,11 +335,14 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 				data_y.resize(y_size);
 				memcpy(data_y.ptrw(), data, y_size);
 			} else {
-				// ColorOS stride alignment present - use in-place processing
-				data_y.resize(len);
-				memcpy(data_y.ptrw(), data, len);
-				compact_stride_inplace(data_y.ptrw(), width, height, y_row_stride);
+				// Stride alignment present - use scratch buffer to avoid realloc
+				if (feed->scratch_y.size() < len) {
+					feed->scratch_y.resize(len);
+				}
+				memcpy(feed->scratch_y.ptrw(), data, len);
+				CameraFeedAndroid::compact_stride_inplace(feed->scratch_y.ptrw(), width, height, y_row_stride);
 				data_y.resize(y_size);
+				memcpy(data_y.ptrw(), feed->scratch_y.ptr(), y_size);
 			}
 
 			// Handle UV plane
@@ -374,13 +377,16 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 				data_uv.resize(uv_size);
 				memcpy(data_uv.ptrw(), data, uv_size);
 			} else if (pixel_stride == 2) {
-				// Semiplanar format with ColorOS stride alignment
-				data_uv.resize(len);
-				memcpy(data_uv.ptrw(), data, len);
+				// Semiplanar format with stride alignment - use scratch buffer
+				if (feed->scratch_uv.size() < len) {
+					feed->scratch_uv.resize(len);
+				}
+				memcpy(feed->scratch_uv.ptrw(), data, len);
 				if (row_stride != uv_width * 2) {
-					compact_stride_inplace(data_uv.ptrw(), uv_width * 2, uv_height, row_stride);
+					CameraFeedAndroid::compact_stride_inplace(feed->scratch_uv.ptrw(), uv_width * 2, uv_height, row_stride);
 				}
 				data_uv.resize(uv_size);
+				memcpy(data_uv.ptrw(), feed->scratch_uv.ptr(), uv_size);
 			} else {
 				// Planar format - interleave U and V safely (no overlap)
 				if (data_v && len_v > 0) {

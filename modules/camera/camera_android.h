@@ -51,6 +51,9 @@ private:
 	Ref<Image> image_uv;
 	Vector<uint8_t> data_y;
 	Vector<uint8_t> data_uv;
+	// Scratch buffers to avoid per-frame reallocations when handling padded strides.
+	Vector<uint8_t> scratch_y;
+	Vector<uint8_t> scratch_uv;
 
 	ACameraManager *manager = nullptr;
 	ACameraMetadata *metadata = nullptr;
