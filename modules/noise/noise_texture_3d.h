@@ -40,8 +40,6 @@ class NoiseTexture3D : public Texture3D {
 	GDCLASS(NoiseTexture3D, Texture3D);
 
 private:
-	Thread noise_thread;
-
 	bool first_time = true;
 	bool update_queued = false;
 	bool regen_queued = false;
@@ -62,13 +60,10 @@ private:
 
 	Image::Format format = Image::FORMAT_L8;
 
-	void _thread_done(const TypedArray<Image> &p_data);
-	static void _thread_function(void *p_ud);
+	void _bake_finished();
 
 	void _queue_update();
-	TypedArray<Image> _generate_texture();
 	void _update_texture();
-	void _set_texture_data(const TypedArray<Image> &p_data);
 
 	Ref<Image> _modulate_with_gradient(Ref<Image> p_image, Ref<Gradient> p_gradient);
 
@@ -106,6 +101,9 @@ public:
 	virtual bool has_mipmaps() const override;
 
 	virtual RID get_rid() const override;
+
+	virtual Vector<Ref<Image>> bake_noise_data();
+	void set_data(const Vector<Ref<Image>> &p_data);
 
 	virtual Vector<Ref<Image>> get_data() const override;
 	virtual Image::Format get_format() const override;

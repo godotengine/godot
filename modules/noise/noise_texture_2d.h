@@ -42,8 +42,6 @@ class NoiseTexture2D : public Texture2D {
 private:
 	Ref<Image> image;
 
-	Thread noise_thread;
-
 	bool first_time = true;
 	bool update_queued = false;
 	bool regen_queued = false;
@@ -64,13 +62,10 @@ private:
 	Ref<Gradient> color_ramp;
 	Ref<Noise> noise;
 
-	void _thread_done(const Ref<Image> &p_image);
-	static void _thread_function(void *p_ud);
+	void _bake_finished();
 
 	void _queue_update();
-	Ref<Image> _generate_texture();
 	void _update_texture();
-	void _set_texture_image(const Ref<Image> &p_image);
 
 	Ref<Image> _modulate_with_gradient(Ref<Image> p_image, Ref<Gradient> p_gradient);
 
@@ -117,6 +112,9 @@ public:
 
 	virtual RID get_rid() const override;
 	virtual bool has_alpha() const override { return false; }
+
+	virtual Ref<Image> bake_noise_data();
+	void set_data(const Ref<Image> &p_data);
 
 	virtual Ref<Image> get_image() const override;
 

@@ -31,6 +31,7 @@
 #include "noise_texture_2d.h"
 
 #include "noise.h"
+#include "noise_texture_generator.h"
 
 #include "servers/rendering/rendering_server.h"
 
@@ -44,9 +45,6 @@ NoiseTexture2D::~NoiseTexture2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (texture.is_valid()) {
 		RS::get_singleton()->free_rid(texture);
-	}
-	if (noise_thread.is_started()) {
-		noise_thread.wait_to_finish();
 	}
 }
 
@@ -115,32 +113,11 @@ void NoiseTexture2D::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-void NoiseTexture2D::_set_texture_image(const Ref<Image> &p_image) {
-	image = p_image;
-	if (image.is_valid()) {
-		if (texture.is_valid()) {
-			RID new_texture = RS::get_singleton()->texture_2d_create(p_image);
-			RS::get_singleton()->texture_replace(texture, new_texture);
-		} else {
-			texture = RS::get_singleton()->texture_2d_create(p_image);
-		}
-		RS::get_singleton()->texture_set_path(texture, get_path());
-	}
-	emit_changed();
-}
-
-void NoiseTexture2D::_thread_done(const Ref<Image> &p_image) {
-	_set_texture_image(p_image);
-	noise_thread.wait_to_finish();
+void NoiseTexture2D::_bake_finished() {
 	if (regen_queued) {
-		noise_thread.start(_thread_function, this);
+		NoiseTextureGenerator::get_singleton()->bake_noise_texture_2d_async(this, callable_mp(this, &NoiseTexture2D::_bake_finished));
 		regen_queued = false;
 	}
-}
-
-void NoiseTexture2D::_thread_function(void *p_ud) {
-	NoiseTexture2D *tex = static_cast<NoiseTexture2D *>(p_ud);
-	callable_mp(tex, &NoiseTexture2D::_thread_done).call_deferred(tex->_generate_texture());
 }
 
 void NoiseTexture2D::_queue_update() {
@@ -152,8 +129,7 @@ void NoiseTexture2D::_queue_update() {
 	callable_mp(this, &NoiseTexture2D::_update_texture).call_deferred();
 }
 
-Ref<Image> NoiseTexture2D::_generate_texture() {
-	// Prevent memdelete due to unref() on other thread.
+Ref<Image> NoiseTexture2D::bake_noise_data() {
 	Ref<Noise> ref_noise = noise;
 
 	if (ref_noise.is_null()) {
@@ -180,6 +156,20 @@ Ref<Image> NoiseTexture2D::_generate_texture() {
 	return new_image;
 }
 
+void NoiseTexture2D::set_data(const Ref<Image> &p_data) {
+	image = p_data;
+	if (image.is_valid()) {
+		if (texture.is_valid()) {
+			RID new_texture = RS::get_singleton()->texture_2d_create(image);
+			RS::get_singleton()->texture_replace(texture, new_texture);
+		} else {
+			texture = RS::get_singleton()->texture_2d_create(image);
+		}
+		RS::get_singleton()->texture_set_path(texture, get_path());
+	}
+	emit_changed();
+}
+
 Ref<Image> NoiseTexture2D::_modulate_with_gradient(Ref<Image> p_image, Ref<Gradient> p_gradient) {
 	int width = p_image->get_width();
 	int height = p_image->get_height();
@@ -198,25 +188,16 @@ Ref<Image> NoiseTexture2D::_modulate_with_gradient(Ref<Image> p_image, Ref<Gradi
 }
 
 void NoiseTexture2D::_update_texture() {
-	bool use_thread = true;
-#ifndef THREADS_ENABLED
-	use_thread = false;
-#endif
 	if (first_time) {
-		use_thread = false;
 		first_time = false;
-	}
-	if (use_thread) {
-		if (!noise_thread.is_started()) {
-			noise_thread.start(_thread_function, this);
+		NoiseTextureGenerator::get_singleton()->bake_noise_texture_2d(this);
+	} else {
+		if (!NoiseTextureGenerator::get_singleton()->is_noise_texture_2d_baking(this)) {
+			NoiseTextureGenerator::get_singleton()->bake_noise_texture_2d_async(this, callable_mp(this, &NoiseTexture2D::_bake_finished));
 			regen_queued = false;
 		} else {
 			regen_queued = true;
 		}
-
-	} else {
-		Ref<Image> new_image = _generate_texture();
-		_set_texture_image(new_image);
 	}
 	update_queued = false;
 }
