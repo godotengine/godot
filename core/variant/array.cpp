@@ -301,14 +301,21 @@ void Array::append_array(const Array &p_array) {
 
 Error Array::resize(int p_new_size) {
 	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
-	Variant::Type &variant_type = _p->typed.type;
-	int old_size = _p->array.size();
-	Error err = _p->array.resize_initialized(p_new_size);
-	if (!err && variant_type != Variant::NIL && variant_type != Variant::OBJECT) {
-		Variant *write = _p->array.ptrw();
-		for (int i = old_size; i < p_new_size; i++) {
-			VariantInternal::initialize(&write[i], variant_type);
-		}
+	const int old_size = _p->array.size();
+
+	const Error err = _p->array.resize_initialized(p_new_size);
+	if (err || p_new_size < old_size) {
+		return err;
+	}
+
+	const Variant::Type &variant_type = _p->typed.type;
+	if (variant_type == Variant::NIL || variant_type == Variant::OBJECT) {
+		return err;
+	}
+
+	Variant *write = _p->array.ptrw();
+	for (int i = old_size; i < p_new_size; i++) {
+		VariantInternal::initialize(&write[i], variant_type);
 	}
 	return err;
 }
