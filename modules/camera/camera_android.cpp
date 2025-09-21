@@ -281,6 +281,24 @@ CameraFeed::FeedFormat CameraFeedAndroid::get_format() const {
 	return selected_format == -1 ? feed_format : formats[selected_format];
 }
 
+// In-place stride compaction (handles 16-byte alignment seen)
+void CameraFeedAndroid::compact_stride_inplace(uint8_t *data, size_t width, int height, size_t stride) {
+	if (stride == width) {
+		return; // No padding, nothing to do
+	}
+
+	uint8_t *src_row = data + stride; // Start from second row
+	uint8_t *dst_row = data + width; // Target position for second row
+
+	// Process rows from second to last, moving data forward
+	for (int y = 1; y < height; y++) {
+		// Use memmove to handle potential overlap safely
+		memmove(dst_row, src_row, width);
+		src_row += stride;
+		dst_row += width;
+	}
+}
+
 void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 	CameraFeedAndroid *feed = static_cast<CameraFeedAndroid *>(context);
 	Vector<uint8_t> data_y = feed->data_y;
@@ -302,7 +320,7 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 	int height = format.height;
 	switch (format.pixel_format) {
 		case AIMAGE_FORMAT_YUV_420_888: {
-			// Handle Y plane
+			// Handle Y plane with optimized processing
 			int32_t y_row_stride;
 			AImage_getPlaneRowStride(image, 0, &y_row_stride);
 			AImage_getPlaneData(image, 0, &data, &len);
@@ -311,22 +329,17 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 			}
 
 			int64_t y_size = Image::get_image_data_size(width, height, Image::FORMAT_R8, false);
-			if (data_y.size() != y_size) {
-				data_y.resize(y_size);
-			}
 
 			if (y_row_stride == width && len == y_size) {
-				// No padding, direct copy
+				// No padding, direct copy (fastest path)
+				data_y.resize(y_size);
 				memcpy(data_y.ptrw(), data, y_size);
 			} else {
-				// Handle row stride alignment
-				uint8_t *src = data;
-				uint8_t *dst = data_y.ptrw();
-				for (int row = 0; row < height; row++) {
-					memcpy(dst, src, width);
-					src += y_row_stride;
-					dst += width;
-				}
+				// ColorOS stride alignment present - use in-place processing
+				data_y.resize(len);
+				memcpy(data_y.ptrw(), data, len);
+				compact_stride_inplace(data_y.ptrw(), width, height, y_row_stride);
+				data_y.resize(y_size);
 			}
 
 			// Handle UV plane
@@ -338,9 +351,6 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 			}
 
 			int64_t uv_size = Image::get_image_data_size(width / 2, height / 2, Image::FORMAT_RG8, false);
-			if (data_uv.size() != uv_size) {
-				data_uv.resize(uv_size);
-			}
 
 			int uv_width = width / 2;
 			int uv_height = height / 2;
@@ -360,35 +370,50 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 			}
 
 			if (pixel_stride == 2 && row_stride == uv_width * 2 && len == uv_size) {
-				// Interleaved UV without padding, direct copy
+				// Semiplanar format without padding - direct copy (fastest path)
+				data_uv.resize(uv_size);
 				memcpy(data_uv.ptrw(), data, uv_size);
+			} else if (pixel_stride == 2) {
+				// Semiplanar format with ColorOS stride alignment
+				data_uv.resize(len);
+				memcpy(data_uv.ptrw(), data, len);
+				if (row_stride != uv_width * 2) {
+					compact_stride_inplace(data_uv.ptrw(), uv_width * 2, uv_height, row_stride);
+				}
+				data_uv.resize(uv_size);
 			} else {
-				// Handle pixel stride and row stride alignment
-				uint8_t *dst = data_uv.ptrw();
-				switch (pixel_stride) {
-					case 2: {
-						uint8_t *src = data;
-						for (int row = 0; row < uv_height; row++) {
-							memcpy(dst, src, uv_width * 2);
-							dst += uv_width * 2;
-							src += row_stride;
+				// Planar format - need to interleave U and V planes
+				if (data_v && len_v > 0) {
+					// Calculate buffer size needed for both U and V data
+					int max_uv_len = MAX(len, len_v);
+					data_uv.resize(uv_size + max_uv_len); // Temporary larger buffer
+
+					// Copy U data to first part of buffer
+					memcpy(data_uv.ptrw(), data, len);
+					// Copy V data to second part of buffer
+					memcpy(data_uv.ptrw() + max_uv_len, data_v, len_v);
+
+					// Interleave U and V in-place at the beginning of buffer
+					uint8_t *u_src = data_uv.ptrw();
+					uint8_t *v_src = data_uv.ptrw() + max_uv_len;
+					uint8_t *dst = data_uv.ptrw();
+
+					for (int y = 0; y < uv_height; y++) {
+						// Process row backwards to avoid overwriting source data
+						for (int x = uv_width - 1; x >= 0; x--) {
+							int src_offset = y * row_stride + x * pixel_stride;
+							int v_src_offset = y * v_row_stride + x * v_pixel_stride;
+							int dst_offset = y * uv_width * 2 + x * 2;
+
+							dst[dst_offset] = u_src[src_offset]; // U component
+							dst[dst_offset + 1] = v_src[v_src_offset]; // V component
 						}
-						break;
 					}
-					default: {
-						uint8_t *src_u = data;
-						uint8_t *src_v = data_v;
-						for (int row = 0; row < uv_height; row++) {
-							for (int col = 0; col < uv_width; col++) {
-								dst[col * 2] = src_u[col * pixel_stride];
-								dst[col * 2 + 1] = src_v[col * v_pixel_stride];
-							}
-							dst += uv_width * 2;
-							src_u += row_stride;
-							src_v += v_row_stride;
-						}
-						break;
-					}
+
+					data_uv.resize(uv_size); // Final resize to compact size
+				} else {
+					data_uv.resize(uv_size);
+					memset(data_uv.ptrw(), 128, uv_size); // Fill with neutral chroma
 				}
 			}
 
