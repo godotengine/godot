@@ -241,12 +241,14 @@ public:
 		if (_keys == nullptr || _size == 0) {
 			return;
 		}
+
 		uint32_t capacity = hash_table_size_primes[_capacity_idx];
-		for (uint32_t i = 0; i < capacity; i++) {
-			_hashes[i] = EMPTY_HASH;
-		}
-		for (uint32_t i = 0; i < _size; i++) {
-			_keys[i].~TKey();
+		memset(_hashes, EMPTY_HASH, sizeof(EMPTY_HASH) * capacity);
+
+		if constexpr (!std::is_trivially_destructible_v<TKey>) {
+			for (uint32_t i = 0; i < _size; i++) {
+				_keys[i].~TKey();
+			}
 		}
 
 		_size = 0;
