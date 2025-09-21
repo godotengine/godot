@@ -836,36 +836,6 @@ void DisplayServerWeb::_window_blur_callback() {
 	Input::get_singleton()->release_pressed_events();
 }
 
-// Gamepad
-void DisplayServerWeb::gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid) {
-	String id = p_id;
-	String guid = p_guid;
-
-#ifdef PROXY_TO_PTHREAD_ENABLED
-	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_gamepad_callback).call_deferred(p_index, p_connected, id, guid);
-		return;
-	}
-#endif
-
-	_gamepad_callback(p_index, p_connected, id, guid);
-}
-
-void DisplayServerWeb::_gamepad_callback(int p_index, int p_connected, const String &p_id, const String &p_guid) {
-	if (p_connected) {
-		DisplayServerWeb::get_singleton()->gamepad_count += 1;
-	} else {
-		DisplayServerWeb::get_singleton()->gamepad_count -= 1;
-	}
-
-	Input *input = Input::get_singleton();
-	if (p_connected) {
-		input->joy_connection_changed(p_index, true, p_id, p_guid);
-	} else {
-		input->joy_connection_changed(p_index, false, "");
-	}
-}
-
 // IME.
 void DisplayServerWeb::ime_callback(int p_type, const char *p_text) {
 	String text = String::utf8(p_text);
@@ -961,36 +931,6 @@ Point2i DisplayServerWeb::ime_get_selection() const {
 
 String DisplayServerWeb::ime_get_text() const {
 	return ime_text;
-}
-
-void DisplayServerWeb::process_joypads() {
-	Input *input = Input::get_singleton();
-	int32_t pads = godot_js_input_gamepad_sample_count();
-	int32_t s_btns_num = 0;
-	int32_t s_axes_num = 0;
-	int32_t s_standard = 0;
-	float s_btns[16];
-	float s_axes[10];
-	for (int idx = 0; idx < pads; idx++) {
-		int err = godot_js_input_gamepad_sample_get(idx, s_btns, &s_btns_num, s_axes, &s_axes_num, &s_standard);
-		if (err) {
-			continue;
-		}
-		for (int b = 0; b < s_btns_num; b++) {
-			// Buttons 6 and 7 in the standard mapping need to be
-			// axis to be handled as JoyAxis::TRIGGER by Godot.
-			if (s_standard && (b == 6)) {
-				input->joy_axis(idx, JoyAxis::TRIGGER_LEFT, s_btns[b]);
-			} else if (s_standard && (b == 7)) {
-				input->joy_axis(idx, JoyAxis::TRIGGER_RIGHT, s_btns[b]);
-			} else {
-				input->joy_button(idx, (JoyButton)b, s_btns[b]);
-			}
-		}
-		for (int a = 0; a < s_axes_num; a++) {
-			input->joy_axis(idx, (JoyAxis)a, s_axes[a]);
-		}
-	}
 }
 
 Vector<String> DisplayServerWeb::get_rendering_drivers_func() {
@@ -1161,7 +1101,6 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 	godot_js_input_key_cb(&DisplayServerWeb::key_callback, key_event.code, key_event.key);
 	godot_js_input_paste_cb(&DisplayServerWeb::update_clipboard_callback);
 	godot_js_input_drop_files_cb(&DisplayServerWeb::drop_files_js_callback);
-	godot_js_input_gamepad_cb(&DisplayServerWeb::gamepad_callback);
 	godot_js_set_ime_cb(&DisplayServerWeb::ime_callback, &DisplayServerWeb::key_callback, key_event.code, key_event.key);
 
 	// JS Display interface (js/libs/library_godot_display.js)
@@ -1461,12 +1400,6 @@ DisplayServer::VSyncMode DisplayServerWeb::window_get_vsync_mode(WindowID p_vsyn
 void DisplayServerWeb::process_events() {
 	process_keys();
 	Input::get_singleton()->flush_buffered_events();
-
-	if (gamepad_count > 0) {
-		if (godot_js_input_gamepad_sample() == OK) {
-			process_joypads();
-		}
-	}
 }
 
 void DisplayServerWeb::process_keys() {

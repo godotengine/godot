@@ -46,29 +46,30 @@ cp -v io/SDL_iostream*.{c,h} $target/io
 
 # Platform specific
 
+mkdir $target/android-files/org/godotengine/godot/input
+cp -rv ../android-project/app/src/main/java/org/libsdl/app/{HID*.java,SDL.java,SDLAudioManager.java,SDLControllerManager.java} $target/android-files/org/godotengine/godot/input
+
 mkdir $target/core
-cp -rv core/{linux,unix,windows} $target/core
+cp -rv core/{android,linux,unix,windows} $target/core
 rm -f $target/core/windows/version.rc
 
 mkdir $target/haptic
-cp -rv haptic/{*.{c,h},darwin,linux,windows} $target/haptic
+cp -rv haptic/{*.{c,h},android,darwin,dummy,linux,windows} $target/haptic
 
 mkdir $target/joystick
-cp -rv joystick/{*.{c,h},apple,darwin,hidapi,linux,windows} $target/joystick
+cp -rv joystick/{*.{c,h},android,apple,darwin,emscripten,hidapi,linux,windows} $target/joystick
 
 mkdir $target/loadso
-cp -rv loadso/dlopen $target/loadso
+cp -rv loadso/{dlopen,dummy} $target/loadso
 
 mkdir $target/sensor
 cp -rv sensor/{*.{c,h},dummy} $target/sensor
 
-mkdir $target/thread
-cp -rv thread/{*.{c,h},pthread,windows} $target/thread
 # Despite being 'generic', syssem.c is included in the Unix driver for macOS,
 # and syscond/sysrwlock are used by the Windows driver.
 # systhread_c.h is included by all these, but we should NOT compile the matching .c file.
-mkdir $target/thread/generic
-cp -v thread/generic/SDL_{syssem.c,{syscond,sysrwlock}*.{c,h},systhread_c.h} $target/thread/generic
+mkdir $target/thread
+cp -rv thread/{*.{c,h},generic,pthread,windows} $target/thread
 
 mkdir $target/timer
 cp -rv timer/{*.{c,h},unix,windows} $target/timer
@@ -77,7 +78,7 @@ cp -rv timer/{*.{c,h},unix,windows} $target/timer
 
 mkdir -p $target/hidapi
 cp -v hidapi/{*.{c,h},AUTHORS.txt,LICENSE.txt,LICENSE-bsd.txt,VERSION} $target/hidapi
-for dir in hidapi linux mac windows; do
+for dir in android hidapi linux mac windows; do
   mkdir $target/hidapi/$dir
   cp -v hidapi/$dir/*.{c,h} $target/hidapi/$dir
 done

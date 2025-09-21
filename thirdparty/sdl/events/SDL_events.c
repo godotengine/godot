@@ -36,7 +36,7 @@
 
 #ifdef SDL_PLATFORM_ANDROID
 #include "../core/android/SDL_android.h"
-#include "../video/android/SDL_androidevents.h"
+//#include "../video/android/SDL_androidevents.h"
 #endif
 
 // An arbitrary limit so we don't have unbounded growth
@@ -1067,7 +1067,7 @@ static void SDL_CutEvent(SDL_EventEntry *entry)
 static void SDL_SendWakeupEvent(void)
 {
 #ifdef SDL_PLATFORM_ANDROID
-    Android_SendLifecycleEvent(SDL_ANDROID_LIFECYCLE_WAKE);
+    //Android_SendLifecycleEvent(SDL_ANDROID_LIFECYCLE_WAKE);
 #endif
 }
 
@@ -1425,7 +1425,7 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
 
 #ifdef SDL_PLATFORM_ANDROID
     // Android event processing is independent of the video subsystem
-    Android_PumpEvents(0);
+    //Android_PumpEvents(0);
 #endif
 
     SDL_PumpEventMaintenance();
@@ -1542,7 +1542,7 @@ bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
             }
             delay = (expiration - now);
         }
-        Android_PumpEvents(delay);
+        //Android_PumpEvents(delay);
     }
 #else
     for (;;) {
@@ -1793,7 +1793,7 @@ void SDL_SendSystemThemeChangedEvent(void)
 bool SDL_InitEvents(void)
 {
 #ifdef SDL_PLATFORM_ANDROID
-    Android_InitEvents();
+    //Android_InitEvents();
 #endif
 #ifndef SDL_JOYSTICK_DISABLED
     SDL_AddHintCallback(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_AutoUpdateJoysticksChanged, NULL);
@@ -1828,6 +1828,6 @@ void SDL_QuitEvents(void)
     SDL_RemoveHintCallback(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_AutoUpdateSensorsChanged, NULL);
 #endif
 #ifdef SDL_PLATFORM_ANDROID
-    Android_QuitEvents();
+    //Android_QuitEvents();
 #endif
 }

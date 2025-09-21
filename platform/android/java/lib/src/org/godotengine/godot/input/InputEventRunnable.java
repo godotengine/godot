@@ -108,10 +108,6 @@ final class InputEventRunnable implements Runnable {
 		TOUCH,
 		MAGNIFY,
 		PAN,
-		JOYSTICK_BUTTON,
-		JOYSTICK_AXIS,
-		JOYSTICK_HAT,
-		JOYSTICK_CONNECTION_CHANGED,
 		KEY,
 		SENSOR
 	}
@@ -188,48 +184,6 @@ final class InputEventRunnable implements Runnable {
 		this.eventDeltaY = deltaY;
 	}
 
-	// common joystick field
-	private int joystickDevice;
-
-	// Joystick button event fields and setter
-	private int button;
-	void setJoystickButtonEvent(int device, int button, boolean pressed) {
-		this.currentEventType = EventType.JOYSTICK_BUTTON;
-		this.joystickDevice = device;
-		this.button = button;
-		this.eventPressed = pressed;
-	}
-
-	// Joystick axis event fields and setter
-	private int axis;
-	private float value;
-	void setJoystickAxisEvent(int device, int axis, float value) {
-		this.currentEventType = EventType.JOYSTICK_AXIS;
-		this.joystickDevice = device;
-		this.axis = axis;
-		this.value = value;
-	}
-
-	// Joystick hat event fields and setter
-	private int hatX;
-	private int hatY;
-	void setJoystickHatEvent(int device, int hatX, int hatY) {
-		this.currentEventType = EventType.JOYSTICK_HAT;
-		this.joystickDevice = device;
-		this.hatX = hatX;
-		this.hatY = hatY;
-	}
-
-	// Joystick connection changed event fields and setter
-	private boolean connected;
-	private String joystickName;
-	void setJoystickConnectionChangedEvent(int device, boolean connected, String name) {
-		this.currentEventType = EventType.JOYSTICK_CONNECTION_CHANGED;
-		this.joystickDevice = device;
-		this.connected = connected;
-		this.joystickName = name;
-	}
-
 	// Key event fields and setter
 	private int physicalKeycode;
 	private int unicode;
@@ -296,22 +250,6 @@ final class InputEventRunnable implements Runnable {
 
 				case PAN:
 					GodotLib.pan(eventX, eventY, eventDeltaX, eventDeltaY);
-					break;
-
-				case JOYSTICK_BUTTON:
-					GodotLib.joybutton(joystickDevice, button, eventPressed);
-					break;
-
-				case JOYSTICK_AXIS:
-					GodotLib.joyaxis(joystickDevice, axis, value);
-					break;
-
-				case JOYSTICK_HAT:
-					GodotLib.joyhat(joystickDevice, hatX, hatY);
-					break;
-
-				case JOYSTICK_CONNECTION_CHANGED:
-					GodotLib.joyconnectionchanged(joystickDevice, connected, joystickName);
 					break;
 
 				case KEY:

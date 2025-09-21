@@ -67,7 +67,6 @@ private:
 	jmethodID _get_ca_certificates = nullptr;
 	jmethodID _init_input_devices = nullptr;
 	jmethodID _vibrate = nullptr;
-	jmethodID _get_input_fallback_mapping = nullptr;
 	jmethodID _on_godot_setup_completed = nullptr;
 	jmethodID _on_godot_main_loop_started = nullptr;
 	jmethodID _on_godot_terminating = nullptr;
@@ -118,7 +117,6 @@ public:
 	String get_ca_certificates() const;
 	void init_input_devices();
 	void vibrate(int p_duration_ms, float p_amplitude = -1.0);
-	String get_input_fallback_mapping();
 	int create_new_godot_instance(const List<String> &args);
 	void begin_benchmark_measure(const String &p_context, const String &p_label);
 	void end_benchmark_measure(const String &p_context, const String &p_label);

@@ -70,8 +70,6 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	private static final int ROTARY_INPUT_VERTICAL_AXIS = 1;
 	private static final int ROTARY_INPUT_HORIZONTAL_AXIS = 0;
 
-	private final SparseIntArray mJoystickIds = new SparseIntArray(4);
-	private final SparseArray<Joystick> mJoysticksDevices = new SparseArray<>(4);
 	private final HashSet<Integer> mHardwareKeyboardIds = new HashSet<>();
 
 	private final Godot godot;
@@ -176,15 +174,10 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	}
 
 	public boolean onKeyUp(final int keyCode, KeyEvent event) {
+		int deviceId = event.getDeviceId();
 		int source = event.getSource();
 		if (isKeyEventGameDevice(source)) {
-			// Check if the device exists
-			final int deviceId = event.getDeviceId();
-			if (mJoystickIds.indexOfKey(deviceId) >= 0) {
-				final int button = getGodotButton(keyCode);
-				final int godotJoyId = mJoystickIds.get(deviceId);
-				handleJoystickButtonEvent(godotJoyId, button, false);
-			}
+			SDLControllerManager.onNativePadUp(deviceId, keyCode);
 		} else {
 			// getKeyCode(): The physical key that was pressed.
 			final int physical_keycode = event.getKeyCode();
@@ -206,14 +199,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 		final int deviceId = event.getDeviceId();
 		// Check if source is a game device and that the device is a registered gamepad
 		if (isKeyEventGameDevice(source)) {
-			if (event.getRepeatCount() > 0) // ignore key echo
-				return true;
-
-			if (mJoystickIds.indexOfKey(deviceId) >= 0) {
-				final int button = getGodotButton(keyCode);
-				final int godotJoyId = mJoystickIds.get(deviceId);
-				handleJoystickButtonEvent(godotJoyId, button, true);
-			}
+			SDLControllerManager.onNativePadDown(deviceId, keyCode);
 		} else {
 			final int physical_keycode = event.getKeyCode();
 			final int unicode = event.getUnicodeChar();
@@ -258,41 +244,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 		lastSeenToolType.set(getEventToolType(event));
 
 		if (event.isFromSource(InputDevice.SOURCE_JOYSTICK) && event.getActionMasked() == MotionEvent.ACTION_MOVE) {
-			// Check if the device exists
-			final int deviceId = event.getDeviceId();
-			if (mJoystickIds.indexOfKey(deviceId) >= 0) {
-				final int godotJoyId = mJoystickIds.get(deviceId);
-				Joystick joystick = mJoysticksDevices.get(deviceId);
-				if (joystick == null) {
-					return true;
-				}
-
-				for (int i = 0; i < joystick.axes.size(); i++) {
-					final int axis = joystick.axes.get(i);
-					final float value = event.getAxisValue(axis);
-					/*
-					  As all axes are polled for each event, only fire an axis event if the value has actually changed.
-					  Prevents flooding Godot with repeated events.
-					 */
-					if (joystick.axesValues.indexOfKey(axis) < 0 || (float)joystick.axesValues.get(axis) != value) {
-						// save value to prevent repeats
-						joystick.axesValues.put(axis, value);
-						handleJoystickAxisEvent(godotJoyId, i, value);
-					}
-				}
-
-				if (joystick.hasAxisHat) {
-					final int hatX = Math.round(event.getAxisValue(MotionEvent.AXIS_HAT_X));
-					final int hatY = Math.round(event.getAxisValue(MotionEvent.AXIS_HAT_Y));
-					if (joystick.hatX != hatX || joystick.hatY != hatY) {
-						joystick.hatX = hatX;
-						joystick.hatY = hatY;
-						handleJoystickHatEvent(godotJoyId, hatX, hatY);
-					}
-				}
-				return true;
-			}
-			return false;
+			return getMotionListener().onGenericMotion(null, event);
 		}
 
 		if (gestureDetector.onGenericMotionEvent(event)) {
@@ -306,6 +258,21 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 		}
 
 		return handleMouseEvent(event);
+	}
+
+	protected static SDLGenericMotionListener_API14 mMotionListener;
+	protected static SDLGenericMotionListener_API14 getMotionListener() {
+		if (mMotionListener == null) {
+			if (Build.VERSION.SDK_INT >= 26 /* Android 8.0 (O) */) {
+				mMotionListener = new SDLGenericMotionListener_API26();
+			} else if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */) {
+				mMotionListener = new SDLGenericMotionListener_API24();
+			} else {
+				mMotionListener = new SDLGenericMotionListener_API14();
+			}
+		}
+
+		return mMotionListener;
 	}
 
 	public void initInputDevices() {
@@ -322,23 +289,8 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 		}
 	}
 
-	private int assignJoystickIdNumber(int deviceId) {
-		int godotJoyId = 0;
-		while (mJoystickIds.indexOfValue(godotJoyId) >= 0) {
-			godotJoyId++;
-		}
-		mJoystickIds.put(deviceId, godotJoyId);
-		return godotJoyId;
-	}
-
 	@Override
 	public void onInputDeviceAdded(int deviceId) {
-		// Check if the device has not been already added
-
-		if (mJoystickIds.indexOfKey(deviceId) >= 0) {
-			return;
-		}
-
 		InputDevice device = mInputManager.getInputDevice(deviceId);
 		//device can be null if deviceId is not found
 		if (device == null) {
@@ -352,143 +304,17 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 				device.getKeyboardType() == InputDevice.KEYBOARD_TYPE_ALPHABETIC) {
 			mHardwareKeyboardIds.add(deviceId);
 		}
-
-		// Device may not be a joystick or gamepad
-		if (!device.supportsSource(InputDevice.SOURCE_GAMEPAD) &&
-				!device.supportsSource(InputDevice.SOURCE_JOYSTICK)) {
-			return;
-		}
-
-		// Assign first available number. Reuse numbers where possible.
-		final int id = assignJoystickIdNumber(deviceId);
-
-		final Joystick joystick = new Joystick();
-		joystick.device_id = deviceId;
-		joystick.name = device.getName();
-
-		//Helps with creating new joypad mappings.
-		Log.i(TAG, "=== New Input Device: " + joystick.name);
-
-		Set<Integer> already = new HashSet<>();
-		for (InputDevice.MotionRange range : device.getMotionRanges()) {
-			boolean isJoystick = range.isFromSource(InputDevice.SOURCE_JOYSTICK);
-			boolean isGamepad = range.isFromSource(InputDevice.SOURCE_GAMEPAD);
-			if (!isJoystick && !isGamepad) {
-				continue;
-			}
-			final int axis = range.getAxis();
-			if (axis == MotionEvent.AXIS_HAT_X || axis == MotionEvent.AXIS_HAT_Y) {
-				joystick.hasAxisHat = true;
-			} else {
-				if (!already.contains(axis)) {
-					already.add(axis);
-					joystick.axes.add(axis);
-				} else {
-					Log.w(TAG, " - DUPLICATE AXIS VALUE IN LIST: " + axis);
-				}
-			}
-		}
-		Collections.sort(joystick.axes);
-		for (int idx = 0; idx < joystick.axes.size(); idx++) {
-			//Helps with creating new joypad mappings.
-			Log.i(TAG, " - Mapping Android axis " + joystick.axes.get(idx) + " to Godot axis " + idx);
-		}
-		mJoysticksDevices.put(deviceId, joystick);
-
-		handleJoystickConnectionChangedEvent(id, true, joystick.name);
 	}
 
 	@Override
 	public void onInputDeviceRemoved(int deviceId) {
 		mHardwareKeyboardIds.remove(deviceId);
-
-		// Check if the device has not been already removed
-		if (mJoystickIds.indexOfKey(deviceId) < 0) {
-			return;
-		}
-		final int godotJoyId = mJoystickIds.get(deviceId);
-		mJoystickIds.delete(deviceId);
-		mJoysticksDevices.delete(deviceId);
-		handleJoystickConnectionChangedEvent(godotJoyId, false, "");
 	}
 
 	@Override
 	public void onInputDeviceChanged(int deviceId) {
 		onInputDeviceRemoved(deviceId);
 		onInputDeviceAdded(deviceId);
-	}
-
-	public static int getGodotButton(int keyCode) {
-		int button;
-		switch (keyCode) {
-			case KeyEvent.KEYCODE_BUTTON_A: // Android A is SNES B
-				button = 0;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_B:
-				button = 1;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_X: // Android X is SNES Y
-				button = 2;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_Y:
-				button = 3;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_L1:
-				button = 9;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_L2:
-				button = 15;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_R1:
-				button = 10;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_R2:
-				button = 16;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_SELECT:
-			case KeyEvent.KEYCODE_BACK:
-				button = 4;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_MODE: // Home/Xbox Button on Xbox controllers
-				button = 5;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_START:
-			case KeyEvent.KEYCODE_MENU:
-				button = 6;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_THUMBL:
-				button = 7;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_THUMBR:
-				button = 8;
-				break;
-			case KeyEvent.KEYCODE_DPAD_UP:
-				button = 11;
-				break;
-			case KeyEvent.KEYCODE_DPAD_DOWN:
-				button = 12;
-				break;
-			case KeyEvent.KEYCODE_DPAD_LEFT:
-				button = 13;
-				break;
-			case KeyEvent.KEYCODE_DPAD_RIGHT:
-				button = 14;
-				break;
-			case KeyEvent.KEYCODE_MEDIA_RECORD: // Share Button on Xbox controllers
-				button = 15;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_C:
-				button = 17;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_Z:
-				button = 18;
-				break;
-
-			default:
-				button = keyCode - KeyEvent.KEYCODE_BUTTON_1 + 20;
-				break;
-		}
-		return button;
 	}
 
 	static int getEventToolType(MotionEvent event) {
@@ -698,46 +524,6 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 		}
 
 		runnable.setPanEvent(x, y, deltaX, deltaY);
-		dispatchInputEventRunnable(runnable);
-	}
-
-	private void handleJoystickButtonEvent(int device, int button, boolean pressed) {
-		InputEventRunnable runnable = InputEventRunnable.obtain();
-		if (runnable == null) {
-			return;
-		}
-
-		runnable.setJoystickButtonEvent(device, button, pressed);
-		dispatchInputEventRunnable(runnable);
-	}
-
-	private void handleJoystickAxisEvent(int device, int axis, float value) {
-		InputEventRunnable runnable = InputEventRunnable.obtain();
-		if (runnable == null) {
-			return;
-		}
-
-		runnable.setJoystickAxisEvent(device, axis, value);
-		dispatchInputEventRunnable(runnable);
-	}
-
-	private void handleJoystickHatEvent(int device, int hatX, int hatY) {
-		InputEventRunnable runnable = InputEventRunnable.obtain();
-		if (runnable == null) {
-			return;
-		}
-
-		runnable.setJoystickHatEvent(device, hatX, hatY);
-		dispatchInputEventRunnable(runnable);
-	}
-
-	private void handleJoystickConnectionChangedEvent(int device, boolean connected, String name) {
-		InputEventRunnable runnable = InputEventRunnable.obtain();
-		if (runnable == null) {
-			return;
-		}
-
-		runnable.setJoystickConnectionChangedEvent(device, connected, name);
 		dispatchInputEventRunnable(runnable);
 	}
 
