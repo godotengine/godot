@@ -478,6 +478,11 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				} break;
 			}
 
+			// Special-case: `Self` refers to the current class meta-type.
+			if (identifier == SNAME("Self")) {
+				return GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::CLASS);
+			}
+
 			// Not found, error.
 			_set_error("Identifier not found: " + String(identifier), p_expression);
 			r_error = ERR_COMPILATION_FAILED;
