@@ -301,34 +301,103 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 	int width = format.width;
 	int height = format.height;
 	switch (format.pixel_format) {
-		case AIMAGE_FORMAT_YUV_420_888:
+		case AIMAGE_FORMAT_YUV_420_888: {
+			// Handle Y plane
+			int32_t y_row_stride;
+			AImage_getPlaneRowStride(image, 0, &y_row_stride);
 			AImage_getPlaneData(image, 0, &data, &len);
 			if (len <= 0) {
 				return;
 			}
-			if (len != data_y.size()) {
-				int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_R8, false);
-				data_y.resize(len > size ? len : size);
-			}
-			memcpy(data_y.ptrw(), data, len);
 
+			int64_t y_size = Image::get_image_data_size(width, height, Image::FORMAT_R8, false);
+			if (data_y.size() != y_size) {
+				data_y.resize(y_size);
+			}
+
+			if (y_row_stride == width && len == y_size) {
+				// No padding, direct copy
+				memcpy(data_y.ptrw(), data, y_size);
+			} else {
+				// Handle row stride alignment
+				uint8_t *src = data;
+				uint8_t *dst = data_y.ptrw();
+				for (int row = 0; row < height; row++) {
+					memcpy(dst, src, width);
+					src += y_row_stride;
+					dst += width;
+				}
+			}
+
+			// Handle UV plane
 			AImage_getPlanePixelStride(image, 1, &pixel_stride);
 			AImage_getPlaneRowStride(image, 1, &row_stride);
 			AImage_getPlaneData(image, 1, &data, &len);
 			if (len <= 0) {
 				return;
 			}
-			if (len != data_uv.size()) {
-				int64_t size = Image::get_image_data_size(width / 2, height / 2, Image::FORMAT_RG8, false);
-				data_uv.resize(len > size ? len : size);
+
+			int64_t uv_size = Image::get_image_data_size(width / 2, height / 2, Image::FORMAT_RG8, false);
+			if (data_uv.size() != uv_size) {
+				data_uv.resize(uv_size);
 			}
-			memcpy(data_uv.ptrw(), data, len);
+
+			int uv_width = width / 2;
+			int uv_height = height / 2;
+
+			uint8_t *data_v = nullptr;
+			int32_t v_pixel_stride = 0;
+			int32_t v_row_stride = 0;
+			int len_v = 0;
+
+			if (pixel_stride != 2) {
+				AImage_getPlanePixelStride(image, 2, &v_pixel_stride);
+				AImage_getPlaneRowStride(image, 2, &v_row_stride);
+				AImage_getPlaneData(image, 2, &data_v, &len_v);
+				if (len_v <= 0) {
+					return;
+				}
+			}
+
+			if (pixel_stride == 2 && row_stride == uv_width * 2 && len == uv_size) {
+				// Interleaved UV without padding, direct copy
+				memcpy(data_uv.ptrw(), data, uv_size);
+			} else {
+				// Handle pixel stride and row stride alignment
+				uint8_t *dst = data_uv.ptrw();
+				switch (pixel_stride) {
+					case 2: {
+						uint8_t *src = data;
+						for (int row = 0; row < uv_height; row++) {
+							memcpy(dst, src, uv_width * 2);
+							dst += uv_width * 2;
+							src += row_stride;
+						}
+						break;
+					}
+					default: {
+						uint8_t *src_u = data;
+						uint8_t *src_v = data_v;
+						for (int row = 0; row < uv_height; row++) {
+							for (int col = 0; col < uv_width; col++) {
+								dst[col * 2] = src_u[col * pixel_stride];
+								dst[col * 2 + 1] = src_v[col * v_pixel_stride];
+							}
+							dst += uv_width * 2;
+							src_u += row_stride;
+							src_v += v_row_stride;
+						}
+						break;
+					}
+				}
+			}
 
 			image_y->initialize_data(width, height, false, Image::FORMAT_R8, data_y);
 			image_uv->initialize_data(width / 2, height / 2, false, Image::FORMAT_RG8, data_uv);
 
 			feed->set_ycbcr_images(image_y, image_uv);
 			break;
+		}
 		case AIMAGE_FORMAT_RGBA_8888:
 			AImage_getPlaneData(image, 0, &data, &len);
 			if (len <= 0) {
