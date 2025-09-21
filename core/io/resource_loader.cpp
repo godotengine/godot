@@ -111,6 +111,14 @@ String ResourceFormatLoader::get_resource_script_class(const String &p_path) con
 	return ret;
 }
 
+String ResourceFormatLoader::get_resource_editor_description(const String &p_path) const {
+	return String();
+}
+
+bool ResourceFormatLoader::has_editor_description_support() const {
+	return false;
+}
+
 ResourceUID::ID ResourceFormatLoader::get_resource_uid(const String &p_path) const {
 	int64_t uid = ResourceUID::INVALID_ID;
 	if (has_custom_uid_support()) {
@@ -327,7 +335,6 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		print_verbose(vformat("Failed loading resource: %s", p_path));
 	}
 
-#ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		if (ResourceFormatImporter::get_singleton()->get_importer_by_file(p_path).is_valid()) {
 			// The format is known to the editor, but the file hasn't been imported
@@ -338,7 +345,6 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 			}
 		}
 	}
-#endif
 
 	ERR_FAIL_COND_V_MSG(found, Ref<Resource>(), vformat("Failed loading resource: %s.", p_path));
 
@@ -1186,6 +1192,36 @@ String ResourceLoader::get_resource_script_class(const String &p_path) {
 	}
 
 	return "";
+}
+
+String ResourceLoader::get_resource_editor_description(const String &p_path) {
+	String local_path = _validate_local_path(p_path);
+
+	for (int i = 0; i < loader_count; i++) {
+		if (loader[i]->has_editor_description_support()) {
+			String result = loader[i]->get_resource_editor_description(local_path);
+			if (!result.is_empty()) {
+				return result;
+			}
+		}
+	}
+
+	return "";
+}
+
+bool ResourceLoader::has_editor_description_support(const String &p_path) {
+	String local_path = _validate_local_path(p_path);
+
+	for (int i = 0; i < loader_count; i++) {
+		if (!loader[i]->recognize_path(local_path)) {
+			continue;
+		}
+		if (loader[i]->has_editor_description_support()) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
