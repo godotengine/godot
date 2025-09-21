@@ -605,6 +605,8 @@ public:
 		MESH_INSTANCE_3D = 1 << 14,
 	};
 
+	static constexpr AncestralClass static_ancestral_class = (AncestralClass)0;
+
 	struct Connection {
 		::Signal signal;
 		Callable callable;
@@ -790,6 +792,8 @@ protected:
 
 	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
 	void _define_ancestry(AncestralClass p_class) { _ancestry |= (uint32_t)p_class; }
+	// Prefer using derives_from.
+	bool _has_ancestry(AncestralClass p_class) const { return _ancestry & (uint32_t)p_class; }
 
 	virtual bool _uses_signal_mutex() const;
 
@@ -821,16 +825,12 @@ public:
 	static T *cast_to(Object *p_object) {
 		// This is like dynamic_cast, but faster.
 		// The reason is that we can assume no virtual and multiple inheritance.
-		static_assert(std::is_base_of_v<Object, T>, "T must be derived from Object");
-		static_assert(std::is_same_v<std::decay_t<T>, typename T::self_type>, "T must use GDCLASS or GDSOFTCLASS");
-		return p_object && p_object->is_class_ptr(T::get_class_ptr_static()) ? static_cast<T *>(p_object) : nullptr;
+		return p_object && p_object->derives_from<T>() ? static_cast<T *>(p_object) : nullptr;
 	}
 
 	template <typename T>
 	static const T *cast_to(const Object *p_object) {
-		static_assert(std::is_base_of_v<Object, T>, "T must be derived from Object");
-		static_assert(std::is_same_v<std::decay_t<T>, typename T::self_type>, "T must use GDCLASS or GDSOFTCLASS");
-		return p_object && p_object->is_class_ptr(T::get_class_ptr_static()) ? static_cast<const T *>(p_object) : nullptr;
+		return p_object && p_object->derives_from<T>() ? static_cast<const T *>(p_object) : nullptr;
 	}
 
 	enum {
@@ -864,7 +864,8 @@ public:
 	}
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
 
-	bool has_ancestry(AncestralClass p_class) const { return _ancestry & (uint32_t)p_class; }
+	template <typename T>
+	bool derives_from() const;
 
 	const StringName &get_class_name() const;
 
@@ -1024,7 +1025,7 @@ public:
 
 	void clear_internal_resource_paths();
 
-	_ALWAYS_INLINE_ bool is_ref_counted() const { return has_ancestry(AncestralClass::REF_COUNTED); }
+	_ALWAYS_INLINE_ bool is_ref_counted() const { return _has_ancestry(AncestralClass::REF_COUNTED); }
 
 	void cancel_free();
 
@@ -1034,6 +1035,29 @@ public:
 
 bool predelete_handler(Object *p_object);
 void postinitialize_handler(Object *p_object);
+
+template <typename T>
+bool Object::derives_from() const {
+	static_assert(std::is_base_of_v<Object, T>, "T must be derived from Object.");
+	static_assert(std::is_same_v<std::decay_t<T>, typename T::self_type>, "T must use GDCLASS or GDSOFTCLASS.");
+
+	// If there is an explicitly set ancestral class on the type, we can use that.
+	if constexpr (T::static_ancestral_class != T::super_type::static_ancestral_class) {
+		return _has_ancestry(T::static_ancestral_class);
+	} else {
+		return is_class_ptr(T::get_class_ptr_static());
+	}
+}
+
+template <>
+inline bool Object::derives_from<Object>() const {
+	return true;
+}
+
+template <>
+inline bool Object::derives_from<const Object>() const {
+	return true;
+}
 
 class ObjectDB {
 // This needs to add up to 63, 1 bit is for reference.
