@@ -3478,6 +3478,14 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="setting_changed">
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="old_value" type="Variant" />
+			<param index="2" name="new_value" type="Variant" />
+			<description>
+				Emitted when an individual project setting is changed. Provides the setting name, old value, and new value.
+			</description>
+		</signal>
 		<signal name="settings_changed">
 			<description>
 				Emitted when any setting is changed, up to once per process frame.
