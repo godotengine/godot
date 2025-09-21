@@ -299,21 +299,24 @@
 		<annotation name="@abstract">
 			<return type="void" />
 			<description>
-				Marks a class or a method as abstract.
+				Marks a class, a method, or a variable as abstract.
 				An abstract class is a class that cannot be instantiated directly. Instead, it is meant to be inherited by other classes. Attempting to instantiate an abstract class will result in an error.
-				An abstract method is a method that has no implementation. Therefore, a newline or a semicolon is expected after the function header. This defines a contract that inheriting classes must conform to, because the method signature must be compatible when overriding.
-				Inheriting classes must either provide implementations for all abstract methods, or the inheriting class must be marked as abstract. If a class has at least one abstract method (either its own or an unimplemented inherited one), then it must also be marked as abstract. However, the reverse is not true: an abstract class is allowed to have no abstract methods.
+				An abstract variable is a variable that has no initial value. This defines a contract that inheriting classes must conform to, because the variable must be overridden in the inheriting class to give it an initial value.
+				Inheriting classes must either provide implementations for all abstract methods and variables, or the inheriting class must be marked as abstract. If a class has at least one abstract method or variable (either its own or an unimplemented inherited one), then it must also be marked as abstract. However, the reverse is not true: an abstract class is allowed to have no abstract methods nor variables.
 				[codeblock]
 				@abstract class Shape:
 					@abstract func draw()
+					@abstract var name
 
 				class Circle extends Shape:
 					func draw():
 						print("Drawing a circle.")
+					@override var name = "circle"
 
 				class Square extends Shape:
 					func draw():
 						print("Drawing a square.")
+					@override var name = "square"
 				[/codeblock]
 			</description>
 		</annotation>

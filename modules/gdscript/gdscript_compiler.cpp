@@ -2378,7 +2378,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 			}
 
 			const GDScriptParser::VariableNode *field = member.variable;
-			if (field->is_static || field->is_override) {
+			if (field->is_static || field->is_override || field->is_abstract) {
 				continue;
 			}
 
@@ -2581,7 +2581,7 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 		}
 
 		const GDScriptParser::VariableNode *field = member.variable;
-		if (!field->is_static) {
+		if (!field->is_static || field->is_abstract) {
 			continue;
 		}
 
@@ -2616,7 +2616,7 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 			continue;
 		}
 		const GDScriptParser::VariableNode *field = p_class->members[i].variable;
-		if (!field->is_static) {
+		if (!field->is_static || field->is_abstract) {
 			continue;
 		}
 

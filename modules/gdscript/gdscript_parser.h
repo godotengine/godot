@@ -1260,6 +1260,7 @@ public:
 
 		bool exported = false;
 		bool onready = false;
+		bool is_abstract = false;
 		bool is_override = false;
 		PropertyInfo export_info;
 		int assignments = 0;

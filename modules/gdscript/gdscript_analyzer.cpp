@@ -1599,6 +1599,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 	// Resolve base abstract class/method implementation requirements.
 	if (!p_class->is_abstract) {
 		HashSet<StringName> implemented_funcs;
+		HashSet<StringName> implemented_vars;
 		const GDScriptParser::ClassNode *base_class = p_class;
 		while (base_class != nullptr) {
 			if (!base_class->is_abstract && base_class != p_class) {
@@ -1619,6 +1620,22 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 						}
 					} else {
 						implemented_funcs.insert(member.function->identifier->name);
+					}
+				} else if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
+					GDScriptParser::VariableNode *var_node = member.variable;
+					if (var_node->is_abstract) {
+						if (base_class == p_class) {
+							const String class_name = p_class->identifier == nullptr ? p_class->fqcn.get_file() : String(p_class->identifier->name);
+							push_error(vformat(R"*(Class "%s" is not abstract but contains abstract variables. Mark the class as "@abstract" or remove "@abstract" from all variables in this class.)*", class_name), p_class);
+							break;
+						} else if (!implemented_vars.has(var_node->identifier->name)) {
+							const String class_name = p_class->identifier == nullptr ? p_class->fqcn.get_file() : String(p_class->identifier->name);
+							const String base_class_name = base_class->identifier == nullptr ? base_class->fqcn.get_file() : String(base_class->identifier->name);
+							push_error(vformat(R"*(Class "%s" must provide a value for "%s.%s" and other inherited abstract variables or be marked as "@abstract".)*", class_name, base_class_name, var_node->identifier->name), p_class);
+							break;
+						}
+					} else {
+						implemented_vars.insert(var_node->identifier->name);
 					}
 				}
 			}
