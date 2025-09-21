@@ -283,6 +283,13 @@ String ProjectSettings::globalize_path(const String &p_path) const {
 bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	_THREAD_SAFE_METHOD_
 
+	// Early return if value hasn't changed (unless it's being deleted)
+	if (p_value.get_type() != Variant::NIL) {
+		if (props.has(p_name) && props[p_name].variant == p_value) {
+			return true;
+		}
+	}
+
 	if (p_value.get_type() == Variant::NIL) {
 		props.erase(p_name);
 		if (p_name.operator String().begins_with("autoload/")) {
@@ -304,7 +311,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			}
 
 			_version++;
-			_queue_changed();
+			_queue_changed(p_name);
 			return true;
 		}
 
@@ -350,7 +357,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	}
 
 	_version++;
-	_queue_changed();
+	_queue_changed(p_name);
 	return true;
 }
 
@@ -526,12 +533,18 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-void ProjectSettings::_queue_changed() {
-	if (is_changed || !MessageQueue::get_singleton() || MessageQueue::get_singleton()->get_max_buffer_usage() == 0) {
+void ProjectSettings::_queue_changed(const StringName &p_name) {
+	changed_settings.insert(p_name);
+
+	if (!MessageQueue::get_singleton() || MessageQueue::get_singleton()->get_max_buffer_usage() == 0) {
 		return;
 	}
-	is_changed = true;
-	callable_mp(this, &ProjectSettings::_emit_changed).call_deferred();
+
+	// Only queue the deferred call once per frame.
+	if (!is_changed) {
+		is_changed = true;
+		callable_mp(this, &ProjectSettings::_emit_changed).call_deferred();
+	}
 }
 
 void ProjectSettings::_emit_changed() {
@@ -539,7 +552,12 @@ void ProjectSettings::_emit_changed() {
 		return;
 	}
 	is_changed = false;
+
+	// Emit the general settings_changed signal to indicate changes are complete.
 	emit_signal("settings_changed");
+
+	// Clear the changed settings after emitting the signal
+	changed_settings.clear();
 }
 
 bool ProjectSettings::load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset) {
@@ -1352,6 +1370,23 @@ Variant ProjectSettings::get_setting(const String &p_setting, const Variant &p_d
 	}
 }
 
+PackedStringArray ProjectSettings::get_changed_settings() const {
+	PackedStringArray arr;
+	for (const StringName &setting : changed_settings) {
+		arr.push_back(setting);
+	}
+	return arr;
+}
+
+bool ProjectSettings::check_changed_settings_in_group(const String &p_setting_prefix) const {
+	for (const StringName &setting : changed_settings) {
+		if (String(setting).begins_with(p_setting_prefix)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void ProjectSettings::refresh_global_class_list() {
 	// This is called after mounting a new PCK file to pick up class changes.
 	is_global_class_list_loaded = false; // Make sure we read from the freshly mounted PCK.
@@ -1548,6 +1583,9 @@ void ProjectSettings::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
 
+	// Change tracking methods
+	ClassDB::bind_method(D_METHOD("get_changed_settings"), &ProjectSettings::get_changed_settings);
+	ClassDB::bind_method(D_METHOD("check_changed_settings_in_group", "setting_prefix"), &ProjectSettings::check_changed_settings_in_group);
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 }
 

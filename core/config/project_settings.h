@@ -47,6 +47,9 @@ class ProjectSettings : public Object {
 	// and will always detect the initial project settings as a "change".
 	uint32_t _version = 1;
 
+	// Track changed settings for get_changed_settings functionality
+	HashSet<StringName> changed_settings;
+
 public:
 	typedef HashMap<String, Variant> CustomMap;
 	static inline const String PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
@@ -119,7 +122,7 @@ protected:
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
-	void _queue_changed();
+	void _queue_changed(const StringName &p_name);
 	void _emit_changed();
 
 	static inline ProjectSettings *singleton = nullptr;
@@ -209,6 +212,10 @@ public:
 	bool is_project_loaded() const;
 
 	bool has_custom_feature(const String &p_feature) const;
+
+	// Change tracking methods
+	PackedStringArray get_changed_settings() const;
+	bool check_changed_settings_in_group(const String &p_setting_prefix) const;
 
 	const HashMap<StringName, AutoloadInfo> &get_autoload_list() const;
 	void add_autoload(const AutoloadInfo &p_autoload);
