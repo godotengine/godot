@@ -382,35 +382,21 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 				}
 				data_uv.resize(uv_size);
 			} else {
-				// Planar format - need to interleave U and V planes
+				// Planar format - interleave U and V safely (no overlap)
 				if (data_v && len_v > 0) {
-					// Calculate buffer size needed for both U and V data
-					int max_uv_len = MAX(len, len_v);
-					data_uv.resize(uv_size + max_uv_len); // Temporary larger buffer
-
-					// Copy U data to first part of buffer
-					memcpy(data_uv.ptrw(), data, len);
-					// Copy V data to second part of buffer
-					memcpy(data_uv.ptrw() + max_uv_len, data_v, len_v);
-
-					// Interleave U and V in-place at the beginning of buffer
-					uint8_t *u_src = data_uv.ptrw();
-					uint8_t *v_src = data_uv.ptrw() + max_uv_len;
+					data_uv.resize(uv_size);
 					uint8_t *dst = data_uv.ptrw();
-
-					for (int y = 0; y < uv_height; y++) {
-						// Process row backwards to avoid overwriting source data
-						for (int x = uv_width - 1; x >= 0; x--) {
-							int src_offset = y * row_stride + x * pixel_stride;
-							int v_src_offset = y * v_row_stride + x * v_pixel_stride;
-							int dst_offset = y * uv_width * 2 + x * 2;
-
-							dst[dst_offset] = u_src[src_offset]; // U component
-							dst[dst_offset + 1] = v_src[v_src_offset]; // V component
+					uint8_t *src_u = data;
+					uint8_t *src_v = data_v;
+					for (int row = 0; row < uv_height; row++) {
+						for (int col = 0; col < uv_width; col++) {
+							dst[col * 2] = src_u[col * pixel_stride];
+							dst[col * 2 + 1] = src_v[col * v_pixel_stride];
 						}
+						dst += uv_width * 2;
+						src_u += row_stride;
+						src_v += v_row_stride;
 					}
-
-					data_uv.resize(uv_size); // Final resize to compact size
 				} else {
 					data_uv.resize(uv_size);
 					memset(data_uv.ptrw(), 128, uv_size); // Fill with neutral chroma
