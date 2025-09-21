@@ -186,6 +186,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		ObjectID obj_id;
 		String variable_name;
 		Variant value;
+		String class_name;
 	};
 
 	LocalVector<DraggedExport> pending_dragged_exports;
