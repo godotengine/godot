@@ -1063,6 +1063,12 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 	}
 
 	uint32_t string_table_size = f->get_32();
+
+	if (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_EDITOR_DESCRIPTION) {
+		ERR_FAIL_COND(string_table_size <= 0);
+		editor_description = get_unicode_string();
+		string_table_size--;
+	}
 	string_map.resize(string_table_size);
 	for (uint32_t i = 0; i < string_table_size; i++) {
 		StringName s = get_unicode_string();
@@ -1209,6 +1215,66 @@ String ResourceLoaderBinary::recognize_script_class(Ref<FileAccess> p_f) {
 	}
 }
 
+String ResourceLoaderBinary::recognize_editor_description(Ref<FileAccess> p_f) {
+	error = OK;
+
+	f = p_f;
+	uint8_t header[4];
+	f->get_buffer(header, 4);
+	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
+		// Compressed.
+		Ref<FileAccessCompressed> fac;
+		fac.instantiate();
+		error = fac->open_after_magic(f);
+		if (error != OK) {
+			f.unref();
+			return String();
+		}
+		f = fac;
+
+	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
+		// Not normal.
+		error = ERR_FILE_UNRECOGNIZED;
+		f.unref();
+		return String();
+	}
+
+	bool big_endian = f->get_32();
+	f->get_32(); // use_real64
+
+	f->set_big_endian(big_endian != 0); //read big endian if saved as big endian
+
+	uint32_t ver_major = f->get_32();
+	f->get_32(); // ver_minor
+	uint32_t ver_fmt = f->get_32();
+
+	if (ver_fmt > FORMAT_VERSION || ver_major > GODOT_VERSION_MAJOR) {
+		f.unref();
+		return String();
+	}
+
+	_ALLOW_DISCARD_ get_unicode_string(); // type
+
+	f->get_64(); // Metadata offset
+	uint32_t flags = f->get_32();
+	if (!(flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_EDITOR_DESCRIPTION)) {
+		return String();
+	}
+
+	f->get_64(); // UID
+
+	if (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_SCRIPT_CLASS) {
+		_ALLOW_DISCARD_ get_unicode_string();
+	}
+
+	for (int i = 0; i < ResourceFormatSaverBinaryInstance::RESERVED_FIELDS; i++) {
+		f->get_32(); //skip a few reserved fields
+	}
+
+	f->get_32(); //string table size
+	return get_unicode_string();
+}
+
 Ref<Resource> ResourceFormatLoaderBinary::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
@@ -1252,6 +1318,7 @@ Ref<Resource> ResourceFormatLoaderBinary::load(const String &p_path, const Strin
 	if (err) {
 		return Ref<Resource>();
 	}
+	loader.resource->set_editor_description(loader.editor_description);
 	return loader.resource;
 }
 
@@ -1575,6 +1642,22 @@ String ResourceFormatLoaderBinary::get_resource_script_class(const String &p_pat
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
 	return loader.recognize_script_class(f);
+}
+
+String ResourceFormatLoaderBinary::get_resource_editor_description(const String &p_path) const {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
+		return ""; // Could not read.
+	}
+
+	ResourceLoaderBinary loader;
+	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	loader.res_path = loader.local_path;
+	return loader.recognize_editor_description(f);
+}
+
+bool ResourceFormatLoaderBinary::has_editor_description_support() const {
+	return true;
 }
 
 ResourceUID::ID ResourceFormatLoaderBinary::get_resource_uid(const String &p_path) const {
@@ -2215,6 +2298,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	f->store_64(0); //offset to import metadata
 
 	String script_class;
+	String editor_description = p_resource->get_editor_description();
 	{
 		uint32_t format_flags = FORMAT_FLAG_NAMED_SCENE_IDS | FORMAT_FLAG_UIDS;
 #ifdef REAL_T_IS_DOUBLE
@@ -2228,6 +2312,10 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 					format_flags |= ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_SCRIPT_CLASS;
 				}
 			}
+		}
+
+		if (!editor_description.is_empty()) {
+			format_flags |= ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_EDITOR_DESCRIPTION;
 		}
 
 		f->store_32(format_flags);
@@ -2300,7 +2388,13 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		}
 	}
 
-	f->store_32(uint32_t(strings.size())); //string table size
+	if (!editor_description.is_empty()) {
+		//for backwards compatibility, this lets older versions treat the editor description as a StringName gracefully without errors.
+		f->store_32(uint32_t(strings.size()) + 1); //string table size + one more string for editor description
+		save_unicode_string(f, editor_description);
+	} else {
+		f->store_32(uint32_t(strings.size())); //string table size
+	}
 	for (int i = 0; i < strings.size(); i++) {
 		save_unicode_string(f, strings[i]);
 	}
