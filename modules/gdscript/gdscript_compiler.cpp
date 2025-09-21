@@ -2381,6 +2381,9 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 			if (field->is_static) {
 				continue;
 			}
+			if (field->is_abstract) {
+				continue;
+			}
 
 			GDScriptDataType field_type = _gdtype_from_datatype(field->get_datatype(), codegen.script);
 			if (field_type.has_type) {
@@ -2579,6 +2582,9 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 		if (!field->is_static) {
 			continue;
 		}
+		if (field->is_abstract) {
+			continue;
+		}
 
 		GDScriptDataType field_type = _gdtype_from_datatype(field->get_datatype(), codegen.script);
 		if (field_type.has_type) {
@@ -2612,6 +2618,9 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 		}
 		const GDScriptParser::VariableNode *field = p_class->members[i].variable;
 		if (!field->is_static) {
+			continue;
+		}
+		if (field->is_abstract) {
 			continue;
 		}
 
@@ -2848,6 +2857,23 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 			case GDScriptParser::ClassNode::Member::VARIABLE: {
 				const GDScriptParser::VariableNode *variable = member.variable;
 				StringName name = variable->identifier->name;
+				
+				bool overrides_abstract_base = false;
+				if (!variable->is_abstract) {
+					const GDScriptParser::ClassNode *base_class_ast = p_class->base_type.class_type;
+					while (base_class_ast) {
+						if (base_class_ast->has_member(name)) {
+							const GDScriptParser::ClassNode::Member &base_member = base_class_ast->get_member(name);
+							if (base_member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
+								if (base_member.variable->is_abstract) {
+									overrides_abstract_base = true;
+									break;
+								}
+							}
+						}
+						base_class_ast = base_class_ast->base_type.class_type;
+					}
+				}
 
 				GDScript::MemberInfo minfo;
 				switch (variable->property) {
@@ -2888,10 +2914,18 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 				minfo.property_info = prop_info;
 
 				if (variable->is_static) {
-					minfo.index = p_script->static_variables_indices.size();
+					if (overrides_abstract_base && p_script->static_variables_indices.has(name)) {
+						minfo.index = p_script->static_variables_indices[name].index;
+					} else {
+						minfo.index = p_script->static_variables_indices.size();
+					}
 					p_script->static_variables_indices[name] = minfo;
 				} else {
-					minfo.index = p_script->member_indices.size();
+					if (overrides_abstract_base && p_script->member_indices.has(name)) {
+						minfo.index = p_script->member_indices[name].index;
+					} else {
+						minfo.index = p_script->member_indices.size();
+					}
 					p_script->member_indices[name] = minfo;
 					p_script->members.insert(name);
 				}

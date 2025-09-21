@@ -234,12 +234,36 @@ bool GDScriptAnalyzer::has_member_name_conflict_in_script_class(const StringName
 		int index = p_class->members_indices[p_member_name];
 		const GDScriptParser::ClassNode::Member *member = &p_class->members[index];
 
-		if (member->type == GDScriptParser::ClassNode::Member::VARIABLE ||
-				member->type == GDScriptParser::ClassNode::Member::CONSTANT ||
+		if (member->type == GDScriptParser::ClassNode::Member::CONSTANT ||
 				member->type == GDScriptParser::ClassNode::Member::ENUM ||
 				member->type == GDScriptParser::ClassNode::Member::ENUM_VALUE ||
 				member->type == GDScriptParser::ClassNode::Member::CLASS ||
 				member->type == GDScriptParser::ClassNode::Member::SIGNAL) {
+			return true;
+		}
+		if (member->type == GDScriptParser::ClassNode::Member::VARIABLE &&
+				p_member->type == GDScriptParser::Node::VARIABLE) {
+			const GDScriptParser::ClassNode *base_class = p_class;
+			while (base_class != nullptr) {
+				if (!base_class->is_abstract && base_class != p_class) {
+					break;
+				}
+				if (base_class->members_indices.has(p_member_name)) {
+					int b_index = base_class->members_indices[p_member_name];
+					const GDScriptParser::ClassNode::Member *base_member = &base_class->members[b_index];
+					if (base_member->type == GDScriptParser::ClassNode::Member::VARIABLE) {
+						if (base_member->variable && base_member->variable->is_abstract) {
+							return false;
+							break;
+						}
+					}
+				}
+				if (base_class->base_type.kind == GDScriptParser::DataType::CLASS) {
+					base_class = base_class->base_type.class_type;
+				} else {
+					break;
+				}
+			}
 			return true;
 		}
 		if (p_member->type != GDScriptParser::Node::FUNCTION && member->type == GDScriptParser::ClassNode::Member::FUNCTION) {
@@ -1058,6 +1082,46 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 						E->apply(parser, member.variable, p_class);
 					}
 				}
+				
+					{
+						GDScriptParser::DataType base_type = p_class->base_type;
+						while (base_type.kind == GDScriptParser::DataType::CLASS) {
+							const GDScriptParser::ClassNode *base_class = base_type.class_type;
+							if (base_class->members_indices.has(member.variable->identifier->name)) {
+								int b_index = base_class->members_indices[member.variable->identifier->name];
+								const GDScriptParser::ClassNode::Member &base_member = base_class->members[b_index];
+								if (base_member.type == GDScriptParser::ClassNode::Member::VARIABLE && base_member.variable->is_abstract) {
+									const GDScriptParser::VariableNode *impl_var = member.variable;
+									if (!impl_var->is_abstract) {
+										if (impl_var->onready) {
+											push_error(R"(Cannot implement abstract variable with "@onready" annotation)", impl_var);
+										}
+										if (impl_var->exported) {
+											push_error(R"(Cannot implement abstract variable with export annotation)", impl_var);
+										}
+										if (impl_var->is_static) {
+											push_error(R"(Static variable cannot override an abstract instance variable.)", impl_var);
+										}
+									}
+									if (!impl_var->datatype.has_no_type() && !base_member.variable->datatype.has_no_type() &&
+											!impl_var->datatype.is_variant() && !base_member.variable->datatype.is_variant()) {
+										if (!is_type_compatible(base_member.variable->datatype, impl_var->datatype, true, impl_var)) {
+											push_error(vformat(R"(Type mismatch implementing abstract variable "%s": expected "%s" got "%s".)",
+												member.variable->identifier->name,
+												base_member.variable->datatype.to_string(),
+												impl_var->datatype.to_string()), impl_var);
+										}
+									}
+									break; 
+								}
+							}
+							if (base_class->base_type.kind == GDScriptParser::DataType::CLASS) {
+								base_type = base_class->base_type;
+								continue;
+							}
+							break;
+						}
+					}
 
 				static_context = previous_static_context;
 
@@ -1530,6 +1594,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 	// Resolve base abstract class/method implementation requirements.
 	if (!p_class->is_abstract) {
 		HashSet<StringName> implemented_funcs;
+		HashSet<StringName> implemented_vars;
 		const GDScriptParser::ClassNode *base_class = p_class;
 		while (base_class != nullptr) {
 			if (!base_class->is_abstract && base_class != p_class) {
@@ -1550,6 +1615,22 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 						}
 					} else {
 						implemented_funcs.insert(member.function->identifier->name);
+					}
+				} else if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
+					GDScriptParser::VariableNode *var_node = member.variable;
+					if (var_node->is_abstract) {
+						if (base_class == p_class) {
+							const String class_name = p_class->identifier == nullptr ? p_class->fqcn.get_file() : String(p_class->identifier->name);
+							push_error(vformat(R"*(Class "%s" is not abstract but contains abstract variables. Mark the class as "@abstract" or remove "@abstract" from all variables in this class.)*", class_name), p_class);
+							break;
+						} else if (!implemented_vars.has(var_node->identifier->name)) {
+							const String class_name = p_class->identifier == nullptr ? p_class->fqcn.get_file() : String(p_class->identifier->name);
+							const String base_class_name = base_class->identifier == nullptr ? base_class->fqcn.get_file() : String(base_class->identifier->name);
+							push_error(vformat(R"*(Class "%s" must provide a value for "%s.%s" and other inherited abstract variables or be marked as "@abstract".)*", class_name, base_class_name, var_node->identifier->name), p_class);
+							break;
+						}
+					} else {
+						implemented_vars.insert(var_node->identifier->name);
 					}
 				}
 			}

@@ -96,7 +96,7 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
 		register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
-		register_annotation(MethodInfo("@abstract"), AnnotationInfo::SCRIPT | AnnotationInfo::CLASS | AnnotationInfo::FUNCTION, &GDScriptParser::abstract_annotation);
+		register_annotation(MethodInfo("@abstract"), AnnotationInfo::SCRIPT | AnnotationInfo::CLASS | AnnotationInfo::FUNCTION | AnnotationInfo::VARIABLE, &GDScriptParser::abstract_annotation);
 		// Onready annotation.
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 		// Export annotations.
@@ -4394,7 +4394,28 @@ bool GDScriptParser::abstract_annotation(AnnotationNode *p_annotation, Node *p_t
 		function_node->is_abstract = true;
 		return true;
 	}
-	ERR_FAIL_V_MSG(false, R"("@abstract" annotation can only be applied to classes and functions.)");
+	if (p_target->type == Node::VARIABLE) {
+		VariableNode *variable = static_cast<VariableNode *>(p_target);
+		if (variable->is_static) {
+			push_error(R"("@abstract" annotation cannot be applied to static variables.)", p_annotation);
+			return false;
+		}
+		if (variable->onready) {
+			push_error(R"("@abstract" annotation cannot be applied to an 'onready' variable.)", p_annotation);
+			return false;
+		}
+		if (variable->is_abstract) {
+			push_error(R"("@abstract" annotation can only be used once per variable.)", p_annotation);
+			return false;
+		}
+		if (variable->exported) {
+			push_error(R"("@abstract" annotation cannot be applied to an exported variable.)", p_annotation);
+			return false;
+		}
+		variable->is_abstract = true;
+		return true;
+	}
+	ERR_FAIL_V_MSG(false, R"("@abstract" annotation can only be applied to classes, functions, and variables.)");
 }
 
 bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
@@ -4412,6 +4433,10 @@ bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_ta
 	}
 	if (variable->onready) {
 		push_error(R"("@onready" annotation can only be used once per variable.)", p_annotation);
+		return false;
+	}
+	if (variable->is_abstract) {
+		push_error(R"("@onready" annotation cannot be applied to an abstract variable.)", p_annotation);
 		return false;
 	}
 	variable->onready = true;
@@ -4541,6 +4566,10 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	}
 	if (variable->exported) {
 		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	if (variable->is_abstract) {
+		push_error(vformat(R"(Annotation "%s" cannot be applied to an abstract variable.)", p_annotation->name), p_annotation);
 		return false;
 	}
 
@@ -4879,6 +4908,10 @@ bool GDScriptParser::export_storage_annotation(AnnotationNode *p_annotation, Nod
 		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
 		return false;
 	}
+	if (variable->is_abstract) {
+		push_error(vformat(R"(Annotation "%s" cannot be applied to an abstract variable.)", p_annotation->name), p_annotation);
+		return false;
+	}
 
 	variable->exported = true;
 
@@ -4900,6 +4933,10 @@ bool GDScriptParser::export_custom_annotation(AnnotationNode *p_annotation, Node
 	}
 	if (variable->exported) {
 		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	if (variable->is_abstract) {
+		push_error(vformat(R"(Annotation "%s" cannot be applied to an abstract variable.)", p_annotation->name), p_annotation);
 		return false;
 	}
 
@@ -4935,6 +4972,10 @@ bool GDScriptParser::export_tool_button_annotation(AnnotationNode *p_annotation,
 	}
 	if (variable->exported) {
 		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	if (variable->is_abstract) {
+		push_error(vformat(R"(Annotation "%s" cannot be applied to an abstract variable.)", p_annotation->name), p_annotation);
 		return false;
 	}
 

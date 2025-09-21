@@ -1,0 +1,11 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 21: Type mismatch implementing abstract variable "a": expected "int" got "String".
+>> ERROR at line 25: "@abstract" annotation can only be used once per variable.
+>> ERROR at line 28: Cannot implement abstract variable with export annotation
+>> ERROR at line 29: "@abstract" annotation cannot be applied to an exported variable.
+>> ERROR at line 30: Annotation "@export" cannot be applied to an abstract variable.
+>> ERROR at line 33: Cannot implement abstract variable with "@onready" annotation
+>> ERROR at line 34: "@abstract" annotation cannot be applied to an 'onready' variable.
+>> ERROR at line 35: "@onready" annotation cannot be applied to an abstract variable.
+>> ERROR at line 14: Class "ConcreteUnfulfilled" must provide a value for "BaseAbstractVar.a" and other inherited abstract variables or be marked as "@abstract".
+>> ERROR at line 17: Class "ConcreteDeclaresAbstractVar" is not abstract but contains abstract variables. Mark the class as "@abstract" or remove "@abstract" from all variables in this class.
