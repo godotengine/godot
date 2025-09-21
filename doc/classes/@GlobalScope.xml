@@ -1611,6 +1611,9 @@
 		<member name="NavigationServer3D" type="NavigationServer3D" setter="" getter="">
 			The [NavigationServer3D] singleton.
 		</member>
+		<member name="NoiseTextureGenerator" type="NoiseTextureGenerator" setter="" getter="">
+			The [NoiseTextureGenerator] singleton.
+		</member>
 		<member name="OS" type="OS" setter="" getter="">
 			The [OS] singleton.
 		</member>
