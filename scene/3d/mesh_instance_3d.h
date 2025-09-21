@@ -70,6 +70,8 @@ protected:
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::MESH_INSTANCE_3D;
+
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
 
