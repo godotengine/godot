@@ -1196,7 +1196,14 @@ void ColorPicker::add_preset(const Color &p_color) {
 	if (e) {
 		presets.move_to_back(e);
 
-		preset_container->move_child(preset_group->get_pressed_button(), preset_container->get_child_count() - 1);
+		for (int i = 1; i < preset_container->get_child_count(); i++) {
+			ColorPresetButton *current_btn = Object::cast_to<ColorPresetButton>(preset_container->get_child(i));
+			if (current_btn && p_color == current_btn->get_preset_color()) {
+				preset_container->move_child(current_btn, preset_container->get_child_count() - 1);
+				current_btn->set_pressed(true);
+				break;
+			}
+		}
 	} else {
 		presets.push_back(p_color);
 
