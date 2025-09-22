@@ -1814,14 +1814,30 @@ Node *Node::get_child(int p_index, bool p_include_internal) const {
 
 TypedArray<Node> Node::get_children(bool p_include_internal) const {
 	ERR_THREAD_GUARD_V(TypedArray<Node>());
-	TypedArray<Node> arr;
-	int cc = get_child_count(p_include_internal);
-	arr.resize(cc);
-	for (int i = 0; i < cc; i++) {
-		arr[i] = get_child(i, p_include_internal);
+	_update_children_cache();
+
+	TypedArray<Node> children;
+
+	if (p_include_internal) {
+		children.resize(data.children_cache.size());
+
+		Array::Iterator itr = children.begin();
+		for (const Node *child : data.children_cache) {
+			*itr = child;
+			++itr;
+		}
+	} else {
+		const int size = data.children_cache.size() - data.internal_children_back_count_cache;
+		children.resize(size - data.internal_children_front_count_cache);
+
+		Array::Iterator itr = children.begin();
+		for (int i = data.internal_children_front_count_cache; i < size; i++) {
+			*itr = data.children_cache[i];
+			++itr;
+		}
 	}
 
-	return arr;
+	return children;
 }
 
 Node *Node::_get_child_by_name(const StringName &p_name) const {
