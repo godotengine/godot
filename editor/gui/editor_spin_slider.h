@@ -98,7 +98,7 @@ protected:
 	static void _bind_methods();
 	void _grabber_mouse_entered();
 	void _grabber_mouse_exited();
-	void _focus_entered();
+	void _focus_entered(bool p_hide_focus = false);
 
 public:
 	String get_tooltip(const Point2 &p_pos) const override;
