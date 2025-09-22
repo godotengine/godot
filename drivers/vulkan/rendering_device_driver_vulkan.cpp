@@ -6145,10 +6145,9 @@ void RenderingDeviceDriverVulkan::video_session_add_h264_parameters(VideoSession
 		vk_sps.flags.qpprime_y_zero_transform_bypass_flag = rd_sps.qpprime_y_zero_transform_bypass_flag;
 		vk_sps.flags.frame_cropping_flag = rd_sps.frame_cropping_flag;
 		vk_sps.flags.seq_scaling_matrix_present_flag = rd_sps.seq_scaling_matrix_present_flag;
-		vk_sps.flags.vui_parameters_present_flag = false; // TODO
+		vk_sps.flags.vui_parameters_present_flag = rd_sps.vui_parameters_present_flag;
 
 		vk_sps.profile_idc = StdVideoH264ProfileIdc(rd_sps.profile_idc);
-		print_line("rd level idc", rd_sps.level_idc);
 		switch (rd_sps.level_idc) {
 			case 10: {
 				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_1_0;
@@ -6260,9 +6259,45 @@ void RenderingDeviceDriverVulkan::video_session_add_h264_parameters(VideoSession
 		vk_sps.frame_crop_top_offset = rd_sps.frame_crop_top_offset;
 		vk_sps.frame_crop_bottom_offset = rd_sps.frame_crop_bottom_offset;
 
-		// TODO scaling lists, VUI
+		// TODO scaling lists
 		vk_sps.pScalingLists = nullptr;
-		vk_sps.pSequenceParameterSetVui = nullptr;
+
+		StdVideoH264SequenceParameterSetVui *vk_sps_vui = ALLOCA_SINGLE(StdVideoH264SequenceParameterSetVui);
+
+		vk_sps_vui->flags.aspect_ratio_info_present_flag = rd_sps.vui.aspect_ratio_info_present_flag;
+		vk_sps_vui->flags.overscan_info_present_flag = rd_sps.vui.overscan_info_present_flag;
+		vk_sps_vui->flags.overscan_appropriate_flag = rd_sps.vui.overscan_appropriate_flag;
+		vk_sps_vui->flags.video_signal_type_present_flag = rd_sps.vui.video_signal_type_present_flag;
+		vk_sps_vui->flags.video_full_range_flag = rd_sps.vui.video_full_range_flag;
+		vk_sps_vui->flags.color_description_present_flag = rd_sps.vui.color_description_present_flag;
+		vk_sps_vui->flags.chroma_loc_info_present_flag = rd_sps.vui.chroma_loc_info_present_flag;
+		vk_sps_vui->flags.timing_info_present_flag = rd_sps.vui.timing_info_present_flag;
+		vk_sps_vui->flags.fixed_frame_rate_flag = rd_sps.vui.fixed_frame_rate_flag;
+		vk_sps_vui->flags.bitstream_restriction_flag = rd_sps.vui.bitstream_restriction_flag;
+		vk_sps_vui->flags.nal_hrd_parameters_present_flag = rd_sps.vui.nal_hrd_parameters_present_flag;
+		vk_sps_vui->flags.vcl_hrd_parameters_present_flag = rd_sps.vui.vcl_hrd_parameters_present_flag;
+
+		vk_sps_vui->aspect_ratio_idc = StdVideoH264AspectRatioIdc(rd_sps.vui.aspect_ratio_idc);
+
+		vk_sps_vui->sar_width = rd_sps.vui.sar_width;
+		vk_sps_vui->sar_height = rd_sps.vui.sar_height;
+
+		vk_sps_vui->video_format = rd_sps.vui.video_format;
+
+		vk_sps_vui->colour_primaries = rd_sps.vui.colour_primaries;
+		vk_sps_vui->transfer_characteristics = rd_sps.vui.transfer_characteristics;
+		vk_sps_vui->matrix_coefficients = rd_sps.vui.matrix_coefficients;
+
+		vk_sps_vui->num_units_in_tick = rd_sps.vui.num_units_in_tick;
+		vk_sps_vui->time_scale = rd_sps.vui.time_scale;
+
+		vk_sps_vui->max_num_reorder_frames = rd_sps.vui.max_num_reorder_frames;
+		vk_sps_vui->max_dec_frame_buffering = rd_sps.vui.max_dec_frame_buffering;
+
+		vk_sps_vui->chroma_sample_loc_type_top_field = rd_sps.vui.chroma_sample_loc_type_top_field;
+		vk_sps_vui->chroma_sample_loc_type_bottom_field = rd_sps.vui.chroma_sample_loc_type_bottom_field;
+
+		vk_sps.pSequenceParameterSetVui = vk_sps_vui;
 
 		sps_sets.push_back(vk_sps);
 	}

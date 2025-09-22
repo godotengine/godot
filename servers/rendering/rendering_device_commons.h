@@ -408,6 +408,10 @@ public:
 
 	};
 
+	enum VideoCodingH264AspectRatioIdc {
+
+	};
+
 	struct VideoCodingH264SequenceParameterSet {
 		VideoCodingH264ProfileIdc profile_idc;
 
@@ -463,10 +467,42 @@ public:
 		uint32_t frame_crop_top_offset;
 		uint32_t frame_crop_bottom_offset;
 
-		// TODO
 		bool vui_parameters_present_flag;
 		struct {
-		} sequence_parameter_set_vui;
+			bool aspect_ratio_info_present_flag;
+			VideoCodingH264AspectRatioIdc aspect_ratio_idc;
+			uint16_t sar_width;
+			uint16_t sar_height;
+
+			bool overscan_info_present_flag;
+			bool overscan_appropriate_flag;
+
+			bool video_signal_type_present_flag;
+			uint8_t video_format;
+			bool video_full_range_flag;
+			bool color_description_present_flag;
+			uint8_t colour_primaries;
+			uint8_t transfer_characteristics;
+			uint8_t matrix_coefficients;
+
+			bool chroma_loc_info_present_flag;
+			uint8_t chroma_sample_loc_type_top_field;
+			uint8_t chroma_sample_loc_type_bottom_field;
+
+			bool timing_info_present_flag;
+			uint32_t num_units_in_tick;
+			uint32_t time_scale;
+			bool fixed_frame_rate_flag;
+
+			bool nal_hrd_parameters_present_flag;
+			bool vcl_hrd_parameters_present_flag;
+
+			bool bitstream_restriction_flag;
+			uint8_t max_num_reorder_frames;
+			uint8_t max_dec_frame_buffering;
+
+			// TODO hdr parameters
+		} vui;
 	};
 
 	struct VideoCodingH264PictureParameterSet {

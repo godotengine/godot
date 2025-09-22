@@ -54,6 +54,7 @@ private:
 	RD::VideoProfile video_profile = {};
 
 	RD::VideoCodingH264SequenceParameterSet active_sps;
+	RD::VideoCodingH264PictureParameterSet active_pps;
 	Vector<RD::VideoCodingH264SequenceParameterSet> sps_sets;
 	Vector<RD::VideoCodingH264PictureParameterSet> pps_sets;
 

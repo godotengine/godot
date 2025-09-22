@@ -678,13 +678,11 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 
 						if (video_id == 0xB0) {
 							width = read_uint();
-							print_line(vformat("width %d", width));
 							continue;
 						}
 
 						if (video_id == 0xBA) {
 							height = read_uint();
-							print_line(vformat("height %d", height));
 							continue;
 						}
 					}

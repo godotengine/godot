@@ -107,9 +107,7 @@ void VideoStreamH264::parse_container_metadata(const uint8_t *p_stream, uint64_t
 
 	target_level_idc = read_bits(8);
 
-	// TODO what is this?
-	uint8_t length_size = (read_bits(8) & 0b11) + 1;
-	print_line(vformat("length size %d", length_size));
+	read_bits(8); // & 0b11 + 1. length_size
 
 	uint8_t sps_set_count = read_bits(8) & 0b11111;
 	for (uint8_t set = 0; set < sps_set_count; set++) {
@@ -254,6 +252,8 @@ void VideoStreamH264::parse_nal_unit(uint64_t p_size, bool p_is_metadata) {
 			RD::VideoCodingH264PictureParameterSet pps = parse_picture_parameter_set(p_size - 1);
 			if (p_is_metadata) {
 				pps_sets.push_back(pps);
+			} else {
+				active_pps = pps;
 			}
 			print_line(vformat("Read %d/%d bytes of a PPS", (uint64_t)(src - start), p_size));
 		} break;
@@ -278,12 +278,20 @@ RD::VideoCodingH264SequenceParameterSet VideoStreamH264::parse_sequence_paramete
 	sequence_parameter_set.constraint_set5_flag = (flags & (1 << 2)) > 0;
 
 	sequence_parameter_set.level_idc = read_bits(8);
-	print_line("sps level", sequence_parameter_set.level_idc);
 
 	sequence_parameter_set.seq_parameter_set_id = read_ue();
 
 	if (sequence_parameter_set.profile_idc == RD::VIDEO_CODING_H264_PROFILE_IDC_HIGH || sequence_parameter_set.profile_idc == RD::VIDEO_CODING_H264_PROFILE_IDC_HIGH_PREDICTIVE) {
-		sequence_parameter_set.chroma_format_idc = RD::VideoCodingChromaSubsampling(read_ue());
+		uint8_t chroma_format = read_ue();
+		if (chroma_format == 0) {
+			sequence_parameter_set.chroma_format_idc = RD::CHROMA_SUBSAMPLING_MONOCHROME;
+		} else if (chroma_format == 1) {
+			sequence_parameter_set.chroma_format_idc = RD::CHROMA_SUBSAMPLING_420;
+		} else if (chroma_format == 2) {
+			sequence_parameter_set.chroma_format_idc = RD::CHROMA_SUBSAMPLING_422;
+		} else if (chroma_format == 3) {
+			sequence_parameter_set.chroma_format_idc = RD::CHROMA_SUBSAMPLING_444;
+		}
 
 		if (sequence_parameter_set.chroma_format_idc == RD::CHROMA_SUBSAMPLING_444) {
 			sequence_parameter_set.separate_colour_plane_flag = read_bits(1) > 0;
@@ -302,6 +310,7 @@ RD::VideoCodingH264SequenceParameterSet VideoStreamH264::parse_sequence_paramete
 				sequence_parameter_set.scaling_lists.scaling_list_present_mask |= present << i;
 				if (present) {
 					if (i < 6) {
+						// TODO
 						print_line("skipping 4x4 seq scaling lists");
 					} else {
 						print_line("skipping 8x8 seq scaling lists");
@@ -317,11 +326,8 @@ RD::VideoCodingH264SequenceParameterSet VideoStreamH264::parse_sequence_paramete
 	if (sequence_parameter_set.pic_order_cnt_type == RD::VIDEO_CODING_H264_POC_TYPE_0) {
 		sequence_parameter_set.log2_max_pic_order_cnt_lsb_minus4 = read_ue();
 	} else if (sequence_parameter_set.pic_order_cnt_type == RD::VIDEO_CODING_H264_POC_TYPE_1) {
+		// TODO
 		print_line("skipping pic_order_cnt_type type 1");
-	} else if (sequence_parameter_set.pic_order_cnt_type == RD::VIDEO_CODING_H264_POC_TYPE_2) {
-		print_line("skipping pic_order_cnt_type type 2");
-	} else {
-		print_line("Inavalid H.264 pic_order_cnt_type");
 	}
 
 	sequence_parameter_set.max_num_ref_frames = read_ue();
@@ -332,14 +338,13 @@ RD::VideoCodingH264SequenceParameterSet VideoStreamH264::parse_sequence_paramete
 	sequence_parameter_set.pic_height_in_map_units_minus1 = read_ue();
 
 	sequence_parameter_set.frame_mbs_only_flag = read_bits(1) > 0;
-
 	if (!sequence_parameter_set.frame_mbs_only_flag) {
 		sequence_parameter_set.mb_adaptive_frame_field_flag = read_bits(1) > 0;
 	}
 
 	sequence_parameter_set.direct_8x8_inference_flag = read_bits(1) > 0;
-	sequence_parameter_set.frame_cropping_flag = read_bits(1) > 0;
 
+	sequence_parameter_set.frame_cropping_flag = read_bits(1) > 0;
 	if (sequence_parameter_set.frame_cropping_flag) {
 		sequence_parameter_set.frame_crop_left_offset = read_ue();
 		sequence_parameter_set.frame_crop_right_offset = read_ue();
@@ -349,66 +354,64 @@ RD::VideoCodingH264SequenceParameterSet VideoStreamH264::parse_sequence_paramete
 
 	sequence_parameter_set.vui_parameters_present_flag = read_bits(1) > 0;
 	if (sequence_parameter_set.vui_parameters_present_flag) {
-		StdVideoH264SequenceParameterSetVui sps_vui;
-
-		sps_vui.flags.aspect_ratio_info_present_flag = read_bits(1) > 0;
-		if (sps_vui.flags.aspect_ratio_info_present_flag) {
-			sps_vui.aspect_ratio_idc = StdVideoH264AspectRatioIdc(read_bits(8));
-			if (sps_vui.aspect_ratio_idc == STD_VIDEO_H264_ASPECT_RATIO_IDC_EXTENDED_SAR) {
-				sps_vui.sar_width = read_bits(16);
-				sps_vui.sar_height = read_bits(16);
+		sequence_parameter_set.vui.aspect_ratio_info_present_flag = read_bits(1) > 0;
+		if (sequence_parameter_set.vui.aspect_ratio_info_present_flag) {
+			sequence_parameter_set.vui.aspect_ratio_idc = RD::VideoCodingH264AspectRatioIdc(read_bits(8));
+			if (sequence_parameter_set.vui.aspect_ratio_idc == STD_VIDEO_H264_ASPECT_RATIO_IDC_EXTENDED_SAR) {
+				sequence_parameter_set.vui.sar_width = read_bits(16);
+				sequence_parameter_set.vui.sar_height = read_bits(16);
 			}
 		}
 
-		sps_vui.flags.overscan_info_present_flag = read_bits(1) > 0;
-		if (sps_vui.flags.overscan_info_present_flag) {
-			sps_vui.flags.overscan_appropriate_flag = read_bits(1) > 0;
+		sequence_parameter_set.vui.overscan_info_present_flag = read_bits(1) > 0;
+		if (sequence_parameter_set.vui.overscan_info_present_flag) {
+			sequence_parameter_set.vui.overscan_appropriate_flag = read_bits(1) > 0;
 		}
 
-		sps_vui.flags.video_signal_type_present_flag = read_bits(1) > 0;
-		if (sps_vui.flags.video_signal_type_present_flag) {
-			sps_vui.video_format = read_bits(3);
+		sequence_parameter_set.vui.video_signal_type_present_flag = read_bits(1) > 0;
+		if (sequence_parameter_set.vui.video_signal_type_present_flag) {
+			sequence_parameter_set.vui.video_format = read_bits(3);
 
-			sps_vui.flags.video_full_range_flag = read_bits(1) > 0;
+			sequence_parameter_set.vui.video_full_range_flag = read_bits(1) > 0;
 
-			sps_vui.flags.color_description_present_flag = read_bits(1) > 0;
-			if (sps_vui.flags.color_description_present_flag) {
-				sps_vui.colour_primaries = read_bits(8);
-				sps_vui.transfer_characteristics = read_bits(8);
-				sps_vui.matrix_coefficients = read_bits(8);
+			sequence_parameter_set.vui.color_description_present_flag = read_bits(1) > 0;
+			if (sequence_parameter_set.vui.color_description_present_flag) {
+				sequence_parameter_set.vui.colour_primaries = read_bits(8);
+				sequence_parameter_set.vui.transfer_characteristics = read_bits(8);
+				sequence_parameter_set.vui.matrix_coefficients = read_bits(8);
 			}
 		}
 
-		sps_vui.flags.chroma_loc_info_present_flag = read_bits(1) > 0;
-		if (sps_vui.flags.chroma_loc_info_present_flag) {
-			sps_vui.chroma_sample_loc_type_top_field = read_ue();
-			sps_vui.chroma_sample_loc_type_bottom_field = read_ue();
+		sequence_parameter_set.vui.chroma_loc_info_present_flag = read_bits(1) > 0;
+		if (sequence_parameter_set.vui.chroma_loc_info_present_flag) {
+			sequence_parameter_set.vui.chroma_sample_loc_type_top_field = read_ue();
+			sequence_parameter_set.vui.chroma_sample_loc_type_bottom_field = read_ue();
 		}
 
-		sps_vui.flags.timing_info_present_flag = read_bits(1) > 0;
-		if (sps_vui.flags.timing_info_present_flag) {
-			sps_vui.num_units_in_tick = read_bits(32);
-			sps_vui.time_scale = read_bits(32);
-			sps_vui.flags.fixed_frame_rate_flag = read_bits(1) > 0;
+		sequence_parameter_set.vui.timing_info_present_flag = read_bits(1) > 0;
+		if (sequence_parameter_set.vui.timing_info_present_flag) {
+			sequence_parameter_set.vui.num_units_in_tick = read_bits(32);
+			sequence_parameter_set.vui.time_scale = read_bits(32);
+			sequence_parameter_set.vui.fixed_frame_rate_flag = read_bits(1) > 0;
 		}
 
-		sps_vui.flags.nal_hrd_parameters_present_flag = read_bits(1) > 0;
-		if (sps_vui.flags.nal_hrd_parameters_present_flag) {
+		sequence_parameter_set.vui.nal_hrd_parameters_present_flag = read_bits(1) > 0;
+		if (sequence_parameter_set.vui.nal_hrd_parameters_present_flag) {
 			print_line("skipping nal_hrd_parameters_present_flag");
 		}
 
-		sps_vui.flags.vcl_hrd_parameters_present_flag = read_bits(1) > 0;
-		if (sps_vui.flags.vcl_hrd_parameters_present_flag) {
+		sequence_parameter_set.vui.vcl_hrd_parameters_present_flag = read_bits(1) > 0;
+		if (sequence_parameter_set.vui.vcl_hrd_parameters_present_flag) {
 			print_line("skipping vcl_hrd_parameters_present_flag");
 		}
 
-		if (sps_vui.flags.nal_hrd_parameters_present_flag || sps_vui.flags.vcl_hrd_parameters_present_flag) {
+		if (sequence_parameter_set.vui.nal_hrd_parameters_present_flag || sequence_parameter_set.vui.vcl_hrd_parameters_present_flag) {
 			read_bits(1); // low_delay_hrd_flag
 		}
 
 		read_bits(1); // pic_struct_present_flag
-		sps_vui.flags.bitstream_restriction_flag = read_bits(1) > 0;
-		if (sps_vui.flags.bitstream_restriction_flag) {
+		sequence_parameter_set.vui.bitstream_restriction_flag = read_bits(1) > 0;
+		if (sequence_parameter_set.vui.bitstream_restriction_flag) {
 			read_bits(1); // motion_vectors_over_pic_boundaries_flag
 
 			read_ue(); // max_bytes_per_pic_denom
@@ -417,9 +420,14 @@ RD::VideoCodingH264SequenceParameterSet VideoStreamH264::parse_sequence_paramete
 			read_ue(); // log2_max_mv_length_horizontal
 			read_ue(); // log2_max_mv_length_vertical
 
-			sps_vui.max_num_reorder_frames = read_ue();
-			sps_vui.max_dec_frame_buffering = read_ue();
+			sequence_parameter_set.vui.max_num_reorder_frames = read_ue();
+			sequence_parameter_set.vui.max_dec_frame_buffering = read_ue();
 		}
+	}
+
+	if (shift != 7) {
+		read_bits(1); // rbsp_stop_one_bit
+		read_bits(shift + 1); // rbsp_alignment_zero_bit
 	}
 
 	return sequence_parameter_set;
@@ -464,6 +472,11 @@ RD::VideoCodingH264PictureParameterSet VideoStreamH264::parse_picture_parameter_
 		}
 
 		picture_parameter_set.second_chroma_qp_index_offset = read_se();
+	}
+
+	if (shift != 7) {
+		read_bits(1); // rbsp_stop_one_bit
+		read_bits(shift + 1); // rbsp_alignment_zero_bit
 	}
 
 	return picture_parameter_set;
@@ -528,6 +541,7 @@ StdVideoDecodeH264PictureInfo VideoStreamH264::parse_slice_header(uint64_t p_siz
 
 	slice_header.flags.is_intra = slice_type == 2 || slice_type == 4 || slice_type == 7 || slice_type == 9;
 
+	// TODO: use PPS to determine SPS
 	slice_header.seq_parameter_set_id = active_sps.seq_parameter_set_id;
 	slice_header.pic_parameter_set_id = read_ue();
 
@@ -561,6 +575,10 @@ StdVideoDecodeH264PictureInfo VideoStreamH264::parse_slice_header(uint64_t p_siz
 		uint64_t pic_order_cnt_lsb_size = active_sps.log2_max_pic_order_cnt_lsb_minus4 + 4;
 		pic_order_cnt_lsb = read_bits(pic_order_cnt_lsb_size);
 		print_line(vformat("pic order cnt lsb %d", pic_order_cnt_lsb));
+
+		if (active_pps.bottom_field_pic_order_in_frame_present_flag && !slice_header.flags.field_pic_flag) {
+			read_se(); // delta_pic_order_cnt_bottom
+		}
 
 		if (pic_order_cnt_lsb < prev_pic_order_cnt_lsb && prev_pic_order_cnt_lsb - pic_order_cnt_lsb >= (max_pic_order_cnt_lsb / 2)) {
 			pic_order_cnt_msb = prev_pic_order_cnt_msb + max_pic_order_cnt_lsb;
