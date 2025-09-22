@@ -1515,7 +1515,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 			}
 		} else if (member.type == GDScriptParser::ClassNode::Member::SIGNAL) {
 #ifdef DEBUG_ENABLED
-			if (member.signal->usages == 0) {
+			if (member.signal->usages == 0 && !p_class->is_abstract) {
 				parser->push_warning(member.signal->identifier, GDScriptWarning::UNUSED_SIGNAL, member.signal->identifier->name);
 			}
 #endif // DEBUG_ENABLED
