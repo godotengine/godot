@@ -4982,7 +4982,7 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line
 	// If IME is active, return current cursor position directly to prevent crash.
 	if (has_ime_text()) {
 		return Point2i(get_caret_column(), get_caret_line());
-	}  
+	}
 	float rows = p_pos.y - theme_cache.style_normal->get_margin(SIDE_TOP);
 	if (!editable) {
 		rows -= theme_cache.style_readonly->get_offset().y / 2;
