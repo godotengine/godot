@@ -110,7 +110,7 @@ public class DownloadThread {
      * headers, or destination filename.
      */
     private class StopRequest extends Throwable {
-    	
+
         private static final long serialVersionUID = 6338592678988347973L;
         public int mFinalStatus;
 
