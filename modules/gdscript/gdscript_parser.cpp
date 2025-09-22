@@ -3595,6 +3595,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_preload(ExpressionNode *p_
 
 	pop_completion_call();
 
+	// Allow trailing comma.
+	match(GDScriptTokenizer::Token::COMMA);
+
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after preload path.)*");
 	complete_extents(preload);
