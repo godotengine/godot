@@ -2472,7 +2472,6 @@ void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 	window->set_flag(Window::FLAG_MOUSE_PASSTHROUGH, true);
 	window->set_flag(Window::FLAG_NO_FOCUS, true);
 	window->set_flag(Window::FLAG_TRANSPARENT, true);
-	window->wrap_controls = true;
 	window->set_size(Size2i(0, 0));
 	p_base->get_root_parent_control()->add_child(window);
 
