@@ -105,16 +105,6 @@ void LayerRenderer::_draw_preview_texture(Node2D *parent_node, const DrawContext
 	}
 }
 
-void LayerRenderer::_draw_a_star_path(Node2D *parent_node, const DrawContext &ctx) {
-    if(ctx.hook_path.is_empty())
-        return;
-
-    for(auto item : ctx.hook_path){
-        parent_node->draw_circle(item + ctx.cell_size / 2.0, 6.0, Color(1, 1, 1));
-    }
-    ctx.hook_path.clear();
-}
-
 void LayerRenderer::draw(Node2D *parent_node, const DrawContext &ctx) {
     Vector2 local_mouse = ctx.map_layer->to_local(ctx.mouse_pos);
 	Vector2i hover_coords = ctx.map_layer->local_to_map(local_mouse);
@@ -123,17 +113,15 @@ void LayerRenderer::draw(Node2D *parent_node, const DrawContext &ctx) {
     _draw_axis(parent_node, ctx);
 	_draw_grid(parent_node, ctx, hover_pos);
 	_draw_preview_texture(parent_node, ctx, hover_pos);
-    _draw_a_star_path(parent_node, ctx);
 }
 
 void SpxDrawTiles::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_layer_index", "index"), &SpxDrawTiles::set_layer_index);
     ClassDB::bind_method(D_METHOD("set_texture", "texture", "with_collision"), &SpxDrawTiles::set_texture);
-    ClassDB::bind_method(D_METHOD("place_tile", "coords"), &SpxDrawTiles::place_tile);
-    ClassDB::bind_method(D_METHOD("erase_tile", "coords"), &SpxDrawTiles::erase_tile);
+    ClassDB::bind_method(D_METHOD("set_tile_size", "size"), &SpxDrawTiles::set_tile_size);
     ClassDB::bind_method(D_METHOD("undo"), &SpxDrawTiles::undo);
     ClassDB::bind_method(D_METHOD("redo"), &SpxDrawTiles::redo);
-    ClassDB::bind_method(D_METHOD("handle_mouse_click", "pos", "erase"), &SpxDrawTiles::handle_mouse_click);
+    ClassDB::bind_method(D_METHOD("place_or_erase_tile", "pos", "erase"), &SpxDrawTiles::place_or_erase_tile);
     ClassDB::bind_method(D_METHOD("clear_all_layers"), &SpxDrawTiles::clear_all_layers);
     ClassDB::bind_method(D_METHOD("enter_editor_mode"), &SpxDrawTiles::enter_editor_mode);
     ClassDB::bind_method(D_METHOD("exit_editor_mode"), &SpxDrawTiles::exit_editor_mode);
@@ -152,9 +140,10 @@ void SpxDrawTiles::_notification(int p_what) {
 void SpxDrawTiles::_ready() {
     set_process(true); 
     set_process_input(true);
-    shared_tile_set.instantiate();
-    shared_tile_set->set_tile_size(CELL_SIZE);
     set_z_index(1000);
+
+    shared_tile_set.instantiate();
+    shared_tile_set->set_tile_size(default_cell_size);
 }
 
 void SpxDrawTiles::_draw() {
@@ -162,12 +151,13 @@ void SpxDrawTiles::_draw() {
         return;
     
     TileMapLayer *layer = _get_layer(current_layer_index);
-    if (!layer) 
+    if (!layer){
         return;
+    }
 
     DrawContext ctx;
     ctx.set_layer(layer)
-       .set_cell_size(CELL_SIZE)
+       .set_cell_size(default_cell_size)
        .set_grid_color(GRID_COLOR)
        .set_axis_width(AXIS_WIDTH)
        .set_guide_rect_radius(GUIDE_RECT_RADIUS)
@@ -175,21 +165,23 @@ void SpxDrawTiles::_draw() {
        .set_mouse_pos(get_global_mouse_position())
        .set_current_texture(current_texture)
        .set_flipped_axis(axis_flipped)
-       .set_axis_dragging(axis_flipped)
-       .set_a_star_path(hook_path);
+       .set_axis_dragging(axis_flipped);
 
     renderer.draw(this, ctx);
 }
 
-void SpxDrawTiles::input(const Ref<InputEvent> &event) {
+void SpxDrawTiles::input(const Ref<InputEvent> &p_event) {
     if(exit_editor)
         return;
 
     TileMapLayer *layer = _get_layer(current_layer_index);
     if (!layer) 
         return;
+    
+    Ref<InputEventMouseButton> mb = p_event;
+    Ref<InputEventMouseMotion> mm = p_event;
 
-    if (const InputEventMouseButton *mb = Object::cast_to<InputEventMouseButton>(event.ptr())) {
+    if (mb.is_valid()) {
         if (mb->get_button_index() == MouseButton::LEFT) {
             if (mb->is_pressed()) {
                 auto mouse_pos = get_global_mouse_position();
@@ -209,12 +201,12 @@ void SpxDrawTiles::input(const Ref<InputEvent> &event) {
         }
     }
 
-    if (event->is_class("InputEventMouseMotion")) {
+    if (mm.is_valid()) {
         if(axis_dragging) {
             Vector2 delta = get_global_mouse_position() - drag_start;
             layer->set_global_position(layer_start_pos + delta);
         }else if(tile_placing) {
-            handle_mouse_click(get_global_mouse_position(), Input::get_singleton()->is_key_pressed(Key::SHIFT));
+            place_or_erase_tile(get_global_mouse_position(), Input::get_singleton()->is_key_pressed(Key::SHIFT));
         }
 
         queue_redraw();
@@ -222,33 +214,33 @@ void SpxDrawTiles::input(const Ref<InputEvent> &event) {
 }
 
 // spx interface
-void SpxDrawTiles::set_sprite_index(GdInt index) {
+void SpxDrawTiles::set_layer_index_spx(GdInt index) {
     axis_flipped = true;
     set_layer_index(index);
 }
 
-void SpxDrawTiles::place_sprites(GdArray positions, GdString texture_path) {
-    place_sprites(positions, texture_path, current_layer_index);
+void SpxDrawTiles::place_tiles_spx(GdArray positions, GdString texture_path) {
+    place_tiles_spx(positions, texture_path, current_layer_index);
 }
 
-void SpxDrawTiles::place_sprites(GdArray positions, GdString texture_path, GdInt index) {
+void SpxDrawTiles::place_tiles_spx(GdArray positions, GdString texture_path, GdInt index) {
     set_layer_index(index);
-    set_sprite_texture(texture_path, true);
-    _place_sprites_bulk(positions);
+    set_tile_texture_spx(texture_path, true);
+    _place_tiles_bulk_spx(positions);
 }
 
-void SpxDrawTiles::place_sprite(GdVec2 pos, GdString texture_path) {
-    place_sprite(pos, texture_path, current_layer_index);
+void SpxDrawTiles::place_tile_spx(GdVec2 pos, GdString texture_path) {
+    place_tile_spx(pos, texture_path, current_layer_index);
 }
 
-void SpxDrawTiles::place_sprite(GdVec2 pos, GdString texture_path, GdInt index) {
+void SpxDrawTiles::place_tile_spx(GdVec2 pos, GdString texture_path, GdInt index) {
     set_layer_index(index);
-    set_sprite_texture(texture_path, true);
-    _place_sprite(pos);
+    set_tile_texture_spx(texture_path, true);
+    _place_tile_spx(pos);
 }
 
-void SpxDrawTiles::erase_sprite(GdVec2 pos, GdInt layer_index) {
-    auto flipped_pos = pos * Vector2(1, -1);
+void SpxDrawTiles::erase_tile_spx(GdVec2 pos, GdInt layer_index) {
+    auto flipped_pos = flip_y(pos);
 
     auto erase_at_layer = [&](TileMapLayer* layer) {
         if (!layer) return;
@@ -259,27 +251,25 @@ void SpxDrawTiles::erase_sprite(GdVec2 pos, GdInt layer_index) {
     };
 
     if(layer_index != -1){
-        if(layer_map.has(layer_index)){
-            erase_at_layer(layer_map[layer_index]);
+        if(index_layer_map.has(layer_index)){
+            erase_at_layer(index_layer_map[layer_index]);
         }
         return;
     }
 
-    for (auto& item : layer_map) {
+    for (auto& item : index_layer_map) {
         erase_at_layer(item.value);
     }
 }
 
-GdString SpxDrawTiles::get_sprite(GdVec2 pos, GdInt layer_index) {
-    auto flipped_pos = pos * Vector2(1, -1);
-
+GdString SpxDrawTiles::get_tile_spx(GdVec2 pos, GdInt layer_index) {
     if(layer_index == -1){
         layer_index = max_layer_index;
     }
 
-    if(layer_map.has(layer_index)){
-        auto layer = layer_map[layer_index];
-        Vector2 local_pos = layer->to_local(flipped_pos);
+    if(index_layer_map.has(layer_index)){
+        auto layer = index_layer_map[layer_index];
+        Vector2 local_pos = layer->to_local(flip_y(pos));
         Vector2i coords = layer->local_to_map(local_pos);
         return SpxReturnStr(_get_tile_texture_path(layer, coords));
     }
@@ -288,35 +278,37 @@ GdString SpxDrawTiles::get_sprite(GdVec2 pos, GdInt layer_index) {
     
 }
 
-GdString SpxDrawTiles::get_sprite(GdVec2 pos) {
-	return get_sprite(pos, current_layer_index);
+GdString SpxDrawTiles::get_tile_spx(GdVec2 pos) {
+	return get_tile_spx(pos, current_layer_index);
 }
 
-void SpxDrawTiles::set_sprite_texture(GdString texture_path, GdBool with_collision) {
+void SpxDrawTiles::set_tile_texture_spx(GdString texture_path, GdBool with_collision) {
 	String path = SpxStr(texture_path);
 	Ref<Texture2D> tex;
-    if(path_cached_textures.has(path)){
-        tex = path_cached_textures[path];
+    if(path_cached_textures_bimap.has_key(path)){
+        tex = path_cached_textures_bimap.get_value(path);
     } else {
         tex = resMgr->load_texture(path, true);
         if(!tex.is_null() && tex.is_valid())
-            path_cached_textures[path] = tex;
+            path_cached_textures_bimap.insert(path, tex);
     }                   
 
     set_texture(tex, with_collision);
 }
 
-void SpxDrawTiles::erase_sprite(GdVec2 pos) {
-    handle_mouse_click(pos * Vector2(1, -1), true);
+void SpxDrawTiles::erase_tile_spx(GdVec2 pos) {
+    place_or_erase_tile(flip_y(pos), true);
 }
 
-void SpxDrawTiles::_place_sprites_bulk(GdArray positions) {
-    if (!positions)
+void SpxDrawTiles::_place_tiles_bulk_spx(GdArray positions) {
+    if (!positions){
         return;
+    }
 
     TileMapLayer *layer = _get_layer(current_layer_index);
-    if (layer == nullptr)
+    if (!layer){
         return;
+    }
 
     int source_id = _get_or_create_source_id(current_texture);
     Vector2i atlas_coord(0,0);
@@ -327,31 +319,15 @@ void SpxDrawTiles::_place_sprites_bulk(GdArray positions) {
         auto y = *(SpxBaseMgr::get_array<float>(positions, i + 1));
 
         Vector2 pos = {x, y};
-        pos *= Vector2(1, -1);
-
-        Vector2 local_pos = layer->to_local(pos);
+        Vector2 local_pos = layer->to_local(flip_y(pos));
         Vector2i coords = layer->local_to_map(local_pos);
 
         layer->set_cell(coords, source_id, atlas_coord, 0);
     }
 }
 
-void SpxDrawTiles::_place_sprite(GdVec2 pos) {
-    handle_mouse_click(pos * Vector2(1, -1), false);
-}
-
-GdArray SpxDrawTiles::get_layer_point_path(GdVec2 p_from, GdVec2 p_to) {
-    auto path_points = get_point_path(p_from * Vector2(1, -1), p_to * Vector2(1, -1));
-    auto count = path_points.size();
-	GdArray result = SpxBaseMgr::create_array(GD_ARRAY_TYPE_FLOAT, count * 2);
-
-	for(auto i = 0; i < count; i ++){
-        auto idx = i * 2;
-		SpxBaseMgr::set_array(result, idx, path_points[i].x);
-		SpxBaseMgr::set_array(result, idx + 1, -path_points[i].y);
-	}
-
-	return result;
+void SpxDrawTiles::_place_tile_spx(GdVec2 pos) {
+    place_or_erase_tile(flip_y(pos), false);
 }
 
 void SpxDrawTiles::set_layer_index(int index) {
@@ -360,56 +336,73 @@ void SpxDrawTiles::set_layer_index(int index) {
     queue_redraw();
 }
 
+void SpxDrawTiles::set_layer_offset_spx(int layer_index, Vector2 offset) {
+    TileMapLayer *layer = _get_layer(layer_index);
+    if (!layer) {
+        return;
+    }
+
+    layer->set_position(flip_y(offset));
+}
+
+Vector2 SpxDrawTiles::get_layer_offset_spx(int layer_index) {
+    TileMapLayer *layer = _get_layer(layer_index);
+    if (!layer) {
+        return Vector2();
+    }
+
+    auto pos = layer->get_position();
+    return flip_y(pos);
+}
+
 void SpxDrawTiles::set_texture(Ref<Texture2D> texture, bool with_collision) {
     if (texture.is_null()) 
         return;
 
-    current_texture = _get_scaled_texture(texture);
+    current_texture = _get_or_create_scaled_texture(texture);
     _get_or_create_source_id(current_texture, with_collision);
     queue_redraw();
 }
 
-void SpxDrawTiles::set_texture_path(const String &texture_path) {
-    Ref<Texture2D> tex;
-    if(path_cached_textures.has(texture_path)){
-        tex = path_cached_textures[texture_path];
-    } else {
-        tex = ResourceLoader::load(texture_path);
-        if(!tex.is_null() && tex.is_valid())
-            path_cached_textures[texture_path] = tex;
-    }                   
-
-    set_texture(tex);
-}
-
-void SpxDrawTiles::place_tile(Vector2i coords) {
-    if (!current_texture.is_valid()) 
+void SpxDrawTiles::place_tile(TileMapLayer* layer, Vector2i coords) {
+    if (!current_texture.is_valid()){
         return;
-
-    TileMapLayer *layer = _get_or_create_layer(current_layer_index);
+    }
 
     int source_id = _get_or_create_source_id(current_texture);
-    Vector2i atlas_coord(0,0);
-    layer->set_cell(coords, source_id, atlas_coord, 0);
-
-    TileAction action{current_layer_index, coords, true, source_id, atlas_coord, 0};
-    undo_stack.push_back(action);
-    redo_stack.clear();
-    queue_redraw();
+    if (source_id != TileSet::INVALID_SOURCE) {
+        layer->set_cell(coords, source_id, default_atlas_coord, 0);
+        TileAction action{current_layer_index, coords, true, source_id, default_atlas_coord, 0};
+        undo_stack.push_back(action);
+        redo_stack.clear();
+        queue_redraw();
+    }
 }
 
-void SpxDrawTiles::erase_tile(Vector2i coords) {
-    TileMapLayer *layer = _get_layer(current_layer_index);
-    if (!layer) 
-        return;
-
+void SpxDrawTiles::erase_tile(TileMapLayer* layer, Vector2i coords) {
     int source_id = layer->get_cell_source_id(coords);
-    if ( source_id != TileSet::INVALID_SOURCE) {
-        TileAction action{current_layer_index, coords, false, source_id, Vector2i(0,0),0};
+    if (source_id != TileSet::INVALID_SOURCE) {
+        TileAction action{current_layer_index, coords, false, source_id, default_atlas_coord, 0};
         layer->erase_cell(coords);
         undo_stack.push_back(action);
         redo_stack.clear();
         queue_redraw();
+    }
+}
+
+void SpxDrawTiles::place_or_erase_tile(Vector2 pos, bool erase) {
+    TileMapLayer *layer = _get_layer(current_layer_index);
+    if(!layer){
+        return;
+    }
+
+    Vector2 local_pos = layer->to_local(pos);
+    Vector2i coords = layer->local_to_map(local_pos);
+
+    if (erase) {
+        erase_tile(layer, coords);
+    } else {
+        place_tile(layer, coords);
     }
 }
 
@@ -445,81 +438,10 @@ void SpxDrawTiles::redo() {
     undo_stack.push_back(action);
 }
 
-void SpxDrawTiles::handle_mouse_click(Vector2 pos, bool erase) {
-    TileMapLayer *layer = _get_layer(current_layer_index);
-    if(layer == nullptr) 
-        return;
-
-    Vector2 local_pos = layer->to_local(pos);
-    Vector2i coords = layer->local_to_map(local_pos);
-
-    if (erase) erase_tile(coords);
-    else place_tile(coords);
-}
-
 void SpxDrawTiles::clear_all_layers() {
     _destroy_layers();
     _clear_cache();
     queue_redraw();
-}
-
-void SpxDrawTiles::init_path_finder(){
-    if(!path_finder.is_valid()){
-        path_finder.instantiate();
-    }
-
-    path_finder->set_region(search_region);
-    path_finder->set_diagonal_mode(AStarGrid2D::DIAGONAL_MODE_NEVER);
-    path_finder->set_cell_size(CELL_SIZE);
-    path_finder->update();
-    
-    _set_point_solid();
-
-    auto count = get_child_count();
-    for (int i = 0; i < count; i++) {
-       auto node = get_child(i);
-       auto layer = node ? Object::cast_to<TileMapLayer>(node) : nullptr;
-       if(layer){
-            layer->set_navigation_enabled(true);
-       }
-    }
-}
-
-Vector<Vector2> SpxDrawTiles::get_point_path(const Vector2 &p_from, const Vector2 &p_to, bool p_allow_partial_path) {
-    if (!path_finder.is_valid()) {
-        init_path_finder();
-    }
-
-    TileMapLayer *layer = _get_layer(current_layer_index);
-    if (!layer) {
-        return Vector<Vector2>();
-    }
-
-    auto world_to_cell = [&](const Vector2 &world_pos) -> Vector2i {
-        return layer->local_to_map(layer->to_local(world_pos));
-    };
-
-    Vector2i coords_from = world_to_cell(p_from);
-    Vector2i coords_to   = world_to_cell(p_to);
-
-    if (!path_finder->is_in_bounds(coords_from.x, coords_to.y) 
-        || !path_finder->is_in_bounds(coords_to.x, coords_to.y)) {
-
-        if (!p_allow_partial_path) {
-            return Vector<Vector2>();
-        }
-    }
-
-    hook_path = path_finder->get_point_path(coords_from, coords_to, p_allow_partial_path);
-    return hook_path;
-}
-
-TypedArray<Vector2i> SpxDrawTiles::get_id_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path){
-    if(path_finder.is_valid()){
-        return path_finder->get_id_path(p_from, p_to, p_allow_partial_path);
-    }
-
-    return TypedArray<Vector2i>();
 }
 
 TileMapLayer* SpxDrawTiles::_get_or_create_layer(int layer_index) {
@@ -529,25 +451,6 @@ TileMapLayer* SpxDrawTiles::_get_or_create_layer(int layer_index) {
     }
 
     return layer;
-}
-
-Vector2 SpxDrawTiles::get_layer_offset(int layer_index) {
-    TileMapLayer *layer = _get_layer(layer_index);
-    if (!layer) {
-        return Vector2();
-    }
-    auto pos = layer->get_position();
-    pos.y = -pos.y;
-    return pos;
-}
-
-void SpxDrawTiles::set_layer_offset(int layer_index, Vector2 offset) {
-    TileMapLayer *layer = _get_layer(layer_index);
-    if (!layer) {
-        return;
-    }
-    offset.y = -offset.y;
-    layer->set_position(offset);
 }
 
 TileMapLayer* SpxDrawTiles::_get_layer(int layer_index) {
@@ -564,7 +467,7 @@ TileMapLayer *SpxDrawTiles::_create_layer(int layer_index) {
     layer->set_z_index(layer_index);
     layer->set_z_as_relative(false);
     layer->set_navigation_enabled(false);
-    layer_map[layer_index] = layer;
+    index_layer_map[layer_index] = layer;
     max_layer_index = MAX(layer_index, max_layer_index);
     add_child(layer);
     return layer;
@@ -576,17 +479,17 @@ int SpxDrawTiles::_get_or_create_source_id(Ref<Texture2D> scaled_texture, bool w
         return TileSet::INVALID_SOURCE;
     }
 
-    if (scaled_texture_source_ids.has(scaled_texture)) {
-        return scaled_texture_source_ids[scaled_texture];
+    if (scaled_texture_source_ids_bimap.has_key(scaled_texture)) {
+        return scaled_texture_source_ids_bimap.get_value(scaled_texture);
     }
 
-    if (CELL_SIZE.x > scaled_texture->get_size().x || CELL_SIZE.y > scaled_texture->get_size().y) {
+    if (default_cell_size.x > scaled_texture->get_size().x || default_cell_size.y > scaled_texture->get_size().y) {
         print_error("Tile size exceeds texture size!");
         return TileSet::INVALID_SOURCE;
     }
 
     int id = next_source_id++;
-    scaled_texture_source_ids[scaled_texture] = id;
+    scaled_texture_source_ids_bimap.insert(scaled_texture, id);
    
     shared_tile_set->add_physics_layer(0);
     shared_tile_set->set_physics_layer_collision_layer(0, 0xFFFF);
@@ -595,7 +498,7 @@ int SpxDrawTiles::_get_or_create_source_id(Ref<Texture2D> scaled_texture, bool w
     Ref<TileSetAtlasSource> atlas_source;
     atlas_source.instantiate();
     atlas_source->set_texture(scaled_texture);
-    atlas_source->set_texture_region_size(CELL_SIZE);
+    atlas_source->set_texture_region_size(default_cell_size);
     if(!_create_tile(atlas_source, Vector2i(0,0), with_collision)){
         print_error("Failed to create tile in atlas source!");
         return TileSet::INVALID_SOURCE;
@@ -615,7 +518,7 @@ bool SpxDrawTiles::_create_tile(Ref<TileSetAtlasSource> atlas_source, const Vect
         return true;
 
     atlas_source->add_physics_layer(0);
-    auto halfSize = CELL_SIZE.x / 2;
+    auto halfSize = default_cell_size.x / 2;
     Vector<Vector2> collision_rect = {
         Vector2(-halfSize, -halfSize),
         Vector2(halfSize, -halfSize),
@@ -628,29 +531,26 @@ bool SpxDrawTiles::_create_tile(Ref<TileSetAtlasSource> atlas_source, const Vect
 
     return true;
 }
-Ref<ImageTexture> SpxDrawTiles::_get_scaled_texture(Ref<Texture2D> texture) {
+Ref<ImageTexture> SpxDrawTiles::_get_or_create_scaled_texture(Ref<Texture2D> texture) {
 	if (texture.is_null()) {
 		return Ref<ImageTexture>();
 	}
 
-	if (texture_scaled_cache.has(texture)) {
-        return texture_scaled_cache[texture];
+	if (texture_scaled_cache_map.has(texture)) {
+        return texture_scaled_cache_map[texture];
     }
 
     Ref<Image> img = texture->get_image();
     //img->convert(Image::FORMAT_RGBA8);
-    img->resize(CELL_SIZE.x, CELL_SIZE.y, Image::INTERPOLATE_LANCZOS);
+    img->resize(default_cell_size.x, default_cell_size.y, Image::INTERPOLATE_LANCZOS);
        
     Ref<ImageTexture> scaled_tex;
     scaled_tex.instantiate();
     scaled_tex = scaled_tex->create_from_image(img);
-    texture_scaled_cache[texture] = scaled_tex;
+    texture_scaled_cache_map[texture] = scaled_tex;
 
-    for(auto& item : path_cached_textures){
-        if(item.value == texture){
-            scaled_texture_path[scaled_tex] = item.key;
-            break;
-        }
+    if(path_cached_textures_bimap.has_value(texture)){
+        scaled_texture_path_map[scaled_tex] = path_cached_textures_bimap.get_key(texture);
     }
 
     return scaled_tex;
@@ -662,18 +562,13 @@ String SpxDrawTiles::_get_tile_texture_path(TileMapLayer *layer, const Vector2i 
     int source_id = layer->get_cell_source_id(pos);
 
     if(source_id != TileSet::INVALID_SOURCE){
-        for(auto& item : scaled_texture_source_ids){
-            if(item.value == source_id){
-                return scaled_texture_path[item.key];
-            }
+        if(scaled_texture_source_ids_bimap.has_value(source_id)){
+            auto tex = scaled_texture_source_ids_bimap.get_key(source_id);
+            return scaled_texture_path_map[tex];
         }
     }
 
     return "";
-}
-
-void SpxDrawTiles::set_tile_size(int size){
-    CELL_SIZE = Vector2(size,size);
 }
 
 void SpxDrawTiles::_destroy_layers(){
@@ -691,36 +586,17 @@ void SpxDrawTiles::_destroy_layers(){
 void SpxDrawTiles::_clear_cache() {
     undo_stack.clear();
     redo_stack.clear();
-    scaled_texture_source_ids.clear();
-    texture_scaled_cache.clear();
+
+    path_cached_textures_bimap.clear();
+    scaled_texture_source_ids_bimap.clear();
+    texture_scaled_cache_map.clear();
+    scaled_texture_path_map.clear();
+    index_layer_map.clear();
 
     current_texture = nullptr;
     next_source_id = 1;
     current_layer_index = 0;
-
-    layer_map.clear();
     max_layer_index = -1;
-}
-
-void SpxDrawTiles::_set_point_solid() {
-	for (int i = get_child_count() - 1; i >= 0; i--) {
-		Node *child = get_child(i);
-		TileMapLayer *layer = Object::cast_to<TileMapLayer>(child);
-		if (layer) {
-			auto cells = layer->get_used_cells();
-			for (int j = 0; j < cells.size(); j++) {
-				Vector2i cell = cells[j];
-				auto tile_data = layer->get_cell_tile_data(cell);
-				if (!tile_data) {
-					continue;
-				}
-				bool has_collision = tile_data->get_collision_polygons_count(0);
-				if (has_collision) {
-					path_finder->set_point_solid(cell, true);
-				}
-			}
-		}
-	}
 }
 
 bool SpxDrawTiles::_apply_action(const TileAction &action, bool inverse) {

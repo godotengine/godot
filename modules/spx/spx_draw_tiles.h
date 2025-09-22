@@ -58,8 +58,6 @@ struct DrawContext {
     bool axis_flipped;
     bool axis_dragging;
 
-    mutable Vector<Vector2> hook_path;
-
     DrawContext& set_layer(TileMapLayer *layer) { map_layer = layer; return *this; }
     DrawContext& set_cell_size(Vector2i size) { cell_size = size; return *this; }
     DrawContext& set_grid_color(Color c) { grid_color = c; return *this; }
@@ -72,24 +70,63 @@ struct DrawContext {
     DrawContext& set_current_texture(Ref<Texture2D> tex) { current_texture = tex; return *this; }
     DrawContext& set_flipped_axis(bool flipped) { axis_flipped = flipped; return *this; }
     DrawContext& set_axis_dragging(bool dragging) { axis_dragging = dragging; return *this; }
-    DrawContext& set_a_star_path(Vector<Vector2>& path) { hook_path = path; path.clear(); return *this; }
 };
 
-class LayerRenderer{
 
+class LayerRenderer{
 private:
     void _draw_axis(Node2D *parent_node, const DrawContext &ctx); 
     void _draw_grid(Node2D *parent_node, const DrawContext &ctx, Vector2 hover_pos); 
     void _draw_used_rect(Node2D *parent_node, const DrawContext &ctx); 
     void _draw_guide_rect(Node2D *parent_node, const DrawContext &ctx, Vector2 hover_pos); 
     void _draw_preview_texture(Node2D *parent_node, const DrawContext &ctx, Vector2 hover_pos); 
-    void _draw_a_star_path(Node2D *parent_node, const DrawContext &ctx); 
 public:
     LayerRenderer() = default;
     ~LayerRenderer() = default;
 
     void draw(Node2D *parent_node, const DrawContext & ctx);
 };
+
+
+template<typename K, typename V>
+class BiMap {
+    HashMap<K, V> forward;
+    HashMap<V, K> backward;
+public:
+    void insert(const K &k, const V &v) {
+        forward[k] = v;
+        backward[v] = k;
+    }
+
+    bool has_key(const K &k) const { return forward.has(k); }
+    bool has_value(const V &v) const { return backward.has(v); }
+
+    V get_value(const K &k) const { return forward[k]; }
+    K get_key(const V &v) const { return backward[v]; }
+
+    void erase_by_key(const K &k) {
+        if (!forward.has(k)) return;
+        auto v = forward[k];
+        forward.erase(k);
+        backward.erase(v);
+    }
+
+    void erase_by_value(const V &v) {
+        if (!backward.has(v)) return;
+        auto k = backward[v];
+        backward.erase(v);
+        forward.erase(k);
+    }
+
+    void clear() {
+        forward.clear();
+        backward.clear();
+    }
+
+    int size() const { return forward.size(); }
+    bool empty() const { return forward.is_empty(); }
+};
+
 
 struct TileAction {
     int layer_index;
@@ -111,17 +148,18 @@ private:
     Vector<TileAction> undo_stack;
     Vector<TileAction> redo_stack;
 
-    HashMap<String, Ref<Texture2D>> path_cached_textures;
-    HashMap<Ref<Texture2D>, int> scaled_texture_source_ids;
-    HashMap<Ref<Texture2D>, Ref<ImageTexture>> texture_scaled_cache;
-    HashMap<Ref<ImageTexture>, String> scaled_texture_path;
-    HashMap<int, TileMapLayer*> layer_map;
+    BiMap<String, Ref<Texture2D>> path_cached_textures_bimap;
+    BiMap<Ref<Texture2D>, int> scaled_texture_source_ids_bimap;
+    HashMap<Ref<Texture2D>, Ref<ImageTexture>> texture_scaled_cache_map;
+    HashMap<Ref<ImageTexture>, String> scaled_texture_path_map;
+    HashMap<int, TileMapLayer*> index_layer_map;
     int max_layer_index = -1;
     int next_source_id = 1;
 
-    Vector2i CELL_SIZE = Vector2i(16, 16);
-    int current_layer_index = 0;
     const String UNIQUE_LAYER_PREFIX = "spx_draw_tiles_layer_";
+    Vector2i default_cell_size{16, 16};
+    Vector2i default_atlas_coord{0, 0};
+    int current_layer_index = 0;
 
     bool exit_editor = true;
     bool axis_flipped = false;
@@ -136,10 +174,6 @@ private:
     static constexpr float AXIS_WIDTH = 5;
     LayerRenderer renderer;
 
-    Rect2i search_region = Rect2i(Vector2i(-50, -50), Vector2i(100, 100));
-    Vector<Vector2> hook_path;
-    Ref<AStarGrid2D> path_finder; 
-
 protected:
     static void _bind_methods();
     void _notification(int p_what);
@@ -152,59 +186,50 @@ public:
     ~SpxDrawTiles() = default;
 
     // spx interface
-    void set_sprite_index(GdInt index);
-    void set_sprite_texture(GdString texture_path, GdBool with_collision);
-    void place_sprites(GdArray positions, GdString texture_path);
-    void place_sprites(GdArray positions, GdString texture_path, GdInt layer_index);
-    void place_sprite(GdVec2 pos, GdString texture_path);
-    void place_sprite(GdVec2 pos, GdString texture_path, GdInt layer_index);
-    void erase_sprite(GdVec2 pos, GdInt layer_index);
-    void erase_sprite(GdVec2 pos);
-    GdString get_sprite(GdVec2 pos, GdInt layer_index);
-    GdString get_sprite(GdVec2 pos);
+    void set_layer_index_spx(GdInt index);
+    void set_tile_texture_spx(GdString texture_path, GdBool with_collision);
+    void place_tiles_spx(GdArray positions, GdString texture_path);
+    void place_tiles_spx(GdArray positions, GdString texture_path, GdInt layer_index);
+    void place_tile_spx(GdVec2 pos, GdString texture_path);
+    void place_tile_spx(GdVec2 pos, GdString texture_path, GdInt layer_index);
+    void erase_tile_spx(GdVec2 pos, GdInt layer_index);
+    void erase_tile_spx(GdVec2 pos);
+    GdString get_tile_spx(GdVec2 pos, GdInt layer_index);
+    GdString get_tile_spx(GdVec2 pos);
 
-    GdArray get_layer_point_path(GdVec2 p_from, GdVec2 p_to);
-
+    _FORCE_INLINE_ void set_tile_size(int size = 16){default_cell_size = Vector2(size, size);};
     void set_layer_index(int index);
-    void set_layer_offset(int index, Vector2 offset);
-    Vector2 get_layer_offset(int index);
+    void set_layer_offset_spx(int index, Vector2 offset);
+    Vector2 get_layer_offset_spx(int index);
     void set_texture(Ref<Texture2D> texture, bool with_collision = true);
-    void set_texture_path(const String &texture_path);
 
-    void place_tile(Vector2i coords);
-    void erase_tile(Vector2i coords);
+    void place_tile(TileMapLayer* layer, Vector2i coords);
+    void erase_tile(TileMapLayer* layer, Vector2i coords);
+    void place_or_erase_tile(Vector2 pos, bool erase);
 
     void undo();
     void redo();
 
-    void handle_mouse_click(Vector2 pos, bool erase);
-
     void clear_all_layers();
 
-    void enter_editor_mode(){exit_editor = false;}
-    void exit_editor_mode(){exit_editor = true; queue_redraw();};
+    _FORCE_INLINE_ void enter_editor_mode(){exit_editor = false;}
+    _FORCE_INLINE_ void exit_editor_mode(){exit_editor = true; queue_redraw();};
 
-	void init_path_finder();
-
-	Vector<Vector2> get_point_path(const Vector2 &p_from, const Vector2 &p_to, bool p_allow_partial_path = false);
-	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path = false);
-
-    void set_tile_size(int size = 16);
 private:
     TileMapLayer* _get_or_create_layer(int layer_index);
     TileMapLayer* _get_layer(int layer_index);
     TileMapLayer* _create_layer(int layer_index);
     int _get_or_create_source_id(Ref<Texture2D> scaled_texture, bool with_collision = true);
     bool _create_tile(Ref<TileSetAtlasSource> atlas_source, const Vector2i &tile_coords, bool with_collision = true);
-    Ref<ImageTexture> _get_scaled_texture(Ref<Texture2D> texture);
+    Ref<ImageTexture> _get_or_create_scaled_texture(Ref<Texture2D> texture);
     String _get_tile_texture_path(TileMapLayer* layer, const Vector2i& pos);
 
-    void _place_sprites_bulk(GdArray positions);
-    void _place_sprite(GdVec2 pos);
+    void _place_tiles_bulk_spx(GdArray positions);
+    void _place_tile_spx(GdVec2 pos);
+    _FORCE_INLINE_ Vector2 flip_y(const Vector2 &pos) { return pos * Vector2(1, -1); }
 
     void _destroy_layers();
     void _clear_cache();
-	void _set_point_solid();
 
     bool _apply_action(const TileAction &action, bool inverse);
 };
