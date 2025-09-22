@@ -67,6 +67,8 @@ protected:
 	};
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::NODE;
+
 	// N.B. Any enum stored as a bitfield should be specified as UNSIGNED to work around
 	// some compilers trying to store it as signed, and requiring 1 more bit than necessary.
 	enum ProcessMode : unsigned int {

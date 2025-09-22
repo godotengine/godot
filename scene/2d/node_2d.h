@@ -55,6 +55,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::NODE_2D;
+
 #ifdef TOOLS_ENABLED
 	virtual Dictionary _edit_get_state() const override;
 	virtual void _edit_set_state(const Dictionary &p_state) override;

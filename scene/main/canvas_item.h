@@ -45,6 +45,8 @@ class CanvasItem : public Node {
 	friend class CanvasLayer;
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::CANVAS_ITEM;
+
 	enum TextureFilter {
 		TEXTURE_FILTER_PARENT_NODE,
 		TEXTURE_FILTER_NEAREST,
