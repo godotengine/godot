@@ -168,8 +168,7 @@ void SpxPathFinder::setup_grid(Vector2i size, Vector2i cell_size, bool with_debu
 	astar->set_region({-size / 2, size});
     astar->set_cell_size(cell_size);
     astar->set_diagonal_mode(AStarGrid2D::DIAGONAL_MODE_NEVER);
-    astar->set_jumping_enabled(true);
-    astar->update();
+	astar->update();
 
     Node* root = nullptr;
     if (SpxEngine::get_singleton()) {
@@ -189,6 +188,10 @@ void SpxPathFinder::setup_grid(Vector2i size, Vector2i cell_size, bool with_debu
             root->add_child(drawer);
         }
     }
+}
+
+void SpxPathFinder::set_jumping_enabled(bool p_enabled) {
+	astar->set_jumping_enabled(p_enabled);
 }
 
 void SpxPathFinder::add_all_obstacles(Node *root) {

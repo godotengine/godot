@@ -599,32 +599,38 @@ gdspx_ext_create_pure_sprite(texture_path,pos,zindex) {
 	FreeGdInt(_arg2); 
 
 }
-gdspx_ext_setup_path_finder_with_size(grid_size,cell_size,with_debug) {
+gdspx_ext_setup_path_finder_with_size(grid_size,cell_size,with_jump,with_debug) {
 	var _gdFuncPtr = Module._gdspx_ext_setup_path_finder_with_size; 
 	
 	var _arg0 = ToGdVec2(grid_size);
 	var _arg1 = ToGdVec2(cell_size);
-	var _arg2 = ToGdBool(with_debug);
-	_gdFuncPtr(_arg0, _arg1, _arg2);
+	var _arg2 = ToGdBool(with_jump);
+	var _arg3 = ToGdBool(with_debug);
+	_gdFuncPtr(_arg0, _arg1, _arg2, _arg3);
 	FreeGdVec2(_arg0); 
 	FreeGdVec2(_arg1); 
 	FreeGdBool(_arg2); 
+	FreeGdBool(_arg3); 
 
 }
-gdspx_ext_setup_path_finder() {
+gdspx_ext_setup_path_finder(with_jump) {
 	var _gdFuncPtr = Module._gdspx_ext_setup_path_finder; 
 	
-	_gdFuncPtr();
+	var _arg0 = ToGdBool(with_jump);
+	_gdFuncPtr(_arg0);
+	FreeGdBool(_arg0); 
 
 }
-gdspx_ext_find_path(p_from,p_to) {
+gdspx_ext_find_path(p_from,p_to,with_jump) {
 	var _gdFuncPtr = Module._gdspx_ext_find_path; 
 	var _retValue = AllocGdArray();
 	var _arg0 = ToGdVec2(p_from);
 	var _arg1 = ToGdVec2(p_to);
-	_gdFuncPtr(_arg0, _arg1, _retValue);
+	var _arg2 = ToGdBool(with_jump);
+	_gdFuncPtr(_arg0, _arg1, _arg2, _retValue);
 	FreeGdVec2(_arg0); 
 	FreeGdVec2(_arg1); 
+	FreeGdBool(_arg2); 
 	var _finalRetValue = ToJsArray(_retValue);
 	FreeGdArray(_retValue); 
 	return _finalRetValue
