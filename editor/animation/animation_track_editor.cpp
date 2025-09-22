@@ -2051,7 +2051,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	length->set_step(SECOND_DECIMAL);
 	length->set_allow_greater(true);
 	length->set_custom_minimum_size(Vector2(70 * EDSCALE, 0));
-	length->set_hide_slider(true);
+	length->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 	length->set_tooltip_text(TTR("Animation length (seconds)"));
 	length->set_accessibility_name(TTRC("Animation length (seconds)"));
 	length->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTimelineEdit::_anim_length_changed));
@@ -7970,7 +7970,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	step->set_min(0);
 	step->set_max(1000000);
 	step->set_step(SECOND_DECIMAL);
-	step->set_hide_slider(true);
+	step->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 	step->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	step->set_tooltip_text(TTR("Animation step value."));
 	step->set_accessibility_name(TTRC("Animation step value."));
