@@ -3839,12 +3839,13 @@ void RasterizerSceneGLES3::_render_uv2(const PagedArray<RenderGeometryInstance *
 		scene_state.enable_gl_depth_draw(true);
 		scene_state.set_gl_depth_func(GL_GREATER);
 
-		TightLocalVector<GLenum> draw_buffers;
-		draw_buffers.push_back(GL_COLOR_ATTACHMENT0);
-		draw_buffers.push_back(GL_COLOR_ATTACHMENT1);
-		draw_buffers.push_back(GL_COLOR_ATTACHMENT2);
-		draw_buffers.push_back(GL_COLOR_ATTACHMENT3);
-		glDrawBuffers(draw_buffers.size(), draw_buffers.ptr());
+		constexpr GLenum draw_buffers[]{
+			GL_COLOR_ATTACHMENT0,
+			GL_COLOR_ATTACHMENT1,
+			GL_COLOR_ATTACHMENT2,
+			GL_COLOR_ATTACHMENT3
+		};
+		glDrawBuffers(std::size(draw_buffers), draw_buffers);
 
 		glClearColor(0.0, 0.0, 0.0, 0.0);
 		RasterizerGLES3::clear_depth(0.0);
