@@ -4145,7 +4145,17 @@ int Main::start() {
 #endif // TOOLS_ENABLED
 
 	if (script.is_empty() && game_path.is_empty()) {
-		game_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
+		const String main_scene = GLOBAL_GET("application/run/main_scene");
+		if (main_scene.begins_with("uid://")) {
+			ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(main_scene);
+			if (!ResourceUID::get_singleton()->has_id(id) && !FileAccess::exists(ResourceUID::get_singleton()->get_cache_file())) {
+				OS::get_singleton()->alert("Main scene's path could not be resolved from UID. Make sure the project is imported first. Aborting.");
+				ERR_FAIL_V_MSG(EXIT_FAILURE, "Main scene's path could not be resolved from UID. Make sure the project is imported first. Aborting.");
+			}
+			game_path = ResourceUID::get_singleton()->get_id_path(id);
+		} else {
+			game_path = main_scene;
+		}
 	}
 
 #ifdef TOOLS_ENABLED
