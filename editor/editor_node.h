@@ -1014,6 +1014,8 @@ public:
 };
 
 class EditorPluginList : public Object {
+	GDSOFTCLASS(EditorPluginList, Object);
+
 private:
 	Vector<EditorPlugin *> plugins_list;
 
