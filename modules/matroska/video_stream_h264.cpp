@@ -45,7 +45,10 @@ RID VideoStreamH264::create_video_session(uint32_t p_width, uint32_t p_height) {
 	RD::get_singleton()->video_profile_get_capabilities(video_profile);
 	RD::get_singleton()->video_profile_get_format_properties(video_profile);
 
-	RenderingDeviceCommons::TextureFormat dpb_format;
+	Vector<RD::VideoProfile> video_profiles;
+	video_profiles.push_back(video_profile);
+
+	RD::TextureFormat dpb_format;
 	dpb_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
 	dpb_format.width = p_width;
 	dpb_format.height = p_height;
@@ -56,12 +59,13 @@ RID VideoStreamH264::create_video_session(uint32_t p_width, uint32_t p_height) {
 	//dpb_format.samples = RenderingDeviceCommons::TEXTURE_SAMPLES_16; // TODO huh?
 	dpb_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DPB_BIT;
 	dpb_format.shareable_formats.clear();
+	dpb_format.video_profiles = video_profiles;
 	dpb_format.is_resolve_buffer = false;
 	dpb_format.is_discardable = false;
 
-	dpb = RD::get_singleton()->texture_create_for_video_coding(dpb_format, RD::TextureView(), video_profile);
+	dpb_texture = RD::get_singleton()->texture_create(dpb_format, RD::TextureView());
 
-	RenderingDeviceCommons::TextureFormat dst_format;
+	RD::TextureFormat dst_format;
 	dst_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
 	dst_format.width = p_width;
 	dst_format.height = p_height;
@@ -72,11 +76,18 @@ RID VideoStreamH264::create_video_session(uint32_t p_width, uint32_t p_height) {
 	//dst_format.samples = RenderingDeviceCommons::TEXTURE_SAMPLES_16; // TODO huh?
 	dst_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DST_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 	dst_format.shareable_formats.clear();
+	dst_format.video_profiles = video_profiles;
 	dst_format.is_resolve_buffer = false;
 	dst_format.is_discardable = false;
 
-	dst_texture = RD::get_singleton()->texture_create_for_video_coding(dst_format, RD::TextureView(), video_profile);
-	return dst_texture;
+	RD::TextureView dst_view;
+	dst_view.use_sampler = true;
+
+	dst_texture = RD::get_singleton()->texture_create(dst_format, dst_view);
+
+	video_session = RD::get_singleton()->video_session_create(video_profile, RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM, p_width, p_height, 17);
+	RD::get_singleton()->video_session_add_h264_parameters(video_session, sps_sets, pps_sets);
+	return video_session;
 }
 
 // The Matroska "codec private" data for H264 is an AVCDecoderConfigurationRecord
@@ -100,21 +111,21 @@ void VideoStreamH264::parse_container_metadata(const uint8_t *p_stream, uint64_t
 	uint8_t length_size = (read_bits(8) & 0b11) + 1;
 	print_line(vformat("length size %d", length_size));
 
-	uint8_t sps_sets = read_bits(8) & 0b11111;
-	for (uint8_t set = 0; set < sps_sets; set++) {
-		const uint8_t *start = src;
+	uint8_t sps_set_count = read_bits(8) & 0b11111;
+	for (uint8_t set = 0; set < sps_set_count; set++) {
 		uint16_t sps_size = read_bits(16);
-		parse_nal_unit(sps_size);
-		src = start + 2 + sps_size;
+		const uint8_t *start = src;
+		parse_nal_unit(sps_size, true);
+		src = start + sps_size;
 		shift = 7;
 	}
 
-	uint8_t pps_sets = read_bits(8);
-	for (uint8_t set = 0; set < pps_sets; set++) {
-		const uint8_t *start = src;
+	uint8_t pps_set_count = read_bits(8);
+	for (uint8_t set = 0; set < pps_set_count; set++) {
 		uint16_t pps_size = read_bits(16);
-		parse_nal_unit(pps_size);
-		src = start + 2 + pps_size;
+		const uint8_t *start = src;
+		parse_nal_unit(pps_size, true);
+		src = start + pps_size;
 		shift = 7;
 	}
 
@@ -137,7 +148,7 @@ void VideoStreamH264::parse_container_metadata(const uint8_t *p_stream, uint64_t
 		for (uint8_t set = 0; set < sps_ext_sets; set++) {
 			const uint8_t *start = src;
 			uint16_t sps_ext_size = read_bits(16);
-			parse_nal_unit(sps_ext_size);
+			parse_nal_unit(sps_ext_size, true);
 			src = start + 2 + sps_ext_size;
 		}
 	}
@@ -145,7 +156,7 @@ void VideoStreamH264::parse_container_metadata(const uint8_t *p_stream, uint64_t
 
 void VideoStreamH264::begin_cluster() {
 	print_line("----------BEGIN CLUSTER--------------------");
-	video_coding_list = RD::get_singleton()->video_coding_list_begin(video_profile, dpb, active_sps, active_pps);
+	RD::get_singleton()->video_coding_begin(video_session, dpb_texture);
 
 	target_dpb_layer = 0;
 	target_dst_layer = 0;
@@ -161,7 +172,7 @@ void VideoStreamH264::append_container_block(Vector<uint8_t> p_buffer) {
 		uint64_t nal_size = read_bits(32);
 		const uint8_t *start = src;
 
-		parse_nal_unit(nal_size);
+		parse_nal_unit(nal_size, false);
 		total_read += nal_size + 4;
 		src = start + nal_size;
 		shift = 7;
@@ -172,11 +183,11 @@ void VideoStreamH264::append_container_block(Vector<uint8_t> p_buffer) {
 
 RID VideoStreamH264::end_cluster() {
 	print_line("----------END CLUSTER--------------------");
-	RD::get_singleton()->video_coding_list_end();
+	RD::get_singleton()->video_coding_end();
 	return dst_texture;
 }
 
-void VideoStreamH264::parse_nal_unit(uint64_t p_size) {
+void VideoStreamH264::parse_nal_unit(uint64_t p_size, bool p_is_metadata) {
 	const uint8_t *start = src;
 
 	uint8_t header = read_bits(8);
@@ -185,17 +196,20 @@ void VideoStreamH264::parse_nal_unit(uint64_t p_size) {
 
 	switch (nal_unit_type) {
 		case 1: {
-			uint64_t buffer_size = p_size;
+			uint64_t buffer_size = p_size + 4;
 			buffer_size += 128 - (buffer_size % 128);
-			RID buffer = RD::get_singleton()->storage_buffer_create_video_session(buffer_size, video_profile, Span<uint8_t>(), RD::STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC);
+			Vector<uint8_t> frame;
+			frame.resize(buffer_size);
 
-			//RD::get_singleton()->buffer_update(buffer, 0, 4, &p_size);
-			RD::get_singleton()->buffer_update(buffer, 0, p_size, start);
-			RD::get_singleton()->_flush_and_stall_for_all_frames();
+			uint8_t start_code[4] = { 0, 0, 0, 1 };
+			memcpy(frame.ptrw(), &start_code, 4);
+			memcpy(frame.ptrw() + 4, start, p_size);
+			RID buffer = RD::get_singleton()->storage_buffer_create_video_session(buffer_size, video_profile, frame, RD::STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC);
+			RD::get_singleton()->_stall_for_previous_frames();
 
 			StdVideoDecodeH264PictureInfo slice_info = parse_slice_header(p_size - 1, false);
 			slice_info.flags.is_reference = nal_ref_idc != 0;
-			RD::get_singleton()->video_coding_list_decode(video_coding_list, buffer, dst_texture, slice_info, target_dst_layer);
+			RD::get_singleton()->video_coding_decode(buffer, slice_info, dst_texture, target_dst_layer, dpb_texture);
 			target_dst_layer += 1;
 
 			String is_reference = nal_ref_idc != 0 ? "reference" : "non-reference";
@@ -203,18 +217,20 @@ void VideoStreamH264::parse_nal_unit(uint64_t p_size) {
 		} break;
 
 		case 5: {
-			uint64_t buffer_size = p_size + 3;
+			uint64_t buffer_size = p_size + 4;
 			buffer_size += 128 - (buffer_size % 128);
-			RID buffer = RD::get_singleton()->storage_buffer_create_video_session(buffer_size, video_profile, Span<uint8_t>(), RD::STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC);
+			Vector<uint8_t> frame;
+			frame.resize(buffer_size);
 
-			uint8_t start_code[3] = { 0, 0, 1 };
-			RD::get_singleton()->buffer_update(buffer, 0, 3, &start_code);
-			RD::get_singleton()->buffer_update(buffer, 3, p_size, start);
-			RD::get_singleton()->_flush_and_stall_for_all_frames();
+			uint8_t start_code[4] = { 0, 0, 0, 1 };
+			memcpy(frame.ptrw(), &start_code, 4);
+			memcpy(frame.ptrw() + 4, start, p_size);
+			RID buffer = RD::get_singleton()->storage_buffer_create_video_session(buffer_size, video_profile, frame, RD::STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC);
+			RD::get_singleton()->_stall_for_previous_frames();
 
 			StdVideoDecodeH264PictureInfo slice_info = parse_slice_header(p_size - 1, true);
 			slice_info.flags.is_reference = nal_ref_idc != 0;
-			RD::get_singleton()->video_coding_list_decode(video_coding_list, buffer, dst_texture, slice_info, target_dst_layer);
+			RD::get_singleton()->video_coding_decode(buffer, slice_info, dst_texture, target_dst_layer, dpb_texture);
 			target_dst_layer += 1;
 
 			print_line(vformat("Read %d/%d bytes of an IDR slice header", (uint64_t)(src - start), p_size));
@@ -225,12 +241,20 @@ void VideoStreamH264::parse_nal_unit(uint64_t p_size) {
 		} break;
 
 		case 7: {
-			active_sps = parse_sequence_parameter_set(p_size - 1);
+			RD::VideoCodingH264SequenceParameterSet sps = parse_sequence_parameter_set(p_size - 1);
+			if (p_is_metadata) {
+				sps_sets.push_back(sps);
+			} else {
+				active_sps = sps;
+			}
 			print_line(vformat("Read %d/%d bytes of an SPS", (uint64_t)(src - start), p_size));
 		} break;
 
 		case 8: {
-			active_pps = parse_picture_parameter_set(p_size - 1);
+			RD::VideoCodingH264PictureParameterSet pps = parse_picture_parameter_set(p_size - 1);
+			if (p_is_metadata) {
+				pps_sets.push_back(pps);
+			}
 			print_line(vformat("Read %d/%d bytes of a PPS", (uint64_t)(src - start), p_size));
 		} break;
 
@@ -240,50 +264,42 @@ void VideoStreamH264::parse_nal_unit(uint64_t p_size) {
 	}
 }
 
-StdVideoH264SequenceParameterSet VideoStreamH264::parse_sequence_parameter_set(uint64_t p_size) {
-	StdVideoH264SequenceParameterSet sequence_parameter_set = {};
+RD::VideoCodingH264SequenceParameterSet VideoStreamH264::parse_sequence_parameter_set(uint64_t p_size) {
+	RD::VideoCodingH264SequenceParameterSet sequence_parameter_set = {};
 
-	sequence_parameter_set.profile_idc = StdVideoH264ProfileIdc(read_bits(8));
+	sequence_parameter_set.profile_idc = RD::VideoCodingH264ProfileIdc(read_bits(8));
 
 	uint8_t flags = read_bits(8);
-	sequence_parameter_set.flags.constraint_set0_flag = (flags & (1 << 7)) > 0;
-	sequence_parameter_set.flags.constraint_set1_flag = (flags & (1 << 6)) > 0;
-	sequence_parameter_set.flags.constraint_set2_flag = (flags & (1 << 5)) > 0;
-	sequence_parameter_set.flags.constraint_set3_flag = (flags & (1 << 4)) > 0;
-	sequence_parameter_set.flags.constraint_set4_flag = (flags & (1 << 3)) > 0;
-	sequence_parameter_set.flags.constraint_set5_flag = (flags & (1 << 2)) > 0;
+	sequence_parameter_set.constraint_set0_flag = (flags & (1 << 7)) > 0;
+	sequence_parameter_set.constraint_set1_flag = (flags & (1 << 6)) > 0;
+	sequence_parameter_set.constraint_set2_flag = (flags & (1 << 5)) > 0;
+	sequence_parameter_set.constraint_set3_flag = (flags & (1 << 4)) > 0;
+	sequence_parameter_set.constraint_set4_flag = (flags & (1 << 3)) > 0;
+	sequence_parameter_set.constraint_set5_flag = (flags & (1 << 2)) > 0;
 
-	uint8_t level_idc = read_bits(8);
-	switch (level_idc) {
-		case 40: {
-			sequence_parameter_set.level_idc = STD_VIDEO_H264_LEVEL_IDC_4_0;
-		} break;
-
-		default: {
-			// TODO default to this.target_level_idc
-			WARN_PRINT(vformat("Unhandled level %d", level_idc));
-		}
-	}
+	sequence_parameter_set.level_idc = read_bits(8);
+	print_line("sps level", sequence_parameter_set.level_idc);
 
 	sequence_parameter_set.seq_parameter_set_id = read_ue();
 
-	if (sequence_parameter_set.profile_idc == STD_VIDEO_H264_PROFILE_IDC_HIGH || sequence_parameter_set.profile_idc == STD_VIDEO_H264_PROFILE_IDC_HIGH_444_PREDICTIVE) {
-		sequence_parameter_set.chroma_format_idc = StdVideoH264ChromaFormatIdc(read_ue());
+	if (sequence_parameter_set.profile_idc == RD::VIDEO_CODING_H264_PROFILE_IDC_HIGH || sequence_parameter_set.profile_idc == RD::VIDEO_CODING_H264_PROFILE_IDC_HIGH_PREDICTIVE) {
+		sequence_parameter_set.chroma_format_idc = RD::VideoCodingChromaSubsampling(read_ue());
 
-		if (sequence_parameter_set.chroma_format_idc == STD_VIDEO_H264_CHROMA_FORMAT_IDC_444) {
-			sequence_parameter_set.flags.separate_colour_plane_flag = read_bits(1) > 0;
+		if (sequence_parameter_set.chroma_format_idc == RD::CHROMA_SUBSAMPLING_444) {
+			sequence_parameter_set.separate_colour_plane_flag = read_bits(1) > 0;
 		}
 
 		sequence_parameter_set.bit_depth_luma_minus8 = read_ue();
 		sequence_parameter_set.bit_depth_chroma_minus8 = read_ue();
 
-		sequence_parameter_set.flags.qpprime_y_zero_transform_bypass_flag = read_bits(1) > 0;
-		sequence_parameter_set.flags.seq_scaling_matrix_present_flag = read_bits(1) > 0;
+		sequence_parameter_set.qpprime_y_zero_transform_bypass_flag = read_bits(1) > 0;
 
-		if (sequence_parameter_set.flags.seq_scaling_matrix_present_flag) {
-			uint64_t size = sequence_parameter_set.chroma_format_idc != STD_VIDEO_H264_CHROMA_FORMAT_IDC_444 ? 8 : 12;
+		sequence_parameter_set.seq_scaling_matrix_present_flag = read_bits(1) > 0;
+		if (sequence_parameter_set.seq_scaling_matrix_present_flag) {
+			uint64_t size = sequence_parameter_set.chroma_format_idc != RD::CHROMA_SUBSAMPLING_444 ? 8 : 12;
 			for (uint64_t i = 0; i < size; i++) {
-				bool present = read_bits(1) > 0;
+				uint8_t present = read_bits(1) > 0;
+				sequence_parameter_set.scaling_lists.scaling_list_present_mask |= present << i;
 				if (present) {
 					if (i < 6) {
 						print_line("skipping 4x4 seq scaling lists");
@@ -296,40 +312,43 @@ StdVideoH264SequenceParameterSet VideoStreamH264::parse_sequence_parameter_set(u
 	}
 
 	sequence_parameter_set.log2_max_frame_num_minus4 = read_ue();
-	sequence_parameter_set.pic_order_cnt_type = StdVideoH264PocType(read_ue());
+	sequence_parameter_set.pic_order_cnt_type = RD::VideoCodingH264PocType(read_ue());
 
-	if (sequence_parameter_set.pic_order_cnt_type == STD_VIDEO_H264_POC_TYPE_0) {
+	if (sequence_parameter_set.pic_order_cnt_type == RD::VIDEO_CODING_H264_POC_TYPE_0) {
 		sequence_parameter_set.log2_max_pic_order_cnt_lsb_minus4 = read_ue();
-	} else if (sequence_parameter_set.pic_order_cnt_type == STD_VIDEO_H264_POC_TYPE_1) {
-		// TODO
+	} else if (sequence_parameter_set.pic_order_cnt_type == RD::VIDEO_CODING_H264_POC_TYPE_1) {
+		print_line("skipping pic_order_cnt_type type 1");
+	} else if (sequence_parameter_set.pic_order_cnt_type == RD::VIDEO_CODING_H264_POC_TYPE_2) {
 		print_line("skipping pic_order_cnt_type type 2");
+	} else {
+		print_line("Inavalid H.264 pic_order_cnt_type");
 	}
 
 	sequence_parameter_set.max_num_ref_frames = read_ue();
 
-	sequence_parameter_set.flags.gaps_in_frame_num_value_allowed_flag = read_bits(1) > 0;
+	sequence_parameter_set.gaps_in_frame_num_value_allowed_flag = read_bits(1) > 0;
 
 	sequence_parameter_set.pic_width_in_mbs_minus1 = read_ue();
 	sequence_parameter_set.pic_height_in_map_units_minus1 = read_ue();
 
-	sequence_parameter_set.flags.frame_mbs_only_flag = read_bits(1) > 0;
+	sequence_parameter_set.frame_mbs_only_flag = read_bits(1) > 0;
 
-	if (!sequence_parameter_set.flags.frame_mbs_only_flag) {
-		sequence_parameter_set.flags.mb_adaptive_frame_field_flag = read_bits(1) > 0;
+	if (!sequence_parameter_set.frame_mbs_only_flag) {
+		sequence_parameter_set.mb_adaptive_frame_field_flag = read_bits(1) > 0;
 	}
 
-	sequence_parameter_set.flags.direct_8x8_inference_flag = read_bits(1) > 0;
-	sequence_parameter_set.flags.frame_cropping_flag = read_bits(1) > 0;
+	sequence_parameter_set.direct_8x8_inference_flag = read_bits(1) > 0;
+	sequence_parameter_set.frame_cropping_flag = read_bits(1) > 0;
 
-	if (sequence_parameter_set.flags.frame_cropping_flag) {
+	if (sequence_parameter_set.frame_cropping_flag) {
 		sequence_parameter_set.frame_crop_left_offset = read_ue();
 		sequence_parameter_set.frame_crop_right_offset = read_ue();
 		sequence_parameter_set.frame_crop_top_offset = read_ue();
 		sequence_parameter_set.frame_crop_bottom_offset = read_ue();
 	}
 
-	sequence_parameter_set.flags.vui_parameters_present_flag = read_bits(1) > 0;
-	if (sequence_parameter_set.flags.vui_parameters_present_flag) {
+	sequence_parameter_set.vui_parameters_present_flag = read_bits(1) > 0;
+	if (sequence_parameter_set.vui_parameters_present_flag) {
 		StdVideoH264SequenceParameterSetVui sps_vui;
 
 		sps_vui.flags.aspect_ratio_info_present_flag = read_bits(1) > 0;
@@ -406,14 +425,15 @@ StdVideoH264SequenceParameterSet VideoStreamH264::parse_sequence_parameter_set(u
 	return sequence_parameter_set;
 }
 
-StdVideoH264PictureParameterSet VideoStreamH264::parse_picture_parameter_set(uint64_t p_size) {
-	StdVideoH264PictureParameterSet picture_parameter_set = {};
+RD::VideoCodingH264PictureParameterSet VideoStreamH264::parse_picture_parameter_set(uint64_t p_size) {
+	const uint8_t *pps_start = src;
+	RD::VideoCodingH264PictureParameterSet picture_parameter_set = {};
 
 	picture_parameter_set.pic_parameter_set_id = read_ue();
 	picture_parameter_set.seq_parameter_set_id = read_ue();
 
-	picture_parameter_set.flags.entropy_coding_mode_flag = read_bits(1) > 0;
-	picture_parameter_set.flags.bottom_field_pic_order_in_frame_present_flag = read_bits(1) > 0;
+	picture_parameter_set.entropy_coding_mode_flag = read_bits(1) > 0;
+	picture_parameter_set.bottom_field_pic_order_in_frame_present_flag = read_bits(1) > 0;
 
 	uint64_t num_slice_groups_minus1 = read_ue();
 	if (num_slice_groups_minus1 > 0) {
@@ -424,23 +444,33 @@ StdVideoH264PictureParameterSet VideoStreamH264::parse_picture_parameter_set(uin
 	picture_parameter_set.num_ref_idx_l0_default_active_minus1 = read_ue();
 	picture_parameter_set.num_ref_idx_l1_default_active_minus1 = read_ue();
 
-	picture_parameter_set.flags.weighted_pred_flag = read_bits(1) > 0;
-	picture_parameter_set.weighted_bipred_idc = StdVideoH264WeightedBipredIdc(read_bits(2));
+	picture_parameter_set.weighted_pred_flag = read_bits(1) > 0;
+	picture_parameter_set.weighted_bipred_idc = RD::VideoCodingH264WeightedBipredIdc(read_bits(2));
 
-	picture_parameter_set.pic_init_qp_minus26 = read_ue();
-	picture_parameter_set.pic_init_qs_minus26 = read_ue();
-	picture_parameter_set.chroma_qp_index_offset = read_ue();
+	picture_parameter_set.pic_init_qp_minus26 = read_se();
+	picture_parameter_set.pic_init_qs_minus26 = read_se();
+	picture_parameter_set.chroma_qp_index_offset = read_se();
 
-	picture_parameter_set.flags.deblocking_filter_control_present_flag = read_bits(1) > 0;
-	picture_parameter_set.flags.constrained_intra_pred_flag = read_bits(1) > 0;
-	picture_parameter_set.flags.redundant_pic_cnt_present_flag = read_bits(1) > 0;
+	picture_parameter_set.deblocking_filter_control_present_flag = read_bits(1) > 0;
+	picture_parameter_set.constrained_intra_pred_flag = read_bits(1) > 0;
+	picture_parameter_set.redundant_pic_cnt_present_flag = read_bits(1) > 0;
+
+	if (src - pps_start < p_size) {
+		picture_parameter_set.transform_8x8_mode_flag = read_bits(1) > 0;
+
+		picture_parameter_set.pic_scaling_matrix_present_flag = read_bits(1) > 0;
+		if (picture_parameter_set.pic_scaling_matrix_present_flag) {
+			print_line("skipping pic_scaling_matrix_present_flag");
+		}
+
+		picture_parameter_set.second_chroma_qp_index_offset = read_se();
+	}
 
 	return picture_parameter_set;
 }
 
 StdVideoDecodeH264PictureInfo VideoStreamH264::parse_slice_header(uint64_t p_size, bool p_is_idr) {
 	StdVideoDecodeH264PictureInfo slice_header = {};
-	slice_header.seq_parameter_set_id = active_sps.seq_parameter_set_id;
 
 	slice_header.flags.IdrPicFlag = p_is_idr;
 
@@ -498,9 +528,10 @@ StdVideoDecodeH264PictureInfo VideoStreamH264::parse_slice_header(uint64_t p_siz
 
 	slice_header.flags.is_intra = slice_type == 2 || slice_type == 4 || slice_type == 7 || slice_type == 9;
 
+	slice_header.seq_parameter_set_id = active_sps.seq_parameter_set_id;
 	slice_header.pic_parameter_set_id = read_ue();
 
-	if (active_sps.flags.separate_colour_plane_flag) {
+	if (active_sps.separate_colour_plane_flag) {
 		read_bits(2); // colour_plane_id
 	}
 
@@ -508,7 +539,7 @@ StdVideoDecodeH264PictureInfo VideoStreamH264::parse_slice_header(uint64_t p_siz
 	slice_header.frame_num = read_bits(frame_num_size);
 	print_line(vformat("frame number %d", slice_header.frame_num));
 
-	if (!active_sps.flags.frame_mbs_only_flag) {
+	if (!active_sps.frame_mbs_only_flag) {
 		slice_header.flags.field_pic_flag = read_bits(1) > 0;
 		if (slice_header.flags.field_pic_flag) {
 			slice_header.flags.bottom_field_flag = read_bits(1) > 0;
@@ -526,7 +557,7 @@ StdVideoDecodeH264PictureInfo VideoStreamH264::parse_slice_header(uint64_t p_siz
 	uint32_t pic_order_cnt_lsb = 0;
 	uint64_t max_pic_order_cnt_lsb = 1 << (active_sps.log2_max_pic_order_cnt_lsb_minus4 + 4);
 
-	if (active_sps.pic_order_cnt_type == STD_VIDEO_H264_POC_TYPE_0) {
+	if (active_sps.pic_order_cnt_type == RD::VIDEO_CODING_H264_POC_TYPE_0) {
 		uint64_t pic_order_cnt_lsb_size = active_sps.log2_max_pic_order_cnt_lsb_minus4 + 4;
 		pic_order_cnt_lsb = read_bits(pic_order_cnt_lsb_size);
 		print_line(vformat("pic order cnt lsb %d", pic_order_cnt_lsb));

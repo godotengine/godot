@@ -233,7 +233,6 @@ public:
 	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil, uint32_t p_mipmaps) override final;
 	virtual TextureID texture_create_shared(TextureID p_original_texture, const TextureView &p_view) override final;
 	virtual TextureID texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) override final;
-	virtual TextureID texture_create_video_session(const TextureFormat &p_format, const TextureView &p_view, const VideoProfile &p_profile) override final;
 	virtual void texture_free(TextureID p_texture) override final;
 	virtual uint64_t texture_get_allocation_size(TextureID p_texture) override final;
 	virtual void texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) override final;
@@ -665,16 +664,27 @@ public:
 	/**********************/
 	/**** VIDEO CODING ****/
 	/**********************/
+	struct VideoCodingSessionInfo {
+		VkVideoSessionKHR vk_session;
+		VkVideoSessionCreateInfoKHR vk_session_create_info;
+		VkVideoSessionParametersKHR vk_session_parameters;
+	};
+
 	Error vk_video_profile_from_state(const VideoProfile &p_profile, VkVideoProfileInfoKHR *r_profile);
 
 	virtual void video_profile_get_capabilities(const VideoProfile &p_profile) override final;
 	virtual void video_profile_get_format_properties(const VideoProfile &p_profile) override final;
 
-	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, DataFormat p_image_format) override final;
+	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, DataFormat p_image_format, uint32_t p_width, uint32_t p_height, uint32_t p_max_dpb_slots) override final;
+	virtual void video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) override final;
+	virtual void video_session_add_h265_parameters() override final;
+	virtual void video_session_add_av1_parameters() override final;
+	virtual void video_session_add_vp9_parameters() override final;
+	virtual void video_session_free(VideoSessionID p_video_session) override final;
 
-	virtual void command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, TextureID p_dpb, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) override final;
+	virtual void command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, TextureID p_dpb_texture) override final;
 	virtual void command_video_control(CommandBufferID p_cmd_buffer) override final;
-	virtual void command_video_decode(CommandBufferID p_cmd_buffer, TextureID p_dpb, BufferID p_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, TextureID p_texture, uint32_t p_array_layer) override final;
+	virtual void command_video_decode(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, TextureID p_dst_texture, uint32_t p_array_layer, TextureID p_dpb_texture) override final;
 	virtual void command_video_coding_end(CommandBufferID p_cmd_buffer) override final;
 
 	/**************/
@@ -711,7 +721,8 @@ private:
 			ShaderInfo,
 			UniformSetInfo,
 			RenderPassInfo,
-			CommandBufferInfo>;
+			CommandBufferInfo,
+			VideoCodingSessionInfo>;
 	PagedAllocator<VersatileResource, true> resources_allocator;
 
 	/******************/

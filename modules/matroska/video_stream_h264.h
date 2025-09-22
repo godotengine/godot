@@ -33,10 +33,7 @@
 #include "scene/resources/video_stream_encoding.h"
 
 #include "servers/rendering/rendering_device.h"
-#include <vk_video/vulkan_video_codec_h264std.h>
 #include <vk_video/vulkan_video_codec_h264std_decode.h>
-
-#include <cstdint>
 
 class VideoStreamH264 : public VideoStreamEncoding {
 	GDCLASS(VideoStreamH264, VideoStreamEncoding);
@@ -56,20 +53,18 @@ private:
 
 	RD::VideoProfile video_profile = {};
 
-	// TODO make RD versions
-	StdVideoH264SequenceParameterSet active_sps;
-	StdVideoH264PictureParameterSet active_pps;
+	RD::VideoCodingH264SequenceParameterSet active_sps;
+	Vector<RD::VideoCodingH264SequenceParameterSet> sps_sets;
+	Vector<RD::VideoCodingH264PictureParameterSet> pps_sets;
 
 	RID video_session;
 
 	// TODO: use a pool of dst textures
-	RID dpb;
 	RID dst_texture;
+	RID dpb_texture;
 
 	uint8_t target_dpb_layer = 0;
 	uint8_t target_dst_layer = 0;
-
-	RD::VideoCodingListID video_coding_list;
 
 public:
 	RID create_video_session(uint32_t p_width, uint32_t p_height) final override;
@@ -80,9 +75,9 @@ public:
 	virtual void append_container_block(Vector<uint8_t> p_block) final override;
 	virtual RID end_cluster() final override;
 
-	void parse_nal_unit(uint64_t p_size);
-	StdVideoH264SequenceParameterSet parse_sequence_parameter_set(uint64_t p_size);
-	StdVideoH264PictureParameterSet parse_picture_parameter_set(uint64_t p_size);
+	void parse_nal_unit(uint64_t p_size, bool p_is_metadata);
+	RD::VideoCodingH264SequenceParameterSet parse_sequence_parameter_set(uint64_t p_size);
+	RD::VideoCodingH264PictureParameterSet parse_picture_parameter_set(uint64_t p_size);
 	StdVideoDecodeH264PictureInfo parse_slice_header(uint64_t p_size, bool p_is_idr);
 
 	uint64_t read_bits(uint8_t p_amount);

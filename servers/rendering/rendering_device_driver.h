@@ -197,6 +197,7 @@ public:
 		TextureSwizzle swizzle_g = TEXTURE_SWIZZLE_G;
 		TextureSwizzle swizzle_b = TEXTURE_SWIZZLE_B;
 		TextureSwizzle swizzle_a = TEXTURE_SWIZZLE_A;
+		bool use_sampler = false;
 	};
 
 	enum TextureLayout {
@@ -272,7 +273,6 @@ public:
 	// texture_create_shared_*() can only use original, non-view textures as original. RenderingDevice is responsible for ensuring that.
 	virtual TextureID texture_create_shared(TextureID p_original_texture, const TextureView &p_view) = 0;
 	virtual TextureID texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) = 0;
-	virtual TextureID texture_create_video_session(const TextureFormat &p_format, const TextureView &p_view, const VideoProfile &p_profile) = 0;
 	virtual void texture_free(TextureID p_texture) = 0;
 	virtual uint64_t texture_get_allocation_size(TextureID p_texture) = 0;
 	virtual void texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) = 0;
@@ -757,11 +757,16 @@ public:
 	virtual void video_profile_get_capabilities(const VideoProfile &p_profile) = 0;
 	virtual void video_profile_get_format_properties(const VideoProfile &p_profile) = 0;
 
-	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, DataFormat p_image_format) = 0;
+	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, DataFormat p_image_format, uint32_t p_width, uint32_t p_height, uint32_t p_max_dpb_slots) = 0;
+	virtual void video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) = 0;
+	virtual void video_session_add_h265_parameters() = 0;
+	virtual void video_session_add_av1_parameters() = 0;
+	virtual void video_session_add_vp9_parameters() = 0;
+	virtual void video_session_free(VideoSessionID p_video_session) = 0;
 
-	virtual void command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, TextureID p_dpb, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) = 0;
+	virtual void command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, TextureID p_dpb_texture) = 0;
 	virtual void command_video_control(CommandBufferID p_cmd_buffer) = 0;
-	virtual void command_video_decode(CommandBufferID p_cmd_buffer, TextureID p_dpb, BufferID p_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, TextureID p_texture, uint32_t p_array_layer) = 0;
+	virtual void command_video_decode(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, TextureID p_dst_texture, uint32_t p_array_layer, TextureID p_dpb_texture) = 0;
 	virtual void command_video_coding_end(CommandBufferID p_cmd_buffer) = 0;
 
 	/**************/

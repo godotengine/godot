@@ -1945,6 +1945,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	VkImageCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 
+	void *create_info_next = nullptr;
 	if (p_format.shareable_formats.size()) {
 		create_info.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
 
@@ -1957,12 +1958,30 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 			VkImageFormatListCreateInfoKHR *format_list_create_info = ALLOCA_SINGLE(VkImageFormatListCreateInfoKHR);
 			*format_list_create_info = {};
 			format_list_create_info->sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO_KHR;
+			format_list_create_info->pNext = create_info_next;
 			format_list_create_info->viewFormatCount = p_format.shareable_formats.size();
 			format_list_create_info->pViewFormats = vk_allowed_formats;
 
-			create_info.pNext = format_list_create_info;
+			create_info_next = format_list_create_info;
 		}
 	}
+
+	if (p_format.video_profiles.size()) {
+		VkVideoProfileInfoKHR *vk_video_profiles = ALLOCA_ARRAY(VkVideoProfileInfoKHR, p_format.video_profiles.size());
+		for (int64_t i = 0; i < p_format.video_profiles.size(); i++) {
+			vk_video_profile_from_state(p_format.video_profiles[i], vk_video_profiles + i);
+		}
+
+		VkVideoProfileListInfoKHR *video_profile_list = ALLOCA_SINGLE(VkVideoProfileListInfoKHR);
+		video_profile_list->sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR;
+		video_profile_list->pNext = create_info_next;
+		video_profile_list->profileCount = 1;
+		video_profile_list->pProfiles = vk_video_profiles;
+
+		create_info_next = video_profile_list;
+	}
+
+	create_info.pNext = create_info_next;
 
 	if (p_format.texture_type == TEXTURE_TYPE_CUBE || p_format.texture_type == TEXTURE_TYPE_CUBE_ARRAY) {
 		create_info.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
@@ -2015,6 +2034,12 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	}
 	if ((p_format.usage_bits & TEXTURE_USAGE_CAN_COPY_TO_BIT)) {
 		create_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	}
+	if ((p_format.usage_bits & TEXTURE_USAGE_VIDEO_DECODE_DST_BIT)) {
+		create_info.usage |= VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR;
+	}
+	if ((p_format.usage_bits & TEXTURE_USAGE_VIDEO_DECODE_DPB_BIT)) {
+		create_info.usage |= VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR;
 	}
 
 	create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -2092,15 +2117,46 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 		image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
 
+	void *image_view_create_info_next = nullptr;
+
 	VkImageViewASTCDecodeModeEXT decode_mode;
 	if (enabled_device_extension_names.has(VK_EXT_ASTC_DECODE_MODE_EXTENSION_NAME)) {
 		if (image_view_create_info.format >= VK_FORMAT_ASTC_4x4_UNORM_BLOCK && image_view_create_info.format <= VK_FORMAT_ASTC_12x12_SRGB_BLOCK) {
 			decode_mode.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_ASTC_DECODE_MODE_EXT;
-			decode_mode.pNext = nullptr;
+			decode_mode.pNext = image_view_create_info_next;
 			decode_mode.decodeMode = VK_FORMAT_R8G8B8A8_UNORM;
-			image_view_create_info.pNext = &decode_mode;
+			image_view_create_info_next = &decode_mode;
 		}
 	}
+
+	VkSamplerYcbcrConversionInfo ycbcr_sampler_info = {};
+	if (p_view.use_sampler) {
+		VkSamplerYcbcrConversionCreateInfo ycbcr_sampler_create_info = {};
+		ycbcr_sampler_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO;
+		ycbcr_sampler_create_info.pNext = nullptr;
+		ycbcr_sampler_create_info.format = image_view_create_info.format;
+		ycbcr_sampler_create_info.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709;
+		ycbcr_sampler_create_info.ycbcrRange = VK_SAMPLER_YCBCR_RANGE_ITU_FULL;
+		ycbcr_sampler_create_info.components.r = VK_COMPONENT_SWIZZLE_R;
+		ycbcr_sampler_create_info.components.g = VK_COMPONENT_SWIZZLE_G;
+		ycbcr_sampler_create_info.components.b = VK_COMPONENT_SWIZZLE_B;
+		ycbcr_sampler_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+		ycbcr_sampler_create_info.xChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN;
+		ycbcr_sampler_create_info.yChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN;
+		ycbcr_sampler_create_info.chromaFilter = VK_FILTER_LINEAR;
+		ycbcr_sampler_create_info.forceExplicitReconstruction = false;
+
+		VkSamplerYcbcrConversion ycbcr_sampler;
+		vkCreateSamplerYcbcrConversionKHR(vk_device, &ycbcr_sampler_create_info, nullptr, &ycbcr_sampler);
+
+		ycbcr_sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO;
+		ycbcr_sampler_info.pNext = image_view_create_info_next;
+		ycbcr_sampler_info.conversion = ycbcr_sampler;
+
+		image_view_create_info_next = &ycbcr_sampler_info;
+	}
+
+	image_view_create_info.pNext = image_view_create_info_next;
 
 	VkImageView vk_image_view = VK_NULL_HANDLE;
 	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &vk_image_view);
@@ -2278,243 +2334,6 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared_from_slice(Tex
 
 #if PRINT_NATIVE_COMMANDS
 	print_line(vformat("vkCreateImageView: 0x%uX for 0x%uX (%d %d %d %d)", uint64_t(new_vk_image_view), uint64_t(owner_tex_info->vk_view_create_info.image), p_mipmap, p_mipmaps, p_layer, p_layers));
-#endif
-
-	return TextureID(tex_info);
-}
-
-RDD::TextureID RenderingDeviceDriverVulkan::texture_create_video_session(const TextureFormat &p_format, const TextureView &p_view, const VideoProfile &p_profile) {
-	VkImageCreateInfo create_info = {};
-	create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-
-	if (p_format.shareable_formats.size()) {
-		create_info.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
-
-		if (enabled_device_extension_names.has(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME)) {
-			VkFormat *vk_allowed_formats = ALLOCA_ARRAY(VkFormat, p_format.shareable_formats.size());
-			for (int i = 0; i < p_format.shareable_formats.size(); i++) {
-				vk_allowed_formats[i] = RD_TO_VK_FORMAT[p_format.shareable_formats[i]];
-			}
-
-			VkImageFormatListCreateInfoKHR *format_list_create_info = ALLOCA_SINGLE(VkImageFormatListCreateInfoKHR);
-			*format_list_create_info = {};
-			format_list_create_info->sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO_KHR;
-			format_list_create_info->viewFormatCount = p_format.shareable_formats.size();
-			format_list_create_info->pViewFormats = vk_allowed_formats;
-
-			create_info.pNext = format_list_create_info;
-		}
-	}
-
-	if (p_format.texture_type == TEXTURE_TYPE_CUBE || p_format.texture_type == TEXTURE_TYPE_CUBE_ARRAY) {
-		create_info.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
-	}
-	/*if (p_format.texture_type == TEXTURE_TYPE_2D || p_format.texture_type == TEXTURE_TYPE_2D_ARRAY) {
-		create_info.flags |= VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
-	}*/
-
-	create_info.imageType = RD_TEX_TYPE_TO_VK_IMG_TYPE[p_format.texture_type];
-
-	create_info.format = RD_TO_VK_FORMAT[p_format.format];
-
-	create_info.extent.width = p_format.width;
-	create_info.extent.height = p_format.height;
-	create_info.extent.depth = p_format.depth;
-
-	create_info.mipLevels = p_format.mipmaps;
-	create_info.arrayLayers = p_format.array_layers;
-
-	create_info.samples = _ensure_supported_sample_count(p_format.samples);
-	create_info.tiling = (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) ? VK_IMAGE_TILING_LINEAR : VK_IMAGE_TILING_OPTIMAL;
-
-	// Usage.
-	if ((p_format.usage_bits & TEXTURE_USAGE_SAMPLING_BIT)) {
-		create_info.usage |= VK_IMAGE_USAGE_SAMPLED_BIT;
-	}
-	if ((p_format.usage_bits & TEXTURE_USAGE_STORAGE_BIT)) {
-		create_info.usage |= VK_IMAGE_USAGE_STORAGE_BIT;
-	}
-	if ((p_format.usage_bits & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT)) {
-		create_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-	}
-	if ((p_format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
-		create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-	}
-	if ((p_format.usage_bits & TEXTURE_USAGE_INPUT_ATTACHMENT_BIT)) {
-		create_info.usage |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-	}
-	if ((p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) && (p_format.usage_bits & TEXTURE_USAGE_VRS_FRAGMENT_SHADING_RATE_BIT)) {
-		create_info.usage |= VK_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
-	}
-	if ((p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) && (p_format.usage_bits & TEXTURE_USAGE_VRS_FRAGMENT_DENSITY_MAP_BIT)) {
-		create_info.usage |= VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT;
-	}
-	if ((p_format.usage_bits & TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-		create_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-	}
-	if ((p_format.usage_bits & TEXTURE_USAGE_CAN_COPY_FROM_BIT)) {
-		create_info.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-	}
-	if ((p_format.usage_bits & TEXTURE_USAGE_CAN_COPY_TO_BIT)) {
-		create_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-	}
-	if ((p_format.usage_bits & TEXTURE_USAGE_VIDEO_DECODE_DST_BIT)) {
-		create_info.usage |= VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR;
-	}
-	if ((p_format.usage_bits & TEXTURE_USAGE_VIDEO_DECODE_DPB_BIT)) {
-		create_info.usage |= VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR;
-	}
-
-	create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-	VkVideoProfileInfoKHR video_profile;
-	vk_video_profile_from_state(p_profile, &video_profile);
-
-	VkVideoProfileListInfoKHR video_profile_list;
-	video_profile_list.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR;
-	video_profile_list.pNext = nullptr;
-	video_profile_list.profileCount = 1;
-	video_profile_list.pProfiles = &video_profile;
-
-	create_info.pNext = &video_profile_list;
-
-	// Allocate memory.
-
-	uint32_t width = 0, height = 0;
-	uint32_t image_size = get_image_format_required_size(p_format.format, p_format.width, p_format.height, p_format.depth, p_format.mipmaps, &width, &height);
-
-	VmaAllocationCreateInfo alloc_create_info = {};
-	alloc_create_info.flags = (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) ? VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT : 0;
-
-	if (p_format.usage_bits & TEXTURE_USAGE_TRANSIENT_BIT) {
-		uint32_t memory_type_index = 0;
-		VmaAllocationCreateInfo lazy_memory_requirements = alloc_create_info;
-		lazy_memory_requirements.usage = VMA_MEMORY_USAGE_GPU_LAZILY_ALLOCATED;
-		VkResult result = vmaFindMemoryTypeIndex(allocator, UINT32_MAX, &lazy_memory_requirements, &memory_type_index);
-		if (VK_SUCCESS == result) {
-			alloc_create_info = lazy_memory_requirements;
-			create_info.usage |= VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
-			// VUID-VkImageCreateInfo-usage-00963 :
-			// If usage includes VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
-			// then bits other than VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-			// and VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT must not be set.
-			create_info.usage &= (VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
-		} else {
-			alloc_create_info.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-		}
-	} else {
-		alloc_create_info.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-	}
-
-	if (image_size <= SMALL_ALLOCATION_MAX_SIZE) {
-		uint32_t mem_type_index = 0;
-		vmaFindMemoryTypeIndexForImageInfo(allocator, &create_info, &alloc_create_info, &mem_type_index);
-		alloc_create_info.pool = _find_or_create_small_allocs_pool(mem_type_index);
-	}
-
-	// Create.
-
-	VkImage vk_image = VK_NULL_HANDLE;
-	VmaAllocation allocation = nullptr;
-	VmaAllocationInfo alloc_info = {};
-
-	if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
-		alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
-		VkResult err = vmaCreateImage(allocator, &create_info, &alloc_create_info, &vk_image, &allocation, &alloc_info);
-		ERR_FAIL_COND_V_MSG(err, TextureID(), "vmaCreateImage failed with error " + itos(err) + ".");
-	} else {
-		VkResult err = vkCreateImage(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE), &vk_image);
-		ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImage failed with error " + itos(err) + ".");
-		err = vmaAllocateMemoryForImage(allocator, vk_image, &alloc_create_info, &allocation, &alloc_info);
-		ERR_FAIL_COND_V_MSG(err, TextureID(), "Can't allocate memory for image, error: " + itos(err) + ".");
-		err = vmaBindImageMemory2(allocator, allocation, 0, vk_image, nullptr);
-		ERR_FAIL_COND_V_MSG(err, TextureID(), "Can't bind memory to image, error: " + itos(err) + ".");
-	}
-
-	// Create view.
-
-	VkImageViewCreateInfo image_view_create_info = {};
-	image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	image_view_create_info.image = vk_image;
-	image_view_create_info.viewType = (VkImageViewType)p_format.texture_type;
-	image_view_create_info.format = RD_TO_VK_FORMAT[p_view.format];
-	image_view_create_info.components.r = (VkComponentSwizzle)p_view.swizzle_r;
-	image_view_create_info.components.g = (VkComponentSwizzle)p_view.swizzle_g;
-	image_view_create_info.components.b = (VkComponentSwizzle)p_view.swizzle_b;
-	image_view_create_info.components.a = (VkComponentSwizzle)p_view.swizzle_a;
-	image_view_create_info.subresourceRange.levelCount = create_info.mipLevels;
-	image_view_create_info.subresourceRange.layerCount = create_info.arrayLayers;
-	if ((p_format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
-		image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-	} else {
-		image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	}
-
-	VkImageViewASTCDecodeModeEXT decode_mode;
-	if (enabled_device_extension_names.has(VK_EXT_ASTC_DECODE_MODE_EXTENSION_NAME)) {
-		if (image_view_create_info.format >= VK_FORMAT_ASTC_4x4_UNORM_BLOCK && image_view_create_info.format <= VK_FORMAT_ASTC_12x12_SRGB_BLOCK) {
-			decode_mode.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_ASTC_DECODE_MODE_EXT;
-			decode_mode.pNext = nullptr;
-			decode_mode.decodeMode = VK_FORMAT_R8G8B8A8_UNORM;
-			image_view_create_info.pNext = &decode_mode;
-		}
-	}
-
-	VkSamplerYcbcrConversionCreateInfo ycbcr_sampler_create_info = {};
-	ycbcr_sampler_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO;
-	ycbcr_sampler_create_info.pNext = nullptr;
-	ycbcr_sampler_create_info.format = image_view_create_info.format;
-	ycbcr_sampler_create_info.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709;
-	ycbcr_sampler_create_info.ycbcrRange = VK_SAMPLER_YCBCR_RANGE_ITU_NARROW;
-	ycbcr_sampler_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-	ycbcr_sampler_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-	ycbcr_sampler_create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-	ycbcr_sampler_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-	ycbcr_sampler_create_info.xChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN;
-	ycbcr_sampler_create_info.yChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN;
-	ycbcr_sampler_create_info.chromaFilter = VK_FILTER_LINEAR;
-	ycbcr_sampler_create_info.forceExplicitReconstruction = false;
-
-	VkSamplerYcbcrConversion ycbcr_sampler;
-	vkCreateSamplerYcbcrConversionKHR(vk_device, &ycbcr_sampler_create_info, nullptr, &ycbcr_sampler);
-
-	VkSamplerYcbcrConversionInfo ycbcr_sampler_info;
-	ycbcr_sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO;
-	ycbcr_sampler_info.pNext = nullptr;
-	ycbcr_sampler_info.conversion = ycbcr_sampler;
-
-	image_view_create_info.pNext = &ycbcr_sampler_info;
-
-	VkImageView vk_image_view = VK_NULL_HANDLE;
-	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &vk_image_view);
-	if (err) {
-		if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
-			vmaDestroyImage(allocator, vk_image, allocation);
-		} else {
-			vkDestroyImage(vk_device, vk_image, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE));
-			vmaFreeMemory(allocator, allocation);
-		}
-
-		ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
-	}
-
-	// Bookkeep.
-
-	TextureInfo *tex_info = VersatileResource::allocate<TextureInfo>(resources_allocator);
-	tex_info->vk_image = vk_image;
-	tex_info->vk_view = vk_image_view;
-	tex_info->rd_format = p_format.format;
-	tex_info->vk_create_info = create_info;
-	tex_info->vk_view_create_info = image_view_create_info;
-	tex_info->allocation.handle = allocation;
-#ifdef DEBUG_ENABLED
-	tex_info->transient = (p_format.usage_bits & TEXTURE_USAGE_TRANSIENT_BIT) != 0;
-#endif
-	vmaGetAllocationInfo(allocator, tex_info->allocation.handle, &tex_info->allocation.info);
-
-#if PRINT_NATIVE_COMMANDS
-	print_line(vformat("vkCreateImageView: 0x%uX for 0x%uX", uint64_t(vk_image_view), uint64_t(vk_image)));
 #endif
 
 	return TextureID(tex_info);
@@ -6193,24 +6012,36 @@ void RenderingDeviceDriverVulkan::video_profile_get_format_properties(const Vide
 	}
 }
 
-RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const VideoProfile &p_profile, DataFormat p_image_format) {
+RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const VideoProfile &p_profile, DataFormat p_image_format, uint32_t p_width, uint32_t p_height, uint32_t p_max_dpb_slots) {
 	VkVideoProfileInfoKHR video_profile = {};
 	vk_video_profile_from_state(p_profile, &video_profile);
 
 	CommandQueueFamilyID command_queue_family = command_queue_family_get(COMMAND_QUEUE_FAMILY_DECODE_BIT);
 	uint32_t command_queue_family_index = command_queue_family.id - 1;
 
-	// TODO Use MIN(capability, video resolution)
 	VkExtent2D extent;
-	extent.width = 1920;
-	extent.height = 1080;
+	extent.width = p_width;
+	extent.height = p_height;
 
-	VkExtensionProperties extension_properties = {};
-	strncpy(extension_properties.extensionName, VK_STD_VULKAN_VIDEO_CODEC_H264_DECODE_EXTENSION_NAME, 38);
-	extension_properties.specVersion = 4194304;
+	// TODO use video_profile_get_capabilities
+	VkVideoCapabilitiesKHR video_capabilities = {};
+	video_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR;
 
-	// TODO picture formats
-	// TODO DPB slots, active reference pictures, pStdHeaderVersion
+	if (p_profile.operation == VIDEO_OPERATION_DECODE_H264) {
+		VkVideoDecodeCapabilitiesKHR decode_capabilities = {};
+		decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR;
+		video_capabilities.pNext = &decode_capabilities;
+
+		VkVideoDecodeH264CapabilitiesKHR h264_decode_capabilities = {};
+		h264_decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_CAPABILITIES_KHR;
+		decode_capabilities.pNext = &h264_decode_capabilities;
+	}
+
+	VkResult result = vkGetPhysicalDeviceVideoCapabilitiesKHR(physical_device, &video_profile, &video_capabilities);
+	if (result != VK_SUCCESS) {
+		ERR_FAIL_V_MSG(RDD::VideoSessionID(), "Video profile is not supported");
+	}
+
 	VkVideoSessionCreateInfoKHR session_info = {
 		.sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_CREATE_INFO_KHR,
 		.pNext = nullptr,
@@ -6220,13 +6051,13 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 		.pictureFormat = RD_TO_VK_FORMAT[p_image_format],
 		.maxCodedExtent = extent,
 		.referencePictureFormat = RD_TO_VK_FORMAT[p_image_format],
-		.maxDpbSlots = 17,
-		.maxActiveReferencePictures = 16,
-		.pStdHeaderVersion = &extension_properties,
+		.maxDpbSlots = p_max_dpb_slots,
+		.maxActiveReferencePictures = p_max_dpb_slots - 1,
+		.pStdHeaderVersion = &video_capabilities.stdHeaderVersion,
 	};
 
 	VkVideoSessionKHR video_session;
-	VkResult result = vkCreateVideoSessionKHR(vk_device, &session_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_KHR), &video_session);
+	result = vkCreateVideoSessionKHR(vk_device, &session_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_KHR), &video_session);
 	if (result != VK_SUCCESS) {
 		ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
 	}
@@ -6239,10 +6070,11 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 
 	TightLocalVector<VkVideoSessionMemoryRequirementsKHR> memory_requirements;
 	memory_requirements.resize(memory_requirements_count);
-	memory_requirements[0].sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_MEMORY_REQUIREMENTS_KHR;
-	memory_requirements[1].sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_MEMORY_REQUIREMENTS_KHR;
-	memory_requirements[0].pNext = nullptr;
-	memory_requirements[1].pNext = nullptr;
+	for (uint64_t i = 0; i < memory_requirements_count; i++) {
+		memory_requirements[i].sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_MEMORY_REQUIREMENTS_KHR;
+		memory_requirements[i].pNext = nullptr;
+	}
+
 	result = vkGetVideoSessionMemoryRequirementsKHR(vk_device, video_session, &memory_requirements_count, memory_requirements.ptr());
 	if (result != VK_SUCCESS) {
 		ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
@@ -6284,27 +6116,202 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 		ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
 	}
 
-	return RDD::VideoSessionID(video_session);
+	VideoCodingSessionInfo *video_session_info = VersatileResource::allocate<VideoCodingSessionInfo>(resources_allocator);
+	video_session_info->vk_session = video_session;
+	video_session_info->vk_session_create_info = session_info;
+
+	return RDD::VideoSessionID(video_session_info);
 }
 
-void RenderingDeviceDriverVulkan::command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, TextureID p_dpb, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) {
-	CommandBufferInfo *buffer_info = (CommandBufferInfo *)p_cmd_buffer.id;
-	VkVideoSessionKHR video_session = (VkVideoSessionKHR)p_video_session.id;
-	TextureInfo *dpb = (TextureInfo *)p_dpb.id;
+void RenderingDeviceDriverVulkan::video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) {
+	VideoCodingSessionInfo *video_session_info = (VideoCodingSessionInfo *)p_video_session.id;
+
+	TightLocalVector<StdVideoH264SequenceParameterSet> sps_sets;
+	for (VideoCodingH264SequenceParameterSet rd_sps : p_sps_sets) {
+		StdVideoH264SequenceParameterSet vk_sps;
+
+		vk_sps.flags.constraint_set0_flag = rd_sps.constraint_set0_flag;
+		vk_sps.flags.constraint_set1_flag = rd_sps.constraint_set1_flag;
+		vk_sps.flags.constraint_set2_flag = rd_sps.constraint_set2_flag;
+		vk_sps.flags.constraint_set3_flag = rd_sps.constraint_set3_flag;
+		vk_sps.flags.constraint_set4_flag = rd_sps.constraint_set4_flag;
+		vk_sps.flags.constraint_set5_flag = rd_sps.constraint_set5_flag;
+		vk_sps.flags.direct_8x8_inference_flag = rd_sps.direct_8x8_inference_flag;
+		vk_sps.flags.mb_adaptive_frame_field_flag = rd_sps.mb_adaptive_frame_field_flag;
+		vk_sps.flags.frame_mbs_only_flag = rd_sps.frame_mbs_only_flag;
+		vk_sps.flags.delta_pic_order_always_zero_flag = rd_sps.delta_pic_order_always_zero_flag;
+		vk_sps.flags.separate_colour_plane_flag = rd_sps.separate_colour_plane_flag;
+		vk_sps.flags.gaps_in_frame_num_value_allowed_flag = rd_sps.gaps_in_frame_num_value_allowed_flag;
+		vk_sps.flags.qpprime_y_zero_transform_bypass_flag = rd_sps.qpprime_y_zero_transform_bypass_flag;
+		vk_sps.flags.frame_cropping_flag = rd_sps.frame_cropping_flag;
+		vk_sps.flags.seq_scaling_matrix_present_flag = rd_sps.seq_scaling_matrix_present_flag;
+		vk_sps.flags.vui_parameters_present_flag = false; // TODO
+
+		vk_sps.profile_idc = StdVideoH264ProfileIdc(rd_sps.profile_idc);
+		print_line("rd level idc", rd_sps.level_idc);
+		switch (rd_sps.level_idc) {
+			case 10: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_1_0;
+			} break;
+
+			case 11: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_1_1;
+			} break;
+
+			case 12: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_1_2;
+			} break;
+
+			case 13: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_1_3;
+			} break;
+
+			case 20: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_2_0;
+			} break;
+
+			case 21: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_2_1;
+			} break;
+
+			case 22: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_2_2;
+			} break;
+
+			case 30: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_3_0;
+			} break;
+
+			case 31: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_3_1;
+			} break;
+
+			case 32: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_3_2;
+			} break;
+
+			case 40: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_4_0;
+			} break;
+
+			case 41: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_4_1;
+			} break;
+
+			case 42: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_4_2;
+			} break;
+
+			case 50: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_5_0;
+			} break;
+
+			case 51: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_5_1;
+			} break;
+
+			case 52: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_5_2;
+			} break;
+
+			case 60: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_6_0;
+			} break;
+
+			case 61: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_6_1;
+			} break;
+
+			case 62: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_6_2;
+			} break;
+
+			default: {
+				ERR_PRINT(vformat("Invalid level %d", rd_sps.level_idc));
+			}
+		}
+
+		vk_sps.chroma_format_idc = StdVideoH264ChromaFormatIdc(rd_sps.chroma_format_idc);
+
+		vk_sps.seq_parameter_set_id = rd_sps.seq_parameter_set_id;
+
+		vk_sps.bit_depth_luma_minus8 = rd_sps.bit_depth_luma_minus8;
+		vk_sps.bit_depth_chroma_minus8 = rd_sps.bit_depth_chroma_minus8;
+
+		vk_sps.log2_max_frame_num_minus4 = rd_sps.log2_max_frame_num_minus4;
+		vk_sps.pic_order_cnt_type = StdVideoH264PocType(rd_sps.pic_order_cnt_type);
+
+		// H.264 POC type 0
+		vk_sps.log2_max_pic_order_cnt_lsb_minus4 = rd_sps.log2_max_pic_order_cnt_lsb_minus4;
+
+		// H.264 POC type 1
+		vk_sps.offset_for_non_ref_pic = 0;
+		vk_sps.offset_for_top_to_bottom_field = 0;
+		vk_sps.num_ref_frames_in_pic_order_cnt_cycle = 0;
+		vk_sps.pOffsetForRefFrame = nullptr;
+
+		vk_sps.max_num_ref_frames = rd_sps.max_num_ref_frames;
+
+		vk_sps.pic_width_in_mbs_minus1 = rd_sps.pic_width_in_mbs_minus1;
+		vk_sps.pic_height_in_map_units_minus1 = rd_sps.pic_height_in_map_units_minus1;
+
+		vk_sps.frame_crop_left_offset = rd_sps.frame_crop_left_offset;
+		vk_sps.frame_crop_right_offset = rd_sps.frame_crop_right_offset;
+		vk_sps.frame_crop_top_offset = rd_sps.frame_crop_top_offset;
+		vk_sps.frame_crop_bottom_offset = rd_sps.frame_crop_bottom_offset;
+
+		// TODO scaling lists, VUI
+		vk_sps.pScalingLists = nullptr;
+		vk_sps.pSequenceParameterSetVui = nullptr;
+
+		sps_sets.push_back(vk_sps);
+	}
+
+	TightLocalVector<StdVideoH264PictureParameterSet> pps_sets;
+	for (VideoCodingH264PictureParameterSet rd_pps : p_pps_sets) {
+		StdVideoH264PictureParameterSet vk_pps;
+
+		vk_pps.flags.transform_8x8_mode_flag = rd_pps.transform_8x8_mode_flag;
+		vk_pps.flags.redundant_pic_cnt_present_flag = rd_pps.redundant_pic_cnt_present_flag;
+		vk_pps.flags.constrained_intra_pred_flag = rd_pps.constrained_intra_pred_flag;
+		vk_pps.flags.deblocking_filter_control_present_flag = rd_pps.deblocking_filter_control_present_flag;
+		vk_pps.flags.weighted_pred_flag = rd_pps.weighted_pred_flag;
+		vk_pps.flags.bottom_field_pic_order_in_frame_present_flag = rd_pps.bottom_field_pic_order_in_frame_present_flag;
+		vk_pps.flags.entropy_coding_mode_flag = rd_pps.entropy_coding_mode_flag;
+		vk_pps.flags.pic_scaling_matrix_present_flag = rd_pps.bottom_field_pic_order_in_frame_present_flag;
+
+		vk_pps.seq_parameter_set_id = rd_pps.seq_parameter_set_id;
+		vk_pps.pic_parameter_set_id = rd_pps.pic_parameter_set_id;
+
+		vk_pps.num_ref_idx_l0_default_active_minus1 = rd_pps.num_ref_idx_l0_default_active_minus1;
+		vk_pps.num_ref_idx_l1_default_active_minus1 = rd_pps.num_ref_idx_l1_default_active_minus1;
+
+		vk_pps.weighted_bipred_idc = StdVideoH264WeightedBipredIdc(rd_pps.weighted_bipred_idc);
+
+		vk_pps.pic_init_qp_minus26 = rd_pps.pic_init_qp_minus26;
+		vk_pps.pic_init_qs_minus26 = rd_pps.pic_init_qs_minus26;
+
+		vk_pps.chroma_qp_index_offset = rd_pps.chroma_qp_index_offset;
+		vk_pps.second_chroma_qp_index_offset = rd_pps.second_chroma_qp_index_offset;
+
+		vk_pps.pScalingLists = nullptr;
+
+		pps_sets.push_back(vk_pps);
+	}
 
 	VkVideoDecodeH264SessionParametersAddInfoKHR h264_add_info = {};
 	h264_add_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_SESSION_PARAMETERS_ADD_INFO_KHR;
 	h264_add_info.pNext = nullptr;
-	h264_add_info.stdSPSCount = 1;
-	h264_add_info.pStdSPSs = &p_sps;
-	h264_add_info.stdPPSCount = 1;
-	h264_add_info.pStdPPSs = &p_pps;
+	h264_add_info.stdSPSCount = sps_sets.size();
+	h264_add_info.pStdSPSs = sps_sets.ptr();
+	h264_add_info.stdPPSCount = pps_sets.size();
+	h264_add_info.pStdPPSs = pps_sets.ptr();
 
 	VkVideoDecodeH264SessionParametersCreateInfoKHR h264_parameter_info = {};
 	h264_parameter_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_SESSION_PARAMETERS_CREATE_INFO_KHR;
 	h264_parameter_info.pNext = nullptr;
-	h264_parameter_info.maxStdSPSCount = 1;
-	h264_parameter_info.maxStdPPSCount = 1;
+	h264_parameter_info.maxStdSPSCount = sps_sets.size();
+	h264_parameter_info.maxStdPPSCount = pps_sets.size();
 	h264_parameter_info.pParametersAddInfo = &h264_add_info;
 
 	VkVideoSessionParametersCreateInfoKHR parameter_info = {};
@@ -6312,7 +6319,7 @@ void RenderingDeviceDriverVulkan::command_video_coding_begin(CommandBufferID p_c
 	parameter_info.pNext = &h264_parameter_info;
 	parameter_info.flags = 0;
 	parameter_info.videoSessionParametersTemplate = VK_NULL_HANDLE;
-	parameter_info.videoSession = video_session;
+	parameter_info.videoSession = video_session_info->vk_session;
 
 	VkVideoSessionParametersKHR session_parameters;
 	VkResult err = vkCreateVideoSessionParametersKHR(vk_device, &parameter_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_PARAMETERS_KHR), &session_parameters);
@@ -6320,8 +6327,32 @@ void RenderingDeviceDriverVulkan::command_video_coding_begin(CommandBufferID p_c
 		ERR_FAIL_MSG("Failed to create parameters");
 	}
 
-	// TODO: base dpb size on H.264 level
-	// TODO: use a texture array as a dpb
+	video_session_info->vk_session_parameters = session_parameters;
+}
+
+void RenderingDeviceDriverVulkan::video_session_add_h265_parameters() {}
+void RenderingDeviceDriverVulkan::video_session_add_av1_parameters() {}
+void RenderingDeviceDriverVulkan::video_session_add_vp9_parameters() {}
+
+void RenderingDeviceDriverVulkan::video_session_free(VideoSessionID p_video_session) {
+	VideoCodingSessionInfo *video_session_info = (VideoCodingSessionInfo *)p_video_session.id;
+
+	if (video_session_info->vk_session_parameters != VK_NULL_HANDLE) {
+		vkDestroyVideoSessionParametersKHR(vk_device, video_session_info->vk_session_parameters, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_PARAMETERS_KHR));
+	}
+
+	if (video_session_info->vk_session != VK_NULL_HANDLE) {
+		vkDestroyVideoSessionKHR(vk_device, video_session_info->vk_session, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_KHR));
+	}
+
+	VersatileResource::free(resources_allocator, video_session_info);
+}
+
+void RenderingDeviceDriverVulkan::command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, TextureID p_dpb_texture) {
+	CommandBufferInfo *buffer_info = (CommandBufferInfo *)p_cmd_buffer.id;
+	VideoCodingSessionInfo *video_session_info = (VideoCodingSessionInfo *)p_video_session.id;
+	TextureInfo *dpb_texture_info = (TextureInfo *)p_dpb_texture.id;
+
 	TightLocalVector<VkVideoReferenceSlotInfoKHR> reference_slots;
 	reference_slots.resize(1);
 
@@ -6331,17 +6362,16 @@ void RenderingDeviceDriverVulkan::command_video_coding_begin(CommandBufferID p_c
 		offset.y = 0;
 
 		VkExtent2D extent = {};
-		extent.width = dpb->vk_create_info.extent.width;
-		extent.height = dpb->vk_create_info.extent.height;
+		extent.width = dpb_texture_info->vk_create_info.extent.width;
+		extent.height = dpb_texture_info->vk_create_info.extent.height;
 
-		// TODO make a valid dpb
 		VkVideoPictureResourceInfoKHR dpb_picture_info = {};
 		dpb_picture_info.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
 		dpb_picture_info.pNext = nullptr;
 		dpb_picture_info.codedOffset = offset;
 		dpb_picture_info.codedExtent = extent;
 		dpb_picture_info.baseArrayLayer = i;
-		dpb_picture_info.imageViewBinding = dpb->vk_view;
+		dpb_picture_info.imageViewBinding = dpb_texture_info->vk_view;
 
 		reference_slots[i].sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
 		reference_slots[i].pNext = nullptr;
@@ -6353,8 +6383,8 @@ void RenderingDeviceDriverVulkan::command_video_coding_begin(CommandBufferID p_c
 	begin_cmd.sType = VK_STRUCTURE_TYPE_VIDEO_BEGIN_CODING_INFO_KHR;
 	begin_cmd.pNext = nullptr;
 	begin_cmd.flags = 0;
-	begin_cmd.videoSession = video_session;
-	begin_cmd.videoSessionParameters = session_parameters;
+	begin_cmd.videoSession = video_session_info->vk_session;
+	begin_cmd.videoSessionParameters = video_session_info->vk_session_parameters;
 	begin_cmd.referenceSlotCount = reference_slots.size();
 	begin_cmd.pReferenceSlots = reference_slots.ptr();
 
@@ -6372,11 +6402,11 @@ void RenderingDeviceDriverVulkan::command_video_control(CommandBufferID p_cmd_bu
 	vkCmdControlVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &cmd_control);
 }
 
-void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buffer, TextureID p_dpb, BufferID p_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, TextureID p_texture, uint32_t p_array_layer) {
+void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, TextureID p_dst_texture, uint32_t p_array_layer, TextureID p_dpb_texture) {
 	CommandBufferInfo *cmd_buffer_info = (CommandBufferInfo *)p_cmd_buffer.id;
-	TextureInfo *dpb = (TextureInfo *)p_dpb.id;
-	BufferInfo *buffer_info = (BufferInfo *)p_buffer.id;
-	TextureInfo *texture_info = (TextureInfo *)p_texture.id;
+	BufferInfo *src_buffer_info = (BufferInfo *)p_src_buffer.id;
+	TextureInfo *dst_texture_info = (TextureInfo *)p_dst_texture.id;
+	TextureInfo *dpb_texture_info = (TextureInfo *)p_dpb_texture.id;
 
 	uint32_t slice_offset = 0;
 	VkVideoDecodeH264PictureInfoKHR h264_picture_info = {};
@@ -6393,8 +6423,8 @@ void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buf
 
 	// TODO is this the right way to make an extent?
 	VkExtent2D extent = {};
-	extent.width = texture_info->vk_create_info.extent.width;
-	extent.height = texture_info->vk_create_info.extent.height;
+	extent.width = dst_texture_info->vk_create_info.extent.width;
+	extent.height = dst_texture_info->vk_create_info.extent.height;
 
 	VkVideoPictureResourceInfoKHR picture_info = {};
 	picture_info.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
@@ -6402,7 +6432,7 @@ void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buf
 	picture_info.codedOffset = offset;
 	picture_info.codedExtent = extent;
 	picture_info.baseArrayLayer = p_array_layer;
-	picture_info.imageViewBinding = texture_info->vk_view;
+	picture_info.imageViewBinding = dst_texture_info->vk_view;
 
 	StdVideoDecodeH264ReferenceInfo h264_reference_info = {};
 	h264_reference_info.flags.top_field_flag = 0;
@@ -6426,7 +6456,7 @@ void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buf
 	dpb_picture_info.codedOffset = offset;
 	dpb_picture_info.codedExtent = extent;
 	dpb_picture_info.baseArrayLayer = 0;
-	dpb_picture_info.imageViewBinding = dpb->vk_view;
+	dpb_picture_info.imageViewBinding = dpb_texture_info->vk_view;
 
 	// TODO slot index
 	VkVideoReferenceSlotInfoKHR reference_info = {};
@@ -6440,9 +6470,9 @@ void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buf
 	decode_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR;
 	decode_info.pNext = &h264_picture_info;
 	decode_info.flags = 0;
-	decode_info.srcBuffer = buffer_info->vk_buffer;
+	decode_info.srcBuffer = src_buffer_info->vk_buffer;
 	decode_info.srcBufferOffset = 0;
-	decode_info.srcBufferRange = buffer_info->size;
+	decode_info.srcBufferRange = src_buffer_info->size;
 	decode_info.dstPictureResource = picture_info;
 	decode_info.pSetupReferenceSlot = &reference_info;
 	decode_info.referenceSlotCount = 0;

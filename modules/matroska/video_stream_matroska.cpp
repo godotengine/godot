@@ -919,7 +919,7 @@ void VideoStreamPlaybackMatroska::play() {
 		return;
 	}
 
-	cluster_rid = video_stream_encoding->create_video_session(width, height);
+	video_stream_encoding->create_video_session(width, height);
 
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ, &err);
@@ -972,12 +972,11 @@ Ref<Texture2D> VideoStreamPlaybackMatroska::get_texture() const {
 
 // TODO
 void VideoStreamPlaybackMatroska::update(double p_delta) {
-	return;
 	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(cluster_rid, 0);
 
 	Ref<Image> frame;
 	frame.instantiate();
-	frame->set_data(width, height, true, Image::FORMAT_RGBA8, data);
+	frame->set_data(width, height, false, Image::FORMAT_R8, data);
 
 	image_texture->set_image(frame);
 }

@@ -367,6 +367,149 @@ public:
 		COMPARE_OP_MAX
 	};
 
+	/**********************/
+	/**** VIDEO CODING ****/
+	/**********************/
+
+	enum VideoCodingOperation {
+		VIDEO_OPERATION_DECODE_H264 = (1 << 0),
+		VIDEO_OPERATION_DECODE_H265 = (1 << 1),
+		VIDEO_OPERATION_DECODE_AV1 = (1 << 2),
+		VIDEO_OPERATION_DECODE_VP9 = (1 << 3),
+	};
+
+	enum VideoCodingChromaSubsampling {
+		CHROMA_SUBSAMPLING_MONOCHROME = (1 << 0),
+		CHROMA_SUBSAMPLING_420 = (1 << 1),
+		CHROMA_SUBSAMPLING_422 = (1 << 2),
+		CHROMA_SUBSAMPLING_444 = (1 << 3),
+	};
+
+	enum VideoCodingH264ProfileIdc {
+		VIDEO_CODING_H264_PROFILE_IDC_BASELINE = 66,
+		VIDEO_CODING_H264_PROFILE_IDC_MAIN = 77,
+		VIDEO_CODING_H264_PROFILE_IDC_HIGH = 100,
+		VIDEO_CODING_H264_PROFILE_IDC_HIGH_PREDICTIVE = 244,
+	};
+
+	enum VideoCodingH264PictureLayout {
+		VIDEO_CODING_H264_PICTURE_LAYOUT_PROGRESSIVE = 0,
+		VIDEO_CODING_H264_PICTURE_LAYOUT_INTERLACED_INTERLEAVED = 1,
+		VIDEO_CODING_H264_PICTURE_LAYOUT_INTERLACED_SEPARATE_PLANES = 2,
+	};
+
+	enum VideoCodingH264PocType {
+		VIDEO_CODING_H264_POC_TYPE_0,
+		VIDEO_CODING_H264_POC_TYPE_1,
+		VIDEO_CODING_H264_POC_TYPE_2,
+	};
+
+	enum VideoCodingH264WeightedBipredIdc {
+
+	};
+
+	struct VideoCodingH264SequenceParameterSet {
+		VideoCodingH264ProfileIdc profile_idc;
+
+		bool constraint_set0_flag;
+		bool constraint_set1_flag;
+		bool constraint_set2_flag;
+		bool constraint_set3_flag;
+		bool constraint_set4_flag;
+		bool constraint_set5_flag;
+
+		uint32_t level_idc;
+		uint8_t seq_parameter_set_id;
+
+		VideoCodingChromaSubsampling chroma_format_idc;
+		bool separate_colour_plane_flag;
+		uint8_t bit_depth_luma_minus8;
+		uint8_t bit_depth_chroma_minus8;
+
+		bool qpprime_y_zero_transform_bypass_flag;
+
+		// TODO scaling lists
+		bool seq_scaling_matrix_present_flag;
+		struct {
+			uint16_t scaling_list_present_mask;
+			uint16_t use_default_scaling_matrix_mask;
+		} scaling_lists;
+
+		uint8_t log2_max_frame_num_minus4;
+
+		VideoCodingH264PocType pic_order_cnt_type;
+
+		uint8_t log2_max_pic_order_cnt_lsb_minus4;
+
+		uint8_t delta_pic_order_always_zero_flag;
+		int32_t offset_for_non_ref_pic;
+		int32_t offset_for_top_to_bottom_field;
+		uint8_t num_ref_frames_in_pic_order_cnt_cycle;
+		Vector<int32_t> offset_for_ref_frame;
+
+		uint8_t max_num_ref_frames;
+		bool gaps_in_frame_num_value_allowed_flag;
+
+		uint32_t pic_width_in_mbs_minus1;
+		uint32_t pic_height_in_map_units_minus1;
+
+		bool frame_mbs_only_flag;
+		bool mb_adaptive_frame_field_flag;
+		bool direct_8x8_inference_flag;
+
+		bool frame_cropping_flag;
+		uint32_t frame_crop_left_offset;
+		uint32_t frame_crop_right_offset;
+		uint32_t frame_crop_top_offset;
+		uint32_t frame_crop_bottom_offset;
+
+		// TODO
+		bool vui_parameters_present_flag;
+		struct {
+		} sequence_parameter_set_vui;
+	};
+
+	struct VideoCodingH264PictureParameterSet {
+		uint8_t seq_parameter_set_id;
+		uint8_t pic_parameter_set_id;
+
+		uint8_t entropy_coding_mode_flag;
+		uint8_t bottom_field_pic_order_in_frame_present_flag;
+
+		uint8_t num_ref_idx_l0_default_active_minus1;
+		uint8_t num_ref_idx_l1_default_active_minus1;
+
+		uint8_t weighted_pred_flag;
+		VideoCodingH264WeightedBipredIdc weighted_bipred_idc;
+
+		int8_t pic_init_qp_minus26;
+		int8_t pic_init_qs_minus26;
+		int8_t chroma_qp_index_offset;
+
+		uint8_t deblocking_filter_control_present_flag;
+		uint8_t constrained_intra_pred_flag;
+		uint8_t redundant_pic_cnt_present_flag;
+
+		uint8_t transform_8x8_mode_flag;
+
+		// TODO
+		uint8_t pic_scaling_matrix_present_flag;
+		struct {
+		} scaling_lists;
+
+		int8_t second_chroma_qp_index_offset;
+	};
+
+	struct VideoProfile {
+		VideoCodingOperation operation;
+		VideoCodingChromaSubsampling chroma_subsampling;
+		uint32_t luma_bit_depth;
+		uint32_t chroma_bit_depth;
+
+		VideoCodingH264ProfileIdc h264_profile_idc;
+		VideoCodingH264PictureLayout h264_picture_layout;
+	};
+
 	/*****************/
 	/**** TEXTURE ****/
 	/*****************/
@@ -437,6 +580,7 @@ public:
 		TextureSamples samples = TEXTURE_SAMPLES_1;
 		uint32_t usage_bits = 0;
 		Vector<DataFormat> shareable_formats;
+		Vector<VideoProfile> video_profiles;
 		bool is_resolve_buffer = false;
 		bool is_discardable = false;
 
@@ -847,47 +991,6 @@ public:
 		DYNAMIC_STATE_STENCIL_COMPARE_MASK = (1 << 4),
 		DYNAMIC_STATE_STENCIL_WRITE_MASK = (1 << 5),
 		DYNAMIC_STATE_STENCIL_REFERENCE = (1 << 6),
-	};
-
-	/**********************/
-	/**** VIDEO CODING ****/
-	/**********************/
-
-	enum VideoCodingOperation {
-		VIDEO_OPERATION_DECODE_H264 = (1 << 0),
-		VIDEO_OPERATION_DECODE_H265 = (1 << 1),
-		VIDEO_OPERATION_DECODE_AV1 = (1 << 2),
-		VIDEO_OPERATION_DECODE_VP9 = (1 << 3),
-	};
-
-	enum VideoCodingChromaSubsampling {
-		CHROMA_SUBSAMPLING_MONOCHROME = (1 << 0),
-		CHROMA_SUBSAMPLING_420 = (1 << 1),
-		CHROMA_SUBSAMPLING_422 = (1 << 2),
-		CHROMA_SUBSAMPLING_444 = (1 << 3),
-	};
-
-	enum VideoCodingH264ProfileIdc {
-		VIDEO_CODING_H264_PROFILE_IDC_BASELINE = 66,
-		VIDEO_CODING_H264_PROFILE_IDC_MAIN = 77,
-		VIDEO_CODING_H264_PROFILE_IDC_HIGH = 100,
-		VIDEO_CODING_H264_PROFILE_IDC_HIGH_PREDICTIVE = 244,
-	};
-
-	enum VideoCodingH264PictureLayout {
-		VIDEO_CODING_H264_PICTURE_LAYOUT_PROGRESSIVE = 0,
-		VIDEO_CODING_H264_PICTURE_LAYOUT_INTERLACED_INTERLEAVED = 1,
-		VIDEO_CODING_H264_PICTURE_LAYOUT_INTERLACED_SEPARATE_PLANES = 2,
-	};
-
-	struct VideoProfile {
-		VideoCodingOperation operation;
-		VideoCodingChromaSubsampling chroma_subsampling;
-		uint32_t luma_bit_depth;
-		uint32_t chroma_bit_depth;
-
-		VideoCodingH264ProfileIdc h264_profile_idc;
-		VideoCodingH264PictureLayout h264_picture_layout;
 	};
 
 	/**************/

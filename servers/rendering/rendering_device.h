@@ -67,7 +67,6 @@ private:
 public:
 	typedef int64_t DrawListID;
 	typedef int64_t ComputeListID;
-	typedef int64_t VideoCodingListID;
 
 	typedef void (*InvalidationCallback)(void *);
 
@@ -378,6 +377,7 @@ public:
 		TextureSwizzle swizzle_g = TEXTURE_SWIZZLE_G;
 		TextureSwizzle swizzle_b = TEXTURE_SWIZZLE_B;
 		TextureSwizzle swizzle_a = TEXTURE_SWIZZLE_A;
+		bool use_sampler = false;
 
 		bool operator==(const TextureView &p_other) const {
 			if (format_override != p_other.format_override) {
@@ -400,7 +400,6 @@ public:
 	RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
 	RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_usage, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers, uint64_t p_mipmaps = 1);
 	RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D, uint32_t p_layers = 0);
-	RID texture_create_for_video_coding(const TextureFormat &p_format, const TextureView &p_view, const VideoProfile &p_profile);
 	Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data);
 	Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer); // CPU textures will return immediately, while GPU textures will most likely force a flush
 	Error texture_get_data_async(RID p_texture, uint32_t p_layer, const Callable &p_callback);
@@ -1401,34 +1400,28 @@ public:
 	void compute_list_end();
 
 private:
-	/****************************/
-	/**** VIDEO CODING LISTS ****/
-	/****************************/
-
-	struct VideoCodingList {
-		bool active = false;
-
-		RID video_profile;
-		RDD::VideoSessionID video_session;
-
-		RID dst_texture;
-		RID dpb_texture;
+	/**********************/
+	/**** VIDEO CODING ****/
+	/**********************/
+	struct VideoSession {
+		RDD::VideoSessionID driver_id;
 	};
 
-	VideoCodingList video_coding_list;
+	RID_Owner<VideoSession> video_session_owner;
+
+	RDD::CommandPoolID decode_pool;
 	RDD::CommandBufferID decode_buffer;
-
-public:
-	VideoCodingListID video_coding_list_begin(const VideoProfile &p_profile, RID p_dpb, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps);
-	void video_coding_list_control(VideoCodingListID p_list);
-	void video_coding_list_decode(VideoCodingListID p_list, RID p_src_buffer, RID p_dst_texture, StdVideoDecodeH264PictureInfo p_std_h264_info, uint32_t p_array_layer);
-	void video_coding_list_encode(VideoCodingListID p_list);
-
-	RID video_coding_list_end();
 
 public:
 	void video_profile_get_capabilities(const VideoProfile &p_profile);
 	void video_profile_get_format_properties(const VideoProfile &p_profile);
+
+	RID video_session_create(const VideoProfile &p_profile, DataFormat p_image_format, uint32_t p_width, uint32_t p_height, uint32_t p_max_dpb_slots);
+	void video_session_add_h264_parameters(RID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets);
+
+	void video_coding_begin(RID p_video_session, RID p_dpb_texture);
+	void video_coding_decode(RID p_src_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, RID p_dst_texture, uint32_t p_array_layer, RID p_dpb_texture);
+	void video_coding_end();
 
 private:
 	/*************************/
