@@ -157,7 +157,7 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 	instance->script = Ref<GDScript>(this);
 	instance->owner = p_owner;
 	instance->owner_id = p_owner->get_instance_id();
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	//needed for hot reloading
 	for (const KeyValue<StringName, MemberInfo> &E : member_indices) {
 		instance->member_indices_cache[E.key] = E.value.index;
@@ -877,7 +877,7 @@ Error GDScript::reload(bool p_keep_state) {
 	GDScriptDocGen::generate_docs(this, parser.get_tree());
 #endif
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	for (const GDScriptWarning &warning : parser.get_warnings()) {
 		if (EngineDebugger::is_active()) {
 			Vector<ScriptLanguage::StackInfo> si;
@@ -1468,7 +1468,7 @@ void GDScript::_save_orphaned_subclasses(ClearData *p_clear_data) {
 	}
 }
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
 	if (p_script.is_valid()) {
 		Ref<GDScript> gdscript = p_script;
@@ -1638,7 +1638,7 @@ void GDScript::cancel_pending_functions(bool warn) {
 		// the GDScriptFunctionState to be destroyed and thus removed from the list.
 		pending_func_states.remove(E);
 		GDScriptFunctionState *state = E->self();
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		if (warn) {
 			WARN_PRINT("Canceling suspended execution of \"" + state->get_readable_function() + "\" due to a script reload.");
 		}
@@ -2141,7 +2141,7 @@ const Variant GDScriptInstance::get_rpc_config() const {
 }
 
 void GDScriptInstance::reload_members() {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 
 	Vector<Variant> new_members;
 	new_members.resize(script->member_indices.size());
@@ -2372,7 +2372,7 @@ void GDScriptLanguage::finish() {
 }
 
 void GDScriptLanguage::profiling_start() {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	MutexLock lock(mutex);
 
 	SelfList<GDScriptFunction> *elem = function_list.first();
@@ -2396,14 +2396,14 @@ void GDScriptLanguage::profiling_start() {
 }
 
 void GDScriptLanguage::profiling_set_save_native_calls(bool p_enable) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	MutexLock lock(mutex);
 	profile_native_calls = p_enable;
 #endif
 }
 
 void GDScriptLanguage::profiling_stop() {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	MutexLock lock(mutex);
 
 	profiling = false;
@@ -2412,7 +2412,7 @@ void GDScriptLanguage::profiling_stop() {
 
 int GDScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) {
 	int current = 0;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 
 	MutexLock lock(mutex);
 
@@ -2451,7 +2451,7 @@ int GDScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *p_info_arr, 
 int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) {
 	int current = 0;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	MutexLock lock(mutex);
 
 	profiling_collate_native_call_data(false);
@@ -2490,7 +2490,7 @@ int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_
 }
 
 void GDScriptLanguage::profiling_collate_native_call_data(bool p_accumulated) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	// The same native call can be called from multiple functions, so join them together here.
 	// Only use the name of the function (ie signature.split[2]).
 	HashMap<String, GDScriptFunction::Profile::NativeProfile *> seen_nat_calls;
@@ -2537,7 +2537,7 @@ struct GDScriptDepSort {
 };
 
 void GDScriptLanguage::reload_all_scripts() {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	print_verbose("GDScript: Reloading all scripts");
 	Array scripts;
 	{
@@ -2567,11 +2567,11 @@ void GDScriptLanguage::reload_all_scripts() {
 	}
 
 	reload_scripts(scripts, true);
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 }
 
 void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 
 	List<Ref<GDScript>> scripts;
 	{
@@ -2705,7 +2705,7 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload
 		//if instance states were saved, set them!
 	}
 
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 }
 
 void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
@@ -2714,7 +2714,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 }
 
 void GDScriptLanguage::frame() {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (profiling) {
 		MutexLock lock(mutex);
 
@@ -2955,7 +2955,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	_debug_parse_err_line = -1;
 	_debug_parse_err_file = "";
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	profiling = false;
 	profile_native_calls = false;
 	script_frame_time = 0;
@@ -2965,7 +2965,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	track_call_stack = GLOBAL_DEF_RST("debug/settings/gdscript/always_track_call_stacks", false);
 	track_locals = GLOBAL_DEF_RST("debug/settings/gdscript/always_track_local_variables", false);
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	track_call_stack = true;
 	track_locals = track_locals || EngineDebugger::is_active();
 
@@ -2984,7 +2984,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	ProjectSettings::get_singleton()->set_as_internal("debug/gdscript/warnings/constant_used_as_function", true);
 	ProjectSettings::get_singleton()->set_as_internal("debug/gdscript/warnings/function_used_as_property", true);
 #endif
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 }
 
 GDScriptLanguage::~GDScriptLanguage() {

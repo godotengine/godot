@@ -248,9 +248,9 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	int position = 0;
 	int length = 0;
 	Vector<int> continuation_lines;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	Vector<String> keyword_list;
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
 	HashMap<int, CommentData> comments;
@@ -266,9 +266,9 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	void _skip_whitespace();
 	void check_indent();
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	void make_keyword_list();
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	Token make_error(const String &p_message);
 	void push_error(const String &p_message);

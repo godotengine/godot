@@ -32,7 +32,7 @@
 
 #include "core/variant/variant.h"
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 
 String GDScriptWarning::get_message() const {
 #define CHECK_SYMBOLS(m_amount) ERR_FAIL_COND_V(symbols.size() < m_amount, String());
@@ -264,4 +264,4 @@ GDScriptWarning::Code GDScriptWarning::get_code_from_name(const String &p_name) 
 	return WARNING_MAX;
 }
 
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED

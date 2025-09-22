@@ -33,7 +33,7 @@
 #include "gdscript_cache.h"
 #include "gdscript_tokenizer.h"
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 #include "gdscript_warning.h"
 #endif
 
@@ -47,7 +47,7 @@
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 #include "core/string/string_builder.h"
 #endif
 
@@ -1348,7 +1348,7 @@ private:
 	Node *list = nullptr;
 	List<ParserError> errors;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	struct PendingWarning {
 		const Node *source = nullptr;
 		GDScriptWarning::Code code = GDScriptWarning::WARNING_MAX;
@@ -1474,7 +1474,7 @@ private:
 
 	void clear();
 	void push_error(const String &p_message, const Node *p_origin = nullptr);
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
 	template <typename... Symbols>
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Symbols &...p_symbols) {
@@ -1615,7 +1615,7 @@ public:
 		// TODO: Keep track of deps.
 		return List<String>();
 	}
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }
 	const HashSet<int> &get_unsafe_lines() const { return unsafe_lines; }
 	int get_last_line_number() const { return current.end_line; }
@@ -1630,7 +1630,7 @@ public:
 	GDScriptParser();
 	~GDScriptParser();
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	class TreePrinter {
 		int indent_level = 0;
 		String indent;
@@ -1683,6 +1683,6 @@ public:
 	public:
 		void print_tree(const GDScriptParser &p_parser);
 	};
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 	static void cleanup();
 };

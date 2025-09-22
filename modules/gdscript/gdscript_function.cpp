@@ -106,7 +106,7 @@ void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<String
 
 GDScriptFunction::GDScriptFunction() {
 	name = "<anonymous>";
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	{
 		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 		GDScriptLanguage::get_singleton()->function_list.add(&function_list);
@@ -126,7 +126,7 @@ GDScriptFunction::~GDScriptFunction() {
 	}
 	return_type.script_type_ref = Ref<Script>();
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 	GDScriptLanguage::get_singleton()->function_list.remove(&function_list);
 #endif
@@ -193,14 +193,14 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 		MutexLock lock(GDScriptLanguage::singleton->mutex);
 
 		if (!scripts_list.in_list()) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			ERR_FAIL_V_MSG(Variant(), "Resumed function '" + state.function_name + "()' after await, but script is gone. At script: " + state.script_path + ":" + itos(state.line));
 #else
 			return Variant();
 #endif
 		}
 		if (state.instance && !instances_list.in_list()) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			ERR_FAIL_V_MSG(Variant(), "Resumed function '" + state.function_name + "()' after await, but class instance is gone. At script: " + state.script_path + ":" + itos(state.line));
 #else
 			return Variant();
