@@ -229,6 +229,7 @@ void EditorFileDialog::_update_theme_item_cache() {
 	theme_cache.filter_box = get_editor_theme_icon(SNAME("Search"));
 	theme_cache.file_sort_button = get_editor_theme_icon(SNAME("Sort"));
 
+	theme_cache.file = get_editor_theme_icon(SNAME("File"));
 	theme_cache.folder = get_editor_theme_icon(SNAME("Folder"));
 	theme_cache.folder_icon_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
 
@@ -1114,9 +1115,9 @@ void EditorFileDialog::update_file_list() {
 			item_list->add_item(dir_name);
 
 			if (display_mode == DISPLAY_THUMBNAILS) {
-				item_list->set_item_icon(-1, folder_thumbnail);
+				item_list->set_item_icon(-1, bundle ? file_thumbnail : folder_thumbnail);
 			} else {
-				item_list->set_item_icon(-1, theme_cache.folder);
+				item_list->set_item_icon(-1, bundle ? theme_cache.file : theme_cache.folder);
 			}
 
 			Dictionary d;
