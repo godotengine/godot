@@ -769,6 +769,48 @@ typedef struct XrVulkanSwapchainCreateInfoMETA {
 
 #endif /* XR_USE_GRAPHICS_API_VULKAN */
 
+#ifdef XR_USE_PLATFORM_ANDROID
+
+// XR_ANDROID_anchor_sharing_export is a preprocessor guard. Do not pass it to API calls.
+#define XR_ANDROID_anchor_sharing_export 1
+#define XR_ANDROID_anchor_sharing_export_SPEC_VERSION 1
+#define XR_ANDROID_ANCHOR_SHARING_EXPORT_EXTENSION_NAME "XR_ANDROID_anchor_sharing_export"
+typedef struct XrAnchorSharingInfoANDROID {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrSpace                     anchor;
+} XrAnchorSharingInfoANDROID;
+
+typedef struct XrAnchorSharingTokenANDROID {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    struct AIBinder*      token;
+} XrAnchorSharingTokenANDROID;
+
+// XrSystemAnchorSharingExportPropertiesANDROID extends XrSystemProperties
+typedef struct XrSystemAnchorSharingExportPropertiesANDROID {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrBool32              supportsAnchorSharingExport;
+} XrSystemAnchorSharingExportPropertiesANDROID;
+
+typedef XrResult (XRAPI_PTR *PFN_xrShareAnchorANDROID)(XrSession session, const XrAnchorSharingInfoANDROID* sharingInfo, XrAnchorSharingTokenANDROID* anchorToken);
+typedef XrResult (XRAPI_PTR *PFN_xrUnshareAnchorANDROID)(XrSession session, XrSpace anchor);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrShareAnchorANDROID(
+    XrSession                                   session,
+    const XrAnchorSharingInfoANDROID*           sharingInfo,
+    XrAnchorSharingTokenANDROID*                anchorToken);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrUnshareAnchorANDROID(
+    XrSession                                   session,
+    XrSpace                                     anchor);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+#endif /* XR_USE_PLATFORM_ANDROID */
+
 #ifdef __cplusplus
 }
 #endif
