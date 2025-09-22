@@ -380,6 +380,22 @@ Point2i Window::get_position() const {
 	return position;
 }
 
+void Window::move_to_mouse() {
+	ERR_MAIN_THREAD_GUARD;
+	ERR_FAIL_COND(!is_inside_tree());
+	
+	Point2i mouse_pos;
+	int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(get_window_id());
+	Point2i screen_pos = DisplayServer::get_singleton()->screen_get_position(parent_screen);
+	if (is_embedded()) {
+		mouse_pos = get_embedder()->get_mouse_position();
+		set_position(mouse_pos + Point2i(10, 10));
+	} else {
+		mouse_pos = DisplayServer::get_singleton()->mouse_get_position();
+		set_position(mouse_pos + Point2i(10, 10));
+	}
+}
+
 void Window::move_to_center() {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
@@ -3153,6 +3169,7 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &Window::set_position);
 	ClassDB::bind_method(D_METHOD("get_position"), &Window::get_position);
 	ClassDB::bind_method(D_METHOD("move_to_center"), &Window::move_to_center);
+	ClassDB::bind_method(D_METHOD("move_to_mouse"), &Window::move_to_mouse);
 
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &Window::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &Window::get_size);

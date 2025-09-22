@@ -1854,8 +1854,8 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 		return nullptr;
 	}
 
-	Control *drag_preview = _gui_get_drag_preview();
-	if (!drag_preview || (c != drag_preview && !drag_preview->is_ancestor_of(c))) {
+	Window *drag_preview = _gui_get_drag_preview();
+	if (!drag_preview || !drag_preview->is_ancestor_of(c)) {
 		return c;
 	}
 
@@ -2029,7 +2029,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 								gui.dragging = true;
 								break;
 							} else {
-								Control *drag_preview = _gui_get_drag_preview();
+								Window *drag_preview = _gui_get_drag_preview();
 								if (drag_preview) {
 									ERR_PRINT("Don't set a drag preview and return null data. Preview was deleted and drag request ignored.");
 									memdelete(drag_preview);
@@ -2150,10 +2150,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (gui.dragging) {
 			// Handle drag & drop. This happens in the viewport where dragging started.
 
-			Control *drag_preview = _gui_get_drag_preview();
+			Window *drag_preview = _gui_get_drag_preview();
 			if (drag_preview) {
-				Vector2 pos = drag_preview->get_canvas_transform().affine_inverse().xform(mpos);
-				drag_preview->set_position(pos);
+				drag_preview->move_to_mouse();
 			}
 
 			gui.drag_mouse_over = section_root->gui.target_control;
@@ -2390,7 +2389,7 @@ void Viewport::gui_perform_drop_at(const Point2 &p_pos, Control *p_control) {
 		gui.drag_successful = false;
 	}
 
-	Control *drag_preview = _gui_get_drag_preview();
+	Window *drag_preview = _gui_get_drag_preview();
 	if (drag_preview) {
 		memdelete(drag_preview);
 		gui.drag_preview_id = ObjectID();
@@ -2460,23 +2459,35 @@ void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 	ERR_FAIL_COND(p_control->is_inside_tree());
 	ERR_FAIL_COND(p_control->get_parent() != nullptr);
 
-	Control *drag_preview = _gui_get_drag_preview();
+	Window *drag_preview = _gui_get_drag_preview();
 	if (drag_preview) {
 		memdelete(drag_preview);
 	}
-	p_control->set_as_top_level(true);
-	p_control->set_position(gui.last_mouse_pos);
-	p_base->get_root_parent_control()->add_child(p_control); // Add as child of viewport.
-	p_control->move_to_front();
 
-	gui.drag_preview_id = p_control->get_instance_id();
+	Window *window = memnew(Window);
+	
+	window->wrap_controls = true;
+	window->set_flag(Window::FLAG_BORDERLESS, true);
+	window->set_flag(Window::FLAG_ALWAYS_ON_TOP, true);
+	window->set_flag(Window::FLAG_MOUSE_PASSTHROUGH, true);
+	window->set_flag(Window::FLAG_NO_FOCUS, true);
+	window->set_flag(Window::FLAG_TRANSPARENT, true);
+	window->wrap_controls = true;
+	window->set_size(Size2i(0, 0));
+	p_base->get_root_parent_control()->add_child(window);
+
+	p_control->set_as_top_level(true);
+	p_control->move_to_front();
+	window->add_child(p_control);
+	window->visible = true;
+	gui.drag_preview_id = window->get_instance_id();
 }
 
-Control *Viewport::_gui_get_drag_preview() {
+Window *Viewport::_gui_get_drag_preview() {
 	if (gui.drag_preview_id.is_null()) {
 		return nullptr;
 	} else {
-		Control *drag_preview = ObjectDB::get_instance<Control>(gui.drag_preview_id);
+		Window *drag_preview = ObjectDB::get_instance<Window>(gui.drag_preview_id);
 		if (!drag_preview) {
 			ERR_PRINT("Don't free the control set as drag preview.");
 			gui.drag_preview_id = ObjectID();
