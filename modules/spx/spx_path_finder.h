@@ -62,7 +62,8 @@ public:
     ~SpxPathFinder();
 
     void setup_grid_spx(GdVec2 size, GdVec2 cell_size, GdBool with_debug);
-    void setup_grid(Vector2i size, Vector2i cell_size, bool with_debug = false);
+	void setup_grid(Vector2i size, Vector2i cell_size, bool with_debug = false);
+	void set_jumping_enabled(bool p_enabled);
 	void add_all_obstacles(Node *root);
 
     GdArray find_path_spx(GdVec2 p_from, GdVec2 p_to);

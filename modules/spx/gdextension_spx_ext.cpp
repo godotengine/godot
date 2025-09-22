@@ -253,14 +253,14 @@ static void gdextension_spx_ext_clear_pure_sprites() {
 static void gdextension_spx_ext_create_pure_sprite(GdString texture_path,GdVec2 pos,GdInt zindex) {
 	 extMgr->create_pure_sprite(texture_path, pos, zindex);
 }
-static void gdextension_spx_ext_setup_path_finder_with_size(GdVec2 grid_size,GdVec2 cell_size,GdBool with_debug) {
-	 extMgr->setup_path_finder_with_size(grid_size, cell_size, with_debug);
+static void gdextension_spx_ext_setup_path_finder_with_size(GdVec2 grid_size,GdVec2 cell_size,GdBool with_jump,GdBool with_debug) {
+	 extMgr->setup_path_finder_with_size(grid_size, cell_size, with_jump, with_debug);
 }
-static void gdextension_spx_ext_setup_path_finder() {
-	 extMgr->setup_path_finder();
+static void gdextension_spx_ext_setup_path_finder(GdBool with_jump) {
+	 extMgr->setup_path_finder(with_jump);
 }
-static void gdextension_spx_ext_find_path(GdVec2 p_from,GdVec2 p_to,GdArray* ret_val) {
-	*ret_val = extMgr->find_path(p_from, p_to);
+static void gdextension_spx_ext_find_path(GdVec2 p_from,GdVec2 p_to,GdBool with_jump,GdArray* ret_val) {
+	*ret_val = extMgr->find_path(p_from, p_to, with_jump);
 }
 static void gdextension_spx_input_get_mouse_pos(GdVec2* ret_val) {
 	*ret_val = inputMgr->get_mouse_pos();

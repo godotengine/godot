@@ -281,9 +281,9 @@ typedef void (*GDExtensionSpxExtCloseDrawTiles)();
 typedef void (*GDExtensionSpxExtExitTilemapEditorMode)();
 typedef void (*GDExtensionSpxExtClearPureSprites)();
 typedef void (*GDExtensionSpxExtCreatePureSprite)(GdString texture_path, GdVec2 pos, GdInt zindex);
-typedef void (*GDExtensionSpxExtSetupPathFinderWithSize)(GdVec2 grid_size, GdVec2 cell_size, GdBool with_debug);
-typedef void (*GDExtensionSpxExtSetupPathFinder)();
-typedef void (*GDExtensionSpxExtFindPath)(GdVec2 p_from, GdVec2 p_to, GdArray* ret_value);
+typedef void (*GDExtensionSpxExtSetupPathFinderWithSize)(GdVec2 grid_size, GdVec2 cell_size, GdBool with_jump, GdBool with_debug);
+typedef void (*GDExtensionSpxExtSetupPathFinder)(GdBool with_jump);
+typedef void (*GDExtensionSpxExtFindPath)(GdVec2 p_from, GdVec2 p_to, GdBool with_jump, GdArray* ret_value);
 // SpxInput
 typedef void (*GDExtensionSpxInputGetMousePos)(GdVec2* ret_value);
 typedef void (*GDExtensionSpxInputGetKey)(GdInt key, GdBool* ret_value);
