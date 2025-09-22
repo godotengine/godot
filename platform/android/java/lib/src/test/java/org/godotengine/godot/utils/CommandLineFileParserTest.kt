@@ -56,8 +56,6 @@ class CommandLineFileParserTest(
 	private val expectedResult: List<String>,
 ) {
 
-	private val commandLineFileParser = CommandLineFileParser()
-
 	companion object {
 		@JvmStatic
 		@Parameterized.Parameters
@@ -96,7 +94,7 @@ class CommandLineFileParserTest(
 		val inputStream = inputStreamArg
 
 		// when
-		val result = commandLineFileParser.parseCommandLine(inputStream)
+		val result = CommandLineFileParser.parseCommandLine(inputStream)
 
 		// then
 		assert(result == expectedResult) { "Expected: $expectedResult Actual: $result" }
