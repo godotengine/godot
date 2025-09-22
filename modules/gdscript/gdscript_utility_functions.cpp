@@ -39,7 +39,7 @@
 #include "core/templates/vector.h"
 #include "core/variant/typed_array.h"
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 
 #define DEBUG_VALIDATE_ARG_COUNT(m_min_count, m_max_count)                  \
 	if (unlikely(p_arg_count < m_min_count)) {                              \
@@ -73,13 +73,13 @@
 		return;                                                           \
 	}
 
-#else // !DEBUG_ENABLED
+#else // !GDSCRIPT_DEBUG_ENABLED
 
 #define DEBUG_VALIDATE_ARG_COUNT(m_min_count, m_max_count)
 #define DEBUG_VALIDATE_ARG_TYPE(m_arg, m_type)
 #define DEBUG_VALIDATE_ARG_CUSTOM(m_arg, m_type, m_cond, m_msg)
 
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 #define VALIDATE_ARG_CUSTOM(m_arg, m_type, m_cond, m_msg)                 \
 	if (unlikely(m_cond)) {                                               \

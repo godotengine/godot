@@ -27,3 +27,6 @@ if env.editor_build:
 if env["tests"]:
     env_gdscript.Append(CPPDEFINES=["TESTS_ENABLED"])
     env_gdscript.add_source_files(env.modules_sources, "./tests/*.cpp")
+
+if env["tests"] or env.debug_features:
+    env_gdscript.Append(CPPDEFINES=["GDSCRIPT_DEBUG_ENABLED"])

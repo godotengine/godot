@@ -38,7 +38,7 @@
 #include "core/math/math_defs.h"
 #include "scene/main/multiplayer_api.h"
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 #include "core/string/string_builder.h"
 #include "servers/text/text_server.h"
 #endif
@@ -136,7 +136,7 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode"), PropertyInfo(Variant::STRING, "sync"), PropertyInfo(Variant::STRING, "transfer_mode"), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::rpc_annotation, varray("authority", "call_remote", "unreliable", 0));
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	is_ignoring_warnings = !(bool)GLOBAL_GET("debug/gdscript/warnings/enable");
 	for (int i = 0; i < GDScriptWarning::WARNING_MAX; i++) {
 		warning_ignore_start_lines[i] = INT_MAX;
@@ -190,7 +190,7 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 	}
 }
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
 	ERR_FAIL_NULL(p_source);
 	ERR_FAIL_INDEX(p_code, GDScriptWarning::WARNING_MAX);
@@ -251,7 +251,7 @@ void GDScriptParser::apply_pending_warnings() {
 
 	pending_warnings.clear();
 }
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 void GDScriptParser::override_completion_context(const Node *p_for_node, CompletionType p_type, Node *p_node, int p_argument) {
 	if (!for_completion) {
@@ -404,7 +404,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 		current = tokenizer->scan();
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	// Warn about parsing an empty script file:
 	if (current.type == GDScriptTokenizer::Token::TK_EOF) {
 		// Create a dummy Node for the warning, pointing to the very beginning of the file
@@ -427,7 +427,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 	memdelete(text_tokenizer);
 	tokenizer = nullptr;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (multiline_stack.size() > 0) {
 		ERR_PRINT("Parser bug: Imbalanced multiline stack.");
 	}
@@ -1497,7 +1497,7 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 
 	HashMap<StringName, int> elements;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	List<MethodInfo> gdscript_funcs;
 	GDScriptLanguage::get_singleton()->get_public_functions(&gdscript_funcs);
 #endif
@@ -1922,7 +1922,7 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 
 GDScriptParser::Node *GDScriptParser::parse_statement() {
 	Node *result = nullptr;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	bool unreachable = current_suite->has_return && !current_suite->has_unreachable_code;
 #endif
 
@@ -2049,7 +2049,6 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 			lambda_ended = lambda_ended || has_ended_lambda;
 			result = expression;
 
-#ifdef DEBUG_ENABLED
 			if (expression != nullptr) {
 				switch (expression->type) {
 					case Node::ASSIGNMENT:
@@ -2059,7 +2058,9 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 						break;
 					case Node::PRELOAD:
 						// `preload` is a function-like keyword.
+#ifdef GDSCRIPT_DEBUG_ENABLED
 						push_warning(expression, GDScriptWarning::RETURN_VALUE_DISCARDED, "preload");
+#endif
 						break;
 					case Node::LAMBDA:
 						// Standalone lambdas can't be used, so make this an error.
@@ -2067,18 +2068,24 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 						break;
 					case Node::LITERAL:
 						// Allow strings as multiline comments.
+#ifdef GDSCRIPT_DEBUG_ENABLED
 						if (static_cast<GDScriptParser::LiteralNode *>(expression)->value.get_type() != Variant::STRING) {
 							push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION);
 						}
+#endif
 						break;
 					case Node::TERNARY_OPERATOR:
+#ifdef GDSCRIPT_DEBUG_ENABLED
 						push_warning(expression, GDScriptWarning::STANDALONE_TERNARY);
+#endif
 						break;
 					default:
+#ifdef GDSCRIPT_DEBUG_ENABLED
 						push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION);
+#endif
+						break;
 				}
 			}
-#endif
 			break;
 		}
 	}
@@ -2122,7 +2129,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 	}
 #endif // TOOLS_ENABLED
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (unreachable && result != nullptr) {
 		current_suite->has_unreachable_code = true;
 		if (current_function) {
@@ -2349,7 +2356,7 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 		}
 		match_branch_annotation_stack.clear();
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		if (have_wildcard && !branch->patterns.is_empty()) {
 			push_warning(branch->patterns[0], GDScriptWarning::UNREACHABLE_PATTERN);
 		}
@@ -2709,7 +2716,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_expression(bool p_can_assi
 
 GDScriptParser::IdentifierNode *GDScriptParser::parse_identifier() {
 	IdentifierNode *identifier = static_cast<IdentifierNode *>(parse_identifier(nullptr, false));
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	// Check for spoofing here (if available in TextServer) since this isn't called inside expressions. This is only relevant for declarations.
 	if (identifier && TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier->name)) {
 		push_warning(identifier, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier->name.operator String());
@@ -3025,7 +3032,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 
 	switch (p_previous_operand->type) {
 		case Node::IDENTIFIER: {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			// Get source to store assignment count.
 			// Also remove one usage since assignment isn't usage.
 			IdentifierNode *id = static_cast<IdentifierNode *>(p_previous_operand);
@@ -3555,7 +3562,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 			advance();
 
 			String identifier = previous.get_identifier();
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			// Check spoofing.
 			if (TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier)) {
 				push_warning(get_node, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier);
@@ -4321,12 +4328,10 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 }
 
 bool GDScriptParser::tool_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
-#ifdef DEBUG_ENABLED
 	if (_is_tool) {
 		push_error(R"("@tool" annotation can only be used once.)", p_annotation);
 		return false;
 	}
-#endif // DEBUG_ENABLED
 	_is_tool = true;
 	return true;
 }
@@ -4338,7 +4343,6 @@ bool GDScriptParser::icon_annotation(AnnotationNode *p_annotation, Node *p_targe
 	ClassNode *class_node = static_cast<ClassNode *>(p_target);
 	String path = p_annotation->resolved_arguments[0];
 
-#ifdef DEBUG_ENABLED
 	if (!class_node->icon_path.is_empty()) {
 		push_error(R"("@icon" annotation can only be used once.)", p_annotation);
 		return false;
@@ -4347,7 +4351,6 @@ bool GDScriptParser::icon_annotation(AnnotationNode *p_annotation, Node *p_targe
 		push_error(R"("@icon" annotation argument must contain the path to the icon.)", p_annotation->arguments[0]);
 		return false;
 	}
-#endif // DEBUG_ENABLED
 
 	class_node->icon_path = path;
 
@@ -4921,7 +4924,6 @@ bool GDScriptParser::export_custom_annotation(AnnotationNode *p_annotation, Node
 }
 
 bool GDScriptParser::export_tool_button_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
-#ifdef TOOLS_ENABLED
 	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
 	ERR_FAIL_COND_V(p_annotation->resolved_arguments.is_empty(), false);
 
@@ -4961,7 +4963,6 @@ bool GDScriptParser::export_tool_button_annotation(AnnotationNode *p_annotation,
 	variable->export_info.hint = PROPERTY_HINT_TOOL_BUTTON;
 	variable->export_info.hint_string = hint_string;
 	variable->export_info.usage = PROPERTY_USAGE_EDITOR;
-#endif // TOOLS_ENABLED
 
 	return true; // Only available in editor.
 }
@@ -4996,7 +4997,7 @@ bool GDScriptParser::export_group_annotations(AnnotationNode *p_annotation, Node
 }
 
 bool GDScriptParser::warning_ignore_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (is_ignoring_warnings) {
 		return true; // We already ignore all warnings, let's optimize it.
 	}
@@ -5070,14 +5071,14 @@ bool GDScriptParser::warning_ignore_annotation(AnnotationNode *p_annotation, Nod
 		}
 	}
 	return !has_error;
-#else // !DEBUG_ENABLED
+#else // !GDSCRIPT_DEBUG_ENABLED
 	// Only available in debug builds.
 	return true;
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 }
 
 bool GDScriptParser::warning_ignore_region_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	bool has_error = false;
 	const bool is_start = p_annotation->name == SNAME("@warning_ignore_start");
 	for (const Variant &warning_name : p_annotation->resolved_arguments) {
@@ -5109,10 +5110,10 @@ bool GDScriptParser::warning_ignore_region_annotations(AnnotationNode *p_annotat
 		}
 	}
 	return !has_error;
-#else // !DEBUG_ENABLED
+#else // !GDSCRIPT_DEBUG_ENABLED
 	// Only available in debug builds.
 	return true;
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 }
 
 bool GDScriptParser::rpc_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
@@ -5543,7 +5544,7 @@ void GDScriptParser::reset_extents(Node *p_node, Node *p_from) {
 
 /*---------- PRETTY PRINT FOR DEBUG ----------*/
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 
 void GDScriptParser::TreePrinter::increase_indent() {
 	indent_level++;
@@ -6416,4 +6417,4 @@ void GDScriptParser::TreePrinter::print_tree(const GDScriptParser &p_parser) {
 	print_line(String(printed));
 }
 
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED

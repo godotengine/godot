@@ -33,7 +33,7 @@
 #include "core/error/error_macros.h"
 #include "core/string/char_utils.h"
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 #include "servers/text/text_server.h"
 #endif
 
@@ -551,7 +551,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
 #define MIN_KEYWORD_LENGTH 2
 #define MAX_KEYWORD_LENGTH 10
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 void GDScriptTokenizerText::make_keyword_list() {
 #define KEYWORD_LINE(keyword, token_type) keyword,
 #define KEYWORD_GROUP_IGNORE(group)
@@ -561,7 +561,7 @@ void GDScriptTokenizerText::make_keyword_list() {
 #undef KEYWORD_LINE
 #undef KEYWORD_GROUP_IGNORE
 }
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 GDScriptTokenizer::Token GDScriptTokenizerText::potential_identifier() {
 	bool only_ascii = _peek(-1) < 128;
@@ -591,7 +591,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::potential_identifier() {
 		// Kept here in case the order with push_error matters.
 		Token id = make_identifier(name);
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		// Additional checks for identifiers but only in debug and if it's available in TextServer.
 		if (TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY)) {
 			int64_t confusable = TS->is_confusable(name, keyword_list);
@@ -599,7 +599,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::potential_identifier() {
 				push_error(vformat(R"(Identifier "%s" is visually similar to the GDScript keyword "%s" and thus not allowed.)", name, keyword_list[confusable]));
 			}
 		}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 		// Cannot be a keyword, as keywords are ASCII only.
 		return id;
@@ -1645,7 +1645,7 @@ GDScriptTokenizerText::GDScriptTokenizerText() {
 		tab_size = EditorSettings::get_singleton()->get_setting("text_editor/behavior/indent/size");
 	}
 #endif // TOOLS_ENABLED
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	make_keyword_list();
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 }
