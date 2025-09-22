@@ -116,11 +116,14 @@ public:
 
 	// Algorithms.
 	constexpr int64_t find(const T &p_val, uint64_t p_from = 0) const;
-	constexpr int64_t find_sequence(const Span<T> &p_span, uint64_t p_from = 0) const;
+	template <typename T1 = T>
+	constexpr int64_t find_sequence(const Span<T1> &p_span, uint64_t p_from = 0) const;
 	constexpr int64_t rfind(const T &p_val, uint64_t p_from) const;
 	_FORCE_INLINE_ constexpr int64_t rfind(const T &p_val) const { return rfind(p_val, size() - 1); }
-	constexpr int64_t rfind_sequence(const Span<T> &p_span, uint64_t p_from) const;
-	_FORCE_INLINE_ constexpr int64_t rfind_sequence(const Span<T> &p_span) const { return rfind_sequence(p_span, size() - p_span.size()); }
+	template <typename T1 = T>
+	constexpr int64_t rfind_sequence(const Span<T1> &p_span, uint64_t p_from) const;
+	template <typename T1 = T>
+	_FORCE_INLINE_ constexpr int64_t rfind_sequence(const Span<T1> &p_span) const { return rfind_sequence(p_span, size() - p_span.size()); }
 	constexpr uint64_t count(const T &p_val) const;
 	/// Find the index of the given value using binary search.
 	/// Note: Assumes that elements in the span are sorted. Otherwise, use find() instead.
@@ -142,7 +145,8 @@ constexpr int64_t Span<T>::find(const T &p_val, uint64_t p_from) const {
 }
 
 template <typename T>
-constexpr int64_t Span<T>::find_sequence(const Span<T> &p_span, uint64_t p_from) const {
+template <typename T1>
+constexpr int64_t Span<T>::find_sequence(const Span<T1> &p_span, uint64_t p_from) const {
 	for (uint64_t i = p_from; i <= size() - p_span.size(); i++) {
 		if (are_spans_equal(ptr() + i, p_span.ptr(), p_span.size())) {
 			return i;
@@ -154,6 +158,7 @@ constexpr int64_t Span<T>::find_sequence(const Span<T> &p_span, uint64_t p_from)
 
 template <typename T>
 constexpr int64_t Span<T>::rfind(const T &p_val, uint64_t p_from) const {
+	DEV_ASSERT(p_from < size());
 	for (int64_t i = p_from; i >= 0; i--) {
 		if (ptr()[i] == p_val) {
 			return i;
@@ -163,7 +168,9 @@ constexpr int64_t Span<T>::rfind(const T &p_val, uint64_t p_from) const {
 }
 
 template <typename T>
-constexpr int64_t Span<T>::rfind_sequence(const Span<T> &p_span, uint64_t p_from) const {
+template <typename T1>
+constexpr int64_t Span<T>::rfind_sequence(const Span<T1> &p_span, uint64_t p_from) const {
+	DEV_ASSERT(p_from + p_span.size() <= size());
 	for (int64_t i = p_from; i >= 0; i--) {
 		if (are_spans_equal(ptr() + i, p_span.ptr(), p_span.size())) {
 			return i;
