@@ -365,8 +365,8 @@ void AnimationPlayer::queue(const StringName &p_name) {
 	}
 }
 
-Vector<String> AnimationPlayer::get_queue() {
-	Vector<String> ret;
+TypedArray<StringName> AnimationPlayer::get_queue() {
+	TypedArray<StringName> ret;
 	for (const StringName &E : playback_queue) {
 		ret.push_back(E);
 	}
@@ -579,8 +579,8 @@ bool AnimationPlayer::is_playing() const {
 	return playing;
 }
 
-void AnimationPlayer::set_current_animation(const String &p_animation) {
-	if (p_animation == "[stop]" || p_animation.is_empty()) {
+void AnimationPlayer::set_current_animation(const StringName &p_animation) {
+	if (p_animation == SNAME("[stop]") || p_animation.is_empty()) {
 		stop();
 	} else if (!is_playing()) {
 		play(p_animation);
@@ -592,16 +592,16 @@ void AnimationPlayer::set_current_animation(const String &p_animation) {
 	}
 }
 
-String AnimationPlayer::get_current_animation() const {
-	return (is_playing() ? playback.assigned : "");
+StringName AnimationPlayer::get_current_animation() const {
+	return (is_playing() ? playback.assigned : StringName());
 }
 
-void AnimationPlayer::set_assigned_animation(const String &p_animation) {
+void AnimationPlayer::set_assigned_animation(const StringName &p_animation) {
 	if (is_playing()) {
 		float speed = playback.current.speed_scale;
 		play(p_animation, -1.0, speed, std::signbit(speed));
 	} else {
-		ERR_FAIL_COND_MSG(!animation_set.has(p_animation), vformat("Animation not found: %s.", p_animation));
+		ERR_FAIL_COND_MSG(!animation_set.has(p_animation), vformat("Animation not found: %s.", p_animation.operator String()));
 		playback.current.pos = 0;
 		playback.current.from = &animation_set[p_animation];
 		playback.current.start_time = -1;
@@ -611,7 +611,7 @@ void AnimationPlayer::set_assigned_animation(const String &p_animation) {
 	}
 }
 
-String AnimationPlayer::get_assigned_animation() const {
+StringName AnimationPlayer::get_assigned_animation() const {
 	return playback.assigned;
 }
 
@@ -745,7 +745,7 @@ bool AnimationPlayer::has_section() const {
 	return Animation::is_greater_or_equal_approx(playback.current.start_time, 0) || Animation::is_greater_or_equal_approx(playback.current.end_time, 0);
 }
 
-void AnimationPlayer::set_autoplay(const String &p_name) {
+void AnimationPlayer::set_autoplay(const StringName &p_name) {
 	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
 		WARN_PRINT("Setting autoplay after the node has been added to the scene has no effect.");
 	}
@@ -753,7 +753,7 @@ void AnimationPlayer::set_autoplay(const String &p_name) {
 	autoplay = p_name;
 }
 
-String AnimationPlayer::get_autoplay() const {
+StringName AnimationPlayer::get_autoplay() const {
 	return autoplay;
 }
 
@@ -1029,7 +1029,7 @@ void AnimationPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "-4,4,0.001,or_less,or_greater"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "movie_quit_on_finish"), "set_movie_quit_on_finish_enabled", "is_movie_quit_on_finish_enabled");
 
-	ADD_SIGNAL(MethodInfo(SNAME("current_animation_changed"), PropertyInfo(Variant::STRING, "name")));
+	ADD_SIGNAL(MethodInfo(SNAME("current_animation_changed"), PropertyInfo(Variant::STRING_NAME, "name")));
 	ADD_SIGNAL(MethodInfo(SNAME("animation_changed"), PropertyInfo(Variant::STRING_NAME, "old_name"), PropertyInfo(Variant::STRING_NAME, "new_name")));
 }
 
