@@ -242,7 +242,7 @@ void TextEdit::Text::update_accessibility(int p_line, RID p_root) {
 	ERR_FAIL_INDEX(p_line, text.size());
 
 	Line &l = text.write[p_line];
-	if (l.accessibility_text_root_element.is_empty()) {
+	if (l.accessibility_text_root_element。is_empty()) {
 		for (int i = 0; i < l.data_buf->get_line_count(); i++) {
 			RID rid = DisplayServer::get_singleton()->accessibility_create_sub_text_edit_elements(p_root, l.data_buf->get_line_rid(i), max_line_height, p_line);
 			l.accessibility_text_root_element.push_back(rid);
@@ -293,8 +293,8 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 	text_line.data_buf->set_custom_punctuation(get_enabled_word_separators());
 	text_line.indent_ofs = -1.0;
 
-	const String &text_with_ime = (!text_line.ime_data.is_empty()) ? text_line.ime_data : text_line.data;
-	const Array &bidi_override_with_ime = (!text_line.ime_data.is_empty()) ? text_line.ime_bidi_override : text_line.bidi_override;
+	const String &text_with_ime = (!text_line.ime_data。is_empty()) ? text_line.ime_data : text_line.data;
+	const Array &bidi_override_with_ime = (!text_line.ime_data。is_empty()) ? text_line.ime_bidi_override : text_line.bidi_override;
 
 	if (p_text_changed) {
 		int from = 0;
@@ -348,7 +348,7 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 	// Apply tab align.
 	if (tab_size > 0) {
 		Vector<float> tabs;
-		tabs.push_back(MAX(1, (font->get_char_size(' ', font_size).width + font->get_spacing(TextServer::SPACING_SPACE)) * tab_size));
+		tabs.push_back(MAX(1， (font->get_char_size(' ', font_size)。width + font->get_spacing(TextServer::SPACING_SPACE)) * tab_size));
 		text_line.data_buf->tab_align(tabs);
 	}
 
@@ -394,7 +394,7 @@ void TextEdit::Text::invalidate_all_lines() {
 		if (tab_size_dirty) {
 			if (tab_size > 0) {
 				Vector<float> tabs;
-				tabs.push_back(MAX(1, (font->get_char_size(' ', font_size).width + font->get_spacing(TextServer::SPACING_SPACE)) * tab_size));
+				tabs.push_back(MAX(1， (font->get_char_size(' ', font_size)。width + font->get_spacing(TextServer::SPACING_SPACE)) * tab_size));
 				text[i].data_buf->tab_align(tabs);
 			}
 		}
@@ -447,7 +447,7 @@ void TextEdit::Text::clear() {
 	total_visible_line_count = 0;
 
 	Line line;
-	line.gutters.resize(gutter_count);
+	line.gutters。resize(gutter_count);
 	text.insert(0, line);
 	invalidate_cache(0, true);
 }
@@ -785,11 +785,11 @@ void TextEdit::_notification(int p_what) {
 					float text_off_x = 0.0;
 					float text_off_y = 0.0;
 					if (!editable) {
-						text_off_x = theme_cache.style_readonly->get_offset().x / 2;
-						text_off_x -= theme_cache.style_normal->get_offset().x / 2;
+						text_off_x = theme_cache.style_readonly->get_offset()。x / 2;
+						text_off_x -= theme_cache.style_normal->get_offset()。x / 2;
 						text_off_y = theme_cache.style_readonly->get_offset().y / 2;
 					} else {
-						text_off_y = theme_cache.style_normal->get_offset().y / 2;
+						text_off_y = theme_cache.style_normal->get_offset()。y / 2;
 					}
 
 					text_off_y += (lines_drawn + j) * row_height + theme_cache.line_spacing / 2;
@@ -815,7 +815,7 @@ void TextEdit::_notification(int p_what) {
 				lines_drawn += ac_buf->get_line_count();
 			}
 			if (accessibility_text_root_element_nl.is_null()) {
-				accessibility_text_root_element_nl = DisplayServer::get_singleton()->accessibility_create_sub_text_edit_elements(ae, RID(), get_line_height());
+				accessibility_text_root_element_nl = DisplayServer::get_singleton()->accessibility_create_sub_text_edit_elements(ae, RID()， get_line_height());
 			}
 
 			// Selection.
@@ -1475,7 +1475,7 @@ void TextEdit::_notification(int p_what) {
 										gutter_rect.size.y = std::floor(icon->get_height() * (gutter_rect.size.x / icon->get_width()));
 									}
 									if (rtl) {
-										gutter_rect.position.x = size.width - gutter_rect.position.x - gutter_rect.size.x;
+										gutter_rect.position。x = size.width - gutter_rect.position.x - gutter_rect.size.x;
 									}
 
 									icon->draw_rect(ci, gutter_rect, false, get_line_gutter_item_color(line, g));
@@ -1486,7 +1486,7 @@ void TextEdit::_notification(int p_what) {
 										if (rtl) {
 											gutter_rect.position.x = size.width - gutter_rect.position.x - gutter_rect.size.x;
 										}
-										gutter.custom_draw_callback.call(line, g, Rect2(gutter_rect));
+										gutter.custom_draw_callback。call(line, g, Rect2(gutter_rect));
 									}
 								} break;
 							}
@@ -1501,7 +1501,7 @@ void TextEdit::_notification(int p_what) {
 					float wrap_indent = line_wrap_index > first_indent_line ? indent_ofs : 0.0;
 
 					if (rtl) {
-						char_margin = size.width - char_margin - TS->shaped_text_get_size(rid).x - wrap_indent;
+						char_margin = size.width - char_margin - TS->shaped_text_get_size(rid)。x - wrap_indent;
 					} else {
 						char_margin += wrap_indent;
 					}
@@ -1553,7 +1553,7 @@ void TextEdit::_notification(int p_what) {
 									rect.position.x = xmargin_beg;
 								}
 								if (rect.position.x + rect.size.x > xmargin_end) {
-									rect.size.x = xmargin_end - rect.position.x;
+									rect.size。x = xmargin_end - rect.position.x;
 								}
 								RS::get_singleton()->canvas_item_add_rect(ci, rect, theme_cache.selection_color);
 							}
@@ -1668,7 +1668,7 @@ void TextEdit::_notification(int p_what) {
 					for (Dictionary k : object_keys) {
 						Rect2 col_rect = TS->shaped_text_get_object_rect(rid, k);
 						col_rect.position += Vector2(char_margin + ofs_x, ofs_y);
-						if (!clipped && (col_rect.position.x) >= xmargin_beg && (col_rect.position.x + col_rect.size.x) <= xmargin_end) {
+						if (!clipped && (col_rect.position。x) >= xmargin_beg && (col_rect.position.x + col_rect.size.x) <= xmargin_end) {
 							inline_object_drawer.call(k, col_rect);
 						}
 					}
@@ -2977,15 +2977,15 @@ void TextEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 
 		if (p_move_by_word) {
 			int cc = get_caret_column(i);
-			// If the caret is at the end of the line, and not on the last line, move it down to the beginning of the next line.
+			// If the caret is at the end of the line, 和 not on the last line, move it down to the beginning of the next line.
 			if (cc == text[get_caret_line(i)].length() && get_caret_line(i) < text.size() - 1) {
-				set_caret_line(get_caret_line(i) + 1, false, true, -1, i);
+				set_caret_line(get_caret_line(i) + 1， false, true, -1, i);
 				set_caret_column(0, i == 0, i);
 			} else {
 				PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(get_caret_line(i))->get_rid());
 				if (words.is_empty() || cc >= words[words.size() - 1]) {
 					// Move to the end when there are no more words.
-					cc = text[get_caret_line(i)].length();
+					cc = text[get_caret_line(i)]。length();
 				} else {
 					for (int j = 1; j < words.size(); j = j + 2) {
 						if (words[j] > cc) {
@@ -2998,7 +2998,7 @@ void TextEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 			}
 		} else {
 			// If we are at the end of the line, move the caret to the next line down.
-			if (get_caret_column(i) == text[get_caret_line(i)].length()) {
+			if (get_caret_column(i) == text[get_caret_line(i)]。length()) {
 				if (get_caret_line(i) < text.size() - 1) {
 					int new_caret_line = get_caret_line(i) + get_next_visible_line_offset_from(CLAMP(get_caret_line(i) + 1, 0, text.size() - 1), 1);
 					set_caret_line(new_caret_line, false, false, -1, i);
@@ -3027,7 +3027,7 @@ void TextEdit::_move_caret_up(bool p_select) {
 
 		int cur_wrap_index = get_caret_wrap_index(i);
 		if (cur_wrap_index > 0) {
-			set_caret_line(get_caret_line(i), true, false, cur_wrap_index - 1, i);
+			set_caret_line(get_caret_line(i)， true， false, cur_wrap_index - 1, i);
 		} else if (get_caret_line(i) == 0) {
 			set_caret_column(0, i == 0, i);
 		} else {
@@ -4982,7 +4982,7 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line
 	// If IME is active, return current cursor position directly to prevent crash.
 	if (has_ime_text()) {
 		return Point2i(get_caret_column(), get_caret_line());
-	}  
+	}
 	float rows = p_pos.y - theme_cache.style_normal->get_margin(SIDE_TOP);
 	if (!editable) {
 		rows -= theme_cache.style_readonly->get_offset().y / 2;
@@ -5050,11 +5050,11 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line
 
 Point2i TextEdit::get_pos_at_line_column(int p_line, int p_column) const {
 	Rect2i rect = get_rect_at_line_column(p_line, p_column);
-	return rect.position.x == -1 ? rect.position : rect.position + Vector2i(0, get_line_height());
+	return rect.position。x == -1 ? rect.position : rect.position + Vector2i(0, get_line_height());
 }
 
 Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), Rect2i(-1, -1, 0, 0));
+	ERR_FAIL_INDEX_V(p_line, text.size()， Rect2i(-1, -1, 0, 0));
 	ERR_FAIL_COND_V(p_column < 0, Rect2i(-1, -1, 0, 0));
 	ERR_FAIL_COND_V(p_column > text[p_line].length(), Rect2i(-1, -1, 0, 0));
 
@@ -5121,7 +5121,7 @@ int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {
 	int num_lines_before = std::round((viewport_offset_y) / minimap_line_height);
 	int minimap_line = (v_scroll->get_max() <= minimap_visible_lines) ? -1 : first_vis_line;
 	if (first_vis_line > 0 && minimap_line >= 0) {
-		minimap_line -= get_next_visible_line_index_offset_from(first_vis_line, 0, -num_lines_before).x;
+		minimap_line -= get_next_visible_line_index_offset_from(first_vis_line, 0, -num_lines_before)。x;
 		minimap_line -= (minimap_line > 0 && smooth_scroll_enabled ? 1 : 0);
 	}
 
