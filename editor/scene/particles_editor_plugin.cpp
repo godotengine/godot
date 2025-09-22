@@ -37,13 +37,21 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/spin_box.h"
 
+#ifndef _3D_DISABLED
+#include "scene/3d/cpu_particles_3d.h"
+#include "scene/3d/gpu_particles_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
+#endif // _3D_DISABLED
+
 void ParticlesEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (handled_type.ends_with("2D")) {
 				add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);
+#ifndef _3D_DISABLED
 			} else if (handled_type.ends_with("3D")) {
 				add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, toolbar);
+#endif // _3D_DISABLED
 			} else {
 				DEV_ASSERT(false);
 			}
