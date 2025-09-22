@@ -274,11 +274,11 @@ private:
 	GLTFAccessorIndex _encode_accessor_as_xform(Ref<GLTFState> p_state,
 			const Vector<Transform3D> p_attribs,
 			const bool p_for_vertex);
-	Error _encode_buffer_view(Ref<GLTFState> p_state, const double *p_src,
-			const int p_count, const GLTFAccessor::GLTFAccessorType p_accessor_type,
+	Error _encode_accessor_into_buffer_view(Ref<GLTFState> p_state, const double *p_src,
+			const int64_t p_count, const GLTFAccessor::GLTFAccessorType p_accessor_type,
 			const GLTFAccessor::GLTFComponentType p_component_type, const bool p_normalized,
-			const int p_byte_offset, const bool p_for_vertex,
-			GLTFBufferViewIndex &r_accessor, const bool p_for_indices = false);
+			const int64_t p_byte_offset, const bool p_for_vertex,
+			GLTFBufferViewIndex &r_buffer_view, const bool p_for_indices = false);
 
 	Error _encode_accessors(Ref<GLTFState> p_state);
 	Error _encode_buffer_views(Ref<GLTFState> p_state);
