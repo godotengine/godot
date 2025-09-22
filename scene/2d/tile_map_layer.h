@@ -369,6 +369,7 @@ public:
 		DIRTY_FLAGS_LAYER_NAVIGATION_MAP,
 		DIRTY_FLAGS_LAYER_NAVIGATION_VISIBILITY_MODE,
 		DIRTY_FLAGS_LAYER_RUNTIME_UPDATE,
+		DIRTY_FLAGS_LAYER_HIGHLIGHT_MODE,
 
 		DIRTY_FLAGS_LAYER_INDEX_IN_TILE_MAP_NODE, // For compatibility.
 
@@ -450,6 +451,7 @@ private:
 	bool _rendering_was_cleaned_up = false;
 	void _rendering_update(bool p_force_cleanup);
 	void _rendering_notification(int p_what);
+	Color _highlight_color(const Color &p_modulate) const;
 	void _rendering_quadrants_update_cell(CellData &r_cell_data, SelfList<RenderingQuadrant>::List &r_dirty_rendering_quadrant_list);
 	void _rendering_occluders_clear_cell(CellData &r_cell_data);
 	void _rendering_occluders_update_cell(CellData &r_cell_data);
