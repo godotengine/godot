@@ -221,16 +221,10 @@ android {
     }
 
     sourceSets {
-        main {
-            manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src']
-            res.srcDirs = ['res']
-            aidl.srcDirs = ['aidl']
-            assets.srcDirs = ['assets']
-        }
-        debug.jniLibs.srcDirs = ['libs/debug', 'libs/debug/vulkan_validation_layers']
-        dev.jniLibs.srcDirs = ['libs/dev']
-        release.jniLibs.srcDirs = ['libs/release']
+        main.res.srcDirs += ['res']
+        debug.jniLibs.srcDirs += ['libs/debug', 'libs/debug/vulkan_validation_layers']
+        dev.jniLibs.srcDirs += ['libs/dev']
+        release.jniLibs.srcDirs += ['libs/release']
     }
 
     applicationVariants.all { variant ->
