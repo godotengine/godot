@@ -358,7 +358,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="buffer" type="PackedByteArray" />
 			<description>
-				Loads an image from the binary contents of a OpenEXR file.
+				Loads an image from the binary contents of an OpenEXR file.
 			</description>
 		</method>
 		<method name="load_from_file" qualifiers="static">
