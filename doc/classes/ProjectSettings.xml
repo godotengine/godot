@@ -2311,6 +2311,12 @@
 		<member name="navigation/2d/use_edge_connections" type="bool" setter="" getter="" default="true">
 			If enabled 2D navigation regions will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin. This setting only affects World2D default navigation maps.
 		</member>
+		<member name="navigation/2d/warnings/navmesh_cell_size_mismatch" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the navigation system will print warnings when a navigation mesh with a small cell size is used on a navigation map with a larger size as this commonly causes rasterization errors.
+		</member>
+		<member name="navigation/2d/warnings/navmesh_edge_merge_errors" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the navigation system will print warnings about navigation mesh edge merge errors occurring in navigation regions or maps.
+		</member>
 		<member name="navigation/3d/default_cell_height" type="float" setter="" getter="" default="0.25">
 			Default cell height for 3D navigation maps. See [method NavigationServer3D.map_set_cell_height].
 		</member>
@@ -2331,6 +2337,12 @@
 		</member>
 		<member name="navigation/3d/use_edge_connections" type="bool" setter="" getter="" default="true">
 			If enabled 3D navigation regions will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin. This setting only affects World3D default navigation maps.
+		</member>
+		<member name="navigation/3d/warnings/navmesh_cell_size_mismatch" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the navigation system will print warnings when a navigation mesh with a small cell size (or in 3D height) is used on a navigation map with a larger size as this commonly causes rasterization errors.
+		</member>
+		<member name="navigation/3d/warnings/navmesh_edge_merge_errors" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the navigation system will print warnings about navigation mesh edge merge errors occurring in navigation regions or maps.
 		</member>
 		<member name="navigation/avoidance/thread_model/avoidance_use_high_priority_threads" type="bool" setter="" getter="" default="true">
 			If enabled and avoidance calculations use multiple threads the threads run with high priority.
