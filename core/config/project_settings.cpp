@@ -540,6 +540,9 @@ bool ProjectSettings::load_resource_pack(const String &p_pack, bool p_replace_fi
 	return ProjectSettings::_load_resource_pack(p_pack, p_replace_files, p_offset, false);
 }
 
+bool ProjectSettings::load_resource_pack_from_buffer(const PackedByteArray &p_pack, bool p_replace_files, int p_offset) {
+	return ProjectSettings::_load_resource_pack_from_buffer(p_pack, p_replace_files, p_offset, false);
+}
 bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset, bool p_main_pack) {
 	if (PackedData::get_singleton()->is_disabled()) {
 		return false;
@@ -550,6 +553,32 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 		return false;
 	}
 
+	_generate_resource_dir(p_main_pack);
+	bool ok = PackedData::get_singleton()->add_pack(p_pack, p_replace_files, p_offset) == OK;
+	if (!ok) {
+		return false;
+	}
+	_post_load_resource_pack();
+
+	return true;
+}
+
+bool ProjectSettings::_load_resource_pack_from_buffer(const PackedByteArray &p_pack, bool p_replace_files, int p_offset, bool p_main_pack) {
+	if (PackedData::get_singleton()->is_disabled()) {
+		return false;
+	}
+
+	_generate_resource_dir(p_main_pack);
+	bool ok = PackedData::get_singleton()->add_pack_from_buffer(p_pack, p_replace_files, p_offset) == OK;
+	if (!ok) {
+		return false;
+	}
+	_post_load_resource_pack();
+
+	return true;
+}
+
+void ProjectSettings::_generate_resource_dir(bool p_main_pack) {
 	if (!p_main_pack && !using_datapack && !OS::get_singleton()->get_resource_dir().is_empty()) {
 		// Add the project's resource file system to PackedData so directory access keeps working when
 		// the game is running without a main pack, like in the editor or on Android.
@@ -558,12 +587,9 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 		DirAccess::make_default<DirAccessPack>(DirAccess::ACCESS_RESOURCES);
 		using_datapack = true;
 	}
+}
 
-	bool ok = PackedData::get_singleton()->add_pack(p_pack, p_replace_files, p_offset) == OK;
-	if (!ok) {
-		return false;
-	}
-
+void ProjectSettings::_post_load_resource_pack() {
 	if (project_loaded) {
 		// This pack may have declared new global classes (make sure they are picked up).
 		refresh_global_class_list();
@@ -577,8 +603,6 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 		DirAccess::make_default<DirAccessPack>(DirAccess::ACCESS_RESOURCES);
 		using_datapack = true;
 	}
-
-	return true;
 }
 
 void ProjectSettings::_convert_to_last_version(int p_from_version) {
@@ -1506,6 +1530,7 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("globalize_path", "path"), &ProjectSettings::globalize_path);
 	ClassDB::bind_method(D_METHOD("save"), &ProjectSettings::save);
 	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset"), &ProjectSettings::load_resource_pack, DEFVAL(true), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("load_resource_pack_from_buffer", "pack", "replace_files", "offset"), &ProjectSettings::load_resource_pack_from_buffer, DEFVAL(true), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
 
