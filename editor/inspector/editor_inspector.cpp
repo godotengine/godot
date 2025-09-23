@@ -4227,10 +4227,10 @@ void EditorInspector::update_tree() {
 		String doc_path;
 		String theme_item_name;
 		String doc_tooltip_text;
-		StringName classname = doc_name;
 
 		// Build the doc hint, to use as tooltip.
 		if (use_doc_hints) {
+			StringName classname = doc_name;
 			if (!object_class.is_empty()) {
 				classname = object_class;
 			} else if (Object::cast_to<MultiNodeEdit>(object)) {
@@ -4253,6 +4253,14 @@ void EditorInspector::update_tree() {
 			}
 
 			StringName propname = property_prefix + p.name;
+			for (const KeyValue<String, String> &E : doc_property_class_remaps) {
+				if (property_prefix.begins_with(E.key)) {
+					propname = property_prefix.trim_prefix(E.key) + p.name;
+					classname = E.value;
+					break;
+				}
+			}
+
 			bool found = false;
 
 			// Small hack for theme_overrides. They are listed under Control, but come from another class.
@@ -4317,12 +4325,12 @@ void EditorInspector::update_tree() {
 				if (p.name.contains("shader_parameter/")) {
 					ShaderMaterial *shader_material = Object::cast_to<ShaderMaterial>(object);
 					if (shader_material) {
-						doc_tooltip_text = "property|" + shader_material->get_shader()->get_path() + "|" + property_prefix + p.name;
+						doc_tooltip_text = "property|" + shader_material->get_shader()->get_path() + "|" + propname;
 					}
 				} else if (p.usage & PROPERTY_USAGE_INTERNAL) {
-					doc_tooltip_text = "internal_property|" + classname + "|" + property_prefix + p.name;
+					doc_tooltip_text = "internal_property|" + classname + "|" + propname;
 				} else {
-					doc_tooltip_text = "property|" + classname + "|" + property_prefix + p.name;
+					doc_tooltip_text = "property|" + classname + "|" + propname;
 				}
 			} else {
 				doc_tooltip_text = "theme_item|" + classname + "|" + theme_item_name;
@@ -5607,6 +5615,10 @@ String EditorInspector::get_custom_property_description(const String &p_property
 		return E->value;
 	}
 	return "";
+}
+
+void EditorInspector::remap_doc_property_class(const String &p_property_prefix, const String &p_class) {
+	doc_property_class_remaps[p_property_prefix] = p_class;
 }
 
 void EditorInspector::set_object_class(const String &p_class) {
