@@ -761,7 +761,43 @@
 		<constant name="FORMAT_ASTC_8x8_HDR" value="38" enum="Format">
 			Same format as [constant FORMAT_ASTC_8x8], but with the hint to let the GPU know it is used for HDR.
 		</constant>
-		<constant name="FORMAT_MAX" value="39" enum="Format">
+		<constant name="FORMAT_R16" value="39" enum="Format">
+			OpenGL texture format [code]GL_R16[/code] where there's one component, a 16-bit unsigned normalized integer value. Since the value is normalized, each component is clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+			[b]Note:[/b] Due to limited hardware support, it is mainly recommended to be used on desktop or console devices. It may be unsupported on mobile or web, and will consequently be converted to [constant FORMAT_RF].
+		</constant>
+		<constant name="FORMAT_RG16" value="40" enum="Format">
+			OpenGL texture format [code]GL_RG16[/code] where there are two components, each a 16-bit unsigned normalized integer value. Since the value is normalized, each component is clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+			[b]Note:[/b] Due to limited hardware support, it is mainly recommended to be used on desktop or console devices. It may be unsupported on mobile or web, and will consequently be converted to [constant FORMAT_RGF].
+		</constant>
+		<constant name="FORMAT_RGB16" value="41" enum="Format">
+			OpenGL texture format [code]GL_RGB16[/code] where there are three components, each a 16-bit unsigned normalized integer value. Since the value is normalized, each component is clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+			[b]Note:[/b] Due to limited hardware support, it is mainly recommended to be used on desktop or console devices. It may be unsupported on mobile or web, and will consequently be converted to [constant FORMAT_RGBF].
+		</constant>
+		<constant name="FORMAT_RGBA16" value="42" enum="Format">
+			OpenGL texture format [code]GL_RGBA16[/code] where there are four components, each a 16-bit unsigned normalized integer value. Since the value is normalized, each component is clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+			[b]Note:[/b] Due to limited hardware support, it is mainly recommended to be used on desktop or console devices. It may be unsupported on mobile or web, and will consequently be converted to [constant FORMAT_RGBAF].
+		</constant>
+		<constant name="FORMAT_R16I" value="43" enum="Format">
+			OpenGL texture format [code]GL_R16UI[/code] where there's one component, a 16-bit unsigned integer value. Each component is clamped between [code]0[/code] and [code]65535[/code] (inclusive).
+			[b]Note:[/b] When used in a shader, the texture requires usage of [code]usampler[/code] samplers. Additionally, it only supports nearest-neighbor filtering under the Compatibility renderer.
+			[b]Note:[/b] When sampling using [method Image.get_pixel], returned [Color]s have to be divided by [code]65535[/code] to get the correct color value.
+		</constant>
+		<constant name="FORMAT_RG16I" value="44" enum="Format">
+			OpenGL texture format [code]GL_RG16UI[/code] where there are two components, each a 16-bit unsigned integer value. Each component is clamped between [code]0[/code] and [code]65535[/code] (inclusive).
+			[b]Note:[/b] When used in a shader, the texture requires usage of [code]usampler[/code] samplers. Additionally, it only supports nearest-neighbor filtering under the Compatibility renderer.
+			[b]Note:[/b] When sampling using [method Image.get_pixel], returned [Color]s have to be divided by [code]65535[/code] to get the correct color value.
+		</constant>
+		<constant name="FORMAT_RGB16I" value="45" enum="Format">
+			OpenGL texture format [code]GL_RGB16UI[/code] where there are three components, each a 16-bit unsigned integer value. Each component is clamped between [code]0[/code] and [code]65535[/code] (inclusive).
+			[b]Note:[/b] When used in a shader, the texture requires usage of [code]usampler[/code] samplers. Additionally, it only supports nearest-neighbor filtering under the Compatibility renderer.
+			[b]Note:[/b] When sampling using [method Image.get_pixel], returned [Color]s have to be divided by [code]65535[/code] to get the correct color value.
+		</constant>
+		<constant name="FORMAT_RGBA16I" value="46" enum="Format">
+			OpenGL texture format [code]GL_RGBA16UI[/code] where there are four components, each a 16-bit unsigned integer value. Each component is clamped between [code]0[/code] and [code]65535[/code] (inclusive).
+			[b]Note:[/b] When used in a shader, the texture requires usage of [code]usampler[/code] samplers. Additionally, it only supports nearest-neighbor filtering under the Compatibility renderer.
+			[b]Note:[/b] When sampling using [method Image.get_pixel], returned [Color]s have to be divided by [code]65535[/code] to get the correct color value.
+		</constant>
+		<constant name="FORMAT_MAX" value="47" enum="Format">
 			Represents the size of the [enum Format] enum.
 		</constant>
 		<constant name="INTERPOLATE_NEAREST" value="0" enum="Interpolation">

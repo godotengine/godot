@@ -505,6 +505,126 @@ static inline Error _get_gl_uncompressed_format(const Ref<Image> &p_image, Image
 			r_gl_format = GL_RGB;
 			r_gl_type = GL_UNSIGNED_INT_5_9_9_9_REV;
 		} break;
+		case Image::FORMAT_R16: {
+			if (config->unorm16_texture_supported) {
+				r_gl_internal_format = _EXT_R16;
+				r_gl_format = GL_RED;
+				r_gl_type = GL_UNSIGNED_SHORT;
+			} else {
+				if (config->float_texture_linear_supported) {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RF);
+					}
+					r_real_format = Image::FORMAT_RF;
+					r_gl_internal_format = GL_R32F;
+					r_gl_format = GL_RED;
+					r_gl_type = GL_FLOAT;
+				} else {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RH);
+					}
+					r_real_format = Image::FORMAT_RH;
+					r_gl_internal_format = GL_R16F;
+					r_gl_format = GL_RED;
+					r_gl_type = GL_HALF_FLOAT;
+				}
+			}
+		} break;
+		case Image::FORMAT_RG16: {
+			if (config->unorm16_texture_supported) {
+				r_gl_internal_format = _EXT_RG16;
+				r_gl_format = GL_RG;
+				r_gl_type = GL_UNSIGNED_SHORT;
+			} else {
+				if (config->float_texture_linear_supported) {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RGF);
+					}
+					r_real_format = Image::FORMAT_RGF;
+					r_gl_internal_format = GL_RG32F;
+					r_gl_format = GL_RG;
+					r_gl_type = GL_FLOAT;
+				} else {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RGH);
+					}
+					r_real_format = Image::FORMAT_RGH;
+					r_gl_internal_format = GL_RG16F;
+					r_gl_format = GL_RG;
+					r_gl_type = GL_HALF_FLOAT;
+				}
+			}
+		} break;
+		case Image::FORMAT_RGB16: {
+			if (config->unorm16_texture_supported) {
+				r_gl_internal_format = _EXT_RGB16;
+				r_gl_format = GL_RGB;
+				r_gl_type = GL_UNSIGNED_SHORT;
+			} else {
+				if (config->float_texture_linear_supported) {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RGBF);
+					}
+					r_real_format = Image::FORMAT_RGBF;
+					r_gl_internal_format = GL_RGB32F;
+					r_gl_format = GL_RGB;
+					r_gl_type = GL_FLOAT;
+				} else {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RGBH);
+					}
+					r_real_format = Image::FORMAT_RGBH;
+					r_gl_internal_format = GL_RGB16F;
+					r_gl_format = GL_RGB;
+					r_gl_type = GL_HALF_FLOAT;
+				}
+			}
+		} break;
+		case Image::FORMAT_RGBA16: {
+			if (config->unorm16_texture_supported) {
+				r_gl_internal_format = _EXT_RGBA16;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_SHORT;
+			} else {
+				if (config->float_texture_linear_supported) {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RGBAF);
+					}
+					r_real_format = Image::FORMAT_RGBAF;
+					r_gl_internal_format = GL_RGBA32F;
+					r_gl_format = GL_RGBA;
+					r_gl_type = GL_FLOAT;
+				} else {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RGH);
+					}
+					r_real_format = Image::FORMAT_RGH;
+					r_gl_internal_format = GL_RGBA16F;
+					r_gl_format = GL_RGBA;
+					r_gl_type = GL_HALF_FLOAT;
+				}
+			}
+		} break;
+		case Image::FORMAT_R16I: {
+			r_gl_internal_format = GL_R16UI;
+			r_gl_format = GL_RED_INTEGER;
+			r_gl_type = GL_UNSIGNED_SHORT;
+		} break;
+		case Image::FORMAT_RG16I: {
+			r_gl_internal_format = GL_RG16UI;
+			r_gl_format = GL_RG_INTEGER;
+			r_gl_type = GL_UNSIGNED_SHORT;
+		} break;
+		case Image::FORMAT_RGB16I: {
+			r_gl_internal_format = GL_RGB16UI;
+			r_gl_format = GL_RGB_INTEGER;
+			r_gl_type = GL_UNSIGNED_SHORT;
+		} break;
+		case Image::FORMAT_RGBA16I: {
+			r_gl_internal_format = GL_RGBA16UI;
+			r_gl_format = GL_RGBA_INTEGER;
+			r_gl_type = GL_UNSIGNED_SHORT;
+		} break;
 		default: {
 			return ERR_UNAVAILABLE;
 		}
