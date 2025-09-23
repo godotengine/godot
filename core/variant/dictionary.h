@@ -74,6 +74,7 @@ public:
 
 	int size() const;
 	bool is_empty() const;
+	void reserve(int p_new_capacity);
 	void clear();
 	void sort();
 	void merge(const Dictionary &p_dictionary, bool p_overwrite = false);
