@@ -1296,7 +1296,7 @@ void EditorSelection::_update_node_list() {
 		top_selected_node_list.push_back(E.key);
 	}
 
-	node_list_changed = true;
+	node_list_changed = false;
 }
 
 void EditorSelection::update() {
