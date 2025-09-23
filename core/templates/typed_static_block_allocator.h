@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  spin_lock.h                                                           */
+/*  typed_static_block_allocator.h                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,96 +30,30 @@
 
 #pragma once
 
-#include "core/os/thread.h"
-#include "core/typedefs.h"
+#include "core/os/memory.h"
+#include "core/os/static_block_allocator.h"
 
-#ifdef THREADS_ENABLED
-
-// Note the implementations below avoid false sharing by ensuring their
-// sizes match the assumed cache line. We can't use align attributes
-// because these objects may end up unaligned in semi-tightly packed arrays.
-
-#ifdef _MSC_VER
-#include <intrin.h>
-#endif
-
-#if defined(__APPLE__)
-
-#include <os/lock.h>
-
-class SpinLock {
-	union {
-		mutable os_unfair_lock _lock = OS_UNFAIR_LOCK_INIT;
-		char aligner[Thread::CACHE_LINE_BYTES];
-	};
+template <typename T>
+class TypedStaticBlockAllocator {
+	int64_t allocator_id = -1;
 
 public:
-	_ALWAYS_INLINE_ void lock() const {
-		os_unfair_lock_lock(&_lock);
-	}
-
-	_ALWAYS_INLINE_ void unlock() const {
-		os_unfair_lock_unlock(&_lock);
-	}
-};
-
-#else // __APPLE__
-
-#include <atomic>
-
-_ALWAYS_INLINE_ static void _cpu_pause() {
-#if defined(_MSC_VER)
-// ----- MSVC.
-#if defined(_M_ARM) || defined(_M_ARM64) // ARM.
-	__yield();
-#elif defined(_M_IX86) || defined(_M_X64) // x86.
-	_mm_pause();
-#endif
-#elif defined(__GNUC__) || defined(__clang__)
-// ----- GCC/Clang.
-#if defined(__i386__) || defined(__x86_64__) // x86.
-	__builtin_ia32_pause();
-#elif defined(__arm__) || defined(__aarch64__) // ARM.
-	asm volatile("yield");
-#elif defined(__powerpc__) // PowerPC.
-	asm volatile("or 27,27,27");
-#elif defined(__riscv) // RISC-V.
-	asm volatile(".insn i 0x0F, 0, x0, x0, 0x010");
-#endif
-#endif
-}
-
-static_assert(std::atomic_bool::is_always_lock_free);
-
-class SpinLock {
-	mutable std::atomic<bool> locked = ATOMIC_VAR_INIT(false);
-
-public:
-	_ALWAYS_INLINE_ void lock() const {
-		while (true) {
-			bool expected = false;
-			if (locked.compare_exchange_weak(expected, true, std::memory_order_acquire, std::memory_order_relaxed)) {
-				break;
-			}
-			do {
-				_cpu_pause();
-			} while (locked.load(std::memory_order_relaxed));
+	template <typename... Args>
+	T *new_allocation(const Args &&...p_args) {
+		if (unlikely(allocator_id == -1)) {
+			allocator_id = StaticBlockAllocator::get_allocator_id_for_size(sizeof(T));
 		}
+		T *ret = static_cast<T *>(StaticBlockAllocator::allocate_by_id(allocator_id));
+		memnew_placement(ret, T(p_args...));
+		return ret;
 	}
-
-	_ALWAYS_INLINE_ void unlock() const {
-		locked.store(false, std::memory_order_release);
+	void delete_allocation(T *p_allocation) {
+		if (!predelete_handler(p_allocation)) {
+			return; // doesn't want to be deleted
+		}
+		if constexpr (!std::is_trivially_destructible_v<T>) {
+			p_allocation->~T();
+		}
+		StaticBlockAllocator::free_by_id(allocator_id, p_allocation);
 	}
 };
-
-#endif // __APPLE__
-
-#else // THREADS_ENABLED
-
-class SpinLock {
-public:
-	void lock() const {}
-	void unlock() const {}
-};
-
-#endif // THREADS_ENABLED
