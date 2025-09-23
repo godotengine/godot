@@ -193,6 +193,10 @@ bool JoltContactListener3D::_try_add_contacts(const JPH::Body &p_jolt_body1, con
 		return manifolds_by_shape_pair[shape_pair];
 	}();
 
+	ERR_FAIL_COND_V_MSG(!manifold.contacts1.is_empty(), false, vformat("A collision between two sub-shapes resulted in multiple contact manifolds. "
+																	   "This should not happen. Please report this, along with the following data: %s",
+																	   _collect_debug_data(*body1, *body2)));
+
 	const JPH::uint contact_count = p_manifold.mRelativeContactPointsOn1.size();
 
 	manifold.contacts1.reserve((uint32_t)contact_count);
@@ -496,6 +500,25 @@ void JoltContactListener3D::_flush_area_exits() {
 	}
 
 	area_exits.clear();
+}
+
+Dictionary JoltContactListener3D::_collect_debug_data(const JoltBody3D &p_body) {
+	Dictionary debug_data;
+	debug_data["instance_id"] = p_body.get_instance_id();
+	debug_data["rid"] = p_body.get_rid();
+	debug_data["global_transform"] = p_body.get_transform_scaled();
+	debug_data["linear_velocity"] = p_body.get_linear_velocity();
+	debug_data["angular_velocity"] = p_body.get_angular_velocity();
+	debug_data["continuous_cd"] = p_body.is_ccd_enabled();
+	debug_data["mode"] = (int)p_body.get_mode();
+	return debug_data;
+}
+
+Dictionary JoltContactListener3D::_collect_debug_data(const JoltBody3D &p_body1, const JoltBody3D &p_body2) {
+	Dictionary debug_data;
+	debug_data["body1"] = _collect_debug_data(p_body1);
+	debug_data["body2"] = _collect_debug_data(p_body2);
+	return debug_data;
 }
 
 void JoltContactListener3D::pre_step() {

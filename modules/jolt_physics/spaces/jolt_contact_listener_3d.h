@@ -46,6 +46,7 @@
 
 #include <new>
 
+class JoltBody3D;
 class JoltShapedObject3D;
 class JoltSpace3D;
 
@@ -121,6 +122,9 @@ class JoltContactListener3D final
 	void _flush_contacts();
 	void _flush_area_enters();
 	void _flush_area_exits();
+
+	static Dictionary _collect_debug_data(const JoltBody3D &p_body);
+	static Dictionary _collect_debug_data(const JoltBody3D &p_body1, const JoltBody3D &p_body2);
 
 public:
 	explicit JoltContactListener3D(JoltSpace3D *p_space) :
