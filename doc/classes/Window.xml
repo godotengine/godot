@@ -365,6 +365,12 @@
 				Centers a native window on the current screen and an embedded window on its embedder [Viewport].
 			</description>
 		</method>
+		<method name="move_to_mouse">
+			<return type="void" />
+			<description>
+				Moves the window to the current mouse position.
+			</description>
+		</method>
 		<method name="move_to_foreground" deprecated="Use [method Window.grab_focus] instead.">
 			<return type="void" />
 			<description>
