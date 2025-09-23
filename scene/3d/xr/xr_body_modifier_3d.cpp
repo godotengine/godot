@@ -66,6 +66,10 @@ StringName XRBodyModifier3D::get_body_tracker() const {
 
 void XRBodyModifier3D::set_body_update(BitField<BodyUpdate> p_body_update) {
 	body_update = p_body_update;
+
+	if (is_inside_tree()) {
+		_get_joint_data();
+	}
 }
 
 BitField<XRBodyModifier3D::BodyUpdate> XRBodyModifier3D::get_body_update() const {

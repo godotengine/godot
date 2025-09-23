@@ -50,6 +50,10 @@ void XRHandModifier3D::_bind_methods() {
 
 void XRHandModifier3D::set_hand_tracker(const StringName &p_tracker_name) {
 	tracker_name = p_tracker_name;
+
+	if (is_inside_tree()) {
+		_get_joint_data();
+	}
 }
 
 StringName XRHandModifier3D::get_hand_tracker() const {
