@@ -806,6 +806,7 @@ void FindInFilesPanel::set_replace_text(const String &text) {
 
 void FindInFilesPanel::clear() {
 	_file_items.clear();
+	_file_items_results_count.clear();
 	_result_items.clear();
 	_results_display->clear();
 	_results_display->create_item(); // Root
@@ -893,8 +894,10 @@ void FindInFilesPanel::_on_result_found(const String &fpath, int line_number, in
 		file_item->set_expand_right(0, true);
 
 		_file_items[fpath] = file_item;
+		_file_items_results_count[file_item] = 1;
 	} else {
 		file_item = E->value;
+		_file_items_results_count[file_item]++;
 	}
 
 	Color file_item_color = _results_display->get_theme_color(SceneStringName(font_color)) * Color(1, 1, 1, 0.67);
@@ -1045,26 +1048,30 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 }
 
 void FindInFilesPanel::_on_button_clicked(TreeItem *p_item, int p_column, int p_id, int p_mouse_button_index) {
-	const String file_path = p_item->get_text(0);
-
 	_result_items.erase(p_item);
-	if (_file_items.find(file_path)) {
-		TreeItem *file_result = _file_items.get(file_path);
-		int match_count = file_result->get_child_count();
+	if (_file_items_results_count.has(p_item)) {
+		const String file_path = p_item->get_metadata(0);
+		int match_count = p_item->get_child_count();
 
 		for (int i = 0; i < match_count; i++) {
-			TreeItem *child_item = file_result->get_child(i);
+			TreeItem *child_item = p_item->get_child(i);
 			_result_items.erase(child_item);
 		}
 
-		file_result->clear_children();
+		p_item->clear_children();
 		_file_items.erase(file_path);
+		_file_items_results_count.erase(p_item);
 	}
 
 	TreeItem *item_parent = p_item->get_parent();
-	if (item_parent && item_parent->get_child_count() < 2) {
-		_file_items.erase(item_parent->get_text(0));
-		get_tree()->queue_delete(item_parent);
+	if (item_parent) {
+		if (_file_items_results_count.has(item_parent)) {
+			_file_items_results_count[item_parent]--;
+		}
+		if (item_parent->get_child_count() < 2) {
+			_file_items.erase(item_parent->get_metadata(0));
+			get_tree()->queue_delete(item_parent);
+		}
 	}
 	get_tree()->queue_delete(p_item);
 	update_matches_text();
@@ -1184,6 +1191,13 @@ void FindInFilesPanel::update_matches_text() {
 	}
 
 	_status_label->set_text(results_text);
+
+	TreeItem *file_item = _results_display->get_root()->get_first_child();
+	while (file_item) {
+		int file_matches_count = _file_items_results_count[file_item];
+		file_item->set_text(0, (String)file_item->get_metadata(0) + " (" + vformat(TTRN("%d match", "%d matches", file_matches_count), file_matches_count) + ")");
+		file_item = file_item->get_next();
+	}
 }
 
 void FindInFilesPanel::_bind_methods() {
