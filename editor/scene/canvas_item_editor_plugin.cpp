@@ -2800,7 +2800,8 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 
 	// Grab focus
 	if (!viewport->has_focus() && (!get_viewport()->gui_get_focus_owner() || !get_viewport()->gui_get_focus_owner()->is_text_field())) {
-		callable_mp((Control *)viewport, &Control::grab_focus).call_deferred(false);
+		Ref<InputEventMouse> mouse_event = p_event;
+		callable_mp((Control *)viewport, &Control::grab_focus).call_deferred(mouse_event.is_valid());
 	}
 }
 
@@ -2988,7 +2989,7 @@ void CanvasItemEditor::_draw_percentage_at_position(real_t p_value, Point2 p_pos
 
 void CanvasItemEditor::_draw_focus() {
 	// Draw the focus around the base viewport
-	if (viewport->has_focus()) {
+	if (viewport->has_focus(true)) {
 		get_theme_stylebox(SNAME("FocusViewport"), EditorStringName(EditorStyles))->draw(viewport->get_canvas_item(), Rect2(Point2(), viewport->get_size()));
 	}
 }

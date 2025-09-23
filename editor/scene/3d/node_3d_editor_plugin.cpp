@@ -467,7 +467,7 @@ void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 			if (mb->is_pressed()) {
 				gizmo_activated = true;
 				original_mouse_pos = get_local_mouse_position();
-				grab_focus();
+				grab_focus(true);
 			}
 		} else if (mb->get_button_index() == MouseButton::RIGHT) {
 			if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
@@ -1572,7 +1572,7 @@ void Node3DEditorViewport::_surface_mouse_enter() {
 	}
 
 	if (!surface->has_focus() && (!get_viewport()->gui_get_focus_owner() || !get_viewport()->gui_get_focus_owner()->is_text_field())) {
-		surface->grab_focus();
+		surface->grab_focus(true);
 	}
 }
 
@@ -3504,7 +3504,7 @@ void Node3DEditorViewport::_draw() {
 		force_over_plugin_list->forward_3d_force_draw_over_viewport(surface);
 	}
 
-	if (surface->has_focus() || rotation_control->has_focus()) {
+	if (surface->has_focus(true) || rotation_control->has_focus(true)) {
 		Size2 size = surface->get_size();
 		Rect2 r = Rect2(Point2(), size);
 		get_theme_stylebox(SNAME("FocusViewport"), EditorStringName(EditorStyles))->draw(surface->get_canvas_item(), r);
