@@ -148,13 +148,13 @@ void GPUParticles2D::set_process_material(const Ref<Material> &p_material) {
 		return;
 	}
 
-	if (process_material.is_valid() && process_material->is_class("ParticleProcessMaterial")) {
+	if (process_material.is_valid() && process_material->derives_from<ParticleProcessMaterial>()) {
 		process_material->disconnect("emission_shape_changed", callable_mp((CanvasItem *)this, &GPUParticles2D::queue_redraw));
 	}
 
 	process_material = p_material;
 
-	if (process_material.is_valid() && process_material->is_class("ParticleProcessMaterial")) {
+	if (process_material.is_valid() && process_material->derives_from<ParticleProcessMaterial>()) {
 		process_material->connect("emission_shape_changed", callable_mp((CanvasItem *)this, &GPUParticles2D::queue_redraw));
 	}
 

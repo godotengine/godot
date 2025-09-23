@@ -400,7 +400,7 @@ void ResourcePreloaderEditorPlugin::edit(Object *p_object) {
 }
 
 bool ResourcePreloaderEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("ResourcePreloader");
+	return p_object->derives_from<ResourcePreloader>();
 }
 
 void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {

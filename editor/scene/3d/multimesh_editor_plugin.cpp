@@ -380,7 +380,7 @@ void MultiMeshEditorPlugin::edit(Object *p_object) {
 }
 
 bool MultiMeshEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("MultiMeshInstance3D");
+	return p_object->derives_from<MultiMeshInstance3D>();
 }
 
 void MultiMeshEditorPlugin::make_visible(bool p_visible) {

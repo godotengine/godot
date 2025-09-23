@@ -90,7 +90,7 @@ void Particles3DEditorPlugin::_node_selected(const NodePath &p_path) {
 		return;
 	}
 
-	if (!sel->is_class("Node3D")) {
+	if (!sel->derives_from<Node3D>()) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't inherit from Node3D."), sel->get_name()));
 		return;
 	}
