@@ -74,11 +74,56 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="updown" data_type="icon" type="Texture2D">
-			Single texture representing both the up and down buttons.
+		<theme_item name="font_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The color of the text.
 		</theme_item>
-		<theme_item name="updown_disabled" data_type="icon" type="Texture2D">
-			Single texture representing both the up and down buttons, when the control is readonly or disabled.
+		<theme_item name="font_uneditable_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The color of the text when the [EditorSpinSlider] is read-only.
+		</theme_item>
+		<theme_item name="label_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The color of the label's text.
+		</theme_item>
+		<theme_item name="read_only_label_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The color of the label's text when the [EditorSpinSlider] is read-only.
+		</theme_item>
+		<theme_item name="updown_v_separation" data_type="constant" type="int" default="0">
+			The vertical spacing between the up and down arrow icons.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			The font used for the text.
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			The size of the font used for the text.
+		</theme_item>
+		<theme_item name="down_arrow" data_type="icon" type="Texture2D">
+			The icon used for the down arrow.
+		</theme_item>
+		<theme_item name="grabber" data_type="icon" type="Texture2D">
+			The icon used for the grabber.
+		</theme_item>
+		<theme_item name="grabber_highlight" data_type="icon" type="Texture2D">
+			The icon used for the grabber when the [EditorSpinSlider] is grabbed.
+		</theme_item>
+		<theme_item name="up_arrow" data_type="icon" type="Texture2D">
+			The icon used for the up arrow.
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			The style of the [EditorSpinSlider] when it is focused.
+		</theme_item>
+		<theme_item name="label_bg" data_type="style" type="StyleBox">
+			The style of the label.
+		</theme_item>
+		<theme_item name="normal" data_type="style" type="StyleBox">
+			The default style of the [EditorSpinSlider].
+		</theme_item>
+		<theme_item name="read_only" data_type="style" type="StyleBox">
+			The style of the [EditorSpinSlider] when it is read-only.
+		</theme_item>
+		<theme_item name="updown_hovered" data_type="style" type="StyleBox">
+			The style of the up and down arrows when they are hovered.
+		</theme_item>
+		<theme_item name="updown_pressed" data_type="style" type="StyleBox">
+			The style of the up and down arrows when they are pressed.
 		</theme_item>
 	</theme_items>
 </class>
