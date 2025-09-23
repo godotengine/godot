@@ -37,6 +37,7 @@
 #include "spx_sprite.h"
 #include "spx_base_mgr.h"
 #include "spx_engine.h"
+#include "spx_ext_mgr.h"
 #include "spx_path_finder.h"
 
 
@@ -124,28 +125,27 @@ void SpxPathFinder::_process_tilemap_obstacles(TileMapLayer *layer, int p_layer_
 
     Array used_cells = layer->get_used_cells();
     Vector2 tile_size = layer->get_tile_set()->get_tile_size();
+    auto ext_mrg = SpxEngine::get_singleton()->get_ext();
 
     for (int i = 0; i < used_cells.size(); ++i) {
         Vector2i cell = used_cells[i];
 
         TileData *td = layer->get_cell_tile_data(cell);
+        int source_id = layer->get_cell_source_id(cell);
         if (!td) {
             continue;
         }
 
         int poly_count = td->get_collision_polygons_count(p_layer_id);
-        if (poly_count <= 0) {
+
+        if (poly_count <= 0 && !ext_mrg->has_collision(source_id)) {
             continue;
         }
 
         Vector2 cell_local = layer->map_to_local(cell);
         Vector2 cell_global = layer->to_global(cell_local); 
-             
-        Vector2i start = _world_to_cell(cell_global - tile_size / 2);
-        Vector2i end   = _world_to_cell(cell_global + tile_size / 2);
 
-        Rect2i rect(start, end - start + Vector2i(1, 1));
-        astar->fill_solid_region(rect, true);
+        astar->set_point_solid(_world_to_cell(cell_global), true);
     } 
 }
 

@@ -356,8 +356,10 @@ Vector2 SpxDrawTiles::get_layer_offset_spx(int layer_index) {
 }
 
 void SpxDrawTiles::set_texture(Ref<Texture2D> texture, bool with_collision) {
-    if (texture.is_null()) 
+    if (texture.is_null()) {
+        print_error("Tile texture is null!");
         return;
+    }
 
     current_texture = _get_or_create_scaled_texture(texture);
     _get_or_create_source_id(current_texture, with_collision);
@@ -499,12 +501,14 @@ int SpxDrawTiles::_get_or_create_source_id(Ref<Texture2D> scaled_texture, bool w
     atlas_source.instantiate();
     atlas_source->set_texture(scaled_texture);
     atlas_source->set_texture_region_size(default_cell_size);
-    if(!_create_tile(atlas_source, Vector2i(0,0), with_collision)){
+    if(!_create_tile(atlas_source, default_atlas_coord, with_collision)){
         print_error("Failed to create tile in atlas source!");
         return TileSet::INVALID_SOURCE;
     }
 
     shared_tile_set->add_source(atlas_source, id);
+    source_id_collision_map[id] = with_collision;
+    
     return id;
 }
 
@@ -527,6 +531,7 @@ bool SpxDrawTiles::_create_tile(Ref<TileSetAtlasSource> atlas_source, const Vect
     };
 
     tile_data->add_collision_polygon(0);
+
     tile_data->set_collision_polygon_points(0, 0, collision_rect);
 
     return true;

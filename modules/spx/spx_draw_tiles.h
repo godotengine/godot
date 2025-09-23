@@ -150,6 +150,7 @@ private:
 
     BiMap<String, Ref<Texture2D>> path_cached_textures_bimap;
     BiMap<Ref<Texture2D>, int> scaled_texture_source_ids_bimap;
+    HashMap<int, bool> source_id_collision_map;
     HashMap<Ref<Texture2D>, Ref<ImageTexture>> texture_scaled_cache_map;
     HashMap<Ref<ImageTexture>, String> scaled_texture_path_map;
     HashMap<int, TileMapLayer*> index_layer_map;
@@ -206,6 +207,14 @@ public:
     void place_tile(TileMapLayer* layer, Vector2i coords);
     void erase_tile(TileMapLayer* layer, Vector2i coords);
     void place_or_erase_tile(Vector2 pos, bool erase);
+
+    _FORCE_INLINE_ bool has_collision(int source_id){
+        if(source_id_collision_map.has(source_id)){       
+            return source_id_collision_map[source_id];
+        }
+
+        return false;
+    }
 
     void undo();
     void redo();
