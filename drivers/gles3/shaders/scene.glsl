@@ -1938,11 +1938,9 @@ void main() {
 #else
 #ifdef MODE_RENDER_DEPTH
 #ifdef USE_OPAQUE_PREPASS
-#ifdef ALPHA_SCISSOR_USED
 	if (alpha < opaque_prepass_threshold) {
 		discard;
 	}
-#endif // ALPHA_SCISSOR_USED
 #endif // USE_OPAQUE_PREPASS
 #endif // MODE_RENDER_DEPTH
 #endif // !ALPHA_SCISSOR_USED
