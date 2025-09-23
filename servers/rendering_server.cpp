@@ -3758,6 +3758,8 @@ void RenderingServer::init() {
 
 	GLOBAL_DEF_RST_BASIC("xr/shaders/enabled", false);
 
+	GLOBAL_DEF("debug/shader_language/errors/output_shader_contents_on_error", false);
+
 	GLOBAL_DEF("debug/shader_language/warnings/enable", true);
 	GLOBAL_DEF("debug/shader_language/warnings/treat_warnings_as_errors", false);
 
