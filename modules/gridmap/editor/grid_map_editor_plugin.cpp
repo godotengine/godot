@@ -1789,7 +1789,7 @@ void GridMapEditorPlugin::edit(Object *p_object) {
 }
 
 bool GridMapEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("GridMap");
+	return p_object->derives_from<GridMap>();
 }
 
 void GridMapEditorPlugin::make_visible(bool p_visible) {

@@ -652,7 +652,7 @@ void CollisionShape2DEditorPlugin::edit(Object *p_obj) {
 }
 
 bool CollisionShape2DEditorPlugin::handles(Object *p_obj) const {
-	return p_obj->is_class("CollisionShape2D");
+	return p_obj->derives_from<CollisionShape2D>();
 }
 
 void CollisionShape2DEditorPlugin::make_visible(bool visible) {

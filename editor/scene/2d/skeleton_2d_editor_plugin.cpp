@@ -116,7 +116,7 @@ void Skeleton2DEditorPlugin::edit(Object *p_object) {
 }
 
 bool Skeleton2DEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Skeleton2D");
+	return p_object->derives_from<Skeleton2D>();
 }
 
 void Skeleton2DEditorPlugin::make_visible(bool p_visible) {

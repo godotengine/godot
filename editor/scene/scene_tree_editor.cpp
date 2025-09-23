@@ -139,7 +139,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->add_undo_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_PIN) {
-		if (n->is_class("AnimationMixer")) {
+		if (n->derives_from<AnimationMixer>()) {
 			AnimationPlayerEditor::get_singleton()->unpin();
 			_update_tree();
 		}
@@ -147,7 +147,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 	} else if (p_id == BUTTON_GROUP) {
 		undo_redo->create_action(TTR("Ungroup Children"));
 
-		if (n->is_class("CanvasItem") || n->is_class("Node3D")) {
+		if (n->derives_from<CanvasItem>() || n->derives_from<Node3D>()) {
 			undo_redo->add_do_method(n, "remove_meta", "_edit_group_");
 			undo_redo->add_undo_method(n, "set_meta", "_edit_group_", true);
 			undo_redo->add_do_method(this, "emit_signal", "node_changed");
@@ -618,7 +618,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 			_update_visibility_color(p_node, p_item);
 		}
 
-		if (p_node->is_class("AnimationMixer")) {
+		if (p_node->derives_from<AnimationMixer>()) {
 			bool is_pinned = AnimationPlayerEditor::get_singleton()->get_editing_node() == p_node && AnimationPlayerEditor::get_singleton()->is_pinned();
 
 			if (is_pinned) {

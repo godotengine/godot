@@ -90,7 +90,7 @@ void VoxelGIEditorPlugin::edit(Object *p_object) {
 }
 
 bool VoxelGIEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("VoxelGI");
+	return p_object->derives_from<VoxelGI>();
 }
 
 void VoxelGIEditorPlugin::_notification(int p_what) {
