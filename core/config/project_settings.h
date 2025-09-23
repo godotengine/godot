@@ -140,7 +140,12 @@ protected:
 	void _convert_to_last_version(int p_from_version);
 
 	bool load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset);
+	bool load_resource_pack_from_buffer(const PackedByteArray &p_pack, bool p_replace_files, int p_offset);
 	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, int p_offset = 0, bool p_main_pack = false);
+	bool _load_resource_pack_from_buffer(const PackedByteArray &p_pack, bool p_replace_files, int p_offset, bool p_main_pack);
+
+	void _generate_resource_dir(bool p_main_pack);
+	void _post_load_resource_pack();
 
 	void _add_property_info_bind(const Dictionary &p_info);
 
