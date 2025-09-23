@@ -52,16 +52,7 @@ public:
 		float m[16];
 	} XrMatrix4x4f;
 
-	typedef enum GraphicsAPI {
-		GRAPHICS_VULKAN,
-		GRAPHICS_OPENGL,
-		GRAPHICS_OPENGL_ES,
-		GRAPHICS_D3D
-	} GraphicsAPI;
-
-	static void XrMatrix4x4f_CreateProjection(XrMatrix4x4f *result, GraphicsAPI graphicsApi, const float tanAngleLeft,
-			const float tanAngleRight, const float tanAngleUp, float const tanAngleDown,
-			const float nearZ, const float farZ);
-	static void XrMatrix4x4f_CreateProjectionFov(XrMatrix4x4f *result, GraphicsAPI graphicsApi, const XrFovf fov,
-			const float nearZ, const float farZ);
+	static void XrMatrix4x4f_CreateProjection(XrMatrix4x4f *result, const float tanAngleLeft, const float tanAngleRight,
+			const float tanAngleUp, float const tanAngleDown, const float nearZ, const float farZ);
+	static void XrMatrix4x4f_CreateProjectionFov(XrMatrix4x4f *result, const XrFovf fov, const float nearZ, const float farZ);
 };
