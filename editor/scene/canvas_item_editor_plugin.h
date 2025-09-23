@@ -260,6 +260,7 @@ private:
 	int ruler_font_size = 8;
 	Point2 node_create_position;
 	real_t grab_distance = 0.0;
+	bool simple_panning = false;
 
 	MenuOption last_option;
 
