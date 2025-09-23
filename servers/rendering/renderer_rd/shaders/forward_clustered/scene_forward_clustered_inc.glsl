@@ -121,12 +121,8 @@ uint sc_directional_penumbra_shadow_samples() {
 	return (sc_packed_0() >> 26) & 63U;
 }
 
-bool sc_multimesh() {
-	return ((sc_packed_1() >> 0) & 1U) != 0;
-}
-
-bool sc_multimesh_format_2d() {
-	return ((sc_packed_1() >> 1) & 1U) != 0;
+uint sc_multimesh_format() {
+	return (sc_packed_1() >> 0) & 3U;
 }
 
 bool sc_multimesh_has_color() {
@@ -163,6 +159,11 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 #define INSTANCE_FLAGS_FADE_SHIFT 24
 //3 bits of stride
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xFF
+
+#define MULTIMESH_FORMAT_NONE 0
+#define MULTIMESH_FORMAT_TRANSFORM_SKIP 1
+#define MULTIMESH_FORMAT_TRANSFORM_2D 2
+#define MULTIMESH_FORMAT_TRANSFORM_3D 3
 
 #define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO 1
 #define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL 2

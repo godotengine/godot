@@ -470,6 +470,14 @@ public:
 	enum MultimeshTransformFormat {
 		MULTIMESH_TRANSFORM_2D,
 		MULTIMESH_TRANSFORM_3D,
+		MULTIMESH_TRANSFORM_SKIP,
+	};
+
+	enum MultimeshFormat {
+		MULTIMESH_FORMAT_NONE,
+		MULTIMESH_FORMAT_TRANSFORM_SKIP,
+		MULTIMESH_FORMAT_TRANSFORM_2D,
+		MULTIMESH_FORMAT_TRANSFORM_3D
 	};
 
 	enum MultimeshPhysicsInterpolationQuality {
