@@ -72,7 +72,7 @@ void SceneTreeDock::_nodes_drag_begin() {
 }
 
 void SceneTreeDock::_quick_open(const String &p_file_path) {
-	instantiate_scenes({ p_file_path }, scene_tree->get_selected());
+	callable_mp(this, &SceneTreeDock::instantiate_scenes).call_deferred(PackedStringArray{ p_file_path }, scene_tree->get_selected());
 }
 
 static void _restore_treeitem_custom_color(TreeItem *p_item) {
@@ -280,11 +280,10 @@ void SceneTreeDock::instantiate_scenes(const Vector<String> &p_files, Node *p_pa
 
 	if (!parent) {
 		if (p_files.size() == 1) {
-			accept->set_text(TTR("No parent to instantiate a child at."));
+			EditorNode::get_singleton()->show_warning(TTR("No parent to instantiate a child at."));
 		} else {
-			accept->set_text(TTR("No parent to instantiate the scenes at."));
+			EditorNode::get_singleton()->show_warning(TTR("No parent to instantiate the scenes at."));
 		}
-		accept->popup_centered();
 		return;
 	};
 
@@ -302,8 +301,7 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 		Ref<PackedScene> sdata = ResourceLoader::load(p_files[i]);
 		if (sdata.is_null()) {
 			current_option = -1;
-			accept->set_text(vformat(TTR("Error loading scene from %s"), p_files[i]));
-			accept->popup_centered();
+			EditorNode::get_singleton()->show_warning(vformat(TTR("Error loading scene from %s"), p_files[i]));
 			error = true;
 			break;
 		}
@@ -311,16 +309,14 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 		Node *instantiated_scene = sdata->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
 		if (!instantiated_scene) {
 			current_option = -1;
-			accept->set_text(vformat(TTR("Error instantiating scene from %s"), p_files[i]));
-			accept->popup_centered();
+			EditorNode::get_singleton()->show_warning(vformat(TTR("Error instantiating scene from %s"), p_files[i]));
 			error = true;
 			break;
 		}
 
 		if (!edited_scene->get_scene_file_path().is_empty()) {
 			if (_cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
-				accept->set_text(vformat(TTR("Cannot instantiate the scene '%s' because the current scene exists within one of its nodes."), p_files[i]));
-				accept->popup_centered();
+				EditorNode::get_singleton()->show_warning(vformat(TTR("Cannot instantiate the scene '%s' because the current scene exists within one of its nodes."), p_files[i]));
 				error = true;
 				break;
 			}
@@ -386,8 +382,7 @@ void SceneTreeDock::_perform_create_audio_stream_players(const Vector<String> &p
 		Ref<AudioStream> stream = ResourceLoader::load(path);
 		if (stream.is_null()) {
 			current_option = -1;
-			accept->set_text(vformat(TTR("Error loading audio stream from %s"), path));
-			accept->popup_centered();
+			EditorNode::get_singleton()->show_warning(vformat(TTR("Error loading audio stream from %s"), path));
 			error = true;
 			break;
 		}
@@ -442,15 +437,13 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 
 	Ref<PackedScene> sdata = ResourceLoader::load(p_file);
 	if (sdata.is_null()) {
-		accept->set_text(vformat(TTR("Error loading scene from %s"), p_file));
-		accept->popup_centered();
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Error loading scene from %s"), p_file));
 		return;
 	}
 
 	Node *instantiated_scene = sdata->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
 	if (!instantiated_scene) {
-		accept->set_text(vformat(TTR("Error instantiating scene from %s"), p_file));
-		accept->popup_centered();
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Error instantiating scene from %s"), p_file));
 		return;
 	}
 
@@ -806,8 +799,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			if (scene_tree->get_selected() == edited_scene) {
 				current_option = -1;
-				accept->set_text(TTR("This operation can't be done on the tree root."));
-				accept->popup_centered();
+				EditorNode::get_singleton()->show_warning(TTR("This operation can't be done on the tree root."));
 				break;
 			}
 
@@ -887,8 +879,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			if (editor_selection->is_selected(edited_scene)) {
 				current_option = -1;
-				accept->set_text(TTR("This operation can't be done on the tree root."));
-				accept->popup_centered();
+				EditorNode::get_singleton()->show_warning(TTR("This operation can't be done on the tree root."));
 				break;
 			}
 
@@ -978,8 +969,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			if (editor_selection->is_selected(edited_scene)) {
 				current_option = -1;
-				accept->set_text(TTR("This operation can't be done on the tree root."));
-				accept->popup_centered();
+				EditorNode::get_singleton()->show_warning(TTR("This operation can't be done on the tree root."));
 				break;
 			}
 
@@ -1016,20 +1006,17 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			//check that from node to root, all owners are right
 
 			if (root->get_scene_inherited_state().is_valid()) {
-				accept->set_text(TTR("Can't reparent nodes in inherited scenes, order of nodes can't change."));
-				accept->popup_centered();
+				EditorNode::get_singleton()->show_warning(TTR("Can't reparent nodes in inherited scenes, order of nodes can't change."));
 				return;
 			}
 
 			if (node->get_owner() != root) {
-				accept->set_text(TTR("Node must belong to the edited scene to become root."));
-				accept->popup_centered();
+				EditorNode::get_singleton()->show_warning(TTR("Node must belong to the edited scene to become root."));
 				return;
 			}
 
 			if (!node->get_scene_file_path().is_empty()) {
-				accept->set_text(TTR("Instantiated scenes can't become root"));
-				accept->popup_centered();
+				EditorNode::get_singleton()->show_warning(TTR("Instantiated scenes can't become root"));
 				return;
 			}
 
@@ -1148,42 +1135,36 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			Node *scene = editor_data->get_edited_scene_root();
 
 			if (!scene) {
-				accept->set_text(TTR("Saving the branch as a scene requires having a scene open in the editor."));
-				accept->popup_centered();
+				EditorNode::get_singleton()->show_warning(TTR("Saving the branch as a scene requires having a scene open in the editor."));
 				break;
 			}
 
 			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
 			if (selection.size() != 1) {
-				accept->set_text(vformat(TTR("Saving the branch as a scene requires selecting only one node, but you have selected %d nodes."), selection.size()));
-				accept->popup_centered();
+				EditorNode::get_singleton()->show_warning(vformat(TTR("Saving the branch as a scene requires selecting only one node, but you have selected %d nodes."), selection.size()));
 				break;
 			}
 
 			Node *tocopy = selection.front()->get();
 
 			if (tocopy == scene) {
-				accept->set_text(TTR("Can't save the root node branch as an instantiated scene.\nTo create an editable copy of the current scene, duplicate it using the FileSystem dock context menu\nor create an inherited scene using Scene > New Inherited Scene... instead."));
-				accept->popup_centered();
+				EditorNode::get_singleton()->show_warning(TTR("Can't save the root node branch as an instantiated scene.\nTo create an editable copy of the current scene, duplicate it using the FileSystem dock context menu\nor create an inherited scene using Scene > New Inherited Scene... instead."));
 				break;
 			}
 
 			if (tocopy != editor_data->get_edited_scene_root() && !tocopy->get_scene_file_path().is_empty()) {
-				accept->set_text(TTR("Can't save the branch of an already instantiated scene.\nTo create a variation of a scene, you can make an inherited scene based on the instantiated scene using Scene > New Inherited Scene... instead."));
-				accept->popup_centered();
+				EditorNode::get_singleton()->show_warning(TTR("Can't save the branch of an already instantiated scene.\nTo create a variation of a scene, you can make an inherited scene based on the instantiated scene using Scene > New Inherited Scene... instead."));
 				break;
 			}
 
 			if (tocopy->get_owner() != scene) {
-				accept->set_text(TTR("Can't save a branch which is a child of an already instantiated scene.\nTo save this branch into its own scene, open the original scene, right click on this branch, and select \"Save Branch as Scene\"."));
-				accept->popup_centered();
+				EditorNode::get_singleton()->show_warning(TTR("Can't save a branch which is a child of an already instantiated scene.\nTo save this branch into its own scene, open the original scene, right click on this branch, and select \"Save Branch as Scene\"."));
 				break;
 			}
 
 			if (scene->get_scene_inherited_state().is_valid() && scene->get_scene_inherited_state()->find_node_by_path(scene->get_path_to(tocopy)) >= 0) {
-				accept->set_text(TTR("Can't save a branch which is part of an inherited scene.\nTo save this branch into its own scene, open the original scene, right click on this branch, and select \"Save Branch as Scene\"."));
-				accept->popup_centered();
+				EditorNode::get_singleton()->show_warning(TTR("Can't save a branch which is part of an inherited scene.\nTo save this branch into its own scene, open the original scene, right click on this branch, and select \"Save Branch as Scene\"."));
 				break;
 			}
 
@@ -1435,8 +1416,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 			if (all_nodes_owner_invalid) {
-				accept->set_text(TTR("Can't toggle unique name for nodes in subscene!"));
-				accept->popup_centered();
+				EditorNode::get_singleton()->show_warning(TTR("Can't toggle unique name for nodes in subscene!"));
 				return;
 			}
 
@@ -1481,8 +1461,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					for (const StringName &name : cant_be_set_unique_names) {
 						popup_text += "\n" + String(name);
 					}
-					accept->set_text(popup_text);
-					accept->popup_centered();
+					EditorNode::get_singleton()->show_warning(popup_text);
 				}
 			} else { // Disabling.
 				undo_redo->create_action(TTR("Disable Scene Unique Name(s)"));
@@ -2299,8 +2278,7 @@ bool SceneTreeDock::_validate_no_foreign() {
 
 	for (Node *E : selection) {
 		if (E != edited_scene && E->get_owner() != edited_scene) {
-			accept->set_text(TTR("Can't operate on nodes from a foreign scene!"));
-			accept->popup_centered();
+			EditorNode::get_singleton()->show_warning(TTR("Can't operate on nodes from a foreign scene!"));
 			return false;
 		}
 
@@ -2313,8 +2291,7 @@ bool SceneTreeDock::_validate_no_foreign() {
 			}
 
 			if (edited_scene == E || edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E)) >= 0) {
-				accept->set_text(TTR("Can't operate on nodes the current scene inherits from!"));
-				accept->popup_centered();
+				EditorNode::get_singleton()->show_warning(TTR("Can't operate on nodes the current scene inherits from!"));
 				return false;
 			}
 		}
@@ -2328,8 +2305,7 @@ bool SceneTreeDock::_validate_no_instance() {
 
 	for (Node *E : selection) {
 		if (E != edited_scene && !E->get_scene_file_path().is_empty()) {
-			accept->set_text(TTR("This operation can't be done on instantiated scenes."));
-			accept->popup_centered();
+			EditorNode::get_singleton()->show_warning(TTR("This operation can't be done on instantiated scenes."));
 			return false;
 		}
 	}
@@ -3404,14 +3380,12 @@ void SceneTreeDock::_new_scene_from(const String &p_file) {
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
 	if (selection.size() != 1) {
-		accept->set_text(TTR("This operation requires a single selected node."));
-		accept->popup_centered();
+		EditorNode::get_singleton()->show_warning(TTR("This operation requires a single selected node."));
 		return;
 	}
 
 	if (EditorNode::get_singleton()->is_scene_open(p_file)) {
-		accept->set_text(TTR("Can't overwrite scene that is still open!"));
-		accept->popup_centered();
+		EditorNode::get_singleton()->show_warning(TTR("Can't overwrite scene that is still open!"));
 		return;
 	}
 
@@ -3468,8 +3442,7 @@ void SceneTreeDock::_new_scene_from(const String &p_file) {
 		memdelete(copy);
 
 		if (err != OK) {
-			accept->set_text(TTR("Couldn't save new scene. Likely dependencies (instances) couldn't be satisfied."));
-			accept->popup_centered();
+			EditorNode::get_singleton()->show_warning(TTR("Couldn't save new scene. Likely dependencies (instances) couldn't be satisfied."));
 			return;
 		}
 
@@ -3480,14 +3453,12 @@ void SceneTreeDock::_new_scene_from(const String &p_file) {
 
 		err = ResourceSaver::save(sdata, p_file, flg);
 		if (err != OK) {
-			accept->set_text(TTR("Error saving scene."));
-			accept->popup_centered();
+			EditorNode::get_singleton()->show_warning(TTR("Error saving scene."));
 			return;
 		}
 		_replace_with_branch_scene(p_file, base);
 	} else {
-		accept->set_text(TTR("Error duplicating scene to save it."));
-		accept->popup_centered();
+		EditorNode::get_singleton()->show_warning(TTR("Error duplicating scene to save it."));
 		return;
 	}
 }
@@ -4266,8 +4237,7 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 
 	if (has_cycle) {
 		current_option = -1;
-		accept->set_text(TTR("Can't paste root node into the same scene."));
-		accept->popup_centered();
+		EditorNode::get_singleton()->show_warning(TTR("Can't paste root node into the same scene."));
 		return pasted_nodes;
 	}
 
@@ -4874,9 +4844,6 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	reparent_dialog = memnew(ReparentDialog);
 	add_child(reparent_dialog);
 	reparent_dialog->connect("reparent", callable_mp(this, &SceneTreeDock::_node_reparent));
-
-	accept = memnew(AcceptDialog);
-	add_child(accept);
 
 	set_process_shortcut_input(true);
 
