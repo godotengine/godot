@@ -598,7 +598,7 @@ GLuint _init_radiance_texture(int p_size, int p_mipmaps, String p_name) {
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, p_mipmaps - 1);
 
-	GLES3::Utilities::get_singleton()->texture_allocated_data(radiance_id, Image::get_image_data_size(p_size, p_size, Image::FORMAT_RGBA8, true), p_name);
+	GLES3::Utilities::get_singleton()->texture_allocated_data(radiance_id, Image::get_image_data_size(p_size, p_size, Image::FORMAT_RGB10A2, true), p_name);
 	return radiance_id;
 }
 

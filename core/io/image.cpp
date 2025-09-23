@@ -78,6 +78,7 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"ASTC_4x4_HDR",
 	"ASTC_8x8",
 	"ASTC_8x8_HDR",
+	"RGB10A2",
 };
 
 // External VRAM compression function pointers.
@@ -201,6 +202,8 @@ int Image::get_format_pixel_size(Format p_format) {
 			return 1;
 		case FORMAT_ASTC_8x8_HDR:
 			return 1;
+		case FORMAT_RGB10A2:
+			return 4;
 		case FORMAT_MAX: {
 		}
 	}
@@ -1871,6 +1874,9 @@ void Image::_generate_mipmap_from_format(Image::Format p_format, const uint8_t *
 		case Image::FORMAT_RGBE9995:
 			_generate_po2_mipmap<uint32_t, 1, false, Image::average_4_rgbe9995, Image::renormalize_rgbe9995>(src_u32, dst_u32, p_width, p_height);
 			break;
+		case Image::FORMAT_RGB10A2:
+			_generate_po2_mipmap<uint32_t, 1, false, Image::average_4_rgb10a2, nullptr>(src_u32, dst_u32, p_width, p_height);
+			break;
 
 		default:
 			return;
@@ -2671,7 +2677,7 @@ bool Image::is_compressed() const {
 }
 
 bool Image::is_format_compressed(Format p_format) {
-	return p_format > FORMAT_RGBE9995;
+	return p_format > FORMAT_RGBE9995 && p_format < FORMAT_RGB10A2;
 }
 
 Error Image::decompress() {
@@ -3252,6 +3258,9 @@ Color Image::_get_color_at_ofs(const uint8_t *ptr, uint32_t ofs) const {
 		case FORMAT_RGBE9995: {
 			return Color::from_rgbe9995(((uint32_t *)ptr)[ofs]);
 		}
+		case FORMAT_RGB10A2: {
+			return Color::from_rgb10a2(((uint32_t *)ptr)[ofs]);
+		} break;
 
 		default: {
 			ERR_FAIL_V_MSG(Color(), "Can't get_pixel() on compressed image, sorry.");
@@ -3343,6 +3352,9 @@ void Image::_set_color_at_ofs(uint8_t *ptr, uint32_t ofs, const Color &p_color) 
 		} break;
 		case FORMAT_RGBE9995: {
 			((uint32_t *)ptr)[ofs] = p_color.to_rgbe9995();
+		} break;
+		case FORMAT_RGB10A2: {
+			((uint32_t *)ptr)[ofs] = p_color.to_rgb10a2();
 		} break;
 
 		default: {
@@ -3657,6 +3669,7 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(FORMAT_ASTC_4x4_HDR);
 	BIND_ENUM_CONSTANT(FORMAT_ASTC_8x8);
 	BIND_ENUM_CONSTANT(FORMAT_ASTC_8x8_HDR);
+	BIND_ENUM_CONSTANT(FORMAT_RGB10A2);
 	BIND_ENUM_CONSTANT(FORMAT_MAX);
 
 	BIND_ENUM_CONSTANT(INTERPOLATE_NEAREST);
@@ -4070,6 +4083,8 @@ uint32_t Image::get_format_component_mask(Format p_format) {
 			return rgba;
 		case FORMAT_ASTC_8x8_HDR:
 			return rgba;
+		case FORMAT_RGB10A2:
+			return rgba;
 		default:
 			ERR_PRINT("Unhandled format.");
 			return rgba;
@@ -4211,6 +4226,10 @@ void Image::average_4_half(uint16_t &p_out, const uint16_t &p_a, const uint16_t 
 
 void Image::average_4_rgbe9995(uint32_t &p_out, const uint32_t &p_a, const uint32_t &p_b, const uint32_t &p_c, const uint32_t &p_d) {
 	p_out = ((Color::from_rgbe9995(p_a) + Color::from_rgbe9995(p_b) + Color::from_rgbe9995(p_c) + Color::from_rgbe9995(p_d)) * 0.25f).to_rgbe9995();
+}
+
+void Image::average_4_rgb10a2(uint32_t &p_out, const uint32_t &p_a, const uint32_t &p_b, const uint32_t &p_c, const uint32_t &p_d) {
+	p_out = ((Color::from_rgb10a2(p_a) + Color::from_rgb10a2(p_b) + Color::from_rgb10a2(p_c) + Color::from_rgb10a2(p_d)) * 0.25f).to_rgb10a2();
 }
 
 void Image::renormalize_uint8(uint8_t *p_rgb) {

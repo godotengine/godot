@@ -111,6 +111,7 @@ public:
 		FORMAT_ASTC_4x4_HDR,
 		FORMAT_ASTC_8x8,
 		FORMAT_ASTC_8x8_HDR,
+		FORMAT_RGB10A2,
 		FORMAT_MAX
 	};
 
@@ -282,6 +283,7 @@ private:
 	static void average_4_float(float &p_out, const float &p_a, const float &p_b, const float &p_c, const float &p_d);
 	static void average_4_half(uint16_t &p_out, const uint16_t &p_a, const uint16_t &p_b, const uint16_t &p_c, const uint16_t &p_d);
 	static void average_4_rgbe9995(uint32_t &p_out, const uint32_t &p_a, const uint32_t &p_b, const uint32_t &p_c, const uint32_t &p_d);
+	static void average_4_rgb10a2(uint32_t &p_out, const uint32_t &p_a, const uint32_t &p_b, const uint32_t &p_c, const uint32_t &p_d);
 	static void renormalize_uint8(uint8_t *p_rgb);
 	static void renormalize_float(float *p_rgb);
 	static void renormalize_half(uint16_t *p_rgb);
