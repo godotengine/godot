@@ -875,12 +875,12 @@ void ColorPicker::_update_presets() {
 		bool palette_edited = editor_settings->call(SNAME("get_project_metadata"), "color_picker", "palette_edited", false);
 		if (!cached_name.is_empty()) {
 			palette_name->set_text(cached_name);
-			if (btn_preset->is_pressed() && !presets.is_empty()) {
+			if (btn_preset->is_pressed() && !presets.is_empty() && !palette_name->get_text().trim_suffix("*").is_empty()) {
 				palette_name->show();
 			}
 
 			if (palette_edited) {
-				palette_name->set_text(vformat("%s*", palette_name->get_text().remove_char('*')));
+				palette_name->set_text(vformat("%s*", palette_name->get_text().trim_suffix("*")));
 				palette_name->set_tooltip_text(TTRC("The changes to this palette have not been saved to a file."));
 			}
 		}
@@ -1112,9 +1112,10 @@ void ColorPicker::_show_hide_preset(const bool &p_is_btn_pressed, Button *p_btn_
 	}
 	_update_drop_down_arrow(p_is_btn_pressed, p_btn_preset);
 
-	palette_name->hide();
-	if (btn_preset->is_pressed() && !palette_name->get_text().is_empty()) {
+	if (btn_preset->is_pressed() && !palette_name->get_text().trim_suffix("*").is_empty()) {
 		palette_name->show();
+	} else {
+		palette_name->hide();
 	}
 }
 
@@ -1217,7 +1218,7 @@ void ColorPicker::add_preset(const Color &p_color) {
 		preset_cache.push_back(p_color);
 	}
 
-	if (!palette_name->get_text().is_empty()) {
+	if (!palette_name->get_text().trim_suffix("*").is_empty()) {
 		palette_name->set_text(vformat("%s*", palette_name->get_text().trim_suffix("*")));
 		palette_name->set_tooltip_text(ETR("The changes to this palette have not been saved to a file."));
 	}
@@ -1271,7 +1272,7 @@ void ColorPicker::erase_preset(const Color &p_color) {
 			}
 		}
 
-		palette_name->set_text(vformat("%s*", palette_name->get_text().remove_char('*')));
+		palette_name->set_text(vformat("%s*", palette_name->get_text().trim_suffix("*")));
 		palette_name->set_tooltip_text(ETR("The changes to this palette have not been saved to a file."));
 		if (presets.is_empty()) {
 			palette_name->set_text("");
