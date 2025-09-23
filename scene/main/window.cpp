@@ -383,7 +383,7 @@ Point2i Window::get_position() const {
 void Window::move_to_mouse() {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
-	
+
 	Point2i mouse_pos;
 	int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(get_window_id());
 	Point2i screen_pos = DisplayServer::get_singleton()->screen_get_position(parent_screen);

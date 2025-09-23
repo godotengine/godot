@@ -2465,7 +2465,7 @@ void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 	}
 
 	Window *window = memnew(Window);
-	
+
 	window->wrap_controls = true;
 	window->set_flag(Window::FLAG_BORDERLESS, true);
 	window->set_flag(Window::FLAG_ALWAYS_ON_TOP, true);
