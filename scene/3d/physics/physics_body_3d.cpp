@@ -53,6 +53,7 @@ void PhysicsBody3D::_bind_methods() {
 
 PhysicsBody3D::PhysicsBody3D(PhysicsServer3D::BodyMode p_mode) :
 		CollisionObject3D(PhysicsServer3D::get_singleton()->body_create(), false) {
+	_define_ancestry(AncestralClass::PHYSICS_BODY_3D);
 	set_body_mode(p_mode);
 }
 
@@ -218,10 +219,6 @@ PackedStringArray PhysicsBody3D::get_configuration_warnings() const {
 	}
 
 	return warnings;
-}
-
-PhysicsBody3D::PhysicsBody3D() {
-	_define_ancestry(AncestralClass::PHYSICS_BODY_3D);
 }
 
 ///////////////////////////////////////
