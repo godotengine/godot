@@ -157,6 +157,7 @@ public:
 	virtual bool has_custom_uid_support() const override;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false) override;
 	virtual Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map) override;
+	bool has_sub_resources(const String &p_path) const override;
 
 	ResourceFormatLoaderText() { singleton = this; }
 };
