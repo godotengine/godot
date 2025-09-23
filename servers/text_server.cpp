@@ -2364,3 +2364,39 @@ TextServer::TextServer() {
 
 TextServer::~TextServer() {
 }
+
+BitField<TextServer::TextOverrunFlag> TextServer::get_overrun_flags_from_behavior(TextServer::OverrunBehavior p_behavior) {
+	BitField<TextOverrunFlag> overrun_flags = OVERRUN_NO_TRIM;
+	switch (p_behavior) {
+		case OVERRUN_TRIM_WORD_ELLIPSIS_FORCE: {
+			overrun_flags.set_flag(OVERRUN_TRIM);
+			overrun_flags.set_flag(OVERRUN_TRIM_WORD_ONLY);
+			overrun_flags.set_flag(OVERRUN_ADD_ELLIPSIS);
+			overrun_flags.set_flag(OVERRUN_ENFORCE_ELLIPSIS);
+		} break;
+		case OVERRUN_TRIM_ELLIPSIS_FORCE: {
+			overrun_flags.set_flag(OVERRUN_TRIM);
+			overrun_flags.set_flag(OVERRUN_ADD_ELLIPSIS);
+			overrun_flags.set_flag(OVERRUN_ENFORCE_ELLIPSIS);
+		} break;
+		case OVERRUN_TRIM_WORD_ELLIPSIS:
+			overrun_flags.set_flag(OVERRUN_TRIM);
+			overrun_flags.set_flag(OVERRUN_TRIM_WORD_ONLY);
+			overrun_flags.set_flag(OVERRUN_ADD_ELLIPSIS);
+			break;
+		case OVERRUN_TRIM_ELLIPSIS:
+			overrun_flags.set_flag(OVERRUN_TRIM);
+			overrun_flags.set_flag(OVERRUN_ADD_ELLIPSIS);
+			break;
+		case OVERRUN_TRIM_WORD:
+			overrun_flags.set_flag(OVERRUN_TRIM);
+			overrun_flags.set_flag(OVERRUN_TRIM_WORD_ONLY);
+			break;
+		case OVERRUN_TRIM_CHAR:
+			overrun_flags.set_flag(OVERRUN_TRIM);
+			break;
+		case OVERRUN_NO_TRIMMING:
+			break;
+	}
+	return overrun_flags;
+}
