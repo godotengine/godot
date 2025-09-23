@@ -256,38 +256,7 @@ void Label::_shape() const {
 		}
 
 		if (para.lines_dirty) {
-			BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::OVERRUN_NO_TRIM;
-			switch (overrun_behavior) {
-				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS_FORCE: {
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
-				} break;
-				case TextServer::OVERRUN_TRIM_ELLIPSIS_FORCE: {
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
-				} break;
-				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					break;
-				case TextServer::OVERRUN_TRIM_ELLIPSIS:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					break;
-				case TextServer::OVERRUN_TRIM_WORD:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-					break;
-				case TextServer::OVERRUN_TRIM_CHAR:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					break;
-				case TextServer::OVERRUN_NO_TRIMMING:
-					break;
-			}
+			BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::get_overrun_flags_from_behavior(overrun_behavior);
 
 			// Fill after min_size calculation.
 

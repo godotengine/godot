@@ -246,6 +246,8 @@ protected:
 #endif
 
 public:
+	static BitField<TextOverrunFlag> get_overrun_flags_from_behavior(OverrunBehavior p_behavior);
+
 	virtual bool has_feature(Feature p_feature) const = 0;
 	virtual String get_name() const = 0;
 	virtual int64_t get_features() const = 0;
