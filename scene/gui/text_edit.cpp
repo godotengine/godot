@@ -5001,7 +5001,7 @@ Point2i TextEdit::get_word_pos(int p_line, int p_column) const {
 		}
 	}
 
-	return Point2i(0,0);
+	return Point2i(0, 0);
 }
 
 Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line, bool p_clamp_column) const {
