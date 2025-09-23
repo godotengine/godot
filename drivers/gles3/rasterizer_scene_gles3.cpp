@@ -2566,7 +2566,13 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	scene_state.enable_gl_scissor_test(false);
 	scene_state.enable_gl_depth_test(true);
 	scene_state.enable_gl_depth_draw(true);
-	scene_state.set_gl_depth_func(GL_EQUAL);
+	if(scene_state.used_depth_prepass){
+		scene_state.set_gl_depth_func(GL_EQUAL);
+	}
+	else{
+		scene_state.set_gl_depth_func(GL_GEQUAL);
+	}
+	
 
 	{
 		GLuint db = GL_COLOR_ATTACHMENT0;
