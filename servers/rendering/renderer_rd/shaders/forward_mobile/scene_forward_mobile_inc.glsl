@@ -120,8 +120,8 @@ bool sc_use_material_debanding() {
 	return ((sc_packed_0() >> 11) & 1U) != 0;
 }
 
-bool sc_multimesh() {
-	return ((sc_packed_0() >> 12) & 1U) != 0;
+uint sc_multimesh_format() {
+	return (sc_packed_0() >> 11) & 3U;
 }
 
 bool sc_multimesh_format_2d() {
@@ -237,6 +237,11 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT 16
 //3 bits of stride
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xFF
+
+#define MULTIMESH_FORMAT_NONE 0
+#define MULTIMESH_FORMAT_TRANSFORM_SKIP 1
+#define MULTIMESH_FORMAT_TRANSFORM_2D 2
+#define MULTIMESH_FORMAT_TRANSFORM_3D 3
 
 layout(set = 0, binding = 3, std430) restrict readonly buffer OmniLights {
 	LightData data[];

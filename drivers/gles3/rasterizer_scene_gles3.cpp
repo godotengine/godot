@@ -455,9 +455,17 @@ void RasterizerSceneGLES3::_geometry_instance_update(RenderGeometryInstance *p_g
 	ginstance->base_flags = 0;
 
 	if (ginstance->data->base_type == RS::INSTANCE_MULTIMESH) {
-		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH;
-		if (mesh_storage->multimesh_get_transform_format(ginstance->data->base) == RS::MULTIMESH_TRANSFORM_2D) {
-			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D;
+		switch (mesh_storage->multimesh_get_transform_format(ginstance->data->base)) {
+			case RS::MULTIMESH_TRANSFORM_SKIP:
+				ginstance->base_flags |= RS::MULTIMESH_FORMAT_TRANSFORM_SKIP << INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT;
+				break;
+			case RS::MULTIMESH_TRANSFORM_2D:
+				ginstance->base_flags |= RS::MULTIMESH_FORMAT_TRANSFORM_2D << INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT;
+				break;
+			case RS::MULTIMESH_TRANSFORM_3D:
+			default:
+				ginstance->base_flags |= RS::MULTIMESH_FORMAT_TRANSFORM_3D << INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT;
+				break;
 		}
 		if (mesh_storage->multimesh_uses_colors(ginstance->data->base)) {
 			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR;
@@ -468,7 +476,7 @@ void RasterizerSceneGLES3::_geometry_instance_update(RenderGeometryInstance *p_g
 
 	} else if (ginstance->data->base_type == RS::INSTANCE_PARTICLES) {
 		ginstance->base_flags |= INSTANCE_DATA_FLAG_PARTICLES;
-		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH;
+		ginstance->base_flags |= RS::MULTIMESH_TRANSFORM_3D << INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT;
 
 		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR;
 		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA;

@@ -165,6 +165,9 @@
 		<constant name="TRANSFORM_3D" value="1" enum="TransformFormat">
 			Use this when using 3D transforms.
 		</constant>
+		<constant name="TRANSFORM_SKIP" value="2" enum="TransformFormat">
+			Use this when using no transforms.
+		</constant>
 		<constant name="INTERP_QUALITY_FAST" value="0" enum="PhysicsInterpolationQuality">
 			Always interpolate using Basis lerping, which can produce warping artifacts in some situations.
 		</constant>

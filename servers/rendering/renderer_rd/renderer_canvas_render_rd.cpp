@@ -1780,6 +1780,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.renames["E"] = String::num(Math::E);
 		actions.renames["AT_LIGHT_PASS"] = "false";
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
+		actions.renames["INSTANCE_COLOR"] = "instance_color";
 
 		actions.renames["COLOR"] = "color";
 		actions.renames["NORMAL"] = "normal";

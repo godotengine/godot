@@ -1612,10 +1612,12 @@ void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RS:
 	multimesh->instances = p_instances;
 	multimesh->xform_format = p_transform_format;
 	multimesh->uses_colors = p_use_colors;
-	multimesh->color_offset_cache = p_transform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12;
+	multimesh->color_offset_cache = p_transform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 0;
+	multimesh->color_offset_cache += p_transform_format == RS::MULTIMESH_TRANSFORM_3D ? 12 : 0;
 	multimesh->uses_custom_data = p_use_custom_data;
 	multimesh->custom_data_offset_cache = multimesh->color_offset_cache + color_and_custom_strides;
 	multimesh->stride_cache = multimesh->custom_data_offset_cache + color_and_custom_strides;
+	ERR_FAIL_COND(multimesh->stride_cache == 0);
 	multimesh->buffer_set = false;
 
 	multimesh->data_cache = Vector<float>();
@@ -1769,7 +1771,7 @@ void MeshStorage::_multimesh_re_create_aabb(MultiMesh *multimesh, const float *p
 			t.basis.rows[2][2] = data[10];
 			t.origin.z = data[11];
 
-		} else {
+		} else if (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D) {
 			t.basis.rows[0][0] = data[0];
 			t.basis.rows[0][1] = data[1];
 			t.origin.x = data[3];
@@ -2033,9 +2035,12 @@ void MeshStorage::_multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_
 
 		_multimesh_make_local(multimesh);
 
-		uint32_t old_stride = multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12;
+		uint32_t old_stride = multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 0;
+		old_stride += multimesh->xform_format == RS::MULTIMESH_TRANSFORM_3D ? 12 : 0;
+		uint32_t transform_stride = old_stride;
 		old_stride += multimesh->uses_colors ? 4 : 0;
 		old_stride += multimesh->uses_custom_data ? 4 : 0;
+		ERR_FAIL_COND(old_stride == 0);
 		ERR_FAIL_COND(p_buffer.size() != (multimesh->instances * (int)old_stride));
 
 		multimesh->data_cache = p_buffer;
@@ -2043,7 +2048,7 @@ void MeshStorage::_multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_
 		float *w = multimesh->data_cache.ptrw();
 
 		for (int i = 0; i < multimesh->instances; i++) {
-			{
+			if (multimesh->xform_format != RS::MULTIMESH_TRANSFORM_SKIP) {
 				float *dataptr = w + i * old_stride;
 				float *newptr = w + i * multimesh->stride_cache;
 				float vals[8] = { dataptr[0], dataptr[1], dataptr[2], dataptr[3], dataptr[4], dataptr[5], dataptr[6], dataptr[7] };
@@ -2058,13 +2063,13 @@ void MeshStorage::_multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_
 			}
 
 			if (multimesh->uses_colors) {
-				float *dataptr = w + i * old_stride + (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12);
+				float *dataptr = w + i * old_stride + transform_stride;
 				float *newptr = w + i * multimesh->stride_cache + multimesh->color_offset_cache;
 				uint16_t val[4] = { Math::make_half_float(dataptr[0]), Math::make_half_float(dataptr[1]), Math::make_half_float(dataptr[2]), Math::make_half_float(dataptr[3]) };
 				memcpy(newptr, val, 2 * 4);
 			}
 			if (multimesh->uses_custom_data) {
-				float *dataptr = w + i * old_stride + (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12) + (multimesh->uses_colors ? 4 : 0);
+				float *dataptr = w + i * old_stride + transform_stride + (multimesh->uses_colors ? 4 : 0);
 				float *newptr = w + i * multimesh->stride_cache + multimesh->custom_data_offset_cache;
 				uint16_t val[4] = { Math::make_half_float(dataptr[0]), Math::make_half_float(dataptr[1]), Math::make_half_float(dataptr[2]), Math::make_half_float(dataptr[3]) };
 				memcpy(newptr, val, 2 * 4);
@@ -2140,9 +2145,15 @@ Vector<float> MeshStorage::_multimesh_get_buffer(RID p_multimesh) const {
 			memcpy(w, r, buffer.size());
 		}
 	}
-	if (multimesh->uses_colors || multimesh->uses_custom_data) {
+
+	uint32_t instance_attribute_count = multimesh->xform_format != RS::MULTIMESH_TRANSFORM_SKIP;
+	instance_attribute_count += multimesh->uses_colors;
+	instance_attribute_count += multimesh->uses_custom_data;
+	if (instance_attribute_count > 1) {
 		// Need to decompress buffer.
-		uint32_t new_stride = multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12;
+		uint32_t transform_stride = multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 0;
+		transform_stride += multimesh->xform_format == RS::MULTIMESH_TRANSFORM_3D ? 12 : 0;
+		uint32_t new_stride = transform_stride;
 		new_stride += multimesh->uses_colors ? 4 : 0;
 		new_stride += multimesh->uses_custom_data ? 4 : 0;
 
@@ -2152,7 +2163,7 @@ Vector<float> MeshStorage::_multimesh_get_buffer(RID p_multimesh) const {
 		const float *r = ret.ptr();
 
 		for (int i = 0; i < multimesh->instances; i++) {
-			{
+			if (multimesh->xform_format != RS::MULTIMESH_TRANSFORM_SKIP) {
 				float *newptr = w + i * new_stride;
 				const float *oldptr = r + i * multimesh->stride_cache;
 				float vals[8] = { oldptr[0], oldptr[1], oldptr[2], oldptr[3], oldptr[4], oldptr[5], oldptr[6], oldptr[7] };
@@ -2167,7 +2178,7 @@ Vector<float> MeshStorage::_multimesh_get_buffer(RID p_multimesh) const {
 			}
 
 			if (multimesh->uses_colors) {
-				float *newptr = w + i * new_stride + (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12);
+				float *newptr = w + i * new_stride + transform_stride;
 				const float *oldptr = r + i * multimesh->stride_cache + multimesh->color_offset_cache;
 				uint16_t raw_data[4];
 				memcpy(raw_data, oldptr, 2 * 4);
@@ -2177,7 +2188,7 @@ Vector<float> MeshStorage::_multimesh_get_buffer(RID p_multimesh) const {
 				newptr[3] = Math::half_to_float(raw_data[3]);
 			}
 			if (multimesh->uses_custom_data) {
-				float *newptr = w + i * new_stride + (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12) + (multimesh->uses_colors ? 4 : 0);
+				float *newptr = w + i * new_stride + transform_stride + (multimesh->uses_colors ? 4 : 0);
 				const float *oldptr = r + i * multimesh->stride_cache + multimesh->custom_data_offset_cache;
 				uint16_t raw_data[4];
 				memcpy(raw_data, oldptr, 2 * 4);
@@ -2312,23 +2323,35 @@ void MeshStorage::_update_dirty_multimesh(MultiMesh *p_multimesh, bool p_uses_mo
 	}
 }
 
-void GLES3::MeshStorage::multimesh_vertex_attrib_setup(GLuint p_instance_buffer, uint32_t p_stride, bool p_uses_format_2d, bool p_has_color_or_custom_data, int p_attrib_base_index) {
+void GLES3::MeshStorage::multimesh_vertex_attrib_setup(GLuint p_instance_buffer, uint32_t p_stride, uint32_t p_multimesh_format, bool p_has_color_or_custom_data, int p_attrib_base_index) {
 	glBindBuffer(GL_ARRAY_BUFFER, p_instance_buffer);
 
-	glEnableVertexAttribArray(p_attrib_base_index + 0);
-	glVertexAttribPointer(p_attrib_base_index + 0, 4, GL_FLOAT, GL_FALSE, p_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(0));
-	glVertexAttribDivisor(p_attrib_base_index + 0, 1);
-	glEnableVertexAttribArray(p_attrib_base_index + 1);
-	glVertexAttribPointer(p_attrib_base_index + 1, 4, GL_FLOAT, GL_FALSE, p_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(sizeof(float) * 4));
-	glVertexAttribDivisor(p_attrib_base_index + 1, 1);
-	if (!p_uses_format_2d) {
-		glEnableVertexAttribArray(p_attrib_base_index + 2);
-		glVertexAttribPointer(p_attrib_base_index + 2, 4, GL_FLOAT, GL_FALSE, p_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(sizeof(float) * 8));
-		glVertexAttribDivisor(p_attrib_base_index + 2, 1);
+	uint32_t multimesh_format = (inst->flags_cache >> INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT) & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_MASK;
+	switch (multimesh_format) {
+		case RS::MULTIMESH_FORMAT_TRANSFORM_SKIP:
+			glVertexAttrib4f(12, 1, 0, 0, 0);
+			glVertexAttrib4f(13, 0, 1, 0, 0);
+			glVertexAttrib4f(14, 0, 0, 1, 0);
+			break;
+		case RS::MULTIMESH_FORMAT_TRANSFORM_3D:
+		default:
+			glEnableVertexAttribArray(p_attrib_base_index + 2);
+			glVertexAttribPointer(p_attrib_base_index + 2, 4, GL_FLOAT, GL_FALSE, p_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(sizeof(float) * 8));
+			glVertexAttribDivisor(p_attrib_base_index + 2, 1);
+			[[fallthrough]];
+		case RS::MULTIMESH_TRANSFORM_2D:
+			glEnableVertexAttribArray(p_attrib_base_index + 0);
+			glVertexAttribPointer(p_attrib_base_index + 0, 4, GL_FLOAT, GL_FALSE, p_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(0));
+			glVertexAttribDivisor(p_attrib_base_index + 0, 1);
+			glEnableVertexAttribArray(p_attrib_base_index + 1);
+			glVertexAttribPointer(p_attrib_base_index + 1, 4, GL_FLOAT, GL_FALSE, p_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(sizeof(float) * 4));
+			glVertexAttribDivisor(p_attrib_base_index + 1, 1);
+			break;
 	}
 
 	if (p_has_color_or_custom_data) {
-		uint32_t color_custom_offset = p_uses_format_2d ? 8 : 12;
+		uint32_t color_custom_offset = multimesh_format == RS::MULTIMESH_FORMAT_TRANSFORM_2D ? 8 : 0;
+		color_custom_offset += multimesh_format == RS::MULTIMESH_FORMAT_TRANSFORM_3D ? 12 : 0;
 		glEnableVertexAttribArray(p_attrib_base_index + 3);
 		glVertexAttribIPointer(p_attrib_base_index + 3, 4, GL_UNSIGNED_INT, p_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(color_custom_offset * sizeof(float)));
 		glVertexAttribDivisor(p_attrib_base_index + 3, 1);
