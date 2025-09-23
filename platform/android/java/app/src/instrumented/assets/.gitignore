@@ -1,0 +1,3 @@
+# Godot 4+ specific ignores
+/android/
+/.godot/editor
