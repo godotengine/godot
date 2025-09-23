@@ -34,6 +34,7 @@
 #include "core/io/json.h"
 #include "core/io/resource.h"
 #include "core/math/math_funcs.h"
+#include "core/object/script_language.h"
 #include "core/variant/variant_parser.h"
 
 PagedAllocator<Variant::Pools::BucketSmall, true> Variant::Pools::_bucket_small;
@@ -172,6 +173,43 @@ String Variant::get_type_name(Variant::Type p_type) {
 	}
 
 	return "";
+}
+
+String Variant::debug_get_type_name() const {
+	switch (get_type()) {
+		case OBJECT: {
+			bool was_freed;
+			Object *obj = get_validated_object_with_check(was_freed);
+			if (obj == nullptr) {
+				if (was_freed) {
+					return "Object (previously freed)";
+				} else {
+					return "Object (null instance)";
+				}
+			}
+
+			return obj->debug_get_class_name();
+		}
+		case ARRAY: {
+			const Array &arr = *reinterpret_cast<const Array *>(_data._mem);
+			if (!arr.is_typed()) {
+				return "Array";
+			}
+
+			return vformat("Array[%s]", arr.get_contained_type_name());
+		}
+		case DICTIONARY: {
+			const Dictionary &dict = *reinterpret_cast<const Dictionary *>(_data._mem);
+			if (!dict.is_typed()) {
+				return "Dictionary";
+			}
+
+			return vformat("Dictionary[%s, %s]", dict.get_key_type_name(), dict.get_value_type_name());
+		}
+		default: {
+			return get_type_name(get_type());
+		}
+	}
 }
 
 Variant::Type Variant::get_type_by_name(const String &p_type_name) {
@@ -3496,7 +3534,7 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 	if (ce.error == Callable::CallError::CALL_ERROR_INVALID_ARGUMENT) {
 		int errorarg = ce.argument;
 		if (p_argptrs) {
-			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from " + Variant::get_type_name(p_argptrs[errorarg]->get_type()) + " to " + Variant::get_type_name(Variant::Type(ce.expected));
+			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from " + p_argptrs[errorarg]->debug_get_type_name() + " to " + Variant::get_type_name(Variant::Type(ce.expected));
 		} else {
 			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from [missing argptr, type unknown] to " + Variant::get_type_name(Variant::Type(ce.expected));
 		}

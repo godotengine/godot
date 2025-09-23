@@ -68,7 +68,7 @@ private:
 			}
 
 			if (p_output_errors) {
-				ERR_FAIL_V_MSG(false, vformat("Attempted to %s a variable of type '%s' into a %s of type '%s'.", String(p_operation), Variant::get_type_name(inout_variant.get_type()), where, Variant::get_type_name(type)));
+				ERR_FAIL_V_MSG(false, vformat("Attempted to %s a variable of type '%s' into a %s of type '%s'.", String(p_operation), inout_variant.debug_get_type_name(), where, get_contained_type_name()));
 			} else {
 				return false;
 			}
@@ -186,5 +186,30 @@ public:
 	}
 	_FORCE_INLINE_ bool operator!=(const ContainerTypeValidate &p_type) const {
 		return type != p_type.type || class_name != p_type.class_name || script != p_type.script;
+	}
+
+	String get_contained_type_name() const {
+		if (type == Variant::NIL) {
+			return "Variant";
+		}
+
+		if (type != Variant::OBJECT) {
+			return Variant::get_type_name(type);
+		}
+
+		String name = class_name;
+		if (name.is_empty()) {
+			name = "Object";
+		}
+
+		if (script.is_null()) {
+			return name;
+		}
+
+		String global_name = script->get_global_name();
+		if (!global_name.is_empty()) {
+			return global_name;
+		}
+		return vformat("%s(%s)", name, script->debug_get_script_name());
 	}
 };
