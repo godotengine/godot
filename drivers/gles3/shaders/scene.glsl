@@ -1928,18 +1928,21 @@ void main() {
 		alpha = 1.0;
 	}
 #else
+#ifdef MODE_RENDER_DEPTH
 	if (alpha < alpha_scissor_threshold) {
 		discard;
 	}
 	alpha = 1.0;
+#endif // MODE_RENDER_DEPTH
 #endif // RENDER_MATERIAL
 #else
 #ifdef MODE_RENDER_DEPTH
 #ifdef USE_OPAQUE_PREPASS
-
+#ifdef ALPHA_SCISSOR_USED
 	if (alpha < opaque_prepass_threshold) {
 		discard;
 	}
+#endif // ALPHA_SCISSOR_USED
 #endif // USE_OPAQUE_PREPASS
 #endif // MODE_RENDER_DEPTH
 #endif // !ALPHA_SCISSOR_USED
