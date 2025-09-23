@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  triangle2.h                                                           */
+/*  test_triangle2.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,23 +30,41 @@
 
 #pragma once
 
-#include "core/math/vector2.h"
+#include "modules/navigation_2d/triangle2.h"
 
-struct Triangle2 {
-	Vector2 vertex[3];
+#include "tests/test_macros.h"
 
-	real_t get_area() const {
-		return Math::abs((vertex[0] - vertex[1]).cross(vertex[0] - vertex[2])) * 0.5f;
+namespace TestTriangle2 {
+TEST_SUITE("[Triangle2]") {
+	TEST_CASE("[Triangle2] Test get_area") {
+		const Vector2 p0(5.0, 5.0);
+		const Vector2 p1(6.0, 7.0);
+		const Vector2 p2(7.0, 6.0);
+
+		CHECK_EQ(Triangle2(p0, p1, p2).get_area(), doctest::Approx(1.5));
+		CHECK_EQ(Triangle2(p0, p2, p1).get_area(), doctest::Approx(1.5));
+
+		CHECK_EQ(Triangle2(p0, p2, p2).get_area(), doctest::Approx(0.0));
+		CHECK_EQ(Triangle2(p0, p1, p1).get_area(), doctest::Approx(0.0));
 	}
 
-	Vector2 get_random_point_inside() const;
+	TEST_CASE("[Triangle2] Test get_closest_point_to") {
+		const Vector2 p0(5.0, 5.0);
+		const Vector2 p1(6.0, 7.0);
+		const Vector2 p2(7.0, 6.0);
 
-	Vector2 get_closest_point_to(const Vector2 &p_point) const;
+		const Vector2 p3(0.0, 0.0);
+		const Vector2 p4(6.0, 6.5);
 
-	Triangle2() {}
-	Triangle2(const Vector2 &p_v1, const Vector2 &p_v2, const Vector2 &p_v3) {
-		vertex[0] = p_v1;
-		vertex[1] = p_v2;
-		vertex[2] = p_v3;
+		const Triangle2 t(p0, p1, p2);
+
+		CHECK(t.get_closest_point_to(p0).is_equal_approx(p0));
+		CHECK(t.get_closest_point_to(p1).is_equal_approx(p1));
+		CHECK(t.get_closest_point_to(p2).is_equal_approx(p2));
+
+		CHECK(t.get_closest_point_to(p3).is_equal_approx(p0));
+
+		CHECK(t.get_closest_point_to(p4).is_equal_approx(p4));
 	}
-};
+}
+} // namespace TestTriangle2
