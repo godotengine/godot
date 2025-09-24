@@ -81,7 +81,7 @@ void Tween::_start_tweeners() {
 		ERR_FAIL_MSG("Tween without commands, aborting.");
 	}
 
-	for (Ref<Tweener> &tweener : tweeners.write[current_step]) {
+	for (Ref<Tweener> &tweener : tweeners[current_step]) {
 		tweener->start();
 	}
 }
@@ -179,7 +179,7 @@ void Tween::append(Ref<Tweener> p_tweener) {
 	parallel_enabled = default_parallel;
 
 	tweeners.resize(current_step + 1);
-	tweeners.write[current_step].push_back(p_tweener);
+	tweeners[current_step].push_back(p_tweener);
 }
 
 void Tween::stop() {
@@ -365,7 +365,7 @@ bool Tween::step(double p_delta) {
 		double step_delta = rem_delta;
 		step_active = false;
 
-		for (Ref<Tweener> &tweener : tweeners.write[current_step]) {
+		for (Ref<Tweener> &tweener : tweeners[current_step]) {
 			// Modified inside Tweener.step().
 			double temp_delta = rem_delta;
 			// Turns to true if any Tweener returns true (i.e. is still not finished).
@@ -379,7 +379,7 @@ bool Tween::step(double p_delta) {
 			emit_signal(SNAME("step_finished"), current_step);
 			current_step++;
 
-			if (current_step == tweeners.size()) {
+			if (current_step == (int)tweeners.size()) {
 				loops_done++;
 				if (loops_done == loops) {
 					running = false;
