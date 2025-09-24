@@ -311,7 +311,6 @@ void SpxDrawTiles::_place_tiles_bulk_spx(GdArray positions) {
     }
 
     int source_id = _get_or_create_source_id(current_texture);
-    Vector2i atlas_coord(0,0);
 
     auto len = positions->size;
     for (int i = 0; i + 1 < len; i += 2) {
@@ -322,7 +321,7 @@ void SpxDrawTiles::_place_tiles_bulk_spx(GdArray positions) {
         Vector2 local_pos = layer->to_local(flip_y(pos));
         Vector2i coords = layer->local_to_map(local_pos);
 
-        layer->set_cell(coords, source_id, atlas_coord, 0);
+        layer->set_cell(coords, source_id, default_atlas_coord, 0);
     }
 }
 
@@ -493,9 +492,11 @@ int SpxDrawTiles::_get_or_create_source_id(Ref<Texture2D> scaled_texture, bool w
     int id = next_source_id++;
     scaled_texture_source_ids_bimap.insert(scaled_texture, id);
    
-    shared_tile_set->add_physics_layer(0);
-    shared_tile_set->set_physics_layer_collision_layer(0, 0xFFFF);
-    shared_tile_set->set_physics_layer_collision_mask(0, 0xFFFF);
+    if(shared_tile_set->get_physics_layers_count() <= 0){
+        shared_tile_set->add_physics_layer(0);
+        shared_tile_set->set_physics_layer_collision_layer(0, 0xFFFF);
+        shared_tile_set->set_physics_layer_collision_mask(0, 0xFFFF);
+    }
  
     Ref<TileSetAtlasSource> atlas_source;
     atlas_source.instantiate();
@@ -508,7 +509,7 @@ int SpxDrawTiles::_get_or_create_source_id(Ref<Texture2D> scaled_texture, bool w
 
     shared_tile_set->add_source(atlas_source, id);
     source_id_collision_map[id] = with_collision;
-    
+
     return id;
 }
 
@@ -530,9 +531,9 @@ bool SpxDrawTiles::_create_tile(Ref<TileSetAtlasSource> atlas_source, const Vect
         Vector2(-halfSize, halfSize)
     };
 
-    tile_data->add_collision_polygon(0);
+    tile_data->add_collision_polygon(default_physics_layer);
 
-    tile_data->set_collision_polygon_points(0, 0, collision_rect);
+    tile_data->set_collision_polygon_points(default_physics_layer, 0, collision_rect);
 
     return true;
 }

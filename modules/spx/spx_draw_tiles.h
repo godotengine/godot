@@ -160,6 +160,7 @@ private:
     const String UNIQUE_LAYER_PREFIX = "spx_draw_tiles_layer_";
     Vector2i default_cell_size{16, 16};
     Vector2i default_atlas_coord{0, 0};
+    int default_physics_layer = 0;
     int current_layer_index = 0;
 
     bool exit_editor = true;

@@ -62,6 +62,7 @@ void SpxExtMgr::on_awake() {
 	
 	debug_root = memnew(Node2D);
 	debug_root->set_name("debug_root");
+
 	get_spx_root()->add_child(debug_root);
 
 	pure_sprite_root = memnew(Node2D);
@@ -421,14 +422,6 @@ void SpxExtMgr::exit_tilemap_editor_mode() {
 		draw_tiles->exit_editor_mode();
 		draw_tiles = nullptr;
     }
-}
-
-bool SpxExtMgr::has_collision(int source_id){
-	if(draw_tiles){
-		return draw_tiles->has_collision(source_id);
-	}
-
-	return false;
 }
 
 void SpxExtMgr::clear_pure_sprites(){
