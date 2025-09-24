@@ -95,7 +95,7 @@ public:
 	int get_height() const override;
 	virtual RID get_rid() const override;
 
-	virtual void set_path(const String &p_path, bool p_take_over) override;
+	virtual void set_path(const String &p_path, bool p_take_over, bool p_lock_cache = true) override;
 
 	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
 	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
@@ -165,7 +165,7 @@ public:
 	virtual bool has_mipmaps() const override;
 	virtual RID get_rid() const override;
 
-	virtual void set_path(const String &p_path, bool p_take_over) override;
+	virtual void set_path(const String &p_path, bool p_take_over, bool p_lock_cache = true) override;
 
 	virtual Ref<Image> get_layer_data(int p_layer) const override;
 
@@ -250,7 +250,7 @@ public:
 	virtual bool has_mipmaps() const override;
 	virtual RID get_rid() const override;
 
-	virtual void set_path(const String &p_path, bool p_take_over) override;
+	virtual void set_path(const String &p_path, bool p_take_over, bool p_lock_cache = true) override;
 
 	virtual Vector<Ref<Image>> get_data() const override;
 

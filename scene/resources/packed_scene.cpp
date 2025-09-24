@@ -2302,9 +2302,9 @@ Ref<SceneState> PackedScene::get_state() const {
 	return state;
 }
 
-void PackedScene::set_path(const String &p_path, bool p_take_over) {
+void PackedScene::set_path(const String &p_path, bool p_take_over, bool p_lock_cache) {
 	state->set_path(p_path);
-	Resource::set_path(p_path, p_take_over);
+	Resource::set_path(p_path, p_take_over, p_lock_cache);
 }
 
 void PackedScene::set_path_cache(const String &p_path) {

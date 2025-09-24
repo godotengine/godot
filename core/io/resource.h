@@ -121,6 +121,8 @@ protected:
 
 	virtual Ref<Resource> _duplicate(const DuplicateParams &p_params) const;
 
+	void _set_path_internal(const String &p_path, bool p_take_over = false);
+
 public:
 	static Node *(*_get_local_scene_func)(); // Used by the editor.
 	static void (*_update_configuration_warning)(); // Used by the editor.
@@ -138,7 +140,7 @@ public:
 	void set_name(const String &p_name);
 	String get_name() const;
 
-	virtual void set_path(const String &p_path, bool p_take_over = false);
+	virtual void set_path(const String &p_path, bool p_take_over = false, bool p_lock_cache = true);
 	String get_path() const;
 	virtual void set_path_cache(const String &p_path); // Set raw path without involving resource cache.
 	_FORCE_INLINE_ bool is_built_in() const { return path_cache.is_empty() || path_cache.contains("::") || path_cache.begins_with("local://"); }
@@ -204,9 +206,37 @@ class ResourceCache {
 	static void clear();
 	friend void register_core_types();
 
+protected:
+	static Ref<Resource> _get_ref_internal(const String &p_path);
+
 public:
 	static bool has(const String &p_path);
-	static Ref<Resource> get_ref(const String &p_path);
+	static Ref<Resource> get_ref(const String &p_path, bool p_lock_cache = true);
+	template <typename F>
+	static Ref<Resource> get_ref_or_create(const String &p_path, F create_func) {
+		Ref<Resource> ref;
+		{
+			MutexLock mutex_lock(lock);
+			Resource **res = resources.getptr(p_path);
+
+			if (res) {
+				ref = Ref<Resource>(*res);
+			}
+
+			if (res && ref.is_null()) {
+				// This resource is in the process of being deleted, ignore its existence
+				(*res)->path_cache = String();
+				resources.erase(p_path);
+				res = nullptr;
+			}
+
+			if (!ref.is_valid()) {
+				ref = create_func();
+			}
+		}
+
+		return ref;
+	}
 	static void get_cached_resources(List<Ref<Resource>> *p_resources);
 	static int get_cached_resource_count();
 };

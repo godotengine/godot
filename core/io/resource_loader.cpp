@@ -286,15 +286,14 @@ ResourceLoader::LoadToken::~LoadToken() {
 	clear();
 }
 
-Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress) {
+Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress, const String &parent_path) {
 	const String &original_path = p_original_path.is_empty() ? p_path : p_original_path;
 	load_nesting++;
 	if (load_paths_stack.size()) {
 		MutexLock thread_load_lock(thread_load_mutex);
-		const String &parent_task_path = load_paths_stack.get(load_paths_stack.size() - 1);
-		HashMap<String, ThreadLoadTask>::Iterator E = thread_load_tasks.find(parent_task_path);
+		HashMap<String, ThreadLoadTask>::Iterator E = thread_load_tasks.find(parent_path);
 		// Avoid double-tracking, for progress reporting, resources that boil down to a remapped path containing the real payload (e.g., imported resources).
-		bool is_remapped_load = original_path == parent_task_path;
+		bool is_remapped_load = original_path == parent_path;
 		if (E && !is_remapped_load) {
 			E->value.sub_tasks.insert(original_path);
 		}
@@ -393,7 +392,7 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 	const String &remapped_path = _path_remap(load_task.local_path, &xl_remapped);
 
 	Error load_err = OK;
-	Ref<Resource> res = _load(remapped_path, remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_err, load_task.use_sub_threads, &load_task.progress);
+	Ref<Resource> res = _load(remapped_path, remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_err, load_task.use_sub_threads, &load_task.progress, load_task.parent_path);
 	if (MessageQueue::get_singleton() != MessageQueue::get_main_singleton()) {
 		MessageQueue::get_singleton()->flush();
 	}
@@ -563,7 +562,7 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 	return res;
 }
 
-Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode, bool p_for_user) {
+Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode, bool p_for_user, const String &parent_path) {
 	String local_path = _validate_local_path(p_path);
 	ERR_FAIL_COND_V(local_path.is_empty(), Ref<ResourceLoader::LoadToken>());
 
@@ -572,6 +571,12 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 	Ref<LoadToken> load_token;
 	bool must_not_register = false;
 	ThreadLoadTask *load_task_ptr = nullptr;
+
+	Ref<Resource> existing = nullptr;
+	if (p_cache_mode == ResourceFormatLoader::CACHE_MODE_REUSE) {
+		existing = ResourceCache::get_ref(local_path);
+	}
+
 	{
 		MutexLock thread_load_lock(thread_load_mutex);
 
@@ -613,17 +618,15 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 			load_task.type_hint = p_type_hint;
 			load_task.cache_mode = p_cache_mode;
 			load_task.use_sub_threads = p_thread_mode == LOAD_THREAD_DISTRIBUTE;
-			if (p_cache_mode == ResourceFormatLoader::CACHE_MODE_REUSE) {
-				Ref<Resource> existing = ResourceCache::get_ref(local_path);
-				if (existing.is_valid()) {
-					//referencing is fine
-					load_task.resource = existing;
-					load_task.status = THREAD_LOAD_LOADED;
-					load_task.progress = 1.0;
-					DEV_ASSERT(!thread_load_tasks.has(local_path));
-					thread_load_tasks[local_path] = load_task;
-					return load_token;
-				}
+			load_task.parent_path = parent_path;
+			if (p_cache_mode == ResourceFormatLoader::CACHE_MODE_REUSE && existing.is_valid()) {
+				//referencing is fine
+				load_task.resource = existing;
+				load_task.status = THREAD_LOAD_LOADED;
+				load_task.progress = 1.0;
+				DEV_ASSERT(!thread_load_tasks.has(local_path));
+				thread_load_tasks[local_path] = load_task;
+				return load_token;
 			}
 
 			// If we want to ignore cache, but there's another task loading it, we can't add this one to the map.

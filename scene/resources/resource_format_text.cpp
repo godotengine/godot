@@ -460,7 +460,7 @@ Error ResourceLoaderText::load() {
 
 		ext_resources[id].path = path;
 		ext_resources[id].type = type;
-		ext_resources[id].load_token = ResourceLoader::_load_start(path, type, use_sub_threads ? ResourceLoader::LOAD_THREAD_DISTRIBUTE : ResourceLoader::LOAD_THREAD_FROM_CURRENT, cache_mode_for_external);
+		ext_resources[id].load_token = ResourceLoader::_load_start(path, type, use_sub_threads ? ResourceLoader::LOAD_THREAD_DISTRIBUTE : ResourceLoader::LOAD_THREAD_FROM_CURRENT, cache_mode_for_external, false, res_path);
 		if (ext_resources[id].load_token.is_null()) {
 			if (ResourceLoader::get_abort_on_missing_resources()) {
 				error = ERR_FILE_CORRUPT;
@@ -521,6 +521,7 @@ Error ResourceLoaderText::load() {
 
 		Ref<Resource> res;
 		bool do_assign = false;
+		bool do_set_path = false;
 
 		if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && ResourceCache::has(path)) {
 			//reuse existing
@@ -535,13 +536,7 @@ Error ResourceLoaderText::load() {
 		MissingResource *missing_resource = nullptr;
 
 		if (res.is_null()) { //not reuse
-			Ref<Resource> cache = ResourceCache::get_ref(path);
-			if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE && cache.is_valid()) { //only if it doesn't exist
-				//cached, do not assign
-				res = cache;
-			} else {
-				//create
-
+			auto create_func = [&]() -> Ref<Resource> {
 				Object *obj = ClassDB::instantiate(type);
 				if (!obj) {
 					if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
@@ -553,7 +548,7 @@ Error ResourceLoaderText::load() {
 						error_text = vformat("Can't create sub resource of type '%s'", type);
 						_printerr();
 						error = ERR_FILE_CORRUPT;
-						return error;
+						return nullptr;
 					}
 				}
 
@@ -562,11 +557,36 @@ Error ResourceLoaderText::load() {
 					error_text = vformat("Can't create sub resource of type '%s' as it's not a resource type", type);
 					_printerr();
 					error = ERR_FILE_CORRUPT;
-					return error;
+					return nullptr;
 				}
 
-				res = Ref<Resource>(r);
+				return Ref<Resource>(r);
+			};
+
+			if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+				res = ResourceCache::get_ref_or_create(path, [&]() -> Ref<Resource> {
+					Ref<Resource> new_res = create_func();
+
+					if (!new_res.is_valid()) {
+						return nullptr;
+					}
+
+					new_res->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE, false);
+					new_res->set_scene_unique_id(id);
+					do_assign = true;
+					// Don't set the path again below as we already set it here to avoid lock contention
+					do_set_path = false;
+					return new_res;
+				});
+
+				if (!res.is_valid()) {
+					return error;
+				}
+			} else {
+				//create
+				res = create_func();
 				do_assign = true;
+				do_set_path = true;
 			}
 		}
 
@@ -577,7 +597,7 @@ Error ResourceLoaderText::load() {
 		}
 
 		int_resources[id] = res; // Always assign int resources.
-		if (do_assign) {
+		if (do_assign && do_set_path) {
 			if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 				res->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
 			} else {
@@ -688,31 +708,38 @@ Error ResourceLoaderText::load() {
 			}
 
 			if (resource.is_null()) {
-				Object *obj = ClassDB::instantiate(res_type);
-				if (!obj) {
-					if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
-						missing_resource = memnew(MissingResource);
-						missing_resource->set_original_class(res_type);
-						missing_resource->set_recording_properties(true);
-						obj = missing_resource;
-					} else {
-						error_text = vformat("Can't create sub resource of type '%s'", res_type);
+				cache = ResourceCache::get_ref_or_create(local_path, [&]() -> Ref<Resource> {
+					Object *obj = ClassDB::instantiate(res_type);
+					if (!obj) {
+						if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+							missing_resource = memnew(MissingResource);
+							missing_resource->set_original_class(res_type);
+							missing_resource->set_recording_properties(true);
+							obj = missing_resource;
+						} else {
+							error_text = vformat("Can't create sub resource of type '%s'", res_type);
+							_printerr();
+							error = ERR_FILE_CORRUPT;
+							return nullptr;
+						}
+					}
+
+					Resource *r = Object::cast_to<Resource>(obj);
+					if (!r) {
+						error_text = vformat("Can't create sub resource of type '%s' as it's not a resource type", res_type);
 						_printerr();
 						error = ERR_FILE_CORRUPT;
-						return error;
+						return nullptr;
 					}
-				}
 
-				Resource *r = Object::cast_to<Resource>(obj);
-				if (!r) {
-					error_text = vformat("Can't create sub resource of type '%s' as it's not a resource type", res_type);
-					_printerr();
-					error = ERR_FILE_CORRUPT;
-					return error;
-				}
-
-				resource = Ref<Resource>(r);
+					return Ref<Resource>(r);
+				});
 			}
+
+			if (cache.is_null()) {
+				return error;
+			}
+			resource = cache;
 		}
 
 		Dictionary missing_resource_properties;

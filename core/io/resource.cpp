@@ -67,7 +67,32 @@ void Resource::_unblock_emit_changed() {
 void Resource::_resource_path_changed() {
 }
 
-void Resource::set_path(const String &p_path, bool p_take_over) {
+void Resource::_set_path_internal(const String &p_path, bool p_take_over) {
+	if (!path_cache.is_empty()) {
+		ResourceCache::resources.erase(path_cache);
+	}
+
+	path_cache = "";
+
+	Ref<Resource> existing = ResourceCache::get_ref(p_path, false);
+
+	if (existing.is_valid()) {
+		if (p_take_over) {
+			existing->path_cache = String();
+			ResourceCache::resources.erase(p_path);
+		} else {
+			ERR_FAIL_MSG(vformat("Another resource is loaded from path '%s' (possible cyclic resource inclusion).", p_path));
+		}
+	}
+
+	path_cache = p_path;
+
+	if (!path_cache.is_empty()) {
+		ResourceCache::resources[path_cache] = this;
+	}
+}
+
+void Resource::set_path(const String &p_path, bool p_take_over, bool p_lock_cache) {
 	if (path_cache == p_path) {
 		return;
 	}
@@ -76,31 +101,11 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		p_take_over = false; // Can't take over an empty path
 	}
 
-	{
+	if (p_lock_cache) {
 		MutexLock lock(ResourceCache::lock);
-
-		if (!path_cache.is_empty()) {
-			ResourceCache::resources.erase(path_cache);
-		}
-
-		path_cache = "";
-
-		Ref<Resource> existing = ResourceCache::get_ref(p_path);
-
-		if (existing.is_valid()) {
-			if (p_take_over) {
-				existing->path_cache = String();
-				ResourceCache::resources.erase(p_path);
-			} else {
-				ERR_FAIL_MSG(vformat("Another resource is loaded from path '%s' (possible cyclic resource inclusion).", p_path));
-			}
-		}
-
-		path_cache = p_path;
-
-		if (!path_cache.is_empty()) {
-			ResourceCache::resources[path_cache] = this;
-		}
+		_set_path_internal(p_path, p_take_over);
+	} else {
+		_set_path_internal(p_path, p_take_over);
 	}
 
 	_resource_path_changed();
@@ -822,22 +827,31 @@ bool ResourceCache::has(const String &p_path) {
 	return true;
 }
 
-Ref<Resource> ResourceCache::get_ref(const String &p_path) {
+Ref<Resource> ResourceCache::_get_ref_internal(const String &p_path) {
 	Ref<Resource> ref;
-	{
+	Resource **res = resources.getptr(p_path);
+
+	if (res) {
+		ref = Ref<Resource>(*res);
+	}
+
+	if (res && ref.is_null()) {
+		// This resource is in the process of being deleted, ignore its existence
+		(*res)->path_cache = String();
+		resources.erase(p_path);
+		res = nullptr;
+	}
+
+	return ref;
+}
+
+Ref<Resource> ResourceCache::get_ref(const String &p_path, bool p_lock_cache) {
+	Ref<Resource> ref;
+	if (p_lock_cache) {
 		MutexLock mutex_lock(lock);
-		Resource **res = resources.getptr(p_path);
-
-		if (res) {
-			ref = Ref<Resource>(*res);
-		}
-
-		if (res && ref.is_null()) {
-			// This resource is in the process of being deleted, ignore its existence
-			(*res)->path_cache = String();
-			resources.erase(p_path);
-			res = nullptr;
-		}
+		ref = _get_ref_internal(p_path);
+	} else {
+		ref = _get_ref_internal(p_path);
 	}
 
 	return ref;

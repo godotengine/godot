@@ -696,7 +696,7 @@ Error ResourceLoaderBinary::load() {
 		}
 
 		external_resources.write[i].path = path; //remap happens here, not on load because on load it can actually be used for filesystem dock resource remap
-		external_resources.write[i].load_token = ResourceLoader::_load_start(path, external_resources[i].type, use_sub_threads ? ResourceLoader::LOAD_THREAD_DISTRIBUTE : ResourceLoader::LOAD_THREAD_FROM_CURRENT, cache_mode_for_external);
+		external_resources.write[i].load_token = ResourceLoader::_load_start(path, external_resources[i].type, use_sub_threads ? ResourceLoader::LOAD_THREAD_DISTRIBUTE : ResourceLoader::LOAD_THREAD_FROM_CURRENT, cache_mode_for_external, false, res_path);
 		if (external_resources[i].load_token.is_null()) {
 			if (!ResourceLoader::get_abort_on_missing_resources()) {
 				ResourceLoader::notify_dependency_error(local_path, path, external_resources[i].type);
@@ -755,6 +755,7 @@ Error ResourceLoaderBinary::load() {
 			res = ResourceLoader::get_resource_ref_override(local_path);
 			r = res.ptr();
 		}
+		bool do_assign = true;
 		if (!r) {
 			if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && ResourceCache::has(path)) {
 				//use the existing one
@@ -768,33 +769,56 @@ Error ResourceLoaderBinary::load() {
 			if (res.is_null()) {
 				//did not replace
 
-				Object *obj = ClassDB::instantiate(t);
-				if (!obj) {
-					if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
-						//create a missing resource
-						missing_resource = memnew(MissingResource);
-						missing_resource->set_original_class(t);
-						missing_resource->set_recording_properties(true);
-						obj = missing_resource;
-					} else {
+				String error_msg = String();
+				res = ResourceCache::get_ref_or_create(path, [&]() -> Ref<Resource> {
+					Object *obj = ClassDB::instantiate(t);
+					if (!obj) {
+						if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+							//create a missing resource
+							missing_resource = memnew(MissingResource);
+							missing_resource->set_original_class(t);
+							missing_resource->set_recording_properties(true);
+							obj = missing_resource;
+						} else {
+							error = ERR_FILE_CORRUPT;
+							error_msg = vformat("'%s': Resource of unrecognized type in file: '%s'.", local_path, t);
+							return nullptr;
+						}
+					}
+
+					r = Object::cast_to<Resource>(obj);
+					if (!r) {
+						String obj_class = obj->get_class();
 						error = ERR_FILE_CORRUPT;
-						ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, vformat("'%s': Resource of unrecognized type in file: '%s'.", local_path, t));
+						error_msg = vformat("'%s': Resource type in resource field not a resource, type is: %s.");
+						memdelete(obj); //bye
+						return nullptr;
+					}
+
+					if (!path.is_empty()) {
+						if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+							r->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE, false); // If got here because the resource with same path has different type, replace it.
+						} else {
+							r->set_path_cache(path);
+						}
+					}
+					r->set_scene_unique_id(id);
+
+					do_assign = false;
+					return Ref<Resource>(r);
+				});
+
+				if (!res.is_valid()) {
+					if (error_msg.is_empty()) {
+						ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, vformat("'%s': Failed to load resource: '%s'.", local_path, t));
+					} else {
+						ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, error_msg);
 					}
 				}
-
-				r = Object::cast_to<Resource>(obj);
-				if (!r) {
-					String obj_class = obj->get_class();
-					error = ERR_FILE_CORRUPT;
-					memdelete(obj); //bye
-					ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, vformat("'%s': Resource type in resource field not a resource, type is: %s.", local_path, obj_class));
-				}
-
-				res = Ref<Resource>(r);
 			}
 		}
 
-		if (r) {
+		if (r && do_assign) {
 			if (!path.is_empty()) {
 				if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 					r->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE); // If got here because the resource with same path has different type, replace it.

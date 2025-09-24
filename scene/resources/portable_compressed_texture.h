@@ -100,7 +100,7 @@ public:
 
 	bool is_pixel_opaque(int p_x, int p_y) const override;
 
-	virtual void set_path(const String &p_path, bool p_take_over = false) override;
+	virtual void set_path(const String &p_path, bool p_take_over = false, bool p_lock_cache = true) override;
 
 	void set_size_override(const Size2 &p_size);
 	Size2 get_size_override() const;
