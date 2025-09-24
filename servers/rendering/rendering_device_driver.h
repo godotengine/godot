@@ -86,6 +86,8 @@ struct VersatileResourceTemplate {
 };
 
 class RenderingDeviceDriver : public RenderingDeviceCommons {
+	GDSOFTCLASS(RenderingDeviceDriver, RenderingDeviceCommons);
+
 public:
 	struct ID {
 		uint64_t id = 0;
