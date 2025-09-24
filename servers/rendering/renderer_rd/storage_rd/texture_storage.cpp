@@ -4130,7 +4130,7 @@ RID TextureStorage::render_target_get_sdf_texture(RID p_render_target) {
 		pv.resize(16 * 4);
 		memset(pv.ptrw(), 0, 16 * 4);
 		Vector<Vector<uint8_t>> vpv;
-
+		vpv.push_back(pv);
 		rt->sdf_buffer_read = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
 	}
 
