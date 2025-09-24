@@ -45,7 +45,7 @@ class SpxPathFinder : public RefCounted {
 
 private:
     Ref<AStarGrid2D> astar;
-    PathDebugDrawer* drawer = nullptr;
+    PathDebugDrawer *drawer = nullptr;
 
     Vector2i _world_to_cell(const Vector2 &pos) const;
     Vector2 _cell_to_world(const Vector2i &cell) const;

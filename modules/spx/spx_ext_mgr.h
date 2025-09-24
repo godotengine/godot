@@ -151,7 +151,6 @@ public:
 		f();
 	}
 
-	bool has_collision(int source_id);
 	// create sprites
 	void clear_pure_sprites();
 	void create_pure_sprite(GdString texture_path, GdVec2 pos, GdInt zindex);
