@@ -3089,6 +3089,11 @@ void EditorPropertyNodePath::_notification(int p_what) {
 Node *EditorPropertyNodePath::get_base_node() {
 	Node *base_node = Object::cast_to<Node>(get_edited_object());
 
+	// For proxy objects, specifies the node to which the path is relative.
+	if (!base_node && get_edited_object()->has_meta("__base_node_relative")) {
+		base_node = Object::cast_to<Node>(get_edited_object()->get_meta("__base_node_relative"));
+	}
+
 	if (!base_node) {
 		base_node = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
 	}
