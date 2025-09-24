@@ -275,7 +275,7 @@
 				[b]Note:[/b] Despite the naming convention, this operation is [b]not[/b] calculated in parent space for compatibility reasons. To translate in parent space, add [param offset] to the [member position] ([code]node_3d.position += offset[/code]).
 			</description>
 		</method>
-		<method name="translate_object_local">
+		<method name="translate_object_local" keywords="move_local">
 			<return type="void" />
 			<param index="0" name="offset" type="Vector3" />
 			<description>
