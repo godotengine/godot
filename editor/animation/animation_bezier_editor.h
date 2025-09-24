@@ -60,7 +60,7 @@ class AnimationBezierTrackEdit : public Control {
 
 	Ref<Animation> animation;
 	bool read_only = false;
-	int selected_track = 0;
+	int selected_track = -1;
 
 	Vector<Rect2> view_rects;
 
@@ -77,10 +77,10 @@ class AnimationBezierTrackEdit : public Control {
 		VISIBILITY_ICON
 	};
 
+	RBMap<String, RBMap<int, Rect2>> node_icons;
 	RBMap<int, RBMap<int, Rect2>> subtrack_icons;
 	HashSet<int> locked_tracks;
 	HashSet<int> hidden_tracks;
-	int solo_track = -1;
 	bool is_filtered = false;
 
 	float track_v_scroll = 0;
@@ -95,6 +95,10 @@ class AnimationBezierTrackEdit : public Control {
 
 	void _update_locked_tracks_after(int p_track);
 	void _update_hidden_tracks_after(int p_track);
+	bool _lock_track(int p_track);
+	bool _unlock_track(int p_track);
+	bool _hide_track(int p_track);
+	bool _show_track(int p_track);
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _menu_selected(int p_index);
