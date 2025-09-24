@@ -270,8 +270,9 @@ void CodeEdit::_draw_guidelines() {
 	const Size2 size = get_size();
 	const bool rtl = is_layout_rtl();
 
-	const int xmargin_beg = theme_cache.style_normal->get_margin(SIDE_LEFT) + get_total_gutter_width();
-	const int xmargin_end = size.width - theme_cache.style_normal->get_margin(SIDE_RIGHT) - (is_drawing_minimap() ? get_minimap_width() : 0);
+	Ref<StyleBox> style = is_editable() ? theme_cache.style_normal : theme_cache.style_readonly;
+	const int xmargin_beg = style->get_margin(SIDE_LEFT) + get_total_gutter_width();
+	const int xmargin_end = size.width - style->get_margin(SIDE_RIGHT) - (is_drawing_minimap() ? get_minimap_width() : 0);
 
 	for (int i = 0; i < line_length_guideline_columns.size(); i++) {
 		const int column_pos = theme_cache.font->get_string_size(String("0").repeat((int)line_length_guideline_columns[i]), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
@@ -3010,6 +3011,7 @@ void CodeEdit::_bind_methods() {
 
 	/* Other visuals */
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CodeEdit, style_normal, "normal");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CodeEdit, style_readonly, "read_only");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, brace_mismatch_color);
 
