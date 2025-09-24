@@ -101,43 +101,41 @@ void RenderingShaderContainerMetal::_initialize_toolchain_properties() {
 			break;
 	}
 
-	Vector<String> parts{ "echo", R"("")", "|", "/usr/bin/xcrun", "-sdk", sdk, "metal", "-E", "-dM", "-x", "metal", "-", "|", "grep", "-E", R"(\"__METAL_VERSION__|__ENVIRONMENT_OS\")" };
+	Vector<String> parts{ "echo", "''", "|", "/usr/bin/xcrun", "-sdk", sdk, "metal" };
 
-	// Compile metal shaders for the minimum supported target instead of the host machine
+	// Add version min flags before other metal arguments
 	if (min_os_version.is_valid()) {
 		switch (device_profile->platform) {
-			case MetalDeviceProfile::Platform::macOS: {
+			case MetalDeviceProfile::Platform::macOS:
 				parts.push_back("-mmacosx-version-min=" + min_os_version.to_compiler_os_version());
 				break;
-			}
-			case MetalDeviceProfile::Platform::iOS: {
+			case MetalDeviceProfile::Platform::iOS:
 				parts.push_back("-mios-version-min=" + min_os_version.to_compiler_os_version());
 				break;
-			}
 		}
 	}
 
-	String s = " ";
-	List<String> args = { "-c", String(" ").join(parts) };
+	parts.append_array({ "-E", "-dM", "-x", "metal", "-", "|", "grep", "-E", "'(__METAL_VERSION__|__ENVIRONMENT_OS)'" });
 
+	List<String> args = { "-c", String(" ").join(parts) };
 	String r_pipe;
 	int exit_code;
 	Error err = OS::get_singleton()->execute("sh", args, &r_pipe, &exit_code, true);
-	ERR_FAIL_COND_MSG(err != OK, "Failed to determine Metal toolchain properties");
 
-	// Parse the lines, which are in the form:
-	//
-	// #define VARNAME VALUE
+	ERR_FAIL_COND_MSG(err != OK || exit_code != 0, "Failed to determine Metal toolchain properties");
+
+	// Parse the output
 	Vector<String> lines = r_pipe.split("\n", false);
-	for (String &line : lines) {
+	for (const String &line : lines) {
 		Vector<String> name_val = line.trim_prefix("#define ").split(" ");
 		if (name_val.size() != 2) {
 			continue;
 		}
+
 		if (name_val[0] == "__ENVIRONMENT_OS_VERSION_MIN_REQUIRED__") {
-			compiler_props.os_version_min_required = MinOsVersion((uint32_t)name_val[1].to_int());
+			compiler_props.os_version_min_required = MinOsVersion(name_val[1].to_int());
 		} else if (name_val[0] == "__METAL_VERSION__") {
-			uint32_t ver = (uint32_t)name_val[1].to_int();
+			uint32_t ver = name_val[1].to_int();
 			uint32_t maj = ver / 100;
 			uint32_t min = (ver % 100) / 10;
 			compiler_props.metal_version = make_msl_version(maj, min);
@@ -147,8 +145,6 @@ void RenderingShaderContainerMetal::_initialize_toolchain_properties() {
 			break;
 		}
 	}
-
-	return;
 }
 
 Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, const StageData &p_stage_data, Vector<uint8_t> &r_binary_data) {
