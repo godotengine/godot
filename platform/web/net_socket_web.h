@@ -35,6 +35,8 @@
 #include <sys/socket.h>
 
 class NetSocketWeb : public NetSocket {
+	GDSOFTCLASS(NetSocketWeb, NetSocket);
+
 protected:
 	static NetSocket *_create_func();
 

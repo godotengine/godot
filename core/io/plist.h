@@ -37,6 +37,8 @@
 class PListNode;
 
 class PList : public RefCounted {
+	GDSOFTCLASS(PList, RefCounted);
+
 	friend class PListNode;
 
 public:

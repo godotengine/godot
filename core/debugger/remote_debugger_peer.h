@@ -37,6 +37,8 @@
 #include "core/string/ustring.h"
 
 class RemoteDebuggerPeer : public RefCounted {
+	GDSOFTCLASS(RemoteDebuggerPeer, RefCounted);
+
 protected:
 	int max_queued_messages = 4096;
 
@@ -54,6 +56,8 @@ public:
 };
 
 class RemoteDebuggerPeerTCP : public RemoteDebuggerPeer {
+	GDSOFTCLASS(RemoteDebuggerPeerTCP, RemoteDebuggerPeer);
+
 private:
 	Ref<StreamPeerTCP> tcp_client;
 	Mutex mutex;

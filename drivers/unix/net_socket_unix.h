@@ -37,6 +37,8 @@
 #include <sys/socket.h>
 
 class NetSocketUnix : public NetSocket {
+	GDSOFTCLASS(NetSocketUnix, NetSocket);
+
 private:
 	int _sock = -1;
 	IP::Type _ip_type = IP::TYPE_NONE;

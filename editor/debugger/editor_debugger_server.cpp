@@ -37,6 +37,8 @@
 #include "editor/settings/editor_settings.h"
 
 class EditorDebuggerServerTCP : public EditorDebuggerServer {
+	GDSOFTCLASS(EditorDebuggerServerTCP, EditorDebuggerServer);
+
 private:
 	Ref<TCPServer> server;
 	String endpoint;
