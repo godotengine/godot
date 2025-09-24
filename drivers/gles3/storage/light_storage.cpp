@@ -807,6 +807,10 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 
 	ERR_FAIL_NULL_V(atlas, false);
 
+	if (atlas->count == 0) {
+		return false;
+	}
+
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL_V(rpi, false);
 
