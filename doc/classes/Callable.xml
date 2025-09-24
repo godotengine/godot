@@ -269,7 +269,7 @@
 				[b]Note:[/b] Beware that when comparing the same [Callable] with arguments bound via [method bind], the comparison only compares the number of bound arguments and not the arguments themselves; thus, keep in mind the following:
 				[codeblock]
 				print.bind("banana") != print.bind("apple") // false
-				[/codeblock]				
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator ==">
@@ -280,7 +280,7 @@
 				[b]Note:[/b] Beware that when comparing the same [Callable] with arguments bound via [method bind], the comparison only compares the number of bound arguments and not the arguments themselves; thus, keep in mind the following:
 				[codeblock]
 				print.bind("banana") == print.bind("apple") // true
-				[/codeblock]				
+				[/codeblock]
 			</description>
 		</operator>
 	</operators>
