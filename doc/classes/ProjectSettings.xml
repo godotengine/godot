@@ -1177,11 +1177,14 @@
 		<member name="filesystem/import/fbx2gltf/enabled.web" type="bool" setter="" getter="" default="false">
 			Override for [member filesystem/import/fbx2gltf/enabled] on the Web where FBX2glTF can't easily be accessed from Godot.
 		</member>
-		<member name="gui/common/always_show_focus_state" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], [Control]s will always show if they're focused, even if said focus was gained via mouse/touch input.
-		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
+		</member>
+		<member name="gui/common/show_focus_state_on_pointer_event" type="int" setter="" getter="" default="1">
+			Determines whether a [Control] should visually indicate focus when said focus is gained using a mouse or touch input.
+			- [b]Never[/b] ([code]0[/code]) show the focused state for mouse/touch input.
+			- [b]Control Supports Keyboard Input[/b] ([code]1[/code]) shows the focused state even when gained via mouse/touch input (similar to how browsers handle focus).
+			- [b]Always[/b] ([code]2[/code]) show the focused state, even if said focus was gained via mouse/touch input.
 		</member>
 		<member name="gui/common/snap_controls_to_pixels" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], snaps [Control] node vertices to the nearest pixel to ensure they remain crisp even when the camera moves or zooms.

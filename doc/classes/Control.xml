@@ -621,7 +621,7 @@
 			<param index="0" name="hide_focus" type="bool" default="false" />
 			<description>
 				Steal the focus from another control and become the focused control (see [member focus_mode]).
-				If [param hide_focus] is [code]true[/code], the control will not visually show its focused state. Has no effect if [member ProjectSettings.gui/common/always_show_focus_state] is set to [code]true[/code].
+				If [param hide_focus] is [code]true[/code], the control will not visually show its focused state. Has no effect for [LineEdit] and [TextEdit] when [member ProjectSettings.gui/common/show_focus_state_on_pointer_event] is set to [code]Control Supports Keyboard Input[/code], or for any control when it is set to [code]Always[/code].
 				[b]Note:[/b] Using this method together with [method Callable.call_deferred] makes it more reliable, especially when called inside [method Node._ready].
 			</description>
 		</method>

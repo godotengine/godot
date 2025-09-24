@@ -532,7 +532,7 @@ void Viewport::_update_viewport_path() {
 }
 
 bool Viewport::_can_hide_focus_state() {
-	return Engine::get_singleton()->is_editor_hint() || !GLOBAL_GET_CACHED(bool, "gui/common/always_show_focus_state");
+	return Engine::get_singleton()->is_editor_hint() || GLOBAL_GET_CACHED(int, "gui/common/show_focus_state_on_pointer_event") < 2;
 }
 
 void Viewport::_on_settings_changed() {
