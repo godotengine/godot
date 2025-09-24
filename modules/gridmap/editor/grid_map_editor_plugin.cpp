@@ -186,7 +186,7 @@ void GridMapEditor::_menu_option(int p_option) {
 
 		} break;
 		case MENU_OPTION_GRIDMAP_SETTINGS: {
-			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size() + Size2(50, 50) * EDSCALE);
+			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size() + vec2_from_scalar(50 * EDSCALE));
 		} break;
 	}
 }

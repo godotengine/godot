@@ -1355,7 +1355,8 @@ void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 
 			}
 			Rect2 icon_region = p_region;
 			icon_region.position += Point2(padding, padding);
-			icon_region.size -= Point2(padding, padding) * 2;
+
+			icon_region.size -= vec2_from_scalar(padding * 2);
 			theme_cache.breakpoint_icon->draw_rect(ci, icon_region, false, use_color);
 		}
 	}

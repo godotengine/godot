@@ -562,7 +562,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		Vector3 world_position = p_world_position;
 		world_position.y *= y_mult;
 		int32_t probe_cells = cascade_size / SDFGI::PROBE_DIVISOR;
-		Vector3 probe_size = Vector3(1, 1, 1) * cascade.cell_size * probe_cells;
+		Vector3 probe_size = vec3_from_scalar(cascade.cell_size * probe_cells);
 		Vector3i probe_pos = Vector3i((world_position / probe_size + Vector3(0.5, 0.5, 0.5)).floor());
 		cascade.position = probe_pos * probe_cells;
 
@@ -1192,7 +1192,7 @@ void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
 	for (SDFGI::Cascade &cascade : cascades) {
 		cascade.dirty_regions = Vector3i();
 
-		Vector3 probe_half_size = Vector3(1, 1, 1) * cascade.cell_size * float(cascade_size / SDFGI::PROBE_DIVISOR) * 0.5;
+		Vector3 probe_half_size = vec3_from_scalar(cascade.cell_size * float(cascade_size / SDFGI::PROBE_DIVISOR) * 0.5);
 		probe_half_size = Vector3(0, 0, 0);
 
 		Vector3 world_position = p_world_position;
@@ -1439,9 +1439,9 @@ int GI::SDFGI::get_pending_region_data(int p_region, Vector3i &r_local_offset, V
 		if (c.dirty_regions == SDFGI::Cascade::DIRTY_ALL) {
 			if (dirty_count == p_region) {
 				r_local_offset = Vector3i();
-				r_local_size = Vector3i(1, 1, 1) * cascade_size;
+				r_local_size = vec3i_from_scalar(cascade_size);
 
-				r_bounds.position = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + c.position)) * c.cell_size * Vector3(1, 1.0 / y_mult, 1);
+				r_bounds.position = Vector3((vec3i_from_scalar(-int32_t(cascade_size >> 1)) + c.position)) * c.cell_size * Vector3(1, 1.0 / y_mult, 1);
 				r_bounds.size = Vector3(r_local_size) * c.cell_size * Vector3(1, 1.0 / y_mult, 1);
 				return i;
 			}
@@ -1451,7 +1451,7 @@ int GI::SDFGI::get_pending_region_data(int p_region, Vector3i &r_local_offset, V
 				if (c.dirty_regions[j] != 0) {
 					if (dirty_count == p_region) {
 						Vector3i from = Vector3i(0, 0, 0);
-						Vector3i to = Vector3i(1, 1, 1) * cascade_size;
+						Vector3i to = vec3i_from_scalar(cascade_size);
 
 						if (c.dirty_regions[j] > 0) {
 							//fill from the beginning
@@ -1473,7 +1473,7 @@ int GI::SDFGI::get_pending_region_data(int p_region, Vector3i &r_local_offset, V
 						r_local_offset = from;
 						r_local_size = to - from;
 
-						r_bounds.position = Vector3(from + Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + c.position) * c.cell_size * Vector3(1, 1.0 / y_mult, 1);
+						r_bounds.position = Vector3(from + vec3i_from_scalar(-int32_t(cascade_size >> 1)) + c.position) * c.cell_size * Vector3(1, 1.0 / y_mult, 1);
 						r_bounds.size = Vector3(r_local_size) * c.cell_size * Vector3(1, 1.0 / y_mult, 1);
 
 						return i;
@@ -1493,7 +1493,7 @@ void GI::SDFGI::update_cascades() {
 	int32_t probe_divisor = cascade_size / SDFGI::PROBE_DIVISOR;
 
 	for (uint32_t i = 0; i < cascades.size(); i++) {
-		Vector3 pos = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cascades[i].position)) * cascades[i].cell_size;
+		Vector3 pos = Vector3((vec3i_from_scalar(-int32_t(cascade_size >> 1)) + cascades[i].position)) * cascades[i].cell_size;
 
 		cascade_data[i].offset[0] = pos.x;
 		cascade_data[i].offset[1] = pos.y;
@@ -1740,7 +1740,7 @@ void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, con
 
 	if (gi->sdfgi_debug_probe_dir != Vector3()) {
 		uint32_t cascade = 0;
-		Vector3 offset = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cascades[cascade].position)) * cascades[cascade].cell_size * Vector3(1.0, 1.0 / y_mult, 1.0);
+		Vector3 offset = Vector3((vec3i_from_scalar(-int32_t(cascade_size >> 1)) + cascades[cascade].position)) * cascades[cascade].cell_size * Vector3(1.0, 1.0 / y_mult, 1.0);
 		Vector3 probe_size = cascades[cascade].cell_size * (cascade_size / SDFGI::PROBE_DIVISOR) * Vector3(1.0, 1.0 / y_mult, 1.0);
 		Vector3 ray_from = gi->sdfgi_debug_probe_pos;
 		Vector3 ray_to = gi->sdfgi_debug_probe_pos + gi->sdfgi_debug_probe_dir * cascades[cascade].cell_size * Math::sqrt(3.0) * cascade_size;
@@ -1855,7 +1855,7 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 
 	for (uint32_t i = 0; i < sdfgi_data.max_cascades; i++) {
 		SDFGIData::ProbeCascadeData &c = sdfgi_data.cascades[i];
-		Vector3 pos = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cascades[i].position)) * cascades[i].cell_size;
+		Vector3 pos = Vector3((vec3i_from_scalar(-int32_t(cascade_size >> 1)) + cascades[i].position)) * cascades[i].cell_size;
 		Vector3 cam_origin = p_transform.origin;
 		cam_origin.y *= y_mult;
 		pos -= cam_origin; //make pos local to camera, to reduce numerical error
@@ -1928,8 +1928,8 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 		}
 
 		AABB cascade_aabb;
-		cascade_aabb.position = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cascade.position)) * cascade.cell_size;
-		cascade_aabb.size = Vector3(1, 1, 1) * cascade_size * cascade.cell_size;
+		cascade_aabb.position = Vector3((vec3i_from_scalar(-int32_t(cascade_size >> 1)) + cascade.position)) * cascade.cell_size;
+		cascade_aabb.size = vec3_from_scalar(cascade_size) * cascade.cell_size;
 
 		for (uint32_t j = 0; j < p_render_data->sdfgi_update_data->positional_light_count; j++) {
 			if (idx == SDFGI::MAX_DYNAMIC_LIGHTS) {
@@ -2314,7 +2314,7 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 				push_constant.occlusion_index = i;
 				RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::PreprocessPushConstant));
 
-				Vector3i groups = Vector3i(probe_size + 1, probe_size + 1, probe_size + 1) - offset; //if offset, it's one less probe per axis to compute
+				Vector3i groups = vec3i_from_scalar(probe_size + 1) - offset; //if offset, it's one less probe per axis to compute
 				RD::get_singleton()->compute_list_dispatch(compute_list, groups.x, groups.y, groups.z);
 			}
 			RD::get_singleton()->compute_list_add_barrier(compute_list);
@@ -2387,8 +2387,8 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 		{ //fill light buffer
 
 			AABB cascade_aabb;
-			cascade_aabb.position = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cc.position)) * cc.cell_size;
-			cascade_aabb.size = Vector3(1, 1, 1) * cascade_size * cc.cell_size;
+			cascade_aabb.position = Vector3((vec3i_from_scalar(-int32_t(cascade_size >> 1)) + cc.position)) * cc.cell_size;
+			cascade_aabb.size = vec3_from_scalar(cascade_size) * cc.cell_size;
 
 			int idx = 0;
 

@@ -405,7 +405,7 @@ Control *EditorDockManager::_close_window(WindowWrapper *p_wrapper) {
 void EditorDockManager::_open_dock_in_window(Control *p_dock, bool p_show_window, bool p_reset_size) {
 	ERR_FAIL_NULL(p_dock);
 
-	Size2 borders = Size2(4, 4) * EDSCALE;
+	Size2 borders = vec2_from_scalar(4 * EDSCALE);
 	// Remember size and position before removing it from the main window.
 	Size2 dock_size = p_dock->get_size() + borders * 2;
 	Point2 dock_screen_pos = p_dock->get_screen_position();

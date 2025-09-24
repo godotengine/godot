@@ -162,7 +162,7 @@ void GenericTilePolygonEditor::_base_control_draw() {
 
 	Transform2D xform;
 	xform.set_origin(base_control->get_size() / 2 + panning);
-	xform.set_scale(Vector2(editor_zoom_widget->get_zoom(), editor_zoom_widget->get_zoom()));
+	xform.set_scale(vec2_from_scalar(editor_zoom_widget->get_zoom()));
 	base_control->draw_set_transform_matrix(xform);
 
 	// Draw fill rect under texture region.
@@ -523,7 +523,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 
 	Transform2D xform;
 	xform.set_origin(base_control->get_size() / 2 + panning);
-	xform.set_scale(Vector2(editor_zoom_widget->get_zoom(), editor_zoom_widget->get_zoom()));
+	xform.set_scale(vec2_from_scalar(editor_zoom_widget->get_zoom()));
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
@@ -1280,11 +1280,11 @@ void TileDataDefaultEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2
 	if (value.get_type() == Variant::BOOL) {
 		Ref<Texture2D> texture = (bool)value ? tile_bool_checked : tile_bool_unchecked;
 		int size = MIN(tile_set->get_tile_size().x, tile_set->get_tile_size().y) / 3;
-		Rect2 rect = p_transform.xform(Rect2(Vector2(-size / 2, -size / 2) - texture_origin, Vector2(size, size)));
+		Rect2 rect = p_transform.xform(Rect2(vec2_from_scalar(-size / 2) - texture_origin, Vector2(size, size)));
 		p_canvas_item->draw_texture_rect(texture, rect);
 	} else if (value.get_type() == Variant::COLOR) {
 		int size = MIN(tile_set->get_tile_size().x, tile_set->get_tile_size().y) / 3;
-		Rect2 rect = p_transform.xform(Rect2(Vector2(-size / 2, -size / 2) - texture_origin, Vector2(size, size)));
+		Rect2 rect = p_transform.xform(Rect2(vec2_from_scalar(-size / 2) - texture_origin, Vector2(size, size)));
 		p_canvas_item->draw_rect(rect, value);
 	} else {
 		Ref<Font> font = TileSetEditor::get_singleton()->get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
@@ -1872,7 +1872,7 @@ void TileDataTerrainsEditor::_update_terrain_selector() {
 		terrain_property_editor->hide();
 	} else {
 		options.clear();
-		Vector<Vector<Ref<Texture2D>>> icons = tile_set->generate_terrains_icons(Size2(16, 16) * EDSCALE);
+		Vector<Vector<Ref<Texture2D>>> icons = tile_set->generate_terrains_icons(vec2_from_scalar(16 * EDSCALE));
 		options.push_back(String(TTR("No terrain")) + String(":-1"));
 		for (int i = 0; i < tile_set->get_terrains_count(terrain_set); i++) {
 			String name = tile_set->get_terrain_name(terrain_set, i);

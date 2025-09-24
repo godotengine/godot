@@ -429,7 +429,7 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Impor
 		if (p_options.has(SNAME("primitive/size"))) {
 			box->set_size(p_options[SNAME("primitive/size")].operator Vector3() * p_applied_root_scale);
 		} else {
-			box->set_size(Vector3(2, 2, 2) * p_applied_root_scale);
+			box->set_size(vec3_from_scalar(2 * p_applied_root_scale));
 		}
 
 		Vector<Ref<Shape3D>> shapes;

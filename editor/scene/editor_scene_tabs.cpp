@@ -450,14 +450,14 @@ EditorSceneTabs::EditorSceneTabs() {
 	add_child(tab_preview_anchor);
 
 	tab_preview_panel = memnew(Panel);
-	tab_preview_panel->set_size(Size2(100, 100) * EDSCALE);
+	tab_preview_panel->set_size(vec2_from_scalar(100 * EDSCALE));
 	tab_preview_panel->hide();
 	tab_preview_panel->set_self_modulate(Color(1, 1, 1, 0.7));
 	tab_preview_anchor->add_child(tab_preview_panel);
 
 	tab_preview = memnew(TextureRect);
 	tab_preview->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-	tab_preview->set_size(Size2(96, 96) * EDSCALE);
-	tab_preview->set_position(Point2(2, 2) * EDSCALE);
+	tab_preview->set_size(vec2_from_scalar(96 * EDSCALE));
+	tab_preview->set_position(vec2_from_scalar(2 * EDSCALE));
 	tab_preview_panel->add_child(tab_preview);
 }

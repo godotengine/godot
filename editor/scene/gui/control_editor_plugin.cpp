@@ -498,7 +498,7 @@ bool EditorInspectorPluginControl::parse_property(Object *p_object, const Varian
 // Toolbars controls.
 
 Size2 ControlEditorPopupButton::get_minimum_size() const {
-	Vector2 base_size = Vector2(26, 26) * EDSCALE;
+	Vector2 base_size = vec2_from_scalar(26 * EDSCALE);
 
 	if (arrow_icon.is_null()) {
 		return base_size;
@@ -580,7 +580,7 @@ void ControlEditorPresetPicker::_add_row_button(HBoxContainer *p_row, const int 
 	ERR_FAIL_COND(preset_buttons.has(p_preset));
 
 	Button *b = memnew(Button);
-	b->set_custom_minimum_size(Size2i(36, 36) * EDSCALE);
+	b->set_custom_minimum_size(vec2i_from_scalar(36 * EDSCALE));
 	b->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	b->set_tooltip_text(p_name);
 	b->set_flat(true);

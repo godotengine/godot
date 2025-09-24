@@ -156,7 +156,7 @@ void EditorPropertyRootMotion::_node_assign() {
 	}
 
 	filters->ensure_cursor_is_visible();
-	filter_dialog->popup_centered(Size2(500, 500) * EDSCALE);
+	filter_dialog->popup_centered(vec2_from_scalar(500 * EDSCALE));
 }
 
 void EditorPropertyRootMotion::_node_clear() {

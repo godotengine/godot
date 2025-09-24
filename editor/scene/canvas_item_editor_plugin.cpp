@@ -3092,14 +3092,14 @@ void CanvasItemEditor::_draw_rulers() {
 	// Subdivisions
 	int major_subdivision = 2;
 	Transform2D major_subdivide;
-	major_subdivide.scale(Size2(1.0 / major_subdivision, 1.0 / major_subdivision));
+	major_subdivide.scale(vec2_from_scalar(1.0 / major_subdivision));
 
 	int minor_subdivision = 5;
 	Transform2D minor_subdivide;
-	minor_subdivide.scale(Size2(1.0 / minor_subdivision, 1.0 / minor_subdivision));
+	minor_subdivide.scale(vec2_from_scalar(1.0 / minor_subdivision));
 
 	// First and last graduations to draw (in the ruler space)
-	Point2 first = (transform * ruler_transform * major_subdivide * minor_subdivide).affine_inverse().xform(Point2(ruler_width_scaled, ruler_width_scaled));
+	Point2 first = (transform * ruler_transform * major_subdivide * minor_subdivide).affine_inverse().xform(vec2_from_scalar(ruler_width_scaled));
 	Point2 last = (transform * ruler_transform * major_subdivide * minor_subdivide).affine_inverse().xform(viewport->get_size());
 
 	// Draw top ruler
@@ -3142,7 +3142,7 @@ void CanvasItemEditor::_draw_rulers() {
 	}
 
 	// Draw the top left corner
-	viewport->draw_rect(Rect2(Point2(), Size2(ruler_width_scaled, ruler_width_scaled)), graduation_color);
+	viewport->draw_rect(Rect2(Point2(), vec2_from_scalar(ruler_width_scaled)), graduation_color);
 }
 
 void CanvasItemEditor::_draw_grid() {
@@ -3920,7 +3920,7 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 
 void CanvasItemEditor::_draw_hover() {
 	List<Rect2> previous_rects;
-	Vector2 icon_size = Vector2(1, 1) * get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+	Vector2 icon_size = vec2_from_scalar(get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 
 	for (int i = 0; i < hovering_results.size(); i++) {
 		Ref<Texture2D> node_icon = hovering_results[i].icon;
@@ -3979,7 +3979,7 @@ void CanvasItemEditor::_draw_message() {
 			case DRAG_SCALE_X:
 			case DRAG_SCALE_Y:
 			case DRAG_SCALE_BOTH: {
-				Vector2 original_scale = (Math::is_zero_approx(original_transform.get_scale().x) || Math::is_zero_approx(original_transform.get_scale().y)) ? Vector2(CMP_EPSILON, CMP_EPSILON) : original_transform.get_scale();
+				Vector2 original_scale = (Math::is_zero_approx(original_transform.get_scale().x) || Math::is_zero_approx(original_transform.get_scale().y)) ? vec2_from_scalar(CMP_EPSILON) : original_transform.get_scale();
 				Vector2 delta = current_transform.get_scale() / original_scale;
 				if (drag_type == DRAG_SCALE_BOTH) {
 					message = TTR("Scaling:") + String::utf8(" ×(") + FORMAT(delta.x) + ", " + FORMAT(delta.y) + ")";
@@ -4319,7 +4319,7 @@ void CanvasItemEditor::_update_scrollbars() {
 
 	// Move the zoom buttons.
 	Point2 controls_vb_begin = Point2(5, 5);
-	controls_vb_begin += (show_rulers) ? Point2(ruler_width_scaled, ruler_width_scaled) : Point2();
+	controls_vb_begin += (show_rulers) ? vec2_from_scalar(ruler_width_scaled) : Point2();
 	controls_vb->set_begin(controls_vb_begin);
 
 	Size2 hmin = h_scroll->get_minimum_size();

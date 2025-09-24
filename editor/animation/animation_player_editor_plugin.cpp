@@ -779,7 +779,7 @@ void AnimationPlayerEditor::_edit_animation_blend() {
 		return;
 	}
 
-	blend_editor.dialog->popup_centered(Size2(400, 400) * EDSCALE);
+	blend_editor.dialog->popup_centered(vec2_from_scalar(400 * EDSCALE));
 	_update_animation_blend();
 }
 

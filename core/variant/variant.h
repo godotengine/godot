@@ -995,3 +995,23 @@ Array::ConstIterator &Array::ConstIterator::operator--() {
 // Zero-constructing Variant results in NULL.
 template <>
 struct is_zero_constructible<Variant> : std::true_type {};
+
+// Vector from scalar helpers.
+_ALWAYS_INLINE_ Vector2 vec2_from_scalar(real_t p_scalar) {
+	return Vector2(p_scalar, p_scalar);
+}
+_ALWAYS_INLINE_ Vector2i vec2i_from_scalar(int32_t p_scalar) {
+	return Vector2i(p_scalar, p_scalar);
+}
+_ALWAYS_INLINE_ Vector3 vec3_from_scalar(real_t p_scalar) {
+	return Vector3(p_scalar, p_scalar, p_scalar);
+}
+_ALWAYS_INLINE_ Vector3i vec3i_from_scalar(int32_t p_scalar) {
+	return Vector3i(p_scalar, p_scalar, p_scalar);
+}
+_ALWAYS_INLINE_ Vector4 vec4_from_scalar(real_t p_scalar) {
+	return Vector4(p_scalar, p_scalar, p_scalar, p_scalar);
+}
+_ALWAYS_INLINE_ Vector4i vec4i_from_scalar(int32_t p_scalar) {
+	return Vector4i(p_scalar, p_scalar, p_scalar, p_scalar);
+}

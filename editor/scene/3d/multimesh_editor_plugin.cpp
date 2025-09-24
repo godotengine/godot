@@ -210,7 +210,7 @@ void MultiMeshEditor::_populate() {
 		xform.basis = post_xform * xform.basis;
 		//xform.basis.orthonormalize();
 
-		xform.basis.scale(Vector3(1, 1, 1) * (_scale + Math::random(-_scale_random, _scale_random)));
+		xform.basis.scale(vec3_from_scalar(_scale + Math::random(-_scale_random, _scale_random)));
 
 		multimesh->set_instance_transform(i, xform);
 	}
