@@ -6303,6 +6303,10 @@ bool EditorNode::is_distraction_free_mode_enabled() const {
 	return distraction_free->is_pressed();
 }
 
+void EditorNode::set_center_split_offset(int p_offset) {
+	center_split->set_split_offset(p_offset);
+}
+
 Dictionary EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
 	Control *drag_control = memnew(Control);
 	TextureRect *drag_preview = memnew(TextureRect);
