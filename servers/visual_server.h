@@ -457,6 +457,13 @@ public:
 		LIGHT_PARAM_MAX
 	};
 
+	enum LightBlobShadowParam {
+		LIGHT_BLOB_SHADOW_PARAM_RANGE_HARDNESS,
+		LIGHT_BLOB_SHADOW_PARAM_RANGE_MAX,
+		LIGHT_BLOB_SHADOW_PARAM_INTENSITY,
+		LIGHT_BLOB_SHADOW_PARAM_MAX
+	};
+
 	virtual RID directional_light_create() = 0;
 	virtual RID omni_light_create() = 0;
 	virtual RID spot_light_create() = 0;
@@ -635,6 +642,7 @@ public:
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far) = 0;
 	virtual void camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far) = 0;
 	virtual void camera_set_transform(RID p_camera, const Transform &p_transform) = 0;
+	virtual void camera_set_blob_focus_position(RID p_camera, const Vector3 &p_pos) = 0;
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers) = 0;
 	virtual void camera_set_environment(RID p_camera, RID p_env) = 0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
@@ -892,6 +900,24 @@ public:
 	virtual void instance_set_exterior(RID p_instance, bool p_enabled) = 0;
 
 	virtual void instance_set_extra_visibility_margin(RID p_instance, real_t p_margin) = 0;
+
+	/* BLOB SHADOWS API */
+	virtual RID capsule_shadow_create() = 0;
+	virtual void capsule_shadow_update(RID p_blob, const Vector3 &p_occluder_a_pos, real_t p_occluder_a_radius, const Vector3 &p_occluder_b_pos, real_t p_occluder_b_radius) = 0;
+
+	virtual RID blob_shadow_create() = 0;
+	virtual void blob_shadow_update(RID p_blob, const Vector3 &p_occluder_pos, real_t p_occluder_radius) = 0;
+
+	virtual void blob_shadows_set_range(real_t p_value) = 0;
+	virtual void blob_shadows_set_gamma(real_t p_value) = 0;
+	virtual void blob_shadows_set_intensity(real_t p_value) = 0;
+
+	virtual RID blob_light_create() = 0;
+	virtual void blob_light_update(RID p_blob_light, const Transform &p_global_transform) = 0;
+	virtual void blob_light_set_param(RID p_blob_light, VisualServer::LightBlobShadowParam p_param, real_t p_value) = 0;
+	virtual void blob_light_set_light_param(RID p_blob_light, VisualServer::LightParam p_param, real_t p_value) = 0;
+	virtual void blob_light_set_type(RID p_blob_light, VisualServer::LightType p_type) = 0;
+	virtual void blob_light_set_visible(RID p_blob_light, bool p_visible) = 0;
 
 	/* PORTALS API */
 
@@ -1247,6 +1273,7 @@ VARIANT_ENUM_CAST(VisualServer::PrimitiveType);
 VARIANT_ENUM_CAST(VisualServer::BlendShapeMode);
 VARIANT_ENUM_CAST(VisualServer::LightType);
 VARIANT_ENUM_CAST(VisualServer::LightParam);
+VARIANT_ENUM_CAST(VisualServer::LightBlobShadowParam);
 VARIANT_ENUM_CAST(VisualServer::ViewportUpdateMode);
 VARIANT_ENUM_CAST(VisualServer::ViewportClearMode);
 VARIANT_ENUM_CAST(VisualServer::ViewportMSAA);

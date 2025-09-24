@@ -38,11 +38,36 @@
 				Sets margin size, where black bars (or images, if [method black_bars_set_images] was used) are rendered.
 			</description>
 		</method>
+		<method name="blob_shadows_set_gamma">
+			<return type="void" />
+			<argument index="0" name="gamma" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="blob_shadows_set_intensity">
+			<return type="void" />
+			<argument index="0" name="intensity" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="blob_shadows_set_range">
+			<return type="void" />
+			<argument index="0" name="range" type="float" />
+			<description>
+			</description>
+		</method>
 		<method name="camera_create">
 			<return type="RID" />
 			<description>
 				Creates a camera and adds it to the VisualServer. It can be accessed with the RID that is returned. This RID will be used in all [code]camera_*[/code] VisualServer functions.
 				Once finished with your RID, you will want to free the RID using the VisualServer's [method free_rid] static method.
+			</description>
+		</method>
+		<method name="camera_set_blob_focus_position">
+			<return type="void" />
+			<argument index="0" name="camera" type="RID" />
+			<argument index="1" name="position" type="Vector3" />
+			<description>
 			</description>
 		</method>
 		<method name="camera_set_cull_mask">

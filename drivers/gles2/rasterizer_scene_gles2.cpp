@@ -2273,6 +2273,10 @@ void RasterizerSceneGLES2::_setup_refprobes(ReflectionProbeInstance *p_refprobe1
 }
 
 void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements, int p_element_count, const Transform &p_view_transform, const CameraMatrix &p_projection, const int p_eye, RID p_shadow_atlas, Environment *p_env, GLuint p_base_env, float p_shadow_bias, float p_shadow_normal_bias, bool p_reverse_cull, bool p_alpha_pass, bool p_shadow) {
+	if (!p_element_count) {
+		return;
+	}
+
 	ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
 
 	Vector2 viewport_size = state.viewport_size;
@@ -2338,6 +2342,8 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 	bool prev_use_lightmap_capture = false;
 
 	storage->info.render.draw_call_count += p_element_count;
+
+	const AABB *instance_aabb = nullptr;
 
 	for (int i = 0; i < p_element_count; i++) {
 		RenderList::Element *e = p_elements[i];
@@ -2527,6 +2533,15 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 			rebind = true;
 		}
 
+		// Setup blob shadows
+		bool blob_shadows = VSG::scene->are_blob_shadows_active() && !material->shader->spatial.unshaded && !material->shader->spatial.no_blob_shadows && !depth_prepass;
+		//blob_shadows = false;
+		if (blob_shadows) {
+			VisualServerScene::Instance *instance = (VisualServerScene::Instance *)(e->instance);
+			instance_aabb = &instance->transformed_aabb;
+		}
+		state.scene_shader.set_conditional(SceneShaderGLES2::USE_BLOB_SHADOWS, blob_shadows);
+
 		RasterizerStorageGLES2::Skeleton *skeleton = storage->skeleton_owner.getornull(e->instance->skeleton);
 
 		if (skeleton != prev_skeleton) {
@@ -2665,6 +2680,37 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 		if (use_lightmap_capture) { //this is per instance, must be set always if present
 			glUniform4fv(state.scene_shader.get_uniform_location(SceneShaderGLES2::LIGHTMAP_CAPTURES), 12, (const GLfloat *)e->instance->lightmap_capture_data.ptr());
+		}
+
+		if (blob_shadows) {
+			const int32_t max_casters = 128;
+			const int32_t blob_data_units = max_casters * 4;
+			float blob_data_casters[blob_data_units] = {};
+			float blob_data_lights[blob_data_units] = {};
+
+			const int32_t capsule_data_units = blob_data_units * 2;
+			float capsule_data_casters[capsule_data_units] = {};
+			float capsule_data_lights[blob_data_units] = {};
+
+			uint32_t num_blob_casters = VSG::scene->blob_shadows_fill_background_uniforms(*instance_aabb, blob_data_casters, blob_data_lights, max_casters);
+			uint32_t num_capsule_casters = VSG::scene->capsule_shadows_fill_background_uniforms(*instance_aabb, capsule_data_casters, capsule_data_lights, max_casters);
+
+			if (num_blob_casters || num_capsule_casters) {
+				if (num_blob_casters) {
+					glUniform4fv(state.scene_shader.get_uniform_location(SceneShaderGLES2::SPHERE_DATA_CASTERS), num_blob_casters, (const GLfloat *)blob_data_casters);
+					glUniform4fv(state.scene_shader.get_uniform_location(SceneShaderGLES2::SPHERE_DATA_LIGHTS), num_blob_casters, (const GLfloat *)blob_data_lights);
+				}
+
+				if (num_capsule_casters) {
+					glUniform4fv(state.scene_shader.get_uniform_location(SceneShaderGLES2::CAPSULE_DATA_CASTERS), num_capsule_casters * 2, (const GLfloat *)capsule_data_casters);
+					glUniform4fv(state.scene_shader.get_uniform_location(SceneShaderGLES2::CAPSULE_DATA_LIGHTS), num_capsule_casters, (const GLfloat *)capsule_data_lights);
+				}
+
+				glUniform2i(state.scene_shader.get_uniform_location(SceneShaderGLES2::SPHERE_CAPSULE_NUM_CASTERS), num_blob_casters, num_capsule_casters);
+				glUniform2f(state.scene_shader.get_uniform_location(SceneShaderGLES2::BLOB_RANGE_AND_GAMMA), VSG::scene->blob_shadows_get_range(), VSG::scene->blob_shadows_get_gamma());
+			} else {
+				glUniform2i(state.scene_shader.get_uniform_location(SceneShaderGLES2::SPHERE_CAPSULE_NUM_CASTERS), 0, 0);
+			}
 		}
 
 		_render_geometry(e);
