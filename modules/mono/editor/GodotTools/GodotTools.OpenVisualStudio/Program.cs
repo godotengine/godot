@@ -46,19 +46,24 @@ namespace GodotTools.OpenVisualStudio
 
             if (dte == null)
             {
-                // Open a new instance
-                dte = TryVisualStudioLaunch("VisualStudio.DTE.17.0");
+                // Try starting from the higher version
+                string[] vsVersions = {
+                    "VisualStudio.DTE.18.0",
+                    "VisualStudio.DTE.17.0",
+                    "VisualStudio.DTE.16.0"
+                };
+
+                foreach (string vsVersion in vsVersions)
+                {
+                    dte = TryVisualStudioLaunch(vsVersion);
+                    if (dte != null)
+                        break;
+                }
 
                 if (dte == null)
                 {
-                    // Launch of VS 2022 failed, fallback to 2019
-                    dte = TryVisualStudioLaunch("VisualStudio.DTE.16.0");
-
-                    if (dte == null)
-                    {
-                        Console.Error.WriteLine("Visual Studio not found");
-                        return 1;
-                    }
+                    Console.Error.WriteLine("Visual Studio not found");
+                    return 1;
                 }
 
                 dte.UserControl = true;
@@ -189,7 +194,7 @@ namespace GodotTools.OpenVisualStudio
                         continue;
 
                     // The digits after the colon are the process ID
-                    if (!Regex.IsMatch(ppszDisplayName, "!VisualStudio.DTE.1[6-7].0:[0-9]"))
+                    if (!Regex.IsMatch(ppszDisplayName, "!VisualStudio.DTE.1[6-8].0:[0-9]"))
                         continue;
 
                     if (pprot.GetObject(moniker[0], out object ppunkObject) == 0)
@@ -281,13 +286,13 @@ namespace GodotTools.OpenVisualStudio
         private interface IOleMessageFilter
         {
             [PreserveSig]
-            int HandleInComingCall(int dwCallType, IntPtr hTaskCaller, int dwTickCount, IntPtr lpInterfaceInfo);
+            public int HandleInComingCall(int dwCallType, IntPtr hTaskCaller, int dwTickCount, IntPtr lpInterfaceInfo);
 
             [PreserveSig]
-            int RetryRejectedCall(IntPtr hTaskCallee, int dwTickCount, int dwRejectType);
+            public int RetryRejectedCall(IntPtr hTaskCallee, int dwTickCount, int dwRejectType);
 
             [PreserveSig]
-            int MessagePending(IntPtr hTaskCallee, int dwTickCount, int dwPendingType);
+            public int MessagePending(IntPtr hTaskCallee, int dwTickCount, int dwPendingType);
         }
 
         #endregion
