@@ -277,7 +277,7 @@
 			<param index="0" name="right" type="Callable" />
 			<description>
 				Returns [code]true[/code] if both [Callable]s invoke the same custom target.
-				[b]Note:[/b] Beware that when comparing the same [Callable] with arguments bound via [method bind], the comparison only compares the number of bound arguments; thus, keep in mind the following:
+				[b]Note:[/b] Beware that when comparing the same [Callable] with arguments bound via [method bind], the comparison only compares the number of bound arguments and not the arguments themselves; thus, keep in mind the following:
 				[codeblock]
 				print.bind("banana") == print.bind("apple") // true
 				[/codeblock]				
