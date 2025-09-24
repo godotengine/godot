@@ -679,6 +679,8 @@ void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
 		return;
 	}
 
+	wayland_thread.window_set_idle_inhibition(MAIN_WINDOW_ID, p_enable);
+
 #ifdef DBUS_ENABLED
 	if (screensaver) {
 		if (p_enable) {
