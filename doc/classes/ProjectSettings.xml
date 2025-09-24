@@ -54,6 +54,13 @@
 				[b]Note:[/b] Setting [code]"usage"[/code] for the property is not supported. Use [method set_as_basic], [method set_restart_if_changed], and [method set_as_internal] to modify usage flags.
 			</description>
 		</method>
+		<method name="add_shader_global_parameter">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="type" type="int" enum="RenderingServer.GlobalShaderParameterType" />
+			<param index="2" name="value" type="Variant" />
+			<description>
+				Add a new global shader uniform to project settings. [param name] must not be a shader language keyword or the word [code]"script"[/code]. Note that shader parameter names are case-sensitive.
 		<method name="check_changed_settings_in_group" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="setting_prefix" type="String" />
@@ -185,6 +192,13 @@
 				Returns the localized path (starting with [code]res://[/code]) corresponding to the absolute, native OS [param path]. See also [method globalize_path].
 			</description>
 		</method>
+		<method name="remove_shader_global_parameter">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes the global shader uniform specified by [param name]. Prints an error if the parameter specifgied by [param name] doesn't exist.
+			</description>
+		</method>
 		<method name="save">
 			<return type="int" enum="Error" />
 			<description>
@@ -268,6 +282,14 @@
 				[/csharp]
 				[/codeblocks]
 				This can also be used to erase custom project settings. To do this change the setting value to [code]null[/code].
+			</description>
+		</method>
+		<method name="set_shader_global_parameter">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Sets the value of the global shader parameter specified by [param name]. Prints an error if the parameter specified by [param name] doesn't exist. See also [method add_shader_global_parameter].
 			</description>
 		</method>
 	</methods>
