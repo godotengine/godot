@@ -330,7 +330,7 @@ ProjectListItemControl::ProjectListItemControl() {
 
 	favorite_button = memnew(TextureButton);
 	favorite_button->set_name("FavoriteButton");
-	favorite_button->set_tooltip_text(TTRC("Add to favorites"));
+	favorite_button->set_tooltip_text(TTRC("Toggle Favorite"));
 	favorite_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
 	// This makes the project's "hover" style display correctly when hovering the favorite icon.
 	favorite_button->set_mouse_filter(MOUSE_FILTER_PASS);
