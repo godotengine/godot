@@ -101,7 +101,7 @@ void RenderingShaderContainerMetal::_initialize_toolchain_properties() {
 			break;
 	}
 
-	Vector<String> parts{ "echo", R"("")", "|", "/usr/bin/xcrun", "-sdk", sdk, "metal", "-E", "-dM", "-x", "metal", "-", "|", "grep", "-E", R"(\"__METAL_VERSION__|__ENVIRONMENT_OS\")" };
+	Vector<String> parts{ "echo", R"("")", "|", "/usr/bin/xcrun", "-sdk", sdk, "metal", "-E", "-dM", "-x", "metal" };
 
 	// Compile metal shaders for the minimum supported target instead of the host machine
 	if (min_os_version.is_valid()) {
@@ -117,7 +117,8 @@ void RenderingShaderContainerMetal::_initialize_toolchain_properties() {
 		}
 	}
 
-	String s = " ";
+	parts.append_array({ "-", "|", "grep", "-E", R"(\"__METAL_VERSION__|__ENVIRONMENT_OS\")" });
+
 	List<String> args = { "-c", String(" ").join(parts) };
 
 	String r_pipe;
@@ -147,8 +148,6 @@ void RenderingShaderContainerMetal::_initialize_toolchain_properties() {
 			break;
 		}
 	}
-
-	return;
 }
 
 Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, const StageData &p_stage_data, Vector<uint8_t> &r_binary_data) {
