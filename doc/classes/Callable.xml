@@ -93,7 +93,7 @@
 			<return type="Callable" />
 			<description>
 				Returns a copy of this [Callable] with one or more arguments bound. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call]. See also [method unbind].
-				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left. Also, keep in mind that the returned [Callable] is not considered strictly unique, see [operator ==].
+				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left. Also, keep in mind that the returned [Callable] is not considered strictly unique, see [operator operator ==].
 			</description>
 		</method>
 		<method name="bindv">
