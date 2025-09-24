@@ -233,7 +233,7 @@ bool ResourceSaver::add_custom_resource_format_saver(const String &script_path) 
 
 	Ref<Resource> res = ResourceLoader::load(script_path);
 	ERR_FAIL_COND_V(res.is_null(), false);
-	ERR_FAIL_COND_V(!res->is_class("Script"), false);
+	ERR_FAIL_COND_V(!res->derives_from<Script>(), false);
 
 	Ref<Script> s = res;
 	StringName ibt = s->get_instance_base_type();

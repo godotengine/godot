@@ -1113,7 +1113,7 @@ void Node3DEditorViewport::_select_region() {
 		}
 
 		// Replace the node by the group if grouped
-		if (node->is_class("Node3D")) {
+		if (node->derives_from<Node3D>()) {
 			Node3D *sel = Object::cast_to<Node3D>(node);
 			while (node && node != EditorNode::get_singleton()->get_edited_scene()->get_parent()) {
 				Node3D *selected_tmp = Object::cast_to<Node3D>(node);
@@ -10011,7 +10011,7 @@ void Node3DEditorPlugin::edit(Object *p_object) {
 }
 
 bool Node3DEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Node3D");
+	return p_object->derives_from<Node3D>();
 }
 
 Dictionary Node3DEditorPlugin::get_state() const {

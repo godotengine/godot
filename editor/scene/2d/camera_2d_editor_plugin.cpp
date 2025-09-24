@@ -316,7 +316,7 @@ void Camera2DEditorPlugin::edit(Object *p_object) {
 }
 
 bool Camera2DEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Camera2D");
+	return p_object->derives_from<Camera2D>();
 }
 
 void Camera2DEditorPlugin::make_visible(bool p_visible) {

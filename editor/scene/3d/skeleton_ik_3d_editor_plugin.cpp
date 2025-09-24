@@ -62,7 +62,7 @@ void SkeletonIK3DEditorPlugin::edit(Object *p_object) {
 }
 
 bool SkeletonIK3DEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("SkeletonIK3D");
+	return p_object->derives_from<SkeletonIK3D>();
 }
 
 void SkeletonIK3DEditorPlugin::make_visible(bool p_visible) {
