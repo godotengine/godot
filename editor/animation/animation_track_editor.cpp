@@ -2155,7 +2155,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (animation.is_null()) {
+			if (animation.is_null() || animation->get_track_count() == 0) {
 				return;
 			}
 			ERR_FAIL_INDEX(track, animation->get_track_count());
