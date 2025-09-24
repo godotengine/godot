@@ -56,6 +56,8 @@ class OpenXRExtensionWrapper : public Object {
 protected:
 	static void _bind_methods();
 
+	Ref<OpenXRAPIExtension> openxr_api_extension;
+
 public:
 	// `get_requested_extensions` should return a list of OpenXR extensions related to this extension.
 	// If the bool * is a nullptr this extension is mandatory
@@ -180,8 +182,8 @@ public:
 
 	GDVIRTUAL1R(bool, _on_event_polled, GDExtensionConstPtr<void>);
 
-	OpenXRExtensionWrapper() = default;
-	virtual ~OpenXRExtensionWrapper() = default;
+	OpenXRExtensionWrapper();
+	virtual ~OpenXRExtensionWrapper() override;
 };
 
 // `OpenXRGraphicsExtensionWrapper` implements specific logic for each supported graphics API.
