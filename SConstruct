@@ -264,6 +264,14 @@ opts.Add(
         True,
     )
 )
+opts.Add(
+    EnumVariable(
+        "library_type",
+        "Build library type",
+        "executable",
+        ("executable", "static_library", "shared_library"),
+    )
+)
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -347,6 +355,13 @@ if not env["platform"]:
 
     if env["platform"]:
         print(f"Automatically detected platform: {env['platform']}")
+
+# Library Support
+if env["library_type"] != "executable":
+    if env["platform"] not in ["linuxbsd", "macos", "windows"]:
+        print_error(f"Library builds not yet supported for {env['platform']}")
+        Exit(255)
+    env.Append(CPPDEFINES=["LIBGODOT_ENABLED"])
 
 # Deprecated aliases kept for compatibility.
 if env["platform"] in compatibility_platform_aliases:
