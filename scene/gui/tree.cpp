@@ -150,6 +150,7 @@ void TreeItem::_change_tree(Tree *p_tree) {
 			tree->edited_item = nullptr;
 			tree->pressing_for_editor = false;
 		}
+		tree->update_min_size_for_item_change();
 		tree->queue_accessibility_update();
 		tree->queue_redraw();
 	}
@@ -880,6 +881,7 @@ TreeItem *TreeItem::create_child(int p_index) {
 	TreeItem *ti = memnew(TreeItem(tree));
 	if (tree) {
 		ti->cells.resize(tree->columns.size());
+		tree->update_min_size_for_item_change();
 		tree->queue_accessibility_update();
 		tree->queue_redraw();
 	}
@@ -5208,6 +5210,7 @@ void Tree::item_changed(int p_column, TreeItem *p_item) {
 		}
 		p_item->accessibility_row_dirty = true;
 	}
+	update_min_size_for_item_change();
 	queue_accessibility_update();
 	queue_redraw();
 }
@@ -5259,6 +5262,14 @@ void Tree::item_deselected(int p_column, TreeItem *p_item) {
 	p_item->accessibility_row_dirty = true;
 	queue_accessibility_update();
 	queue_redraw();
+}
+
+void Tree::update_min_size_for_item_change() {
+	// Only need to update when any scroll bar is disabled because that's the only time item size
+	// affects tree size.
+	if (!h_scroll_enabled || !v_scroll_enabled) {
+		update_minimum_size();
+	}
 }
 
 void Tree::set_select_mode(SelectMode p_mode) {
@@ -5595,6 +5606,7 @@ void Tree::set_columns(int p_columns) {
 		selected_col = p_columns - 1;
 		selected_button = -1;
 	}
+	update_min_size_for_item_change();
 	queue_accessibility_update();
 	queue_redraw();
 }
