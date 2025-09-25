@@ -677,12 +677,10 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 		tf.texture_type = RD::TEXTURE_TYPE_3D;
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
 
-		Vector<Vector<uint8_t>> texdata;
-		texdata.resize(1);
-		//grid and indices
+		// Grid and indices
 		tf.format = RD::DATA_FORMAT_R32G32_UINT;
-		texdata.write[0] = grid_indices.to_byte_array();
-		grid_texture = rd->texture_create(tf, RD::TextureView(), texdata);
+		Span<uint8_t> grid_indices_span = grid_indices.span().reinterpret<uint8_t>();
+		grid_texture = rd->texture_create(tf, RD::TextureView(), Span(&grid_indices_span, 1));
 	}
 }
 
@@ -1184,11 +1182,13 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	{ // create all textures
 
-		Vector<Vector<uint8_t>> albedo_data;
-		Vector<Vector<uint8_t>> emission_data;
+		LocalVector<Span<uint8_t>> albedo_data;
+		albedo_data.reserve(atlas_slices);
+		LocalVector<Span<uint8_t>> emission_data;
+		emission_data.reserve(atlas_slices);
 		for (int i = 0; i < atlas_slices; i++) {
-			albedo_data.push_back(albedo_images[i]->get_data());
-			emission_data.push_back(emission_images[i]->get_data());
+			albedo_data.push_back(albedo_images[i]->get_data_span());
+			emission_data.push_back(emission_images[i]->get_data_span());
 		}
 
 		RD::TextureFormat tf;
@@ -1258,9 +1258,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			tfp.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
 			tfp.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
 
-			Vector<Vector<uint8_t>> tdata;
-			tdata.push_back(panorama_tex->get_data());
-			light_environment_tex = rd->texture_create(tfp, RD::TextureView(), tdata);
+			Span<uint8_t> panorama_tex_span = panorama_tex->get_data_span();
+			light_environment_tex = rd->texture_create(tfp, RD::TextureView(), Span(&panorama_tex_span, 1));
 
 #ifdef DEBUG_TEXTURES
 			panorama_tex->save_exr("res://0_panorama.exr", false);

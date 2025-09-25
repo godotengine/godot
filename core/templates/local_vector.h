@@ -279,6 +279,13 @@ public:
 		}
 	}
 
+	void append_array(Span<T> p_span) {
+		reserve(size() + p_span.size());
+		for (U i = 0; i < p_span.size(); i++) {
+			memnew_placement(&data[count++], T(p_span[i]));
+		}
+	}
+
 	int64_t find(const T &p_val, int64_t p_from = 0) const {
 		if (p_from < 0) {
 			p_from = size() + p_from;
@@ -330,16 +337,6 @@ public:
 					w[i] = data[i];
 				}
 			}
-		}
-		return ret;
-	}
-
-	Vector<uint8_t> to_byte_array() const { //useful to pass stuff to gpu or variant
-		Vector<uint8_t> ret;
-		ret.resize(count * sizeof(T));
-		uint8_t *w = ret.ptrw();
-		if (w) {
-			memcpy(w, data, sizeof(T) * count);
 		}
 		return ret;
 	}
