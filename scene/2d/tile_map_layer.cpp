@@ -2391,9 +2391,9 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_constrain
 }
 
 HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_connect(const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains) const {
+	ERR_FAIL_COND_V(tile_set.is_null(), (HashMap<Vector2i, TileSet::TerrainsPattern>()));
+	ERR_FAIL_INDEX_V(p_terrain_set, tile_set->get_terrain_sets_count(), (HashMap<Vector2i, TileSet::TerrainsPattern>()));
 	HashMap<Vector2i, TileSet::TerrainsPattern> output;
-	ERR_FAIL_COND_V(tile_set.is_null(), output);
-	ERR_FAIL_INDEX_V(p_terrain_set, tile_set->get_terrain_sets_count(), output);
 
 	// Build list and set of tiles that can be modified (painted and their surroundings).
 	Vector<Vector2i> can_modify_list;
@@ -2491,14 +2491,13 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_connect(c
 	}
 
 	// Fill the terrains.
-	output = terrain_fill_constraints(can_modify_list, p_terrain_set, constraints);
-	return output;
+	return terrain_fill_constraints(can_modify_list, p_terrain_set, constraints);
 }
 
 HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_path(const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains) const {
+	ERR_FAIL_COND_V(tile_set.is_null(), (HashMap<Vector2i, TileSet::TerrainsPattern>()));
+	ERR_FAIL_INDEX_V(p_terrain_set, tile_set->get_terrain_sets_count(), (HashMap<Vector2i, TileSet::TerrainsPattern>()));
 	HashMap<Vector2i, TileSet::TerrainsPattern> output;
-	ERR_FAIL_COND_V(tile_set.is_null(), output);
-	ERR_FAIL_INDEX_V(p_terrain_set, tile_set->get_terrain_sets_count(), output);
 
 	// Make sure the path is correct and build the peering bit list while doing it.
 	Vector<TileSet::CellNeighbor> neighbor_list;
@@ -2564,14 +2563,13 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_path(cons
 	}
 
 	// Fill the terrains.
-	output = terrain_fill_constraints(can_modify_list, p_terrain_set, constraints);
-	return output;
+	return terrain_fill_constraints(can_modify_list, p_terrain_set, constraints);
 }
 
 HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_pattern(const Vector<Vector2i> &p_coords_array, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern, bool p_ignore_empty_terrains) const {
+	ERR_FAIL_COND_V(tile_set.is_null(), (HashMap<Vector2i, TileSet::TerrainsPattern>()));
+	ERR_FAIL_INDEX_V(p_terrain_set, tile_set->get_terrain_sets_count(), (HashMap<Vector2i, TileSet::TerrainsPattern>()));
 	HashMap<Vector2i, TileSet::TerrainsPattern> output;
-	ERR_FAIL_COND_V(tile_set.is_null(), output);
-	ERR_FAIL_INDEX_V(p_terrain_set, tile_set->get_terrain_sets_count(), output);
 
 	// Build list and set of tiles that can be modified (painted and their surroundings).
 	Vector<Vector2i> can_modify_list;
@@ -2616,8 +2614,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_pattern(c
 	}
 
 	// Fill the terrains.
-	output = terrain_fill_constraints(can_modify_list, p_terrain_set, constraints);
-	return output;
+	return terrain_fill_constraints(can_modify_list, p_terrain_set, constraints);
 }
 
 TileMapCell TileMapLayer::get_cell(const Vector2i &p_coords) const {
@@ -3596,10 +3593,9 @@ TileMapLayer::~TileMapLayer() {
 }
 
 HashMap<Vector2i, TileSet::CellNeighbor> TerrainConstraint::get_overlapping_coords_and_peering_bits() const {
+	ERR_FAIL_COND_V(is_center_bit(), (HashMap<Vector2i, TileSet::CellNeighbor>()));
+	ERR_FAIL_COND_V(tile_set.is_null(), (HashMap<Vector2i, TileSet::CellNeighbor>()));
 	HashMap<Vector2i, TileSet::CellNeighbor> output;
-
-	ERR_FAIL_COND_V(is_center_bit(), output);
-	ERR_FAIL_COND_V(tile_set.is_null(), output);
 
 	TileSet::TileShape shape = tile_set->get_tile_shape();
 	if (shape == TileSet::TILE_SHAPE_SQUARE) {
