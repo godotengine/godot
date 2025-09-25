@@ -34,6 +34,11 @@ configurations {
 }
 
 dependencies {
+    // Android instrumented test dependencies
+    androidTestImplementation "androidx.test.ext:junit:1.3.0"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.7.0"
+    androidTestImplementation "org.jetbrains.kotlin:kotlin-test:1.3.11"
+
     implementation "androidx.fragment:fragment:$versions.fragmentVersion"
     implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
 
@@ -114,6 +119,8 @@ android {
         targetSdkVersion getExportTargetSdkVersion()
 
         missingDimensionStrategy 'products', 'template'
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     lintOptions {
@@ -214,23 +221,26 @@ android {
     flavorDimensions 'edition'
 
     productFlavors {
+        // Product flavor for the standard (no .net support) builds.
         standard {
             getIsDefault().set(true)
         }
+
+        // Product flavor for the Mono (.net) builds.
         mono {}
+
+        // Product flavor used for running instrumented tests.
+        instrumented {
+            applicationIdSuffix ".instrumented"
+            versionNameSuffix "-instrumented"
+        }
     }
 
     sourceSets {
-        main {
-            manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src']
-            res.srcDirs = ['res']
-            aidl.srcDirs = ['aidl']
-            assets.srcDirs = ['assets']
-        }
-        debug.jniLibs.srcDirs = ['libs/debug', 'libs/debug/vulkan_validation_layers']
-        dev.jniLibs.srcDirs = ['libs/dev']
-        release.jniLibs.srcDirs = ['libs/release']
+        main.res.srcDirs += ['res']
+        debug.jniLibs.srcDirs += ['libs/debug', 'libs/debug/vulkan_validation_layers']
+        dev.jniLibs.srcDirs += ['libs/dev']
+        release.jniLibs.srcDirs += ['libs/release']
     }
 
     applicationVariants.all { variant ->
