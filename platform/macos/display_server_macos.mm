@@ -3029,6 +3029,10 @@ void DisplayServerMacOS::update_screen_parameters() {
 	}
 }
 
+bool DisplayServerMacOS::window_is_hdr_output_supported(WindowID p_window) const {
+	return true; // allenwp: temporary rebase hack
+}
+
 void DisplayServerMacOS::window_set_hdr_output_enabled(const bool p_enabled, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -3078,11 +3082,11 @@ bool DisplayServerMacOS::window_is_hdr_output_preferring_high_precision(WindowID
 	return false;
 }
 
-void DisplayServerMacOS::window_set_hdr_output_use_screen_luminance(const bool p_enabled, WindowID p_window) {
+void DisplayServerMacOS::window_set_hdr_output_auto_adjust_reference_luminance(const bool p_enabled, WindowID p_window) {
 	// Apple platforms only support using screen luminance
 }
 
-bool DisplayServerMacOS::window_is_hdr_output_using_screen_luminance(WindowID p_window) const {
+bool DisplayServerMacOS::window_is_hdr_output_auto_adjusting_reference_luminance(WindowID p_window) const {
 	ERR_FAIL_V_MSG(true, "Not implemented");
 }
 
@@ -3107,6 +3111,14 @@ float DisplayServerMacOS::window_get_hdr_output_reference_luminance(WindowID p_w
 	return 0.0f;
 }
 
+void DisplayServerMacOS::window_set_hdr_output_auto_adjust_max_luminance(const bool p_enabled, WindowID p_window) {
+	// Apple platforms only support using screen luminance
+}
+
+bool DisplayServerMacOS::window_is_hdr_output_auto_adjusting_max_luminance(WindowID p_window) const {
+	ERR_FAIL_V_MSG(true, "Not implemented");
+}
+
 void DisplayServerMacOS::window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window) {
 }
 
@@ -3119,6 +3131,12 @@ float DisplayServerMacOS::window_get_hdr_output_max_luminance(WindowID p_window)
 #endif
 
 	return 0.0f;
+}
+
+float DisplayServerMacOS::window_get_hdr_output_max_value(WindowID p_window) const {
+	// allenwp: temporary rebase hack (this should return 1.0 when HDR is disabled.
+	// Also, this whole function should probably be handled in a driver independent way.
+	return window_get_hdr_output_max_luminance(p_window) / window_get_hdr_output_reference_luminance(p_window);
 }
 
 int DisplayServerMacOS::accessibility_should_increase_contrast() const {

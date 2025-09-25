@@ -426,16 +426,23 @@ private:
 	void _update_hdr_output_for_window(WindowID p_window, const WindowData &p_window_data);
 
 public:
+	virtual bool window_is_hdr_output_supported(WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual void window_set_hdr_output_enabled(const bool p_enabled, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual bool window_is_hdr_output_enabled(WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual void window_set_hdr_output_prefer_high_precision(const bool p_enabled, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual bool window_is_hdr_output_preferring_high_precision(WindowID p_window = MAIN_WINDOW_ID) const override;
-	virtual void window_set_hdr_output_use_screen_luminance(const bool p_enabled, WindowID p_window = MAIN_WINDOW_ID) override;
-	virtual bool window_is_hdr_output_using_screen_luminance(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_hdr_output_auto_adjust_reference_luminance(const bool p_enabled, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_is_hdr_output_auto_adjusting_reference_luminance(WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual void window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual float window_get_hdr_output_reference_luminance(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_hdr_output_auto_adjust_max_luminance(const bool p_enabled, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_is_hdr_output_auto_adjusting_max_luminance(WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual void window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual float window_get_hdr_output_max_luminance(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual float window_get_hdr_output_max_value(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual bool window_maximize_on_title_dbl_click() const override;
 	virtual bool window_minimize_on_title_dbl_click() const override;

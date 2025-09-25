@@ -174,12 +174,12 @@ public:
 
 			if (hdr_output_prefer_high_precision) {
 				layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearDisplayP3);
-				r_color_space = RDD::COLOR_SPACE_SRGB_LINEAR;
+				r_color_space = RDD::COLOR_SPACE_REC709_LINEAR;
 				r_format = RDD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 				layer.pixelFormat = MTLPixelFormatRGBA16Float;
 			} else {
 				layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceDisplayP3_PQ);
-				r_color_space = RDD::COLOR_SPACE_HDR10_ST2084;
+				r_color_space = RDD::COLOR_SPACE_REC2020_NONLINEAR_ST2084;
 				r_format = RDD::DATA_FORMAT_A2R10G10B10_UNORM_PACK32;
 				layer.pixelFormat = MTLPixelFormatBGR10A2Unorm;
 			}
@@ -190,7 +190,7 @@ public:
 
 			r_format = RDD::DATA_FORMAT_B8G8R8A8_UNORM;
 			layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
-			r_color_space = RDD::COLOR_SPACE_SRGB_NONLINEAR;
+			r_color_space = RDD::COLOR_SPACE_REC709_NONLINEAR_SRGB;
 		}
 
 		return OK;
