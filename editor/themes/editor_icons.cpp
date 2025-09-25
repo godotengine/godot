@@ -117,7 +117,7 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	native_menu_icons.insert("History");
 
 	// The names of the icons to exclude from the standard color conversion.
-	HashSet<StringName> conversion_exceptions = EditorColorMap::get_color_conversion_exceptions();
+	const HashSet<StringName> &conversion_exceptions = EditorColorMap::get_color_conversion_exceptions();
 
 	// The names of the icons to exclude when adjusting for saturation.
 	HashSet<StringName> saturation_exceptions;
