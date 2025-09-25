@@ -44,7 +44,7 @@
 #include "scene/resources/3d/sphere_shape_3d.h"
 #include "scene/resources/3d/world_boundary_shape_3d.h"
 #include "scene/resources/navigation_mesh.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 Callable StaticBody3D::_navmesh_source_geometry_parsing_callback;
 RID StaticBody3D::_navmesh_source_geometry_parser;
