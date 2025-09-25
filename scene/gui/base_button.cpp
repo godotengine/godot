@@ -64,7 +64,7 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 	bool touchscreen_available = DisplayServer::get_singleton()->is_touchscreen_available();
 	if (touchscreen_available) {
 		Ref<InputEventScreenTouch> touch = p_event;
-        if (touch.is_valid()) {
+		if (touch.is_valid()) {
 			if (status.touch_index == -1) {
 				if (touch->is_pressed()) {
 					status.touch_index = touch->get_index();
@@ -73,11 +73,10 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 					status.hovering = status.pressing_inside;
 					on_action_event(p_event);
 				}
-			} 
-			else if (touch->get_index() == status.touch_index) {
+			} else if (touch->get_index() == status.touch_index) {
 				if (!touch->is_pressed()) {
 					status.touch_index = -1;
-					// problem between mouse (touch simulation) and touch 
+					// problem between mouse (touch simulation) and touch
 					// For mouse it should still be hovering when the position is on the button
 					// For touch it should not be hovering since the finger is up
 					// status.hovering = has_point(touch->get_position());
@@ -86,8 +85,8 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 		}
-	
-        Ref<InputEventScreenDrag> drag = p_event;
+
+		Ref<InputEventScreenDrag> drag = p_event;
 		if (drag.is_valid() && drag->get_index() == status.touch_index && status.press_attempt) {
 			bool last_press_inside = status.pressing_inside;
 			status.pressing_inside = has_point(drag->get_position());
