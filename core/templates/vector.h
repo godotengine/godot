@@ -189,6 +189,10 @@ public:
 	void operator=(const Vector &p_from) { _cowdata = p_from._cowdata; }
 	void operator=(Vector &&p_from) { _cowdata = std::move(p_from._cowdata); }
 
+	// Caution: This function exists mostly for the bindings / backwards compatibility.
+	//  In almost all cases, it was used to pass the data to some API in byte form.
+	//  In this case, use `span().reinterpret<uint8_t>()` instead, which won't create a copy
+	//  of the data, and is thus a lot faster.
 	Vector<uint8_t> to_byte_array() const {
 		Vector<uint8_t> ret;
 		if (is_empty()) {
