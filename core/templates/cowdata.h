@@ -76,6 +76,27 @@ private:
 
 	// internal helpers
 
+	static constexpr _FORCE_INLINE_ USize grow_capacity(USize p_previous_capacity) {
+		// 1.5x the given size.
+		// This ratio was chosen because it is close to the ideal growth rate of the golden ratio.
+		// See https://archive.ph/Z2R8w for details.
+		return MAX((USize)2, p_previous_capacity + ((1 + p_previous_capacity) >> 1));
+	}
+
+	static constexpr _FORCE_INLINE_ USize next_capacity(USize p_previous_capacity, USize p_size) {
+		if (p_previous_capacity < p_size) {
+			return MAX(grow_capacity(p_previous_capacity), p_size);
+		}
+		return p_previous_capacity;
+	}
+
+	static constexpr _FORCE_INLINE_ USize smaller_capacity(USize p_previous_capacity, USize p_size) {
+		if (p_size < p_previous_capacity >> 2) {
+			return grow_capacity(p_size);
+		}
+		return p_previous_capacity;
+	}
+
 	static _FORCE_INLINE_ T *_get_data_ptr(uint8_t *p_ptr) {
 		return (T *)(p_ptr + DATA_OFFSET);
 	}
@@ -95,34 +116,6 @@ private:
 		return (USize *)((uint8_t *)_ptr - DATA_OFFSET + CAPACITY_OFFSET);
 	}
 
-	_FORCE_INLINE_ static USize _get_alloc_size(USize p_elements) {
-		return next_power_of_2(p_elements * (USize)sizeof(T));
-	}
-
-	_FORCE_INLINE_ static bool _get_alloc_size_checked(USize p_elements, USize *out) {
-		if (unlikely(p_elements == 0)) {
-			*out = 0;
-			return true;
-		}
-#if defined(__GNUC__) && defined(IS_32_BIT)
-		USize o;
-		USize p;
-		if (__builtin_mul_overflow(p_elements, sizeof(T), &o)) {
-			*out = 0;
-			return false;
-		}
-		*out = next_power_of_2(o);
-		if (__builtin_add_overflow(o, static_cast<USize>(32), &p)) {
-			return false; // No longer allocated here.
-		}
-#else
-		// Speed is more important than correctness here, do the operations unchecked
-		// and hope for the best.
-		*out = _get_alloc_size(p_elements);
-#endif
-		return *out;
-	}
-
 	// Decrements the reference count. Deallocates the backing buffer if needed.
 	// After this function, _ptr is guaranteed to be NULL.
 	void _unref();
@@ -133,22 +126,21 @@ private:
 	/// It is the responsibility of the caller to:
 	/// - Ensure _ptr == nullptr
 	/// - Ensure p_capacity > 0
-	Error _alloc(USize p_capacity);
+	Error _alloc_exact(USize p_capacity);
 
 	/// Re-allocates the backing array to the given capacity.
 	/// It is the responsibility of the caller to:
 	/// - Ensure we are the only owner of the backing array
 	/// - Ensure p_capacity > 0
-	Error _realloc(USize p_capacity);
-	Error _realloc_bytes(USize p_bytes);
+	Error _realloc_exact(USize p_capacity);
 
 	/// Create a new buffer and copies over elements from the old buffer.
 	/// Elements are inserted first from the start, then a gap is left uninitialized, and then elements are inserted from the back.
 	/// It is the responsibility of the caller to:
 	/// - Construct elements in the gap.
 	/// - Ensure size() >= p_size_from_start and size() >= p_size_from_back.
-	/// - Ensure p_min_capacity is enough to hold all elements.
-	[[nodiscard]] Error _copy_to_new_buffer(USize p_min_capacity, USize p_size_from_start, USize p_gap, USize p_size_from_back);
+	/// - Ensure p_capacity is enough to hold all elements.
+	[[nodiscard]] Error _copy_to_new_buffer_exact(USize p_capacity, USize p_size_from_start, USize p_gap, USize p_size_from_back);
 
 	/// Ensure we are the only owners of the backing buffer.
 	[[nodiscard]] Error _copy_on_write();
@@ -206,7 +198,11 @@ public:
 	template <bool p_init = false>
 	Error resize(Size p_size);
 
+	template <bool p_exact = false>
 	Error reserve(USize p_min_capacity);
+	_FORCE_INLINE_ Error reserve_exact(USize p_capacity) {
+		return reserve<true>(p_capacity);
+	}
 
 	_FORCE_INLINE_ void remove_at(Size p_index);
 
@@ -285,18 +281,16 @@ void CowData<T>::remove_at(Size p_index) {
 		_ptr[p_index].~T();
 		memmove((void *)(_ptr + p_index), (void *)(_ptr + p_index + 1), (new_size - p_index) * sizeof(T));
 
-		// Shrink buffer if necessary.
-		const USize new_alloc_size = _get_alloc_size(new_size);
-		const USize prev_alloc_size = _get_alloc_size(capacity());
-		if (new_alloc_size < prev_alloc_size) {
-			Error err = _realloc_bytes(new_alloc_size);
+		// Shrink to fit if necessary.
+		const USize new_capacity = smaller_capacity(capacity(), new_size);
+		if (new_capacity < capacity()) {
+			Error err = _realloc_exact(new_capacity);
 			CRASH_COND(err);
 		}
-
 		*_get_size() = new_size;
 	} else {
 		// Remove by forking.
-		Error err = _copy_to_new_buffer(new_size, p_index, 0, new_size - p_index);
+		Error err = _copy_to_new_buffer_exact(smaller_capacity(capacity(), new_size), p_index, 0, new_size - p_index);
 		CRASH_COND(err);
 	}
 }
@@ -307,12 +301,12 @@ Error CowData<T>::insert(Size p_pos, const T &p_val) {
 	ERR_FAIL_INDEX_V(p_pos, new_size, ERR_INVALID_PARAMETER);
 
 	if (!_ptr) {
-		_alloc(1);
+		_alloc_exact(next_capacity(0, 1));
 		*_get_size() = 1;
 	} else if (_get_refcount()->get() == 1) {
 		if ((USize)new_size > capacity()) {
 			// Need to grow.
-			const Error error = _realloc(new_size);
+			const Error error = _realloc_exact(grow_capacity(capacity()));
 			if (error) {
 				return error;
 			}
@@ -324,8 +318,8 @@ Error CowData<T>::insert(Size p_pos, const T &p_val) {
 	} else {
 		// Insert new element by forking.
 		// Use the max of capacity and new_size, to ensure we don't accidentally shrink after reserve.
-		const USize new_capacity = MAX(capacity(), (USize)new_size);
-		const Error error = _copy_to_new_buffer(new_capacity, p_pos, 1, size() - p_pos);
+		const USize new_capacity = next_capacity(capacity(), new_size);
+		const Error error = _copy_to_new_buffer_exact(new_capacity, p_pos, 1, size() - p_pos);
 		if (error) {
 			return error;
 		}
@@ -343,13 +337,13 @@ Error CowData<T>::push_back(const T &p_val) {
 
 	if (!_ptr) {
 		// Grow by allocating.
-		_alloc(1);
+		_alloc_exact(next_capacity(0, 1));
 		*_get_size() = 1;
 	} else if (_get_refcount()->get() == 1) {
 		// Grow in-place.
 		if ((USize)new_size > capacity()) {
 			// Need to grow.
-			const Error error = _realloc(new_size);
+			const Error error = _realloc_exact(grow_capacity(capacity()));
 			if (error) {
 				return error;
 			}
@@ -359,8 +353,8 @@ Error CowData<T>::push_back(const T &p_val) {
 	} else {
 		// Grow by forking.
 		// Use the max of capacity and new_size, to ensure we don't accidentally shrink after reserve.
-		const USize new_capacity = MAX(capacity(), (USize)new_size);
-		const Error error = _copy_to_new_buffer(new_capacity, size(), 1, 0);
+		const USize new_capacity = next_capacity(capacity(), new_size);
+		const Error error = _copy_to_new_buffer_exact(new_capacity, size(), 1, 0);
 		if (error) {
 			return error;
 		}
@@ -373,25 +367,26 @@ Error CowData<T>::push_back(const T &p_val) {
 }
 
 template <typename T>
+template <bool p_exact>
 Error CowData<T>::reserve(USize p_min_capacity) {
-	if (p_min_capacity <= capacity()) {
+	USize new_capacity = p_exact ? p_min_capacity : next_capacity(capacity(), p_min_capacity);
+	if (new_capacity <= capacity()) {
 		if (p_min_capacity < (USize)size()) {
 			WARN_VERBOSE("reserve() called with a capacity smaller than the current size. This is likely a mistake.");
 		}
-
 		// No need to reserve more, we already have (at least) the right size.
 		return OK;
 	}
 
 	if (!_ptr) {
 		// Initial allocation.
-		return _alloc(p_min_capacity);
+		return _alloc_exact(new_capacity);
 	} else if (_get_refcount()->get() == 1) {
 		// Grow in-place.
-		return _realloc(p_min_capacity);
+		return _realloc_exact(new_capacity);
 	} else {
 		// Grow by forking.
-		return _copy_to_new_buffer(p_min_capacity, size(), 0, 0);
+		return _copy_to_new_buffer_exact(new_capacity, size(), 0, 0);
 	}
 }
 
@@ -411,21 +406,21 @@ Error CowData<T>::resize(Size p_size) {
 
 		if (!_ptr) {
 			// Grow by allocating.
-			const Error error = _alloc(p_size);
+			const Error error = _alloc_exact(next_capacity(0, p_size));
 			if (error) {
 				return error;
 			}
 		} else if (_get_refcount()->get() == 1) {
 			// Grow in-place.
 			if ((USize)p_size > capacity()) {
-				const Error error = _realloc(p_size);
+				const Error error = _realloc_exact(next_capacity(capacity(), p_size));
 				if (error) {
 					return error;
 				}
 			}
 		} else {
 			// Grow by forking.
-			const Error error = _copy_to_new_buffer(p_size, prev_size, 0, 0);
+			const Error error = _copy_to_new_buffer_exact(next_capacity(capacity(), p_size), prev_size, 0, 0);
 			if (error) {
 				return error;
 			}
@@ -449,10 +444,9 @@ Error CowData<T>::resize(Size p_size) {
 			destruct_arr_placement(_ptr + p_size, prev_size - p_size);
 
 			// Shrink buffer if necessary.
-			const USize new_alloc_size = _get_alloc_size(p_size);
-			const USize prev_alloc_size = _get_alloc_size(capacity());
-			if (new_alloc_size < prev_alloc_size) {
-				Error err = _realloc_bytes(new_alloc_size);
+			const USize new_capacity = smaller_capacity(capacity(), p_size);
+			if (new_capacity < capacity()) {
+				Error err = _realloc_exact(new_capacity);
 				CRASH_COND(err);
 			}
 
@@ -460,19 +454,17 @@ Error CowData<T>::resize(Size p_size) {
 			return OK;
 		} else {
 			// Shrink by forking.
-			return _copy_to_new_buffer(p_size, p_size, 0, 0);
+			const USize new_capacity = smaller_capacity(capacity(), p_size);
+			return _copy_to_new_buffer_exact(new_capacity, p_size, 0, 0);
 		}
 	}
 }
 
 template <typename T>
-Error CowData<T>::_alloc(USize p_min_capacity) {
+Error CowData<T>::_alloc_exact(USize p_capacity) {
 	DEV_ASSERT(!_ptr);
 
-	USize alloc_size;
-	ERR_FAIL_COND_V(!_get_alloc_size_checked(p_min_capacity, &alloc_size), ERR_OUT_OF_MEMORY);
-
-	uint8_t *mem_new = (uint8_t *)Memory::alloc_static(alloc_size + DATA_OFFSET, false);
+	uint8_t *mem_new = (uint8_t *)Memory::alloc_static(p_capacity * sizeof(T) + DATA_OFFSET, false);
 	ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
 
 	_ptr = _get_data_ptr(mem_new);
@@ -481,23 +473,16 @@ Error CowData<T>::_alloc(USize p_min_capacity) {
 	new (_get_refcount()) SafeNumeric<USize>(1);
 	*_get_size() = 0;
 	// The actual capacity is whatever we can stuff into the alloc_size.
-	*_get_capacity() = alloc_size / sizeof(T);
+	*_get_capacity() = p_capacity;
 
 	return OK;
 }
 
 template <typename T>
-Error CowData<T>::_realloc(USize p_min_capacity) {
-	USize bytes;
-	ERR_FAIL_COND_V(!_get_alloc_size_checked(p_min_capacity, &bytes), ERR_OUT_OF_MEMORY);
-	return _realloc_bytes(bytes);
-}
-
-template <typename T>
-Error CowData<T>::_realloc_bytes(USize p_bytes) {
+Error CowData<T>::_realloc_exact(USize p_capacity) {
 	DEV_ASSERT(_ptr);
 
-	uint8_t *mem_new = (uint8_t *)Memory::realloc_static(((uint8_t *)_ptr) - DATA_OFFSET, p_bytes + DATA_OFFSET, false);
+	uint8_t *mem_new = (uint8_t *)Memory::realloc_static(((uint8_t *)_ptr) - DATA_OFFSET, p_capacity * sizeof(T) + DATA_OFFSET, false);
 	ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
 
 	_ptr = _get_data_ptr(mem_new);
@@ -507,14 +492,14 @@ Error CowData<T>::_realloc_bytes(USize p_bytes) {
 	DEV_ASSERT(_get_refcount()->get() == 1);
 	// The size was also copied from the previous allocation.
 	// The actual capacity is whatever we can stuff into the alloc_size.
-	*_get_capacity() = p_bytes / sizeof(T);
+	*_get_capacity() = p_capacity;
 
 	return OK;
 }
 
 template <typename T>
-Error CowData<T>::_copy_to_new_buffer(USize p_min_capacity, USize p_size_from_start, USize p_gap, USize p_size_from_back) {
-	DEV_ASSERT(p_min_capacity >= p_size_from_start + p_size_from_back + p_gap);
+Error CowData<T>::_copy_to_new_buffer_exact(USize p_capacity, USize p_size_from_start, USize p_gap, USize p_size_from_back) {
+	DEV_ASSERT(p_capacity >= p_size_from_start + p_size_from_back + p_gap);
 	DEV_ASSERT((USize)size() >= p_size_from_start && (USize)size() >= p_size_from_back);
 
 	// Create a temporary CowData to hold ownership over our _ptr.
@@ -524,7 +509,7 @@ Error CowData<T>::_copy_to_new_buffer(USize p_min_capacity, USize p_size_from_st
 	prev_data._ptr = _ptr;
 	_ptr = nullptr;
 
-	const Error error = _alloc(p_min_capacity);
+	const Error error = _alloc_exact(p_capacity);
 	if (error) {
 		// On failure to allocate, recover the old data and return the error.
 		_ptr = prev_data._ptr;
@@ -551,7 +536,7 @@ Error CowData<T>::_copy_on_write() {
 	}
 
 	// Fork to become the only reference.
-	return _copy_to_new_buffer(capacity(), size(), 0, 0);
+	return _copy_to_new_buffer_exact(capacity(), size(), 0, 0);
 }
 
 template <typename T>
@@ -578,7 +563,7 @@ void CowData<T>::_ref(const CowData &p_from) {
 
 template <typename T>
 CowData<T>::CowData(std::initializer_list<T> p_init) {
-	CRASH_COND(_alloc(p_init.size()));
+	CRASH_COND(_alloc_exact(p_init.size()));
 
 	copy_arr_placement(_ptr, p_init.begin(), p_init.size());
 	*_get_size() = p_init.size();
