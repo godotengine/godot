@@ -267,6 +267,7 @@ typedef void (*GDExtensionSpxExtOpenDrawTilesWithSize)(GdInt tile_size);
 typedef void (*GDExtensionSpxExtOpenDrawTiles)();
 typedef void (*GDExtensionSpxExtSetLayerIndex)(GdInt index);
 typedef void (*GDExtensionSpxExtSetTile)(GdString texture_path, GdBool with_collision);
+typedef void (*GDExtensionSpxExtSetTileWithCollisionInfo)(GdString texture_path, GdArray collision_points);
 typedef void (*GDExtensionSpxExtSetLayerOffset)(GdInt index, GdVec2 offset);
 typedef void (*GDExtensionSpxExtGetLayerOffset)(GdInt index, GdVec2* ret_value);
 typedef void (*GDExtensionSpxExtPlaceTiles)(GdArray positions, GdString texture_path);

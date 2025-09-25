@@ -187,9 +187,16 @@ public:
     SpxDrawTiles() = default;
     ~SpxDrawTiles() = default;
 
+    // Static collision shapes for reuse
+    static Vector<Vector2> default_collision_rect;
+    static Vector<Vector2> no_collision_array;
+    
+    // Update collision rect based on current cell size
+    void update_default_collision_rect();
+
     // spx interface
     void set_layer_index_spx(GdInt index);
-    void set_tile_texture_spx(GdString texture_path, GdBool with_collision);
+    void set_tile_texture_spx(GdString texture_path, const Vector<Vector2> *collision_points);
     void place_tiles_spx(GdArray positions, GdString texture_path);
     void place_tiles_spx(GdArray positions, GdString texture_path, GdInt layer_index);
     void place_tile_spx(GdVec2 pos, GdString texture_path);
@@ -199,11 +206,12 @@ public:
     GdString get_tile_spx(GdVec2 pos, GdInt layer_index);
     GdString get_tile_spx(GdVec2 pos);
 
-    _FORCE_INLINE_ void set_tile_size(int size = 16){default_cell_size = Vector2(size, size);};
+    void set_tile_size(int size = 16);
     void set_layer_index(int index);
     void set_layer_offset_spx(int index, Vector2 offset);
     Vector2 get_layer_offset_spx(int index);
     void set_texture(Ref<Texture2D> texture, bool with_collision = true);
+    void set_texture_with_collision_points(Ref<Texture2D> texture, const Vector<Vector2> *collision_points);
 
     void place_tile(TileMapLayer* layer, Vector2i coords);
     void erase_tile(TileMapLayer* layer, Vector2i coords);
@@ -230,7 +238,8 @@ private:
     TileMapLayer* _get_layer(int layer_index);
     TileMapLayer* _create_layer(int layer_index);
     int _get_or_create_source_id(Ref<Texture2D> scaled_texture, bool with_collision = true);
-    bool _create_tile(Ref<TileSetAtlasSource> atlas_source, const Vector2i &tile_coords, bool with_collision = true);
+    int _get_or_create_source_id_with_collision(Ref<Texture2D> scaled_texture, const Vector<Vector2> *collision_points);
+    bool _create_tile(Ref<TileSetAtlasSource> atlas_source, const Vector2i &tile_coords, const Vector<Vector2> *collision_points);
     Ref<ImageTexture> _get_or_create_scaled_texture(Ref<Texture2D> texture);
     String _get_tile_texture_path(TileMapLayer* layer, const Vector2i& pos);
 

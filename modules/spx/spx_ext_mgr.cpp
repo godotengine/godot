@@ -62,7 +62,6 @@ void SpxExtMgr::on_awake() {
 	
 	debug_root = memnew(Node2D);
 	debug_root->set_name("debug_root");
-
 	get_spx_root()->add_child(debug_root);
 
 	pure_sprite_root = memnew(Node2D);
@@ -357,9 +356,22 @@ void SpxExtMgr::set_layer_index(GdInt index) {
 }
 void SpxExtMgr::set_tile(GdString texture_path, GdBool with_collision) {
 	without_draw_tiles([&](){
-		draw_tiles->set_tile_texture_spx(texture_path, with_collision);
+		draw_tiles->set_tile_texture_spx(texture_path, with_collision ? &SpxDrawTiles::default_collision_rect : &SpxDrawTiles::no_collision_array);
 	});
 }
+void SpxExtMgr::set_tile_with_collision_info(GdString texture_path, GdArray collision_points) {
+	Vector<Vector2> points = {};
+	auto len = collision_points == nullptr ? 0 : collision_points->size;
+    for (int i = 0; i + 1 < len; i += 2) {
+        auto x = *(SpxBaseMgr::get_array<real_t>(collision_points, i));
+        auto y = *(SpxBaseMgr::get_array<real_t>(collision_points, i + 1));
+		points.append(Vector2(x, y));
+    }
+	without_draw_tiles([&](){
+		draw_tiles->set_tile_texture_spx(texture_path, &points);
+	});
+}
+
 
 void SpxExtMgr::place_tiles(GdArray positions, GdString texture_path) {
 	without_draw_tiles([&](){
