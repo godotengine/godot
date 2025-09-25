@@ -135,6 +135,7 @@ public:
 		float tonemap_c = 0.0;
 		float tonemap_d = 0.0;
 		float exposure = 1.0;
+		float white = 1.0;
 		float max_value = 1.0;
 
 		bool use_auto_exposure = false;
