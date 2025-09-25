@@ -139,7 +139,7 @@ void LightmapGIEditorPlugin::edit(Object *p_object) {
 }
 
 bool LightmapGIEditorPlugin::handles(Object *p_object) const {
-	return p_object->derives_from<LightmapGI>();
+	return p_object->is_class("LightmapGI");
 }
 
 void LightmapGIEditorPlugin::make_visible(bool p_visible) {

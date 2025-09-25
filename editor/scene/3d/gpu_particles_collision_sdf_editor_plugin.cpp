@@ -64,7 +64,7 @@ void GPUParticlesCollisionSDF3DEditorPlugin::edit(Object *p_object) {
 }
 
 bool GPUParticlesCollisionSDF3DEditorPlugin::handles(Object *p_object) const {
-	return p_object->derives_from<GPUParticlesCollisionSDF3D>();
+	return p_object->is_class("GPUParticlesCollisionSDF3D");
 }
 
 void GPUParticlesCollisionSDF3DEditorPlugin::_notification(int p_what) {
