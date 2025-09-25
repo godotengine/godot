@@ -140,7 +140,7 @@ uint8_t *PackedData::get_file_hash(const String &p_path) {
 HashSet<String> PackedData::get_file_paths() const {
 	HashSet<String> file_paths;
 	_get_file_paths(root, root->name, file_paths);
-	return file_paths;
+	return HashSet<String>(file_paths);
 }
 
 void PackedData::_get_file_paths(PackedDir *p_dir, const String &p_parent_dir, HashSet<String> &r_paths) const {

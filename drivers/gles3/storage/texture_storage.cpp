@@ -1223,7 +1223,7 @@ void TextureStorage::texture_remap_proxies(RID p_from_texture, RID p_to_texture)
 	}
 
 	// Make a local copy, we're about to change the content of the original.
-	thread_local LocalVector<RID> proxies = from_tex->proxies;
+	thread_local LocalVector<RID> proxies = LocalVector<RID>(from_tex->proxies);
 
 	// Now change them to our new texture.
 	for (RID &proxy : proxies) {

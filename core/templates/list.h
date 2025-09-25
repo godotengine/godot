@@ -416,6 +416,19 @@ public:
 	 * find an element in the list,
 	 */
 	template <typename T_v>
+	const Element *find(const T_v &p_val) const {
+		const Element *it = front();
+		while (it) {
+			if (it->value == p_val) {
+				return it;
+			}
+			it = it->next();
+		}
+
+		return nullptr;
+	}
+
+	template <typename T_v>
 	Element *find(const T_v &p_val) {
 		Element *it = front();
 		while (it) {
@@ -677,7 +690,7 @@ public:
 	/**
 	 * copy constructor for the list
 	 */
-	List(const List &p_list) {
+	explicit List(const List &p_list) {
 		const Element *it = p_list.front();
 		while (it) {
 			push_back(it->get());
