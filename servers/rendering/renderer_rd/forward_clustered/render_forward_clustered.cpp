@@ -489,11 +489,7 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 		RID vertex_array_rd;
 		RID index_array_rd;
 		RID pipeline_rd;
-		uint32_t ubershader_iterations = 2;
-		if constexpr (p_pass_mode == PASS_MODE_DEPTH_MATERIAL || p_pass_mode == PASS_MODE_SDF) {
-			ubershader_iterations = 1;
-		}
-
+		const uint32_t ubershader_iterations = 2;
 		bool pipeline_valid = false;
 		while (pipeline_key.ubershader < ubershader_iterations) {
 			// Skeleton and blend shape.
@@ -519,9 +515,8 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 			pipeline_hash = pipeline_key.hash();
 
 			if (shader != prev_shader || pipeline_hash != prev_pipeline_hash) {
-				bool wait_for_compilation = (ubershader_iterations == 1) || pipeline_key.ubershader;
-				RS::PipelineSource pipeline_source = wait_for_compilation ? RS::PIPELINE_SOURCE_DRAW : RS::PIPELINE_SOURCE_SPECIALIZATION;
-				pipeline_rd = shader->pipeline_hash_map.get_pipeline(pipeline_key, pipeline_hash, wait_for_compilation, pipeline_source);
+				RS::PipelineSource pipeline_source = pipeline_key.ubershader ? RS::PIPELINE_SOURCE_DRAW : RS::PIPELINE_SOURCE_SPECIALIZATION;
+				pipeline_rd = shader->pipeline_hash_map.get_pipeline(pipeline_key, pipeline_hash, pipeline_key.ubershader, pipeline_source);
 
 				if (pipeline_rd.is_valid()) {
 					pipeline_valid = true;
@@ -1820,9 +1815,13 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				using_sdfgi = true;
 			}
 			if (environment_get_ssr_enabled(p_render_data->environment)) {
-				using_separate_specular = true;
-				using_ssr = true;
-				color_pass_flags |= COLOR_PASS_FLAG_SEPARATE_SPECULAR;
+				if (!p_render_data->transparent_bg) {
+					using_separate_specular = true;
+					using_ssr = true;
+					color_pass_flags |= COLOR_PASS_FLAG_SEPARATE_SPECULAR;
+				} else {
+					WARN_PRINT_ONCE("Screen-space reflections are not supported in viewports with a transparent background. Disabling SSR in transparent viewport.");
+				}
 			}
 		}
 
@@ -1899,6 +1898,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 
 	bool using_sss = rb_data.is_valid() && !is_reflection_probe && scene_state.used_sss && ss_effects->sss_get_quality() != RS::SUB_SURFACE_SCATTERING_QUALITY_DISABLED;
+
+	if (using_sss && p_render_data->transparent_bg) {
+		WARN_PRINT_ONCE("Sub-surface scattering is not supported in viewports with a transparent background. Disabling SSS in transparent viewport.");
+		using_sss = false;
+	}
 
 	if ((using_sss || ce_needs_separate_specular) && !using_separate_specular) {
 		using_separate_specular = true;
@@ -3778,7 +3782,7 @@ RID RenderForwardClustered::_setup_sdfgi_render_pass_uniform_set(RID p_albedo_te
 		// The variant for SDF from the default material should only be retrieved when SDFGI is required.
 		ERR_FAIL_NULL_V(scene_shader.default_material_shader_ptr, RID());
 		scene_shader.enable_advanced_shader_group();
-		scene_shader.default_shader_sdfgi_rd = scene_shader.default_material_shader_ptr->get_shader_variant(SceneShaderForwardClustered::PIPELINE_VERSION_DEPTH_PASS_WITH_SDF, 0, false);
+		scene_shader.default_shader_sdfgi_rd = scene_shader.default_material_shader_ptr->get_shader_variant(SceneShaderForwardClustered::PIPELINE_VERSION_DEPTH_PASS_WITH_SDF, 0, true);
 		ERR_FAIL_COND_V(scene_shader.default_shader_sdfgi_rd.is_null(), RID());
 	}
 
@@ -4570,11 +4574,11 @@ void RenderForwardClustered::_mesh_compile_pipelines_for_surface(const SurfacePi
 		// Depth pass with SDFGI support.
 		pipeline_key.version = SceneShaderForwardClustered::PIPELINE_VERSION_DEPTH_PASS_WITH_SDF;
 		pipeline_key.framebuffer_format_id = _get_depth_framebuffer_format_for_pipeline(buffers_can_be_storage, RD::TextureSamples(p_global.texture_samples), false, false);
-		_mesh_compile_pipeline_for_surface(p_surface.shader, p_surface.mesh_surface, false, p_surface.instanced, p_source, pipeline_key, r_pipeline_pairs);
+		_mesh_compile_pipeline_for_surface(p_surface.shader, p_surface.mesh_surface, true, p_surface.instanced, p_source, pipeline_key, r_pipeline_pairs);
 
 		// Depth pass with SDFGI support for an empty framebuffer.
 		pipeline_key.framebuffer_format_id = RD::get_singleton()->framebuffer_format_create_empty();
-		_mesh_compile_pipeline_for_surface(p_surface.shader, p_surface.mesh_surface, false, p_surface.instanced, p_source, pipeline_key, r_pipeline_pairs);
+		_mesh_compile_pipeline_for_surface(p_surface.shader, p_surface.mesh_surface, true, p_surface.instanced, p_source, pipeline_key, r_pipeline_pairs);
 	}
 
 	// The dedicated depth passes use a different version of the surface and the shader.
@@ -5035,7 +5039,6 @@ RenderForwardClustered::RenderForwardClustered() {
 	_update_shader_quality_settings();
 	_update_global_pipeline_data_requirements_from_project();
 
-	resolve_effects = memnew(RendererRD::Resolve());
 	taa = memnew(RendererRD::TAA);
 	fsr2_effect = memnew(RendererRD::FSR2Effect);
 	ss_effects = memnew(RendererRD::SSEffects);
@@ -5072,11 +5075,6 @@ RenderForwardClustered::~RenderForwardClustered() {
 		motion_vectors_store = nullptr;
 	}
 #endif
-
-	if (resolve_effects != nullptr) {
-		memdelete(resolve_effects);
-		resolve_effects = nullptr;
-	}
 
 	RD::get_singleton()->free(shadow_sampler);
 	RSG::light_storage->directional_shadow_atlas_set_size(0);

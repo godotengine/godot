@@ -230,36 +230,38 @@ void Particles2DEditorPlugin::_set_show_gizmos(Node *p_node, bool p_show) {
 }
 
 void Particles2DEditorPlugin::_selection_changed() {
-	List<Node *> current_selection = EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list();
+	const List<Node *> &current_selection = EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list();
 	if (selected_particles.is_empty() && current_selection.is_empty()) {
 		return;
 	}
 
-	// Turn gizmos off for nodes that are no longer selected.
-	for (List<Node *>::Element *E = selected_particles.front(); E;) {
-		Node *node = E->get();
-		List<Node *>::Element *N = E->next();
-		if (current_selection.find(node) == nullptr) {
-			_set_show_gizmos(node, false);
-			selected_particles.erase(E);
+	// Turn gizmos on for nodes that are newly selected.
+	HashSet<const Node *> nodes_in_current_selection;
+	for (Node *node : current_selection) {
+		nodes_in_current_selection.insert(node);
+		if (!selected_particles.has(node)) {
+			_set_show_gizmos(node, true);
+			selected_particles.insert(node);
 		}
-		E = N;
 	}
 
-	// Turn gizmos on for nodes that are newly selected.
-	for (Node *node : current_selection) {
-		if (selected_particles.find(node) == nullptr) {
-			_set_show_gizmos(node, true);
-			selected_particles.push_back(node);
+	// Turn gizmos off for nodes that are no longer selected.
+	LocalVector<Node *> to_erase;
+	for (Node *node : selected_particles) {
+		if (!nodes_in_current_selection.has(node)) {
+			_set_show_gizmos(node, false);
+			to_erase.push_back(node);
 		}
+	}
+
+	for (Node *node : to_erase) {
+		selected_particles.erase(node);
 	}
 }
 
 void Particles2DEditorPlugin::_node_removed(Node *p_node) {
-	List<Node *>::Element *E = selected_particles.find(p_node);
-	if (E) {
-		_set_show_gizmos(E->get(), false);
-		selected_particles.erase(E);
+	if (selected_particles.erase(p_node)) {
+		_set_show_gizmos(p_node, false);
 	}
 }
 

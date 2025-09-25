@@ -70,7 +70,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-19 09:02+0000\n"
+"PO-Revision-Date: 2025-09-01 00:56+0000\n"
 "Last-Translator: Myeongjin <aranet100@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hant/>\n"
@@ -79,7 +79,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.13.1-dev\n"
 
 msgid "Unset"
 msgstr "未設定"
@@ -4011,7 +4011,7 @@ msgstr "載入音訊串流時發生錯誤，檔案：%s"
 
 msgid "Create AudioStreamPlayer"
 msgid_plural "Create AudioStreamPlayers"
-msgstr[0] "新增音效播放器"
+msgstr[0] "新增 AudioStreamPlayer"
 
 msgid "Replace with Branch Scene"
 msgstr "取代分支場景"
@@ -7442,6 +7442,9 @@ msgstr "取消自訂數值編輯"
 msgid "Locale"
 msgstr "地區"
 
+msgid "Toggle Display UID"
+msgstr "切換 UID 顯示"
+
 msgid "Renaming layer %d:"
 msgstr "重新命名%d圖層："
 
@@ -8516,7 +8519,7 @@ msgid "Play a custom scene."
 msgstr "執行自定義場景。"
 
 msgid "Reload the played scene."
-msgstr "重新載入播放場景。"
+msgstr "重新載入執行場景。"
 
 msgid ""
 "Movie Maker mode is enabled, but no movie file path has been specified.\n"
@@ -8678,9 +8681,6 @@ msgstr "暫停／恢復嵌入專案"
 msgid "Next Frame"
 msgstr "下一影格"
 
-msgid "Select Mode"
-msgstr "選擇模式"
-
 msgid "Connection impossible to the game process."
 msgstr "無法連線到遊戲進程。"
 
@@ -8691,7 +8691,7 @@ msgid "Game running not embedded."
 msgstr "遊戲未嵌入編輯器中執行。"
 
 msgid "Press play to start the game."
-msgstr "按下播放鍵開始遊戲。"
+msgstr "按下執行鍵開始遊戲。"
 
 msgid "Embedding is disabled."
 msgstr "嵌入功能已停用。"
@@ -11233,6 +11233,9 @@ msgstr "設定預覽環境色調對映"
 msgid "Set Preview Environment Global Illumination"
 msgstr "設定預覽環境全域光照"
 
+msgid "Select Mode"
+msgstr "選擇模式"
+
 msgid "Move Mode"
 msgstr "移動模式"
 
@@ -11782,7 +11785,7 @@ msgid "Bone Transform"
 msgstr "骨骼變換"
 
 msgid "Play IK"
-msgstr "執行 IK"
+msgstr "播放 IK"
 
 msgid "Voxel GI data is not local to the scene."
 msgstr "Voxel GI 資料並非此場景的在地資料。"
@@ -13309,6 +13312,9 @@ msgstr "貼上資源"
 
 msgid "Load Resource"
 msgstr "載入資源"
+
+msgid "ResourcePreloader"
+msgstr "資源預載器"
 
 msgid "Toggle ResourcePreloader Bottom Panel"
 msgstr "切換資源預載器底部面板"
@@ -15394,9 +15400,6 @@ msgstr "設定常數：%s"
 
 msgid "Invalid name for varying."
 msgstr "Varying 名稱無效。"
-
-msgid "Varying with that name is already exist."
-msgstr "已存在使用該名稱的 Varying。"
 
 msgid "Boolean type cannot be used with `%s` varying mode."
 msgstr "布林型別無法用於 `%s` varying 模式。"
@@ -19546,10 +19549,6 @@ msgstr "不允許遞迴。"
 
 msgid "Function '%s' can't be called from source code."
 msgstr "函式「%s」不可從原始碼中呼叫。"
-
-msgid ""
-"Invalid argument for \"%s(%s)\" function: argument %d should be %s but is %s."
-msgstr "函式「%s(%s)」的參數無效：第 %d 個參數應為 %s，卻為 %s。"
 
 msgid ""
 "Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."

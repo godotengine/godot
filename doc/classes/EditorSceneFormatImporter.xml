@@ -10,7 +10,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_get_extensions" qualifiers="virtual const">
+		<method name="_get_extensions" qualifiers="virtual required const">
 			<return type="PackedStringArray" />
 			<description>
 				Return supported file extensions for this scene importer.
@@ -34,7 +34,7 @@
 				Should return [code]true[/code] to show the given option, [code]false[/code] to hide the given option, or [code]null[/code] to ignore.
 			</description>
 		</method>
-		<method name="_import_scene" qualifiers="virtual">
+		<method name="_import_scene" qualifiers="virtual required">
 			<return type="Object" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="flags" type="int" />

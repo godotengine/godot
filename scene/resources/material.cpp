@@ -1357,7 +1357,7 @@ void vertex() {)";
 	if (flags[FLAG_FIXED_SIZE]) {
 		code += R"(
 	// Fixed Size: Enabled
-	if (PROJECTION_MATRIX[3][3] != 0.0) {
+	if (PROJECTION_MATRIX[2][3] == 0.0) {
 		// Orthogonal matrix; try to do about the same with viewport size.
 		float h = abs(1.0 / (2.0 * PROJECTION_MATRIX[1][1]));
 		// Consistent with vertical FOV (Keep Height).
@@ -1367,7 +1367,7 @@ void vertex() {)";
 		MODELVIEW_MATRIX[2] *= sc;
 	} else {
 		// Scale by depth.
-		float sc = -(MODELVIEW_MATRIX)[3].z;
+		float sc = length((MODELVIEW_MATRIX)[3].xyz);
 		MODELVIEW_MATRIX[0] *= sc;
 		MODELVIEW_MATRIX[1] *= sc;
 		MODELVIEW_MATRIX[2] *= sc;

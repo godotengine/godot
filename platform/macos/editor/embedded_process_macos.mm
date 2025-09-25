@@ -150,16 +150,6 @@ void EmbeddedProcessMacOS::_try_embed_process() {
 		queue_redraw();
 		emit_signal(SNAME("embedding_completed"));
 
-		// Send initial joystick state.
-		{
-			Input *input = Input::get_singleton();
-			TypedArray<int> joy_pads = input->get_connected_joypads();
-			for (const Variant &idx : joy_pads) {
-				String name = input->get_joy_name(idx);
-				script_debugger->send_message("embed:joy_add", { idx, name });
-			}
-		}
-
 		layer_host->grab_focus();
 	} else {
 		// Another unknown error.

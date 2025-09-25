@@ -364,7 +364,7 @@ void ColorPicker::finish_shaders() {
 }
 
 void ColorPicker::set_focus_on_line_edit() {
-	callable_mp((Control *)c_text, &Control::grab_focus).call_deferred();
+	callable_mp((Control *)c_text, &Control::grab_focus).call_deferred(false);
 }
 
 void ColorPicker::set_focus_on_picker_shape() {
@@ -1196,7 +1196,14 @@ void ColorPicker::add_preset(const Color &p_color) {
 	if (e) {
 		presets.move_to_back(e);
 
-		preset_container->move_child(preset_group->get_pressed_button(), preset_container->get_child_count() - 1);
+		for (int i = 1; i < preset_container->get_child_count(); i++) {
+			ColorPresetButton *current_btn = Object::cast_to<ColorPresetButton>(preset_container->get_child(i));
+			if (current_btn && p_color == current_btn->get_preset_color()) {
+				preset_container->move_child(current_btn, preset_container->get_child_count() - 1);
+				current_btn->set_pressed(true);
+				break;
+			}
+		}
 	} else {
 		presets.push_back(p_color);
 
@@ -1491,7 +1498,7 @@ void ColorPicker::_sample_draw() {
 
 	sample->draw_rect(rect_new, color);
 
-	if (display_old_color && !old_color.is_equal_approx(color) && sample->has_focus()) {
+	if (display_old_color && !old_color.is_equal_approx(color) && sample->has_focus(true)) {
 		RID ci = sample->get_canvas_item();
 		theme_cache.sample_focus->draw(ci, rect_old);
 	}
@@ -2663,7 +2670,7 @@ void ColorPresetButton::_notification(int p_what) {
 				WARN_PRINT("Unsupported StyleBox used for ColorPresetButton. Use StyleBoxFlat or StyleBoxTexture instead.");
 			}
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				RID ci = get_canvas_item();
 				theme_cache.focus_style->draw(ci, Rect2(Point2(), get_size()));
 			}

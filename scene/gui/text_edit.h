@@ -288,6 +288,7 @@ private:
 
 	/* Text */
 	Text text;
+	RID text_ci;
 	bool setting_text = false;
 
 	enum AltInputMode {
@@ -657,6 +658,9 @@ private:
 
 	RID accessibility_text_root_element_nl;
 
+	// FIXME: Helper method to draw unfilled rects, should be moved to RenderingServer.
+	void _draw_rect_unfilled(RID p_canvas_item, const Rect2 &p_rect, const Color &p_color, real_t p_width = -1.0, bool p_antialiased = false) const;
+
 	/*** Super internal Core API. Everything builds on it. ***/
 	bool text_changed_dirty = false;
 	void _text_changed();
@@ -783,6 +787,8 @@ public:
 
 	/* Text */
 	// Text properties.
+	RID get_text_canvas_item() const;
+
 	bool has_ime_text() const;
 	void cancel_ime();
 	void apply_ime();
@@ -1188,6 +1194,7 @@ public:
 #endif
 
 	TextEdit(const String &p_placeholder = String());
+	~TextEdit();
 };
 
 VARIANT_ENUM_CAST(TextEdit::EditAction);

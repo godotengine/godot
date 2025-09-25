@@ -268,26 +268,12 @@ class [[nodiscard]] String {
 	static constexpr char32_t _null = 0;
 	static constexpr char32_t _replacement_char = 0xfffd;
 
-	// Known-length copy.
-	void copy_from_unchecked(const char32_t *p_char, int p_length);
-
 	// NULL-terminated c string copy - automatically parse the string to find the length.
 	void append_latin1(const char *p_cstr) {
 		append_latin1(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
 	}
 	void append_utf32(const char32_t *p_cstr) {
 		append_utf32(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
-	}
-
-	// wchar_t copy_from depends on the platform.
-	void append_wstring(const Span<wchar_t> &p_cstr) {
-#ifdef WINDOWS_ENABLED
-		// wchar_t is 16-bit, parse as UTF-16
-		append_utf16((const char16_t *)p_cstr.ptr(), p_cstr.size());
-#else
-		// wchar_t is 32-bit, copy directly
-		append_utf32((Span<char32_t> &)p_cstr);
-#endif
 	}
 	void append_wstring(const wchar_t *p_cstr) {
 #ifdef WINDOWS_ENABLED
@@ -438,7 +424,7 @@ public:
 	String trim_suffix(const char *p_suffix) const;
 	String lpad(int min_length, const String &character = " ") const;
 	String rpad(int min_length, const String &character = " ") const;
-	String sprintf(const Array &values, bool *error) const;
+	String sprintf(const Span<Variant> &values, bool *error) const;
 	String quote(const String &quotechar = "\"") const;
 	String unquote() const;
 	static String num(double p_num, int p_decimals = -1);
@@ -562,10 +548,35 @@ public:
 	}
 	static String utf16(const Span<char16_t> &p_range) { return utf16(p_range.ptr(), p_range.size()); }
 
-	void append_utf32(const Span<char32_t> &p_cstr);
+	// wchar_t copy_from depends on the platform.
+	Error append_wstring(const Span<wchar_t> &p_cstr) {
+#ifdef WINDOWS_ENABLED
+		// wchar_t is 16-bit, parse as UTF-16
+		return append_utf16((const char16_t *)p_cstr.ptr(), p_cstr.size());
+#else
+		// wchar_t is 32-bit, copy directly
+		return append_utf32((Span<char32_t> &)p_cstr);
+#endif
+	}
+	static String wstring(const Span<wchar_t> &p_string) {
+		String string;
+		string.append_wstring(p_string);
+		return string;
+	}
+
+	Error append_utf32(const Span<char32_t> &p_cstr);
 	static String utf32(const Span<char32_t> &p_span) {
 		String string;
 		string.append_utf32(p_span);
+		return string;
+	}
+
+	// Like append_utf32, but does not check the string for string integrity (and is thus faster).
+	// Prefer this function for conversion from trusted utf32 strings.
+	void append_utf32_unchecked(const Span<char32_t> &p_span);
+	static String utf32_unchecked(const Span<char32_t> &p_string) {
+		String string;
+		string.append_utf32_unchecked(p_string);
 		return string;
 	}
 

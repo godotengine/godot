@@ -87,7 +87,7 @@
 # ZAID G <zaidm1122334455@gmail.com>, 2023.
 # Jugy <hellowo038@gmail.com>, 2023.
 # 7D <miuatoro.exe@gmail.com>, 2023.
-# Emad Alhaddad <emad142240@gmail.com>, 2023.
+# Emad Alhaddad <emad142240@gmail.com>, 2023, 2025.
 # Varga <vancouver_cliparf@simplelogin.com>, 2024.
 # Ahmed Nehad <nmkao333@gmail.com>, 2024.
 # Rashid Al Haqbany <haqbany@gmail.com>, 2024.
@@ -108,8 +108,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-01 11:01+0000\n"
-"Last-Translator: Elias Dammach <eliasdammach208@gmail.com>\n"
+"PO-Revision-Date: 2025-08-16 14:33+0000\n"
+"Last-Translator: Emad Alhaddad <emad142240@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ar/>\n"
 "Language: ar\n"
@@ -118,7 +118,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && "
 "n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.13\n"
 
 msgid "Unset"
 msgstr "غير محدد"
@@ -349,6 +349,9 @@ msgstr "نسخ"
 msgid "Paste"
 msgstr "لصق"
 
+msgid "Toggle Tab Focus Mode"
+msgstr "حول إلى وضع التركيز"
+
 msgid "Undo"
 msgstr "تراجع"
 
@@ -466,6 +469,12 @@ msgstr "مضاعفة العُقد"
 msgid "Delete Nodes"
 msgstr "حذف العُقد"
 
+msgid "Follow Input Port Connection"
+msgstr "إتبع مدخل الإتصال"
+
+msgid "Follow Output Port Connection"
+msgstr "إتبع مخرج الإتصال"
+
 msgid "Go Up One Level"
 msgstr "إذهب مرحلة للأعلى"
 
@@ -480,6 +489,9 @@ msgstr "تبديل جهة الإدخال"
 
 msgid "Start Unicode Character Input"
 msgstr "بدء إدخال حروف يونيكود"
+
+msgid "ColorPicker: Delete Preset"
+msgstr "أداة اختيار الألوان: احذف الإعدادات المسبقة"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "مدخلات خاطئة %d (لم يتم تمريرها) في التعبير"
@@ -7995,9 +8007,6 @@ msgstr "أنشر إلى رابع جهاز في القائمة"
 msgid "Project Run"
 msgstr "تشغيل المشروع"
 
-msgid "Select Mode"
-msgstr "وضع الاختيار"
-
 msgid "Press play to start the game."
 msgstr "اضغط على التشغيل لبدء اللعبة."
 
@@ -9875,6 +9884,9 @@ msgstr ""
 "المشهد يحوي\n"
 "بيئة-العالم.\n"
 "المعاينة معطلة."
+
+msgid "Select Mode"
+msgstr "وضع الاختيار"
 
 msgid "Move Mode"
 msgstr "وضع التنقيل"
@@ -13629,9 +13641,6 @@ msgstr "تعيين الثابت: %s"
 
 msgid "Invalid name for varying."
 msgstr "اسم غير صالح للتنوع."
-
-msgid "Varying with that name is already exist."
-msgstr "المتغير بهذا الاسم موجود بالفعل."
 
 msgid "Add Node(s) to Visual Shader"
 msgstr "إضافة عُقدة للتظليل البصري"

@@ -1281,11 +1281,6 @@ bool OpenXRAPI::create_main_swapchains(Size2i p_size) {
 	}
 
 	for (uint32_t i = 0; i < render_state.views.size(); i++) {
-		render_state.views[i].type = XR_TYPE_VIEW;
-		render_state.views[i].next = nullptr;
-
-		render_state.projection_views[i].type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW;
-		render_state.projection_views[i].next = nullptr;
 		render_state.projection_views[i].subImage.swapchain = render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].get_swapchain();
 		render_state.projection_views[i].subImage.imageArrayIndex = i;
 		render_state.projection_views[i].subImage.imageRect.offset.x = 0;
@@ -1296,8 +1291,6 @@ bool OpenXRAPI::create_main_swapchains(Size2i p_size) {
 		if (render_state.submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available() && !render_state.depth_views.is_empty()) {
 			render_state.projection_views[i].next = &render_state.depth_views[i];
 
-			render_state.depth_views[i].type = XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR;
-			render_state.depth_views[i].next = nullptr;
 			render_state.depth_views[i].subImage.swapchain = render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].get_swapchain();
 			render_state.depth_views[i].subImage.imageArrayIndex = i;
 			render_state.depth_views[i].subImage.imageRect.offset.x = 0;
@@ -2116,8 +2109,36 @@ void OpenXRAPI::_allocate_view_buffers(uint32_t p_view_count, bool p_submit_dept
 	openxr_api->render_state.views.resize(p_view_count);
 	openxr_api->render_state.projection_views.resize(p_view_count);
 
+	for (uint32_t i = 0; i < p_view_count; i++) {
+		openxr_api->render_state.views[i] = {
+			XR_TYPE_VIEW, // type
+			nullptr, // next
+			{}, // pose
+			{}, // fov
+		};
+		openxr_api->render_state.projection_views[i] = {
+			XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW, // type
+			nullptr, // next
+			{}, // pose
+			{}, // fov
+			{}, // subImage
+		};
+	}
+
 	if (p_submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available()) {
 		openxr_api->render_state.depth_views.resize(p_view_count);
+
+		for (uint32_t i = 0; i < p_view_count; i++) {
+			openxr_api->render_state.depth_views[i] = {
+				XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR, // type
+				nullptr, // next
+				{}, // subImage
+				0.0, // minDepth
+				0.0, // maxDepth
+				0.0, // nearZ
+				0.0, // farZ
+			};
+		}
 	}
 }
 

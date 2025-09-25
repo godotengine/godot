@@ -25,6 +25,7 @@
 		<member name="dof_blur_far_enabled" type="bool" setter="set_dof_blur_far_enabled" getter="is_dof_blur_far_enabled" default="false">
 			Enables depth of field blur for objects further than [member dof_blur_far_distance]. Strength of blur is controlled by [member dof_blur_amount] and modulated by [member dof_blur_far_transition].
 			[b]Note:[/b] Depth of field blur is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
+			[b]Note:[/b] Depth of field blur is not supported on viewports that have a transparent background (where [member Viewport.transparent_bg] is [code]true[/code]).
 		</member>
 		<member name="dof_blur_far_transition" type="float" setter="set_dof_blur_far_transition" getter="get_dof_blur_far_transition" default="5.0">
 			When positive, distance over which (starting from [member dof_blur_far_distance]) blur effect will scale from 0 to [member dof_blur_amount]. When negative, uses physically-based scaling so depth of field effect will scale from 0 at [member dof_blur_far_distance] and will increase in a physically accurate way as objects get further from the [Camera3D].
@@ -35,6 +36,7 @@
 		<member name="dof_blur_near_enabled" type="bool" setter="set_dof_blur_near_enabled" getter="is_dof_blur_near_enabled" default="false">
 			Enables depth of field blur for objects closer than [member dof_blur_near_distance]. Strength of blur is controlled by [member dof_blur_amount] and modulated by [member dof_blur_near_transition].
 			[b]Note:[/b] Depth of field blur is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
+			[b]Note:[/b] Depth of field blur is not supported on viewports that have a transparent background (where [member Viewport.transparent_bg] is [code]true[/code]).
 		</member>
 		<member name="dof_blur_near_transition" type="float" setter="set_dof_blur_near_transition" getter="get_dof_blur_near_transition" default="1.0">
 			When positive, distance over which blur effect will scale from 0 to [member dof_blur_amount], ending at [member dof_blur_near_distance]. When negative, uses physically-based scaling so depth of field effect will scale from 0 at [member dof_blur_near_distance] and will increase in a physically accurate way as objects get closer to the [Camera3D].

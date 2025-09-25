@@ -140,6 +140,8 @@ protected:
 	}
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::SCRIPT;
+
 	virtual void reload_from_file() override;
 
 	virtual bool can_instantiate() const = 0;
@@ -197,7 +199,9 @@ public:
 
 	virtual const Variant get_rpc_config() const = 0;
 
-	Script() {}
+	Script() {
+		_define_ancestry(AncestralClass::SCRIPT);
+	}
 };
 
 class ScriptLanguage : public Object {

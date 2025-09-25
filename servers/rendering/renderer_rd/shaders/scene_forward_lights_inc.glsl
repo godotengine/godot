@@ -746,12 +746,12 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	float light_length = length(light_rel_vec);
 	hvec3 light_rel_vec_norm = hvec3(light_rel_vec / light_length);
 	half spot_attenuation = get_omni_attenuation(light_length, spot_lights.data[idx].inv_radius, spot_lights.data[idx].attenuation);
-	hvec3 spot_dir = hvec3(spot_lights.data[idx].direction);
-	half cone_angle = half(spot_lights.data[idx].cone_angle);
-	half scos = max(dot(-light_rel_vec_norm, spot_dir), cone_angle);
+	vec3 spot_dir = spot_lights.data[idx].direction;
+	float cone_angle = spot_lights.data[idx].cone_angle;
+	float scos = max(dot(-vec3(light_rel_vec_norm), spot_dir), cone_angle);
 
 	// This conversion to a highp float is crucial to prevent light leaking due to precision errors.
-	float spot_rim = max(1e-4, float(half(1.0) - scos) / float(half(1.0) - cone_angle));
+	float spot_rim = max(1e-4, (1.0 - scos) / (1.0 - cone_angle));
 	spot_attenuation *= half(1.0 - pow(spot_rim, spot_lights.data[idx].cone_attenuation));
 
 	// Compute size.
@@ -779,7 +779,7 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 			//soft shadow
 
 			//find blocker
-			float z_norm = dot(vec3(spot_dir), -light_rel_vec) * spot_lights.data[idx].inv_radius;
+			float z_norm = dot(spot_dir, -light_rel_vec) * spot_lights.data[idx].inv_radius;
 
 			vec2 shadow_uv = splane.xy * spot_lights.data[idx].atlas_rect.zw + spot_lights.data[idx].atlas_rect.xy;
 
@@ -857,7 +857,7 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 		shadow_z = 2.0 * z_near * z_far / (z_far + z_near - shadow_z * (z_far - z_near));
 
 		//distance to light plane
-		float z = dot(vec3(spot_dir), -light_rel_vec);
+		float z = dot(spot_dir, -light_rel_vec);
 		transmittance_z = half(z - shadow_z);
 	}
 #endif // !SHADOWS_DISABLED

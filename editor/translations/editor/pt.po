@@ -76,13 +76,14 @@
 # Bryam Sidoly <bsidoly123@gmail.com>, 2025.
 # Larissa Camargo <larissacar26@gmail.com>, 2025.
 # Augusto Milão <augusto.milao01@gmail.com>, 2025.
+# Pedro Mateus <pedropmateus91@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-30 18:30+0000\n"
-"Last-Translator: ssantos <ssantos@web.de>\n"
+"PO-Revision-Date: 2025-08-10 14:48+0000\n"
+"Last-Translator: Pedro Mateus <pedropmateus91@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -462,6 +463,9 @@ msgstr "Trocar Direção da Entrada"
 
 msgid "Start Unicode Character Input"
 msgstr "Começa Unicode Character Input"
+
+msgid "ColorPicker: Delete Preset"
+msgstr "Clique direito: Apagar predefinição"
 
 msgid "Accessibility: Keyboard Drag and Drop"
 msgstr "Acessibilidade: Arrastar e Soltar com Teclado"
@@ -939,6 +943,17 @@ msgstr "Gravar Biblioteca de Animações no Ficheiro: %s"
 
 msgid "Save Animation to File: %s"
 msgstr "Gravar Animação em Ficheiro: %s"
+
+msgid ""
+"The file you selected is not a valid AnimationLibrary.\n"
+"\n"
+"If the animations you want are inside of this file, save them to a separate "
+"file first."
+msgstr ""
+"O ficheiro que selecionou não é um AnimationLibrary válido.\n"
+"\n"
+"Se as animações que deseja estão neste ficheiro, grave-as primeiro num "
+"ficheiro separado."
 
 msgid "Some of the selected libraries were already added to the mixer."
 msgstr ""
@@ -3071,6 +3086,9 @@ msgid ""
 msgstr ""
 "Este método não precisa de uma instância para ser chamado.\n"
 "Ele pode ser chamado diretamente usando o nome da classe."
+
+msgid "This method must be implemented to complete the abstract class."
+msgstr "Este método deve ser implementado para completar a classe abstrata."
 
 msgid "Code snippet copied to clipboard."
 msgstr "Trecho de código copiado para a área de transferência."
@@ -7020,6 +7038,9 @@ msgstr "Selecione a Cena"
 msgid "Fuzzy Search"
 msgstr "Pesquisa Difusa"
 
+msgid "Include approximate matches."
+msgstr "Incluir correspondências aproximadas."
+
 msgid "Addons"
 msgstr "Complementos"
 
@@ -7723,6 +7744,13 @@ msgstr "Cancelar Edição de Valor Personalizado"
 
 msgid "Locale"
 msgstr "Localização"
+
+msgid ""
+"Toggles displaying between path and UID.\n"
+"The UID is the actual value of this property."
+msgstr ""
+"Alterna mostar o caminho e o UID.\n"
+"O UID é o valor real desta propriedade."
 
 msgid "Renaming layer %d:"
 msgstr "Renomeando a camada %d:"
@@ -8762,6 +8790,9 @@ msgstr "Escala de Exibição"
 msgid "Network Mode"
 msgstr "Modo de Rede"
 
+msgid "Check for Updates"
+msgstr "Verificar se há atualizações"
+
 msgid "Directory Naming Convention"
 msgstr "Convenção de Nomeação de Diretórios"
 
@@ -8964,9 +8995,6 @@ msgstr "Suspender/Continuar Projeto Integrado"
 msgid "Next Frame"
 msgstr "Próximo quadro"
 
-msgid "Select Mode"
-msgstr "Modo Seleção"
-
 msgid "Connection impossible to the game process."
 msgstr "Conexão impossível ao processo do jogo."
 
@@ -9088,6 +9116,9 @@ msgstr ""
 "O modo 'Keep Aspect' é usado quando o espaço de trabalho do jogo é menor que "
 "o tamanho desejado."
 
+msgid "Embedded game size is based on project settings."
+msgstr "O tamanho do jogo incorporado é baseado nas configurações do projeto."
+
 msgid "Keep the aspect ratio of the embedded game."
 msgstr "Mantenha a proporção do jogo incorporado."
 
@@ -9144,6 +9175,9 @@ msgstr "Substituir tags principais"
 msgid "Feature Tags"
 msgstr "Marcadores de recursos"
 
+msgid "Move Origin to Geometric Center"
+msgstr "Mover a origem para o centro geométrico"
+
 msgid "Create Polygon"
 msgstr "Criar Polígono"
 
@@ -9155,6 +9189,9 @@ msgstr ""
 "Editar Polígono:\n"
 "LMB: Mover Ponto\n"
 "RMB: Apagar Ponto"
+
+msgid "Move center of gravity to geometric center."
+msgstr "Mova o centro da gravidade para o centro geométrico."
 
 msgid "Edit Polygon"
 msgstr "Editar Polígono"
@@ -9419,6 +9456,9 @@ msgstr "Pintar pesos com determinada intensidade."
 
 msgid "Unpaint weights with specified intensity."
 msgstr "Despintar pesos com intensidade específica."
+
+msgid "Strength"
+msgstr "Força"
 
 msgid "Radius:"
 msgstr "Raio:"
@@ -11618,6 +11658,9 @@ msgstr "Definir Tonemap da Prévia do Ambiente"
 
 msgid "Set Preview Environment Global Illumination"
 msgstr "Definir Iluminação Global da Prévia do Ambiente"
+
+msgid "Select Mode"
+msgstr "Modo Seleção"
 
 msgid "Move Mode"
 msgstr "Modo Mover"
@@ -14002,6 +14045,9 @@ msgstr "Reproduzir a Animação selecionada a partir do início. (Shift+D)"
 msgid "Play selected animation from current pos. (D)"
 msgstr "Reproduzir a Animação selecionada a partir da presente posição. (D)"
 
+msgid "Empty Before"
+msgstr "Esvaziar Antes"
+
 msgid "Delete Frame"
 msgstr "Apagar Quadro"
 
@@ -14333,6 +14379,26 @@ msgstr "Incapaz de abrir '%s'. O ficheiro pode ter sido movido ou apagado."
 
 msgid "Close and save changes?"
 msgstr "Fechar e guardar alterações?"
+
+msgid "Importing theme failed. File is not a text editor theme file (.tet)."
+msgstr ""
+"Importar o tema falhou. O ficheiro não é um ficheiro de tema de editor de "
+"texto (.tet)."
+
+msgid ""
+"Importing theme failed. File name cannot be 'Default', 'Custom', or 'Godot 2'."
+msgstr ""
+"Importar o tema falhou. O nome do ficheiro não pode ser \"Default\", "
+"\"Custom\", ou \"Godot 2\"."
+
+msgid "Importing theme failed. Failed to copy theme file."
+msgstr "Importar o tema falhou. Falhado a copiar o ficheiro do tema."
+
+msgid ""
+"Saving theme failed. File name cannot be 'Default', 'Custom', or 'Godot 2'."
+msgstr ""
+"Gravar o tema falhou. O nome do ficheiro não pode ser \"Default\", "
+"\"Custom\", ou \"Godot 2\"."
 
 msgid "Error writing TextFile:"
 msgstr "Erro ao escrever FicheiroTexto:"
@@ -15369,6 +15435,15 @@ msgstr "Identificação da Tecla (Unicode, diferencia maiúsculas de minúsculas
 msgid "Physical location"
 msgstr "Local Físico"
 
+msgid "Shift key"
+msgstr "Tecla shift"
+
+msgid "Control key"
+msgstr "Tecla control"
+
+msgid "Meta/Windows or Command key"
+msgstr "Tecla Meta/Windows ou Command"
+
 msgid "Add Project Setting"
 msgstr "Adicionar Configuração ao Projeto"
 
@@ -15778,9 +15853,6 @@ msgstr "Definir Constante: %s"
 
 msgid "Invalid name for varying."
 msgstr "Nome Inválido para varying."
-
-msgid "Varying with that name is already exist."
-msgstr "Varying com esse nome já existe."
 
 msgid "Boolean type cannot be used with `%s` varying mode."
 msgstr "O tipo booleano não pode ser usado com o modo varying `%s`."
@@ -17834,6 +17906,9 @@ msgstr "Editar Obstáculo (Mover Vértice)"
 msgid "Edit Obstacle (Remove Vertex)"
 msgstr "Editar Obstáculo (Remover Vértice)"
 
+msgid "Flip"
+msgstr "Virar"
+
 msgid "Remove all vertices?"
 msgstr "Remover todas as vértices?"
 
@@ -17890,6 +17965,17 @@ msgstr "Renomear Nome Das Ações Traduzidas"
 
 msgid "Change Action Type"
 msgstr "Alterar Tipo de Ação"
+
+msgid ""
+"Internal name of the action. Some XR runtimes don't allow spaces or special "
+"characters."
+msgstr ""
+"Nome interno da ação. Alguns ambientes de execução XR não permitem espaços ou "
+"caracteres especiais."
+
+msgid "Human-readable name of the action. This can be displayed to end users."
+msgstr ""
+"Nome da ação legível humana. Isso pode ser exibido para utilizadores finais."
 
 msgid "Remove action"
 msgstr "Remover Ação"
@@ -17950,6 +18036,19 @@ msgstr "Adicionar Ação"
 
 msgid "Delete action"
 msgstr "Apagar Ação"
+
+msgid ""
+"Human-readable name of the action set. This can be displayed to end users."
+msgstr ""
+"Nome legível humano do grupo de ações. Isto pode ser exibido a utilizadores "
+"finais."
+
+msgid ""
+"Priority of the action set. If multiple action sets bind to the same input, "
+"the action set with the highest priority will be updated."
+msgstr ""
+"Prioridade do grupo de ações. Se vários grupos de ações estão ligados à mesma "
+"entrada, o grupo de ações com a maior prioridade será atualizado."
 
 msgid "Add action."
 msgstr "Adicionar ação."
@@ -19003,6 +19102,20 @@ msgstr ""
 "Frames\" para que o AnimatedSprite2D exiba quadros."
 
 msgid ""
+"Ancestor \"%s\" clips its children, so this CanvasGroup will not function "
+"properly."
+msgstr ""
+"O ancestor \"%s\" corta os seus filhos, então este CanvasGroup não funcionará "
+"corretamente."
+
+msgid ""
+"Ancestor \"%s\" is a CanvasGroup, so this CanvasGroup will not function "
+"properly."
+msgstr ""
+"O ancestor \"%s\" é um CanvasGroup, então este CanvasGroup não funcionará "
+"corretamente."
+
+msgid ""
 "Only one visible CanvasModulate is allowed per canvas.\n"
 "When there are more than one, only one of them will be active. Which one is "
 "undefined."
@@ -19196,6 +19309,15 @@ msgid ""
 msgstr ""
 "Um nó PhysicalBone2D deve ter um nó filho baseado em Joint2D para manter os "
 "ossos conectados! Adicione um nó baseado em Joint2D como filho a este nó!"
+
+msgid ""
+"PhysicsBody2D will not work correctly on a non-interpolated branch of the "
+"SceneTree.\n"
+"Check the node's inherited physics_interpolation_mode."
+msgstr ""
+"O PhysicsBody2D não funcionará corretamente num ramo não interpolado do "
+"SceneTree.\n"
+"Verifique o nó herdado Física_interpolation_mode."
 
 msgid ""
 "Size changes to RigidBody2D will be overridden by the physics engine when "
@@ -19691,6 +19813,15 @@ msgid "Node A and Node B must be different PhysicsBody3Ds"
 msgstr "Nó A e Nó B devem ser diferentes PhysicsBody3Ds"
 
 msgid ""
+"PhysicsBody3D will not work correctly on a non-interpolated branch of the "
+"SceneTree.\n"
+"Check the node's inherited physics_interpolation_mode."
+msgstr ""
+"O PhysicsBody3D não funcionará corretamente num ramo não interpolado do "
+"SceneTree.\n"
+"Verifique o nó herdado Física_interpolation_mode."
+
+msgid ""
 "Scale changes to RigidBody3D will be overridden by the physics engine when "
 "running.\n"
 "Please change the size in children collision shapes instead."
@@ -19842,6 +19973,13 @@ msgstr ""
 "pai."
 
 msgid ""
+"XRCamera3D should have physics_interpolation_mode set to OFF in order to "
+"avoid jitter."
+msgstr ""
+"XRCamera3D deve ter physics_interpolation_mode definido para OFF, para evitar "
+"jitter."
+
+msgid ""
 "XRNode3D may not function as expected without an XROrigin3D node as its "
 "parent."
 msgstr ""
@@ -19853,6 +19991,13 @@ msgstr "Nenhum nome de rastreador foi definido."
 
 msgid "No pose is set."
 msgstr "Nenhuma pose foi definida."
+
+msgid ""
+"XRNode3D should have physics_interpolation_mode set to OFF in order to avoid "
+"jitter."
+msgstr ""
+"XRNode3D deve ter physics_interpolation_mode definido para OFF, para evitar "
+"jitter."
 
 msgid "XROrigin3D requires an XRCamera3D child node."
 msgstr "XROrigin3D requer um nó filho XRCamera3D."
@@ -19888,6 +20033,9 @@ msgstr ""
 "ButtonGroup destina-se a ser usado apenas com botões que têm toggle_mode "
 "definido como true."
 
+msgid "The changes to this palette have not been saved to a file."
+msgstr "As alterações nesta paleta não foram gravadas num ficheiro."
+
 msgid "Switch between hexadecimal and code values."
 msgstr "Alternar valores entre hexadecimal e código."
 
@@ -19907,6 +20055,21 @@ msgstr ""
 "A Dica de Ferramenta não será exibida se o Filtro do Rato do Control estiver "
 "definido como \"Ignorar\". Para resolver isto, defina o Filtro do Rato como "
 "\"Parar\" ou \"Passar\"."
+
+msgid "Accessibility Name must not be empty, or contain only spaces."
+msgstr "O nome de acessibilidade não deve estar vazio ou conter apenas espaços."
+
+msgid "Accessibility Name must not include Node class name."
+msgstr "O nome de acessibilidade não deve incluir o nome da classe Node."
+
+msgid "Accessibility Name must not include control character."
+msgstr "O nome de acessibilidade não deve incluir o caráter de controle."
+
+msgid "%s can be dropped here. Use %s to drop, use %s to cancel."
+msgstr "%s pode ser solto aqui. Use %s para soltar, use %s para cancelar."
+
+msgid "%s can not be dropped here. Use %s to cancel."
+msgstr "%s não pode ser solto aqui. Use %s para cancelar."
 
 msgid ""
 "Please be aware that GraphEdit and GraphNode will undergo extensive "
@@ -19966,6 +20129,12 @@ msgid ""
 msgstr ""
 "A forma padrão do cursor do mouse de SubViewportContainer não tem efeito.\n"
 "Considere deixá-lo com seu valor inicial `CURSOR_ARROW`."
+
+msgid "Cell %d x %d: either text or alternative text must not be empty."
+msgstr "A célula %d x %d: texto ou texto alternativo não deve estar vazio."
+
+msgid "Button %d in %d x %d: alternative text must not be empty."
+msgstr "Botão %d em %d x %d: o texto alternativo não deve estar vazio."
 
 msgid ""
 "This node was an instance of scene '%s', which was no longer available when "
@@ -20033,6 +20202,9 @@ msgstr ""
 "frames física.\n"
 "Considere usar um ciclo de processo de script em vez de depender de um Timer "
 "para tempos de espera muito baixos."
+
+msgid "Drag-and-drop data"
+msgstr "Arrastar e soltar dados"
 
 msgid ""
 "The Viewport size must be greater than or equal to 2 pixels on both "
@@ -20163,12 +20335,6 @@ msgstr "A recursão não é permitida."
 
 msgid "Function '%s' can't be called from source code."
 msgstr "A função '%s' não pode ser chamada a partir do código-fonte."
-
-msgid ""
-"Invalid argument for \"%s(%s)\" function: argument %d should be %s but is %s."
-msgstr ""
-"Argumento inválido para a função \"%s(%s)\": o argumento %d deveria ser %s, "
-"mas é %s."
 
 msgid ""
 "Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."
@@ -20470,6 +20636,13 @@ msgstr "Tipo de shader inválido. Os tipos válidos são: %s"
 msgid "Unexpected token: '%s'."
 msgstr "Token inesperado: '%s'."
 
+msgid "Stencil mode reference value cannot be negative: '%s'."
+msgstr "O valor de referência do modo estêncil não pode ser negativo: '%s'."
+
+msgid "Stencil mode reference value cannot be greater than 255: '%s'."
+msgstr ""
+"O valor de referência do modo estêncil não pode ser superior a 255: '%s'."
+
 msgid "Expected a struct identifier."
 msgstr "Esperava-se um identificador de struct."
 
@@ -20537,6 +20710,9 @@ msgstr ""
 
 msgid "Duplicated hint: '%s'."
 msgstr "Inferência duplicada: '%s'."
+
+msgid "Hint '%s' should be preceded by '%s'."
+msgstr "Dica '%s' deve ser precedida por '%s'."
 
 msgid "Range hint is for '%s' and '%s' only."
 msgstr "O intervalo de inferência é apenas para '%s' e '%s'."

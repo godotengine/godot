@@ -465,7 +465,7 @@ void EditorPropertyOTVariation::update_property() {
 			Vector3i range = supported.get_value_at_index(i);
 
 			EditorPropertyInteger *prop = memnew(EditorPropertyInteger);
-			prop->setup(range.x, range.y, false, true, false, false);
+			prop->setup(range.x, range.y, 1, false, true, false, false);
 			prop->set_object_and_property(object.ptr(), "keys/" + itos(name_tag));
 
 			String name = TS->tag_to_name(name_tag);
@@ -746,7 +746,7 @@ void EditorPropertyOTFeatures::update_property() {
 					} break;
 					case Variant::INT: {
 						EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
-						editor->setup(0, 255, 1, false, false, false);
+						editor->setup(0, 255, 1, false, false, false, false);
 						prop = editor;
 					} break;
 					default: {

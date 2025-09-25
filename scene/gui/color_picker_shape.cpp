@@ -84,7 +84,7 @@ void ColorPickerShape::cancel_event() {
 }
 
 void ColorPickerShape::draw_focus_rect(Control *p_control, const Rect2 &p_rect) {
-	if (!p_control->has_focus()) {
+	if (!p_control->has_focus(true)) {
 		return;
 	}
 
@@ -103,7 +103,7 @@ void ColorPickerShape::draw_focus_rect(Control *p_control, const Rect2 &p_rect) 
 }
 
 void ColorPickerShape::draw_focus_circle(Control *p_control) {
-	if (!p_control->has_focus()) {
+	if (!p_control->has_focus(true)) {
 		return;
 	}
 

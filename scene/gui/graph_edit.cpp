@@ -861,7 +861,7 @@ void GraphEdit::_notification(int p_what) {
 			// Draw background fill.
 			draw_style_box(theme_cache.panel, Rect2(Point2(), get_size()));
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				draw_style_box(theme_cache.panel_focus, Rect2(Point2(), get_size()));
 			}
 
@@ -3096,7 +3096,7 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom_step"), "set_zoom_step", "get_zoom_step");
 
 	ADD_GROUP("Minimap", "minimap_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_enabled"), "set_minimap_enabled", "is_minimap_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_minimap_enabled", "is_minimap_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "minimap_size", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_size", "get_minimap_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "minimap_opacity"), "set_minimap_opacity", "get_minimap_opacity");
 

@@ -316,7 +316,7 @@ void ScrollContainer::_gui_focus_changed(Control *p_control) {
 		ensure_control_visible(p_control);
 	}
 	if (draw_focus_border) {
-		const bool _should_draw_focus_border = has_focus() || child_has_focus();
+		const bool _should_draw_focus_border = has_focus(true) || child_has_focus();
 		if (focus_border_is_drawn != _should_draw_focus_border) {
 			queue_redraw();
 		}
@@ -484,7 +484,7 @@ void ScrollContainer::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 			draw_style_box(theme_cache.panel_style, Rect2(Vector2(), get_size()));
-			focus_border_is_drawn = draw_focus_border && (has_focus() || child_has_focus());
+			focus_border_is_drawn = draw_focus_border && (has_focus(true) || child_has_focus());
 			focus_panel->set_visible(focus_border_is_drawn);
 		} break;
 
@@ -815,7 +815,7 @@ bool ScrollContainer::get_draw_focus_border() {
 
 bool ScrollContainer::child_has_focus() {
 	const Control *focus_owner = get_viewport() ? get_viewport()->gui_get_focus_owner() : nullptr;
-	return focus_owner && is_ancestor_of(focus_owner);
+	return focus_owner && focus_owner->has_focus(true) && is_ancestor_of(focus_owner);
 }
 
 ScrollContainer::ScrollContainer() {
