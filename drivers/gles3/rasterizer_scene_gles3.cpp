@@ -2362,6 +2362,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		}
 
 		tonemap_ubo.exposure = environment_get_exposure(render_data.environment);
+		tonemap_ubo.white = environment_get_white(render_data.environment);
 		tonemap_ubo.tonemapper = int32_t(environment_get_tone_mapper(render_data.environment));
 		RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(render_data.environment);
 		tonemap_ubo.tonemap_a = params.tonemap_a;

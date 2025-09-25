@@ -443,6 +443,7 @@ private:
 
 		struct TonemapUBO {
 			float exposure = 1.0;
+			float white = 1.0;
 			int32_t tonemapper = 0;
 			float tonemap_a = 0.0;
 			float tonemap_b = 0.0;
@@ -450,7 +451,6 @@ private:
 			float tonemap_d = 0.0;
 			int32_t pad = 0;
 			int32_t pad2 = 0;
-			int32_t pad3 = 0;
 			float brightness = 1.0;
 			float contrast = 1.0;
 			float saturation = 1.0;
