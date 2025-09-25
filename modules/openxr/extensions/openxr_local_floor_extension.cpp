@@ -49,7 +49,7 @@ HashMap<String, bool *> OpenXRLocalFloorExtension::get_requested_extensions() {
 
 	request_extensions[XR_EXT_LOCAL_FLOOR_EXTENSION_NAME] = &available;
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 bool OpenXRLocalFloorExtension::is_available() {

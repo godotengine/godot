@@ -491,7 +491,7 @@ public:
 		};
 
 		if (polygon.is_empty()) {
-			return polygon;
+			return Vector<Vector3>(polygon);
 		}
 
 		int *location_cache = (int *)alloca(sizeof(int) * polygon.size());
@@ -514,7 +514,7 @@ public:
 		}
 
 		if (outside_count == 0) {
-			return polygon; // No changes.
+			return Vector<Vector3>(polygon); // No changes.
 		} else if (inside_count == 0) {
 			return Vector<Vector3>(); // Empty.
 		}

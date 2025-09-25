@@ -39,7 +39,7 @@ HashMap<String, bool *> OpenXRMetaControllerExtension::get_requested_extensions(
 	request_extensions[XR_FB_TOUCH_CONTROLLER_PRO_EXTENSION_NAME] = &available[META_TOUCH_PRO];
 	request_extensions[XR_META_TOUCH_CONTROLLER_PLUS_EXTENSION_NAME] = &available[META_TOUCH_PLUS];
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 bool OpenXRMetaControllerExtension::is_available(MetaControllers p_type) {

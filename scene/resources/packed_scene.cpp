@@ -2379,7 +2379,7 @@ HashSet<StringName> SceneState::get_all_groups() {
 			ret.insert(names[group]);
 		}
 	}
-	return ret;
+	return HashSet<StringName>(ret);
 }
 
 Vector<String> SceneState::_get_node_groups(int p_idx) const {
@@ -2553,7 +2553,7 @@ HashSet<StringName> PackedScene::get_scene_groups(const String &p_path) {
 				i = k + 1;
 			}
 		}
-		return ret;
+		return HashSet<StringName>(ret);
 	} else {
 		Ref<PackedScene> packed_scene = ResourceLoader::load(p_path);
 		ERR_FAIL_COND_V(packed_scene.is_null(), HashSet<StringName>());

@@ -66,7 +66,7 @@ HashMap<String, bool *> OpenXRCompositionLayerExtension::get_requested_extension
 	request_extensions[XR_KHR_ANDROID_SURFACE_SWAPCHAIN_EXTENSION_NAME] = &android_surface_ext_available;
 #endif
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXRCompositionLayerExtension::on_instance_created(const XrInstance p_instance) {

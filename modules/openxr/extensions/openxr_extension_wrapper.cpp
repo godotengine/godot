@@ -89,7 +89,7 @@ HashMap<String, bool *> OpenXRExtensionWrapper::get_requested_extensions() {
 			GDExtensionPtr<bool> value = VariantCaster<GDExtensionPtr<bool>>::cast(kv.value);
 			result.insert(kv.key, value);
 		}
-		return result;
+		return HashMap<String, bool *>(result);
 	}
 
 	return HashMap<String, bool *>();

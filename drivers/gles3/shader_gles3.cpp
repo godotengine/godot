@@ -619,7 +619,7 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 
 			variant.insert(specialization_key, specialization);
 		}
-		variants.push_back(variant);
+		variants.push_back(AHashMap<uint64_t, Version::Specialization>(variant));
 	}
 	p_version->variants = variants;
 
@@ -706,7 +706,7 @@ void ShaderGLES3::_initialize_version(Version *p_version) {
 	p_version->variants.reserve(variant_count);
 	for (int i = 0; i < variant_count; i++) {
 		AHashMap<uint64_t, Version::Specialization> variant;
-		p_version->variants.push_back(variant);
+		p_version->variants.push_back(AHashMap<uint64_t, Version::Specialization>(variant));
 		Version::Specialization spec;
 		_compile_specialization(spec, i, p_version, specialization_default_mask);
 		p_version->variants[i].insert(specialization_default_mask, spec);
