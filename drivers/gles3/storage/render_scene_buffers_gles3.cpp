@@ -202,6 +202,10 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 
 	if ((!use_internal_buffer || internal3d.color != 0) && (msaa3d.mode == RS::VIEWPORT_MSAA_DISABLED || msaa3d.color != 0)) {
 		// already setup!
+		if (!use_internal_buffer && msaa3d.mode == RS::VIEWPORT_MSAA_DISABLED && (internal3d.color != 0 || msaa3d.color != 0)) {
+			_clear_intermediate_buffers();
+		}
+
 		return;
 	}
 
