@@ -32,10 +32,10 @@
 
 	<Type Name="Dictionary">
 		<Expand>
-			<Item Name="[size]">_p &amp;&amp; _p->variant_map.head_element ? _p->variant_map.num_elements : 0</Item>
+			<Item Name="[size]">_p &amp;&amp; _p->variant_map._head_element ? _p->variant_map._size : 0</Item>
 			<LinkedListItems>
-				<Size>_p &amp;&amp; _p->variant_map.head_element ? _p->variant_map.num_elements : 0</Size>
-				<HeadPointer>_p ? _p->variant_map.head_element : nullptr</HeadPointer>
+				<Size>_p &amp;&amp; _p->variant_map._head_element ? _p->variant_map._size : 0</Size>
+				<HeadPointer>_p ? _p->variant_map._head_element : nullptr</HeadPointer>
 				<NextPointer>next</NextPointer>
 				<ValueNode Name="[{data.key}]">(*this),view(MapHelper)</ValueNode>
 			</LinkedListItems>
@@ -93,10 +93,10 @@
 
 	<Type Name="HashSet&lt;*,*,*&gt;">
 		<Expand>
-			<Item Name="[size]">num_elements</Item>
+			<Item Name="[size]">_size</Item>
 			<ArrayItems>
-				<Size>num_elements</Size>
-				<ValuePointer>($T1 *) keys._cowdata._ptr</ValuePointer>
+				<Size>_size</Size>
+				<ValuePointer>($T1 *) _keys._cowdata._ptr</ValuePointer>
 			</ArrayItems>
 		</Expand>
 	</Type>
@@ -112,10 +112,10 @@
 	<!-- elements displayed by index -->
 	<Type Name="HashMap&lt;*,*,*,*,*&gt;" Priority="Medium">
 		<Expand>
-			<Item Name="[size]">head_element ? num_elements : 0</Item>
+			<Item Name="[size]">_head_element ? _size : 0</Item>
 			<LinkedListItems>
-				<Size>head_element ? num_elements : 0</Size>
-				<HeadPointer>head_element</HeadPointer>
+				<Size>_head_element ? _size : 0</Size>
+				<HeadPointer>_head_element</HeadPointer>
 				<NextPointer>next</NextPointer>
 				<ValueNode>(*this)</ValueNode>
 			</LinkedListItems>
@@ -126,10 +126,10 @@
 	<!-- show elements by index by specifying "ShowElementsByIndex"-->
 	<Type Name="HashMap&lt;*,*,*,*,*&gt;" ExcludeView="ShowElementsByIndex" Priority="MediumHigh">
 		<Expand>
-			<Item Name="[size]">head_element ? num_elements : 0</Item>
+			<Item Name="[size]">_head_element ? _size : 0</Item>
 			<LinkedListItems>
-				<Size>head_element ? num_elements : 0</Size>
-				<HeadPointer>head_element</HeadPointer>
+				<Size>_head_element ? _size : 0</Size>
+				<HeadPointer>_head_element</HeadPointer>
 				<NextPointer>next</NextPointer>
 				<ValueNode Name="[{data.key}]">(*this),view(MapHelper)</ValueNode>
 			</LinkedListItems>
