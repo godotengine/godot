@@ -536,7 +536,7 @@ int SpxDrawTiles::_get_or_create_source_id_with_collision(Ref<Texture2D> scaled_
     Ref<TileSetAtlasSource> atlas_source;
     atlas_source.instantiate();
     atlas_source->set_texture(scaled_texture);
-    atlas_source->set_texture_region_size(default_cell_size);
+    atlas_source->set_texture_region_size(Vector2(scaled_texture->get_width(),scaled_texture->get_height()));
     if(!_create_tile(atlas_source, default_atlas_coord, collision_points)){
         print_error("Failed to create tile in atlas source!");
         return TileSet::INVALID_SOURCE;
@@ -576,8 +576,8 @@ Ref<ImageTexture> SpxDrawTiles::_get_or_create_scaled_texture(Ref<Texture2D> tex
     }
 
     Ref<Image> img = texture->get_image();
-    //img->convert(Image::FORMAT_RGBA8);
-    img->resize(default_cell_size.x, default_cell_size.y, Image::INTERPOLATE_LANCZOS);
+    // Forced scaling will cause image rendering distortion
+    //img->resize(default_cell_size.x, default_cell_size.y, Image::INTERPOLATE_LANCZOS);
        
     Ref<ImageTexture> scaled_tex;
     scaled_tex.instantiate();
