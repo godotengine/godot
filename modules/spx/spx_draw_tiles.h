@@ -176,10 +176,16 @@ private:
     static constexpr float AXIS_WIDTH = 5;
     LayerRenderer renderer;
 
+    const String DEFAULT_SAVE_PATH = "user://exported_tilemap.png";
+    bool export_pending = false;
+    double elapsed = 0.0;
+    SubViewport *viewport_to_export = nullptr;
+
 protected:
     static void _bind_methods();
     void _notification(int p_what);
     void _ready();
+    void _process(double delta);
 	void _draw();
 	void input(const Ref<InputEvent> &p_event) override;
 
@@ -205,6 +211,10 @@ public:
     void erase_tile_spx(GdVec2 pos);
     GdString get_tile_spx(GdVec2 pos, GdInt layer_index);
     GdString get_tile_spx(GdVec2 pos);
+
+	void save_full_scene(Node *root);
+    void request_export(SubViewport *viewport);
+	void export_vp_png(SubViewport *viewport);
 
     void set_tile_size(int size = 16);
     void set_layer_index(int index);
@@ -246,6 +256,9 @@ private:
     void _place_tiles_bulk_spx(GdArray positions);
     void _place_tile_spx(GdVec2 pos);
     _FORCE_INLINE_ Vector2 flip_y(const Vector2 &pos) { return pos * Vector2(1, -1); }
+
+    Rect2 _get_bounds(TileMapLayer *layer);
+    Rect2 _get_scene_bounds(Node *node);
 
     void _destroy_layers();
     void _clear_cache();

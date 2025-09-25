@@ -62,6 +62,8 @@ void SpxExtMgr::on_awake() {
 	
 	debug_root = memnew(Node2D);
 	debug_root->set_name("debug_root");
+	debug_root->set_z_index(1000);
+	debug_root->set_z_as_relative(false);
 	get_spx_root()->add_child(debug_root);
 
 	pure_sprite_root = memnew(Node2D);
