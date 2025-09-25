@@ -61,6 +61,46 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	bool touchscreen_available = DisplayServer::get_singleton()->is_touchscreen_available();
+	if (touchscreen_available) {
+		Ref<InputEventScreenTouch> touch = p_event;
+        if (touch.is_valid()) {
+			if (status.touch_index == -1) {
+				if (touch->is_pressed()) {
+					status.touch_index = touch->get_index();
+					status.press_attempt = true;
+					status.pressing_inside = has_point(touch->get_position());
+					status.hovering = status.pressing_inside;
+					on_action_event(p_event);
+				}
+			} 
+			else if (touch->get_index() == status.touch_index) {
+				if (!touch->is_pressed()) {
+					status.touch_index = -1;
+					// problem between mouse (touch simulation) and touch 
+					// For mouse it should still be hovering when the position is on the button
+					// For touch it should not be hovering since the finger is up
+					// status.hovering = has_point(touch->get_position());
+					status.hovering = false;
+					on_action_event(p_event);
+				}
+			}
+		}
+	
+        Ref<InputEventScreenDrag> drag = p_event;
+		if (drag.is_valid() && drag->get_index() == status.touch_index && status.press_attempt) {
+			bool last_press_inside = status.pressing_inside;
+			status.pressing_inside = has_point(drag->get_position());
+			status.hovering = status.pressing_inside;
+
+			if (last_press_inside != status.pressing_inside) {
+				queue_redraw();
+			}
+		}
+
+		return;
+	}
+
 	Ref<InputEventMouseButton> mouse_button = p_event;
 	bool ui_accept = p_event->is_action("ui_accept", true) && !p_event->is_echo();
 
@@ -152,6 +192,7 @@ void BaseButton::_notification(int p_what) {
 		case NOTIFICATION_SCROLL_BEGIN: {
 			if (status.press_attempt) {
 				status.press_attempt = false;
+				status.touch_index = -1;
 				queue_redraw();
 			}
 		} break;
@@ -163,6 +204,7 @@ void BaseButton::_notification(int p_what) {
 		case NOTIFICATION_FOCUS_EXIT: {
 			if (status.press_attempt) {
 				status.press_attempt = false;
+				status.touch_index = -1;
 				queue_redraw();
 			} else if (status.hovering) {
 				queue_redraw();
@@ -185,6 +227,7 @@ void BaseButton::_notification(int p_what) {
 			status.hovering = false;
 			status.press_attempt = false;
 			status.pressing_inside = false;
+			status.touch_index = -1;
 		} break;
 	}
 }
@@ -203,8 +246,11 @@ void BaseButton::_toggled(bool p_pressed) {
 
 void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 	Ref<InputEventMouseButton> mouse_button = p_event;
+	Ref<InputEventScreenTouch> screen_touch = p_event;
+	Ref<InputEventScreenDrag> screen_drag = p_event;
 
-	if (p_event->is_pressed() && (mouse_button.is_null() || status.hovering)) {
+	bool is_accept_event = mouse_button.is_null() && screen_touch.is_null() && screen_drag.is_null();
+	if (p_event->is_pressed() && (is_accept_event || status.hovering)) {
 		status.press_attempt = true;
 		status.pressing_inside = true;
 		if (!status.pressed_down_with_focus) {
