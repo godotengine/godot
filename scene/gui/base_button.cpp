@@ -62,6 +62,10 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	bool touchscreen_available = DisplayServer::get_singleton()->is_touchscreen_available();
+	if (!Engine::get_singleton()->is_editor_hint() && touchscreen_only && !touchscreen_available) {
+		return;
+	}
+
 	if (touchscreen_available) {
 		Ref<InputEventScreenTouch> touch = p_event;
 		if (touch.is_valid()) {
@@ -560,6 +564,15 @@ Ref<ButtonGroup> BaseButton::get_button_group() const {
 	return button_group;
 }
 
+void BaseButton::set_touchscreen_only(bool p_enable) {
+	touchscreen_only = p_enable;
+	queue_redraw();
+}
+
+bool BaseButton::is_touchscreen_only() const {
+	return touchscreen_only;
+}
+
 bool BaseButton::_was_pressed_by_mouse() const {
 	return was_mouse_pressed;
 }
@@ -601,6 +614,9 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_button_group", "button_group"), &BaseButton::set_button_group);
 	ClassDB::bind_method(D_METHOD("get_button_group"), &BaseButton::get_button_group);
 
+	ClassDB::bind_method(D_METHOD("set_touchscreen_only", "enabled"), &BaseButton::set_touchscreen_only);
+	ClassDB::bind_method(D_METHOD("is_touchscreen_only"), &BaseButton::is_touchscreen_only);
+
 	GDVIRTUAL_BIND(_pressed);
 	GDVIRTUAL_BIND(_toggled, "toggled_on");
 
@@ -616,6 +632,7 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left, Mouse Right, Mouse Middle"), "set_button_mask", "get_button_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_pressed_outside"), "set_keep_pressed_outside", "is_keep_pressed_outside");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "button_group", PROPERTY_HINT_RESOURCE_TYPE, "ButtonGroup"), "set_button_group", "get_button_group");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "touchscreen_only"), "set_touchscreen_only", "is_touchscreen_only");
 
 	ADD_GROUP("Shortcut", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
