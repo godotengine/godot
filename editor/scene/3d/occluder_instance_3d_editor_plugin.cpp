@@ -87,7 +87,7 @@ void OccluderInstance3DEditorPlugin::edit(Object *p_object) {
 }
 
 bool OccluderInstance3DEditorPlugin::handles(Object *p_object) const {
-	return p_object->derives_from<OccluderInstance3D>();
+	return p_object->is_class("OccluderInstance3D");
 }
 
 void OccluderInstance3DEditorPlugin::make_visible(bool p_visible) {

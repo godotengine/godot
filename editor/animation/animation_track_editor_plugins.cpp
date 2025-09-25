@@ -1330,20 +1330,20 @@ AnimationTrackEdit *AnimationTrackEditDefaultPlugin::create_value_track_edit(Obj
 		return audio;
 	}
 
-	if (p_property == "frame" && (p_object->derives_from<Sprite2D>() || p_object->derives_from<Sprite3D>() || p_object->derives_from<AnimatedSprite2D>() || p_object->derives_from<AnimatedSprite3D>())) {
+	if (p_property == "frame" && (p_object->is_class("Sprite2D") || p_object->is_class("Sprite3D") || p_object->is_class("AnimatedSprite2D") || p_object->is_class("AnimatedSprite3D"))) {
 		AnimationTrackEditSpriteFrame *sprite = memnew(AnimationTrackEditSpriteFrame);
 		sprite->set_node(p_object);
 		return sprite;
 	}
 
-	if (p_property == "frame_coords" && (p_object->derives_from<Sprite2D>() || p_object->derives_from<Sprite3D>())) {
+	if (p_property == "frame_coords" && (p_object->is_class("Sprite2D") || p_object->is_class("Sprite3D"))) {
 		AnimationTrackEditSpriteFrame *sprite = memnew(AnimationTrackEditSpriteFrame);
 		sprite->set_as_coords();
 		sprite->set_node(p_object);
 		return sprite;
 	}
 
-	if (p_property == "current_animation" && (p_object->derives_from<AnimationPlayer>())) {
+	if (p_property == "current_animation" && (p_object->is_class("AnimationPlayer"))) {
 		AnimationTrackEditSubAnim *player = memnew(AnimationTrackEditSubAnim);
 		player->set_node(p_object);
 		return player;

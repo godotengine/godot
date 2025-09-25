@@ -311,7 +311,7 @@ void MeshLibraryEditorPlugin::edit(Object *p_node) {
 }
 
 bool MeshLibraryEditorPlugin::handles(Object *p_node) const {
-	return p_node->derives_from<MeshLibrary>();
+	return p_node->is_class("MeshLibrary");
 }
 
 void MeshLibraryEditorPlugin::make_visible(bool p_visible) {

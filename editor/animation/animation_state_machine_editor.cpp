@@ -916,7 +916,7 @@ void AnimationNodeStateMachineEditor::_clip_dst_line_to_rect(const Vector2 &p_fr
 
 Ref<StyleBox> AnimationNodeStateMachineEditor::_adjust_stylebox_opacity(Ref<StyleBox> p_style, float p_opacity) {
 	Ref<StyleBox> style = p_style->duplicate();
-	if (style->derives_from<StyleBoxFlat>()) {
+	if (style->is_class("StyleBoxFlat")) {
 		Ref<StyleBoxFlat> flat_style = style;
 		Color bg_color = flat_style->get_bg_color();
 		Color border_color = flat_style->get_border_color();

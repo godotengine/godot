@@ -898,7 +898,7 @@ void FontPreview::_notification(int p_what) {
 					} else {
 						name = vformat("%s (%s)", prev_font->get_font_name(), prev_font->get_font_style_name());
 					}
-					if (prev_font->derives_from<FontVariation>()) {
+					if (prev_font->is_class("FontVariation")) {
 						// TRANSLATORS: This refers to variable font config, appended to the font name.
 						name += " - " + TTR("Variation");
 					}
