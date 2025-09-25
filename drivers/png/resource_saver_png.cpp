@@ -73,7 +73,7 @@ Vector<uint8_t> ResourceSaverPNG::save_image_to_buffer(const Ref<Image> &p_img) 
 }
 
 bool ResourceSaverPNG::recognize(const Ref<Resource> &p_resource) const {
-	return (p_resource.is_valid() && p_resource->derives_from<ImageTexture>());
+	return (p_resource.is_valid() && p_resource->is_class("ImageTexture"));
 }
 
 void ResourceSaverPNG::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {

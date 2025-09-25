@@ -112,7 +112,7 @@ void Camera3DEditorPlugin::edit(Object *p_object) {
 }
 
 bool Camera3DEditorPlugin::handles(Object *p_object) const {
-	return p_object->derives_from<Camera3D>();
+	return p_object->is_class("Camera3D");
 }
 
 void Camera3DEditorPlugin::make_visible(bool p_visible) {
