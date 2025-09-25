@@ -44,6 +44,8 @@ public:
 };
 
 class ShaderBakerExportPlugin : public EditorExportPlugin {
+	GDSOFTCLASS(ShaderBakerExportPlugin, EditorExportPlugin);
+
 protected:
 	struct WorkItem {
 		String cache_path;

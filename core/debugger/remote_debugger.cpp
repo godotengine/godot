@@ -48,9 +48,9 @@ class RemoteDebugger::PerformanceProfiler : public EngineProfiler {
 	uint64_t last_monitor_modification_time = 0;
 
 public:
-	void toggle(bool p_enable, const Array &p_opts) {}
-	void add(const Array &p_data) {}
-	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
+	void toggle(bool p_enable, const Array &p_opts) override {}
+	void add(const Array &p_data) override {}
+	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) override {
 		if (!performance) {
 			return;
 		}
