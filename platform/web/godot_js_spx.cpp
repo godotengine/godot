@@ -271,6 +271,10 @@ void gdspx_ext_set_tile(GdString* texture_path,GdBool* with_collision) {
 	 extMgr->set_tile(*texture_path, *with_collision);
 }
 EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_set_tile_with_collision_info(GdString* texture_path,GdArray* collision_points) {
+	 extMgr->set_tile_with_collision_info(*texture_path, *collision_points);
+}
+EMSCRIPTEN_KEEPALIVE
 void gdspx_ext_set_layer_offset(GdInt* index,GdVec2* offset) {
 	 extMgr->set_layer_offset(*index, *offset);
 }

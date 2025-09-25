@@ -123,6 +123,7 @@ public:
 	void open_draw_tiles();
 	void set_layer_index(GdInt index);
 	void set_tile(GdString texture_path, GdBool with_collision);
+	void set_tile_with_collision_info(GdString texture_path, GdArray collision_points);
     void set_layer_offset(GdInt index, GdVec2 offset);
     GdVec2 get_layer_offset(GdInt index);
 	void place_tiles(GdArray positions, GdString texture_path);

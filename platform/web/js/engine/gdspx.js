@@ -465,6 +465,16 @@ gdspx_ext_set_tile(texture_path,with_collision) {
 	FreeGdBool(_arg1); 
 
 }
+gdspx_ext_set_tile_with_collision_info(texture_path,collision_points) {
+	var _gdFuncPtr = Module._gdspx_ext_set_tile_with_collision_info; 
+	
+	var _arg0 = ToGdString(texture_path);
+	var _arg1 = ToGdArray(collision_points);
+	_gdFuncPtr(_arg0, _arg1);
+	FreeGdString(_arg0); 
+	FreeGdArray(_arg1); 
+
+}
 gdspx_ext_set_layer_offset(index,offset) {
 	var _gdFuncPtr = Module._gdspx_ext_set_layer_offset; 
 	

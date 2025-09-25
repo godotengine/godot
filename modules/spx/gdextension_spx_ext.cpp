@@ -211,6 +211,9 @@ static void gdextension_spx_ext_set_layer_index(GdInt index) {
 static void gdextension_spx_ext_set_tile(GdString texture_path,GdBool with_collision) {
 	 extMgr->set_tile(texture_path, with_collision);
 }
+static void gdextension_spx_ext_set_tile_with_collision_info(GdString texture_path,GdArray collision_points) {
+	 extMgr->set_tile_with_collision_info(texture_path, collision_points);
+}
 static void gdextension_spx_ext_set_layer_offset(GdInt index,GdVec2 offset) {
 	 extMgr->set_layer_offset(index, offset);
 }
@@ -951,6 +954,7 @@ void gdextension_spx_setup_interface() {
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_open_draw_tiles);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_layer_index);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_tile);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_tile_with_collision_info);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_layer_offset);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_get_layer_offset);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_place_tiles);

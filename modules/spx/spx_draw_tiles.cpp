@@ -43,6 +43,10 @@
 #include "spx_res_mgr.h"
 #include "spx_base_mgr.h"
 
+// Static member variable definitions
+Vector<Vector2> SpxDrawTiles::default_collision_rect = {};
+Vector<Vector2> SpxDrawTiles::no_collision_array = {};
+
 void LayerRenderer::_draw_axis(Node2D *parent_node, const DrawContext &ctx) {
 	Vector2 origin = ctx.layer_pos;
 
@@ -144,6 +148,25 @@ void SpxDrawTiles::_ready() {
 
     shared_tile_set.instantiate();
     shared_tile_set->set_tile_size(default_cell_size);
+    update_default_collision_rect();
+}
+
+void SpxDrawTiles::update_default_collision_rect() {
+    auto halfSize = default_cell_size.x / 2;
+    default_collision_rect = {
+        Vector2(-halfSize, -halfSize),
+        Vector2(halfSize, -halfSize),
+        Vector2(halfSize, halfSize),
+        Vector2(-halfSize, halfSize)
+    };
+}
+
+void SpxDrawTiles::set_tile_size(int size) {
+    default_cell_size = Vector2(size, size);
+    update_default_collision_rect();
+    if (shared_tile_set.is_valid()) {
+        shared_tile_set->set_tile_size(default_cell_size);
+    }
 }
 
 void SpxDrawTiles::_draw() {
@@ -225,7 +248,7 @@ void SpxDrawTiles::place_tiles_spx(GdArray positions, GdString texture_path) {
 
 void SpxDrawTiles::place_tiles_spx(GdArray positions, GdString texture_path, GdInt index) {
     set_layer_index(index);
-    set_tile_texture_spx(texture_path, true);
+    set_tile_texture_spx(texture_path, &default_collision_rect);
     _place_tiles_bulk_spx(positions);
 }
 
@@ -235,7 +258,7 @@ void SpxDrawTiles::place_tile_spx(GdVec2 pos, GdString texture_path) {
 
 void SpxDrawTiles::place_tile_spx(GdVec2 pos, GdString texture_path, GdInt index) {
     set_layer_index(index);
-    set_tile_texture_spx(texture_path, true);
+    set_tile_texture_spx(texture_path, &default_collision_rect);
     _place_tile_spx(pos);
 }
 
@@ -282,7 +305,7 @@ GdString SpxDrawTiles::get_tile_spx(GdVec2 pos) {
 	return get_tile_spx(pos, current_layer_index);
 }
 
-void SpxDrawTiles::set_tile_texture_spx(GdString texture_path, GdBool with_collision) {
+void SpxDrawTiles::set_tile_texture_spx(GdString texture_path, const Vector<Vector2> *collision_points) {
 	String path = SpxStr(texture_path);
 	Ref<Texture2D> tex;
     if(path_cached_textures_bimap.has_key(path)){
@@ -293,7 +316,7 @@ void SpxDrawTiles::set_tile_texture_spx(GdString texture_path, GdBool with_colli
             path_cached_textures_bimap.insert(path, tex);
     }                   
 
-    set_texture(tex, with_collision);
+    set_texture_with_collision_points(tex, collision_points);
 }
 
 void SpxDrawTiles::erase_tile_spx(GdVec2 pos) {
@@ -355,13 +378,19 @@ Vector2 SpxDrawTiles::get_layer_offset_spx(int layer_index) {
 }
 
 void SpxDrawTiles::set_texture(Ref<Texture2D> texture, bool with_collision) {
+    // Use the collision points version for consistency
+    const Vector<Vector2> *collision_points = with_collision ? &default_collision_rect : &no_collision_array;
+    set_texture_with_collision_points(texture, collision_points);
+}
+
+void SpxDrawTiles::set_texture_with_collision_points(Ref<Texture2D> texture, const Vector<Vector2> *collision_points) {
     if (texture.is_null()) {
         print_error("Tile texture is null!");
         return;
     }
 
     current_texture = _get_or_create_scaled_texture(texture);
-    _get_or_create_source_id(current_texture, with_collision);
+    _get_or_create_source_id_with_collision(current_texture, collision_points);
     queue_redraw();
 }
 
@@ -475,6 +504,12 @@ TileMapLayer *SpxDrawTiles::_create_layer(int layer_index) {
 }
 
 int SpxDrawTiles::_get_or_create_source_id(Ref<Texture2D> scaled_texture, bool with_collision) {
+    // Use the collision points version for consistency
+    const Vector<Vector2> *collision_points = with_collision ? &default_collision_rect : &no_collision_array;
+    return _get_or_create_source_id_with_collision(scaled_texture, collision_points);
+}
+
+int SpxDrawTiles::_get_or_create_source_id_with_collision(Ref<Texture2D> scaled_texture, const Vector<Vector2> *collision_points) {
     if (!scaled_texture.is_valid()) {
         print_error("Invalid texture!");
         return TileSet::INVALID_SOURCE;
@@ -502,41 +537,35 @@ int SpxDrawTiles::_get_or_create_source_id(Ref<Texture2D> scaled_texture, bool w
     atlas_source.instantiate();
     atlas_source->set_texture(scaled_texture);
     atlas_source->set_texture_region_size(default_cell_size);
-    if(!_create_tile(atlas_source, default_atlas_coord, with_collision)){
+    if(!_create_tile(atlas_source, default_atlas_coord, collision_points)){
         print_error("Failed to create tile in atlas source!");
         return TileSet::INVALID_SOURCE;
     }
 
     shared_tile_set->add_source(atlas_source, id);
-    source_id_collision_map[id] = with_collision;
+    bool has_collision = collision_points && collision_points->size() > 0;
+    source_id_collision_map[id] = has_collision;
 
     return id;
 }
 
-bool SpxDrawTiles::_create_tile(Ref<TileSetAtlasSource> atlas_source, const Vector2i &tile_coords, bool with_collision) {
+
+bool SpxDrawTiles::_create_tile(Ref<TileSetAtlasSource> atlas_source, const Vector2i &tile_coords, const Vector<Vector2> *collision_points) {
     atlas_source->create_tile(tile_coords);
     auto tile_data = atlas_source->get_tile_data(tile_coords, 0);
     if (!tile_data) 
         return false;
 
-    if (!with_collision) 
+    if (!collision_points || collision_points->size() == 0) 
         return true;
 
     atlas_source->add_physics_layer(0);
-    auto halfSize = default_cell_size.x / 2;
-    Vector<Vector2> collision_rect = {
-        Vector2(-halfSize, -halfSize),
-        Vector2(halfSize, -halfSize),
-        Vector2(halfSize,halfSize),
-        Vector2(-halfSize, halfSize)
-    };
-
     tile_data->add_collision_polygon(default_physics_layer);
-
-    tile_data->set_collision_polygon_points(default_physics_layer, 0, collision_rect);
+    tile_data->set_collision_polygon_points(default_physics_layer, 0, *collision_points);
 
     return true;
 }
+
 Ref<ImageTexture> SpxDrawTiles::_get_or_create_scaled_texture(Ref<Texture2D> texture) {
 	if (texture.is_null()) {
 		return Ref<ImageTexture>();
