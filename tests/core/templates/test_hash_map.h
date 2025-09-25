@@ -130,7 +130,7 @@ TEST_CASE("[HashMap] Const iteration") {
 	map.insert(123485, 1238888);
 	map.insert(123, 111111);
 
-	const HashMap<int, int> const_map = map;
+	const HashMap<int, int> const_map = HashMap<int, int>(map);
 
 	Vector<Pair<int, int>> expected;
 	expected.push_back(Pair<int, int>(42, 84));

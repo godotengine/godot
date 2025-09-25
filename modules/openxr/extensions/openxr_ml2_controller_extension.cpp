@@ -41,7 +41,7 @@ HashMap<String, bool *> OpenXRML2ControllerExtension::get_requested_extensions(X
 		request_extensions[XR_ML_ML2_CONTROLLER_INTERACTION_EXTENSION_NAME] = &available;
 	}
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 bool OpenXRML2ControllerExtension::is_available() {

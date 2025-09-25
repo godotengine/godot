@@ -189,7 +189,7 @@ void GroupSettingsEditor::_group_name_text_changed(const String &p_name) {
 void GroupSettingsEditor::_modify_references(const StringName &p_name, const StringName &p_new_name, bool p_is_rename) {
 	HashSet<String> scenes;
 
-	HashMap<StringName, HashSet<StringName>> scene_groups_cache = ProjectSettings::get_singleton()->get_scene_groups_cache();
+	const HashMap<StringName, HashSet<StringName>> scene_groups_cache = HashMap<StringName, HashSet<StringName>>(ProjectSettings::get_singleton()->get_scene_groups_cache());
 	for (const KeyValue<StringName, HashSet<StringName>> &E : scene_groups_cache) {
 		if (E.value.has(p_name)) {
 			scenes.insert(E.key);

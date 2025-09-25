@@ -267,7 +267,7 @@ static FfxErrorCode register_resource_rd(FfxFsr2Interface *p_backend_interface, 
 
 static FfxErrorCode unregister_resources_rd(FfxFsr2Interface *p_backend_interface) {
 	FSR2Context::Scratch &scratch = *reinterpret_cast<FSR2Context::Scratch *>(p_backend_interface->scratchBuffer);
-	LocalVector<uint32_t> dynamic_list_copy = scratch.resources.dynamic_list;
+	LocalVector<uint32_t> dynamic_list_copy = LocalVector<uint32_t>(scratch.resources.dynamic_list);
 	for (uint32_t i : dynamic_list_copy) {
 		scratch.resources.remove(i);
 	}

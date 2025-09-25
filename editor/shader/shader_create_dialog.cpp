@@ -265,7 +265,7 @@ void ShaderCreateDialog::_browse_path() {
 	file_browse->set_customization_flag_enabled(FileDialog::CUSTOMIZATION_OVERWRITE_WARNING, false);
 	file_browse->clear_filters();
 
-	List<String> extensions = type_data.get(type_menu->get_selected()).extensions;
+	const List<String> extensions = List<String>(type_data.get(type_menu->get_selected()).extensions);
 
 	for (const String &E : extensions) {
 		file_browse->add_filter("*." + E);

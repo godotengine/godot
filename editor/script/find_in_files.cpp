@@ -540,7 +540,7 @@ HashSet<String> FindInFilesDialog::get_filter() const {
 			filters.insert(cb->get_text());
 		}
 	}
-	return filters;
+	return HashSet<String>(filters);
 }
 
 HashSet<String> FindInFilesDialog::get_includes() const {
@@ -548,14 +548,14 @@ HashSet<String> FindInFilesDialog::get_includes() const {
 	String text = _includes_line_edit->get_text();
 
 	if (text.is_empty()) {
-		return includes;
+		return HashSet<String>(includes);
 	}
 
 	PackedStringArray wildcards = text.split(",", false);
 	for (const String &wildcard : wildcards) {
 		includes.insert(validate_filter_wildcard(wildcard));
 	}
-	return includes;
+	return HashSet<String>(includes);
 }
 
 HashSet<String> FindInFilesDialog::get_excludes() const {
@@ -563,14 +563,14 @@ HashSet<String> FindInFilesDialog::get_excludes() const {
 	String text = _excludes_line_edit->get_text();
 
 	if (text.is_empty()) {
-		return excludes;
+		return HashSet<String>(excludes);
 	}
 
 	PackedStringArray wildcards = text.split(",", false);
 	for (const String &wildcard : wildcards) {
 		excludes.insert(validate_filter_wildcard(wildcard));
 	}
-	return excludes;
+	return HashSet<String>(excludes);
 }
 
 void FindInFilesDialog::_notification(int p_what) {

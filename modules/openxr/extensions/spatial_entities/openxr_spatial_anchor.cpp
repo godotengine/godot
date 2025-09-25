@@ -343,7 +343,7 @@ HashMap<String, bool *> OpenXRSpatialAnchorCapability::get_requested_extensions(
 		}
 	}
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXRSpatialAnchorCapability::on_instance_created(const XrInstance p_instance) {

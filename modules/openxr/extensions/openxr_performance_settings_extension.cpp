@@ -51,7 +51,7 @@ HashMap<String, bool *> OpenXRPerformanceSettingsExtension::get_requested_extens
 
 	request_extensions[XR_EXT_PERFORMANCE_SETTINGS_EXTENSION_NAME] = &available;
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXRPerformanceSettingsExtension::on_instance_created(const XrInstance p_instance) {

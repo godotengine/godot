@@ -265,7 +265,7 @@ void NavigationRegion3DEditorPlugin::edit(Object *p_object) {
 		NavigationRegion3D *region = Object::cast_to<NavigationRegion3D>(p_object);
 		if (region) {
 			regions.push_back(region);
-			navigation_region_editor->edit(regions);
+			navigation_region_editor->edit(LocalVector<NavigationRegion3D *>(regions));
 			return;
 		}
 	}
@@ -281,7 +281,7 @@ void NavigationRegion3DEditorPlugin::edit(Object *p_object) {
 		}
 	}
 
-	navigation_region_editor->edit(regions);
+	navigation_region_editor->edit(LocalVector<NavigationRegion3D *>(regions));
 }
 
 bool NavigationRegion3DEditorPlugin::handles(Object *p_object) const {

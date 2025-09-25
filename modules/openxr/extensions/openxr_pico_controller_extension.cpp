@@ -46,7 +46,7 @@ HashMap<String, bool *> OpenXRPicoControllerExtension::get_requested_extensions(
 		request_extensions[XR_BD_CONTROLLER_INTERACTION_EXTENSION_NAME] = &available;
 	}
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 bool OpenXRPicoControllerExtension::is_available() {

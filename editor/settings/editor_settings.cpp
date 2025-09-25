@@ -203,7 +203,7 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 				continue;
 			}
 
-			List<Ref<InputEvent>> events = action_override.value;
+			const List<Ref<InputEvent>> events = List<Ref<InputEvent>>(action_override.value);
 
 			Dictionary action_dict;
 			action_dict["name"] = action_override.key;
@@ -1635,7 +1635,7 @@ Vector<String> EditorSettings::get_favorites() const {
 }
 
 HashMap<String, PackedStringArray> EditorSettings::get_favorite_properties() const {
-	return favorite_properties;
+	return HashMap<String, PackedStringArray>(favorite_properties);
 }
 
 void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs, bool p_update_file_dialog) {
@@ -1779,7 +1779,7 @@ HashMap<StringName, Color> EditorSettings::get_godot2_text_editor_theme() {
 	colors["text_editor/theme/highlighting/comment_markers/critical_color"] = Color(0.77, 0.35, 0.35);
 	colors["text_editor/theme/highlighting/comment_markers/warning_color"] = Color(0.72, 0.61, 0.48);
 	colors["text_editor/theme/highlighting/comment_markers/notice_color"] = Color(0.56, 0.67, 0.51);
-	return colors;
+	return HashMap<StringName, Color>(colors);
 }
 
 bool EditorSettings::is_default_text_editor_theme(const String &p_theme_name) {
@@ -2196,7 +2196,7 @@ const Array EditorSettings::get_builtin_action_overrides(const String &p_name) c
 	if (AO) {
 		Array event_array;
 
-		List<Ref<InputEvent>> events_list = AO->value;
+		const List<Ref<InputEvent>> events_list = List<Ref<InputEvent>>(AO->value);
 		for (const Ref<InputEvent> &E : events_list) {
 			event_array.push_back(E);
 		}

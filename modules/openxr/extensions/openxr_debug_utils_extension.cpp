@@ -55,7 +55,7 @@ HashMap<String, bool *> OpenXRDebugUtilsExtension::get_requested_extensions(XrVe
 
 	request_extensions[XR_EXT_DEBUG_UTILS_EXTENSION_NAME] = &debug_utils_ext;
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXRDebugUtilsExtension::on_instance_created(const XrInstance p_instance) {

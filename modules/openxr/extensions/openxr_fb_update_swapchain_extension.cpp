@@ -80,7 +80,7 @@ HashMap<String, bool *> OpenXRFBUpdateSwapchainExtension::get_requested_extensio
 	request_extensions[XR_FB_SWAPCHAIN_UPDATE_STATE_ANDROID_SURFACE_EXTENSION_NAME] = &fb_swapchain_update_state_android_ext;
 #endif
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXRFBUpdateSwapchainExtension::on_instance_created(const XrInstance p_instance) {

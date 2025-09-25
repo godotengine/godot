@@ -1114,7 +1114,7 @@ void GridMap::_queue_octants_dirty() {
 
 void GridMap::_recreate_octant_data() {
 	recreating_octants = true;
-	HashMap<IndexKey, Cell, IndexKey> cell_copy = cell_map;
+	HashMap<IndexKey, Cell, IndexKey> cell_copy = HashMap<IndexKey, Cell, IndexKey>(cell_map);
 	_clear_internal();
 	for (const KeyValue<IndexKey, Cell> &E : cell_copy) {
 		set_cell_item(Vector3i(E.key), E.value.item, E.value.rot);

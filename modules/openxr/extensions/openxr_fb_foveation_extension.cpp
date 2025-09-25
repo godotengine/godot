@@ -96,7 +96,7 @@ HashMap<String, bool *> OpenXRFBFoveationExtension::get_requested_extensions(XrV
 	}
 #endif // XR_USE_GRAPHICS_API_VULKAN
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXRFBFoveationExtension::on_instance_created(const XrInstance p_instance) {

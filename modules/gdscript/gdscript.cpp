@@ -644,7 +644,7 @@ void GDScript::_update_exports_down(bool p_base_exports_changed) {
 		return;
 	}
 
-	HashSet<ObjectID> copy = inheriters_cache; //might get modified
+	HashSet<ObjectID> copy = HashSet<ObjectID>(inheriters_cache); //might get modified
 
 	for (const ObjectID &E : copy) {
 		Object *id = ObjectDB::get_instance(E);
@@ -1267,7 +1267,7 @@ RBSet<GDScript *> GDScript::get_dependencies() {
 	_collect_dependencies(dependencies, this);
 	dependencies.erase(this);
 
-	return dependencies;
+	return RBSet<GDScript *>(dependencies);
 }
 
 HashMap<GDScript *, RBSet<GDScript *>> GDScript::get_all_dependencies() {
@@ -1291,7 +1291,7 @@ HashMap<GDScript *, RBSet<GDScript *>> GDScript::get_all_dependencies() {
 		all_dependencies.insert(scr, scr->get_dependencies());
 	}
 
-	return all_dependencies;
+	return HashMap<GDScript *, RBSet<GDScript *>>(all_dependencies);
 }
 
 RBSet<GDScript *> GDScript::get_must_clear_dependencies() {
@@ -1321,7 +1321,7 @@ RBSet<GDScript *> GDScript::get_must_clear_dependencies() {
 	cant_clear.clear();
 	dependencies.clear();
 	all_dependencies.clear();
-	return must_clear_dependencies;
+	return RBSet<GDScript *>(must_clear_dependencies);
 }
 
 bool GDScript::has_script_signal(const StringName &p_signal) const {

@@ -141,7 +141,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 	}
 
 	/* Autoloads. */
-	HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+	const HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = HashMap<StringName, ProjectSettings::AutoloadInfo>(ProjectSettings::get_singleton()->get_autoload_list());
 	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
 		const ProjectSettings::AutoloadInfo &info = E.value;
 		if (info.is_singleton) {

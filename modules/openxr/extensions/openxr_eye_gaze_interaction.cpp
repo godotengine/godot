@@ -60,7 +60,7 @@ HashMap<String, bool *> OpenXREyeGazeInteractionExtension::get_requested_extensi
 		request_extensions[XR_EXT_EYE_GAZE_INTERACTION_EXTENSION_NAME] = &available;
 	}
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void *OpenXREyeGazeInteractionExtension::set_system_properties_and_get_next_pointer(void *p_next_pointer) {

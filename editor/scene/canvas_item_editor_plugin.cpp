@@ -330,13 +330,13 @@ void CanvasItemEditor::_snap_other_nodes(
 		const Point2 p_value,
 		const Transform2D p_transform_to_snap,
 		Point2 &r_current_snap, SnapTarget (&r_current_snap_target)[2],
-		const SnapTarget p_snap_target, List<const CanvasItem *> p_exceptions,
+		const SnapTarget p_snap_target, const List<const CanvasItem *> p_exceptions,
 		const Node *p_current) {
 	const CanvasItem *ci = Object::cast_to<CanvasItem>(p_current);
 
 	// Check if the element is in the exception
 	bool exception = false;
-	for (const CanvasItem *&E : p_exceptions) {
+	for (const CanvasItem *const &E : p_exceptions) {
 		if (E == p_current) {
 			exception = true;
 			break;
@@ -359,7 +359,7 @@ void CanvasItemEditor::_snap_other_nodes(
 		}
 	}
 	for (int i = 0; i < p_current->get_child_count(); i++) {
-		_snap_other_nodes(p_value, p_transform_to_snap, r_current_snap, r_current_snap_target, p_snap_target, p_exceptions, p_current->get_child(i));
+		_snap_other_nodes(p_value, p_transform_to_snap, r_current_snap, r_current_snap_target, p_snap_target, List<const CanvasItem *>(p_exceptions), p_current->get_child(i));
 	}
 }
 
@@ -446,7 +446,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 				p_target, to_snap_transform,
 				output, snap_target,
 				SNAP_TARGET_OTHER_NODE,
-				exceptions,
+				List<const CanvasItem *>(exceptions),
 				get_tree()->get_edited_scene_root());
 	}
 
@@ -4853,7 +4853,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			snap_dialog->popup_centered(Size2(320, 160) * EDSCALE);
 		} break;
 		case SKELETON_SHOW_BONES: {
-			List<Node *> selection = editor_selection->get_top_selected_node_list();
+			List<Node *> selection = List<Node *>(editor_selection->get_top_selected_node_list());
 			for (Node *E : selection) {
 				// Add children nodes so they are processed
 				for (int child = 0; child < E->get_child_count(); child++) {

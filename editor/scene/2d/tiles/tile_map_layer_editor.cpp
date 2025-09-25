@@ -1093,7 +1093,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_line(Vector2
 			}
 		}
 	}
-	return output;
+	return HashMap<Vector2i, TileMapCell>(output);
 }
 
 HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_rect(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase) {
@@ -1148,7 +1148,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_rect(Vector2
 		}
 	}
 
-	return output;
+	return HashMap<Vector2i, TileMapCell>(output);
 }
 
 HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_bucket_fill(Vector2i p_coords, bool p_contiguous, bool p_erase) {
@@ -1253,7 +1253,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_bucket_fill(
 			}
 		}
 	}
-	return output;
+	return HashMap<Vector2i, TileMapCell>(output);
 }
 
 void TileMapLayerEditorTilesPlugin::_stop_dragging() {
@@ -2537,7 +2537,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTerrainsPlugin::_draw_terrain_p
 			}
 		}
 	}
-	return output;
+	return HashMap<Vector2i, TileMapCell>(output);
 }
 
 HashMap<Vector2i, TileMapCell> TileMapLayerEditorTerrainsPlugin::_draw_terrain_pattern(const Vector<Vector2i> &p_to_paint, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const {
@@ -2584,7 +2584,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTerrainsPlugin::_draw_terrain_p
 			}
 		}
 	}
-	return output;
+	return HashMap<Vector2i, TileMapCell>(output);
 }
 
 HashMap<Vector2i, TileMapCell> TileMapLayerEditorTerrainsPlugin::_draw_line(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase) {
@@ -2753,7 +2753,7 @@ RBSet<Vector2i> TileMapLayerEditorTerrainsPlugin::_get_cells_for_bucket_fill(Vec
 			}
 		}
 	}
-	return output;
+	return RBSet<Vector2i>(output);
 }
 
 HashMap<Vector2i, TileMapCell> TileMapLayerEditorTerrainsPlugin::_draw_bucket_fill(Vector2i p_coords, bool p_contiguous, bool p_erase) {

@@ -39,7 +39,7 @@ HashMap<String, bool *> OpenXRHTCViveTrackerExtension::get_requested_extensions(
 
 	request_extensions[XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME] = &available;
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 PackedStringArray OpenXRHTCViveTrackerExtension::get_suggested_tracker_names() {

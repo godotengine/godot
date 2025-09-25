@@ -357,7 +357,7 @@ void Area2D::_clear_monitoring() {
 	ERR_FAIL_COND_MSG(locked, "This function can't be used during the in/out signal.");
 
 	{
-		HashMap<ObjectID, BodyState> bmcopy = body_map;
+		HashMap<ObjectID, BodyState> bmcopy = HashMap<ObjectID, BodyState>(body_map);
 		body_map.clear();
 		//disconnect all monitored stuff
 
@@ -385,7 +385,7 @@ void Area2D::_clear_monitoring() {
 	}
 
 	{
-		HashMap<ObjectID, AreaState> bmcopy = area_map;
+		HashMap<ObjectID, AreaState> bmcopy = HashMap<ObjectID, AreaState>(area_map);
 		area_map.clear();
 		//disconnect all monitored stuff
 

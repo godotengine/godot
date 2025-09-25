@@ -451,7 +451,7 @@ HashMap<String, bool *> OpenXRSpatialMarkerTrackingCapability::get_requested_ext
 		request_extensions[XR_EXT_SPATIAL_MARKER_TRACKING_EXTENSION_NAME] = &spatial_marker_tracking_ext;
 	}
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXRSpatialMarkerTrackingCapability::on_session_created(const XrSession p_session) {

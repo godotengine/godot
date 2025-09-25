@@ -74,7 +74,7 @@ HashMap<String, bool *> OpenXRVisibilityMaskExtension::get_requested_extensions(
 
 	request_extensions[XR_KHR_VISIBILITY_MASK_EXTENSION_NAME] = &available;
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXRVisibilityMaskExtension::on_instance_created(const XrInstance p_instance) {

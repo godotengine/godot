@@ -82,7 +82,7 @@ void GodotNavigationServer2D::init() {
 	navmesh_generator_2d = memnew(NavMeshGenerator2D);
 	ERR_FAIL_NULL_MSG(navmesh_generator_2d, "Failed to init NavMeshGenerator2D.");
 	RWLockRead read_lock(geometry_parser_rwlock);
-	navmesh_generator_2d->set_generator_parsers(generator_parsers);
+	navmesh_generator_2d->set_generator_parsers(LocalVector<NavMeshGeometryParser2D *>(generator_parsers));
 #endif // CLIPPER2_ENABLED
 	// TODO
 }
@@ -251,7 +251,7 @@ TypedArray<RID> GodotNavigationServer2D::map_get_obstacles(RID p_map) const {
 	TypedArray<RID> obstacles_rids;
 	const NavMap2D *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_NULL_V(map, obstacles_rids);
-	const LocalVector<NavObstacle2D *> obstacles = map->get_obstacles();
+	const LocalVector<NavObstacle2D *> obstacles = LocalVector<NavObstacle2D *>(map->get_obstacles());
 	obstacles_rids.resize(obstacles.size());
 	for (uint32_t i = 0; i < obstacles.size(); i++) {
 		obstacles_rids[i] = obstacles[i]->get_self();
@@ -1198,7 +1198,7 @@ COMMAND_1(free_rid, RID, p_object) {
 
 		generator_parsers.erase(parser);
 #ifdef CLIPPER2_ENABLED
-		NavMeshGenerator2D::get_singleton()->set_generator_parsers(generator_parsers);
+		NavMeshGenerator2D::get_singleton()->set_generator_parsers(LocalVector<NavMeshGeometryParser2D *>(generator_parsers));
 #endif
 		geometry_parser_owner.free(parser->self);
 		return;
@@ -1384,7 +1384,7 @@ RID GodotNavigationServer2D::source_geometry_parser_create() {
 
 	generator_parsers.push_back(parser);
 #ifdef CLIPPER2_ENABLED
-	NavMeshGenerator2D::get_singleton()->set_generator_parsers(generator_parsers);
+	NavMeshGenerator2D::get_singleton()->set_generator_parsers(LocalVector<NavMeshGeometryParser2D *>(generator_parsers));
 #endif
 	return rid;
 }

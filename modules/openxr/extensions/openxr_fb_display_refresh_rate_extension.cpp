@@ -50,7 +50,7 @@ HashMap<String, bool *> OpenXRDisplayRefreshRateExtension::get_requested_extensi
 
 	request_extensions[XR_FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME] = &display_refresh_rate_ext;
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXRDisplayRefreshRateExtension::on_instance_created(const XrInstance p_instance) {

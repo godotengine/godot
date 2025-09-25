@@ -54,7 +54,7 @@ HashMap<String, bool *> OpenXRPalmPoseExtension::get_requested_extensions(XrVers
 		request_extensions[XR_EXT_PALM_POSE_EXTENSION_NAME] = &available;
 	}
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 bool OpenXRPalmPoseExtension::is_available() {
