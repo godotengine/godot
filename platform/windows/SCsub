@@ -60,6 +60,7 @@ sources += res_obj
 prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
 arrange_program_clean(prog)
 
+env.Depends(prog, "godot.manifest")
 if env.msvc:
     env.Depends(prog, "godot.natvis")
 
