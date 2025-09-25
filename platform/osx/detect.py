@@ -180,8 +180,6 @@ def configure(env):
             "-framework",
             "OpenGL",
             "-framework",
-            "AGL",
-            "-framework",
             "AudioUnit",
             "-framework",
             "CoreAudio",
