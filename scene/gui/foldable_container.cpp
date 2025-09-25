@@ -36,7 +36,7 @@
 Size2 FoldableContainer::get_minimum_size() const {
 	_update_title_min_size();
 
-	if (folded) {
+	if (folded || disabled) {
 		return title_minimum_size;
 	}
 	Size2 ms;
@@ -54,27 +54,37 @@ Size2 FoldableContainer::get_minimum_size() const {
 }
 
 void FoldableContainer::fold() {
+	ERR_FAIL_COND_MSG(disabled && !updating_disabled_state, "Cannot change folded state when disabled.");
+
 	set_folded(true);
 	emit_signal(SNAME("folding_changed"), folded);
 }
 
 void FoldableContainer::expand() {
+	ERR_FAIL_COND_MSG(disabled && !updating_disabled_state, "Cannot change folded state when disabled.");
+
 	set_folded(false);
 	emit_signal(SNAME("folding_changed"), folded);
 }
 
 void FoldableContainer::set_folded(bool p_folded) {
-	if (folded != p_folded) {
-		if (!changing_group && foldable_group.is_valid()) {
-			if (!p_folded) {
-				_update_group();
-				foldable_group->emit_signal(SNAME("expanded"), this);
-			} else if (!foldable_group->updating_group && foldable_group->get_expanded_container() == this && !foldable_group->is_allow_folding_all()) {
-				return;
-			}
-		}
-		folded = p_folded;
+	ERR_FAIL_COND_MSG(disabled && !updating_disabled_state, "Cannot change folded state when disabled.");
 
+	if (folded == p_folded) {
+		return;
+	}
+
+	if (!changing_group && foldable_group.is_valid()) {
+		if (!p_folded) {
+			_update_group();
+			foldable_group->emit_signal(SNAME("expanded"), this);
+		} else if (!foldable_group->updating_group && foldable_group->get_expanded_container() == this && !foldable_group->is_allow_folding_all()) {
+			return;
+		}
+	}
+	folded = p_folded;
+
+	if (!updating_disabled_state) {
 		update_minimum_size();
 		queue_sort();
 		queue_redraw();
@@ -85,6 +95,35 @@ bool FoldableContainer::is_folded() const {
 	return folded;
 }
 
+void FoldableContainer::set_disabled(bool p_disabled) {
+	if (disabled == p_disabled) {
+		return;
+	}
+	disabled = p_disabled;
+
+	updating_disabled_state = true;
+	if (!folded) {
+		set_folded(true);
+		expand_when_enabled = true;
+
+		if (foldable_group.is_valid() && !foldable_group->allow_folding_all) {
+			_update_group();
+		}
+	} else if (!disabled && expand_when_enabled) {
+		set_folded(false);
+		expand_when_enabled = false;
+	}
+	updating_disabled_state = false;
+
+	update_minimum_size();
+	queue_sort();
+	queue_redraw();
+}
+
+bool FoldableContainer::is_disabled() const {
+	return disabled;
+}
+
 void FoldableContainer::set_foldable_group(const Ref<FoldableGroup> &p_group) {
 	if (foldable_group.is_valid()) {
 		foldable_group->containers.erase(this);
@@ -93,14 +132,16 @@ void FoldableContainer::set_foldable_group(const Ref<FoldableGroup> &p_group) {
 	foldable_group = p_group;
 
 	if (foldable_group.is_valid()) {
-		changing_group = true;
-		if (folded && !foldable_group->get_expanded_container() && !foldable_group->is_allow_folding_all()) {
-			set_folded(false);
-		} else if (!folded && foldable_group->get_expanded_container()) {
-			set_folded(true);
+		if (!disabled) {
+			changing_group = true;
+			if (folded && !foldable_group->get_expanded_container() && !foldable_group->is_allow_folding_all()) {
+				set_folded(false);
+			} else if (!folded && foldable_group->get_expanded_container()) {
+				set_folded(true);
+			}
+			changing_group = false;
 		}
 		foldable_group->containers.insert(this);
-		changing_group = false;
 	}
 
 	queue_redraw();
@@ -216,6 +257,9 @@ void FoldableContainer::remove_title_bar_control(Control *p_control) {
 
 void FoldableContainer::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
+	if (disabled) {
+		return;
+	}
 
 	Ref<InputEventMouseMotion> m = p_event;
 	if (m.is_valid()) {
@@ -266,6 +310,7 @@ void FoldableContainer::_notification(int p_what) {
 
 			Ref<StyleBox> title_style = _get_title_style();
 			Ref<Texture2D> icon = _get_title_icon();
+			Size2 icon_size = icon->get_size();
 
 			real_t title_controls_width = _get_title_controls_width();
 			if (title_controls_width > 0) {
@@ -284,22 +329,26 @@ void FoldableContainer::_notification(int p_what) {
 			Point2 title_text_pos(title_style->get_margin(SIDE_LEFT), title_style_ofs);
 			title_text_pos.y += MAX((title_minimum_size.height - title_ms.height - text_buf->get_size().height) * 0.5, 0);
 
-			title_text_width -= icon->get_width() + h_separation + title_controls_width;
-			Point2 icon_pos(0, MAX((title_minimum_size.height - title_ms.height - icon->get_height()) * 0.5, 0) + title_style_ofs);
+			title_text_width -= icon_size.width + h_separation + title_controls_width;
+			Point2 icon_pos(0, MAX((title_minimum_size.height - title_ms.height - icon_size.height) * 0.5, 0) + title_style_ofs);
 
 			bool rtl = is_layout_rtl();
 			if (rtl) {
-				icon_pos.x = size.width - title_style->get_margin(SIDE_RIGHT) - icon->get_width();
+				icon_pos.x = size.width - title_style->get_margin(SIDE_RIGHT) - icon_size.width;
 				title_text_pos.x += title_controls_width;
 			} else {
 				icon_pos.x = title_style->get_margin(SIDE_LEFT);
-				title_text_pos.x += icon->get_width() + h_separation;
+				title_text_pos.x += icon_size.width + h_separation;
 			}
-			icon->draw(ci, title_rect.position + icon_pos);
 
-			Color font_color = folded ? theme_cache.title_collapsed_font_color : theme_cache.title_font_color;
-			if (is_hovering) {
-				font_color = theme_cache.title_hovered_font_color;
+			Color font_color;
+			if (disabled) {
+				font_color = theme_cache.title_disabled_font_color;
+			} else {
+				// Draw the arrow icon when not disabled.
+				icon->draw(ci, title_rect.position + icon_pos);
+
+				font_color = is_hovering ? theme_cache.title_hovered_font_color : (folded ? theme_cache.title_collapsed_font_color : theme_cache.title_font_color);
 			}
 			text_buf->set_width(title_text_width);
 
@@ -386,7 +435,9 @@ void FoldableContainer::_notification(int p_what) {
 		case NOTIFICATION_MOUSE_EXIT: {
 			if (is_hovering) {
 				is_hovering = false;
-				queue_redraw();
+				if (!disabled) {
+					queue_redraw();
+				}
 			}
 		} break;
 
@@ -416,6 +467,10 @@ real_t FoldableContainer::_get_title_controls_width() const {
 }
 
 Ref<StyleBox> FoldableContainer::_get_title_style() const {
+	if (disabled) {
+		return theme_cache.title_disabled_style;
+	}
+
 	if (is_hovering) {
 		return folded ? theme_cache.title_collapsed_hover_style : theme_cache.title_hover_style;
 	}
@@ -425,30 +480,28 @@ Ref<StyleBox> FoldableContainer::_get_title_style() const {
 Ref<Texture2D> FoldableContainer::_get_title_icon() const {
 	if (!folded) {
 		return (title_position == POSITION_TOP) ? theme_cache.expanded_arrow : theme_cache.expanded_arrow_mirrored;
-	} else if (is_layout_rtl()) {
-		return theme_cache.folded_arrow_mirrored;
 	}
-	return theme_cache.folded_arrow;
+
+	return is_layout_rtl() ? theme_cache.folded_arrow_mirrored : theme_cache.folded_arrow;
 }
 
 void FoldableContainer::_update_title_min_size() const {
-	Ref<StyleBox> title_style = folded ? theme_cache.title_collapsed_style : theme_cache.title_style;
-	Ref<Texture2D> icon = _get_title_icon();
-	Size2 title_ms = title_style->get_minimum_size();
+	Size2 title_ms = disabled ? theme_cache.title_disabled_style->get_minimum_size() : (folded ? theme_cache.title_collapsed_style->get_minimum_size() : theme_cache.title_style->get_minimum_size());
+	Size2 icon_size = _get_title_icon()->get_size();
 	int h_separation = _get_h_separation();
 
 	title_minimum_size = title_ms;
-	title_minimum_size.width += icon->get_width();
+	title_minimum_size.width += icon_size.width;
 
 	if (!title.is_empty()) {
 		title_minimum_size.width += h_separation;
 		Size2 text_size = text_buf->get_size();
-		title_minimum_size.height += MAX(text_size.height, icon->get_height());
+		title_minimum_size.height += MAX(text_size.height, icon_size.height);
 		if (overrun_behavior == TextServer::OverrunBehavior::OVERRUN_NO_TRIMMING) {
 			title_minimum_size.width += text_size.width;
 		}
 	} else {
-		title_minimum_size.height += icon->get_height();
+		title_minimum_size.height += icon_size.height;
 	}
 
 	if (!title_controls.is_empty()) {
@@ -502,11 +555,17 @@ HorizontalAlignment FoldableContainer::_get_actual_alignment() const {
 	return title_alignment;
 }
 
+// Can fold all other containers when this container is expanded.
+// Can also expand another container when this container is folded when disabled
+// and foldable_group doesn't allow folding all.
 void FoldableContainer::_update_group() {
 	foldable_group->updating_group = true;
 	for (FoldableContainer *container : foldable_group->containers) {
-		if (container != this) {
-			container->set_folded(true);
+		if (container != this && !container->disabled) {
+			container->set_folded(!disabled);
+			if (disabled) {
+				break;
+			}
 		}
 	}
 	foldable_group->updating_group = false;
@@ -528,6 +587,8 @@ void FoldableContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("expand"), &FoldableContainer::expand);
 	ClassDB::bind_method(D_METHOD("set_folded", "folded"), &FoldableContainer::set_folded);
 	ClassDB::bind_method(D_METHOD("is_folded"), &FoldableContainer::is_folded);
+	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &FoldableContainer::set_disabled);
+	ClassDB::bind_method(D_METHOD("is_disabled"), &FoldableContainer::is_disabled);
 	ClassDB::bind_method(D_METHOD("set_foldable_group", "button_group"), &FoldableContainer::set_foldable_group);
 	ClassDB::bind_method(D_METHOD("get_foldable_group"), &FoldableContainer::get_foldable_group);
 	ClassDB::bind_method(D_METHOD("set_title", "text"), &FoldableContainer::set_title);
@@ -548,6 +609,7 @@ void FoldableContainer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("folding_changed", PropertyInfo(Variant::BOOL, "is_folded")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "folded"), "set_folded", "is_folded");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "title_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_title_alignment", "get_title_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "title_position", PROPERTY_HINT_ENUM, "Top,Bottom"), "set_title_position", "get_title_position");
@@ -562,6 +624,7 @@ void FoldableContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(POSITION_BOTTOM);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, FoldableContainer, title_style, "title_panel");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, FoldableContainer, title_disabled_style, "title_disabled_panel");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, FoldableContainer, title_hover_style, "title_hover_panel");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, FoldableContainer, title_collapsed_style, "title_collapsed_panel");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, FoldableContainer, title_collapsed_hover_style, "title_collapsed_hover_panel");
@@ -573,6 +636,7 @@ void FoldableContainer::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, FoldableContainer, title_font_outline_size, "outline_size");
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, FoldableContainer, title_font_color, "font_color");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, FoldableContainer, title_disabled_font_color, "disabled_font_color");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, FoldableContainer, title_hovered_font_color, "hover_font_color");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, FoldableContainer, title_collapsed_font_color, "collapsed_font_color");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, FoldableContainer, title_font_outline_color, "font_outline_color");
@@ -600,7 +664,7 @@ FoldableContainer::~FoldableContainer() {
 
 FoldableContainer *FoldableGroup::get_expanded_container() const {
 	for (FoldableContainer *container : containers) {
-		if (!container->is_folded()) {
+		if (!container->is_folded() && !container->is_disabled()) {
 			return container;
 		}
 	}
@@ -611,9 +675,16 @@ FoldableContainer *FoldableGroup::get_expanded_container() const {
 void FoldableGroup::set_allow_folding_all(bool p_enabled) {
 	allow_folding_all = p_enabled;
 	if (!allow_folding_all && !get_expanded_container() && containers.size() > 0) {
-		updating_group = true;
-		(*containers.begin())->set_folded(false);
-		updating_group = false;
+		for (FoldableContainer *container : containers) {
+			if (container->is_disabled()) {
+				continue;
+			}
+
+			updating_group = true;
+			container->set_folded(false);
+			updating_group = false;
+			return;
+		}
 	}
 }
 

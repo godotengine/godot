@@ -47,6 +47,9 @@ public:
 
 private:
 	bool folded = false;
+	bool disabled = false;
+	bool updating_disabled_state = false;
+	bool expand_when_enabled = false;
 	String title;
 	Ref<FoldableGroup> foldable_group;
 	String language;
@@ -64,6 +67,7 @@ private:
 
 	struct ThemeCache {
 		Ref<StyleBox> title_style;
+		Ref<StyleBox> title_disabled_style;
 		Ref<StyleBox> title_hover_style;
 		Ref<StyleBox> title_collapsed_style;
 		Ref<StyleBox> title_collapsed_hover_style;
@@ -71,6 +75,7 @@ private:
 		Ref<StyleBox> focus_style;
 
 		Color title_font_color;
+		Color title_disabled_font_color;
 		Color title_hovered_font_color;
 		Color title_collapsed_font_color;
 		Color title_font_outline_color;
@@ -110,6 +115,9 @@ public:
 
 	void set_folded(bool p_folded);
 	bool is_folded() const;
+
+	void set_disabled(bool p_disabled);
+	bool is_disabled() const;
 
 	void set_foldable_group(const Ref<FoldableGroup> &p_group);
 	Ref<FoldableGroup> get_foldable_group() const;

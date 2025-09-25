@@ -42,6 +42,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false">
+			If [code]true[/code], the container will be disabled and cannot be expanded or collapsed, and the folded state will be remembered and applied to the container when re-enabled.
+			When disabled, the container will automatically fold, and if part of a [FoldableGroup], another container in the group may be expanded to ensure at least one remains open when [member FoldableGroup.allow_folding_all] is [code]false[/code].
+		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
 		<member name="foldable_group" type="FoldableGroup" setter="set_foldable_group" getter="get_foldable_group">
 			The [FoldableGroup] associated with the container. When multiple [FoldableContainer] nodes share the same group, only one of them is allowed to be unfolded.
@@ -73,7 +77,7 @@
 		<signal name="folding_changed">
 			<param index="0" name="is_folded" type="bool" />
 			<description>
-				Emitted when the container is folded/expanded.
+				Emitted when the container is folded/expanded by the user.
 			</description>
 		</signal>
 	</signals>
@@ -88,6 +92,9 @@
 	<theme_items>
 		<theme_item name="collapsed_font_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The title's font color when collapsed.
+		</theme_item>
+		<theme_item name="disabled_font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
+			The title's font color when the container is disabled.
 		</theme_item>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			The title's font color when expanded.
@@ -133,6 +140,9 @@
 		</theme_item>
 		<theme_item name="title_collapsed_panel" data_type="style" type="StyleBox">
 			Default background for the [FoldableContainer]'s title when collapsed.
+		</theme_item>
+		<theme_item name="title_disabled_panel" data_type="style" type="StyleBox">
+			Default background for the [FoldableContainer]'s title when disabled.
 		</theme_item>
 		<theme_item name="title_hover_panel" data_type="style" type="StyleBox">
 			Background used when the mouse cursor enters the title's area when expanded.

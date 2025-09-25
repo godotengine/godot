@@ -1281,6 +1281,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("title_hover_panel", "FoldableContainer", foldable_container_hover);
 	theme->set_stylebox("title_collapsed_panel", "FoldableContainer", make_flat_stylebox(style_pressed_color));
 	theme->set_stylebox("title_collapsed_hover_panel", "FoldableContainer", make_flat_stylebox(style_hover_color));
+	theme->set_stylebox("title_disabled_panel", "FoldableContainer", make_flat_stylebox(style_disabled_color));
 	Ref<StyleBoxFlat> foldable_container_panel = make_flat_stylebox(style_normal_color);
 	foldable_container_panel->set_content_margin_all(default_margin);
 	foldable_container_panel->set_corner_radius(CORNER_TOP_LEFT, 0);
@@ -1293,6 +1294,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size(SceneStringName(font_size), "FoldableContainer", default_font_size);
 
 	theme->set_color(SceneStringName(font_color), "FoldableContainer", control_font_color);
+	theme->set_color("disabled_font_color", "FoldableContainer", control_font_disabled_color);
 	theme->set_color("hover_font_color", "FoldableContainer", control_font_hover_color);
 	theme->set_color("collapsed_font_color", "FoldableContainer", control_font_pressed_color);
 	theme->set_color("font_outline_color", "FoldableContainer", Color(1, 1, 1));
