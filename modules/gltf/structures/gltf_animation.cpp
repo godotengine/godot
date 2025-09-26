@@ -74,7 +74,7 @@ String GLTFAnimation::get_original_name() {
 	return original_name;
 }
 
-void GLTFAnimation::set_original_name(String p_name) {
+void GLTFAnimation::set_original_name(const String &p_name) {
 	original_name = p_name;
 }
 
