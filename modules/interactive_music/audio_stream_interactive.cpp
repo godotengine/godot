@@ -429,6 +429,10 @@ void AudioStreamInteractive::_validate_property(PropertyInfo &r_property) const 
 
 	if (Engine::get_singleton()->is_editor_hint() && prop == "initial_clip") {
 #ifdef TOOLS_ENABLED
+		if (get_clip_count() == 0) {
+			// Hide property since there's no clip to choose from.
+			r_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 		r_property.hint_string = _get_streams_hint();
 #endif
 	} else if (prop.begins_with("clip_") && prop != "clip_count") {
