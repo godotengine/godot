@@ -3549,6 +3549,31 @@
 				Sets the path hint for the specified shader. This should generally match the [Shader] resource's [member Resource.resource_path].
 			</description>
 		</method>
+		<method name="shader_set_shader_template" experimental="">
+			<return type="void" />
+			<param index="0" name="shader" type="RID" />
+			<param index="1" name="shader_template" type="RID" default="RID()" />
+			<param index="2" name="clear_code" type="bool" default="false" />
+			<description>
+				Sets the shader template to be used when compiling this shader.
+			</description>
+		</method>
+		<method name="shader_template_create" experimental="">
+			<return type="RID" />
+			<description>
+				Creates a new shader template.
+			</description>
+		</method>
+		<method name="shader_template_set_raster_code" experimental="">
+			<return type="void" />
+			<param index="0" name="shader_template" type="RID" />
+			<param index="1" name="vertex_code" type="String" />
+			<param index="2" name="fragment_code" type="String" />
+			<param index="3" name="name" type="String" />
+			<description>
+				Sets the vertex and fragment base code for the template into which the user shader is injected. [param name] is used when caching this shader.
+			</description>
+		</method>
 		<method name="skeleton_allocate_data">
 			<return type="void" />
 			<param index="0" name="skeleton" type="RID" />

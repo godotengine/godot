@@ -210,7 +210,7 @@ private:
 
 		bool uses_time = false;
 
-		virtual void set_code(const String &p_Code);
+		virtual void set_code(const String &p_Code, RID p_shader_template = RID());
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;

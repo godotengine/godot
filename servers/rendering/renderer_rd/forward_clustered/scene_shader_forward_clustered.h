@@ -215,6 +215,7 @@ public:
 		void _create_pipeline(PipelineKey p_pipeline_key);
 		PipelineHashMapRD<PipelineKey, ShaderData, void (ShaderData::*)(PipelineKey)> pipeline_hash_map;
 
+		RID shader_template;
 		RID version;
 
 		static const uint32_t VERTEX_INPUT_MASKS_SIZE = ShaderVersion::SHADER_VERSION_COLOR_PASS * 2 + SHADER_COLOR_PASS_FLAG_COUNT;
@@ -296,7 +297,7 @@ public:
 			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_position && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && backface_culling && !uses_point_size && !uses_world_coordinates && !wireframe && !uses_z_clip_scale && !stencil_enabled;
 		}
 
-		virtual void set_code(const String &p_Code);
+		virtual void set_code(const String &p_Code, RID p_shader_template = RID());
 
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
@@ -340,9 +341,10 @@ public:
 		return static_cast<SceneShaderForwardClustered *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
 	}
 
-	SceneForwardClusteredShaderRD shader;
+	String default_defines;
 	ShaderCompiler compiler;
 
+	RID default_shader_template;
 	RID default_shader;
 	RID default_material;
 	RID overdraw_material_shader;

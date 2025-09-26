@@ -38,7 +38,15 @@
 #include "core/templates/self_list.h"
 #include "servers/rendering/rendering_server.h"
 
+namespace RendererRD {
+
+class MaterialStorage;
+
+}
+
 class ShaderRD {
+	friend class RendererRD::MaterialStorage;
+
 public:
 	struct VariantDefine {
 		int group = 0;
