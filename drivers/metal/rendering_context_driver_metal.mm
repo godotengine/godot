@@ -172,13 +172,17 @@ public:
 		if (hdr_output) {
 			layer.wantsExtendedDynamicRangeContent = YES;
 
-			if (hdr_output_prefer_high_precision) {
-				layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearDisplayP3);
+			//if (hdr_output_prefer_high_precision) {
+			if (true) {
+				layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearSRGB);
 				r_color_space = RDD::COLOR_SPACE_REC709_LINEAR;
 				r_format = RDD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 				layer.pixelFormat = MTLPixelFormatRGBA16Float;
 			} else {
-				layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceDisplayP3_PQ);
+				// This is currently broken with external monitors. (Possibly because the
+				// reference_multiplier is incorrectly calculated based on reference
+				// luminance???)
+				layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2100_PQ);
 				r_color_space = RDD::COLOR_SPACE_REC2020_NONLINEAR_ST2084;
 				r_format = RDD::DATA_FORMAT_A2R10G10B10_UNORM_PACK32;
 				layer.pixelFormat = MTLPixelFormatBGR10A2Unorm;
