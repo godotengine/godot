@@ -739,6 +739,8 @@ public:
 		BLEND_FACTOR_MAX
 	};
 
+	static const char *const BLEND_FACTOR_NAMES[BLEND_FACTOR_MAX];
+
 	enum BlendOperation {
 		BLEND_OP_ADD,
 		BLEND_OP_SUBTRACT,
