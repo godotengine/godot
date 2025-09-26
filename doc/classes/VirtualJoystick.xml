@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VirtualJoystick" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A virtual joystick control for touch screen devices.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="action_down" type="String" setter="set_action_down" getter="get_action_down" default="&quot;ui_down&quot;">
+			The action to trigger when the joystick is moved down.
+		</member>
+		<member name="action_left" type="String" setter="set_action_left" getter="get_action_left" default="&quot;ui_left&quot;">
+			The action to trigger when the joystick is moved left.
+		</member>
+		<member name="action_right" type="String" setter="set_action_right" getter="get_action_right" default="&quot;ui_right&quot;">
+			The action to trigger when the joystick is moved right.
+		</member>
+		<member name="action_up" type="String" setter="set_action_up" getter="get_action_up" default="&quot;ui_up&quot;">
+			The action to trigger when the joystick is moved up.
+		</member>
+		<member name="joystick_mode" type="int" setter="set_joystick_mode" getter="get_joystick_mode" enum="VirtualJoystick.JoystickMode" default="0">
+			The joystick mode to use (must be one of [constant JOYSTICK_FIXED], [constant JOYSTICK_DYNAMIC], or [constant JOYSTICK_FOLLOWING]).
+		</member>
+		<member name="visibility_mode" type="int" setter="set_visibility_mode" getter="get_visibility_mode" enum="VirtualJoystick.VisibilityMode" default="0">
+			The visibility mode to use (must be one of [constant VISIBILITY_ALWAYS] or [constant VISIBILITY_TOUCHSCREEN_ONLY]).
+		</member>
+	</members>
+	<signals>
+		<signal name="flick_canceled">
+			<description>
+				Emitted when the tip enters the deadzone after being outside of it.
+			</description>
+		</signal>
+		<signal name="flicked">
+			<param index="0" name="input_vector" type="Vector2" />
+			<description>
+				Emitted when the tip moved outside the deadzone and the joystick is released.
+			</description>
+		</signal>
+		<signal name="released">
+			<param index="0" name="input_vector" type="Vector2" />
+			<description>
+				Emitted when the joystick is released.
+			</description>
+		</signal>
+		<signal name="tapped">
+			<description>
+				Emitted when the joystick is released without moving the tip.
+			</description>
+		</signal>
+	</signals>
+	<theme_items>
+		<theme_item name="base_normal_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			Default Base joystick [Color].
+		</theme_item>
+		<theme_item name="base_pressed_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			Base joystick [Color] when pressed.
+		</theme_item>
+		<theme_item name="tip_normal_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			Default Tip joystick [Color].
+		</theme_item>
+		<theme_item name="tip_pressed_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			Tip joystick [Color] when pressed.
+		</theme_item>
+	</theme_items>
+	<constants>
+		<constant name="JOYSTICK_FIXED" value="0" enum="JoystickMode">
+			The joystick doesn't move.
+		</constant>
+		<constant name="JOYSTICK_DYNAMIC" value="1" enum="JoystickMode">
+			The joystick is moved to the initial touch position as long as it's within the joystick's rect. It moves back to its original position when released.
+		</constant>
+		<constant name="JOYSTICK_FOLLOWING" value="2" enum="JoystickMode">
+			The joystick is moved to the initial touch position as long as it's within the joystick's rect. It will follow the touch input if it goes outside the joystick's range. It moves back to its original position when released.
+		</constant>
+		<constant name="VISIBILITY_ALWAYS" value="0" enum="VisibilityMode">
+			The joystick is always visible.
+		</constant>
+		<constant name="VISIBILITY_TOUCHSCREEN_ONLY" value="1" enum="VisibilityMode">
+			The joystick is only visible on touchscreen devices.
+		</constant>
+	</constants>
+</class>

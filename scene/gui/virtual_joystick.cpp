@@ -30,11 +30,203 @@
 
 #include "virtual_joystick.h"
 
+#include "core/input/input_map.h"
+#include "scene/theme/theme_db.h"
+
+void VirtualJoystick::gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventScreenTouch> touch = p_event;
+	if (touch.is_valid()) {
+		if (touch->is_pressed()) {
+			if (touch_index == -1 && has_point(touch->get_position())) {
+				Rect2 base_rect = Rect2(base_pos - Vector2(base_size, base_size), Vector2(base_size * 2, base_size * 2));
+				if (joystick_mode == JOYSTICK_DYNAMIC || joystick_mode == JOYSTICK_FOLLOWING || (base_rect.has_point(touch->get_position()) && joystick_mode == JOYSTICK_FIXED)) {
+					if (joystick_mode == JOYSTICK_DYNAMIC || joystick_mode == JOYSTICK_FOLLOWING) {
+						base_pos = touch->get_position();
+					}
+
+					is_pressed = true;
+					touch_index = touch->get_index();
+					_update_joystick(touch->get_position());
+				}
+			}
+		} else if (touch->get_index() == touch_index) {
+			is_pressed = false;
+			emit_signal("released", input_vector);
+
+			if (!is_flick_canceled && !has_moved) {
+				emit_signal("tapped");
+			} else if (has_input && has_moved) {
+				emit_signal("flicked", input_vector);
+			}
+			_reset();
+		}
+	}
+
+	Ref<InputEventScreenDrag> drag = p_event;
+	if (drag.is_valid() && drag->get_index() == touch_index) {
+		has_moved = true;
+		_update_joystick(drag->get_position());
+	}
+}
+
+void VirtualJoystick::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			if (!Engine::get_singleton()->is_editor_hint() && visibility == VISIBILITY_TOUCHSCREEN_ONLY && !DisplayServer::get_singleton()->is_touchscreen_available()) {
+				return;
+			}
+
+			draw_circle(base_pos, base_size, is_pressed ? theme_cache.base_pressed_color : theme_cache.base_normal_color, false, 10, true);
+
+			draw_circle(tip_pos, base_size * 0.5, is_pressed ? theme_cache.tip_pressed_color : theme_cache.tip_normal_color, true, -1, true);
+		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+			base_pos = Vector2(get_size().x / 2, get_size().y / 2);
+			tip_pos = base_pos;
+			base_default_pos = base_pos;
+			tip_default_pos = tip_pos;
+		} break;
+	}
+}
+
+void VirtualJoystick::_update_joystick(const Vector2 &p_pos) {
+	Vector2 offset = p_pos - base_pos;
+	float length = offset.length();
+	Vector2 direction = offset.normalized();
+
+	if (joystick_mode == JOYSTICK_FOLLOWING && length > clampzone_size) {
+		if (has_point(p_pos)) {
+			base_pos = p_pos - direction * clampzone_size;
+		}
+	}
+
+	if (length > clampzone_size) {
+		length = clampzone_size;
+		offset = direction * length;
+	}
+
+	tip_pos = base_pos + offset;
+
+	bool was_pressed = has_input;
+	float deadzone_size = _get_deadzone_size();
+	raw_input_vector = offset / clampzone_size;
+	if (length > deadzone_size) {
+		has_input = true;
+		float scaled = Math::inverse_lerp(deadzone_size, clampzone_size, length);
+		input_vector = direction * scaled;
+	} else {
+		has_input = false;
+		input_vector = Vector2();
+	}
+
+	if (!is_flick_canceled && was_pressed && !has_input) {
+		is_flick_canceled = true;
+		emit_signal("flick_canceled");
+	}
+	if (is_flick_canceled && !was_pressed && has_input) {
+		is_flick_canceled = false;
+	}
+
+	_handle_input_actions();
+
+	queue_redraw();
+}
+
+float VirtualJoystick::_get_deadzone_size() const {
+	return clampzone_size * 0.25 *
+			(InputMap::get_singleton()->action_get_deadzone(action_left) +
+					InputMap::get_singleton()->action_get_deadzone(action_right) +
+					InputMap::get_singleton()->action_get_deadzone(action_up) +
+					InputMap::get_singleton()->action_get_deadzone(action_down));
+}
+
+void VirtualJoystick::_handle_input_actions() {
+	Input *input = Input::get_singleton();
+
+	if (raw_input_vector.x >= 0.0f && input->is_action_pressed(action_left)) {
+		input->action_release(action_left);
+	}
+	if (raw_input_vector.x <= 0.0f && input->is_action_pressed(action_right)) {
+		input->action_release(action_right);
+	}
+	if (raw_input_vector.y >= 0.0f && input->is_action_pressed(action_up)) {
+		input->action_release(action_up);
+	}
+	if (raw_input_vector.y <= 0.0f && input->is_action_pressed(action_down)) {
+		input->action_release(action_down);
+	}
+
+	if (raw_input_vector.x < 0.0f) {
+		input->action_press(action_left, -raw_input_vector.x);
+	} else if (raw_input_vector.x > 0.0f) {
+		input->action_press(action_right, raw_input_vector.x);
+	}
+	if (raw_input_vector.y < 0.0f) {
+		input->action_press(action_up, -raw_input_vector.y);
+	} else if (raw_input_vector.y > 0.0f) {
+		input->action_press(action_down, raw_input_vector.y);
+	}
+}
+
+void VirtualJoystick::_reset() {
+	is_pressed = false;
+	has_input = false;
+	has_moved = false;
+	raw_input_vector = Vector2();
+	input_vector = Vector2();
+	is_flick_canceled = false;
+	touch_index = -1;
+	base_pos = base_default_pos;
+	tip_pos = tip_default_pos;
+
+	Input *input = Input::get_singleton();
+	for (const String &action : { action_left, action_right, action_down, action_up }) {
+		if (input->is_action_pressed(action)) {
+			input->action_release(action);
+		}
+	}
+
+	queue_redraw();
+}
+
 void VirtualJoystick::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_joystick_mode", "mode"), &VirtualJoystick::set_joystick_mode);
 	ClassDB::bind_method(D_METHOD("get_joystick_mode"), &VirtualJoystick::get_joystick_mode);
 
+	ClassDB::bind_method(D_METHOD("set_action_left", "action"), &VirtualJoystick::set_action_left);
+	ClassDB::bind_method(D_METHOD("get_action_left"), &VirtualJoystick::get_action_left);
+
+	ClassDB::bind_method(D_METHOD("set_action_right", "action"), &VirtualJoystick::set_action_right);
+	ClassDB::bind_method(D_METHOD("get_action_right"), &VirtualJoystick::get_action_right);
+
+	ClassDB::bind_method(D_METHOD("set_action_up", "action"), &VirtualJoystick::set_action_up);
+	ClassDB::bind_method(D_METHOD("get_action_up"), &VirtualJoystick::get_action_up);
+
+	ClassDB::bind_method(D_METHOD("set_action_down", "action"), &VirtualJoystick::set_action_down);
+	ClassDB::bind_method(D_METHOD("get_action_down"), &VirtualJoystick::get_action_down);
+
+	ClassDB::bind_method(D_METHOD("set_visibility_mode", "mode"), &VirtualJoystick::set_visibility_mode);
+	ClassDB::bind_method(D_METHOD("get_visibility_mode"), &VirtualJoystick::get_visibility_mode);
+
+	ADD_SIGNAL(MethodInfo("released", PropertyInfo(Variant::VECTOR2, "input_vector")));
+	ADD_SIGNAL(MethodInfo("tapped"));
+	ADD_SIGNAL(MethodInfo("flicked", PropertyInfo(Variant::VECTOR2, "input_vector")));
+	ADD_SIGNAL(MethodInfo("flick_canceled"));
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "joystick_mode", PROPERTY_HINT_ENUM, "Fixed,Dynamic,Following"), "set_joystick_mode", "get_joystick_mode");
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action_left", PROPERTY_HINT_INPUT_NAME), "set_action_left", "get_action_left");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action_right", PROPERTY_HINT_INPUT_NAME), "set_action_right", "get_action_right");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action_up", PROPERTY_HINT_INPUT_NAME), "set_action_up", "get_action_up");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action_down", PROPERTY_HINT_INPUT_NAME), "set_action_down", "get_action_down");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_mode", PROPERTY_HINT_ENUM, "Always,Touchscreen Only"), "set_visibility_mode", "get_visibility_mode");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, VirtualJoystick, base_normal_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, VirtualJoystick, tip_normal_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, VirtualJoystick, base_pressed_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, VirtualJoystick, tip_pressed_color);
 }
 
 void VirtualJoystick::set_joystick_mode(JoystickMode p_mode) {
@@ -43,6 +235,46 @@ void VirtualJoystick::set_joystick_mode(JoystickMode p_mode) {
 
 VirtualJoystick::JoystickMode VirtualJoystick::get_joystick_mode() const {
 	return joystick_mode;
+}
+
+void VirtualJoystick::set_action_left(const String &p_action) {
+	action_left = p_action;
+}
+
+String VirtualJoystick::get_action_left() const {
+	return action_left;
+}
+
+void VirtualJoystick::set_action_right(const String &p_action) {
+	action_right = p_action;
+}
+
+String VirtualJoystick::get_action_right() const {
+	return action_right;
+}
+
+void VirtualJoystick::set_action_up(const String &p_action) {
+	action_up = p_action;
+}
+
+String VirtualJoystick::get_action_up() const {
+	return action_up;
+}
+
+void VirtualJoystick::set_action_down(const String &p_action) {
+	action_down = p_action;
+}
+
+String VirtualJoystick::get_action_down() const {
+	return action_down;
+}
+
+void VirtualJoystick::set_visibility_mode(VisibilityMode p_mode) {
+	visibility = p_mode;
+}
+
+VirtualJoystick::VisibilityMode VirtualJoystick::get_visibility_mode() const {
+	return visibility;
 }
 
 VirtualJoystick::VirtualJoystick() {
