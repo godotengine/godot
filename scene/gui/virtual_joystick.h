@@ -37,22 +37,76 @@ class VirtualJoystick : public Control {
 
 public:
 	enum JoystickMode {
-		FIXED,
-		DYNAMIC,
-		FOLLOWING
+		JOYSTICK_FIXED,
+		JOYSTICK_DYNAMIC,
+		JOYSTICK_FOLLOWING
+	};
+
+	enum VisibilityMode {
+		VISIBILITY_ALWAYS,
+		VISIBILITY_TOUCHSCREEN_ONLY
 	};
 
 private:
-	JoystickMode joystick_mode = FIXED;
+	float_t base_size = 100;
+	JoystickMode joystick_mode = JOYSTICK_FIXED;
+	String action_left = "ui_left";
+	String action_right = "ui_right";
+	String action_up = "ui_up";
+	String action_down = "ui_down";
+	VisibilityMode visibility = VISIBILITY_ALWAYS;
+
+	struct ThemeCache {
+		Color base_normal_color;
+		Color tip_normal_color;
+		Color base_pressed_color;
+		Color tip_pressed_color;
+	} theme_cache;
+
+	bool is_pressed = false;
+	bool has_input = false;
+	bool has_moved = false;
+	Vector2 raw_input_vector = Vector2();
+	Vector2 input_vector = Vector2();
+	bool is_flick_canceled = false;
+	int touch_index = -1;
+	float clampzone_size = 100.0f;
+
+	Vector2 base_pos = Vector2(0, 0);
+	Vector2 tip_pos = Vector2(0, 0);
+
+	Vector2 base_default_pos = Vector2(0, 0);
+	Vector2 tip_default_pos = Vector2(0, 0);
+
+	void _update_joystick(const Vector2 &p_pos);
+	float _get_deadzone_size() const;
+	void _handle_input_actions();
+	void _reset();
 
 protected:
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	void _notification(int p_what);
 	static void _bind_methods();
+
 public:
 	void set_joystick_mode(JoystickMode p_mode);
 	JoystickMode get_joystick_mode() const;
+
+	void set_action_left(const String &p_action);
+	String get_action_left() const;
+	void set_action_right(const String &p_action);
+	String get_action_right() const;
+	void set_action_up(const String &p_action);
+	String get_action_up() const;
+	void set_action_down(const String &p_action);
+	String get_action_down() const;
+
+	void set_visibility_mode(VisibilityMode p_mode);
+	VisibilityMode get_visibility_mode() const;
 
 	VirtualJoystick();
 	~VirtualJoystick();
 };
 
 VARIANT_ENUM_CAST(VirtualJoystick::JoystickMode);
+VARIANT_ENUM_CAST(VirtualJoystick::VisibilityMode);
