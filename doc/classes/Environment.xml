@@ -323,7 +323,7 @@
 		</member>
 		<member name="tonemap_white" type="float" setter="set_tonemap_white" getter="get_tonemap_white" default="1.0">
 			The white reference value for tonemapping, which indicates where bright white is located in the scale of values provided to the tonemapper. For photorealistic lighting, recommended values are between [code]6.0[/code] and [code]8.0[/code]. Higher values result in less blown out highlights, but may make the scene appear lower contrast. See also [member tonemap_exposure].
-			[b]Note:[/b] [member tonemap_white] is ignored when using [constant TONE_MAPPER_LINEAR] or [constant TONE_MAPPER_AGX].
+			[b]Note:[/b] [member tonemap_white] is ignored when using [constant TONE_MAPPER_LINEAR], [constant TONE_MAPPER_AGX] or [constant TONE_MAPPER_TONY_MC_MAPFACE].
 		</member>
 		<member name="volumetric_fog_albedo" type="Color" setter="set_volumetric_fog_albedo" getter="get_volumetric_fog_albedo" default="Color(1, 1, 1, 1)">
 			The [Color] of the volumetric fog when interacting with lights. Mist and fog have an albedo close to [code]Color(1, 1, 1, 1)[/code] while smoke has a darker albedo.
@@ -432,6 +432,9 @@
 		<constant name="TONE_MAPPER_AGX" value="4" enum="ToneMapper">
 			Uses a film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
 			[b]Note:[/b] [member tonemap_white] is fixed at a value of [code]16.29[/code], which makes [constant TONE_MAPPER_AGX] unsuitable for use with the Mobile rendering method.
+		</constant>
+		<constant name="TONE_MAPPER_TONY_MC_MAPFACE" value="5" enum="ToneMapper">
+			Tony McMapface is an artist-friendly tonemapper designed to stay close to the input color in order to achieve a neutral look that does not increase contrast or saturation. It can prevent hue shift issues common with other tonemappers. It samples its own custom lookup table (LUT) to determine the output color.
 		</constant>
 		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0" enum="GlowBlendMode">
 			Additive glow blending mode. Mostly used for particles, glows (bloom), lens flare, bright sources.

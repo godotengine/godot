@@ -5477,6 +5477,9 @@
 			Uses a film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
 			[b]Note:[/b] [member Environment.tonemap_white] is fixed at a value of [code]16.29[/code], which makes [constant ENV_TONE_MAPPER_AGX] unsuitable for use with the Mobile rendering method.
 		</constant>
+		<constant name="ENV_TONE_MAPPER_TONY_MC_MAPFACE" value="5" enum="EnvironmentToneMapper">
+			Tony McMapface is an artist-friendly tonemapper designed to stay close to the input color in order to achieve a neutral look that does not increase contrast or saturation. It can prevent hue shift issues common with other tonemappers. It samples its own custom lookup table (LUT) to determine the output color.
+		</constant>
 		<constant name="ENV_SSR_ROUGHNESS_QUALITY_DISABLED" value="0" enum="EnvironmentSSRRoughnessQuality">
 			Lowest quality of roughness filter for screen-space reflections. Rough materials will not have blurrier screen-space reflections compared to smooth (non-rough) materials. This is the fastest option.
 		</constant>
