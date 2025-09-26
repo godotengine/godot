@@ -54,3 +54,10 @@ Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/set_curre
 Validate extension JSON: Error: Field 'classes/AnimationPlayer/signals/current_animation_changed/arguments/0': type changed value in new API, from "String" to "StringName".
 
 Return types and parameters changed to StringName to improve performance. Compatibility methods registered; No compatibility system for signal arguments.
+
+
+GH-110940
+---------
+Validate extension JSON: Error: Field 'classes/XMLParser/methods/get_named_attribute_value_safe/arguments': size changed value in new API, from 1 to 2.
+
+Added optional "default" argument to get_named_attribute_value_safe method. Compatibility method registered.
