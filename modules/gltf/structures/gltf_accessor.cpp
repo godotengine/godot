@@ -165,19 +165,19 @@ void GLTFAccessor::set_type(int p_accessor_type) {
 }
 
 Vector<double> GLTFAccessor::get_min() const {
-	return min;
+	return Vector<double>(min);
 }
 
-void GLTFAccessor::set_min(Vector<double> p_min) {
-	min = p_min;
+void GLTFAccessor::set_min(const Vector<double> &p_min) {
+	min = Vector<double>(p_min);
 }
 
 Vector<double> GLTFAccessor::get_max() const {
-	return max;
+	return Vector<double>(max);
 }
 
-void GLTFAccessor::set_max(Vector<double> p_max) {
-	max = p_max;
+void GLTFAccessor::set_max(const Vector<double> &p_max) {
+	max = Vector<double>(p_max);
 }
 
 int64_t GLTFAccessor::get_sparse_count() const {

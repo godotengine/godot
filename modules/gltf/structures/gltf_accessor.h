@@ -146,10 +146,10 @@ public:
 	void set_type(int p_accessor_type);
 
 	Vector<double> get_min() const;
-	void set_min(Vector<double> p_min);
+	void set_min(const Vector<double> &p_min);
 
 	Vector<double> get_max() const;
-	void set_max(Vector<double> p_max);
+	void set_max(const Vector<double> &p_max);
 
 	int64_t get_sparse_count() const;
 	void set_sparse_count(int64_t p_sparse_count);
