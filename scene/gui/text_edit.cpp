@@ -3810,12 +3810,12 @@ TextServer::StructuredTextParser TextEdit::get_structured_text_bidi_override() c
 	return st_parser;
 }
 
-void TextEdit::set_structured_text_bidi_override_options(Array p_args) {
+void TextEdit::set_structured_text_bidi_override_options(const Array &p_args) {
 	if (st_args == p_args) {
 		return;
 	}
 
-	st_args = p_args;
+	st_args = Array(p_args);
 	for (int i = 0; i < text.size(); i++) {
 		text.set(i, text[i], structured_text_parser(st_parser, st_args, text[i]));
 	}
@@ -3824,7 +3824,7 @@ void TextEdit::set_structured_text_bidi_override_options(Array p_args) {
 }
 
 Array TextEdit::get_structured_text_bidi_override_options() const {
-	return st_args;
+	return Array(st_args);
 }
 
 void TextEdit::set_tab_size(const int p_size) {
