@@ -41,17 +41,20 @@
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/editor_inspector.h"
+#include "editor/inspector/editor_resource_picker.h"
 #include "editor/inspector/multi_node_edit.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "modules/regex/regex.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
-#include "scene/gui/slider.h"
 #include "scene/gui/split_container.h"
 
 void ConnectionInfoDialog::ok_pressed() {
@@ -201,12 +204,14 @@ void ScriptTextEditor::_load_theme_settings() {
 	Color updated_marked_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
 	Color updated_safe_line_number_color = EDITOR_GET("text_editor/theme/highlighting/safe_line_number_color");
 	Color updated_folded_code_region_color = EDITOR_GET("text_editor/theme/highlighting/folded_code_region_color");
+	Color updated_comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
 
 	bool warning_line_color_updated = updated_warning_line_color != warning_line_color;
 	bool marked_line_color_updated = updated_marked_line_color != marked_line_color;
 	bool safe_line_number_color_updated = updated_safe_line_number_color != safe_line_number_color;
 	bool folded_code_region_color_updated = updated_folded_code_region_color != folded_code_region_color;
-	if (safe_line_number_color_updated || warning_line_color_updated || marked_line_color_updated || folded_code_region_color_updated) {
+	bool comment_color_updated = updated_comment_color != comment_color;
+	if (safe_line_number_color_updated || warning_line_color_updated || marked_line_color_updated || folded_code_region_color_updated || comment_color_updated) {
 		safe_line_number_color = updated_safe_line_number_color;
 		for (int i = 0; i < text_edit->get_line_count(); i++) {
 			if (warning_line_color_updated && text_edit->get_line_background_color(i) == warning_line_color) {
@@ -228,6 +233,7 @@ void ScriptTextEditor::_load_theme_settings() {
 		warning_line_color = updated_warning_line_color;
 		marked_line_color = updated_marked_line_color;
 		folded_code_region_color = updated_folded_code_region_color;
+		comment_color = updated_comment_color;
 	}
 
 	theme_loaded = true;
@@ -413,7 +419,7 @@ bool ScriptTextEditor::_is_valid_color_info(const Dictionary &p_info) {
 	return true;
 }
 
-Array ScriptTextEditor::_inline_object_parse(const String &p_text) {
+Array ScriptTextEditor::_inline_object_color_parse(const String &p_text) {
 	Array result;
 	int i_end_previous = 0;
 	int i_start = p_text.find("Color");
@@ -517,7 +523,7 @@ Array ScriptTextEditor::_inline_object_parse(const String &p_text) {
 	return result;
 }
 
-void ScriptTextEditor::_inline_object_draw(const Dictionary &p_info, const Rect2 &p_rect) {
+void ScriptTextEditor::_inline_object_color_draw(const Dictionary &p_info, const Rect2 &p_rect) {
 	if (_is_valid_color_info(p_info)) {
 		Rect2 col_rect = p_rect.grow(-4);
 		if (color_alpha_texture.is_null()) {
@@ -530,7 +536,7 @@ void ScriptTextEditor::_inline_object_draw(const Dictionary &p_info, const Rect2
 	}
 }
 
-void ScriptTextEditor::_inline_object_handle_click(const Dictionary &p_info, const Rect2 &p_rect) {
+void ScriptTextEditor::_inline_object_color_handle_click(const Dictionary &p_info, const Rect2 &p_rect) {
 	if (_is_valid_color_info(p_info)) {
 		inline_color_picker->set_pick_color(p_info["color"]);
 		inline_color_line = p_info["line"];
@@ -683,13 +689,196 @@ void ScriptTextEditor::_update_color_text() {
 	code_editor->get_text_editor()->end_complex_operation();
 }
 
+Array ScriptTextEditor::_inline_object_path_parse(const String &p_text) {
+	static RegEx parser = RegEx("(?P<quote>\"|\"\"\"|'|''')(?P<inner>(?P<format>res|uid):\\/\\/.*?)(?P=quote)");
+	Array result;
+	const TypedArray<RegExMatch> matches = parser.search_all(p_text);
+	for (const Variant &v_match : matches) {
+		// ts had better be a RegExMatch
+		const RegExMatch *match = static_cast<RegExMatch *>(v_match.get_validated_object());
+		String quote_style = match->get_string("quote");
+		String format = match->get_string("format");
+		if (path_picker_mode != PATH_PICKER_OFF) {
+			const int start = match->get_start("inner");
+			const int end = match->get_end("inner");
+
+			Dictionary info;
+			info["column"] = match->get_start(0);
+			info["width_ratio"] = 1.0;
+			info["string_start"] = start;
+			info["string_end"] = end;
+			info["format"] = format;
+			info["quote_style"] = quote_style;
+			info["path_obj_type"] = "picker";
+			result.append(info);
+		}
+
+		if (enable_inline_path_display && format == "uid" && !code_editor_font.is_null()) {
+			String inner = match->get_string("inner");
+			ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(inner);
+			bool valid = ResourceUID::get_singleton()->has_id(id);
+			if (!valid) {
+				continue;
+			}
+			String text = " (" + ResourceUID::get_singleton()->get_id_path(id) + ")";
+			real_t width = code_editor_font->get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, code_editor_font_size).x;
+
+			Dictionary uid_info;
+			// Place inside of quotes to avoid last-column issues (they don't show up there, for some reason).
+			uid_info["column"] = match->get_end(0) - quote_style.length();
+			uid_info["text"] = text;
+			uid_info["path_obj_type"] = "uid";
+			uid_info["width"] = width;
+			uid_info["width_ratio"] = width / font_height;
+			uid_info["clickable"] = false;
+			result.append(uid_info);
+		}
+	}
+	return result;
+}
+
+void ScriptTextEditor::_inline_object_path_file_picked(const String &p_path, const Dictionary &p_info) {
+	if (p_path.is_empty()) {
+		return;
+	}
+
+	const int line = p_info["line"];
+	const int string_start = p_info["string_start"];
+	const int string_end = p_info["string_end"];
+	const String &quote_style = p_info["quote_style"];
+	String path = p_path;
+	if (path_picker_mode == PATH_PICKER_ONLY_UID || (path_picker_mode == PATH_PICKER_PRESERVE && p_info["format"] == "uid")) {
+		path = ResourceUID::get_singleton()->path_to_uid(path);
+	}
+
+	path = path
+				   .replace("\\", "\\\\")
+				   .replace("\a", "\\a")
+				   .replace("\b", "\\b")
+				   .replace("\f", "\\f")
+				   .replace("\n", "\\n")
+				   .replace("\r", "\\r")
+				   .replace("\t", "\\t")
+				   .replace("\v", "\\v");
+	if (quote_style.length() > 1) {
+		if (quote_style[0] == '\'') {
+			path = path.replace("'''", "\'\'\'");
+		} else if (quote_style[0] == '"') {
+			path = path.replace("\"\"\"", "\\\"\\\"\\\"");
+		}
+	} else {
+		if (quote_style[0] == '\'') {
+			path = path.replace("'", "\\'");
+		} else if (quote_style[0] == '"') {
+			path = path.replace("\"", "\\\"");
+		}
+	}
+	code_editor->get_text_editor()->begin_complex_operation();
+	code_editor->get_text_editor()->remove_text(line, string_start, line, string_end);
+	code_editor->get_text_editor()->insert_text(path, line, string_start);
+	code_editor->get_text_editor()->end_complex_operation();
+}
+
+void ScriptTextEditor::_inline_object_path_draw(const Dictionary &p_info, const Rect2 &p_rect) {
+	if (p_info["path_obj_type"] == "picker") {
+		if (quick_load_texture.is_null()) {
+			// ScriptTextEditor overrides get_theme_icon, annoyingly.
+			quick_load_texture = Control::get_theme_icon("load", "FileDialog");
+		}
+		RID text_ci = code_editor->get_text_editor()->get_text_canvas_item();
+		const Size2 tex_size = quick_load_texture->get_size();
+		const Rect2 rect = p_rect.size.x < tex_size.x || p_rect.size.y < tex_size.y ? p_rect
+																					: Rect2((p_rect.get_center() - tex_size * 0.5).floor(), tex_size);
+		quick_load_texture->draw_rect(text_ci, rect, false, comment_color);
+	} else if (p_info["path_obj_type"] == "uid") {
+		if (code_editor_font.is_null()) {
+			return;
+		}
+		Vector2 string_size = Vector2(p_info["width"], code_editor_font->get_ascent(code_editor_font_size));
+		RID text_ci = code_editor->get_text_editor()->get_text_canvas_item();
+		code_editor_font->draw_string(
+				text_ci,
+				p_rect.position + Vector2(0.0, string_size.y),
+				p_info["text"],
+				HORIZONTAL_ALIGNMENT_LEFT, -1, code_editor_font_size,
+				comment_color);
+	}
+}
+
+void ScriptTextEditor::_inline_object_path_handle_click(const Dictionary &p_info, const Rect2 &p_rect) {
+	if (p_info["path_obj_type"] != "picker") {
+		return;
+	}
+	EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog({ SNAME("Resource") }, callable_mp(this, &ScriptTextEditor::_inline_object_path_file_picked).bind(p_info));
+}
+
+Array ScriptTextEditor::_inline_object_parse(const String &p_text) {
+	Array result;
+	if (enable_inline_color_picker) {
+		Array items = _inline_object_color_parse(p_text);
+		for (Variant &it : items) {
+			Dictionary d = it;
+			d["type"] = "color";
+		}
+		result.append_array(items);
+	}
+	if (enable_inline_path_display || path_picker_mode != PATH_PICKER_OFF) {
+		Array items = _inline_object_path_parse(p_text);
+		for (Variant &it : items) {
+			Dictionary d = it;
+			d["type"] = "path";
+		}
+		result.append_array(items);
+	}
+	return result;
+}
+
+void ScriptTextEditor::_inline_object_draw(const Dictionary &p_info, const Rect2 &p_rect) {
+	const String &type = p_info["type"];
+	if (type == "color") {
+		_inline_object_color_draw(p_info, p_rect);
+	} else if (type == "path") {
+		_inline_object_path_draw(p_info, p_rect);
+	}
+}
+
+void ScriptTextEditor::_inline_object_handle_click(const Dictionary &p_info, const Rect2 &p_rect) {
+	if (p_info["type"] == "color") {
+		_inline_object_color_handle_click(p_info, p_rect);
+	} else if (p_info["type"] == "path") {
+		_inline_object_path_handle_click(p_info, p_rect);
+	}
+}
+
+void ScriptTextEditor::_update_inline_object_handlers() {
+	code_editor->get_text_editor()->set_inline_object_handlers(
+			callable_mp(this, &ScriptTextEditor::_inline_object_parse),
+			callable_mp(this, &ScriptTextEditor::_inline_object_draw),
+			callable_mp(this, &ScriptTextEditor::_inline_object_handle_click));
+	// It doesn't redraw when it doesn't have focus, annoyingly.
+	code_editor->get_text_editor()->queue_redraw();
+}
+
+void ScriptTextEditor::_update_font() {
+	code_editor_font = get_theme_font("font", "CodeEdit");
+	code_editor_font_size = code_editor->get_text_editor()->get_theme_font_size("font_size");
+	font_height = code_editor_font->get_height(code_editor_font_size);
+
+	// When the font and font size change, the inline object handlers need to be invalidated because they rely on that stuff.
+	_update_inline_object_handlers();
+}
+
+void ScriptTextEditor::_update_font_from_zoom(float p_zoom_factor) {
+	_update_font();
+}
+
 void ScriptTextEditor::update_settings() {
+	path_picker_mode = (PathPickerMode)EDITOR_GET("text_editor/appearance/path_picker_mode").operator int();
+	enable_inline_path_display = bool(EDITOR_GET("text_editor/appearance/enable_inline_path_display"));
+	enable_inline_color_picker = EDITOR_GET("text_editor/appearance/enable_inline_color_picker");
 	code_editor->get_text_editor()->set_gutter_draw(connection_gutter, EDITOR_GET("text_editor/appearance/gutters/show_info_gutter"));
-	if (EDITOR_GET("text_editor/appearance/enable_inline_color_picker")) {
-		code_editor->get_text_editor()->set_inline_object_handlers(
-				callable_mp(this, &ScriptTextEditor::_inline_object_parse),
-				callable_mp(this, &ScriptTextEditor::_inline_object_draw),
-				callable_mp(this, &ScriptTextEditor::_inline_object_handle_click));
+	if (enable_inline_color_picker || path_picker_mode != PATH_PICKER_OFF) {
+		_update_inline_object_handlers();
 	} else {
 		code_editor->get_text_editor()->set_inline_object_handlers(Callable(), Callable(), Callable());
 	}
@@ -2097,10 +2286,11 @@ void ScriptTextEditor::_notification(int p_what) {
 			}
 			[[fallthrough]];
 		case NOTIFICATION_ENTER_TREE: {
+			_update_font();
+
 			code_editor->get_text_editor()->set_gutter_width(connection_gutter, code_editor->get_text_editor()->get_line_height());
-			Ref<Font> code_font = get_theme_font("font", "CodeEdit");
-			inline_color_options->add_theme_font_override("font", code_font);
-			inline_color_options->get_popup()->add_theme_font_override("font", code_font);
+			inline_color_options->add_theme_font_override("font", code_editor_font);
+			inline_color_options->get_popup()->add_theme_font_override("font", code_editor_font);
 		} break;
 	}
 }
@@ -2970,6 +3160,8 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &ScriptTextEditor::_breakpoint_toggled));
 	code_editor->get_text_editor()->connect("caret_changed", callable_mp(this, &ScriptTextEditor::_on_caret_moved));
 	code_editor->connect("navigation_preview_ended", callable_mp(this, &ScriptTextEditor::_on_caret_moved));
+	// need to update the inlay hint font sizes on zoom
+	code_editor->connect("zoomed", callable_mp(this, &ScriptTextEditor::_update_font_from_zoom));
 
 	connection_gutter = 1;
 	code_editor->get_text_editor()->add_gutter(connection_gutter);
@@ -3061,6 +3253,8 @@ ScriptTextEditor::ScriptTextEditor() {
 	inline_color_picker->get_slider_container()->add_sibling(inline_color_options);
 
 	connection_info_dialog = memnew(ConnectionInfoDialog);
+
+	EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &ScriptTextEditor::_update_inline_object_handlers));
 
 	SET_DRAG_FORWARDING_GCD(code_editor->get_text_editor(), ScriptTextEditor);
 }

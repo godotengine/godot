@@ -3646,6 +3646,10 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 			if (!is_inline_info_valid(k)) {
 				continue;
 			}
+			Dictionary info = k;
+			if (!info.get("clickable", false)) {
+				continue;
+			}
 			Rect2 obj_rect = ldata->get_line_object_rect(wrap_i, k);
 			obj_rect.position.x += xmargin_beg + wrap_indent - first_visible_col;
 			if (p_pos.x > obj_rect.position.x && p_pos.x < obj_rect.get_end().x) {
