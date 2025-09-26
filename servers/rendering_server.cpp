@@ -3473,6 +3473,12 @@ void RenderingServer::_bind_methods() {
 
 	/* Misc */
 
+	ClassDB::bind_method(D_METHOD("set_cpu_gpu_sync_mode", "sync_mode"), &RenderingServer::set_cpu_gpu_sync_mode);
+	ClassDB::bind_method(D_METHOD("get_cpu_gpu_sync_mode"), &RenderingServer::get_cpu_gpu_sync_mode);
+
+	BIND_ENUM_CONSTANT(CPU_GPU_SYNC_PARALLEL);
+	BIND_ENUM_CONSTANT(CPU_GPU_SYNC_SEQUENTIAL);
+
 	ClassDB::bind_method(D_METHOD("request_frame_drawn_callback", "callable"), &RenderingServer::request_frame_drawn_callback);
 	ClassDB::bind_method(D_METHOD("has_changed"), &RenderingServer::has_changed);
 	ClassDB::bind_method(D_METHOD("get_rendering_info", "info"), &RenderingServer::get_rendering_info);
