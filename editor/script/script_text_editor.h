@@ -62,6 +62,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	RichTextLabel *errors_panel = nullptr;
 
 	Ref<Script> script;
+	Variant pending_state;
 	bool script_is_valid = false;
 	bool editor_enabled = false;
 
