@@ -28,11 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#define MINIMP3_FLOAT_OUTPUT
-#define MINIMP3_IMPLEMENTATION
-#define MINIMP3_NO_STDIO
+#define DR_MP3_FLOAT_OUTPUT
+#define DR_MP3_IMPLEMENTATION
+#define DR_MP3_NO_STDIO
 
 #include "audio_stream_mp3.h"
+#include "thirdparty/dr_libs/dr_bridge.h"
 
 int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	if (!active) {
@@ -41,66 +42,82 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
 	int todo = p_frames;
 
-	int frames_mixed_this_step = p_frames;
-
 	int beat_length_frames = -1;
 	bool use_loop = looping_override ? looping : mp3_stream->loop;
 
-	bool beat_loop = use_loop && mp3_stream->get_bpm() > 0 && mp3_stream->get_beat_count() > 0;
-	if (beat_loop) {
-		beat_length_frames = mp3_stream->get_beat_count() * mp3_stream->sample_rate * 60 / mp3_stream->get_bpm();
+	if (use_loop && mp3_stream->get_bpm() > 0 && mp3_stream->get_beat_count() > 0) {
+		beat_length_frames = mp3_stream->get_beat_count() * mp3d.sampleRate * 60 / mp3_stream->get_bpm();
 	}
 
-	while (todo && active) {
-		mp3dec_frame_info_t frame_info;
-		mp3d_sample_t *buf_frame = nullptr;
+	while (todo > 0 && active) {
+		AudioFrame *buffer = p_buffer;
+		buffer += p_frames - todo;
 
-		int samples_mixed = mp3dec_ex_read_frame(&mp3d, &buf_frame, &frame_info, mp3_stream->channels);
+		int to_mix = todo;
+		if (beat_length_frames >= 0 && (beat_length_frames - (int)frames_mixed) < to_mix) {
+			to_mix = MAX(0, beat_length_frames - (int)frames_mixed);
+		}
 
-		if (samples_mixed) {
-			p_buffer[p_frames - todo] = AudioFrame(buf_frame[0], buf_frame[samples_mixed - 1]);
-			if (loop_fade_remaining < FADE_SIZE) {
-				p_buffer[p_frames - todo] += loop_fade[loop_fade_remaining] * (float(FADE_SIZE - loop_fade_remaining) / float(FADE_SIZE));
-				loop_fade_remaining++;
+		int mixed = _mix_frames_mp3(buffer, to_mix);
+		ERR_FAIL_COND_V(mixed < 0, 0);
+		todo -= mixed;
+		frames_mixed += mixed;
+
+		if (loop_fade_remaining < FADE_SIZE) {
+			int to_fade = loop_fade_remaining + MIN(FADE_SIZE - loop_fade_remaining, mixed);
+			for (int i = loop_fade_remaining; i < to_fade; i++) {
+				buffer[i - loop_fade_remaining] += loop_fade[i] * (float(FADE_SIZE - i) / float(FADE_SIZE));
 			}
-			--todo;
-			++frames_mixed;
+			loop_fade_remaining = to_fade;
+		}
 
-			if (beat_loop && (int)frames_mixed >= beat_length_frames) {
-				for (int i = 0; i < FADE_SIZE; i++) {
-					samples_mixed = mp3dec_ex_read_frame(&mp3d, &buf_frame, &frame_info, mp3_stream->channels);
-					loop_fade[i] = AudioFrame(buf_frame[0], buf_frame[samples_mixed - 1]);
-					if (!samples_mixed) {
-						break;
+		if (beat_length_frames >= 0) {
+			if (use_loop && beat_length_frames <= (int)frames_mixed) {
+				if (frames_mixed >= drmp3_get_pcm_frame_count(&mp3d)) {
+					loop_fade_remaining = FADE_SIZE;
+				} else {
+					int faded_mix = _mix_frames_mp3(loop_fade, FADE_SIZE);
+					for (int i = faded_mix; i < FADE_SIZE; i++) {
+						loop_fade[i] = loop_fade[i - faded_mix];
 					}
+					loop_fade_remaining = 0;
 				}
-				loop_fade_remaining = 0;
 				seek(mp3_stream->loop_offset);
 				loops++;
+				continue;
 			}
 		}
 
-		else {
-			//EOF
-			if (use_loop) {
+		if (frames_mixed >= drmp3_get_pcm_frame_count(&mp3d)) {
+			bool is_not_empty = mixed > 0 || mp3_stream->get_length() > 0;
+			if (use_loop && is_not_empty) {
 				seek(mp3_stream->loop_offset);
 				loops++;
 			} else {
-				frames_mixed_this_step = p_frames - todo;
-				//fill remainder with silence
 				for (int i = p_frames - todo; i < p_frames; i++) {
 					p_buffer[i] = AudioFrame(0, 0);
 				}
 				active = false;
-				todo = 0;
 			}
 		}
 	}
-	return frames_mixed_this_step;
+	return p_frames - todo;
+}
+
+int AudioStreamPlaybackMP3::_mix_frames_mp3(AudioFrame *p_buffer, int p_frames) {
+	int frames = drmp3_read_pcm_frames_f32(&mp3d, p_frames, (float *)p_buffer);
+	if (mp3d.channels == 1) {
+		float *mono_buffer = (float *)p_buffer;
+		for (int i = frames - 1; i >= 0; i--) {
+			p_buffer[i].left = mono_buffer[i];
+			p_buffer[i].right = mono_buffer[i];
+		}
+	}
+	return frames;
 }
 
 float AudioStreamPlaybackMP3::get_stream_sampling_rate() {
-	return mp3_stream->sample_rate;
+	return mp3d.sampleRate;
 }
 
 void AudioStreamPlaybackMP3::start(double p_from_pos) {
@@ -123,7 +140,7 @@ int AudioStreamPlaybackMP3::get_loop_count() const {
 }
 
 double AudioStreamPlaybackMP3::get_playback_position() const {
-	return double(frames_mixed) / mp3_stream->sample_rate;
+	return double(frames_mixed) / mp3d.sampleRate;
 }
 
 void AudioStreamPlaybackMP3::seek(double p_time) {
@@ -135,8 +152,8 @@ void AudioStreamPlaybackMP3::seek(double p_time) {
 		p_time = 0;
 	}
 
-	frames_mixed = uint32_t(mp3_stream->sample_rate * p_time);
-	mp3dec_ex_seek(&mp3d, (uint64_t)frames_mixed * mp3_stream->channels);
+	frames_mixed = mp3d.sampleRate * p_time;
+	drmp3_seek_to_pcm_frame(&mp3d, frames_mixed);
 }
 
 void AudioStreamPlaybackMP3::tag_used_streams() {
@@ -182,7 +199,7 @@ Variant AudioStreamPlaybackMP3::get_parameter(const StringName &p_name) const {
 }
 
 AudioStreamPlaybackMP3::~AudioStreamPlaybackMP3() {
-	mp3dec_ex_close(&mp3d);
+	drmp3_uninit(&mp3d);
 }
 
 Ref<AudioStreamPlayback> AudioStreamMP3::instantiate_playback() {
@@ -196,15 +213,13 @@ Ref<AudioStreamPlayback> AudioStreamMP3::instantiate_playback() {
 	mp3s.instantiate();
 	mp3s->mp3_stream = Ref<AudioStreamMP3>(this);
 
-	int errorcode = mp3dec_ex_open_buf(&mp3s->mp3d, data.ptr(), data_len, MP3D_SEEK_TO_SAMPLE);
+	int success = drmp3_init_memory(&mp3s->mp3d, data.ptr(), data_len, (drmp3_allocation_callbacks *)&dr_alloc_calls);
 
 	mp3s->frames_mixed = 0;
 	mp3s->active = false;
 	mp3s->loops = 0;
 
-	if (errorcode) {
-		ERR_FAIL_COND_V(errorcode, Ref<AudioStreamPlaybackMP3>());
-	}
+	ERR_FAIL_COND_V(!success, Ref<AudioStreamPlaybackMP3>());
 
 	return mp3s;
 }
@@ -220,18 +235,16 @@ void AudioStreamMP3::clear_data() {
 void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 	int src_data_len = p_data.size();
 
-	mp3dec_ex_t *mp3d = memnew(mp3dec_ex_t);
-	int err = mp3dec_ex_open_buf(mp3d, p_data.ptr(), src_data_len, MP3D_SEEK_TO_SAMPLE);
-	if (err || mp3d->info.hz == 0) {
+	drmp3 *mp3d = memnew(drmp3);
+	int success = drmp3_init_memory(mp3d, p_data.ptr(), src_data_len, (drmp3_allocation_callbacks *)&dr_alloc_calls);
+	if (!success || mp3d->sampleRate == 0) {
 		memdelete(mp3d);
 		ERR_FAIL_MSG("Failed to decode mp3 file. Make sure it is a valid mp3 audio file.");
 	}
 
-	channels = mp3d->info.channels;
-	sample_rate = mp3d->info.hz;
-	length = float(mp3d->samples) / (sample_rate * float(channels));
+	length = float(drmp3_get_pcm_frame_count(mp3d)) / (mp3d->sampleRate);
 
-	mp3dec_ex_close(mp3d);
+	drmp3_uninit(mp3d);
 	memdelete(mp3d);
 
 	data = p_data;
