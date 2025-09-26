@@ -6472,7 +6472,7 @@ void RenderingDevice::_end_frame() {
 	_submit_transfer_workers(command_buffer);
 	_submit_transfer_barriers(command_buffer);
 
-	draw_graph.end(RENDER_GRAPH_REORDER, RENDER_GRAPH_FULL_BARRIERS, command_buffer, frames[frame].command_buffer_pool);
+	draw_graph.end(render_graph_reorder, RENDER_GRAPH_FULL_BARRIERS, command_buffer, frames[frame].command_buffer_pool);
 	driver->command_buffer_end(command_buffer);
 	driver->end_segment();
 }
@@ -6713,6 +6713,12 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	device = context->device_get(device_index);
 	err = driver->initialize(device_index, frame_count);
 	ERR_FAIL_COND_V_MSG(err != OK, FAILED, "Failed to initialize driver for device.");
+
+	// Apply GPU workarounds (available only after driver initialization).
+	render_graph_reorder = RENDER_GRAPH_REORDER;
+	if (get_device_workarounds().avoid_render_graph_reorder) {
+		render_graph_reorder = false;
+	}
 
 	if (is_main_instance) {
 		// Only the singleton instance with a display should print this information.
