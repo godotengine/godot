@@ -92,6 +92,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	ColorPicker *inline_color_picker = nullptr;
 	OptionButton *inline_color_options = nullptr;
 	Ref<Texture2D> color_alpha_texture;
+	Ref<Texture2D> quick_load_texture;
 
 	GotoLinePopup *goto_line_popup = nullptr;
 	ScriptEditorQuickOpen *quick_open = nullptr;
@@ -114,6 +115,21 @@ class ScriptTextEditor : public ScriptEditorBase {
 	ColorPicker *color_picker = nullptr;
 	Vector3i color_position;
 	String color_args;
+
+	enum PathPickerMode {
+		OFF,
+		ONLY_UID,
+		ONLY_RES,
+		PRESERVE,
+	};
+
+	bool enable_inline_color_picker;
+	bool enable_inline_path_display;
+	PathPickerMode path_picker_mode = OFF;
+
+	Ref<Font> code_editor_font;
+	int code_editor_font_size = 0;
+	real_t font_height;
 
 	bool theme_loaded = false;
 
@@ -216,14 +232,31 @@ protected:
 	void _warning_clicked(const Variant &p_line);
 
 	bool _is_valid_color_info(const Dictionary &p_info);
-	Array _inline_object_parse(const String &p_text);
-	void _inline_object_draw(const Dictionary &p_info, const Rect2 &p_rect);
-	void _inline_object_handle_click(const Dictionary &p_info, const Rect2 &p_rect);
+	Array _inline_object_color_parse(const String &p_text);
+	void _inline_object_color_draw(const Dictionary &p_info, const Rect2 &p_rect);
+	void _inline_object_color_handle_click(const Dictionary &p_info, const Rect2 &p_rect);
 	String _picker_color_stringify(const Color &p_color, COLOR_MODE p_mode);
 	void _picker_color_changed(const Color &p_color);
 	void _update_color_constructor_options();
 	void _update_background_color();
 	void _update_color_text();
+
+	Array _inline_object_path_parse(const String &p_text);
+	void _inline_object_path_draw(const Dictionary &p_info, const Rect2 &p_rect);
+	void _inline_object_path_file_picked(const String &p_path, const Dictionary &p_info);
+	void _inline_object_path_handle_click(const Dictionary &p_info, const Rect2 &p_rect);
+
+	Array _inline_object_parse(const String &p_text);
+	void _inline_object_draw(const Dictionary &p_info, const Rect2 &p_rect);
+	void _inline_object_handle_click(const Dictionary &p_info, const Rect2 &p_rect);
+
+	void _set_inline_object_handlers();
+
+	void _filesystem_dock_item_moved(const String& p_old_file, const String& p_new_file);
+	void _filesystem_dock_item_removed(const String& p_file);
+
+	void _update_font();
+	void _update_font_from_zoom(float p_zoom_factor);
 
 	void _notification(int p_what);
 
