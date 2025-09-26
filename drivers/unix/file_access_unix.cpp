@@ -148,7 +148,15 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 			last_error = ERR_FILE_CANT_OPEN;
 			return last_error;
 		}
-		fchmod(fd, 0644);
+
+		struct stat file_stat = {};
+		int error = stat(save_path.utf8().get_data(), &file_stat);
+		if (!error) {
+			fchmod(fd, file_stat.st_mode & 0xFFF); // Mask to remove file type
+		} else {
+			fchmod(fd, 0644); // Fallback permissions
+		}
+
 		path = String::utf8(cs.ptr());
 
 		f = fdopen(fd, mode_string);
