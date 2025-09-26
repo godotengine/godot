@@ -104,7 +104,7 @@ bool OS_MacOS::is_sandboxed() const {
 }
 
 bool OS_MacOS::request_permission(const String &p_name) {
-	if (@available(macOS 10.15, *)) {
+	if (@available(macOS 11.0, *)) {
 		if (p_name == "macos.permission.RECORD_SCREEN") {
 			if (CGPreflightScreenCaptureAccess()) {
 				return true;
@@ -124,7 +124,7 @@ bool OS_MacOS::request_permission(const String &p_name) {
 Vector<String> OS_MacOS::get_granted_permissions() const {
 	Vector<String> ret;
 
-	if (@available(macOS 10.15, *)) {
+	if (@available(macOS 11.0, *)) {
 		if (CGPreflightScreenCaptureAccess()) {
 			ret.push_back("macos.permission.RECORD_SCREEN");
 		}
