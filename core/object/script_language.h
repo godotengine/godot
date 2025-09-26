@@ -273,7 +273,6 @@ public:
 	virtual bool is_using_templates() { return false; }
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const = 0;
 	virtual String validate_path(const String &p_path) const { return ""; }
-	virtual Script *create_script() const = 0;
 	virtual bool supports_builtin_mode() const = 0;
 	virtual bool supports_documentation() const { return false; }
 	virtual bool can_inherit_from_file() const { return false; }

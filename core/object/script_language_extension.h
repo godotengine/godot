@@ -361,13 +361,8 @@ public:
 	}
 
 	EXBIND1RC(String, validate_path, const String &)
-	GDVIRTUAL0RC_REQUIRED(Object *, _create_script)
-	Script *create_script() const override {
-		Object *ret = nullptr;
-		GDVIRTUAL_CALL(_create_script, ret);
-		return Object::cast_to<Script>(ret);
-	}
 #ifndef DISABLE_DEPRECATED
+	GDVIRTUAL0RC(Object *, _create_script)
 	GDVIRTUAL0RC(bool, _has_named_classes)
 #endif
 	EXBIND0RC(bool, supports_builtin_mode)
