@@ -46,13 +46,15 @@ class SpxPathFinder : public RefCounted {
 private:
     Ref<AStarGrid2D> astar;
     PathDebugDrawer *drawer = nullptr;
+    Vector2 cached_cell_size;
 
     Vector2i _world_to_cell(const Vector2 &pos) const;
     Vector2 _cell_to_world(const Vector2i &cell) const;
 
-    void _process_rectangle_shape(Node2D *owner, CollisionShape2D *shape);
-    void _process_static_obstacles(Node2D *body);
+    void _process_rectangle_shape(Node2D *owner, CollisionShape2D *shape, bool add = true);
+    void _process_static_obstacles(Node2D *body, bool add = true);
     void _process_tilemap_obstacles(TileMapLayer *tilemap, int p_layer_id = 0);
+    void _process_sprite_obstacle(GdObj obj, bool add);
 
 protected:
     static void _bind_methods();
@@ -65,6 +67,8 @@ public:
 	void setup_grid(Vector2i size, Vector2i cell_size, bool with_debug = false);
 	void set_jumping_enabled(bool p_enabled);
 	void add_all_obstacles(Node *root);
+
+    void set_sprite_obstacle(GdObj obj, bool enabled);
 
     GdArray find_path_spx(GdVec2 p_from, GdVec2 p_to);
 	PackedVector2Array find_path(Vector2 start, Vector2 end);

@@ -262,6 +262,9 @@ static void gdextension_spx_ext_setup_path_finder_with_size(GdVec2 grid_size,GdV
 static void gdextension_spx_ext_setup_path_finder(GdBool with_jump) {
 	 extMgr->setup_path_finder(with_jump);
 }
+static void gdextension_spx_ext_set_obstacle(GdObj obj,GdBool enabled) {
+	 extMgr->set_obstacle(obj, enabled);
+}
 static void gdextension_spx_ext_find_path(GdVec2 p_from,GdVec2 p_to,GdBool with_jump,GdArray* ret_val) {
 	*ret_val = extMgr->find_path(p_from, p_to, with_jump);
 }
@@ -971,6 +974,7 @@ void gdextension_spx_setup_interface() {
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_create_pure_sprite);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_setup_path_finder_with_size);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_setup_path_finder);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_set_obstacle);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_find_path);
 	REGISTER_SPX_INTERFACE_FUNC(spx_input_get_mouse_pos);
 	REGISTER_SPX_INTERFACE_FUNC(spx_input_get_key);
