@@ -972,7 +972,7 @@ void main() {
 				glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
 			}
 
-			glow = apply_tonemapping(glow, params.white);
+			glow = apply_tonemapping(glow);
 			if (convert_to_srgb) {
 				glow = linear_to_srgb(glow);
 			}
@@ -990,7 +990,7 @@ void main() {
 			if (params.glow_map_strength > 0.001) {
 				glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
 			}
-			glow = apply_tonemapping(glow, params.white);
+			glow = apply_tonemapping(glow);
 			color.rgb = apply_glow(color.rgb, glow, params.white);
 		}
 #endif

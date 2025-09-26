@@ -208,13 +208,7 @@ void RendererEnvironmentStorage::environment_set_tonemap(RID p_env, RS::Environm
 	ERR_FAIL_NULL(env);
 	env->exposure = p_exposure;
 	env->tone_mapper = p_tone_mapper;
-	if (p_tone_mapper == RS::ENV_TONE_MAPPER_LINEAR) {
-		env->white = 1.0; // With HDR output this should be the output max value instead.
-	} else if (p_tone_mapper == RS::ENV_TONE_MAPPER_AGX) {
-		env->white = 16.29;
-	} else {
-		env->white = p_white;
-	}
+	env->white = p_white;
 	env->tonemap_contrast = p_contrast;
 }
 
