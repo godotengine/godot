@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "editor/inspector/multi_node_edit.h"
 #include "editor/plugins/editor_plugin.h"
 
 class CheckBox;
@@ -57,10 +58,12 @@ protected:
 	String conversion_option_name;
 
 	Node *edited_node = nullptr;
+	Ref<MultiNodeEdit> mne;
 
 	void _notification(int p_what);
 
 	bool need_show_lifetime_dialog(SpinBox *p_seconds);
+	void disable_single_select_operations(bool p_disabled) const;
 	virtual void _menu_callback(int p_idx);
 
 	virtual void _add_menu_options(PopupMenu *p_menu) {}
