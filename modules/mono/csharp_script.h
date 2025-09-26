@@ -512,7 +512,6 @@ public:
 		return true;
 	}
 	String validate_path(const String &p_path) const override;
-	Script *create_script() const override;
 #ifndef DISABLE_DEPRECATED
 	virtual bool has_named_classes() const override { return false; }
 #endif
