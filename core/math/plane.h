@@ -81,7 +81,6 @@ struct [[nodiscard]] Plane {
 	bool is_finite() const;
 
 	constexpr bool operator==(const Plane &p_plane) const;
-	constexpr bool operator!=(const Plane &p_plane) const;
 	explicit operator String() const;
 
 	Plane() = default;
@@ -135,10 +134,6 @@ Plane::Plane(const Vector3 &p_point1, const Vector3 &p_point2, const Vector3 &p_
 
 constexpr bool Plane::operator==(const Plane &p_plane) const {
 	return normal == p_plane.normal && d == p_plane.d;
-}
-
-constexpr bool Plane::operator!=(const Plane &p_plane) const {
-	return normal != p_plane.normal || d != p_plane.d;
 }
 
 template <>

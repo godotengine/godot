@@ -349,7 +349,6 @@ public:
 		}
 
 		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return _keys == b._keys && _key_idx == b._key_idx; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return _keys != b._keys || _key_idx != b._key_idx; }
 
 		_FORCE_INLINE_ explicit operator bool() const {
 			return _keys != nullptr;
@@ -450,9 +449,6 @@ public:
 			}
 		}
 		return true;
-	}
-	bool operator!=(const HashSet &p_other) const {
-		return !(*this == p_other);
 	}
 
 	HashSet(uint32_t p_initial_capacity) {
