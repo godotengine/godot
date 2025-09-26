@@ -23,6 +23,9 @@
 
 #VERSION_DEFINES
 
+#ifndef SSAO_TYPE_GTAO
+// Intel ASSAO
+
 #define INTELSSAO_MAIN_DISK_SAMPLE_COUNT (32)
 const vec4 sample_pattern[INTELSSAO_MAIN_DISK_SAMPLE_COUNT] = {
 	vec4(0.78488064, 0.56661671, 1.500000, -0.126083), vec4(0.26022232, -0.29575172, 1.500000, -1.064030), vec4(0.10459357, 0.08372527, 1.110000, -2.730563), vec4(-0.68286800, 0.04963045, 1.090000, -0.498827),
@@ -66,6 +69,13 @@ const int num_taps[5] = { 3, 5, 12, 0, 0 };
 #define SSAO_ADAPTIVE_TAP_BASE_COUNT 5
 #define SSAO_ADAPTIVE_TAP_FLEXIBLE_COUNT (SSAO_MAX_TAPS - SSAO_ADAPTIVE_TAP_BASE_COUNT)
 #define SSAO_DEPTH_MIP_LEVELS 4
+
+#else
+// GTAO
+const int num_slices[5] = {2, 4, 6, 0, 0};
+const int num_taps[5] = {4, 8, 16, 0, 0};
+
+#endif
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
@@ -172,6 +182,71 @@ vec3 load_normal(ivec2 p_pos, ivec2 p_offset) {
 	encoded_normal.z = -encoded_normal.z;
 	return encoded_normal;
 }
+
+// The common part
+vec4 calculate_all_edges(const uvec2 full_res_coord, const vec3 pixel_normal, const float pix_z, const float pix_left_z, const float pix_right_z, const float pix_top_z, const float pix_bottom_z, int p_quality_level, bool p_adaptive_base){
+	// edge mask for between this and left/right/top/bottom neighbor pixels - not used in quality level 0 so initialize to "no edge" (1 is no edge, 0 is edge)
+	vec4 edgesLRTB = vec4(1.0, 1.0, 1.0, 1.0);
+
+	if (!p_adaptive_base && (p_quality_level >= SSAO_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET)) {
+		edgesLRTB = calculate_edges(pix_z, pix_left_z, pix_right_z, pix_top_z, pix_bottom_z);
+	}
+
+	// Sharp normals also create edges - but this adds to the cost as well
+	if (!p_adaptive_base && (p_quality_level >= SSAO_NORMAL_BASED_EDGES_ENABLE_AT_QUALITY_PRESET)) {
+		vec3 neighbour_normal_left = load_normal(ivec2(full_res_coord), ivec2(-2, 0));
+		vec3 neighbour_normal_right = load_normal(ivec2(full_res_coord), ivec2(2, 0));
+		vec3 neighbour_normal_top = load_normal(ivec2(full_res_coord), ivec2(0, -2));
+		vec3 neighbour_normal_bottom = load_normal(ivec2(full_res_coord), ivec2(0, 2));
+
+		const float dot_threshold = SSAO_NORMAL_BASED_EDGES_DOT_THRESHOLD;
+
+		vec4 normal_edgesLRTB;
+		normal_edgesLRTB.x = clamp((dot(pixel_normal, neighbour_normal_left) + dot_threshold), 0.0, 1.0);
+		normal_edgesLRTB.y = clamp((dot(pixel_normal, neighbour_normal_right) + dot_threshold), 0.0, 1.0);
+		normal_edgesLRTB.z = clamp((dot(pixel_normal, neighbour_normal_top) + dot_threshold), 0.0, 1.0);
+		normal_edgesLRTB.w = clamp((dot(pixel_normal, neighbour_normal_bottom) + dot_threshold), 0.0, 1.0);
+
+		edgesLRTB *= normal_edgesLRTB;
+	}
+
+	return edgesLRTB;
+}
+
+float calculate_final_occlusion(float obscurance, float pix_center_z, vec4 edgesLRTB, int p_quality_level, bool p_adaptive_base){
+	// calculate fadeout (1 close, gradient, 0 far)
+	float fade_out = clamp(pix_center_pos.z * params.fade_out_mul + params.fade_out_add, 0.0, 1.0);
+
+	// Reduce the SSAO shadowing if we're on the edge to remove artifacts on edges (we don't care for the lower quality one)
+	if (!p_adaptive_base && (p_quality_level >= SSAO_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET)) {
+		// when there's more than 2 opposite edges, start fading out the occlusion to reduce aliasing artifacts
+		float edge_fadeout_factor = clamp((1.0 - edgesLRTB.x - edgesLRTB.y) * 0.35, 0.0, 1.0) + clamp((1.0 - edgesLRTB.z - edgesLRTB.w) * 0.35, 0.0, 1.0);
+
+		fade_out *= clamp(1.0 - edge_fadeout_factor, 0.0, 1.0);
+	}
+
+	// strength
+	obscurance = params.intensity * obscurance;
+
+	// clamp
+	obscurance = min(obscurance, params.shadow_clamp);
+
+	// fadeout
+	obscurance *= fade_out;
+
+	// conceptually switch to occlusion with the meaning being visibility (grows with visibility, occlusion == 1 implies full visibility),
+	// to be in line with what is more commonly used.
+	float occlusion = 1.0 - obscurance;
+
+	// modify the gradient
+	// note: this cannot be moved to a later pass because of loss of precision after storing in the render target
+	occlusion = pow(clamp(occlusion, 0.0, 1.0), params.shadow_power);
+
+	return occlusion;
+}
+
+#ifndef SSAO_TYPE_GTAO
+// Intel ASSAO implementation
 
 // all vectors in viewspace
 float calculate_pixel_obscurance(vec3 p_pixel_normal, vec3 p_hit_delta, float p_fallof_sq) {
@@ -302,16 +377,6 @@ void generate_SSAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 	float obscurance_sum = 0.0;
 	float weight_sum = 0.0;
 
-	// edge mask for between this and left/right/top/bottom neighbor pixels - not used in quality level 0 so initialize to "no edge" (1 is no edge, 0 is edge)
-	vec4 edgesLRTB = vec4(1.0, 1.0, 1.0, 1.0);
-
-	// Move center pixel slightly towards camera to avoid imprecision artifacts due to using of 16bit depth buffer.
-	pix_center_pos *= 0.99;
-
-	if (!p_adaptive_base && (p_quality_level >= SSAO_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET)) {
-		edgesLRTB = calculate_edges(pix_z, pix_left_z, pix_right_z, pix_top_z, pix_bottom_z);
-	}
-
 	// adds a more high definition sharp effect, which gets blurred out (reuses left/right/top/bottom samples that we used for edge detection)
 	if (!p_adaptive_base && (p_quality_level >= SSAO_DETAIL_AO_ENABLE_AT_QUALITY_PRESET)) {
 		// disable in case of quality level 4 (reference)
@@ -336,23 +401,10 @@ void generate_SSAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 		}
 	}
 
-	// Sharp normals also create edges - but this adds to the cost as well
-	if (!p_adaptive_base && (p_quality_level >= SSAO_NORMAL_BASED_EDGES_ENABLE_AT_QUALITY_PRESET)) {
-		vec3 neighbour_normal_left = load_normal(ivec2(full_res_coord), ivec2(-2, 0));
-		vec3 neighbour_normal_right = load_normal(ivec2(full_res_coord), ivec2(2, 0));
-		vec3 neighbour_normal_top = load_normal(ivec2(full_res_coord), ivec2(0, -2));
-		vec3 neighbour_normal_bottom = load_normal(ivec2(full_res_coord), ivec2(0, 2));
+	// Move center pixel slightly towards camera to avoid imprecision artifacts due to using of 16bit depth buffer.
+	pix_center_pos *= 0.99;
 
-		const float dot_threshold = SSAO_NORMAL_BASED_EDGES_DOT_THRESHOLD;
-
-		vec4 normal_edgesLRTB;
-		normal_edgesLRTB.x = clamp((dot(pixel_normal, neighbour_normal_left) + dot_threshold), 0.0, 1.0);
-		normal_edgesLRTB.y = clamp((dot(pixel_normal, neighbour_normal_right) + dot_threshold), 0.0, 1.0);
-		normal_edgesLRTB.z = clamp((dot(pixel_normal, neighbour_normal_top) + dot_threshold), 0.0, 1.0);
-		normal_edgesLRTB.w = clamp((dot(pixel_normal, neighbour_normal_bottom) + dot_threshold), 0.0, 1.0);
-
-		edgesLRTB *= normal_edgesLRTB;
-	}
+	vec4 edgesLRTB = calculate_all_edges(full_res_coord, pixel_normal, pix_z, pix_left_z, pix_right_z, pix_top_z, pix_bottom_z);
 
 	const float global_mip_offset = SSAO_DEPTH_MIPS_GLOBAL_OFFSET;
 	float mip_offset = (p_quality_level < SSAO_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET) ? (0) : (log2(pixel_lookup_radius) + global_mip_offset);
@@ -422,39 +474,116 @@ void generate_SSAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 	// calculate weighted average
 	float obscurance = obscurance_sum / weight_sum;
 
-	// calculate fadeout (1 close, gradient, 0 far)
-	float fade_out = clamp(pix_center_pos.z * params.fade_out_mul + params.fade_out_add, 0.0, 1.0);
-
-	// Reduce the SSAO shadowing if we're on the edge to remove artifacts on edges (we don't care for the lower quality one)
-	if (!p_adaptive_base && (p_quality_level >= SSAO_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET)) {
-		// when there's more than 2 opposite edges, start fading out the occlusion to reduce aliasing artifacts
-		float edge_fadeout_factor = clamp((1.0 - edgesLRTB.x - edgesLRTB.y) * 0.35, 0.0, 1.0) + clamp((1.0 - edgesLRTB.z - edgesLRTB.w) * 0.35, 0.0, 1.0);
-
-		fade_out *= clamp(1.0 - edge_fadeout_factor, 0.0, 1.0);
-	}
-
-	// strength
-	obscurance = params.intensity * obscurance;
-
-	// clamp
-	obscurance = min(obscurance, params.shadow_clamp);
-
-	// fadeout
-	obscurance *= fade_out;
-
-	// conceptually switch to occlusion with the meaning being visibility (grows with visibility, occlusion == 1 implies full visibility),
-	// to be in line with what is more commonly used.
-	float occlusion = 1.0 - obscurance;
-
-	// modify the gradient
-	// note: this cannot be moved to a later pass because of loss of precision after storing in the render target
-	occlusion = pow(clamp(occlusion, 0.0, 1.0), params.shadow_power);
+	// calculate final occlusion
+	float occlusion = calculate_final_occlusion(obscurance, pix_center_pos.z, edgesLRTB, p_quality_level, p_adaptive_base);
 
 	// outputs!
 	r_shadow_term = occlusion; // Our final 'occlusion' term (0 means fully occluded, 1 means fully lit)
 	r_edges = edgesLRTB; // These are used to prevent blurring across edges, 1 means no edge, 0 means edge, 0.5 means half way there, etc.
 	r_weight = weight_sum;
 }
+
+#else
+// GTAO implementation
+void generate_GTAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, out float r_weight, const vec2 p_pos, int p_quality_level, bool p_adaptive_base) {
+	vec2 pos_rounded = trunc(p_pos);
+	uvec2 upos = uvec2(pos_rounded);
+
+	const int number_of_taps = (p_adaptive_base) ? (SSAO_ADAPTIVE_TAP_BASE_COUNT) : (num_taps[p_quality_level]);
+	float pix_z, pix_left_z, pix_top_z, pix_right_z, pix_bottom_z;
+
+	vec4 valuesUL = textureGather(source_depth_mipmaps, vec3(pos_rounded * params.half_screen_pixel_size, params.pass));
+	vec4 valuesBR = textureGather(source_depth_mipmaps, vec3((pos_rounded + vec2(1.0)) * params.half_screen_pixel_size, params.pass));
+
+	// get this pixel's viewspace depth
+	pix_z = valuesUL.y;
+
+	// get left right top bottom neighboring pixels for edge detection (gets compiled out on quality_level == 0)
+	pix_left_z = valuesUL.x;
+	pix_top_z = valuesUL.z;
+	pix_right_z = valuesBR.z;
+	pix_bottom_z = valuesBR.x;
+
+	vec2 normalized_screen_pos = pos_rounded * params.half_screen_pixel_size + params.half_screen_pixel_size_x025;
+	vec3 pix_center_pos = NDC_to_view_space(normalized_screen_pos, pix_z);
+
+	// Load this pixel's viewspace normal
+	uvec2 full_res_coord = upos * 2 * params.size_multiplier + params.pass_coord_offset.xy;
+	vec3 pixel_normal = load_normal(ivec2(full_res_coord));
+
+	const vec2 pixel_size_at_center = NDC_to_view_space(normalized_screen_pos.xy + params.half_screen_pixel_size, pix_center_pos.z).xy - pix_center_pos.xy;
+
+	float pixel_lookup_radius;
+	float fallof_sq;
+
+	// calculate effect radius and fit our screen sampling pattern inside it
+	float viewspace_radius;
+	calculate_radius_parameters(length(pix_center_pos), pixel_size_at_center, pixel_lookup_radius, viewspace_radius, fallof_sq);
+
+
+	// the main obscurance & sample weight storage
+	float obscurance_sum = 0.0;
+	float weight_sum = 0.0;
+
+	// adds a more high definition sharp effect, which gets blurred out (reuses left/right/top/bottom samples that we used for edge detection)
+	if (!p_adaptive_base && (p_quality_level >= SSAO_DETAIL_AO_ENABLE_AT_QUALITY_PRESET)) {
+		// disable in case of quality level 4 (reference)
+		if (p_quality_level != 4) {
+			//approximate neighboring pixels positions (actually just deltas or "positions - pix_center_pos" )
+			vec3 normalized_viewspace_dir = vec3(pix_center_pos.xy / pix_center_pos.zz, 1.0);
+			vec3 pixel_left_delta = vec3(-pixel_size_at_center.x, 0.0, 0.0) + normalized_viewspace_dir * (pix_left_z - pix_center_pos.z);
+			vec3 pixel_right_delta = vec3(+pixel_size_at_center.x, 0.0, 0.0) + normalized_viewspace_dir * (pix_right_z - pix_center_pos.z);
+			vec3 pixel_top_delta = vec3(0.0, -pixel_size_at_center.y, 0.0) + normalized_viewspace_dir * (pix_top_z - pix_center_pos.z);
+			vec3 pixel_bottom_delta = vec3(0.0, +pixel_size_at_center.y, 0.0) + normalized_viewspace_dir * (pix_bottom_z - pix_center_pos.z);
+
+			const float range_reduction = 4.0f;// this is to avoid various artifacts
+			const float modified_fallof_sq = range_reduction * fallof_sq;
+
+			vec4 additional_obscurance;
+			additional_obscurance.x = calculate_pixel_obscurance(pixel_normal, pixel_left_delta, modified_fallof_sq);
+			additional_obscurance.y = calculate_pixel_obscurance(pixel_normal, pixel_right_delta, modified_fallof_sq);
+			additional_obscurance.z = calculate_pixel_obscurance(pixel_normal, pixel_top_delta, modified_fallof_sq);
+			additional_obscurance.w = calculate_pixel_obscurance(pixel_normal, pixel_bottom_delta, modified_fallof_sq);
+
+			obscurance_sum += params.detail_intensity * dot(additional_obscurance, edgesLRTB);
+		}
+	}
+
+	// Move center pixel slightly towards camera to avoid imprecision artifacts due to using of 16bit depth buffer.
+	pix_center_pos *= 0.99;
+
+	vec4 edgesLRTB = calculate_all_edges(full_res_coord, pixel_normal, pix_z, pix_left_z, pix_right_z, pix_top_z, pix_bottom_z);
+
+	const float global_mip_offset = SSAO_DEPTH_MIPS_GLOBAL_OFFSET;
+	float mip_offset = (p_quality_level < SSAO_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET) ? (0) : (log2(pixel_lookup_radius) + global_mip_offset);
+
+	// Used to tilt the second set of samples so that the disk is effectively rotated by the normal
+	// effective at removing one set of artifacts, but too expensive for lower quality settings
+	vec2 norm_xy = vec2(pixel_normal.x, pixel_normal.y);
+	float norm_xy_length = length(norm_xy);
+	norm_xy /= vec2(norm_xy_length, -norm_xy_length);
+	norm_xy_length *= SSAO_TILT_SAMPLES_AMOUNT;
+
+	// standard, non-adaptive approach
+	if ((p_quality_level != 3) || p_adaptive_base) {
+		for (int i = 0; i < number_of_taps; i++) {
+			SSAOTap(p_quality_level, obscurance_sum, weight_sum, i, rot_scale_matrix, pix_center_pos, pixel_normal, normalized_screen_pos, mip_offset, fallof_sq, 1.0, norm_xy, norm_xy_length);
+		}
+	}
+
+	// calculate weighted average
+	float obscurance = obscurance_sum / weight_sum;
+
+	// calculate final occlusion
+	float occlusion = calculate_final_occlusion(obscurance, pix_center_pos.z, edgesLRTB, p_quality_level, p_adaptive_base);
+
+	// outputs!
+	r_shadow_term = occlusion; // Our final 'occlusion' term (0 means fully occluded, 1 means fully lit)
+	r_edges = edgesLRTB; // These are used to prevent blurring across edges, 1 means no edge, 0 means edge, 0.5 means half way there, etc.
+	r_weight = weight_sum;
+}
+
+#endif
 
 void main() {
 	float out_shadow_term;
