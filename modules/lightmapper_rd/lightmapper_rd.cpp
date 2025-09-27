@@ -139,6 +139,39 @@ void LightmapperRD::add_spot_light(const String &p_name, bool p_static, const Ve
 	light_metadata.push_back(md);
 }
 
+void LightmapperRD::add_area_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, const Vector3 &p_area_width, const Vector3 &p_area_height, float p_size, float p_shadow_blur) {
+	Light l;
+	l.type = LIGHT_TYPE_AREA;
+	l.position[0] = p_position.x;
+	l.position[1] = p_position.y;
+	l.position[2] = p_position.z;
+	l.direction[0] = p_direction.x;
+	l.direction[1] = p_direction.y;
+	l.direction[2] = p_direction.z;
+	l.area_width[0] = p_area_width.x;
+	l.area_width[1] = p_area_width.y;
+	l.area_width[2] = p_area_width.z;
+	l.area_height[0] = p_area_height.x;
+	l.area_height[1] = p_area_height.y;
+	l.area_height[2] = p_area_height.z;
+	l.range = p_range;
+	l.attenuation = p_attenuation;
+	l.color[0] = p_color.r;
+	l.color[1] = p_color.g;
+	l.color[2] = p_color.b;
+	l.energy = p_energy;
+	l.indirect_energy = p_indirect_energy;
+	l.static_bake = p_static;
+	l.size = p_size;
+	l.shadow_blur = p_shadow_blur;
+	lights.push_back(l);
+
+	LightMetadata md;
+	md.name = p_name;
+	md.type = LIGHT_TYPE_AREA;
+	light_metadata.push_back(md);
+}
+
 void LightmapperRD::add_probe(const Vector3 &p_position) {
 	Probe probe;
 	probe.position[0] = p_position.x;
