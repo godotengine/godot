@@ -831,6 +831,9 @@
 			- [b]Cancel First[/b] forces the ordering Cancel/OK.
 			- [b]OK First[/b] forces the ordering OK/Cancel.
 		</member>
+		<member name="interface/editor/auto_apply_external_scene_changes" type="bool" setter="" getter="">
+			If [code]true[/code], automatically reloads scenes and project settings when they are modified externally (by another program). If [code]false[/code], a dialog will be shown asking the user what to do.
+		</member>
 		<member name="interface/editor/automatically_open_screenshots" type="bool" setter="" getter="">
 			If [code]true[/code], automatically opens screenshots with the default program associated to [code].png[/code] files after a screenshot is taken using the [b]Editor &gt; Take Screenshot[/b] action.
 		</member>
