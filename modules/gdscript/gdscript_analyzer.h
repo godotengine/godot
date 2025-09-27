@@ -141,6 +141,7 @@ class GDScriptAnalyzer {
 	void push_error(const String &p_message, const GDScriptParser::Node *p_origin = nullptr);
 	void mark_node_unsafe(const GDScriptParser::Node *p_node);
 	void downgrade_node_type_source(GDScriptParser::Node *p_node);
+	void find_declaring_class_and_member(const StringName &p_name, const GDScriptParser::ClassNode *&r_declaring_class, GDScriptParser::ClassNode::Member &r_member);
 	void mark_lambda_use_self();
 	void resolve_pending_lambda_bodies();
 	bool class_exists(const StringName &p_class) const;
