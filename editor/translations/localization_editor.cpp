@@ -398,6 +398,11 @@ void LocalizationEditor::_pot_generate_open() {
 void LocalizationEditor::_pot_add_builtin_toggled() {
 	ProjectSettings::get_singleton()->set_setting("internationalization/locale/translation_add_builtin_strings_to_pot", translation_pot_add_builtin->is_pressed());
 	ProjectSettings::get_singleton()->save();
+
+	PackedStringArray pot_translations = GLOBAL_GET("internationalization/locale/translations_pot_files");
+	if (pot_translations.is_empty()) {
+		pot_generate_button->set_disabled(!translation_pot_add_builtin->is_pressed());
+	}
 }
 
 void LocalizationEditor::_pot_generate(const String &p_file) {
@@ -611,7 +616,7 @@ void LocalizationEditor::update_translations() {
 	// New translation parser plugin might extend possible file extensions in POT generation.
 	_update_pot_file_extensions();
 
-	pot_generate_button->set_disabled(pot_translations.is_empty());
+	pot_generate_button->set_disabled(pot_translations.is_empty() && !translation_pot_add_builtin->is_pressed());
 
 	updating_translations = false;
 }
