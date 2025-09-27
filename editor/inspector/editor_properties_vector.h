@@ -45,15 +45,19 @@ class EditorPropertyVectorN : public EditorProperty {
 
 	Vector<EditorSpinSlider *> spin_sliders;
 	TextureButton *linked = nullptr;
+	Button *swap_button = nullptr;
 	Vector<double> ratio;
 	bool is_grabbed = false;
 
+	bool horizontal = false;
 	bool radians_as_degrees = false;
 
 	void _update_ratio();
 	void _store_link(bool p_linked);
 	void _grab_changed(bool p_grab);
 	void _value_changed(double p_val, const String &p_name);
+	void _swap_value();
+	void _set_swap_visible(bool p_visible);
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
