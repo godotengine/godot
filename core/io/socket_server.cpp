@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  tcp_server.h                                                          */
+/*  socket_server.cpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,21 +28,63 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "socket_server.h"
 
-#include "core/io/ip.h"
-#include "core/io/socket_server.h"
-#include "core/io/stream_peer_tcp.h"
+void SocketServer::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("is_connection_available"), &SocketServer::is_connection_available);
+	ClassDB::bind_method(D_METHOD("is_listening"), &SocketServer::is_listening);
+	ClassDB::bind_method(D_METHOD("stop"), &SocketServer::stop);
+	ClassDB::bind_method(D_METHOD("take_socket_connection"), &SocketServer::take_socket_connection);
+}
 
-class TCPServer : public SocketServer {
-	GDCLASS(TCPServer, SocketServer);
+Error SocketServer::_listen(const NetSocket::Address &p_addr) {
+	DEV_ASSERT(_sock.is_valid());
+	DEV_ASSERT(_sock->is_open());
 
-protected:
-	static void _bind_methods();
+	_sock->set_blocking_enabled(false);
+	Error err = _sock->bind(p_addr);
 
-public:
-	Error listen(uint16_t p_port, const IPAddress &p_bind_address = IPAddress("*"));
-	int get_local_port() const;
-	Ref<StreamPeerTCP> take_connection();
-	Ref<StreamPeerSocket> take_socket_connection() override { return take_connection(); }
-};
+	if (err != OK) {
+		_sock->close();
+		return ERR_ALREADY_IN_USE;
+	}
+
+	err = _sock->listen(MAX_PENDING_CONNECTIONS);
+
+	if (err != OK) {
+		_sock->close();
+		return FAILED;
+	}
+	return OK;
+}
+
+bool SocketServer::is_listening() const {
+	ERR_FAIL_COND_V(_sock.is_null(), false);
+
+	return _sock->is_open();
+}
+
+bool SocketServer::is_connection_available() const {
+	ERR_FAIL_COND_V(_sock.is_null(), false);
+
+	if (!_sock->is_open()) {
+		return false;
+	}
+
+	Error err = _sock->poll(NetSocket::POLL_TYPE_IN, 0);
+	return (err == OK);
+}
+
+void SocketServer::stop() {
+	if (_sock.is_valid()) {
+		_sock->close();
+	}
+}
+
+SocketServer::SocketServer() :
+		_sock(NetSocket::create()) {
+}
+
+SocketServer::~SocketServer() {
+	stop();
+}
