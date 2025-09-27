@@ -693,7 +693,7 @@ namespace GodotTools
                 RiderPathManager.InitializeIfNeeded(editor);
             }
 
-            if (changedSettings.Contains(_editorSettings.NotificationThemeChanged))
+            if (changedSettings.Contains("interface/theme/preset"))
             {
                 UpdateTheme();
             }
