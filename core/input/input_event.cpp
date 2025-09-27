@@ -1188,11 +1188,12 @@ String InputEventJoypadMotion::to_string() {
 	return vformat("InputEventJoypadMotion: axis=%d, axis_value=%.2f", axis, axis_value);
 }
 
-Ref<InputEventJoypadMotion> InputEventJoypadMotion::create_reference(JoyAxis p_axis, float p_value) {
+Ref<InputEventJoypadMotion> InputEventJoypadMotion::create_reference(JoyAxis p_axis, float p_value, int p_device) {
 	Ref<InputEventJoypadMotion> ie;
 	ie.instantiate();
 	ie->set_axis(p_axis);
 	ie->set_axis_value(p_value);
+	ie->set_device(p_device);
 
 	return ie;
 }
@@ -1307,10 +1308,11 @@ String InputEventJoypadButton::to_string() {
 	return vformat("InputEventJoypadButton: button_index=%d, pressed=%s, pressure=%.2f", button_index, p, pressure);
 }
 
-Ref<InputEventJoypadButton> InputEventJoypadButton::create_reference(JoyButton p_btn_index) {
+Ref<InputEventJoypadButton> InputEventJoypadButton::create_reference(JoyButton p_btn_index, int p_device) {
 	Ref<InputEventJoypadButton> ie;
 	ie.instantiate();
 	ie->set_button_index(p_btn_index);
+	ie->set_device(p_device);
 
 	return ie;
 }
