@@ -76,7 +76,7 @@ protected:
 public:
 	OpenXRDpadBindingModifier();
 
-	void set_action_set(const Ref<OpenXRActionSet> p_action_set);
+	void set_action_set(const Ref<OpenXRActionSet> &p_action_set);
 	Ref<OpenXRActionSet> get_action_set() const;
 
 	void set_input_path(const String &p_input_path);

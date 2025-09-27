@@ -104,7 +104,7 @@ protected:
 public:
 	Ref<OpenXRBindingModifier> get_binding_modifier() const { return binding_modifier; }
 
-	virtual void setup(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRBindingModifier> p_binding_modifier);
+	virtual void setup(const Ref<OpenXRActionMap> &p_action_map, const Ref<OpenXRBindingModifier> &p_binding_modifier);
 
 	OpenXRBindingModifierEditor();
 };
