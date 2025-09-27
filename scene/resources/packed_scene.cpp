@@ -592,8 +592,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		}
 	}
 
-	//do connections
-
+	// add the connections in this scene.
 	int cc = connections.size();
 	const ConnectionData *cdata = connections.ptr();
 
@@ -630,6 +629,9 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		}
 
 		cfrom->connect(snames[c.signal], callable, CONNECT_PERSIST | c.flags | (p_edit_state == GEN_EDIT_STATE_MAIN ? 0 : CONNECT_INHERITED));
+
+		NODE_FROM_ID(conn_owner, 0); // root node of scene.
+		cfrom->add_connection_owner(conn_owner, cto, snames[c.signal], callable);
 	}
 
 	//Node *s = ret_nodes[0];
@@ -1118,7 +1120,16 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 				base_callable = c.callable;
 			}
 
-			//find if this connection already exists
+			// don't save connection if it is part of an instance or inheritance
+			//
+			// Check 1 only works in the editor.
+			// Check 2 works in the editor and when packing from tool script or during game
+			//
+			// But check 2 doesn't work in the case when the root node is inherited and a
+			// signal comes from the base scene. If the check is modified to detect this case
+			// check 1 can be deleted.
+
+			// Check for existence 1
 			Node *common_parent = target->find_common_parent_with(p_node);
 
 			ERR_CONTINUE(!common_parent);
@@ -1160,51 +1171,12 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 				continue;
 			}
 
-			{
-				Node *nl = p_node;
+			// Check for existence 2
+			Node *conn_owner = p_node->get_connection_owner(target, E.name, base_callable);
+			bool owned_by_main_scene = (conn_owner == p_owner || conn_owner == nullptr); // nullptr means the connection was just added and wasn't connected during node instantiation.
 
-				bool exists2 = false;
-
-				while (nl) {
-					if (nl == p_owner) {
-						Ref<SceneState> state = nl->get_scene_inherited_state();
-						if (state.is_valid()) {
-							int from_node = state->find_node_by_path(nl->get_path_to(p_node));
-							int to_node = state->find_node_by_path(nl->get_path_to(target));
-
-							if (from_node >= 0 && to_node >= 0) {
-								//this one has state for this node, save
-								if (state->is_connection(from_node, c.signal.get_name(), to_node, base_callable.get_method())) {
-									exists2 = true;
-									break;
-								}
-							}
-						}
-
-						nl = nullptr;
-					} else {
-						if (nl->is_instance()) {
-							Ref<SceneState> state = nl->get_scene_instance_state();
-							if (state.is_valid()) {
-								int from_node = state->find_node_by_path(nl->get_path_to(p_node));
-								int to_node = state->find_node_by_path(nl->get_path_to(target));
-
-								if (from_node >= 0 && to_node >= 0) {
-									//this one has state for this node, save
-									if (state->is_connection(from_node, c.signal.get_name(), to_node, base_callable.get_method())) {
-										exists2 = true;
-										break;
-									}
-								}
-							}
-						}
-						nl = nl->get_owner();
-					}
-				}
-
-				if (exists2) {
-					continue;
-				}
+			if (!owned_by_main_scene) {
+				continue;
 			}
 
 			int src_id;
@@ -1480,39 +1452,6 @@ bool SceneState::disable_placeholders = false;
 
 void SceneState::set_disable_placeholders(bool p_disable) {
 	disable_placeholders = p_disable;
-}
-
-bool SceneState::is_connection(int p_node, const StringName &p_signal, int p_to_node, const StringName &p_to_method) const {
-	ERR_FAIL_COND_V(p_node < 0, false);
-	ERR_FAIL_COND_V(p_to_node < 0, false);
-
-	if (p_node < nodes.size() && p_to_node < nodes.size()) {
-		int signal_idx = -1;
-		int method_idx = -1;
-		for (int i = 0; i < names.size(); i++) {
-			if (names[i] == p_signal) {
-				signal_idx = i;
-			} else if (names[i] == p_to_method) {
-				method_idx = i;
-			}
-		}
-
-		if (signal_idx >= 0 && method_idx >= 0) {
-			//signal and method strings are stored..
-
-			for (int i = 0; i < connections.size(); i++) {
-				if (connections[i].from == p_node && connections[i].to == p_to_node && connections[i].signal == signal_idx && connections[i].method == method_idx) {
-					return true;
-				}
-			}
-		}
-	}
-
-	if (base_scene_node_remap.has(p_node) && base_scene_node_remap.has(p_to_node)) {
-		return get_base_scene_state()->is_connection(base_scene_node_remap[p_node], p_signal, base_scene_node_remap[p_to_node], p_to_method);
-	}
-
-	return false;
 }
 
 void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {

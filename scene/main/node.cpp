@@ -2544,6 +2544,23 @@ void Node::_propagate_reverse_notification(int p_notification) {
 	data.blocked--;
 }
 
+void Node::add_connection_owner(Node *p_owner, Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable) {
+	Node::ConnectionOwnerData sc;
+	sc.to_node = p_to_node;
+	sc.signal_name = p_signal_name;
+	sc.method_name = p_callable.get_method();
+	data.connection_owners[p_owner] = sc;
+}
+
+Node *Node::get_connection_owner(Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable) const {
+	for (const KeyValue<Node *, Node::ConnectionOwnerData> &E : data.connection_owners) {
+		if (E.value.to_node == p_to_node && E.value.signal_name == p_signal_name && E.value.method_name == p_callable.get_method()) {
+			return E.key;
+		}
+	}
+	return nullptr; // the connection was just added (not instantiated) so it doesn't have an owner.
+}
+
 void Node::_propagate_deferred_notification(int p_notification, bool p_reverse) {
 	ERR_FAIL_COND(!is_inside_tree());
 
