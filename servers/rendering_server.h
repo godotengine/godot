@@ -1385,6 +1385,8 @@ public:
 	virtual void sub_surface_scattering_set_quality(SubSurfaceScatteringQuality p_quality) = 0;
 	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) = 0;
 
+	virtual void environment_set_use_legacy_mode(bool p_enable) = 0;
+
 	/* CAMERA EFFECTS */
 
 	virtual RID camera_attributes_create() = 0;

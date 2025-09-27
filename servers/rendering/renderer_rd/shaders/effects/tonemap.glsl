@@ -68,6 +68,7 @@ layout(set = 3, binding = 0) uniform sampler3D source_color_correction;
 #define FLAG_USE_8_BIT_DEBANDING (1 << 5)
 #define FLAG_USE_10_BIT_DEBANDING (1 << 6)
 #define FLAG_CONVERT_TO_SRGB (1 << 7)
+#define FLAG_USE_LEGACY_MODE (1 << 8)
 
 layout(push_constant, std430) uniform Params {
 	vec3 bcs;
@@ -329,9 +330,6 @@ vec3 tonemap_agx(vec3 color) {
 }
 
 vec3 linear_to_srgb(vec3 color) {
-	// Clamping is not strictly necessary for floating point nonlinear sRGB encoding,
-	// but many cases that call this function need the result clamped.
-	color = clamp(color, vec3(0.0), vec3(1.0));
 	const vec3 a = vec3(0.055f);
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
 }
@@ -402,34 +400,75 @@ vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
 #define GLOW_MODE_REPLACE 3
 #define GLOW_MODE_MIX 4
 
-vec3 apply_glow(vec3 color, vec3 glow) { // apply glow using the selected blending mode
+vec3 apply_glow(vec3 color, vec3 glow, float white) { // apply glow using the selected blending mode
 	if (params.glow_mode == GLOW_MODE_ADD) {
 		return color + glow;
 	} else if (params.glow_mode == GLOW_MODE_SCREEN) {
-		// Needs color clamping.
-		glow.rgb = clamp(glow.rgb, vec3(0.0f), vec3(1.0f));
-		return max((color + glow) - (color * glow), vec3(0.0));
-	} else if (params.glow_mode == GLOW_MODE_SOFTLIGHT) {
-		// Needs color clamping.
-		glow.rgb = clamp(glow.rgb, vec3(0.0f), vec3(1.0f));
-		glow = glow * vec3(0.5f) + vec3(0.5f);
+		// Glow cannot be above 1.0 after normalizing and should be non-negative
+		// to produce expected results. It is possible that glow can be negative
+		// if negative lights were used in the scene.
+		// We clamp to white because glow will be normalized to this range.
+		glow.rgb = clamp(glow.rgb, 0.0, white);
 
-		color.r = (glow.r <= 0.5f) ? (color.r - (1.0f - 2.0f * glow.r) * color.r * (1.0f - color.r)) : (((glow.r > 0.5f) && (color.r <= 0.25f)) ? (color.r + (2.0f * glow.r - 1.0f) * (4.0f * color.r * (4.0f * color.r + 1.0f) * (color.r - 1.0f) + 7.0f * color.r)) : (color.r + (2.0f * glow.r - 1.0f) * (sqrt(color.r) - color.r)));
-		color.g = (glow.g <= 0.5f) ? (color.g - (1.0f - 2.0f * glow.g) * color.g * (1.0f - color.g)) : (((glow.g > 0.5f) && (color.g <= 0.25f)) ? (color.g + (2.0f * glow.g - 1.0f) * (4.0f * color.g * (4.0f * color.g + 1.0f) * (color.g - 1.0f) + 7.0f * color.g)) : (color.g + (2.0f * glow.g - 1.0f) * (sqrt(color.g) - color.g)));
-		color.b = (glow.b <= 0.5f) ? (color.b - (1.0f - 2.0f * glow.b) * color.b * (1.0f - color.b)) : (((glow.b > 0.5f) && (color.b <= 0.25f)) ? (color.b + (2.0f * glow.b - 1.0f) * (4.0f * color.b * (4.0f * color.b + 1.0f) * (color.b - 1.0f) + 7.0f * color.b)) : (color.b + (2.0f * glow.b - 1.0f) * (sqrt(color.b) - color.b)));
+		// Normalize to white range.
+		//glow.rgb /= white;
+		//color.rgb /= white;
+		//color.rgb = (color.rgb + glow.rgb) - (color.rgb * glow.rgb);
+		// Expand back to original range.
+		//color.rgb *= white;
+
+		// The following is a mathematically simplified version of the above.
+		color.rgb = color.rgb + glow.rgb - (color.rgb * glow.rgb / white);
+
+		return color;
+	} else if (params.glow_mode == GLOW_MODE_SOFTLIGHT) {
+		// Glow cannot be above 1.0 should be non-negative to produce
+		// expected results. It is possible that glow can be negative
+		// if negative lights were used in the scene.
+		// Note: This approach causes a discontinuity with scene values
+		// at 1.0, but because this glow should have its strongest influence
+		// anchored at 0.25 there is no way around this.
+		glow.rgb = clamp(glow.rgb, 0.0, 1.0);
+
+		color.r = color.r > 1.0 ? color.r : color.r + glow.r * ((color.r <= 0.25f ? ((16.0f * color.r - 12.0f) * color.r + 4.0f) * color.r : sqrt(color.r)) - color.r);
+		color.g = color.g > 1.0 ? color.g : color.g + glow.g * ((color.g <= 0.25f ? ((16.0f * color.g - 12.0f) * color.g + 4.0f) * color.g : sqrt(color.g)) - color.g);
+		color.b = color.b > 1.0 ? color.b : color.b + glow.b * ((color.b <= 0.25f ? ((16.0f * color.b - 12.0f) * color.b + 4.0f) * color.b : sqrt(color.b)) - color.b);
+
 		return color;
 	} else { //replace
 		return glow;
 	}
 }
 
-vec3 apply_bcs(vec3 color, vec3 bcs) {
-	color = mix(vec3(0.0f), color, bcs.x);
+vec3 apply_legacy_bcs(vec3 color, vec3 bcs) {
+	color = color * bcs.x;
 	color = mix(vec3(0.5f), color, bcs.y);
 	color = mix(vec3(dot(vec3(1.0f), color) * 0.33333f), color, bcs.z);
+	return color;
+}
+
+vec3 apply_bcs(vec3 color, vec3 bcs) {
+	// Apply brightness:
+	// Apply to relative luminance. This ensures that the hue and saturation of
+	// colors is not affected by the adjustment, but requires the multiplication
+	// to be performed on linear encoded values.
+	color = color * params.bcs.x;
+
+	// Apply contrast:
+	// Use the industry-standard "18% middle gray" as the pivot.
+	// This approximately matches Photoshop 26.1's camera raw filter behavior.
+	color = mix(vec3(0.18), color, params.bcs.y);
+
+	// Apply saturation:
+	// Luminance weights of the current primaries must be used to prevent blues from
+	// brightening when saturation is decreased and darkening when saturation is increased.
+	// This approach approximately matches Photoshop 26.1's camera raw filter behavior.
+	const vec3 rec709_luminance_weights = vec3(0.2126, 0.7152, 0.0722);
+	color = mix(vec3(dot(rec709_luminance_weights, color)), color, params.bcs.z);
 
 	return color;
 }
+
 #ifdef USE_1D_LUT
 vec3 apply_color_correction(vec3 color) {
 	color.r = texture(source_color_correction, vec2(color.r, 0.0f)).r;
@@ -866,43 +905,89 @@ void main() {
 		color.rgb = do_fxaa(color.rgb, exposure, uv_interp);
 	}
 
-	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode == GLOW_MODE_MIX) {
-		vec3 glow = gather_glow(source_glow, uv_interp) * params.luminance_multiplier;
-		if (params.glow_map_strength > 0.001) {
-			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
+	if (bool(params.flags & FLAG_USE_GLOW)) {
+		if (bool(params.flags & FLAG_USE_LEGACY_MODE)) {
+			if (params.glow_mode == GLOW_MODE_MIX) {
+				vec3 glow = gather_glow(source_glow, uv_interp) * params.luminance_multiplier;
+				if (params.glow_map_strength > 0.001) {
+					glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
+				}
+				color.rgb = mix(color.rgb, glow, params.glow_intensity);
+			}
+		} else {
+			if (params.glow_mode == GLOW_MODE_MIX) {
+				vec3 glow = gather_glow(source_glow, uv_interp) * params.luminance_multiplier;
+				if (params.glow_map_strength > 0.001) {
+					glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
+				}
+				color.rgb = mix(color.rgb, glow, params.glow_intensity);
+			} else if (params.glow_mode != GLOW_MODE_SOFTLIGHT) {
+				vec3 glow = gather_glow(source_glow, uv_interp) * params.glow_intensity * params.luminance_multiplier;
+				if (params.glow_map_strength > 0.001) {
+					glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
+				}
+				color.rgb = apply_glow(color.rgb, glow, params.white);
+			}
 		}
-		color.rgb = mix(color.rgb, glow, params.glow_intensity);
 	}
 #endif
 
 	color.rgb = apply_tonemapping(color.rgb, params.white);
 
 	bool convert_to_srgb = bool(params.flags & FLAG_CONVERT_TO_SRGB);
-	if (convert_to_srgb) {
-		color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
-	}
-#ifndef SUBPASS
-	// Glow
-	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode != GLOW_MODE_MIX) {
-		vec3 glow = gather_glow(source_glow, uv_interp) * params.glow_intensity * params.luminance_multiplier;
-		if (params.glow_map_strength > 0.001) {
-			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
-		}
 
-		// high dynamic range -> SRGB
-		glow = apply_tonemapping(glow, params.white);
+	if (bool(params.flags & FLAG_USE_LEGACY_MODE)) {
+		// Legacy mode glow must be applied after linear_to_srgb.
 		if (convert_to_srgb) {
-			glow = linear_to_srgb(glow);
+			color.rgb = clamp(color.rgb, vec3(0.0), vec3(1.0));
+			color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
 		}
 
-		color.rgb = apply_glow(color.rgb, glow);
-	}
+#ifndef SUBPASS
+		if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode != GLOW_MODE_MIX) {
+			vec3 glow = gather_glow(source_glow, uv_interp) * params.glow_intensity * params.luminance_multiplier;
+			if (params.glow_map_strength > 0.001) {
+				glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
+			}
+
+			glow = apply_tonemapping(glow, params.white);
+			if (convert_to_srgb) {
+				glow = linear_to_srgb(glow);
+			}
+
+			color.rgb = apply_glow(color.rgb, glow, 1.0);
+		}
 #endif
+	} else {
+#ifndef SUBPASS
+		if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode == GLOW_MODE_SOFTLIGHT) {
+			// Apply soft light after tonemapping to mitigate the issue of discontinuity
+			// at 1.0 and higher. This makes the issue only appear with HDR output that
+			// can exceed a 1.0 output value.
+			vec3 glow = gather_glow(source_glow, uv_interp) * params.glow_intensity * params.luminance_multiplier;
+			if (params.glow_map_strength > 0.001) {
+				glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
+			}
+			glow = apply_tonemapping(glow, params.white);
+			color.rgb = apply_glow(color.rgb, glow, params.white);
+		}
+#endif
+	}
 
 	// Additional effects
 
-	if (bool(params.flags & FLAG_USE_BCS)) {
-		color.rgb = apply_bcs(color.rgb, params.bcs);
+	if (bool(params.flags & FLAG_USE_LEGACY_MODE)) {
+		if (bool(params.flags & FLAG_USE_BCS)) {
+			color.rgb = apply_legacy_bcs(color.rgb, params.bcs);
+		}
+	} else {
+		if (bool(params.flags & FLAG_USE_BCS)) {
+			color.rgb = apply_bcs(color.rgb, params.bcs);
+		}
+
+		if (convert_to_srgb) {
+			color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
+		}
 	}
 
 	if (bool(params.flags & FLAG_USE_COLOR_CORRECTION)) {
@@ -910,6 +995,7 @@ void main() {
 		if (!convert_to_srgb) {
 			color.rgb = linear_to_srgb(color.rgb);
 		}
+		color.rgb = clamp(color.rgb, vec3(0.0), vec3(1.0));
 		color.rgb = apply_color_correction(color.rgb);
 		// When convert_to_srgb is false, there is no need to convert back to
 		// linear because the color correction texture sampling does this for us.

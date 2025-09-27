@@ -327,6 +327,8 @@ public:
 	virtual void positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) = 0;
 	virtual void directional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) = 0;
 
+	virtual void environment_set_use_legacy_mode(bool p_enable) = 0;
+
 	/* Render Buffers */
 
 	virtual Ref<RenderSceneBuffers> render_buffers_create() = 0;

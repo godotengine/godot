@@ -3025,6 +3025,8 @@ void Node3DEditorViewport::_project_settings_changed() {
 
 	const Viewport::AnisotropicFiltering anisotropic_filtering_level = Viewport::AnisotropicFiltering(int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level")));
 	viewport->set_anisotropic_filtering_level(anisotropic_filtering_level);
+
+	RenderingServer::get_singleton()->environment_set_use_legacy_mode(GLOBAL_GET("rendering/environment/use_legacy_mode"));
 }
 
 static void override_button_stylebox(Button *p_button, const Ref<StyleBox> p_stylebox) {

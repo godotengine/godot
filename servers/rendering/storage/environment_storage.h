@@ -98,11 +98,11 @@ private:
 		// Glow
 		bool glow_enabled = false;
 		Vector<float> glow_levels;
-		float glow_intensity = 0.8;
+		float glow_intensity = 0.3;
 		float glow_strength = 1.0;
 		float glow_bloom = 0.0;
 		float glow_mix = 0.01;
-		RS::EnvironmentGlowBlendMode glow_blend_mode = RS::ENV_GLOW_BLEND_MODE_SOFTLIGHT;
+		RS::EnvironmentGlowBlendMode glow_blend_mode = RS::ENV_GLOW_BLEND_MODE_SCREEN;
 		float glow_hdr_bleed_threshold = 1.0;
 		float glow_hdr_luminance_cap = 12.0;
 		float glow_hdr_bleed_scale = 2.0;
@@ -149,6 +149,7 @@ private:
 		// Adjustments
 		bool adjustments_enabled = false;
 		float adjustments_brightness = 1.0f;
+		float adjustments_brightness_legacy = 1.0f;
 		float adjustments_contrast = 1.0f;
 		float adjustments_saturation = 1.0f;
 		bool use_1d_color_correction = false;
@@ -299,6 +300,7 @@ public:
 	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction);
 	bool environment_get_adjustments_enabled(RID p_env) const;
 	float environment_get_adjustments_brightness(RID p_env) const;
+	float environment_get_adjustments_brightness_legacy(RID p_env) const;
 	float environment_get_adjustments_contrast(RID p_env) const;
 	float environment_get_adjustments_saturation(RID p_env) const;
 	bool environment_get_use_1d_color_correction(RID p_env) const;

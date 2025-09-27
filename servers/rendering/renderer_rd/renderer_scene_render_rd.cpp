@@ -162,6 +162,10 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 	}
 }
 
+void RendererSceneRenderRD::environment_set_use_legacy_mode(bool p_enable) {
+	environment_use_legacy_mode = p_enable;
+}
+
 /* REFLECTION PROBE */
 
 RID RendererSceneRenderRD::reflection_probe_create_framebuffer(RID p_color, RID p_depth) {
@@ -683,7 +687,11 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		if (can_use_effects && p_render_data->environment.is_valid()) {
 			tonemap.use_bcs = environment_get_adjustments_enabled(p_render_data->environment);
-			tonemap.brightness = environment_get_adjustments_brightness(p_render_data->environment);
+			if (environment_use_legacy_mode) {
+				tonemap.brightness = environment_get_adjustments_brightness_legacy(p_render_data->environment);
+			} else {
+				tonemap.brightness = environment_get_adjustments_brightness(p_render_data->environment);
+			}
 			tonemap.contrast = environment_get_adjustments_contrast(p_render_data->environment);
 			tonemap.saturation = environment_get_adjustments_saturation(p_render_data->environment);
 			if (environment_get_adjustments_enabled(p_render_data->environment) && environment_get_color_correction(p_render_data->environment).is_valid()) {
@@ -745,6 +753,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		} else {
 			tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_DISABLED;
 		}
+
+		tonemap.use_legacy_mode = environment_use_legacy_mode;
 
 		tone_mapper->tonemapper(color_texture, dest_fb, tonemap);
 
@@ -923,7 +933,11 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 
 	if (can_use_effects && p_render_data->environment.is_valid()) {
 		tonemap.use_bcs = environment_get_adjustments_enabled(p_render_data->environment);
-		tonemap.brightness = environment_get_adjustments_brightness(p_render_data->environment);
+		if (environment_use_legacy_mode) {
+			tonemap.brightness = environment_get_adjustments_brightness_legacy(p_render_data->environment);
+		} else {
+			tonemap.brightness = environment_get_adjustments_brightness(p_render_data->environment);
+		}
 		tonemap.contrast = environment_get_adjustments_contrast(p_render_data->environment);
 		tonemap.saturation = environment_get_adjustments_saturation(p_render_data->environment);
 		if (environment_get_adjustments_enabled(p_render_data->environment) && environment_get_color_correction(p_render_data->environment).is_valid()) {
@@ -952,6 +966,8 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	} else {
 		tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_DISABLED;
 	}
+
+	tonemap.use_legacy_mode = environment_use_legacy_mode;
 
 	tone_mapper->tonemapper(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
 
@@ -1702,6 +1718,8 @@ void RendererSceneRenderRD::init() {
 	decals_set_filter(RS::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
 	light_projectors_set_filter(RS::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
 	lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
+
+	environment_use_legacy_mode = (GLOBAL_GET("rendering/environment/use_legacy_mode"));
 
 	cull_argument.set_page_pool(&cull_argument_pool);
 

@@ -856,6 +856,8 @@ public:
 	FUNC1(light_projectors_set_filter, RS::LightProjectorFilter);
 	FUNC1(lightmaps_set_bicubic_filter, bool);
 
+	FUNC1(environment_set_use_legacy_mode, bool);
+
 	/* CAMERA ATTRIBUTES */
 
 #undef server_name

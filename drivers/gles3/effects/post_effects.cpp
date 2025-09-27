@@ -87,7 +87,7 @@ void PostEffects::_draw_screen_triangle() {
 	glBindVertexArray(0);
 }
 
-void PostEffects::post_copy(GLuint p_dest_framebuffer, Size2i p_dest_size, GLuint p_source_color, Size2i p_source_size, float p_luminance_multiplier, const Glow::GLOWLEVEL *p_glow_buffers, float p_glow_intensity, uint32_t p_view, bool p_use_multiview, uint64_t p_spec_constants) {
+void PostEffects::post_copy(GLuint p_dest_framebuffer, Size2i p_dest_size, GLuint p_source_color, Size2i p_source_size, float p_luminance_multiplier, const Glow::GLOWLEVEL *p_glow_buffers, float p_glow_intensity, uint32_t p_view, bool p_use_multiview, uint64_t p_spec_constants, bool p_use_legacy_mode) {
 	glDisable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);
 	glDisable(GL_BLEND);
@@ -105,6 +105,9 @@ void PostEffects::post_copy(GLuint p_dest_framebuffer, Size2i p_dest_size, GLuin
 	}
 	if (p_luminance_multiplier != 1.0) {
 		flags |= PostShaderGLES3::USE_LUMINANCE_MULTIPLIER;
+	}
+	if (p_use_legacy_mode) {
+		flags |= PostShaderGLES3::USE_LEGACY_MODE;
 	}
 
 	bool success = post.shader.version_bind_shader(post.shader_version, mode, flags);

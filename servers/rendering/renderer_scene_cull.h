@@ -1379,6 +1379,8 @@ public:
 
 	PASS2(sdfgi_set_debug_probe_select, const Vector3 &, const Vector3 &)
 
+	PASS1(environment_set_use_legacy_mode, bool)
+
 	/* Render Buffers */
 
 	PASS0R(Ref<RenderSceneBuffers>, render_buffers_create)
