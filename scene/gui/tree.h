@@ -650,6 +650,8 @@ private:
 		int parent_hl_line_margin = 0;
 		int draw_guides = 0;
 
+		int dragging_unfold_wait_msec = 500;
+
 		int scroll_border = 0;
 		int scroll_speed = 0;
 
@@ -736,6 +738,11 @@ private:
 	bool hide_folding = false;
 
 	bool enable_recursive_folding = true;
+
+	bool enable_drag_unfolding = true;
+	Timer *dropping_unfold_timer = nullptr;
+	void _on_dropping_unfold_timer_timeout();
+	void _reset_drop_mode_over();
 
 	bool enable_auto_tooltip = true;
 
@@ -884,6 +891,9 @@ public:
 
 	void set_enable_recursive_folding(bool p_enable);
 	bool is_recursive_folding_enabled() const;
+
+	void set_enable_drag_unfolding(bool p_enable);
+	bool is_drag_unfolding_enabled() const;
 
 	void set_drop_mode_flags(int p_flags);
 	int get_drop_mode_flags() const;
