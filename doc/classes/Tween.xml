@@ -137,6 +137,13 @@
 				Returns the number of remaining loops for this [Tween] (see [method set_loops]). A return value of [code]-1[/code] indicates an infinitely looping [Tween], and a return value of [code]0[/code] indicates that the [Tween] has already finished.
 			</description>
 		</method>
+		<method name="get_step_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the total number of steps in this [Tween]. One step is either a single [Tweener] or a group of [Tweener]s running in parallel.
+				[b]Note:[/b] A [SubtweenTweener] added to a [Tween] using [method tween_subtween] counts as one step, regardless of the number of steps within the subtween.
+			</description>
+		</method>
 		<method name="get_total_elapsed_time" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -510,7 +517,7 @@
 		<signal name="step_finished">
 			<param index="0" name="idx" type="int" />
 			<description>
-				Emitted when one step of the [Tween] is complete, providing the step index. One step is either a single [Tweener] or a group of [Tweener]s running in parallel.
+				Emitted when one step of the [Tween] is complete, providing the step index. One step is either a single [Tweener] or a group of [Tweener]s running in parallel. Use [method get_step_count] to determine how many steps there are in total in the [Tween].
 			</description>
 		</signal>
 	</signals>
