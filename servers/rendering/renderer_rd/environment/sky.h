@@ -252,6 +252,10 @@ public:
 		virtual ~SkyMaterialData();
 	};
 
+private:
+	SkyMaterialData *_get_sky_material_data(RID p_env);
+
+public:
 	struct Sky {
 		static inline const int REAL_TIME_SIZE = 256;
 		static inline const int REAL_TIME_ROUGHNESS_LAYERS = 7;
@@ -280,7 +284,7 @@ public:
 		float baked_exposure = 1.0;
 
 		// State to track when radiance octmap needs updating.
-		SkyMaterialData *prev_material = nullptr;
+		SkyMaterialData *prev_material_data = nullptr;
 		Vector3 prev_position;
 		float prev_time;
 
