@@ -82,7 +82,7 @@ private:
 	virtual Vector<EGLint> _get_platform_context_attribs() const = 0;
 
 #ifdef EGL_ANDROID_blob_cache
-	static String shader_cache_dir;
+	static inline String shader_cache_dir;
 
 	static void _set_cache(const void *p_key, EGLsizeiANDROID p_key_size, const void *p_value, EGLsizeiANDROID p_value_size);
 	static EGLsizeiANDROID _get_cache(const void *p_key, EGLsizeiANDROID p_key_size, void *p_value, EGLsizeiANDROID p_value_size);

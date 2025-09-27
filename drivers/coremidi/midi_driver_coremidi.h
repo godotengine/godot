@@ -52,8 +52,8 @@ class MIDIDriverCoreMidi : public MIDIDriver {
 
 	Vector<InputConnection *> connected_sources;
 
-	static Mutex mutex;
-	static bool core_midi_closed;
+	static inline Mutex mutex;
+	static inline bool core_midi_closed = false;
 
 	static void read(const MIDIPacketList *packet_list, void *read_proc_ref_con, void *src_conn_ref_con);
 
