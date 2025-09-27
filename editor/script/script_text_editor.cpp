@@ -349,6 +349,10 @@ void ScriptTextEditor::_error_clicked(const Variant &p_line) {
 	}
 }
 
+void ScriptTextEditor::_on_mouse_exited() {
+	drag_info_label->hide();
+}
+
 void ScriptTextEditor::reload_text() {
 	ERR_FAIL_COND(script.is_null());
 
@@ -2102,6 +2106,9 @@ void ScriptTextEditor::_notification(int p_what) {
 			inline_color_options->add_theme_font_override("font", code_font);
 			inline_color_options->get_popup()->add_theme_font_override("font", code_font);
 		} break;
+		case NOTIFICATION_DRAG_END: {
+			drag_info_label->hide();
+		} break;
 	}
 }
 
@@ -2172,10 +2179,51 @@ bool ScriptTextEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 					String(d["type"]) == "nodes" ||
 					String(d["type"]) == "obj_property" ||
 					String(d["type"]) == "files_and_dirs")) {
+		set_drop_info_text(d);
 		return true;
 	}
 
 	return false;
+}
+
+void ScriptTextEditor::set_drop_info_text(const Dictionary &p_info) const {
+	String text;
+
+	static const String single_resource_text = TTR("Drag and drop to copy the file path into the script.") +
+			"\n" + TTR("Hold Ctrl when dropping to add a const var, preloading the resource at that path.") +
+			"\n" + TTR("Hold Shift to alter between referencing the resource by uid/file path.") +
+			"\n" + TTR("Hold Alt when dropping to add an @export var pointing to the resource.");
+
+	static const String multiple_resources_text = TTR("Drag and drop to copy the file paths into the script.") +
+			"\n" + TTR("Hold Ctrl when dropping to add const vars, preloading the resources at those paths.") +
+			"\n" + TTR("Hold Shift to alter between referencing the resources by uid/file path.") +
+			"\n" + TTR("Hold Alt when dropping to add @export vars pointing to the resources.");
+
+	static const String single_nodes_text = TTR("Drag and drop to copy the node path to the script.") +
+			"\n" + TTR("Hold Ctrl when dropping to add an @onready var pointing to the node path.") +
+			"\n" + TTR("Hold Alt when dropping to add an @export var pointing to the node.");
+
+	static const String multiple_nodes_text = TTR("Drag and drop to copy the node paths to the script.") +
+			"\n" + TTR("Hold Ctrl when dropping to add @onready vars pointing to the node paths.") +
+			"\n" + TTR("Hold Alt when dropping to add @export vars pointing to the node.");
+
+	String type = String(p_info["type"]);
+
+	if (type == "files" || type == "files_and_dirs") {
+		Array files = p_info["files"];
+		text = files.size() > 1 ? multiple_resources_text : single_resource_text;
+	} else if (type == "nodes") {
+		Array nodes = p_info["nodes"];
+		text = nodes.size() > 1 ? multiple_nodes_text : single_nodes_text;
+	} else if (type == "resource") {
+		text = single_resource_text;
+	} else if (type == "obj_property") {
+		text = TTR("Drag and drop to copy the property path to the script.");
+	}
+
+	drag_info_label->show();
+	drag_info_label->set_text(text);
+	drag_info_label->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT, Control::PRESET_MODE_MINSIZE, 10);
 }
 
 static Node *_find_script_node(Node *p_current_node, const Ref<Script> &script) {
@@ -2507,6 +2555,8 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	te->insert_text_at_caret(text_to_drop);
 	te->end_complex_operation();
 	te->grab_focus();
+
+	drag_info_label->hide();
 }
 
 Vector<ObjectID> ScriptTextEditor::_get_objects_for_export_assignment() const {
@@ -2842,6 +2892,9 @@ void ScriptTextEditor::_enable_code_editor() {
 			"normal_font_size", EditorNode::get_singleton()->get_editor_theme()->get_font_size(SNAME("main_size"), EditorStringName(EditorFonts)));
 	errors_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_error_clicked));
 
+	code_editor->get_text_editor()->add_child(drag_info_label);
+	drag_info_label->hide();
+
 	add_child(context_menu);
 	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 
@@ -2996,6 +3049,15 @@ ScriptTextEditor::ScriptTextEditor() {
 	errors_panel->set_focus_mode(FOCUS_CLICK);
 	errors_panel->hide();
 
+	drag_info_label = memnew(Label);
+	drag_info_label->set_anchors_preset(Control::PRESET_BOTTOM_RIGHT);
+	drag_info_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	drag_info_label->add_theme_color_override(SceneStringName(font_color), Color(0.6f, 0.6f, 0.6f, 1));
+	drag_info_label->add_theme_color_override("font_shadow_color", Color(0.2f, 0.2f, 0.2f, 1));
+	drag_info_label->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
+	drag_info_label->add_theme_constant_override("line_spacing", 0);
+	code_editor->get_text_editor()->connect("mouse_exited", callable_mp(this, &ScriptTextEditor::_on_mouse_exited));
+
 	update_settings();
 
 	code_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
@@ -3072,6 +3134,7 @@ ScriptTextEditor::~ScriptTextEditor() {
 		memdelete(code_editor);
 		memdelete(warnings_panel);
 		memdelete(errors_panel);
+		memdelete(drag_info_label);
 		memdelete(context_menu);
 		memdelete(color_panel);
 		memdelete(edit_hb);
