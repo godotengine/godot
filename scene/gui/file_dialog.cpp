@@ -863,9 +863,7 @@ void FileDialog::update_file_list() {
 			DirInfo di;
 			di.name = dir_name;
 			di.bundle = bundle;
-			if (file_sort == FileSortOption::MODIFIED_TIME || file_sort == FileSortOption::MODIFIED_TIME_REVERSE) {
-				di.modified_time = FileAccess::get_modified_time(base_dir.path_join(dir_name));
-			}
+			di.modified_time = FileAccess::get_modified_time(base_dir.path_join(dir_name));
 			filtered_dirs.push_back(di);
 		}
 	}
@@ -876,7 +874,7 @@ void FileDialog::update_file_list() {
 		filtered_dirs.sort_custom<DirInfo::NameComparator>();
 	}
 
-	if (file_sort == FileSortOption::NAME_REVERSE || file_sort == FileSortOption::MODIFIED_TIME_REVERSE) {
+	if (file_sort == FileSortOption::NAME_REVERSE || file_sort == FileSortOption::TYPE_REVERSE || file_sort == FileSortOption::MODIFIED_TIME_REVERSE) {
 		filtered_dirs.reverse();
 	}
 
