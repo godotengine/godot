@@ -325,6 +325,9 @@ public:
 	void set_streams_count(int p_count);
 	int get_streams_count() const;
 
+	void set_random_pitch_semitones(float p_pitch_semitones);
+	float get_random_pitch_semitones() const;
+
 	void set_random_pitch(float p_pitch_scale);
 	float get_random_pitch() const;
 
