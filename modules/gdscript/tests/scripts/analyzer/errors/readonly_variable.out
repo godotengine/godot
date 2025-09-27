@@ -1,0 +1,10 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 7: "@readonly" annotation cannot be used with a variable that has a property getter or setter.
+>> ERROR at line 29: The read-only variable "a" can only be assigned inline or in the base constructor.
+>> ERROR at line 33: The read-only variable "c" can only be assigned inline or in the base constructor.
+>> ERROR at line 18: The read-only variable "a" can only be assigned inline or in the base constructor.
+>> ERROR at line 12: The read-only variable "a" is assigned inline and in the constructor; only one assignment is allowed.
+>> ERROR at line 14: The read-only variable "b" is assigned more than once in the constructor; only the first assignment is allowed.
+>> ERROR at line 4: The read-only variable "c" must be assigned a value inline or in the constructor.
+>> ERROR at line 23: The read-only variable "a" can only be assigned inline or in the base constructor.
+>> ERROR at line 24: The read-only variable "b" can only be assigned inline or in the base constructor.
