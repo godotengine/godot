@@ -34,6 +34,7 @@
 #include "noise.h"
 #include "noise_texture_2d.h"
 #include "noise_texture_3d.h"
+#include "noise_texture_generator.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/noise_editor_plugin.h"
@@ -43,13 +44,23 @@
 #include "editor/plugins/editor_plugin.h"
 #endif
 
+NoiseTextureGenerator *_noise_texture_generator = nullptr;
+
 void initialize_noise_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
+		_noise_texture_generator = memnew(NoiseTextureGenerator);
+		GDREGISTER_CLASS(NoiseTextureGenerator);
+		Engine::get_singleton()->add_singleton(Engine::Singleton("NoiseTextureGenerator", NoiseTextureGenerator::get_singleton()));
+	}
+
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		GDREGISTER_CLASS(NoiseTexture3D);
 		GDREGISTER_CLASS(NoiseTexture2D);
 		GDREGISTER_ABSTRACT_CLASS(Noise);
 		GDREGISTER_CLASS(FastNoiseLite);
 		ClassDB::add_compatibility_class("NoiseTexture", "NoiseTexture2D");
+
+		NoiseTextureGenerator::get_singleton()->init();
 	}
 
 #ifdef TOOLS_ENABLED
@@ -60,6 +71,13 @@ void initialize_noise_module(ModuleInitializationLevel p_level) {
 }
 
 void uninitialize_noise_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
+		if (_noise_texture_generator) {
+			_noise_texture_generator->finish();
+			memdelete(_noise_texture_generator);
+		}
+	}
+
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
