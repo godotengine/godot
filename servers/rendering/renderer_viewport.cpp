@@ -723,6 +723,10 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		RSG::texture_storage->render_target_do_msaa_resolve(p_viewport->render_target);
 	}
 
+	if (p_viewport->use_mipmaps) {
+		RSG::texture_storage->render_target_gen_mipmaps(p_viewport->render_target);
+	}
+
 	if (p_viewport->measure_render_time) {
 		String rt_id = "vp_end_" + itos(p_viewport->self.get_id());
 		RSG::utilities->capture_timestamp(rt_id);
@@ -1151,6 +1155,17 @@ void RendererViewport::viewport_set_update_mode(RID p_viewport, RS::ViewportUpda
 	ERR_FAIL_NULL(viewport);
 
 	viewport->update_mode = p_mode;
+}
+
+void RendererViewport::viewport_set_use_mipmaps(RID p_viewport, bool p_use_mipmaps) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL(viewport);
+
+	if (viewport->use_mipmaps != p_use_mipmaps) {
+		viewport->use_mipmaps = p_use_mipmaps;
+
+		RSG::texture_storage->render_target_set_use_mipmaps(viewport->render_target, p_use_mipmaps);
+	}
 }
 
 RS::ViewportUpdateMode RendererViewport::viewport_get_update_mode(RID p_viewport) const {
