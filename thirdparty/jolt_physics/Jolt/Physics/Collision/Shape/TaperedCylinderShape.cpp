@@ -536,7 +536,7 @@ void TaperedCylinderShape::GetTrianglesStart(GetTrianglesContext &ioContext, con
 	JPH_ASSERT(IsAligned(&ioContext, alignof(TCSGetTrianglesContext)));
 
 	// Make sure the scale is not inside out
-	Vec3 scale = ScaleHelpers::IsInsideOut(inScale)? Vec3(-1, 1, 1) * inScale : inScale;
+	Vec3 scale = ScaleHelpers::IsInsideOut(inScale)? inScale.FlipSign<-1, 1, 1>() : inScale;
 
 	// Mark top and bottom processed if their radius is too small
 	TCSGetTrianglesContext *context = new (&ioContext) TCSGetTrianglesContext(Mat44::sRotationTranslation(inRotation, inPositionCOM) * Mat44::sScale(scale));
@@ -645,7 +645,7 @@ int TaperedCylinderShape::GetTrianglesNext(GetTrianglesContext &ioContext, int i
 void TaperedCylinderShape::Draw(DebugRenderer *inRenderer, RMat44Arg inCenterOfMassTransform, Vec3Arg inScale, ColorArg inColor, bool inUseMaterialColors, bool inDrawWireframe) const
 {
 	// Preserve flip along y axis but make sure we're not inside out
-	Vec3 scale = ScaleHelpers::IsInsideOut(inScale)? Vec3(-1, 1, 1) * inScale : inScale;
+	Vec3 scale = ScaleHelpers::IsInsideOut(inScale)? inScale.FlipSign<-1, 1, 1>() : inScale;
 	RMat44 world_transform = inCenterOfMassTransform * Mat44::sScale(scale);
 
 	DebugRenderer::EDrawMode draw_mode = inDrawWireframe? DebugRenderer::EDrawMode::Wireframe : DebugRenderer::EDrawMode::Solid;
