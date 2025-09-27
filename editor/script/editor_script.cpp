@@ -65,6 +65,7 @@ void EditorScript::add_root_node(Node *p_node) {
 }
 
 Node *EditorScript::get_scene() const {
+	WARN_DEPRECATED_MSG("EditorScript::get_scene is deprecated. Use EditorInterface::get_edited_scene_root instead.");
 	if (!EditorNode::get_singleton()) {
 		EditorNode::add_io_error("EditorScript::get_scene: " + TTR("Write your logic in the _run() method."));
 		return nullptr;
