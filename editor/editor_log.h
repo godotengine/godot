@@ -138,7 +138,7 @@ private:
 
 	Button *show_search_button = nullptr;
 	LineEdit *search_box = nullptr;
-	
+
 	// Reusable RichTextLabel for BBCode parsing during search
 	mutable RichTextLabel *bbcode_parser = nullptr;
 
