@@ -46,8 +46,6 @@ class NodeDock : public VBoxContainer {
 
 	HBoxContainer *mode_hb = nullptr;
 
-	Label *select_a_node = nullptr;
-
 	void _save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
 	void _load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section);
 
@@ -62,7 +60,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_node(Node *p_node);
+	void set_selection(const Vector<Node *> &p_nodes);
 
 	void show_groups();
 	void show_connections();
