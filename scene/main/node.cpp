@@ -1782,6 +1782,26 @@ void Node::_update_children_cache_impl() const {
 	data.children_cache_dirty = false;
 }
 
+template <bool p_include_internal>
+Iterable<Node::ChildrenIterator> Node::iterate_children() const {
+	// The thread guard is omitted for performance reasons.
+	// ERR_THREAD_GUARD_V(Iterable<ChildrenIterator>(nullptr, nullptr));
+
+	_update_children_cache();
+	const uint32_t size = data.children_cache.size();
+	// Might be null, but then size and internal counts are also 0.
+	Node **ptr = data.children_cache.ptr();
+
+	if constexpr (p_include_internal) {
+		return Iterable(ChildrenIterator(ptr), ChildrenIterator(ptr + size));
+	} else {
+		return Iterable(ChildrenIterator(ptr + data.internal_children_front_count_cache), ChildrenIterator(ptr + size - data.internal_children_back_count_cache));
+	}
+}
+
+template Iterable<Node::ChildrenIterator> Node::iterate_children<true>() const;
+template Iterable<Node::ChildrenIterator> Node::iterate_children<false>() const;
+
 int Node::get_child_count(bool p_include_internal) const {
 	ERR_THREAD_GUARD_V(0);
 	if (p_include_internal) {
