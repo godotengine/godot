@@ -173,6 +173,14 @@
 				Sets camera to use perspective projection. Objects on the screen becomes smaller when they are far away.
 			</description>
 		</method>
+		<method name="camera_set_scale" experimental="This will be replaced by a more general camera method in future.">
+			<return type="void" />
+			<param index="0" name="camera" type="RID" />
+			<param index="1" name="scale" type="Vector2" />
+			<description>
+				Set camera scale, modifying aspect ratio.
+			</description>
+		</method>
 		<method name="camera_set_transform">
 			<return type="void" />
 			<param index="0" name="camera" type="RID" />
