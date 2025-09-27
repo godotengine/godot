@@ -20,20 +20,27 @@ const CACHED_FILES = ___GODOT_CACHE___;
 const CACHEABLE_FILES = ___GODOT_OPT_CACHE___;
 const FULL_CACHE = CACHED_FILES.concat(CACHEABLE_FILES);
 
+const cacheDisabledClientIds = new Set();
+
 self.addEventListener('install', (event) => {
-	event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(CACHED_FILES)));
+	event.waitUntil((async () => {
+		const cache = await caches.open(CACHE_NAME);
+		await cache.addAll(CACHED_FILES);
+	})());
 });
 
 self.addEventListener('activate', (event) => {
-	event.waitUntil(caches.keys().then(
-		function (keys) {
-			// Remove old caches.
-			return Promise.all(keys.filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME).map((key) => caches.delete(key)));
+	event.waitUntil((async () => {
+		const keys = await caches.keys();
+		await Promise.all(
+			keys
+				.filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+				.map((key) => caches.delete(key))
+		);
+		if ('navigationPreload' in self.registration) {
+			await self.registration.navigationPreload.enable();
 		}
-	).then(function () {
-		// Enable navigation preload if available.
-		return ('navigationPreload' in self.registration) ? self.registration.navigationPreload.enable() : Promise.resolve();
-	}));
+	})());
 });
 
 /**
@@ -95,12 +102,47 @@ self.addEventListener(
 	 */
 	(event) => {
 		const isNavigate = event.request.mode === 'navigate';
-		const url = event.request.url || '';
-		const referrer = event.request.referrer || '';
+		const url = new URL(event.request.url);
+		const referrer = event.request.referrer ?? '';
 		const base = referrer.slice(0, referrer.lastIndexOf('/') + 1);
-		const local = url.startsWith(base) ? url.replace(base, '') : '';
+		const local = url.href.startsWith(base) ? url.href.replace(base, '') : '';
 		const isCacheable = FULL_CACHE.some((v) => v === local) || (base === referrer && base.endsWith(CACHED_FILES[0]));
-		if (isNavigate || isCacheable) {
+		const clientId = isNavigate
+			? event.resultingClientId ?? ''
+			: event.clientId ?? '';
+
+		const respondWithNonCacheableEnsureCOIH = () => {
+			event.respondWith((async () => {
+				let response = await fetch(event.request);
+				response = ensureCrossOriginIsolationHeaders(response);
+				return response;
+			})());
+		};
+
+		if (isNavigate && clientId !== '' && !cacheDisabledClientIds.has(clientId) && url.searchParams.has('no-cache')) {
+			const noCacheValue = url.searchParams.get('no-cache').toLowerCase();
+			let addToNoCache = true;
+			switch (noCacheValue) {
+			case 'no':
+			case 'n':
+			case 'false':
+			case 'f':
+			case '0':
+				addToNoCache = false;
+				break;
+			default:
+				// Do nothing.
+			}
+			if (addToNoCache) {
+				cacheDisabledClientIds.add(clientId);
+			}
+		}
+
+		if (cacheDisabledClientIds.has(clientId)) {
+			if (ENSURE_CROSSORIGIN_ISOLATION_HEADERS) {
+				respondWithNonCacheableEnsureCOIH();
+			}
+		} else if (isNavigate || isCacheable) {
 			event.respondWith((async () => {
 				// Try to use cache first
 				const cache = await caches.open(CACHE_NAME);
@@ -133,33 +175,47 @@ self.addEventListener(
 				return response;
 			})());
 		} else if (ENSURE_CROSSORIGIN_ISOLATION_HEADERS) {
-			event.respondWith((async () => {
-				let response = await fetch(event.request);
-				response = ensureCrossOriginIsolationHeaders(response);
-				return response;
-			})());
+			respondWithNonCacheableEnsureCOIH();
 		}
 	}
 );
 
-self.addEventListener('message', (event) => {
+self.addEventListener('message', async (event) => {
 	// No cross origin
 	if (event.origin !== self.origin) {
 		return;
 	}
-	const id = event.source.id || '';
-	const msg = event.data || '';
+
+	const id = event.source.id ?? '';
+	const msg = event.data ?? '';
+
 	// Ensure it's one of our clients.
-	self.clients.get(id).then(function (client) {
-		if (!client) {
-			return; // Not a valid client.
+	const client = await self.clients.get(id);
+	if (!client) {
+		return; // Not a valid client.
+	}
+	if (typeof msg === 'string') {
+		switch (msg) {
+		case 'claim':
+			await self.skipWaiting();
+			self.clients.claim();
+			break;
+		case 'clear':
+			await caches.delete(CACHE_NAME);
+			break;
+		case 'update': {
+			await self.skipWaiting();
+			await self.clients.claim();
+			const all = await self.clients.matchAll();
+			for (const c of all) {
+				c.navigate(c.url);
+			}
+		} break;
+		case 'pagehide':
+			cacheDisabledClientIds.delete(id);
+			break;
+		default:
+			// Do nothing.
 		}
-		if (msg === 'claim') {
-			self.skipWaiting().then(() => self.clients.claim());
-		} else if (msg === 'clear') {
-			caches.delete(CACHE_NAME);
-		} else if (msg === 'update') {
-			self.skipWaiting().then(() => self.clients.claim()).then(() => self.clients.matchAll()).then((all) => all.forEach((c) => c.navigate(c.url)));
-		}
-	});
+	}
 });
