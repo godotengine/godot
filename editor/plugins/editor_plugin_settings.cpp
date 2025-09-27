@@ -101,9 +101,6 @@ void EditorPluginSettings::update_plugins() {
 				String description = cfg->get_value("plugin", "description");
 				String scr = cfg->get_value("plugin", "script");
 
-				bool is_enabled = EditorNode::get_singleton()->is_addon_plugin_enabled(path);
-				Color disabled_color = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
-
 				const PackedInt32Array boundaries = TS->string_get_word_breaks(description, "", 80);
 				String wrapped_description;
 
@@ -115,9 +112,6 @@ void EditorPluginSettings::update_plugins() {
 
 				TreeItem *item = plugin_list->create_item(root);
 				item->set_text(COLUMN_NAME, name);
-				if (!is_enabled) {
-					item->set_custom_color(COLUMN_NAME, disabled_color);
-				}
 				item->set_tooltip_text(COLUMN_NAME, vformat(TTR("Name: %s\nPath: %s\nMain Script: %s\n\n%s"), name, path, scr, wrapped_description));
 				item->set_metadata(COLUMN_NAME, path);
 				item->set_text(COLUMN_VERSION, version);
@@ -125,11 +119,22 @@ void EditorPluginSettings::update_plugins() {
 				item->set_metadata(COLUMN_VERSION, scr);
 				item->set_text(COLUMN_AUTHOR, author);
 				item->set_metadata(COLUMN_AUTHOR, description);
-				item->set_cell_mode(COLUMN_STATUS, TreeItem::CELL_MODE_CHECK);
-				item->set_text(COLUMN_STATUS, TTRC("On"));
-				item->set_checked(COLUMN_STATUS, is_enabled);
-				item->set_editable(COLUMN_STATUS, true);
-				item->add_button(COLUMN_EDIT, get_editor_theme_icon(SNAME("Edit")), BUTTON_PLUGIN_EDIT, false, TTRC("Edit Plugin"));
+
+				if (!scr.is_empty()) {
+					bool is_enabled = EditorNode::get_singleton()->is_addon_plugin_enabled(path);
+
+					if (!is_enabled) {
+						Color disabled_color = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
+
+						item->set_custom_color(COLUMN_NAME, disabled_color);
+					}
+
+					item->set_cell_mode(COLUMN_STATUS, TreeItem::CELL_MODE_CHECK);
+					item->set_text(COLUMN_STATUS, TTRC("On"));
+					item->set_checked(COLUMN_STATUS, is_enabled);
+					item->set_editable(COLUMN_STATUS, true);
+					item->add_button(COLUMN_EDIT, get_editor_theme_icon(SNAME("Edit")), BUTTON_PLUGIN_EDIT, false, TTRC("Edit Plugin"));
+				}
 			}
 		}
 	}
