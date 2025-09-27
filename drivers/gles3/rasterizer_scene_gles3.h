@@ -168,10 +168,13 @@ private:
 		RID default_shader;
 		RID overdraw_material;
 		RID overdraw_shader;
+		RID uv2_texel_density_material_shader;
+		RID uv2_texel_density_material;
 	} scene_globals;
 
 	GLES3::SceneMaterialData *default_material_data_ptr = nullptr;
 	GLES3::SceneMaterialData *overdraw_material_data_ptr = nullptr;
+	GLES3::SceneMaterialData *uv2_texel_density_material_data_ptr = nullptr;
 
 	/* LIGHT INSTANCE */
 

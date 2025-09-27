@@ -426,8 +426,20 @@ AABB GeometryInstance3D::get_custom_aabb() const {
 	return custom_aabb;
 }
 
+void GeometryInstance3D::set_lightmap_baked_texel_scale(float p_scale) {
+	lightmap_baked_texel_scale = p_scale;
+
+	RS::get_singleton()->instance_geometry_set_lightmap_baked_texel_scale(get_instance(), p_scale);
+}
+
+float GeometryInstance3D::get_lightmap_baked_texel_scale() const {
+	return lightmap_baked_texel_scale;
+}
+
 void GeometryInstance3D::set_lightmap_texel_scale(float p_scale) {
 	lightmap_texel_scale = p_scale;
+
+	RS::get_singleton()->instance_geometry_set_lightmap_texel_scale(get_instance(), p_scale);
 }
 
 float GeometryInstance3D::get_lightmap_texel_scale() const {
@@ -575,6 +587,9 @@ void GeometryInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extra_cull_margin", "margin"), &GeometryInstance3D::set_extra_cull_margin);
 	ClassDB::bind_method(D_METHOD("get_extra_cull_margin"), &GeometryInstance3D::get_extra_cull_margin);
 
+	ClassDB::bind_method(D_METHOD("set_lightmap_baked_texel_scale", "scale"), &GeometryInstance3D::set_lightmap_baked_texel_scale);
+	ClassDB::bind_method(D_METHOD("get_lightmap_baked_texel_scale"), &GeometryInstance3D::get_lightmap_baked_texel_scale);
+
 	ClassDB::bind_method(D_METHOD("set_lightmap_texel_scale", "scale"), &GeometryInstance3D::set_lightmap_texel_scale);
 	ClassDB::bind_method(D_METHOD("get_lightmap_texel_scale"), &GeometryInstance3D::get_lightmap_texel_scale);
 
@@ -607,6 +622,7 @@ void GeometryInstance3D::_bind_methods() {
 	ADD_GROUP("Global Illumination", "gi_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_mode", PROPERTY_HINT_ENUM, "Disabled,Static,Dynamic"), "set_gi_mode", "get_gi_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gi_lightmap_texel_scale", PROPERTY_HINT_RANGE, "0.01,10,0.0001,or_greater"), "set_lightmap_texel_scale", "get_lightmap_texel_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gi_lightmap_baked_texel_scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_lightmap_baked_texel_scale", "get_lightmap_baked_texel_scale");
 #ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_lightmap_scale", PROPERTY_HINT_ENUM, String::utf8("1×,2×,4×,8×"), PROPERTY_USAGE_NONE), "set_lightmap_scale", "get_lightmap_scale");
 #endif // DISABLE_DEPRECATED

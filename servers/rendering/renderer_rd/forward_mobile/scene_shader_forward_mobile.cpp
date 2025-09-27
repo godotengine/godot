@@ -895,6 +895,34 @@ void fragment() {
 	}
 
 	{
+		uv2_texel_density_material_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(uv2_texel_density_material_shader);
+		material_storage->shader_set_code(uv2_texel_density_material_shader, R"(
+// 3D editor UV2 texel density debug draw mode shader (clustered).
+shader_type spatial;
+instance uniform vec2 lightmap_size : instance_index(0);
+void fragment() {
+	vec2 lightmap_pos = UV2 * lightmap_size;
+	vec2 ddx = dFdx(UV2);
+	vec2 ddy = dFdy(UV2);
+	vec2 w = max(abs(ddx), abs(ddy)) + 0.01;
+	vec2 s = 2.0 * (abs(fract((lightmap_pos - 0.5 * w) / 2.0) - 0.5) - abs(fract((lightmap_pos + 0.5 * w) / 2.0) - 0.5)) / w;
+	float checkerboard_pattern = mix(0.85, 1.15, 0.5 - 0.5 * s.x * s.y);
+	ALBEDO = vec3(0.6) * checkerboard_pattern;
+	ROUGHNESS = 0.8;
+	METALLIC = 0.2;
+}
+)");
+		uv2_texel_density_material = material_storage->material_allocate();
+		material_storage->material_initialize(uv2_texel_density_material);
+		material_storage->material_set_shader(uv2_texel_density_material, uv2_texel_density_material_shader);
+
+		MaterialData *md = static_cast<MaterialData *>(material_storage->material_get_data(uv2_texel_density_material, RendererRD::MaterialStorage::SHADER_TYPE_3D));
+		uv2_texel_density_material_shader_ptr = md->shader_data;
+		uv2_texel_density_material_uniform_set = md->uniform_set;
+	}
+
+	{
 		default_vec4_xform_buffer = RD::get_singleton()->storage_buffer_create(256);
 		Vector<RD::Uniform> uniforms;
 		RD::Uniform u;
@@ -957,10 +985,12 @@ SceneShaderForwardMobile::~SceneShaderForwardMobile() {
 	RD::get_singleton()->free(shadow_sampler);
 
 	material_storage->shader_free(overdraw_material_shader);
+	material_storage->shader_free(uv2_texel_density_material_shader);
 	material_storage->shader_free(default_shader);
 	material_storage->shader_free(debug_shadow_splits_material_shader);
 
 	material_storage->material_free(overdraw_material);
+	material_storage->material_free(uv2_texel_density_material);
 	material_storage->material_free(default_material);
 	material_storage->material_free(debug_shadow_splits_material);
 }

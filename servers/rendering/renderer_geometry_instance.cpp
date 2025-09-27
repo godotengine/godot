@@ -116,6 +116,18 @@ void RenderGeometryInstanceBase::set_use_baked_light(bool p_enable) {
 	_mark_dirty();
 }
 
+void RenderGeometryInstanceBase::set_baked_texel_scale(float p_scale) {
+	lightmap_baked_texel_scale = p_scale;
+
+	_mark_dirty();
+}
+
+void RenderGeometryInstanceBase::set_texel_scale(float p_scale) {
+	lightmap_texel_scale = p_scale;
+
+	_mark_dirty();
+}
+
 void RenderGeometryInstanceBase::set_use_dynamic_gi(bool p_enable) {
 	data->use_dynamic_gi = p_enable;
 
