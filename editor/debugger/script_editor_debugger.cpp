@@ -288,8 +288,7 @@ void ScriptEditorDebugger::clear_inspector(bool p_send_msg) {
 }
 
 void ScriptEditorDebugger::_remote_object_selected(ObjectID p_id) {
-	Array arr = { p_id };
-	emit_signal(SNAME("remote_objects_requested"), arr);
+	emit_signal(SNAME("remote_objects_requested"), Array{ p_id });
 }
 
 void ScriptEditorDebugger::_remote_objects_edited(const String &p_prop, const TypedDictionary<uint64_t, Variant> &p_values, const String &p_field) {
