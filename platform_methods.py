@@ -168,7 +168,11 @@ def combine_libs_apple_embedded(target, source, env):
     else:
         libtool = "$APPLE_TOOLCHAIN_PATH/usr/bin/libtool"
     env.Execute(
-        libtool + ' -static -o "' + lib_path + '" ' + " ".join([('"' + lib.srcnode().abspath + '"') for lib in source])
+        libtool
+        + ' -static -a -o "'
+        + lib_path
+        + '" '
+        + " ".join([('"' + lib.srcnode().abspath + '"') for lib in source])
     )
 
 

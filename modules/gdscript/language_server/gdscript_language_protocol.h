@@ -108,4 +108,5 @@ public:
 	bool is_goto_native_symbols_enabled() const;
 
 	GDScriptLanguageProtocol();
+	~GDScriptLanguageProtocol();
 };

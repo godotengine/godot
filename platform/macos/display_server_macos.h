@@ -43,7 +43,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#import "rendering_context_driver_vulkan_macos.h"
+#import "drivers/apple/rendering_context_driver_vulkan_apple.h"
 #endif // VULKAN_ENABLED
 #if defined(METAL_ENABLED)
 #import "drivers/metal/rendering_context_driver_metal.h"

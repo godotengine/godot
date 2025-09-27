@@ -72,7 +72,7 @@ if env["builtin_pcre2"]:
 
 module_obj = []
 
-env_regex.Append(CPPDEFINES=[("PCRE2_CODE_UNIT_WIDTH", 0)])
+env_regex.Append(CPPDEFINES=[("PCRE2_CODE_UNIT_WIDTH", 16)])
 env_regex.add_source_files(module_obj, "*.cpp")
 env.modules_sources += module_obj
 

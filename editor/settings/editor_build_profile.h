@@ -211,4 +211,5 @@ public:
 
 	static EditorBuildProfileManager *get_singleton() { return singleton; }
 	EditorBuildProfileManager();
+	~EditorBuildProfileManager();
 };

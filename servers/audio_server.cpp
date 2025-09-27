@@ -58,6 +58,12 @@ void AudioDriver::set_singleton() {
 	singleton = this;
 }
 
+AudioDriver::~AudioDriver() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}
+
 void AudioDriver::audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time) {
 	if (p_update_mix_time) {
 		update_mix_time(p_frames);
@@ -248,6 +254,11 @@ void AudioDriverManager::initialize(int p_driver) {
 AudioDriver *AudioDriverManager::get_driver(int p_driver) {
 	ERR_FAIL_INDEX_V(p_driver, driver_count, nullptr);
 	return drivers[p_driver];
+}
+
+void AudioDriverManager::reset() {
+	drivers[0] = &AudioDriverManager::dummy_driver;
+	driver_count = 1;
 }
 
 //////////////////////////////////////////////

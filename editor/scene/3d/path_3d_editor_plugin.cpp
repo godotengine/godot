@@ -1002,6 +1002,11 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(topmenu_bar);
 }
 
+Path3DEditorPlugin::~Path3DEditorPlugin() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}
+
 Ref<EditorNode3DGizmo> Path3DGizmoPlugin::create_gizmo(Node3D *p_spatial) {
 	Ref<Path3DGizmo> ref;
 

@@ -35,8 +35,9 @@
 #include "core/io/resource.h"
 #include "core/os/os.h"
 #include "core/variant/callable.h"
-
 #include "display/native_menu.h"
+#include "servers/display_server_embedded_host_interface.h"
+#include "servers/rendering/rendering_native_surface.h"
 
 class Texture2D;
 class AccessibilityDriver;
@@ -84,6 +85,7 @@ public:
 		OPENGL_CONTEXT,
 		EGL_DISPLAY,
 		EGL_CONFIG,
+		OPENGL_FBO,
 	};
 
 	enum Context {
@@ -169,6 +171,7 @@ public:
 		FEATURE_NATIVE_COLOR_PICKER,
 		FEATURE_SELF_FITTING_WINDOWS,
 		FEATURE_ACCESSIBILITY_SCREEN_READER,
+		FEATURE_NATIVE_WINDOWS,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -437,6 +440,10 @@ public:
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, WindowID p_transient_parent = INVALID_WINDOW_ID);
 	virtual void show_window(WindowID p_id);
 	virtual void delete_sub_window(WindowID p_id);
+
+	virtual WindowID create_native_window(Ref<RenderingNativeSurface> p_native_window);
+	virtual bool is_native_window(WindowID p_id);
+	virtual void delete_native_window(WindowID p_id);
 
 	virtual WindowID window_get_active_popup() const { return INVALID_WINDOW_ID; }
 	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) {}
@@ -856,9 +863,19 @@ public:
 
 	virtual void release_rendering_thread();
 	virtual void swap_buffers();
+	virtual uint64_t get_native_window_id(WindowID p_id = MAIN_WINDOW_ID) const;
+
+	virtual bool is_rendering_flipped() const;
 
 	virtual void set_native_icon(const String &p_filename);
 	virtual void set_icon(const Ref<Image> &p_icon);
+
+	virtual void mouse_button(int p_x, int p_y, MouseButton p_mouse_button_index, bool p_pressed, bool p_double_click, bool p_cancelled, DisplayServer::WindowID p_window);
+	virtual void mouse_motion(int p_prev_x, int p_prev_y, int p_x, int p_y, DisplayServer::WindowID p_window);
+
+	virtual void touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click, DisplayServer::WindowID p_window);
+	virtual void touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y, float p_pressure, Vector2 p_tilt, DisplayServer::WindowID p_window);
+	virtual void key(Key p_key, char32_t p_char, Key p_unshifted, Key p_physical, BitField<KeyModifierMask> p_modifiers, bool p_pressed, DisplayServer::WindowID p_window);
 
 	virtual IndicatorID create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback);
 	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon);

@@ -37,3 +37,6 @@ extern void godot_apple_embedded_plugins_deinitialize();
 
 void register_visionos_api();
 void unregister_visionos_api();
+
+void register_core_visionos_api();
+void unregister_core_visionos_api();

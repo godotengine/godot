@@ -110,4 +110,5 @@ public:
 	static AudioStreamImportSettingsDialog *get_singleton() { return singleton; }
 
 	AudioStreamImportSettingsDialog();
+	~AudioStreamImportSettingsDialog();
 };

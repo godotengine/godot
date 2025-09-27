@@ -32,16 +32,19 @@
 
 #ifdef APPLE_EMBEDDED_ENABLED
 
+#ifndef LIBGODOT_ENABLED
 #import "app_delegate_service.h"
 #import "display_server_apple_embedded.h"
 #import "godot_view_apple_embedded.h"
 #import "view_controller.h"
+#endif
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #import "drivers/apple/os_log_logger.h"
 #include "main/main.h"
+#include "servers/display_server_embedded.h"
 
 #import <AVFoundation/AVFAudio.h>
 #import <AudioToolbox/AudioServices.h>
@@ -144,7 +147,9 @@ OS_AppleEmbedded::OS_AppleEmbedded() {
 	loggers.push_back(memnew(OsLogLogger(NSBundle.mainBundle.bundleIdentifier.UTF8String)));
 	_set_logger(memnew(CompositeLogger(loggers)));
 
+#ifdef COREAUDIO_ENABLED
 	AudioDriverManager::add_driver(&audio_driver);
+#endif
 }
 
 OS_AppleEmbedded::~OS_AppleEmbedded() {}
@@ -665,17 +670,23 @@ void OS_AppleEmbedded::on_focus_out() {
 	if (is_focused) {
 		is_focused = false;
 
+#ifndef LIBGODOT_ENABLED
 		if (DisplayServerAppleEmbedded::get_singleton()) {
 			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
 		}
+#endif
 
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 		}
 
+#ifndef LIBGODOT_ENABLED
 		[GDTAppDelegateService.viewController.godotView stopRendering];
+#endif
 
+#ifdef COREAUDIO_ENABLED
 		audio_driver.stop();
+#endif
 	}
 }
 
@@ -683,26 +694,34 @@ void OS_AppleEmbedded::on_focus_in() {
 	if (!is_focused) {
 		is_focused = true;
 
+#ifndef LIBGODOT_ENABLED
 		if (DisplayServerAppleEmbedded::get_singleton()) {
 			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
 		}
+#endif
 
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
 		}
 
+#ifndef LIBGODOT_ENABLED
 		[GDTAppDelegateService.viewController.godotView startRendering];
+#endif
 
+#ifdef COREAUDIO_ENABLED
 		audio_driver.start();
+#endif
 	}
 }
 
 void OS_AppleEmbedded::on_enter_background() {
 	// Do not check for is_focused, because on_focus_out will always be fired first by applicationWillResignActive.
 
+#ifndef LIBGODOT_ENABLED
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
 	}
+#endif
 
 	on_focus_out();
 }
@@ -711,9 +730,11 @@ void OS_AppleEmbedded::on_exit_background() {
 	if (!is_focused) {
 		on_focus_in();
 
+#ifndef LIBGODOT_ENABLED
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
 		}
+#endif
 	}
 }
 

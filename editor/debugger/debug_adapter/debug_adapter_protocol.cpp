@@ -1266,4 +1266,6 @@ DebugAdapterProtocol::DebugAdapterProtocol() {
 
 DebugAdapterProtocol::~DebugAdapterProtocol() {
 	memdelete(parser);
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
 }

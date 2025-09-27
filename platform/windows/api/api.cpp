@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rendering_context_driver_vulkan_macos.mm                              */
+/*  api.cpp                                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,42 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "rendering_context_driver_vulkan_macos.h"
+#include "api.h"
 
-#ifdef VULKAN_ENABLED
-
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan_metal.h>
+#ifdef WINDOWS_ENABLED
+#include "core/object/class_db.h"
+#include "platform/windows/rendering_native_surface_windows.h"
 #endif
 
-const char *RenderingContextDriverVulkanMacOS::_get_platform_surface_extension() const {
-	return VK_EXT_METAL_SURFACE_EXTENSION_NAME;
+void register_core_windows_api() {
+#ifdef WINDOWS_ENABLED
+	GDREGISTER_ABSTRACT_CLASS(RenderingNativeSurfaceWindows);
+#endif
 }
 
-RenderingContextDriver::SurfaceID RenderingContextDriverVulkanMacOS::surface_create(const void *p_platform_data) {
-	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
-
-	VkMetalSurfaceCreateInfoEXT create_info = {};
-	create_info.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
-	create_info.pLayer = *wpd->layer_ptr;
-
-	VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
-	VkResult err = vkCreateMetalSurfaceEXT(instance_get(), &create_info, get_allocation_callbacks(VK_OBJECT_TYPE_SURFACE_KHR), &vk_surface);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, SurfaceID());
-
-	Surface *surface = memnew(Surface);
-	surface->vk_surface = vk_surface;
-	return SurfaceID(surface);
+void unregister_core_windows_api() {
 }
 
-RenderingContextDriverVulkanMacOS::RenderingContextDriverVulkanMacOS() {
-	// Does nothing.
+void register_windows_api() {
 }
 
-RenderingContextDriverVulkanMacOS::~RenderingContextDriverVulkanMacOS() {
-	// Does nothing.
+void unregister_windows_api() {
 }
-
-#endif // VULKAN_ENABLED

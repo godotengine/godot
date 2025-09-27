@@ -53,7 +53,7 @@
 #include "scene/resources/image_texture.h"
 
 #ifdef TOOLS_ENABLED
-#import "display_server_embedded.h"
+#import "display_server_macos_embedded.h"
 #import "editor/embedded_process_macos.h"
 #endif
 
@@ -72,6 +72,8 @@
 #if defined(ACCESSKIT_ENABLED)
 #include "drivers/accesskit/accessibility_driver_accesskit.h"
 #endif
+
+#include "drivers/apple/rendering_native_surface_apple.h"
 
 #import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
@@ -163,26 +165,28 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		}
 
 #if defined(RD_ENABLED)
+		Ref<RenderingNativeSurfaceApple> apple_surface;
+		if (rendering_driver == "vulkan" || rendering_driver == "metal") {
+			apple_surface = RenderingNativeSurfaceApple::create((__bridge void *)layer);
+		}
+
+		if (!rendering_context) {
+			if (apple_surface.is_valid()) {
+				rendering_context = apple_surface->create_rendering_context(rendering_driver);
+			}
+
+			if (rendering_context) {
+				if (rendering_context->initialize() != OK) {
+					memdelete(rendering_context);
+					rendering_context = nullptr;
+					ERR_PRINT("Could not initialize " + rendering_driver);
+					return INVALID_WINDOW_ID;
+				}
+			}
+		}
+
 		if (rendering_context) {
-			union {
-#ifdef VULKAN_ENABLED
-				RenderingContextDriverVulkanMacOS::WindowPlatformData vulkan;
-#endif
-#ifdef METAL_ENABLED
-				RenderingContextDriverMetal::WindowPlatformData metal;
-#endif
-			} wpd;
-#ifdef VULKAN_ENABLED
-			if (rendering_driver == "vulkan") {
-				wpd.vulkan.layer_ptr = (CAMetalLayer *const *)&layer;
-			}
-#endif
-#ifdef METAL_ENABLED
-			if (rendering_driver == "metal") {
-				wpd.metal.layer = (CAMetalLayer *)layer;
-			}
-#endif
-			Error err = rendering_context->window_create(window_id_counter, &wpd);
+			Error err = rendering_context->window_create(window_id_counter, apple_surface);
 #ifdef ACCESSKIT_ENABLED
 			if (err != OK && accessibility_driver) {
 				accessibility_driver->window_destroy(id);
@@ -3862,7 +3866,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	}
 #endif
 	if (rendering_driver == "vulkan") {
-		rendering_context = memnew(RenderingContextDriverVulkanMacOS);
+		rendering_context = memnew(RenderingContextDriverVulkanApple);
 	}
 #endif
 #if defined(METAL_ENABLED)
@@ -3937,7 +3941,10 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	}
 
 	WindowID main_window = _create_window(p_mode, p_vsync_mode, Rect2i(window_position, p_resolution));
-	ERR_FAIL_COND(main_window == INVALID_WINDOW_ID);
+	if (main_window == INVALID_WINDOW_ID) {
+		r_error = ERR_CANT_CREATE;
+		ERR_FAIL_MSG("Could not create main window.");
+	}
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, main_window);

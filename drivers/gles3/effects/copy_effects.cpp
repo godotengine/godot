@@ -32,6 +32,7 @@
 
 #include "copy_effects.h"
 #include "../storage/texture_storage.h"
+#include "../storage/utilities.h"
 
 using namespace GLES3;
 
@@ -214,6 +215,8 @@ void CopyEffects::copy_cube_to_panorama(float p_mip_level) {
 // Intended for efficiently mipmapping textures.
 void CopyEffects::bilinear_blur(GLuint p_source_texture, int p_mipmap_count, const Rect2i &p_region) {
 	GLuint framebuffers[2];
+	FramebufferBinding read_binding(GL_READ_FRAMEBUFFER);
+	FramebufferBinding draw_binding(GL_DRAW_FRAMEBUFFER);
 	glGenFramebuffers(2, framebuffers);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffers[0]);
 	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_source_texture, 0);
@@ -231,8 +234,8 @@ void CopyEffects::bilinear_blur(GLuint p_source_texture, int p_mipmap_count, con
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffers[i % 2]);
 		source_region = dest_region;
 	}
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	read_binding.reset();
+	draw_binding.reset();
 	glDeleteFramebuffers(2, framebuffers);
 }
 
@@ -240,7 +243,7 @@ void CopyEffects::bilinear_blur(GLuint p_source_texture, int p_mipmap_count, con
 void CopyEffects::gaussian_blur(GLuint p_source_texture, int p_mipmap_count, const Rect2i &p_region, const Size2i &p_size) {
 	GLuint framebuffer;
 	glGenFramebuffers(1, &framebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	FramebufferBinding binding(GL_FRAMEBUFFER, framebuffer);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, p_source_texture);
@@ -297,7 +300,7 @@ void CopyEffects::gaussian_blur(GLuint p_source_texture, int p_mipmap_count, con
 		source_region = dest_region;
 		normalized_source_region = normalized_dest_region;
 	}
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	binding.reset();
 	glDeleteFramebuffers(1, &framebuffer);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

@@ -573,6 +573,11 @@ Performance::Performance() {
 	singleton = this;
 }
 
+Performance::~Performance() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}
+
 Performance::MonitorCall::MonitorCall(Callable p_callable, Vector<Variant> p_arguments) {
 	_callable = p_callable;
 	_arguments = p_arguments;

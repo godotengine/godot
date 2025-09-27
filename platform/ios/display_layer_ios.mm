@@ -41,7 +41,6 @@
 #import <AudioToolbox/AudioServices.h>
 #import <GameController/GameController.h>
 #import <OpenGLES/EAGL.h>
-#import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES1/glext.h>
 #import <QuartzCore/QuartzCore.h>
 #import <UIKit/UIKit.h>
@@ -67,16 +66,14 @@
 - (void)stopRenderDisplayLayer {
 }
 
+- (void)setupContext:(GLManager *)context withSurface:(Ref<RenderingNativeSurface> *)surface {
+}
+
 @end
 
 @implementation GDTOpenGLLayer {
-	// The pixel dimensions of the backbuffer
-	GLint backingWidth;
-	GLint backingHeight;
-
-	EAGLContext *context;
-	GLuint viewRenderbuffer, viewFramebuffer;
-	GLuint depthRenderbuffer;
+	GLManager *gl_manager;
+	Ref<RenderingNativeSurface> native_surface;
 }
 
 - (void)initializeDisplayLayer {
@@ -88,104 +85,29 @@
 			kEAGLColorFormatRGBA8,
 			kEAGLDrawablePropertyColorFormat,
 			nil];
-
-	// Create GL ES 3 context
-	if (GLOBAL_GET("rendering/renderer/rendering_method") == "gl_compatibility") {
-		context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
-		NSLog(@"Setting up an OpenGL ES 3.0 context.");
-		if (!context) {
-			NSLog(@"Failed to create OpenGL ES 3.0 context!");
-			return;
-		}
-	}
-
-	if (![EAGLContext setCurrentContext:context]) {
-		NSLog(@"Failed to set EAGLContext!");
-		return;
-	}
-	if (![self createFramebuffer]) {
-		NSLog(@"Failed to create frame buffer!");
-		return;
-	}
 }
 
 - (void)layoutDisplayLayer {
-	[EAGLContext setCurrentContext:context];
-	[self destroyFramebuffer];
-	[self createFramebuffer];
+	gl_manager->window_resize(DisplayServer::MAIN_WINDOW_ID, 0, 0);
 }
 
 - (void)startRenderDisplayLayer {
-	[EAGLContext setCurrentContext:context];
-
-	glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
+	gl_manager->window_make_current(DisplayServer::MAIN_WINDOW_ID);
 }
 
 - (void)stopRenderDisplayLayer {
-	glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-	[context presentRenderbuffer:GL_RENDERBUFFER_OES];
-
-#ifdef DEBUG_ENABLED
-	GLenum err = glGetError();
-	if (err) {
-		NSLog(@"DrawView: %x error", err);
-	}
-#endif
+	gl_manager->swap_buffers();
 }
 
 - (void)dealloc {
-	if ([EAGLContext currentContext] == context) {
-		[EAGLContext setCurrentContext:nil];
-	}
-
-	if (context) {
-		context = nil;
-	}
+	gl_manager->window_destroy(DisplayServer::MAIN_WINDOW_ID);
 }
 
-- (BOOL)createFramebuffer {
-	glGenFramebuffersOES(1, &viewFramebuffer);
-	glGenRenderbuffersOES(1, &viewRenderbuffer);
-
-	glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
-	glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-	// This call associates the storage for the current render buffer with the EAGLDrawable (our CAself)
-	// allowing us to draw into a buffer that will later be rendered to screen wherever the layer is (which corresponds with our view).
-	[context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(id<EAGLDrawable>)self];
-	glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
-
-	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
-
-	// For this sample, we also need a depth buffer, so we'll create and attach one via another renderbuffer.
-	glGenRenderbuffersOES(1, &depthRenderbuffer);
-	glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthRenderbuffer);
-	glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_DEPTH_COMPONENT16_OES, backingWidth, backingHeight);
-	glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER_OES, depthRenderbuffer);
-
-	if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
-		NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
-		return NO;
-	}
-
-	GLES3::TextureStorage::system_fbo = viewFramebuffer;
-
-	return YES;
-}
-
-// Clean up any buffers we have allocated.
-- (void)destroyFramebuffer {
-	GLES3::TextureStorage::system_fbo = 0;
-
-	glDeleteFramebuffersOES(1, &viewFramebuffer);
-	viewFramebuffer = 0;
-	glDeleteRenderbuffersOES(1, &viewRenderbuffer);
-	viewRenderbuffer = 0;
-
-	if (depthRenderbuffer) {
-		glDeleteRenderbuffersOES(1, &depthRenderbuffer);
-		depthRenderbuffer = 0;
-	}
+- (void)setupContext:(GLManager *)context withSurface:(Ref<RenderingNativeSurface> *)surface {
+	gl_manager = context;
+	native_surface = *surface;
+	gl_manager->initialize();
+	gl_manager->window_create(DisplayServer::MAIN_WINDOW_ID, native_surface, 0, 0);
 }
 
 @end

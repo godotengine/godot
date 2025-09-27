@@ -638,6 +638,17 @@ bool Window::is_in_edited_scene_root() const {
 
 void Window::_make_window() {
 	ERR_FAIL_COND(window_id != DisplayServer::INVALID_WINDOW_ID);
+	if (native_surface != nullptr) {
+		window_id = DisplayServer::get_singleton()->create_native_window(native_surface);
+		ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
+
+		_update_window_size();
+
+		_update_window_callbacks();
+
+		RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
+		return;
+	}
 
 	if (transient && transient_to_focused) {
 		_make_transient();
@@ -700,6 +711,13 @@ void Window::_update_from_window() {
 
 void Window::_clear_window() {
 	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
+	if (native_surface != nullptr) {
+		DisplayServer::get_singleton()->delete_native_window(window_id);
+		window_id = DisplayServer::INVALID_WINDOW_ID;
+
+		RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
+		return;
+	}
 
 	bool had_focus = has_focus();
 
@@ -908,6 +926,11 @@ void Window::_accessibility_notify_exit(Node *p_node) {
 
 void Window::set_visible(bool p_visible) {
 	ERR_MAIN_THREAD_GUARD;
+	if (native_surface.is_valid()) {
+		visible = true;
+		return;
+	}
+
 	if (visible == p_visible) {
 		return;
 	}
@@ -997,6 +1020,33 @@ void Window::_clear_transient() {
 		}
 		transient_parent = nullptr;
 	}
+}
+
+void Window::set_native_surface(Ref<RenderingNativeSurface> p_native_surface) {
+	Ref<RenderingNativeSurface> new_native_handle = p_native_surface;
+	if (new_native_handle == native_surface) {
+		return;
+	}
+	if (!initialized) {
+		native_surface = new_native_handle;
+		return;
+	}
+	if (embedder) {
+		embedder->_sub_window_remove(this);
+	} else {
+		_clear_window();
+	}
+	native_surface = new_native_handle;
+	embedder = get_embedder();
+	if (embedder) {
+		embedder->_sub_window_register(this);
+	} else {
+		_make_window();
+	}
+}
+
+Ref<RenderingNativeSurface> Window::get_native_surface() {
+	return native_surface;
 }
 
 void Window::_make_transient() {
@@ -1358,6 +1408,10 @@ bool Window::get_force_native() const {
 Viewport *Window::get_embedder() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
 	if (force_native && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SUBWINDOWS) && !is_in_edited_scene_root()) {
+		return nullptr;
+	}
+
+	if (native_surface != nullptr) {
 		return nullptr;
 	}
 
@@ -3183,6 +3237,9 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_visible", "visible"), &Window::set_visible);
 	ClassDB::bind_method(D_METHOD("is_visible"), &Window::is_visible);
+
+	ClassDB::bind_method(D_METHOD("set_native_surface", "native_surface"), &Window::set_native_surface);
+	ClassDB::bind_method(D_METHOD("get_native_surface"), &Window::get_native_surface);
 
 	ClassDB::bind_method(D_METHOD("hide"), &Window::hide);
 	ClassDB::bind_method(D_METHOD("show"), &Window::show);

@@ -32,6 +32,7 @@
 
 #include "glow.h"
 #include "../storage/texture_storage.h"
+#include "../storage/utilities.h"
 
 using namespace GLES3;
 
@@ -96,6 +97,8 @@ void Glow::process_glow(GLuint p_source_color, Size2i p_size, const Glow::GLOWLE
 	glDisable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);
+
+	FramebufferBinding binding(GL_FRAMEBUFFER);
 
 	// Start with our filter pass
 	{
@@ -167,7 +170,6 @@ void Glow::process_glow(GLuint p_source_color, Size2i p_size, const Glow::GLOWLE
 	glDepthMask(GL_TRUE);
 	glUseProgram(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 }
 
 #endif // GLES3_ENABLED

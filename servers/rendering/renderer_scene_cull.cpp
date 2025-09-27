@@ -4332,4 +4332,7 @@ RendererSceneCull::~RendererSceneCull() {
 		memdelete(light_culler);
 		light_culler = nullptr;
 	}
+
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
 }
