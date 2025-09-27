@@ -150,7 +150,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void setup(const Vector<String> &p_options, bool p_string_name = false, bool p_loose_mode = false);
+	void setup(const Vector<String> &p_options, const Vector<String> &p_option_names = {}, bool p_string_name = false, bool p_loose_mode = false);
 	virtual void update_property() override;
 	EditorPropertyTextEnum();
 };

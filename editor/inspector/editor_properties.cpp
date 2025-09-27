@@ -360,7 +360,7 @@ void EditorPropertyTextEnum::_emit_changed_value(const String &p_string) {
 }
 
 void EditorPropertyTextEnum::_option_selected(int p_which) {
-	_emit_changed_value(option_button->get_item_text(p_which));
+	_emit_changed_value(option_button->get_item_metadata(p_which));
 }
 
 void EditorPropertyTextEnum::_edit_custom_value() {
@@ -422,20 +422,28 @@ void EditorPropertyTextEnum::update_property() {
 	}
 }
 
-void EditorPropertyTextEnum::setup(const Vector<String> &p_options, bool p_string_name, bool p_loose_mode) {
+void EditorPropertyTextEnum::setup(const Vector<String> &p_options, const Vector<String> &p_option_names, bool p_string_name, bool p_loose_mode) {
+	ERR_FAIL_COND(!p_option_names.is_empty() && p_option_names.size() != p_options.size());
+
 	string_name = p_string_name;
 	loose_mode = p_loose_mode;
 
-	options.clear();
+	options = p_options;
 
 	if (loose_mode) {
 		// Add an explicit empty value for clearing the property in the loose mode.
 		option_button->add_item("", options.size() + 1000);
+		option_button->set_item_metadata(-1, String());
 	}
 
+	bool use_option_names = !p_option_names.is_empty();
 	for (int i = 0; i < p_options.size(); i++) {
-		options.append(p_options[i]);
-		option_button->add_item(p_options[i], i);
+		if (use_option_names) {
+			option_button->add_item(p_option_names[i], i);
+		} else {
+			option_button->add_item(p_options[i], i);
+		}
+		option_button->set_item_metadata(-1, options[i]);
 	}
 
 	if (loose_mode) {
@@ -3729,7 +3737,7 @@ static EditorProperty *get_input_action_editor(const String &p_hint_text, bool i
 		}
 	}
 	options.append_array(builtin_options);
-	editor->setup(options, is_string_name, hints.has("loose_mode"));
+	editor->setup(options, Vector<String>(), is_string_name, hints.has("loose_mode"));
 	return editor;
 }
 
@@ -3843,8 +3851,17 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::STRING: {
 			if (p_hint == PROPERTY_HINT_ENUM || p_hint == PROPERTY_HINT_ENUM_SUGGESTION) {
 				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
-				Vector<String> options = p_hint_text.split(",", false);
-				editor->setup(options, false, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
+				Vector<String> options;
+				Vector<String> option_names;
+				if (p_hint_text.begins_with(";")) {
+					for (const String &option : p_hint_text.split(";", false)) {
+						options.append(option.get_slicec('/', 0));
+						option_names.append(option.get_slicec('/', 1));
+					}
+				} else {
+					options = p_hint_text.remove_char(' ').split(",", false);
+				}
+				editor->setup(options, option_names, false, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_INPUT_NAME) {
 				return get_input_action_editor(p_hint_text, false);
@@ -3999,7 +4016,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			if (p_hint == PROPERTY_HINT_ENUM || p_hint == PROPERTY_HINT_ENUM_SUGGESTION) {
 				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
 				Vector<String> options = p_hint_text.split(",", false);
-				editor->setup(options, true, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
+				editor->setup(options, Vector<String>(), true, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_INPUT_NAME) {
 				return get_input_action_editor(p_hint_text, true);
