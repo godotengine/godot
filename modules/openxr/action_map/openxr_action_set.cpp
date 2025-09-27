@@ -60,7 +60,7 @@ Ref<OpenXRActionSet> OpenXRActionSet::new_action_set(const char *p_name, const c
 	return action_set;
 }
 
-void OpenXRActionSet::set_localized_name(const String p_localized_name) {
+void OpenXRActionSet::set_localized_name(const String &p_localized_name) {
 	localized_name = p_localized_name;
 	emit_changed();
 }
@@ -96,7 +96,7 @@ void OpenXRActionSet::clear_actions() {
 	emit_changed();
 }
 
-void OpenXRActionSet::set_actions(Array p_actions) {
+void OpenXRActionSet::set_actions(const Array &p_actions) {
 	// Any actions not retained in p_actions should be freed automatically, those held within our Array will have be relinked to our action set.
 	clear_actions();
 
@@ -110,7 +110,7 @@ Array OpenXRActionSet::get_actions() const {
 	return actions;
 }
 
-Ref<OpenXRAction> OpenXRActionSet::get_action(const String p_name) const {
+Ref<OpenXRAction> OpenXRActionSet::get_action(const String &p_name) const {
 	for (int i = 0; i < actions.size(); i++) {
 		Ref<OpenXRAction> action = actions[i];
 		if (action->get_name() == p_name) {
@@ -121,7 +121,7 @@ Ref<OpenXRAction> OpenXRActionSet::get_action(const String p_name) const {
 	return Ref<OpenXRAction>();
 }
 
-void OpenXRActionSet::add_action(Ref<OpenXRAction> p_action) {
+void OpenXRActionSet::add_action(const Ref<OpenXRAction> &p_action) {
 	ERR_FAIL_COND(p_action.is_null());
 
 	if (!actions.has(p_action)) {
@@ -136,7 +136,7 @@ void OpenXRActionSet::add_action(Ref<OpenXRAction> p_action) {
 	}
 }
 
-void OpenXRActionSet::remove_action(Ref<OpenXRAction> p_action) {
+void OpenXRActionSet::remove_action(const Ref<OpenXRAction> &p_action) {
 	int idx = actions.find(p_action);
 	if (idx != -1) {
 		actions.remove_at(idx);

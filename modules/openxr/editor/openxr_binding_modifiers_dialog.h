@@ -51,7 +51,7 @@ private:
 	Button *add_binding_modifier_btn = nullptr;
 	CreateDialog *create_dialog = nullptr;
 
-	OpenXRBindingModifierEditor *_add_binding_modifier_editor(Ref<OpenXRBindingModifier> p_binding_modifier);
+	OpenXRBindingModifierEditor *_add_binding_modifier_editor(const Ref<OpenXRBindingModifier> &p_binding_modifier);
 	void _create_binding_modifiers();
 
 	void _on_add_binding_modifier();
@@ -74,5 +74,5 @@ protected:
 public:
 	OpenXRBindingModifiersDialog();
 
-	void setup(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRInteractionProfile> p_interaction_profile, Ref<OpenXRIPBinding> p_ip_binding = Ref<OpenXRIPBinding>());
+	void setup(const Ref<OpenXRActionMap> &p_action_map, const Ref<OpenXRInteractionProfile> &p_interaction_profile, const Ref<OpenXRIPBinding> &p_ip_binding = Ref<OpenXRIPBinding>());
 };
