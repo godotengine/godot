@@ -69,6 +69,3 @@ if env["sdl"] and env["platform"] in ["linuxbsd", "macos", "windows"]:
 SConscript("png/SCsub")
 
 env.add_source_files(env.drivers_sources, "*.cpp")
-
-lib = env.add_library("drivers", env.drivers_sources)
-env.Prepend(LIBS=[lib])
