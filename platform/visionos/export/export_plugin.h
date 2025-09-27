@@ -58,6 +58,6 @@ public:
 		r_features->push_back("visionos");
 	}
 
-	EditorExportPlatformVisionOS();
+	virtual void initialize() override;
 	~EditorExportPlatformVisionOS();
 };

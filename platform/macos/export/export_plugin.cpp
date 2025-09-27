@@ -2814,7 +2814,7 @@ Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, in
 #undef CLEANUP_AND_RETURN
 }
 
-EditorExportPlatformMacOS::EditorExportPlatformMacOS() {
+void EditorExportPlatformMacOS::initialize() {
 	if (EditorNode::get_singleton()) {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
