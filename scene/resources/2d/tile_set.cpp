@@ -1301,12 +1301,10 @@ Array TileSet::map_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_a
 
 	// Source matches.
 	if (source_level_proxies.has(p_source_from)) {
-		Array output = { source_level_proxies[p_source_from], p_coords_from, p_alternative_from };
-		return output;
+		return Array{ source_level_proxies[p_source_from], p_coords_from, p_alternative_from };
 	}
 
-	Array output = { p_source_from, p_coords_from, p_alternative_from };
-	return output;
+	return Array{ p_source_from, p_coords_from, p_alternative_from };
 }
 
 void TileSet::cleanup_invalid_tile_proxies() {

@@ -885,8 +885,8 @@ const Array &ExtendGDScriptParser::get_member_completions() {
 }
 
 Dictionary ExtendGDScriptParser::dump_function_api(const GDScriptParser::FunctionNode *p_func) const {
+	ERR_FAIL_NULL_V(p_func, Dictionary());
 	Dictionary func;
-	ERR_FAIL_NULL_V(p_func, func);
 	func["name"] = p_func->identifier->name;
 	func["return_type"] = p_func->get_datatype().to_string();
 	func["rpc_config"] = p_func->rpc_config;
@@ -909,9 +909,8 @@ Dictionary ExtendGDScriptParser::dump_function_api(const GDScriptParser::Functio
 }
 
 Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode *p_class) const {
+	ERR_FAIL_NULL_V(p_class, Dictionary());
 	Dictionary class_api;
-
-	ERR_FAIL_NULL_V(p_class, class_api);
 
 	class_api["name"] = p_class->identifier != nullptr ? String(p_class->identifier->name) : String();
 	class_api["path"] = path;

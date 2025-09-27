@@ -355,13 +355,11 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 }
 
 Array GDScriptTextDocument::foldingRange(const Dictionary &p_params) {
-	Array arr;
-	return arr;
+	return Array();
 }
 
 Array GDScriptTextDocument::codeLens(const Dictionary &p_params) {
-	Array arr;
-	return arr;
+	return Array();
 }
 
 Array GDScriptTextDocument::documentLink(const Dictionary &p_params) {
@@ -379,8 +377,7 @@ Array GDScriptTextDocument::documentLink(const Dictionary &p_params) {
 }
 
 Array GDScriptTextDocument::colorPresentation(const Dictionary &p_params) {
-	Array arr;
-	return arr;
+	return Array();
 }
 
 Variant GDScriptTextDocument::hover(const Dictionary &p_params) {
@@ -416,8 +413,7 @@ Array GDScriptTextDocument::definition(const Dictionary &p_params) {
 	LSP::TextDocumentPositionParams params;
 	params.load(p_params);
 	List<const LSP::DocumentSymbol *> symbols;
-	Array arr = find_symbols(params, symbols);
-	return arr;
+	return find_symbols(params, symbols);
 }
 
 Variant GDScriptTextDocument::declaration(const Dictionary &p_params) {
