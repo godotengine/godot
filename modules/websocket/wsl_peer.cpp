@@ -80,7 +80,7 @@ void WSLPeer::Resolver::stop() {
 	port = 0;
 }
 
-void WSLPeer::Resolver::try_next_candidate(Ref<StreamPeerTCP> &p_tcp) {
+void WSLPeer::Resolver::try_next_candidate(const Ref<StreamPeerTCP> &p_tcp) {
 	// Check if we still need resolving.
 	if (resolver_id != IP::RESOLVER_INVALID_ID) {
 		IP::ResolverStatus ip_status = IP::get_singleton()->get_resolve_item_status(resolver_id);
@@ -124,7 +124,7 @@ void WSLPeer::Resolver::try_next_candidate(Ref<StreamPeerTCP> &p_tcp) {
 ///
 /// Server functions
 ///
-Error WSLPeer::accept_stream(Ref<StreamPeer> p_stream) {
+Error WSLPeer::accept_stream(const Ref<StreamPeer> &p_stream) {
 	ERR_FAIL_COND_V(p_stream.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(ready_state != STATE_CLOSED && ready_state != STATE_CLOSING, ERR_ALREADY_IN_USE);
 
@@ -474,7 +474,7 @@ bool WSLPeer::_verify_server_response() {
 	return true;
 }
 
-Error WSLPeer::connect_to_url(const String &p_url, Ref<TLSOptions> p_options) {
+Error WSLPeer::connect_to_url(const String &p_url, const Ref<TLSOptions> &p_options) {
 	ERR_FAIL_COND_V(p_url.is_empty(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_options.is_valid() && p_options->is_server(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(ready_state != STATE_CLOSED && ready_state != STATE_CLOSING, ERR_ALREADY_IN_USE);
@@ -688,7 +688,7 @@ String WSLPeer::_generate_key() {
 	return CryptoCore::b64_encode_str(bkey.ptrw(), len);
 }
 
-String WSLPeer::_compute_key_response(String p_key) {
+String WSLPeer::_compute_key_response(const String &p_key) {
 	String key = p_key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"; // Magic UUID as per RFC
 	Vector<uint8_t> sha = key.sha1_buffer();
 	return CryptoCore::b64_encode_str(sha.ptr(), sha.size());
@@ -840,7 +840,7 @@ int WSLPeer::get_current_outbound_buffered_amount() const {
 	return wslay_event_get_queued_msg_length(wsl_ctx);
 }
 
-void WSLPeer::close(int p_code, String p_reason) {
+void WSLPeer::close(int p_code, const String &p_reason) {
 	if (p_code < 0) {
 		// Force immediate close.
 		ready_state = STATE_CLOSED;
