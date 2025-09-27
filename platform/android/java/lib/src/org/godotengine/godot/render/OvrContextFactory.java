@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  GodotRenderer.java                                                    */
+/*  OvrContextFactory.java                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,71 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.gl;
+package org.godotengine.godot.render;
 
-import org.godotengine.godot.GodotLib;
-import org.godotengine.godot.plugin.GodotPlugin;
-import org.godotengine.godot.plugin.GodotPluginRegistry;
-
-import android.util.Log;
-
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
+import android.opengl.EGL14;
+import android.opengl.EGLConfig;
+import android.opengl.EGLContext;
+import android.opengl.EGLDisplay;
 
 /**
- * Godot's GL renderer implementation.
+ * EGL Context factory for the Oculus mobile VR SDK.
  */
-public class GodotRenderer implements GLSurfaceView.Renderer {
-	private final String TAG = GodotRenderer.class.getSimpleName();
+class OvrContextFactory implements GLSurfaceView.EGLContextFactory {
+	private static final int[] CONTEXT_ATTRIBS = {
+		EGL14.EGL_CONTEXT_CLIENT_VERSION, 3, EGL14.EGL_NONE
+	};
 
-	private final GodotPluginRegistry pluginRegistry;
-	private boolean activityJustResumed = false;
-
-	public GodotRenderer() {
-		this.pluginRegistry = GodotPluginRegistry.getPluginRegistry();
-	}
-
-	public boolean onDrawFrame(GL10 gl) {
-		if (activityJustResumed) {
-			GodotLib.onRendererResumed();
-			activityJustResumed = false;
-		}
-
-		boolean swapBuffers = GodotLib.step();
-		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
-			plugin.onGLDrawFrame(gl);
-		}
-
-		return swapBuffers;
+	@Override
+	public EGLContext createContext(EGLDisplay display, EGLConfig eglConfig) {
+		return EGL14.eglCreateContext(display, eglConfig, EGL14.EGL_NO_CONTEXT, CONTEXT_ATTRIBS, 0);
 	}
 
 	@Override
-	public void onRenderThreadExiting() {
-		Log.d(TAG, "Destroying Godot Engine");
-		GodotLib.ondestroy();
-	}
-
-	public void onSurfaceChanged(GL10 gl, int width, int height) {
-		GodotLib.resize(null, width, height);
-		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
-			plugin.onGLSurfaceChanged(gl, width, height);
-		}
-	}
-
-	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-		GodotLib.newcontext(null);
-		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
-			plugin.onGLSurfaceCreated(gl, config);
-		}
-	}
-
-	public void onActivityResumed() {
-		// We defer invoking GodotLib.onRendererResumed() until the first draw frame call.
-		// This ensures we have a valid GL context and surface when we do so.
-		activityJustResumed = true;
-	}
-
-	public void onActivityPaused() {
-		GodotLib.onRendererPaused();
+	public void destroyContext(EGLDisplay display, EGLContext context) {
+		EGL14.eglDestroyContext(display, context);
 	}
 }
