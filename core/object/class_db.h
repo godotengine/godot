@@ -95,6 +95,12 @@ MethodDefinition D_METHOD(const char *p_name, const VarArgs... p_args) {
 
 #endif // DEBUG_ENABLED
 
+#if defined(DEV_ENABLED) && !defined(TESTS_ENABLED)
+#define GDCLASS_WARN_REGISTER_SECOND_TIME(m_class_name) WARN_PRINT(vformat("Minor bug, please report: Object class %s was explicitly registered after it had already been added to ClassDB.", m_class_name));
+#else
+#define GDCLASS_WARN_REGISTER_SECOND_TIME(m_class_name)
+#endif
+
 class ClassDB {
 	friend class Object;
 
@@ -251,7 +257,9 @@ public:
 	static void register_class(bool p_virtual = false) {
 		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
-		T::initialize_class();
+		if (unlikely(!T::initialize_class())) {
+			GDCLASS_WARN_REGISTER_SECOND_TIME(T::get_class_static());
+		}
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_NULL(t);
 		t->creation_func = &creator<T>;
@@ -266,7 +274,9 @@ public:
 	static void register_abstract_class() {
 		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
-		T::initialize_class();
+		if (unlikely(!T::initialize_class())) {
+			GDCLASS_WARN_REGISTER_SECOND_TIME(T::get_class_static());
+		}
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_NULL(t);
 		t->exposed = true;
@@ -279,7 +289,9 @@ public:
 	static void register_internal_class() {
 		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
-		T::initialize_class();
+		if (unlikely(!T::initialize_class())) {
+			GDCLASS_WARN_REGISTER_SECOND_TIME(T::get_class_static());
+		}
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_NULL(t);
 		t->creation_func = &creator<T>;
@@ -294,7 +306,9 @@ public:
 	static void register_runtime_class() {
 		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
-		T::initialize_class();
+		if (unlikely(!T::initialize_class())) {
+			GDCLASS_WARN_REGISTER_SECOND_TIME(T::get_class_static());
+		}
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_NULL(t);
 		ERR_FAIL_COND_MSG(t->inherits_ptr && !t->inherits_ptr->creation_func, vformat("Cannot register runtime class '%s' that descends from an abstract parent class.", T::get_class_static()));
@@ -319,7 +333,9 @@ public:
 	static void register_custom_instance_class() {
 		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
-		T::initialize_class();
+		if (unlikely(!T::initialize_class())) {
+			GDCLASS_WARN_REGISTER_SECOND_TIME(T::get_class_static());
+		}
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_NULL(t);
 		t->creation_func = &_create_ptr_func<T>;
