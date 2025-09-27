@@ -2257,6 +2257,9 @@ void TextureStorage::decal_set_fade(RID p_decal, float p_above, float p_below) {
 void TextureStorage::decal_set_normal_fade(RID p_decal, float p_fade) {
 }
 
+void TextureStorage::decal_set_keep_decal_opacity(RID p_decal, bool p_override) {
+}
+
 AABB TextureStorage::decal_get_aabb(RID p_decal) const {
 	return AABB();
 }

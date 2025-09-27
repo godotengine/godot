@@ -1183,6 +1183,14 @@
 				Sets the upper fade ([param above]) and lower fade ([param below]) in the decal specified by the [param decal] RID. Equivalent to [member Decal.upper_fade] and [member Decal.lower_fade].
 			</description>
 		</method>
+		<method name="decal_set_keep_decal_opacity">
+			<return type="void" />
+			<param index="0" name="decal" type="RID" />
+			<param index="1" name="keep_decal_opacity" type="bool" />
+			<description>
+				If [code]true[/code], the alpha from the decal's texture will override the surface's alpha for any pixel where the decal's alpha is greater. This ensures that the resulting pixels are at least as opaque as the decal, never less.
+			</description>
+		</method>
 		<method name="decal_set_modulate">
 			<return type="void" />
 			<param index="0" name="decal" type="RID" />

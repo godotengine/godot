@@ -3000,6 +3000,12 @@ void TextureStorage::decal_set_normal_fade(RID p_decal, float p_fade) {
 	decal->normal_fade = p_fade;
 }
 
+void TextureStorage::decal_set_keep_decal_opacity(RID p_decal, bool p_override) {
+	Decal *decal = decal_owner.get_or_null(p_decal);
+	ERR_FAIL_NULL(decal);
+	decal->keep_decal_opacity = p_override;
+}
+
 void TextureStorage::decal_atlas_mark_dirty_on_texture(RID p_texture) {
 	if (decal_atlas.textures.has(p_texture)) {
 		//belongs to decal atlas..
@@ -3407,6 +3413,8 @@ void TextureStorage::update_decal_buffer(const PagedArray<RID> &p_decals, const 
 		dd.normal[1] = normal.y;
 		dd.normal[2] = normal.z;
 		dd.normal_fade = decal->normal_fade;
+
+		dd.keep_decal_opacity = static_cast<uint32_t>(decal->keep_decal_opacity);
 
 		RID albedo_tex = decal->textures[RS::DECAL_TEXTURE_ALBEDO];
 		RID emission_tex = decal->textures[RS::DECAL_TEXTURE_EMISSION];
