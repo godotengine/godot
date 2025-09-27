@@ -575,6 +575,14 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 }
 
 void DependencyRemoveDialog::ok_pressed() {
+	HashMap<String, StringName> setting_path_map;
+	for (const StringName &setting : path_project_settings) {
+		const String path = ResourceUID::ensure_path(GLOBAL_GET(setting));
+		setting_path_map[path] = setting;
+	}
+
+	bool project_settings_modified = false;
+
 	for (const KeyValue<String, String> &E : all_remove_files) {
 		String file = E.key;
 
@@ -583,23 +591,17 @@ void DependencyRemoveDialog::ok_pressed() {
 			emit_signal(SNAME("resource_removed"), res);
 			res->set_path("");
 		}
-	}
 
-	HashMap<String, StringName> setting_path_map;
-	for (const StringName &setting : path_project_settings) {
-		const String path = ResourceUID::ensure_path(GLOBAL_GET(setting));
-		setting_path_map[path] = setting;
-	}
-
-	bool project_settings_modified = false;
-	for (const String &file : files_to_delete) {
 		// If the file we are deleting for e.g. the main scene, default environment,
 		// or audio bus layout, we must clear its definition in Project Settings.
 		const StringName *setting_name = setting_path_map.getptr(file);
 		if (setting_name) {
 			ProjectSettings::get_singleton()->set(*setting_name, "");
+			project_settings_modified = true;
 		}
+	}
 
+	for (const String &file : files_to_delete) {
 		const String path = OS::get_singleton()->get_resource_dir() + file.replace_first("res://", "/");
 		print_verbose("Moving to trash: " + path);
 		Error err = OS::get_singleton()->move_to_trash(path);
