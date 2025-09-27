@@ -99,6 +99,7 @@ private:
 	Ref<Script> stack_script; // Why?!?
 
 	bool initializing = true;
+	bool broken = false;
 	int last_error_count = 0;
 	int last_warning_count = 0;
 
