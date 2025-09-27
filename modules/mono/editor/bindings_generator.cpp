@@ -3858,35 +3858,28 @@ struct SortMethodWithHashes {
 bool BindingsGenerator::_populate_object_type_interfaces() {
 	obj_types.clear();
 
-	List<StringName> class_list;
-	ClassDB::get_class_list(&class_list);
-	class_list.sort_custom<StringName::AlphCompare>();
+	LocalVector<StringName> class_list;
+	ClassDB::get_class_list(class_list);
 
-	while (class_list.size()) {
-		StringName type_cname = class_list.front()->get();
-
+	for (const StringName &type_cname : class_list) {
 		ClassDB::APIType api_type = ClassDB::get_api_type(type_cname);
 
 		if (api_type == ClassDB::API_NONE) {
-			class_list.pop_front();
 			continue;
 		}
 
 		if (ignored_types.has(type_cname)) {
 			_log("Ignoring type '%s' because it's in the list of ignored types\n", String(type_cname).utf8().get_data());
-			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_exposed(type_cname)) {
 			_log("Ignoring type '%s' because it's not exposed\n", String(type_cname).utf8().get_data());
-			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_enabled(type_cname)) {
 			_log("Ignoring type '%s' because it's not enabled\n", String(type_cname).utf8().get_data());
-			class_list.pop_front();
 			continue;
 		}
 
@@ -4447,8 +4440,6 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			obj_types.insert(itype.name + CS_SINGLETON_INSTANCE_SUFFIX, itype);
 		}
-
-		class_list.pop_front();
 	}
 
 	return true;
