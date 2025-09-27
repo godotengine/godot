@@ -5961,6 +5961,38 @@ void DisplayServerX11::window_start_resize(WindowResizeEdge p_edge, WindowID p_w
 	XSync(x11_display, 0);
 }
 
+void DisplayServerX11::window_show_system_menu(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+
+	WindowData &wd = windows[p_window];
+	// `_GTK_SHOW_WINDOW_MENU` used for compatibility in most WMs.
+	Atom wmState = XInternAtom(x11_display, "_GTK_SHOW_WINDOW_MENU", True);
+	XClientMessageEvent xev;
+
+	memset(&xev, 0, sizeof(xev));
+
+	int root_x, root_y;
+
+	Bool xquerypointer_result = XQueryPointer(x11_display, wd.x11_window, NULL, NULL, &root_x, &root_y, NULL, NULL, NULL);
+
+	xev.type = ClientMessage;
+	xev.window = wd.x11_window;
+	xev.message_type = wmState;
+
+	if (xquerypointer_result) {
+		// `2` is the default device ID.
+		// TODO: Properly get the device ID somehow.
+		xev.data.l[0] = 2;
+		xev.data.l[1] = root_x;
+		xev.data.l[2] = root_y;
+	}
+
+	xev.format = 32;
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&xev);
+}
+
 pid_t get_window_pid(Display *p_display, Window p_window) {
 	Atom atom = XInternAtom(p_display, "_NET_WM_PID", False);
 	Atom actualType;
