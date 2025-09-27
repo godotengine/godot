@@ -805,7 +805,10 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 
 	RS::EnvironmentBG background = environment_get_background(p_env);
 
-	if (sky) {
+	if (background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) {
+		sky_material = sky_globals.fog_material;
+		material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RS::SHADER_SKY));
+	} else if (sky) {
 		sky_material = sky->material;
 
 		if (sky_material.is_valid()) {
@@ -819,9 +822,6 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 			sky_material = sky_globals.default_material;
 			material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RS::SHADER_SKY));
 		}
-	} else if (background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) {
-		sky_material = sky_globals.fog_material;
-		material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RS::SHADER_SKY));
 	}
 
 	ERR_FAIL_NULL(material_data);
