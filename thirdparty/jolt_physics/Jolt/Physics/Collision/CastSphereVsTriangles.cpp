@@ -117,8 +117,6 @@ float CastSphereVsTriangles::RayCylinder(Vec3Arg inRayDirection, Vec3Arg inCylin
 
 void CastSphereVsTriangles::Cast(Vec3Arg inV0, Vec3Arg inV1, Vec3Arg inV2, uint8 inActiveEdges, const SubShapeID &inSubShapeID2)
 {
-	JPH_PROFILE_FUNCTION();
-
 	// Scale triangle and make it relative to the start of the cast
 	Vec3 v0 = mScale * inV0 - mStart;
 	Vec3 v1 = mScale * inV1 - mStart;

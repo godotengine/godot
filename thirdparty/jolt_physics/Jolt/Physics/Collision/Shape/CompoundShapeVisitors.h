@@ -302,6 +302,7 @@ struct CompoundShape::CollideCompoundVsShapeVisitor
 
 		// Convert bounding box of 2 into space of 1
 		mBoundsOf2InSpaceOf1 = inShape2->GetLocalBounds().Scaled(inScale2).Transformed(transform2_to_1);
+		mBoundsOf2InSpaceOf1.ExpandBy(Vec3::sReplicate(inCollideShapeSettings.mMaxSeparationDistance));
 	}
 
 	/// Returns true when collision detection should abort because it's not possible to find a better hit

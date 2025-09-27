@@ -98,7 +98,7 @@ public:
 	/// After adding, to get a body by ID use the BodyLockRead or BodyLockWrite interface!
 	void						AddBody(const BodyID &inBodyID, EActivation inActivationMode);
 
-	/// Remove body from the physics system.
+	/// Remove body from the physics system. Note that you need to add a body to the physics system before you can remove it.
 	void						RemoveBody(const BodyID &inBodyID);
 
 	/// Check if a body has been added to the physics system.
@@ -132,12 +132,12 @@ public:
 	/// Please ensure that the ioBodies array passed to AddBodiesPrepare is unmodified and passed again to this function.
 	void						AddBodiesAbort(BodyID *ioBodies, int inNumber, AddState inAddState);
 
-	/// Remove inNumber bodies in ioBodies from the PhysicsSystem.
+	/// Remove inNumber bodies in ioBodies from the PhysicsSystem. Note that bodies need to be added to the physics system before they can be removed.
 	/// ioBodies may be shuffled around by this function.
 	void						RemoveBodies(BodyID *ioBodies, int inNumber);
 	///@}
 
-	///@name Activate / deactivate a body
+	///@name Activate / deactivate a body. Note that you need to add a body to the physics system before you can activate it.
 	///@{
 	void						ActivateBody(const BodyID &inBodyID);
 	void						ActivateBodies(const BodyID *inBodyIDs, int inNumber);
@@ -151,7 +151,8 @@ public:
 	/// Create a two body constraint
 	TwoBodyConstraint *			CreateConstraint(const TwoBodyConstraintSettings *inSettings, const BodyID &inBodyID1, const BodyID &inBodyID2);
 
-	/// Activate non-static bodies attached to a constraint
+	/// Activate non-static bodies attached to a constraint.
+	/// Note that the bodies involved in the constraint should be added to the physics system before activating a constraint.
 	void						ActivateConstraint(const TwoBodyConstraint *inConstraint);
 
 	///@name Access to the shape of a body
@@ -214,7 +215,7 @@ public:
 	/// Note that the linear velocity is the velocity of the center of mass, which may not coincide with the position of your object, to correct for this: \f$VelocityCOM = Velocity - AngularVelocity \times ShapeCOM\f$
 	void						SetPositionRotationAndVelocity(const BodyID &inBodyID, RVec3Arg inPosition, QuatArg inRotation, Vec3Arg inLinearVelocity, Vec3Arg inAngularVelocity);
 
-	///@name Add forces to the body
+	///@name Add forces to the body. Note that you should add a body to the physics system before applying forces or torques.
 	///@{
 	void						AddForce(const BodyID &inBodyID, Vec3Arg inForce, EActivation inActivationMode = EActivation::Activate); ///< See Body::AddForce
 	void						AddForce(const BodyID &inBodyID, Vec3Arg inForce, RVec3Arg inPoint, EActivation inActivationMode = EActivation::Activate); ///< Applied at inPoint
@@ -222,7 +223,7 @@ public:
 	void						AddForceAndTorque(const BodyID &inBodyID, Vec3Arg inForce, Vec3Arg inTorque, EActivation inActivationMode = EActivation::Activate); ///< A combination of Body::AddForce and Body::AddTorque
 	///@}
 
-	///@name Add an impulse to the body
+	///@name Add an impulse to the body. Note that you should add a body to the physics system before applying impulses.
 	///@{
 	void						AddImpulse(const BodyID &inBodyID, Vec3Arg inImpulse); ///< Applied at center of mass
 	void						AddImpulse(const BodyID &inBodyID, Vec3Arg inImpulse, RVec3Arg inPoint); ///< Applied at inPoint
@@ -268,10 +269,28 @@ public:
 	float						GetGravityFactor(const BodyID &inBodyID) const;
 	///@}
 
+    ///@name Max linear velocity
+    ///@{
+    void						SetMaxLinearVelocity(const BodyID &inBodyID, float inLinearVelocity);
+    float						GetMaxLinearVelocity(const BodyID &inBodyID) const;
+    ///@}
+
+    ///@name Max angular velocity
+    ///@{
+    void						SetMaxAngularVelocity(const BodyID &inBodyID, float inAngularVelocity);
+    float						GetMaxAngularVelocity(const BodyID &inBodyID) const;
+    ///@}
+
 	///@name Manifold reduction
 	///@{
 	void						SetUseManifoldReduction(const BodyID &inBodyID, bool inUseReduction);
 	bool						GetUseManifoldReduction(const BodyID &inBodyID) const;
+	///@}
+
+	///@name Sensor
+	///@{
+	void						SetIsSensor(const BodyID &inBodyID, bool inIsSensor);
+	bool						IsSensor(const BodyID &inBodyID) const;
 	///@}
 
 	///@name Collision group

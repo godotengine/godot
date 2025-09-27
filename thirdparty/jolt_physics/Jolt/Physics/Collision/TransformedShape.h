@@ -188,7 +188,7 @@ public:
 	SubShapeIDCreator			mSubShapeIDCreator;							///< Optional sub shape ID creator for the shape (can be used when expanding compound shapes into multiple transformed shapes)
 };
 
-static_assert(JPH_CPU_ADDRESS_BITS != 64 || sizeof(TransformedShape) == JPH_IF_SINGLE_PRECISION_ELSE(64, 96), "Not properly packed");
-static_assert(alignof(TransformedShape) == JPH_RVECTOR_ALIGNMENT, "Not properly aligned");
+static_assert(JPH_CPU_ADDRESS_BITS != 64 || JPH_RVECTOR_ALIGNMENT < 16 || sizeof(TransformedShape) == JPH_IF_SINGLE_PRECISION_ELSE(64, 96), "Not properly packed");
+static_assert(alignof(TransformedShape) == max(JPH_VECTOR_ALIGNMENT, JPH_RVECTOR_ALIGNMENT), "Not properly aligned");
 
 JPH_NAMESPACE_END
