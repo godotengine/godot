@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include <cstddef>
+
 #include "servers/camera/camera_feed.h"
 #include "servers/camera_server.h"
 
@@ -49,6 +51,9 @@ private:
 	Ref<Image> image_uv;
 	Vector<uint8_t> data_y;
 	Vector<uint8_t> data_uv;
+	// Scratch buffers to avoid per-frame reallocations when handling padded strides.
+	Vector<uint8_t> scratch_y;
+	Vector<uint8_t> scratch_uv;
 
 	ACameraManager *manager = nullptr;
 	ACameraMetadata *metadata = nullptr;
@@ -60,6 +65,7 @@ private:
 	void _add_formats();
 	void _set_rotation();
 
+	static void compact_stride_inplace(uint8_t *data, size_t width, int height, size_t stride);
 	static void onError(void *context, ACameraDevice *p_device, int error);
 	static void onDisconnected(void *context, ACameraDevice *p_device);
 	static void onImage(void *context, AImageReader *p_reader);
