@@ -626,10 +626,15 @@ class GDScriptFunctionState : public RefCounted {
 	SelfList<GDScriptFunctionState> scripts_list;
 	SelfList<GDScriptFunctionState> instances_list;
 
+	static bool warn_on_cross_thread_await;
+	Thread::ID await_id = Thread::UNASSIGNED_ID;
+
 protected:
 	static void _bind_methods();
 
 public:
+	static void set_warn_on_cross_thread_await(bool p_enable);
+
 	bool is_valid(bool p_extended_check = false) const;
 	Variant resume(const Variant &p_arg = Variant());
 

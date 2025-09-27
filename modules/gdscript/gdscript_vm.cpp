@@ -2583,6 +2583,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					gdfs->state.ip = ip + 2;
 					gdfs->state.line = line;
 					gdfs->state.script = _script;
+					gdfs->await_id = Thread::get_caller_id();
+
 					{
 						MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 						_script->pending_func_states.add(&gdfs->scripts_list);
