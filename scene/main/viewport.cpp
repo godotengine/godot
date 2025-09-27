@@ -134,10 +134,7 @@ int ViewportTexture::get_width() const {
 		_err_print_viewport_not_set();
 		return 0;
 	}
-	if (vp->is_sub_viewport()) {
-		return vp->size.width;
-	}
-	return vp->size.width * vp->get_stretch_transform().get_scale().width;
+	return vp->size.width;
 }
 
 int ViewportTexture::get_height() const {
@@ -145,10 +142,7 @@ int ViewportTexture::get_height() const {
 		_err_print_viewport_not_set();
 		return 0;
 	}
-	if (vp->is_sub_viewport()) {
-		return vp->size.height;
-	}
-	return vp->size.height * vp->get_stretch_transform().get_scale().height;
+	return vp->size.height;
 }
 
 Size2 ViewportTexture::get_size() const {
@@ -156,11 +150,7 @@ Size2 ViewportTexture::get_size() const {
 		_err_print_viewport_not_set();
 		return Size2();
 	}
-	if (vp->is_sub_viewport()) {
-		return vp->size;
-	}
-	Size2 scale = vp->get_stretch_transform().get_scale();
-	return Size2(vp->size.width * scale.width, vp->size.height * scale.height).ceil();
+	return vp->size;
 }
 
 RID ViewportTexture::get_rid() const {
@@ -337,7 +327,7 @@ void Viewport::_sub_window_update(Window *p_window) {
 	sw.pending_window_update = false;
 
 	RS::get_singleton()->canvas_item_clear(sw.canvas_item);
-	const Rect2i r = Rect2i(p_window->get_position(), p_window->get_size());
+	const Rect2i r = Rect2i(p_window->get_position(), p_window->get_visible_rect().size);
 
 	if (!p_window->get_flag(Window::FLAG_BORDERLESS)) {
 		Ref<StyleBox> panel = gui.subwindow_focused == p_window ? p_window->theme_cache.embedded_border : p_window->theme_cache.embedded_unfocused_border;
@@ -372,7 +362,7 @@ void Viewport::_sub_window_update(Window *p_window) {
 		close_icon->draw(sw.canvas_item, r.position + Vector2(r.size.width - close_h_ofs, -close_v_ofs));
 	}
 
-	const Transform2D xform = sw.window->window_transform * sw.window->stretch_transform;
+	const Transform2D xform = sw.window->window_transform;
 	Rect2 vr = xform.xform(sw.window->get_visible_rect());
 	vr.position += p_window->get_position();
 	if (vr != r) {
