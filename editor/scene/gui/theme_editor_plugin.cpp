@@ -2592,11 +2592,7 @@ void ThemeTypeEditor::_update_type_items() {
 
 	// Colors.
 	{
-		for (int i = color_items_list->get_child_count() - 1; i >= 0; i--) {
-			Node *node = color_items_list->get_child(i);
-			node->queue_free();
-			color_items_list->remove_child(node);
-		}
+		color_items_list->delete_all_children(true, DELETE_MODE_QUEUE_FREE);
 
 		HashMap<StringName, bool> color_items = _get_type_items(edited_type, Theme::DATA_TYPE_COLOR, show_default);
 		for (const KeyValue<StringName, bool> &E : color_items) {
@@ -2621,11 +2617,7 @@ void ThemeTypeEditor::_update_type_items() {
 
 	// Constants.
 	{
-		for (int i = constant_items_list->get_child_count() - 1; i >= 0; i--) {
-			Node *node = constant_items_list->get_child(i);
-			node->queue_free();
-			constant_items_list->remove_child(node);
-		}
+		constant_items_list->delete_all_children(true, DELETE_MODE_QUEUE_FREE);
 
 		HashMap<StringName, bool> constant_items = _get_type_items(edited_type, Theme::DATA_TYPE_CONSTANT, show_default);
 		for (const KeyValue<StringName, bool> &E : constant_items) {
@@ -2654,11 +2646,7 @@ void ThemeTypeEditor::_update_type_items() {
 
 	// Fonts.
 	{
-		for (int i = font_items_list->get_child_count() - 1; i >= 0; i--) {
-			Node *node = font_items_list->get_child(i);
-			node->queue_free();
-			font_items_list->remove_child(node);
-		}
+		font_items_list->delete_all_children(true, DELETE_MODE_QUEUE_FREE);
 
 		HashMap<StringName, bool> font_items = _get_type_items(edited_type, Theme::DATA_TYPE_FONT, show_default);
 		for (const KeyValue<StringName, bool> &E : font_items) {
@@ -2693,11 +2681,7 @@ void ThemeTypeEditor::_update_type_items() {
 
 	// Fonts sizes.
 	{
-		for (int i = font_size_items_list->get_child_count() - 1; i >= 0; i--) {
-			Node *node = font_size_items_list->get_child(i);
-			node->queue_free();
-			font_size_items_list->remove_child(node);
-		}
+		font_size_items_list->delete_all_children(true, DELETE_MODE_QUEUE_FREE);
 
 		HashMap<StringName, bool> font_size_items = _get_type_items(edited_type, Theme::DATA_TYPE_FONT_SIZE, show_default);
 		for (const KeyValue<StringName, bool> &E : font_size_items) {
@@ -2726,11 +2710,7 @@ void ThemeTypeEditor::_update_type_items() {
 
 	// Icons.
 	{
-		for (int i = icon_items_list->get_child_count() - 1; i >= 0; i--) {
-			Node *node = icon_items_list->get_child(i);
-			node->queue_free();
-			icon_items_list->remove_child(node);
-		}
+		icon_items_list->delete_all_children(true, DELETE_MODE_QUEUE_FREE);
 
 		HashMap<StringName, bool> icon_items = _get_type_items(edited_type, Theme::DATA_TYPE_ICON, show_default);
 		for (const KeyValue<StringName, bool> &E : icon_items) {
@@ -2765,11 +2745,7 @@ void ThemeTypeEditor::_update_type_items() {
 
 	// Styleboxes.
 	{
-		for (int i = stylebox_items_list->get_child_count() - 1; i >= 0; i--) {
-			Node *node = stylebox_items_list->get_child(i);
-			node->queue_free();
-			stylebox_items_list->remove_child(node);
-		}
+		stylebox_items_list->delete_all_children(true, DELETE_MODE_QUEUE_FREE);
 
 		if (leading_stylebox.pinned) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_STYLEBOX, leading_stylebox.item_name, true);
