@@ -19,6 +19,13 @@
 				Creates a new [DPITexture] and initializes it by allocating and setting the SVG data from string.
 			</description>
 		</method>
+		<method name="force_update_texture">
+			<return type="void" />
+			<description>
+				Forces the texture to update immediately. Normally, texture updates are deferred until the end of the current frame to avoid redundant expensive updates. Calling this method applies any pending changes right away instead of waiting.
+				[b]Note:[/b] If you call [method force_update_texture] manually, the engine will detect that the texture has already been refreshed and will not perform an additional deferred update at the end of the frame.
+			</description>
+		</method>
 		<method name="get_scaled_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
@@ -43,19 +50,23 @@
 			<param index="0" name="source" type="String" />
 			<description>
 				Sets SVG source code.
+				[b]Note:[/b] Changes are applied at the end of the current frame for performance reasons. See [method force_update_texture] to update immediately.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="base_scale" type="float" setter="set_base_scale" getter="get_base_scale" default="1.0">
 			Texture scale. [code]1.0[/code] is the original SVG size. Higher values result in a larger image.
+			[b]Note:[/b] Changes are applied at the end of the current frame for performance reasons. See [method force_update_texture] to update immediately.
 		</member>
 		<member name="color_map" type="Dictionary" setter="set_color_map" getter="get_color_map" default="{}">
 			If set, remaps texture colors according to [Color]-[Color] map.
+			[b]Note:[/b] Changes are applied at the end of the current frame for performance reasons. See [method force_update_texture] to update immediately.
 		</member>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 		<member name="saturation" type="float" setter="set_saturation" getter="get_saturation" default="1.0">
 			Overrides texture saturation.
+			[b]Note:[/b] Changes are applied at the end of the current frame for performance reasons. See [method force_update_texture] to update immediately.
 		</member>
 	</members>
 </class>
