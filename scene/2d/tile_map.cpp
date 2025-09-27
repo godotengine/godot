@@ -147,7 +147,7 @@ Vector<int> TileMap::_get_tile_map_data_using_compatibility_format(int p_layer) 
 	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), Vector<int>());
 
 	// Export tile data to raw format.
-	const HashMap<Vector2i, CellData> tile_map_layer_data = layers[p_layer]->get_tile_map_layer_data();
+	const HashMap<Vector2i, CellData> &tile_map_layer_data = layers[p_layer]->get_tile_map_layer_data();
 	Vector<int> tile_data;
 	tile_data.resize(tile_map_layer_data.size() * 3);
 	int *w = tile_data.ptrw();
@@ -571,23 +571,19 @@ void TileMap::set_pattern(int p_layer, const Vector2i &p_position, const Ref<Til
 }
 
 HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_constraints(int p_layer, const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> &p_constraints) {
-	HashMap<Vector2i, TileSet::TerrainsPattern> err_value;
-	TILEMAP_CALL_FOR_LAYER_V(p_layer, err_value, terrain_fill_constraints, p_to_replace, p_terrain_set, p_constraints);
+	TILEMAP_CALL_FOR_LAYER_V(p_layer, (HashMap<Vector2i, TileSet::TerrainsPattern>()), terrain_fill_constraints, p_to_replace, p_terrain_set, p_constraints);
 }
 
 HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_connect(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains) {
-	HashMap<Vector2i, TileSet::TerrainsPattern> err_value;
-	TILEMAP_CALL_FOR_LAYER_V(p_layer, err_value, terrain_fill_connect, p_coords_array, p_terrain_set, p_terrain, p_ignore_empty_terrains);
+	TILEMAP_CALL_FOR_LAYER_V(p_layer, (HashMap<Vector2i, TileSet::TerrainsPattern>()), terrain_fill_connect, p_coords_array, p_terrain_set, p_terrain, p_ignore_empty_terrains);
 }
 
 HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_path(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains) {
-	HashMap<Vector2i, TileSet::TerrainsPattern> err_value;
-	TILEMAP_CALL_FOR_LAYER_V(p_layer, err_value, terrain_fill_path, p_coords_array, p_terrain_set, p_terrain, p_ignore_empty_terrains);
+	TILEMAP_CALL_FOR_LAYER_V(p_layer, (HashMap<Vector2i, TileSet::TerrainsPattern>()), terrain_fill_path, p_coords_array, p_terrain_set, p_terrain, p_ignore_empty_terrains);
 }
 
 HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_pattern(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern, bool p_ignore_empty_terrains) {
-	HashMap<Vector2i, TileSet::TerrainsPattern> err_value;
-	TILEMAP_CALL_FOR_LAYER_V(p_layer, err_value, terrain_fill_pattern, p_coords_array, p_terrain_set, p_terrains_pattern, p_ignore_empty_terrains);
+	TILEMAP_CALL_FOR_LAYER_V(p_layer, (HashMap<Vector2i, TileSet::TerrainsPattern>()), terrain_fill_pattern, p_coords_array, p_terrain_set, p_terrains_pattern, p_ignore_empty_terrains);
 }
 
 void TileMap::set_cells_terrain_connect(int p_layer, TypedArray<Vector2i> p_cells, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains) {

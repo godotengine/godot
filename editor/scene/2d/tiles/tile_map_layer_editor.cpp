@@ -1114,8 +1114,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_rect(Vector2
 	// Get or create the pattern.
 	Ref<TileMapPattern> pattern = p_erase ? erase_pattern : selection_pattern;
 
-	HashMap<Vector2i, TileMapCell> err_output;
-	ERR_FAIL_COND_V(pattern->is_empty(), err_output);
+	ERR_FAIL_COND_V(pattern->is_empty(), (HashMap<Vector2i, TileMapCell>()));
 
 	// Compute the offset to align things to the bottom or right.
 	bool aligned_right = p_end_cell.x < p_start_cell.x;
