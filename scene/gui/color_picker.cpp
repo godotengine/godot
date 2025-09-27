@@ -632,8 +632,8 @@ void ColorPicker::set_editor_settings(Object *p_editor_settings) {
 	_update_recent_presets();
 }
 
-void ColorPicker::set_quick_open_callback(const Callable &p_file_selected) {
-	quick_open_callback = p_file_selected;
+void ColorPicker::set_quick_open_callback(const Callable &p_callback) {
+	quick_open_callback = p_callback;
 }
 
 void ColorPicker::set_palette_saved_callback(const Callable &p_palette_saved) {
@@ -1755,7 +1755,7 @@ void ColorPicker::_update_menu_items() {
 	options_menu->set_item_tooltip(-1, ETR("Load existing color palette."));
 
 #ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (quick_open_callback.is_valid()) {
 		options_menu->add_icon_item(get_theme_icon(SNAME("load"), SNAME("FileDialog")), TTRC("Quick Load"), static_cast<int>(MenuOption::MENU_QUICKLOAD));
 		options_menu->set_item_tooltip(-1, TTRC("Load existing color palette."));
 	}
@@ -1783,10 +1783,7 @@ void ColorPicker::_options_menu_cbk(int p_which) {
 
 #ifdef TOOLS_ENABLED
 		case MenuOption::MENU_QUICKLOAD:
-			if (quick_open_callback.is_valid()) {
-				file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
-				quick_open_callback.call_deferred();
-			}
+			quick_open_callback.call(Vector<StringName>{ "ColorPalette" }, callable_mp(this, &ColorPicker::_quick_open_palette_file_selected));
 			break;
 #endif // TOOLS_ENABLED
 		case MenuOption::MENU_CLEAR: {
