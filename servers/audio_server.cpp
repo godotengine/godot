@@ -113,6 +113,20 @@ void AudioDriver::input_buffer_write(int32_t sample) {
 	}
 }
 
+void AudioDriver::input_buffer_wrote(unsigned int p_frames) {
+	if ((int)input_position < input_buffer.size()) {
+		input_position += p_frames;
+		if ((int)input_position >= input_buffer.size()) {
+			input_position -= input_buffer.size();
+		}
+		if ((int)input_size < input_buffer.size()) {
+			input_size = MAX(input_size + p_frames, input_buffer.size());
+		}
+	} else {
+		WARN_PRINT("input_buffer_write: Invalid input_position=" + itos(input_position) + " input_buffer.size()=" + itos(input_buffer.size()));
+	}
+}
+
 int AudioDriver::_get_configured_mix_rate() {
 	StringName audio_driver_setting = "audio/driver/mix_rate";
 	int mix_rate = GLOBAL_GET(audio_driver_setting);

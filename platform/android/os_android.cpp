@@ -896,6 +896,10 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 	loggers.push_back(memnew(AndroidLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
 
+#ifdef SDL_ENABLED
+	AudioDriverManager::add_driver(&driver_sdl);
+#endif
+
 	AudioDriverManager::add_driver(&audio_driver_android);
 
 	DisplayServerAndroid::register_android_driver();

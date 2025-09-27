@@ -61,8 +61,9 @@ if env["metal"]:
     SConscript("metal/SCsub")
 
 # Input drivers
-if env["sdl"] and env["platform"] in ["linuxbsd", "macos", "windows"]:
-    # TODO: Evaluate support for Android, iOS, and Web.
+if env["sdl"] and env["platform"] in ["android", "linuxbsd", "macos", "visionOS", "ios", "windows"]:
+    # TODO: Evaluate joypad support for Android, iOS, and Web.
+    # TODO: Evaluate audio support for Web.
     SConscript("sdl/SCsub")
 
 # Core dependencies

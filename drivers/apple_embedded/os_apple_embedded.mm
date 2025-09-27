@@ -144,6 +144,10 @@ OS_AppleEmbedded::OS_AppleEmbedded() {
 	loggers.push_back(memnew(OsLogLogger(NSBundle.mainBundle.bundleIdentifier.UTF8String)));
 	_set_logger(memnew(CompositeLogger(loggers)));
 
+#ifdef SDL_ENABLED
+	AudioDriverManager::add_driver(&driver_sdl);
+#endif
+
 	AudioDriverManager::add_driver(&audio_driver);
 }
 
