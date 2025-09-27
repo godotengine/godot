@@ -162,13 +162,10 @@ class GameView : public VBoxContainer {
 	Button *camera_override_button = nullptr;
 	MenuButton *camera_override_menu = nullptr;
 
-	VSeparator *embedding_separator = nullptr;
-	Button *fixed_size_button = nullptr;
-	Button *keep_aspect_button = nullptr;
-	Button *stretch_button = nullptr;
+	HBoxContainer *embedding_hb = nullptr;
 	MenuButton *embed_options_menu = nullptr;
 	Label *game_size_label = nullptr;
-	Panel *panel = nullptr;
+	PanelContainer *panel = nullptr;
 	EmbeddedProcessBase *embedded_process = nullptr;
 	Label *state_label = nullptr;
 
@@ -183,7 +180,6 @@ class GameView : public VBoxContainer {
 	void _node_type_pressed(int p_option);
 	void _select_mode_pressed(int p_option);
 	void _embed_options_menu_menu_id_pressed(int p_id);
-	void _size_mode_button_pressed(int size_mode);
 
 	void _play_pressed();
 	static void _instance_starting_static(int p_idx, List<String> &r_arguments);
