@@ -10,7 +10,7 @@
 		1F1575721F582BE20003B888 /* dylibs in Resources */ = {isa = PBXBuildFile; fileRef = 1F1575711F582BE20003B888 /* dylibs */; };
 		DEADBEEF2F582BE20003B888 /* $binary.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEADBEEF1F582BE20003B888 /* $binary.xcframework */; };
 		$modules_buildfile
-		$swift_runtime_buildfile
+		90B4C2B62680C7E90039117A /* dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90B4C2B52680C7E90039117A /* dummy.swift */; };
 		1FF8DBB11FBA9DE1009DE660 /* dummy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1FF8DBB01FBA9DE1009DE660 /* dummy.cpp */; };
 		D07CD44E1C5D589C00B7FB28 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D07CD44D1C5D589C00B7FB28 /* Images.xcassets */; };
         $moltenvk_buildfile
@@ -38,7 +38,8 @@
 		1F1575711F582BE20003B888 /* dylibs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = dylibs; path = "$binary/dylibs"; sourceTree = "<group>"; };
 		DEADBEEF1F582BE20003B888 /* $binary.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = godot; path = "$binary.xcframework"; sourceTree = "<group>"; };
 		$modules_fileref
-		$swift_runtime_fileref
+		90B4C2AA2680BC560039117A /* dummy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dummy.h"; sourceTree = "<group>"; };
+		90B4C2B52680C7E90039117A /* dummy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "dummy.swift"; sourceTree = "<group>"; };
 		1FF4C1881F584E6300A41E41 /* $binary.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "$binary.entitlements"; sourceTree = "<group>"; };
 		1FF8DBB01FBA9DE1009DE660 /* dummy.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dummy.cpp; sourceTree = "<group>"; };
         $moltenvk_fileref
@@ -109,7 +110,8 @@
 				D07CD44D1C5D589C00B7FB28 /* Images.xcassets */,
 				D0BCFE4218AEBDA2004A7AAE /* Supporting Files */,
 				1FF8DBB01FBA9DE1009DE660 /* dummy.cpp */,
-				$swift_runtime_binary_files
+				90B4C2AA2680BC560039117A /* dummy.h */,
+				90B4C2B52680C7E90039117A /* dummy.swift */,
 			);
 			path = "$binary";
 			sourceTree = "<group>";
@@ -155,7 +157,7 @@
 				TargetAttributes = {
 					D0BCFE3318AEBDA2004A7AAE = {
 						DevelopmentTeam = $team_id;
-						$swift_runtime_migration
+						LastSwiftMigration = 1250;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 						};
@@ -202,7 +204,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1FF8DBB11FBA9DE1009DE660 /* dummy.cpp in Sources */,
-				$swift_runtime_build_phase
+				90B4C2B62680C7E90039117A /* dummy.swift */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -340,7 +342,9 @@
 				TARGETED_DEVICE_FAMILY = "$targeted_device_family";
 				VALID_ARCHS = "$valid_archs";
 				WRAPPER_EXTENSION = app;
-				$swift_runtime_build_settings
+				CLANG_ENABLE_MODULES = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$binary/dummy.h";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -375,7 +379,9 @@
 				TARGETED_DEVICE_FAMILY = "$targeted_device_family";
 				VALID_ARCHS = "$valid_archs";
 				WRAPPER_EXTENSION = app;
-				$swift_runtime_build_settings
+				CLANG_ENABLE_MODULES = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$binary/dummy.h";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};

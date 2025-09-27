@@ -638,35 +638,6 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 			}
 		}
 		strnew += p_line.replace("$pbx_locale_build_reference", locale_files);
-	} else if (p_line.contains("$swift_runtime_migration")) {
-		String value = !p_config.use_swift_runtime ? "" : "LastSwiftMigration = 1250;";
-		strnew += p_line.replace("$swift_runtime_migration", value) + "\n";
-	} else if (p_line.contains("$swift_runtime_build_settings")) {
-		String value = !p_config.use_swift_runtime ? "" : R"(
-				 CLANG_ENABLE_MODULES = YES;
-				 SWIFT_OBJC_BRIDGING_HEADER = "$binary/dummy.h";
-				 SWIFT_VERSION = 5.0;
-				 )";
-		value = value.replace("$binary", p_config.binary_name);
-		strnew += p_line.replace("$swift_runtime_build_settings", value) + "\n";
-	} else if (p_line.contains("$swift_runtime_fileref")) {
-		String value = !p_config.use_swift_runtime ? "" : R"(
-				 90B4C2AA2680BC560039117A /* dummy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dummy.h"; sourceTree = "<group>"; };
-				 90B4C2B52680C7E90039117A /* dummy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "dummy.swift"; sourceTree = "<group>"; };
-				 )";
-		strnew += p_line.replace("$swift_runtime_fileref", value) + "\n";
-	} else if (p_line.contains("$swift_runtime_binary_files")) {
-		String value = !p_config.use_swift_runtime ? "" : R"(
-				 90B4C2AA2680BC560039117A /* dummy.h */,
-				 90B4C2B52680C7E90039117A /* dummy.swift */,
-				 )";
-		strnew += p_line.replace("$swift_runtime_binary_files", value) + "\n";
-	} else if (p_line.contains("$swift_runtime_buildfile")) {
-		String value = !p_config.use_swift_runtime ? "" : "90B4C2B62680C7E90039117A /* dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90B4C2B52680C7E90039117A /* dummy.swift */; };";
-		strnew += p_line.replace("$swift_runtime_buildfile", value) + "\n";
-	} else if (p_line.contains("$swift_runtime_build_phase")) {
-		String value = !p_config.use_swift_runtime ? "" : "90B4C2B62680C7E90039117A /* dummy.swift */,";
-		strnew += p_line.replace("$swift_runtime_build_phase", value) + "\n";
 	} else if (p_line.contains("$priv_collection")) {
 		bool section_opened = false;
 		for (uint64_t j = 0; j < std::size(data_collect_type_info); ++j) {
@@ -1566,10 +1537,6 @@ Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Re
 
 		plugin_initialization_cpp_code += "\t" + initialization_method;
 		plugin_deinitialization_cpp_code += "\t" + deinitialization_method;
-
-		if (plugin.use_swift_runtime) {
-			p_config_data.use_swift_runtime = true;
-		}
 	}
 
 	// Updating `Info.plist`
@@ -1819,7 +1786,6 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		"",
 		"",
 		Vector<String>(),
-		false
 	};
 
 	config_data.plist_content += p_preset->get("application/additional_plist_content").operator String() + "\n";
