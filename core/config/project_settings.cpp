@@ -277,6 +277,12 @@ String ProjectSettings::globalize_path(const String &p_path) const {
 bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	_THREAD_SAFE_METHOD_
 
+	// Capture old value before making changes
+	Variant old_value;
+	if (props.has(p_name)) {
+		old_value = props[p_name].variant;
+	}
+
 	if (p_value.get_type() == Variant::NIL) {
 		props.erase(p_name);
 		if (p_name.operator String().begins_with("autoload/")) {
@@ -298,7 +304,10 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			}
 
 			_version++;
-			_queue_changed();
+
+			if (old_value != p_value) {
+				_queue_changed(p_name, old_value, p_value);
+			}
 			return true;
 		}
 
@@ -344,7 +353,10 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	}
 
 	_version++;
-	_queue_changed();
+
+	if (old_value != p_value) {
+		_queue_changed(p_name, old_value, p_value);
+	}
 	return true;
 }
 
@@ -528,11 +540,38 @@ void ProjectSettings::_queue_changed() {
 	callable_mp(this, &ProjectSettings::_emit_changed).call_deferred();
 }
 
+void ProjectSettings::_queue_changed(const StringName &p_name, const Variant &p_old_value, const Variant &p_new_value) {
+	if (!MessageQueue::get_singleton() || MessageQueue::get_singleton()->get_max_buffer_usage() == 0) {
+		return;
+	}
+
+	// Add this signal to the pending list
+	PendingSignal signal;
+	signal.name = p_name;
+	signal.old_value = p_old_value;
+	signal.new_value = p_new_value;
+	pending_signals.push_back(signal);
+
+	// Only queue the deferred call once per frame
+	if (!is_changed) {
+		is_changed = true;
+		callable_mp(this, &ProjectSettings::_emit_changed).call_deferred();
+	}
+}
+
 void ProjectSettings::_emit_changed() {
 	if (!is_changed) {
 		return;
 	}
 	is_changed = false;
+
+	// Emit all pending setting_changed signals first.
+	for (const PendingSignal &signal : pending_signals) {
+		emit_signal("setting_changed", signal.name, signal.old_value, signal.new_value);
+	}
+	pending_signals.clear();
+
+	// Then emit the general settings_changed signal to indicate all changes are complete.
 	emit_signal("settings_changed");
 }
 
@@ -1510,6 +1549,7 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
+	ADD_SIGNAL(MethodInfo("setting_changed", PropertyInfo(Variant::STRING_NAME, "name"), PropertyInfo(Variant::NIL, "old_value"), PropertyInfo(Variant::NIL, "new_value")));
 }
 
 void ProjectSettings::_add_builtin_input_map() {

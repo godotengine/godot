@@ -155,4 +155,222 @@ TEST_CASE("[ProjectSettings] localize_path") {
 	TestProjectSettingsInternalsAccessor::resource_path() = old_resource_path;
 }
 
+TEST_CASE("[SceneTree][ProjectSettings] settings_changed signal") {
+	SIGNAL_WATCH(ProjectSettings::get_singleton(), SNAME("settings_changed"));
+
+	ProjectSettings::get_singleton()->set_setting("test_signal_setting", "test_value");
+	MessageQueue::get_singleton()->flush();
+
+	SIGNAL_CHECK("settings_changed", { {} });
+
+	SIGNAL_UNWATCH(ProjectSettings::get_singleton(), SNAME("settings_changed"));
+}
+
+TEST_CASE("[SceneTree][ProjectSettings] setting_changed signal for new setting") {
+	SIGNAL_WATCH(ProjectSettings::get_singleton(), SNAME("setting_changed"));
+
+	String setting_name = "test_new_setting";
+	String new_value = "new_value";
+
+	CHECK_FALSE(ProjectSettings::get_singleton()->has_setting(setting_name));
+
+	SIGNAL_DISCARD("setting_changed");
+
+	ProjectSettings::get_singleton()->set_setting(setting_name, new_value);
+	MessageQueue::get_singleton()->flush();
+
+	Array expected_args;
+	expected_args.push_back(StringName(setting_name));
+	expected_args.push_back(Variant());
+	expected_args.push_back(new_value);
+	Array signal_args;
+	signal_args.push_back(expected_args);
+	SIGNAL_CHECK("setting_changed", signal_args);
+
+	SIGNAL_UNWATCH(ProjectSettings::get_singleton(), SNAME("setting_changed"));
+}
+
+TEST_CASE("[SceneTree][ProjectSettings] setting_changed signal with parameters") {
+	SIGNAL_WATCH(ProjectSettings::get_singleton(), SNAME("setting_changed"));
+
+	String setting_name = "test_old_value_signal";
+	String old_value = "old_value";
+	String new_value = "new_value";
+
+	ProjectSettings::get_singleton()->set_setting(setting_name, old_value);
+	MessageQueue::get_singleton()->flush();
+
+	SIGNAL_DISCARD("setting_changed");
+
+	ProjectSettings::get_singleton()->set_setting(setting_name, new_value);
+	MessageQueue::get_singleton()->flush();
+
+	Array expected_args;
+	expected_args.push_back(StringName(setting_name));
+	expected_args.push_back(old_value);
+	expected_args.push_back(new_value);
+	Array signal_args;
+	signal_args.push_back(expected_args);
+	SIGNAL_CHECK("setting_changed", signal_args);
+
+	SIGNAL_UNWATCH(ProjectSettings::get_singleton(), SNAME("setting_changed"));
+}
+
+TEST_CASE("[SceneTree][ProjectSettings] setting_changed signal for setting removal") {
+	SIGNAL_WATCH(ProjectSettings::get_singleton(), SNAME("setting_changed"));
+
+	String setting_name = "test_removal_setting";
+	String initial_value = "initial_value";
+
+	ProjectSettings::get_singleton()->set_setting(setting_name, initial_value);
+	MessageQueue::get_singleton()->flush();
+	SIGNAL_DISCARD("setting_changed");
+
+	ProjectSettings::get_singleton()->set_setting(setting_name, Variant());
+	MessageQueue::get_singleton()->flush();
+
+	Array expected_args;
+	expected_args.push_back(StringName(setting_name));
+	expected_args.push_back(initial_value);
+	expected_args.push_back(Variant());
+	Array signal_args;
+	signal_args.push_back(expected_args);
+	SIGNAL_CHECK("setting_changed", signal_args);
+
+	SIGNAL_UNWATCH(ProjectSettings::get_singleton(), SNAME("setting_changed"));
+}
+
+TEST_CASE("[SceneTree][ProjectSettings] Both signals emitted together") {
+	SIGNAL_WATCH(ProjectSettings::get_singleton(), SNAME("settings_changed"));
+	SIGNAL_WATCH(ProjectSettings::get_singleton(), SNAME("setting_changed"));
+
+	String setting_name = "test_both_signals";
+	String old_value = "old_both";
+	String new_value = "new_both";
+
+	ProjectSettings::get_singleton()->set_setting(setting_name, old_value);
+	MessageQueue::get_singleton()->flush();
+	SIGNAL_DISCARD("settings_changed");
+	SIGNAL_DISCARD("setting_changed");
+
+	ProjectSettings::get_singleton()->set_setting(setting_name, new_value);
+	MessageQueue::get_singleton()->flush();
+
+	SIGNAL_CHECK("settings_changed", { {} });
+
+	Array expected_args;
+	expected_args.push_back(StringName(setting_name));
+	expected_args.push_back(old_value);
+	expected_args.push_back(new_value);
+	Array signal_args;
+	signal_args.push_back(expected_args);
+	SIGNAL_CHECK("setting_changed", signal_args);
+
+	SIGNAL_UNWATCH(ProjectSettings::get_singleton(), SNAME("settings_changed"));
+	SIGNAL_UNWATCH(ProjectSettings::get_singleton(), SNAME("setting_changed"));
+}
+
+TEST_CASE("[SceneTree][ProjectSettings] No signals when setting same value") {
+	SIGNAL_WATCH(ProjectSettings::get_singleton(), SNAME("settings_changed"));
+	SIGNAL_WATCH(ProjectSettings::get_singleton(), SNAME("setting_changed"));
+
+	String setting_name = "test_same_value";
+	String test_value = "same_value";
+
+	ProjectSettings::get_singleton()->set_setting(setting_name, test_value);
+	MessageQueue::get_singleton()->flush();
+	SIGNAL_DISCARD("settings_changed");
+	SIGNAL_DISCARD("setting_changed");
+
+	// Set the same value again. This should not trigger any signals.
+	ProjectSettings::get_singleton()->set_setting(setting_name, test_value);
+	MessageQueue::get_singleton()->flush();
+
+	SIGNAL_CHECK_FALSE("settings_changed");
+	SIGNAL_CHECK_FALSE("setting_changed");
+
+	SIGNAL_UNWATCH(ProjectSettings::get_singleton(), SNAME("settings_changed"));
+	SIGNAL_UNWATCH(ProjectSettings::get_singleton(), SNAME("setting_changed"));
+}
+
+TEST_CASE("[SceneTree][ProjectSettings] Multiple setting changes in same frame") {
+	SIGNAL_WATCH(ProjectSettings::get_singleton(), SNAME("settings_changed"));
+	SIGNAL_WATCH(ProjectSettings::get_singleton(), SNAME("setting_changed"));
+
+	SIGNAL_DISCARD("settings_changed");
+	SIGNAL_DISCARD("setting_changed");
+
+	// Change multiple settings in the same frame,
+	ProjectSettings::get_singleton()->set_setting("setting_1", "value_1");
+	ProjectSettings::get_singleton()->set_setting("setting_2", "value_2");
+
+	MessageQueue::get_singleton()->flush();
+
+	Array expected_args1;
+	expected_args1.push_back(StringName("setting_1"));
+	expected_args1.push_back(Variant());
+	expected_args1.push_back("value_1");
+
+	Array expected_args2;
+	expected_args2.push_back(StringName("setting_2"));
+	expected_args2.push_back(Variant());
+	expected_args2.push_back("value_2");
+
+	Array all_signal_args;
+	all_signal_args.push_back(expected_args1);
+	all_signal_args.push_back(expected_args2);
+
+	// Should have 2 setting_changed signals.
+	SIGNAL_CHECK("setting_changed", all_signal_args);
+	// Should have 1 settings_changed signal.
+	SIGNAL_CHECK("settings_changed", { {} });
+
+	SIGNAL_UNWATCH(ProjectSettings::get_singleton(), SNAME("settings_changed"));
+	SIGNAL_UNWATCH(ProjectSettings::get_singleton(), SNAME("setting_changed"));
+}
+
+TEST_CASE("[SceneTree][ProjectSettings] Multiple changes to the same setting only fire for actual changes") {
+	SIGNAL_WATCH(ProjectSettings::get_singleton(), SNAME("settings_changed"));
+	SIGNAL_WATCH(ProjectSettings::get_singleton(), SNAME("setting_changed"));
+
+	SIGNAL_DISCARD("settings_changed");
+	SIGNAL_DISCARD("setting_changed");
+
+	// Change setting multiple times in the same frame.
+	ProjectSettings::get_singleton()->set_setting("reused_setting", "value_1");
+	ProjectSettings::get_singleton()->set_setting("reused_setting", "value_2");
+	ProjectSettings::get_singleton()->set_setting("reused_setting", "value_2");
+	ProjectSettings::get_singleton()->set_setting("reused_setting", "value_3");
+
+	MessageQueue::get_singleton()->flush();
+
+	Array expected_args1;
+	expected_args1.push_back(StringName("reused_setting"));
+	expected_args1.push_back(Variant());
+	expected_args1.push_back("value_1");
+
+	Array expected_args2;
+	expected_args2.push_back(StringName("reused_setting"));
+	expected_args2.push_back("value_1");
+	expected_args2.push_back("value_2");
+
+	Array expected_args3;
+	expected_args3.push_back(StringName("reused_setting"));
+	expected_args3.push_back("value_2");
+	expected_args3.push_back("value_3");
+
+	Array all_signal_args;
+	all_signal_args.push_back(expected_args1);
+	all_signal_args.push_back(expected_args2);
+	all_signal_args.push_back(expected_args3);
+
+	// Should have 3 setting_changed signals as the duplicate value_2 should be ignored.
+	SIGNAL_CHECK("setting_changed", all_signal_args);
+	// Should have 1 settings_changed signal.
+	SIGNAL_CHECK("settings_changed", { {} });
+
+	SIGNAL_UNWATCH(ProjectSettings::get_singleton(), SNAME("settings_changed"));
+	SIGNAL_UNWATCH(ProjectSettings::get_singleton(), SNAME("setting_changed"));
+}
+
 } // namespace TestProjectSettings

@@ -46,6 +46,14 @@ class ProjectSettings : public Object {
 	// and will always detect the initial project settings as a "change".
 	uint32_t _version = 1;
 
+	// Pending signal data for the new setting_changed signal
+	struct PendingSignal {
+		StringName name;
+		Variant old_value;
+		Variant new_value;
+	};
+	Vector<PendingSignal> pending_signals;
+
 public:
 	typedef HashMap<String, Variant> CustomMap;
 	static inline const String PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
@@ -119,6 +127,7 @@ protected:
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 	void _queue_changed();
+	void _queue_changed(const StringName &p_name, const Variant &p_old_value, const Variant &p_new_value);
 	void _emit_changed();
 
 	static inline ProjectSettings *singleton = nullptr;
