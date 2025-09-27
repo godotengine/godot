@@ -75,7 +75,7 @@ EditorCommandPalette *EditorInterface::get_command_palette() const {
 	return EditorCommandPalette::get_singleton();
 }
 
-EditorFileSystem *EditorInterface::get_resource_file_system() const {
+EditorFileSystem *EditorInterface::get_resource_filesystem() const {
 	return EditorFileSystem::get_singleton();
 }
 
@@ -794,7 +794,7 @@ void EditorInterface::_bind_methods() {
 	// Editor tools.
 
 	ClassDB::bind_method(D_METHOD("get_command_palette"), &EditorInterface::get_command_palette);
-	ClassDB::bind_method(D_METHOD("get_resource_filesystem"), &EditorInterface::get_resource_file_system);
+	ClassDB::bind_method(D_METHOD("get_resource_filesystem"), &EditorInterface::get_resource_filesystem);
 	ClassDB::bind_method(D_METHOD("get_editor_paths"), &EditorInterface::get_editor_paths);
 	ClassDB::bind_method(D_METHOD("get_resource_previewer"), &EditorInterface::get_resource_previewer);
 	ClassDB::bind_method(D_METHOD("get_selection"), &EditorInterface::get_selection);
