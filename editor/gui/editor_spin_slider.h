@@ -39,9 +39,10 @@ class EditorSpinSlider : public Range {
 
 	String label;
 	String suffix;
-	int updown_offset = -1;
-	bool hover_updown = false;
-	bool mouse_hover = false;
+	Point2 updown_offset = Point2(-1, -1);
+	bool up_icon_hovered = false;
+	bool down_icon_hovered = false;
+	bool updown_pressed = false;
 
 	TextureRect *grabber = nullptr;
 	int grabber_range = 1;
@@ -88,6 +89,7 @@ private:
 	void _value_input_submitted(const String &);
 	void _value_focus_exited();
 	void _value_input_gui_input(const Ref<InputEvent> &p_event);
+	void _update_button_hover_state(const Point2 &p_pos);
 
 	void _evaluate_input_text();
 
@@ -96,8 +98,27 @@ private:
 	void _draw_spin_slider();
 
 	struct ThemeCache {
-		Ref<Texture2D> updown_icon;
-		Ref<Texture2D> updown_disabled_icon;
+		Ref<Texture2D> grabber_icon;
+		Ref<Texture2D> grabber_highlight_icon;
+		Ref<Texture2D> up_icon;
+		Ref<Texture2D> down_icon;
+
+		Ref<Font> font;
+		int font_size = 0;
+
+		int updown_v_separation = 0;
+
+		Color font_color;
+		Color font_uneditable_color;
+		Color label_color;
+		Color read_only_label_color;
+
+		Ref<StyleBox> normal_style;
+		Ref<StyleBox> read_only_style;
+		Ref<StyleBox> focus_style;
+		Ref<StyleBox> label_bg_style;
+		Ref<StyleBox> updown_hovered_style;
+		Ref<StyleBox> updown_pressed_style;
 	} theme_cache;
 
 protected:
