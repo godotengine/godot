@@ -140,12 +140,8 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 	}
 
 	/* Autoloads. */
-	HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
-	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
-		const ProjectSettings::AutoloadInfo &info = E.value;
-		if (info.is_singleton) {
-			highlighter->add_keyword_color(info.name, usertype_color);
-		}
+	for (const StringName &global_variable_name : ProjectSettings::get_singleton()->get_autoload_list(true)) {
+		highlighter->add_keyword_color(global_variable_name, usertype_color);
 	}
 
 	const ScriptLanguage *scr_lang = script_language;

@@ -1119,14 +1119,11 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 	}
 
 	// Autoload singletons
-	HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
-
-	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
-		const ProjectSettings::AutoloadInfo &info = E.value;
-		if (!info.is_singleton || info.path.get_extension().to_lower() != "gd") {
+	for (const StringName &global_variable_name : ProjectSettings::get_singleton()->get_autoload_list(true)) {
+		if (ProjectSettings::get_singleton()->get_autoload_path(global_variable_name).get_extension().to_lower() != "gd") {
 			continue;
 		}
-		ScriptLanguage::CodeCompletionOption option(info.name, ScriptLanguage::CODE_COMPLETION_KIND_CLASS, ScriptLanguage::LOCATION_OTHER_USER_CODE);
+		ScriptLanguage::CodeCompletionOption option(global_variable_name, ScriptLanguage::CODE_COMPLETION_KIND_CLASS, ScriptLanguage::LOCATION_OTHER_USER_CODE);
 		r_result.insert(option.display, option);
 	}
 }
@@ -1606,11 +1603,8 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 		r_result.insert(option.display, option);
 	}
 
-	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
-		if (!E.value.is_singleton) {
-			continue;
-		}
-		ScriptLanguage::CodeCompletionOption option(E.key, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
+	for (const StringName &global_variable_name : ProjectSettings::get_singleton()->get_autoload_list(true)) {
+		ScriptLanguage::CodeCompletionOption option(global_variable_name, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
 		r_result.insert(option.display, option);
 	}
 
@@ -3832,8 +3826,8 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 				if (!for_unique_name) {
 					// Get autoloads.
-					for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
-						String path = "/root/" + E.key;
+					for (const StringName &autoload_name : ProjectSettings::get_singleton()->get_autoload_list(false)) {
+						String path = "/root/" + autoload_name;
 						ScriptLanguage::CodeCompletionOption option(path.quote(quote_style), ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH);
 						options.insert(option.display, option);
 					}
@@ -4483,23 +4477,20 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			}
 
 			if (!is_function) {
-				if (ProjectSettings::get_singleton()->has_autoload(p_symbol)) {
-					const ProjectSettings::AutoloadInfo &autoload = ProjectSettings::get_singleton()->get_autoload(p_symbol);
-					if (autoload.is_singleton) {
-						String scr_path = autoload.path;
-						if (!scr_path.ends_with(".gd")) {
-							// Not a script, try find the script anyway, may have some success.
-							scr_path = scr_path.get_basename() + ".gd";
-						}
+				if (ProjectSettings::get_singleton()->is_autoload_global_variable(p_symbol)) {
+					String scr_path = ProjectSettings::get_singleton()->get_autoload_path(p_symbol);
+					if (!scr_path.ends_with(".gd")) {
+						// Not a script, try find the script anyway, may have some success.
+						scr_path = scr_path.get_basename() + ".gd";
+					}
 
-						if (FileAccess::exists(scr_path)) {
-							r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS;
-							r_result.class_name = p_symbol;
-							r_result.script = ResourceLoader::load(scr_path);
-							r_result.script_path = scr_path;
-							r_result.location = 0;
-							return OK;
-						}
+					if (FileAccess::exists(scr_path)) {
+						r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS;
+						r_result.class_name = p_symbol;
+						r_result.script = ResourceLoader::load(scr_path);
+						r_result.script_path = scr_path;
+						r_result.location = 0;
+						return OK;
 					}
 				}
 
