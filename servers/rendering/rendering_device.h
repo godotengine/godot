@@ -103,6 +103,7 @@ public:
 		ID_TYPE_VERTEX_FORMAT,
 		ID_TYPE_DRAW_LIST,
 		ID_TYPE_COMPUTE_LIST = 4,
+		ID_TYPE_VIDEO_CODING_LIST = 5,
 		ID_TYPE_MAX,
 		ID_BASE_SHIFT = 58, // 5 bits for ID types.
 		ID_MASK = (ID_BASE_SHIFT - 1),
@@ -376,6 +377,7 @@ public:
 		TextureSwizzle swizzle_g = TEXTURE_SWIZZLE_G;
 		TextureSwizzle swizzle_b = TEXTURE_SWIZZLE_B;
 		TextureSwizzle swizzle_a = TEXTURE_SWIZZLE_A;
+		bool use_sampler = false;
 
 		bool operator==(const TextureView &p_other) const {
 			if (format_override != p_other.format_override) {
@@ -793,6 +795,7 @@ public:
 
 	enum StorageBufferUsage {
 		STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT = (1 << 0),
+		STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC = (1 << 1),
 	};
 
 	RID vertex_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p_data = {}, BitField<BufferCreationBits> p_creation_bits = 0);
@@ -982,6 +985,7 @@ public:
 	}
 
 	RID storage_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p_data = {}, BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0);
+	RID storage_buffer_create_video_session(uint32_t p_size_bytes, const VideoProfile &p_profile, Span<uint8_t> p_data = {}, BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0);
 	RID _storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0) {
 		return storage_buffer_create(p_size_bytes, p_data, p_usage, p_creation_bits);
 	}
@@ -1396,6 +1400,30 @@ public:
 	void compute_list_end();
 
 private:
+	/**********************/
+	/**** VIDEO CODING ****/
+	/**********************/
+	struct VideoSession {
+		RDD::VideoSessionID driver_id;
+	};
+
+	RID_Owner<VideoSession, true> video_session_owner;
+
+	RDD::CommandPoolID decode_pool;
+	RDD::CommandBufferID decode_buffer;
+
+public:
+	void video_profile_get_capabilities(const VideoProfile &p_profile);
+	void video_profile_get_format_properties(const VideoProfile &p_profile);
+
+	RID video_session_create(const VideoProfile &p_profile, DataFormat p_image_format, uint32_t p_width, uint32_t p_height, uint32_t p_max_dpb_slots);
+	void video_session_add_h264_parameters(RID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets);
+
+	void video_coding_begin(RID p_video_session, RID p_dpb_texture);
+	void video_coding_decode(RID p_src_buffer, VideoCodingDecodeH264SliceHeader p_std_h264_info, RID p_dst_texture, uint32_t p_array_layer, RID p_dpb_texture);
+	void video_coding_end();
+
+private:
 	/*************************/
 	/**** TRANSFER WORKER ****/
 	/*************************/
@@ -1466,9 +1494,11 @@ private:
 	RDD::CommandQueueFamilyID main_queue_family;
 	RDD::CommandQueueFamilyID transfer_queue_family;
 	RDD::CommandQueueFamilyID present_queue_family;
+	RDD::CommandQueueFamilyID decode_queue_family;
 	RDD::CommandQueueID main_queue;
 	RDD::CommandQueueID transfer_queue;
 	RDD::CommandQueueID present_queue;
+	RDD::CommandQueueID decode_queue;
 
 	/**************************/
 	/**** FRAME MANAGEMENT ****/
