@@ -34,6 +34,7 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_settings.h"
@@ -164,6 +165,12 @@ void DependencyEditor::_update_file() {
 	EditorFileSystem::get_singleton()->update_file(editing);
 }
 
+void DependencyEditor::_notification(int p_what) {
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
+		warning_label->add_theme_color_override(SceneStringName(font_color), get_theme_color("warning_color", EditorStringName(Editor)));
+	}
+}
+
 void DependencyEditor::_update_list() {
 	List<String> deps;
 	ResourceLoader::get_dependencies(editing, &deps, true);
@@ -229,13 +236,17 @@ void DependencyEditor::edit(const String &p_path) {
 	set_title(TTR("Dependencies For:") + " " + p_path.get_file());
 
 	_update_list();
-	popup_centered_ratio(0.4);
 
 	if (EditorNode::get_singleton()->is_scene_open(p_path)) {
-		EditorNode::get_singleton()->show_warning(vformat(TTR("Scene '%s' is currently being edited.\nChanges will only take effect when reloaded."), p_path.get_file()));
+		warning_label->show();
+		warning_label->set_text(vformat(TTR("Scene \"%s\" is currently being edited. Changes will only take effect when reloaded."), p_path.get_file()));
 	} else if (ResourceCache::has(p_path)) {
-		EditorNode::get_singleton()->show_warning(vformat(TTR("Resource '%s' is in use.\nChanges will only take effect when reloaded."), p_path.get_file()));
+		warning_label->show();
+		warning_label->set_text(vformat(TTR("Resource \"%s\" is in use. Changes will only take effect when reloaded."), p_path.get_file()));
+	} else {
+		warning_label->hide();
 	}
+	popup_centered_ratio(0.4);
 }
 
 DependencyEditor::DependencyEditor() {
@@ -273,6 +284,10 @@ DependencyEditor::DependencyEditor() {
 
 	mc->add_child(tree);
 	vb->add_child(mc);
+
+	warning_label = memnew(Label);
+	warning_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
+	vb->add_child(warning_label);
 
 	set_title(TTR("Dependency Editor"));
 	search = memnew(EditorFileDialog);
