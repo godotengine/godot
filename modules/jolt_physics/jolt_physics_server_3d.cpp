@@ -1391,6 +1391,16 @@ real_t JoltPhysicsServer3D::hinge_joint_get_param(RID p_joint, HingeJointParam p
 	return (real_t)hinge_joint->get_param(p_param);
 }
 
+real_t JoltPhysicsServer3D::hinge_joint_get_angle(RID p_joint) const {
+	const JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0.0);
+
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_HINGE, 0.0);
+	const JoltHingeJoint3D *hinge_joint = static_cast<const JoltHingeJoint3D *>(joint);
+
+	return hinge_joint->get_angle();
+}
+
 void JoltPhysicsServer3D::hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_enabled) {
 	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL(joint);

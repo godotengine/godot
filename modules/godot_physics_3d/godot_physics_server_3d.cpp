@@ -1398,6 +1398,14 @@ real_t GodotPhysicsServer3D::hinge_joint_get_param(RID p_joint, HingeJointParam 
 	return hinge_joint->get_param(p_param);
 }
 
+real_t GodotPhysicsServer3D::hinge_joint_get_angle(RID p_joint) const {
+	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0);
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_HINGE, 0);
+	GodotHingeJoint3D *hinge_joint = static_cast<GodotHingeJoint3D *>(joint);
+	return hinge_joint->get_hinge_angle();
+}
+
 void GodotPhysicsServer3D::hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_enabled) {
 	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL(joint);

@@ -810,6 +810,13 @@
 				Creates a 3D heightmap shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the heightmap's data.
 			</description>
 		</method>
+		<method name="hinge_joint_get_angle" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Gets the current hinge joint angle.
+			</description>
+		</method>
 		<method name="hinge_joint_get_flag" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="joint" type="RID" />

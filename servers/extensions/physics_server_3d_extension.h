@@ -500,6 +500,7 @@ public:
 
 	EXBIND3(hinge_joint_set_param, RID, HingeJointParam, real_t)
 	EXBIND2RC(real_t, hinge_joint_get_param, RID, HingeJointParam)
+	EXBIND1RC(real_t, hinge_joint_get_angle, RID)
 
 	EXBIND3(hinge_joint_set_flag, RID, HingeJointFlag, bool)
 	EXBIND2RC(bool, hinge_joint_get_flag, RID, HingeJointFlag)
