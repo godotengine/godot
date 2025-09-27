@@ -32,6 +32,8 @@
 
 #include "core/config/engine.h"
 #include "shader_compile.h"
+#include "core/config/project_settings.h"
+#include "servers/rendering/rendering_device.h"
 
 #include <glslang/Public/ResourceLimits.h>
 #include <glslang/Public/ShaderLang.h>
@@ -102,6 +104,12 @@ Vector<uint8_t> compile_glslang_shader(RenderingDeviceCommons::ShaderStage p_sta
 	std::vector<uint32_t> SpirV;
 	spv::SpvBuildLogger logger;
 	glslang::SpvOptions spvOptions;
+
+	bool optimize = GLOBAL_GET("rendering/shader_compiler/shader_compilation/optimize");
+	if (optimize) {
+		spvOptions.disableOptimizer = false;
+		spvOptions.optimizeSize = true;
+	}
 
 	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
 		spvOptions.generateDebugInfo = true;

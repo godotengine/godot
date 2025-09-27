@@ -1,0 +1,651 @@
+{
+  "copyright" : [
+    "Copyright (c) 2018 The Khronos Group Inc.",
+    "",
+    "Permission is hereby granted, free of charge, to any person obtaining a copy",
+    "of this software and/or associated documentation files (the \"Materials\"),",
+    "to deal in the Materials without restriction, including without limitation",
+    "the rights to use, copy, modify, merge, publish, distribute, sublicense,",
+    "and/or sell copies of the Materials, and to permit persons to whom the",
+    "Materials are furnished to do so, subject to the following conditions:",
+    "",
+    "The above copyright notice and this permission notice shall be included in",
+    "all copies or substantial portions of the Materials.",
+    "",
+    "MODIFICATIONS TO THIS FILE MAY MEAN IT NO LONGER ACCURATELY REFLECTS KHRONOS",
+    "STANDARDS. THE UNMODIFIED, NORMATIVE VERSIONS OF KHRONOS SPECIFICATIONS AND",
+    "HEADER INFORMATION ARE LOCATED AT https://www.khronos.org/registry/ ",
+    "",
+    "THE MATERIALS ARE PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS",
+    "OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,",
+    "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL",
+    "THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER",
+    "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING",
+    "FROM,OUT OF OR IN CONNECTION WITH THE MATERIALS OR THE USE OR OTHER DEALINGS",
+    "IN THE MATERIALS."
+  ],
+  "version" : 200,
+  "revision" : 2,
+  "instructions" : [
+    {
+      "opname" : "DebugInfoNone",
+      "opcode" : 0
+    },
+    {
+      "opname" : "DebugCompilationUnit",
+      "opcode" : 1,
+      "operands" : [
+        { "kind" : "LiteralInteger", "name" : "'Version'" },
+        { "kind" : "LiteralInteger", "name" : "'DWARF Version'" },
+        { "kind" : "IdRef", "name" : "'Source'" },
+        { "kind" : "SourceLanguage", "name" : "'Language'" }
+      ]
+    },
+    {
+      "opname" : "DebugTypeBasic",
+      "opcode" : 2,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Name'" },
+        { "kind" : "IdRef", "name" : "'Size'" },
+        { "kind" : "DebugBaseTypeAttributeEncoding", "name" : "'Encoding'" }
+      ]
+    },
+    {
+      "opname" : "DebugTypePointer",
+      "opcode" : 3,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Base Type'" },
+        { "kind" : "StorageClass", "name" : "'Storage Class'" },
+        { "kind" : "DebugInfoFlags", "name" : "'Flags'" }
+      ]
+    },
+    {
+      "opname" : "DebugTypeQualifier",
+      "opcode" : 4,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Base Type'" },
+        { "kind" : "DebugTypeQualifier", "name" : "'Type Qualifier'" }
+      ]
+    },
+    {
+      "opname" : "DebugTypeArray",
+      "opcode" : 5,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Base Type'" },
+        { "kind" : "IdRef", "name" : "'Component Counts'", "quantifier" : "*" }
+      ]
+    },
+    {
+      "opname" : "DebugTypeVector",
+      "opcode" : 6,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Base Type'" },
+        { "kind" : "LiteralInteger", "name" : "'Component Count'" }
+      ]
+    },
+    {
+      "opname" : "DebugTypedef",
+      "opcode" : 7,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Name'" },
+        { "kind" : "IdRef", "name" : "'Base Type'" },
+        { "kind" : "IdRef", "name" : "'Source'" },
+        { "kind" : "LiteralInteger", "name" : "'Line'" },
+        { "kind" : "LiteralInteger", "name" : "'Column'" },
+        { "kind" : "IdRef", "name" : "'Parent'" }
+      ]
+    },
+    {
+      "opname" : "DebugTypeFunction",
+      "opcode" : 8,
+      "operands" : [
+        { "kind" : "DebugInfoFlags", "name" : "'Flags'" },
+        { "kind" : "IdRef", "name" : "'Return Type'" },
+        { "kind" : "IdRef", "name" : "'Parameter Types'", "quantifier" : "*" }
+      ]
+    },
+    {
+      "opname" : "DebugTypeEnum",
+      "opcode" : 9,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Name'" },
+        { "kind" : "IdRef", "name" : "'Underlying Type'" },
+        { "kind" : "IdRef", "name" : "'Source'" },
+        { "kind" : "LiteralInteger", "name" : "'Line'" },
+        { "kind" : "LiteralInteger", "name" : "'Column'" },
+        { "kind" : "IdRef", "name" : "'Parent'" },
+        { "kind" : "IdRef", "name" : "'Size'" },
+        { "kind" : "DebugInfoFlags", "name" : "'Flags'" },
+        { "kind" : "PairIdRefIdRef", "name" : "'Value, Name, Value, Name, ...'", "quantifier" : "*" }
+      ]
+    },
+    {
+      "opname" : "DebugTypeComposite",
+      "opcode" : 10,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Name'" },
+        { "kind" : "DebugCompositeType", "name" : "'Tag'" },
+        { "kind" : "IdRef", "name" : "'Source'" },
+        { "kind" : "LiteralInteger", "name" : "'Line'" },
+        { "kind" : "LiteralInteger", "name" : "'Column'" },
+        { "kind" : "IdRef", "name" : "'Parent'" },
+        { "kind" : "IdRef", "name" : "'Linkage Name'" },
+        { "kind" : "IdRef", "name" : "'Size'" },
+        { "kind" : "DebugInfoFlags", "name" : "'Flags'" },
+        { "kind" : "IdRef", "name" : "'Members'", "quantifier" : "*" }
+      ]
+    },
+    {
+      "opname" : "DebugTypeMember",
+      "opcode" : 11,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Name'" },
+        { "kind" : "IdRef", "name" : "'Type'" },
+        { "kind" : "IdRef", "name" : "'Source'" },
+        { "kind" : "LiteralInteger", "name" : "'Line'" },
+        { "kind" : "LiteralInteger", "name" : "'Column'" },
+        { "kind" : "IdRef", "name" : "'Parent'" },
+        { "kind" : "IdRef", "name" : "'Offset'" },
+        { "kind" : "IdRef", "name" : "'Size'" },
+        { "kind" : "DebugInfoFlags", "name" : "'Flags'" },
+        { "kind" : "IdRef", "name" : "'Value'", "quantifier" : "?" }
+      ]
+    },
+    {
+      "opname" : "DebugTypeInheritance",
+      "opcode" : 12,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Child'" },
+        { "kind" : "IdRef", "name" : "'Parent'" },
+        { "kind" : "IdRef", "name" : "'Offset'" },
+        { "kind" : "IdRef", "name" : "'Size'" },
+        { "kind" : "DebugInfoFlags", "name" : "'Flags'" }
+      ]
+    },
+    {
+      "opname" : "DebugTypePtrToMember",
+      "opcode" : 13,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Member Type'" },
+        { "kind" : "IdRef", "name" : "'Parent'" }
+      ]
+    },
+    {
+      "opname" : "DebugTypeTemplate",
+      "opcode" : 14,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Target'" },
+        { "kind" : "IdRef", "name" : "'Parameters'", "quantifier" : "*" }
+      ]
+    },
+    {
+      "opname" : "DebugTypeTemplateParameter",
+      "opcode" : 15,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Name'" },
+        { "kind" : "IdRef", "name" : "'Actual Type'" },
+        { "kind" : "IdRef", "name" : "'Value'" },
+        { "kind" : "IdRef", "name" : "'Source'" },
+        { "kind" : "LiteralInteger", "name" : "'Line'" },
+        { "kind" : "LiteralInteger", "name" : "'Column'" }
+      ]
+    },
+    {
+      "opname" : "DebugTypeTemplateTemplateParameter",
+      "opcode" : 16,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Name'" },
+        { "kind" : "IdRef", "name" : "'Template Name'" },
+        { "kind" : "IdRef", "name" : "'Source'" },
+        { "kind" : "LiteralInteger", "name" : "'Line'" },
+        { "kind" : "LiteralInteger", "name" : "'Column'" }
+      ]
+    },
+    {
+      "opname" : "DebugTypeTemplateParameterPack",
+      "opcode" : 17,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Name'" },
+        { "kind" : "IdRef", "name" : "'Source'" },
+        { "kind" : "LiteralInteger", "name" : "'Line'" },
+        { "kind" : "LiteralInteger", "name" : "'Column'" },
+        { "kind" : "IdRef", "name" : "'Template Parameters'", "quantifier" : "*" }
+      ]
+    },
+    {
+      "opname" : "DebugGlobalVariable",
+      "opcode" : 18,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Name'" },
+        { "kind" : "IdRef", "name" : "'Type'" },
+        { "kind" : "IdRef", "name" : "'Source'" },
+        { "kind" : "LiteralInteger", "name" : "'Line'" },
+        { "kind" : "LiteralInteger", "name" : "'Column'" },
+        { "kind" : "IdRef", "name" : "'Parent'" },
+        { "kind" : "IdRef", "name" : "'Linkage Name'" },
+        { "kind" : "IdRef", "name" : "'Variable'" },
+        { "kind" : "DebugInfoFlags", "name" : "'Flags'" },
+        { "kind" : "IdRef", "name" : "'Static Member Declaration'", "quantifier" : "?" }
+      ]
+    },
+    {
+      "opname" : "DebugFunctionDeclaration",
+      "opcode" : 19,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Name'" },
+        { "kind" : "IdRef", "name" : "'Type'" },
+        { "kind" : "IdRef", "name" : "'Source'" },
+        { "kind" : "LiteralInteger", "name" : "'Line'" },
+        { "kind" : "LiteralInteger", "name" : "'Column'" },
+        { "kind" : "IdRef", "name" : "'Parent'" },
+        { "kind" : "IdRef", "name" : "'Linkage Name'" },
+        { "kind" : "DebugInfoFlags", "name" : "'Flags'" }
+      ]
+    },
+    {
+      "opname" : "DebugFunction",
+      "opcode" : 20,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Name'" },
+        { "kind" : "IdRef", "name" : "'Type'" },
+        { "kind" : "IdRef", "name" : "'Source'" },
+        { "kind" : "LiteralInteger", "name" : "'Line'" },
+        { "kind" : "LiteralInteger", "name" : "'Column'" },
+        { "kind" : "IdRef", "name" : "'Parent'" },
+        { "kind" : "IdRef", "name" : "'Linkage Name'" },
+        { "kind" : "DebugInfoFlags", "name" : "'Flags'" },
+        { "kind" : "LiteralInteger", "name" : "'Scope Line'" },
+        { "kind" : "IdRef", "name" : "'Function'" },
+        { "kind" : "IdRef", "name" : "'Declaration'", "quantifier" : "?" }
+      ]
+    },
+    {
+      "opname" : "DebugLexicalBlock",
+      "opcode" : 21,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Source'" },
+        { "kind" : "LiteralInteger", "name" : "'Line'" },
+        { "kind" : "LiteralInteger", "name" : "'Column'" },
+        { "kind" : "IdRef", "name" : "'Parent'" },
+        { "kind" : "IdRef", "name" : "'Name'", "quantifier" : "?" }
+      ]
+    },
+    {
+      "opname" : "DebugLexicalBlockDiscriminator",
+      "opcode" : 22,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Source'" },
+        { "kind" : "LiteralInteger", "name" : "'Discriminator'" },
+        { "kind" : "IdRef", "name" : "'Parent'" }
+      ]
+    },
+    {
+      "opname" : "DebugScope",
+      "opcode" : 23,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Scope'" },
+        { "kind" : "IdRef", "name" : "'Inlined At'", "quantifier" : "?" }
+      ]
+    },
+    {
+      "opname" : "DebugNoScope",
+      "opcode" : 24
+    },
+    {
+      "opname" : "DebugInlinedAt",
+      "opcode" : 25,
+      "operands" : [
+        { "kind" : "LiteralInteger", "name" : "'Line'" },
+        { "kind" : "IdRef", "name" : "'Scope'" },
+        { "kind" : "IdRef", "name" : "'Inlined'", "quantifier" : "?" }
+      ]
+    },
+    {
+      "opname" : "DebugLocalVariable",
+      "opcode" : 26,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Name'" },
+        { "kind" : "IdRef", "name" : "'Type'" },
+        { "kind" : "IdRef", "name" : "'Source'" },
+        { "kind" : "LiteralInteger", "name" : "'Line'" },
+        { "kind" : "LiteralInteger", "name" : "'Column'" },
+        { "kind" : "IdRef", "name" : "'Parent'" },
+        { "kind" : "DebugInfoFlags", "name" : "'Flags'" },
+        { "kind" : "LiteralInteger", "name" : "'Arg Number'", "quantifier" : "?" }
+      ]
+    },
+    {
+      "opname" : "DebugInlinedVariable",
+      "opcode" : 27,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Variable'" },
+        { "kind" : "IdRef", "name" : "'Inlined'" }
+      ]
+    },
+    {
+      "opname" : "DebugDeclare",
+      "opcode" : 28,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Local Variable'" },
+        { "kind" : "IdRef", "name" : "'Variable'" },
+        { "kind" : "IdRef", "name" : "'Expression'" }
+      ]
+    },
+    {
+      "opname" : "DebugValue",
+      "opcode" : 29,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Local Variable'" },
+        { "kind" : "IdRef", "name" : "'Value'" },
+        { "kind" : "IdRef", "name" : "'Expression'" },
+        { "kind" : "IdRef", "name" : "'Indexes'", "quantifier" : "*" }
+      ]
+    },
+    {
+      "opname" : "DebugOperation",
+      "opcode" : 30,
+      "operands" : [
+        { "kind" : "DebugOperation", "name" : "'OpCode'" },
+        { "kind" : "LiteralInteger", "name" : "'Operands ...'", "quantifier" : "*" }
+      ]
+    },
+    {
+      "opname" : "DebugExpression",
+      "opcode" : 31,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Operands ...'", "quantifier" : "*" }
+      ]
+    },
+    {
+      "opname" : "DebugMacroDef",
+      "opcode" : 32,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Source'" },
+        { "kind" : "LiteralInteger", "name" : "'Line'" },
+        { "kind" : "IdRef", "name" : "'Name'" },
+        { "kind" : "IdRef", "name" : "'Value'", "quantifier" : "?" }
+      ]
+    },
+    {
+      "opname" : "DebugMacroUndef",
+      "opcode" : 33,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Source'" },
+        { "kind" : "LiteralInteger", "name" : "'Line'" },
+        { "kind" : "IdRef", "name" : "'Macro'" }
+      ]
+    },
+    {
+      "opname" : "DebugImportedEntity",
+      "opcode" : 34,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Name'" },
+        { "kind" : "DebugImportedEntity", "name" : "'Tag'" },
+        { "kind" : "IdRef", "name" : "'Source'" },
+        { "kind" : "IdRef", "name" : "'Entity'" },
+        { "kind" : "LiteralInteger", "name" : "'Line'" },
+        { "kind" : "LiteralInteger", "name" : "'Column'" },
+        { "kind" : "IdRef", "name" : "'Parent'" }
+      ]
+    },
+    {
+      "opname" : "DebugSource",
+      "opcode" : 35,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'File'" },
+        { "kind" : "IdRef", "name" : "'Text'", "quantifier" : "?" }
+      ]
+    },
+    {
+      "opname" : "DebugModuleINTEL",
+      "opcode" : 36,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Name'" },
+        { "kind" : "IdRef", "name" : "'Source'" },
+        { "kind" : "IdRef", "name" : "'Parent'" },
+        { "kind" : "LiteralInteger", "name" : "'Line'" },
+        { "kind" : "IdRef", "name" : "'ConfigurationMacros'" },
+        { "kind" : "IdRef", "name" : "'IncludePath'" },
+        { "kind" : "IdRef", "name" : "'APINotesFile'" },
+        { "kind" : "LiteralInteger", "name" : "'IsDeclaration'" }
+      ],
+      "capability" : "DebugInfoModuleINTEL"
+    }
+  ],
+  "operand_kinds" : [
+    {
+      "category" : "BitEnum",
+      "kind" : "DebugInfoFlags",
+      "enumerants" : [
+        {
+          "enumerant" : "None",
+          "value" : "0x0000"
+        },
+        {
+          "enumerant" : "FlagIsProtected",
+          "value" : "0x01"
+        },
+        {
+          "enumerant" : "FlagIsPrivate",
+          "value" : "0x02"
+        },
+        {
+          "enumerant" : "FlagIsPublic",
+          "value" : "0x03"
+        },
+        {
+          "enumerant" : "FlagIsLocal",
+          "value" : "0x04"
+        },
+        {
+          "enumerant" : "FlagIsDefinition",
+          "value" : "0x08"
+        },
+        {
+          "enumerant" : "FlagFwdDecl",
+          "value" : "0x10"
+        },
+        {
+          "enumerant" : "FlagArtificial",
+          "value" : "0x20"
+        },
+        {
+          "enumerant" : "FlagExplicit",
+          "value" : "0x40"
+        },
+        {
+          "enumerant" : "FlagPrototyped",
+          "value" : "0x80"
+        },
+        {
+          "enumerant" : "FlagObjectPointer",
+          "value" : "0x100"
+        },
+        {
+          "enumerant" : "FlagStaticMember",
+          "value" : "0x200"
+        },
+        {
+          "enumerant" : "FlagIndirectVariable",
+          "value" : "0x400"
+        },
+        {
+          "enumerant" : "FlagLValueReference",
+          "value" : "0x800"
+        },
+        {
+          "enumerant" : "FlagRValueReference",
+          "value" : "0x1000"
+        },
+        {
+          "enumerant" : "FlagIsOptimized",
+          "value" : "0x2000"
+        },
+        {
+          "enumerant" : "FlagIsEnumClass",
+          "value" : "0x4000"
+        },
+        {
+          "enumerant" : "FlagTypePassByValue",
+          "value" : "0x8000"
+        },
+        {
+          "enumerant" : "FlagTypePassByReference",
+          "value" : "0x10000"
+        }
+      ]
+    },
+    {
+      "category" : "ValueEnum",
+      "kind" : "DebugBaseTypeAttributeEncoding",
+      "enumerants" : [
+        {
+          "enumerant" : "Unspecified",
+          "value" : "0"
+        },
+        {
+          "enumerant" : "Address",
+          "value" : "1"
+        },
+        {
+          "enumerant" : "Boolean",
+          "value" : "2"
+        },
+        {
+          "enumerant" : "Float",
+          "value" : "3"
+        },
+        {
+          "enumerant" : "Signed",
+          "value" : "4"
+        },
+        {
+          "enumerant" : "SignedChar",
+          "value" : "5"
+        },
+        {
+          "enumerant" : "Unsigned",
+          "value" : "6"
+        },
+        {
+          "enumerant" : "UnsignedChar",
+          "value" : "7"
+        }
+      ]
+    },
+    {
+      "category" : "ValueEnum",
+      "kind" : "DebugCompositeType",
+      "enumerants" : [
+        {
+          "enumerant" : "Class",
+          "value" : "0"
+        },
+        {
+          "enumerant" : "Structure",
+          "value" : "1"
+        },
+        {
+          "enumerant" : "Union",
+          "value" : "2"
+        }
+      ]
+    },
+    {
+      "category" : "ValueEnum",
+      "kind" : "DebugTypeQualifier",
+      "enumerants" : [
+        {
+          "enumerant" : "ConstType",
+          "value" : "0"
+        },
+        {
+          "enumerant" : "VolatileType",
+          "value" : "1"
+        },
+        {
+          "enumerant" : "RestrictType",
+          "value" : "2"
+        },
+        {
+          "enumerant" : "AtomicType",
+          "value" : "3"
+        }
+      ]
+    },
+    {
+      "category" : "ValueEnum",
+      "kind" : "DebugOperation",
+      "enumerants" : [
+        {
+          "enumerant" : "Deref",
+          "value" : "0"
+        },
+        {
+          "enumerant" : "Plus",
+          "value" : "1"
+        },
+        {
+          "enumerant" : "Minus",
+          "value" : "2"
+        },
+        {
+          "enumerant" : "PlusUconst",
+          "value" : "3",
+          "parameters" : [
+             { "kind" : "LiteralInteger" }
+          ]
+        },
+        {
+          "enumerant" : "BitPiece",
+          "value" : "4",
+          "parameters" : [
+             { "kind" : "LiteralInteger" },
+             { "kind" : "LiteralInteger" }
+          ]
+        },
+        {
+          "enumerant" : "Swap",
+          "value" : "5"
+        },
+        {
+          "enumerant" : "Xderef",
+          "value" : "6"
+        },
+        {
+          "enumerant" : "StackValue",
+          "value" : "7"
+        },
+        {
+          "enumerant" : "Constu",
+          "value" : "8",
+          "parameters" : [
+             { "kind" : "LiteralInteger" }
+          ]
+        },
+        {
+          "enumerant" : "Fragment",
+          "value" : "9",
+          "parameters" : [
+             { "kind" : "LiteralInteger" },
+             { "kind" : "LiteralInteger" }
+          ]
+        }
+      ]
+    },
+    {
+      "category" : "ValueEnum",
+      "kind" : "DebugImportedEntity",
+      "enumerants" : [
+        {
+          "enumerant" : "ImportedModule",
+          "value" : "0"
+        },
+        {
+          "enumerant" : "ImportedDeclaration",
+          "value" : "1"
+	}
+      ]
+    }
+  ]
+}
