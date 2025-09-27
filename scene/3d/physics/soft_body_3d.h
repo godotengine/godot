@@ -183,6 +183,7 @@ public:
 	Vector3 get_point_transform(int p_point_index);
 
 	void pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath(), int p_insert_at = -1);
+	void pin_overlapping_points(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath(), int p_insert_at = -1);
 	bool is_point_pinned(int p_point_index) const;
 
 	void _pin_point_deferred(int p_point_index, bool pin, const NodePath p_spatial_attachment_path);
