@@ -131,7 +131,7 @@ Variant InstanceUniforms::get_default(const StringName &p_name) const {
 }
 
 void InstanceUniforms::get_property_list(List<PropertyInfo> &r_parameters) const {
-	Vector<StringName> names;
+	LocalVector<StringName> names;
 
 	// Invalid items won't be saved, but will remain in memory in case of shader compilation failure.
 	for (const KeyValue<StringName, Item> &kv : _parameters) {
