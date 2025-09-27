@@ -4245,12 +4245,12 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		// Populate signals
 
-		const HashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
+		const HashMap<StringName, MethodInfo *> &signal_map = class_info->signal_map;
 
-		for (const KeyValue<StringName, MethodInfo> &E : signal_map) {
+		for (const KeyValue<StringName, MethodInfo *> &E : signal_map) {
 			SignalInterface isignal;
 
-			const MethodInfo &method_info = E.value;
+			const MethodInfo &method_info = *E.value;
 
 			isignal.name = method_info.name;
 			isignal.cname = method_info.name;
@@ -4352,11 +4352,11 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			const List<StringName> &enum_constants = E.value.constants;
 			for (const StringName &constant_cname : enum_constants) {
 				String constant_name = constant_cname.operator String();
-				int64_t *value = class_info->constant_map.getptr(constant_cname);
+				int64_t **value = class_info->constant_map.getptr(constant_cname);
 				ERR_FAIL_NULL_V(value, false);
 				constants.erase(constant_name);
 
-				ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
+				ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), **value);
 
 				iconstant.const_doc = nullptr;
 				for (int i = 0; i < itype.class_doc->constants.size(); i++) {
@@ -4397,7 +4397,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		}
 
 		for (const String &constant_name : constants) {
-			int64_t *value = class_info->constant_map.getptr(StringName(constant_name));
+			int64_t **value = class_info->constant_map.getptr(StringName(constant_name));
 			ERR_FAIL_NULL_V(value, false);
 
 			String constant_proxy_name = snake_to_pascal_case(constant_name, true);
@@ -4408,7 +4408,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				constant_proxy_name += "Constant";
 			}
 
-			ConstantInterface iconstant(constant_name, constant_proxy_name, *value);
+			ConstantInterface iconstant(constant_name, constant_proxy_name, **value);
 
 			iconstant.const_doc = nullptr;
 			for (int i = 0; i < itype.class_doc->constants.size(); i++) {
