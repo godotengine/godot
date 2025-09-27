@@ -795,6 +795,9 @@
 		<member name="filesystem/quick_open_dialog/include_addons" type="bool" setter="" getter="">
 			If [code]true[/code], results will include files located in the [code]addons[/code] folder.
 		</member>
+		<member name="filesystem/quick_open_dialog/instant_preview" type="bool" setter="" getter="">
+			If [code]true[/code], highlighting a resource will preview it quickly without confirming the selection or closing the dialog.
+		</member>
 		<member name="filesystem/quick_open_dialog/max_fuzzy_misses" type="int" setter="" getter="">
 			The number of missed query characters allowed in a match when fuzzy matching is enabled. For example, with the default value of [code]2[/code], [code]"normal"[/code] would match [code]"narmal"[/code] and [code]"norma"[/code] but not [code]"nor"[/code].
 		</member>
