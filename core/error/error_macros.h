@@ -344,7 +344,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * If it is null, the current function returns.
  */
 #define ERR_FAIL_NULL(m_param)                                                                          \
+	GODOT_DEPRECATED_BEGIN                                                                              \
 	if (unlikely(m_param == nullptr)) {                                                                 \
+		GODOT_DEPRECATED_END                                                                            \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null."); \
 		return;                                                                                         \
 	} else                                                                                              \
@@ -355,7 +357,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * If it is null, prints `m_msg` and the current function returns.
  */
 #define ERR_FAIL_NULL_MSG(m_param, m_msg)                                                                      \
+	GODOT_DEPRECATED_BEGIN                                                                                     \
 	if (unlikely(m_param == nullptr)) {                                                                        \
+		GODOT_DEPRECATED_END                                                                                   \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null.", m_msg); \
 		return;                                                                                                \
 	} else                                                                                                     \
@@ -365,7 +369,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * Same as `ERR_FAIL_NULL_MSG` but also notifies the editor.
  */
 #define ERR_FAIL_NULL_EDMSG(m_param, m_msg)                                                                          \
+	GODOT_DEPRECATED_BEGIN                                                                                           \
 	if (unlikely(m_param == nullptr)) {                                                                              \
+		GODOT_DEPRECATED_END                                                                                         \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null.", m_msg, true); \
 		return;                                                                                                      \
 	} else                                                                                                           \
@@ -379,7 +385,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * If it is null, the current function returns `m_retval`.
  */
 #define ERR_FAIL_NULL_V(m_param, m_retval)                                                              \
+	GODOT_DEPRECATED_BEGIN                                                                              \
 	if (unlikely(m_param == nullptr)) {                                                                 \
+		GODOT_DEPRECATED_END                                                                            \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null."); \
 		return m_retval;                                                                                \
 	} else                                                                                              \
@@ -390,7 +398,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * If it is null, prints `m_msg` and the current function returns `m_retval`.
  */
 #define ERR_FAIL_NULL_V_MSG(m_param, m_retval, m_msg)                                                          \
+	GODOT_DEPRECATED_BEGIN                                                                                     \
 	if (unlikely(m_param == nullptr)) {                                                                        \
+		GODOT_DEPRECATED_END                                                                                   \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null.", m_msg); \
 		return m_retval;                                                                                       \
 	} else                                                                                                     \
@@ -400,7 +410,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * Same as `ERR_FAIL_NULL_V_MSG` but also notifies the editor.
  */
 #define ERR_FAIL_NULL_V_EDMSG(m_param, m_retval, m_msg)                                                              \
+	GODOT_DEPRECATED_BEGIN                                                                                           \
 	if (unlikely(m_param == nullptr)) {                                                                              \
+		GODOT_DEPRECATED_END                                                                                         \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null.", m_msg, true); \
 		return m_retval;                                                                                             \
 	} else                                                                                                           \

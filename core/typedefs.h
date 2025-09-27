@@ -439,3 +439,12 @@ inline constexpr bool is_zero_constructible_v = is_zero_constructible<T>::value;
 #define GODOT_MSVC_WARNING_POP
 #define GODOT_MSVC_WARNING_PUSH_AND_IGNORE(m_warning)
 #endif
+
+#define GODOT_DEPRECATED_BEGIN                                       \
+	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") \
+	GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")   \
+	GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4996)
+#define GODOT_DEPRECATED_END \
+	GODOT_CLANG_WARNING_POP  \
+	GODOT_GCC_WARNING_POP    \
+	GODOT_MSVC_WARNING_POP
