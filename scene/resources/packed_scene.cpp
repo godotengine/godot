@@ -630,6 +630,9 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		}
 
 		cfrom->connect(snames[c.signal], callable, CONNECT_PERSIST | c.flags | (p_edit_state == GEN_EDIT_STATE_MAIN ? 0 : CONNECT_INHERITED));
+
+		NODE_FROM_ID(conn_owner, 0); // root node of scene
+		cfrom->add_connection_owner(conn_owner, cto, snames[c.signal], callable);
 	}
 
 	//Node *s = ret_nodes[0];
@@ -1118,7 +1121,16 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 				base_callable = c.callable;
 			}
 
-			//find if this connection already exists
+			// don't save connection if it is part of an instance or inheritance
+			//
+			// Check 1 only works in the editor.
+			// Check 2 works in the editor and when packing from tool script or during game
+			//
+			// But check 2 doesn't work in the case when the root node is inherited and a
+			// signal comes from the base scene. If the check is modified to detect this case
+			// check 1 can be deleted.
+
+			// Check for existence 1
 			Node *common_parent = target->find_common_parent_with(p_node);
 
 			ERR_CONTINUE(!common_parent);
@@ -1139,7 +1151,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 					ps = common_parent->get_scene_instance_state();
 				}
 
-				if (ps.is_valid()) {
+				if (ps.is_valid()) { // this scene is being packed by the editor
 					NodePath signal_from = common_parent->get_path_to(p_node);
 					NodePath signal_to = common_parent->get_path_to(target);
 
@@ -1148,7 +1160,6 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 						break;
 					}
 				}
-
 				if (common_parent == p_owner) {
 					break;
 				} else {
@@ -1160,51 +1171,12 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 				continue;
 			}
 
-			{
-				Node *nl = p_node;
+			// Check for existence 2
+			Node *conn_owner = p_node->get_connection_owner(target, E.name, base_callable);
+			bool owned_by_main_scene = (conn_owner == p_owner || conn_owner == nullptr); // nullptr means the connection was just added and wasn't connected during node instantiation.
 
-				bool exists2 = false;
-
-				while (nl) {
-					if (nl == p_owner) {
-						Ref<SceneState> state = nl->get_scene_inherited_state();
-						if (state.is_valid()) {
-							int from_node = state->find_node_by_path(nl->get_path_to(p_node));
-							int to_node = state->find_node_by_path(nl->get_path_to(target));
-
-							if (from_node >= 0 && to_node >= 0) {
-								//this one has state for this node, save
-								if (state->is_connection(from_node, c.signal.get_name(), to_node, base_callable.get_method())) {
-									exists2 = true;
-									break;
-								}
-							}
-						}
-
-						nl = nullptr;
-					} else {
-						if (nl->is_instance()) {
-							Ref<SceneState> state = nl->get_scene_instance_state();
-							if (state.is_valid()) {
-								int from_node = state->find_node_by_path(nl->get_path_to(p_node));
-								int to_node = state->find_node_by_path(nl->get_path_to(target));
-
-								if (from_node >= 0 && to_node >= 0) {
-									//this one has state for this node, save
-									if (state->is_connection(from_node, c.signal.get_name(), to_node, base_callable.get_method())) {
-										exists2 = true;
-										break;
-									}
-								}
-							}
-						}
-						nl = nl->get_owner();
-					}
-				}
-
-				if (exists2) {
-					continue;
-				}
+			if (!owned_by_main_scene) {
+				continue;
 			}
 
 			int src_id;
