@@ -394,6 +394,10 @@ float GeometryInstance3D::get_lod_bias() const {
 }
 
 void GeometryInstance3D::set_instance_shader_parameter(const StringName &p_name, const Variant &p_value) {
+	if (!instance_shader_parameters.has(p_name)) {
+		ERR_PRINT_ED(vformat("Instance shader parameter \'%s\' does not exist in base %s.", p_name, get_class_name()));
+	}
+
 	if (p_value.get_type() == Variant::NIL) {
 		Variant def_value = RS::get_singleton()->instance_geometry_get_shader_parameter_default_value(get_instance(), p_name);
 		RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_name, def_value);
