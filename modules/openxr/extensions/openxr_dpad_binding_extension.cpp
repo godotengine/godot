@@ -121,7 +121,7 @@ OpenXRDpadBindingModifier::OpenXRDpadBindingModifier() {
 	dpad_bindings->isSticky = false;
 }
 
-void OpenXRDpadBindingModifier::set_action_set(const Ref<OpenXRActionSet> p_action_set) {
+void OpenXRDpadBindingModifier::set_action_set(const Ref<OpenXRActionSet> &p_action_set) {
 	action_set = p_action_set;
 }
 
