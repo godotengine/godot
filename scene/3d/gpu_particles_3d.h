@@ -72,6 +72,7 @@ private:
 	double speed_scale = 0.0;
 	AABB visibility_aabb;
 	bool local_coords = false;
+	bool local_trails = false;
 	int fixed_fps = 0;
 	bool fractional_delta = false;
 	bool interpolate = true;
@@ -125,6 +126,7 @@ public:
 	void set_randomness_ratio(real_t p_ratio);
 	void set_visibility_aabb(const AABB &p_aabb);
 	void set_use_local_coordinates(bool p_enable);
+	void set_local_trails(bool p_enable);
 	void set_process_material(const Ref<Material> &p_material);
 	void set_speed_scale(double p_scale);
 	void set_collision_base_size(real_t p_ratio);
@@ -142,6 +144,7 @@ public:
 	real_t get_randomness_ratio() const;
 	AABB get_visibility_aabb() const;
 	bool get_use_local_coordinates() const;
+	bool get_local_trails() const;
 	Ref<Material> get_process_material() const;
 	double get_speed_scale() const;
 	real_t get_collision_base_size() const;

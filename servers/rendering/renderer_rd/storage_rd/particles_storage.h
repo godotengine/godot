@@ -171,6 +171,7 @@ private:
 		bool restart_request = false;
 		AABB custom_aabb = AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8));
 		bool use_local_coords = false;
+		bool local_trails = false;
 		bool has_collision_cache = false;
 
 		bool has_sdf_collision = false;
@@ -283,6 +284,10 @@ private:
 			uint32_t sub_emitter_mode;
 			uint32_t can_emit;
 			uint32_t trail_pass;
+			uint32_t local_trails;
+			uint32_t pad1; // Padding required to offset data to multiple of 16 bytes.
+			uint32_t pad2;
+			uint32_t pad3;
 		};
 
 		ParticlesShaderRD shader;
@@ -450,6 +455,7 @@ public:
 	virtual void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) override;
 	virtual void particles_set_speed_scale(RID p_particles, double p_scale) override;
 	virtual void particles_set_use_local_coordinates(RID p_particles, bool p_enable) override;
+	virtual void particles_set_local_trails(RID p_particles, bool p_enable) override;
 	virtual void particles_set_process_material(RID p_particles, RID p_material) override;
 	virtual RID particles_get_process_material(RID p_particles) const override;
 
