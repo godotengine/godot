@@ -140,6 +140,10 @@ void VideoStreamH264::parse_container_metadata(const uint8_t *p_stream, uint64_t
 			parse_nal_unit(sps_ext_size, true);
 			src = start + sps_ext_size;
 		}
+	} else {
+		video_profile.chroma_subsampling = RD::CHROMA_SUBSAMPLING_420;
+		video_profile.luma_bit_depth = 8;
+		video_profile.chroma_bit_depth = 8;
 	}
 }
 
@@ -309,6 +313,15 @@ RD::VideoCodingH264SequenceParameterSet VideoStreamH264::parse_sequence_paramete
 				}
 			}
 		}
+	} else {
+		sequence_parameter_set.chroma_format_idc = RD::CHROMA_SUBSAMPLING_420;
+		sequence_parameter_set.separate_colour_plane_flag = false;
+
+		sequence_parameter_set.bit_depth_luma_minus8 = 0;
+		sequence_parameter_set.bit_depth_chroma_minus8 = 0;
+
+		sequence_parameter_set.qpprime_y_zero_transform_bypass_flag = false;
+		sequence_parameter_set.seq_scaling_matrix_present_flag = false;
 	}
 
 	sequence_parameter_set.log2_max_frame_num_minus4 = read_ue();
@@ -568,7 +581,7 @@ RD::VideoCodingDecodeH264SliceHeader VideoStreamH264::parse_slice_header(uint64_
 
 	uint64_t pic_order_cnt_msb = 0;
 	uint32_t pic_order_cnt_lsb = 0;
-	uint64_t max_pic_order_cnt_lsb = 1 << (active_sps.log2_max_pic_order_cnt_lsb_minus4 + 4);
+	uint64_t max_pic_order_cnt_lsb = 1ULL << (active_sps.log2_max_pic_order_cnt_lsb_minus4 + 4);
 
 	if (active_sps.pic_order_cnt_type == RD::VIDEO_CODING_H264_POC_TYPE_0) {
 		uint64_t pic_order_cnt_lsb_size = active_sps.log2_max_pic_order_cnt_lsb_minus4 + 4;
@@ -585,6 +598,12 @@ RD::VideoCodingDecodeH264SliceHeader VideoStreamH264::parse_slice_header(uint64_
 			pic_order_cnt_msb = prev_pic_order_cnt_msb - max_pic_order_cnt_lsb;
 		} else {
 			pic_order_cnt_msb = prev_pic_order_cnt_msb;
+		}
+	} else if (active_sps.pic_order_cnt_type == RD::VIDEO_CODING_H264_POC_TYPE_1 && !active_sps.delta_pic_order_always_zero_flag) {
+		read_se(); // delta_pic_order_cnt[0]
+
+		if (active_pps.bottom_field_pic_order_in_frame_present_flag && !slice_header.field_pic_flag) {
+			read_se(); // delta_pic_order_cnt[1]
 		}
 	}
 
@@ -638,7 +657,7 @@ uint64_t VideoStreamH264::read_bits(uint8_t p_amount) {
 
 	uint64_t value = 0;
 	for (uint8_t offset = start + 1; offset > end; offset--) {
-		value |= encoded & (1 << (offset - 1));
+		value |= encoded & (1ULL << (offset - 1));
 	}
 
 	value >>= end;
@@ -652,11 +671,11 @@ uint64_t VideoStreamH264::read_ue() {
 	}
 
 	uint64_t rest = read_bits(bits);
-	return (1 << bits) + rest - 1;
+	return (1ULL << bits) + rest - 1;
 }
 
 int64_t VideoStreamH264::read_se() {
-	uint64_t code = read_ue();
+	int64_t code = read_ue();
 	if (code % 2 == 0) {
 		return -code / 2;
 	} else {
