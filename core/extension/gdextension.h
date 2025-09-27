@@ -176,7 +176,6 @@ public:
 	static void initialize_gdextensions();
 	static void finalize_gdextensions();
 
-	GDExtension();
 	~GDExtension();
 };
 
