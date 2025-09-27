@@ -516,6 +516,20 @@
 				Returns the mouse's position in this [CanvasItem] using the local coordinate system of this [CanvasItem].
 			</description>
 		</method>
+		<method name="get_distance_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="target" type="CanvasItem" />
+			<description>
+				Returns the distance between this [CanvasItem] and [param target].
+			</description>
+		</method>
+		<method name="get_distance_squared_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="target" type="CanvasItem" />
+			<description>
+				Returns the squared distance between this [CanvasItem] and [param target].
+			</description>
+		</method>
 		<method name="get_screen_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>

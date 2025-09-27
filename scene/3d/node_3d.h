@@ -265,6 +265,9 @@ public:
 	Vector3 get_rotation_degrees() const;
 	Vector3 get_scale() const;
 
+	real_t get_distance_to(Node3D *p_target) const;
+	real_t get_distance_squared_to(Node3D *p_target) const;
+
 	Vector3 get_global_position() const;
 	Basis get_global_basis() const;
 	Vector3 get_global_rotation() const;

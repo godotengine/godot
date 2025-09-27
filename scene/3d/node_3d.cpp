@@ -855,6 +855,18 @@ Vector3 Node3D::get_scale() const {
 	return data.scale;
 }
 
+real_t Node3D::get_distance_to(Node3D *p_target) const {
+	ERR_READ_THREAD_GUARD_V(0);
+	ERR_FAIL_NULL_V(p_target, 0);
+	return get_global_position().distance_to(p_target->get_global_position());
+}
+
+real_t Node3D::get_distance_squared_to(Node3D *p_target) const {
+	ERR_READ_THREAD_GUARD_V(0);
+	ERR_FAIL_NULL_V(p_target, 0);
+	return get_global_position().distance_squared_to(p_target->get_global_position());
+}
+
 void Node3D::update_gizmos() {
 	ERR_THREAD_GUARD;
 #ifdef TOOLS_ENABLED
@@ -1445,7 +1457,8 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_quaternion"), &Node3D::get_quaternion);
 	ClassDB::bind_method(D_METHOD("set_basis", "basis"), &Node3D::set_basis);
 	ClassDB::bind_method(D_METHOD("get_basis"), &Node3D::get_basis);
-
+	ClassDB::bind_method(D_METHOD("get_distance_to", "target"), &Node3D::get_distance_to);
+	ClassDB::bind_method(D_METHOD("get_distance_squared_to", "target"), &Node3D::get_distance_squared_to);
 	ClassDB::bind_method(D_METHOD("set_global_transform", "global"), &Node3D::set_global_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &Node3D::get_global_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform_interpolated"), &Node3D::get_global_transform_interpolated);

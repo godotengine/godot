@@ -266,6 +266,21 @@
 				Returns the [param global_point] converted from global space to this node's local space. This is the opposite of [method to_global].
 			</description>
 		</method>
+		<method name="get_distance_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="target" type="Node3D" />
+			<description>
+				Returns the distance between this [Node3D] and [param target].
+			</description>
+		</method>
+		<method name="get_distance_squared_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="target" type="Node3D" />
+			<description>
+				Returns the squared distance between this [Node3D] and [param target].
+				Wrapper for [code]global_position.distance_squared_to(target.global_position)[/code]
+			</description>
+		</method>
 		<method name="translate">
 			<return type="void" />
 			<param index="0" name="offset" type="Vector3" />

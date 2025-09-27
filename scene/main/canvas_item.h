@@ -390,6 +390,9 @@ public:
 	Vector2 get_global_mouse_position() const;
 	Vector2 get_local_mouse_position() const;
 
+	real_t get_distance_to(CanvasItem *p_target) const;
+	real_t get_distance_squared_to(CanvasItem *p_target) const;
+
 	void set_notify_local_transform(bool p_enable);
 	bool is_local_transform_notification_enabled() const;
 
