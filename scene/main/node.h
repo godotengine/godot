@@ -160,6 +160,13 @@ private:
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->data.physics_process_priority == p_a->data.physics_process_priority ? p_b->is_greater_than(p_a) : p_b->data.physics_process_priority > p_a->data.physics_process_priority; }
 	};
 
+	struct ConnectionOwnerData {
+		// Data to identify connection
+		StringName sname;
+		Callable callable;
+		Node *to_node;
+	};
+
 	// This Data struct is to avoid namespace pollution in derived classes.
 	struct Data {
 		String scene_file_path;
@@ -182,6 +189,7 @@ private:
 		int blocked = 0; // Safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
 		StringName name;
 		SceneTree *tree = nullptr;
+		HashMap<Node *, ConnectionOwnerData> connection_owners; // Maintain the level at which signals were connected so connections can be packed correctly
 
 #ifdef TOOLS_ENABLED
 		NodePath import_path; // Path used when imported, used by scene editors to keep tracking.
@@ -475,7 +483,6 @@ public:
 	};
 
 	/* NODE/TREE */
-
 	StringName get_name() const;
 	String get_description() const;
 	void set_name(const StringName &p_name);
@@ -596,6 +603,25 @@ public:
 	void get_storable_properties(HashSet<StringName> &r_storable_properties) const;
 
 	virtual String to_string() override;
+
+	/* USED ONLY BY PACKED SCENE */
+
+	void add_connection_owner(Node *owner, Node *to_node, const StringName &sname, Callable c) {
+		ConnectionOwnerData sc;
+		sc.to_node = to_node;
+		sc.sname = sname;
+		sc.callable = c;
+		data.connection_owners[owner] = sc;
+	}
+
+	Node *get_connection_owner(Node *to_node, const StringName &sname, Callable c) const {
+		for (const KeyValue<Node *, ConnectionOwnerData> &E : data.connection_owners) {
+			if (E.value.to_node == to_node && E.value.sname == sname && E.value.callable == c) {
+				return E.key;
+			}
+		}
+		return nullptr;
+	}
 
 	/* NOTIFICATIONS */
 
