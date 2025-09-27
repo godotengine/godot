@@ -40,7 +40,7 @@ class StyleBox : public Resource {
 	RES_BASE_EXTENSION("stylebox");
 	OBJ_SAVE_TYPE(StyleBox);
 
-	float content_margin[4];
+	int content_margin[4];
 
 protected:
 	static void _bind_methods();
