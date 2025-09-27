@@ -1563,8 +1563,8 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 		tex_to->tex_id = 0;
 	}
 
-	Vector<RID> proxies_to_update = tex_to->proxies;
-	Vector<RID> proxies_to_redirect = tex_from->proxies;
+	Vector<RID> proxies_to_update = Vector<RID>(tex_to->proxies);
+	Vector<RID> proxies_to_redirect = Vector<RID>(tex_from->proxies);
 
 	*tex_to = *tex_from;
 
