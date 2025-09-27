@@ -586,6 +586,7 @@ private:
 
 	void _set_current_scene(int p_idx);
 	void _set_current_scene_nocheck(int p_idx);
+	void _nav_to_selected_scene(int p_idx) const;
 	bool _validate_scene_recursive(const String &p_filename, Node *p_node);
 	void _save_scene(String p_file, int idx = -1);
 	void _save_all_scenes();
