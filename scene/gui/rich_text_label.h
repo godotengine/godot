@@ -960,7 +960,7 @@ public:
 	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
-	void set_structured_text_bidi_override_options(Array p_args);
+	void set_structured_text_bidi_override_options(const Array &p_args);
 	Array get_structured_text_bidi_override_options() const;
 
 	void set_visible_characters(int p_visible);
@@ -976,7 +976,7 @@ public:
 	TextServer::VisibleCharactersBehavior get_visible_characters_behavior() const;
 	void set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior);
 
-	void set_effects(Array p_effects);
+	void set_effects(const Array &p_effects);
 	Array get_effects();
 
 	void install_effect(const Variant effect);

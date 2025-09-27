@@ -494,14 +494,14 @@ TextServer::StructuredTextParser TreeItem::get_structured_text_bidi_override(int
 	return cells[p_column].st_parser;
 }
 
-void TreeItem::set_structured_text_bidi_override_options(int p_column, Array p_args) {
+void TreeItem::set_structured_text_bidi_override_options(int p_column, const Array &p_args) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
 	if (cells[p_column].st_args == p_args) {
 		return;
 	}
 
-	cells.write[p_column].st_args = p_args;
+	cells.write[p_column].st_args = Array(p_args);
 	cells.write[p_column].dirty = true;
 	cells.write[p_column].cached_minimum_size_dirty = true;
 
@@ -510,7 +510,7 @@ void TreeItem::set_structured_text_bidi_override_options(int p_column, Array p_a
 
 Array TreeItem::get_structured_text_bidi_override_options(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), Array());
-	return cells[p_column].st_args;
+	return Array(cells[p_column].st_args);
 }
 
 void TreeItem::set_language(int p_column, const String &p_language) {

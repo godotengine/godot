@@ -75,14 +75,14 @@ TextServer::StructuredTextParser LinkButton::get_structured_text_bidi_override()
 	return st_parser;
 }
 
-void LinkButton::set_structured_text_bidi_override_options(Array p_args) {
-	st_args = p_args;
+void LinkButton::set_structured_text_bidi_override_options(const Array &p_args) {
+	st_args = Array(p_args);
 	_shape();
 	queue_redraw();
 }
 
 Array LinkButton::get_structured_text_bidi_override_options() const {
-	return st_args;
+	return Array(st_args);
 }
 
 void LinkButton::set_text_direction(Control::TextDirection p_text_direction) {
