@@ -684,7 +684,7 @@ public:
 
 	virtual void command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, TextureID p_dpb_texture) override final;
 	virtual void command_video_control(CommandBufferID p_cmd_buffer) override final;
-	virtual void command_video_decode(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, TextureID p_dst_texture, uint32_t p_array_layer, TextureID p_dpb_texture) override final;
+	virtual void command_video_decode(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, VideoCodingDecodeH264SliceHeader p_std_h264_info, TextureID p_dst_texture, uint32_t p_array_layer, TextureID p_dpb_texture) override final;
 	virtual void command_video_coding_end(CommandBufferID p_cmd_buffer) override final;
 
 	/**************/

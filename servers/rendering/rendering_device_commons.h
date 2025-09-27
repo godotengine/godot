@@ -409,7 +409,24 @@ public:
 	};
 
 	enum VideoCodingH264AspectRatioIdc {
-
+		VIDEO_CODING_H264_ASPECT_RATIO_IDC_UNSPECIFIED = 0,
+		VIDEO_CODING_H264_ASPECT_RATIO_IDC_SQUARE = 1,
+		VIDEO_CODING_H264_ASPECT_RATIO_IDC_12_11 = 2,
+		VIDEO_CODING_H264_ASPECT_RATIO_IDC_10_11 = 3,
+		VIDEO_CODING_H264_ASPECT_RATIO_IDC_16_11 = 4,
+		VIDEO_CODING_H264_ASPECT_RATIO_IDC_40_33 = 5,
+		VIDEO_CODING_H264_ASPECT_RATIO_IDC_24_11 = 6,
+		VIDEO_CODING_H264_ASPECT_RATIO_IDC_20_11 = 7,
+		VIDEO_CODING_H264_ASPECT_RATIO_IDC_32_11 = 8,
+		VIDEO_CODING_H264_ASPECT_RATIO_IDC_80_33 = 9,
+		VIDEO_CODING_H264_ASPECT_RATIO_IDC_18_11 = 10,
+		VIDEO_CODING_H264_ASPECT_RATIO_IDC_15_11 = 11,
+		VIDEO_CODING_H264_ASPECT_RATIO_IDC_64_33 = 12,
+		VIDEO_CODING_H264_ASPECT_RATIO_IDC_160_99 = 13,
+		VIDEO_CODING_H264_ASPECT_RATIO_IDC_4_3 = 14,
+		VIDEO_CODING_H264_ASPECT_RATIO_IDC_3_2 = 15,
+		VIDEO_CODING_H264_ASPECT_RATIO_IDC_2_1 = 16,
+		VIDEO_CODING_H264_ASPECT_RATIO_IDC_EXTENDED_SAR = 255,
 	};
 
 	struct VideoCodingH264SequenceParameterSet {
@@ -534,6 +551,25 @@ public:
 		} scaling_lists;
 
 		int8_t second_chroma_qp_index_offset;
+	};
+
+	struct VideoCodingDecodeH264SliceHeader {
+		bool is_intra;
+		bool is_reference;
+		bool complementary_field_pair;
+
+		uint8_t pic_parameter_set_id;
+		uint8_t seq_parameter_set_id;
+
+		uint16_t frame_num;
+
+		bool field_pic_flag;
+		bool bottom_field_flag;
+
+		uint16_t idr_pic_id;
+
+		int32_t pic_order_cnt_top_field;
+		int32_t pic_order_cnt_bottom_field;
 	};
 
 	struct VideoProfile {

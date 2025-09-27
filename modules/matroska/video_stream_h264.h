@@ -33,14 +33,13 @@
 #include "scene/resources/video_stream_encoding.h"
 
 #include "servers/rendering/rendering_device.h"
-#include <vk_video/vulkan_video_codec_h264std_decode.h>
 
 class VideoStreamH264 : public VideoStreamEncoding {
 	GDCLASS(VideoStreamH264, VideoStreamEncoding);
 
 private:
 	const uint8_t *src = nullptr;
-	uint8_t shift = 7;
+	uint8_t shift = 0;
 
 	uint64_t prev_pic_order_cnt_lsb;
 	uint64_t prev_pic_order_cnt_msb;
@@ -79,7 +78,7 @@ public:
 	void parse_nal_unit(uint64_t p_size, bool p_is_metadata);
 	RD::VideoCodingH264SequenceParameterSet parse_sequence_parameter_set(uint64_t p_size);
 	RD::VideoCodingH264PictureParameterSet parse_picture_parameter_set(uint64_t p_size);
-	StdVideoDecodeH264PictureInfo parse_slice_header(uint64_t p_size, bool p_is_idr);
+	RD::VideoCodingDecodeH264SliceHeader parse_slice_header(uint64_t p_size, bool p_is_idr);
 
 	uint64_t read_bits(uint8_t p_amount);
 	uint64_t read_ue();

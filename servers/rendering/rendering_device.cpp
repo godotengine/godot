@@ -5657,7 +5657,7 @@ void RenderingDevice::video_coding_begin(RID p_video_session, RID p_dpb_texture)
 	driver->command_video_control(decode_buffer);
 }
 
-void RenderingDevice::video_coding_decode(RID p_src_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, RID p_dst_texture, uint32_t p_array_layer, RID p_dpb_texture) {
+void RenderingDevice::video_coding_decode(RID p_src_buffer, VideoCodingDecodeH264SliceHeader p_std_h264_info, RID p_dst_texture, uint32_t p_array_layer, RID p_dpb_texture) {
 	Buffer *src_buffer = storage_buffer_owner.get_or_null(p_src_buffer);
 	ERR_FAIL_NULL(src_buffer);
 

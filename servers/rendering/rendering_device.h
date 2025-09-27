@@ -1407,7 +1407,7 @@ private:
 		RDD::VideoSessionID driver_id;
 	};
 
-	RID_Owner<VideoSession> video_session_owner;
+	RID_Owner<VideoSession, true> video_session_owner;
 
 	RDD::CommandPoolID decode_pool;
 	RDD::CommandBufferID decode_buffer;
@@ -1420,7 +1420,7 @@ public:
 	void video_session_add_h264_parameters(RID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets);
 
 	void video_coding_begin(RID p_video_session, RID p_dpb_texture);
-	void video_coding_decode(RID p_src_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, RID p_dst_texture, uint32_t p_array_layer, RID p_dpb_texture);
+	void video_coding_decode(RID p_src_buffer, VideoCodingDecodeH264SliceHeader p_std_h264_info, RID p_dst_texture, uint32_t p_array_layer, RID p_dpb_texture);
 	void video_coding_end();
 
 private:

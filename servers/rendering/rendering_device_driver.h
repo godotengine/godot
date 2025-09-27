@@ -51,8 +51,6 @@
 #include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/rendering_shader_container.h"
 
-#include "thirdparty/vulkan/include/vk_video/vulkan_video_codec_h264std_decode.h"
-
 // These utilities help drivers avoid allocations.
 #define ALLOCA(m_size) ((m_size != 0) ? alloca(m_size) : nullptr)
 #define ALLOCA_ARRAY(m_type, m_count) ((m_type *)ALLOCA(sizeof(m_type) * (m_count)))
@@ -766,7 +764,7 @@ public:
 
 	virtual void command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, TextureID p_dpb_texture) = 0;
 	virtual void command_video_control(CommandBufferID p_cmd_buffer) = 0;
-	virtual void command_video_decode(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, TextureID p_dst_texture, uint32_t p_array_layer, TextureID p_dpb_texture) = 0;
+	virtual void command_video_decode(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, VideoCodingDecodeH264SliceHeader p_std_h264_info, TextureID p_dst_texture, uint32_t p_array_layer, TextureID p_dpb_texture) = 0;
 	virtual void command_video_coding_end(CommandBufferID p_cmd_buffer) = 0;
 
 	/**************/
