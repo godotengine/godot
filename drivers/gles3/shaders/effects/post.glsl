@@ -10,6 +10,7 @@ USE_LUMINANCE_MULTIPLIER = false
 USE_BCS = false
 USE_COLOR_CORRECTION = false
 USE_1D_LUT = false
+USE_LEGACY_MODE = false
 
 #[vertex]
 layout(location = 0) in vec2 vertex_attrib;
@@ -82,10 +83,31 @@ vec3 apply_color_correction(vec3 color) {
 #endif // USE_COLOR_CORRECTION
 
 #ifdef USE_BCS
-vec3 apply_bcs(vec3 color) {
-	color = mix(vec3(0.0), color, brightness);
+vec3 apply_legacy_bcs(vec3 color) {
+	color = color * brightness;
 	color = mix(vec3(0.5), color, contrast);
 	color = mix(vec3(dot(vec3(1.0), color) * 0.33333), color, saturation);
+
+	return color;
+}
+vec3 apply_bcs(vec3 color) {
+	// Apply brightness:
+	// Apply to relative luminance. This ensures that the hue and saturation of
+	// colors is not affected by the adjustment, but requires the multiplication
+	// to be performed on linear encoded values.
+	color = color * brightness;
+
+	// Apply contrast:
+	// Use the industry-standard "18% middle gray" as the pivot.
+	// This approximately matches Photoshop 26.1's camera raw filter behavior.
+	color = mix(vec3(0.18), color, contrast);
+
+	// Apply saturation:
+	// Luminance weights of the current primaries must be used to prevent blues from
+	// brightening when saturation is decreased and darkening when saturation is increased.
+	// This approach approximately matches Photoshop 26.1's camera raw filter behavior.
+	const vec3 rec709_luminance_weights = vec3(0.2126, 0.7152, 0.0722);
+	color = mix(vec3(dot(rec709_luminance_weights, color)), color, saturation);
 
 	return color;
 }
@@ -102,25 +124,64 @@ void main() {
 	vec4 color = texture(source_color, uv_interp);
 #endif
 
+#ifdef USE_LEGACY_MODE
 #ifdef USE_GLOW
 	vec4 glow = get_glow_color(uv_interp) * glow_intensity;
 
-	// Just use softlight...
+	// Just use screen...
 	glow.rgb = clamp(glow.rgb, vec3(0.0f), vec3(1.0f));
 	color.rgb = max((color.rgb + glow.rgb) - (color.rgb * glow.rgb), vec3(0.0));
 #endif // USE_GLOW
+#endif // USE_LEGACY_MODE
 
 #ifdef USE_LUMINANCE_MULTIPLIER
 	color = color / luminance_multiplier;
 #endif
 
+#ifndef USE_LEGACY_MODE
+#ifdef USE_GLOW
+	vec4 glow = get_glow_color(uv_interp);
+#ifdef USE_LUMINANCE_MULTIPLIER
+	glow = glow / luminance_multiplier;
+#endif
+	glow = glow * glow_intensity;
+
+	// Glow cannot be above 1.0 after normalizing and should be non-negative
+	// to produce expected results. It is possible that glow can be negative
+	// if negative lights were used in the scene.
+	// We clamp to white because glow will be normalized to this range.
+	glow.rgb = clamp(glow.rgb, 0.0, white);
+
+	// Normalize to white range.
+	//glow.rgb /= white;
+	//color.rgb /= white;
+	//color.rgb = (color.rgb + glow.rgb) - (color.rgb * glow.rgb);
+	// Expand back to original range.
+	//color.rgb *= white;
+
+	// The following is a mathematically simplified version of the above.
+	color.rgb = color.rgb + glow.rgb - (color.rgb * glow.rgb / white);
+#endif // USE_GLOW
+#endif // !USE_LEGACY_MODE
+
 	color.rgb = srgb_to_linear(color.rgb);
-	color.rgb = apply_tonemapping(color.rgb, white);
-	color.rgb = linear_to_srgb(color.rgb);
+	color.rgb = apply_tonemapping(color.rgb);
 
 #ifdef USE_BCS
+
+#ifdef USE_LEGACY_MODE
+	// Legacy behavior applies these functions to RGB values that use
+	// nonlinear sRGB encoding.
+	color.rgb = linear_to_srgb(color.rgb);
+	color.rgb = apply_legacy_bcs(color.rgb);
+#else
 	color.rgb = apply_bcs(color.rgb);
-#endif
+	color.rgb = linear_to_srgb(color.rgb);
+#endif // USE_LEGACY_MODE
+
+#else
+	color.rgb = linear_to_srgb(color.rgb);
+#endif // USE_BCS
 
 #ifdef USE_COLOR_CORRECTION
 	color.rgb = apply_color_correction(color.rgb);

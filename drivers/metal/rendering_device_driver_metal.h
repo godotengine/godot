@@ -209,11 +209,11 @@ private:
 	struct SwapChain {
 		RenderingContextDriver::SurfaceID surface = RenderingContextDriver::SurfaceID();
 		RenderPassID render_pass;
-		RDD::DataFormat data_format = DATA_FORMAT_MAX;
-		SwapChain() :
-				render_pass(nullptr) {}
+		DataFormat data_format = DATA_FORMAT_MAX;
+		ColorSpace color_space = COLOR_SPACE_MAX;
 	};
 
+	RenderPassID _swap_chain_create_render_pass(DataFormat p_format);
 	void _swap_chain_release(SwapChain *p_swap_chain);
 	void _swap_chain_release_buffers(SwapChain *p_swap_chain);
 
@@ -224,6 +224,7 @@ public:
 	virtual RenderPassID swap_chain_get_render_pass(SwapChainID p_swap_chain) override final;
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) override final;
 	virtual void swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) override final;
+	virtual ColorSpace swap_chain_get_color_space(SwapChainID p_swap_chain) override final;
 	virtual void swap_chain_free(SwapChainID p_swap_chain) override final;
 
 #pragma mark - Frame Buffer

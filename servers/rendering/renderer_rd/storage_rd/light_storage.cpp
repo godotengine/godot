@@ -1543,7 +1543,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		}
 		atlas->reflections.resize(atlas->count);
 		for (int i = 0; i < atlas->count; i++) {
-			atlas->reflections.write[i].data.update_reflection_data(atlas->size, mipmaps, false, atlas->reflection, i * 6, update_always, RendererSceneRenderRD::get_singleton()->get_sky()->roughness_layers, RendererSceneRenderRD::get_singleton()->_render_buffers_get_color_format());
+			atlas->reflections.write[i].data.update_reflection_data(atlas->size, mipmaps, false, atlas->reflection, i * 6, update_always, RendererSceneRenderRD::get_singleton()->get_sky()->roughness_layers, RendererSceneRenderRD::get_singleton()->_render_buffers_get_preferred_color_format());
 			for (int j = 0; j < 6; j++) {
 				atlas->reflections.write[i].fbs[j] = RendererSceneRenderRD::get_singleton()->reflection_probe_create_framebuffer(atlas->reflections.write[i].data.layers[0].mipmaps[0].views[j], atlas->depth_buffer);
 			}
@@ -1815,7 +1815,7 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 }
 
 RD::DataFormat LightStorage::get_reflection_probe_color_format() {
-	return RendererSceneRenderRD::get_singleton()->_render_buffers_get_color_format();
+	return RendererSceneRenderRD::get_singleton()->_render_buffers_get_preferred_color_format();
 }
 
 uint32_t LightStorage::get_reflection_probe_color_usage_bits() {

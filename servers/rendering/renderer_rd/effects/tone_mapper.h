@@ -66,27 +66,37 @@ private:
 		TONEMAP_FLAG_USE_8_BIT_DEBANDING = (1 << 5),
 		TONEMAP_FLAG_USE_10_BIT_DEBANDING = (1 << 6),
 		TONEMAP_FLAG_CONVERT_TO_SRGB = (1 << 7),
+		TONEMAP_FLAG_USE_LEGACY_MODE = (1 << 8),
 	};
 
 	struct TonemapPushConstant {
 		float bcs[3]; // 12 - 12
-		uint32_t flags; //  4 - 16
+		uint32_t flags; // 4 - 16
 
 		float pixel_size[2]; //  8 - 24
 		uint32_t tonemapper; //  4 - 28
-		uint32_t pad; //  4 - 32
+		float tonemap_a; //  4 - 32
+		float tonemap_b; //  4 - 36
+		float tonemap_c; //  4 - 40
+		float tonemap_d; //  4 - 44
+		uint32_t pad; //  4 - 48
 
-		uint32_t glow_texture_size[2]; //  8 - 40
-		float glow_intensity; //  4 - 44
-		float glow_map_strength; //  4 - 48
+		uint32_t glow_texture_size[2]; //  8 - 56
+		float glow_intensity; //  4 - 60
+		float glow_map_strength; //  4 - 64
 
-		uint32_t glow_mode; //  4 - 52
-		float glow_levels[7]; // 28 - 80
+		uint32_t glow_mode; //  4 - 68
+		float glow_levels[7]; // 28 - 96
 
-		float exposure; //  4 - 84
+		float exposure; //  4 - 100
 		float white; //  4 - 88
-		float auto_exposure_scale; //  4 - 92
-		float luminance_multiplier; //  4 - 96
+		float auto_exposure_scale; //  4 - 104
+		float luminance_multiplier; //  4 - 108
+		float output_max_value; // 4 - 100
+
+		uint32_t pad2; // 4 - 112
+		uint32_t pad3; // 4 - 112
+		uint32_t pad4; // 4 - 112
 	};
 
 	/* tonemap actually writes to a framebuffer, which is
@@ -114,18 +124,23 @@ public:
 			GLOW_MODE_MIX
 		};
 
-		GlowMode glow_mode = GLOW_MODE_ADD;
-		float glow_intensity = 1.0;
+		GlowMode glow_mode = GLOW_MODE_SCREEN;
+		float glow_intensity = 0.3;
 		float glow_map_strength = 0.0f;
-		float glow_levels[7] = { 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0 };
+		float glow_levels[7] = { 1.0, 0.8, 0.4, 0.1, 0.0, 0.0, 0.0 };
 		Vector2i glow_texture_size;
 		bool glow_use_bicubic_upscale = false;
 		RID glow_texture;
 		RID glow_map;
 
 		RS::EnvironmentToneMapper tonemap_mode = RS::ENV_TONE_MAPPER_LINEAR;
+		float tonemap_a = 0.0;
+		float tonemap_b = 0.0;
+		float tonemap_c = 0.0;
+		float tonemap_d = 0.0;
 		float exposure = 1.0;
 		float white = 1.0;
+		float max_value = 1.0;
 
 		bool use_auto_exposure = false;
 		float auto_exposure_scale = 0.5;
@@ -152,6 +167,8 @@ public:
 		uint32_t view_count = 1;
 
 		bool convert_to_srgb = false;
+
+		bool use_legacy_mode = false;
 	};
 
 	void tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings);

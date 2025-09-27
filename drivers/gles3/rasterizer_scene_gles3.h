@@ -445,8 +445,11 @@ private:
 			float exposure = 1.0;
 			float white = 1.0;
 			int32_t tonemapper = 0;
+			float tonemap_a = 0.0;
+			float tonemap_b = 0.0;
+			float tonemap_c = 0.0;
+			float tonemap_d = 0.0;
 			int32_t pad = 0;
-
 			int32_t pad2 = 0;
 			float brightness = 1.0;
 			float contrast = 1.0;
@@ -751,6 +754,8 @@ protected:
 
 	bool lightmap_bicubic_upscale = false;
 
+	bool environment_use_legacy_mode = false;
+
 	/* Sky */
 
 	struct SkyGlobals {
@@ -886,6 +891,8 @@ public:
 	_FORCE_INLINE_ bool is_using_physical_light_units() {
 		return use_physical_light_units;
 	}
+
+	void environment_set_use_legacy_mode(bool p_enable) override;
 
 	void positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) override;
 	void directional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) override;

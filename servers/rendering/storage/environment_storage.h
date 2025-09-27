@@ -34,6 +34,15 @@
 #include "servers/rendering_server.h"
 
 class RendererEnvironmentStorage {
+public:
+	struct TonemapParameters {
+		float tonemap_a = 0.0;
+		float tonemap_b = 0.0;
+		float tonemap_c = 0.0;
+		float tonemap_d = 0.0;
+		float exposure = 1.0;
+	};
+
 private:
 	static RendererEnvironmentStorage *singleton;
 
@@ -62,6 +71,9 @@ private:
 		RS::EnvironmentToneMapper tone_mapper;
 		float exposure = 1.0;
 		float white = 1.0;
+		float max_value = 1.0;
+		float tonemap_contrast = 1.25; // Default to approximately Blender's AgX contrast
+		TonemapParameters tonemap_parameters;
 
 		// Fog
 		bool fog_enabled = false;
@@ -98,11 +110,11 @@ private:
 		// Glow
 		bool glow_enabled = false;
 		Vector<float> glow_levels;
-		float glow_intensity = 0.8;
+		float glow_intensity = 0.3;
 		float glow_strength = 1.0;
 		float glow_bloom = 0.0;
 		float glow_mix = 0.01;
-		RS::EnvironmentGlowBlendMode glow_blend_mode = RS::ENV_GLOW_BLEND_MODE_SOFTLIGHT;
+		RS::EnvironmentGlowBlendMode glow_blend_mode = RS::ENV_GLOW_BLEND_MODE_SCREEN;
 		float glow_hdr_bleed_threshold = 1.0;
 		float glow_hdr_luminance_cap = 12.0;
 		float glow_hdr_bleed_scale = 2.0;
@@ -149,6 +161,7 @@ private:
 		// Adjustments
 		bool adjustments_enabled = false;
 		float adjustments_brightness = 1.0f;
+		float adjustments_brightness_legacy = 1.0f;
 		float adjustments_contrast = 1.0f;
 		float adjustments_saturation = 1.0f;
 		bool use_1d_color_correction = false;
@@ -199,10 +212,14 @@ public:
 	RS::EnvironmentReflectionSource environment_get_reflection_source(RID p_env) const;
 
 	// Tonemap
-	void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white);
+	void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, float p_contrast);
+	void environment_set_max_value(RID p_env, float p_max_value);
 	RS::EnvironmentToneMapper environment_get_tone_mapper(RID p_env) const;
 	float environment_get_exposure(RID p_env) const;
 	float environment_get_white(RID p_env) const;
+	float environment_get_max_value(RID p_env) const;
+	float environment_get_tonemap_contrast(RID p_env) const;
+	TonemapParameters environment_get_tonemap_parameters(RID p_env, float output_max_value) const;
 
 	// Fog
 	void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect, RS::EnvironmentFogMode p_mode);
@@ -299,6 +316,7 @@ public:
 	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction);
 	bool environment_get_adjustments_enabled(RID p_env) const;
 	float environment_get_adjustments_brightness(RID p_env) const;
+	float environment_get_adjustments_brightness_legacy(RID p_env) const;
 	float environment_get_adjustments_contrast(RID p_env) const;
 	float environment_get_adjustments_saturation(RID p_env) const;
 	bool environment_get_use_1d_color_correction(RID p_env) const;
