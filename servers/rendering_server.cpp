@@ -3620,7 +3620,7 @@ void RenderingServer::init() {
 
 	GLOBAL_DEF_RST("rendering/lights_and_shadows/use_physical_light_units", false);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/directional_shadow/size", PROPERTY_HINT_RANGE, "256,16384"), 4096);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/directional_shadow/size", PROPERTY_HINT_ENUM, U"256×256 (Fastest):256,512×512 (Fastest):512,1024×1024 (Faster):1024,1536×1536 (Faster):1536,2048×2048 (Fast):2048,3072×3072 (Fast):3072,4096×4096 (Average):4096,6144×6144 (Average):6144,8192×8192 (Slow):8192,12288×12288 (Slower):12288,16384×16384 (Slowest):16384"), 4096);
 	GLOBAL_DEF("rendering/lights_and_shadows/directional_shadow/size.mobile", 2048);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"), 2);
 	GLOBAL_DEF("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality.mobile", 0);
