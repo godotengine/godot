@@ -264,6 +264,14 @@ opts.Add(
         True,
     )
 )
+opts.Add(
+    EnumVariable(
+        "library_type",
+        "Build library type",
+        "executable",
+        ("executable", "shared_library"),
+    )
+)
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -347,6 +355,15 @@ if not env["platform"]:
 
     if env["platform"]:
         print(f"Automatically detected platform: {env['platform']}")
+
+# Allow for shared libraries.
+if env["library_type"] == "shared_library":
+    if env["platform"] == "linuxbsd" or env["platform"] == "windows":
+        # currently needed to ensure that modules get built properly
+        env.Append(CCFLAGS=["-fPIC"])
+    else:
+        print_error(f"Shared library build not yet supported for {env['platform']}")
+        Exit(255)
 
 # Deprecated aliases kept for compatibility.
 if env["platform"] in compatibility_platform_aliases:
