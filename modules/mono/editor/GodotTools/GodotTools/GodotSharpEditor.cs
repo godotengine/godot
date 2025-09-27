@@ -692,6 +692,11 @@ namespace GodotTools
 
                 RiderPathManager.InitializeIfNeeded(editor);
             }
+
+            if (changedSettings.Contains(_editorSettings.NotificationThemeChanged))
+            {
+                UpdateTheme();
+            }
         }
 
         protected override void Dispose(bool disposing)
@@ -722,18 +727,6 @@ namespace GodotTools
             base.Dispose(disposing);
         }
 
-        public override void _Notification(int what)
-        {
-            base._Notification(what);
-
-            UpdateTheme();
-
-            //if (what == NotificationThemeChanged)
-            //{
-
-            //}
-        }
-
         private void UpdateTheme()
         {
             // Nodes will be null until _Ready is called.
@@ -742,6 +735,7 @@ namespace GodotTools
 
             _toolBarBuildButton.Icon = EditorInterface.Singleton.GetEditorTheme().GetIcon("BuildCSharp", "EditorIcons");
         }
+
         public void OnBeforeSerialize()
         {
         }
