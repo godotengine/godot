@@ -791,6 +791,7 @@ public:
 	/* ENVIRONMENT API */
 
 	FUNC1(voxel_gi_set_quality, VoxelGIQuality)
+	FUNC1(voxel_gi_set_dynamic_oversampling, VoxelGIDynamicOversampling)
 
 	/* SKY API */
 
