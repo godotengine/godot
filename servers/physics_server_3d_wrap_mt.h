@@ -311,6 +311,9 @@ public:
 	FUNC2(soft_body_set_simulation_precision, RID, int);
 	FUNC1RC(int, soft_body_get_simulation_precision, RID);
 
+	FUNC2(soft_body_set_point_radius, RID, real_t);
+	FUNC1RC(real_t, soft_body_get_point_radius, RID);
+
 	FUNC2(soft_body_set_total_mass, RID, real_t);
 	FUNC1RC(real_t, soft_body_get_total_mass, RID);
 

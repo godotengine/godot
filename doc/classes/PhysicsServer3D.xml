@@ -1170,6 +1170,14 @@
 				Returns the current position of the given soft body point in global coordinates.
 			</description>
 		</method>
+		<method name="soft_body_get_point_radius" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns the radius of all points of the given soft body.
+				[b]Note:[/b] This is only supported when using Jolt Physics (see [member ProjectSettings.physics/3d/physics_engine]).
+			</description>
+		</method>
 		<method name="soft_body_get_pressure_coefficient" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="body" type="RID" />
@@ -1303,6 +1311,15 @@
 			<param index="1" name="mesh" type="RID" />
 			<description>
 				Sets the mesh of the given soft body.
+			</description>
+		</method>
+		<method name="soft_body_set_point_radius">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="radius" type="float" />
+			<description>
+				Sets the radius of all points of the given soft body. When using a thin mesh as a soft body (such as a [PlaneMesh] for cloth simulation), this can be increased to prevent the mesh from clipping through other objects. Setting this too high will make the soft body appear to float, can also make its simulation look more "rounded".
+				[b]Note:[/b] This is only supported when using Jolt Physics (see [member ProjectSettings.physics/3d/physics_engine]).
 			</description>
 		</method>
 		<method name="soft_body_set_pressure_coefficient">
