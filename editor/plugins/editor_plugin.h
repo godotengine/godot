@@ -133,6 +133,7 @@ protected:
 	GDVIRTUAL1(_set_window_layout, Ref<ConfigFile>)
 	GDVIRTUAL1(_get_window_layout, Ref<ConfigFile>)
 	GDVIRTUAL0R(bool, _build)
+	GDVIRTUAL2RC(Vector<String>, _run_scene, String, Vector<String>)
 	GDVIRTUAL0(_enable_plugin)
 	GDVIRTUAL0(_disable_plugin)
 
@@ -202,6 +203,7 @@ public:
 	virtual void get_window_layout(Ref<ConfigFile> p_layout);
 	virtual void edited_scene_changed() {} // if changes are pending in editor, apply them
 	virtual bool build(); // builds with external tools. Returns true if safe to continue running scene.
+	virtual void run_scene(const String &p_scene, Vector<String> &r_args);
 
 	EditorInterface *get_editor_interface();
 	ScriptCreateDialog *get_script_create_dialog();

@@ -724,6 +724,7 @@ public:
 	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
 
 	bool call_build();
+	void call_run_scene(const String &p_scene, Vector<String> &r_args);
 
 	// This is a very naive estimation, but we need something now. Will be reworked later.
 	bool is_editor_ready() const { return is_inside_tree() && !waiting_for_first_scan; }
