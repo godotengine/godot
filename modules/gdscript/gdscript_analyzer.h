@@ -57,11 +57,14 @@ class GDScriptAnalyzer {
 	HashMap<const GDScriptParser::ClassNode *, Ref<GDScriptParserRef>> external_class_parser_cache;
 	bool static_context = false;
 
-	// Tests for detecting invalid overloading of script members
-	static _FORCE_INLINE_ bool has_member_name_conflict_in_script_class(const StringName &p_name, const GDScriptParser::ClassNode *p_current_class_node, const GDScriptParser::Node *p_member);
-	static _FORCE_INLINE_ bool has_member_name_conflict_in_native_type(const StringName &p_name, const StringName &p_native_type_string);
-	Error check_native_member_name_conflict(const StringName &p_member_name, const GDScriptParser::Node *p_member_node, const StringName &p_native_type_string);
-	Error check_class_member_name_conflict(const GDScriptParser::ClassNode *p_class_node, const StringName &p_member_name, const GDScriptParser::Node *p_member_node);
+	enum class MemberConflict {
+		NOT_FOUND,
+		OVERRIDE,
+		FOUND,
+	};
+	_FORCE_INLINE_ MemberConflict _check_member_conflict_gdscript(const GDScriptParser::ClassNode *p_class, const StringName &p_member_name, const GDScriptParser::Node *p_member_node, GDScriptParser::DataType *r_override_type);
+	_FORCE_INLINE_ MemberConflict _check_member_conflict_native(const StringName &p_class, const StringName &p_member_name, const GDScriptParser::Node *p_member_node, GDScriptParser::DataType *r_override_type);
+	void check_member_conflict(const GDScriptParser::ClassNode *p_class, const StringName &p_member_name, const GDScriptParser::Node *p_member_node, GDScriptParser::DataType *r_override_type = nullptr);
 
 	void get_class_node_current_scope_classes(GDScriptParser::ClassNode *p_node, List<GDScriptParser::ClassNode *> *p_list, GDScriptParser::Node *p_source);
 

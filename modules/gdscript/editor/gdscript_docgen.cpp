@@ -33,6 +33,7 @@
 #include "../gdscript.h"
 
 #include "core/config/project_settings.h"
+#include "editor/doc/editor_help.h"
 
 HashMap<String, String> GDScriptDocGen::singletons;
 
@@ -522,7 +523,28 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 					prop_doc.default_value = docvalue_from_expression(m_var->initializer);
 				}
 
-				prop_doc.overridden = false;
+				if (m_var->is_override) {
+					prop_doc.overridden = true;
+
+					const DocTools *dd = EditorHelp::get_doc_data();
+					if (dd) {
+						HashMap<String, DocData::ClassDoc>::ConstIterator E = dd->class_list.find(doc.inherits);
+						while (E && !E->value.name.is_empty()) {
+							bool found = false;
+							for (const DocData::PropertyDoc &property : E->value.properties) {
+								if (property.name == var_name) {
+									prop_doc.overrides = E->value.name;
+									found = true;
+									break;
+								}
+							}
+							if (found) {
+								break;
+							}
+							E = dd->class_list.find(E->value.inherits);
+						}
+					}
+				}
 
 				doc.properties.push_back(prop_doc);
 			} break;

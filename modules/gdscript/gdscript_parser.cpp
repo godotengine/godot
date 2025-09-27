@@ -96,9 +96,10 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
 		register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
-		register_annotation(MethodInfo("@abstract"), AnnotationInfo::SCRIPT | AnnotationInfo::CLASS | AnnotationInfo::FUNCTION, &GDScriptParser::abstract_annotation);
+		register_annotation(MethodInfo("@abstract"), AnnotationInfo::SCRIPT | AnnotationInfo::CLASS | AnnotationInfo::FUNCTION | AnnotationInfo::VARIABLE, &GDScriptParser::abstract_annotation);
 		// Onready annotation.
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
+		register_annotation(MethodInfo("@override"), AnnotationInfo::VARIABLE, &GDScriptParser::override_annotation);
 		// Export annotations.
 		register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
 		register_annotation(MethodInfo("@export_enum", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_ENUM, Variant::NIL>, varray(), true);
@@ -4394,7 +4395,24 @@ bool GDScriptParser::abstract_annotation(AnnotationNode *p_annotation, Node *p_t
 		function_node->is_abstract = true;
 		return true;
 	}
-	ERR_FAIL_V_MSG(false, R"("@abstract" annotation can only be applied to classes and functions.)");
+	if (p_target->type == Node::VARIABLE) {
+		VariableNode *variable = static_cast<VariableNode *>(p_target);
+		if (variable->is_static) {
+			push_error(R"("@abstract" annotation cannot be applied to static variables.)", p_annotation);
+			return false;
+		}
+		if (variable->is_abstract) {
+			push_error(R"("@abstract" annotation can only be used once per variable.)", p_annotation);
+			return false;
+		}
+		if (variable->initializer != nullptr) {
+			push_error(R"(An abstract variable cannot have an initializer.)", p_annotation);
+			return false;
+		}
+		variable->is_abstract = true;
+		return true;
+	}
+	ERR_FAIL_V_MSG(false, R"("@abstract" annotation can only be applied to classes, functions, and variables.)");
 }
 
 bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
@@ -4414,8 +4432,34 @@ bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_ta
 		push_error(R"("@onready" annotation can only be used once per variable.)", p_annotation);
 		return false;
 	}
+
 	variable->onready = true;
 	current_class->onready_used = true;
+	return true;
+}
+
+bool GDScriptParser::override_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, R"("@override" annotation can only be applied to class variables.)");
+
+	VariableNode *variable = static_cast<VariableNode *>(p_target);
+	if (variable->is_static) {
+		push_error(R"("@override" annotation cannot be applied to a static variable.)", p_annotation);
+		return false;
+	}
+	if (variable->is_override) {
+		push_error(R"("@override" annotation can only be used once per variable.)", p_annotation);
+		return false;
+	}
+	if (variable->property != VariableNode::PROP_NONE) {
+		push_error(R"(An overridden variable cannot have a setter or getter.)", p_annotation);
+		return false;
+	}
+	if (variable->initializer == nullptr) {
+		push_error(R"(An overridden variable must have an initializer.)", p_annotation);
+		return false;
+	}
+
+	variable->is_override = true;
 	return true;
 }
 

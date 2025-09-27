@@ -1,0 +1,11 @@
+GDTEST_OK
+B text_1= text_1b
+B text_2= text_2b
+..
+C text_1= text_1c
+C text_2= text_2b
+..
+E text_1= text_1d
+E text_2= text_2e
+..
+E text_1= text_1e
