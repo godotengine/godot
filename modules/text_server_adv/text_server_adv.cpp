@@ -2016,7 +2016,7 @@ hb_font_t *TextServerAdvanced::_font_get_hb_handle(const RID &p_font_rid, int64_
 	FontForSizeAdvanced *ffsd = nullptr;
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size, ffsd), nullptr);
 #ifdef MODULE_FREETYPE_ENABLED
-	r_is_color = FT_HAS_COLOR(ffsd->face);
+	r_is_color = ffsd->face && FT_HAS_COLOR(ffsd->face);
 #else
 	r_is_color = false;
 #endif
