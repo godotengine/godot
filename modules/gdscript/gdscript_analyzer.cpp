@@ -3078,10 +3078,45 @@ void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
 
 #ifdef DEBUG_ENABLED
 	GDScriptParser::DataType to_await_type = p_await->to_await->get_datatype();
-	if (!to_await_type.is_coroutine && !to_await_type.is_variant() && to_await_type.builtin_type != Variant::SIGNAL) {
+	if (!to_await_type.is_coroutine && !to_await_type.is_variant() && to_await_type.builtin_type != Variant::SIGNAL && !awaited_is_of_abstract_function(p_await)) {
 		parser->push_warning(p_await, GDScriptWarning::REDUNDANT_AWAIT);
 	}
 #endif // DEBUG_ENABLED
+}
+
+bool GDScriptAnalyzer::awaited_is_of_abstract_function(GDScriptParser::AwaitNode *p_await) {
+	if (p_await->to_await == nullptr) {
+		return false;
+	}
+
+	if (p_await->to_await->type != GDScriptParser::Node::CALL) {
+		return false;
+	};
+
+	GDScriptParser::CallNode *call = static_cast<GDScriptParser::CallNode *>(p_await->to_await);
+
+	GDScriptParser::DataType return_type;
+	List<GDScriptParser::DataType> par_types;
+	int default_arg_count = 0;
+	BitField<MethodFlags> method_flags = METHOD_FLAGS_DEFAULT;
+	StringName native_class;
+
+	bool found = GDScriptAnalyzer::get_function_signature(
+			call,
+			false,
+			p_await->datatype,
+			call->function_name,
+			return_type,
+			par_types,
+			default_arg_count,
+			method_flags,
+			&native_class);
+
+	if (!found) {
+		return false;
+	}
+
+	return method_flags & METHOD_FLAG_VIRTUAL_REQUIRED;
 }
 
 void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_op) {
