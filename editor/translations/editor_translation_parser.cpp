@@ -79,14 +79,39 @@ void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_ex
 		for (int i = 0; i < extensions.size(); i++) {
 			r_extensions->push_back(extensions[i]);
 		}
-	} else {
+	} else if (!GDVIRTUAL_IS_OVERRIDDEN(_customize_strings)) {
 		ERR_PRINT("Custom translation parser plugin's \"func get_recognized_extensions()\" is undefined.");
+	}
+}
+
+void EditorTranslationParserPlugin::customize_strings(Vector<Vector<String>> &r_strings) const {
+	if (!GDVIRTUAL_IS_OVERRIDDEN(_customize_strings)) {
+		return;
+	}
+
+	TypedArray<PackedStringArray> new_strings;
+	new_strings.resize(r_strings.size());
+	int i = 0;
+	for (const PackedStringArray &translation : r_strings) {
+		new_strings[i] = translation;
+		i++;
+	}
+
+	GDVIRTUAL_CALL(_customize_strings, new_strings, new_strings);
+
+	r_strings.resize(new_strings.size());
+	PackedStringArray *translation_write = r_strings.ptrw();
+	i = 0;
+	for (const Variant &translation : new_strings) {
+		translation_write[i] = translation;
+		i++;
 	}
 }
 
 void EditorTranslationParserPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_parse_file, "path");
 	GDVIRTUAL_BIND(_get_recognized_extensions);
+	GDVIRTUAL_BIND(_customize_strings, "strings");
 
 #ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND_COMPAT(_parse_file_bind_compat_99297, "path", "msgids", "msgids_context_plural");
@@ -149,6 +174,12 @@ Ref<EditorTranslationParserPlugin> EditorTranslationParser::get_parser(const Str
 	WARN_PRINT("No translation parser available for \"" + p_extension + "\" extension.");
 
 	return nullptr;
+}
+
+void EditorTranslationParser::customize_strings(Vector<Vector<String>> &r_strings) const {
+	for (const Ref<EditorTranslationParserPlugin> &parser : custom_parsers) {
+		parser->customize_strings(r_strings);
+	}
 }
 
 void EditorTranslationParser::add_parser(const Ref<EditorTranslationParserPlugin> &p_parser, ParserType p_type) {
