@@ -91,6 +91,7 @@ private:
 	static Error _msg_next_frame(const Array &p_args);
 	static Error _msg_debug_mute_audio(const Array &p_args);
 	static Error _msg_override_cameras(const Array &p_args);
+	static Error _msg_override_debug_draw(const Array &p_args);
 	static Error _msg_transform_camera_2d(const Array &p_args);
 #ifndef _3D_DISABLED
 	static Error _msg_transform_camera_3d(const Array &p_args);
