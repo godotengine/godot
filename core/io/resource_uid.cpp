@@ -289,6 +289,9 @@ Error ResourceUID::load_from_cache(bool p_reset) {
 }
 
 Error ResourceUID::update_cache() {
+	// Clears entries that are invalid due to file deletion.
+	verify();
+
 	if (!changed) {
 		return OK;
 	}
@@ -346,10 +349,26 @@ String ResourceUID::get_path_from_cache(Ref<FileAccess> &p_cache_file, const Str
 	return String();
 }
 
-void ResourceUID::clear() {
-	cache_entries = 0;
-	unique_ids.clear();
-	changed = false;
+void ResourceUID::verify() {
+	MutexLock l(mutex);
+
+	Vector<ID> invalid_ids;
+	Ref<FileAccess> f = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+
+	for (KeyValue<ID, Cache> &E : unique_ids) {
+		const String file = String::utf8(E.value.cs.ptr());
+		if (!f->file_exists(file) || ResourceLoader::get_resource_uid(file) != E.key) {
+			invalid_ids.push_back(E.key);
+		}
+	}
+
+	if (!invalid_ids.is_empty()) {
+		for (ID &id : invalid_ids) {
+			unique_ids.erase(id);
+		}
+		changed = true;
+		cache_entries = 0; // Forces a resave to the cache file.
+	}
 }
 void ResourceUID::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("id_to_text", "id"), &ResourceUID::id_to_text);
