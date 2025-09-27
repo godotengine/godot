@@ -162,12 +162,7 @@ void OS_LinuxBSD::initialize() {
 
 void OS_LinuxBSD::initialize_joypads() {
 #ifdef SDL_ENABLED
-	joypad_sdl = memnew(JoypadSDL());
-	if (joypad_sdl->initialize() != OK) {
-		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
-		memdelete(joypad_sdl);
-		joypad_sdl = nullptr;
-	}
+	SETUP_JOYPAD_SDL;
 #endif
 }
 

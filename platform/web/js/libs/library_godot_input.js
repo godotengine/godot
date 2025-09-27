@@ -171,137 +171,6 @@ const GodotIME = {
 mergeInto(LibraryManager.library, GodotIME);
 
 /*
- * Gamepad API helper.
- */
-const GodotInputGamepads = {
-	$GodotInputGamepads__deps: ['$GodotRuntime', '$GodotEventListeners'],
-	$GodotInputGamepads: {
-		samples: [],
-
-		get_pads: function () {
-			try {
-				// Will throw in iframe when permission is denied.
-				// Will throw/warn in the future for insecure contexts.
-				// See https://github.com/w3c/gamepad/pull/120
-				const pads = navigator.getGamepads();
-				if (pads) {
-					return pads;
-				}
-				return [];
-			} catch (e) {
-				return [];
-			}
-		},
-
-		get_samples: function () {
-			return GodotInputGamepads.samples;
-		},
-
-		get_sample: function (index) {
-			const samples = GodotInputGamepads.samples;
-			return index < samples.length ? samples[index] : null;
-		},
-
-		sample: function () {
-			const pads = GodotInputGamepads.get_pads();
-			const samples = [];
-			for (let i = 0; i < pads.length; i++) {
-				const pad = pads[i];
-				if (!pad) {
-					samples.push(null);
-					continue;
-				}
-				const s = {
-					standard: pad.mapping === 'standard',
-					buttons: [],
-					axes: [],
-					connected: pad.connected,
-				};
-				for (let b = 0; b < pad.buttons.length; b++) {
-					s.buttons.push(pad.buttons[b].value);
-				}
-				for (let a = 0; a < pad.axes.length; a++) {
-					s.axes.push(pad.axes[a]);
-				}
-				samples.push(s);
-			}
-			GodotInputGamepads.samples = samples;
-		},
-
-		init: function (onchange) {
-			GodotInputGamepads.samples = [];
-			function add(pad) {
-				const guid = GodotInputGamepads.get_guid(pad);
-				const c_id = GodotRuntime.allocString(pad.id);
-				const c_guid = GodotRuntime.allocString(guid);
-				onchange(pad.index, 1, c_id, c_guid);
-				GodotRuntime.free(c_id);
-				GodotRuntime.free(c_guid);
-			}
-			const pads = GodotInputGamepads.get_pads();
-			for (let i = 0; i < pads.length; i++) {
-				// Might be reserved space.
-				if (pads[i]) {
-					add(pads[i]);
-				}
-			}
-			GodotEventListeners.add(window, 'gamepadconnected', function (evt) {
-				if (evt.gamepad) {
-					add(evt.gamepad);
-				}
-			}, false);
-			GodotEventListeners.add(window, 'gamepaddisconnected', function (evt) {
-				if (evt.gamepad) {
-					onchange(evt.gamepad.index, 0);
-				}
-			}, false);
-		},
-
-		get_guid: function (pad) {
-			if (pad.mapping) {
-				return pad.mapping;
-			}
-			const ua = navigator.userAgent;
-			let os = 'Unknown';
-			if (ua.indexOf('Android') >= 0) {
-				os = 'Android';
-			} else if (ua.indexOf('Linux') >= 0) {
-				os = 'Linux';
-			} else if (ua.indexOf('iPhone') >= 0) {
-				os = 'iOS';
-			} else if (ua.indexOf('Macintosh') >= 0) {
-				// Updated iPads will fall into this category.
-				os = 'MacOSX';
-			} else if (ua.indexOf('Windows') >= 0) {
-				os = 'Windows';
-			}
-
-			const id = pad.id;
-			// Chrom* style: NAME (Vendor: xxxx Product: xxxx).
-			const exp1 = /vendor: ([0-9a-f]{4}) product: ([0-9a-f]{4})/i;
-			// Firefox/Safari style (Safari may remove leading zeroes).
-			const exp2 = /^([0-9a-f]+)-([0-9a-f]+)-/i;
-			let vendor = '';
-			let product = '';
-			if (exp1.test(id)) {
-				const match = exp1.exec(id);
-				vendor = match[1].padStart(4, '0');
-				product = match[2].padStart(4, '0');
-			} else if (exp2.test(id)) {
-				const match = exp2.exec(id);
-				vendor = match[1].padStart(4, '0');
-				product = match[2].padStart(4, '0');
-			}
-			if (!vendor || !product) {
-				return `${os}Unknown`;
-			}
-			return os + vendor + product;
-		},
-	},
-};
-mergeInto(LibraryManager.library, GodotInputGamepads);
-
-/*
  * Drag and drop helper.
  * This is pretty big, but basically detect dropped files on GodotConfig.canvas,
  * process them one by one (recursively for directories), and copies them to
@@ -480,7 +349,7 @@ mergeInto(LibraryManager.library, GodotInputDragDrop);
  * Godot exposed input functions.
  */
 const GodotInput = {
-	$GodotInput__deps: ['$GodotRuntime', '$GodotConfig', '$GodotEventListeners', '$GodotInputGamepads', '$GodotInputDragDrop', '$GodotIME'],
+	$GodotInput__deps: ['$GodotRuntime', '$GodotConfig', '$GodotEventListeners', '$GodotInputDragDrop', '$GodotIME'],
 	$GodotInput: {
 		getModifiers: function (evt) {
 			return (evt.shiftKey + 0) + ((evt.altKey + 0) << 1) + ((evt.ctrlKey + 0) << 2) + ((evt.metaKey + 0) << 3);
@@ -630,53 +499,6 @@ const GodotInput = {
 	godot_js_is_ime_focused__sig: 'i',
 	godot_js_is_ime_focused: function () {
 		return GodotIME.active;
-	},
-
-	/*
-	 * Gamepad API
-	 */
-	godot_js_input_gamepad_cb__proxy: 'sync',
-	godot_js_input_gamepad_cb__sig: 'vi',
-	godot_js_input_gamepad_cb: function (change_cb) {
-		const onchange = GodotRuntime.get_func(change_cb);
-		GodotInputGamepads.init(onchange);
-	},
-
-	godot_js_input_gamepad_sample_count__proxy: 'sync',
-	godot_js_input_gamepad_sample_count__sig: 'i',
-	godot_js_input_gamepad_sample_count: function () {
-		return GodotInputGamepads.get_samples().length;
-	},
-
-	godot_js_input_gamepad_sample__proxy: 'sync',
-	godot_js_input_gamepad_sample__sig: 'i',
-	godot_js_input_gamepad_sample: function () {
-		GodotInputGamepads.sample();
-		return 0;
-	},
-
-	godot_js_input_gamepad_sample_get__proxy: 'sync',
-	godot_js_input_gamepad_sample_get__sig: 'iiiiiii',
-	godot_js_input_gamepad_sample_get: function (p_index, r_btns, r_btns_num, r_axes, r_axes_num, r_standard) {
-		const sample = GodotInputGamepads.get_sample(p_index);
-		if (!sample || !sample.connected) {
-			return 1;
-		}
-		const btns = sample.buttons;
-		const btns_len = btns.length < 16 ? btns.length : 16;
-		for (let i = 0; i < btns_len; i++) {
-			GodotRuntime.setHeapValue(r_btns + (i << 2), btns[i], 'float');
-		}
-		GodotRuntime.setHeapValue(r_btns_num, btns_len, 'i32');
-		const axes = sample.axes;
-		const axes_len = axes.length < 10 ? axes.length : 10;
-		for (let i = 0; i < axes_len; i++) {
-			GodotRuntime.setHeapValue(r_axes + (i << 2), axes[i], 'float');
-		}
-		GodotRuntime.setHeapValue(r_axes_num, axes_len, 'i32');
-		const is_standard = sample.standard ? 1 : 0;
-		GodotRuntime.setHeapValue(r_standard, is_standard, 'i32');
-		return 0;
 	},
 
 	/*
