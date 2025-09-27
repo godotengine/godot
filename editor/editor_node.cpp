@@ -1393,11 +1393,16 @@ void EditorNode::_remove_lock_file() {
 }
 
 void EditorNode::_scan_external_changes() {
-	disk_changed_list->clear();
-	TreeItem *r = disk_changed_list->create_item();
-	disk_changed_list->set_hide_root(true);
-	bool need_reload = false;
+	bool auto_apply_changes = EDITOR_GET("interface/editor/auto_apply_external_scene_changes");
 
+	// Only prepare dialog UI if auto-apply is disabled
+	if (!auto_apply_changes) {
+		disk_changed_list->clear();
+		disk_changed_list->create_item();
+		disk_changed_list->set_hide_root(true);
+	}
+
+	bool need_reload = false;
 	disk_changed_scenes.clear();
 	disk_changed_project = false;
 
@@ -1415,8 +1420,10 @@ void EditorNode::_scan_external_changes() {
 		uint64_t date = FileAccess::get_modified_time(scene_path);
 
 		if (date > last_date) {
-			TreeItem *ti = disk_changed_list->create_item(r);
-			ti->set_text(0, scene_path.get_file());
+			if (!auto_apply_changes) {
+				TreeItem *ti = disk_changed_list->create_item(disk_changed_list->get_root());
+				ti->set_text(0, scene_path.get_file());
+			}
 			need_reload = true;
 			disk_changed_scenes.push_back(scene_path);
 		}
@@ -1424,14 +1431,24 @@ void EditorNode::_scan_external_changes() {
 
 	String project_settings_path = ProjectSettings::get_singleton()->get_resource_path().path_join("project.godot");
 	if (FileAccess::get_modified_time(project_settings_path) > ProjectSettings::get_singleton()->get_last_saved_time()) {
-		TreeItem *ti = disk_changed_list->create_item(r);
-		ti->set_text(0, "project.godot");
+		if (!auto_apply_changes) {
+			TreeItem *ti = disk_changed_list->create_item(disk_changed_list->get_root());
+			ti->set_text(0, "project.godot");
+		}
 		need_reload = true;
 		disk_changed_project = true;
 	}
 
 	if (need_reload) {
-		callable_mp((Window *)disk_changed, &Window::popup_centered_ratio).call_deferred(0.3);
+		if (auto_apply_changes) {
+			_reload_modified_scenes();
+			if (disk_changed_project) {
+				ProjectSettings::get_singleton()->setup(ProjectSettings::get_singleton()->get_resource_path(), String(), true, true);
+			}
+		} else {
+			// Show the dialog for user to decide
+			callable_mp((Window *)disk_changed, &Window::popup_centered_ratio).call_deferred(0.3);
+		}
 	}
 }
 
