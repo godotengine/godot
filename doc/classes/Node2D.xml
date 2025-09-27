@@ -49,20 +49,20 @@
 				[param point] should not be the same as the node's position, otherwise the node always looks to the right.
 			</description>
 		</method>
-		<method name="move_local_x">
+		<method name="move_local_x" keywords="translate_object_local">
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<param index="1" name="scaled" type="bool" default="false" />
 			<description>
-				Applies a local translation on the node's X axis based on the [method Node._process]'s [param delta]. If [param scaled] is [code]false[/code], normalizes the movement.
+				Applies a local translation on the node's X axis with the amount specified in [param delta]. If [param scaled] is [code]false[/code], normalizes the movement to occur independently of the node's [member scale].
 			</description>
 		</method>
-		<method name="move_local_y">
+		<method name="move_local_y" keywords="translate_object_local">
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<param index="1" name="scaled" type="bool" default="false" />
 			<description>
-				Applies a local translation on the node's Y axis based on the [method Node._process]'s [param delta]. If [param scaled] is [code]false[/code], normalizes the movement.
+				Applies a local translation on the node's Y axis with the amount specified in [param delta]. If [param scaled] is [code]false[/code], normalizes the movement to occur independently of the node's [member scale].
 			</description>
 		</method>
 		<method name="rotate">
