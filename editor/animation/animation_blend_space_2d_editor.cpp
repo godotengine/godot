@@ -936,7 +936,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 
 	snap_x = memnew(SpinBox);
 	top_hb->add_child(snap_x);
-	snap_x->set_prefix("x:");
+	snap_x->set_format("x: %s");
 	snap_x->set_min(0.01);
 	snap_x->set_step(0.01);
 	snap_x->set_max(1000);
@@ -944,7 +944,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 
 	snap_y = memnew(SpinBox);
 	top_hb->add_child(snap_y);
-	snap_y->set_prefix("y:");
+	snap_y->set_format("y: %s");
 	snap_y->set_min(0.01);
 	snap_y->set_step(0.01);
 	snap_y->set_max(1000);

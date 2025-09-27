@@ -56,7 +56,14 @@
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
 			If [code]true[/code], the [SpinBox] will be editable. Otherwise, it will be read only.
 		</member>
-		<member name="prefix" type="String" setter="set_prefix" getter="get_prefix" default="&quot;&quot;">
+		<member name="format" type="String" setter="set_format" getter="get_format" default="&quot;&quot;">
+			The formatting of the displayed numeric value, using the same rules as [String]'s [code]%[/code] operator (see [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings[/url]). If empty, the value is displayed with no special formatting. If the format string is invalid, the [SpinBox] will display [code]"ERROR"[/code], with the error message available as a configuration warning.
+			The following format strings can be used as examples:
+			- [code]"(%s)"[/code] displays as a number in brackets (e.g. [code](6.9)[/code]).
+			- [code]"%d ms"[/code] displays as an integer with milliseconds unit (e.g. [code]420 ms[/code]).
+			- [code]"%0.2f%%"[/code] displays as a percentage, with 2 decimal points (e.g. [code]21.37%[/code]).
+		</member>
+		<member name="prefix" type="String" setter="set_prefix" getter="get_prefix" default="&quot;&quot;" deprecated="Use [member format] instead.">
 			Adds the specified prefix string before the numerical value of the [SpinBox].
 		</member>
 		<member name="select_all_on_focus" type="bool" setter="set_select_all_on_focus" getter="is_select_all_on_focus" default="false">
@@ -64,7 +71,7 @@
 		</member>
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" enum="Control.SizeFlags" is_bitfield="true" default="1" />
 		<member name="step" type="float" setter="set_step" getter="get_step" overrides="Range" default="1.0" />
-		<member name="suffix" type="String" setter="set_suffix" getter="get_suffix" default="&quot;&quot;">
+		<member name="suffix" type="String" setter="set_suffix" getter="get_suffix" default="&quot;&quot;" deprecated="Use [member format] instead.">
 			Adds the specified suffix string after the numerical value of the [SpinBox].
 		</member>
 		<member name="update_on_text_changed" type="bool" setter="set_update_on_text_changed" getter="get_update_on_text_changed" default="false">
