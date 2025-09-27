@@ -430,10 +430,10 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
 	HostFxrCharString godot_plugins_path = str_to_hostfxr(
-			GodotSharpDirs::get_api_assemblies_dir().path_join("GodotPlugins.dll"));
+			GodotSharpDirs::get_tools_assemblies_dir().path_join("GodotPlugins.dll"));
 
 	HostFxrCharString config_path = str_to_hostfxr(
-			GodotSharpDirs::get_api_assemblies_dir().path_join("GodotPlugins.runtimeconfig.json"));
+			GodotSharpDirs::get_tools_assemblies_dir().path_join("GodotPlugins.runtimeconfig.json"));
 
 	load_assembly_and_get_function_pointer_fn load_assembly_and_get_function_pointer =
 			initialize_hostfxr_for_config(get_data(config_path));
@@ -642,7 +642,7 @@ void GDMono::initialize() {
 
 #if !defined(APPLE_EMBEDDED_ENABLED)
 	// Check that the .NET assemblies directory exists before trying to use it.
-	if (!DirAccess::exists(GodotSharpDirs::get_api_assemblies_dir())) {
+	if (!DirAccess::exists(GodotSharpDirs::get_api_assemblies_dir()) && !DirAccess::exists(GodotSharpDirs::get_tools_assemblies_dir())) {
 		OS::get_singleton()->alert(vformat(RTR("Unable to find the .NET assemblies directory.\nMake sure the '%s' directory exists and contains the .NET assemblies."), GodotSharpDirs::get_api_assemblies_dir()), RTR(".NET assemblies not found"));
 		ERR_FAIL_MSG(".NET: Assemblies not found");
 	}
@@ -745,7 +745,7 @@ void GDMono::_init_godot_api_hashes() {
 bool GDMono::_load_project_assembly() {
 	String assembly_name = Path::get_csharp_project_name();
 
-	String assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir()
+	String assembly_path = GodotSharpDirs::get_res_assemblies_dir()
 								   .path_join(assembly_name + ".dll");
 	assembly_path = ProjectSettings::get_singleton()->globalize_path(assembly_path);
 
@@ -775,7 +775,7 @@ void GDMono::reload_failure() {
 		ERR_PRINT_ED(".NET: Giving up on assembly reloading. Please restart the editor if unloading was failing.");
 
 		String assembly_name = Path::get_csharp_project_name();
-		String assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir().path_join(assembly_name + ".dll");
+		String assembly_path = GodotSharpDirs::get_res_assemblies_dir().path_join(assembly_name + ".dll");
 		assembly_path = ProjectSettings::get_singleton()->globalize_path(assembly_path);
 		project_assembly_path = assembly_path.simplify_path();
 		project_assembly_modified_time = FileAccess::get_modified_time(assembly_path);
