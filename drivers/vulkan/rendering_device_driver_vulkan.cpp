@@ -2236,6 +2236,78 @@ void RenderingDeviceDriverVulkan::texture_get_copyable_layout(TextureID p_textur
 	}
 }
 
+Vector<uint8_t> RenderingDeviceDriverVulkan::texture_get_data(TextureID p_texture, uint32_t p_layer) {
+	const TextureInfo *tex = (const TextureInfo *)p_texture.id;
+
+	DataFormat tex_format = tex->rd_format;
+	uint32_t tex_width = tex->vk_create_info.extent.width;
+	uint32_t tex_height = tex->vk_create_info.extent.height;
+	uint32_t tex_depth = tex->vk_create_info.extent.depth;
+	uint32_t tex_mipmaps = tex->vk_create_info.mipLevels;
+
+	uint32_t width, height, depth;
+	uint32_t tight_mip_size = get_image_format_required_size(tex_format, tex_width, tex_height, tex_depth, tex_mipmaps, &width, &height, &depth);
+
+	Vector<uint8_t> image_data;
+	image_data.resize(tight_mip_size);
+
+	uint32_t blockw, blockh;
+	get_compressed_image_format_block_dimensions(tex_format, blockw, blockh);
+	uint32_t block_size = get_compressed_image_format_block_byte_size(tex_format);
+	uint32_t pixel_size = get_image_format_pixel_size(tex_format);
+
+	{
+		uint8_t *w = image_data.ptrw();
+
+		uint32_t mipmap_offset = 0;
+		for (uint32_t mm_i = 0; mm_i < tex_mipmaps; mm_i++) {
+			uint32_t image_total = get_image_format_required_size(tex_format, tex_width, tex_height, tex_depth, mm_i + 1, &width, &height, &depth);
+
+			uint8_t *write_ptr_mipmap = w + mipmap_offset;
+			tight_mip_size = image_total - mipmap_offset;
+
+			RDD::TextureSubresource subres;
+			subres.aspect = RDD::TEXTURE_ASPECT_COLOR;
+			subres.layer = p_layer;
+			subres.mipmap = mm_i;
+			RDD::TextureCopyableLayout layout;
+			texture_get_copyable_layout(p_texture, subres, &layout);
+
+			uint8_t *img_mem = texture_map(p_texture, subres);
+			ERR_FAIL_NULL_V(img_mem, Vector<uint8_t>());
+
+			for (uint32_t z = 0; z < depth; z++) {
+				uint8_t *write_ptr = write_ptr_mipmap + z * tight_mip_size / depth;
+				const uint8_t *slice_read_ptr = img_mem + z * layout.depth_pitch;
+
+				if (block_size > 1) {
+					// Compressed.
+					uint32_t line_width = (block_size * (width / blockw));
+					for (uint32_t y = 0; y < height / blockh; y++) {
+						const uint8_t *rptr = slice_read_ptr + y * layout.row_pitch;
+						uint8_t *wptr = write_ptr + y * line_width;
+
+						memcpy(wptr, rptr, line_width);
+					}
+				} else {
+					// Uncompressed.
+					for (uint32_t y = 0; y < height; y++) {
+						const uint8_t *rptr = slice_read_ptr + y * layout.row_pitch;
+						uint8_t *wptr = write_ptr + y * pixel_size * width;
+						memcpy(wptr, rptr, (uint64_t)pixel_size * width);
+					}
+				}
+			}
+
+			texture_unmap(p_texture);
+
+			mipmap_offset = image_total;
+		}
+	}
+
+	return image_data;
+}
+
 uint8_t *RenderingDeviceDriverVulkan::texture_map(TextureID p_texture, const TextureSubresource &p_subresource) {
 	const TextureInfo *tex_info = (const TextureInfo *)p_texture.id;
 
