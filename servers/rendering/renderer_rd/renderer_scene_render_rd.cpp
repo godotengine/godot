@@ -162,6 +162,10 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 	}
 }
 
+void RendererSceneRenderRD::environment_set_use_legacy_mode(bool p_enable) {
+	environment_use_legacy_mode = p_enable;
+}
+
 /* REFLECTION PROBE */
 
 RID RendererSceneRenderRD::reflection_probe_create_framebuffer(RID p_color, RID p_depth) {
@@ -746,6 +750,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_DISABLED;
 		}
 
+		tonemap.use_legacy_mode = environment_use_legacy_mode;
+
 		tone_mapper->tonemapper(color_texture, dest_fb, tonemap);
 
 		RD::get_singleton()->draw_command_end_label();
@@ -952,6 +958,8 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	} else {
 		tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_DISABLED;
 	}
+
+	tonemap.use_legacy_mode = environment_use_legacy_mode;
 
 	tone_mapper->tonemapper(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
 
@@ -1702,6 +1710,8 @@ void RendererSceneRenderRD::init() {
 	decals_set_filter(RS::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
 	light_projectors_set_filter(RS::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
 	lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
+
+	environment_use_legacy_mode = (GLOBAL_GET("rendering/environment/use_legacy_mode"));
 
 	cull_argument.set_page_pool(&cull_argument_pool);
 

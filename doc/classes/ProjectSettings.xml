@@ -2865,6 +2865,11 @@
 			Scales the distance over which samples are taken for subsurface scattering effect. Changing this does not impact performance, but higher values will result in significant artifacts as the samples will become obviously spread out. A lower value results in a smaller spread of scattered light. See also [member rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale].
 			[b]Note:[/b] This property is only read when the project starts. To set the subsurface scattering scale at runtime, call [method RenderingServer.sub_surface_scattering_set_scale] instead.
 		</member>
+		<member name="rendering/environment/use_legacy_mode" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], will use the glow blending behavior from Godot 4.5 and earlier.
+			[b]Note:[/b] While this setting restores previous glow blending behavior, the default values of glow blend mode, intensity, and levels have changed and may need to be manually set to their previous default values.
+			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
+		</member>
 		<member name="rendering/environment/volumetric_fog/use_filter" type="int" setter="" getter="" default="1">
 			Enables filtering of the volumetric fog effect prior to integration. This substantially blurs the fog which reduces fine details but also smooths out harsh edges and aliasing artifacts. Disable when more detail is required.
 		</member>

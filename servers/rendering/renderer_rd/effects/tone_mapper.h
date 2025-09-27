@@ -66,6 +66,7 @@ private:
 		TONEMAP_FLAG_USE_8_BIT_DEBANDING = (1 << 5),
 		TONEMAP_FLAG_USE_10_BIT_DEBANDING = (1 << 6),
 		TONEMAP_FLAG_CONVERT_TO_SRGB = (1 << 7),
+		TONEMAP_FLAG_USE_LEGACY_MODE = (1 << 8),
 	};
 
 	struct TonemapPushConstant {
@@ -114,10 +115,10 @@ public:
 			GLOW_MODE_MIX
 		};
 
-		GlowMode glow_mode = GLOW_MODE_ADD;
-		float glow_intensity = 1.0;
+		GlowMode glow_mode = GLOW_MODE_SCREEN;
+		float glow_intensity = 0.3;
 		float glow_map_strength = 0.0f;
-		float glow_levels[7] = { 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0 };
+		float glow_levels[7] = { 1.0, 0.8, 0.4, 0.1, 0.0, 0.0, 0.0 };
 		Vector2i glow_texture_size;
 		bool glow_use_bicubic_upscale = false;
 		RID glow_texture;
@@ -152,6 +153,8 @@ public:
 		uint32_t view_count = 1;
 
 		bool convert_to_srgb = false;
+
+		bool use_legacy_mode = false;
 	};
 
 	void tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings);
