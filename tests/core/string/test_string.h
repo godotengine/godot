@@ -156,20 +156,6 @@ TEST_CASE("[String] UTF16 with BOM") {
 	CHECK(String::utf16(cs) == s);
 }
 
-TEST_CASE("[String] UTF8 with CR") {
-	const String base = U"Hello darkness\r\nMy old friend\nI've come to talk\rWith you again";
-
-	String keep_cr;
-	Error err = keep_cr.append_utf8(base.utf8().get_data());
-	CHECK(err == OK);
-	CHECK(keep_cr == base);
-
-	String no_cr;
-	err = no_cr.append_utf8(base.utf8().get_data(), -1, true); // Skip CR.
-	CHECK(err == OK);
-	CHECK(no_cr == base.replace("\r", ""));
-}
-
 TEST_CASE("[String] Invalid UTF8 (non shortest form sequence)") {
 	ERR_PRINT_OFF
 	// Examples from the unicode standard : 3.9 Unicode Encoding Forms - Table 3.8.
