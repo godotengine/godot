@@ -654,13 +654,14 @@ void SceneDebugger::_set_object_property(ObjectID p_id, const String &p_property
 		prop_name = p_property;
 	}
 
-	Variant value;
-	if (p_field.is_empty()) {
-		// Whole value.
-		value = p_value;
-	} else {
-		// Only one field.
-		value = fieldwise_assign(obj->get(prop_name), p_value, p_field);
+	Variant value = p_value;
+	if (p_value.is_string() && (obj->get_static_property_type(prop_name) == Variant::OBJECT || p_property == "script")) {
+		value = ResourceLoader::load(p_value);
+	}
+
+	if (!p_field.is_empty()) {
+		// Only one specific field.
+		value = fieldwise_assign(obj->get(prop_name), value, p_field);
 	}
 
 	obj->set(prop_name, value);
@@ -739,6 +740,13 @@ SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
 			_parse_script_properties(s, si);
 		}
 	}
+	HashMap<String, SceneDebuggerProperty> script_props;
+	for (SceneDebuggerProperty &property : properties) {
+		String name = property.first.name;
+		if (name.begins_with("Members/")) {
+			script_props[name.get_slice("/", 1)] = property;
+		}
+	}
 
 	if (Node *node = Object::cast_to<Node>(obj)) {
 		// For debugging multiplayer.
@@ -765,6 +773,10 @@ SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
 	obj->get_property_list(&pinfo, true);
 	for (const PropertyInfo &E : pinfo) {
 		if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
+			// Remove duplicates from the "Members" category.
+			if (script_props.has(E.name)) {
+				properties.erase(script_props[E.name]);
+			}
 			properties.push_back(SceneDebuggerProperty(E, obj->get(E.name)));
 		}
 	}
@@ -826,7 +838,7 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 
 void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 	Array send_props;
-	for (SceneDebuggerObject::SceneDebuggerProperty &property : properties) {
+	for (SceneDebuggerProperty &property : properties) {
 		const PropertyInfo &pi = property.first;
 		Variant &var = property.second;
 
