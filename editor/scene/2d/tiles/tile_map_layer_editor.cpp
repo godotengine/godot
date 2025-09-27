@@ -351,11 +351,11 @@ void TileMapLayerEditorTilesPlugin::_patterns_item_list_gui_input(const Ref<Inpu
 }
 
 void TileMapLayerEditorTilesPlugin::_pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Texture2D> p_texture) {
-	// TODO optimize ?
-	for (int i = 0; i < patterns_item_list->get_item_count(); i++) {
-		if (patterns_item_list->get_item_metadata(i) == p_pattern) {
-			patterns_item_list->set_item_icon(i, p_texture);
-			break;
+	// Optimized: Use HashMap for O(1) lookup instead of O(n) linear search
+	if (pattern_to_index_map.has(p_pattern)) {
+		int index = pattern_to_index_map[p_pattern];
+		if (index < patterns_item_list->get_item_count()) {
+			patterns_item_list->set_item_icon(index, p_texture);
 		}
 	}
 }
@@ -373,11 +373,14 @@ void TileMapLayerEditorTilesPlugin::_update_patterns_list() {
 
 	// Recreate the items.
 	patterns_item_list->clear();
+	pattern_to_index_map.clear(); // Clear the optimization map
 	for (int i = 0; i < tile_set->get_patterns_count(); i++) {
 		int id = patterns_item_list->add_item("");
-		patterns_item_list->set_item_metadata(id, tile_set->get_pattern(i));
+		Ref<TileMapPattern> pattern = tile_set->get_pattern(i);
+		patterns_item_list->set_item_metadata(id, pattern);
 		patterns_item_list->set_item_tooltip(id, vformat(TTR("Index: %d"), i));
-		TilesEditorUtils::get_singleton()->queue_pattern_preview(tile_set, tile_set->get_pattern(i), callable_mp(this, &TileMapLayerEditorTilesPlugin::_pattern_preview_done));
+		pattern_to_index_map[pattern] = id; // Add to optimization map
+		TilesEditorUtils::get_singleton()->queue_pattern_preview(tile_set, pattern, callable_mp(this, &TileMapLayerEditorTilesPlugin::_pattern_preview_done));
 	}
 
 	// Update the label visibility.
