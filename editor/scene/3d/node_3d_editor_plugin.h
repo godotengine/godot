@@ -310,7 +310,7 @@ private:
 	Vector3 _get_screen_to_space(const Vector3 &p_vector3);
 
 	void _select_region();
-	bool _transform_gizmo_select(const Vector2 &p_screenpos, bool p_highlight_only = false);
+	bool _transform_gizmo_select(const Vector2 &p_screenpos, bool p_highlight_only = false, bool p_duplicate = false);
 	void _transform_gizmo_apply(Node3D *p_node, const Transform3D &p_transform, bool p_local);
 
 	void _nav_pan(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
@@ -381,6 +381,14 @@ private:
 		Variant gizmo_initial_value;
 		bool original_local;
 		bool instant;
+
+		// Tracking duplication data. Sstoring this allows us to decouple the duplication
+		// from creating the undo/redo entry later when committing the transform.
+		bool duplicate;
+		List<Node *> dup_original_selection;
+		HashMap<Node *, NodePath> dup_original_paths;
+		HashMap<Node *, Node *> dup_insertion_siblings;
+		List<Node *> dup_owned_nodes;
 
 		// Numeric blender-style transforms (e.g. 'g5x').
 		// numeric_input tracks the current input value, e.g. 1.23.
@@ -515,7 +523,7 @@ private:
 
 	Transform3D _compute_transform(TransformMode p_mode, const Transform3D &p_original, const Transform3D &p_original_local, Vector3 p_motion, double p_extra, bool p_local, bool p_orthogonal);
 
-	void begin_transform(TransformMode p_mode, bool instant);
+	void begin_transform(TransformMode p_mode, bool p_instant, bool p_duplicate = false);
 	void commit_transform();
 	void apply_transform(Vector3 p_motion, double p_snap);
 	void update_transform(bool p_shift);
