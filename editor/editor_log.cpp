@@ -341,7 +341,28 @@ void EditorLog::_rebuild_log() {
 bool EditorLog::_check_display_message(LogMessage &p_message) {
 	bool filter_active = type_filter_map[p_message.type]->is_active();
 	String search_text = search_box->get_text();
-	bool search_match = search_text.is_empty() || p_message.text.containsn(search_text);
+
+	if (search_text.is_empty()) {
+		return filter_active;
+	}
+
+	bool search_match = p_message.text.containsn(search_text);
+
+	// If not found and message contains BBCode tags, also check the parsed text
+	if (!search_match && p_message.text.contains_char('[')) {
+		// Lazy initialize the BBCode parser
+		if (!bbcode_parser) {
+			bbcode_parser = memnew(RichTextLabel);
+			bbcode_parser->set_use_bbcode(true);
+		}
+
+		// Ensure clean state for each message
+		bbcode_parser->clear();
+		bbcode_parser->parse_bbcode(p_message.text);
+		String parsed_text = bbcode_parser->get_parsed_text();
+		search_match = parsed_text.containsn(search_text);
+	}
+
 	return filter_active && search_match;
 }
 
@@ -586,6 +607,10 @@ void EditorLog::deinit() {
 }
 
 EditorLog::~EditorLog() {
+	if (bbcode_parser) {
+		memdelete(bbcode_parser);
+	}
+
 	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
 		// MSG_TYPE_STD_RICH is connected to the std_filter button, so we do this
 		// to avoid it from being deleted twice, causing a crash on closing.
