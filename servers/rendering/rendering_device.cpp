@@ -6389,6 +6389,80 @@ void RenderingDevice::_free_pending_resources(int p_frame) {
 	}
 }
 
+void RenderingDevice::set_latency_mode(LatencyMode p_latency_mode) {
+	latency_mode = p_latency_mode;
+}
+
+RenderingDevice::LatencyMode RenderingDevice::get_latency_mode() const {
+	return latency_mode;
+}
+
+void RenderingDevice::_wait_for_present(bool p_sequential_sync) {
+	const PacingMethod pacing_method = get_current_pacing_method(p_sequential_sync);
+
+	if (pacing_method == PACING_METHOD_WAITABLE_SWAPCHAIN) {
+		HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(DisplayServer::MAIN_WINDOW_ID);
+		if (it != screen_swap_chains.end()) {
+			uint32_t max_frame_delay = frames.size();
+			switch (latency_mode) {
+				case LATENCY_MODE_LOW_EXTREME:
+					max_frame_delay = 0u;
+					break;
+				case LATENCY_MODE_LOW:
+					max_frame_delay = 1u;
+					break;
+				case LATENCY_MODE_MEDIUM:
+					max_frame_delay = std::min(max_frame_delay, 2u);
+					break;
+				case LATENCY_MODE_HIGH_THROUGHPUT:
+					DEV_ASSERT(false && "This path should be unreachable!");
+					max_frame_delay = 16u;
+					break;
+			}
+			driver->swap_chain_wait_for_present(it->key, it->value, max_frame_delay);
+		}
+	} else if (pacing_method == PACING_METHOD_SEQUENTIAL_SYNC) {
+		_stall_for_previous_frames();
+	}
+}
+
+void RenderingDevice::_restrict_available_pacing_methods(uint8_t mask) {
+	available_pacing_methods = mask;
+	if (driver) {
+		available_pacing_methods = available_pacing_methods.get_shared(driver->get_available_pacing_methods());
+	}
+}
+
+RDD::PacingMethod RenderingDevice::get_current_pacing_method(bool p_sequential_sync) const {
+	if (available_pacing_methods.has_flag(PACING_METHOD_ANDROID_SWAPPY)) {
+		return PACING_METHOD_ANDROID_SWAPPY;
+	}
+	if (available_pacing_methods.has_flag(PACING_METHOD_WAITABLE_SWAPCHAIN) && latency_mode != LATENCY_MODE_HIGH_THROUGHPUT) {
+		return PACING_METHOD_WAITABLE_SWAPCHAIN;
+	}
+	if (available_pacing_methods.has_flag(PACING_METHOD_SEQUENTIAL_SYNC) && p_sequential_sync && latency_mode <= LATENCY_MODE_LOW) {
+		return PACING_METHOD_SEQUENTIAL_SYNC;
+	}
+	return PACING_METHOD_NONE;
+}
+
+bool RenderingDevice::should_capture_frame_pacing_timings() {
+	RenderingDevice *device = RenderingDevice::get_singleton();
+	if (device) {
+		return device->_should_capture_frame_pacing_timings();
+	}
+	return false;
+}
+
+bool RenderingDevice::_should_capture_frame_pacing_timings() const {
+#ifdef DEBUG_ENABLED
+	// Debug builds always measure this value for more performance metrics.
+	return true;
+#else
+	return get_current_pacing_method(true) == RDD::PACING_METHOD_SEQUENTIAL_SYNC;
+#endif
+}
+
 uint32_t RenderingDevice::get_frame_delay() const {
 	return frames.size();
 }
@@ -6727,6 +6801,8 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 		Engine::get_singleton()->print_header(vformat("%s %s - %s - Using Device #%d: %s - %s", get_device_api_name(), get_device_api_version(), rendering_method, device_index, _get_device_vendor_name(device), device.name));
 	}
 
+	latency_mode = LatencyMode(GLOBAL_GET("rendering/rendering_device/vsync/latency_mode"));
+
 	// Pick the main queue family. It is worth noting we explicitly do not request the transfer bit, as apparently the specification defines
 	// that the existence of either the graphics or compute bit implies that the queue can also do transfer operations, but it is optional
 	// to indicate whether it supports them or not with the dedicated transfer bit if either is set.
@@ -6889,6 +6965,35 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 			pipeline_cache_size = driver->pipeline_cache_query_size();
 			print_verbose(vformat("Startup PSO cache (%.1f MiB)", pipeline_cache_size / (1024.0f * 1024.0f)));
 		}
+	}
+
+	const BitField<PacingMethod> supported_pacing_methods = driver->get_available_pacing_methods();
+	print_verbose(vformat("Supported Pacing Methods (mask 0x%02x):", (uint64_t)supported_pacing_methods));
+	if (supported_pacing_methods.has_flag(PACING_METHOD_SEQUENTIAL_SYNC)) {
+		print_verbose("\t SEQUENTIAL_SYNC");
+	}
+	if (supported_pacing_methods.has_flag(PACING_METHOD_WAITABLE_SWAPCHAIN)) {
+		print_verbose("\t WAITABLE_SWAPCHAIN");
+	}
+	if (supported_pacing_methods.has_flag(PACING_METHOD_ANDROID_SWAPPY)) {
+		print_verbose("\t ANDROID_SWAPPY");
+	}
+
+	available_pacing_methods = available_pacing_methods.get_shared(supported_pacing_methods);
+
+	switch (get_current_pacing_method(true)) {
+		case RenderingDeviceCommons::PACING_METHOD_NONE:
+			print_verbose("Current Pacing Method (may change later): NONE");
+			break;
+		case RenderingDeviceCommons::PACING_METHOD_SEQUENTIAL_SYNC:
+			print_verbose("Current Pacing Method (may change later): SEQUENTIAL_SYNC");
+			break;
+		case RenderingDeviceCommons::PACING_METHOD_WAITABLE_SWAPCHAIN:
+			print_verbose("Current Pacing Method (may change later): WAITABLE_SWAPCHAIN");
+			break;
+		case RenderingDeviceCommons::PACING_METHOD_ANDROID_SWAPPY:
+			print_verbose("Current Pacing Method (may change later): ANDROID_SWAPPY");
+			break;
 	}
 
 	// Find the best method available for VRS on the current hardware.
@@ -7464,6 +7569,8 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &RenderingDevice::has_feature);
 	ClassDB::bind_method(D_METHOD("limit_get", "limit"), &RenderingDevice::limit_get);
+	ClassDB::bind_method(D_METHOD("set_latency_mode", "p_latency_mode"), &RenderingDevice::set_latency_mode);
+	ClassDB::bind_method(D_METHOD("get_latency_mode"), &RenderingDevice::get_latency_mode);
 	ClassDB::bind_method(D_METHOD("get_frame_delay"), &RenderingDevice::get_frame_delay);
 	ClassDB::bind_method(D_METHOD("submit"), &RenderingDevice::submit);
 	ClassDB::bind_method(D_METHOD("sync"), &RenderingDevice::sync);
@@ -8091,6 +8198,11 @@ void RenderingDevice::_bind_methods() {
 	BIND_BITFIELD_FLAG(DRAW_IGNORE_STENCIL);
 	BIND_BITFIELD_FLAG(DRAW_CLEAR_ALL);
 	BIND_BITFIELD_FLAG(DRAW_IGNORE_ALL);
+
+	BIND_ENUM_CONSTANT(LATENCY_MODE_LOW_EXTREME);
+	BIND_ENUM_CONSTANT(LATENCY_MODE_LOW);
+	BIND_ENUM_CONSTANT(LATENCY_MODE_MEDIUM);
+	BIND_ENUM_CONSTANT(LATENCY_MODE_HIGH_THROUGHPUT);
 }
 
 void RenderingDevice::make_current() {

@@ -33,11 +33,15 @@
 
 #include "core/config/project_settings.h"
 #include "core/variant/typed_array.h"
+#include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_warnings.h"
 
 RenderingServer *RenderingServer::singleton = nullptr;
 RenderingServer *(*RenderingServer::create_func)() = nullptr;
+
+uint64_t RenderingServer::draw_gpu_time = 0ul;
+uint64_t RenderingServer::draw_cpu_time = 0ul;
 
 RenderingServer *RenderingServer::get_singleton() {
 	return singleton;
@@ -3473,6 +3477,11 @@ void RenderingServer::_bind_methods() {
 
 	/* Misc */
 
+	ClassDB::bind_method(D_METHOD("get_actual_cpu_gpu_sync_mode"), &RenderingServer::get_actual_cpu_gpu_sync_mode);
+
+	BIND_ENUM_CONSTANT(CPU_GPU_SYNC_PARALLEL);
+	BIND_ENUM_CONSTANT(CPU_GPU_SYNC_SEQUENTIAL);
+
 	ClassDB::bind_method(D_METHOD("request_frame_drawn_callback", "callable"), &RenderingServer::request_frame_drawn_callback);
 	ClassDB::bind_method(D_METHOD("has_changed"), &RenderingServer::has_changed);
 	ClassDB::bind_method(D_METHOD("get_rendering_info", "info"), &RenderingServer::get_rendering_info);
@@ -3600,6 +3609,108 @@ TypedArray<StringName> RenderingServer::_global_shader_parameter_get_list() cons
 		gsp[i] = gsp_sn[i];
 	}
 	return gsp;
+}
+
+void RenderingServer::notify_cpu_gpu_sync_timings(uint64_t cpu_time, uint64_t gpu_time) {
+	// Clamp total time to prevent anomalous readings from sending the average out of sync
+	// for a long time until it converges again. Anomalous readings can be something as simple
+	// as Windows Update, Alt + Tab, etc.
+	const uint64_t total_time = MIN(cpu_time + gpu_time, 1000ul * 1000ul);
+
+	last_cpu_time = cpu_time;
+	last_gpu_time = gpu_time;
+
+	// Calculate rolling average & variance.
+	const int64_t delta = int64_t(total_time - avg_total_time);
+	variance_total_time = (variance_total_time + uint64_t(delta * delta)) >> 1ul;
+	avg_total_time = (avg_total_time + total_time) >> 1ul;
+
+	const DisplayServer::VSyncMode vsync_mode = DisplayServer::get_singleton()->window_get_vsync_mode(DisplayServer::MAIN_WINDOW_ID);
+	if (vsync_mode == DisplayServer::VSYNC_DISABLED || vsync_mode == DisplayServer::VSYNC_MAILBOX || RSG::rasterizer->is_opengl()) {
+		// We're processing & presenting as fast as possible. Or using OpenGL (GL has a lot of variance, unpredictability
+		// and each time it switches between SEQ and PARALLEL there's a very visible stutter. Disabled until this is fixed).
+		same_cpu_sync_mode_count = 0u;
+		missed_hard_target = 0u;
+		last_frame_cpu_gpu_sync_mode = CPU_GPU_SYNC_PARALLEL;
+		actual_cpu_gpu_sync_mode = CPU_GPU_SYNC_PARALLEL;
+		return;
+	}
+
+	const uint64_t stdev_total_time = uint64_t(Math::sqrt(double(variance_total_time)));
+	// We estimate the next frame will take "estimated_time". If that's below the monitor's
+	// refresh rate, switch to CPU_GPU_SYNC_SEQUENTIAL. Otherwise switch to CPU_GPU_SYNC_PARALLEL.
+	const uint64_t estimated_time = avg_total_time + stdev_total_time;
+
+	const uint64_t max_mfps = uint64_t(Engine::get_singleton()->get_max_fps() * 1000.0);
+	uint64_t soft_target = cached_refresh_rate_us;
+	uint64_t curr_mhz = cached_refresh_rate_millihertz;
+	if (max_mfps != 0ul) {
+		soft_target = MAX((1000000ul * 1000ul) / max_mfps, cached_refresh_rate_us);
+		curr_mhz = MIN(cached_refresh_rate_millihertz, max_mfps);
+	}
+	const uint64_t hard_target = soft_target;
+	soft_target = soft_target / 2ul;
+
+	const bool target_is_between_avg_and_std_dev =
+			Math::abs(int64_t(soft_target - avg_total_time)) <= int64_t(stdev_total_time);
+
+	// Without threshold_same_mode_count + same_cpu_sync_mode_count + last_frame_cpu_gpu_sync_mode,
+	// we could end up in an unstable situation where the system performance is right there on the
+	// edge between parallel & sequential and thus keeps switching modes back and forth.
+	// That's a lot of stutter. Thus only switch if results have been consistent for
+	// <N> frames in a row.
+	const uint32_t threshold_same_mode_count = target_is_between_avg_and_std_dev ? 1200u : 60u;
+
+	if (actual_cpu_gpu_sync_mode == CPU_GPU_SYNC_PARALLEL) {
+		// If we don't reset it while in PARALLEL, missed_hard_target may have temporarily grown
+		// very large and take forever to get below threshold.
+		missed_hard_target = 0u;
+	}
+
+	// Missing the hard target is an extreme offense. We only tolerate 2.0% of frames missing a VBLANK.
+	// If that happens, switch to PARALLEL.
+	const uint32_t threshold_missed_hard_target = 2000u;
+	if (estimated_time >= hard_target) {
+		missed_hard_target += 1000u;
+	} else {
+		// If we had a single missed frame, over the course of a second missed_hard_target should be
+		// 0 again (excluding fixed-point inaccuracies). If we can't attaing the target FPS, then
+		// missed_hard_target will decrease at a slower rate; but we don't care because that
+		// means we should be in PARALLEL anyway.
+		missed_hard_target -= MIN((1000u * 1000u) / curr_mhz, missed_hard_target);
+	}
+
+	CPUGPUSyncMode new_cpu_gpu_sync_mode;
+	if ((estimated_time >= soft_target || missed_hard_target >= threshold_missed_hard_target) &&
+			RenderingDevice::get_singleton()->get_latency_mode() != RD::LATENCY_MODE_LOW_EXTREME) {
+		new_cpu_gpu_sync_mode = CPU_GPU_SYNC_PARALLEL;
+	} else {
+		new_cpu_gpu_sync_mode = CPU_GPU_SYNC_SEQUENTIAL;
+	}
+
+	if (last_frame_cpu_gpu_sync_mode != new_cpu_gpu_sync_mode) {
+		same_cpu_sync_mode_count = 0u;
+	} else {
+		++same_cpu_sync_mode_count;
+	}
+	last_frame_cpu_gpu_sync_mode = new_cpu_gpu_sync_mode;
+	if (same_cpu_sync_mode_count >= threshold_same_mode_count) {
+		actual_cpu_gpu_sync_mode = new_cpu_gpu_sync_mode;
+	}
+}
+
+void RenderingServer::update_cached_refresh_rate() {
+	double refresh_rate_hz = double(DisplayServer::get_singleton()->screen_get_refresh_rate());
+	cached_refresh_rate_millihertz = uint32_t(MAX(refresh_rate_hz, 0.0) * 1000.0);
+	if (cached_refresh_rate_millihertz == 0u) {
+		// By setting cached_refresh_rate_us to 0, 2 things can happen:
+		//	1. If max FPS is set, MAX(1000000ul / max_fps, cached_refresh_rate_us) will always obey FPS.
+		//  2. If max FPS isn't set, the target will always be CPU_GPU_SYNC_PARALLEL.
+		cached_refresh_rate_millihertz = UINT32_MAX;
+		cached_refresh_rate_us = 0ul;
+	} else {
+		cached_refresh_rate_us = uint64_t((1000.0 * 1000.0) / refresh_rate_hz);
+	}
 }
 
 void RenderingServer::init() {

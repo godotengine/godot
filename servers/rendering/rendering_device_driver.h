@@ -457,6 +457,10 @@ public:
 	// Wait until all rendering associated to the swap chain is finished before deleting it.
 	virtual void swap_chain_free(SwapChainID p_swap_chain) = 0;
 
+	virtual Error swap_chain_wait_for_present(DisplayServer::WindowID p_window, SwapChainID p_swap_chain, uint32_t p_max_frame_delay) = 0;
+
+	virtual BitField<PacingMethod> get_available_pacing_methods() const = 0;
+
 	/*********************/
 	/**** FRAMEBUFFER ****/
 	/*********************/

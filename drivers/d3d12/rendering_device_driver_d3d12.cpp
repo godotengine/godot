@@ -2735,6 +2735,11 @@ void RenderingDeviceDriverD3D12::_swap_chain_release_buffers(SwapChain *p_swap_c
 	p_swap_chain->render_targets.clear();
 	p_swap_chain->render_targets_info.clear();
 
+	if (p_swap_chain->waitable_object) {
+		CloseHandle(p_swap_chain->waitable_object);
+		p_swap_chain->waitable_object = nullptr;
+	}
+
 	for (RDD::FramebufferID framebuffer : p_swap_chain->framebuffers) {
 		framebuffer_free(framebuffer);
 	}
@@ -2792,6 +2797,7 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 		case DisplayServer::VSYNC_ENABLED: {
 			sync_interval = 1;
 			present_flags = 0;
+			creation_flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
 		} break;
 		case DisplayServer::VSYNC_DISABLED: {
 			sync_interval = 0;
@@ -2802,6 +2808,7 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 		default:
 			sync_interval = 1;
 			present_flags = 0;
+			creation_flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
 			break;
 	}
 
@@ -2851,6 +2858,11 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 
 		res = context_driver->dxgi_factory_get()->MakeWindowAssociation(surface->hwnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
 		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+	}
+
+	if (creation_flags & DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT) {
+		swap_chain->d3d_swap_chain->SetMaximumFrameLatency(UINT(frames.size()));
+		swap_chain->waitable_object = swap_chain->d3d_swap_chain->GetFrameLatencyWaitableObject();
 	}
 
 #ifdef DCOMP_ENABLED
@@ -2969,6 +2981,49 @@ void RenderingDeviceDriverD3D12::swap_chain_free(SwapChainID p_swap_chain) {
 	_swap_chain_release(swap_chain);
 	render_pass_free(swap_chain->render_pass);
 	memdelete(swap_chain);
+}
+
+Error RenderingDeviceDriverD3D12::swap_chain_wait_for_present(DisplayServer::WindowID p_window, SwapChainID p_swap_chain, uint32_t p_max_frame_delay) {
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+	if (swap_chain->waitable_object != NULL) {
+		UINT timeout = 1000u;
+
+		HRESULT res;
+
+		{
+			UINT current_frame_latency = 0u;
+			res = swap_chain->d3d_swap_chain->GetMaximumFrameLatency(&current_frame_latency);
+
+			ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), FAILED, "GetMaximumFrameLatency failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+
+			if (p_max_frame_delay != current_frame_latency) {
+				swap_chain->d3d_swap_chain->SetMaximumFrameLatency(UINT(p_max_frame_delay));
+			}
+		}
+
+		do {
+			res = WaitForSingleObjectEx(swap_chain->waitable_object, timeout, FALSE);
+		} while (res == WAIT_IO_COMPLETION);
+
+		if (res == WAIT_TIMEOUT) {
+			ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_TIMEOUT, "swap_chain_wait_for_present timeout exceeded.");
+		} else if (res == (HRESULT)WAIT_FAILED) {
+			DWORD error = GetLastError();
+			ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), FAILED, "WaitForSingleObjectEx failed with error " + vformat("0x%08ux", (uint64_t)error) + ".");
+		} else if (res != WAIT_OBJECT_0) {
+			ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), FAILED, "WaitForSingleObjectEx returned " + vformat("0x%08ux", (uint64_t)res) + ".");
+		}
+		return OK;
+	} else {
+		return ERR_UNAVAILABLE;
+	}
+}
+
+BitField<RDD::PacingMethod> RenderingDeviceDriverD3D12::get_available_pacing_methods() const {
+	BitField<PacingMethod> methods = 0;
+	methods.set_flag(PACING_METHOD_SEQUENTIAL_SYNC);
+	methods.set_flag(PACING_METHOD_WAITABLE_SWAPCHAIN);
+	return methods;
 }
 
 /*********************/

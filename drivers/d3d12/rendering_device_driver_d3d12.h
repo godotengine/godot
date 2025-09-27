@@ -533,6 +533,7 @@ private:
 
 	struct SwapChain {
 		ComPtr<IDXGISwapChain3> d3d_swap_chain;
+		HANDLE waitable_object;
 		RenderingContextDriver::SurfaceID surface = RenderingContextDriver::SurfaceID();
 		UINT present_flags = 0;
 		UINT sync_interval = 1;
@@ -554,6 +555,9 @@ public:
 	virtual RenderPassID swap_chain_get_render_pass(SwapChainID p_swap_chain) override;
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) override;
 	virtual void swap_chain_free(SwapChainID p_swap_chain) override;
+	virtual Error swap_chain_wait_for_present(DisplayServer::WindowID p_window, SwapChainID p_swap_chain, uint32_t p_max_frame_delay) override final;
+
+	virtual BitField<PacingMethod> get_available_pacing_methods() const override final;
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
