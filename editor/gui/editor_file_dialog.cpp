@@ -1019,8 +1019,17 @@ void EditorFileDialog::update_file_list() {
 
 	dir_access->list_dir_begin();
 
+	struct DirInfo {
+		String name;
+		uint64_t modified_time;
+
+		bool operator<(const DirInfo &p_other) const {
+			return FileNoCaseComparator()(name, p_other.name);
+		}
+	};
+
 	List<FileInfo> file_infos;
-	List<String> dirs;
+	List<DirInfo> dirs;
 
 	String item = dir_access->get_next();
 
@@ -1046,13 +1055,19 @@ void EditorFileDialog::update_file_list() {
 				if (!dir_access->current_is_dir()) {
 					file_infos.push_back(file_info);
 				} else {
-					dirs.push_back(file_info.name);
+					DirInfo dir_info;
+					dir_info.name = file_info.name;
+					dir_info.modified_time = file_info.modified_time;
+					dirs.push_back(dir_info);
 				}
 			} else if (!dir_access->current_is_hidden()) {
 				String full_path = cdir == "res://" ? file_info.name : dir_access->get_current_dir() + "/" + file_info.name;
 				if (dir_access->current_is_dir()) {
 					if (Engine::get_singleton()->is_project_manager_hint() || !EditorFileSystem::_should_skip_directory(full_path)) {
-						dirs.push_back(file_info.name);
+						DirInfo dir_info;
+						dir_info.name = file_info.name;
+						dir_info.modified_time = file_info.modified_time;
+						dirs.push_back(dir_info);
 					}
 				} else {
 					file_infos.push_back(file_info);
@@ -1062,8 +1077,19 @@ void EditorFileDialog::update_file_list() {
 		item = dir_access->get_next();
 	}
 
-	dirs.sort_custom<FileNoCaseComparator>();
-	bool reverse_directories = file_sort == FileSortOption::FILE_SORT_NAME_REVERSE;
+	// Sort directories
+	if (file_sort == FileSortOption::FILE_SORT_MODIFIED_TIME || file_sort == FileSortOption::FILE_SORT_MODIFIED_TIME_REVERSE) {
+		struct DirTimeComparator {
+			bool operator()(const DirInfo &a, const DirInfo &b) const {
+				return a.modified_time > b.modified_time;
+			}
+		};
+		dirs.sort_custom<DirTimeComparator>();
+	} else {
+		dirs.sort();
+	}
+
+	bool reverse_directories = file_sort == FileSortOption::FILE_SORT_NAME_REVERSE || file_sort == FileSortOption::FILE_SORT_TYPE_REVERSE || file_sort == FileSortOption::FILE_SORT_MODIFIED_TIME_REVERSE;
 	if (reverse_directories) {
 		dirs.reverse();
 	}
@@ -1096,7 +1122,8 @@ void EditorFileDialog::update_file_list() {
 	}
 
 	while (!dirs.is_empty()) {
-		const String &dir_name = dirs.front()->get();
+		const DirInfo &dir_info = dirs.front()->get();
+		const String &dir_name = dir_info.name;
 
 		bool bundle = dir_access->is_bundle(dir_name);
 		bool found = true;
