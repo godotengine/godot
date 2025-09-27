@@ -64,6 +64,7 @@
 #include "extensions/openxr_htc_controller_extension.h"
 #include "extensions/openxr_htc_vive_tracker_extension.h"
 #include "extensions/openxr_huawei_controller_extension.h"
+#include "extensions/openxr_khr_generic_controller_extension.h"
 #include "extensions/openxr_local_floor_extension.h"
 #include "extensions/openxr_meta_controller_extension.h"
 #include "extensions/openxr_ml2_controller_extension.h"
@@ -157,6 +158,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRMxInkExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRVisibilityMaskExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPerformanceSettingsExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRKHRGenericController));
 
 			// Futures extension has to be registered as a singleton so extensions can access it.
 			OpenXRFutureExtension *future_extension = memnew(OpenXRFutureExtension);
