@@ -2272,8 +2272,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		}
 
 		SceneShaderForwardMobile::ShaderSpecialization pipeline_specialization = p_params->base_specialization;
-		pipeline_specialization.multimesh = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH);
-		pipeline_specialization.multimesh_format_2d = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D);
+		pipeline_specialization.multimesh_format = (inst->flags_cache >> INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT) & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_MASK;
 		pipeline_specialization.multimesh_has_color = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR);
 		pipeline_specialization.multimesh_has_custom_data = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA);
 
@@ -2458,7 +2457,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 
 			if (surf->owner->base_flags & INSTANCE_DATA_FLAG_PARTICLES) {
 				particles_storage->particles_get_instance_buffer_motion_vectors_offsets(surf->owner->data->base, push_constant.multimesh_motion_vectors_current_offset, push_constant.multimesh_motion_vectors_previous_offset);
-			} else if (surf->owner->base_flags & INSTANCE_DATA_FLAG_MULTIMESH) {
+			} else if ((surf->owner->base_flags >> INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT) & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_MASK) {
 				mesh_storage->_multimesh_get_motion_vectors_offsets(surf->owner->data->base, push_constant.multimesh_motion_vectors_current_offset, push_constant.multimesh_motion_vectors_previous_offset);
 			} else {
 				push_constant.multimesh_motion_vectors_current_offset = 0;
@@ -2932,10 +2931,17 @@ void RenderForwardMobile::_geometry_instance_update(RenderGeometryInstance *p_ge
 	ginstance->base_flags = 0;
 
 	if (ginstance->data->base_type == RS::INSTANCE_MULTIMESH) {
-		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH;
-
-		if (mesh_storage->multimesh_get_transform_format(ginstance->data->base) == RS::MULTIMESH_TRANSFORM_2D) {
-			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D;
+		switch (mesh_storage->multimesh_get_transform_format(ginstance->data->base)) {
+			case RS::MULTIMESH_TRANSFORM_SKIP:
+				ginstance->base_flags |= RS::MULTIMESH_FORMAT_TRANSFORM_SKIP << INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT;
+				break;
+			case RS::MULTIMESH_TRANSFORM_2D:
+				ginstance->base_flags |= RS::MULTIMESH_FORMAT_TRANSFORM_2D << INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT;
+				break;
+			case RS::MULTIMESH_TRANSFORM_3D:
+			default:
+				ginstance->base_flags |= RS::MULTIMESH_FORMAT_TRANSFORM_3D << INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT;
+				break;
 		}
 		if (mesh_storage->multimesh_uses_colors(ginstance->data->base)) {
 			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR;
@@ -2951,10 +2957,7 @@ void RenderForwardMobile::_geometry_instance_update(RenderGeometryInstance *p_ge
 
 	} else if (ginstance->data->base_type == RS::INSTANCE_PARTICLES) {
 		ginstance->base_flags |= INSTANCE_DATA_FLAG_PARTICLES;
-		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH;
-		if (false) { // 2D particles
-			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D;
-		}
+		ginstance->base_flags |= RS::MULTIMESH_TRANSFORM_3D << INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT;
 
 		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR;
 		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA;

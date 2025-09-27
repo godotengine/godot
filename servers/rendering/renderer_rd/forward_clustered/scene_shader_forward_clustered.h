@@ -121,8 +121,7 @@ public:
 			uint32_t packed_1;
 
 			struct {
-				uint32_t multimesh : 1;
-				uint32_t multimesh_format_2d : 1;
+				uint32_t multimesh_format : 2;
 				uint32_t multimesh_has_color : 1;
 				uint32_t multimesh_has_custom_data : 1;
 			};

@@ -455,9 +455,17 @@ void RasterizerSceneGLES3::_geometry_instance_update(RenderGeometryInstance *p_g
 	ginstance->base_flags = 0;
 
 	if (ginstance->data->base_type == RS::INSTANCE_MULTIMESH) {
-		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH;
-		if (mesh_storage->multimesh_get_transform_format(ginstance->data->base) == RS::MULTIMESH_TRANSFORM_2D) {
-			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D;
+		switch (mesh_storage->multimesh_get_transform_format(ginstance->data->base)) {
+			case RS::MULTIMESH_TRANSFORM_SKIP:
+				ginstance->base_flags |= RS::MULTIMESH_FORMAT_TRANSFORM_SKIP << INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT;
+				break;
+			case RS::MULTIMESH_TRANSFORM_2D:
+				ginstance->base_flags |= RS::MULTIMESH_FORMAT_TRANSFORM_2D << INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT;
+				break;
+			case RS::MULTIMESH_TRANSFORM_3D:
+			default:
+				ginstance->base_flags |= RS::MULTIMESH_FORMAT_TRANSFORM_3D << INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT;
+				break;
 		}
 		if (mesh_storage->multimesh_uses_colors(ginstance->data->base)) {
 			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR;
@@ -468,7 +476,7 @@ void RasterizerSceneGLES3::_geometry_instance_update(RenderGeometryInstance *p_g
 
 	} else if (ginstance->data->base_type == RS::INSTANCE_PARTICLES) {
 		ginstance->base_flags |= INSTANCE_DATA_FLAG_PARTICLES;
-		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH;
+		ginstance->base_flags |= RS::MULTIMESH_TRANSFORM_3D << INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT;
 
 		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR;
 		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA;
@@ -3666,21 +3674,32 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				}
 
 				glBindBuffer(GL_ARRAY_BUFFER, instance_buffer);
-
-				glEnableVertexAttribArray(12);
-				glVertexAttribPointer(12, 4, GL_FLOAT, GL_FALSE, stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(0));
-				glVertexAttribDivisor(12, 1);
-				glEnableVertexAttribArray(13);
-				glVertexAttribPointer(13, 4, GL_FLOAT, GL_FALSE, stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(sizeof(float) * 4));
-				glVertexAttribDivisor(13, 1);
-				if (!(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D)) {
-					glEnableVertexAttribArray(14);
-					glVertexAttribPointer(14, 4, GL_FLOAT, GL_FALSE, stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(sizeof(float) * 8));
-					glVertexAttribDivisor(14, 1);
+				uint32_t multimesh_format = (inst->flags_cache >> INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT) & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_MASK;
+				switch (multimesh_format) {
+					case RS::MULTIMESH_FORMAT_TRANSFORM_SKIP:
+						glVertexAttrib4f(12, 1, 0, 0, 0);
+						glVertexAttrib4f(13, 0, 1, 0, 0);
+						glVertexAttrib4f(14, 0, 0, 1, 0);
+						break;
+					case RS::MULTIMESH_FORMAT_TRANSFORM_3D:
+					default:
+						glEnableVertexAttribArray(14);
+						glVertexAttribPointer(14, 4, GL_FLOAT, GL_FALSE, stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(sizeof(float) * 8));
+						glVertexAttribDivisor(14, 1);
+						[[fallthrough]];
+					case RS::MULTIMESH_TRANSFORM_2D:
+						glEnableVertexAttribArray(12);
+						glVertexAttribPointer(12, 4, GL_FLOAT, GL_FALSE, stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(0));
+						glVertexAttribDivisor(12, 1);
+						glEnableVertexAttribArray(13);
+						glVertexAttribPointer(13, 4, GL_FLOAT, GL_FALSE, stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(sizeof(float) * 4));
+						glVertexAttribDivisor(13, 1);
+						break;
 				}
 
 				if ((inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR) || (inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA)) {
-					uint32_t color_custom_offset = inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D ? 8 : 12;
+					uint32_t color_custom_offset = multimesh_format == RS::MULTIMESH_FORMAT_TRANSFORM_2D ? 8 : 0;
+					color_custom_offset += multimesh_format == RS::MULTIMESH_FORMAT_TRANSFORM_3D ? 12 : 0;
 					glEnableVertexAttribArray(15);
 					glVertexAttribIPointer(15, 4, GL_UNSIGNED_INT, stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(color_custom_offset * sizeof(float)));
 					glVertexAttribDivisor(15, 1);
