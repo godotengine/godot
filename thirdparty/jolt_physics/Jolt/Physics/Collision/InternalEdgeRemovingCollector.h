@@ -69,16 +69,23 @@ class InternalEdgeRemovingCollector : public CollideShapeCollector
 		VoidFeatures(inResult);
 
 	#ifdef JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
-		DebugRenderer::sInstance->DrawWirePolygon(RMat44::sIdentity(), inResult.mShape2Face, Color::sGreen);
-		DebugRenderer::sInstance->DrawArrow(RVec3(inResult.mContactPointOn2), RVec3(inResult.mContactPointOn2) + inResult.mPenetrationAxis.NormalizedOr(Vec3::sZero()), Color::sGreen, 0.1f);
+		DebugRenderer::sInstance->DrawWirePolygon(RMat44::sTranslation(mBaseOffset), inResult.mShape2Face, Color::sGreen);
+		DebugRenderer::sInstance->DrawArrow(mBaseOffset + inResult.mContactPointOn2, mBaseOffset + inResult.mContactPointOn2 + inResult.mPenetrationAxis.NormalizedOr(Vec3::sZero()), Color::sGreen, 0.1f);
 	#endif // JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
 	}
 
 public:
 	/// Constructor, configures a collector to be called with all the results that do not hit internal edges
-	explicit				InternalEdgeRemovingCollector(CollideShapeCollector &inChainedCollector) :
+	explicit				InternalEdgeRemovingCollector(CollideShapeCollector &inChainedCollector
+		#ifdef JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
+			, RVec3Arg inBaseOffset
+		#endif // JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
+		) :
 		CollideShapeCollector(inChainedCollector),
 		mChainedCollector(inChainedCollector)
+		#ifdef JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
+			, mBaseOffset(inBaseOffset)
+		#endif // JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
 	{
 		// Initialize arrays to full capacity to avoid needless reallocation calls
 		mVoidedFeatures.reserve(cMaxLocalVoidedFeatures);
@@ -205,11 +212,11 @@ public:
 
 		#ifdef JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
 			Color color = voided? Color::sRed : Color::sYellow;
-			DebugRenderer::sInstance->DrawText3D(RVec3(r.mContactPointOn2), StringFormat("%d: %g", i, r.mPenetrationDepth), color, 0.1f);
-			DebugRenderer::sInstance->DrawWirePolygon(RMat44::sIdentity(), r.mShape2Face, color);
-			DebugRenderer::sInstance->DrawArrow(RVec3(r.mContactPointOn2), RVec3(r.mContactPointOn2) + r.mPenetrationAxis.NormalizedOr(Vec3::sZero()), color, 0.1f);
-			DebugRenderer::sInstance->DrawMarker(RVec3(r.mShape2Face[best_v1_idx]), IsVoided(r.mSubShapeID1, r.mShape2Face[best_v1_idx])? Color::sRed : Color::sYellow, 0.1f);
-			DebugRenderer::sInstance->DrawMarker(RVec3(r.mShape2Face[best_v2_idx]), IsVoided(r.mSubShapeID1, r.mShape2Face[best_v2_idx])? Color::sRed : Color::sYellow, 0.1f);
+			DebugRenderer::sInstance->DrawText3D(mBaseOffset + r.mContactPointOn2, StringFormat("%d: %g", i, r.mPenetrationDepth), color, 0.1f);
+			DebugRenderer::sInstance->DrawWirePolygon(RMat44::sTranslation(mBaseOffset), r.mShape2Face, color);
+			DebugRenderer::sInstance->DrawArrow(mBaseOffset + r.mContactPointOn2, mBaseOffset + r.mContactPointOn2 + r.mPenetrationAxis.NormalizedOr(Vec3::sZero()), color, 0.1f);
+			DebugRenderer::sInstance->DrawMarker(mBaseOffset + r.mShape2Face[best_v1_idx], IsVoided(r.mSubShapeID1, r.mShape2Face[best_v1_idx])? Color::sRed : Color::sYellow, 0.1f);
+			DebugRenderer::sInstance->DrawMarker(mBaseOffset + r.mShape2Face[best_v2_idx], IsVoided(r.mSubShapeID1, r.mShape2Face[best_v2_idx])? Color::sRed : Color::sYellow, 0.1f);
 		#endif // JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
 
 			// No voided features, accept the contact
@@ -233,12 +240,20 @@ public:
 	}
 
 	/// Version of CollisionDispatch::sCollideShapeVsShape that removes internal edges
-	static void				sCollideShapeVsShape(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector, const ShapeFilter &inShapeFilter = { })
+	static void				sCollideShapeVsShape(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector, const ShapeFilter &inShapeFilter = { }
+#ifdef JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
+		, RVec3Arg inBaseOffset = RVec3::sZero()
+#endif // JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
+		)
 	{
 		JPH_ASSERT(inCollideShapeSettings.mActiveEdgeMode == EActiveEdgeMode::CollideWithAll); // Won't work without colliding with all edges
 		JPH_ASSERT(inCollideShapeSettings.mCollectFacesMode == ECollectFacesMode::CollectFaces); // Won't work without collecting faces
 
-		InternalEdgeRemovingCollector wrapper(ioCollector);
+		InternalEdgeRemovingCollector wrapper(ioCollector
+		#ifdef JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
+			, inBaseOffset
+		#endif // JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
+		);
 		CollisionDispatch::sCollideShapeVsShape(inShape1, inShape2, inScale1, inScale2, inCenterOfMassTransform1, inCenterOfMassTransform2, inSubShapeIDCreator1, inSubShapeIDCreator2, inCollideShapeSettings, wrapper, inShapeFilter);
 		wrapper.Flush();
 	}
@@ -256,6 +271,9 @@ private:
 	CollideShapeCollector &	mChainedCollector;
 	Array<Voided, STLLocalAllocator<Voided, cMaxLocalVoidedFeatures>> mVoidedFeatures;
 	Array<CollideShapeResult, STLLocalAllocator<CollideShapeResult, cMaxLocalDelayedResults>> mDelayedResults;
+#ifdef JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
+	RVec3					mBaseOffset; 			// Base offset for the query, used to draw the results in the right place
+#endif // JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
 };
 
 JPH_NAMESPACE_END

@@ -94,6 +94,11 @@ public:
 	uint64						mUserData = 0;
 
 protected:
+	/// Don't allow (copy) constructing this base class, but allow derived classes to (copy) construct themselves
+								ConstraintSettings() = default;
+								ConstraintSettings(const ConstraintSettings &) = default;
+	ConstraintSettings &		operator = (const ConstraintSettings &) = default;
+
 	/// This function should not be called directly, it is used by sRestoreFromBinaryState.
 	virtual void				RestoreBinaryState(StreamIn &inStream);
 };

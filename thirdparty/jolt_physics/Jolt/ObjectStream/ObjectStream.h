@@ -58,10 +58,12 @@ public:
 	virtual bool				ReadPrimitiveData(bool &outPrimitive) = 0;
 	virtual bool				ReadPrimitiveData(String &outPrimitive) = 0;
 	virtual bool				ReadPrimitiveData(Float3 &outPrimitive) = 0;
+	virtual bool				ReadPrimitiveData(Float4 &outPrimitive) = 0;
 	virtual bool				ReadPrimitiveData(Double3 &outPrimitive) = 0;
 	virtual bool				ReadPrimitiveData(Vec3 &outPrimitive) = 0;
 	virtual bool				ReadPrimitiveData(DVec3 &outPrimitive) = 0;
 	virtual bool				ReadPrimitiveData(Vec4 &outPrimitive) = 0;
+	virtual bool				ReadPrimitiveData(UVec4 &outPrimitive) = 0;
 	virtual bool				ReadPrimitiveData(Quat &outPrimitive) = 0;
 	virtual bool				ReadPrimitiveData(Mat44 &outPrimitive) = 0;
 	virtual bool				ReadPrimitiveData(DMat44 &outPrimitive) = 0;
@@ -92,10 +94,12 @@ public:
 	virtual void				WritePrimitiveData(const bool &inPrimitive) = 0;
 	virtual void				WritePrimitiveData(const String &inPrimitive) = 0;
 	virtual void				WritePrimitiveData(const Float3 &inPrimitive) = 0;
+	virtual void				WritePrimitiveData(const Float4 &inPrimitive) = 0;
 	virtual void				WritePrimitiveData(const Double3 &inPrimitive) = 0;
 	virtual void				WritePrimitiveData(const Vec3 &inPrimitive) = 0;
 	virtual void				WritePrimitiveData(const DVec3 &inPrimitive) = 0;
 	virtual void				WritePrimitiveData(const Vec4 &inPrimitive) = 0;
+	virtual void				WritePrimitiveData(const UVec4 &inPrimitive) = 0;
 	virtual void				WritePrimitiveData(const Quat &inPrimitive) = 0;
 	virtual void				WritePrimitiveData(const Mat44 &inPrimitive) = 0;
 	virtual void				WritePrimitiveData(const DMat44 &inPrimitive) = 0;

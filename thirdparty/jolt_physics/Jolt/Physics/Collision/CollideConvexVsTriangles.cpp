@@ -40,8 +40,6 @@ CollideConvexVsTriangles::CollideConvexVsTriangles(const ConvexShape *inShape1, 
 
 void CollideConvexVsTriangles::Collide(Vec3Arg inV0, Vec3Arg inV1, Vec3Arg inV2, uint8 inActiveEdges, const SubShapeID &inSubShapeID2)
 {
-	JPH_PROFILE_FUNCTION();
-
 	// Scale triangle and transform it to the space of 1
 	Vec3 v0 = mTransform2To1 * (mScale2 * inV0);
 	Vec3 v1 = mTransform2To1 * (mScale2 * inV1);

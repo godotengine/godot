@@ -1106,12 +1106,12 @@ void ConvexHullShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, 
 					}
 				}
 			}
-			bool is_outside = max_distance > 0.0f;
 
-			// Project point onto that plane
-			Vec3 closest_point = local_pos - max_distance * max_plane_normal;
+			// Project point onto that plane, in local space to the vertex
+			Vec3 closest_point = -max_distance * max_plane_normal;
 
 			// Check edges if we're outside the hull (when inside we know the closest face is also the closest point to the surface)
+			bool is_outside = max_distance > 0.0f;
 			if (is_outside)
 			{
 				// Loop over edges
@@ -1137,13 +1137,16 @@ void ConvexHullShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, 
 						Vec3 closest = ClosestPoint::GetClosestPointOnLine(p1 - local_pos, p2 - local_pos, set);
 						float distance_sq = closest.LengthSq();
 						if (distance_sq < closest_point_dist_sq)
-							closest_point = local_pos + closest;
+						{
+							closest_point_dist_sq = distance_sq;
+							closest_point = closest;
+						}
 					}
 				}
 			}
 
 			// Check if this is the largest penetration
-			Vec3 normal = local_pos - closest_point;
+			Vec3 normal = -closest_point;
 			float normal_length = normal.Length();
 			float penetration = normal_length;
 			if (is_outside)
@@ -1153,8 +1156,8 @@ void ConvexHullShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, 
 			if (v.UpdatePenetration(penetration))
 			{
 				// Calculate contact plane
-				normal = normal_length > 0.0f? normal / normal_length : max_plane_normal;
-				Plane plane = Plane::sFromPointAndNormal(closest_point, normal);
+				normal = normal_length > 1.0e-12f? normal / normal_length : max_plane_normal;
+				Plane plane = Plane::sFromPointAndNormal(local_pos + closest_point, normal);
 
 				// Store collision
 				v.SetCollision(plane.GetTransformed(inCenterOfMassTransform), inCollidingShapeIndex);

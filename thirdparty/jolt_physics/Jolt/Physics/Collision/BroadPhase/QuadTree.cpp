@@ -225,10 +225,6 @@ uint32 QuadTree::AllocateNode(bool inIsChanged)
 		// you could still be running out of nodes because the tree is not being maintained. If your application is paused,
 		// consider still calling PhysicsSystem::Update with a delta time of 0 to keep the tree in good shape.
 		//
-		// The system keeps track of a previous and a current tree, this allows for queries to continue using the old tree
-		// while the new tree is being built. If you completely clean the PhysicsSystem and rebuild it from scratch, you may
-		// want to call PhysicsSystem::OptimizeBroadPhase two times after clearing to completely get rid of any lingering nodes.
-		//
 		// The number of nodes that is allocated is related to the max number of bodies that is passed in PhysicsSystem::Init.
 		// For normal situations there are plenty of nodes available. If all else fails, you can increase the number of nodes
 		// by increasing the maximum number of bodies.

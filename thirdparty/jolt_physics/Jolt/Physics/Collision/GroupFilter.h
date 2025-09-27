@@ -34,6 +34,11 @@ public:
 	static GroupFilterResult	sRestoreFromBinaryState(StreamIn &inStream);
 
 protected:
+	/// Don't allow (copy) constructing this base class, but allow derived classes to (copy) construct themselves
+								GroupFilter() = default;
+								GroupFilter(const GroupFilter &) = default;
+	GroupFilter &				operator = (const GroupFilter &) = default;
+
 	/// This function should not be called directly, it is used by sRestoreFromBinaryState.
 	virtual void				RestoreBinaryState(StreamIn &inStream);
 };

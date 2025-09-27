@@ -12,7 +12,7 @@ static void sAddVertex(StaticArray<Vec3, 1026> &ioVertices, Vec3Arg inVertex)
 {
 	bool found = false;
 	for (const Vec3 &v : ioVertices)
-		if (v == inVertex)
+		if (v.IsClose(inVertex, 1.0e-6f))
 		{
 			found = true;
 			break;
