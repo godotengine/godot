@@ -33,6 +33,7 @@
 #include "../../openxr_util.h"
 
 #import "drivers/metal/rendering_device_driver_metal.h"
+#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_globals.h"
 
 HashMap<String, bool *> OpenXRMetalExtension::get_requested_extensions() {
@@ -151,6 +152,8 @@ bool OpenXRMetalExtension::get_swapchain_image_data(XrSwapchain p_swapchain, int
 	ERR_FAIL_NULL_V(rendering_server, false);
 	RenderingDevice *rendering_device = rendering_server->get_rendering_device();
 	ERR_FAIL_NULL_V(rendering_device, false);
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	ERR_FAIL_NULL_V(texture_storage, false);
 
 	uint32_t swapchain_length;
 	XrResult result = xrEnumerateSwapchainImages(p_swapchain, 0, &swapchain_length, nullptr);
@@ -251,12 +254,16 @@ bool OpenXRMetalExtension::get_swapchain_image_data(XrSwapchain p_swapchain, int
 			break;
 	}
 
-	Vector<RID> texture_rids;
+	thread_local LocalVector<RID> texture_rd_rids;
+	thread_local LocalVector<RID> texture_rids;
+
+	texture_rd_rids.reserve(swapchain_length);
+	texture_rids.reserve(swapchain_length);
 
 	// Create Godot texture objects for each entry in our swapchain.
 	for (uint64_t i = 0; i < swapchain_length; i++) {
 		// Note, the formats we sent to render_device are ignored on metal.
-		RID image_rid = rendering_device->texture_create_from_extension(
+		RID texture_rd_rid = rendering_device->texture_create_from_extension(
 				p_array_size == 1 ? RenderingDevice::TEXTURE_TYPE_2D : RenderingDevice::TEXTURE_TYPE_2D_ARRAY,
 				format,
 				samples,
@@ -268,9 +275,15 @@ bool OpenXRMetalExtension::get_swapchain_image_data(XrSwapchain p_swapchain, int
 				p_array_size,
 				1);
 
-		texture_rids.push_back(image_rid);
+		texture_rd_rids.push_back(texture_rd_rid);
+
+		RID texture_rid = texture_storage->texture_allocate();
+		texture_storage->texture_rd_initialize(texture_rid, texture_rd_rid);
+
+		texture_rids.push_back(texture_rid);
 	}
 
+	data->texture_rd_rids = texture_rd_rids;
 	data->texture_rids = texture_rids;
 
 	return true;
@@ -287,11 +300,18 @@ void OpenXRMetalExtension::cleanup_swapchain_graphics_data(void **p_swapchain_gr
 	ERR_FAIL_NULL(rendering_server);
 	RenderingDevice *rendering_device = rendering_server->get_rendering_device();
 	ERR_FAIL_NULL(rendering_device);
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	ERR_FAIL_NULL(texture_storage);
 
 	for (const RID &texture_rid : data->texture_rids) {
-		rendering_device->free(texture_rid);
+		texture_storage->texture_free(texture_rid);
 	}
 	data->texture_rids.clear();
+
+	for (const RID &texture_rd_rid : data->texture_rd_rids) {
+		rendering_device->free(texture_rd_rid);
+	}
+	data->texture_rd_rids.clear();
 
 	memdelete(data);
 	*p_swapchain_graphics_data = nullptr;
@@ -314,6 +334,6 @@ RID OpenXRMetalExtension::get_texture(void *p_swapchain_graphics_data, int p_ima
 	SwapchainGraphicsData *data = (SwapchainGraphicsData *)p_swapchain_graphics_data;
 	ERR_FAIL_NULL_V(data, RID());
 
-	ERR_FAIL_INDEX_V(p_image_index, data->texture_rids.size(), RID());
+	ERR_FAIL_INDEX_V(p_image_index, (int)data->texture_rids.size(), RID());
 	return data->texture_rids[p_image_index];
 }
