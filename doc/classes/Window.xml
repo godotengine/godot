@@ -741,6 +741,10 @@
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
 			If [code]true[/code], the window is visible.
 		</member>
+		<member name="wallpaper" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], window content is drawn as a desktop wallpaper.
+			[b]Note:[/b] This property is implemented on macOS and Windows.
+		</member>
 		<member name="wrap_controls" type="bool" setter="set_wrap_controls" getter="is_wrapping_controls" default="false">
 			If [code]true[/code], the window's size will automatically update when a child node is added or removed, ignoring [member min_size] if the new size is bigger.
 			If [code]false[/code], you need to call [method child_controls_changed] manually.
@@ -919,7 +923,11 @@
 			Window maximize button is disabled.
 			[b]Note:[/b] This flag is implemented on macOS and Windows.
 		</constant>
-		<constant name="FLAG_MAX" value="13" enum="Flags">
+		<constant name="FLAG_WALLPAPER" value="13" enum="Flags">
+			Window content is drawn as a desktop wallpaper.
+			[b]Note:[/b] This flag is implemented on macOS and Windows.
+		</constant>
+		<constant name="FLAG_MAX" value="14" enum="Flags">
 			Max value of the [enum Flags].
 		</constant>
 		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">
