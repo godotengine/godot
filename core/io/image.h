@@ -350,6 +350,7 @@ public:
 	bool is_empty() const;
 
 	Vector<uint8_t> get_data() const;
+	Span<uint8_t> get_data_span() const;
 
 	Error load(const String &p_path);
 	static Ref<Image> load_from_file(const String &p_path);

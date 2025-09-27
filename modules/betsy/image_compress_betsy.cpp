@@ -481,9 +481,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 	dst_data.resize(Image::get_image_data_size(img_width, img_height, dest_format, r_img->has_mipmaps()));
 	uint8_t *dst_data_ptr = dst_data.ptrw();
 
-	Vector<Vector<uint8_t>> src_images;
-	src_images.push_back(Vector<uint8_t>());
-	Vector<uint8_t> *src_image_ptr = src_images.ptrw();
+	LocalVector<uint8_t> src_image;
 
 	// Compress each mipmap.
 	for (int i = 0; i < mip_count; i++) {
@@ -508,8 +506,8 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 
 			// Reserve the buffer for padded image data.
 			int px_size = Image::get_format_pixel_size(r_img->get_format());
-			src_image_ptr[0].resize(width * height * px_size);
-			uint8_t *ptrw = src_image_ptr[0].ptrw();
+			src_image.resize(width * height * px_size);
+			uint8_t *ptrw = src_image.ptr();
 
 			int x = 0, y = 0;
 			for (y = 0; y < src_mip_h; y++) {
@@ -531,11 +529,12 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 			}
 		} else {
 			// Create a buffer filled with the source mip layer data.
-			src_image_ptr[0].resize(src_mip_size);
-			memcpy(src_image_ptr[0].ptrw(), r_img->ptr() + src_mip_ofs, src_mip_size);
+			src_image.resize(src_mip_size);
+			memcpy(src_image.ptr(), r_img->ptr() + src_mip_ofs, src_mip_size);
 		}
 
 		// Create the textures on the GPU.
+		const Span<uint8_t> src_images[1] = { src_image.span() };
 		RID src_texture = compress_rd->texture_create(src_texture_format, RD::TextureView(), src_images);
 		RID dst_texture_primary = compress_rd->texture_create(dst_texture_format, RD::TextureView());
 
@@ -722,7 +721,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		compress_rd->free(dst_texture_rid);
 	}
 
-	src_images.clear();
+	src_image.reset();
 
 	// Set the compressed data to the image.
 	r_img->set_data(img_width, img_height, r_img->has_mipmaps(), dest_format, dst_data);

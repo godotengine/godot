@@ -865,7 +865,7 @@ RID RenderingDevice::texture_buffer_create(uint32_t p_size_elements, DataFormat 
 /**** TEXTURE ****/
 /*****************/
 
-RID RenderingDevice::texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data) {
+RID RenderingDevice::texture_create(const TextureFormat &p_format, const TextureView &p_view, const Span<Span<uint8_t>> &p_data) {
 	// Some adjustments will happen.
 	TextureFormat format = p_format;
 
@@ -936,25 +936,36 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 	ERR_FAIL_COND_V_MSG(required_mipmaps < format.mipmaps, RID(),
 			"Too many mipmaps requested for texture format and dimensions (" + itos(format.mipmaps) + "), maximum allowed: (" + itos(required_mipmaps) + ").");
 
-	Vector<Vector<uint8_t>> data = p_data;
 	bool immediate_flush = false;
+
+	// In some cases, we need to attach more data.
+	// For convenience, we'll do this by concatenating the given and additional data if need be,
+	//  and replacing the data span.
+	LocalVector<Vector<uint8_t>> aux_data;
+	LocalVector<Span<uint8_t>> aux_data_spans;
+	Span<Span<uint8_t>> data = p_data;
 
 	// If this is a VRS texture, we make sure that it is created with valid initial data. This prevents a crash on Qualcomm Snapdragon XR2 Gen 1
 	// (used in Quest 2, Quest Pro, Pico 4, HTC Vive XR Elite and others) where the driver will read the texture before we've had time to finish updating it.
-	if (data.is_empty() && (p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT)) {
+	if (p_data.is_empty() && (p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT)) {
 		immediate_flush = true;
+		if (format.array_layers) {
+			aux_data_spans.append_array(p_data);
+		}
 		for (uint32_t i = 0; i < format.array_layers; i++) {
 			uint32_t required_size = get_image_format_required_size(format.format, format.width, format.height, format.depth, format.mipmaps);
 			Vector<uint8_t> layer;
 			layer.resize(required_size);
 			layer.fill(255);
-			data.push_back(layer);
+			aux_data.push_back(layer);
+			aux_data_spans.push_back(layer.span());
 		}
+		data = aux_data_spans.span();
 	}
 
 	uint32_t forced_usage_bits = _texture_vrs_method_to_usage_bits();
 	if (data.size()) {
-		ERR_FAIL_COND_V_MSG(data.size() != (int)format.array_layers, RID(),
+		ERR_FAIL_COND_V_MSG(data.size() != format.array_layers, RID(),
 				"Default supplied data for image format is of invalid length (" + itos(data.size()) + "), should be (" + itos(format.array_layers) + ").");
 
 		for (uint32_t i = 0; i < format.array_layers; i++) {
@@ -1421,7 +1432,7 @@ uint32_t RenderingDevice::_texture_alignment(Texture *p_texture) const {
 	return least_common_multiple(alignment, driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT));
 }
 
-Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, RDD::TextureLayout p_dst_layout, bool p_immediate_flush) {
+Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, const Span<uint8_t> p_data, RDD::TextureLayout p_dst_layout, bool p_immediate_flush) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL_V(texture, ERR_INVALID_PARAMETER);
 
@@ -8120,11 +8131,12 @@ RenderingDevice::RenderingDevice() {
 RID RenderingDevice::_texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const TypedArray<PackedByteArray> &p_data) {
 	ERR_FAIL_COND_V(p_format.is_null(), RID());
 	ERR_FAIL_COND_V(p_view.is_null(), RID());
-	Vector<Vector<uint8_t>> data;
+	LocalVector<Span<uint8_t>> data;
+	data.reserve(p_data.size());
 	for (int i = 0; i < p_data.size(); i++) {
 		Vector<uint8_t> byte_slice = p_data[i];
 		ERR_FAIL_COND_V(byte_slice.is_empty(), RID());
-		data.push_back(byte_slice);
+		data.push_back(byte_slice.span());
 	}
 	return texture_create(p_format->base, p_view->base, data);
 }
