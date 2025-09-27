@@ -874,6 +874,8 @@ public:
 	void set_fov_override(float p_fov_override);
 	float get_fov_override() const;
 
+	String get_shader_code() const;
+
 	static void init_shaders();
 	static void finish_shaders();
 	static void flush_changes();

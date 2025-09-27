@@ -35,6 +35,7 @@
 #include "core/error/error_macros.h"
 #include "core/version.h"
 #include "scene/main/scene_tree.h"
+#include "servers/rendering/shader_preprocessor.h"
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
 	for (Ref<Material> pass_child = p_pass; pass_child.is_valid(); pass_child = pass_child->get_next_pass()) {
@@ -724,6 +725,42 @@ void BaseMaterial3D::_update_shader() {
 	// race to create the shader. The winner, which is the one found in shader_map, will be
 	// used. The losers will free their shader.
 
+	String preprocessed_code;
+
+	ShaderPreprocessor preprocessor;
+	Error result = preprocessor.preprocess(get_shader_code(), "", preprocessed_code, nullptr, nullptr, nullptr, nullptr);
+
+	ERR_FAIL_COND(result != OK);
+
+	// We must create the shader outside the shader_map_mutex to avoid potential deadlocks with
+	// other tasks in the WorkerThreadPool simultaneously creating materials, which
+	// may also hold the shared shader_map_mutex lock.
+	RID new_shader = RS::get_singleton()->shader_create_from_code(preprocessed_code);
+
+	MutexLock lock(shader_map_mutex);
+
+	ShaderData *v = shader_map.getptr(mk);
+	if (unlikely(v)) {
+		// We raced and managed to create the same key concurrently, so we'll free the shader we just created,
+		// given we know it isn't used, and use the winner.
+		RS::get_singleton()->free(new_shader);
+	} else {
+		ShaderData shader_data;
+		shader_data.shader = new_shader;
+		// ShaderData will be inserted with a users count of 0, but we
+		// increment unconditionally outside this if block, whilst still under lock.
+		v = &shader_map.insert(mk, shader_data)->value;
+	}
+
+	shader_rid = v->shader;
+	v->users++;
+
+	if (_get_material().is_valid()) {
+		RS::get_singleton()->material_set_shader(_get_material(), shader_rid);
+	}
+}
+
+String BaseMaterial3D::get_shader_code() const {
 	String texfilter_str;
 	// Force linear filtering for the heightmap texture, as the heightmap effect
 	// looks broken with nearest-neighbor filtering (with and without Deep Parallax).
@@ -1813,7 +1850,11 @@ void fragment() {)";
 	float ref_amount = 1.0 - albedo.a * albedo_tex.a;
 
 	float refraction_depth_tex = textureLod(depth_texture, ref_ofs, 0.0).r;
+#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+	vec4 refraction_view_pos = INV_PROJECTION_MATRIX * vec4(vec3(SCREEN_UV, refraction_depth_tex) * 2.0 - 1.0, 1.0);
+#else
 	vec4 refraction_view_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, refraction_depth_tex, 1.0);
+#endif
 	refraction_view_pos.xyz /= refraction_view_pos.w;
 
 	// If the depth buffer is lower then the model's Z position, use the refracted UV, otherwise use the normal screen UV.
@@ -2056,32 +2097,7 @@ void fragment() {)";
 
 	code += "}\n";
 
-	// We must create the shader outside the shader_map_mutex to avoid potential deadlocks with
-	// other tasks in the WorkerThreadPool simultaneously creating materials, which
-	// may also hold the shared shader_map_mutex lock.
-	RID new_shader = RS::get_singleton()->shader_create_from_code(code);
-
-	MutexLock lock(shader_map_mutex);
-
-	ShaderData *v = shader_map.getptr(mk);
-	if (unlikely(v)) {
-		// We raced and managed to create the same key concurrently, so we'll free the shader we just created,
-		// given we know it isn't used, and use the winner.
-		RS::get_singleton()->free(new_shader);
-	} else {
-		ShaderData shader_data;
-		shader_data.shader = new_shader;
-		// ShaderData will be inserted with a users count of 0, but we
-		// increment unconditionally outside this if block, whilst still under lock.
-		v = &shader_map.insert(mk, shader_data)->value;
-	}
-
-	shader_rid = v->shader;
-	v->users++;
-
-	if (_get_material().is_valid()) {
-		RS::get_singleton()->material_set_shader(_get_material(), shader_rid);
-	}
+	return code;
 }
 
 void BaseMaterial3D::_check_material_rid() {
