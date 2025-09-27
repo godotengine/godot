@@ -117,7 +117,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="device" type="int" setter="set_device" getter="get_device" default="0">
+		<member name="device" type="int" setter="set_device" getter="get_device" default="-1">
 			The event's device ID.
 			[b]Note:[/b] [member device] can be negative for special use cases that don't refer to devices physically present on the system. See [constant DEVICE_ID_EMULATION].
 		</member>
