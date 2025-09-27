@@ -248,15 +248,15 @@ void BetsyCompressor::_thread_exit() {
 
 	if (compress_rd != nullptr) {
 		if (dxt1_encoding_table_buffer.is_valid()) {
-			compress_rd->free(dxt1_encoding_table_buffer);
+			compress_rd->free_rid(dxt1_encoding_table_buffer);
 		}
 
-		compress_rd->free(src_sampler);
+		compress_rd->free_rid(src_sampler);
 
 		// Clear the shader cache, pipelines will be unreferenced automatically.
 		for (int i = 0; i < BETSY_SHADER_MAX; i++) {
 			if (cached_shaders[i].compiled.is_valid()) {
-				compress_rd->free(cached_shaders[i].compiled);
+				compress_rd->free_rid(cached_shaders[i].compiled);
 			}
 		}
 
@@ -707,8 +707,8 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 
 			dst_texture_rid = dst_texture_combined;
 
-			compress_rd->free(dst_texture_primary);
-			compress_rd->free(dst_texture_alpha);
+			compress_rd->free_rid(dst_texture_primary);
+			compress_rd->free_rid(dst_texture_alpha);
 		}
 
 		// Copy data from the GPU to the buffer.
@@ -718,8 +718,8 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		memcpy(dst_data_ptr + dst_ofs, texture_data.ptr(), texture_data.size());
 
 		// Free the source and dest texture.
-		compress_rd->free(src_texture);
-		compress_rd->free(dst_texture_rid);
+		compress_rd->free_rid(src_texture);
+		compress_rd->free_rid(dst_texture_rid);
 	}
 
 	src_images.clear();

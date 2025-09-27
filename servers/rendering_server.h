@@ -1768,7 +1768,12 @@ public:
 
 	/* FREE */
 
-	virtual void free(RID p_rid) = 0; // Free RIDs associated with the rendering server.
+	virtual void free_rid(RID p_rid) = 0; // Free RIDs associated with the rendering server.
+#ifndef DISABLE_DEPRECATED
+	[[deprecated("Use `free_rid()` instead.")]] void free(RID p_rid) {
+		free_rid(p_rid);
+	}
+#endif // DISABLE_DEPRECATED
 
 	/* INTERPOLATION */
 

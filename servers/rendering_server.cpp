@@ -147,13 +147,13 @@ RID RenderingServer::get_test_texture() {
 
 void RenderingServer::_free_internal_rids() {
 	if (test_texture.is_valid()) {
-		free(test_texture);
+		free_rid(test_texture);
 	}
 	if (white_texture.is_valid()) {
-		free(white_texture);
+		free_rid(white_texture);
 	}
 	if (test_material.is_valid()) {
-		free(test_material);
+		free_rid(test_material);
 	}
 }
 
@@ -3469,7 +3469,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_MAX);
 
 	/* Free */
-	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &RenderingServer::free); // Shouldn't conflict with Object::free().
+	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &RenderingServer::free_rid);
 
 	/* Misc */
 
