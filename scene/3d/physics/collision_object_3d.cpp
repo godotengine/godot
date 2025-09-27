@@ -31,6 +31,7 @@
 #include "collision_object_3d.h"
 
 #include "scene/resources/3d/shape_3d.h"
+#include "scene/resources/physics_material.h"
 
 void CollisionObject3D::_notification(int p_what) {
 	switch (p_what) {
@@ -483,6 +484,8 @@ void CollisionObject3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shape_owner_get_owner", "owner_id"), &CollisionObject3D::shape_owner_get_owner);
 	ClassDB::bind_method(D_METHOD("shape_owner_set_disabled", "owner_id", "disabled"), &CollisionObject3D::shape_owner_set_disabled);
 	ClassDB::bind_method(D_METHOD("is_shape_owner_disabled", "owner_id"), &CollisionObject3D::is_shape_owner_disabled);
+	ClassDB::bind_method(D_METHOD("shape_owner_set_physics_material", "owner_id", "material"), &CollisionObject3D::shape_owner_set_physics_material);
+	ClassDB::bind_method(D_METHOD("shape_owner_get_physics_material", "owner_id"), &CollisionObject3D::shape_owner_get_physics_material);
 	ClassDB::bind_method(D_METHOD("shape_owner_add_shape", "owner_id", "shape"), &CollisionObject3D::shape_owner_add_shape);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_shape_count", "owner_id"), &CollisionObject3D::shape_owner_get_shape_count);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_shape", "owner_id", "shape_id"), &CollisionObject3D::shape_owner_get_shape);
@@ -563,6 +566,38 @@ bool CollisionObject3D::is_shape_owner_disabled(uint32_t p_owner) const {
 	ERR_FAIL_COND_V(!shapes.has(p_owner), false);
 
 	return shapes[p_owner].disabled;
+}
+
+void CollisionObject3D::shape_owner_set_physics_material(uint32_t p_owner, const Ref<PhysicsMaterial> &p_material) {
+	ERR_FAIL_COND(!shapes.has(p_owner));
+
+	if (area) {
+		return;
+	}
+
+	ShapeData &sd = shapes[p_owner];
+	if (sd.material == p_material) {
+		return;
+	}
+	sd.material = p_material;
+
+	for (int i = 0; i < sd.shapes.size(); i++) {
+		if (p_material.is_null()) {
+			// Disable override and use the body's physics material.
+			PhysicsServer3D::get_singleton()->body_set_shape_friction_override(rid, sd.shapes[i].index, false);
+			PhysicsServer3D::get_singleton()->body_set_shape_bounce_override(rid, sd.shapes[i].index, false);
+		} else {
+			// Enable material override for this shape.
+			PhysicsServer3D::get_singleton()->body_set_shape_friction_override(rid, sd.shapes[i].index, true, p_material->computed_friction());
+			PhysicsServer3D::get_singleton()->body_set_shape_bounce_override(rid, sd.shapes[i].index, true, p_material->computed_bounce());
+		}
+	}
+}
+
+Ref<PhysicsMaterial> CollisionObject3D::shape_owner_get_physics_material(uint32_t p_owner) const {
+	ERR_FAIL_COND_V(!shapes.has(p_owner), nullptr);
+
+	return shapes[p_owner].material;
 }
 
 void CollisionObject3D::get_shape_owners(List<uint32_t> *r_owners) {

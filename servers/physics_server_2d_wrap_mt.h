@@ -196,6 +196,12 @@ public:
 	FUNC2(body_remove_shape, RID, int);
 	FUNC1(body_clear_shapes, RID);
 
+	FUNC4(body_set_shape_friction_override, RID, int, bool, real_t);
+	FUNC4(body_set_shape_bounce_override, RID, int, bool, real_t);
+
+	FUNC2RC(real_t, body_get_shape_friction_override, RID, int);
+	FUNC2RC(real_t, body_get_shape_bounce_override, RID, int);
+
 	FUNC2(body_attach_object_instance_id, RID, ObjectID);
 	FUNC1RC(ObjectID, body_get_object_instance_id, RID);
 
