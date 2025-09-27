@@ -1868,8 +1868,18 @@ bool CodeEdit::is_line_folded(int p_line) const {
 	return p_line + 1 < get_line_count() && !_is_line_hidden(p_line) && _is_line_hidden(p_line + 1);
 }
 
-TypedArray<int> CodeEdit::get_folded_lines() const {
+TypedArray<int> CodeEdit::get_folded_lines_bind() const {
 	TypedArray<int> folded_lines;
+	for (int i = 0; i < get_line_count(); i++) {
+		if (is_line_folded(i)) {
+			folded_lines.push_back(i);
+		}
+	}
+	return folded_lines;
+}
+
+PackedInt32Array CodeEdit::get_folded_lines() const {
+	PackedInt32Array folded_lines;
 	for (int i = 0; i < get_line_count(); i++) {
 		if (is_line_folded(i)) {
 			folded_lines.push_back(i);
@@ -2805,7 +2815,7 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("toggle_foldable_lines_at_carets"), &CodeEdit::toggle_foldable_lines_at_carets);
 
 	ClassDB::bind_method(D_METHOD("is_line_folded", "line"), &CodeEdit::is_line_folded);
-	ClassDB::bind_method(D_METHOD("get_folded_lines"), &CodeEdit::get_folded_lines);
+	ClassDB::bind_method(D_METHOD("get_folded_lines"), &CodeEdit::get_folded_lines_bind);
 
 	/* Code region */
 	ClassDB::bind_method(D_METHOD("create_code_region"), &CodeEdit::create_code_region);
