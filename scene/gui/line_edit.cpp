@@ -824,23 +824,43 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			if (alt_mode == ALT_INPUT_UNICODE) {
 				if ((alt_code > 0x31 && alt_code < 0xd800) || (alt_code > 0xdfff)) {
 					char32_t ucodestr[2] = { (char32_t)alt_code, 0 };
+					int prev_length = text.length();
 					insert_text_at_caret(ucodestr);
+					if (text.length() != prev_length) {
+						_text_changed();
+					}
 				}
 			} else if (alt_mode == ALT_INPUT_OEM) {
 				if (alt_code > 0x00 && alt_code <= 0xff) {
 					char32_t ucodestr[2] = { alt_code_oem437[alt_code], 0 };
+					int prev_length = text.length();
 					insert_text_at_caret(ucodestr);
+					if (text.length() != prev_length) {
+						_text_changed();
+					}
 				} else if ((alt_code > 0xff && alt_code < 0xd800) || (alt_code > 0xdfff)) {
 					char32_t ucodestr[2] = { (char32_t)alt_code, 0 };
+					int prev_length = text.length();
 					insert_text_at_caret(ucodestr);
+					if (text.length() != prev_length) {
+						_text_changed();
+					}
 				}
 			} else if (alt_mode == ALT_INPUT_WIN) {
 				if (alt_code > 0x00 && alt_code <= 0xff) {
 					char32_t ucodestr[2] = { alt_code_cp1252[alt_code], 0 };
+					int prev_length = text.length();
 					insert_text_at_caret(ucodestr);
+					if (text.length() != prev_length) {
+						_text_changed();
+					}
 				} else if ((alt_code > 0xff && alt_code < 0xd800) || (alt_code > 0xdfff)) {
 					char32_t ucodestr[2] = { (char32_t)alt_code, 0 };
+					int prev_length = text.length();
 					insert_text_at_caret(ucodestr);
+					if (text.length() != prev_length) {
+						_text_changed();
+					}
 				}
 			}
 			alt_mode = ALT_INPUT_NONE;
@@ -2637,82 +2657,146 @@ void LineEdit::menu_option(int p_option) {
 		} break;
 		case MENU_INSERT_LRM: {
 			if (editable) {
+				int prev_len = text.length();
 				insert_text_at_caret(String::chr(0x200E));
+				if (text.length() != prev_len) {
+					_text_changed();
+				}
 			}
 		} break;
 		case MENU_INSERT_RLM: {
 			if (editable) {
+				int prev_len = text.length();
 				insert_text_at_caret(String::chr(0x200F));
+				if (text.length() != prev_len) {
+					_text_changed();
+				}
 			}
 		} break;
 		case MENU_INSERT_LRE: {
 			if (editable) {
+				int prev_len = text.length();
 				insert_text_at_caret(String::chr(0x202A));
+				if (text.length() != prev_len) {
+					_text_changed();
+				}
 			}
 		} break;
 		case MENU_INSERT_RLE: {
 			if (editable) {
+				int prev_len = text.length();
 				insert_text_at_caret(String::chr(0x202B));
+				if (text.length() != prev_len) {
+					_text_changed();
+				}
 			}
 		} break;
 		case MENU_INSERT_LRO: {
 			if (editable) {
+				int prev_len = text.length();
 				insert_text_at_caret(String::chr(0x202D));
+				if (text.length() != prev_len) {
+					_text_changed();
+				}
 			}
 		} break;
 		case MENU_INSERT_RLO: {
 			if (editable) {
+				int prev_len = text.length();
 				insert_text_at_caret(String::chr(0x202E));
+				if (text.length() != prev_len) {
+					_text_changed();
+				}
 			}
 		} break;
 		case MENU_INSERT_PDF: {
 			if (editable) {
+				int prev_len = text.length();
 				insert_text_at_caret(String::chr(0x202C));
+				if (text.length() != prev_len) {
+					_text_changed();
+				}
 			}
 		} break;
 		case MENU_INSERT_ALM: {
 			if (editable) {
+				int prev_len = text.length();
 				insert_text_at_caret(String::chr(0x061C));
+				if (text.length() != prev_len) {
+					_text_changed();
+				}
 			}
 		} break;
 		case MENU_INSERT_LRI: {
 			if (editable) {
+				int prev_len = text.length();
 				insert_text_at_caret(String::chr(0x2066));
+				if (text.length() != prev_len) {
+					_text_changed();
+				}
 			}
 		} break;
 		case MENU_INSERT_RLI: {
 			if (editable) {
+				int prev_len = text.length();
 				insert_text_at_caret(String::chr(0x2067));
+				if (text.length() != prev_len) {
+					_text_changed();
+				}
 			}
 		} break;
 		case MENU_INSERT_FSI: {
 			if (editable) {
+				int prev_len = text.length();
 				insert_text_at_caret(String::chr(0x2068));
+				if (text.length() != prev_len) {
+					_text_changed();
+				}
 			}
 		} break;
 		case MENU_INSERT_PDI: {
 			if (editable) {
+				int prev_len = text.length();
 				insert_text_at_caret(String::chr(0x2069));
+				if (text.length() != prev_len) {
+					_text_changed();
+				}
 			}
 		} break;
 		case MENU_INSERT_ZWJ: {
 			if (editable) {
+				int prev_len = text.length();
 				insert_text_at_caret(String::chr(0x200D));
+				if (text.length() != prev_len) {
+					_text_changed();
+				}
 			}
 		} break;
 		case MENU_INSERT_ZWNJ: {
 			if (editable) {
+				int prev_len = text.length();
 				insert_text_at_caret(String::chr(0x200C));
+				if (text.length() != prev_len) {
+					_text_changed();
+				}
 			}
 		} break;
 		case MENU_INSERT_WJ: {
 			if (editable) {
+				int prev_len = text.length();
 				insert_text_at_caret(String::chr(0x2060));
+				if (text.length() != prev_len) {
+					_text_changed();
+				}
 			}
 		} break;
 		case MENU_INSERT_SHY: {
 			if (editable) {
+				int prev_len = text.length();
 				insert_text_at_caret(String::chr(0x00AD));
+				if (text.length() != prev_len) {
+					_text_changed();
+				}
 			}
 		} break;
 		case MENU_EMOJI_AND_SYMBOL: {
