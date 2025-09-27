@@ -2177,7 +2177,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 					text_color.a *= 0.7;
 				} else if (node) {
 					Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
-					const Vector2 icon_size = Vector2(1, 1) * get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+					const Vector2 icon_size = vec2_from_scalar(get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 
 					icon_rect = Rect2(Point2(ofs, (get_size().height - check->get_height()) / 2).round(), icon->get_size());
 					draw_texture_rect(icon, icon_rect);
@@ -3728,7 +3728,7 @@ AnimationTrackEdit *AnimationTrackEditPlugin::create_animation_track_edit(Object
 void AnimationTrackEditGroup::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			icon_size = Vector2(1, 1) * get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+			icon_size = vec2_from_scalar(get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 		} break;
 
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {

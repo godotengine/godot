@@ -2378,7 +2378,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 
 	sources_list = memnew(ItemList);
 	sources_list->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED);
-	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
+	sources_list->set_fixed_icon_size(vec2_from_scalar(60 * EDSCALE));
 	sources_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	sources_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	sources_list->set_stretch_ratio(0.25);
@@ -3320,7 +3320,7 @@ void TileMapLayerEditorTerrainsPlugin::_update_terrains_tree() {
 	}
 
 	// Fill in the terrain list.
-	Vector<Vector<Ref<Texture2D>>> icons = tile_set->generate_terrains_icons(Size2(16, 16) * EDSCALE);
+	Vector<Vector<Ref<Texture2D>>> icons = tile_set->generate_terrains_icons(vec2_from_scalar(16 * EDSCALE));
 	for (int terrain_set_index = 0; terrain_set_index < tile_set->get_terrain_sets_count(); terrain_set_index++) {
 		// Add an item for the terrain set.
 		TreeItem *terrain_set_tree_item = terrains_tree->create_item();
@@ -3504,7 +3504,7 @@ TileMapLayerEditorTerrainsPlugin::TileMapLayerEditorTerrainsPlugin() {
 	terrains_tile_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	terrains_tile_list->set_max_columns(0);
 	terrains_tile_list->set_same_column_width(true);
-	terrains_tile_list->set_fixed_icon_size(Size2(32, 32) * EDSCALE);
+	terrains_tile_list->set_fixed_icon_size(vec2_from_scalar(32 * EDSCALE));
 	terrains_tile_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	tilemap_tab_terrains->add_child(terrains_tile_list);
 
