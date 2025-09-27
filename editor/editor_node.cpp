@@ -924,6 +924,15 @@ void EditorNode::_notification(int p_what) {
 				EditorToaster::get_singleton()->popup_str(TTR("Recovery Mode is enabled. Editor functionality has been restricted."), EditorToaster::SEVERITY_WARNING);
 			}
 
+			// Preview your default translation, if available.
+			String default_preview = TranslationServer::get_singleton()->get_default_preview();
+			if (!default_preview.is_empty()) {
+				Vector<String> locales = TranslationServer::get_singleton()->get_loaded_locales();
+				if (locales.has(default_preview)) {
+					set_preview_locale(default_preview);
+				}
+			}
+
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
 
