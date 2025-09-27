@@ -658,8 +658,8 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 	switch (p_format) {
 		case Image::FORMAT_DXT1: {
 			if (config->s3tc_supported) {
-				r_gl_internal_format = _EXT_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-				r_gl_format = GL_RGBA;
+				r_gl_internal_format = _EXT_COMPRESSED_RGB_S3TC_DXT1_EXT;
+				r_gl_format = GL_RGB;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
 			} else {
