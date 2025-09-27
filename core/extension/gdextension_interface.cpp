@@ -1048,6 +1048,7 @@ static GDExtensionInt gdextension_string_resize(GDExtensionStringPtr p_self, GDE
 	return (*self).resize_uninitialized(p_length);
 }
 
+#ifndef DISABLE_DEPRECATED
 static void gdextension_string_name_new_with_latin1_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionBool p_is_static) {
 	memnew_placement(r_dest, StringName(p_contents, static_cast<bool>(p_is_static)));
 }
@@ -1061,6 +1062,7 @@ static void gdextension_string_name_new_with_utf8_chars_and_len(GDExtensionUnini
 	String tmp = String::utf8(p_contents, p_size);
 	memnew_placement(r_dest, StringName(tmp));
 }
+#endif
 
 static GDExtensionInt gdextension_xml_parser_open_buffer(GDExtensionObjectPtr p_instance, const uint8_t *p_buffer, size_t p_size) {
 	XMLParser *xml = (XMLParser *)p_instance;
@@ -1770,9 +1772,11 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_wcstr);
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_c32str);
 	REGISTER_INTERFACE_FUNC(string_resize);
+#ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(string_name_new_with_latin1_chars);
 	REGISTER_INTERFACE_FUNC(string_name_new_with_utf8_chars);
 	REGISTER_INTERFACE_FUNC(string_name_new_with_utf8_chars_and_len);
+#endif
 	REGISTER_INTERFACE_FUNC(xml_parser_open_buffer);
 	REGISTER_INTERFACE_FUNC(file_access_store_buffer);
 	REGISTER_INTERFACE_FUNC(file_access_get_buffer);
