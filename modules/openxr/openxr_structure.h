@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_util.h                                                         */
+/*  openxr_structure.h                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,42 +30,47 @@
 
 #pragma once
 
-#include "core/string/ustring.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/ref_counted.h"
+#include "openxr_util.h"
+#include "util.h"
 
-#include <openxr/openxr.h>
-#include <openxr/openxr_reflection.h>
+// Base class for XrStructureType based headers
+class OpenXRStructureBase : public RefCounted {
+	GDCLASS(OpenXRStructureBase, RefCounted);
 
-#define XR_ENUM_CASE_STR(name, val) \
-	case name:                      \
-		return #name;
-#define XR_ENUM_SWITCH(enumType, var)                                                                                           \
-	switch (var) {                                                                                                              \
-		XR_LIST_ENUM_##enumType(XR_ENUM_CASE_STR) default : return "Unknown " #enumType ": " + String::num_int64(int64_t(var)); \
-	}
-
-class OpenXRUtil {
 public:
-	static String get_result_string(XrResult p_result);
-	static String get_view_configuration_name(XrViewConfigurationType p_view_configuration);
-	static String get_reference_space_name(XrReferenceSpaceType p_reference_space);
-	static String get_structure_type_name(XrStructureType p_structure_type);
-	static String get_session_state_name(XrSessionState p_session_state);
-	static String get_action_type_name(XrActionType p_action_type);
-	static String get_environment_blend_mode_name(XrEnvironmentBlendMode p_blend_mode);
-	static String make_xr_version_string(XrVersion p_version);
-	static String get_handle_as_hex_string(void *p_handle);
-	static String string_from_xruuid(const XrUuid &xr_uuid);
-	static XrUuid xruuid_from_string(const String &p_uuid);
+	/*
+	 * get_header should return a pointer to a proper XrStructureType structure.
+	 * The pointer should remain valid as long as this object is not destructed.
+	 *
+	 * This function should be implemented based on the following template:
+	 * void *get_header(void *p_next = nullptr) {
+	 *     my_xr_struct.type = XR_TYPE_XYZ;
+	 *     if (get_next().is_valid()) {
+	 *         my_xr_struct.next = get_next()->get_header(p_next);
+	 *     } else {
+	 *         my_xr_struct.next = p_next
+	 *     }
+	 *
+	 *     // add further setup of the struct here
+	 *
+	 *     return &my_xr_struct;
+	 * }
+	 */
+	virtual void *get_header(void *p_next = nullptr);
+	virtual XrStructureType get_structure_type();
 
-	// Copied from OpenXR xr_linear.h private header, so we can still link against
-	// system-provided packages without relying on our `thirdparty` code.
+	void set_next(const Ref<OpenXRStructureBase> p_next);
+	Ref<OpenXRStructureBase> get_next() const;
 
-	// Column-major, pre-multiplied. This type does not exist in the OpenXR API and is provided for convenience.
-	typedef struct XrMatrix4x4f {
-		float m[16];
-	} XrMatrix4x4f;
+	GDVIRTUAL1R(uint64_t, _get_header, uint64_t);
 
-	static void XrMatrix4x4f_CreateProjection(XrMatrix4x4f *result, const float tanAngleLeft, const float tanAngleRight,
-			const float tanAngleUp, float const tanAngleDown, const float nearZ, const float farZ);
-	static void XrMatrix4x4f_CreateProjectionFov(XrMatrix4x4f *result, const XrFovf fov, const float nearZ, const float farZ);
+protected:
+	static void _bind_methods();
+
+private:
+	Ref<OpenXRStructureBase> next;
+
+	uint64_t _get_structure_type();
 };

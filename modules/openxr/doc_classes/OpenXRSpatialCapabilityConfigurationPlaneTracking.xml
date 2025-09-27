@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialCapabilityConfigurationPlaneTracking" inherits="OpenXRSpatialCapabilityConfigurationBaseHeader" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Configuration header for plane tracking.
+	</brief_description>
+	<description>
+		Configuration header for plane tracking. Pass this to [method OpenXRSpatialEntityExtension.create_spatial_context] to create a spatial context with plane tracking capabilities.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_enabled_components" qualifiers="const">
+			<return type="PackedInt64Array" />
+			<description>
+				Returns the components enabled by this configuration.
+				[b]Note:[/b] Only valid after this configuration was used to create a spatial context.
+			</description>
+		</method>
+		<method name="supports_labels">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if we support the plane semantic label component (only valid after the OpenXR session has started). You can query these using the [OpenXRSpatialComponentPlaneSemanticLabelList] data object.
+			</description>
+		</method>
+		<method name="supports_mesh_2d">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if we support the mesh 2D component (only valid after the OpenXR session has started). You can query these using the [OpenXRSpatialComponentMesh2DList] data object.
+			</description>
+		</method>
+		<method name="supports_polygons">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if we support the polygon 2D component (only valid after the OpenXR session has started). You can query these using the [OpenXRSpatialComponentPolygon2DList] data object.
+			</description>
+		</method>
+	</methods>
+</class>
