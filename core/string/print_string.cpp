@@ -131,145 +131,147 @@ void __print_line_rich(const String &p_string) {
 		pos = brk_end + 1;
 		output += txt;
 
+		const bool should_color = Engine::get_singleton()->is_coloring_standard_output();
+
 		String tag = p_string.substr(brk_pos + 1, brk_end - brk_pos - 1);
 		if (tag == "b") {
-			output += "\u001b[1m";
+			output += should_color ? "\u001b[1m" : "";
 		} else if (tag == "/b") {
-			output += "\u001b[22m";
+			output += should_color ? "\u001b[22m" : "";
 		} else if (tag == "i") {
-			output += "\u001b[3m";
+			output += should_color ? "\u001b[3m" : "";
 		} else if (tag == "/i") {
-			output += "\u001b[23m";
+			output += should_color ? "\u001b[23m" : "";
 		} else if (tag == "u") {
-			output += "\u001b[4m";
+			output += should_color ? "\u001b[4m" : "";
 		} else if (tag == "/u") {
-			output += "\u001b[24m";
+			output += should_color ? "\u001b[24m" : "";
 		} else if (tag == "s") {
-			output += "\u001b[9m";
+			output += should_color ? "\u001b[9m" : "";
 		} else if (tag == "/s") {
-			output += "\u001b[29m";
+			output += should_color ? "\u001b[29m" : "";
 		} else if (tag == "indent") {
-			output += "    ";
+			output += should_color ? "    " : "";
 		} else if (tag == "/indent") {
 			output += "";
 		} else if (tag == "code") {
-			output += "\u001b[2m";
+			output += should_color ? "\u001b[2m" : "";
 		} else if (tag == "/code") {
-			output += "\u001b[22m";
+			output += should_color ? "\u001b[22m" : "";
 		} else if (tag == "url") {
 			output += "";
 		} else if (tag == "/url") {
 			output += "";
 		} else if (tag == "center") {
-			output += "\n\t\t\t";
+			output += should_color ? "\n\t\t\t" : "";
 		} else if (tag == "/center") {
 			output += "";
 		} else if (tag == "right") {
-			output += "\n\t\t\t\t\t\t";
+			output += should_color ? "\n\t\t\t\t\t\t" : "";
 		} else if (tag == "/right") {
 			output += "";
 		} else if (tag.begins_with("color=")) {
 			String color_name = tag.trim_prefix("color=");
 			if (color_name == "black") {
-				output += "\u001b[30m";
+				output += should_color ? "\u001b[30m" : "";
 			} else if (color_name == "red") {
-				output += "\u001b[91m";
+				output += should_color ? "\u001b[91m" : "";
 			} else if (color_name == "green") {
-				output += "\u001b[92m";
+				output += should_color ? "\u001b[92m" : "";
 			} else if (color_name == "lime") {
-				output += "\u001b[92m";
+				output += should_color ? "\u001b[92m" : "";
 			} else if (color_name == "yellow") {
-				output += "\u001b[93m";
+				output += should_color ? "\u001b[93m" : "";
 			} else if (color_name == "blue") {
-				output += "\u001b[94m";
+				output += should_color ? "\u001b[94m" : "";
 			} else if (color_name == "magenta") {
-				output += "\u001b[95m";
+				output += should_color ? "\u001b[95m" : "";
 			} else if (color_name == "pink") {
-				output += "\u001b[38;5;218m";
+				output += should_color ? "\u001b[38;5;218m" : "";
 			} else if (color_name == "purple") {
-				output += "\u001b[38;5;98m";
+				output += should_color ? "\u001b[38;5;98m" : "";
 			} else if (color_name == "cyan") {
-				output += "\u001b[96m";
+				output += should_color ? "\u001b[96m" : "";
 			} else if (color_name == "white") {
-				output += "\u001b[97m";
+				output += should_color ? "\u001b[97m" : "";
 			} else if (color_name == "orange") {
-				output += "\u001b[38;5;208m";
+				output += should_color ? "\u001b[38;5;208m" : "";
 			} else if (color_name == "gray") {
-				output += "\u001b[90m";
+				output += should_color ? "\u001b[90m" : "";
 			} else {
 				Color c = Color::from_string(color_name, Color());
-				output += vformat("\u001b[38;2;%d;%d;%dm", c.r * 255, c.g * 255, c.b * 255);
+				output += should_color ? vformat("\u001b[38;2;%d;%d;%dm", c.r * 255, c.g * 255, c.b * 255) : "";
 			}
 		} else if (tag == "/color") {
-			output += "\u001b[39m";
+			output += should_color ? "\u001b[39m" : "";
 		} else if (tag.begins_with("bgcolor=")) {
 			String color_name = tag.trim_prefix("bgcolor=");
 			if (color_name == "black") {
-				output += "\u001b[40m";
+				output += should_color ? "\u001b[40m" : "";
 			} else if (color_name == "red") {
-				output += "\u001b[101m";
+				output += should_color ? "\u001b[101m" : "";
 			} else if (color_name == "green") {
-				output += "\u001b[102m";
+				output += should_color ? "\u001b[102m" : "";
 			} else if (color_name == "lime") {
-				output += "\u001b[102m";
+				output += should_color ? "\u001b[102m" : "";
 			} else if (color_name == "yellow") {
-				output += "\u001b[103m";
+				output += should_color ? "\u001b[103m" : "";
 			} else if (color_name == "blue") {
-				output += "\u001b[104m";
+				output += should_color ? "\u001b[104m" : "";
 			} else if (color_name == "magenta") {
-				output += "\u001b[105m";
+				output += should_color ? "\u001b[105m" : "";
 			} else if (color_name == "pink") {
-				output += "\u001b[48;5;218m";
+				output += should_color ? "\u001b[48;5;218m" : "";
 			} else if (color_name == "purple") {
-				output += "\u001b[48;5;98m";
+				output += should_color ? "\u001b[48;5;98m" : "";
 			} else if (color_name == "cyan") {
-				output += "\u001b[106m";
+				output += should_color ? "\u001b[106m" : "";
 			} else if (color_name == "white") {
-				output += "\u001b[107m";
+				output += should_color ? "\u001b[107m" : "";
 			} else if (color_name == "orange") {
-				output += "\u001b[48;5;208m";
+				output += should_color ? "\u001b[48;5;208m" : "";
 			} else if (color_name == "gray") {
-				output += "\u001b[100m";
+				output += should_color ? "\u001b[100m" : "";
 			} else {
 				Color c = Color::from_string(color_name, Color());
-				output += vformat("\u001b[48;2;%d;%d;%dm", c.r * 255, c.g * 255, c.b * 255);
+				output += should_color ? vformat("\u001b[48;2;%d;%d;%dm", c.r * 255, c.g * 255, c.b * 255) : "";
 			}
 		} else if (tag == "/bgcolor") {
-			output += "\u001b[49m";
+			output += should_color ? "\u001b[49m" : "";
 		} else if (tag.begins_with("fgcolor=")) {
 			String color_name = tag.trim_prefix("fgcolor=");
 			if (color_name == "black") {
-				output += "\u001b[30;40m";
+				output += should_color ? "\u001b[30;40m" : "";
 			} else if (color_name == "red") {
-				output += "\u001b[91;101m";
+				output += should_color ? "\u001b[91;101m" : "";
 			} else if (color_name == "green") {
-				output += "\u001b[92;102m";
+				output += should_color ? "\u001b[92;102m" : "";
 			} else if (color_name == "lime") {
-				output += "\u001b[92;102m";
+				output += should_color ? "\u001b[92;102m" : "";
 			} else if (color_name == "yellow") {
-				output += "\u001b[93;103m";
+				output += should_color ? "\u001b[93;103m" : "";
 			} else if (color_name == "blue") {
-				output += "\u001b[94;104m";
+				output += should_color ? "\u001b[94;104m" : "";
 			} else if (color_name == "magenta") {
-				output += "\u001b[95;105m";
+				output += should_color ? "\u001b[95;105m" : "";
 			} else if (color_name == "pink") {
-				output += "\u001b[38;5;218;48;5;218m";
+				output += should_color ? "\u001b[38;5;218;48;5;218m" : "";
 			} else if (color_name == "purple") {
-				output += "\u001b[38;5;98;48;5;98m";
+				output += should_color ? "\u001b[38;5;98;48;5;98m" : "";
 			} else if (color_name == "cyan") {
-				output += "\u001b[96;106m";
+				output += should_color ? "\u001b[96;106m" : "";
 			} else if (color_name == "white") {
-				output += "\u001b[97;107m";
+				output += should_color ? "\u001b[97;107m" : "";
 			} else if (color_name == "orange") {
-				output += "\u001b[38;5;208;48;5;208m";
+				output += should_color ? "\u001b[38;5;208;48;5;208m" : "";
 			} else if (color_name == "gray") {
-				output += "\u001b[90;100m";
+				output += should_color ? "\u001b[90;100m" : "";
 			} else {
 				Color c = Color::from_string(color_name, Color());
-				output += vformat("\u001b[38;2;%d;%d;%d;48;2;%d;%d;%dm", c.r * 255, c.g * 255, c.b * 255, c.r * 255, c.g * 255, c.b * 255);
+				output += should_color ? vformat("\u001b[38;2;%d;%d;%d;48;2;%d;%d;%dm", c.r * 255, c.g * 255, c.b * 255, c.r * 255, c.g * 255, c.b * 255) : "";
 			}
 		} else if (tag == "/fgcolor") {
-			output += "\u001b[39;49m";
+			output += should_color ? "\u001b[39;49m" : "";
 		} else {
 			output += "[";
 			pos = brk_pos + 1;
