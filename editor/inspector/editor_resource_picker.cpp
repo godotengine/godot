@@ -247,6 +247,11 @@ void EditorResourcePicker::_update_menu_items() {
 				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Clear")), TTR("Clear"), OBJ_MENU_CLEAR);
 			}
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
+			String modifier = "Ctrl";
+			if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+				modifier = "Cmd";
+			}
+			edit_menu->set_item_tooltip(-1, vformat(TTRC("Hold %s while drag-and-dropping from the FileSystem dock or another resource picker to automatically make the dropped resource unique."), modifier));
 
 			if (_has_sub_resources(edited_resource)) {
 				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique (Recursive)"), OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
@@ -886,7 +891,14 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 		}
 
 		edited_resource = dropped_resource;
-		_resource_changed();
+
+		if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+			// `_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE)` already calls `_resource_changed()`,
+			// so we don't need to manually call it in this case.
+			_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
+		} else {
+			_resource_changed();
+		}
 	}
 }
 
