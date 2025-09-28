@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRStructureBase" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Object for storing OpenXR structure data.
+	</brief_description>
+	<description>
+		Object for storing OpenXR structure data that is passed when calling into OpenXR APIs.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_header" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="next" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_structure_type">
+			<return type="int" />
+			<description>
+				Returns the structure type (OpenXR [code]XrStructureType[/code]) used for this structure.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="next" type="OpenXRStructureBase" setter="set_next" getter="get_next">
+			Setting another structure object here chains these structures together to extend the API functionality. Consult the OpenXR documentation for which structures can be used with a given API call.
+		</member>
+	</members>
+</class>

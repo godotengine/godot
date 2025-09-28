@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialContextPersistenceConfig" inherits="OpenXRStructureBase" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Configuration header for spatial persistence.
+	</brief_description>
+	<description>
+		Configuration header for spatial persistence. Pass this to [method OpenXRSpatialEntityExtension.create_spatial_context] as the next parameter to create a spatial context with spatial persistence capabilities.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_persistence_context">
+			<return type="void" />
+			<param index="0" name="persistence_context" type="RID" />
+			<description>
+				Adds a persistence context to this configuration. You must add at least one persistence context to create a valid configuration. You can create a persistence context by calling [method OpenXRSpatialAnchorCapability.create_persistence_context].
+			</description>
+		</method>
+		<method name="remove_persistence_context">
+			<return type="void" />
+			<param index="0" name="persistence_context" type="RID" />
+			<description>
+				Removes a persistence context.
+			</description>
+		</method>
+	</methods>
+</class>

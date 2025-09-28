@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_util.h                                                         */
+/*  openxr_structure.cpp                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,44 +28,56 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "openxr_structure.h"
 
-#include "core/string/ustring.h"
+void OpenXRStructureBase::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_structure_type"), &OpenXRStructureBase::_get_structure_type);
 
-#include <openxr/openxr.h>
-#include <openxr/openxr_reflection.h>
+	ClassDB::bind_method(D_METHOD("set_next", "entity"), &OpenXRStructureBase::set_next);
+	ClassDB::bind_method(D_METHOD("get_next"), &OpenXRStructureBase::get_next);
 
-#define XR_ENUM_CASE_STR(name, val) \
-	case name:                      \
-		return #name;
-#define XR_ENUM_SWITCH(enumType, var)                                                                                           \
-	switch (var) {                                                                                                              \
-		XR_LIST_ENUM_##enumType(XR_ENUM_CASE_STR) default : return "Unknown " #enumType ": " + String::num_int64(int64_t(var)); \
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "next", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRStructureBase"), "set_next", "get_next");
+
+	GDVIRTUAL_BIND(_get_header, "next");
+}
+
+void OpenXRStructureBase::set_next(const Ref<OpenXRStructureBase> p_next) {
+	next = p_next;
+}
+
+Ref<OpenXRStructureBase> OpenXRStructureBase::get_next() const {
+	return next;
+}
+
+void *OpenXRStructureBase::get_header(void *p_next) {
+	void *n = p_next;
+	if (get_next().is_valid()) {
+		n = get_next()->get_header(p_next);
 	}
 
-class OpenXRUtil {
-public:
-	static String get_result_string(XrResult p_result);
-	static String get_view_configuration_name(XrViewConfigurationType p_view_configuration);
-	static String get_reference_space_name(XrReferenceSpaceType p_reference_space);
-	static String get_structure_type_name(XrStructureType p_structure_type);
-	static String get_session_state_name(XrSessionState p_session_state);
-	static String get_action_type_name(XrActionType p_action_type);
-	static String get_environment_blend_mode_name(XrEnvironmentBlendMode p_blend_mode);
-	static String make_xr_version_string(XrVersion p_version);
-	static String get_handle_as_hex_string(void *p_handle);
-	static String string_from_xruuid(const XrUuid &xr_uuid);
-	static XrUuid xruuid_from_string(const String &p_uuid);
+	uint64_t pointer = 0;
 
-	// Copied from OpenXR xr_linear.h private header, so we can still link against
-	// system-provided packages without relying on our `thirdparty` code.
+	if (GDVIRTUAL_CALL(_get_header, (uint64_t)n, pointer)) {
+		return reinterpret_cast<void *>(pointer);
+	}
 
-	// Column-major, pre-multiplied. This type does not exist in the OpenXR API and is provided for convenience.
-	typedef struct XrMatrix4x4f {
-		float m[16];
-	} XrMatrix4x4f;
+	return n;
+}
 
-	static void XrMatrix4x4f_CreateProjection(XrMatrix4x4f *result, const float tanAngleLeft, const float tanAngleRight,
-			const float tanAngleUp, float const tanAngleDown, const float nearZ, const float farZ);
-	static void XrMatrix4x4f_CreateProjectionFov(XrMatrix4x4f *result, const XrFovf fov, const float nearZ, const float farZ);
-};
+XrStructureType OpenXRStructureBase::get_structure_type() {
+	// By default we call get_header to get the structure type so we have a guaranteed implementation.
+
+	// The first member of our header is always the structure type, so this works:
+	XrStructureType *header = (XrStructureType *)get_header();
+	if (header == nullptr) {
+		// Header can return nullptr for valid reasons, so we do not error here!
+		return XR_TYPE_UNKNOWN;
+	} else {
+		return *header;
+	}
+}
+
+// Return structure type as uint64_t to GDScript
+uint64_t OpenXRStructureBase::_get_structure_type() {
+	return (uint64_t)get_structure_type();
+}
