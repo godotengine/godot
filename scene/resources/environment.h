@@ -133,6 +133,8 @@ private:
 	float ssao_detail = 0.5;
 	float ssao_horizon = 0.06;
 	float ssao_sharpness = 0.98;
+	// Only used for GTAO
+	float ssao_thickness_blend = 0.5;
 	float ssao_direct_light_affect = 0.0;
 	float ssao_ao_channel_affect = 0.0;
 	void _update_ssao();
@@ -299,6 +301,8 @@ public:
 	float get_ssao_horizon() const;
 	void set_ssao_sharpness(float p_sharpness);
 	float get_ssao_sharpness() const;
+	void set_ssao_thickness_blend(float p_thickness_blend);
+	float get_ssao_thickness_blend() const;
 	void set_ssao_direct_light_affect(float p_direct_light_affect);
 	float get_ssao_direct_light_affect() const;
 	void set_ssao_ao_channel_affect(float p_ao_channel_affect);
