@@ -2738,22 +2738,10 @@ void Node::get_storable_properties(HashSet<StringName> &r_storable_properties) c
 }
 
 String Node::to_string() {
-	// Keep this method in sync with `Object::to_string`.
 	ERR_THREAD_GUARD_V(String());
-	if (get_script_instance()) {
-		bool valid;
-		String ret = get_script_instance()->to_string(&valid);
-		if (valid) {
-			return ret;
-		}
-	}
-	if (_get_extension() && _get_extension()->to_string) {
-		String ret;
-		GDExtensionBool is_valid;
-		_get_extension()->to_string(_get_extension_instance(), &is_valid, &ret);
-		if (is_valid) {
-			return ret;
-		}
+	String ret;
+	if (_try_get_override_to_string(ret)) {
+		return ret;
 	}
 	return (get_name() ? String(get_name()) + ":" : "") + Object::to_string();
 }

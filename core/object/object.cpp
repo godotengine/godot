@@ -965,13 +965,13 @@ void Object::_notification_backward(int p_notification) {
 	_notification_backwardv(p_notification);
 }
 
-String Object::to_string() {
-	// Keep this method in sync with `Node::to_string`.
+bool Object::_try_get_override_to_string(String &r_result) const {
 	if (script_instance) {
 		bool valid;
 		String ret = script_instance->to_string(&valid);
 		if (valid) {
-			return ret;
+			r_result = ret;
+			return true;
 		}
 	}
 	if (_extension && _extension->to_string) {
@@ -979,8 +979,17 @@ String Object::to_string() {
 		GDExtensionBool is_valid;
 		_extension->to_string(_extension_instance, &is_valid, &ret);
 		if (is_valid) {
-			return ret;
+			r_result = ret;
+			return true;
 		}
+	}
+	return false;
+}
+
+String Object::to_string() {
+	String ret;
+	if (_try_get_override_to_string(ret)) {
+		return ret;
 	}
 	return "<" + get_class() + "#" + itos(get_instance_id()) + ">";
 }

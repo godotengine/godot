@@ -797,6 +797,8 @@ protected:
 
 	virtual bool _uses_signal_mutex() const;
 
+	bool _try_get_override_to_string(String &r_result) const;
+
 #ifdef TOOLS_ENABLED
 	struct VirtualMethodTracker {
 		void **method;

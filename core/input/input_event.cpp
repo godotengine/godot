@@ -278,6 +278,10 @@ String InputEventWithModifiers::as_text() const {
 }
 
 String InputEventWithModifiers::to_string() {
+	String ret;
+	if (_try_get_override_to_string(ret)) {
+		return ret;
+	}
 	return as_text();
 }
 
@@ -489,6 +493,10 @@ String InputEventKey::as_text() const {
 }
 
 String InputEventKey::to_string() {
+	String ret;
+	if (_try_get_override_to_string(ret)) {
+		return ret;
+	}
 	String p = is_pressed() ? "true" : "false";
 	String e = is_echo() ? "true" : "false";
 
@@ -849,6 +857,10 @@ String InputEventMouseButton::as_text() const {
 }
 
 String InputEventMouseButton::to_string() {
+	String ret;
+	if (_try_get_override_to_string(ret)) {
+		return ret;
+	}
 	String p = is_pressed() ? "true" : "false";
 	String canceled_state = is_canceled() ? "true" : "false";
 	String d = double_click ? "true" : "false";
@@ -989,6 +1001,10 @@ String InputEventMouseMotion::as_text() const {
 }
 
 String InputEventMouseMotion::to_string() {
+	String ret;
+	if (_try_get_override_to_string(ret)) {
+		return ret;
+	}
 	BitField<MouseButtonMask> mouse_button_mask = get_button_mask();
 	String button_mask_string = itos((int64_t)mouse_button_mask);
 
@@ -1185,6 +1201,10 @@ String InputEventJoypadMotion::as_text() const {
 }
 
 String InputEventJoypadMotion::to_string() {
+	String ret;
+	if (_try_get_override_to_string(ret)) {
+		return ret;
+	}
 	return vformat("InputEventJoypadMotion: axis=%d, axis_value=%.2f", axis, axis_value);
 }
 
@@ -1303,6 +1323,10 @@ String InputEventJoypadButton::as_text() const {
 }
 
 String InputEventJoypadButton::to_string() {
+	String ret;
+	if (_try_get_override_to_string(ret)) {
+		return ret;
+	}
 	String p = is_pressed() ? "true" : "false";
 	return vformat("InputEventJoypadButton: button_index=%d, pressed=%s, pressure=%.2f", button_index, p, pressure);
 }
@@ -1385,6 +1409,10 @@ String InputEventScreenTouch::as_text() const {
 }
 
 String InputEventScreenTouch::to_string() {
+	String ret;
+	if (_try_get_override_to_string(ret)) {
+		return ret;
+	}
 	String p = pressed ? "true" : "false";
 	String canceled_state = canceled ? "true" : "false";
 	String double_tap_string = double_tap ? "true" : "false";
@@ -1513,6 +1541,10 @@ String InputEventScreenDrag::as_text() const {
 }
 
 String InputEventScreenDrag::to_string() {
+	String ret;
+	if (_try_get_override_to_string(ret)) {
+		return ret;
+	}
 	return vformat("InputEventScreenDrag: index=%d, position=(%s), relative=(%s), velocity=(%s), pressure=%.2f, tilt=(%s), pen_inverted=(%s)", index, String(get_position()), String(get_relative()), String(get_velocity()), get_pressure(), String(get_tilt()), get_pen_inverted());
 }
 
@@ -1655,6 +1687,10 @@ String InputEventAction::as_text() const {
 }
 
 String InputEventAction::to_string() {
+	String ret;
+	if (_try_get_override_to_string(ret)) {
+		return ret;
+	}
 	String p = is_pressed() ? "true" : "false";
 	return vformat("InputEventAction: action=\"%s\", pressed=%s", action, p);
 }
@@ -1726,6 +1762,10 @@ String InputEventMagnifyGesture::as_text() const {
 }
 
 String InputEventMagnifyGesture::to_string() {
+	String ret;
+	if (_try_get_override_to_string(ret)) {
+		return ret;
+	}
 	return vformat("InputEventMagnifyGesture: factor=%.2f, position=(%s)", factor, String(get_position()));
 }
 
@@ -1768,6 +1808,10 @@ String InputEventPanGesture::as_text() const {
 }
 
 String InputEventPanGesture::to_string() {
+	String ret;
+	if (_try_get_override_to_string(ret)) {
+		return ret;
+	}
 	return vformat("InputEventPanGesture: delta=(%s), position=(%s)", String(get_delta()), String(get_position()));
 }
 
@@ -1850,6 +1894,9 @@ String InputEventMIDI::as_text() const {
 
 String InputEventMIDI::to_string() {
 	String ret;
+	if (_try_get_override_to_string(ret)) {
+		return ret;
+	}
 	switch (message) {
 		case MIDIMessage::NOTE_ON:
 			ret = vformat("Note On: channel=%d, pitch=%d, velocity=%d", channel, pitch, velocity);
@@ -1925,6 +1972,10 @@ String InputEventShortcut::as_text() const {
 }
 
 String InputEventShortcut::to_string() {
+	String ret;
+	if (_try_get_override_to_string(ret)) {
+		return ret;
+	}
 	ERR_FAIL_COND_V(shortcut.is_null(), "None");
 
 	return vformat("InputEventShortcut: shortcut=%s", shortcut->get_as_text());
