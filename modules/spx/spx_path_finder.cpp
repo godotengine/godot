@@ -99,7 +99,7 @@ void SpxPathFinder::_process_rectangle_shape(Node2D *owner, CollisionShape2D *sh
 
     for (int x = start.x; x <= end.x; x++) {
         for (int y = start.y; y <= end.y; y++) {
-            // Now assume no rotation for speed, otherwise use Geometry2D::is_point_in_polygon 
+            // Now assume no rotation, otherwise use Geometry2D::is_point_in_polygon 
             astar->set_point_solid(Vector2i(x, y), add);
         }
     }
@@ -156,6 +156,56 @@ void SpxPathFinder::_process_sprite_obstacle(GdObj obj, bool add) {
     _process_static_obstacles(sprite, add);
 }
 
+Rect2 SpxPathFinder::_get_scene_bounds(Node *node) {
+	Rect2 rect;
+    bool first = true;
+
+    for (int i = 0; i < node->get_child_count(); i++) {
+        Node *child = node->get_child(i);
+
+        if (TileMapLayer *tm = Object::cast_to<TileMapLayer>(child)) {
+            Rect2 tml_rect = _get_tilemap_bounds(tm);
+
+            tml_rect.position = tm->get_global_transform().xform(tml_rect.position);
+
+            if (first) {
+                rect = tml_rect;
+                first = false;
+            } else {
+                rect = rect.merge(tml_rect);
+            }
+        }
+
+        Rect2 child_rect = _get_scene_bounds(child);
+        if (child_rect.size != Vector2(0, 0)) {
+            if (first) {
+                rect = child_rect;
+                first = false;
+            } else {
+                rect = rect.merge(child_rect);
+            }
+        }
+    }
+
+    return rect;
+}
+
+Rect2 SpxPathFinder::_get_tilemap_bounds(TileMapLayer *layer) {
+	if (!layer) return Rect2();
+
+    Rect2i used = layer->get_used_rect();
+
+    if (used.size == Vector2i(0, 0)) {
+        return Rect2();
+    }
+
+    Vector2 top_left = layer->map_to_local(used.position);
+    Vector2 bottom_right = layer->map_to_local(used.position + used.size);
+
+    Rect2 rect(top_left - cached_cell_size / 2, bottom_right - top_left);
+    return rect;
+}
+
 SpxPathFinder::SpxPathFinder() {
     astar.instantiate();
 }
@@ -172,14 +222,9 @@ void SpxPathFinder::setup_grid_spx(GdVec2 grid_size, GdVec2 cell_size, GdBool wi
 }
 
 void SpxPathFinder::setup_grid(Vector2i grid_size, Vector2i cell_size, bool with_debug) {
-	astar->set_region({-grid_size / 2, grid_size});
-    astar->set_cell_size(cell_size);
-    astar->set_diagonal_mode(AStarGrid2D::DIAGONAL_MODE_NEVER);
-	astar->update();
-
     cached_cell_size = cell_size;
-
     Node* root = nullptr;
+
     if (SpxEngine::get_singleton()) {
         root = SpxEngine::get_singleton()->get_spx_root();
     }
@@ -189,6 +234,27 @@ void SpxPathFinder::setup_grid(Vector2i grid_size, Vector2i cell_size, bool with
     }
 
     if (root) {
+        Rect2 scene_bounds = _get_scene_bounds(root);
+        Vector2 scene_center = scene_bounds.get_center();
+        Vector2i scene_cells = _world_to_cell(scene_bounds.size);
+        Vector2 center_cell = _world_to_cell(scene_center);
+
+        Vector2i final_size_cells(
+            MIN(scene_cells.x, grid_size.x),
+            MIN(scene_cells.y, grid_size.y)
+        );
+
+        if (final_size_cells.x <= 0 || final_size_cells.y <= 0) {
+            final_size_cells = grid_size;
+        }
+
+        Vector2i final_pos = (center_cell - final_size_cells / 2).floor();
+
+        astar->set_region({final_pos, final_size_cells});
+        astar->set_cell_size(cell_size);
+        astar->set_diagonal_mode(AStarGrid2D::DIAGONAL_MODE_NEVER);
+        astar->update();
+
         add_all_obstacles(root);
 
         if (with_debug && !drawer) {
@@ -320,13 +386,12 @@ void PathDebugDrawer::_draw() {
     if (path_finder.is_null()) 
         return;
 
-    Vector2i grid_size = path_finder->get_size();
+    Rect2i region = path_finder->get_region();
     Vector2 cell_size = path_finder->get_cell_size();
 
-    for (int x = 0; x < grid_size.x; x++) {
-        for (int y = 0; y < grid_size.y; y++) {
-            Vector2i cell(x, y);
-            cell -= grid_size /2;
+    for (int x = 0; x < region.size.x; x++) {
+        for (int y = 0; y < region.size.y; y++) {
+            Vector2i cell(x + region.position.x, y + region.position.y);
             Vector2 world_pos = path_finder->cell_to_world_gd(cell);
             Vector2 top_left = world_pos - cell_size * 0.5;
 
