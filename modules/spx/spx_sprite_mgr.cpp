@@ -426,6 +426,7 @@ GdString SpxSpriteMgr::get_texture(GdObj obj) {
 void SpxSpriteMgr::set_visible(GdObj obj, GdBool visible) {
 	check_and_get_sprite_v()
 	sprite->set_visible(visible);
+	sprite->on_set_visible(visible);
 }
 
 GdBool SpxSpriteMgr::get_visible(GdObj obj) {
