@@ -90,6 +90,14 @@ void FileAccess::store_pascal_string_bind_compat_78289(const String &p_string) {
 	store_pascal_string(p_string);
 }
 
+String FileAccess::get_as_text_bind_compat_110867(bool p_skip_cr) const {
+	String text = get_as_text();
+	if (unlikely(p_skip_cr)) {
+		text = text.remove_char('\r');
+	}
+	return text;
+}
+
 void FileAccess::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_static_method("FileAccess", D_METHOD("open_encrypted", "path", "mode_flags", "key"), &FileAccess::_open_encrypted_bind_compat_98918);
 
@@ -107,6 +115,7 @@ void FileAccess::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("store_string", "string"), &FileAccess::store_string_bind_compat_78289);
 	ClassDB::bind_compatibility_method(D_METHOD("store_var", "value", "full_objects"), &FileAccess::store_var_bind_compat_78289, DEFVAL(false));
 	ClassDB::bind_compatibility_method(D_METHOD("store_pascal_string", "string"), &FileAccess::store_pascal_string_bind_compat_78289);
+	ClassDB::bind_compatibility_method(D_METHOD("get_as_text", "skip_cr"), &FileAccess::get_as_text_bind_compat_110867, DEFVAL(false));
 }
 
 #endif

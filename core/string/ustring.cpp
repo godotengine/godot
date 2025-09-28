@@ -1763,7 +1763,7 @@ Error String::append_ascii(const Span<char> &p_range) {
 	return decode_failed ? ERR_INVALID_DATA : OK;
 }
 
-Error String::append_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
+Error String::append_utf8(const char *p_utf8, int p_len) {
 	if (!p_utf8) {
 		return ERR_INVALID_DATA;
 	}
@@ -1796,11 +1796,6 @@ Error String::append_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 
 	while (ptrtmp < ptr_limit && *ptrtmp) {
 		uint8_t c = *ptrtmp;
-
-		if (p_skip_cr && c == '\r') {
-			++ptrtmp;
-			continue;
-		}
 		uint32_t unicode = _replacement_char;
 		uint32_t size = 1;
 

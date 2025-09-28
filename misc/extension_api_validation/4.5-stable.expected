@@ -14,3 +14,10 @@ Validate extension JSON: JSON file: Field was added in a way that breaks compati
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Control/methods/has_focus': arguments
 
 Optional argument added. Compatibility methods registered.
+
+
+GH-110867
+---------
+ERROR: Validate extension JSON: Missing field in current API 'classes/FileAccess/methods/get_as_text': arguments. This is a bug.
+
+Optional argument removed. Compatibility method registered.
