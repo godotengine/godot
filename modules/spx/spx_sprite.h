@@ -188,6 +188,7 @@ public:
 	void set_texture_direct(GdString path, GdBool direct);
 
 	GdString get_texture();
+	Rect2 get_rect()const;
 	
 	void on_set_visible(GdBool visible);
 	// animation
