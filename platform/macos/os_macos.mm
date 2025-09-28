@@ -45,6 +45,7 @@
 
 #ifdef SDL_ENABLED
 #include "drivers/sdl/joypad_sdl.h"
+#include "drivers/sdl/sdl_event_processor.h"
 #endif
 
 #include <dlfcn.h>
@@ -1060,6 +1061,10 @@ OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
 	AudioDriverManager::add_driver(&audio_driver);
 #endif
 
+#ifdef SDL_ENABLED
+	AudioDriverManager::add_driver(&audio_driver_sdl);
+#endif
+
 	DisplayServerMacOS::register_macos_driver();
 }
 
@@ -1107,9 +1112,7 @@ void OS_MacOS_NSApp::start_main() {
 								ds->process_events();
 							}
 #ifdef SDL_ENABLED
-							if (joypad_sdl) {
-								joypad_sdl->process_events();
-							}
+							sdl_process_events();
 #endif
 
 							if (Main::iteration() || sig_received) {
@@ -1277,9 +1280,7 @@ void OS_MacOS_Embedded::run() {
 					ds->process_events();
 
 #ifdef SDL_ENABLED
-					if (joypad_sdl) {
-						joypad_sdl->process_events();
-					}
+					sdl_process_events();
 #endif
 					if (Main::iteration()) {
 						break;

@@ -38,9 +38,16 @@
 #include "drivers/unix/os_unix.h"
 #include "servers/audio_server.h"
 
+#ifdef SDL_ENABLED
+#include "drivers/sdl/audio_driver_sdl.h"
+#endif
+
 class JoypadSDL;
 
 class OS_MacOS : public OS_Unix {
+#ifdef SDL_ENABLED
+	AudioDriverSDL audio_driver_sdl;
+#endif
 #ifdef COREAUDIO_ENABLED
 	AudioDriverCoreAudio audio_driver;
 #endif

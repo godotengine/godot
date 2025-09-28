@@ -45,6 +45,7 @@
 
 #ifdef SDL_ENABLED
 #include "drivers/sdl/joypad_sdl.h"
+#include "drivers/sdl/sdl_event_processor.h"
 #endif
 
 #include "servers/rendering/dummy/rasterizer_dummy.h"
@@ -3797,9 +3798,7 @@ void DisplayServerWindows::process_events() {
 
 	if (!drop_events) {
 #ifdef SDL_ENABLED
-		if (joypad_sdl) {
-			joypad_sdl->process_events();
-		}
+		sdl_process_events();
 #endif
 	}
 

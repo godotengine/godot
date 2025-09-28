@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  joypad_sdl.h                                                          */
+/*  sdl_event_processor.cpp                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,44 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "sdl_event_processor.h"
 
-#include "core/input/input.h"
-#include "core/os/thread.h"
+#include "drivers/sdl/joypad_sdl.h"
 
-typedef uint32_t SDL_JoystickID;
-typedef struct HWND__ *HWND;
-union SDL_Event;
+#include <SDL3/SDL_init.h>
 
-class JoypadSDL {
-public:
-	JoypadSDL();
-#ifdef WINDOWS_ENABLED
-	JoypadSDL(HWND p_helper_window);
-#endif
-	~JoypadSDL();
+void sdl_process_events() {
+	if (SDL_WasInit(SDL_INIT_EVENTS)) {
+		JoypadSDL *joypad_sdl = JoypadSDL::get_singleton();
 
-	static JoypadSDL *get_singleton();
+		if (joypad_sdl) {
+			joypad_sdl->prepare_process_event();
+		}
 
-	Error initialize();
-	void prepare_process_event();
-	void process_event(const SDL_Event *p_event);
-
-private:
-	struct Joypad {
-		bool attached = false;
-		StringName guid;
-
-		SDL_JoystickID sdl_instance_idx;
-
-		bool supports_force_feedback = false;
-		uint64_t ff_effect_timestamp = 0;
-	};
-
-	static JoypadSDL *singleton;
-
-	Joypad joypads[Input::JOYPADS_MAX];
-	HashMap<SDL_JoystickID, int> sdl_instance_id_to_joypad_id;
-
-	void close_joypad(int p_pad_idx);
-};
+		SDL_Event sdl_event;
+		while (SDL_PollEvent(&sdl_event)) {
+			if (joypad_sdl) {
+				joypad_sdl->process_event(&sdl_event);
+			}
+		}
+	}
+}

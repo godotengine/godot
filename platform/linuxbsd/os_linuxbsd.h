@@ -39,6 +39,10 @@
 #include "drivers/unix/os_unix.h"
 #include "servers/audio_server.h"
 
+#ifdef SDL_ENABLED
+#include "drivers/sdl/audio_driver_sdl.h"
+#endif
+
 #ifdef FONTCONFIG_ENABLED
 #ifdef SOWRAP_ENABLED
 #include "fontconfig-so_wrap.h"
@@ -63,6 +67,10 @@ class OS_LinuxBSD : public OS_Unix {
 
 #ifdef SDL_ENABLED
 	JoypadSDL *joypad_sdl = nullptr;
+#endif
+
+#ifdef SDL_ENABLED
+	AudioDriverSDL audio_driver_sdl;
 #endif
 
 #ifdef ALSA_ENABLED

@@ -198,8 +198,9 @@ def configure(env: "SConsEnvironment"):
         env["x86_libtheora_opt_gcc"] = True
 
     if env["sdl"]:
+        env.Prepend(CPPEXTPATH=["#thirdparty/sdl/include"])
         env.Append(CPPDEFINES=["SDL_ENABLED"])
-        env.Append(LINKFLAGS=["-framework", "ForceFeedback"])
+        env.Append(LINKFLAGS=["-framework", "ForceFeedback", "-framework", "AudioToolbox"])
 
     ## Flags
 
