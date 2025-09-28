@@ -631,6 +631,16 @@ gdspx_ext_setup_path_finder(with_jump) {
 	FreeGdBool(_arg0); 
 
 }
+gdspx_ext_set_obstacle(obj,enabled) {
+	var _gdFuncPtr = Module._gdspx_ext_set_obstacle; 
+	
+	var _arg0 = ToGdObj(obj);
+	var _arg1 = ToGdBool(enabled);
+	_gdFuncPtr(_arg0, _arg1);
+	FreeGdObj(_arg0); 
+	FreeGdBool(_arg1); 
+
+}
 gdspx_ext_find_path(p_from,p_to,with_jump) {
 	var _gdFuncPtr = Module._gdspx_ext_find_path; 
 	var _retValue = AllocGdArray();

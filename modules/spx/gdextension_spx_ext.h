@@ -284,6 +284,7 @@ typedef void (*GDExtensionSpxExtClearPureSprites)();
 typedef void (*GDExtensionSpxExtCreatePureSprite)(GdString texture_path, GdVec2 pos, GdInt zindex);
 typedef void (*GDExtensionSpxExtSetupPathFinderWithSize)(GdVec2 grid_size, GdVec2 cell_size, GdBool with_jump, GdBool with_debug);
 typedef void (*GDExtensionSpxExtSetupPathFinder)(GdBool with_jump);
+typedef void (*GDExtensionSpxExtSetObstacle)(GdObj obj, GdBool enabled);
 typedef void (*GDExtensionSpxExtFindPath)(GdVec2 p_from, GdVec2 p_to, GdBool with_jump, GdArray* ret_value);
 // SpxInput
 typedef void (*GDExtensionSpxInputGetMousePos)(GdVec2* ret_value);

@@ -36,9 +36,11 @@
 #include "core/variant/variant.h"
 #include "spx_sprite.h"
 #include "spx_base_mgr.h"
+#include "spx_sprite_mgr.h"
 #include "spx_engine.h"
 #include "spx_path_finder.h"
 
+#define spriteMgr SpxEngine::get_singleton()->get_sprite()
 
 void SpxPathFinder::_bind_methods() {
     ClassDB::bind_method(D_METHOD("setup_grid", "size", "cell_size", "with_debug"), &SpxPathFinder::setup_grid);
@@ -52,22 +54,20 @@ void SpxPathFinder::_bind_methods() {
 }
 
 Vector2i SpxPathFinder::_world_to_cell(const Vector2 &pos) const {
-    Vector2 cell_size = astar->get_cell_size();
     return Vector2i(
-        (int)Math::floor(pos.x / cell_size.x),
-        (int)Math::floor(pos.y / cell_size.y)
+        (int)Math::floor(pos.x / cached_cell_size.x),
+        (int)Math::floor(pos.y / cached_cell_size.y)
     );
 }
 
 Vector2 SpxPathFinder::_cell_to_world(const Vector2i &cell) const {
-    Vector2 cell_size = astar->get_cell_size();
     return Vector2(
-        cell.x * cell_size.x + cell_size.x * 0.5,
-        cell.y * cell_size.y + cell_size.y * 0.5
+        cell.x * cached_cell_size.x + cached_cell_size.x * 0.5,
+        cell.y * cached_cell_size.y + cached_cell_size.y * 0.5
     );
 }
 
-void SpxPathFinder::_process_rectangle_shape(Node2D *owner, CollisionShape2D *shape) {
+void SpxPathFinder::_process_rectangle_shape(Node2D *owner, CollisionShape2D *shape, bool add) {
     if (!shape || !shape->get_shape().is_valid()) return;
 
     RectangleShape2D *rect = Object::cast_to<RectangleShape2D>(shape->get_shape().ptr());
@@ -99,15 +99,13 @@ void SpxPathFinder::_process_rectangle_shape(Node2D *owner, CollisionShape2D *sh
 
     for (int x = start.x; x <= end.x; x++) {
         for (int y = start.y; y <= end.y; y++) {
-            Vector2 cell_center = _cell_to_world(Vector2i(x, y));
-            if (Geometry2D::is_point_in_polygon(cell_center, world_points)) {
-                astar->set_point_solid(Vector2i(x, y), true);
-            }
+            // Now assume no rotation for speed, otherwise use Geometry2D::is_point_in_polygon 
+            astar->set_point_solid(Vector2i(x, y), add);
         }
     }
 }
 
-void SpxPathFinder::_process_static_obstacles(Node2D *body) {
+void SpxPathFinder::_process_static_obstacles(Node2D *body, bool add) {
 
     for (int j = 0; j < body->get_child_count(); j++) {
         Node *child = body->get_child(j);
@@ -144,6 +142,20 @@ void SpxPathFinder::_process_tilemap_obstacles(TileMapLayer *layer, int p_layer_
     } 
 }
 
+void SpxPathFinder::_process_sprite_obstacle(GdObj obj, bool add) {
+    auto sprite = spriteMgr->get_sprite(obj);
+    if (!sprite) {
+        print_error("Try to get property of a null sprite gid = " + itos(obj));
+        return;
+    }
+
+    if (sprite->get_physics_mode() != SpxSprite::PhysicsMode::STATIC) {
+        print_error("Skip processing non-static obstacles.");
+        return;
+    }
+    _process_static_obstacles(sprite, add);
+}
+
 SpxPathFinder::SpxPathFinder() {
     astar.instantiate();
 }
@@ -155,15 +167,17 @@ SpxPathFinder::~SpxPathFinder() {
     }
 }
 
-void SpxPathFinder::setup_grid_spx(GdVec2 size, GdVec2 cell_size, GdBool with_debug) {
-    setup_grid(size, cell_size, with_debug);
+void SpxPathFinder::setup_grid_spx(GdVec2 grid_size, GdVec2 cell_size, GdBool with_debug) {
+    setup_grid(grid_size, cell_size, with_debug);
 }
 
-void SpxPathFinder::setup_grid(Vector2i size, Vector2i cell_size, bool with_debug) {
-	astar->set_region({-size / 2, size});
+void SpxPathFinder::setup_grid(Vector2i grid_size, Vector2i cell_size, bool with_debug) {
+	astar->set_region({-grid_size / 2, grid_size});
     astar->set_cell_size(cell_size);
     astar->set_diagonal_mode(AStarGrid2D::DIAGONAL_MODE_NEVER);
 	astar->update();
+
+    cached_cell_size = cell_size;
 
     Node* root = nullptr;
     if (SpxEngine::get_singleton()) {
@@ -193,12 +207,12 @@ void SpxPathFinder::add_all_obstacles(Node *root) {
     if (!root) 
         return;
 
-    Vector<Node*> stack;
+    List<Node*> stack;
     stack.push_back(root);
 
-    while(!stack.is_empty()){
-        Node *node = stack[stack.size() - 1];
-        stack.resize(stack.size() - 1);
+    while (!stack.is_empty()){
+        Node *node = stack.back()->get();
+        stack.pop_back();
 
         for (int i = 0; i < node->get_child_count(); i++) {
             Node *child = node->get_child(i);
@@ -215,6 +229,10 @@ void SpxPathFinder::add_all_obstacles(Node *root) {
             stack.push_back(child);
         }
     }
+}
+
+void SpxPathFinder::set_sprite_obstacle(GdObj obj, bool enabled) {
+    _process_sprite_obstacle(obj, enabled);
 }
 
 GdArray SpxPathFinder::find_path_spx(GdVec2 p_from, GdVec2 p_to) {
@@ -294,6 +312,8 @@ void PathDebugDrawer::_notification(int p_what) {
 
 void PathDebugDrawer::_ready(){
     set_process_input(true);
+    set_z_index(1000);
+	set_z_as_relative(false);
 }
 
 void PathDebugDrawer::_draw() {

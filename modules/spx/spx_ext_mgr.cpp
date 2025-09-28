@@ -476,6 +476,12 @@ void SpxExtMgr::setup_path_finder(GdBool with_jump) {
 	setup_path_finder_with_size(default_grid_size, default_cell_size, with_jump, false);
 }
 
+void SpxExtMgr::set_obstacle(GdObj obj, GdBool enabled) {
+	if(path_finder.is_valid()){
+		path_finder->set_sprite_obstacle(obj, enabled);
+	}
+}
+
 GdArray SpxExtMgr::find_path(GdVec2 p_from, GdVec2 p_to, GdBool with_jump) {
 	if(path_finder.is_null() || !path_finder.is_valid()){
 		setup_path_finder(with_jump);

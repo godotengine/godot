@@ -339,6 +339,10 @@ void gdspx_ext_setup_path_finder(GdBool* with_jump) {
 	 extMgr->setup_path_finder(*with_jump);
 }
 EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_set_obstacle(GdObj* obj,GdBool* enabled) {
+	 extMgr->set_obstacle(*obj, *enabled);
+}
+EMSCRIPTEN_KEEPALIVE
 void gdspx_ext_find_path(GdVec2* p_from,GdVec2* p_to,GdBool* with_jump,GdArray* ret_val) {
 	*ret_val = extMgr->find_path(*p_from, *p_to, *with_jump);
 }
