@@ -47,7 +47,7 @@ public:
 protected:
 	virtual uint32_t _format() const override;
 	virtual uint32_t _format_version() const override;
-	virtual bool _set_code_from_spirv(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv) override;
+	virtual bool _set_code_from_spirv(Span<ReflectedShaderStage> p_spirv) override;
 
 public:
 	RenderingShaderContainerVulkan(bool p_debug_info_enabled);

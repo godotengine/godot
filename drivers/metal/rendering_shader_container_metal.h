@@ -292,7 +292,7 @@ protected:
 
 	virtual uint32_t _format() const override;
 	virtual uint32_t _format_version() const override;
-	virtual bool _set_code_from_spirv(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv) override;
+	virtual bool _set_code_from_spirv(Span<ReflectedShaderStage> p_spirv) override;
 };
 
 class RenderingShaderContainerFormatMetal : public RenderingShaderContainerFormat {

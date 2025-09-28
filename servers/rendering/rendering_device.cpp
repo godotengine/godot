@@ -3366,19 +3366,12 @@ String RenderingDevice::_shader_uniform_debug(RID p_shader, int p_set) {
 }
 
 Vector<uint8_t> RenderingDevice::shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name) {
-	ShaderReflection shader_refl;
-	if (reflect_spirv(p_spirv, shader_refl) != OK) {
-		return Vector<uint8_t>();
-	}
-
 	const RenderingShaderContainerFormat &container_format = driver->get_shader_container_format();
 	Ref<RenderingShaderContainer> shader_container = container_format.create_container();
 	ERR_FAIL_COND_V(shader_container.is_null(), Vector<uint8_t>());
 
-	shader_container->set_from_shader_reflection(p_shader_name, shader_refl);
-
 	// Compile shader binary from SPIR-V.
-	bool code_compiled = shader_container->set_code_from_spirv(p_spirv);
+	bool code_compiled = shader_container->set_code_from_spirv(p_shader_name, p_spirv);
 	ERR_FAIL_COND_V_MSG(!code_compiled, Vector<uint8_t>(), vformat("Failed to compile code to native for SPIR-V."));
 
 	return shader_container->to_bytes();
