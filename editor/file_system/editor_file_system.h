@@ -191,6 +191,7 @@ class EditorFileSystem : public Node {
 	float scan_total;
 	String filesystem_settings_version_for_import;
 	bool revalidate_import_files = false;
+	bool revalidate_editor_import_files = false;
 	static int nb_files_total;
 
 	void _notify_filesystem_changed();
@@ -245,6 +246,16 @@ class EditorFileSystem : public Node {
 
 	void _save_filesystem_cache();
 	void _save_filesystem_cache(EditorFileSystemDirectory *p_dir, Ref<FileAccess> p_file);
+
+	static bool _has_editor_variant_import(const String &p_path);
+	static bool _is_test_for_editor_resources_reimport_needed();
+	static String _editor_import_meta_path();
+	static void _load_editor_import_meta(Dictionary &p_values);
+	static void _load_editor_import_meta(Dictionary &p_values, Ref<FileAccess> p_file);
+	static void _save_editor_import_meta();
+	static void _save_editor_import_meta(Ref<FileAccess> p_file);
+	static void _remove_editor_import_meta();
+	static void _remove_editor_import_meta(Ref<FileAccess> p_file);
 
 	bool _find_file(const String &p_file, EditorFileSystemDirectory **r_d, int &r_file_pos) const;
 
