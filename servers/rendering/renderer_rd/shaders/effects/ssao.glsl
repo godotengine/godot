@@ -40,22 +40,22 @@
 #define GTAO_MAX_SCREEN_RADIUS (256.0)
 #define GTAO_BIAS_MIP_LEVEL (0)
 
-const int num_slices[5] = {2, 4, 5, 6, 8};
-const int num_taps[5] = {4, 8, 12, 16, 20};
+const int num_slices[5] = { 2, 4, 5, 6, 8 };
+const int num_taps[5] = { 4, 8, 12, 16, 20 };
 
 #else
 // Intel ASSAO
 
 #define INTELSSAO_MAIN_DISK_SAMPLE_COUNT (32)
 const vec4 sample_pattern[INTELSSAO_MAIN_DISK_SAMPLE_COUNT] = {
-vec4(0.78488064, 0.56661671, 1.500000, -0.126083), vec4(0.26022232, -0.29575172, 1.500000, -1.064030), vec4(0.10459357, 0.08372527, 1.110000, -2.730563), vec4(-0.68286800, 0.04963045, 1.090000, -0.498827),
-vec4(-0.13570161, -0.64190155, 1.250000, -0.532765), vec4(-0.26193795, -0.08205118, 0.670000, -1.783245), vec4(-0.61177456, 0.66664219, 0.710000, -0.044234), vec4(0.43675563, 0.25119025, 0.610000, -1.167283),
-vec4(0.07884444, 0.86618668, 0.640000, -0.459002), vec4(-0.12790935, -0.29869005, 0.600000, -1.729424), vec4(-0.04031125, 0.02413622, 0.600000, -4.792042), vec4(0.16201244, -0.52851415, 0.790000, -1.067055),
-vec4(-0.70991218, 0.47301072, 0.640000, -0.335236), vec4(0.03277707, -0.22349690, 0.600000, -1.982384), vec4(0.68921727, 0.36800742, 0.630000, -0.266718), vec4(0.29251814, 0.37775412, 0.610000, -1.422520),
-vec4(-0.12224089, 0.96582592, 0.600000, -0.426142), vec4(0.11071457, -0.16131058, 0.600000, -2.165947), vec4(0.46562141, -0.59747696, 0.600000, -0.189760), vec4(-0.51548797, 0.11804193, 0.600000, -1.246800),
-vec4(0.89141309, -0.42090443, 0.600000, 0.028192), vec4(-0.32402530, -0.01591529, 0.600000, -1.543018), vec4(0.60771245, 0.41635221, 0.600000, -0.605411), vec4(0.02379565, -0.08239821, 0.600000, -3.809046),
-vec4(0.48951152, -0.23657045, 0.600000, -1.189011), vec4(-0.17611565, -0.81696892, 0.600000, -0.513724), vec4(-0.33930185, -0.20732205, 0.600000, -1.698047), vec4(-0.91974425, 0.05403209, 0.600000, 0.062246),
-vec4(-0.15064627, -0.14949332, 0.600000, -1.896062), vec4(0.53180975, -0.35210401, 0.600000, -0.758838), vec4(0.41487166, 0.81442589, 0.600000, -0.505648), vec4(-0.24106961, -0.32721516, 0.600000, -1.665244)
+	vec4(0.78488064, 0.56661671, 1.500000, -0.126083), vec4(0.26022232, -0.29575172, 1.500000, -1.064030), vec4(0.10459357, 0.08372527, 1.110000, -2.730563), vec4(-0.68286800, 0.04963045, 1.090000, -0.498827),
+	vec4(-0.13570161, -0.64190155, 1.250000, -0.532765), vec4(-0.26193795, -0.08205118, 0.670000, -1.783245), vec4(-0.61177456, 0.66664219, 0.710000, -0.044234), vec4(0.43675563, 0.25119025, 0.610000, -1.167283),
+	vec4(0.07884444, 0.86618668, 0.640000, -0.459002), vec4(-0.12790935, -0.29869005, 0.600000, -1.729424), vec4(-0.04031125, 0.02413622, 0.600000, -4.792042), vec4(0.16201244, -0.52851415, 0.790000, -1.067055),
+	vec4(-0.70991218, 0.47301072, 0.640000, -0.335236), vec4(0.03277707, -0.22349690, 0.600000, -1.982384), vec4(0.68921727, 0.36800742, 0.630000, -0.266718), vec4(0.29251814, 0.37775412, 0.610000, -1.422520),
+	vec4(-0.12224089, 0.96582592, 0.600000, -0.426142), vec4(0.11071457, -0.16131058, 0.600000, -2.165947), vec4(0.46562141, -0.59747696, 0.600000, -0.189760), vec4(-0.51548797, 0.11804193, 0.600000, -1.246800),
+	vec4(0.89141309, -0.42090443, 0.600000, 0.028192), vec4(-0.32402530, -0.01591529, 0.600000, -1.543018), vec4(0.60771245, 0.41635221, 0.600000, -0.605411), vec4(0.02379565, -0.08239821, 0.600000, -3.809046),
+	vec4(0.48951152, -0.23657045, 0.600000, -1.189011), vec4(-0.17611565, -0.81696892, 0.600000, -0.513724), vec4(-0.33930185, -0.20732205, 0.600000, -1.698047), vec4(-0.91974425, 0.05403209, 0.600000, 0.062246),
+	vec4(-0.15064627, -0.14949332, 0.600000, -1.896062), vec4(0.53180975, -0.35210401, 0.600000, -0.758838), vec4(0.41487166, 0.81442589, 0.600000, -0.505648), vec4(-0.24106961, -0.32721516, 0.600000, -1.665244)
 };
 
 // these values can be changed (up to SSAO_MAX_TAPS) with no changes required elsewhere; values for 4th and 5th preset are ignored but array needed to avoid compilation errors
@@ -199,7 +199,7 @@ vec3 load_normal(ivec2 p_pos, ivec2 p_offset) {
 }
 
 // The common part
-vec4 calculate_all_edges(const uvec2 full_res_coord, const vec3 pixel_normal, const float pix_z, const float pix_left_z, const float pix_right_z, const float pix_top_z, const float pix_bottom_z, int p_quality_level, bool p_adaptive_base){
+vec4 calculate_all_edges(const uvec2 full_res_coord, const vec3 pixel_normal, const float pix_z, const float pix_left_z, const float pix_right_z, const float pix_top_z, const float pix_bottom_z, int p_quality_level, bool p_adaptive_base) {
 	// edge mask for between this and left/right/top/bottom neighbor pixels - not used in quality level 0 so initialize to "no edge" (1 is no edge, 0 is edge)
 	vec4 edgesLRTB = vec4(1.0, 1.0, 1.0, 1.0);
 
@@ -318,6 +318,7 @@ float compute_inner_integral(vec2 angles, vec2 screen_dir, vec3 view_dir, vec3 v
 vec2 search_for_largest_angle_dual(in int num_taps, vec2 base_uv, vec2 screen_dir, float search_radius, float initial_offset, vec3 view_pos, vec3 view_dir, float atten_factor) {
 	float scene_depth, len_sq, oo_len, ang, fall_off;
 	vec3 v;
+	vec2 uv;
 	vec2 best_ang = vec2(-1.0, -1.0);
 	float thickness = params.thickness_blend;
 
@@ -340,8 +341,10 @@ vec2 search_for_largest_angle_dual(in int num_taps, vec2 base_uv, vec2 screen_di
 		}
 
 		// Positive direction
-		scene_depth = textureLod(source_depth_mipmaps, vec3(uv2.xy, params.pass), mip_level).x;
-		v = NDC_to_view_space(uv2.xy, scene_depth).xyz - view_pos;
+		// Clamp UV coords to avoid artifacts
+		uv = clamp(uv2.xy, vec2(0.0), vec2(1.0));
+		scene_depth = textureLod(source_depth_mipmaps, vec3(uv, params.pass), mip_level).x;
+		v = NDC_to_view_space(uv, scene_depth).xyz - view_pos;
 		len_sq = dot(v, v);
 		oo_len = inversesqrt(len_sq + 0.0001);
 		ang = dot(v, view_dir) * oo_len;
@@ -352,8 +355,9 @@ vec2 search_for_largest_angle_dual(in int num_taps, vec2 base_uv, vec2 screen_di
 		best_ang.x = (ang > best_ang.x) ? ang : mix(ang, best_ang.x, thickness);
 
 		// Negative direction
-		scene_depth = textureLod(source_depth_mipmaps, vec3(uv2.zw, params.pass), mip_level).x;
-		v = NDC_to_view_space(uv2.zw, scene_depth).xyz - view_pos;
+		uv = clamp(uv2.zw, vec2(0.0), vec2(1.0));
+		scene_depth = textureLod(source_depth_mipmaps, vec3(uv, params.pass), mip_level).x;
+		v = NDC_to_view_space(uv, scene_depth).xyz - view_pos;
 		len_sq = dot(v, v);
 		oo_len = inversesqrt(len_sq + 0.0001);
 		ang = dot(v, view_dir) * oo_len;
@@ -638,7 +642,7 @@ void generate_SSAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 			SSAOTap(p_quality_level, obscurance_sum, weight_sum, i, rot_scale_matrix, pix_center_pos, pixel_normal, normalized_screen_pos, mip_offset, fallof_sq, 1.0, norm_xy, norm_xy_length);
 		}
 	}
-	#ifdef ADAPTIVE
+#ifdef ADAPTIVE
 	else {
 		// add new ones if needed
 		vec2 full_res_uv = normalized_screen_pos + params.pass_uv_offset.xy;
@@ -675,7 +679,7 @@ void generate_SSAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 			SSAOTap(p_quality_level, obscurance_sum, weight_sum, int(i), rot_scale_matrix, pix_center_pos, pixel_normal, normalized_screen_pos, mip_offset, fallof_sq, weight_mod, norm_xy, norm_xy_length);
 		}
 	}
-	#endif
+#endif
 
 	// early out for adaptive base - just output weight (used for the next pass)
 	if (p_adaptive_base) {
