@@ -302,6 +302,8 @@ void DisplayServerMacOSBase::show_emoji_and_symbol_picker() const {
 }
 
 DisplayServerMacOSBase::DisplayServerMacOSBase() {
+	KeyMappingMacOS::initialize();
+
 	// Init TTS
 	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
 	if (tts_enabled) {
