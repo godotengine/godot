@@ -177,7 +177,7 @@ SSEffects::SSEffects() {
 	}
 
 	// Initialize Screen Space Ambient Occlusion (SSAO)
-	ssao_set_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/environment/ssao/quality"))), GLOBAL_GET("rendering/environment/ssao/half_size"), GLOBAL_GET("rendering/environment/ssao/adaptive_target"), GLOBAL_GET("rendering/environment/ssao/blur_passes"), GLOBAL_GET("rendering/environment/ssao/fadeout_from"), GLOBAL_GET("rendering/environment/ssao/fadeout_to"));
+	ssao_set_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/environment/ssao/quality"))), RS::EnvironmentSSAOType(int(GLOBAL_GET("rendering/environment/ssao/type"))), GLOBAL_GET("rendering/environment/ssao/half_size"), GLOBAL_GET("rendering/environment/ssao/adaptive_target"), GLOBAL_GET("rendering/environment/ssao/blur_passes"), GLOBAL_GET("rendering/environment/ssao/fadeout_from"), GLOBAL_GET("rendering/environment/ssao/fadeout_to"));
 
 	{
 		RD::SamplerState sampler;
@@ -196,12 +196,13 @@ SSEffects::SSEffects() {
 			ssao_modes.push_back("\n");
 			ssao_modes.push_back("\n#define SSAO_BASE\n");
 			ssao_modes.push_back("\n#define ADAPTIVE\n");
+			ssao_modes.push_back("\n#define SSAO_TYPE_GTAO\n");
 
 			ssao.gather_shader.initialize(ssao_modes);
 
 			ssao.gather_shader_version = ssao.gather_shader.version_create();
 
-			for (int i = 0; i <= SSAO_GATHER_ADAPTIVE; i++) {
+			for (int i = 0; i <= SSAO_GATHER_GTAO; i++) {
 				ssao.pipelines[pipeline].create_compute_pipeline(ssao.gather_shader.version_get_shader(ssao.gather_shader_version, i));
 				pipeline++;
 			}
@@ -705,7 +706,8 @@ void SSEffects::ssil_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers
 	// These are automatically cached and cleaned up when our viewport resizes
 	// or when our viewport gets destroyed.
 
-	if (!p_render_buffers->has_texture(RB_SCOPE_SSIL, RB_FINAL)) { // We don't strictly have to check if it exists but we only want to clear it when we create it...
+	if (!p_render_buffers->has_texture(RB_SCOPE_SSIL, RB_FINAL)) {
+		// We don't strictly have to check if it exists but we only want to clear it when we create it...
 		RID final = p_render_buffers->create_texture(RB_SCOPE_SSIL, RB_FINAL, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT);
 		RD::get_singleton()->texture_clear(final, Color(0, 0, 0, 0), 0, 1, 0, view_count);
 	}
@@ -1045,8 +1047,9 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 
 /* SSAO */
 
-void SSEffects::ssao_set_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
+void SSEffects::ssao_set_quality(RS::EnvironmentSSAOQuality p_quality, RS::EnvironmentSSAOType p_type, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
 	ssao_quality = p_quality;
+	ssao_type = p_type;
 	ssao_half_size = p_half_size;
 	ssao_adaptive_target = p_adaptive_target;
 	ssao_blur_passes = p_blur_passes;
@@ -1063,7 +1066,13 @@ void SSEffects::gather_ssao(RD::ComputeListID p_compute_list, const RID *p_ao_sl
 		RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, p_importance_map_uniform_set, 1);
 	}
 
-	RID shader = ssao.gather_shader.version_get_shader(ssao.gather_shader_version, 1); //
+	int variant_id;
+	if (ssao_type == RS::ENV_SSAO_TYPE_GTAO) {
+		variant_id = 3;
+	} else {
+		variant_id = 1;
+	}
+	RID shader = ssao.gather_shader.version_get_shader(ssao.gather_shader_version, variant_id); //
 
 	for (int i = 0; i < 4; i++) {
 		if ((ssao_quality == RS::ENV_SSAO_QUALITY_VERY_LOW) && ((i == 1) || (i == 2))) {
@@ -1151,7 +1160,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 	memset(&ssao.gather_push_constant, 0, sizeof(SSAOGatherPushConstant));
 	/* FIRST PASS */
 
-	RID shader = ssao.gather_shader.version_get_shader(ssao.gather_shader_version, SSAO_GATHER);
+	RID shader = ssao.gather_shader.version_get_shader(ssao.gather_shader_version, SSAO_GATHER_ASSAO);
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	RD::get_singleton()->draw_command_begin_label("Process Screen-Space Ambient Occlusion");
@@ -1204,6 +1213,12 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 		ssao.gather_push_constant.quality = MAX(0, ssao_quality - 1);
 		ssao.gather_push_constant.size_multiplier = ssao_half_size ? 2 : 1;
 
+		if (ssao_type == RS::ENV_SSAO_TYPE_GTAO) {
+			float inv_tan_half_fov_x = p_projection.columns[0][0];
+			ssao.gather_push_constant.fov_scale = inv_tan_half_fov_x * p_ssao_buffers.buffer_height;
+			ssao.gather_push_constant.thickness_blend = p_settings.thickness_blend;
+		}
+
 		// We are using our uniform cache so our uniform sets are automatically freed when our textures are freed.
 		// It also ensures that we're reusing the right cached entry in a multiview situation without us having to
 		// remember each instance of the uniform set.
@@ -1248,11 +1263,11 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 			u_load_counter.binding = 2;
 			u_load_counter.append_id(ssao.importance_map_load_counter);
 
-			RID shader_adaptive = ssao.gather_shader.version_get_shader(ssao.gather_shader_version, SSAO_GATHER_ADAPTIVE);
+			RID shader_adaptive = ssao.gather_shader.version_get_shader(ssao.gather_shader_version, SSAO_GATHER_ASSAO_ADAPTIVE);
 			importance_map_uniform_set = uniform_set_cache->get_cache(shader_adaptive, 1, u_pong, u_importance_map, u_load_counter);
 		}
 
-		if (ssao_quality == RS::ENV_SSAO_QUALITY_ULTRA) {
+		if (ssao_type == RS::ENV_SSAO_TYPE_ASSAO && ssao_quality == RS::ENV_SSAO_QUALITY_ULTRA) {
 			RD::get_singleton()->draw_command_begin_label("Generate Importance Map");
 			ssao.importance_map_push_constant.half_screen_pixel_size[0] = 1.0 / p_ssao_buffers.buffer_width;
 			ssao.importance_map_push_constant.half_screen_pixel_size[1] = 1.0 / p_ssao_buffers.buffer_height;
@@ -1260,7 +1275,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 			ssao.importance_map_push_constant.power = p_settings.power;
 
 			//base pass
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_GATHER_BASE].get_rid());
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_GATHER_ASSAO_BASE].get_rid());
 			gather_ssao(compute_list, ao_pong_slices, p_settings, true, gather_uniform_set, RID());
 
 			//generate importance map
@@ -1304,10 +1319,16 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 			RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_ssao_buffers.half_buffer_width, p_ssao_buffers.half_buffer_height, 1);
 			RD::get_singleton()->compute_list_add_barrier(compute_list);
 
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_GATHER_ADAPTIVE].get_rid());
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_GATHER_ASSAO_ADAPTIVE].get_rid());
 			RD::get_singleton()->draw_command_end_label(); // Importance Map
 		} else {
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_GATHER].get_rid());
+			int pipeline_id;
+			if (ssao_type == RS::ENV_SSAO_TYPE_GTAO) {
+				pipeline_id = SSAO_GATHER_GTAO;
+			} else {
+				pipeline_id = SSAO_GATHER_ASSAO;
+			}
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[pipeline_id].get_rid());
 		}
 
 		gather_ssao(compute_list, ao_deinterleaved_slices, p_settings, false, gather_uniform_set, importance_map_uniform_set);
@@ -1765,7 +1786,8 @@ void SSEffects::sub_surface_scattering(Ref<RenderSceneBuffersRD> p_render_buffer
 	p.normal /= p.d;
 	float unit_size = p.normal.x;
 
-	{ //scale color and depth to half
+	{
+		//scale color and depth to half
 		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
 		sss.push_constant.camera_z_far = p_camera.get_z_far();

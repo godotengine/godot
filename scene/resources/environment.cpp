@@ -357,6 +357,15 @@ float Environment::get_ssao_sharpness() const {
 	return ssao_sharpness;
 }
 
+void Environment::set_ssao_thickness_blend(float p_thickness_blend) {
+	ssao_thickness_blend = p_thickness_blend;
+	_update_ssao();
+}
+
+float Environment::get_ssao_thickness_blend() const {
+	return ssao_thickness_blend;
+}
+
 void Environment::set_ssao_direct_light_affect(float p_direct_light_affect) {
 	ssao_direct_light_affect = p_direct_light_affect;
 	_update_ssao();
@@ -385,6 +394,7 @@ void Environment::_update_ssao() {
 			ssao_detail,
 			ssao_horizon,
 			ssao_sharpness,
+			ssao_thickness_blend,
 			ssao_direct_light_affect,
 			ssao_ao_channel_affect);
 }
@@ -1284,6 +1294,8 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ssao_horizon"), &Environment::get_ssao_horizon);
 	ClassDB::bind_method(D_METHOD("set_ssao_sharpness", "sharpness"), &Environment::set_ssao_sharpness);
 	ClassDB::bind_method(D_METHOD("get_ssao_sharpness"), &Environment::get_ssao_sharpness);
+	ClassDB::bind_method(D_METHOD("set_ssao_thickness_blend", "thickness_blend"), &Environment::set_ssao_thickness_blend);
+	ClassDB::bind_method(D_METHOD("get_ssao_thickness_blend"), &Environment::get_ssao_thickness_blend);
 	ClassDB::bind_method(D_METHOD("set_ssao_direct_light_affect", "amount"), &Environment::set_ssao_direct_light_affect);
 	ClassDB::bind_method(D_METHOD("get_ssao_direct_light_affect"), &Environment::get_ssao_direct_light_affect);
 	ClassDB::bind_method(D_METHOD("set_ssao_ao_channel_affect", "amount"), &Environment::set_ssao_ao_channel_affect);
@@ -1297,6 +1309,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_detail", PROPERTY_HINT_RANGE, "0,5,0.01"), "set_ssao_detail", "get_ssao_detail");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_horizon", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ssao_horizon", "get_ssao_horizon");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_sharpness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ssao_sharpness", "get_ssao_sharpness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_thickness_blend", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ssao_thickness_blend", "get_ssao_thickness_blend");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_light_affect", PROPERTY_HINT_RANGE, "0.00,1,0.01"), "set_ssao_direct_light_affect", "get_ssao_direct_light_affect");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_ao_channel_affect", PROPERTY_HINT_RANGE, "0.00,1,0.01"), "set_ssao_ao_channel_affect", "get_ssao_ao_channel_affect");
 
