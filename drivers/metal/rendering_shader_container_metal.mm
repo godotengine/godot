@@ -253,7 +253,7 @@ Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability"
 
-bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv) {
+bool RenderingShaderContainerMetal::_set_code_from_spirv(Span<ReflectedShaderStage> p_spirv) {
 	using namespace spirv_cross;
 	using spirv_cross::CompilerMSL;
 	using spirv_cross::Resource;
@@ -354,12 +354,11 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 
 	for (uint32_t i = 0; i < p_spirv.size(); i++) {
 		StageData &stage_data = mtl_shaders.write[i];
-		RD::ShaderStageSPIRVData const &v = p_spirv[i];
+		const ReflectedShaderStage &v = p_spirv[i];
 		RD::ShaderStage stage = v.shader_stage;
 		char const *stage_name = RD::SHADER_STAGE_NAMES[stage];
-		uint32_t const *const ir = reinterpret_cast<uint32_t const *const>(v.spirv.ptr());
-		size_t word_count = v.spirv.size() / sizeof(uint32_t);
-		Parser parser(ir, word_count);
+		Span<uint32_t> spirv = v.spirv();
+		Parser parser(spirv.ptr(), spirv.size());
 		try {
 			parser.parse();
 		} catch (CompilerError &e) {
