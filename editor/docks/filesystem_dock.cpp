@@ -4018,6 +4018,8 @@ void FileSystemDock::_set_dock_horizontal(bool p_enable) {
 	}
 
 	if (p_enable) {
+		path_hb->reparent(toolbar_hbc, false);
+		toolbar_hbc->move_child(path_hb, 2);
 		set_meta("_dock_display_mode", get_display_mode());
 		set_meta("_dock_file_display_mode", get_file_list_display_mode());
 
@@ -4028,6 +4030,8 @@ void FileSystemDock::_set_dock_horizontal(bool p_enable) {
 		set_file_list_display_mode(new_file_display_mode);
 		set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	} else {
+		path_hb->reparent(file_list_vb);
+		file_list_vb->move_child(path_hb, 0);
 		set_meta("_bottom_display_mode", get_display_mode());
 		set_meta("_bottom_file_display_mode", get_file_list_display_mode());
 
@@ -4174,7 +4178,7 @@ FileSystemDock::FileSystemDock() {
 	VBoxContainer *top_vbc = memnew(VBoxContainer);
 	add_child(top_vbc);
 
-	HBoxContainer *toolbar_hbc = memnew(HBoxContainer);
+	toolbar_hbc = memnew(HBoxContainer);
 	top_vbc->add_child(toolbar_hbc);
 
 	HBoxContainer *nav_hbc = memnew(HBoxContainer);
@@ -4270,6 +4274,7 @@ FileSystemDock::FileSystemDock() {
 	split_box->add_child(file_list_vb);
 
 	path_hb = memnew(HBoxContainer);
+	path_hb->set_h_size_flags(SIZE_EXPAND_FILL);
 	file_list_vb->add_child(path_hb);
 
 	file_list_search_box = memnew(LineEdit);
