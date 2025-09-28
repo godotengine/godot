@@ -3272,9 +3272,9 @@ RID TextureStorage::RenderTarget::get_framebuffer() {
 	// this is where our framebuffer cache comes in clutch..
 
 	if (msaa != RS::VIEWPORT_MSAA_DISABLED) {
-		return FramebufferCacheRD::get_singleton()->get_cache_multiview(view_count, color_multisample, overridden.color.is_valid() ? overridden.color : color);
+		return FramebufferCacheRD::get_singleton()->get_cache_multiview(view_count, color_multisample, overridden.color.is_valid() ? overridden.color : color_mipmap0);
 	} else {
-		return FramebufferCacheRD::get_singleton()->get_cache_multiview(view_count, overridden.color.is_valid() ? overridden.color : color);
+		return FramebufferCacheRD::get_singleton()->get_cache_multiview(view_count, overridden.color.is_valid() ? overridden.color : color_mipmap0);
 	}
 }
 
@@ -3379,6 +3379,8 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 			rt->color_mipmaps.push_back(mipmap);
 		}
 	}
+
+	rt->color_mipmap0 = mipmaps_required > 1 ? rt->color_mipmaps[0] : rt->color;
 
 	if (rt->msaa != RS::VIEWPORT_MSAA_DISABLED) {
 		// Use the texture format of the color attachment for the multisample color attachment.
@@ -3751,7 +3753,7 @@ RID TextureStorage::render_target_get_rd_texture(RID p_render_target) {
 	if (rt->overridden.color.is_valid()) {
 		return rt->overridden.color;
 	} else {
-		return rt->color;
+		return rt->color_mipmap0;
 	}
 }
 
@@ -3760,7 +3762,7 @@ RID TextureStorage::render_target_get_rd_texture_slice(RID p_render_target, uint
 	ERR_FAIL_NULL_V(rt, RID());
 
 	if (rt->view_count == 1) {
-		return rt->color;
+		return rt->color_mipmap0;
 	} else {
 		ERR_FAIL_UNSIGNED_INDEX_V(p_layer, rt->view_count, RID());
 		if (rt->color_slices.is_empty()) {
@@ -4163,7 +4165,7 @@ void TextureStorage::render_target_gen_mipmaps(RID p_render_target) {
 		RID prev_texture = rt->color_mipmaps[i - 1];
 		RID mipmap = rt->color_mipmaps[i];
 		if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
-			copy_effects->make_mipmap(prev_texture, mipmap, prev_texture_size);
+			copy_effects->make_mipmap(prev_texture, mipmap, prev_texture_size, !rt->use_hdr);
 		} else {
 			copy_effects->make_mipmap_raster(prev_texture, mipmap, prev_texture_size);
 		}

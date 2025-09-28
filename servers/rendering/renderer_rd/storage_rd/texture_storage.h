@@ -353,6 +353,7 @@ private:
 		Size2i size;
 		uint32_t view_count;
 		RID color;
+		RID color_mipmap0;
 		Vector<RID> color_slices;
 		RID color_multisample; // Needed when 2D MSAA is enabled.
 		bool use_mipmaps = false;
