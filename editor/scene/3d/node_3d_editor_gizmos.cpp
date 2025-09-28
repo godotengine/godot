@@ -365,14 +365,6 @@ void EditorNode3DGizmo::add_unscaled_billboard(const Ref<Material> &p_material, 
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a);
 	mesh->surface_set_material(0, p_material);
 
-	float md = 0;
-	for (int i = 0; i < vs.size(); i++) {
-		md = MAX(0, vs[i].length());
-	}
-	if (md) {
-		mesh->set_custom_aabb(AABB(Vector3(-md, -md, -md), Vector3(md, md, md) * 2.0));
-	}
-
 	selectable_icon_size = p_scale;
 	mesh->set_custom_aabb(AABB(Vector3(-selectable_icon_size, -selectable_icon_size, -selectable_icon_size) * 100.0f, Vector3(selectable_icon_size, selectable_icon_size, selectable_icon_size) * 200.0f));
 
