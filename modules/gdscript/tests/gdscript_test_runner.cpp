@@ -330,12 +330,12 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 
 bool GDScriptTestRunner::make_tests() {
 	Error err = OK;
-	Ref<DirAccess> dir(DirAccess::open(source_dir, &err));
+	Ref<DirAccess> dir(DirAccess::open("res://", &err));
 
 	ERR_FAIL_COND_V_MSG(err != OK, false, "Could not open specified test directory.");
 
-	source_dir = dir->get_current_dir() + "/"; // Make it absolute path.
-	return make_tests_for_dir(dir->get_current_dir());
+	source_dir = dir->get_current_dir();
+	return make_tests_for_dir(source_dir);
 }
 
 static bool generate_class_index_recursive(const String &p_dir) {
@@ -391,11 +391,11 @@ static bool generate_class_index_recursive(const String &p_dir) {
 
 bool GDScriptTestRunner::generate_class_index() {
 	Error err = OK;
-	Ref<DirAccess> dir(DirAccess::open(source_dir, &err));
+	Ref<DirAccess> dir(DirAccess::open("res://", &err));
 
 	ERR_FAIL_COND_V_MSG(err != OK, false, "Could not open specified test directory.");
 
-	source_dir = dir->get_current_dir() + "/"; // Make it absolute path.
+	source_dir = dir->get_current_dir();
 	return generate_class_index_recursive(dir->get_current_dir());
 }
 
@@ -704,6 +704,18 @@ bool GDScriptTest::generate_output() {
 	out_file->store_string(output);
 
 	return true;
+}
+
+String GDScriptTest::get_source_file() const {
+	return ProjectSettings::get_singleton()->globalize_path(source_file);
+}
+
+String GDScriptTest::get_source_relative_filepath() const {
+	return source_file.trim_prefix(base_dir);
+}
+
+String GDScriptTest::get_output_file() const {
+	return ProjectSettings::get_singleton()->globalize_path(output_file);
 }
 
 } // namespace GDScriptTests
