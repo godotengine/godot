@@ -2432,6 +2432,9 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 					GLES3::MaterialStorage::get_singleton()->material_set_param(sky_globals.fog_material, "clear_color", Variant(clear_color));
 				} else {
 					// Sky will not be drawn so we need to multiply here.
+					clear_color.r *= render_data.luminance_multiplier;
+					clear_color.g *= render_data.luminance_multiplier;
+					clear_color.b *= render_data.luminance_multiplier;
 					clear_color = clear_color.srgb_to_linear();
 					clear_color.r *= bg_energy_multiplier;
 					clear_color.g *= bg_energy_multiplier;
@@ -2446,6 +2449,9 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 					GLES3::MaterialStorage::get_singleton()->material_set_param(sky_globals.fog_material, "clear_color", Variant(clear_color));
 				} else {
 					// Sky will not be drawn so we need to multiply here.
+					clear_color.r *= render_data.luminance_multiplier;
+					clear_color.g *= render_data.luminance_multiplier;
+					clear_color.b *= render_data.luminance_multiplier;
 					clear_color = clear_color.srgb_to_linear();
 					clear_color.r *= bg_energy_multiplier;
 					clear_color.g *= bg_energy_multiplier;
