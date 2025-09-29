@@ -59,8 +59,6 @@ enum DownloadsAvailability {
 };
 
 static DownloadsAvailability _get_downloads_availability() {
-	const int network_mode = EDITOR_GET("network/connection/network_mode");
-
 	// Downloadable export templates are only available for stable and official alpha/beta/RC builds
 	// (which always have a number following their status, e.g. "alpha1").
 	// Therefore, don't display download-related features when using a development version
@@ -74,13 +72,16 @@ static DownloadsAvailability _get_downloads_availability() {
 
 #ifdef REAL_T_IS_DOUBLE
 	return DOWNLOADS_NOT_AVAILABLE_FOR_DOUBLE_BUILDS;
-#endif
+#else
+
+	const int network_mode = EDITOR_GET("network/connection/network_mode");
 
 	if (network_mode == EditorSettings::NETWORK_OFFLINE) {
 		return DOWNLOADS_NOT_AVAILABLE_IN_OFFLINE_MODE;
 	}
 
 	return DOWNLOADS_AVAILABLE;
+#endif
 }
 
 void ExportTemplateManager::_update_template_status() {
