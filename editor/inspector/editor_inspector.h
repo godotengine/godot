@@ -40,6 +40,7 @@ class AddMetadataDialog;
 class AcceptDialog;
 class ConfirmationDialog;
 class EditorInspector;
+class EditorUndoRedoManager;
 class EditorValidationPanel;
 class HSeparator;
 class LineEdit;
@@ -197,6 +198,7 @@ private:
 	bool selectable = true;
 	bool selected = false;
 	int selected_focusable;
+	BitField<KeyModifierMask> select_modifiers;
 
 	float split_ratio;
 
@@ -769,6 +771,8 @@ class EditorInspector : public ScrollContainer {
 		String theme_item_name;
 	};
 
+	HashSet<StringName> selected_properties;
+
 	HashMap<StringName, HashMap<StringName, DocCacheInfo>> doc_cache;
 	HashSet<StringName> restart_request_props;
 	HashMap<String, String> custom_property_descriptions;
@@ -782,6 +786,7 @@ class EditorInspector : public ScrollContainer {
 
 	bool restrict_to_basic = false;
 
+	void _process_prop_undo_redo(EditorUndoRedoManager *undo_redo, Object *obj, String prop_name, Variant p_value, bool p_refresh_all);
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
 
 	void _property_changed(const String &p_path, const Variant &p_value, const String &p_name = "", bool p_changing = false, bool p_update_all = false);
@@ -796,6 +801,7 @@ class EditorInspector : public ScrollContainer {
 
 	void _resource_selected(const String &p_path, Ref<Resource> p_resource);
 	void _property_selected(const String &p_path, int p_focusable);
+	void _property_multi_selected(const String &p_path, int p_focusable, bool p_force_enabled);
 	void _object_id_selected(const String &p_path, ObjectID p_id);
 
 	void _update_current_favorites();
