@@ -183,9 +183,6 @@ private:
 		StringName name;
 		SceneTree *tree = nullptr;
 
-#ifdef TOOLS_ENABLED
-		NodePath import_path; // Path used when imported, used by scene editors to keep tracking.
-#endif
 		String editor_description;
 
 		Viewport *viewport = nullptr;
@@ -739,9 +736,6 @@ public:
 
 	//hacks for speed
 	static void init_node_hrcr();
-
-	void set_import_path(const NodePath &p_import_path); //path used when imported, used by scene editors to keep tracking
-	NodePath get_import_path() const;
 
 	bool is_owned_by_parent() const;
 
