@@ -1324,7 +1324,7 @@ public:
 	PASS1RC(float, environment_get_ssao_detail, RID)
 	PASS1RC(float, environment_get_ssao_horizon, RID)
 	PASS1RC(float, environment_get_ssao_sharpness, RID)
-	PASS1RC(float, environment_get_ssao_thickness_blend, RID)
+	PASS1RC(float, environment_get_ssao_thickness_heuristic, RID)
 	PASS1RC(float, environment_get_ssao_direct_light_affect, RID)
 	PASS1RC(float, environment_get_ssao_ao_channel_affect, RID)
 

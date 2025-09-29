@@ -135,7 +135,7 @@ public:
 		float horizon = 0.06;
 		float sharpness = 0.98;
 		// Only used for GTAO
-		float thickness_blend = 0.5;
+		float thickness_heuristic = 0.5;
 
 		Size2i full_screen_size;
 	};
@@ -372,7 +372,7 @@ private:
 		float horizon_angle_threshold;
 		float inv_radius_near_limit;
 		// GTAO-specific
-		float thickness_blend;
+		float thickness_heuristic;
 		float fov_scale;
 
 		uint32_t is_orthogonal;

@@ -1216,7 +1216,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 		if (ssao_type == RS::ENV_SSAO_TYPE_GTAO) {
 			float inv_tan_half_fov_x = p_projection.columns[0][0];
 			ssao.gather_push_constant.fov_scale = inv_tan_half_fov_x * p_ssao_buffers.buffer_height;
-			ssao.gather_push_constant.thickness_blend = p_settings.thickness_blend;
+			ssao.gather_push_constant.thickness_heuristic = p_settings.thickness_heuristic;
 		}
 
 		// We are using our uniform cache so our uniform sets are automatically freed when our textures are freed.

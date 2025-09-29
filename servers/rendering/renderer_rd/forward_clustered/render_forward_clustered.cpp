@@ -1383,7 +1383,7 @@ void RenderForwardClustered::_process_ssao(Ref<RenderSceneBuffersRD> p_render_bu
 	settings.detail = environment_get_ssao_detail(p_environment);
 	settings.horizon = environment_get_ssao_horizon(p_environment);
 	settings.sharpness = environment_get_ssao_sharpness(p_environment);
-	settings.thickness_blend = environment_get_ssao_thickness_blend(p_environment);
+	settings.thickness_heuristic = environment_get_ssao_thickness_heuristic(p_environment);
 	settings.full_screen_size = p_render_buffers->get_internal_size();
 
 	ss_effects->ssao_allocate_buffers(p_render_buffers, rb_data->ss_effects_data.ssao, settings);

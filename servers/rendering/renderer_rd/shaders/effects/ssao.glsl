@@ -39,6 +39,7 @@
 #define GTAO_MAX_DEPTH (1000.0)
 #define GTAO_MAX_SCREEN_RADIUS (256.0)
 #define GTAO_BIAS_MIP_LEVEL (0)
+#define GTAO_FALLOFF_RANGE (0.717)
 
 const int num_slices[5] = { 2, 4, 5, 6, 8 };
 const int num_taps[5] = { 4, 8, 12, 16, 20 };
@@ -135,7 +136,7 @@ layout(push_constant, std430) uniform Params {
 	float inv_radius_near_limit;
 
 	// GTAO-specific
-	float thickness_blend;
+	float thickness_heuristic;
 	float fov_scale;
 
 	bool is_orthogonal;
@@ -228,6 +229,7 @@ vec4 calculate_all_edges(const uvec2 full_res_coord, const vec3 pixel_normal, co
 	return edgesLRTB;
 }
 
+// Calculate fadeout, intensity and power of AO value
 float calculate_final_occlusion(float obscurance, float pix_center_z, vec4 edgesLRTB, int p_quality_level, bool p_adaptive_base) {
 	// calculate fadeout (1 close, gradient, 0 far)
 	float fade_out = clamp(pix_center_z * params.fade_out_mul + params.fade_out_add, 0.0, 1.0);
@@ -266,20 +268,23 @@ float calculate_final_occlusion(float obscurance, float pix_center_z, vec4 edges
 #define PI 3.141592653589793
 #define PI_HALF (PI / 2.0)
 
-// Interleaved gradient function from Jimenez 2014
+// [Jimenez 2014] Interleaved gradient function
 // Use integer coordinates rather than UV since UV varies too little
 float quick_hash(vec2 pos) {
 	const vec3 magic = vec3(0.06711056f, 0.00583715f, 52.9829189f);
 	return fract(magic.z * fract(dot(pos, magic.xy)));
 }
 
-vec2 get_random_angle_offset(uvec2 coords) {
+vec2 get_angle_offset_noise(uvec2 coords) {
 	coords.y = 4096u - coords.y;
 	float angle = quick_hash(vec2(coords));
-	float offset = 0.25 * float((coords.y - coords.x) & 3u);
-	return vec2(angle, offset);
+	// [Jorge Jiménez 2016] Practical Real-Time Strategies for Accurate Indirect Occlusion
+	// Noise Distribution - Spatial Offsets
+	float noise = 0.25 * float((coords.y - coords.x) & 3u);
+	return vec2(angle, noise);
 }
 
+// [Eberly 2014] GPGPU Programming for Games and Science
 // Fast approximation of arccos
 float acos_fast(float x) {
 	float abs_x = abs(x);
@@ -288,47 +293,19 @@ float acos_fast(float x) {
 	return x >= 0.0 ? res : PI - res;
 }
 
-// Compute the inner integration given azimuth
-float compute_inner_integral(vec2 angles, vec2 screen_dir, vec3 view_dir, vec3 view_space_normal) {
-	// Project view_space_normal onto the plane defined by screen_dir and view_dir
-	vec3 plane_normal = normalize(cross(vec3(screen_dir, 0.0), view_dir));
-	vec3 perp = cross(view_dir, plane_normal);
-	vec3 proj_normal = view_space_normal - plane_normal * dot(view_space_normal, plane_normal);
+float GTAO_slice(in int num_taps, vec2 base_uv, vec2 screen_dir, float search_radius, float initial_offset, vec3 view_pos, vec3 view_dir, float falloff_mul, vec3 view_space_normal) {
+	float scene_depth, sample_delta_len_sq, sample_horizon_cos, falloff;
+	vec3 sample_delta;
+	vec2 sample_uv;
+	vec2 horizon_cos = vec2(-1.0, -1.0);
+	const vec2 screen_vec_pixels = screen_dir * params.half_screen_pixel_size;
+	const float thickness = params.thickness_heuristic;
 
-	float len_proj_normal = length(proj_normal) + 0.000001;
-	float recip_mag = 1.0 / len_proj_normal;
-
-	float cos_ang = dot(proj_normal, perp) * recip_mag;
-	float gamma = acos_fast(cos_ang) - PI_HALF;
-	float cos_gamma = dot(proj_normal, view_dir) * recip_mag;
-	float sin_gamma = cos_ang * -2.0;
-
-	// Clamp to normal hemisphere
-	angles.x = gamma + max(-angles.x - gamma, -PI_HALF);
-	angles.y = gamma + min(angles.y - gamma, PI_HALF);
-
-	float ao = (len_proj_normal * 0.25 * (
-	(angles.x * sin_gamma + cos_gamma - cos(2.0 * angles.x - gamma)) +
-	(angles.y * sin_gamma + cos_gamma - cos(2.0 * angles.y - gamma))
-	));
-	return ao; // Return vec3 to match output type
-}
-
-// Search for horizon lines in screen space
-vec2 search_for_largest_angle_dual(in int num_taps, vec2 base_uv, vec2 screen_dir, float search_radius, float initial_offset, vec3 view_pos, vec3 view_dir, float atten_factor) {
-	float scene_depth, len_sq, oo_len, ang, fall_off;
-	vec3 v;
-	vec2 uv;
-	vec2 best_ang = vec2(-1.0, -1.0);
-	float thickness = params.thickness_blend;
-
-	for (int i = 1; i <= num_taps; ++i) {
-		float fi = float(i);
-		vec2 uv_offset = screen_dir * max(search_radius * (fi + initial_offset), fi + 1.0);
-
+	// Find the largest angle
+	for (int i = 0; i < num_taps; ++i) {
+		vec2 uv_offset = screen_vec_pixels * max(search_radius * (float(i) + initial_offset), float(i) + 1.0);
+		// Paper: flip y due to texture coordinate system
 		uv_offset.y *= -1.0;
-		// A packed value of two symmetric sampling UVs
-		vec4 uv2 = vec4(base_uv, base_uv) + vec4(uv_offset, -uv_offset);
 
 		// Use HZB tracing for better performance
 		int mip_level = GTAO_BIAS_MIP_LEVEL;
@@ -342,36 +319,65 @@ vec2 search_for_largest_angle_dual(in int num_taps, vec2 base_uv, vec2 screen_di
 
 		// Positive direction
 		// Clamp UV coords to avoid artifacts
-		uv = clamp(uv2.xy, vec2(0.0), vec2(1.0));
-		scene_depth = textureLod(source_depth_mipmaps, vec3(uv, params.pass), mip_level).x;
-		v = NDC_to_view_space(uv, scene_depth).xyz - view_pos;
-		len_sq = dot(v, v);
-		oo_len = inversesqrt(len_sq + 0.0001);
-		ang = dot(v, view_dir) * oo_len;
+		sample_uv = clamp(base_uv + uv_offset, vec2(0.0), vec2(1.0));
+		scene_depth = textureLod(source_depth_mipmaps, vec3(sample_uv, params.pass), mip_level).x;
+		sample_delta = NDC_to_view_space(sample_uv, scene_depth).xyz - view_pos;
+		sample_delta_len_sq = dot(sample_delta, sample_delta);
+		// TODO: This could be replaced with fast sqrt
+		sample_horizon_cos = dot(sample_delta, view_dir) * inversesqrt(sample_delta_len_sq);
+		// XeGTAO uses 1/r falloff here, ASSAO uses 1/r^2 falloff instead.
+		// To make the AO appear sharper, 1/r^2 is chosen
+		falloff = clamp(sample_delta_len_sq * falloff_mul, 0.0, 1.0);
+		sample_horizon_cos = mix(sample_horizon_cos, horizon_cos.x, falloff);
 
-		fall_off = clamp(len_sq * atten_factor, 0.0, 1.0);
-		ang = mix(ang, best_ang.x, fall_off);
-
-		best_ang.x = (ang > best_ang.x) ? ang : mix(ang, best_ang.x, thickness);
+		// Thickness heuristic - see "4.3 Implementation details, Height-field assumption considerations"
+		horizon_cos.x = (sample_horizon_cos > horizon_cos.x) ? sample_horizon_cos : mix(sample_horizon_cos, horizon_cos.x, thickness);
 
 		// Negative direction
-		uv = clamp(uv2.zw, vec2(0.0), vec2(1.0));
-		scene_depth = textureLod(source_depth_mipmaps, vec3(uv, params.pass), mip_level).x;
-		v = NDC_to_view_space(uv, scene_depth).xyz - view_pos;
-		len_sq = dot(v, v);
-		oo_len = inversesqrt(len_sq + 0.0001);
-		ang = dot(v, view_dir) * oo_len;
+		sample_uv = clamp(base_uv - uv_offset, vec2(0.0), vec2(1.0));
+		scene_depth = textureLod(source_depth_mipmaps, vec3(sample_uv, params.pass), mip_level).x;
+		sample_delta = NDC_to_view_space(sample_uv, scene_depth).xyz - view_pos;
+		sample_delta_len_sq = dot(sample_delta, sample_delta);
+		sample_horizon_cos = dot(sample_delta, view_dir) * inversesqrt(sample_delta_len_sq);
 
-		fall_off = clamp(len_sq * atten_factor, 0.0, 1.0);
-		ang = mix(ang, best_ang.y, fall_off);
+		falloff = clamp(sample_delta_len_sq * falloff_mul, 0.0, 1.0);
+		sample_horizon_cos = mix(sample_horizon_cos, horizon_cos.y, falloff);
 
-		best_ang.y = (ang > best_ang.y) ? ang : mix(ang, best_ang.y, thickness);
+		horizon_cos.y = (sample_horizon_cos > horizon_cos.y) ? sample_horizon_cos : mix(sample_horizon_cos, horizon_cos.y, thickness);
 	}
 
-	best_ang.x = acos_fast(clamp(best_ang.x, -1.0, 1.0));
-	best_ang.y = acos_fast(clamp(best_ang.y, -1.0, 1.0));
+	// Convert cosine to angle, `horizon_cos` is now an ANGLE
+	horizon_cos.x = -acos_fast(clamp(horizon_cos.x, -1.0, 1.0));
+	horizon_cos.y = acos_fast(clamp(horizon_cos.y, -1.0, 1.0));
 
-	return best_ang;
+	// Project view_space_normal onto the plane defined by screen_dir and view_dir
+	vec3 axis_vec = normalize(cross(vec3(screen_dir, 0.0), view_dir));
+	vec3 ortho_dir_vec = cross(view_dir, axis_vec);
+	vec3 proj_normal_vec = view_space_normal - axis_vec * dot(view_space_normal, axis_vec);
+
+	float proj_normal_len = length(proj_normal_vec) + 0.000001;
+
+	float sign_norm = sign(dot(ortho_dir_vec, proj_normal_vec));
+	float cos_norm = dot(proj_normal_vec, view_dir) / proj_normal_len;
+
+	// The original paper doesn't have this negative sign,
+	// added due to coordinate system differences
+	float n = -sign_norm * acos_fast(cos_norm);
+	// The final formula uses `2 * sin(n)` so we precalculate this value
+	float two_sin_norm = 2.0 * sin(n);
+
+	// Clamp to normal hemisphere
+	// XeGTAO: we can skip clamping for a tiny little bit more performance
+	horizon_cos.x = n + clamp(horizon_cos.x - n, -PI_HALF, PI_HALF);
+	horizon_cos.y = n + clamp(horizon_cos.y - n, -PI_HALF, PI_HALF);
+
+	float iarc1 = (cos_norm + horizon_cos.x * two_sin_norm - cos(2.0 * horizon_cos.x - n));
+	float iarc2 = (cos_norm + horizon_cos.y * two_sin_norm - cos(2.0 * horizon_cos.y - n));
+
+	float local_visibility = 0.25 * (iarc1 + iarc2) * proj_normal_len;
+	// Disallow total occlusion
+	local_visibility = max(0.03, local_visibility);
+	return local_visibility;
 }
 
 void generate_GTAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, out float r_weight, const vec2 p_pos, int p_quality_level) {
@@ -418,22 +424,25 @@ void generate_GTAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 
 	// Calculate rotation angle for slices
 	float delta_angle = PI / float(number_of_slices);
+	// Precalculate rotational components for slices
 	float sin_delta_angle = sin(delta_angle);
 	float cos_delta_angle = cos(delta_angle);
 
-	float world_radius = params.radius;
-	float adjusted_world_radius = world_radius * params.fov_scale;
-	float pixel_radius = max(min(adjusted_world_radius / pix_center_pos.z, GTAO_MAX_SCREEN_RADIUS), float(number_of_slices));
-	float step_radius = pixel_radius / (float(number_of_taps) + 1.0);
-	float atten_factor = 2.0 / (world_radius * world_radius);
+	float viewspace_radius = params.radius;
+	// Multiply the radius by projection[0][0] to make it FOV-independent, same as HBAO
+	float screenspace_radius = clamp(viewspace_radius * params.fov_scale / pix_center_pos.z, float(number_of_taps), GTAO_MAX_SCREEN_RADIUS);
+	float step_radius = screenspace_radius / float(number_of_taps);
+	float falloff_range = GTAO_FALLOFF_RANGE * viewspace_radius;
+	float falloff_mul = 1.0 / (falloff_range * falloff_range);
 
-	vec2 random_angle_offset = get_random_angle_offset(upos);
+	vec2 noise = get_angle_offset_noise(upos);
 	// Apply a random offset on to reduce artifacts
-	float offset = random_angle_offset.y;
+	float offset = noise.y;
 	// Get a random direction on the hemisphere
+	// Screen dir is guaranteed to be already normalized
 	vec2 screen_dir;
-	screen_dir.y = sin(random_angle_offset.x);
-	screen_dir.x = cos(random_angle_offset.x);
+	screen_dir.y = sin(noise.x);
+	screen_dir.x = cos(noise.x);
 
 	// the main obscurance & sample weight storage
 	float obscurance_sum = 0.0;
@@ -441,12 +450,12 @@ void generate_GTAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 
 	// Calculate AO values for each slice
 	for (uint slice = 0; slice < number_of_slices; ++slice) {
-		vec2 best_ang = search_for_largest_angle_dual(number_of_taps, normalized_screen_pos, screen_dir * params.half_screen_pixel_size, step_radius, offset, pix_center_pos, view_dir, atten_factor);
-		// Inner intergral gives visibility, which is one minus obscurance
-		obscurance_sum += 1.0 - compute_inner_integral(best_ang, screen_dir, view_dir, pixel_normal);
+		// GTAO inner intergral gives visibility, which is one minus obscurance
+		obscurance_sum += 1.0 - GTAO_slice(number_of_taps, normalized_screen_pos, screen_dir, step_radius, offset, pix_center_pos, view_dir, falloff_mul, pixel_normal);
 		weight_sum += 1.0;
 
-		// Rotate screen_dir
+		// XeGTAO calculates screen direction with sincos(angle) every iteration, but that's too slow,
+		// so we calculate it once and rotate it instead.
 		vec2 tmp_dir = screen_dir;
 		screen_dir.x = tmp_dir.x * cos_delta_angle - tmp_dir.y * sin_delta_angle;
 		screen_dir.y = tmp_dir.x * sin_delta_angle + tmp_dir.y * cos_delta_angle;
@@ -499,7 +508,7 @@ void SSAO_tap_inner(const int p_quality_level, inout float r_obscurance_sum, ino
 	r_weight_sum += weight;
 }
 
-void SSAOTap(const int p_quality_level, inout float r_obscurance_sum, inout float r_weight_sum, const int p_tap_index, const mat2 p_rot_scale, const vec3 p_pix_center_pos, vec3 p_pixel_normal, const vec2 p_normalized_screen_pos, const float p_mip_offset, const float p_fallof_sq, float p_weight_mod, vec2 p_norm_xy, float p_norm_xy_length) {
+void SSAO_tap(const int p_quality_level, inout float r_obscurance_sum, inout float r_weight_sum, const int p_tap_index, const mat2 p_rot_scale, const vec3 p_pix_center_pos, vec3 p_pixel_normal, const vec2 p_normalized_screen_pos, const float p_mip_offset, const float p_fallof_sq, float p_weight_mod, vec2 p_norm_xy, float p_norm_xy_length) {
 	vec2 sample_offset;
 	float sample_pow_2_len;
 
@@ -639,7 +648,7 @@ void generate_SSAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 	// standard, non-adaptive approach
 	if ((p_quality_level != 3) || p_adaptive_base) {
 		for (int i = 0; i < number_of_taps; i++) {
-			SSAOTap(p_quality_level, obscurance_sum, weight_sum, i, rot_scale_matrix, pix_center_pos, pixel_normal, normalized_screen_pos, mip_offset, fallof_sq, 1.0, norm_xy, norm_xy_length);
+			SSAO_tap(p_quality_level, obscurance_sum, weight_sum, i, rot_scale_matrix, pix_center_pos, pixel_normal, normalized_screen_pos, mip_offset, fallof_sq, 1.0, norm_xy, norm_xy_length);
 		}
 	}
 #ifdef ADAPTIVE
@@ -676,7 +685,7 @@ void generate_SSAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 		for (uint i = SSAO_ADAPTIVE_TAP_BASE_COUNT; i < additional_samples_to; i++) {
 			additional_sample_count -= 1.0f;
 			float weight_mod = clamp(additional_sample_count * blend_range_inv, 0.0, 1.0);
-			SSAOTap(p_quality_level, obscurance_sum, weight_sum, int(i), rot_scale_matrix, pix_center_pos, pixel_normal, normalized_screen_pos, mip_offset, fallof_sq, weight_mod, norm_xy, norm_xy_length);
+			SSAO_tap(p_quality_level, obscurance_sum, weight_sum, int(i), rot_scale_matrix, pix_center_pos, pixel_normal, normalized_screen_pos, mip_offset, fallof_sq, weight_mod, norm_xy, norm_xy_length);
 		}
 	}
 #endif
