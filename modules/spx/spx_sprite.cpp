@@ -487,6 +487,27 @@ GdString SpxSprite::get_texture() {
 	return SpxReturnStr(tex->get_name());
 }
 
+
+Rect2 SpxSprite::get_rect() const {
+	auto tex = anim2d->get_sprite_frames()->get_frame_texture(SpxSpriteMgr::default_texture_anim, 0);
+	if (tex.is_null()) {
+		return Rect2(0, 0, 1, 1);
+	}
+
+	Size2i s = tex->get_size();
+	Point2 ofs = get_global_position() - Size2(s) / 2;
+
+	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
+		ofs = (ofs + Point2(0.5, 0.5)).floor();
+	}
+
+	if (s == Size2(0, 0)) {
+		s = Size2(1, 1);
+	}
+
+	return Rect2(ofs, s);
+}
+
 GdString SpxSprite::get_current_anim_name() {
 	return SpxReturnStr(current_anim_name);
 }

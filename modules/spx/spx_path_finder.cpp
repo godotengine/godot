@@ -43,7 +43,7 @@
 #define spriteMgr SpxEngine::get_singleton()->get_sprite()
 
 void SpxPathFinder::_bind_methods() {
-    ClassDB::bind_method(D_METHOD("setup_grid", "size", "cell_size", "with_debug"), &SpxPathFinder::setup_grid);
+    ClassDB::bind_method(D_METHOD("setup_grid", "size", "cell_size", "with_debug"), &SpxPathFinder::setup);
     ClassDB::bind_method(D_METHOD("add_all_obstacles", "root"), &SpxPathFinder::add_all_obstacles);
     ClassDB::bind_method(D_METHOD("find_path", "start", "end"), &SpxPathFinder::find_path);
 
@@ -65,6 +65,28 @@ Vector2 SpxPathFinder::_cell_to_world(const Vector2i &cell) const {
         cell.x * cached_cell_size.x + cached_cell_size.x * 0.5,
         cell.y * cached_cell_size.y + cached_cell_size.y * 0.5
     );
+}
+
+void SpxPathFinder::_setup_astar(Node *root, Vector2i &grid_size, Vector2i &cell_size) {
+	Rect2 scene_bounds = _get_scene_bounds(root);
+	Vector2 scene_center = scene_bounds.get_center();
+	Vector2i scene_cells = _world_to_cell(scene_bounds.size);
+	Vector2 center_cell = _world_to_cell(scene_center);
+
+	Vector2i final_grid_size(
+			MIN(scene_cells.x, grid_size.x),
+			MIN(scene_cells.y, grid_size.y));
+
+	if (final_grid_size.x <= 0 || final_grid_size.y <= 0) {
+		final_grid_size = grid_size;
+	}
+
+	Vector2i final_grid_pos = (center_cell - final_grid_size / 2).floor();
+
+	astar->set_region({ final_grid_pos, final_grid_size });
+	astar->set_cell_size(cell_size);
+	astar->set_diagonal_mode(AStarGrid2D::DIAGONAL_MODE_NEVER);
+	astar->update();
 }
 
 void SpxPathFinder::_process_rectangle_shape(Node2D *owner, CollisionShape2D *shape, bool add) {
@@ -137,8 +159,44 @@ void SpxPathFinder::_process_tilemap_obstacles(TileMapLayer *layer, int p_layer_
 
         Vector2 cell_local = layer->map_to_local(cell);
         Vector2 cell_global = layer->to_global(cell_local); 
-
         astar->set_point_solid(_world_to_cell(cell_global), true);
+        
+        Transform2D xform = layer->get_global_transform();
+
+        for (int j = 0; j < poly_count; ++j) {
+            Vector<Vector2> poly = td->get_collision_polygon_points(p_layer_id, j);
+            if (poly.is_empty()) {
+                continue;
+            }
+
+            Vector<Vector2> world_poly;
+            world_poly.resize(poly.size());
+            for (int k = 0; k < poly.size(); ++k) {
+                world_poly.write[k] = xform.xform(cell_local + poly[k]);
+            }
+
+            Rect2 poly_aabb;
+            for (int k = 0; k < world_poly.size(); k++) {
+                if (k == 0) {
+                    poly_aabb.position = world_poly[k];
+                    poly_aabb.size = Vector2(0, 0);
+                } else {
+                    poly_aabb.expand_to(world_poly[k]);
+                }
+            }
+
+            Vector2i min_cell = _world_to_cell(poly_aabb.position);
+            Vector2i max_cell = _world_to_cell(poly_aabb.position + poly_aabb.size);
+
+            for (int cx = min_cell.x; cx <= max_cell.x; ++cx) {
+                for (int cy = min_cell.y; cy <= max_cell.y; ++cy) {
+                    Vector2 center = _cell_to_world(Vector2i(cx, cy));
+                    if (Geometry2D::is_point_in_polygon(center, world_poly)) {
+                        astar->set_point_solid(Vector2i(cx, cy), true);
+                    }
+                }
+            }
+        }
     } 
 }
 
@@ -157,37 +215,46 @@ void SpxPathFinder::_process_sprite_obstacle(GdObj obj, bool add) {
 }
 
 Rect2 SpxPathFinder::_get_scene_bounds(Node *node) {
-	Rect2 rect;
+	Rect2 total_rect;
+    Rect2 cur_rect;
     bool first = true;
 
     for (int i = 0; i < node->get_child_count(); i++) {
         Node *child = node->get_child(i);
 
-        if (TileMapLayer *tm = Object::cast_to<TileMapLayer>(child)) {
-            Rect2 tml_rect = _get_tilemap_bounds(tm);
+        if (TileMapLayer *tml = Object::cast_to<TileMapLayer>(child)) {
+            Rect2 tml_rect = _get_tilemap_bounds(tml);
 
-            tml_rect.position = tm->get_global_transform().xform(tml_rect.position);
+            tml_rect.position = tml->get_global_transform().xform(tml_rect.position);
+            cur_rect = tml_rect;
 
-            if (first) {
-                rect = tml_rect;
-                first = false;
-            } else {
-                rect = rect.merge(tml_rect);
-            }
+        } else if (SpxSprite *sp = Object::cast_to<SpxSprite>(child)) {
+
+            cur_rect = sp->get_rect();   
+            
+        } else{
+            // other objects...
+        }
+
+        if (first) {
+            first = false;
+            total_rect = cur_rect;
+        } else {
+            total_rect = total_rect.merge(cur_rect);
         }
 
         Rect2 child_rect = _get_scene_bounds(child);
         if (child_rect.size != Vector2(0, 0)) {
             if (first) {
-                rect = child_rect;
+                total_rect = child_rect;
                 first = false;
             } else {
-                rect = rect.merge(child_rect);
+                total_rect = total_rect.merge(child_rect);
             }
         }
     }
 
-    return rect;
+    return total_rect;
 }
 
 Rect2 SpxPathFinder::_get_tilemap_bounds(TileMapLayer *layer) {
@@ -217,11 +284,11 @@ SpxPathFinder::~SpxPathFinder() {
     }
 }
 
-void SpxPathFinder::setup_grid_spx(GdVec2 grid_size, GdVec2 cell_size, GdBool with_debug) {
-    setup_grid(grid_size, cell_size, with_debug);
+void SpxPathFinder::setup_spx(GdVec2 grid_size, GdVec2 cell_size, GdBool with_debug) {
+    setup(grid_size, cell_size, with_debug);
 }
 
-void SpxPathFinder::setup_grid(Vector2i grid_size, Vector2i cell_size, bool with_debug) {
+void SpxPathFinder::setup(Vector2i grid_size, Vector2i cell_size, bool with_debug) {
     cached_cell_size = cell_size;
     Node* root = nullptr;
 
@@ -234,28 +301,9 @@ void SpxPathFinder::setup_grid(Vector2i grid_size, Vector2i cell_size, bool with
     }
 
     if (root) {
-        Rect2 scene_bounds = _get_scene_bounds(root);
-        Vector2 scene_center = scene_bounds.get_center();
-        Vector2i scene_cells = _world_to_cell(scene_bounds.size);
-        Vector2 center_cell = _world_to_cell(scene_center);
+		_setup_astar(root, grid_size, cell_size);
 
-        Vector2i final_size_cells(
-            MIN(scene_cells.x, grid_size.x),
-            MIN(scene_cells.y, grid_size.y)
-        );
-
-        if (final_size_cells.x <= 0 || final_size_cells.y <= 0) {
-            final_size_cells = grid_size;
-        }
-
-        Vector2i final_pos = (center_cell - final_size_cells / 2).floor();
-
-        astar->set_region({final_pos, final_size_cells});
-        astar->set_cell_size(cell_size);
-        astar->set_diagonal_mode(AStarGrid2D::DIAGONAL_MODE_NEVER);
-        astar->update();
-
-        add_all_obstacles(root);
+		add_all_obstacles(root);
 
         if (with_debug && !drawer) {
             drawer = memnew(PathDebugDrawer(this));
@@ -286,7 +334,7 @@ void SpxPathFinder::add_all_obstacles(Node *root) {
             if (StaticBody2D *body = Object::cast_to<StaticBody2D>(child)) {
                 _process_static_obstacles(body);
             } else if (SpxSprite *sprite = Object::cast_to<SpxSprite>(child)) {
-                if(sprite->get_physics_mode() == SpxSprite::PhysicsMode::STATIC)
+                if(sprite->get_physics_mode() == SpxSprite::PhysicsMode::STATIC && sprite->is_visible_in_tree())
                     _process_static_obstacles(sprite);
             } else if (TileMapLayer *layer = Object::cast_to<TileMapLayer>(child)) {
                 _process_tilemap_obstacles(layer);

@@ -52,6 +52,8 @@ private:
     Vector2i _world_to_cell(const Vector2 &pos) const;
     Vector2 _cell_to_world(const Vector2i &cell) const;
 
+    void _setup_astar(Node *root, Vector2i &grid_size, Vector2i &cell_size);
+
     void _process_rectangle_shape(Node2D *owner, CollisionShape2D *shape, bool add = true);
     void _process_static_obstacles(Node2D *body, bool add = true);
     void _process_tilemap_obstacles(TileMapLayer *tilemap, int p_layer_id = 0);
@@ -67,8 +69,8 @@ public:
     SpxPathFinder();
     ~SpxPathFinder();
 
-    void setup_grid_spx(GdVec2 size, GdVec2 cell_size, GdBool with_debug);
-	void setup_grid(Vector2i size, Vector2i cell_size, bool with_debug = false);
+    void setup_spx(GdVec2 size, GdVec2 cell_size, GdBool with_debug);
+	void setup(Vector2i size, Vector2i cell_size, bool with_debug = false);
 	void set_jumping_enabled(bool p_enabled);
 	void add_all_obstacles(Node *root);
 
