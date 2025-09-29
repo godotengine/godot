@@ -1743,11 +1743,15 @@ void SceneTreeEditor::set_display_foreign_nodes(bool p_display) {
 	_update_tree();
 }
 
-void SceneTreeEditor::set_valid_types(const Vector<StringName> &p_valid) {
-	valid_types = p_valid;
+void SceneTreeEditor::clear_cache() {
 	node_cache.force_update = true;
 	callable_mp(this, &SceneTreeEditor::_update_tree).call_deferred(false);
 	tree_dirty = true;
+}
+
+void SceneTreeEditor::set_valid_types(const Vector<StringName> &p_valid) {
+	valid_types = p_valid;
+	clear_cache();
 }
 
 void SceneTreeEditor::set_editor_selection(EditorSelection *p_selection) {

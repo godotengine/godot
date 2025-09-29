@@ -219,6 +219,7 @@ public:
 	void set_edited_scene_live_edit_root(const NodePath &p_root);
 	NodePath get_edited_scene_live_edit_root();
 	bool check_and_update_scene(int p_idx);
+	bool reload_scene_from_memory(int p_idx, bool p_mark_unsaved);
 	void move_edited_scene_to_index(int p_idx);
 
 	bool call_build();
