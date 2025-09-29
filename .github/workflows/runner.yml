@@ -12,6 +12,8 @@ jobs:
     if: ${{ !vars.DISABLE_GODOT_CI || github.run_attempt > 1 }}
     name: 📊 Static checks
     uses: ./.github/workflows/static_checks.yml
+    with:
+      event-name: ${{ github.event_name }}
 
   # Second stage: Run all the builds and some of the tests.
 
