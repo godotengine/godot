@@ -100,6 +100,43 @@ console.log("AI Agent is thinking...");
 ai_agent.execute_typescript_code(ts_code)
 ```
 
+## 💬 Interactive Chat Interface Setup
+
+For the ultimate Godot development assistant experience:
+
+### 1. Create Chat UI Scene
+
+```gdscript
+# Create a scene with this structure:
+ChatInterface (Control)
+└─ AIAgent (AIAgent node)
+└─ VBoxContainer
+   ├─ ScrollContainer
+   │  └─ ChatOutput (VBoxContainer)
+   ├─ ChatInput (LineEdit)
+   └─ HBoxContainer
+      ├─ SendButton (Button)
+      └─ ClearButton (Button)
+```
+
+### 2. Attach Chat Script
+
+1. **Select ChatInterface node**
+2. **Attach script** → Use `chat_interface_example.gd`
+3. **Set API key** → Replace `"YOUR_GEMINI_API_KEY_HERE"`
+4. **Run scene** → Start chatting!
+
+### 3. Try These Commands
+
+- 👄 **"hello"** → Get started
+- 📁 **"create project"** → Project setup guide
+- 🎭 **"add CharacterBody2D"** → Add player node
+- ⚙️ **"project settings"** → Configuration help
+- 📝 **"attach script"** → Script creation
+- 𫒫 **"help"** → All available commands
+
+**The assistant adapts to your skill level and remembers conversation context!** 😺
+
 ### 3. Memory and Actions
 
 The AI Agent has built-in memory and action systems:
@@ -191,7 +228,28 @@ scons typescript_path="C:/path/to/tsc.exe"
 
 ## Examples
 
-See the `examples/` directory for complete TypeScript examples:
+See the `examples/` directory for complete examples:
+
+### 🎮 Interactive Chat Interface
+- `godot_chat_assistant.ts`: **Advanced chat AI** for Godot development
+- `chat_interface_example.gd`: **Complete GDScript implementation**
+- `message_container.gd`: **UI helper for chat messages**
+
+**Features:**
+- 🐾 **Friendly cat-themed assistant** with personality
+- 💬 **Natural conversation** with context awareness  
+- 🎯 **Smart topic detection** (projects, nodes, scripts, settings)
+- 📚 **Step-by-step guides** for common Godot tasks
+- 🧠 **Skill level adaptation** (beginner/intermediate/advanced)
+- ⚡ **Interactive help system** with commands
+
+**Chat Commands:**
+- "create project" → Project setup guide
+- "add node" → Node creation tutorial
+- "project settings" → Configuration help
+- "help" → Full command list
+
+### 🤖 Basic Examples
 - `basic_agent.ts`: Simple AI assistant with code generation
 - `tsconfig.json`: TypeScript configuration file
 
@@ -227,6 +285,130 @@ See the `examples/` directory for complete TypeScript examples:
 - `state_changed(new_state: int)` - Agent state changed
 - `thinking_started()` - AI started processing
 - `thinking_finished()` - AI finished processing
+
+## Troubleshooting
+
+### 🔑 API Key Issues
+
+**Problem**: "Invalid API key" or "Authentication failed"
+- ✅ **Solution**: Verify your Gemini API key is correct
+- ✅ **Check**: Visit [Google AI Studio](https://makersuite.google.com/app/apikey) to generate/verify key
+- ✅ **Test**: Try the key in a simple HTTP request first
+
+```gdscript
+# Test your API key
+ai_agent.set_gemini_api_key("your-actual-api-key-here")
+ai_agent.send_message("Hello, test connection")
+```
+
+### 🔧 TypeScript Compilation Errors
+
+**Problem**: "TypeScript compiler not found" or compilation fails
+- ✅ **Install TypeScript**: `npm install -g typescript`
+- ✅ **Verify installation**: `tsc --version`
+- ✅ **Check path**: Ensure TypeScript is in your system PATH
+
+**Problem**: "Cannot find module" errors in TypeScript
+- ✅ **Solution**: Check `tsconfig.json` configuration
+- ✅ **Verify**: Ensure all imports are correct
+
+### 🌐 Network Connection Issues
+
+**Problem**: "Connection timeout" or "Network unreachable"
+- ✅ **Check internet**: Verify internet connection works
+- ✅ **Firewall**: Check if firewall blocks Godot
+- ✅ **Proxy**: Configure proxy settings if needed
+
+```gdscript
+# Enable debug output for network issues
+ai_agent.set_debug_mode(true)
+```
+
+### 🏗️ Build Configuration Issues
+
+**Problem**: Module not found during build
+- ✅ **Location**: Ensure module is in `modules/ai_agent/`
+- ✅ **SCsub**: Verify `SCsub` file exists and is correct
+- ✅ **Clean build**: `scons --clean` then rebuild
+
+**Problem**: Compilation errors during build
+- ✅ **Dependencies**: Check C++ compiler version
+- ✅ **Headers**: Verify all header files are present
+- ✅ **Platform**: Use correct platform flags for your OS
+
+```bash
+# Clean and rebuild with verbose output
+scons --clean
+scons platform=windows target=editor verbose=yes
+```
+
+### 🐛 Runtime Errors
+
+**Problem**: AI Agent node crashes or freezes
+- ✅ **Memory**: Check available system memory
+- ✅ **API limits**: Verify you haven't exceeded API quotas
+- ✅ **Logs**: Check Godot output and error logs
+
+**Problem**: TypeScript execution fails
+- ✅ **Syntax**: Verify TypeScript syntax is correct
+- ✅ **Context**: Ensure proper context is passed to scripts
+- ✅ **Permissions**: Check file system permissions
+
+### 📊 Performance Issues
+
+**Problem**: Slow AI responses
+- ✅ **Model**: Try different Gemini models (Flash for speed)
+- ✅ **Context**: Reduce conversation history length
+- ✅ **Threading**: Ensure requests aren't blocking main thread
+
+```gdscript
+# Optimize for speed
+ai_agent.set_model("gemini-1.5-flash")
+ai_agent.set_max_conversation_turns(5)  # Limit history
+```
+
+### ⚡ Quick Diagnostic
+
+Run this diagnostic script to check common issues:
+
+```gdscript
+func diagnostic_check():
+    print("=== AI Agent Diagnostics ===")
+    
+    # Check if module is loaded
+    if Engine.has_singleton("AIAgent"):
+        print("✅ AI Agent module loaded")
+    else:
+        print("❌ AI Agent module not found")
+        return
+    
+    # Check API key
+    var agent = AIAgent.new()
+    if agent.has_api_key():
+        print("✅ API key configured")
+    else:
+        print("❌ API key missing")
+    
+    # Check TypeScript
+    if agent.is_typescript_available():
+        print("✅ TypeScript available")
+    else:
+        print("⚠️ TypeScript not available")
+    
+    # Check network
+    agent.connect("response_received", func(response): print("✅ Network connection working"))
+    agent.connect("error_occurred", func(error): print("❌ Network error: " + error))
+    agent.send_message("Test connection")
+```
+
+### 🆘 Getting Help
+
+If you're still having issues:
+
+1. **Check logs**: Look at Godot's output for error messages
+2. **Minimal test**: Create a simple scene with just an AIAgent node
+3. **Report bugs**: Include error messages, OS, and Godot version
+4. **Community**: Ask on Godot forums or Discord
 
 ## License
 
