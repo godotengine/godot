@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_ai_agent = env_modules.Clone()
+
+# Add third-party dependencies if needed
+thirdparty_dir = "#thirdparty/"
+
+# Configure TypeScript support
+if env.get("builtin_typescript", True):
+    env_ai_agent.Append(CPPDEFINES=["BUILTIN_TYPESCRIPT_ENABLED"])
+
+# HTTP client configuration for Gemini API
+env_ai_agent.Append(CPPDEFINES=["HTTP_CLIENT_ENABLED"])
+
+# Godot source files
+module_obj = []
+
+env_ai_agent.add_source_files(module_obj, "*.cpp")
+
+# Add editor files when building editor
+if env.editor_build:
+    env_ai_agent.add_source_files(module_obj, "editor/*.cpp")
+
+# Add TypeScript support files
+env_ai_agent.add_source_files(module_obj, "typescript/*.cpp")
+
+env.modules_sources += module_obj
+
+# Custom TypeScript compilation builder
+def typescript_builder(target, source, env):
+    """Custom builder for TypeScript files"""
+    import subprocess
+    import os
+    
+    typescript_compiler = env.get("typescript_path", "tsc")
+    if not typescript_compiler:
+        # Try to find tsc in PATH
+        try:
+            subprocess.run([typescript_compiler, "--version"], check=True, capture_output=True)
+        except (FileNotFoundError, subprocess.CalledProcessError):
+            print("TypeScript compiler not found. Skipping TypeScript compilation.")
+            return
+    
+    for src in source:
+        src_path = str(src)
+        if src_path.endswith('.ts'):
+            try:
+                subprocess.run([typescript_compiler, src_path], check=True)
+                print(f"Compiled TypeScript file: {src_path}")
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to compile TypeScript file {src_path}: {e}")
+
+# Register TypeScript builder
+if env.get("builtin_typescript", True):
+    ts_builder = env.Builder(action=typescript_builder, suffix='.js', src_suffix='.ts')
+    env.Append(BUILDERS={'TypeScript': ts_builder})
