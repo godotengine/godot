@@ -70,6 +70,9 @@ private:
 	bool collision_enabled = true;         // Whether collision is enabled
 	float _gravity = 980.0f;               // Gravity value (from ProjectSettings)
 
+	bool _is_collision_enabled = false;
+	bool _is_trigger_enabled = false;
+	
 	template <typename T>
 	T *get_component(Node *node, GdBool recursive = false);
 	Node *get_component(Node *node, StringName name, GdBool recursive);
@@ -186,6 +189,7 @@ public:
 
 	GdString get_texture();
 	
+	void on_set_visible(GdBool visible);
 	// animation
 	void play_anim(GdString p_name, GdFloat p_speed = 1.0, GdBool isLoop = false, GdBool p_from_end = false);
 	void play_backwards_anim(GdString p_name);

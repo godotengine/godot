@@ -172,25 +172,32 @@ void SpxSprite::_draw() {
 }
 
 void SpxSprite::on_start() {
-	collider2d = (get_component<CollisionShape2D>());
-	anim2d = (get_component<AnimatedSprite2D>());
+	collider2d = get_component<CollisionShape2D>();
+	anim2d = get_component<AnimatedSprite2D>();
+	area2d = get_component<Area2D>();
+	if (area2d != nullptr) {
+		trigger2d = get_component<CollisionShape2D>(area2d);
+	}
+	
+	ERR_FAIL_COND_MSG(collider2d == nullptr, "SpxSprite: CollisionShape2D component is missing.");
+	ERR_FAIL_COND_MSG(anim2d == nullptr, "SpxSprite: AnimatedSprite2D component is missing.");
+	ERR_FAIL_COND_MSG(area2d == nullptr, "SpxSprite: Area2D component is missing.");
+	ERR_FAIL_COND_MSG(trigger2d == nullptr, "SpxSprite: Trigger2D component is missing.");
+
 	default_sprite_frames = anim2d->get_sprite_frames();
 	if(default_sprite_frames.is_null() || resMgr->is_dynamic_anim_mode()) {
 		default_sprite_frames.instantiate();
 		anim2d->set_sprite_frames(default_sprite_frames);
 	}
 
-	visible_notifier = (get_component<VisibleOnScreenNotifier2D>());
+	visible_notifier = get_component<VisibleOnScreenNotifier2D>();
 	if (visible_notifier == nullptr) {
 		visible_notifier = memnew(VisibleOnScreenNotifier2D);
 		add_child(visible_notifier);
 	}
 	//anim2d->get_sprite_frames()->add_animation(SpxSpriteMgr::default_texture_anim);
-	area2d = (get_component<Area2D>());
-	if (area2d != nullptr) {
-		trigger2d = get_component<CollisionShape2D>(area2d);
-	}
-
+	_is_trigger_enabled = !trigger2d->is_disabled();
+	_is_collision_enabled = !collider2d->is_disabled();
 	if (area2d != nullptr) {
 		area2d->connect("area_entered", Callable(this, "on_area_entered"));
 		area2d->connect("area_exited", Callable(this, "on_area_exited"));
@@ -663,6 +670,11 @@ void SpxSprite::set_collider_rect(GdVec2 center, GdVec2 size) {
 	collider2d->set_shape(rect);
 	collider2d->set_position(center);
 }
+void SpxSprite::on_set_visible(GdBool visible){
+	collider2d->set_disabled(!(_is_collision_enabled && is_visible()));
+	trigger2d->set_disabled(!(_is_trigger_enabled && is_visible()));
+}
+
 
 void SpxSprite::set_collider_circle(GdVec2 center, GdFloat radius) {
 	Ref<CircleShape2D> circle = memnew(CircleShape2D);
@@ -680,11 +692,12 @@ void SpxSprite::set_collider_capsule(GdVec2 center, GdVec2 size) {
 }
 
 void SpxSprite::set_collision_enabled(GdBool enabled) {
-	collider2d->set_visible(enabled);
+	_is_collision_enabled = enabled;
+	collider2d->set_disabled(_is_collision_enabled && is_visible());
 }
 
 GdBool SpxSprite::is_collision_enabled() {
-	return collider2d->is_visible();
+	return _is_collision_enabled;
 }
 
 void SpxSprite::set_trigger_capsule(GdVec2 center, GdVec2 size) {
@@ -710,11 +723,12 @@ void SpxSprite::set_trigger_circle(GdVec2 center, GdFloat radius) {
 }
 
 void SpxSprite::set_trigger_enabled(GdBool trigger) {
-	area2d->set_visible(trigger);
+	_is_trigger_enabled = trigger;
+	trigger2d->set_disabled(!(_is_trigger_enabled && is_visible()));
 }
 
 GdBool SpxSprite::is_trigger_enabled() {
-	return area2d->is_visible();
+	return _is_trigger_enabled;
 }
 
 CollisionShape2D *SpxSprite::get_collider(bool is_trigger) {
