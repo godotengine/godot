@@ -29,6 +29,8 @@ jobs:
     name: 🐧 Linux
     needs: static-checks
     uses: ./.github/workflows/linux_builds.yml
+    with:
+      changed-files: ${{ needs.static-checks.outputs.changed-files }}
 
   macos-build:
     name: 🍎 macOS
