@@ -1396,7 +1396,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				Node *node = e->get();
 				if (node) {
 					node->set_scene_inherited_state(Ref<SceneState>());
-					scene_tree->update_tree();
+					editor_data->reload_scene_from_memory(editor_data->get_edited_scene(), true);
+					scene_tree->clear_cache();
 					InspectorDock::get_inspector_singleton()->update_tree();
 				}
 			}

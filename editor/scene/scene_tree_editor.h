@@ -248,6 +248,7 @@ public:
 
 	void set_show_enabled_subscene(bool p_show) { show_enabled_subscene = p_show; }
 	void set_valid_types(const Vector<StringName> &p_valid);
+	void clear_cache();
 
 	inline void update_tree() { _update_tree(); }
 
