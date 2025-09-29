@@ -581,8 +581,8 @@ float RendererSceneRender::environment_get_ssr_depth_tolerance(RID p_env) const 
 
 // SSAO
 
-void RendererSceneRender::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_thickness_blend, float p_light_affect, float p_ao_channel_affect) {
-	environment_storage.environment_set_ssao(p_env, p_enable, p_radius, p_intensity, p_power, p_detail, p_horizon, p_sharpness, p_thickness_blend, p_light_affect, p_ao_channel_affect);
+void RendererSceneRender::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_thickness_heuristic, float p_light_affect, float p_ao_channel_affect) {
+	environment_storage.environment_set_ssao(p_env, p_enable, p_radius, p_intensity, p_power, p_detail, p_horizon, p_sharpness, p_thickness_heuristic, p_light_affect, p_ao_channel_affect);
 }
 
 bool RendererSceneRender::environment_get_ssao_enabled(RID p_env) const {
@@ -613,8 +613,8 @@ float RendererSceneRender::environment_get_ssao_sharpness(RID p_env) const {
 	return environment_storage.environment_get_ssao_sharpness(p_env);
 }
 
-float RendererSceneRender::environment_get_ssao_thickness_blend(RID p_env) const {
-	return environment_storage.environment_get_ssao_thickness_blend(p_env);
+float RendererSceneRender::environment_get_ssao_thickness_heuristic(RID p_env) const {
+	return environment_storage.environment_get_ssao_thickness_heuristic(p_env);
 }
 
 float RendererSceneRender::environment_get_ssao_direct_light_affect(RID p_env) const {
