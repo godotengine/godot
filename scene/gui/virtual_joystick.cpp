@@ -34,14 +34,18 @@
 #include "scene/theme/theme_db.h"
 
 void VirtualJoystick::gui_input(const Ref<InputEvent> &p_event) {
+	if (visibility == VISIBILITY_TOUCHSCREEN_ONLY && !DisplayServer::get_singleton()->is_touchscreen_available()) {
+		return;
+	}
+
 	Ref<InputEventScreenTouch> touch = p_event;
 	if (touch.is_valid()) {
 		if (touch->is_pressed()) {
 			if (touch_index == -1 && has_point(touch->get_position())) {
-				Rect2 base_rect = Rect2(base_pos - Vector2(base_size, base_size), Vector2(base_size * 2, base_size * 2));
+				Rect2 base_rect = Rect2(joystick_pos - Vector2(joystick_size, joystick_size), Vector2(joystick_size * 2, joystick_size * 2));
 				if (joystick_mode == JOYSTICK_DYNAMIC || joystick_mode == JOYSTICK_FOLLOWING || (base_rect.has_point(touch->get_position()) && joystick_mode == JOYSTICK_FIXED)) {
 					if (joystick_mode == JOYSTICK_DYNAMIC || joystick_mode == JOYSTICK_FOLLOWING) {
-						base_pos = touch->get_position();
+						joystick_pos = touch->get_position();
 					}
 
 					is_pressed = true;
@@ -76,28 +80,29 @@ void VirtualJoystick::_notification(int p_what) {
 				return;
 			}
 
-			draw_circle(base_pos, base_size, is_pressed ? theme_cache.base_pressed_color : theme_cache.base_normal_color, false, 10, true);
-
-			draw_circle(tip_pos, base_size * 0.5, is_pressed ? theme_cache.tip_pressed_color : theme_cache.tip_normal_color, true, -1, true);
+			draw_circle(joystick_pos, joystick_size, is_pressed ? theme_cache.base_pressed_color : theme_cache.base_normal_color, false, joystick_size * 0.1, true);
+			draw_circle(tip_pos, joystick_size * 0.5, is_pressed ? theme_cache.tip_pressed_color : theme_cache.tip_normal_color, true, -1, true);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			base_pos = Vector2(get_size().x / 2, get_size().y / 2);
-			tip_pos = base_pos;
-			base_default_pos = base_pos;
-			tip_default_pos = tip_pos;
+			joystick_pos = Vector2(get_size().x / 2, get_size().y / 2);
+			tip_pos = joystick_pos;
+		} break;
+
+		case NOTIFICATION_RESIZED: {
+			_reset();
 		} break;
 	}
 }
 
 void VirtualJoystick::_update_joystick(const Vector2 &p_pos) {
-	Vector2 offset = p_pos - base_pos;
+	Vector2 offset = p_pos - joystick_pos;
 	float length = offset.length();
 	Vector2 direction = offset.normalized();
 
 	if (joystick_mode == JOYSTICK_FOLLOWING && length > clampzone_size) {
 		if (has_point(p_pos)) {
-			base_pos = p_pos - direction * clampzone_size;
+			joystick_pos = p_pos - direction * clampzone_size;
 		}
 	}
 
@@ -106,7 +111,7 @@ void VirtualJoystick::_update_joystick(const Vector2 &p_pos) {
 		offset = direction * length;
 	}
 
-	tip_pos = base_pos + offset;
+	tip_pos = joystick_pos + offset;
 
 	bool was_pressed = has_input;
 	float deadzone_size = _get_deadzone_size();
@@ -177,8 +182,8 @@ void VirtualJoystick::_reset() {
 	input_vector = Vector2();
 	is_flick_canceled = false;
 	touch_index = -1;
-	base_pos = base_default_pos;
-	tip_pos = tip_default_pos;
+	joystick_pos = Vector2(get_size().x * initial_offset_ratio.x, get_size().y * initial_offset_ratio.y);
+	tip_pos = joystick_pos;
 
 	Input *input = Input::get_singleton();
 	for (const String &action : { action_left, action_right, action_down, action_up }) {
@@ -193,6 +198,12 @@ void VirtualJoystick::_reset() {
 void VirtualJoystick::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_joystick_mode", "mode"), &VirtualJoystick::set_joystick_mode);
 	ClassDB::bind_method(D_METHOD("get_joystick_mode"), &VirtualJoystick::get_joystick_mode);
+
+	ClassDB::bind_method(D_METHOD("set_joystick_size", "size"), &VirtualJoystick::set_joystick_size);
+	ClassDB::bind_method(D_METHOD("get_joystick_size"), &VirtualJoystick::get_joystick_size);
+
+	ClassDB::bind_method(D_METHOD("set_initial_offset_ratio", "ratio"), &VirtualJoystick::set_initial_offset_ratio);
+	ClassDB::bind_method(D_METHOD("get_initial_offset_ratio"), &VirtualJoystick::get_initial_offset_ratio);
 
 	ClassDB::bind_method(D_METHOD("set_action_left", "action"), &VirtualJoystick::set_action_left);
 	ClassDB::bind_method(D_METHOD("get_action_left"), &VirtualJoystick::get_action_left);
@@ -216,6 +227,9 @@ void VirtualJoystick::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "joystick_mode", PROPERTY_HINT_ENUM, "Fixed,Dynamic,Following"), "set_joystick_mode", "get_joystick_mode");
 
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "joystick_size", PROPERTY_HINT_RANGE, "10,500,10"), "set_joystick_size", "get_joystick_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "initial_offset_ratio", PROPERTY_HINT_RANGE, "0.0,1,0.01"), "set_initial_offset_ratio", "get_initial_offset_ratio");
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action_left", PROPERTY_HINT_INPUT_NAME), "set_action_left", "get_action_left");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action_right", PROPERTY_HINT_INPUT_NAME), "set_action_right", "get_action_right");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action_up", PROPERTY_HINT_INPUT_NAME), "set_action_up", "get_action_up");
@@ -223,10 +237,35 @@ void VirtualJoystick::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_mode", PROPERTY_HINT_ENUM, "Always,Touchscreen Only"), "set_visibility_mode", "get_visibility_mode");
 
+	BIND_CONSTANT(JOYSTICK_FIXED);
+	BIND_CONSTANT(JOYSTICK_DYNAMIC);
+	BIND_CONSTANT(JOYSTICK_FOLLOWING);
+	BIND_CONSTANT(VISIBILITY_ALWAYS);
+	BIND_CONSTANT(VISIBILITY_TOUCHSCREEN_ONLY);
+
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, VirtualJoystick, base_normal_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, VirtualJoystick, tip_normal_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, VirtualJoystick, base_pressed_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, VirtualJoystick, tip_pressed_color);
+}
+
+void VirtualJoystick::set_joystick_size(float p_size) {
+	joystick_size = p_size;
+	clampzone_size = joystick_size;
+	_reset();
+}
+
+float VirtualJoystick::get_joystick_size() const {
+	return joystick_size;
+}
+
+void VirtualJoystick::set_initial_offset_ratio(const Vector2 &p_ratio) {
+	initial_offset_ratio = p_ratio;
+	_reset();
+}
+
+Vector2 VirtualJoystick::get_initial_offset_ratio() const {
+	return initial_offset_ratio;
 }
 
 void VirtualJoystick::set_joystick_mode(JoystickMode p_mode) {
@@ -278,7 +317,5 @@ VirtualJoystick::VisibilityMode VirtualJoystick::get_visibility_mode() const {
 }
 
 VirtualJoystick::VirtualJoystick() {
-}
-
-VirtualJoystick::~VirtualJoystick() {
+	clampzone_size = joystick_size;	
 }

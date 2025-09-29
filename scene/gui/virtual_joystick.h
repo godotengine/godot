@@ -48,8 +48,9 @@ public:
 	};
 
 private:
-	float_t base_size = 100;
 	JoystickMode joystick_mode = JOYSTICK_FIXED;
+	float joystick_size = 100.0f;
+	Vector2 initial_offset_ratio = Vector2(0.5, 0.5);
 	String action_left = "ui_left";
 	String action_right = "ui_right";
 	String action_up = "ui_up";
@@ -70,13 +71,10 @@ private:
 	Vector2 input_vector = Vector2();
 	bool is_flick_canceled = false;
 	int touch_index = -1;
-	float clampzone_size = 100.0f;
+	float clampzone_size;
 
-	Vector2 base_pos = Vector2(0, 0);
+	Vector2 joystick_pos = Vector2(0, 0);
 	Vector2 tip_pos = Vector2(0, 0);
-
-	Vector2 base_default_pos = Vector2(0, 0);
-	Vector2 tip_default_pos = Vector2(0, 0);
 
 	void _update_joystick(const Vector2 &p_pos);
 	float _get_deadzone_size() const;
@@ -92,6 +90,12 @@ public:
 	void set_joystick_mode(JoystickMode p_mode);
 	JoystickMode get_joystick_mode() const;
 
+	void set_joystick_size(float p_size);
+	float get_joystick_size() const;
+
+	void set_initial_offset_ratio(const Vector2 &p_ratio);
+	Vector2 get_initial_offset_ratio() const;
+
 	void set_action_left(const String &p_action);
 	String get_action_left() const;
 	void set_action_right(const String &p_action);
@@ -105,7 +109,6 @@ public:
 	VisibilityMode get_visibility_mode() const;
 
 	VirtualJoystick();
-	~VirtualJoystick();
 };
 
 VARIANT_ENUM_CAST(VirtualJoystick::JoystickMode);
