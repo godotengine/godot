@@ -203,7 +203,7 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(Geometry
 
 	bool has_read_screen_alpha = p_material->shader_data->uses_screen_texture || p_material->shader_data->uses_depth_texture || p_material->shader_data->uses_normal_texture;
 	bool has_base_alpha = ((p_material->shader_data->uses_alpha && !p_material->shader_data->uses_alpha_clip) || has_read_screen_alpha);
-	bool has_blend_alpha = p_material->shader_data->uses_blend_alpha;
+	bool has_blend_alpha = p_material->shader_data->uses_blend_alpha && !p_material->shader_data->uses_alpha_clip;
 	bool has_alpha = has_base_alpha || has_blend_alpha;
 
 	uint32_t flags = 0;
