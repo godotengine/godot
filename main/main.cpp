@@ -1094,7 +1094,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				arg == "--display-driver" ||
 				arg == "--rendering-method" ||
 				arg == "--rendering-driver" ||
-				arg == "--xr-mode") {
+				arg == "--xr-mode" ||
+				arg == "-l" ||
+				arg == "--language") {
 			if (N) {
 				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(arg);
 				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(N->get());
@@ -2803,6 +2805,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_unobstructed_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_controller_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT
 	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/hand_interaction_profile", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enabled", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_spatial_anchors", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_persistent_anchors", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_builtin_anchor_detection", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_plane_tracking", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_builtin_plane_detection", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_marker_tracking", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_builtin_marker_tracking", false);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/spatial_entity/aruco_dict", PROPERTY_HINT_ENUM, "4x4 50 IDs,4x4 100 IDs,4x4 250 IDs,4x4 1000 IDs,5x5 50 IDs,5x5 100 IDs,5x5 250 IDs,5x5 1000 IDs,6x6 50 IDs,6x6 100 IDs,6x6 250 IDs,6x6 1000 IDs,7x7 50 IDs,7x7 100 IDs,7x7 250 IDs,7x7 1000 IDs"), "15");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/spatial_entity/april_tag_dict", PROPERTY_HINT_ENUM, "4x4H5,5x5H9,6x6H10,6x6H11"), "3");
 	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/eye_gaze_interaction", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/render_model", false);
 
@@ -3842,6 +3854,10 @@ String Main::get_rendering_driver_name() {
 	return rendering_driver;
 }
 
+String Main::get_locale_override() {
+	return locale;
+}
+
 // everything the main loop needs to know about frame timings
 static MainTimerSync main_timer_sync;
 
@@ -4139,7 +4155,17 @@ int Main::start() {
 #endif // TOOLS_ENABLED
 
 	if (script.is_empty() && game_path.is_empty()) {
-		game_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
+		const String main_scene = GLOBAL_GET("application/run/main_scene");
+		if (main_scene.begins_with("uid://")) {
+			ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(main_scene);
+			if (!editor && !ResourceUID::get_singleton()->has_id(id) && !FileAccess::exists(ResourceUID::get_singleton()->get_cache_file())) {
+				OS::get_singleton()->alert("Main scene's path could not be resolved from UID. Make sure the project is imported first. Aborting.");
+				ERR_FAIL_V_MSG(EXIT_FAILURE, "Main scene's path could not be resolved from UID. Make sure the project is imported first. Aborting.");
+			}
+			game_path = ResourceUID::get_singleton()->get_id_path(id);
+		} else {
+			game_path = main_scene;
+		}
 	}
 
 #ifdef TOOLS_ENABLED
@@ -4561,8 +4587,13 @@ int Main::start() {
 				sml->add_current_scene(scene);
 
 #ifdef MACOS_ENABLED
+#ifndef TOOLS_ENABLED
+				if ((FileAccess::exists(OS::get_singleton()->get_bundle_resource_dir().path_join("Assets.car")) && !OS::get_singleton()->get_bundle_icon_name().is_empty()) || (!OS::get_singleton()->get_bundle_icon_path().is_empty())) {
+					has_icon = true; // Bundle has embedded icon, do not override with project icon.
+				}
+#endif
 				String mac_icon_path = GLOBAL_GET("application/config/macos_native_icon");
-				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_ICON) && !mac_icon_path.is_empty()) {
+				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_ICON) && !mac_icon_path.is_empty() && !has_icon) {
 					DisplayServer::get_singleton()->set_native_icon(mac_icon_path);
 					has_icon = true;
 				}

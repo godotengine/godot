@@ -506,8 +506,6 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	}
 
 	if (mm.is_valid()) {
-		state_machine_draw->grab_focus();
-
 		String new_hovered_node_name;
 		HoveredNodeArea new_hovered_node_area = HOVER_NODE_NONE;
 		if (tool_select->is_pressed()) {
@@ -954,7 +952,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		travel_path = playback->get_travel_path();
 	}
 
-	if (state_machine_draw->has_focus()) {
+	if (state_machine_draw->has_focus(true)) {
 		state_machine_draw->draw_rect(Rect2(Point2(), state_machine_draw->get_size()), theme_cache.focus_color, false);
 	}
 	int sep = 3 * EDSCALE;

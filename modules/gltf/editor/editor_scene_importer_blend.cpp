@@ -146,6 +146,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	parameters_map["export_keep_originals"] = unpack_original_images;
 	parameters_map["export_format"] = "GLTF_SEPARATE";
 	parameters_map["export_yup"] = true;
+	parameters_map["export_import_convert_lighting_mode"] = "COMPAT";
 
 	if (p_options.has(SNAME("blender/nodes/custom_properties")) && p_options[SNAME("blender/nodes/custom_properties")]) {
 		parameters_map["export_extras"] = true;
@@ -515,6 +516,8 @@ void EditorFileSystemImportFormatSupportQueryBlend::_update_icons() {
 }
 
 bool EditorFileSystemImportFormatSupportQueryBlend::query() {
+	ERR_FAIL_COND_V_MSG(DisplayServer::get_singleton()->get_name() == "headless", true, "Blender path is invalid or not set, check your Editor Settings. Cannot configure blender path in headless mode.");
+
 	if (!configure_blender_dialog) {
 		configure_blender_dialog = memnew(ConfirmationDialog);
 		configure_blender_dialog->set_title(TTR("Configure Blender Importer"));

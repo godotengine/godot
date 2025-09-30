@@ -63,7 +63,7 @@ void OpenXRRenderModelManager::_update_models() {
 	ERR_FAIL_NULL(render_model_extension);
 
 	// Make a copy of our current models.
-	HashMap<RID, Node3D *> org_render_models = render_models;
+	HashMap<RID, Node3D *> org_render_models = HashMap<RID, Node3D *>(render_models);
 
 	// Loop through our interaction data so we add new entries.
 	TypedArray<RID> render_model_rids = render_model_extension->render_model_get_all();

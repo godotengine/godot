@@ -504,6 +504,10 @@ void XRFaceModifier3D::_bind_methods() {
 
 void XRFaceModifier3D::set_face_tracker(const StringName &p_tracker_name) {
 	tracker_name = p_tracker_name;
+
+	if (is_inside_tree()) {
+		_get_blend_data();
+	}
 }
 
 StringName XRFaceModifier3D::get_face_tracker() const {

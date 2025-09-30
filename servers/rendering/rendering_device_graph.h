@@ -104,7 +104,7 @@ public:
 
 		Type type = TYPE_NONE;
 		int32_t adjacent_command_list_index = -1;
-		RDD::MemoryBarrier memory_barrier;
+		RDD::MemoryAccessBarrier memory_barrier;
 		int32_t normalization_barrier_index = -1;
 		int normalization_barrier_count = 0;
 		int32_t transition_barrier_index = -1;
@@ -150,6 +150,7 @@ public:
 		RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE,
 		RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ,
 		RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ,
+		RESOURCE_USAGE_GENERAL,
 		RESOURCE_USAGE_MAX
 	};
 
@@ -662,7 +663,7 @@ private:
 	struct BarrierGroup {
 		BitField<RDD::PipelineStageBits> src_stages = {};
 		BitField<RDD::PipelineStageBits> dst_stages = {};
-		RDD::MemoryBarrier memory_barrier;
+		RDD::MemoryAccessBarrier memory_barrier;
 		LocalVector<RDD::TextureBarrier> normalization_barriers;
 		LocalVector<RDD::TextureBarrier> transition_barriers;
 #if USE_BUFFER_BARRIERS

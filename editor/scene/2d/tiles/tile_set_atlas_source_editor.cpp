@@ -867,7 +867,7 @@ void TileSetAtlasSourceEditor::_update_current_tile_data_editor() {
 	// Find the property to use.
 	String property;
 	if (tools_button_group->get_pressed_button() == tool_select_button && tile_inspector->is_visible() && !tile_inspector->get_selected_path().is_empty()) {
-		Vector<String> components = tile_inspector->get_selected_path().split("/");
+		Vector<String> components = tile_inspector->get_selected_path().split("/", true, 1);
 		if (components.size() >= 1) {
 			property = components[0];
 
@@ -1476,8 +1476,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 				undo_redo->add_do_method(tile_set_atlas_source, "move_tile_in_atlas", drag_start_tile_shape.position, drag_current_tile, tile_set_atlas_source->get_tile_size_in_atlas(drag_current_tile));
 				undo_redo->add_do_method(this, "_set_selection_from_array", _get_selection_as_array());
 				undo_redo->add_undo_method(tile_set_atlas_source, "move_tile_in_atlas", drag_current_tile, drag_start_tile_shape.position, drag_start_tile_shape.size);
-				Array array = { drag_start_tile_shape.position, 0 };
-				undo_redo->add_undo_method(this, "_set_selection_from_array", array);
+				undo_redo->add_undo_method(this, "_set_selection_from_array", Array{ drag_start_tile_shape.position, 0 });
 				undo_redo->commit_action(false);
 			}
 			break;
@@ -1574,8 +1573,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 				undo_redo->add_do_method(tile_set_atlas_source, "move_tile_in_atlas", drag_start_tile_shape.position, drag_current_tile, tile_set_atlas_source->get_tile_size_in_atlas(drag_current_tile));
 				undo_redo->add_do_method(this, "_set_selection_from_array", _get_selection_as_array());
 				undo_redo->add_undo_method(tile_set_atlas_source, "move_tile_in_atlas", drag_current_tile, drag_start_tile_shape.position, drag_start_tile_shape.size);
-				Array array = { drag_start_tile_shape.position, 0 };
-				undo_redo->add_undo_method(this, "_set_selection_from_array", array);
+				undo_redo->add_undo_method(this, "_set_selection_from_array", Array{ drag_start_tile_shape.position, 0 });
 				undo_redo->commit_action(false);
 			}
 			break;
@@ -1663,8 +1661,7 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 		case TILE_CREATE: {
 			undo_redo->create_action(TTR("Create a tile"));
 			undo_redo->add_do_method(tile_set_atlas_source, "create_tile", menu_option_coords);
-			Array array = { menu_option_coords, 0 };
-			undo_redo->add_do_method(this, "_set_selection_from_array", array);
+			undo_redo->add_do_method(this, "_set_selection_from_array", Array{ menu_option_coords, 0 });
 			undo_redo->add_undo_method(tile_set_atlas_source, "remove_tile", menu_option_coords);
 			undo_redo->add_undo_method(this, "_set_selection_from_array", _get_selection_as_array());
 			undo_redo->commit_action();

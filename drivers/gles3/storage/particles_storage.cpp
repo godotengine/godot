@@ -1282,7 +1282,7 @@ GLuint ParticlesStorage::particles_collision_get_heightfield_framebuffer(RID p_p
 #ifdef DEBUG_ENABLED
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
-			WARN_PRINT("Could create heightmap texture status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
+			WARN_PRINT("Could not create heightmap texture, status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
 		}
 #endif
 		GLES3::Utilities::get_singleton()->texture_allocated_data(particles_collision->heightfield_texture, size.x * size.y * 4, "Particles collision heightfield texture");

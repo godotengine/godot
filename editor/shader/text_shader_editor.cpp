@@ -787,7 +787,7 @@ void TextShaderEditor::_menu_option(int p_option) {
 		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
-		callable_mp((Control *)code_editor->get_text_editor(), &Control::grab_focus).call_deferred();
+		callable_mp((Control *)code_editor->get_text_editor(), &Control::grab_focus).call_deferred(false);
 	}
 }
 
@@ -979,6 +979,13 @@ void TextShaderEditor::edit_shader_include(const Ref<ShaderInclude> &p_shader_in
 	code_editor->set_edited_shader_include(p_shader_inc);
 }
 
+void TextShaderEditor::use_menu_bar_items(MenuButton *p_file_menu, Button *p_make_floating) {
+	p_file_menu->set_switch_on_hover(true);
+	menu_bar_hbox->add_child(p_file_menu);
+	menu_bar_hbox->move_child(p_file_menu, 0);
+	menu_bar_hbox->add_child(p_make_floating);
+}
+
 void TextShaderEditor::save_external_data(const String &p_str) {
 	if (shader.is_null() && shader_inc.is_null()) {
 		disk_changed->hide();
@@ -1025,10 +1032,6 @@ void TextShaderEditor::trim_final_newlines() {
 
 void TextShaderEditor::validate_script() {
 	code_editor->_validate_script();
-}
-
-Control *TextShaderEditor::get_top_bar() {
-	return hbc;
 }
 
 bool TextShaderEditor::is_unsaved() const {
@@ -1204,9 +1207,11 @@ TextShaderEditor::TextShaderEditor() {
 
 	VBoxContainer *main_container = memnew(VBoxContainer);
 	main_container->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	hbc = memnew(HBoxContainer);
+	menu_bar_hbox = memnew(HBoxContainer);
 
 	edit_menu = memnew(MenuButton);
+	edit_menu->set_flat(false);
+	edit_menu->set_theme_type_variation("FlatMenuButton");
 	edit_menu->set_shortcut_context(this);
 	edit_menu->set_text(TTR("Edit"));
 	edit_menu->set_switch_on_hover(true);
@@ -1235,6 +1240,8 @@ TextShaderEditor::TextShaderEditor() {
 	edit_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	search_menu = memnew(MenuButton);
+	search_menu->set_flat(false);
+	search_menu->set_theme_type_variation("FlatMenuButton");
 	search_menu->set_shortcut_context(this);
 	search_menu->set_text(TTR("Search"));
 	search_menu->set_switch_on_hover(true);
@@ -1246,6 +1253,8 @@ TextShaderEditor::TextShaderEditor() {
 	search_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	MenuButton *goto_menu = memnew(MenuButton);
+	goto_menu->set_flat(false);
+	goto_menu->set_theme_type_variation("FlatMenuButton");
 	goto_menu->set_shortcut_context(this);
 	goto_menu->set_text(TTR("Go To"));
 	goto_menu->set_switch_on_hover(true);
@@ -1261,20 +1270,21 @@ TextShaderEditor::TextShaderEditor() {
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &TextShaderEditor::_bookmark_item_pressed));
 
 	add_child(main_container);
-	hbc->add_child(edit_menu);
-	hbc->add_child(search_menu);
-	hbc->add_child(goto_menu);
-	hbc->add_spacer();
+	main_container->add_child(menu_bar_hbox);
+	menu_bar_hbox->add_child(edit_menu);
+	menu_bar_hbox->add_child(search_menu);
+	menu_bar_hbox->add_child(goto_menu);
+	menu_bar_hbox->add_spacer();
 
 	site_search = memnew(Button);
-	site_search->set_flat(true);
+	site_search->set_theme_type_variation(SceneStringName(FlatButton));
 	site_search->connect(SceneStringName(pressed), callable_mp(this, &TextShaderEditor::_menu_option).bind(HELP_DOCS));
 	site_search->set_text(TTR("Online Docs"));
 	site_search->set_tooltip_text(TTR("Open Godot online documentation."));
-	hbc->add_child(site_search);
-	hbc->add_child(memnew(VSeparator));
+	menu_bar_hbox->add_child(site_search);
+	menu_bar_hbox->add_child(memnew(VSeparator));
 
-	hbc->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
+	menu_bar_hbox->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	main_container->add_child(editor_box);

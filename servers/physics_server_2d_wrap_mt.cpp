@@ -42,8 +42,15 @@ void PhysicsServer2DWrapMT::_thread_exit() {
 void PhysicsServer2DWrapMT::_thread_loop() {
 	while (!exit) {
 		WorkerThreadPool::get_singleton()->yield();
-		command_queue.flush_all();
+
+		if (!doing_sync.is_set()) {
+			command_queue.flush_all();
+		}
 	}
+}
+
+void PhysicsServer2DWrapMT::_thread_sync() {
+	doing_sync.set();
 }
 
 /* EVENT QUEUING */
@@ -58,7 +65,7 @@ void PhysicsServer2DWrapMT::step(real_t p_step) {
 
 void PhysicsServer2DWrapMT::sync() {
 	if (create_thread) {
-		command_queue.sync();
+		command_queue.push_and_sync(this, &PhysicsServer2DWrapMT::_thread_sync);
 	} else {
 		command_queue.flush_all(); // Flush all pending from other threads.
 	}
@@ -71,6 +78,10 @@ void PhysicsServer2DWrapMT::flush_queries() {
 
 void PhysicsServer2DWrapMT::end_sync() {
 	physics_server_2d->end_sync();
+
+	if (create_thread) {
+		doing_sync.clear();
+	}
 }
 
 void PhysicsServer2DWrapMT::init() {

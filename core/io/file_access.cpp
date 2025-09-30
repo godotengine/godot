@@ -81,12 +81,12 @@ Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 Ref<FileAccess> FileAccess::create_temp(int p_mode_flags, const String &p_prefix, const String &p_extension, bool p_keep, Error *r_error) {
 	const String ERROR_COMMON_PREFIX = "Error while creating temporary file";
 
-	if (!p_prefix.is_valid_filename()) {
+	if (!p_prefix.is_empty() && !p_prefix.is_valid_filename()) {
 		*r_error = ERR_FILE_BAD_PATH;
 		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: "%s" is not a valid prefix.)", ERROR_COMMON_PREFIX, p_prefix));
 	}
 
-	if (!p_extension.is_valid_filename()) {
+	if (!p_extension.is_empty() && !p_extension.is_valid_filename()) {
 		*r_error = ERR_FILE_BAD_PATH;
 		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: "%s" is not a valid extension.)", ERROR_COMMON_PREFIX, p_extension));
 	}
@@ -467,10 +467,22 @@ String FileAccess::get_line() const {
 	uint8_t c = get_8();
 
 	while (!eof_reached()) {
-		if (c == '\n' || c == '\0' || get_error() != OK) {
+		if (c == '\r' || c == '\n' || c == '\0' || get_error() != OK) {
+			if (c == '\r') {
+				// Check for Windows-style EOL.
+				const uint64_t prev_pos = get_position() - 1;
+				if (unlikely(get_8() != '\n')) {
+					// HACK: We can't simply check the next value in a vacuum, so we risk triggering
+					//  an EOL false-positive in the unlikely event that this `\r` was the final
+					//  value of the file. Unilaterally work around by re-reading the *previous*
+					//  byte (the starting `\r`) to ensure `get_error()` returns `OK`.
+					const_cast<FileAccess *>(this)->seek(prev_pos);
+					get_8();
+				}
+			}
 			line.push_back(0);
 			return String::utf8(line.get_data());
-		} else if (c != '\r') {
+		} else {
 			line.push_back(char(c));
 		}
 
@@ -538,11 +550,11 @@ Vector<String> FileAccess::get_csv_line(const String &p_delim) const {
 	return strings;
 }
 
-String FileAccess::get_as_text(bool p_skip_cr) const {
+String FileAccess::get_as_text() const {
 	uint64_t original_pos = get_position();
 	const_cast<FileAccess *>(this)->seek(0);
 
-	String text = get_as_utf8_string(p_skip_cr);
+	String text = get_as_utf8_string();
 
 	const_cast<FileAccess *>(this)->seek(original_pos);
 
@@ -570,7 +582,7 @@ Vector<uint8_t> FileAccess::get_buffer(int64_t p_length) const {
 	return data;
 }
 
-String FileAccess::get_as_utf8_string(bool p_skip_cr) const {
+String FileAccess::get_as_utf8_string() const {
 	Vector<uint8_t> sourcef;
 	uint64_t len = get_length();
 	sourcef.resize(len + 1);
@@ -581,7 +593,7 @@ String FileAccess::get_as_utf8_string(bool p_skip_cr) const {
 	w[len] = 0;
 
 	String s;
-	s.append_utf8((const char *)w, len, p_skip_cr);
+	s.append_utf8((const char *)w, len);
 	return s;
 }
 
@@ -987,7 +999,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_buffer", "length"), (Vector<uint8_t> (FileAccess::*)(int64_t) const) & FileAccess::get_buffer);
 	ClassDB::bind_method(D_METHOD("get_line"), &FileAccess::get_line);
 	ClassDB::bind_method(D_METHOD("get_csv_line", "delim"), &FileAccess::get_csv_line, DEFVAL(","));
-	ClassDB::bind_method(D_METHOD("get_as_text", "skip_cr"), &FileAccess::get_as_text, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_as_text"), &FileAccess::get_as_text);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_md5", "path"), &FileAccess::get_md5);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_sha256", "path"), &FileAccess::get_sha256);
 	ClassDB::bind_method(D_METHOD("is_big_endian"), &FileAccess::is_big_endian);

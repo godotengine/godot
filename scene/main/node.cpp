@@ -68,7 +68,7 @@ void Node::_notification(int p_notification) {
 				for (int i = 0; i < get_child_count(); i++) {
 					Node *child_node = get_child(i);
 					Window *child_wnd = Object::cast_to<Window>(child_node);
-					if (child_wnd && !child_wnd->is_embedded()) {
+					if (child_wnd && !(child_wnd->is_visible() && (child_wnd->is_embedded() || child_wnd->is_popup()))) {
 						continue;
 					}
 					if (child_node->is_part_of_edited_scene()) {
@@ -1814,14 +1814,30 @@ Node *Node::get_child(int p_index, bool p_include_internal) const {
 
 TypedArray<Node> Node::get_children(bool p_include_internal) const {
 	ERR_THREAD_GUARD_V(TypedArray<Node>());
-	TypedArray<Node> arr;
-	int cc = get_child_count(p_include_internal);
-	arr.resize(cc);
-	for (int i = 0; i < cc; i++) {
-		arr[i] = get_child(i, p_include_internal);
+	_update_children_cache();
+
+	TypedArray<Node> children;
+
+	if (p_include_internal) {
+		children.resize(data.children_cache.size());
+
+		Array::Iterator itr = children.begin();
+		for (const Node *child : data.children_cache) {
+			*itr = child;
+			++itr;
+		}
+	} else {
+		const int size = data.children_cache.size() - data.internal_children_back_count_cache;
+		children.resize(size - data.internal_children_front_count_cache);
+
+		Array::Iterator itr = children.begin();
+		for (int i = data.internal_children_front_count_cache; i < size; i++) {
+			*itr = data.children_cache[i];
+			++itr;
+		}
 	}
 
-	return arr;
+	return children;
 }
 
 Node *Node::_get_child_by_name(const StringName &p_name) const {
@@ -2053,6 +2069,14 @@ Window *Node::get_window() const {
 		return vp->get_base_window();
 	}
 	return nullptr;
+}
+
+Window *Node::get_non_popup_window() const {
+	Window *w = get_window();
+	while (w && w->is_popup()) {
+		w = w->get_parent_visible_window();
+	}
+	return w;
 }
 
 Window *Node::get_last_exclusive_window() const {
@@ -2773,7 +2797,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		nip->set_instance_path(ip->get_instance_path());
 		node = nip;
 
-	} else if ((p_flags & DUPLICATE_USE_INSTANTIATION) && !get_scene_file_path().is_empty()) {
+	} else if ((p_flags & DUPLICATE_USE_INSTANTIATION) && is_instance()) {
 		Ref<PackedScene> res = ResourceLoader::load(get_scene_file_path());
 		ERR_FAIL_COND_V(res.is_null(), nullptr);
 		PackedScene::GenEditState edit_state = PackedScene::GEN_EDIT_STATE_DISABLED;
@@ -2798,7 +2822,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		ERR_FAIL_NULL_V(node, nullptr);
 	}
 
-	if (!get_scene_file_path().is_empty()) { //an instance
+	if (is_instance()) {
 		node->set_scene_file_path(get_scene_file_path());
 		node->data.editable_instance = data.editable_instance;
 	}
@@ -2829,7 +2853,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 
 				node_tree.push_back(descendant);
 
-				if (!descendant->get_scene_file_path().is_empty() && instance_roots.has(descendant->get_owner())) {
+				if (descendant->is_instance() && instance_roots.has(descendant->get_owner())) {
 					instance_roots.push_back(descendant);
 				}
 			}
@@ -3687,8 +3711,9 @@ RID Node::get_accessibility_element() const {
 		return RID();
 	}
 	if (unlikely(data.accessibility_element.is_null())) {
-		if (get_window() && get_window()->get_window_id() != DisplayServer::INVALID_WINDOW_ID) {
-			data.accessibility_element = DisplayServer::get_singleton()->accessibility_create_element(get_window()->get_window_id(), DisplayServer::ROLE_CONTAINER);
+		Window *w = get_non_popup_window();
+		if (w && w->get_window_id() != DisplayServer::INVALID_WINDOW_ID && get_window()->is_visible()) {
+			data.accessibility_element = DisplayServer::get_singleton()->accessibility_create_element(w->get_window_id(), DisplayServer::ROLE_CONTAINER);
 		}
 	}
 	return data.accessibility_element;
@@ -4032,6 +4057,8 @@ String Node::_get_name_num_separator() {
 }
 
 Node::Node() {
+	_define_ancestry(AncestralClass::NODE);
+
 	orphan_node_count++;
 
 	// Default member initializer for bitfield is a C++20 extension, so:

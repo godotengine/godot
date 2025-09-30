@@ -45,7 +45,7 @@ void initialize_theora_module(ModuleInitializationLevel p_level) {
 	switch (p_level) {
 		case MODULE_INITIALIZATION_LEVEL_SERVERS: {
 #ifdef TOOLS_ENABLED
-			if (GD_IS_CLASS_ENABLED(MovieWriterOGV)) {
+			if constexpr (GD_IS_CLASS_ENABLED(MovieWriterOGV)) {
 				writer_ogv = memnew(MovieWriterOGV);
 				MovieWriter::add_writer(writer_ogv);
 			}
@@ -71,7 +71,7 @@ void uninitialize_theora_module(ModuleInitializationLevel p_level) {
 
 		case MODULE_INITIALIZATION_LEVEL_SERVERS: {
 #ifdef TOOLS_ENABLED
-			if (GD_IS_CLASS_ENABLED(MovieWriterOGV)) {
+			if constexpr (GD_IS_CLASS_ENABLED(MovieWriterOGV)) {
 				memdelete(writer_ogv);
 			}
 #endif

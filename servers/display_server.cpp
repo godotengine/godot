@@ -1476,6 +1476,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("window_start_drag", "window_id"), &DisplayServer::window_start_drag, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_start_resize", "edge", "window_id"), &DisplayServer::window_start_resize, DEFVAL(MAIN_WINDOW_ID));
 
+	ClassDB::bind_method(D_METHOD("window_set_color", "color"), &DisplayServer::window_set_color);
+
 	ClassDB::bind_method(D_METHOD("accessibility_should_increase_contrast"), &DisplayServer::accessibility_should_increase_contrast);
 	ClassDB::bind_method(D_METHOD("accessibility_should_reduce_animation"), &DisplayServer::accessibility_should_reduce_animation);
 	ClassDB::bind_method(D_METHOD("accessibility_should_reduce_transparency"), &DisplayServer::accessibility_should_reduce_transparency);

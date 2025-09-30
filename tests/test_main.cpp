@@ -190,6 +190,7 @@
 #include "tests/scene/test_navigation_obstacle_2d.h"
 #include "tests/scene/test_navigation_region_2d.h"
 #include "tests/servers/test_navigation_server_2d.h"
+#include "tests/servers/test_triangle2.h"
 #endif // MODULE_NAVIGATION_2D_ENABLED
 
 #ifdef MODULE_NAVIGATION_3D_ENABLED

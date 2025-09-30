@@ -36,6 +36,10 @@
 #include "core/templates/command_queue_mt.h"
 #include "servers/physics_server_3d.h"
 
+#define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread)
+#define ASYNC_COND_PUSH_AND_RET (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
+#define ASYNC_COND_PUSH_AND_SYNC (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
+
 #ifdef DEBUG_SYNC
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));
 #else
@@ -51,6 +55,8 @@
 #endif
 
 class PhysicsServer3DWrapMT : public PhysicsServer3D {
+	GDSOFTCLASS(PhysicsServer3DWrapMT, PhysicsServer3D);
+
 	mutable PhysicsServer3D *physics_server_3d = nullptr;
 
 	mutable CommandQueueMT command_queue;
@@ -59,11 +65,13 @@ class PhysicsServer3DWrapMT : public PhysicsServer3D {
 	WorkerThreadPool::TaskID server_task_id = WorkerThreadPool::INVALID_TASK_ID;
 	bool exit = false;
 	bool create_thread = false;
+	SafeFlag doing_sync;
 
 	void _assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id);
 	void _thread_exit();
 	void _thread_step(real_t p_delta);
 	void _thread_loop();
+	void _thread_sync();
 
 public:
 #define ServerName PhysicsServer3D

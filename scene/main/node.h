@@ -67,6 +67,8 @@ protected:
 	};
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::NODE;
+
 	// N.B. Any enum stored as a bitfield should be specified as UNSIGNED to work around
 	// some compilers trying to store it as signed, and requiring 1 more bit than necessary.
 	enum ProcessMode : unsigned int {
@@ -500,6 +502,7 @@ public:
 	Node *find_parent(const String &p_pattern) const;
 
 	Window *get_window() const;
+	Window *get_non_popup_window() const;
 	Window *get_last_exclusive_window() const;
 
 	_FORCE_INLINE_ SceneTree *get_tree() const {
@@ -817,6 +820,10 @@ public:
 	}
 	void set_thread_safe(const StringName &p_property, const Variant &p_value);
 	void notify_thread_safe(int p_notification);
+
+	/* HELPER */
+
+	bool is_instance() const { return !data.scene_file_path.is_empty(); }
 
 	// These inherited functions need proper multithread locking when overridden in Node.
 #ifdef DEBUG_ENABLED

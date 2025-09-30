@@ -75,6 +75,7 @@
 		</member>
 		<member name="region_enabled" type="bool" setter="set_region_enabled" getter="is_region_enabled" default="false">
 			If [code]true[/code], texture is cut from a larger atlas texture. See [member region_rect].
+			[b]Note:[/b] When using a custom [Shader] on a [Sprite2D], the [code]UV[/code] shader built-in will refer to the entire texture space. Use the [code]REGION_RECT[/code] built-in to get the currently visible region defined in [member region_rect] instead. See [url=$DOCS_URL/tutorials/shaders/shader_reference/canvas_item_shader.html]CanvasItem shaders[/url] for details.
 		</member>
 		<member name="region_filter_clip_enabled" type="bool" setter="set_region_filter_clip_enabled" getter="is_region_filter_clip_enabled" default="false">
 			If [code]true[/code], the area outside of the [member region_rect] is clipped to avoid bleeding of the surrounding texture pixels. [member region_enabled] must be [code]true[/code].

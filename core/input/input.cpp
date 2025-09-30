@@ -663,6 +663,9 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 				}
 			}
 		}
+		// We don't want this setting to be exposed to the user, because it's not very useful outside of this method.
+		js.info.erase("mapping_handled");
+
 		_set_joypad_mapping(js, mapping);
 	} else {
 		js.connected = false;
@@ -1753,8 +1756,7 @@ void Input::parse_mapping(const String &p_mapping) {
 void Input::add_joy_mapping(const String &p_mapping, bool p_update_existing) {
 	parse_mapping(p_mapping);
 	if (p_update_existing) {
-		Vector<String> entry = p_mapping.split(",");
-		const String &uid = entry[0];
+		const String uid = p_mapping.get_slicec(',', 0);
 		for (KeyValue<int, Joypad> &E : joy_names) {
 			Joypad &joy = E.value;
 			if (joy.uid == uid) {

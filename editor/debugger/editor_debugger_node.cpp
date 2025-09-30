@@ -404,7 +404,8 @@ void EditorDebuggerNode::_notification(int p_what) {
 
 				EditorRunBar::get_singleton()->get_pause_button()->set_disabled(false);
 				// Switch to remote tree view if so desired.
-				auto_switch_remote_scene_tree = (bool)EDITOR_GET("debugger/auto_switch_to_remote_scene_tree");
+				remote_scene_tree->set_new_session();
+				auto_switch_remote_scene_tree = EDITOR_GET("debugger/auto_switch_to_remote_scene_tree");
 				if (auto_switch_remote_scene_tree) {
 					SceneTreeDock::get_singleton()->show_remote_tree();
 				}

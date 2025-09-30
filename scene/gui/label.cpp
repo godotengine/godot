@@ -256,38 +256,7 @@ void Label::_shape() const {
 		}
 
 		if (para.lines_dirty) {
-			BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::OVERRUN_NO_TRIM;
-			switch (overrun_behavior) {
-				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS_FORCE: {
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
-				} break;
-				case TextServer::OVERRUN_TRIM_ELLIPSIS_FORCE: {
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
-				} break;
-				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					break;
-				case TextServer::OVERRUN_TRIM_ELLIPSIS:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					break;
-				case TextServer::OVERRUN_TRIM_WORD:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-					break;
-				case TextServer::OVERRUN_TRIM_CHAR:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					break;
-				case TextServer::OVERRUN_NO_TRIMMING:
-					break;
-			}
+			BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::get_overrun_flags_from_behavior(overrun_behavior);
 
 			// Fill after min_size calculation.
 
@@ -762,7 +731,7 @@ void Label::_notification(int p_what) {
 			Vector<LabelSettings::StackedShadowData> stacked_shadow_datas = has_settings ? settings->get_stacked_shadow_data() : Vector<LabelSettings::StackedShadowData>();
 			bool rtl_layout = is_layout_rtl();
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				theme_cache.focus_style->draw(ci, Rect2(Point2(0, 0), get_size()));
 			} else {
 				theme_cache.normal_style->draw(ci, Rect2(Point2(0, 0), get_size()));

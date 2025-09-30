@@ -421,9 +421,9 @@ void FileDialog::_save_confirm_pressed() {
 void FileDialog::_post_popup() {
 	ConfirmationDialog::_post_popup();
 	if (mode == FILE_MODE_SAVE_FILE) {
-		filename_edit->grab_focus();
+		filename_edit->grab_focus(true);
 	} else {
-		file_list->grab_focus();
+		file_list->grab_focus(true);
 	}
 
 	set_process_shortcut_input(true);
@@ -882,9 +882,9 @@ void FileDialog::update_file_list() {
 
 	for (const DirInfo &info : filtered_dirs) {
 		if (display_mode == DISPLAY_THUMBNAILS) {
-			file_list->add_item(info.name, theme_cache.folder_thumbnail);
+			file_list->add_item(info.name, info.bundle ? theme_cache.file_thumbnail : theme_cache.folder_thumbnail);
 		} else {
-			file_list->add_item(info.name, theme_cache.folder);
+			file_list->add_item(info.name, info.bundle ? theme_cache.file : theme_cache.folder);
 		}
 		file_list->set_item_icon_modulate(-1, theme_cache.folder_icon_color);
 
@@ -1362,7 +1362,7 @@ void FileDialog::set_access(Access p_access) {
 		case ACCESS_FILESYSTEM: {
 			dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 #ifdef ANDROID_ENABLED
-			set_root_subfolder(OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DESKTOP));
+			set_current_dir(OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DESKTOP));
 #endif
 		} break;
 		case ACCESS_RESOURCES: {
@@ -2035,7 +2035,7 @@ void FileDialog::set_show_filename_filter(bool p_show) {
 		filename_filter->grab_focus();
 	} else {
 		if (filename_filter->has_focus()) {
-			callable_mp((Control *)file_list, &Control::grab_focus).call_deferred();
+			callable_mp((Control *)file_list, &Control::grab_focus).call_deferred(false);
 		}
 	}
 	show_filename_filter = p_show;
@@ -2143,7 +2143,7 @@ FileDialog::FileDialog() {
 
 	favorite_button = memnew(Button);
 	favorite_button->set_theme_type_variation(SceneStringName(FlatButton));
-	favorite_button->set_tooltip_text(TTRC("(Un)favorite current folder."));
+	favorite_button->set_tooltip_text(ETR("(Un)favorite current folder."));
 	top_toolbar->add_child(favorite_button);
 	favorite_button->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::_favorite_pressed));
 

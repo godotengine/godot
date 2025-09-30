@@ -574,13 +574,16 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 						return;
 					}
 
+					const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 					int closest = -1;
+					real_t closest_dist = Math::INF;
 
-					for (int i = editing_points.size() - 1; i >= editing_points.size() - internal_vertices; i--) {
+					for (int i = editing_points.size() - 1; i >= editing_points.size() - internal_vertices && closest_dist >= 8; i--) {
 						Vector2 tuv = mtx.xform(previous_polygon[i]);
-						if (tuv.distance_to(mb->get_position()) < 8) {
+						const real_t dist = tuv.distance_to(mb->get_position());
+						if (dist < grab_threshold && dist < closest_dist) {
 							closest = i;
-							break;
+							closest_dist = dist;
 						}
 					}
 
@@ -625,11 +628,15 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 				}
 
 				if (current_action == ACTION_EDIT_POINT) {
+					const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 					point_drag_index = -1;
-					for (int i = 0; i < editing_points.size(); i++) {
-						if (mtx.xform(editing_points[i]).distance_to(mb->get_position()) < 8) {
+					real_t closest_dist = Math::INF;
+					for (int i = editing_points.size() - 1; i >= 0 && closest_dist >= 8; i--) {
+						const real_t dist = mtx.xform(editing_points[i]).distance_to(mb->get_position());
+						if (dist < grab_threshold && dist < closest_dist) {
 							drag_from = mb->get_position();
 							point_drag_index = i;
+							closest_dist = dist;
 						}
 					}
 
@@ -639,13 +646,16 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 				}
 
 				if (current_action == ACTION_ADD_POLYGON) {
+					const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 					int closest = -1;
+					real_t closest_dist = Math::INF;
 
-					for (int i = editing_points.size() - 1; i >= 0; i--) {
+					for (int i = editing_points.size() - 1; i >= 0 && closest_dist >= 8; i--) {
 						Vector2 tuv = mtx.xform(editing_points[i]);
-						if (tuv.distance_to(mb->get_position()) < 8) {
+						const real_t dist = tuv.distance_to(mb->get_position());
+						if (dist < grab_threshold && dist < closest_dist) {
 							closest = i;
-							break;
+							closest_dist = dist;
 						}
 					}
 

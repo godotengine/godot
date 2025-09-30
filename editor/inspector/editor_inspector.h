@@ -414,6 +414,7 @@ class EditorInspectorSection : public Container {
 		int vertical_separation = 0;
 		int inspector_margin = 0;
 		int indent_size = 0;
+		int key_padding_size = 0;
 
 		Color warning_color;
 		Color prop_subsection;
@@ -710,6 +711,7 @@ class EditorInspector : public ScrollContainer {
 	HashMap<StringName, HashMap<StringName, DocCacheInfo>> doc_cache;
 	HashSet<StringName> restart_request_props;
 	HashMap<String, String> custom_property_descriptions;
+	HashMap<String, String> doc_property_class_remaps;
 
 	HashMap<ObjectID, int> scroll_cache;
 
@@ -767,6 +769,8 @@ class EditorInspector : public ScrollContainer {
 	void _add_meta_confirm();
 	void _show_add_meta_dialog();
 
+	void _handle_menu_option(int p_option);
+	void _add_section_in_tree(EditorInspectorSection *p_section, VBoxContainer *p_current_vbox);
 	static EditorInspector *_get_control_parent_inspector(Control *p_control);
 
 protected:
@@ -827,6 +831,8 @@ public:
 
 	void add_custom_property_description(const String &p_class, const String &p_property, const String &p_description);
 	String get_custom_property_description(const String &p_property) const;
+
+	void remap_doc_property_class(const String &p_property_prefix, const String &p_class);
 
 	void set_object_class(const String &p_class);
 	String get_object_class() const;

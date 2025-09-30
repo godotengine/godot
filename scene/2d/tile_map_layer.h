@@ -243,14 +243,20 @@ public:
 		int physics_layer = 0;
 		Vector2 linear_velocity;
 		real_t angular_velocity = 0.0;
+
 		bool one_way_collision = false;
 		real_t one_way_collision_margin = 0.0;
+
+		int64_t y_origin = 0; // This is only used if one_way_collision is on, to avoid merging polygons vertically in that case.
 
 		bool operator<(const PhysicsBodyKey &p_other) const {
 			if (physics_layer == p_other.physics_layer) {
 				if (linear_velocity == p_other.linear_velocity) {
 					if (angular_velocity == p_other.angular_velocity) {
 						if (one_way_collision == p_other.one_way_collision) {
+							if (one_way_collision && y_origin != p_other.y_origin) {
+								return y_origin < p_other.y_origin;
+							}
 							return one_way_collision_margin < p_other.one_way_collision_margin;
 						}
 						return one_way_collision < p_other.one_way_collision;
@@ -270,7 +276,8 @@ public:
 					linear_velocity == p_other.linear_velocity &&
 					angular_velocity == p_other.angular_velocity &&
 					one_way_collision == p_other.one_way_collision &&
-					one_way_collision_margin == p_other.one_way_collision_margin;
+					one_way_collision_margin == p_other.one_way_collision_margin &&
+					(!one_way_collision || y_origin == p_other.y_origin);
 		}
 	};
 
@@ -280,6 +287,9 @@ public:
 			h = hash_murmur3_one_real(p_hash.linear_velocity.x);
 			h = hash_murmur3_one_real(p_hash.linear_velocity.y, h);
 			h = hash_murmur3_one_real(p_hash.angular_velocity, h);
+			if (p_hash.one_way_collision) {
+				h = hash_murmur3_one_32(p_hash.y_origin, h);
+			}
 			return h;
 		}
 	};
@@ -430,14 +440,15 @@ private:
 	// Per-system methods.
 #ifdef DEBUG_ENABLED
 	HashMap<Vector2i, Ref<DebugQuadrant>> debug_quadrant_map;
-	bool _debug_was_cleaned_up = false;
+	bool _debug_was_cleaned_up = true;
 	void _debug_update(bool p_force_cleanup);
 	void _debug_quadrants_update_cell(CellData &r_cell_data);
 	void _get_debug_quadrant_for_cell(const Vector2i &p_coords);
 #endif // DEBUG_ENABLED
 
 	HashMap<Vector2i, Ref<RenderingQuadrant>> rendering_quadrant_map;
-	bool _rendering_was_cleaned_up = false;
+	bool _rendering_was_cleaned_up = true;
+	bool _occlusion_was_cleaned_up = true;
 	void _rendering_update(bool p_force_cleanup);
 	void _rendering_notification(int p_what);
 	void _rendering_quadrants_update_cell(CellData &r_cell_data, SelfList<RenderingQuadrant>::List &r_dirty_rendering_quadrant_list);
@@ -450,7 +461,7 @@ private:
 #ifndef PHYSICS_2D_DISABLED
 	HashMap<Vector2i, Ref<PhysicsQuadrant>> physics_quadrant_map;
 	HashMap<RID, Vector2i> bodies_coords; // Mapping for RID to coords.
-	bool _physics_was_cleaned_up = false;
+	bool _physics_was_cleaned_up = true;
 	void _physics_update(bool p_force_cleanup);
 	void _physics_notification(int p_what);
 	void _physics_quadrants_update_cell(CellData &r_cell_data, SelfList<PhysicsQuadrant>::List &r_dirty_physics_quadrant_list);
@@ -462,7 +473,7 @@ private:
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef NAVIGATION_2D_DISABLED
-	bool _navigation_was_cleaned_up = false;
+	bool _navigation_was_cleaned_up = true;
 	void _navigation_update(bool p_force_cleanup);
 	void _navigation_notification(int p_what);
 	void _navigation_clear_cell(CellData &r_cell_data);
@@ -472,7 +483,7 @@ private:
 #endif // DEBUG_ENABLED
 #endif // NAVIGATION_2D_DISABLED
 
-	bool _scenes_was_cleaned_up = false;
+	bool _scenes_was_cleaned_up = true;
 	void _scenes_update(bool p_force_cleanup);
 	void _scenes_clear_cell(CellData &r_cell_data);
 	void _scenes_update_cell(CellData &r_cell_data);

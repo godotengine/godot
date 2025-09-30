@@ -1935,7 +1935,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 
 					// Transform gizmo
-					if (_transform_gizmo_select(_edit.mouse_pos)) {
+					if (transform_gizmo_visible && _transform_gizmo_select(_edit.mouse_pos)) {
 						break;
 					}
 
@@ -2203,7 +2203,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (spatial_editor->get_current_hover_gizmo().is_null() && !m->get_button_mask().has_flag(MouseButtonMask::LEFT) && _edit.gizmo.is_null()) {
+		if (transform_gizmo_visible && spatial_editor->get_current_hover_gizmo().is_null() && !m->get_button_mask().has_flag(MouseButtonMask::LEFT) && _edit.gizmo.is_null()) {
 			_transform_gizmo_select(_edit.mouse_pos, true);
 		}
 
@@ -2432,7 +2432,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, true);
 				_edit.gizmo = Ref<EditorNode3DGizmo>();
 			}
-			if (k->get_keycode() == Key::ESCAPE && !cursor.region_select) {
+			if (k->get_keycode() == Key::ESCAPE && !cursor.region_select && !k->is_echo()) {
 				_clear_selected();
 				return;
 			}
@@ -5225,7 +5225,7 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 		selected_files = d["files"];
 	}
 
-	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list();
+	const List<Node *> &selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list();
 	Node *root_node = EditorNode::get_singleton()->get_edited_scene();
 	if (selected_nodes.size() > 0) {
 		Node *selected_node = selected_nodes.front()->get();
@@ -5664,6 +5664,7 @@ void Node3DEditorViewport::finish_transform() {
 	spatial_editor->update_transform_gizmo();
 	surface->queue_redraw();
 	set_process_input(false);
+	clicked = ObjectID();
 }
 
 // Register a shortcut and also add it as an input action with the same events.
@@ -8069,6 +8070,38 @@ void Node3DEditor::_finish_grid() {
 	}
 }
 
+void Node3DEditor::update_gizmo_opacity() {
+	if (!origin_instance.is_valid()) {
+		return;
+	}
+
+	const float opacity = EDITOR_GET("editors/3d/manipulator_gizmo_opacity");
+
+	for (int i = 0; i < 3; i++) {
+		Color col = gizmo_color[i]->get_albedo();
+		col.a = opacity;
+		gizmo_color[i]->set_albedo(col);
+
+		col = gizmo_color_hl[i]->get_albedo();
+		col.a = 1.0;
+		gizmo_color_hl[i]->set_albedo(col);
+
+		col = plane_gizmo_color[i]->get_albedo();
+		col.a = opacity;
+		plane_gizmo_color[i]->set_albedo(col);
+
+		col = plane_gizmo_color_hl[i]->get_albedo();
+		col.a = 1.0;
+		plane_gizmo_color_hl[i]->set_albedo(col);
+	}
+}
+
+void Node3DEditor::_on_editor_settings_changed() {
+	if (EditorSettings::get_singleton()->get_changed_settings().has("editors/3d/manipulator_gizmo_opacity")) {
+		update_gizmo_opacity();
+	}
+}
+
 void Node3DEditor::update_grid() {
 	const Camera3D::ProjectionType current_projection = viewports[0]->camera->get_projection();
 
@@ -8384,7 +8417,7 @@ void Node3DEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	snap_key_enabled = Input::get_singleton()->is_key_pressed(Key::CTRL);
+	snap_key_enabled = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 }
 
 void Node3DEditor::_sun_environ_settings_pressed() {
@@ -8522,6 +8555,7 @@ void Node3DEditor::_notification(int p_what) {
 			environ_state->set_custom_minimum_size(environ_vb->get_combined_minimum_size());
 
 			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditor::update_all_gizmos).bind(Variant()));
+			EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditor::_on_editor_settings_changed));
 		} break;
 
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
@@ -8542,6 +8576,7 @@ void Node3DEditor::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			_finish_indicators();
+			EditorSettings::get_singleton()->disconnect("settings_changed", callable_mp(this, &Node3DEditor::_on_editor_settings_changed));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {

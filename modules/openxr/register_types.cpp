@@ -75,6 +75,11 @@
 #include "extensions/openxr_valve_analog_threshold_extension.h"
 #include "extensions/openxr_visibility_mask_extension.h"
 #include "extensions/openxr_wmr_controller_extension.h"
+#include "extensions/spatial_entities/openxr_spatial_entity_extension.h"
+
+#include "extensions/spatial_entities/openxr_spatial_anchor.h"
+#include "extensions/spatial_entities/openxr_spatial_marker_tracking.h"
+#include "extensions/spatial_entities/openxr_spatial_plane_tracking.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/openxr_editor_plugin.h"
@@ -168,6 +173,23 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRAPI::register_extension_wrapper(render_model_extension);
 			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRRenderModelExtension", render_model_extension));
 
+			// Register spatial entity extensions
+			OpenXRSpatialEntityExtension *spatial_entity_extension = memnew(OpenXRSpatialEntityExtension);
+			OpenXRAPI::register_extension_wrapper(spatial_entity_extension);
+			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRSpatialEntityExtension", spatial_entity_extension));
+
+			OpenXRSpatialAnchorCapability *anchor_capability = memnew(OpenXRSpatialAnchorCapability);
+			OpenXRAPI::register_extension_wrapper(anchor_capability);
+			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRSpatialAnchorCapability", anchor_capability));
+
+			OpenXRSpatialPlaneTrackingCapability *plane_tracking_capability = memnew(OpenXRSpatialPlaneTrackingCapability);
+			OpenXRAPI::register_extension_wrapper(plane_tracking_capability);
+			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRSpatialPlaneTrackingCapability", plane_tracking_capability));
+
+			OpenXRSpatialMarkerTrackingCapability *marker_tracking_capability = memnew(OpenXRSpatialMarkerTrackingCapability);
+			OpenXRAPI::register_extension_wrapper(marker_tracking_capability);
+			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRSpatialMarkerTrackingCapability", marker_tracking_capability));
+
 			// register gated extensions
 			if (int(GLOBAL_GET("xr/openxr/extensions/debug_utils")) > 0) {
 				OpenXRAPI::register_extension_wrapper(memnew(OpenXRDebugUtilsExtension));
@@ -245,6 +267,39 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(OpenXRVisibilityMask);
 		GDREGISTER_CLASS(OpenXRRenderModel);
 		GDREGISTER_CLASS(OpenXRRenderModelManager);
+
+		GDREGISTER_CLASS(OpenXRSpatialEntityExtension);
+		GDREGISTER_VIRTUAL_CLASS(OpenXRSpatialEntityTracker);
+		GDREGISTER_CLASS(OpenXRAnchorTracker);
+		GDREGISTER_CLASS(OpenXRPlaneTracker);
+		GDREGISTER_CLASS(OpenXRMarkerTracker);
+
+		GDREGISTER_VIRTUAL_CLASS(OpenXRStructureBase);
+
+		GDREGISTER_VIRTUAL_CLASS(OpenXRSpatialCapabilityConfigurationBaseHeader);
+		GDREGISTER_CLASS(OpenXRSpatialCapabilityConfigurationAnchor);
+		GDREGISTER_CLASS(OpenXRSpatialCapabilityConfigurationQrCode);
+		GDREGISTER_CLASS(OpenXRSpatialCapabilityConfigurationMicroQrCode);
+		GDREGISTER_CLASS(OpenXRSpatialCapabilityConfigurationAruco);
+		GDREGISTER_CLASS(OpenXRSpatialCapabilityConfigurationAprilTag);
+		GDREGISTER_CLASS(OpenXRSpatialContextPersistenceConfig);
+		GDREGISTER_CLASS(OpenXRSpatialCapabilityConfigurationPlaneTracking);
+		GDREGISTER_VIRTUAL_CLASS(OpenXRSpatialComponentData);
+		GDREGISTER_CLASS(OpenXRSpatialComponentBounded2DList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentBounded3DList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentParentList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentMesh2DList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentMesh3DList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentPlaneAlignmentList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentPolygon2DList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentPlaneSemanticLabelList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentMarkerList);
+		GDREGISTER_CLASS(OpenXRSpatialQueryResultData);
+		GDREGISTER_CLASS(OpenXRSpatialComponentAnchorList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentPersistenceList);
+		GDREGISTER_CLASS(OpenXRSpatialAnchorCapability);
+		GDREGISTER_CLASS(OpenXRSpatialPlaneTrackingCapability);
+		GDREGISTER_CLASS(OpenXRSpatialMarkerTrackingCapability);
 
 		XRServer *xr_server = XRServer::get_singleton();
 		if (xr_server) {

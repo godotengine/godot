@@ -679,7 +679,7 @@ Patches:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: 0.24 (7b2d4f4c817aea55d74dcd65d9763ac2ca608026, 2025)
+- Version: 0.25 (6daea4695c48338363b08022d2fb15deaef6ac09, 2025)
 - License: MIT
 
 Files extracted from upstream repository:
@@ -864,7 +864,7 @@ Files extracted from the upstream source:
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.1.49 (977f6675bc0057d5a54ed290cb5c71c699b1c0ab, 2025)
+- Version: 1.1.52 (a664705dee0b1041096d1e21b539bf9fb2489f00, 2025)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -1042,6 +1042,7 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-revert-tvglines-bezier-precision.patch` (GH-96658)
+- `0002-use-heap-alloc.patch` (GH-109530)
 
 
 ## tinyexr
@@ -1156,7 +1157,7 @@ Files extracted from upstream source:
 # wayland-protocols
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
-- Version: 1.33 (54346071a5f211f2c482889f2c8ee3b5ecda63ab, 2024)
+- Version: 1.45 (54346071a5f211f2c482889f2c8ee3b5ecda63ab, 2025)
 - License: MIT
 
 Files extracted from upstream source:

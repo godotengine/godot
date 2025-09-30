@@ -317,8 +317,15 @@ void CanvasItem::_notification(int p_what) {
 
 				if (ci) {
 					parent_visible_in_tree = ci->is_visible_in_tree();
-					C = ci->children_items.push_back(this);
+
+					data.index_in_parent = ci->data.canvas_item_children.size();
+					ci->data.canvas_item_children.push_back(this);
 				} else {
+					if (data.index_in_parent != UINT32_MAX) {
+						data.index_in_parent = UINT32_MAX;
+						ERR_PRINT("CanvasItem ENTER_TREE detected without EXIT_TREE, recovering.");
+					}
+
 					CanvasLayer *cl = Object::cast_to<CanvasLayer>(parent);
 
 					if (cl) {
@@ -388,10 +395,27 @@ void CanvasItem::_notification(int p_what) {
 				get_tree()->xform_change_list.remove(&xform_change);
 			}
 			_exit_canvas();
-			if (C) {
-				Object::cast_to<CanvasItem>(get_parent())->children_items.erase(C);
-				C = nullptr;
+
+			CanvasItem *parent = Object::cast_to<CanvasItem>(get_parent());
+			if (parent) {
+				if (data.index_in_parent != UINT32_MAX) {
+					// Aliases
+					uint32_t c = data.index_in_parent;
+					LocalVector<CanvasItem *> &parent_children = parent->data.canvas_item_children;
+
+					parent_children.remove_at_unordered(c);
+
+					// After unordered remove, we need to inform the moved child
+					// what their new id is in the parent children list.
+					if (parent_children.size() > c) {
+						parent_children[c]->data.index_in_parent = c;
+					}
+				} else {
+					ERR_PRINT("CanvasItem index_in_parent unset at EXIT_TREE.");
+				}
 			}
+			data.index_in_parent = UINT32_MAX;
+
 			if (window) {
 				window->disconnect(SceneStringName(visibility_changed), callable_mp(this, &CanvasItem::_window_visibility_changed));
 				window = nullptr;
@@ -752,8 +776,10 @@ void CanvasItem::draw_polyline_colors(const Vector<Point2> &p_points, const Vect
 	RenderingServer::get_singleton()->canvas_item_add_polyline(canvas_item, p_points, p_colors, p_width, p_antialiased);
 }
 
-void CanvasItem::draw_arc(const Vector2 &p_center, real_t p_radius, real_t p_start_angle, real_t p_end_angle, int p_point_count, const Color &p_color, real_t p_width, bool p_antialiased) {
+void CanvasItem::draw_ellipse_arc(const Vector2 &p_center, real_t p_major, real_t p_minor, real_t p_start_angle, real_t p_end_angle, int p_point_count, const Color &p_color, real_t p_width, bool p_antialiased) {
 	ERR_THREAD_GUARD;
+	ERR_DRAW_GUARD;
+
 	Vector<Point2> points;
 	points.resize(p_point_count);
 	Point2 *points_ptr = points.ptrw();
@@ -762,10 +788,17 @@ void CanvasItem::draw_arc(const Vector2 &p_center, real_t p_radius, real_t p_sta
 	const real_t delta_angle = CLAMP(p_end_angle - p_start_angle, -Math::TAU, Math::TAU);
 	for (int i = 0; i < p_point_count; i++) {
 		real_t theta = (i / (p_point_count - 1.0f)) * delta_angle + p_start_angle;
-		points_ptr[i] = p_center + Vector2(Math::cos(theta), Math::sin(theta)) * p_radius;
+		points_ptr[i] = p_center + Vector2(p_major * Math::cos(theta), p_minor * Math::sin(theta));
 	}
 
 	draw_polyline(points, p_color, p_width, p_antialiased);
+}
+
+void CanvasItem::draw_arc(const Vector2 &p_center, real_t p_radius, real_t p_start_angle, real_t p_end_angle, int p_point_count, const Color &p_color, real_t p_width, bool p_antialiased) {
+	ERR_THREAD_GUARD;
+	ERR_DRAW_GUARD;
+
+	draw_ellipse_arc(p_center, p_radius, p_radius, p_start_angle, p_end_angle, p_point_count, p_color, p_width, p_antialiased);
 }
 
 void CanvasItem::draw_multiline(const Vector<Point2> &p_points, const Color &p_color, real_t p_width, bool p_antialiased) {
@@ -812,18 +845,18 @@ void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_fil
 	}
 }
 
-void CanvasItem::draw_circle(const Point2 &p_pos, real_t p_radius, const Color &p_color, bool p_filled, real_t p_width, bool p_antialiased) {
+void CanvasItem::draw_ellipse(const Point2 &p_pos, real_t p_major, real_t p_minor, const Color &p_color, bool p_filled, real_t p_width, bool p_antialiased) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 
 	if (p_filled) {
 		if (p_width != -1.0) {
-			WARN_PRINT("The draw_circle() \"width\" argument has no effect when \"filled\" is \"true\".");
+			WARN_PRINT("The \"width\" argument has no effect when \"filled\" is \"true\".");
 		}
 
-		RenderingServer::get_singleton()->canvas_item_add_circle(canvas_item, p_pos, p_radius, p_color, p_antialiased);
-	} else if (p_width >= 2.0 * p_radius) {
-		RenderingServer::get_singleton()->canvas_item_add_circle(canvas_item, p_pos, p_radius + 0.5 * p_width, p_color, p_antialiased);
+		RenderingServer::get_singleton()->canvas_item_add_ellipse(canvas_item, p_pos, p_major, p_minor, p_color, p_antialiased);
+	} else if (p_width >= 2.0 * MAX(p_major, p_minor)) {
+		RenderingServer::get_singleton()->canvas_item_add_ellipse(canvas_item, p_pos, p_major + 0.5 * p_width, p_minor + 0.5 * p_width, p_color, p_antialiased);
 	} else {
 		// Tessellation count is hardcoded. Keep in sync with the same variable in `RendererCanvasCull::canvas_item_add_circle()`.
 		const int circle_segments = 64;
@@ -836,8 +869,8 @@ void CanvasItem::draw_circle(const Point2 &p_pos, real_t p_radius, const Color &
 
 		for (int i = 0; i < circle_segments; i++) {
 			float angle = i * circle_point_step;
-			points_ptr[i].x = Math::cos(angle) * p_radius;
-			points_ptr[i].y = Math::sin(angle) * p_radius;
+			points_ptr[i].x = Math::cos(angle) * p_major;
+			points_ptr[i].y = Math::sin(angle) * p_minor;
 			points_ptr[i] += p_pos;
 		}
 		points_ptr[circle_segments] = points_ptr[0];
@@ -846,6 +879,13 @@ void CanvasItem::draw_circle(const Point2 &p_pos, real_t p_radius, const Color &
 
 		RenderingServer::get_singleton()->canvas_item_add_polyline(canvas_item, points, colors, p_width, p_antialiased);
 	}
+}
+
+void CanvasItem::draw_circle(const Point2 &p_pos, real_t p_radius, const Color &p_color, bool p_filled, real_t p_width, bool p_antialiased) {
+	ERR_THREAD_GUARD;
+	ERR_DRAW_GUARD;
+
+	draw_ellipse(p_pos, p_radius, p_radius, p_color, p_filled, p_width, p_antialiased);
 }
 
 void CanvasItem::draw_texture(const Ref<Texture2D> &p_texture, const Point2 &p_pos, const Color &p_modulate) {
@@ -1057,11 +1097,11 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 		}
 	}
 
-	for (CanvasItem *ci : p_node->children_items) {
-		if (ci->top_level) {
-			continue;
+	for (uint32_t n = 0; n < p_node->data.canvas_item_children.size(); n++) {
+		CanvasItem *ci = p_node->data.canvas_item_children[n];
+		if (!ci->top_level) {
+			_notify_transform(ci);
 		}
-		_notify_transform(ci);
 	}
 }
 
@@ -1354,11 +1394,13 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_dashed_line", "from", "to", "color", "width", "dash", "aligned", "antialiased"), &CanvasItem::draw_dashed_line, DEFVAL(-1.0), DEFVAL(2.0), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_polyline", "points", "color", "width", "antialiased"), &CanvasItem::draw_polyline, DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_polyline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_polyline_colors, DEFVAL(-1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_ellipse_arc", "center", "major", "minor", "start_angle", "end_angle", "point_count", "color", "width", "antialiased"), &CanvasItem::draw_ellipse_arc, DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_arc", "center", "radius", "start_angle", "end_angle", "point_count", "color", "width", "antialiased"), &CanvasItem::draw_arc, DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_multiline", "points", "color", "width", "antialiased"), &CanvasItem::draw_multiline, DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_multiline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_multiline_colors, DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_rect", "rect", "color", "filled", "width", "antialiased"), &CanvasItem::draw_rect, DEFVAL(true), DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_circle", "position", "radius", "color", "filled", "width", "antialiased"), &CanvasItem::draw_circle, DEFVAL(true), DEFVAL(-1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_ellipse", "position", "major", "minor", "color", "filled", "width", "antialiased"), &CanvasItem::draw_ellipse, DEFVAL(true), DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_texture", "texture", "position", "modulate"), &CanvasItem::draw_texture, DEFVAL(Color(1, 1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("draw_texture_rect", "texture", "rect", "tile", "modulate", "transpose"), &CanvasItem::draw_texture_rect, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_texture_rect_region", "texture", "rect", "src_rect", "modulate", "transpose", "clip_uv"), &CanvasItem::draw_texture_rect_region, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false), DEFVAL(true));
@@ -1612,9 +1654,11 @@ void CanvasItem::_update_texture_filter_changed(bool p_propagate) {
 	_update_self_texture_filter(texture_filter_cache);
 
 	if (p_propagate) {
-		for (CanvasItem *E : children_items) {
-			if (!E->top_level && E->texture_filter == TEXTURE_FILTER_PARENT_NODE) {
-				E->_update_texture_filter_changed(true);
+		for (uint32_t n = 0; n < data.canvas_item_children.size(); n++) {
+			CanvasItem *ci = data.canvas_item_children[n];
+
+			if (!ci->top_level && ci->texture_filter == TEXTURE_FILTER_PARENT_NODE) {
+				ci->_update_texture_filter_changed(true);
 			}
 		}
 	}
@@ -1666,9 +1710,10 @@ void CanvasItem::_update_texture_repeat_changed(bool p_propagate) {
 	_update_self_texture_repeat(texture_repeat_cache);
 
 	if (p_propagate) {
-		for (CanvasItem *E : children_items) {
-			if (!E->top_level && E->texture_repeat == TEXTURE_REPEAT_PARENT_NODE) {
-				E->_update_texture_repeat_changed(true);
+		for (uint32_t n = 0; n < data.canvas_item_children.size(); n++) {
+			CanvasItem *ci = data.canvas_item_children[n];
+			if (!ci->top_level && ci->texture_repeat == TEXTURE_REPEAT_PARENT_NODE) {
+				ci->_update_texture_repeat_changed(true);
 			}
 		}
 	}
@@ -1728,6 +1773,8 @@ CanvasItem::TextureRepeat CanvasItem::get_texture_repeat_in_tree() const {
 
 CanvasItem::CanvasItem() :
 		xform_change(this) {
+	_define_ancestry(AncestralClass::CANVAS_ITEM);
+
 	canvas_item = RenderingServer::get_singleton()->canvas_item_create();
 }
 

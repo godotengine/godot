@@ -38,7 +38,7 @@
 #include "scene/theme/theme_db.h"
 
 void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
-	if ((ac_popup || get_flag(FLAG_POPUP)) && p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+	if (get_flag(FLAG_POPUP) && p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
 		hide_reason = HIDE_REASON_CANCELED; // ESC pressed, mark as canceled unconditionally.
 		_close_pressed();
 	}
@@ -78,6 +78,8 @@ void Popup::_notification(int p_what) {
 			if (!is_in_edited_scene_root()) {
 				if (is_visible()) {
 					_initialize_visible_parents();
+					popped_up = true;
+					hide_reason = HIDE_REASON_NONE;
 				} else {
 					_deinitialize_visible_parents();
 					if (hide_reason == HIDE_REASON_NONE) {
@@ -85,15 +87,6 @@ void Popup::_notification(int p_what) {
 					}
 					emit_signal(SNAME("popup_hide"));
 					popped_up = false;
-				}
-			}
-		} break;
-
-		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
-			if (!is_in_edited_scene_root()) {
-				if (has_focus()) {
-					popped_up = true;
-					hide_reason = HIDE_REASON_NONE;
 				}
 			}
 		} break;
@@ -115,7 +108,7 @@ void Popup::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
-			if (!is_in_edited_scene_root() && (get_flag(FLAG_POPUP) || ac_popup)) {
+			if (!is_in_edited_scene_root() && get_flag(FLAG_POPUP)) {
 				if (hide_reason == HIDE_REASON_NONE) {
 					hide_reason = HIDE_REASON_UNFOCUSED;
 				}
@@ -126,7 +119,7 @@ void Popup::_notification(int p_what) {
 }
 
 void Popup::_parent_focused() {
-	if (popped_up && (get_flag(FLAG_POPUP) || ac_popup)) {
+	if (popped_up && get_flag(FLAG_POPUP)) {
 		if (hide_reason == HIDE_REASON_NONE) {
 			hide_reason = HIDE_REASON_UNFOCUSED;
 		}

@@ -83,6 +83,9 @@ private:
 	static Error _msg_request_scene_tree(const Array &p_args);
 	static Error _msg_save_node(const Array &p_args);
 	static Error _msg_inspect_objects(const Array &p_args);
+#ifndef DISABLE_DEPRECATED
+	static Error _msg_inspect_object(const Array &p_args);
+#endif // DISABLE_DEPRECATED
 	static Error _msg_clear_selection(const Array &p_args);
 	static Error _msg_suspend_changed(const Array &p_args);
 	static Error _msg_next_frame(const Array &p_args);

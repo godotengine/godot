@@ -150,6 +150,8 @@ public:
 };
 
 class RenderingShaderContainerFormat : public RenderingDeviceCommons {
+	GDSOFTCLASS(RenderingShaderContainerFormat, RenderingDeviceCommons);
+
 public:
 	virtual Ref<RenderingShaderContainer> create_container() const = 0;
 	virtual ShaderLanguageVersion get_shader_language_version() const = 0;

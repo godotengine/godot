@@ -149,6 +149,7 @@ public:
 	void add_vsplit(DockSplitContainer *p_split);
 	void add_hsplit(DockSplitContainer *p_split);
 	void register_dock_slot(DockSlot p_dock_slot, TabContainer *p_tab_container);
+	int get_hsplit_count() const;
 	int get_vsplit_count() const;
 	PopupMenu *get_docks_menu();
 

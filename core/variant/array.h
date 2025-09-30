@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/span.h"
 #include "core/typedefs.h"
 #include "core/variant/variant_deep_duplicate.h"
 
@@ -134,6 +135,7 @@ public:
 	_FORCE_INLINE_ void append(const Variant &p_value) { push_back(p_value); } //for python compatibility
 	void append_array(const Array &p_array);
 	Error resize(int p_new_size);
+	Error reserve(int p_new_size);
 
 	Error insert(int p_pos, const Variant &p_value);
 	void remove_at(int p_pos);
@@ -200,6 +202,11 @@ public:
 	void make_read_only();
 	bool is_read_only() const;
 	static Array create_read_only();
+
+	Span<Variant> span() const;
+	operator Span<Variant>() const {
+		return this->span();
+	}
 
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);

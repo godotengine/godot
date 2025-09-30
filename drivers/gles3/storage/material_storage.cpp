@@ -861,7 +861,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 			GlobalShaderUniforms::Variable *v = material_storage->global_shader_uniforms.variables.getptr(uniform_name);
 			if (v) {
 				if (v->buffer_index >= 0) {
-					WARN_PRINT("Shader uses global parameter texture '" + String(uniform_name) + "', but it changed type and is no longer a texture!.");
+					WARN_PRINT("Shader uses global parameter texture '" + String(uniform_name) + "', but it changed type and is no longer a texture!");
 
 				} else {
 					HashMap<StringName, uint64_t>::Iterator E = used_global_textures.find(uniform_name);
@@ -960,6 +960,9 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
 							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_CUBEMAP_BLACK);
 						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
+							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_CUBEMAP_TRANSPARENT);
+						} break;
 						default: {
 							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_CUBEMAP_WHITE);
 						} break;
@@ -979,6 +982,9 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
 							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_3D_BLACK);
 						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
+							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_3D_TRANSPARENT);
+						} break;
 						default: {
 							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_3D_WHITE);
 						} break;
@@ -988,7 +994,17 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
 				case ShaderLanguage::TYPE_USAMPLER2DARRAY:
 				case ShaderLanguage::TYPE_SAMPLER2DARRAY: {
-					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE);
+					switch (p_texture_uniforms[i].hint) {
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
+							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_2D_ARRAY_BLACK);
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
+							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_2D_ARRAY_TRANSPARENT);
+						} break;
+						default: {
+							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE);
+						} break;
+					}
 				} break;
 
 				default: {
@@ -2398,7 +2414,8 @@ void MaterialStorage::material_free(RID p_rid) {
 	// This happens when the app is being closed.
 	for (KeyValue<StringName, Variant> &E : material->params) {
 		if (E.value.get_type() == Variant::ARRAY) {
-			Array(E.value).clear();
+			// Clear the array for this material only (the array may be shared).
+			E.value = Variant();
 		}
 	}
 

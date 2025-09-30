@@ -30,6 +30,8 @@
 
 #include "editor_resource_tooltip_plugins.h"
 
+#include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/themes/editor_scale.h"
@@ -37,19 +39,14 @@
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
 
-void EditorResourceTooltipPlugin::_thumbnail_ready(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
-	ObjectID trid = p_udata;
-	TextureRect *tr = ObjectDB::get_instance<TextureRect>(trid);
-
-	if (!tr) {
-		return;
+void EditorResourceTooltipPlugin::_thumbnail_ready(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_trect_id) {
+	TextureRect *tr = ObjectDB::get_instance<TextureRect>(p_trect_id);
+	if (tr) {
+		tr->set_texture(p_preview);
 	}
-
-	tr->set_texture(p_preview);
 }
 
 void EditorResourceTooltipPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_thumbnail_ready"), &EditorResourceTooltipPlugin::_thumbnail_ready);
 	ClassDB::bind_method(D_METHOD("request_thumbnail", "path", "control"), &EditorResourceTooltipPlugin::request_thumbnail);
 
 	GDVIRTUAL_BIND(_handles, "type");
@@ -72,8 +69,15 @@ VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p
 
 	{
 		Ref<FileAccess> f = FileAccess::open(p_resource_path, FileAccess::READ);
-		Label *label = memnew(Label(vformat(TTR("Size: %s"), String::humanize_size(f->get_length()))));
-		vb->add_child(label);
+		if (f.is_valid()) {
+			Label *label = memnew(Label(vformat(TTR("Size: %s"), String::humanize_size(f->get_length()))));
+			vb->add_child(label);
+		} else {
+			Label *label = memnew(Label(TTR("Invalid file or broken link.")));
+			label->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			vb->add_child(label);
+			return vb;
+		}
 	}
 
 	if (ResourceLoader::exists(p_resource_path)) {
@@ -86,7 +90,7 @@ VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p
 
 void EditorResourceTooltipPlugin::request_thumbnail(const String &p_path, TextureRect *p_for_control) const {
 	ERR_FAIL_NULL(p_for_control);
-	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, const_cast<EditorResourceTooltipPlugin *>(this), "_thumbnail_ready", p_for_control->get_instance_id());
+	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, callable_mp(const_cast<EditorResourceTooltipPlugin *>(this), &EditorResourceTooltipPlugin::_thumbnail_ready).bind(p_for_control->get_instance_id()));
 }
 
 bool EditorResourceTooltipPlugin::handles(const String &p_resource_type) const {

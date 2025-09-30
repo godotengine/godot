@@ -30,6 +30,7 @@
 
 #include "soft_body_3d_gizmo_plugin.h"
 
+#include "editor/editor_undo_redo_manager.h"
 #include "scene/3d/physics/soft_body_3d.h"
 
 SoftBody3DGizmoPlugin::SoftBody3DGizmoPlugin() {
@@ -106,7 +107,15 @@ Variant SoftBody3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo
 
 void SoftBody3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
 	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_node_3d());
-	soft_body->pin_point_toggle(p_id);
+	const bool is_pinned = soft_body->is_point_pinned(p_id);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(is_pinned ? TTR("Remove SoftBody3D pinned point %d") : TTR("Add SoftBody3D pinned point %d"), p_id));
+	undo_redo->add_do_method(soft_body, "set_point_pinned", p_id, !is_pinned);
+	undo_redo->add_do_method(soft_body, "update_gizmos");
+	undo_redo->add_undo_method(soft_body, "set_point_pinned", p_id, is_pinned);
+	undo_redo->add_undo_method(soft_body, "update_gizmos");
+	undo_redo->commit_action();
 }
 
 bool SoftBody3DGizmoPlugin::is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {

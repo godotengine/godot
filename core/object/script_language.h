@@ -98,7 +98,7 @@ public:
 	static StringName get_global_class_native_base(const String &p_class);
 	static bool is_global_class_abstract(const String &p_class);
 	static bool is_global_class_tool(const String &p_class);
-	static void get_global_class_list(List<StringName> *r_global_classes);
+	static void get_global_class_list(LocalVector<StringName> &r_global_classes);
 	static void get_inheriters_list(const StringName &p_base_type, List<StringName> *r_classes);
 	static void save_global_classes();
 
@@ -140,6 +140,8 @@ protected:
 	}
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::SCRIPT;
+
 	virtual void reload_from_file() override;
 
 	virtual bool can_instantiate() const = 0;
@@ -197,7 +199,9 @@ public:
 
 	virtual const Variant get_rpc_config() const = 0;
 
-	Script() {}
+	Script() {
+		_define_ancestry(AncestralClass::SCRIPT);
+	}
 };
 
 class ScriptLanguage : public Object {

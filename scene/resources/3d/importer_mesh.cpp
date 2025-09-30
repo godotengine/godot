@@ -322,6 +322,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 		if (index_count == 0) {
 			continue; //no lods if no indices
 		}
+		ERR_FAIL_COND_MSG(index_count % 3 != 0, "ImporterMesh::generate_lods: Indexed triangle meshes MUST have an index array with a size that is a multiple of 3, but got " + itos(index_count) + " indices. Cannot generate LODs for this invalid mesh.");
 
 		const Vector3 *vertices_ptr = vertices.ptr();
 		const int *indices_ptr = indices.ptr();
@@ -339,6 +340,8 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 				n_ptr[j + 2] = n;
 			}
 		}
+
+		bool deformable = bones.size() > 0 || blend_shapes.size() > 0;
 
 		if (bones.size() > 0 && weights.size() && bone_transform_vector.size() > 0) {
 			Vector3 *vertices_ptrw = vertices.ptrw();
@@ -426,7 +429,6 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 
 		unsigned int merged_vertex_count = merged_vertices.size();
 		const Vector3 *merged_vertices_ptr = merged_vertices.ptr();
-		const int32_t *merged_indices_ptr = merged_indices.ptr();
 		Vector3 *merged_normals_ptr = merged_normals.ptr();
 
 		{
@@ -471,50 +473,65 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 			}
 		}
 
-		unsigned int index_target = 12; // Start with the smallest target, 4 triangles
-		unsigned int last_index_count = 0;
+		print_verbose("LOD Generation: Triangles " + itos(index_count / 3) + ", vertices " + itos(vertex_count) + " (merged " + itos(merged_vertex_count) + ")" + (deformable ? ", deformable" : ""));
 
-		const float max_mesh_error = 1.0f; // we only need LODs that can be selected by error threshold
-		float mesh_error = 0.0f;
+		const float max_mesh_error = 1.0f; // We only need LODs that can be selected by error threshold.
+		const unsigned min_target_indices = 12;
 
-		while (index_target < index_count) {
+		LocalVector<int> current_indices = merged_indices;
+		float current_error = 0.0f;
+
+		while (current_indices.size() > min_target_indices * 2) {
+			unsigned int current_index_count = current_indices.size();
+			unsigned int target_index_count = MAX(((current_index_count / 3) / 2) * 3, min_target_indices);
+
 			PackedInt32Array new_indices;
-			new_indices.resize(index_count);
+			new_indices.resize(current_index_count);
 
-			const int simplify_options = SurfaceTool::SIMPLIFY_LOCK_BORDER;
+			int simplify_options = SurfaceTool::SIMPLIFY_SPARSE; // Does not change appearance, but speeds up subsequent iterations.
 
+			// Lock geometric boundary in case the mesh is composed of multiple material subsets.
+			simplify_options |= SurfaceTool::SIMPLIFY_LOCK_BORDER;
+
+			if (deformable) {
+				// Improves appearance of deformable objects after deformation by using more regular tessellation.
+				simplify_options |= SurfaceTool::SIMPLIFY_REGULARIZE;
+			}
+
+			float step_error = 0.0f;
 			size_t new_index_count = SurfaceTool::simplify_with_attrib_func(
 					(unsigned int *)new_indices.ptrw(),
-					(const uint32_t *)merged_indices_ptr, index_count,
+					(const uint32_t *)current_indices.ptr(), current_index_count,
 					merged_vertices_f32.ptr(), merged_vertex_count,
 					sizeof(float) * 3, // Vertex stride
 					merged_attribs_ptr,
 					sizeof(float) * attrib_count, // Attribute stride
 					attrib_weights, attrib_count,
 					nullptr, // Vertex lock
-					index_target,
+					target_index_count,
 					max_mesh_error,
 					simplify_options,
-					&mesh_error);
+					&step_error);
 
-			if (new_index_count < last_index_count * 1.5f) {
-				index_target = index_target * 1.5f;
-				continue;
-			}
-
-			if (new_index_count == 0 || (new_index_count >= (index_count * 0.75f))) {
-				break;
-			}
-			if (new_index_count > 5000000) {
-				// This limit theoretically shouldn't be needed, but it's here
-				// as an ad-hoc fix to prevent a crash with complex meshes.
-				// The crash still happens with limit of 6000000, but 5000000 works.
-				// In the future, identify what's causing that crash and fix it.
-				WARN_PRINT("Mesh LOD generation failed for mesh " + get_name() + " surface " + itos(i) + ", mesh is too complex. Some automatic LODs were not generated.");
-				break;
-			}
+			// Accumulate error over iterations. Usually, it's correct to use step_error as is; however, on coarse LODs, we may start
+			// getting *smaller* relative error compared to the previous LOD. To make sure the error is monotonic and strictly increasing,
+			// and to limit the switching (pop) distance, we ensure the error grows by an arbitrary factor each iteration.
+			current_error = MAX(current_error * 1.5f, step_error);
 
 			new_indices.resize(new_index_count);
+			current_indices = new_indices;
+
+			if (new_index_count == 0 || (new_index_count >= current_index_count * 0.75f)) {
+				print_verbose("  LOD stop: got " + itos(new_index_count / 3) + " triangles when asking for " + itos(target_index_count / 3));
+				break;
+			}
+
+			if (current_error > max_mesh_error) {
+				print_verbose("  LOD stop: reached " + rtos(current_error) + " cumulative error (step error " + rtos(step_error) + ")");
+				break;
+			}
+
+			// We need to remap the LOD indices back to the original vertex array; note that we already copied new_indices into current_indices for subsequent iteration.
 			{
 				int *ptrw = new_indices.ptrw();
 				for (unsigned int j = 0; j < new_index_count; j++) {
@@ -523,15 +540,11 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 			}
 
 			Surface::LOD lod;
-			lod.distance = MAX(mesh_error * scale, CMP_EPSILON2);
+			lod.distance = MAX(current_error * scale, CMP_EPSILON2);
 			lod.indices = new_indices;
 			surfaces.write[i].lods.push_back(lod);
-			index_target = MAX(new_index_count, index_target) * 2;
-			last_index_count = new_index_count;
 
-			if (mesh_error == 0.0f) {
-				break;
-			}
+			print_verbose("  LOD " + itos(surfaces.write[i].lods.size()) + ": " + itos(new_index_count / 3) + " triangles, error " + rtos(current_error) + " (step error " + rtos(step_error) + ")");
 		}
 
 		surfaces.write[i].lods.sort_custom<Surface::LODComparator>();
@@ -885,7 +898,7 @@ Ref<ConvexPolygonShape3D> ImporterMesh::create_convex_shape(bool p_clean, bool p
 		Geometry3D::MeshData md;
 		Error err = ConvexHullComputer::convex_hull(vertices, md);
 		if (err == OK) {
-			shape->set_points(md.vertices);
+			shape->set_points(Vector<Vector3>(md.vertices));
 			return shape;
 		} else {
 			ERR_PRINT("Convex shape cleaning failed, falling back to simpler process.");

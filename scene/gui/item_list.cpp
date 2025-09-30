@@ -1383,7 +1383,7 @@ void ItemList::_notification(int p_what) {
 			Ref<StyleBox> sbsel;
 			Ref<StyleBox> cursor;
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				sbsel = theme_cache.selected_focus_style;
 				cursor = theme_cache.cursor_focus_style;
 			} else {
@@ -1507,7 +1507,7 @@ void ItemList::_notification(int p_what) {
 						draw_style_box(sbsel, r);
 					}
 					if (should_draw_hovered_selected_bg) {
-						if (has_focus()) {
+						if (has_focus(true)) {
 							draw_style_box(theme_cache.hovered_selected_focus_style, r);
 						} else {
 							draw_style_box(theme_cache.hovered_selected_style, r);
@@ -1695,7 +1695,7 @@ void ItemList::_notification(int p_what) {
 				draw_style_box(cursor, cursor_rcache);
 			}
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
 				size.x -= (scroll_bar_h->get_max() - scroll_bar_h->get_page());
 				draw_style_box(theme_cache.focus_style, Rect2(Point2(), size));

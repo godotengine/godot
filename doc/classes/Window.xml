@@ -904,7 +904,8 @@
 		</constant>
 		<constant name="FLAG_EXCLUDE_FROM_CAPTURE" value="9" enum="Flags">
 			Windows is excluded from screenshots taken by [method DisplayServer.screen_get_image], [method DisplayServer.screen_get_image_rect], and [method DisplayServer.screen_get_pixel].
-			[b]Note:[/b] This flag is implemented on macOS and Windows.
+			[b]Note:[/b] This flag has no effect in embedded windows.
+			[b]Note:[/b] This flag is implemented on macOS and Windows (10, 20H1).
 			[b]Note:[/b] Setting this flag will prevent standard screenshot methods from capturing a window image, but does [b]NOT[/b] guarantee that other apps won't be able to capture an image. It should not be used as a DRM or security measure.
 		</constant>
 		<constant name="FLAG_POPUP_WM_HINT" value="10" enum="Flags">

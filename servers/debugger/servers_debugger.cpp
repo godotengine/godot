@@ -73,8 +73,7 @@ bool ServersDebugger::ResourceUsage::deserialize(const Array &p_arr) {
 }
 
 Array ServersDebugger::ScriptFunctionSignature::serialize() {
-	Array arr = { name, id };
-	return arr;
+	return Array{ name, id };
 }
 
 bool ServersDebugger::ScriptFunctionSignature::deserialize(const Array &p_arr) {

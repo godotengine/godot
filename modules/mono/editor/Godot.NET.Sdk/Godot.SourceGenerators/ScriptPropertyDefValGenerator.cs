@@ -100,13 +100,13 @@ namespace Godot.SourceGenerators
                     source.Append("partial ");
                     source.Append(containingType.GetDeclarationKeyword());
                     source.Append(" ");
-                    source.Append(containingType.NameWithTypeParameters());
+                    source.Append(containingType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
                     source.Append("\n{\n");
                 }
             }
 
             source.Append("partial class ");
-            source.Append(symbol.NameWithTypeParameters());
+            source.Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
             source.Append("\n{\n");
 
             var exportedMembers = new List<ExportedPropertyMetadata>();

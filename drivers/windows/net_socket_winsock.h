@@ -38,6 +38,8 @@
 #include <ws2tcpip.h>
 
 class NetSocketWinSock : public NetSocket {
+	GDSOFTCLASS(NetSocketWinSock, NetSocket);
+
 private:
 	SOCKET _sock = INVALID_SOCKET;
 	IP::Type _ip_type = IP::TYPE_NONE;

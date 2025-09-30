@@ -41,6 +41,24 @@
 
 #include <type_traits>
 
+template <typename T, typename = void>
+struct is_class_enabled;
+
+template <>
+struct is_class_enabled<Object> : std::true_type {};
+
+template <typename T>
+struct is_class_enabled<T, std::enable_if_t<std::is_base_of_v<Object, T>>> {
+	static constexpr bool value = is_class_enabled<typename T::super_type>::value;
+};
+
+template <typename T>
+inline constexpr bool is_class_enabled_v = is_class_enabled<T>::value;
+
+#define GD_IS_CLASS_ENABLED(m_class) is_class_enabled_v<m_class>
+
+#include "core/disabled_classes.gen.h"
+
 #define DEFVAL(m_defval) (m_defval)
 #define DEFVAL_ARRAY DEFVAL(ClassDB::default_array_arg)
 
@@ -311,9 +329,9 @@ public:
 		T::register_custom_data_to_otdb();
 	}
 
-	static void get_class_list(List<StringName> *p_classes);
+	static void get_class_list(LocalVector<StringName> &p_classes);
 #ifdef TOOLS_ENABLED
-	static void get_extensions_class_list(List<StringName> *p_classes);
+	static void get_extensions_class_list(LocalVector<StringName> &p_classes);
 	static void get_extension_class_list(const Ref<GDExtension> &p_extension, List<StringName> *p_classes);
 	static ObjectGDExtension *get_placeholder_extension(const StringName &p_class);
 #endif
@@ -532,10 +550,10 @@ public:
 };
 
 #define BIND_ENUM_CONSTANT(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant), #m_constant, m_constant);
 
 #define BIND_BITFIELD_FLAG(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_bitfield_name(m_constant, #m_constant), #m_constant, m_constant, true);
+	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_bitfield_name(m_constant), #m_constant, m_constant, true);
 
 #define BIND_CONSTANT(m_constant) \
 	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
@@ -551,25 +569,24 @@ public:
 
 #endif // DEBUG_ENABLED
 
-#define GDREGISTER_CLASS(m_class)             \
-	if (m_class::_class_is_enabled) {         \
-		::ClassDB::register_class<m_class>(); \
+#define GDREGISTER_CLASS(m_class)                 \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
+		::ClassDB::register_class<m_class>();     \
 	}
 #define GDREGISTER_VIRTUAL_CLASS(m_class)         \
-	if (m_class::_class_is_enabled) {             \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_class<m_class>(true); \
 	}
 #define GDREGISTER_ABSTRACT_CLASS(m_class)             \
-	if (m_class::_class_is_enabled) {                  \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {      \
 		::ClassDB::register_abstract_class<m_class>(); \
 	}
 #define GDREGISTER_INTERNAL_CLASS(m_class)             \
-	if (m_class::_class_is_enabled) {                  \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {      \
 		::ClassDB::register_internal_class<m_class>(); \
 	}
-
 #define GDREGISTER_RUNTIME_CLASS(m_class)             \
-	if (m_class::_class_is_enabled) {                 \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {     \
 		::ClassDB::register_runtime_class<m_class>(); \
 	}
 
