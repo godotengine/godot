@@ -3479,6 +3479,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 		call->is_super = true;
 		if (!check(GDScriptTokenizer::Token::PERIOD)) {
 			make_completion_context(COMPLETION_SUPER, call);
+			// There's no make_refactor_rename_context() here as `REFACTOR_RENAME_TYPE_SUPER`
+			// doesn't exist. So this is as intended.
 		}
 		push_multiline(true);
 		if (match(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
