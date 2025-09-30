@@ -21,7 +21,7 @@ def get_opts():
 
     return [
         ("ANDROID_SDK_ROOT", "Path to the Android SDK", get_env_android_sdk_root()),
-        ("ndk_platform", 'Target platform (android-<api>, e.g. "android-24")', "android-24"),
+        ("ndk_platform", 'Target platform (android-<api>, e.g. "android-21")', "android-21"),
         EnumVariable("android_arch", "Target architecture", "armv7", ("armv7", "arm64v8", "x86", "x86_64")),
         BoolVariable("android_neon", "Enable NEON support (armv7 only)", True),
         BoolVariable("store_release", "Editor build for Google Play Store (for official builds only)", False),
@@ -176,7 +176,9 @@ def configure(env):
         CCFLAGS="-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing".split()
     )
     env.Append(CPPDEFINES=["NO_STATVFS", "GLES_ENABLED"])
-    env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
+
+    if get_min_sdk_version(env["ndk_platform"]) >= 24:
+        env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
 
     env["neon_enabled"] = False
     if env["android_arch"] == "x86":
