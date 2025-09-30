@@ -50,6 +50,36 @@
 #include "scene/resources/canvas_item_material.h"
 #include "scene/resources/particle_process_material.h"
 
+static Ref<ShaderMaterial> _make_shader_material(const Ref<Material> &p_from, bool p_copy_params = true) {
+	ERR_FAIL_COND_V(p_from.is_null(), Ref<ShaderMaterial>());
+	ERR_FAIL_COND_V(!p_from->_is_initialized(), Ref<ShaderMaterial>());
+
+	Ref<ShaderMaterial> smat;
+	smat.instantiate();
+
+	Ref<Shader> shader;
+	shader.instantiate();
+
+	String code = RS::get_singleton()->shader_get_code(p_from->get_shader_rid());
+	shader->set_code(code);
+	smat->set_shader(shader);
+
+	if (p_copy_params) {
+		List<PropertyInfo> params;
+		RS::get_singleton()->get_shader_parameter_list(p_from->get_shader_rid(), &params);
+
+		for (const PropertyInfo &E : params) {
+			Variant value = RS::get_singleton()->material_get_param(p_from->get_rid(), E.name);
+			smat->set_shader_parameter(E.name, value);
+		}
+	}
+
+	smat->set_render_priority(p_from->get_render_priority());
+	smat->set_local_to_scene(p_from->is_local_to_scene());
+	smat->set_name(p_from->get_name());
+	return smat;
+}
+
 void MaterialEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -455,20 +485,10 @@ bool StandardMaterial3DConversionPlugin::handles(const Ref<Resource> &p_resource
 
 Ref<Resource> StandardMaterial3DConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<StandardMaterial3D> mat = p_resource;
-	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
-	ERR_FAIL_COND_V(!mat->_is_initialized(), Ref<Resource>());
-
-	Ref<ShaderMaterial> smat;
-	smat.instantiate();
-
-	Ref<Shader> shader;
-	shader.instantiate();
-
-	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
-
-	shader->set_code(code);
-
-	smat->set_shader(shader);
+	Ref<ShaderMaterial> smat = _make_shader_material(mat, false);
+	if (smat.is_null()) {
+		return smat;
+	}
 
 	List<PropertyInfo> params;
 	RS::get_singleton()->get_shader_parameter_list(mat->get_shader_rid(), &params);
@@ -484,10 +504,6 @@ Ref<Resource> StandardMaterial3DConversionPlugin::convert(const Ref<Resource> &p
 			smat->set_shader_parameter(E.name, value);
 		}
 	}
-
-	smat->set_render_priority(mat->get_render_priority());
-	smat->set_local_to_scene(mat->is_local_to_scene());
-	smat->set_name(mat->get_name());
 	return smat;
 }
 
@@ -502,20 +518,10 @@ bool ORMMaterial3DConversionPlugin::handles(const Ref<Resource> &p_resource) con
 
 Ref<Resource> ORMMaterial3DConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<ORMMaterial3D> mat = p_resource;
-	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
-	ERR_FAIL_COND_V(!mat->_is_initialized(), Ref<Resource>());
-
-	Ref<ShaderMaterial> smat;
-	smat.instantiate();
-
-	Ref<Shader> shader;
-	shader.instantiate();
-
-	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
-
-	shader->set_code(code);
-
-	smat->set_shader(shader);
+	Ref<ShaderMaterial> smat = _make_shader_material(mat, false);
+	if (smat.is_null()) {
+		return smat;
+	}
 
 	List<PropertyInfo> params;
 	RS::get_singleton()->get_shader_parameter_list(mat->get_shader_rid(), &params);
@@ -531,10 +537,6 @@ Ref<Resource> ORMMaterial3DConversionPlugin::convert(const Ref<Resource> &p_reso
 			smat->set_shader_parameter(E.name, value);
 		}
 	}
-
-	smat->set_render_priority(mat->get_render_priority());
-	smat->set_local_to_scene(mat->is_local_to_scene());
-	smat->set_name(mat->get_name());
 	return smat;
 }
 
@@ -548,34 +550,7 @@ bool ParticleProcessMaterialConversionPlugin::handles(const Ref<Resource> &p_res
 }
 
 Ref<Resource> ParticleProcessMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
-	Ref<ParticleProcessMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
-	ERR_FAIL_COND_V(!mat->_is_initialized(), Ref<Resource>());
-
-	Ref<ShaderMaterial> smat;
-	smat.instantiate();
-
-	Ref<Shader> shader;
-	shader.instantiate();
-
-	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
-
-	shader->set_code(code);
-
-	smat->set_shader(shader);
-
-	List<PropertyInfo> params;
-	RS::get_singleton()->get_shader_parameter_list(mat->get_shader_rid(), &params);
-
-	for (const PropertyInfo &E : params) {
-		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
-		smat->set_shader_parameter(E.name, value);
-	}
-
-	smat->set_render_priority(mat->get_render_priority());
-	smat->set_local_to_scene(mat->is_local_to_scene());
-	smat->set_name(mat->get_name());
-	return smat;
+	return _make_shader_material(p_resource);
 }
 
 String CanvasItemMaterialConversionPlugin::converts_to() const {
@@ -588,34 +563,7 @@ bool CanvasItemMaterialConversionPlugin::handles(const Ref<Resource> &p_resource
 }
 
 Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
-	Ref<CanvasItemMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
-	ERR_FAIL_COND_V(!mat->_is_initialized(), Ref<Resource>());
-
-	Ref<ShaderMaterial> smat;
-	smat.instantiate();
-
-	Ref<Shader> shader;
-	shader.instantiate();
-
-	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
-
-	shader->set_code(code);
-
-	smat->set_shader(shader);
-
-	List<PropertyInfo> params;
-	RS::get_singleton()->get_shader_parameter_list(mat->get_shader_rid(), &params);
-
-	for (const PropertyInfo &E : params) {
-		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
-		smat->set_shader_parameter(E.name, value);
-	}
-
-	smat->set_render_priority(mat->get_render_priority());
-	smat->set_local_to_scene(mat->is_local_to_scene());
-	smat->set_name(mat->get_name());
-	return smat;
+	return _make_shader_material(p_resource);
 }
 
 String ProceduralSkyMaterialConversionPlugin::converts_to() const {
@@ -628,34 +576,7 @@ bool ProceduralSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resou
 }
 
 Ref<Resource> ProceduralSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
-	Ref<ProceduralSkyMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
-	ERR_FAIL_COND_V(!mat->_is_initialized(), Ref<Resource>());
-
-	Ref<ShaderMaterial> smat;
-	smat.instantiate();
-
-	Ref<Shader> shader;
-	shader.instantiate();
-
-	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
-
-	shader->set_code(code);
-
-	smat->set_shader(shader);
-
-	List<PropertyInfo> params;
-	RS::get_singleton()->get_shader_parameter_list(mat->get_shader_rid(), &params);
-
-	for (const PropertyInfo &E : params) {
-		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
-		smat->set_shader_parameter(E.name, value);
-	}
-
-	smat->set_render_priority(mat->get_render_priority());
-	smat->set_local_to_scene(mat->is_local_to_scene());
-	smat->set_name(mat->get_name());
-	return smat;
+	return _make_shader_material(p_resource);
 }
 
 String PanoramaSkyMaterialConversionPlugin::converts_to() const {
@@ -668,34 +589,7 @@ bool PanoramaSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resourc
 }
 
 Ref<Resource> PanoramaSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
-	Ref<PanoramaSkyMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
-	ERR_FAIL_COND_V(!mat->_is_initialized(), Ref<Resource>());
-
-	Ref<ShaderMaterial> smat;
-	smat.instantiate();
-
-	Ref<Shader> shader;
-	shader.instantiate();
-
-	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
-
-	shader->set_code(code);
-
-	smat->set_shader(shader);
-
-	List<PropertyInfo> params;
-	RS::get_singleton()->get_shader_parameter_list(mat->get_shader_rid(), &params);
-
-	for (const PropertyInfo &E : params) {
-		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
-		smat->set_shader_parameter(E.name, value);
-	}
-
-	smat->set_render_priority(mat->get_render_priority());
-	smat->set_local_to_scene(mat->is_local_to_scene());
-	smat->set_name(mat->get_name());
-	return smat;
+	return _make_shader_material(p_resource);
 }
 
 String PhysicalSkyMaterialConversionPlugin::converts_to() const {
@@ -708,34 +602,7 @@ bool PhysicalSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resourc
 }
 
 Ref<Resource> PhysicalSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
-	Ref<PhysicalSkyMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
-	ERR_FAIL_COND_V(!mat->_is_initialized(), Ref<Resource>());
-
-	Ref<ShaderMaterial> smat;
-	smat.instantiate();
-
-	Ref<Shader> shader;
-	shader.instantiate();
-
-	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
-
-	shader->set_code(code);
-
-	smat->set_shader(shader);
-
-	List<PropertyInfo> params;
-	RS::get_singleton()->get_shader_parameter_list(mat->get_shader_rid(), &params);
-
-	for (const PropertyInfo &E : params) {
-		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
-		smat->set_shader_parameter(E.name, value);
-	}
-
-	smat->set_render_priority(mat->get_render_priority());
-	smat->set_local_to_scene(mat->is_local_to_scene());
-	smat->set_name(mat->get_name());
-	return smat;
+	return _make_shader_material(p_resource);
 }
 
 String FogMaterialConversionPlugin::converts_to() const {
@@ -748,30 +615,5 @@ bool FogMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const
 }
 
 Ref<Resource> FogMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
-	Ref<FogMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
-	ERR_FAIL_COND_V(!mat->_is_initialized(), Ref<Resource>());
-
-	Ref<ShaderMaterial> smat;
-	smat.instantiate();
-
-	Ref<Shader> shader;
-	shader.instantiate();
-
-	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
-
-	shader->set_code(code);
-
-	smat->set_shader(shader);
-
-	List<PropertyInfo> params;
-	RS::get_singleton()->get_shader_parameter_list(mat->get_shader_rid(), &params);
-
-	for (const PropertyInfo &E : params) {
-		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
-		smat->set_shader_parameter(E.name, value);
-	}
-
-	smat->set_render_priority(mat->get_render_priority());
-	return smat;
+	return _make_shader_material(p_resource);
 }
