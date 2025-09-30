@@ -106,6 +106,7 @@
 #include "editor/scene/gradient_editor_plugin.h"
 #include "editor/scene/gui/control_editor_plugin.h"
 #include "editor/scene/gui/font_config_plugin.h"
+#include "editor/scene/gui/margin_container_editor_plugin.h"
 #include "editor/scene/gui/style_box_editor_plugin.h"
 #include "editor/scene/gui/theme_editor_plugin.h"
 #include "editor/scene/material_editor_plugin.h"
@@ -230,6 +231,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<GradientTexture2DEditorPlugin>();
 	EditorPlugins::add_by_type<InputEventEditorPlugin>();
 	EditorPlugins::add_by_type<LightmapGIEditorPlugin>();
+	EditorPlugins::add_by_type<MarginContainerEditorPlugin>();
 	EditorPlugins::add_by_type<MaterialEditorPlugin>();
 	EditorPlugins::add_by_type<MeshEditorPlugin>();
 	EditorPlugins::add_by_type<MeshInstance3DEditorPlugin>();
