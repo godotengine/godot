@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/object/object.h"
+#include "rendering_native_surface.h"
 #include "servers/display_server.h"
 
 class RenderingDeviceDriver;
@@ -40,11 +42,14 @@ public:
 
 private:
 	HashMap<DisplayServer::WindowID, SurfaceID> window_surface_map;
+	HashMap<SurfaceID, DisplayServer::WindowID> surface_window_map;
 
 public:
 	SurfaceID surface_get_from_window(DisplayServer::WindowID p_window) const;
-	Error window_create(DisplayServer::WindowID p_window, const void *p_platform_data);
+	DisplayServer::WindowID window_get_from_surface(SurfaceID p_surface) const;
+	Error window_create(DisplayServer::WindowID p_window, Ref<RenderingNativeSurface> p_native_surface);
 	void window_set_size(DisplayServer::WindowID p_window, uint32_t p_width, uint32_t p_height);
+	void window_get_size(DisplayServer::WindowID p_window, uint32_t &r_width, uint32_t &r_height);
 	void window_set_vsync_mode(DisplayServer::WindowID p_window, DisplayServer::VSyncMode p_vsync_mode);
 	DisplayServer::VSyncMode window_get_vsync_mode(DisplayServer::WindowID p_window) const;
 	void window_destroy(DisplayServer::WindowID p_window);
@@ -93,7 +98,7 @@ public:
 	virtual bool device_supports_present(uint32_t p_device_index, SurfaceID p_surface) const = 0;
 	virtual RenderingDeviceDriver *driver_create() = 0;
 	virtual void driver_free(RenderingDeviceDriver *p_driver) = 0;
-	virtual SurfaceID surface_create(const void *p_platform_data) = 0;
+	virtual SurfaceID surface_create(Ref<RenderingNativeSurface> p_native_surface) = 0;
 	virtual void surface_set_size(SurfaceID p_surface, uint32_t p_width, uint32_t p_height) = 0;
 	virtual void surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) = 0;
 	virtual DisplayServer::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const = 0;

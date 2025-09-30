@@ -101,6 +101,9 @@ public:
 
 	virtual void initialize_joypads() override;
 
+	virtual Error set_cwd(const String &p_cwd) override;
+	String get_asset_path_prefix() { return asset_path_prefix; }
+
 	virtual void set_main_loop(MainLoop *p_main_loop) override;
 	virtual void delete_main_loop() override;
 

@@ -108,6 +108,8 @@ public:
 	void set_vsync_enabled(bool p_enabled);
 	bool is_vsync_enabled() const { return vsync_enabled; }
 
+	uint64_t get_fbo(DisplayServer::WindowID p_window_id) const;
+
 	void release_current();
 	void swap_buffers();
 

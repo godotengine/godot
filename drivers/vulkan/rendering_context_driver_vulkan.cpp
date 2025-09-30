@@ -31,6 +31,8 @@
 #ifdef VULKAN_ENABLED
 
 #include "rendering_context_driver_vulkan.h"
+#include "rendering_native_surface_vulkan.h"
+#include "servers/rendering/rendering_native_surface_external_target.h"
 
 #include "vk_enum_string_helper.h"
 
@@ -388,7 +390,7 @@ RenderingContextDriverVulkan::~RenderingContextDriverVulkan() {
 	}
 
 	if (instance != VK_NULL_HANDLE) {
-		vkDestroyInstance(instance, get_allocation_callbacks(VK_OBJECT_TYPE_INSTANCE));
+		functions.DestroyInstance(instance, get_allocation_callbacks(VK_OBJECT_TYPE_INSTANCE));
 	}
 }
 
@@ -738,6 +740,18 @@ Error RenderingContextDriverVulkan::_initialize_instance() {
 	volkLoadInstance(instance);
 #endif
 
+	functions.CreateDevice = PFN_vkCreateDevice(vkGetInstanceProcAddr(instance, "vkCreateDevice"));
+	functions.DestroyInstance = PFN_vkDestroyInstance(vkGetInstanceProcAddr(instance, "vkDestroyInstance"));
+	functions.DestroySurfaceKHR = PFN_vkDestroySurfaceKHR(vkGetInstanceProcAddr(instance, "vkDestroySurfaceKHR"));
+	functions.EnumerateDeviceExtensionProperties = PFN_vkEnumerateDeviceExtensionProperties(vkGetInstanceProcAddr(instance, "vkEnumerateDeviceExtensionProperties"));
+	functions.EnumeratePhysicalDevices = PFN_vkEnumeratePhysicalDevices(vkGetInstanceProcAddr(instance, "vkEnumeratePhysicalDevices"));
+	functions.GetPhysicalDeviceFeatures = PFN_vkGetPhysicalDeviceFeatures(vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceFeatures"));
+	functions.GetPhysicalDeviceMemoryProperties = PFN_vkGetPhysicalDeviceMemoryProperties(vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceMemoryProperties"));
+	functions.GetPhysicalDeviceProperties = PFN_vkGetPhysicalDeviceProperties(vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceProperties"));
+	functions.GetPhysicalDeviceQueueFamilyProperties = PFN_vkGetPhysicalDeviceQueueFamilyProperties(vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceQueueFamilyProperties"));
+	functions.GetPhysicalDeviceFormatProperties = PFN_vkGetPhysicalDeviceFormatProperties(vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceFormatProperties"));
+	functions.EnumerateInstanceLayerProperties = PFN_vkEnumerateInstanceLayerProperties(vkGetInstanceProcAddr(instance, "vkEnumerateInstanceLayerProperties"));
+
 	// Physical device.
 	if (enabled_instance_extension_names.has(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
 		functions.GetPhysicalDeviceFeatures2 = PFN_vkGetPhysicalDeviceFeatures2(vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceFeatures2"));
@@ -770,6 +784,7 @@ Error RenderingContextDriverVulkan::_initialize_instance() {
 		functions.CmdBeginDebugUtilsLabelEXT = (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(instance, "vkCmdBeginDebugUtilsLabelEXT");
 		functions.CmdEndDebugUtilsLabelEXT = (PFN_vkCmdEndDebugUtilsLabelEXT)vkGetInstanceProcAddr(instance, "vkCmdEndDebugUtilsLabelEXT");
 		functions.SetDebugUtilsObjectNameEXT = (PFN_vkSetDebugUtilsObjectNameEXT)vkGetInstanceProcAddr(instance, "vkSetDebugUtilsObjectNameEXT");
+		functions.SubmitDebugUtilsMessageEXT = (PFN_vkSubmitDebugUtilsMessageEXT)vkGetInstanceProcAddr(instance, "vkSubmitDebugUtilsMessageEXT");
 
 		if (!functions.debug_util_functions_available()) {
 			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "GetProcAddr: Failed to init VK_EXT_debug_utils\nGetProcAddr: Failure");
@@ -825,21 +840,21 @@ Error RenderingContextDriverVulkan::_initialize_devices() {
 
 	} else {
 		uint32_t physical_device_count = 0;
-		VkResult err = vkEnumeratePhysicalDevices(instance, &physical_device_count, nullptr);
+		VkResult err = functions.EnumeratePhysicalDevices(instance, &physical_device_count, nullptr);
 		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 		ERR_FAIL_COND_V_MSG(physical_device_count == 0, ERR_CANT_CREATE, "vkEnumeratePhysicalDevices reported zero accessible devices.\n\nDo you have a compatible Vulkan installable client driver (ICD) installed?\nvkEnumeratePhysicalDevices Failure.");
 
 		driver_devices.resize(physical_device_count);
 		physical_devices.resize(physical_device_count);
 		device_queue_families.resize(physical_device_count);
-		err = vkEnumeratePhysicalDevices(instance, &physical_device_count, physical_devices.ptr());
+		err = functions.EnumeratePhysicalDevices(instance, &physical_device_count, physical_devices.ptr());
 		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 	}
 
 	// Fill the list of driver devices with the properties from the physical devices.
 	for (uint32_t i = 0; i < physical_devices.size(); i++) {
 		VkPhysicalDeviceProperties props;
-		vkGetPhysicalDeviceProperties(physical_devices[i], &props);
+		functions.GetPhysicalDeviceProperties(physical_devices[i], &props);
 
 		Device &driver_device = driver_devices[i];
 		driver_device.name = String::utf8(props.deviceName);
@@ -850,11 +865,11 @@ Error RenderingContextDriverVulkan::_initialize_devices() {
 		_check_driver_workarounds(props, driver_device);
 
 		uint32_t queue_family_properties_count = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &queue_family_properties_count, nullptr);
+		functions.GetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &queue_family_properties_count, nullptr);
 
 		if (queue_family_properties_count > 0) {
 			device_queue_families[i].properties.resize(queue_family_properties_count);
-			vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &queue_family_properties_count, device_queue_families[i].properties.ptr());
+			functions.GetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &queue_family_properties_count, device_queue_families[i].properties.ptr());
 		}
 	}
 
@@ -968,9 +983,28 @@ void RenderingContextDriverVulkan::driver_free(RenderingDeviceDriver *p_driver) 
 	memdelete(p_driver);
 }
 
-RenderingContextDriver::SurfaceID RenderingContextDriverVulkan::surface_create(const void *p_platform_data) {
-	DEV_ASSERT(false && "Surface creation should not be called on the platform-agnostic version of the driver.");
-	return SurfaceID();
+RenderingContextDriver::SurfaceID RenderingContextDriverVulkan::surface_create(Ref<RenderingNativeSurface> p_native_surface) {
+#ifdef EXTERNAL_TARGET_ENABLED
+	Ref<RenderingNativeSurfaceExternalTarget> external_native_surface = Object::cast_to<RenderingNativeSurfaceExternalTarget>(*p_native_surface);
+	if (external_native_surface.is_valid()) {
+		Surface *surface = memnew(Surface);
+		surface->headless = true;
+		surface->width = external_native_surface->get_width();
+		surface->height = external_native_surface->get_height();
+		surface->needs_resize = true;
+
+		SurfaceID surface_id = SurfaceID(surface);
+		external_native_surface->set_surface(surface_id);
+		return surface_id;
+	}
+#endif
+
+	Ref<RenderingNativeSurfaceVulkan> vulkan_native_surface = Object::cast_to<RenderingNativeSurfaceVulkan>(*p_native_surface);
+	ERR_FAIL_COND_V(vulkan_native_surface == nullptr, SurfaceID());
+
+	Surface *surface = memnew(Surface);
+	surface->vk_surface = vulkan_native_surface->get_vulkan_surface();
+	return SurfaceID(surface);
 }
 
 void RenderingContextDriverVulkan::surface_set_size(SurfaceID p_surface, uint32_t p_width, uint32_t p_height) {
@@ -1013,12 +1047,25 @@ bool RenderingContextDriverVulkan::surface_get_needs_resize(SurfaceID p_surface)
 
 void RenderingContextDriverVulkan::surface_destroy(SurfaceID p_surface) {
 	Surface *surface = (Surface *)(p_surface);
-	vkDestroySurfaceKHR(instance, surface->vk_surface, get_allocation_callbacks(VK_OBJECT_TYPE_SURFACE_KHR));
+
+#ifdef EXTERNAL_TARGET_ENABLED
+	const bool should_destroy_surface = !surface->headless;
+#else
+	const bool should_destroy_surface = true;
+#endif
+	if (should_destroy_surface) {
+		functions.DestroySurfaceKHR(instance, surface->vk_surface, get_allocation_callbacks(VK_OBJECT_TYPE_SURFACE_KHR));
+	}
+
 	memdelete(surface);
 }
 
 bool RenderingContextDriverVulkan::is_debug_utils_enabled() const {
 	return enabled_instance_extension_names.has(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+}
+
+bool RenderingContextDriverVulkan::is_extension_enabled(const CharString &p_extension_name) const {
+	return enabled_instance_extension_names.has(p_extension_name);
 }
 
 VkInstance RenderingContextDriverVulkan::instance_get() const {
@@ -1046,7 +1093,12 @@ bool RenderingContextDriverVulkan::queue_family_supports_present(VkPhysicalDevic
 	DEV_ASSERT(p_surface != 0);
 	Surface *surface = (Surface *)(p_surface);
 	VkBool32 present_supported = false;
-	VkResult err = vkGetPhysicalDeviceSurfaceSupportKHR(p_physical_device, p_queue_family_index, surface->vk_surface, &present_supported);
+	VkResult err = VK_SUCCESS;
+	if (surface->vk_surface) {
+		err = functions.GetPhysicalDeviceSurfaceSupportKHR(p_physical_device, p_queue_family_index, surface->vk_surface, &present_supported);
+	} else {
+		present_supported = true;
+	}
 	return err == VK_SUCCESS && present_supported;
 }
 

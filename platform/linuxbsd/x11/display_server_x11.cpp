@@ -43,6 +43,7 @@
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
 
+#include "rendering_native_surface_x11.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #if defined(VULKAN_ENABLED)
@@ -6605,19 +6606,29 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		_update_size_hints(id);
 
 #if defined(RD_ENABLED)
-		if (rendering_context) {
-			union {
+		Ref<RenderingNativeSurfaceX11> x11_surface = nullptr;
 #ifdef VULKAN_ENABLED
-				RenderingContextDriverVulkanX11::WindowPlatformData vulkan;
+		if (rendering_driver == "vulkan") {
+			x11_surface = RenderingNativeSurfaceX11::create(wd.x11_window, x11_display);
+		}
 #endif
-			} wpd;
-#ifdef VULKAN_ENABLED
-			if (rendering_driver == "vulkan") {
-				wpd.vulkan.window = wd.x11_window;
-				wpd.vulkan.display = x11_display;
+
+		if (!rendering_context) {
+			if (x11_surface.is_valid()) {
+				rendering_context = x11_surface->create_rendering_context(rendering_driver);
 			}
-#endif
-			Error err = rendering_context->window_create(id, &wpd);
+
+			if (rendering_context) {
+				if (rendering_context->initialize() != OK) {
+					memdelete(rendering_context);
+					rendering_context = nullptr;
+					ERR_FAIL_V_MSG(INVALID_WINDOW_ID, vformat("Could not initialize %s", rendering_driver));
+				}
+			}
+		}
+
+		if (rendering_context) {
+			Error err = rendering_context->window_create(id, x11_surface);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, vformat("Can't create a %s window", rendering_driver));
 
 			rendering_context->window_set_size(id, win_rect.size.width, win_rect.size.height);
@@ -7050,46 +7061,13 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 
 #if defined(RD_ENABLED)
-#if defined(VULKAN_ENABLED)
+#ifdef VULKAN_ENABLED
 	if (rendering_driver == "vulkan") {
-		rendering_context = memnew(RenderingContextDriverVulkanX11);
-	}
-#endif // VULKAN_ENABLED
-
-	if (rendering_context) {
-		if (rendering_context->initialize() != OK) {
-			memdelete(rendering_context);
-			rendering_context = nullptr;
-#if defined(GLES3_ENABLED)
-			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
-			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
-				WARN_PRINT("Your video card drivers seem not to support the required Vulkan version, switching to OpenGL 3.");
-				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-			} else
-#endif // GLES3_ENABLED
-			{
-				r_error = ERR_CANT_CREATE;
-
-				if (p_rendering_driver == "vulkan") {
-					OS::get_singleton()->alert(
-							vformat("Your video card drivers seem not to support the required Vulkan version.\n\n"
-									"If possible, consider updating your video card drivers or using the OpenGL 3 driver.\n\n"
-									"You can enable the OpenGL 3 driver by starting the engine from the\n"
-									"command line with the command:\n\n    \"%s\" --rendering-driver opengl3\n\n"
-									"If you recently updated your video card drivers, try rebooting.",
-									executable_name),
-							"Unable to initialize Vulkan video driver");
-				}
-
-				ERR_FAIL_MSG(vformat("Could not initialize %s", rendering_driver));
-			}
-		}
 		driver_found = true;
 	}
-#endif // RD_ENABLED
-
+#endif
+#endif
+	// Initialize context and rendering device.
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3" || rendering_driver == "opengl3_es") {
 		if (getenv("DRI_PRIME") == nullptr) {

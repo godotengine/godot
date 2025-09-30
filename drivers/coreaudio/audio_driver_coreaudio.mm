@@ -151,7 +151,7 @@ Error AudioDriverCoreAudio::init() {
 	strdesc.mBytesPerPacket = strdesc.mBytesPerFrame * strdesc.mFramesPerPacket;
 
 	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, kOutputBus, &strdesc, sizeof(strdesc));
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	ERR_FAIL_COND_V_MSG(result != noErr, FAILED, String::utf8("Result: {}").format(result));
 
 	uint32_t latency = Engine::get_singleton()->get_audio_output_latency();
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
@@ -159,7 +159,7 @@ Error AudioDriverCoreAudio::init() {
 
 #ifdef MACOS_ENABLED
 	result = AudioUnitSetProperty(audio_unit, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global, kOutputBus, &buffer_frames, sizeof(UInt32));
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	ERR_FAIL_COND_V_MSG(result != noErr, FAILED, String::utf8("Result: {}").format(result));
 #endif
 
 	unsigned int buffer_size = buffer_frames * channels;
@@ -174,10 +174,10 @@ Error AudioDriverCoreAudio::init() {
 	callback.inputProc = &AudioDriverCoreAudio::output_callback;
 	callback.inputProcRefCon = this;
 	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, kOutputBus, &callback, sizeof(callback));
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	ERR_FAIL_COND_V_MSG(result != noErr, FAILED, String::utf8("Result: {}").format(result));
 
 	result = AudioUnitInitialize(audio_unit);
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	ERR_FAIL_COND_V_MSG(result != noErr, FAILED, String::utf8("Result: {}").format(result));
 
 	if (GLOBAL_GET("audio/driver/enable_input")) {
 		return init_input_device();
@@ -379,7 +379,7 @@ Error AudioDriverCoreAudio::init_input_device() {
 	ERR_FAIL_NULL_V(comp, FAILED);
 
 	OSStatus result = AudioComponentInstanceNew(comp, &input_unit);
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	ERR_FAIL_COND_V_MSG(result != noErr, FAILED, String::utf8("Result: {}").format(result));
 
 #ifdef MACOS_ENABLED
 	AudioObjectPropertyAddress prop;
@@ -388,12 +388,12 @@ Error AudioDriverCoreAudio::init_input_device() {
 	prop.mElement = kAudioObjectPropertyElementMain;
 
 	result = AudioObjectAddPropertyListener(kAudioObjectSystemObject, &prop, &input_device_address_cb, this);
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	ERR_FAIL_COND_V_MSG(result != noErr, FAILED, String::utf8("Result: {}").format(result));
 #endif
 
 	UInt32 flag = 1;
 	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, kInputBus, &flag, sizeof(flag));
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	ERR_FAIL_COND_V_MSG(result != noErr, FAILED, String::utf8("Result: {}").format(result));
 
 	UInt32 size;
 #ifdef MACOS_ENABLED
@@ -402,17 +402,17 @@ Error AudioDriverCoreAudio::init_input_device() {
 	AudioObjectPropertyAddress property = { kAudioHardwarePropertyDefaultInputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
 
 	result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &property, 0, nullptr, &size, &device_id);
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	ERR_FAIL_COND_V_MSG(result != noErr, FAILED, String::utf8("Result: {}").format(result));
 
 	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &device_id, sizeof(AudioDeviceID));
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	ERR_FAIL_COND_V_MSG(result != noErr, FAILED, String::utf8("Result: {}").format(result));
 #endif
 
 	AudioStreamBasicDescription strdesc;
 	memset(&strdesc, 0, sizeof(strdesc));
 	size = sizeof(strdesc);
 	result = AudioUnitGetProperty(input_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &strdesc, &size);
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	ERR_FAIL_COND_V_MSG(result != noErr, FAILED, String::utf8("Result: {}").format(result));
 
 	switch (strdesc.mChannelsPerFrame) {
 		case 1: // Mono
@@ -452,7 +452,7 @@ Error AudioDriverCoreAudio::init_input_device() {
 	strdesc.mBytesPerPacket = strdesc.mBytesPerFrame * strdesc.mFramesPerPacket;
 
 	result = AudioUnitSetProperty(input_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &strdesc, sizeof(strdesc));
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	ERR_FAIL_COND_V_MSG(result != noErr, FAILED, String::utf8("Result: {}").format(result));
 
 	uint32_t latency = Engine::get_singleton()->get_audio_output_latency();
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
@@ -465,10 +465,10 @@ Error AudioDriverCoreAudio::init_input_device() {
 	callback.inputProc = &AudioDriverCoreAudio::input_callback;
 	callback.inputProcRefCon = this;
 	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Global, kInputBus, &callback, sizeof(callback));
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	ERR_FAIL_COND_V_MSG(result != noErr, FAILED, String::utf8("Result: {}").format(result));
 
 	result = AudioUnitInitialize(input_unit);
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	ERR_FAIL_COND_V_MSG(result != noErr, FAILED, String::utf8("Result: {}").format(result));
 
 	print_verbose("CoreAudio: input sampling rate: " + itos(capture_mix_rate) + " Hz");
 	print_verbose("CoreAudio: input audio buffer frames: " + itos(capture_buffer_frames) + " calculated latency: " + itos(capture_buffer_frames * 1000 / capture_mix_rate) + "ms");
@@ -665,14 +665,14 @@ void AudioDriverCoreAudio::_set_device(const String &output_device, bool input) 
 		AudioObjectPropertyAddress property = { elem, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
 
 		OSStatus result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &property, 0, nullptr, &size, &device_id);
-		ERR_FAIL_COND(result != noErr);
+		ERR_FAIL_COND_MSG(result != noErr, String::utf8("Result: {}").format(result));
 
 		found = true;
 	}
 
 	if (found) {
 		OSStatus result = AudioUnitSetProperty(input ? input_unit : audio_unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &device_id, sizeof(AudioDeviceID));
-		ERR_FAIL_COND(result != noErr);
+		ERR_FAIL_COND_MSG(result != noErr, String::utf8("Result: {}").format(result));
 
 		if (input) {
 			// Reset audio input to keep synchronization.

@@ -45,14 +45,16 @@ struct StringName::Table {
 };
 
 void StringName::setup() {
-	ERR_FAIL_COND(configured);
-	for (uint32_t i = 0; i < Table::TABLE_LEN; i++) {
-		Table::table[i] = nullptr;
+	if (!configured) {
+		for (uint32_t i = 0; i < Table::TABLE_LEN; i++) {
+			Table::table[i] = nullptr;
+		}
+		configured = true;
 	}
-	configured = true;
 }
 
 void StringName::cleanup() {
+#ifndef LIBGODOT_ENABLED
 	MutexLock lock(Table::mutex);
 
 #ifdef DEBUG_ENABLED
@@ -104,6 +106,7 @@ void StringName::cleanup() {
 		print_verbose(vformat("StringName: %d unclaimed string names at exit.", lost_strings));
 	}
 	configured = false;
+#endif
 }
 
 void StringName::unref() {

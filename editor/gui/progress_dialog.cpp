@@ -302,3 +302,8 @@ ProgressDialog::ProgressDialog() {
 	cancel_hb->add_spacer();
 	cancel->connect(SceneStringName(pressed), callable_mp(this, &ProgressDialog::_cancel_pressed));
 }
+
+ProgressDialog::~ProgressDialog() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}

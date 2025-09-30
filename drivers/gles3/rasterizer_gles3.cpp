@@ -38,6 +38,7 @@
 #include "core/io/image.h"
 #include "core/os/os.h"
 #include "storage/texture_storage.h"
+#include "storage/utilities.h"
 
 #define _EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB 0x8242
 #define _EXT_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_ARB 0x8243
@@ -236,11 +237,44 @@ void *_egl_load_function_wrapper(const char *p_name) {
 }
 #endif
 
+#ifdef GLAD_ENABLED
+bool RasterizerGLES3::glad_loaded = false;
+GLADloadfunc RasterizerGLES3::gl_get_proc_addr = nullptr;
+
+void RasterizerGLES3::preloadGL(GLADloadfunc p_load_func) {
+	if (glad_loaded) {
+		return;
+	}
+	if (gles_over_gl) {
+		if (p_load_func != nullptr) {
+			if (gladLoadGLES2(p_load_func)) {
+				gl_get_proc_addr = p_load_func;
+				glad_loaded = true;
+			}
+		} else {
+			if (gladLoaderLoadGLES2()) {
+				glad_loaded = true;
+			}
+		}
+	} else {
+		if (p_load_func != nullptr) {
+			if (gladLoadGL(p_load_func)) {
+				gl_get_proc_addr = p_load_func;
+				glad_loaded = true;
+			}
+		} else {
+			if (gladLoaderLoadGL()) {
+				glad_loaded = true;
+			}
+		}
+	}
+}
+#endif
+
 RasterizerGLES3::RasterizerGLES3() {
 	singleton = this;
 
 #ifdef GLAD_ENABLED
-	bool glad_loaded = false;
 
 #ifdef EGL_ENABLED
 	// There should be a more flexible system for getting the GL pointer, as
@@ -307,11 +341,14 @@ RasterizerGLES3::RasterizerGLES3() {
 	}
 #endif // GL_API_ENABLED
 #ifdef GLES_API_ENABLED
+	if (gl_get_proc_addr == nullptr) {
+		gl_get_proc_addr = eglGetProcAddress;
+	}
 	if (!gles_over_gl) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
-			DebugMessageCallbackARB callback = (DebugMessageCallbackARB)eglGetProcAddress("glDebugMessageCallback");
+			DebugMessageCallbackARB callback = (DebugMessageCallbackARB)gl_get_proc_addr("glDebugMessageCallback");
 			if (!callback) {
-				callback = (DebugMessageCallbackARB)eglGetProcAddress("glDebugMessageCallbackKHR");
+				callback = (DebugMessageCallbackARB)gl_get_proc_addr("glDebugMessageCallbackKHR");
 			}
 
 			if (callback) {
@@ -380,6 +417,9 @@ RasterizerGLES3::RasterizerGLES3() {
 }
 
 RasterizerGLES3::~RasterizerGLES3() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 }
 
 void RasterizerGLES3::_blit_render_target_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen &p_blit, bool p_first) {
@@ -388,7 +428,7 @@ void RasterizerGLES3::_blit_render_target_to_screen(DisplayServer::WindowID p_sc
 	ERR_FAIL_NULL(rt);
 
 	// We normally render to the render target upside down, so flip Y when blitting to the screen.
-	bool flip_y = true;
+	bool flip_y = DisplayServer::get_singleton()->is_rendering_flipped();
 	bool linear_to_srgb = false;
 	if (rt->overridden.color.is_valid()) {
 		// If we've overridden the render target's color texture, that means we
@@ -410,7 +450,7 @@ void RasterizerGLES3::_blit_render_target_to_screen(DisplayServer::WindowID p_sc
 	}
 #endif
 
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, DisplayServer::get_singleton()->window_get_native_handle(DisplayServer::OPENGL_FBO, p_screen));
 
 	if (p_first) {
 		if (p_blit.dst_rect.position != Vector2() || p_blit.dst_rect.size != rt->size) {
@@ -463,14 +503,19 @@ void RasterizerGLES3::blit_render_targets_to_screen(DisplayServer::WindowID p_sc
 	}
 }
 
-void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, DisplayServer::WindowID p_screen, bool p_use_filter) {
 	if (p_image.is_null() || p_image->is_empty()) {
 		return;
 	}
 
-	Size2i win_size = DisplayServer::get_singleton()->window_get_size();
+	Size2i win_size = DisplayServer::get_singleton()->window_get_size(p_screen);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		// This is currently needed for GLES to keep the current window being rendered to up to date
+		DisplayServer::get_singleton()->gl_window_make_current(p_screen);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, DisplayServer::get_singleton()->window_get_native_handle(DisplayServer::OPENGL_FBO, p_screen));
 	glViewport(0, 0, win_size.width, win_size.height);
 	glEnable(GL_BLEND);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);

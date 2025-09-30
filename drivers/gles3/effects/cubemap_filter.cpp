@@ -33,6 +33,7 @@
 #include "cubemap_filter.h"
 
 #include "../storage/texture_storage.h"
+#include "../storage/utilities.h"
 #include "core/config/project_settings.h"
 
 using namespace GLES3;
@@ -129,7 +130,7 @@ Vector2 hammersley(uint32_t i, uint32_t N) {
 void CubemapFilter::filter_radiance(GLuint p_source_cubemap, GLuint p_dest_cubemap, GLuint p_dest_framebuffer, int p_source_size, int p_mipmap_count, int p_layer) {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, p_source_cubemap);
-	glBindFramebuffer(GL_FRAMEBUFFER, p_dest_framebuffer);
+	FramebufferBinding binding(GL_FRAMEBUFFER, p_dest_framebuffer);
 
 	CubemapFilterShaderGLES3::ShaderVariant mode = CubemapFilterShaderGLES3::MODE_DEFAULT;
 
@@ -207,7 +208,6 @@ void CubemapFilter::filter_radiance(GLuint p_source_cubemap, GLuint p_dest_cubem
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 	}
 	glBindVertexArray(0);
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 }
 
 #endif // GLES3_ENABLED

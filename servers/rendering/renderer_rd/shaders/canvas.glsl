@@ -4,6 +4,8 @@
 
 #VERSION_DEFINES
 
+#include "metal_simulator_inc.glsl"
+
 #ifdef USE_ATTRIBUTES
 layout(location = 0) in vec2 vertex_attrib;
 layout(location = 3) in vec4 color_attrib;
@@ -233,6 +235,8 @@ void main() {
 #version 450
 
 #VERSION_DEFINES
+
+#include "metal_simulator_inc.glsl"
 
 #include "canvas_uniforms_inc.glsl"
 

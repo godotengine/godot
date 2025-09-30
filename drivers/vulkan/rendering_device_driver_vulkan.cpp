@@ -46,6 +46,19 @@
 #include "thirdparty/swappy-frame-pacing/swappyVk.h"
 #endif
 
+#include "thirdparty/vulkan/vk_enum_string_helper.h"
+
+#if defined(UNIX_ENABLED)
+#include <unistd.h>
+#endif
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+#include <windows.h>
+#undef CreateSemaphore
+#undef MemoryBarrier
+#include <vulkan/vulkan_win32.h>
+#endif
+
 #define ARRAY_SIZE(a) std::size(a)
 
 #define PRINT_NATIVE_COMMANDS 0
@@ -524,6 +537,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_16BIT_STORAGE_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_MAINTENANCE_2_EXTENSION_NAME, false);
@@ -533,10 +547,16 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_VULKAN_MEMORY_MODEL_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_TEXTURE_COMPRESSION_ASTC_HDR_EXTENSION_NAME, false);
-
-	// We don't actually use this extension, but some runtime components on some platforms
-	// can and will fill the validation layers with useless info otherwise if not enabled.
+	_register_requested_device_extension(VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME, true);
+#ifdef EXTERNAL_TARGET_ENABLED
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+	_register_requested_device_extension(VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME, true);
+#elif defined(UNIX_ENABLED)
+	_register_requested_device_extension(VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME, true);
+#endif
+#else
 	_register_requested_device_extension(VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME, false);
+#endif
 
 	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
 		_register_requested_device_extension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, true);
@@ -564,13 +584,13 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 
 	uint32_t device_extension_count = 0;
 	VkResult err = vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &device_extension_count, nullptr);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, string_VkResult(err));
 	ERR_FAIL_COND_V_MSG(device_extension_count == 0, ERR_CANT_CREATE, "vkEnumerateDeviceExtensionProperties failed to find any extensions\n\nDo you have a compatible Vulkan installable client driver (ICD) installed?");
 
 	TightLocalVector<VkExtensionProperties> device_extensions;
 	device_extensions.resize(device_extension_count);
 	err = vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &device_extension_count, device_extensions.ptr());
-	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, string_VkResult(err));
 
 #if defined(SWAPPY_FRAME_PACING_ENABLED)
 	if (swappy_frame_pacer_enable) {
@@ -1020,6 +1040,9 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		if (subgroup_capabilities.quad_operations_in_all_stages) {
 			print_verbose("  quad operations in all stages");
 		}
+
+		// Get Memory information and properties.
+		context_driver->functions_get().GetPhysicalDeviceMemoryProperties(physical_device, &memory_properties);
 	}
 
 	return OK;
@@ -1204,7 +1227,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		ERR_FAIL_COND_V(!device_created, ERR_CANT_CREATE);
 	} else {
 		VkResult err = vkCreateDevice(physical_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DEVICE), &vk_device);
-		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, string_VkResult(err));
 	}
 
 	for (uint32_t i = 0; i < queue_families.size(); i++) {
@@ -1237,6 +1260,10 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		// Debug device fault extension.
 		if (device_fault_support) {
 			device_functions.GetDeviceFaultInfoEXT = (PFN_vkGetDeviceFaultInfoEXT)functions.GetDeviceProcAddr(vk_device, "vkGetDeviceFaultInfoEXT");
+		}
+
+		if (enabled_device_extension_names.has(VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME)) {
+			device_functions.GetMemoryFdKHR = (PFN_vkGetMemoryFdKHR)functions.GetDeviceProcAddr(vk_device, "vkGetMemoryFdKHR");
 		}
 	}
 
@@ -1371,6 +1398,19 @@ VkResult RenderingDeviceDriverVulkan::_create_render_pass(VkDevice p_device, con
 	}
 }
 
+bool RenderingDeviceDriverVulkan::SwapChain::release_image_semaphore(CommandQueue *p_command_queue, uint32_t p_semaphore_index) {
+	// Remove the acquired semaphore from the swap chain's vectors.
+	for (uint32_t i = 0; i < command_queues_acquired.size(); i++) {
+		if (command_queues_acquired[i] == p_command_queue && command_queues_acquired_semaphores[i] == p_semaphore_index) {
+			command_queues_acquired.remove_at(i);
+			command_queues_acquired_semaphores.remove_at(i);
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool RenderingDeviceDriverVulkan::_release_image_semaphore(CommandQueue *p_command_queue, uint32_t p_semaphore_index, bool p_release_on_swap_chain) {
 	SwapChain *swap_chain = p_command_queue->image_semaphores_swap_chains[p_semaphore_index];
 	if (swap_chain != nullptr) {
@@ -1378,17 +1418,8 @@ bool RenderingDeviceDriverVulkan::_release_image_semaphore(CommandQueue *p_comma
 		p_command_queue->image_semaphores_swap_chains[p_semaphore_index] = nullptr;
 
 		if (p_release_on_swap_chain) {
-			// Remove the acquired semaphore from the swap chain's vectors.
-			for (uint32_t i = 0; i < swap_chain->command_queues_acquired.size(); i++) {
-				if (swap_chain->command_queues_acquired[i] == p_command_queue && swap_chain->command_queues_acquired_semaphores[i] == p_semaphore_index) {
-					swap_chain->command_queues_acquired.remove_at(i);
-					swap_chain->command_queues_acquired_semaphores.remove_at(i);
-					break;
-				}
-			}
+			return swap_chain->release_image_semaphore(p_command_queue, p_semaphore_index);
 		}
-
-		return true;
 	}
 
 	return false;
@@ -1401,7 +1432,7 @@ bool RenderingDeviceDriverVulkan::_recreate_image_semaphore(CommandQueue *p_comm
 	VkSemaphoreCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 	VkResult err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &semaphore);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, false);
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, false, string_VkResult(err));
 
 	// Indicate the semaphore is free again and destroy the previous one before storing the new one.
 	vkDestroySemaphore(vk_device, p_command_queue->image_semaphores[p_semaphore_index], VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
@@ -1524,7 +1555,8 @@ void RenderingDeviceDriverVulkan::_set_object_name(VkObjectType p_object_type, u
 Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t p_frame_count) {
 	context_device = context_driver->device_get(p_device_index);
 	physical_device = context_driver->physical_device_get(p_device_index);
-	vkGetPhysicalDeviceProperties(physical_device, &physical_device_properties);
+	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
+	functions.GetPhysicalDeviceProperties(physical_device, &physical_device_properties);
 
 	// Workaround a driver bug on Adreno 730 GPUs that keeps leaking memory on each call to vkResetDescriptorPool.
 	// Which eventually run out of memory. In such case we should not be using linear allocated pools
@@ -2089,7 +2121,8 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared(TextureID p_or
 			// Certain features may not be available for the format of the view.
 			{
 				VkFormatProperties properties = {};
-				vkGetPhysicalDeviceFormatProperties(physical_device, RD_TO_VK_FORMAT[p_view.format], &properties);
+				const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
+				functions.GetPhysicalDeviceFormatProperties(physical_device, RD_TO_VK_FORMAT[p_view.format], &properties);
 				const VkFormatFeatureFlags &supported_flags = owner_tex_info->vk_create_info.tiling == VK_IMAGE_TILING_LINEAR ? properties.linearTilingFeatures : properties.optimalTilingFeatures;
 				if ((usage_info->usage & VK_IMAGE_USAGE_STORAGE_BIT) && !(supported_flags & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)) {
 					usage_info->usage &= ~uint32_t(VK_IMAGE_USAGE_STORAGE_BIT);
@@ -2272,7 +2305,8 @@ BitField<RDD::TextureUsageBits> RenderingDeviceDriverVulkan::texture_get_usages_
 		return 0;
 	}
 	VkFormatProperties properties = {};
-	vkGetPhysicalDeviceFormatProperties(physical_device, RD_TO_VK_FORMAT[p_format], &properties);
+	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
+	functions.GetPhysicalDeviceFormatProperties(physical_device, RD_TO_VK_FORMAT[p_format], &properties);
 
 	const VkFormatFeatureFlags &flags = p_cpu_readable ? properties.linearTilingFeatures : properties.optimalTilingFeatures;
 
@@ -2364,7 +2398,8 @@ bool RenderingDeviceDriverVulkan::sampler_is_format_supported_for_filter(DataFor
 		}
 		case SAMPLER_FILTER_LINEAR: {
 			VkFormatProperties properties = {};
-			vkGetPhysicalDeviceFormatProperties(physical_device, RD_TO_VK_FORMAT[p_format], &properties);
+			const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
+			functions.GetPhysicalDeviceFormatProperties(physical_device, RD_TO_VK_FORMAT[p_format], &properties);
 			return (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
 		}
 	}
@@ -2534,7 +2569,7 @@ RDD::FenceID RenderingDeviceDriverVulkan::fence_create() {
 	VkFenceCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	VkResult err = vkCreateFence(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_FENCE), &vk_fence);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, FenceID());
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, FenceID(), string_VkResult(err));
 
 	Fence *fence = memnew(Fence);
 	fence->vk_fence = vk_fence;
@@ -2547,12 +2582,17 @@ Error RenderingDeviceDriverVulkan::fence_wait(FenceID p_fence) {
 	VkResult fence_status = vkGetFenceStatus(vk_device, fence->vk_fence);
 	if (fence_status == VK_NOT_READY) {
 		VkResult err = vkWaitForFences(vk_device, 1, &fence->vk_fence, VK_TRUE, UINT64_MAX);
-		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, FAILED, string_VkResult(err));
 	}
 
 	VkResult err = vkResetFences(vk_device, 1, &fence->vk_fence);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, FAILED, string_VkResult(err));
 
+	return OK;
+}
+
+void RenderingDeviceDriverVulkan::frame_cleanup(FenceID p_fence) {
+	Fence *fence = (Fence *)(p_fence.id);
 	if (fence->queue_signaled_from != nullptr) {
 		// Release all semaphores that the command queue associated to the fence waited on the last time it was submitted.
 		LocalVector<Pair<Fence *, uint32_t>> &pairs = fence->queue_signaled_from->image_semaphores_for_fences;
@@ -2569,8 +2609,6 @@ Error RenderingDeviceDriverVulkan::fence_wait(FenceID p_fence) {
 
 		fence->queue_signaled_from = nullptr;
 	}
-
-	return OK;
 }
 
 void RenderingDeviceDriverVulkan::fence_free(FenceID p_fence) {
@@ -2588,7 +2626,7 @@ RDD::SemaphoreID RenderingDeviceDriverVulkan::semaphore_create() {
 	VkSemaphoreCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 	VkResult err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &semaphore);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, SemaphoreID());
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, SemaphoreID(), string_VkResult(err));
 
 	return SemaphoreID(semaphore);
 }
@@ -2708,6 +2746,23 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		wait_semaphores_stages.push_back(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
 	}
 
+	thread_local LocalVector<VkSwapchainKHR> swapchains;
+	thread_local LocalVector<SwapChain *> presented_swapchains;
+	thread_local LocalVector<uint32_t> image_indices;
+	swapchains.clear();
+	presented_swapchains.clear();
+	image_indices.clear();
+
+	for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
+		SwapChain *swap_chain = (SwapChain *)(p_swap_chains[i].id);
+		if (VkSwapchainKHR swap_chain_handle = swap_chain->get_swapchain_handle()) {
+			swapchains.push_back(swap_chain_handle);
+			presented_swapchains.push_back(swap_chain);
+			DEV_ASSERT(swap_chain->get_image_index() < swap_chain->get_number_of_images());
+			image_indices.push_back(swap_chain->get_image_index());
+		}
+	}
+
 	if (p_cmd_buffers.size() > 0) {
 		thread_local LocalVector<VkCommandBuffer> command_buffers;
 		thread_local LocalVector<VkSemaphore> present_semaphores;
@@ -2725,9 +2780,9 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 			signal_semaphores.push_back(VkSemaphore(p_cmd_semaphores[i].id));
 		}
 
-		for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
-			const SwapChain *swap_chain = (const SwapChain *)(p_swap_chains[i].id);
-			VkSemaphore semaphore = swap_chain->present_semaphores[swap_chain->image_index];
+		for (uint32_t i = 0; i < presented_swapchains.size(); i++) {
+			const SwapChain *swap_chain = presented_swapchains[i];
+			VkSemaphore semaphore = swap_chain->get_present_semaphore(swap_chain->get_image_index());
 			present_semaphores.push_back(semaphore);
 			signal_semaphores.push_back(semaphore);
 		}
@@ -2750,7 +2805,7 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 			print_lost_device_info();
 			CRASH_NOW_MSG("Vulkan device was lost.");
 		}
-		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, FAILED, string_VkResult(err));
 
 		if (fence != nullptr && !command_queue->pending_semaphores_for_fence.is_empty()) {
 			fence->queue_signaled_from = command_queue;
@@ -2769,19 +2824,8 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		}
 	}
 
-	if (p_swap_chains.size() > 0) {
-		thread_local LocalVector<VkSwapchainKHR> swapchains;
-		thread_local LocalVector<uint32_t> image_indices;
+	if (swapchains.size() > 0) {
 		thread_local LocalVector<VkResult> results;
-		swapchains.clear();
-		image_indices.clear();
-
-		for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
-			SwapChain *swap_chain = (SwapChain *)(p_swap_chains[i].id);
-			swapchains.push_back(swap_chain->vk_swapchain);
-			DEV_ASSERT(swap_chain->image_index < swap_chain->images.size());
-			image_indices.push_back(swap_chain->image_index);
-		}
 
 		results.resize(swapchains.size());
 
@@ -2809,11 +2853,11 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 
 		// Set the index to an invalid value. If any of the swap chains returned out of date, indicate it should be resized the next time it's acquired.
 		bool any_result_is_out_of_date = false;
-		for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
-			SwapChain *swap_chain = (SwapChain *)(p_swap_chains[i].id);
-			swap_chain->image_index = UINT_MAX;
+		for (uint32_t i = 0; i < presented_swapchains.size(); i++) {
+			SwapChain *swap_chain = presented_swapchains[i];
+			swap_chain->set_image_index(UINT_MAX);
 			if (results[i] == VK_ERROR_OUT_OF_DATE_KHR) {
-				context_driver->surface_set_needs_resize(swap_chain->surface, true);
+				context_driver->surface_set_needs_resize(swap_chain->get_surface(), true);
 				any_result_is_out_of_date = true;
 			}
 		}
@@ -2997,47 +3041,147 @@ void RenderingDeviceDriverVulkan::command_buffer_execute_secondary(CommandBuffer
 /**** SWAP CHAIN ****/
 /********************/
 
-void RenderingDeviceDriverVulkan::_swap_chain_release(SwapChain *swap_chain) {
+void RenderingDeviceDriverVulkan::PresentableSwapChain::release() {
 	// Destroy views and framebuffers associated to the swapchain's images.
-	for (FramebufferID framebuffer : swap_chain->framebuffers) {
-		framebuffer_free(framebuffer);
+
+	{
+		MutexLock external_lock(mutex);
+
+		if (!in_use.is_empty()) {
+			in_use.clear();
+		}
+
+		last_drawn_buffer = -1;
+		version += 1;
 	}
 
-	for (VkImageView view : swap_chain->image_views) {
-		vkDestroyImageView(vk_device, view, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW));
+	for (FramebufferID framebuffer : framebuffers) {
+		device_driver->framebuffer_free(framebuffer);
 	}
 
-	swap_chain->image_index = UINT_MAX;
-	swap_chain->images.clear();
-	swap_chain->image_views.clear();
-	swap_chain->framebuffers.clear();
+	for (VkImageView view : image_views) {
+		vkDestroyImageView(device_driver->vk_device, view, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW));
+	}
 
-	if (swap_chain->vk_swapchain != VK_NULL_HANDLE) {
+	image_index = UINT_MAX;
+	images.clear();
+	image_views.clear();
+	framebuffers.clear();
+
+	if (vk_swapchain != VK_NULL_HANDLE) {
 #if defined(SWAPPY_FRAME_PACING_ENABLED)
 		if (swappy_frame_pacer_enable) {
 			// Swappy has a bug where the ANativeWindow will be leaked if we call
 			// SwappyVk_destroySwapchain, so we must release it by hand.
-			SwappyVk_setWindow(vk_device, swap_chain->vk_swapchain, nullptr);
-			SwappyVk_destroySwapchain(vk_device, swap_chain->vk_swapchain);
+			SwappyVk_setWindow(device_driver->vk_device, vk_swapchain, nullptr);
+			SwappyVk_destroySwapchain(device_driver->vk_device, vk_swapchain);
 		}
 #endif
-		device_functions.DestroySwapchainKHR(vk_device, swap_chain->vk_swapchain, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SWAPCHAIN_KHR));
-		swap_chain->vk_swapchain = VK_NULL_HANDLE;
+		device_driver->device_functions.DestroySwapchainKHR(device_driver->vk_device, vk_swapchain, nullptr);
+		vk_swapchain = VK_NULL_HANDLE;
 	}
 
-	for (uint32_t i = 0; i < swap_chain->command_queues_acquired.size(); i++) {
-		_recreate_image_semaphore(swap_chain->command_queues_acquired[i], swap_chain->command_queues_acquired_semaphores[i], false);
+	for (uint32_t i = 0; i < command_queues_acquired.size(); i++) {
+		device_driver->_recreate_image_semaphore(command_queues_acquired[i], command_queues_acquired_semaphores[i], false);
 	}
 
-	swap_chain->command_queues_acquired.clear();
-	swap_chain->command_queues_acquired_semaphores.clear();
+	command_queues_acquired.clear();
+	command_queues_acquired_semaphores.clear();
 
-	for (VkSemaphore semaphore : swap_chain->present_semaphores) {
-		vkDestroySemaphore(vk_device, semaphore, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
+	for (VkSemaphore semaphore : present_semaphores) {
+		vkDestroySemaphore(device_driver->vk_device, semaphore, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
 	}
 
-	swap_chain->present_semaphores.clear();
+	present_semaphores.clear();
 }
+
+#ifdef EXTERNAL_TARGET_ENABLED
+void RenderingDeviceDriverVulkan::ExternalSwapChain::release() {
+	// Destroy views and framebuffers associated to the swapchain's images.
+
+	{
+		MutexLock lock(mutex);
+
+		images_released_callback.call();
+
+		if (!external_handle_transferred.is_empty()) {
+			for (uint32_t i = 0; i < images.size(); i++) {
+				if (!external_handle_transferred[i]) {
+					ERR_FAIL_COND(external_handles.is_empty());
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+					CloseHandle((HANDLE)external_handles[i]);
+#elif defined(UNIX_ENABLED)
+					close(external_handles[i]);
+#endif
+				}
+			}
+			external_handle_transferred.clear();
+		}
+		if (!external_handles.is_empty()) {
+			external_handles.clear();
+		}
+		if (!externally_acquired.is_empty()) {
+			for (uint32_t i = 0; i < images.size(); i++) {
+				if (externally_acquired[i]) {
+					ERR_FAIL_COND(image_memories.is_empty());
+					ERR_FAIL_COND(images[i] == VK_NULL_HANDLE);
+					ERR_FAIL_COND(image_memories[i] == VK_NULL_HANDLE);
+					prev_acquired_images.insert(i, images[i]);
+					prev_acquired_memory.insert(i, image_memories[i]);
+				}
+			}
+			externally_acquired.clear();
+		}
+		if (!allocation_sizes.is_empty()) {
+			allocation_sizes.clear();
+		}
+		if (!memory_type_indices.is_empty()) {
+			memory_type_indices.clear();
+		}
+		if (!image_create_infos.is_empty()) {
+			image_create_infos.clear();
+		}
+		if (!in_use.is_empty()) {
+			in_use.clear();
+		}
+		last_drawn_buffer = -1;
+		free_count = 0;
+		version += 1;
+
+		if (!images.is_empty()) {
+			for (uint32_t i = 0; i < images.size(); i++) {
+				vkDestroyImageView(device_driver->vk_device, image_views[i], nullptr);
+				device_driver->framebuffer_free(framebuffers[i]);
+				if (!prev_acquired_images.has(i)) {
+					vkDestroyImage(device_driver->vk_device, images[i], nullptr);
+				}
+				if (image_memories[i] != VK_NULL_HANDLE && !prev_acquired_memory.has(i)) {
+					vkFreeMemory(device_driver->vk_device, image_memories[i], nullptr);
+				}
+			}
+
+			image_index = UINT_MAX;
+			images.clear();
+			image_views.clear();
+			framebuffers.clear();
+			image_memories.clear();
+		}
+
+		for (uint32_t i = 0; i < command_queues_acquired.size(); i++) {
+			device_driver->_recreate_image_semaphore(command_queues_acquired[i], command_queues_acquired_semaphores[i], false);
+		}
+
+		command_queues_acquired.clear();
+		command_queues_acquired_semaphores.clear();
+
+		for (VkSemaphore semaphore : present_semaphores) {
+			vkDestroySemaphore(device_driver->vk_device, semaphore, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
+		}
+
+		present_semaphores.clear();
+	}
+}
+#endif
 
 RenderingDeviceDriver::SwapChainID RenderingDeviceDriverVulkan::swap_chain_create(RenderingContextDriver::SurfaceID p_surface) {
 	DEV_ASSERT(p_surface != 0);
@@ -3047,17 +3191,26 @@ RenderingDeviceDriver::SwapChainID RenderingDeviceDriverVulkan::swap_chain_creat
 
 	// Retrieve the formats supported by the surface.
 	uint32_t format_count = 0;
-	VkResult err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, nullptr);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, SwapChainID());
+	VkResult err = VK_SUCCESS;
+	if (surface->vk_surface) {
+		err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, nullptr);
+	}
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, SwapChainID(), string_VkResult(err));
 
 	TightLocalVector<VkSurfaceFormatKHR> formats;
 	formats.resize(format_count);
-	err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, formats.ptr());
-	ERR_FAIL_COND_V(err != VK_SUCCESS, SwapChainID());
+	if (surface->vk_surface) {
+		err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, formats.ptr());
+	}
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, SwapChainID(), string_VkResult(err));
 
 	VkFormat format = VK_FORMAT_UNDEFINED;
 	VkColorSpaceKHR color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-	if (format_count == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
+	if (format_count == 0) {
+		// TODO let's use as default for now
+		format = VK_FORMAT_R8G8B8A8_UNORM;
+		color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+	} else if (format_count == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
 		// If the format list includes just one entry of VK_FORMAT_UNDEFINED, the surface has no preferred format.
 		format = VK_FORMAT_B8G8R8A8_UNORM;
 		color_space = formats[0].colorSpace;
@@ -3089,7 +3242,7 @@ RenderingDeviceDriver::SwapChainID RenderingDeviceDriverVulkan::swap_chain_creat
 	attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	attachment.finalLayout = surface->headless ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	VkAttachmentReference2KHR color_reference = {};
 	color_reference.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
@@ -3110,51 +3263,57 @@ RenderingDeviceDriver::SwapChainID RenderingDeviceDriverVulkan::swap_chain_creat
 
 	VkRenderPass vk_render_pass = VK_NULL_HANDLE;
 	err = _create_render_pass(vk_device, &pass_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS), &vk_render_pass);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, SwapChainID());
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, SwapChainID(), string_VkResult(err));
 
 	RenderPassInfo *render_pass_info = VersatileResource::allocate<RenderPassInfo>(resources_allocator);
 	render_pass_info->vk_render_pass = vk_render_pass;
 
-	SwapChain *swap_chain = memnew(SwapChain);
-	swap_chain->surface = p_surface;
-	swap_chain->format = format;
-	swap_chain->color_space = color_space;
-	swap_chain->render_pass = RenderPassID(render_pass_info);
+	SwapChain *swap_chain = nullptr;
+
+#ifdef EXTERNAL_TARGET_ENABLED
+	if (surface->headless) {
+		swap_chain = memnew(ExternalSwapChain(this, p_surface, format, color_space, render_pass_info));
+	} else
+#endif
+	{
+		swap_chain = memnew(PresentableSwapChain(this, p_surface, format, color_space, render_pass_info));
+	}
+
 	return SwapChainID(swap_chain);
 }
 
-Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, uint32_t p_desired_framebuffer_count) {
-	DEV_ASSERT(p_cmd_queue.id != 0);
-	DEV_ASSERT(p_swap_chain.id != 0);
+Error RenderingDeviceDriverVulkan::PresentableSwapChain::resize(CommandQueueID p_cmd_queue, uint32_t p_desired_framebuffer_count) {
+	// Release all current contents of the swap chain.
+	release();
+
+	RenderingContextDriverVulkan::Surface *surface_ptr = (RenderingContextDriverVulkan::Surface *)(surface);
+
+	uint32_t sp_image_count;
+	VkResult err = VK_SUCCESS;
 
 	CommandQueue *command_queue = (CommandQueue *)(p_cmd_queue.id);
-	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
-
-	// Release all current contents of the swap chain.
-	_swap_chain_release(swap_chain);
 
 	// Validate if the command queue being used supports creating the swap chain for this surface.
-	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
-	if (!context_driver->queue_family_supports_present(physical_device, command_queue->queue_family, swap_chain->surface)) {
+	const RenderingContextDriverVulkan::Functions &functions = device_driver->context_driver->functions_get();
+	if (!device_driver->context_driver->queue_family_supports_present(device_driver->physical_device, command_queue->queue_family, surface)) {
 		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Surface is not supported by device. Did the GPU go offline? Was the window created on another monitor? Check"
 										"previous errors & try launching with --gpu-validation.");
 	}
 
 	// Retrieve the surface's capabilities.
-	RenderingContextDriverVulkan::Surface *surface = (RenderingContextDriverVulkan::Surface *)(swap_chain->surface);
 	VkSurfaceCapabilitiesKHR surface_capabilities = {};
-	VkResult err = functions.GetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface->vk_surface, &surface_capabilities);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	err = functions.GetPhysicalDeviceSurfaceCapabilitiesKHR(device_driver->physical_device, surface_ptr->vk_surface, &surface_capabilities);
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, FAILED, string_VkResult(err));
 
 	// No swapchain yet, this is the first time we're creating it.
-	if (!swap_chain->vk_swapchain) {
+	if (!vk_swapchain) {
 		if (surface_capabilities.currentExtent.width == 0xFFFFFFFF) {
 			// The current extent is currently undefined, so the current surface width and height will be clamped to the surface's capabilities.
 			// We make sure to overwrite surface_capabilities.currentExtent.width so that the same check further below
 			// does not set extent.width = CLAMP( surface->width, ... ) on the first run of this function, because
 			// that'd be potentially unswapped.
-			surface_capabilities.currentExtent.width = CLAMP(surface->width, surface_capabilities.minImageExtent.width, surface_capabilities.maxImageExtent.width);
-			surface_capabilities.currentExtent.height = CLAMP(surface->height, surface_capabilities.minImageExtent.height, surface_capabilities.maxImageExtent.height);
+			surface_capabilities.currentExtent.width = CLAMP(surface_ptr->width, surface_capabilities.minImageExtent.width, surface_capabilities.maxImageExtent.width);
+			surface_capabilities.currentExtent.height = CLAMP(surface_ptr->height, surface_capabilities.minImageExtent.height, surface_capabilities.maxImageExtent.height);
 		}
 
 		// We must SWAP() only once otherwise we'll keep ping-ponging between
@@ -3169,17 +3328,16 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	VkExtent2D extent;
 	if (surface_capabilities.currentExtent.width == 0xFFFFFFFF) {
 		// The current extent is currently undefined, so the current surface width and height will be clamped to the surface's capabilities.
-		// We can only be here on the second call to swap_chain_resize(), by which time surface->width & surface->height should already be swapped if needed.
-		extent.width = CLAMP(surface->width, surface_capabilities.minImageExtent.width, surface_capabilities.maxImageExtent.width);
-		extent.height = CLAMP(surface->height, surface_capabilities.minImageExtent.height, surface_capabilities.maxImageExtent.height);
+		extent.width = CLAMP(surface_ptr->width, surface_capabilities.minImageExtent.width, surface_capabilities.maxImageExtent.width);
+		extent.height = CLAMP(surface_ptr->height, surface_capabilities.minImageExtent.height, surface_capabilities.maxImageExtent.height);
 	} else {
 		// Grab the dimensions from the current extent.
 		extent = surface_capabilities.currentExtent;
-		surface->width = extent.width;
-		surface->height = extent.height;
+		surface_ptr->width = extent.width;
+		surface_ptr->height = extent.height;
 	}
 
-	if (surface->width == 0 || surface->height == 0) {
+	if (surface_ptr->width == 0 || surface_ptr->height == 0) {
 		// The surface doesn't have valid dimensions, so we can't create a swap chain.
 		return ERR_SKIP;
 	}
@@ -3187,17 +3345,17 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	// Find what present modes are supported.
 	TightLocalVector<VkPresentModeKHR> present_modes;
 	uint32_t present_modes_count = 0;
-	err = functions.GetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface->vk_surface, &present_modes_count, nullptr);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	err = functions.GetPhysicalDeviceSurfacePresentModesKHR(device_driver->physical_device, surface_ptr->vk_surface, &present_modes_count, nullptr);
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, string_VkResult(err));
 
 	present_modes.resize(present_modes_count);
-	err = functions.GetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface->vk_surface, &present_modes_count, present_modes.ptr());
-	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	err = functions.GetPhysicalDeviceSurfacePresentModesKHR(device_driver->physical_device, surface_ptr->vk_surface, &present_modes_count, present_modes.ptr());
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, string_VkResult(err));
 
 	// Choose the present mode based on the display server setting.
 	VkPresentModeKHR present_mode = VkPresentModeKHR::VK_PRESENT_MODE_FIFO_KHR;
 	String present_mode_name = "Enabled";
-	switch (surface->vsync_mode) {
+	switch (surface_ptr->vsync_mode) {
 		case DisplayServer::VSYNC_MAILBOX:
 			present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
 			present_mode_name = "Mailbox";
@@ -3216,11 +3374,12 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 			break;
 	}
 
+	// Check if the requested mode is available.
 	bool present_mode_available = present_modes.has(present_mode);
 	if (!present_mode_available) {
 		// Present mode is not available, fall back to FIFO which is guaranteed to be supported.
 		WARN_PRINT(vformat("The requested V-Sync mode %s is not available. Falling back to V-Sync mode Enabled.", present_mode_name));
-		surface->vsync_mode = DisplayServer::VSYNC_ENABLED;
+		surface_ptr->vsync_mode = DisplayServer::VSYNC_ENABLED;
 		present_mode = VkPresentModeKHR::VK_PRESENT_MODE_FIFO_KHR;
 	}
 
@@ -3250,15 +3409,14 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 				break;
 			}
 		}
-		has_comp_alpha[(uint64_t)p_cmd_queue.id] = (composite_alpha != VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
 	}
+	device_driver->has_comp_alpha[(uint64_t)p_cmd_queue.id] = (composite_alpha != VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
 
 	VkSwapchainCreateInfoKHR swap_create_info = {};
 	swap_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-	swap_create_info.surface = surface->vk_surface;
+	swap_create_info.surface = surface_ptr->vk_surface;
 	swap_create_info.minImageCount = desired_swapchain_images;
-	swap_create_info.imageFormat = swap_chain->format;
-	swap_create_info.imageColorSpace = swap_chain->color_space;
+	swap_create_info.imageFormat = format;
 	swap_create_info.imageExtent = extent;
 	swap_create_info.imageArrayLayers = 1;
 	swap_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -3266,34 +3424,35 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	swap_create_info.preTransform = surface_transform_bits;
 	switch (swap_create_info.preTransform) {
 		case VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR:
-			swap_chain->pre_transform_rotation_degrees = 0;
+			pre_transform_rotation_degrees = 0;
 			break;
 		case VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR:
-			swap_chain->pre_transform_rotation_degrees = 90;
+			pre_transform_rotation_degrees = 90;
 			break;
 		case VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR:
-			swap_chain->pre_transform_rotation_degrees = 180;
+			pre_transform_rotation_degrees = 180;
 			break;
 		case VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR:
-			swap_chain->pre_transform_rotation_degrees = 270;
+			pre_transform_rotation_degrees = 270;
 			break;
 		default:
 			WARN_PRINT("Unexpected swap_create_info.preTransform = " + itos(swap_create_info.preTransform) + ".");
-			swap_chain->pre_transform_rotation_degrees = 0;
+			pre_transform_rotation_degrees = 0;
 			break;
 	}
 	swap_create_info.compositeAlpha = composite_alpha;
 	swap_create_info.presentMode = present_mode;
 	swap_create_info.clipped = true;
-	err = device_functions.CreateSwapchainKHR(vk_device, &swap_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SWAPCHAIN_KHR), &swap_chain->vk_swapchain);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+	err = device_driver->device_functions.CreateSwapchainKHR(device_driver->vk_device, &swap_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SWAPCHAIN_KHR), &vk_swapchain);
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, string_VkResult(err));
 
 #if defined(SWAPPY_FRAME_PACING_ENABLED)
 	if (swappy_frame_pacer_enable) {
 		SwappyVk_initAndGetRefreshCycleDuration(get_jni_env(), static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity(), physical_device,
-				vk_device, swap_chain->vk_swapchain, &swap_chain->refresh_duration);
-		SwappyVk_setWindow(vk_device, swap_chain->vk_swapchain, static_cast<OS_Android *>(OS::get_singleton())->get_native_window());
-		SwappyVk_setSwapIntervalNS(vk_device, swap_chain->vk_swapchain, swap_chain->refresh_duration);
+				device_driver->vk_device, vk_swapchain, &refresh_duration);
+		SwappyVk_setWindow(device_driver->vk_device, vk_swapchain, static_cast<OS_Android *>(OS::get_singleton())->get_native_window());
+		SwappyVk_setSwapIntervalNS(device_driver->vk_device, vk_swapchain, refresh_duration);
 
 		enum SwappyModes {
 			PIPELINE_FORCED_ON,
@@ -3318,18 +3477,17 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	}
 #endif
 
-	uint32_t image_count = 0;
-	err = device_functions.GetSwapchainImagesKHR(vk_device, swap_chain->vk_swapchain, &image_count, nullptr);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	err = device_driver->device_functions.GetSwapchainImagesKHR(device_driver->vk_device, vk_swapchain, &sp_image_count, nullptr);
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, string_VkResult(err));
 
-	swap_chain->images.resize(image_count);
-	err = device_functions.GetSwapchainImagesKHR(vk_device, swap_chain->vk_swapchain, &image_count, swap_chain->images.ptr());
-	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	images.resize(sp_image_count);
+	err = device_driver->device_functions.GetSwapchainImagesKHR(device_driver->vk_device, vk_swapchain, &sp_image_count, images.ptr());
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, string_VkResult(err));
 
 	VkImageViewCreateInfo view_create_info = {};
 	view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	view_create_info.format = swap_chain->format;
+	view_create_info.format = format;
 	view_create_info.components.r = VK_COMPONENT_SWIZZLE_R;
 	view_create_info.components.g = VK_COMPONENT_SWIZZLE_G;
 	view_create_info.components.b = VK_COMPONENT_SWIZZLE_B;
@@ -3338,65 +3496,265 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	view_create_info.subresourceRange.levelCount = 1;
 	view_create_info.subresourceRange.layerCount = 1;
 
-	swap_chain->image_views.reserve(image_count);
+	image_views.reserve(sp_image_count);
 
 	VkImageView image_view;
-	for (uint32_t i = 0; i < image_count; i++) {
-		view_create_info.image = swap_chain->images[i];
-		err = vkCreateImageView(vk_device, &view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &image_view);
-		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	for (uint32_t i = 0; i < sp_image_count; i++) {
+		view_create_info.image = images[i];
+		err = vkCreateImageView(device_driver->vk_device, &view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &image_view);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, string_VkResult(err));
 
-		swap_chain->image_views.push_back(image_view);
+		image_views.push_back(image_view);
 	}
 
-	swap_chain->framebuffers.reserve(image_count);
+	framebuffers.reserve(sp_image_count);
 
-	const RenderPassInfo *render_pass = (const RenderPassInfo *)(swap_chain->render_pass.id);
+	const RenderPassInfo *render_pass_info = (const RenderPassInfo *)(render_pass.id);
 	VkFramebufferCreateInfo fb_create_info = {};
 	fb_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-	fb_create_info.renderPass = render_pass->vk_render_pass;
+	fb_create_info.renderPass = render_pass_info->vk_render_pass;
 	fb_create_info.attachmentCount = 1;
-	fb_create_info.width = surface->width;
-	fb_create_info.height = surface->height;
+	fb_create_info.width = surface_ptr->width;
+	fb_create_info.height = surface_ptr->height;
 	fb_create_info.layers = 1;
 
 	VkFramebuffer vk_framebuffer;
-	for (uint32_t i = 0; i < image_count; i++) {
-		fb_create_info.pAttachments = &swap_chain->image_views[i];
-		err = vkCreateFramebuffer(vk_device, &fb_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_FRAMEBUFFER), &vk_framebuffer);
-		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	for (uint32_t i = 0; i < sp_image_count; i++) {
+		fb_create_info.pAttachments = &image_views[i];
+		err = vkCreateFramebuffer(device_driver->vk_device, &fb_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_FRAMEBUFFER), &vk_framebuffer);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, string_VkResult(err));
 
 		Framebuffer *framebuffer = memnew(Framebuffer);
 		framebuffer->vk_framebuffer = vk_framebuffer;
-		framebuffer->swap_chain_image = swap_chain->images[i];
+		framebuffer->swap_chain_image = images[i];
 		framebuffer->swap_chain_image_subresource_range = view_create_info.subresourceRange;
-		swap_chain->framebuffers.push_back(RDD::FramebufferID(framebuffer));
+		framebuffers.push_back(RDD::FramebufferID(framebuffer));
+	}
+
+	{
+		MutexLock lock(mutex);
+		in_use.resize(sp_image_count);
+
+		for (uint32_t i = 0; i < sp_image_count; i++) {
+			in_use[i] = false;
+		}
+
+		last_drawn_buffer = -1;
 	}
 
 	VkSemaphore vk_semaphore = VK_NULL_HANDLE;
-	for (uint32_t i = 0; i < image_count; i++) {
+	for (uint32_t i = 0; i < sp_image_count; i++) {
 		VkSemaphoreCreateInfo create_info = {};
 		create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-		err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &vk_semaphore);
+		err = vkCreateSemaphore(device_driver->vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &vk_semaphore);
 		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
 
-		swap_chain->present_semaphores.push_back(vk_semaphore);
+		present_semaphores.push_back(vk_semaphore);
 	}
 
 	// Once everything's been created correctly, indicate the surface no longer needs to be resized.
-	context_driver->surface_set_needs_resize(swap_chain->surface, false);
+	device_driver->context_driver->surface_set_needs_resize(surface, false);
 
 	return OK;
 }
 
-RDD::FramebufferID RenderingDeviceDriverVulkan::swap_chain_acquire_framebuffer(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, bool &r_resize_required) {
-	DEV_ASSERT(p_cmd_queue);
-	DEV_ASSERT(p_swap_chain);
+#ifdef EXTERNAL_TARGET_ENABLED
+Error RenderingDeviceDriverVulkan::ExternalSwapChain::resize(CommandQueueID p_cmd_queue, uint32_t p_desired_framebuffer_count) {
+	// Release all current contents of the swap chain.
+	release();
 
-	CommandQueue *command_queue = (CommandQueue *)(p_cmd_queue.id);
+	RenderingContextDriverVulkan::Surface *surface_ptr = (RenderingContextDriverVulkan::Surface *)(surface);
+
+	uint32_t sp_image_count = p_desired_framebuffer_count;
+	VkResult err = VK_SUCCESS;
+
+	if (surface_ptr->width == 0 || surface_ptr->height == 0) {
+		// Likely window minimized, no swapchain created.
+		return ERR_SKIP;
+	}
+
+	TightLocalVector<VkImage> swapchainImages;
+	swapchainImages.resize(sp_image_count);
+	TightLocalVector<VkDeviceMemory> imageMemory;
+	imageMemory.resize(sp_image_count);
+	TightLocalVector<uint64_t> externalHandles;
+	externalHandles.resize(sp_image_count);
+	TightLocalVector<uint64_t> allocationSizes;
+	allocationSizes.resize(sp_image_count);
+	TightLocalVector<uint32_t> memoryTypeIndices;
+	memoryTypeIndices.resize(sp_image_count);
+	TightLocalVector<VkImageCreateInfo> imageCreateInfos;
+	imageCreateInfos.resize(sp_image_count);
+
+	{
+		MutexLock lock(mutex);
+
+		for (uint32_t i = 0; i < swapchainImages.size(); i++) {
+			VkExternalMemoryImageCreateInfo externalMemoryImageCreateInfo = {
+				/*sType*/ VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO,
+				/*pNext*/ nullptr,
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+				/*handleTypes*/ VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT
+#elif defined(UNIX_ENABLED)
+				/*handleTypes*/ VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT
+#endif
+			};
+
+			imageCreateInfos[i] = {
+				/*sType*/ VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+				/*pNext*/ &externalMemoryImageCreateInfo,
+				/*flags*/ 0,
+				/*imageType*/ VK_IMAGE_TYPE_2D,
+				/*format*/ format,
+				/*extent*/ { /*width*/ surface_ptr->width,
+						/*height*/ surface_ptr->height,
+						/*depth*/ 1 },
+				/*mipLevels*/ 1,
+				/*arrayLayers*/ 1,
+				/*samples*/ VK_SAMPLE_COUNT_1_BIT,
+				/*tiling*/ VK_IMAGE_TILING_OPTIMAL,
+				/*usage*/ VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+				/*sharingMode*/ VK_SHARING_MODE_EXCLUSIVE,
+				/*queueFamilyIndexCount*/ 0,
+				/*pQueueFamilyIndices*/ nullptr,
+				/*initialLayout*/ VK_IMAGE_LAYOUT_UNDEFINED
+			};
+			err = vkCreateImage(device_driver->vk_device, &imageCreateInfos[i], nullptr, &swapchainImages[i]);
+			if (err) {
+				ERR_FAIL_V(ERR_CANT_CREATE);
+			}
+
+			VkMemoryRequirements memory_requirements;
+			vkGetImageMemoryRequirements(device_driver->vk_device, swapchainImages[i], &memory_requirements);
+
+			memoryTypeIndices[i] = 0;
+			for (uint32_t j = 0; j < device_driver->memory_properties.memoryTypeCount; j++) {
+				if (!(memory_requirements.memoryTypeBits & (1 << j))) {
+					continue;
+				}
+				memoryTypeIndices[i] = j;
+			}
+
+			allocationSizes[i] = memory_requirements.size;
+
+			VkExportMemoryAllocateInfo export_memory_allocate_info = {
+				VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO,
+				nullptr,
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+				VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT
+#elif defined(UNIX_ENABLED)
+				VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT
+#endif
+			};
+
+			VkMemoryAllocateInfo allocate_info = {
+				VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+				&export_memory_allocate_info,
+				allocationSizes[i],
+				memoryTypeIndices[i]
+			};
+
+			err = vkAllocateMemory(device_driver->vk_device, &allocate_info, nullptr, &imageMemory[i]);
+			ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+			err = vkBindImageMemory(device_driver->vk_device, swapchainImages[i], imageMemory[i], 0);
+			ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+			err = device_driver->get_external_memory_handle(device_driver->vk_device, imageMemory[i], &externalHandles[i]);
+			ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+		}
+
+		VkImageViewCreateInfo view_create_info = {};
+		view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		view_create_info.format = format;
+		view_create_info.components.r = VK_COMPONENT_SWIZZLE_R;
+		view_create_info.components.g = VK_COMPONENT_SWIZZLE_G;
+		view_create_info.components.b = VK_COMPONENT_SWIZZLE_B;
+		view_create_info.components.a = VK_COMPONENT_SWIZZLE_A;
+		view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		view_create_info.subresourceRange.levelCount = 1;
+		view_create_info.subresourceRange.layerCount = 1;
+
+		image_views.reserve(sp_image_count);
+
+		VkImageView image_view;
+		for (uint32_t i = 0; i < sp_image_count; i++) {
+			view_create_info.image = swapchainImages[i];
+			err = vkCreateImageView(device_driver->vk_device, &view_create_info, nullptr, &image_view);
+			ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+			image_views.push_back(image_view);
+			image_memories.push_back(imageMemory[i]);
+		}
+
+		framebuffers.reserve(sp_image_count);
+
+		const RenderPassInfo *render_pass_info = (const RenderPassInfo *)(render_pass.id);
+		VkFramebufferCreateInfo fb_create_info = {};
+		fb_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		fb_create_info.renderPass = render_pass_info->vk_render_pass;
+		fb_create_info.attachmentCount = 1;
+		fb_create_info.width = surface_ptr->width;
+		fb_create_info.height = surface_ptr->height;
+		fb_create_info.layers = 1;
+
+		VkFramebuffer vk_framebuffer;
+		for (uint32_t i = 0; i < sp_image_count; i++) {
+			fb_create_info.pAttachments = &image_views[i];
+			err = vkCreateFramebuffer(device_driver->vk_device, &fb_create_info, nullptr, &vk_framebuffer);
+			ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+			Framebuffer *framebuffer = memnew(Framebuffer);
+			framebuffer->vk_framebuffer = vk_framebuffer;
+			framebuffer->swap_chain_image = swapchainImages[i];
+			framebuffer->swap_chain_image_subresource_range = view_create_info.subresourceRange;
+			framebuffers.push_back(RDD::FramebufferID(framebuffer));
+		}
+
+		images.resize(sp_image_count);
+		external_handles.resize(sp_image_count);
+		external_handle_transferred.resize(sp_image_count);
+		allocation_sizes.resize(sp_image_count);
+		memory_type_indices.resize(sp_image_count);
+		externally_acquired.resize(sp_image_count);
+		image_create_infos.resize(sp_image_count);
+		in_use.resize(sp_image_count);
+		for (uint32_t i = 0; i < sp_image_count; i++) {
+			images[i] = swapchainImages[i];
+			external_handles[i] = externalHandles[i];
+			external_handle_transferred[i] = false;
+			allocation_sizes[i] = allocationSizes[i];
+			memory_type_indices[i] = memoryTypeIndices[i];
+			image_create_infos[i] = imageCreateInfos[i];
+			externally_acquired[i] = false;
+			in_use[i] = false;
+		}
+		free_count = sp_image_count;
+		last_drawn_buffer = -1;
+
+		// Once everything's been created correctly, indicate the surface no longer needs to be resized.
+		device_driver->context_driver->surface_set_needs_resize(surface, false);
+
+		images_created_callback.call(get_number_of_images_func, get_native_handle_func, get_allocation_size_func, get_memory_type_index_func, get_image_create_info_func);
+	}
+
+	return OK;
+}
+#endif
+
+Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, uint32_t p_desired_framebuffer_count) {
+	DEV_ASSERT(p_cmd_queue.id != 0);
+	DEV_ASSERT(p_swap_chain.id != 0);
+
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
-	if ((swap_chain->vk_swapchain == VK_NULL_HANDLE) || context_driver->surface_get_needs_resize(swap_chain->surface)) {
+
+	return swap_chain->resize(p_cmd_queue, p_desired_framebuffer_count);
+}
+
+RDD::FramebufferID RenderingDeviceDriverVulkan::PresentableSwapChain::acquire_framebuffer(CommandQueue *p_command_queue, bool &r_resize_required) {
+	if ((vk_swapchain == VK_NULL_HANDLE) || device_driver->context_driver->surface_get_needs_resize(surface)) {
 		// The surface does not have a valid swap chain or it indicates it requires a resize.
 		r_resize_required = true;
 		return FramebufferID();
@@ -3405,33 +3763,33 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::swap_chain_acquire_framebuffer(C
 	VkResult err;
 	VkSemaphore semaphore = VK_NULL_HANDLE;
 	uint32_t semaphore_index = 0;
-	if (command_queue->free_image_semaphores.is_empty()) {
+	if (p_command_queue->free_image_semaphores.is_empty()) {
 		// Add a new semaphore if none are free.
 		VkSemaphoreCreateInfo create_info = {};
 		create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-		err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &semaphore);
-		ERR_FAIL_COND_V(err != VK_SUCCESS, FramebufferID());
+		err = vkCreateSemaphore(device_driver->vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &semaphore);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, FramebufferID(), string_VkResult(err));
 
-		semaphore_index = command_queue->image_semaphores.size();
-		command_queue->image_semaphores.push_back(semaphore);
-		command_queue->image_semaphores_swap_chains.push_back(swap_chain);
+		semaphore_index = p_command_queue->image_semaphores.size();
+		p_command_queue->image_semaphores.push_back(semaphore);
+		p_command_queue->image_semaphores_swap_chains.push_back(this);
 	} else {
 		// Pick a free semaphore.
-		uint32_t free_index = command_queue->free_image_semaphores.size() - 1;
-		semaphore_index = command_queue->free_image_semaphores[free_index];
-		command_queue->image_semaphores_swap_chains[semaphore_index] = swap_chain;
-		command_queue->free_image_semaphores.remove_at(free_index);
-		semaphore = command_queue->image_semaphores[semaphore_index];
+		uint32_t free_index = p_command_queue->free_image_semaphores.size() - 1;
+		semaphore_index = p_command_queue->free_image_semaphores[free_index];
+		p_command_queue->image_semaphores_swap_chains[semaphore_index] = this;
+		p_command_queue->free_image_semaphores.remove_at(free_index);
+		semaphore = p_command_queue->image_semaphores[semaphore_index];
 	}
 
 	// Store in the swap chain the acquired semaphore.
-	swap_chain->command_queues_acquired.push_back(command_queue);
-	swap_chain->command_queues_acquired_semaphores.push_back(semaphore_index);
+	command_queues_acquired.push_back(p_command_queue);
+	command_queues_acquired_semaphores.push_back(semaphore_index);
 
-	err = device_functions.AcquireNextImageKHR(vk_device, swap_chain->vk_swapchain, UINT64_MAX, semaphore, VK_NULL_HANDLE, &swap_chain->image_index);
+	err = device_driver->device_functions.AcquireNextImageKHR(device_driver->vk_device, vk_swapchain, UINT64_MAX, semaphore, VK_NULL_HANDLE, &image_index);
 	if (err == VK_ERROR_OUT_OF_DATE_KHR) {
 		// Out of date leaves the semaphore in a signaled state that will never finish, so it's necessary to recreate it.
-		bool semaphore_recreated = _recreate_image_semaphore(command_queue, semaphore_index, true);
+		bool semaphore_recreated = device_driver->_recreate_image_semaphore(p_command_queue, semaphore_index, true);
 		ERR_FAIL_COND_V(!semaphore_recreated, FramebufferID());
 
 		// Swap chain is out of date and must be recreated.
@@ -3445,35 +3803,77 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::swap_chain_acquire_framebuffer(C
 
 	// Indicate the command queue should wait on these semaphores on the next submission and that it should
 	// indicate they're free again on the next fence.
-	command_queue->pending_semaphores_for_execute.push_back(semaphore_index);
-	command_queue->pending_semaphores_for_fence.push_back(semaphore_index);
+	p_command_queue->pending_semaphores_for_execute.push_back(semaphore_index);
+	p_command_queue->pending_semaphores_for_fence.push_back(semaphore_index);
+
+	{
+		MutexLock external_lock(mutex);
+		in_use[image_index] = true;
+	}
 
 	// Return the corresponding framebuffer to the new current image.
-	FramebufferID framebuffer_id = swap_chain->framebuffers[swap_chain->image_index];
+	FramebufferID framebuffer_id = framebuffers[image_index];
 	Framebuffer *framebuffer = (Framebuffer *)(framebuffer_id.id);
 	framebuffer->swap_chain_acquired = true;
 	return framebuffer_id;
+}
+
+#ifdef EXTERNAL_TARGET_ENABLED
+RDD::FramebufferID RenderingDeviceDriverVulkan::ExternalSwapChain::acquire_framebuffer(CommandQueue *p_command_queue, bool &r_resize_required) {
+	// NOTE:
+	// external_swapchain_acquire_next is NOT acquire_framebuffer
+	// acquire_framebuffer happens internally and it acquires a free image for drawing.
+	// External acquiring means the host acquires an already rendered image for displaying. -> ExternalSwapChain::grab_image -> Only RenderingNativeSurfaceExternalTarget will call this.
+
+	MutexLock external_lock(mutex);
+
+	if (images.is_empty() || device_driver->context_driver->surface_get_needs_resize(surface)) {
+		r_resize_required = true;
+		return FramebufferID();
+	}
+
+	ERR_FAIL_COND_V_MSG(free_count == 0, FramebufferID(), "All images of the swapchain have been externally acquired.");
+	uint32_t count = 0;
+	do {
+		ERR_FAIL_COND_V_MSG(count == images.size(), FramebufferID(), "All images of the swapchain has been externally acquired.");
+		count++;
+		image_index = (image_index + 1) % images.size();
+	} while (externally_acquired[image_index] || image_index == last_drawn_buffer);
+	in_use[image_index] = true;
+
+	return framebuffers[image_index];
+}
+#endif
+
+RDD::FramebufferID RenderingDeviceDriverVulkan::swap_chain_acquire_framebuffer(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, bool &r_resize_required) {
+	DEV_ASSERT(p_cmd_queue);
+	DEV_ASSERT(p_swap_chain);
+
+	CommandQueue *command_queue = (CommandQueue *)(p_cmd_queue.id);
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+
+	return swap_chain->acquire_framebuffer(command_queue, r_resize_required);
 }
 
 RDD::RenderPassID RenderingDeviceDriverVulkan::swap_chain_get_render_pass(SwapChainID p_swap_chain) {
 	DEV_ASSERT(p_swap_chain.id != 0);
 
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
-	return swap_chain->render_pass;
+	return swap_chain->get_render_pass();
 }
 
 int RenderingDeviceDriverVulkan::swap_chain_get_pre_rotation_degrees(SwapChainID p_swap_chain) {
 	DEV_ASSERT(p_swap_chain.id != 0);
 
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
-	return swap_chain->pre_transform_rotation_degrees;
+	return swap_chain->get_pre_transform_rotation_degrees();
 }
 
 RDD::DataFormat RenderingDeviceDriverVulkan::swap_chain_get_format(SwapChainID p_swap_chain) {
 	DEV_ASSERT(p_swap_chain.id != 0);
 
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
-	switch (swap_chain->format) {
+	switch (swap_chain->get_format()) {
 		case VK_FORMAT_B8G8R8A8_UNORM:
 			return DATA_FORMAT_B8G8R8A8_UNORM;
 		case VK_FORMAT_R8G8B8A8_UNORM:
@@ -3500,18 +3900,104 @@ void RenderingDeviceDriverVulkan::swap_chain_set_max_fps(SwapChainID p_swap_chai
 #endif
 }
 
+#ifdef EXTERNAL_TARGET_ENABLED
+BinaryMutex *RenderingDeviceDriverVulkan::swap_chain_get_mutex(SwapChainID p_swap_chain) {
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+
+	return &swap_chain->get_mutex();
+}
+
+void RenderingDeviceDriverVulkan::swap_chain_set_frame_in_use(SwapChainID p_swap_chain, size_t p_index, bool p_in_use) {
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+
+	swap_chain->set_frame_in_use(p_index, p_in_use);
+}
+
+int RenderingDeviceDriverVulkan::swap_chain_get_last_drawn_buffer(SwapChainID p_swap_chain) {
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+
+	return swap_chain->get_last_drawn_buffer();
+}
+
+void RenderingDeviceDriverVulkan::swap_chain_set_last_drawn_buffer(SwapChainID p_swap_chain, int p_buffer) {
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+
+	swap_chain->set_last_drawn_buffer(p_buffer);
+}
+
+uint32_t RenderingDeviceDriverVulkan::swap_chain_get_image_index(SwapChainID p_swap_chain) {
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+
+	return swap_chain->get_image_index();
+}
+
+uint64_t RenderingDeviceDriverVulkan::swap_chain_get_version(SwapChainID p_swap_chain) {
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+
+	return swap_chain->get_version();
+}
+#endif
+
 void RenderingDeviceDriverVulkan::swap_chain_free(SwapChainID p_swap_chain) {
 	DEV_ASSERT(p_swap_chain.id != 0);
 
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
-	_swap_chain_release(swap_chain);
+	swap_chain->release();
 
-	if (swap_chain->render_pass) {
-		render_pass_free(swap_chain->render_pass);
+	if (swap_chain->get_render_pass()) {
+		render_pass_free(swap_chain->get_render_pass());
 	}
 
 	memdelete(swap_chain);
 }
+
+#ifdef EXTERNAL_TARGET_ENABLED
+void RenderingDeviceDriverVulkan::external_swap_chain_set_callbacks(SwapChainID p_swap_chain, Callable p_images_created, Callable p_images_released) {
+	ExternalSwapChain *swap_chain = (ExternalSwapChain *)(p_swap_chain.id);
+
+	swap_chain->set_callbacks(p_images_created, p_images_released);
+}
+
+void RenderingDeviceDriverVulkan::external_swap_chain_release_image(SwapChainID p_swap_chain, uint32_t p_index) {
+	ExternalSwapChain *swap_chain = (ExternalSwapChain *)(p_swap_chain.id);
+
+	swap_chain->release_image(p_index);
+}
+
+VkImage RenderingDeviceDriverVulkan::external_swap_chain_get_image(SwapChainID p_swap_chain, uint32_t p_index) {
+	ExternalSwapChain *swap_chain = (ExternalSwapChain *)(p_swap_chain.id);
+
+	return swap_chain->get_image(p_index);
+}
+
+int RenderingDeviceDriverVulkan::external_swap_chain_grab_image(SwapChainID p_swap_chain) {
+	ExternalSwapChain *swap_chain = (ExternalSwapChain *)(p_swap_chain.id);
+
+	return swap_chain->grab_image();
+}
+
+VkResult RenderingDeviceDriverVulkan::get_external_memory_handle(VkDevice p_device, VkDeviceMemory p_device_memory, uint64_t *p_external_handle_out) {
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+	VkMemoryGetWin32HandleInfoKHR memory_get_win32_info = {
+		VK_STRUCTURE_TYPE_MEMORY_GET_WIN32_HANDLE_INFO_KHR,
+		nullptr,
+		p_device_memory,
+		VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT
+	};
+	return vkGetMemoryWin32HandleKHR(p_device, &memory_get_win32_info, (HANDLE *)p_external_handle_out);
+#elif defined(UNIX_ENABLED)
+	VkMemoryGetFdInfoKHR memory_get_fd_info = {
+		VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR,
+		nullptr,
+		p_device_memory,
+		VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT
+	};
+	return device_functions.GetMemoryFdKHR(p_device, &memory_get_fd_info, (int *)p_external_handle_out);
+#else
+	return VK_ERROR_INITIALIZATION_FAILED;
+#endif
+}
+#endif
 
 /*********************/
 /**** FRAMEBUFFER ****/
@@ -4129,7 +4615,6 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 	descriptor_set_allocate_info.pSetLayouts = &shader_info->vk_descriptor_set_layouts[p_set_index];
 
 	VkDescriptorSet vk_descriptor_set = VK_NULL_HANDLE;
-
 	VkResult res = vkAllocateDescriptorSets(vk_device, &descriptor_set_allocate_info, &vk_descriptor_set);
 	if (res) {
 		_descriptor_set_pool_unreference(pool_sets_it, vk_pool, p_linear_pool_index);
@@ -4470,7 +4955,7 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::pipeline_cache_serialize() {
 	pipelines_cache.buffer.resize(pipelines_cache.current_size + sizeof(PipelineCacheHeader));
 
 	VkResult err = vkGetPipelineCacheData(vk_device, pipelines_cache.vk_cache, &pipelines_cache.current_size, pipelines_cache.buffer.ptrw() + sizeof(PipelineCacheHeader));
-	ERR_FAIL_COND_V(err != VK_SUCCESS && err != VK_INCOMPLETE, Vector<uint8_t>()); // Incomplete is OK because the cache may have grown since the size was queried (unless when exiting).
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS && err != VK_INCOMPLETE, Vector<uint8_t>(), string_VkResult(err)); // Incomplete is OK because the cache may have grown since the size was queried (unless when exiting).
 
 	// The real buffer size may now be bigger than the updated current_size.
 	// We take into account the new size but keep the buffer resized in a worst-case fashion.

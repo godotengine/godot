@@ -2286,6 +2286,8 @@ AnimationPlayerEditor::~AnimationPlayerEditor() {
 	RS::get_singleton()->free(onion.capture.canvas);
 	RS::get_singleton()->free(onion.capture.canvas_item);
 	onion.capture = {};
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
 }
 
 void AnimationPlayerEditorPlugin::_notification(int p_what) {

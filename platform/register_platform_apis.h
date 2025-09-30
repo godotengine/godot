@@ -30,5 +30,7 @@
 
 #pragma once
 
+void register_core_platform_apis();
 void register_platform_apis();
+void unregister_core_platform_apis();
 void unregister_platform_apis();

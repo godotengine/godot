@@ -2,6 +2,7 @@
 #define MAX_VIEWS 2
 
 #include "../decal_data_inc.glsl"
+#include "../metal_simulator_inc.glsl"
 #include "../scene_data_inc.glsl"
 
 #if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
@@ -328,7 +329,7 @@ instances;
 
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 
-layout(set = 1, binding = 2) uniform textureCubeArray radiance_cubemap;
+layout(set = 1, binding = 2) uniform textureCubeArrayFix radiance_cubemap;
 
 #else
 
@@ -336,7 +337,7 @@ layout(set = 1, binding = 2) uniform textureCube radiance_cubemap;
 
 #endif
 
-layout(set = 1, binding = 3) uniform textureCubeArray reflection_atlas;
+layout(set = 1, binding = 3) uniform textureCubeArrayFix reflection_atlas;
 
 layout(set = 1, binding = 4) uniform texture2D shadow_atlas;
 

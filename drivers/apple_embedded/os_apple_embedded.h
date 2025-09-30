@@ -44,7 +44,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#import "rendering_context_driver_vulkan_apple_embedded.h"
+#import "drivers/apple/rendering_context_driver_vulkan_apple.h"
 #endif
 #endif
 
@@ -53,7 +53,9 @@ private:
 	static HashMap<String, void *> dynamic_symbol_lookup_table;
 	friend void register_dynamic_symbol(char *name, void *address);
 
+#ifdef COREAUDIO_ENABLED
 	AudioDriverCoreAudio audio_driver;
+#endif
 
 	AppleEmbedded *apple_embedded = nullptr;
 

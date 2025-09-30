@@ -36,6 +36,12 @@
 
 static JavaScriptBridge *javascript_bridge_singleton;
 
+void register_core_web_api() {
+}
+
+void unregister_core_web_api() {
+}
+
 void register_web_api() {
 	GDREGISTER_ABSTRACT_CLASS(JavaScriptObject);
 	GDREGISTER_ABSTRACT_CLASS(JavaScriptBridge);
@@ -58,7 +64,10 @@ JavaScriptBridge::JavaScriptBridge() {
 	singleton = this;
 }
 
-JavaScriptBridge::~JavaScriptBridge() {}
+JavaScriptBridge::~JavaScriptBridge() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}
 
 void JavaScriptBridge::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("eval", "code", "use_global_execution_context"), &JavaScriptBridge::eval, DEFVAL(false));

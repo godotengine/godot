@@ -2009,4 +2009,6 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 
 SceneImportSettingsDialog::~SceneImportSettingsDialog() {
 	memdelete(scene_import_settings_data);
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
 }

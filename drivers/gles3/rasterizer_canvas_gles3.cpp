@@ -44,6 +44,7 @@
 #include "storage/mesh_storage.h"
 #include "storage/particles_storage.h"
 #include "storage/texture_storage.h"
+#include "storage/utilities.h"
 
 void RasterizerCanvasGLES3::_update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4) {
 	p_mat4[0] = p_transform.columns[0][0];
@@ -1651,7 +1652,7 @@ void RasterizerCanvasGLES3::light_update_shadow(RID p_rid, int p_shadow_index, c
 	cl->shadow.z_far = p_far;
 	cl->shadow.y_offset = float(p_shadow_index * 2 + 1) / float(data.max_lights_per_render * 2);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, state.shadow_fb);
+	FramebufferBinding binding(GL_FRAMEBUFFER, state.shadow_fb);
 	glViewport(0, p_shadow_index * 2, state.shadow_texture_size, 2);
 
 	glDepthMask(GL_TRUE);
@@ -1749,7 +1750,6 @@ void RasterizerCanvasGLES3::light_update_shadow(RID p_rid, int p_shadow_index, c
 	}
 
 	glBindVertexArray(0);
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	glDepthMask(GL_FALSE);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_SCISSOR_TEST);
@@ -1784,7 +1784,7 @@ void RasterizerCanvasGLES3::light_update_directional_shadow(RID p_rid, int p_sha
 
 	to_light_xform.invert();
 
-	glBindFramebuffer(GL_FRAMEBUFFER, state.shadow_fb);
+	FramebufferBinding binding(GL_FRAMEBUFFER, state.shadow_fb);
 	glViewport(0, p_shadow_index * 2, state.shadow_texture_size, 2);
 
 	glDepthMask(GL_TRUE);
@@ -1857,7 +1857,6 @@ void RasterizerCanvasGLES3::light_update_directional_shadow(RID p_rid, int p_sha
 	cl->shadow.directional_xform = to_shadow * to_light_xform;
 
 	glBindVertexArray(0);
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	glDepthMask(GL_FALSE);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_SCISSOR_TEST);
@@ -1871,7 +1870,7 @@ void RasterizerCanvasGLES3::_update_shadow_atlas() {
 		glActiveTexture(GL_TEXTURE0);
 
 		glGenFramebuffers(1, &state.shadow_fb);
-		glBindFramebuffer(GL_FRAMEBUFFER, state.shadow_fb);
+		FramebufferBinding binding(GL_FRAMEBUFFER, state.shadow_fb);
 
 		glGenRenderbuffers(1, &state.shadow_depth_buffer);
 		glBindRenderbuffer(GL_RENDERBUFFER, state.shadow_depth_buffer);
@@ -1905,7 +1904,6 @@ void RasterizerCanvasGLES3::_update_shadow_atlas() {
 			WARN_PRINT("Could not create CanvasItem shadow atlas, status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
 		}
 		GLES3::Utilities::get_singleton()->texture_allocated_data(state.shadow_texture, state.shadow_texture_size * data.max_lights_per_render * 2 * 4, "2D shadow atlas texture");
-		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	}
 }
 
@@ -1927,7 +1925,7 @@ void RasterizerCanvasGLES3::render_sdf(RID p_render_target, LightOccluderInstanc
 
 	to_clip = to_clip * to_sdf.affine_inverse();
 
-	glBindFramebuffer(GL_FRAMEBUFFER, fb);
+	FramebufferBinding binding(GL_FRAMEBUFFER, fb);
 	glViewport(0, 0, rect.size.width, rect.size.height);
 
 	glDepthMask(GL_FALSE);
@@ -1971,7 +1969,6 @@ void RasterizerCanvasGLES3::render_sdf(RID p_render_target, LightOccluderInstanc
 
 	texture_storage->render_target_sdf_process(p_render_target); //done rendering, process it
 	glBindVertexArray(0);
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 }
 
 RID RasterizerCanvasGLES3::occluder_polygon_create() {

@@ -31,6 +31,18 @@
 #import "display_server_ios.h"
 
 #import "device_metrics.h"
+#import "display_layer.h"
+#import "godot_view.h"
+#import "ios.h"
+#import "key_mapping_ios.h"
+#import "keyboard_input_view.h"
+#import "os_ios.h"
+#import "tts_ios.h"
+#import "view_controller.h"
+
+#include "core/config/project_settings.h"
+#include "core/io/file_access_pack.h"
+#include "drivers/apple/rendering_native_surface_apple.h"
 
 #import <UIKit/UIKit.h>
 #import <sys/utsname.h>

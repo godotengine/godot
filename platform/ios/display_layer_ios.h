@@ -33,6 +33,7 @@
 #include "drivers/apple_embedded/display_layer_apple_embedded.h"
 
 #import <OpenGLES/EAGLDrawable.h>
+#import <OpenGLES/ES1/gl.h>
 #import <QuartzCore/QuartzCore.h>
 
 // An ugly workaround for iOS simulator

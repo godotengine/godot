@@ -2542,3 +2542,9 @@ void ResourceFormatSaverBinary::get_recognized_extensions(const Ref<Resource> &p
 ResourceFormatSaverBinary::ResourceFormatSaverBinary() {
 	singleton = this;
 }
+
+ResourceFormatSaverBinary::~ResourceFormatSaverBinary() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}

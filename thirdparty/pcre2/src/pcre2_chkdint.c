@@ -63,7 +63,7 @@ The INT64_OR_DOUBLE type is a 64-bit integer type when available,
 otherwise double. */
 
 BOOL
-PRIV(ckd_smul)(PCRE2_SIZE *r, int a, int b)
+PCRE2_SUFFIX(_pcre2_ckd_smul)(PCRE2_SIZE *r, int a, int b)
 {
 #ifdef HAVE_BUILTIN_MUL_OVERFLOW
 PCRE2_SIZE m;

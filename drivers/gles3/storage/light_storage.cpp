@@ -827,6 +827,8 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 
 		glActiveTexture(GL_TEXTURE0);
 
+		FramebufferBinding binding(GL_FRAMEBUFFER);
+
 		{
 			// We create one set of 6 layers for depth, we can reuse this when rendering.
 			glGenTextures(1, &atlas->depth);
@@ -938,7 +940,6 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 			}
 		}
 
-		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 		glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 	}
@@ -1506,7 +1507,7 @@ bool LightStorage::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_i
 		if (sc > (int)shadow_atlas->quadrants[qidx].textures.size()) {
 			GLuint fbo_id = 0;
 			glGenFramebuffers(1, &fbo_id);
-			glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+			FramebufferBinding binding(GL_FRAMEBUFFER, fbo_id);
 
 			GLuint texture_id = 0;
 			glGenTextures(1, &texture_id);
@@ -1559,7 +1560,6 @@ bool LightStorage::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_i
 
 				glBindTexture(GL_TEXTURE_2D, 0);
 			}
-			glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
 			r_quadrant = qidx;
 			r_shadow = shadow_atlas->quadrants[qidx].textures.size();
@@ -1629,6 +1629,7 @@ void LightStorage::shadow_atlas_update(RID p_atlas) {
 
 // Create if necessary and clear.
 void LightStorage::update_directional_shadow_atlas() {
+	FramebufferBinding binding(GL_FRAMEBUFFER);
 	if (directional_shadow.depth == 0 && directional_shadow.size > 0) {
 		glGenFramebuffers(1, &directional_shadow.fbo);
 		glBindFramebuffer(GL_FRAMEBUFFER, directional_shadow.fbo);
@@ -1659,7 +1660,6 @@ void LightStorage::update_directional_shadow_atlas() {
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 }
 
 void LightStorage::directional_shadow_atlas_set_size(int p_size, bool p_16_bits) {

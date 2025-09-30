@@ -165,6 +165,7 @@ private:
 public:
 	virtual FenceID fence_create() override final;
 	virtual Error fence_wait(FenceID p_fence) override final;
+	virtual void frame_cleanup(FenceID p_fence) override final;
 	virtual void fence_free(FenceID p_fence) override final;
 
 #pragma mark - Semaphores

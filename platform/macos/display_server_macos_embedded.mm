@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  display_server_embedded.mm                                            */
+/*  display_server_macos_embedded.mm                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "display_server_embedded.h"
+#import "display_server_macos_embedded.h"
 
 #if defined(GLES3_ENABLED)
 #import "embedded_gl_manager.h"
@@ -42,11 +42,12 @@
 #import "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#import "rendering_context_driver_vulkan_macos.h"
+#import "drivers/apple/rendering_context_driver_vulkan_apple.h"
 #endif // VULKAN_ENABLED
 #if defined(METAL_ENABLED)
 #import "drivers/metal/rendering_context_driver_metal.h"
 #endif
+#include "drivers/apple/rendering_native_surface_apple.h"
 #endif // RD_ENABLED
 
 #import "embedded_debugger.h"
@@ -56,7 +57,7 @@
 #import "core/debugger/engine_debugger.h"
 #import "core/io/marshalls.h"
 
-DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	EmbeddedDebugger::initialize(this);
 
 	r_error = OK; // default to OK
@@ -81,7 +82,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 	}
 #endif
 	if (rendering_driver == "vulkan") {
-		rendering_context = memnew(RenderingContextDriverVulkanMacOS);
+		rendering_context = memnew(RenderingContextDriverVulkanApple);
 	}
 #endif
 #if defined(METAL_ENABLED)
@@ -144,25 +145,12 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 		layer = [CAMetalLayer new];
 		layer.anchorPoint = CGPointMake(0, 1);
 
-		union {
-#ifdef VULKAN_ENABLED
-			RenderingContextDriverVulkanMacOS::WindowPlatformData vulkan;
-#endif
-#ifdef METAL_ENABLED
-			RenderingContextDriverMetal::WindowPlatformData metal;
-#endif
-		} wpd;
-#ifdef VULKAN_ENABLED
-		if (rendering_driver == "vulkan") {
-			wpd.vulkan.layer_ptr = (CAMetalLayer *const *)&layer;
+		Ref<RenderingNativeSurfaceApple> apple_surface;
+		if (rendering_driver == "vulkan" || rendering_driver == "metal") {
+			apple_surface = RenderingNativeSurfaceApple::create((__bridge void *)layer);
 		}
-#endif
-#ifdef METAL_ENABLED
-		if (rendering_driver == "metal") {
-			wpd.metal.layer = (CAMetalLayer *)layer;
-		}
-#endif
-		Error err = rendering_context->window_create(window_id_counter, &wpd);
+
+		Error err = rendering_context->window_create(window_id_counter, apple_surface);
 		ERR_FAIL_COND_MSG(err != OK, vformat("Can't create a %s context", rendering_driver));
 
 		// The rendering context is always in pixels
@@ -211,7 +199,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 	}
 }
 
-DisplayServerEmbedded::~DisplayServerEmbedded() {
+DisplayServerMacOSEmbedded::~DisplayServerMacOSEmbedded() {
 	if (native_menu) {
 		memdelete(native_menu);
 		native_menu = nullptr;
@@ -239,11 +227,11 @@ DisplayServerEmbedded::~DisplayServerEmbedded() {
 #endif
 }
 
-DisplayServer *DisplayServerEmbedded::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t /* p_parent_window */, Error &r_error) {
-	return memnew(DisplayServerEmbedded(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
+DisplayServer *DisplayServerMacOSEmbedded::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t /* p_parent_window */, Error &r_error) {
+	return memnew(DisplayServerMacOSEmbedded(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
 }
 
-Vector<String> DisplayServerEmbedded::get_rendering_drivers_func() {
+Vector<String> DisplayServerMacOSEmbedded::get_rendering_drivers_func() {
 	Vector<String> drivers;
 
 #if defined(VULKAN_ENABLED)
@@ -259,17 +247,17 @@ Vector<String> DisplayServerEmbedded::get_rendering_drivers_func() {
 	return drivers;
 }
 
-void DisplayServerEmbedded::register_embedded_driver() {
+void DisplayServerMacOSEmbedded::register_embedded_driver() {
 	register_create_function("embedded", create_func, get_rendering_drivers_func);
 }
 
-void DisplayServerEmbedded::beep() const {
+void DisplayServerMacOSEmbedded::beep() const {
 	NSBeep();
 }
 
 // MARK: - Mouse
 
-void DisplayServerEmbedded::_mouse_update_mode() {
+void DisplayServerMacOSEmbedded::_mouse_update_mode() {
 	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
 			? mouse_mode_override
 			: mouse_mode_base;
@@ -283,7 +271,7 @@ void DisplayServerEmbedded::_mouse_update_mode() {
 	mouse_mode = wanted_mouse_mode;
 }
 
-void DisplayServerEmbedded::mouse_set_mode(MouseMode p_mode) {
+void DisplayServerMacOSEmbedded::mouse_set_mode(MouseMode p_mode) {
 	if (p_mode == mouse_mode_base) {
 		return;
 	}
@@ -291,11 +279,11 @@ void DisplayServerEmbedded::mouse_set_mode(MouseMode p_mode) {
 	_mouse_update_mode();
 }
 
-DisplayServerEmbedded::MouseMode DisplayServerEmbedded::mouse_get_mode() const {
+DisplayServerMacOSEmbedded::MouseMode DisplayServerMacOSEmbedded::mouse_get_mode() const {
 	return mouse_mode;
 }
 
-void DisplayServerEmbedded::mouse_set_mode_override(MouseMode p_mode) {
+void DisplayServerMacOSEmbedded::mouse_set_mode_override(MouseMode p_mode) {
 	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
 	if (p_mode == mouse_mode_override) {
 		return;
@@ -304,11 +292,11 @@ void DisplayServerEmbedded::mouse_set_mode_override(MouseMode p_mode) {
 	_mouse_update_mode();
 }
 
-DisplayServer::MouseMode DisplayServerEmbedded::mouse_get_mode_override() const {
+DisplayServer::MouseMode DisplayServerMacOSEmbedded::mouse_get_mode_override() const {
 	return mouse_mode_override;
 }
 
-void DisplayServerEmbedded::mouse_set_mode_override_enabled(bool p_override_enabled) {
+void DisplayServerMacOSEmbedded::mouse_set_mode_override_enabled(bool p_override_enabled) {
 	if (p_override_enabled == mouse_mode_override_enabled) {
 		return;
 	}
@@ -316,17 +304,17 @@ void DisplayServerEmbedded::mouse_set_mode_override_enabled(bool p_override_enab
 	_mouse_update_mode();
 }
 
-bool DisplayServerEmbedded::mouse_is_mode_override_enabled() const {
+bool DisplayServerMacOSEmbedded::mouse_is_mode_override_enabled() const {
 	return mouse_mode_override_enabled;
 }
 
-void DisplayServerEmbedded::warp_mouse(const Point2i &p_position) {
+void DisplayServerMacOSEmbedded::warp_mouse(const Point2i &p_position) {
 	_THREAD_SAFE_METHOD_
 	Input::get_singleton()->set_mouse_position(p_position);
 	EngineDebugger::get_singleton()->send_message("game_view:warp_mouse", { p_position });
 }
 
-Point2i DisplayServerEmbedded::mouse_get_position() const {
+Point2i DisplayServerMacOSEmbedded::mouse_get_position() const {
 	_THREAD_SAFE_METHOD_
 
 	const NSPoint mouse_pos = [NSEvent mouseLocation];
@@ -346,7 +334,7 @@ Point2i DisplayServerEmbedded::mouse_get_position() const {
 	return Vector2i();
 }
 
-BitField<MouseButtonMask> DisplayServerEmbedded::mouse_get_button_state() const {
+BitField<MouseButtonMask> DisplayServerMacOSEmbedded::mouse_get_button_state() const {
 	BitField<MouseButtonMask> last_button_state = MouseButtonMask::NONE;
 
 	NSUInteger buttons = [NSEvent pressedMouseButtons];
@@ -370,41 +358,41 @@ BitField<MouseButtonMask> DisplayServerEmbedded::mouse_get_button_state() const 
 
 // MARK: Events
 
-void DisplayServerEmbedded::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
 	window_resize_callbacks[p_window] = p_callable;
 }
 
-void DisplayServerEmbedded::window_set_window_event_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_window_event_callback(const Callable &p_callable, WindowID p_window) {
 	window_event_callbacks[p_window] = p_callable;
 }
-void DisplayServerEmbedded::window_set_input_event_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_input_event_callback(const Callable &p_callable, WindowID p_window) {
 	input_event_callbacks[p_window] = p_callable;
 }
 
-void DisplayServerEmbedded::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
 	input_text_callbacks[p_window] = p_callable;
 }
 
-void DisplayServerEmbedded::window_set_drop_files_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_drop_files_callback(const Callable &p_callable, WindowID p_window) {
 	// Not supported
 }
 
-void DisplayServerEmbedded::process_events() {
+void DisplayServerMacOSEmbedded::process_events() {
 	Input *input = Input::get_singleton();
 	input->flush_buffered_events();
 }
 
-void DisplayServerEmbedded::_dispatch_input_events(const Ref<InputEvent> &p_event) {
+void DisplayServerMacOSEmbedded::_dispatch_input_events(const Ref<InputEvent> &p_event) {
 	Ref<InputEventFromWindow> event_from_window = p_event;
 	WindowID window_id = INVALID_WINDOW_ID;
 	if (event_from_window.is_valid()) {
 		window_id = event_from_window->get_window_id();
 	}
-	DisplayServerEmbedded *ds = (DisplayServerEmbedded *)DisplayServer::get_singleton();
+	DisplayServerMacOSEmbedded *ds = (DisplayServerMacOSEmbedded *)DisplayServer::get_singleton();
 	ds->send_input_event(p_event, window_id);
 }
 
-void DisplayServerEmbedded::send_input_event(const Ref<InputEvent> &p_event, WindowID p_id) const {
+void DisplayServerMacOSEmbedded::send_input_event(const Ref<InputEvent> &p_event, WindowID p_id) const {
 	if (p_id != INVALID_WINDOW_ID) {
 		const Callable *cb = input_event_callbacks.getptr(p_id);
 		if (cb) {
@@ -417,21 +405,21 @@ void DisplayServerEmbedded::send_input_event(const Ref<InputEvent> &p_event, Win
 	}
 }
 
-void DisplayServerEmbedded::send_input_text(const String &p_text, WindowID p_id) const {
+void DisplayServerMacOSEmbedded::send_input_text(const String &p_text, WindowID p_id) const {
 	const Callable *cb = input_text_callbacks.getptr(p_id);
 	if (cb) {
 		_window_callback(*cb, p_text);
 	}
 }
 
-void DisplayServerEmbedded::send_window_event(DisplayServer::WindowEvent p_event, WindowID p_id) const {
+void DisplayServerMacOSEmbedded::send_window_event(DisplayServer::WindowEvent p_event, WindowID p_id) const {
 	const Callable *cb = window_event_callbacks.getptr(p_id);
 	if (cb) {
 		_window_callback(*cb, int(p_event));
 	}
 }
 
-void DisplayServerEmbedded::_window_callback(const Callable &p_callable, const Variant &p_arg) const {
+void DisplayServerMacOSEmbedded::_window_callback(const Callable &p_callable, const Variant &p_arg) const {
 	if (p_callable.is_valid()) {
 		p_callable.call(p_arg);
 	}
@@ -439,7 +427,7 @@ void DisplayServerEmbedded::_window_callback(const Callable &p_callable, const V
 
 // MARK: -
 
-bool DisplayServerEmbedded::has_feature(Feature p_feature) const {
+bool DisplayServerMacOSEmbedded::has_feature(Feature p_feature) const {
 	switch (p_feature) {
 #ifndef DISABLE_DEPRECATED
 		case FEATURE_GLOBAL_MENU: {
@@ -468,19 +456,19 @@ bool DisplayServerEmbedded::has_feature(Feature p_feature) const {
 	}
 }
 
-String DisplayServerEmbedded::get_name() const {
+String DisplayServerMacOSEmbedded::get_name() const {
 	return "embedded";
 }
 
-int DisplayServerEmbedded::get_screen_count() const {
+int DisplayServerMacOSEmbedded::get_screen_count() const {
 	return 1;
 }
 
-int DisplayServerEmbedded::get_primary_screen() const {
+int DisplayServerMacOSEmbedded::get_primary_screen() const {
 	return 0;
 }
 
-Point2i DisplayServerEmbedded::screen_get_position(int p_screen) const {
+Point2i DisplayServerMacOSEmbedded::screen_get_position(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
@@ -490,7 +478,7 @@ Point2i DisplayServerEmbedded::screen_get_position(int p_screen) const {
 	return Point2i(0, 0);
 }
 
-Size2i DisplayServerEmbedded::screen_get_size(int p_screen) const {
+Size2i DisplayServerMacOSEmbedded::screen_get_size(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
@@ -500,7 +488,7 @@ Size2i DisplayServerEmbedded::screen_get_size(int p_screen) const {
 	return window_get_size(MAIN_WINDOW_ID);
 }
 
-Rect2i DisplayServerEmbedded::screen_get_usable_rect(int p_screen) const {
+Rect2i DisplayServerMacOSEmbedded::screen_get_usable_rect(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
@@ -510,7 +498,7 @@ Rect2i DisplayServerEmbedded::screen_get_usable_rect(int p_screen) const {
 	return Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
 }
 
-int DisplayServerEmbedded::screen_get_dpi(int p_screen) const {
+int DisplayServerMacOSEmbedded::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
@@ -520,7 +508,7 @@ int DisplayServerEmbedded::screen_get_dpi(int p_screen) const {
 	return 96;
 }
 
-float DisplayServerEmbedded::screen_get_scale(int p_screen) const {
+float DisplayServerMacOSEmbedded::screen_get_scale(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	switch (p_screen) {
@@ -535,7 +523,7 @@ float DisplayServerEmbedded::screen_get_scale(int p_screen) const {
 	}
 }
 
-float DisplayServerEmbedded::screen_get_refresh_rate(int p_screen) const {
+float DisplayServerMacOSEmbedded::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
@@ -554,72 +542,72 @@ float DisplayServerEmbedded::screen_get_refresh_rate(int p_screen) const {
 	return SCREEN_REFRESH_RATE_FALLBACK;
 }
 
-Vector<DisplayServer::WindowID> DisplayServerEmbedded::get_window_list() const {
+Vector<DisplayServer::WindowID> DisplayServerMacOSEmbedded::get_window_list() const {
 	Vector<DisplayServer::WindowID> list;
 	list.push_back(MAIN_WINDOW_ID);
 	return list;
 }
 
-DisplayServer::WindowID DisplayServerEmbedded::get_window_at_screen_position(const Point2i &p_position) const {
+DisplayServer::WindowID DisplayServerMacOSEmbedded::get_window_at_screen_position(const Point2i &p_position) const {
 	return MAIN_WINDOW_ID;
 }
 
-void DisplayServerEmbedded::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
 	window_attached_instance_id[p_window] = p_instance;
 }
 
-ObjectID DisplayServerEmbedded::window_get_attached_instance_id(WindowID p_window) const {
+ObjectID DisplayServerMacOSEmbedded::window_get_attached_instance_id(WindowID p_window) const {
 	return window_attached_instance_id[p_window];
 }
 
-void DisplayServerEmbedded::window_set_title(const String &p_title, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_title(const String &p_title, WindowID p_window) {
 	// Not supported
 }
 
-int DisplayServerEmbedded::window_get_current_screen(WindowID p_window) const {
+int DisplayServerMacOSEmbedded::window_get_current_screen(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, INVALID_SCREEN);
 
 	return 0;
 }
 
-void DisplayServerEmbedded::window_set_current_screen(int p_screen, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_current_screen(int p_screen, WindowID p_window) {
 	// Not supported
 }
 
-Point2i DisplayServerEmbedded::window_get_position(WindowID p_window) const {
+Point2i DisplayServerMacOSEmbedded::window_get_position(WindowID p_window) const {
 	return Point2i();
 }
 
-Point2i DisplayServerEmbedded::window_get_position_with_decorations(WindowID p_window) const {
+Point2i DisplayServerMacOSEmbedded::window_get_position_with_decorations(WindowID p_window) const {
 	return Point2i();
 }
 
-void DisplayServerEmbedded::window_set_position(const Point2i &p_position, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_position(const Point2i &p_position, WindowID p_window) {
 	// Probably not supported for single window iOS app
 }
 
-void DisplayServerEmbedded::window_set_transient(WindowID p_window, WindowID p_parent) {
+void DisplayServerMacOSEmbedded::window_set_transient(WindowID p_window, WindowID p_parent) {
 	// Not supported
 }
 
-void DisplayServerEmbedded::window_set_max_size(const Size2i p_size, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_max_size(const Size2i p_size, WindowID p_window) {
 	// Not supported
 }
 
-Size2i DisplayServerEmbedded::window_get_max_size(WindowID p_window) const {
+Size2i DisplayServerMacOSEmbedded::window_get_max_size(WindowID p_window) const {
 	return Size2i();
 }
 
-void DisplayServerEmbedded::window_set_min_size(const Size2i p_size, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_min_size(const Size2i p_size, WindowID p_window) {
 	// Not supported
 }
 
-Size2i DisplayServerEmbedded::window_get_min_size(WindowID p_window) const {
+Size2i DisplayServerMacOSEmbedded::window_get_min_size(WindowID p_window) const {
 	return Size2i();
 }
 
-void DisplayServerEmbedded::window_set_size(const Size2i p_size, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_size(const Size2i p_size, WindowID p_window) {
 	[CATransaction begin];
 	[CATransaction setDisableActions:YES];
 
@@ -648,7 +636,7 @@ void DisplayServerEmbedded::window_set_size(const Size2i p_size, WindowID p_wind
 	}
 }
 
-Size2i DisplayServerEmbedded::window_get_size(WindowID p_window) const {
+Size2i DisplayServerMacOSEmbedded::window_get_size(WindowID p_window) const {
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		RenderingContextDriver::SurfaceID surface = rendering_context->surface_get_from_window(p_window);
@@ -666,65 +654,65 @@ Size2i DisplayServerEmbedded::window_get_size(WindowID p_window) const {
 	return Size2i();
 }
 
-Size2i DisplayServerEmbedded::window_get_size_with_decorations(WindowID p_window) const {
+Size2i DisplayServerMacOSEmbedded::window_get_size_with_decorations(WindowID p_window) const {
 	return window_get_size(p_window);
 }
 
-void DisplayServerEmbedded::window_set_mode(WindowMode p_mode, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_mode(WindowMode p_mode, WindowID p_window) {
 	// Not supported
 }
 
-DisplayServer::WindowMode DisplayServerEmbedded::window_get_mode(WindowID p_window) const {
+DisplayServer::WindowMode DisplayServerMacOSEmbedded::window_get_mode(WindowID p_window) const {
 	return WindowMode::WINDOW_MODE_WINDOWED;
 }
 
-bool DisplayServerEmbedded::window_is_maximize_allowed(WindowID p_window) const {
+bool DisplayServerMacOSEmbedded::window_is_maximize_allowed(WindowID p_window) const {
 	return false;
 }
 
-void DisplayServerEmbedded::window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window) {
 	if (p_flag == WINDOW_FLAG_TRANSPARENT && p_window == MAIN_WINDOW_ID) {
 		transparent = p_enabled;
 		layer.opaque = !(OS::get_singleton()->is_layered_allowed() && transparent);
 	}
 }
 
-bool DisplayServerEmbedded::window_get_flag(WindowFlags p_flag, WindowID p_window) const {
+bool DisplayServerMacOSEmbedded::window_get_flag(WindowFlags p_flag, WindowID p_window) const {
 	if (p_flag == WINDOW_FLAG_TRANSPARENT && p_window == MAIN_WINDOW_ID) {
 		return transparent;
 	}
 	return false;
 }
 
-void DisplayServerEmbedded::window_request_attention(WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_request_attention(WindowID p_window) {
 	// Not supported
 }
 
-void DisplayServerEmbedded::window_move_to_foreground(WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_move_to_foreground(WindowID p_window) {
 	// Not supported
 }
 
-bool DisplayServerEmbedded::window_is_focused(WindowID p_window) const {
+bool DisplayServerMacOSEmbedded::window_is_focused(WindowID p_window) const {
 	return true;
 }
 
-float DisplayServerEmbedded::screen_get_max_scale() const {
+float DisplayServerMacOSEmbedded::screen_get_max_scale() const {
 	return state.screen_max_scale;
 }
 
-bool DisplayServerEmbedded::window_can_draw(WindowID p_window) const {
+bool DisplayServerMacOSEmbedded::window_can_draw(WindowID p_window) const {
 	return true;
 }
 
-bool DisplayServerEmbedded::can_any_window_draw() const {
+bool DisplayServerMacOSEmbedded::can_any_window_draw() const {
 	return true;
 }
 
-void DisplayServerEmbedded::window_set_ime_active(const bool p_active, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_ime_active(const bool p_active, WindowID p_window) {
 	EngineDebugger::get_singleton()->send_message("game_view:window_set_ime_active", { p_active });
 }
 
-void DisplayServerEmbedded::window_set_ime_position(const Point2i &p_pos, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_ime_position(const Point2i &p_pos, WindowID p_window) {
 	if (p_pos == ime_last_position) {
 		return;
 	}
@@ -732,7 +720,7 @@ void DisplayServerEmbedded::window_set_ime_position(const Point2i &p_pos, Window
 	ime_last_position = p_pos;
 }
 
-void DisplayServerEmbedded::set_state(const DisplayServerEmbeddedState &p_state) {
+void DisplayServerMacOSEmbedded::set_state(const DisplayServerEmbeddedState &p_state) {
 	if (state == p_state) {
 		return;
 	}
@@ -750,7 +738,7 @@ void DisplayServerEmbedded::set_state(const DisplayServerEmbeddedState &p_state)
 	}
 }
 
-void DisplayServerEmbedded::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
+void DisplayServerMacOSEmbedded::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
 		gl_manager->set_vsync_enabled(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
@@ -764,7 +752,7 @@ void DisplayServerEmbedded::window_set_vsync_mode(DisplayServer::VSyncMode p_vsy
 #endif
 }
 
-DisplayServer::VSyncMode DisplayServerEmbedded::window_get_vsync_mode(WindowID p_window) const {
+DisplayServer::VSyncMode DisplayServerMacOSEmbedded::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
@@ -779,31 +767,31 @@ DisplayServer::VSyncMode DisplayServerEmbedded::window_get_vsync_mode(WindowID p
 	return DisplayServer::VSYNC_ENABLED;
 }
 
-void DisplayServerEmbedded::update_im_text(const Point2i &p_selection, const String &p_text) {
+void DisplayServerMacOSEmbedded::update_im_text(const Point2i &p_selection, const String &p_text) {
 	im_selection = p_selection;
 	im_text = p_text;
 
 	OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 }
 
-Point2i DisplayServerEmbedded::ime_get_selection() const {
+Point2i DisplayServerMacOSEmbedded::ime_get_selection() const {
 	return im_selection;
 }
 
-String DisplayServerEmbedded::ime_get_text() const {
+String DisplayServerMacOSEmbedded::ime_get_text() const {
 	return im_text;
 }
 
-void DisplayServerEmbedded::cursor_set_shape(CursorShape p_shape) {
+void DisplayServerMacOSEmbedded::cursor_set_shape(CursorShape p_shape) {
 	cursor_shape = p_shape;
 	EngineDebugger::get_singleton()->send_message("game_view:cursor_set_shape", { p_shape });
 }
 
-DisplayServer::CursorShape DisplayServerEmbedded::cursor_get_shape() const {
+DisplayServer::CursorShape DisplayServerMacOSEmbedded::cursor_get_shape() const {
 	return cursor_shape;
 }
 
-void DisplayServerEmbedded::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+void DisplayServerMacOSEmbedded::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	PackedByteArray data;
 	if (p_cursor.is_valid()) {
 		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot);
@@ -814,7 +802,7 @@ void DisplayServerEmbedded::cursor_set_custom_image(const Ref<Resource> &p_curso
 	EngineDebugger::get_singleton()->send_message("game_view:cursor_set_custom_image", { data, p_shape, p_hotspot });
 }
 
-void DisplayServerEmbedded::swap_buffers() {
+void DisplayServerMacOSEmbedded::swap_buffers() {
 #ifdef GLES3_ENABLED
 	if (gl_manager) {
 		gl_manager->swap_buffers();

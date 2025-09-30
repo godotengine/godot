@@ -1696,6 +1696,8 @@ TypedArray<Dictionary> ClassDB::class_get_method_list(const StringName &p_class,
 #else
 		Dictionary dict;
 		dict["name"] = E.name;
+		dict["is_static"] = E.is_static;
+		dict["hash"] = E.hash;
 		ret.push_back(dict);
 #endif // DEBUG_ENABLED
 	}
@@ -2281,6 +2283,10 @@ EngineDebugger::~EngineDebugger() {
 		::EngineDebugger::unregister_message_capture(E.key);
 	}
 	captures.clear();
+
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 }
 
 void EngineDebugger::_bind_methods() {

@@ -753,7 +753,7 @@ public:
 	virtual Size2i render_target_get_size(RID p_render_target) const override;
 	virtual void render_target_set_transparent(RID p_render_target, bool p_is_transparent) override;
 	virtual bool render_target_get_transparent(RID p_render_target) const override;
-	virtual void render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen) override;
+	virtual void render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen, DisplayServer::WindowID p_direct_to_screen_id) override;
 	virtual bool render_target_get_direct_to_screen(RID p_render_target) const override;
 	virtual bool render_target_was_used(RID p_render_target) const override;
 	virtual void render_target_set_as_unused(RID p_render_target) override;

@@ -1500,6 +1500,9 @@ RuntimeNodeSelect::~RuntimeNodeSelect() {
 		RS::get_singleton()->free(sbox_2d_ci);
 		RS::get_singleton()->free(draw_canvas);
 	}
+
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
 }
 
 void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {

@@ -376,6 +376,7 @@ struct RenderTarget {
 
 	bool is_transparent = false;
 	bool direct_to_screen = false;
+	DisplayServer::WindowID direct_to_screen_id = DisplayServer::INVALID_WINDOW_ID;
 
 	bool used_in_frame = false;
 	RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
@@ -630,8 +631,6 @@ public:
 
 	/* RENDER TARGET API */
 
-	static GLuint system_fbo;
-
 	RenderTarget *get_render_target(RID p_rid) { return render_target_owner.get_or_null(p_rid); }
 	bool owns_render_target(RID p_rid) { return render_target_owner.owns(p_rid); }
 
@@ -646,7 +645,7 @@ public:
 	virtual Size2i render_target_get_size(RID p_render_target) const override;
 	virtual void render_target_set_transparent(RID p_render_target, bool p_is_transparent) override;
 	virtual bool render_target_get_transparent(RID p_render_target) const override;
-	virtual void render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen) override;
+	virtual void render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen, DisplayServer::WindowID p_direct_to_screen_id) override;
 	virtual bool render_target_get_direct_to_screen(RID p_render_target) const override;
 	virtual bool render_target_was_used(RID p_render_target) const override;
 	void render_target_clear_used(RID p_render_target);
@@ -718,10 +717,6 @@ public:
 
 	void bind_framebuffer(GLuint framebuffer) {
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-	}
-
-	void bind_framebuffer_system() {
-		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	}
 
 	String get_framebuffer_error(GLenum p_status);

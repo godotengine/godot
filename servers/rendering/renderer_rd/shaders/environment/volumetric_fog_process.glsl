@@ -16,6 +16,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 #include "../cluster_data_inc.glsl"
 #include "../light_data_inc.glsl"
+#include "../metal_simulator_inc.glsl"
 
 #define M_PI 3.14159265359
 
@@ -202,7 +203,7 @@ layout(r32ui, set = 0, binding = 18) uniform uimage3D emissive_only_map;
 #endif
 
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
-layout(set = 0, binding = 19) uniform textureCubeArray sky_texture;
+layout(set = 0, binding = 19) uniform textureCubeArrayFix sky_texture;
 #else
 layout(set = 0, binding = 19) uniform textureCube sky_texture;
 #endif
@@ -430,8 +431,8 @@ void main() {
 				float mip_bias = 2.0 + total_density * (MAX_SKY_LOD - 2.0); // Not physically based, but looks nice
 				vec3 scatter_direction = (params.radiance_inverse_xform * normalize(view_pos)) * sign(params.phase_g);
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
-				isotropic = texture(samplerCubeArray(sky_texture, linear_sampler_with_mipmaps), vec4(0.0, 1.0, 0.0, mip_bias)).rgb;
-				anisotropic = texture(samplerCubeArray(sky_texture, linear_sampler_with_mipmaps), vec4(scatter_direction, mip_bias)).rgb;
+				isotropic = textureFix(sky_texture, linear_sampler_with_mipmaps, vec4(0.0, 1.0, 0.0, mip_bias)).rgb;
+				anisotropic = textureFix(sky_texture, linear_sampler_with_mipmaps, vec4(scatter_direction, mip_bias)).rgb;
 #else
 				isotropic = textureLod(samplerCube(sky_texture, linear_sampler_with_mipmaps), vec3(0.0, 1.0, 0.0), mip_bias).rgb;
 				anisotropic = textureLod(samplerCube(sky_texture, linear_sampler_with_mipmaps), vec3(scatter_direction), mip_bias).rgb;
