@@ -132,7 +132,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-14 10:01+0000\n"
+"PO-Revision-Date: 2025-09-23 15:23+0000\n"
 "Last-Translator: Wuzzy <Wuzzy@disroot.org>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot/"
 "de/>\n"
@@ -7793,6 +7793,14 @@ msgstr ""
 msgid "Property: %s"
 msgstr "Eigenschaft: %s"
 
+msgid ""
+"Toggling the checkbox is disabled for Resource properties. Modify the "
+"property using the resource picker instead."
+msgstr ""
+"Das Umschalten dieses Kontrollkästchens ist für Ressourceneigenschaften "
+"deaktiviert. Die Eigenschaft muss stattdessen mit dem Ressourcenwähler "
+"geändert werden."
+
 msgid "Unfavorite Property"
 msgstr "Eigenschaft entfavorisieren"
 
@@ -10943,6 +10951,12 @@ msgstr "Zylinder-Shape-Höhe ändern"
 
 msgid "Change Separation Ray Shape Length"
 msgstr "Teilungsstrahl-Shape-Länge ändern"
+
+msgid "Remove SoftBody3D pinned point %d"
+msgstr "SoftBody3D-gepinnten Punkt %d entfernen"
+
+msgid "Add SoftBody3D pinned point %d"
+msgstr "SoftBody3D-gepinnten Punkt %d hinzufügen"
 
 msgid "Change Probe Size"
 msgstr "Probe-Größe ändern"
