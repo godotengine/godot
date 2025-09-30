@@ -1004,45 +1004,58 @@ Dictionary EditorExportPlatform::get_internal_export_files(const Ref<EditorExpor
 	Dictionary files;
 
 	// Text server support data.
-	if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA) && (bool)get_project_setting(p_preset, "internationalization/locale/include_text_server_data")) {
-		String ts_name = TS->get_support_data_filename();
-		String ts_target = "res://" + ts_name;
-		if (!ts_name.is_empty()) {
-			bool export_ok = false;
-			if (FileAccess::exists(ts_target)) { // Include user supplied data file.
-				const PackedByteArray &ts_data = FileAccess::get_file_as_bytes(ts_target);
-				if (!ts_data.is_empty()) {
-					add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("Using user provided text server data, text display in the exported project might be broken if export template was built with different ICU version!"));
-					files[ts_target] = ts_data;
-					export_ok = true;
+	if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
+		bool include_data = (bool)get_project_setting(p_preset, "internationalization/locale/include_text_server_data");
+		if (!include_data) {
+			Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
+			translations.push_back(get_project_setting(p_preset, "internationalization/locale/fallback"));
+			for (const String &t : translations) {
+				if (TS->is_locale_using_support_data(t)) {
+					include_data = true;
+					break;
 				}
-			} else {
-				String current_version = GODOT_VERSION_FULL_CONFIG;
-				String template_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version);
-				if (p_debug && p_preset->has("custom_template/debug") && p_preset->get("custom_template/debug") != "") {
-					template_path = p_preset->get("custom_template/debug").operator String().get_base_dir();
-				} else if (!p_debug && p_preset->has("custom_template/release") && p_preset->get("custom_template/release") != "") {
-					template_path = p_preset->get("custom_template/release").operator String().get_base_dir();
-				}
-				String data_file_name = template_path.path_join(ts_name);
-				if (FileAccess::exists(data_file_name)) {
-					const PackedByteArray &ts_data = FileAccess::get_file_as_bytes(data_file_name);
+			}
+		}
+		if (include_data) {
+			String ts_name = TS->get_support_data_filename();
+			String ts_target = "res://" + ts_name;
+			if (!ts_name.is_empty()) {
+				bool export_ok = false;
+				if (FileAccess::exists(ts_target)) { // Include user supplied data file.
+					const PackedByteArray &ts_data = FileAccess::get_file_as_bytes(ts_target);
 					if (!ts_data.is_empty()) {
-						print_line("Using text server data from export templates.");
+						add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("Using user provided text server data, text display in the exported project might be broken if export template was built with different ICU version!"));
 						files[ts_target] = ts_data;
 						export_ok = true;
 					}
 				} else {
-					const PackedByteArray &ts_data = TS->get_support_data();
-					if (!ts_data.is_empty()) {
-						add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("Using editor embedded text server data, text display in the exported project might be broken if export template was built with different ICU version!"));
-						files[ts_target] = ts_data;
-						export_ok = true;
+					String current_version = GODOT_VERSION_FULL_CONFIG;
+					String template_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version);
+					if (p_debug && p_preset->has("custom_template/debug") && p_preset->get("custom_template/debug") != "") {
+						template_path = p_preset->get("custom_template/debug").operator String().get_base_dir();
+					} else if (!p_debug && p_preset->has("custom_template/release") && p_preset->get("custom_template/release") != "") {
+						template_path = p_preset->get("custom_template/release").operator String().get_base_dir();
+					}
+					String data_file_name = template_path.path_join(ts_name);
+					if (FileAccess::exists(data_file_name)) {
+						const PackedByteArray &ts_data = FileAccess::get_file_as_bytes(data_file_name);
+						if (!ts_data.is_empty()) {
+							print_line("Using text server data from export templates.");
+							files[ts_target] = ts_data;
+							export_ok = true;
+						}
+					} else {
+						const PackedByteArray &ts_data = TS->get_support_data();
+						if (!ts_data.is_empty()) {
+							add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("Using editor embedded text server data, text display in the exported project might be broken if export template was built with different ICU version!"));
+							files[ts_target] = ts_data;
+							export_ok = true;
+						}
 					}
 				}
-			}
-			if (!export_ok) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), TTR("Missing text server data, text display in the exported project might be broken!"));
+				if (!export_ok) {
+					add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), TTR("Missing text server data, text display in the exported project might be broken!"));
+				}
 			}
 		}
 	}
