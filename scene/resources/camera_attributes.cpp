@@ -259,8 +259,8 @@ void CameraAttributesPractical::_validate_property(PropertyInfo &p_property) con
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
-	if ((!dof_blur_far_enabled && p_property.name.begins_with("dof_blur_far_")) ||
-			(!dof_blur_near_enabled && p_property.name.begins_with("dof_blur_near_"))) {
+	if ((p_property.name != "dof_blur_far_enabled" && !dof_blur_far_enabled && p_property.name.begins_with("dof_blur_far_")) ||
+			(p_property.name != "dof_blur_near_enabled" && !dof_blur_near_enabled && p_property.name.begins_with("dof_blur_near_"))) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
