@@ -98,7 +98,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	int current_line = 0;
 	int instr_args_max = 0;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	List<int> temp_stack;
 #endif
 
@@ -121,7 +121,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	RBMap<MethodBind *, int> method_bind_map;
 	RBMap<GDScriptFunction *, int> lambdas_map;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	// Keep method and property names for pointer and validated operations.
 	// Used when disassembling the bytecode.
 	Vector<String> operator_names;
@@ -191,7 +191,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		stack_identifiers_counts.pop_back();
 		stack_identifiers = stack_id_stack.back()->get();
 		stack_id_stack.pop_back();
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		if (!used_temporaries.is_empty()) {
 			ERR_PRINT("Leaving block with non-zero temporary variables: " + itos(used_temporaries.size()));
 		}
@@ -474,7 +474,7 @@ public:
 	virtual void write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, Variant p_rpc_config, const GDScriptDataType &p_return_type) override;
 	virtual GDScriptFunction *write_end() override;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	virtual void set_signature(const String &p_signature) override;
 #endif
 	virtual void set_initial_line(int p_line) override;

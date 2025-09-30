@@ -145,7 +145,7 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 	if (do_init_languages) {
 		init_language(p_source_dir);
 	}
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	// Set all warning levels to "Warn" in order to test them properly, even the ones that default to error.
 	ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/enable", true);
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
@@ -170,7 +170,7 @@ GDScriptTestRunner::~GDScriptTestRunner() {
 	}
 }
 
-#ifndef DEBUG_ENABLED
+#ifndef GDSCRIPT_DEBUG_ENABLED
 static String strip_warnings(const String &p_expected) {
 	// On release builds we don't have warnings. Here we remove them from the output before comparison
 	// so it doesn't fail just because of difference in warnings.
@@ -205,7 +205,7 @@ int GDScriptTestRunner::run_tests() {
 		GDScriptTest::TestResult result = test.run_test();
 
 		String expected = FileAccess::get_file_as_string(test.get_output_file());
-#ifndef DEBUG_ENABLED
+#ifndef GDSCRIPT_DEBUG_ENABLED
 		expected = strip_warnings(expected);
 #endif
 		INFO(test.get_source_file());
@@ -275,27 +275,22 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 				return false;
 			}
 		} else {
-			// `*.notest.gd` files are skipped.
-			if (next.ends_with(".notest.gd")) {
-				next = dir->get_next();
-				continue;
-			} else if (binary_tokens && next.ends_with(".textonly.gd")) {
-				next = dir->get_next();
-				continue;
-			} else if (next.get_extension().to_lower() == "gd") {
-#ifndef DEBUG_ENABLED
-				// On release builds, skip tests marked as debug only.
-				Error open_err = OK;
-				Ref<FileAccess> script_file(FileAccess::open(current_dir.path_join(next), FileAccess::READ, &open_err));
-				if (open_err != OK) {
-					ERR_PRINT(vformat(R"(Couldn't open test file "%s".)", next));
+			if (next.get_extension().to_lower() == "gd") {
+				// `*.notest.*` files are skipped.
+				if (next.contains(".notest.")) {
 					next = dir->get_next();
 					continue;
-				} else {
-					if (script_file->get_line() == "#debug-only") {
-						next = dir->get_next();
-						continue;
-					}
+				}
+				if (binary_tokens && next.contains(".textonly.")) {
+					next = dir->get_next();
+					continue;
+				}
+#ifndef DEBUG_ENABLED
+				// On release builds, skip tests marked as debug only.
+				if (next.contains(".debugonly.")) {
+					WARN_PRINT(vformat("Skipping debug-only test %s", current_dir.path_join(next).trim_prefix(source_dir)));
+					next = dir->get_next();
+					continue;
 				}
 #endif
 
@@ -330,12 +325,12 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 
 bool GDScriptTestRunner::make_tests() {
 	Error err = OK;
-	Ref<DirAccess> dir(DirAccess::open(source_dir, &err));
+	Ref<DirAccess> dir(DirAccess::open("res://", &err));
 
 	ERR_FAIL_COND_V_MSG(err != OK, false, "Could not open specified test directory.");
 
-	source_dir = dir->get_current_dir() + "/"; // Make it absolute path.
-	return make_tests_for_dir(dir->get_current_dir());
+	source_dir = dir->get_current_dir();
+	return make_tests_for_dir(source_dir);
 }
 
 static bool generate_class_index_recursive(const String &p_dir) {
@@ -391,11 +386,11 @@ static bool generate_class_index_recursive(const String &p_dir) {
 
 bool GDScriptTestRunner::generate_class_index() {
 	Error err = OK;
-	Ref<DirAccess> dir(DirAccess::open(source_dir, &err));
+	Ref<DirAccess> dir(DirAccess::open("res://", &err));
 
 	ERR_FAIL_COND_V_MSG(err != OK, false, "Could not open specified test directory.");
 
-	source_dir = dir->get_current_dir() + "/"; // Make it absolute path.
+	source_dir = dir->get_current_dir();
 	return generate_class_index_recursive(dir->get_current_dir());
 }
 
@@ -482,7 +477,7 @@ bool GDScriptTest::check_output(const String &p_output) const {
 	String got = p_output.strip_edges(); // TODO: may be hacky.
 	got += "\n"; // Make sure to insert newline for CI static checks.
 
-#ifndef DEBUG_ENABLED
+#ifndef GDSCRIPT_DEBUG_ENABLED
 	expected = strip_warnings(expected);
 #endif
 
@@ -579,7 +574,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		return result;
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	StringBuilder warning_string;
 	for (const GDScriptWarning &warning : parser.get_warnings()) {
 		warning_string.append(vformat("~~ WARNING at line %d: (%s) %s\n", warning.start_line, warning.get_name(), warning.get_message()));
@@ -704,6 +699,18 @@ bool GDScriptTest::generate_output() {
 	out_file->store_string(output);
 
 	return true;
+}
+
+String GDScriptTest::get_source_file() const {
+	return ProjectSettings::get_singleton()->globalize_path(source_file);
+}
+
+String GDScriptTest::get_source_relative_filepath() const {
+	return source_file.trim_prefix(base_dir);
+}
+
+String GDScriptTest::get_output_file() const {
+	return ProjectSettings::get_singleton()->globalize_path(output_file);
 }
 
 } // namespace GDScriptTests

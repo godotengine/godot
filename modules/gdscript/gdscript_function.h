@@ -534,7 +534,7 @@ private:
 	MethodBind **_methods_ptr = nullptr;
 	GDScriptFunction **_lambdas_ptr = nullptr;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	CharString func_cname;
 	const char *_func_cname = nullptr;
 
@@ -578,7 +578,7 @@ public:
 		Signal completed;
 		GDScript *script = nullptr;
 		GDScriptInstance *instance = nullptr;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		StringName function_name;
 		String script_path;
 #endif
@@ -606,7 +606,7 @@ public:
 	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state = nullptr);
 	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	void _profile_native_call(uint64_t p_t_taken, const String &p_function_name, const String &p_instance_class_name = String());
 	void disassemble(const Vector<String> &p_code_lines) const;
 #endif
@@ -633,7 +633,7 @@ public:
 	bool is_valid(bool p_extended_check = false) const;
 	Variant resume(const Variant &p_arg = Variant());
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	// Returns a human-readable representation of the function.
 	String get_readable_function() {
 		return state.function_name;

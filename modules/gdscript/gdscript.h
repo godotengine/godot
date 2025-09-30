@@ -205,7 +205,7 @@ private:
 	void _update_exports_down(bool p_base_exports_changed);
 #endif
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	HashMap<ObjectID, List<Pair<StringName, Variant>>> pending_reload_state;
 #endif
 
@@ -231,7 +231,7 @@ protected:
 	static void _bind_methods();
 
 public:
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	static String debug_get_script_name(const Ref<Script> &p_script);
 #endif
 
@@ -370,7 +370,7 @@ class GDScriptInstance : public ScriptInstance {
 	ObjectID owner_id;
 	Object *owner = nullptr;
 	Ref<GDScript> script;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	HashMap<StringName, int> member_indices_cache; //used only for hot script reloading
 #endif
 	Vector<Variant> members;
@@ -466,7 +466,7 @@ class GDScriptLanguage : public ScriptLanguage {
 	friend class GDScriptFunction;
 
 	SelfList<GDScriptFunction>::List function_list;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	bool profiling;
 	bool profile_native_calls;
 	uint64_t script_frame_time;
@@ -488,7 +488,7 @@ public:
 			return;
 		}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		ScriptDebugger *script_debugger = EngineDebugger::get_script_debugger();
 		if (script_debugger != nullptr && script_debugger->get_lines_left() > 0 && script_debugger->get_depth() >= 0) {
 			script_debugger->set_depth(script_debugger->get_depth() + 1);
@@ -498,7 +498,7 @@ public:
 		if (unlikely(_call_stack_size >= _debug_max_call_stack)) {
 			_debug_error = vformat("Stack overflow (stack size: %s). Check for infinite recursion in your script.", _debug_max_call_stack);
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			if (script_debugger != nullptr) {
 				script_debugger->debug(this);
 			}
@@ -522,7 +522,7 @@ public:
 			return;
 		}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		ScriptDebugger *script_debugger = EngineDebugger::get_script_debugger();
 		if (script_debugger && script_debugger->get_lines_left() > 0 && script_debugger->get_depth() >= 0) {
 			script_debugger->set_depth(script_debugger->get_depth() - 1);
@@ -530,14 +530,14 @@ public:
 #endif
 
 		if (unlikely(_call_stack_size == 0)) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			if (script_debugger) {
 				_debug_error = "Stack Underflow (Engine Bug)";
 				script_debugger->debug(this);
 			} else {
 				ERR_PRINT("Stack underflow! (Engine Bug)");
 			}
-#else // !DEBUG_ENABLED
+#else // !GDSCRIPT_DEBUG_ENABLED
 			ERR_PRINT("Stack underflow! (Engine Bug)");
 #endif
 			return;

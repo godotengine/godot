@@ -164,7 +164,7 @@ void GDScriptByteCodeGenerator::write_start(GDScript *p_script, const StringName
 	function->_script = p_script;
 	function->source = p_script->get_script_path();
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	function->func_cname = (String(function->source) + " - " + String(p_function_name)).utf8();
 	function->_func_cname = function->func_cname.get_data();
 #endif
@@ -176,7 +176,7 @@ void GDScriptByteCodeGenerator::write_start(GDScript *p_script, const StringName
 }
 
 GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (!used_temporaries.is_empty()) {
 		ERR_PRINT("Non-zero temporary variables at end of function: " + itos(used_temporaries.size()));
 	}
@@ -398,7 +398,7 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 	function->_stack_size = GDScriptFunction::FIXED_ADDRESSES_MAX + max_locals + temporaries.size();
 	function->_instruction_args_size = instr_args_max;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	function->operator_names = operator_names;
 	function->setter_names = setter_names;
 	function->getter_names = getter_names;
@@ -412,7 +412,7 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 	return function;
 }
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 void GDScriptByteCodeGenerator::set_signature(const String &p_signature) {
 	function->profile.signature = p_signature;
 }
@@ -561,7 +561,7 @@ void GDScriptByteCodeGenerator::write_unary_operator(const Address &p_target, Va
 		append(Address());
 		append(p_target);
 		append(op_func);
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		add_debug_name(operator_names, get_operation_pos(op_func), Variant::get_operator_name(p_operator));
 #endif
 		return;
@@ -618,7 +618,7 @@ void GDScriptByteCodeGenerator::write_binary_operator(const Address &p_target, V
 		append(p_right_operand);
 		append(p_target);
 		append(op_func);
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		add_debug_name(operator_names, get_operation_pos(op_func), Variant::get_operator_name(p_operator));
 #endif
 		return;
@@ -850,7 +850,7 @@ void GDScriptByteCodeGenerator::write_set_named(const Address &p_target, const S
 		append(p_target);
 		append(p_source);
 		append(setter);
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		add_debug_name(setter_names, get_setter_pos(setter), p_name);
 #endif
 		return;
@@ -868,7 +868,7 @@ void GDScriptByteCodeGenerator::write_get_named(const Address &p_target, const S
 		append(p_source);
 		append(p_target);
 		append(getter);
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		add_debug_name(getter_names, get_getter_pos(getter), p_name);
 #endif
 		return;
@@ -1130,7 +1130,7 @@ void GDScriptByteCodeGenerator::write_call_gdscript_utility(const Address &p_tar
 	append(p_arguments.size());
 	append(gds_function);
 	ct.cleanup();
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	add_debug_name(gds_utilities_names, get_gds_utility_pos(gds_function), p_function);
 #endif
 }
@@ -1166,7 +1166,7 @@ void GDScriptByteCodeGenerator::write_call_utility(const Address &p_target, cons
 		append(p_arguments.size());
 		append(Variant::get_validated_utility_function(p_function));
 		ct.cleanup();
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		add_debug_name(utilities_names, get_utility_pos(Variant::get_validated_utility_function(p_function)), p_function);
 #endif
 	} else {
@@ -1237,7 +1237,7 @@ void GDScriptByteCodeGenerator::write_call_builtin_type(const Address &p_target,
 	append(Variant::get_validated_builtin_method(p_type, p_method));
 	ct.cleanup();
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	add_debug_name(builtin_methods_names, get_builtin_method_pos(Variant::get_validated_builtin_method(p_type, p_method)), p_method);
 #endif
 }
@@ -1431,7 +1431,7 @@ void GDScriptByteCodeGenerator::write_construct(const Address &p_target, Variant
 			append(p_arguments.size());
 			append(Variant::get_validated_constructor(p_type, valid_constructor));
 			ct.cleanup();
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			add_debug_name(constructors_names, get_constructor_pos(Variant::get_validated_constructor(p_type, valid_constructor)), Variant::get_type_name(p_type));
 #endif
 			return;

@@ -36,8 +36,6 @@
 
 namespace GDScriptTests {
 
-// TODO: Handle some cases failing on release builds. See: https://github.com/godotengine/godot/pull/88452
-#ifdef TOOLS_ENABLED
 TEST_SUITE("[Modules][GDScript]") {
 	TEST_CASE("Script compilation and runtime") {
 		bool print_filenames = OS::get_singleton()->get_cmdline_args().find("--print-filenames") != nullptr;
@@ -48,7 +46,6 @@ TEST_SUITE("[Modules][GDScript]") {
 		REQUIRE_MESSAGE(fail_count == 0, "All GDScript tests should pass.");
 	}
 }
-#endif // TOOLS_ENABLED
 
 TEST_CASE("[Modules][GDScript] Load source code dynamically and run it") {
 	GDScriptLanguage::get_singleton()->init();
