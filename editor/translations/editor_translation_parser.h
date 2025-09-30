@@ -37,6 +37,12 @@
 class EditorTranslationParserPlugin : public RefCounted {
 	GDCLASS(EditorTranslationParserPlugin, RefCounted);
 
+	// These static methods were added since this class is exposed, but the singleton `EditorTranslationParser` is not.
+	// The `add_parser()` and `remove_parser()` methods are exposed through `EditorPlugin`, but there's no point
+	// in cluttering it with more unrelated methods.
+	static TypedArray<PackedStringArray> parse(const PackedStringArray &p_paths, bool p_add_builtin);
+	static PackedStringArray get_all_recognized_extensions();
+
 protected:
 	static void _bind_methods();
 
@@ -53,22 +59,27 @@ public:
 };
 
 class EditorTranslationParser {
-	static EditorTranslationParser *singleton;
-
 public:
 	enum ParserType {
-		STANDARD, // GDScript, CSharp, ...
-		CUSTOM // User-defined parser plugins. This will override standard parsers if the same extension type is defined.
+		STANDARD, // Built-in parser plugins.
+		CUSTOM, // User-defined parser plugins. This will override standard parsers if the same file extension is used.
 	};
 
-	static EditorTranslationParser *get_singleton();
+private:
+	static EditorTranslationParser *singleton;
 
 	Vector<Ref<EditorTranslationParserPlugin>> standard_parsers;
 	Vector<Ref<EditorTranslationParserPlugin>> custom_parsers;
 
+public:
+	static EditorTranslationParser *get_singleton();
+
+	Vector<Vector<String>> parse(const Vector<String> &p_paths, bool p_add_builtin) const;
+
 	void get_recognized_extensions(List<String> *r_extensions) const;
 	bool can_parse(const String &p_extension) const;
 	Ref<EditorTranslationParserPlugin> get_parser(const String &p_extension) const;
+
 	void add_parser(const Ref<EditorTranslationParserPlugin> &p_parser, ParserType p_type);
 	void remove_parser(const Ref<EditorTranslationParserPlugin> &p_parser, ParserType p_type);
 	void clean_parsers();
