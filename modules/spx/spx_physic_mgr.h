@@ -34,6 +34,7 @@
 #include "gdextension_spx_ext.h"
 #include "spx_base_mgr.h"
 
+
 class SpxPhysicDefine{
 private:
 	static GdFloat global_gravity;
@@ -71,6 +72,12 @@ public:
 	bool is_collision_by_pixel;
 	void on_awake() override;
 
+	static const int COLLIDER_NONE    = 0x00;
+	static const int COLLIDER_AUTO    = 0x01;
+	static const int COLLIDER_CIRCLE  = 0x02;
+	static const int COLLIDER_RECT    = 0x03;
+	static const int COLLIDER_CAPSULE = 0x04;
+	static const int COLLIDER_POLYGON = 0x05;
 public:
 	virtual ~SpxPhysicMgr() = default; // Added virtual destructor to fix -Werror=non-virtual-dtor
 	GdObj raycast(GdVec2 from, GdVec2 to, GdInt collision_mask);

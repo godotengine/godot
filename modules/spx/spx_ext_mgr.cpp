@@ -35,12 +35,20 @@
 #include "scene/2d/line_2d.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/2d/polygon_2d.h"
+#include "scene/2d/physics/static_body_2d.h"
+#include "scene/2d/physics/collision_shape_2d.h"
+#include "scene/resources/2d/capsule_shape_2d.h"
+#include "scene/resources/2d/circle_shape_2d.h"
+#include "scene/resources/2d/rectangle_shape_2d.h"
 #include "spx.h"
 #include "spx_engine.h"
+#include "spx_pen.h"
 #include "spx_pen.h"
 #include "spx_res_mgr.h"
 #include "spx_sprite.h"
 #include "spx_draw_tiles.h"
+#include "spx_physic_mgr.h"
+
 #include <cmath>
 
 #define resMgr SpxEngine::get_singleton()->get_res()
@@ -446,22 +454,115 @@ void SpxExtMgr::create_pure_sprite(GdString texture_path, GdVec2 pos, GdInt zind
 	if (pure_sprite_root == nullptr) {
 		return;
 	}
+	create_render_sprite(texture_path, pos, 0, GdVec2(1, 1), zindex);
+}
+void SpxExtMgr::create_render_sprite(GdString texture_path, GdVec2 pos, GdFloat rotation, GdVec2 scale, GdInt zindex){
+	if (pure_sprite_root == nullptr) {
+		return;
+	}
+
 	Sprite2D* sprite = memnew(Sprite2D);
 	auto path_str = SpxStr(texture_path);
-
-	Ref<Texture2D> texture = nullptr;
-	auto is_svg_mode = svgMgr->is_svg_file(path_str);
-	if (is_svg_mode){
-		int target_scale = 1;
-		texture = svgMgr->get_svg_image(path_str, target_scale);
-	}else{
-		texture = resMgr->load_texture(path_str, true);
-	}
+	Ref<Texture2D> texture = resMgr->load_texture(path_str, true);
 	sprite->set_texture(texture);
-	sprite->set_position(Vector2(pos.x,-pos.y));
+	sprite->set_position(Vector2(pos.x, -pos.y));
+	sprite->set_rotation(rotation);
+	sprite->set_scale(Vector2(scale.x, scale.y));
 	sprite->set_name(path_str.get_file());
 	pure_sprite_root->add_child(sprite);
 	sprite->set_z_index(zindex);
+}
+
+void SpxExtMgr::create_static_sprite(GdString texture_path, GdVec2 pos,GdFloat rotation,GdVec2 scale, GdInt zindex, GdInt collider_type, GdVec2 collider_pivot, GdArray collider_params){
+	if (pure_sprite_root == nullptr) {
+		return;
+	}
+
+	if(collider_type == SpxPhysicMgr::COLLIDER_NONE){
+		create_render_sprite(texture_path, pos, rotation, scale, zindex);
+		return;
+	}
+
+	auto path_str = SpxStr(texture_path);
+	// Create StaticBody2D
+	StaticBody2D* static_body = memnew(StaticBody2D);
+	static_body->set_position(Vector2(pos.x, -pos.y));
+	static_body->set_rotation_degrees(rotation);
+	static_body->set_scale(Vector2(scale.x, scale.y));
+	static_body->set_name(path_str.get_file());
+
+	// Load and create sprite child
+	Sprite2D* sprite = memnew(Sprite2D);
+	Ref<Texture2D> texture = resMgr->load_texture(path_str, true);
+	sprite->set_texture(texture);
+	sprite->set_z_index(zindex);
+	static_body->add_child(sprite);   
+
+	// Create collision shape (default: rectangle matching texture size)
+	CollisionShape2D* collision_shape = memnew(CollisionShape2D);
+	collision_shape->set_position(collider_pivot);
+	static_body->add_child(collision_shape);
+	auto data_len =  collider_params == nullptr ? 0 : collider_params->size;
+	switch (collider_type)
+	{
+	case SpxPhysicMgr::COLLIDER_AUTO:
+		if (texture.is_valid()) {
+			Ref<RectangleShape2D> rect = memnew(RectangleShape2D);
+			Vector2 texture_size = texture->get_size();
+			rect->set_size(texture_size);
+			collision_shape->set_shape(rect);
+		}
+		break;
+	case SpxPhysicMgr::COLLIDER_CIRCLE: {
+		Ref<CircleShape2D> circle = memnew(CircleShape2D);
+		if (data_len > 0) {
+			auto radius = *(SpxBaseMgr::get_array<real_t>(collider_params, 0));
+			circle->set_radius(radius);
+		}
+		collision_shape->set_shape(circle);
+		break;
+	}
+	case SpxPhysicMgr::COLLIDER_RECT: {
+		Ref<RectangleShape2D> rect = memnew(RectangleShape2D);
+		if (data_len >= 2) {
+			auto width = *(SpxBaseMgr::get_array<real_t>(collider_params, 0));
+			auto height = *(SpxBaseMgr::get_array<real_t>(collider_params, 1));
+			rect->set_size(Vector2(width, height));
+		}
+		collision_shape->set_shape(rect);
+		break;
+	}
+	case SpxPhysicMgr::COLLIDER_CAPSULE: {
+		Ref<CapsuleShape2D> capsule = memnew(CapsuleShape2D);
+		if (data_len >= 2) {
+			auto radius = *(SpxBaseMgr::get_array<real_t>(collider_params, 0));
+			auto height = *(SpxBaseMgr::get_array<real_t>(collider_params, 1));
+			capsule->set_radius(radius);
+			capsule->set_height(height);
+		}
+		collision_shape->set_shape(capsule);
+		collision_shape->set_position(collider_pivot);
+		break;
+	}
+	case SpxPhysicMgr::COLLIDER_POLYGON: {
+		Ref<ConvexPolygonShape2D> polygon = memnew(ConvexPolygonShape2D);
+		Vector<Vector2> points = {};
+		auto len = data_len;
+		for (int i = 0; i + 1 < len; i += 2) {
+			auto x = *(SpxBaseMgr::get_array<real_t>(collider_params, i));
+			auto y = *(SpxBaseMgr::get_array<real_t>(collider_params, i + 1));
+			points.append(Vector2(x, y));
+		}
+		polygon->set_points(points);
+		collision_shape->set_shape(polygon);
+		break;
+	}
+	default:
+		print_error("Invalid collider type: " + itos(collider_type));
+		break;
+	}
+	// Add to scene tree
+	pure_sprite_root->add_child(static_body);
 }
 
 void SpxExtMgr::setup_path_finder_with_size(GdVec2 grid_size, GdVec2 cell_size, GdBool with_jump, GdBool with_debug) {

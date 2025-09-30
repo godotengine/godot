@@ -155,6 +155,8 @@ public:
 	// create sprites
 	void clear_pure_sprites();
 	void create_pure_sprite(GdString texture_path, GdVec2 pos, GdInt zindex);
+	void create_render_sprite(GdString texture_path, GdVec2 pos, GdFloat rotation, GdVec2 scale, GdInt zindex);
+	void create_static_sprite(GdString texture_path, GdVec2 pos, GdFloat rotation, GdVec2 scale, GdInt zindex, GdInt collider_type, GdVec2 collider_pivot, GdArray collider_params);
 
 	// path finder
 	void setup_path_finder_with_size(GdVec2 grid_size, GdVec2 cell_size, GdBool with_jump, GdBool with_debug);
