@@ -8,7 +8,7 @@
 # Nafis Ibrahim <thepreciousnafis@gmail.com>, 2018.
 # Muhammad Hazim bin Hafizalshah <muhammadhazimhafizalshah@gmail.com>, 2020.
 # keviinx <keviinx@yahoo.com>, 2020.
-# Keviindran Ramachandran <keviinx@yahoo.com>, 2020, 2021, 2022, 2024.
+# Keviindran Ramachandran <keviinx@yahoo.com>, 2020, 2021, 2022, 2024, 2025.
 # Jacque Fresco <aidter@use.startmail.com>, 2021.
 # Lemoney <railkill@gmail.com>, 2021, 2022.
 # dens-07 <densleyn01@gmail.com>, 2023.
@@ -18,8 +18,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-03-01 21:04+0000\n"
-"Last-Translator: ghakindye vv <ghaffur2013@gmail.com>\n"
+"PO-Revision-Date: 2025-09-27 00:24+0000\n"
+"Last-Translator: Keviindran Ramachandran <keviinx@yahoo.com>\n"
 "Language-Team: Malay <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ms/>\n"
 "Language: ms\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.5-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "Batal Set"
@@ -176,6 +176,9 @@ msgstr "Butang Joypad %d"
 msgid "Pressure:"
 msgstr "Tekanan:"
 
+msgid "touched"
+msgstr "disentuh"
+
 msgid "released"
 msgstr "dilepas"
 
@@ -198,6 +201,12 @@ msgstr "Masukan MIDI di Saluran=%s Mesej=%s"
 
 msgid "Input Event with Shortcut=%s"
 msgstr "Peristiwa Pemasuk dengan Pintasan=%s"
+
+msgid " or "
+msgstr " atau "
+
+msgid "Action has no bound inputs"
+msgstr "Tindakan tidak mempunyai input terikat"
 
 msgid "Accept"
 msgstr "Terima"
@@ -361,6 +370,9 @@ msgstr "Menduplikasi Note"
 msgid "Delete Nodes"
 msgstr "Padam Nod"
 
+msgid "Follow Output Port Connection"
+msgstr "Ikuti Sambungan Port Keluaran"
+
 msgid "Go Up One Level"
 msgstr "Naik Satu Tingkat"
 
@@ -372,6 +384,15 @@ msgstr "Tunjuk Tersembunyi"
 
 msgid "Swap Input Direction"
 msgstr "Tukar Arah Pemasuk"
+
+msgid "Start Unicode Character Input"
+msgstr "Mulakan Input Aksara Unicode"
+
+msgid "ColorPicker: Delete Preset"
+msgstr "ColorPicker: Padam Pratetap"
+
+msgid "Accessibility: Keyboard Drag and Drop"
+msgstr "Kebolehcapaian: Seret dan Lepas Papan Kekunci"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "%d Pemasukan tidak sah (tidak diluluskan) dalam ungkapan"
@@ -566,6 +587,9 @@ msgstr "Titik"
 msgid "Open Editor"
 msgstr "Buka Editor"
 
+msgid "Max"
+msgstr "Maks"
+
 msgid "Value"
 msgstr "Nilai"
 
@@ -602,6 +626,15 @@ msgstr "Padamkan titik-titik dan segi tiga-segi tiga."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr ""
 "Jana segi tiga-segi tiga campuran secara automatik (bukan secara manual)"
+
+msgid "Max Y"
+msgstr "Maks Y"
+
+msgid "Min Y"
+msgstr "Min Y"
+
+msgid "Min X"
+msgstr "Min X"
 
 msgid "Edit Filters"
 msgstr "Sunting Filters"
@@ -669,11 +702,55 @@ msgstr "Tambah Nod..."
 msgid "Enable Filtering"
 msgstr "Dayakan Penapisan"
 
+msgid "Invert"
+msgstr "Terbalik"
+
 msgid "Clear"
 msgstr "Kosongkan"
 
+msgid "Set Custom Timeline from Marker"
+msgstr "Tetapkan Garis Masa Tersuai dari Penanda"
+
+msgid "End Marker"
+msgstr "Penanda Akhir"
+
+msgid "Enter a library name."
+msgstr "Masukkan nama perpustakaan."
+
+msgid "Global library will be created."
+msgstr "Perpustakaan global akan dibuat."
+
 msgid "Load Animation"
 msgstr "Muatkan Animasi"
+
+msgid "Make Animation Library Unique: %s"
+msgstr "Buat Perpustakaan Animasi Unik: %s"
+
+msgid "Save Animation library to File: %s"
+msgstr "Simpan perpustakaan Animasi ke Fail: %s"
+
+msgid ""
+"The file you selected is an imported scene from a 3D model such as glTF or "
+"FBX.\n"
+"\n"
+"In Godot, 3D models can be imported as either scenes or animation libraries, "
+"which is why they show up here.\n"
+"\n"
+"If you want to use animations from this 3D model, open the Advanced Import "
+"Settings\n"
+"dialog and save the animations using Actions... -> Set Animation Save Paths,\n"
+"or import the whole scene as a single AnimationLibrary in the Import dock."
+msgstr ""
+"Fail yang anda pilih adalah adegan yang diimport daripada model 3D seperti "
+"gITF atau FBX.\n"
+"\n"
+"Dalam Godot, model 3D boleh diimport sama ada sebagai adegan atau "
+"perpustakaan animasi, sebab itulah ia dipaparkan di sini.\n"
+"\n"
+"Jika anda ingin menggunakan animsai daripada model 3D ini, buka dialog "
+"Advanced Import Settings\n"
+"dan simpan animasi menggunakan Actions...->Set Animation Save Paths,\n"
+"atau import seluruh adegan sebagai satu AnimationLibrary di dok Import."
 
 msgid "Animation Name:"
 msgstr "Nama Animasi:"
@@ -3205,9 +3282,6 @@ msgstr ""
 "Sila tambah pratetap yang dapat dijalankan di menu Eksport atau tentukan "
 "pratetap yang ada sebagai yang dapat dijalankan."
 
-msgid "Select Mode"
-msgstr "Pilih Mod"
-
 msgid "Clear All"
 msgstr "Padam Semua"
 
@@ -3312,6 +3386,9 @@ msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr ""
 "Alt+RMB: Tunjukkan senarai semua nod pada kedudukan yang diklik, termasuk "
 "yang dikunci."
+
+msgid "Select Mode"
+msgstr "Pilih Mod"
 
 msgid "Move Mode"
 msgstr "Mod Alih"

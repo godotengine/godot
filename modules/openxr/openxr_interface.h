@@ -120,7 +120,7 @@ private:
 
 	void free_interaction_profiles();
 
-	void _set_default_pos(Transform3D &p_transform, double p_world_scale, uint64_t p_eye);
+	void _set_default_pos(Transform3D &r_transform, double p_world_scale, uint64_t p_eye);
 
 	void handle_hand_tracking(const String &p_path, OpenXRHandTrackingExtension::HandTrackedHands p_hand);
 

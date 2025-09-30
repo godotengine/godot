@@ -56,7 +56,7 @@ class NavMap2D : public NavRid2D {
 	Vector2 merge_rasterizer_cell_size = Vector2(cell_size, cell_size);
 
 	// This value is used to control sensitivity of internal rasterizer.
-	float merge_rasterizer_cell_scale = 1.0;
+	float merge_rasterizer_cell_scale = 0.1;
 
 	bool use_edge_connections = true;
 	/// This value is used to detect the near edges to connect.

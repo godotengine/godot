@@ -64,10 +64,11 @@
 			[b]Note:[/b] Meshes' global illumination mode will also affect the global illumination rendering. See [member GeometryInstance3D.gi_mode].
 		</member>
 		<member name="light_color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
-			The light's color in the nonlinear sRGB color space. An [i]overbright[/i] color can be used to achieve a result equivalent to increasing the light's [member light_energy].
+			The light's color in nonlinear sRGB encoding. An [i]overbright[/i] color can be used to achieve a result equivalent to increasing the light's [member light_energy].
 		</member>
 		<member name="light_cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" default="4294967295">
 			The light will affect objects in the selected layers.
+			[b]Note:[/b] The light cull mask is ignored by [VoxelGI], SDFGI, [LightmapGI], and volumetric fog. These will always render lights in a way that ignores the cull mask. See also [member VisualInstance3D.layers].
 		</member>
 		<member name="light_energy" type="float" setter="set_param" getter="get_param" default="1.0">
 			The light's strength multiplier (this is not a physical unit). For [OmniLight3D] and [SpotLight3D], changing this value will only change the light color's intensity, not the light's radius.

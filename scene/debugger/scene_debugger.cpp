@@ -622,7 +622,7 @@ void SceneDebugger::_send_object_ids(const Vector<ObjectID> &p_ids, bool p_updat
 	}
 
 	if (p_update_selection) {
-		RuntimeNodeSelect::get_singleton()->_set_selected_nodes(nodes);
+		RuntimeNodeSelect::get_singleton()->_set_selected_nodes(Vector<Node *>(nodes));
 	}
 
 	if (objs_missing) {
@@ -647,10 +647,11 @@ void SceneDebugger::_set_object_property(ObjectID p_id, const String &p_property
 		return;
 	}
 
-	String prop_name = p_property;
+	String prop_name;
 	if (p_property.begins_with("Members/")) {
-		Vector<String> ss = p_property.split("/");
-		prop_name = ss[ss.size() - 1];
+		prop_name = p_property.get_slicec('/', p_property.get_slice_count("/") - 1);
+	} else {
+		prop_name = p_property;
 	}
 
 	Variant value;
@@ -1292,11 +1293,9 @@ void LiveEditor::_remove_node_func(const NodePath &p_at) {
 		return; //scene not editable
 	}
 
-	Vector<Node *> to_delete;
+	LocalVector<Node *> to_delete;
 
-	for (HashSet<Node *>::Iterator F = E->value.begin(); F; ++F) {
-		Node *n = *F;
-
+	for (const Node *n : E->value) {
 		if (base && !base->is_ancestor_of(n)) {
 			continue;
 		}
@@ -1309,8 +1308,8 @@ void LiveEditor::_remove_node_func(const NodePath &p_at) {
 		to_delete.push_back(n2);
 	}
 
-	for (int i = 0; i < to_delete.size(); i++) {
-		memdelete(to_delete[i]);
+	for (Node *node : to_delete) {
+		memdelete(node);
 	}
 }
 
@@ -1330,10 +1329,8 @@ void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_kee
 		return; //scene not editable
 	}
 
-	Vector<Node *> to_remove;
-	for (HashSet<Node *>::Iterator F = E->value.begin(); F; ++F) {
-		Node *n = *F;
-
+	LocalVector<Node *> to_remove;
+	for (Node *n : E->value) {
 		if (base && !base->is_ancestor_of(n)) {
 			continue;
 		}
@@ -1345,8 +1342,7 @@ void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_kee
 		to_remove.push_back(n);
 	}
 
-	for (int i = 0; i < to_remove.size(); i++) {
-		Node *n = to_remove[i];
+	for (Node *n : to_remove) {
 		Node *n2 = n->get_node(p_at);
 		n2->get_parent()->remove_child(n2);
 		live_edit_remove_list[n][p_keep_id] = n2;
@@ -2008,7 +2004,7 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 		EngineDebugger::get_singleton()->send_message("remote_objects_selected", message);
 	}
 
-	_set_selected_nodes(nodes);
+	_set_selected_nodes(Vector<Node *>(nodes));
 }
 
 void RuntimeNodeSelect::_set_selected_nodes(const Vector<Node *> &p_nodes) {

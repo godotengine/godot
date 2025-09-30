@@ -18,7 +18,7 @@ thirdparty_obj = []
 if env["platform"] == "android":
     # may need to set OPENXR_ANDROID_VERSION_SUFFIX
     env_openxr.AppendUnique(CPPDEFINES=["XR_OS_ANDROID", "XR_USE_PLATFORM_ANDROID"])
-    env_openxr.AppendUnique(CPPDEFINES=["JSON_USE_EXCEPTION=0"])
+    env_openxr.AppendUnique(CPPDEFINES=[("JSON_USE_EXCEPTION", 0)])
 
     # may need to include java parts of the openxr loader
 elif env["platform"] == "linuxbsd":
@@ -86,9 +86,11 @@ if env["builtin_openxr"]:
 
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/api_layer_interface.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_core.cpp")
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_init_data.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_instance.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_logger_recorders.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_logger.cpp")
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_properties.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/manifest_file.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/runtime_interface.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/xr_generated_loader.cpp")

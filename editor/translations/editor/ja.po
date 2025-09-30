@@ -85,13 +85,15 @@
 # Myeongjin Lee <aranet100@gmail.com>, 2025.
 # Viktor Jagebrant <vjagebrant@gmail.com>, 2025.
 # RockHopperPenguin64 <ryo1108820@gmail.com>, 2025.
+# Septian Ganendra Savero Kurniawan <mail@init.id>, 2025.
+# testkun08080 <testkun.08080@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-06-19 17:04+0000\n"
-"Last-Translator: Viktor Jagebrant <vjagebrant@gmail.com>\n"
+"PO-Revision-Date: 2025-08-29 19:03+0000\n"
+"Last-Translator: Myeongjin <aranet100@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -99,7 +101,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.12.1\n"
+"X-Generator: Weblate 5.13.1-dev\n"
 
 msgid "Unset"
 msgstr "未設定"
@@ -454,7 +456,7 @@ msgid "Go Up One Level"
 msgstr "レベルを1つ上げる"
 
 msgid "Refresh"
-msgstr "再読み込み"
+msgstr "再読込"
 
 msgid "Show Hidden"
 msgstr "非表示を表示"
@@ -465,11 +467,14 @@ msgstr "入力方向の入れ替え"
 msgid "Start Unicode Character Input"
 msgstr "Unicode文字の入力を開始"
 
+msgid "ColorPicker: Delete Preset"
+msgstr "カラーピッカー: プリセットの削除"
+
 msgid "Accessibility: Keyboard Drag and Drop"
 msgstr "アクセシビリティ: キーボードのドラッグ＆ドロップ"
 
 msgid "Invalid input %d (not passed) in expression"
-msgstr "式に無効入力 %d (渡されていません)"
+msgstr "無効入力 :式に%d が渡されていません"
 
 msgid "self can't be used because instance is null (not passed)"
 msgstr "インスタンスがNULLの（渡されていない）ため、selfは使用できません"
@@ -660,6 +665,9 @@ msgstr "点を消す。"
 msgid "Enable snap and show grid."
 msgstr "スナップとグリッドの表示を有効にする。"
 
+msgid "Grid Step"
+msgstr "グリッドのステップ:"
+
 msgid "Sync:"
 msgstr "同期:"
 
@@ -716,6 +724,12 @@ msgstr "点と三角形を消す。"
 
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "自動的にブレンド三角形を生成"
+
+msgid "Grid X Step"
+msgstr "グリッドXのステップ:"
+
+msgid "Grid Y Step"
+msgstr "グリッドYのステップ:"
 
 msgid "Parameter Changed: %s"
 msgstr "パラメーターが変更されました: %s"
@@ -2317,6 +2331,9 @@ msgstr "サポート"
 
 msgid "Assets ZIP File"
 msgstr "アセットのzipファイル"
+
+msgid "AssetLib"
+msgstr "アセットライブ"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr "\"%s\" のアセットファイルを開けません (ZIP形式ではありません)。"
@@ -8537,9 +8554,6 @@ msgstr "プロジェクトの実行"
 msgid "Next Frame"
 msgstr "次フレーム"
 
-msgid "Select Mode"
-msgstr "選択モード"
-
 msgid "Connection impossible to the game process."
 msgstr "ゲームプロセスに接続できません。"
 
@@ -10914,6 +10928,9 @@ msgstr ""
 "シーンに含まれています。\n"
 "プレビューは無効です。"
 
+msgid "Select Mode"
+msgstr "選択モード"
+
 msgid "Move Mode"
 msgstr "移動モード"
 
@@ -12939,6 +12956,9 @@ msgstr "リソースの貼り付け"
 msgid "Load Resource"
 msgstr "リソースを読み込む"
 
+msgid "ResourcePreloader"
+msgstr "リソースプリローダー"
+
 msgid "Toggle ResourcePreloader Bottom Panel"
 msgstr "リソースプリローダーの下部パネルの切り替え"
 
@@ -14839,9 +14859,6 @@ msgstr "定数を設定: %s"
 
 msgid "Invalid name for varying."
 msgstr "Varyingの名前が無効です。"
-
-msgid "Varying with that name is already exist."
-msgstr "その名前の Varying は既に存在します。"
 
 msgid "Add Node(s) to Visual Shader"
 msgstr "ビジュアルシェーダーにノードを追加"
@@ -18748,12 +18765,6 @@ msgstr "再帰は許可されません。"
 
 msgid "Function '%s' can't be called from source code."
 msgstr "関数 '%s' をソースコードから呼び出すことはできません。"
-
-msgid ""
-"Invalid argument for \"%s(%s)\" function: argument %d should be %s but is %s."
-msgstr ""
-"「%s(%s)」関数の引数が無効です: 引数 %d は %s である必要がありますが、%s で"
-"す。"
 
 msgid ""
 "Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."

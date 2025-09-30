@@ -185,6 +185,7 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_CUSTOM_CURSOR_SHAPE:
 		case FEATURE_WINDOW_TRANSPARENCY:
+		case FEATURE_ICON:
 		case FEATURE_HIDPI:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
@@ -1831,6 +1832,11 @@ void DisplayServerWayland::swap_buffers() {
 #endif
 }
 
+void DisplayServerWayland::set_icon(const Ref<Image> &p_icon) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+	wayland_thread.set_icon(p_icon);
+}
+
 void DisplayServerWayland::set_context(Context p_context) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
@@ -1879,7 +1885,7 @@ DisplayServer *DisplayServerWayland::create_func(const String &p_rendering_drive
 }
 
 DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Context p_context, int64_t p_parent_window, Error &r_error) {
-#ifdef GLES3_ENABLED
+#if defined(GLES3_ENABLED) || defined(DBUS_ENABLED)
 #ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
@@ -1887,7 +1893,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	int dylibloader_verbose = 0;
 #endif // DEBUG_ENABLED
 #endif // SOWRAP_ENABLED
-#endif // GLES3_ENABLED
+#endif // defined(GLES3_ENABLED) || defined(DBUS_ENABLED)
 
 	r_error = ERR_UNAVAILABLE;
 	context = p_context;

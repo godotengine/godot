@@ -246,6 +246,7 @@ private:
 	struct ReflectionAtlas {
 		int count = 0;
 		int size = 0;
+		bool update_always = false;
 
 		RID reflection;
 		RID depth_buffer;

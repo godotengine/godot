@@ -37,6 +37,8 @@
 #include "nav_map_iteration_2d.h"
 #include "nav_region_iteration_2d.h"
 
+#include "core/config/project_settings.h"
+
 using namespace Nav2D;
 
 PointKey NavMapBuilder2D::get_point_key(const Vector2 &p_pos, const Vector2 &p_cell_size) {
@@ -110,6 +112,7 @@ void NavMapBuilder2D::_build_step_find_edge_connection_pairs(NavMapIterationBuil
 	connection_pairs_map.clear();
 	connection_pairs_map.reserve(polygon_count);
 	int free_edges_count = 0; // How many ConnectionPairs have only one Connection.
+	int edge_merge_error_count = 0;
 
 	for (const Ref<NavRegionIteration2D> &region : map_iteration->region_iterations) {
 		for (const ConnectableEdge &connectable_edge : region->get_external_edges()) {
@@ -138,9 +141,13 @@ void NavMapBuilder2D::_build_step_find_edge_connection_pairs(NavMapIterationBuil
 
 			} else {
 				// The edge is already connected with another edge, skip.
-				ERR_PRINT_ONCE("Navigation map synchronization error. Attempted to merge a navigation mesh polygon edge with another already-merged edge. This is usually caused by crossing edges, overlapping polygons, or a mismatch of the NavigationMesh / NavigationPolygon baked 'cell_size' and navigation map 'cell_size'. If you're certain none of above is the case, change 'navigation/2d/merge_rasterizer_cell_scale' to 0.001.");
+				edge_merge_error_count++;
 			}
 		}
+	}
+
+	if (edge_merge_error_count > 0 && GLOBAL_GET_CACHED(bool, "navigation/2d/warnings/navmesh_edge_merge_errors")) {
+		WARN_PRINT("Navigation map synchronization had " + itos(edge_merge_error_count) + " edge error(s).\nMore than 2 edges tried to occupy the same map rasterization space.\nThis causes a logical error in the navigation mesh geometry and is commonly caused by overlap or too densely placed edges.\nConsider baking with a higher 'cell_size', greater geometry margin, and less detailed bake objects to cause fewer edges.\nConsider lowering the 'navigation/2d/merge_rasterizer_cell_scale' in the project settings.\nThis warning can be toggled under 'navigation/2d/warnings/navmesh_edge_merge_errors' in the project settings.");
 	}
 
 	r_build.free_edge_count = free_edges_count;

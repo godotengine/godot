@@ -48,9 +48,9 @@ class RemoteDebugger::PerformanceProfiler : public EngineProfiler {
 	uint64_t last_monitor_modification_time = 0;
 
 public:
-	void toggle(bool p_enable, const Array &p_opts) {}
-	void add(const Array &p_data) {}
-	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
+	void toggle(bool p_enable, const Array &p_opts) override {}
+	void add(const Array &p_data) override {}
+	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) override {
 		if (!performance) {
 			return;
 		}
@@ -566,25 +566,25 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 					input_vals.append(V);
 				}
 
-				List<StringName> native_types;
-				ClassDB::get_class_list(&native_types);
-				for (const StringName &E : native_types) {
-					if (!ClassDB::is_class_exposed(E) || !Engine::get_singleton()->has_singleton(E) || Engine::get_singleton()->is_singleton_editor_only(E)) {
+				LocalVector<StringName> native_types;
+				ClassDB::get_class_list(native_types);
+				for (const StringName &class_name : native_types) {
+					if (!ClassDB::is_class_exposed(class_name) || !Engine::get_singleton()->has_singleton(class_name) || Engine::get_singleton()->is_singleton_editor_only(class_name)) {
 						continue;
 					}
 
-					input_names.append(E);
-					input_vals.append(Engine::get_singleton()->get_singleton_object(E));
+					input_names.append(class_name);
+					input_vals.append(Engine::get_singleton()->get_singleton_object(class_name));
 				}
 
-				List<StringName> user_types;
-				ScriptServer::get_global_class_list(&user_types);
-				for (const StringName &S : user_types) {
-					String scr_path = ScriptServer::get_global_class_path(S);
+				LocalVector<StringName> user_types;
+				ScriptServer::get_global_class_list(user_types);
+				for (const StringName &class_name : user_types) {
+					String scr_path = ScriptServer::get_global_class_path(class_name);
 					Ref<Script> scr = ResourceLoader::load(scr_path, "Script");
-					ERR_CONTINUE_MSG(scr.is_null(), vformat(R"(Could not load the global class %s from resource path: "%s".)", S, scr_path));
+					ERR_CONTINUE_MSG(scr.is_null(), vformat(R"(Could not load the global class %s from resource path: "%s".)", class_name, scr_path));
 
-					input_names.append(S);
+					input_names.append(class_name);
 					input_vals.append(scr);
 				}
 

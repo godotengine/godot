@@ -129,6 +129,7 @@ void ScriptEditorDebugger::debug_break() {
 	ERR_FAIL_COND(is_breaked());
 
 	_put_msg("break", Array());
+	_mute_audio_on_break(true);
 }
 
 void ScriptEditorDebugger::debug_continue() {
@@ -142,6 +143,7 @@ void ScriptEditorDebugger::debug_continue() {
 	_clear_execution();
 	_put_msg("continue", Array(), debugging_thread_id);
 	_put_msg("servers:foreground", Array());
+	_mute_audio_on_break(false);
 }
 
 void ScriptEditorDebugger::update_tabs() {
@@ -286,8 +288,7 @@ void ScriptEditorDebugger::clear_inspector(bool p_send_msg) {
 }
 
 void ScriptEditorDebugger::_remote_object_selected(ObjectID p_id) {
-	Array arr = { p_id };
-	emit_signal(SNAME("remote_objects_requested"), arr);
+	emit_signal(SNAME("remote_objects_requested"), Array{ p_id });
 }
 
 void ScriptEditorDebugger::_remote_objects_edited(const String &p_prop, const TypedDictionary<uint64_t, Variant> &p_values, const String &p_field) {
@@ -324,6 +325,7 @@ void ScriptEditorDebugger::_thread_debug_enter(uint64_t p_thread_id) {
 	ThreadDebugged &td = threads_debugged[p_thread_id];
 	_set_reason_text(td.error, MESSAGE_ERROR);
 	emit_signal(SNAME("breaked"), true, td.can_debug, td.error, td.has_stackdump);
+	_mute_audio_on_break(true);
 	if (!td.error.is_empty() && EDITOR_GET("debugger/auto_switch_to_stack_trace")) {
 		tabs->set_current_tab(0);
 	}
@@ -395,6 +397,7 @@ void ScriptEditorDebugger::_msg_debug_exit(uint64_t p_thread_id, const Array &p_
 
 			_set_reason_text(TTR("Execution resumed."), MESSAGE_SUCCESS);
 			emit_signal(SNAME("breaked"), false, false, "", false);
+			_mute_audio_on_break(false);
 
 			_update_buttons_state();
 		} else {
@@ -445,6 +448,11 @@ void ScriptEditorDebugger::_msg_scene_inspect_object(uint64_t p_thread_id, const
 	_msg_scene_inspect_objects(p_thread_id, wrapped_data);
 }
 #endif // DISABLE_DEPRECATED
+
+void ScriptEditorDebugger::_msg_scene_debug_mute_audio(uint64_t p_thread_id, const Array &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
+	// This is handled by SceneDebugger, we need to ignore here to not show a warning.
+}
 
 void ScriptEditorDebugger::_msg_servers_memory_usage(uint64_t p_thread_id, const Array &p_data) {
 	vmem_tree->clear();
@@ -966,6 +974,7 @@ void ScriptEditorDebugger::_init_parse_message_handlers() {
 #ifndef DISABLE_DEPRECATED
 	parse_message_handlers["scene:inspect_object"] = &ScriptEditorDebugger::_msg_scene_inspect_object;
 #endif // DISABLE_DEPRECATED
+	parse_message_handlers["scene:debug_mute_audio"] = &ScriptEditorDebugger::_msg_scene_debug_mute_audio;
 	parse_message_handlers["servers:memory_usage"] = &ScriptEditorDebugger::_msg_servers_memory_usage;
 	parse_message_handlers["servers:drawn"] = &ScriptEditorDebugger::_msg_servers_drawn;
 	parse_message_handlers["stack_dump"] = &ScriptEditorDebugger::_msg_stack_dump;
@@ -1628,10 +1637,25 @@ bool ScriptEditorDebugger::get_debug_mute_audio() const {
 	return debug_mute_audio;
 }
 
-void ScriptEditorDebugger::set_debug_mute_audio(bool p_mute) {
+void ScriptEditorDebugger::_send_debug_mute_audio_msg(bool p_mute) {
 	Array msg = { p_mute };
 	_put_msg("scene:debug_mute_audio", msg);
+}
+
+void ScriptEditorDebugger::set_debug_mute_audio(bool p_mute) {
+	// Send the message if we want to mute the audio or if it isn't muted already due to a break.
+	if (p_mute || !audio_muted_on_break) {
+		_send_debug_mute_audio_msg(p_mute);
+	}
 	debug_mute_audio = p_mute;
+}
+
+void ScriptEditorDebugger::_mute_audio_on_break(bool p_mute) {
+	// Send the message if we want to mute the audio on a break or if it isn't muted already.
+	if (p_mute || !debug_mute_audio) {
+		_send_debug_mute_audio_msg(p_mute);
+	}
+	audio_muted_on_break = p_mute;
 }
 
 CameraOverride ScriptEditorDebugger::get_camera_override() const {
@@ -1879,7 +1903,7 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 			}
 
 			// Parse back the `file:line @ method()` string.
-			const Vector<String> file_line_number = ci->get_text(1).split("@")[0].strip_edges().split(":");
+			const Vector<String> file_line_number = ci->get_text(1).get_slicec('@', 0).strip_edges().split(":");
 			ERR_FAIL_COND_MSG(file_line_number.size() < 2, "Incorrect C++ source stack trace file:line format (please report).");
 			const String &file = file_line_number[0];
 			const int line_number = file_line_number[1].to_int();

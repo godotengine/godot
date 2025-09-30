@@ -726,7 +726,7 @@ class TextServerAdvanced : public TextServerExtension {
 	static void _bmp_font_set_funcs(hb_font_t *p_font, TextServerAdvanced::FontForSizeAdvanced *p_face, bool p_unref);
 	static hb_font_t *_bmp_font_create(TextServerAdvanced::FontForSizeAdvanced *p_face, hb_destroy_func_t p_destroy);
 
-	hb_font_t *_font_get_hb_handle(const RID &p_font, int64_t p_font_size) const;
+	hb_font_t *_font_get_hb_handle(const RID &p_font, int64_t p_font_size, bool &r_is_color) const;
 
 	struct GlyphCompare { // For line breaking reordering.
 		_FORCE_INLINE_ bool operator()(const Glyph &l, const Glyph &r) const {

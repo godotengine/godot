@@ -260,11 +260,11 @@ String InputEventWithModifiers::as_text() const {
 	if (is_ctrl_pressed()) {
 		mod_names.push_back(find_keycode_name(Key::CTRL));
 	}
-	if (is_shift_pressed()) {
-		mod_names.push_back(find_keycode_name(Key::SHIFT));
-	}
 	if (is_alt_pressed()) {
 		mod_names.push_back(find_keycode_name(Key::ALT));
+	}
+	if (is_shift_pressed()) {
+		mod_names.push_back(find_keycode_name(Key::SHIFT));
 	}
 	if (is_meta_pressed()) {
 		mod_names.push_back(find_keycode_name(Key::META));

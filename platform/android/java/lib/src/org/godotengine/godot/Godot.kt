@@ -260,16 +260,7 @@ class Godot private constructor(val context: Context) {
 					useImmersive.set(true)
 					newArgs.add(commandLine[i])
 				} else if (commandLine[i] == "--background_color") {
-					val colorStr = commandLine[i + 1]
-					try {
-						backgroundColor = colorStr.toColorInt()
-						Log.d(TAG, "background color = $backgroundColor")
-					} catch (e: java.lang.IllegalArgumentException) {
-						Log.d(TAG, "Failed to parse background color: $colorStr")
-					}
-					runOnHostThread {
-						getActivity()?.window?.decorView?.setBackgroundColor(backgroundColor)
-					}
+					setWindowColor(commandLine[i + 1])
 				} else if (commandLine[i] == "--use_apk_expansion") {
 					useApkExpansion = true
 				} else if (hasExtra && commandLine[i] == "--apk_expansion_md5") {
@@ -492,6 +483,21 @@ class Godot private constructor(val context: Context) {
 		}
 	}
 
+	fun setWindowColor(colorStr: String) {
+		val color = try {
+			colorStr.toColorInt()
+		} catch (e: java.lang.IllegalArgumentException) {
+			Log.w(TAG, "Failed to parse background color: $colorStr", e)
+			return
+		}
+		val decorView = getActivity()?.window?.decorView ?: return
+		runOnHostThread {
+			decorView.setBackgroundColor(color)
+			backgroundColor = color
+			setSystemBarsAppearance()
+		}
+	}
+
 	/**
 	 * Used to complete initialization of the view used by the engine for rendering.
 	 *
@@ -622,8 +628,8 @@ class Godot private constructor(val context: Context) {
 				}
 
 				override fun onEnd(animation: WindowInsetsAnimationCompat) {
-					// Fixes issue on Android 7 and 8 where immersive mode gets auto disabled after the keyboard is hidden.
-					if (useImmersive.get() && Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+					// Fixes an issue on Android 10 and older where immersive mode gets auto disabled after the keyboard is hidden on some devices.
+					if (useImmersive.get() && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
 						runOnHostThread {
 							enableImmersiveMode(true, true)
 						}

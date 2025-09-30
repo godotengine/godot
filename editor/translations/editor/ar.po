@@ -87,7 +87,7 @@
 # ZAID G <zaidm1122334455@gmail.com>, 2023.
 # Jugy <hellowo038@gmail.com>, 2023.
 # 7D <miuatoro.exe@gmail.com>, 2023.
-# Emad Alhaddad <emad142240@gmail.com>, 2023.
+# Emad Alhaddad <emad142240@gmail.com>, 2023, 2025.
 # Varga <vancouver_cliparf@simplelogin.com>, 2024.
 # Ahmed Nehad <nmkao333@gmail.com>, 2024.
 # Rashid Al Haqbany <haqbany@gmail.com>, 2024.
@@ -103,13 +103,14 @@
 # 7Xme <ayoubatigui33@gmail.com>, 2025.
 # عمّار عبدالله <ammar-dmour19@proton.me>, 2025.
 # Elias Dammach <eliasdammach208@gmail.com>, 2025.
+# Ihab Shoully <shoully@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-01 11:01+0000\n"
-"Last-Translator: Elias Dammach <eliasdammach208@gmail.com>\n"
+"PO-Revision-Date: 2025-09-19 05:48+0000\n"
+"Last-Translator: Emad Alhaddad <emad142240@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ar/>\n"
 "Language: ar\n"
@@ -118,13 +119,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && "
 "n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
-msgstr "غير محدد"
+msgstr "غير معيّن"
 
 msgid "Physical"
-msgstr "فيزيائى"
+msgstr "طبيعي"
 
 msgid "Left Mouse Button"
 msgstr "زر الفأرة الأيسر"
@@ -349,6 +350,9 @@ msgstr "نسخ"
 msgid "Paste"
 msgstr "لصق"
 
+msgid "Toggle Tab Focus Mode"
+msgstr "حول إلى وضع التركيز"
+
 msgid "Undo"
 msgstr "تراجع"
 
@@ -466,6 +470,12 @@ msgstr "مضاعفة العُقد"
 msgid "Delete Nodes"
 msgstr "حذف العُقد"
 
+msgid "Follow Input Port Connection"
+msgstr "إتبع مدخل الإتصال"
+
+msgid "Follow Output Port Connection"
+msgstr "إتبع مخرج الإتصال"
+
 msgid "Go Up One Level"
 msgstr "إذهب مرحلة للأعلى"
 
@@ -480,6 +490,12 @@ msgstr "تبديل جهة الإدخال"
 
 msgid "Start Unicode Character Input"
 msgstr "بدء إدخال حروف يونيكود"
+
+msgid "ColorPicker: Delete Preset"
+msgstr "أداة اختيار الألوان: احذف الإعدادات المسبقة"
+
+msgid "Accessibility: Keyboard Drag and Drop"
+msgstr "إمكانية الوصول: السحب والإفلات عبر لوحة المفاتيح"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "مدخلات خاطئة %d (لم يتم تمريرها) في التعبير"
@@ -580,6 +596,9 @@ msgstr "إضافة نقطة بيزية"
 msgid "Move Bezier Points"
 msgstr "تحريك نقاط بيزية"
 
+msgid "Scale Bezier Points"
+msgstr "التحجيم نقاط بيزييه"
+
 msgid "Animation Duplicate Keys"
 msgstr "تكرار مفاتيح الرسوم المتحركة"
 
@@ -668,6 +687,9 @@ msgstr "مسح النقاط."
 msgid "Enable snap and show grid."
 msgstr "تمكين المحاذاة وإظهار الشبكة."
 
+msgid "Grid Step"
+msgstr "خطوة الشبكة"
+
 msgid "Sync:"
 msgstr "مزامنة:"
 
@@ -677,8 +699,14 @@ msgstr "الدمج:"
 msgid "Point"
 msgstr "نقطة"
 
+msgid "Blend Value"
+msgstr "مزج القيمة"
+
 msgid "Open Editor"
 msgstr "فتح المُحرر"
+
+msgid "Min"
+msgstr "أقل"
 
 msgid "Max"
 msgstr "الحد الأقصى"
@@ -721,6 +749,30 @@ msgstr "مسح النقط والمثلثات."
 
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "توليد مثلثات دمج بصورة تلقائية (بدلاً من اليدوية)"
+
+msgid "Grid X Step"
+msgstr "خطوة س في الشبكة"
+
+msgid "Grid Y Step"
+msgstr "خطوة ص في الشبكة"
+
+msgid "Blend X Value"
+msgstr "مزج بقيمة س"
+
+msgid "Max Y"
+msgstr "القيمة القصوى ل ص"
+
+msgid "Y Value"
+msgstr "قيمة ص"
+
+msgid "Min Y"
+msgstr "أقل قيمة ل ص"
+
+msgid "Min X"
+msgstr "أقل قيمة ل س"
+
+msgid "X Value"
+msgstr "‭‮قيمة س"
 
 msgid "Parameter Changed: %s"
 msgstr "المعامل تغير:%s"
@@ -814,6 +866,24 @@ msgstr "اقْلبْ"
 msgid "Clear"
 msgstr "مسح"
 
+msgid "Start of Animation"
+msgstr "بدايه تحريك"
+
+msgid "End of Animation"
+msgstr "نهاية التحريك"
+
+msgid "Set Custom Timeline from Marker"
+msgstr "تعيين الجدول الزمني المخصص من العلامة"
+
+msgid "Select Markers"
+msgstr "تحديد العلامات"
+
+msgid "Start Marker"
+msgstr "بدايه العلامة"
+
+msgid "End Marker"
+msgstr "نهاية العلامة"
+
 msgid "Library Name:"
 msgstr "اسم المكتبة:"
 
@@ -895,6 +965,40 @@ msgstr "حفظ مكتبة التحريك في الملف: %s"
 
 msgid "Save Animation to File: %s"
 msgstr "حفظ التحريك في الملف: %s"
+
+msgid ""
+"The file you selected is an imported scene from a 3D model such as glTF or "
+"FBX.\n"
+"\n"
+"In Godot, 3D models can be imported as either scenes or animation libraries, "
+"which is why they show up here.\n"
+"\n"
+"If you want to use animations from this 3D model, open the Advanced Import "
+"Settings\n"
+"dialog and save the animations using Actions... -> Set Animation Save Paths,\n"
+"or import the whole scene as a single AnimationLibrary in the Import dock."
+msgstr ""
+"الملف الذي حددته هو مشهد مستورد من نموذج ثلاثي الأبعاد مثل glTF أو FBX.\n"
+"\n"
+"في جوْدَتْ، يمكن استيراد النماذج ثلاثية الأبعاد إما كمشاهد أو مكتبات رسوم "
+"متحركة، ولهذا السبب تظهر هنا.\n"
+"\n"
+"إذا كنت ترغب في استخدام رسوم متحركة من هذا النموذج ثلاثي الأبعاد، فافتح مربع "
+"حوار \"إعدادات الاستيراد المتقدمة\"\n"
+"واحفظ الرسوم المتحركة باستخدام \"الإجراءات...\" ← \"تعيين مسارات حفظ الرسوم "
+"المتحركة\"،\n"
+"أو استورد المشهد بأكمله كمكتبة رسوم متحركة واحدة من شريط الاستيراد."
+
+msgid ""
+"The file you selected is not a valid AnimationLibrary.\n"
+"\n"
+"If the animations you want are inside of this file, save them to a separate "
+"file first."
+msgstr ""
+"الملف الذي حددته ليس مكتبة رسوم متحركة صالحة.\n"
+"\n"
+"إذا كانت الرسوم المتحركة التي تريدها موجودة داخل هذا الملف، فاحفظها في ملف "
+"منفصل أولًا."
 
 msgid "Some of the selected libraries were already added to the mixer."
 msgstr "بعض المكتبات المحددة كانت مُضافة سابقا إلى الخالط."
@@ -1052,6 +1156,21 @@ msgstr "أسماء التحريك المتكرر:"
 msgid "Onion skinning requires a RESET animation."
 msgstr "يتطلب سلخ البصل لإعادة الضبط الرسوم المتحركة."
 
+msgid "Play Animation Backwards"
+msgstr "تشغيل الرسوم المتحركة بشكل عكسي"
+
+msgid "Play Animation Backwards from End"
+msgstr "تشغيل الرسوم المتحركة بشكل عكسي من النهاية"
+
+msgid "Pause/Stop Animation"
+msgstr "إيقاف مؤقت/إيقاف الرسوم المتحركة"
+
+msgid "Play Animation from Start"
+msgstr "تشغيل الرسوم المتحركة من البداية"
+
+msgid "Play Animation"
+msgstr "تشغيل الرسوم المتحركة"
+
 msgid "Animation position (in seconds)."
 msgstr "موقع الرسم المتحرك (بالثواني)."
 
@@ -1142,6 +1261,12 @@ msgstr "أوقات الدمج:"
 msgid "Next (Auto Queue):"
 msgstr "التالي (مزامنة تلقائية):"
 
+msgid "Go to Next Keyframe"
+msgstr "انتقل إلى الإطار التالي"
+
+msgid "Go to Previous Keyframe"
+msgstr "انتقل إلى الإطار السابق"
+
 msgid "Toggle Animation Bottom Panel"
 msgstr "تبديل لوحة التحريك السفلى"
 
@@ -1194,6 +1319,9 @@ msgstr ""
 "الزر-الأيمن: يضيف عقدة عند الموضع المنقور عليه.\n"
 "المناوِب(shift) + الزر-الأيسر + السحب: يصل العقدة المختارة بالأخرى أو يُنشئ "
 "عقدة جديدة إذا كان المكان المختار ليس فيه عُقد."
+
+msgid "Select and move nodes."
+msgstr "تحديد العُقد ونقلها."
 
 msgid "Create new nodes."
 msgstr "إنشاء عُقد جديدة."
@@ -7995,9 +8123,6 @@ msgstr "أنشر إلى رابع جهاز في القائمة"
 msgid "Project Run"
 msgstr "تشغيل المشروع"
 
-msgid "Select Mode"
-msgstr "وضع الاختيار"
-
 msgid "Press play to start the game."
 msgstr "اضغط على التشغيل لبدء اللعبة."
 
@@ -9875,6 +10000,9 @@ msgstr ""
 "المشهد يحوي\n"
 "بيئة-العالم.\n"
 "المعاينة معطلة."
+
+msgid "Select Mode"
+msgstr "وضع الاختيار"
 
 msgid "Move Mode"
 msgstr "وضع التنقيل"
@@ -13630,9 +13758,6 @@ msgstr "تعيين الثابت: %s"
 msgid "Invalid name for varying."
 msgstr "اسم غير صالح للتنوع."
 
-msgid "Varying with that name is already exist."
-msgstr "المتغير بهذا الاسم موجود بالفعل."
-
 msgid "Add Node(s) to Visual Shader"
 msgstr "إضافة عُقدة للتظليل البصري"
 
@@ -16924,6 +17049,9 @@ msgstr "هذا التلميح غير معتمد للصفائف الموحدة."
 
 msgid "Duplicated hint: '%s'."
 msgstr "تلميح مكرر: '%s'."
+
+msgid "Source color conversion disabled hint is for '%s', '%s'."
+msgstr "تم تعطيل تلميح تحويل لون المصدر لـ '%s'، '%s'."
 
 msgid "Range hint is for '%s' and '%s' only."
 msgstr "تلميح النطاق مخصص لـ '%s' و'%s' فقط."

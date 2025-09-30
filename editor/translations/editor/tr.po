@@ -120,12 +120,13 @@
 # Talha Öztürak <talhaozturak@gmail.com>, 2025.
 # Murat Ugur <muratyer1005@gmail.com>, 2025.
 # Aydın Burak Kuşçu <a.brkkuscu@gmail.com>, 2025.
+# anilguneyaltun <anilguneyaltun@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-26 22:08+0000\n"
+"PO-Revision-Date: 2025-08-23 21:15+0000\n"
 "Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
@@ -134,7 +135,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.13\n"
 
 msgid "Unset"
 msgstr "Kaldır"
@@ -505,6 +506,9 @@ msgstr "Giriş Yönünü Değiştir"
 
 msgid "Start Unicode Character Input"
 msgstr "Evrensel Kod Karakter Girişini Başlat"
+
+msgid "ColorPicker: Delete Preset"
+msgstr "RenkSeçici: Hazır Ayarı Sil"
 
 msgid "Accessibility: Keyboard Drag and Drop"
 msgstr "Erişilebilirlik: Klavye Sürükle ve Bırak"
@@ -983,6 +987,42 @@ msgstr "Canlandırma kütüphanesini Dosyaya kaydet: %s"
 msgid "Save Animation to File: %s"
 msgstr "Canlandırmayı Dosyaya Kaydet: %s"
 
+msgid ""
+"The file you selected is an imported scene from a 3D model such as glTF or "
+"FBX.\n"
+"\n"
+"In Godot, 3D models can be imported as either scenes or animation libraries, "
+"which is why they show up here.\n"
+"\n"
+"If you want to use animations from this 3D model, open the Advanced Import "
+"Settings\n"
+"dialog and save the animations using Actions... -> Set Animation Save Paths,\n"
+"or import the whole scene as a single AnimationLibrary in the Import dock."
+msgstr ""
+"Seçtiğiniz dosya, glTF veya FBX gibi bir 3B modelden içe aktarılmış bir "
+"sahnedir.\n"
+"\n"
+"Godot'da 3B modeller, sahne veya canlandırma kütüphanesi olarak içe "
+"aktarılabilirler, bu yüzden burada görünürler.\n"
+"\n"
+"Bu 3B modeldeki canlandırmaları kullanmak istiyorsanız, Gelişmiş İçe Aktarma "
+"Ayarları iletişim kutusunu açın\n"
+"ve canlandırmaları Eylemler... -> Canlandırma Kayıt Yollarını Ayarla öğesini "
+"kullanarak kaydedin,\n"
+"veya tüm sahneyi İçe Aktarma yuvasında tek bir CanlandırmaKütüphanesi olarak "
+"içe aktarın."
+
+msgid ""
+"The file you selected is not a valid AnimationLibrary.\n"
+"\n"
+"If the animations you want are inside of this file, save them to a separate "
+"file first."
+msgstr ""
+"Seçtiğiniz dosya geçerli bir CanlandırmaKütüphanesi değil.\n"
+"\n"
+"İstediğiniz canlandırmalar bu dosyanın içindeyse, bunları önce ayrı bir "
+"dosyaya kaydedin."
+
 msgid "Some of the selected libraries were already added to the mixer."
 msgstr "Seçilen kütüphanelerden bazıları karıştırıcıya zaten eklenmişti."
 
@@ -1302,6 +1342,9 @@ msgstr ""
 "Sağ Fare Düşmesi: Tıklanan konuma düğüm ekler.\n"
 "Shift + Sol Fare Düğmesi + Sürükle: Seçilen düğümü başka bir düğüme bağlar, "
 "veya düğümsüz bir alan seçerseniz yeni bir düğüm oluşturur."
+
+msgid "Select and move nodes."
+msgstr "Düğümleri seç ve taşı."
 
 msgid "Create new nodes."
 msgstr "Yeni düğümler oluştur."
@@ -3120,6 +3163,9 @@ msgstr ""
 "Bu yöntemin çağrılması için bir kopya oluşum gerekmez.\n"
 "Sınıf adı kullanılarak doğrudan çağrılabilir."
 
+msgid "This method must be implemented to complete the abstract class."
+msgstr "Soyut sınıfın tamamlanması için bu yöntemin uyarlanması gerekir."
+
 msgid "Code snippet copied to clipboard."
 msgstr "Kod parçacığı panoya kopyalandı."
 
@@ -3717,6 +3763,9 @@ msgstr ""
 
 msgid "Could not create folder: %s"
 msgstr "Klasör oluşturulamadı: %s"
+
+msgid "Open Scene"
+msgstr "Sahneyi Aç"
 
 msgid "New Inherited Scene"
 msgstr "Yeni Miras Alınmış Sahne"
@@ -4765,6 +4814,9 @@ msgstr "Sahne Kaydediliyor"
 msgid "Analyzing"
 msgstr "Çözümleniyor"
 
+msgid "Creating Thumbnail"
+msgstr "Küçük Resim Oluşturuluyor"
+
 msgid "This operation can't be done without a tree root."
 msgstr "Bu işlem, ağacın bir kökü olmadan yapılamaz."
 
@@ -5242,6 +5294,9 @@ msgstr "Mobil"
 
 msgid "Compatibility"
 msgstr "Uyumluluk"
+
+msgid "%s (Overridden)"
+msgstr "%s (Üzerine Yazılmış)"
 
 msgid "Main Menu"
 msgstr "Ana Menü"
@@ -5779,6 +5834,18 @@ msgstr "En az bir disk alanı erişimi nedeni seçilmelidir."
 msgid "At least one system boot time access reason should be selected."
 msgstr "En az bir sistem önyükleme zamanı erişimi nedeni seçilmelidir."
 
+msgid "\"Shader Baker\" doesn't work with the Compatibility renderer."
+msgstr "“Gölgelendirici Fırınlayıcı”, Uyumluluk işleyicisi ile çalışmaz."
+
+msgid ""
+"The editor is currently using a different renderer than what the target "
+"platform will use. \"Shader Baker\" won't be able to include core shaders. "
+"Switch to \"%s\" renderer temporarily to fix this."
+msgstr ""
+"Düzenleyici şu anda, hedef platformun kullanacağından farklı bir işleyici "
+"kullanıyor. \"Gölgelendirici Fırınlayıcı\", temel gölgelendiricileri dahil "
+"edemeyecek. Bunu düzeltmek için, geçici olarak \"%s\" işleyicisine geçin."
+
 msgid "Target folder does not exist or is inaccessible: \"%s\""
 msgstr "Hedef klasör mevcut değil veya erişilemiyor: \"%s\""
 
@@ -5917,6 +5984,19 @@ msgstr "Kurulum başarısız oldu, ayrıntılar için düzenleyici günlüğüne
 
 msgid "Running failed, see editor log for details."
 msgstr "Çalıştırma başarısız oldu, ayrıntılar için düzenleyici günlüğüne bakın."
+
+msgid "\"Shader Baker\" is not supported when using the Compatibility renderer."
+msgstr ""
+"“Gölgelendirici Fırınlayıcı”, Uyumluluk işleyicisi kullanılırken desteklenmez."
+
+msgid ""
+"The editor is currently using a different renderer than what the target "
+"platform will use. \"Shader Baker\" won't be able to include core shaders. "
+"Switch to the \"%s\" renderer temporarily to fix this."
+msgstr ""
+"Düzenleyici şu anda, hedef platformun kullanacağından farklı bir işleyici "
+"kullanıyor. \"Gölgelendirici Fırınlayıcı\", temel gölgelendiricileri dahil "
+"edemeyecek. Bunu düzeltmek için, geçici olarak \"%s\" işleyicisine geçin."
 
 msgid ""
 "A texture format must be selected to export the project. Please select at "
@@ -6619,6 +6699,9 @@ msgstr "Yeniden içe aktarma sonrası işlemler yürütülüyor..."
 msgid "Copying files..."
 msgstr "Dosyalar kopyalanıyor..."
 
+msgid "Remapping dependencies..."
+msgstr "Bağımlılıklar yeniden haritalanıyor..."
+
 msgid "Go to Line"
 msgstr "Satıra Git"
 
@@ -7022,6 +7105,9 @@ msgstr "Önizleme:"
 msgid "Filter:"
 msgstr "Filtre:"
 
+msgid "Filename Filter:"
+msgstr "Dosya Adı Filtresi:"
+
 msgid "File:"
 msgstr "Dosya:"
 
@@ -7057,6 +7143,9 @@ msgstr "Sahne Seç"
 msgid "Fuzzy Search"
 msgstr "Bulanık Arama"
 
+msgid "Include approximate matches."
+msgstr "Yaklaşık eşleşmeleri dahil et."
+
 msgid "Addons"
 msgstr "Eklentiler"
 
@@ -7090,6 +7179,9 @@ msgstr "Bildirim yok."
 
 msgid "Show notifications."
 msgstr "Bildirimleri göster."
+
+msgid "Notifications:"
+msgstr "Bildirimler:"
 
 msgid "Silence the notifications."
 msgstr "Bildirimleri sessize al."
@@ -7727,6 +7819,12 @@ msgstr "Yeni Boyut:"
 msgid "First Page"
 msgstr "İlk Sayfa"
 
+msgid "Previous Page"
+msgstr "Önceki Sayfa"
+
+msgid "Page Number"
+msgstr "Sayfa Numarası"
+
 msgid "Next Page"
 msgstr "Sonraki Sayfa"
 
@@ -7783,6 +7881,16 @@ msgstr "Özel Değer Düzenlemesini İptal Et"
 
 msgid "Locale"
 msgstr "Yerel kodu"
+
+msgid "Toggle Display UID"
+msgstr "Ekran UID Kimliğini Aç/Kapat"
+
+msgid ""
+"Toggles displaying between path and UID.\n"
+"The UID is the actual value of this property."
+msgstr ""
+"Yol ve UID Kimliği arasında görüntülemeyi açar/kapatır.\n"
+"UID, bu özelliğin asıl değeridir."
 
 msgid "Renaming layer %d:"
 msgstr "%d katmanı yeniden adlandırılıyor:"
@@ -9078,9 +9186,6 @@ msgstr "Gömülü Projeyi Duraklat / Devam Ettir"
 msgid "Next Frame"
 msgstr "Sonraki Kare"
 
-msgid "Select Mode"
-msgstr "Seçme Kipi"
-
 msgid "Connection impossible to the game process."
 msgstr "Oyun sürecine bağlantı imkansız."
 
@@ -9206,6 +9311,9 @@ msgstr ""
 "'En Boy Oranını Koru' modu, Oyun Çalışma Alanı istenilen boyuttan daha küçük "
 "olduğunda kullanılır."
 
+msgid "Embedded game size is based on project settings."
+msgstr "Gömülü oyun boyutu proje ayarlarına bağlıdır."
+
 msgid "Keep the aspect ratio of the embedded game."
 msgstr "Gömülü oyun görüntü en-boy oranını koru."
 
@@ -9264,6 +9372,9 @@ msgstr "Ana Etiketlerin Üzerine Yaz"
 msgid "Feature Tags"
 msgstr "Özellik Etiketleri"
 
+msgid "Move Origin to Geometric Center"
+msgstr "Sıfır Noktasını Geometrik Merkeze Taşı"
+
 msgid "Create Polygon"
 msgstr "Çokgen Oluştur"
 
@@ -9275,6 +9386,12 @@ msgstr ""
 "Noktaları düzenle.\n"
 "Sol Fare Düğmesi: Noktayı Taşı\n"
 "Sağ Fare Düğmesi: Noktayı Sil"
+
+msgid "Move center of gravity to geometric center."
+msgstr "Ağırlık merkezini geometrik merkeze taşı."
+
+msgid "Move Geometric Center"
+msgstr "Geometrik Merkezi Taşı"
 
 msgid "Edit Polygon"
 msgstr "Çokgeni Düzenle"
@@ -9296,6 +9413,9 @@ msgstr "Çokgen Noktalarını Düzenle"
 
 msgid "Delete Polygon Points"
 msgstr "Çokgen Noktalarını Sil"
+
+msgid "Edit Camera2D Limits"
+msgstr "2B Kamera Limitlerini Düzenle"
 
 msgid "Camera2D"
 msgstr "Camera2D"
@@ -10058,6 +10178,9 @@ msgstr "Seçili Karo Haritası Katmanını Vurgula"
 
 msgid "Toggle grid visibility."
 msgstr "Izgara görünürlüğünü aç/kapat."
+
+msgid "Advanced settings."
+msgstr "Gelişmiş ayarlar."
 
 msgid "Automatically Replace Tiles with Proxies"
 msgstr "Karoları Vekiller ile Otomatik Değiştir"
@@ -11358,6 +11481,17 @@ msgstr "Gölgesiz Görüntüle"
 msgid "Directional Shadow Splits"
 msgstr "Yönlü Gölge Ayrıkları"
 
+msgid ""
+"Displays directional shadow splits in different colors to make adjusting "
+"split thresholds easier. \n"
+"Red: 1st split (closest to the camera), Green: 2nd split, Blue: 3rd split, "
+"Yellow: 4th split (furthest from the camera)"
+msgstr ""
+"Ayrık eşiklerinin ayarlanmasını kolaylaştırmak için yönlü gölge ayrıklarını "
+"farklı renklerle görüntüler .\n"
+"Kırmızı: 1. ayrık (kameraya en yakın), Yeşil: 2. ayrık, Mavi: 3. ayrık, Sarı: "
+"4. ayrık(kameraya en uzak)"
+
 msgid "Normal Buffer"
 msgstr "Normal Arabellek"
 
@@ -11420,6 +11554,13 @@ msgstr "Sahne Parlaklığı"
 
 msgid "SSAO"
 msgstr "Ekran-Uzayı Çevresel Perdeleme (SSAO)"
+
+msgid ""
+"Displays the screen-space ambient occlusion buffer. Requires SSAO to be "
+"enabled in Environment to have a visible effect."
+msgstr ""
+"Ekran-uzayı çevresel perdeleme (SSAO) arabelleğini gösterir. Görülebilir bir "
+"etki için Ortam ayarlarında SSAO’nun etkinleştirilmiş olması gerekir."
 
 msgid "SSIL"
 msgstr "Ekran-Uzayı Dolaylı Aydınlatma (SSIL)"
@@ -11687,6 +11828,9 @@ msgstr "Önizleme Ortamı Ton Haritasını Ayarla"
 
 msgid "Set Preview Environment Global Illumination"
 msgstr "Önizleme Ortamı Genel Aydınlatmayı Ayarla"
+
+msgid "Select Mode"
+msgstr "Seçme Kipi"
 
 msgid "Move Mode"
 msgstr "Taşıma Kipi"
@@ -15960,9 +16104,6 @@ msgstr "Sabit Ayarla: %s"
 
 msgid "Invalid name for varying."
 msgstr "Değişen için geçersiz isim."
-
-msgid "Varying with that name is already exist."
-msgstr "Bu isimle bir değişen zaten var."
 
 msgid "Boolean type cannot be used with `%s` varying mode."
 msgstr "Mantıksal tip `%s` değişen modu ile kullanılamaz."
@@ -20561,12 +20702,6 @@ msgstr "Özyinelemeye izin verilmez."
 
 msgid "Function '%s' can't be called from source code."
 msgstr "'%s' fonksiyonu, kaynak kodun içinden çağrılamaz."
-
-msgid ""
-"Invalid argument for \"%s(%s)\" function: argument %d should be %s but is %s."
-msgstr ""
-"\"%s(%s)\" fonksiyonu için geçersiz girdi değişkeni: %d girdi değişkeni, %s "
-"olmalıydı ancak bir %s'dir."
 
 msgid ""
 "Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."

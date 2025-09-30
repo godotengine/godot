@@ -547,6 +547,10 @@
 		<member name="editors/animation/default_fps_mode" type="int" setter="" getter="">
 			Default step mode for [AnimationPlayer] (seconds or FPS). The option is remembered locally for a scene and this option only determines the default value when scene doesn't have local state yet.
 		</member>
+		<member name="editors/animation/insert_at_current_time" type="bool" setter="" getter="">
+			If [code]true[/code], animation keys and markers are inserted at the current time in the animation.
+			If [code]false[/code], they are inserted at the mouse cursor's position.
+		</member>
 		<member name="editors/animation/onion_layers_future_color" type="Color" setter="" getter="">
 			The modulate color to use for "future" frames displayed in the animation editor's onion skinning feature.
 		</member>
@@ -560,9 +564,6 @@
 		<member name="editors/bone_mapper/handle_colors/set" type="Color" setter="" getter="">
 		</member>
 		<member name="editors/bone_mapper/handle_colors/unset" type="Color" setter="" getter="">
-		</member>
-		<member name="editors/grid_map/palette_min_width" type="int" setter="" getter="">
-			Minimum width of GridMap's mesh palette side panel.
 		</member>
 		<member name="editors/grid_map/pick_distance" type="float" setter="" getter="">
 			The maximum distance at which tiles can be placed on a GridMap, relative to the camera position (in 3D units).
@@ -870,7 +871,7 @@
 		</member>
 		<member name="interface/editor/editor_language" type="String" setter="" getter="">
 			The language to use for the editor interface.
-			Translations are provided by the community. If you spot a mistake, [url=$DOCS_URL/contributing/documentation/editor_and_docs_localization.html]contribute to editor translations on Weblate![/url]
+			Translations are provided by the community. If you spot a mistake, [url=https://contributing.godotengine.org/en/latest/documentation/translation/index.html]contribute to editor translations on Weblate![/url]
 		</member>
 		<member name="interface/editor/editor_screen" type="int" setter="" getter="">
 			The preferred monitor to display the editor. If [b]Auto[/b], the editor will remember the last screen it was displayed on across multiple sessions.
@@ -1025,6 +1026,9 @@
 		</member>
 		<member name="interface/inspector/horizontal_vector_types_editing" type="bool" setter="" getter="">
 			If [code]true[/code], [Vector3], [Vector3i], [Vector4], [Vector4i], [Rect2], [Rect2i], [Plane], and [Quaternion] properties are shown on a single line in the inspector instead of multiple lines. This is overall more compact, but it can be harder to view and edit large values without expanding the inspector horizontally.
+		</member>
+		<member name="interface/inspector/integer_drag_speed" type="float" setter="" getter="">
+			Base speed for increasing/decreasing integer values by dragging them in the inspector.
 		</member>
 		<member name="interface/inspector/max_array_dictionary_items_per_page" type="int" setter="" getter="">
 			The number of [Array] or [Dictionary] items to display on each "page" in the inspector. Higher values allow viewing more values per page, but take more time to load. This increased load time is noticeable when selecting nodes that have array or dictionary properties in the editor.

@@ -273,7 +273,7 @@ OpenXRBindingModifierEditor::OpenXRBindingModifierEditor() {
 	main_vb->add_child(editor_inspector);
 }
 
-void OpenXRBindingModifierEditor::setup(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRBindingModifier> p_binding_modifier) {
+void OpenXRBindingModifierEditor::setup(const Ref<OpenXRActionMap> &p_action_map, const Ref<OpenXRBindingModifier> &p_binding_modifier) {
 	ERR_FAIL_NULL(binding_modifier_title);
 	ERR_FAIL_NULL(editor_inspector);
 

@@ -106,7 +106,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-26 22:08+0000\n"
+"PO-Revision-Date: 2025-08-14 17:49+0000\n"
 "Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
@@ -1055,6 +1055,9 @@ msgstr "Performans Oyun Sınıfı"
 
 msgid "Performance A 12"
 msgstr "Performans A 12"
+
+msgid "Shader Baker"
+msgstr "Gölgelendirici Fırınlayıcı"
 
 msgid "Enabled"
 msgstr "Etkin"

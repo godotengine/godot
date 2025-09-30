@@ -1074,6 +1074,11 @@ void EditorAudioBusDrop::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("dropped"));
 }
 
+void EditorAudioBuses::_update_file_label_size() {
+	int label_min_width = file->get_minimum_size().x + file->get_character_bounds(0).size.x;
+	file->set_custom_minimum_size(Size2(label_min_width, 0));
+}
+
 void EditorAudioBuses::_rebuild_buses() {
 	for (int i = bus_hb->get_child_count() - 1; i >= 0; i--) {
 		EditorAudioBus *audio_bus = Object::cast_to<EditorAudioBus>(bus_hb->get_child(i));
@@ -1111,6 +1116,7 @@ void EditorAudioBuses::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			bus_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+			_update_file_label_size();
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -1141,6 +1147,23 @@ void EditorAudioBuses::_notification(int p_what) {
 			if (edited) {
 				AudioServer::get_singleton()->set_edited(false);
 				save_timer->start();
+			}
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				break;
+			}
+
+			_update_file_label_size();
+
+			// Setting `the split_offset` value once to the minimum value required to display the entire contents of the `EditorAudioBuses`.
+			// This is used instead of setting a custom_minimum_size or similar, as this may cause the panel to be outside the window (see GH-26835).
+			// If `EditorAudioBuses` is selected when starting the editor, this code will be executed first and then the saved layout will load.
+			if (use_default_editor_size) {
+				use_default_editor_size = false;
+				int offset = EditorNode::get_bottom_panel()->get_combined_minimum_size().y + get_combined_minimum_size().y;
+				offset += Object::cast_to<Control>(bus_hb->get_child(0))->get_combined_minimum_size().y; // Master audio bus always exists.
+				EditorNode::get_singleton()->set_center_split_offset(-offset);
 			}
 		} break;
 	}
@@ -1315,9 +1338,16 @@ EditorAudioBuses::EditorAudioBuses() {
 
 	edited_path = ResourceUID::ensure_path(GLOBAL_GET("audio/buses/default_bus_layout"));
 
+	Label *layout_label = memnew(Label(TTRC("Layout:")));
+	top_hb->add_child(layout_label);
+
 	file = memnew(Label);
-	file->set_text(vformat("%s %s", TTR("Layout:"), edited_path.get_file()));
-	file->set_clip_text(true);
+	const String _file_name = edited_path.get_file();
+	file->set_text(_file_name);
+	file->set_tooltip_text(_file_name);
+	file->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	file->set_mouse_filter(MOUSE_FILTER_PASS);
+	file->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	file->set_h_size_flags(SIZE_EXPAND_FILL);
 	top_hb->add_child(file);
 
@@ -1356,7 +1386,7 @@ EditorAudioBuses::EditorAudioBuses() {
 
 	bus_scroll = memnew(ScrollContainer);
 	bus_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
-	bus_scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+	bus_scroll->set_custom_minimum_size(Size2(0, 40 * EDSCALE));
 	add_child(bus_scroll);
 	bus_hb = memnew(HBoxContainer);
 	bus_hb->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1401,7 +1431,11 @@ void EditorAudioBuses::open_layout(const String &p_path) {
 	}
 
 	edited_path = path;
-	file->set_text(vformat("%s %s", TTR("Layout:"), path.get_file()));
+	const String _file_name = edited_path.get_file();
+	file->set_text(_file_name);
+	file->set_tooltip_text(_file_name);
+	_update_file_label_size();
+
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_rebuild_buses();
 	EditorUndoRedoManager::get_singleton()->clear_history(EditorUndoRedoManager::GLOBAL_HISTORY);

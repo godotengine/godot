@@ -303,7 +303,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			const int h_separation = get_theme_constant(SNAME("h_separation"), SNAME("AnimationBezierTrackEdit"));
 			const int v_separation = get_theme_constant(SNAME("h_separation"), SNAME("AnimationBezierTrackEdit"));
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				draw_rect(Rect2(Point2(), get_size()), focus_color, false, Math::round(EDSCALE));
 			}
 
