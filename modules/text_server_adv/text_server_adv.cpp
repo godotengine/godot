@@ -522,6 +522,15 @@ PackedByteArray TextServerAdvanced::_get_support_data() const {
 #endif
 }
 
+bool TextServerAdvanced::_is_locale_using_support_data(const String &p_locale) const {
+	String l = p_locale.get_slicec('_', 0);
+	if ((l == "my") || (l == "zh") || (l == "ja") || (l == "ko") || (l == "km") || (l == "lo") || (l == "th")) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
 bool TextServerAdvanced::_is_locale_right_to_left(const String &p_locale) const {
 	String l = p_locale.get_slicec('_', 0);
 	if ((l == "ar") || (l == "dv") || (l == "he") || (l == "fa") || (l == "ff") || (l == "ku") || (l == "ur")) {
@@ -5727,6 +5736,7 @@ RID TextServerAdvanced::_find_sys_font_for_text(const RID &p_fdef, const String 
 
 	String locale = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 	PackedStringArray fallback_font_name = OS::get_singleton()->get_system_font_path_for_text(font_name, p_text, locale, p_script_code, font_weight, font_stretch, font_style & TextServer::FONT_ITALIC);
+	print_line("sysf x ", p_text, " --> ", fallback_font_name);
 #ifdef GDEXTENSION
 	for (int fb = 0; fb < fallback_font_name.size(); fb++) {
 		const String &E = fallback_font_name[fb];
