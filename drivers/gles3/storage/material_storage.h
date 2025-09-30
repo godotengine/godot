@@ -122,6 +122,7 @@ struct Material {
 	bool uniform_dirty = false;
 	bool texture_dirty = false;
 	HashMap<StringName, Variant> params;
+	HashMap<StringName, Vector<uint8_t>> buffers;
 	int32_t priority = 0;
 	RID next_pass;
 	SelfList<Material> update_element;
@@ -631,6 +632,14 @@ public:
 
 	virtual void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) override;
 	virtual Variant material_get_param(RID p_material, const StringName &p_param) const override;
+
+	virtual void material_set_buffer(RID p_material, const StringName &p_buffer, const TypedDictionary<StringName, Variant> &p_values) override;
+	virtual void material_update_buffer(RID p_material, const StringName &p_buffer, const TypedDictionary<StringName, Variant> &p_values) override;
+	virtual TypedDictionary<StringName, Variant> material_get_buffer(RID p_material, const StringName &p_buffer) const override;
+	virtual void material_set_buffer_raw(RID p_material, const StringName &p_buffer, const Vector<uint8_t> &p_values) override;
+	virtual Vector<uint8_t> material_get_buffer_raw(RID p_material, const StringName &p_buffer) const override;
+	virtual void material_set_buffer_field(RID p_material, const StringName &p_buffer, const StringName &p_field, const Variant &p_value) override;
+	virtual Variant material_get_buffer_field(RID p_material, const StringName &p_buffer, const StringName &p_field) const override;
 
 	virtual void material_set_next_pass(RID p_material, RID p_next_material) override;
 	virtual void material_set_render_priority(RID p_material, int priority) override;
