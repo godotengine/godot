@@ -202,8 +202,8 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(Geometry
 	GLES3::MeshStorage *mesh_storage = GLES3::MeshStorage::get_singleton();
 
 	bool has_read_screen_alpha = p_material->shader_data->uses_screen_texture || p_material->shader_data->uses_depth_texture || p_material->shader_data->uses_normal_texture;
-	bool has_base_alpha = ((p_material->shader_data->uses_alpha && !p_material->shader_data->uses_alpha_clip) || has_read_screen_alpha);
-	bool has_blend_alpha = p_material->shader_data->uses_blend_alpha && !p_material->shader_data->uses_alpha_clip;
+	bool has_base_alpha = ((p_material->shader_data->uses_alpha && !p_material->shader_data->uses_alpha_clip && !p_material->shader_data->uses_depth_prepass_alpha) || has_read_screen_alpha);
+	bool has_blend_alpha = p_material->shader_data->uses_blend_alpha;
 	bool has_alpha = has_base_alpha || has_blend_alpha;
 
 	uint32_t flags = 0;
@@ -2569,9 +2569,6 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	if(scene_state.used_depth_prepass){
 		scene_state.set_gl_depth_func(GL_EQUAL);
 	}
-	else{
-		scene_state.set_gl_depth_func(GL_GEQUAL);
-	}
 	
 
 	{
@@ -2658,9 +2655,9 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		scene_state.enable_gl_blend(true);
 	}
 
+
 	// Render Opaque Objects.
 	RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, spec_constant_base_flags, use_wireframe);
-
 	_render_list_template<PASS_MODE_COLOR>(&render_list_params, &render_data, 0, render_list[RENDER_LIST_OPAQUE].elements.size());
 
 	scene_state.enable_gl_depth_draw(false);
@@ -2670,7 +2667,6 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		RENDER_TIMESTAMP("Render Sky");
 
 		scene_state.enable_gl_depth_test(true);
-		scene_state.set_gl_depth_func(GL_GEQUAL);
 		scene_state.enable_gl_blend(false);
 		scene_state.set_gl_cull_mode(RS::CULL_MODE_BACK);
 
@@ -2732,6 +2728,8 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		// Bound framebuffer may have changed, so change it back
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 	}
+
+	scene_state.set_gl_depth_func(GL_GEQUAL);
 
 	RENDER_TIMESTAMP("Render 3D Transparent Pass");
 	scene_state.enable_gl_blend(true);
@@ -3059,8 +3057,6 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 
 		if (shader->depth_test == GLES3::SceneShaderData::DEPTH_TEST_ENABLED_INVERTED) {
 			scene_state.set_gl_depth_func(GL_LESS);
-		} else {
-			scene_state.set_gl_depth_func(GL_GEQUAL);
 		}
 
 		if constexpr (p_pass_mode != PASS_MODE_SHADOW) {
