@@ -1104,6 +1104,12 @@
 		<member name="interface/theme/draw_extra_borders" type="bool" setter="" getter="">
 			If [code]true[/code], draws additional borders around interactive UI elements in the editor. This is automatically enabled when using the [b]Black (OLED)[/b] theme preset, as this theme preset uses a fully black background.
 		</member>
+		<member name="interface/theme/draw_relationship_lines" type="String" setter="" getter="">
+			What relationship lines to draw in the editor's [Tree]-based GUIs (such as the Scene tree dock).
+			- [b]None[/b] will make so that no relationship lines are drawn.
+			- [b]Selected Only[/b] will only draw them for selected items.
+			- [b]All[/b] will always draw them for all items.
+		</member>
 		<member name="interface/theme/follow_system_theme" type="bool" setter="" getter="">
 			If [code]true[/code], the editor theme preset will attempt to automatically match the system theme.
 		</member>
@@ -1118,13 +1124,16 @@
 			[b]Note:[/b] The default editor icon saturation was increased by 30% in Godot 4.0 and later. To get Godot 3.x's icon saturation back, set [member interface/theme/icon_saturation] to [code]0.77[/code].
 		</member>
 		<member name="interface/theme/preset" type="String" setter="" getter="">
-			The editor theme preset to use.
+			The editor color preset to use.
 		</member>
 		<member name="interface/theme/relationship_line_opacity" type="float" setter="" getter="">
 			The opacity to use when drawing relationship lines in the editor's [Tree]-based GUIs (such as the Scene tree dock).
 		</member>
 		<member name="interface/theme/spacing_preset" type="String" setter="" getter="">
 			The editor theme spacing preset to use. See also [member interface/theme/base_spacing] and [member interface/theme/additional_spacing].
+		</member>
+		<member name="interface/theme/style" type="String" setter="" getter="">
+			The editor theme style to use.
 		</member>
 		<member name="interface/theme/use_system_accent_color" type="bool" setter="" getter="">
 			If [code]true[/code], set accent color based on system settings.
