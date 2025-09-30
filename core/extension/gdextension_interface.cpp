@@ -1649,7 +1649,7 @@ static GDExtensionObjectPtr gdextension_classdb_construct_object2(GDExtensionCon
 
 static void *gdextension_classdb_get_class_tag(GDExtensionConstStringNamePtr p_classname) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
-	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(classname);
+	ClassDB::ClassInfo *class_info = deref_or_null(ClassDB::classes.getptr(classname));
 	return class_info ? class_info->class_ptr : nullptr;
 }
 

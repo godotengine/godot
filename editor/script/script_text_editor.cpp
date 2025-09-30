@@ -1638,7 +1638,7 @@ void ScriptTextEditor::_update_connected_methods() {
 					}
 				}
 
-				ClassDB::ClassInfo *base_class_ptr = ClassDB::classes.getptr(base_class)->inherits_ptr;
+				ClassDB::ClassInfo *base_class_ptr = ClassDB::classes.get(base_class)->inherits_ptr;
 				if (base_class_ptr == nullptr) {
 					break;
 				}

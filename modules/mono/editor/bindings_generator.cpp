@@ -3883,7 +3883,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			continue;
 		}
 
-		ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(type_cname);
+		ClassDB::ClassInfo *class_info = deref_or_null(ClassDB::classes.getptr(type_cname));
 
 		TypeInterface itype = TypeInterface::create_object_type(type_cname, pascal_to_pascal_case(type_cname), api_type);
 

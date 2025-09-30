@@ -240,7 +240,7 @@ void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
 		LSP::GodotNativeClassInfo gdclass;
 		gdclass.name = E.value.name;
 		gdclass.class_doc = &(E.value);
-		if (ClassDB::ClassInfo *ptr = ClassDB::classes.getptr(StringName(E.value.name))) {
+		if (ClassDB::ClassInfo *ptr = deref_or_null(ClassDB::classes.getptr(StringName(E.value.name)))) {
 			gdclass.class_info = ptr;
 		}
 		capabilities.native_classes.push_back(gdclass);
