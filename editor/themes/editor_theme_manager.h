@@ -32,6 +32,8 @@
 
 #include "editor/themes/editor_theme.h"
 #include "scene/resources/style_box_flat.h"
+#include "scene/resources/style_box_line.h"
+#include "scene/resources/style_box_texture.h"
 
 class EditorThemeManager {
 	static int benchmark_run;
@@ -46,9 +48,11 @@ class EditorThemeManager {
 		LIGHT_COLOR,
 	};
 
+public:
 	struct ThemeConfiguration {
 		// Basic properties.
 
+		String style;
 		String preset;
 		String spacing_preset;
 
@@ -74,7 +78,8 @@ class EditorThemeManager {
 		int color_picker_button_height = 28;
 		float subresource_hue_tint = 0.0;
 
-		float default_contrast = 1.0;
+		float default_contrast = 0.3;
+		int default_corner_radius = 4;
 
 		// Generated properties.
 
@@ -89,6 +94,7 @@ class EditorThemeManager {
 		int forced_even_separation = 0;
 
 		Color mono_color;
+		Color mono_color_inv;
 		Color dark_color_1;
 		Color dark_color_2;
 		Color dark_color_3;
@@ -103,6 +109,7 @@ class EditorThemeManager {
 		Color extra_border_color_2;
 
 		Color font_color;
+		Color font_secondary_color;
 		Color font_focus_color;
 		Color font_hover_color;
 		Color font_pressed_color;
@@ -113,10 +120,27 @@ class EditorThemeManager {
 		Color font_outline_color;
 
 		Color icon_normal_color;
+		Color icon_secondary_color;
 		Color icon_focus_color;
 		Color icon_hover_color;
 		Color icon_pressed_color;
 		Color icon_disabled_color;
+
+		Color surface_lowest_color;
+		Color surface_lower_color;
+		Color surface_low_color;
+		Color surface_base_color;
+		Color surface_high_color;
+		Color surface_higher_color;
+		Color surface_highest_color;
+
+		Color button_normal_color;
+		Color button_hover_color;
+		Color button_pressed_color;
+		Color button_disabled_color;
+		Color button_border_normal_color;
+		Color button_border_hover_color;
+		Color button_border_pressed_color;
 
 		Color shadow_color;
 		Color selection_color;
@@ -125,7 +149,9 @@ class EditorThemeManager {
 		Color separator_color;
 
 		Ref<StyleBoxFlat> base_style;
+		Ref<StyleBoxFlat> focus_style;
 		Ref<StyleBoxEmpty> base_empty_style;
+		Ref<StyleBoxEmpty> base_empty_wide_style;
 
 		Ref<StyleBoxFlat> button_style;
 		Ref<StyleBoxFlat> button_style_disabled;
@@ -133,11 +159,15 @@ class EditorThemeManager {
 		Ref<StyleBoxFlat> button_style_pressed;
 		Ref<StyleBoxFlat> button_style_hover;
 
-		Ref<StyleBoxFlat> circle_style_focus;
+		Ref<StyleBoxFlat> flat_button;
+		Ref<StyleBoxFlat> flat_button_pressed;
+		Ref<StyleBoxFlat> flat_button_hover;
 
 		Ref<StyleBoxFlat> popup_style;
 		Ref<StyleBoxFlat> popup_border_style;
+		Ref<StyleBoxFlat> popup_panel_style;
 		Ref<StyleBoxFlat> window_style;
+		Ref<StyleBoxFlat> window_complex_style;
 		Ref<StyleBoxFlat> dialog_style;
 		Ref<StyleBoxFlat> panel_container_style;
 		Ref<StyleBoxFlat> content_panel_style;
@@ -150,12 +180,9 @@ class EditorThemeManager {
 		uint32_t hash_icons();
 	};
 
+private:
 	static Ref<EditorTheme> _create_base_theme(const Ref<EditorTheme> &p_old_theme = nullptr);
 	static ThemeConfiguration _create_theme_config(const Ref<EditorTheme> &p_theme);
-
-	static void _create_shared_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);
-	static void _populate_standard_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);
-	static void _populate_editor_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);
 
 	static void _populate_text_editor_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);
 	static void _populate_visual_shader_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);
@@ -163,6 +190,11 @@ class EditorThemeManager {
 	static void _reset_dirty_flag();
 
 public:
+	static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1, int p_corner_width = 0);
+	static Ref<StyleBoxEmpty> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1);
+	static Ref<StyleBoxTexture> make_stylebox(Ref<Texture2D> p_texture, float p_left, float p_top, float p_right, float p_bottom, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1, bool p_draw_center = true);
+	static Ref<StyleBoxLine> make_line_stylebox(Color p_color, int p_thickness = 1, float p_grow_begin = 1, float p_grow_end = 1, bool p_vertical = false);
+
 	static Ref<EditorTheme> generate_theme(const Ref<EditorTheme> &p_old_theme = nullptr);
 	static bool is_generated_theme_outdated();
 
