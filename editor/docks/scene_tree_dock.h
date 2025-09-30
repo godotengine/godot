@@ -100,6 +100,7 @@ class SceneTreeDock : public EditorDock {
 	Vector<ObjectID> subresources;
 
 	bool reset_create_dialog = false;
+	bool changing_scene = false;
 
 	int current_option = 0;
 
@@ -254,6 +255,7 @@ class SceneTreeDock : public EditorDock {
 	void _selection_changed();
 	void _update_script_button();
 	void _queue_update_script_button();
+	bool _can_replace_nodes(bool &r_instance_replace) const;
 
 	void _fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, HashMap<Node *, NodePath> *p_renames);
 	bool _has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delete) const;
@@ -265,6 +267,7 @@ class SceneTreeDock : public EditorDock {
 	void _files_dropped(const Vector<String> &p_files, NodePath p_to, int p_type);
 	void _script_dropped(const String &p_file, NodePath p_to);
 	void _quick_open(const String &p_file_path);
+	void _quick_open_scene_change(const String &p_new_scene_path);
 
 	void _tree_rmb(const Vector2 &p_menu_pos);
 	void _update_tree_menu();
@@ -274,9 +277,11 @@ class SceneTreeDock : public EditorDock {
 	void _filter_option_selected(int option);
 	void _append_filter_options_to(PopupMenu *p_menu);
 
+	Node *_instantiate_scene(const String &p_path);
 	void _perform_instantiate_scenes(const Vector<String> &p_files, Node *p_parent, int p_pos);
 	void _perform_create_audio_stream_players(const Vector<String> &p_files, Node *p_parent, int p_pos);
 	void _replace_with_branch_scene(const String &p_file, Node *p_base);
+	void _replace_with_instance(Node *p_instance, Node *p_base);
 
 	void _remote_tree_selected();
 	void _local_tree_selected();
