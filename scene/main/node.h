@@ -264,8 +264,6 @@ private:
 
 	} data;
 
-	Ref<MultiplayerAPI> multiplayer;
-
 	String _get_tree_string_pretty(const String &p_prefix, bool p_last);
 	String _get_tree_string(const Node *p_node);
 
