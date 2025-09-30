@@ -521,18 +521,28 @@ void QuickOpenResultContainer::update_results() {
 }
 
 void QuickOpenResultContainer::_use_default_candidates() {
+	HashSet<String> existing_paths;
 	Vector<QuickOpenResultCandidate> *history = _get_history();
 	if (history) {
 		candidates.append_array(*history);
+		for (const QuickOpenResultCandidate &candi : *history) {
+			existing_paths.insert(candi.file_path);
+		}
 	}
+	int i = candidates.size();
+
 	candidates.resize(MIN(max_total_results, filepaths.size()));
+	QuickOpenResultCandidate *candidates_w = candidates.ptrw();
 	int count = candidates.size();
-	int i = 0;
+
 	for (const String &filepath : filepaths) {
 		if (i >= count) {
 			break;
 		}
-		_setup_candidate(candidates.write[i++], filepath);
+		if (existing_paths.has(filepath)) {
+			continue;
+		}
+		_setup_candidate(candidates_w[i++], filepath);
 	}
 }
 
