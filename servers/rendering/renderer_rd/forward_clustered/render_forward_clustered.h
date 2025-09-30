@@ -322,16 +322,20 @@ private:
 		};
 
 		struct InstanceData {
-			float transform[16];
-			float prev_transform[16];
+			float transform[12];
+			float compressed_aabb_position[4];
+			float compressed_aabb_size[4];
+			float uv_scale[4];
 			uint32_t flags;
 			uint32_t instance_uniforms_ofs; //base offset in global buffer for instance variables
 			uint32_t gi_offset; //GI information when using lightmapping (VCT or lightmap index)
 			uint32_t layer_mask;
+			float prev_transform[12];
 			float lightmap_uv_scale[4];
-			float compressed_aabb_position[4];
-			float compressed_aabb_size[4];
-			float uv_scale[4];
+#ifdef REAL_T_IS_DOUBLE
+			float model_precision[4];
+			float prev_model_precision[4];
+#endif
 
 			// These setters allow us to copy the data over with operation when using floats.
 			inline void set_lightmap_uv_scale(const Rect2 &p_rect) {
