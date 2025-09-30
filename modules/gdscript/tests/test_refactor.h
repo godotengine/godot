@@ -51,7 +51,12 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
 
-#include <csignal>
+#define FAIL_COND_MSG(cond, msg) \
+	if (cond) {                  \
+		FAIL(msg);               \
+		return;                  \
+	}                            \
+	(void)0
 
 namespace GDScriptTests {
 namespace TestRefactor {
@@ -101,7 +106,7 @@ static ProcessCodeData process_code(Ref<TextServer> text_server, const String &p
 				found_word = line.substr(words[j], words[j + 1] - words[j]);
 				current_index += refactor_column_index;
 
-				code_with_sentinel = p_code.insert(current_index, "\uFFFF");
+				code_with_sentinel = p_code.insert(current_index, String::chr(0xFFFF));
 				break;
 			}
 
@@ -130,10 +135,7 @@ static void test_directory(const String &p_dir) {
 	Error err = OK;
 	Ref<DirAccess> dir = DirAccess::open(p_dir, &err);
 
-	if (err != OK) {
-		FAIL("Invalid test directory.");
-		return;
-	}
+	FAIL_COND_MSG(err != OK, "Invalid test directory.");
 
 	Ref<TextServer> ts = TextServerManager::get_singleton()->get_primary_interface();
 	String path = dir->get_current_dir();
@@ -161,22 +163,20 @@ static void test_directory(const String &p_dir) {
 			String res_path = ProjectSettings::get_singleton()->localize_path(path.path_join(next));
 
 			ConfigFile conf;
-			if (conf.load(path.path_join(next.get_basename() + ".cfg")) != OK) {
-				FAIL("No config file found.");
-			}
+			FAIL_COND_MSG(conf.load(path.path_join(next.get_basename() + ".cfg")) != OK, "No config file found.");
 
 			EditorSettings::get_singleton()->set_setting("text_editor/completion/use_single_quotes", conf.get_value("input", "use_single_quotes", false));
 			EditorSettings::get_singleton()->set_setting("text_editor/completion/add_node_path_literals", conf.get_value("input", "add_node_path_literals", false));
 			EditorSettings::get_singleton()->set_setting("text_editor/completion/add_string_name_literals", conf.get_value("input", "add_string_name_literals", false));
 
 			Dictionary refactor = conf.get_value("test", "refactor", Dictionary());
-			ERR_FAIL_COND_MSG(refactor["line"].get_type() != Variant::Type::INT, "refactor.line is not an int");
-			ERR_FAIL_COND_MSG(refactor["column"].get_type() != Variant::Type::INT, "refactor.column is not an int");
+			FAIL_COND_MSG(refactor["line"].get_type() != Variant::Type::INT, "refactor.line is not an int");
+			FAIL_COND_MSG(refactor["column"].get_type() != Variant::Type::INT, "refactor.column is not an int");
 
 			int refactor_line = refactor["line"];
-			ERR_FAIL_COND_MSG(refactor_line < 1, "refactor_line is invalid");
+			FAIL_COND_MSG(refactor_line < 1, "refactor_line is invalid");
 			int refactor_column = refactor["column"];
-			ERR_FAIL_COND_MSG(refactor_column < 1, "refactor_column is invalid");
+			FAIL_COND_MSG(refactor_column < 1, "refactor_column is invalid");
 
 			MESSAGE(vformat("Testing \"%s\".", res_path));
 
@@ -186,8 +186,8 @@ static void test_directory(const String &p_dir) {
 			const HashMap<String, String> unsaved_scripts_code;
 			Node *owner = nullptr;
 
-			Error refactor_error_result = GDScriptLanguage::get_singleton()->refactor_rename_symbol_code(code, data.symbol, res_path, owner, unsaved_scripts_code, refactor_result);
-			ERR_FAIL_COND_MSG(refactor_error_result != OK, vformat("could not refactor rename symbol code: %s", error_names[refactor_error_result]));
+			Error refactor_error_result = GDScriptLanguage::get_singleton()->refactor_rename_symbol_code(data.code, data.symbol, res_path, owner, unsaved_scripts_code, refactor_result);
+			FAIL_COND_MSG(refactor_error_result != OK, vformat("could not refactor rename symbol code: %s", error_names[refactor_error_result]));
 
 			print_line(vformat("Result: %s", refactor_result.to_string()));
 		}
