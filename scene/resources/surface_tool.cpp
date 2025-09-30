@@ -1153,6 +1153,9 @@ void SurfaceTool::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, cons
 }
 
 void SurfaceTool::generate_tangents() {
+	if (vertex_array.size() == 0) {
+		return;
+	}
 	ERR_FAIL_COND_MSG(!(format & Mesh::ARRAY_FORMAT_TEX_UV), "UVs are required to generate tangents.");
 	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_NORMAL));
 
