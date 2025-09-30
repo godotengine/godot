@@ -47,6 +47,7 @@
 #include "scene/gui/separator.h"
 #include "scene/main/timer.h"
 #include "scene/resources/font.h"
+#include "scene/resources/style_box_flat.h"
 #include "servers/audio/audio_server.h"
 
 void EditorAudioBus::_update_visible_channels() {
@@ -87,10 +88,11 @@ void EditorAudioBus::_notification(int p_what) {
 
 			disabled_vu = get_editor_theme_icon(SNAME("BusVuFrozen"));
 
-			Color solo_color = EditorThemeManager::is_dark_theme() ? Color(1.0, 0.89, 0.22) : Color(1.9, 1.74, 0.83);
-			Color mute_color = EditorThemeManager::is_dark_theme() ? Color(1.0, 0.16, 0.16) : Color(2.35, 1.03, 1.03);
-			Color bypass_color = EditorThemeManager::is_dark_theme() ? Color(0.13, 0.8, 1.0) : Color(1.03, 2.04, 2.35);
-			float darkening_factor = EditorThemeManager::is_dark_theme() ? 0.15 : 0.65;
+			bool dark_icon_and_font = EditorThemeManager::is_dark_icon_and_font();
+			Color solo_color = dark_icon_and_font ? Color(1.0, 0.89, 0.22) : Color(1.9, 1.74, 0.83);
+			Color mute_color = dark_icon_and_font ? Color(1.0, 0.16, 0.16) : Color(2.35, 1.03, 1.03);
+			Color bypass_color = dark_icon_and_font ? Color(0.13, 0.8, 1.0) : Color(1.03, 2.04, 2.35);
+			float darkening_factor = dark_icon_and_font ? 0.15 : 0.65;
 			Color solo_color_darkened = solo_color.darkened(darkening_factor);
 			Color mute_color_darkened = mute_color.darkened(darkening_factor);
 			Color bypass_color_darkened = bypass_color.darkened(darkening_factor);

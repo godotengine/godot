@@ -211,7 +211,7 @@ private:
 	bool always_show_folders = false;
 	int thumbnail_size_setting = 0;
 
-	bool editor_is_dark_theme = false;
+	bool editor_is_dark_icon_and_font = false;
 
 	class FileOrFolder {
 	public:
