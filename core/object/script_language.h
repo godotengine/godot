@@ -438,12 +438,7 @@ public:
 			}
 			matches_string = matches_string.trim_suffix("\n");
 
-			return vformat(R"(RefactorRenameSymbolResult{
-	"%s" -> "%s",
-	(
-%s
-	)
-})",
+			return vformat("(RefactorRenameSymbolResult{\n\"%s\" -> \"%s\",\n\t(\n%s\n\t)\n})",
 					symbol, new_symbol, matches_string);
 		}
 
