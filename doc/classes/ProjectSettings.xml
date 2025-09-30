@@ -3417,6 +3417,9 @@
 			- 8×8 = rgb(255, 255, 0) - #ffff00 - Not supported on most hardware
 			[/codeblock]
 		</member>
+		<member name="threading/warnings/warn_on_cross_thread_await" type="bool" setter="" getter="" default="true">
+			This setting forces a warning to emit when the script awaits for something in a thread, but the signal to resume it originated from another. This normally happens unintentionally but, if this behavior is truly intended, turn off this warning.
+		</member>
 		<member name="threading/worker_pool/low_priority_thread_ratio" type="float" setter="" getter="" default="0.3">
 			The ratio of [WorkerThreadPool]'s threads that will be reserved for low-priority tasks. For example, if 10 threads are available and this value is set to [code]0.3[/code], 3 of the worker threads will be reserved for low-priority tasks. The actual value won't exceed the number of CPU cores minus one, and if possible, at least one worker thread will be dedicated to low-priority tasks.
 		</member>
