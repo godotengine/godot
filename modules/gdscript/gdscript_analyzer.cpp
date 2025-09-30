@@ -3102,8 +3102,10 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 	}
 
 #ifdef DEBUG_ENABLED
-	if (p_binary_op->variant_op == Variant::OP_DIVIDE && left_type.builtin_type == Variant::INT && right_type.builtin_type == Variant::INT) {
-		parser->push_warning(p_binary_op, GDScriptWarning::INTEGER_DIVISION);
+	if (!(flags & GDScriptAnalyzerFlags::ANALYZER_FLAG_IGNORE_NUMERIC_CONVERSION)) {
+		if (p_binary_op->variant_op == Variant::OP_DIVIDE && left_type.builtin_type == Variant::INT && right_type.builtin_type == Variant::INT) {
+			parser->push_warning(p_binary_op, GDScriptWarning::INTEGER_DIVISION);
+		}
 	}
 #endif // DEBUG_ENABLED
 
@@ -3221,6 +3223,14 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 	bool all_is_constant = true;
 	HashMap<int, GDScriptParser::ArrayNode *> arrays; // For array literal to potentially type when passing.
 	HashMap<int, GDScriptParser::DictionaryNode *> dictionaries; // Same, but for dictionaries.
+	uint32_t old_flags = flags;
+
+	if (p_call->function_name == "int") {
+		flags |= GDScriptAnalyzerFlags::ANALYZER_FLAG_IGNORE_NUMERIC_CONVERSION;
+	} else {
+		flags &= ~GDScriptAnalyzerFlags::ANALYZER_FLAG_IGNORE_NUMERIC_CONVERSION;
+	}
+
 	for (int i = 0; i < p_call->arguments.size(); i++) {
 		reduce_expression(p_call->arguments[i]);
 		if (p_call->arguments[i]->type == GDScriptParser::Node::ARRAY) {
@@ -3769,6 +3779,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 	}
 
 	p_call->set_datatype(call_type);
+	flags = old_flags;
 }
 
 void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
