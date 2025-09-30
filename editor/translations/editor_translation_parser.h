@@ -37,11 +37,22 @@
 class EditorTranslationParserPlugin : public RefCounted {
 	GDCLASS(EditorTranslationParserPlugin, RefCounted);
 
+	// These static methods were added because this class is exposed, while the singleton `EditorTranslationParser` is not.
+	// The `add_parser()` and `remove_parser()` methods are exposed through `EditorPlugin`, but there's no point
+	// in cluttering it with more unrelated methods.
+	static PackedStringArray get_all_recognized_extensions_bind();
+	static Ref<EditorTranslationParserPlugin> get_parser_bind(const String &p_extension, bool p_standard_only = false);
+	// It's also convenient to expose the global function `get_extractable_message_list()` here.
+	static TypedArray<PackedStringArray> get_builtin_strings_bind();
+
+	TypedArray<PackedStringArray> parse_file_bind(const String &p_path);
+	PackedStringArray get_recognized_extensions_bind() const;
+
 protected:
 	static void _bind_methods();
 
 	GDVIRTUAL1R(TypedArray<PackedStringArray>, _parse_file, String)
-	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
+	GDVIRTUAL0RC(PackedStringArray, _get_recognized_extensions)
 
 #ifndef DISABLE_DEPRECATED
 	GDVIRTUAL3_COMPAT(_parse_file_bind_compat_99297, _parse_file, String, TypedArray<String>, TypedArray<Array>)
@@ -55,6 +66,9 @@ public:
 class EditorTranslationParser {
 	static EditorTranslationParser *singleton;
 
+	Vector<Ref<EditorTranslationParserPlugin>> standard_parsers;
+	Vector<Ref<EditorTranslationParserPlugin>> custom_parsers;
+
 public:
 	enum ParserType {
 		STANDARD, // GDScript, CSharp, ...
@@ -63,12 +77,9 @@ public:
 
 	static EditorTranslationParser *get_singleton();
 
-	Vector<Ref<EditorTranslationParserPlugin>> standard_parsers;
-	Vector<Ref<EditorTranslationParserPlugin>> custom_parsers;
-
 	void get_recognized_extensions(List<String> *r_extensions) const;
 	bool can_parse(const String &p_extension) const;
-	Ref<EditorTranslationParserPlugin> get_parser(const String &p_extension) const;
+	Ref<EditorTranslationParserPlugin> get_parser(const String &p_extension, bool p_standard_only = false) const;
 	void add_parser(const Ref<EditorTranslationParserPlugin> &p_parser, ParserType p_type);
 	void remove_parser(const Ref<EditorTranslationParserPlugin> &p_parser, ParserType p_type);
 	void clean_parsers();
