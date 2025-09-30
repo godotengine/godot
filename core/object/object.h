@@ -330,6 +330,9 @@ struct ObjectGDExtension {
 	bool is_runtime = false;
 	bool is_placeholder = false;
 #endif
+#ifndef DISABLE_DEPRECATED
+	bool legacy_unexposed_class = false;
+#endif // DISABLE_DEPRECATED
 	GDExtensionClassSet set;
 	GDExtensionClassGet get;
 	GDExtensionClassGetPropertyList get_property_list;
