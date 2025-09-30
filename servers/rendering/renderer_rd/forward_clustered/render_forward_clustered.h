@@ -494,6 +494,10 @@ private:
 				uint64_t sort_key2;
 			};
 			struct {
+				uint64_t geometry_id : 32;
+				uint64_t material_id : 32;
+
+				uint64_t shader_id : 32;
 				uint64_t lod_index : 8;
 				uint64_t uses_softshadow : 1;
 				uint64_t uses_projector : 1;
@@ -502,10 +506,6 @@ private:
 				uint64_t depth_layer : 4;
 				uint64_t surface_index : 8;
 				uint64_t priority : 8;
-				uint64_t geometry_id : 32;
-
-				uint64_t material_id : 32;
-				uint64_t shader_id : 32;
 			};
 		} sort;
 
