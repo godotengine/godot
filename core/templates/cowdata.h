@@ -32,6 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
+#include "core/string/print_string.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/span.h"
 
@@ -373,9 +374,11 @@ Error CowData<T>::push_back(const T &p_val) {
 
 template <typename T>
 Error CowData<T>::reserve(USize p_min_capacity) {
-	ERR_FAIL_COND_V_MSG(p_min_capacity < (USize)size(), ERR_INVALID_PARAMETER, "reserve() called with a capacity smaller than the current size. This is likely a mistake.");
-
 	if (p_min_capacity <= capacity()) {
+		if (p_min_capacity < (USize)size()) {
+			WARN_VERBOSE("reserve() called with a capacity smaller than the current size. This is likely a mistake.");
+		}
+
 		// No need to reserve more, we already have (at least) the right size.
 		return OK;
 	}
