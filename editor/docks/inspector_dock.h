@@ -99,7 +99,6 @@ class InspectorDock : public VBoxContainer {
 
 	int current_option = -1;
 	ConfirmationDialog *unique_resources_confirmation = nullptr;
-	Label *unique_resources_label = nullptr;
 	Tree *unique_resources_list_tree = nullptr;
 	LocalVector<StringName> properties_to_unique;
 
