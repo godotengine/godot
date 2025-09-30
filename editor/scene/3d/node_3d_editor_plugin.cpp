@@ -100,6 +100,7 @@
 #include "scene/resources/3d/sky_material.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/surface_tool.h"
+#include <editor/gui/editor_toaster.h>
 
 constexpr real_t DISTANCE_DEFAULT = 4;
 
@@ -671,30 +672,43 @@ int Node3DEditorViewport::get_selected_count() const {
 void Node3DEditorViewport::cancel_transform() {
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
-	for (Node *E : selection) {
-		Node3D *sp = Object::cast_to<Node3D>(E);
-		if (!sp) {
-			continue;
+	if (_edit.duplicate) {
+		editor_selection->clear();
+
+		Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+		for (Node *dup : selection) {
+			EditorDebuggerNode::get_singleton()->live_debug_remove_node(NodePath(String(edited_scene->get_path_to(dup))));
+			dup->queue_free();
 		}
-
-		Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
-		if (!se) {
-			continue;
+		for (Node *orig : _edit.dup_original_selection) {
+			editor_selection->add_node(orig);
 		}
-
-		if (se && se->gizmo.is_valid()) {
-			Vector<int> ids;
-			Vector<Transform3D> restore;
-
-			for (const KeyValue<int, Transform3D> &GE : se->subgizmos) {
-				ids.push_back(GE.key);
-				restore.push_back(GE.value);
+	} else {
+		for (Node *E : selection) {
+			Node3D *sp = Object::cast_to<Node3D>(E);
+			if (!sp) {
+				continue;
 			}
 
-			se->gizmo->commit_subgizmos(ids, restore, true);
-		}
+			Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
+			if (!se) {
+				continue;
+			}
 
-		sp->set_global_transform(se->original);
+			if (se && se->gizmo.is_valid()) {
+				Vector<int> ids;
+				Vector<Transform3D> restore;
+
+				for (const KeyValue<int, Transform3D> &GE : se->subgizmos) {
+					ids.push_back(GE.key);
+					restore.push_back(GE.value);
+				}
+
+				se->gizmo->commit_subgizmos(ids, restore, true);
+			}
+
+			sp->set_global_transform(se->original);
+		}
 	}
 
 	collision_reposition = false;
@@ -1230,6 +1244,7 @@ void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
 	Node3DEditorSelectedItem *se = selected ? editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(selected) : nullptr;
 
 	if (se && se->gizmo.is_valid()) {
+		_edit.duplicate = false; // only supported for nodes
 		for (const KeyValue<int, Transform3D> &E : se->subgizmos) {
 			int subgizmo_id = E.key;
 			se->subgizmos[subgizmo_id] = se->gizmo->get_subgizmo_transform(subgizmo_id);
@@ -1237,6 +1252,79 @@ void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
 		se->original_local = selected->get_transform();
 		se->original = selected->get_global_transform();
 	} else {
+		Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+		if (_edit.duplicate && editor_selection->is_selected(edited_scene)) {
+			_edit.duplicate = false;
+			EditorToaster::get_singleton()->popup_str(TTR("Root nodes can't be duplicated"), EditorToaster::SEVERITY_WARNING);
+		}
+
+		if (_edit.duplicate) {
+			_edit.dup_original_selection = editor_selection->get_full_selected_node_list();
+
+			List<Node *> selection = editor_selection->get_top_selected_node_list();
+			selection.sort_custom<Node::Comparator>();
+			editor_selection->clear();
+
+			HashMap<const Node *, Node *> add_below_map;
+			for (List<Node *>::Element *E = selection.back(); E; E = E->prev()) {
+				Node *node = E->get();
+				if (!add_below_map.has(node->get_parent())) {
+					add_below_map.insert(node->get_parent(), node);
+				}
+			}
+
+			Node *dupsingle = nullptr;
+			for (Node *node : selection) {
+				Node *parent = node->get_parent();
+
+				List<Node *> owned;
+				Node *owner = node;
+				while (owner) {
+					List<Node *> cur_owned;
+					node->get_owned_by(owner, &cur_owned);
+					owner = owner->get_owner();
+					for (Node *F : cur_owned) {
+						owned.push_back(F);
+					}
+				}
+
+				HashMap<const Node *, Node *> duplimap;
+				Node *dup = node->duplicate_from_editor(duplimap);
+
+				ERR_CONTINUE(!dup);
+
+				if (selection.size() == 1) {
+					dupsingle = dup;
+				}
+
+				dup->set_name(parent->validate_child_name(dup));
+
+				add_below_map[parent]->add_sibling(dup, true);
+				_edit.dup_insertion_siblings[dup] = add_below_map[parent];
+
+				for (Node *F : owned) {
+					if (!duplimap.has(F)) {
+						continue;
+					}
+					Node *d = duplimap[F];
+					d->set_owner(edited_scene);
+					_edit.dup_owned_nodes.push_back(d);
+				}
+				editor_selection->add_node(dup);
+				dup->set_owner(edited_scene);
+				_edit.dup_owned_nodes.push_back(dup);
+				_edit.dup_original_paths[dup] = edited_scene->get_path_to(node);
+
+				EditorDebuggerNode::get_singleton()->live_debug_duplicate_node(edited_scene->get_path_to(node), dup->get_name());
+
+				add_below_map[parent] = dup;
+			}
+
+			if (dupsingle) {
+				EditorNode::get_singleton()->push_node_item(dupsingle);
+			}
+		}
+
 		const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
 		for (Node *E : selection) {
@@ -1289,7 +1377,7 @@ static Key _get_key_modifier(Ref<InputEventWithModifiers> e) {
 	return Key::NONE;
 }
 
-bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, bool p_highlight_only) {
+bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, bool p_highlight_only, bool p_duplicate) {
 	if (!spatial_editor->is_gizmo_visible()) {
 		return false;
 	}
@@ -1363,6 +1451,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 
 			} else {
 				//handle plane translate
+				_edit.duplicate = p_duplicate;
 				_edit.mode = TRANSFORM_TRANSLATE;
 				_compute_edit(p_screenpos);
 				_edit.plane = TransformPlane(TRANSFORM_X_AXIS + col_axis + (is_plane_translate ? 3 : 0));
@@ -1417,6 +1506,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 				spatial_editor->select_gizmo_highlight_axis(col_axis + 3);
 			} else {
 				//handle rotate
+				_edit.duplicate = p_duplicate;
 				_edit.mode = TRANSFORM_ROTATE;
 				_compute_edit(p_screenpos);
 				_edit.plane = TransformPlane(TRANSFORM_X_AXIS + col_axis);
@@ -1483,6 +1573,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 
 			} else {
 				//handle scale
+				_edit.duplicate = p_duplicate;
 				_edit.mode = TRANSFORM_SCALE;
 				_compute_edit(p_screenpos);
 				_edit.plane = TransformPlane(TRANSFORM_X_AXIS + col_axis + (is_plane_scale ? 3 : 0));
@@ -1723,6 +1814,12 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	Ref<InputEventWithModifiers> event_modifiers = p_event;
+	bool duplicate_on_transform = false;
+	if (event_modifiers.is_valid()) {
+		duplicate_on_transform = event_modifiers->is_shift_pressed();
+	}
+
 	EditorPlugin::AfterGUIInput after = EditorPlugin::AFTER_GUI_INPUT_PASS;
 	{
 		EditorNode *en = EditorNode::get_singleton();
@@ -1863,7 +1960,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			} break;
 			case MouseButton::LEFT: {
 				if (b->is_pressed()) {
-					clicked_wants_append = b->is_shift_pressed();
+					clicked_wants_append = b->is_shift_pressed() && !b->is_alt_pressed();
 
 					if (_edit.mode != TRANSFORM_NONE && (_edit.instant || collision_reposition)) {
 						commit_transform();
@@ -1935,7 +2032,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 
 					// Transform gizmo
-					if (transform_gizmo_visible && _transform_gizmo_select(_edit.mouse_pos)) {
+					if (transform_gizmo_visible && _transform_gizmo_select(_edit.mouse_pos, false, duplicate_on_transform)) {
 						break;
 					}
 
@@ -2026,7 +2123,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								}
 
 								if (mode != TRANSFORM_NONE) {
-									begin_transform(mode, false);
+									begin_transform(mode, false, duplicate_on_transform);
 									break;
 								}
 							}
@@ -2073,7 +2170,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						}
 
 						if (mode != TRANSFORM_NONE) {
-							begin_transform(mode, false);
+							begin_transform(mode, false, duplicate_on_transform);
 							break;
 						}
 					}
@@ -2131,6 +2228,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						} else {
 							if (_edit.original_mouse_pos != _edit.mouse_pos) {
 								commit_transform();
+							} else {
+								cancel_transform();
 							}
 						}
 						_edit.mode = TRANSFORM_NONE;
@@ -2239,6 +2338,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					bool is_clicked_selected = editor_selection->is_selected(ObjectDB::get_instance<Node>(clicked));
 
 					if (_edit.mode == TRANSFORM_NONE && (is_select_mode || is_clicked_selected)) {
+						_edit.duplicate = duplicate_on_transform;
 						_compute_edit(_edit.original_mouse_pos);
 						clicked = ObjectID();
 						_edit.mode = TRANSFORM_TRANSLATE;
@@ -5251,8 +5351,9 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 	_perform_drop_data();
 }
 
-void Node3DEditorViewport::begin_transform(TransformMode p_mode, bool instant) {
+void Node3DEditorViewport::begin_transform(TransformMode p_mode, bool instant, bool duplicate) {
 	if (get_selected_count() > 0) {
+		_edit.duplicate = duplicate;
 		_edit.mode = p_mode;
 		_compute_edit(_edit.mouse_pos);
 		_edit.instant = instant;
@@ -5272,8 +5373,17 @@ void Node3DEditorViewport::commit_transform() {
 		TTRC("Translate"),
 		TTRC("Scale"),
 	};
+
+	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(_transform_name[_edit.mode]);
+
+	if (_edit.duplicate) {
+		undo_redo->create_action(TTR("Duplicate Node(s)"), UndoRedo::MERGE_DISABLE, _edit.dup_original_selection.get(0));
+		undo_redo->add_do_method(editor_selection, "clear");
+	} else {
+		undo_redo->create_action(_transform_name[_edit.mode]);
+	}
 
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
@@ -5288,10 +5398,27 @@ void Node3DEditorViewport::commit_transform() {
 			continue;
 		}
 
+		if (_edit.duplicate) {
+			undo_redo->add_do_method(_edit.dup_insertion_siblings[E], "add_sibling", E);
+			undo_redo->add_do_method(editor_selection, "add_node", E);
+			undo_redo->add_undo_method(E->get_parent(), "remove_child", E);
+			undo_redo->add_do_reference(E);
+			undo_redo->add_do_method(ed, "live_debug_duplicate_node", _edit.dup_original_paths[E], E->get_name());
+			undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(E))));
+		}
+
+		sp->set_transform(sp->get_local_gizmo_transform());
 		undo_redo->add_do_method(sp, "set_transform", sp->get_local_gizmo_transform());
 		undo_redo->add_undo_method(sp, "set_transform", se->original_local);
 	}
-	undo_redo->commit_action();
+
+	if (_edit.duplicate) {
+		for (Node *E : _edit.dup_owned_nodes) {
+			undo_redo->add_do_method(E, "set_owner", edited_scene);
+		}
+	}
+
+	undo_redo->commit_action(false);
 
 	collision_reposition = false;
 	finish_transform();
@@ -5660,6 +5787,11 @@ void Node3DEditorViewport::finish_transform() {
 	_edit.numeric_input = 0;
 	_edit.numeric_next_decimal = 0;
 	_edit.numeric_negate = false;
+	_edit.duplicate = false;
+	_edit.dup_original_selection.clear();
+	_edit.dup_owned_nodes.clear();
+	_edit.dup_insertion_siblings.clear();
+	_edit.dup_original_paths.clear();
 	spatial_editor->set_local_coords_enabled(_edit.original_local);
 	spatial_editor->update_transform_gizmo();
 	surface->queue_redraw();
