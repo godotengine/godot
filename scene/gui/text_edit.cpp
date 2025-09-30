@@ -4989,15 +4989,18 @@ String TextEdit::get_word(int p_line, int p_column) const {
 	return String();
 }
 
-Point2i TextEdit::get_word_pos(int p_line, int p_column) const {
-	String s = text[p_line];
+Point2i TextEdit::get_word_pos_at_pos(const Point2i &p_pos) const {
+	int line = p_pos.y;
+	int column = p_pos.x;
+
+	String s = text[line];
 	if (s.length() == 0) {
 		return Point2i(0, 0);
 	}
-	const PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(p_line)->get_rid());
+	const PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(line)->get_rid());
 	for (int i = 0; i < words.size(); i = i + 2) {
-		if (words[i] <= p_column && words[i + 1] >= p_column) {
-			return Point2i(words[i], p_line);
+		if (words[i] <= column && words[i + 1] >= column) {
+			return Point2i(words[i], line);
 		}
 	}
 
@@ -7289,7 +7292,6 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_local_mouse_pos"), &TextEdit::get_local_mouse_pos);
 
 	ClassDB::bind_method(D_METHOD("get_word_at_pos", "position"), &TextEdit::get_word_at_pos);
-	ClassDB::bind_method(D_METHOD("get_word", "line", "column"), &TextEdit::get_word);
 
 	ClassDB::bind_method(D_METHOD("get_line_column_at_pos", "position", "clamp_line", "clamp_column"), &TextEdit::get_line_column_at_pos, DEFVAL(true), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_pos_at_line_column", "line", "column"), &TextEdit::get_pos_at_line_column);

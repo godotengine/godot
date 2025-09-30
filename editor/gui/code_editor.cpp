@@ -1471,7 +1471,7 @@ void CodeTextEditor::_refactor_rename_request() {
 	String selected_text = text_editor->get_selected_text(0);
 	String symbol = text_editor->get_word(caret_position.y, caret_position.x);
 	String new_symbol = "";
-	Point2i word_start = text_editor->get_word_pos(caret_position.y, caret_position.x);
+	Point2i word_start = text_editor->get_word_pos_at_pos(Point2i(caret_position.y, caret_position.x));
 
 	// No symbol selected.
 	if (symbol.is_empty()) {
@@ -1492,7 +1492,7 @@ void CodeTextEditor::_refactor_rename_request() {
 		temporary_caret_position.x -= 1;
 		code = text_editor->get_text_with_cursor_char(temporary_caret_position.y, temporary_caret_position.x);
 		symbol = text_editor->get_word(temporary_caret_position.y, temporary_caret_position.x);
-		word_start = text_editor->get_word_pos(temporary_caret_position.y, temporary_caret_position.x);
+		word_start = text_editor->get_word_pos_at_pos(Point2i(temporary_caret_position.y, temporary_caret_position.x));
 
 		_refactor_rename_symbol_script(code, symbol, new_symbol, result);
 		if (refactor_rename_symbol_func) {
