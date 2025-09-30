@@ -8,6 +8,18 @@ Add new entries at the end of the file.
 
 ## Changes between 4.5-stable and 4.6-stable
 
+GH-107954
+---------
+Validate extension JSON: API was removed: classes/TCPServer/methods/is_connection_available
+Validate extension JSON: API was removed: classes/TCPServer/methods/is_listening
+Validate extension JSON: API was removed: classes/TCPServer/methods/stop
+Validate extension JSON: API was removed: classes/StreamPeerTCP/methods/disconnect_from_host
+Validate extension JSON: API was removed: classes/StreamPeerTCP/methods/get_status
+Validate extension JSON: API was removed: classes/StreamPeerTCP/methods/poll
+
+These were moved to the parent classes, and are still available.
+
+
 GH-110250
 ---------
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Control/methods/grab_focus': arguments

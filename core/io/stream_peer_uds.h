@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  tcp_server.h                                                          */
+/*  stream_peer_uds.h                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,19 +30,19 @@
 
 #pragma once
 
-#include "core/io/ip.h"
-#include "core/io/socket_server.h"
-#include "core/io/stream_peer_tcp.h"
+#include "core/io/stream_peer_socket.h"
 
-class TCPServer : public SocketServer {
-	GDCLASS(TCPServer, SocketServer);
+class StreamPeerUDS : public StreamPeerSocket {
+	GDCLASS(StreamPeerUDS, StreamPeerSocket);
 
 protected:
+	String peer_path;
 	static void _bind_methods();
 
 public:
-	Error listen(uint16_t p_port, const IPAddress &p_bind_address = IPAddress("*"));
-	int get_local_port() const;
-	Ref<StreamPeerTCP> take_connection();
-	Ref<StreamPeerSocket> take_socket_connection() override { return take_connection(); }
+	void accept_socket(Ref<NetSocket> p_sock, const NetSocket::Address &p_addr) override;
+
+	Error bind(const String &p_path);
+	Error connect_to_host(const String &p_path);
+	const String get_connected_path() const;
 };
