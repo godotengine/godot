@@ -36,7 +36,9 @@
 #include "core/templates/a_hash_map.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/control.h"
+#include "scene/main/viewport.h"
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
+#include "scene/resources/svg_texture.h"
 #include "scene/resources/world_2d.h"
 
 #ifndef PHYSICS_2D_DISABLED
@@ -203,6 +205,25 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 
 #endif // DEBUG_ENABLED
 
+PackedStringArray TileMapLayer::get_configuration_warnings() const {
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
+	if (tile_set.is_valid()) {
+		for (int i = 0; i < tile_set->get_source_count(); i++) {
+			int sid = tile_set->get_source_id(i);
+			TileSetSource *source = *tile_set->get_source(sid);
+			TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+			if (atlas_source && atlas_source->get_use_texture_padding()) {
+				Ref<SVGTexture> texture = atlas_source->get_texture();
+				if (texture.is_valid()) {
+					warnings.push_back(RTR("The TileSet includes at least one source with an SVGTexture and texture padding enabled. Automatic oversampling will not work for this source."));
+					break;
+				}
+			}
+		}
+	}
+	return warnings;
+}
+
 /////////////////////////////// Rendering //////////////////////////////////////
 void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 	RenderingServer *rs = RenderingServer::get_singleton();
@@ -228,6 +249,32 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 		rs->canvas_item_set_modulate(get_canvas_item(), layer_modulate);
 	}
 
+	// ----------- Look for SVG textures -----------
+	bool force_redraw = false;
+	if (!forced_cleanup) {
+		if (tile_set.is_null()) {
+			has_scalable_textures = false;
+		} else if (dirty.flags[TileMapLayer::DIRTY_FLAGS_TILE_SET]) {
+			has_scalable_textures = false;
+			for (int i = 0; i < tile_set->get_source_count(); i++) {
+				int sid = tile_set->get_source_id(i);
+				TileSetSource *source = *tile_set->get_source(sid);
+				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+				if (atlas_source) {
+					Texture2D *texture = *atlas_source->get_texture();
+					if (Object::cast_to<SVGTexture>(texture) && !atlas_source->get_use_texture_padding()) {
+						has_scalable_textures = true;
+						break;
+					}
+				}
+			}
+		}
+		if (has_scalable_textures && get_viewport() && dirty.flags[DIRTY_FLAGS_OVERSAMPLING]) {
+			force_redraw = true;
+			oversampling = get_viewport()->get_oversampling();
+		}
+	}
+
 	// ----------- Quadrants processing -----------
 
 	// List all rendering quadrants to update, creating new ones if needed.
@@ -237,7 +284,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 	// If so, recreate everything.
 	bool quadrant_shape_changed = dirty.flags[DIRTY_FLAGS_LAYER_Y_SORT_ENABLED] || dirty.flags[DIRTY_FLAGS_TILE_SET] ||
 			(is_y_sort_enabled() && (dirty.flags[DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN] || dirty.flags[DIRTY_FLAGS_LAYER_X_DRAW_ORDER_REVERSED] || dirty.flags[DIRTY_FLAGS_LAYER_LOCAL_TRANSFORM])) ||
-			(!is_y_sort_enabled() && dirty.flags[DIRTY_FLAGS_LAYER_RENDERING_QUADRANT_SIZE]);
+			(!is_y_sort_enabled() && dirty.flags[DIRTY_FLAGS_LAYER_RENDERING_QUADRANT_SIZE]) || force_redraw;
 
 	// Free all quadrants.
 	if (!_rendering_was_cleaned_up && (forced_cleanup || quadrant_shape_changed)) {
@@ -255,7 +302,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 
 	if (!forced_cleanup) {
 		// List all quadrants to update, recreating them if needed.
-		if (dirty.flags[DIRTY_FLAGS_TILE_SET] || dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE] || _rendering_was_cleaned_up) {
+		if (dirty.flags[DIRTY_FLAGS_TILE_SET] || dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE] || _rendering_was_cleaned_up || force_redraw) {
 			// Update all cells.
 			for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
 				CellData &cell_data = kv.value;
@@ -267,6 +314,10 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 				CellData &cell_data = *cell_data_list_element->self();
 				_rendering_quadrants_update_cell(cell_data, dirty_rendering_quadrant_list);
 			}
+		}
+
+		if (has_scalable_textures && !is_drawing()) {
+			CanvasItem::set_current_item_drawn(this);
 		}
 
 		// Update all dirty quadrants.
@@ -395,6 +446,10 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 			}
 
 			quadrant_list_element = next_quadrant_list_element;
+		}
+
+		if (has_scalable_textures && !is_drawing()) {
+			CanvasItem::set_current_item_drawn(nullptr);
 		}
 
 		dirty_rendering_quadrant_list.clear();
@@ -1980,6 +2035,7 @@ RBSet<TerrainConstraint> TileMapLayer::_get_terrain_constraints_from_painted_cel
 void TileMapLayer::_tile_set_changed() {
 	dirty.flags[DIRTY_FLAGS_TILE_SET] = true;
 	_queue_internal_update();
+	update_configuration_warnings();
 	emit_signal(CoreStringName(changed));
 }
 
@@ -2131,6 +2187,13 @@ void TileMapLayer::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			dirty.flags[DIRTY_FLAGS_LAYER_VISIBILITY] = true;
 			_queue_internal_update();
+		} break;
+
+		case NOTIFICATION_DRAW: {
+			if (has_scalable_textures && get_viewport() && (get_viewport()->get_oversampling() != oversampling)) {
+				dirty.flags[DIRTY_FLAGS_OVERSAMPLING] = true;
+				_queue_internal_update();
+			}
 		} break;
 	}
 
