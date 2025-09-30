@@ -86,6 +86,8 @@ private:
 	Ref<Texture2D> projector;
 	Color correlated_color = Color(1.0, 1.0, 1.0);
 	float temperature = 6500.0;
+	Vector2 area_size;
+	bool area_normalize_energy;
 
 	// bind helpers
 
@@ -148,6 +150,12 @@ public:
 	void set_temperature(const float p_temperature);
 	float get_temperature() const;
 	Color get_correlated_color() const;
+
+	void set_area_size(Vector2 p_size);
+	Vector2 get_area_size() const;
+
+	void set_area_normalize_energy(bool p_enable);
+	bool get_area_normalize_energy() const;
 
 	virtual AABB get_aabb() const override;
 	virtual PackedStringArray get_configuration_warnings() const override;
@@ -237,4 +245,16 @@ public:
 	PackedStringArray get_configuration_warnings() const override;
 
 	SpotLight3D();
+};
+
+class AreaLight3D : public Light3D {
+	GDCLASS(AreaLight3D, Light3D);
+
+protected:
+	static void _bind_methods();
+
+public:
+	PackedStringArray get_configuration_warnings() const override;
+
+	AreaLight3D();
 };
