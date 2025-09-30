@@ -3840,6 +3840,10 @@ static void _find_call_arguments(GDScriptParser::ParsingContext &p_context, cons
 			|>>>>>>> 0b901bf5bf (Add refactor rename symbol functionality)
 			*/
 
+			/*
+			 * <Current way to do>
+			 */
+
 			GDScriptParsingIdentifier base;
 
 			if (_guess_identifier_type(completion_context, type->type_chain[0], base)) {
@@ -3856,6 +3860,56 @@ static void _find_call_arguments(GDScriptParser::ParsingContext &p_context, cons
 					_find_identifiers_in_base(base, false, true, true, options, 0);
 				}
 			}
+
+			/*
+			 * </Current way to do>
+			 */
+
+			/*
+			 * <0b901bf5bf (Add refactor rename symbol functionality)>
+			 */
+
+			// bool found = false;
+
+			// GDScriptParsingIdentifier base;
+			// base.type.kind = GDScriptParser::DataType::CLASS;
+			// base.type.type_source = GDScriptParser::DataType::INFERRED;
+			// base.type.is_constant = true;
+
+			// if (completion_context.current_argument == 1) {
+			// 	StringName type_name = type->type_chain[0]->name;
+
+			// 	if (ClassDB::class_exists(type_name)) {
+			// 		base.type.kind = GDScriptParser::DataType::NATIVE;
+			// 		base.type.native_type = type_name;
+			// 	} else if (ScriptServer::is_global_class(type_name)) {
+			// 		base.type.kind = GDScriptParser::DataType::SCRIPT;
+			// 		String scr_path = ScriptServer::get_global_class_path(type_name);
+			// 		base.type.script_type = ResourceLoader::load(scr_path);
+			// 	}
+			// }
+
+			// if (base.type.kind == GDScriptParser::DataType::CLASS) {
+			// 	base.type.class_type = completion_context.current_class;
+			// 	base.value = completion_context.base;
+
+			// 	for (int i = 0; i < completion_context.current_argument; i++) {
+			// 		GDScriptParsingIdentifier ci;
+			// 		if (!_guess_identifier_type_from_base(completion_context, base, type->type_chain[i]->name, ci)) {
+			// 			found = false;
+			// 			break;
+			// 		}
+			// 		base = ci;
+			// 	}
+			// }
+
+			// if (found) {
+			// 	_find_identifiers_in_base(base, false, true, true, options, 0);
+			// }
+
+			/*
+			 * </0b901bf5bf (Add refactor rename symbol functionality)>
+			 */
 
 			r_forced = true;
 		} break;
