@@ -690,6 +690,12 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 	}
 
 	p_render_data->scene_data->update_ubo(scene_state.uniform_buffers[p_index], get_debug_draw_mode(), env, reflection_probe_instance, p_render_data->camera_attributes, p_pancake_shadows, p_screen_size, p_default_bg_color, _render_buffers_get_luminance_multiplier(), p_opaque_render_buffers, p_apply_alpha_multiplier);
+	if (p_index == 0u && p_render_data->environment.is_valid()) {
+		RS::EnvironmentAmbientSource ambient_source = environment_get_ambient_source(p_render_data->environment);
+		if (ambient_source == RS::ENV_AMBIENT_SOURCE_SKY || ambient_source == RS::ENV_AMBIENT_SOURCE_BG) {
+			sky.copy_spherical_harmonics_to_scene_data(p_render_data->environment, scene_state.uniform_buffers[p_index]);
+		}
+	}
 
 	// now do implementation UBO
 
