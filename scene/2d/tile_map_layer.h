@@ -60,6 +60,15 @@ public:
 		return base_cell_coords < p_other.base_cell_coords;
 	}
 
+	bool operator==(const TerrainConstraint &p_other) const {
+		return bit == p_other.bit && base_cell_coords == p_other.base_cell_coords;
+	}
+
+	_FORCE_INLINE_ static uint32_t hash(const TerrainConstraint &p_val) {
+		uint32_t h = HashMapHasherDefault::hash(p_val.base_cell_coords);
+		return hash_murmur3_one_32(h, p_val.bit);
+	}
+
 	String to_string() const {
 		return vformat("Constraint {pos:%s, bit:%d, terrain:%d, priority:%d}", base_cell_coords, bit, terrain, priority);
 	}
@@ -492,9 +501,9 @@ private:
 #endif // DEBUG_ENABLED
 
 	// Terrains.
-	TileSet::TerrainsPattern _get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const RBSet<TerrainConstraint> &p_constraints, TileSet::TerrainsPattern p_current_pattern) const;
-	RBSet<TerrainConstraint> _get_terrain_constraints_from_added_pattern(const Vector2i &p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const;
-	RBSet<TerrainConstraint> _get_terrain_constraints_from_painted_cells_list(const RBSet<Vector2i> &p_painted, int p_terrain_set, bool p_ignore_empty_terrains) const;
+	TileSet::TerrainsPattern _get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const HashSet<TerrainConstraint, TerrainConstraint> &p_constraints, TileSet::TerrainsPattern p_current_pattern, const RBSet<TileSet::TerrainsPattern> &p_pattern_set) const;
+	HashSet<TerrainConstraint, TerrainConstraint> _get_terrain_constraints_from_added_pattern(const Vector2i &p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const;
+	HashSet<TerrainConstraint, TerrainConstraint> _get_terrain_constraints_from_painted_cells_list(const HashSet<Vector2i> &p_painted, int p_terrain_set, bool p_ignore_empty_terrains) const;
 
 	void _tile_set_changed();
 
@@ -535,7 +544,7 @@ public:
 	Rect2 get_rect(bool &r_changed) const;
 
 	// Terrains.
-	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_constraints(const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> &p_constraints) const; // Not exposed.
+	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_constraints(const Vector<Vector2i> &p_to_replace, int p_terrain_set, const HashSet<TerrainConstraint, TerrainConstraint> &p_constraints) const; // Not exposed.
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_connect(const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true) const; // Not exposed.
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_path(const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true) const; // Not exposed.
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_pattern(const Vector<Vector2i> &p_coords_array, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern, bool p_ignore_empty_terrains = true) const; // Not exposed.
