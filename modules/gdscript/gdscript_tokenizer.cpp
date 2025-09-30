@@ -113,6 +113,7 @@ static const char *token_names[] = {
 	"func", // FUNC,
 	"in", // TK_IN,
 	"is", // IS,
+	"let", // LET,
 	"namespace", // NAMESPACE
 	"preload", // PRELOAD,
 	"self", // SELF,
@@ -512,6 +513,8 @@ GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
 	KEYWORD("if", Token::IF)                 \
 	KEYWORD("in", Token::TK_IN)              \
 	KEYWORD("is", Token::IS)                 \
+	KEYWORD_GROUP('l')                       \
+	KEYWORD("let", Token::LET)               \
 	KEYWORD_GROUP('m')                       \
 	KEYWORD("match", Token::MATCH)           \
 	KEYWORD_GROUP('n')                       \
