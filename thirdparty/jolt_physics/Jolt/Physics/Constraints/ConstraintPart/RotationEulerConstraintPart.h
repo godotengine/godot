@@ -143,8 +143,21 @@ public:
 		mInvI2 = inBody2.IsDynamic()? inBody2.GetMotionProperties()->GetInverseInertiaForRotation(inRotation2) : Mat44::sZero();
 
 		// Calculate effective mass: K^-1 = (J M^-1 J^T)^-1
-		if (!mEffectiveMass.SetInversed3x3(mInvI1 + mInvI2))
-			Deactivate();
+		Mat44 inertia_sum = mInvI1 + mInvI2;
+		if (!mEffectiveMass.SetInversed3x3(inertia_sum))
+		{
+			// If a column is zero, the axis is locked and we set the column to identity.
+			// This does not matter because any impulse will always be multiplied with mInvI1 or mInvI2 which will result in zero for the locked coordinate.
+			Vec4 zero = Vec4::sZero();
+			if (inertia_sum.GetColumn4(0) == zero)
+				inertia_sum.SetColumn4(0, Vec4(1, 0, 0, 0));
+			if (inertia_sum.GetColumn4(1) == zero)
+				inertia_sum.SetColumn4(1, Vec4(0, 1, 0, 0));
+			if (inertia_sum.GetColumn4(2) == zero)
+				inertia_sum.SetColumn4(2, Vec4(0, 0, 1, 0));
+			if (!mEffectiveMass.SetInversed3x3(inertia_sum))
+				Deactivate();
+		}
 	}
 
 	/// Deactivate this constraint
