@@ -229,6 +229,8 @@ protected:
 		r_features->push_back("apple_embedded");
 	}
 
+	void _initialize(const char *p_platform_logo_svg, const char *p_run_icon_svg);
+
 public:
 	virtual Ref<Texture2D> get_logo() const override { return logo; }
 	virtual Ref<Texture2D> get_run_icon() const override { return run_icon; }
@@ -279,7 +281,6 @@ public:
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override {
 	}
 
-	EditorExportPlatformAppleEmbedded(const char *p_platform_logo_svg, const char *p_run_icon_svg);
 	~EditorExportPlatformAppleEmbedded();
 
 	/// List the gdip files in the directory specified by the p_path parameter.

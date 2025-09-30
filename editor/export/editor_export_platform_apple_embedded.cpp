@@ -2815,23 +2815,21 @@ Error EditorExportPlatformAppleEmbedded::run(const Ref<EditorExportPreset> &p_pr
 #endif
 }
 
-EditorExportPlatformAppleEmbedded::EditorExportPlatformAppleEmbedded(const char *p_platform_logo_svg, const char *p_run_icon_svg) {
-	if (EditorNode::get_singleton()) {
-		Ref<Image> img = memnew(Image);
-		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
+void EditorExportPlatformAppleEmbedded::_initialize(const char *p_platform_logo_svg, const char *p_run_icon_svg) {
+	Ref<Image> img = memnew(Image);
+	const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-		ImageLoaderSVG::create_image_from_string(img, p_platform_logo_svg, EDSCALE, upsample, false);
-		logo = ImageTexture::create_from_image(img);
+	ImageLoaderSVG::create_image_from_string(img, p_platform_logo_svg, EDSCALE, upsample, false);
+	logo = ImageTexture::create_from_image(img);
 
-		ImageLoaderSVG::create_image_from_string(img, p_run_icon_svg, EDSCALE, upsample, false);
-		run_icon = ImageTexture::create_from_image(img);
+	ImageLoaderSVG::create_image_from_string(img, p_run_icon_svg, EDSCALE, upsample, false);
+	run_icon = ImageTexture::create_from_image(img);
 
-		plugins_changed.set();
-		devices_changed.set();
+	plugins_changed.set();
+	devices_changed.set();
 #ifdef MACOS_ENABLED
-		_update_preset_status();
+	_update_preset_status();
 #endif
-	}
 }
 
 EditorExportPlatformAppleEmbedded::~EditorExportPlatformAppleEmbedded() {
