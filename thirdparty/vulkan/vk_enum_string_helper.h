@@ -3518,8 +3518,10 @@ static inline const char* string_VkDriverId(VkDriverId input_value) {
             return "VK_DRIVER_ID_MESA_NVK";
         case VK_DRIVER_ID_IMAGINATION_OPEN_SOURCE_MESA:
             return "VK_DRIVER_ID_IMAGINATION_OPEN_SOURCE_MESA";
+#ifdef VK_DRIVER_ID_MESA_AGXV
         case VK_DRIVER_ID_MESA_AGXV:
             return "VK_DRIVER_ID_MESA_AGXV";
+#endif
         default:
             return "Unhandled VkDriverId";
     }
@@ -8287,7 +8289,9 @@ static inline const char* string_VkBufferUsageFlagBits2KHR(uint64_t input_value)
     if (input_value == VK_BUFFER_USAGE_2_INDEX_BUFFER_BIT_KHR) return "VK_BUFFER_USAGE_2_INDEX_BUFFER_BIT_KHR";
     if (input_value == VK_BUFFER_USAGE_2_VERTEX_BUFFER_BIT_KHR) return "VK_BUFFER_USAGE_2_VERTEX_BUFFER_BIT_KHR";
     if (input_value == VK_BUFFER_USAGE_2_INDIRECT_BUFFER_BIT_KHR) return "VK_BUFFER_USAGE_2_INDIRECT_BUFFER_BIT_KHR";
+#ifdef VK_BUFFER_USAGE_2_EXECUTION_GRAPH_SCRATCH_BIT_AMDX
     if (input_value == VK_BUFFER_USAGE_2_EXECUTION_GRAPH_SCRATCH_BIT_AMDX) return "VK_BUFFER_USAGE_2_EXECUTION_GRAPH_SCRATCH_BIT_AMDX";
+#endif
     if (input_value == VK_BUFFER_USAGE_2_CONDITIONAL_RENDERING_BIT_EXT) return "VK_BUFFER_USAGE_2_CONDITIONAL_RENDERING_BIT_EXT";
     if (input_value == VK_BUFFER_USAGE_2_SHADER_BINDING_TABLE_BIT_KHR) return "VK_BUFFER_USAGE_2_SHADER_BINDING_TABLE_BIT_KHR";
     if (input_value == VK_BUFFER_USAGE_2_TRANSFORM_FEEDBACK_BUFFER_BIT_EXT) return "VK_BUFFER_USAGE_2_TRANSFORM_FEEDBACK_BUFFER_BIT_EXT";
