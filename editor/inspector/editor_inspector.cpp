@@ -1978,6 +1978,8 @@ void EditorInspectorSection::_notification(int p_what) {
 
 			bg_color = theme_cache.prop_subsection;
 			bg_color.a /= level;
+
+			vbox->add_theme_constant_override("separation", theme_cache.vertical_separation);
 		} break;
 
 		case NOTIFICATION_SORT_CHILDREN: {
@@ -3552,7 +3554,7 @@ void EditorInspector::initialize_section_theme(EditorInspectorSection::ThemeCach
 	}
 
 	p_cache.horizontal_separation = p_control->get_theme_constant(SNAME("h_separation"), SNAME("EditorInspectorSection"));
-	p_cache.vertical_separation = p_control->get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
+	p_cache.vertical_separation = p_control->get_theme_constant(SNAME("v_separation"), SNAME("EditorInspector"));
 	p_cache.inspector_margin = p_control->get_theme_constant(SNAME("inspector_margin"), EditorStringName(Editor));
 	p_cache.indent_size = p_control->get_theme_constant(SNAME("indent_size"), SNAME("EditorInspectorSection"));
 	p_cache.key_padding_size = int(EDITOR_GET("interface/theme/base_spacing")) * 2;
@@ -3591,7 +3593,7 @@ void EditorInspector::initialize_category_theme(EditorInspectorCategory::ThemeCa
 	}
 
 	p_cache.horizontal_separation = p_control->get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
-	p_cache.vertical_separation = p_control->get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
+	p_cache.vertical_separation = p_control->get_theme_constant(SNAME("v_separation"), SNAME("EditorInspector"));
 	p_cache.class_icon_size = p_control->get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
 	p_cache.font_color = p_control->get_theme_color(SceneStringName(font_color), SNAME("Tree"));
@@ -3806,8 +3808,7 @@ void EditorInspector::_add_section_in_tree(EditorInspectorSection *p_section, VB
 	}
 	if (!container) {
 		container = memnew(VBoxContainer);
-		int separation = get_theme_constant(SNAME("v_separation"), SNAME("EditorInspector"));
-		container->add_theme_constant_override("separation", separation);
+		container->add_theme_constant_override("separation", theme_cache.vertical_separation);
 		p_current_vbox->add_child(container);
 	}
 	container->add_child(p_section);
@@ -4209,6 +4210,7 @@ void EditorInspector::update_tree() {
 		// Recreate the category vbox if it was reset.
 		if (category_vbox == nullptr) {
 			category_vbox = memnew(VBoxContainer);
+			category_vbox->add_theme_constant_override("separation", theme_cache.vertical_separation);
 			category_vbox->hide();
 			main_vbox->add_child(category_vbox);
 		}
