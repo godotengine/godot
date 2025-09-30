@@ -129,6 +129,12 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(NAVIGATION_3D_EDGE_FREE_COUNT);
 	BIND_ENUM_CONSTANT(NAVIGATION_3D_OBSTACLE_COUNT);
 #endif // NAVIGATION_3D_DISABLED
+	BIND_ENUM_CONSTANT(FRAME_PACING_TOTAL_TIME);
+	BIND_ENUM_CONSTANT(FRAME_PACING_CPU_TIME);
+	BIND_ENUM_CONSTANT(FRAME_PACING_GPU_TIME);
+	BIND_ENUM_CONSTANT(FRAME_PACING_EVALUATED_SYNC_MODE);
+	BIND_ENUM_CONSTANT(FRAME_PACING_ACTUAL_SYNC_MODE);
+	BIND_ENUM_CONSTANT(FRAME_PACING_MISSED_HARD_TARGET);
 	BIND_ENUM_CONSTANT(MONITOR_MAX);
 }
 
@@ -141,9 +147,27 @@ int Performance::_get_node_count() const {
 	return sml->get_node_count();
 }
 
+#if defined(NAVIGATION_2D_DISABLED) && defined(NAVIGATION_3D_DISABLED)
+#define NAVIGATION_PREFIX "Unavailable"
+#else
+#define NAVIGATION_PREFIX ""
+#endif
+
+#ifdef NAVIGATION_2D_DISABLED
+#define NAVIGATION_2D_PREFIX "Unavailable"
+#else
+#define NAVIGATION_2D_PREFIX ""
+#endif
+
+#ifdef NAVIGATION_3D_DISABLED
+#define NAVIGATION_3D_PREFIX "Unavailable"
+#else
+#define NAVIGATION_3D_PREFIX ""
+#endif
+
 String Performance::get_monitor_name(Monitor p_monitor) const {
 	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, String());
-	static const char *names[MONITOR_MAX] = {
+	static const char *names[] = {
 		PNAME("time/fps"),
 		PNAME("time/process"),
 		PNAME("time/physics_process"),
@@ -168,47 +192,47 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		PNAME("physics_3d/collision_pairs"),
 		PNAME("physics_3d/islands"),
 		PNAME("audio/driver/output_latency"),
-#if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
-		PNAME("navigation/active_maps"),
-		PNAME("navigation/regions"),
-		PNAME("navigation/agents"),
-		PNAME("navigation/links"),
-		PNAME("navigation/polygons"),
-		PNAME("navigation/edges"),
-		PNAME("navigation/edges_merged"),
-		PNAME("navigation/edges_connected"),
-		PNAME("navigation/edges_free"),
-		PNAME("navigation/obstacles"),
-#endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
+		PNAME(NAVIGATION_PREFIX "navigation/active_maps"),
+		PNAME(NAVIGATION_PREFIX "navigation/regions"),
+		PNAME(NAVIGATION_PREFIX "navigation/agents"),
+		PNAME(NAVIGATION_PREFIX "navigation/links"),
+		PNAME(NAVIGATION_PREFIX "navigation/polygons"),
+		PNAME(NAVIGATION_PREFIX "navigation/edges"),
+		PNAME(NAVIGATION_PREFIX "navigation/edges_merged"),
+		PNAME(NAVIGATION_PREFIX "navigation/edges_connected"),
+		PNAME(NAVIGATION_PREFIX "navigation/edges_free"),
+		PNAME(NAVIGATION_PREFIX "navigation/obstacles"),
 		PNAME("pipeline/compilations_canvas"),
 		PNAME("pipeline/compilations_mesh"),
 		PNAME("pipeline/compilations_surface"),
 		PNAME("pipeline/compilations_draw"),
 		PNAME("pipeline/compilations_specialization"),
-#ifndef NAVIGATION_2D_DISABLED
-		PNAME("navigation_2d/active_maps"),
-		PNAME("navigation_2d/regions"),
-		PNAME("navigation_2d/agents"),
-		PNAME("navigation_2d/links"),
-		PNAME("navigation_2d/polygons"),
-		PNAME("navigation_2d/edges"),
-		PNAME("navigation_2d/edges_merged"),
-		PNAME("navigation_2d/edges_connected"),
-		PNAME("navigation_2d/edges_free"),
-		PNAME("navigation_2d/obstacles"),
-#endif // NAVIGATION_2D_DISABLED
-#ifndef NAVIGATION_3D_DISABLED
-		PNAME("navigation_3d/active_maps"),
-		PNAME("navigation_3d/regions"),
-		PNAME("navigation_3d/agents"),
-		PNAME("navigation_3d/links"),
-		PNAME("navigation_3d/polygons"),
-		PNAME("navigation_3d/edges"),
-		PNAME("navigation_3d/edges_merged"),
-		PNAME("navigation_3d/edges_connected"),
-		PNAME("navigation_3d/edges_free"),
-		PNAME("navigation_3d/obstacles"),
-#endif // NAVIGATION_3D_DISABLED
+		PNAME(NAVIGATION_2D_PREFIX "navigation_2d/active_maps"),
+		PNAME(NAVIGATION_2D_PREFIX "navigation_2d/regions"),
+		PNAME(NAVIGATION_2D_PREFIX "navigation_2d/agents"),
+		PNAME(NAVIGATION_2D_PREFIX "navigation_2d/links"),
+		PNAME(NAVIGATION_2D_PREFIX "navigation_2d/polygons"),
+		PNAME(NAVIGATION_2D_PREFIX "navigation_2d/edges"),
+		PNAME(NAVIGATION_2D_PREFIX "navigation_2d/edges_merged"),
+		PNAME(NAVIGATION_2D_PREFIX "navigation_2d/edges_connected"),
+		PNAME(NAVIGATION_2D_PREFIX "navigation_2d/edges_free"),
+		PNAME(NAVIGATION_2D_PREFIX "navigation_2d/obstacles"),
+		PNAME(NAVIGATION_3D_PREFIX "navigation_3d/active_maps"),
+		PNAME(NAVIGATION_3D_PREFIX "navigation_3d/regions"),
+		PNAME(NAVIGATION_3D_PREFIX "navigation_3d/agents"),
+		PNAME(NAVIGATION_3D_PREFIX "navigation_3d/links"),
+		PNAME(NAVIGATION_3D_PREFIX "navigation_3d/polygons"),
+		PNAME(NAVIGATION_3D_PREFIX "navigation_3d/edges"),
+		PNAME(NAVIGATION_3D_PREFIX "navigation_3d/edges_merged"),
+		PNAME(NAVIGATION_3D_PREFIX "navigation_3d/edges_connected"),
+		PNAME(NAVIGATION_3D_PREFIX "navigation_3d/edges_free"),
+		PNAME(NAVIGATION_3D_PREFIX "navigation_3d/obstacles"),
+		PNAME("frame_pacing/total_time"),
+		PNAME("frame_pacing/cpu_time"),
+		PNAME("frame_pacing/gpu_time"),
+		PNAME("frame_pacing/evaluated_sync_mode"),
+		PNAME("frame_pacing/actual_sync_mode"),
+		PNAME("frame_pacing/missed_hard_target"),
 	};
 	static_assert(std::size(names) == MONITOR_MAX);
 
@@ -433,6 +457,19 @@ double Performance::get_monitor(Monitor p_monitor) const {
 			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_OBSTACLE_COUNT);
 #endif // NAVIGATION_3D_DISABLED
 
+		case FRAME_PACING_TOTAL_TIME:
+			return double(RenderingServer::get_singleton()->get_last_cpu_time() + RenderingServer::get_singleton()->get_last_gpu_time()) / (1000.0 * 1000.0);
+		case FRAME_PACING_CPU_TIME:
+			return double(RenderingServer::get_singleton()->get_last_cpu_time()) / (1000.0 * 1000.0);
+		case FRAME_PACING_GPU_TIME:
+			return double(RenderingServer::get_singleton()->get_last_gpu_time()) / (1000.0 * 1000.0);
+		case FRAME_PACING_EVALUATED_SYNC_MODE:
+			return double(RenderingServer::get_singleton()->get_evaluated_cpu_gpu_sync_mode());
+		case FRAME_PACING_ACTUAL_SYNC_MODE:
+			return double(RenderingServer::get_singleton()->get_actual_cpu_gpu_sync_mode());
+		case FRAME_PACING_MISSED_HARD_TARGET:
+			return double(RenderingServer::get_singleton()->get_missed_hard_target());
+
 		default: {
 		}
 	}
@@ -443,7 +480,7 @@ double Performance::get_monitor(Monitor p_monitor) const {
 Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const {
 	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, MONITOR_TYPE_QUANTITY);
 	// ugly
-	static const MonitorType types[MONITOR_MAX] = {
+	static const MonitorType types[] = {
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_TIME,
 		MONITOR_TYPE_TIME,
@@ -500,6 +537,12 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_TIME,
+		MONITOR_TYPE_TIME,
+		MONITOR_TYPE_TIME,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,

@@ -969,6 +969,31 @@ public:
 		SUBGROUP_QUAD_BIT = 128,
 	};
 
+	enum PacingMethod {
+		// There are no methods reducing latency and/or reducing jitter and sutter.
+		PACING_METHOD_NONE = 0u,
+
+		// Forcing the CPU to wait for the GPU is used to reduce latency if GPU & CPU are fast enough.
+		// It's an "OK" solution. It requires higher level integration (i.e. RenderingServer).
+		PACING_METHOD_SEQUENTIAL_SYNC = 1u << 0u,
+
+		// Waitable Swapchain extension is used to reduce latency and control frame pacing (very good
+		// solution). Requires driver support.
+		//
+		// Normally Godot allows the GPU to get frame_queue_size ahead of the GPU. Assuming
+		// frame_queue_size = 2, Godot normally starts working on frame N+2 on the CPU when the GPU is
+		// done working on frame N. Waitable swapchains make Godot start frame N+2 when
+		// frame N is *done presenting*.
+		//
+		// This gap between when the GPU finishes its work and when that work actually appears on screen
+		// can increase latency. Thus waitable swapchains can reduce latency at the cost of some
+		// framerate (framerate may decrease because the CPU has to wait more time doing nothing).
+		PACING_METHOD_WAITABLE_SWAPCHAIN = 1u << 1u,
+
+		// Android Swappy is being used to control frame pacing. It's a 3rd Party solution.
+		PACING_METHOD_ANDROID_SWAPPY = 1u << 2u,
+	};
+
 	////////////////////////////////////////////
 	// PROTECTED STUFF
 	// Not exposed by RenderingDevice, but shared

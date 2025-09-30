@@ -351,10 +351,8 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 
 		float cpu_time = m.areas[i].cpu_time;
 		float gpu_time = m.areas[i].gpu_time;
-		if (i < m.areas.size() - 1) {
-			cpu_time = m.areas[i + 1].cpu_time - cpu_time;
-			gpu_time = m.areas[i + 1].gpu_time - gpu_time;
-		}
+		cpu_time = m.areas[i + 1].cpu_time - cpu_time;
+		gpu_time = m.areas[i + 1].gpu_time - gpu_time;
 
 		if (name.begins_with(">")) {
 			TreeItem *category = variables->create_item(parent);

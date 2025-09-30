@@ -3273,6 +3273,11 @@
 			Try the [url=https://darksylinc.github.io/vsync_simulator/]V-Sync Simulator[/url], an interactive interface that simulates presentation to better understand how it is affected by different variables under various conditions.
 			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this value at run-time.
 		</member>
+		<member name="rendering/rendering_device/vsync/latency_mode" type="int" setter="" getter="" default="0">
+			Sets the default latency mode. Lower is better for input-to-display latency, but it will sacrifice FPS (frames per second) in return. This setting can be changed at runtime via [method RenderingDevice.set_latency_mode] on [method RenderingServer.get_rendering_device]. See documentation for [constant RenderingDevice.LATENCY_MODE_LOW], [constant RenderingDevice.LATENCY_MODE_MEDIUM], and [constant RenderingDevice.LATENCY_MODE_HIGH_THROUGHPUT] for what each individual setting entails.
+			[b]Note:[/b] The setting [constant RenderingDevice.LATENCY_MODE_LOW_EXTREME] is not available through this property as it is strongly ill-advised to ship with this value as the default.
+			[b]Note:[/b] This property may be overridden with the [code]--latency-mode[/code] command-line argument. When this argument is used, this project setting is ignored.
+		</member>
 		<member name="rendering/rendering_device/vsync/swapchain_image_count" type="int" setter="" getter="" default="3">
 			The number of images the swapchain will consist of (back buffers + front buffer).
 			[code]2[/code] corresponds to double-buffering and [code]3[/code] to triple-buffering.

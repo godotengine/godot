@@ -513,6 +513,7 @@ public:
 	virtual void window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window = MAIN_WINDOW_ID) {}
 	virtual Vector3i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const { return Vector3i(); }
 
+	virtual bool _window_presentation_occluded(WindowID p_window = MAIN_WINDOW_ID) { return false; }
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
 	virtual bool can_any_window_draw() const = 0;

@@ -198,6 +198,8 @@ String rendering_driver = "";
 String rendering_method = "";
 static int text_driver_idx = -1;
 static int audio_driver_idx = -1;
+static int latency_mode = -1;
+static uint8_t pacing_mode_mask = UINT8_MAX;
 
 // Engine config/tools
 
@@ -598,6 +600,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--rendering-method <renderer>", "Renderer name. Requires driver support.\n");
 	print_help_option("--rendering-driver <driver>", "Rendering driver (depends on display driver).\n");
 	print_help_option("--gpu-index <device_index>", "Use a specific GPU (run with --verbose to get a list of available devices).\n");
+	print_help_option("--latency-mode <mode>", "Override latency mode [\"low_extreme\", \"low\", \"medium\", \"high_throughput\"].\n");
 	print_help_option("--text-driver <driver>", "Text driver (used for font rendering, bidirectional support and shaping).\n");
 	print_help_option("--tablet-driver <driver>", "Pen tablet input driver.\n");
 	print_help_option("--headless", "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script.\n");
@@ -640,6 +643,7 @@ void Main::print_help(const char *p_binary) {
 #endif
 	print_help_option("--remote-debug <uri>", "Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n");
 	print_help_option("--single-threaded-scene", "Force scene tree to run in single-threaded mode. Sub-thread groups are disabled and run on the main thread.\n");
+	print_help_option("--pacing-mode-mask <mask>", "8-bit hexadecimal mask to prevent Godot from using certain pacing modes. Use '1' as mask to only use the most basic fallback pacing method.\n");
 #if defined(DEBUG_ENABLED)
 	print_help_option("--debug-collisions", "Show collision shapes when running the scene.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 	print_help_option("--debug-paths", "Show path lines when running the scene.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
@@ -1242,6 +1246,35 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing rendering driver argument, aborting.\n");
 				goto error;
 			}
+		} else if (arg == "--latency-mode") {
+			if (N) {
+				if (N->get() == "low_extreme") {
+					latency_mode = RenderingDevice::LATENCY_MODE_LOW_EXTREME;
+				} else if (N->get() == "low") {
+					latency_mode = RenderingDevice::LATENCY_MODE_LOW;
+				} else if (N->get() == "medium") {
+					latency_mode = RenderingDevice::LATENCY_MODE_MEDIUM;
+				} else if (N->get() == "high_throughput") {
+					latency_mode = RenderingDevice::LATENCY_MODE_HIGH_THROUGHPUT;
+				} else {
+					OS::get_singleton()->print("Unknown latency mode, aborting.\nValid options are 'low_extreme', 'low', 'medium' and 'high_throughput'.\n");
+					goto error;
+				}
+
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing latency mode argument, aborting.\n");
+				goto error;
+			}
+		} else if (arg == "--pacing-mode-mask") {
+			if (N) {
+				pacing_mode_mask = static_cast<uint8_t>(N->get().hex_to_int());
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing pacing mode mask argument, aborting.\n");
+				goto error;
+			}
+
 		} else if (arg == "-f" || arg == "--fullscreen") { // force fullscreen
 			init_fullscreen = true;
 			window_mode = DisplayServer::WINDOW_MODE_FULLSCREEN;
@@ -3322,6 +3355,15 @@ Error Main::setup2(bool p_show_boot_logo) {
 	RenderingDevice *rd = RenderingDevice::get_singleton();
 	if (rd) {
 		rd->_set_max_fps(engine->get_max_fps());
+
+		if (pacing_mode_mask != UINT8_MAX) {
+			rd->_restrict_available_pacing_methods(pacing_mode_mask);
+		}
+		if (latency_mode >= 0) {
+			rd->set_latency_mode(RenderingDevice::LatencyMode(latency_mode));
+		} else {
+			rd->set_latency_mode(RenderingDevice::LatencyMode((int)GLOBAL_GET("rendering/rendering_device/vsync/latency_mode") + 1));
+		}
 	}
 
 #ifdef TOOLS_ENABLED
@@ -3423,6 +3465,8 @@ Error Main::setup2(bool p_show_boot_logo) {
 		if (profile_gpu || (!editor && bool(GLOBAL_GET("debug/settings/stdout/print_gpu_profile")))) {
 			rendering_server->set_print_gpu_profile(true);
 		}
+
+		rendering_server->update_cached_refresh_rate();
 
 		OS::get_singleton()->benchmark_end_measure("Servers", "Rendering");
 	}
@@ -4708,6 +4752,14 @@ static uint64_t navigation_process_max = 0;
 bool Main::iteration() {
 	iterating++;
 
+	if (RD::get_singleton()) {
+		const bool sequential_sync = RenderingServer::get_singleton()->get_actual_cpu_gpu_sync_mode() == RenderingServer::CPU_GPU_SYNC_SEQUENTIAL;
+
+		// We must do this right before input polling (i.e. DisplayServer**::process_events()).
+		// But we also must do this outside of timing measurements, so this is the 2nd best place.
+		RD::get_singleton()->_wait_for_present(sequential_sync);
+	}
+
 	const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 	Engine::get_singleton()->_frame_ticks = ticks;
 	main_timer_sync.set_cpu_ticks_usec(ticks);
@@ -4789,7 +4841,7 @@ bool Main::iteration() {
 		}
 
 #if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
-		uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
+		const uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
 
 #ifndef NAVIGATION_2D_DISABLED
 		NavigationServer2D::get_singleton()->physics_process(physics_step * time_scale);
@@ -4798,8 +4850,9 @@ bool Main::iteration() {
 		NavigationServer3D::get_singleton()->physics_process(physics_step * time_scale);
 #endif // NAVIGATION_3D_DISABLED
 
-		navigation_process_ticks = MAX(navigation_process_ticks, OS::get_singleton()->get_ticks_usec() - navigation_begin); // keep the largest one for reference
-		navigation_process_max = MAX(OS::get_singleton()->get_ticks_usec() - navigation_begin, navigation_process_max);
+		uint64_t tmp_tick = OS::get_singleton()->get_ticks_usec();
+		navigation_process_ticks = MAX(navigation_process_ticks, tmp_tick - navigation_begin); // keep the largest one for reference
+		navigation_process_max = MAX(tmp_tick - navigation_begin, navigation_process_max);
 
 		message_queue->flush();
 #endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
@@ -4818,8 +4871,9 @@ bool Main::iteration() {
 
 		OS::get_singleton()->get_main_loop()->iteration_end();
 
-		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
-		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);
+		tmp_tick = OS::get_singleton()->get_ticks_usec();
+		physics_process_ticks = MAX(physics_process_ticks, tmp_tick - physics_begin); // keep the largest one for reference
+		physics_process_max = MAX(tmp_tick - physics_begin, physics_process_max);
 
 		Engine::get_singleton()->_in_physics = false;
 	}
@@ -4844,6 +4898,8 @@ bool Main::iteration() {
 
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
+	const uint64_t ticks_before_draw = OS::get_singleton()->get_ticks_usec();
+
 	const bool has_pending_resources_for_processing = RD::get_singleton() && RD::get_singleton()->has_pending_resources_for_processing();
 	bool wants_present = (DisplayServer::get_singleton()->can_any_window_draw() ||
 								 DisplayServer::get_singleton()->has_additional_outputs()) &&
@@ -4863,9 +4919,11 @@ bool Main::iteration() {
 		}
 	}
 
-	process_ticks = OS::get_singleton()->get_ticks_usec() - process_begin;
+	uint64_t tmp_tick = OS::get_singleton()->get_ticks_usec();
+	const uint64_t ticks_after_draw = tmp_tick;
+	process_ticks = tmp_tick - process_begin;
 	process_max = MAX(process_ticks, process_max);
-	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
+	uint64_t frame_time = tmp_tick - ticks;
 
 	GDExtensionManager::get_singleton()->frame();
 
@@ -4907,6 +4965,10 @@ bool Main::iteration() {
 		frame %= 1000000;
 		frames = 0;
 	}
+
+	tmp_tick = OS::get_singleton()->get_ticks_usec();
+	const uint64_t cpu_time = (tmp_tick - ticks_after_draw) + (ticks_before_draw - ticks) + RenderingServer::draw_cpu_time;
+	RenderingServer::get_singleton()->notify_cpu_gpu_sync_timings(cpu_time, RenderingServer::draw_gpu_time);
 
 	iterating--;
 

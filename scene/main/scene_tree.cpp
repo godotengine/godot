@@ -916,6 +916,10 @@ void SceneTree::_notification(int p_notification) {
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
 			// Pass these to nodes, since they are mirrored.
 			get_root()->propagate_notification(p_notification);
+			if (p_notification == NOTIFICATION_APPLICATION_FOCUS_IN) {
+				// TODO: Is this the right place?
+				RenderingServer::get_singleton()->update_cached_refresh_rate();
+			}
 		} break;
 	}
 }

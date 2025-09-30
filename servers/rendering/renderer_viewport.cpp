@@ -818,6 +818,8 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 	int objects_drawn = 0;
 	int draw_calls_used = 0;
 
+	bool sync_mode_captured = false;
+
 	for (int i = 0; i < sorted_active_viewports.size(); i++) {
 		Viewport *vp = sorted_active_viewports[i];
 
@@ -862,6 +864,11 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 				if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID) {
 					if (RSG::rasterizer->is_opengl()) {
 						if (blits.size() > 0) {
+							if (!sync_mode_captured) {
+								RSG::utilities->capture_timestamps_sync_mode_auto_end();
+								sync_mode_captured = true;
+							}
+
 							RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blits.ptr(), blits.size());
 							RSG::rasterizer->gl_end_frame(p_swap_buffers);
 						}
@@ -896,6 +903,11 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 				}
 
 				if (RSG::rasterizer->is_opengl()) {
+					if (!sync_mode_captured) {
+						RSG::utilities->capture_timestamps_sync_mode_auto_end();
+						sync_mode_captured = true;
+					}
+
 					RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, &blit, 1);
 					RSG::rasterizer->gl_end_frame(p_swap_buffers);
 				} else {
@@ -930,6 +942,10 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 	total_draw_calls_used = draw_calls_used;
 
 	RENDER_TIMESTAMP("< Render Viewports");
+
+	if (!sync_mode_captured) {
+		RSG::utilities->capture_timestamps_sync_mode_auto_end();
+	}
 
 	if (p_swap_buffers && !blit_to_screen_list.is_empty()) {
 		for (const KeyValue<int, Vector<BlitToScreen>> &E : blit_to_screen_list) {

@@ -99,6 +99,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 		PFN_vkQueuePresentKHR QueuePresentKHR = nullptr;
 		PFN_vkCreateRenderPass2KHR CreateRenderPass2KHR = nullptr;
 		PFN_vkCmdEndRenderPass2KHR EndRenderPass2KHR = nullptr;
+		PFN_vkWaitForPresentKHR WaitForPresentKHR = nullptr;
 
 		// Debug marker extensions.
 		PFN_vkCmdDebugMarkerBeginEXT CmdDebugMarkerBeginEXT = nullptr;
@@ -116,6 +117,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	RenderingContextDriverVulkan *context_driver = nullptr;
 	RenderingContextDriver::Device context_device = {};
 	uint32_t frame_count = 1;
+	uint64_t current_present_id = 0ul;
 	VkPhysicalDevice physical_device = VK_NULL_HANDLE;
 	VkPhysicalDeviceProperties physical_device_properties = {};
 	VkPhysicalDeviceFeatures physical_device_features = {};
@@ -145,6 +147,8 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	bool swappy_frame_pacer_enable = false;
 	uint8_t swappy_mode = 2; // See default value for display/window/frame_pacing/android/swappy_mode.
 #endif
+	bool waitable_swapchain_support = false;
+	bool last_swapchain_occluded = false;
 	DeviceFunctions device_functions;
 
 	void _register_requested_device_extension(const CharString &p_extension_name, bool p_required);
@@ -386,6 +390,9 @@ public:
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) override final;
 	virtual void swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) override final;
 	virtual void swap_chain_free(SwapChainID p_swap_chain) override final;
+	virtual Error swap_chain_wait_for_present(DisplayServer::WindowID p_window, SwapChainID p_swap_chain, uint32_t p_max_frame_delay) override final;
+
+	virtual BitField<PacingMethod> get_available_pacing_methods() const override final;
 
 private:
 	/*********************/

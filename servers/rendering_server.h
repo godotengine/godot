@@ -58,6 +58,13 @@
 class RenderingServer : public Object {
 	GDCLASS(RenderingServer, Object);
 
+public:
+	enum CPUGPUSyncMode {
+		CPU_GPU_SYNC_PARALLEL,
+		CPU_GPU_SYNC_SEQUENTIAL,
+	};
+
+private:
 	static RenderingServer *singleton;
 
 	int mm_policy = 0;
@@ -76,6 +83,21 @@ protected:
 	RID test_texture;
 	RID white_texture;
 	RID test_material;
+
+	uint64_t variance_total_time = 0ul;
+	uint64_t avg_total_time = 0ul;
+	// Calling screen_get_refresh_rate() is expensive enough to appear in profilers.
+	// Plus it can cause internal mutexes in the OS that cause stutter. So it's cached.
+	uint64_t cached_refresh_rate_us = (1000ul * 1000ul) / 60ul; // Refresh rate in microseconds.
+	uint32_t cached_refresh_rate_millihertz = 1000u * 60u; // Refresh rate in millihertz (mHz).
+
+	CPUGPUSyncMode actual_cpu_gpu_sync_mode = CPU_GPU_SYNC_PARALLEL;
+	CPUGPUSyncMode last_frame_cpu_gpu_sync_mode = CPU_GPU_SYNC_PARALLEL;
+	uint32_t same_cpu_sync_mode_count = 0u;
+	uint32_t missed_hard_target = 0u;
+
+	uint64_t last_cpu_time = 0ul; // For performance counters.
+	uint64_t last_gpu_time = 0ul; // For performance counters.
 
 	Error _surface_set_data(Array p_arrays, uint64_t p_format, uint32_t *p_offsets, uint32_t p_vertex_stride, uint32_t p_normal_stride, uint32_t p_attrib_stride, uint32_t p_skin_stride, Vector<uint8_t> &r_vertex_array, Vector<uint8_t> &r_attrib_array, Vector<uint8_t> &r_skin_array, int p_vertex_array_len, Vector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb, Vector4 &r_uv_scale);
 
@@ -1774,6 +1796,21 @@ public:
 
 	virtual void set_physics_interpolation_enabled(bool p_enabled) = 0;
 
+	/* SYNCHRONIZATION */
+
+	// Used by RenderingServer::CPUGPUSyncMode::CPU_GPU_SYNC_AUTO to track partial timings.
+	// final timings are set via notify_cpu_gpu_sync_timings().
+	static uint64_t draw_gpu_time;
+	static uint64_t draw_cpu_time;
+
+	CPUGPUSyncMode get_actual_cpu_gpu_sync_mode() const { return actual_cpu_gpu_sync_mode; }
+	void notify_cpu_gpu_sync_timings(uint64_t cpu_time, uint64_t gpu_time);
+	uint32_t get_missed_hard_target() const { return missed_hard_target; }
+	uint64_t get_last_cpu_time() const { return last_cpu_time; }
+	uint64_t get_last_gpu_time() const { return last_gpu_time; }
+	CPUGPUSyncMode get_evaluated_cpu_gpu_sync_mode() const { return last_frame_cpu_gpu_sync_mode; }
+	void update_cached_refresh_rate();
+
 	/* EVENT QUEUING */
 
 	virtual void request_frame_drawn_callback(const Callable &p_callable) = 0;
@@ -1993,6 +2030,7 @@ VARIANT_ENUM_CAST(RenderingServer::GlobalShaderParameterType);
 VARIANT_ENUM_CAST(RenderingServer::RenderingInfo);
 VARIANT_ENUM_CAST(RenderingServer::CanvasTextureChannel);
 VARIANT_ENUM_CAST(RenderingServer::BakeChannels);
+VARIANT_ENUM_CAST(RenderingServer::CPUGPUSyncMode);
 
 #ifndef DISABLE_DEPRECATED
 VARIANT_ENUM_CAST(RenderingServer::Features);

@@ -225,6 +225,9 @@ public:
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) override final;
 	virtual void swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) override final;
 	virtual void swap_chain_free(SwapChainID p_swap_chain) override final;
+	virtual Error swap_chain_wait_for_present(DisplayServer::WindowID p_window, SwapChainID p_swap_chain, uint32_t p_max_frame_delay) override final;
+
+	virtual BitField<PacingMethod> get_available_pacing_methods() const override final;
 
 #pragma mark - Frame Buffer
 

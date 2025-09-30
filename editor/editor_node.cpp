@@ -440,6 +440,12 @@ void EditorNode::_update_from_settings() {
 	}
 	_update_title();
 
+	RD *device = RD::get_singleton();
+	if (device) {
+		const int latency_mode = int(GLOBAL_GET("rendering/rendering_device/vsync/latency_mode")) + 1;
+		device->set_latency_mode((RD::LatencyMode)latency_mode);
+	}
+
 	int current_filter = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter");
 	if (current_filter != scene_root->get_default_canvas_item_texture_filter()) {
 		Viewport::DefaultCanvasItemTextureFilter tf = (Viewport::DefaultCanvasItemTextureFilter)current_filter;

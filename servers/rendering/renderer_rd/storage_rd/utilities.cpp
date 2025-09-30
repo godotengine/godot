@@ -226,6 +226,12 @@ void Utilities::capture_timestamp(const String &p_name) {
 	RD::get_singleton()->capture_timestamp(p_name);
 }
 
+void Utilities::capture_timestamps_sync_mode_auto_end() {
+	if (RenderingDevice::should_capture_frame_pacing_timings()) {
+		RD::get_singleton()->capture_timestamp("_Sync Mode Auto");
+	}
+}
+
 uint32_t Utilities::get_captured_timestamps_count() const {
 	return RD::get_singleton()->get_captured_timestamps_count();
 }
