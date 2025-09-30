@@ -175,11 +175,14 @@ struct ReflectionProbeInstance {
 struct Lightmap {
 	RID light_texture;
 	RID shadow_texture;
+	RID directional_texture;
 	bool uses_spherical_harmonics = false;
 	bool interior = false;
 	AABB bounds = AABB(Vector3(), Vector3(1, 1, 1));
 	float baked_exposure = 1.0;
 	Vector2i light_texture_size;
+	Vector2i shadow_texture_size;
+	Vector2i direction_texture_size;
 	int32_t array_index = -1; //unassigned
 	RS::ShadowmaskMode shadowmask_mode = RS::SHADOWMASK_MODE_NONE;
 	PackedVector3Array points;
@@ -738,6 +741,8 @@ public:
 	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) override;
 	virtual RS::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) override;
 	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMode p_mode) override;
+
+	virtual void lightmap_set_directional_textures(RID p_lightmap, RID p_directional) override;
 
 	/* LIGHTMAP INSTANCE */
 
