@@ -44,7 +44,9 @@
 #include "scene/resources/packed_scene.h"
 #include "viewport.h"
 
-int Node::orphan_node_count = 0;
+#ifdef DEBUG_ENABLED
+SafeNumeric<uint64_t> Node::total_node_count{ 0 };
+#endif
 
 thread_local Node *Node::current_process_thread_group = nullptr;
 
@@ -165,7 +167,6 @@ void Node::_notification(int p_notification) {
 			}
 
 			data.tree->nodes_in_tree_count++;
-			orphan_node_count--;
 
 		} break;
 
@@ -193,7 +194,6 @@ void Node::_notification(int p_notification) {
 			}
 
 			data.tree->nodes_in_tree_count--;
-			orphan_node_count++;
 
 			if (data.input) {
 				remove_from_group("_vp_input" + itos(get_viewport()->get_instance_id()));
@@ -4058,9 +4058,9 @@ String Node::_get_name_num_separator() {
 
 Node::Node() {
 	_define_ancestry(AncestralClass::NODE);
-
-	orphan_node_count++;
-
+#ifdef DEBUG_ENABLED
+	total_node_count.increment();
+#endif
 	// Default member initializer for bitfield is a C++20 extension, so:
 
 	data.process_mode = PROCESS_MODE_INHERIT;
@@ -4107,7 +4107,9 @@ Node::~Node() {
 	ERR_FAIL_COND(data.parent);
 	ERR_FAIL_COND(data.children_cache.size());
 
-	orphan_node_count--;
+#ifdef DEBUG_ENABLED
+	total_node_count.decrement();
+#endif
 }
 
 ////////////////////////////////
