@@ -1906,6 +1906,17 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 				r_type = _type_from_variant(literal->value, p_context);
 				found = true;
 			} break;
+			case GDScriptParser::Node::GET_NODE: {
+				// Resolves chained calls after %/$ to their concrete node type from the current scene.
+				const GDScriptParser::GetNodeNode *gn = static_cast<const GDScriptParser::GetNodeNode *>(p_expression);
+				const Node *base = Object::cast_to<Node>(p_context.base);
+				const Node *node = base ? base->get_node_or_null(gn->full_path) : nullptr;
+				if (node != nullptr) {
+					r_type = _type_from_variant(node, p_context);
+					found = true;
+					break;
+				}
+			} break;
 			case GDScriptParser::Node::SELF: {
 				if (p_context.current_class) {
 					r_type.type = p_context.current_class->get_datatype();
