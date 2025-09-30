@@ -239,6 +239,7 @@
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
+#include "scene/3d/limit_angular_velocity_modifier_3d.h"
 #include "scene/3d/look_at_modifier_3d.h"
 #include "scene/3d/marker_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -682,6 +683,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(FABRIK3D);
 	GDREGISTER_CLASS(CCDIK3D);
 	GDREGISTER_CLASS(JacobianIK3D);
+	GDREGISTER_CLASS(LimitAngularVelocityModifier3D);
 
 #ifndef XR_DISABLED
 	GDREGISTER_CLASS(XRCamera3D);
