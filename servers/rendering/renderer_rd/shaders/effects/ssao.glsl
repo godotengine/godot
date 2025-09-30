@@ -36,8 +36,9 @@
 #ifdef SSAO_TYPE_GTAO
 // GTAO
 
+#define GTAO_RADIUS_MULTIPLIER (0.5)
 #define GTAO_MAX_DEPTH (1000.0)
-#define GTAO_MAX_SCREEN_RADIUS (256.0)
+#define GTAO_MAX_SCREEN_RADIUS (128.0)
 #define GTAO_BIAS_MIP_LEVEL (0)
 #define GTAO_FALLOFF_RANGE (0.717)
 
@@ -297,10 +298,25 @@ float GTAO_slice(in int num_taps, vec2 base_uv, vec2 screen_dir, float search_ra
 	float scene_depth, sample_delta_len_sq, sample_horizon_cos, falloff;
 	vec3 sample_delta;
 	vec2 sample_uv;
-	vec2 horizon_cos = vec2(-1.0, -1.0);
 	const vec2 screen_vec_pixels = screen_dir * params.half_screen_pixel_size;
 	const float thickness = params.thickness_heuristic;
 
+	// Project view_space_normal onto the plane defined by screen_dir and view_dir
+	vec3 axis_vec = normalize(cross(vec3(screen_dir, 0.0), view_dir));
+	vec3 ortho_dir_vec = cross(view_dir, axis_vec);
+	vec3 proj_normal_vec = view_space_normal - axis_vec * dot(view_space_normal, axis_vec);
+
+	float proj_normal_len = length(proj_normal_vec) + 0.000001;
+
+	float sign_norm = sign(dot(ortho_dir_vec, proj_normal_vec));
+	float cos_norm = dot(proj_normal_vec, view_dir) / proj_normal_len;
+
+	// The original paper doesn't have this negative sign,
+	// added due to coordinate system differences
+	float n = -sign_norm * acos_fast(cos_norm);
+
+	// this is a lower weight target; not using -1 as in the original paper because it is under horizon
+	vec2 horizon_cos = vec2(-1.0, -1.0);
 	// Find the largest angle
 	for (int i = 0; i < num_taps; ++i) {
 		vec2 uv_offset = screen_vec_pixels * max(search_radius * (float(i) + initial_offset), float(i) + 1.0);
@@ -350,26 +366,13 @@ float GTAO_slice(in int num_taps, vec2 base_uv, vec2 screen_dir, float search_ra
 	horizon_cos.x = -acos_fast(clamp(horizon_cos.x, -1.0, 1.0));
 	horizon_cos.y = acos_fast(clamp(horizon_cos.y, -1.0, 1.0));
 
-	// Project view_space_normal onto the plane defined by screen_dir and view_dir
-	vec3 axis_vec = normalize(cross(vec3(screen_dir, 0.0), view_dir));
-	vec3 ortho_dir_vec = cross(view_dir, axis_vec);
-	vec3 proj_normal_vec = view_space_normal - axis_vec * dot(view_space_normal, axis_vec);
-
-	float proj_normal_len = length(proj_normal_vec) + 0.000001;
-
-	float sign_norm = sign(dot(ortho_dir_vec, proj_normal_vec));
-	float cos_norm = dot(proj_normal_vec, view_dir) / proj_normal_len;
-
-	// The original paper doesn't have this negative sign,
-	// added due to coordinate system differences
-	float n = -sign_norm * acos_fast(cos_norm);
-	// The final formula uses `2 * sin(n)` so we precalculate this value
-	float two_sin_norm = 2.0 * sin(n);
-
 	// Clamp to normal hemisphere
 	// XeGTAO: we can skip clamping for a tiny little bit more performance
 	horizon_cos.x = n + clamp(horizon_cos.x - n, -PI_HALF, PI_HALF);
 	horizon_cos.y = n + clamp(horizon_cos.y - n, -PI_HALF, PI_HALF);
+
+	// The final formula uses `2 * sin(n)` so we precalculate this value
+	float two_sin_norm = 2.0 * sin(n);
 
 	float iarc1 = (cos_norm + horizon_cos.x * two_sin_norm - cos(2.0 * horizon_cos.x - n));
 	float iarc2 = (cos_norm + horizon_cos.y * two_sin_norm - cos(2.0 * horizon_cos.y - n));
@@ -428,7 +431,7 @@ void generate_GTAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 	float sin_delta_angle = sin(delta_angle);
 	float cos_delta_angle = cos(delta_angle);
 
-	float viewspace_radius = params.radius;
+	float viewspace_radius = params.radius * GTAO_RADIUS_MULTIPLIER;
 	// Multiply the radius by projection[0][0] to make it FOV-independent, same as HBAO
 	float screenspace_radius = clamp(viewspace_radius * params.fov_scale / pix_center_pos.z, float(number_of_taps), GTAO_MAX_SCREEN_RADIUS);
 	float step_radius = screenspace_radius / float(number_of_taps);

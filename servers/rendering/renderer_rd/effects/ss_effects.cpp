@@ -1075,6 +1075,11 @@ void SSEffects::gather_ssao(RD::ComputeListID p_compute_list, const RID *p_ao_sl
 	RID shader = ssao.gather_shader.version_get_shader(ssao.gather_shader_version, variant_id); //
 
 	for (int i = 0; i < 4; i++) {
+		// Only do two pass for GTAO
+		if ((ssao_type == RS::ENV_SSAO_TYPE_GTAO) && ((i == 1) || (i == 2))) {
+			continue;
+		}
+
 		if ((ssao_quality == RS::ENV_SSAO_QUALITY_VERY_LOW) && ((i == 1) || (i == 2))) {
 			continue;
 		}
@@ -1411,11 +1416,15 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 		shader = ssao.interleave_shader.version_get_shader(ssao.interleave_shader_version, 0);
 
 		int interleave_pipeline = SSAO_INTERLEAVE_HALF;
-		if (ssao_quality == RS::ENV_SSAO_QUALITY_LOW) {
-			interleave_pipeline = SSAO_INTERLEAVE;
-		} else if (ssao_quality >= RS::ENV_SSAO_QUALITY_MEDIUM) {
-			interleave_pipeline = SSAO_INTERLEAVE_SMART;
+		// Always do half sample interleave for GTAO
+		if (ssao_type == RS::ENV_SSAO_TYPE_ASSAO) {
+			if (ssao_quality == RS::ENV_SSAO_QUALITY_LOW) {
+				interleave_pipeline = SSAO_INTERLEAVE;
+			} else if (ssao_quality >= RS::ENV_SSAO_QUALITY_MEDIUM) {
+				interleave_pipeline = SSAO_INTERLEAVE_SMART;
+			}
 		}
+
 
 		RID interleave_shader = ssao.interleave_shader.version_get_shader(ssao.interleave_shader_version, interleave_pipeline - SSAO_INTERLEAVE);
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[interleave_pipeline].get_rid());
