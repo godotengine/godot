@@ -998,8 +998,9 @@ void GDScriptParser::parse_extends() {
 		}
 	}
 
-	make_completion_context(COMPLETION_INHERIT_TYPE, current_class, chain_index++);
-	make_refactor_rename_context(REFACTOR_RENAME_TYPE_INHERIT_TYPE, current_class, chain_index++);
+	make_completion_context(COMPLETION_INHERIT_TYPE, current_class, chain_index);
+	make_refactor_rename_context(REFACTOR_RENAME_TYPE_INHERIT_TYPE, current_class, chain_index);
+	chain_index++;
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected superclass name after "extends".)")) {
 		return;
@@ -1007,8 +1008,10 @@ void GDScriptParser::parse_extends() {
 	current_class->extends.push_back(parse_identifier());
 
 	while (match(GDScriptTokenizer::Token::PERIOD)) {
-		make_completion_context(COMPLETION_INHERIT_TYPE, current_class, chain_index++);
-		make_refactor_rename_context(REFACTOR_RENAME_TYPE_INHERIT_TYPE, current_class, chain_index++);
+		make_completion_context(COMPLETION_INHERIT_TYPE, current_class, chain_index);
+		make_refactor_rename_context(REFACTOR_RENAME_TYPE_INHERIT_TYPE, current_class, chain_index);
+		chain_index++;
+
 		if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected superclass name after ".".)")) {
 			return;
 		}
@@ -3635,8 +3638,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 			path_state = PATH_STATE_SLASH;
 		}
 
-		make_completion_context(COMPLETION_GET_NODE, get_node, context_argument++);
-		make_refactor_rename_context(REFACTOR_RENAME_TYPE_GET_NODE, get_node, context_argument++);
+		make_completion_context(COMPLETION_GET_NODE, get_node, context_argument);
+		make_refactor_rename_context(REFACTOR_RENAME_TYPE_GET_NODE, get_node, context_argument);
+		context_argument++;
 
 		if (match(GDScriptTokenizer::Token::LITERAL)) {
 			if (previous.literal.get_type() != Variant::STRING) {
@@ -3915,8 +3919,10 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 
 	int chain_index = 1;
 	while (match(GDScriptTokenizer::Token::PERIOD)) {
-		make_completion_context(COMPLETION_TYPE_ATTRIBUTE, type, chain_index++);
-		make_refactor_rename_context(REFACTOR_RENAME_TYPE_TYPE_ATTRIBUTE, type, chain_index++);
+		make_completion_context(COMPLETION_TYPE_ATTRIBUTE, type, chain_index);
+		make_refactor_rename_context(REFACTOR_RENAME_TYPE_TYPE_ATTRIBUTE, type, chain_index);
+		chain_index++;
+
 		if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected inner type name after ".".)")) {
 			type_element = parse_identifier();
 			type->type_chain.push_back(type_element);
