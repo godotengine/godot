@@ -76,6 +76,7 @@ struct doctest::StringMaker<GodotPosition> {
 };
 
 namespace GDScriptTests {
+namespace TestLSP {
 
 // LSP GDScript test scripts are located inside project of other GDScript tests:
 // Cannot reset `ProjectSettings` (singleton) -> Cannot load another workspace and resources in there.
@@ -532,6 +533,7 @@ func f():
 	}
 }
 
+} // namespace TestLSP
 } // namespace GDScriptTests
 
 #endif // MODULE_JSONRPC_ENABLED
