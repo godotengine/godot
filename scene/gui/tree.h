@@ -286,7 +286,7 @@ public:
 	void set_structured_text_bidi_override(int p_column, TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override(int p_column) const;
 
-	void set_structured_text_bidi_override_options(int p_column, Array p_args);
+	void set_structured_text_bidi_override_options(int p_column, const Array &p_args);
 	Array get_structured_text_bidi_override_options(int p_column) const;
 
 	void set_language(int p_column, const String &p_language);
