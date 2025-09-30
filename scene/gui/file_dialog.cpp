@@ -1335,6 +1335,64 @@ FileDialog::DisplayMode FileDialog::get_display_mode() const {
 	return display_mode;
 }
 
+void FileDialog::set_favorite_list(const PackedStringArray &p_favorites) {
+	ERR_FAIL_COND_MSG(Thread::get_caller_id() != Thread::get_main_id(), "Setting favorite list can only be done on the main thread.");
+
+	global_favorites.clear();
+	global_favorites.reserve(p_favorites.size());
+	for (const String &fav : p_favorites) {
+		if (fav.ends_with("/")) {
+			global_favorites.push_back(fav);
+		} else {
+			global_favorites.push_back(fav + "/");
+		}
+	}
+}
+
+PackedStringArray FileDialog::get_favorite_list() {
+	PackedStringArray ret;
+	ERR_FAIL_COND_V_MSG(Thread::get_caller_id() != Thread::get_main_id(), ret, "Getting favorite list can only be done on the main thread.");
+
+	ret.resize(global_favorites.size());
+
+	String *fav_write = ret.ptrw();
+	int i = 0;
+	for (const String &fav : global_favorites) {
+		fav_write[i] = fav;
+		i++;
+	}
+	return ret;
+}
+
+void FileDialog::set_recent_list(const PackedStringArray &p_recents) {
+	ERR_FAIL_COND_MSG(Thread::get_caller_id() != Thread::get_main_id(), "Setting recent list can only be done on the main thread.");
+
+	global_recents.clear();
+	global_recents.reserve(p_recents.size());
+	for (const String &recent : p_recents) {
+		if (recent.ends_with("/")) {
+			global_recents.push_back(recent);
+		} else {
+			global_recents.push_back(recent + "/");
+		}
+	}
+}
+
+PackedStringArray FileDialog::get_recent_list() {
+	PackedStringArray ret;
+	ERR_FAIL_COND_V_MSG(Thread::get_caller_id() != Thread::get_main_id(), ret, "Getting recent list can only be done on the main thread.");
+
+	ret.resize(global_recents.size());
+
+	String *recent_write = ret.ptrw();
+	int i = 0;
+	for (const String &recent : global_recents) {
+		recent_write[i] = recent;
+		i++;
+	}
+	return ret;
+}
+
 void FileDialog::set_customization_flag_enabled(Customization p_flag, bool p_enabled) {
 	ERR_FAIL_INDEX(p_flag, CUSTOMIZATION_MAX);
 	if (customization_flags[p_flag] == p_enabled) {
@@ -1920,6 +1978,11 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_customization_flag_enabled", "flag", "enabled"), &FileDialog::set_customization_flag_enabled);
 	ClassDB::bind_method(D_METHOD("is_customization_flag_enabled", "flag"), &FileDialog::is_customization_flag_enabled);
 	ClassDB::bind_method(D_METHOD("deselect_all"), &FileDialog::deselect_all);
+
+	ClassDB::bind_static_method("FileDialog", D_METHOD("set_favorite_list", "favorites"), &FileDialog::set_favorite_list);
+	ClassDB::bind_static_method("FileDialog", D_METHOD("get_favorite_list"), &FileDialog::get_favorite_list);
+	ClassDB::bind_static_method("FileDialog", D_METHOD("set_recent_list", "recents"), &FileDialog::set_recent_list);
+	ClassDB::bind_static_method("FileDialog", D_METHOD("get_recent_list"), &FileDialog::get_recent_list);
 
 	ClassDB::bind_method(D_METHOD("invalidate"), &FileDialog::invalidate);
 
