@@ -484,9 +484,16 @@ Array ScriptTextEditor::_inline_object_parse(const String &p_text) {
 				}
 				params.push_back(s_param.to_float());
 			}
+
+			// Append default alpha depending on the constructor being used.
 			if (valid_floats && params.size() == 3) {
-				params.push_back(1.0);
+				if (fn_name == "8") {
+					params.push_back(255.0); // Color8(r8, g8, b8[, a8]) defaults to a8 = 255.
+				} else {
+					params.push_back(1.0); // The other functions default to a = 1.0.
+				}
 			}
+
 			if (valid_floats && params.size() == 4) {
 				has_added_color = true;
 				if (fn_name == ".from_ok_hsl") {
@@ -498,6 +505,9 @@ Array ScriptTextEditor::_inline_object_parse(const String &p_text) {
 				} else if (fn_name == ".from_rgba8") {
 					color_info["color"] = Color::from_rgba8(int(params[0]), int(params[1]), int(params[2]), int(params[3]));
 					color_info["color_mode"] = MODE_RGB8;
+				} else if (fn_name == "8") {
+					color_info["color"] = Color::from_rgba8(int(params[0]), int(params[1]), int(params[2]), int(params[3]));
+					color_info["color_mode"] = MODE_COLOR8;
 				} else if (fn_name.is_empty()) {
 					color_info["color"] = Color(params[0], params[1], params[2], params[3]);
 					color_info["color_mode"] = MODE_RGB;
@@ -563,8 +573,7 @@ void ScriptTextEditor::_inline_object_handle_click(const Dictionary &p_info, con
 }
 
 String ScriptTextEditor::_picker_color_stringify(const Color &p_color, COLOR_MODE p_mode) {
-	String result;
-	String fname;
+	String target = "Color", fname, result;
 	Vector<String> str_params;
 	switch (p_mode) {
 		case ScriptTextEditor::MODE_STRING: {
@@ -608,10 +617,19 @@ String ScriptTextEditor::_picker_color_stringify(const Color &p_color, COLOR_MOD
 			};
 			fname = ".from_rgba8";
 		} break;
+		case ScriptTextEditor::MODE_COLOR8: {
+			str_params = {
+				itos(p_color.get_r8()),
+				itos(p_color.get_g8()),
+				itos(p_color.get_b8())
+			};
+			fname.clear();
+			target = "Color8";
+		} break;
 		default: {
 		} break;
 	}
-	result = "Color" + fname + "(" + String(", ").join(str_params) + ")";
+	result = target + fname + "(" + String(", ").join(str_params) + ")";
 	return result;
 }
 
