@@ -60,7 +60,7 @@
 # Ravager <al.porkhunov@gmail.com>, 2019.
 # Александр <akonn7@mail.ru>, 2019, 2023.
 # Rei <clxgamer12@gmail.com>, 2019.
-# Vitaly <arkology11@gmail.com>, 2019.
+# Vitaly <arkology11@gmail.com>, 2019, 2025.
 # Andy <8ofproject@gmail.com>, 2020.
 # Андрей Беляков <andbelandantrus@gmail.com>, 2020.
 # Artur Tretiak <stikyt@protonmail.com>, 2020.
@@ -231,8 +231,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-10 19:04+0000\n"
-"Last-Translator: Deniil <danpko@ya.ru>\n"
+"PO-Revision-Date: 2025-09-20 16:45+0000\n"
+"Last-Translator: arkology <arkology11@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -3617,9 +3617,9 @@ msgstr "Нет совпадений"
 
 msgid "%d match"
 msgid_plural "%d matches"
-msgstr[0] "%d совпадает"
-msgstr[1] "%d совпадают"
-msgstr[2] "%d совпадают"
+msgstr[0] "%d совпадение"
+msgstr[1] "%d совпадения"
+msgstr[2] "%d совпадений"
 
 msgid "%d of %d match"
 msgid_plural "%d of %d matches"

@@ -104,7 +104,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-10 19:04+0000\n"
+"PO-Revision-Date: 2025-09-21 19:28+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/pl/>\n"
@@ -888,7 +888,7 @@ msgid "Test"
 msgstr "Test"
 
 msgid "Fallback"
-msgstr "Rozwiązanie awaryjne"
+msgstr "Rezerwowy"
 
 msgid "Pseudolocalization"
 msgstr "Pseudo-lokalizacja"
@@ -4866,6 +4866,9 @@ msgstr "Katalog kompilacji Gradle"
 
 msgid "Android Source Template"
 msgstr "Źródłowy szablon Androida"
+
+msgid "Compress Native Libraries"
+msgstr "Kompresuj biblioteki natywne"
 
 msgid "Export Format"
 msgstr "Format eksportu"

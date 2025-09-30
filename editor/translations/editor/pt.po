@@ -45,7 +45,7 @@
 # gomakappa <gomaproi@outlook.com>, 2023.
 # 100Nome <100nome.portugal@gmail.com>, 2023, 2024, 2025.
 # João Victor Alonso de Paula Sperandio <joaovictorapsperandio@gmail.com>, 2024.
-# AegisTTN <tc.dev04@gmail.com>, 2024.
+# AegisTTN <tc.dev04@gmail.com>, 2024, 2025.
 # NamelessGO <66227691+NameLessGO@users.noreply.github.com>, 2024.
 # pgbiolchi <pgbiolchi@gmail.com>, 2024.
 # Bruno Vieira <bruno.leo516@hotmail.com>, 2024.
@@ -77,13 +77,14 @@
 # Larissa Camargo <larissacar26@gmail.com>, 2025.
 # Augusto Milão <augusto.milao01@gmail.com>, 2025.
 # Pedro Mateus <pedropmateus91@gmail.com>, 2025.
+# Diogo Gomes <dgomes@graphnode.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-08-10 14:48+0000\n"
-"Last-Translator: Pedro Mateus <pedropmateus91@gmail.com>\n"
+"PO-Revision-Date: 2025-09-29 08:02+0000\n"
+"Last-Translator: AegisTTN <tc.dev04@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -91,7 +92,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "Desativar"
@@ -945,6 +946,31 @@ msgid "Save Animation to File: %s"
 msgstr "Gravar Animação em Ficheiro: %s"
 
 msgid ""
+"The file you selected is an imported scene from a 3D model such as glTF or "
+"FBX.\n"
+"\n"
+"In Godot, 3D models can be imported as either scenes or animation libraries, "
+"which is why they show up here.\n"
+"\n"
+"If you want to use animations from this 3D model, open the Advanced Import "
+"Settings\n"
+"dialog and save the animations using Actions... -> Set Animation Save Paths,\n"
+"or import the whole scene as a single AnimationLibrary in the Import dock."
+msgstr ""
+"O ficheiro que selecionou é uma cena importada de um modelo 3D, como glTF ou "
+"FBX.\n"
+"\n"
+"No Godot, os modelos 3D podem ser importados como cenas ou como bibliotecas "
+"de animação, razão pela qual aparecem aqui.\n"
+"\n"
+"Se quiser usar as animações deste modelo 3D, abra a janela de Definições "
+"Avançadas de Importação\n"
+" e guarde as animações usando Ações... -> Definir Caminhos de Gravação de "
+"Animação,\n"
+" ou importe a cena inteira como uma única AnimationLibrary no painel de "
+"Importação."
+
+msgid ""
 "The file you selected is not a valid AnimationLibrary.\n"
 "\n"
 "If the animations you want are inside of this file, save them to a separate "
@@ -1276,6 +1302,9 @@ msgstr ""
 "Clique Direito: Adicionar Nó na posição do clique.\n"
 "Shift+Clique Esquerdo+Arrastar: Conecta o Nó selecionado com outro Nó ou cria "
 "um novo Nó caso selecione uma área sem Nós."
+
+msgid "Select and move nodes."
+msgstr "Selecionar e mover nós."
 
 msgid "Create new nodes."
 msgstr "Criar novos nós."
@@ -2375,6 +2404,9 @@ msgstr "Suporte"
 
 msgid "Assets ZIP File"
 msgstr "Ficheiro ZIP de Recursos"
+
+msgid "AssetLib"
+msgstr "Biblioteca de Recursos"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr ""
@@ -4274,6 +4306,9 @@ msgstr "Nova Raiz da Cena"
 msgid "Create Root Node:"
 msgstr "Criar Nó Raiz:"
 
+msgid "Favorite Nodes"
+msgstr "Nós Favoritos"
+
 msgid "Toggle the display of favorite nodes."
 msgstr "Alternar a visibilidade de nós favoritos."
 
@@ -4398,6 +4433,9 @@ msgstr ""
 
 msgid "Hide Filtered Out Parents"
 msgstr "Esconder Pais Filtrados"
+
+msgid "Show Accessibility Warnings"
+msgstr "Mostrar Avisos de Acessibilidade"
 
 msgid "All Scene Sub-Resources"
 msgstr "Todos os Sub-Recursos da Cena"
@@ -5199,6 +5237,9 @@ msgstr "Móvel"
 
 msgid "Compatibility"
 msgstr "Compatibilidade"
+
+msgid "%s (Overridden)"
+msgstr "%s(Sobrescrito)"
 
 msgid "Main Menu"
 msgstr "Menu Principal"
@@ -7003,6 +7044,9 @@ msgstr "Pré-visualização:"
 msgid "Filter:"
 msgstr "Filtro:"
 
+msgid "Filename Filter:"
+msgstr "Filtro de Nome de Ficheiro:"
+
 msgid "File:"
 msgstr "Ficheiro:"
 
@@ -7075,6 +7119,9 @@ msgstr "Nenhuma notificação."
 msgid "Show notifications."
 msgstr "Mostrar notificações."
 
+msgid "Notifications:"
+msgstr "Notificações:"
+
 msgid "Silence the notifications."
 msgstr "Silenciar as notificações."
 
@@ -7102,6 +7149,9 @@ msgstr "Trocar Posição do Painel Integrado"
 
 msgid "Make this panel floating in the screen %d."
 msgstr "Transforma esse painel em flutuante na tela %d."
+
+msgid "Right-click to open the screen selector."
+msgstr "Clique com o botão direito para abrir o seletor de tela."
 
 msgid "Select Screen"
 msgstr "Tela de seleção"
@@ -7687,6 +7737,9 @@ msgstr "Novo Tamanho:"
 
 msgid "First Page"
 msgstr "Primeira Página"
+
+msgid "Page Number"
+msgstr "Número da Página"
 
 msgid "Next Page"
 msgstr "Próxima Página"
