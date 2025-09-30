@@ -103,7 +103,7 @@ Vector<uint8_t> WaylandThread::_read_fd(int fd) {
 		data.resize(bytes_read + chunk_size);
 	}
 
-	return data;
+	return Vector<uint8_t>(data);
 }
 
 // Based on the wayland book's shared memory boilerplate (PD/CC0).

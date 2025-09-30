@@ -2988,9 +2988,9 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 						}
 					}
 					gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i);
-					attributes[gltf_texcoord_key] = _encode_accessor_as_vec2(p_state, first_channel, true);
+					attributes[gltf_texcoord_key] = _encode_accessor_as_vec2(p_state, Vector<Vector2>(first_channel), true);
 					gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i + 1);
-					attributes[gltf_texcoord_key] = _encode_accessor_as_vec2(p_state, second_channel, true);
+					attributes[gltf_texcoord_key] = _encode_accessor_as_vec2(p_state, Vector<Vector2>(second_channel), true);
 				}
 			}
 			{

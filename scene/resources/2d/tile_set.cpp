@@ -6422,7 +6422,7 @@ void TileData::set_collision_polygon_points(int p_layer_id, int p_polygon_index,
 Vector<Vector2> TileData::get_collision_polygon_points(int p_layer_id, int p_polygon_index) const {
 	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), Vector<Vector2>());
 	ERR_FAIL_INDEX_V(p_polygon_index, physics[p_layer_id].polygons.size(), Vector<Vector2>());
-	return physics[p_layer_id].polygons[p_polygon_index].polygon;
+	return Vector<Vector2>(physics[p_layer_id].polygons[p_polygon_index].polygon);
 }
 
 void TileData::set_collision_polygon_one_way(int p_layer_id, int p_polygon_index, bool p_one_way) {
