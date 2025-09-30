@@ -159,7 +159,7 @@ void initialize_gdscript_module(ModuleInitializationLevel p_level) {
 		EditorNode::add_init_callback(_editor_init);
 
 		gdscript_translation_parser_plugin.instantiate();
-		EditorTranslationParser::get_singleton()->add_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
+		EditorTranslationParser::get_singleton()->add_parser(gdscript_translation_parser_plugin, true);
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		GDREGISTER_CLASS(GDScriptSyntaxHighlighter);
 	}
@@ -190,7 +190,7 @@ void uninitialize_gdscript_module(ModuleInitializationLevel p_level) {
 
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		EditorTranslationParser::get_singleton()->remove_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
+		EditorTranslationParser::get_singleton()->remove_parser(gdscript_translation_parser_plugin, true);
 		gdscript_translation_parser_plugin.unref();
 	}
 #endif // TOOLS_ENABLED

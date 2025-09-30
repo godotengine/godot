@@ -8779,7 +8779,7 @@ EditorNode::EditorNode() {
 
 	Ref<PackedSceneEditorTranslationParserPlugin> packed_scene_translation_parser_plugin;
 	packed_scene_translation_parser_plugin.instantiate();
-	EditorTranslationParser::get_singleton()->add_parser(packed_scene_translation_parser_plugin, EditorTranslationParser::STANDARD);
+	EditorTranslationParser::get_singleton()->add_parser(packed_scene_translation_parser_plugin, true);
 
 	_edit_current();
 	saving_resource = Ref<Resource>();

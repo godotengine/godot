@@ -33,6 +33,7 @@
 #include "core/error/error_macros.h"
 #include "core/object/script_language.h"
 #include "core/templates/hash_set.h"
+#include "editor/translations/editor_translation.h"
 
 EditorTranslationParser *EditorTranslationParser::singleton = nullptr;
 
@@ -61,7 +62,7 @@ Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Vec
 		// Add user's collected translatable messages with context or plurals.
 		for (int i = 0; i < ids_ctx_plural.size(); i++) {
 			Array arr = ids_ctx_plural[i];
-			ERR_FAIL_COND_V_MSG(arr.size() != 3, ERR_INVALID_DATA, "Array entries written into `msgids_context_plural` in `_parse_file` method should have the form [\"message\", \"context\", \"plural message\"]");
+			ERR_FAIL_COND_V_MSG(arr.size() != 3, ERR_INVALID_DATA, R"*(Array entries written into "msgids_context_plural" in "_parse_file()" method should have the form ["message", "context", "plural message"].)*");
 
 			r_translations->push_back({ arr[0], arr[1], arr[2] });
 		}
@@ -69,7 +70,7 @@ Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Vec
 	}
 #endif // DISABLE_DEPRECATED
 
-	ERR_PRINT("Custom translation parser plugin's \"_parse_file\" is undefined.");
+	ERR_PRINT(R"*(Custom translation parser plugin's "_parse_file()" method is undefined.)*");
 	return ERR_UNAVAILABLE;
 }
 
@@ -80,8 +81,65 @@ void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_ex
 			r_extensions->push_back(extensions[i]);
 		}
 	} else {
-		ERR_PRINT("Custom translation parser plugin's \"func get_recognized_extensions()\" is undefined.");
+		ERR_PRINT(R"*(Custom translation parser plugin's "_get_recognized_extensions()" method is undefined.)*");
 	}
+}
+
+PackedStringArray EditorTranslationParserPlugin::get_all_recognized_extensions_bind() {
+	List<String> extensions;
+	EditorTranslationParser::get_singleton()->get_recognized_extensions(&extensions);
+
+	PackedStringArray arr;
+	for (const String &extension : extensions) {
+		arr.push_back(extension);
+	}
+
+	return arr;
+}
+
+Ref<EditorTranslationParserPlugin> EditorTranslationParserPlugin::get_parser_bind(const String &p_extension) {
+	return EditorTranslationParser::get_singleton()->get_parser(p_extension);
+}
+
+TypedArray<PackedStringArray> EditorTranslationParserPlugin::get_builtin_strings_bind() {
+	const Vector<Vector<String>> messages = get_extractable_message_list();
+
+	TypedArray<PackedStringArray> arr;
+	arr.resize(messages.size());
+	for (int i = 0; i < messages.size(); i++) {
+		arr[i] = messages[i];
+	}
+
+	return arr;
+}
+
+TypedArray<PackedStringArray> EditorTranslationParserPlugin::parse_file_bind(const String &p_path) {
+	Vector<Vector<String>> translations;
+	parse_file(p_path, &translations);
+
+	TypedArray<PackedStringArray> arr;
+	arr.resize(translations.size());
+	for (int i = 0; i < translations.size(); i++) {
+		arr[i] = translations[i];
+	}
+
+	return arr;
+}
+
+PackedStringArray EditorTranslationParserPlugin::get_recognized_extensions_bind() const {
+	List<String> extensions;
+	get_recognized_extensions(&extensions);
+
+	PackedStringArray arr;
+	for (const String &extension : extensions) {
+		arr.push_back(extension);
+	}
+
+	return arr;
+}
+
+Ref<EditorTranslationParserPlugin> EditorTranslationParserPlugin::get_previous_parser_bind(const String &p_extension) const {
+	return EditorTranslationParser::get_singleton()->get_previous_parser(Ref<EditorTranslationParserPlugin>(this), p_extension);
 }
 
 void EditorTranslationParserPlugin::_bind_methods() {
@@ -91,20 +149,25 @@ void EditorTranslationParserPlugin::_bind_methods() {
 #ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND_COMPAT(_parse_file_bind_compat_99297, "path", "msgids", "msgids_context_plural");
 #endif
+
+	ClassDB::bind_static_method("EditorTranslationParserPlugin", D_METHOD("get_all_recognized_extensions"), &EditorTranslationParserPlugin::get_all_recognized_extensions_bind);
+	ClassDB::bind_static_method("EditorTranslationParserPlugin", D_METHOD("get_parser", "extension"), &EditorTranslationParserPlugin::get_parser_bind);
+	ClassDB::bind_static_method("EditorTranslationParserPlugin", D_METHOD("get_builtin_strings"), &EditorTranslationParserPlugin::get_builtin_strings_bind);
+
+	ClassDB::bind_method(D_METHOD("parse_file", "path"), &EditorTranslationParserPlugin::parse_file_bind);
+	ClassDB::bind_method(D_METHOD("get_recognized_extensions"), &EditorTranslationParserPlugin::get_recognized_extensions_bind);
+	ClassDB::bind_method(D_METHOD("get_previous_parser", "extension"), &EditorTranslationParserPlugin::get_previous_parser_bind);
 }
 
 /////////////////////////
 
 void EditorTranslationParser::get_recognized_extensions(List<String> *r_extensions) const {
-	HashSet<String> extensions;
 	List<String> temp;
-	for (int i = 0; i < standard_parsers.size(); i++) {
-		standard_parsers[i]->get_recognized_extensions(&temp);
-	}
-	for (int i = 0; i < custom_parsers.size(); i++) {
-		custom_parsers[i]->get_recognized_extensions(&temp);
+	for (const ParserData &data : parsers) {
+		data.parser->get_recognized_extensions(&temp);
 	}
 	// Remove duplicates.
+	HashSet<String> extensions;
 	for (const String &E : temp) {
 		extensions.insert(E);
 	}
@@ -125,51 +188,66 @@ bool EditorTranslationParser::can_parse(const String &p_extension) const {
 }
 
 Ref<EditorTranslationParserPlugin> EditorTranslationParser::get_parser(const String &p_extension) const {
-	// Consider user-defined parsers first.
-	for (int i = 0; i < custom_parsers.size(); i++) {
-		List<String> temp;
-		custom_parsers[i]->get_recognized_extensions(&temp);
-		for (const String &E : temp) {
-			if (E == p_extension) {
-				return custom_parsers[i];
+	for (int i = parsers.size() - 1; i >= 0; i--) {
+		List<String> extensions;
+		parsers[i].parser->get_recognized_extensions(&extensions);
+		for (const String &extension : extensions) {
+			if (extension == p_extension) {
+				return parsers[i].parser;
 			}
 		}
 	}
 
-	for (int i = 0; i < standard_parsers.size(); i++) {
-		List<String> temp;
-		standard_parsers[i]->get_recognized_extensions(&temp);
-		for (const String &E : temp) {
-			if (E == p_extension) {
-				return standard_parsers[i];
-			}
-		}
-	}
-
-	WARN_PRINT("No translation parser available for \"" + p_extension + "\" extension.");
+	WARN_PRINT(vformat(R"(No translation parser available for "%s" extension.)", p_extension));
 
 	return nullptr;
 }
 
-void EditorTranslationParser::add_parser(const Ref<EditorTranslationParserPlugin> &p_parser, ParserType p_type) {
-	if (p_type == ParserType::STANDARD) {
-		standard_parsers.push_back(p_parser);
-	} else if (p_type == ParserType::CUSTOM) {
-		custom_parsers.push_back(p_parser);
+Ref<EditorTranslationParserPlugin> EditorTranslationParser::get_previous_parser(const Ref<EditorTranslationParserPlugin> &p_parser, const String &p_extension) const {
+	const int index = _find_parser(p_parser);
+
+	ERR_FAIL_COND_V_MSG(index < 0, nullptr, "This translation parser is not registered.");
+
+	for (int i = index - 1; i >= 0; i--) {
+		List<String> extensions;
+		parsers[i].parser->get_recognized_extensions(&extensions);
+		for (const String &extension : extensions) {
+			if (extension == p_extension) {
+				return parsers[i].parser;
+			}
+		}
 	}
+
+	return nullptr;
 }
 
-void EditorTranslationParser::remove_parser(const Ref<EditorTranslationParserPlugin> &p_parser, ParserType p_type) {
-	if (p_type == ParserType::STANDARD) {
-		standard_parsers.erase(p_parser);
-	} else if (p_type == ParserType::CUSTOM) {
-		custom_parsers.erase(p_parser);
+int EditorTranslationParser::_find_parser(const Ref<EditorTranslationParserPlugin> &p_parser) const {
+	for (int i = 0; i < parsers.size(); i++) {
+		if (parsers[i].parser == p_parser) {
+			return i;
+		}
 	}
+	return -1;
+}
+
+void EditorTranslationParser::add_parser(const Ref<EditorTranslationParserPlugin> &p_parser, bool p_is_standard) {
+	ERR_FAIL_COND_MSG(_find_parser(p_parser) >= 0, "Сannot add an already registered translation parser.");
+
+	parsers.push_back({ p_parser, p_is_standard });
+}
+
+void EditorTranslationParser::remove_parser(const Ref<EditorTranslationParserPlugin> &p_parser, bool p_is_standard) {
+	const int index = _find_parser(p_parser);
+
+	ERR_FAIL_COND_MSG(index < 0, "Сannot remove an unregistered translation parser.");
+	ERR_FAIL_COND_MSG(parsers[index].is_standard && !p_is_standard, "Сannot remove a standard translation parser."); // User space.
+	ERR_FAIL_COND_MSG(!parsers[index].is_standard && p_is_standard, "Trying to remove a custom parser as a standard one."); // Bug.
+
+	parsers.remove_at(index);
 }
 
 void EditorTranslationParser::clean_parsers() {
-	standard_parsers.clear();
-	custom_parsers.clear();
+	parsers.clear();
 }
 
 EditorTranslationParser *EditorTranslationParser::get_singleton() {

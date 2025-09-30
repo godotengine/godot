@@ -573,6 +573,7 @@
 			<param index="0" name="parser" type="EditorTranslationParserPlugin" />
 			<description>
 				Registers a custom translation parser plugin for extracting translatable strings from custom files.
+				[b]Note:[/b] A parser added later has priority over an earlier one and can intercept it using [method EditorTranslationParserPlugin.get_previous_parser].
 			</description>
 		</method>
 		<method name="add_undo_redo_inspector_hook_callback">
@@ -759,6 +760,7 @@
 			<param index="0" name="parser" type="EditorTranslationParserPlugin" />
 			<description>
 				Removes a custom translation parser plugin registered by [method add_translation_parser_plugin].
+				[b]Note:[/b] This method cannot be used to remove a standard parser.
 			</description>
 		</method>
 		<method name="remove_undo_redo_inspector_hook_callback">
