@@ -51,6 +51,7 @@
 #include "modules/modules_enabled.gen.h" // For mono.
 
 namespace GDScriptTests {
+namespace TestCompletion {
 
 static bool match_option(const Dictionary p_expected, const ScriptLanguage::CodeCompletionOption p_got) {
 	if (p_expected.get("display", p_got.display) != p_got.display) {
@@ -271,6 +272,8 @@ TEST_SUITE("[Modules][GDScript][Completion]") {
 		finish_language();
 	}
 }
+
+} // namespace TestCompletion
 } // namespace GDScriptTests
 
 #endif
