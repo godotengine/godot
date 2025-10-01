@@ -2304,27 +2304,40 @@ NodePath Node::get_path_to(const Node *p_node, bool p_use_unique_path) const {
 		return NodePath(".");
 	}
 
-	HashSet<const Node *> visited;
-
 	const Node *n = this;
-
-	while (n) {
-		visited.insert(n);
-		n = n->data.parent;
-	}
-
 	const Node *common_parent = p_node;
-
-	while (common_parent) {
-		if (visited.has(common_parent)) {
-			break;
+	if (is_inside_tree() && p_node->data.tree == data.tree) {
+		// Optimized codepath that uses the cached depth information that is available while nodes are in the tree.
+		while (common_parent->data.depth > data.depth) {
+			common_parent = common_parent->data.parent;
 		}
-		common_parent = common_parent->data.parent;
+
+		while (n->data.depth > common_parent->data.depth) {
+			n = n->data.parent;
+		}
+
+		while (common_parent != n) {
+			common_parent = common_parent->data.parent;
+			n = n->data.parent;
+		}
+	} else {
+		HashSet<const Node *> visited;
+
+		while (n) {
+			visited.insert(n);
+			n = n->data.parent;
+		}
+
+		while (common_parent) {
+			if (visited.has(common_parent)) {
+				break;
+			}
+			common_parent = common_parent->data.parent;
+		}
+		visited.clear();
 	}
 
 	ERR_FAIL_NULL_V(common_parent, NodePath()); //nodes not in the same tree
-
-	visited.clear();
 
 	Vector<StringName> path;
 	StringName up = String("..");
@@ -2364,6 +2377,32 @@ NodePath Node::get_path_to(const Node *p_node, bool p_use_unique_path) const {
 			if (!detected_name.is_empty()) {
 				path.push_back(UNIQUE_NODE_PREFIX + detected_name);
 			}
+
+			path.reverse();
+		}
+	} else if (is_inside_tree() && data.tree == p_node->data.tree) {
+		// Optimized codepath that uses the cached depth information that is available while nodes are in the tree.
+
+		const int32_t this_branch_depth = (data.depth - common_parent->data.depth);
+		const int32_t other_branch_depth = (p_node->data.depth - common_parent->data.depth);
+
+		path.resize(this_branch_depth + other_branch_depth);
+
+		int i = 0;
+		n = this;
+		StringName *ptrw = path.ptrw();
+		while (n != common_parent) {
+			ptrw[i] = up;
+			i++;
+			n = n->data.parent;
+		}
+
+		n = p_node;
+		i = this_branch_depth + other_branch_depth - 1;
+		while (n != common_parent) {
+			ptrw[i] = n->get_name();
+			i--;
+			n = n->data.parent;
 		}
 	} else {
 		n = p_node;
@@ -2379,9 +2418,9 @@ NodePath Node::get_path_to(const Node *p_node, bool p_use_unique_path) const {
 			path.push_back(up);
 			n = n->data.parent;
 		}
-	}
 
-	path.reverse();
+		path.reverse();
+	}
 
 	return NodePath(path, false);
 }
