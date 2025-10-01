@@ -438,7 +438,9 @@ void EditorUndoRedoManager::clear_history(int p_idx, bool p_increase_version) {
 		history.undo_stack.clear();
 		history.redo_stack.clear();
 
-		if (!p_increase_version) {
+		if (p_increase_version) {
+			history.saved_version = 0;
+		} else {
 			set_history_as_saved(p_idx);
 		}
 		emit_signal(SNAME("history_changed"));
