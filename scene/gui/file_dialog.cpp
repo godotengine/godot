@@ -653,6 +653,11 @@ int FileDialog::_get_selected_file_idx() {
 	return selected.is_empty() ? -1 : selected[0];
 }
 
+String FileDialog::_get_item_path(int p_idx) const {
+	const Dictionary meta = file_list->get_item_metadata(p_idx);
+	return ProjectSettings::get_singleton()->globalize_path(dir_access->get_current_dir().path_join(meta["name"]));
+}
+
 void FileDialog::_file_list_multi_selected(int p_item, bool p_selected) {
 	if (p_selected) {
 		_file_list_selected(p_item);
@@ -715,13 +720,32 @@ void FileDialog::update_file_name() {
 }
 
 void FileDialog::_item_menu_id_pressed(int p_option) {
+	int selected = _get_selected_file_idx();
 	switch (p_option) {
+		case ITEM_MENU_COPY_PATH: {
+			if (selected > -1) {
+				DisplayServer::get_singleton()->clipboard_set(_get_item_path(selected));
+			}
+		} break;
+
+		case ITEM_MENU_DELETE: {
+			if (selected > -1) {
+				delete_dialog->popup_centered(Size2(250, 80));
+			}
+		} break;
+
+		case ITEM_MENU_REFRESH: {
+			invalidate();
+		} break;
+
+		case ITEM_MENU_NEW_FOLDER: {
+			_make_dir();
+		} break;
+
 		case ITEM_MENU_SHOW_IN_EXPLORER: {
 			String path;
-			int selected = _get_selected_file_idx();
 			if (selected > -1) {
-				Dictionary d = file_list->get_item_metadata(selected);
-				path = ProjectSettings::get_singleton()->globalize_path(dir_access->get_current_dir().path_join(d["name"]));
+				path = _get_item_path(selected);
 			} else {
 				path = ProjectSettings::get_singleton()->globalize_path(dir_access->get_current_dir());
 			}
@@ -730,12 +754,11 @@ void FileDialog::_item_menu_id_pressed(int p_option) {
 		} break;
 
 		case ITEM_MENU_SHOW_BUNDLE_CONTENT: {
-			int selected = _get_selected_file_idx();
 			if (selected == -1) {
 				return;
 			}
-			Dictionary d = file_list->get_item_metadata(selected);
-			_change_dir(d["name"]);
+			Dictionary meta = file_list->get_item_metadata(selected);
+			_change_dir(meta["name"]);
 			if (mode == FILE_MODE_OPEN_FILE || mode == FILE_MODE_OPEN_FILES || mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY) {
 				filename_edit->set_text("");
 			}
@@ -746,15 +769,7 @@ void FileDialog::_item_menu_id_pressed(int p_option) {
 
 void FileDialog::_empty_clicked(const Vector2 &p_pos, MouseButton p_button) {
 	if (p_button == MouseButton::RIGHT) {
-		item_menu->clear();
-#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
-		// Opening the system file manager is not supported on the Android and web editors.
-		item_menu->add_item(ETR("Open in File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
-
-		item_menu->set_position(file_list->get_screen_position() + p_pos);
-		item_menu->reset_size();
-		item_menu->popup();
-#endif
+		_popup_menu(p_pos, -1);
 	} else if (p_button == MouseButton::LEFT) {
 		deselect_all();
 	}
@@ -762,20 +777,47 @@ void FileDialog::_empty_clicked(const Vector2 &p_pos, MouseButton p_button) {
 
 void FileDialog::_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_button) {
 	if (p_button == MouseButton::RIGHT) {
-		item_menu->clear();
-#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
-		// Opening the system file manager is not supported on the Android and web editors.
-		Dictionary d = file_list->get_item_metadata(p_item);
-		if (d["bundle"]) {
-			item_menu->add_item(ETR("Show Package Contents"), ITEM_MENU_SHOW_BUNDLE_CONTENT);
-		}
-		item_menu->add_item(ETR("Open in File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
-
-		item_menu->set_position(file_list->get_screen_position() + p_pos);
-		item_menu->reset_size();
-		item_menu->popup();
-#endif
+		_popup_menu(p_pos, p_item);
 	}
+}
+
+void FileDialog::_popup_menu(const Vector2 &p_pos, int p_for_item) {
+	item_menu->clear();
+
+	if (p_for_item > -1) {
+		item_menu->add_item(ETR("Copy Path"), ITEM_MENU_COPY_PATH);
+		if (customization_flags[CUSTOMIZATION_DELETE]) {
+			item_menu->add_item(ETR("Delete"), ITEM_MENU_DELETE);
+		}
+	} else {
+		if (can_create_folders) {
+			item_menu->add_item(ETR("New Folder..."), ITEM_MENU_NEW_FOLDER);
+		}
+		item_menu->add_item(ETR("Refresh"), ITEM_MENU_REFRESH);
+	}
+
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+	// Opening the system file manager is not supported on the Android and web editors.
+	item_menu->add_separator();
+
+	Dictionary meta;
+	if (p_for_item > -1) {
+		meta = file_list->get_item_metadata(p_for_item);
+	}
+
+	item_menu->add_item((p_for_item == -1 || meta["dir"]) ? ETR("Open in File Manager") : ETR("Show in File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
+	if (meta["bundle"]) {
+		item_menu->add_item(ETR("Show Package Contents"), ITEM_MENU_SHOW_BUNDLE_CONTENT);
+	}
+#endif
+
+	if (item_menu->get_item_count() == 0) {
+		return;
+	}
+
+	item_menu->set_position(file_list->get_screen_position() + p_pos);
+	item_menu->reset_size();
+	item_menu->popup();
 }
 
 void FileDialog::update_file_list() {
@@ -1061,6 +1103,11 @@ void FileDialog::_file_list_select_first() {
 		file_list->select(0);
 		_file_list_selected(0);
 	}
+}
+
+void FileDialog::_delete_confirm() {
+	OS::get_singleton()->move_to_trash(_get_item_path(_get_selected_file_idx()));
+	invalidate();
 }
 
 void FileDialog::_filename_filter_selected() {
@@ -1518,7 +1565,8 @@ void FileDialog::_setup_button(Button *p_button, const Ref<Texture2D> &p_icon) {
 }
 
 void FileDialog::_update_make_dir_visible() {
-	make_dir_container->set_visible(customization_flags[CUSTOMIZATION_CREATE_FOLDER] && mode != FILE_MODE_OPEN_FILE && mode != FILE_MODE_OPEN_FILES);
+	can_create_folders = customization_flags[CUSTOMIZATION_CREATE_FOLDER] && mode != FILE_MODE_OPEN_FILE && mode != FILE_MODE_OPEN_FILES;
+	make_dir_container->set_visible(can_create_folders);
 }
 
 FileDialog::Access FileDialog::get_access() const {
@@ -2058,6 +2106,7 @@ void FileDialog::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "recent_list_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_RECENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "layout_toggle_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_LAYOUT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "overwrite_warning_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_OVERWRITE_WARNING);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "deleting_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_DELETE);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR, "", PROPERTY_USAGE_NONE), "set_current_dir", "get_current_dir");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file", PROPERTY_HINT_FILE_PATH, "*", PROPERTY_USAGE_NONE), "set_current_file", "get_current_file");
@@ -2089,6 +2138,7 @@ void FileDialog::_bind_methods() {
 	BIND_ENUM_CONSTANT(CUSTOMIZATION_RECENT);
 	BIND_ENUM_CONSTANT(CUSTOMIZATION_LAYOUT);
 	BIND_ENUM_CONSTANT(CUSTOMIZATION_OVERWRITE_WARNING);
+	BIND_ENUM_CONSTANT(CUSTOMIZATION_DELETE);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, FileDialog, thumbnail_size);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, parent_folder);
@@ -2494,6 +2544,11 @@ FileDialog::FileDialog() {
 	confirm_save = memnew(ConfirmationDialog);
 	add_child(confirm_save, false, INTERNAL_MODE_FRONT);
 	confirm_save->connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_save_confirm_pressed));
+
+	delete_dialog = memnew(ConfirmationDialog);
+	delete_dialog->set_text(ETR("Delete the selected file?\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
+	add_child(delete_dialog, false, INTERNAL_MODE_FRONT);
+	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_delete_confirm));
 
 	make_dir_dialog = memnew(ConfirmationDialog);
 	make_dir_dialog->set_title(ETR("Create Folder"));
