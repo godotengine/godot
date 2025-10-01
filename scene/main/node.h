@@ -165,6 +165,7 @@ private:
 		StringName signal_name;
 		StringName method_name;
 		Node *to_node = nullptr;
+		bool inherited = false;
 	};
 
 	// This Data struct is to avoid namespace pollution in derived classes.
@@ -607,7 +608,7 @@ public:
 
 	/* USED ONLY BY PACKED SCENE */
 
-	void add_connection_owner(Node *p_owner, Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable);
+	void add_connection_owner(Node *p_owner, Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable, bool is_inherited);
 	Node *get_connection_owner(Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable) const;
 
 	/* NOTIFICATIONS */

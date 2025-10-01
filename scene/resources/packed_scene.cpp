@@ -592,7 +592,26 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		}
 	}
 
-	// add the connections in this scene.
+	NODE_FROM_ID(conn_owner, 0); // root node of scene.
+
+	// If there are already connections on this node, then they must be from an inherited scene.
+	// Add inherited=true to existing connection owner data.
+	List<MethodInfo> _signals;
+	conn_owner->get_signal_list(&_signals);
+	for (const MethodInfo &E : _signals) {
+		List<Node::Connection> conns;
+		conn_owner->get_signal_connection_list(E.name, &conns);
+
+		for (const Node::Connection &F : conns) {
+			const Node::Connection &c = F;
+			Node *target = Object::cast_to<Node>(c.callable.get_object());
+
+			// overwrite the connection owner data with is_inherited=true.
+			conn_owner->add_connection_owner(conn_owner, target, E.name, c.callable, true);
+		}
+	}
+
+	// add the connections that belong to this scene.
 	int cc = connections.size();
 	const ConnectionData *cdata = connections.ptr();
 
@@ -630,8 +649,12 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 		cfrom->connect(snames[c.signal], callable, CONNECT_PERSIST | c.flags | (p_edit_state == GEN_EDIT_STATE_MAIN ? 0 : CONNECT_INHERITED));
 
-		NODE_FROM_ID(conn_owner, 0); // root node of scene.
-		cfrom->add_connection_owner(conn_owner, cto, snames[c.signal], callable);
+		// Above check for inherited connections works in most cases, this is needed when creating a new inherited scene in the editor.
+		if (p_edit_state == GEN_EDIT_STATE_MAIN_INHERITED) {
+			cfrom->add_connection_owner(conn_owner, cto, snames[c.signal], callable, true);
+		} else {
+			cfrom->add_connection_owner(conn_owner, cto, snames[c.signal], callable, false);
+		}
 	}
 
 	//Node *s = ret_nodes[0];
@@ -1120,58 +1143,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 				base_callable = c.callable;
 			}
 
-			// don't save connection if it is part of an instance or inheritance
-			//
-			// Check 1 only works in the editor.
-			// Check 2 works in the editor and when packing from tool script or during game
-			//
-			// But check 2 doesn't work in the case when the root node is inherited and a
-			// signal comes from the base scene. If the check is modified to detect this case
-			// check 1 can be deleted.
-
-			// Check for existence 1
-			Node *common_parent = target->find_common_parent_with(p_node);
-
-			ERR_CONTINUE(!common_parent);
-
-			if (common_parent != p_owner && !common_parent->is_instance()) {
-				common_parent = common_parent->get_owner();
-			}
-
-			bool exists = false;
-
-			//go through ownership chain to see if this exists
-			while (common_parent) {
-				Ref<SceneState> ps;
-
-				if (common_parent == p_owner) {
-					ps = common_parent->get_scene_inherited_state();
-				} else {
-					ps = common_parent->get_scene_instance_state();
-				}
-
-				if (ps.is_valid()) {
-					NodePath signal_from = common_parent->get_path_to(p_node);
-					NodePath signal_to = common_parent->get_path_to(target);
-
-					if (ps->has_connection(signal_from, c.signal.get_name(), signal_to, base_callable.get_method())) {
-						exists = true;
-						break;
-					}
-				}
-
-				if (common_parent == p_owner) {
-					break;
-				} else {
-					common_parent = common_parent->get_owner();
-				}
-			}
-
-			if (exists) { //already exists (comes from instance or inheritance), so don't save
-				continue;
-			}
-
-			// Check for existence 2
+			// don't save connection if it is part of an instance or inheritance.
 			Node *conn_owner = p_node->get_connection_owner(target, E.name, base_callable);
 			bool owned_by_main_scene = (conn_owner == p_owner || conn_owner == nullptr); // nullptr means the connection was just added and wasn't connected during node instantiation.
 
