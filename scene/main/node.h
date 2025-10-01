@@ -570,6 +570,7 @@ public:
 	bool is_greater_than(RequiredParam<const Node> p_node) const;
 
 	NodePath get_path() const;
+	uint32_t calculate_depth() const;
 	NodePath get_path_to(RequiredParam<const Node> p_node, bool p_use_unique_path = false) const;
 	Node *find_common_parent_with(const Node *p_node) const;
 
