@@ -306,7 +306,7 @@ void OpenXRD3D12Extension::cleanup_swapchain_graphics_data(void **p_swapchain_gr
 
 	for (const RID &texture_rid : data->texture_rids) {
 		// This should clean up our RIDs and associated texture objects but shouldn't destroy the images, they are owned by our XrSwapchain.
-		rendering_device->free(texture_rid);
+		rendering_device->free_rid(texture_rid);
 	}
 	data->texture_rids.clear();
 

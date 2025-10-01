@@ -9324,5 +9324,5 @@ TextEdit::TextEdit(const String &p_placeholder) {
 }
 
 TextEdit::~TextEdit() {
-	RS::get_singleton()->free(text_ci);
+	RS::get_singleton()->free_rid(text_ci);
 }

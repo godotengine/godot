@@ -183,7 +183,7 @@ Material::Material() {
 Material::~Material() {
 	if (material.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(material);
+		RenderingServer::get_singleton()->free_rid(material);
 	}
 }
 
@@ -700,7 +700,7 @@ void BaseMaterial3D::_update_shader() {
 			if (v->users == 0) {
 				// Deallocate shader which is no longer in use.
 				shader_rid = RID();
-				RS::get_singleton()->free(v->shader);
+				RS::get_singleton()->free_rid(v->shader);
 				shader_map.erase(current_key);
 			}
 		}
@@ -2067,7 +2067,7 @@ void fragment() {)";
 	if (unlikely(v)) {
 		// We raced and managed to create the same key concurrently, so we'll free the shader we just created,
 		// given we know it isn't used, and use the winner.
-		RS::get_singleton()->free(new_shader);
+		RS::get_singleton()->free_rid(new_shader);
 	} else {
 		ShaderData shader_data;
 		shader_data.shader = new_shader;
@@ -4004,7 +4004,7 @@ BaseMaterial3D::~BaseMaterial3D() {
 			shader_map[current_key].users--;
 			if (shader_map[current_key].users == 0) {
 				// Deallocate shader which is no longer in use.
-				RS::get_singleton()->free(shader_map[current_key].shader);
+				RS::get_singleton()->free_rid(shader_map[current_key].shader);
 				shader_map.erase(current_key);
 			}
 		}

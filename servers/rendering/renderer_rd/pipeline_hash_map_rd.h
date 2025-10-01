@@ -208,7 +208,7 @@ public:
 		_add_new_pipelines_to_map();
 
 		for (KeyValue<uint32_t, RID> entry : hash_map) {
-			RD::get_singleton()->free(entry.value);
+			RD::get_singleton()->free_rid(entry.value);
 		}
 
 		hash_map.clear();

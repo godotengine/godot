@@ -349,7 +349,7 @@ NavigationAgent2D::NavigationAgent2D() {
 
 NavigationAgent2D::~NavigationAgent2D() {
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
-	NavigationServer2D::get_singleton()->free(agent);
+	NavigationServer2D::get_singleton()->free_rid(agent);
 	agent = RID(); // Pointless
 
 #ifdef DEBUG_ENABLED
@@ -357,7 +357,7 @@ NavigationAgent2D::~NavigationAgent2D() {
 
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (debug_path_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_path_instance);
+		RenderingServer::get_singleton()->free_rid(debug_path_instance);
 	}
 #endif // DEBUG_ENABLED
 }

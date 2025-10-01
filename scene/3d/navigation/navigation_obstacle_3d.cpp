@@ -232,7 +232,7 @@ NavigationObstacle3D::~NavigationObstacle3D() {
 	NavigationServer3D *ns3d = NavigationServer3D::get_singleton();
 	ERR_FAIL_NULL(ns3d);
 
-	ns3d->free(obstacle);
+	ns3d->free_rid(obstacle);
 	obstacle = RID();
 
 #ifdef DEBUG_ENABLED
@@ -242,19 +242,19 @@ NavigationObstacle3D::~NavigationObstacle3D() {
 	RenderingServer *rs = RenderingServer::get_singleton();
 	ERR_FAIL_NULL(rs);
 	if (fake_agent_radius_debug_instance_rid.is_valid()) {
-		rs->free(fake_agent_radius_debug_instance_rid);
+		rs->free_rid(fake_agent_radius_debug_instance_rid);
 		fake_agent_radius_debug_instance_rid = RID();
 	}
 	if (fake_agent_radius_debug_mesh_rid.is_valid()) {
-		rs->free(fake_agent_radius_debug_mesh_rid);
+		rs->free_rid(fake_agent_radius_debug_mesh_rid);
 		fake_agent_radius_debug_mesh_rid = RID();
 	}
 	if (static_obstacle_debug_instance_rid.is_valid()) {
-		rs->free(static_obstacle_debug_instance_rid);
+		rs->free_rid(static_obstacle_debug_instance_rid);
 		static_obstacle_debug_instance_rid = RID();
 	}
 	if (static_obstacle_debug_mesh_rid.is_valid()) {
-		rs->free(static_obstacle_debug_mesh_rid);
+		rs->free_rid(static_obstacle_debug_mesh_rid);
 		static_obstacle_debug_mesh_rid = RID();
 	}
 #endif // DEBUG_ENABLED

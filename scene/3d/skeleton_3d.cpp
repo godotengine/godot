@@ -61,7 +61,7 @@ SkinReference::~SkinReference() {
 	if (skeleton_node) {
 		skeleton_node->skin_bindings.erase(this);
 	}
-	RS::get_singleton()->free(skeleton);
+	RS::get_singleton()->free_rid(skeleton);
 }
 
 ///////////////////////////////////////

@@ -437,7 +437,7 @@ public:
 	/* MISC */
 
 	GDVIRTUAL1_REQUIRED(_free_rid, RID)
-	virtual void free(RID p_rid) override {
+	virtual void free_rid(RID p_rid) override {
 		GDVIRTUAL_CALL(_free_rid, p_rid);
 	}
 

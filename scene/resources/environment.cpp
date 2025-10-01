@@ -1596,5 +1596,5 @@ Environment::Environment() {
 
 Environment::~Environment() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(environment);
+	RS::get_singleton()->free_rid(environment);
 }
