@@ -237,7 +237,7 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(Geometry
 		}
 	} else {
 		if (!p_material->shader_data->opaque_skipped) {
-		flags |= GeometryInstanceSurface::FLAG_PASS_OPAQUE;
+			flags |= GeometryInstanceSurface::FLAG_PASS_OPAQUE;
 		}
 		if (!p_material->shader_data->depth_prepass_skipped) {
 			flags |= GeometryInstanceSurface::FLAG_PASS_DEPTH;
