@@ -11,11 +11,26 @@
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
+		<method name="get_blob_shadow_param" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="arg0" type="int" enum="Light.BlobShadowParam" />
+			<description>
+				Returns the value of the specified [enum Light.BlobShadowParam] parameter.
+			</description>
+		</method>
 		<method name="get_param" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="param" type="int" enum="Light.Param" />
 			<description>
 				Returns the value of the specified [enum Light.Param] parameter.
+			</description>
+		</method>
+		<method name="set_blob_shadow_param">
+			<return type="void" />
+			<argument index="0" name="parameter" type="int" enum="Light.BlobShadowParam" />
+			<argument index="1" name="value" type="float" />
+			<description>
+				Sets the value of the specified [enum Light.BlobShadowParam] parameter.
 			</description>
 		</method>
 		<method name="set_param">
@@ -28,6 +43,24 @@
 		</method>
 	</methods>
 	<members>
+		<member name="blob_shadow_enabled" type="bool" setter="set_blob_shadow" getter="has_blob_shadow" default="false">
+			If [code]true[/code], the light will cast shadows when [BlobShadow] nodes are in the scene.
+		</member>
+		<member name="blob_shadow_intensity" type="float" setter="set_blob_shadow_param" getter="get_blob_shadow_param" default="1.0">
+			Allows modifying the intensity (darkness) of blob shadows per light.
+		</member>
+		<member name="blob_shadow_range_hardness" type="float" setter="set_blob_shadow_param" getter="get_blob_shadow_param" default="0.8">
+			Determines how quickly blob shadows fade as they reach their range limit.
+			A value of [code]1[/code] switches off shadows abruptly, [code]0[/code] gives maximum softness.
+		</member>
+		<member name="blob_shadow_range_max" type="float" setter="set_blob_shadow_param" getter="get_blob_shadow_param" default="0.0">
+			The maximum range at which [BlobShadow] nodes will cast shadows.
+			[b]Note:[/b] When set to [code]0[/code] (default), the range will be overridden by [member OmniLight.omni_range] or [member SpotLight.spot_range].
+		</member>
+		<member name="blob_shadow_shadow_only" type="bool" setter="set_blob_shadow_shadow_only" getter="is_blob_shadow_shadow_only" default="false">
+			If [code]true[/code], no light (or shadow mapping) will be visible, only blob shadows will be shown (if enabled).
+			This is particularly useful for "fake" blob shadow only lights, such as a drop shadow in a platform game.
+		</member>
 		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only" default="false">
 			If [code]true[/code], the light only appears in the editor and will not be visible at runtime.
 		</member>
@@ -127,6 +160,14 @@
 		</constant>
 		<constant name="PARAM_MAX" value="17" enum="Param">
 			Represents the size of the [enum Param] enum.
+		</constant>
+		<constant name="BLOB_SHADOW_PARAM_RANGE_HARDNESS" value="0" enum="BlobShadowParam">
+		</constant>
+		<constant name="BLOB_SHADOW_PARAM_RANGE_MAX" value="1" enum="BlobShadowParam">
+		</constant>
+		<constant name="BLOB_SHADOW_PARAM_INTENSITY" value="2" enum="BlobShadowParam">
+		</constant>
+		<constant name="BLOB_SHADOW_PARAM_MAX" value="3" enum="BlobShadowParam">
 		</constant>
 		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">
 			Light is ignored when baking.

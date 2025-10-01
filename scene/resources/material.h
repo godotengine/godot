@@ -172,7 +172,7 @@ public:
 		CULL_DISABLED
 	};
 
-	enum Flags {
+	enum Flags : uint32_t {
 		FLAG_UNSHADED,
 		FLAG_USE_VERTEX_LIGHTING,
 		FLAG_DISABLE_DEPTH_TEST,
@@ -193,6 +193,7 @@ public:
 		FLAG_DISABLE_AMBIENT_LIGHT,
 		FLAG_USE_SHADOW_TO_OPACITY,
 		FLAG_ALBEDO_TEXTURE_SDF,
+		FLAG_DONT_RECEIVE_BLOB_SHADOWS,
 		FLAG_MAX
 	};
 
@@ -246,13 +247,14 @@ public:
 
 private:
 	union MaterialKey {
+		static_assert(FLAG_MAX == 21, "Must change bit depth in MaterialKey when changing Flags.");
 		struct {
 			uint64_t feature_mask : 12;
 			uint64_t detail_uv : 1;
 			uint64_t blend_mode : 2;
 			uint64_t depth_draw_mode : 2;
 			uint64_t cull_mode : 2;
-			uint64_t flags : 20;
+			uint64_t flags : 21;
 			uint64_t detail_blend_mode : 2;
 			uint64_t diffuse_mode : 3;
 			uint64_t specular_mode : 3;
@@ -265,7 +267,7 @@ private:
 			uint64_t emission_op : 1;
 			uint64_t texture_metallic : 1;
 			uint64_t texture_roughness : 1;
-			//uint64_t reserved : 6;
+			//uint64_t reserved : 5;
 		};
 
 		uint64_t key;
@@ -296,7 +298,7 @@ private:
 		mk.blend_mode = blend_mode;
 		mk.depth_draw_mode = depth_draw_mode;
 		mk.cull_mode = cull_mode;
-		for (int i = 0; i < FLAG_MAX; i++) {
+		for (uint32_t i = 0; i < FLAG_MAX; i++) {
 			if (flags[i]) {
 				mk.flags |= ((uint64_t)1 << i);
 			}

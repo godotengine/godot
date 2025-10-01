@@ -40,6 +40,7 @@
 template <class T, uint32_t CAPACITY = 8, bool force_trivial = false, uint32_t ALIGN = 1>
 class FixedArray {
 	static_assert(ALIGN > 0, "ALIGN must be at least 1.");
+	static_assert(CAPACITY > 0, "CAPACITY must be at least 1.");
 	const static uint32_t UNIT_SIZE = ((sizeof(T) + ALIGN - 1) / ALIGN * ALIGN);
 	const static bool CONSTRUCT = !std::is_trivially_constructible<T>::value && !force_trivial;
 	const static bool DESTRUCT = !std::is_trivially_destructible<T>::value && !force_trivial;
@@ -107,6 +108,39 @@ public:
 
 		_size = p_size;
 	}
+	bool pop() {
+		if (!size()) {
+			return false;
+		}
+		resize(size() - 1);
+		return true;
+	}
+	void insert(const T &p_val, uint32_t p_index, uint32_t p_max_size = CAPACITY) {
+		// Insert will drop the last item if the array is already full,
+		// as the fixed array is not growable.
+		// We can also optionally set p_max_size to grow to a smaller size than CAPACITY.
+		DEV_ASSERT(p_max_size <= CAPACITY);
+		//DEV_ASSERT(p_index < CAPACITY);
+
+		// We can only insert to size()+1 when the array is not full already.
+		ERR_FAIL_UNSIGNED_INDEX(p_index, MIN(p_max_size, size() + 1));
+
+		int32_t move_end = int32_t(size()) - 1;
+
+		// Two possibles, either we are adding to the list or lopping one off.
+		if (size() < p_max_size) {
+			resize(size() + 1);
+		}
+
+		move_end = MIN(move_end, (int32_t)p_max_size - 2);
+
+		for (int32_t n = move_end; n >= (int32_t)p_index; n--) {
+			get(n + 1) = get(n);
+		}
+
+		// Save the new value.
+		get(p_index) = p_val;
+	}
 	const T &operator[](uint32_t p_index) const {
 		DEV_ASSERT(p_index < size());
 		return get(p_index);
@@ -114,6 +148,23 @@ public:
 	T &operator[](uint32_t p_index) {
 		DEV_ASSERT(p_index < size());
 		return get(p_index);
+	}
+
+	const T &last() const {
+		DEV_ASSERT(size());
+		return (*this)[size() - 1];
+	}
+	T &last() {
+		DEV_ASSERT(size());
+		return (*this)[size() - 1];
+	}
+	const T &first() const {
+		DEV_ASSERT(size());
+		return (*this)[0];
+	}
+	T &first() {
+		DEV_ASSERT(size());
+		return (*this)[0];
 	}
 
 	operator Vector<T>() const {
