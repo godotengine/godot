@@ -2533,7 +2533,7 @@
 			Sets which physics engine to use for 3D physics.
 			[b]DEFAULT[/b] is currently equivalent to [b]GodotPhysics3D[/b], but may change in future releases. Select an explicit implementation if you want to ensure that your project stays on the same engine.
 			[b]GodotPhysics3D[/b] is Godot's internal 3D physics engine.
-			[b]Jolt Physics[/b] is an alternative physics engine that is generally faster and more reliable than [b]GodotPhysics3D[/b]. As it was recently implemented, it is currently considered experimental and its behavior may change in future releases. Jolt Physics is the default for projects created starting in Godot 4.6.
+			[b]Jolt Physics[/b] is an alternative physics engine that is generally faster and more reliable than [b]GodotPhysics3D[/b]. Jolt Physics is the default for projects created starting in Godot 4.6.
 			[b]Dummy[/b] is a 3D physics server that does nothing and returns only dummy values, effectively disabling all 3D physics functionality.
 			Third-party extensions and modules can add other physics engines to select with this setting.
 		</member>
