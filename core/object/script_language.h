@@ -434,7 +434,7 @@ public:
 				for (const Match &match : KV.value) {
 					match_entries.push_back(match.to_string());
 				}
-				matches_string += vformat("\t\t%s: %s,\n", KV.key, String(", ").join(match_entries));
+				matches_string += vformat("\t\t%s: %s,\n", KV.key, String(", ").join(PackedStringArray(match_entries)));
 			}
 			matches_string = matches_string.trim_suffix("\n");
 
