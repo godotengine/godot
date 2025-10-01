@@ -683,7 +683,13 @@ void EditorInterface::edit_node(Node *p_node) {
 }
 
 void EditorInterface::edit_script(const Ref<Script> &p_script, int p_line, int p_col, bool p_grab_focus) {
-	ScriptEditor::get_singleton()->edit(p_script, p_line - 1, p_col - 1, p_grab_focus);
+	if(p_line > 0){
+		p_line -= 1;
+	}
+	if(p_col > 0){
+		p_col -= 1;
+	}
+	ScriptEditor::get_singleton()->edit(p_script, p_line, p_col, p_grab_focus);
 }
 
 void EditorInterface::open_scene_from_path(const String &scene_path, bool p_set_inherited) {
