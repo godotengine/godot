@@ -70,6 +70,7 @@ class JavaClass : public RefCounted {
 	RBMap<StringName, Variant> constant_map;
 
 	struct MethodInfo {
+		bool _public = false;
 		bool _static = false;
 		bool _constructor = false;
 		Vector<uint32_t> param_types;
@@ -276,7 +277,7 @@ class JavaClassWrapper : public Object {
 
 	Ref<JavaObject> exception;
 
-	Ref<JavaClass> _wrap(const String &p_class, bool p_allow_non_public_methods_access);
+	Ref<JavaClass> _wrap(const String &p_class, bool p_allow_non_public_methods_access = false);
 
 	static JavaClassWrapper *singleton;
 
@@ -295,7 +296,7 @@ public:
 	}
 
 #ifdef ANDROID_ENABLED
-	Ref<JavaClass> wrap_jclass(jclass p_class, bool p_allow_private_methods_access = false);
+	Ref<JavaClass> wrap_jclass(jclass p_class, bool p_allow_non_public_methods_access = false);
 #endif
 	JavaClassWrapper();
 };

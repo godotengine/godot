@@ -55,15 +55,17 @@ Callable jcallable_to_callable(JNIEnv *p_env, jobject p_jcallable_obj) {
 	ERR_FAIL_NULL_V(p_env, Callable());
 
 	const Variant *callable_variant = nullptr;
-	jclass callable_class = jni_find_class(p_env, "org/godotengine/godot/variant/Callable");
-	if (callable_class && p_env->IsInstanceOf(p_jcallable_obj, callable_class)) {
-		jmethodID get_native_pointer = p_env->GetMethodID(callable_class, "getNativePointer", "()J");
-		jlong native_callable = p_env->CallLongMethod(p_jcallable_obj, get_native_pointer);
+	if (p_jcallable_obj) {
+		jclass callable_class = jni_find_class(p_env, "org/godotengine/godot/variant/Callable");
+		if (callable_class && p_env->IsInstanceOf(p_jcallable_obj, callable_class)) {
+			jmethodID get_native_pointer = p_env->GetMethodID(callable_class, "getNativePointer", "()J");
+			jlong native_callable = p_env->CallLongMethod(p_jcallable_obj, get_native_pointer);
 
-		callable_variant = reinterpret_cast<const Variant *>(native_callable);
+			callable_variant = reinterpret_cast<const Variant *>(native_callable);
+		}
+
+		p_env->DeleteLocalRef(callable_class);
 	}
-
-	p_env->DeleteLocalRef(callable_class);
 
 	ERR_FAIL_NULL_V(callable_variant, Callable());
 	return *callable_variant;
@@ -73,16 +75,18 @@ String charsequence_to_string(JNIEnv *p_env, jobject p_charsequence) {
 	ERR_FAIL_NULL_V(p_env, String());
 
 	String result;
-	jclass bclass = jni_find_class(p_env, "java/lang/CharSequence");
-	if (bclass && p_env->IsInstanceOf(p_charsequence, bclass)) {
-		jmethodID to_string = p_env->GetMethodID(bclass, "toString", "()Ljava/lang/String;");
-		jstring obj_string = (jstring)p_env->CallObjectMethod(p_charsequence, to_string);
+	if (p_charsequence) {
+		jclass bclass = jni_find_class(p_env, "java/lang/CharSequence");
+		if (bclass && p_env->IsInstanceOf(p_charsequence, bclass)) {
+			jmethodID to_string = p_env->GetMethodID(bclass, "toString", "()Ljava/lang/String;");
+			jstring obj_string = (jstring)p_env->CallObjectMethod(p_charsequence, to_string);
 
-		result = jstring_to_string(obj_string, p_env);
-		p_env->DeleteLocalRef(obj_string);
+			result = jstring_to_string(obj_string, p_env);
+			p_env->DeleteLocalRef(obj_string);
+		}
+
+		p_env->DeleteLocalRef(bclass);
 	}
-
-	p_env->DeleteLocalRef(bclass);
 	return result;
 }
 
