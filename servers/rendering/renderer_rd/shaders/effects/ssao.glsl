@@ -453,7 +453,7 @@ void generate_GTAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 
 	// Calculate AO values for each slice
 	for (uint slice = 0; slice < number_of_slices; ++slice) {
-		// GTAO inner intergral gives visibility, which is one minus obscurance
+		// GTAO inner integral gives visibility, which is one minus obscurance
 		obscurance_sum += 1.0 - GTAO_slice(number_of_taps, normalized_screen_pos, screen_dir, step_radius, offset, pix_center_pos, view_dir, falloff_mul, pixel_normal);
 		weight_sum += 1.0;
 
