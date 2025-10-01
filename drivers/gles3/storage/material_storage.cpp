@@ -3077,7 +3077,7 @@ void SceneShaderData::set_code(const String &p_code) {
 
 	blend_mode = BlendMode(blend_modei);
 	alpha_antialiasing_mode = AlphaAntiAliasing(alpha_antialiasing_modei);
-	depth_draw = DepthDraw(depth_drawi);
+	depth_draw = depth_prepass_skipped? DepthDraw(GLES3::SceneShaderData::DEPTH_TEST_DISABLED) : DepthDraw(depth_drawi);
 	if (depth_test_disabledi) {
 		depth_test = DEPTH_TEST_DISABLED;
 	} else if (depth_test_invertedi) {

@@ -228,7 +228,7 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(Geometry
 		flags |= GeometryInstanceSurface::FLAG_USES_STENCIL;
 	}
 
-	if (has_alpha || has_read_screen_alpha || p_material->shader_data->depth_draw == GLES3::SceneShaderData::DEPTH_DRAW_DISABLED || p_material->shader_data->depth_test != GLES3::SceneShaderData::DEPTH_TEST_ENABLED) {
+	if (has_alpha || has_read_screen_alpha || (p_material->shader_data->depth_draw == GLES3::SceneShaderData::DEPTH_DRAW_DISABLED && !p_material->shader_data->depth_prepass_skipped) || p_material->shader_data->depth_test != GLES3::SceneShaderData::DEPTH_TEST_ENABLED) {
 		//material is only meant for alpha pass
 		flags |= GeometryInstanceSurface::FLAG_PASS_ALPHA;
 		if (p_material->shader_data->uses_depth_prepass_alpha && !(p_material->shader_data->depth_draw == GLES3::SceneShaderData::DEPTH_DRAW_DISABLED || p_material->shader_data->depth_test != GLES3::SceneShaderData::DEPTH_TEST_ENABLED) && !p_material->shader_data->depth_prepass_skipped) {
@@ -1447,7 +1447,7 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 				if (surf->flags & GeometryInstanceSurface::FLAG_USES_DEPTH_TEXTURE) {
 					scene_state.used_depth_texture = true;
 				}
-				if ((surf->flags & GeometryInstanceSurface::FLAG_USES_STENCIL) && !force_alpha && (surf->flags & (GeometryInstanceSurface::FLAG_PASS_DEPTH | GeometryInstanceSurface::FLAG_PASS_OPAQUE))) {
+				if ((surf->flags & GeometryInstanceSurface::FLAG_USES_STENCIL) && !force_alpha && (surf->flags & GeometryInstanceSurface::FLAG_PASS_DEPTH )) {
 					scene_state.used_opaque_stencil = true;
 				}
 
