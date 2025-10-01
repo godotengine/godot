@@ -91,10 +91,6 @@ private:
 	static Error _msg_next_frame(const Array &p_args);
 	static Error _msg_debug_mute_audio(const Array &p_args);
 	static Error _msg_override_cameras(const Array &p_args);
-	static Error _msg_transform_camera_2d(const Array &p_args);
-#ifndef _3D_DISABLED
-	static Error _msg_transform_camera_3d(const Array &p_args);
-#endif
 	static Error _msg_set_object_property(const Array &p_args);
 	static Error _msg_set_object_property_field(const Array &p_args);
 	static Error _msg_reload_cached_files(const Array &p_args);
@@ -118,11 +114,14 @@ private:
 	static Error _msg_runtime_node_select_set_type(const Array &p_args);
 	static Error _msg_runtime_node_select_set_mode(const Array &p_args);
 	static Error _msg_runtime_node_select_set_visible(const Array &p_args);
+	static Error _msg_rq_screenshot(const Array &p_args);
+
 	static Error _msg_runtime_node_select_reset_camera_2d(const Array &p_args);
+	static Error _msg_transform_camera_2d(const Array &p_args);
 #ifndef _3D_DISABLED
 	static Error _msg_runtime_node_select_reset_camera_3d(const Array &p_args);
-#endif
-	static Error _msg_rq_screenshot(const Array &p_args);
+	static Error _msg_transform_camera_3d(const Array &p_args);
+#endif // _3D_DISABLED
 
 public:
 	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
