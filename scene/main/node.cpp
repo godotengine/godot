@@ -2416,13 +2416,13 @@ NodePath Node::get_path() const {
 	const Node *n = this;
 
 	Vector<StringName> path;
+	path.resize(data.depth);
 
+	StringName *ptrw = path.ptrw();
 	while (n) {
-		path.push_back(n->get_name());
+		ptrw[n->data.depth - 1] = n->get_name();
 		n = n->data.parent;
 	}
-
-	path.reverse();
 
 	data.path_cache = memnew(NodePath(path, true));
 
