@@ -201,6 +201,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"ARG_OUT",
 	"ARG_INOUT",
 	"RENDER_MODE",
+	"BLEND_FACTORS",
 	"HINT_DEFAULT_WHITE_TEXTURE",
 	"HINT_DEFAULT_BLACK_TEXTURE",
 	"HINT_DEFAULT_TRANSPARENT_TEXTURE",
@@ -340,6 +341,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_SHADER_TYPE, "shader_type", CF_SHADER_TYPE, {}, {} },
 	{ TK_RENDER_MODE, "render_mode", CF_GLOBAL_SPACE, {}, {} },
 	{ TK_STENCIL_MODE, "stencil_mode", CF_GLOBAL_SPACE, {}, {} },
+	{ TK_BLEND_FACTORS, "blend_factors", CF_GLOBAL_SPACE, {}, {} },
 
 	// uniform qualifiers
 
@@ -9281,6 +9283,51 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				keyword_completion_context = CF_GLOBAL_SPACE;
 #endif // DEBUG_ENABLED
 			} break;
+			case TK_BLEND_FACTORS: {
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = CF_UNSPECIFIED;
+#endif // DEBUG_ENABLED
+				shader->blend_factors.clear();
+				for (int k = 0; k < 4; k++) {
+					StringName mode;
+					_get_completable_identifier(nullptr, COMPLETION_BLEND_FACTORS, mode);
+
+					if (mode == StringName()) {
+						_set_error(RTR("Expected an identifier for blend mode."));
+						return ERR_PARSE_ERROR;
+					}
+
+					const String smode = String(mode);
+					bool found = false;
+					for (int i = 0; i < RD::BLEND_FACTOR_MAX; i++) {
+						const String name = String(RD::BLEND_FACTOR_NAMES[i]);
+						if (smode == name) {
+							found = true;
+							break;
+						}
+					}
+
+					if (!found) {
+						_set_error(vformat(RTR("Invalid blend mode: '%s'."), smode));
+						return ERR_PARSE_ERROR;
+					}
+
+					shader->blend_factors.push_back(mode);
+
+					tk = _get_token();
+					if ((k < 3) && (tk.type == TK_COMMA)) {
+						//all good, do nothing
+					} else if ((k == 3) && (tk.type == TK_SEMICOLON)) {
+						break; //done
+					} else {
+						_set_error(vformat(RTR("Unexpected token: '%s'; blend mode list must consist of exactly 4 mode names, separated by commas)."), get_token_text(tk)));
+						return ERR_PARSE_ERROR;
+					}
+				}
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = CF_GLOBAL_SPACE;
+#endif // DEBUG_ENABLED
+			} break;
 			case TK_STRUCT: {
 				ShaderNode::Struct st;
 				DataType type;
@@ -11519,6 +11566,14 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						}
 					}
 				}
+			}
+
+			return OK;
+		} break;
+		case COMPLETION_BLEND_FACTORS: {
+			for (int i = 0; i < RD::BLEND_FACTOR_MAX; i++) {
+				ScriptLanguage::CodeCompletionOption option(String(RD::BLEND_FACTOR_NAMES[i]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+				r_options->push_back(option);
 			}
 
 			return OK;
