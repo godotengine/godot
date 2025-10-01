@@ -3456,20 +3456,6 @@ void Node::queue_free() {
 	}
 }
 
-void Node::set_import_path(const NodePath &p_import_path) {
-#ifdef TOOLS_ENABLED
-	data.import_path = p_import_path;
-#endif
-}
-
-NodePath Node::get_import_path() const {
-#ifdef TOOLS_ENABLED
-	return data.import_path;
-#else
-	return NodePath();
-#endif
-}
-
 #ifdef TOOLS_ENABLED
 static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
 	if (p_node != p_base && !p_node->get_owner()) {
@@ -3873,9 +3859,6 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
 	ClassDB::bind_method(D_METHOD("get_editor_description"), &Node::get_editor_description);
 
-	ClassDB::bind_method(D_METHOD("_set_import_path", "import_path"), &Node::set_import_path);
-	ClassDB::bind_method(D_METHOD("_get_import_path"), &Node::get_import_path);
-
 	ClassDB::bind_method(D_METHOD("set_unique_name_in_owner", "enable"), &Node::set_unique_name_in_owner);
 	ClassDB::bind_method(D_METHOD("is_unique_name_in_owner"), &Node::is_unique_name_in_owner);
 
@@ -3885,8 +3868,6 @@ void Node::_bind_methods() {
 #ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_set_property_pinned", "property", "pinned"), &Node::set_property_pinned);
 #endif
-
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "_import_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_import_path", "_get_import_path");
 
 	{
 		MethodInfo mi;
