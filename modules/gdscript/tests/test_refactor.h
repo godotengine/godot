@@ -125,10 +125,11 @@ static ProcessCodeData process_code(Ref<TextServer> text_server, const String &p
 	text_server->free_rid(code_shaped_text);
 	text_server->free_rid(font);
 
-	return {
-		.code = code_with_sentinel,
-		.symbol = found_word
-	};
+	ProcessCodeData return_value;
+	return_value.code = code_with_sentinel;
+	return_value.symbol = found_word;
+
+	return return_value;
 }
 
 static void test_directory(const String &p_dir) {
