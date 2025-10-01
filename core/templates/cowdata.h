@@ -90,13 +90,6 @@ private:
 		return p_previous_capacity;
 	}
 
-	static constexpr _FORCE_INLINE_ USize smaller_capacity(USize p_previous_capacity, USize p_size) {
-		if (p_size < p_previous_capacity >> 2) {
-			return grow_capacity(p_size);
-		}
-		return p_previous_capacity;
-	}
-
 	static _FORCE_INLINE_ T *_get_data_ptr(uint8_t *p_ptr) {
 		return (T *)(p_ptr + DATA_OFFSET);
 	}
@@ -116,9 +109,6 @@ private:
 		return (USize *)((uint8_t *)_ptr - DATA_OFFSET + CAPACITY_OFFSET);
 	}
 
-	// Decrements the reference count. Deallocates the backing buffer if needed.
-	// After this function, _ptr is guaranteed to be NULL.
-	void _unref();
 	void _ref(const CowData *p_from);
 	void _ref(const CowData &p_from);
 
@@ -152,7 +142,7 @@ public:
 			return;
 		}
 
-		_unref();
+		reset();
 		_ptr = p_from._ptr;
 		p_from._ptr = nullptr;
 	}
@@ -171,7 +161,10 @@ public:
 	_FORCE_INLINE_ USize capacity() const { return !_ptr ? 0 : *_get_capacity(); }
 	_FORCE_INLINE_ USize refcount() const { return !_ptr ? 0 : *_get_refcount(); }
 
-	_FORCE_INLINE_ void clear() { _unref(); }
+	// Removes all items from the array, but keeps the current capacity.
+	_FORCE_INLINE_ void clear();
+	// Drops the reference to the array, setting _ptr to NULL.
+	_FORCE_INLINE_ void reset();
 	_FORCE_INLINE_ bool is_empty() const { return size() == 0; }
 
 	_FORCE_INLINE_ void set(Size p_index, const T &p_elem) {
@@ -213,7 +206,7 @@ public:
 	_FORCE_INLINE_ Span<T> span() const { return operator Span<T>(); }
 
 	_FORCE_INLINE_ CowData() {}
-	_FORCE_INLINE_ ~CowData() { _unref(); }
+	_FORCE_INLINE_ ~CowData() { reset(); }
 	_FORCE_INLINE_ CowData(std::initializer_list<T> p_init);
 	_FORCE_INLINE_ CowData(const CowData<T> &p_from) { _ref(p_from); }
 	_FORCE_INLINE_ CowData(CowData<T> &&p_from) {
@@ -223,7 +216,26 @@ public:
 };
 
 template <typename T>
-void CowData<T>::_unref() {
+void CowData<T>::clear() {
+	if (!_ptr) {
+		return;
+	}
+
+	if (_get_refcount()->get() == 1) {
+		// We're the only owner; clear in-place.
+		destruct_arr_placement(_ptr, *_get_size());
+		*_get_size() = 0;
+	} else {
+		// Clear by forking.
+		USize capacity_ = capacity();
+		reset();
+		// If re-allocation fails, we could technically carry on, but it's pretty likely we'll crash soon anyway.
+		CRASH_COND(_alloc_exact(capacity_));
+	}
+}
+
+template <typename T>
+void CowData<T>::reset() {
 	if (!_ptr) {
 		return;
 	}
@@ -266,12 +278,6 @@ void CowData<T>::remove_at(Size p_index) {
 	const Size prev_size = size();
 	ERR_FAIL_INDEX(p_index, prev_size);
 
-	if (prev_size == 1) {
-		// Removing the only element.
-		_unref();
-		return;
-	}
-
 	const USize new_size = prev_size - 1;
 
 	if (_get_refcount()->get() == 1) {
@@ -280,17 +286,10 @@ void CowData<T>::remove_at(Size p_index) {
 		// Destruct the element, then relocate the rest one down.
 		_ptr[p_index].~T();
 		memmove((void *)(_ptr + p_index), (void *)(_ptr + p_index + 1), (new_size - p_index) * sizeof(T));
-
-		// Shrink to fit if necessary.
-		const USize new_capacity = smaller_capacity(capacity(), new_size);
-		if (new_capacity < capacity()) {
-			Error err = _realloc_exact(new_capacity);
-			CRASH_COND(err);
-		}
 		*_get_size() = new_size;
 	} else {
 		// Remove by forking.
-		Error err = _copy_to_new_buffer_exact(smaller_capacity(capacity(), new_size), p_index, 0, new_size - p_index);
+		Error err = _copy_to_new_buffer_exact(capacity(), p_index, 0, new_size - p_index);
 		CRASH_COND(err);
 	}
 }
@@ -436,26 +435,14 @@ Error CowData<T>::resize(Size p_size) {
 	} else {
 		// Caller wants to shrink.
 
-		if (p_size == 0) {
-			_unref();
-			return OK;
-		} else if (_get_refcount()->get() == 1) {
+		if (_get_refcount()->get() == 1) {
 			// Shrink in-place.
 			destruct_arr_placement(_ptr + p_size, prev_size - p_size);
-
-			// Shrink buffer if necessary.
-			const USize new_capacity = smaller_capacity(capacity(), p_size);
-			if (new_capacity < capacity()) {
-				Error err = _realloc_exact(new_capacity);
-				CRASH_COND(err);
-			}
-
 			*_get_size() = p_size;
 			return OK;
 		} else {
 			// Shrink by forking.
-			const USize new_capacity = smaller_capacity(capacity(), p_size);
-			return _copy_to_new_buffer_exact(new_capacity, p_size, 0, 0);
+			return _copy_to_new_buffer_exact(capacity(), p_size, 0, 0);
 		}
 	}
 }
@@ -550,7 +537,7 @@ void CowData<T>::_ref(const CowData &p_from) {
 		return; // self assign, do nothing.
 	}
 
-	_unref(); // Resets _ptr to nullptr.
+	reset(); // Resets _ptr to nullptr.
 
 	if (!p_from._ptr) {
 		return; //nothing to do
