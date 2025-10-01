@@ -72,6 +72,10 @@ void CollisionObject::_notification(int p_what) {
 			//get space
 		} break;
 
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			_fti_physics_reset_requested = true;
+		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (only_update_transform_changes) {
 				return;
@@ -83,7 +87,7 @@ void CollisionObject::_notification(int p_what) {
 				PhysicsServer::get_singleton()->body_set_state(rid, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
 			}
 
-			_on_transform_changed();
+			_on_transform_changed(false);
 
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -283,7 +287,7 @@ void CollisionObject::_clear_debug_shapes() {
 	debug_shapes_count = 0;
 }
 
-void CollisionObject::_on_transform_changed() {
+void CollisionObject::_on_transform_changed(bool p_in_physics_callback) {
 	if (debug_shapes_count > 0 && !debug_shape_old_transform.is_equal_approx(get_global_transform())) {
 		debug_shape_old_transform = get_global_transform();
 		for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
@@ -293,6 +297,11 @@ void CollisionObject::_on_transform_changed() {
 				VS::get_singleton()->instance_set_transform(shapes[i].debug_shape, debug_shape_old_transform * shapedata.xform);
 			}
 		}
+	}
+
+	if (p_in_physics_callback && _fti_physics_reset_requested) {
+		reset_physics_interpolation();
+		_fti_physics_reset_requested = false;
 	}
 }
 
