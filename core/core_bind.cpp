@@ -701,7 +701,7 @@ String OS::get_unique_id() const {
 }
 
 void OS::add_logger(const Ref<Logger> &p_logger) {
-	ERR_FAIL_COND(p_logger.is_null());
+	ERR_FAIL_NULL(p_logger);
 
 	if (!logger_bind) {
 		logger_bind = memnew(LoggerBind);
@@ -713,7 +713,7 @@ void OS::add_logger(const Ref<Logger> &p_logger) {
 }
 
 void OS::remove_logger(const Ref<Logger> &p_logger) {
-	ERR_FAIL_COND(p_logger.is_null());
+	ERR_FAIL_NULL(p_logger);
 	ERR_FAIL_COND_MSG(!logger_bind || logger_bind->loggers.find(p_logger) == -1, "Could not remove logger, as it hasn't been added.");
 	logger_bind->loggers.erase(p_logger);
 }
@@ -2152,7 +2152,7 @@ bool EngineDebugger::is_active() {
 }
 
 void EngineDebugger::register_profiler(const StringName &p_name, Ref<EngineProfiler> p_profiler) {
-	ERR_FAIL_COND(p_profiler.is_null());
+	ERR_FAIL_NULL(p_profiler);
 	ERR_FAIL_COND_MSG(p_profiler->is_bound(), "Profiler already registered.");
 	ERR_FAIL_COND_MSG(profilers.has(p_name) || has_profiler(p_name), vformat("Profiler name already in use: '%s'.", p_name));
 	Error err = p_profiler->bind(p_name);
