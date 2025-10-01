@@ -45,7 +45,7 @@ public:
 
 private:
 	float expand_margin[4] = {};
-	float texture_margin[4] = {};
+	int texture_margin[4] = {};
 	Rect2 region_rect;
 	Ref<Texture2D> texture;
 	bool draw_center = true;
