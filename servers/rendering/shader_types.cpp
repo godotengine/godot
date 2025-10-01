@@ -250,6 +250,8 @@ ShaderTypes::ShaderTypes() {
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("debug_shadow_splits") });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("fog_disabled") });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("specular_occlusion_disabled") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("skip_opaque_pass") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("skip_depth_prepass") });
 		shader_modes[RS::SHADER_SPATIAL].stencil_modes.push_back({ PNAME("read") });
 		shader_modes[RS::SHADER_SPATIAL].stencil_modes.push_back({ PNAME("write") });
 		shader_modes[RS::SHADER_SPATIAL].stencil_modes.push_back({ PNAME("write_depth_fail") });

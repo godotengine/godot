@@ -2926,6 +2926,8 @@ void SceneShaderData::set_code(const String &p_code) {
 	uses_alpha_clip = false;
 	uses_blend_alpha = false;
 	uses_depth_prepass_alpha = false;
+	opaque_skipped = false;
+	depth_prepass_skipped = false;
 	uses_discard = false;
 	uses_roughness = false;
 	uses_normal = false;
@@ -3008,6 +3010,9 @@ void SceneShaderData::set_code(const String &p_code) {
 	actions.render_mode_flags["particle_trails"] = &uses_particle_trails;
 	actions.render_mode_flags["world_vertex_coords"] = &uses_world_coordinates;
 
+	actions.render_mode_flags["skip_opaque_pass"] = &opaque_skipped;
+	actions.render_mode_flags["skip_depth_prepass"] = &depth_prepass_skipped;
+
 	actions.usage_flag_pointers["ALPHA"] = &uses_alpha;
 	actions.usage_flag_pointers["ALPHA_SCISSOR_THRESHOLD"] = &uses_alpha_clip;
 	// Use alpha clip pipeline for alpha hash/dither.
@@ -3072,7 +3077,7 @@ void SceneShaderData::set_code(const String &p_code) {
 
 	blend_mode = BlendMode(blend_modei);
 	alpha_antialiasing_mode = AlphaAntiAliasing(alpha_antialiasing_modei);
-	depth_draw = DepthDraw(depth_drawi);
+	depth_draw = depth_prepass_skipped? DepthDraw(GLES3::SceneShaderData::DEPTH_TEST_DISABLED) : DepthDraw(depth_drawi);
 	if (depth_test_disabledi) {
 		depth_test = DEPTH_TEST_DISABLED;
 	} else if (depth_test_invertedi) {
