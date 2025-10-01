@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "line_edit.h"
+#include "line_edit.compat.inc"
 
 #include "core/input/input_map.h"
 #include "core/os/keyboard.h"
@@ -45,17 +46,17 @@
 #include "editor/settings/editor_settings.h"
 #endif
 
-void LineEdit::edit() {
-	_edit(true);
+void LineEdit::edit(bool p_hide_focus) {
+	_edit(true, p_hide_focus);
 }
 
-void LineEdit::_edit(bool p_show_virtual_keyboard) {
+void LineEdit::_edit(bool p_show_virtual_keyboard, bool p_hide_focus) {
 	if (!is_inside_tree()) {
 		return;
 	}
 
 	if (!has_focus()) {
-		grab_focus();
+		grab_focus(p_hide_focus);
 		return;
 	}
 
@@ -415,7 +416,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (editable && !editing) {
-				edit();
+				edit(true);
 				emit_signal(SNAME("editing_toggled"), true);
 			}
 
@@ -432,7 +433,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			set_caret_at_pixel_pos(b->get_position().x);
 
 			if (!editing) {
-				edit();
+				edit(true);
 				emit_signal(SNAME("editing_toggled"), true);
 			}
 
@@ -535,7 +536,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (editable && !editing) {
-				edit();
+				edit(true);
 				emit_signal(SNAME("editing_toggled"), true);
 				return;
 			}
@@ -1099,10 +1100,10 @@ void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 			selection_delete();
 			set_caret_column(caret_column_tmp);
 			insert_text_at_caret(p_data);
-			grab_focus();
+			grab_focus(true);
 		} else {
 			insert_text_at_caret(p_data);
-			grab_focus();
+			grab_focus(true);
 		}
 		select(caret_column_tmp, caret_column);
 		if (!text_changed_dirty) {
@@ -3196,7 +3197,7 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &LineEdit::set_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &LineEdit::get_horizontal_alignment);
 
-	ClassDB::bind_method(D_METHOD("edit"), &LineEdit::edit);
+	ClassDB::bind_method(D_METHOD("edit", "hide_focus"), &LineEdit::edit, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("unedit"), &LineEdit::unedit);
 	ClassDB::bind_method(D_METHOD("is_editing"), &LineEdit::is_editing);
 	ClassDB::bind_method(D_METHOD("set_keep_editing_on_text_submit", "enable"), &LineEdit::set_keep_editing_on_text_submit);
