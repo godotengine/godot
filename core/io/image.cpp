@@ -3124,20 +3124,17 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const P
 
 	int pixel_size = get_format_pixel_size(format);
 
-	for (int i = 0; i < dest_rect.size.y; i++) {
-		for (int j = 0; j < dest_rect.size.x; j++) {
-			int src_x = src_rect.position.x + j;
-			int src_y = src_rect.position.y + i;
-
-			int dst_x = dest_rect.position.x + j;
-			int dst_y = dest_rect.position.y + i;
-
-			const uint8_t *src = &src_data_ptr[(src_y * p_src->width + src_x) * pixel_size];
-			uint8_t *dst = &dst_data_ptr[(dst_y * width + dst_x) * pixel_size];
-
-			for (int k = 0; k < pixel_size; k++) {
-				dst[k] = src[k];
-			}
+	// If the rect width is equivalent for both src and dst and the x offset is 0, we can blit in a single memcpy.
+	// Else, we do a per-line copy.
+	if ((dest_rect.size.x == p_src->width) && (p_src->width == width) && (dest_rect.position.x == 0) && (src_rect.position.x == 0)) {
+		const uint8_t *src = &src_data_ptr[(src_rect.position.y * p_src->width) * pixel_size];
+		uint8_t *dst = &dst_data_ptr[(dest_rect.position.y * width) * pixel_size];
+		memcpy(dst, src, width * dest_rect.size.y * pixel_size);
+	} else {
+		for (int i = 0; i < dest_rect.size.y; i++) {
+			const uint8_t *src = &src_data_ptr[((src_rect.position.y + i) * p_src->width + src_rect.position.x) * pixel_size];
+			uint8_t *dst = &dst_data_ptr[((dest_rect.position.y + i) * width + dest_rect.position.x) * pixel_size];
+			memcpy(dst, src, pixel_size * dest_rect.size.x);
 		}
 	}
 }

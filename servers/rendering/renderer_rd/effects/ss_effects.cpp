@@ -366,7 +366,7 @@ SSEffects::~SSEffects() {
 		ssr_scale.shader.version_free(ssr_scale.shader_version);
 
 		if (ssr.ubo.is_valid()) {
-			RD::get_singleton()->free(ssr.ubo);
+			RD::get_singleton()->free_rid(ssr.ubo);
 		}
 	}
 
@@ -374,8 +374,8 @@ SSEffects::~SSEffects() {
 		// Cleanup SS downsampler
 		ss_effects.downsample_shader.version_free(ss_effects.downsample_shader_version);
 
-		RD::get_singleton()->free(ss_effects.mirror_sampler);
-		RD::get_singleton()->free(ss_effects.gather_constants_buffer);
+		RD::get_singleton()->free_rid(ss_effects.mirror_sampler);
+		RD::get_singleton()->free_rid(ss_effects.gather_constants_buffer);
 	}
 
 	{
@@ -385,8 +385,8 @@ SSEffects::~SSEffects() {
 		ssil.interleave_shader.version_free(ssil.interleave_shader_version);
 		ssil.importance_map_shader.version_free(ssil.importance_map_shader_version);
 
-		RD::get_singleton()->free(ssil.importance_map_load_counter);
-		RD::get_singleton()->free(ssil.projection_uniform_buffer);
+		RD::get_singleton()->free_rid(ssil.importance_map_load_counter);
+		RD::get_singleton()->free_rid(ssil.projection_uniform_buffer);
 	}
 
 	{
@@ -396,7 +396,7 @@ SSEffects::~SSEffects() {
 		ssao.interleave_shader.version_free(ssao.interleave_shader_version);
 		ssao.importance_map_shader.version_free(ssao.importance_map_shader_version);
 
-		RD::get_singleton()->free(ssao.importance_map_load_counter);
+		RD::get_singleton()->free_rid(ssao.importance_map_load_counter);
 	}
 
 	{
@@ -641,7 +641,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	RD::get_singleton()->draw_command_begin_label("Process Screen Space Indirect Lighting");
+	RD::get_singleton()->draw_command_begin_label("Process Screen-Space Indirect Lighting");
 
 	// Obtain our (cached) buffer slices for the view we are rendering.
 	RID last_frame = p_render_buffers->get_texture_slice(RB_SCOPE_SSIL, RB_LAST_FRAME, p_view, 0, 1, 6);
@@ -1069,7 +1069,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 	RID shader = ssao.gather_shader.version_get_shader(ssao.gather_shader_version, SSAO_GATHER);
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
-	RD::get_singleton()->draw_command_begin_label("Process Screen Space Ambient Occlusion");
+	RD::get_singleton()->draw_command_begin_label("Process Screen-Space Ambient Occlusion");
 	/* SECOND PASS */
 	// Sample SSAO
 	{
@@ -1233,7 +1233,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 	//	// Blur
 	//
 	{
-		RD::get_singleton()->draw_command_begin_label("Edge Aware Blur");
+		RD::get_singleton()->draw_command_begin_label("Edge-Aware Blur");
 		ssao.blur_push_constant.edge_sharpness = 1.0 - p_settings.sharpness;
 		ssao.blur_push_constant.half_screen_pixel_size[0] = 1.0 / p_ssao_buffers.buffer_width;
 		ssao.blur_push_constant.half_screen_pixel_size[1] = 1.0 / p_ssao_buffers.buffer_height;
@@ -1464,7 +1464,7 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 		}
 
 		{
-			RD::get_singleton()->draw_command_begin_label("SSR main");
+			RD::get_singleton()->draw_command_begin_label("SSR Main");
 
 			ScreenSpaceReflectionPushConstant push_constant;
 			push_constant.view_index = v;
@@ -1520,7 +1520,7 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 		}
 
 		if (ssr_roughness_quality != RS::ENV_SSR_ROUGHNESS_QUALITY_DISABLED) {
-			RD::get_singleton()->draw_command_begin_label("SSR filter");
+			RD::get_singleton()->draw_command_begin_label("SSR Roughness Filter");
 			//blur
 
 			RD::get_singleton()->compute_list_add_barrier(compute_list);

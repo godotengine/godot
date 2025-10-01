@@ -318,18 +318,12 @@ public:
 		insert(i, p_val);
 	}
 
-	operator Vector<T>() const {
+	explicit operator Vector<T>() const {
 		Vector<T> ret;
 		ret.resize(count);
 		T *w = ret.ptrw();
 		if (w) {
-			if constexpr (std::is_trivially_copyable_v<T>) {
-				memcpy(w, data, sizeof(T) * count);
-			} else {
-				for (U i = 0; i < count; i++) {
-					w[i] = data[i];
-				}
-			}
+			copy_arr_placement(w, data, count);
 		}
 		return ret;
 	}

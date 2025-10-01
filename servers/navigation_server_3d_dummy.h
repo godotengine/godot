@@ -199,7 +199,7 @@ public:
 
 	Vector<Vector3> simplify_path(const Vector<Vector3> &p_path, real_t p_epsilon) override { return Vector<Vector3>(); }
 
-	void free(RID p_object) override {}
+	void free_rid(RID p_object) override {}
 	void set_active(bool p_active) override {}
 	void process(double p_delta_time) override {}
 	void physics_process(double p_delta_time) override {}

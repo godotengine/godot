@@ -606,5 +606,31 @@ namespace Godot.NativeInterop
         // Object
 
         public static partial void godotsharp_object_to_string(IntPtr ptr, out godot_string r_str);
+
+        // Vector
+
+        public static partial long godotsharp_string_size(in godot_string p_self);
+
+        public static partial long godotsharp_packed_byte_array_size(in godot_packed_byte_array p_self);
+
+        public static partial long godotsharp_packed_int32_array_size(in godot_packed_int32_array p_self);
+
+        public static partial long godotsharp_packed_int64_array_size(in godot_packed_int64_array p_self);
+
+        public static partial long godotsharp_packed_float32_array_size(in godot_packed_float32_array p_self);
+
+        public static partial long godotsharp_packed_float64_array_size(in godot_packed_float64_array p_self);
+
+        public static partial long godotsharp_packed_string_array_size(in godot_packed_string_array p_self);
+
+        public static partial long godotsharp_packed_vector2_array_size(in godot_packed_vector2_array p_self);
+
+        public static partial long godotsharp_packed_vector3_array_size(in godot_packed_vector3_array p_self);
+
+        public static partial long godotsharp_packed_vector4_array_size(in godot_packed_vector4_array p_self);
+
+        public static partial long godotsharp_packed_color_array_size(in godot_packed_color_array p_self);
+
+        public static partial long godotsharp_array_size(in godot_array p_self);
     }
 }

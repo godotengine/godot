@@ -2080,20 +2080,22 @@ void GDScriptInstance::notification(int p_notification, bool p_reversed) {
 	//notification is not virtual, it gets called at ALL levels just like in C.
 	Variant value = p_notification;
 	const Variant *args[1] = { &value };
+	const StringName &notification_str = GDScriptLanguage::get_singleton()->strings._notification;
 
-	List<GDScript *> pl;
-	GDScript *sptr = script.ptr();
-	while (sptr) {
-		if (p_reversed) {
-			pl.push_back(sptr);
-		} else {
-			pl.push_front(sptr);
-		}
-		sptr = sptr->_base;
+	LocalVector<GDScript *> script_stack;
+	uint32_t script_count = 0;
+	for (GDScript *sptr = script.ptr(); sptr; sptr = sptr->_base, ++script_count) {
+		script_stack.push_back(sptr);
 	}
-	for (GDScript *sc : pl) {
+
+	const int start = p_reversed ? 0 : script_count - 1;
+	const int end = p_reversed ? script_count : -1;
+	const int step = p_reversed ? 1 : -1;
+
+	for (int idx = start; idx != end; idx += step) {
+		GDScript *sc = script_stack[idx];
 		if (likely(sc->valid)) {
-			HashMap<StringName, GDScriptFunction *>::Iterator E = sc->member_functions.find(GDScriptLanguage::get_singleton()->strings._notification);
+			HashMap<StringName, GDScriptFunction *>::Iterator E = sc->member_functions.find(notification_str);
 			if (E) {
 				Callable::CallError err;
 				E->value->call(this, args, 1, err);
@@ -2268,14 +2270,14 @@ void GDScriptLanguage::init() {
 
 	//populate native classes
 
-	List<StringName> class_list;
-	ClassDB::get_class_list(&class_list);
-	for (const StringName &n : class_list) {
-		if (globals.has(n)) {
+	LocalVector<StringName> class_list;
+	ClassDB::get_class_list(class_list);
+	for (const StringName &class_name : class_list) {
+		if (globals.has(class_name)) {
 			continue;
 		}
-		Ref<GDScriptNativeClass> nc = memnew(GDScriptNativeClass(n));
-		_add_global(n, nc);
+		Ref<GDScriptNativeClass> nc = memnew(GDScriptNativeClass(class_name));
+		_add_global(class_name, nc);
 	}
 
 	//populate singletons

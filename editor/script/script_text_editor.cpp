@@ -184,6 +184,11 @@ void ScriptTextEditor::enable_editor(Control *p_shortcut_context) {
 
 	_validate_script();
 
+	if (pending_state != Variant()) {
+		code_editor->set_edit_state(pending_state);
+		pending_state = Variant();
+	}
+
 	if (p_shortcut_context) {
 		for (int i = 0; i < edit_hb->get_child_count(); ++i) {
 			Control *c = cast_to<Control>(edit_hb->get_child(i));
@@ -704,11 +709,19 @@ bool ScriptTextEditor::is_unsaved() {
 }
 
 Variant ScriptTextEditor::get_edit_state() {
+	if (pending_state != Variant()) {
+		return pending_state;
+	}
 	return code_editor->get_edit_state();
 }
 
 void ScriptTextEditor::set_edit_state(const Variant &p_state) {
-	code_editor->set_edit_state(p_state);
+	if (editor_enabled) {
+		code_editor->set_edit_state(p_state);
+	} else {
+		// The editor is not fully initialized, so the state can't be loaded properly.
+		pending_state = p_state;
+	}
 
 	Dictionary state = p_state;
 	if (state.has("syntax_highlighter")) {

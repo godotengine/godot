@@ -1114,12 +1114,12 @@ TextServer::StructuredTextParser Label::get_structured_text_bidi_override() cons
 	return st_parser;
 }
 
-void Label::set_structured_text_bidi_override_options(Array p_args) {
+void Label::set_structured_text_bidi_override_options(const Array &p_args) {
 	if (st_args == p_args) {
 		return;
 	}
 
-	st_args = p_args;
+	st_args = Array(p_args);
 	for (Paragraph &para : paragraphs) {
 		para.dirty = true;
 	}
@@ -1127,7 +1127,7 @@ void Label::set_structured_text_bidi_override_options(Array p_args) {
 }
 
 Array Label::get_structured_text_bidi_override_options() const {
-	return st_args;
+	return Array(st_args);
 }
 
 Control::TextDirection Label::get_text_direction() const {

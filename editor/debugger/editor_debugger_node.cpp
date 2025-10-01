@@ -243,8 +243,7 @@ ScriptEditorDebugger *EditorDebuggerNode::get_default_debugger() const {
 }
 
 String EditorDebuggerNode::get_server_uri() const {
-	ERR_FAIL_COND_V(server.is_null(), "");
-	return server->get_uri();
+	return server.is_valid() ? server->get_uri() : "";
 }
 
 void EditorDebuggerNode::set_keep_open(bool p_keep_open) {

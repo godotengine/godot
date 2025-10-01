@@ -63,6 +63,6 @@ public:
 		r_features->push_back("ios");
 	}
 
-	EditorExportPlatformIOS();
+	virtual void initialize() override;
 	~EditorExportPlatformIOS();
 };

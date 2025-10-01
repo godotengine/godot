@@ -63,6 +63,7 @@
 #include "core/io/tcp_server.h"
 #include "core/io/translation_loader_po.h"
 #include "core/io/udp_server.h"
+#include "core/io/uds_server.h"
 #include "core/io/xml_parser.h"
 #include "core/math/a_star.h"
 #include "core/math/a_star_grid_2d.h"
@@ -198,11 +199,17 @@ void register_core_types() {
 	GDREGISTER_ABSTRACT_CLASS(IP);
 
 	GDREGISTER_ABSTRACT_CLASS(StreamPeer);
+	GDREGISTER_ABSTRACT_CLASS(StreamPeerSocket);
+	GDREGISTER_ABSTRACT_CLASS(SocketServer);
 	GDREGISTER_CLASS(StreamPeerExtension);
 	GDREGISTER_CLASS(StreamPeerBuffer);
 	GDREGISTER_CLASS(StreamPeerGZIP);
 	GDREGISTER_CLASS(StreamPeerTCP);
 	GDREGISTER_CLASS(TCPServer);
+
+	// IPC using UNIX domain sockets.
+	GDREGISTER_CLASS(StreamPeerUDS);
+	GDREGISTER_CLASS(UDSServer);
 
 	GDREGISTER_ABSTRACT_CLASS(PacketPeer);
 	GDREGISTER_CLASS(PacketPeerExtension);
@@ -322,6 +329,7 @@ void register_core_types() {
 void register_core_settings() {
 	// Since in register core types, globals may not be present.
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/tcp/connect_timeout_seconds", PROPERTY_HINT_RANGE, "1,1800,1"), (30));
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/unix/connect_timeout_seconds", PROPERTY_HINT_RANGE, "1,1800,1"), (30));
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "network/limits/packet_peer_stream/max_buffer_po2", PROPERTY_HINT_RANGE, "8,64,1,or_greater"), (16));
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, "network/tls/certificate_bundle_override", PROPERTY_HINT_FILE, "*.crt"), "");
 

@@ -57,5 +57,5 @@ public:
 	void poll() override;
 	bool can_block() const override;
 
-	RemoteDebuggerPeerWebSocket(Ref<WebSocketPeer> p_peer = Ref<WebSocketPeer>());
+	RemoteDebuggerPeerWebSocket(const Ref<WebSocketPeer> &p_peer = Ref<WebSocketPeer>());
 };

@@ -44,7 +44,9 @@
 #include "scene/resources/packed_scene.h"
 #include "viewport.h"
 
-int Node::orphan_node_count = 0;
+#ifdef DEBUG_ENABLED
+SafeNumeric<uint64_t> Node::total_node_count{ 0 };
+#endif
 
 thread_local Node *Node::current_process_thread_group = nullptr;
 
@@ -165,7 +167,6 @@ void Node::_notification(int p_notification) {
 			}
 
 			data.tree->nodes_in_tree_count++;
-			orphan_node_count--;
 
 		} break;
 
@@ -193,7 +194,6 @@ void Node::_notification(int p_notification) {
 			}
 
 			data.tree->nodes_in_tree_count--;
-			orphan_node_count++;
 
 			if (data.input) {
 				remove_from_group("_vp_input" + itos(get_viewport()->get_instance_id()));
@@ -1781,6 +1781,26 @@ void Node::_update_children_cache_impl() const {
 	}
 	data.children_cache_dirty = false;
 }
+
+template <bool p_include_internal>
+Iterable<Node::ChildrenIterator> Node::iterate_children() const {
+	// The thread guard is omitted for performance reasons.
+	// ERR_THREAD_GUARD_V(Iterable<ChildrenIterator>(nullptr, nullptr));
+
+	_update_children_cache();
+	const uint32_t size = data.children_cache.size();
+	// Might be null, but then size and internal counts are also 0.
+	Node **ptr = data.children_cache.ptr();
+
+	if constexpr (p_include_internal) {
+		return Iterable(ChildrenIterator(ptr), ChildrenIterator(ptr + size));
+	} else {
+		return Iterable(ChildrenIterator(ptr + data.internal_children_front_count_cache), ChildrenIterator(ptr + size - data.internal_children_back_count_cache));
+	}
+}
+
+template Iterable<Node::ChildrenIterator> Node::iterate_children<true>() const;
+template Iterable<Node::ChildrenIterator> Node::iterate_children<false>() const;
 
 int Node::get_child_count(bool p_include_internal) const {
 	ERR_THREAD_GUARD_V(0);
@@ -3436,20 +3456,6 @@ void Node::queue_free() {
 	}
 }
 
-void Node::set_import_path(const NodePath &p_import_path) {
-#ifdef TOOLS_ENABLED
-	data.import_path = p_import_path;
-#endif
-}
-
-NodePath Node::get_import_path() const {
-#ifdef TOOLS_ENABLED
-	return data.import_path;
-#else
-	return NodePath();
-#endif
-}
-
 #ifdef TOOLS_ENABLED
 static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
 	if (p_node != p_base && !p_node->get_owner()) {
@@ -3853,9 +3859,6 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
 	ClassDB::bind_method(D_METHOD("get_editor_description"), &Node::get_editor_description);
 
-	ClassDB::bind_method(D_METHOD("_set_import_path", "import_path"), &Node::set_import_path);
-	ClassDB::bind_method(D_METHOD("_get_import_path"), &Node::get_import_path);
-
 	ClassDB::bind_method(D_METHOD("set_unique_name_in_owner", "enable"), &Node::set_unique_name_in_owner);
 	ClassDB::bind_method(D_METHOD("is_unique_name_in_owner"), &Node::is_unique_name_in_owner);
 
@@ -3865,8 +3868,6 @@ void Node::_bind_methods() {
 #ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_set_property_pinned", "property", "pinned"), &Node::set_property_pinned);
 #endif
-
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "_import_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_import_path", "_get_import_path");
 
 	{
 		MethodInfo mi;
@@ -4058,9 +4059,9 @@ String Node::_get_name_num_separator() {
 
 Node::Node() {
 	_define_ancestry(AncestralClass::NODE);
-
-	orphan_node_count++;
-
+#ifdef DEBUG_ENABLED
+	total_node_count.increment();
+#endif
 	// Default member initializer for bitfield is a C++20 extension, so:
 
 	data.process_mode = PROCESS_MODE_INHERIT;
@@ -4107,7 +4108,9 @@ Node::~Node() {
 	ERR_FAIL_COND(data.parent);
 	ERR_FAIL_COND(data.children_cache.size());
 
-	orphan_node_count--;
+#ifdef DEBUG_ENABLED
+	total_node_count.decrement();
+#endif
 }
 
 ////////////////////////////////

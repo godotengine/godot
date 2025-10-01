@@ -52,8 +52,8 @@ private:
 	Button *rem_action = nullptr;
 
 	void _theme_changed();
-	void _on_action_name_changed(const String p_new_text);
-	void _on_action_localized_name_changed(const String p_new_text);
+	void _on_action_name_changed(const String &p_new_text);
+	void _on_action_localized_name_changed(const String &p_new_text);
 	void _on_item_selected(int p_idx);
 	void _on_remove_action();
 
@@ -62,11 +62,11 @@ protected:
 	void _notification(int p_what);
 
 	// used for undo/redo
-	void _do_set_name(const String p_new_text);
-	void _do_set_localized_name(const String p_new_text);
+	void _do_set_name(const String &p_new_text);
+	void _do_set_localized_name(const String &p_new_text);
 	void _do_set_action_type(OpenXRAction::ActionType p_action_type);
 
 public:
 	Ref<OpenXRAction> get_action() { return action; }
-	OpenXRActionEditor(Ref<OpenXRAction> p_action);
+	OpenXRActionEditor(const Ref<OpenXRAction> &p_action);
 };

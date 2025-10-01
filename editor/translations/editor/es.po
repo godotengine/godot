@@ -153,12 +153,13 @@
 # David <ocsidev@gmail.com>, 2025.
 # Eduardo Suárez <eduardosrez@gmail.com>, 2025.
 # Julián Lacomba <julian_alberto93@yahoo.com.ar>, 2025.
+# Ignacio Parentella <ignacio.parentella@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-11 20:32+0000\n"
+"PO-Revision-Date: 2025-09-22 12:43+0000\n"
 "Last-Translator: Alejandro Moctezuma <moctezumaalejandro25@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -1690,7 +1691,7 @@ msgstr "¿Crear %d nuevas pistas e insertar claves?"
 
 msgid "Hold Shift when clicking the key icon to skip this dialog."
 msgstr ""
-"Mantén presionada la tecla Shift al hacer clic en el ícono de la llave para "
+"Mantén presionada la tecla Shift al hacer clic en el icono de la llave para "
 "omitir este cuadro de diálogo."
 
 msgid "Create"
@@ -2500,7 +2501,7 @@ msgstr "%s (ya existe)"
 
 msgid "%d file conflicts with your project and won't be installed"
 msgid_plural "%d files conflict with your project and won't be installed"
-msgstr[0] "%d archivo entra en conflicto con su proyecto y no se instalará"
+msgstr[0] "%d archivo entra en conflicto con tu proyecto y no se instalará"
 msgstr[1] "%d archivos entran en conflicto con tu proyecto y no se instalarán"
 
 msgid "This asset doesn't have a root directory, so it can't be ignored."
@@ -2546,7 +2547,7 @@ msgid "Ignore asset root"
 msgstr "Ignorar la raíz del recurso"
 
 msgid "No files conflict with your project"
-msgstr "Ningún archivo entra en conflicto con su proyecto"
+msgstr "Ningún archivo entra en conflicto con tu proyecto"
 
 msgid "Show contents of the asset and conflicting files."
 msgstr "Mostrar el contenido del recurso y los archivos conflictivos."
@@ -3332,7 +3333,7 @@ msgid "Properties"
 msgstr "Propiedades"
 
 msgid "overrides %s:"
-msgstr "anula %s:"
+msgstr "sobrescribe %s:"
 
 msgid "default:"
 msgstr "predeterminado:"
@@ -4901,7 +4902,7 @@ msgid ""
 "Make sure the editor's user data path is writable."
 msgstr ""
 "Un error ha ocurrido mientras se intentaba guardar el diseño del editor.\n"
-"Asegúrese de que la ruta de datos del usuario del editor tenga permisos de "
+"Asegúrate de que la ruta de datos del usuario del editor tenga permisos de "
 "escritura."
 
 msgid ""
@@ -7382,7 +7383,7 @@ msgid ""
 msgstr ""
 "El material no tiene nombre ni ninguna otra forma de identificarse en la "
 "reimportación.\n"
-"Por favor, dale un nombre o asegúrese de exportarlo con un ID único."
+"Por favor, dale un nombre o asegúrate de exportarlo con un ID único."
 
 msgid "Extract Materials to Resource Files"
 msgstr "Extraer Materiales a Archivos de Recursos"
@@ -8325,7 +8326,7 @@ msgid ""
 "to the plugin."
 msgstr ""
 "Requerido. El lenguaje de scripting que se utilizará para el script.\n"
-"Tenga en cuenta que un plugin puede utilizar varios lenguajes a la vez "
+"Ten en cuenta que un plugin puede utilizar varios lenguajes a la vez "
 "agregando más scripts al plugin."
 
 msgid "Script Name:"
@@ -9166,7 +9167,7 @@ msgstr ""
 "Se puede especificar una ruta de archivo de video predeterminada en la "
 "configuración del proyecto, en la categoría Editor > Movie Writer.\n"
 "Alternativamente, para ejecutar escenas individuales, se puede añadir un "
-"metadato de cadena `movie_file` al nodo raíz, \n"
+"metadato de string `movie_file` al nodo raíz, \n"
 "especificando la ruta de un archivo de video que se utilizará al grabar esa "
 "escena."
 
@@ -11924,7 +11925,7 @@ msgid "Cancel Transformation"
 msgstr "Cancelar Transformación"
 
 msgid "Begin Translate Transformation"
-msgstr "Comenzar la transformación de traducción"
+msgstr "Iniciar Transformación de Traslación"
 
 msgid "Begin Rotate Transformation"
 msgstr "Iniciar Transformación de Rotación"
@@ -13552,7 +13553,7 @@ msgstr "No se han encontrado tamaños de fuente."
 
 msgid "1 icon"
 msgid_plural "{num} icons"
-msgstr[0] "1 ícono"
+msgstr[0] "1 icono"
 msgstr[1] "{num} íconos"
 
 msgid "No icons found."
@@ -13638,13 +13639,13 @@ msgid "Deselect all visible font size items."
 msgstr "Deseleccionar todos los ítems de tamaño de fuente visibles."
 
 msgid "Select all visible icon items."
-msgstr "Seleccionar todos los ítems de ícono visibles."
+msgstr "Seleccionar todos los ítems de icono visibles."
 
 msgid "Select all visible icon items and their data."
-msgstr "Seleccionar todos los ítems de ícono visibles y sus datos."
+msgstr "Seleccionar todos los ítems de icono visibles y sus datos."
 
 msgid "Deselect all visible icon items."
-msgstr "Deseleccionar todos los ítems de ícono visibles."
+msgstr "Deseleccionar todos los ítems de icono visibles."
 
 msgid "Select all visible stylebox items."
 msgstr "Seleccionar todos los ítems de StyleBox visibles."
@@ -15862,7 +15863,7 @@ msgid "Go to the override in the Project Settings."
 msgstr "Ir a la anulación en los Ajustes del Proyecto."
 
 msgid "Remove this override."
-msgstr "Eliminar esta sobrescritura."
+msgstr "Eliminar esta sobreescritura."
 
 msgid "Left Stick Left, Joystick 0 Left"
 msgstr "Joystick Izquierda, Joystick 0 Izquierda"
@@ -16677,7 +16678,7 @@ msgid ""
 "Returns an associated floating-point scalar if the provided boolean value is "
 "true or false."
 msgstr ""
-"Devuelve un escalar de coma flotante asociado si el valor booleano "
+"Devuelve un escalar de punto flotante asociado si el valor booleano "
 "proporcionado es verdadero o falso."
 
 msgid ""
@@ -16974,7 +16975,7 @@ msgid "Finds the truncated value of the parameter."
 msgstr "Encuentra el valor truncado del parámetro."
 
 msgid "Sums two floating-point scalars."
-msgstr "Suma dos productos escalares de coma flotante."
+msgstr "Suma dos productos escalares de punto flotante."
 
 msgid "Sums two integer scalars."
 msgstr "Suma dos productos escalares enteros."
@@ -17037,7 +17038,7 @@ msgstr ""
 "signo."
 
 msgid "Divides two floating-point scalars."
-msgstr "Divide dos productos escalares de coma flotante."
+msgstr "Divide dos productos escalares de punto flotante."
 
 msgid "Divides two integer scalars."
 msgstr "Divide dos productos escalares enteros."
@@ -17046,7 +17047,7 @@ msgid "Divides two unsigned integer scalars."
 msgstr "Divide dos productos escalares enteros sin signo."
 
 msgid "Multiplies two floating-point scalars."
-msgstr "Multiplica dos productos escalares de coma flotante."
+msgstr "Multiplica dos productos escalares de punto flotante."
 
 msgid "Multiplies two integer scalars."
 msgstr "Multiplica dos productos escalares enteros."
@@ -17055,7 +17056,7 @@ msgid "Multiplies two unsigned integer scalars."
 msgstr "Multiplica dos productos escalares enteros sin signo."
 
 msgid "Returns the remainder of the two floating-point scalars."
-msgstr "Devuelve el resto de dos escalares de coma flotante."
+msgstr "Devuelve el resto de dos escalares de punto flotante."
 
 msgid "Returns the remainder of the two integer scalars."
 msgstr "Devuelve el resto de dos escalares enteros."
@@ -17064,7 +17065,7 @@ msgid "Returns the remainder of the two unsigned integer scalars."
 msgstr "Devuelve el resto de dos escalares enteros sin signo."
 
 msgid "Subtracts two floating-point scalars."
-msgstr "Resta de dos escalares de coma flotante."
+msgstr "Resta de dos escalares de punto flotante."
 
 msgid "Subtracts two integer scalars."
 msgstr "Resta de dos escalares enteros."
@@ -17073,7 +17074,7 @@ msgid "Subtracts two unsigned integer scalars."
 msgstr "Resta de dos escalares enteros sin signo."
 
 msgid "Scalar floating-point constant."
-msgstr "Constante escalar de coma flotante."
+msgstr "Constante escalar de punto flotante."
 
 msgid "Scalar integer constant."
 msgstr "Constante escalar entero."
@@ -17082,7 +17083,7 @@ msgid "Scalar unsigned integer constant."
 msgstr "Constante escalar entero sin signo."
 
 msgid "Scalar floating-point parameter."
-msgstr "Parámetro escalar de coma flotante."
+msgstr "Parámetro escalar de punto flotante."
 
 msgid "Scalar integer parameter."
 msgstr "Parámetro escalar entero."
@@ -17519,7 +17520,7 @@ msgid ""
 "it later in the Expressions. You can also declare varyings, parameters and "
 "constants."
 msgstr ""
-"Expresión personalizada en el Lenguaje de Shaders de Godot, que se coloca al "
+"Expresión personalizada en el lenguaje de shaders de Godot, que se coloca al "
 "inicio del shader resultante. Puedes definir varias funciones dentro y "
 "llamarlas más tarde en las Expresiones. También puedes declarar varyings, "
 "parámetros y constantes."
@@ -17659,7 +17660,7 @@ msgid "POT Generation"
 msgstr "Generación de POT"
 
 msgid "Files with translation strings:"
-msgstr "Archivos con cadenas de traducción:"
+msgstr "Archivos con strings de traducción:"
 
 msgid "Generate POT"
 msgstr "Generar POT"
@@ -17669,7 +17670,7 @@ msgstr "Añadir Cadenas Integradas a POT"
 
 msgid "Add strings from built-in components such as certain Control nodes."
 msgstr ""
-"Agregar cadenas de componentes integrados como ciertos nodos de Control."
+"Agregar strings de componentes integrados como ciertos nodos de Control."
 
 msgid ""
 "No VCS plugins are available in the project. Install a VCS plugin to use VCS "
@@ -19789,13 +19790,13 @@ msgid "Resources Modification"
 msgstr "Modificación de Recursos"
 
 msgid "Icon size \"%d\" is missing."
-msgstr "Falta el tamaño del ícono \"%d\"."
+msgstr "Falta el tamaño del icono \"%d\"."
 
 msgid "Failed to rename temporary file \"%s\"."
 msgstr "Fallo al renombrar el archivo temporal \"%s\"."
 
 msgid "Invalid icon path."
-msgstr "Ruta de ícono inválida."
+msgstr "Ruta de icono inválida."
 
 msgid "Invalid file version."
 msgstr "Versión de archivo inválida."
@@ -19804,7 +19805,7 @@ msgid "Invalid product version."
 msgstr "Versión de producto inválida."
 
 msgid "Invalid icon file \"%s\"."
-msgstr "Archivo de ícono \"%s\" inválido."
+msgstr "Archivo de icono \"%s\" inválido."
 
 msgid "Could not find signtool executable at \"%s\"."
 msgstr "No se pudo encontrar el ejecutable de signtool en \"%s\"."
@@ -20133,7 +20134,7 @@ msgstr ""
 "El nodo TileMap está obsoleto, ya que ha sido reemplazado por el uso de "
 "múltiples nodos TileMapLayer.\n"
 "Para convertir un TileMap en un conjunto de nodos TileMapLayer, abre el panel "
-"inferior de TileMap con este nodo seleccionado, haz clic en el ícono de la "
+"inferior de TileMap con este nodo seleccionado, haz clic en el icono de la "
 "caja de herramientas en la esquina superior derecha y elige \"Extraer capas "
 "de TileMap como nodos individuales de TileMapLayer\"."
 
@@ -21607,10 +21608,10 @@ msgid "Enum hint is for '%s' only."
 msgstr "La sugerencia de enumeración es solo para '%s'."
 
 msgid "Expected a string constant."
-msgstr "Se esperaba una constante de cadena."
+msgstr "Se esperaba una constante de string."
 
 msgid "Expected ',' or ')' after string constant."
-msgstr "Se esperaba ',' o ')' después de la constante de cadena."
+msgstr "Se esperaba ',' o ')' después de la constante de string."
 
 msgid "Can only specify '%s' once."
 msgstr "Solo se puede especificar '%s' una vez."

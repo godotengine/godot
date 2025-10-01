@@ -480,12 +480,12 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				selection.creating = true;
 
 			} else {
-				if (selecting_enabled) {
+				if (selecting_enabled && !text.is_empty()) {
 					const int triple_click_timeout = 600;
 					const int triple_click_tolerance = 5;
 					const bool is_triple_click = !b->is_double_click() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < triple_click_timeout && b->get_position().distance_to(last_dblclk_pos) < triple_click_tolerance;
 
-					if (is_triple_click && !text.is_empty()) {
+					if (is_triple_click) {
 						// Triple-click select all.
 						selection.enabled = true;
 						selection.begin = 0;
@@ -2148,14 +2148,14 @@ TextServer::StructuredTextParser LineEdit::get_structured_text_bidi_override() c
 	return st_parser;
 }
 
-void LineEdit::set_structured_text_bidi_override_options(Array p_args) {
-	st_args = p_args;
+void LineEdit::set_structured_text_bidi_override_options(const Array &p_args) {
+	st_args = Array(p_args);
 	_shape();
 	queue_redraw();
 }
 
 Array LineEdit::get_structured_text_bidi_override_options() const {
-	return st_args;
+	return Array(st_args);
 }
 
 void LineEdit::clear() {
