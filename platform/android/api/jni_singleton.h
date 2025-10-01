@@ -60,31 +60,15 @@ public:
 		}
 
 		// Check the method we're looking for is in the JNISingleton map.
+		// This is done because JNISingletons register methods differently than wrapped JavaClass / JavaObject to allow
+		// for access to private methods annotated with the @UsedByGodot annotation.
+		// In the future, we should remove access to private methods and require that JNISingletons' methods exposed to
+		// GDScript be all public, similarly to what we do for wrapped JavaClass / JavaObject methods. Doing so will
+		// also allow dropping and deprecating the @UsedByGodot annotation.
 		RBMap<StringName, MethodData>::Element *E = method_map.find(p_method);
 		if (E) {
 			if (wrapped_object.is_valid()) {
-				// Check that the arguments match.
-				int method_arg_count = E->get().argtypes.size();
-				if (p_argcount < method_arg_count) {
-					r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-				} else if (p_argcount > method_arg_count) {
-					r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
-				} else {
-					// Check the arguments are valid.
-					bool arguments_valid = true;
-					for (int i = 0; i < p_argcount; i++) {
-						if (!Variant::can_convert(p_args[i]->get_type(), E->get().argtypes[i])) {
-							arguments_valid = false;
-							break;
-						}
-					}
-
-					if (arguments_valid) {
-						return wrapped_object->callp(p_method, p_args, p_argcount, r_error);
-					} else {
-						r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-					}
-				}
+				return wrapped_object->callp(p_method, p_args, p_argcount, r_error);
 			} else {
 				r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 			}

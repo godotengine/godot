@@ -199,7 +199,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				case ARG_ARRAY_BIT | ARG_TYPE_CHARSEQUENCE: {
 					if (p_args[i]->get_type() == Variant::ARRAY) {
 						Array arr = *p_args[i];
-						if (arr.is_typed() && arr.get_typed_builtin() != Variant::STRING) {
+						if (arr.is_typed() && (arr.get_typed_builtin() != Variant::STRING || arr.get_typed_builtin() != Variant::STRING_NAME)) {
 							arg_expected = Variant::ARRAY;
 						}
 					} else if (p_args[i]->get_type() != Variant::PACKED_STRING_ARRAY) {
@@ -1527,6 +1527,7 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_non_p
 		}
 
 		JavaClass::MethodInfo mi;
+		mi._public = is_public;
 		mi._static = (mods & 0x8) != 0;
 		mi._constructor = is_constructor;
 		bool valid = true;
@@ -1686,7 +1687,7 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_non_p
 	return java_class;
 }
 
-Ref<JavaClass> JavaClassWrapper::wrap_jclass(jclass p_class, bool p_allow_private_methods_access) {
+Ref<JavaClass> JavaClassWrapper::wrap_jclass(jclass p_class, bool p_allow_non_public_methods_access) {
 	JNIEnv *env = get_jni_env();
 	ERR_FAIL_NULL_V(env, Ref<JavaClass>());
 
@@ -1694,7 +1695,7 @@ Ref<JavaClass> JavaClassWrapper::wrap_jclass(jclass p_class, bool p_allow_privat
 	String class_name_string = jstring_to_string(class_name, env);
 	env->DeleteLocalRef(class_name);
 
-	return _wrap(class_name_string, p_allow_private_methods_access);
+	return _wrap(class_name_string, p_allow_non_public_methods_access);
 }
 
 JavaClassWrapper *JavaClassWrapper::singleton = nullptr;
