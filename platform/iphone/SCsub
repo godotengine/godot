@@ -14,6 +14,7 @@ iphone_lib = [
     "tts_ios.mm",
     "display_layer.mm",
     "godot_app_delegate.m",
+    "godot_scene_delegate.m",
     "godot_view_renderer.mm",
     "device_metrics.m",
     "keyboard_input_view.mm",
