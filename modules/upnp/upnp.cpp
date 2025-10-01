@@ -145,7 +145,11 @@ void UPNP::parse_igd(Ref<UPNPDevice> dev, UPNPDev *devlist) {
 	}
 
 	char addr[16];
+#if MINIUPNPC_API_VERSION >= 18
+	int i = UPNP_GetValidIGD(devlist, urls, &data, (char *)&addr, 16, nullptr, 0);
+#else
 	int i = UPNP_GetValidIGD(devlist, urls, &data, (char *)&addr, 16);
+#endif
 
 	if (i != 1) {
 		FreeUPNPUrls(urls);

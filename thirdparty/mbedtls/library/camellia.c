@@ -24,12 +24,6 @@
 
 #if !defined(MBEDTLS_CAMELLIA_ALT)
 
-/* Parameter validation macros */
-#define CAMELLIA_VALIDATE_RET(cond)                                       \
-    MBEDTLS_INTERNAL_VALIDATE_RET(cond, MBEDTLS_ERR_CAMELLIA_BAD_INPUT_DATA)
-#define CAMELLIA_VALIDATE(cond)                                           \
-    MBEDTLS_INTERNAL_VALIDATE(cond)
-
 static const unsigned char SIGMA_CHARS[6][8] =
 {
     { 0xa0, 0x9e, 0x66, 0x7f, 0x3b, 0xcc, 0x90, 0x8b },
@@ -279,7 +273,6 @@ static void camellia_feistel(const uint32_t x[2], const uint32_t k[2],
 
 void mbedtls_camellia_init(mbedtls_camellia_context *ctx)
 {
-    CAMELLIA_VALIDATE(ctx != NULL);
     memset(ctx, 0, sizeof(mbedtls_camellia_context));
 }
 
@@ -306,9 +299,6 @@ int mbedtls_camellia_setkey_enc(mbedtls_camellia_context *ctx,
     uint32_t SIGMA[6][2];
     uint32_t KC[16];
     uint32_t TK[20];
-
-    CAMELLIA_VALIDATE_RET(ctx != NULL);
-    CAMELLIA_VALIDATE_RET(key != NULL);
 
     RK = ctx->rk;
 
@@ -409,6 +399,7 @@ int mbedtls_camellia_setkey_enc(mbedtls_camellia_context *ctx,
 /*
  * Camellia key schedule (decryption)
  */
+#if !defined(MBEDTLS_BLOCK_CIPHER_NO_DECRYPT)
 int mbedtls_camellia_setkey_dec(mbedtls_camellia_context *ctx,
                                 const unsigned char *key,
                                 unsigned int keybits)
@@ -418,8 +409,6 @@ int mbedtls_camellia_setkey_dec(mbedtls_camellia_context *ctx,
     mbedtls_camellia_context cty;
     uint32_t *RK;
     uint32_t *SK;
-    CAMELLIA_VALIDATE_RET(ctx != NULL);
-    CAMELLIA_VALIDATE_RET(key != NULL);
 
     mbedtls_camellia_init(&cty);
 
@@ -456,6 +445,7 @@ exit:
 
     return ret;
 }
+#endif /* !MBEDTLS_BLOCK_CIPHER_NO_DECRYPT */
 
 /*
  * Camellia-ECB block encryption/decryption
@@ -467,11 +457,9 @@ int mbedtls_camellia_crypt_ecb(mbedtls_camellia_context *ctx,
 {
     int NR;
     uint32_t *RK, X[4];
-    CAMELLIA_VALIDATE_RET(ctx != NULL);
-    CAMELLIA_VALIDATE_RET(mode == MBEDTLS_CAMELLIA_ENCRYPT ||
-                          mode == MBEDTLS_CAMELLIA_DECRYPT);
-    CAMELLIA_VALIDATE_RET(input  != NULL);
-    CAMELLIA_VALIDATE_RET(output != NULL);
+    if (mode != MBEDTLS_CAMELLIA_ENCRYPT && mode != MBEDTLS_CAMELLIA_DECRYPT) {
+        return MBEDTLS_ERR_CAMELLIA_BAD_INPUT_DATA;
+    }
 
     ((void) mode);
 
@@ -535,14 +523,10 @@ int mbedtls_camellia_crypt_cbc(mbedtls_camellia_context *ctx,
                                const unsigned char *input,
                                unsigned char *output)
 {
-    int i;
     unsigned char temp[16];
-    CAMELLIA_VALIDATE_RET(ctx != NULL);
-    CAMELLIA_VALIDATE_RET(mode == MBEDTLS_CAMELLIA_ENCRYPT ||
-                          mode == MBEDTLS_CAMELLIA_DECRYPT);
-    CAMELLIA_VALIDATE_RET(iv != NULL);
-    CAMELLIA_VALIDATE_RET(length == 0 || input  != NULL);
-    CAMELLIA_VALIDATE_RET(length == 0 || output != NULL);
+    if (mode != MBEDTLS_CAMELLIA_ENCRYPT && mode != MBEDTLS_CAMELLIA_DECRYPT) {
+        return MBEDTLS_ERR_CAMELLIA_BAD_INPUT_DATA;
+    }
 
     if (length % 16) {
         return MBEDTLS_ERR_CAMELLIA_INVALID_INPUT_LENGTH;
@@ -553,9 +537,7 @@ int mbedtls_camellia_crypt_cbc(mbedtls_camellia_context *ctx,
             memcpy(temp, input, 16);
             mbedtls_camellia_crypt_ecb(ctx, mode, input, output);
 
-            for (i = 0; i < 16; i++) {
-                output[i] = (unsigned char) (output[i] ^ iv[i]);
-            }
+            mbedtls_xor(output, output, iv, 16);
 
             memcpy(iv, temp, 16);
 
@@ -565,9 +547,7 @@ int mbedtls_camellia_crypt_cbc(mbedtls_camellia_context *ctx,
         }
     } else {
         while (length > 0) {
-            for (i = 0; i < 16; i++) {
-                output[i] = (unsigned char) (input[i] ^ iv[i]);
-            }
+            mbedtls_xor(output, input, iv, 16);
 
             mbedtls_camellia_crypt_ecb(ctx, mode, output, output);
             memcpy(iv, output, 16);
@@ -596,13 +576,9 @@ int mbedtls_camellia_crypt_cfb128(mbedtls_camellia_context *ctx,
 {
     int c;
     size_t n;
-    CAMELLIA_VALIDATE_RET(ctx != NULL);
-    CAMELLIA_VALIDATE_RET(mode == MBEDTLS_CAMELLIA_ENCRYPT ||
-                          mode == MBEDTLS_CAMELLIA_DECRYPT);
-    CAMELLIA_VALIDATE_RET(iv     != NULL);
-    CAMELLIA_VALIDATE_RET(iv_off != NULL);
-    CAMELLIA_VALIDATE_RET(length == 0 || input  != NULL);
-    CAMELLIA_VALIDATE_RET(length == 0 || output != NULL);
+    if (mode != MBEDTLS_CAMELLIA_ENCRYPT && mode != MBEDTLS_CAMELLIA_DECRYPT) {
+        return MBEDTLS_ERR_CAMELLIA_BAD_INPUT_DATA;
+    }
 
     n = *iv_off;
     if (n >= 16) {
@@ -653,12 +629,6 @@ int mbedtls_camellia_crypt_ctr(mbedtls_camellia_context *ctx,
 {
     int c, i;
     size_t n;
-    CAMELLIA_VALIDATE_RET(ctx != NULL);
-    CAMELLIA_VALIDATE_RET(nonce_counter != NULL);
-    CAMELLIA_VALIDATE_RET(stream_block  != NULL);
-    CAMELLIA_VALIDATE_RET(nc_off != NULL);
-    CAMELLIA_VALIDATE_RET(length == 0 || input  != NULL);
-    CAMELLIA_VALIDATE_RET(length == 0 || output != NULL);
 
     n = *nc_off;
     if (n >= 16) {
@@ -920,14 +890,26 @@ int mbedtls_camellia_self_test(int verbose)
                            (v == MBEDTLS_CAMELLIA_DECRYPT) ? "dec" : "enc");
         }
 
+#if defined(MBEDTLS_BLOCK_CIPHER_NO_DECRYPT)
+        if (v == MBEDTLS_CAMELLIA_DECRYPT) {
+            if (verbose != 0) {
+                mbedtls_printf("skipped\n");
+            }
+            continue;
+        }
+#endif
+
         for (i = 0; i < CAMELLIA_TESTS_ECB; i++) {
             memcpy(key, camellia_test_ecb_key[u][i], 16 + 8 * u);
 
+#if !defined(MBEDTLS_BLOCK_CIPHER_NO_DECRYPT)
             if (v == MBEDTLS_CAMELLIA_DECRYPT) {
                 mbedtls_camellia_setkey_dec(&ctx, key, 128 + u * 64);
                 memcpy(src, camellia_test_ecb_cipher[u][i], 16);
                 memcpy(dst, camellia_test_ecb_plain[i], 16);
-            } else { /* MBEDTLS_CAMELLIA_ENCRYPT */
+            } else
+#endif
+            { /* MBEDTLS_CAMELLIA_ENCRYPT */
                 mbedtls_camellia_setkey_enc(&ctx, key, 128 + u * 64);
                 memcpy(src, camellia_test_ecb_plain[i], 16);
                 memcpy(dst, camellia_test_ecb_cipher[u][i], 16);

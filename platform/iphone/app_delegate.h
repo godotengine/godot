@@ -32,7 +32,9 @@
 
 @class ViewController;
 
-@interface AppDelegate : NSObject <UIApplicationDelegate>
+@interface AppDelegate : NSObject <UIApplicationDelegate, UIWindowSceneDelegate>
+
++ (AppDelegate *)getSingleton;
 
 @property(strong, nonatomic) UIWindow *window;
 @property(strong, class, readonly, nonatomic) ViewController *viewController;

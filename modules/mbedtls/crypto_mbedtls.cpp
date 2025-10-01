@@ -71,7 +71,7 @@ Error CryptoKeyMbedTLS::load(String p_path, bool p_public_only) {
 	if (p_public_only) {
 		ret = mbedtls_pk_parse_public_key(&pkey, out.read().ptr(), out.size());
 	} else {
-		ret = mbedtls_pk_parse_key(&pkey, out.read().ptr(), out.size(), nullptr, 0);
+		ret = _parse_key(out.read().ptr(), out.size());
 	}
 	// We MUST zeroize the memory for safety!
 	mbedtls_platform_zeroize(out.write().ptr(), out.size());
@@ -112,7 +112,7 @@ Error CryptoKeyMbedTLS::load_from_string(String p_string_key, bool p_public_only
 	if (p_public_only) {
 		ret = mbedtls_pk_parse_public_key(&pkey, (unsigned char *)p_string_key.utf8().get_data(), p_string_key.utf8().size());
 	} else {
-		ret = mbedtls_pk_parse_key(&pkey, (unsigned char *)p_string_key.utf8().get_data(), p_string_key.utf8().size(), nullptr, 0);
+		ret = _parse_key((unsigned char *)p_string_key.utf8().get_data(), p_string_key.utf8().size());
 	}
 	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing key '" + itos(ret) + "'.");
 
@@ -136,6 +136,25 @@ String CryptoKeyMbedTLS::save_to_string(bool p_public_only) {
 	}
 	String s = String::utf8((char *)w);
 	return s;
+}
+
+int CryptoKeyMbedTLS::_parse_key(const uint8_t *p_buf, int p_size) {
+#if MBEDTLS_VERSION_MAJOR >= 3
+	mbedtls_entropy_context rng_entropy;
+	mbedtls_ctr_drbg_context rng_drbg;
+
+	mbedtls_ctr_drbg_init(&rng_drbg);
+	mbedtls_entropy_init(&rng_entropy);
+	int ret = mbedtls_ctr_drbg_seed(&rng_drbg, mbedtls_entropy_func, &rng_entropy, nullptr, 0);
+	ERR_FAIL_COND_V_MSG(ret != 0, ret, vformat("mbedtls_ctr_drbg_seed returned -0x%x\n", (unsigned int)-ret));
+
+	ret = mbedtls_pk_parse_key(&pkey, p_buf, p_size, nullptr, 0, mbedtls_ctr_drbg_random, &rng_drbg);
+	mbedtls_ctr_drbg_free(&rng_drbg);
+	mbedtls_entropy_free(&rng_entropy);
+	return ret;
+#else
+	return mbedtls_pk_parse_key(&pkey, p_buf, p_size, nullptr, 0);
+#endif
 }
 
 X509Certificate *X509CertificateMbedTLS::create() {
@@ -267,10 +286,6 @@ Crypto *CryptoMbedTLS::create() {
 }
 
 void CryptoMbedTLS::initialize_crypto() {
-#ifdef DEBUG_ENABLED
-	mbedtls_debug_set_threshold(1);
-#endif
-
 	Crypto::_create = create;
 	Crypto::_load_default_certificates = load_default_certificates;
 	X509CertificateMbedTLS::make_default();
@@ -360,12 +375,18 @@ Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoK
 	mbedtls_x509write_crt_set_version(&crt, MBEDTLS_X509_CRT_VERSION_3);
 	mbedtls_x509write_crt_set_md_alg(&crt, MBEDTLS_MD_SHA256);
 
+	uint8_t rand_serial[20];
+	mbedtls_ctr_drbg_random(&ctr_drbg, rand_serial, sizeof(rand_serial));
+
+#if MBEDTLS_VERSION_MAJOR >= 3
+	mbedtls_x509write_crt_set_serial_raw(&crt, rand_serial, sizeof(rand_serial));
+#else
+
 	mbedtls_mpi serial;
 	mbedtls_mpi_init(&serial);
-	uint8_t rand_serial[20];
-	mbedtls_ctr_drbg_random(&ctr_drbg, rand_serial, 20);
-	ERR_FAIL_COND_V(mbedtls_mpi_read_binary(&serial, rand_serial, 20), nullptr);
+	ERR_FAIL_COND_V(mbedtls_mpi_read_binary(&serial, rand_serial, sizeof(rand_serial)), nullptr);
 	mbedtls_x509write_crt_set_serial(&crt, &serial);
+#endif
 
 	mbedtls_x509write_crt_set_validity(&crt, p_not_before.utf8().get_data(), p_not_after.utf8().get_data());
 	mbedtls_x509write_crt_set_basic_constraints(&crt, 1, -1);
@@ -374,7 +395,9 @@ Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoK
 	unsigned char buf[4096];
 	memset(buf, 0, 4096);
 	int ret = mbedtls_x509write_crt_pem(&crt, buf, 4096, mbedtls_ctr_drbg_random, &ctr_drbg);
+#if MBEDTLS_VERSION_MAJOR < 3
 	mbedtls_mpi_free(&serial);
+#endif
 	mbedtls_x509write_crt_free(&crt);
 	ERR_FAIL_COND_V_MSG(ret != 0, nullptr, "Failed to generate certificate: " + itos(ret));
 	buf[4095] = '\0'; // Make sure strlen can't fail.
@@ -418,9 +441,18 @@ Vector<uint8_t> CryptoMbedTLS::sign(HashingContext::HashType p_hash_type, Vector
 	ERR_FAIL_COND_V_MSG(!key.is_valid(), Vector<uint8_t>(), "Invalid key provided.");
 	ERR_FAIL_COND_V_MSG(key->is_public_only(), Vector<uint8_t>(), "Invalid key provided. Cannot sign with public_only keys.");
 	size_t sig_size = 0;
+#if MBEDTLS_VERSION_MAJOR >= 3
+	unsigned char buf[MBEDTLS_PK_SIGNATURE_MAX_SIZE];
+#else
 	unsigned char buf[MBEDTLS_MPI_MAX_SIZE];
+#endif
 	Vector<uint8_t> out;
-	int ret = mbedtls_pk_sign(&(key->pkey), type, p_hash.ptr(), size, buf, &sig_size, mbedtls_ctr_drbg_random, &ctr_drbg);
+	int ret = mbedtls_pk_sign(&(key->pkey), type, p_hash.ptr(), size, buf,
+#if MBEDTLS_VERSION_MAJOR >= 3
+			sizeof(buf),
+#endif
+			&sig_size, mbedtls_ctr_drbg_random, &ctr_drbg);
+
 	ERR_FAIL_COND_V_MSG(ret, out, "Error while signing: " + itos(ret));
 	out.resize(sig_size);
 	memcpy(out.ptrw(), buf, sig_size);

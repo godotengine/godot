@@ -1910,9 +1910,9 @@ bool EditorExportPlatformOSX::has_valid_export_configuration(const Ref<EditorExp
 	String err;
 	bool valid = false;
 
-	// Look for export templates (custom templates).
-	bool dvalid = false;
-	bool rvalid = false;
+	// Look for export templates (official templates first, then custom).
+	bool dvalid = exists_export_template("osx.zip", &err);
+	bool rvalid = dvalid; // Both in the same ZIP.
 
 	if (p_preset->get("custom_template/debug") != "") {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
@@ -1925,12 +1925,6 @@ bool EditorExportPlatformOSX::has_valid_export_configuration(const Ref<EditorExp
 		if (!rvalid) {
 			err += TTR("Custom release template not found.") + "\n";
 		}
-	}
-
-	// Look for export templates (official templates, check only is custom templates are not set).
-	if (!dvalid || !rvalid) {
-		dvalid = exists_export_template("osx.zip", &err);
-		rvalid = dvalid; // Both in the same ZIP.
 	}
 
 	valid = dvalid || rvalid;

@@ -30,6 +30,7 @@
 
 #include "editor_properties.h"
 
+#include "core/core_string_names.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/filesystem_dock.h"
 #include "editor/project_settings_editor.h"
@@ -2617,8 +2618,11 @@ void EditorPropertyResource::_resource_selected(const RES &p_resource, bool p_ed
 void EditorPropertyResource::_resource_changed(const RES &p_resource) {
 	// Make visual script the correct type.
 	Ref<Script> s = p_resource;
+
+	// The bool is_script applies only to an object's main script.
+	// Changing the value of Script-type exported variables of the main script should not trigger saving/reloading properties.
 	bool is_script = false;
-	if (get_edited_object() && s.is_valid()) {
+	if (get_edited_object() && s.is_valid() && get_edited_property() == CoreStringNames::get_singleton()->_script) {
 		is_script = true;
 		EditorNode::get_singleton()->get_inspector_dock()->store_script_properties(get_edited_object());
 		s->call("set_instance_base_type", get_edited_object()->get_class());

@@ -284,20 +284,26 @@ Files extracted from upstream source:
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 2.28.10 (2fc8413bfcb51354c8e679141b17b3f1a5942561, 2025)
+- Version: 3.6.4 (c765c831e5c2a0971410692f92f7a81d6ec65ec2, 2025)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
 
 - All `.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`
-  except `config_psa.h` and `psa_util.h`
-- All `.c` and `.h` from `library/` to `thirdparty/mbedtls/library/` except
-  those starting with `psa_*`
+  and all `.h` from `include/psa/` to `thirdparty/mbedtls/include/psa/`
+- From `library/` to `thirdparty/mbedtls/library/`:
+  - All `.c` and `.h` files
+  - Except `bignum_mod.c`, `block_cipher.c`, `ecp_curves_new.c`, `lmots.c`,
+  `lms.c`, `bignum_core_invasive.h`
 - The `LICENSE` file (edited to keep only the Apache 2.0 variant)
-- Applied the patch `windows-arm64-hardclock.diff` to fix Windows ARM64 build
-  Applied the patch `windows-entropy-bcrypt.diff` to fix Windows Store support
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
-  providing configuration for light bundling with core.
+  providing configuration for light bundling with core
+- Added 2 files `godot_module_mbedtls_config.h` and `threading_alt.h`
+  to customize the build configuration when bundling the full library
+
+Patches:
+  
+- `0001-msvc-2019-psa-redeclaration.patch` (GH-90535)
 
 
 ## minimp3

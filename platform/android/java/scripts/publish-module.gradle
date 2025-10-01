@@ -43,6 +43,11 @@ afterEvaluate {
                             name = 'Rémi Verschelde'
                             email = 'rverschelde@gmail.com'
                         }
+                        developer {
+                            id = 'godotengine'
+                            name = 'Godot Engine contributors'
+                            email = 'contact@godotengine.org'
+                        }
                         // Add all other devs here...
                     }
 
