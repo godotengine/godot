@@ -161,22 +161,58 @@ static void test_directory(const String &p_dir) {
 			String code = acc->get_as_utf8_string();
 
 			String res_path = ProjectSettings::get_singleton()->localize_path(path.path_join(next));
+			String cfg_path = ProjectSettings::get_singleton()->localize_path(path.path_join(next.get_basename() + ".cfg"));
 
+			MESSAGE(vformat("Parsing \"%s\".", cfg_path));
 			ConfigFile conf;
-			FAIL_COND_MSG(conf.load(path.path_join(next.get_basename() + ".cfg")) != OK, "No config file found.");
+			FAIL_COND_MSG(conf.load(cfg_path) != OK, "No config file found.");
 
 			EditorSettings::get_singleton()->set_setting("text_editor/completion/use_single_quotes", conf.get_value("input", "use_single_quotes", false));
 			EditorSettings::get_singleton()->set_setting("text_editor/completion/add_node_path_literals", conf.get_value("input", "add_node_path_literals", false));
 			EditorSettings::get_singleton()->set_setting("text_editor/completion/add_string_name_literals", conf.get_value("input", "add_string_name_literals", false));
 
+			// [test] refactor
 			Dictionary refactor = conf.get_value("test", "refactor", Dictionary());
+
+			FAIL_COND_MSG(!refactor.has("line"), "refactor.line doesn't exist");
+			FAIL_COND_MSG(!refactor.has("column"), "refactor.line doesn't exist");
 			FAIL_COND_MSG(refactor["line"].get_type() != Variant::Type::INT, "refactor.line is not an int");
 			FAIL_COND_MSG(refactor["column"].get_type() != Variant::Type::INT, "refactor.column is not an int");
-
 			int refactor_line = refactor["line"];
 			FAIL_COND_MSG(refactor_line < 1, "refactor_line is invalid");
 			int refactor_column = refactor["column"];
 			FAIL_COND_MSG(refactor_column < 1, "refactor_column is invalid");
+
+			String refactor_to;
+			if (refactor.has("to")) {
+				FAIL_COND_MSG(refactor["line"].get_type() != Variant::Type::STRING, "refactor.to is not a String");
+				refactor_to = refactor["to"];
+			}
+
+			// [expected_result] matches
+			Dictionary expected_result_matches = conf.get_value("expected_result", "matches", Dictionary());
+			for (Variant matches_array_key : expected_result_matches.keys()) {
+				FAIL_COND_MSG(matches_array_key.get_type() != Variant::Type::STRING, "match key is not a String");
+				FAIL_COND_MSG(expected_result_matches[matches_array_key].get_type() != Variant::Type::ARRAY, "match value is not an Array");
+				Array matches_array = expected_result_matches[matches_array_key];
+				for (Variant match : matches_array) {
+					FAIL_COND_MSG(match.get_type() != Variant::Type::DICTIONARY, "match entry is not a Dictionary");
+					Dictionary match_dict = match;
+
+#define CHECK_MATCH_ENTRY(key_name)                                                                                      \
+	FAIL_COND_MSG(!match_dict.has(#key_name), "match entry doesn't have \"" #key_name "\" key");                         \
+	FAIL_COND_MSG(match_dict[#key_name].get_type() != Variant::Type::INT, "match entry \"" #key_name "\" isn't an int"); \
+	FAIL_COND_MSG((int)(match_dict[#key_name]) < 1, "match entry \"" #key_name "\" is invalid");                         \
+	(void)0
+
+					CHECK_MATCH_ENTRY(start_line);
+					CHECK_MATCH_ENTRY(start_column);
+					CHECK_MATCH_ENTRY(end_line);
+					CHECK_MATCH_ENTRY(end_column);
+
+#undef CHECK_MATCH_ENTRY
+				}
+			}
 
 			MESSAGE(vformat("Testing \"%s\".", res_path));
 
@@ -189,7 +225,35 @@ static void test_directory(const String &p_dir) {
 			Error refactor_error_result = GDScriptLanguage::get_singleton()->refactor_rename_symbol_code(data.code, data.symbol, res_path, owner, unsaved_scripts_code, refactor_result);
 			FAIL_COND_MSG(refactor_error_result != OK, vformat("could not refactor rename symbol code: %s", error_names[refactor_error_result]));
 
-			print_line(vformat("Result: %s", refactor_result.to_string()));
+			// Comparing results.
+			if (expected_result_matches.size() > 0) {
+				for (KeyValue<String, LocalVector<ScriptLanguage::RefactorRenameSymbolResult::Match>> KV : refactor_result.matches) {
+					FAIL_COND_MSG(!expected_result_matches.has(KV.key), vformat("unexpected match for \"%s\" not defined in the cfg", KV.key));
+					Array expected_result_matches_array = expected_result_matches[KV.key];
+					FAIL_COND_MSG((uint32_t)expected_result_matches_array.size() != KV.value.size(), vformat("number of matches don't match the expected result for \"%s\"", KV.key));
+
+					for (ScriptLanguage::RefactorRenameSymbolResult::Match match : KV.value) {
+						bool found_result = false;
+
+						for (Dictionary expected_result_match : expected_result_matches_array) {
+							int start_line = expected_result_match["start_line"];
+							int start_column = expected_result_match["start_column"];
+							int end_line = expected_result_match["end_line"];
+							int end_column = expected_result_match["end_column"];
+
+							if (start_line == match.start_line &&
+									start_column == match.start_column &&
+									end_line == match.end_line &&
+									end_column == match.end_column) {
+								found_result = true;
+								break;
+							}
+						}
+
+						FAIL_COND_MSG(!found_result, vformat("got a %s, but it wasn't expected", match.to_string()));
+					}
+				}
+			}
 		}
 		next = dir->get_next();
 	}
