@@ -3859,7 +3859,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 						option_names.append(option.get_slicec('/', 1));
 					}
 				} else {
-					options = p_hint_text.remove_char(' ').split(",", false);
+					options = p_hint_text.split(",", false);
 				}
 				editor->setup(options, option_names, false, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
