@@ -6130,7 +6130,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> p_state) {
 			int bone_cnt = skeleton->get_bone_count();
 			ERR_FAIL_COND(bone_cnt != gltf_skeleton->joints.size());
 
-			ObjectID gltf_skin_key = 0;
+			ObjectID gltf_skin_key;
 			if (skin.is_valid()) {
 				gltf_skin_key = skin->get_instance_id();
 			}

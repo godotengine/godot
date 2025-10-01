@@ -107,7 +107,7 @@ bool BulletPhysicsDirectSpaceState::intersect_ray(const Vector3 &p_from, const V
 			r_result.shape = btResult.m_shapeId;
 			r_result.rid = gObj->get_self();
 			r_result.collider_id = gObj->get_instance_id();
-			r_result.collider = 0 == r_result.collider_id ? nullptr : ObjectDB::get_instance(r_result.collider_id);
+			r_result.collider = !r_result.collider_id.is_valid() ? nullptr : ObjectDB::get_instance(r_result.collider_id);
 		} else {
 			WARN_PRINT("The raycast performed has hit a collision object that is not part of Godot scene, please check it.");
 		}
