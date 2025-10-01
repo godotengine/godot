@@ -641,7 +641,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	RD::get_singleton()->draw_command_begin_label("Process Screen Space Indirect Lighting");
+	RD::get_singleton()->draw_command_begin_label("Process Screen-Space Indirect Lighting");
 
 	// Obtain our (cached) buffer slices for the view we are rendering.
 	RID last_frame = p_render_buffers->get_texture_slice(RB_SCOPE_SSIL, RB_LAST_FRAME, p_view, 0, 1, 6);
@@ -1069,7 +1069,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 	RID shader = ssao.gather_shader.version_get_shader(ssao.gather_shader_version, SSAO_GATHER);
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
-	RD::get_singleton()->draw_command_begin_label("Process Screen Space Ambient Occlusion");
+	RD::get_singleton()->draw_command_begin_label("Process Screen-Space Ambient Occlusion");
 	/* SECOND PASS */
 	// Sample SSAO
 	{
@@ -1233,7 +1233,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 	//	// Blur
 	//
 	{
-		RD::get_singleton()->draw_command_begin_label("Edge Aware Blur");
+		RD::get_singleton()->draw_command_begin_label("Edge-Aware Blur");
 		ssao.blur_push_constant.edge_sharpness = 1.0 - p_settings.sharpness;
 		ssao.blur_push_constant.half_screen_pixel_size[0] = 1.0 / p_ssao_buffers.buffer_width;
 		ssao.blur_push_constant.half_screen_pixel_size[1] = 1.0 / p_ssao_buffers.buffer_height;
@@ -1464,7 +1464,7 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 		}
 
 		{
-			RD::get_singleton()->draw_command_begin_label("SSR main");
+			RD::get_singleton()->draw_command_begin_label("SSR Main");
 
 			ScreenSpaceReflectionPushConstant push_constant;
 			push_constant.view_index = v;
@@ -1520,7 +1520,7 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 		}
 
 		if (ssr_roughness_quality != RS::ENV_SSR_ROUGHNESS_QUALITY_DISABLED) {
-			RD::get_singleton()->draw_command_begin_label("SSR filter");
+			RD::get_singleton()->draw_command_begin_label("SSR Roughness Filter");
 			//blur
 
 			RD::get_singleton()->compute_list_add_barrier(compute_list);
