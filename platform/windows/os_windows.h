@@ -391,6 +391,8 @@ class OS_Windows : public OS {
 
 	CrashHandler crash_handler;
 
+	bool _allow_gdriver_threaded_optimizations = false;
+
 	void _drag_event(float p_x, float p_y, int idx);
 	void _touch_event(bool p_pressed, float p_x, float p_y, int idx);
 
@@ -612,6 +614,9 @@ public:
 	virtual Error move_to_trash(const String &p_path);
 
 	virtual void process_and_drop_events();
+
+	virtual bool _is_gdriver_threaded_optimization_allowed() const { return _allow_gdriver_threaded_optimizations; }
+	virtual void _set_gdriver_threaded_optimization_allowed(bool p_allow) override { _allow_gdriver_threaded_optimizations = p_allow; }
 
 	OS_Windows(HINSTANCE _hInstance);
 	~OS_Windows();
