@@ -150,7 +150,7 @@ static void test_directory(const String &p_dir) {
 				continue;
 			}
 			test_directory(path.path_join(next));
-		} else if (next.ends_with(".gd") && !next.ends_with(".notest.gd")) {
+		} else if (next.ends_with(".gd") && !next.ends_with(".notest.gd") && !next.ends_with(".global.gd")) {
 			Ref<FileAccess> acc = FileAccess::open(path.path_join(next), FileAccess::READ, &err);
 
 			if (err != OK) {
