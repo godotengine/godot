@@ -778,6 +778,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Behavior
 	// Behavior: General
 	_initial_set("text_editor/behavior/general/empty_selection_clipboard", true);
+	_initial_set("text_editor/behavior/general/middle_mouse_paste", true, true);
 
 	// Behavior: Navigation
 	_initial_set("text_editor/behavior/navigation/move_caret_on_right_click", true, true);
