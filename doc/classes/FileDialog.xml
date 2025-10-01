@@ -29,6 +29,15 @@
 				[param default_value_index] should be an index of the value in the [param values]. If [param values] is empty it should be either [code]1[/code] (checked), or [code]0[/code] (unchecked).
 			</description>
 		</method>
+		<method name="add_side_menu">
+			<return type="void" />
+			<param index="0" name="menu" type="Control" />
+			<param index="1" name="title" type="String" default="&quot;&quot;" />
+			<description>
+				Adds a control to the side of the [FileDialog] that can add custom options to the dialog. If [param title] is not empty, a header label will be added above the control. Only one side menu can be added to the [FileDialog] at a time. The menu can be removed with [method remove_side_menu].
+				If [member use_native_dialog] is enabled, the [FileDialog] will appear with full-size side menu and then open the native dialog once accepted.
+			</description>
+		</method>
 		<method name="clear_filename_filter">
 			<return type="void" />
 			<description>
@@ -113,6 +122,12 @@
 			<param index="0" name="flag" type="int" enum="FileDialog.Customization" />
 			<description>
 				Returns [code]true[/code] if the provided [param flag] is enabled.
+			</description>
+		</method>
+		<method name="remove_side_menu">
+			<return type="void" />
+			<description>
+				Removes the side menu. The menu node is automatically freed. Prints an error if the side menu was not added via [method add_side_menu].
 			</description>
 		</method>
 		<method name="set_customization_flag_enabled">

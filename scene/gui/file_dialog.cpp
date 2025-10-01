@@ -93,27 +93,16 @@ bool FileDialog::_can_use_native_popup() {
 	return DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE);
 }
 
-void FileDialog::popup(const Rect2i &p_rect) {
-	_update_option_controls();
-
-#ifdef TOOLS_ENABLED
-	if (is_part_of_edited_scene()) {
-		ConfirmationDialog::popup(p_rect);
-		return;
-	}
-#endif
-
-	if (_can_use_native_popup() && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
-		_native_popup();
-	} else {
-		ConfirmationDialog::popup(p_rect);
-	}
+bool FileDialog::_should_use_native_popup() {
+	return _can_use_native_popup() && (use_native_dialog || OS::get_singleton()->is_sandboxed());
 }
 
 void FileDialog::set_visible(bool p_visible) {
-	if (p_visible) {
-		_update_option_controls();
+	if (!p_visible) {
+		ConfirmationDialog::set_visible(false);
+		return;
 	}
+	_update_option_controls();
 
 #ifdef TOOLS_ENABLED
 	if (is_part_of_edited_scene()) {
@@ -122,11 +111,13 @@ void FileDialog::set_visible(bool p_visible) {
 	}
 #endif
 
-	if (_can_use_native_popup() && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
-		if (p_visible) {
-			_native_popup();
-		}
+	bool native = _should_use_native_popup();
+	if (native && !side_vbox) {
+		_native_popup();
 	} else {
+		if (side_vbox) {
+			_update_side_menu_visibility(native);
+		}
 		ConfirmationDialog::set_visible(p_visible);
 	}
 }
@@ -453,6 +444,13 @@ void FileDialog::_push_history() {
 }
 
 void FileDialog::_action_pressed() {
+	// Accept side menu properties and show native dialog.
+	if (side_vbox && _should_use_native_popup()) {
+		hide();
+		_native_popup();
+		return;
+	}
+
 	if (mode == FILE_MODE_OPEN_FILES) {
 		const Vector<String> files = get_selected_files();
 		if (!files.is_empty()) {
@@ -1521,6 +1519,11 @@ void FileDialog::_update_make_dir_visible() {
 	make_dir_container->set_visible(customization_flags[CUSTOMIZATION_CREATE_FOLDER] && mode != FILE_MODE_OPEN_FILE && mode != FILE_MODE_OPEN_FILES);
 }
 
+void FileDialog::_update_side_menu_visibility(bool p_native_dialog) {
+	left_center_split->set_visible(!p_native_dialog);
+	top_toolbar->set_visible(!p_native_dialog);
+}
+
 FileDialog::Access FileDialog::get_access() const {
 	return access;
 }
@@ -1887,6 +1890,31 @@ Dictionary FileDialog::get_selected_options() const {
 	return selected_options;
 }
 
+void FileDialog::add_side_menu(Control *p_menu, const String &p_title) {
+	ERR_FAIL_COND_MSG(side_vbox != nullptr, "Only one side menu can be added to FileDialog.");
+	ERR_FAIL_NULL(p_menu);
+
+	side_vbox = memnew(VBoxContainer);
+	side_vbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	side_vbox->set_stretch_ratio(0.5);
+	main_split->add_child(side_vbox);
+
+	if (!p_title.is_empty()) {
+		Label *title_label = memnew(Label(p_title));
+		title_label->set_theme_type_variation("HeaderSmall");
+		side_vbox->add_child(title_label);
+	}
+	p_menu->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	side_vbox->add_child(p_menu);
+}
+
+void FileDialog::remove_side_menu() {
+	ERR_FAIL_NULL_MSG(side_vbox, "FileDialog has no side menu added.");
+	main_split->remove_child(side_vbox);
+	side_vbox->queue_free();
+	_update_side_menu_visibility(false);
+}
+
 String FileDialog::get_option_name(int p_option) const {
 	ERR_FAIL_INDEX_V(p_option, options.size(), String());
 	return options[p_option].name;
@@ -2027,6 +2055,9 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_customization_flag_enabled", "flag", "enabled"), &FileDialog::set_customization_flag_enabled);
 	ClassDB::bind_method(D_METHOD("is_customization_flag_enabled", "flag"), &FileDialog::is_customization_flag_enabled);
 	ClassDB::bind_method(D_METHOD("deselect_all"), &FileDialog::deselect_all);
+
+	ClassDB::bind_method(D_METHOD("add_side_menu", "menu", "title"), &FileDialog::add_side_menu, DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("remove_side_menu"), &FileDialog::remove_side_menu);
 
 	ClassDB::bind_static_method("FileDialog", D_METHOD("set_favorite_list", "favorites"), &FileDialog::set_favorite_list);
 	ClassDB::bind_static_method("FileDialog", D_METHOD("get_favorite_list"), &FileDialog::get_favorite_list);
@@ -2214,7 +2245,7 @@ FileDialog::FileDialog() {
 	main_vbox = memnew(VBoxContainer);
 	add_child(main_vbox, false, INTERNAL_MODE_FRONT);
 
-	HBoxContainer *top_toolbar = memnew(HBoxContainer);
+	top_toolbar = memnew(HBoxContainer);
 	main_vbox->add_child(top_toolbar);
 
 	dir_prev = memnew(Button);
@@ -2281,13 +2312,18 @@ FileDialog::FileDialog() {
 	make_dir_container->add_child(make_dir_button);
 	make_dir_button->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::_make_dir));
 
-	HSplitContainer *main_split = memnew(HSplitContainer);
+	main_split = memnew(HSplitContainer);
 	main_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	main_vbox->add_child(main_split);
 
+	// TODO: Remove when SplitContainer allows more than 2 children.
+	left_center_split = memnew(HSplitContainer);
+	left_center_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	main_split->add_child(left_center_split);
+
 	{
 		VSplitContainer *fav_split = memnew(VSplitContainer);
-		main_split->add_child(fav_split);
+		left_center_split->add_child(fav_split);
 
 		favorite_vbox = memnew(VBoxContainer);
 		favorite_vbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -2337,7 +2373,7 @@ FileDialog::FileDialog() {
 	}
 
 	VBoxContainer *file_vbox = memnew(VBoxContainer);
-	main_split->add_child(file_vbox);
+	left_center_split->add_child(file_vbox);
 
 	HBoxContainer *lower_toolbar = memnew(HBoxContainer);
 	file_vbox->add_child(lower_toolbar);

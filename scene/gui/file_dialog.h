@@ -37,6 +37,7 @@ class DirAccess;
 class FlowContainer;
 class GridContainer;
 class HBoxContainer;
+class HSplitContainer;
 class ItemList;
 class LineEdit;
 class MenuButton;
@@ -218,6 +219,11 @@ private:
 	Button *show_filename_filter_button = nullptr;
 	MenuButton *file_sort_button = nullptr;
 
+	HSplitContainer *main_split = nullptr;
+	HBoxContainer *top_toolbar = nullptr;
+	HSplitContainer *left_center_split = nullptr;
+	VBoxContainer *side_vbox = nullptr;
+
 	VBoxContainer *favorite_vbox = nullptr;
 	Button *fav_up_button = nullptr;
 	Button *fav_down_button = nullptr;
@@ -331,10 +337,12 @@ private:
 	void _invalidate();
 	void _setup_button(Button *p_button, const Ref<Texture2D> &p_icon);
 	void _update_make_dir_visible();
+	void _update_side_menu_visibility(bool p_native_dialog);
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	bool _can_use_native_popup();
+	bool _should_use_native_popup();
 	void _native_popup();
 	void _native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter);
 	void _native_dialog_cb_with_options(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options);
@@ -361,7 +369,6 @@ protected:
 
 public:
 	virtual void set_visible(bool p_visible) override;
-	virtual void popup(const Rect2i &p_rect = Rect2i()) override;
 
 	void popup_file_dialog();
 	void clear_filters();
@@ -395,6 +402,9 @@ public:
 	int get_option_count() const;
 
 	Dictionary get_selected_options() const;
+
+	void add_side_menu(Control *p_menu, const String &p_title = String());
+	void remove_side_menu();
 
 	void set_root_subfolder(const String &p_root);
 	String get_root_subfolder() const;
