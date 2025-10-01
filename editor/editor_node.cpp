@@ -1761,7 +1761,7 @@ void EditorNode::save_resource_bulk(const LocalVector<Ref<Resource>> &p_resource
 		editor_data.notify_resource_saved(resource);
 	}
 
-	EditorFileSystem::get_singleton()->update_files(paths);
+	EditorFileSystem::get_singleton()->update_files(PackedStringArray(paths));
 	editor_data.apply_changes_in_editors();
 }
 
