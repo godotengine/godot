@@ -215,7 +215,9 @@ Error DirAccessWindows::make_dir(String p_dir) {
 }
 
 String DirAccessWindows::get_current_dir(bool p_include_drive) const {
+	print_error("get_current_dir 0 ");
 	String cdir = current_dir.trim_prefix(R"(\\?\)").replace_char('\\', '/');
+	print_error("get_current_dir 1 " + cdir);
 	String base = _get_root_path();
 	if (!base.is_empty()) {
 		String bd = cdir.replace_first(base, "");
@@ -225,7 +227,7 @@ String DirAccessWindows::get_current_dir(bool p_include_drive) const {
 			return _get_root_string() + bd;
 		}
 	}
-
+	print_error("get_current_dir 2");
 	if (p_include_drive) {
 		return cdir;
 	} else {

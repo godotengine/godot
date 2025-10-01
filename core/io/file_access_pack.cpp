@@ -624,6 +624,7 @@ Error DirAccessPack::change_dir(String p_dir) {
 }
 
 String DirAccessPack::get_current_dir(bool p_include_drive) const {
+	print_error("DirAccessPack::get_current_dir");
 	PackedData::PackedDir *pd = current;
 	String p = current->name;
 

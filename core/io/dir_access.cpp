@@ -35,6 +35,7 @@
 #include "core/os/os.h"
 #include "core/os/time.h"
 #include "core/templates/local_vector.h"
+#include "editor/settings/editor_settings.h"
 
 String DirAccess::_get_root_path() const {
 	switch (_access_type) {
@@ -42,6 +43,10 @@ String DirAccess::_get_root_path() const {
 			return ProjectSettings::get_singleton()->get_resource_path();
 		case ACCESS_USERDATA:
 			return OS::get_singleton()->get_user_data_dir();
+		case ACCESS_GLOBAL_RESOURCES:
+			//return ProjectSettings::get_singleton()->get_resource_path();
+			print_error("_get_root_path: " + EditorSettings::get_singleton()->get_global_resource_path());
+			return EditorSettings::get_singleton()->get_global_resource_path();
 		default:
 			return "";
 	}
@@ -53,6 +58,8 @@ String DirAccess::_get_root_string() const {
 			return "res://";
 		case ACCESS_USERDATA:
 			return "user://";
+		case ACCESS_GLOBAL_RESOURCES:
+			return "glob://";
 		default:
 			return "";
 	}
@@ -152,6 +159,8 @@ Error DirAccess::make_dir_recursive(const String &p_dir) {
 		base = "res://";
 	} else if (full_dir.begins_with("user://")) {
 		base = "user://";
+	} else if (full_dir.begins_with("glob://")) {
+		base = "glob://";
 	} else if (full_dir.is_network_share_path()) {
 		int pos = full_dir.find_char('/', 2);
 		ERR_FAIL_COND_V(pos < 0, ERR_INVALID_PARAMETER);
@@ -210,6 +219,17 @@ String DirAccess::fix_path(const String &p_path) const {
 			}
 
 		} break;
+		case ACCESS_GLOBAL_RESOURCES: {
+			if (ProjectSettings::get_singleton()) {
+				if (p_path.begins_with("glob://")) {
+					String resource_path = EditorSettings::get_singleton()->get_global_resource_path();
+					if (!resource_path.is_empty()) {
+						return p_path.replace_first("glob:/", resource_path);
+					}
+					return p_path.replace_first("glob://", "");
+				}
+			}
+		} break;
 		case ACCESS_FILESYSTEM: {
 			return p_path;
 		} break;
@@ -220,7 +240,7 @@ String DirAccess::fix_path(const String &p_path) const {
 	return p_path;
 }
 
-DirAccess::CreateFunc DirAccess::create_func[ACCESS_MAX] = { nullptr, nullptr, nullptr };
+DirAccess::CreateFunc DirAccess::create_func[ACCESS_MAX] = { nullptr, nullptr, nullptr, nullptr };
 
 Ref<DirAccess> DirAccess::create_for_path(const String &p_path) {
 	Ref<DirAccess> da;
@@ -228,6 +248,8 @@ Ref<DirAccess> DirAccess::create_for_path(const String &p_path) {
 		da = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
 		da = create(ACCESS_USERDATA);
+	} else if (p_path.begins_with("glob://")) {
+		da = create(ACCESS_GLOBAL_RESOURCES);
 	} else {
 		da = create(ACCESS_FILESYSTEM);
 	}
@@ -306,6 +328,7 @@ Error DirAccess::remove_absolute(const String &p_path) {
 
 Ref<DirAccess> DirAccess::create(AccessType p_access) {
 	Ref<DirAccess> da = create_func[p_access] ? create_func[p_access]() : nullptr;
+	print_error("DirAccess::create: " + String::num(int(p_access)) + " " + String::num(int(da.is_valid())));
 	if (da.is_valid()) {
 		da->_access_type = p_access;
 
@@ -315,6 +338,8 @@ Ref<DirAccess> DirAccess::create(AccessType p_access) {
 			da->change_dir("res://");
 		} else if (p_access == ACCESS_USERDATA) {
 			da->change_dir("user://");
+		} else if (p_access == ACCESS_GLOBAL_RESOURCES) {
+			da->change_dir("glob://");
 		}
 	}
 

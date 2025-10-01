@@ -39,6 +39,7 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
+#include "editor/settings/editor_settings.h"
 
 Ref<FileAccess> FileAccess::create(AccessType p_access) {
 	ERR_FAIL_INDEX_V(p_access, ACCESS_MAX, nullptr);
@@ -69,6 +70,8 @@ Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 		ret = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
 		ret = create(ACCESS_USERDATA);
+	} else if (p_path.begins_with("glob://")) {
+		ret = create(ACCESS_GLOBAL_RESOURCES);
 	} else if (p_path.begins_with("pipe://")) {
 		ret = create(ACCESS_PIPE);
 	} else {
@@ -165,6 +168,7 @@ Ref<FileAccess> FileAccess::open(const String &p_path, int p_mode_flags, Error *
 			if (r_error) {
 				*r_error = OK;
 			}
+			print_error("FileAccess::open 1 " + p_path);
 			return ret;
 		}
 	}
@@ -178,7 +182,7 @@ Ref<FileAccess> FileAccess::open(const String &p_path, int p_mode_flags, Error *
 	if (err != OK) {
 		ret.unref();
 	}
-
+	print_error("FileAccess::open 2 " + p_path);
 	return ret;
 }
 
@@ -283,6 +287,15 @@ String FileAccess::fix_path(const String &p_path) const {
 					return r_path.replace("user:/", data_dir);
 				}
 				return r_path.replace("user://", "");
+			}
+		} break;
+		case ACCESS_GLOBAL_RESOURCES: {
+			if (r_path.begins_with("glob://")) {
+				String data_dir = EditorSettings::get_singleton()->get_global_resource_path();
+				if (!data_dir.is_empty()) {
+					return r_path.replace("glob:/", data_dir);
+				}
+				return r_path.replace("glob://", "");
 			}
 
 		} break;

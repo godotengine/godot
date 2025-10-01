@@ -182,6 +182,7 @@ class EditorFileSystem : public Node {
 
 	EditorFileSystemDirectory *new_filesystem = nullptr;
 	static ScannedDirectory *first_scan_root_dir;
+	static ScannedDirectory *first_scan_global_root_dir;
 
 	bool filesystem_changed_queued = false;
 	bool scanning = false;

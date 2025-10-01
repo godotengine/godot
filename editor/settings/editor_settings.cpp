@@ -1244,6 +1244,16 @@ String EditorSettings::get_newest_settings_path() {
 	return EditorPaths::get_singleton()->get_config_dir().path_join(config_file_name);
 }
 
+String EditorSettings::get_global_resource_path() {
+	const String config_dir = EditorPaths::get_singleton()->get_config_dir();
+	const String global_res_dir = config_dir.path_join("global_resources");
+	//int minor = GODOT_VERSION_MINOR;
+	String filename;
+	filename = vformat("global_res-%d.%d", GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR);
+
+	return global_res_dir.path_join(filename);
+}
+
 void EditorSettings::create() {
 	// IMPORTANT: create() *must* create a valid EditorSettings singleton,
 	// as the rest of the engine code will assume it. As such, it should never

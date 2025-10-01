@@ -50,6 +50,7 @@
 EditorFileSystem *EditorFileSystem::singleton = nullptr;
 int EditorFileSystem::nb_files_total = 0;
 EditorFileSystem::ScannedDirectory *EditorFileSystem::first_scan_root_dir = nullptr;
+EditorFileSystem::ScannedDirectory *EditorFileSystem::first_scan_global_root_dir = nullptr;
 
 //the name is the version, to keep compatibility with different versions of Godot
 #define CACHE_FILE_NAME "filesystem_cache10"
@@ -245,7 +246,13 @@ void EditorFileSystem::_load_first_scan_root_dir() {
 	first_scan_root_dir = memnew(ScannedDirectory);
 	first_scan_root_dir->full_path = "res://";
 
-	nb_files_total = _scan_new_dir(first_scan_root_dir, d);
+	Ref<DirAccess> gd = DirAccess::create(DirAccess::ACCESS_GLOBAL_RESOURCES);
+	first_scan_global_root_dir = memnew(ScannedDirectory);
+	first_scan_global_root_dir->full_path = "glob://";
+
+	print_error("_load_first_scan_root_dir 1");
+	nb_files_total = _scan_new_dir(first_scan_root_dir, d) + _scan_new_dir(first_scan_global_root_dir, gd);
+	print_error("_load_first_scan_root_dir 2");
 }
 
 void EditorFileSystem::scan_for_uid() {
@@ -262,6 +269,7 @@ void EditorFileSystem::scan_for_uid() {
 
 	// Scan the file system to load uid.
 	_scan_for_uid_directory(first_scan_root_dir, import_extensions);
+	_scan_for_uid_directory(first_scan_global_root_dir, import_extensions);
 
 	// It's done, resetting the callback method to prevent a second scan.
 	ResourceUID::scan_for_uid_on_startup = nullptr;
@@ -302,7 +310,7 @@ void EditorFileSystem::_first_scan_filesystem() {
 	HashSet<String> existing_class_names;
 	HashSet<String> extensions;
 
-	if (!first_scan_root_dir) {
+	if (!first_scan_root_dir || !first_scan_global_root_dir) {
 		ep.step(TTR("Scanning file structure..."), 0, true);
 		_load_first_scan_root_dir();
 	}
@@ -317,6 +325,7 @@ void EditorFileSystem::_first_scan_filesystem() {
 	// At the same time, to prevent looping multiple times in all files, it looks for extensions.
 	ep.step(TTR("Loading global class names..."), 1, true);
 	_first_scan_process_scripts(first_scan_root_dir, gdextension_extensions, existing_class_names, extensions);
+	_first_scan_process_scripts(first_scan_global_root_dir, gdextension_extensions, existing_class_names, extensions);
 
 	// Removing invalid global class to prevent having invalid paths in ScriptServer.
 	bool save_scripts = _remove_invalid_global_class_names(existing_class_names);
@@ -391,7 +400,7 @@ void EditorFileSystem::_first_scan_process_scripts(const ScannedDirectory *p_sca
 
 void EditorFileSystem::_scan_filesystem() {
 	// On the first scan, the first_scan_root_dir is created in _first_scan_filesystem.
-	ERR_FAIL_COND(!scanning || new_filesystem || (first_scan && !first_scan_root_dir));
+	ERR_FAIL_COND(!scanning || new_filesystem || (first_scan && !first_scan_root_dir && !first_scan_global_root_dir));
 
 	//read .fscache
 	String cpath;
@@ -498,10 +507,12 @@ void EditorFileSystem::_scan_filesystem() {
 	new_filesystem->parent = nullptr;
 
 	ScannedDirectory *sd;
+	ScannedDirectory *gsd;
 	HashSet<String> *processed_files = nullptr;
 	// On the first scan, the first_scan_root_dir is created in _first_scan_filesystem.
 	if (first_scan) {
 		sd = first_scan_root_dir;
+		gsd = first_scan_global_root_dir;
 		// Will be updated on scan.
 		ResourceUID::get_singleton()->clear();
 		ResourceUID::scan_for_uid_on_startup = nullptr;
@@ -511,9 +522,14 @@ void EditorFileSystem::_scan_filesystem() {
 		sd = memnew(ScannedDirectory);
 		sd->full_path = "res://";
 		nb_files_total = _scan_new_dir(sd, d);
+		Ref<DirAccess> gd = DirAccess::create(DirAccess::ACCESS_GLOBAL_RESOURCES);
+		gsd = memnew(ScannedDirectory);
+		gsd->full_path = "glob://";
+		nb_files_total = _scan_new_dir(gsd, gd);
 	}
 
 	_process_file_system(sd, new_filesystem, sp, processed_files);
+	_process_file_system(gsd, new_filesystem, sp, processed_files);
 
 	if (first_scan) {
 		_process_removed_files(*processed_files);
@@ -524,6 +540,8 @@ void EditorFileSystem::_scan_filesystem() {
 	if (first_scan) {
 		memdelete(first_scan_root_dir);
 		first_scan_root_dir = nullptr;
+		memdelete(first_scan_global_root_dir);
+		first_scan_global_root_dir = nullptr;
 		memdelete(processed_files);
 	} else {
 		//on the first scan this is done from the main thread after re-importing
@@ -1134,7 +1152,9 @@ int EditorFileSystem::_scan_new_dir(ScannedDirectory *p_dir, Ref<DirAccess> &da)
 	List<String> dirs;
 	List<String> files;
 
+	print_error("_scan_new_dir 1");
 	String cd = da->get_current_dir();
+	print_error("_scan_new_dir 2");
 
 	da->list_dir_begin();
 	while (true) {
