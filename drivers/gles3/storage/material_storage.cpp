@@ -2926,6 +2926,8 @@ void SceneShaderData::set_code(const String &p_code) {
 	uses_alpha_clip = false;
 	uses_blend_alpha = false;
 	uses_depth_prepass_alpha = false;
+	opaque_skipped = false;
+	depth_prepass_skipped = false;
 	uses_discard = false;
 	uses_roughness = false;
 	uses_normal = false;
@@ -3007,6 +3009,9 @@ void SceneShaderData::set_code(const String &p_code) {
 	actions.render_mode_flags["wireframe"] = &wireframe;
 	actions.render_mode_flags["particle_trails"] = &uses_particle_trails;
 	actions.render_mode_flags["world_vertex_coords"] = &uses_world_coordinates;
+
+	actions.render_mode_flags["skip_opaque_pass"] = &opaque_skipped;
+	actions.render_mode_flags["skip_depth_prepass"] = &depth_prepass_skipped;
 
 	actions.usage_flag_pointers["ALPHA"] = &uses_alpha;
 	actions.usage_flag_pointers["ALPHA_SCISSOR_THRESHOLD"] = &uses_alpha_clip;
