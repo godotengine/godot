@@ -121,13 +121,14 @@ public:
 };
 
 class AudioDriverManager {
-	enum {
+	enum : int32_t {
 
 		MAX_DRIVERS = 10
 	};
 
 public:
-	enum MuteFlags {
+	// Specify uint32_t to prevent UBSan errors on bitwise operations.
+	enum MuteFlags : uint32_t {
 		// User enables or disables audio, e.g. via button in editor.
 		MUTE_FLAG_DISABLED = 1 << 0,
 		// Whether app is in focus.
