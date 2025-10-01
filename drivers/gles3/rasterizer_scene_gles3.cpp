@@ -1431,7 +1431,7 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 #else
 				bool force_alpha = false;
 #endif
-				if (!force_alpha && (surf->flags & (GeometryInstanceSurface::FLAG_PASS_DEPTH | GeometryInstanceSurface::FLAG_PASS_OPAQUE))) {
+				if (!force_alpha && (surf->flags & GeometryInstanceSurface::FLAG_PASS_OPAQUE)) {
 					rl->add_element(surf);
 				}
 				if (force_alpha || (surf->flags & GeometryInstanceSurface::FLAG_PASS_ALPHA)) {
@@ -1460,7 +1460,7 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 					rl->add_element(surf);
 				}
 			} else {
-				if (surf->flags & (GeometryInstanceSurface::FLAG_PASS_DEPTH | GeometryInstanceSurface::FLAG_PASS_OPAQUE)) {
+				if (surf->flags & GeometryInstanceSurface::FLAG_PASS_DEPTH) {
 					rl->add_element(surf);
 				}
 			}
