@@ -197,38 +197,48 @@ static void test_directory(const String &p_dir) {
 
 static void setup_global_classes(const String &p_dir) {
 	Error err = OK;
-	Ref<DirAccess> dir = DirAccess::open(p_dir, &err);
+	Ref<DirAccess> dir(DirAccess::open(p_dir, &err));
 
-	if (err != OK) {
-		FAIL("Invalid test directory.");
-		return;
-	}
+	FAIL_COND_MSG(err != OK, vformat("failed to open directory %s", p_dir));
 
-	String path = dir->get_current_dir();
+	String current_dir = dir->get_current_dir();
 
 	dir->list_dir_begin();
 	String next = dir->get_next();
 
+	StringName gdscript_name = GDScriptLanguage::get_singleton()->get_name();
 	while (!next.is_empty()) {
-		if (dir->current_is_dir() && next != "." && next != "..") {
-			setup_global_classes(path.path_join(next));
-		} else if (next.ends_with(".gd")) {
+		if (dir->current_is_dir()) {
+			if (next == "." || next == ".." || next == "completion" || next == "lsp" || next == "refactor") {
+				next = dir->get_next();
+				continue;
+			}
+			setup_global_classes(current_dir.path_join(next));
+		} else {
+			if (!next.ends_with(".global.gd")) {
+				next = dir->get_next();
+				continue;
+			}
+
 			String base_type;
-			bool is_abstract;
-			bool is_tool;
-			String source_file = path.path_join(next);
+			String source_file = ProjectSettings::get_singleton()->localize_path(current_dir.path_join(next));
+			bool is_abstract = false;
+			bool is_tool = false;
 			String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(source_file, &base_type, nullptr, &is_abstract, &is_tool);
 			if (class_name.is_empty()) {
 				next = dir->get_next();
 				continue;
 			}
-			ERR_FAIL_COND_MSG(ScriptServer::is_global_class(class_name),
-					"Class name \"" + class_name + "\" from \"" + source_file + "\" is already used in \"" + ScriptServer::get_global_class_path(class_name) + "\".");
+			FAIL_COND_MSG(ScriptServer::is_global_class(class_name),
+					vformat("Class name '%s' from %s is already used in %s", class_name, source_file, ScriptServer::get_global_class_path(class_name)));
 
-			ScriptServer::add_global_class(class_name, base_type, GDScriptLanguage::get_singleton()->get_name(), source_file, is_abstract, is_tool);
+			ScriptServer::add_global_class(class_name, base_type, gdscript_name, source_file, is_abstract, is_tool);
 		}
+
 		next = dir->get_next();
 	}
+
+	dir->list_dir_end();
 }
 
 TEST_SUITE("[Modules][GDScript][Refactor tools]") {
