@@ -197,7 +197,7 @@
 		</member>
 		<member name="velocity" type="Vector2" setter="set_velocity" getter="get_velocity" default="Vector2(0, 0)">
 			Current velocity vector in pixels per second, used and modified during calls to [method move_and_slide].
-			This property should not be set to a value multiplied by [code]delta[/code], because this happens internally in [method move_and_slide]. Otherwise, the simulation will run at an incorrect speed.
+			[b]Note:[/b] A common mistake is setting this property to the desired velocity multiplied by [code]delta[/code], which produces a motion vector in pixels.
 		</member>
 		<member name="wall_min_slide_angle" type="float" setter="set_wall_min_slide_angle" getter="get_wall_min_slide_angle" default="0.2617994">
 			Minimum angle (in radians) where the body is allowed to slide when it encounters a wall. The default value equals 15 degrees. This property only affects movement when [member motion_mode] is [constant MOTION_MODE_FLOATING].
