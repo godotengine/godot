@@ -4953,9 +4953,12 @@ void Tree::_notification(int p_what) {
 
 		case NOTIFICATION_DRAG_BEGIN: {
 			single_select_defer = nullptr;
-			if (theme_cache.scroll_speed > 0) {
-				scrolling = true;
-				set_process_internal(true);
+			if (theme_cache.scroll_speed > 0 && drop_mode_flags != DROP_MODE_DISABLED) {
+				Point2 mouse_pos = get_local_mouse_position();
+				if (can_drop_data(mouse_pos, get_drag_data(mouse_pos))) {
+					scrolling = true;
+					set_process_internal(true);
+				}
 			}
 		} break;
 
