@@ -2119,28 +2119,12 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	}
 
 	VkSamplerYcbcrConversionInfo ycbcr_sampler_info = {};
-	if (p_view.use_sampler) {
-		VkSamplerYcbcrConversionCreateInfo ycbcr_sampler_create_info = {};
-		ycbcr_sampler_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO;
-		ycbcr_sampler_create_info.pNext = nullptr;
-		ycbcr_sampler_create_info.format = image_view_create_info.format;
-		ycbcr_sampler_create_info.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709;
-		ycbcr_sampler_create_info.ycbcrRange = VK_SAMPLER_YCBCR_RANGE_ITU_FULL;
-		ycbcr_sampler_create_info.components.r = VK_COMPONENT_SWIZZLE_R;
-		ycbcr_sampler_create_info.components.g = VK_COMPONENT_SWIZZLE_G;
-		ycbcr_sampler_create_info.components.b = VK_COMPONENT_SWIZZLE_B;
-		ycbcr_sampler_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-		ycbcr_sampler_create_info.xChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN;
-		ycbcr_sampler_create_info.yChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN;
-		ycbcr_sampler_create_info.chromaFilter = VK_FILTER_LINEAR;
-		ycbcr_sampler_create_info.forceExplicitReconstruction = false;
-
-		VkSamplerYcbcrConversion ycbcr_sampler;
-		vkCreateSamplerYcbcrConversionKHR(vk_device, &ycbcr_sampler_create_info, nullptr, &ycbcr_sampler);
+	if (p_view.ycbcr_sampler.id) {
+		SamplerInfo *sampler_info = (SamplerInfo *)p_view.ycbcr_sampler.id;
 
 		ycbcr_sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO;
 		ycbcr_sampler_info.pNext = image_view_create_info_next;
-		ycbcr_sampler_info.conversion = ycbcr_sampler;
+		ycbcr_sampler_info.conversion = sampler_info->vk_ycbcr_conversion;
 
 		image_view_create_info_next = &ycbcr_sampler_info;
 	}
@@ -2479,6 +2463,8 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::SAMPLER_BORDER_COLOR_FLOAT_OPAQUE_WHITE, V
 static_assert(ENUM_MEMBERS_EQUAL(RDD::SAMPLER_BORDER_COLOR_INT_OPAQUE_WHITE, VK_BORDER_COLOR_INT_OPAQUE_WHITE));
 
 RDD::SamplerID RenderingDeviceDriverVulkan::sampler_create(const SamplerState &p_state) {
+	SamplerInfo *sampler_info = VersatileResource::allocate<SamplerInfo>(resources_allocator);
+
 	VkSamplerCreateInfo sampler_create_info = {};
 	sampler_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	sampler_create_info.pNext = nullptr;
@@ -2499,15 +2485,45 @@ RDD::SamplerID RenderingDeviceDriverVulkan::sampler_create(const SamplerState &p
 	sampler_create_info.borderColor = (VkBorderColor)p_state.border_color;
 	sampler_create_info.unnormalizedCoordinates = p_state.unnormalized_uvw;
 
+	VkSamplerYcbcrConversionInfo ycbcr_conversion_info = {};
+	if (p_state.enable_ycbcr) {
+		ycbcr_conversion_info.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO;
+		ycbcr_conversion_info.pNext = nullptr;
+
+		VkSamplerYcbcrConversionCreateInfo ycbcr_conversion_create_info = {};
+		ycbcr_conversion_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO;
+		ycbcr_conversion_create_info.pNext = nullptr;
+		ycbcr_conversion_create_info.format = VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+		ycbcr_conversion_create_info.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709;
+		ycbcr_conversion_create_info.ycbcrRange = VK_SAMPLER_YCBCR_RANGE_ITU_FULL;
+		ycbcr_conversion_create_info.components.r = VK_COMPONENT_SWIZZLE_R;
+		ycbcr_conversion_create_info.components.g = VK_COMPONENT_SWIZZLE_G;
+		ycbcr_conversion_create_info.components.b = VK_COMPONENT_SWIZZLE_B;
+		ycbcr_conversion_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+		ycbcr_conversion_create_info.xChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN;
+		ycbcr_conversion_create_info.yChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN;
+		ycbcr_conversion_create_info.chromaFilter = VK_FILTER_LINEAR;
+		ycbcr_conversion_create_info.forceExplicitReconstruction = false;
+
+		VkSamplerYcbcrConversion sampler_ycbcr_conversion;
+		vkCreateSamplerYcbcrConversion(vk_device, &ycbcr_conversion_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER), &sampler_ycbcr_conversion);
+		sampler_info->vk_ycbcr_conversion = sampler_ycbcr_conversion;
+
+		ycbcr_conversion_info.conversion = sampler_ycbcr_conversion;
+		sampler_create_info.pNext = &ycbcr_conversion_info;
+	}
+
 	VkSampler vk_sampler = VK_NULL_HANDLE;
 	VkResult res = vkCreateSampler(vk_device, &sampler_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER), &vk_sampler);
 	ERR_FAIL_COND_V_MSG(res, SamplerID(), "vkCreateSampler failed with error " + itos(res) + ".");
 
-	return SamplerID(vk_sampler);
+	sampler_info->vk_sampler = vk_sampler;
+	return SamplerID(sampler_info);
 }
 
 void RenderingDeviceDriverVulkan::sampler_free(SamplerID p_sampler) {
-	vkDestroySampler(vk_device, (VkSampler)p_sampler.id, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER));
+	SamplerInfo *sampler_info = (SamplerInfo *)p_sampler.id;
+	vkDestroySampler(vk_device, sampler_info->vk_sampler, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER));
 }
 
 bool RenderingDeviceDriverVulkan::sampler_is_format_supported_for_filter(DataFormat p_format, SamplerFilter p_filter) {
@@ -3791,13 +3807,29 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 							}
 						}
 						if (immutable_bind_index >= 0) {
-							layout_binding.pImmutableSamplers = (VkSampler *)&p_immutable_samplers[immutable_bind_index].ids[0].id;
+							SamplerInfo *sampler_info = (SamplerInfo *)p_immutable_samplers[immutable_bind_index].ids[0].id;
+							layout_binding.pImmutableSamplers = &sampler_info->vk_sampler;
 						}
 					}
 				} break;
 				case UNIFORM_TYPE_SAMPLER_WITH_TEXTURE: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 					layout_binding.descriptorCount = uniform.length;
+
+					// Immutable samplers: here they get set in the layoutbinding, given that they will not be changed later.
+					int immutable_bind_index = -1;
+					if (immutable_samplers_enabled && p_immutable_samplers.size() > 0) {
+						for (int k = 0; k < p_immutable_samplers.size(); k++) {
+							if (p_immutable_samplers[k].binding == layout_binding.binding) {
+								immutable_bind_index = k;
+								break;
+							}
+						}
+						if (immutable_bind_index >= 0) {
+							SamplerInfo *sampler_info = (SamplerInfo *)p_immutable_samplers[immutable_bind_index].ids[0].id;
+							layout_binding.pImmutableSamplers = &sampler_info->vk_sampler;
+						}
+					}
 				} break;
 				case UNIFORM_TYPE_TEXTURE: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
@@ -4137,7 +4169,7 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 
 				for (uint32_t j = 0; j < num_descriptors; j++) {
 					vk_img_infos[j] = {};
-					vk_img_infos[j].sampler = (VkSampler)uniform.ids[j].id;
+					vk_img_infos[j].sampler = ((SamplerInfo *)uniform.ids[j].id)->vk_sampler;
 					vk_img_infos[j].imageView = VK_NULL_HANDLE;
 					vk_img_infos[j].imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 				}
@@ -4156,7 +4188,7 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 					}
 #endif
 					vk_img_infos[j] = {};
-					vk_img_infos[j].sampler = (VkSampler)uniform.ids[j * 2 + 0].id;
+					vk_img_infos[j].sampler = ((SamplerInfo *)uniform.ids[j * 2 + 0].id)->vk_sampler;
 					vk_img_infos[j].imageView = ((const TextureInfo *)uniform.ids[j * 2 + 1].id)->vk_view;
 					vk_img_infos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				}
@@ -4226,7 +4258,7 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 
 				for (uint32_t j = 0; j < num_descriptors; j++) {
 					vk_img_infos[j] = {};
-					vk_img_infos[j].sampler = (VkSampler)uniform.ids[j * 2 + 0].id;
+					vk_img_infos[j].sampler = ((SamplerInfo *)uniform.ids[j * 2 + 0].id)->vk_sampler;
 
 					const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[j * 2 + 1].id;
 					vk_buf_infos[j] = {};
@@ -6031,19 +6063,18 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 		ERR_FAIL_V_MSG(RDD::VideoSessionID(), "Video profile is not supported");
 	}
 
-	VkVideoSessionCreateInfoKHR session_info = {
-		.sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_CREATE_INFO_KHR,
-		.pNext = nullptr,
-		.queueFamilyIndex = command_queue_family_index,
-		.flags = 0,
-		.pVideoProfile = &video_profile,
-		.pictureFormat = RD_TO_VK_FORMAT[p_image_format],
-		.maxCodedExtent = extent,
-		.referencePictureFormat = RD_TO_VK_FORMAT[p_image_format],
-		.maxDpbSlots = p_max_dpb_slots,
-		.maxActiveReferencePictures = p_max_dpb_slots - 1,
-		.pStdHeaderVersion = &video_capabilities.stdHeaderVersion,
-	};
+	VkVideoSessionCreateInfoKHR session_info = {};
+	session_info.sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_CREATE_INFO_KHR;
+	session_info.pNext = nullptr;
+	session_info.queueFamilyIndex = command_queue_family_index;
+	session_info.flags = 0;
+	session_info.pVideoProfile = &video_profile;
+	session_info.pictureFormat = RD_TO_VK_FORMAT[p_image_format];
+	session_info.maxCodedExtent = extent;
+	session_info.referencePictureFormat = RD_TO_VK_FORMAT[p_image_format];
+	session_info.maxDpbSlots = p_max_dpb_slots;
+	session_info.maxActiveReferencePictures = p_max_dpb_slots - 1;
+	session_info.pStdHeaderVersion = &video_capabilities.stdHeaderVersion;
 
 	VkVideoSessionKHR video_session;
 	result = vkCreateVideoSessionKHR(vk_device, &session_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_KHR), &video_session);
@@ -6562,7 +6593,11 @@ void RenderingDeviceDriverVulkan::set_object_name(ObjectType p_type, ID p_driver
 			_set_object_name(VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)tex_info->vk_view, p_name + " View");
 		} break;
 		case OBJECT_TYPE_SAMPLER: {
-			_set_object_name(VK_OBJECT_TYPE_SAMPLER, p_driver_id.id, p_name);
+			const SamplerInfo *sampler_info = (const SamplerInfo *)p_driver_id.id;
+			_set_object_name(VK_OBJECT_TYPE_SAMPLER, (uint64_t)sampler_info->vk_sampler, p_name);
+			if (sampler_info->vk_ycbcr_conversion) {
+				_set_object_name(VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION, (uint64_t)sampler_info->vk_ycbcr_conversion, p_name + "YCbCr Conversion");
+			}
 		} break;
 		case OBJECT_TYPE_BUFFER: {
 			const BufferInfo *buf_info = (const BufferInfo *)p_driver_id.id;

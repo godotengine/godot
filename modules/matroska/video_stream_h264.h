@@ -43,6 +43,8 @@ private:
 
 	uint64_t prev_pic_order_cnt_lsb;
 	uint64_t prev_pic_order_cnt_msb;
+	uint64_t prev_frame_num_offset;
+	uint64_t prev_frame_num;
 
 	RD::VideoCodingH264ProfileIdc target_profile_idc = RenderingDeviceCommons::VIDEO_CODING_H264_PROFILE_IDC_HIGH;
 	RD::VideoCodingH264ProfileIdc minimum_profile_idc;
@@ -50,10 +52,9 @@ private:
 	// TODO make an RD version
 	uint32_t target_level_idc;
 
+	RenderingDevice *coding_device;
 	RD::VideoProfile video_profile = {};
 
-	RD::VideoCodingH264SequenceParameterSet active_sps;
-	RD::VideoCodingH264PictureParameterSet active_pps;
 	Vector<RD::VideoCodingH264SequenceParameterSet> sps_sets;
 	Vector<RD::VideoCodingH264PictureParameterSet> pps_sets;
 
@@ -67,7 +68,7 @@ private:
 	uint8_t target_dst_layer = 0;
 
 public:
-	RID create_video_session(uint32_t p_width, uint32_t p_height) final override;
+	RID create_video_session(RenderingDevice *p_coding_device, RID p_sampler, uint32_t p_width, uint32_t p_height) final override;
 
 	void parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) final override;
 
@@ -78,7 +79,7 @@ public:
 	void parse_nal_unit(uint64_t p_size, bool p_is_metadata);
 	RD::VideoCodingH264SequenceParameterSet parse_sequence_parameter_set(uint64_t p_size);
 	RD::VideoCodingH264PictureParameterSet parse_picture_parameter_set(uint64_t p_size);
-	RD::VideoCodingDecodeH264SliceHeader parse_slice_header(uint64_t p_size, bool p_is_idr);
+	RD::VideoCodingDecodeH264SliceHeader parse_slice_header(uint64_t p_size, bool p_is_reference, bool p_is_idr);
 
 	uint64_t read_bits(uint8_t p_amount);
 	uint64_t read_ue();

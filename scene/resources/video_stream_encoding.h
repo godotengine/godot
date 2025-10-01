@@ -31,12 +31,13 @@
 #pragma once
 
 #include "core/io/resource.h"
+#include "servers/rendering/rendering_device.h"
 
 class VideoStreamEncoding : public Resource {
 	GDCLASS(VideoStreamEncoding, Resource);
 
 public:
-	virtual RID create_video_session(uint32_t p_width, uint32_t p_height) = 0;
+	virtual RID create_video_session(RenderingDevice *p_coding_device, RID p_sampler, uint32_t p_width, uint32_t p_height) = 0;
 
 	virtual void parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) = 0;
 

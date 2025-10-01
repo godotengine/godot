@@ -38,7 +38,10 @@
 #include "core/variant/variant.h"
 #include "scene/resources/texture.h"
 #include "servers/audio_server.h"
+#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_device_binds.h"
 #include "video_stream_h264.h"
+#include "ycbcr_sampler.glsl.gen.h"
 
 #include <cstdint>
 
@@ -908,6 +911,52 @@ void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 		src += size;
 		WARN_PRINT(vformat("Unhandled element with ID %x of size %d", id, size));
 	}
+
+	// All Matroska metadata is done, now create the ycbcr sampler shader and dst image
+	RD::TextureFormat dst_rgba_format;
+	dst_rgba_format.format = RD::DATA_FORMAT_R8G8B8A8_UINT;
+	dst_rgba_format.width = width;
+	dst_rgba_format.height = height;
+	dst_rgba_format.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+
+	dst_rgba_texture = coding_device->texture_create(dst_rgba_format, RD::TextureView());
+
+	Vector<RD::PipelineImmutableSampler> samplers;
+
+	RD::SamplerState src_sampler_state;
+	src_sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+	src_sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+	src_sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+	src_sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+	src_sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+
+	// TODO State of the sampler depends on the metadata
+	src_sampler_state.enable_ycbcr = true;
+
+	ycbcr_sampler = coding_device->sampler_create(src_sampler_state);
+
+	RD::Uniform src_uniform;
+	src_uniform.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+	src_uniform.binding = 0;
+	src_uniform.append_id(ycbcr_sampler);
+	src_uniform.append_id(dst_rgba_texture);
+	samplers.push_back(src_uniform);
+
+	Ref<RDShaderFile> ycbcr_sampler_src;
+	ycbcr_sampler_src.instantiate();
+
+	Error err = ycbcr_sampler_src->parse_versions_from_text(ycbcr_sampler_shader_glsl);
+	if (err != OK) {
+		ycbcr_sampler_src->print_errors("Invalid ycbcr shader code");
+	}
+
+	Vector<uint8_t> ycbcr_sampler_binary = coding_device->shader_compile_binary_from_spirv(ycbcr_sampler_src->get_spirv_stages());
+
+	ycbcr_sampler_shader = coding_device->shader_create_from_bytecode_with_samplers(ycbcr_sampler_binary, RID(), samplers);
+	ERR_FAIL_COND(ycbcr_sampler_shader.is_null());
+
+	ycbcr_sampler_pipeline = coding_device->compute_pipeline_create(ycbcr_sampler_shader);
+	ERR_FAIL_COND(ycbcr_sampler_pipeline.is_null());
 }
 
 void VideoStreamPlaybackMatroska::play() {
@@ -917,7 +966,7 @@ void VideoStreamPlaybackMatroska::play() {
 		return;
 	}
 
-	video_stream_encoding->create_video_session(width, height);
+	video_stream_encoding->create_video_session(coding_device, ycbcr_sampler, width, height);
 
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ, &err);
@@ -930,7 +979,32 @@ void VideoStreamPlaybackMatroska::play() {
 	Vector<uint8_t> frame = file->get_buffer(block.size);
 	video_stream_encoding->append_container_block(frame);
 
-	cluster_rid = video_stream_encoding->end_cluster();
+	src_ycbcr_texture = video_stream_encoding->end_cluster();
+
+	Vector<RD::Uniform> uniforms;
+
+	RD::Uniform src_uniform;
+	src_uniform.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+	src_uniform.binding = 0;
+	src_uniform.append_id(ycbcr_sampler);
+	src_uniform.append_id(src_ycbcr_texture);
+	uniforms.push_back(src_uniform);
+
+	RD::Uniform dst_uniform;
+	dst_uniform.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+	dst_uniform.binding = 1;
+	dst_uniform.append_id(dst_rgba_texture);
+	uniforms.push_back(dst_uniform);
+
+	RID uniform_set = coding_device->uniform_set_create(uniforms, ycbcr_sampler_shader, 0);
+
+	RD::ComputeListID compute_list = coding_device->compute_list_begin();
+	coding_device->compute_list_bind_compute_pipeline(compute_list, ycbcr_sampler_pipeline);
+	coding_device->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+	coding_device->compute_list_dispatch(compute_list, 50, 50, 1);
+	coding_device->compute_list_end();
+	coding_device->submit();
+	coding_device->sync();
 }
 
 void VideoStreamPlaybackMatroska::stop() {
@@ -970,11 +1044,11 @@ Ref<Texture2D> VideoStreamPlaybackMatroska::get_texture() const {
 
 // TODO
 void VideoStreamPlaybackMatroska::update(double p_delta) {
-	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(cluster_rid, 0);
+	Vector<uint8_t> data = coding_device->texture_get_data(dst_rgba_texture, 0);
 
 	Ref<Image> frame;
 	frame.instantiate();
-	frame->set_data(width, height, false, Image::FORMAT_R8, data);
+	frame->set_data(width, height, false, Image::FORMAT_RGBA8, data);
 
 	image_texture->set_image(frame);
 }
@@ -994,6 +1068,14 @@ void VideoStreamPlaybackMatroska::set_audio_track(int p_idx) {
 
 VideoStreamPlaybackMatroska::VideoStreamPlaybackMatroska() {
 	image_texture.instantiate();
+
+	coding_device = RenderingServer::get_singleton()->create_local_rendering_device();
+}
+
+VideoStreamPlaybackMatroska::~VideoStreamPlaybackMatroska() {
+	if (coding_device) {
+		memdelete(coding_device);
+	}
 }
 
 Ref<Resource> ResourceFormatLoaderMatroska::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {

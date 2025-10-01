@@ -34,9 +34,10 @@
 #include "core/string/print_string.h"
 #include "core/variant/variant.h"
 
-RID VideoStreamH264::create_video_session(uint32_t p_width, uint32_t p_height) {
-	RD::get_singleton()->video_profile_get_capabilities(video_profile);
-	RD::get_singleton()->video_profile_get_format_properties(video_profile);
+RID VideoStreamH264::create_video_session(RenderingDevice *p_coding_device, RID p_sampler, uint32_t p_width, uint32_t p_height) {
+	coding_device = p_coding_device;
+	coding_device->video_profile_get_capabilities(video_profile);
+	coding_device->video_profile_get_format_properties(video_profile);
 
 	Vector<RD::VideoProfile> video_profiles;
 	video_profiles.push_back(video_profile);
@@ -56,7 +57,7 @@ RID VideoStreamH264::create_video_session(uint32_t p_width, uint32_t p_height) {
 	dpb_format.is_resolve_buffer = false;
 	dpb_format.is_discardable = false;
 
-	dpb_texture = RD::get_singleton()->texture_create(dpb_format, RD::TextureView());
+	dpb_texture = coding_device->texture_create(dpb_format, RD::TextureView());
 
 	RD::TextureFormat dst_format;
 	dst_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
@@ -74,12 +75,12 @@ RID VideoStreamH264::create_video_session(uint32_t p_width, uint32_t p_height) {
 	dst_format.is_discardable = false;
 
 	RD::TextureView dst_view;
-	dst_view.use_sampler = true;
+	dst_view.ycbcr_sampler = p_sampler;
 
-	dst_texture = RD::get_singleton()->texture_create(dst_format, dst_view);
+	dst_texture = coding_device->texture_create(dst_format, dst_view);
 
-	video_session = RD::get_singleton()->video_session_create(video_profile, RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM, p_width, p_height, 17);
-	RD::get_singleton()->video_session_add_h264_parameters(video_session, sps_sets, pps_sets);
+	video_session = coding_device->video_session_create(video_profile, RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM, p_width, p_height, 17);
+	coding_device->video_session_add_h264_parameters(video_session, sps_sets, pps_sets);
 	return video_session;
 }
 
@@ -121,13 +122,13 @@ void VideoStreamH264::parse_container_metadata(const uint8_t *p_stream, uint64_t
 	if (target_profile_idc == RD::VIDEO_CODING_H264_PROFILE_IDC_HIGH) {
 		uint8_t chroma_format = read_bits(8) & 0b11;
 		if (chroma_format == 0) {
-			video_profile.chroma_subsampling = RD::CHROMA_SUBSAMPLING_MONOCHROME;
+			video_profile.chroma_subsampling = RD::VIDEO_CHROMA_SUBSAMPLING_MONOCHROME;
 		} else if (chroma_format == 1) {
-			video_profile.chroma_subsampling = RD::CHROMA_SUBSAMPLING_420;
+			video_profile.chroma_subsampling = RD::VIDEO_CHROMA_SUBSAMPLING_420;
 		} else if (chroma_format == 2) {
-			video_profile.chroma_subsampling = RD::CHROMA_SUBSAMPLING_422;
+			video_profile.chroma_subsampling = RD::VIDEO_CHROMA_SUBSAMPLING_422;
 		} else if (chroma_format == 3) {
-			video_profile.chroma_subsampling = RD::CHROMA_SUBSAMPLING_444;
+			video_profile.chroma_subsampling = RD::VIDEO_CHROMA_SUBSAMPLING_444;
 		}
 
 		video_profile.luma_bit_depth = (read_bits(8) & 0b111) + 8;
@@ -140,16 +141,12 @@ void VideoStreamH264::parse_container_metadata(const uint8_t *p_stream, uint64_t
 			parse_nal_unit(sps_ext_size, true);
 			src = start + sps_ext_size;
 		}
-	} else {
-		video_profile.chroma_subsampling = RD::CHROMA_SUBSAMPLING_420;
-		video_profile.luma_bit_depth = 8;
-		video_profile.chroma_bit_depth = 8;
 	}
 }
 
 void VideoStreamH264::begin_cluster() {
 	print_line("----------BEGIN CLUSTER--------------------");
-	RD::get_singleton()->video_coding_begin(video_session, dpb_texture);
+	coding_device->video_coding_begin(video_session, dpb_texture);
 
 	target_dpb_layer = 0;
 	target_dst_layer = 0;
@@ -176,7 +173,7 @@ void VideoStreamH264::append_container_block(Vector<uint8_t> p_buffer) {
 
 RID VideoStreamH264::end_cluster() {
 	print_line("----------END CLUSTER--------------------");
-	RD::get_singleton()->video_coding_end();
+	coding_device->video_coding_end();
 	return dst_texture;
 }
 
@@ -189,20 +186,9 @@ void VideoStreamH264::parse_nal_unit(uint64_t p_size, bool p_is_metadata) {
 
 	switch (nal_unit_type) {
 		case 1: {
-			uint64_t buffer_size = p_size + 3;
-			buffer_size += 128 - (buffer_size % 128);
-			Vector<uint8_t> frame;
-			frame.resize(buffer_size);
-
-			uint8_t start_code[3] = { 0, 0, 1 };
-			memcpy(frame.ptrw(), &start_code, 3);
-			memcpy(frame.ptrw() + 3, start, p_size);
-			RID buffer = RD::get_singleton()->storage_buffer_create_video_session(buffer_size, video_profile, frame, RD::STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC);
-			RD::get_singleton()->_stall_for_previous_frames();
-
-			RD::VideoCodingDecodeH264SliceHeader slice_info = parse_slice_header(p_size - 1, false);
-			slice_info.is_reference = nal_ref_idc != 0;
-			RD::get_singleton()->video_coding_decode(buffer, slice_info, dst_texture, target_dst_layer, dpb_texture);
+			Span<uint8_t> view = Span(start, p_size);
+			RD::VideoCodingDecodeH264SliceHeader slice_info = parse_slice_header(p_size - 1, nal_ref_idc != 0, false);
+			coding_device->video_coding_decode(view, slice_info, dst_texture, target_dst_layer, dpb_texture);
 			target_dst_layer += 1;
 
 			String is_reference = nal_ref_idc != 0 ? "reference" : "non-reference";
@@ -210,20 +196,9 @@ void VideoStreamH264::parse_nal_unit(uint64_t p_size, bool p_is_metadata) {
 		} break;
 
 		case 5: {
-			uint64_t buffer_size = p_size + 3;
-			buffer_size += 128 - (buffer_size % 128);
-			Vector<uint8_t> frame;
-			frame.resize(buffer_size);
-
-			uint8_t start_code[3] = { 0, 0, 1 };
-			memcpy(frame.ptrw(), &start_code, 3);
-			memcpy(frame.ptrw() + 3, start, p_size);
-			RID buffer = RD::get_singleton()->storage_buffer_create_video_session(buffer_size, video_profile, frame, RD::STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC);
-			RD::get_singleton()->_stall_for_previous_frames();
-
-			RD::VideoCodingDecodeH264SliceHeader slice_info = parse_slice_header(p_size - 1, true);
-			slice_info.is_reference = nal_ref_idc != 0;
-			RD::get_singleton()->video_coding_decode(buffer, slice_info, dst_texture, target_dst_layer, dpb_texture);
+			Span<uint8_t> view = Span(start, p_size);
+			RD::VideoCodingDecodeH264SliceHeader slice_info = parse_slice_header(p_size - 1, nal_ref_idc != 0, true);
+			coding_device->video_coding_decode(view, slice_info, dst_texture, target_dst_layer, dpb_texture);
 			target_dst_layer += 1;
 
 			print_line(vformat("Read %d/%d bytes of an IDR slice header", (uint64_t)(src - start), p_size));
@@ -237,8 +212,6 @@ void VideoStreamH264::parse_nal_unit(uint64_t p_size, bool p_is_metadata) {
 			RD::VideoCodingH264SequenceParameterSet sps = parse_sequence_parameter_set(p_size - 1);
 			if (p_is_metadata) {
 				sps_sets.push_back(sps);
-			} else {
-				active_sps = sps;
 			}
 			print_line(vformat("Read %d/%d bytes of an SPS", (uint64_t)(src - start), p_size));
 		} break;
@@ -247,8 +220,6 @@ void VideoStreamH264::parse_nal_unit(uint64_t p_size, bool p_is_metadata) {
 			RD::VideoCodingH264PictureParameterSet pps = parse_picture_parameter_set(p_size - 1);
 			if (p_is_metadata) {
 				pps_sets.push_back(pps);
-			} else {
-				active_pps = pps;
 			}
 			print_line(vformat("Read %d/%d bytes of a PPS", (uint64_t)(src - start), p_size));
 		} break;
@@ -279,16 +250,16 @@ RD::VideoCodingH264SequenceParameterSet VideoStreamH264::parse_sequence_paramete
 	if (sequence_parameter_set.profile_idc == RD::VIDEO_CODING_H264_PROFILE_IDC_HIGH || sequence_parameter_set.profile_idc == RD::VIDEO_CODING_H264_PROFILE_IDC_HIGH_PREDICTIVE) {
 		uint8_t chroma_format = read_ue();
 		if (chroma_format == 0) {
-			sequence_parameter_set.chroma_format_idc = RD::CHROMA_SUBSAMPLING_MONOCHROME;
+			sequence_parameter_set.chroma_format_idc = RD::VIDEO_CHROMA_SUBSAMPLING_MONOCHROME;
 		} else if (chroma_format == 1) {
-			sequence_parameter_set.chroma_format_idc = RD::CHROMA_SUBSAMPLING_420;
+			sequence_parameter_set.chroma_format_idc = RD::VIDEO_CHROMA_SUBSAMPLING_420;
 		} else if (chroma_format == 2) {
-			sequence_parameter_set.chroma_format_idc = RD::CHROMA_SUBSAMPLING_422;
+			sequence_parameter_set.chroma_format_idc = RD::VIDEO_CHROMA_SUBSAMPLING_422;
 		} else if (chroma_format == 3) {
-			sequence_parameter_set.chroma_format_idc = RD::CHROMA_SUBSAMPLING_444;
+			sequence_parameter_set.chroma_format_idc = RD::VIDEO_CHROMA_SUBSAMPLING_444;
 		}
 
-		if (sequence_parameter_set.chroma_format_idc == RD::CHROMA_SUBSAMPLING_444) {
+		if (sequence_parameter_set.chroma_format_idc == RD::VIDEO_CHROMA_SUBSAMPLING_444) {
 			sequence_parameter_set.separate_colour_plane_flag = read_bits(1) > 0;
 		}
 
@@ -299,7 +270,7 @@ RD::VideoCodingH264SequenceParameterSet VideoStreamH264::parse_sequence_paramete
 
 		sequence_parameter_set.seq_scaling_matrix_present_flag = read_bits(1) > 0;
 		if (sequence_parameter_set.seq_scaling_matrix_present_flag) {
-			uint64_t size = sequence_parameter_set.chroma_format_idc != RD::CHROMA_SUBSAMPLING_444 ? 8 : 12;
+			uint64_t size = sequence_parameter_set.chroma_format_idc != RD::VIDEO_CHROMA_SUBSAMPLING_444 ? 8 : 12;
 			for (uint64_t i = 0; i < size; i++) {
 				uint8_t present = read_bits(1) > 0;
 				sequence_parameter_set.scaling_lists.scaling_list_present_mask |= present << i;
@@ -313,15 +284,6 @@ RD::VideoCodingH264SequenceParameterSet VideoStreamH264::parse_sequence_paramete
 				}
 			}
 		}
-	} else {
-		sequence_parameter_set.chroma_format_idc = RD::CHROMA_SUBSAMPLING_420;
-		sequence_parameter_set.separate_colour_plane_flag = false;
-
-		sequence_parameter_set.bit_depth_luma_minus8 = 0;
-		sequence_parameter_set.bit_depth_chroma_minus8 = 0;
-
-		sequence_parameter_set.qpprime_y_zero_transform_bypass_flag = false;
-		sequence_parameter_set.seq_scaling_matrix_present_flag = false;
 	}
 
 	sequence_parameter_set.log2_max_frame_num_minus4 = read_ue();
@@ -497,9 +459,10 @@ RD::VideoCodingH264PictureParameterSet VideoStreamH264::parse_picture_parameter_
 	return picture_parameter_set;
 }
 
-RD::VideoCodingDecodeH264SliceHeader VideoStreamH264::parse_slice_header(uint64_t p_size, bool p_is_idr) {
+RD::VideoCodingDecodeH264SliceHeader VideoStreamH264::parse_slice_header(uint64_t p_size, bool p_is_reference, bool p_is_idr) {
 	RD::VideoCodingDecodeH264SliceHeader slice_header = {};
 
+	slice_header.is_reference = p_is_reference;
 	slice_header.is_intra = p_is_idr;
 
 	// TODO support interlaced video
@@ -554,9 +517,24 @@ RD::VideoCodingDecodeH264SliceHeader VideoStreamH264::parse_slice_header(uint64_
 		}
 	}
 
-	// TODO: use PPS to determine SPS
+	RD::VideoCodingH264PictureParameterSet active_pps = {};
+	RD::VideoCodingH264SequenceParameterSet active_sps = {};
+
 	slice_header.pic_parameter_set_id = read_ue();
-	slice_header.seq_parameter_set_id = active_sps.seq_parameter_set_id;
+	for (RD::VideoCodingH264PictureParameterSet potential_pps : pps_sets) {
+		if (potential_pps.pic_parameter_set_id == slice_header.pic_parameter_set_id) {
+			active_pps = potential_pps;
+			break;
+		}
+	}
+
+	slice_header.seq_parameter_set_id = active_pps.seq_parameter_set_id;
+	for (RD::VideoCodingH264SequenceParameterSet potential_sps : sps_sets) {
+		if (potential_sps.seq_parameter_set_id == active_pps.seq_parameter_set_id) {
+			active_sps = potential_sps;
+			break;
+		}
+	}
 
 	if (active_sps.separate_colour_plane_flag) {
 		read_bits(2); // colour_plane_id
@@ -577,11 +555,15 @@ RD::VideoCodingDecodeH264SliceHeader VideoStreamH264::parse_slice_header(uint64_
 		slice_header.idr_pic_id = read_ue();
 		prev_pic_order_cnt_lsb = 0;
 		prev_pic_order_cnt_msb = 0;
+		prev_frame_num_offset = 0;
+		prev_frame_num = 0;
 	}
 
 	uint64_t pic_order_cnt_msb = 0;
 	uint32_t pic_order_cnt_lsb = 0;
 	uint64_t max_pic_order_cnt_lsb = 1ULL << (active_sps.log2_max_pic_order_cnt_lsb_minus4 + 4);
+
+	int64_t delta_pic_order_cnt[2] = { 0, 0 };
 
 	if (active_sps.pic_order_cnt_type == RD::VIDEO_CODING_H264_POC_TYPE_0) {
 		uint64_t pic_order_cnt_lsb_size = active_sps.log2_max_pic_order_cnt_lsb_minus4 + 4;
@@ -591,7 +573,15 @@ RD::VideoCodingDecodeH264SliceHeader VideoStreamH264::parse_slice_header(uint64_
 		if (active_pps.bottom_field_pic_order_in_frame_present_flag && !slice_header.field_pic_flag) {
 			read_se(); // delta_pic_order_cnt_bottom
 		}
+	} else if (active_sps.pic_order_cnt_type == RD::VIDEO_CODING_H264_POC_TYPE_1 && !active_sps.delta_pic_order_always_zero_flag) {
+		delta_pic_order_cnt[0] = read_se();
 
+		if (active_pps.bottom_field_pic_order_in_frame_present_flag && !slice_header.field_pic_flag) {
+			delta_pic_order_cnt[1] = read_se();
+		}
+	}
+
+	if (active_sps.pic_order_cnt_type == RD::VIDEO_CODING_H264_POC_TYPE_0) {
 		if (pic_order_cnt_lsb < prev_pic_order_cnt_lsb && prev_pic_order_cnt_lsb - pic_order_cnt_lsb >= (max_pic_order_cnt_lsb / 2)) {
 			pic_order_cnt_msb = prev_pic_order_cnt_msb + max_pic_order_cnt_lsb;
 		} else if (pic_order_cnt_lsb > prev_pic_order_cnt_lsb && pic_order_cnt_lsb - prev_pic_order_cnt_lsb > (max_pic_order_cnt_lsb / 2)) {
@@ -599,20 +589,86 @@ RD::VideoCodingDecodeH264SliceHeader VideoStreamH264::parse_slice_header(uint64_
 		} else {
 			pic_order_cnt_msb = prev_pic_order_cnt_msb;
 		}
-	} else if (active_sps.pic_order_cnt_type == RD::VIDEO_CODING_H264_POC_TYPE_1 && !active_sps.delta_pic_order_always_zero_flag) {
-		read_se(); // delta_pic_order_cnt[0]
 
-		if (active_pps.bottom_field_pic_order_in_frame_present_flag && !slice_header.field_pic_flag) {
-			read_se(); // delta_pic_order_cnt[1]
+		slice_header.pic_order_cnt_top_field = pic_order_cnt_msb + pic_order_cnt_lsb;
+		slice_header.pic_order_cnt_bottom_field = pic_order_cnt_msb + pic_order_cnt_lsb;
+
+		prev_pic_order_cnt_lsb = pic_order_cnt_lsb;
+		prev_pic_order_cnt_msb = pic_order_cnt_msb;
+	} else if (active_sps.pic_order_cnt_type == RD::VIDEO_CODING_H264_POC_TYPE_1) {
+		uint64_t frame_num_offset;
+		if (p_is_idr) {
+			frame_num_offset = 0;
+		} else if (prev_frame_num_offset > slice_header.frame_num) {
+			frame_num_offset = prev_frame_num_offset + frame_num_size;
+		} else {
+			frame_num_offset = prev_frame_num_offset;
 		}
+
+		uint64_t abs_frame_num = 0;
+		if (active_sps.num_ref_frames_in_pic_order_cnt_cycle != 0) {
+			abs_frame_num = frame_num_offset + slice_header.frame_num;
+		} else {
+			abs_frame_num = 0;
+		}
+
+		if (!p_is_reference && abs_frame_num > 0) {
+			abs_frame_num -= 1;
+		}
+
+		uint64_t expected_pic_order_cnt = 0;
+		if (abs_frame_num > 0) {
+			uint64_t pic_order_cnt_cycle_cnt = (abs_frame_num - 1) / active_sps.num_ref_frames_in_pic_order_cnt_cycle;
+			uint64_t frame_num_in_pic_order_cnt_cycle = (abs_frame_num - 1) % active_sps.num_ref_frames_in_pic_order_cnt_cycle;
+
+			uint64_t expected_delta_per_pic_order_cnt_cycle = 0;
+			for (uint64_t i = 0; i < active_sps.num_ref_frames_in_pic_order_cnt_cycle; i++) {
+				expected_delta_per_pic_order_cnt_cycle = active_sps.offset_for_ref_frame[i];
+			}
+
+			expected_pic_order_cnt = pic_order_cnt_cycle_cnt * expected_delta_per_pic_order_cnt_cycle;
+			for (uint64_t i = 0; i < frame_num_in_pic_order_cnt_cycle; i++) {
+				expected_pic_order_cnt += active_sps.offset_for_ref_frame[i];
+			}
+		} else {
+			expected_pic_order_cnt = 0;
+		}
+
+		if (!p_is_reference) {
+			expected_pic_order_cnt += active_sps.offset_for_non_ref_pic;
+		}
+
+		slice_header.pic_order_cnt_top_field = expected_pic_order_cnt + delta_pic_order_cnt[0];
+		slice_header.pic_order_cnt_bottom_field = slice_header.pic_order_cnt_top_field + delta_pic_order_cnt[1] + active_sps.offset_for_top_to_bottom_field;
+
+		prev_frame_num_offset = frame_num_offset;
+	} else if (active_sps.pic_order_cnt_type == RD::VIDEO_CODING_H264_POC_TYPE_2) {
+		uint64_t frame_num_offset;
+		if (p_is_idr) {
+			frame_num_offset = 0;
+		} else if (prev_frame_num_offset > slice_header.frame_num) {
+			frame_num_offset = prev_frame_num_offset + frame_num_size;
+		} else {
+			frame_num_offset = prev_frame_num_offset;
+		}
+
+		uint64_t tmp_pic_order_cnt;
+		if (p_is_idr) {
+			tmp_pic_order_cnt = 0;
+		} else if (!p_is_reference) {
+			tmp_pic_order_cnt = 2 * (frame_num_offset + slice_header.frame_num) - 1;
+		} else {
+			tmp_pic_order_cnt = 2 * (frame_num_offset + slice_header.frame_num);
+		}
+
+		// TODO does leaving it like this break interlaced video?
+		slice_header.pic_order_cnt_top_field = tmp_pic_order_cnt;
+		slice_header.pic_order_cnt_bottom_field = tmp_pic_order_cnt;
+
+		prev_frame_num_offset = frame_num_offset;
 	}
 
-	slice_header.pic_order_cnt_top_field = pic_order_cnt_msb + pic_order_cnt_lsb;
-	slice_header.pic_order_cnt_bottom_field = pic_order_cnt_msb + pic_order_cnt_lsb;
-
-	prev_pic_order_cnt_lsb = pic_order_cnt_lsb;
-	prev_pic_order_cnt_msb = pic_order_cnt_msb;
-
+	print_line("pic order cnt", slice_header.pic_order_cnt_top_field);
 	return slice_header;
 }
 

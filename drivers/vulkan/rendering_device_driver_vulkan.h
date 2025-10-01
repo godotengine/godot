@@ -245,6 +245,11 @@ public:
 	/**** SAMPLER ****/
 	/*****************/
 public:
+	struct SamplerInfo {
+		VkSampler vk_sampler = VK_NULL_HANDLE;
+		VkSamplerYcbcrConversion vk_ycbcr_conversion = VK_NULL_HANDLE;
+	};
+
 	virtual SamplerID sampler_create(const SamplerState &p_state) final override;
 	virtual void sampler_free(SamplerID p_sampler) final override;
 	virtual bool sampler_is_format_supported_for_filter(DataFormat p_format, SamplerFilter p_filter) override final;
@@ -722,6 +727,7 @@ private:
 			UniformSetInfo,
 			RenderPassInfo,
 			CommandBufferInfo,
+			SamplerInfo,
 			VideoCodingSessionInfo>;
 	PagedAllocator<VersatileResource, true> resources_allocator;
 

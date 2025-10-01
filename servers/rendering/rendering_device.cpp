@@ -1063,7 +1063,13 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 	tv.swizzle_g = p_view.swizzle_g;
 	tv.swizzle_b = p_view.swizzle_b;
 	tv.swizzle_a = p_view.swizzle_a;
-	tv.use_sampler = p_view.use_sampler;
+
+	RDD::SamplerID *sampler = sampler_owner.get_or_null(p_view.ycbcr_sampler);
+	if (sampler != nullptr) {
+		tv.ycbcr_sampler = *sampler;
+	} else {
+		tv.ycbcr_sampler = RDD::SamplerID();
+	}
 
 	// Create.
 
@@ -3469,9 +3475,19 @@ RID RenderingDevice::shader_create_from_bytecode_with_samplers(const Vector<uint
 		driver_sampler.type = source_sampler.uniform_type;
 		driver_sampler.binding = source_sampler.binding;
 
-		for (uint32_t j = 0; j < source_sampler.get_id_count(); j++) {
-			RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(source_sampler.get_id(j));
-			driver_sampler.ids.push_back(*sampler_driver_id);
+		if (source_sampler.uniform_type == UNIFORM_TYPE_SAMPLER) {
+			for (uint32_t j = 0; j < source_sampler.get_id_count(); j++) {
+				RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(source_sampler.get_id(j));
+				driver_sampler.ids.push_back(*sampler_driver_id);
+			}
+		} else if (source_sampler.uniform_type == UNIFORM_TYPE_SAMPLER_WITH_TEXTURE) {
+			for (uint32_t j = 0; j < source_sampler.get_id_count(); j += 2) {
+				RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(source_sampler.get_id(j));
+				driver_sampler.ids.push_back(*sampler_driver_id);
+
+				Texture *texture_driver_id = texture_owner.get_or_null(source_sampler.get_id(j + 1));
+				driver_sampler.ids.push_back(texture_driver_id->driver_id);
+			}
 		}
 
 		driver_immutable_samplers.append(driver_sampler);
@@ -5631,6 +5647,7 @@ void RenderingDevice::video_profile_get_format_properties(const VideoProfile &p_
 // TODO validate everything is alright
 RID RenderingDevice::video_session_create(const VideoProfile &p_profile, DataFormat p_image_format, uint32_t p_width, uint32_t p_height, uint32_t p_max_dpb_slots) {
 	VideoSession video_session;
+	video_session.video_profile = p_profile;
 	video_session.driver_id = driver->video_session_create(p_profile, p_image_format, p_width, p_height, p_max_dpb_slots);
 
 	RID rid = video_session_owner.make_rid(video_session);
@@ -5649,6 +5666,8 @@ void RenderingDevice::video_coding_begin(RID p_video_session, RID p_dpb_texture)
 	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
 	ERR_FAIL_NULL(video_session);
 
+	active_session = p_video_session;
+
 	Texture *dpb_texture = texture_owner.get_or_null(p_dpb_texture);
 	ERR_FAIL_NULL(dpb_texture);
 
@@ -5657,9 +5676,24 @@ void RenderingDevice::video_coding_begin(RID p_video_session, RID p_dpb_texture)
 	driver->command_video_control(decode_buffer);
 }
 
-void RenderingDevice::video_coding_decode(RID p_src_buffer, VideoCodingDecodeH264SliceHeader p_std_h264_info, RID p_dst_texture, uint32_t p_array_layer, RID p_dpb_texture) {
-	Buffer *src_buffer = storage_buffer_owner.get_or_null(p_src_buffer);
-	ERR_FAIL_NULL(src_buffer);
+void RenderingDevice::video_coding_decode(Span<uint8_t> p_nal_unit, VideoCodingDecodeH264SliceHeader p_std_h264_info, RID p_dst_texture, uint32_t p_array_layer, RID p_dpb_texture) {
+	VideoSession *video_session = video_session_owner.get_or_null(active_session);
+	ERR_FAIL_NULL(video_session);
+
+	uint64_t buffer_size = p_nal_unit.size() + 3;
+	buffer_size += 128 - (buffer_size % 128);
+
+	BitField<RDD::BufferUsageBits> buffer_usage = {};
+	buffer_usage.set_flag(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT);
+	buffer_usage.set_flag(RDD::BUFFER_USAGE_TRANSFER_FROM_BIT);
+
+	RDD::BufferID src_buffer = driver->buffer_create_video_session(buffer_size, buffer_usage, RDD::MEMORY_ALLOCATION_TYPE_CPU, video_session->video_profile);
+	uint8_t *write_ptr = driver->buffer_map(src_buffer);
+
+	uint8_t start_code[3] = { 0, 0, 1 };
+	memcpy(write_ptr, start_code, 3);
+	memcpy(write_ptr + 3, p_nal_unit.begin(), p_nal_unit.size());
+	driver->buffer_unmap(src_buffer);
 
 	Texture *dst_texture = texture_owner.get_or_null(p_dst_texture);
 	ERR_FAIL_NULL(dst_texture);
@@ -5667,7 +5701,8 @@ void RenderingDevice::video_coding_decode(RID p_src_buffer, VideoCodingDecodeH26
 	Texture *dpb_texture = texture_owner.get_or_null(p_dpb_texture);
 	ERR_FAIL_NULL(dpb_texture);
 
-	driver->command_video_decode(decode_buffer, src_buffer->driver_id, p_std_h264_info, dst_texture->driver_id, p_array_layer, dpb_texture->driver_id);
+	driver->command_video_decode(decode_buffer, src_buffer, p_std_h264_info, dst_texture->driver_id, p_array_layer, dpb_texture->driver_id);
+	driver->buffer_free(src_buffer);
 }
 
 void RenderingDevice::video_coding_end() {

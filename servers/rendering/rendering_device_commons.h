@@ -379,10 +379,10 @@ public:
 	};
 
 	enum VideoCodingChromaSubsampling {
-		CHROMA_SUBSAMPLING_MONOCHROME = (1 << 0),
-		CHROMA_SUBSAMPLING_420 = (1 << 1),
-		CHROMA_SUBSAMPLING_422 = (1 << 2),
-		CHROMA_SUBSAMPLING_444 = (1 << 3),
+		VIDEO_CHROMA_SUBSAMPLING_MONOCHROME = (1 << 0),
+		VIDEO_CHROMA_SUBSAMPLING_420 = (1 << 1),
+		VIDEO_CHROMA_SUBSAMPLING_422 = (1 << 2),
+		VIDEO_CHROMA_SUBSAMPLING_444 = (1 << 3),
 	};
 
 	enum VideoCodingH264ProfileIdc {
@@ -442,15 +442,15 @@ public:
 		uint32_t level_idc;
 		uint8_t seq_parameter_set_id;
 
-		VideoCodingChromaSubsampling chroma_format_idc;
-		bool separate_colour_plane_flag;
-		uint8_t bit_depth_luma_minus8;
-		uint8_t bit_depth_chroma_minus8;
+		VideoCodingChromaSubsampling chroma_format_idc = VIDEO_CHROMA_SUBSAMPLING_420;
+		bool separate_colour_plane_flag = false;
+		uint8_t bit_depth_luma_minus8 = 0;
+		uint8_t bit_depth_chroma_minus8 = 0;
 
-		bool qpprime_y_zero_transform_bypass_flag;
+		bool qpprime_y_zero_transform_bypass_flag = false;
 
 		// TODO scaling lists
-		bool seq_scaling_matrix_present_flag;
+		bool seq_scaling_matrix_present_flag = false;
 		struct {
 			uint16_t scaling_list_present_mask;
 			uint16_t use_default_scaling_matrix_mask;
@@ -475,14 +475,14 @@ public:
 		uint32_t pic_height_in_map_units_minus1;
 
 		bool frame_mbs_only_flag;
-		bool mb_adaptive_frame_field_flag;
+		bool mb_adaptive_frame_field_flag = false;
 		bool direct_8x8_inference_flag;
 
 		bool frame_cropping_flag;
-		uint32_t frame_crop_left_offset;
-		uint32_t frame_crop_right_offset;
-		uint32_t frame_crop_top_offset;
-		uint32_t frame_crop_bottom_offset;
+		uint32_t frame_crop_left_offset = 0;
+		uint32_t frame_crop_right_offset = 0;
+		uint32_t frame_crop_top_offset = 0;
+		uint32_t frame_crop_bottom_offset = 0;
 
 		bool vui_parameters_present_flag;
 		struct {
@@ -574,9 +574,9 @@ public:
 
 	struct VideoProfile {
 		VideoCodingOperation operation;
-		VideoCodingChromaSubsampling chroma_subsampling;
-		uint32_t luma_bit_depth;
-		uint32_t chroma_bit_depth;
+		VideoCodingChromaSubsampling chroma_subsampling = VIDEO_CHROMA_SUBSAMPLING_420;
+		uint32_t luma_bit_depth = 8;
+		uint32_t chroma_bit_depth = 8;
 
 		VideoCodingH264ProfileIdc h264_profile_idc;
 		VideoCodingH264PictureLayout h264_picture_layout;
@@ -750,6 +750,8 @@ public:
 		float max_lod = 1e20; // Something very large should do.
 		SamplerBorderColor border_color = SAMPLER_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
 		bool unnormalized_uvw = false;
+
+		bool enable_ycbcr = false;
 	};
 
 	/**********************/

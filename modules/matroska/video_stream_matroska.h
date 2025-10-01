@@ -35,6 +35,8 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/video_stream.h"
 #include "scene/resources/video_stream_encoding.h"
+#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_device_driver.h"
 
 #define EBML_HEADER_ID 0x1A45DFA3
 #define EBML_VERSION_ID 0x4286
@@ -122,9 +124,7 @@ private:
 		String doc_type;
 		uint64_t doc_type_version;
 		uint64_t doc_type_read_version;
-	};
-
-	struct EbmlHeader header;
+	} header;
 
 	struct SeekHead {
 		uint64_t segment_info_position = 0;
@@ -230,7 +230,15 @@ private:
 	uint32_t width = 0;
 	uint32_t height = 0;
 
-	RID cluster_rid;
+	RenderingDevice *coding_device;
+
+	RID ycbcr_sampler;
+	RID ycbcr_sampler_shader;
+	RID ycbcr_sampler_pipeline;
+
+	RID src_ycbcr_texture;
+	RID dst_rgba_texture;
+
 	Ref<ImageTexture> image_texture;
 
 	bool playing = false;
@@ -279,6 +287,7 @@ public:
 	virtual void set_audio_track(int p_idx) override;
 
 	VideoStreamPlaybackMatroska();
+	~VideoStreamPlaybackMatroska();
 };
 
 class ResourceFormatLoaderMatroska : public ResourceFormatLoader {

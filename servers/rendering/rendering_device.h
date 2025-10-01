@@ -377,7 +377,7 @@ public:
 		TextureSwizzle swizzle_g = TEXTURE_SWIZZLE_G;
 		TextureSwizzle swizzle_b = TEXTURE_SWIZZLE_B;
 		TextureSwizzle swizzle_a = TEXTURE_SWIZZLE_A;
-		bool use_sampler = false;
+		RID ycbcr_sampler;
 
 		bool operator==(const TextureView &p_other) const {
 			if (format_override != p_other.format_override) {
@@ -1404,11 +1404,13 @@ private:
 	/**** VIDEO CODING ****/
 	/**********************/
 	struct VideoSession {
+		VideoProfile video_profile;
 		RDD::VideoSessionID driver_id;
 	};
 
 	RID_Owner<VideoSession, true> video_session_owner;
 
+	RID active_session;
 	RDD::CommandPoolID decode_pool;
 	RDD::CommandBufferID decode_buffer;
 
@@ -1420,7 +1422,7 @@ public:
 	void video_session_add_h264_parameters(RID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets);
 
 	void video_coding_begin(RID p_video_session, RID p_dpb_texture);
-	void video_coding_decode(RID p_src_buffer, VideoCodingDecodeH264SliceHeader p_std_h264_info, RID p_dst_texture, uint32_t p_array_layer, RID p_dpb_texture);
+	void video_coding_decode(Span<uint8_t> p_nal_unit, VideoCodingDecodeH264SliceHeader p_std_h264_info, RID p_dst_texture, uint32_t p_array_layer, RID p_dpb_texture);
 	void video_coding_end();
 
 private:
