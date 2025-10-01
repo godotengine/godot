@@ -194,7 +194,7 @@ private:
 
 	GDScriptFunction *_super_constructor(GDScript *p_script);
 	void _super_implicit_constructor(GDScript *p_script, GDScriptInstance *p_instance, Callable::CallError &r_error);
-	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error);
+	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, Callable::CallError &r_error);
 
 	String _get_debug_path() const;
 
@@ -374,7 +374,6 @@ class GDScriptInstance : public ScriptInstance {
 	HashMap<StringName, int> member_indices_cache; //used only for hot script reloading
 #endif
 	Vector<Variant> members;
-	bool base_ref_counted;
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 
@@ -414,7 +413,7 @@ public:
 
 	virtual const Variant get_rpc_config() const;
 
-	GDScriptInstance();
+	GDScriptInstance() {}
 	~GDScriptInstance();
 };
 
