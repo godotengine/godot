@@ -121,6 +121,7 @@ public:
 	int size() const;
 	bool is_empty() const;
 	void clear();
+	void reset();
 
 	bool operator==(const Array &p_array) const;
 	bool operator!=(const Array &p_array) const;
