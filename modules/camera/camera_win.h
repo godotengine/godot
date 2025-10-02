@@ -66,6 +66,7 @@ private:
 	};
 
 	String device_id;
+	IMFActivate *imf_activate = NULL;
 	IMFMediaSource *imf_media_source = NULL;
 
 	IMFSourceReader *imf_source_reader = NULL;

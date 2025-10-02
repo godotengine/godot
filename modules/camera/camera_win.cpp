@@ -39,6 +39,10 @@ Ref<CameraFeedWindows> CameraFeedWindows::create(IMFActivate *imf_camera_device)
 	UINT32 len;
 	HRESULT hr;
 
+	// Store IMFActivate for reactivation.
+	feed->imf_activate = imf_camera_device;
+	feed->imf_activate->AddRef();
+
 	// Get camera ID.
 	wchar_t *camera_id = nullptr;
 	hr = imf_camera_device->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &camera_id, &len);
@@ -289,7 +293,13 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 CameraFeedWindows::~CameraFeedWindows() {
 	if (is_active()) {
 		deactivate_feed();
-	};
+	}
+
+	// Release IMFActivate.
+	if (imf_activate != nullptr) {
+		imf_activate->Release();
+		imf_activate = nullptr;
+	}
 }
 
 bool IMFMediaSource_set_media_type(IMFMediaSource *imf_media_source, uint32_t media_type_index) {
@@ -333,109 +343,85 @@ bool IMFMediaSource_set_media_type(IMFMediaSource *imf_media_source, uint32_t me
 bool CameraFeedWindows::activate_feed() {
 	ERR_FAIL_COND_V_MSG(selected_format == -1, false, "CameraFeed format needs to be set before activating.");
 	ERR_FAIL_INDEX_V_MSG(selected_format, formats.size(), false, "Invalid format index for CameraFeed.");
+	ERR_FAIL_COND_V_MSG(imf_activate == nullptr, false, "IMFActivate is null, cannot activate camera feed.");
 
 	bool result = false;
 	HRESULT hr;
 
-	IMFAttributes *imf_attributes = nullptr;
-	hr = MFCreateAttributes(&imf_attributes, 2);
+	// Create media source.
+	hr = imf_activate->ActivateObject(IID_PPV_ARGS(&imf_media_source));
 	if (SUCCEEDED(hr)) {
-		Vector<uint8_t> device_id_wchar;
-		// Set the device type to video.
-		hr = imf_attributes->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
-		if (FAILED(hr)) {
-			goto release_attributes;
-		}
+		bool media_type_set = IMFMediaSource_set_media_type(imf_media_source, format_mediatypes[selected_format]);
 
-		device_id_wchar = device_id.to_wchar_buffer();
-		hr = imf_attributes->SetString(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, (const wchar_t *)device_id_wchar.ptr());
-		if (FAILED(hr)) {
-			goto release_attributes;
-		}
+		if (media_type_set) {
+			// Create media imf_source_reader.
+			IMFAttributes *reader_attributes = nullptr;
+			hr = MFCreateAttributes(&reader_attributes, 2);
+			if (SUCCEEDED(hr)) {
+				// Enable hardware acceleration if available.
+				hr = reader_attributes->SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, TRUE);
+				// Hint to disconnect media source on shutdown to help unblock.
+				reader_attributes->SetUINT32(MF_SOURCE_READER_DISCONNECT_MEDIASOURCE_ON_SHUTDOWN, TRUE);
 
-		// Create media imf_media_source.
-		hr = MFCreateDeviceSource(imf_attributes, &imf_media_source);
-		if (SUCCEEDED(hr)) {
-			bool media_type_set = IMFMediaSource_set_media_type(imf_media_source, format_mediatypes[selected_format]);
+				hr = MFCreateSourceReaderFromMediaSource(imf_media_source, reader_attributes, &imf_source_reader);
+				reader_attributes->Release();
 
-			if (media_type_set) {
-				// Create media imf_source_reader.
-				IMFAttributes *reader_attributes = nullptr;
-				hr = MFCreateAttributes(&reader_attributes, 2);
 				if (SUCCEEDED(hr)) {
-					// Enable hardware acceleration if available.
-					hr = reader_attributes->SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, TRUE);
-					// Hint to disconnect media source on shutdown to help unblock.
-					reader_attributes->SetUINT32(MF_SOURCE_READER_DISCONNECT_MEDIASOURCE_ON_SHUTDOWN, TRUE);
+					// Ensure we are reading the first video stream.
+					imf_source_reader->SetStreamSelection(MF_SOURCE_READER_FIRST_VIDEO_STREAM, TRUE);
 
-					hr = MFCreateSourceReaderFromMediaSource(imf_media_source, reader_attributes, &imf_source_reader);
-					reader_attributes->Release();
-
+					// Configure source reader to convert to RGB24.
+					IMFMediaType *output_type = nullptr;
+					hr = MFCreateMediaType(&output_type);
 					if (SUCCEEDED(hr)) {
-						// Ensure we are reading the first video stream.
-						imf_source_reader->SetStreamSelection(MF_SOURCE_READER_FIRST_VIDEO_STREAM, TRUE);
+						hr = output_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
+						hr = output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB24);
 
-						// Configure source reader to convert to RGB24.
-						IMFMediaType *output_type = nullptr;
-						hr = MFCreateMediaType(&output_type);
+						// Try to set RGB24 as output format.
+						hr = imf_source_reader->SetCurrentMediaType(
+								MF_SOURCE_READER_FIRST_VIDEO_STREAM,
+								nullptr,
+								output_type);
+
 						if (SUCCEEDED(hr)) {
-							hr = output_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
-							hr = output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB24);
-
-							// Try to set RGB24 as output format.
-							hr = imf_source_reader->SetCurrentMediaType(
-									MF_SOURCE_READER_FIRST_VIDEO_STREAM,
-									nullptr,
-									output_type);
-
-							if (SUCCEEDED(hr)) {
-								result = true;
-								use_mf_conversion = true;
-								// Create CopyBufferDecoder for MF-converted RGB24 data.
-								buffer_decoder = memnew(CopyBufferDecoder(this, CopyBufferDecoder::rgb));
-							} else {
-								// Fallback to manual conversion for formats that support it.
-								const GUID &video_format = format_guids[selected_format];
-								if (video_format == MFVideoFormat_MJPG ||
-										video_format == MFVideoFormat_NV12 ||
-										video_format == MFVideoFormat_YUY2 ||
-										video_format == MFVideoFormat_RGB24) {
-									result = true;
-									use_mf_conversion = false;
-									// Create buffer decoder.
-									buffer_decoder = _create_buffer_decoder();
-								} else {
-									// Format not supported by either method.
-									ERR_PRINT("Format not supported by Media Foundation conversion or manual decoder.");
-									result = false;
-								}
-							}
-
-							output_type->Release();
-						}
-
-						if (result) {
-							// Start reading.
-							worker = memnew(std::thread(capture, this));
+							result = true;
+							use_mf_conversion = true;
+							// Create CopyBufferDecoder for MF-converted RGB24 data.
+							buffer_decoder = memnew(CopyBufferDecoder(this, CopyBufferDecoder::rgb));
 						} else {
-							ERR_PRINT(vformat("MFCreateSourceReaderFromMediaSource failed: 0x%08x", (uint32_t)hr));
-							// If another application is using the device, provide a human-readable hint.
-							if (hr == HRESULT_FROM_WIN32(ERROR_SHARING_VIOLATION)) {
-								ERR_PRINT("Check that no other applications are currently using the camera.");
+							// Fallback to manual conversion for formats that support it.
+							const GUID &video_format = format_guids[selected_format];
+							if (video_format == MFVideoFormat_MJPG ||
+									video_format == MFVideoFormat_NV12 ||
+									video_format == MFVideoFormat_YUY2 ||
+									video_format == MFVideoFormat_RGB24) {
+								result = true;
+								use_mf_conversion = false;
+								// Create buffer decoder.
+								buffer_decoder = _create_buffer_decoder();
+							} else {
+								// Format not supported by either method.
+								ERR_PRINT("Format not supported by Media Foundation conversion or manual decoder.");
+								result = false;
 							}
 						}
+
+						output_type->Release();
+					}
+
+					if (result) {
+						// Start reading.
+						worker = memnew(std::thread(capture, this));
 					}
 				}
 			}
-		} else {
-			ERR_PRINT(vformat("MFCreateDeviceSource failed: 0x%08x", (uint32_t)hr));
-			// If another application is using the device, provide a human-readable hint.
-			if (hr == HRESULT_FROM_WIN32(ERROR_SHARING_VIOLATION)) {
-				ERR_PRINT("Check that no other applications are currently using the camera.");
-			}
 		}
-	release_attributes:
-		imf_attributes->Release();
+	} else {
+		ERR_PRINT(vformat("IMFActivate::ActivateObject failed: 0x%08x", (uint32_t)hr));
+		// If another application is using the device, provide a human-readable hint.
+		if (hr == HRESULT_FROM_WIN32(ERROR_SHARING_VIOLATION)) {
+			ERR_PRINT("Check that no other applications are currently using the camera.");
+		}
 	}
 
 	return result;
@@ -468,6 +454,11 @@ void CameraFeedWindows::deactivate_feed() {
 	if (imf_media_source != nullptr) {
 		imf_media_source->Release();
 		imf_media_source = nullptr;
+	}
+
+	// Shutdown the device.
+	if (imf_activate != nullptr) {
+		imf_activate->ShutdownObject();
 	}
 }
 
