@@ -282,31 +282,19 @@ static void test_scene_file(const String &p_path) {
 	FAIL_COND_MSG(scene.is_null(), vformat("couldn't load PackedScene \"%s\"", p_path));
 	FAIL_COND_MSG(!scene->can_instantiate(), vformat("cannot instantiate PackedScene \"%s\"", p_path));
 
-	// ERR_PRINT_OFF;
-	Node *scene_instance = scene->instantiate();
-	// ERR_PRINT_ON;
-
-	auto process_scene_node = [&p_path](Node *p_node) -> void {
-		Ref<GDScript> node_gdscript = p_node->get_script();
-		if (node_gdscript.is_null()) {
-			return;
+	Ref<SceneState> scene_state = scene->get_state();
+	for (int node_idx = 0; node_idx < scene_state->get_node_count(); node_idx++) {
+		for (int node_property_idx = 0; node_property_idx < scene_state->get_node_property_count(node_idx); node_property_idx++) {
+			if (scene_state->get_node_property_name(node_idx, node_property_idx) == SNAME("script")) {
+				Ref<GDScript> node_gdscript = scene_state->get_node_property_value(node_idx, node_property_idx);
+				String cfg_path = vformat("%s__%s.cfg", p_path.get_basename(), node_gdscript->get_name());
+				if (!FileAccess::exists(cfg_path)) {
+					continue;
+				}
+				test_script(node_gdscript->get_source_code(), node_gdscript->get_script_path(), cfg_path);
+			}
 		}
-		String node_gdscript_name = node_gdscript->get_name();
-		String cfg_path = vformat("%s__%s.cfg", p_path.get_basename(), node_gdscript_name);
-
-		if (!FileAccess::exists(cfg_path)) {
-			return;
-		}
-
-		test_script(node_gdscript->get_source_code(), node_gdscript->get_script_path(), cfg_path, node_gdscript_name);
-	};
-
-	process_scene_node(scene_instance);
-	for (Node *child : scene_instance->iterate_children()) {
-		process_scene_node(child);
 	}
-
-	scene_instance->queue_free();
 }
 
 static void test_script_file(const String &p_path) {
