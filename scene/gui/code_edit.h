@@ -521,6 +521,7 @@ public:
 	void delete_lines();
 	void duplicate_selection();
 	void duplicate_lines();
+	void shape_code();
 
 	CodeEdit();
 	~CodeEdit();
