@@ -2149,12 +2149,23 @@ Window *Node::get_last_exclusive_window() const {
 
 bool Node::is_ancestor_of(RequiredParam<const Node> rp_node) const {
 	EXTRACT_PARAM_OR_FAIL_V(p_node, rp_node, false);
-	Node *p = p_node->data.parent;
-	while (p) {
-		if (p == this) {
+
+	const Node *n = p_node;
+
+	if (is_inside_tree() && p_node->data.tree == data.tree) {
+		const int depth = data.depth;
+		while (n->data.depth > depth) {
+			n = n->data.parent;
+		}
+		return n == this;
+	}
+
+	n = p_node->data.parent;
+	while (n) {
+		if (n == this) {
 			return true;
 		}
-		p = p->data.parent;
+		n = n->data.parent;
 	}
 
 	return false;
