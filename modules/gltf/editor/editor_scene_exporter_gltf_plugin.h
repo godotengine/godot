@@ -35,6 +35,7 @@
 
 #include "editor/plugins/editor_plugin.h"
 
+class ConfirmationDialog;
 class EditorFileDialog;
 class EditorInspector;
 
@@ -44,7 +45,9 @@ class SceneExporterGLTFPlugin : public EditorPlugin {
 	Ref<GLTFDocument> _gltf_document;
 	Ref<EditorSceneExporterGLTFSettings> _export_settings;
 	EditorInspector *_settings_inspector = nullptr;
+	ConfirmationDialog *_config_dialog = nullptr;
 	EditorFileDialog *_file_dialog = nullptr;
+	void _popup_gltf_settings_dialog();
 	void _popup_gltf_export_dialog();
 	void _export_scene_as_gltf(const String &p_file_path);
 
