@@ -1857,7 +1857,7 @@ float DisplayServerMacOS::screen_get_max_full_frame_luminance(int p_screen) cons
 	return screen.maximumExtendedDynamicRangeColorComponentValue * 100.0;
 }
 
-float DisplayServerMacOS::screen_get_sdr_white_level(int p_screen) const {
+float DisplayServerMacOS::screen_get_reference_luminance(int p_screen) const {
 	// Per https://developer.apple.com/documentation/metal/performing-your-own-tone-mapping?language=objc#Understand-EDR-Pixel-Values,
 	// the SDR white level is always 1.0.
 	return 100.0f; // 100 nits.
@@ -3133,7 +3133,7 @@ float DisplayServerMacOS::window_get_hdr_output_max_luminance(WindowID p_window)
 	return 0.0f;
 }
 
-float DisplayServerMacOS::window_get_hdr_output_max_value(WindowID p_window) const {
+float DisplayServerMacOS::window_get_output_max_value(WindowID p_window) const {
 	// allenwp: temporary rebase hack (this should return 1.0 when HDR is disabled.
 	// Also, this whole function should probably be handled in a driver independent way.
 	return window_get_hdr_output_max_luminance(p_window) / window_get_hdr_output_reference_luminance(p_window);

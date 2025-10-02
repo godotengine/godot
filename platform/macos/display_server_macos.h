@@ -348,7 +348,7 @@ public:
 	virtual float screen_get_min_luminance(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_max_luminance(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_max_full_frame_luminance(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
-	virtual float screen_get_sdr_white_level(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_reference_luminance(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
 	virtual Vector<int> get_window_list() const override;
 
@@ -442,7 +442,7 @@ public:
 	virtual void window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual float window_get_hdr_output_max_luminance(WindowID p_window = MAIN_WINDOW_ID) const override;
 
-	virtual float window_get_hdr_output_max_value(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual float window_get_output_max_value(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual bool window_maximize_on_title_dbl_click() const override;
 	virtual bool window_minimize_on_title_dbl_click() const override;
