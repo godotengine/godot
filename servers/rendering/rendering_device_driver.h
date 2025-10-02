@@ -49,7 +49,9 @@
 #include "core/variant/type_info.h"
 #include "servers/rendering/rendering_context_driver.h"
 #include "servers/rendering/rendering_device_commons.h"
-#include "servers/rendering/rendering_shader_container.h"
+
+class RenderingShaderContainer;
+class RenderingShaderContainerFormat;
 
 // These utilities help drivers avoid allocations.
 #define ALLOCA(m_size) ((m_size != 0) ? alloca(m_size) : nullptr)
