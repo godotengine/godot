@@ -268,20 +268,21 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 	while (!next.is_empty()) {
 		if (dir->current_is_dir()) {
 			if (next == "." || next == ".." || next == "completion" || next == "lsp" || next == "refactor") {
-				next = dir->get_next();
-				continue;
+				goto next;
 			}
+			if (next == ".godot") {
+				goto next;
+			}
+
 			if (!make_tests_for_dir(current_dir.path_join(next))) {
 				return false;
 			}
 		} else {
 			// `*.notest.gd` files are skipped.
 			if (next.ends_with(".notest.gd")) {
-				next = dir->get_next();
-				continue;
+				goto next;
 			} else if (binary_tokens && next.ends_with(".textonly.gd")) {
-				next = dir->get_next();
-				continue;
+				goto next;
 			} else if (next.has_extension("gd")) {
 #ifndef DEBUG_ENABLED
 				// On release builds, skip tests marked as debug only.
@@ -289,12 +290,10 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 				Ref<FileAccess> script_file(FileAccess::open(current_dir.path_join(next), FileAccess::READ, &open_err));
 				if (open_err != OK) {
 					ERR_PRINT(vformat(R"(Couldn't open test file "%s".)", next));
-					next = dir->get_next();
-					continue;
+					goto next;
 				} else {
 					if (script_file->get_line() == "#debug-only") {
-						next = dir->get_next();
-						continue;
+						goto next;
 					}
 				}
 #endif
@@ -320,6 +319,7 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 			}
 		}
 
+	next:
 		next = dir->get_next();
 	}
 
@@ -355,16 +355,17 @@ static bool generate_class_index_recursive(const String &p_dir) {
 	while (!next.is_empty()) {
 		if (dir->current_is_dir()) {
 			if (next == "." || next == ".." || next == "completion" || next == "lsp" || next == "refactor") {
-				next = dir->get_next();
-				continue;
+				goto next;
+			}
+			if (next == ".godot") {
+				goto next;
 			}
 			if (!generate_class_index_recursive(current_dir.path_join(next))) {
 				return false;
 			}
 		} else {
 			if (!next.ends_with(".gd")) {
-				next = dir->get_next();
-				continue;
+				goto next;
 			}
 			String base_type;
 			String source_file = current_dir.path_join(next);
@@ -372,8 +373,7 @@ static bool generate_class_index_recursive(const String &p_dir) {
 			bool is_tool = false;
 			String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(source_file, &base_type, nullptr, &is_abstract, &is_tool);
 			if (class_name.is_empty()) {
-				next = dir->get_next();
-				continue;
+				goto next;
 			}
 			ERR_FAIL_COND_V_MSG(ScriptServer::is_global_class(class_name), false,
 					"Class name '" + class_name + "' from " + source_file + " is already used in " + ScriptServer::get_global_class_path(class_name));
@@ -381,6 +381,7 @@ static bool generate_class_index_recursive(const String &p_dir) {
 			ScriptServer::add_global_class(class_name, base_type, gdscript_name, source_file, is_abstract, is_tool);
 		}
 
+	next:
 		next = dir->get_next();
 	}
 

@@ -97,16 +97,17 @@ static void test_directory(const String &p_dir) {
 	while (!next.is_empty()) {
 		if (dir->current_is_dir()) {
 			if (next == "." || next == "..") {
-				next = dir->get_next();
-				continue;
+				goto next;
+			}
+			if (next == ".godot") {
+				goto next;
 			}
 			test_directory(path.path_join(next));
 		} else if (next.ends_with(".gd") && !next.ends_with(".notest.gd")) {
 			Ref<FileAccess> acc = FileAccess::open(path.path_join(next), FileAccess::READ, &err);
 
 			if (err != OK) {
-				next = dir->get_next();
-				continue;
+				goto next;
 			}
 
 			String code = acc->get_as_utf8_string();
@@ -125,8 +126,7 @@ static void test_directory(const String &p_dir) {
 
 #ifndef MODULE_MONO_ENABLED
 			if (conf.get_value("input", "cs", false)) {
-				next = dir->get_next();
-				continue;
+				goto next;
 			}
 #endif
 
@@ -220,6 +220,8 @@ static void test_directory(const String &p_dir) {
 				memdelete(scene);
 			}
 		}
+
+	next:
 		next = dir->get_next();
 	}
 }
@@ -240,6 +242,9 @@ static void setup_global_classes(const String &p_dir) {
 
 	while (!next.is_empty()) {
 		if (dir->current_is_dir() && next != "." && next != "..") {
+			if (next == ".godot") {
+				goto next;
+			}
 			setup_global_classes(path.path_join(next));
 		} else if (next.ends_with(".gd")) {
 			String base_type;
@@ -248,14 +253,15 @@ static void setup_global_classes(const String &p_dir) {
 			String source_file = path.path_join(next);
 			String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(source_file, &base_type, nullptr, &is_abstract, &is_tool);
 			if (class_name.is_empty()) {
-				next = dir->get_next();
-				continue;
+				goto next;
 			}
 			ERR_FAIL_COND_MSG(ScriptServer::is_global_class(class_name),
 					"Class name \"" + class_name + "\" from \"" + source_file + "\" is already used in \"" + ScriptServer::get_global_class_path(class_name) + "\".");
 
 			ScriptServer::add_global_class(class_name, base_type, GDScriptLanguage::get_singleton()->get_name(), source_file, is_abstract, is_tool);
 		}
+
+	next:
 		next = dir->get_next();
 	}
 }
