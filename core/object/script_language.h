@@ -385,6 +385,13 @@ public:
 				end_column = p_end_column;
 			}
 
+			_FORCE_INLINE_ bool operator==(const Match &r) const {
+				return start_line == r.start_line &&
+						start_column == r.start_column &&
+						end_line == r.end_line &&
+						end_column == r.end_column;
+			}
+
 			String to_string() const {
 				return vformat("Match{(%s,%s)=>(%s,%s)}", start_line, start_column, end_line, end_column);
 			}

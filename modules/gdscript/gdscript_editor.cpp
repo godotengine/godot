@@ -4311,6 +4311,16 @@ static Error _refactor_rename_symbol_match_from_class_find_matching_nodes(GDScri
 					GDScriptParser::VariableNode *member_variable = static_cast<GDScriptParser::VariableNode *>(p_source_node);
 					member_identifier = member_variable->identifier;
 				} break;
+				case GDScriptParser::Node::CONSTANT: {
+					member_type = RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_CONSTANT;
+					GDScriptParser::ConstantNode *member_constant = static_cast<GDScriptParser::ConstantNode *>(p_source_node);
+					member_identifier = member_constant->identifier;
+				} break;
+				case GDScriptParser::Node::SIGNAL: {
+					member_type = RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_SIGNAL;
+					GDScriptParser::SignalNode *member_signal = static_cast<GDScriptParser::SignalNode *>(p_source_node);
+					member_identifier = member_signal->identifier;
+				} break;
 				default: {
 					continue;
 				}
@@ -5106,8 +5116,8 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 		case GDScriptParser::REFACTOR_RENAME_TYPE_TYPE_NAME: {
 			switch (context.node->type) {
 				case GDScriptParser::Node::FUNCTION: {
-					GDScriptParser::FunctionNode *function = static_cast<GDScriptParser::FunctionNode *>(context.node);
-					GDScriptParser::DataType function_return_datatype = function->return_type->get_datatype();
+					GDScriptParser::FunctionNode *function_node = static_cast<GDScriptParser::FunctionNode *>(context.node);
+					GDScriptParser::DataType function_return_datatype = function_node->return_type->get_datatype();
 					switch (function_return_datatype.kind) {
 						case GDScriptParser::DataType::BUILTIN: {
 							REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_NATIVE);
@@ -5115,6 +5125,19 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 						} break;
 						case GDScriptParser::DataType::CLASS: {
 							_refactor_rename_symbol_match_from_class(context, p_symbol, p_path, function_return_datatype.class_type->get_datatype().script_path, p_unsaved_scripts_source_code, r_result, RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_CLASS, function_return_datatype.class_type);
+							REFACTOR_RENAME_RETURN(OK);
+						} break;
+						default: {
+							// Do nothing.
+						}
+					}
+				} break;
+				case GDScriptParser::Node::TYPE: {
+					GDScriptParser::TypeNode *type_node = static_cast<GDScriptParser::TypeNode *>(context.node);
+					GDScriptParser::DataType type_node_datatype = type_node->get_datatype();
+					switch (type_node_datatype.kind) {
+						case GDScriptParser::DataType::CLASS: {
+							_refactor_rename_symbol_match_from_class(context, p_symbol, p_path, type_node_datatype.class_type->get_datatype().script_path, p_unsaved_scripts_source_code, r_result, RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_CLASS, type_node_datatype.class_type);
 							REFACTOR_RENAME_RETURN(OK);
 						} break;
 						default: {
