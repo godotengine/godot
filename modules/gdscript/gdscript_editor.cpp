@@ -5111,8 +5111,8 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 		case GDScriptParser::REFACTOR_RENAME_TYPE_TYPE_NAME: {
 			switch (context.node->type) {
 				case GDScriptParser::Node::FUNCTION: {
-					GDScriptParser::FunctionNode *function_node = static_cast<GDScriptParser::FunctionNode *>(context.node);
-					GDScriptParser::DataType function_return_datatype = function_node->return_type->get_datatype();
+					GDScriptParser::FunctionNode *function = static_cast<GDScriptParser::FunctionNode *>(context.node);
+					GDScriptParser::DataType function_return_datatype = function->return_type->get_datatype();
 					switch (function_return_datatype.kind) {
 						case GDScriptParser::DataType::BUILTIN: {
 							REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_NATIVE);
@@ -5128,11 +5128,11 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 					}
 				} break;
 				case GDScriptParser::Node::TYPE: {
-					GDScriptParser::TypeNode *type_node = static_cast<GDScriptParser::TypeNode *>(context.node);
-					GDScriptParser::DataType type_node_datatype = type_node->get_datatype();
-					switch (type_node_datatype.kind) {
+					GDScriptParser::TypeNode *type = static_cast<GDScriptParser::TypeNode *>(context.node);
+					GDScriptParser::DataType type_datatype = type->get_datatype();
+					switch (type_datatype.kind) {
 						case GDScriptParser::DataType::CLASS: {
-							_refactor_rename_symbol_match_from_class(context, p_symbol, p_path, type_node_datatype.class_type->get_datatype().script_path, p_unsaved_scripts_source_code, r_result, RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_CLASS, type_node_datatype.class_type);
+							_refactor_rename_symbol_match_from_class(context, p_symbol, p_path, type_datatype.class_type->get_datatype().script_path, p_unsaved_scripts_source_code, r_result, RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_CLASS, type_datatype.class_type);
 							REFACTOR_RENAME_RETURN(OK);
 						} break;
 						default: {
