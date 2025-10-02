@@ -514,7 +514,7 @@ bool RenderingLightCuller::prepare_camera(const Transform3D &p_cam_transform, co
 	data.regular_rejected_count = 0;
 #endif
 
-	data.directional_cull_planes.resize(0);
+	data.directional_cull_planes.clear();
 
 #ifdef LIGHT_CULLER_DEBUG_LOGGING
 	if (is_logging()) {

@@ -863,7 +863,7 @@ void WSLPeer::close(int p_code, const String &p_reason) {
 	if (ready_state == STATE_CLOSED) {
 		heartbeat_waiting = false;
 		in_buffer.clear();
-		packet_buffer.resize(0);
+		packet_buffer.clear();
 		pending_message.clear();
 	}
 }

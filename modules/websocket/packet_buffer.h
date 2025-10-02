@@ -112,8 +112,8 @@ public:
 	}
 
 	void clear() {
-		_payload.resize(0);
-		_packets.resize(0);
+		_payload.clear();
+		_packets.clear();
 		_read_pos = 0;
 		_write_pos = 0;
 		_queued = 0;
