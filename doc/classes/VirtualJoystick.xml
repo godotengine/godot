@@ -58,19 +58,19 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="JOYSTICK_FIXED" value="0">
+		<constant name="JOYSTICK_FIXED" value="0" enum="JoystickMode">
 			The joystick doesn't move.
 		</constant>
-		<constant name="JOYSTICK_DYNAMIC" value="1">
+		<constant name="JOYSTICK_DYNAMIC" value="1" enum="JoystickMode">
 			The joystick is moved to the initial touch position as long as it's within the joystick's rect. It moves back to its original position when released.
 		</constant>
-		<constant name="JOYSTICK_FOLLOWING" value="2">
+		<constant name="JOYSTICK_FOLLOWING" value="2" enum="JoystickMode">
 			The joystick is moved to the initial touch position as long as it's within the joystick's rect. It will follow the touch input if it goes outside the joystick's range. It moves back to its original position when released.
 		</constant>
-		<constant name="VISIBILITY_ALWAYS" value="0">
+		<constant name="VISIBILITY_ALWAYS" value="0" enum="VisibilityMode">
 			The joystick is always visible.
 		</constant>
-		<constant name="VISIBILITY_TOUCHSCREEN_ONLY" value="1">
+		<constant name="VISIBILITY_TOUCHSCREEN_ONLY" value="1" enum="VisibilityMode">
 			The joystick is only visible on touchscreen devices.
 		</constant>
 	</constants>

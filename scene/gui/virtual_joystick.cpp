@@ -317,5 +317,5 @@ VirtualJoystick::VisibilityMode VirtualJoystick::get_visibility_mode() const {
 }
 
 VirtualJoystick::VirtualJoystick() {
-	clampzone_size = joystick_size;	
+	clampzone_size = joystick_size;
 }
