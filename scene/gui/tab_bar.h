@@ -156,6 +156,11 @@ private:
 		Color font_disabled_color;
 		Color font_outline_color;
 
+		Color icon_selected_color;
+		Color icon_hovered_color;
+		Color icon_unselected_color;
+		Color icon_disabled_color;
+
 		Ref<Texture2D> close_icon;
 		Ref<StyleBox> button_pressed_style;
 		Ref<StyleBox> button_hl_style;
@@ -172,7 +177,7 @@ private:
 	void _on_mouse_exited();
 
 	void _shape(int p_tab);
-	void _draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x, bool p_focus);
+	void _draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, const Color &p_icon_color, int p_index, float p_x, bool p_focus);
 
 	void _accessibility_action_scroll_into_view(const Variant &p_data, int p_index);
 	void _accessibility_action_focus(const Variant &p_data, int p_index);

@@ -1172,6 +1172,14 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_color("drop_mark_color", "TabContainer", tab_highlight);
 		p_theme->set_color("drop_mark_color", "TabBar", tab_highlight);
 
+		Color icon_color = Color(1, 1, 1);
+		p_theme->set_color("icon_selected_color", "TabContainer", icon_color);
+		p_theme->set_color("icon_hovered_color", "TabContainer", icon_color);
+		p_theme->set_color("icon_unselected_color", "TabContainer", icon_color);
+		p_theme->set_color("icon_selected_color", "TabBar", icon_color);
+		p_theme->set_color("icon_hovered_color", "TabBar", icon_color);
+		p_theme->set_color("icon_unselected_color", "TabBar", icon_color);
+
 		p_theme->set_icon("menu", "TabContainer", p_theme->get_icon(SNAME("GuiTabMenu"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("menu_highlight", "TabContainer", p_theme->get_icon(SNAME("GuiTabMenuHl"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("close", "TabBar", p_theme->get_icon(SNAME("GuiClose"), EditorStringName(EditorIcons)));
