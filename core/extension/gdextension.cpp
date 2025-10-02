@@ -267,6 +267,7 @@ void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library
 	};
 
 	const ClassCreationDeprecatedInfo legacy = {
+		false,
 		p_extension_funcs->notification_func, // GDExtensionClassNotification notification_func;
 		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList free_property_list_func;
 		p_extension_funcs->create_instance_func, // GDExtensionClassCreateInstance create_instance_func;
@@ -281,7 +282,7 @@ void GDExtension::_register_extension_class2(GDExtensionClassLibraryPtr p_librar
 	const GDExtensionClassCreationInfo5 class_info5 = {
 		p_extension_funcs->is_virtual, // GDExtensionBool is_virtual;
 		p_extension_funcs->is_abstract, // GDExtensionBool is_abstract;
-		true, // GDExtensionBool is_exposed;
+		p_extension_funcs->is_exposed, // GDExtensionBool is_exposed;
 		false, // GDExtensionBool is_runtime;
 		nullptr, // GDExtensionConstStringPtr icon_path;
 		p_extension_funcs->set_func, // GDExtensionClassSet set_func;
@@ -305,6 +306,7 @@ void GDExtension::_register_extension_class2(GDExtensionClassLibraryPtr p_librar
 	};
 
 	const ClassCreationDeprecatedInfo legacy = {
+		!p_extension_funcs->is_exposed, // bool legacy_unexposed_class;
 		nullptr, // GDExtensionClassNotification notification_func;
 		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList free_property_list_func;
 		p_extension_funcs->create_instance_func, // GDExtensionClassCreateInstance create_instance_func;
@@ -319,7 +321,7 @@ void GDExtension::_register_extension_class3(GDExtensionClassLibraryPtr p_librar
 	const GDExtensionClassCreationInfo5 class_info5 = {
 		p_extension_funcs->is_virtual, // GDExtensionBool is_virtual;
 		p_extension_funcs->is_abstract, // GDExtensionBool is_abstract;
-		true, // GDExtensionBool is_exposed;
+		p_extension_funcs->is_exposed, // GDExtensionBool is_exposed;
 		p_extension_funcs->is_runtime, // GDExtensionBool is_runtime;
 		nullptr, // GDExtensionConstStringPtr icon_path;
 		p_extension_funcs->set_func, // GDExtensionClassSet set_func;
@@ -343,6 +345,7 @@ void GDExtension::_register_extension_class3(GDExtensionClassLibraryPtr p_librar
 	};
 
 	const ClassCreationDeprecatedInfo legacy = {
+		!p_extension_funcs->is_exposed, // bool legacy_unexposed_class;
 		nullptr, // GDExtensionClassNotification notification_func;
 		nullptr, // GDExtensionClassFreePropertyList free_property_list_func;
 		p_extension_funcs->create_instance_func, // GDExtensionClassCreateInstance2 create_instance_func;
@@ -355,9 +358,16 @@ void GDExtension::_register_extension_class3(GDExtensionClassLibraryPtr p_librar
 
 void GDExtension::_register_extension_class4(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo4 *p_extension_funcs) {
 	GDExtensionClassCreationInfo5 class_info5 = *p_extension_funcs;
-	// Force classes to be exposed, because the behavior of unexposed classes changed in an incompatible (albeit, minor) way.
-	class_info5.is_exposed = true;
-	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info5);
+	const ClassCreationDeprecatedInfo legacy = {
+		!p_extension_funcs->is_exposed, // bool legacy_unexposed_class;
+		nullptr, // GDExtensionClassNotification notification_func;
+		nullptr, // GDExtensionClassFreePropertyList free_property_list_func;
+		nullptr, // GDExtensionClassCreateInstance2 create_instance_func;
+		nullptr, // GDExtensionClassGetRID get_rid;
+		nullptr, // GDExtensionClassGetVirtual get_virtual_func;
+		nullptr, // GDExtensionClassGetVirtual get_virtual_func;
+	};
+	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info5, &legacy);
 }
 #endif // DISABLE_DEPRECATED
 
@@ -447,6 +457,7 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 	extension->gdextension.validate_property = p_extension_funcs->validate_property_func;
 #ifndef DISABLE_DEPRECATED
 	if (p_deprecated_funcs) {
+		extension->gdextension.legacy_unexposed_class = p_deprecated_funcs->legacy_unexposed_class;
 		extension->gdextension.notification = p_deprecated_funcs->notification_func;
 		extension->gdextension.free_property_list = p_deprecated_funcs->free_property_list_func;
 		extension->gdextension.create_instance = p_deprecated_funcs->create_instance_func;
