@@ -61,8 +61,6 @@ bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_
 		return ret;
 	}
 
-	print_error("not ret. p_for_type.is_empty(): " + itos(p_for_type.is_empty()));
-
 	List<String> extensions;
 	if (p_for_type.is_empty()) {
 		get_recognized_extensions(&extensions);
@@ -72,7 +70,6 @@ bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_
 
 	for (const String &E : extensions) {
 		const String ext = !E.begins_with(".") ? "." + E : E;
-		print_error("EXT: " + ext);
 		if (p_path.right(ext.length()).nocasecmp_to(ext) == 0) {
 			return true;
 		}
@@ -319,7 +316,6 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 			break;
 		}
 	}
-	print_error("ResourceLoader::_load found: " + p_path + " " + itos(found) + " res valid: " + itos(res.is_valid()));
 
 	load_paths_stack.resize(load_paths_stack.size() - 1);
 	res_ref_overrides.erase(load_nesting);

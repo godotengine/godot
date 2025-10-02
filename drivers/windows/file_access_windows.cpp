@@ -400,12 +400,10 @@ bool FileAccessWindows::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 
 bool FileAccessWindows::file_exists(const String &p_name) {
 	if (is_path_invalid(p_name)) {
-		print_error("invalid path in file_exists: " + p_name);
 		return false;
 	}
 
 	String filename = fix_path(p_name);
-	print_error("checking file exists: " + filename);
 	DWORD file_attr = GetFileAttributesW((LPCWSTR)(filename.utf16().get_data()));
 	return (file_attr != INVALID_FILE_ATTRIBUTES) && !(file_attr & FILE_ATTRIBUTE_DIRECTORY);
 }

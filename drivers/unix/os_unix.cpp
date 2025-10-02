@@ -169,6 +169,7 @@ void OS_Unix::initialize_core() {
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
 	FileAccess::make_default<FileAccessUnixPipe>(FileAccess::ACCESS_PIPE);
+	FileAccess::make_default<FileAccessUnixPipe>(FileAccess::ACCESS_GLOBAL_RESOURCES);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);

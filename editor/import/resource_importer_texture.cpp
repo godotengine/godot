@@ -157,8 +157,6 @@ void ResourceImporterTexture::update_imports() {
 	make_flags.clear();
 
 	if (!to_reimport.is_empty()) {
-		print_error(String("ResourceImporterTexture::update_imports: ").join(to_reimport));
-		print_error("ResourceImporterTexture::update_imports");
 		EditorFileSystem::get_singleton()->reimport_files(to_reimport);
 	}
 }
