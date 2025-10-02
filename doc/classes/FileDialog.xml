@@ -246,6 +246,9 @@
 		<member name="option_count" type="int" setter="set_option_count" getter="get_option_count" default="0">
 			The number of additional [OptionButton]s and [CheckBox]es in the dialog.
 		</member>
+		<member name="overwrite_warning_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
+			If [code]true[/code], the [FileDialog] will warn the user before overwriting files in save mode.
+		</member>
 		<member name="recent_list_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
 			If [code]true[/code], shows the recent directories list on the left side of the dialog.
 		</member>
@@ -351,6 +354,10 @@
 		<constant name="CUSTOMIZATION_LAYOUT" value="6" enum="Customization">
 			If enabled, shows the layout switch buttons (list/thumbnails).
 			Equivalent to [member layout_toggle_enabled].
+		</constant>
+		<constant name="CUSTOMIZATION_OVERWRITE_WARNING" value="7" enum="Customization">
+			If enabled, the [FileDialog] will warn the user before overwriting files in save mode.
+			Equivalent to [member overwrite_warning_enabled].
 		</constant>
 	</constants>
 	<theme_items>

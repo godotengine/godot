@@ -143,6 +143,7 @@ public:
 		CUSTOMIZATION_FAVORITES,
 		CUSTOMIZATION_RECENT,
 		CUSTOMIZATION_LAYOUT,
+		CUSTOMIZATION_OVERWRITE_WARNING,
 		CUSTOMIZATION_MAX
 	};
 
@@ -159,6 +160,7 @@ private:
 	PropertyListHelper property_helper;
 
 	inline static bool default_show_hidden_files = false;
+	static inline DisplayMode default_display_mode = DISPLAY_THUMBNAILS;
 	bool show_hidden_files = false;
 	bool use_native_dialog = false;
 	bool customization_flags[CUSTOMIZATION_MAX]; // Initialized to true in the constructor.
@@ -432,6 +434,7 @@ public:
 	bool get_show_filename_filter() const;
 
 	static void set_default_show_hidden_files(bool p_show);
+	static void set_default_display_mode(DisplayMode p_mode);
 
 	static void set_get_icon_callback(const Callable &p_callback);
 	static void set_get_thumbnail_callback(const Callable &p_callback);
