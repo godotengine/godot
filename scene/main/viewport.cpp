@@ -5603,5 +5603,7 @@ T *Viewport::CameraOverride<T>::get_overridden_camera() const {
 // Explicit template instantiation to allow template definitions inside cpp file
 // and prevent instantiation using other than the desired camera types.
 template class Viewport::CameraOverride<Camera2D>;
+#ifndef _3D_DISABLED
 template class Viewport::CameraOverride<Camera3D>;
+#endif // _3D_DISABLED
 #endif // DEBUG_ENABLED
