@@ -70,7 +70,7 @@ Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 		ret = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
 		ret = create(ACCESS_USERDATA);
-	} else if (p_path.begins_with("glob://")) {
+	} else if (p_path.begins_with("global://")) {
 		ret = create(ACCESS_GLOBAL_RESOURCES);
 	} else if (p_path.begins_with("pipe://")) {
 		ret = create(ACCESS_PIPE);
@@ -290,12 +290,12 @@ String FileAccess::fix_path(const String &p_path) const {
 			}
 		} break;
 		case ACCESS_GLOBAL_RESOURCES: {
-			if (r_path.begins_with("glob://")) {
+			if (r_path.begins_with("global://")) {
 				String data_dir = EditorSettings::get_singleton()->get_global_resource_path();
 				if (!data_dir.is_empty()) {
-					return r_path.replace("glob:/", data_dir);
+					return r_path.replace("global:/", data_dir);
 				}
-				return r_path.replace("glob://", "");
+				return r_path.replace("global://", "");
 			}
 
 		} break;

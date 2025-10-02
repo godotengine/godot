@@ -59,7 +59,7 @@ String DirAccess::_get_root_string() const {
 		case ACCESS_USERDATA:
 			return "user://";
 		case ACCESS_GLOBAL_RESOURCES:
-			return "glob://";
+			return "global://";
 		default:
 			return "";
 	}
@@ -159,8 +159,8 @@ Error DirAccess::make_dir_recursive(const String &p_dir) {
 		base = "res://";
 	} else if (full_dir.begins_with("user://")) {
 		base = "user://";
-	} else if (full_dir.begins_with("glob://")) {
-		base = "glob://";
+	} else if (full_dir.begins_with("global://")) {
+		base = "global://";
 	} else if (full_dir.is_network_share_path()) {
 		int pos = full_dir.find_char('/', 2);
 		ERR_FAIL_COND_V(pos < 0, ERR_INVALID_PARAMETER);
@@ -221,12 +221,12 @@ String DirAccess::fix_path(const String &p_path) const {
 		} break;
 		case ACCESS_GLOBAL_RESOURCES: {
 			if (ProjectSettings::get_singleton()) {
-				if (p_path.begins_with("glob://")) {
+				if (p_path.begins_with("global://")) {
 					String resource_path = EditorSettings::get_singleton()->get_global_resource_path();
 					if (!resource_path.is_empty()) {
-						return p_path.replace_first("glob:/", resource_path);
+						return p_path.replace_first("global:/", resource_path);
 					}
-					return p_path.replace_first("glob://", "");
+					return p_path.replace_first("global://", "");
 				}
 			}
 		} break;
@@ -248,7 +248,7 @@ Ref<DirAccess> DirAccess::create_for_path(const String &p_path) {
 		da = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
 		da = create(ACCESS_USERDATA);
-	} else if (p_path.begins_with("glob://")) {
+	} else if (p_path.begins_with("global://")) {
 		da = create(ACCESS_GLOBAL_RESOURCES);
 	} else {
 		da = create(ACCESS_FILESYSTEM);
@@ -328,7 +328,6 @@ Error DirAccess::remove_absolute(const String &p_path) {
 
 Ref<DirAccess> DirAccess::create(AccessType p_access) {
 	Ref<DirAccess> da = create_func[p_access] ? create_func[p_access]() : nullptr;
-	print_error("DirAccess::create: " + String::num(int(p_access)) + " " + String::num(int(da.is_valid())));
 	if (da.is_valid()) {
 		da->_access_type = p_access;
 
@@ -339,7 +338,7 @@ Ref<DirAccess> DirAccess::create(AccessType p_access) {
 		} else if (p_access == ACCESS_USERDATA) {
 			da->change_dir("user://");
 		} else if (p_access == ACCESS_GLOBAL_RESOURCES) {
-			da->change_dir("glob://");
+			da->change_dir("global://");
 		}
 	}
 

@@ -219,9 +219,12 @@ Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, const String
 
 void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path) {
 	// Create a tree item for the subdirectory.
-	TreeItem *subdirectory_item = tree->create_item(p_parent);
 	String dname = p_dir->get_name();
 	String lpath = p_dir->get_path();
+	if (lpath.begins_with("global://")) {
+		return; // Skip the global:// global directory.
+	}
+	TreeItem *subdirectory_item = tree->create_item(p_parent);
 
 	if (dname.is_empty()) {
 		dname = "res://";

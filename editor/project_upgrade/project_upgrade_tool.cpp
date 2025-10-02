@@ -99,6 +99,8 @@ void ProjectUpgradeTool::finish_upgrade() {
 	EditorNode::get_singleton()->trigger_menu_option(EditorNode::SCENE_CLOSE_ALL, true);
 
 	Vector<String> paths = EditorSettings::get_singleton()->get_project_metadata(META_PROJECT_UPGRADE_TOOL, META_REIMPORT_PATHS, Vector<String>());
+	print_error(String("finish_upgrade: ").join(paths));
+	print_error("finish_upgrade");
 	EditorFileSystem::get_singleton()->reimport_files(paths);
 	EditorSettings::get_singleton()->set_project_metadata(META_PROJECT_UPGRADE_TOOL, META_REIMPORT_PATHS, Variant());
 

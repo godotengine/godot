@@ -4007,7 +4007,7 @@ void EditorNode::_update_addon_config() {
 void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed) {
 	String addon_path = p_addon;
 
-	if (!addon_path.begins_with("res://") && !addon_path.begins_with("glob://")) {
+	if (!addon_path.begins_with("res://") && !addon_path.begins_with("global://")) {
 		addon_path = "res://addons/" + addon_path + "/plugin.cfg";
 	}
 
@@ -4100,7 +4100,7 @@ bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 		return addon_name_to_plugin.has(p_addon);
 	}
 
-	if (p_addon.begins_with("glob://")) {
+	if (p_addon.begins_with("global://")) {
 		return addon_name_to_plugin.has(p_addon);
 	}
 

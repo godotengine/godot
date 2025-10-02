@@ -108,7 +108,7 @@ String EditorFileSystemDirectory::get_path() const {
 	}
 
 	if (parents == 0) {
-		return "res://";
+		return efd->root_path;
 	}
 
 	// Using PackedStringArray, because the path is built in reverse order.
@@ -116,7 +116,11 @@ String EditorFileSystemDirectory::get_path() const {
 	// Allocate an array based on nesting. It will store path bits.
 	path_bits.resize(parents + 2); // Last String is empty, so paths end with /.
 	String *path_write = path_bits.ptrw();
-	path_write[0] = "res:/";
+	if (efd->root_path == "res://") {
+		path_write[0] = "res:/";
+	} else if (efd->root_path == "global://") {
+		path_write[0] = "global:/";
+	}
 
 	efd = this;
 	for (int i = parents; i > 0; i--) {
@@ -248,7 +252,7 @@ void EditorFileSystem::_load_first_scan_root_dir() {
 
 	Ref<DirAccess> gd = DirAccess::create(DirAccess::ACCESS_GLOBAL_RESOURCES);
 	first_scan_global_root_dir = memnew(ScannedDirectory);
-	first_scan_global_root_dir->full_path = "glob://";
+	first_scan_global_root_dir->full_path = "global://";
 
 	print_error("_load_first_scan_root_dir 1");
 	nb_files_total = _scan_new_dir(first_scan_root_dir, d) + _scan_new_dir(first_scan_global_root_dir, gd);
@@ -400,7 +404,7 @@ void EditorFileSystem::_first_scan_process_scripts(const ScannedDirectory *p_sca
 
 void EditorFileSystem::_scan_filesystem() {
 	// On the first scan, the first_scan_root_dir is created in _first_scan_filesystem.
-	ERR_FAIL_COND(!scanning || new_filesystem || (first_scan && !first_scan_root_dir && !first_scan_global_root_dir));
+	ERR_FAIL_COND(!scanning || new_filesystem || new_global_filesystem || (first_scan && !first_scan_root_dir && !first_scan_global_root_dir));
 
 	//read .fscache
 	String cpath;
@@ -505,6 +509,10 @@ void EditorFileSystem::_scan_filesystem() {
 
 	new_filesystem = memnew(EditorFileSystemDirectory);
 	new_filesystem->parent = nullptr;
+	new_filesystem->root_path = "res://";
+	new_global_filesystem = memnew(EditorFileSystemDirectory);
+	new_global_filesystem->parent = nullptr;
+	new_global_filesystem->root_path = "global://";
 
 	ScannedDirectory *sd;
 	ScannedDirectory *gsd;
@@ -521,15 +529,15 @@ void EditorFileSystem::_scan_filesystem() {
 		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		sd = memnew(ScannedDirectory);
 		sd->full_path = "res://";
-		nb_files_total = _scan_new_dir(sd, d);
 		Ref<DirAccess> gd = DirAccess::create(DirAccess::ACCESS_GLOBAL_RESOURCES);
 		gsd = memnew(ScannedDirectory);
-		gsd->full_path = "glob://";
-		nb_files_total = _scan_new_dir(gsd, gd);
+		gsd->full_path = "global://";
+
+		nb_files_total = _scan_new_dir(sd, d) + _scan_new_dir(gsd, gd);
 	}
 
 	_process_file_system(sd, new_filesystem, sp, processed_files);
-	_process_file_system(gsd, new_filesystem, sp, processed_files);
+	_process_file_system(gsd, new_global_filesystem, sp, processed_files);
 
 	if (first_scan) {
 		_process_removed_files(*processed_files);
@@ -1040,7 +1048,8 @@ bool EditorFileSystem::_update_scan_actions() {
 		if (_scan_import_support(reimports)) {
 			return true;
 		}
-
+		print_error("update_scan_actions: " + String(", ").join(reimports));
+		print_error("update_scan_actions");
 		reimport_files(reimports);
 	} else {
 		//reimport files will update the uid cache file so if nothing was reimported, update it manually
@@ -1118,6 +1127,9 @@ void EditorFileSystem::scan() {
 		//file_type_cache.clear();
 		filesystem = new_filesystem;
 		new_filesystem = nullptr;
+		global_filesystem = new_global_filesystem;
+		new_global_filesystem = nullptr;
+
 		_update_scan_actions();
 		// Update all icons so they are loaded for the FileSystemDock.
 		_update_files_icon_path();
@@ -1627,7 +1639,12 @@ void EditorFileSystem::_delete_internal_files(const String &p_file) {
 	if (FileAccess::exists(p_file + ".import")) {
 		List<String> paths;
 		ResourceFormatImporter::get_singleton()->get_internal_resource_path_list(p_file, &paths);
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> da;
+		if (p_file.begins_with("res://")) {
+			da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		} else if (p_file.begins_with("global://")) {
+			da = DirAccess::create(DirAccess::ACCESS_GLOBAL_RESOURCES);
+		}
 		for (const String &E : paths) {
 			da->remove(E);
 		}
@@ -1664,6 +1681,7 @@ void EditorFileSystem::_thread_func_sources(void *_userdata) {
 		sp.progress = &pr;
 		sp.hi = efs->nb_files_total;
 		efs->_scan_fs_changes(efs->filesystem, sp);
+		efs->_scan_fs_changes(efs->global_filesystem, sp);
 	}
 	efs->scanning_changes_done.set();
 }
@@ -1720,6 +1738,7 @@ void EditorFileSystem::scan_changes() {
 			sp.hi = nb_files_total;
 			scan_total = 0;
 			_scan_fs_changes(filesystem, sp);
+			_scan_fs_changes(global_filesystem, sp);
 			if (_update_scan_actions()) {
 				emit_signal(SNAME("filesystem_changed"));
 			}
@@ -1756,8 +1775,20 @@ void EditorFileSystem::_notification(int p_what) {
 			if (new_filesystem) {
 				memdelete(new_filesystem);
 			}
+
 			filesystem = nullptr;
 			new_filesystem = nullptr;
+
+			if (global_filesystem) {
+				memdelete(global_filesystem);
+			}
+			if (new_global_filesystem) {
+				memdelete(new_global_filesystem);
+			}
+
+			global_filesystem = nullptr;
+			new_global_filesystem = nullptr;
+
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -1804,6 +1835,12 @@ void EditorFileSystem::_notification(int p_what) {
 					}
 					filesystem = new_filesystem;
 					new_filesystem = nullptr;
+					if (global_filesystem) {
+						memdelete(global_filesystem);
+					}
+					global_filesystem = new_global_filesystem;
+					new_global_filesystem = nullptr;
+
 					thread.wait_to_finish();
 					_update_scan_actions();
 					// Update all icons so they are loaded for the FileSystemDock.
@@ -1879,33 +1916,55 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 	//todo make faster
 
 	if (!filesystem || scanning) {
+		print_error("_find_file: !filesystem || scanning");
 		return false;
 	}
 
-	String f = ProjectSettings::get_singleton()->localize_path(p_file);
+	String localize_path = ProjectSettings::get_singleton()->localize_path(p_file);
+	String f = localize_path;
+	print_error("localize path: " + p_file + " " + localize_path);
 
 	// Note: Only checks if base directory is case sensitive.
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	bool fs_case_sensitive = dir->is_case_sensitive("res://");
+	bool fs_case_sensitive = dir->is_case_sensitive("res://") || dir->is_case_sensitive("global://");
 
-	if (!f.begins_with("res://")) {
+	if (!f.begins_with("res://") && !f.begins_with("global://")) {
+		print_error("_find_file : (!f.begins_with('res://') && !f.begins_with('global://'))" + f);
 		return false;
 	}
-	f = f.substr(6);
+	if (localize_path.begins_with("res://")) {
+		f = f.substr(6);
+	} else if (localize_path.begins_with("global://")) {
+		f = f.substr(9);
+	}
+
 	f = f.replace_char('\\', '/');
 
 	Vector<String> path = f.split("/");
 
+	print_error("_find_file: " + String("/ ").join(path) + " f: " + f);
+
 	if (path.is_empty()) {
+		print_error("_find_file : path.is_empty()");
 		return false;
 	}
 	String file = path[path.size() - 1];
 	path.resize(path.size() - 1);
 
-	EditorFileSystemDirectory *fs = filesystem;
+	EditorFileSystemDirectory *fs;
+	if (localize_path.begins_with("res://")) {
+		fs = filesystem;
+		print_error("fs == filesystem");
+	} else {
+		fs = global_filesystem;
+		print_error("fs == global_filesystem");
+	}
+
+	print_error("subdir count: " + String::num(fs->get_subdir_count()));
 
 	for (int i = 0; i < path.size(); i++) {
 		if (path[i].begins_with(".")) {
+			print_error("_find_file : path[i].begins_with('.')");
 			return false;
 		}
 
@@ -1927,6 +1986,7 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 		if (idx == -1) {
 			// Only create a missing directory in memory when it exists on disk.
 			if (!dir->dir_exists(fs->get_path().path_join(path[i]))) {
+				print_error("_find_file : !dir->dir_exists(fs->get_path().path_join(path[i])): " + fs->get_path().path_join(path[i]) + " path[i]: " + path[i]);
 				return false;
 			}
 			EditorFileSystemDirectory *efsd = memnew(EditorFileSystemDirectory);
@@ -1971,6 +2031,7 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 	r_file_pos = cpos;
 	*r_d = fs;
 
+	print_error("_find_file : cpos != -1: " + cpos);
 	return cpos != -1;
 }
 
@@ -2794,6 +2855,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 
 Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant *p_generator_parameters, bool p_update_file_system) {
 	print_verbose(vformat("EditorFileSystem: Importing file: %s", p_file));
+	print_error("_reimport_file: Importing file: " + p_file);
 	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
 
 	EditorFileSystemDirectory *fs = nullptr;
@@ -2916,6 +2978,9 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 	List<String> import_variants;
 	List<String> gen_files;
 	Variant meta;
+
+	print_error("_reimport_file: Importer: " + importer->get_importer_name() + " for file: " + p_file);
+
 	Error err = importer->import(uid, p_file, base_path, params, &import_variants, &gen_files, &meta);
 
 	// As import is complete, save the .import file.
@@ -3090,7 +3155,7 @@ void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file
 
 	// Emit the resource_reimporting signal for the single file before the actual importation.
 	emit_signal(SNAME("resources_reimporting"), reloads);
-
+	print_error("reimport_file_with_custom_parameters: Reimporting file with custom parameters: " + p_file);
 	_reimport_file(p_file, p_custom_params, p_importer);
 
 	// Emit the resource_reimported signal for the single file we just reimported.
@@ -3216,6 +3281,7 @@ void EditorFileSystem::_refresh_filesystem() {
 void EditorFileSystem::_reimport_thread(uint32_t p_index, ImportThreadData *p_import_data) {
 	ResourceLoader::set_is_import_thread(true);
 	int file_idx = p_import_data->reimport_from + int(p_index);
+	print_error("_reimport_thread: Thread reimporting file: " + p_import_data->reimport_files[file_idx].path);
 	_reimport_file(p_import_data->reimport_files[file_idx].path);
 	ResourceLoader::set_is_import_thread(false);
 
@@ -3252,7 +3318,10 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 		ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(file);
 		if (uid != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
 			file = ResourceUID::get_singleton()->get_id_path(uid);
+			print_error("Resolved " + p_files[i] + " to " + file);
 		}
+
+		print_error("p_files to file" + p_files[i] + " " + file);
 
 		String group_file = ResourceFormatImporter::get_singleton()->get_import_group_file(file);
 
@@ -3271,7 +3340,9 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 			// It's a regular file.
 			ImportFile ifile;
 			ifile.path = file;
+			print_error("Get import order for: " + file);
 			ResourceFormatImporter::get_singleton()->get_import_order_threads_and_importer(file, ifile.order, ifile.threaded, ifile.importer);
+			print_error("Get import order for 2: " + file);
 			reloads.push_back(file);
 			reimport_files.push_back(ifile);
 		}
@@ -3300,6 +3371,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	int from = 0;
 	Semaphore imported_sem;
 	for (int i = 0; i < reimport_files.size(); i++) {
+		print_error(vformat("Reimport file: %s (importer: %s)", reimport_files[i].path, reimport_files[i].importer));
 		if (groups_to_reimport.has(reimport_files[i].path)) {
 			from = i + 1;
 			continue;
@@ -3310,6 +3382,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 				if (from - i == 0) {
 					// Single file, do not use threads.
 					ep->step(reimport_files[i].path.get_file(), i, false);
+					print_error("reimport_files 1: " + reimport_files[i].path);
 					_reimport_file(reimport_files[i].path);
 				} else {
 					Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(reimport_files[from].importer);
@@ -3354,6 +3427,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 		} else {
 			ep->step(reimport_files[i].path.get_file(), i, false);
+			print_error("reimport_files 2: " + reimport_files[i].path);
 			_reimport_file(reimport_files[i].path);
 
 			// We need to increment the counter, maybe the next file is multithreaded
@@ -3369,12 +3443,14 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	if (groups_to_reimport.size()) {
 		HashMap<String, Vector<String>> group_files;
 		_find_group_files(filesystem, group_files, groups_to_reimport);
+		_find_group_files(global_filesystem, group_files, groups_to_reimport);
 		for (const KeyValue<String, Vector<String>> &E : group_files) {
 			ep->step(E.key.get_file(), from++, false);
 			Error err = _reimport_group(E.key, E.value);
 			reloads.push_back(E.key);
 			reloads.append_array(E.value);
 			if (err == OK) {
+				print_error("reimport_files 3: " + E.key);
 				_reimport_file(E.key);
 			}
 		}
@@ -3409,7 +3485,7 @@ Error EditorFileSystem::reimport_append(const String &p_file, const HashMap<Stri
 
 	// Emit the resource_reimporting signal for the single file before the actual importation.
 	emit_signal(SNAME("resources_reimporting"), reloads);
-
+	print_error("reimport_append: " + p_file);
 	Error ret = _reimport_file(p_file, p_custom_options, p_custom_importer, &p_generator_parameters);
 
 	// Emit the resource_reimported signal for the single file we just reimported.
@@ -3418,6 +3494,7 @@ Error EditorFileSystem::reimport_append(const String &p_file, const HashMap<Stri
 }
 
 Error EditorFileSystem::_resource_import(const String &p_path) {
+	print_error("_resource_import: Importing file: " + p_path);
 	Vector<String> files;
 	files.push_back(p_path);
 
@@ -3433,6 +3510,8 @@ Ref<Resource> EditorFileSystem::_load_resource_on_startup(ResourceFormatImporter
 	if (!FileAccess::exists(p_path)) {
 		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Failed loading resource: %s. The file doesn't seem to exist.", p_path));
 	}
+
+	print_error("Loading resource at startup: " + p_path);
 
 	Ref<Resource> res;
 	bool can_retry = true;
@@ -3771,6 +3850,7 @@ EditorFileSystem::EditorFileSystem() {
 	filesystem->parent = nullptr;
 
 	new_filesystem = nullptr;
+	new_global_filesystem = nullptr;
 
 	// This should probably also work on Unix and use the string it returns for FAT32 or exFAT
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);

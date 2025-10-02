@@ -49,6 +49,7 @@ class EditorFileSystemDirectory : public Object {
 	uint64_t modified_time;
 	bool verified = false; //used for checking changes
 
+	String root_path = "res://";
 	EditorFileSystemDirectory *parent = nullptr;
 	Vector<EditorFileSystemDirectory *> subdirs;
 
@@ -181,6 +182,7 @@ class EditorFileSystem : public Node {
 	static void _thread_func(void *_userdata);
 
 	EditorFileSystemDirectory *new_filesystem = nullptr;
+	EditorFileSystemDirectory *new_global_filesystem = nullptr;
 	static ScannedDirectory *first_scan_root_dir;
 	static ScannedDirectory *first_scan_global_root_dir;
 
@@ -208,6 +210,7 @@ class EditorFileSystem : public Node {
 	void _save_late_updated_files();
 
 	EditorFileSystemDirectory *filesystem = nullptr;
+	EditorFileSystemDirectory *global_filesystem = nullptr;
 
 	static EditorFileSystem *singleton;
 

@@ -97,6 +97,7 @@ public:
 ImportDock *ImportDock::singleton = nullptr;
 
 void ImportDock::set_edit_path(const String &p_path) {
+	print_error("set_edit_path: " + p_path);
 	Ref<ConfigFile> config;
 	config.instantiate();
 	Error err = config->load(p_path + ".import");
@@ -229,6 +230,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	HashSet<String> extensions;
 
 	for (int i = 0; i < p_paths.size(); i++) {
+		print_error("set_edit_multiple_paths: " + p_paths[i]);
 		Ref<ConfigFile> config;
 		config.instantiate();
 		extensions.insert(p_paths[i].get_extension());
@@ -682,7 +684,8 @@ void ImportDock::_reimport() {
 
 		config->save(params->paths[i] + ".import");
 	}
-
+	print_error(String("_reimport param: ").join(params->paths));
+	print_error("_reimport param");
 	EditorFileSystem::get_singleton()->reimport_files(params->paths);
 	EditorFileSystem::get_singleton()->emit_signal(SNAME("filesystem_changed")); //it changed, so force emitting the signal
 

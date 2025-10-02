@@ -73,7 +73,7 @@ void EditorPluginSettings::update_plugins() {
 	TreeItem *root = plugin_list->create_item();
 
 	Vector<String> plugins = _get_plugins("res://addons");
-	plugins.append_array(_get_plugins("glob://"));
+	plugins.append_array(_get_plugins("global://"));
 	plugins.sort();
 
 	// Replace the print_error line with this to display the plugins as a single string.
@@ -193,7 +193,7 @@ Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
 	Ref<DirAccess> da;
 	if (p_dir.begins_with("res://")) {
 		da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	} else if (p_dir.begins_with("glob://")) {
+	} else if (p_dir.begins_with("global://")) {
 		da = DirAccess::create(DirAccess::ACCESS_GLOBAL_RESOURCES);
 	}
 	Error err = da->change_dir(p_dir);
