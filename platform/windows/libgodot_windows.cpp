@@ -65,7 +65,7 @@ void libgodot_destroy_godot_instance(GDExtensionObjectPtr p_godot_instance) {
 		godot_instance->stop();
 		memdelete(godot_instance);
 		// Note: When Godot Engine supports reinitialization, clear the instance pointer here.
-		// instance = nullptr;
+		//instance = nullptr;
 		Main::cleanup();
 	}
 }

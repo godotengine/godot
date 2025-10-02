@@ -53,7 +53,7 @@ GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], 
 	if (!instance->initialize(p_init_func)) {
 		memdelete(instance);
 		// Note: When Godot Engine supports reinitialization, clear the instance pointer here.
-		// instance = nullptr;
+		//instance = nullptr;
 		return nullptr;
 	}
 

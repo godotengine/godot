@@ -121,7 +121,7 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension(const String &
 GDExtensionManager::LoadStatus GDExtensionManager::load_extension_from_function(const String &p_path, GDExtensionConstPtr<const GDExtensionInitializationFunction> p_init_func) {
 	Ref<GDExtensionFunctionLoader> func_loader;
 	func_loader.instantiate();
-	func_loader->set_initialization_function((GDExtensionInitializationFunction) * (p_init_func.data));
+	func_loader->set_initialization_function((GDExtensionInitializationFunction)*p_init_func.data);
 	return load_extension_with_loader(p_path, func_loader);
 }
 

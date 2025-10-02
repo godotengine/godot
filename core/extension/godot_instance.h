@@ -32,14 +32,14 @@
 
 #include "core/extension/gdextension_interface.h"
 #include "core/object/class_db.h"
-#include "core/object/object.h"
 
 class GodotInstance : public Object {
 	GDCLASS(GodotInstance, Object);
 
-	static void _bind_methods();
-
 	bool started = false;
+
+protected:
+	static void _bind_methods();
 
 public:
 	GodotInstance();

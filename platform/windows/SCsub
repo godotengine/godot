@@ -27,13 +27,10 @@ common_win = [
     "drop_target_windows.cpp",
 ]
 
-libgodot_win = [
-    "libgodot_windows.cpp",
-]
-
-exec_win = [
-    "godot_windows.cpp",
-]
+if env["library_type"] == "executable":
+    common_win += ["godot_windows.cpp"]
+else:
+    common_win += ["libgodot_windows.cpp"]
 
 if env.msvc:
     common_win += ["crash_handler_windows_seh.cpp"]
@@ -84,13 +81,10 @@ if env["accesskit"] and not env.msvc:
     sources += env.DEFLIB("uiautomationcore")
 
 if env["library_type"] == "static_library":
-    env.add_source_files(sources, libgodot_win)
     prog = env.add_library("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
 elif env["library_type"] == "shared_library":
-    env.add_source_files(sources, libgodot_win)
     prog = env.add_shared_library("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
 else:
-    env.add_source_files(sources, exec_win)
     prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
 arrange_program_clean(prog)
 

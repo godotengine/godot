@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "godot_instance.h"
+
 #include "core/extension/gdextension_manager.h"
 #include "main/main.h"
 #include "servers/display_server.h"

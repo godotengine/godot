@@ -356,13 +356,6 @@ if not env["platform"]:
     if env["platform"]:
         print(f"Automatically detected platform: {env['platform']}")
 
-# Library Support
-if env["library_type"] != "executable":
-    if env["platform"] not in ["linuxbsd", "macos", "windows"]:
-        print_error(f"Library builds not yet supported for {env['platform']}")
-        Exit(255)
-    env.Append(CPPDEFINES=["LIBGODOT_ENABLED"])
-
 # Deprecated aliases kept for compatibility.
 if env["platform"] in compatibility_platform_aliases:
     alias = env["platform"]
@@ -570,6 +563,13 @@ if not env["deprecated"]:
 
 if env["precision"] == "double":
     env.Append(CPPDEFINES=["REAL_T_IS_DOUBLE"])
+
+# Library Support
+if env["library_type"] != "executable":
+    if "library" not in env.get("supported", []):
+        print_error(f"Library builds unsupported for {env['platform']}")
+        Exit(255)
+    env.Append(CPPDEFINES=["LIBGODOT_ENABLED"])
 
 # Default num_jobs to local cpu count if not user specified.
 # SCons has a peculiarity where user-specified options won't be overridden

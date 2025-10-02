@@ -39,17 +39,16 @@ class GDExtensionFunctionLoader : public GDExtensionLoader {
 	friend class GDExtensionManager;
 	friend class GDExtension;
 
-private:
 	String library_path;
 	GDExtensionInitializationFunction initialization_function = nullptr;
 
 public:
-	Error open_library(const String &p_path) override;
+	virtual Error open_library(const String &p_path) override;
 	Error initialize(GDExtensionInterfaceGetProcAddress p_get_proc_address, const Ref<GDExtension> &p_extension, GDExtensionInitialization *r_initialization) override;
 	void close_library() override;
 	bool is_library_open() const override;
 	bool has_library_changed() const override;
 	bool library_exists() const override;
 
-	void set_initialization_function(GDExtensionInitializationFunction initialization_function);
+	void set_initialization_function(GDExtensionInitializationFunction p_initialization_function);
 };

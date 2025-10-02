@@ -5,7 +5,7 @@ import platform_macos_builders
 
 Import("env")
 
-common_files = [
+files = [
     "os_macos.mm",
     "godot_application.mm",
     "godot_application_delegate.mm",
@@ -33,25 +33,22 @@ common_files = [
 ]
 
 if env.editor_build:
-    common_files += [
+    files += [
         "editor/embedded_game_view_plugin.mm",
         "editor/embedded_process_macos.mm",
     ]
 
-executable_files = [
-    "godot_main_macos.mm",
-]
-
-libgodot_files = [
-    "libgodot_macos.mm",
-]
+if env["library_type"] == "executable":
+    files += ["godot_main_macos.mm"]
+else:
+    files += ["libgodot_macos.mm"]
 
 if env["library_type"] == "static_library":
-    prog = env.add_library("#bin/godot", common_files + libgodot_files)
+    prog = env.add_library("#bin/godot", files)
 elif env["library_type"] == "shared_library":
-    prog = env.add_shared_library("#bin/godot", common_files + libgodot_files)
+    prog = env.add_shared_library("#bin/godot", files)
 else:
-    prog = env.add_program("#bin/godot", common_files + executable_files)
+    prog = env.add_program("#bin/godot", files)
 
 if env["debug_symbols"] and env["separate_debug_symbols"]:
     env.AddPostAction(prog, env.Run(platform_macos_builders.make_debug_macos))
