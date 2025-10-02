@@ -93,6 +93,17 @@
 				Returns [code]true[/code] if an animation is currently playing with a section.
 			</description>
 		</method>
+		<method name="is_animation_active" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the an animation is currently active. An animation is active if it was played by calling [method play] and was not finished yet, or was stopped by calling [method stop].
+				This can be used to check whether an animation is currently paused or stopped.
+				[codeblock]
+				var is_paused = not is_playing() and is_animation_active()
+				var is_stopped = not is_playing() and not is_animation_active()
+				[/codeblock]
+			</description>
+		</method>
 		<method name="is_playing" qualifiers="const">
 			<return type="bool" />
 			<description>
