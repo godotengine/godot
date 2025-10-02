@@ -277,6 +277,11 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_color_override(SNAME("font_disabled_color"), theme_cache.font_disabled_color);
 	tab_bar->add_theme_color_override(SNAME("font_outline_color"), theme_cache.font_outline_color);
 
+	tab_bar->add_theme_color_override(SNAME("icon_selected_color"), theme_cache.icon_selected_color);
+	tab_bar->add_theme_color_override(SNAME("icon_hovered_color"), theme_cache.icon_hovered_color);
+	tab_bar->add_theme_color_override(SNAME("icon_unselected_color"), theme_cache.icon_unselected_color);
+	tab_bar->add_theme_color_override(SNAME("icon_disabled_color"), theme_cache.icon_disabled_color);
+
 	tab_bar->add_theme_font_override(SceneStringName(font), theme_cache.tab_font);
 	tab_bar->add_theme_font_size_override(SceneStringName(font_size), theme_cache.tab_font_size);
 
@@ -1165,6 +1170,11 @@ void TabContainer::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, font_unselected_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, font_disabled_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, font_outline_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, icon_selected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, icon_hovered_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, icon_unselected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, icon_disabled_color);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_FONT, TabContainer, tab_font, "font");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_FONT_SIZE, TabContainer, tab_font_size, "font_size");
