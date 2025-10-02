@@ -36,6 +36,7 @@
 #include "core/math/color.h"
 #include "core/string/print_string.h"
 #include "core/variant/variant.h"
+#include "matroska.h"
 #include "scene/resources/texture.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/rendering_device.h"
@@ -71,7 +72,7 @@ uint64_t VideoStreamPlaybackMatroska::read_id() {
 	}
 
 	if (!found_marker) {
-		ERR_PRINT("Failed to parse EBML ID");
+		ERR_PRINT("Failed to parse EBML_ID ID");
 		return 0;
 	}
 
@@ -98,7 +99,7 @@ uint64_t VideoStreamPlaybackMatroska::read_size() {
 	}
 
 	if (!found_marker) {
-		ERR_PRINT("Failed to parse EBML size");
+		ERR_PRINT("Failed to parse EBML_ID size");
 		return 1;
 	}
 
@@ -189,53 +190,53 @@ Error VideoStreamPlaybackMatroska::parse_ebml_header(EbmlHeader *r_header) {
 	while (src - header_start < header_size) {
 		uint64_t potential_id = read_id();
 
-		if (potential_id == EBML_VERSION_ID) {
+		if (potential_id == EBML_ID_VERSION) {
 			r_header->version = read_uint();
 			continue;
 		}
 
-		if (potential_id == EBML_READ_VERSION_ID) {
+		if (potential_id == EBML_ID_READ_VERSION) {
 			r_header->read_version = read_uint();
 			continue;
 		}
 
-		if (potential_id == EBML_MAX_ID_LENGTH_ID) {
+		if (potential_id == EBML_ID_MAX_LENGTH) {
 			r_header->max_id_length = read_uint();
 			continue;
 		}
 
-		if (potential_id == EBML_MAX_SIZE_LENGTH_ID) {
+		if (potential_id == EBML_ID_MAX_SIZE_LENGTH) {
 			r_header->max_size_length = read_uint();
 			continue;
 		}
 
-		if (potential_id == EBML_DOC_TYPE_ID) {
+		if (potential_id == EBML_ID_DOC_TYPE) {
 			r_header->doc_type = read_string();
 			continue;
 		}
 
-		if (potential_id == EBML_DOC_TYPE_VERSION_ID) {
+		if (potential_id == EBML_ID_DOC_TYPE_VERSION) {
 			r_header->doc_type_version = read_uint();
 			continue;
 		}
 
-		if (potential_id == EBML_DOC_TYPE_READ_VERSION_ID) {
+		if (potential_id == EBML_ID_DOC_TYPE_READ_VERSION) {
 			r_header->doc_type_read_version = read_uint();
 			continue;
 		}
 
-		if (potential_id == EBML_DOC_TYPE_EXTENSION_ID) {
+		if (potential_id == EBML_ID_DOC_TYPE_EXTENSION) {
 			uint64_t extension_size = read_size();
 			src += extension_size;
 			continue;
 		}
 
-		if (potential_id == EBML_DOC_TYPE_EXTENSION_NAME_ID) {
+		if (potential_id == EBML_ID_DOC_TYPE_EXTENSION_NAME) {
 			String extension_name = read_string();
 			continue;
 		}
 
-		if (potential_id == EBML_DOC_TYPE_EXTENSION_VERSION_ID) {
+		if (potential_id == EBML_ID_DOC_TYPE_EXTENSION_VERSION) {
 			read_uint();
 			continue;
 		}
@@ -258,44 +259,44 @@ Error VideoStreamPlaybackMatroska::parse_segment(Segment *r_segment) {
 	while (src - segment_start < segment_size) {
 		uint64_t potential_id = read_id();
 
-		if (potential_id == MATROSKA_SEEK_HEAD_ID) {
+		if (potential_id == MATROSKA_ID_SEEK_HEAD) {
 			parse_seek_head(&r_segment->seek_head);
 			use_seek_head = true;
 			break;
 		}
 
-		if (potential_id == MATROSKA_SEGMENT_INFO_ID) {
+		if (potential_id == MATROSKA_ID_SEGMENT_INFO) {
 			parse_segment_info(&r_segment->info);
 			continue;
 		}
 
-		if (potential_id == MATROSKA_TRACKS_ID) {
+		if (potential_id == MATROSKA_ID_TRACKS) {
 			parse_tracks(r_segment->tracks);
 			continue;
 		}
 
-		if (potential_id == MATROSKA_CHAPTERS_ID) {
+		if (potential_id == MATROSKA_ID_CHAPTERS) {
 			parse_chapters();
 			continue;
 		}
 
-		if (potential_id == MATROSKA_CLUSTER_ID) {
+		if (potential_id == MATROSKA_ID_CLUSTER) {
 			Cluster cluster;
 			parse_cluster(&cluster);
 			continue;
 		}
 
-		if (potential_id == MATROSKA_CUES_ID) {
+		if (potential_id == MATROSKA_ID_CUES) {
 			parse_cues();
 			continue;
 		}
 
-		if (potential_id == MATROSKA_ATTACHEMENTS_ID) {
+		if (potential_id == MATROSKA_ID_ATTACHEMENTS) {
 			parse_attachments();
 			continue;
 		}
 
-		if (potential_id == MATROSKA_TAGS_ID) {
+		if (potential_id == MATROSKA_ID_TAGS) {
 			parse_tags();
 			continue;
 		}
@@ -348,7 +349,7 @@ Error VideoStreamPlaybackMatroska::parse_seek_head(SeekHead *r_seak_head) {
 	while (src - seek_head_start < seek_head_size) {
 		uint64_t potential_id = read_id();
 
-		if (potential_id == MATROSKA_SEEK_ID) {
+		if (potential_id == MATROSKA_ID_SEEK) {
 			int64_t inner_size = read_size();
 			const uint8_t *seek_start = src;
 
@@ -360,22 +361,22 @@ Error VideoStreamPlaybackMatroska::parse_seek_head(SeekHead *r_seak_head) {
 			while (src - seek_start < inner_size) {
 				uint64_t inner_id = read_id();
 
-				if (inner_id == MATROSKA_SEEK_TARGET_ID) {
+				if (inner_id == MATROSKA_ID_SEEK_ID) {
 					seek.id = read_uint();
 				}
 
-				if (inner_id == MATROSKA_SEEK_POSITION_ID) {
+				if (inner_id == MATROSKA_ID_SEEK_POSITION) {
 					seek.position = read_uint();
 				}
 			}
 
-			if (seek.id == MATROSKA_SEGMENT_INFO_ID) {
+			if (seek.id == MATROSKA_ID_SEGMENT_INFO) {
 				r_seak_head->segment_info_position = seek.position;
-			} else if (seek.id == MATROSKA_TRACKS_ID) {
+			} else if (seek.id == MATROSKA_ID_TRACKS) {
 				r_seak_head->tracks_position = seek.position;
-			} else if (seek.id == MATROSKA_CUES_ID) {
+			} else if (seek.id == MATROSKA_ID_CUES) {
 				r_seak_head->cues_position = seek.position;
-			} else if (seek.id == MATROSKA_TAGS_ID) {
+			} else if (seek.id == MATROSKA_ID_TAGS) {
 				r_seak_head->tags_position = seek.position;
 			}
 		}
@@ -393,90 +394,90 @@ Error VideoStreamPlaybackMatroska::parse_segment_info(SegmentInfo *r_segment_inf
 		uint64_t id = read_id();
 
 		// TODO use CRC?
-		if (id == EBML_CRC32_ID) {
+		if (id == EBML_ID_CRC32) {
 			uint64_t size = read_size();
 			src += size;
 			continue;
 		}
 
-		if (id == MATROSKA_SEGMENT_INFO_UUID_ID) {
+		if (id == MATROSKA_ID_SEGMENT_INFO_UUID) {
 			uint64_t uuid_size = read_size();
 			memcpy(r_segment_info->uuid, src, uuid_size);
 			src += uuid_size;
 			continue;
 		}
 
-		if (id == MATROSKA_SEGMENT_INFO_FILENAME_ID) {
+		if (id == MATROSKA_ID_SEGMENT_INFO_FILENAME) {
 			r_segment_info->filename = read_string();
 			continue;
 		}
 
-		if (id == MATROSKA_SEGMENT_INFO_PREV_UUID_ID) {
+		if (id == MATROSKA_ID_SEGMENT_INFO_PREV_UUID) {
 			uint64_t uuid_size = read_size();
 			memcpy(r_segment_info->prev_uuid, src, uuid_size);
 			src += uuid_size;
 			continue;
 		}
 
-		if (id == MATROSKA_SEGMENT_INFO_PREV_FILENAME_ID) {
+		if (id == MATROSKA_ID_SEGMENT_INFO_PREV_FILENAME) {
 			r_segment_info->prev_filename = read_string();
 			continue;
 		}
 
-		if (id == MATROSKA_SEGMENT_INFO_NEXT_UUID_ID) {
+		if (id == MATROSKA_ID_SEGMENT_INFO_NEXT_UUID) {
 			uint64_t uuid_size = read_size();
 			memcpy(r_segment_info->next_uuid, src, uuid_size);
 			src += uuid_size;
 			continue;
 		}
 
-		if (id == MATROSKA_SEGMENT_INFO_NEXT_FILENAME_ID) {
+		if (id == MATROSKA_ID_SEGMENT_INFO_NEXT_FILENAME) {
 			r_segment_info->next_filename = read_string();
 			continue;
 		}
 
 		// TODO
-		if (id == MATROSKA_SEGMENT_INFO_FAMILY_ID) {
+		if (id == MATROSKA_ID_SEGMENT_INFO_FAMILY) {
 			uint64_t family_size = read_size();
 			src += family_size;
 			continue;
 		}
 
 		// TODO
-		if (id == MATROSKA_SEGMENT_INFO_CHAPTER_TRANSLATE_ID) {
+		if (id == MATROSKA_ID_SEGMENT_INFO_CHAPTER_TRANSLATE) {
 			uint64_t chapter_size = read_size();
 			src += chapter_size;
 			continue;
 		}
 
-		if (id == MATROSKA_SEGMENT_INFO_TIME_SCALE_ID) {
+		if (id == MATROSKA_ID_SEGMENT_INFO_TIME_SCALE) {
 			r_segment_info->time_scale = read_uint();
 			continue;
 		}
 
-		if (id == MATROSKA_SEGMENT_INFO_DURATION_ID) {
+		if (id == MATROSKA_ID_SEGMENT_INFO_DURATION) {
 			r_segment_info->duration = read_float();
 			continue;
 		}
 
 		// TODO
-		if (id == MATROSKA_SEGMENT_INFO_DATE_UTC_ID) {
+		if (id == MATROSKA_ID_SEGMENT_INFO_DATE_UTC) {
 			uint64_t date_size = read_size();
 			src += date_size;
 			continue;
 		}
 
-		if (id == MATROSKA_SEGMENT_INFO_TITLE_ID) {
+		if (id == MATROSKA_ID_SEGMENT_INFO_TITLE) {
 			r_segment_info->title = read_string();
 			continue;
 		}
 
-		if (id == MATROSKA_SEGMENT_INFO_MUXING_APP_ID) {
+		if (id == MATROSKA_ID_SEGMENT_INFO_MUXING_APP) {
 			r_segment_info->muxing_app = read_string();
 			continue;
 		}
 
-		if (id == MATROSKA_SEGMENT_INFO_WRITING_APP_ID) {
+		if (id == MATROSKA_ID_SEGMENT_INFO_WRITING_APP) {
 			r_segment_info->writing_app = read_string();
 			continue;
 		}
@@ -498,13 +499,13 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 		uint64_t id = read_id();
 
 		// TODO use CRC
-		if (id == EBML_CRC32_ID) {
+		if (id == EBML_ID_CRC32) {
 			uint64_t crc_size = read_size();
 			src += crc_size;
 			continue;
 		}
 
-		if (id == MATROSKA_TRACK_ENTRY_ID) {
+		if (id == MATROSKA_ID_TRACK_ENTRY) {
 			int64_t entry_size = read_size();
 			const uint8_t *entry_start = src;
 
@@ -512,23 +513,23 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 			while (src - entry_start < entry_size) {
 				uint64_t inner_id = read_id();
 
-				if (inner_id == 0xec) {
+				if (inner_id == EBML_ID_VOID) {
 					uint64_t void_size = read_size();
 					src += void_size;
 					continue;
 				}
 
-				if (inner_id == MATROSKA_TRACK_NUMBER_ID) {
+				if (inner_id == MATROSKA_ID_TRACK_NUMBER) {
 					track.track_number = read_uint();
 					continue;
 				}
 
-				if (inner_id == MATROSKA_TRACK_UID_ID) {
+				if (inner_id == MATROSKA_ID_TRACK_UID) {
 					track.track_uid = read_uint();
 					continue;
 				}
 
-				if (inner_id == MATROSKA_TRACK_TYPE) {
+				if (inner_id == MATROSKA_ID_TRACK_TYPE) {
 					uint64_t track_type = read_uint();
 					if (track_type != 1 && track_type != 2) {
 						print_line(vformat("Unknown track type %d", track_type));
@@ -536,85 +537,84 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 					continue;
 				}
 
-				if (inner_id == MATROSKA_TRACK_FLAG_ENABLED) {
+				if (inner_id == MATROSKA_ID_TRACK_FLAG_ENABLED) {
 					track.flag_enabled = read_uint();
 					continue;
 				}
 
-				if (inner_id == MATROSKA_TRACK_FLAG_DEFAULT) {
+				if (inner_id == MATROSKA_ID_TRACK_FLAG_DEFAULT) {
 					track.flag_default = read_uint();
 					continue;
 				}
 
-				if (inner_id == MATROSKA_TRACK_FLAG_FORCED) {
+				if (inner_id == MATROSKA_ID_TRACK_FLAG_FORCED) {
 					track.flag_forced = read_uint();
 					continue;
 				}
 
-				if (inner_id == MATROSKA_TRACK_FLAG_HEARING_IMPAIRED) {
+				if (inner_id == MATROSKA_ID_TRACK_FLAG_HEARING_IMPAIRED) {
 					track.flag_hearing_impaired = read_uint();
 					continue;
 				}
 
-				if (inner_id == MATROSKA_TRACK_FLAG_VISUAL_IMPAIRED) {
+				if (inner_id == MATROSKA_ID_TRACK_FLAG_VISUAL_IMPAIRED) {
 					track.flag_visual_impaired = read_uint();
 					continue;
 				}
 
-				if (inner_id == MATROSKA_TRACK_FLAG_TEXT_DESCRIPTIONS) {
+				if (inner_id == MATROSKA_ID_TRACK_FLAG_TEXT_DESCRIPTIONS) {
 					track.flag_text_descriptions = read_uint();
 					continue;
 				}
 
-				if (inner_id == MATROSKA_TRACK_FLAG_ORIGINAL) {
+				if (inner_id == MATROSKA_ID_TRACK_FLAG_ORIGINAL) {
 					track.flag_original = read_uint();
 					continue;
 				}
 
-				if (inner_id == MATROSKA_TRACK_FLAG_COMMENTARY) {
+				if (inner_id == MATROSKA_ID_TRACK_FLAG_COMMENTARY) {
 					track.flag_commentary = read_uint();
 					continue;
 				}
 
-				if (inner_id == MATROSKA_TRACK_FLAG_LACING) {
+				if (inner_id == MATROSKA_ID_TRACK_FLAG_LACING) {
 					track.flag_lacing = read_uint();
 					continue;
 				}
 
-				if (inner_id == MATRSOKA_TRACK_DEFAULT_DURATION) {
+				if (inner_id == MATROSKA_ID_TRACK_DEFAULT_DURATION) {
 					track.default_duration = read_uint();
 					continue;
 				}
 
-				if (inner_id == MATRSOKA_TRACK_DEFAULT_DECODED_FIELD_DURATION) {
+				if (inner_id == MATROSKA_ID_TRACK_DEFAULT_DECODED_FIELD_DURATION) {
 					track.default_decoded_field_duration = read_uint();
 					continue;
 				}
 
-				if (inner_id == 0x23314F) {
+				if (inner_id == MATROSKA_ID_TRACK_TIMESTAMP_SCALE) {
 					track.track_timestamp_scale = read_float();
 					continue;
 				}
 
-				if (inner_id == 0x55ee) {
+				if (inner_id == MATROSKA_ID_TRACK_MAX_BLOCK_ADDITION_ID) {
 					track.max_block_addition_id = read_uint();
 					continue;
 				}
 
-				// block additions mapping
-				if (inner_id == 0x41E4) {
+				if (inner_id == MATROSKA_ID_TRACK_BLOCK_ADDITION_MAPPING) {
 					uint64_t block_additions_size = read_size();
 					src += block_additions_size;
 					continue;
 				}
 
-				if (inner_id == 0x536E) {
+				if (inner_id == MATROSKA_ID_TRACK_NAME) {
 					track.name = read_string();
 					continue;
 				}
 
 				// BCP47 language codes take priority over Matroska language codes
-				if (inner_id == 0x22b59c) {
+				if (inner_id == MATROSKA_ID_TRACK_LANGUAGE) {
 					String language = read_string();
 					if (track.language.is_empty()) {
 						track.language = language;
@@ -622,12 +622,12 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 					continue;
 				}
 
-				if (inner_id == 0x22B59D) {
+				if (inner_id == MATROSKA_ID_TRACK_LANGUAGE_BCP47) {
 					track.language = read_string();
 					continue;
 				}
 
-				if (inner_id == 0x86) {
+				if (inner_id == MATROSKA_ID_TRACK_CODEC_ID) {
 					track.codec_id = read_string();
 					print_line(vformat("Track #%d (%s)", track.track_number, track.codec_id));
 					if (track.codec_id == "V_MPEG4/ISO/AVC") {
@@ -636,7 +636,7 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 					continue;
 				}
 
-				if (inner_id == 0x63A2) {
+				if (inner_id == MATROSKA_ID_TRACK_CODEC_PRIVATE) {
 					uint64_t codec_size = read_size();
 					if (track.track_number == 1 && video_stream_encoding.is_valid()) {
 						video_stream_encoding->parse_container_metadata(src, codec_size);
@@ -646,45 +646,45 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 					continue;
 				}
 
-				if (inner_id == 0x258688) {
+				if (inner_id == MATROSKA_ID_TRACK_CODEC_NAME) {
 					track.coded_name = read_string();
 					continue;
 				}
 
-				if (inner_id == 0x7446) {
+				if (inner_id == MATROSKA_ID_TRACK_ATTACHMENT_LINK) {
 					track.attachment_link = read_uint();
 					continue;
 				}
 
-				if (inner_id == 0x56aa) {
+				if (inner_id == MATROSKA_ID_TRACK_CODEC_DELAY) {
 					track.codec_delay = read_uint();
 					continue;
 				}
 
-				if (inner_id == 0x56BB) {
+				if (inner_id == MATROSKA_ID_TRACK_SEEK_PRE_ROLL) {
 					track.seek_pre_roll = read_uint();
 					continue;
 				}
 
-				if (inner_id == 0x6624) {
+				if (inner_id == MATROSKA_ID_TRACK_TRANSLATE) {
 					uint64_t track_translate_size = read_size();
 					src += track_translate_size;
 					continue;
 				}
 
-				if (inner_id == 0xe0) {
+				if (inner_id == MATROSKA_ID_TRACK_VIDEO) {
 					int64_t video_size = read_size();
 					const uint8_t *video_start = src;
 
 					while (src - video_start < video_size) {
 						uint64_t video_id = read_id();
 
-						if (video_id == 0xB0) {
+						if (video_id == MATROSKA_ID_TRACK_VIDEO_PIXEL_WIDTH) {
 							width = read_uint();
 							continue;
 						}
 
-						if (video_id == 0xBA) {
+						if (video_id == MATROSKA_ID_TRACK_VIDEO_PIXEL_HEIGHT) {
 							height = read_uint();
 							continue;
 						}
@@ -694,19 +694,19 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 					continue;
 				}
 
-				if (inner_id == 0xe1) {
+				if (inner_id == MATROSKA_ID_TRACK_AUDIO) {
 					uint64_t audio_size = read_size();
 					src += audio_size;
 					continue;
 				}
 
-				if (inner_id == 0xe2) {
+				if (inner_id == MATROSKA_ID_TRACK_OPERATION) {
 					uint64_t track_operation_size = read_size();
 					src += track_operation_size;
 					continue;
 				}
 
-				if (inner_id == 0x6D80) {
+				if (inner_id == MATROSKA_ID_TRACK_CONTENT_ENCODINGS) {
 					uint64_t content_encodings_size = read_size();
 					src += content_encodings_size;
 					continue;
@@ -745,18 +745,18 @@ Error VideoStreamPlaybackMatroska::parse_cluster(Cluster *r_cluster) {
 	while (src - cluster_start < cluster_size) {
 		uint64_t id = read_id();
 
-		if (id == EBML_CRC32_ID) {
+		if (id == EBML_ID_CRC32) {
 			uint64_t crc_size = read_size();
 			src += crc_size;
 			continue;
 		}
 
-		if (id == 0xE7) {
+		if (id == MATROSKA_ID_CLUSTER_TIMESTAMP) {
 			r_cluster->time = read_uint();
 			continue;
 		}
 
-		if (id == 0xA3) {
+		if (id == MATROSKA_ID_CLUSTER_SIMPLE_BLOCK) {
 			Cluster::Block block = {};
 
 			uint64_t block_size = read_size();
@@ -800,13 +800,13 @@ Error VideoStreamPlaybackMatroska::parse_cues() {
 	while (src - cues_start < cues_size) {
 		uint64_t id = read_id();
 
-		if (id == EBML_CRC32_ID) {
+		if (id == EBML_ID_CRC32) {
 			uint64_t crc_size = read_size();
 			src += crc_size;
 			continue;
 		}
 
-		if (id == 0xBB) {
+		if (id == MATROSKA_ID_CUES_CUE_POINT) {
 			int64_t element_size = read_size();
 			const uint8_t *element_start = src;
 
@@ -814,30 +814,30 @@ Error VideoStreamPlaybackMatroska::parse_cues() {
 			while (src - element_start < element_size) {
 				uint64_t element_id = read_id();
 
-				if (element_id == 0xB3) {
+				if (element_id == MATROSKA_ID_CUES_CUE_POINT_TIME) {
 					cluster.time = read_uint();
 					continue;
 				}
 
-				if (element_id == 0xB7) {
+				if (element_id == MATROSKA_ID_CUES_CUE_POINT_POSITIONS) {
 					int64_t positions_size = read_size();
 					const uint8_t *positions_start = src;
 
 					while (src - positions_start < positions_size) {
 						uint64_t positions_id = read_id();
 
-						if (positions_id == 0xF7) {
+						if (positions_id == MATROSKA_ID_CUES_CUE_POINT_POSITIONS_TRACK) {
 							cluster.target_track = read_uint();
 							continue;
 						}
 
-						if (positions_id == 0xF1) {
+						if (positions_id == MATROSKA_ID_CUES_CUE_POINT_POSITIONS_CLUSTER_POSITION) {
 							cluster.position = read_uint();
 							continue;
 						}
 
 						// TODO is relative position at all useful?
-						if (positions_id == 0xF0) {
+						if (positions_id == MATROSKA_ID_CUES_CUE_POINT_POSITIONS_RELATIVE_POSITION) {
 							read_uint();
 							continue;
 						}
@@ -891,7 +891,7 @@ void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 	while (src - origin < buffer.size()) {
 		uint64_t id = read_id();
 
-		if (id == EBML_HEADER_ID) {
+		if (id == EBML_ID_HEADER) {
 			Error err = parse_ebml_header(&header);
 			if (err != OK) {
 				ERR_PRINT("error parsing ebml header");
@@ -899,7 +899,7 @@ void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 			continue;
 		}
 
-		if (id == MATROSKA_SEGMENT_ID) {
+		if (id == MATROSKA_ID_SEGMENT) {
 			Error err = parse_segment(&segment);
 			if (err != OK) {
 				ERR_PRINT("error parsing matroska segment");
