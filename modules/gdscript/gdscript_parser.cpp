@@ -1218,9 +1218,7 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, b
 	}
 
 	variable->identifier = parse_identifier();
-	if (is_for_refactor_rename()) {
-		make_refactor_rename_context(REFACTOR_RENAME_TYPE_IDENTIFIER, variable->identifier);
-	}
+	make_refactor_rename_context(REFACTOR_RENAME_TYPE_IDENTIFIER, variable->identifier);
 
 	variable->export_info.name = variable->identifier->name;
 	variable->is_static = p_is_static;
@@ -1462,6 +1460,7 @@ GDScriptParser::ConstantNode *GDScriptParser::parse_constant(bool p_is_static) {
 	}
 
 	constant->identifier = parse_identifier();
+	make_refactor_rename_context(REFACTOR_RENAME_TYPE_IDENTIFIER, constant->identifier);
 
 	if (match(GDScriptTokenizer::Token::COLON)) {
 		if (check((GDScriptTokenizer::Token::EQUAL))) {
@@ -1532,6 +1531,7 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 	}
 
 	signal->identifier = parse_identifier();
+	make_refactor_rename_context(REFACTOR_RENAME_TYPE_IDENTIFIER, signal->identifier);
 
 	if (check(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
 		push_multiline(true);
@@ -3878,6 +3878,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_invalid_token(ExpressionNo
 GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 	TypeNode *type = alloc_node<TypeNode>();
 	make_completion_context(p_allow_void ? COMPLETION_TYPE_NAME_OR_VOID : COMPLETION_TYPE_NAME, type);
+	make_refactor_rename_context(p_allow_void ? REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID : REFACTOR_RENAME_TYPE_TYPE_NAME, type);
+
 	if (!match(GDScriptTokenizer::Token::IDENTIFIER)) {
 		if (match(GDScriptTokenizer::Token::TK_VOID)) {
 			if (p_allow_void) {
