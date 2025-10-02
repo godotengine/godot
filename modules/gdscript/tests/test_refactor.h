@@ -370,58 +370,63 @@ static void setup_global_classes(const String &p_dir) {
 			}
 			setup_global_classes(current_dir.path_join(next));
 		} else {
-			if (!next.ends_with(".global.gd") /* && !next.ends_with(".tscn") */) {
+			if (!next.ends_with(".global.gd")) {
+				goto next;
+			}
+
+			String element_path = ProjectSettings::get_singleton()->localize_path(current_dir.path_join(next));
+			String base_type;
+			bool is_abstract = false;
+			bool is_tool = false;
+			String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(element_path, &base_type, nullptr, &is_abstract, &is_tool);
+			if (class_name.is_empty()) {
+				return;
+			}
+			FAIL_COND_MSG(ScriptServer::is_global_class(class_name),
+					vformat("Class name '%s' from %s is already used in %s", class_name, element_path, ScriptServer::get_global_class_path(class_name)));
+
+			ScriptServer::add_global_class(class_name, base_type, gdscript_singleton_name, element_path, is_abstract, is_tool);
+			MESSAGE(vformat("Added global class \"%s\" (from \"%s\")", class_name, element_path));
+		}
+
+	next:
+		next = dir->get_next();
+	}
+
+	dir->list_dir_end();
+}
+
+static void load_scenes(const String &p_dir) {
+	Error err = OK;
+	Ref<DirAccess> dir(DirAccess::open(p_dir, &err));
+
+	FAIL_COND_MSG(err != OK, vformat("failed to open directory %s", p_dir));
+
+	String current_dir = dir->get_current_dir();
+
+	dir->list_dir_begin();
+	String next = dir->get_next();
+
+	StringName gdscript_singleton_name = GDScriptLanguage::get_singleton()->get_name();
+	while (!next.is_empty()) {
+		if (dir->current_is_dir()) {
+			if (next == "." || next == ".." || next == "completion" || next == "lsp" || next == "refactor") {
+				goto next;
+			}
+			load_scenes(current_dir.path_join(next));
+		} else {
+			if (!next.ends_with(".tscn")) {
 				goto next;
 			}
 
 			String element_path = ProjectSettings::get_singleton()->localize_path(current_dir.path_join(next));
 
-			auto add_global_class = [&gdscript_singleton_name](const String &p_path, const String &p_code = "") -> void {
-				String base_type;
-				bool is_abstract = false;
-				bool is_tool = false;
-				String class_name = p_code.is_empty()
-						? GDScriptLanguage::get_singleton()->get_global_class_name(p_path, &base_type, nullptr, &is_abstract, &is_tool)
-						: "";
-				if (class_name.is_empty()) {
-					return;
-				}
-				FAIL_COND_MSG(ScriptServer::is_global_class(class_name),
-						vformat("Class name '%s' from %s is already used in %s", class_name, p_path, ScriptServer::get_global_class_path(class_name)));
+			MESSAGE(vformat("before loading %s", element_path));
 
-				ScriptServer::add_global_class(class_name, base_type, gdscript_singleton_name, p_path, is_abstract, is_tool);
-				MESSAGE(vformat("Added global class \"%s\" (from \"%s\")", class_name, p_path));
-			};
+			Ref<PackedScene> scene = ResourceLoader::load(element_path);
+			FAIL_COND_MSG(scene.is_null(), vformat("couldn't load PackedScene \"%s\"", element_path));
 
-			if (next.ends_with(".tscn")) {
-				MESSAGE(vformat("before loading %s", element_path));
-
-				Ref<PackedScene> scene = ResourceLoader::load(element_path);
-				FAIL_COND_MSG(scene.is_null(), vformat("couldn't load PackedScene \"%s\"", element_path));
-				FAIL_COND_MSG(!scene->can_instantiate(), vformat("cannot instantiate PackedScene \"%s\"", element_path));
-
-				// ERR_PRINT_OFF;
-				Node *scene_instance = scene->instantiate();
-				// ERR_PRINT_ON;
-				MESSAGE(vformat("instantiated %s", element_path));
-
-				auto process_scene_node = [&add_global_class](Node *p_node) -> void {
-					Ref<GDScript> node_gdscript = p_node->get_script();
-					if (node_gdscript.is_null()) {
-						return;
-					}
-					add_global_class(node_gdscript->get_script_path(), node_gdscript->get_source_code());
-				};
-
-				process_scene_node(scene_instance);
-				for (Node *child : scene_instance->iterate_children()) {
-					process_scene_node(child);
-				}
-
-				scene_instance->queue_free();
-			} else {
-				add_global_class(element_path);
-			}
+			// No need to do anything further, as loading a packed scene also loads its scripts.
 		}
 
 	next:
@@ -434,10 +439,15 @@ static void setup_global_classes(const String &p_dir) {
 TEST_SUITE("[Modules][GDScript][Refactor tools]") {
 	TEST_CASE("[Editor] Rename symbol") {
 		EditorSettings::get_singleton()->set_setting("text_editor/completion/use_single_quotes", false);
-		init_language("modules/gdscript/tests/scripts");
 
-		setup_global_classes("modules/gdscript/tests/scripts/refactor/rename/");
-		test_directory("modules/gdscript/tests/scripts/refactor/rename/");
+		const String gdscript_tests_scripts_path = "modules/gdscript/tests/scripts";
+		const String gdscript_tests_scripts_refactor_path = gdscript_tests_scripts_path.path_join("refactor");
+
+		init_language(gdscript_tests_scripts_path);
+		setup_global_classes(gdscript_tests_scripts_refactor_path);
+		load_scenes(gdscript_tests_scripts_refactor_path);
+
+		test_directory(gdscript_tests_scripts_refactor_path);
 
 		finish_language();
 	}
