@@ -31,6 +31,7 @@
 #include "engine_update_label.h"
 
 #include "core/io/json.h"
+#include "core/version.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/main/http_request.h"
@@ -79,14 +80,16 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 	}
 
 	UpdateMode update_mode = UpdateMode(int(EDITOR_GET("network/connection/check_for_updates")));
+	if (update_mode == UpdateMode::AUTO) {
+		if (_get_version_type(GODOT_VERSION_STATUS) == VersionType::STABLE) {
+			update_mode = UpdateMode::NEWEST_STABLE;
+		} else {
+			update_mode = UpdateMode::NEWEST_UNSTABLE;
+		}
+	}
 	bool stable_only = update_mode == UpdateMode::NEWEST_STABLE || update_mode == UpdateMode::NEWEST_PATCH;
 
-	const Dictionary current_version_info = Engine::get_singleton()->get_version_info();
-	int current_major = current_version_info.get("major", 0);
-	int current_minor = current_version_info.get("minor", 0);
-	int current_patch = current_version_info.get("patch", 0);
 	available_newer_version = String();
-
 	for (const Variant &data_bit : version_array) {
 		const Dictionary version_info = data_bit;
 
@@ -98,7 +101,7 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 		}
 
 		int minor = version_bits[1].to_int();
-		if (version_bits[0].to_int() != current_major || minor < current_minor) {
+		if (version_bits[0].to_int() != GODOT_VERSION_MAJOR || minor < GODOT_VERSION_MINOR) {
 			continue;
 		}
 
@@ -107,11 +110,11 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 			patch = version_bits[2].to_int();
 		}
 
-		if (minor == current_minor && patch < current_patch) {
+		if (minor == GODOT_VERSION_MINOR && patch < GODOT_VERSION_PATCH) {
 			continue;
 		}
 
-		if (update_mode == UpdateMode::NEWEST_PATCH && minor > current_minor) {
+		if (update_mode == UpdateMode::NEWEST_PATCH && minor > GODOT_VERSION_MINOR) {
 			continue;
 		}
 
@@ -126,7 +129,7 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 		int release_index;
 		VersionType release_type = _get_version_type(release_string, &release_index);
 
-		if (minor > current_minor || patch > current_patch) {
+		if (minor > GODOT_VERSION_MINOR || patch > GODOT_VERSION_PATCH) {
 			if (stable_only && release_type != VersionType::STABLE) {
 				continue;
 			}
@@ -136,7 +139,7 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 		}
 
 		int current_version_index;
-		VersionType current_version_type = _get_version_type(current_version_info.get("status", "unknown"), &current_version_index);
+		VersionType current_version_type = _get_version_type(GODOT_VERSION_STATUS, &current_version_index);
 
 		if (int(release_type) > int(current_version_type)) {
 			break;
