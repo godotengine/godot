@@ -360,7 +360,7 @@ void EditorPropertyTextEnum::_emit_changed_value(const String &p_string) {
 }
 
 void EditorPropertyTextEnum::_option_selected(int p_which) {
-	_emit_changed_value(option_button->get_item_metadata(p_which));
+	_emit_changed_value(option_button->get_item_text(p_which));
 }
 
 void EditorPropertyTextEnum::_edit_custom_value() {
