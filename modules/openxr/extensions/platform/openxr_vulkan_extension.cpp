@@ -71,7 +71,7 @@ bool OpenXRVulkanExtension::check_graphics_api_support(XrVersion p_desired_versi
 
 	XrResult result = xrGetVulkanGraphicsRequirements2KHR(OpenXRAPI::get_singleton()->get_instance(), OpenXRAPI::get_singleton()->get_system_id(), &vulkan_requirements);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to get vulkan graphics requirements [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
+		print_line("OpenXR: Failed to get Vulkan graphics requirements [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
@@ -125,7 +125,7 @@ bool OpenXRVulkanExtension::create_vulkan_instance(const VkInstanceCreateInfo *p
 	VkResult vk_result = VK_SUCCESS;
 	XrResult result = xrCreateVulkanInstanceKHR(OpenXRAPI::get_singleton()->get_instance(), &xr_vulkan_instance_info, &vulkan_instance, &vk_result);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to create vulkan instance [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
+		print_line("OpenXR: Failed to create Vulkan instance [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
@@ -159,7 +159,7 @@ bool OpenXRVulkanExtension::get_physical_device(VkPhysicalDevice *r_device) {
 
 	XrResult result = xrGetVulkanGraphicsDevice2KHR(OpenXRAPI::get_singleton()->get_instance(), &get_info, &vulkan_physical_device);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to obtain vulkan physical device [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
+		print_line("OpenXR: Failed to obtain Vulkan physical device [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
@@ -185,12 +185,12 @@ bool OpenXRVulkanExtension::create_vulkan_device(const VkDeviceCreateInfo *p_dev
 	VkResult vk_result = VK_SUCCESS;
 	XrResult result = xrCreateVulkanDeviceKHR(OpenXRAPI::get_singleton()->get_instance(), &create_info, &vulkan_device, &vk_result);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to create vulkan device [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
+		print_line("OpenXR: Failed to create Vulkan device [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
 	if (vk_result != VK_SUCCESS) {
-		print_line("OpenXR: Failed to create vulkan device [vulkan error", vk_result, "]");
+		print_line("OpenXR: Failed to create Vulkan device [Vulkan error", vk_result, "]");
 	}
 
 	*r_device = vulkan_device;
@@ -251,7 +251,7 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 	uint32_t swapchain_length;
 	XrResult result = xrEnumerateSwapchainImages(p_swapchain, 0, &swapchain_length, nullptr);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to get swapchaim image count [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
+		print_line("OpenXR: Failed to get swapchain image count [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
@@ -279,7 +279,7 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 
 	result = xrEnumerateSwapchainImages(p_swapchain, swapchain_length, &swapchain_length, (XrSwapchainImageBaseHeader *)images.ptr());
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to get swapchaim images [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
+		print_line("OpenXR: Failed to get swapchain images [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
@@ -417,9 +417,8 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 }
 
 bool OpenXRVulkanExtension::create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) {
-	// Even though this is a Vulkan renderer we're using OpenGL coordinate systems.
 	OpenXRUtil::XrMatrix4x4f matrix;
-	OpenXRUtil::XrMatrix4x4f_CreateProjectionFov(&matrix, OpenXRUtil::GRAPHICS_OPENGL, p_fov, (float)p_z_near, (float)p_z_far);
+	OpenXRUtil::XrMatrix4x4f_CreateProjectionFov(&matrix, p_fov, (float)p_z_near, (float)p_z_far);
 
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
@@ -460,13 +459,13 @@ void OpenXRVulkanExtension::cleanup_swapchain_graphics_data(void **p_swapchain_g
 
 	for (const RID &texture_rid : data->texture_rids) {
 		// This should clean up our RIDs and associated texture objects but shouldn't destroy the images, they are owned by our XrSwapchain.
-		rendering_device->free(texture_rid);
+		rendering_device->free_rid(texture_rid);
 	}
 	data->texture_rids.clear();
 
 	for (int i = 0; i < data->density_map_rids.size(); i++) {
 		if (data->density_map_rids[i].is_valid()) {
-			rendering_device->free(data->density_map_rids[i]);
+			rendering_device->free_rid(data->density_map_rids[i]);
 		}
 	}
 	data->density_map_rids.clear();

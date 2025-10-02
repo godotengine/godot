@@ -525,6 +525,8 @@ public:
 
 	virtual void window_start_drag(WindowID p_window = MAIN_WINDOW_ID) {}
 
+	virtual void window_set_color(const Color &p_color) {}
+
 	enum WindowResizeEdge {
 		WINDOW_EDGE_TOP_LEFT,
 		WINDOW_EDGE_TOP,
@@ -651,6 +653,20 @@ public:
 		LIVE_OFF,
 		LIVE_POLITE,
 		LIVE_ASSERTIVE,
+	};
+
+	enum AccessibilityScrollUnit {
+		SCROLL_UNIT_ITEM,
+		SCROLL_UNIT_PAGE,
+	};
+
+	enum AccessibilityScrollHint {
+		SCROLL_HINT_TOP_LEFT,
+		SCROLL_HINT_BOTTOM_RIGHT,
+		SCROLL_HINT_TOP_EDGE,
+		SCROLL_HINT_BOTTOM_EDGE,
+		SCROLL_HINT_LEFT_EDGE,
+		SCROLL_HINT_RIGHT_EDGE,
 	};
 
 	static AccessibilityMode accessibility_get_mode() { return accessibility_mode; }
@@ -981,6 +997,8 @@ VARIANT_ENUM_CAST(DisplayServer::AccessibilityFlags)
 VARIANT_ENUM_CAST(DisplayServer::AccessibilityLiveMode)
 VARIANT_ENUM_CAST(DisplayServer::AccessibilityPopupType)
 VARIANT_ENUM_CAST(DisplayServer::AccessibilityRole)
+VARIANT_ENUM_CAST(DisplayServer::AccessibilityScrollUnit)
+VARIANT_ENUM_CAST(DisplayServer::AccessibilityScrollHint)
 
 VARIANT_ENUM_CAST(DisplayServer::WindowEvent)
 VARIANT_ENUM_CAST(DisplayServer::Feature)

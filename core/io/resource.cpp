@@ -298,6 +298,12 @@ Variant Resource::_duplicate_recursive(const Variant &p_variant, const Duplicate
 							DEV_ASSERT(false);
 						}
 					}
+					if (should_duplicate) {
+						Ref<Script> scr = sr;
+						if (scr.is_valid()) {
+							should_duplicate = false;
+						}
+					}
 				}
 			}
 			if (should_duplicate) {
@@ -330,7 +336,7 @@ Variant Resource::_duplicate_recursive(const Variant &p_variant, const Duplicate
 			const Dictionary &src = p_variant;
 			Dictionary dst;
 			if (src.is_typed()) {
-				dst.set_typed(src.get_key_type(), src.get_value_type());
+				dst.set_typed(src.get_typed_key_builtin(), src.get_typed_key_class_name(), src.get_typed_key_script(), src.get_typed_value_builtin(), src.get_typed_value_class_name(), src.get_typed_value_script());
 			}
 			for (const Variant &k : src.get_key_list()) {
 				const Variant &v = src[k];
@@ -672,25 +678,25 @@ void Resource::set_as_translation_remapped(bool p_remapped) {
 }
 
 // Helps keep IDs the same when loading/saving scenes. An empty ID clears the entry, and an empty ID is returned when not found.
-void Resource::set_id_for_path(const String &p_path, const String &p_id) {
+void Resource::set_resource_id_for_path(const String &p_referrer_path, const String &p_resource_path, const String &p_id) {
 #ifdef TOOLS_ENABLED
 	if (p_id.is_empty()) {
 		ResourceCache::path_cache_lock.write_lock();
-		ResourceCache::resource_path_cache[p_path].erase(get_path());
+		ResourceCache::resource_path_cache[p_referrer_path].erase(p_resource_path);
 		ResourceCache::path_cache_lock.write_unlock();
 	} else {
 		ResourceCache::path_cache_lock.write_lock();
-		ResourceCache::resource_path_cache[p_path][get_path()] = p_id;
+		ResourceCache::resource_path_cache[p_referrer_path][p_resource_path] = p_id;
 		ResourceCache::path_cache_lock.write_unlock();
 	}
 #endif
 }
 
-String Resource::get_id_for_path(const String &p_path) const {
+String Resource::get_id_for_path(const String &p_referrer_path) const {
 #ifdef TOOLS_ENABLED
 	ResourceCache::path_cache_lock.read_lock();
-	if (ResourceCache::resource_path_cache[p_path].has(get_path())) {
-		String result = ResourceCache::resource_path_cache[p_path][get_path()];
+	if (ResourceCache::resource_path_cache[p_referrer_path].has(get_path())) {
+		String result = ResourceCache::resource_path_cache[p_referrer_path][get_path()];
 		ResourceCache::path_cache_lock.read_unlock();
 		return result;
 	} else {
@@ -752,7 +758,9 @@ void Resource::_bind_methods() {
 }
 
 Resource::Resource() :
-		remapped_list(this) {}
+		remapped_list(this) {
+	_define_ancestry(AncestralClass::RESOURCE);
+}
 
 Resource::~Resource() {
 	if (unlikely(path_cache.is_empty())) {

@@ -144,7 +144,7 @@ def configure(env: "SConsEnvironment"):
 
     if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
         env.extra_suffix += ".san"
-        env.Append(CCFLAGS=["-DSANITIZERS_ENABLED"])
+        env.Append(CPPDEFINES=["SANITIZERS_ENABLED"])
 
         if env["use_ubsan"]:
             env.Append(
@@ -278,6 +278,9 @@ def configure(env: "SConsEnvironment"):
     if not env["builtin_libwebp"]:
         env.ParseConfig("pkg-config libwebp --cflags --libs")
 
+    if not env["builtin_libjpeg_turbo"]:
+        env.ParseConfig("pkg-config libturbojpeg --cflags --libs")
+
     if not env["builtin_mbedtls"]:
         # mbedTLS only provides a pkgconfig file since 3.6.0, but we still support 2.28.x,
         # so fallback to manually specifying LIBS if it fails.
@@ -380,7 +383,6 @@ def configure(env: "SConsEnvironment"):
         env.Append(CPPDEFINES=["XKB_ENABLED"])
 
     if platform.system() == "Linux":
-        env.Append(CPPDEFINES=["JOYDEV_ENABLED"])
         if env["udev"]:
             if not env["use_sowrap"]:
                 if os.system("pkg-config --exists libudev") == 0:  # 0 means found

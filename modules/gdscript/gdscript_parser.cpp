@@ -1785,7 +1785,7 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 			}
 
 			argument_index++;
-		} while (match(GDScriptTokenizer::Token::COMMA) && !is_at_end());
+		} while (match(GDScriptTokenizer::Token::COMMA));
 
 		pop_multiline();
 		consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after annotation arguments.)*");
@@ -3594,6 +3594,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_preload(ExpressionNode *p_
 	}
 
 	pop_completion_call();
+
+	// Allow trailing comma.
+	match(GDScriptTokenizer::Token::COMMA);
 
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after preload path.)*");

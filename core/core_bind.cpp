@@ -718,6 +718,27 @@ void OS::remove_logger(const Ref<Logger> &p_logger) {
 	logger_bind->loggers.erase(p_logger);
 }
 
+void OS::remove_script_loggers(const ScriptLanguage *p_script) {
+	if (logger_bind) {
+		LocalVector<Ref<CoreBind::Logger>> to_remove;
+		for (const Ref<CoreBind::Logger> &logger : logger_bind->loggers) {
+			if (logger.is_null()) {
+				continue;
+			}
+			ScriptInstance *si = logger->get_script_instance();
+			if (!si) {
+				continue;
+			}
+			if (si->get_language() == p_script) {
+				to_remove.push_back(logger);
+			}
+		}
+		for (const Ref<CoreBind::Logger> &logger : to_remove) {
+			logger_bind->loggers.erase(logger);
+		}
+	}
+}
+
 void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_entropy", "size"), &OS::get_entropy);
 	ClassDB::bind_method(D_METHOD("get_system_ca_certificates"), &OS::get_system_ca_certificates);
@@ -1505,6 +1526,10 @@ void Thread::set_thread_safety_checks_enabled(bool p_enabled) {
 	set_current_thread_safe_for_nodes(!p_enabled);
 }
 
+bool Thread::is_main_thread() {
+	return ::Thread::is_main_thread();
+}
+
 void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start", "callable", "priority"), &Thread::start, DEFVAL(PRIORITY_NORMAL));
 	ClassDB::bind_method(D_METHOD("get_id"), &Thread::get_id);
@@ -1513,6 +1538,7 @@ void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("wait_to_finish"), &Thread::wait_to_finish);
 
 	ClassDB::bind_static_method("Thread", D_METHOD("set_thread_safety_checks_enabled", "enabled"), &Thread::set_thread_safety_checks_enabled);
+	ClassDB::bind_static_method("Thread", D_METHOD("is_main_thread"), &Thread::is_main_thread);
 
 	BIND_ENUM_CONSTANT(PRIORITY_LOW);
 	BIND_ENUM_CONSTANT(PRIORITY_NORMAL);
@@ -1524,14 +1550,16 @@ namespace Special {
 ////// ClassDB //////
 
 PackedStringArray ClassDB::get_class_list() const {
-	List<StringName> classes;
-	::ClassDB::get_class_list(&classes);
+	LocalVector<StringName> classes;
+	::ClassDB::get_class_list(classes);
 
 	PackedStringArray ret;
 	ret.resize(classes.size());
+	String *ptrw = ret.ptrw();
 	int idx = 0;
-	for (const StringName &E : classes) {
-		ret.set(idx++, E);
+	for (const StringName &cls : classes) {
+		ptrw[idx] = cls;
+		idx++;
 	}
 
 	return ret;

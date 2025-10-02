@@ -95,10 +95,7 @@ void EditorDebuggerTree::_scene_tree_selection_changed(TreeItem *p_item, int p_c
 		if (inspected_object_ids.size() == (int)EDITOR_GET("debugger/max_node_selection")) {
 			selection_surpassed_limit = true;
 			p_item->deselect(0);
-			return;
-		}
-
-		if (!inspected_object_ids.has(id)) {
+		} else if (!inspected_object_ids.has(id)) {
 			inspected_object_ids.append(id);
 		}
 	} else if (inspected_object_ids.has(id)) {
@@ -375,6 +372,16 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 	}
 	if (scroll_item) {
 		scroll_to_item(scroll_item, false);
+	}
+
+	if (new_session) {
+		// Some nodes may stay selected between sessions.
+		// Make sure the inspector shows them properly.
+		if (!notify_selection_queued) {
+			callable_mp(this, &EditorDebuggerTree::_notify_selection_changed).call_deferred();
+			notify_selection_queued = true;
+		}
+		new_session = false;
 	}
 
 	last_filter = filter;

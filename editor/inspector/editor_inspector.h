@@ -32,12 +32,12 @@
 
 #include "editor/inspector/editor_property_name_processor.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_container.h"
 
 class AddMetadataDialog;
 class AcceptDialog;
-class Button;
 class ConfirmationDialog;
 class EditorInspector;
 class EditorValidationPanel;
@@ -55,6 +55,18 @@ class EditorPropertyRevert {
 public:
 	static Variant get_property_revert_value(Object *p_object, const StringName &p_property, bool *r_is_valid);
 	static bool can_property_revert(Object *p_object, const StringName &p_property, const Variant *p_custom_current_value = nullptr);
+};
+
+class EditorInspectorActionButton : public Button {
+	GDCLASS(EditorInspectorActionButton, Button);
+
+	StringName icon_name;
+
+protected:
+	void _notification(int p_what);
+
+public:
+	EditorInspectorActionButton(const String &p_text, const StringName &p_icon_name);
 };
 
 class EditorProperty : public Container {
@@ -402,6 +414,7 @@ class EditorInspectorSection : public Container {
 		int vertical_separation = 0;
 		int inspector_margin = 0;
 		int indent_size = 0;
+		int key_padding_size = 0;
 
 		Color warning_color;
 		Color prop_subsection;
@@ -698,6 +711,7 @@ class EditorInspector : public ScrollContainer {
 	HashMap<StringName, HashMap<StringName, DocCacheInfo>> doc_cache;
 	HashSet<StringName> restart_request_props;
 	HashMap<String, String> custom_property_descriptions;
+	HashMap<String, String> doc_property_class_remaps;
 
 	HashMap<ObjectID, int> scroll_cache;
 
@@ -755,6 +769,8 @@ class EditorInspector : public ScrollContainer {
 	void _add_meta_confirm();
 	void _show_add_meta_dialog();
 
+	void _handle_menu_option(int p_option);
+	void _add_section_in_tree(EditorInspectorSection *p_section, VBoxContainer *p_current_vbox);
 	static EditorInspector *_get_control_parent_inspector(Control *p_control);
 
 protected:
@@ -765,7 +781,6 @@ public:
 	static void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void cleanup_plugins();
-	static Button *create_inspector_action_button(const String &p_text);
 
 	static EditorProperty *instantiate_property_editor(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
 
@@ -816,6 +831,8 @@ public:
 
 	void add_custom_property_description(const String &p_class, const String &p_property, const String &p_description);
 	String get_custom_property_description(const String &p_property) const;
+
+	void remap_doc_property_class(const String &p_property_prefix, const String &p_class);
 
 	void set_object_class(const String &p_class);
 	String get_object_class() const;

@@ -64,6 +64,7 @@ Ref<Material> Material::get_next_pass() const {
 void Material::set_render_priority(int p_priority) {
 	ERR_FAIL_COND(p_priority < RENDER_PRIORITY_MIN);
 	ERR_FAIL_COND(p_priority > RENDER_PRIORITY_MAX);
+
 	render_priority = p_priority;
 
 	if (material.is_valid()) {
@@ -182,7 +183,7 @@ Material::Material() {
 Material::~Material() {
 	if (material.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(material);
+		RenderingServer::get_singleton()->free_rid(material);
 	}
 }
 
@@ -699,7 +700,7 @@ void BaseMaterial3D::_update_shader() {
 			if (v->users == 0) {
 				// Deallocate shader which is no longer in use.
 				shader_rid = RID();
-				RS::get_singleton()->free(v->shader);
+				RS::get_singleton()->free_rid(v->shader);
 				shader_map.erase(current_key);
 			}
 		}
@@ -1356,7 +1357,7 @@ void vertex() {)";
 	if (flags[FLAG_FIXED_SIZE]) {
 		code += R"(
 	// Fixed Size: Enabled
-	if (PROJECTION_MATRIX[3][3] != 0.0) {
+	if (PROJECTION_MATRIX[2][3] == 0.0) {
 		// Orthogonal matrix; try to do about the same with viewport size.
 		float h = abs(1.0 / (2.0 * PROJECTION_MATRIX[1][1]));
 		// Consistent with vertical FOV (Keep Height).
@@ -1366,7 +1367,7 @@ void vertex() {)";
 		MODELVIEW_MATRIX[2] *= sc;
 	} else {
 		// Scale by depth.
-		float sc = -(MODELVIEW_MATRIX)[3].z;
+		float sc = length((MODELVIEW_MATRIX)[3].xyz);
 		MODELVIEW_MATRIX[0] *= sc;
 		MODELVIEW_MATRIX[1] *= sc;
 		MODELVIEW_MATRIX[2] *= sc;
@@ -1476,8 +1477,8 @@ void vertex() {)";
 
 	if (flags[FLAG_ALBEDO_TEXTURE_MSDF] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
 		code += R"(
-float msdf_median(float r, float g, float b, float a) {
-	return min(max(min(r, g), min(max(r, g), b)), a);
+float msdf_median(float r, float g, float b) {
+	return max(min(r, g), min(max(r, g), b));
 }
 )";
 	}
@@ -1621,10 +1622,12 @@ void fragment() {)";
 		code += R"(
 	{
 		// Albedo Texture MSDF: Enabled
-		albedo_tex.rgb = mix(
-				vec3(1.0 + 0.055) * pow(albedo_tex.rgb, vec3(1.0 / 2.4)) - vec3(0.055),
-				vec3(12.92) * albedo_tex.rgb,
-				lessThan(albedo_tex.rgb, vec3(0.0031308)));
+		if (!OUTPUT_IS_SRGB) {
+			albedo_tex.rgb = mix(
+					vec3(1.0 + 0.055) * pow(albedo_tex.rgb, vec3(1.0 / 2.4)) - vec3(0.055),
+					vec3(12.92) * albedo_tex.rgb,
+					lessThan(albedo_tex.rgb, vec3(0.0031308)));
+		}
 		vec2 msdf_size = vec2(msdf_pixel_range) / vec2(albedo_texture_size);
 )";
 		if (flags[FLAG_USE_POINT_SIZE]) {
@@ -1634,12 +1637,13 @@ void fragment() {)";
 		}
 		code += R"(
 		float px_size = max(0.5 * dot(msdf_size, dest_size), 1.0);
-		float d = msdf_median(albedo_tex.r, albedo_tex.g, albedo_tex.b, albedo_tex.a) - 0.5;
+		float d = msdf_median(albedo_tex.r, albedo_tex.g, albedo_tex.b);
 		if (msdf_outline_size > 0.0) {
-			float cr = clamp(msdf_outline_size, 0.0, msdf_pixel_range / 2.0) / msdf_pixel_range;
-			albedo_tex.a = clamp((d + cr) * px_size, 0.0, 1.0);
+			float cr = clamp(msdf_outline_size, 0.0, (msdf_pixel_range / 2.0) - 1.0) / msdf_pixel_range;
+			d = min(d, albedo_tex.a);
+			albedo_tex.a = clamp((d - 0.5 + cr) * px_size, 0.0, 1.0);
 		} else {
-			albedo_tex.a = clamp(d * px_size + 0.5, 0.0, 1.0);
+			albedo_tex.a = clamp((d - 0.5) * px_size + 0.5, 0.0, 1.0);
 		}
 		albedo_tex.rgb = vec3(1.0);
 	}
@@ -2063,7 +2067,7 @@ void fragment() {)";
 	if (unlikely(v)) {
 		// We raced and managed to create the same key concurrently, so we'll free the shader we just created,
 		// given we know it isn't used, and use the winner.
-		RS::get_singleton()->free(new_shader);
+		RS::get_singleton()->free_rid(new_shader);
 	} else {
 		ShaderData shader_data;
 		shader_data.shader = new_shader;
@@ -3217,6 +3221,11 @@ void BaseMaterial3D::set_stencil_mode(StencilMode p_stencil_mode) {
 		return;
 	}
 
+	if (p_stencil_mode == StencilMode::STENCIL_MODE_OUTLINE || p_stencil_mode == StencilMode::STENCIL_MODE_XRAY) {
+		ERR_FAIL_COND_EDMSG(get_render_priority() >= RENDER_PRIORITY_MAX,
+				vformat("Cannot use stencil mode Outline or Xray, when render priority is RENDER_PRIORITY_MAX(%d).", RENDER_PRIORITY_MAX));
+	}
+
 	stencil_mode = p_stencil_mode;
 	_prepare_stencil_effect();
 	_queue_shader_change();
@@ -3995,7 +4004,7 @@ BaseMaterial3D::~BaseMaterial3D() {
 			shader_map[current_key].users--;
 			if (shader_map[current_key].users == 0) {
 				// Deallocate shader which is no longer in use.
-				RS::get_singleton()->free(shader_map[current_key].shader);
+				RS::get_singleton()->free_rid(shader_map[current_key].shader);
 				shader_map.erase(current_key);
 			}
 		}

@@ -795,7 +795,7 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 
 	Ref<FileAccessUnixPipe> err_pipe;
 	err_pipe.instantiate();
-	err_pipe->open_existing(pipe_err[0], 0, p_blocking);
+	err_pipe->open_existing(pipe_err[0], -1, p_blocking);
 
 	ProcessInfo pi;
 	process_map_mutex.lock();
@@ -1130,8 +1130,8 @@ String OS_Unix::get_user_data_dir(const String &p_user_dir) const {
 String OS_Unix::get_executable_path() const {
 #ifdef __linux__
 	//fix for running from a symlink
-	char buf[256];
-	memset(buf, 0, 256);
+	char buf[PATH_MAX];
+	memset(buf, 0, PATH_MAX);
 	ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf));
 	String b;
 	if (len > 0) {

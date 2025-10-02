@@ -480,12 +480,12 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				selection.creating = true;
 
 			} else {
-				if (selecting_enabled) {
+				if (selecting_enabled && !text.is_empty()) {
 					const int triple_click_timeout = 600;
 					const int triple_click_tolerance = 5;
 					const bool is_triple_click = !b->is_double_click() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < triple_click_timeout && b->get_position().distance_to(last_dblclk_pos) < triple_click_tolerance;
 
-					if (is_triple_click && !text.is_empty()) {
+					if (is_triple_click) {
 						// Triple-click select all.
 						selection.enabled = true;
 						selection.begin = 0;
@@ -503,7 +503,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 						last_dblclk_pos = b->get_position();
 						PackedInt32Array words = TS->shaped_text_get_word_breaks(text_rid);
 						for (int i = 0; i < words.size(); i = i + 2) {
-							if ((words[i] < caret_column && words[i + 1] > caret_column) || (i == words.size() - 2 && caret_column == words[i + 1])) {
+							if (words[i] <= caret_column && words[i + 1] >= caret_column) {
 								selection.enabled = true;
 								selection.begin = words[i];
 								selection.end = words[i + 1];
@@ -597,10 +597,10 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 					PackedInt32Array words = TS->shaped_text_get_word_breaks(text_rid);
 					for (int i = 0; i < words.size(); i = i + 2) {
-						if ((words[i] < selection.begin && words[i + 1] > selection.begin) || (i == words.size() - 2 && selection.begin == words[i + 1])) {
+						if (words[i] <= selection.begin && words[i + 1] >= selection.begin) {
 							selection.begin = words[i];
 						}
-						if ((words[i] < selection.end && words[i + 1] > selection.end) || (i == words.size() - 2 && selection.end == words[i + 1])) {
+						if (words[i] <= selection.end && words[i + 1] >= selection.end) {
 							selection.end = words[i + 1];
 							selection.enabled = true;
 							break;
@@ -1128,8 +1128,7 @@ bool LineEdit::_is_over_clear_button(const Point2 &p_pos) const {
 		return false;
 	}
 	Ref<Texture2D> icon = theme_cache.clear_icon;
-	int x_ofs = theme_cache.normal->get_margin(SIDE_RIGHT);
-	return p_pos.x > get_size().width - icon->get_width() - x_ofs;
+	return is_layout_rtl() ? p_pos.x < theme_cache.normal->get_margin(SIDE_LEFT) + icon->get_width() : p_pos.x > get_size().width - icon->get_width() - theme_cache.normal->get_margin(SIDE_RIGHT);
 }
 
 void LineEdit::_update_theme_item_cache() {
@@ -1226,19 +1225,21 @@ void LineEdit::_notification(int p_what) {
 					if (rtl) {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - Math::ceil(style->get_margin(SIDE_RIGHT) + (text_width))));
 					} else {
-						x_ofs = style->get_offset().x;
+						x_ofs = style->get_margin(SIDE_LEFT);
 					}
 				} break;
 				case HORIZONTAL_ALIGNMENT_CENTER: {
 					if (!Math::is_zero_approx(scroll_offset)) {
-						x_ofs = style->get_offset().x;
+						x_ofs = style->get_margin(SIDE_LEFT);
 					} else {
-						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - (text_width)) / 2);
+						int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
+						int centered = int((size.width - total_margin - text_width)) / 2;
+						x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, centered);
 					}
 				} break;
 				case HORIZONTAL_ALIGNMENT_RIGHT: {
 					if (rtl) {
-						x_ofs = style->get_offset().x;
+						x_ofs = style->get_margin(SIDE_LEFT);
 					} else {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - Math::ceil(style->get_margin(SIDE_RIGHT) + (text_width))));
 					}
@@ -1249,10 +1250,19 @@ void LineEdit::_notification(int p_what) {
 				Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
 				if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
 					if (Math::is_zero_approx(scroll_offset)) {
-						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
+						int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
+						int center = int(size.width - total_margin - text_width - r_icon->get_width()) / 2;
+						x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
+					}
+					if (rtl) {
+						x_ofs += r_icon->get_width();
 					}
 				} else {
-					x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+					if (rtl) {
+						x_ofs = MAX(style->get_margin(SIDE_LEFT) + r_icon->get_width(), x_ofs);
+					} else {
+						x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+					}
 				}
 			}
 
@@ -1333,7 +1343,7 @@ void LineEdit::_notification(int p_what) {
 				style->draw(ci, Rect2(Point2(), size));
 			}
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				theme_cache.focus->draw(ci, Rect2(Point2(), size));
 			}
 
@@ -1348,19 +1358,21 @@ void LineEdit::_notification(int p_what) {
 					if (rtl) {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - Math::ceil(style->get_margin(SIDE_RIGHT) + (text_width))));
 					} else {
-						x_ofs = style->get_offset().x;
+						x_ofs = style->get_margin(SIDE_LEFT);
 					}
 				} break;
 				case HORIZONTAL_ALIGNMENT_CENTER: {
 					if (!Math::is_zero_approx(scroll_offset)) {
-						x_ofs = style->get_offset().x;
+						x_ofs = style->get_margin(SIDE_LEFT);
 					} else {
-						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - (text_width)) / 2);
+						int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
+						int centered = int((size.width - total_margin - text_width)) / 2;
+						x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, centered);
 					}
 				} break;
 				case HORIZONTAL_ALIGNMENT_RIGHT: {
 					if (rtl) {
-						x_ofs = style->get_offset().x;
+						x_ofs = style->get_margin(SIDE_LEFT);
 					} else {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - Math::ceil(style->get_margin(SIDE_RIGHT) + (text_width))));
 					}
@@ -1399,17 +1411,32 @@ void LineEdit::_notification(int p_what) {
 					}
 				}
 
-				r_icon->draw(ci, Point2(width - r_icon->get_width() - style->get_margin(SIDE_RIGHT), height / 2 - r_icon->get_height() / 2), color_icon);
+				Point2 icon_pos = Point2(width - r_icon->get_width() - style->get_margin(SIDE_RIGHT), height / 2 - r_icon->get_height() / 2);
+				if (rtl) {
+					icon_pos.x = style->get_margin(SIDE_LEFT);
+				}
+				r_icon->draw(ci, icon_pos, color_icon);
 
 				if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
 					if (Math::is_zero_approx(scroll_offset)) {
-						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
+						int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
+						int center = int(size.width - total_margin - text_width - r_icon->get_width()) / 2;
+						x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
+					}
+					if (rtl) {
+						x_ofs += r_icon->get_width();
 					}
 				} else {
-					x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+					if (rtl) {
+						x_ofs = MAX(style->get_margin(SIDE_LEFT) + r_icon->get_width(), x_ofs);
+					} else {
+						x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+					}
 				}
 
-				ofs_max -= r_icon->get_width();
+				if (!rtl) {
+					ofs_max -= r_icon->get_width();
+				}
 			}
 
 			// Draw selections rects.
@@ -1496,11 +1523,18 @@ void LineEdit::_notification(int p_what) {
 								}
 							} break;
 							case HORIZONTAL_ALIGNMENT_CENTER: {
-								caret.l_caret = Rect2(Vector2(size.x / 2, y), Size2(caret_width, h));
+								int icon_width = 0;
+								if (right_icon.is_valid()) {
+									icon_width = right_icon->get_width();
+								}
+								int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
+								int center = int(size.width - total_margin - icon_width) / 2;
+
+								caret.l_caret = Rect2(Vector2(style->get_margin(SIDE_LEFT) + MAX(0, center), y), Size2(caret_width, h));
 							} break;
 							case HORIZONTAL_ALIGNMENT_RIGHT: {
 								if (rtl) {
-									caret.l_caret = Rect2(Vector2(style->get_offset().x, y), Size2(caret_width, h));
+									caret.l_caret = Rect2(Vector2(x_ofs, y), Size2(caret_width, h));
 								} else {
 									caret.l_caret = Rect2(Vector2(ofs_max, y), Size2(caret_width, h));
 								}
@@ -1773,19 +1807,21 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 			if (rtl) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			} else {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_CENTER: {
 			if (!Math::is_zero_approx(scroll_offset)) {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			} else {
-				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - (text_width)) / 2);
+				int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
+				int centered = int((get_size().width - total_margin - text_width)) / 2;
+				x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, centered);
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_RIGHT: {
 			if (rtl) {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			} else {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			}
@@ -1798,14 +1834,26 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 		Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
 		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
 			if (Math::is_zero_approx(scroll_offset)) {
-				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
+				int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
+				int center = int(get_size().width - total_margin - text_width - r_icon->get_width()) / 2;
+				x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
+			}
+			if (rtl) {
+				x_ofs += r_icon->get_width();
 			}
 		} else {
-			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			if (rtl) {
+				x_ofs = MAX(style->get_margin(SIDE_LEFT) + r_icon->get_width(), x_ofs);
+			} else {
+				x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			}
 		}
 	}
 
 	int ofs = std::ceil(TS->shaped_text_hit_test_position(text_rid, p_x - x_ofs - scroll_offset));
+	if (ofs == -1) {
+		return;
+	}
 	if (!caret_mid_grapheme_enabled) {
 		ofs = TS->shaped_text_closest_character_pos(text_rid, ofs);
 	}
@@ -1824,19 +1872,21 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 			if (rtl) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			} else {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_CENTER: {
 			if (!Math::is_zero_approx(scroll_offset)) {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			} else {
-				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - (text_width)) / 2);
+				int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
+				int centered = int((get_size().width - total_margin - text_width)) / 2;
+				x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, centered);
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_RIGHT: {
 			if (rtl) {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			} else {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			}
@@ -1849,10 +1899,19 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 		Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
 		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
 			if (Math::is_zero_approx(scroll_offset)) {
-				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
+				int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
+				int center = int(get_size().width - total_margin - text_width - r_icon->get_width()) / 2;
+				x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
+			}
+			if (rtl) {
+				x_ofs += r_icon->get_width();
 			}
 		} else {
-			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			if (rtl) {
+				x_ofs = MAX(style->get_margin(SIDE_LEFT) + r_icon->get_width(), x_ofs);
+			} else {
+				x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			}
 		}
 	}
 
@@ -2089,14 +2148,14 @@ TextServer::StructuredTextParser LineEdit::get_structured_text_bidi_override() c
 	return st_parser;
 }
 
-void LineEdit::set_structured_text_bidi_override_options(Array p_args) {
-	st_args = p_args;
+void LineEdit::set_structured_text_bidi_override_options(const Array &p_args) {
+	st_args = Array(p_args);
 	_shape();
 	queue_redraw();
 }
 
 Array LineEdit::get_structured_text_bidi_override_options() const {
-	return st_args;
+	return Array(st_args);
 }
 
 void LineEdit::clear() {
@@ -2175,19 +2234,21 @@ void LineEdit::set_caret_column(int p_column) {
 			if (rtl) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			} else {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_CENTER: {
 			if (!Math::is_zero_approx(scroll_offset)) {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			} else {
-				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - (text_width)) / 2);
+				int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
+				int centered = int((get_size().width - total_margin - text_width)) / 2;
+				x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, centered);
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_RIGHT: {
 			if (rtl) {
-				x_ofs = style->get_offset().x;
+				x_ofs = style->get_margin(SIDE_LEFT);
 			} else {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			}
@@ -2201,12 +2262,27 @@ void LineEdit::set_caret_column(int p_column) {
 		Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
 		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
 			if (Math::is_zero_approx(scroll_offset)) {
-				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
+				int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
+				int center = int(get_size().width - total_margin - text_width - r_icon->get_width()) / 2;
+				x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, center);
+			}
+			if (rtl) {
+				x_ofs += r_icon->get_width();
 			}
 		} else {
-			x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+			if (rtl) {
+				x_ofs = MAX(style->get_margin(SIDE_LEFT) + r_icon->get_width(), x_ofs);
+			} else {
+				if (rtl) {
+					x_ofs = MAX(style->get_margin(SIDE_LEFT) + r_icon->get_width(), x_ofs);
+				} else {
+					x_ofs = MAX(style->get_margin(SIDE_LEFT), x_ofs - r_icon->get_width() - style->get_margin(SIDE_RIGHT));
+				}
+			}
 		}
-		ofs_max -= r_icon->get_width();
+		if (!rtl) {
+			ofs_max -= r_icon->get_width();
+		}
 	}
 
 	// Note: Use two coordinates to fit IME input range.

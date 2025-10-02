@@ -33,23 +33,15 @@
 #include "core/config/project_settings.h"
 
 void AudioStreamPlayback::start(double p_from_pos) {
-	if (GDVIRTUAL_CALL(_start, p_from_pos)) {
-		return;
-	}
-	ERR_FAIL_MSG("AudioStreamPlayback::start unimplemented!");
+	GDVIRTUAL_CALL(_start, p_from_pos);
 }
 void AudioStreamPlayback::stop() {
-	if (GDVIRTUAL_CALL(_stop)) {
-		return;
-	}
-	ERR_FAIL_MSG("AudioStreamPlayback::stop unimplemented!");
+	GDVIRTUAL_CALL(_stop);
 }
 bool AudioStreamPlayback::is_playing() const {
-	bool ret;
-	if (GDVIRTUAL_CALL(_is_playing, ret)) {
-		return ret;
-	}
-	ERR_FAIL_V_MSG(false, "AudioStreamPlayback::is_playing unimplemented!");
+	bool ret = false;
+	GDVIRTUAL_CALL(_is_playing, ret);
+	return ret;
 }
 
 int AudioStreamPlayback::get_loop_count() const {
@@ -59,11 +51,9 @@ int AudioStreamPlayback::get_loop_count() const {
 }
 
 double AudioStreamPlayback::get_playback_position() const {
-	double ret;
-	if (GDVIRTUAL_CALL(_get_playback_position, ret)) {
-		return ret;
-	}
-	ERR_FAIL_V_MSG(0, "AudioStreamPlayback::get_playback_position unimplemented!");
+	double ret = 0.0;
+	GDVIRTUAL_CALL(_get_playback_position, ret);
+	return ret;
 }
 void AudioStreamPlayback::seek(double p_time) {
 	GDVIRTUAL_CALL(_seek, p_time);
@@ -250,10 +240,8 @@ int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, 
 
 Ref<AudioStreamPlayback> AudioStream::instantiate_playback() {
 	Ref<AudioStreamPlayback> ret;
-	if (GDVIRTUAL_CALL(_instantiate_playback, ret)) {
-		return ret;
-	}
-	ERR_FAIL_V_MSG(Ref<AudioStreamPlayback>(), "Method must be implemented!");
+	GDVIRTUAL_CALL(_instantiate_playback, ret);
+	return ret;
 }
 String AudioStream::get_stream_name() const {
 	String ret;
@@ -425,9 +413,6 @@ int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fra
 
 				p_buffer[i] = AudioFrame(l, r);
 			} else {
-				if (mixed_frames == p_frames) {
-					mixed_frames = i;
-				}
 				p_buffer[i] = AudioFrame(0.0f, 0.0f);
 			}
 		}
@@ -799,10 +784,13 @@ AudioStreamRandomizer::AudioStreamRandomizer() {
 void AudioStreamPlaybackRandomizer::start(double p_from_pos) {
 	playing = playback;
 	{
-		float range_from = 1.0 / randomizer->random_pitch_scale;
-		float range_to = randomizer->random_pitch_scale;
+		// GH-10238 : Pitch_scale is multiplicative, so picking a random number for it without log
+		// conversion will bias it towards higher pitches (0.5 is down one octave, 2.0 is up one octave).
+		// See: https://pressbooks.pub/sound/chapter/pitch-and-frequency-in-music/
+		float range_from = Math::log(1.0f / randomizer->random_pitch_scale);
+		float range_to = Math::log(randomizer->random_pitch_scale);
 
-		pitch_scale = range_from + Math::randf() * (range_to - range_from);
+		pitch_scale = Math::exp(range_from + Math::randf() * (range_to - range_from));
 	}
 	{
 		float range_from = -randomizer->random_volume_offset_db;

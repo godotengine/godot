@@ -237,46 +237,6 @@ def get_flags():
     }
 
 
-def build_def_file(target, source, env: "SConsEnvironment"):
-    arch_aliases = {
-        "x86_32": "i386",
-        "x86_64": "i386:x86-64",
-        "arm32": "arm",
-        "arm64": "arm64",
-    }
-
-    cmdbase = "dlltool -m " + arch_aliases[env["arch"]]
-    if env["arch"] == "x86_32":
-        cmdbase += " -k"
-    else:
-        cmdbase += " --no-leading-underscore"
-
-    mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
-
-    for x in range(len(source)):
-        ok = True
-        # Try prefixed executable (MinGW on Linux).
-        cmd = mingw_bin_prefix + cmdbase + " -d " + str(source[x]) + " -l " + str(target[x])
-        try:
-            out = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
-            if len(out[1]):
-                ok = False
-        except Exception:
-            ok = False
-
-        # Try generic executable (MSYS2).
-        if not ok:
-            cmd = cmdbase + " -d " + str(source[x]) + " -l " + str(target[x])
-            try:
-                out = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
-                if len(out[1]):
-                    return -1
-            except Exception:
-                return -1
-
-    return 0
-
-
 def configure_msvc(env: "SConsEnvironment"):
     """Configure env to work with MSVC"""
 
@@ -356,7 +316,7 @@ def configure_msvc(env: "SConsEnvironment"):
                 if not caught and (is_cl and re_cl_capture.match(line)) or (not is_cl and re_link_capture.match(line)):
                     caught = True
                     try:
-                        with open(capture_path, "a", encoding=sys.stdout.encoding) as log:
+                        with open(capture_path, "a", encoding=sys.stdout.encoding, errors="replace") as log:
                             log.write(line + "\n")
                     except OSError:
                         print_warning(f'Failed to log captured line: "{line}".')
@@ -402,8 +362,8 @@ def configure_msvc(env: "SConsEnvironment"):
             "WINMIDI_ENABLED",
             "TYPED_METHOD_BIND",
             "WIN32",
-            "WINVER=0x0A00",
-            "_WIN32_WINNT=0x0A00",
+            ("WINVER", "0x0A00"),
+            ("_WIN32_WINNT", "0x0A00"),
         ]
     )
     env.AppendUnique(CPPDEFINES=["NOMINMAX"])  # disable bogus min/max WinDef.h macros
@@ -793,8 +753,8 @@ def configure_mingw(env: "SConsEnvironment"):
     env.Append(CPPDEFINES=["WINDOWS_ENABLED", "WASAPI_ENABLED", "WINMIDI_ENABLED"])
     env.Append(
         CPPDEFINES=[
-            "WINVER=0x0A00",
-            "_WIN32_WINNT=0x0A00",
+            ("WINVER", "0x0A00"),
+            ("_WIN32_WINNT", "0x0A00"),
         ]
     )
     env.Append(
@@ -919,7 +879,35 @@ def configure_mingw(env: "SConsEnvironment"):
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
 
     # dlltool
-    env.Append(BUILDERS={"DEF": env.Builder(action=build_def_file, suffix=".a", src_suffix=".def")})
+    env["DEF"] = get_detected(env, "dlltool")
+    env["DEFCOM"] = "$DEF $DEFFLAGS -d $SOURCE -l $TARGET"
+    env["DEFCOMSTR"] = "$CXXCOMSTR"
+    env["DEFPREFIX"] = "$LIBPREFIX"
+    env["DEFSUFFIX"] = ".${__env__['arch']}$LIBSUFFIX"
+    env["DEFSRCSUFFIX"] = ".${__env__['arch']}.def"
+    DEF_ALIASES = {
+        "x86_32": "i386",
+        "x86_64": "i386:x86-64",
+        "arm32": "arm",
+        "arm64": "arm64",
+    }
+    env.Append(DEFFLAGS=["-m", DEF_ALIASES[env["arch"]]])
+    if env["arch"] == "x86_32":
+        env.Append(DEFFLAGS=["-k"])
+    else:
+        env.Append(DEFFLAGS=["--no-leading-underscore"])
+
+    env.Append(
+        BUILDERS={
+            "DEFLIB": env.Builder(
+                action=env.Run("$DEFCOM", "$DEFCOMSTR"),
+                prefix="$DEFPREFIX",
+                suffix="$DEFSUFFIX",
+                src_suffix="$DEFSRCSUFFIX",
+                emitter=methods.redirect_emitter,
+            )
+        }
+    )
 
 
 def configure(env: "SConsEnvironment"):
@@ -943,6 +931,6 @@ def check_d3d12_installed(env, suffix):
             "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
             "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
             "See the documentation for more information:\n\t"
-            "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
+            "https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html"
         )
         sys.exit(255)

@@ -244,6 +244,7 @@ public:
 		CALLBACK_RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE,
 		CALLBACK_RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ,
 		CALLBACK_RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ,
+		CALLBACK_RESOURCE_USAGE_GENERAL,
 		CALLBACK_RESOURCE_USAGE_MAX
 	};
 
@@ -349,7 +350,7 @@ public:
 	Vector<uint8_t> _texture_get_data(Texture *tex, uint32_t p_layer, bool p_2d = false);
 	uint32_t _texture_layer_count(Texture *p_texture) const;
 	uint32_t _texture_alignment(Texture *p_texture) const;
-	Error _texture_initialize(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, bool p_immediate_flush = false);
+	Error _texture_initialize(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, RDD::TextureLayout p_dst_layout, bool p_immediate_flush);
 	void _texture_check_shared_fallback(Texture *p_texture);
 	void _texture_update_shared_fallback(RID p_texture_rid, Texture *p_texture, bool p_for_writing);
 	void _texture_free_shared_fallback(Texture *p_texture);
@@ -1602,7 +1603,12 @@ public:
 
 	void _set_max_fps(int p_max_fps);
 
-	void free(RID p_id);
+	void free_rid(RID p_rid);
+#ifndef DISABLE_DEPRECATED
+	[[deprecated("Use `free_rid()` instead.")]] void free(RID p_rid) {
+		free_rid(p_rid);
+	}
+#endif // DISABLE_DEPRECATED
 
 	/****************/
 	/**** Timing ****/

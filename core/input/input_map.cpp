@@ -843,9 +843,8 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_featur
 	for (const KeyValue<String, List<Ref<InputEvent>>> &E : builtins) {
 		String fullname = E.key;
 
-		Vector<String> split = fullname.split(".");
-		const String &name = split[0];
-		String override_for = split.size() > 1 ? split[1] : String();
+		const String &name = fullname.get_slicec('.', 0);
+		String override_for = fullname.get_slice_count(".") > 1 ? fullname.get_slicec('.', 1) : String();
 
 		if (!override_for.is_empty() && OS::get_singleton()->has_feature(override_for)) {
 			builtins_with_overrides[name].push_back(override_for);
@@ -855,9 +854,8 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_featur
 	for (const KeyValue<String, List<Ref<InputEvent>>> &E : builtins) {
 		String fullname = E.key;
 
-		Vector<String> split = fullname.split(".");
-		const String &name = split[0];
-		String override_for = split.size() > 1 ? split[1] : String();
+		const String &name = fullname.get_slicec('.', 0);
+		String override_for = fullname.get_slice_count(".") > 1 ? fullname.get_slicec('.', 1) : String();
 
 		if (builtins_with_overrides.has(name) && override_for.is_empty()) {
 			// Builtin has an override but this particular one is not an override, so skip.
@@ -896,7 +894,7 @@ void InputMap::load_default() {
 }
 
 InputMap::InputMap() {
-	ERR_FAIL_COND_MSG(singleton, "Singleton in InputMap already exist.");
+	ERR_FAIL_COND_MSG(singleton, "Singleton in InputMap already exists.");
 	singleton = this;
 }
 

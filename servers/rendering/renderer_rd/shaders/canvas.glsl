@@ -462,8 +462,8 @@ void light_blend_compute(uint light_base, vec4 light_color, inout vec3 color) {
 	}
 }
 
-float msdf_median(float r, float g, float b, float a) {
-	return min(max(min(r, g), min(max(r, g), b)), a);
+float msdf_median(float r, float g, float b) {
+	return max(min(r, g), min(max(r, g), b));
 }
 
 void main() {
@@ -513,14 +513,15 @@ void main() {
 		vec2 msdf_size = vec2(textureSize(sampler2D(color_texture, texture_sampler), 0));
 		vec2 dest_size = vec2(1.0) / fwidth(uv);
 		float px_size = max(0.5 * dot((vec2(px_range) / msdf_size), dest_size), 1.0);
-		float d = msdf_median(msdf_sample.r, msdf_sample.g, msdf_sample.b, msdf_sample.a) - 0.5;
+		float d = msdf_median(msdf_sample.r, msdf_sample.g, msdf_sample.b);
 
 		if (outline_thickness > 0) {
-			float cr = clamp(outline_thickness, 0.0, px_range / 2) / px_range;
-			float a = clamp((d + cr) * px_size, 0.0, 1.0);
+			float cr = clamp(outline_thickness, 0.0, (px_range / 2.0) - 1.0) / px_range;
+			d = min(d, msdf_sample.a);
+			float a = clamp((d - 0.5 + cr) * px_size, 0.0, 1.0);
 			color.a = a * color.a;
 		} else {
-			float a = clamp(d * px_size + 0.5, 0.0, 1.0);
+			float a = clamp((d - 0.5) * px_size + 0.5, 0.0, 1.0);
 			color.a = a * color.a;
 		}
 	} else if (bool(draw_data.flags & INSTANCE_FLAGS_USE_LCD)) {

@@ -165,5 +165,5 @@ Shape3D::Shape3D(RID p_shape) :
 
 Shape3D::~Shape3D() {
 	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
-	PhysicsServer3D::get_singleton()->free(shape);
+	PhysicsServer3D::get_singleton()->free_rid(shape);
 }

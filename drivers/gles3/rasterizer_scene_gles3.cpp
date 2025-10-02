@@ -2529,7 +2529,6 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		scene_state.set_gl_depth_func(GL_GEQUAL);
 		scene_state.enable_gl_scissor_test(false);
 		scene_state.enable_gl_stencil_test(false);
-		scene_state.set_gl_stencil_write_mask(255);
 
 		glColorMask(0, 0, 0, 0);
 		RasterizerGLES3::clear_depth(0.0);
@@ -3084,7 +3083,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			}
 
 			// Stencil.
-			if (shader->stencil_enabled) {
+			if (p_pass_mode != PASS_MODE_DEPTH && shader->stencil_enabled) {
 				static const GLenum stencil_compare_table[GLES3::SceneShaderData::STENCIL_COMPARE_MAX] = {
 					GL_LESS,
 					GL_EQUAL,
@@ -3121,7 +3120,6 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				scene_state.set_gl_stencil_op(GL_KEEP, stencil_op_dpfail, stencil_op_dppass);
 			} else {
 				scene_state.enable_gl_stencil_test(false);
-				scene_state.set_gl_stencil_write_mask(255);
 			}
 
 			if constexpr (p_pass_mode == PASS_MODE_COLOR || p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
@@ -3202,7 +3200,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			// Find cull variant.
 			RS::CullMode cull_mode = shader->cull_mode;
 
-			if (p_pass_mode == PASS_MODE_MATERIAL || (surf->flags & GeometryInstanceSurface::FLAG_USES_DOUBLE_SIDED_SHADOWS)) {
+			if (p_pass_mode == PASS_MODE_MATERIAL || (p_pass_mode == PASS_MODE_SHADOW && (surf->flags & GeometryInstanceSurface::FLAG_USES_DOUBLE_SIDED_SHADOWS))) {
 				cull_mode = RS::CULL_MODE_DISABLED;
 			} else {
 				bool mirror = inst->mirror;
@@ -3841,12 +3839,13 @@ void RasterizerSceneGLES3::_render_uv2(const PagedArray<RenderGeometryInstance *
 		scene_state.enable_gl_depth_draw(true);
 		scene_state.set_gl_depth_func(GL_GREATER);
 
-		TightLocalVector<GLenum> draw_buffers;
-		draw_buffers.push_back(GL_COLOR_ATTACHMENT0);
-		draw_buffers.push_back(GL_COLOR_ATTACHMENT1);
-		draw_buffers.push_back(GL_COLOR_ATTACHMENT2);
-		draw_buffers.push_back(GL_COLOR_ATTACHMENT3);
-		glDrawBuffers(draw_buffers.size(), draw_buffers.ptr());
+		constexpr GLenum draw_buffers[]{
+			GL_COLOR_ATTACHMENT0,
+			GL_COLOR_ATTACHMENT1,
+			GL_COLOR_ATTACHMENT2,
+			GL_COLOR_ATTACHMENT3
+		};
+		glDrawBuffers(std::size(draw_buffers), draw_buffers);
 
 		glClearColor(0.0, 0.0, 0.0, 0.0);
 		RasterizerGLES3::clear_depth(0.0);

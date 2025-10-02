@@ -79,6 +79,9 @@ class ProjectConverter3To4 {
 	void rename_joypad_buttons_and_axes(Vector<SourceLine> &source_lines, const RegExContainer &reg_container);
 	Vector<String> check_for_rename_joypad_buttons_and_axes(Vector<String> &lines, const RegExContainer &reg_container);
 
+	void rename_animation_suffixes(Vector<SourceLine> &source_lines, const RegExContainer &reg_container);
+	Vector<String> check_for_rename_animation_suffixes(Vector<String> &lines, const RegExContainer &reg_container);
+
 	void custom_rename(Vector<SourceLine> &source_lines, const String &from, const String &to);
 	Vector<String> check_for_custom_rename(Vector<String> &lines, const String &from, const String &to);
 

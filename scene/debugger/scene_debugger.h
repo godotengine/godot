@@ -83,6 +83,9 @@ private:
 	static Error _msg_request_scene_tree(const Array &p_args);
 	static Error _msg_save_node(const Array &p_args);
 	static Error _msg_inspect_objects(const Array &p_args);
+#ifndef DISABLE_DEPRECATED
+	static Error _msg_inspect_object(const Array &p_args);
+#endif // DISABLE_DEPRECATED
 	static Error _msg_clear_selection(const Array &p_args);
 	static Error _msg_suspend_changed(const Array &p_args);
 	static Error _msg_next_frame(const Array &p_args);
@@ -352,10 +355,10 @@ private:
 
 		~SelectionBox3D() {
 			if (instance.is_valid()) {
-				RS::get_singleton()->free(instance);
-				RS::get_singleton()->free(instance_ofs);
-				RS::get_singleton()->free(instance_xray);
-				RS::get_singleton()->free(instance_xray_ofs);
+				RS::get_singleton()->free_rid(instance);
+				RS::get_singleton()->free_rid(instance_ofs);
+				RS::get_singleton()->free_rid(instance_xray);
+				RS::get_singleton()->free_rid(instance_xray_ofs);
 			}
 		}
 	};

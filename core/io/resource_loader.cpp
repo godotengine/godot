@@ -174,7 +174,7 @@ Ref<Resource> ResourceFormatLoader::load(const String &p_path, const String &p_o
 		}
 	}
 
-	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Failed to load resource '%s'. ResourceFormatLoader::load was not implemented for this resource type.", p_path));
+	return Ref<Resource>();
 }
 
 void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
@@ -1269,7 +1269,9 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		}
 
 		// Fallback to p_path if new_path does not exist.
-		if (!FileAccess::exists(new_path + ".import") && !FileAccess::exists(new_path)) {
+		if (!FileAccess::exists(new_path + ".import") &&
+				!FileAccess::exists(new_path + ".remap") &&
+				!FileAccess::exists(new_path)) {
 			WARN_PRINT(vformat("Translation remap '%s' does not exist. Falling back to '%s'.", new_path, p_path));
 			new_path = p_path;
 		}
@@ -1463,8 +1465,8 @@ void ResourceLoader::add_custom_loaders() {
 
 	String custom_loader_base_class = ResourceFormatLoader::get_class_static();
 
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
+	LocalVector<StringName> global_classes;
+	ScriptServer::get_global_class_list(global_classes);
 
 	for (const StringName &class_name : global_classes) {
 		StringName base_class = ScriptServer::get_global_class_native_base(class_name);

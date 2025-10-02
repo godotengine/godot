@@ -31,9 +31,11 @@
 #include "script_language.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_bind.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/resource_loader.h"
+#include "core/templates/sort_array.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;
@@ -330,6 +332,9 @@ void ScriptServer::finish_languages() {
 	}
 
 	for (ScriptLanguage *E : langs_to_finish) {
+		if (CoreBind::OS::get_singleton()) {
+			CoreBind::OS::get_singleton()->remove_script_loggers(E); // Unregister loggers using this script language.
+		}
 		E->finish();
 	}
 
@@ -503,15 +508,18 @@ bool ScriptServer::is_global_class_tool(const String &p_class) {
 	return global_classes[p_class].is_tool;
 }
 
-void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
-	List<StringName> classes;
-	for (const KeyValue<StringName, GlobalScriptClass> &E : global_classes) {
-		classes.push_back(E.key);
+// This function only sorts items added by this function.
+// If `r_global_classes` is not empty before calling and a global sort is needed, caller must handle that separately.
+void ScriptServer::get_global_class_list(LocalVector<StringName> &r_global_classes) {
+	if (global_classes.is_empty()) {
+		return;
 	}
-	classes.sort_custom<StringName::AlphCompare>();
-	for (const StringName &E : classes) {
-		r_global_classes->push_back(E);
+	r_global_classes.reserve(r_global_classes.size() + global_classes.size());
+	for (const KeyValue<StringName, GlobalScriptClass> &global_class : global_classes) {
+		r_global_classes.push_back(global_class.key);
 	}
+	SortArray<StringName> sorter;
+	sorter.sort(&r_global_classes[r_global_classes.size() - global_classes.size()], global_classes.size());
 }
 
 void ScriptServer::save_global_classes() {
@@ -526,17 +534,17 @@ void ScriptServer::save_global_classes() {
 		class_icons[d["name"]] = d["icon"];
 	}
 
-	List<StringName> gc;
-	get_global_class_list(&gc);
+	LocalVector<StringName> gc;
+	get_global_class_list(gc);
 	Array gcarr;
-	for (const StringName &E : gc) {
-		const GlobalScriptClass &global_class = global_classes[E];
+	for (const StringName &class_name : gc) {
+		const GlobalScriptClass &global_class = global_classes[class_name];
 		Dictionary d;
-		d["class"] = E;
+		d["class"] = class_name;
 		d["language"] = global_class.language;
 		d["path"] = global_class.path;
 		d["base"] = global_class.base;
-		d["icon"] = class_icons.get(E, "");
+		d["icon"] = class_icons.get(class_name, "");
 		d["is_abstract"] = global_class.is_abstract;
 		d["is_tool"] = global_class.is_tool;
 		gcarr.push_back(d);

@@ -48,6 +48,7 @@ namespace GLES3 {
 #define _GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
 #define _GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
 
+#define _EXT_COMPRESSED_RGB_S3TC_DXT1_EXT 0x83F0
 #define _EXT_COMPRESSED_RGBA_S3TC_DXT1_EXT 0x83F1
 #define _EXT_COMPRESSED_RGBA_S3TC_DXT3_EXT 0x83F2
 #define _EXT_COMPRESSED_RGBA_S3TC_DXT5_EXT 0x83F3
@@ -112,6 +113,11 @@ namespace GLES3 {
 
 #define _EXT_TEXTURE_CUBE_MAP_SEAMLESS 0x884F
 
+#define _EXT_R16 0x822A
+#define _EXT_RG16 0x822C
+#define _EXT_RGB16 0x8054
+#define _EXT_RGBA16 0x805B
+
 enum DefaultGLTexture {
 	DEFAULT_GL_TEXTURE_WHITE,
 	DEFAULT_GL_TEXTURE_BLACK,
@@ -122,9 +128,13 @@ enum DefaultGLTexture {
 	DEFAULT_GL_TEXTURE_CUBEMAP_BLACK,
 	//DEFAULT_GL_TEXTURE_CUBEMAP_ARRAY_BLACK, // Cubemap Arrays not supported in GL 3.3 or GL ES 3.0
 	DEFAULT_GL_TEXTURE_CUBEMAP_WHITE,
+	DEFAULT_GL_TEXTURE_CUBEMAP_TRANSPARENT,
 	DEFAULT_GL_TEXTURE_3D_WHITE,
 	DEFAULT_GL_TEXTURE_3D_BLACK,
+	DEFAULT_GL_TEXTURE_3D_TRANSPARENT,
 	DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE,
+	DEFAULT_GL_TEXTURE_2D_ARRAY_BLACK,
+	DEFAULT_GL_TEXTURE_2D_ARRAY_TRANSPARENT,
 	DEFAULT_GL_TEXTURE_2D_UINT,
 	DEFAULT_GL_TEXTURE_EXT,
 	DEFAULT_GL_TEXTURE_MAX
@@ -151,7 +161,7 @@ struct Texture {
 	bool is_render_target = false;
 
 	RID proxy_to;
-	Vector<RID> proxies;
+	LocalVector<RID> proxies;
 
 	String path;
 	int width = 0;
@@ -525,6 +535,7 @@ public:
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override;
 	virtual void texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) override;
+	void texture_remap_proxies(RID p_from_texture, RID p_to_texture);
 
 	Ref<Image> texture_2d_placeholder;
 	Vector<Ref<Image>> texture_2d_array_placeholder;

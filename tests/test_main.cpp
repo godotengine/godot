@@ -62,6 +62,7 @@
 #include "tests/core/io/test_stream_peer_gzip.h"
 #include "tests/core/io/test_tcp_server.h"
 #include "tests/core/io/test_udp_server.h"
+#include "tests/core/io/test_uds_server.h"
 #include "tests/core/io/test_xml_parser.h"
 #include "tests/core/math/test_aabb.h"
 #include "tests/core/math/test_astar.h"
@@ -190,6 +191,7 @@
 #include "tests/scene/test_navigation_obstacle_2d.h"
 #include "tests/scene/test_navigation_region_2d.h"
 #include "tests/servers/test_navigation_server_2d.h"
+#include "tests/servers/test_triangle2.h"
 #endif // MODULE_NAVIGATION_2D_ENABLED
 
 #ifdef MODULE_NAVIGATION_3D_ENABLED

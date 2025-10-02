@@ -46,6 +46,7 @@ class Performance : public Object {
 	static void _bind_methods();
 
 	int _get_node_count() const;
+	int _get_orphan_node_count() const;
 
 	double _process_time;
 	double _physics_process_time;

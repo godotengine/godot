@@ -280,7 +280,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_value.get_type() == Variant::NIL) {
 		props.erase(p_name);
 		if (p_name.operator String().begins_with("autoload/")) {
-			String node_name = p_name.operator String().split("/")[1];
+			String node_name = p_name.operator String().get_slicec('/', 1);
 			if (autoloads.has(node_name)) {
 				remove_autoload(node_name);
 			}
@@ -326,7 +326,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			props[p_name] = VariantContainer(p_value, last_order++);
 		}
 		if (p_name.operator String().begins_with("autoload/")) {
-			String node_name = p_name.operator String().split("/")[1];
+			String node_name = p_name.operator String().get_slicec('/', 1);
 			AutoloadInfo autoload;
 			autoload.name = node_name;
 			String path = p_value;
@@ -1675,6 +1675,7 @@ ProjectSettings::ProjectSettings() {
 #endif
 
 	GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
+	GLOBAL_DEF("gui/common/always_show_focus_state", false);
 	GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);
 
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/vsync/frame_queue_size", PROPERTY_HINT_RANGE, "2,3,1"), 2);
@@ -1698,7 +1699,7 @@ ProjectSettings::ProjectSettings() {
 	// installed by the scripts provided in the repository
 	// (check `misc/scripts/install_d3d12_sdk_windows.py`).
 	// For example, if the script installs 1.613.3, the default value must be 613.
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version", PROPERTY_HINT_RANGE, "0,10000,1,or_greater,hide_slider"), 613);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version", PROPERTY_HINT_RANGE, "0,10000,1,or_greater,hide_control"), 613);
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), 1);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"), 0);
@@ -1732,6 +1733,14 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("navigation/baking/thread_model/baking_use_multiple_threads", true);
 	GLOBAL_DEF("navigation/baking/thread_model/baking_use_high_priority_threads", true);
 #endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
+#ifndef NAVIGATION_2D_DISABLED
+	GLOBAL_DEF("navigation/2d/warnings/navmesh_edge_merge_errors", true);
+	GLOBAL_DEF("navigation/2d/warnings/navmesh_cell_size_mismatch", true);
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+	GLOBAL_DEF("navigation/3d/warnings/navmesh_edge_merge_errors", true);
+	GLOBAL_DEF("navigation/3d/warnings/navmesh_cell_size_mismatch", true);
+#endif // NAVIGATION_3D_DISABLED
 
 	ProjectSettings::get_singleton()->add_hidden_prefix("input/");
 }

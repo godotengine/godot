@@ -315,7 +315,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 		bool is_joypad_event = (joypadmotion_event.is_valid() || joypadbutton_event.is_valid());
 		if (p_event->is_action("ui_right", true)) {
 			if (is_joypad_event) {
-				if (!input->is_action_just_pressed("ui_right", true)) {
+				if (!input->is_action_just_pressed_by_event("ui_right", p_event, true)) {
 					return;
 				}
 				set_process_internal(true);
@@ -325,7 +325,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		} else if (p_event->is_action("ui_left", true)) {
 			if (is_joypad_event) {
-				if (!input->is_action_just_pressed("ui_left", true)) {
+				if (!input->is_action_just_pressed_by_event("ui_left", p_event, true)) {
 					return;
 				}
 				set_process_internal(true);
@@ -543,7 +543,7 @@ void TabBar::_notification(int p_what) {
 			if (current >= offset && current <= max_drawn_tab && !tabs[current].hidden) {
 				Ref<StyleBox> sb = tabs[current].disabled ? theme_cache.tab_disabled_style : theme_cache.tab_selected_style;
 
-				_draw_tab(sb, theme_cache.font_selected_color, current, rtl ? (size.width - tabs[current].ofs_cache - tabs[current].size_cache) : tabs[current].ofs_cache, has_focus());
+				_draw_tab(sb, theme_cache.font_selected_color, current, rtl ? (size.width - tabs[current].ofs_cache - tabs[current].size_cache) : tabs[current].ofs_cache, has_focus(true));
 			}
 
 			if (buttons_visible) {

@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "control.h"
+#include "control.compat.inc"
 
 #include "container.h"
 #include "core/config/project_settings.h"
@@ -1042,10 +1043,6 @@ int Control::_get_anchors_layout_preset() const {
 	float right = get_anchor(SIDE_RIGHT);
 	float top = get_anchor(SIDE_TOP);
 	float bottom = get_anchor(SIDE_BOTTOM);
-
-	if (get_offset(SIDE_LEFT) != 0.0 || get_offset(SIDE_RIGHT) != 0.0 || get_offset(SIDE_TOP) != 0.0 || get_offset(SIDE_BOTTOM) != 0.0) {
-		return -1;
-	}
 
 	if (left == (float)ANCHOR_BEGIN && right == (float)ANCHOR_BEGIN && top == (float)ANCHOR_BEGIN && bottom == (float)ANCHOR_BEGIN) {
 		return (int)LayoutPreset::PRESET_TOP_LEFT;
@@ -2319,12 +2316,12 @@ void Control::_propagate_focus_behavior_recursive_recursively(bool p_enabled, bo
 	}
 }
 
-bool Control::has_focus() const {
+bool Control::has_focus(bool p_ignore_hidden_focus) const {
 	ERR_READ_THREAD_GUARD_V(false);
-	return is_inside_tree() && get_viewport()->_gui_control_has_focus(this);
+	return is_inside_tree() && get_viewport()->_gui_control_has_focus(this, p_ignore_hidden_focus);
 }
 
-void Control::grab_focus() {
+void Control::grab_focus(bool p_hide_focus) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
 
@@ -2333,7 +2330,7 @@ void Control::grab_focus() {
 		return;
 	}
 
-	get_viewport()->_gui_control_grab_focus(this);
+	get_viewport()->_gui_control_grab_focus(this, p_hide_focus);
 }
 
 void Control::grab_click_focus() {
@@ -2395,10 +2392,12 @@ Control *Control::find_next_valid_focus() const {
 	}
 
 	Control *from = const_cast<Control *>(this);
+	HashSet<Control *> checked;
 	bool ac_enabled = get_tree() && get_tree()->is_accessibility_enabled();
 
 	// Index of the current `Control` subtree within the containing `Window`.
 	int window_next = -1;
+	checked.insert(from);
 
 	while (true) {
 		// Find next child.
@@ -2460,9 +2459,10 @@ Control *Control::find_next_valid_focus() const {
 			return next_child;
 		}
 
-		if (next_child == from || next_child == this) {
+		if (checked.has(next_child)) {
 			return nullptr; // Stuck in a loop with no next control.
 		}
+		checked.insert(next_child);
 
 		from = next_child; // Try to find the next control with focus mode FOCUS_ALL.
 	}
@@ -2499,10 +2499,12 @@ Control *Control::find_prev_valid_focus() const {
 	}
 
 	Control *from = const_cast<Control *>(this);
+	HashSet<Control *> checked;
 	bool ac_enabled = get_tree() && get_tree()->is_accessibility_enabled();
 
 	// Index of the current `Control` subtree within the containing `Window`.
 	int window_prev = -1;
+	checked.insert(from);
 
 	while (true) {
 		// Find prev child.
@@ -2558,9 +2560,10 @@ Control *Control::find_prev_valid_focus() const {
 			return prev_child;
 		}
 
-		if (prev_child == from || prev_child == this) {
+		if (checked.has(prev_child)) {
 			return nullptr; // Stuck in a loop with no prev control.
 		}
+		checked.insert(prev_child);
 
 		from = prev_child; // Try to find the prev control with focus mode FOCUS_ALL.
 	}
@@ -3905,14 +3908,6 @@ void Control::_notification(int p_notification) {
 			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), data.clip_contents);
 		} break;
 
-		case NOTIFICATION_MOUSE_ENTER: {
-			emit_signal(SceneStringName(mouse_entered));
-		} break;
-
-		case NOTIFICATION_MOUSE_EXIT: {
-			emit_signal(SceneStringName(mouse_exited));
-		} break;
-
 		case NOTIFICATION_FOCUS_ENTER: {
 			emit_signal(SceneStringName(focus_entered));
 			queue_redraw();
@@ -4014,8 +4009,8 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_focus_mode_with_override"), &Control::get_focus_mode_with_override);
 	ClassDB::bind_method(D_METHOD("set_focus_behavior_recursive", "focus_behavior_recursive"), &Control::set_focus_behavior_recursive);
 	ClassDB::bind_method(D_METHOD("get_focus_behavior_recursive"), &Control::get_focus_behavior_recursive);
-	ClassDB::bind_method(D_METHOD("has_focus"), &Control::has_focus);
-	ClassDB::bind_method(D_METHOD("grab_focus"), &Control::grab_focus);
+	ClassDB::bind_method(D_METHOD("has_focus", "ignore_hidden_focus"), &Control::has_focus, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("grab_focus", "hide_focus"), &Control::grab_focus, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("release_focus"), &Control::release_focus);
 	ClassDB::bind_method(D_METHOD("find_prev_valid_focus"), &Control::find_prev_valid_focus);
 	ClassDB::bind_method(D_METHOD("find_next_valid_focus"), &Control::find_next_valid_focus);
@@ -4404,6 +4399,8 @@ void Control::_bind_methods() {
 }
 
 Control::Control() {
+	_define_ancestry(AncestralClass::CONTROL);
+
 	data.theme_owner = memnew(ThemeOwner(this));
 
 	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);

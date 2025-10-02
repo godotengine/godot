@@ -13,6 +13,7 @@
 	</description>
 	<tutorials>
 		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
+		<link title="Troubleshooting physics issues">$DOCS_URL/tutorials/physics/troubleshooting_physics_issues.html</link>
 		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/2752</link>
 		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/2747</link>
 	</tutorials>
@@ -145,7 +146,7 @@
 		</member>
 		<member name="center_of_mass" type="Vector3" setter="set_center_of_mass" getter="get_center_of_mass" default="Vector3(0, 0, 0)">
 			The body's custom center of mass, relative to the body's origin position, when [member center_of_mass_mode] is set to [constant CENTER_OF_MASS_MODE_CUSTOM]. This is the balanced point of the body, where applied forces only cause linear acceleration. Applying forces outside of the center of mass causes angular acceleration.
-			When [member center_of_mass_mode] is set to [constant CENTER_OF_MASS_MODE_AUTO] (default value), the center of mass is automatically computed.
+			When [member center_of_mass_mode] is set to [constant CENTER_OF_MASS_MODE_AUTO] (default value), the center of mass is automatically determined, but this does not update the value of [member center_of_mass].
 		</member>
 		<member name="center_of_mass_mode" type="int" setter="set_center_of_mass_mode" getter="get_center_of_mass_mode" enum="RigidBody3D.CenterOfMassMode" default="0">
 			Defines the way the body's center of mass is set.

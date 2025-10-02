@@ -167,7 +167,6 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 				undo_redo->add_undo_method(this, "_update_edited_point_pos");
 				undo_redo->commit_action();
 				updating = false;
-				_update_edited_point_pos();
 			}
 
 			dragging_selected_attempt = false;
@@ -187,11 +186,6 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
-
-	if (mm.is_valid() && !blend_space_draw->has_focus()) {
-		blend_space_draw->grab_focus();
-		blend_space_draw->queue_redraw();
-	}
 
 	if (mm.is_valid() && dragging_selected_attempt) {
 		dragging_selected = true;
@@ -595,11 +589,7 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 
 			String error;
 
-			if (!tree->is_active()) {
-				error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
-			} else if (tree->is_state_invalid()) {
-				error = tree->get_invalid_state_reason();
-			}
+			error = tree->get_editor_error_message();
 
 			if (error != error_label->get_text()) {
 				error_label->set_text(error);
@@ -801,6 +791,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	error_label = memnew(Label);
 	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	error_panel->add_child(error_label);
+	error_panel->hide();
 
 	menu = memnew(PopupMenu);
 	add_child(menu);

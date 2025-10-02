@@ -76,10 +76,14 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const St
 	}
 }
 
+void CreateDialog::for_inherit() {
+	allow_abstract_scripts = true;
+}
+
 void CreateDialog::_fill_type_list() {
-	List<StringName> complete_type_list;
-	ClassDB::get_class_list(&complete_type_list);
-	ScriptServer::get_global_class_list(&complete_type_list);
+	LocalVector<StringName> complete_type_list;
+	ClassDB::get_class_list(complete_type_list);
+	ScriptServer::get_global_class_list(complete_type_list);
 
 	EditorData &ed = EditorNode::get_editor_data();
 	HashMap<String, DocData::ClassDoc> &class_docs_list = EditorHelp::get_doc_data()->class_list;
@@ -222,7 +226,7 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 		// Abstract scripts cannot be instantiated.
 		String path = ScriptServer::get_global_class_path(p_type);
 		Ref<Script> scr = ResourceLoader::load(path, "Script");
-		return scr.is_null() || scr->is_abstract();
+		return scr.is_null() || (!allow_abstract_scripts && scr->is_abstract());
 	}
 
 	return false;
@@ -363,7 +367,9 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 		type_name = p_type;
 		text = p_type;
 
-		is_abstract = ScriptServer::is_global_class_abstract(p_type);
+		if (!allow_abstract_scripts) {
+			is_abstract = ScriptServer::is_global_class_abstract(p_type);
+		}
 
 		String tooltip = TTR("Script path: %s");
 		bool is_tool = ScriptServer::is_global_class_tool(p_type);
@@ -392,7 +398,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 	r_item->set_metadata(0, meta);
 
 	bool can_instantiate = (p_type_category == TypeCategory::CPP_TYPE && ClassDB::can_instantiate(p_type)) ||
-			(p_type_category == TypeCategory::OTHER_TYPE && !is_abstract);
+			(p_type_category == TypeCategory::OTHER_TYPE && !(!allow_abstract_scripts && is_abstract));
 	bool instantiable = can_instantiate && !(ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type));
 
 	r_item->set_meta(SNAME("__instantiable"), instantiable);
@@ -557,7 +563,7 @@ void CreateDialog::_notification(int p_what) {
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
-				callable_mp((Control *)search_box, &Control::grab_focus).call_deferred(); // Still not visible.
+				callable_mp((Control *)search_box, &Control::grab_focus).call_deferred(false); // Still not visible.
 				search_box->select_all();
 			} else {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));

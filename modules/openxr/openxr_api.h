@@ -260,7 +260,7 @@ private:
 	bool load_supported_swapchain_formats();
 	bool is_swapchain_format_supported(int64_t p_swapchain_format);
 	bool obtain_swapchain_formats();
-	bool create_main_swapchains(Size2i p_size);
+	bool create_main_swapchains(const Size2i &p_size);
 	void free_main_swapchains();
 	void destroy_session();
 
@@ -328,7 +328,7 @@ private:
 	bool on_state_exiting();
 
 	// convenience
-	void copy_string_to_char_buffer(const String p_string, char *p_buffer, int p_buffer_len);
+	void copy_string_to_char_buffer(const String &p_string, char *p_buffer, int p_buffer_len);
 
 	// Render state, Only accessible in rendering thread
 	struct RenderState {
@@ -337,6 +337,7 @@ private:
 		bool has_xr_viewport = false;
 		XrTime predicted_display_time = 0;
 		XrSpace play_space = XR_NULL_HANDLE;
+		XrEnvironmentBlendMode environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
 		double render_target_size_multiplier = 1.0;
 		uint64_t frame = 0;
 		Rect2i render_region;
@@ -363,19 +364,20 @@ private:
 		OpenXRSwapChainInfo main_swapchains[OPENXR_SWAPCHAIN_MAX];
 	} render_state;
 
-	static void _allocate_view_buffers(uint32_t p_view_count, bool p_submit_depth_buffer);
-	static void _set_render_session_running(bool p_is_running);
-	static void _set_render_display_info(XrTime p_predicted_display_time, bool p_should_render);
-	static void _set_render_play_space(uint64_t p_play_space);
-	static void _set_render_state_multiplier(double p_render_target_size_multiplier);
-	static void _set_render_state_render_region(const Rect2i &p_render_region);
+	static void _allocate_view_buffers_rt(uint32_t p_view_count, bool p_submit_depth_buffer);
+	static void _set_render_session_running_rt(bool p_is_running);
+	static void _set_render_display_info_rt(XrTime p_predicted_display_time, bool p_should_render);
+	static void _set_render_play_space_rt(uint64_t p_play_space);
+	static void _set_render_environment_blend_mode_rt(int32_t p_environment_blend_mode);
+	static void _set_render_state_multiplier_rt(double p_render_target_size_multiplier);
+	static void _set_render_state_render_region_rt(const Rect2i &p_render_region);
 
 	_FORCE_INLINE_ void allocate_view_buffers(uint32_t p_view_count, bool p_submit_depth_buffer) {
 		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
 		RenderingServer *rendering_server = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rendering_server);
 
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_allocate_view_buffers).bind(p_view_count, p_submit_depth_buffer));
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_allocate_view_buffers_rt).bind(p_view_count, p_submit_depth_buffer));
 	}
 
 	_FORCE_INLINE_ void set_render_session_running(bool p_is_running) {
@@ -383,7 +385,7 @@ private:
 		RenderingServer *rendering_server = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rendering_server);
 
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_session_running).bind(p_is_running));
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_session_running_rt).bind(p_is_running));
 	}
 
 	_FORCE_INLINE_ void set_render_display_info(XrTime p_predicted_display_time, bool p_should_render) {
@@ -391,7 +393,7 @@ private:
 		RenderingServer *rendering_server = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rendering_server);
 
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_display_info).bind(p_predicted_display_time, p_should_render));
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_display_info_rt).bind(p_predicted_display_time, p_should_render));
 	}
 
 	_FORCE_INLINE_ void set_render_play_space(XrSpace p_play_space) {
@@ -399,7 +401,15 @@ private:
 		RenderingServer *rendering_server = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rendering_server);
 
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_play_space).bind(uint64_t(p_play_space)));
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_play_space_rt).bind(uint64_t(p_play_space)));
+	}
+
+	_FORCE_INLINE_ void set_render_environment_blend_mode(XrEnvironmentBlendMode p_mode) {
+		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+		RenderingServer *rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_NULL(rendering_server);
+
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_environment_blend_mode_rt).bind((int32_t)p_mode));
 	}
 
 	_FORCE_INLINE_ void set_render_state_multiplier(double p_render_target_size_multiplier) {
@@ -407,14 +417,14 @@ private:
 		RenderingServer *rendering_server = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rendering_server);
 
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_state_multiplier).bind(p_render_target_size_multiplier));
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_state_multiplier_rt).bind(p_render_target_size_multiplier));
 	}
 
 	_FORCE_INLINE_ void set_render_state_render_region(const Rect2i &p_render_region) {
 		RenderingServer *rendering_server = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rendering_server);
 
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_state_render_region).bind(p_render_region));
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_state_render_region_rt).bind(p_render_region));
 	}
 
 public:
@@ -430,12 +440,13 @@ public:
 
 	// helper method to convert an XrPosef to a Transform3D
 	Transform3D transform_from_pose(const XrPosef &p_pose);
+	XrPosef pose_from_transform(const Transform3D &p_transform);
 
 	// helper method to get a valid Transform3D from an openxr space location
 	XRPose::TrackingConfidence transform_from_location(const XrSpaceLocation &p_location, Transform3D &r_transform);
 	XRPose::TrackingConfidence transform_from_location(const XrHandJointLocationEXT &p_location, Transform3D &r_transform);
 	void parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
-	bool xr_result(XrResult result, const char *format, Array args = Array()) const;
+	bool xr_result(XrResult p_result, const char *p_format, const Array &p_args = Array()) const;
 	XrPath get_xr_path(const String &p_path);
 	String get_xr_path_name(const XrPath &p_path);
 	bool is_top_level_path_supported(const String &p_toplevel_path);
@@ -551,35 +562,35 @@ public:
 	// action map
 	String get_default_action_map_resource_name();
 
-	RID tracker_create(const String p_name);
+	RID tracker_create(const String &p_name);
 	String tracker_get_name(RID p_tracker);
 	void tracker_check_profile(RID p_tracker, XrSession p_session = XR_NULL_HANDLE);
 	void tracker_free(RID p_tracker);
 
-	RID action_set_create(const String p_name, const String p_localized_name, const int p_priority);
+	RID action_set_create(const String &p_name, const String &p_localized_name, const int p_priority);
 	String action_set_get_name(RID p_action_set);
 	XrActionSet action_set_get_handle(RID p_action_set);
 	bool attach_action_sets(const Vector<RID> &p_action_sets);
 	void action_set_free(RID p_action_set);
 
-	RID action_create(RID p_action_set, const String p_name, const String p_localized_name, OpenXRAction::ActionType p_action_type, const Vector<RID> &p_trackers);
+	RID action_create(RID p_action_set, const String &p_name, const String &p_localized_name, OpenXRAction::ActionType p_action_type, const Vector<RID> &p_trackers);
 	String action_get_name(RID p_action);
 	XrAction action_get_handle(RID p_action);
 	void action_free(RID p_action);
 
-	RID interaction_profile_create(const String p_name);
+	RID interaction_profile_create(const String &p_name);
 	String interaction_profile_get_name(RID p_interaction_profile);
 	void interaction_profile_clear_bindings(RID p_interaction_profile);
-	int interaction_profile_add_binding(RID p_interaction_profile, RID p_action, const String p_path);
+	int interaction_profile_add_binding(RID p_interaction_profile, RID p_action, const String &p_path);
 	bool interaction_profile_add_modifier(RID p_interaction_profile, const PackedByteArray &p_modifier);
 	bool interaction_profile_suggest_bindings(RID p_interaction_profile);
 	void interaction_profile_free(RID p_interaction_profile);
 
 	RID find_tracker(const String &p_name);
-	RID find_action_set(const String p_name);
+	RID find_action_set(const String &p_name);
 	RID find_action(const String &p_name, const RID &p_action_set = RID());
 
-	bool sync_action_sets(const Vector<RID> p_active_sets);
+	bool sync_action_sets(const Vector<RID> &p_active_sets);
 	bool get_action_bool(RID p_action, RID p_tracker);
 	float get_action_float(RID p_action, RID p_tracker);
 	Vector2 get_action_vector2(RID p_action, RID p_tracker);

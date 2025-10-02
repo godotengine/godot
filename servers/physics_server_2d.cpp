@@ -114,6 +114,12 @@ void PhysicsDirectBodyState2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sleep_state", "enabled"), &PhysicsDirectBodyState2D::set_sleep_state);
 	ClassDB::bind_method(D_METHOD("is_sleeping"), &PhysicsDirectBodyState2D::is_sleeping);
 
+	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &PhysicsDirectBodyState2D::set_collision_layer);
+	ClassDB::bind_method(D_METHOD("get_collision_layer"), &PhysicsDirectBodyState2D::get_collision_layer);
+
+	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &PhysicsDirectBodyState2D::set_collision_mask);
+	ClassDB::bind_method(D_METHOD("get_collision_mask"), &PhysicsDirectBodyState2D::get_collision_mask);
+
 	ClassDB::bind_method(D_METHOD("get_contact_count"), &PhysicsDirectBodyState2D::get_contact_count);
 
 	ClassDB::bind_method(D_METHOD("get_contact_local_position", "contact_idx"), &PhysicsDirectBodyState2D::get_contact_local_position);
@@ -142,6 +148,8 @@ void PhysicsDirectBodyState2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sleeping"), "set_sleep_state", "is_sleeping");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer"), "set_collision_layer", "get_collision_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask"), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform"), "set_transform", "get_transform");
 }
 
@@ -788,7 +796,7 @@ void PhysicsServer2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("joint_get_type", "joint"), &PhysicsServer2D::joint_get_type);
 
-	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &PhysicsServer2D::free);
+	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &PhysicsServer2D::free_rid);
 
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &PhysicsServer2D::set_active);
 

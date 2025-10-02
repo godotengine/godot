@@ -297,6 +297,9 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 			asset_library->add_theme_style_override(SceneStringName(panel), memnew(StyleBoxEmpty));
 		}
 	}
+#ifdef ANDROID_ENABLED
+	DisplayServer::get_singleton()->window_set_color(theme->get_color(SNAME("background"), EditorStringName(Editor)));
+#endif
 }
 
 Button *ProjectManager::_add_main_view(MainViewTab p_id, const String &p_name, const Ref<Texture2D> &p_icon, Control *p_view_control) {
@@ -363,7 +366,8 @@ void ProjectManager::_select_main_view(int p_id) {
 	if (current_main_view == MAIN_VIEW_PROJECTS && search_box->is_inside_tree()) {
 		// Automatically grab focus when the user moves from the Templates tab
 		// back to the Projects tab.
-		search_box->grab_focus();
+		// Needs to be deferred, otherwise the focus outline is always drawn.
+		callable_mp((Control *)search_box, &Control::grab_focus).call_deferred(true);
 	}
 
 	// The Templates tab's search field is focused on display in the asset
@@ -1012,6 +1016,24 @@ void ProjectManager::_set_new_tag_name(const String p_name) {
 	if (p_name.contains_char(' ')) {
 		tag_error->set_text(TTRC("Tag name can't contain spaces."));
 		return;
+	}
+
+	if (p_name[0] == '_' || p_name[p_name.length() - 1] == '_') {
+		tag_error->set_text(TTRC("Tag name can't begin or end with underscore."));
+		return;
+	}
+
+	bool was_underscore = false;
+	for (const char32_t &c : p_name.span()) {
+		if (c == '_') {
+			if (was_underscore) {
+				tag_error->set_text(TTRC("Tag name can't contain consecutive underscores."));
+				return;
+			}
+			was_underscore = true;
+		} else {
+			was_underscore = false;
+		}
 	}
 
 	for (const String &c : forbidden_tag_characters) {
@@ -1820,7 +1842,7 @@ ProjectManager::ProjectManager() {
 		new_tag_name->connect(SceneStringName(text_changed), callable_mp(this, &ProjectManager::_set_new_tag_name));
 		new_tag_name->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectManager::_create_new_tag).unbind(1));
 		create_tag_dialog->connect("about_to_popup", callable_mp(new_tag_name, &LineEdit::clear));
-		create_tag_dialog->connect("about_to_popup", callable_mp((Control *)new_tag_name, &Control::grab_focus), CONNECT_DEFERRED);
+		create_tag_dialog->connect("about_to_popup", callable_mp((Control *)new_tag_name, &Control::grab_focus).bind(false), CONNECT_DEFERRED);
 
 		tag_error = memnew(Label);
 		tag_error->set_focus_mode(FOCUS_ACCESSIBILITY);
@@ -1830,6 +1852,8 @@ ProjectManager::ProjectManager() {
 		create_tag_btn->set_accessibility_name(TTRC("Create Tag"));
 		all_tags->add_child(create_tag_btn);
 		create_tag_btn->connect(SceneStringName(pressed), callable_mp((Window *)create_tag_dialog, &Window::popup_centered).bind(Vector2i(500, 0) * EDSCALE));
+
+		_set_new_tag_name("");
 	}
 
 	// Initialize project list.

@@ -465,7 +465,7 @@ void EditorFileSystem::_scan_filesystem() {
 						fc.import_md5 = slices[5];
 						fc.import_dest_paths = slices[6].split("<*>");
 					}
-					fc.deps = split[8].strip_edges().split("<>");
+					fc.deps = split[8].strip_edges().split("<>", false);
 
 					file_cache[name] = fc;
 				}
@@ -1069,12 +1069,13 @@ void EditorFileSystem::scan() {
 	if (first_scan) {
 		_first_scan_filesystem();
 #ifdef ANDROID_ENABLED
+		// Create a .nomedia file to hide assets from media apps on Android.
 		// Android 11 has some issues with nomedia files, so it's disabled there. See GH-106479 and GH-105399 for details.
+		// NOTE: Nomedia file is also handled in project manager. See project_dialog.cpp ->  ProjectDialog::ok_pressed().
 		String sdk_version = OS::get_singleton()->get_version().get_slicec('.', 0);
 		if (sdk_version != "30") {
 			const String nomedia_file_path = ProjectSettings::get_singleton()->get_resource_path().path_join(".nomedia");
 			if (!FileAccess::exists(nomedia_file_path)) {
-				// Create a .nomedia file to hide assets from media apps on Android.
 				Ref<FileAccess> f = FileAccess::open(nomedia_file_path, FileAccess::WRITE);
 				if (f.is_null()) {
 					// .nomedia isn't so critical.
@@ -1648,9 +1649,9 @@ void EditorFileSystem::_thread_func_sources(void *_userdata) {
 }
 
 bool EditorFileSystem::_remove_invalid_global_class_names(const HashSet<String> &p_existing_class_names) {
-	List<StringName> global_classes;
+	LocalVector<StringName> global_classes;
 	bool must_save = false;
-	ScriptServer::get_global_class_list(&global_classes);
+	ScriptServer::get_global_class_list(global_classes);
 	for (const StringName &class_name : global_classes) {
 		if (!p_existing_class_names.has(class_name)) {
 			ScriptServer::remove_global_class(class_name);
@@ -1767,13 +1768,13 @@ void EditorFileSystem::_notification(int p_what) {
 						// Set first_scan to false before the signals so the function doing_first_scan can return false
 						// in editor_node to start the export if needed.
 						first_scan = false;
+						scanning_changes = false;
+						done_importing = true;
 						ResourceImporter::load_on_startup = nullptr;
 						if (changed) {
 							emit_signal(SNAME("filesystem_changed"));
 						}
 						emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
-						scanning_changes = false; // Changed to false here to prevent recursive triggering of scan thread.
-						done_importing = true;
 					}
 				} else if (!scanning && thread.is_started()) {
 					set_process(false);
@@ -3441,7 +3442,7 @@ bool EditorFileSystem::_should_skip_directory(const String &p_path) {
 
 	if (FileAccess::exists(p_path.path_join("project.godot"))) {
 		// Skip if another project inside this.
-		if (EditorFileSystem::get_singleton()->first_scan) {
+		if (EditorFileSystem::get_singleton() == nullptr || EditorFileSystem::get_singleton()->first_scan) {
 			WARN_PRINT_ONCE(vformat("Detected another project.godot at %s. The folder will be ignored.", p_path));
 		}
 		return true;

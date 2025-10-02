@@ -57,6 +57,14 @@
 #include "drivers/accesskit/accessibility_driver_accesskit.h"
 #endif
 
+#ifdef DBUS_ENABLED
+#ifdef SOWRAP_ENABLED
+#include "dbus-so_wrap.h"
+#else
+#include <dbus/dbus.h>
+#endif
+#endif
+
 #include <dlfcn.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -438,14 +446,19 @@ bool DisplayServerX11::is_dark_mode() const {
 }
 
 Color DisplayServerX11::get_accent_color() const {
+	if (!portal_desktop) {
+		return Color();
+	}
 	return portal_desktop->get_appearance_accent_color();
 }
 
 void DisplayServerX11::set_system_theme_change_callback(const Callable &p_callable) {
+	ERR_FAIL_COND(!portal_desktop);
 	portal_desktop->set_system_theme_change_callback(p_callable);
 }
 
 Error DisplayServerX11::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) {
+	ERR_FAIL_COND_V(!portal_desktop, ERR_UNAVAILABLE);
 	WindowID window_id = p_window_id;
 
 	if (!windows.has(window_id) || windows[window_id].is_popup) {
@@ -457,6 +470,7 @@ Error DisplayServerX11::file_dialog_show(const String &p_title, const String &p_
 }
 
 Error DisplayServerX11::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) {
+	ERR_FAIL_COND_V(!portal_desktop, ERR_UNAVAILABLE);
 	WindowID window_id = p_window_id;
 
 	if (!windows.has(window_id) || windows[window_id].is_popup) {
@@ -1845,13 +1859,15 @@ void DisplayServerX11::screen_set_keep_on(bool p_enable) {
 		return;
 	}
 
-	if (p_enable) {
-		screensaver->inhibit();
-	} else {
-		screensaver->uninhibit();
-	}
+	if (screensaver) {
+		if (p_enable) {
+			screensaver->inhibit();
+		} else {
+			screensaver->uninhibit();
+		}
 
-	keep_screen_on = p_enable;
+		keep_screen_on = p_enable;
+	}
 }
 
 bool DisplayServerX11::screen_is_kept_on() const {
@@ -3420,6 +3436,9 @@ void DisplayServerX11::window_set_ime_position(const Point2i &p_pos, WindowID p_
 
 int DisplayServerX11::accessibility_should_increase_contrast() const {
 #ifdef DBUS_ENABLED
+	if (!portal_desktop) {
+		return -1;
+	}
 	return portal_desktop->get_high_contrast();
 #endif
 	return -1;
@@ -3427,7 +3446,7 @@ int DisplayServerX11::accessibility_should_increase_contrast() const {
 
 int DisplayServerX11::accessibility_screen_reader_active() const {
 #ifdef DBUS_ENABLED
-	if (atspi_monitor->is_supported()) {
+	if (atspi_monitor && atspi_monitor->is_supported()) {
 		return atspi_monitor->is_active();
 	}
 #endif
@@ -3692,6 +3711,9 @@ Key DisplayServerX11::keyboard_get_label_from_physical(Key p_keycode) const {
 
 bool DisplayServerX11::color_picker(const Callable &p_callback) {
 #ifdef DBUS_ENABLED
+	if (!portal_desktop) {
+		return false;
+	}
 	WindowID window_id = last_focused_window;
 
 	if (!windows.has(window_id)) {
@@ -3815,12 +3837,21 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	XLookupString(xkeyevent, str, 255, &keysym_unicode, nullptr);
 	XLookupString(&xkeyevent_no_mod, nullptr, 0, &keysym_keycode, nullptr);
 
+	// Get a normalized keysym (ignoring modifiers like Shift/Ctrl).
 	String keysym;
 #ifdef XKB_ENABLED
 	if (xkb_loaded_v08p) {
 		KeySym keysym_unicode_nm = 0; // keysym used to find unicode
 		XLookupString(&xkeyevent_no_mod, nullptr, 0, &keysym_unicode_nm, nullptr);
-		keysym = String::chr(xkb_keysym_to_utf32(xkb_keysym_to_upper(keysym_unicode_nm)));
+
+		// Unicode codepoint corresponding to the pressed key.
+		// Printable keys (letters, numbers, symbols) return a valid codepoint.
+		u_int32_t unicode_cp = xkb_keysym_to_utf32(xkb_keysym_to_upper(keysym_unicode_nm));
+
+		// Non-printable keys (Ctrl, Home, CapsLock, F1, etc.) return 0, so we skip them.
+		if (unicode_cp != 0) {
+			keysym = String::chr(unicode_cp);
+		}
 	}
 #endif
 
@@ -4778,9 +4809,6 @@ void DisplayServerX11::process_events() {
 		MutexLock mutex_lock(events_mutex);
 		events = polled_events;
 		polled_events.clear();
-
-		// Check for more pending events to avoid an extra frame delay.
-		_check_pending_events(events);
 	}
 
 	for (uint32_t event_index = 0; event_index < events.size(); ++event_index) {
@@ -7347,12 +7375,35 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	_update_real_mouse_position(windows[MAIN_WINDOW_ID]);
 
 #ifdef DBUS_ENABLED
-	screensaver = memnew(FreeDesktopScreenSaver);
+	bool dbus_ok = true;
+#ifdef SOWRAP_ENABLED
+	if (initialize_dbus(dylibloader_verbose) != 0) {
+		print_verbose("Failed to load DBus library!");
+		dbus_ok = false;
+	}
+#endif
+	if (dbus_ok) {
+		bool ver_ok = false;
+		int version_major = 0;
+		int version_minor = 0;
+		int version_rev = 0;
+		dbus_get_version(&version_major, &version_minor, &version_rev);
+		ver_ok = (version_major == 1 && version_minor >= 10) || (version_major > 1); // 1.10.0
+		print_verbose(vformat("DBus %d.%d.%d detected.", version_major, version_minor, version_rev));
+		if (!ver_ok) {
+			print_verbose("Unsupported DBus library version!");
+			dbus_ok = false;
+		}
+	}
+	if (dbus_ok) {
+		screensaver = memnew(FreeDesktopScreenSaver);
+		portal_desktop = memnew(FreeDesktopPortalDesktop);
+		atspi_monitor = memnew(FreeDesktopAtSPIMonitor);
+	}
+#endif // DBUS_ENABLED
+
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 
-	portal_desktop = memnew(FreeDesktopPortalDesktop);
-	atspi_monitor = memnew(FreeDesktopAtSPIMonitor);
-#endif // DBUS_ENABLED
 	XSetErrorHandler(&default_window_error_handler);
 
 	r_error = OK;
@@ -7484,9 +7535,15 @@ DisplayServerX11::~DisplayServerX11() {
 #endif
 
 #ifdef DBUS_ENABLED
-	memdelete(screensaver);
-	memdelete(portal_desktop);
-	memdelete(atspi_monitor);
+	if (screensaver) {
+		memdelete(screensaver);
+	}
+	if (portal_desktop) {
+		memdelete(portal_desktop);
+	}
+	if (atspi_monitor) {
+		memdelete(atspi_monitor);
+	}
 #endif
 }
 

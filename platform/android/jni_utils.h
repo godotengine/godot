@@ -38,17 +38,11 @@
 
 #include <jni.h>
 
-struct jvalret {
-	jobject obj;
-	jvalue val;
-	jvalret() { obj = nullptr; }
-};
-
-jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, bool force_jobject = false);
+jvalue _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, bool force_jobject = false, int p_depth = 0);
 
 String _get_class_name(JNIEnv *env, jclass cls, bool *array);
 
-Variant _jobject_to_variant(JNIEnv *env, jobject obj);
+Variant _jobject_to_variant(JNIEnv *env, jobject obj, int p_depth = 0);
 
 Variant::Type get_jni_type(const String &p_type);
 
@@ -96,3 +90,18 @@ static inline String jstring_to_string(jstring source, JNIEnv *env = nullptr) {
 	}
 	return result;
 }
+
+/**
+ * Set up thread-safe Android ClassLoader (used by jni_find_class() below).
+ */
+void setup_android_class_loader();
+void cleanup_android_class_loader();
+
+/**
+ * Thread-safe JNI class finder using Android ClassLoader.
+ * Works on any thread, unlike standard FindClass which may fail on non-main threads.
+ * @param p_env JNI environment instance.
+ * @param p_class_name Class name to find.
+ * @return jclass reference or null if not found.
+ */
+jclass jni_find_class(JNIEnv *p_env, const char *p_class_name);

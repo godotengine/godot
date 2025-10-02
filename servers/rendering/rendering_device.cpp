@@ -168,7 +168,7 @@ void RenderingDevice::_free_dependencies(RID p_id) {
 	HashMap<RID, HashSet<RID>>::Iterator E = dependency_map.find(p_id);
 	if (E) {
 		while (E->value.size()) {
-			free(*E->value.begin());
+			free_rid(*E->value.begin());
 		}
 		dependency_map.remove(E);
 	}
@@ -1065,13 +1065,14 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 #endif
 
 	if (data.size()) {
+		const bool use_general_in_copy_queues = driver->api_trait_get(RDD::API_TRAIT_USE_GENERAL_IN_COPY_QUEUES);
+		const RDD::TextureLayout dst_layout = use_general_in_copy_queues ? RDD::TEXTURE_LAYOUT_GENERAL : RDD::TEXTURE_LAYOUT_COPY_DST_OPTIMAL;
 		for (uint32_t i = 0; i < format.array_layers; i++) {
-			_texture_initialize(id, i, data[i], immediate_flush);
+			_texture_initialize(id, i, data[i], dst_layout, immediate_flush);
 		}
 
 		if (texture.draw_tracker != nullptr) {
-			// Draw tracker can assume the texture will be in copy destination.
-			texture.draw_tracker->usage = RDG::RESOURCE_USAGE_COPY_TO;
+			texture.draw_tracker->usage = use_general_in_copy_queues ? RDG::RESOURCE_USAGE_GENERAL : RDG::RESOURCE_USAGE_COPY_TO;
 		}
 	}
 
@@ -1420,7 +1421,7 @@ uint32_t RenderingDevice::_texture_alignment(Texture *p_texture) const {
 	return least_common_multiple(alignment, driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT));
 }
 
-Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, bool p_immediate_flush) {
+Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, RDD::TextureLayout p_dst_layout, bool p_immediate_flush) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL_V(texture, ERR_INVALID_PARAMETER);
 
@@ -1454,7 +1455,6 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 	TransferWorker *transfer_worker = nullptr;
 	const uint8_t *read_ptr = p_data.ptr();
 	uint8_t *write_ptr = nullptr;
-	const RDD::TextureLayout copy_dst_layout = driver->api_trait_get(RDD::API_TRAIT_USE_GENERAL_IN_COPY_QUEUES) ? RDD::TEXTURE_LAYOUT_GENERAL : RDD::TEXTURE_LAYOUT_COPY_DST_OPTIMAL;
 	for (uint32_t pass = 0; pass < 2; pass++) {
 		const bool copy_pass = (pass == 1);
 		if (copy_pass) {
@@ -1477,7 +1477,7 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 				tb.texture = texture->driver_id;
 				tb.dst_access = RDD::BARRIER_ACCESS_COPY_WRITE_BIT;
 				tb.prev_layout = RDD::TEXTURE_LAYOUT_UNDEFINED;
-				tb.next_layout = copy_dst_layout;
+				tb.next_layout = p_dst_layout;
 				tb.subresources.aspect = texture->barrier_aspect_flags;
 				tb.subresources.mipmap_count = texture->mipmaps;
 				tb.subresources.base_layer = p_layer;
@@ -1524,7 +1524,7 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 					copy_region.texture_subresources.layer_count = 1;
 					copy_region.texture_offset = Vector3i(0, 0, z);
 					copy_region.texture_region_size = Vector3i(logic_width, logic_height, 1);
-					driver->command_copy_buffer_to_texture(transfer_worker->command_buffer, transfer_worker->staging_buffer, texture->driver_id, copy_dst_layout, copy_region);
+					driver->command_copy_buffer_to_texture(transfer_worker->command_buffer, transfer_worker->staging_buffer, texture->driver_id, p_dst_layout, copy_region);
 				}
 
 				staging_local_offset += to_allocate;
@@ -1543,7 +1543,7 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 				RDD::TextureBarrier tb;
 				tb.texture = texture->driver_id;
 				tb.src_access = RDD::BARRIER_ACCESS_COPY_WRITE_BIT;
-				tb.prev_layout = copy_dst_layout;
+				tb.prev_layout = p_dst_layout;
 				tb.next_layout = RDD::TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				tb.subresources.aspect = texture->barrier_aspect_flags;
 				tb.subresources.mipmap_count = texture->mipmaps;
@@ -3366,19 +3366,12 @@ String RenderingDevice::_shader_uniform_debug(RID p_shader, int p_set) {
 }
 
 Vector<uint8_t> RenderingDevice::shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name) {
-	ShaderReflection shader_refl;
-	if (reflect_spirv(p_spirv, shader_refl) != OK) {
-		return Vector<uint8_t>();
-	}
-
 	const RenderingShaderContainerFormat &container_format = driver->get_shader_container_format();
 	Ref<RenderingShaderContainer> shader_container = container_format.create_container();
 	ERR_FAIL_COND_V(shader_container.is_null(), Vector<uint8_t>());
 
-	shader_container->set_from_shader_reflection(p_shader_name, shader_refl);
-
 	// Compile shader binary from SPIR-V.
-	bool code_compiled = shader_container->set_code_from_spirv(p_spirv);
+	bool code_compiled = shader_container->set_code_from_spirv(p_shader_name, p_spirv);
 	ERR_FAIL_COND_V_MSG(!code_compiled, Vector<uint8_t>(), vformat("Failed to compile code to native for SPIR-V."));
 
 	return shader_container->to_bytes();
@@ -6043,11 +6036,11 @@ bool RenderingDevice::_dependencies_make_mutable(RID p_id, RDG::ResourceTracker 
 /**** FRAME MANAGEMENT ****/
 /**************************/
 
-void RenderingDevice::free(RID p_id) {
+void RenderingDevice::free_rid(RID p_rid) {
 	ERR_RENDER_THREAD_GUARD();
 
-	_free_dependencies(p_id); // Recursively erase dependencies first, to avoid potential API problems.
-	_free_internal(p_id);
+	_free_dependencies(p_rid); // Recursively erase dependencies first, to avoid potential API problems.
+	_free_internal(p_rid);
 }
 
 void RenderingDevice::_free_internal(RID p_id) {
@@ -6708,7 +6701,6 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	}
 
 	frame = 0;
-	frames.resize(frame_count);
 	max_timestamp_query_elements = GLOBAL_GET("debug/settings/profiler/max_timestamp_query_elements");
 
 	device = context->device_get(device_index);
@@ -6776,6 +6768,8 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 
 	// Use the processor count as the max amount of transfer workers that can be created.
 	transfer_worker_pool_max_size = OS::get_singleton()->get_processor_count();
+
+	frames.resize(frame_count);
 
 	// Create data for all the frames.
 	for (uint32_t i = 0; i < frames.size(); i++) {
@@ -6985,7 +6979,7 @@ void RenderingDevice::_free_rids(T &p_owner, const char *p_type) {
 				print_line(String(" - ") + resource_names[rid]);
 			}
 #endif
-			free(rid);
+			free_rid(rid);
 		}
 	}
 }
@@ -7198,7 +7192,7 @@ void RenderingDevice::finalize() {
 						print_line(String(" - ") + resource_names[texture_rid]);
 					}
 #endif
-					free(texture_rid);
+					free_rid(texture_rid);
 				} else {
 					owned_non_shared.push_back(texture_rid);
 				}
@@ -7210,7 +7204,7 @@ void RenderingDevice::finalize() {
 					print_line(String(" - ") + resource_names[texture_rid]);
 				}
 #endif
-				free(texture_rid);
+				free_rid(texture_rid);
 			}
 		}
 	}
@@ -7452,7 +7446,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("compute_list_add_barrier", "compute_list"), &RenderingDevice::compute_list_add_barrier);
 	ClassDB::bind_method(D_METHOD("compute_list_end"), &RenderingDevice::compute_list_end);
 
-	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &RenderingDevice::free);
+	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &RenderingDevice::free_rid);
 
 	ClassDB::bind_method(D_METHOD("capture_timestamp", "name"), &RenderingDevice::capture_timestamp);
 	ClassDB::bind_method(D_METHOD("get_captured_timestamps_count"), &RenderingDevice::get_captured_timestamps_count);
@@ -8406,4 +8400,5 @@ static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_STORAGE_IMAGE_READ,
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_STORAGE_IMAGE_READ_WRITE, RDG::RESOURCE_USAGE_STORAGE_IMAGE_READ_WRITE));
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE, RDG::RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE));
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE, RDG::RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE));
+static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_GENERAL, RDG::RESOURCE_USAGE_GENERAL));
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_MAX, RDG::RESOURCE_USAGE_MAX));

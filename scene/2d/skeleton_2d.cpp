@@ -825,5 +825,5 @@ Skeleton2D::Skeleton2D() {
 
 Skeleton2D::~Skeleton2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(skeleton);
+	RS::get_singleton()->free_rid(skeleton);
 }

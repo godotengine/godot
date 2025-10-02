@@ -39,6 +39,8 @@ class CollisionObject2D : public Node2D {
 	GDCLASS(CollisionObject2D, Node2D);
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::COLLISION_OBJECT_2D;
+
 	enum DisableMode {
 		DISABLE_MODE_REMOVE,
 		DISABLE_MODE_MAKE_STATIC,

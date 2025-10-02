@@ -925,9 +925,12 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			ScriptLanguage::CodeCompletionOption slider2("or_less", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 			slider2.insert_text = slider2.display.quote(p_quote_style);
 			r_result.insert(slider2.display, slider2);
-			ScriptLanguage::CodeCompletionOption slider3("hide_slider", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+			ScriptLanguage::CodeCompletionOption slider3("prefer_slider", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 			slider3.insert_text = slider3.display.quote(p_quote_style);
 			r_result.insert(slider3.display, slider3);
+			ScriptLanguage::CodeCompletionOption slider4("hide_control", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+			slider4.insert_text = slider4.display.quote(p_quote_style);
+			r_result.insert(slider4.display, slider4);
 		}
 	} else if (p_annotation->name == SNAME("@export_exp_easing")) {
 		if (p_argument == 0 || p_argument == 1) {
@@ -955,13 +958,13 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			r_result.insert(option.display, option);
 		}
 
-		List<StringName> global_script_classes;
-		ScriptServer::get_global_class_list(&global_script_classes);
-		for (const StringName &E : global_script_classes) {
-			if (!ClassDB::is_parent_class(ScriptServer::get_global_class_native_base(E), "Node")) {
+		LocalVector<StringName> global_script_classes;
+		ScriptServer::get_global_class_list(global_script_classes);
+		for (const StringName &class_name : global_script_classes) {
+			if (!ClassDB::is_parent_class(ScriptServer::get_global_class_native_base(class_name), "Node")) {
 				continue;
 			}
-			ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
+			ScriptLanguage::CodeCompletionOption option(class_name, ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
 			option.insert_text = option.display.quote(p_quote_style);
 			r_result.insert(option.display, option);
 		}
@@ -1049,11 +1052,11 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 	// Built-in Variant Types
 	_find_built_in_variants(r_result, true);
 
-	List<StringName> native_types;
-	ClassDB::get_class_list(&native_types);
-	for (const StringName &E : native_types) {
-		if (ClassDB::is_class_exposed(E) && !Engine::get_singleton()->has_singleton(E)) {
-			ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
+	LocalVector<StringName> native_types;
+	ClassDB::get_class_list(native_types);
+	for (const StringName &type : native_types) {
+		if (ClassDB::is_class_exposed(type) && !Engine::get_singleton()->has_singleton(type)) {
+			ScriptLanguage::CodeCompletionOption option(type, ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
 			r_result.insert(option.display, option);
 		}
 	}
@@ -1103,10 +1106,10 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 	}
 
 	// Global scripts
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
-	for (const StringName &E : global_classes) {
-		ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_CLASS, ScriptLanguage::LOCATION_OTHER_USER_CODE);
+	LocalVector<StringName> global_classes;
+	ScriptServer::get_global_class_list(global_classes);
+	for (const StringName &class_name : global_classes) {
+		ScriptLanguage::CodeCompletionOption option(class_name, ScriptLanguage::CODE_COMPLETION_KIND_CLASS, ScriptLanguage::LOCATION_OTHER_USER_CODE);
 		r_result.insert(option.display, option);
 	}
 
@@ -1626,10 +1629,10 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 	_find_global_enums(r_result);
 
 	// Global classes
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
-	for (const StringName &E : global_classes) {
-		ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_CLASS, ScriptLanguage::LOCATION_OTHER_USER_CODE);
+	LocalVector<StringName> global_classes;
+	ScriptServer::get_global_class_list(global_classes);
+	for (const StringName &class_name : global_classes) {
+		ScriptLanguage::CodeCompletionOption option(class_name, ScriptLanguage::CODE_COMPLETION_KIND_CLASS, ScriptLanguage::LOCATION_OTHER_USER_CODE);
 		r_result.insert(option.display, option);
 	}
 }
@@ -1764,6 +1767,113 @@ static bool _is_expression_named_identifier(const GDScriptParser::ExpressionNode
 	return false;
 }
 
+// Creates a map of exemplary results for some functions that return a structured dictionary.
+// Setting this example as value allows autocompletion to suggest the specific keys in some cases.
+static HashMap<String, Dictionary> make_structure_samples() {
+	HashMap<String, Dictionary> res;
+	const Array arr;
+
+	{
+		Dictionary d;
+		d.set("major", 0);
+		d.set("minor", 0);
+		d.set("patch", 0);
+		d.set("hex", 0);
+		d.set("status", String());
+		d.set("build", String());
+		d.set("hash", String());
+		d.set("timestamp", 0);
+		d.set("string", String());
+		res["Engine::get_version_info"] = d;
+	}
+
+	{
+		Dictionary d;
+		d.set("lead_developers", arr);
+		d.set("founders", arr);
+		d.set("project_managers", arr);
+		d.set("developers", arr);
+		res["Engine::get_author_info"] = d;
+	}
+
+	{
+		Dictionary d;
+		d.set("platinum_sponsors", arr);
+		d.set("gold_sponsors", arr);
+		d.set("silver_sponsors", arr);
+		d.set("bronze_sponsors", arr);
+		d.set("mini_sponsors", arr);
+		d.set("gold_donors", arr);
+		d.set("silver_donors", arr);
+		d.set("bronze_donors", arr);
+		res["Engine::get_donor_info"] = d;
+	}
+
+	{
+		Dictionary d;
+		d.set("physical", -1);
+		d.set("free", -1);
+		d.set("available", -1);
+		d.set("stack", -1);
+		res["OS::get_memory_info"] = d;
+	}
+
+	{
+		Dictionary d;
+		d.set("year", 0);
+		d.set("month", 0);
+		d.set("day", 0);
+		d.set("weekday", 0);
+		d.set("hour", 0);
+		d.set("minute", 0);
+		d.set("second", 0);
+		d.set("dst", 0);
+		res["Time::get_datetime_dict_from_system"] = d;
+	}
+
+	{
+		Dictionary d;
+		d.set("year", 0);
+		d.set("month", 0);
+		d.set("day", 0);
+		d.set("weekday", 0);
+		d.set("hour", 0);
+		d.set("minute", 0);
+		d.set("second", 0);
+		res["Time::get_datetime_dict_from_unix_time"] = d;
+	}
+
+	{
+		Dictionary d;
+		d.set("year", 0);
+		d.set("month", 0);
+		d.set("day", 0);
+		d.set("weekday", 0);
+		res["Time::get_date_dict_from_system"] = d;
+		res["Time::get_date_dict_from_unix_time"] = d;
+	}
+
+	{
+		Dictionary d;
+		d.set("hour", 0);
+		d.set("minute", 0);
+		d.set("second", 0);
+		res["Time::get_time_dict_from_system"] = d;
+		res["Time::get_time_dict_from_unix_time"] = d;
+	}
+
+	{
+		Dictionary d;
+		d.set("bias", 0);
+		d.set("name", String());
+		res["Time::get_time_zone_from_system"] = d;
+	}
+
+	return res;
+}
+
+static const HashMap<String, Dictionary> structure_examples = make_structure_samples();
+
 static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context, const GDScriptParser::ExpressionNode *p_expression, GDScriptCompletionIdentifier &r_type) {
 	bool found = false;
 
@@ -1791,18 +1901,6 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 		found = true;
 	} else {
 		switch (p_expression->type) {
-			case GDScriptParser::Node::LITERAL: {
-				const GDScriptParser::LiteralNode *literal = static_cast<const GDScriptParser::LiteralNode *>(p_expression);
-				r_type = _type_from_variant(literal->value, p_context);
-				found = true;
-			} break;
-			case GDScriptParser::Node::SELF: {
-				if (p_context.current_class) {
-					r_type.type = p_context.current_class->get_datatype();
-					r_type.type.is_meta_type = false;
-					found = true;
-				}
-			} break;
 			case GDScriptParser::Node::IDENTIFIER: {
 				const GDScriptParser::IdentifierNode *id = static_cast<const GDScriptParser::IdentifierNode *>(p_expression);
 				found = _guess_identifier_type(p_context, id, r_type);
@@ -1884,156 +1982,68 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 			} break;
 			case GDScriptParser::Node::CALL: {
 				const GDScriptParser::CallNode *call = static_cast<const GDScriptParser::CallNode *>(p_expression);
-				if (GDScriptParser::get_builtin_type(call->function_name) < Variant::VARIANT_MAX) {
-					r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-					r_type.type.kind = GDScriptParser::DataType::BUILTIN;
-					r_type.type.builtin_type = GDScriptParser::get_builtin_type(call->function_name);
-					found = true;
-					break;
-				} else if (GDScriptUtilityFunctions::function_exists(call->function_name)) {
-					MethodInfo mi = GDScriptUtilityFunctions::get_function_info(call->function_name);
-					r_type = _type_from_property(mi.return_val);
-					found = true;
-					break;
-				} else {
-					GDScriptParser::CompletionContext c = p_context;
-					c.current_line = call->start_line;
+				GDScriptParser::CompletionContext c = p_context;
+				c.current_line = call->start_line;
 
-					GDScriptParser::Node::Type callee_type = call->get_callee_type();
+				GDScriptParser::Node::Type callee_type = call->get_callee_type();
 
-					GDScriptCompletionIdentifier base;
-					if (callee_type == GDScriptParser::Node::IDENTIFIER || call->is_super) {
-						// Simple call, so base is 'self'.
-						if (p_context.current_class) {
-							if (call->is_super) {
-								base.type = p_context.current_class->base_type;
-								base.value = p_context.base;
-							} else {
-								base.type.kind = GDScriptParser::DataType::CLASS;
-								base.type.type_source = GDScriptParser::DataType::INFERRED;
-								base.type.is_constant = true;
-								base.type.class_type = p_context.current_class;
-								base.value = p_context.base;
-							}
+				GDScriptCompletionIdentifier base;
+				if (callee_type == GDScriptParser::Node::IDENTIFIER || call->is_super) {
+					// Simple call, so base is 'self'.
+					if (p_context.current_class) {
+						if (call->is_super) {
+							base.type = p_context.current_class->base_type;
+							base.value = p_context.base;
 						} else {
-							break;
-						}
-					} else if (callee_type == GDScriptParser::Node::SUBSCRIPT && static_cast<const GDScriptParser::SubscriptNode *>(call->callee)->is_attribute) {
-						if (!_guess_expression_type(c, static_cast<const GDScriptParser::SubscriptNode *>(call->callee)->base, base)) {
-							found = false;
-							break;
+							base.type.kind = GDScriptParser::DataType::CLASS;
+							base.type.type_source = GDScriptParser::DataType::INFERRED;
+							base.type.is_constant = true;
+							base.type.class_type = p_context.current_class;
+							base.value = p_context.base;
 						}
 					} else {
 						break;
 					}
+				} else if (callee_type == GDScriptParser::Node::SUBSCRIPT && static_cast<const GDScriptParser::SubscriptNode *>(call->callee)->is_attribute) {
+					if (!_guess_expression_type(c, static_cast<const GDScriptParser::SubscriptNode *>(call->callee)->base, base)) {
+						found = false;
+						break;
+					}
+				} else {
+					break;
+				}
 
-					// Try call if constant methods with constant arguments
-					if (base.type.is_constant && base.value.get_type() == Variant::OBJECT) {
-						GDScriptParser::DataType native_type = base.type;
-
-						while (native_type.kind == GDScriptParser::DataType::CLASS) {
-							native_type = native_type.class_type->base_type;
-						}
-
-						while (native_type.kind == GDScriptParser::DataType::SCRIPT) {
-							if (native_type.script_type.is_valid()) {
-								Ref<Script> parent = native_type.script_type->get_base_script();
-								if (parent.is_valid()) {
-									native_type.script_type = parent;
-								} else {
-									native_type.kind = GDScriptParser::DataType::NATIVE;
-									native_type.builtin_type = Variant::OBJECT;
-									native_type.native_type = native_type.script_type->get_instance_base_type();
-									if (!ClassDB::class_exists(native_type.native_type)) {
-										native_type.kind = GDScriptParser::DataType::UNRESOLVED;
-									}
-								}
-							}
-						}
-
-						if (native_type.kind == GDScriptParser::DataType::NATIVE) {
-							MethodBind *mb = ClassDB::get_method(native_type.native_type, call->function_name);
-							if (mb && mb->is_const()) {
-								bool all_is_const = true;
-								Vector<Variant> args;
-								for (int i = 0; all_is_const && i < call->arguments.size(); i++) {
-									GDScriptCompletionIdentifier arg;
-
-									if (!call->arguments[i]->is_constant) {
-										all_is_const = false;
-									}
-								}
-
-								Object *baseptr = base.value;
-
-								if (all_is_const && call->function_name == SNAME("get_node") && ClassDB::is_parent_class(native_type.native_type, SNAME("Node")) && args.size()) {
-									String arg1 = args[0];
-									if (arg1.begins_with("/root/")) {
-										String which = arg1.get_slicec('/', 2);
-										if (!which.is_empty()) {
-											// Try singletons first
-											if (GDScriptLanguage::get_singleton()->get_named_globals_map().has(which)) {
-												r_type = _type_from_variant(GDScriptLanguage::get_singleton()->get_named_globals_map()[which], p_context);
-												found = true;
-											} else {
-												for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
-													String name = E.key;
-													if (name == which) {
-														String script = E.value.path;
-
-														if (!script.begins_with("res://")) {
-															script = "res://" + script;
-														}
-
-														if (!script.ends_with(".gd")) {
-															// not a script, try find the script anyway,
-															// may have some success
-															script = script.get_basename() + ".gd";
-														}
-
-														if (FileAccess::exists(script)) {
-															Ref<GDScriptParserRef> parser = p_context.parser->get_depended_parser_for(script);
-															if (parser.is_valid() && parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED) == OK) {
-																r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-																r_type.type.script_path = script;
-																r_type.type.class_type = parser->get_parser()->get_tree();
-																r_type.type.is_constant = false;
-																r_type.type.kind = GDScriptParser::DataType::CLASS;
-																r_type.value = Variant();
-																found = true;
-															}
-														}
-														break;
-													}
-												}
-											}
-										}
-									}
-								}
-
-								if (!found && all_is_const && baseptr) {
-									Vector<const Variant *> argptr;
-									for (int i = 0; i < args.size(); i++) {
-										argptr.push_back(&args[i]);
-									}
-
-									Callable::CallError ce;
-									Variant ret = mb->call(baseptr, (const Variant **)argptr.ptr(), argptr.size(), ce);
-
-									if (ce.error == Callable::CallError::CALL_OK && ret.get_type() != Variant::NIL) {
-										if (ret.get_type() != Variant::OBJECT || ret.operator Object *() != nullptr) {
-											r_type = _type_from_variant(ret, p_context);
-											found = true;
-										}
-									}
-								}
-							}
+				// Apply additional behavior aware inference that the analyzer can't do.
+				if (base.type.is_set()) {
+					// Maintain type for duplicate methods.
+					if (call->function_name == SNAME("duplicate")) {
+						if (base.type.builtin_type == Variant::OBJECT && (ClassDB::is_parent_class(base.type.native_type, SNAME("Resource")) || ClassDB::is_parent_class(base.type.native_type, SNAME("Node")))) {
+							r_type.type = base.type;
+							found = true;
+							break;
 						}
 					}
 
-					if (!found) {
-						found = _guess_method_return_type_from_base(c, base, call->function_name, r_type);
+					// Simulate generics for some typed array methods.
+					if (base.type.builtin_type == Variant::ARRAY && base.type.has_container_element_types() && (call->function_name == SNAME("back") || call->function_name == SNAME("front") || call->function_name == SNAME("get") || call->function_name == SNAME("max") || call->function_name == SNAME("min") || call->function_name == SNAME("pick_random") || call->function_name == SNAME("pop_at") || call->function_name == SNAME("pop_back") || call->function_name == SNAME("pop_front"))) {
+						r_type.type = base.type.get_container_element_type(0);
+						found = true;
+						break;
 					}
+
+					// Insert example values for functions which a structured dictionary response.
+					if (!base.type.is_meta_type) {
+						const Dictionary *example = structure_examples.getptr(base.type.native_type.operator String() + "::" + call->function_name);
+						if (example != nullptr) {
+							r_type = _type_from_variant(*example, p_context);
+							found = true;
+							break;
+						}
+					}
+				}
+
+				if (!found) {
+					found = _guess_method_return_type_from_base(c, base, call->function_name, r_type);
 				}
 			} break;
 			case GDScriptParser::Node::SUBSCRIPT: {

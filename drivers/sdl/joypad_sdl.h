@@ -39,15 +39,15 @@ typedef struct HWND__ *HWND;
 class JoypadSDL {
 public:
 	JoypadSDL();
+#ifdef WINDOWS_ENABLED
+	JoypadSDL(HWND p_helper_window);
+#endif
 	~JoypadSDL();
 
 	static JoypadSDL *get_singleton();
 
 	Error initialize();
 	void process_events();
-#ifdef WINDOWS_ENABLED
-	void setup_sdl_helper_window(HWND p_hwnd);
-#endif
 
 private:
 	struct Joypad {

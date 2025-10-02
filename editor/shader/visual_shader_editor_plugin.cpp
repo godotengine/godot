@@ -41,6 +41,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_paths.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/editor_properties_vector.h"
 #include "editor/scene/curve_editor_plugin.h"
@@ -1560,6 +1561,13 @@ void VisualShaderEditor::edit_shader(const Ref<Shader> &p_shader) {
 	}
 }
 
+void VisualShaderEditor::use_menu_bar_items(MenuButton *p_file_menu, Button *p_make_floating) {
+	p_file_menu->set_switch_on_hover(false);
+	toolbar_hflow->add_child(p_file_menu);
+	toolbar_hflow->move_child(p_file_menu, 2); // Toggle Files Panel button + separator.
+	toolbar_hflow->add_child(p_make_floating);
+}
+
 void VisualShaderEditor::apply_shaders() {
 	// Stub. TODO: Implement apply_shaders in visual shaders for parity with text shaders.
 }
@@ -1608,10 +1616,6 @@ void VisualShaderEditor::set_current_shader_type(VisualShader::Type p_type) {
 
 VisualShader::Type VisualShaderEditor::get_current_shader_type() const {
 	return current_type;
-}
-
-Control *VisualShaderEditor::get_top_bar() {
-	return toolbar;
 }
 
 void VisualShaderEditor::add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin) {
@@ -1664,7 +1668,7 @@ void VisualShaderEditor::add_custom_type(const String &p_name, const String &p_t
 	ao.is_native = !p_type.is_empty();
 
 	bool begin = false;
-	String root = p_category.split("/")[0];
+	String root = p_category.get_slicec('/', 0);
 
 	for (int i = 0; i < add_options.size(); i++) {
 		if (add_options[i].is_custom) {
@@ -2155,12 +2159,12 @@ void VisualShaderEditor::_update_nodes() {
 
 	// Add GDScript classes.
 	{
-		List<StringName> class_list;
-		ScriptServer::get_global_class_list(&class_list);
+		LocalVector<StringName> class_list;
+		ScriptServer::get_global_class_list(class_list);
 
-		for (const StringName &E : class_list) {
-			if (ScriptServer::get_global_class_native_base(E) == "VisualShaderNodeCustom") {
-				String script_path = ScriptServer::get_global_class_path(E);
+		for (const StringName &class_name : class_list) {
+			if (ScriptServer::get_global_class_native_base(class_name) == "VisualShaderNodeCustom") {
+				String script_path = ScriptServer::get_global_class_path(class_name);
 				Ref<Resource> res = ResourceLoader::load(script_path);
 				ERR_CONTINUE(res.is_null());
 				ERR_CONTINUE(!res->is_class("Script"));
@@ -2185,19 +2189,19 @@ void VisualShaderEditor::_update_nodes() {
 
 	// Add GDExtension classes.
 	{
-		List<StringName> class_list;
-		ClassDB::get_class_list(&class_list);
+		LocalVector<StringName> class_list;
+		ClassDB::get_class_list(class_list);
 
-		for (const StringName &E : class_list) {
-			if (ClassDB::get_parent_class(E) == "VisualShaderNodeCustom") {
-				Object *instance = ClassDB::instantiate(E);
+		for (const StringName &class_name : class_list) {
+			if (ClassDB::get_parent_class(class_name) == "VisualShaderNodeCustom") {
+				Object *instance = ClassDB::instantiate(class_name);
 				Ref<VisualShaderNodeCustom> ref = Object::cast_to<VisualShaderNodeCustom>(instance);
 				ERR_CONTINUE(ref.is_null());
 				if (!ref->is_available(visual_shader->get_mode(), get_current_shader_type())) {
 					continue;
 				}
 				Dictionary dict = get_custom_node_data(ref);
-				dict["type"] = E;
+				dict["type"] = class_name;
 				dict["script"] = Ref<Script>();
 
 				String key;
@@ -5999,7 +6003,7 @@ void VisualShaderEditor::_varying_validate() {
 		error += TTR("Invalid name for varying.");
 		has_error = true;
 	} else if (visual_shader->has_varying(varname)) {
-		error += TTR("Varying with that name is already exist.");
+		error += TTR("Varying with that name already exists.");
 		has_error = true;
 	}
 
@@ -6607,7 +6611,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	toolbar_panel->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE, PRESET_MODE_MINSIZE, 10);
 	toolbar_panel->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 
-	toolbar = memnew(HFlowContainer);
+	toolbar_hflow = memnew(HFlowContainer);
 	{
 		LocalVector<Node *> nodes;
 		for (int i = 0; i < graph->get_menu_hbox()->get_child_count(); i++) {
@@ -6617,16 +6621,16 @@ VisualShaderEditor::VisualShaderEditor() {
 
 		for (Node *node : nodes) {
 			graph->get_menu_hbox()->remove_child(node);
-			toolbar->add_child(node);
+			toolbar_hflow->add_child(node);
 		}
 
 		graph->get_menu_hbox()->hide();
-		toolbar_panel->add_child(toolbar);
+		toolbar_panel->add_child(toolbar_hflow);
 	}
 
 	VSeparator *vs = memnew(VSeparator);
-	toolbar->add_child(vs);
-	toolbar->move_child(vs, 0);
+	toolbar_hflow->add_child(vs);
+	toolbar_hflow->move_child(vs, 0);
 
 	custom_mode_box = memnew(CheckBox);
 	custom_mode_box->set_text(TTR("Custom"));
@@ -6660,31 +6664,33 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	edit_type = edit_type_standard;
 
-	toolbar->add_child(custom_mode_box);
-	toolbar->move_child(custom_mode_box, 0);
-	toolbar->add_child(edit_type_standard);
-	toolbar->move_child(edit_type_standard, 0);
-	toolbar->add_child(edit_type_particles);
-	toolbar->move_child(edit_type_particles, 0);
-	toolbar->add_child(edit_type_sky);
-	toolbar->move_child(edit_type_sky, 0);
-	toolbar->add_child(edit_type_fog);
-	toolbar->move_child(edit_type_fog, 0);
+	toolbar_hflow->add_child(custom_mode_box);
+	toolbar_hflow->move_child(custom_mode_box, 0);
+	toolbar_hflow->add_child(edit_type_standard);
+	toolbar_hflow->move_child(edit_type_standard, 0);
+	toolbar_hflow->add_child(edit_type_particles);
+	toolbar_hflow->move_child(edit_type_particles, 0);
+	toolbar_hflow->add_child(edit_type_sky);
+	toolbar_hflow->move_child(edit_type_sky, 0);
+	toolbar_hflow->add_child(edit_type_fog);
+	toolbar_hflow->move_child(edit_type_fog, 0);
 
 	add_node = memnew(Button);
-	add_node->set_flat(true);
+	add_node->set_theme_type_variation(SceneStringName(FlatButton));
 	add_node->set_text(TTR("Add Node..."));
-	toolbar->add_child(add_node);
-	toolbar->move_child(add_node, 0);
+	toolbar_hflow->add_child(add_node);
+	toolbar_hflow->move_child(add_node, 0);
 	add_node->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_show_members_dialog).bind(false, VisualShaderNode::PORT_TYPE_MAX, VisualShaderNode::PORT_TYPE_MAX));
 
 	graph->connect("graph_elements_linked_to_frame_request", callable_mp(this, &VisualShaderEditor::_nodes_linked_to_frame_request));
 	graph->connect("frame_rect_changed", callable_mp(this, &VisualShaderEditor::_frame_rect_changed));
 
 	varying_button = memnew(MenuButton);
+	varying_button->set_flat(false);
+	varying_button->set_theme_type_variation("FlatMenuButton");
 	varying_button->set_text(TTR("Manage Varyings"));
 	varying_button->set_switch_on_hover(true);
-	toolbar->add_child(varying_button);
+	toolbar_hflow->add_child(varying_button);
 
 	PopupMenu *varying_menu = varying_button->get_popup();
 	varying_menu->add_item(TTR("Add Varying"), int(VaryingMenuOptions::ADD));
@@ -6695,7 +6701,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	code_preview_button->set_theme_type_variation(SceneStringName(FlatButton));
 	code_preview_button->set_toggle_mode(true);
 	code_preview_button->set_tooltip_text(TTR("Show generated shader code."));
-	toolbar->add_child(code_preview_button);
+	toolbar_hflow->add_child(code_preview_button);
 	code_preview_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_show_preview_text));
 
 	shader_preview_button = memnew(Button);
@@ -6703,34 +6709,34 @@ VisualShaderEditor::VisualShaderEditor() {
 	shader_preview_button->set_toggle_mode(true);
 	shader_preview_button->set_tooltip_text(TTR("Toggle shader preview."));
 	shader_preview_button->set_pressed(true);
-	toolbar->add_child(shader_preview_button);
+	toolbar_hflow->add_child(shader_preview_button);
 	shader_preview_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_show_shader_preview));
 
 	Control *spacer = memnew(Control);
 	spacer->set_h_size_flags(Control::SIZE_EXPAND);
-	toolbar->add_child(spacer);
+	toolbar_hflow->add_child(spacer);
 
 	site_search = memnew(Button);
-	site_search->set_flat(true);
+	site_search->set_theme_type_variation(SceneStringName(FlatButton));
 	site_search->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_help_open));
 	site_search->set_text(TTR("Online Docs"));
 	site_search->set_tooltip_text(TTR("Open Godot online documentation."));
-	toolbar->add_child(site_search);
-	toolbar->add_child(memnew(VSeparator));
+	toolbar_hflow->add_child(site_search);
+	toolbar_hflow->add_child(memnew(VSeparator));
 
 	VSeparator *separator = memnew(VSeparator);
-	toolbar->add_child(separator);
-	toolbar->move_child(separator, 0);
+	toolbar_hflow->add_child(separator);
+	toolbar_hflow->move_child(separator, 0);
 
 	separator = memnew(VSeparator);
-	toolbar->add_child(separator);
-	toolbar->move_child(separator, 0);
+	toolbar_hflow->add_child(separator);
+	toolbar_hflow->move_child(separator, 0);
 
 	toggle_files_button = memnew(Button);
-	toggle_files_button->set_flat(true);
+	toggle_files_button->set_theme_type_variation(SceneStringName(FlatButton));
 	toggle_files_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_toggle_files_pressed));
-	toolbar->add_child(toggle_files_button);
-	toolbar->move_child(toggle_files_button, 0);
+	toolbar_hflow->add_child(toggle_files_button);
+	toolbar_hflow->move_child(toggle_files_button, 0);
 
 	///////////////////////////////////////
 	// CODE PREVIEW
@@ -7759,6 +7765,10 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_child(panning_debounce_timer);
 }
 
+VisualShaderEditor::~VisualShaderEditor() {
+	save_editor_layout();
+}
+
 class VisualShaderNodePluginInputEditor : public OptionButton {
 	GDCLASS(VisualShaderNodePluginInputEditor, OptionButton);
 
@@ -8437,6 +8447,20 @@ bool VisualShaderConversionPlugin::handles(const Ref<Resource> &p_resource) cons
 Ref<Resource> VisualShaderConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<VisualShader> vshader = p_resource;
 	ERR_FAIL_COND_V(vshader.is_null(), Ref<Resource>());
+	int embed = vshader->has_node_embeds();
+
+	EditorToaster *toast = EditorToaster::get_singleton();
+	if (toast == nullptr) {
+		ERR_FAIL_COND_V_MSG(embed == 2, Ref<Resource>(), "Cannot convert VisualShader to GDShader because VisualShader has embedded subresources.");
+		if (embed == 1) {
+			WARN_PRINT("Visual Shader conversion cannot convert external dependencies. Resource references from Nodes will have to be rebound as ShaderParameters on a Material.");
+		}
+	} else if (embed == 2) {
+		toast->popup_str(TTR("Cannot convert VisualShader to GDShader because VisualShader has embedded subresources."), EditorToaster::SEVERITY_ERROR);
+		return Ref<Resource>();
+	} else if (embed == 1) {
+		toast->popup_str(TTR("Visual Shader conversion cannot convert external dependencies. Resource references from Nodes will have to be rebound as ShaderParameters on a Material."), EditorToaster::SEVERITY_WARNING);
+	}
 
 	Ref<Shader> shader;
 	shader.instantiate();

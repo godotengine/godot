@@ -47,6 +47,12 @@ DDSFormat _dxgi_to_dds_format(uint32_t p_dxgi_format) {
 		case DXGI_R16G16B16A16_FLOAT: {
 			return DDS_RGBA16F;
 		}
+		case DXGI_R16G16B16A16_UNORM: {
+			return DDS_RGBA16;
+		}
+		case DXGI_R16G16B16A16_UINT: {
+			return DDS_RGBA16I;
+		}
 		case DXGI_R32G32_FLOAT: {
 			return DDS_RG32F;
 		}
@@ -60,6 +66,12 @@ DDSFormat _dxgi_to_dds_format(uint32_t p_dxgi_format) {
 		case DXGI_R16G16_FLOAT: {
 			return DDS_RG16F;
 		}
+		case DXGI_R16G16_UNORM: {
+			return DDS_RG16;
+		}
+		case DXGI_R16G16_UINT: {
+			return DDS_RG16I;
+		}
 		case DXGI_R32_FLOAT: {
 			return DDS_R32F;
 		}
@@ -69,6 +81,12 @@ DDSFormat _dxgi_to_dds_format(uint32_t p_dxgi_format) {
 		}
 		case DXGI_R16_FLOAT: {
 			return DDS_R16F;
+		}
+		case DXGI_R16_UNORM: {
+			return DDS_R16;
+		}
+		case DXGI_R16_UINT: {
+			return DDS_R16I;
 		}
 		case DXGI_R8G8_UNORM: {
 			return DDS_LUMINANCE_ALPHA;
@@ -172,10 +190,6 @@ static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format
 
 		// Calculate the space these formats will take up after decoding.
 		switch (p_dds_format) {
-			case DDS_BGR565:
-				size = size * 3 / 2;
-				break;
-
 			case DDS_BGR5A1:
 			case DDS_B2GR3A8:
 			case DDS_LUMINANCE_ALPHA_4:
@@ -212,24 +226,6 @@ static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format
 					wb[dst_ofs + 1] = g << 3;
 					wb[dst_ofs + 2] = b << 3;
 					wb[dst_ofs + 3] = a ? 255 : 0;
-				}
-
-			} break;
-			case DDS_BGR565: {
-				// To RGB8.
-				int colcount = size / 3;
-
-				for (int i = colcount - 1; i >= 0; i--) {
-					int src_ofs = i * 2;
-					int dst_ofs = i * 3;
-
-					uint8_t b = wb[src_ofs] & 0x1F;
-					uint8_t g = (wb[src_ofs] >> 5) | ((wb[src_ofs + 1] & 0x7) << 3);
-					uint8_t r = wb[src_ofs + 1] >> 3;
-
-					wb[dst_ofs + 0] = r << 3;
-					wb[dst_ofs + 1] = g << 2;
-					wb[dst_ofs + 2] = b << 3;
 				}
 
 			} break;
@@ -572,6 +568,9 @@ static Vector<Ref<Image>> _dds_load_images_from_buffer(Ref<FileAccess> p_f, DDSF
 			case DDFCC_A2XY: {
 				r_dds_format = DDS_ATI2;
 			} break;
+			case DDFCC_RGBA16: {
+				r_dds_format = DDS_RGBA16;
+			} break;
 			case DDFCC_R16F: {
 				r_dds_format = DDS_R16F;
 			} break;
@@ -652,6 +651,10 @@ static Vector<Ref<Image>> _dds_load_images_from_buffer(Ref<FileAccess> p_f, DDSF
 			}
 		}
 
+		if (format_rgb_bits == 32 && format_red_mask == 0xffff && format_green_mask == 0xffff0000) {
+			r_dds_format = DDS_RG16;
+		}
+
 	} else {
 		// Other formats.
 		if (format_flags & DDPF_ALPHAONLY && format_rgb_bits == 8 && format_alpha_mask == 0xff) {
@@ -675,6 +678,8 @@ static Vector<Ref<Image>> _dds_load_images_from_buffer(Ref<FileAccess> p_f, DDSF
 			// Without alpha.
 			if (format_rgb_bits == 8 && format_red_mask == 0xff) {
 				r_dds_format = DDS_LUMINANCE;
+			} else if (format_rgb_bits == 16 && format_red_mask == 0xffff) {
+				r_dds_format = DDS_R16;
 			}
 		}
 	}

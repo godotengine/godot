@@ -288,8 +288,6 @@ GameViewDebugger::GameViewDebugger() {
 	ED_SHORTCUT_OVERRIDE("editor/suspend_resume_embedded_project", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);
 
 	ED_SHORTCUT("editor/next_frame_embedded_project", TTRC("Next Frame"), Key::F10);
-
-	ED_SHORTCUT("spatial_editor/tool_select", TTRC("Select Mode"), Key::Q);
 }
 
 ///////
@@ -778,7 +776,7 @@ void GameView::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			suspend_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
+			suspend_button->set_button_icon(get_editor_theme_icon(SNAME("Suspend")));
 			next_frame_button->set_button_icon(get_editor_theme_icon(SNAME("NextFrame")));
 
 			node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_button_icon(get_editor_theme_icon(SNAME("InputEventJoypadMotion")));
@@ -1066,6 +1064,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	suspend_button->connect(SceneStringName(toggled), callable_mp(this, &GameView::_suspend_button_toggled));
 	suspend_button->set_accessibility_name(TTRC("Suspend"));
 	suspend_button->set_shortcut(ED_GET_SHORTCUT("editor/suspend_resume_embedded_project"));
+	suspend_button->set_tooltip_text(TTRC("Force pause at SceneTree level. Stops all processing, but you can still interact with the project."));
 
 	next_frame_button = memnew(Button);
 	main_menu_hbox->add_child(next_frame_button);

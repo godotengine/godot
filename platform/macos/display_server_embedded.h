@@ -140,13 +140,9 @@ public:
 	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
 	virtual bool mouse_is_mode_override_enabled() const override;
 
+	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
-
-	// MARK: - Joystick
-
-	void joy_add(int p_idx, const String &p_name);
-	void joy_del(int p_idx);
 
 	// MARK: - Window
 

@@ -2261,6 +2261,14 @@
 				Makes the window specified by [param window_id] request attention, which is materialized by the window title and taskbar entry blinking until the window is focused. This usually has no visible effect if the window is currently focused. The exact behavior varies depending on the operating system.
 			</description>
 		</method>
+		<method name="window_set_color">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Sets the background color of the root window.
+				[b]Note:[/b] This method is implemented only on Android.
+			</description>
+		</method>
 		<method name="window_set_current_screen">
 			<return type="void" />
 			<param index="0" name="screen" type="int" />
@@ -2592,10 +2600,10 @@
 			The display server supports initiating window drag and resize operations on demand. See [method window_start_drag] and [method window_start_resize].
 		</constant>
 		<constant name="FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE" value="28" enum="Feature">
-			Display server supports [constant WINDOW_FLAG_EXCLUDE_FROM_CAPTURE] window flag.
+			Display server supports [constant WINDOW_FLAG_EXCLUDE_FROM_CAPTURE] window flag. [b]Windows, macOS[/b]
 		</constant>
 		<constant name="FEATURE_WINDOW_EMBEDDING" value="29" enum="Feature">
-			Display server supports embedding a window from another process. [b]Windows, Linux (X11)[/b]
+			Display server supports embedding a window from another process. [b]Windows, Linux (X11), macOS[/b]
 		</constant>
 		<constant name="FEATURE_NATIVE_DIALOG_FILE_MIME" value="30" enum="Feature">
 			Native file selection dialog supports MIME types as filters.
@@ -2833,22 +2841,22 @@
 			Scroll backward action, callback argument is not set.
 		</constant>
 		<constant name="ACTION_SCROLL_DOWN" value="12" enum="AccessibilityAction">
-			Scroll down action, callback argument is not set.
+			Scroll down action, callback argument is set to [enum AccessibilityScrollUnit].
 		</constant>
 		<constant name="ACTION_SCROLL_FORWARD" value="13" enum="AccessibilityAction">
 			Scroll forward action, callback argument is not set.
 		</constant>
 		<constant name="ACTION_SCROLL_LEFT" value="14" enum="AccessibilityAction">
-			Scroll left action, callback argument is not set.
+			Scroll left action, callback argument is set to [enum AccessibilityScrollUnit].
 		</constant>
 		<constant name="ACTION_SCROLL_RIGHT" value="15" enum="AccessibilityAction">
-			Scroll right action, callback argument is not set.
+			Scroll right action, callback argument is set to [enum AccessibilityScrollUnit].
 		</constant>
 		<constant name="ACTION_SCROLL_UP" value="16" enum="AccessibilityAction">
-			Scroll up action, callback argument is not set.
+			Scroll up action, callback argument is set to [enum AccessibilityScrollUnit].
 		</constant>
 		<constant name="ACTION_SCROLL_INTO_VIEW" value="17" enum="AccessibilityAction">
-			Scroll into view action, callback argument is not set.
+			Scroll into view action, callback argument is set to [enum AccessibilityScrollHint].
 		</constant>
 		<constant name="ACTION_SCROLL_TO_POINT" value="18" enum="AccessibilityAction">
 			Scroll to point action, callback argument is set to [Vector2] with the relative point coordinates.
@@ -2873,6 +2881,30 @@
 		</constant>
 		<constant name="LIVE_ASSERTIVE" value="2" enum="AccessibilityLiveMode">
 			Indicates that updates to the live region have the highest priority and should be presented immediately.
+		</constant>
+		<constant name="SCROLL_UNIT_ITEM" value="0" enum="AccessibilityScrollUnit">
+			The amount by which to scroll. A single item of a list, line of text.
+		</constant>
+		<constant name="SCROLL_UNIT_PAGE" value="1" enum="AccessibilityScrollUnit">
+			The amount by which to scroll. A single page.
+		</constant>
+		<constant name="SCROLL_HINT_TOP_LEFT" value="0" enum="AccessibilityScrollHint">
+			A preferred position for the node scrolled into view. Top-left edge of the scroll container.
+		</constant>
+		<constant name="SCROLL_HINT_BOTTOM_RIGHT" value="1" enum="AccessibilityScrollHint">
+			A preferred position for the node scrolled into view. Bottom-right edge of the scroll container.
+		</constant>
+		<constant name="SCROLL_HINT_TOP_EDGE" value="2" enum="AccessibilityScrollHint">
+			A preferred position for the node scrolled into view. Top edge of the scroll container.
+		</constant>
+		<constant name="SCROLL_HINT_BOTTOM_EDGE" value="3" enum="AccessibilityScrollHint">
+			A preferred position for the node scrolled into view. Bottom edge of the scroll container.
+		</constant>
+		<constant name="SCROLL_HINT_LEFT_EDGE" value="4" enum="AccessibilityScrollHint">
+			A preferred position for the node scrolled into view. Left edge of the scroll container.
+		</constant>
+		<constant name="SCROLL_HINT_RIGHT_EDGE" value="5" enum="AccessibilityScrollHint">
+			A preferred position for the node scrolled into view. Right edge of the scroll container.
 		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
@@ -3099,7 +3131,7 @@
 		</constant>
 		<constant name="WINDOW_FLAG_EXCLUDE_FROM_CAPTURE" value="9" enum="WindowFlags">
 			Window is excluded from screenshots taken by [method screen_get_image], [method screen_get_image_rect], and [method screen_get_pixel].
-			[b]Note:[/b] This flag is implemented on macOS and Windows.
+			[b]Note:[/b] This flag is implemented on macOS and Windows (10, 20H1).
 			[b]Note:[/b] Setting this flag will prevent standard screenshot methods from capturing a window image, but does [b]NOT[/b] guarantee that other apps won't be able to capture an image. It should not be used as a DRM or security measure.
 		</constant>
 		<constant name="WINDOW_FLAG_POPUP_WM_HINT" value="10" enum="WindowFlags">

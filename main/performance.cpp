@@ -141,6 +141,16 @@ int Performance::_get_node_count() const {
 	return sml->get_node_count();
 }
 
+int Performance::_get_orphan_node_count() const {
+#ifdef DEBUG_ENABLED
+	const int total_node_count = Node::total_node_count.get();
+	const int orphan_node_count = total_node_count - _get_node_count();
+	return orphan_node_count;
+#else
+	return 0;
+#endif
+}
+
 String Performance::get_monitor_name(Monitor p_monitor) const {
 	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, String());
 	static const char *names[MONITOR_MAX] = {
@@ -240,7 +250,7 @@ double Performance::get_monitor(Monitor p_monitor) const {
 		case OBJECT_NODE_COUNT:
 			return _get_node_count();
 		case OBJECT_ORPHAN_NODE_COUNT:
-			return Node::orphan_node_count;
+			return _get_orphan_node_count();
 		case RENDER_TOTAL_OBJECTS_IN_FRAME:
 			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME);
 		case RENDER_TOTAL_PRIMITIVES_IN_FRAME:
@@ -529,7 +539,7 @@ void Performance::add_custom_monitor(const StringName &p_id, const Callable &p_c
 }
 
 void Performance::remove_custom_monitor(const StringName &p_id) {
-	ERR_FAIL_COND_MSG(!has_custom_monitor(p_id), "Custom monitor with id '" + String(p_id) + "' doesn't exists.");
+	ERR_FAIL_COND_MSG(!has_custom_monitor(p_id), "Custom monitor with id '" + String(p_id) + "' doesn't exist.");
 	_monitor_map.erase(p_id);
 	_monitor_modification_time = OS::get_singleton()->get_ticks_usec();
 }
@@ -539,7 +549,7 @@ bool Performance::has_custom_monitor(const StringName &p_id) {
 }
 
 Variant Performance::get_custom_monitor(const StringName &p_id) {
-	ERR_FAIL_COND_V_MSG(!has_custom_monitor(p_id), Variant(), "Custom monitor with id '" + String(p_id) + "' doesn't exists.");
+	ERR_FAIL_COND_V_MSG(!has_custom_monitor(p_id), Variant(), "Custom monitor with id '" + String(p_id) + "' doesn't exist.");
 	bool error;
 	String error_message;
 	Variant return_value = _monitor_map[p_id].call(error, error_message);

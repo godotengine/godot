@@ -49,10 +49,11 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
 
 	GDVIRTUAL0RC(AABB, _get_aabb)
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::VISUAL_INSTANCE_3D;
+
 	enum GetFacesFlags {
 		FACES_SOLID = 1, // solid geometry
 		FACES_ENCLOSING = 2,
@@ -86,6 +87,8 @@ class GeometryInstance3D : public VisualInstance3D {
 	GDCLASS(GeometryInstance3D, VisualInstance3D);
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::GEOMETRY_INSTANCE_3D;
+
 	enum ShadowCastingSetting {
 		SHADOW_CASTING_SETTING_OFF = RS::SHADOW_CASTING_SETTING_OFF,
 		SHADOW_CASTING_SETTING_ON = RS::SHADOW_CASTING_SETTING_ON,

@@ -587,6 +587,12 @@ void GraphEdit::_graph_element_deselected(Node *p_node) {
 	emit_signal(SNAME("node_deselected"), graph_element);
 }
 
+void GraphEdit::_graph_element_visibility_changed(GraphElement *p_graph_element) {
+	if (p_graph_element->is_selected() && !p_graph_element->is_visible()) {
+		p_graph_element->set_selected(false);
+	}
+}
+
 void GraphEdit::_graph_element_resize_request(const Vector2 &p_new_minsize, Node *p_node) {
 	GraphElement *graph_element = Object::cast_to<GraphElement>(p_node);
 	ERR_FAIL_NULL(graph_element);
@@ -700,6 +706,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		graph_element->connect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_element_moved).bind(graph_element));
 		graph_element->connect("node_selected", callable_mp(this, &GraphEdit::_graph_element_selected).bind(graph_element));
 		graph_element->connect("node_deselected", callable_mp(this, &GraphEdit::_graph_element_deselected).bind(graph_element));
+		graph_element->connect(SceneStringName(visibility_changed), callable_mp(this, &GraphEdit::_graph_element_visibility_changed).bind(graph_element));
 
 		GraphNode *graph_node = Object::cast_to<GraphNode>(graph_element);
 		if (graph_node) {
@@ -756,6 +763,7 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 		graph_element->disconnect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_element_moved));
 		graph_element->disconnect("node_selected", callable_mp(this, &GraphEdit::_graph_element_selected));
 		graph_element->disconnect("node_deselected", callable_mp(this, &GraphEdit::_graph_element_deselected));
+		graph_element->disconnect(SceneStringName(visibility_changed), callable_mp(this, &GraphEdit::_graph_element_visibility_changed));
 
 		GraphNode *graph_node = Object::cast_to<GraphNode>(graph_element);
 		if (graph_node) {
@@ -853,7 +861,7 @@ void GraphEdit::_notification(int p_what) {
 			// Draw background fill.
 			draw_style_box(theme_cache.panel, Rect2(Point2(), get_size()));
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				draw_style_box(theme_cache.panel_focus, Rect2(Point2(), get_size()));
 			}
 
@@ -1607,7 +1615,7 @@ void GraphEdit::_draw_minimap_connection_line(const Vector2 &p_from_graph_positi
 		colors.push_back(p_from_color.lerp(p_to_color, normalized_curve_position));
 	}
 
-	minimap->draw_polyline_colors(points, colors, 0.5, lines_antialiased);
+	minimap->draw_polyline_colors(points, Vector<Color>(colors), 0.5, lines_antialiased);
 }
 
 void GraphEdit::_update_connections() {
@@ -2041,6 +2049,10 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				continue;
 			}
 
+			if (!graph_element->is_visible()) {
+				continue;
+			}
+
 			// Only select frames when the box selection is fully enclosing them.
 			bool is_frame = Object::cast_to<GraphFrame>(graph_element);
 			Rect2 r = graph_element->get_rect();
@@ -2171,6 +2183,10 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				GraphElement *selected_element = Object::cast_to<GraphElement>(get_child(i));
 
 				if (!selected_element) {
+					continue;
+				}
+
+				if (!selected_element->is_visible()) {
 					continue;
 				}
 
@@ -3080,7 +3096,7 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom_step"), "set_zoom_step", "get_zoom_step");
 
 	ADD_GROUP("Minimap", "minimap_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_enabled"), "set_minimap_enabled", "is_minimap_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_minimap_enabled", "is_minimap_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "minimap_size", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_size", "get_minimap_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "minimap_opacity"), "set_minimap_opacity", "get_minimap_opacity");
 

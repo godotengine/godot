@@ -106,7 +106,7 @@ void BonePropertiesEditor::create_editors() {
 	meta_section->setup("bone_meta", TTR("Bone Metadata"), this, Color(.0f, .0f, .0f), true);
 	section->get_vbox()->add_child(meta_section);
 
-	add_metadata_button = EditorInspector::create_inspector_action_button(TTR("Add Bone Metadata"));
+	EditorInspectorActionButton *add_metadata_button = memnew(EditorInspectorActionButton(TTRC("Add Bone Metadata"), SNAME("Add")));
 	add_metadata_button->connect(SceneStringName(pressed), callable_mp(this, &BonePropertiesEditor::_show_add_meta_dialog));
 	section->get_vbox()->add_child(add_metadata_button);
 
@@ -121,7 +121,6 @@ void BonePropertiesEditor::_notification(int p_what) {
 			const Color section_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 			section->set_bg_color(section_color);
 			rest_section->set_bg_color(section_color);
-			add_metadata_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
 	}
 }
@@ -1707,12 +1706,12 @@ Ref<ArrayMesh> Skeleton3DGizmoPlugin::get_bones_mesh(Skeleton3D *p_skeleton, int
 				case 0: { // Wire shape.
 					surface_tool->set_color(current_bone_color);
 					bones[0] = current_bone_idx;
-					surface_tool->set_bones(bones);
-					surface_tool->set_weights(weights);
+					surface_tool->set_bones(Vector<int>(bones));
+					surface_tool->set_weights(Vector<float>(weights));
 					surface_tool->add_vertex(v0);
 					bones[0] = child_bone_idx;
-					surface_tool->set_bones(bones);
-					surface_tool->set_weights(weights);
+					surface_tool->set_bones(Vector<int>(bones));
+					surface_tool->set_weights(Vector<float>(weights));
 					surface_tool->add_vertex(v1);
 				} break;
 
@@ -1738,19 +1737,19 @@ Ref<ArrayMesh> Skeleton3DGizmoPlugin::get_bones_mesh(Skeleton3D *p_skeleton, int
 							point += axis * dist * 0.1;
 
 							bones[0] = current_bone_idx;
-							surface_tool->set_bones(bones);
-							surface_tool->set_weights(weights);
+							surface_tool->set_bones(Vector<int>(bones));
+							surface_tool->set_weights(Vector<float>(weights));
 							surface_tool->add_vertex(v0);
-							surface_tool->set_bones(bones);
-							surface_tool->set_weights(weights);
+							surface_tool->set_bones(Vector<int>(bones));
+							surface_tool->set_weights(Vector<float>(weights));
 							surface_tool->add_vertex(point);
 
-							surface_tool->set_bones(bones);
-							surface_tool->set_weights(weights);
+							surface_tool->set_bones(Vector<int>(bones));
+							surface_tool->set_weights(Vector<float>(weights));
 							surface_tool->add_vertex(point);
 							bones[0] = child_bone_idx;
-							surface_tool->set_bones(bones);
-							surface_tool->set_weights(weights);
+							surface_tool->set_bones(Vector<int>(bones));
+							surface_tool->set_weights(Vector<float>(weights));
 							surface_tool->add_vertex(v1);
 							points[point_idx++] = point;
 						}
@@ -1759,11 +1758,11 @@ Ref<ArrayMesh> Skeleton3DGizmoPlugin::get_bones_mesh(Skeleton3D *p_skeleton, int
 					SWAP(points[1], points[2]);
 					bones[0] = current_bone_idx;
 					for (int j = 0; j < 6; j++) {
-						surface_tool->set_bones(bones);
-						surface_tool->set_weights(weights);
+						surface_tool->set_bones(Vector<int>(bones));
+						surface_tool->set_weights(Vector<float>(weights));
 						surface_tool->add_vertex(points[j]);
-						surface_tool->set_bones(bones);
-						surface_tool->set_weights(weights);
+						surface_tool->set_bones(Vector<int>(bones));
+						surface_tool->set_weights(Vector<float>(weights));
 						surface_tool->add_vertex(points[(j + 1) % 6]);
 					}
 				} break;
@@ -1773,11 +1772,11 @@ Ref<ArrayMesh> Skeleton3DGizmoPlugin::get_bones_mesh(Skeleton3D *p_skeleton, int
 			for (int j = 0; j < 3; j++) {
 				bones[0] = current_bone_idx;
 				surface_tool->set_color(axis_colors[j]);
-				surface_tool->set_bones(bones);
-				surface_tool->set_weights(weights);
+				surface_tool->set_bones(Vector<int>(bones));
+				surface_tool->set_weights(Vector<float>(weights));
 				surface_tool->add_vertex(v0);
-				surface_tool->set_bones(bones);
-				surface_tool->set_weights(weights);
+				surface_tool->set_bones(Vector<int>(bones));
+				surface_tool->set_weights(Vector<float>(weights));
 				surface_tool->add_vertex(v0 + (p_skeleton->get_bone_global_rest(current_bone_idx).basis.inverse())[j].normalized() * dist * bone_axis_length);
 
 				if (j == closest) {
@@ -1790,11 +1789,11 @@ Ref<ArrayMesh> Skeleton3DGizmoPlugin::get_bones_mesh(Skeleton3D *p_skeleton, int
 				for (int j = 0; j < 3; j++) {
 					bones[0] = child_bone_idx;
 					surface_tool->set_color(axis_colors[j]);
-					surface_tool->set_bones(bones);
-					surface_tool->set_weights(weights);
+					surface_tool->set_bones(Vector<int>(bones));
+					surface_tool->set_weights(Vector<float>(weights));
 					surface_tool->add_vertex(v1);
-					surface_tool->set_bones(bones);
-					surface_tool->set_weights(weights);
+					surface_tool->set_bones(Vector<int>(bones));
+					surface_tool->set_weights(Vector<float>(weights));
 					surface_tool->add_vertex(v1 + (p_skeleton->get_bone_global_rest(child_bone_idx).basis.inverse())[j].normalized() * dist * bone_axis_length);
 
 					if (j == closest) {

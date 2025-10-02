@@ -56,6 +56,14 @@
 #include "drivers/accesskit/accessibility_driver_accesskit.h"
 #endif
 
+#ifdef DBUS_ENABLED
+#ifdef SOWRAP_ENABLED
+#include "dbus-so_wrap.h"
+#else
+#include <dbus/dbus.h>
+#endif
+#endif
+
 #define WAYLAND_MAX_FRAME_TIME_US (1'000'000)
 
 String DisplayServerWayland::_get_app_id_from_context(Context p_context) {
@@ -177,6 +185,7 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_CUSTOM_CURSOR_SHAPE:
 		case FEATURE_WINDOW_TRANSPARENCY:
+		case FEATURE_ICON:
 		case FEATURE_HIDPI:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
@@ -311,14 +320,19 @@ bool DisplayServerWayland::is_dark_mode() const {
 }
 
 Color DisplayServerWayland::get_accent_color() const {
+	if (!portal_desktop) {
+		return Color();
+	}
 	return portal_desktop->get_appearance_accent_color();
 }
 
 void DisplayServerWayland::set_system_theme_change_callback(const Callable &p_callable) {
+	ERR_FAIL_COND(!portal_desktop);
 	portal_desktop->set_system_theme_change_callback(p_callable);
 }
 
 Error DisplayServerWayland::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) {
+	ERR_FAIL_COND_V(!portal_desktop, ERR_UNAVAILABLE);
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	WindowID window_id = p_window_id;
@@ -333,6 +347,7 @@ Error DisplayServerWayland::file_dialog_show(const String &p_title, const String
 }
 
 Error DisplayServerWayland::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) {
+	ERR_FAIL_COND_V(!portal_desktop, ERR_UNAVAILABLE);
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	WindowID window_id = p_window_id;
@@ -664,6 +679,8 @@ void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
 	if (screen_is_kept_on() == p_enable) {
 		return;
 	}
+
+	wayland_thread.window_set_idle_inhibition(MAIN_WINDOW_ID, p_enable);
 
 #ifdef DBUS_ENABLED
 	if (screensaver) {
@@ -1321,6 +1338,9 @@ void DisplayServerWayland::window_set_ime_position(const Point2i &p_pos, Display
 
 int DisplayServerWayland::accessibility_should_increase_contrast() const {
 #ifdef DBUS_ENABLED
+	if (!portal_desktop) {
+		return -1;
+	}
 	return portal_desktop->get_high_contrast();
 #endif
 	return -1;
@@ -1328,7 +1348,7 @@ int DisplayServerWayland::accessibility_should_increase_contrast() const {
 
 int DisplayServerWayland::accessibility_screen_reader_active() const {
 #ifdef DBUS_ENABLED
-	if (atspi_monitor->is_supported()) {
+	if (atspi_monitor && atspi_monitor->is_supported()) {
 		return atspi_monitor->is_active();
 	}
 #endif
@@ -1544,6 +1564,10 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 
 bool DisplayServerWayland::color_picker(const Callable &p_callback) {
 #ifdef DBUS_ENABLED
+	if (!portal_desktop) {
+		return false;
+	}
+	MutexLock mutex_lock(wayland_thread.mutex);
 	WindowID window_id = MAIN_WINDOW_ID;
 	// TODO: Use window IDs for multiwindow support.
 	WaylandThread::WindowState *ws = wayland_thread.wl_surface_get_window_state(wayland_thread.window_get_wl_surface(window_id));
@@ -1810,6 +1834,11 @@ void DisplayServerWayland::swap_buffers() {
 #endif
 }
 
+void DisplayServerWayland::set_icon(const Ref<Image> &p_icon) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+	wayland_thread.set_icon(p_icon);
+}
+
 void DisplayServerWayland::set_context(Context p_context) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
@@ -1858,7 +1887,7 @@ DisplayServer *DisplayServerWayland::create_func(const String &p_rendering_drive
 }
 
 DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Context p_context, int64_t p_parent_window, Error &r_error) {
-#ifdef GLES3_ENABLED
+#if defined(GLES3_ENABLED) || defined(DBUS_ENABLED)
 #ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
@@ -1866,7 +1895,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	int dylibloader_verbose = 0;
 #endif // DEBUG_ENABLED
 #endif // SOWRAP_ENABLED
-#endif // GLES3_ENABLED
+#endif // defined(GLES3_ENABLED) || defined(DBUS_ENABLED)
 
 	r_error = ERR_UNAVAILABLE;
 	context = p_context;
@@ -2112,9 +2141,31 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 #endif // RD_ENABLED
 
 #ifdef DBUS_ENABLED
-	portal_desktop = memnew(FreeDesktopPortalDesktop);
-	atspi_monitor = memnew(FreeDesktopAtSPIMonitor);
-	screensaver = memnew(FreeDesktopScreenSaver);
+	bool dbus_ok = true;
+#ifdef SOWRAP_ENABLED
+	if (initialize_dbus(dylibloader_verbose) != 0) {
+		print_verbose("Failed to load DBus library!");
+		dbus_ok = false;
+	}
+#endif
+	if (dbus_ok) {
+		bool ver_ok = false;
+		int version_major = 0;
+		int version_minor = 0;
+		int version_rev = 0;
+		dbus_get_version(&version_major, &version_minor, &version_rev);
+		ver_ok = (version_major == 1 && version_minor >= 10) || (version_major > 1); // 1.10.0
+		print_verbose(vformat("DBus %d.%d.%d detected.", version_major, version_minor, version_rev));
+		if (!ver_ok) {
+			print_verbose("Unsupported DBus library version!");
+			dbus_ok = false;
+		}
+	}
+	if (dbus_ok) {
+		screensaver = memnew(FreeDesktopScreenSaver);
+		portal_desktop = memnew(FreeDesktopPortalDesktop);
+		atspi_monitor = memnew(FreeDesktopAtSPIMonitor);
+	}
 #endif // DBUS_ENABLED
 
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
@@ -2178,8 +2229,12 @@ DisplayServerWayland::~DisplayServerWayland() {
 #ifdef DBUS_ENABLED
 	if (portal_desktop) {
 		memdelete(portal_desktop);
-		memdelete(atspi_monitor);
+	}
+	if (screensaver) {
 		memdelete(screensaver);
+	}
+	if (atspi_monitor) {
+		memdelete(atspi_monitor);
 	}
 #endif
 }

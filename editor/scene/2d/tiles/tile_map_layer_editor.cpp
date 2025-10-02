@@ -441,8 +441,7 @@ void TileMapLayerEditorTilesPlugin::_update_scenes_collection_view() {
 		int item_index = 0;
 		if (scene.is_valid()) {
 			item_index = scene_tiles_list->add_item(vformat("%s (Path: %s, ID: %d)", scene->get_path().get_file().get_basename(), scene->get_path(), scene_id));
-			Variant udata = i;
-			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(scene, this, "_scene_thumbnail_done", udata);
+			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(scene, callable_mp(this, &TileMapLayerEditorTilesPlugin::_scene_thumbnail_done).bind(i));
 		} else {
 			item_index = scene_tiles_list->add_item(TTR("Tile with Invalid Scene"), tiles_bottom_panel->get_editor_theme_icon(SNAME("PackedScene")));
 		}
@@ -463,11 +462,9 @@ void TileMapLayerEditorTilesPlugin::_update_scenes_collection_view() {
 	scene_tiles_list->set_fixed_icon_size(Vector2(int_size, int_size));
 }
 
-void TileMapLayerEditorTilesPlugin::_scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_ud) {
-	int index = p_ud;
-
-	if (index >= 0 && index < scene_tiles_list->get_item_count()) {
-		scene_tiles_list->set_item_icon(index, p_preview);
+void TileMapLayerEditorTilesPlugin::_scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_index) {
+	if (p_index >= 0 && p_index < scene_tiles_list->get_item_count()) {
+		scene_tiles_list->set_item_icon(p_index, p_preview);
 	}
 }
 
@@ -817,7 +814,7 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 			// Do nothing.
 		} else {
 			Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
-			Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
+			Color selection_color = Color::from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 			tile_set->draw_cells_outline(p_overlay, tile_map_selection, selection_color, xform);
 		}
 	}
@@ -1117,8 +1114,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_rect(Vector2
 	// Get or create the pattern.
 	Ref<TileMapPattern> pattern = p_erase ? erase_pattern : selection_pattern;
 
-	HashMap<Vector2i, TileMapCell> err_output;
-	ERR_FAIL_COND_V(pattern->is_empty(), err_output);
+	ERR_FAIL_COND_V(pattern->is_empty(), (HashMap<Vector2i, TileMapCell>()));
 
 	// Compute the offset to align things to the bottom or right.
 	bool aligned_right = p_end_cell.x < p_start_cell.x;
@@ -1807,7 +1803,7 @@ void TileMapLayerEditorTilesPlugin::_tile_atlas_control_draw() {
 
 	// Draw the selection.
 	Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
-	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
+	Color selection_color = Color::from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 	for (const TileMapCell &E : tile_set_selection) {
 		int16_t untransformed_alternative_id = E.alternative_tile & TileSetAtlasSource::UNTRANSFORM_MASK;
 		if (E.source_id == source_id && untransformed_alternative_id == 0) {
@@ -2112,7 +2108,6 @@ void TileMapLayerEditorTilesPlugin::_set_source_sort(int p_sort) {
 }
 
 void TileMapLayerEditorTilesPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_scene_thumbnail_done"), &TileMapLayerEditorTilesPlugin::_scene_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("_set_tile_map_selection", "selection"), &TileMapLayerEditorTilesPlugin::_set_tile_map_selection);
 	ClassDB::bind_method(D_METHOD("_get_tile_map_selection"), &TileMapLayerEditorTilesPlugin::_get_tile_map_selection);
 }
@@ -3427,11 +3422,9 @@ void TileMapLayerEditorTerrainsPlugin::_update_tiles_list() {
 							icon = atlas_source->get_texture();
 							region = atlas_source->get_tile_texture_region(cell.get_atlas_coords());
 							if (tile_data->get_flip_h()) {
-								region.position.x += region.size.x;
 								region.size.x = -region.size.x;
 							}
 							if (tile_data->get_flip_v()) {
-								region.position.y += region.size.y;
 								region.size.y = -region.size.y;
 							}
 							transpose = tile_data->get_transpose();

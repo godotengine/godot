@@ -506,8 +506,6 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	}
 
 	if (mm.is_valid()) {
-		state_machine_draw->grab_focus();
-
 		String new_hovered_node_name;
 		HoveredNodeArea new_hovered_node_area = HOVER_NODE_NONE;
 		if (tool_select->is_pressed()) {
@@ -954,7 +952,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		travel_path = playback->get_travel_path();
 	}
 
-	if (state_machine_draw->has_focus()) {
+	if (state_machine_draw->has_focus(true)) {
 		state_machine_draw->draw_rect(Rect2(Point2(), state_machine_draw->get_size()), theme_cache.focus_color, false);
 	}
 	int sep = 3 * EDSCALE;
@@ -1395,11 +1393,11 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 			if (error_time > 0) {
 				error = error_text;
 				error_time -= get_process_delta_time();
-			} else if (!tree->is_active()) {
-				error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
-			} else if (tree->is_state_invalid()) {
-				error = tree->get_invalid_state_reason();
-			} else if (playback.is_null()) {
+			} else {
+				error = tree->get_editor_error_message();
+			}
+
+			if (error.is_empty() && playback.is_null()) {
 				error = vformat(TTR("No playback resource set at path: %s."), AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 			}
 

@@ -41,6 +41,25 @@ const uint32_t VIEW_MASK_BUFFER_INDEX = 24;
 
 class RenderingShaderContainerFormatMetal;
 
+class MinOsVersion {
+	uint32_t version;
+
+public:
+	String to_compiler_os_version() const;
+	bool is_null() const { return version == UINT32_MAX; }
+	bool is_valid() const { return version != UINT32_MAX; }
+
+	MinOsVersion(const String &p_version);
+	explicit MinOsVersion(uint32_t p_version) :
+			version(p_version) {}
+	MinOsVersion() :
+			version(UINT32_MAX) {}
+
+	bool operator>(uint32_t p_other) {
+		return version > p_other;
+	}
+};
+
 /// @brief A minimal structure that defines a device profile for Metal.
 ///
 /// This structure is used by the `RenderingShaderContainerMetal` class to
@@ -53,17 +72,20 @@ struct MetalDeviceProfile {
 		iOS = 1,
 	};
 
-	/// @brief The GPU family.
+	/*! @brief The GPU family.
+	 *
+	 * NOTE: These values match Apple's MTLGPUFamily
+	 */
 	enum class GPU : uint32_t {
-		Apple1,
-		Apple2,
-		Apple3,
-		Apple4,
-		Apple5,
-		Apple6,
-		Apple7,
-		Apple8,
-		Apple9,
+		Apple1 = 1001,
+		Apple2 = 1002,
+		Apple3 = 1003,
+		Apple4 = 1004,
+		Apple5 = 1005,
+		Apple6 = 1006,
+		Apple7 = 1007,
+		Apple8 = 1008,
+		Apple9 = 1009,
 	};
 
 	enum class ArgumentBuffersTier : uint32_t {
@@ -108,6 +130,13 @@ public:
 		/// The Metal language version specified when compiling SPIR-V to MSL.
 		/// Format is major * 10000 + minor * 100 + patch.
 		uint32_t msl_version = UINT32_MAX;
+		/*! @brief The minimum supported OS version for shaders baked to a `.metallib`.
+		 *
+		 * NOTE: This property is only valid when shaders are baked to a .metalllib
+		 *
+		 * Format is major * 10000 + minor * 100 + patch.
+		 */
+		MinOsVersion os_min_version;
 		uint32_t flags = NONE;
 
 		/// @brief Returns `true` if the shader is compiled with multi-view support.
@@ -211,8 +240,22 @@ public:
 	Vector<StageData> mtl_shaders; // compliment to shaders
 
 private:
+	struct ToolchainProperties {
+		MinOsVersion os_version_min_required;
+		uint32_t metal_version = UINT32_MAX;
+
+		_FORCE_INLINE_ bool is_null() const { return os_version_min_required.is_null() || metal_version == UINT32_MAX; }
+		_FORCE_INLINE_ bool is_valid() const { return !is_null(); }
+	};
+
+	ToolchainProperties compiler_props;
+
+	void _initialize_toolchain_properties();
+
+private:
 	const MetalDeviceProfile *device_profile = nullptr;
 	bool export_mode = false;
+	MinOsVersion min_os_version;
 
 	Vector<UniformData> mtl_reflection_binding_set_uniforms_data; // compliment to reflection_binding_set_uniforms_data
 	Vector<SpecializationData> mtl_reflection_specialization_data; // compliment to reflection_specialization_data
@@ -224,6 +267,7 @@ public:
 
 	void set_export_mode(bool p_export_mode) { export_mode = p_export_mode; }
 	void set_device_profile(const MetalDeviceProfile *p_device_profile) { device_profile = p_device_profile; }
+	void set_min_os_version(const MinOsVersion p_min_os_version) { min_os_version = p_min_os_version; }
 
 	struct MetalShaderReflection {
 		Vector<Vector<UniformData>> uniform_sets;
@@ -248,11 +292,12 @@ protected:
 
 	virtual uint32_t _format() const override;
 	virtual uint32_t _format_version() const override;
-	virtual bool _set_code_from_spirv(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv) override;
+	virtual bool _set_code_from_spirv(Span<ReflectedShaderStage> p_spirv) override;
 };
 
 class RenderingShaderContainerFormatMetal : public RenderingShaderContainerFormat {
 	bool export_mode = false;
+	MinOsVersion min_os_version;
 
 	const MetalDeviceProfile *device_profile = nullptr;
 
@@ -260,6 +305,6 @@ public:
 	virtual Ref<RenderingShaderContainer> create_container() const override;
 	virtual ShaderLanguageVersion get_shader_language_version() const override;
 	virtual ShaderSpirvVersion get_shader_spirv_version() const override;
-	RenderingShaderContainerFormatMetal(const MetalDeviceProfile *p_device_profile, bool p_export = false);
+	RenderingShaderContainerFormatMetal(const MetalDeviceProfile *p_device_profile, bool p_export = false, const MinOsVersion p_min_os_version = MinOsVersion());
 	virtual ~RenderingShaderContainerFormatMetal() = default;
 };

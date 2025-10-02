@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/string/node_path.h"
+#include "core/templates/iterable.h"
 #include "core/variant/typed_array.h"
 #include "scene/main/scene_tree.h"
 #include "scene/scene_string_names.h"
@@ -46,8 +47,6 @@ SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
 
 class Node : public Object {
 	GDCLASS(Node, Object);
-
-	friend class SceneTreeFTI;
 
 protected:
 	// During group processing, these are thread-safe.
@@ -67,6 +66,8 @@ protected:
 	};
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::NODE;
+
 	// N.B. Any enum stored as a bitfield should be specified as UNSIGNED to work around
 	// some compilers trying to store it as signed, and requiring 1 more bit than necessary.
 	enum ProcessMode : unsigned int {
@@ -128,9 +129,34 @@ public:
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
 	};
 
-	static int orphan_node_count;
+#ifdef DEBUG_ENABLED
+	static SafeNumeric<uint64_t> total_node_count;
+#endif
 
 	void _update_process(bool p_enable, bool p_for_children);
+
+	struct ChildrenIterator {
+		_FORCE_INLINE_ Node *&operator*() const { return *_ptr; }
+		_FORCE_INLINE_ Node **operator->() const { return _ptr; }
+		_FORCE_INLINE_ ChildrenIterator &operator++() {
+			_ptr++;
+			return *this;
+		}
+		_FORCE_INLINE_ ChildrenIterator &operator--() {
+			_ptr--;
+			return *this;
+		}
+
+		_FORCE_INLINE_ bool operator==(const ChildrenIterator &b) const { return _ptr == b._ptr; }
+		_FORCE_INLINE_ bool operator!=(const ChildrenIterator &b) const { return _ptr != b._ptr; }
+
+		ChildrenIterator(Node **p_ptr) { _ptr = p_ptr; }
+		ChildrenIterator() {}
+		ChildrenIterator(const ChildrenIterator &p_it) { _ptr = p_it._ptr; }
+
+	private:
+		Node **_ptr = nullptr;
+	};
 
 private:
 	struct GroupData {
@@ -181,9 +207,6 @@ private:
 		StringName name;
 		SceneTree *tree = nullptr;
 
-#ifdef TOOLS_ENABLED
-		NodePath import_path; // Path used when imported, used by scene editors to keep tracking.
-#endif
 		String editor_description;
 
 		Viewport *viewport = nullptr;
@@ -261,8 +284,6 @@ private:
 		mutable NodePath *path_cache = nullptr;
 
 	} data;
-
-	Ref<MultiplayerAPI> multiplayer;
 
 	String _get_tree_string_pretty(const String &p_prefix, bool p_last);
 	String _get_tree_string(const Node *p_node);
@@ -484,6 +505,13 @@ public:
 	void add_sibling(Node *p_sibling, bool p_force_readable_name = false);
 	void remove_child(Node *p_child);
 
+	/// Optimal way to iterate the children of this node.
+	/// The caller is responsible to ensure:
+	/// - The thread has the rights to access the node (is_accessible_from_caller_thread() == true).
+	/// - No children are inserted, removed, or have their index changed during iteration.
+	template <bool p_include_internal = true>
+	Iterable<ChildrenIterator> iterate_children() const;
+
 	int get_child_count(bool p_include_internal = true) const;
 	Node *get_child(int p_index, bool p_include_internal = true) const;
 	TypedArray<Node> get_children(bool p_include_internal = true) const;
@@ -500,6 +528,7 @@ public:
 	Node *find_parent(const String &p_pattern) const;
 
 	Window *get_window() const;
+	Window *get_non_popup_window() const;
 	Window *get_last_exclusive_window() const;
 
 	_FORCE_INLINE_ SceneTree *get_tree() const {
@@ -737,9 +766,6 @@ public:
 	//hacks for speed
 	static void init_node_hrcr();
 
-	void set_import_path(const NodePath &p_import_path); //path used when imported, used by scene editors to keep tracking
-	NodePath get_import_path() const;
-
 	bool is_owned_by_parent() const;
 
 	void clear_internal_tree_resource_paths();
@@ -817,6 +843,10 @@ public:
 	}
 	void set_thread_safe(const StringName &p_property, const Variant &p_value);
 	void notify_thread_safe(int p_notification);
+
+	/* HELPER */
+
+	bool is_instance() const { return !data.scene_file_path.is_empty(); }
 
 	// These inherited functions need proper multithread locking when overridden in Node.
 #ifdef DEBUG_ENABLED

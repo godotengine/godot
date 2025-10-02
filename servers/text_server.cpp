@@ -1539,7 +1539,7 @@ int64_t TextServer::shaped_text_hit_test_position(const RID &p_shaped, double p_
 	// Cursor placement hit test.
 
 	// Place caret to the left of the leftmost grapheme, or to position 0 if string is empty.
-	if (p_coords <= 0) {
+	if (Math::floor(p_coords) <= 0) {
 		if (v_size > 0) {
 			if ((glyphs[0].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
 				return glyphs[0].end;
@@ -1552,7 +1552,7 @@ int64_t TextServer::shaped_text_hit_test_position(const RID &p_shaped, double p_
 	}
 
 	// Place caret to the right of the rightmost grapheme, or to position 0 if string is empty.
-	if (p_coords >= shaped_text_get_width(p_shaped)) {
+	if (Math::ceil(p_coords) >= shaped_text_get_width(p_shaped)) {
 		if (v_size > 0) {
 			if ((glyphs[v_size - 1].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
 				return glyphs[v_size - 1].start;
@@ -1622,7 +1622,8 @@ int64_t TextServer::shaped_text_hit_test_position(const RID &p_shaped, double p_
 		}
 		off += glyphs[i].advance * glyphs[i].repeat;
 	}
-	return 0;
+
+	return -1;
 }
 
 Vector2 TextServer::shaped_text_get_grapheme_bounds(const RID &p_shaped, int64_t p_pos) const {
@@ -2362,4 +2363,40 @@ TextServer::TextServer() {
 }
 
 TextServer::~TextServer() {
+}
+
+BitField<TextServer::TextOverrunFlag> TextServer::get_overrun_flags_from_behavior(TextServer::OverrunBehavior p_behavior) {
+	BitField<TextOverrunFlag> overrun_flags = OVERRUN_NO_TRIM;
+	switch (p_behavior) {
+		case OVERRUN_TRIM_WORD_ELLIPSIS_FORCE: {
+			overrun_flags.set_flag(OVERRUN_TRIM);
+			overrun_flags.set_flag(OVERRUN_TRIM_WORD_ONLY);
+			overrun_flags.set_flag(OVERRUN_ADD_ELLIPSIS);
+			overrun_flags.set_flag(OVERRUN_ENFORCE_ELLIPSIS);
+		} break;
+		case OVERRUN_TRIM_ELLIPSIS_FORCE: {
+			overrun_flags.set_flag(OVERRUN_TRIM);
+			overrun_flags.set_flag(OVERRUN_ADD_ELLIPSIS);
+			overrun_flags.set_flag(OVERRUN_ENFORCE_ELLIPSIS);
+		} break;
+		case OVERRUN_TRIM_WORD_ELLIPSIS:
+			overrun_flags.set_flag(OVERRUN_TRIM);
+			overrun_flags.set_flag(OVERRUN_TRIM_WORD_ONLY);
+			overrun_flags.set_flag(OVERRUN_ADD_ELLIPSIS);
+			break;
+		case OVERRUN_TRIM_ELLIPSIS:
+			overrun_flags.set_flag(OVERRUN_TRIM);
+			overrun_flags.set_flag(OVERRUN_ADD_ELLIPSIS);
+			break;
+		case OVERRUN_TRIM_WORD:
+			overrun_flags.set_flag(OVERRUN_TRIM);
+			overrun_flags.set_flag(OVERRUN_TRIM_WORD_ONLY);
+			break;
+		case OVERRUN_TRIM_CHAR:
+			overrun_flags.set_flag(OVERRUN_TRIM);
+			break;
+		case OVERRUN_NO_TRIMMING:
+			break;
+	}
+	return overrun_flags;
 }

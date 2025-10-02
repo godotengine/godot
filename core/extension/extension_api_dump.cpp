@@ -96,7 +96,7 @@ static String fix_doc_description(const String &p_bbcode) {
 	// Based on what EditorHelp does.
 
 	return p_bbcode.dedent()
-			.remove_chars("\t\r")
+			.remove_chars("\r")
 			.strip_edges();
 }
 
@@ -900,11 +900,9 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 		// classes
 		Array classes;
 
-		List<StringName> class_list;
+		LocalVector<StringName> class_list;
 
-		ClassDB::get_class_list(&class_list);
-
-		class_list.sort_custom<StringName::AlphCompare>();
+		ClassDB::get_class_list(class_list);
 
 		for (const StringName &class_name : class_list) {
 			if (!ClassDB::is_class_exposed(class_name)) {

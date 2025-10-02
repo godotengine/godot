@@ -97,7 +97,7 @@ DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, W
 #if defined(GLES3_ENABLED)
 			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
 			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
-				WARN_PRINT("Your device seem not to support MoltenVK or Metal, switching to OpenGL 3.");
+				WARN_PRINT("Your device does not seem to support MoltenVK or Metal, switching to OpenGL 3.");
 				rendering_driver = "opengl3";
 				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
 				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
@@ -320,6 +320,12 @@ bool DisplayServerEmbedded::mouse_is_mode_override_enabled() const {
 	return mouse_mode_override_enabled;
 }
 
+void DisplayServerEmbedded::warp_mouse(const Point2i &p_position) {
+	_THREAD_SAFE_METHOD_
+	Input::get_singleton()->set_mouse_position(p_position);
+	EngineDebugger::get_singleton()->send_message("game_view:warp_mouse", { p_position });
+}
+
 Point2i DisplayServerEmbedded::mouse_get_position() const {
 	_THREAD_SAFE_METHOD_
 
@@ -383,36 +389,8 @@ void DisplayServerEmbedded::window_set_drop_files_callback(const Callable &p_cal
 	// Not supported
 }
 
-void DisplayServerEmbedded::joy_add(int p_idx, const String &p_name) {
-	Joy *joy = joysticks.getptr(p_idx);
-	if (joy == nullptr) {
-		joysticks[p_idx] = Joy(p_name);
-		Input::get_singleton()->joy_connection_changed(p_idx, true, p_name);
-	}
-}
-
-void DisplayServerEmbedded::joy_del(int p_idx) {
-	if (joysticks.erase(p_idx)) {
-		Input::get_singleton()->joy_connection_changed(p_idx, false, String());
-	}
-}
-
 void DisplayServerEmbedded::process_events() {
 	Input *input = Input::get_singleton();
-	for (KeyValue<int, Joy> &kv : joysticks) {
-		uint64_t ts = input->get_joy_vibration_timestamp(kv.key);
-		if (ts > kv.value.timestamp) {
-			kv.value.timestamp = ts;
-			Vector2 strength = input->get_joy_vibration_strength(kv.key);
-			if (strength == Vector2()) {
-				EngineDebugger::get_singleton()->send_message("game_view:joy_stop", { kv.key });
-			} else {
-				float duration = input->get_joy_vibration_duration(kv.key);
-				EngineDebugger::get_singleton()->send_message("game_view:joy_start", { kv.key, duration, strength });
-			}
-		}
-	}
-
 	input->flush_buffered_events();
 }
 
@@ -470,19 +448,19 @@ bool DisplayServerEmbedded::has_feature(Feature p_feature) const {
 #endif
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_IME:
-			// case FEATURE_CUSTOM_CURSOR_SHAPE:
+		case FEATURE_CUSTOM_CURSOR_SHAPE:
 			// case FEATURE_HIDPI:
 			// case FEATURE_ICON:
 			// case FEATURE_MOUSE:
-			// case FEATURE_MOUSE_WARP:
+		case FEATURE_MOUSE_WARP:
 			// case FEATURE_NATIVE_DIALOG:
 			// case FEATURE_NATIVE_ICON:
 			// case FEATURE_WINDOW_TRANSPARENCY:
-			// case FEATURE_CLIPBOARD:
+		case FEATURE_CLIPBOARD:
 			// case FEATURE_KEEP_SCREEN_ON:
 			// case FEATURE_ORIENTATION:
 			// case FEATURE_VIRTUAL_KEYBOARD:
-			// case FEATURE_TEXT_TO_SPEECH:
+		case FEATURE_TEXT_TO_SPEECH:
 			// case FEATURE_TOUCHSCREEN:
 			return true;
 		default:

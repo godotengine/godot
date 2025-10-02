@@ -57,8 +57,8 @@ protected:
 	Node *import_scene_wrapper(const String &p_path, uint32_t p_flags, const Dictionary &p_options);
 	Ref<Animation> import_animation_wrapper(const String &p_path, uint32_t p_flags, const Dictionary &p_options);
 
-	GDVIRTUAL0RC(Vector<String>, _get_extensions)
-	GDVIRTUAL3R(Object *, _import_scene, String, uint32_t, Dictionary)
+	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_extensions)
+	GDVIRTUAL3R_REQUIRED(Object *, _import_scene, String, uint32_t, Dictionary)
 	GDVIRTUAL1(_get_import_options, String)
 	GDVIRTUAL3RC(Variant, _get_option_visibility, String, bool, String)
 
@@ -232,7 +232,6 @@ class ResourceImporterScene : public ResourceImporter {
 	};
 
 	void _optimize_track_usage(AnimationPlayer *p_player, AnimationImportTracks *p_track_actions);
-	void _generate_editor_preview_for_scene(const String &p_path, Node *p_scene);
 
 	String _scene_import_type = "PackedScene";
 

@@ -208,11 +208,20 @@ void ItemList::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	if (items[p_idx].icon == p_icon) {
+	Item &item = items.write[p_idx];
+	if (item.icon == p_icon) {
 		return;
 	}
 
-	items.write[p_idx].icon = p_icon;
+	const Callable redraw = callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw);
+	if (item.icon.is_valid()) {
+		item.icon->disconnect_changed(redraw);
+	}
+	item.icon = p_icon;
+	if (p_icon.is_valid()) {
+		p_icon->connect_changed(redraw);
+	}
+
 	queue_redraw();
 	shape_changed = true;
 }
@@ -1204,19 +1213,35 @@ void ItemList::_accessibility_action_scroll_set(const Variant &p_data) {
 }
 
 void ItemList::_accessibility_action_scroll_up(const Variant &p_data) {
-	scroll_bar_v->set_value(scroll_bar_v->get_value() - scroll_bar_v->get_page() / 4);
+	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+		scroll_bar_v->set_value(scroll_bar_v->get_value() - scroll_bar_v->get_page() / 4);
+	} else {
+		scroll_bar_v->set_value(scroll_bar_v->get_value() - scroll_bar_v->get_page());
+	}
 }
 
 void ItemList::_accessibility_action_scroll_down(const Variant &p_data) {
-	scroll_bar_v->set_value(scroll_bar_v->get_value() + scroll_bar_v->get_page() / 4);
+	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+		scroll_bar_v->set_value(scroll_bar_v->get_value() + scroll_bar_v->get_page() / 4);
+	} else {
+		scroll_bar_v->set_value(scroll_bar_v->get_value() + scroll_bar_v->get_page());
+	}
 }
 
 void ItemList::_accessibility_action_scroll_left(const Variant &p_data) {
-	scroll_bar_h->set_value(scroll_bar_h->get_value() - scroll_bar_h->get_page() / 4);
+	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+		scroll_bar_h->set_value(scroll_bar_h->get_value() - scroll_bar_h->get_page() / 4);
+	} else {
+		scroll_bar_h->set_value(scroll_bar_h->get_value() - scroll_bar_h->get_page());
+	}
 }
 
 void ItemList::_accessibility_action_scroll_right(const Variant &p_data) {
-	scroll_bar_h->set_value(scroll_bar_h->get_value() + scroll_bar_h->get_page() / 4);
+	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+		scroll_bar_h->set_value(scroll_bar_h->get_value() + scroll_bar_h->get_page() / 4);
+	} else {
+		scroll_bar_h->set_value(scroll_bar_h->get_value() + scroll_bar_h->get_page());
+	}
 }
 
 void ItemList::_accessibility_action_scroll_into_view(const Variant &p_data, int p_index) {
@@ -1367,7 +1392,7 @@ void ItemList::_notification(int p_what) {
 			Ref<StyleBox> sbsel;
 			Ref<StyleBox> cursor;
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				sbsel = theme_cache.selected_focus_style;
 				cursor = theme_cache.cursor_focus_style;
 			} else {
@@ -1491,7 +1516,7 @@ void ItemList::_notification(int p_what) {
 						draw_style_box(sbsel, r);
 					}
 					if (should_draw_hovered_selected_bg) {
-						if (has_focus()) {
+						if (has_focus(true)) {
 							draw_style_box(theme_cache.hovered_selected_focus_style, r);
 						} else {
 							draw_style_box(theme_cache.hovered_selected_style, r);
@@ -1679,7 +1704,7 @@ void ItemList::_notification(int p_what) {
 				draw_style_box(cursor, cursor_rcache);
 			}
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
 				size.x -= (scroll_bar_h->get_max() - scroll_bar_h->get_page());
 				draw_style_box(theme_cache.focus_style, Rect2(Point2(), size));

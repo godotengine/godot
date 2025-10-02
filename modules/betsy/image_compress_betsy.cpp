@@ -248,15 +248,15 @@ void BetsyCompressor::_thread_exit() {
 
 	if (compress_rd != nullptr) {
 		if (dxt1_encoding_table_buffer.is_valid()) {
-			compress_rd->free(dxt1_encoding_table_buffer);
+			compress_rd->free_rid(dxt1_encoding_table_buffer);
 		}
 
-		compress_rd->free(src_sampler);
+		compress_rd->free_rid(src_sampler);
 
 		// Clear the shader cache, pipelines will be unreferenced automatically.
 		for (int i = 0; i < BETSY_SHADER_MAX; i++) {
 			if (cached_shaders[i].compiled.is_valid()) {
-				compress_rd->free(cached_shaders[i].compiled);
+				compress_rd->free_rid(cached_shaders[i].compiled);
 			}
 		}
 
@@ -349,6 +349,40 @@ static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format) {
 
 		case Image::FORMAT_RGBE9995:
 			r_format = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
+			break;
+
+		case Image::FORMAT_R16:
+			r_format = RD::DATA_FORMAT_R16_UNORM;
+			break;
+
+		case Image::FORMAT_RG16:
+			r_format = RD::DATA_FORMAT_R16G16_UNORM;
+			break;
+
+		case Image::FORMAT_RGB16:
+			r_img->convert(Image::FORMAT_RGBA16);
+			r_format = RD::DATA_FORMAT_R16G16B16A16_UNORM;
+			break;
+
+		case Image::FORMAT_RGBA16:
+			r_format = RD::DATA_FORMAT_R16G16B16A16_UNORM;
+			break;
+
+		case Image::FORMAT_R16I:
+			r_format = RD::DATA_FORMAT_R16_UINT;
+			break;
+
+		case Image::FORMAT_RG16I:
+			r_format = RD::DATA_FORMAT_R16G16_UINT;
+			break;
+
+		case Image::FORMAT_RGB16I:
+			r_img->convert(Image::FORMAT_RGBA16I);
+			r_format = RD::DATA_FORMAT_R16G16B16A16_UINT;
+			break;
+
+		case Image::FORMAT_RGBA16I:
+			r_format = RD::DATA_FORMAT_R16G16B16A16_UINT;
 			break;
 
 		default: {
@@ -673,8 +707,8 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 
 			dst_texture_rid = dst_texture_combined;
 
-			compress_rd->free(dst_texture_primary);
-			compress_rd->free(dst_texture_alpha);
+			compress_rd->free_rid(dst_texture_primary);
+			compress_rd->free_rid(dst_texture_alpha);
 		}
 
 		// Copy data from the GPU to the buffer.
@@ -684,8 +718,8 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		memcpy(dst_data_ptr + dst_ofs, texture_data.ptr(), texture_data.size());
 
 		// Free the source and dest texture.
-		compress_rd->free(src_texture);
-		compress_rd->free(dst_texture_rid);
+		compress_rd->free_rid(src_texture);
+		compress_rd->free_rid(dst_texture_rid);
 	}
 
 	src_images.clear();

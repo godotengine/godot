@@ -57,7 +57,7 @@ void QuickSettingsDialog::_fetch_setting_values() {
 		for (const PropertyInfo &pi : editor_settings_properties) {
 			if (pi.name == "interface/editor/editor_language") {
 #ifndef ANDROID_ENABLED
-				editor_languages = pi.hint_string.split(",");
+				editor_languages = pi.hint_string.split(";", false);
 #endif
 			} else if (pi.name == "interface/theme/preset") {
 				editor_themes = pi.hint_string.split(",");
@@ -81,10 +81,11 @@ void QuickSettingsDialog::_update_current_values() {
 		const String current_lang = EDITOR_GET("interface/editor/editor_language");
 
 		for (int i = 0; i < editor_languages.size(); i++) {
-			const String &lang_value = editor_languages[i];
+			const String &lang_value = editor_languages[i].get_slicec('/', 0);
 			if (current_lang == lang_value) {
-				language_option_button->set_text(current_lang);
+				language_option_button->set_text(editor_languages[i].get_slicec('/', 1));
 				language_option_button->select(i);
+				break;
 			}
 		}
 	}
@@ -285,10 +286,10 @@ QuickSettingsDialog::QuickSettingsDialog() {
 			language_option_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_language_selected));
 
 			for (int i = 0; i < editor_languages.size(); i++) {
-				const String &lang_value = editor_languages[i];
-				String lang_name = TranslationServer::get_singleton()->get_locale_name(lang_value);
-				language_option_button->add_item(vformat("[%s] %s", lang_value, lang_name), i);
-				language_option_button->set_item_metadata(i, lang_value);
+				const String &lang_code = editor_languages[i].get_slicec('/', 0);
+				const String &lang_name = editor_languages[i].get_slicec('/', 1);
+				language_option_button->add_item(lang_name, i);
+				language_option_button->set_item_metadata(i, lang_code);
 			}
 
 			_add_setting_control(TTRC("Language"), language_option_button);

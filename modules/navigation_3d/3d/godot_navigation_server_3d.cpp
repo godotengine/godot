@@ -1227,7 +1227,7 @@ String GodotNavigationServer3D::get_baking_navigation_mesh_state_msg(Ref<Navigat
 #endif // _3D_DISABLED
 }
 
-COMMAND_1(free, RID, p_object) {
+COMMAND_1(free_rid, RID, p_object) {
 	if (map_owner.owns(p_object)) {
 		NavMap3D *map = map_owner.get_or_null(p_object);
 

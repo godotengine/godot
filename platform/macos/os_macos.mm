@@ -104,7 +104,7 @@ bool OS_MacOS::is_sandboxed() const {
 }
 
 bool OS_MacOS::request_permission(const String &p_name) {
-	if (@available(macOS 10.15, *)) {
+	if (@available(macOS 11.0, *)) {
 		if (p_name == "macos.permission.RECORD_SCREEN") {
 			if (CGPreflightScreenCaptureAccess()) {
 				return true;
@@ -124,7 +124,7 @@ bool OS_MacOS::request_permission(const String &p_name) {
 Vector<String> OS_MacOS::get_granted_permissions() const {
 	Vector<String> ret;
 
-	if (@available(macOS 10.15, *)) {
+	if (@available(macOS 11.0, *)) {
 		if (CGPreflightScreenCaptureAccess()) {
 			ret.push_back("macos.permission.RECORD_SCREEN");
 		}
@@ -464,6 +464,19 @@ String OS_MacOS::get_bundle_icon_path() const {
 		NSString *icon_path = [[main infoDictionary] objectForKey:@"CFBundleIconFile"];
 		if (icon_path) {
 			ret.append_utf8([icon_path UTF8String]);
+		}
+	}
+	return ret;
+}
+
+String OS_MacOS::get_bundle_icon_name() const {
+	String ret;
+
+	NSBundle *main = [NSBundle mainBundle];
+	if (main) {
+		NSString *icon_name = [[main infoDictionary] objectForKey:@"CFBundleIconName"];
+		if (icon_name) {
+			ret.append_utf8([icon_name UTF8String]);
 		}
 	}
 	return ret;
@@ -1263,6 +1276,11 @@ void OS_MacOS_Embedded::run() {
 				@try {
 					ds->process_events();
 
+#ifdef SDL_ENABLED
+					if (joypad_sdl) {
+						joypad_sdl->process_events();
+					}
+#endif
 					if (Main::iteration()) {
 						break;
 					}

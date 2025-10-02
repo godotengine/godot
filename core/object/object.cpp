@@ -254,11 +254,45 @@ Object::Connection::Connection(const Variant &p_variant) {
 bool Object::_predelete() {
 	_predelete_ok = 1;
 	notification(NOTIFICATION_PREDELETE, true);
-	if (_predelete_ok) {
-		_class_name_ptr = nullptr; // Must restore, so constructors/destructors have proper class name access at each stage.
-		notification(NOTIFICATION_PREDELETE_CLEANUP, true);
+	if (!_predelete_ok) {
+		return false;
 	}
-	return _predelete_ok;
+
+	_class_name_ptr = nullptr; // Must restore, so constructors/destructors have proper class name access at each stage.
+	notification(NOTIFICATION_PREDELETE_CLEANUP, true);
+
+	// Destruction order starts with the most derived class, and progresses towards the base Object class:
+	// Script subclasses -> GDExtension subclasses -> C++ subclasses -> Object
+	if (script_instance) {
+		memdelete(script_instance);
+	}
+	script_instance = nullptr;
+
+	if (_extension) {
+#ifdef TOOLS_ENABLED
+		if (_extension->untrack_instance) {
+			_extension->untrack_instance(_extension->tracking_userdata, this);
+		}
+#endif
+		if (_extension->free_instance) {
+			_extension->free_instance(_extension->class_userdata, _extension_instance);
+		}
+		_extension = nullptr;
+		_extension_instance = nullptr;
+	}
+#ifdef TOOLS_ENABLED
+	else if (_instance_bindings != nullptr) {
+		Engine *engine = Engine::get_singleton();
+		GDExtensionManager *gdextension_manager = GDExtensionManager::get_singleton();
+		if (engine && gdextension_manager && engine->is_extension_reloading_enabled()) {
+			for (uint32_t i = 0; i < _instance_binding_count; i++) {
+				gdextension_manager->untrack_instance_binding(_instance_bindings[i].token, this);
+			}
+		}
+	}
+#endif
+
+	return true;
 }
 
 void Object::cancel_free() {
@@ -1212,8 +1246,13 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		return ERR_CANT_ACQUIRE_RESOURCE; //no emit, signals blocked
 	}
 
-	Callable *slot_callables = nullptr;
-	uint32_t *slot_flags = nullptr;
+	constexpr int MAX_SLOTS_ON_STACK = 5;
+	// Don't default initialize the Callable objects on the stack, just reserve the space - we'll memnew_placement() them later.
+	alignas(Callable) uint8_t slot_callable_stack[sizeof(Callable) * MAX_SLOTS_ON_STACK];
+	uint32_t slot_flags_stack[MAX_SLOTS_ON_STACK];
+
+	Callable *slot_callables = (Callable *)slot_callable_stack;
+	uint32_t *slot_flags = slot_flags_stack;
 	uint32_t slot_count = 0;
 
 	{
@@ -1230,15 +1269,13 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 			return ERR_UNAVAILABLE;
 		}
 
-		// If this is a ref-counted object, prevent it from being destroyed during signal emission,
-		// which is needed in certain edge cases; e.g., https://github.com/godotengine/godot/issues/73889.
-		Ref<RefCounted> rc = Ref<RefCounted>(Object::cast_to<RefCounted>(this));
+		if (s->slot_map.size() > MAX_SLOTS_ON_STACK) {
+			slot_callables = (Callable *)memalloc(sizeof(Callable) * s->slot_map.size());
+			slot_flags = (uint32_t *)memalloc(sizeof(uint32_t) * s->slot_map.size());
+		}
 
 		// Ensure that disconnecting the signal or even deleting the object
 		// will not affect the signal calling.
-		slot_callables = (Callable *)alloca(sizeof(Callable) * s->slot_map.size());
-		slot_flags = (uint32_t *)alloca(sizeof(uint32_t) * s->slot_map.size());
-
 		for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
 			memnew_placement(&slot_callables[slot_count], Callable(slot_kv.value.conn.callable));
 			slot_flags[slot_count] = slot_kv.value.conn.flags;
@@ -1263,6 +1300,13 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 	}
 
 	OBJ_DEBUG_LOCK
+
+	// If this is a ref-counted object, prevent it from being destroyed during signal
+	// emission, which is needed in certain edge cases; e.g., GH-73889 and GH-109471.
+	// Moreover, since signals can be emitted from constructors (classic example being
+	// notify_property_list_changed), we must be careful not to do the ref init ourselves,
+	// which would lead to the object being destroyed at the end of this function.
+	bool pending_unref = Object::cast_to<RefCounted>(this) ? ((RefCounted *)this)->reference() : false;
 
 	Error err = OK;
 
@@ -1306,6 +1350,20 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 
 	for (uint32_t i = 0; i < slot_count; ++i) {
 		slot_callables[i].~Callable();
+	}
+
+	if (slot_callables != (Callable *)slot_callable_stack) {
+		memfree(slot_callables);
+		memfree(slot_flags);
+	}
+
+	if (pending_unref) {
+		// We have to do the same Ref<T> would do. We can't just use Ref<T>
+		// because it would do the init ref logic, which is something this function
+		// shouldn't do, as explained above.
+		if (((RefCounted *)this)->unreference()) {
+			memdelete(this);
+		}
 	}
 
 	return err;
@@ -2204,8 +2262,19 @@ void Object::reset_internal_extension(ObjectGDExtension *p_extension) {
 #endif
 
 void Object::_construct_object(bool p_reference) {
-	type_is_reference = p_reference;
+	_block_signals = false;
+	_can_translate = true;
+	_emitting = false;
+
+	// ObjectDB::add_instance relies on AncestralClass::REF_COUNTED
+	// being already set in the case of references.
+	_ancestry = p_reference ? (uint32_t)AncestralClass::REF_COUNTED : 0;
+
 	_instance_id = ObjectDB::add_instance(this);
+
+#ifdef TOOLS_ENABLED
+	_edited = false;
+#endif
 
 #ifdef DEBUG_ENABLED
 	_lock_index.init(1);
@@ -2238,35 +2307,6 @@ void Object::assign_class_name_static(const Span<char> &p_name, StringName &r_ta
 }
 
 Object::~Object() {
-	if (script_instance) {
-		memdelete(script_instance);
-	}
-	script_instance = nullptr;
-
-	if (_extension) {
-#ifdef TOOLS_ENABLED
-		if (_extension->untrack_instance) {
-			_extension->untrack_instance(_extension->tracking_userdata, this);
-		}
-#endif
-		if (_extension->free_instance) {
-			_extension->free_instance(_extension->class_userdata, _extension_instance);
-		}
-		_extension = nullptr;
-		_extension_instance = nullptr;
-	}
-#ifdef TOOLS_ENABLED
-	else if (_instance_bindings != nullptr) {
-		Engine *engine = Engine::get_singleton();
-		GDExtensionManager *gdextension_manager = GDExtensionManager::get_singleton();
-		if (engine && gdextension_manager && engine->is_extension_reloading_enabled()) {
-			for (uint32_t i = 0; i < _instance_binding_count; i++) {
-				gdextension_manager->untrack_instance_binding(_instance_bindings[i].token, this);
-			}
-		}
-	}
-#endif
-
 	if (_emitting) {
 		//@todo this may need to actually reach the debugger prioritarily somehow because it may crash before
 		ERR_PRINT(vformat("Object '%s' was freed or unreferenced while a signal is being emitted from it. Try connecting to the signal using 'CONNECT_DEFERRED' flag, or use queue_free() to free the object (if this object is a Node) to avoid this error and potential crashes.", to_string()));
