@@ -315,7 +315,6 @@ void GDScript::get_script_method_list(List<MethodInfo> *r_list) const {
 
 void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_include_base) const {
 	const GDScript *sptr = this;
-	List<PropertyInfo> props;
 
 	while (sptr) {
 		Vector<_GDScriptMemberSort> msort;
@@ -330,24 +329,19 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 		}
 
 		msort.sort();
-		msort.reverse();
-		for (int i = 0; i < msort.size(); i++) {
-			props.push_front(sptr->member_indices[msort[i].name].property_info);
-		}
 
 #ifdef TOOLS_ENABLED
 		r_list->push_back(sptr->get_class_category());
 #endif // TOOLS_ENABLED
 
-		for (const PropertyInfo &E : props) {
-			r_list->push_back(E);
+		for (int i = 0; i < msort.size(); i++) {
+			r_list->push_back(sptr->member_indices[msort[i].name].property_info);
 		}
 
 		if (!p_include_base) {
 			break;
 		}
 
-		props.clear();
 		sptr = sptr->_base;
 	}
 }
