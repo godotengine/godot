@@ -582,6 +582,14 @@ double VariantUtilityFunctions::db_to_linear(double db) {
 	return Math::db_to_linear(db);
 }
 
+double VariantUtilityFunctions::pitch_scale_to_semitones(double pitch_scale) {
+	return Math::pitch_scale_to_semitones(pitch_scale);
+}
+
+double VariantUtilityFunctions::semitones_to_pitch_scale(double semitones) {
+	return Math::semitones_to_pitch_scale(semitones);
+}
+
 Variant VariantUtilityFunctions::wrap(const Variant &p_x, const Variant &p_min, const Variant &p_max, Callable::CallError &r_error) {
 	Variant::Type x_type = p_x.get_type();
 	if (x_type != Variant::INT && x_type != Variant::FLOAT) {
@@ -1712,6 +1720,8 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(rad_to_deg, sarray("rad"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(linear_to_db, sarray("lin"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(db_to_linear, sarray("db"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(pitch_scale_to_semitones, sarray("scale"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(semitones_to_pitch_scale, sarray("semitones"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDVR3(wrap, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(wrapi, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
