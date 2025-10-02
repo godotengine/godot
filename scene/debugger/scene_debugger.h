@@ -284,6 +284,7 @@ private:
 	RID sel_drag_ci;
 
 	bool camera_override = false;
+	bool camera_first_override = true;
 
 	// Values taken from EditorZoomWidget.
 	const float VIEW_2D_MIN_ZOOM = 1.0 / 128;
@@ -326,7 +327,6 @@ private:
 	const float CAMERA_MIN_FOV_SCALE = 0.1;
 	const float CAMERA_MAX_FOV_SCALE = 2.5;
 
-	bool camera_first_override = true;
 	bool camera_freelook = false;
 
 	real_t camera_fov = 0;

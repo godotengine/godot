@@ -229,7 +229,9 @@ Error SceneDebugger::_msg_transform_camera_2d(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	ERR_FAIL_COND_V(!SceneTree::get_singleton()->get_root()->is_camera_2d_override_enabled(), ERR_BUG);
 	Transform2D transform = p_args[0];
-	SceneTree::get_singleton()->get_root()->get_override_camera_2d()->set_transform(transform);
+	Camera2D *override_camera = SceneTree::get_singleton()->get_root()->get_override_camera_2d();
+	override_camera->set_offset(transform.affine_inverse().get_origin());
+	override_camera->set_zoom(transform.get_scale());
 	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
 	return OK;
 }
@@ -1622,7 +1624,6 @@ void RuntimeNodeSelect::_select_set_mode(SelectMode p_mode) {
 void RuntimeNodeSelect::_set_camera_override_enabled(bool p_enabled) {
 	camera_override = p_enabled;
 
-	Window *root = SceneTree::get_singleton()->get_root();
 	if (camera_first_override) {
 		_reset_camera_2d();
 #ifndef _3D_DISABLED
@@ -1634,6 +1635,7 @@ void RuntimeNodeSelect::_set_camera_override_enabled(bool p_enabled) {
 		_update_view_2d();
 
 #ifndef _3D_DISABLED
+		Window *root = SceneTree::get_singleton()->get_root();
 		ERR_FAIL_COND(!root->is_camera_3d_override_enabled());
 		Camera3D *override_camera = root->get_override_camera_3d();
 		override_camera->set_transform(_get_cursor_transform());
@@ -2477,6 +2479,7 @@ void RuntimeNodeSelect::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Re
 }
 
 void RuntimeNodeSelect::_reset_camera_2d() {
+	camera_first_override = true;
 	Window *root = SceneTree::get_singleton()->get_root();
 	Camera2D *game_camera = root->is_camera_2d_override_enabled() ? root->get_overridden_camera_2d() : root->get_camera_2d();
 	if (game_camera) {
@@ -2500,7 +2503,7 @@ void RuntimeNodeSelect::_update_view_2d() {
 	Camera2D *override_camera = root->get_override_camera_2d();
 	override_camera->set_anchor_mode(Camera2D::ANCHOR_MODE_FIXED_TOP_LEFT);
 	override_camera->set_zoom(Vector2(view_2d_zoom, view_2d_zoom));
-	override_camera->set_position(view_2d_offset);
+	override_camera->set_offset(view_2d_offset);
 
 	_queue_selection_update();
 }
