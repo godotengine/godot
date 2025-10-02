@@ -208,13 +208,7 @@ void RendererEnvironmentStorage::environment_set_tonemap(RID p_env, RS::Environm
 	ERR_FAIL_NULL(env);
 	env->exposure = p_exposure;
 	env->tone_mapper = p_tone_mapper;
-	if (p_tone_mapper == RS::ENV_TONE_MAPPER_LINEAR) {
-		env->white = 1.0; // With HDR output this should be the output max value instead.
-	} else if (p_tone_mapper == RS::ENV_TONE_MAPPER_AGX) {
-		env->white = 16.29;
-	} else {
-		env->white = MAX(1.0, p_white); // Glow with screen blend mode does not work when white < 1.0.
-	}
+	env->white = p_white;
 	env->tonemap_contrast = p_contrast;
 }
 
@@ -257,7 +251,9 @@ float RendererEnvironmentStorage::environment_get_white(RID p_env) const {
 		float agx_white = MAX(env->white, 2.0);
 		return agx_white * env->max_value;
 	} else {
-		return env->white;
+		// Filmic and ACES do not support HDR output; their white is stable
+		// regardless of env->max_value.
+		return env->white = MAX(1.0, env->white); // Glow with screen blend mode does not work when white < 1.0.
 	}
 }
 
@@ -273,7 +269,7 @@ float RendererEnvironmentStorage::environment_get_tonemap_contrast(RID p_env) co
 	return env->tonemap_contrast;
 }
 
-RendererEnvironmentStorage::TonemapParameters RendererEnvironmentStorage::environment_get_tonemap_parameters(RID p_env, float output_max_value) const {
+RendererEnvironmentStorage::TonemapParameters RendererEnvironmentStorage::environment_get_tonemap_parameters(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, TonemapParameters());
 
@@ -282,8 +278,8 @@ RendererEnvironmentStorage::TonemapParameters RendererEnvironmentStorage::enviro
 	if (env->tone_mapper == RS::ENV_TONE_MAPPER_LINEAR) {
 		// Linear has no tonemapping parameters
 	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_REINHARD) {
-		float reinhard_white = MAX(white, output_max_value);
-		env->tonemap_parameters.tonemap_a = (reinhard_white * reinhard_white) / output_max_value;
+		float reinhard_white = white;
+		env->tonemap_parameters.tonemap_a = (reinhard_white * reinhard_white) / env->max_value;
 	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_FILMIC) {
 		// exposure bias: input scale (color *= bias, white *= bias) to make the brightness consistent with other tonemappers
 		// also useful to scale the input to the range that the tonemapper is designed for (some require very high input values)
@@ -318,9 +314,9 @@ RendererEnvironmentStorage::TonemapParameters RendererEnvironmentStorage::enviro
 		// These constants must match the those in the shader code.
 		// 18% "middle gray" is perceptually 50% of the brightness of reference white.
 		const float awp_crossover_point = 0.18;
-		// When output_max_value and/or awp_crossover_point are no longer constant, awp_shoulder_max can
+		// When env->max_value and/or awp_crossover_point are no longer constant, awp_shoulder_max can
 		// be calculated on the CPU and passed in as tonemap_parameters.tonemap_e
-		const float awp_shoulder_max = output_max_value - awp_crossover_point;
+		const float awp_shoulder_max = env->max_value - awp_crossover_point;
 
 		// Constrained and adjusted for HDR in environment_get_white.
 		float awp_high_clip = white;
