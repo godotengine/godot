@@ -30,12 +30,12 @@
 				[param default_value_index] should be an index of the value in the [param values]. If [param values] is empty it should be either [code]1[/code] (checked), or [code]0[/code] (unchecked).
 			</description>
 		</method>
-		<method name="add_side_menu">
+		<method name="add_side_menu" deprecated="This feature is no longer supported.">
 			<return type="void" />
 			<param index="0" name="menu" type="Control" />
 			<param index="1" name="title" type="String" default="&quot;&quot;" />
 			<description>
-				Adds the given [param menu] to the side of the file dialog with the given [param title] text on top. Only one side menu is allowed.
+				This method is kept for compatibility and does nothing. As an alternative, you can display another dialog after showing the file dialog.
 			</description>
 		</method>
 		<method name="clear_filename_filter">
