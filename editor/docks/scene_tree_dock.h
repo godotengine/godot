@@ -102,6 +102,9 @@ class SceneTreeDock : public EditorDock {
 	bool reset_create_dialog = false;
 
 	int current_option = 0;
+
+	VBoxContainer *main_vbox = nullptr;
+
 	CreateDialog *create_dialog = nullptr;
 	RenameDialog *rename_dialog = nullptr;
 
