@@ -2545,23 +2545,21 @@ void Node::_propagate_reverse_notification(int p_notification) {
 }
 
 void Node::add_connection_owner(Node *p_owner, Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable, bool is_inherited) {
-	Node::ConnectionOwnerData sc;
-	sc.to_node = p_to_node;
-	sc.signal_name = p_signal_name;
-	sc.method_name = p_callable.get_method();
-	sc.inherited = is_inherited;
-	data.connection_owners[p_owner] = sc;
+	uint32_t hash = HashMapHasherDefault::hash(p_to_node) ^ p_signal_name.hash() ^ p_callable.get_method().hash();
+	if (is_inherited) {
+		// this connection exists from instantiation but is inherited, so return some pointer that
+		// isn't the actual owner and isn't nullptr.
+		data.connection_owners[hash] = reinterpret_cast<Node *>(1);
+	} else {
+		data.connection_owners[hash] = p_owner;
+	}
 }
 
 Node *Node::get_connection_owner(Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable) const {
-	for (const KeyValue<Node *, Node::ConnectionOwnerData> &E : data.connection_owners) {
-		if (E.value.to_node == p_to_node && E.value.signal_name == p_signal_name && E.value.method_name == p_callable.get_method()) {
-			if (E.value.inherited) {
-				// this connection exists from instantiation but is inherited, so return some pointer that
-				// isn't the actual owner and isn't nullptr.
-				return reinterpret_cast<Node *>(1);
-			}
-			return E.key;
+	for (const KeyValue<uint32_t, Node *> &E : data.connection_owners) {
+		uint32_t hash = HashMapHasherDefault::hash(p_to_node) ^ p_signal_name.hash() ^ p_callable.get_method().hash();
+		if (E.key == hash) {
+			return E.value;
 		}
 	}
 	return nullptr; // the connection was just added (not instantiated) so it doesn't have an owner.
