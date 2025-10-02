@@ -1171,6 +1171,7 @@ public:
 		bool has_continue = false;
 		bool has_unreachable_code = false; // Just so warnings aren't given more than once per block.
 		bool is_in_loop = false; // The block is nested in a loop (directly or indirectly).
+		bool has_only_pass = false;
 
 		bool has_local(const StringName &p_name) const;
 		const Local &get_local(const StringName &p_name) const;
