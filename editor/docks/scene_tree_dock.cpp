@@ -4380,7 +4380,7 @@ List<Node *> SceneTreeDock::get_node_clipboard() const {
 
 void SceneTreeDock::add_remote_tree_editor(Control *p_remote) {
 	ERR_FAIL_COND(remote_tree != nullptr);
-	add_child(p_remote);
+	main_vbox->add_child(p_remote);
 	remote_tree = p_remote;
 	remote_tree->hide();
 	remote_tree->connect("open", callable_mp(this, &SceneTreeDock::_load_request));
@@ -4701,8 +4701,8 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	editor_selection = p_editor_selection;
 	scene_root = p_scene_root;
 
-	VBoxContainer *vbc = memnew(VBoxContainer);
-	add_child(vbc);
+	main_vbox = memnew(VBoxContainer);
+	add_child(main_vbox);
 
 	HBoxContainer *filter_hbc = memnew(HBoxContainer);
 	filter_hbc->add_theme_constant_override("separate", 0);
@@ -4751,7 +4751,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	button_instance->set_tooltip_text(TTRC("Instantiate a scene file as a Node. Creates an inherited scene if no root node exists."));
 	button_instance->set_shortcut(ED_GET_SHORTCUT("scene_tree/instantiate_scene"));
 	filter_hbc->add_child(button_instance);
-	vbc->add_child(filter_hbc);
+	main_vbox->add_child(filter_hbc);
 
 	// The "Filter Nodes" text input above the Scene Tree Editor.
 	filter = memnew(LineEdit);
@@ -4806,7 +4806,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	tree_menu->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
 
 	button_hb = memnew(HBoxContainer);
-	vbc->add_child(button_hb);
+	main_vbox->add_child(button_hb);
 
 	edit_remote = memnew(Button);
 	edit_remote->set_theme_type_variation(SceneStringName(FlatButton));
@@ -4830,13 +4830,13 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	button_hb->hide();
 
 	create_root_dialog = memnew(VBoxContainer);
-	vbc->add_child(create_root_dialog);
+	main_vbox->add_child(create_root_dialog);
 	create_root_dialog->set_v_size_flags(SIZE_EXPAND_FILL);
 	create_root_dialog->hide();
 
 	scene_tree = memnew(SceneTreeEditor(false, true, true));
 
-	vbc->add_child(scene_tree);
+	main_vbox->add_child(scene_tree);
 	scene_tree->set_v_size_flags(SIZE_EXPAND | SIZE_FILL);
 	scene_tree->connect("rmb_pressed", callable_mp(this, &SceneTreeDock::_tree_rmb));
 
