@@ -55,21 +55,15 @@ void POTGenerator::_print_all_translation_strings() {
 #endif
 
 void POTGenerator::generate_pot(const String &p_file) {
-	Vector<String> files = GLOBAL_GET("internationalization/locale/translations_pot_files");
-
-	if (files.is_empty()) {
-		WARN_PRINT("No files selected for POT generation.");
-		return;
-	}
-
 	// Clear all_translation_strings of the previous round.
 	all_translation_strings.clear();
 
+	Vector<String> files = GLOBAL_GET("internationalization/locale/translations_pot_files");
+
 	// Collect all translatable strings according to files order in "POT Generation" setting.
-	for (int i = 0; i < files.size(); i++) {
+	for (const String &file_path : files) {
 		Vector<Vector<String>> translations;
 
-		const String &file_path = files[i];
 		String file_extension = file_path.get_extension();
 
 		if (EditorTranslationParser::get_singleton()->can_parse(file_extension)) {
@@ -92,6 +86,11 @@ void POTGenerator::generate_pot(const String &p_file) {
 		for (const Vector<String> &extractable_msgids : get_extractable_message_list()) {
 			_add_new_msgid(extractable_msgids[0], extractable_msgids[1], extractable_msgids[2], "", "");
 		}
+	}
+
+	if (all_translation_strings.is_empty()) {
+		WARN_PRINT("No translatable strings found.");
+		return;
 	}
 
 	_write_to_pot(p_file);
