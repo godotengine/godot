@@ -75,11 +75,10 @@ void EditorFileDialog::popup(const Rect2i &p_rect) {
 	_update_option_controls();
 
 	bool use_native = DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (bool(EDITOR_GET("interface/editor/use_native_file_dialogs")) || OS::get_singleton()->is_sandboxed());
-	if (!side_vbox && use_native) {
+	if (use_native) {
 		_native_popup();
 	} else {
-		// Show custom file dialog (full dialog or side menu only).
-		_update_side_menu_visibility(use_native);
+		// Show custom file dialog.
 		ConfirmationDialog::popup(p_rect);
 	}
 }
@@ -88,11 +87,10 @@ void EditorFileDialog::set_visible(bool p_visible) {
 	if (p_visible) {
 		bool use_native = DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (bool(EDITOR_GET("interface/editor/use_native_file_dialogs")) || OS::get_singleton()->is_sandboxed());
 		_update_option_controls();
-		if (!side_vbox && use_native) {
+		if (use_native) {
 			_native_popup();
 		} else {
-			// Show custom file dialog (full dialog or side menu only).
-			_update_side_menu_visibility(use_native);
+			// Show custom file dialog.
 			ConfirmationDialog::set_visible(p_visible);
 		}
 	} else {
@@ -556,14 +554,6 @@ void EditorFileDialog::_request_single_thumbnail(const String &p_path) {
 }
 
 void EditorFileDialog::_action_pressed() {
-	// Accept side menu properties and show native dialog.
-	if (side_vbox && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (bool(EDITOR_GET("interface/editor/use_native_file_dialogs")) || OS::get_singleton()->is_sandboxed())) {
-		hide();
-		_native_popup();
-
-		return;
-	}
-
 	// Accept selection in the custom dialog.
 	if (mode == FILE_MODE_OPEN_FILES) {
 		String fbase = dir_access->get_current_dir();
@@ -2176,8 +2166,10 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_display_mode"), &EditorFileDialog::get_display_mode);
 	ClassDB::bind_method(D_METHOD("set_disable_overwrite_warning", "disable"), &EditorFileDialog::set_disable_overwrite_warning);
 	ClassDB::bind_method(D_METHOD("is_overwrite_warning_disabled"), &EditorFileDialog::is_overwrite_warning_disabled);
-	ClassDB::bind_method(D_METHOD("add_side_menu", "menu", "title"), &EditorFileDialog::add_side_menu, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("popup_file_dialog"), &EditorFileDialog::popup_file_dialog);
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("add_side_menu", "menu", "title"), &EditorFileDialog::add_side_menu, DEFVAL(""));
+#endif
 
 	ClassDB::bind_method(D_METHOD("invalidate"), &EditorFileDialog::invalidate);
 
@@ -2298,39 +2290,6 @@ void EditorFileDialog::set_previews_enabled(bool p_enabled) {
 
 bool EditorFileDialog::are_previews_enabled() {
 	return previews_enabled;
-}
-
-void EditorFileDialog::add_side_menu(Control *p_menu, const String &p_title) {
-	// HSplitContainer has 3 children at maximum capacity, 1 of them is the SplitContainerDragger.
-	ERR_FAIL_COND_MSG(body_hsplit->get_child_count() > 2, "EditorFileDialog: Only one side menu can be added.");
-	// Everything for the side menu goes inside of a VBoxContainer.
-	side_vbox = memnew(VBoxContainer);
-	side_vbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	side_vbox->set_stretch_ratio(0.5);
-	body_hsplit->add_child(side_vbox);
-	// Add a Label to the VBoxContainer.
-	if (!p_title.is_empty()) {
-		Label *title_label = memnew(Label(p_title));
-		title_label->set_theme_type_variation("HeaderSmall");
-		side_vbox->add_child(title_label);
-	}
-	// Add the given menu to the VBoxContainer.
-	p_menu->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	side_vbox->add_child(p_menu);
-}
-
-void EditorFileDialog::_update_side_menu_visibility(bool p_native_dlg) {
-	if (p_native_dlg) {
-		pathhb->set_visible(false);
-		flow_checkbox_options->set_visible(false);
-		grid_select_options->set_visible(false);
-		list_hb->set_visible(false);
-	} else {
-		pathhb->set_visible(true);
-		flow_checkbox_options->set_visible(true);
-		grid_select_options->set_visible(true);
-		list_hb->set_visible(true);
-	}
 }
 
 EditorFileDialog::EditorFileDialog() {
