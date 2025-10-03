@@ -496,10 +496,6 @@ void AnimationPlayer::play_section(const StringName &p_name, double p_start_time
 	double start = playback.current.get_start_time();
 	double end = playback.current.get_end_time();
 
-	if (!end_reached) {
-		playback_queue.clear();
-	}
-
 	if (c.assigned != name) { // Reset.
 		c.current.pos = p_from_end ? end : start;
 		c.assigned = name;
@@ -784,7 +780,6 @@ void AnimationPlayer::_stop_internal(bool p_reset, bool p_keep_state) {
 		emit_signal(SNAME("current_animation_changed"), "");
 	}
 	_set_process(false);
-	playback_queue.clear();
 	playing = false;
 }
 
