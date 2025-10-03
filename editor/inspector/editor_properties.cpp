@@ -1480,11 +1480,8 @@ void EditorPropertyInteger::setup(int64_t p_min, int64_t p_max, int64_t p_step, 
 	spin->set_min(p_min);
 	spin->set_max(p_max);
 	spin->set_step(p_step);
-	if (p_hide_control) {
-		spin->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
-	} else {
-		spin->set_control_state(p_prefer_slider ? EditorSpinSlider::CONTROL_STATE_PREFER_SLIDER : EditorSpinSlider::CONTROL_STATE_DEFAULT);
-	}
+	spin->set_hide_control(p_hide_control);
+	spin->set_integer_prefer_slider(p_prefer_slider);
 	spin->set_allow_greater(p_allow_greater);
 	spin->set_allow_lesser(p_allow_lesser);
 	spin->set_suffix(p_suffix);
@@ -1607,14 +1604,13 @@ void EditorPropertyFloat::update_property() {
 	spin->set_value_no_signal(val);
 }
 
-void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_hide_control, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix, bool p_radians_as_degrees) {
+void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_prefer_arrows, bool p_hide_control, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix, bool p_radians_as_degrees) {
 	radians_as_degrees = p_radians_as_degrees;
 	spin->set_min(p_min);
 	spin->set_max(p_max);
 	spin->set_step(p_step);
-	if (p_hide_control) {
-		spin->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
-	}
+	spin->set_hide_control(p_hide_control);
+	spin->set_float_prefer_arrows(p_prefer_arrows);
 	spin->set_exp_ratio(p_exp_range);
 	spin->set_allow_greater(p_greater);
 	spin->set_allow_lesser(p_lesser);
@@ -1831,7 +1827,7 @@ EditorPropertyEasing::EditorPropertyEasing() {
 	spin->set_min(-100);
 	spin->set_max(100);
 	spin->set_step(0);
-	spin->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
+	spin->set_hide_control(true);
 	spin->set_allow_lesser(true);
 	spin->set_allow_greater(true);
 	spin->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyEasing::_spin_value_changed));
@@ -1881,9 +1877,7 @@ void EditorPropertyRect2::setup(double p_min, double p_max, double p_step, bool 
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		if (p_hide_control) {
-			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
-		}
+		spin[i]->set_hide_control(p_hide_control);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
@@ -2071,9 +2065,7 @@ void EditorPropertyPlane::setup(double p_min, double p_max, double p_step, bool 
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		if (p_hide_control) {
-			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
-		}
+		spin[i]->set_hide_control(p_hide_control);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 	}
@@ -2222,9 +2214,7 @@ void EditorPropertyQuaternion::setup(double p_min, double p_max, double p_step, 
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		if (p_hide_control) {
-			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
-		}
+		spin[i]->set_hide_control(p_hide_control);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		// Quaternion is inherently unitless, however someone may want to use it as
@@ -2369,9 +2359,7 @@ void EditorPropertyAABB::setup(double p_min, double p_max, double p_step, bool p
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		if (p_hide_control) {
-			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
-		}
+		spin[i]->set_hide_control(p_hide_control);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
@@ -2449,9 +2437,7 @@ void EditorPropertyTransform2D::setup(double p_min, double p_max, double p_step,
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		if (p_hide_control) {
-			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
-		}
+		spin[i]->set_hide_control(p_hide_control);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		if (i % 3 == 2) {
@@ -2533,9 +2519,7 @@ void EditorPropertyBasis::setup(double p_min, double p_max, double p_step, bool 
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		if (p_hide_control) {
-			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
-		}
+		spin[i]->set_hide_control(p_hide_control);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		// Basis is inherently unitless, however someone may want to use it as
@@ -2624,9 +2608,7 @@ void EditorPropertyTransform3D::setup(double p_min, double p_max, double p_step,
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		if (p_hide_control) {
-			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
-		}
+		spin[i]->set_hide_control(p_hide_control);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		if (i % 4 == 3) {
@@ -2723,9 +2705,7 @@ void EditorPropertyProjection::setup(double p_min, double p_max, double p_step, 
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		if (p_hide_control) {
-			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
-		}
+		spin[i]->set_hide_control(p_hide_control);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		if (i % 4 == 3) {
@@ -3640,6 +3620,7 @@ struct EditorPropertyRangeHint {
 	String suffix;
 	bool exp_range = false;
 	bool prefer_slider = false;
+	bool prefer_arrows = false;
 	bool hide_control = true;
 	bool radians_as_degrees = false;
 };
@@ -3674,6 +3655,8 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 				hint.or_less = true;
 			} else if (slice == "prefer_slider") {
 				hint.prefer_slider = true;
+			} else if (slice == "prefer_arrows") {
+				hint.prefer_arrows = true;
 			} else if (slice == "hide_control") {
 				hint.hide_control = true;
 #ifndef DISABLE_DEPRECATED
@@ -3845,7 +3828,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-				editor->setup(hint.min, hint.max, hint.step, hint.hide_control, hint.exp_range, hint.or_greater, hint.or_less, hint.suffix, hint.radians_as_degrees);
+				editor->setup(hint.min, hint.max, hint.step, hint.prefer_arrows, hint.hide_control, hint.exp_range, hint.or_greater, hint.or_less, hint.suffix, hint.radians_as_degrees);
 
 				return editor;
 			}

@@ -422,7 +422,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_hide_control, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix = String(), bool p_radians_as_degrees = false);
+	void setup(double p_min, double p_max, double p_step, bool p_prefer_arrows, bool p_hide_control, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix = String(), bool p_radians_as_degrees = false);
 	EditorPropertyFloat();
 };
 
