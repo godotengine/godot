@@ -1375,8 +1375,11 @@ void AudioServer::set_playback_all_bus_volumes_linear(Ref<AudioStreamPlayback> p
 }
 
 void AudioServer::set_playback_pitch_scale(Ref<AudioStreamPlayback> p_playback, float p_pitch_scale) {
-	ERR_FAIL_COND(p_playback.is_null());
-
+	// delete "//" ERR_FAIL_COND(p_playback.is_null());
+	print_line("AudioServer::set_playback_pitch_scale called with pitch = " + rtos(p_pitch_scale));
+	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
+	
+		print_line("Playback is valid: " + itos(!p_playback.is_null()));
 	// Samples.
 	if (p_playback->get_is_sample() && p_playback->get_sample_playback().is_valid()) {
 		Ref<AudioSamplePlayback> sample_playback = p_playback->get_sample_playback();
@@ -1943,7 +1946,10 @@ double AudioServer::get_sample_playback_position(const Ref<AudioSamplePlayback> 
 }
 
 void AudioServer::update_sample_playback_pitch_scale(const Ref<AudioSamplePlayback> &p_playback, float p_pitch_scale) {
+	print_line("AudioServer::set_playback_pitch_scale called with pitch = " + rtos(p_pitch_scale));
 	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
+	
+		print_line("Playback is valid: " + itos(!p_playback.is_null()));
 	return AudioDriver::get_singleton()->update_sample_playback_pitch_scale(p_playback, p_pitch_scale);
 }
 

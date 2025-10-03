@@ -88,6 +88,8 @@ float AudioStreamPlayer::get_volume_linear() const {
 }
 
 void AudioStreamPlayer::set_pitch_scale(float p_pitch_scale) {
+	print_line("AudioStreamPlayer::set_pitch_scale called with pitch = " + rtos(p_pitch_scale));
+	ERR_FAIL_NULL(internal);
 	internal->set_pitch_scale(p_pitch_scale);
 }
 
