@@ -142,7 +142,6 @@ protected:
 		String modules_buildphase;
 		String modules_buildgrp;
 		Vector<String> capabilities;
-		bool use_swift_runtime;
 	};
 
 	struct CodeSigningDetails {
