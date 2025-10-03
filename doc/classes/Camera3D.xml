@@ -204,6 +204,11 @@
 		<member name="near" type="float" setter="set_near" getter="get_near" default="0.05">
 			The distance to the near culling boundary for this camera relative to its local Z axis. Lower values allow the camera to see objects more up close to its origin, at the cost of lower precision across the [i]entire[/i] range. Values lower than the default can lead to increased Z-fighting.
 		</member>
+		<member name="override_projection" type="Projection" setter="set_override_projection" getter="get_override_projection" default="Projection(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)">
+			If set to a non-zero Projection, overrides the view-projection matrix passed to shaders with this custom matrix. This *only* overrides the projection passed to shaders on the GPU. The [constant PROJECTION_PERSPECTIVE], [constant PROJECTION_ORTHOGONAL], or [constant PROJECTION_FRUSTUM] values are still used for CPU-side operations such as culling, which can be used to provide a separate culling frustum.
+			To clear the overridden projection, set to [code]Projection(Vector4.ZERO, Vector4.ZERO, Vector4.ZERO, Vector4.ZERO)[/code].
+			[member override_projection] does not currently support stereo cameras.
+		</member>
 		<member name="projection" type="int" setter="set_projection" getter="get_projection" enum="Camera3D.ProjectionType" default="0">
 			The camera's projection mode. In [constant PROJECTION_PERSPECTIVE] mode, objects' Z distance from the camera's local space scales their perceived size.
 		</member>
