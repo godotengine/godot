@@ -239,6 +239,11 @@ opts.Add(BoolVariable("disable_physics_3d", "Disable 3D physics nodes and server
 opts.Add(BoolVariable("disable_navigation_2d", "Disable 2D navigation features", False))
 opts.Add(BoolVariable("disable_navigation_3d", "Disable 3D navigation features", False))
 opts.Add(BoolVariable("disable_xr", "Disable XR nodes and server", False))
+opts.Add(
+    BoolVariable(
+        "disable_tony_mc_mapface", "Disable Tony McMapface tonemapping mode (decreases binary size by ~300 KB)", False
+    )
+)
 opts.Add("build_profile", "Path to a file containing a feature build profile", "")
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
@@ -1038,6 +1043,8 @@ if env["disable_navigation_3d"]:
     env.Append(CPPDEFINES=["NAVIGATION_3D_DISABLED"])
 if env["disable_xr"]:
     env.Append(CPPDEFINES=["XR_DISABLED"])
+if env["disable_tony_mc_mapface"]:
+    env.Append(CPPDEFINES=["TONY_MC_MAPFACE_DISABLED"])
 if env["minizip"]:
     env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
 if env["brotli"]:
