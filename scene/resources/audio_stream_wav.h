@@ -162,6 +162,8 @@ public:
 	Vector<uint8_t> get_data() const;
 
 	Error save_to_wav(const String &p_path);
+	Error save_to_wav_buffer(TypedArray<uint8_t> &r_wav);
+	Dictionary save_to_wav_buffer_wrapper();
 
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
