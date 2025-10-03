@@ -1046,6 +1046,7 @@ bool EditorFileSystem::_update_scan_actions() {
 		if (_scan_import_support(reimports)) {
 			return true;
 		}
+
 		reimport_files(reimports);
 	} else {
 		//reimport files will update the uid cache file so if nothing was reimported, update it manually
@@ -1774,7 +1775,6 @@ void EditorFileSystem::_notification(int p_what) {
 			if (new_filesystem) {
 				memdelete(new_filesystem);
 			}
-
 			filesystem = nullptr;
 			new_filesystem = nullptr;
 
@@ -2963,7 +2963,6 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 	List<String> import_variants;
 	List<String> gen_files;
 	Variant meta;
-
 	Error err = importer->import(uid, p_file, base_path, params, &import_variants, &gen_files, &meta);
 
 	// As import is complete, save the .import file.
@@ -3138,6 +3137,7 @@ void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file
 
 	// Emit the resource_reimporting signal for the single file before the actual importation.
 	emit_signal(SNAME("resources_reimporting"), reloads);
+
 	_reimport_file(p_file, p_custom_params, p_importer);
 
 	// Emit the resource_reimported signal for the single file we just reimported.
@@ -3457,6 +3457,7 @@ Error EditorFileSystem::reimport_append(const String &p_file, const HashMap<Stri
 
 	// Emit the resource_reimporting signal for the single file before the actual importation.
 	emit_signal(SNAME("resources_reimporting"), reloads);
+
 	Error ret = _reimport_file(p_file, p_custom_options, p_custom_importer, &p_generator_parameters);
 
 	// Emit the resource_reimported signal for the single file we just reimported.
