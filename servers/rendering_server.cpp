@@ -3637,6 +3637,7 @@ void RenderingServer::init() {
 	// Number of commands that can be drawn per frame.
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/gl_compatibility/item_buffer_size", PROPERTY_HINT_RANGE, "128,1048576,1"), 16384);
 
+	GLOBAL_DEF_RST("rendering/shader_compiler/shader_compilation/optimize", false);
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/enabled", true);
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/compress", true);
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/use_zstd_compression", true);

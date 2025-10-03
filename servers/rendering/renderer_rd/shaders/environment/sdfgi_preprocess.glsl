@@ -155,6 +155,8 @@ layout(r16ui, set = 0, binding = 2) uniform restrict readonly uimage3D src_occlu
 
 #endif
 
+#if !defined(MODE_INITIALIZE_JUMP_FLOOD_HALF) && !defined(MODE_UPSCALE_JUMP_FLOOD)
+
 layout(push_constant, std430) uniform Params {
 	ivec3 scroll;
 
@@ -169,6 +171,8 @@ layout(push_constant, std430) uniform Params {
 	uint pad;
 }
 params;
+
+#endif
 
 void main() {
 #ifdef MODE_SCROLL

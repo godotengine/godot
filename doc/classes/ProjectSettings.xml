@@ -3320,6 +3320,8 @@
 		</member>
 		<member name="rendering/shader_compiler/shader_cache/use_zstd_compression" type="bool" setter="" getter="" default="true">
 		</member>
+		<member name="rendering/shader_compiler/shader_compilation/optimize" type="bool" setter="" getter="" default="false">
+		</member>
 		<member name="rendering/shading/overrides/force_lambert_over_burley" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses faster but lower-quality Lambert material lighting model instead of Burley.
 		</member>
