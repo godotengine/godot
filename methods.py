@@ -970,6 +970,23 @@ def prepare_timer():
     atexit.register(print_elapsed_time, time.time())
 
 
+def prepare_run(env) -> None:
+    import subprocess
+
+    from SCons.Script.Main import GetBuildFailures
+
+    def run() -> None:
+        if len(GetBuildFailures()) == 0:
+            print("-" * 80 + f"\nBuild successful, running: {env['bin_path']} {env['run']}\n" + "-" * 80)
+            try:
+                # Allow using `~` as a shorthand for `$HOME` on all platforms.
+                subprocess.run([env["bin_path"], *env["run"].replace("~", os.environ["HOME"]).split()], shell=True)
+            except:  # noqa: E722
+                print("-" * 80 + "\nAn error has occurred while Godot was running.\n" + "-" * 80)
+
+    atexit.register(run)
+
+
 def dump(env):
     """
     Dumps latest build information for debugging purposes and external tools.
