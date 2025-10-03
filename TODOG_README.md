@@ -12,16 +12,11 @@ Feel free to skip parts you already have, add your own twist, or adapt it to God
 
 | Layer | Purpose | What you see | How you get to it |
 |-------|---------|--------------|-------------------|
-| **Editor** | The “authoring surface” (Godot editor, slightly modified) | Full‑blown Godot editor UI | Run the executable with the 
-`--no-window` flag (or similar) and a launch script that spawns the editor. |
-| **Matrix 1** | First “inside” game – a simple platformer | Standard 2‑D platformer world | Player starts in this world; on a 
-“break‑out” event the engine loads Matrix 2. |
-| **Matrix 2, 3…** | New gameplay paradigms (e.g. puzzle, top‑down shooter, text‑based, VR, etc.) | Whatever you design for that layer 
-| Triggered by a scripted “break‑out” that calls a scene loader. |
-| **Final Layer – The “Computer”** | The world’s terminal that is actually the editor UI | A terminal screen that hosts the Godot 
-editor | When the player enters, the editor UI is instantiated inside the game. |
-| **Exit** | Switch to full‑editor mode (credits, option to re‑play) | Credits text, dialogue window | When the player closes the 
-terminal, the editor window replaces the game window. |
+| **Editor** | The “authoring surface” (Godot editor, slightly modified) | Full‑blown Godot editor UI | Run the executable with the `--no-window` flag (or similar) and a launch script that spawns the editor. |
+| **Matrix 1** | First “inside” game – a simple platformer | Standard 2‑D platformer world | Player starts in this world; on a “break‑out” event the engine loads Matrix 2. |
+| **Matrix 2, 3…** | New gameplay paradigms (e.g. puzzle, top‑down shooter, text‑based, VR, etc.) | Whatever you design for that layer | Triggered by a scripted “break‑out” that calls a scene loader. |
+| **Final Layer – The “Computer”** | The world’s terminal that is actually the editor UI | A terminal screen that hosts the Godot editor | When the player enters, the editor UI is instantiated inside the game. |
+| **Exit** | Switch to full‑editor mode (credits, option to re‑play) | Credits text, dialogue window | When the player closes the terminal, the editor window replaces the game window. |
 
 The whole pipeline is *live* – every time you hit **Save** in the editor, the engine automatically rebuilds (or hot‑reloads) the 
 artifacts so that the next time you press “Play” you’re running the newest code.
