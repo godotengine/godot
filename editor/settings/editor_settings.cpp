@@ -1249,7 +1249,7 @@ String EditorSettings::get_global_resource_path() {
 	const String global_res_dir = config_dir.path_join("global_resources");
 	//int minor = GODOT_VERSION_MINOR;
 	String filename;
-	filename = vformat("global_res-%d.%d", GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR);
+	filename = vformat("%d.%d", GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR);
 
 	return global_res_dir.path_join(filename);
 }
