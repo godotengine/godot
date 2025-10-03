@@ -1585,6 +1585,10 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("file_dialog_show", "title", "current_directory", "filename", "show_hidden", "mode", "filters", "callback", "parent_window_id"), &DisplayServer::file_dialog_show, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("file_dialog_with_options_show", "title", "current_directory", "root", "filename", "show_hidden", "mode", "filters", "options", "callback", "parent_window_id"), &DisplayServer::file_dialog_with_options_show, DEFVAL(MAIN_WINDOW_ID));
 
+	ClassDB::bind_method(D_METHOD("get_temp_file_path_for_save", "filename"), &DisplayServer::get_temp_file_path_for_save);
+	ClassDB::bind_method(D_METHOD("release_file_access", "file_path"), &DisplayServer::release_file_access);
+	ClassDB::bind_method(D_METHOD("release_all_file_access"), &DisplayServer::release_all_file_access);
+
 	ClassDB::bind_method(D_METHOD("beep"), &DisplayServer::beep);
 
 	ClassDB::bind_method(D_METHOD("keyboard_get_layout_count"), &DisplayServer::keyboard_get_layout_count);

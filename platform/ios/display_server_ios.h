@@ -48,7 +48,19 @@ public:
 
 	virtual String get_name() const override;
 
+	virtual bool has_feature(Feature p_feature) const override;
+
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id = MAIN_WINDOW_ID) override;
+	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id = MAIN_WINDOW_ID) override;
+
+	// iOS-specific methods for security-scoped URL management
+	virtual void release_file_access(const String &p_file_path) override;
+	virtual void release_all_file_access() override;
+
+	// iOS-specific method to get temporary file path for save operations
+	virtual String get_temp_file_path_for_save(const String &p_filename) override;
 };

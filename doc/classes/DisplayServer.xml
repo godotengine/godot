@@ -917,6 +917,16 @@
 				[b]Note:[/b] Native dialogs are not included in this list.
 			</description>
 		</method>
+		<method name="get_temp_file_path_for_save" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="filename" type="String" />
+			<description>
+				Generates a unique temporary file path for save operations within the app's documents directory. The [param filename] parameter specifies the desired filename, which will be sanitized and made unique if necessary.
+				Returns an empty string if the operation fails or if the platform doesn't support this feature.
+				[b]Note:[/b] This method is implemented only on iOS for native file dialog save operations.
+				[b]Note:[/b] The returned path is within the app's sandboxed documents directory and is suitable for temporary file creation before export via [method file_dialog_show] in save mode.
+			</description>
+		</method>
 		<method name="global_menu_add_check_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
@@ -1691,6 +1701,23 @@
 			<description>
 				Registers an [Object] which represents an additional output that will be rendered too, beyond normal windows. The [Object] is only used as an identifier, which can be later passed to [method unregister_additional_output].
 				This can be used to prevent Godot from skipping rendering when no normal windows are visible.
+			</description>
+		</method>
+		<method name="release_all_file_access">
+			<return type="void" />
+			<description>
+				Releases all security-scoped file access permissions that were granted through native file dialogs.
+				This method cleans up all stored file access permissions and should be called when the application no longer needs access to any files that were selected through file dialogs.
+				[b]Note:[/b] This method is only implemented on iOS. On other platforms, this method does nothing.
+			</description>
+		</method>
+		<method name="release_file_access">
+			<return type="void" />
+			<param index="0" name="file_path" type="String" />
+			<description>
+				Releases security-scoped file access permission for the specified file path.
+				This method should be called when the application no longer needs access to a specific file that was selected through a native file dialog, allowing the system to reclaim the security-scoped resource.
+				[b]Note:[/b] This method is only implemented on iOS. On other platforms, this method does nothing.
 			</description>
 		</method>
 		<method name="screen_get_dpi" qualifiers="const">
