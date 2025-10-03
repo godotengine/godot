@@ -39,6 +39,7 @@ class AnimationNodeBlendTree;
 class AnimationNodeStartState;
 class AnimationNodeEndState;
 class AnimationTree;
+struct AnimationNodeInstance;
 
 class AnimationNode : public Resource {
 	GDCLASS(AnimationNode, Resource);
@@ -94,24 +95,6 @@ public:
 		}
 	};
 
-	// Temporary state for blending process which needs to be stored in each AnimationNodes.
-	struct NodeState {
-		friend AnimationNode;
-
-	private:
-		StringName base_path;
-
-	public:
-		AnimationNode *parent = nullptr;
-		Vector<StringName> connections;
-		LocalVector<real_t> track_weights;
-
-		const StringName get_base_path() const {
-			return base_path;
-		}
-
-	} node_state;
-
 	// Temporary state for blending process which needs to be started in the AnimationTree, pass through the AnimationNodes, and then return to the AnimationTree.
 	struct ProcessState {
 		AnimationTree *tree = nullptr;
@@ -120,61 +103,42 @@ public:
 		bool valid = false;
 		String invalid_reasons;
 		uint64_t last_pass = 0;
-	} *process_state = nullptr;
+	};
 
-private:
-	mutable AHashMap<StringName, int> property_cache;
+	// For performance ProcessState needs to be passed down,
+	// but the scripting api was already exposed before this optimization was made.
+	// So to keep compatibility, we need this internal state, so that the scripting api can continue working as before.
+	// It also must be thread_local, because multiple AnimationTrees can be processed in different threads.
+	static thread_local ProcessState *tls_process_state;
 
 public:
-	void set_node_state_base_path(const StringName p_base_path) {
-		if (p_base_path != node_state.base_path) {
-			node_state.base_path = p_base_path;
-			make_cache_dirty();
-		}
-	}
-
-	void set_node_state_base_path(const String p_base_path) {
-		if (p_base_path != node_state.base_path) {
-			node_state.base_path = p_base_path;
-			make_cache_dirty();
-		}
-	}
-
-	const StringName get_node_state_base_path() const {
-		return node_state.get_base_path();
-	}
-
-	void make_cache_dirty() {
-		property_cache.clear();
-	}
 	Array _get_filters() const;
 	void _set_filters(const Array &p_filters);
 	friend class AnimationNodeBlendTree;
 
 	// The time information is passed from upstream to downstream by AnimationMixer::PlaybackInfo::p_playback_info until AnimationNodeAnimation processes it.
 	// Conversely, AnimationNodeAnimation returns the processed result as NodeTimeInfo from downstream to upstream.
-	NodeTimeInfo _blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationNode *p_new_parent, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false, real_t *r_activity = nullptr);
-	NodeTimeInfo _pre_process(ProcessState *p_process_state, AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false);
+	NodeTimeInfo _blend_node(ProcessState &p_process_state, AnimationNodeInstance &p_instance, AnimationNodeInstance &p_node_instance, const Ref<AnimationNode> &p_node, const StringName &p_subpath, AnimationNode *p_new_parent, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false, real_t *r_activity = nullptr);
+	NodeTimeInfo _pre_process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only = false);
 
 protected:
 	StringName current_length = "current_length";
 	StringName current_position = "current_position";
 	StringName current_delta = "current_delta";
 
-	virtual NodeTimeInfo process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false); // To organize time information. Virtualizing for especially AnimationNodeAnimation needs to take "backward" into account.
-	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false); // Main process.
+	virtual NodeTimeInfo process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only = false); // To organize time information. Virtualizing for especially AnimationNodeAnimation needs to take "backward" into account.
+	virtual NodeTimeInfo _process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only = false); // Main process.
 
-	void blend_animation(const StringName &p_animation, AnimationMixer::PlaybackInfo p_playback_info);
-	NodeTimeInfo blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
-	NodeTimeInfo blend_input(int p_input, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
+	void blend_animation(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const StringName &p_animation, AnimationMixer::PlaybackInfo &p_playback_info);
+	NodeTimeInfo blend_node(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const Ref<AnimationNode> &p_node, const StringName &p_subpath, const AnimationMixer::PlaybackInfo &p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
+	NodeTimeInfo blend_input(ProcessState &p_process_state, AnimationNodeInstance &p_instance, int p_input, const AnimationMixer::PlaybackInfo &p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
 
 	// Bind-able methods to expose for compatibility, moreover AnimationMixer::PlaybackInfo is not exposed.
 	void blend_animation_ex(const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_is_external_seeking, real_t p_blend, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE);
-	double blend_node_ex(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
+	double blend_node_ex(const StringName &p_sub_path, const Ref<AnimationNode> &p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
 	double blend_input_ex(int p_input, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
 
-	void make_invalid(const String &p_reason);
-	AnimationTree *get_animation_tree() const;
+	void make_invalid(ProcessState &p_process_state, const String &p_reason);
 
 	static void _bind_methods();
 
@@ -190,22 +154,22 @@ protected:
 	GDVIRTUAL0RC(bool, _has_filter)
 
 public:
-	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
+	virtual void get_parameter_list(LocalVector<PropertyInfo> *r_list) const;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
 	virtual bool is_parameter_read_only(const StringName &p_parameter) const;
 
-	void set_parameter(const StringName &p_name, const Variant &p_value);
-	Variant get_parameter(const StringName &p_name) const;
+	void set_parameter_ex(const StringName &p_name, const Variant &p_value);
+	Variant get_parameter_ex(const StringName &p_name) const;
 
-	void set_node_time_info(const NodeTimeInfo &p_node_time_info); // Wrapper of set_parameter().
-	virtual NodeTimeInfo get_node_time_info() const; // Wrapper of get_parameter().
+	void set_node_time_info(AnimationNodeInstance &instance, ProcessState &p_process_state, const NodeTimeInfo &p_node_time_info); // Wrapper of set_parameter().
+	virtual NodeTimeInfo get_node_time_info(AnimationNodeInstance &instance, ProcessState &p_process_state) const; // Wrapper of get_parameter().
 
 	struct ChildNode {
 		StringName name;
 		Ref<AnimationNode> node;
 	};
 
-	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
+	virtual void get_child_nodes(LocalVector<ChildNode> *r_child_nodes);
 
 	virtual String get_caption() const;
 
@@ -261,6 +225,93 @@ class AnimationNodeEndState : public AnimationRootNode {
 	GDCLASS(AnimationNodeEndState, AnimationRootNode);
 };
 
+// Per instance data, for a node.
+struct AnimationNodeInstance {
+	// TODO: Maybe ptr to parent AnimationNodeInstance for faster access???
+	AnimationNode *parent = nullptr;
+	Vector<StringName> connections;
+	LocalVector<real_t> track_weights;
+	StringName base_path;
+	mutable AHashMap<StringName, int> property_cache;
+	mutable AHashMap<StringName, StringName> child_base_cache; // child_name -> child_base
+	mutable AHashMap<StringName, StringName> property_parent_map; // local property name -> full property path
+	mutable AHashMap<StringName, Pair<Variant, bool> *> property_ptrs;
+
+	// This makes it faster to access the most commonly used parameters, since we just index an array instead of doing a hash lookup.
+	// But unfortunately, these are still Variants, which are quite slow
+	// (ideally, get_parameter and set_parameter are removed, and everything is made strongly typed without variant).
+	LocalVector<Pair<Variant, bool> *> parameter_ptrs_by_slot;
+
+	// We can't put the members in here directly, because when AnimationNodeInstances are destroyed they do not persist data.
+	// In an ideal world, we would create a structure like `AnimationNodeInstanceParameters`
+	// It would contain the strongly typed members, and it would be persisted in AnimationTree.
+	// But that is a ton of work, and this is a good enough optimization for now.
+	uint32_t slot_current_length = static_cast<uint32_t>(-1);
+	uint32_t slot_current_position = static_cast<uint32_t>(-1);
+	uint32_t slot_current_delta = static_cast<uint32_t>(-1);
+
+	_FORCE_INLINE_ void set_parameter(const StringName &p_name, const Variant &p_value, const bool p_test_only) {
+		if (p_test_only) {
+			return;
+		}
+
+		if (p_name == SNAME("current_length")) {
+			ERR_FAIL_COND(p_value.get_type() != Variant::FLOAT);
+			Pair<Variant, bool> *prop = parameter_ptrs_by_slot[slot_current_length];
+			prop->first = p_value;
+			return;
+		}
+		if (p_name == SNAME("current_position")) {
+			ERR_FAIL_COND(p_value.get_type() != Variant::FLOAT);
+			Pair<Variant, bool> *prop = parameter_ptrs_by_slot[slot_current_position];
+			prop->first = p_value;
+			return;
+		}
+		if (p_name == SNAME("current_delta")) {
+			ERR_FAIL_COND(p_value.get_type() != Variant::FLOAT);
+			Pair<Variant, bool> *prop = parameter_ptrs_by_slot[slot_current_delta];
+			prop->first = p_value;
+			return;
+		}
+
+		Pair<Variant, bool> **p = property_ptrs.getptr(p_name);
+		ERR_FAIL_NULL(p);
+		Pair<Variant, bool> &prop = **p;
+
+		// Only copy variant if needed.
+		if (Animation::needs_type_cast(prop.first, p_value)) {
+			Variant value = p_value;
+			if (Animation::validate_type_match(prop.first, value)) {
+				prop.first = value;
+			}
+		} else {
+			prop.first = p_value;
+		}
+	}
+
+	_FORCE_INLINE_ Variant &get_parameter(const StringName &p_name) {
+		static Variant dummy = Variant();
+
+		if (p_name == SNAME("current_length")) {
+			Pair<Variant, bool> *prop = parameter_ptrs_by_slot[slot_current_length];
+			return prop->first;
+		}
+		if (p_name == SNAME("current_position")) {
+			Pair<Variant, bool> *prop = parameter_ptrs_by_slot[slot_current_position];
+			return prop->first;
+		}
+		if (p_name == SNAME("current_delta")) {
+			Pair<Variant, bool> *prop = parameter_ptrs_by_slot[slot_current_delta];
+			return prop->first;
+		}
+
+		Pair<Variant, bool> **p = property_ptrs.getptr(p_name);
+		ERR_FAIL_NULL_V(p, dummy);
+		Pair<Variant, bool> &prop = **p;
+		return prop.first;
+	}
+};
+
 class AnimationTree : public AnimationMixer {
 	GDCLASS(AnimationTree, AnimationMixer);
 
@@ -284,15 +335,14 @@ private:
 
 	friend class AnimationNode;
 
-	mutable List<PropertyInfo> properties;
-	mutable AHashMap<StringName, AHashMap<StringName, StringName>> property_parent_map;
-	mutable AHashMap<ObjectID, StringName> property_reference_map;
+	mutable LocalVector<PropertyInfo> properties;
 	mutable AHashMap<StringName, Pair<Variant, bool>> property_map; // Property value and read-only flag.
+	mutable AHashMap<ObjectID, AnimationNodeInstance> instance_map;
 
 	mutable bool properties_dirty = true;
 
 	void _update_properties() const;
-	void _update_properties_for_node(const String &p_base_path, Ref<AnimationNode> p_node) const;
+	void _update_properties_for_node(const StringName &p_base_path, const Ref<AnimationNode> &p_node) const;
 
 	void _tree_changed();
 	void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name);
@@ -334,6 +384,12 @@ private:
 #endif // DISABLE_DEPRECATED
 
 public:
+	AnimationNodeInstance &get_node_instance(const ObjectID p_id) {
+		AnimationNodeInstance *instance = instance_map.getptr(p_id);
+		CRASH_COND_MSG(instance == nullptr, "No instance found for id %s" + itos(p_id.operator uint64_t()));
+		return *instance;
+	}
+
 	void set_animation_player(const NodePath &p_path);
 	NodePath get_animation_player() const;
 

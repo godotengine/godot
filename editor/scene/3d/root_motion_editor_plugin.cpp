@@ -66,7 +66,7 @@ void EditorPropertyRootMotion::_node_assign() {
 
 	HashSet<String> paths;
 	{
-		List<StringName> animations;
+		LocalVector<StringName> animations;
 		mixer->get_animation_list(&animations);
 
 		for (const StringName &E : animations) {

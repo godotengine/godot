@@ -616,7 +616,7 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 	animations_menu->clear();
 	animations_to_add.clear();
 
-	List<StringName> animation_names;
+	LocalVector<StringName> animation_names;
 	tree->get_animation_list(&animation_names);
 	menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
 	if (animation_names.is_empty()) {
@@ -777,7 +777,7 @@ void AnimationNodeStateMachineEditor::_add_animation_type(int p_index) {
 
 	anim->set_animation(animations_to_add[p_index]);
 
-	String base_name = animations_to_add[p_index].validate_node_name();
+	String base_name = String(animations_to_add[p_index]).validate_node_name();
 	int base = 1;
 	String name = base_name;
 	while (state_machine->has_node(name)) {
