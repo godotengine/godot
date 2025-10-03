@@ -168,6 +168,11 @@ public:
 	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const = 0;
 	virtual String get_captured_timestamp_name(uint32_t p_index) const = 0;
 
+	/* SYNCHRONIZATION */
+
+	virtual void set_cpu_gpu_sync_mode(RS::CpuGpuSyncMode p_sync_mode) = 0;
+	virtual RS::CpuGpuSyncMode get_cpu_gpu_sync_mode() const = 0;
+
 	/* MISC */
 
 	virtual void update_dirty_resources() = 0;

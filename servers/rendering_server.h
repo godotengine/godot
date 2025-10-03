@@ -1779,6 +1779,16 @@ public:
 
 	virtual void set_physics_interpolation_enabled(bool p_enabled) = 0;
 
+	/* SYNCHRONIZATION */
+
+	enum CpuGpuSyncMode {
+		CPU_GPU_SYNC_PARALLEL,
+		CPU_GPU_SYNC_SEQUENTIAL,
+	};
+
+	virtual void set_cpu_gpu_sync_mode(CpuGpuSyncMode p_sync_mode) = 0;
+	virtual CpuGpuSyncMode get_cpu_gpu_sync_mode() const = 0;
+
 	/* EVENT QUEUING */
 
 	virtual void request_frame_drawn_callback(const Callable &p_callable) = 0;
@@ -1998,6 +2008,7 @@ VARIANT_ENUM_CAST(RenderingServer::GlobalShaderParameterType);
 VARIANT_ENUM_CAST(RenderingServer::RenderingInfo);
 VARIANT_ENUM_CAST(RenderingServer::CanvasTextureChannel);
 VARIANT_ENUM_CAST(RenderingServer::BakeChannels);
+VARIANT_ENUM_CAST(RenderingServer::CpuGpuSyncMode);
 
 #ifndef DISABLE_DEPRECATED
 VARIANT_ENUM_CAST(RenderingServer::Features);

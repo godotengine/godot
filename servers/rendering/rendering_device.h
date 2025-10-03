@@ -1621,6 +1621,22 @@ public:
 	uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const;
 	String get_captured_timestamp_name(uint32_t p_index) const;
 
+	/*************************/
+	/**** SYNCHRONIZATION ****/
+	/*************************/
+
+	enum CpuGpuSyncMode {
+		CPU_GPU_SYNC_PARALLEL,
+		CPU_GPU_SYNC_SEQUENTIAL,
+	};
+
+	void set_cpu_gpu_sync_mode(CpuGpuSyncMode p_sync_mode);
+	CpuGpuSyncMode get_cpu_gpu_sync_mode() const { return _cpu_gpu_sync_mode; }
+
+private:
+	CpuGpuSyncMode _cpu_gpu_sync_mode = CpuGpuSyncMode::CPU_GPU_SYNC_PARALLEL;
+
+public:
 	/****************/
 	/**** LIMITS ****/
 	/****************/

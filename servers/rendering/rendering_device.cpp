@@ -6276,6 +6276,10 @@ void RenderingDevice::swap_buffers(bool p_present) {
 	_end_frame();
 	_execute_frame(p_present);
 
+	if (_cpu_gpu_sync_mode == CpuGpuSyncMode::CPU_GPU_SYNC_SEQUENTIAL) {
+		_stall_for_previous_frames();
+	}
+
 	// Advance to the next frame and begin recording again.
 	frame = (frame + 1) % frames.size();
 
@@ -7140,6 +7144,10 @@ uint64_t RenderingDevice::get_captured_timestamp_cpu_time(uint32_t p_index) cons
 String RenderingDevice::get_captured_timestamp_name(uint32_t p_index) const {
 	ERR_FAIL_UNSIGNED_INDEX_V(p_index, frames[frame].timestamp_result_count, String());
 	return frames[frame].timestamp_result_names[p_index];
+}
+
+void RenderingDevice::set_cpu_gpu_sync_mode(CpuGpuSyncMode p_sync_mode) {
+	_cpu_gpu_sync_mode = p_sync_mode;
 }
 
 uint64_t RenderingDevice::limit_get(Limit p_limit) const {
