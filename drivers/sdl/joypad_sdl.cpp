@@ -234,6 +234,12 @@ void JoypadSDL::process_events() {
 				case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
 					SKIP_EVENT_FOR_GAMEPAD;
 
+					// Some devices report pressing buttons with indices like 232+, 241+, etc. that are not valid,
+					// so we ignore them here.
+					if (sdl_event.jbutton.button >= (int)JoyButton::MAX) {
+						continue;
+					}
+
 					Input::get_singleton()->joy_button(
 							joy_id,
 							static_cast<JoyButton>(sdl_event.jbutton.button), // Godot button constants are intentionally the same as SDL's, so we can just straight up use them
