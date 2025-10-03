@@ -52,7 +52,7 @@
 
 using Microsoft::WRL::ComPtr;
 
-#define ARRAY_SIZE(a) std::size(a)
+#define ARRAY_SIZE(a) std_size(a)
 
 class RenderingContextDriverD3D12 : public RenderingContextDriver {
 	ComPtr<ID3D12DeviceFactory> device_factory;

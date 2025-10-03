@@ -43,7 +43,6 @@
 #include <algorithm>
 #include <csignal>
 #include <cstdlib>
-#include <iterator>
 #include <string>
 #include <vector>
 

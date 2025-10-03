@@ -4199,7 +4199,7 @@ Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p
 				32,
 				PropModeReplace,
 				(unsigned char *)&data,
-				std::size(data));
+				std_size(data));
 		return p_property;
 	} else if (p_target == XInternAtom(x11_display, "SAVE_TARGETS", 0)) {
 		// Request to check if SAVE_TARGETS is supported, nothing special to do.
