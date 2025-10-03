@@ -55,6 +55,10 @@ RenderingContextDriver::SurfaceID RenderingContextDriverVulkanWayland::surface_c
 	return SurfaceID(surface);
 }
 
+bool RenderingContextDriverVulkanWayland::is_colorspace_externally_managed() const {
+	return true;
+}
+
 RenderingContextDriverVulkanWayland::RenderingContextDriverVulkanWayland() {
 	// Does nothing.
 }
