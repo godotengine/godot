@@ -28,11 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#define MINIMP3_FLOAT_OUTPUT
-#define MINIMP3_IMPLEMENTATION
-#define MINIMP3_NO_STDIO
+#define DR_MP3_FLOAT_OUTPUT
+#define DR_MP3_IMPLEMENTATION
+#define DR_MP3_NO_STDIO
 
 #include "audio_stream_mp3.h"
+
+#include "thirdparty/dr_libs/dr_bridge.h"
 
 int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	if (!active) {
@@ -52,13 +54,12 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	}
 
 	while (todo && active) {
-		mp3dec_frame_info_t frame_info;
-		mp3d_sample_t *buf_frame = nullptr;
+		drmp3d_sample_t buf_frame[2];
 
-		int samples_mixed = mp3dec_ex_read_frame(&mp3d, &buf_frame, &frame_info, mp3_stream->channels);
+		int samples_mixed = drmp3_read_pcm_frames_f32(&mp3d, 1, buf_frame);
 
 		if (samples_mixed) {
-			p_buffer[p_frames - todo] = AudioFrame(buf_frame[0], buf_frame[samples_mixed - 1]);
+			p_buffer[p_frames - todo] = AudioFrame(buf_frame[0], buf_frame[mp3d.channels - 1]);
 			if (loop_fade_remaining < FADE_SIZE) {
 				p_buffer[p_frames - todo] += loop_fade[loop_fade_remaining] * (float(FADE_SIZE - loop_fade_remaining) / float(FADE_SIZE));
 				loop_fade_remaining++;
@@ -68,8 +69,8 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
 			if (beat_loop && (int)frames_mixed >= beat_length_frames) {
 				for (int i = 0; i < FADE_SIZE; i++) {
-					samples_mixed = mp3dec_ex_read_frame(&mp3d, &buf_frame, &frame_info, mp3_stream->channels);
-					loop_fade[i] = AudioFrame(buf_frame[0], buf_frame[samples_mixed - 1]);
+					samples_mixed = drmp3_read_pcm_frames_f32(&mp3d, 1, buf_frame);
+					loop_fade[i] = AudioFrame(buf_frame[0], buf_frame[mp3d.channels - 1]);
 					if (!samples_mixed) {
 						break;
 					}
@@ -136,7 +137,7 @@ void AudioStreamPlaybackMP3::seek(double p_time) {
 	}
 
 	frames_mixed = uint32_t(mp3_stream->sample_rate * p_time);
-	mp3dec_ex_seek(&mp3d, (uint64_t)frames_mixed * mp3_stream->channels);
+	drmp3_seek_to_pcm_frame(&mp3d, (uint64_t)frames_mixed);
 }
 
 void AudioStreamPlaybackMP3::tag_used_streams() {
@@ -182,7 +183,7 @@ Variant AudioStreamPlaybackMP3::get_parameter(const StringName &p_name) const {
 }
 
 AudioStreamPlaybackMP3::~AudioStreamPlaybackMP3() {
-	mp3dec_ex_close(&mp3d);
+	drmp3_uninit(&mp3d);
 }
 
 Ref<AudioStreamPlayback> AudioStreamMP3::instantiate_playback() {
@@ -196,15 +197,13 @@ Ref<AudioStreamPlayback> AudioStreamMP3::instantiate_playback() {
 	mp3s.instantiate();
 	mp3s->mp3_stream = Ref<AudioStreamMP3>(this);
 
-	int errorcode = mp3dec_ex_open_buf(&mp3s->mp3d, data.ptr(), data_len, MP3D_SEEK_TO_SAMPLE);
+	int success = drmp3_init_memory(&mp3s->mp3d, data.ptr(), data_len, (drmp3_allocation_callbacks *)&dr_alloc_calls);
 
 	mp3s->frames_mixed = 0;
 	mp3s->active = false;
 	mp3s->loops = 0;
 
-	if (errorcode) {
-		ERR_FAIL_COND_V(errorcode, Ref<AudioStreamPlaybackMP3>());
-	}
+	ERR_FAIL_COND_V(!success, Ref<AudioStreamPlaybackMP3>());
 
 	return mp3s;
 }
@@ -220,18 +219,18 @@ void AudioStreamMP3::clear_data() {
 void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 	int src_data_len = p_data.size();
 
-	mp3dec_ex_t *mp3d = memnew(mp3dec_ex_t);
-	int err = mp3dec_ex_open_buf(mp3d, p_data.ptr(), src_data_len, MP3D_SEEK_TO_SAMPLE);
-	if (err || mp3d->info.hz == 0) {
+	drmp3 *mp3d = memnew(drmp3);
+	int success = drmp3_init_memory(mp3d, p_data.ptr(), src_data_len, (drmp3_allocation_callbacks *)&dr_alloc_calls);
+	if (!success || mp3d->sampleRate == 0) {
 		memdelete(mp3d);
 		ERR_FAIL_MSG("Failed to decode mp3 file. Make sure it is a valid mp3 audio file.");
 	}
 
-	channels = mp3d->info.channels;
-	sample_rate = mp3d->info.hz;
-	length = float(mp3d->samples) / (sample_rate * float(channels));
+	channels = mp3d->channels;
+	sample_rate = mp3d->sampleRate;
+	length = float(drmp3_get_pcm_frame_count(mp3d)) / (mp3d->sampleRate);
 
-	mp3dec_ex_close(mp3d);
+	drmp3_uninit(mp3d);
 	memdelete(mp3d);
 
 	data = p_data;
