@@ -311,7 +311,7 @@ void test(TestType p_type) {
 	ERR_FAIL_COND_MSG(fa.is_null(), "Could not open file: " + test);
 
 	// Initialize the language for the test routine.
-	init_language(fa->get_path_absolute().get_base_dir());
+	init_language("gdscript", "res://", fa->get_path_absolute().get_base_dir());
 
 	// Load global classes.
 	TypedArray<Dictionary> script_classes = ProjectSettings::get_singleton()->get_global_class_list();
