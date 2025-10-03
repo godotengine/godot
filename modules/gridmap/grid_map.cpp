@@ -216,6 +216,18 @@ real_t GridMap::get_collision_priority() const {
 	return collision_priority;
 }
 
+void GridMap::set_collision_visibility_mode(DebugVisibilityMode p_show_collision) {
+	if (collision_visibility_mode == p_show_collision) {
+		return;
+	}
+	collision_visibility_mode = p_show_collision;
+	_recreate_octant_data();
+}
+
+GridMap::DebugVisibilityMode GridMap::get_collision_visibility_mode() const {
+	return collision_visibility_mode;
+}
+
 void GridMap::set_physics_material(Ref<PhysicsMaterial> p_material) {
 	physics_material = p_material;
 	_update_physics_bodies_characteristics();
@@ -398,12 +410,22 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, physics_material->computed_bounce());
 		}
 #endif // PHYSICS_3D_DISABLED
-		SceneTree *st = SceneTree::get_singleton();
-
-		if (st && st->is_debugging_collisions_hint()) {
-			g->collision_debug = RenderingServer::get_singleton()->mesh_create();
-			g->collision_debug_instance = RenderingServer::get_singleton()->instance_create();
-			RenderingServer::get_singleton()->instance_set_base(g->collision_debug_instance, g->collision_debug);
+		bool debug_collisions = false;
+		switch (collision_visibility_mode) {
+			case DEBUG_VISIBILITY_MODE_DEFAULT:
+				debug_collisions = !Engine::get_singleton()->is_editor_hint() && get_tree()->is_debugging_collisions_hint();
+				break;
+			case DEBUG_VISIBILITY_MODE_FORCE_HIDE:
+				debug_collisions = false;
+				break;
+			case DEBUG_VISIBILITY_MODE_FORCE_SHOW:
+				debug_collisions = true;
+				break;
+		}
+		if (debug_collisions) {
+			g->collision_debug = RS::get_singleton()->mesh_create();
+			g->collision_debug_instance = RS::get_singleton()->instance_create();
+			RS::get_singleton()->instance_set_base(g->collision_debug_instance, g->collision_debug);
 		}
 
 		octant_map[octantkey] = g;
@@ -1187,6 +1209,9 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_priority", "priority"), &GridMap::set_collision_priority);
 	ClassDB::bind_method(D_METHOD("get_collision_priority"), &GridMap::get_collision_priority);
 
+	ClassDB::bind_method(D_METHOD("set_collision_visibility_mode", "visibility_mode"), &GridMap::set_collision_visibility_mode);
+	ClassDB::bind_method(D_METHOD("get_collision_visibility_mode"), &GridMap::get_collision_visibility_mode);
+
 	ClassDB::bind_method(D_METHOD("set_physics_material", "material"), &GridMap::set_physics_material);
 	ClassDB::bind_method(D_METHOD("get_physics_material"), &GridMap::get_physics_material);
 #endif // PHYSICS_3D_DISABLED
@@ -1260,6 +1285,7 @@ void GridMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_priority"), "set_collision_priority", "get_collision_priority");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
 #endif // PHYSICS_3D_DISABLED
 	ADD_GROUP("Navigation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
@@ -1268,6 +1294,10 @@ void GridMap::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
 	ADD_SIGNAL(MethodInfo(CoreStringName(changed)));
+
+	BIND_ENUM_CONSTANT(DEBUG_VISIBILITY_MODE_DEFAULT);
+	BIND_ENUM_CONSTANT(DEBUG_VISIBILITY_MODE_FORCE_HIDE);
+	BIND_ENUM_CONSTANT(DEBUG_VISIBILITY_MODE_FORCE_SHOW);
 }
 
 void GridMap::set_cell_scale(float p_scale) {
