@@ -164,6 +164,8 @@ uniform bool clear;
 uniform uint total_particles;
 uniform bool use_fractional_delta;
 
+uniform uint instance_offset;
+
 uint hash(uint x) {
 	x = ((x >> uint(16)) ^ x) * uint(0x45d9f3b);
 	x = ((x >> uint(16)) ^ x) * uint(0x45d9f3b);
