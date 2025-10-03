@@ -471,7 +471,17 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 
 	// Encoding table setup.
 	if ((dest_format == Image::FORMAT_DXT1 || dest_format == Image::FORMAT_DXT5) && dxt1_encoding_table_buffer.is_null()) {
-		dxt1_encoding_table_buffer = compress_rd->storage_buffer_create(1024 * 4, Span(dxt1_encoding_table).reinterpret<uint8_t>());
+		LocalVector<float> dxt1_encoding_table;
+		dxt1_encoding_table.resize(256 * 4);
+
+		for (int i = 0; i < 256; i++) {
+			dxt1_encoding_table[i * 2 + 0] = static_cast<float>(stb__OMatch5[i][0]);
+			dxt1_encoding_table[i * 2 + 1] = static_cast<float>(stb__OMatch5[i][1]);
+			dxt1_encoding_table[512 + (i * 2 + 0)] = static_cast<float>(stb__OMatch6[i][0]);
+			dxt1_encoding_table[512 + (i * 2 + 1)] = static_cast<float>(stb__OMatch6[i][1]);
+		}
+
+		dxt1_encoding_table_buffer = compress_rd->storage_buffer_create(dxt1_encoding_table.size() * sizeof(float), Span<float>(dxt1_encoding_table).reinterpret<uint8_t>());
 	}
 
 	const int mip_count = r_img->get_mipmap_count() + 1;
