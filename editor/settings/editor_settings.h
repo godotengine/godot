@@ -171,11 +171,13 @@ public:
 	void set_project_metadata(const String &p_section, const String &p_key, const Variant &p_data);
 	Variant get_project_metadata(const String &p_section, const String &p_key, const Variant &p_default) const;
 
-	void set_favorites(const Vector<String> &p_favorites);
+	void set_favorites(const Vector<String> &p_favorites, bool p_update_file_dialog = true);
+	void set_favorites_bind(const Vector<String> &p_favorites);
 	Vector<String> get_favorites() const;
 	void set_favorite_properties(const HashMap<String, PackedStringArray> &p_favorite_properties);
 	HashMap<String, PackedStringArray> get_favorite_properties() const;
-	void set_recent_dirs(const Vector<String> &p_recent_dirs);
+	void set_recent_dirs(const Vector<String> &p_recent_dirs, bool p_update_file_dialog = true);
+	void set_recent_dirs_bind(const Vector<String> &p_recent_dirs);
 	Vector<String> get_recent_dirs() const;
 	void load_favorites_and_recent_dirs();
 
