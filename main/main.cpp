@@ -598,7 +598,24 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--rendering-method <renderer>", "Renderer name. Requires driver support.\n");
 	print_help_option("--rendering-driver <driver>", "Rendering driver (depends on display driver).\n");
 	print_help_option("--gpu-index <device_index>", "Use a specific GPU (run with --verbose to get a list of available devices).\n");
-	print_help_option("--text-driver <driver>", "Text driver (used for font rendering, bidirectional support and shaping).\n");
+	Vector<String> text_drivers = { "dummy" };
+	// Insert in reverse order, so that the `dummy` option is always last
+	// and the `fallback` option is always after `advanced`.
+#ifdef MODULE_TEXT_SERVER_FB_ENABLED
+	text_drivers.insert(0, "fallback");
+#endif
+#ifdef MODULE_TEXT_SERVER_ADV_ENABLED
+	text_drivers.insert(0, "advanced");
+#endif
+	print_help_option("--text-driver <driver>", "Text driver (used for font rendering, bidirectional support and shaping) [");
+	for (int i = 0; i < text_drivers.size(); i++) {
+		if (i > 0) {
+			OS::get_singleton()->print(", ");
+		}
+		OS::get_singleton()->print("\"%s\"", text_drivers[i].utf8().get_data());
+	}
+	OS::get_singleton()->print("].\n");
+
 	print_help_option("--tablet-driver <driver>", "Pen tablet input driver.\n");
 	print_help_option("--headless", "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script.\n");
 	print_help_option("--log-file <file>", "Write output/error log to the specified path instead of the default location defined by the project.\n");
@@ -1184,6 +1201,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--text-driver") {
 			if (N) {
 				text_driver = N->get();
+				// Aliases for default text drivers.
+				if (text_driver == "advanced") {
+					text_driver = "ICU / HarfBuzz / Graphite (Built-in)";
+				} else if (text_driver == "fallback") {
+					text_driver = "Fallback (Built-in)";
+				} else if (text_driver == "dummy") {
+					text_driver = "Dummy";
+				}
 				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing text driver argument, aborting.\n");
