@@ -34,7 +34,7 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 #include "core/variant/array.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #include <objbase.h>
 #include <sapi.h>

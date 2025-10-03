@@ -388,6 +388,18 @@
 		<theme_item name="font_unselected_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 1)">
 			Font color of the other, unselected tabs.
 		</theme_item>
+		<theme_item name="icon_disabled_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon color of disabled tabs.
+		</theme_item>
+		<theme_item name="icon_hovered_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon color of the currently hovered tab. Does not apply to the selected tab.
+		</theme_item>
+		<theme_item name="icon_selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon color of the currently selected tab.
+		</theme_item>
+		<theme_item name="icon_unselected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon color of the other, unselected tabs.
+		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal separation between the elements inside tabs.
 		</theme_item>

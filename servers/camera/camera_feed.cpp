@@ -30,7 +30,7 @@
 
 #include "camera_feed.h"
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 void CameraFeed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_id"), &CameraFeed::get_id);

@@ -72,7 +72,7 @@
 #include "scene/main/node.h"
 #include "scene/main/window.h"
 #include "script_text_editor.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 #include "text_editor.h"
 
 /*** SYNTAX HIGHLIGHTER ****/

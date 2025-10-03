@@ -34,7 +34,7 @@
 #include "../../openxr_util.h"
 #include "../openxr_future_extension.h"
 #include "core/config/project_settings.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 
 ////////////////////////////////////////////////////////////////////////////
 // OpenXRSpatialCapabilityConfigurationAnchor

@@ -39,7 +39,7 @@
 #include "scene/resources/image_texture.h"
 
 #ifndef NAVIGATION_2D_DISABLED
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 #endif // NAVIGATION_2D_DISABLED
 
 /////////////////////////////// TileMapPattern //////////////////////////////////////

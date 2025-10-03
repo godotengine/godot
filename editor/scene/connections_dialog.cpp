@@ -791,6 +791,7 @@ ConnectDialog::ConnectDialog() {
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ConnectDialog::_item_activated));
 	tree->connect("node_selected", callable_mp(this, &ConnectDialog::_tree_node_selected));
 	tree->set_connect_to_script_mode(true);
+	tree->get_scene_tree()->set_theme_type_variation("TreeSecondary");
 
 	HBoxContainer *hbc_filter = memnew(HBoxContainer);
 

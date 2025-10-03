@@ -32,7 +32,7 @@
 
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 ///@TODO probably should change a few integers to unsigned integers...
 

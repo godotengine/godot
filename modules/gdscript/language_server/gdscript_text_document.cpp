@@ -36,7 +36,7 @@
 
 #include "editor/script/script_text_editor.h"
 #include "editor/settings/editor_settings.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 void GDScriptTextDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("didOpen"), &GDScriptTextDocument::didOpen);

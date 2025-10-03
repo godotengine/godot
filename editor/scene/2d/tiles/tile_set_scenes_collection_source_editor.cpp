@@ -556,6 +556,7 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	scene_tiles_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	scene_tiles_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	scene_tiles_list->set_v_size_flags(SIZE_EXPAND_FILL);
+	scene_tiles_list->set_theme_type_variation("ItemListSecondary");
 	SET_DRAG_FORWARDING_CDU(scene_tiles_list, TileSetScenesCollectionSourceEditor);
 	scene_tiles_list->connect(SceneStringName(item_selected), callable_mp(this, &TileSetScenesCollectionSourceEditor::_update_tile_inspector).unbind(1));
 	scene_tiles_list->connect(SceneStringName(item_selected), callable_mp(this, &TileSetScenesCollectionSourceEditor::_update_action_buttons).unbind(1));
