@@ -31,6 +31,7 @@
 #include "engine.h"
 
 #include "core/authors.gen.h"
+#include "core/buildsystem.gen.h"
 #include "core/config/project_settings.h"
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
@@ -143,6 +144,17 @@ Dictionary Engine::get_version_info() const {
 	}
 	stringver += "-" + String(dict["status"]) + " (" + String(dict["build"]) + ")";
 	dict["string"] = stringver;
+
+	return dict;
+}
+
+Dictionary Engine::get_build_system_info() const {
+	Dictionary dict;
+	dict["os_name"] = BUILDSYSTEM_OS_NAME;
+	dict["compiler_name"] = BUILDSYSTEM_COMPILER_NAME;
+	dict["compiler_version"] = BUILDSYSTEM_COMPILER_VERSION;
+	dict["optimization_type"] = BUILDSYSTEM_OPTIMIZATION_TYPE;
+	dict["optimization_lto"] = BUILDSYSTEM_OPTIMIZATION_LTO;
 
 	return dict;
 }

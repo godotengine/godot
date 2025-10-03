@@ -3,7 +3,7 @@ import platform
 import sys
 from typing import TYPE_CHECKING
 
-from methods import get_compiler_version, print_error, print_info, print_warning, using_gcc
+from methods import print_error, print_info, print_warning, using_gcc
 from platform_methods import detect_arch, validate_arch
 
 if TYPE_CHECKING:
@@ -113,8 +113,7 @@ def configure(env: "SConsEnvironment"):
     if env["linker"] != "default":
         print("Using linker program: " + env["linker"])
         if env["linker"] == "mold" and using_gcc(env):  # GCC < 12.1 doesn't support -fuse-ld=mold.
-            cc_version = get_compiler_version(env)
-            cc_semver = (cc_version["major"], cc_version["minor"])
+            cc_semver = (env.compiler_version["major"], env.compiler_version["minor"])
             if cc_semver < (12, 1):
                 found_wrapper = False
                 for path in ["/usr/libexec", "/usr/local/libexec", "/usr/lib", "/usr/local/lib"]:
