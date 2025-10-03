@@ -897,6 +897,17 @@ EditorDebuggerNode::CameraOverride EditorDebuggerNode::get_camera_override() {
 	return camera_override;
 }
 
+void EditorDebuggerNode::set_debug_draw_override(Viewport::DebugDraw p_override) {
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		dbg->set_debug_draw_override(p_override);
+	});
+	debug_draw_override = p_override;
+}
+
+Viewport::DebugDraw EditorDebuggerNode::get_debug_draw_override() {
+	return debug_draw_override;
+}
+
 void EditorDebuggerNode::add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin) {
 	ERR_FAIL_COND_MSG(p_plugin.is_null(), "Debugger plugin is null.");
 	ERR_FAIL_COND_MSG(debugger_plugins.has(p_plugin), "Debugger plugin already exists.");

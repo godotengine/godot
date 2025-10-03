@@ -190,6 +190,7 @@ private:
 	void _send_debug_mute_audio_msg(bool p_mute);
 
 	EditorDebuggerNode::CameraOverride camera_override;
+	Viewport::DebugDraw debug_draw_override;
 
 	void _stack_dump_frame_selected();
 
@@ -362,6 +363,9 @@ public:
 
 	EditorDebuggerNode::CameraOverride get_camera_override() const;
 	void set_camera_override(EditorDebuggerNode::CameraOverride p_override);
+
+	Viewport::DebugDraw get_debug_draw_override() const;
+	void set_debug_draw_override(Viewport::DebugDraw p_override);
 
 	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);
 

@@ -54,6 +54,7 @@ private:
 	int select_mode = RuntimeNodeSelect::SELECT_MODE_SINGLE;
 	bool mute_audio = false;
 	EditorDebuggerNode::CameraOverride camera_override_mode = EditorDebuggerNode::OVERRIDE_INGAME;
+	Viewport::DebugDraw debug_draw_override = Viewport::DEBUG_DRAW_DISABLED;
 
 	void _session_started(Ref<EditorDebuggerSession> p_session);
 	void _session_stopped();
@@ -92,6 +93,8 @@ public:
 	void set_camera_override(bool p_enabled);
 	void set_camera_manipulate_mode(EditorDebuggerNode::CameraOverride p_mode);
 
+	void set_debug_draw_override(Viewport::DebugDraw p_mode);
+
 	void reset_camera_2d_position();
 	void reset_camera_3d_position();
 
@@ -128,6 +131,46 @@ class GameView : public VBoxContainer {
 		EMBED_NOT_AVAILABLE_PROJECT_DISPLAY_DRIVER,
 	};
 
+	// Keep values in sync with Node3DEditorPlugin's `VIEW_DISPLAY_*` enum.
+	enum ViewDisplay {
+		VIEW_DISPLAY_NORMAL = 100,
+		VIEW_DISPLAY_WIREFRAME = 101,
+		VIEW_DISPLAY_OVERDRAW = 102,
+		VIEW_DISPLAY_LIGHTING = 103,
+		VIEW_DISPLAY_UNSHADED = 104,
+		VIEW_DISPLAY_ADVANCED = 105,
+		VIEW_DISPLAY_DEBUG_PSSM_SPLITS = 106,
+		VIEW_DISPLAY_NORMAL_BUFFER = 107,
+		VIEW_DISPLAY_DEBUG_SHADOW_ATLAS = 108,
+		VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS = 109,
+		VIEW_DISPLAY_DEBUG_DECAL_ATLAS = 110,
+		VIEW_DISPLAY_DEBUG_VOXEL_GI_ALBEDO = 111,
+		VIEW_DISPLAY_DEBUG_VOXEL_GI_LIGHTING = 112,
+		VIEW_DISPLAY_DEBUG_VOXEL_GI_EMISSION = 113,
+		VIEW_DISPLAY_DEBUG_SDFGI = 114,
+		VIEW_DISPLAY_DEBUG_SDFGI_PROBES = 115,
+		VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE = 116,
+		VIEW_DISPLAY_DEBUG_SSAO = 117,
+		VIEW_DISPLAY_DEBUG_SSIL = 118,
+		VIEW_DISPLAY_DEBUG_GI_BUFFER = 119,
+		VIEW_DISPLAY_DEBUG_DISABLE_LOD = 120,
+		VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS = 121,
+		VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS = 122,
+		VIEW_DISPLAY_DEBUG_CLUSTER_DECALS = 123,
+		VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES = 124,
+		VIEW_DISPLAY_DEBUG_OCCLUDERS = 125,
+		VIEW_DISPLAY_MOTION_VECTORS = 126,
+		VIEW_DISPLAY_INTERNAL_BUFFER = 127,
+		VIEW_MAX = 128,
+	};
+
+	// Supported rendering methods for advanced debug draw mode items.
+	enum SupportedRenderingMethods {
+		ALL,
+		FORWARD_PLUS,
+		FORWARD_PLUS_MOBILE,
+	};
+
 	inline static GameView *singleton = nullptr;
 
 	Ref<GameViewDebugger> debugger;
@@ -143,6 +186,7 @@ class GameView : public VBoxContainer {
 	EmbedSizeMode embed_size_mode = SIZE_MODE_FIXED;
 	bool paused = false;
 	Size2 size_paused;
+	Viewport::DebugDraw debug_draw_override = Viewport::DEBUG_DRAW_DISABLED;
 
 	Rect2i floating_window_rect;
 	int floating_window_screen = -1;
@@ -161,6 +205,8 @@ class GameView : public VBoxContainer {
 
 	Button *camera_override_button = nullptr;
 	MenuButton *camera_override_menu = nullptr;
+	MenuButton *debug_draw_override_menu = nullptr;
+	PopupMenu *debug_draw_override_advanced_submenu = nullptr;
 
 	VSeparator *embedding_separator = nullptr;
 	Button *fixed_size_button = nullptr;
@@ -210,6 +256,8 @@ class GameView : public VBoxContainer {
 
 	void _camera_override_button_toggled(bool p_pressed);
 	void _camera_override_menu_id_pressed(int p_id);
+
+	void _debug_draw_override_menu_id_pressed(int p_id);
 
 	void _window_close_request();
 	void _update_floating_window_settings();
