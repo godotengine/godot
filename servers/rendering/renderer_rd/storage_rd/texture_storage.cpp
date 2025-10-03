@@ -1390,6 +1390,48 @@ void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image,
 	_texture_2d_update(p_texture, p_image, p_layer, false);
 }
 
+void TextureStorage::texture_update_partial(RID p_texture, const Ref<Image> &p_image, Rect2i p_src_rect, Vector2i p_dst_pos, int p_dst_depth, int p_dst_mipmap, int p_dst_layer) {
+	ERR_FAIL_COND(p_image.is_null() || p_image->is_empty());
+
+	Texture *texture = texture_owner.get_or_null(p_texture);
+
+	ERR_FAIL_NULL(texture);
+	ERR_FAIL_COND(p_image.is_null());
+	ERR_FAIL_COND(texture->render_target);
+	ERR_FAIL_COND(texture->format != p_image->get_format());
+
+	int src_x = p_src_rect.position.x;
+	int src_y = p_src_rect.position.y;
+	int src_w = p_src_rect.size.width;
+	int src_h = p_src_rect.size.height;
+
+	ERR_FAIL_COND(src_w <= 0 || src_h <= 0);
+	ERR_FAIL_COND(src_x < 0 || src_y < 0 || src_x + src_w > p_image->get_width() || src_y + src_h > p_image->get_height());
+
+#ifdef TOOLS_ENABLED
+	texture->image_cache_2d.unref();
+#endif
+
+	TextureToRDFormat tf;
+	Ref<Image> validated_img = _validate_texture_format(p_image, tf);
+	Ref<Image> sub_img = validated_img;
+	if (src_x > 0 || src_y > 0 || src_w != validated_img->get_width() || src_h != validated_img->get_height()) {
+		sub_img = validated_img->get_region(p_src_rect);
+	}
+	Vector2i img_size = sub_img->get_size();
+	Vector<uint8_t> data = sub_img->get_data();
+	Span<uint8_t> span = data.span();
+	if (sub_img->has_mipmaps()) {
+		// Only use the data of the first mipmap level.
+		int64_t mip_ofs;
+		int64_t mip_size;
+		sub_img->get_mipmap_offset_and_size(0, mip_ofs, mip_size);
+		span = Span(data.ptr() + mip_ofs, mip_size);
+	}
+
+	RD::get_singleton()->texture_update_partial(texture->rd_texture, p_dst_layer, p_dst_mipmap, Vector3i(p_dst_pos.x, p_dst_pos.y, p_dst_depth), Vector3i(img_size.x, img_size.y, 1), span);
+}
+
 void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) {
 	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL(tex);

@@ -202,6 +202,7 @@ public:
 	//these go through command queue if they are in another thread
 	FUNC3(texture_2d_update, RID, const Ref<Image> &, int)
 	FUNC2(texture_3d_update, RID, const Vector<Ref<Image>> &)
+	FUNC7(texture_update_partial, RID, const Ref<Image> &, Rect2i, Vector2i, int, int, int)
 	FUNC4(texture_external_update, RID, int, int, uint64_t)
 	FUNC2(texture_proxy_update, RID, RID)
 
