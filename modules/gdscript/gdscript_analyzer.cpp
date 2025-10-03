@@ -1453,8 +1453,15 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 				bool has_valid_setter = false;
 
 				if (member.variable->getter_pointer != nullptr) {
-					if (p_class->has_function(member.variable->getter_pointer->name)) {
-						getter_function = p_class->get_member(member.variable->getter_pointer->name).function;
+					GDScriptParser::ClassNode *current_class = p_class;
+					bool found_getter = false;
+					while (current_class != nullptr && !found_getter) {
+						if (current_class->has_function(member.variable->getter_pointer->name)) {
+							getter_function = current_class->get_member(member.variable->getter_pointer->name).function;
+							found_getter = true;
+						} else {
+							current_class = current_class->base_type.class_type;
+						}
 					}
 
 					if (getter_function == nullptr) {
@@ -1483,8 +1490,15 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 				}
 
 				if (member.variable->setter_pointer != nullptr) {
-					if (p_class->has_function(member.variable->setter_pointer->name)) {
-						setter_function = p_class->get_member(member.variable->setter_pointer->name).function;
+					GDScriptParser::ClassNode *current_class = p_class;
+					bool found_setter = false;
+					while (current_class != nullptr && !found_setter) {
+						if (current_class->has_function(member.variable->setter_pointer->name)) {
+							setter_function = current_class->get_member(member.variable->setter_pointer->name).function;
+							found_setter = true;
+						} else {
+							current_class = current_class->base_type.class_type;
+						}
 					}
 
 					if (setter_function == nullptr) {
