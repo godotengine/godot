@@ -8306,6 +8306,12 @@ EditorNode::EditorNode() {
 	settings_menu->add_item(TTRC("Configure FBX Importer..."), EDITOR_CONFIGURE_FBX_IMPORTER);
 #endif
 
+	if (global_menu && NativeMenu::get_singleton()->has_system_menu(NativeMenu::WINDOW_MENU_ID)) {
+		PopupMenu *window_menu = memnew(PopupMenu);
+		window_menu->set_system_menu(NativeMenu::WINDOW_MENU_ID);
+		_add_to_main_menu(TTRC("Window"), window_menu);
+	}
+
 	help_menu = memnew(PopupMenu);
 	if (global_menu && NativeMenu::get_singleton()->has_system_menu(NativeMenu::HELP_MENU_ID)) {
 		help_menu->set_system_menu(NativeMenu::HELP_MENU_ID);
