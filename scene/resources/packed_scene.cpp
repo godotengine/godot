@@ -596,20 +596,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 	// If there are already connections on this node, then they must be from an inherited scene.
 	// Add inherited=true to existing connection owner data.
-	List<MethodInfo> _signals;
-	conn_owner->get_signal_list(&_signals);
-	for (const MethodInfo &E : _signals) {
-		List<Node::Connection> conns;
-		conn_owner->get_signal_connection_list(E.name, &conns);
-
-		for (const Node::Connection &F : conns) {
-			const Node::Connection &c = F;
-			Node *target = Object::cast_to<Node>(c.callable.get_object());
-
-			// overwrite the connection owner data with is_inherited=true.
-			conn_owner->add_connection_owner(conn_owner, target, E.name, c.callable, true);
-		}
-	}
+	_add_inheritance_to_connections_owned_by(conn_owner, conn_owner);
 
 	// add the connections that belong to this scene.
 	int cc = connections.size();
@@ -671,6 +658,28 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	}
 
 	return ret_nodes[0];
+}
+
+void SceneState::_add_inheritance_to_connections_owned_by(Node *p_owner, Node *p_node) const {
+	List<MethodInfo> _signals;
+	p_node->get_signal_list(&_signals);
+	for (const MethodInfo &E : _signals) {
+		List<Node::Connection> conns;
+		p_node->get_signal_connection_list(E.name, &conns);
+
+		for (const Node::Connection &F : conns) {
+			const Node::Connection &c = F;
+			Node *target = Object::cast_to<Node>(c.callable.get_object());
+
+			// overwrite the connection owner data with is_inherited=true.
+			p_node->add_connection_owner(p_owner, target, E.name, c.callable, true);
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		Node *child = p_node->get_child(i);
+		_add_inheritance_to_connections_owned_by(p_owner, child);
+	}
 }
 
 Variant SceneState::make_local_resource(Variant &p_value, const SceneState::NodeData &p_node_data, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_sub_scene, Node *p_node, const StringName p_sname, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_scene, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const {

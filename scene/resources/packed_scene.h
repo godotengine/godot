@@ -107,6 +107,7 @@ public:
 
 private:
 	static InstantiationWarningNotify instantiation_warn_notify;
+	void _add_inheritance_to_connections_owned_by(Node *p_owner, Node *p_node) const;
 #endif
 
 protected:
