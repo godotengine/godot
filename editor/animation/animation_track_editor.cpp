@@ -2177,7 +2177,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 					}
 					text_color.a *= 0.7;
 				} else if (node) {
-					Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
+					Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node);
 					const Vector2 icon_size = Vector2(1, 1) * get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
 					icon_rect = Rect2(Point2(ofs, (get_size().height - check->get_height()) / 2).round(), icon->get_size());
@@ -5110,7 +5110,7 @@ void AnimationTrackEditor::_update_tracks() {
 				if (root) {
 					Node *n = root->get_node_or_null(base_path);
 					if (n) {
-						icon = EditorNode::get_singleton()->get_object_icon(n, "Node");
+						icon = EditorNode::get_singleton()->get_object_icon(n);
 						name = n->get_name();
 						tooltip = String(root->get_path_to(n));
 					}
