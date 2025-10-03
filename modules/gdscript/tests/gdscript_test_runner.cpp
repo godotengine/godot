@@ -112,7 +112,7 @@ void init_autoloads() {
 	}
 }
 
-void init_language(const String &p_base_path, const String &p_test_name, const String &p_copy_target) {
+void init_project_dir(const String &p_base_path, const String &p_test_name, const String &p_copy_target) {
 	Error err;
 
 	String base_path_godot_file = p_base_path.path_join("project.godot");
@@ -120,47 +120,64 @@ void init_language(const String &p_base_path, const String &p_test_name, const S
 	// Setup project settings since it's needed for the import process.
 	String project_folder = TestUtils::get_temp_path(vformat("gdscript_%s", p_test_name));
 	String project_godot_file = project_folder.path_join("project.godot");
-	String project_folder_godot = project_folder.path_join(".godot");
-	String project_folder_imported = project_folder_godot.path_join("imported");
-	String godot_backup = TestUtils::get_temp_path("gdscript_metadata_backup");
+	String project_folder_dot_godot = project_folder.path_join(".godot");
+	String project_folder_imported = project_folder_dot_godot.path_join("imported");
+	String dot_godot_dir_backup = TestUtils::get_temp_path("gdscript_dot_godot_backup");
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	auto remove_dir = [&da](const String &p_dir_to_remove) -> Error {
+		Ref<DirAccess> deletion_da = DirAccess::open(p_dir_to_remove);
+		if (deletion_da.is_null()) {
+			return FAILED;
+		}
+
+		Error err;
+		err = deletion_da->erase_contents_recursive();
+		if (err != OK) {
+			return err;
+		}
+		return da->remove(p_dir_to_remove);
+	};
 
 	bool first_setup = false;
 	if (!is_test_setup.has(p_test_name) || !is_test_setup[p_test_name]) {
 		// First setup.
 		is_test_setup[p_test_name] = true;
 		first_setup = true;
-		da->remove(godot_backup);
-		da->remove(project_folder);
+		remove_dir(dot_godot_dir_backup);
+		remove_dir(project_folder);
 
 		err = da->make_dir_recursive(project_folder_imported);
-		CHECK_MESSAGE(err == OK, vformat("Couldn't create dir \"%s\"", project_folder_imported));
+		CHECK_MESSAGE(err == OK, vformat("couldn't create dir \"%s\"", project_folder_imported));
 
 		if (FileAccess::exists(base_path_godot_file)) {
 			err = da->copy(base_path_godot_file, project_godot_file);
-			CHECK_MESSAGE(err == OK, vformat("Couldn't copy project.godot"));
+			CHECK_MESSAGE(err == OK, vformat("couldn't copy project.godot"));
 		}
 	}
 
 	// Initialize res:// to `project_folder`.
 	TestProjectSettingsInternalsAccessor::resource_path() = project_folder;
 	err = ProjectSettings::get_singleton()->setup(project_folder, String(), true);
-	CHECK_MESSAGE(err == OK, "Error while setuping project");
+	CHECK_MESSAGE(err == OK, "error while setuping project");
 
 	if (!first_setup || p_copy_target.is_empty()) {
 		goto end_init;
 	}
 
-	err = da->copy_dir(project_folder_godot, godot_backup);
-	CHECK_MESSAGE(err == OK, vformat("Error while copying dir \"%s\" to \"%s\"", project_folder_godot, godot_backup));
-	err = da->copy_dir(p_base_path, project_folder);
-	CHECK_MESSAGE(err == OK, vformat("Error while copying dir \"%s\" to \"%s\"", p_base_path, project_folder));
-	err = da->copy_dir(godot_backup, project_folder_godot);
-	CHECK_MESSAGE(err == OK, vformat("Error while copying dir \"%s\" to \"%s\"", p_base_path, project_folder));
-	da->remove(godot_backup);
+#define COPY_DIR(from, to)        \
+	err = da->copy_dir(from, to); \
+	CHECK_MESSAGE(err == OK, vformat("error while copying dir \"%s\" to \"%s\"", from, to))
+	COPY_DIR(project_folder_dot_godot, dot_godot_dir_backup);
+	COPY_DIR(p_base_path, project_folder);
+	COPY_DIR(dot_godot_dir_backup, project_folder_dot_godot);
+#undef COPY_DIR
 
 end_init:
+	err = remove_dir(dot_godot_dir_backup);
+}
+
+void init_language() {
 	// Initialize the language for the test routine.
 	GDScriptLanguage::get_singleton()->init();
 	init_autoloads();
@@ -185,7 +202,8 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 	}
 
 	if (do_init_languages) {
-		init_language(p_source_dir, "gdscript_test_runner", "res://");
+		init_project_dir(p_source_dir, "gdscript_test_runner");
+		init_language();
 	}
 #ifdef DEBUG_ENABLED
 	// Set all warning levels to "Warn" in order to test them properly, even the ones that default to error.
