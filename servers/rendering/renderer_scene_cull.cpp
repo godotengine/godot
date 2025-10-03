@@ -106,6 +106,14 @@ void RendererSceneCull::camera_set_frustum(RID p_camera, float p_size, Vector2 p
 	camera->zfar = p_z_far;
 }
 
+void RendererSceneCull::camera_set_projection(RID p_camera, const Projection &p_projection) {
+	Camera *camera = camera_owner.get_or_null(p_camera);
+	ERR_FAIL_NULL(camera);
+
+	camera->type = Camera::CUSTOM;
+	camera->projection = p_projection;
+}
+
 void RendererSceneCull::camera_set_transform(RID p_camera, const Transform3D &p_transform) {
 	Camera *camera = camera_owner.get_or_null(p_camera);
 	ERR_FAIL_NULL(camera);
@@ -2618,15 +2626,12 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 	// Setup Camera(s)
 	if (p_xr_interface.is_null()) {
 		// Normal camera
-		Transform3D transform = camera->transform;
-		Projection projection;
-		bool vaspect = camera->vaspect;
 		bool is_orthogonal = false;
 		bool is_frustum = false;
 
 		switch (camera->type) {
 			case Camera::ORTHOGONAL: {
-				projection.set_orthogonal(
+				camera->projection.set_orthogonal(
 						camera->size,
 						p_viewport_size.width / (float)p_viewport_size.height,
 						camera->znear,
@@ -2635,7 +2640,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 				is_orthogonal = true;
 			} break;
 			case Camera::PERSPECTIVE: {
-				projection.set_perspective(
+				camera->projection.set_perspective(
 						camera->fov,
 						p_viewport_size.width / (float)p_viewport_size.height,
 						camera->znear,
@@ -2644,7 +2649,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 
 			} break;
 			case Camera::FRUSTUM: {
-				projection.set_frustum(
+				camera->projection.set_frustum(
 						camera->size,
 						p_viewport_size.width / (float)p_viewport_size.height,
 						camera->offset,
@@ -2653,9 +2658,14 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 						camera->vaspect);
 				is_frustum = true;
 			} break;
+			case Camera::CUSTOM: {
+				is_orthogonal = camera->projection.is_orthogonal();
+			} break;
 		}
 
-		camera_data.set_camera(transform, projection, is_orthogonal, is_frustum, vaspect, jitter, taa_frame_count, camera->visible_layers);
+		camera_data.set_camera(camera->transform, camera->projection,
+				is_orthogonal, is_frustum, camera->vaspect, jitter, taa_frame_count, camera->visible_layers);
+
 #ifndef XR_DISABLED
 	} else {
 		XRServer *xr_server = XRServer::get_singleton();
