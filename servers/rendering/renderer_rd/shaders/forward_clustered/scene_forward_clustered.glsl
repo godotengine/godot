@@ -210,7 +210,8 @@ vec3 double_add_vec3(vec3 base_a, vec3 prec_a, vec3 base_b, vec3 prec_b, out vec
 #endif
 
 uint multimesh_stride() {
-	uint stride = sc_multimesh_format_2d() ? 2 : 3;
+	uint stride = sc_multimesh_format() == MULTIMESH_FORMAT_TRANSFORM_2D ? 2 : 0;
+	stride += sc_multimesh_format() == MULTIMESH_FORMAT_TRANSFORM_3D ? 3 : 0;
 	stride += sc_multimesh_has_color() ? 1 : 0;
 	stride += sc_multimesh_has_custom_data() ? 1 : 0;
 	return stride;
@@ -258,7 +259,7 @@ void vertex_shader(vec3 vertex_input,
 	mat4 matrix;
 	mat4 read_model_matrix = model_matrix;
 
-	if (sc_multimesh()) {
+	if (sc_multimesh_format() != MULTIMESH_FORMAT_NONE) {
 		//multimesh, instances are for it
 
 #ifdef USE_PARTICLE_TRAILS
@@ -309,10 +310,10 @@ void vertex_shader(vec3 vertex_input,
 		uint stride = multimesh_stride();
 		uint offset = stride * (gl_InstanceIndex + multimesh_offset);
 
-		if (sc_multimesh_format_2d()) {
+		if (sc_multimesh_format() == MULTIMESH_FORMAT_TRANSFORM_2D) {
 			matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
 			offset += 2;
-		} else {
+		} else if (sc_multimesh_format() == MULTIMESH_FORMAT_TRANSFORM_3D) {
 			matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], transforms.data[offset + 2], vec4(0.0, 0.0, 0.0, 1.0));
 			offset += 3;
 		}
@@ -421,7 +422,7 @@ void vertex_shader(vec3 vertex_input,
 	// Then we combine the translations from the model matrix and the view matrix using emulated doubles.
 	// We add the result to the vertex and ignore the final lost precision.
 	vec3 model_origin = model_matrix[3].xyz;
-	if (sc_multimesh()) {
+	if (sc_multimesh_format() != MULTIMESH_FORMAT_NONE) {
 		modelview = modelview * matrix;
 
 		vec3 instance_origin = mat3(model_matrix) * matrix[3].xyz;
@@ -739,7 +740,7 @@ void _unpack_vertex_attributes(vec4 p_vertex_in, vec3 p_compressed_aabb_position
 
 void main() {
 	uint instance_index = draw_call.instance_index;
-	if (!sc_multimesh()) {
+	if (sc_multimesh_format() == MULTIMESH_FORMAT_NONE) {
 		instance_index += gl_InstanceIndex;
 	}
 
