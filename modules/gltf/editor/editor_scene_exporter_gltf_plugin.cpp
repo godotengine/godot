@@ -65,7 +65,7 @@ SceneExporterGLTFPlugin::SceneExporterGLTFPlugin() {
 	_export_settings->generate_property_list(_gltf_document);
 	_settings_inspector = memnew(EditorInspector);
 	_settings_inspector->set_custom_minimum_size(Size2(350, 300) * EDSCALE);
-	_file_dialog->add_side_menu(_settings_inspector, TTR("Export Settings:"));
+	// _file_dialog->add_side_menu(_settings_inspector, TTR("Export Settings:"));
 	// Add a button to the Scene -> Export menu to pop up the settings dialog.
 	PopupMenu *menu = get_export_as_menu();
 	int idx = menu->get_item_count();
