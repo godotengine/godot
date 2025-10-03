@@ -1700,15 +1700,16 @@ Variant Object::_get_indexed_bind(const NodePath &p_name) const {
 	return get_indexed(p_name.get_as_property_path().get_subnames());
 }
 
-void Object::initialize_class() {
+bool Object::initialize_class() {
 	static bool initialized = false;
 	if (initialized) {
-		return;
+		return false;
 	}
 	_add_class_to_classdb(get_class_static(), StringName());
 	_bind_methods();
 	_bind_compatibility_methods();
 	initialized = true;
+	return true;
 }
 
 StringName Object::get_translation_domain() const {

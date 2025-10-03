@@ -488,6 +488,14 @@ protected:                                                                      
                                                                                                                  \
 private:
 
+#if defined(DEV_ENABLED) && !defined(TESTS_ENABLED)
+#define GDCLASS_WARN_AUTOREGISTER_SUBCLASS(m_class, m_superclass) WARN_PRINT(vformat("Minor bug, please report: Object class %s was automatically registered during registration of a subclass (%s).", #m_superclass, #m_class));
+#define GDCLASS_WARN_AUTOREGISTER_INIT(m_class) WARN_PRINT(vformat("Minor bug, please report: Object class %s was automatically registered during object initialization.", #m_class));
+#else
+#define GDCLASS_WARN_AUTOREGISTER_SUBCLASS(m_class, m_superclass)
+#define GDCLASS_WARN_AUTOREGISTER_INIT(m_class)
+#endif
+
 /// `GDSOFTCLASS` provides `Object` functionality, such as being able to use `Object::cast_to()`.
 /// Use this for `Object` subclasses that are registered in `ObjectDB` (use `GDSOFTCLASS` otherwise).
 #define GDCLASS(m_class, m_inherits)                                                                                                        \
@@ -523,12 +531,14 @@ protected:                                                                      
 	}                                                                                                                                       \
                                                                                                                                             \
 public:                                                                                                                                     \
-	static void initialize_class() {                                                                                                        \
+	static bool initialize_class() {                                                                                                        \
 		static bool initialized = false;                                                                                                    \
 		if (initialized) {                                                                                                                  \
-			return;                                                                                                                         \
+			return false;                                                                                                                   \
 		}                                                                                                                                   \
-		m_inherits::initialize_class();                                                                                                     \
+		if (unlikely(m_inherits::initialize_class())) {                                                                                     \
+			GDCLASS_WARN_AUTOREGISTER_SUBCLASS(m_class, m_inherits);                                                                        \
+		}                                                                                                                                   \
 		_add_class_to_classdb(get_class_static(), super_type::get_class_static());                                                          \
 		if (m_class::_get_bind_methods() != m_inherits::_get_bind_methods()) {                                                              \
 			_bind_methods();                                                                                                                \
@@ -537,11 +547,14 @@ public:                                                                         
 			_bind_compatibility_methods();                                                                                                  \
 		}                                                                                                                                   \
 		initialized = true;                                                                                                                 \
+		return true;                                                                                                                        \
 	}                                                                                                                                       \
                                                                                                                                             \
 protected:                                                                                                                                  \
 	virtual void _initialize_classv() override {                                                                                            \
-		initialize_class();                                                                                                                 \
+		if (unlikely(initialize_class())) {                                                                                                 \
+			GDCLASS_WARN_AUTOREGISTER_INIT(m_class);                                                                                        \
+		}                                                                                                                                   \
 	}                                                                                                                                       \
 	_FORCE_INLINE_ void (Object::*_get_get_property_list() const)(List<PropertyInfo> * p_list) const {                                      \
 		return (void (Object::*)(List<PropertyInfo> *) const) & m_class::_get_property_list;                                                \
@@ -723,7 +736,11 @@ protected:
 	friend class GDExtensionMethodBind;
 	_ALWAYS_INLINE_ const ObjectGDExtension *_get_extension() const { return _extension; }
 	_ALWAYS_INLINE_ GDExtensionClassInstancePtr _get_extension_instance() const { return _extension_instance; }
-	virtual void _initialize_classv() { initialize_class(); }
+	virtual void _initialize_classv() {
+		if (unlikely(initialize_class())) {
+			GDCLASS_WARN_AUTOREGISTER_INIT(Object);
+		}
+	}
 	virtual bool _setv(const StringName &p_name, const Variant &p_property) { return false; }
 	virtual bool _getv(const StringName &p_name, Variant &r_property) const { return false; }
 	virtual void _get_property_listv(List<PropertyInfo> *p_list, bool p_reversed) const {}
@@ -810,7 +827,7 @@ protected:
 #endif
 
 public: // Should be protected, but bug in clang++.
-	static void initialize_class();
+	static bool initialize_class();
 	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
 
 public:
