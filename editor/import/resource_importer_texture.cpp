@@ -83,6 +83,20 @@ void ResourceImporterTexture::_texture_reimport_normal(const Ref<CompressedTextu
 	singleton->make_flags[path].flags |= MAKE_NORMAL_FLAG;
 }
 
+void ResourceImporterTexture::_texture_reimport_height(const Ref<CompressedTexture2D> &p_tex) {
+	ERR_FAIL_COND(p_tex.is_null());
+
+	MutexLock lock(singleton->mutex);
+
+	StringName path = p_tex->get_path();
+
+	if (!singleton->make_flags.has(path)) {
+		singleton->make_flags[path] = MakeInfo();
+	}
+
+	singleton->make_flags[path].flags |= MAKE_HEIGHT_FLAG;
+}
+
 void ResourceImporterTexture::update_imports() {
 	if (EditorFileSystem::get_singleton()->is_scanning() || EditorFileSystem::get_singleton()->is_importing()) {
 		return; // Don't update when EditorFileSystem is doing something else.
@@ -121,6 +135,14 @@ void ResourceImporterTexture::update_imports() {
 
 			cf->set_value("params", "roughness/mode", E.value.channel_for_roughness + 2);
 			cf->set_value("params", "roughness/src_normal", E.value.normal_path_for_roughness);
+			changed = true;
+		}
+
+		if (E.value.flags & MAKE_HEIGHT_FLAG && int(cf->get_value("params", "process/height_map_adjust")) == HEIGHTMAP_ADJUST_DETECT) {
+			print_line(
+					vformat(TTR("%s: Texture detected as used as a height map in 3D. Enabling height baseline correction to avoid parallax issues."),
+							String(E.key)));
+			cf->set_value("params", "process/height_map_adjust", HEIGHTMAP_ADJUST_CORRECT_BASELINE);
 			changed = true;
 		}
 
@@ -253,6 +275,7 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/fix_alpha_border"), p_preset != PRESET_3D));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/premult_alpha"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/normal_map_invert_y"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/height_map_adjust", PROPERTY_HINT_ENUM, "Detect,Disabled,Correct Baseline,Normalize"), HEIGHTMAP_ADJUST_DETECT));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/hdr_as_srgb"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/hdr_clamp_exposure"), false));
 
@@ -351,7 +374,7 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 	}
 }
 
-void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel) {
+void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_detect_height, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel) {
 	Ref<FileAccess> f = FileAccess::open(p_to_path, FileAccess::WRITE);
 	ERR_FAIL_COND(f.is_null());
 
@@ -383,6 +406,9 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 	}
 	if (p_detect_normal) {
 		flags |= CompressedTexture2D::FORMAT_BIT_DETECT_NORMAL;
+	}
+	if (p_detect_height) {
+		flags |= CompressedTexture2D::FORMAT_BIT_DETECT_HEIGHT;
 	}
 
 	f->store_32(flags);
@@ -726,6 +752,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 	const bool fix_alpha_border = p_options["process/fix_alpha_border"];
 	const bool premult_alpha = p_options["process/premult_alpha"];
 	const bool normal_map_invert_y = p_options["process/normal_map_invert_y"];
+	const HeightmapAdjust height_map_adjust = HeightmapAdjust(int(p_options["process/height_map_adjust"]));
 
 	const bool hdr_as_srgb = p_options["process/hdr_as_srgb"];
 	const bool hdr_clamp_exposure = p_options["process/hdr_clamp_exposure"];
@@ -873,6 +900,66 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 			_invert_y_channel(target_image);
 		}
 
+		// Correct a heightmap texture's baseline so it starts from a fully white pixel,
+		// without affecting its scale.
+		// This reduces distortion as the camera moves and ensures the material's appearance
+		// doesn't change too much when heightmapping is disabled.
+		if (height_map_adjust == HEIGHTMAP_ADJUST_CORRECT_BASELINE) {
+			const int height = target_image->get_height();
+			const int width = target_image->get_width();
+
+			// Determine the correction offset, i.e. how much each pixel should be darkened in the image.
+			// This is `1.0` if black needs to be turned white (if there are only black pixels),
+			// or `0.0` if no correction is needed at all (because the brightest pixel is already fully white).
+			float correction_offset = 1.0;
+			for (int i = 0; i < width; i++) {
+				for (int j = 0; j < height; j++) {
+					correction_offset = MIN(correction_offset, 1.0 - target_image->get_pixel(i, j).get_v());
+					if (Math::is_zero_approx(correction_offset)) {
+						// It can't go any lower, so we can stop searching.
+						break;
+					}
+				}
+			}
+
+			// Adjust all pixels to bring the brightest pixel to white, while keeping the existing
+			// contrast (= scale) in place.
+			for (int i = 0; i < width; i++) {
+				for (int j = 0; j < height; j++) {
+					target_image->set_pixel(i, j, target_image->get_pixel(i, j) + Color(1, 1, 1) * correction_offset);
+				}
+			}
+		} else if (height_map_adjust == HEIGHTMAP_ADJUST_NORMALIZE) {
+			const int height = target_image->get_height();
+			const int width = target_image->get_width();
+
+			// Determine the brightest and darkest pixels in the texture.
+			float brightest_pixel = 0.0;
+			float darkest_pixel = 1.0;
+			for (int i = 0; i < width; i++) {
+				for (int j = 0; j < height; j++) {
+					const float pixel_value = target_image->get_pixel(i, j).get_v();
+					brightest_pixel = MAX(brightest_pixel, pixel_value);
+					darkest_pixel = MIN(darkest_pixel, pixel_value);
+					if (Math::is_equal_approx(brightest_pixel, 1.0f) && Math::is_zero_approx(darkest_pixel)) {
+						// The brightest pixel can't be any brighter and the darkest pixel can't be any darker, so we can stop searching.
+						break;
+					}
+				}
+			}
+
+			// Normalize pixel data by remapping it to the pixel range we found.
+			// This changes the texture's contrast, so the user must reduce the heightmap scale in the material afterwards.
+			// However, this improves quality by making the shader use the full range of the heightmap texture.
+			for (int i = 0; i < width; i++) {
+				for (int j = 0; j < height; j++) {
+					target_image->set_pixel(i, j, Color(1, 1, 1) * Math::remap(target_image->get_pixel(i, j).get_v(), darkest_pixel, brightest_pixel, 0.0f, 1.0f));
+				}
+			}
+
+			print_line(vformat("%s: Heightmap texture normalized. Use this heightmap scale multiplier to match the non-normalized appearance: (existing scale) * %.4f", p_source_file, brightest_pixel - darkest_pixel));
+		}
+
 		// Clamp HDR exposure.
 		if (hdr_clamp_exposure) {
 			_clamp_hdr_exposure(target_image);
@@ -883,6 +970,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 	bool detect_roughness = roughness == 0;
 	bool detect_normal = normal == 0;
 	bool force_normal = normal == 1;
+	bool detect_height = height_map_adjust == HEIGHTMAP_ADJUST_DETECT;
 	bool srgb_friendly_pack = pack_channels == 0;
 
 	Array formats_imported;
@@ -929,7 +1017,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 
 		if (force_uncompressed) {
 			_save_ctex(image, p_save_path + ".ctex", COMPRESS_VRAM_UNCOMPRESSED, lossy, basisu_params, Image::COMPRESS_S3TC /* This is ignored. */,
-					mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+					mipmaps, stream, detect_3d, detect_roughness, detect_normal, detect_height, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
 		} else {
 			if (can_s3tc_bptc) {
 				Image::CompressMode image_compress_mode;
@@ -943,7 +1031,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 				}
 
 				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, basisu_params, image_compress_mode, mipmaps,
-						stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+						stream, detect_3d, detect_roughness, detect_normal, detect_height, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
 				r_platform_variants->push_back(image_compress_format);
 			}
 
@@ -959,19 +1047,19 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 				}
 
 				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, basisu_params, image_compress_mode, mipmaps, stream, detect_3d,
-						detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+						detect_roughness, detect_normal, detect_height, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
 				r_platform_variants->push_back(image_compress_format);
 			}
 		}
 	} else {
 		// Import normally.
 		_save_ctex(image, p_save_path + ".ctex", compress_mode, lossy, basisu_params, Image::COMPRESS_S3TC /* This is ignored. */,
-				mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+				mipmaps, stream, detect_3d, detect_roughness, detect_normal, detect_height, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
 	}
 
 	if (editor_image.is_valid()) {
 		_save_ctex(editor_image, p_save_path + ".editor.ctex", compress_mode, lossy, basisu_params, Image::COMPRESS_S3TC /* This is ignored. */,
-				mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+				mipmaps, stream, detect_3d, detect_roughness, detect_normal, detect_height, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
 
 		// Generate and save editor-specific metadata, which we cannot save to the .import file.
 		Dictionary editor_meta;
@@ -1090,6 +1178,7 @@ ResourceImporterTexture::ResourceImporterTexture(bool p_singleton) {
 	CompressedTexture2D::request_3d_callback = _texture_reimport_3d;
 	CompressedTexture2D::request_roughness_callback = _texture_reimport_roughness;
 	CompressedTexture2D::request_normal_callback = _texture_reimport_normal;
+	CompressedTexture2D::request_height_callback = _texture_reimport_height;
 }
 
 ResourceImporterTexture::~ResourceImporterTexture() {
