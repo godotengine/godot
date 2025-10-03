@@ -29,7 +29,7 @@
 	</methods>
 	<members>
 		<member name="bar_beats" type="int" setter="" getter="" default="4">
-			The number of bars within a single beat in the audio track. This is only relevant for music that wishes to make use of interactive music functionality, not sound effects.
+			The number of beats within a single bar in the audio track. This is only relevant for music that wishes to make use of interactive music functionality, not sound effects.
 			A more convenient editor for [member bar_beats] is provided in the [b]Advanced Import Settings[/b] dialog, as it lets you preview your changes without having to reimport the audio.
 		</member>
 		<member name="beat_count" type="int" setter="" getter="" default="0">
