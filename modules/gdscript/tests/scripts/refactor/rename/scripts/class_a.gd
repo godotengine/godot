@@ -45,3 +45,6 @@ func func_of_a_args(a: int):
 func func_of_a_callable(call := func():
 	var x_of_a = 10):
 	pass
+
+static func secretely_a_all_along() -> ClassCisB:
+	return ClassCisB.get_new_me()
