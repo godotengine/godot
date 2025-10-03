@@ -1337,15 +1337,9 @@ void EditorSettings::setup_language(bool p_initial_setup) {
 		TranslationServer::get_singleton()->set_locale(lang);
 		return; // Default, nothing to do.
 	}
-	// Load editor translation for configured/detected locale.
+
 	load_editor_translations(lang);
-	load_property_translations(lang);
-
-	// Load class reference translation.
 	load_doc_translations(lang);
-
-	// Load extractable translation for projects.
-	load_extractable_translations(lang);
 
 	TranslationServer::get_singleton()->set_locale(lang);
 }
