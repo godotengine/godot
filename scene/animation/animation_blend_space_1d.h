@@ -51,7 +51,13 @@ protected:
 		StringName name;
 		Ref<AnimationRootNode> node;
 		float position = 0.0;
+		float weight = -1.0;
+		float velocity_limit = 0.1;
+		bool override_velocity_limit = false;
 	};
+	bool use_velocity_limit = false;
+	float default_velocity_limit = 0.0;
+	float velocity_limit_ease = 1.0;
 
 	BlendPoint blend_points[MAX_BLEND_POINTS];
 	int blend_points_used = 0;
@@ -111,6 +117,23 @@ public:
 
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
+
+	float velocity_limit(float p_start, float p_target, float p_velocity_limit, float p_delta);
+
+	void set_blend_point_vl(int p_point, const float &p_velocity_limit);
+	float get_blend_point_vl(int p_point) const;
+
+	void set_blend_point_ovl(int p_point, const bool &p_override_velocity_limit);
+	bool get_blend_point_ovl(int p_point) const;
+
+	void set_use_velocity_limit(bool p_use_velocity_limit);
+	bool get_use_velocity_limit() const;
+
+	void set_velocity_limit(const double &p_default_blend_time);
+	double get_velocity_limit() const;
+
+	void set_velocity_limit_ease(const float p_ease);
+	float get_velocity_limit_ease() const;
 
 	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 	String get_caption() const override;
