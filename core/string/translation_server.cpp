@@ -385,6 +385,14 @@ String TranslationServer::get_fallback_locale() const {
 	return fallback;
 }
 
+void TranslationServer::set_default_preview(const String &p_locale) {
+	default_preview = p_locale;
+}
+
+String TranslationServer::get_default_preview() const {
+	return default_preview;
+}
+
 PackedStringArray TranslationServer::get_loaded_locales() const {
 	return main_domain->get_loaded_locales();
 }
@@ -451,6 +459,7 @@ void TranslationServer::setup() {
 	}
 
 	fallback = GLOBAL_DEF("internationalization/locale/fallback", "en");
+	default_preview = GLOBAL_DEF("internationalization/locale/default_preview", "");
 	main_domain->set_pseudolocalization_enabled(GLOBAL_DEF("internationalization/pseudolocalization/use_pseudolocalization", false));
 	main_domain->set_pseudolocalization_accents_enabled(GLOBAL_DEF("internationalization/pseudolocalization/replace_with_accents", true));
 	main_domain->set_pseudolocalization_double_vowels_enabled(GLOBAL_DEF("internationalization/pseudolocalization/double_vowels", false));
@@ -464,6 +473,7 @@ void TranslationServer::setup() {
 #ifdef TOOLS_ENABLED
 	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, "internationalization/locale/test", PROPERTY_HINT_LOCALE_ID, ""));
 	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, "internationalization/locale/fallback", PROPERTY_HINT_LOCALE_ID, ""));
+	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, "internationalization/locale/default_preview", PROPERTY_HINT_LOCALE_ID, ""));
 #endif
 }
 
