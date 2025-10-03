@@ -699,6 +699,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		RID dest_fb;
 		RD::DataFormat dest_fb_format;
 		RD::DataFormat format_for_debanding;
+		RS::CanvasItemTextureFilter filter_mode = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 		if (spatial_upscaler != nullptr || use_smaa) {
 			// If we use a spatial upscaler to upscale or SMAA to antialias we need to write our result into an intermediate buffer.
 			// Note that this is cached so we only create the texture the first time.
@@ -731,6 +732,11 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 				// Assume that the DataFormat of render_target_get_rd_framebuffer is the same as render_target_get_color_format.
 				format_for_debanding = texture_storage->render_target_get_color_format(using_hdr, tonemap.convert_to_srgb);
 			}
+
+			if (rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_NEAREST) {
+				// Make the hardware perform nearest-neighbor filtering when scaling the viewport 3D buffer.
+				filter_mode = RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST;
+			}
 		}
 
 		if (rb->get_use_debanding()) {
@@ -746,7 +752,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_DISABLED;
 		}
 
-		tone_mapper->tonemapper(color_texture, dest_fb, tonemap);
+		tone_mapper->tonemapper(color_texture, dest_fb, tonemap, filter_mode);
 
 		RD::get_singleton()->draw_command_end_label();
 	}
