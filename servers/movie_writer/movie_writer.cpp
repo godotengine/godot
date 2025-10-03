@@ -112,14 +112,20 @@ void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String
 				actual_movie_size.width, actual_movie_size.height));
 	}
 
-	// Check for available disk space and warn the user if needed.
-	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	String path = p_base_path.get_basename();
+	String path = p_base_path.get_base_dir();
 	if (path.is_relative_path()) {
 		path = "res://" + path;
 	}
-	dir->open(path);
-	if (dir->get_space_left() < 10 * Math::pow(1024.0, 3.0)) {
+	Error err;
+	Ref<DirAccess> dir = DirAccess::open(path, &err);
+	if (dir.is_null() && err == ERR_INVALID_PARAMETER) {
+		// Failed to change to the directory, try to create it.
+		// Print a message to notify the user, as the folder being created may be the result of a typo in the movie path.
+		print_line(vformat("Parent folder does not exist. Creating folder for MovieWriter output: %s", path));
+		DirAccess::make_dir_recursive_absolute(path);
+		dir = DirAccess::open(path);
+	}
+	if (dir.is_valid() && dir->get_space_left() < 10 * Math::pow(1024.0, 3.0)) {
 		// Less than 10 GiB available.
 		WARN_PRINT(vformat("Current available space on disk is low (%s). MovieWriter will fail during movie recording if the disk runs out of available space.", String::humanize_size(dir->get_space_left())));
 	}
