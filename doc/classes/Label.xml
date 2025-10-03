@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A control for displaying plain text. It gives you control over the horizontal and vertical alignment and can wrap the text inside the node's bounding rectangle. It doesn't support bold, italics, or other rich text formatting. For that, use [RichTextLabel] instead.
+		[b]Note:[/b] A single Label node is not designed to display huge amounts of text. To display large amounts of text in a single node, consider using [RichTextLabel] instead as it supports features like an integrated scroll bar and threading. [RichTextLabel] generally performs better when displaying large amounts of text (several pages or more).
 	</description>
 	<tutorials>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
