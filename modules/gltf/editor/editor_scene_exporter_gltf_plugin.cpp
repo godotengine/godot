@@ -30,6 +30,7 @@
 
 #include "editor_scene_exporter_gltf_plugin.h"
 
+#include "../gltf_document.h"
 #include "editor_scene_exporter_gltf_settings.h"
 
 #include "editor/editor_node.h"
@@ -39,33 +40,27 @@
 #include "editor/inspector/editor_inspector.h"
 #include "editor/themes/editor_scale.h"
 
-String SceneExporterGLTFPlugin::get_plugin_name() const {
-	return "ConvertGLTF2";
-}
-
-bool SceneExporterGLTFPlugin::has_main_screen() const {
-	return false;
-}
-
 SceneExporterGLTFPlugin::SceneExporterGLTFPlugin() {
 	_gltf_document.instantiate();
+	_export_settings.instantiate();
+
 	// Set up the file dialog.
 	_file_dialog = memnew(EditorFileDialog);
 	_file_dialog->connect("file_selected", callable_mp(this, &SceneExporterGLTFPlugin::_export_scene_as_gltf));
-	_file_dialog->set_title(TTR("Export Library"));
+	_file_dialog->set_title(TTRC("Export Library"));
 	_file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	_file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-	_file_dialog->clear_filters();
 	_file_dialog->add_filter("*.glb");
 	_file_dialog->add_filter("*.gltf");
-	_file_dialog->set_title(TTR("Export Scene to glTF 2.0 File"));
+	_file_dialog->set_title(TTRC("Export Scene to glTF 2.0 File"));
 	EditorNode::get_singleton()->get_gui_base()->add_child(_file_dialog);
+
 	// Set up the export settings menu.
-	_export_settings.instantiate();
-	_export_settings->generate_property_list(_gltf_document);
 	_settings_inspector = memnew(EditorInspector);
 	_settings_inspector->set_custom_minimum_size(Size2(350, 300) * EDSCALE);
-	_file_dialog->add_side_menu(_settings_inspector, TTR("Export Settings:"));
+	_settings_inspector->edit(_export_settings.ptr());
+	_file_dialog->add_side_menu(_settings_inspector, TTRC("Export Settings:"));
+
 	// Add a button to the Scene -> Export menu to pop up the settings dialog.
 	PopupMenu *menu = get_export_as_menu();
 	int idx = menu->get_item_count();
@@ -76,7 +71,7 @@ SceneExporterGLTFPlugin::SceneExporterGLTFPlugin() {
 void SceneExporterGLTFPlugin::_popup_gltf_export_dialog() {
 	Node *root = EditorNode::get_singleton()->get_tree()->get_edited_scene_root();
 	if (!root) {
-		EditorNode::get_singleton()->show_accept(TTR("This operation can't be done without a scene."), TTR("OK"));
+		EditorNode::get_singleton()->show_warning(TTR("This operation can't be done without a scene."));
 		return;
 	}
 	// Set the file dialog's file name to the scene name.
@@ -85,12 +80,13 @@ void SceneExporterGLTFPlugin::_popup_gltf_export_dialog() {
 		filename = root->get_name();
 	}
 	_file_dialog->set_current_file(filename + String(".gltf"));
+
 	// Generate and refresh the export settings.
 	_export_settings->generate_property_list(_gltf_document, root);
-	_settings_inspector->edit(nullptr);
-	_settings_inspector->edit(_export_settings.ptr());
+	_settings_inspector->update_tree();
+
 	// Show the file dialog.
-	_file_dialog->popup_centered_ratio();
+	_file_dialog->popup_file_dialog();
 }
 
 void SceneExporterGLTFPlugin::_export_scene_as_gltf(const String &p_file_path) {
