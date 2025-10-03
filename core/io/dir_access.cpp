@@ -35,7 +35,9 @@
 #include "core/os/os.h"
 #include "core/os/time.h"
 #include "core/templates/local_vector.h"
+#ifdef TOOLS_ENABLED
 #include "editor/settings/editor_settings.h"
+#endif
 
 String DirAccess::_get_root_path() const {
 	switch (_access_type) {
@@ -43,8 +45,10 @@ String DirAccess::_get_root_path() const {
 			return ProjectSettings::get_singleton()->get_resource_path();
 		case ACCESS_USERDATA:
 			return OS::get_singleton()->get_user_data_dir();
+#ifdef TOOLS_ENABLED
 		case ACCESS_GLOBAL_RESOURCES:
 			return EditorSettings::get_singleton()->get_global_resource_path();
+#endif
 		default:
 			return "";
 	}
@@ -56,8 +60,10 @@ String DirAccess::_get_root_string() const {
 			return "res://";
 		case ACCESS_USERDATA:
 			return "user://";
+#ifdef TOOLS_ENABLED
 		case ACCESS_GLOBAL_RESOURCES:
 			return "global://";
+#endif
 		default:
 			return "";
 	}
@@ -157,8 +163,10 @@ Error DirAccess::make_dir_recursive(const String &p_dir) {
 		base = "res://";
 	} else if (full_dir.begins_with("user://")) {
 		base = "user://";
+#ifdef TOOLS_ENABLED
 	} else if (full_dir.begins_with("global://")) {
 		base = "global://";
+#endif
 	} else if (full_dir.is_network_share_path()) {
 		int pos = full_dir.find_char('/', 2);
 		ERR_FAIL_COND_V(pos < 0, ERR_INVALID_PARAMETER);
@@ -217,8 +225,9 @@ String DirAccess::fix_path(const String &p_path) const {
 			}
 
 		} break;
+#ifdef TOOLS_ENABLED
 		case ACCESS_GLOBAL_RESOURCES: {
-			if (ProjectSettings::get_singleton()) {
+			if (EditorSettings::get_singleton()) {
 				if (p_path.begins_with("global://")) {
 					String resource_path = EditorSettings::get_singleton()->get_global_resource_path();
 					if (!resource_path.is_empty()) {
@@ -228,6 +237,7 @@ String DirAccess::fix_path(const String &p_path) const {
 				}
 			}
 		} break;
+#endif
 		case ACCESS_FILESYSTEM: {
 			return p_path;
 		} break;
@@ -246,8 +256,10 @@ Ref<DirAccess> DirAccess::create_for_path(const String &p_path) {
 		da = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
 		da = create(ACCESS_USERDATA);
+#ifdef TOOLS_ENABLED
 	} else if (p_path.begins_with("global://")) {
 		da = create(ACCESS_GLOBAL_RESOURCES);
+#endif
 	} else {
 		da = create(ACCESS_FILESYSTEM);
 	}
@@ -335,8 +347,10 @@ Ref<DirAccess> DirAccess::create(AccessType p_access) {
 			da->change_dir("res://");
 		} else if (p_access == ACCESS_USERDATA) {
 			da->change_dir("user://");
+#ifdef TOOLS_ENABLED
 		} else if (p_access == ACCESS_GLOBAL_RESOURCES) {
 			da->change_dir("global://");
+#endif
 		}
 	}
 
