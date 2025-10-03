@@ -322,7 +322,9 @@ void CameraMacOS::update_feeds() {
 		devices = session.devices;
 #if defined(__x86_64__)
 	} else {
+		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") // devicesWithMediaType is deprecated in macOS 10.15.
 		devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+		GODOT_CLANG_WARNING_POP
 	}
 #endif
 
