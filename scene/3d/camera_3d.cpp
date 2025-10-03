@@ -130,6 +130,10 @@ void Camera3D::_validate_property(PropertyInfo &p_property) const {
 			if (mode != PROJECTION_FRUSTUM) {
 				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			}
+		} else if (p_property.name == "transparency_sort_axis") {
+			if (transparency_sort_mode != RS::TRANSPARENCY_SORT_CUSTOM_AXIS) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
 		}
 	}
 
@@ -666,6 +670,10 @@ void Camera3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_cull_mask_value", "layer_number", "value"), &Camera3D::set_cull_mask_value);
 	ClassDB::bind_method(D_METHOD("get_cull_mask_value", "layer_number"), &Camera3D::get_cull_mask_value);
+	ClassDB::bind_method(D_METHOD("set_transparency_sort_mode", "mode"), &Camera3D::set_transparency_sort_mode);
+	ClassDB::bind_method(D_METHOD("get_transparency_sort_mode"), &Camera3D::get_transparency_sort_mode);
+	ClassDB::bind_method(D_METHOD("set_transparency_sort_axis", "axis"), &Camera3D::set_transparency_sort_axis);
+	ClassDB::bind_method(D_METHOD("get_transparency_sort_axis"), &Camera3D::get_transparency_sort_axis);
 
 	//ClassDB::bind_method(D_METHOD("_camera_make_current"),&Camera::_camera_make_current );
 
@@ -684,6 +692,8 @@ void Camera3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frustum_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_frustum_offset", "get_frustum_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "near", PROPERTY_HINT_RANGE, "0.001,10,0.001,or_greater,exp,suffix:m"), "set_near", "get_near");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "far", PROPERTY_HINT_RANGE, "0.01,4000,0.01,or_greater,exp,suffix:m"), "set_far", "get_far");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "transparency_sort_mode", PROPERTY_HINT_ENUM, "Default,Depth,Orthogonal,CustomAxis"), "set_transparency_sort_mode", "get_transparency_sort_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "transparency_sort_axis", PROPERTY_HINT_NONE), "set_transparency_sort_axis", "get_transparency_sort_axis");
 
 	BIND_ENUM_CONSTANT(PROJECTION_PERSPECTIVE);
 	BIND_ENUM_CONSTANT(PROJECTION_ORTHOGONAL);
@@ -823,6 +833,27 @@ Vector3 Camera3D::get_doppler_tracked_velocity() const {
 	} else {
 		return Vector3();
 	}
+}
+
+void Camera3D::set_transparency_sort_mode(RS::TransparencySortMode p_mode) {
+	if (transparency_sort_mode != p_mode) {
+		transparency_sort_mode = p_mode;
+		notify_property_list_changed();
+		RS::get_singleton()->camera_set_transparency_sort_mode(camera, p_mode);
+	}
+}
+
+RS::TransparencySortMode Camera3D::get_transparency_sort_mode() const {
+	return transparency_sort_mode;
+}
+
+void Camera3D::set_transparency_sort_axis(const Vector3 &p_axis) {
+	transparency_sort_axis = p_axis;
+	RS::get_singleton()->camera_set_transparency_sort_axis(camera, p_axis);
+}
+
+Vector3 Camera3D::get_transparency_sort_axis() const {
+	return transparency_sort_axis;
 }
 
 #ifndef PHYSICS_3D_DISABLED

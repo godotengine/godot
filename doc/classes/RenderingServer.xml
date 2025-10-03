@@ -181,6 +181,23 @@
 				Sets [Transform3D] of camera.
 			</description>
 		</method>
+		<method name="camera_set_transparency_sort_axis">
+			<return type="void" />
+			<param index="0" name="camera" type="RID" />
+			<param index="1" name="axis" type="Vector3" />
+			<description>
+				Sets the axis used when transparency sorting mode is set to [constant TRANSPARENCY_SORT_CUSTOM_AXIS]. Equivalent to [member Camera3D.transparency_sort_axis].
+				[b]Note:[/b] The axis set by this function is not used when transparency sorting mode is set to [constant TRANSPARENCY_SORT_DEFAULT]. To change the default axis, see [method set_default_transparency_sort_axis].
+			</description>
+		</method>
+		<method name="camera_set_transparency_sort_mode">
+			<return type="void" />
+			<param index="0" name="camera" type="RID" />
+			<param index="1" name="mode" type="int" enum="RenderingServer.TransparencySortMode" />
+			<description>
+				Sets the mode the camera uses to sort transparent meshes. Equivalent to [member Camera3D.transparency_sort_mode].
+			</description>
+		</method>
 		<method name="camera_set_use_vertical_aspect">
 			<return type="void" />
 			<param index="0" name="camera" type="RID" />
@@ -3455,6 +3472,21 @@
 				Sets the default clear color which is used when a specific clear color has not been selected. See also [method get_default_clear_color].
 			</description>
 		</method>
+		<method name="set_default_transparency_sort_axis">
+			<return type="void" />
+			<param index="0" name="axis" type="Vector3" />
+			<description>
+				Sets the axis used when the default transparency sorting mode is set to [constant TRANSPARENCY_SORT_CUSTOM_AXIS]. Runtime equivalent to [member ProjectSettings.rendering/camera/transparency_sort/default_transparency_sort_axis].
+			</description>
+		</method>
+		<method name="set_default_transparency_sort_mode">
+			<return type="void" />
+			<param index="0" name="mode" type="int" enum="RenderingServer.TransparencySortMode" />
+			<description>
+				Sets the mode used to sort transparent meshes for cameras that use [constant TRANSPARENCY_SORT_DEFAULT]. To change camera's mode, see [method camera_set_transparency_sort_mode] and [member Camera3D.transparency_sort_mode]. Runtime equivalent to [member ProjectSettings.rendering/camera/transparency_sort/default_transparency_sort_mode].
+				[b]Note:[/b] Setting the default mode to [constant TRANSPARENCY_SORT_DEFAULT] is equivalent to setting it to [constant TRANSPARENCY_SORT_DEPTH].
+			</description>
+		</method>
 		<method name="shader_create">
 			<return type="RID" />
 			<description>
@@ -5060,6 +5092,18 @@
 		</constant>
 		<constant name="FOG_VOLUME_SHAPE_MAX" value="5" enum="FogVolumeShape">
 			Represents the size of the [enum FogVolumeShape] enum.
+		</constant>
+		<constant name="TRANSPARENCY_SORT_DEFAULT" value="0" enum="TransparencySortMode">
+			Transparent meshes are sorted by the default mode. If unchanged, the default mode is [constant TRANSPARENCY_SORT_DEPTH]. To change the default mode to other value, see [method set_default_transparency_sort_mode] and [member ProjectSettings.rendering/camera/transparency_sort/default_transparency_sort_mode].
+		</constant>
+		<constant name="TRANSPARENCY_SORT_DEPTH" value="1" enum="TransparencySortMode">
+			Transparent meshes are sorted based on their depth. Equivalent to [constant TRANSPARENCY_SORT_ORTHOGONAL] when camera projection is set to [constant Camera3D.PROJECTION_ORTHOGONAL].
+		</constant>
+		<constant name="TRANSPARENCY_SORT_ORTHOGONAL" value="2" enum="TransparencySortMode">
+			Transparent meshes are sorted based on their distance to camera's near plane. Equivalent to [constant TRANSPARENCY_SORT_DEPTH] when camera projection is set to [constant Camera3D.PROJECTION_ORTHOGONAL].
+		</constant>
+		<constant name="TRANSPARENCY_SORT_CUSTOM_AXIS" value="3" enum="TransparencySortMode">
+			Transparent meshes are sorted based on a dot product of their position and a custom axis. For example, when the axis is set to the value [code]Vector3(0, 0, 1)[/code] meshes are sorted based on their position on the Z-axis regardless of camera orientation. To change the axis, see [method camera_set_transparency_sort_axis], [method set_default_transparency_sort_axis], and [member ProjectSettings.rendering/camera/transparency_sort/default_transparency_sort_axis].
 		</constant>
 		<constant name="VIEWPORT_SCALING_3D_MODE_BILINEAR" value="0" enum="ViewportScaling3DMode">
 			Use bilinear scaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.

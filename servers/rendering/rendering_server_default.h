@@ -680,6 +680,11 @@ public:
 	FUNC2(camera_set_camera_attributes, RID, RID)
 	FUNC2(camera_set_compositor, RID, RID)
 	FUNC2(camera_set_use_vertical_aspect, RID, bool)
+	FUNC2(camera_set_transparency_sort_mode, RID, TransparencySortMode)
+	FUNC2(camera_set_transparency_sort_axis, RID, const Vector3 &)
+
+	FUNC1(set_default_transparency_sort_mode, TransparencySortMode)
+	FUNC1(set_default_transparency_sort_axis, const Vector3 &)
 
 	/* OCCLUDER */
 	FUNCRIDSPLIT(occluder)

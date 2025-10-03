@@ -920,6 +920,18 @@ public:
 	virtual void camera_set_compositor(RID p_camera, RID p_compositor) = 0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
 
+	enum TransparencySortMode {
+		TRANSPARENCY_SORT_DEFAULT,
+		TRANSPARENCY_SORT_DEPTH,
+		TRANSPARENCY_SORT_ORTHOGONAL,
+		TRANSPARENCY_SORT_CUSTOM_AXIS,
+	};
+
+	virtual void set_default_transparency_sort_mode(TransparencySortMode p_mode) = 0;
+	virtual void set_default_transparency_sort_axis(const Vector3 &p_axis) = 0;
+	virtual void camera_set_transparency_sort_mode(RID p_camera, TransparencySortMode p_mode) = 0;
+	virtual void camera_set_transparency_sort_axis(RID p_camera, const Vector3 &p_axis) = 0;
+
 	/* VIEWPORT API */
 
 	enum CanvasItemTextureFilter {
@@ -1947,6 +1959,7 @@ VARIANT_ENUM_CAST(RenderingServer::ParticlesEmitFlags);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesCollisionType);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesCollisionHeightfieldResolution);
 VARIANT_ENUM_CAST(RenderingServer::FogVolumeShape);
+VARIANT_ENUM_CAST(RenderingServer::TransparencySortMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportScaling3DMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportClearMode);

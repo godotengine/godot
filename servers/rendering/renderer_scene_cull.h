@@ -87,6 +87,9 @@ public:
 		RID attributes;
 		RID compositor;
 
+		RS::TransparencySortMode transparency_sort_mode;
+		Vector3 transparency_sort_axis;
+
 		Transform3D transform;
 
 		Camera() {
@@ -98,8 +101,13 @@ public:
 			size = 1.0;
 			offset = Vector2();
 			vaspect = false;
+			transparency_sort_mode = RS::TRANSPARENCY_SORT_DEFAULT;
+			transparency_sort_axis = Vector3(0, 0, 1);
 		}
 	};
+
+	RS::TransparencySortMode default_transparency_sort_mode = RS::TRANSPARENCY_SORT_DEPTH;
+	Vector3 default_transparency_sort_axis = Vector3(0, 0, 1);
 
 	mutable RID_Owner<Camera, true> camera_owner;
 
@@ -115,7 +123,12 @@ public:
 	virtual void camera_set_camera_attributes(RID p_camera, RID p_attributes);
 	virtual void camera_set_compositor(RID p_camera, RID p_compositor);
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable);
+	virtual void camera_set_transparency_sort_mode(RID p_camera, RS::TransparencySortMode p_mode);
+	virtual void camera_set_transparency_sort_axis(RID p_camera, const Vector3 &p_axis);
 	virtual bool is_camera(RID p_camera) const;
+
+	virtual void set_default_transparency_sort_mode(RS::TransparencySortMode p_mode);
+	virtual void set_default_transparency_sort_axis(const Vector3 &p_axis);
 
 	/* OCCLUDER API */
 
