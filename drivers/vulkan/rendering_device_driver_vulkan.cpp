@@ -3301,9 +3301,10 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 			swap_chain->rdd_color_space = COLOR_SPACE_MAX;
 	}
 
-	//TODO obvious hack to use wp_color_management_surface_v1
-	// This will fail on windows and macos
-	swap_chain->color_space = VK_COLOR_SPACE_PASS_THROUGH_EXT;
+	if (context_driver->is_colorspace_externally_managed()) {
+		// On Wayland the display server will use wp-color-management to manage the window's colorspace
+		swap_chain->color_space = VK_COLOR_SPACE_PASS_THROUGH_EXT;
+	}
 
 	VkSwapchainCreateInfoKHR swap_create_info = {};
 	swap_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
