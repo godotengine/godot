@@ -346,8 +346,12 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	PopupMenu *submenu_popup = items[p_over].submenu;
 	if (submenu_popup->is_visible()) {
+		ERR_PRINT("Activate submenu should not be called on an open submenu.");
 		return; // Already visible.
 	}
+	submenu_popup->this_submenu_index = p_over;
+	// Ensure mouse inputs to parent menu are not inhibited by the submenu in exclusive mode.
+	submenu_popup->get_window()->set_exclusive(false);
 
 	const float win_scale = get_content_scale_factor();
 
@@ -384,29 +388,20 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	}
 
 	submenu_popup->set_position(submenu_pos);
-
-	PopupMenu *submenu_pum = Object::cast_to<PopupMenu>(submenu_popup);
-	if (!submenu_pum) {
-		submenu_popup->popup();
-		return;
-	}
-
-	submenu_pum->activated_by_keyboard = p_by_keyboard;
+	submenu_popup->activated_by_keyboard = p_by_keyboard;
 
 	// If not triggered by the mouse, start the popup with its first enabled item focused.
 	if (p_by_keyboard) {
-		for (int i = 0; i < submenu_pum->get_item_count(); i++) {
-			if (!submenu_pum->is_item_disabled(i)) {
-				submenu_pum->set_focused_item(i);
+		for (int i = 0; i < submenu_popup->get_item_count(); i++) {
+			if (!submenu_popup->is_item_disabled(i)) {
+				submenu_popup->set_focused_item(i);
 				break;
 			}
 		}
 	}
-
-	submenu_pum->popup();
+	submenu_popup->popup();
 
 	// Set autohide areas.
-
 	const Rect2 safe_area(get_position(), get_size());
 	Viewport *vp = submenu_popup->get_embedder();
 	if (vp) {
@@ -415,19 +410,19 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 		DisplayServer::get_singleton()->window_set_popup_safe_rect(submenu_popup->get_window_id(), safe_area);
 	}
 
-	this_rect.position -= submenu_pum->get_position(); // Make the position of the parent popup relative to submenu popup.
+	this_rect.position -= submenu_popup->get_position(); // Make the position of the parent popup relative to submenu popup.
 	this_rect.size.width -= panel_ofs_start.x + panel_ofs_end.x;
 	this_rect.size.height -= panel_ofs_end.y + (theme_cache.panel_style->get_margin(SIDE_TOP) + theme_cache.panel_style->get_margin(SIDE_BOTTOM)) * win_scale;
 
 	// Autohide area above the submenu item.
-	submenu_pum->clear_autohide_areas();
-	submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y - theme_cache.panel_style->get_margin(SIDE_TOP) * win_scale,
+	submenu_popup->clear_autohide_areas();
+	submenu_popup->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y - theme_cache.panel_style->get_margin(SIDE_TOP) * win_scale,
 			this_rect.size.x, scaled_ofs_cache + scroll_offset + theme_cache.panel_style->get_margin(SIDE_TOP) * win_scale - theme_cache.v_separation / 2));
 
 	// If there is an area below the submenu item, add an autohide area there.
 	if (scaled_ofs_cache + scaled_height_cache + scroll_offset <= control->get_size().height * win_scale) {
 		const int from = scaled_ofs_cache + scaled_height_cache + scroll_offset + theme_cache.v_separation / 2;
-		submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y + from, this_rect.size.x, this_rect.size.y - from));
+		submenu_popup->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y + from, this_rect.size.x, this_rect.size.y - from));
 	}
 }
 
@@ -458,8 +453,6 @@ void PopupMenu::_submenu_timeout() {
 	if (mouse_over == submenu_over) {
 		_activate_submenu(mouse_over);
 	}
-
-	submenu_over = -1;
 }
 
 void PopupMenu::_input_from_window(const Ref<InputEvent> &p_event) {
@@ -692,28 +685,45 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 
 	if (m.is_valid()) {
-		if (m->get_velocity().is_zero_approx()) {
+		if (m->get_velocity().is_zero_approx() || m->get_relative() == Vector2(0, 0)) {
 			return;
 		}
 		activated_by_keyboard = false;
 
 		for (const Rect2 &E : autohide_areas) {
+			// The mouse left the safe area.
 			if (!scroll_container->get_global_rect().has_point(m->get_position()) && E.has_point(m->get_position())) {
-				// The mouse left the safe area, prepare to close.
-				_close_pressed();
+				_close_or_suspend();
 				return;
 			}
 		}
 
-		if (!minimum_lifetime_timer->is_stopped()) {
+		if (this_submenu_index != -1) {
 			// The mouse left the safe area, but came back again, so cancel the auto-closing.
-			minimum_lifetime_timer->stop();
+			PopupMenu *parent_popup = Object::cast_to<PopupMenu>(get_parent());
+			if (parent_popup) {
+				// Clear last_submenu_item_mouse_relative so if the mouse enters a submenu item
+				// when moving to the left out of an open submenu, it won't trigger close suspend.
+				parent_popup->last_submenu_item_mouse_relative = Vector2(0, -1);
+				if (!parent_popup->close_suspended_timer->is_stopped()) {
+					parent_popup->close_suspended_timer->stop();
+				}
+			}
 		}
 
 		if (mouse_over == -1 && !item_clickable_area.has_point(m->get_position())) {
+			Vector2 m_relative = m->get_relative();
+			if (is_embedded() && m_relative != Vector2()) { // Only if the mouse has moved relative.
+				PopupMenu *parent_popup = Object::cast_to<PopupMenu>(get_parent());
+				if (parent_popup) {
+					parent_popup->last_submenu_item_mouse_relative = m_relative;
+				} else {
+					last_submenu_item_mouse_relative = m_relative;
+				}
+			}
 			return;
 		}
-		_mouse_over_update(m->get_position());
+		_mouse_over_update(m->get_position(), m->get_relative());
 	}
 
 	Ref<InputEventKey> k = p_event;
@@ -759,24 +769,45 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void PopupMenu::_mouse_over_update(const Point2 &p_over) {
-	int over = _get_mouse_over(p_over);
-	int id = (over < 0 || items[over].separator || items[over].disabled) ? -1 : (items[over].id >= 0 ? items[over].id : over);
+bool PopupMenu::_is_mouse_moving_right(const Vector2 &p_relative) const {
+	const Vector2 ur_quadrant_1 = Vector2(1, 4).normalized();
+	const Vector2 ul_quadrant_1 = Vector2(-4, 1).normalized();
+	bool is_moving_right = false;
+	// If the mouse moves right into the LR quadrant rotated 14 degrees (atan of 1/4) counter-clockwise.
+	// NOTE: Upward y values are negative, so the test vectors are the mirror image of the target mouse quadrant.
+	if (ur_quadrant_1.dot(p_relative.normalized()) > 0 && ul_quadrant_1.dot(p_relative.normalized()) < 0) {
+		is_moving_right = true;
+	}
+	return is_moving_right;
+}
 
+void PopupMenu::_mouse_over_update(const Point2 &p_over, const Vector2 &p_relative) {
+	int over_index = _get_mouse_over(p_over);
+	int id = (over_index < 0 || items[over_index].separator || items[over_index].disabled) ? -1 : (items[over_index].id >= 0 ? items[over_index].id : over_index);
 	if (id < 0) {
 		mouse_over = -1;
+		submenu_over = -1;
+		submenu_timer->stop();
 		queue_accessibility_update();
 		control->queue_redraw();
 		return;
 	}
-
-	if (!is_scrolling && items[over].submenu && submenu_over != over) {
-		submenu_over = over;
-		submenu_timer->start();
+	if (items[over_index].submenu) {
+		if (items[over_index].submenu->is_visible()) {
+			if (submenu_over == over_index) {
+				last_submenu_item_mouse_relative = p_relative;
+			}
+		} else if (!is_scrolling && submenu_over != over_index && !close_was_suspended) {
+			submenu_timer->start();
+			submenu_over = over_index;
+		}
+	} else {
+		submenu_timer->stop();
+		submenu_over = -1;
 	}
 
-	if (over != mouse_over) {
-		mouse_over = over;
+	if (over_index != mouse_over) {
+		mouse_over = over_index;
 		queue_accessibility_update();
 		control->queue_redraw();
 	}
@@ -980,28 +1011,22 @@ void PopupMenu::_draw_items() {
 	}
 }
 
-void PopupMenu::_minimum_lifetime_timeout() {
-	close_allowed = true;
-	// If the mouse still isn't in this popup after timer expires, close.
-	if (!activated_by_keyboard && !get_visible_rect().has_point(get_mouse_position())) {
-		_close_pressed();
-	}
+void PopupMenu::_close_pressed() {
+	Popup::_close_pressed();
 }
 
-void PopupMenu::_close_pressed() {
-	// Only apply minimum lifetime to submenus.
-	PopupMenu *parent_pum = Object::cast_to<PopupMenu>(get_parent());
-	if (!parent_pum) {
-		Popup::_close_pressed();
-		return;
-	}
-
-	// If the timer has expired, close. If timer is still running, do nothing.
-	if (close_allowed) {
-		close_allowed = false;
-		Popup::_close_pressed();
-	} else if (minimum_lifetime_timer->is_stopped()) {
-		minimum_lifetime_timer->start();
+void PopupMenu::_close_or_suspend() {
+	if (this_submenu_index != -1) { // Is a submenu.
+		PopupMenu *parent_popup = Object::cast_to<PopupMenu>(get_parent());
+		if (!parent_popup->close_was_suspended && parent_popup->close_suspended_timer->is_stopped() && _is_mouse_moving_right(parent_popup->last_submenu_item_mouse_relative)) {
+			parent_popup->close_suspended_timer->start();
+			parent_popup->close_was_suspended = true; // Stays true until the submenu is closed so it can only be suspended once.
+			parent_popup->submenu_timer->stop();
+		} else if (parent_popup->close_suspended_timer->is_stopped()) {
+			_close_pressed();
+		}
+	} else { // Is the parent popup menu.
+		_close_pressed();
 	}
 }
 
@@ -1380,7 +1405,7 @@ void PopupMenu::_notification(int p_what) {
 
 				for (const Rect2 &E : autohide_areas) {
 					if (!Rect2(Point2(), get_size()).has_point(mouse_pos) && E.has_point(mouse_pos)) {
-						_close_pressed();
+						_close_or_suspend();
 						return;
 					}
 				}
@@ -1839,6 +1864,7 @@ void PopupMenu::add_submenu_node_item(const String &p_label, PopupMenu *p_submen
 	queue_accessibility_update();
 	control->queue_redraw();
 
+	p_submenu->connect("popup_hide", callable_mp(this, &PopupMenu::_submenu_hidden));
 	child_controls_changed();
 	notify_property_list_changed();
 	_menu_changed();
@@ -2129,10 +2155,30 @@ void PopupMenu::set_item_submenu_node(int p_idx, PopupMenu *p_submenu) {
 			items.write[p_idx].submenu_bound = true;
 		}
 	}
-
+	p_submenu->connect("popup_hide", callable_mp(this, &PopupMenu::_submenu_hidden));
 	control->queue_redraw();
 	child_controls_changed();
 	_menu_changed();
+}
+
+void PopupMenu::_close_suspended_timeout() {
+	if (is_embedded()) {
+		if (items[submenu_over].submenu->is_visible()) {
+			items[submenu_over].submenu->_close_or_suspend();
+		}
+	}
+}
+
+void PopupMenu::_submenu_hidden() {
+	submenu_over = -1;
+	close_was_suspended = false;
+	last_submenu_item_mouse_relative = Vector2(0, -1);
+	Ref<InputEventMouseMotion> motion_event;
+	motion_event.instantiate();
+	motion_event->set_relative(Vector2(0, -1)); // Downward vector so mouse is not moving rightward.
+	motion_event->set_position(get_mouse_position());
+	motion_event->set_velocity(Vector2(0, -20));
+	_input_from_window_internal(motion_event);
 }
 
 void PopupMenu::toggle_item_checked(int p_idx) {
@@ -2887,7 +2933,7 @@ void PopupMenu::set_submenu_popup_delay(float p_time) {
 	if (p_time <= 0) {
 		p_time = 0.01;
 	}
-
+	submenu_timer_popup_delay = p_time;
 	submenu_timer->set_wait_time(p_time);
 }
 
@@ -3283,16 +3329,16 @@ PopupMenu::PopupMenu() {
 	control->connect(SceneStringName(draw), callable_mp(this, &PopupMenu::_draw_items));
 
 	submenu_timer = memnew(Timer);
-	submenu_timer->set_wait_time(0.3);
+	submenu_timer->set_wait_time(submenu_timer_popup_delay); // Default is 0.1.
 	submenu_timer->set_one_shot(true);
 	submenu_timer->connect("timeout", callable_mp(this, &PopupMenu::_submenu_timeout));
 	add_child(submenu_timer, false, INTERNAL_MODE_FRONT);
 
-	minimum_lifetime_timer = memnew(Timer);
-	minimum_lifetime_timer->set_wait_time(0.3);
-	minimum_lifetime_timer->set_one_shot(true);
-	minimum_lifetime_timer->connect("timeout", callable_mp(this, &PopupMenu::_minimum_lifetime_timeout));
-	add_child(minimum_lifetime_timer, false, INTERNAL_MODE_FRONT);
+	close_suspended_timer = memnew(Timer);
+	close_suspended_timer->set_wait_time(0.5);
+	close_suspended_timer->set_one_shot(true);
+	close_suspended_timer->connect("timeout", callable_mp(this, &PopupMenu::_close_suspended_timeout));
+	add_child(close_suspended_timer, false, INTERNAL_MODE_FRONT);
 
 	property_helper.setup_for_instance(base_property_helper, this);
 
