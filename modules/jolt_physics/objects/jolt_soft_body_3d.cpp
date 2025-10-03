@@ -146,7 +146,7 @@ bool JoltSoftBody3D::_ref_shared_data() {
 		LocalVector<int> &mesh_to_physics = iter_shared_data->value.mesh_to_physics;
 
 		JPH::SoftBodySharedSettings &settings = *iter_shared_data->value.settings;
-		settings.mVertexRadius = JoltProjectSettings::soft_body_point_radius;
+		settings.mVertexRadius = point_radius;
 
 		JPH::Array<JPH::SoftBodySharedSettings::Vertex> &physics_vertices = settings.mVertices;
 		JPH::Array<JPH::SoftBodySharedSettings::Face> &physics_faces = settings.mFaces;
@@ -304,6 +304,10 @@ void JoltSoftBody3D::_mesh_changed() {
 }
 
 void JoltSoftBody3D::_simulation_precision_changed() {
+	wake_up();
+}
+
+void JoltSoftBody3D::_point_radius_changed() {
 	wake_up();
 }
 
@@ -489,6 +493,16 @@ void JoltSoftBody3D::set_simulation_precision(int p_precision) {
 	simulation_precision = MAX(p_precision, 0);
 
 	_simulation_precision_changed();
+}
+
+void JoltSoftBody3D::set_point_radius(float p_radius) {
+	if (unlikely(point_radius == p_radius)) {
+		return;
+	}
+
+	point_radius = MAX(p_radius, 0.0f);
+
+	_point_radius_changed();
 }
 
 void JoltSoftBody3D::set_mass(float p_mass) {

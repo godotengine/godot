@@ -607,6 +607,9 @@ public:
 	virtual void soft_body_set_simulation_precision(RID p_body, int p_simulation_precision) = 0;
 	virtual int soft_body_get_simulation_precision(RID p_body) const = 0;
 
+	virtual void soft_body_set_point_radius(RID p_body, real_t p_radius) = 0;
+	virtual real_t soft_body_get_point_radius(RID p_body) const = 0;
+
 	virtual void soft_body_set_total_mass(RID p_body, real_t p_total_mass) = 0;
 	virtual real_t soft_body_get_total_mass(RID p_body) const = 0;
 

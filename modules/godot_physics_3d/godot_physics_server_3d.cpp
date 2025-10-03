@@ -1104,6 +1104,13 @@ int GodotPhysicsServer3D::soft_body_get_simulation_precision(RID p_body) const {
 	return soft_body->get_iteration_count();
 }
 
+void GodotPhysicsServer3D::soft_body_set_point_radius(RID p_body, real_t p_radius) {
+}
+
+real_t GodotPhysicsServer3D::soft_body_get_point_radius(RID p_body) const {
+	return 0.01;
+}
+
 void GodotPhysicsServer3D::soft_body_set_total_mass(RID p_body, real_t p_total_mass) {
 	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(soft_body);

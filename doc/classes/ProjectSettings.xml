@@ -2701,9 +2701,6 @@
 		<member name="physics/jolt_physics_3d/simulation/sleep_velocity_threshold" type="float" setter="" getter="" default="0.03">
 			The linear velocity of specific points on the bounding box of a [RigidBody3D], below which it can be put to sleep, in meters per second. These points help capture both the linear and angular motion of a [RigidBody3D].
 		</member>
-		<member name="physics/jolt_physics_3d/simulation/soft_body_point_radius" type="float" setter="" getter="" default="0.01">
-			How big the points of a [SoftBody3D] are, in meters. A higher value can prevent behavior such as cloth laying perfectly flush against other surfaces and causing Z-fighting.
-		</member>
 		<member name="physics/jolt_physics_3d/simulation/speculative_contact_distance" type="float" setter="" getter="" default="0.02">
 			Radius around physics bodies, inside which speculative contact points will be detected, in meters. This is mainly used to prevent tunneling/penetration for [RigidBody3D] nodes during simulation.
 			[b]Note:[/b] Setting this too high may result in ghost collisions, as speculative contacts are based on the closest points during the collision detection step which may not be the actual closest points by the time the two bodies hit.
