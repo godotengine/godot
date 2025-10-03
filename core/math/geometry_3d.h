@@ -30,8 +30,10 @@
 
 #pragma once
 
+#include "core/math/color.h"
 #include "core/math/delaunay_3d.h"
 #include "core/math/face3.h"
+#include "core/math/vector2.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/vector.h"
 
