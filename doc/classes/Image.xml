@@ -258,6 +258,30 @@
 				Returns the offset where the image's mipmap with index [param mipmap] is stored in the [member data] dictionary.
 			</description>
 		</method>
+		<method name="get_original_height" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the original height of the [Image] after the [enum PerformanceMode] has been set.
+			</description>
+		</method>
+		<method name="get_original_size" qualifiers="const">
+			<return type="Vector2i" />
+			<description>
+				Returns the original size of the [Image] after the [enum PerformanceMode] has been set.
+			</description>
+		</method>
+		<method name="get_original_width" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the original width of the [Image] after the [enum PerformanceMode] has been set.
+			</description>
+		</method>
+		<method name="get_performance_mode" qualifiers="const">
+			<return type="int" enum="Image.PerformanceMode" />
+			<description>
+				Returns the image's current [enum PerformanceMode]
+			</description>
+		</method>
 		<method name="get_pixel" qualifiers="const">
 			<return type="Color" />
 			<param index="0" name="x" type="int" />
@@ -560,6 +584,14 @@
 				Overwrites data of an existing [Image]. Non-static equivalent of [method create_from_data].
 			</description>
 		</method>
+		<method name="set_performance_mode">
+			<return type="int" enum="Error" />
+			<param index="0" name="performance_mode" type="int" enum="Image.PerformanceMode" />
+			<description>
+				Sets the performance mode of the [Image]. This will change the size of the [Image] based on settings in [ProjectSettings].
+				[method get_size] will return this new size. The original size is always available using [method get_original_size].
+			</description>
+		</method>
 		<method name="set_pixel">
 			<return type="void" />
 			<param index="0" name="x" type="int" />
@@ -626,7 +658,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" default="{ &quot;data&quot;: PackedByteArray(), &quot;format&quot;: &quot;Lum8&quot;, &quot;height&quot;: 0, &quot;mipmaps&quot;: false, &quot;width&quot;: 0 }">
+		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" default="{ &quot;data&quot;: PackedByteArray(), &quot;format&quot;: &quot;Lum8&quot;, &quot;height&quot;: 0, &quot;mipmaps&quot;: false, &quot;original_height&quot;: 0, &quot;original_width&quot;: 0, &quot;width&quot;: 0 }">
 			Holds all the image's color data in a given format. See [enum Format] constants.
 		</member>
 	</members>
@@ -636,6 +668,15 @@
 		</constant>
 		<constant name="MAX_HEIGHT" value="16777216">
 			The maximal height allowed for [Image] resources.
+		</constant>
+		<constant name="PERFORMANCE_MODE_ORIGINAL_SIZE" value="0" enum="PerformanceMode">
+			Keeps the original size of the [Image].
+		</constant>
+		<constant name="PERFORMANCE_MODE_MAX_SIZE" value="1" enum="PerformanceMode">
+			Ensures that the size of the [Image] is smaller then or equal to the size specified at [member ProjectSettings.rendering/textures/performance/max_size].
+		</constant>
+		<constant name="PERFORMANCE_MODE_DOWNSCALE_SIZE" value="2" enum="PerformanceMode">
+			Reduces the size of [Image] logarithmically according to the equation [code]size = max(floor(original_size / pow(2, downscale_factor)), Vector2i.ONE)[/code], getting downscale_factor from [member ProjectSettings.rendering/textures/performance/downscale_factor].
 		</constant>
 		<constant name="FORMAT_L8" value="0" enum="Format">
 			Texture format with a single 8-bit depth representing luminance.

@@ -73,6 +73,9 @@
 		<member name="mipmaps/limit" type="int" setter="" getter="" default="-1">
 			Unimplemented. This currently has no effect when changed.
 		</member>
+		<member name="performance/force_original_size" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], then the engine will ignore [member ProjectSettings.rendering/textures/performance/default_mode] and will always load the image at full size.
+		</member>
 		<member name="process/channel_remap/alpha" type="int" setter="" getter="" default="3">
 			Specifies the data source of the output image's alpha channel.
 			[b]Red:[/b] Use the values from the source image's red channel.

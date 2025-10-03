@@ -71,6 +71,12 @@ public:
 		MAX_PIXELS = 268435456 // 16384 ^ 2
 	};
 
+	enum PerformanceMode {
+		PERFORMANCE_MODE_ORIGINAL_SIZE,
+		PERFORMANCE_MODE_MAX_SIZE,
+		PERFORMANCE_MODE_DOWNSCALE_SIZE
+	};
+
 	enum Format : int32_t {
 		FORMAT_L8, // Luminance
 		FORMAT_LA8, // Luminance-Alpha
@@ -257,10 +263,13 @@ protected:
 	static void _bind_methods();
 
 private:
+	PerformanceMode performance_mode = PERFORMANCE_MODE_ORIGINAL_SIZE;
 	Format format = FORMAT_L8;
 	Vector<uint8_t> data;
 	int width = 0;
 	int height = 0;
+	int original_width = 0;
+	int original_height = 0;
 	bool mipmaps = false;
 
 	void _copy_internals_from(const Image &p_image);
@@ -303,11 +312,17 @@ public:
 	int get_width() const;
 	int get_height() const;
 	Size2i get_size() const;
+	int get_original_width() const;
+	int get_original_height() const;
+	Size2i get_original_size() const;
 	bool has_mipmaps() const;
 	int get_mipmap_count() const;
 
 	// Convert the image to another format, conversion only to raw byte format.
 	void convert(Format p_new_format);
+
+	PerformanceMode get_performance_mode() const;
+	Error set_performance_mode(PerformanceMode p_performance_mode);
 
 	Format get_format() const;
 
@@ -460,6 +475,7 @@ public:
 	Dictionary compute_image_metrics(const Ref<Image> p_compared_image, bool p_luma_metric = true);
 };
 
+VARIANT_ENUM_CAST(Image::PerformanceMode)
 VARIANT_ENUM_CAST(Image::Format)
 VARIANT_ENUM_CAST(Image::Interpolation)
 VARIANT_ENUM_CAST(Image::CompressMode)

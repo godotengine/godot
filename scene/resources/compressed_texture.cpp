@@ -30,6 +30,7 @@
 
 #include "compressed_texture.h"
 
+#include "core/config/project_settings.h"
 #include "scene/resources/bit_map.h"
 
 Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit) {
@@ -83,6 +84,14 @@ Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r
 
 	if (image.is_null() || image->is_empty()) {
 		return ERR_CANT_OPEN;
+	}
+
+	if (!(df & FORMAT_BIT_FORCE_ORIGINAL_SIZE)) {
+		Image::PerformanceMode performance_mode = GLOBAL_GET("rendering/textures/performance/default_mode");
+
+		if (performance_mode != Image::PERFORMANCE_MODE_ORIGINAL_SIZE) {
+			image->set_performance_mode(performance_mode);
+		}
 	}
 
 	return OK;

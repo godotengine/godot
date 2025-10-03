@@ -479,6 +479,18 @@ Size2i Image::get_size() const {
 	return Size2i(width, height);
 }
 
+int Image::get_original_width() const {
+	return original_width;
+}
+
+int Image::get_original_height() const {
+	return original_height;
+}
+
+Size2i Image::get_original_size() const {
+	return Size2i(original_width, original_height);
+}
+
 bool Image::has_mipmaps() const {
 	return mipmaps;
 }
@@ -859,6 +871,102 @@ void Image::convert(Format p_new_format) {
 	}
 
 	_copy_internals_from(new_img);
+}
+
+Image::PerformanceMode Image::get_performance_mode() const {
+	return performance_mode;
+}
+
+Error Image::set_performance_mode(PerformanceMode p_performance_mode) {
+	switch (performance_mode) {
+		case PERFORMANCE_MODE_ORIGINAL_SIZE:
+			break;
+
+		default:
+			ERR_FAIL_V_MSG(FAILED, "Image's performance_mode has already been set. It needs to be reloaded/recreated before it can be set again");
+	}
+
+	performance_mode = p_performance_mode;
+
+	Size2i size = get_size();
+	Vector2i desired_size = size;
+
+	switch (performance_mode) {
+		case PERFORMANCE_MODE_ORIGINAL_SIZE:
+			break;
+
+		case PERFORMANCE_MODE_MAX_SIZE: {
+			Vector2i max_size = GLOBAL_GET("rendering/textures/performance/max_size");
+
+			if (desired_size.x > max_size.x) {
+				desired_size.x = max_size.x;
+			}
+
+			if (desired_size.y > max_size.y) {
+				desired_size.y = max_size.y;
+			}
+
+			break;
+		}
+
+		case PERFORMANCE_MODE_DOWNSCALE_SIZE: {
+			int factor = GLOBAL_GET("rendering/textures/performance/downscale_factor");
+			factor = CLAMP(factor, 1, 14);
+
+			desired_size.x >>= factor;
+			desired_size.y >>= factor;
+
+			break;
+		}
+
+		default:
+			ERR_FAIL_V_MSG(FAILED, vformat("Unknown image performance mode '%i'", performance_mode));
+	}
+
+	desired_size = desired_size.max(Vector2i(1, 1));
+
+	if (desired_size == size) {
+		return OK;
+	}
+
+	if (is_compressed()) {
+		Format current_format = get_format();
+
+		Error err = decompress();
+
+		if (err != OK) {
+			ERR_FAIL_V_MSG(FAILED, vformat("Cannot decompress image format '%s'", current_format));
+		}
+
+		resize(desired_size.x, desired_size.y);
+
+		Image::CompressMode compress_mode = COMPRESS_MAX;
+
+		if ((current_format >= FORMAT_DXT1 && current_format <= FORMAT_RGTC_RG) || (current_format == FORMAT_DXT5_RA_AS_RG)) {
+			compress_mode = COMPRESS_S3TC;
+		} else if (current_format >= FORMAT_BPTC_RGBA && current_format <= FORMAT_BPTC_RGBFU) {
+			compress_mode = COMPRESS_BPTC;
+		} else if (current_format == FORMAT_ETC) {
+			compress_mode = COMPRESS_ETC;
+		} else if (current_format >= FORMAT_ETC2_R11 && current_format <= FORMAT_ETC2_RA_AS_RG) {
+			compress_mode = COMPRESS_ETC2;
+		} else if (current_format >= FORMAT_ASTC_4x4 && current_format <= FORMAT_ASTC_8x8_HDR) {
+			compress_mode = COMPRESS_ASTC;
+		}
+
+		if (compress_mode != COMPRESS_MAX) {
+			compress(compress_mode);
+		} else {
+			ERR_PRINT(vformat("Cannot recompress image format '%s'", current_format));
+		}
+	} else {
+		resize(desired_size.x, desired_size.y);
+	}
+
+	original_width = size.x;
+	original_height = size.y;
+
+	return OK;
 }
 
 Image::Format Image::get_format() const {
@@ -1616,6 +1724,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 	}
 
 	_copy_internals_from(dst);
+	performance_mode = PERFORMANCE_MODE_ORIGINAL_SIZE;
 }
 
 void Image::crop_from_point(int p_x, int p_y, int p_width, int p_height) {
@@ -1779,6 +1888,10 @@ void Image::rotate_90(ClockDirection p_direction) {
 
 			width = h;
 			height = w;
+			int o_h = original_height;
+			int o_w = original_width;
+			original_height = o_w;
+			original_width = o_h;
 		}
 
 #undef PREV_INDEX_IN_CYCLE
@@ -2119,6 +2232,8 @@ void Image::shrink_x2() {
 
 	width = MAX(width / 2, 1);
 	height = MAX(height / 2, 1);
+	original_width = width;
+	original_height = height;
 	data = new_data;
 }
 
@@ -2409,6 +2524,8 @@ void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Forma
 
 	width = p_width;
 	height = p_height;
+	original_width = p_width;
+	original_height = p_height;
 	mipmaps = p_use_mipmaps;
 	format = p_format;
 }
@@ -2445,10 +2562,14 @@ void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Forma
 
 	height = p_height;
 	width = p_width;
+	original_height = p_height;
+	original_width = p_width;
 	format = p_format;
 	data = p_data;
 
 	mipmaps = p_use_mipmaps;
+
+	performance_mode = PERFORMANCE_MODE_ORIGINAL_SIZE;
 }
 
 void Image::initialize_data(const char **p_xpm) {
@@ -2457,6 +2578,8 @@ void Image::initialize_data(const char **p_xpm) {
 	int pixelchars = 0;
 	mipmaps = false;
 	bool has_alpha = false;
+
+	performance_mode = PERFORMANCE_MODE_ORIGINAL_SIZE;
 
 	enum Status {
 		READING_HEADER,
@@ -3002,6 +3125,8 @@ Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels
 Image::Image(const char **p_xpm) {
 	width = 0;
 	height = 0;
+	original_width = 0;
+	original_height = 0;
 	mipmaps = false;
 	format = FORMAT_L8;
 
@@ -3011,6 +3136,8 @@ Image::Image(const char **p_xpm) {
 Image::Image(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
 	width = 0;
 	height = 0;
+	original_width = 0;
+	original_height = 0;
 	mipmaps = p_use_mipmaps;
 	format = FORMAT_L8;
 
@@ -3020,6 +3147,8 @@ Image::Image(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
 Image::Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
 	width = 0;
 	height = 0;
+	original_width = 0;
+	original_height = 0;
 	mipmaps = p_mipmaps;
 	format = FORMAT_L8;
 
@@ -3337,6 +3466,8 @@ void Image::fill_rect(const Rect2i &p_rect, const Color &p_color) {
 void Image::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("width"));
 	ERR_FAIL_COND(!p_data.has("height"));
+	ERR_FAIL_COND(!p_data.has("original_width"));
+	ERR_FAIL_COND(!p_data.has("original_height"));
 	ERR_FAIL_COND(!p_data.has("format"));
 	ERR_FAIL_COND(!p_data.has("mipmaps"));
 	ERR_FAIL_COND(!p_data.has("data"));
@@ -3357,12 +3488,17 @@ void Image::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(ddformat == FORMAT_MAX);
 
 	initialize_data(dwidth, dheight, dmipmaps, ddformat, ddata);
+
+	original_width = p_data["original_width"];
+	original_height = p_data["original_height"];
 }
 
 Dictionary Image::_get_data() const {
 	Dictionary d;
 	d["width"] = width;
 	d["height"] = height;
+	d["original_width"] = original_width;
+	d["original_height"] = original_height;
 	d["format"] = get_format_name(format);
 	d["mipmaps"] = mipmaps;
 	d["data"] = data;
@@ -3377,6 +3513,8 @@ void Image::_copy_internals_from(const Image &p_image) {
 	format = p_image.format;
 	width = p_image.width;
 	height = p_image.height;
+	original_width = p_image.original_width;
+	original_height = p_image.original_height;
 	mipmaps = p_image.mipmaps;
 	data = p_image.data;
 }
@@ -3833,7 +3971,12 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_width"), &Image::get_width);
 	ClassDB::bind_method(D_METHOD("get_height"), &Image::get_height);
 	ClassDB::bind_method(D_METHOD("get_size"), &Image::get_size);
+	ClassDB::bind_method(D_METHOD("get_original_width"), &Image::get_original_width);
+	ClassDB::bind_method(D_METHOD("get_original_height"), &Image::get_original_height);
+	ClassDB::bind_method(D_METHOD("get_original_size"), &Image::get_original_size);
 	ClassDB::bind_method(D_METHOD("has_mipmaps"), &Image::has_mipmaps);
+	ClassDB::bind_method(D_METHOD("get_performance_mode"), &Image::get_performance_mode);
+	ClassDB::bind_method(D_METHOD("set_performance_mode", "performance_mode"), &Image::set_performance_mode);
 	ClassDB::bind_method(D_METHOD("get_format"), &Image::get_format);
 	ClassDB::bind_method(D_METHOD("get_data"), &Image::get_data);
 	ClassDB::bind_method(D_METHOD("get_data_size"), &Image::get_data_size);
@@ -3936,6 +4079,9 @@ void Image::_bind_methods() {
 	BIND_CONSTANT(MAX_WIDTH);
 	BIND_CONSTANT(MAX_HEIGHT);
 
+	BIND_ENUM_CONSTANT(PERFORMANCE_MODE_ORIGINAL_SIZE);
+	BIND_ENUM_CONSTANT(PERFORMANCE_MODE_MAX_SIZE);
+	BIND_ENUM_CONSTANT(PERFORMANCE_MODE_DOWNSCALE_SIZE);
 	BIND_ENUM_CONSTANT(FORMAT_L8);
 	BIND_ENUM_CONSTANT(FORMAT_LA8);
 	BIND_ENUM_CONSTANT(FORMAT_R8);
@@ -4074,6 +4220,8 @@ Ref<Image> Image::get_image_from_mipmap(int p_mipmap) const {
 	image.instantiate();
 	image->width = w;
 	image->height = h;
+	image->original_width = w;
+	image->original_height = h;
 	image->format = format;
 	image->data = new_data;
 
@@ -4612,6 +4760,8 @@ void Image::renormalize_uint16(uint16_t *p_rgb) {
 Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {
 	width = 0;
 	height = 0;
+	original_width = 0;
+	original_height = 0;
 	mipmaps = false;
 	format = FORMAT_L8;
 
@@ -4644,6 +4794,8 @@ void Image::copy_internals_from(const Ref<Image> &p_image) {
 	format = p_image->format;
 	width = p_image->width;
 	height = p_image->height;
+	original_width = p_image->original_width;
+	original_height = p_image->original_height;
 	mipmaps = p_image->mipmaps;
 	data = p_image->data;
 }
