@@ -526,7 +526,7 @@ void TileMapLayer::_rendering_quadrants_update_cell(CellData &r_cell_data, SelfL
 	if (tile_set->has_source(r_cell_data.cell.source_id)) {
 		source = *tile_set->get_source(r_cell_data.cell.source_id);
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-		if (atlas_source && atlas_source->has_tile(r_cell_data.cell.get_atlas_coords()) && atlas_source->has_alternative_tile(r_cell_data.cell.get_atlas_coords(), r_cell_data.cell.alternative_tile)) {
+		if (atlas_source && atlas_source->has_tile_with_alternative(r_cell_data.cell.get_atlas_coords(), r_cell_data.cell.alternative_tile)) {
 			is_valid = true;
 			const TileData *tile_data;
 			if (r_cell_data.runtime_tile_data_cache) {
@@ -632,7 +632,7 @@ void TileMapLayer::_rendering_occluders_update_cell(CellData &r_cell_data) {
 	if (tile_set->has_source(r_cell_data.cell.source_id)) {
 		source = *tile_set->get_source(r_cell_data.cell.source_id);
 
-		if (source->has_tile(r_cell_data.cell.get_atlas_coords()) && source->has_alternative_tile(r_cell_data.cell.get_atlas_coords(), r_cell_data.cell.alternative_tile)) {
+		if (source->has_tile_with_alternative(r_cell_data.cell.get_atlas_coords(), r_cell_data.cell.alternative_tile)) {
 			TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 			if (atlas_source) {
 				// Get the tile data.
@@ -716,7 +716,7 @@ void TileMapLayer::_rendering_draw_cell_debug(const RID &p_canvas_item, const Ve
 	if (tile_set->has_source(c.source_id)) {
 		source = *tile_set->get_source(c.source_id);
 
-		if (source->has_tile(c.get_atlas_coords()) && source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
+		if (source->has_tile_with_alternative(c.get_atlas_coords(), c.alternative_tile)) {
 			TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 			if (atlas_source) {
 				Vector2i grid_size = atlas_source->get_atlas_grid_size();
@@ -984,7 +984,7 @@ void TileMapLayer::_physics_quadrants_update_cell(CellData &r_cell_data, SelfLis
 	if (tile_set->has_source(r_cell_data.cell.source_id)) {
 		source = *tile_set->get_source(r_cell_data.cell.source_id);
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-		if (atlas_source && atlas_source->has_tile(r_cell_data.cell.get_atlas_coords()) && atlas_source->has_alternative_tile(r_cell_data.cell.get_atlas_coords(), r_cell_data.cell.alternative_tile)) {
+		if (atlas_source && atlas_source->has_tile_with_alternative(r_cell_data.cell.get_atlas_coords(), r_cell_data.cell.alternative_tile)) {
 			is_valid = true;
 		}
 	}
@@ -1394,7 +1394,7 @@ void TileMapLayer::_navigation_update_cell(CellData &r_cell_data) {
 	if (tile_set->has_source(c.source_id)) {
 		source = *tile_set->get_source(c.source_id);
 
-		if (source->has_tile(c.get_atlas_coords()) && source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
+		if (source->has_tile_with_alternative(c.get_atlas_coords(), c.alternative_tile)) {
 			TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 			if (atlas_source) {
 				const TileData *tile_data;
@@ -1498,7 +1498,7 @@ void TileMapLayer::_navigation_draw_cell_debug(const RID &p_canvas_item, const V
 	if (tile_set->has_source(c.source_id)) {
 		source = *tile_set->get_source(c.source_id);
 
-		if (source->has_tile(c.get_atlas_coords()) && source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
+		if (source->has_tile_with_alternative(c.get_atlas_coords(), c.alternative_tile)) {
 			TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 			if (atlas_source) {
 				const TileData *tile_data;
@@ -1623,7 +1623,7 @@ void TileMapLayer::_scenes_update_cell(CellData &r_cell_data) {
 	if (tile_set->has_source(c.source_id)) {
 		source = *tile_set->get_source(c.source_id);
 
-		if (source->has_tile(c.get_atlas_coords()) && source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
+		if (source->has_tile_with_alternative(c.get_atlas_coords(), c.alternative_tile)) {
 			TileSetScenesCollectionSource *scenes_collection_source = Object::cast_to<TileSetScenesCollectionSource>(source);
 			if (scenes_collection_source) {
 				Ref<PackedScene> packed_scene = scenes_collection_source->get_scene_tile_scene(c.alternative_tile);
@@ -1675,7 +1675,7 @@ void TileMapLayer::_scenes_draw_cell_debug(const RID &p_canvas_item, const Vecto
 	if (tile_set->has_source(c.source_id)) {
 		source = *tile_set->get_source(c.source_id);
 
-		if (!source->has_tile(c.get_atlas_coords()) || !source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
+		if (!source->has_tile_with_alternative(c.get_atlas_coords(), c.alternative_tile)) {
 			return;
 		}
 
@@ -1743,7 +1743,7 @@ void TileMapLayer::_build_runtime_update_tile_data_for_cell(CellData &r_cell_dat
 	if (tile_set->has_source(c.source_id)) {
 		source = *tile_set->get_source(c.source_id);
 
-		if (source->has_tile(c.get_atlas_coords()) && source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
+		if (source->has_tile_with_alternative(c.get_atlas_coords(), c.alternative_tile)) {
 			TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 			if (atlas_source) {
 				bool ret = false;
@@ -2643,8 +2643,7 @@ TileMapCell TileMapLayer::get_cell(const Vector2i &p_coords) const {
 void TileMapLayer::draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame, const TileData *p_tile_data_override, real_t p_normalized_animation_offset) {
 	ERR_FAIL_COND(p_tile_set.is_null());
 	ERR_FAIL_COND(!p_tile_set->has_source(p_atlas_source_id));
-	ERR_FAIL_COND(!p_tile_set->get_source(p_atlas_source_id)->has_tile(p_atlas_coords));
-	ERR_FAIL_COND(!p_tile_set->get_source(p_atlas_source_id)->has_alternative_tile(p_atlas_coords, p_alternative_tile));
+	ERR_FAIL_COND(!p_tile_set->get_source(p_atlas_source_id)->has_tile_with_alternative(p_atlas_coords, p_alternative_tile));
 	TileSetSource *source = *p_tile_set->get_source(p_atlas_source_id);
 	TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 	if (atlas_source) {
@@ -2811,7 +2810,7 @@ void TileMapLayer::fix_invalid_tiles() {
 	RBSet<Vector2i> coords;
 	for (const KeyValue<Vector2i, CellData> &E : tile_map_layer_data) {
 		TileSetSource *source = *tile_set->get_source(E.value.cell.source_id);
-		if (!source || !source->has_tile(E.value.cell.get_atlas_coords()) || !source->has_alternative_tile(E.value.cell.get_atlas_coords(), E.value.cell.alternative_tile)) {
+		if (!source || !source->has_tile_with_alternative(E.value.cell.get_atlas_coords(), E.value.cell.alternative_tile)) {
 			coords.insert(E.key);
 		}
 	}

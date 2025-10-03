@@ -514,7 +514,7 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::edit(Ref<TileSetAtlasSource
 		const Vector2i &coords = E.tile;
 		const int &alternative = E.alternative;
 
-		if (tile_set_atlas_source.is_valid() && tile_set_atlas_source->has_tile(coords) && tile_set_atlas_source->has_alternative_tile(coords, alternative)) {
+		if (tile_set_atlas_source.is_valid() && tile_set_atlas_source->has_tile_with_alternative(coords, alternative)) {
 			TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
 			if (tile_data->is_connected(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed))) {
 				tile_data->disconnect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
@@ -530,7 +530,7 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::edit(Ref<TileSetAtlasSource
 		const Vector2i &coords = E.tile;
 		const int &alternative = E.alternative;
 
-		if (tile_set_atlas_source->has_tile(coords) && tile_set_atlas_source->has_alternative_tile(coords, alternative)) {
+		if (tile_set_atlas_source->has_tile_with_alternative(coords, alternative)) {
 			TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
 			if (!tile_data->is_connected(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed))) {
 				tile_data->connect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
@@ -572,7 +572,7 @@ void TileSetAtlasSourceEditor::_update_fix_selected_and_hovered_tiles() {
 	for (RBSet<TileSelection>::Element *E = selection.front(); E;) {
 		RBSet<TileSelection>::Element *N = E->next();
 		TileSelection selected = E->get();
-		if (!tile_set_atlas_source->has_tile(selected.tile) || !tile_set_atlas_source->has_alternative_tile(selected.tile, selected.alternative)) {
+		if (!tile_set_atlas_source->has_tile_with_alternative(selected.tile, selected.alternative)) {
 			selection.erase(E);
 		}
 		E = N;
@@ -584,7 +584,7 @@ void TileSetAtlasSourceEditor::_update_fix_selected_and_hovered_tiles() {
 	}
 	Vector2i coords = Vector2i(hovered_alternative_tile_coords.x, hovered_alternative_tile_coords.y);
 	int alternative = hovered_alternative_tile_coords.z;
-	if (!tile_set_atlas_source->has_tile(coords) || !tile_set_atlas_source->has_alternative_tile(coords, alternative)) {
+	if (!tile_set_atlas_source->has_tile_with_alternative(coords, alternative)) {
 		hovered_alternative_tile_coords = Vector3i(TileSetSource::INVALID_ATLAS_COORDS.x, TileSetSource::INVALID_ATLAS_COORDS.y, TileSetSource::INVALID_TILE_ALTERNATIVE);
 	}
 }
@@ -1713,7 +1713,7 @@ void TileSetAtlasSourceEditor::_set_selection_from_array(const Array &p_selectio
 	selection.clear();
 	for (int i = 0; i < p_selection.size() / 2; i++) {
 		TileSelection selected = { p_selection[i * 2], p_selection[i * 2 + 1] };
-		if (tile_set_atlas_source->has_tile(selected.tile) && tile_set_atlas_source->has_alternative_tile(selected.tile, selected.alternative)) {
+		if (tile_set_atlas_source->has_tile_with_alternative(selected.tile, selected.alternative)) {
 			selection.insert(selected);
 		}
 	}
