@@ -1796,21 +1796,41 @@ void EditorPropertyEasing::_spin_focus_exited() {
 void EditorPropertyEasing::setup(bool p_positive_only, bool p_flip) {
 	flip = p_flip;
 	positive_only = p_positive_only;
+
+	// Names need translation context, so they are set in NOTIFICATION_TRANSLATION_CHANGED.
+	preset->add_item("", EASING_LINEAR);
+	preset->add_item("", EASING_IN);
+	preset->add_item("", EASING_OUT);
+	preset->add_item("", EASING_ZERO);
+	if (!positive_only) {
+		preset->add_item("", EASING_IN_OUT);
+		preset->add_item("", EASING_OUT_IN);
+	}
 }
 
 void EditorPropertyEasing::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			preset->clear();
-			preset->add_icon_item(get_editor_theme_icon(SNAME("CurveLinear")), "Linear", EASING_LINEAR);
-			preset->add_icon_item(get_editor_theme_icon(SNAME("CurveIn")), "Ease In", EASING_IN);
-			preset->add_icon_item(get_editor_theme_icon(SNAME("CurveOut")), "Ease Out", EASING_OUT);
-			preset->add_icon_item(get_editor_theme_icon(SNAME("CurveConstant")), "Zero", EASING_ZERO);
+			preset->set_item_icon(preset->get_item_index(EASING_LINEAR), get_editor_theme_icon(SNAME("CurveLinear")));
+			preset->set_item_icon(preset->get_item_index(EASING_IN), get_editor_theme_icon(SNAME("CurveIn")));
+			preset->set_item_icon(preset->get_item_index(EASING_OUT), get_editor_theme_icon(SNAME("CurveOut")));
+			preset->set_item_icon(preset->get_item_index(EASING_ZERO), get_editor_theme_icon(SNAME("CurveConstant")));
 			if (!positive_only) {
-				preset->add_icon_item(get_editor_theme_icon(SNAME("CurveInOut")), "Ease In-Out", EASING_IN_OUT);
-				preset->add_icon_item(get_editor_theme_icon(SNAME("CurveOutIn")), "Ease Out-In", EASING_OUT_IN);
+				preset->set_item_icon(preset->get_item_index(EASING_IN_OUT), get_editor_theme_icon(SNAME("CurveInOut")));
+				preset->set_item_icon(preset->get_item_index(EASING_OUT_IN), get_editor_theme_icon(SNAME("CurveOutIn")));
 			}
 			easing_draw->set_custom_minimum_size(Size2(0, get_theme_font(SceneStringName(font), SNAME("Label"))->get_height(get_theme_font_size(SceneStringName(font_size), SNAME("Label"))) * 2));
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			preset->set_item_text(preset->get_item_index(EASING_LINEAR), TTR("Linear", "Ease Type"));
+			preset->set_item_text(preset->get_item_index(EASING_IN), TTR("Ease In", "Ease Type"));
+			preset->set_item_text(preset->get_item_index(EASING_OUT), TTR("Ease Out", "Ease Type"));
+			preset->set_item_text(preset->get_item_index(EASING_ZERO), TTR("Zero", "Ease Type"));
+			if (!positive_only) {
+				preset->set_item_text(preset->get_item_index(EASING_IN_OUT), TTR("Ease In-Out", "Ease Type"));
+				preset->set_item_text(preset->get_item_index(EASING_OUT_IN), TTR("Ease Out-In", "Ease Type"));
+			}
 		} break;
 	}
 }
@@ -1823,6 +1843,7 @@ EditorPropertyEasing::EditorPropertyEasing() {
 	add_child(easing_draw);
 
 	preset = memnew(PopupMenu);
+	preset->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(preset);
 	preset->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyEasing::_set_preset));
 
