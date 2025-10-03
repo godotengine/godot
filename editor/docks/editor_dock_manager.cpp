@@ -248,8 +248,12 @@ EditorDock *EditorDockManager::_get_dock_tab_dragged() {
 	Dictionary dock_drop_data = dock_slot[DOCK_SLOT_LEFT_BL]->get_viewport()->gui_get_drag_data();
 
 	// Check if we are dragging a dock.
-	const String type = dock_drop_data.get("type", "");
-	if (type == "tab_container_tab") {
+	if (dock_drop_data.get("type", "").operator String() != "tab") {
+		return nullptr;
+	}
+
+	const String tab_type = dock_drop_data.get("tab_type", "");
+	if (tab_type == "tab_container_tab") {
 		Node *source_tab_bar = EditorNode::get_singleton()->get_node(dock_drop_data["from_path"]);
 		if (!source_tab_bar) {
 			return nullptr;
