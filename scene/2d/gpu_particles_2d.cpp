@@ -399,6 +399,15 @@ PackedStringArray GPUParticles2D::get_configuration_warnings() const {
 	return warnings;
 }
 
+PackedVector2Array GPUParticles2D::capture_positions() const {
+	PackedVector3Array positions_vec3 = RS::get_singleton()->particles_get_current_positions(particles);
+	PackedVector2Array positions;
+	for (int i = 0; i < positions_vec3.size(); i++) {
+		positions.push_back(Vector2(positions_vec3[i].x, positions_vec3[i].y));
+	}
+	return positions;
+}
+
 Rect2 GPUParticles2D::capture_rect() const {
 	AABB aabb = RS::get_singleton()->particles_get_current_aabb(particles);
 	Rect2 r;
@@ -901,6 +910,7 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_texture"), &GPUParticles2D::get_texture);
 
 	ClassDB::bind_method(D_METHOD("capture_rect"), &GPUParticles2D::capture_rect);
+	ClassDB::bind_method(D_METHOD("capture_positions"), &GPUParticles2D::capture_positions);
 
 	ClassDB::bind_method(D_METHOD("restart", "keep_seed"), &GPUParticles2D::restart, DEFVAL(false));
 

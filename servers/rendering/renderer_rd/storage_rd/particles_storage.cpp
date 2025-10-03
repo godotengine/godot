@@ -632,6 +632,40 @@ void ParticlesStorage::particles_request_process(RID p_particles) {
 	}
 }
 
+PackedVector3Array ParticlesStorage::particles_get_current_positions(RID p_particles) const {
+	const Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL_V(particles, PackedVector3Array());
+
+	int total_amount = particles->amount;
+	if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
+		total_amount *= particles->trail_bind_poses.size();
+	}
+
+	uint32_t particle_data_size = sizeof(ParticleData) + sizeof(float) * 4 * particles->userdata_count;
+	Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(particles->particle_buffer);
+	ERR_FAIL_COND_V(buffer.size() != (int)(total_amount * particle_data_size), PackedVector3Array());
+
+	Transform3D inv = particles->emission_transform.affine_inverse();
+
+	PackedVector3Array positions;
+	if (buffer.size()) {
+		const uint8_t *data_ptr = (const uint8_t *)buffer.ptr();
+
+		for (int i = 0; i < total_amount; i++) {
+			const ParticleData &particle_data = *(const ParticleData *)&data_ptr[particle_data_size * i];
+			if (particle_data.active) {
+				Vector3 pos = Vector3(particle_data.xform[12], particle_data.xform[13], particle_data.xform[14]);
+				if (!particles->use_local_coords) {
+					pos = inv.xform(pos);
+				}
+				positions.push_back(pos);
+			}
+		}
+	}
+
+	return positions;
+}
+
 AABB ParticlesStorage::particles_get_current_aabb(RID p_particles) {
 	const Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, AABB());

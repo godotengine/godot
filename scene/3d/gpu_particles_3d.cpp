@@ -453,6 +453,10 @@ AABB GPUParticles3D::capture_aabb() const {
 	return RS::get_singleton()->particles_get_current_aabb(particles);
 }
 
+PackedVector3Array GPUParticles3D::capture_positions() const {
+	return RS::get_singleton()->particles_get_current_positions(particles);
+}
+
 void GPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "emitting") {
 		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
@@ -791,6 +795,7 @@ void GPUParticles3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("restart", "keep_seed"), &GPUParticles3D::restart, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("capture_aabb"), &GPUParticles3D::capture_aabb);
+	ClassDB::bind_method(D_METHOD("capture_positions"), &GPUParticles3D::capture_positions);
 
 	ClassDB::bind_method(D_METHOD("set_sub_emitter", "path"), &GPUParticles3D::set_sub_emitter);
 	ClassDB::bind_method(D_METHOD("get_sub_emitter"), &GPUParticles3D::get_sub_emitter);
