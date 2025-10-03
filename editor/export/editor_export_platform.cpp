@@ -325,7 +325,7 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 		ftmp = pd->f;
 	}
 
-	PackData::SavedData sd;
+	EditorExportPlatform::SavedData sd;
 	sd.path_utf8 = simplified_path.trim_prefix("res://").utf8();
 	sd.ofs = (pd->use_sparse_pck) ? 0 : pd->f->get_position();
 	sd.size = p_data.size();
@@ -1715,7 +1715,7 @@ Error EditorExportPlatform::_pack_add_shared_object(void *p_userdata, const Shar
 Error EditorExportPlatform::_remove_pack_file(void *p_userdata, const String &p_path) {
 	PackData *pd = (PackData *)p_userdata;
 
-	SavedData sd;
+	EditorExportPlatform::SavedData sd;
 	sd.path_utf8 = p_path.utf8();
 	sd.ofs = pd->f->get_position();
 	sd.size = 0;
