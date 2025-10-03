@@ -30,6 +30,14 @@
 
 #pragma once
 
+#define SETUP_JOYPAD_SDL                                           \
+	joypad_sdl = memnew(JoypadSDL());                              \
+	if (joypad_sdl->initialize() != OK) {                          \
+		ERR_PRINT("Couldn't initialize SDL joypad input driver."); \
+		memdelete(joypad_sdl);                                     \
+		joypad_sdl = nullptr;                                      \
+	}
+
 #include "core/input/input.h"
 #include "core/os/thread.h"
 
@@ -66,4 +74,5 @@ private:
 	HashMap<SDL_JoystickID, int> sdl_instance_id_to_joypad_id;
 
 	void close_joypad(int p_pad_idx);
+	bool should_ignore_joypad(SDL_JoystickID p_joy_id);
 };
