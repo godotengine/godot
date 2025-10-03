@@ -131,6 +131,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vector", "negative_x", "positive_x", "negative_y", "positive_y", "deadzone"), &Input::get_vector, DEFVAL(-1.0f));
 	ClassDB::bind_method(D_METHOD("add_joy_mapping", "mapping", "update_existing"), &Input::add_joy_mapping, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_joy_mapping", "guid"), &Input::remove_joy_mapping);
+	ClassDB::bind_method(D_METHOD("set_joy_raw", "device", "raw"), &Input::set_joy_raw);
+	ClassDB::bind_method(D_METHOD("get_joy_raw", "device"), &Input::get_joy_raw);
 	ClassDB::bind_method(D_METHOD("is_joy_known", "device"), &Input::is_joy_known);
 	ClassDB::bind_method(D_METHOD("get_joy_axis", "device", "axis"), &Input::get_joy_axis);
 	ClassDB::bind_method(D_METHOD("get_joy_name", "device"), &Input::get_joy_name);
@@ -1307,7 +1309,8 @@ void Input::joy_button(int p_device, JoyButton p_button, bool p_pressed) {
 		return;
 	}
 	joy.last_buttons[(size_t)p_button] = p_pressed;
-	if (joy.mapping == -1) {
+
+	if (joy.raw || joy.mapping == -1) {
 		_button_event(p_device, p_button, p_pressed);
 		return;
 	}
@@ -1338,7 +1341,7 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 
 	joy.last_axis[(size_t)p_axis] = p_value;
 
-	if (joy.mapping == -1) {
+	if (joy.raw || joy.mapping == -1) {
 		_axis_event(p_device, p_axis, p_value);
 		return;
 	}
@@ -1835,6 +1838,16 @@ void Input::remove_joy_mapping(const String &p_guid) {
 			}
 		}
 	}
+}
+
+void Input::set_joy_raw(int p_device, bool p_raw) {
+	_THREAD_SAFE_METHOD_
+	joy_names[p_device].raw = p_raw;
+}
+
+bool Input::get_joy_raw(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	return joy_names[p_device].raw;
 }
 
 void Input::_set_joypad_mapping(Joypad &p_js, int p_map_index) {
