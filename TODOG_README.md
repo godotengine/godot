@@ -1,4 +1,4 @@
-# Todog
+# todoG
 ## A “Recursive Game‑Builder” in Godot  
 *(What the description is essentially asking for: a Godot editor that *also* runs a game that, when finished, returns control to that 
 very same editor.)*  
