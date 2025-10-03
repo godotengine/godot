@@ -4076,30 +4076,25 @@ int Main::start() {
 		main_loop_type = GLOBAL_GET("application/run/main_loop_type");
 	}
 
+	// Register autoload constants early so they exist before any script.
+	// Should happen before --check-only to avoid parse errors.
+	HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
+		const ProjectSettings::AutoloadInfo &info = E.value;
+
+		if (info.is_singleton) {
+			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+				ScriptServer::get_language(i)->add_global_constant(info.name, Variant());
+			}
+		}
+	}
+
 	if (!script.is_empty()) {
 		Ref<Script> script_res = ResourceLoader::load(script);
 		ERR_FAIL_COND_V_MSG(script_res.is_null(), EXIT_FAILURE, "Can't load script: " + script);
 
 		if (check_only) {
 			return script_res->is_valid() ? EXIT_SUCCESS : EXIT_FAILURE;
-		}
-
-		if (script_res->can_instantiate()) {
-			StringName instance_type = script_res->get_instance_base_type();
-			Object *obj = ClassDB::instantiate(instance_type);
-			MainLoop *script_loop = Object::cast_to<MainLoop>(obj);
-			if (!script_loop) {
-				if (obj) {
-					memdelete(obj);
-				}
-				OS::get_singleton()->alert(vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
-				ERR_FAIL_V_MSG(EXIT_FAILURE, vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
-			}
-
-			script_loop->set_script(script_res);
-			main_loop = script_loop;
-		} else {
-			return EXIT_FAILURE;
 		}
 	} else { // Not based on script path.
 		if (!editor && !ClassDB::class_exists(main_loop_type) && ScriptServer::is_global_class(main_loop_type)) {
@@ -4207,29 +4202,16 @@ int Main::start() {
 
 		if (!project_manager && !editor) { // game
 			if (!game_path.is_empty() || !script.is_empty()) {
-				//autoload
-				OS::get_singleton()->benchmark_begin_measure("Startup", "Load Autoloads");
-				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
-
-				//first pass, add the constants so they exist before any script is loaded
-				for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
-					const ProjectSettings::AutoloadInfo &info = E.value;
-
-					if (info.is_singleton) {
-						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-							ScriptServer::get_language(i)->add_global_constant(info.name, Variant());
-						}
-					}
-				}
-
-				//second pass, load into global constants
+				// Load autoloads to be added to the main loop.
 				List<Node *> to_add;
+				OS::get_singleton()->benchmark_begin_measure("Startup", "Load Autoloads");
+
 				for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
 					const ProjectSettings::AutoloadInfo &info = E.value;
 
 					Node *n = nullptr;
 					if (ResourceLoader::get_resource_type(info.path) == "PackedScene") {
-						// Cache the scene reference before loading it (for cyclic references)
+						// Cache the scene reference before loading it (for cyclic references).
 						Ref<PackedScene> scn;
 						scn.instantiate();
 						scn->set_path(info.path);
@@ -4243,9 +4225,9 @@ int Main::start() {
 						Ref<Resource> res = ResourceLoader::load(info.path);
 						ERR_CONTINUE_MSG(res.is_null(), vformat("Failed to instantiate an autoload, can't load from path: %s.", info.path));
 
-						Ref<Script> script_res = res;
-						if (script_res.is_valid()) {
-							StringName ibt = script_res->get_instance_base_type();
+						Ref<Script> scr_res = res;
+						if (scr_res.is_valid()) {
+							StringName ibt = scr_res->get_instance_base_type();
 							bool valid_type = ClassDB::is_parent_class(ibt, "Node");
 							ERR_CONTINUE_MSG(!valid_type, vformat("Failed to instantiate an autoload, script '%s' does not inherit from 'Node'.", info.path));
 
@@ -4253,14 +4235,14 @@ int Main::start() {
 							ERR_CONTINUE_MSG(!obj, vformat("Failed to instantiate an autoload, cannot instantiate '%s'.", ibt));
 
 							n = Object::cast_to<Node>(obj);
-							n->set_script(script_res);
+							n->set_script(scr_res);
 						}
 					}
 
 					ERR_CONTINUE_MSG(!n, vformat("Failed to instantiate an autoload, path is not pointing to a scene or a script: %s.", info.path));
 					n->set_name(info.name);
 
-					//defer so references are all valid on _ready()
+					// Defer so references are all valid on _ready().
 					to_add.push_back(n);
 
 					if (info.is_singleton) {
@@ -4273,7 +4255,31 @@ int Main::start() {
 				for (Node *E : to_add) {
 					sml->get_root()->add_child(E);
 				}
+
 				OS::get_singleton()->benchmark_end_measure("Startup", "Load Autoloads");
+			}
+		}
+
+		if (!script.is_empty()) {
+			Ref<Script> script_res = ResourceLoader::load(script);
+			ERR_FAIL_COND_V_MSG(script_res.is_null(), EXIT_FAILURE, "Can't load script: " + script);
+
+			if (script_res->can_instantiate()) {
+				StringName instance_type = script_res->get_instance_base_type();
+				Object *obj = ClassDB::instantiate(instance_type);
+				MainLoop *script_loop = Object::cast_to<MainLoop>(obj);
+				if (!script_loop) {
+					if (obj) {
+						memdelete(obj);
+					}
+					OS::get_singleton()->alert(vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
+					ERR_FAIL_V_MSG(EXIT_FAILURE, vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
+				}
+
+				script_loop->set_script(script_res);
+				main_loop = script_loop;
+			} else {
+				return EXIT_FAILURE;
 			}
 		}
 
