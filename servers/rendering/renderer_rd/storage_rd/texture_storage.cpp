@@ -3498,9 +3498,9 @@ RID TextureStorage::RenderTarget::get_framebuffer() {
 	// this is where our framebuffer cache comes in clutch..
 
 	if (msaa != RS::VIEWPORT_MSAA_DISABLED) {
-		return FramebufferCacheRD::get_singleton()->get_cache_multiview(view_count, color_multisample, overridden.color.is_valid() ? overridden.color : color);
+		return FramebufferCacheRD::get_singleton()->get_cache_multiview(view_count, color_multisample, overridden.color.is_valid() ? overridden.color : color_mipmap0);
 	} else {
-		return FramebufferCacheRD::get_singleton()->get_cache_multiview(view_count, overridden.color.is_valid() ? overridden.color : color);
+		return FramebufferCacheRD::get_singleton()->get_cache_multiview(view_count, overridden.color.is_valid() ? overridden.color : color_mipmap0);
 	}
 }
 
@@ -3536,6 +3536,7 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 
 	rt->color = RID();
 	rt->color_multisample = RID();
+	rt->color_mipmaps.clear();
 	if (rt->texture.is_valid()) {
 		Texture *tex = get_texture(rt->texture);
 		tex->render_target = nullptr;
@@ -3567,6 +3568,8 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		rt->image_format = rt->is_transparent ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8;
 	}
 
+	uint32_t mipmaps_required = rt->use_mipmaps ? Image::get_image_required_mipmaps(rt->size.width, rt->size.height, Image::FORMAT_RGBA8) : 1;
+
 	RD::TextureFormat rd_color_attachment_format;
 	RD::TextureView rd_view;
 	{ //attempt register
@@ -3575,7 +3578,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		rd_color_attachment_format.height = rt->size.height;
 		rd_color_attachment_format.depth = 1;
 		rd_color_attachment_format.array_layers = rt->view_count; // for stereo we create two (or more) layers, need to see if we can make fallback work like this too if we don't have multiview
-		rd_color_attachment_format.mipmaps = 1;
+		rd_color_attachment_format.mipmaps = mipmaps_required;
 		if (rd_color_attachment_format.array_layers > 1) { // why are we not using rt->texture_type ??
 			rd_color_attachment_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 		} else {
@@ -3593,6 +3596,17 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 	// TODO see if we can lazy create this once we actually use it as we may not need to create this if we have an overridden color buffer...
 	rt->color = RD::get_singleton()->texture_create(rd_color_attachment_format, rd_view);
 	ERR_FAIL_COND(rt->color.is_null());
+
+	if (rt->use_mipmaps) {
+		for (uint32_t i = 0; i < mipmaps_required; i++) {
+			RID mipmap = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rt->color, 0, i);
+			RD::get_singleton()->set_resource_name(mipmap, "Color slice mip: " + itos(i));
+
+			rt->color_mipmaps.push_back(mipmap);
+		}
+	}
+
+	rt->color_mipmap0 = mipmaps_required > 1 ? rt->color_mipmaps[0] : rt->color;
 
 	if (rt->msaa != RS::VIEWPORT_MSAA_DISABLED) {
 		// Use the texture format of the color attachment for the multisample color attachment.
@@ -3648,6 +3662,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		tex->rd_format_srgb = rt->color_format_srgb;
 		tex->format = rt->image_format;
 		tex->validated_format = rt->use_hdr ? Image::FORMAT_RGBAH : Image::FORMAT_RGBA8;
+		tex->mipmaps = mipmaps_required;
 
 		Vector<RID> proxies = tex->proxies; //make a copy, since update may change it
 		for (int i = 0; i < proxies.size(); i++) {
@@ -3964,7 +3979,7 @@ RID TextureStorage::render_target_get_rd_texture(RID p_render_target) {
 	if (rt->overridden.color.is_valid()) {
 		return rt->overridden.color;
 	} else {
-		return rt->color;
+		return rt->color_mipmap0;
 	}
 }
 
@@ -3973,7 +3988,7 @@ RID TextureStorage::render_target_get_rd_texture_slice(RID p_render_target, uint
 	ERR_FAIL_NULL_V(rt, RID());
 
 	if (rt->view_count == 1) {
-		return rt->color;
+		return rt->color_mipmap0;
 	} else {
 		ERR_FAIL_UNSIGNED_INDEX_V(p_layer, rt->view_count, RID());
 		if (rt->color_slices.is_empty()) {
@@ -4335,6 +4350,53 @@ void TextureStorage::render_target_sdf_process(RID p_render_target) {
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.size[0], push_constant.size[1], 1);
 
 	RD::get_singleton()->compute_list_end();
+}
+
+void TextureStorage::render_target_set_use_mipmaps(RID p_render_target, bool p_use_mipmaps) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+	if (rt->use_mipmaps != p_use_mipmaps) {
+		rt->use_mipmaps = p_use_mipmaps;
+		_update_render_target(rt);
+	}
+}
+
+bool TextureStorage::render_target_is_using_mipmaps(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, false);
+
+	return rt->use_mipmaps;
+}
+
+void TextureStorage::render_target_gen_mipmaps(RID p_render_target) {
+	CopyEffects *copy_effects = CopyEffects::get_singleton();
+	ERR_FAIL_NULL(copy_effects);
+
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	if (!rt->use_mipmaps || rt->color_mipmaps.size() < 2) {
+		return;
+	}
+
+	// TODO figure out stereo support here
+
+	RD::get_singleton()->draw_command_begin_label("Generate Mipmaps");
+	Size2i texture_size = rt->size;
+
+	for (int i = 1; i < rt->color_mipmaps.size(); i++) {
+		Size2i prev_texture_size = texture_size;
+		texture_size = Size2i(texture_size.x >> 1, texture_size.y >> 1).maxi(1);
+
+		RID prev_texture = rt->color_mipmaps[i - 1];
+		RID mipmap = rt->color_mipmaps[i];
+		if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+			copy_effects->make_mipmap(prev_texture, mipmap, prev_texture_size, !rt->use_hdr);
+		} else {
+			copy_effects->make_mipmap_raster(prev_texture, mipmap, prev_texture_size);
+		}
+	}
+	RD::get_singleton()->draw_command_end_label();
 }
 
 void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps) {

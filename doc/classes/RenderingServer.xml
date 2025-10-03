@@ -4261,6 +4261,14 @@
 				Practically speaking, this means that the end result of the Viewport will not be clamped to the [code]0-1[/code] range and can be used in 3D rendering without color encoding adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients. This setting has the same effect as [member Viewport.use_hdr_2d].
 			</description>
 		</method>
+		<method name="viewport_set_use_mipmaps">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="use_mipmaps" type="bool" />
+			<description>
+				If [code]true[/code], the viewport will generate mipmaps for the output [ViewportTexture]. This has a performance impact, so only enable mipmaps if they are actually needed during rendering.
+			</description>
+		</method>
 		<method name="viewport_set_use_occlusion_culling">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
