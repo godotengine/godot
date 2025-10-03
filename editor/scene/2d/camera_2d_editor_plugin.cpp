@@ -219,7 +219,7 @@ void Camera2DEditor::_update_hover(const Vector2 &p_mouse_pos) {
 
 	const Rect2 limit_rect = CanvasItemEditor::get_singleton()->get_canvas_transform().xform(selected_camera->get_limit_rect());
 	const float drag_tolerance = 8.0;
-	const Vector2 tolerance_vector = Vector2(1, 1) * drag_tolerance;
+	const Vector2 tolerance_vector = vec2_from_scalar(drag_tolerance);
 
 	hover_type = Drag::NONE;
 	if (Rect2(limit_rect.position - tolerance_vector, tolerance_vector * 2).has_point(p_mouse_pos)) {

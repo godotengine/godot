@@ -127,7 +127,7 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, real_t p_s
 	}
 
 	set_position(new_ofs);
-	set_scale(Vector2(1, 1) * p_scale * orig_scale);
+	set_scale(vec2_from_scalar(p_scale) * orig_scale);
 
 	_update_mirroring();
 }

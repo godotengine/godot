@@ -938,7 +938,7 @@ void FontPreview::_notification(int p_what) {
 void FontPreview::_bind_methods() {}
 
 Size2 FontPreview::get_minimum_size() const {
-	return Vector2(64, 64) * EDSCALE;
+	return vec2_from_scalar(64 * EDSCALE);
 }
 
 void FontPreview::set_data(const Ref<Font> &p_f) {

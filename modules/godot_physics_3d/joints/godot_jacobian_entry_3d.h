@@ -80,7 +80,7 @@ public:
 			const Basis &world2B,
 			const Vector3 &inertiaInvA,
 			const Vector3 &inertiaInvB) :
-			m_linearJointAxis(Vector3(real_t(0.), real_t(0.), real_t(0.))) {
+			m_linearJointAxis(vec3_from_scalar(real_t(0.))) {
 		m_aJ = world2A.xform(jointAxis);
 		m_bJ = world2B.xform(-jointAxis);
 		m_0MinvJt = inertiaInvA * m_aJ;
@@ -95,7 +95,7 @@ public:
 			const Vector3 &axisInB,
 			const Vector3 &inertiaInvA,
 			const Vector3 &inertiaInvB) :
-			m_linearJointAxis(Vector3(real_t(0.), real_t(0.), real_t(0.))),
+			m_linearJointAxis(vec3_from_scalar(real_t(0.))),
 			m_aJ(axisInA),
 			m_bJ(-axisInB) {
 		m_0MinvJt = inertiaInvA * m_aJ;
@@ -116,7 +116,7 @@ public:
 		m_aJ = world2A.xform(rel_pos1.cross(jointAxis));
 		m_bJ = world2A.xform(rel_pos2.cross(-jointAxis));
 		m_0MinvJt = inertiaInvA * m_aJ;
-		m_1MinvJt = Vector3(real_t(0.), real_t(0.), real_t(0.));
+		m_1MinvJt = vec3_from_scalar(real_t(0.));
 		m_Adiag = massInvA + m_0MinvJt.dot(m_aJ);
 
 		ERR_FAIL_COND(m_Adiag <= real_t(0.0));

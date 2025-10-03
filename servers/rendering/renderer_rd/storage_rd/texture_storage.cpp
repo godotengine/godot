@@ -3147,7 +3147,7 @@ void TextureStorage::update_decal_atlas() {
 
 		for (int i = 0; i < item_count; i++) {
 			DecalAtlas::Texture *t = decal_atlas.textures.getptr(items[i].texture);
-			t->uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2);
+			t->uv_rect.position = items[i].pos * border + vec2i_from_scalar(border / 2);
 			t->uv_rect.size = items[i].pixel_size;
 
 			t->uv_rect.position /= Size2(decal_atlas.size);
