@@ -2495,7 +2495,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 	scene_state.reset_gl_state();
 
-	GLuint motion_vectors_fbo = rt->overridden.velocity_fbo;
+	GLuint motion_vectors_fbo = rt->velocity_fbo;
 	if (motion_vectors_fbo != 0 && GLES3::Config::get_singleton()->max_vertex_attribs >= 22) {
 		RENDER_TIMESTAMP("Motion Vectors Pass");
 		glBindFramebuffer(GL_FRAMEBUFFER, motion_vectors_fbo);
