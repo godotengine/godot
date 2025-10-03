@@ -400,6 +400,7 @@ void EditorPropertyTextEnum::update_property() {
 		// Manually entered value.
 		if (default_option < 0 && !current_value.is_empty()) {
 			option_button->add_item(current_value, options.size() + 1001);
+			option_button->set_item_metadata(-1, current_value);
 			option_button->select(0);
 
 			option_button->add_separator();
@@ -409,7 +410,8 @@ void EditorPropertyTextEnum::update_property() {
 		option_button->add_item("", options.size() + 1000);
 
 		for (int i = 0; i < options.size(); i++) {
-			option_button->add_item(options[i], i);
+			option_button->add_item(option_names[i], i);
+			option_button->set_item_metadata(-1, options[i]);
 			if (options[i] == current_value) {
 				option_button->select(option_button->get_item_count() - 1);
 			}
@@ -429,6 +431,11 @@ void EditorPropertyTextEnum::setup(const Vector<String> &p_options, const Vector
 	loose_mode = p_loose_mode;
 
 	options = p_options;
+	if (p_option_names.is_empty()) {
+		option_names = p_options;
+	} else {
+		option_names = p_option_names;
+	}
 
 	if (loose_mode) {
 		// Add an explicit empty value for clearing the property in the loose mode.
@@ -436,13 +443,8 @@ void EditorPropertyTextEnum::setup(const Vector<String> &p_options, const Vector
 		option_button->set_item_metadata(-1, String());
 	}
 
-	bool use_option_names = !p_option_names.is_empty();
-	for (int i = 0; i < p_options.size(); i++) {
-		if (use_option_names) {
-			option_button->add_item(p_option_names[i], i);
-		} else {
-			option_button->add_item(p_options[i], i);
-		}
+	for (int i = 0; i < options.size(); i++) {
+		option_button->add_item(option_names[i], i);
 		option_button->set_item_metadata(-1, options[i]);
 	}
 
