@@ -124,6 +124,8 @@ private:
 		float ssao_detail = 0.5;
 		float ssao_horizon = 0.06;
 		float ssao_sharpness = 0.98;
+		// Only used for GTAO
+		float ssao_thickness_heuristic = 0.5;
 		float ssao_direct_light_affect = 0.0;
 		float ssao_ao_channel_affect = 0.0;
 
@@ -263,7 +265,7 @@ public:
 	float environment_get_ssr_depth_tolerance(RID p_env) const;
 
 	// SSAO
-	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect);
+	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_thickness_heuristic, float p_light_affect, float p_ao_channel_affect);
 	bool environment_get_ssao_enabled(RID p_env) const;
 	float environment_get_ssao_radius(RID p_env) const;
 	float environment_get_ssao_intensity(RID p_env) const;
@@ -271,6 +273,7 @@ public:
 	float environment_get_ssao_detail(RID p_env) const;
 	float environment_get_ssao_horizon(RID p_env) const;
 	float environment_get_ssao_sharpness(RID p_env) const;
+	float environment_get_ssao_thickness_heuristic(RID p_env) const;
 	float environment_get_ssao_direct_light_affect(RID p_env) const;
 	float environment_get_ssao_ao_channel_affect(RID p_env) const;
 
