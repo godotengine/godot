@@ -1042,6 +1042,7 @@ public:
 	WindowState *window_get_state(DisplayServer::WindowID p_window_id);
 
 	void window_start_resize(DisplayServer::WindowResizeEdge p_edge, DisplayServer::WindowID p_window);
+	virtual void window_show_system_menu(WindowID p_window = MAIN_WINDOW_ID) override;
 
 	void window_set_max_size(DisplayServer::WindowID p_window_id, const Size2i &p_size);
 	void window_set_min_size(DisplayServer::WindowID p_window_id, const Size2i &p_size);

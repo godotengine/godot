@@ -662,6 +662,7 @@ public:
 
 	virtual void window_start_drag(WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_start_resize(WindowResizeEdge p_edge, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_show_system_menu(WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;

@@ -1435,6 +1435,11 @@ void DisplayServerWayland::window_start_resize(WindowResizeEdge p_edge, WindowID
 	wayland_thread.window_start_resize(p_edge, p_window);
 }
 
+void DisplayServerWayland::window_show_system_menu(WindowID p_window) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+	wayland_thread.window_show_system_menu(p_window);
+}
+
 void DisplayServerWayland::cursor_set_shape(CursorShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 

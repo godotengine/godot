@@ -3838,6 +3838,22 @@ void WaylandThread::window_start_resize(DisplayServer::WindowResizeEdge p_edge, 
 #endif
 }
 
+void WaylandThread::window_show_system_menu(DisplayServer::WindowID p_window) {
+	ERR_FAIL_COND(!windows.has(p_window));
+
+	WindowState &ws = windows[p_window];
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+	if (ws.wl_surface && ws.xdg_toplevel) {
+		xdg_toplevel_show_window_menu(ws.xdg_toplevel, wl_seat_current, ss->pointer_data.button_serial, ss->pointer_data.position.x, ss->pointer_data.position.y);
+	}
+
+#ifdef LIBDECOR_ENABLED
+	if (ws.libdecor_frame) {
+		libdecor_frame_show_window_menu(ws.libdecor_frame, wl_seat_current, ss->pointer_data.button_serial, ss->pointer_data.position.x, ss->pointer_data.position.y);
+	}
+#endif
+}
+
 void WaylandThread::window_set_parent(DisplayServer::WindowID p_window_id, DisplayServer::WindowID p_parent_id) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	ERR_FAIL_COND(!windows.has(p_parent_id));
