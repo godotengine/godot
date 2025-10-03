@@ -182,6 +182,13 @@ private:
 	Error _buffer_initialize(Buffer *p_buffer, Span<uint8_t> p_data, uint32_t p_required_align = 32);
 
 	void update_perf_report();
+
+	// Flag for render graph reordering.
+	// Final value is set in RenderingDevice::initialize()
+	// based on '#define RENDER_GRAPH_REORDER' and GPU workarounds.
+	// Disabled on Adreno 5xx (crashes in vkCmdDrawIndexed, no perf gain).
+	bool render_graph_reorder = true;
+
 	// Flag for batching descriptor sets.
 	bool descriptor_set_batching = true;
 	// When true, the final draw call that copies our offscreen result into the Swapchain is put into its
@@ -953,6 +960,7 @@ public:
 	RenderingDeviceDriver *get_device_driver() const { return driver; }
 	RenderingContextDriver *get_context_driver() const { return context; }
 
+	const RenderingContextDriver::Workarounds &get_device_workarounds() const { return device.workarounds; }
 	const RDD::Capabilities &get_device_capabilities() const { return driver->get_capabilities(); }
 
 	bool has_feature(const Features p_feature) const;
