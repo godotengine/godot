@@ -977,6 +977,7 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pause"), &AnimationPlayer::pause);
 	ClassDB::bind_method(D_METHOD("stop", "keep_state"), &AnimationPlayer::stop, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimationPlayer::is_playing);
+	ClassDB::bind_method(D_METHOD("is_animation_active"), &AnimationPlayer::is_valid);
 
 	ClassDB::bind_method(D_METHOD("set_current_animation", "animation"), &AnimationPlayer::set_current_animation);
 	ClassDB::bind_method(D_METHOD("get_current_animation"), &AnimationPlayer::get_current_animation);
