@@ -189,6 +189,7 @@ void TreeItem::set_cell_mode(int p_column, TreeCellMode p_mode) {
 	}
 
 	Cell &c = cells.write[p_column];
+	bool keep_string = (c.mode == CELL_MODE_STRING || c.mode == CELL_MODE_CHECK) && (p_mode == CELL_MODE_STRING || p_mode == CELL_MODE_CHECK);
 	c.mode = p_mode;
 	c.min = 0;
 	c.max = 100;
@@ -196,7 +197,9 @@ void TreeItem::set_cell_mode(int p_column, TreeCellMode p_mode) {
 	c.val = 0;
 	c.checked = false;
 	c.icon = Ref<Texture2D>();
-	c.text = "";
+	if (!keep_string) {
+		c.text = "";
+	}
 	c.dirty = true;
 	c.icon_max_w = 0;
 	c.cached_minimum_size_dirty = true;
