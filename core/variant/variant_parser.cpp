@@ -34,7 +34,7 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_uid.h"
 #include "core/object/script_language.h"
-#include "core/string/string_buffer.h"
+#include "core/string/char_buffer.h"
 
 char32_t VariantParser::Stream::get_char() {
 	// is within buffer?
@@ -239,7 +239,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				return OK;
 			}
 			case '#': {
-				StringBuffer<> color_str;
+				CharBuffer<char32_t> color_str;
 				color_str += '#';
 				while (true) {
 					char32_t ch = p_stream->get_char();
@@ -255,7 +255,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 					}
 				}
 
-				r_token.value = Color::html(color_str.as_string());
+				r_token.value = Color::html(color_str.finalize());
 				r_token.type = TK_COLOR;
 				return OK;
 			}
@@ -416,7 +416,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				if (cchar <= 32) {
 					break;
 				}
-				StringBuffer<> token_text;
+				CharBuffer<char32_t> token_text;
 				if (cchar == '-') {
 					token_text += '-';
 					cchar = p_stream->get_char();
@@ -485,9 +485,9 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 					r_token.type = TK_NUMBER;
 
 					if (is_float) {
-						r_token.value = token_text.as_double();
+						r_token.value = String::to_float(token_text.get_terminated_buffer());
 					} else {
-						r_token.value = token_text.as_int();
+						r_token.value = String::to_int(token_text.get_terminated_buffer());
 					}
 					return OK;
 				} else if (is_ascii_alphabet_char(cchar) || is_underscore(cchar)) {
@@ -502,7 +502,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 					p_stream->saved = cchar;
 
 					r_token.type = TK_IDENTIFIER;
-					r_token.value = token_text.as_string();
+					r_token.value = token_text.finalize();
 					return OK;
 				} else {
 					r_err_str = "Unexpected character";
