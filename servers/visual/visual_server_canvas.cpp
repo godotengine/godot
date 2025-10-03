@@ -381,7 +381,7 @@ void VisualServerCanvas::_render_canvas_item_cull_by_item(Item *p_canvas_item, c
 	Rect2 rect = ci->get_rect();
 
 	Transform2D final_xform;
-	if (!_interpolation_data.interpolation_enabled || !ci->interpolated) {
+	if (!_interpolation_data.interpolation_enabled || !ci->interpolated || !ci->on_interpolate_transform_list) {
 		final_xform = ci->xform_curr;
 	} else {
 		real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
@@ -528,7 +528,7 @@ void VisualServerCanvas::_render_canvas_item_cull_by_node(Item *p_canvas_item, c
 	Rect2 rect = ci->get_rect();
 
 	Transform2D final_xform;
-	if (!_interpolation_data.interpolation_enabled || !ci->interpolated) {
+	if (!_interpolation_data.interpolation_enabled || !ci->interpolated || !ci->on_interpolate_transform_list) {
 		final_xform = ci->xform_curr;
 	} else {
 		real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
