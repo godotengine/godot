@@ -206,6 +206,24 @@ void OS_Web::vibrate_handheld(int p_duration_ms, float p_amplitude) {
 	godot_js_input_vibrate_handheld(p_duration_ms);
 }
 
+Key OS_Web::get_command_keycode() const {
+	if (command_key != Key::NONE) {
+		return command_key;
+	}
+
+	char *operating_system_ptr = godot_js_os_get_operating_system();
+	String operating_system = String::utf8(operating_system_ptr);
+	memfree(operating_system_ptr);
+
+	if (operating_system == "macOS" || operating_system == "iOS") {
+		command_key = Key::META;
+	} else {
+		command_key = Key::CTRL;
+	}
+
+	return command_key;
+}
+
 String OS_Web::get_user_data_dir(const String &p_user_dir) const {
 	String userfs = "/userfs";
 	return userfs.path_join(p_user_dir).replace_char('\\', '/');
