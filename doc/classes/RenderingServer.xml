@@ -5477,6 +5477,10 @@
 			Uses a film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
 			[b]Note:[/b] [member Environment.tonemap_white] is fixed at a value of [code]16.29[/code], which makes [constant ENV_TONE_MAPPER_AGX] unsuitable for use with the Mobile rendering method.
 		</constant>
+		<constant name="ENV_TONE_MAPPER_LOTTES" value="5" enum="EnvironmentToneMapper">
+			Uses a film-like tonemapping curve that tries to preserve contrast and detail in the midtones and highlights, good at maintaining color hue, while being a bit more punchy than AGX. Slower than [constant TONE_MAPPER_LINEAR].
+			[b]Note:[/b] This tonemapper, like [constant ENV_TONE_MAPPER_AGX], has a fixed white point.
+		</constant>
 		<constant name="ENV_SSR_ROUGHNESS_QUALITY_DISABLED" value="0" enum="EnvironmentSSRRoughnessQuality">
 			Lowest quality of roughness filter for screen-space reflections. Rough materials will not have blurrier screen-space reflections compared to smooth (non-rough) materials. This is the fastest option.
 		</constant>
