@@ -5,8 +5,8 @@ VERSION=3.2.16
 target=$(dirname "$(realpath $0)")
 pushd $target
 
-rm -rf atomic core events haptic hidapi include io joystick libm loadso \
-  sensor stdlib thread timer *.c *.h CREDITS.md LICENSE.txt
+rm -rf atomic audio core cpuinfo events haptic hidapi include io joystick \
+  libm loadso sensor stdlib thread timer *.c *.h CREDITS.md LICENSE.txt
 rm -rf *.tar.gz tmp
 
 mkdir tmp && pushd tmp
@@ -26,8 +26,8 @@ cp -v CREDITS.md LICENSE.txt $target
 # For build config, we use a single private one in the driver.
 # We might reconsider as we make more platforms use SDL.
 cp -rv include $target
-rm -f $target/include/build_config/{*.cmake,SDL_build_config_*.h} $target
-rm -f $target/include/SDL3/SDL_{egl,gpu,oldnames,opengl*,test*,vulkan}.h $target
+rm -f $target/include/build_config/{*.cmake,SDL_build_config_*.h}
+rm -f $target/include/SDL3/SDL_{egl,gpu,oldnames,opengl*,test*,vulkan}.h
 
 pushd src
 
@@ -46,10 +46,16 @@ cp -v io/SDL_iostream*.{c,h} $target/io
 
 # Platform specific
 
+mkdir $target/audio
+cp -rv audio/{*.{c,h},alsa,coreaudio,pulseaudio,wasapi} $target/audio
+
 mkdir $target/core
 cp -rv core/{linux,unix,windows} $target/core
 rm -f $target/core/windows/version.rc
 rm -f $target/core/linux/SDL_{fcitx,ibus,ime,system_theme}.*
+
+mkdir $target/cpuinfo
+cp -rv cpuinfo/*.{c,h} $target/cpuinfo
 
 mkdir $target/haptic
 cp -rv haptic/{*.{c,h},darwin,linux,windows} $target/haptic
@@ -80,7 +86,9 @@ mkdir -p $target/hidapi
 cp -v hidapi/{*.{c,h},AUTHORS.txt,LICENSE.txt,LICENSE-bsd.txt,VERSION} $target/hidapi
 for dir in hidapi linux mac windows; do
   mkdir $target/hidapi/$dir
-  cp -v hidapi/$dir/*.{c,h} $target/hidapi/$dir
+  for f in hidapi/$dir/*.{c,h}; do
+    [ -e "$f" ] && cp -v $f $target/hidapi/$dir
+  done
 done
 
 popd

@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #ifdef SDL_ENABLED
 #include "drivers/sdl/joypad_sdl.h"
+#include "drivers/sdl/sdl_event_processor.h"
 #endif
 #include "main/main.h"
 #include "servers/display_server.h"
@@ -982,9 +983,7 @@ void OS_LinuxBSD::run() {
 	while (true) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
 #ifdef SDL_ENABLED
-		if (joypad_sdl) {
-			joypad_sdl->process_events();
-		}
+		sdl_process_events();
 #endif
 		if (Main::iteration()) {
 			break;
@@ -1285,6 +1284,10 @@ OS_LinuxBSD::OS_LinuxBSD() {
 
 #ifdef ALSA_ENABLED
 	AudioDriverManager::add_driver(&driver_alsa);
+#endif
+
+#ifdef SDL_ENABLED
+	AudioDriverManager::add_driver(&audio_driver_sdl);
 #endif
 
 #ifdef X11_ENABLED

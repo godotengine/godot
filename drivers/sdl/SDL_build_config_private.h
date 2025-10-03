@@ -39,7 +39,6 @@
 
 // Here we disable SDL subsystems that are not going to be used
 #define SDL_CPUINFO_DISABLED 1
-#define SDL_AUDIO_DISABLED 1
 #define SDL_PROCESS_DUMMY 1
 #define SDL_LOADSO_DUMMY 1
 #define SDL_VIDEO_DISABLED 1
@@ -73,6 +72,10 @@
 #define SDL_THREAD_GENERIC_RWLOCK_SUFFIX 1
 #define SDL_THREAD_WINDOWS 1
 #define SDL_TIMER_WINDOWS 1
+
+// Audio.
+#define SDL_AUDIO_DRIVER_WASAPI 1
+#define HAVE_MMDEVICEAPI_H 1
 
 // Linux defines
 #elif defined(SDL_PLATFORM_LINUX)
@@ -116,6 +119,15 @@
 #define SDL_INPUT_LINUXEV 1
 #define SDL_THREAD_PTHREAD 1
 
+// Audio.
+#define SDL_AUDIO_DRIVER_ALSA 1
+#define SDL_AUDIO_DRIVER_PULSEAUDIO 1
+
+#ifdef SOWRAP_ENABLED
+#define SDL_AUDIO_DRIVER_ALSA_DYNAMIC "libasound.so.2"
+#define SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC "libpulse.so.0"
+#endif
+
 // MacOS defines
 #elif defined(SDL_PLATFORM_MACOS)
 
@@ -128,6 +140,9 @@
 #define SDL_JOYSTICK_MFI 1
 #define SDL_TIMER_UNIX 1
 #define SDL_THREAD_PTHREAD 1
+
+// Audio.
+#define SDL_AUDIO_DRIVER_COREAUDIO 1
 
 // Other platforms are not supported (for now)
 #else

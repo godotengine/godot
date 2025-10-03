@@ -116,6 +116,17 @@ if env["builtin_sdl"]:
         "joystick/hidapi/SDL_hidapi_xboxone.c",
     ]
 
+    # Audio.
+    thirdparty_sources += [
+        "audio/SDL_audio.c",
+        "audio/SDL_audiocvt.c",
+        "audio/SDL_audioresample.c",
+        "audio/SDL_audioqueue.c",
+        "audio/SDL_audiotypecvt.c",
+        "audio/SDL_mixer.c",
+        "cpuinfo/SDL_cpuinfo.c",
+    ]
+
     # Platform specific sources.
 
     if env["platform"] == "linuxbsd":
@@ -143,6 +154,12 @@ if env["builtin_sdl"]:
         ]
         env_sdl.Prepend(CPPPATH=[thirdparty_dir + "core/linux"])
 
+        # Audio.
+        thirdparty_sources += [
+            "audio/alsa/SDL_alsa_audio.c",
+            "audio/pulseaudio/SDL_pulseaudio.c",
+        ]
+
     elif env["platform"] == "macos":
         env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_MACOS"])
         thirdparty_sources += [
@@ -158,6 +175,11 @@ if env["builtin_sdl"]:
             "thread/pthread/SDL_systhread.c",
             "thread/pthread/SDL_systls.c",
             "timer/unix/SDL_systimer.c",
+        ]
+
+        # Audio.
+        thirdparty_sources += [
+            "audio/coreaudio/SDL_coreaudio.m",
         ]
 
     elif env["platform"] == "windows":
@@ -185,6 +207,11 @@ if env["builtin_sdl"]:
             "thread/windows/SDL_systhread.c",
             "thread/windows/SDL_systls.c",
             "timer/windows/SDL_systimer.c",
+        ]
+
+        # Audio.
+        thirdparty_sources += [
+            "audio/wasapi/SDL_wasapi.c",
         ]
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]

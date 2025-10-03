@@ -66,6 +66,7 @@ protected:
 	void update_mix_time(int p_frames);
 	void input_buffer_init(int driver_buffer_frames);
 	void input_buffer_write(int32_t sample);
+	void input_buffer_wrote(unsigned int p_frames);
 
 	int _get_configured_mix_rate();
 

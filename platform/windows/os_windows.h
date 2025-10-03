@@ -40,6 +40,10 @@
 #include "drivers/winmidi/midi_driver_winmidi.h"
 #include "servers/audio_server.h"
 
+#ifdef SDL_ENABLED
+#include "drivers/sdl/audio_driver_sdl.h"
+#endif
+
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
@@ -107,6 +111,9 @@ class OS_Windows : public OS {
 	HINSTANCE hInstance;
 	MainLoop *main_loop = nullptr;
 
+#ifdef SDL_ENABLED
+	AudioDriverSDL audio_driver_sdl;
+#endif
 #ifdef WASAPI_ENABLED
 	AudioDriverWASAPI driver_wasapi;
 #endif
