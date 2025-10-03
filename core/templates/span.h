@@ -33,6 +33,22 @@
 #include "core/error/error_macros.h"
 #include "core/typedefs.h"
 
+// Checks if the two spans have the same contents.
+// Automatically optimizes the checks for trivial types using memcmp.
+template <typename T1, typename T2>
+static bool spans_equal(const T1 *p_lhs_begin, const T2 *p_rhs_begin, size_t p_len) {
+	if constexpr (std::is_same_v<T1, T2> && std::is_trivial_v<T1>) {
+		return memcmp(p_lhs_begin, p_rhs_begin, p_len * sizeof(T1)) == 0;
+	} else {
+		for (size_t i = 0; i < p_len; ++i) {
+			if (p_lhs_begin[i] != p_rhs_begin[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+}
+
 // Equivalent of std::span.
 // Represents a view into a contiguous memory space.
 // DISCLAIMER: This data type does not own the underlying buffer. DO NOT STORE IT.
@@ -98,11 +114,14 @@ public:
 
 	// Algorithms.
 	constexpr int64_t find(const T &p_val, uint64_t p_from = 0) const;
-	constexpr int64_t find_sequence(const Span<T> &p_span, uint64_t p_from = 0) const;
+	template <typename T1 = T>
+	constexpr int64_t find_sequence(const Span<T1> &p_span, uint64_t p_from = 0) const;
 	constexpr int64_t rfind(const T &p_val, uint64_t p_from) const;
 	_FORCE_INLINE_ constexpr int64_t rfind(const T &p_val) const { return rfind(p_val, size() - 1); }
-	constexpr int64_t rfind_sequence(const Span<T> &p_span, uint64_t p_from) const;
-	_FORCE_INLINE_ constexpr int64_t rfind_sequence(const Span<T> &p_span) const { return rfind_sequence(p_span, size() - p_span.size()); }
+	template <typename T1 = T>
+	constexpr int64_t rfind_sequence(const Span<T1> &p_span, uint64_t p_from) const;
+	template <typename T1 = T>
+	_FORCE_INLINE_ constexpr int64_t rfind_sequence(const Span<T1> &p_span) const { return rfind_sequence(p_span, size() - p_span.size()); }
 	constexpr uint64_t count(const T &p_val) const;
 	/// Find the index of the given value using binary search.
 	/// Note: Assumes that elements in the span are sorted. Otherwise, use find() instead.
@@ -121,16 +140,10 @@ constexpr int64_t Span<T>::find(const T &p_val, uint64_t p_from) const {
 }
 
 template <typename T>
-constexpr int64_t Span<T>::find_sequence(const Span<T> &p_span, uint64_t p_from) const {
+template <typename T1>
+constexpr int64_t Span<T>::find_sequence(const Span<T1> &p_span, uint64_t p_from) const {
 	for (uint64_t i = p_from; i <= size() - p_span.size(); i++) {
-		bool found = true;
-		for (uint64_t j = 0; j < p_span.size(); j++) {
-			if (ptr()[i + j] != p_span.ptr()[j]) {
-				found = false;
-				break;
-			}
-		}
-		if (found) {
+		if (spans_equal(ptr() + i, p_span.ptr(), p_span.size())) {
 			return i;
 		}
 	}
@@ -149,16 +162,10 @@ constexpr int64_t Span<T>::rfind(const T &p_val, uint64_t p_from) const {
 }
 
 template <typename T>
-constexpr int64_t Span<T>::rfind_sequence(const Span<T> &p_span, uint64_t p_from) const {
+template <typename T1>
+constexpr int64_t Span<T>::rfind_sequence(const Span<T1> &p_span, uint64_t p_from) const {
 	for (int64_t i = p_from; i >= 0; i--) {
-		bool found = true;
-		for (uint64_t j = 0; j < p_span.size(); j++) {
-			if (ptr()[i + j] != p_span.ptr()[j]) {
-				found = false;
-				break;
-			}
-		}
-		if (found) {
+		if (spans_equal(ptr() + i, p_span.ptr(), p_span.size())) {
 			return i;
 		}
 	}
