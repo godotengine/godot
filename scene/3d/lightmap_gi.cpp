@@ -267,6 +267,22 @@ float LightmapGIData::get_baked_exposure() const {
 	return baked_exposure;
 }
 
+void LightmapGIData::_set_light_textures_data(const Array &p_data) {
+	set_lightmap_textures(p_data);
+}
+
+Array LightmapGIData::_get_light_textures_data() const {
+	return Array(storage_light_textures);
+}
+
+float LightmapGIData::get_specular_intensity() const {
+	return RS::get_singleton()->lightmap_get_specular_intensity(lightmap);
+}
+
+void LightmapGIData::set_specular_intensity(float p_strength) {
+	RS::get_singleton()->lightmap_set_specular_intensity(lightmap, p_strength);
+}
+
 void LightmapGIData::_set_probe_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("bounds"));
 	ERR_FAIL_COND(!p_data.has("points"));
@@ -302,14 +318,6 @@ Ref<TextureLayered> LightmapGIData::get_light_texture() const {
 	}
 	return storage_light_textures.get(0);
 }
-
-void LightmapGIData::_set_light_textures_data(const Array &p_data) {
-	set_lightmap_textures(p_data);
-}
-
-Array LightmapGIData::_get_light_textures_data() const {
-	return Array(storage_light_textures);
-}
 #endif
 
 void LightmapGIData::_bind_methods() {
@@ -336,12 +344,16 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_probe_data", "data"), &LightmapGIData::_set_probe_data);
 	ClassDB::bind_method(D_METHOD("_get_probe_data"), &LightmapGIData::_get_probe_data);
 
+	ClassDB::bind_method(D_METHOD("set_specular_intensity", "specular_intensity"), &LightmapGIData::set_specular_intensity);
+	ClassDB::bind_method(D_METHOD("get_specular_intensity"), &LightmapGIData::get_specular_intensity);
+
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "lightmap_textures", PROPERTY_HINT_ARRAY_TYPE, "TextureLayered", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "set_lightmap_textures", "get_lightmap_textures");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "shadowmask_textures", PROPERTY_HINT_ARRAY_TYPE, "TextureLayered", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "set_shadowmask_textures", "get_shadowmask_textures");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uses_spherical_harmonics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_uses_spherical_harmonics", "is_using_spherical_harmonics");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "user_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_user_data", "_get_user_data");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "probe_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_probe_data", "_get_probe_data");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "_uses_packed_directional", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_uses_packed_directional", "_is_using_packed_directional");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "specular_intensity", PROPERTY_HINT_RANGE, "0,10,0.01"), "set_specular_intensity", "get_specular_intensity");
 
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_light_texture", "light_texture"), &LightmapGIData::set_light_texture);
@@ -357,6 +369,18 @@ void LightmapGIData::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHADOWMASK_MODE_NONE);
 	BIND_ENUM_CONSTANT(SHADOWMASK_MODE_REPLACE);
 	BIND_ENUM_CONSTANT(SHADOWMASK_MODE_OVERLAY);
+}
+
+void LightmapGIData::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+
+	if (p_property.name == "specular_intensity") {
+		if (!_uses_packed_directional) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
 }
 
 LightmapGIData::LightmapGIData() {

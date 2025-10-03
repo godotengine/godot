@@ -88,6 +88,7 @@ private:
 
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance = -1);
@@ -134,6 +135,9 @@ public:
 	TypedArray<TextureLayered> get_shadowmask_textures() const;
 	void clear_shadowmask_textures();
 	bool has_shadowmask_textures();
+
+	float get_specular_intensity() const;
+	void set_specular_intensity(float p_strength);
 
 	virtual RID get_rid() const override;
 	LightmapGIData();
