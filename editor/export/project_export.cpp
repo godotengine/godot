@@ -619,7 +619,7 @@ void ProjectExportDialog::_pck_compression_enabled_changed(bool p_toggled) {
 
 	current->set_pck_compression_enabled(p_toggled);
 	pck_compression_mode->set_disabled(!p_toggled);
-	pck_compression_chunk_size->set_disabled(!p_toggled);
+	pck_compression_chunk_size->set_editable(p_toggled);
 	_update_current_preset();
 }
 

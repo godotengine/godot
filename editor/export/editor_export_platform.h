@@ -86,6 +86,13 @@ public:
 		Vector<uint8_t> md5;
 		CharString path_utf8;
 
+		// for compressed files
+		bool compressed = false;
+		Compression::Mode compression_mode;
+		uint64_t compressed_size = 0;
+		int block_size = 0;
+		Vector<uint32_t> chunk_sizes;
+
 		bool operator<(const SavedData &p_data) const {
 			return path_utf8 < p_data.path_utf8;
 		}
@@ -98,6 +105,11 @@ public:
 		EditorProgress *ep = nullptr;
 		Vector<SharedObject> *so_files = nullptr;
 		bool use_sparse_pck = false;
+		const Ref<EditorExportPreset> &preset;
+
+		PackData(const Ref<EditorExportPreset> &p_preset) :
+				preset(p_preset) {
+		}
 	};
 
 	static bool _store_header(Ref<FileAccess> p_fd, bool p_enc, bool p_sparse, uint64_t &r_file_base_ofs, uint64_t &r_dir_base_ofs);

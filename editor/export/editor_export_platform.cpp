@@ -33,36 +33,6 @@
 
 #include "editor_export_platform.compat.inc"
 
-struct PackData {
-	EditorProgress *ep = nullptr;
-	Ref<FileAccess> f;
-	Vector<EditorExportPlatform::SharedObject> *so_files = nullptr;
-	String path;
-	bool use_sparse_pck = false;
-	const Ref<EditorExportPreset> &preset;
-
-	struct SavedData {
-		CharString path_utf8;
-		uint64_t ofs = 0;
-		uint64_t size = 0;
-		Vector<uint8_t> md5;
-		bool encrypted = false;
-		bool removal = false;
-		bool compressed = false;
-		Compression::Mode compression_mode;
-		uint64_t compressed_size = 0;
-		int block_size = 0;
-		Vector<uint32_t> chunk_sizes;
-
-		bool operator<(const SavedData &p_another) const {
-			return path_utf8 < p_another.path_utf8;
-		}
-	};
-	Vector<SavedData> file_ofs;
-	PackData(const Ref<EditorExportPreset> &p_preset) :
-			preset(p_preset) {}
-};
-
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/extension/gdextension.h"
