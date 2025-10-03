@@ -27,6 +27,22 @@ def can_build():
 def get_opts():
     from SCons.Variables import BoolVariable, EnumVariable
 
+    # ANGLE dependencies folders.
+    build_deps_folder = os.getenv("LOCALAPPDATA")
+    if build_deps_folder:
+        build_deps_folder = os.path.join(build_deps_folder, "Godot", "build_deps")
+    else:
+        # Cross-compiling, the deps install script puts things in `bin`.
+        # Getting an absolute path to it is a bit hacky in Python.
+        try:
+            import inspect
+
+            caller_frame = inspect.stack()[1]
+            caller_script_dir = os.path.dirname(os.path.abspath(caller_frame[1]))
+            build_deps_folder = os.path.join(caller_script_dir, "bin", "build_deps")
+        except Exception:  # Give up.
+            build_deps_folder = ""
+
     return [
         ("osxcross_sdk", "OSXCross SDK version", "darwin16"),
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
@@ -36,7 +52,11 @@ def get_opts():
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_coverage", "Use instrumentation codes in the binary (e.g. for code coverage)", False),
-        ("angle_libs", "Path to the ANGLE static libraries", ""),
+        (
+            "angle_libs",
+            "Path to the ANGLE static libraries",
+            os.path.join(build_deps_folder, "angle"),
+        ),
         (
             "bundle_sign_identity",
             "The 'Full Name', 'Common Name' or SHA-1 hash of the signing identity used to sign editor .app bundle.",
