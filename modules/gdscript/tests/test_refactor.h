@@ -393,7 +393,8 @@ TEST_SUITE("[Modules][GDScript][Refactor tools]") {
 
 		const String gdscript_tests_scripts_refactor_rename_path = gdscript_tests_scripts_refactor_path.path_join("rename");
 
-		init_language(gdscript_tests_scripts_refactor_rename_path, "refactor_rename", "res://");
+		init_project_dir(gdscript_tests_scripts_refactor_rename_path, "refactor_rename");
+		init_language();
 
 		setup_global_classes("res://");
 		load_scenes("res://");

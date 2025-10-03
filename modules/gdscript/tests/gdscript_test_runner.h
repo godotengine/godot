@@ -43,7 +43,8 @@ namespace GDScriptTests {
 static HashMap<String, bool> is_test_setup;
 
 void init_autoloads();
-void init_language(const String &p_base_path, const String &p_test_name, const String &p_copy_target = "");
+void init_project_dir(const String &p_base_path, const String &p_test_name, const String &p_copy_target = "res://");
+void init_language();
 void finish_language();
 
 // Single test instance in a suite.

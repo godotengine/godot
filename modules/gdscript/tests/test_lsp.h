@@ -95,7 +95,8 @@ GDScriptLanguageProtocol *initialize(const String &p_root) {
 	Ref<DirAccess> dir(DirAccess::open(p_root, &err));
 	REQUIRE_MESSAGE(err == OK, "Could not open specified root directory");
 	String absolute_root = dir->get_current_dir();
-	init_language(absolute_root, "lsp", "res://");
+	init_project_dir(absolute_root, "lsp", "res://");
+	init_language();
 
 	absolute_root = ProjectSettings::get_singleton()->get_resource_path();
 
