@@ -48,6 +48,12 @@
 		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4" enum="BlendMode">
 			Mix blending mode. Colors are assumed to be premultiplied by the alpha (opacity) value.
 		</constant>
+		<constant name="BLEND_MODE_MINIMUM" value="5" enum="BlendMode">
+			Minimum blending mode (keeps the darkest pixel between the foreground's and background's color).
+		</constant>
+		<constant name="BLEND_MODE_MAXIMUM" value="6" enum="BlendMode">
+			Maximum blending mode (keeps the brightest pixel between the foreground's and background's color).
+		</constant>
 		<constant name="LIGHT_MODE_NORMAL" value="0" enum="LightMode">
 			Render the material using both light and non-light sensitive material properties.
 		</constant>
