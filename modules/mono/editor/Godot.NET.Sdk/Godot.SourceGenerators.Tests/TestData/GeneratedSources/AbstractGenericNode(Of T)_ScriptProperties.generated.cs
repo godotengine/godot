@@ -1,4 +1,4 @@
-using Godot;
+using Godot; // Dummy.
 using Godot.NativeInterop;
 
 partial class AbstractGenericNode<T>
