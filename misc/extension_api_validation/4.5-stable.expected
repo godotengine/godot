@@ -33,3 +33,10 @@ GH-110867
 ERROR: Validate extension JSON: Missing field in current API 'classes/FileAccess/methods/get_as_text': arguments. This is a bug.
 
 Optional argument removed. Compatibility method registered.
+
+
+GH-110940
+---------
+Validate extension JSON: Error: Field 'classes/XMLParser/methods/get_named_attribute_value_safe/arguments': size changed value in new API, from 1 to 2.
+
+Added optional "default" argument to get_named_attribute_value_safe method. Compatibility method registered.

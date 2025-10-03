@@ -78,8 +78,9 @@
 		<method name="get_named_attribute_value_safe" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="name" type="String" />
+			<param index="1" name="default" type="String" default="&quot;&quot;" />
 			<description>
-				Returns the value of an attribute of the currently parsed element, specified by its [param name]. This method will return an empty string if the element has no such attribute.
+				Returns the value of an attribute of the currently parsed element, specified by its [param name]. This method will return the string [param default] if the element has no such attribute.
 			</description>
 		</method>
 		<method name="get_node_data" qualifiers="const">
