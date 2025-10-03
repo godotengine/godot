@@ -232,6 +232,7 @@
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
+#include "scene/3d/limit_angular_velocity_modifier_3d.h"
 #include "scene/3d/look_at_modifier_3d.h"
 #include "scene/3d/marker_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -660,6 +661,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CopyTransformModifier3D);
 	GDREGISTER_CLASS(ConvertTransformModifier3D);
 	GDREGISTER_CLASS(AimModifier3D);
+	GDREGISTER_CLASS(LimitAngularVelocityModifier3D);
 
 	OS::get_singleton()->yield(); // may take time to init
 
