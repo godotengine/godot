@@ -2168,6 +2168,9 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 #ifdef VULKAN_ENABLED
 	if (rendering_driver == "vulkan") {
 		rendering_context = memnew(RenderingContextDriverVulkanWayland);
+		if (wayland_thread.supports_hdr()) {
+			rendering_context->set_colorspace_externally_managed(true);
+		}
 	}
 #endif // VULKAN_ENABLED
 

@@ -3221,7 +3221,7 @@ struct FormatCandidate {
 	VkColorSpaceKHR colorspace;
 };
 
-bool RenderingDeviceDriverVulkan::_determine_swap_chain_format(RenderingContextDriver::SurfaceID p_surface, VkFormat &r_format, VkColorSpaceKHR &r_color_space) {
+bool RenderingDeviceDriverVulkan::_determine_swap_chain_format(RenderingContextDriver::SurfaceID p_surface, VkFormat &r_format, VkColorSpaceKHR &r_color_space, RDD::ColorSpace &r_rdd_color_space) {
 	DEV_ASSERT(p_surface != 0);
 
 	RenderingContextDriverVulkan::Surface *surface = (RenderingContextDriverVulkan::Surface *)(p_surface);
@@ -3248,12 +3248,21 @@ bool RenderingDeviceDriverVulkan::_determine_swap_chain_format(RenderingContextD
 	bool hdr_output_requested = context_driver->surface_get_hdr_output_enabled(p_surface);
 
 	// Determine which formats to prefer based on the requested capabilities.
-	FixedVector<FormatCandidate, 3> preferred_formats;
-
-	// If the surface requests HDR output, try to get an HDR format.
-	if (hdr_output_requested && colorspace_supported) {
-		// This format is preferred for HDR output
-		preferred_formats.push_back({ VK_FORMAT_R16G16B16A16_SFLOAT, VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT });
+	FixedVector<FormatCandidate, 4> preferred_formats;
+	if (!context_driver->get_colorspace_externally_managed()) {
+		// If the surface requests HDR output, try to get an HDR format.
+		if (hdr_output_requested && colorspace_supported) {
+			// This format is preferred for HDR output
+			preferred_formats.push_back({ VK_FORMAT_R16G16B16A16_SFLOAT, VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT });
+		}
+	} else {
+		// When the colorspace is externally managed, only the data format matters.
+		if (hdr_output_requested) {
+			// Using wp-color-management-v1 generally requires using `VK_COLOR_SPACE_PASS_THROUGH_EXT` when supported
+			// TODO: determine if there are any drivers which do not support VK_FORMAT_R16G16B16A16_SFLOAT at all
+			preferred_formats.push_back({ VK_FORMAT_R16G16B16A16_SFLOAT, VK_COLOR_SPACE_PASS_THROUGH_EXT });
+			preferred_formats.push_back({ VK_FORMAT_R16G16B16A16_SFLOAT, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR });
+		}
 	}
 
 	// These formats are always considered for SDR.
@@ -3273,6 +3282,18 @@ bool RenderingDeviceDriverVulkan::_determine_swap_chain_format(RenderingContextD
 
 		if (found) {
 			break;
+		}
+	}
+
+	switch (r_format) {
+		case VK_FORMAT_R16G16B16A16_SFLOAT: {
+			r_rdd_color_space = COLOR_SPACE_REC709_LINEAR;
+		} break;
+		case VK_FORMAT_B8G8R8A8_UNORM:
+		case VK_FORMAT_R8G8B8A8_UNORM: {
+			r_rdd_color_space = COLOR_SPACE_REC709_NONLINEAR_SRGB;
+		} break;
+		default: {
 		}
 	}
 
@@ -3479,11 +3500,13 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	// Determine the format and color space for the swap chain.
 	VkFormat format = VK_FORMAT_UNDEFINED;
 	VkColorSpaceKHR color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-	if (!_determine_swap_chain_format(swap_chain->surface, format, color_space)) {
+	RDD::ColorSpace rdd_color_space = COLOR_SPACE_REC709_NONLINEAR_SRGB;
+	if (!_determine_swap_chain_format(swap_chain->surface, format, color_space, rdd_color_space)) {
 		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Surface did not return any valid formats.");
 	} else {
 		swap_chain->format = format;
 		swap_chain->color_space = color_space;
+		swap_chain->rdd_color_space = rdd_color_space;
 	}
 
 	VkSwapchainCreateInfoKHR swap_create_info = {};
@@ -3765,15 +3788,7 @@ RDD::ColorSpace RenderingDeviceDriverVulkan::swap_chain_get_color_space(SwapChai
 	DEV_ASSERT(p_swap_chain.id != 0);
 
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
-	switch (swap_chain->color_space) {
-		case VK_COLOR_SPACE_SRGB_NONLINEAR_KHR:
-			return COLOR_SPACE_REC709_NONLINEAR_SRGB;
-		case VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT:
-			return COLOR_SPACE_REC709_LINEAR;
-		default:
-			DEV_ASSERT(false && "Unknown swap chain color space.");
-			return COLOR_SPACE_MAX;
-	}
+	return swap_chain->rdd_color_space;
 }
 
 void RenderingDeviceDriverVulkan::swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) {
