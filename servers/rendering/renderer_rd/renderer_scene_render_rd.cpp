@@ -242,6 +242,7 @@ Ref<RenderSceneBuffers> RendererSceneRenderRD::render_buffers_create() {
 
 	rb->set_can_be_storage(_render_buffers_can_be_storage());
 	rb->set_max_cluster_elements(max_cluster_elements);
+	rb->set_cluster_size(cluster_size);
 	rb->set_base_data_format(_render_buffers_get_color_format());
 	if (vrs) {
 		rb->set_vrs(vrs);
@@ -1648,6 +1649,7 @@ RendererSceneRenderRD::RendererSceneRenderRD() {
 void RendererSceneRenderRD::init() {
 	max_cluster_elements = get_max_elements();
 	RendererRD::LightStorage::get_singleton()->set_max_cluster_elements(max_cluster_elements);
+	cluster_size = RS::ClusterSize(int(GLOBAL_GET("rendering/limits/cluster_builder/cluster_size")));
 
 	/* Forward ID */
 	forward_id_storage = create_forward_id_storage();

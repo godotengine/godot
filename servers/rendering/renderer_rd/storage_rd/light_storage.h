@@ -59,6 +59,8 @@ private:
 	static LightStorage *singleton;
 	uint32_t max_cluster_elements = 512;
 
+	RS::ClusterSize cluster_size = RS::CLUSTER_SIZE_64;
+
 	/* LIGHT */
 	struct Light {
 		RS::LightType type;
@@ -463,6 +465,11 @@ public:
 		set_max_lights(p_max_cluster_elements);
 	}
 	uint32_t get_max_cluster_elements() const { return max_cluster_elements; }
+
+	void set_cluster_size(RS::ClusterSize p_cluster_size) {
+		cluster_size = p_cluster_size;
+	}
+	RS::ClusterSize get_cluster_size() const { return cluster_size; }
 
 	/* LIGHT */
 

@@ -1346,7 +1346,7 @@ void LightStorage::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_s
 
 	if (ra->cluster_builder) {
 		// only if we're using our cluster
-		ra->cluster_builder->setup(Size2i(ra->size, ra->size), max_cluster_elements, RID(), RID(), RID());
+		ra->cluster_builder->setup(Size2i(ra->size, ra->size), max_cluster_elements, RID(), RID(), RID(), cluster_size);
 	}
 
 	ra->size = p_reflection_size;
@@ -1681,7 +1681,7 @@ ClusterBuilderRD *LightStorage::reflection_probe_instance_get_cluster_builder(RI
 		if (ra->cluster_builder == nullptr) {
 			ra->cluster_builder = memnew(ClusterBuilderRD);
 			ra->cluster_builder->set_shared(p_cluster_builder_shared);
-			ra->cluster_builder->setup(Size2i(ra->size, ra->size), get_max_cluster_elements(), RID(), RID(), RID());
+			ra->cluster_builder->setup(Size2i(ra->size, ra->size), get_max_cluster_elements(), RID(), RID(), RID(), get_cluster_size());
 		}
 		return ra->cluster_builder;
 	}

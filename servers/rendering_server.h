@@ -527,6 +527,13 @@ public:
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const = 0;
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) = 0;
 
+	enum ClusterSize {
+		CLUSTER_SIZE_32,
+		CLUSTER_SIZE_64,
+		CLUSTER_SIZE_128,
+		CLUSTER_SIZE_256,
+	};
+
 	/* Light API */
 
 	enum LightType {
@@ -1926,6 +1933,7 @@ VARIANT_BITFIELD_CAST(RenderingServer::ArrayFormat);
 VARIANT_ENUM_CAST(RenderingServer::ArrayCustomFormat);
 VARIANT_ENUM_CAST(RenderingServer::PrimitiveType);
 VARIANT_ENUM_CAST(RenderingServer::BlendShapeMode);
+VARIANT_ENUM_CAST(RenderingServer::ClusterSize);
 VARIANT_ENUM_CAST(RenderingServer::MultimeshTransformFormat);
 VARIANT_ENUM_CAST(RenderingServer::MultimeshPhysicsInterpolationQuality);
 VARIANT_ENUM_CAST(RenderingServer::LightType);
