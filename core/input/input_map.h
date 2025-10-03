@@ -64,6 +64,7 @@ private:
 	HashMap<String, List<Ref<InputEvent>>> default_builtin_with_overrides_cache;
 
 	List<Ref<InputEvent>>::Element *_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool p_exact_match = false, bool *r_pressed = nullptr, float *r_strength = nullptr, float *r_raw_strength = nullptr, int *r_event_index = nullptr) const;
+	Ref<InputEvent> _normalize_event(const Ref<InputEvent> &p_event) const;
 
 	TypedArray<InputEvent> _action_get_events(const StringName &p_action);
 
