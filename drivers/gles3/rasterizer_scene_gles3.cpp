@@ -42,7 +42,7 @@
 #include "core/config/project_settings.h"
 #include "core/templates/sort_array.h"
 #include "servers/camera/camera_feed.h"
-#include "servers/camera_server.h"
+#include "servers/camera/camera_server.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/rendering/rendering_server_globals.h"
 

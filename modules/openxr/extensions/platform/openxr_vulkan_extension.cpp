@@ -36,8 +36,8 @@
 #include "core/string/print_string.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
-#include "servers/rendering_server.h"
 
 HashMap<String, bool *> OpenXRVulkanExtension::get_requested_extensions() {
 	HashMap<String, bool *> request_extensions;

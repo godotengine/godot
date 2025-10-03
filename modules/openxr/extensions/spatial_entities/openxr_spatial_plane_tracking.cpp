@@ -35,7 +35,7 @@
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 
 ////////////////////////////////////////////////////////////////////////////
 // OpenXRSpatialCapabilityConfigurationPlaneTracking

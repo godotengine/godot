@@ -35,7 +35,7 @@
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 class AudioDriverWeb : public AudioDriver {
 private:

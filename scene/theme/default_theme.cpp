@@ -41,7 +41,7 @@
 #include "scene/scene_string_names.h"
 #include "scene/theme/default_theme_icons.gen.h"
 #include "scene/theme/theme_db.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 #ifdef BROTLI_ENABLED
 #include "scene/theme/default_font.gen.h"
