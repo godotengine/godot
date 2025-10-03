@@ -361,6 +361,13 @@
 			[b]Note:[/b] When the menu is displayed, project execution will pause until the menu is [i]fully[/i] closed due to Windows behavior. Consider this when enabling this setting in a networked multiplayer game. The menu is only considered fully closed when an option is selected, when the user clicks outside, or when [kbd]Escape[/kbd] is pressed after bringing up the window menu [i]and[/i] another key is pressed afterwards.
 			[b]Note:[/b] This setting is implemented only on Windows.
 		</member>
+		<member name="application/run/fixed_fps" type="int" setter="" getter="" default="0">
+			If set to a value greater than [code]0[/code], this forces the engine to simulate as fast as possible while respecting the given FPS as a [code]delta[/code] value passed to [method Node._process] functions. This can be used for non-realtime simulation such as benchmarking or AI training.
+			[member application/run/fixed_fps] is [b]not[/b] a FPS limiter (use [member application/run/max_fps] instead). See also [member physics/common/physics_ticks_per_second].
+			Non-realtime simulation can also be enabled using the [code]--fixed-fps &lt;fps&gt;[/code] command line argument, which takes priority over [member application/run/fixed_fps].
+			[b]Note:[/b] This property is only read when the project starts. To toggle non-realtime simulation at runtime, set [member Engine.fixed_fps] instead.
+			[b]Note:[/b] When running the project from the editor with Movie Maker mode enabled, [member editor/movie_writer/fps] takes priority over [member application/run/fixed_fps].
+		</member>
 		<member name="application/run/flush_stdout_on_print" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], flushes the standard output stream every time a line is printed. This affects both terminal logging and file logging.
 			When running a project, this setting must be enabled if you want logs to be collected by service managers such as systemd/journalctl. This setting is disabled by default on release builds, since flushing on every printed line will negatively affect performance if lots of lines are printed in a rapid succession. Also, if this setting is enabled, logged files will still be written successfully if the application crashes or is otherwise killed by the user (without being closed "normally").
@@ -392,7 +399,7 @@
 			Path to the main scene file that will be loaded when the project runs.
 		</member>
 		<member name="application/run/max_fps" type="int" setter="" getter="" default="0">
-			Maximum number of frames per second allowed. A value of [code]0[/code] means "no limit". The actual number of frames per second may still be below this value if the CPU or GPU cannot keep up with the project logic and rendering.
+			Maximum number of frames per second allowed. A value of [code]0[/code] means "no limit". The actual number of frames per second may still be below this value if the CPU or GPU cannot keep up with the project logic and rendering. See also [member physics/common/physics_ticks_per_second] and [member application/run/fixed_fps].
 			Limiting the FPS can be useful to reduce system power consumption, which reduces heat and noise emissions (and improves battery life on mobile devices).
 			If [member display/window/vsync/vsync_mode] is set to [code]Enabled[/code] or [code]Adaptive[/code], it takes precedence and the forced FPS number cannot exceed the monitor's refresh rate.
 			If [member display/window/vsync/vsync_mode] is [code]Enabled[/code], on monitors with variable refresh rate enabled (G-Sync/FreeSync), using an FPS limit a few frames lower than the monitor's refresh rate will [url=https://blurbusters.com/howto-low-lag-vsync-on/]reduce input lag while avoiding tearing[/url].
@@ -1094,7 +1101,7 @@
 		</member>
 		<member name="editor/movie_writer/fps" type="int" setter="" getter="" default="60">
 			The number of frames per second to record in the video when writing a movie. Simulation speed will adjust to always match the specified framerate, which means the engine will appear to run slower at higher [member editor/movie_writer/fps] values. Certain FPS values will require you to adjust [member editor/movie_writer/mix_rate] to prevent audio from desynchronizing over time.
-			This can be specified manually on the command line using the [code]--fixed-fps &lt;fps&gt;[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
+			This can be specified manually on the command line using the [code]--fixed-fps &lt;fps&gt;[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url]. See also [member application/run/fixed_fps], which also applies when not using Movie Maker mode. [member editor/movie_writer/fps] takes priority over [member application/run/fixed_fps] when running the project from the editor with Movie Maker mode enabled.
 		</member>
 		<member name="editor/movie_writer/mix_rate" type="int" setter="" getter="" default="48000">
 			The audio mix rate to use in the recorded audio when writing a movie (in Hz). This can be different from [member audio/driver/mix_rate], but this value must be divisible by [member editor/movie_writer/fps] to prevent audio from desynchronizing over time.
@@ -2593,7 +2600,7 @@
 			[b]Note:[/b] This property is only read when the project starts. To change the physics jitter fix at runtime, set [member Engine.physics_jitter_fix] instead.
 		</member>
 		<member name="physics/common/physics_ticks_per_second" type="int" setter="" getter="" default="60">
-			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. See also [member application/run/max_fps].
+			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. See also [member application/run/max_fps] and [member application/run/fixed_fps].
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_ticks_per_second] instead.
 			[b]Note:[/b] Only [member physics/common/max_physics_steps_per_frame] physics ticks may be simulated per rendered frame at most. If more physics ticks have to be simulated per rendered frame to keep up with rendering, the project will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended to also increase [member physics/common/max_physics_steps_per_frame] if increasing [member physics/common/physics_ticks_per_second] significantly above its default value.
 		</member>
