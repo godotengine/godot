@@ -1074,6 +1074,10 @@ bool RenderingContextDriverVulkan::is_colorspace_supported() const {
 	return enabled_instance_extension_names.has(VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME);
 }
 
+bool RenderingContextDriverVulkan::is_colorspace_externally_managed() const {
+	return false;
+}
+
 VkInstance RenderingContextDriverVulkan::instance_get() const {
 	return instance;
 }

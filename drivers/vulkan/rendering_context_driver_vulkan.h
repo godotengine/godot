@@ -154,6 +154,7 @@ public:
 	virtual void surface_destroy(SurfaceID p_surface) override;
 	virtual bool is_debug_utils_enabled() const override;
 	bool is_colorspace_supported() const;
+	virtual bool is_colorspace_externally_managed() const;
 
 	// Vulkan-only methods.
 	struct Surface {
