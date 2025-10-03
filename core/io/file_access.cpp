@@ -39,9 +39,7 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
-#ifdef TOOLS_ENABLED
 #include "editor/settings/editor_settings.h"
-#endif
 
 Ref<FileAccess> FileAccess::create(AccessType p_access) {
 	ERR_FAIL_INDEX_V(p_access, ACCESS_MAX, nullptr);
@@ -72,10 +70,8 @@ Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 		ret = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
 		ret = create(ACCESS_USERDATA);
-#ifdef TOOLS_ENABLED
 	} else if (p_path.begins_with("global://")) {
 		ret = create(ACCESS_GLOBAL_RESOURCES);
-#endif
 	} else if (p_path.begins_with("pipe://")) {
 		ret = create(ACCESS_PIPE);
 	} else {
@@ -291,7 +287,6 @@ String FileAccess::fix_path(const String &p_path) const {
 				return r_path.replace("user://", "");
 			}
 		} break;
-#ifdef TOOLS_ENABLED
 		case ACCESS_GLOBAL_RESOURCES: {
 			if (r_path.begins_with("global://")) {
 				String data_dir = EditorSettings::get_singleton()->get_global_resource_path();
@@ -302,7 +297,6 @@ String FileAccess::fix_path(const String &p_path) const {
 			}
 
 		} break;
-#endif
 		case ACCESS_PIPE: {
 			return r_path;
 		} break;
