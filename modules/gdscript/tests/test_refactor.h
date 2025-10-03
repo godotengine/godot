@@ -289,7 +289,6 @@ static void test_directory(const String &p_dir) {
 			String element_path = ProjectSettings::get_singleton()->localize_path(path.path_join(next));
 			run_test_cfg(element_path);
 		}
-
 	next:
 		next = dir->get_next();
 	}
@@ -335,7 +334,6 @@ static void setup_global_classes(const String &p_dir) {
 			ScriptServer::add_global_class(class_name, base_type, gdscript_singleton_name, element_path, is_abstract, is_tool);
 			INFO(vformat("Added global class \"%s\" (from \"%s\")", class_name, element_path));
 		}
-
 	next:
 		next = dir->get_next();
 	}
@@ -376,7 +374,6 @@ static void load_scenes(const String &p_dir) {
 
 			// No need to do anything further, as loading a packed scene also loads its scripts.
 		}
-
 	next:
 		next = dir->get_next();
 	}
