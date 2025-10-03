@@ -28,6 +28,12 @@
 #  endif
 #endif
 
+#ifdef PNG_RISCV_RVV_IMPLEMENTATION
+#  if PNG_RISCV_RVV_IMPLEMENTATION == 1
+#    define PNG_RISCV_RVV_INTRINSICS_AVAILABLE
+#  endif
+#endif
+
 #ifdef PNG_READ_SUPPORTED
 
 /* Set the action on getting a CRC error for an ancillary or critical chunk. */
