@@ -1240,6 +1240,14 @@ void RendererSceneRenderRD::light_projectors_set_filter(RenderingServer::LightPr
 	_update_shader_quality_settings();
 }
 
+void RendererSceneRenderRD::base_material_3d_set_default_filter(RenderingServer::MaterialFilter p_filter) {
+	if (RS::get_singleton()->base_material_3d_default_filter == p_filter) {
+		return;
+	}
+
+	RS::get_singleton()->base_material_3d_default_filter = p_filter;
+}
+
 void RendererSceneRenderRD::lightmaps_set_bicubic_filter(bool p_enable) {
 	if (lightmap_filter_bicubic == p_enable) {
 		return;
@@ -1701,6 +1709,7 @@ void RendererSceneRenderRD::init() {
 
 	decals_set_filter(RS::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
 	light_projectors_set_filter(RS::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
+	base_material_3d_set_default_filter(RS::MaterialFilter(int(GLOBAL_GET("rendering/textures/default_filters/base_material_3d_filter"))));
 	lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
 
 	cull_argument.set_page_pool(&cull_argument_pool);

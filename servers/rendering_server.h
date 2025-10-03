@@ -259,6 +259,17 @@ public:
 		MATERIAL_RENDER_PRIORITY_MAX = 127,
 	};
 
+	enum MaterialFilter {
+		MATERIAL_FILTER_NEAREST,
+		MATERIAL_FILTER_LINEAR,
+		MATERIAL_FILTER_NEAREST_MIPMAPS,
+		MATERIAL_FILTER_LINEAR_MIPMAPS,
+		MATERIAL_FILTER_NEAREST_MIPMAPS_ANISOTROPIC,
+		MATERIAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC,
+	};
+
+	MaterialFilter base_material_3d_default_filter = MATERIAL_FILTER_LINEAR_MIPMAPS;
+
 	virtual RID material_create() = 0;
 	virtual RID material_create_from_shader(RID p_next_pass, int p_render_priority, RID p_shader) = 0;
 
@@ -270,6 +281,10 @@ public:
 	virtual void material_set_render_priority(RID p_material, int priority) = 0;
 
 	virtual void material_set_next_pass(RID p_material, RID p_next_material) = 0;
+
+	virtual void base_material_3d_set_default_filter(MaterialFilter p_filter) = 0;
+
+	_FORCE_INLINE_ MaterialFilter base_material_3d_get_default_filter() const { return base_material_3d_default_filter; }
 
 	/* MESH API */
 
@@ -1940,6 +1955,7 @@ VARIANT_ENUM_CAST(RenderingServer::ReflectionProbeAmbientMode);
 VARIANT_ENUM_CAST(RenderingServer::VoxelGIQuality);
 VARIANT_ENUM_CAST(RenderingServer::DecalTexture);
 VARIANT_ENUM_CAST(RenderingServer::DecalFilter);
+VARIANT_ENUM_CAST(RenderingServer::MaterialFilter);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesMode);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesTransformAlign);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesDrawOrder);
