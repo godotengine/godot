@@ -30,10 +30,6 @@
 
 #pragma once
 
-#include "core/error/error_list.h"
-#include "core/error/error_macros.h"
-#include "core/io/resource_loader.h"
-#include "servers/text_server.h"
 #ifdef TOOLS_ENABLED
 
 #include "tests/test_macros.h"
@@ -42,8 +38,11 @@
 #include "gdscript_test_runner.h"
 
 #include "core/config/project_settings.h"
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
+#include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "core/variant/dictionary.h"
 #include "core/variant/variant.h"
@@ -51,6 +50,7 @@
 #include "editor/themes/builtin_fonts.gen.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
+#include "servers/text_server.h"
 
 #define FAIL_COND_V_MSG(cond, return_value, msg) \
 	if (cond) {                                  \
