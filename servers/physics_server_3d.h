@@ -123,12 +123,14 @@ public:
 class PhysicsRayQueryParameters3D;
 class PhysicsPointQueryParameters3D;
 class PhysicsShapeQueryParameters3D;
+class PhysicsTestRayResult3D;
 
 class PhysicsDirectSpaceState3D : public Object {
 	GDCLASS(PhysicsDirectSpaceState3D, Object);
 
 private:
 	Dictionary _intersect_ray(const Ref<PhysicsRayQueryParameters3D> &p_ray_query);
+	bool _test_ray(const Ref<PhysicsRayQueryParameters3D> &p_ray_query, const Ref<PhysicsTestRayResult3D> &p_result);
 	TypedArray<Dictionary> _intersect_point(const Ref<PhysicsPointQueryParameters3D> &p_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results = 32);
 	Vector<real_t> _cast_motion(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query);
@@ -213,6 +215,26 @@ public:
 	virtual Vector3 get_closest_point_to_object_volume(RID p_object, const Vector3 p_point) const = 0;
 
 	PhysicsDirectSpaceState3D();
+};
+
+class PhysicsTestRayResult3D : public RefCounted {
+	GDCLASS(PhysicsTestRayResult3D, RefCounted);
+
+	PhysicsDirectSpaceState3D::RayResult result;
+
+protected:
+	static void _bind_methods();
+
+public:
+	PhysicsDirectSpaceState3D::RayResult *get_result_ptr() { return &result; }
+
+	Vector3 get_position() const { return result.position; }
+	Vector3 get_normal() const { return result.normal; }
+	RID get_rid() const { return result.rid; }
+	ObjectID get_collider_id() const { return result.collider_id; }
+	Object *get_collider() const { return result.collider; }
+	int get_shape() const { return result.shape; }
+	int get_face_index() const { return result.face_index; }
 };
 
 class PhysicsServer3DRenderingServerHandler : public Object {

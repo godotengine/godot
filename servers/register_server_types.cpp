@@ -320,6 +320,7 @@ void register_server_types() {
 	GDREGISTER_ABSTRACT_CLASS(PhysicsDirectBodyState3D);
 	GDREGISTER_ABSTRACT_CLASS(PhysicsDirectSpaceState3D);
 	GDREGISTER_CLASS(PhysicsRayQueryParameters3D);
+	GDREGISTER_CLASS(PhysicsTestRayResult3D);
 	GDREGISTER_CLASS(PhysicsPointQueryParameters3D);
 	GDREGISTER_CLASS(PhysicsShapeQueryParameters3D);
 	GDREGISTER_CLASS(PhysicsTestMotionParameters3D);
