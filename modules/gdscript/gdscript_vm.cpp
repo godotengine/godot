@@ -1829,7 +1829,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				int argc = _code_ptr[ip + 1];
 				Dictionary dict;
-
+				dict.reserve(argc);
 				for (int i = 0; i < argc; i++) {
 					GET_INSTRUCTION_ARG(k, i * 2 + 0);
 					GET_INSTRUCTION_ARG(v, i * 2 + 1);
@@ -1867,7 +1867,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				Dictionary dict;
 				dict.set_typed(key_builtin_type, key_native_type, *key_script_type, value_builtin_type, value_native_type, *value_script_type);
-
+				dict.reserve(argc);
 				for (int i = 0; i < argc; i++) {
 					GET_INSTRUCTION_ARG(k, i * 2 + 0);
 					GET_INSTRUCTION_ARG(v, i * 2 + 1);
