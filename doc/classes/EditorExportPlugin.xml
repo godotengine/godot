@@ -115,6 +115,16 @@
 				[b]Note:[/b] Only supported on Android and requires [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] to be enabled.
 			</description>
 		</method>
+		<method name="_get_android_gradle_plugins" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<param index="1" name="debug" type="bool" />
+			<description>
+				Virtual method to be overridden by the user. This is called to retrieve the set of Android gradle plugins provided by this plugin. Each returned Android gradle plugin should have the format of: [code]org.godot.example:my-plugin[/code]
+				For more information see [url=https://docs.gradle.org/current/userguide/custom_plugins.html]Gradle documentation on custom plugins[/url].
+				[b]Note:[/b] Only supported on Android and requires [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] to be enabled.
+			</description>
+		</method>
 		<method name="_get_android_libraries" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<param index="0" name="platform" type="EditorExportPlatform" />
