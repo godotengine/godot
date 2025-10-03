@@ -1,7 +1,5 @@
 # todoG
 ## A “Recursive Game‑Builder” in Godot  
-*(What the description is essentially asking for: a Godot editor that *also* runs a game that, when finished, returns control to that 
-very same editor.)*  
 
 Below is a practical, step‑by‑step blueprint that turns the idea into a working prototype.  
 Feel free to skip parts you already have, add your own twist, or adapt it to Godot 4.x if that’s your target.  
@@ -283,37 +281,3 @@ distribution; keep the `--editor` flag for your dev builds. |
 
 Happy building! If you hit a snag or need sample scripts for a particular matrix (e.g. a text‑based layer or a physics‑heavy puzzle), 
 let me know and I’ll dig out more code.
-
-# Thiking output
-
-We need to flesh out the idea, give details: concept, recursive game building, Godot editor modification, build pipeline, triggers, 
-architecture, data flow, versioning, game logic for breakouts, editor as game level, runtime reloading, saving, hot-reload, scriptable 
-game content, level design, modular architecture. Provide steps for implementation: modifying Godot, making fork, hooking into boot, 
-customizing editor, creating a build script, hooking into save system to trigger build, making a scene that hosts the editor UI, making 
-a credit text, dialogue window, etc. Also mention potential issues: security, reentrancy, build performance, debugging, modular design, 
-use of GDScript, EditorPlugin, EditorResourceImporter, plugin to detect changes. Use Godot 4? mention signals.
-
-We should propose structure: main game, "matrix" layers represented as scenes. Each layer has a distinct theme, physics, input. On 
-break-out, load next layer, perhaps with a fade. At final layer, display a screen that runs an editor plugin. The editor plugin uses 
-the Godot editor UI in-game: we can embed the editor interface via EditorInterface and EditorSceneTree? Or use Control nodes 
-replicating UI.
-
-We need build pipeline: use Godot's exported template, but for live reloading we can use Godot's "autoload" or "Script Reload" but we 
-can also use "FileSystem" change signals to recompile. Provide an EditorPlugin that watches for file changes and rebuilds the project 
-via 'godot --headless --editor' or using Godot's exported scripts.
-
-We can also explain that each layer is a scene with its own script, that changes in the scene tree automatically get reloaded. Use 
-"reload" plugin to re-run on file change.
-
-Explain that the final editor window: we can open the Editor interface in-game using "EditorPlugin" that uses "EditorInterface" to load 
-the scene. Or use the built-in "godot -d" mode.
-
-Also mention that this approach is like "Eternal return" or "The game that breaks the game".
-
-We should produce a structured answer: 1. Overview of concept. 2. Architecture. 3. Technical Implementation. 4. Build Pipeline. 5. 
-Editor Integration. 6. Flow of the game. 7. Handling resets and restart. 8. Extensibility. 9. Tips & pitfalls. Provide sample code 
-skeleton, sample plugin.
-
-We need to keep it clear, thorough, and actionable.
-
-Let's produce the final answer.
