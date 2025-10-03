@@ -421,6 +421,14 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	int script_export_mode = current->get_script_export_mode();
 	script_mode->select(script_export_mode);
 
+	bool pck_comp_enabled = current->is_pck_compression_enabled();
+	pck_compression_enabled->set_pressed(pck_comp_enabled);
+	pck_compression_mode->select(current->get_pck_compression_mode());
+	pck_compression_chunk_size->set_text(itos(current->get_pck_compression_chunk_size()));
+
+	pck_compression_mode->set_disabled(!pck_comp_enabled);
+	pck_compression_chunk_size->set_editable(pck_comp_enabled);
+
 	updating = false;
 }
 
@@ -598,6 +606,44 @@ void ProjectExportDialog::_enc_pck_changed(bool p_pressed) {
 	enc_ex_filters->set_editable(p_pressed);
 	script_key->set_editable(p_pressed);
 
+	_update_current_preset();
+}
+
+void ProjectExportDialog::_pck_compression_enabled_changed(bool p_toggled) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_pck_compression_enabled(p_toggled);
+	pck_compression_mode->set_disabled(!p_toggled);
+	pck_compression_chunk_size->set_disabled(!p_toggled);
+	_update_current_preset();
+}
+
+void ProjectExportDialog::_pck_compression_mode_changed(int p_mode) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_pck_compression_mode(p_mode);
+	_update_current_preset();
+}
+
+void ProjectExportDialog::_pck_compression_chunk_size_changed(const String &p_text) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_pck_compression_chunk_size(p_text.to_int());
 	_update_current_preset();
 }
 
@@ -1738,6 +1784,28 @@ ProjectExportDialog::ProjectExportDialog() {
 	script_mode->connect(SceneStringName(item_selected), callable_mp(this, &ProjectExportDialog::_script_export_mode_changed));
 
 	sections->add_child(script_vb);
+
+	VBoxContainer *pck_vb = memnew(VBoxContainer);
+	pck_vb->set_name(TTR("PCK"));
+	sections->add_child(pck_vb);
+
+	pck_compression_enabled = memnew(CheckButton);
+	pck_compression_enabled->set_text(TTR("Enable Compression"));
+	pck_compression_enabled->connect(SceneStringName(toggled), callable_mp(this, &ProjectExportDialog::_pck_compression_enabled_changed));
+	pck_vb->add_margin_child(TTR("Compression:"), pck_compression_enabled);
+
+	pck_compression_mode = memnew(OptionButton);
+	pck_compression_mode->add_item(TTR("FastLZ"), EditorExportPreset::PCK_COMPRESSION_FASTLZ);
+	pck_compression_mode->add_item(TTR("Deflate"), EditorExportPreset::PCK_COMPRESSION_DEFLATE);
+	pck_compression_mode->add_item(TTR("ZSTD"), EditorExportPreset::PCK_COMPRESSION_ZSTD);
+	pck_compression_mode->add_item(TTR("Gzip"), EditorExportPreset::PCK_COMPRESSION_GZIP);
+	pck_compression_mode->add_item(TTR("Brotli"), EditorExportPreset::PCK_COMPRESSION_BROTLI);
+	pck_compression_mode->connect(SceneStringName(item_selected), callable_mp(this, &ProjectExportDialog::_pck_compression_mode_changed));
+	pck_vb->add_margin_child(TTR("Mode:"), pck_compression_mode);
+
+	pck_compression_chunk_size = memnew(LineEdit);
+	pck_compression_chunk_size->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_pck_compression_chunk_size_changed));
+	pck_vb->add_margin_child(TTR("Chunk Size (KiB):"), pck_compression_chunk_size);
 
 	sections->connect("tab_changed", callable_mp(this, &ProjectExportDialog::_tab_changed));
 

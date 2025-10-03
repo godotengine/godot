@@ -177,6 +177,10 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	OptionButton *script_mode = nullptr;
 
+	CheckButton *pck_compression_enabled = nullptr;
+	OptionButton *pck_compression_mode = nullptr;
+	LineEdit *pck_compression_chunk_size = nullptr;
+
 	void _open_export_template_manager();
 
 	void _export_pck_zip();
@@ -203,6 +207,10 @@ class ProjectExportDialog : public ConfirmationDialog {
 	bool _validate_script_encryption_key(const String &p_key);
 
 	void _script_export_mode_changed(int p_mode);
+
+	void _pck_compression_enabled_changed(bool p_toggled);
+	void _pck_compression_mode_changed(int p_mode);
+	void _pck_compression_chunk_size_changed(const String &p_text);
 
 	void _open_key_help_link();
 

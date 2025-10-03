@@ -46,14 +46,7 @@ Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t 
 }
 
 void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted, bool p_bundle) {
-	String simplified_path = p_path.simplify_path().trim_prefix("res://");
-	PathMD5 pmd5(simplified_path.md5_buffer());
-
-	bool exists = files.has(pmd5);
-
 	PackedFile pf;
-	pf.encrypted = p_encrypted;
-	pf.bundle = p_bundle;
 	pf.pack = p_pkg_path;
 	pf.offset = p_ofs;
 	pf.size = p_size;
@@ -61,9 +54,20 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 		pf.md5[i] = p_md5[i];
 	}
 	pf.src = p_src;
+	pf.encrypted = p_encrypted;
+	pf.bundle = p_bundle;
+
+	add_path(p_path, pf, p_replace_files);
+}
+
+void PackedData::add_path(const String &p_path, const PackedFile &p_file, bool p_replace_files) {
+	String simplified_path = p_path.simplify_path().trim_prefix("res://");
+	PathMD5 pmd5(simplified_path.md5_buffer());
+
+	bool exists = files.has(pmd5);
 
 	if (!exists || p_replace_files) {
-		files[pmd5] = pf;
+		files[pmd5] = p_file;
 	}
 
 	if (!exists) {
@@ -322,7 +326,27 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		if (flags & PACK_FILE_REMOVAL) { // The file was removed.
 			PackedData::get_singleton()->remove_path(path);
 		} else {
-			PackedData::get_singleton()->add_path(p_path, path, file_base + ofs, size, md5, this, p_replace_files, (flags & PACK_FILE_ENCRYPTED), sparse_bundle);
+			bool compressed = (flags & PACK_FILE_COMPRESSED);
+			PackedData::PackedFile pf;
+			pf.pack = p_path;
+			pf.offset = file_base + ofs;
+			pf.size = size;
+			for (int j = 0; j < 16; j++) {
+				pf.md5[j] = md5[j];
+			}
+			pf.src = this;
+			pf.encrypted = (flags & PACK_FILE_ENCRYPTED);
+			pf.bundle = sparse_bundle;
+			pf.compressed = compressed;
+			if (compressed) {
+				pf.compression_mode = (Compression::Mode)f->get_32();
+				pf.block_size = f->get_32();
+				pf.compressed_size = f->get_64();
+				int chunk_count = f->get_32();
+				pf.chunk_sizes.resize(chunk_count);
+				f->get_buffer((uint8_t *)pf.chunk_sizes.ptrw(), chunk_count * sizeof(uint32_t));
+			}
+			PackedData::get_singleton()->add_path(path, pf, p_replace_files);
 		}
 	}
 
@@ -395,8 +419,12 @@ void FileAccessPack::seek(uint64_t p_position) {
 		eof = false;
 	}
 
-	f->seek(off + p_position);
-	pos = p_position;
+	if (pf.compressed) {
+		pos = p_position;
+	} else {
+		f->seek(off + p_position);
+		pos = p_position;
+	}
 }
 
 void FileAccessPack::seek_end(int64_t p_position) {
@@ -429,14 +457,46 @@ uint64_t FileAccessPack::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 		to_read = (int64_t)pf.size - (int64_t)pos;
 	}
 
-	pos += to_read;
-
 	if (to_read <= 0) {
 		return 0;
 	}
-	f->get_buffer(p_dst, to_read);
 
-	return to_read;
+	if (pf.compressed) {
+		int64_t bytes_read = 0;
+		while (bytes_read < to_read) {
+			int current_chunk_index = pos / pf.block_size;
+			ERR_FAIL_COND_V(current_chunk_index >= pf.chunk_sizes.size(), bytes_read);
+
+			if (decompressed_current_chunk != current_chunk_index) {
+				uint64_t chunk_ofs = off;
+				for (int i = 0; i < current_chunk_index; i++) {
+					chunk_ofs += pf.chunk_sizes[i];
+				}
+				f->seek(chunk_ofs);
+
+				Vector<uint8_t> compressed_buffer;
+				compressed_buffer.resize(pf.chunk_sizes[current_chunk_index]);
+				f->get_buffer(compressed_buffer.ptrw(), pf.chunk_sizes[current_chunk_index]);
+
+				int ret = Compression::decompress(decompressed_cache.ptrw(), pf.block_size, compressed_buffer.ptr(), pf.chunk_sizes[current_chunk_index], pf.compression_mode);
+				ERR_FAIL_COND_V_MSG(ret < 0, bytes_read, "Error decompressing chunk in FileAccessPack.");
+				decompressed_current_chunk = current_chunk_index;
+			}
+
+			uint64_t in_chunk_offset = pos % pf.block_size;
+			uint64_t to_copy = MIN((uint64_t)to_read - bytes_read, (uint64_t)pf.block_size - in_chunk_offset);
+
+			memcpy(p_dst + bytes_read, decompressed_cache.ptr() + in_chunk_offset, to_copy);
+
+			bytes_read += to_copy;
+			pos += to_copy;
+		}
+		return bytes_read;
+	} else {
+		f->get_buffer(p_dst, to_read);
+		pos += to_read;
+		return to_read;
+	}
 }
 
 void FileAccessPack::set_big_endian(bool p_big_endian) {
@@ -499,6 +559,11 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 		f = fae;
 		off = 0;
 	}
+
+	if (pf.compressed) {
+		decompressed_cache.resize(pf.block_size);
+	}
+
 	pos = 0;
 	eof = false;
 }

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/string/print_string.h"
@@ -54,6 +55,7 @@ enum PackFlags {
 enum PackFileFlags {
 	PACK_FILE_ENCRYPTED = 1 << 0,
 	PACK_FILE_REMOVAL = 1 << 1,
+	PACK_FILE_COMPRESSED = 1 << 2,
 };
 
 class PackSource;
@@ -72,6 +74,13 @@ public:
 		PackSource *src = nullptr;
 		bool encrypted;
 		bool bundle;
+
+		// for compressed files
+		bool compressed = false;
+		Compression::Mode compression_mode;
+		uint64_t compressed_size = 0;
+		int block_size = 0;
+		Vector<uint32_t> chunk_sizes;
 	};
 
 private:
@@ -117,6 +126,7 @@ private:
 public:
 	void add_pack_source(PackSource *p_source);
 	void add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted = false, bool p_bundle = false); // for PackSource
+	void add_path(const String &p_path, const PackedFile &p_file, bool p_replace_files);
 	void remove_path(const String &p_path);
 	uint8_t *get_file_hash(const String &p_path);
 	HashSet<String> get_file_paths() const;
@@ -171,6 +181,12 @@ class FileAccessPack : public FileAccess {
 	uint64_t off;
 
 	Ref<FileAccess> f;
+
+	// for compressed files
+	mutable Vector<uint8_t> decompressed_cache;
+	mutable int decompressed_current_chunk = -1;
+	mutable bool decompressed_dirty = true;
+
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override;
 	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; }
 	virtual uint64_t _get_access_time(const String &p_file) override { return 0; }

@@ -59,6 +59,14 @@ public:
 		MODE_SCRIPT_BINARY_TOKENS_COMPRESSED,
 	};
 
+	enum PckCompressionMode {
+		PCK_COMPRESSION_FASTLZ,
+		PCK_COMPRESSION_DEFLATE,
+		PCK_COMPRESSION_ZSTD,
+		PCK_COMPRESSION_GZIP,
+		PCK_COMPRESSION_BROTLI,
+	};
+
 private:
 	Ref<EditorExportPlatform> platform;
 	ExportFilter export_filter = EXPORT_ALL_RESOURCES;
@@ -95,6 +103,10 @@ private:
 
 	String script_key;
 	int script_mode = MODE_SCRIPT_BINARY_TOKENS_COMPRESSED;
+
+	bool pck_compression_enabled = false;
+	int pck_compression_mode = PCK_COMPRESSION_ZSTD;
+	int pck_compression_chunk_size = 64;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -182,6 +194,15 @@ public:
 	void set_script_export_mode(int p_mode);
 	int get_script_export_mode() const;
 
+	void set_pck_compression_enabled(bool p_enabled);
+	bool is_pck_compression_enabled() const;
+
+	void set_pck_compression_mode(int p_mode);
+	int get_pck_compression_mode() const;
+
+	void set_pck_compression_chunk_size(int p_size);
+	int get_pck_compression_chunk_size() const;
+
 	Variant _get_or_env(const StringName &p_name, const String &p_env_var) const {
 		return get_or_env(p_name, p_env_var);
 	}
@@ -201,3 +222,4 @@ public:
 VARIANT_ENUM_CAST(EditorExportPreset::ExportFilter);
 VARIANT_ENUM_CAST(EditorExportPreset::FileExportMode);
 VARIANT_ENUM_CAST(EditorExportPreset::ScriptExportMode);
+VARIANT_ENUM_CAST(EditorExportPreset::PckCompressionMode);

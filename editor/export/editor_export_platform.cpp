@@ -29,8 +29,39 @@
 /**************************************************************************/
 
 #include "editor_export_platform.h"
+#include "core/io/compression.h"
 
 #include "editor_export_platform.compat.inc"
+
+struct PackData {
+	EditorProgress *ep = nullptr;
+	Ref<FileAccess> f;
+	Vector<EditorExportPlatform::SharedObject> *so_files = nullptr;
+	String path;
+	bool use_sparse_pck = false;
+	const Ref<EditorExportPreset> &preset;
+
+	struct SavedData {
+		CharString path_utf8;
+		uint64_t ofs = 0;
+		uint64_t size = 0;
+		Vector<uint8_t> md5;
+		bool encrypted = false;
+		bool removal = false;
+		bool compressed = false;
+		Compression::Mode compression_mode;
+		uint64_t compressed_size = 0;
+		int block_size = 0;
+		Vector<uint32_t> chunk_sizes;
+
+		bool operator<(const SavedData &p_another) const {
+			return path_utf8 < p_another.path_utf8;
+		}
+	};
+	Vector<SavedData> file_ofs;
+	PackData(const Ref<EditorExportPreset> &p_preset) :
+			preset(p_preset) {}
+};
 
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
@@ -324,16 +355,48 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 		ftmp = pd->f;
 	}
 
-	SavedData sd;
+	PackData::SavedData sd;
 	sd.path_utf8 = simplified_path.trim_prefix("res://").utf8();
 	sd.ofs = (pd->use_sparse_pck) ? 0 : pd->f->get_position();
 	sd.size = p_data.size();
-	Error err = _encrypt_and_store_data(ftmp, simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, sd.encrypted);
-	if (err != OK) {
-		return err;
+
+	bool compress = pd->preset->is_pck_compression_enabled();
+	if (compress) {
+		sd.compressed = true;
+		sd.compression_mode = (Compression::Mode)pd->preset->get_pck_compression_mode();
+		sd.block_size = pd->preset->get_pck_compression_chunk_size() * 1024; // It's in KiB
+
+		Vector<uint8_t> compressed_data;
+		int pos = 0;
+		while (pos < p_data.size()) {
+			int chunk_size = MIN(sd.block_size, p_data.size() - pos);
+			const uint8_t *chunk_ptr = &p_data[pos];
+
+			Vector<uint8_t> c_chunk;
+			c_chunk.resize(Compression::get_max_compressed_buffer_size(chunk_size, sd.compression_mode));
+			int c_size = Compression::compress(c_chunk.ptrw(), chunk_ptr, chunk_size, sd.compression_mode);
+			ERR_FAIL_COND_V(c_size < 0, ERR_CANT_CREATE);
+			c_chunk.resize(c_size);
+
+			sd.chunk_sizes.push_back(c_size);
+			sd.compressed_size += c_size;
+			compressed_data.append_array(c_chunk);
+			pos += chunk_size;
+		}
+
+		Error err = _encrypt_and_store_data(ftmp, simplified_path, compressed_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, sd.encrypted);
+		if (err != OK) {
+			return err;
+		}
+	} else {
+		Error err = _encrypt_and_store_data(ftmp, simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, sd.encrypted);
+		if (err != OK) {
+			return err;
+		}
 	}
+
 	if (!pd->use_sparse_pck) {
-		ERR_FAIL_COND_V(pd->f->get_position() - sd.ofs < (uint64_t)p_data.size(), ERR_FILE_CANT_WRITE);
+		ERR_FAIL_COND_V(pd->f->get_position() - sd.ofs < (compress ? sd.compressed_size : (uint64_t)p_data.size()), ERR_FILE_CANT_WRITE);
 	}
 
 	if (!pd->use_sparse_pck) {
@@ -2006,7 +2069,17 @@ bool EditorExportPlatform::_encrypt_and_store_directory(Ref<FileAccess> p_fd, Pa
 		if (p_pack_data.file_ofs[i].removal) {
 			flags |= PACK_FILE_REMOVAL;
 		}
+		if (p_pack_data.file_ofs[i].compressed) {
+			flags |= PACK_FILE_COMPRESSED;
+		}
 		fhead->store_32(flags);
+		if (p_pack_data.file_ofs[i].compressed) {
+			fhead->store_32(p_pack_data.file_ofs[i].compression_mode);
+			fhead->store_32(p_pack_data.file_ofs[i].block_size);
+			fhead->store_64(p_pack_data.file_ofs[i].compressed_size);
+			fhead->store_32(p_pack_data.file_ofs[i].chunk_sizes.size());
+			fhead->store_buffer((const uint8_t *)p_pack_data.file_ofs[i].chunk_sizes.ptr(), p_pack_data.file_ofs[i].chunk_sizes.size() * sizeof(uint32_t));
+		}
 	}
 
 	if (fae.is_valid()) {
@@ -2076,7 +2149,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	f->seek(file_base);
 
 	// Write files.
-	PackData pd;
+	PackData pd(p_preset);
 	pd.ep = &ep;
 	pd.f = f;
 	pd.so_files = p_so_files;

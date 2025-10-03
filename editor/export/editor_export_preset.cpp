@@ -519,6 +519,30 @@ int EditorExportPreset::get_script_export_mode() const {
 	return script_mode;
 }
 
+void EditorExportPreset::set_pck_compression_enabled(bool p_enabled) {
+	pck_compression_enabled = p_enabled;
+}
+
+bool EditorExportPreset::is_pck_compression_enabled() const {
+	return pck_compression_enabled;
+}
+
+void EditorExportPreset::set_pck_compression_mode(int p_mode) {
+	pck_compression_mode = p_mode;
+}
+
+int EditorExportPreset::get_pck_compression_mode() const {
+	return pck_compression_mode;
+}
+
+void EditorExportPreset::set_pck_compression_chunk_size(int p_size) {
+	pck_compression_chunk_size = p_size;
+}
+
+int EditorExportPreset::get_pck_compression_chunk_size() const {
+	return pck_compression_chunk_size;
+}
+
 Variant EditorExportPreset::get_or_env(const StringName &p_name, const String &p_env_var, bool *r_valid) const {
 	const String from_env = OS::get_singleton()->get_environment(p_env_var);
 	if (!from_env.is_empty()) {
