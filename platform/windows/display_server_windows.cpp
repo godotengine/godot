@@ -1628,6 +1628,11 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 	}
 	if (p_flags & WINDOW_FLAG_ALWAYS_ON_TOP_BIT && p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		wd.always_on_top = true;
+		wd.wallpaper = false;
+	}
+	if (p_flags & WINDOW_FLAG_WALLPAPER_BIT && p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+		wd.always_on_top = false;
+		wd.wallpaper = true;
 	}
 	if (p_flags & WINDOW_FLAG_SHARP_CORNERS_BIT) {
 		wd.sharp_corners = true;
@@ -2160,7 +2165,8 @@ void DisplayServerWindows::window_set_transient(WindowID p_window, WindowID p_pa
 	WindowData &wd_window = windows[p_window];
 
 	ERR_FAIL_COND(wd_window.transient_parent == p_parent);
-	ERR_FAIL_COND_MSG(wd_window.always_on_top, "Windows with the 'on top' can't become transient.");
+	ERR_FAIL_COND_MSG(wd_window.always_on_top, "Windows with the 'on top' flag can't become transient.");
+	ERR_FAIL_COND_MSG(wd_window.wallpaper, "Windows with the 'wallpaper' flag can't become transient.");
 
 	if (p_parent == INVALID_WINDOW_ID) {
 		// Remove transient.
@@ -2394,10 +2400,26 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
+	if (wd.wallpaper) {
+		SetParent(wd.hWnd, get_wp_host_hwnd());
+		SetWindowLongPtr(wd.hWnd, GWLP_HWNDPARENT, (LONG_PTR)get_wp_host_hwnd());
+	} else if (wd.transient_parent != INVALID_WINDOW_ID && wd.exclusive) {
+		WindowData &wd_parent = windows[wd.transient_parent];
+		SetParent(wd.hWnd, nullptr);
+		SetWindowLongPtr(wd.hWnd, GWLP_HWNDPARENT, (LONG_PTR)wd_parent.hWnd);
+	} else {
+		SetParent(wd.hWnd, nullptr);
+		SetWindowLongPtr(wd.hWnd, GWLP_HWNDPARENT, (LONG_PTR) nullptr);
+	}
+
 	DWORD style = 0;
 	DWORD style_ex = 0;
 
 	_get_window_style(p_window == MAIN_WINDOW_ID, wd.initialized, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.no_min_btn, wd.no_max_btn, wd.minimized, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, wd.parent_hwnd, style, style_ex);
+	if (wd.wallpaper) {
+		style |= WS_CHILDWINDOW;
+		style_ex |= WS_EX_NOACTIVATE;
+	}
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
@@ -2595,6 +2617,56 @@ bool DisplayServerWindows::window_is_maximize_allowed(WindowID p_window) const {
 	return (style & WS_MAXIMIZEBOX) == WS_MAXIMIZEBOX;
 }
 
+HWND DisplayServerWindows::get_wp_host_hwnd() {
+	if (os_ver.dwBuildNumber >= 26100) {
+		HWND progman = FindWindowW(L"Progman", nullptr);
+		HWND defview = FindWindowExW(progman, nullptr, L"SHELLDLL_DefView", nullptr);
+		if (defview != nullptr) {
+			HWND workerw = FindWindowExW(progman, nullptr, L"WorkerW", nullptr);
+			while (workerw != nullptr) {
+				if (FindWindowExW(workerw, nullptr, L"SHELLDLL_DefView", nullptr) == nullptr) {
+					return workerw;
+				}
+				workerw = FindWindowExW(progman, workerw, L"WorkerW", nullptr);
+			}
+		}
+
+		SendMessageTimeoutW(progman, WM_SPAWN_WORKER, 0x00, 0x00, SMTO_NORMAL, 2000, nullptr);
+		HWND workerw = FindWindowExW(progman, nullptr, L"WorkerW", nullptr);
+		while (workerw != nullptr) {
+			if (FindWindowExW(workerw, nullptr, L"SHELLDLL_DefView", nullptr) == nullptr) {
+				return workerw;
+			}
+			workerw = FindWindowExW(progman, workerw, L"WorkerW", nullptr);
+		}
+		return nullptr;
+	} else {
+		HWND progman = FindWindowW(L"Progman", L"Program Manager");
+		SendMessageTimeoutW(progman, WM_SPAWN_WORKER, 0x0D, 0x01, SMTO_NORMAL, 2000, nullptr);
+
+		HWND iconview = 0;
+		EnumWindows(find_iconview, (LPARAM)(&iconview));
+
+		return GetWindow(iconview, GW_HWNDNEXT);
+	}
+}
+
+BOOL CALLBACK DisplayServerWindows::find_iconview(HWND p_hwnd, LPARAM p_lparam) {
+	HWND *iconview = (HWND *)(p_lparam);
+	WCHAR classname[255];
+	GetClassNameW(p_hwnd, (LPWSTR)&classname[0], 255);
+
+	if (wcscmp(&classname[0], L"WorkerW") == 0) {
+		HWND child = FindWindowExW(p_hwnd, nullptr, L"SHELLDLL_DefView", nullptr);
+		if (child != nullptr) {
+			*iconview = p_hwnd;
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -2623,6 +2695,18 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 			_update_window_style(p_window);
 			ShowWindow(wd.hWnd, (wd.no_focus || wd.is_popup) ? SW_SHOWNOACTIVATE : SW_SHOW); // Show the window.
 		} break;
+		case WINDOW_FLAG_WALLPAPER: {
+			ERR_FAIL_COND_MSG(wd.transient_parent != INVALID_WINDOW_ID && p_enabled, "Transient windows can't become wallpaper.");
+			if (p_enabled && wd.parent_hwnd) {
+				print_line("Embedded window can't become wallpaper.");
+				return;
+			}
+			wd.wallpaper = p_enabled;
+			if (p_enabled) {
+				wd.always_on_top = false;
+			}
+			_update_window_style(p_window);
+		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
 			ERR_FAIL_COND_MSG(wd.transient_parent != INVALID_WINDOW_ID && p_enabled, "Transient windows can't become on top.");
 			if (p_enabled && wd.parent_hwnd) {
@@ -2630,6 +2714,9 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 				return;
 			}
 			wd.always_on_top = p_enabled;
+			if (p_enabled) {
+				wd.wallpaper = false;
+			}
 			_update_window_style(p_window);
 		} break;
 		case WINDOW_FLAG_SHARP_CORNERS: {
@@ -2721,6 +2808,9 @@ bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window
 		} break;
 		case WINDOW_FLAG_SHARP_CORNERS: {
 			return wd.sharp_corners;
+		} break;
+		case WINDOW_FLAG_WALLPAPER: {
+			return wd.wallpaper;
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
 			return wd.layered_window;

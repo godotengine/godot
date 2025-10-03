@@ -171,6 +171,9 @@ typedef PreferredAppMode(WINAPI *SetPreferredAppModePtr)(PreferredAppMode appMod
 typedef void(WINAPI *RefreshImmersiveColorPolicyStatePtr)();
 typedef void(WINAPI *FlushMenuThemesPtr)();
 
+#ifndef WM_SPAWN_WORKER
+#define WM_SPAWN_WORKER 0x052C
+#endif
 typedef struct {
 	BYTE bWidth; // Width, in pixels, of the image
 	BYTE bHeight; // Height, in pixels, of the image
@@ -310,6 +313,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool first_activation_done = false;
 		bool was_maximized = false;
 		bool always_on_top = false;
+		bool wallpaper = false;
 		bool no_focus = false;
 		bool exclusive = false;
 		bool context_created = false;
@@ -514,6 +518,9 @@ class DisplayServerWindows : public DisplayServer {
 	HWND _find_window_from_process_id(OS::ProcessID p_pid, HWND p_current_hwnd);
 
 	void initialize_tts() const;
+
+	HWND get_wp_host_hwnd();
+	static BOOL CALLBACK find_iconview(HWND p_hwnd, LPARAM p_lparam);
 
 public:
 	LRESULT WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
