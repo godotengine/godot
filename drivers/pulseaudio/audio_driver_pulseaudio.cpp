@@ -174,7 +174,6 @@ Error AudioDriverPulseAudio::detect_channels(bool input) {
 			ERR_PRINT("pa_context_get_sink_info_by_name error");
 		}
 	}
-
 	return OK;
 }
 
@@ -199,23 +198,31 @@ Error AudioDriverPulseAudio::init_output_device() {
 		return err;
 	}
 
-	switch (pa_map.channels) {
+	print_verbose("PulseAudio: detected " + itos(pa_map.channels) + " output channels");
+	pa_channels = pa_map.channels;
+	if (GLOBAL_GET("audio/driver/override_channels") && (pa_map.channels == 2)) {
+		pa_channels = GLOBAL_GET("audio/driver/override_speaker_channels");
+		pa_channel0 = CLAMP((int)GLOBAL_GET("audio/driver/override_channel_out"), 0, pa_channels - 2);
+		print_verbose("PulseAudio: forcing " + itos(pa_channels) + " output channels, but outputting to " + itos(pa_channel0) + "," + itos(pa_channel0 + 1));
+	}
+
+	switch (pa_channels) {
 		case 1: // Mono
 		case 3: // Surround 2.1
 		case 5: // Surround 5.0
 		case 7: // Surround 7.0
-			channels = pa_map.channels + 1;
+			channels = pa_channels + 1;
 			break;
 
 		case 2: // Stereo
 		case 4: // Surround 4.0
 		case 6: // Surround 5.1
 		case 8: // Surround 7.1
-			channels = pa_map.channels;
+			channels = pa_channels;
 			break;
 
 		default:
-			WARN_PRINT("PulseAudio: Unsupported number of output channels: " + itos(pa_map.channels));
+			WARN_PRINT("PulseAudio: Unsupported number of output channels: " + itos(pa_channels));
 			pa_channel_map_init_stereo(&pa_map);
 			channels = 2;
 			break;
@@ -225,7 +232,7 @@ Error AudioDriverPulseAudio::init_output_device() {
 	buffer_frames = closest_power_of_2(tmp_latency * mix_rate / 1000);
 	pa_buffer_size = buffer_frames * pa_map.channels;
 
-	print_verbose("PulseAudio: detected " + itos(pa_map.channels) + " output channels");
+	print_verbose("PulseAudio: reserving " + itos(channels) + " bus channels");
 	print_verbose("PulseAudio: audio buffer frames: " + itos(buffer_frames) + " calculated output latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 
 	pa_sample_spec spec;
@@ -415,11 +422,10 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 					for (unsigned int i = 0; i < ad->pa_buffer_size; i++) {
 						out_ptr[i] = ad->samples_in[i] >> 16;
 					}
-				} else {
+				} else if (ad->channels == ad->pa_map.channels + 1) {
 					// Uneven amount of channels
 					unsigned int in_idx = 0;
 					unsigned int out_idx = 0;
-
 					for (unsigned int i = 0; i < ad->buffer_frames; i++) {
 						for (int j = 0; j < ad->pa_map.channels - 1; j++) {
 							out_ptr[out_idx++] = ad->samples_in[in_idx++] >> 16;
@@ -427,6 +433,17 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 						uint32_t l = ad->samples_in[in_idx++] >> 16;
 						uint32_t r = ad->samples_in[in_idx++] >> 16;
 						out_ptr[out_idx++] = (l + r) / 2;
+					}
+				} else {
+					// override_channels case
+					unsigned int in_idx = 0;
+					unsigned int out_idx = 0;
+					for (unsigned int i = 0; i < ad->buffer_frames; i++) {
+						in_idx += ad->pa_channel0;
+						for (int j = 0; j < ad->pa_map.channels; j++) {
+							out_ptr[out_idx++] = ad->samples_in[in_idx++] >> 16;
+						}
+						in_idx += ad->channels - ad->pa_map.channels - ad->pa_channel0;
 					}
 				}
 			}
