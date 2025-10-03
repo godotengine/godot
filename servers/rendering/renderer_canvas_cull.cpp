@@ -116,7 +116,7 @@ void RendererCanvasCull::_collect_ysort_children(RendererCanvasCull::Item *p_can
 				// To y-sort according to the item's final position, physics interpolation
 				// and transform snapping need to be applied before y-sorting.
 				Transform2D child_xform;
-				if (!_interpolation_data.interpolation_enabled || !child_items[i]->interpolated) {
+				if (!_interpolation_data.interpolation_enabled || !child_items[i]->interpolated || !child_items[i]->on_interpolate_transform_list) {
 					child_xform = child_items[i]->xform_curr;
 				} else {
 					real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
@@ -348,7 +348,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		// and is passed as `p_parent_xform` afterwards. No need to recalculate.
 		final_xform = p_parent_xform;
 	} else {
-		if (!_interpolation_data.interpolation_enabled || !ci->interpolated) {
+		if (!_interpolation_data.interpolation_enabled || !ci->interpolated || !ci->on_interpolate_transform_list) {
 			self_xform = ci->xform_curr;
 		} else {
 			real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
