@@ -239,6 +239,13 @@
 				Returns this image's format.
 			</description>
 		</method>
+		<method name="get_format_name" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="format" type="int" enum="Image.Format" />
+			<description>
+				Returns the name of the image format specified by [param format].
+			</description>
+		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="int" />
 			<description>
