@@ -1267,7 +1267,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		for (const KeyValue<int, RBMap<int, Rect2>> &E : subtrack_icons) {
 			int track = E.key;
-			RBMap<int, Rect2> track_icons = E.value;
+			const RBMap<int, Rect2> &track_icons = E.value;
 			for (const KeyValue<int, Rect2> &I : track_icons) {
 				if (I.value.has_point(mb->get_position())) {
 					if (I.key == REMOVE_ICON) {

@@ -3189,7 +3189,7 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 	ERR_FAIL_NULL(p_node);
 	ERR_FAIL_COND(p_node->data.parent);
 
-	List<Node *> owned = data.owned;
+	const List<Node *> &owned = data.owned;
 	List<Node *> owned_by_owner;
 	Node *owner = (data.owner == this) ? p_node : data.owner;
 
@@ -3477,7 +3477,7 @@ void Node::get_argument_options(const StringName &p_function, int p_idx, List<St
 	if (p_idx == 0 && (pf == "has_node" || pf == "get_node" || pf == "get_node_or_null")) {
 		_add_nodes_to_options(this, this, r_options);
 	} else if (p_idx == 0 && (pf == "add_to_group" || pf == "remove_from_group" || pf == "is_in_group")) {
-		HashMap<StringName, String> global_groups = ProjectSettings::get_singleton()->get_global_groups_list();
+		const HashMap<StringName, String> &global_groups = ProjectSettings::get_singleton()->get_global_groups_list();
 		for (const KeyValue<StringName, String> &E : global_groups) {
 			r_options->push_back(E.key.operator String().quote());
 		}
