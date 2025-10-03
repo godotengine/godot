@@ -1707,17 +1707,21 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 				return;
 			}
 
-			Variant converted_to;
-			const Variant *converted_from = &value;
-			Callable::CallError call_error;
-			Variant::construct(argument_info.type, converted_to, &converted_from, 1, call_error);
+			// Only validate the conversion if the argument's type isn't explicitly Variant.
+			if (!(argument_info.type == Variant::NIL && (argument_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT))) {
 
-			if (call_error.error != Callable::CallError::CALL_OK) {
-				push_error(vformat(R"(Cannot convert argument %d of annotation "%s" from "%s" to "%s".)", i + 1, p_annotation->name, Variant::get_type_name(value.get_type()), Variant::get_type_name(argument_info.type)), argument);
-				return;
+				Variant converted_to;
+				const Variant *converted_from = &value;
+				Callable::CallError call_error;
+				Variant::construct(argument_info.type, converted_to, &converted_from, 1, call_error);
+
+				if (call_error.error != Callable::CallError::CALL_OK) {
+					push_error(vformat(R"(Cannot convert argument %d of annotation "%s" from "%s" to "%s".)", i + 1, p_annotation->name, Variant::get_type_name(value.get_type()), Variant::get_type_name(argument_info.type)), argument);
+					return;
+				}
+
+				value = converted_to;
 			}
-
-			value = converted_to;
 		}
 
 		p_annotation->resolved_arguments.push_back(value);
@@ -2690,9 +2694,11 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 }
 
 void GDScriptAnalyzer::reduce_array(GDScriptParser::ArrayNode *p_array) {
+	p_array->is_constant = true;
 	for (int i = 0; i < p_array->elements.size(); i++) {
 		GDScriptParser::ExpressionNode *element = p_array->elements[i];
 		reduce_expression(element);
+		p_array->is_constant &= element->is_constant;
 	}
 
 	// It's array in any case.
@@ -3835,12 +3841,15 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 void GDScriptAnalyzer::reduce_dictionary(GDScriptParser::DictionaryNode *p_dictionary) {
 	HashMap<Variant, GDScriptParser::ExpressionNode *, VariantHasher, StringLikeVariantComparator> elements;
 
+	p_dictionary->is_constant = true;
 	for (int i = 0; i < p_dictionary->elements.size(); i++) {
 		const GDScriptParser::DictionaryNode::Pair &element = p_dictionary->elements[i];
 		if (p_dictionary->style == GDScriptParser::DictionaryNode::PYTHON_DICT) {
 			reduce_expression(element.key);
+			p_dictionary->is_constant &= element.key->is_constant;
 		}
 		reduce_expression(element.value);
+		p_dictionary->is_constant &= element.value->is_constant;
 
 		if (element.key->is_constant) {
 			if (elements.has(element.key->reduced_value)) {
