@@ -144,6 +144,12 @@ constexpr auto CLAMP(const T m_a, const T2 m_min, const T3 m_max) {
 #define SWAP(m_x, m_y) std::swap((m_x), (m_y))
 #endif // SWAP
 
+// Like std::size, but without requiring any additional includes.
+template <typename T, size_t SIZE>
+constexpr size_t std_size(const T (&)[SIZE]) {
+	return SIZE;
+}
+
 /* Functions to handle powers of 2 and shifting. */
 
 // Returns `true` if a positive integer is a power of 2, `false` otherwise.

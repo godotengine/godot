@@ -3845,7 +3845,7 @@ void RasterizerSceneGLES3::_render_uv2(const PagedArray<RenderGeometryInstance *
 			GL_COLOR_ATTACHMENT2,
 			GL_COLOR_ATTACHMENT3
 		};
-		glDrawBuffers(std::size(draw_buffers), draw_buffers);
+		glDrawBuffers(std_size(draw_buffers), draw_buffers);
 
 		glClearColor(0.0, 0.0, 0.0, 0.0);
 		RasterizerGLES3::clear_depth(0.0);
