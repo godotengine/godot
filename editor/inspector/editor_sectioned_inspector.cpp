@@ -99,7 +99,7 @@ class SectionedInspectorFilter : public Object {
 		for (PropertyInfo &pi : pinfo) {
 			int sp = pi.name.find_char('/');
 
-			if (pi.name == "resource_path" || pi.name == "resource_name" || pi.name == "resource_local_to_scene" || pi.name.begins_with("script/") || pi.name.begins_with("_global_script")) { //skip resource stuff
+			if (pi.name == "resource_path" || pi.name == "resource_name" || pi.name == "resource_local_to_scene" || pi.name == "editor_description" || pi.name.begins_with("script/") || pi.name.begins_with("_global_script")) { //skip resource stuff
 				continue;
 			}
 
