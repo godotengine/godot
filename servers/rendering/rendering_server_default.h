@@ -509,6 +509,10 @@ public:
 	FUNC2(lightmap_set_shadowmask_textures, RID, RID)
 	FUNC1R(ShadowmaskMode, lightmap_get_shadowmask_mode, RID)
 	FUNC2(lightmap_set_shadowmask_mode, RID, ShadowmaskMode)
+	FUNC1R(float, lightmap_get_texel_scale, RID)
+	FUNC2(lightmap_set_texel_scale, RID, float)
+	FUNC1R(float, lightmap_get_baked_texel_scale, RID)
+	FUNC2(lightmap_set_baked_texel_scale, RID, float)
 
 	/* Shadow Atlas */
 	FUNC0R(RID, shadow_atlas_create)
@@ -924,6 +928,8 @@ public:
 
 	FUNC6(instance_geometry_set_visibility_range, RID, float, float, float, float, VisibilityRangeFadeMode)
 	FUNC4(instance_geometry_set_lightmap, RID, RID, const Rect2 &, int)
+	FUNC2(instance_geometry_set_lightmap_baked_texel_scale, RID, float)
+	FUNC2(instance_geometry_set_lightmap_texel_scale, RID, float)
 	FUNC2(instance_geometry_set_lod_bias, RID, float)
 	FUNC2(instance_geometry_set_transparency, RID, float)
 	FUNC3(instance_geometry_set_shader_parameter, RID, const StringName &, const Variant &)

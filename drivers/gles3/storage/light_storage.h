@@ -186,6 +186,8 @@ struct Lightmap {
 	PackedColorArray point_sh;
 	PackedInt32Array tetrahedra;
 	PackedInt32Array bsp_tree;
+	float texel_scale = 1.0;
+	float baked_texel_scale = 1.0;
 
 	struct BSP {
 		static const int32_t EMPTY_LEAF = INT32_MIN;
@@ -735,9 +737,18 @@ public:
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) override;
 	virtual float lightmap_get_probe_capture_update_speed() const override;
 
+	_FORCE_INLINE_ Vector2i lightmap_get_light_texture_size(RID p_lightmap) const {
+		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+		return lm->light_texture_size;
+	}
+
 	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) override;
 	virtual RS::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) override;
 	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMode p_mode) override;
+	virtual float lightmap_get_texel_scale(RID p_lightmap) override;
+	virtual void lightmap_set_texel_scale(RID p_lightmap, float p_scale) override;
+	virtual float lightmap_get_baked_texel_scale(RID p_lightmap) override;
+	virtual void lightmap_set_baked_texel_scale(RID p_lightmap, float p_factor) override;
 
 	/* LIGHTMAP INSTANCE */
 
@@ -747,6 +758,11 @@ public:
 	virtual RID lightmap_instance_create(RID p_lightmap) override;
 	virtual void lightmap_instance_free(RID p_lightmap) override;
 	virtual void lightmap_instance_set_transform(RID p_lightmap, const Transform3D &p_transform) override;
+
+	_FORCE_INLINE_ RID lightmap_instance_get_lightmap(RID p_lightmap_instance) {
+		LightmapInstance *li = lightmap_instance_owner.get_or_null(p_lightmap_instance);
+		return li->lightmap;
+	}
 
 	/* SHADOW ATLAS API */
 	bool owns_shadow_atlas(RID p_rid) { return shadow_atlas_owner.owns(p_rid); }

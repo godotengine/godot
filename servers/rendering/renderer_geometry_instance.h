@@ -57,6 +57,8 @@ public:
 	virtual void set_use_baked_light(bool p_enable) = 0;
 	virtual void set_use_dynamic_gi(bool p_enable) = 0;
 	virtual void set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) = 0;
+	virtual void set_baked_texel_scale(float p_scale) = 0;
+	virtual void set_texel_scale(float p_scale) = 0;
 	virtual void set_lightmap_capture(const Color *p_sh9) = 0;
 	virtual void set_instance_shader_uniforms_offset(int32_t p_offset) = 0;
 	virtual void set_cast_double_sided_shadows(bool p_enable) = 0;
@@ -106,6 +108,8 @@ public:
 
 	float parent_fade_alpha = 1.0;
 	float force_alpha = 1.0;
+	float lightmap_texel_scale = 1.0;
+	float lightmap_baked_texel_scale = 1.0f;
 
 	int32_t shader_uniforms_offset = -1;
 
@@ -124,6 +128,8 @@ public:
 		bool use_dynamic_gi = false;
 		bool cast_double_sided_shadows = false;
 		bool dirty_dependencies = false;
+
+		int32_t lightmap_size_global_uniform_pos = -2;
 
 		DependencyTracker dependency_tracker;
 	};
@@ -144,6 +150,8 @@ public:
 	virtual void set_transparency(float p_transparency) override;
 	virtual void set_use_baked_light(bool p_enable) override;
 	virtual void set_use_dynamic_gi(bool p_enable) override;
+	virtual void set_baked_texel_scale(float p_scale) override;
+	virtual void set_texel_scale(float p_scale) override;
 	virtual void set_instance_shader_uniforms_offset(int32_t p_offset) override;
 	virtual void set_cast_double_sided_shadows(bool p_enable) override;
 

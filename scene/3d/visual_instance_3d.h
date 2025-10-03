@@ -136,6 +136,7 @@ private:
 
 	float extra_cull_margin = 0.0;
 	AABB custom_aabb;
+	float lightmap_baked_texel_scale = 1.0f;
 	float lightmap_texel_scale = 1.0f;
 	GIMode gi_mode = GI_MODE_STATIC;
 	bool ignore_occlusion_culling = false;
@@ -186,6 +187,9 @@ public:
 
 	void set_gi_mode(GIMode p_mode);
 	GIMode get_gi_mode() const;
+
+	void set_lightmap_baked_texel_scale(float p_scale);
+	float get_lightmap_baked_texel_scale() const;
 
 	void set_lightmap_texel_scale(float p_scale);
 	float get_lightmap_texel_scale() const;

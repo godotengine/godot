@@ -921,7 +921,7 @@ LightmapperRD::BakeError LightmapperRD::_denoise_oidn(RenderingDevice *p_rd, RID
 
 			List<String> args;
 			args.push_back("--device");
-			args.push_back("default");
+			args.push_back("cpu");
 
 			args.push_back("--filter");
 			args.push_back("RTLightmap");

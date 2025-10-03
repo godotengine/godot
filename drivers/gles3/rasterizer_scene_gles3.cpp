@@ -1371,6 +1371,37 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 			}
 		}
 
+#ifdef DEBUG_ENABLED
+		if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY)) {
+			if (inst->data->base_type == RS::INSTANCE_MESH && inst->data->use_baked_light && inst->lightmap_instance.is_valid()) {
+				// GLES3::LightStorage *light_storage = GLES3::LightStorage::get_singleton();
+
+				RID lightmap = light_storage->lightmap_instance_get_lightmap(inst->lightmap_instance);
+				Vector2i lightmap_atlas_size = light_storage->lightmap_get_light_texture_size(lightmap);
+				float lightmap_texel_scale = light_storage->lightmap_get_texel_scale(lightmap);
+				float lightmap_baked_texel_scale = light_storage->lightmap_get_baked_texel_scale(lightmap);
+				float mesh_lightmap_texel_scale = inst->lightmap_texel_scale;
+				float mesh_lightmap_baked_texel_scale = inst->lightmap_baked_texel_scale;
+
+				Size2 lightmap_size = inst->lightmap_uv_scale.size * Size2(lightmap_atlas_size) * lightmap_texel_scale * mesh_lightmap_texel_scale / (lightmap_baked_texel_scale * mesh_lightmap_baked_texel_scale);
+
+				if (inst->data->lightmap_size_global_uniform_pos == -2) {
+					// Not allocated, try to allocate.
+					inst->data->lightmap_size_global_uniform_pos = RSG::material_storage->global_shader_parameters_unit_variable_allocate();
+				}
+
+				if (inst->data->lightmap_size_global_uniform_pos >= 0) {
+					RSG::material_storage->global_shader_parameters_unit_variable_update(inst->data->lightmap_size_global_uniform_pos, lightmap_size);
+				}
+			}
+		} else if (unlikely(inst->data->lightmap_size_global_uniform_pos != -2)) {
+			if (inst->data->lightmap_size_global_uniform_pos >= 0) {
+				RSG::material_storage->global_shader_parameters_unit_variable_free(inst->data->lightmap_size_global_uniform_pos);
+			}
+			inst->data->lightmap_size_global_uniform_pos = -2;
+		}
+#endif
+
 		inst->flags_cache = flags;
 
 		GeometryInstanceSurface *surf = inst->surface_caches;
@@ -3031,6 +3062,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			} else if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_LIGHTING)) {
 				material_data = default_material_data_ptr;
 				shader = material_data->shader_data;
+			} else if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY)) {
+				material_data = uv2_texel_density_material_data_ptr;
+				shader = material_data->shader_data;
 			} else {
 				shader = surf->shader;
 				material_data = surf->material;
@@ -3621,6 +3655,12 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 
 			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::MODEL_FLAGS, inst->flags_cache, shader->version, instance_variant, spec_constants);
 			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::INSTANCE_OFFSET, uint32_t(inst->shader_uniforms_offset), shader->version, instance_variant, spec_constants);
+
+#ifdef DEBUG_ENABLED
+			if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY && inst->data->use_baked_light && inst->data->lightmap_size_global_uniform_pos >= 0)) {
+				material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::INSTANCE_OFFSET, uint32_t(inst->data->lightmap_size_global_uniform_pos), shader->version, instance_variant, spec_constants);
+			}
+#endif
 
 			if (p_pass_mode == PASS_MODE_MATERIAL) {
 				material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::UV_OFFSET, p_params->uv_offset, shader->version, instance_variant, spec_constants);
@@ -4363,6 +4403,32 @@ void fragment() {
 	}
 
 	{
+		// UV2 debug shader.
+		scene_globals.uv2_texel_density_material_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(scene_globals.uv2_texel_density_material_shader);
+		material_storage->shader_set_code(scene_globals.uv2_texel_density_material_shader, R"(
+// 3D editor UV2 texel density debug draw mode shader (clustered).
+shader_type spatial;
+instance uniform vec2 lightmap_size : instance_index(0);
+void fragment() {
+	vec2 lightmap_pos = UV2 * lightmap_size;
+	vec2 ddx = dFdx(UV2);
+	vec2 ddy = dFdy(UV2);
+	vec2 w = max(abs(ddx), abs(ddy)) + 0.01;
+	vec2 s = 2.0 * (abs(fract((lightmap_pos - 0.5 * w) / 2.0) - 0.5) - abs(fract((lightmap_pos + 0.5 * w) / 2.0) - 0.5)) / w;
+	float checkerboard_pattern = mix(0.85, 1.15, 0.5 - 0.5 * s.x * s.y);
+	ALBEDO = vec3(0.6) * checkerboard_pattern;
+	ROUGHNESS = 0.8;
+	METALLIC = 0.2;
+}
+)");
+		scene_globals.uv2_texel_density_material = material_storage->material_allocate();
+		material_storage->material_initialize(scene_globals.uv2_texel_density_material);
+		material_storage->material_set_shader(scene_globals.uv2_texel_density_material, scene_globals.uv2_texel_density_material_shader);
+		uv2_texel_density_material_data_ptr = static_cast<GLES3::SceneMaterialData *>(GLES3::MaterialStorage::get_singleton()->material_get_data(scene_globals.uv2_texel_density_material, RS::SHADER_SPATIAL));
+	}
+
+	{
 		// Initialize Sky stuff
 		sky_globals.roughness_layers = GLOBAL_GET("rendering/reflections/sky_reflections/roughness_layers");
 
@@ -4468,6 +4534,11 @@ RasterizerSceneGLES3::~RasterizerSceneGLES3() {
 	// Overdraw Shader
 	RSG::material_storage->material_free(scene_globals.overdraw_material);
 	RSG::material_storage->shader_free(scene_globals.overdraw_shader);
+
+	// UV2 Debug Shader.
+	// Overdraw Shader
+	RSG::material_storage->material_free(scene_globals.uv2_texel_density_material);
+	RSG::material_storage->shader_free(scene_globals.uv2_texel_density_material_shader);
 
 	// Sky Shader
 	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_free(sky_globals.shader_default_version);
