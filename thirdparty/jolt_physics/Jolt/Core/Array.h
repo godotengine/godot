@@ -69,8 +69,8 @@ public:
 		rev_it &			operator -- ()					{ ++mValue; return *this; }
 		rev_it				operator -- (int)				{ return rev_it(mValue++); }
 
-		rev_it				operator + (int inValue)		{ return rev_it(mValue - inValue); }
-		rev_it				operator - (int inValue)		{ return rev_it(mValue + inValue); }
+		rev_it				operator + (int inValue) const	{ return rev_it(mValue - inValue); }
+		rev_it				operator - (int inValue) const	{ return rev_it(mValue + inValue); }
 
 		rev_it &			operator += (int inValue)		{ mValue -= inValue; return *this; }
 		rev_it &			operator -= (int inValue)		{ mValue += inValue; return *this; }

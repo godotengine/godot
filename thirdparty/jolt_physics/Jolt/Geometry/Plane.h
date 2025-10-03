@@ -32,6 +32,9 @@ public:
 	float			GetConstant() const														{ return mNormalAndConstant.GetW(); }
 	void			SetConstant(float inConstant)											{ mNormalAndConstant.SetW(inConstant); }
 
+	/// Store as 4 floats
+	void			StoreFloat4(Float4 *outV) const											{ mNormalAndConstant.StoreFloat4(outV); }
+
 	/// Offset the plane (positive value means move it in the direction of the plane normal)
 	Plane			Offset(float inDistance) const											{ return Plane(mNormalAndConstant - Vec4(Vec3::sZero(), inDistance)); }
 

@@ -255,7 +255,7 @@ UVec4 UVec4::operator * (UVec4Arg inV2) const
 #endif
 }
 
-UVec4 UVec4::operator + (UVec4Arg inV2)
+UVec4 UVec4::operator + (UVec4Arg inV2) const
 {
 #if defined(JPH_USE_SSE)
 	return _mm_add_epi32(mValue, inV2.mValue);
@@ -278,6 +278,33 @@ UVec4 &UVec4::operator += (UVec4Arg inV2)
 #else
 	for (int i = 0; i < 4; ++i)
 		mU32[i] += inV2.mU32[i];
+#endif
+	return *this;
+}
+
+UVec4 UVec4::operator - (UVec4Arg inV2) const
+{
+#if defined(JPH_USE_SSE)
+	return _mm_sub_epi32(mValue, inV2.mValue);
+#elif defined(JPH_USE_NEON)
+	return vsubq_u32(mValue, inV2.mValue);
+#else
+	return UVec4(mU32[0] - inV2.mU32[0],
+				 mU32[1] - inV2.mU32[1],
+				 mU32[2] - inV2.mU32[2],
+				 mU32[3] - inV2.mU32[3]);
+#endif
+}
+
+UVec4 &UVec4::operator -= (UVec4Arg inV2)
+{
+#if defined(JPH_USE_SSE)
+	mValue = _mm_sub_epi32(mValue, inV2.mValue);
+#elif defined(JPH_USE_NEON)
+	mValue = vsubq_u32(mValue, inV2.mValue);
+#else
+	for (int i = 0; i < 4; ++i)
+		mU32[i] -= inV2.mU32[i];
 #endif
 	return *this;
 }
@@ -345,6 +372,34 @@ Vec4 UVec4::ReinterpretAsFloat() const
 	return vreinterpretq_f32_u32(mValue);
 #else
 	return *reinterpret_cast<const Vec4 *>(this);
+#endif
+}
+
+UVec4 UVec4::DotV(UVec4Arg inV2) const
+{
+#if defined(JPH_USE_SSE4_1)
+	__m128i mul = _mm_mullo_epi32(mValue, inV2.mValue);
+    __m128i sum = _mm_add_epi32(mul, _mm_shuffle_epi32(mul, _MM_SHUFFLE(2, 3, 0, 1)));
+    return _mm_add_epi32(sum, _mm_shuffle_epi32(sum, _MM_SHUFFLE(1, 0, 3, 2)));
+#elif defined(JPH_USE_NEON)
+	uint32x4_t mul = vmulq_u32(mValue, inV2.mValue);
+	return vdupq_n_u32(vaddvq_u32(mul));
+#else
+	return UVec4::sReplicate(mU32[0] * inV2.mU32[0] + mU32[1] * inV2.mU32[1] + mU32[2] * inV2.mU32[2] + mU32[3] * inV2.mU32[3]);
+#endif
+}
+
+uint32 UVec4::Dot(UVec4Arg inV2) const
+{
+#if defined(JPH_USE_SSE4_1)
+	__m128i mul = _mm_mullo_epi32(mValue, inV2.mValue);
+    __m128i sum = _mm_add_epi32(mul, _mm_shuffle_epi32(mul, _MM_SHUFFLE(2, 3, 0, 1)));
+    return _mm_cvtsi128_si32(_mm_add_epi32(sum, _mm_shuffle_epi32(sum, _MM_SHUFFLE(1, 0, 3, 2))));
+#elif defined(JPH_USE_NEON)
+	uint32x4_t mul = vmulq_u32(mValue, inV2.mValue);
+	return vaddvq_u32(mul);
+#else
+	return mU32[0] * inV2.mU32[0] + mU32[1] * inV2.mU32[1] + mU32[2] * inV2.mU32[2] + mU32[3] * inV2.mU32[3];
 #endif
 }
 
