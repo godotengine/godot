@@ -176,6 +176,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		MODE_HSV,
 		MODE_OKHSL,
 		MODE_RGB8,
+		MODE_COLOR8,
 		MODE_HEX,
 		MODE_MAX
 	};
