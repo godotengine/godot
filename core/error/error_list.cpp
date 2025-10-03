@@ -30,7 +30,7 @@
 
 #include "error_list.h"
 
-#include <iterator>
+#include "core/typedefs.h"
 
 const char *error_names[] = {
 	"OK", // OK
@@ -84,4 +84,4 @@ const char *error_names[] = {
 	"Printer on fire", // ERR_PRINTER_ON_FIRE
 };
 
-static_assert(std::size(error_names) == ERR_MAX);
+static_assert(std_size(error_names) == ERR_MAX);
