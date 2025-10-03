@@ -196,6 +196,7 @@ String tablet_driver = "";
 String text_driver = "";
 String rendering_driver = "";
 String rendering_method = "";
+Dictionary available_drivers = {};
 static int text_driver_idx = -1;
 static int audio_driver_idx = -1;
 
@@ -1043,6 +1044,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	String default_renderer = "";
 	String default_renderer_mobile = "";
 	String renderer_hints = "";
+	Vector<String> available_methods = {};
+	Vector<String> rd_drivers = {};
+	Vector<String> gl_drivers = {};
 
 	packed_data = PackedData::get_singleton();
 	if (!packed_data) {
@@ -2405,18 +2409,44 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::ARRAY, "rendering/gl_compatibility/force_angle_on_devices", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::DICTIONARY, PROPERTY_HINT_NONE, String())), force_angle_list);
 	}
 
-	// Start with RenderingDevice-based backends.
+	available_drivers = {};
+	// Set a default renderer if none selected. Try to choose one that matches the driver.
+	if (rendering_method.is_empty()) {
+		if (rendering_driver == "dummy") {
+			rendering_method = "dummy";
+		} else if (rendering_driver == "opengl3" || rendering_driver == "opengl3_angle" || rendering_driver == "opengl3_es") {
+			rendering_method = "gl_compatibility";
+		} else {
+			rendering_method = "forward_plus";
+		}
+	}
+
 #ifdef RD_ENABLED
-	renderer_hints = "forward_plus,mobile";
+	rd_drivers = {};
 	default_renderer_mobile = "mobile";
 #endif
-
-	// And Compatibility next, or first if Vulkan is disabled.
+#ifdef VULKAN_ENABLED
+	rd_drivers.push_back("vulkan");
+#endif
+#ifdef D3D12_ENABLED
+	rd_drivers.push_back("d3d12");
+#endif
+#ifdef METAL_ENABLED
+	rd_drivers.push_back("metal");
+#endif
+#ifdef RD_ENABLED
+	available_drivers["forward_plus"] = rd_drivers;
+	available_drivers["mobile"] = rd_drivers;
+#endif
 #ifdef GLES3_ENABLED
-	if (!renderer_hints.is_empty()) {
-		renderer_hints += ",";
-	}
-	renderer_hints += "gl_compatibility";
+	gl_drivers = { "opengl3" };
+#if defined(WINDOWS_ENABLED) || defined(MACOS_ENABLED)
+	gl_drivers.push_back("opengl3_angle");
+#endif
+#ifdef LINUXBSD_ENABLED
+	gl_drivers.push_back("opengl3_es");
+#endif
+	available_drivers["gl_compatibility"] = gl_drivers;
 	if (default_renderer_mobile.is_empty()) {
 		default_renderer_mobile = "gl_compatibility";
 	}
@@ -2427,6 +2457,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		default_renderer_mobile = "gl_compatibility";
 	}
 #endif
+	if (available_drivers.keys().is_empty()) {
+		available_drivers["dummy"] = Vector<String>{ "dummy" };
+	}
 
 	if (!rendering_method.is_empty()) {
 		if (rendering_method != "forward_plus" &&
@@ -2436,7 +2469,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->print("Unknown rendering method '%s', aborting.\nValid options are ",
 					rendering_method.utf8().get_data());
 
-			Vector<String> rendering_method_hints = renderer_hints.split(",");
+			Vector<String> rendering_method_hints;
+			for (int i = 0; i < available_drivers.keys().size(); i++) {
+				rendering_method_hints.push_back(available_drivers.keys()[i]);
+			}
 			rendering_method_hints.push_back("dummy");
 			for (int i = 0; i < rendering_method_hints.size(); i++) {
 				if (i == rendering_method_hints.size() - 1) {
@@ -2450,9 +2486,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->print(".\n");
 			goto error;
 		}
-	}
-	if (renderer_hints.is_empty()) {
-		renderer_hints = "dummy";
 	}
 
 	if (!rendering_driver.is_empty()) {
@@ -2502,48 +2535,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			goto error;
 		}
 
-		// Set a default renderer if none selected. Try to choose one that matches the driver.
-		if (rendering_method.is_empty()) {
-			if (rendering_driver == "dummy") {
-				rendering_method = "dummy";
-			} else if (rendering_driver == "opengl3" || rendering_driver == "opengl3_angle" || rendering_driver == "opengl3_es") {
-				rendering_method = "gl_compatibility";
-			} else {
-				rendering_method = "forward_plus";
-			}
-		}
-
 		// Now validate whether the selected driver matches with the renderer.
 		bool valid_combination = false;
-		Vector<String> available_drivers;
-		if (rendering_method == "forward_plus" || rendering_method == "mobile") {
-#ifdef VULKAN_ENABLED
-			available_drivers.push_back("vulkan");
-#endif
-#ifdef D3D12_ENABLED
-			available_drivers.push_back("d3d12");
-#endif
-#ifdef METAL_ENABLED
-			available_drivers.push_back("metal");
-#endif
-		}
-#ifdef GLES3_ENABLED
-		if (rendering_method == "gl_compatibility") {
-			available_drivers.push_back("opengl3");
-			available_drivers.push_back("opengl3_angle");
-			available_drivers.push_back("opengl3_es");
-		}
-#endif
-		if (rendering_method == "dummy") {
-			available_drivers.push_back("dummy");
-		}
 		if (available_drivers.is_empty()) {
 			OS::get_singleton()->print("Unknown renderer name '%s', aborting.\n", rendering_method.utf8().get_data());
 			goto error;
 		}
 
-		for (int i = 0; i < available_drivers.size(); i++) {
-			if (rendering_driver == available_drivers[i]) {
+		PackedStringArray current_method_drivers = available_drivers[rendering_method];
+		for (int i = 0; i < current_method_drivers.size(); i++) {
+			if (rendering_driver == current_method_drivers[i]) {
 				valid_combination = true;
 				break;
 			}
@@ -2552,8 +2553,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (!valid_combination) {
 			OS::get_singleton()->print("Invalid renderer/driver combination '%s' and '%s', aborting. %s only supports the following drivers ", rendering_method.utf8().get_data(), rendering_driver.utf8().get_data(), rendering_method.utf8().get_data());
 
-			for (int d = 0; d < available_drivers.size(); d++) {
-				OS::get_singleton()->print("'%s', ", available_drivers[d].utf8().get_data());
+			for (int d = 0; d < current_method_drivers.size(); d++) {
+				OS::get_singleton()->print("'%s', ", current_method_drivers[d].utf8().get_data());
 			}
 
 			OS::get_singleton()->print(".\n");
@@ -2562,7 +2563,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	default_renderer = renderer_hints.get_slicec(',', 0);
+	available_methods = {};
+	for (int i = 0; i < available_drivers.keys().size(); i++) {
+		available_methods.push_back(available_drivers.keys()[i]);
+	}
+	default_renderer = available_methods[0];
+	renderer_hints = "";
+	for (int i = 0; i < available_methods.size(); i++) {
+		if (i > 0) {
+			renderer_hints += ",";
+		}
+		renderer_hints += available_methods[i];
+	}
 	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method", PROPERTY_HINT_ENUM, renderer_hints), default_renderer);
 	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.mobile", default_renderer_mobile);
 	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method.web", PROPERTY_HINT_ENUM, "gl_compatibility"), "gl_compatibility"); // This is a bit of a hack until we have WebGPU support.
@@ -3423,6 +3435,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 		if (profile_gpu || (!editor && bool(GLOBAL_GET("debug/settings/stdout/print_gpu_profile")))) {
 			rendering_server->set_print_gpu_profile(true);
 		}
+		RenderingServer::get_singleton()->set_available_rendering_drivers(available_drivers);
 
 		OS::get_singleton()->benchmark_end_measure("Servers", "Rendering");
 	}
