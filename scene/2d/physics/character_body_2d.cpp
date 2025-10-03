@@ -118,6 +118,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 	Vector2 motion_slide_up = motion.slide(up_direction);
 
 	Vector2 prev_floor_normal = floor_normal;
+	const real_t recovery_tolerance = margin + CMP_EPSILON;
 
 	platform_rid = RID();
 	platform_object_id = ObjectID();
@@ -153,19 +154,19 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 			// If we hit a ceiling platform, we set the vertical velocity to at least the platform one.
 			if (on_ceiling && result.collider_velocity != Vector2() && result.collider_velocity.dot(up_direction) < 0) {
 				// If ceiling sliding is on, only apply when the ceiling is flat or when the motion is upward.
-				if (!slide_on_ceiling || motion.dot(up_direction) < 0 || (result.collision_normal + up_direction).length() < 0.01) {
+				if (!slide_on_ceiling || motion.dot(up_direction) < 0 || (result.collision_normal + up_direction).length() < 0.01f) {
 					apply_ceiling_velocity = true;
 					Vector2 ceiling_vertical_velocity = up_direction * up_direction.dot(result.collider_velocity);
 					Vector2 motion_vertical_velocity = up_direction * up_direction.dot(velocity);
-					if (motion_vertical_velocity.dot(up_direction) > 0 || ceiling_vertical_velocity.length_squared() > motion_vertical_velocity.length_squared()) {
+					if (motion_vertical_velocity.dot(up_direction) > 0.0f || ceiling_vertical_velocity.length_squared() > motion_vertical_velocity.length_squared()) {
 						velocity = ceiling_vertical_velocity + velocity.slide(up_direction);
 					}
 				}
 			}
 
-			if (on_floor && floor_stop_on_slope && (velocity.normalized() + up_direction).length() < 0.01) {
+			if (on_floor && floor_stop_on_slope && (velocity.normalized() + up_direction).length() < 0.01f) {
 				Transform2D gt = get_global_transform();
-				if (result.travel.length() <= margin + CMP_EPSILON) {
+				if (result.travel.length() <= recovery_tolerance) {
 					gt.columns[2] -= result.travel;
 				}
 				set_global_transform(gt);
@@ -185,7 +186,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 				// Avoid to move forward on a wall if floor_block_on_wall is true.
 				if (p_was_on_floor && !on_floor && !vel_dir_facing_up) {
 					// If the movement is large the body can be prevented from reaching the walls.
-					if (result.travel.length() <= margin + CMP_EPSILON) {
+					if (result.travel.length() <= recovery_tolerance) {
 						// Cancels the motion.
 						Transform2D gt = get_global_transform();
 						gt.columns[2] -= result.travel;
