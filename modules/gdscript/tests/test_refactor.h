@@ -138,7 +138,7 @@ static ProcessCodeData process_code(const String &p_code, const Point2i &p_pos) 
 static void run_test_cfg(const String &p_config_path) {
 #define CHECK_REFACTOR_DICT_ENTRY(dict_element, key_name, variant_type)                  \
 	FAIL_COND_MSG(!dict_element.has(#key_name), "refactor." #key_name " doesn't exist"); \
-	FAIL_COND_MSG(dict_element[#key_name].get_type() != Variant::Type::variant_type, "refactor." #key_name " is not of variant type" #variant_type)
+	FAIL_COND_MSG(dict_element[#key_name].get_type() != Variant::Type::variant_type, "refactor." #key_name " is not of variant type " #variant_type)
 #define CHECK_REFACTOR_DICT_ENTRY_POSITION(dict_element, key_name) \
 	CHECK_REFACTOR_DICT_ENTRY(dict_element, key_name, INT);        \
 	FAIL_COND_MSG(((int)dict_element[#key_name]) < 1, "refactor." #key_name " is invalid");
