@@ -1425,12 +1425,14 @@ void ColorPicker::_update_text_value() {
 		text_type->set_disabled(!is_color_valid_hex(color));
 		hex_label->set_text(ETR("Expr"));
 		c_text->set_text(t);
+		c_text->set_tooltip_text(RTR("Execute an expression as a color."));
 	} else {
 		text_type->set_text("#");
 		text_type->set_button_icon(nullptr);
 		text_type->set_disabled(false);
 		hex_label->set_text(ETR("Hex"));
 		c_text->set_text(color.to_html(edit_alpha && color.a < 1));
+		c_text->set_tooltip_text(ETR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
 	}
 }
 
