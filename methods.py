@@ -89,14 +89,18 @@ def redirect_emitter(target, source, env):
     retaining subfolder structure. External build files will attempt to retain subfolder
     structure relative to their environment's parent directory, sorted under `bin/obj/external`.
     If `redirect_build_objects` is `False`, or an external build file isn't relative to the
-    passed environment, this emitter does nothing.
+    passed environment, or a file is being written directly into `bin`, this emitter does nothing.
     """
     if not env["redirect_build_objects"]:
         return target, source
 
     redirected_targets = []
     for item in target:
-        if base_folder in (path := Path(item.get_abspath()).resolve()).parents:
+        path = Path(item.get_abspath()).resolve()
+
+        if path.parent == base_folder / "bin":
+            pass
+        elif base_folder in path.parents:
             item = env.File(f"#bin/obj/{path.relative_to(base_folder)}")
         elif (alt_base := Path(env.Dir(".").get_abspath()).resolve().parent) in path.parents:
             item = env.File(f"#bin/obj/external/{path.relative_to(alt_base)}")
