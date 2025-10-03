@@ -31,11 +31,15 @@
 #include "gdscript_language_protocol.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_loader.h"
+#include "core/templates/local_vector.h"
 #include "editor/doc/doc_tools.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/resources/packed_scene.h"
 
 GDScriptLanguageProtocol *GDScriptLanguageProtocol::singleton = nullptr;
 
@@ -134,6 +138,9 @@ Error GDScriptLanguageProtocol::on_client_connected() {
 
 void GDScriptLanguageProtocol::on_client_disconnected(const int &p_client_id) {
 	clients.erase(p_client_id);
+	if (clients.size() == 0) {
+		scene_cache.clear();
+	}
 	EditorNode::get_log()->add_message("[LSP] Disconnected", EditorLog::MSG_TYPE_EDITOR);
 }
 
@@ -256,6 +263,8 @@ void GDScriptLanguageProtocol::poll(int p_limit_usec) {
 		on_client_connected();
 	}
 
+	scene_cache._poll_scene_load();
+
 	HashMap<int, Ref<LSPeer>>::Iterator E = clients.begin();
 	while (E != clients.end()) {
 		Ref<LSPeer> peer = E->value;
@@ -301,7 +310,7 @@ void GDScriptLanguageProtocol::stop() {
 		Ref<LSPeer> peer = clients.get(E.key);
 		peer->connection->disconnect_from_host();
 	}
-
+	scene_cache.clear();
 	server->stop();
 }
 
@@ -403,3 +412,135 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 #undef SET_DOCUMENT_METHOD
 #undef SET_COMPLETION_METHOD
 #undef SET_WORKSPACE_METHOD
+
+//-------------------
+
+void SceneCache::_get_owner_paths(EditorFileSystemDirectory *p_dir, const String &p_path, LocalVector<String> &r_owner_paths) {
+	if (!p_dir) {
+		return;
+	}
+
+	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
+		_get_owner_paths(p_dir->get_subdir(i), p_path, r_owner_paths);
+	}
+
+	for (int i = 0; i < p_dir->get_file_count(); i++) {
+		if (p_dir->get_file_deps(i).has(p_path)) {
+			r_owner_paths.push_back(p_dir->get_file_path(i));
+		}
+	}
+}
+
+/**
+ * Does only one threaded request to the ResourceLoader at a time.
+ * Because loading the same subresources in parallel can bring up errors in the editor.
+ * Called via polling state independent.
+ * */
+void SceneCache::_try_scene_load_for_next_script() {
+	if (pending_script_queue.has_current_load() || pending_script_queue.is_empty() || EditorFileSystem::get_singleton()->is_scanning()) {
+		return;
+	}
+
+	LocalVector<String> owners;
+	_get_owner_paths(EditorFileSystem::get_singleton()->get_filesystem(), pending_script_queue.get_front(), owners);
+
+	LOG_LSP("Owner paths added for", pending_script_queue.get_front());
+#ifdef DEBUG_LSP
+	for (const String &owner : owners) {
+		LOG_LSP("Owner path added:", owner);
+	}
+#endif
+	pending_script_queue.try_owners_for_load(owners);
+
+	if (not pending_script_queue.has_current_load()) {
+		cache[pending_script_queue.get_front()] = nullptr;
+		LOG_LSP("No scene found for script:", pending_script_queue.get_front());
+		pending_script_queue.remove_front();
+		LOG_LSP("pending_script_queue length:", pending_script_queue.script_path_queue.size());
+	}
+}
+
+void SceneCache::_finalize_scene_load() {
+	if (not pending_script_queue.has_current_load()) {
+		//can be called to force scene load independent from load status
+		return;
+	}
+	String script_path = pending_script_queue.get_front();
+	LOG_LSP("Caching scene for:", script_path);
+	Ref<PackedScene> scene_res = pending_script_queue.get_current_loaded_owner_res();
+
+	if (scene_res.is_valid()) {
+		cache[script_path] = scene_res->instantiate();
+	}
+
+	if (not cache.has(script_path)) {
+		cache[script_path] = nullptr;
+	}
+
+	pending_script_queue.remove_front();
+	LOG_LSP("Scene cached for script:", script_path);
+	LOG_LSP("pending_script_queue length:", pending_script_queue.script_path_queue.size());
+}
+
+void SceneCache::_poll_scene_load() {
+	_try_scene_load_for_next_script();
+
+	if (not pending_script_queue.has_current_load() || pending_script_queue.is_empty()) {
+		return;
+	}
+
+	pending_script_queue.update_load_status();
+
+	if (pending_script_queue.current_load_status == ResourceLoader::ThreadLoadStatus::THREAD_LOAD_IN_PROGRESS) {
+		return;
+	} else if (pending_script_queue.current_load_status == ResourceLoader::ThreadLoadStatus::THREAD_LOAD_LOADED) {
+		_finalize_scene_load();
+	} else {
+		LOG_LSP("Scene load failure for:", pending_script_queue.current_loaded_owner);
+		cache[pending_script_queue.get_front()] = nullptr;
+		pending_script_queue.remove_front();
+	}
+}
+
+void SceneCache::_enqueue_script_for_scene_load(String p_path) {
+	if (!cache.has(p_path) && !pending_script_queue.has_script_path(p_path)) {
+		pending_script_queue.push_back(p_path);
+		LOG_LSP("Scene load requested for:", p_path);
+		LOG_LSP("pending_script_queue length:", pending_script_queue.script_path_queue.size());
+	}
+}
+
+Node *SceneCache::get(const String &p_path) {
+	if (not cache.has(p_path)) {
+		LOG_LSP("Non loaded cache requested for:", p_path);
+		if (pending_script_queue.get_front() == p_path) {
+			_finalize_scene_load();
+		} else {
+			return nullptr;
+		}
+	}
+	return cache[p_path];
+}
+
+void SceneCache::request_scene_load_for_script(const String &p_path) {
+	_enqueue_script_for_scene_load(p_path);
+}
+
+void SceneCache::unload_scene_for_script(const String &p_path) {
+	pending_script_queue.erase(p_path);
+	if (!cache.has(p_path)) {
+		return;
+	}
+	memdelete_notnull(cache[p_path]);
+	cache.erase(p_path);
+	LOG_LSP("Cache cleared for path:", p_path);
+}
+
+void SceneCache::clear() {
+	pending_script_queue.clear();
+	for (const KeyValue<String, Node *> &E : cache) {
+		memdelete_notnull(E.value);
+	}
+	cache.clear();
+	LOG_LSP("Cache cleared.");
+}
