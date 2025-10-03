@@ -256,6 +256,28 @@ thread_local int GDScriptLanguage::_debug_parse_err_line = -1;
 thread_local String GDScriptLanguage::_debug_parse_err_file;
 thread_local String GDScriptLanguage::_debug_error;
 
+bool GDScriptLanguage::debug_default_constructor(const String &p_error, GDScriptFunction *p_initializer) {
+	if (EngineDebugger::is_active() && Thread::get_caller_id() == Thread::get_main_id()) {
+		_debug_parse_err_line = -1;
+		_debug_parse_err_file = "";
+		_debug_error = p_error;
+
+		// Add a new layer to the call stack so that the function can be highlighted
+		// Will also result in showing the GDScript call stack in the debugger
+		GDScriptLanguage::CallLevel call_level;
+		enter_function(&call_level, nullptr, p_initializer, nullptr, nullptr, &p_initializer->_initial_line);
+		EngineDebugger::get_script_debugger()->debug(this, false, true);
+		exit_function();
+
+		// Because this is thread local, clear the memory afterwards.
+		_debug_parse_err_file = String();
+		_debug_error = String();
+		return true;
+	} else {
+		return false;
+	}
+}
+
 bool GDScriptLanguage::debug_break_parse(const String &p_file, int p_line, const String &p_error) {
 	// break because of parse error
 
@@ -339,6 +361,10 @@ void GDScriptLanguage::debug_get_stack_level_locals(int p_level, List<String> *p
 
 	CallLevel *cl = _get_stack_level(p_level);
 	GDScriptFunction *f = cl->function;
+
+	if (cl->stack == nullptr) {
+		return;
+	}
 
 	List<Pair<StringName, int>> locals;
 
