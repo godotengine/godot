@@ -3031,7 +3031,7 @@
 			Use 16 bits for the directional shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
 		</member>
 		<member name="rendering/lights_and_shadows/directional_shadow/size" type="int" setter="" getter="" default="4096">
-			The directional shadow's size in pixels. Higher values will result in sharper shadows, at the cost of performance. The value is rounded up to the nearest power of 2.
+			The directional shadow's size in pixels. Higher values will result in sharper shadows, at the cost of performance.
 		</member>
 		<member name="rendering/lights_and_shadows/directional_shadow/size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/lights_and_shadows/directional_shadow/size] on mobile devices, due to performance concerns or driver support.
