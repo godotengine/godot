@@ -196,6 +196,11 @@ static void run_test_cfg(const String &p_config_path) {
 			}
 		}
 
+		FAIL_COND_MSG(conf.get_value("output", "outside_refactor", false).get_type() != Variant::Type::BOOL, "output.outside_refactor is not of type bool");
+		bool outside_refactor = conf.get_value("output", "outside_refactor", false);
+		FAIL_COND_MSG(conf.get_value("output", "refactor_failed", false).get_type() != Variant::Type::BOOL, "output.refactor_failed is not of type bool");
+		bool refactor_has_failed = conf.get_value("output", "refactor_failed", false);
+
 		Ref<GDScript> gdscript = ResourceLoader::load(refactor_file);
 		FAIL_COND_MSG(gdscript.is_null(), vformat("couldn't load script \"%s\"", refactor_file));
 
@@ -209,11 +214,12 @@ static void run_test_cfg(const String &p_config_path) {
 		Error refactor_error_result = GDScriptLanguage::get_singleton()->refactor_rename_symbol_code(data.code, data.symbol, refactor_file, owner, unsaved_scripts_code, refactor_result);
 		FAIL_COND_MSG(refactor_error_result != OK, vformat("could not refactor rename symbol code: %s", error_names[refactor_error_result]));
 
-		// Comparing results.
-		if (expected_result_matches.size() == 0) {
-			FAIL(vformat("no matches set in \"%s\"", config_path));
+		CHECK(outside_refactor == refactor_result.outside_refactor);
+		if (!outside_refactor) {
+			CHECK(refactor_has_failed == refactor_result.has_failed());
 		}
 
+		// Comparing results.
 		for (KeyValue<String, LocalVector<ScriptLanguage::RefactorRenameSymbolResult::Match>> KV : refactor_result.matches) {
 			Array expected_result_matches_array;
 			if (expected_result_matches.size() > 0) {
@@ -240,7 +246,8 @@ static void run_test_cfg(const String &p_config_path) {
 						}
 					}
 				} else {
-					INFO(vformat("[DEBUG] %s: %s", KV.key, match.to_string()));
+					print_line(vformat("[DEBUG] %s: %s", KV.key, match.to_string()));
+					MESSAGE(vformat("[DEBUG] %s: %s", KV.key, match.to_string()));
 					found_result = true;
 				}
 
