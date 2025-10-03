@@ -207,6 +207,9 @@
 		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path">
 			The currently selected file path of the file dialog.
 		</member>
+		<member name="deleting_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
+			If [code]true[/code], the context menu will show the "Delete" option, which allows moving files and folders to trash.
+		</member>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" overrides="AcceptDialog" default="false" />
 		<member name="display_mode" type="int" setter="set_display_mode" getter="get_display_mode" enum="FileDialog.DisplayMode" default="0">
 			Display mode of the dialog's file list.
@@ -232,7 +235,7 @@
 			[b]Note:[/b] Embedded file dialog and Windows file dialog support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
 		</member>
 		<member name="folder_creation_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
-			If [code]true[/code], shows the button for creating new directories (when using [constant FILE_MODE_OPEN_DIR], [constant FILE_MODE_OPEN_ANY], or [constant FILE_MODE_SAVE_FILE]).
+			If [code]true[/code], shows the button for creating new directories (when using [constant FILE_MODE_OPEN_DIR], [constant FILE_MODE_OPEN_ANY], or [constant FILE_MODE_SAVE_FILE]), and the context menu will have the "New Folder..." option.
 		</member>
 		<member name="hidden_files_toggle_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
 			If [code]true[/code], shows the toggle hidden files button.
@@ -358,6 +361,10 @@
 		<constant name="CUSTOMIZATION_OVERWRITE_WARNING" value="7" enum="Customization">
 			If enabled, the [FileDialog] will warn the user before overwriting files in save mode.
 			Equivalent to [member overwrite_warning_enabled].
+		</constant>
+		<constant name="CUSTOMIZATION_DELETE" value="8" enum="Customization">
+			If enabled, the context menu will show the "Delete" option, which allows moving files and folders to trash.
+			Equivalent to [member deleting_enabled].
 		</constant>
 	</constants>
 	<theme_items>
