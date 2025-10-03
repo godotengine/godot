@@ -97,6 +97,7 @@
 			return ["gd"];
 		}
 		[/csharp]
+		See [method get_parser] if you want to intercept the standard parser, not replace it.
 		[/codeblocks]
 		To use [EditorTranslationParserPlugin], register it using the [method EditorPlugin.add_translation_parser_plugin] method first.
 	</description>
@@ -106,14 +107,59 @@
 		<method name="_get_recognized_extensions" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<description>
-				Gets the list of file extensions to associate with this parser, e.g. [code]["csv"][/code].
+				Override this method to provide the list of file extensions to associate with this parser, e.g. [code]["csv"][/code]. See also [method get_recognized_extensions].
 			</description>
 		</method>
 		<method name="_parse_file" qualifiers="virtual">
 			<return type="PackedStringArray[]" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Override this method to define a custom parsing logic to extract the translatable strings.
+				Override this method to define a custom parsing logic to extract the translatable strings. See also [method parse_file].
+			</description>
+		</method>
+		<method name="get_all_recognized_extensions" qualifiers="static">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a list of all file extensions supported by any translation parser, both standard and custom.
+			</description>
+		</method>
+		<method name="get_builtin_strings" qualifiers="static">
+			<return type="PackedStringArray[]" />
+			<description>
+				Returns a list of strings from built-in components such as certain [Control] nodes. Each entry contains [code][msgid, msgctxt, msgid_plural][/code], where all except [code]msgid[/code] can be an empty string.
+			</description>
+		</method>
+		<method name="get_parser" qualifiers="static">
+			<return type="EditorTranslationParserPlugin" />
+			<param index="0" name="extension" type="String" />
+			<param index="1" name="standard_only" type="bool" default="false" />
+			<description>
+				Returns a [EditorTranslationParserPlugin] associated with the file extension [param extension]. If [param standard_only] is [code]true[/code], then only standard parsers are taken into account.
+				This method is useful if you want to intercept a standard parser:
+				[codeblock]
+				var _standard_parser = EditorTranslationParserPlugin.get_parser("gd", true)
+
+				func _parse_file(path):
+					var extracted_strings = _standard_parser.parse_file(path)
+					# Customization logic.
+					return extracted_strings
+
+				func _get_recognized_extensions():
+					return ["gd"]
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_recognized_extensions" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a list of file extensions associated with this parser, e.g. [code]["csv"][/code]. See also [method _get_recognized_extensions].
+			</description>
+		</method>
+		<method name="parse_file">
+			<return type="PackedStringArray[]" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns a list of translatable strings extracted from the file [param path]. See also [method _parse_file].
 			</description>
 		</method>
 	</methods>
