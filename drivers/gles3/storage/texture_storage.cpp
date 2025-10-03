@@ -3461,6 +3461,8 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 
 	if (rt->backbuffer_fbo == 0) {
 		_create_render_target_backbuffer(rt);
+	} else if (rt->backbuffer == 0) {
+		check_backbuffer(rt, true, false);
 	}
 
 	Rect2i region;
@@ -3522,6 +3524,8 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 
 	if (rt->backbuffer_fbo == 0) {
 		_create_render_target_backbuffer(rt);
+	} else if (rt->backbuffer == 0) {
+		check_backbuffer(rt, true, false);
 	}
 
 	Rect2i region;
