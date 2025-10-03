@@ -224,6 +224,9 @@ EditorPaths::EditorPaths() {
 		if (!dir->dir_exists(feature_profiles_folder)) {
 			dir->make_dir(feature_profiles_folder);
 		}
+		if (!dir->dir_exists(global_resources_folder)) {
+			dir->make_dir(global_resources_folder);
+		}
 	}
 
 	// Cache dir.
