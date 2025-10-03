@@ -244,6 +244,9 @@ def configure(env: "SConsEnvironment"):
 
     if not env["builtin_enet"]:
         env.ParseConfig("pkg-config libenet --cflags --libs")
+        print_warning(
+            "System-provided ENet if unpatched for Godot has its functionality limited to IPv4 only and no DTLS."
+        )
 
     if not env["builtin_zstd"]:
         env.ParseConfig("pkg-config libzstd --cflags --libs")
