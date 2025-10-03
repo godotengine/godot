@@ -203,7 +203,7 @@ private:
 	bool code_hint_draw_below = true;
 	int code_hint_xpos = -0xFFFF;
 
-	/* Code Completion */ 
+	/* Code Completion */
 	bool code_completion_enabled = false;
 	bool code_completion_forced = false;
 
