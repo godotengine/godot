@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gl_manager_windows_native.h                                           */
+/*  nvapi_profile.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,75 +30,16 @@
 
 #pragma once
 
-#if defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
+#include "core/variant/dictionary.h"
 
-#include "core/os/os.h"
-#include "core/templates/local_vector.h"
-#include "servers/display/display_server.h"
+const int OGL_THREAD_CONTROL_ID = 0x20C1221E;
+const int OGL_THREAD_CONTROL_DISABLE = 0x00000002;
+const int OGL_THREAD_CONTROL_ENABLE = 0x00000001;
+const int VRR_MODE_ID = 0x1194F158;
+const int VRR_MODE_FULLSCREEN_ONLY = 0x1;
+const int OGL_CPL_PREFER_DXPRESENT_ID = 0x20D690F8;
+const int OGL_CPL_PREFER_DXPRESENT_PREFER_DISABLED = 0x00000000;
+const int OGL_CPL_PREFER_DXPRESENT_PREFER_ENABLED = 0x00000001;
+const int OGL_CPL_PREFER_DXPRESENT_AUTO = 0x00000002;
 
-#include <windows.h>
-
-typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
-typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
-
-class GLManagerNative_Windows {
-private:
-	// any data specific to the window
-	struct GLWindow {
-		bool use_vsync = false;
-
-		// windows specific
-		HDC hDC;
-		HWND hwnd;
-
-		int gldisplay_id = 0;
-	};
-
-	struct GLDisplay {
-		// windows specific
-		HGLRC hRC;
-	};
-
-	RBMap<DisplayServer::WindowID, GLWindow> _windows;
-	LocalVector<GLDisplay> _displays;
-
-	GLWindow *_current_window = nullptr;
-
-	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = nullptr;
-
-	GLWindow &get_window(unsigned int id) { return _windows[id]; }
-	const GLWindow &get_window(unsigned int id) const { return _windows[id]; }
-
-	const GLDisplay &get_current_display() const { return _displays[_current_window->gldisplay_id]; }
-	const GLDisplay &get_display(unsigned int id) { return _displays[id]; }
-
-	bool direct_render;
-	int glx_minor, glx_major;
-
-private:
-	int _find_or_create_display(GLWindow &win);
-	Error _create_context(GLWindow &win, GLDisplay &gl_display);
-
-public:
-	Error window_create(DisplayServer::WindowID p_window_id, HWND p_hwnd, HINSTANCE p_hinstance, int p_width, int p_height);
-	void window_destroy(DisplayServer::WindowID p_window_id);
-	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {}
-
-	void release_current();
-	void swap_buffers();
-
-	void window_make_current(DisplayServer::WindowID p_window_id);
-
-	Error initialize();
-
-	void set_use_vsync(DisplayServer::WindowID p_window_id, bool p_use);
-	bool is_using_vsync(DisplayServer::WindowID p_window_id) const;
-
-	HDC get_hdc(DisplayServer::WindowID p_window_id);
-	HGLRC get_hglrc(DisplayServer::WindowID p_window_id);
-
-	GLManagerNative_Windows();
-	~GLManagerNative_Windows();
-};
-
-#endif // WINDOWS_ENABLED && GLES3_ENABLED
+bool nvapi_setup_profile(const Dictionary &p_props);
