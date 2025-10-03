@@ -55,6 +55,7 @@ class SceneTreeEditor : public Control {
 		BUTTON_GROUPS = 7,
 		BUTTON_PIN = 8,
 		BUTTON_UNIQUE = 9,
+		BUTTON_EXPOSED = 10,
 	};
 
 	struct CachedNode {
@@ -64,6 +65,7 @@ class SceneTreeEditor : public Control {
 		bool dirty = true;
 		bool has_moved_children = false;
 		bool removed = false;
+		bool hidden = false;
 
 		// Store the iterator for faster removal. This is safe as
 		// HashMap never moves elements.
@@ -87,8 +89,10 @@ class SceneTreeEditor : public Control {
 		NodeCache(SceneTreeEditor *p_editor) :
 				editor(p_editor) {}
 
+		HashMap<Node *, CachedNode>::Iterator add(Node *p_node);
 		HashMap<Node *, CachedNode>::Iterator add(Node *p_node, TreeItem *p_item);
 		HashMap<Node *, CachedNode>::Iterator get(Node *p_node, bool p_deleted_ok = true);
+		HashMap<Node *, CachedNode>::Iterator find_by_item(TreeItem *p_item);
 		bool has(Node *p_node);
 		void remove(Node *p_node, bool p_recursive = false);
 		void mark_dirty(Node *p_node, bool p_parents = true);
@@ -125,6 +129,10 @@ class SceneTreeEditor : public Control {
 	CheckBox *ask_before_revoke_checkbox = nullptr;
 	Node *revoke_node = nullptr;
 
+	ConfirmationDialog *revoke_node_exposure = nullptr;
+	Label *revoke_node_exposure_dialog_label = nullptr;
+	CheckBox *ask_before_revoke_node_exposure_checkbox = nullptr;
+
 	bool auto_expand_selected = true;
 	bool hide_filtered_out_parents = false;
 	bool accessibility_warnings = false;
@@ -140,6 +148,7 @@ class SceneTreeEditor : public Control {
 	PackedStringArray _get_node_accessibility_configuration_warnings(Node *p_node);
 
 	void _update_node_path(Node *p_node, bool p_recursive = true);
+	void _update_exposed_nodes(Node *p_node, TreeItem *p_parent, bool p_force, TreeItem *&p_last_inserted);
 	void _update_node_subtree(Node *p_node, TreeItem *p_parent, bool p_force = false);
 	void _update_node(Node *p_node, TreeItem *p_item, bool p_part_of_subscene);
 	void _update_if_clean();
@@ -224,6 +233,8 @@ class SceneTreeEditor : public Control {
 
 	void _update_ask_before_revoking_unique_name();
 	void _revoke_unique_name();
+	void _update_ask_before_revoking_node_exposure();
+	void _toggle_node_exposure();
 
 public:
 	// Public for use with callable_mp.
