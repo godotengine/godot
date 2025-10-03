@@ -2756,6 +2756,14 @@
 				Sets the [Transform2D] for this instance. For use when multimesh is used in 2D. Equivalent to [method MultiMesh.set_instance_transform_2d].
 			</description>
 		</method>
+		<method name="multimesh_instances_reset_physics_interpolation">
+			<return type="void" />
+			<param index="0" name="multimesh" type="RID" />
+			<description>
+				Prevents physics interpolation for all instances during the current physics tick.
+				This is useful when moving all instances to new locations, to give instantaneous changes rather than interpolation from the previous locations.
+			</description>
+		</method>
 		<method name="multimesh_set_buffer">
 			<return type="void" />
 			<param index="0" name="multimesh" type="RID" />
