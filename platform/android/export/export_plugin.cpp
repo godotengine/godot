@@ -3627,7 +3627,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		_remove_copied_libs(gdextension_libs_path);
 		if (!apk_expansion) {
 			print_verbose("Exporting project files...");
-			CustomExportData user_data;
+			CustomExportData user_data(p_preset);
 			user_data.assets_directory = assets_directory;
 			user_data.libs_directory = gradle_build_directory.path_join("libs");
 			user_data.debug = p_debug;
@@ -4088,7 +4088,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	err = OK;
 
 	if (p_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT)) {
-		APKExportData ed;
+		APKExportData ed(p_preset);
 		ed.ep = &ep;
 		ed.apk = unaligned_apk;
 		err = export_project_files(p_preset, p_debug, ignore_apk_file, nullptr, &ed, save_apk_so);
@@ -4100,7 +4100,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				return err;
 			}
 		} else {
-			APKExportData ed;
+			APKExportData ed(p_preset);
 			ed.ep = &ep;
 			ed.apk = unaligned_apk;
 			ed.pd.path = "assets.sparsepck";

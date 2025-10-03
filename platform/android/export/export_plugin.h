@@ -76,6 +76,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		EditorExportPlatform::PackData pd;
 		zipFile apk;
 		EditorProgress *ep = nullptr;
+
+		APKExportData(const Ref<EditorExportPreset> &p_preset) :
+				pd(p_preset) {}
 	};
 
 	struct FeatureInfo {

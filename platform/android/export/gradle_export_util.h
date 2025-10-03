@@ -69,6 +69,9 @@ struct CustomExportData {
 	String libs_directory;
 	bool debug;
 	Vector<String> libs;
+
+	CustomExportData(const Ref<EditorExportPreset> &p_preset) :
+			pd(p_preset) {}
 };
 
 struct MetadataInfo {
