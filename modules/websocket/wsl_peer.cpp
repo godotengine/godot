@@ -124,7 +124,7 @@ void WSLPeer::Resolver::try_next_candidate(const Ref<StreamPeerTCP> &p_tcp) {
 ///
 /// Server functions
 ///
-Error WSLPeer::accept_stream(const Ref<StreamPeer> &p_stream) {
+Error WSLPeer::accept_stream(const Ref<StreamPeer> &p_stream, String p_received_headers) {
 	ERR_FAIL_COND_V(p_stream.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(ready_state != STATE_CLOSED && ready_state != STATE_CLOSING, ERR_ALREADY_IN_USE);
 
@@ -147,6 +147,9 @@ Error WSLPeer::accept_stream(const Ref<StreamPeer> &p_stream) {
 	ready_state = STATE_CONNECTING;
 	handshake_buffer->resize(WSL_MAX_HEADER_SIZE);
 	handshake_buffer->seek(0);
+
+	CharString cs = p_received_headers.utf8();
+	handshake_buffer->put_data((const uint8_t *)cs.get_data(), MIN(cs.length(), WSL_MAX_HEADER_SIZE));
 	return OK;
 }
 
@@ -234,20 +237,8 @@ Error WSLPeer::_do_server_handshake() {
 	if (pending_request) {
 		int read = 0;
 		while (true) {
-			ERR_FAIL_COND_V_MSG(handshake_buffer->get_available_bytes() < 1, ERR_OUT_OF_MEMORY, "WebSocket response headers are too big.");
-			int pos = handshake_buffer->get_position();
-			uint8_t byte;
-			Error err = connection->get_partial_data(&byte, 1, read);
-			if (err != OK) { // Got an error
-				print_verbose(vformat("WebSocket error while getting partial data (StreamPeer error code %d).", err));
-				close(-1);
-				return FAILED;
-			} else if (read != 1) { // Busy, wait next poll
-				return OK;
-			}
-			handshake_buffer->put_u8(byte);
 			const char *r = (const char *)handshake_buffer->get_data_array().ptr();
-			int l = pos;
+			int l = handshake_buffer->get_position() - 1;
 			if (l > 3 && r[l] == '\n' && r[l - 1] == '\r' && r[l - 2] == '\n' && r[l - 3] == '\r') {
 				if (!_parse_client_request()) {
 					close(-1);
@@ -271,6 +262,18 @@ Error WSLPeer::_do_server_handshake() {
 				pending_request = false;
 				break;
 			}
+
+			ERR_FAIL_COND_V_MSG(handshake_buffer->get_available_bytes() < 1, ERR_OUT_OF_MEMORY, "WebSocket response headers are too big.");
+			uint8_t byte;
+			Error err = connection->get_partial_data(&byte, 1, read);
+			if (err != OK) { // Got an error
+				print_verbose(vformat("WebSocket error while getting partial data (StreamPeer error code %d).", err));
+				close(-1);
+				return FAILED;
+			} else if (read != 1) { // Busy, wait next poll
+				return OK;
+			}
+			handshake_buffer->put_u8(byte);
 		}
 	}
 
