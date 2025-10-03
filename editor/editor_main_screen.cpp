@@ -263,6 +263,11 @@ void EditorMainScreen::add_main_plugin(EditorPlugin *p_editor) {
 	tb->set_name(p_editor->get_plugin_name());
 	tb->set_text(p_editor->get_plugin_name());
 
+	Ref<Shortcut> shortcut = EditorSettings::get_singleton()->get_shortcut("editor/editor_" + p_editor->get_plugin_name().to_lower());
+	if (shortcut.is_valid()) {
+		tb->set_shortcut(shortcut);
+	}
+
 	Ref<Texture2D> icon = p_editor->get_plugin_icon();
 	if (icon.is_null() && has_theme_icon(p_editor->get_plugin_name(), EditorStringName(EditorIcons))) {
 		icon = get_editor_theme_icon(p_editor->get_plugin_name());
