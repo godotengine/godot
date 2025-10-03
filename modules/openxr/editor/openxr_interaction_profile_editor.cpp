@@ -337,9 +337,7 @@ void OpenXRInteractionProfileEditor::_update_interaction_profile() {
 	PackedStringArray requested_extensions = OpenXRAPI::get_all_requested_extensions();
 
 	// out with the old...
-	while (interaction_profile_hb->get_child_count() > 0) {
-		memdelete(interaction_profile_hb->get_child(0));
-	}
+	interaction_profile_hb->delete_all_children();
 
 	// in with the new...
 
