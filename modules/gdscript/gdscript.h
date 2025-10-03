@@ -175,7 +175,6 @@ private:
 	Error _static_init();
 	void _static_default_init(); // Initialize static variables with default values based on their types.
 
-	int subclass_count = 0;
 	RBSet<Object *> instances;
 	bool destructing = false;
 	bool clearing = false;
