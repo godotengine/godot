@@ -101,6 +101,9 @@ class DisplayServerWayland : public DisplayServer {
 
 		DisplayServer::WindowMode mode = WINDOW_MODE_WINDOWED;
 
+		bool hdr_requested;
+		WaylandThread::ColorProfile color_profile;
+
 		Callable rect_changed_callback;
 		Callable window_event_callback;
 		Callable input_event_callback;
@@ -183,6 +186,8 @@ class DisplayServerWayland : public DisplayServer {
 
 	void _update_window_rect(const Rect2i &p_rect, WindowID p_window_id = MAIN_WINDOW_ID);
 
+	void _window_update_hdr_state(WindowID p_window);
+
 	void try_suspend();
 
 	void initialize_tts() const;
@@ -243,6 +248,12 @@ public:
 
 	virtual void screen_set_keep_on(bool p_enable) override;
 	virtual bool screen_is_kept_on() const override;
+
+	virtual bool screen_is_hdr_supported(int p_screen) const override;
+	virtual float screen_get_min_luminance(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_max_luminance(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_max_full_frame_luminance(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_reference_luminance(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
 
@@ -321,6 +332,24 @@ public:
 
 	virtual void window_start_drag(WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_start_resize(WindowResizeEdge p_edge, WindowID p_window) override;
+
+	virtual bool window_is_hdr_output_supported(WindowID p_window_id = MAIN_WINDOW_ID) const override;
+	virtual void window_set_hdr_output_enabled(const bool p_enabled, WindowID p_window_id = MAIN_WINDOW_ID) override;
+	virtual bool window_is_hdr_output_enabled(WindowID p_window_id = MAIN_WINDOW_ID) const override;
+	virtual void window_set_hdr_output_prefer_high_precision(const bool p_enabled, WindowID p_window_id = MAIN_WINDOW_ID) override;
+	virtual bool window_is_hdr_output_preferring_high_precision(WindowID p_window_id = MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_hdr_output_auto_adjust_reference_luminance(const bool p_enabled, WindowID p_window_id = MAIN_WINDOW_ID) override;
+	virtual bool window_is_hdr_output_auto_adjusting_reference_luminance(WindowID p_window_id = MAIN_WINDOW_ID) const override;
+	virtual void window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window_id = MAIN_WINDOW_ID) override;
+	virtual float window_get_hdr_output_reference_luminance(WindowID p_window_id = MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_hdr_output_auto_adjust_max_luminance(const bool p_enabled, WindowID p_window_id = MAIN_WINDOW_ID) override;
+	virtual bool window_is_hdr_output_auto_adjusting_max_luminance(WindowID p_window_id = MAIN_WINDOW_ID) const override;
+	virtual void window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window_id = MAIN_WINDOW_ID) override;
+	virtual float window_get_hdr_output_max_luminance(WindowID p_window_id = MAIN_WINDOW_ID) const override;
+
+	virtual float window_get_output_max_value(WindowID p_window_id = MAIN_WINDOW_ID) const override;
 
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;
