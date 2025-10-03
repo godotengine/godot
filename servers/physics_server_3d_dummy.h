@@ -237,6 +237,12 @@ public:
 
 	virtual void body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) override {}
 
+	virtual real_t body_get_shape_friction_override(RID p_shape, int p_index) const override { return NAN; }
+	virtual void body_set_shape_friction_override(RID p_body, int p_shape_idx, bool p_enable, real_t p_friction = 0.0) override {}
+
+	virtual real_t body_get_shape_bounce_override(RID p_body, int p_shape_idx) const override { return NAN; }
+	virtual void body_set_shape_bounce_override(RID p_body, int p_shape_idx, bool p_enable, real_t p_bounce = 0.0) override {}
+
 	virtual void body_attach_object_instance_id(RID p_body, ObjectID p_id) override {}
 	virtual ObjectID body_get_object_instance_id(RID p_body) const override { return ObjectID(); }
 

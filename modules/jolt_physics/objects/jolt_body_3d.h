@@ -64,6 +64,8 @@ private:
 	LocalVector<Contact> contacts;
 	LocalVector<JoltArea3D *> areas;
 	LocalVector<JoltJoint3D *> joints;
+	LocalVector<float> shape_frictions;
+	LocalVector<float> shape_bounces;
 
 	Variant custom_integration_userdata;
 
@@ -103,11 +105,14 @@ private:
 	bool sleep_initially = false;
 	bool custom_center_of_mass = false;
 	bool custom_integrator = false;
+	bool shape_materials = false;
 
 	virtual JPH::BroadPhaseLayer _get_broad_phase_layer() const override;
 	virtual JPH::ObjectLayer _get_object_layer() const override;
 
 	virtual JPH::EMotionType _get_motion_type() const override;
+
+	bool _can_use_manifold_reduction() const { return !reports_contacts() && !uses_shape_materials(); }
 
 	virtual void _add_to_space() override;
 
@@ -133,12 +138,15 @@ private:
 	void _update_joint_constraints();
 	void _update_possible_kinematic_contacts();
 	void _update_sleep_allowed();
+	void _update_manifold_reduction();
+	void _update_uses_shape_materials();
 
 	void _destroy_joint_constraints();
 
 	void _exit_all_areas();
 
 	void _mode_changed();
+	virtual void _shape_removed(int p_index) override;
 	virtual void _shapes_committed() override;
 	virtual void _space_changing() override;
 	virtual void _space_changed() override;
@@ -150,6 +158,7 @@ private:
 	void _axis_lock_changed();
 	void _contact_reporting_changed();
 	void _sleep_allowed_changed();
+	void _shape_materials_changed();
 
 public:
 	JoltBody3D();
@@ -306,4 +315,12 @@ public:
 	virtual bool can_interact_with(const JoltBody3D &p_other) const override;
 	virtual bool can_interact_with(const JoltSoftBody3D &p_other) const override;
 	virtual bool can_interact_with(const JoltArea3D &p_other) const override;
+
+	float get_shape_friction(int p_index) const;
+	void set_shape_friction(int p_index, float p_friction);
+
+	float get_shape_bounce(int p_index) const;
+	void set_shape_bounce(int p_index, float p_bounce);
+
+	bool uses_shape_materials() const { return shape_materials; }
 };

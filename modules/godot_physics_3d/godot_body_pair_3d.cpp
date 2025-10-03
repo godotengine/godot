@@ -250,12 +250,32 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 	return true;
 }
 
-real_t combine_bounce(GodotBody3D *A, GodotBody3D *B) {
-	return CLAMP(A->get_bounce() + B->get_bounce(), 0, 1);
+real_t combine_bounce(const GodotBody3D *p_body_a, const GodotBody3D *p_body_b, int p_shape_idx_a, int p_shape_idx_b) {
+	real_t bounce_a = p_body_a->get_shape_bounce(p_shape_idx_a);
+	if (Math::is_nan(bounce_a)) {
+		bounce_a = p_body_a->get_bounce();
+	}
+
+	real_t bounce_b = p_body_b->get_shape_bounce(p_shape_idx_b);
+	if (Math::is_nan(bounce_b)) {
+		bounce_b = p_body_b->get_bounce();
+	}
+
+	return CLAMP(bounce_a + bounce_b, 0, 1);
 }
 
-real_t combine_friction(GodotBody3D *A, GodotBody3D *B) {
-	return Math::abs(MIN(A->get_friction(), B->get_friction()));
+real_t combine_friction(const GodotBody3D *p_body_a, const GodotBody3D *p_body_b, int p_shape_idx_a, int p_shape_idx_b) {
+	real_t friction_a = p_body_a->get_shape_friction(p_shape_idx_a);
+	if (Math::is_nan(friction_a)) {
+		friction_a = p_body_a->get_friction();
+	}
+
+	real_t friction_b = p_body_b->get_shape_friction(p_shape_idx_b);
+	if (Math::is_nan(friction_b)) {
+		friction_b = p_body_b->get_friction();
+	}
+
+	return Math::abs(MIN(friction_a, friction_b));
 }
 
 bool GodotBodyPair3D::setup(real_t p_step) {
@@ -439,7 +459,7 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 			B->apply_impulse(j_vec, c.rB + B->get_center_of_mass());
 		}
 
-		c.bounce = combine_bounce(A, B);
+		c.bounce = combine_bounce(A, B, shape_A, shape_B);
 		if (c.bounce) {
 			Vector3 crA = A->get_prev_angular_velocity().cross(c.rA);
 			Vector3 crB = B->get_prev_angular_velocity().cross(c.rB);
@@ -548,7 +568,7 @@ void GodotBodyPair3D::solve(real_t p_step) {
 
 		//friction impulse
 
-		real_t friction = combine_friction(A, B);
+		real_t friction = combine_friction(A, B, shape_A, shape_B);
 
 		Vector3 lvA = A->get_linear_velocity() + A->get_angular_velocity().cross(c.rA);
 		Vector3 lvB = B->get_linear_velocity() + B->get_angular_velocity().cross(c.rB);

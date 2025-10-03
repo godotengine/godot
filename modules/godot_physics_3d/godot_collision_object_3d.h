@@ -181,7 +181,7 @@ public:
 	}
 
 	void remove_shape(GodotShape3D *p_shape) override;
-	void remove_shape(int p_index);
+	virtual void remove_shape(int p_index);
 
 	virtual void set_space(GodotSpace3D *p_space) = 0;
 

@@ -112,6 +112,7 @@ class JoltContactListener3D final
 	bool _try_evaluate_area_overlap(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold);
 	bool _try_remove_contacts(const JPH::SubShapeIDPair &p_shape_pair);
 	bool _try_remove_area_overlap(const JPH::SubShapeIDPair &p_shape_pair);
+	bool _try_override_material(const JPH::Body &p_jolt_body1, const JPH::Body &p_jolt_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings);
 
 #ifdef DEBUG_ENABLED
 	bool _try_add_debug_contacts(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold);
