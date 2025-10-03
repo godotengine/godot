@@ -560,6 +560,7 @@ void EditorFileSystem::_scan_filesystem() {
 }
 
 void EditorFileSystem::_save_filesystem_cache() {
+	print_error("_save_filesystem_cache");
 	group_file_cache.clear();
 
 	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().path_join(CACHE_FILE_NAME);
@@ -975,6 +976,7 @@ bool EditorFileSystem::_update_scan_actions() {
 				// Restore another script with the same global class name if it exists.
 				if (!class_name.is_empty()) {
 					EditorFileSystemDirectory::FileInfo *old_fi = nullptr;
+					print_error("_get_file_by_class_name");
 					String old_file = _get_file_by_class_name(filesystem, class_name, old_fi);
 					if (!old_file.is_empty() && old_fi) {
 						_queue_update_script_class(old_file, ScriptClassInfoUpdate::from_file_info(old_fi));
@@ -1127,6 +1129,11 @@ void EditorFileSystem::scan() {
 		//file_type_cache.clear();
 		filesystem = new_filesystem;
 		new_filesystem = nullptr;
+
+		if (global_filesystem) {
+			memdelete(global_filesystem);
+		}
+
 		global_filesystem = new_global_filesystem;
 		new_global_filesystem = nullptr;
 
@@ -1731,7 +1738,7 @@ void EditorFileSystem::scan_changes() {
 	scanning_changes_done.clear();
 
 	if (!use_threads) {
-		if (filesystem) {
+		if (filesystem && global_filesystem) {
 			EditorProgressBG pr("sources", TTR("ScanSources"), 1000);
 			ScanProgress sp;
 			sp.progress = &pr;
@@ -1915,8 +1922,8 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirectory **r_d, int &r_file_pos) const {
 	//todo make faster
 
-	if (!filesystem || scanning) {
-		print_error("_find_file: !filesystem || scanning");
+	if (!filesystem || !global_filesystem || scanning) {
+		print_error("_find_file: !filesystem || !global_filesystem || scanning");
 		return false;
 	}
 
@@ -2047,7 +2054,7 @@ String EditorFileSystem::get_file_type(const String &p_file) const {
 }
 
 EditorFileSystemDirectory *EditorFileSystem::find_file(const String &p_file, int *r_index) const {
-	if (!filesystem || scanning) {
+	if (!filesystem || !global_filesystem || scanning) {
 		return nullptr;
 	}
 
@@ -2075,7 +2082,8 @@ ResourceUID::ID EditorFileSystem::get_file_uid(const String &p_path) const {
 }
 
 EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p_path) {
-	if (!filesystem || scanning) {
+	print_error("get_filesystem_path: " + p_path);
+	if (!filesystem || !global_filesystem || scanning) {
 		return nullptr;
 	}
 
@@ -3848,6 +3856,9 @@ EditorFileSystem::EditorFileSystem() {
 	singleton = this;
 	filesystem = memnew(EditorFileSystemDirectory); //like, empty
 	filesystem->parent = nullptr;
+	global_filesystem = memnew(EditorFileSystemDirectory); //like, empty
+	global_filesystem->parent = nullptr;
+	global_filesystem->root_path = "global://";
 
 	new_filesystem = nullptr;
 	new_global_filesystem = nullptr;
