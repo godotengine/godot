@@ -377,6 +377,13 @@ float JoltHingeJoint3D::get_applied_torque() const {
 	}
 }
 
+real_t JoltHingeJoint3D::get_angle() const {
+	if (JPH::HingeConstraint *constraint = static_cast<JPH::HingeConstraint *>(jolt_ref.GetPtr())) {
+		return constraint->GetCurrentAngle();
+	}
+	return 0.0;
+}
+
 void JoltHingeJoint3D::rebuild() {
 	destroy();
 

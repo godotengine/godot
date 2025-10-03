@@ -362,6 +362,7 @@ public:
 
 	FUNC3(hinge_joint_set_param, RID, HingeJointParam, real_t)
 	FUNC2RC(real_t, hinge_joint_get_param, RID, HingeJointParam)
+	FUNC1RC(real_t, hinge_joint_get_angle, RID)
 
 	FUNC3(hinge_joint_set_flag, RID, HingeJointFlag, bool)
 	FUNC2RC(bool, hinge_joint_get_flag, RID, HingeJointFlag)

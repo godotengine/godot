@@ -393,6 +393,7 @@ void PhysicsServer3DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_hinge_joint_set_param, "joint", "param", "value");
 	GDVIRTUAL_BIND(_hinge_joint_get_param, "joint", "param");
+	GDVIRTUAL_BIND(_hinge_joint_get_angle, "joint");
 
 	GDVIRTUAL_BIND(_hinge_joint_set_flag, "joint", "flag", "enabled");
 	GDVIRTUAL_BIND(_hinge_joint_get_flag, "joint", "flag");

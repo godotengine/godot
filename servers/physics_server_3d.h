@@ -701,6 +701,7 @@ public:
 
 	virtual void hinge_joint_set_param(RID p_joint, HingeJointParam p_param, real_t p_value) = 0;
 	virtual real_t hinge_joint_get_param(RID p_joint, HingeJointParam p_param) const = 0;
+	virtual real_t hinge_joint_get_angle(RID p_joint) const = 0;
 
 	virtual void hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_enabled) = 0;
 	virtual bool hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag) const = 0;

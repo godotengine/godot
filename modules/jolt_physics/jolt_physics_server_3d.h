@@ -381,6 +381,7 @@ public:
 
 	virtual void hinge_joint_set_param(RID p_joint, PhysicsServer3D::HingeJointParam p_param, real_t p_value) override;
 	virtual real_t hinge_joint_get_param(RID p_joint, PhysicsServer3D::HingeJointParam p_param) const override;
+	virtual real_t hinge_joint_get_angle(RID p_joint) const override;
 
 	virtual void hinge_joint_set_flag(RID p_joint, PhysicsServer3D::HingeJointFlag p_flag, bool p_enabled) override;
 	virtual bool hinge_joint_get_flag(RID p_joint, PhysicsServer3D::HingeJointFlag p_flag) const override;
