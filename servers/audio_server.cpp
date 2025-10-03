@@ -393,7 +393,7 @@ void AudioServer::_mix_step() {
 		// If `fading_out` is true, we're in the process of fading out the stream playback.
 		// TODO: Currently this sets the volume of the stream to 0 which creates a linear interpolation between its previous volume and silence.
 		//  A more punchy option for fading out could be to just use the lookahead buffer.
-		bool fading_out = playback->state.load() == AudioStreamPlaybackListNode::FADE_OUT_TO_DELETION || playback->state.load() == AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE;
+		bool fading = playback->state.load() == AudioStreamPlaybackListNode::FADE_IN || playback->state.load() == AudioStreamPlaybackListNode::FADE_OUT_TO_DELETION || playback->state.load() == AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE;
 
 		AudioFrame *buf = mix_buffer.ptrw();
 
@@ -462,8 +462,8 @@ void AudioServer::_mix_step() {
 			//  The channels correspond to output channels of the audio device, e.g. stereo or 5.1. To reduce needless nesting, this is done with a helper method named `_mix_step_for_channel`.
 			for (int channel_idx = 0; channel_idx < channel_count; channel_idx++) {
 				AudioFrame *channel_buf = thread_get_channel_mix_buffer(bus_idx, channel_idx);
-				// TODO: This `fading_out` check could be replaced with with an exponential fadeout of the samples from the lookahead buffer for more punchy results.
-				if (fading_out) {
+				// TODO: This `fading` check could be replaced with with an exponential fadeout of the samples from the lookahead buffer for more punchy results.
+				if (fading) {
 					bus_details.volume[idx][channel_idx] = AudioFrame(0, 0);
 				}
 				AudioFrame channel_vol = bus_details.volume[idx][channel_idx];
@@ -531,6 +531,9 @@ void AudioServer::_mix_step() {
 			case AudioStreamPlaybackListNode::PAUSED:
 				// No-op!
 				break;
+			case AudioStreamPlaybackListNode::FADE_IN: {
+				playback->state.store(AudioStreamPlaybackListNode::PLAYING);
+			} break;
 		}
 	}
 
@@ -1267,7 +1270,7 @@ void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, con
 		frame = AudioFrame(0, 0);
 	}
 
-	playback_node->state.store(AudioStreamPlaybackListNode::PLAYING);
+	playback_node->state.store(AudioStreamPlaybackListNode::FADE_IN);
 
 	playback_list.insert(playback_node);
 }
@@ -1403,8 +1406,8 @@ void AudioServer::set_playback_paused(Ref<AudioStreamPlayback> p_playback, bool 
 	AudioStreamPlaybackListNode::PlaybackState new_state, old_state;
 	do {
 		old_state = playback_node->state.load();
-		new_state = p_paused ? AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE : AudioStreamPlaybackListNode::PLAYING;
-		if (!p_paused && old_state == AudioStreamPlaybackListNode::PLAYING) {
+		new_state = p_paused ? AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE : AudioStreamPlaybackListNode::FADE_IN;
+		if (!p_paused && (old_state == AudioStreamPlaybackListNode::PLAYING || old_state == AudioStreamPlaybackListNode::FADE_IN)) {
 			return; // No-op.
 		}
 		if (p_paused && (old_state == AudioStreamPlaybackListNode::PAUSED || old_state == AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE)) {
@@ -1442,7 +1445,7 @@ bool AudioServer::is_playback_active(Ref<AudioStreamPlayback> p_playback) {
 		return false;
 	}
 
-	return playback_node->state.load() == AudioStreamPlaybackListNode::PLAYING;
+	return playback_node->state.load() == AudioStreamPlaybackListNode::PLAYING || playback_node->state.load() == AudioStreamPlaybackListNode::FADE_IN;
 }
 
 float AudioServer::get_playback_position(Ref<AudioStreamPlayback> p_playback) {
