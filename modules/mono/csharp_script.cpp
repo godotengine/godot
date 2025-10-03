@@ -1147,7 +1147,7 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 
 	StringName type_name = p_object->get_class_name();
 
-	const ClassDB::ClassInfo *classinfo = ClassDB::classes.getptr(type_name);
+	const ClassDB::ClassInfo *classinfo = deref_or_null(ClassDB::classes.getptr(type_name));
 
 	// This skipping of GDExtension classes, as well as whatever classes are in this list of ignored types, is a
 	// workaround to allow GDExtension classes to be used from C# so long as they're only used through base classes that

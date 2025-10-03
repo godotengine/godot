@@ -37,6 +37,7 @@
 // Makes callable_mp readily available in all classes connecting signals.
 // Needs to come after method_bind and object have been included.
 #include "core/object/callable_method_pointer.h"
+#include "core/templates/a_hash_map.h"
 #include "core/templates/hash_set.h"
 
 #include <type_traits>
@@ -202,7 +203,7 @@ public:
 		};
 	};
 
-	static HashMap<StringName, ClassInfo> classes;
+	static AHashMap<StringName, ClassInfo *> classes;
 	static HashMap<StringName, StringName> resource_base_extensions;
 	static HashMap<StringName, StringName> compat_classes;
 
@@ -252,7 +253,7 @@ public:
 		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
-		ClassInfo *t = classes.getptr(T::get_class_static());
+		ClassInfo *t = deref_or_null(classes.getptr(T::get_class_static()));
 		ERR_FAIL_NULL(t);
 		t->creation_func = &creator<T>;
 		t->exposed = true;
@@ -267,7 +268,7 @@ public:
 		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
-		ClassInfo *t = classes.getptr(T::get_class_static());
+		ClassInfo *t = deref_or_null(classes.getptr(T::get_class_static()));
 		ERR_FAIL_NULL(t);
 		t->exposed = true;
 		t->class_ptr = T::get_class_ptr_static();
@@ -280,7 +281,7 @@ public:
 		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
-		ClassInfo *t = classes.getptr(T::get_class_static());
+		ClassInfo *t = deref_or_null(classes.getptr(T::get_class_static()));
 		ERR_FAIL_NULL(t);
 		t->creation_func = &creator<T>;
 		t->exposed = false;
@@ -295,7 +296,7 @@ public:
 		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
-		ClassInfo *t = classes.getptr(T::get_class_static());
+		ClassInfo *t = deref_or_null(classes.getptr(T::get_class_static()));
 		ERR_FAIL_NULL(t);
 		ERR_FAIL_COND_MSG(t->inherits_ptr && !t->inherits_ptr->creation_func, vformat("Cannot register runtime class '%s' that descends from an abstract parent class.", T::get_class_static()));
 		t->creation_func = &creator<T>;
@@ -320,7 +321,7 @@ public:
 		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
-		ClassInfo *t = classes.getptr(T::get_class_static());
+		ClassInfo *t = deref_or_null(classes.getptr(T::get_class_static()));
 		ERR_FAIL_NULL(t);
 		t->creation_func = &_create_ptr_func<T>;
 		t->exposed = true;

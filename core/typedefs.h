@@ -144,6 +144,11 @@ constexpr auto CLAMP(const T m_a, const T2 m_min, const T3 m_max) {
 #define SWAP(m_x, m_y) std::swap((m_x), (m_y))
 #endif // SWAP
 
+template <typename T>
+_FORCE_INLINE_ T *deref_or_null(T **p_ptr) {
+	return p_ptr ? *p_ptr : nullptr;
+}
+
 /* Functions to handle powers of 2 and shifting. */
 
 // Returns `true` if a positive integer is a power of 2, `false` otherwise.

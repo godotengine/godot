@@ -73,7 +73,7 @@ MethodBind *godotsharp_method_bind_get_method_with_compatibility(const StringNam
 }
 
 godotsharp_class_creation_func godotsharp_get_class_constructor(const StringName *p_classname) {
-	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(*p_classname);
+	ClassDB::ClassInfo *class_info = deref_or_null(ClassDB::classes.getptr(*p_classname));
 	if (class_info) {
 		return class_info->creation_func;
 	}
