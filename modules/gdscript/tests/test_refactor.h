@@ -219,6 +219,10 @@ static void run_test_cfg(const String &p_config_path) {
 			CHECK(refactor_has_failed == refactor_result.has_failed());
 		}
 
+		if (!refactor_to.is_empty()) {
+			CHECK(refactor_to == refactor_result.new_symbol);
+		}
+
 		// Comparing results.
 		for (KeyValue<String, LocalVector<ScriptLanguage::RefactorRenameSymbolResult::Match>> KV : refactor_result.matches) {
 			Array expected_result_matches_array;
