@@ -35,7 +35,6 @@
 #include "core/os/os.h"
 #include "core/os/time.h"
 #include "core/templates/local_vector.h"
-#include "editor/settings/editor_settings.h"
 
 String DirAccess::_get_root_path() const {
 	switch (_access_type) {
@@ -44,7 +43,7 @@ String DirAccess::_get_root_path() const {
 		case ACCESS_USERDATA:
 			return OS::get_singleton()->get_user_data_dir();
 		case ACCESS_GLOBAL_RESOURCES:
-			return EditorSettings::get_singleton()->get_global_resource_path();
+			return ProjectSettings::get_singleton()->get_global_resource_path();
 		default:
 			return "";
 	}
@@ -220,7 +219,7 @@ String DirAccess::fix_path(const String &p_path) const {
 		case ACCESS_GLOBAL_RESOURCES: {
 			if (ProjectSettings::get_singleton()) {
 				if (p_path.begins_with("global://")) {
-					String resource_path = EditorSettings::get_singleton()->get_global_resource_path();
+					String resource_path = ProjectSettings::get_singleton()->get_global_resource_path();
 					if (!resource_path.is_empty()) {
 						return p_path.replace_first("global:/", resource_path);
 					}

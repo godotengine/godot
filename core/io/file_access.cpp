@@ -39,7 +39,6 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
-#include "editor/settings/editor_settings.h"
 
 Ref<FileAccess> FileAccess::create(AccessType p_access) {
 	ERR_FAIL_INDEX_V(p_access, ACCESS_MAX, nullptr);
@@ -289,7 +288,7 @@ String FileAccess::fix_path(const String &p_path) const {
 		} break;
 		case ACCESS_GLOBAL_RESOURCES: {
 			if (r_path.begins_with("global://")) {
-				String data_dir = EditorSettings::get_singleton()->get_global_resource_path();
+				String data_dir = ProjectSettings::get_singleton()->get_global_resource_path();
 				if (!data_dir.is_empty()) {
 					return r_path.replace("global:/", data_dir);
 				}

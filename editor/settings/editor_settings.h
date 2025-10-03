@@ -137,8 +137,6 @@ public:
 	static String get_existing_settings_path();
 	static String get_newest_settings_path();
 
-	static String get_global_resource_path();
-
 	static void create();
 	void setup_language(bool p_initial_setup);
 	void setup_network();

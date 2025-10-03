@@ -8875,6 +8875,12 @@ EditorNode::EditorNode() {
 	add_child(system_theme_timer);
 	system_theme_timer->set_owner(get_owner());
 	system_theme_timer->set_autostart(true);
+
+	const String config_dir = EditorPaths::get_singleton()->get_config_dir();
+	const String global_res_dir = config_dir.path_join("global_resources");
+	String filename;
+	filename = vformat("%d.%d", GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR);
+	ProjectSettings::get_singleton()->set_global_resource_path(global_res_dir.path_join(filename));
 }
 
 EditorNode::~EditorNode() {
