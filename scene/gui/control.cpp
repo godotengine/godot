@@ -4190,7 +4190,7 @@ void Control::_bind_methods() {
 	StringBuilder builder;
 	builder.append(TTRC("Custom"));
 	builder.append(":-1");
-	for (size_t i = 0; i < std::size(anchors_presets); i++) {
+	for (size_t i = 0; i < std_size(anchors_presets); i++) {
 		builder.append(",");
 		builder.append(anchors_presets[i].name);
 		builder.append(":");

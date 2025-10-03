@@ -46,7 +46,7 @@
 #include "thirdparty/swappy-frame-pacing/swappyVk.h"
 #endif
 
-#define ARRAY_SIZE(a) std::size(a)
+#define ARRAY_SIZE(a) std_size(a)
 
 #define PRINT_NATIVE_COMMANDS 0
 

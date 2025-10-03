@@ -415,7 +415,7 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 };
 
 String InputMap::get_builtin_display_name(const String &p_name) const {
-	constexpr int len = std::size(_builtin_action_display_names);
+	constexpr int len = std_size(_builtin_action_display_names);
 
 	for (int i = 0; i < len; i++) {
 		if (_builtin_action_display_names[i].name == p_name) {

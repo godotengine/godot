@@ -92,7 +92,7 @@ static FloatConstantDef float_constant_defs[] = {
 	{ "Sqrt2", Math::SQRT2, TTRC("Sqrt2 constant (1.414214). Square root of 2.") }
 };
 
-constexpr int MAX_FLOAT_CONST_DEFS = std::size(float_constant_defs);
+constexpr int MAX_FLOAT_CONST_DEFS = std_size(float_constant_defs);
 
 ///////////////////
 

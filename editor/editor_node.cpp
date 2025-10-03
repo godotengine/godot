@@ -8467,7 +8467,7 @@ EditorNode::EditorNode() {
 	default_layout->set_value(docks_section, "dock_5", "Inspector,Node,History");
 
 	int hsplits[] = { 0, 270, -270, 0 };
-	DEV_ASSERT((int)std::size(hsplits) == editor_dock_manager->get_hsplit_count());
+	DEV_ASSERT((int)std_size(hsplits) == editor_dock_manager->get_hsplit_count());
 	for (int i = 0; i < editor_dock_manager->get_hsplit_count(); i++) {
 		default_layout->set_value(docks_section, "dock_hsplit_" + itos(i + 1), hsplits[i]);
 	}

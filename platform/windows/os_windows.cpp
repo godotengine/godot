@@ -851,7 +851,7 @@ bool OS_Windows::get_user_prefers_integrated_gpu() const {
 			GetCurrentApplicationUserModelIdPtr GetCurrentApplicationUserModelId = (GetCurrentApplicationUserModelIdPtr)(void *)GetProcAddress(kernel32, "GetCurrentApplicationUserModelId");
 
 			if (GetCurrentApplicationUserModelId) {
-				UINT32 length = std::size(value_name);
+				UINT32 length = std_size(value_name);
 				LONG result = GetCurrentApplicationUserModelId(&length, value_name);
 				if (result == ERROR_SUCCESS) {
 					is_packaged = true;
