@@ -35,12 +35,15 @@
 #include "core/error/error_macros.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/vector.h"
 
 namespace GDScriptTests {
 
+static HashMap<String, bool> is_test_setup;
+
 void init_autoloads();
-void init_language(const String &p_base_path);
+void init_language(const String &p_base_path, const String &p_test_name, const String &p_copy_target = "");
 void finish_language();
 
 // Single test instance in a suite.
