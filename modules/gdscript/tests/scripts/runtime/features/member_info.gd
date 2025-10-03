@@ -67,6 +67,15 @@ signal test_signal_7(a: TestMemberInfo, b: Array[TestMemberInfo], c: Dictionary[
 signal test_signal_8(a: MyClass, b: Array[MyClass], c: Dictionary[MyClass, MyClass])
 @warning_ignore_restore("unused_signal")
 
+@abstract
+class TestAbstractMyClass:
+	@abstract
+	func test_abstract_method_with_return_type() -> Node
+	@abstract
+	func test_abstract_method_return_type_void() -> void
+	@abstract
+	func test_abstract_method_without_return_type()
+
 func test():
 	var script: Script = get_script()
 	for property in script.get_property_list():
