@@ -2707,6 +2707,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("particles_set_custom_aabb", "particles", "aabb"), &RenderingServer::particles_set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("particles_set_speed_scale", "particles", "scale"), &RenderingServer::particles_set_speed_scale);
 	ClassDB::bind_method(D_METHOD("particles_set_use_local_coordinates", "particles", "enable"), &RenderingServer::particles_set_use_local_coordinates);
+	ClassDB::bind_method(D_METHOD("particles_set_local_trails", "particles", "enable"), &RenderingServer::particles_set_local_trails);
 	ClassDB::bind_method(D_METHOD("particles_set_process_material", "particles", "material"), &RenderingServer::particles_set_process_material);
 	ClassDB::bind_method(D_METHOD("particles_set_fixed_fps", "particles", "fps"), &RenderingServer::particles_set_fixed_fps);
 	ClassDB::bind_method(D_METHOD("particles_set_interpolate", "particles", "enable"), &RenderingServer::particles_set_interpolate);

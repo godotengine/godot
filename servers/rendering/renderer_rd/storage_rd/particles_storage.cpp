@@ -398,11 +398,20 @@ void ParticlesStorage::particles_set_speed_scale(RID p_particles, double p_scale
 
 	particles->speed_scale = p_scale;
 }
+
 void ParticlesStorage::particles_set_use_local_coordinates(RID p_particles, bool p_enable) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 
 	particles->use_local_coords = p_enable;
+	particles->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_PARTICLES);
+}
+
+void ParticlesStorage::particles_set_local_trails(RID p_particles, bool p_enable) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->local_trails = p_enable;
 	particles->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_PARTICLES);
 }
 
@@ -1124,6 +1133,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	push_constant.use_fractional_delta = p_particles->fractional_delta;
 	push_constant.sub_emitter_mode = !p_particles->emitting && p_particles->emission_buffer && (p_particles->emission_buffer->particle_count > 0 || p_particles->force_sub_emit);
 	push_constant.trail_pass = false;
+	push_constant.local_trails = p_particles->local_trails;
 
 	p_particles->force_sub_emit = false; //reset
 

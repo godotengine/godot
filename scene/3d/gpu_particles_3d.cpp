@@ -146,6 +146,11 @@ void GPUParticles3D::set_use_local_coordinates(bool p_enable) {
 	RS::get_singleton()->particles_set_use_local_coordinates(particles, local_coords);
 }
 
+void GPUParticles3D::set_local_trails(bool p_enable) {
+	local_trails = p_enable;
+	RS::get_singleton()->particles_set_local_trails(particles, local_trails);
+}
+
 void GPUParticles3D::set_process_material(const Ref<Material> &p_material) {
 #ifdef TOOLS_ENABLED
 	if (process_material.is_valid()) {
@@ -218,6 +223,10 @@ AABB GPUParticles3D::get_visibility_aabb() const {
 
 bool GPUParticles3D::get_use_local_coordinates() const {
 	return local_coords;
+}
+
+bool GPUParticles3D::get_local_trails() const {
+	return local_trails;
 }
 
 Ref<Material> GPUParticles3D::get_process_material() const {
@@ -745,6 +754,7 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_randomness_ratio", "ratio"), &GPUParticles3D::set_randomness_ratio);
 	ClassDB::bind_method(D_METHOD("set_visibility_aabb", "aabb"), &GPUParticles3D::set_visibility_aabb);
 	ClassDB::bind_method(D_METHOD("set_use_local_coordinates", "enable"), &GPUParticles3D::set_use_local_coordinates);
+	ClassDB::bind_method(D_METHOD("set_local_trails", "enable"), &GPUParticles3D::set_local_trails);
 	ClassDB::bind_method(D_METHOD("set_fixed_fps", "fps"), &GPUParticles3D::set_fixed_fps);
 	ClassDB::bind_method(D_METHOD("set_fractional_delta", "enable"), &GPUParticles3D::set_fractional_delta);
 	ClassDB::bind_method(D_METHOD("set_interpolate", "enable"), &GPUParticles3D::set_interpolate);
@@ -762,6 +772,7 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_randomness_ratio"), &GPUParticles3D::get_randomness_ratio);
 	ClassDB::bind_method(D_METHOD("get_visibility_aabb"), &GPUParticles3D::get_visibility_aabb);
 	ClassDB::bind_method(D_METHOD("get_use_local_coordinates"), &GPUParticles3D::get_use_local_coordinates);
+	ClassDB::bind_method(D_METHOD("get_local_trails"), &GPUParticles3D::get_local_trails);
 	ClassDB::bind_method(D_METHOD("get_fixed_fps"), &GPUParticles3D::get_fixed_fps);
 	ClassDB::bind_method(D_METHOD("get_fractional_delta"), &GPUParticles3D::get_fractional_delta);
 	ClassDB::bind_method(D_METHOD("get_interpolate"), &GPUParticles3D::get_interpolate);
@@ -839,6 +850,7 @@ void GPUParticles3D::_bind_methods() {
 	ADD_GROUP("Drawing", "");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "visibility_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_visibility_aabb", "get_visibility_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_trails"), "set_local_trails", "get_local_trails");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime,Reverse Lifetime,View Depth"), "set_draw_order", "get_draw_order");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_align", PROPERTY_HINT_ENUM, "Disabled,Z-Billboard,Y to Velocity,Z-Billboard + Y to Velocity"), "set_transform_align", "get_transform_align");
 	ADD_GROUP("Trails", "trail_");
@@ -894,6 +906,7 @@ GPUParticles3D::GPUParticles3D() {
 	set_trail_lifetime(0.3);
 	set_visibility_aabb(AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8)));
 	set_use_local_coordinates(false);
+	set_local_trails(false);
 	set_draw_passes(1);
 	set_draw_order(DRAW_ORDER_INDEX);
 	set_speed_scale(1);
