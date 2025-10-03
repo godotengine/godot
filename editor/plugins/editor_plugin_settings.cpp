@@ -76,9 +76,6 @@ void EditorPluginSettings::update_plugins() {
 	plugins.append_array(_get_plugins("global://"));
 	plugins.sort();
 
-	// Replace the print_error line with this to display the plugins as a single string.
-	print_error("update_plugins: " + String(", ").join(plugins));
-
 	for (int i = 0; i < plugins.size(); i++) {
 		Ref<ConfigFile> cfg;
 		cfg.instantiate();

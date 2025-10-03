@@ -168,7 +168,6 @@ Ref<FileAccess> FileAccess::open(const String &p_path, int p_mode_flags, Error *
 			if (r_error) {
 				*r_error = OK;
 			}
-			print_error("FileAccess::open 1 " + p_path);
 			return ret;
 		}
 	}
@@ -182,7 +181,6 @@ Ref<FileAccess> FileAccess::open(const String &p_path, int p_mode_flags, Error *
 	if (err != OK) {
 		ret.unref();
 	}
-	print_error("FileAccess::open 2 " + p_path);
 	return ret;
 }
 

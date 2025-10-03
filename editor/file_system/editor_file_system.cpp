@@ -254,9 +254,7 @@ void EditorFileSystem::_load_first_scan_root_dir() {
 	first_scan_global_root_dir = memnew(ScannedDirectory);
 	first_scan_global_root_dir->full_path = "global://";
 
-	print_error("_load_first_scan_root_dir 1");
 	nb_files_total = _scan_new_dir(first_scan_root_dir, d) + _scan_new_dir(first_scan_global_root_dir, gd);
-	print_error("_load_first_scan_root_dir 2");
 }
 
 void EditorFileSystem::scan_for_uid() {
@@ -560,7 +558,6 @@ void EditorFileSystem::_scan_filesystem() {
 }
 
 void EditorFileSystem::_save_filesystem_cache() {
-	print_error("_save_filesystem_cache");
 	group_file_cache.clear();
 
 	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().path_join(CACHE_FILE_NAME);
@@ -976,7 +973,6 @@ bool EditorFileSystem::_update_scan_actions() {
 				// Restore another script with the same global class name if it exists.
 				if (!class_name.is_empty()) {
 					EditorFileSystemDirectory::FileInfo *old_fi = nullptr;
-					print_error("_get_file_by_class_name");
 					String old_file = _get_file_by_class_name(filesystem, class_name, old_fi);
 					if (!old_file.is_empty() && old_fi) {
 						_queue_update_script_class(old_file, ScriptClassInfoUpdate::from_file_info(old_fi));
@@ -1050,8 +1046,6 @@ bool EditorFileSystem::_update_scan_actions() {
 		if (_scan_import_support(reimports)) {
 			return true;
 		}
-		print_error("update_scan_actions: " + String(", ").join(reimports));
-		print_error("update_scan_actions");
 		reimport_files(reimports);
 	} else {
 		//reimport files will update the uid cache file so if nothing was reimported, update it manually
@@ -1171,9 +1165,7 @@ int EditorFileSystem::_scan_new_dir(ScannedDirectory *p_dir, Ref<DirAccess> &da)
 	List<String> dirs;
 	List<String> files;
 
-	print_error("_scan_new_dir 1");
 	String cd = da->get_current_dir();
-	print_error("_scan_new_dir 2");
 
 	da->list_dir_begin();
 	while (true) {
@@ -1923,20 +1915,17 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 	//todo make faster
 
 	if (!filesystem || !global_filesystem || scanning) {
-		print_error("_find_file: !filesystem || !global_filesystem || scanning");
 		return false;
 	}
 
 	String localize_path = ProjectSettings::get_singleton()->localize_path(p_file);
 	String f = localize_path;
-	print_error("localize path: " + p_file + " " + localize_path);
 
 	// Note: Only checks if base directory is case sensitive.
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	bool fs_case_sensitive = dir->is_case_sensitive("res://") || dir->is_case_sensitive("global://");
 
 	if (!f.begins_with("res://") && !f.begins_with("global://")) {
-		print_error("_find_file : (!f.begins_with('res://') && !f.begins_with('global://'))" + f);
 		return false;
 	}
 	if (localize_path.begins_with("res://")) {
@@ -1949,10 +1938,7 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 
 	Vector<String> path = f.split("/");
 
-	print_error("_find_file: " + String("/ ").join(path) + " f: " + f);
-
 	if (path.is_empty()) {
-		print_error("_find_file : path.is_empty()");
 		return false;
 	}
 	String file = path[path.size() - 1];
@@ -1961,17 +1947,12 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 	EditorFileSystemDirectory *fs;
 	if (localize_path.begins_with("res://")) {
 		fs = filesystem;
-		print_error("fs == filesystem");
 	} else {
 		fs = global_filesystem;
-		print_error("fs == global_filesystem");
 	}
-
-	print_error("subdir count: " + String::num(fs->get_subdir_count()));
 
 	for (int i = 0; i < path.size(); i++) {
 		if (path[i].begins_with(".")) {
-			print_error("_find_file : path[i].begins_with('.')");
 			return false;
 		}
 
@@ -1993,7 +1974,6 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 		if (idx == -1) {
 			// Only create a missing directory in memory when it exists on disk.
 			if (!dir->dir_exists(fs->get_path().path_join(path[i]))) {
-				print_error("_find_file : !dir->dir_exists(fs->get_path().path_join(path[i])): " + fs->get_path().path_join(path[i]) + " path[i]: " + path[i]);
 				return false;
 			}
 			EditorFileSystemDirectory *efsd = memnew(EditorFileSystemDirectory);
@@ -2038,7 +2018,6 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 	r_file_pos = cpos;
 	*r_d = fs;
 
-	print_error("_find_file : cpos != -1: " + cpos);
 	return cpos != -1;
 }
 
@@ -2082,7 +2061,6 @@ ResourceUID::ID EditorFileSystem::get_file_uid(const String &p_path) const {
 }
 
 EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p_path) {
-	print_error("get_filesystem_path: " + p_path);
 	if (!filesystem || !global_filesystem || scanning) {
 		return nullptr;
 	}
@@ -2863,7 +2841,6 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 
 Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant *p_generator_parameters, bool p_update_file_system) {
 	print_verbose(vformat("EditorFileSystem: Importing file: %s", p_file));
-	print_error("_reimport_file: Importing file: " + p_file);
 	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
 
 	EditorFileSystemDirectory *fs = nullptr;
@@ -2986,8 +2963,6 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 	List<String> import_variants;
 	List<String> gen_files;
 	Variant meta;
-
-	print_error("_reimport_file: Importer: " + importer->get_importer_name() + " for file: " + p_file);
 
 	Error err = importer->import(uid, p_file, base_path, params, &import_variants, &gen_files, &meta);
 
@@ -3163,7 +3138,6 @@ void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file
 
 	// Emit the resource_reimporting signal for the single file before the actual importation.
 	emit_signal(SNAME("resources_reimporting"), reloads);
-	print_error("reimport_file_with_custom_parameters: Reimporting file with custom parameters: " + p_file);
 	_reimport_file(p_file, p_custom_params, p_importer);
 
 	// Emit the resource_reimported signal for the single file we just reimported.
@@ -3289,7 +3263,6 @@ void EditorFileSystem::_refresh_filesystem() {
 void EditorFileSystem::_reimport_thread(uint32_t p_index, ImportThreadData *p_import_data) {
 	ResourceLoader::set_is_import_thread(true);
 	int file_idx = p_import_data->reimport_from + int(p_index);
-	print_error("_reimport_thread: Thread reimporting file: " + p_import_data->reimport_files[file_idx].path);
 	_reimport_file(p_import_data->reimport_files[file_idx].path);
 	ResourceLoader::set_is_import_thread(false);
 
@@ -3326,10 +3299,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 		ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(file);
 		if (uid != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
 			file = ResourceUID::get_singleton()->get_id_path(uid);
-			print_error("Resolved " + p_files[i] + " to " + file);
 		}
-
-		print_error("p_files to file" + p_files[i] + " " + file);
 
 		String group_file = ResourceFormatImporter::get_singleton()->get_import_group_file(file);
 
@@ -3348,9 +3318,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 			// It's a regular file.
 			ImportFile ifile;
 			ifile.path = file;
-			print_error("Get import order for: " + file);
 			ResourceFormatImporter::get_singleton()->get_import_order_threads_and_importer(file, ifile.order, ifile.threaded, ifile.importer);
-			print_error("Get import order for 2: " + file);
 			reloads.push_back(file);
 			reimport_files.push_back(ifile);
 		}
@@ -3379,7 +3347,6 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	int from = 0;
 	Semaphore imported_sem;
 	for (int i = 0; i < reimport_files.size(); i++) {
-		print_error(vformat("Reimport file: %s (importer: %s)", reimport_files[i].path, reimport_files[i].importer));
 		if (groups_to_reimport.has(reimport_files[i].path)) {
 			from = i + 1;
 			continue;
@@ -3390,7 +3357,6 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 				if (from - i == 0) {
 					// Single file, do not use threads.
 					ep->step(reimport_files[i].path.get_file(), i, false);
-					print_error("reimport_files 1: " + reimport_files[i].path);
 					_reimport_file(reimport_files[i].path);
 				} else {
 					Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(reimport_files[from].importer);
@@ -3435,7 +3401,6 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 		} else {
 			ep->step(reimport_files[i].path.get_file(), i, false);
-			print_error("reimport_files 2: " + reimport_files[i].path);
 			_reimport_file(reimport_files[i].path);
 
 			// We need to increment the counter, maybe the next file is multithreaded
@@ -3458,7 +3423,6 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 			reloads.push_back(E.key);
 			reloads.append_array(E.value);
 			if (err == OK) {
-				print_error("reimport_files 3: " + E.key);
 				_reimport_file(E.key);
 			}
 		}
@@ -3493,7 +3457,6 @@ Error EditorFileSystem::reimport_append(const String &p_file, const HashMap<Stri
 
 	// Emit the resource_reimporting signal for the single file before the actual importation.
 	emit_signal(SNAME("resources_reimporting"), reloads);
-	print_error("reimport_append: " + p_file);
 	Error ret = _reimport_file(p_file, p_custom_options, p_custom_importer, &p_generator_parameters);
 
 	// Emit the resource_reimported signal for the single file we just reimported.
@@ -3502,7 +3465,6 @@ Error EditorFileSystem::reimport_append(const String &p_file, const HashMap<Stri
 }
 
 Error EditorFileSystem::_resource_import(const String &p_path) {
-	print_error("_resource_import: Importing file: " + p_path);
 	Vector<String> files;
 	files.push_back(p_path);
 
@@ -3518,8 +3480,6 @@ Ref<Resource> EditorFileSystem::_load_resource_on_startup(ResourceFormatImporter
 	if (!FileAccess::exists(p_path)) {
 		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Failed loading resource: %s. The file doesn't seem to exist.", p_path));
 	}
-
-	print_error("Loading resource at startup: " + p_path);
 
 	Ref<Resource> res;
 	bool can_retry = true;

@@ -44,8 +44,6 @@ String DirAccess::_get_root_path() const {
 		case ACCESS_USERDATA:
 			return OS::get_singleton()->get_user_data_dir();
 		case ACCESS_GLOBAL_RESOURCES:
-			//return ProjectSettings::get_singleton()->get_resource_path();
-			print_error("_get_root_path: " + EditorSettings::get_singleton()->get_global_resource_path());
 			return EditorSettings::get_singleton()->get_global_resource_path();
 		default:
 			return "";
