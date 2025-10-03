@@ -94,6 +94,10 @@ public:
 	int get_plural_forms() const;
 	String get_plural_rule() const;
 
+#ifdef TOOLS_ENABLED
+	Error save_mo(const String &p_path) const;
+#endif
+
 #ifdef DEBUG_TRANSLATION_PO
 	void print_translation_map();
 #endif

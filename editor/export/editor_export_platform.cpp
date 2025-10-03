@@ -41,6 +41,7 @@
 #include "core/io/resource_uid.h"
 #include "core/io/zip_io.h"
 #include "core/math/random_pcg.h"
+#include "core/string/translation_po.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -919,6 +920,17 @@ String EditorExportPlatform::_export_customize(const String &p_path, LocalVector
 		}
 
 		node->queue_free();
+	} else if (type == "TranslationPO" || type == "Translation") { // Its a PO translation.
+		if (p_force_save) {
+			Ref<TranslationPO> tr = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
+			ERR_FAIL_COND_V(tr.is_null(), p_path);
+
+			String base_file = p_path.get_file().get_basename() + ".mo";
+			save_path = export_base_path.path_join("export-" + p_path.md5_text() + "-" + base_file);
+
+			Error err = tr->save_mo(save_path);
+			ERR_FAIL_COND_V_MSG(err != OK, p_path, "Unable to save export translation file to: " + save_path);
+		}
 	} else {
 		Ref<Resource> res = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
 		ERR_FAIL_COND_V(res.is_null(), p_path);
@@ -1521,7 +1533,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			// Just store it as it comes.
 
 			// Customization only happens if plugins did not take care of it before.
-			bool force_binary = convert_text_to_binary && (path.get_extension().to_lower() == "tres" || path.get_extension().to_lower() == "tscn");
+			bool force_binary = convert_text_to_binary && (path.get_extension().to_lower() == "tres" || path.get_extension().to_lower() == "tscn" || path.get_extension().to_lower() == "po");
 			String export_path = _export_customize(path, customize_resources_plugins, customize_scenes_plugins, export_cache, export_base_path, force_binary);
 
 			if (export_path != path) {
