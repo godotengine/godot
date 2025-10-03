@@ -66,26 +66,33 @@ void POTGenerator::generate_pot(const String &p_file) {
 	all_translation_strings.clear();
 
 	// Collect all translatable strings according to files order in "POT Generation" setting.
-	for (int i = 0; i < files.size(); i++) {
-		Vector<Vector<String>> translations;
-
-		const String &file_path = files[i];
-		String file_extension = file_path.get_extension();
+	Vector<Vector<String>> translations;
+	for (const String &file_path : files) {
+		const String file_extension = file_path.get_extension();
+		Vector<Vector<String>> new_translations;
 
 		if (EditorTranslationParser::get_singleton()->can_parse(file_extension)) {
-			EditorTranslationParser::get_singleton()->get_parser(file_extension)->parse_file(file_path, &translations);
+			EditorTranslationParser::get_singleton()->get_parser(file_extension)->parse_file(file_path, &new_translations);
 		} else {
-			ERR_PRINT("Unrecognized file extension " + file_extension + " in generate_pot()");
+			ERR_PRINT("Unrecognized file extension \"" + file_extension + "\" in generate_pot()");
 			return;
 		}
 
-		for (const Vector<String> &translation : translations) {
-			ERR_CONTINUE(translation.is_empty());
-			const String &msgctxt = (translation.size() > 1) ? translation[1] : String();
-			const String &msgid_plural = (translation.size() > 2) ? translation[2] : String();
-			const String &comment = (translation.size() > 3) ? translation[3] : String();
-			_add_new_msgid(translation[0], msgctxt, msgid_plural, file_path, comment);
+		for (Vector<String> &translation : new_translations) {
+			translation.resize(5);
+			translation.write[4] = file_path;
 		}
+		translations.append_array(new_translations);
+	}
+	EditorTranslationParser::get_singleton()->customize_strings(translations);
+
+	for (const Vector<String> &translation : translations) {
+		ERR_CONTINUE(translation.is_empty());
+		const String &msgctxt = (translation.size() > 1) ? translation[1] : String();
+		const String &msgid_plural = (translation.size() > 2) ? translation[2] : String();
+		const String &comment = (translation.size() > 3) ? translation[3] : String();
+		const String &location = (translation.size() > 4) ? translation[4] : String();
+		_add_new_msgid(translation[0], msgctxt, msgid_plural, location, comment);
 	}
 
 	if (GLOBAL_GET("internationalization/locale/translation_add_builtin_strings_to_pot")) {
