@@ -1,0 +1,34 @@
+[gd_scene load_steps=2 format=3 uid="uid://cg3hylang5fxn"]
+
+[ext_resource type="Script" uid="uid://bv6y7in6otgcm" path="res://main.gd" id="1_j0gfq"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_j0gfq")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+offset_left = 68.0
+offset_top = 102.0
+offset_right = 506.0
+offset_bottom = 408.0
+theme_override_constants/separation = 25
+
+[node name="PluginToastButton" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Plugin Toast
+"
+
+[node name="VibrationButton" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Vibration"
+
+[node name="GDScriptToastButton" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "GDScript Toast
+"
+
+[connection signal="pressed" from="VBoxContainer/PluginToastButton" to="." method="_on_plugin_toast_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/VibrationButton" to="." method="_on_vibration_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/GDScriptToastButton" to="." method="_on_gd_script_toast_button_pressed"]
