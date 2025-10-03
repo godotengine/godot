@@ -76,7 +76,9 @@ sources += res_obj
 if env["accesskit"] and not env.msvc:
     sources += env.DEFLIB("uiautomationcore")
 
-prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
+prog = env.add_program(
+    f"#{env['output_path']}" if env["output_path"] else "#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"]
+)
 arrange_program_clean(prog)
 
 env.Depends(prog, "godot.manifest")
