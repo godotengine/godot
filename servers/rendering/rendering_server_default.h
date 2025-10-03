@@ -536,6 +536,7 @@ public:
 	FUNC4(decal_set_distance_fade, RID, bool, float, float)
 	FUNC3(decal_set_fade, RID, float, float)
 	FUNC2(decal_set_normal_fade, RID, float)
+	FUNC2(decal_set_keep_decal_opacity, RID, bool)
 
 	/* BAKED LIGHT API */
 

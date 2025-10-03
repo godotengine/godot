@@ -1540,6 +1540,9 @@ void fragment_shader(in SceneData scene_data) {
 						decal_albedo = textureLod(sampler2D(decal_atlas_srgb, decal_sampler), uv_local.xz * decals.data[decal_index].albedo_rect.zw + decals.data[decal_index].albedo_rect.xy, 0.0);
 					}
 					decal_albedo *= decals.data[decal_index].modulate;
+					if (decals.data[decal_index].keep_decal_opacity == 1u) {
+						alpha = max(alpha, decal_albedo.a);
+					}
 					decal_albedo.a *= fade;
 					albedo = mix(albedo, decal_albedo.rgb, decal_albedo.a * decals.data[decal_index].albedo_mix);
 

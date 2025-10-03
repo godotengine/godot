@@ -2628,6 +2628,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("decal_set_distance_fade", "decal", "enabled", "begin", "length"), &RenderingServer::decal_set_distance_fade);
 	ClassDB::bind_method(D_METHOD("decal_set_fade", "decal", "above", "below"), &RenderingServer::decal_set_fade);
 	ClassDB::bind_method(D_METHOD("decal_set_normal_fade", "decal", "fade"), &RenderingServer::decal_set_normal_fade);
+	ClassDB::bind_method(D_METHOD("decal_set_keep_decal_opacity", "decal", "keep_decal_opacity"), &RenderingServer::decal_set_keep_decal_opacity);
 
 	ClassDB::bind_method(D_METHOD("decals_set_filter", "filter"), &RenderingServer::decals_set_filter);
 

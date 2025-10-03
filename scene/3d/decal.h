@@ -53,6 +53,7 @@ private:
 	Color modulate = Color(1, 1, 1, 1);
 	uint32_t cull_mask = (1 << 20) - 1;
 	real_t normal_fade = 0.0;
+	bool keep_decal_opacity = false;
 	real_t upper_fade = 0.3;
 	real_t lower_fade = 0.3;
 	bool distance_fade_enabled = false;
@@ -91,7 +92,10 @@ public:
 	real_t get_lower_fade() const;
 
 	void set_normal_fade(real_t p_fade);
-	real_t get_normal_fade() const;
+	real_t get_normal_fade() const; ////////
+
+	void set_keep_decal_opacity(bool p_override);
+	bool is_keep_decal_opacity_enabled() const;
 
 	void set_enable_distance_fade(bool p_enable);
 	bool is_distance_fade_enabled() const;

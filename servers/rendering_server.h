@@ -693,6 +693,7 @@ public:
 	virtual void decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) = 0;
 	virtual void decal_set_fade(RID p_decal, float p_above, float p_below) = 0;
 	virtual void decal_set_normal_fade(RID p_decal, float p_fade) = 0;
+	virtual void decal_set_keep_decal_opacity(RID p_decal, bool p_override) = 0;
 
 	enum DecalFilter {
 		DECAL_FILTER_NEAREST,
