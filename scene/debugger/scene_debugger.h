@@ -143,10 +143,12 @@ public:
 	List<SceneDebuggerProperty> properties;
 
 	SceneDebuggerObject(ObjectID p_id);
+	SceneDebuggerObject(Object *p_obj);
 	SceneDebuggerObject() {}
 
 	void serialize(Array &r_arr, int p_max_size = 1 << 20);
 	void deserialize(const Array &p_arr);
+	void deserialize(uint64_t p_id, const String &p_class_name, const Array &p_props);
 };
 
 class SceneDebuggerTree {
