@@ -424,9 +424,11 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	bool pck_comp_enabled = current->is_pck_compression_enabled();
 	pck_compression_enabled->set_pressed(pck_comp_enabled);
 	pck_compression_mode->select(current->get_pck_compression_mode());
+	pck_compression_level->select(current->get_pck_compression_level());
 	pck_compression_chunk_size->set_text(itos(current->get_pck_compression_chunk_size()));
 
 	pck_compression_mode->set_disabled(!pck_comp_enabled);
+	pck_compression_level->set_disabled(!pck_comp_enabled);
 	pck_compression_chunk_size->set_editable(pck_comp_enabled);
 
 	updating = false;
@@ -619,6 +621,7 @@ void ProjectExportDialog::_pck_compression_enabled_changed(bool p_toggled) {
 
 	current->set_pck_compression_enabled(p_toggled);
 	pck_compression_mode->set_disabled(!p_toggled);
+	pck_compression_level->set_disabled(!p_toggled);
 	pck_compression_chunk_size->set_editable(p_toggled);
 	_update_current_preset();
 }
@@ -632,6 +635,18 @@ void ProjectExportDialog::_pck_compression_mode_changed(int p_mode) {
 	ERR_FAIL_COND(current.is_null());
 
 	current->set_pck_compression_mode(p_mode);
+	_update_current_preset();
+}
+
+void ProjectExportDialog::_pck_compression_level_changed(int p_level) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_pck_compression_level(p_level);
 	_update_current_preset();
 }
 
@@ -1802,6 +1817,14 @@ ProjectExportDialog::ProjectExportDialog() {
 	pck_compression_mode->add_item(TTR("Brotli"), EditorExportPreset::PCK_COMPRESSION_BROTLI);
 	pck_compression_mode->connect(SceneStringName(item_selected), callable_mp(this, &ProjectExportDialog::_pck_compression_mode_changed));
 	pck_vb->add_margin_child(TTR("Mode:"), pck_compression_mode);
+
+	pck_compression_level = memnew(OptionButton);
+	pck_compression_level->add_item(TTR("Low"), EditorExportPreset::PCK_COMPRESSION_LEVEL_LOW);
+	pck_compression_level->add_item(TTR("Medium"), EditorExportPreset::PCK_COMPRESSION_LEVEL_MEDIUM);
+	pck_compression_level->add_item(TTR("High"), EditorExportPreset::PCK_COMPRESSION_LEVEL_HIGH);
+	pck_compression_level->add_item(TTR("Ultra"), EditorExportPreset::PCK_COMPRESSION_LEVEL_ULTRA);
+	pck_compression_level->connect(SceneStringName(item_selected), callable_mp(this, &ProjectExportDialog::_pck_compression_level_changed));
+	pck_vb->add_margin_child(TTR("Level:"), pck_compression_level);
 
 	pck_compression_chunk_size = memnew(LineEdit);
 	pck_compression_chunk_size->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_pck_compression_chunk_size_changed));

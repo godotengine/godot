@@ -47,7 +47,7 @@ static ZSTD_DCtx *current_zstd_d_ctx = nullptr;
 static bool current_zstd_long_distance_matching;
 static int current_zstd_window_log_size;
 
-int64_t Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int64_t p_src_size, Mode p_mode) {
+int64_t Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int64_t p_src_size, Mode p_mode, CompressionLevel p_level) {
 	switch (p_mode) {
 		case MODE_BROTLI: {
 			ERR_FAIL_V_MSG(-1, "Only brotli decompression is supported.");
@@ -91,14 +91,29 @@ int64_t Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int64_t p_sr
 
 		} break;
 		case MODE_ZSTD: {
+			int level = zstd_level;
+			switch (p_level) {
+				case COMPRESSION_LEVEL_LOW:
+					level = 1;
+					break;
+				case COMPRESSION_LEVEL_MEDIUM:
+					level = 3;
+					break;
+				case COMPRESSION_LEVEL_HIGH:
+					level = 10;
+					break;
+				case COMPRESSION_LEVEL_ULTRA:
+					level = 20;
+					break;
+			}
 			ZSTD_CCtx *cctx = ZSTD_createCCtx();
-			ZSTD_CCtx_setParameter(cctx, ZSTD_c_compressionLevel, zstd_level);
+			ZSTD_CCtx_setParameter(cctx, ZSTD_c_compressionLevel, level);
 			if (zstd_long_distance_matching) {
 				ZSTD_CCtx_setParameter(cctx, ZSTD_c_enableLongDistanceMatching, 1);
 				ZSTD_CCtx_setParameter(cctx, ZSTD_c_windowLog, zstd_window_log_size);
 			}
 			const int64_t max_dst_size = get_max_compressed_buffer_size(p_src_size, MODE_ZSTD);
-			const size_t ret = ZSTD_compressCCtx(cctx, p_dst, max_dst_size, p_src, p_src_size, zstd_level);
+			const size_t ret = ZSTD_compressCCtx(cctx, p_dst, max_dst_size, p_src, p_src_size, level);
 			ZSTD_freeCCtx(cctx);
 			return (int64_t)ret;
 		} break;

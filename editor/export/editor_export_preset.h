@@ -67,6 +67,13 @@ public:
 		PCK_COMPRESSION_BROTLI,
 	};
 
+	enum PckCompressionLevel {
+		PCK_COMPRESSION_LEVEL_LOW,
+		PCK_COMPRESSION_LEVEL_MEDIUM,
+		PCK_COMPRESSION_LEVEL_HIGH,
+		PCK_COMPRESSION_LEVEL_ULTRA,
+	};
+
 private:
 	Ref<EditorExportPlatform> platform;
 	ExportFilter export_filter = EXPORT_ALL_RESOURCES;
@@ -106,6 +113,7 @@ private:
 
 	bool pck_compression_enabled = false;
 	int pck_compression_mode = PCK_COMPRESSION_ZSTD;
+	int pck_compression_level = PCK_COMPRESSION_LEVEL_MEDIUM;
 	int pck_compression_chunk_size = 64;
 
 protected:
@@ -203,6 +211,9 @@ public:
 	void set_pck_compression_chunk_size(int p_size);
 	int get_pck_compression_chunk_size() const;
 
+	void set_pck_compression_level(int p_level);
+	int get_pck_compression_level() const;
+
 	Variant _get_or_env(const StringName &p_name, const String &p_env_var) const {
 		return get_or_env(p_name, p_env_var);
 	}
@@ -223,3 +234,4 @@ VARIANT_ENUM_CAST(EditorExportPreset::ExportFilter);
 VARIANT_ENUM_CAST(EditorExportPreset::FileExportMode);
 VARIANT_ENUM_CAST(EditorExportPreset::ScriptExportMode);
 VARIANT_ENUM_CAST(EditorExportPreset::PckCompressionMode);
+VARIANT_ENUM_CAST(EditorExportPreset::PckCompressionLevel);

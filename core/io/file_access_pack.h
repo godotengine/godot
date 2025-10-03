@@ -185,7 +185,6 @@ class FileAccessPack : public FileAccess {
 	// for compressed files
 	mutable Vector<uint8_t> decompressed_cache;
 	mutable int decompressed_current_chunk = -1;
-	mutable bool decompressed_dirty = true;
 
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override;
 	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; }

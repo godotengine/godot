@@ -543,6 +543,14 @@ int EditorExportPreset::get_pck_compression_chunk_size() const {
 	return pck_compression_chunk_size;
 }
 
+void EditorExportPreset::set_pck_compression_level(int p_level) {
+	pck_compression_level = p_level;
+}
+
+int EditorExportPreset::get_pck_compression_level() const {
+	return pck_compression_level;
+}
+
 Variant EditorExportPreset::get_or_env(const StringName &p_name, const String &p_env_var, bool *r_valid) const {
 	const String from_env = OS::get_singleton()->get_environment(p_env_var);
 	if (!from_env.is_empty()) {

@@ -344,7 +344,7 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 
 			Vector<uint8_t> c_chunk;
 			c_chunk.resize(Compression::get_max_compressed_buffer_size(chunk_size, sd.compression_mode));
-			int c_size = Compression::compress(c_chunk.ptrw(), chunk_ptr, chunk_size, sd.compression_mode);
+			int c_size = Compression::compress(c_chunk.ptrw(), chunk_ptr, chunk_size, sd.compression_mode, (Compression::CompressionLevel)pd->preset->get_pck_compression_level());
 			ERR_FAIL_COND_V(c_size < 0, ERR_CANT_CREATE);
 			c_chunk.resize(c_size);
 

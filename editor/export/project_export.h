@@ -179,6 +179,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	CheckButton *pck_compression_enabled = nullptr;
 	OptionButton *pck_compression_mode = nullptr;
+	OptionButton *pck_compression_level = nullptr;
 	LineEdit *pck_compression_chunk_size = nullptr;
 
 	void _open_export_template_manager();
@@ -210,6 +211,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	void _pck_compression_enabled_changed(bool p_toggled);
 	void _pck_compression_mode_changed(int p_mode);
+	void _pck_compression_level_changed(int p_level);
 	void _pck_compression_chunk_size_changed(const String &p_text);
 
 	void _open_key_help_link();
