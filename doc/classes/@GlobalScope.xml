@@ -1608,8 +1608,14 @@
 		<member name="NavigationServer2D" type="NavigationServer2D" setter="" getter="">
 			The [NavigationServer2D] singleton.
 		</member>
+		<member name="NavigationServer2DManager" type="NavigationServer2DManager" setter="" getter="">
+			The [NavigationServer2DManager] singleton.
+		</member>
 		<member name="NavigationServer3D" type="NavigationServer3D" setter="" getter="">
 			The [NavigationServer3D] singleton.
+		</member>
+		<member name="NavigationServer3DManager" type="NavigationServer3DManager" setter="" getter="">
+			The [NavigationServer3DManager] singleton.
 		</member>
 		<member name="OS" type="OS" setter="" getter="">
 			The [OS] singleton.
