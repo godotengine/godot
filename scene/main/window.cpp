@@ -3353,6 +3353,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "popup_wm_hint"), "set_flag", "get_flag", FLAG_POPUP_WM_HINT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "minimize_disabled"), "set_flag", "get_flag", FLAG_MINIMIZE_DISABLED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "maximize_disabled"), "set_flag", "get_flag", FLAG_MAXIMIZE_DISABLED);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "skip_taskbar"), "set_flag", "get_flag", FLAG_SKIP_TASKBAR);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_native"), "set_force_native", "get_force_native");
 
 	ADD_GROUP("Limits", "");
@@ -3416,6 +3417,7 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_POPUP_WM_HINT);
 	BIND_ENUM_CONSTANT(FLAG_MINIMIZE_DISABLED);
 	BIND_ENUM_CONSTANT(FLAG_MAXIMIZE_DISABLED);
+	BIND_ENUM_CONSTANT(FLAG_SKIP_TASKBAR);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_DISABLED);
