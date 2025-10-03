@@ -460,6 +460,22 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="to_named" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the color converted to the mathematically closest standardized named color [String] in [code]UPPER_SNAKE_CASE[/code].
+				[codeblocks]
+				[gdscript]
+				var white = Color(1, 1, 1, 0.5)
+				print(white.to_named()) # Prints "WHITE"
+				[/gdscript]
+				[csharp]
+				var white = new Color(1, 1, 1, 0.5f);
+				GD.Print(white.ToNamed()); // Prints "WHITE"
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="to_rgba32" qualifiers="const">
 			<return type="int" />
 			<description>
