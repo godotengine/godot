@@ -981,8 +981,6 @@ void EditorNode::_notification(int p_what) {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("filesystem/file_dialog")) {
 				FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
 				FileDialog::set_default_display_mode(EDITOR_GET("filesystem/file_dialog/display_mode"));
-				EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
-				EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 			}
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/tablet_driver")) {
@@ -1198,10 +1196,6 @@ void EditorNode::_resources_changed(const Vector<String> &p_resources) {
 
 void EditorNode::_fs_changed() {
 	for (FileDialog *E : file_dialogs) {
-		E->invalidate();
-	}
-
-	for (EditorFileDialog *E : editor_file_dialogs) {
 		E->invalidate();
 	}
 
@@ -5670,14 +5664,6 @@ void EditorNode::_file_dialog_unregister(FileDialog *p_dialog) {
 	singleton->file_dialogs.erase(p_dialog);
 }
 
-void EditorNode::_editor_file_dialog_register(EditorFileDialog *p_dialog) {
-	singleton->editor_file_dialogs.insert(p_dialog);
-}
-
-void EditorNode::_editor_file_dialog_unregister(EditorFileDialog *p_dialog) {
-	singleton->editor_file_dialogs.erase(p_dialog);
-}
-
 Vector<EditorNodeInitCallback> EditorNode::_init_callbacks;
 
 void EditorNode::_begin_first_scan() {
@@ -7848,10 +7834,6 @@ EditorNode::EditorNode() {
 	FileDialog::register_func = _file_dialog_register;
 	FileDialog::unregister_func = _file_dialog_unregister;
 
-	EditorFileDialog::get_icon_func = _file_dialog_get_icon;
-	EditorFileDialog::register_func = _editor_file_dialog_register;
-	EditorFileDialog::unregister_func = _editor_file_dialog_unregister;
-
 	editor_export = memnew(EditorExport);
 	add_child(editor_export);
 
@@ -8939,12 +8921,7 @@ EditorNode::~EditorNode() {
 	FileDialog::register_func = nullptr;
 	FileDialog::unregister_func = nullptr;
 
-	EditorFileDialog::get_icon_func = nullptr;
-	EditorFileDialog::register_func = nullptr;
-	EditorFileDialog::unregister_func = nullptr;
-
 	file_dialogs.clear();
-	editor_file_dialogs.clear();
 
 	singleton = nullptr;
 }
