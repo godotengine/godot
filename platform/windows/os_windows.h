@@ -40,10 +40,6 @@
 #include "drivers/winmidi/midi_driver_winmidi.h"
 #include "servers/audio_server.h"
 
-#ifdef XAUDIO2_ENABLED
-#include "drivers/xaudio2/audio_driver_xaudio2.h"
-#endif
-
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
 #endif
@@ -109,9 +105,6 @@ class OS_Windows : public OS {
 
 #ifdef WASAPI_ENABLED
 	AudioDriverWASAPI driver_wasapi;
-#endif
-#ifdef XAUDIO2_ENABLED
-	AudioDriverXAudio2 driver_xaudio2;
 #endif
 #ifdef WINMIDI_ENABLED
 	MIDIDriverWinMidi driver_midi;

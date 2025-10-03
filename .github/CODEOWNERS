@@ -24,7 +24,6 @@
 /drivers/pulseaudio/                          @godotengine/audio
 /drivers/wasapi/                              @godotengine/audio
 /drivers/winmidi/                             @godotengine/audio
-/drivers/xaudio2/                             @godotengine/audio
 
 ## Rendering
 /drivers/d3d12/                               @godotengine/rendering
