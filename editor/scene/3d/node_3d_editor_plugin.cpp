@@ -9359,7 +9359,7 @@ void Node3DEditor::_load_default_preview_settings() {
 	if (OS::get_singleton()->get_current_rendering_method() != "gl_compatibility" && OS::get_singleton()->get_current_rendering_method() != "dummy") {
 		environ_glow_button->set_pressed_no_signal(true);
 	}
-	environ_tonemap_button->set_pressed_no_signal(true);
+	environ_tonemap_button->set_pressed_no_signal(false);
 	environ_ao_button->set_pressed_no_signal(false);
 	environ_gi_button->set_pressed_no_signal(false);
 	sun_shadow_max_distance->set_value_no_signal(100);
