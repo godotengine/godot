@@ -974,14 +974,6 @@ Array::Iterator &Array::Iterator::operator--() {
 	return *this;
 }
 
-const Variant &Array::ConstIterator::operator*() const {
-	return *element_ptr;
-}
-
-const Variant *Array::ConstIterator::operator->() const {
-	return element_ptr;
-}
-
 Array::ConstIterator &Array::ConstIterator::operator++() {
 	element_ptr++;
 	return *this;
