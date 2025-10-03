@@ -164,8 +164,9 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 //3 bits of stride
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xFF
 
-#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO 1
-#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL 2
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO (1 << 0)
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL (1 << 1)
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR (1 << 2)
 
 layout(set = 0, binding = 3, std430) restrict readonly buffer OmniLights {
 	LightData data[];
@@ -435,8 +436,10 @@ layout(set = 1, binding = 33) uniform texture3D volumetric_fog_texture;
 
 #ifdef USE_MULTIVIEW
 layout(set = 1, binding = 34) uniform texture2DArray ssil_buffer;
+layout(set = 1, binding = 35) uniform texture2DArray ssr_buffer;
 #else
 layout(set = 1, binding = 34) uniform texture2D ssil_buffer;
+layout(set = 1, binding = 35) uniform texture2D ssr_buffer;
 #endif // USE_MULTIVIEW
 
 #endif
