@@ -90,6 +90,8 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) SurfaceLayer : public Re
 	uint32_t rear = -1;
 	uint32_t front = 0;
 	uint32_t count = 0;
+	bool hdr_output = false;
+	bool hdr_output_prefer_high_precision = false;
 
 public:
 	SurfaceLayer(CAMetalLayer *p_layer, id<MTLDevice> p_device) :
@@ -97,7 +99,7 @@ public:
 		layer.allowsNextDrawableTimeout = YES;
 		layer.framebufferOnly = YES;
 		layer.opaque = OS::get_singleton()->is_layered_allowed() ? NO : YES;
-		layer.pixelFormat = get_pixel_format();
+		layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
 		layer.device = p_device;
 	}
 
@@ -105,7 +107,33 @@ public:
 		layer = nil;
 	}
 
-	Error resize(uint32_t p_desired_framebuffer_count) override final {
+	void set_hdr_output_enabled(bool p_enabled) override final {
+		if (hdr_output == p_enabled) {
+			return;
+		}
+
+		hdr_output = p_enabled;
+		needs_resize = true;
+	}
+
+	bool is_hdr_output_enabled() const override final {
+		return hdr_output;
+	}
+
+	void set_hdr_output_prefer_high_precision(bool p_enabled) override final {
+		if (hdr_output_prefer_high_precision == p_enabled) {
+			return;
+		}
+
+		hdr_output_prefer_high_precision = p_enabled;
+		needs_resize = true;
+	}
+
+	bool get_hdr_output_prefer_high_precision() const override final {
+		return hdr_output_prefer_high_precision;
+	}
+
+	Error resize(uint32_t p_desired_framebuffer_count, RDD::DataFormat &r_format, RDD::ColorSpace &r_color_space) override final {
 		if (width == 0 || height == 0) {
 			// Very likely the window is minimized, don't create a swap chain.
 			return ERR_SKIP;
@@ -139,6 +167,34 @@ public:
 		for (uint32_t i = 0; i < p_desired_framebuffer_count; i++) {
 			// Reserve space for the drawable texture.
 			frame_buffers[i].set_texture_count(1);
+		}
+
+		if (hdr_output) {
+			layer.wantsExtendedDynamicRangeContent = YES;
+
+			//if (hdr_output_prefer_high_precision) {
+			if (true) {
+				layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearSRGB);
+				r_color_space = RDD::COLOR_SPACE_REC709_LINEAR;
+				r_format = RDD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+				layer.pixelFormat = MTLPixelFormatRGBA16Float;
+			} else {
+				// This is currently broken with external monitors. (Possibly because the
+				// reference_multiplier is incorrectly calculated based on reference
+				// luminance???)
+				layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2100_PQ);
+				r_color_space = RDD::COLOR_SPACE_REC2020_NONLINEAR_ST2084;
+				r_format = RDD::DATA_FORMAT_A2R10G10B10_UNORM_PACK32;
+				layer.pixelFormat = MTLPixelFormatBGR10A2Unorm;
+			}
+
+		} else {
+			layer.wantsExtendedDynamicRangeContent = NO;
+			layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+
+			r_format = RDD::DATA_FORMAT_B8G8R8A8_UNORM;
+			layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+			r_color_space = RDD::COLOR_SPACE_REC709_NONLINEAR_SRGB;
 		}
 
 		return OK;
@@ -213,6 +269,51 @@ void RenderingContextDriverMetal::surface_set_vsync_mode(SurfaceID p_surface, Di
 DisplayServer::VSyncMode RenderingContextDriverMetal::surface_get_vsync_mode(SurfaceID p_surface) const {
 	Surface *surface = (Surface *)(p_surface);
 	return surface->vsync_mode;
+}
+
+void RenderingContextDriverMetal::surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->set_hdr_output_enabled(p_enabled);
+}
+
+bool RenderingContextDriverMetal::surface_get_hdr_output_enabled(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->is_hdr_output_enabled();
+}
+
+void RenderingContextDriverMetal::surface_set_hdr_output_prefer_high_precision(SurfaceID p_surface, bool p_enabled) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->set_hdr_output_prefer_high_precision(p_enabled);
+}
+
+bool RenderingContextDriverMetal::surface_get_hdr_output_prefer_high_precision(SurfaceID p_surface) const {
+	const Surface *surface = (Surface *)(p_surface);
+	return surface->get_hdr_output_prefer_high_precision();
+}
+
+void RenderingContextDriverMetal::surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_reference_luminance = p_reference_luminance;
+}
+
+float RenderingContextDriverMetal::surface_get_hdr_output_reference_luminance(SurfaceID p_surface) const {
+	const Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_reference_luminance;
+}
+
+void RenderingContextDriverMetal::surface_set_hdr_output_max_luminance(SurfaceID p_surface, float p_max_luminance) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_max_luminance = p_max_luminance;
+}
+
+float RenderingContextDriverMetal::surface_get_hdr_output_max_luminance(SurfaceID p_surface) const {
+	const Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_max_luminance;
+}
+
+float RenderingContextDriverMetal::surface_get_hdr_output_max_value(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return MAX(surface->hdr_max_luminance / MAX(surface->hdr_reference_luminance, 1.0f), 1.0f);
 }
 
 uint32_t RenderingContextDriverMetal::surface_get_width(SurfaceID p_surface) const {
