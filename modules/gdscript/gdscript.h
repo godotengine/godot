@@ -61,8 +61,8 @@ class GDScript : public Script {
 	GDCLASS(GDScript, Script);
 	bool tool = false;
 	bool valid = false;
-	bool reloading = false;
 	bool _is_abstract = false;
+	std::atomic<Thread::ID> reloading_thread = 0;
 
 	struct MemberInfo {
 		int index = 0;
