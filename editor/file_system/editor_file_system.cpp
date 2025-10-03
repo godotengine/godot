@@ -45,6 +45,8 @@
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/project_settings_editor.h"
+#include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/resources/packed_scene.h"
 
 EditorFileSystem *EditorFileSystem::singleton = nullptr;
@@ -513,6 +515,12 @@ void EditorFileSystem::_scan_filesystem() {
 		nb_files_total = _scan_new_dir(sd, d);
 	}
 
+	revalidate_editor_import_files = _is_test_for_editor_resources_reimport_needed();
+	if (revalidate_editor_import_files) {
+		// The new editor meta will be created after revalidation and reimport.
+		_remove_editor_import_meta();
+	}
+
 	_process_file_system(sd, new_filesystem, sp, processed_files);
 
 	if (first_scan) {
@@ -543,6 +551,91 @@ void EditorFileSystem::_save_filesystem_cache() {
 
 	f->store_line(filesystem_settings_version_for_import);
 	_save_filesystem_cache(filesystem, f);
+
+	_save_editor_import_meta();
+}
+
+bool EditorFileSystem::_has_editor_variant_import(const String &p_path) {
+	String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(p_path);
+	return FileAccess::exists(base_path + ".editor.meta");
+}
+
+bool EditorFileSystem::_is_test_for_editor_resources_reimport_needed() {
+	Dictionary editor_meta;
+	_load_editor_import_meta(editor_meta);
+
+	if (!editor_meta.has("editor_scale") || !editor_meta["editor_scale"].hash_compare(EDSCALE)) {
+		return true;
+	}
+
+	if (!editor_meta.has("editor_dark_theme") || !editor_meta["editor_dark_theme"].hash_compare(EditorThemeManager::is_dark_theme())) {
+		return true;
+	}
+
+	return false;
+}
+
+String EditorFileSystem::_editor_import_meta_path() {
+	return ProjectSettings::get_singleton()->get_imported_files_path().path_join(".editor.meta");
+}
+
+void EditorFileSystem::_load_editor_import_meta(Dictionary &p_values) {
+	String editor_meta = _editor_import_meta_path();
+
+	if (!FileAccess::exists(editor_meta)) {
+		// This case is OK.
+		// No editor meta cause test for reimport of all editor-related resources.
+		return;
+	}
+
+	Ref<FileAccess> f = FileAccess::open(editor_meta, FileAccess::READ);
+	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file '" + editor_meta + "'.");
+
+	_load_editor_import_meta(p_values, f);
+}
+
+void EditorFileSystem::_load_editor_import_meta(Dictionary &p_values, Ref<FileAccess> p_file) {
+	Dictionary editor_meta = p_file->get_var();
+
+	if (editor_meta.has("editor_scale")) {
+		p_values["editor_scale"] = editor_meta["editor_scale"];
+	}
+
+	if (editor_meta.has("editor_dark_theme")) {
+		p_values["editor_dark_theme"] = editor_meta["editor_dark_theme"];
+	}
+}
+
+void EditorFileSystem::_save_editor_import_meta() {
+	String editor_meta = _editor_import_meta_path();
+
+	Ref<FileAccess> f = FileAccess::open(editor_meta, FileAccess::WRITE);
+	ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + editor_meta + "'. Check user write permissions.");
+
+	_save_editor_import_meta(f);
+}
+
+void EditorFileSystem::_save_editor_import_meta(Ref<FileAccess> p_file) {
+	Dictionary editor_meta;
+
+	editor_meta["editor_scale"] = EDSCALE;
+
+	editor_meta["editor_dark_theme"] = EditorThemeManager::is_dark_theme();
+
+	p_file->store_var(editor_meta);
+}
+
+void EditorFileSystem::_remove_editor_import_meta() {
+	String editor_meta = _editor_import_meta_path();
+
+	Ref<FileAccess> f = FileAccess::open(editor_meta, FileAccess::WRITE);
+	ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + editor_meta + "'. Check user write permissions.");
+
+	_remove_editor_import_meta(f);
+}
+
+void EditorFileSystem::_remove_editor_import_meta(Ref<FileAccess> p_file) {
+	p_file->store_var(Dictionary());
 }
 
 void EditorFileSystem::_thread_func(void *_userdata) {
@@ -554,6 +647,10 @@ bool EditorFileSystem::_is_test_for_reimport_needed(const String &p_path, uint64
 	// The idea here is to trust the cache. If the last modification times in the cache correspond
 	// to the last modification times of the files on disk, it means the files have not changed since
 	// the last import, and the files in .godot/imported (p_import_dest_paths) should all be valid.
+	//
+	// The exception is editor-related imports. These may be invalid and require reimport even if
+	// the modification and import dates are the same but the user changed the editor settings,
+	// e.g. editor scale or dark theme. It's handled by revalidate_editor_import_files and _has_editor_variant_import.
 	if (p_last_modification_time != p_modification_time) {
 		return true;
 	}
@@ -1258,7 +1355,8 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				// If something is different, we will queue a test for reimportation that will check
 				// the md5 of all files and import settings and, if necessary, execute a reimportation.
 				if (_is_test_for_reimport_needed(path, fc->modification_time, mt, fc->import_modification_time, import_mt, fi->import_dest_paths) ||
-						(revalidate_import_files && !ResourceFormatImporter::get_singleton()->are_import_settings_valid(path))) {
+						(revalidate_import_files && !ResourceFormatImporter::get_singleton()->are_import_settings_valid(path)) ||
+						(revalidate_editor_import_files && _has_editor_variant_import(path))) {
 					ItemAction ia;
 					ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
 					ia.dir = p_dir;
