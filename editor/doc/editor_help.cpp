@@ -4550,8 +4550,6 @@ EditorHelpBit::EditorHelpBit(const String &p_symbol, const String &p_prologue, b
 
 /// EditorHelpBitTooltip ///
 
-bool EditorHelpBitTooltip::_is_tooltip_visible = false;
-
 Control *EditorHelpBitTooltip::_make_invisible_control() {
 	Control *control = memnew(Control);
 	control->set_visible(false);
@@ -4707,8 +4705,6 @@ EditorHelpBitTooltip::EditorHelpBitTooltip(Control *p_target) {
 }
 
 /// EditorHelpHighlighter ///
-
-EditorHelpHighlighter *EditorHelpHighlighter::singleton = nullptr;
 
 void EditorHelpHighlighter::create_singleton() {
 	ERR_FAIL_COND(singleton != nullptr);
