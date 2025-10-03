@@ -1723,7 +1723,7 @@ private:
 	List<bool> multiline_stack;
 	HashMap<String, Ref<GDScriptParserRef>> depended_parsers;
 
-	ParsingType parsing_type;
+	ParsingType parsing_type = PARSING_TYPE_STANDARD;
 	_FORCE_INLINE_ bool is_for_completion() {
 		return parsing_type == PARSING_TYPE_COMPLETION;
 	}
