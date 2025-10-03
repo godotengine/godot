@@ -30,9 +30,14 @@
 
 #pragma once
 
-#include "core/string/ustring.h"
-#include "core/templates/hash_map.h"
+#include "core/os/memory.h"
+#include "core/string/print_string.h"
+#include "core/templates/hashfuncs.h"
+#include "core/templates/pair.h"
 
+#include <initializer_list>
+
+class String;
 class StringName;
 class Variant;
 
@@ -182,8 +187,7 @@ private:
 			if (_metadata[meta_idx].hash == EMPTY_HASH) {
 #ifdef DEV_ENABLED
 				if (unlikely(distance > 12)) {
-					WARN_PRINT("Excessive collision count (" +
-							itos(distance) + "), is the right hash function being used?");
+					WARN_PRINT("Excessive collision count, is the right hash function being used?");
 				}
 #endif
 				_metadata[meta_idx] = metadata;
@@ -657,16 +661,20 @@ public:
 
 	/* Constructors */
 
-	AHashMap(const AHashMap &p_other) {
-		_init_from(p_other);
+	AHashMap(AHashMap &&p_other) {
+		_elements = p_other._elements;
+		_metadata = p_other._metadata;
+		_capacity_mask = p_other._capacity_mask;
+		_size = p_other._size;
+
+		p_other._elements = nullptr;
+		p_other._metadata = nullptr;
+		p_other._capacity_mask = 0;
+		p_other._size = 0;
 	}
 
-	AHashMap(const HashMap<TKey, TValue> &p_other) {
-		reserve(p_other.size());
-		for (const KeyValue<TKey, TValue> &E : p_other) {
-			uint32_t hash = _hash(E.key);
-			_insert_element(E.key, E.value, hash);
-		}
+	AHashMap(const AHashMap &p_other) {
+		_init_from(p_other);
 	}
 
 	void operator=(const AHashMap &p_other) {
@@ -677,15 +685,6 @@ public:
 		reset();
 
 		_init_from(p_other);
-	}
-
-	void operator=(const HashMap<TKey, TValue> &p_other) {
-		reset();
-		reserve(p_other.size());
-		for (const KeyValue<TKey, TValue> &E : p_other) {
-			uint32_t hash = _hash(E.key);
-			_insert_element(E.key, E.value, hash);
-		}
 	}
 
 	AHashMap(uint32_t p_initial_capacity) {
