@@ -61,7 +61,7 @@ def get_flags():
         "arch": detect_arch(),
         "use_volk": False,
         "metal": True,
-        "supported": ["metal", "mono"],
+        "supported": ["library", "metal", "mono"],
     }
 
 
@@ -172,8 +172,9 @@ def configure(env: "SConsEnvironment"):
             env.Append(CCFLAGS=["-fsanitize=thread"])
             env.Append(LINKFLAGS=["-fsanitize=thread"])
 
-        env.Append(LINKFLAGS=["-Wl,-stack_size," + hex(STACK_SIZE_SANITIZERS)])
-    else:
+        if env["library_type"] == "executable":
+            env.Append(LINKFLAGS=["-Wl,-stack_size," + hex(STACK_SIZE_SANITIZERS)])
+    elif env["library_type"] == "executable":
         env.Append(LINKFLAGS=["-Wl,-stack_size," + hex(STACK_SIZE)])
 
     if env["use_coverage"]:
