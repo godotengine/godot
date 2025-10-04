@@ -89,6 +89,7 @@ class GodotBodyPair3D : public GodotBodyContact3D {
 	bool collide_A = false;
 	bool collide_B = false;
 
+	bool oneway_disabled = false;
 	bool report_contacts_only = false;
 
 	Vector3 offset_B; //use local A coordinates to avoid numerical issues on collision detection

@@ -73,6 +73,8 @@ public:
 	_FORCE_INLINE_ const AABB &get_aabb() const { return aabb; }
 	_FORCE_INLINE_ bool is_configured() const { return configured; }
 
+	virtual bool allows_one_way_collision() const { return true; }
+
 	virtual bool is_concave() const { return false; }
 
 	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const = 0;
@@ -145,6 +147,8 @@ class GodotSeparationRayShape3D : public GodotShape3D {
 public:
 	real_t get_length() const;
 	bool get_slide_on_slope() const;
+
+	virtual bool allows_one_way_collision() const override { return false; }
 
 	virtual real_t get_volume() const override { return 0.0; }
 	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_SEPARATION_RAY; }

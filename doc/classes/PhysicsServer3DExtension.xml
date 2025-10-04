@@ -556,6 +556,15 @@
 			<description>
 			</description>
 		</method>
+		<method name="_body_set_shape_as_one_way_collision" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<param index="2" name="enabled" type="bool" />
+			<param index="3" name="margin" type="float" />
+			<description>
+			</description>
+		</method>
 		<method name="_body_set_shape_disabled" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />

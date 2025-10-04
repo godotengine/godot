@@ -221,6 +221,7 @@ public:
 	virtual Transform3D body_get_shape_transform(RID p_body, int p_shape_idx) const override;
 
 	virtual void body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) override;
+	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape, bool p_enabled, real_t p_margin = 0) override;
 
 	virtual int body_get_shape_count(RID p_body) const override;
 

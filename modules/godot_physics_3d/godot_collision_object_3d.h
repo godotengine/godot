@@ -68,6 +68,8 @@ private:
 		real_t area_cache = 0.0;
 		GodotShape3D *shape = nullptr;
 		bool disabled = false;
+		bool one_way_collision = false;
+		real_t one_way_collision_margin = 0.0;
 	};
 
 	Vector<Shape> shapes;
@@ -151,6 +153,21 @@ public:
 	_FORCE_INLINE_ bool is_shape_disabled(int p_idx) const {
 		ERR_FAIL_INDEX_V(p_idx, shapes.size(), false);
 		return shapes[p_idx].disabled;
+	}
+
+	_FORCE_INLINE_ void set_shape_as_one_way_collision(int p_idx, bool p_one_way_collision, real_t p_margin) {
+		CRASH_BAD_INDEX(p_idx, shapes.size());
+		shapes.write[p_idx].one_way_collision = p_one_way_collision;
+		shapes.write[p_idx].one_way_collision_margin = p_margin;
+	}
+	_FORCE_INLINE_ bool is_shape_set_as_one_way_collision(int p_idx) const {
+		CRASH_BAD_INDEX(p_idx, shapes.size());
+		return shapes[p_idx].one_way_collision;
+	}
+
+	_FORCE_INLINE_ real_t get_shape_one_way_collision_margin(int p_idx) const {
+		CRASH_BAD_INDEX(p_idx, shapes.size());
+		return shapes[p_idx].one_way_collision_margin;
 	}
 
 	_FORCE_INLINE_ void set_collision_layer(uint32_t p_layer) {
