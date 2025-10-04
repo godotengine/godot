@@ -125,13 +125,12 @@ void init_project_dir(const String &p_base_path, const String &p_test_name, cons
 	String dot_godot_dir_backup = TestUtils::get_temp_path("gdscript_dot_godot_backup");
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	auto remove_dir = [&da](const String &p_dir_to_remove) -> Error {
+	auto remove_dir = [&da, &err](const String &p_dir_to_remove) -> Error {
 		Ref<DirAccess> deletion_da = DirAccess::open(p_dir_to_remove);
 		if (deletion_da.is_null()) {
 			return FAILED;
 		}
 
-		Error err;
 		err = deletion_da->erase_contents_recursive();
 		if (err != OK) {
 			return err;
