@@ -49,9 +49,13 @@ JoypadSDL *JoypadSDL::singleton = nullptr;
 
 // Macro to skip the SDL joystick event handling if the device is an SDL gamepad, because
 // there are separate events for SDL gamepads
-#define SKIP_EVENT_FOR_GAMEPAD                    \
-	if (SDL_IsGamepad(sdl_event.jdevice.which)) { \
-		continue;                                 \
+#define SKIP_JOYSTICK_EVENT_WHEN_NOT_RAW                \
+	if (!Input::get_singleton()->get_joy_raw(joy_id)) { \
+		continue;                                       \
+	}
+#define SKIP_GAMEPAD_EVENT_WHEN_RAW                    \
+	if (Input::get_singleton()->get_joy_raw(joy_id)) { \
+		continue;                                      \
 	}
 
 JoypadSDL::JoypadSDL() {
@@ -222,7 +226,7 @@ void JoypadSDL::process_events() {
 					break;
 
 				case SDL_EVENT_JOYSTICK_AXIS_MOTION:
-					SKIP_EVENT_FOR_GAMEPAD;
+					SKIP_JOYSTICK_EVENT_WHEN_NOT_RAW;
 
 					Input::get_singleton()->joy_axis(
 							joy_id,
@@ -232,7 +236,7 @@ void JoypadSDL::process_events() {
 
 				case SDL_EVENT_JOYSTICK_BUTTON_UP:
 				case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
-					SKIP_EVENT_FOR_GAMEPAD;
+					SKIP_JOYSTICK_EVENT_WHEN_NOT_RAW;
 
 					Input::get_singleton()->joy_button(
 							joy_id,
@@ -241,8 +245,6 @@ void JoypadSDL::process_events() {
 					break;
 
 				case SDL_EVENT_JOYSTICK_HAT_MOTION:
-					SKIP_EVENT_FOR_GAMEPAD;
-
 					Input::get_singleton()->joy_hat(
 							joy_id,
 							(HatMask)sdl_event.jhat.value // Godot hat masks are identical to SDL hat masks, so we can just use them as-is.
@@ -250,6 +252,8 @@ void JoypadSDL::process_events() {
 					break;
 
 				case SDL_EVENT_GAMEPAD_AXIS_MOTION: {
+					SKIP_GAMEPAD_EVENT_WHEN_RAW;
+
 					float axis_value;
 
 					if (sdl_event.gaxis.axis == SDL_GAMEPAD_AXIS_LEFT_TRIGGER || sdl_event.gaxis.axis == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) {
@@ -270,6 +274,8 @@ void JoypadSDL::process_events() {
 				// Do note SDL gamepads do not have separate events for the dpad
 				case SDL_EVENT_GAMEPAD_BUTTON_UP:
 				case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+					SKIP_GAMEPAD_EVENT_WHEN_RAW;
+
 					Input::get_singleton()->joy_button(
 							joy_id,
 							static_cast<JoyButton>(sdl_event.gbutton.button), // Godot button constants are intentionally the same as SDL's, so we can just straight up use them
