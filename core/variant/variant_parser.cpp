@@ -2328,20 +2328,23 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				} else {
 					p_recursion_count++;
 
+					// Add a tab for every recursion depth, except this one and it's parent
+					String tab_str = String("\t");
+					String tab_depth = tab_str.repeat(std::max(0, p_recursion_count));
+					String tab_parent_depth = tab_str.repeat(std::max(0, p_recursion_count - 1));
+
 					p_store_string_func(p_store_string_ud, "{\n");
 
 					for (uint32_t i = 0; i < keys.size(); i++) {
 						const Variant &key = keys[i];
+						p_store_string_func(p_store_string_ud, tab_depth);
 						write(key, p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
 						p_store_string_func(p_store_string_ud, ": ");
 						write(dict[key], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
-						if (i + 1 < keys.size()) {
-							p_store_string_func(p_store_string_ud, ",\n");
-						} else {
-							p_store_string_func(p_store_string_ud, "\n");
-						}
+						p_store_string_func(p_store_string_ud, ",\n");
 					}
 
+					p_store_string_func(p_store_string_ud, tab_parent_depth);
 					p_store_string_func(p_store_string_ud, "}");
 				}
 			}
