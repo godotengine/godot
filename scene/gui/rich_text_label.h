@@ -153,10 +153,13 @@ protected:
 private:
 	struct Item;
 
-	struct Line {
-		Item *from = nullptr;
+	struct Line { // Line is a paragraph.
+		Item *from = nullptr; // `from` is main if this Line is the first Line in the doc, otherwise `from` is the previous Item in the doc of any type.
 
 		Ref<TextLine> text_prefix;
+		Color prefix_color = Color(0, 0, 0, 0);
+		int prefix_outline_size = -1;
+		Color prefix_outline_color = Color(0, 0, 0, 0);
 		float prefix_width = 0;
 		Ref<TextParagraph> text_buf;
 
@@ -192,17 +195,17 @@ private:
 	struct Item {
 		int index = 0;
 		int char_ofs = 0;
-		Item *parent = nullptr;
+		Item *parent = nullptr; // "parent" means "enclosing item tag", if any. It is an interval predecessor, not a hierarchical parent.
 		ItemType type = ITEM_FRAME;
 		List<Item *> subitems;
 		List<Item *>::Element *E = nullptr;
 		ObjectID owner;
-		int line = 0;
+		int line = 0; // `line` is the index number of the paragraph (Line) this item is inside of (zero if the first paragraph).
 		RID rid;
 
 		RID accessibility_item_element;
 
-		void _clear_children() {
+		void _clear_children() { // Only ever called on main or a paragraph (Line).
 			RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
 			while (subitems.size()) {
 				Item *subitem = subitems.front()->get();
@@ -503,6 +506,29 @@ private:
 	struct ItemContext : public Item {
 		ItemContext() { type = ITEM_CONTEXT; }
 	};
+	const Array formatting_items = {
+		// all ITEM types affecting glyph appearance.
+		ITEM_FONT,
+		ITEM_FONT_SIZE,
+		ITEM_FONT_FEATURES,
+		ITEM_COLOR,
+		ITEM_OUTLINE_SIZE,
+		ITEM_OUTLINE_COLOR,
+		ITEM_UNDERLINE,
+		ITEM_STRIKETHROUGH,
+		ITEM_FADE,
+		ITEM_SHAKE,
+		ITEM_WAVE,
+		ITEM_TORNADO,
+		ITEM_RAINBOW,
+		ITEM_BGCOLOR,
+		ITEM_FGCOLOR,
+		ITEM_META,
+		ITEM_HINT,
+		ITEM_CUSTOMFX,
+		ITEM_LANGUAGE,
+		ITEM_PULSE,
+	};
 
 	ItemFrame *main = nullptr;
 	Item *current = nullptr;
@@ -691,6 +717,7 @@ private:
 	Size2 _get_image_size(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Rect2 &p_region = Rect2());
 
 	String _get_prefix(Item *p_item, const Vector<int> &p_list_index, const Vector<ItemList *> &p_list_items);
+	void _add_list_prefixes(ItemFrame *p_frame, int p_line, Line &r_l);
 
 	static int _find_unquoted(const String &p_src, char32_t p_chr, int p_from);
 	static Vector<String> _split_unquoted(const String &p_src, char32_t p_splitter);
