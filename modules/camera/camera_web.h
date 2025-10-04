@@ -32,7 +32,7 @@
 
 #include "platform/web/camera_driver_web.h"
 #include "servers/camera/camera_feed.h"
-#include "servers/camera_server.h"
+#include "servers/camera/camera_server.h"
 
 class CameraFeedWeb : public CameraFeed {
 	GDSOFTCLASS(CameraFeedWeb, CameraFeed);
