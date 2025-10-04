@@ -1068,6 +1068,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("run/platforms/linuxbsd/prefer_wayland", false, true);
 	set_restart_if_changed("run/platforms/linuxbsd/prefer_wayland", true);
 
+	// Resolution presets
+	Dictionary default_resolutions;
+	default_resolutions[StringName("iPhone 16")] = Size2i(1179, 2556);
+	default_resolutions[StringName("iPad Air 13")] = Size2i(2048, 2732);
+	default_resolutions[StringName("Samsung Galaxy S25")] = Size2i(1080, 2340);
+	EDITOR_SETTING(Variant::DICTIONARY, PROPERTY_HINT_NONE, "run/resolution_presets/resolutions", default_resolutions, "")
+
 	/* Network */
 
 	// General
