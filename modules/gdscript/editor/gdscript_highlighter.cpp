@@ -717,11 +717,11 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 	/* Engine types. */
 	const Color types_color = EDITOR_GET("text_editor/theme/highlighting/engine_type_color");
-	List<StringName> types;
-	ClassDB::get_class_list(&types);
-	for (const StringName &E : types) {
-		if (ClassDB::is_class_exposed(E)) {
-			class_names[E] = types_color;
+	LocalVector<StringName> types;
+	ClassDB::get_class_list(types);
+	for (const StringName &type : types) {
+		if (ClassDB::is_class_exposed(type)) {
+			class_names[type] = types_color;
 		}
 	}
 
@@ -734,10 +734,10 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 	/* User types. */
 	const Color usertype_color = EDITOR_GET("text_editor/theme/highlighting/user_type_color");
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
-	for (const StringName &E : global_classes) {
-		class_names[E] = usertype_color;
+	LocalVector<StringName> global_classes;
+	ScriptServer::get_global_class_list(global_classes);
+	for (const StringName &class_name : global_classes) {
+		class_names[class_name] = usertype_color;
 	}
 
 	/* Autoloads. */

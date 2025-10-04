@@ -37,7 +37,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/split_container.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 /*** SHADER SCRIPT EDITOR ****/
 

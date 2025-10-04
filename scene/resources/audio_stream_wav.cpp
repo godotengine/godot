@@ -525,7 +525,7 @@ void AudioStreamWAV::set_data(const Vector<uint8_t> &p_data) {
 }
 
 Vector<uint8_t> AudioStreamWAV::get_data() const {
-	return data;
+	return Vector<uint8_t>(data);
 }
 
 Error AudioStreamWAV::save_to_wav(const String &p_path) {

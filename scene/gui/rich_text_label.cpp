@@ -39,7 +39,7 @@
 #include "scene/gui/rich_text_effect.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/theme/theme_db.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
@@ -2670,6 +2670,11 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 								deselect();
 							}
 						}
+
+						if (!selection.drag_attempt) {
+							is_selecting_text = true;
+							click_select_held->start();
+						}
 					}
 				}
 			} else if (b->is_pressed() && b->is_double_click() && selection.enabled) {
@@ -2751,6 +2756,9 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 						}
 					}
 				}
+
+				is_selecting_text = false;
+				click_select_held->stop();
 			}
 		}
 
@@ -2939,94 +2947,118 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> m = p_event;
 	if (m.is_valid()) {
-		ItemFrame *c_frame = nullptr;
-		int c_line = 0;
-		Item *c_item = nullptr;
-		int c_index = 0;
-		bool outside;
+		local_mouse_pos = get_local_mouse_position();
+		last_clamped_mouse_pos = local_mouse_pos.clamp(Vector2(), get_size());
+	}
+}
 
-		_find_click(main, m->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside, false);
-		if (selection.click_item && c_item) {
-			selection.from_frame = selection.click_frame;
-			selection.from_line = selection.click_line;
-			selection.from_item = selection.click_item;
-			selection.from_char = selection.click_char;
+void RichTextLabel::_update_selection() {
+	ItemFrame *c_frame = nullptr;
+	int c_line = 0;
+	Item *c_item = nullptr;
+	int c_index = 0;
+	bool outside;
 
-			selection.to_frame = c_frame;
-			selection.to_line = c_line;
-			selection.to_item = c_item;
-			selection.to_char = c_index;
-
-			bool swap = false;
-			if (selection.click_frame && c_frame) {
-				const Line &l1 = c_frame->lines[c_line];
-				const Line &l2 = selection.click_frame->lines[selection.click_line];
-				if (l1.char_offset + c_index < l2.char_offset + selection.click_char) {
-					swap = true;
-				} else if (l1.char_offset + c_index == l2.char_offset + selection.click_char && !selection.double_click) {
-					deselect();
-					return;
-				}
-			}
-
-			if (swap) {
-				SWAP(selection.from_frame, selection.to_frame);
-				SWAP(selection.from_line, selection.to_line);
-				SWAP(selection.from_item, selection.to_item);
-				SWAP(selection.from_char, selection.to_char);
-			}
-
-			if (selection.double_click && c_frame) {
-				// Expand the selection to word edges.
-
-				Line *l = &selection.from_frame->lines[selection.from_line];
-				MutexLock lock(l->text_buf->get_mutex());
-				PackedInt32Array words = TS->shaped_text_get_word_breaks(l->text_buf->get_rid());
-				for (int i = 0; i < words.size(); i = i + 2) {
-					if (selection.from_char > words[i] && selection.from_char < words[i + 1]) {
-						selection.from_char = words[i];
-						break;
-					}
-				}
-				l = &selection.to_frame->lines[selection.to_line];
-				lock = MutexLock(l->text_buf->get_mutex());
-				words = TS->shaped_text_get_word_breaks(l->text_buf->get_rid());
-				for (int i = 0; i < words.size(); i = i + 2) {
-					if (selection.to_char > words[i] && selection.to_char < words[i + 1]) {
-						selection.to_char = words[i + 1];
-						break;
-					}
-				}
-			}
-
-			selection.active = true;
-			queue_accessibility_update();
-			queue_redraw();
+	// Handle auto scrolling.
+	const Size2 size = get_size();
+	if (!(local_mouse_pos.x >= 0.0 && local_mouse_pos.y >= 0.0 &&
+				local_mouse_pos.x < size.x && local_mouse_pos.y < size.y)) {
+		real_t scroll_delta = 0.0;
+		if (local_mouse_pos.y < 0) {
+			scroll_delta = -auto_scroll_speed * (1 - (local_mouse_pos.y / 15.0));
+		} else if (local_mouse_pos.y > size.y) {
+			scroll_delta = auto_scroll_speed * (1 + (local_mouse_pos.y - size.y) / 15.0);
 		}
 
-		_find_click(main, m->get_position(), nullptr, nullptr, &c_item, nullptr, &outside, true);
-		Variant meta;
-		ItemMeta *item_meta;
-		ItemMeta *prev_meta = meta_hovering;
-		if (c_item && !outside && _find_meta(c_item, &meta, &item_meta)) {
-			if (meta_hovering != item_meta) {
-				if (meta_hovering) {
-					emit_signal(SNAME("meta_hover_ended"), current_meta);
-				}
-				meta_hovering = item_meta;
-				current_meta = meta;
-				emit_signal(SNAME("meta_hover_started"), meta);
-				if ((item_meta && item_meta->underline == META_UNDERLINE_ON_HOVER) || (prev_meta && prev_meta->underline == META_UNDERLINE_ON_HOVER)) {
-					queue_redraw();
+		if (scroll_delta != 0.0) {
+			vscroll->scroll(scroll_delta);
+			queue_redraw();
+		}
+	}
+
+	// Update selection area.
+	_find_click(main, last_clamped_mouse_pos, &c_frame, &c_line, &c_item, &c_index, &outside, false);
+	if (selection.click_item && c_item) {
+		selection.from_frame = selection.click_frame;
+		selection.from_line = selection.click_line;
+		selection.from_item = selection.click_item;
+		selection.from_char = selection.click_char;
+
+		selection.to_frame = c_frame;
+		selection.to_line = c_line;
+		selection.to_item = c_item;
+		selection.to_char = c_index;
+
+		bool swap = false;
+		if (selection.click_frame && c_frame) {
+			const Line &l1 = c_frame->lines[c_line];
+			const Line &l2 = selection.click_frame->lines[selection.click_line];
+			if (l1.char_offset + c_index < l2.char_offset + selection.click_char) {
+				swap = true;
+			} else if (l1.char_offset + c_index == l2.char_offset + selection.click_char && !selection.double_click) {
+				deselect();
+				return;
+			}
+		}
+
+		if (swap) {
+			SWAP(selection.from_frame, selection.to_frame);
+			SWAP(selection.from_line, selection.to_line);
+			SWAP(selection.from_item, selection.to_item);
+			SWAP(selection.from_char, selection.to_char);
+		}
+
+		if (selection.double_click && c_frame) {
+			// Expand the selection to word edges.
+
+			Line *l = &selection.from_frame->lines[selection.from_line];
+			MutexLock lock(l->text_buf->get_mutex());
+			PackedInt32Array words = TS->shaped_text_get_word_breaks(l->text_buf->get_rid());
+			for (int i = 0; i < words.size(); i = i + 2) {
+				if (selection.from_char > words[i] && selection.from_char < words[i + 1]) {
+					selection.from_char = words[i];
+					break;
 				}
 			}
-		} else if (meta_hovering) {
-			meta_hovering = nullptr;
-			emit_signal(SNAME("meta_hover_ended"), current_meta);
-			current_meta = false;
-			if (prev_meta->underline == META_UNDERLINE_ON_HOVER) {
+			l = &selection.to_frame->lines[selection.to_line];
+			lock = MutexLock(l->text_buf->get_mutex());
+			words = TS->shaped_text_get_word_breaks(l->text_buf->get_rid());
+			for (int i = 0; i < words.size(); i = i + 2) {
+				if (selection.to_char > words[i] && selection.to_char < words[i + 1]) {
+					selection.to_char = words[i + 1];
+					break;
+				}
+			}
+		}
+
+		selection.active = true;
+		queue_accessibility_update();
+		queue_redraw();
+	}
+
+	// Update meta hovering.
+	_find_click(main, local_mouse_pos, nullptr, nullptr, &c_item, nullptr, &outside, true);
+	Variant meta;
+	ItemMeta *item_meta;
+	ItemMeta *prev_meta = meta_hovering;
+	if (c_item && !outside && _find_meta(c_item, &meta, &item_meta)) {
+		if (meta_hovering != item_meta) {
+			if (meta_hovering) {
+				emit_signal(SNAME("meta_hover_ended"), current_meta);
+			}
+			meta_hovering = item_meta;
+			current_meta = meta;
+			emit_signal(SNAME("meta_hover_started"), meta);
+			if ((item_meta && item_meta->underline == META_UNDERLINE_ON_HOVER) || (prev_meta && prev_meta->underline == META_UNDERLINE_ON_HOVER)) {
 				queue_redraw();
 			}
+		}
+	} else if (meta_hovering) {
+		meta_hovering = nullptr;
+		emit_signal(SNAME("meta_hover_ended"), current_meta);
+		current_meta = false;
+		if (prev_meta->underline == META_UNDERLINE_ON_HOVER) {
+			queue_redraw();
 		}
 	}
 }
@@ -5877,7 +5909,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					} else if (subtag[1] == "bottom" || subtag[1] == "b") {
 						alignment |= INLINE_ALIGNMENT_TO_BOTTOM;
 					}
-				} else if (subtag.size() > 0) {
+				} else if (!subtag.is_empty()) {
 					if (subtag[0] == "top" || subtag[0] == "t") {
 						alignment = INLINE_ALIGNMENT_TOP;
 					} else if (subtag[0] == "center" || subtag[0] == "c") {
@@ -5958,7 +5990,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 							} else if (subtag[1] == "bottom" || subtag[1] == "b") {
 								alignment |= INLINE_ALIGNMENT_TO_BOTTOM;
 							}
-						} else if (subtag.size() > 0) {
+						} else if (!subtag.is_empty()) {
 							if (subtag[0] == "top" || subtag[0] == "t") {
 								alignment = INLINE_ALIGNMENT_TOP;
 							} else if (subtag[0] == "center" || subtag[0] == "c") {
@@ -6026,18 +6058,18 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			Vector<String> subtag = fnt_ftr.split(",");
 			_normalize_subtags(subtag);
 
-			if (subtag.size() > 0) {
-				Ref<Font> font = theme_cache.normal_font;
-				DefaultFont def_font = RTL_NORMAL_FONT;
+			Ref<Font> font = theme_cache.normal_font;
+			DefaultFont def_font = RTL_NORMAL_FONT;
 
-				ItemFont *font_it = _find_font(current);
-				if (font_it) {
-					if (font_it->font.is_valid()) {
-						font = font_it->font;
-						def_font = font_it->def_font;
-					}
+			ItemFont *font_it = _find_font(current);
+			if (font_it) {
+				if (font_it->font.is_valid()) {
+					font = font_it->font;
+					def_font = font_it->def_font;
 				}
-				Dictionary features;
+			}
+			Dictionary features;
+			if (!subtag.is_empty()) {
 				for (int i = 0; i < subtag.size(); i++) {
 					Vector<String> subtag_a = subtag[i].split("=");
 					_normalize_subtags(subtag_a);
@@ -6048,19 +6080,19 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 						features[TS->name_to_tag(subtag_a[0])] = 1;
 					}
 				}
-
-				Ref<FontVariation> fc;
-				fc.instantiate();
-
-				fc->set_base_font(font);
-				fc->set_opentype_features(features);
-
-				if (def_font != RTL_CUSTOM_FONT) {
-					_push_def_font_var(def_font, fc);
-				} else {
-					push_font(fc);
-				}
 			}
+			Ref<FontVariation> fc;
+			fc.instantiate();
+
+			fc->set_base_font(font);
+			fc->set_opentype_features(features);
+
+			if (def_font != RTL_CUSTOM_FONT) {
+				_push_def_font_var(def_font, fc);
+			} else {
+				push_font(fc);
+			}
+
 			pos = brk_end + 1;
 			tag_stack.push_front(tag.substr(0, value_pos));
 
@@ -6070,6 +6102,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			Ref<Font> fc = ResourceLoader::load(fnt, "Font");
 			if (fc.is_valid()) {
 				push_font(fc);
+			} else {
+				push_font(theme_cache.normal_font);
 			}
 
 			pos = brk_end + 1;
@@ -6220,9 +6254,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 		} else if (tag.begins_with("outline_size=")) {
 			int fnt_size = _get_tag_value(tag).to_int();
-			if (fnt_size > 0) {
-				push_outline_size(fnt_size);
-			}
+			push_outline_size(MAX(0, fnt_size));
 			pos = brk_end + 1;
 			tag_stack.push_front("outline_size");
 
@@ -7187,11 +7219,11 @@ TextServer::StructuredTextParser RichTextLabel::get_structured_text_bidi_overrid
 	return st_parser;
 }
 
-void RichTextLabel::set_structured_text_bidi_override_options(Array p_args) {
+void RichTextLabel::set_structured_text_bidi_override_options(const Array &p_args) {
 	if (st_args != p_args) {
 		_stop_thread();
 
-		st_args = p_args;
+		st_args = Array(p_args);
 		main->first_invalid_line.store(0); // Invalidate all lines.
 		_invalidate_accessibility();
 		_validate_line_caches();
@@ -7200,7 +7232,7 @@ void RichTextLabel::set_structured_text_bidi_override_options(Array p_args) {
 }
 
 Array RichTextLabel::get_structured_text_bidi_override_options() const {
-	return st_args;
+	return Array(st_args);
 }
 
 void RichTextLabel::set_language(const String &p_language) {
@@ -7318,13 +7350,13 @@ float RichTextLabel::get_visible_ratio() const {
 	return visible_ratio;
 }
 
-void RichTextLabel::set_effects(Array p_effects) {
-	custom_effects = p_effects;
+void RichTextLabel::set_effects(const Array &p_effects) {
+	custom_effects = Array(p_effects);
 	reload_effects();
 }
 
 Array RichTextLabel::get_effects() {
-	return custom_effects;
+	return Array(custom_effects);
 }
 
 void RichTextLabel::install_effect(const Variant effect) {
@@ -8076,6 +8108,11 @@ RichTextLabel::RichTextLabel(const String &p_text) {
 	parsing_bbcode.store(false);
 
 	set_clip_contents(true);
+
+	click_select_held = memnew(Timer);
+	add_child(click_select_held, false, INTERNAL_MODE_FRONT);
+	click_select_held->set_wait_time(0.05);
+	click_select_held->connect("timeout", callable_mp(this, &RichTextLabel::_update_selection));
 }
 
 RichTextLabel::~RichTextLabel() {

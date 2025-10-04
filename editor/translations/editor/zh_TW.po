@@ -65,13 +65,14 @@
 # Myeongjin Lee <aranet100@gmail.com>, 2025.
 # sashimi <kyle2160k@gmail.com>, 2025.
 # 陳間時光（MorningFungame） <morningfungame@gmail.com>, 2025.
+# Stenyin <cbcbccc2003@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-01 00:56+0000\n"
-"Last-Translator: Myeongjin <aranet100@gmail.com>\n"
+"PO-Revision-Date: 2025-09-19 22:58+0000\n"
+"Last-Translator: STENYIN lee <stenyin@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -79,7 +80,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.13.1-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "未設定"
@@ -450,6 +451,9 @@ msgstr "交換輸入方向"
 
 msgid "Start Unicode Character Input"
 msgstr "開始輸入 Unicode 字元"
+
+msgid "ColorPicker: Delete Preset"
+msgstr "色彩挑選器：刪除預設"
 
 msgid "Accessibility: Keyboard Drag and Drop"
 msgstr "無障礙：鍵盤拖放"
@@ -915,6 +919,36 @@ msgstr "將動畫庫儲存至檔案：%s"
 msgid "Save Animation to File: %s"
 msgstr "將動畫儲存至檔案：%s"
 
+msgid ""
+"The file you selected is an imported scene from a 3D model such as glTF or "
+"FBX.\n"
+"\n"
+"In Godot, 3D models can be imported as either scenes or animation libraries, "
+"which is why they show up here.\n"
+"\n"
+"If you want to use animations from this 3D model, open the Advanced Import "
+"Settings\n"
+"dialog and save the animations using Actions... -> Set Animation Save Paths,\n"
+"or import the whole scene as a single AnimationLibrary in the Import dock."
+msgstr ""
+"你選擇的檔案是由 glTF 或 FBX 等 3D 模型匯入的場景。\n"
+"\n"
+"在 Godot 中，3D 模型可以匯入為場景或動畫庫，因此它們會出現在這裡。\n"
+"\n"
+"若要使用此 3D 模型中的動畫，請開啟「進階匯入設定」\n"
+"對話方塊，並透過「動作… -> 設定動畫儲存路徑」來儲存動畫，\n"
+"或是在「匯入」面板中將整個場景匯入為單一的 AnimationLibrary。"
+
+msgid ""
+"The file you selected is not a valid AnimationLibrary.\n"
+"\n"
+"If the animations you want are inside of this file, save them to a separate "
+"file first."
+msgstr ""
+"你選擇的檔案不是有效的 AnimationLibrary。\n"
+"\n"
+"如果你要的動畫在此檔案內，請先將它們另存到獨立的檔案。"
+
 msgid "Some of the selected libraries were already added to the mixer."
 msgstr "部分選取的函式庫已加入到混合器。"
 
@@ -1233,6 +1267,9 @@ msgstr ""
 "選擇並移動節點。\n"
 "滑鼠右鍵：在點擊的位置新增節點。\n"
 "Shift+滑鼠左鍵拖曳：將選取的節點連接至其他節點，或在沒有節點的區域建立新節點。"
+
+msgid "Select and move nodes."
+msgstr "選取並移動節點。"
 
 msgid "Create new nodes."
 msgstr "建立新節點。"
@@ -2601,12 +2638,12 @@ msgid ""
 msgstr "啟用後，路徑節點使用的曲線資源將在執行中的專案中可見。"
 
 msgid "Visible Navigation"
-msgstr "顯示導覽"
+msgstr "顯示導航"
 
 msgid ""
 "When this option is enabled, navigation meshes, and polygons will be visible "
 "in the running project."
-msgstr "啟用後，導覽網格與多邊形將在執行中的專案中可見。"
+msgstr "啟用後，導航網格與多邊形將在執行中的專案中可見。"
 
 msgid "Visible Avoidance"
 msgstr "顯示迴避"
@@ -2994,6 +3031,9 @@ msgid ""
 msgstr ""
 "呼叫這個方法不需要實例。\n"
 "可以直接使用類別名呼叫。"
+
+msgid "This method must be implemented to complete the abstract class."
+msgstr "此方法必須被實作，才能完成這個抽象類別。"
 
 msgid "Code snippet copied to clipboard."
 msgstr "程式碼片段已複製到剪貼簿。"
@@ -3564,6 +3604,9 @@ msgstr "要將這些檔案轉換為 %s 嗎？（此操作無法復原！）"
 
 msgid "Could not create folder: %s"
 msgstr "無法建立資料夾：%s"
+
+msgid "Open Scene"
+msgstr "開啟場景"
 
 msgid "New Inherited Scene"
 msgstr "新增繼承場景"
@@ -4572,6 +4615,9 @@ msgstr "正在保存場景"
 msgid "Analyzing"
 msgstr "正在分析"
 
+msgid "Creating Thumbnail"
+msgstr "正在建立縮圖"
+
 msgid "This operation can't be done without a tree root."
 msgstr "此操作無法在沒有樹根節點的情況下完成。"
 
@@ -5002,6 +5048,9 @@ msgstr "行動裝置"
 
 msgid "Compatibility"
 msgstr "相容性"
+
+msgid "%s (Overridden)"
+msgstr "%s（已覆寫）"
 
 msgid "Main Menu"
 msgstr "主選單"
@@ -6338,6 +6387,9 @@ msgstr "執行重新匯入後續處理作業…"
 msgid "Copying files..."
 msgstr "正在複製檔案..."
 
+msgid "Remapping dependencies..."
+msgstr "正在重新對映相依性…"
+
 msgid "Go to Line"
 msgstr "跳至行"
 
@@ -6733,6 +6785,9 @@ msgstr "預覽："
 msgid "Filter:"
 msgstr "篩選："
 
+msgid "Filename Filter:"
+msgstr "檔名篩選："
+
 msgid "File:"
 msgstr "檔案："
 
@@ -6767,6 +6822,9 @@ msgstr "選取場景"
 msgid "Fuzzy Search"
 msgstr "模糊搜尋"
 
+msgid "Include approximate matches."
+msgstr "包含近似符合。"
+
 msgid "Addons"
 msgstr "附加元件"
 
@@ -6800,6 +6858,9 @@ msgstr "沒有通知。"
 
 msgid "Show notifications."
 msgstr "顯示通知。"
+
+msgid "Notifications:"
+msgstr "通知："
 
 msgid "Silence the notifications."
 msgstr "靜音通知。"
@@ -7294,6 +7355,11 @@ msgstr "metadata名稱開頭為底線的是給編輯器專用的。"
 msgid "Property: %s"
 msgstr "屬性：%s"
 
+msgid ""
+"Toggling the checkbox is disabled for Resource properties. Modify the "
+"property using the resource picker instead."
+msgstr "資源屬性無法透過核取方塊切換。請改用資源選擇器來修改該屬性。"
+
 msgid "Unfavorite Property"
 msgstr "取消收藏屬性"
 
@@ -7385,6 +7451,12 @@ msgstr "新大小："
 msgid "First Page"
 msgstr "第一頁"
 
+msgid "Previous Page"
+msgstr "上一頁"
+
+msgid "Page Number"
+msgstr "頁碼"
+
 msgid "Next Page"
 msgstr "下一頁"
 
@@ -7444,6 +7516,13 @@ msgstr "地區"
 
 msgid "Toggle Display UID"
 msgstr "切換 UID 顯示"
+
+msgid ""
+"Toggles displaying between path and UID.\n"
+"The UID is the actual value of this property."
+msgstr ""
+"在路徑與 UID 顯示之間切換。\n"
+"UID 是此屬性的實際值。"
 
 msgid "Renaming layer %d:"
 msgstr "重新命名%d圖層："
@@ -7628,6 +7707,9 @@ msgstr "新增著色器…"
 msgid "Size: %s"
 msgstr "大小：%s"
 
+msgid "Invalid file or broken link."
+msgstr "無效的檔案或連結已損壞。"
+
 msgid "Type: %s"
 msgstr "型別：%s"
 
@@ -7645,6 +7727,9 @@ msgstr "長度：%0.3f 秒"
 
 msgid "Advanced settings are always shown when searching."
 msgstr "搜尋時總是顯示進階設定。"
+
+msgid "Event Configured"
+msgstr "事件已設定"
 
 msgid "Configure"
 msgstr "設定"
@@ -8288,6 +8373,12 @@ msgstr "標籤名稱不能為空。"
 msgid "Tag name can't contain spaces."
 msgstr "標籤名稱不能包含空白。"
 
+msgid "Tag name can't begin or end with underscore."
+msgstr "標籤名稱不可以下劃線開頭或結尾。"
+
+msgid "Tag name can't contain consecutive underscores."
+msgstr "標籤名稱不可包含連續的下劃線。"
+
 msgid "These characters are not allowed in tags: %s."
 msgstr "標籤中不允許使用以下字元：%s。"
 
@@ -8386,6 +8477,9 @@ msgstr "先備份專案"
 
 msgid "Convert Full Project"
 msgstr "轉換整個專案"
+
+msgid "See Migration Guide"
+msgstr "參見遷移指南"
 
 msgid ""
 "This option will perform full project conversion, updating scenes, resources "
@@ -8794,6 +8888,9 @@ msgstr ""
 "內嵌遊戲尺寸以專案設定為準。\n"
 "當遊戲工作區小於期望尺寸時，會使用「保持比例」模式。"
 
+msgid "Embedded game size is based on project settings."
+msgstr "內嵌遊戲大小將依據專案設定。"
+
 msgid "Keep the aspect ratio of the embedded game."
 msgstr "保持內嵌遊戲的長寬比。"
 
@@ -8851,6 +8948,9 @@ msgstr "覆寫主要標籤"
 msgid "Feature Tags"
 msgstr "功能標籤"
 
+msgid "Move Origin to Geometric Center"
+msgstr "將原點移至幾何中心"
+
 msgid "Create Polygon"
 msgstr "建立多邊形"
 
@@ -8862,6 +8962,12 @@ msgstr ""
 "編輯頂點。\n"
 "左鍵：移動頂點\n"
 "右鍵：刪除頂點"
+
+msgid "Move center of gravity to geometric center."
+msgstr "將重心移至幾何中心。"
+
+msgid "Move Geometric Center"
+msgstr "移動幾何中心"
 
 msgid "Edit Polygon"
 msgstr "編輯多邊形"
@@ -8883,6 +8989,12 @@ msgstr "編輯多邊形頂點"
 
 msgid "Delete Polygon Points"
 msgstr "刪除多邊形頂點"
+
+msgid "Edit Camera2D Limits"
+msgstr "編輯 Camera2D 限制"
+
+msgid "Snap Camera2D Limits to the Viewport"
+msgstr "將 Camera2D 限制貼齊至檢視區"
 
 msgid "Camera2D"
 msgstr "Camera2D"
@@ -9626,6 +9738,9 @@ msgstr "突顯所選 TileMap 圖層"
 msgid "Toggle grid visibility."
 msgstr "切換格線可見度。"
 
+msgid "Advanced settings."
+msgstr "進階設定。"
+
 msgid "Automatically Replace Tiles with Proxies"
 msgstr "自動以代理取代圖塊"
 
@@ -10185,6 +10300,12 @@ msgstr "更改圓柱體高度"
 
 msgid "Change Separation Ray Shape Length"
 msgstr "更改分離射線形狀長度"
+
+msgid "Remove SoftBody3D pinned point %d"
+msgstr "移除 SoftBody3D 釘選點 %d"
+
+msgid "Add SoftBody3D pinned point %d"
+msgstr "新增 SoftBody3D 釘選點 %d"
 
 msgid "Change Probe Size"
 msgstr "更改探查大小"
@@ -11295,6 +11416,9 @@ msgstr ""
 "切換預覽陽光。\n"
 "若場景中已加入 DirectionalLight3D 節點，預覽陽光將被停用。"
 
+msgid "Toggle preview sunlight."
+msgstr "切換預覽陽光。"
+
 msgid ""
 "Toggle preview environment.\n"
 "If a WorldEnvironment node is added to the scene, preview environment is "
@@ -11302,6 +11426,9 @@ msgid ""
 msgstr ""
 "切換預覽環境。\n"
 "若場景中已加入 WorldEnvironment 節點，預覽環境將被停用。"
+
+msgid "Toggle preview environment."
+msgstr "切換預覽環境。"
 
 msgid "Edit Sun and Environment settings."
 msgstr "編輯太陽與環境設定。"
@@ -11577,6 +11704,9 @@ msgstr "此幾何體面沒有任何面積。"
 
 msgid "The geometry doesn't contain any faces."
 msgstr "此幾何體未包含任何面。"
+
+msgid "Generation Time (sec)"
+msgstr "產生時間（秒）"
 
 msgid "Create Emitter"
 msgstr "建立發射器"
@@ -12987,6 +13117,9 @@ msgid ""
 msgstr ""
 "釘選該樣式盒為主要樣式。編輯其屬性將更新所有其他同型別樣式盒的相同屬性。"
 
+msgid "Pin this StyleBox as a main style."
+msgstr "將此 StyleBox 釘選為主要樣式。"
+
 msgid "Add Item Type"
 msgstr "新增項目型別"
 
@@ -13164,6 +13297,9 @@ msgstr "PackedScene 資源無效，必須擁有 Control 節點作為根節點。
 msgid "Invalid file, not a PackedScene resource."
 msgstr "檔案無效，並非 PackedScene 資源。"
 
+msgid "Invalid PackedScene resource, could not instantiate it."
+msgstr "PackedScene 資源無效，無法實例化。"
+
 msgid "Reload the scene to reflect its most actual state."
 msgstr "重新載入場景以反映其最新狀態。"
 
@@ -13252,6 +13388,9 @@ msgid ""
 msgstr ""
 "計數器的最少位數。\n"
 "不足位數會以前導零補齊。"
+
+msgid "Minimum number of digits for the counter."
+msgstr "計數器的最少位數。"
 
 msgid "Post-Process"
 msgstr "後處理"
@@ -13700,6 +13839,9 @@ msgstr "SpriteFrames"
 msgid "Toggle SpriteFrames Bottom Panel"
 msgstr "切換 SpriteFrames 底部面板"
 
+msgid "Toggle color channel preview selection."
+msgstr "切換色彩通道預覽選取。"
+
 msgid "Move GradientTexture2D Fill Point"
 msgstr "移動 GradientTexture2D 填充點"
 
@@ -13961,6 +14103,23 @@ msgstr "無法開啟「%s」，該檔案可能已被移動或刪除。"
 msgid "Close and save changes?"
 msgstr "關閉並儲存變更？"
 
+msgid "Importing theme failed. File is not a text editor theme file (.tet)."
+msgstr "匯入主題失敗。檔案並非文字編輯器主題檔（.tet）。"
+
+msgid ""
+"Importing theme failed. File name cannot be 'Default', 'Custom', or 'Godot 2'."
+msgstr "匯入主題失敗。檔名不得為「Default」、「Custom」或「Godot 2」。"
+
+msgid "Importing theme failed. Failed to copy theme file."
+msgstr "匯入主題失敗。無法複製主題檔。"
+
+msgid ""
+"Saving theme failed. File name cannot be 'Default', 'Custom', or 'Godot 2'."
+msgstr "儲存主題失敗。檔名不得為「Default」、「Custom」或「Godot 2」。"
+
+msgid "Saving theme failed."
+msgstr "儲存主題失敗。"
+
 msgid "Error writing TextFile:"
 msgstr "無法儲存檔案："
 
@@ -14141,6 +14300,9 @@ msgstr "來源"
 msgid "Target"
 msgstr "目標"
 
+msgid "Error at ([hint=Line %d, column %d]%d, %d[/hint]):"
+msgstr "錯誤位置（[hint=第 %d 行，第 %d 欄]%d, %d[/hint]）："
+
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
 msgstr "缺少方法「%s」， 訊號「%s」自節點「%s」至「%s」的連接。"
@@ -14293,6 +14455,9 @@ msgstr ""
 
 msgid "An action with the name '%s' already exists."
 msgstr "已有名稱「%s」的動作。"
+
+msgid "Built-in actions are always shown when searching."
+msgstr "搜尋時會一併顯示內建動作。"
 
 msgid "Action %s"
 msgstr "動作 %s"
@@ -14807,6 +14972,9 @@ msgstr "選擇既存的畫面佈局:"
 msgid "Or enter new layout name"
 msgstr "或是輸入新的排版名稱"
 
+msgid "New layout name"
+msgstr "新排版名稱"
+
 msgid "Edit Built-in Action: %s"
 msgstr "編輯內建動作：%s"
 
@@ -14951,6 +15119,18 @@ msgstr "控制器按鈕"
 msgid "Joypad Axes"
 msgstr "控制器軸"
 
+msgctxt "Key Location"
+msgid "Unspecified"
+msgstr "未指定"
+
+msgctxt "Key Location"
+msgid "Left"
+msgstr "左側"
+
+msgctxt "Key Location"
+msgid "Right"
+msgstr "右側"
+
 msgid "Event Configuration for \"%s\""
 msgstr "「%s」的事件配置"
 
@@ -14985,6 +15165,18 @@ msgstr "鍵標籤（Unicode，不區分大小寫）"
 
 msgid "Physical location"
 msgstr "物理位置"
+
+msgid "Alt or Option key"
+msgstr "Alt 或 Option 鍵"
+
+msgid "Shift key"
+msgstr "Shift 鍵"
+
+msgid "Control key"
+msgstr "Control 鍵"
+
+msgid "Meta/Windows or Command key"
+msgstr "Meta/Windows 或 Command 鍵"
 
 msgid "Add Project Setting"
 msgstr "新增專案設定"
@@ -15163,6 +15355,12 @@ msgstr "名稱「%s」是保留的著色器語言關鍵字。"
 
 msgid "Add Shader Global Parameter"
 msgstr "新增著色器全域參數"
+
+msgid "Error at line %d:"
+msgstr "錯誤於第 %d 行："
+
+msgid "Error at line %d in include %s:%d:"
+msgstr "錯誤於第 %d 行（於引入檔 %s:%d）："
 
 msgid "Warnings should be fixed to prevent errors."
 msgstr "應修正警告以避免錯誤。"
@@ -15400,6 +15598,9 @@ msgstr "設定常數：%s"
 
 msgid "Invalid name for varying."
 msgstr "Varying 名稱無效。"
+
+msgid "Varying with that name already exists."
+msgstr "同名的 Varying 已存在。"
 
 msgid "Boolean type cannot be used with `%s` varying mode."
 msgstr "布林型別無法用於 `%s` varying 模式。"
@@ -16669,6 +16870,9 @@ msgstr "拉取 (Pull)"
 msgid "Push"
 msgstr "推送 (Push)"
 
+msgid "Extra options"
+msgstr "額外選項"
+
 msgid "Force Push"
 msgstr "強制推送"
 
@@ -16765,6 +16969,15 @@ msgstr "變更環面外半徑"
 
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "convert() 的型別參數無效，請使用 TYPE_* 常數。"
+
+msgid "Expected an integer between 0 and 2^32 - 1."
+msgstr "應為 0 到 2^32 - 1 之間的整數。"
+
+msgid "Expected a string of length 1 (a character)."
+msgstr "應為長度為 1 的字串（單一字元）。"
+
+msgid "Range too big."
+msgstr "範圍過大。"
 
 msgid "Cannot resize array."
 msgstr "無法調整陣列大小。"
@@ -16926,6 +17139,9 @@ msgstr "以游標沿 Y 軸旋轉"
 
 msgid "Cursor Rotate Z"
 msgstr "以游標沿 Z 軸旋轉"
+
+msgid "Change Grid Floor:"
+msgstr "變更格線樓層："
 
 msgid ""
 "Change Grid Floor:\n"
@@ -17379,6 +17595,9 @@ msgid ""
 "another type."
 msgstr "無法產生導航網格，因為該資源是從其他類型匯入的。"
 
+msgid "Bake"
+msgstr "烘焙"
+
 msgid "Bake NavigationMesh"
 msgstr "烘焙導航網格"
 
@@ -17392,6 +17611,9 @@ msgstr "清除導航網格"
 
 msgid "Clears the internal NavigationMesh vertices and polygons."
 msgstr "清除內部導航網格頂點與多邊形。"
+
+msgid "Baking NavigationMesh ..."
+msgstr "正在烘焙 NavigationMesh…"
 
 msgid "Toggles whether the noise preview is computed in 3D space."
 msgstr "切換是否在 3D 空間中計算雜訊預覽。"
@@ -17634,6 +17856,11 @@ msgstr "必須啟用「使用 Gradle 建置」，才能開啟「滑動關閉」�
 msgid "\"Use Gradle Build\" must be enabled to use the plugins."
 msgstr "必須啟用「使用 Gradle 建置」，才能使用外掛。"
 
+msgid ""
+"\"Compress Native Libraries\" is only valid when \"Use Gradle Build\" is "
+"enabled."
+msgstr "只有啟用「使用 Gradle 建置」時，才能使用「壓縮原生函式庫」。"
+
 msgid "\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled."
 msgstr "只有在啟用「使用 Gradle 建置」時，「匯出 AAB」才有效。"
 
@@ -17772,6 +17999,9 @@ msgstr "缺少「build-tools」資料夾！"
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "找不到 Android SDK build-tools 的 apksigner 指令。"
 
+msgid "\"Use Gradle Build\" is required for transparent background on Android"
+msgstr "在 Android 上使用透明背景需要啟用「使用 Gradle 建置」"
+
 msgid ""
 "\"Target SDK\" %d is higher than the default version %d. This may work, but "
 "wasn't tested and may be unstable."
@@ -17846,6 +18076,9 @@ msgstr "無法驗證已簽署的 APK。"
 msgid "'apksigner' verification of APK failed."
 msgstr "APK 的「apksigner」驗證失敗。"
 
+msgid "Could not create temporary file!"
+msgstr "無法建立暫存檔！"
+
 msgid "Exporting for Android"
 msgstr "為 Android 匯出"
 
@@ -17882,6 +18115,12 @@ msgstr ""
 
 msgid "Unable to overwrite res/*.xml files with project name."
 msgstr "無法使用專案名稱覆寫 res/*.xml 檔案。"
+
+msgid "Could not generate sparse pck metadata!"
+msgstr "無法產生稀疏 PCK 中繼資料！"
+
+msgid "Could not write PCK directory!"
+msgstr "無法寫入 PCK 目錄！"
 
 msgid "Could not export project files to gradle project."
 msgstr "無法匯出專案檔至 Gradle 專案。"
@@ -19519,6 +19758,11 @@ msgid "Modulo by zero error."
 msgstr "取餘除以零錯誤。"
 
 msgid ""
+"Invalid number of arguments when calling stage function '%s', which expects "
+"%d argument(s)."
+msgstr "呼叫階段函式「%s」時的參數數量無效，應為 %d 個參數。"
+
+msgid ""
 "Invalid argument type when calling stage function '%s', type expected is '%s'."
 msgstr "呼叫階段函式「%s」時的參數型別無效，應為「%s」。"
 
@@ -19549,6 +19793,13 @@ msgstr "不允許遞迴。"
 
 msgid "Function '%s' can't be called from source code."
 msgstr "函式「%s」不可從原始碼中呼叫。"
+
+msgid "No matching function for \"%s\" call:"
+msgstr "找不到符合的函式以呼叫「%s」："
+
+msgid ""
+"candidate function \"%s(%s)\" not viable, argument %d should be %s but is %s."
+msgstr "候選函式「%s(%s)」不適用，第 %d 個參數應為 %s，卻是 %s。"
 
 msgid ""
 "Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."
@@ -19837,6 +20088,15 @@ msgstr "無效的著色器型別。有效型別：%s"
 msgid "Unexpected token: '%s'."
 msgstr "出現意外符號：「%s」。"
 
+msgid "Duplicated stencil mode reference value: '%s'."
+msgstr "重複的模板模式參考值：「%s」。"
+
+msgid "Stencil mode reference value cannot be negative: '%s'."
+msgstr "模板模式參考值不可為負數：「%s」。"
+
+msgid "Stencil mode reference value cannot be greater than 255: '%s'."
+msgstr "模板模式參考值不可大於 255：「%s」。"
+
 msgid "Expected a struct identifier."
 msgstr "應為 struct 識別字。"
 
@@ -20062,15 +20322,29 @@ msgstr "著色器使用的 varying 過多（%d 個，最多支援 %d 個）。"
 msgid "uniform buffer"
 msgstr "uniform 緩衝"
 
+msgid "Expected an identifier for stencil mode."
+msgstr "應提供模板模式的識別字。"
+
 msgid "Expected an identifier for render mode."
 msgstr "應提供算繪模式識別字。"
+
+msgid "Duplicated stencil mode: '%s'."
+msgstr "重複的模板模式：「%s」。"
 
 msgid "Duplicated render mode: '%s'."
 msgstr "重複的算繪模式：「%s」。"
 
 msgid ""
+"Redefinition of stencil mode: '%s'. The '%s' mode has already been set to "
+"'%s'."
+msgstr "重新定義模板模式：「%s」。模式「%s」已設為「%s」。"
+
+msgid ""
 "Redefinition of render mode: '%s'. The '%s' mode has already been set to '%s'."
 msgstr "算繪模式「%s」被重新定義。「%s」模式已設為「%s」。"
+
+msgid "Invalid stencil mode: '%s'."
+msgstr "無效的模板模式：「%s」。"
 
 msgid "Invalid render mode: '%s'."
 msgstr "無效的算繪模式：「%s」。"

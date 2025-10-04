@@ -540,7 +540,7 @@ void FileDialog::_action_pressed() {
 			return;
 		}
 
-		if (dir_access->file_exists(f) || dir_access->is_bundle(f)) {
+		if (customization_flags[CUSTOMIZATION_OVERWRITE_WARNING] && (dir_access->file_exists(f) || dir_access->is_bundle(f))) {
 			confirm_save->set_text(vformat(atr(ETR("File \"%s\" already exists.\nDo you want to overwrite it?")), f));
 			confirm_save->popup_centered(Size2(250, 80));
 		} else {
@@ -575,6 +575,24 @@ bool FileDialog::_is_open_should_be_disabled() {
 		}
 	}
 	return false;
+}
+
+void FileDialog::_thumbnail_callback(const Ref<Texture2D> &p_texture, const String &p_path) {
+	if (display_mode == DISPLAY_LIST || p_texture.is_null()) {
+		return;
+	}
+
+	if (!p_path.begins_with(full_dir)) {
+		return;
+	}
+
+	const String file_name = p_path.get_file();
+	for (int i = 0; i < file_list->get_item_count(); i++) {
+		if (file_list->get_item_text(i) == file_name) {
+			file_list->set_item_icon(i, p_texture);
+			break;
+		}
+	}
 }
 
 void FileDialog::_go_up() {
@@ -778,7 +796,7 @@ void FileDialog::update_file_list() {
 		file_list->set_max_columns(1);
 		file_list->set_max_text_lines(1);
 		file_list->set_fixed_column_width(0);
-		file_list->set_fixed_icon_size(Size2());
+		file_list->set_fixed_icon_size(theme_cache.file->get_size());
 	}
 
 	dir_access->list_dir_begin();
@@ -948,13 +966,44 @@ void FileDialog::update_file_list() {
 
 	for (const FileInfo &info : filtered_files) {
 		file_list->add_item(info.name);
-		if (get_icon_func) {
-			Ref<Texture2D> icon = get_icon_func(base_dir.path_join(info.name));
+		const String path = base_dir.path_join(info.name);
+
+		if (display_mode == DISPLAY_LIST) {
+			Ref<Texture2D> icon;
+			if (get_icon_callback.is_valid()) {
+				const Variant &v = path;
+				const Variant *argptrs[1] = { &v };
+				Variant vicon;
+
+				Callable::CallError ce;
+				get_icon_callback.callp(argptrs, 1, vicon, ce);
+				if (unlikely(ce.error != Callable::CallError::CALL_OK)) {
+					ERR_PRINT(vformat("Error calling FileDialog's icon callback: %s.", Variant::get_callable_error_text(get_icon_callback, argptrs, 1, ce)));
+				}
+				icon = vicon;
+			}
+			if (icon.is_null()) {
+				icon = theme_cache.file;
+			}
 			file_list->set_item_icon(-1, icon);
-		} else if (display_mode == DISPLAY_THUMBNAILS) {
-			file_list->set_item_icon(-1, theme_cache.file_thumbnail);
-		} else {
-			file_list->set_item_icon(-1, theme_cache.file);
+		} else { // DISPLAY_THUMBNAILS
+			Ref<Texture2D> icon;
+			if (get_thumbnail_callback.is_valid()) {
+				const Variant &v = path;
+				const Variant *argptrs[1] = { &v };
+				Variant vicon;
+
+				Callable::CallError ce;
+				get_thumbnail_callback.callp(argptrs, 1, vicon, ce);
+				if (unlikely(ce.error != Callable::CallError::CALL_OK)) {
+					ERR_PRINT(vformat("Error calling FileDialog's thumbnail callback: %s.", Variant::get_callable_error_text(get_thumbnail_callback, argptrs, 1, ce)));
+				}
+				icon = vicon;
+			}
+			if (icon.is_null()) {
+				icon = theme_cache.file;
+			}
+			file_list->set_item_icon(-1, icon);
 		}
 		file_list->set_item_icon_modulate(-1, theme_cache.file_icon_color);
 
@@ -1333,6 +1382,64 @@ void FileDialog::set_display_mode(DisplayMode p_mode) {
 
 FileDialog::DisplayMode FileDialog::get_display_mode() const {
 	return display_mode;
+}
+
+void FileDialog::set_favorite_list(const PackedStringArray &p_favorites) {
+	ERR_FAIL_COND_MSG(Thread::get_caller_id() != Thread::get_main_id(), "Setting favorite list can only be done on the main thread.");
+
+	global_favorites.clear();
+	global_favorites.reserve(p_favorites.size());
+	for (const String &fav : p_favorites) {
+		if (fav.ends_with("/")) {
+			global_favorites.push_back(fav);
+		} else {
+			global_favorites.push_back(fav + "/");
+		}
+	}
+}
+
+PackedStringArray FileDialog::get_favorite_list() {
+	PackedStringArray ret;
+	ERR_FAIL_COND_V_MSG(Thread::get_caller_id() != Thread::get_main_id(), ret, "Getting favorite list can only be done on the main thread.");
+
+	ret.resize(global_favorites.size());
+
+	String *fav_write = ret.ptrw();
+	int i = 0;
+	for (const String &fav : global_favorites) {
+		fav_write[i] = fav;
+		i++;
+	}
+	return ret;
+}
+
+void FileDialog::set_recent_list(const PackedStringArray &p_recents) {
+	ERR_FAIL_COND_MSG(Thread::get_caller_id() != Thread::get_main_id(), "Setting recent list can only be done on the main thread.");
+
+	global_recents.clear();
+	global_recents.reserve(p_recents.size());
+	for (const String &recent : p_recents) {
+		if (recent.ends_with("/")) {
+			global_recents.push_back(recent);
+		} else {
+			global_recents.push_back(recent + "/");
+		}
+	}
+}
+
+PackedStringArray FileDialog::get_recent_list() {
+	PackedStringArray ret;
+	ERR_FAIL_COND_V_MSG(Thread::get_caller_id() != Thread::get_main_id(), ret, "Getting recent list can only be done on the main thread.");
+
+	ret.resize(global_recents.size());
+
+	String *recent_write = ret.ptrw();
+	int i = 0;
+	for (const String &recent : global_recents) {
+		recent_write[i] = recent;
+		i++;
+	}
+	return ret;
 }
 
 void FileDialog::set_customization_flag_enabled(Customization p_flag, bool p_enabled) {
@@ -1921,6 +2028,13 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_customization_flag_enabled", "flag"), &FileDialog::is_customization_flag_enabled);
 	ClassDB::bind_method(D_METHOD("deselect_all"), &FileDialog::deselect_all);
 
+	ClassDB::bind_static_method("FileDialog", D_METHOD("set_favorite_list", "favorites"), &FileDialog::set_favorite_list);
+	ClassDB::bind_static_method("FileDialog", D_METHOD("get_favorite_list"), &FileDialog::get_favorite_list);
+	ClassDB::bind_static_method("FileDialog", D_METHOD("set_recent_list", "recents"), &FileDialog::set_recent_list);
+	ClassDB::bind_static_method("FileDialog", D_METHOD("get_recent_list"), &FileDialog::get_recent_list);
+	ClassDB::bind_static_method("FileDialog", D_METHOD("set_get_icon_callback", "callback"), &FileDialog::set_get_icon_callback);
+	ClassDB::bind_static_method("FileDialog", D_METHOD("set_get_thumbnail_callback", "callback"), &FileDialog::set_get_thumbnail_callback);
+
 	ClassDB::bind_method(D_METHOD("invalidate"), &FileDialog::invalidate);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mode_overrides_title"), "set_mode_overrides_title", "is_mode_overriding_title");
@@ -1943,6 +2057,7 @@ void FileDialog::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "favorites_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_FAVORITES);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "recent_list_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_RECENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "layout_toggle_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_LAYOUT);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "overwrite_warning_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_OVERWRITE_WARNING);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR, "", PROPERTY_USAGE_NONE), "set_current_dir", "get_current_dir");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file", PROPERTY_HINT_FILE_PATH, "*", PROPERTY_USAGE_NONE), "set_current_file", "get_current_file");
@@ -1973,6 +2088,7 @@ void FileDialog::_bind_methods() {
 	BIND_ENUM_CONSTANT(CUSTOMIZATION_FAVORITES);
 	BIND_ENUM_CONSTANT(CUSTOMIZATION_RECENT);
 	BIND_ENUM_CONSTANT(CUSTOMIZATION_LAYOUT);
+	BIND_ENUM_CONSTANT(CUSTOMIZATION_OVERWRITE_WARNING);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, FileDialog, thumbnail_size);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, parent_folder);
@@ -2055,6 +2171,18 @@ void FileDialog::set_default_show_hidden_files(bool p_show) {
 	default_show_hidden_files = p_show;
 }
 
+void FileDialog::set_default_display_mode(DisplayMode p_mode) {
+	default_display_mode = p_mode;
+}
+
+void FileDialog::set_get_icon_callback(const Callable &p_callback) {
+	get_icon_callback = p_callback;
+}
+
+void FileDialog::set_get_thumbnail_callback(const Callable &p_callback) {
+	get_thumbnail_callback = p_callback;
+}
+
 void FileDialog::set_use_native_dialog(bool p_native) {
 	use_native_dialog = p_native;
 
@@ -2080,12 +2208,14 @@ FileDialog::FileDialog() {
 	set_hide_on_ok(false);
 	set_size(Size2(640, 360));
 	set_default_ok_text(ETR("Save")); // Default mode text.
+	thumbnail_callback = callable_mp(this, &FileDialog::_thumbnail_callback);
 
 	for (int i = 0; i < CUSTOMIZATION_MAX; i++) {
 		customization_flags[i] = true;
 	}
 
 	show_hidden_files = default_show_hidden_files;
+	display_mode = default_display_mode;
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 
 	main_vbox = memnew(VBoxContainer);
@@ -2192,6 +2322,7 @@ FileDialog::FileDialog() {
 		favorite_list = memnew(ItemList);
 		favorite_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		favorite_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		favorite_list->set_theme_type_variation("ItemListSecondary");
 		favorite_list->set_accessibility_name(ETR("Favorites:"));
 		favorite_vbox->add_child(favorite_list);
 		favorite_list->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_favorite_selected));
@@ -2208,6 +2339,7 @@ FileDialog::FileDialog() {
 		recent_list = memnew(ItemList);
 		recent_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		recent_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		recent_list->set_theme_type_variation("ItemListSecondary");
 		recent_list->set_accessibility_name(ETR("Recent:"));
 		recent_vbox->add_child(recent_list);
 		recent_list->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_recent_selected));

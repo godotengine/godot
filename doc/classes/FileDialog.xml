@@ -47,6 +47,12 @@
 				Clear all currently selected items in the dialog.
 			</description>
 		</method>
+		<method name="get_favorite_list" qualifiers="static">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the list of favorite directories, which is shared by all [FileDialog] nodes. Useful to store the list of favorites between project sessions. This method can be called only from the main thread.
+			</description>
+		</method>
 		<method name="get_line_edit">
 			<return type="LineEdit" />
 			<description>
@@ -73,6 +79,12 @@
 			<param index="0" name="option" type="int" />
 			<description>
 				Returns an array of values of the [OptionButton] with index [param option].
+			</description>
+		</method>
+		<method name="get_recent_list" qualifiers="static">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the list of recent directories, which is shared by all [FileDialog] nodes. Useful to store the list of recents between project sessions. This method can be called only from the main thread.
 			</description>
 		</method>
 		<method name="get_selected_options" qualifiers="const">
@@ -111,6 +123,42 @@
 				Toggles the specified customization [param flag], allowing to customize features available in this [FileDialog]. See [enum Customization] for options.
 			</description>
 		</method>
+		<method name="set_favorite_list" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="favorites" type="PackedStringArray" />
+			<description>
+				Sets the list of favorite directories, which is shared by all [FileDialog] nodes. Useful to restore the list of favorites saved with [method get_favorite_list]. This method can be called only from the main thread.
+				[b]Note:[/b] [FileDialog] will update its internal [ItemList] of favorites when its visibility changes. Be sure to call this method earlier if you want your changes to have effect.
+			</description>
+		</method>
+		<method name="set_get_icon_callback" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<description>
+				Sets the callback used by the [FileDialog] nodes to get a file icon, when [constant DISPLAY_LIST] mode is used. The callback should take a single [String] argument (file path), and return a [Texture2D]. If an invalid texture is returned, the [theme_item file] icon will be used instead.
+			</description>
+		</method>
+		<method name="set_get_thumbnail_callback" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<description>
+				Sets the callback used by the [FileDialog] nodes to get a file icon, when [constant DISPLAY_THUMBNAILS] mode is used. The callback should take a single [String] argument (file path), and return a [Texture2D]. If an invalid texture is returned, the [theme_item file_thumbnail] icon will be used instead.
+				Thumbnails are usually more complex and may take a while to load. To avoid stalling the application, you can use [ImageTexture] to asynchronously create the thumbnail.
+				[codeblock]
+				func _ready():
+					FileDialog.set_get_thumbnail_callback(thumbnail_method)
+
+				func thumbnail_method(path):
+					var image_texture = ImageTexture.new()
+					make_thumbnail_async(path, image_texture)
+					return image_texture
+
+				func make_thumbnail_async(path, image_texture):
+					var thumbnail_texture = await generate_thumbnail(path) # Some method that generates a thumbnail.
+					image_texture.set_image(thumbnail_texture.get_image())
+				[/codeblock]
+			</description>
+		</method>
 		<method name="set_option_default">
 			<return type="void" />
 			<param index="0" name="option" type="int" />
@@ -133,6 +181,14 @@
 			<param index="1" name="values" type="PackedStringArray" />
 			<description>
 				Sets the option values of the [OptionButton] with index [param option].
+			</description>
+		</method>
+		<method name="set_recent_list" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="recents" type="PackedStringArray" />
+			<description>
+				Sets the list of recent directories, which is shared by all [FileDialog] nodes. Useful to restore the list of recents saved with [method set_recent_list]. This method can be called only from the main thread.
+				[b]Note:[/b] [FileDialog] will update its internal [ItemList] of recent directories when its visibility changes. Be sure to call this method earlier if you want your changes to have effect.
 			</description>
 		</method>
 	</methods>
@@ -189,6 +245,9 @@
 		</member>
 		<member name="option_count" type="int" setter="set_option_count" getter="get_option_count" default="0">
 			The number of additional [OptionButton]s and [CheckBox]es in the dialog.
+		</member>
+		<member name="overwrite_warning_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
+			If [code]true[/code], the [FileDialog] will warn the user before overwriting files in save mode.
 		</member>
 		<member name="recent_list_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
 			If [code]true[/code], shows the recent directories list on the left side of the dialog.
@@ -295,6 +354,10 @@
 		<constant name="CUSTOMIZATION_LAYOUT" value="6" enum="Customization">
 			If enabled, shows the layout switch buttons (list/thumbnails).
 			Equivalent to [member layout_toggle_enabled].
+		</constant>
+		<constant name="CUSTOMIZATION_OVERWRITE_WARNING" value="7" enum="Customization">
+			If enabled, the [FileDialog] will warn the user before overwriting files in save mode.
+			Equivalent to [member overwrite_warning_enabled].
 		</constant>
 	</constants>
 	<theme_items>

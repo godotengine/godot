@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialComponentMarkerList" inherits="OpenXRSpatialComponentData" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Object for storing the queries marker result data.
+	</brief_description>
+	<description>
+		Object for storing the queries marker result data when calling [method OpenXRSpatialEntityExtension.query_snapshot].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_marker_data" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="snapshot" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Returns either a [String] or a [PackedByteArray] buffer with data for the marker at this [param index]. Only applicable for QR code markers.
+			</description>
+		</method>
+		<method name="get_marker_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the marker ID for the marker at this [param index]. Only applicable for Aruco or April Tag markers.
+			</description>
+		</method>
+		<method name="get_marker_type" qualifiers="const">
+			<return type="int" enum="OpenXRSpatialComponentMarkerList.MarkerType" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the marker type for the marker at this [param index].
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="MARKER_TYPE_UNKNOWN" value="0" enum="MarkerType">
+			Unknown or unset marker type.
+		</constant>
+		<constant name="MARKER_TYPE_QRCODE" value="1" enum="MarkerType">
+			Marker based on a QR code.
+		</constant>
+		<constant name="MARKER_TYPE_MICRO_QRCODE" value="2" enum="MarkerType">
+			Marker based on a micro QR code.
+		</constant>
+		<constant name="MARKER_TYPE_ARUCO" value="3" enum="MarkerType">
+			Marker based on an Aruco code.
+		</constant>
+		<constant name="MARKER_TYPE_APRIL_TAG" value="4" enum="MarkerType">
+			Marker based on an April Tag.
+		</constant>
+		<constant name="MARKER_TYPE_MAX" value="5" enum="MarkerType">
+			Maximum value for this enum.
+		</constant>
+	</constants>
+</class>

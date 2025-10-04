@@ -38,13 +38,7 @@
 
 #include <jni.h>
 
-struct jvalret {
-	jobject obj;
-	jvalue val;
-	jvalret() { obj = nullptr; }
-};
-
-jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, bool force_jobject = false, int p_depth = 0);
+jvalue _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, bool force_jobject = false, int p_depth = 0);
 
 String _get_class_name(JNIEnv *env, jclass cls, bool *array);
 

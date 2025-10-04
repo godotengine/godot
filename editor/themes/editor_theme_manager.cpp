@@ -536,10 +536,10 @@ void EditorThemeManager::_create_shared_styles(const Ref<EditorTheme> &p_theme, 
 		const float prop_color_saturation = p_config.accent_color.get_s() * 0.75;
 		const float prop_color_value = p_config.accent_color.get_v();
 
-		p_theme->set_color("property_color_x", EditorStringName(Editor), Color().from_hsv(0.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
-		p_theme->set_color("property_color_y", EditorStringName(Editor), Color().from_hsv(1.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
-		p_theme->set_color("property_color_z", EditorStringName(Editor), Color().from_hsv(2.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
-		p_theme->set_color("property_color_w", EditorStringName(Editor), Color().from_hsv(1.5 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+		p_theme->set_color("property_color_x", EditorStringName(Editor), Color::from_hsv(0.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+		p_theme->set_color("property_color_y", EditorStringName(Editor), Color::from_hsv(1.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+		p_theme->set_color("property_color_z", EditorStringName(Editor), Color::from_hsv(2.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+		p_theme->set_color("property_color_w", EditorStringName(Editor), Color::from_hsv(1.5 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
 
 		// Special colors for rendering methods.
 
@@ -1171,6 +1171,14 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_color("font_outline_color", "TabBar", p_config.font_outline_color);
 		p_theme->set_color("drop_mark_color", "TabContainer", tab_highlight);
 		p_theme->set_color("drop_mark_color", "TabBar", tab_highlight);
+
+		Color icon_color = Color(1, 1, 1);
+		p_theme->set_color("icon_selected_color", "TabContainer", icon_color);
+		p_theme->set_color("icon_hovered_color", "TabContainer", icon_color);
+		p_theme->set_color("icon_unselected_color", "TabContainer", icon_color);
+		p_theme->set_color("icon_selected_color", "TabBar", icon_color);
+		p_theme->set_color("icon_hovered_color", "TabBar", icon_color);
+		p_theme->set_color("icon_unselected_color", "TabBar", icon_color);
 
 		p_theme->set_icon("menu", "TabContainer", p_theme->get_icon(SNAME("GuiTabMenu"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("menu_highlight", "TabContainer", p_theme->get_icon(SNAME("GuiTabMenuHl"), EditorStringName(EditorIcons)));

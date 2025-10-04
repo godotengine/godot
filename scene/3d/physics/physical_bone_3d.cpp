@@ -1287,7 +1287,7 @@ PhysicalBone3D::~PhysicalBone3D() {
 		memdelete(joint_data);
 	}
 	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
-	PhysicsServer3D::get_singleton()->free(joint);
+	PhysicsServer3D::get_singleton()->free_rid(joint);
 }
 
 void PhysicalBone3D::update_bone_id() {

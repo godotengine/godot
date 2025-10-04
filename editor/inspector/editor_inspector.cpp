@@ -320,7 +320,6 @@ void EditorProperty::_notification(int p_what) {
 					height = MAX(height, minsize.height);
 					no_children = false;
 				}
-				child_room = MAX(child_room, get_minimum_size().width);
 
 				if (no_children) {
 					text_size = size.width;

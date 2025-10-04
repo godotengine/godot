@@ -6,6 +6,7 @@
 	<description>
 		Native image datatype. Contains image data which can be converted to an [ImageTexture] and provides commonly used [i]image processing[/i] methods. The maximum width and height for an [Image] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
 		An [Image] cannot be assigned to a texture property of an object directly (such as [member Sprite2D.texture]), and has to be converted manually to an [ImageTexture] first.
+		[b]Note:[/b] Methods that modify the image data cannot be used on VRAM-compressed images. Use [method decompress] to convert the image to an uncompressed format first.
 		[b]Note:[/b] The maximum image size is 16384×16384 pixels due to graphics hardware limitations. Larger images may fail to import.
 	</description>
 	<tutorials>
@@ -80,9 +81,10 @@
 			<param index="1" name="source" type="int" enum="Image.CompressSource" default="0" />
 			<param index="2" name="astc_format" type="int" enum="Image.ASTCFormat" default="0" />
 			<description>
-				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available.
+				Compresses the image with a VRAM-compressed format to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available.
 				The [param source] parameter helps to pick the best compression method for DXT and ETC2 formats. It is ignored for ASTC compression.
-				For ASTC compression, the [param astc_format] parameter must be supplied.
+				The [param astc_format] parameter is only taken into account when using ASTC compression; it is ignored for all other formats.
+				[b]Note:[/b] [method compress] is only supported in editor builds. When run in an exported project, this method always returns [constant ERR_UNAVAILABLE].
 			</description>
 		</method>
 		<method name="compress_from_channels">
@@ -91,9 +93,10 @@
 			<param index="1" name="channels" type="int" enum="Image.UsedChannels" />
 			<param index="2" name="astc_format" type="int" enum="Image.ASTCFormat" default="0" />
 			<description>
-				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available.
+				Compresses the image with a VRAM-compressed format to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available.
 				This is an alternative to [method compress] that lets the user supply the channels used in order for the compressor to pick the best DXT and ETC2 formats. For other formats (non DXT or ETC2), this argument is ignored.
-				For ASTC compression, the [param astc_format] parameter must be supplied.
+				The [param astc_format] parameter is only taken into account when using ASTC compression; it is ignored for all other formats.
+				[b]Note:[/b] [method compress_from_channels] is only supported in editor builds. When run in an exported project, this method always returns [constant ERR_UNAVAILABLE].
 			</description>
 		</method>
 		<method name="compute_image_metrics">
@@ -101,7 +104,7 @@
 			<param index="0" name="compared_image" type="Image" />
 			<param index="1" name="use_luma" type="bool" />
 			<description>
-				Compute image metrics on the current image and the compared image.
+				Compute image metrics on the current image and the compared image. This can be used to calculate the similarity between two images.
 				The dictionary contains [code]max[/code], [code]mean[/code], [code]mean_squared[/code], [code]root_mean_squared[/code] and [code]peak_snr[/code].
 			</description>
 		</method>
@@ -161,8 +164,7 @@
 		<method name="decompress">
 			<return type="int" enum="Error" />
 			<description>
-				Decompresses the image if it is VRAM compressed in a supported format. Returns [constant OK] if the format is supported, otherwise [constant ERR_UNAVAILABLE].
-				[b]Note:[/b] The following formats can be decompressed: DXT, RGTC, BPTC. The formats ETC1 and ETC2 are not supported.
+				Decompresses the image if it is VRAM-compressed in a supported format. This increases memory utilization, but allows modifying the image. Returns [constant OK] if the format is supported, otherwise [constant ERR_UNAVAILABLE]. All VRAM-compressed formats supported by Godot can be decompressed with this method, except [constant FORMAT_ETC2_R11S], [constant FORMAT_ETC2_RG11S], and [constant FORMAT_ETC2_RGB8A1].
 			</description>
 		</method>
 		<method name="detect_alpha" qualifiers="const">

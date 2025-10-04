@@ -121,7 +121,7 @@ void WebXRInterfaceJS::is_session_supported(const String &p_session_mode) {
 	godot_webxr_is_session_supported(p_session_mode.utf8().get_data(), &_emwebxr_on_session_supported);
 }
 
-void WebXRInterfaceJS::set_session_mode(String p_session_mode) {
+void WebXRInterfaceJS::set_session_mode(const String &p_session_mode) {
 	session_mode = p_session_mode;
 }
 
@@ -129,7 +129,7 @@ String WebXRInterfaceJS::get_session_mode() const {
 	return session_mode;
 }
 
-void WebXRInterfaceJS::set_required_features(String p_required_features) {
+void WebXRInterfaceJS::set_required_features(const String &p_required_features) {
 	required_features = p_required_features;
 }
 
@@ -137,7 +137,7 @@ String WebXRInterfaceJS::get_required_features() const {
 	return required_features;
 }
 
-void WebXRInterfaceJS::set_optional_features(String p_optional_features) {
+void WebXRInterfaceJS::set_optional_features(const String &p_optional_features) {
 	optional_features = p_optional_features;
 }
 
@@ -145,7 +145,7 @@ String WebXRInterfaceJS::get_optional_features() const {
 	return optional_features;
 }
 
-void WebXRInterfaceJS::set_requested_reference_space_types(String p_requested_reference_space_types) {
+void WebXRInterfaceJS::set_requested_reference_space_types(const String &p_requested_reference_space_types) {
 	requested_reference_space_types = p_requested_reference_space_types;
 }
 
@@ -251,7 +251,7 @@ bool WebXRInterfaceJS::set_environment_blend_mode(EnvironmentBlendMode p_new_env
 	return false;
 }
 
-void WebXRInterfaceJS::_set_environment_blend_mode(String p_blend_mode_string) {
+void WebXRInterfaceJS::_set_environment_blend_mode(const String &p_blend_mode_string) {
 	if (p_blend_mode_string == "opaque") {
 		environment_blend_mode = XRInterface::XR_ENV_BLEND_MODE_OPAQUE;
 	} else if (p_blend_mode_string == "additive") {

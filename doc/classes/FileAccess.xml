@@ -133,10 +133,8 @@
 		</method>
 		<method name="get_as_text" qualifiers="const">
 			<return type="String" />
-			<param index="0" name="skip_cr" type="bool" default="false" />
 			<description>
 				Returns the whole file as a [String]. Text is interpreted as being UTF-8 encoded. This ignores the file cursor and does not affect it.
-				If [param skip_cr] is [code]true[/code], carriage return characters ([code]\r[/code], CR) will be ignored when parsing the UTF-8, so that only line feed characters ([code]\n[/code], LF) represent a new line (Unix convention).
 			</description>
 		</method>
 		<method name="get_buffer" qualifiers="const">

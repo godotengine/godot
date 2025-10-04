@@ -37,6 +37,10 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/text_paragraph.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/themes/editor_scale.h"
+#endif
+
 class CharFXTransform;
 class RichTextEffect;
 
@@ -680,6 +684,17 @@ private:
 	void _scroll_changed(double);
 	int _find_first_line(int p_from, int p_to, int p_vofs) const;
 
+#ifdef TOOLS_ENABLED
+	const real_t auto_scroll_speed = EDSCALE * 2.0f;
+#else
+	const real_t auto_scroll_speed = 2.0f;
+#endif
+	Vector2 last_clamped_mouse_pos;
+	Timer *click_select_held = nullptr;
+	Vector2 local_mouse_pos;
+	bool is_selecting_text = false;
+	void _update_selection();
+
 	_FORCE_INLINE_ float _calculate_line_vertical_offset(const Line &line) const;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
@@ -960,7 +975,7 @@ public:
 	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
-	void set_structured_text_bidi_override_options(Array p_args);
+	void set_structured_text_bidi_override_options(const Array &p_args);
 	Array get_structured_text_bidi_override_options() const;
 
 	void set_visible_characters(int p_visible);
@@ -976,7 +991,7 @@ public:
 	TextServer::VisibleCharactersBehavior get_visible_characters_behavior() const;
 	void set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior);
 
-	void set_effects(Array p_effects);
+	void set_effects(const Array &p_effects);
 	Array get_effects();
 
 	void install_effect(const Variant effect);

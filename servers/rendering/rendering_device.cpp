@@ -37,6 +37,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "modules/modules_enabled.gen.h"
+#include "servers/rendering/rendering_shader_container.h"
 
 #ifdef MODULE_GLSLANG_ENABLED
 #include "modules/glslang/shader_compile.h"
@@ -168,7 +169,7 @@ void RenderingDevice::_free_dependencies(RID p_id) {
 	HashMap<RID, HashSet<RID>>::Iterator E = dependency_map.find(p_id);
 	if (E) {
 		while (E->value.size()) {
-			free(*E->value.begin());
+			free_rid(*E->value.begin());
 		}
 		dependency_map.remove(E);
 	}
@@ -3366,19 +3367,12 @@ String RenderingDevice::_shader_uniform_debug(RID p_shader, int p_set) {
 }
 
 Vector<uint8_t> RenderingDevice::shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name) {
-	ShaderReflection shader_refl;
-	if (reflect_spirv(p_spirv, shader_refl) != OK) {
-		return Vector<uint8_t>();
-	}
-
 	const RenderingShaderContainerFormat &container_format = driver->get_shader_container_format();
 	Ref<RenderingShaderContainer> shader_container = container_format.create_container();
 	ERR_FAIL_COND_V(shader_container.is_null(), Vector<uint8_t>());
 
-	shader_container->set_from_shader_reflection(p_shader_name, shader_refl);
-
 	// Compile shader binary from SPIR-V.
-	bool code_compiled = shader_container->set_code_from_spirv(p_spirv);
+	bool code_compiled = shader_container->set_code_from_spirv(p_shader_name, p_spirv);
 	ERR_FAIL_COND_V_MSG(!code_compiled, Vector<uint8_t>(), vformat("Failed to compile code to native for SPIR-V."));
 
 	return shader_container->to_bytes();
@@ -6043,11 +6037,11 @@ bool RenderingDevice::_dependencies_make_mutable(RID p_id, RDG::ResourceTracker 
 /**** FRAME MANAGEMENT ****/
 /**************************/
 
-void RenderingDevice::free(RID p_id) {
+void RenderingDevice::free_rid(RID p_rid) {
 	ERR_RENDER_THREAD_GUARD();
 
-	_free_dependencies(p_id); // Recursively erase dependencies first, to avoid potential API problems.
-	_free_internal(p_id);
+	_free_dependencies(p_rid); // Recursively erase dependencies first, to avoid potential API problems.
+	_free_internal(p_rid);
 }
 
 void RenderingDevice::_free_internal(RID p_id) {
@@ -6986,7 +6980,7 @@ void RenderingDevice::_free_rids(T &p_owner, const char *p_type) {
 				print_line(String(" - ") + resource_names[rid]);
 			}
 #endif
-			free(rid);
+			free_rid(rid);
 		}
 	}
 }
@@ -7199,7 +7193,7 @@ void RenderingDevice::finalize() {
 						print_line(String(" - ") + resource_names[texture_rid]);
 					}
 #endif
-					free(texture_rid);
+					free_rid(texture_rid);
 				} else {
 					owned_non_shared.push_back(texture_rid);
 				}
@@ -7211,7 +7205,7 @@ void RenderingDevice::finalize() {
 					print_line(String(" - ") + resource_names[texture_rid]);
 				}
 #endif
-				free(texture_rid);
+				free_rid(texture_rid);
 			}
 		}
 	}
@@ -7453,7 +7447,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("compute_list_add_barrier", "compute_list"), &RenderingDevice::compute_list_add_barrier);
 	ClassDB::bind_method(D_METHOD("compute_list_end"), &RenderingDevice::compute_list_end);
 
-	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &RenderingDevice::free);
+	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &RenderingDevice::free_rid);
 
 	ClassDB::bind_method(D_METHOD("capture_timestamp", "name"), &RenderingDevice::capture_timestamp);
 	ClassDB::bind_method(D_METHOD("get_captured_timestamps_count"), &RenderingDevice::get_captured_timestamps_count);

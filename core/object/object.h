@@ -330,6 +330,9 @@ struct ObjectGDExtension {
 	bool is_runtime = false;
 	bool is_placeholder = false;
 #endif
+#ifndef DISABLE_DEPRECATED
+	bool legacy_unexposed_class = false;
+#endif // DISABLE_DEPRECATED
 	GDExtensionClassSet set;
 	GDExtensionClassGet get;
 	GDExtensionClassGetPropertyList get_property_list;
@@ -1091,7 +1094,7 @@ class ObjectDB {
 	static void setup();
 
 public:
-	typedef void (*DebugFunc)(Object *p_obj);
+	typedef void (*DebugFunc)(Object *p_obj, void *p_user_data);
 
 	_ALWAYS_INLINE_ static Object *get_instance(ObjectID p_instance_id) {
 		uint64_t id = p_instance_id;
@@ -1123,6 +1126,6 @@ public:
 	template <typename T>
 	_ALWAYS_INLINE_ static Ref<T> get_ref(ObjectID p_instance_id); // Defined in ref_counted.h
 
-	static void debug_objects(DebugFunc p_func);
+	static void debug_objects(DebugFunc p_func, void *p_user_data);
 	static int get_object_count();
 };

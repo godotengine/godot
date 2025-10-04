@@ -34,21 +34,23 @@
 #include "core/variant/typed_array.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
+#include "servers/rendering/rendering_server.h"
+
 #ifndef NAVIGATION_2D_DISABLED
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 #endif // NAVIGATION_2D_DISABLED
+
 #ifndef NAVIGATION_3D_DISABLED
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 #endif // NAVIGATION_3D_DISABLED
-#include "servers/rendering_server.h"
 
 #ifndef PHYSICS_2D_DISABLED
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
 Performance *Performance::singleton = nullptr;
@@ -139,6 +141,16 @@ int Performance::_get_node_count() const {
 		return 0;
 	}
 	return sml->get_node_count();
+}
+
+int Performance::_get_orphan_node_count() const {
+#ifdef DEBUG_ENABLED
+	const int total_node_count = Node::total_node_count.get();
+	const int orphan_node_count = total_node_count - _get_node_count();
+	return orphan_node_count;
+#else
+	return 0;
+#endif
 }
 
 String Performance::get_monitor_name(Monitor p_monitor) const {
@@ -240,7 +252,7 @@ double Performance::get_monitor(Monitor p_monitor) const {
 		case OBJECT_NODE_COUNT:
 			return _get_node_count();
 		case OBJECT_ORPHAN_NODE_COUNT:
-			return Node::orphan_node_count;
+			return _get_orphan_node_count();
 		case RENDER_TOTAL_OBJECTS_IN_FRAME:
 			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME);
 		case RENDER_TOTAL_PRIMITIVES_IN_FRAME:
@@ -297,6 +309,7 @@ double Performance::get_monitor(Monitor p_monitor) const {
 		case AUDIO_OUTPUT_LATENCY:
 			return AudioServer::get_singleton()->get_output_latency();
 
+			// Deprecated, use the 2D/3D specific ones instead.
 		case NAVIGATION_ACTIVE_MAPS:
 #ifndef NAVIGATION_2D_DISABLED
 			info = NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_ACTIVE_MAPS);
@@ -493,6 +506,7 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
+#ifndef _3D_DISABLED
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
@@ -503,6 +517,7 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
+#endif // _3D_DISABLED
 
 	};
 	static_assert((sizeof(types) / sizeof(MonitorType)) == MONITOR_MAX);

@@ -36,8 +36,8 @@
 #include "drivers/sdl/joypad_sdl.h"
 #endif
 #include "main/main.h"
-#include "servers/display_server.h"
-#include "servers/rendering_server.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef X11_ENABLED
 #include "x11/detect_prime_x11.h"

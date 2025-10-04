@@ -30,6 +30,8 @@
 
 #include "ustring.h"
 
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Dictionary);
+
 #include "core/crypto/crypto_core.h"
 #include "core/math/color.h"
 #include "core/math/math_funcs.h"
@@ -1253,7 +1255,7 @@ Vector<float> String::split_floats_mk(const Vector<String> &p_splitters, bool p_
 
 	String buffer = *this;
 	while (true) {
-		int idx;
+		int idx = 0;
 		int end = findmk(p_splitters, from, &idx);
 		int spl_len = 1;
 		if (end < 0) {
@@ -1308,7 +1310,7 @@ Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allo
 	int len = length();
 
 	while (true) {
-		int idx;
+		int idx = 0;
 		int end = findmk(p_splitters, from, &idx);
 		int spl_len = 1;
 		if (end < 0) {
@@ -1763,7 +1765,7 @@ Error String::append_ascii(const Span<char> &p_range) {
 	return decode_failed ? ERR_INVALID_DATA : OK;
 }
 
-Error String::append_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
+Error String::append_utf8(const char *p_utf8, int p_len) {
 	if (!p_utf8) {
 		return ERR_INVALID_DATA;
 	}
@@ -1796,11 +1798,6 @@ Error String::append_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 
 	while (ptrtmp < ptr_limit && *ptrtmp) {
 		uint8_t c = *ptrtmp;
-
-		if (p_skip_cr && c == '\r') {
-			++ptrtmp;
-			continue;
-		}
 		uint32_t unicode = _replacement_char;
 		uint32_t size = 1;
 

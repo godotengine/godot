@@ -176,8 +176,8 @@ void RendererCompositorRD::finalize() {
 
 	//only need to erase these, the rest are erased by cascade
 	blit.shader.version_free(blit.shader_version);
-	RD::get_singleton()->free(blit.index_buffer);
-	RD::get_singleton()->free(blit.sampler);
+	RD::get_singleton()->free_rid(blit.index_buffer);
+	RD::get_singleton()->free_rid(blit.sampler);
 }
 
 void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
@@ -263,7 +263,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	RD::get_singleton()->swap_buffers(true);
 
 	texture_storage->texture_free(texture);
-	RD::get_singleton()->free(sampler);
+	RD::get_singleton()->free_rid(sampler);
 }
 
 RendererCompositorRD *RendererCompositorRD::singleton = nullptr;

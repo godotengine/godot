@@ -1045,8 +1045,8 @@ void EditorData::script_class_set_name(const String &p_path, const StringName &p
 }
 
 void EditorData::script_class_save_global_classes() {
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
+	LocalVector<StringName> global_classes;
+	ScriptServer::get_global_class_list(global_classes);
 	Array array_classes;
 	for (const StringName &class_name : global_classes) {
 		Dictionary d;
