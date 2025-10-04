@@ -32,6 +32,8 @@
 
 #include "../gltf_document.h"
 
+#include "core/templates/rb_map.h"
+
 class EditorSceneExporterGLTFSettings : public RefCounted {
 	GDCLASS(EditorSceneExporterGLTFSettings, RefCounted);
 	List<PropertyInfo> _property_list;
