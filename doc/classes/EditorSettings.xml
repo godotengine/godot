@@ -1118,13 +1118,16 @@
 			[b]Note:[/b] The default editor icon saturation was increased by 30% in Godot 4.0 and later. To get Godot 3.x's icon saturation back, set [member interface/theme/icon_saturation] to [code]0.77[/code].
 		</member>
 		<member name="interface/theme/preset" type="String" setter="" getter="">
-			The editor theme preset to use.
+			The editor color preset to use.
 		</member>
 		<member name="interface/theme/relationship_line_opacity" type="float" setter="" getter="">
 			The opacity to use when drawing relationship lines in the editor's [Tree]-based GUIs (such as the Scene tree dock).
 		</member>
 		<member name="interface/theme/spacing_preset" type="String" setter="" getter="">
 			The editor theme spacing preset to use. See also [member interface/theme/base_spacing] and [member interface/theme/additional_spacing].
+		</member>
+		<member name="interface/theme/style" type="String" setter="" getter="">
+			The editor theme style to use.
 		</member>
 		<member name="interface/theme/use_system_accent_color" type="bool" setter="" getter="">
 			If [code]true[/code], set accent color based on system settings.
