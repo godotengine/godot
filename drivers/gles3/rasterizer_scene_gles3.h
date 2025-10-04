@@ -401,7 +401,7 @@ private:
 			float ambient_light_color_energy[4];
 
 			float ambient_color_sky_mix;
-			uint32_t pad2;
+			uint32_t directional_shadow_count;
 			float emissive_exposure_normalization;
 			uint32_t use_ambient_light = 0;
 

@@ -1499,6 +1499,9 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 	// Only render the lights without shadows in the base pass.
 	scene_state.data.directional_light_count = p_render_data->directional_light_count - p_render_data->directional_shadow_count;
 
+	// Lights with shadows still need to be applied to fog sun scatter.
+	scene_state.data.directional_shadow_count = p_render_data->directional_shadow_count;
+
 	scene_state.data.z_far = p_render_data->z_far;
 	scene_state.data.z_near = p_render_data->z_near;
 
@@ -3376,6 +3379,10 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 							spec_constants |= SceneShaderGLES3::USE_LIGHTMAP_CAPTURE;
 						} else {
 							spec_constants |= SceneShaderGLES3::DISABLE_LIGHTMAP;
+						}
+
+						if (p_render_data->directional_light_count > 0 && is_environment(p_render_data->environment) && environment_get_fog_sun_scatter(p_render_data->environment) > 0.001) {
+							spec_constants |= SceneShaderGLES3::USE_SUN_SCATTER;
 						}
 					}
 				} else {
