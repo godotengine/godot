@@ -1822,7 +1822,7 @@ TEST_CASE("[Variant] Writer and parser dictionary") {
 	String d_str;
 	VariantWriter::write_to_string(d, d_str);
 
-	CHECK_EQ(d_str, "{\n4: \"hello\",\n5: {\nnull: []\n},\n{\n1: 2\n}: 3\n}");
+	CHECK_EQ(d_str, "{\n\t4: \"hello\",\n\t5: {\n\t\tnull: [],\n\t},\n\t{\n\t\t1: 2,\n\t}: 3,\n}");
 
 	VariantParser::StreamString ss;
 	String errs;
@@ -1840,7 +1840,7 @@ TEST_CASE("[Variant] Writer key sorting") {
 	String d_str;
 	VariantWriter::write_to_string(d, d_str);
 
-	CHECK_EQ(d_str, "{\n\"A\": 1,\n&\"B\": 2,\n&\"C\": 3,\n\"D\": 4\n}");
+	CHECK_EQ(d_str, "{\n\t\"A\": 1,\n\t&\"B\": 2,\n\t&\"C\": 3,\n\t\"D\": 4,\n}");
 }
 
 TEST_CASE("[Variant] Writer recursive dictionary") {
@@ -1908,6 +1908,54 @@ TEST_CASE("[Variant] Writer recursive dictionary on keys") {
 	d2.clear();
 }
 #endif
+
+TEST_CASE("[Variant] Writer prints one Object with correct spacing and tabbing") {
+	Object o1 = Object();
+	Variant v1 = &o1;
+
+	String o_str;
+	VariantWriter::write_to_string(v1, o_str);
+
+	// encode newlines and tabs for readable exception messages
+	String o_str_enc = o_str.replace("\t", "\\t").replace("\n", "\\n");
+
+	String expected_str = "Object(Object,\n\t\"script\": null,\n)";
+	String expected_str_enc = expected_str.replace("\t", "\\t").replace("\n", "\\n");
+
+	CHECK(o_str == expected_str);
+	CHECK(o_str_enc == expected_str_enc);
+}
+
+TEST_CASE("[Variant] Writer prints nested Objects with correct spacing and tabbing") {
+	Object o1 = Object();
+	Object o2 = Object();
+	Object o3 = Object();
+
+	o1.set_meta("o2", &o2);
+	o2.set_meta("o3", &o3);
+
+	Variant v1 = &o1;
+
+	String o_str;
+	VariantWriter::write_to_string(v1, o_str);
+
+	// encode newlines and tabs for readable exception messages
+	String o_str_enc = o_str.replace("\t", "\\t").replace("\n", "\\n");
+
+	String expected_str = "Object(Object,\n"
+						  "\t\"script\": null,\n"
+						  "\t\"metadata/o2\": Object(Object,\n"
+						  "\t\t\"script\": null,\n"
+						  "\t\t\"metadata/o3\": Object(Object,\n"
+						  "\t\t\t\"script\": null,\n"
+						  "\t\t),\n"
+						  "\t),\n"
+						  ")";
+	String expected_str_enc = expected_str.replace("\t", "\\t").replace("\n", "\\n");
+
+	CHECK(o_str == expected_str);
+	CHECK(o_str_enc == expected_str_enc);
+}
 
 TEST_CASE("[Variant] Basic comparison") {
 	CHECK_EQ(Variant(1), Variant(1));
