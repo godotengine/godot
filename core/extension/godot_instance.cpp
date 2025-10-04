@@ -32,7 +32,7 @@
 
 #include "core/extension/gdextension_manager.h"
 #include "main/main.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 void GodotInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start"), &GodotInstance::start);
