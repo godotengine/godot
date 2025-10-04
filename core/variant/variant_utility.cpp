@@ -970,7 +970,7 @@ void VariantUtilityFunctions::print_rich(const Variant **p_args, int p_arg_count
 
 void VariantUtilityFunctions::_print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 	if (OS::get_singleton()->is_stdout_verbose()) {
-		// No need to use `print_verbose()` as this call already only happens
+		// No need to use `PRINT_VERBOSE()` as this call already only happens
 		// when verbose mode is enabled. This avoids performing string argument concatenation
 		// when not needed.
 		print_line(join_string(p_args, p_arg_count));
