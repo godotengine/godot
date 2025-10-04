@@ -45,7 +45,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #ifndef PHYSICS_2D_DISABLED
 #include "scene/2d/physics/collision_object_2d.h"
@@ -224,37 +224,6 @@ Error SceneDebugger::_msg_override_cameras(const Array &p_args) {
 	RuntimeNodeSelect::get_singleton()->_set_camera_override_enabled(enable && !from_editor);
 	return OK;
 }
-
-Error SceneDebugger::_msg_transform_camera_2d(const Array &p_args) {
-	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
-	ERR_FAIL_COND_V(!SceneTree::get_singleton()->get_root()->is_camera_2d_override_enabled(), ERR_BUG);
-	Transform2D transform = p_args[0];
-	SceneTree::get_singleton()->get_root()->get_override_camera_2d()->set_transform(transform);
-	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
-	return OK;
-}
-
-#ifndef _3D_DISABLED
-Error SceneDebugger::_msg_transform_camera_3d(const Array &p_args) {
-	ERR_FAIL_COND_V(p_args.size() < 5, ERR_INVALID_DATA);
-	ERR_FAIL_COND_V(!SceneTree::get_singleton()->get_root()->is_camera_3d_override_enabled(), ERR_BUG);
-	Transform3D transform = p_args[0];
-	bool is_perspective = p_args[1];
-	float size_or_fov = p_args[2];
-	float depth_near = p_args[3];
-	float depth_far = p_args[4];
-
-	Camera3D *override_camera = SceneTree::get_singleton()->get_root()->get_override_camera_3d();
-	if (is_perspective) {
-		override_camera->set_perspective(size_or_fov, depth_near, depth_far);
-	} else {
-		override_camera->set_orthogonal(size_or_fov, depth_near, depth_far);
-	}
-	override_camera->set_transform(transform);
-	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
-	return OK;
-}
-#endif // _3D_DISABLED
 
 Error SceneDebugger::_msg_set_object_property(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
@@ -441,9 +410,41 @@ Error SceneDebugger::_msg_runtime_node_select_reset_camera_2d(const Array &p_arg
 	RuntimeNodeSelect::get_singleton()->_reset_camera_2d();
 	return OK;
 }
+
+Error SceneDebugger::_msg_transform_camera_2d(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(!SceneTree::get_singleton()->get_root()->is_camera_2d_override_enabled(), ERR_BUG);
+	Transform2D transform = p_args[0];
+	Camera2D *override_camera = SceneTree::get_singleton()->get_root()->get_override_camera_2d();
+	override_camera->set_offset(transform.affine_inverse().get_origin());
+	override_camera->set_zoom(transform.get_scale());
+	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
+	return OK;
+}
+
 #ifndef _3D_DISABLED
 Error SceneDebugger::_msg_runtime_node_select_reset_camera_3d(const Array &p_args) {
 	RuntimeNodeSelect::get_singleton()->_reset_camera_3d();
+	return OK;
+}
+
+Error SceneDebugger::_msg_transform_camera_3d(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.size() < 5, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(!SceneTree::get_singleton()->get_root()->is_camera_3d_override_enabled(), ERR_BUG);
+	Transform3D transform = p_args[0];
+	bool is_perspective = p_args[1];
+	float size_or_fov = p_args[2];
+	float depth_near = p_args[3];
+	float depth_far = p_args[4];
+
+	Camera3D *override_camera = SceneTree::get_singleton()->get_root()->get_override_camera_3d();
+	if (is_perspective) {
+		override_camera->set_perspective(size_or_fov, depth_near, depth_far);
+	} else {
+		override_camera->set_orthogonal(size_or_fov, depth_near, depth_far);
+	}
+	override_camera->set_transform(transform);
+	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
 	return OK;
 }
 #endif // _3D_DISABLED
@@ -532,7 +533,7 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["transform_camera_2d"] = _msg_transform_camera_2d;
 #ifndef _3D_DISABLED
 	message_handlers["transform_camera_3d"] = _msg_transform_camera_3d;
-#endif
+#endif // _3D_DISABLED
 	message_handlers["set_object_property"] = _msg_set_object_property;
 	message_handlers["set_object_property_field"] = _msg_set_object_property_field;
 	message_handlers["reload_cached_files"] = _msg_reload_cached_files;
@@ -726,18 +727,20 @@ void SceneDebugger::reload_cached_files(const PackedStringArray &p_files) {
 	}
 }
 
+SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) :
+		SceneDebuggerObject(ObjectDB::get_instance(p_id)) {
+}
+
 /// SceneDebuggerObject
-SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
-	id = ObjectID();
-	Object *obj = ObjectDB::get_instance(p_id);
-	if (!obj) {
+SceneDebuggerObject::SceneDebuggerObject(Object *p_obj) {
+	if (!p_obj) {
 		return;
 	}
 
-	id = p_id;
-	class_name = obj->get_class();
+	id = p_obj->get_instance_id();
+	class_name = p_obj->get_class();
 
-	if (ScriptInstance *si = obj->get_script_instance()) {
+	if (ScriptInstance *si = p_obj->get_script_instance()) {
 		// Read script instance constants and variables
 		if (!si->get_script().is_null()) {
 			Script *s = si->get_script().ptr();
@@ -745,7 +748,7 @@ SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
 		}
 	}
 
-	if (Node *node = Object::cast_to<Node>(obj)) {
+	if (Node *node = Object::cast_to<Node>(p_obj)) {
 		// For debugging multiplayer.
 		{
 			PropertyInfo pi(Variant::INT, String("Node/multiplayer_authority"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY);
@@ -760,17 +763,17 @@ SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
 			PropertyInfo pi(Variant::STRING, String("Node/path"));
 			properties.push_back(SceneDebuggerProperty(pi, "[Orphan]"));
 		}
-	} else if (Script *s = Object::cast_to<Script>(obj)) {
+	} else if (Script *s = Object::cast_to<Script>(p_obj)) {
 		// Add script constants (no instance).
 		_parse_script_properties(s, nullptr);
 	}
 
 	// Add base object properties.
 	List<PropertyInfo> pinfo;
-	obj->get_property_list(&pinfo, true);
+	p_obj->get_property_list(&pinfo, true);
 	for (const PropertyInfo &E : pinfo) {
 		if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
-			properties.push_back(SceneDebuggerProperty(E, obj->get(E.name)));
+			properties.push_back(SceneDebuggerProperty(E, p_obj->get(E.name)));
 		}
 	}
 }
@@ -869,13 +872,16 @@ void SceneDebuggerObject::deserialize(const Array &p_arr) {
 	CHECK_TYPE(p_arr[1], STRING);
 	CHECK_TYPE(p_arr[2], ARRAY);
 
-	id = uint64_t(p_arr[0]);
-	class_name = p_arr[1];
-	Array props = p_arr[2];
+	deserialize(uint64_t(p_arr[0]), p_arr[1], p_arr[2]);
+}
 
-	for (int i = 0; i < props.size(); i++) {
-		CHECK_TYPE(props[i], ARRAY);
-		Array prop = props[i];
+void SceneDebuggerObject::deserialize(uint64_t p_id, const String &p_class_name, const Array &p_props) {
+	id = p_id;
+	class_name = p_class_name;
+
+	for (int i = 0; i < p_props.size(); i++) {
+		CHECK_TYPE(p_props[i], ARRAY);
+		Array prop = p_props[i];
 
 		ERR_FAIL_COND(prop.size() != 6);
 		CHECK_TYPE(prop[0], STRING);
@@ -1622,7 +1628,6 @@ void RuntimeNodeSelect::_select_set_mode(SelectMode p_mode) {
 void RuntimeNodeSelect::_set_camera_override_enabled(bool p_enabled) {
 	camera_override = p_enabled;
 
-	Window *root = SceneTree::get_singleton()->get_root();
 	if (camera_first_override) {
 		_reset_camera_2d();
 #ifndef _3D_DISABLED
@@ -1634,6 +1639,7 @@ void RuntimeNodeSelect::_set_camera_override_enabled(bool p_enabled) {
 		_update_view_2d();
 
 #ifndef _3D_DISABLED
+		Window *root = SceneTree::get_singleton()->get_root();
 		ERR_FAIL_COND(!root->is_camera_3d_override_enabled());
 		Camera3D *override_camera = root->get_override_camera_3d();
 		override_camera->set_transform(_get_cursor_transform());
@@ -2477,6 +2483,7 @@ void RuntimeNodeSelect::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Re
 }
 
 void RuntimeNodeSelect::_reset_camera_2d() {
+	camera_first_override = true;
 	Window *root = SceneTree::get_singleton()->get_root();
 	Camera2D *game_camera = root->is_camera_2d_override_enabled() ? root->get_overridden_camera_2d() : root->get_camera_2d();
 	if (game_camera) {
@@ -2500,7 +2507,7 @@ void RuntimeNodeSelect::_update_view_2d() {
 	Camera2D *override_camera = root->get_override_camera_2d();
 	override_camera->set_anchor_mode(Camera2D::ANCHOR_MODE_FIXED_TOP_LEFT);
 	override_camera->set_zoom(Vector2(view_2d_zoom, view_2d_zoom));
-	override_camera->set_position(view_2d_offset);
+	override_camera->set_offset(view_2d_offset);
 
 	_queue_selection_update();
 }

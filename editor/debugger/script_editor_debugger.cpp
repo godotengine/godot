@@ -66,7 +66,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 #include "servers/debugger/servers_debugger.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 using CameraOverride = EditorDebuggerNode::CameraOverride;
 
@@ -2220,6 +2220,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		error_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 		error_tree->set_allow_rmb_select(true);
 		error_tree->set_allow_reselect(true);
+		error_tree->set_theme_type_variation("TreeSecondary");
 		error_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_error_tree_item_rmb_selected));
 		errors_tab->add_child(error_tree);
 

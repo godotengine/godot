@@ -34,7 +34,7 @@
 #include "scene/2d/physics/collision_object_2d.h"
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 void CollisionShape2D::_shape_changed() {
 	queue_redraw();

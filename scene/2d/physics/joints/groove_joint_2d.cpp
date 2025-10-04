@@ -31,7 +31,7 @@
 #include "groove_joint_2d.h"
 
 #include "scene/2d/physics/physics_body_2d.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef DEBUG_ENABLED
 void GrooveJoint2D::_notification(int p_what) {

@@ -33,8 +33,8 @@
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
 #include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
-#include "servers/rendering_server.h"
 #include "shader_types.h"
 
 #define HAS_WARNING(flag) (warning_flags & flag)

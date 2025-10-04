@@ -39,7 +39,7 @@
 #include "objects/jolt_area_3d.h"
 #include "objects/jolt_body_3d.h"
 #include "objects/jolt_soft_body_3d.h"
-#include "servers/physics_server_3d_wrap_mt.h"
+#include "servers/physics_3d/physics_server_3d_wrap_mt.h"
 #include "shapes/jolt_box_shape_3d.h"
 #include "shapes/jolt_capsule_shape_3d.h"
 #include "shapes/jolt_concave_polygon_shape_3d.h"

@@ -34,8 +34,6 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/templates/pair.h"
 #include "core/templates/sort_array.h"
-#include "scene/2d/audio_listener_2d.h"
-#include "scene/2d/camera_2d.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup.h"
@@ -47,8 +45,12 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/world_2d.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 #include "servers/rendering/rendering_server_globals.h"
+
+// 2D.
+#include "scene/2d/audio_listener_2d.h"
+#include "scene/2d/camera_2d.h"
 
 #ifndef _3D_DISABLED
 #include "scene/3d/audio_listener_3d.h"
@@ -1204,35 +1206,6 @@ void Viewport::canvas_parent_mark_dirty(Node *p_node) {
 		callable_mp(this, &Viewport::_process_dirty_canvas_parent_orders).call_deferred();
 	}
 }
-
-#if DEBUG_ENABLED
-void Viewport::enable_camera_2d_override(bool p_enable) {
-	ERR_MAIN_THREAD_GUARD;
-
-	if (p_enable) {
-		camera_2d_override.enable(this, camera_2d);
-	} else {
-		camera_2d_override.disable(camera_2d);
-	}
-}
-
-bool Viewport::is_camera_2d_override_enabled() const {
-	ERR_READ_THREAD_GUARD_V(false);
-	return camera_2d_override.is_enabled();
-}
-
-Camera2D *Viewport::get_overridden_camera_2d() const {
-	ERR_READ_THREAD_GUARD_V(nullptr);
-	ERR_FAIL_COND_V(!camera_2d_override.is_enabled(), nullptr);
-	return camera_2d_override.get_overridden_camera();
-}
-
-Camera2D *Viewport::get_override_camera_2d() const {
-	ERR_READ_THREAD_GUARD_V(nullptr);
-	ERR_FAIL_COND_V(!camera_2d_override.is_enabled(), nullptr);
-	return camera_2d_override.is_enabled() ? get_camera_2d() : nullptr;
-}
-#endif // DEBUG_ENABLED
 
 void Viewport::set_canvas_transform(const Transform2D &p_transform) {
 	ERR_MAIN_THREAD_GUARD;
@@ -4400,6 +4373,35 @@ void Viewport::assign_next_enabled_camera_2d(const StringName &p_camera_group) {
 	}
 }
 
+#if DEBUG_ENABLED
+void Viewport::enable_camera_2d_override(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
+
+	if (p_enable) {
+		camera_2d_override.enable(this, camera_2d);
+	} else {
+		camera_2d_override.disable(camera_2d);
+	}
+}
+
+bool Viewport::is_camera_2d_override_enabled() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return camera_2d_override.is_enabled();
+}
+
+Camera2D *Viewport::get_overridden_camera_2d() const {
+	ERR_READ_THREAD_GUARD_V(nullptr);
+	ERR_FAIL_COND_V(!camera_2d_override.is_enabled(), nullptr);
+	return camera_2d_override.get_overridden_camera();
+}
+
+Camera2D *Viewport::get_override_camera_2d() const {
+	ERR_READ_THREAD_GUARD_V(nullptr);
+	ERR_FAIL_COND_V(!camera_2d_override.is_enabled(), nullptr);
+	return camera_2d_override.is_enabled() ? get_camera_2d() : nullptr;
+}
+#endif // DEBUG_ENABLED
+
 #ifndef _3D_DISABLED
 AudioListener3D *Viewport::get_audio_listener_3d() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
@@ -5603,5 +5605,7 @@ T *Viewport::CameraOverride<T>::get_overridden_camera() const {
 // Explicit template instantiation to allow template definitions inside cpp file
 // and prevent instantiation using other than the desired camera types.
 template class Viewport::CameraOverride<Camera2D>;
+#ifndef _3D_DISABLED
 template class Viewport::CameraOverride<Camera3D>;
+#endif // _3D_DISABLED
 #endif // DEBUG_ENABLED

@@ -534,13 +534,6 @@ public:
 	Ref<World2D> get_world_2d() const;
 	Ref<World2D> find_world_2d() const;
 
-#if DEBUG_ENABLED
-	void enable_camera_2d_override(bool p_enable);
-	bool is_camera_2d_override_enabled() const;
-	Camera2D *get_overridden_camera_2d() const;
-	Camera2D *get_override_camera_2d() const;
-#endif // DEBUG_ENABLED
-
 	void set_canvas_transform(const Transform2D &p_transform);
 	Transform2D get_canvas_transform() const;
 
@@ -766,11 +759,18 @@ private:
 
 	friend class Camera2D; // Needs _camera_2d_set
 	Camera2D *camera_2d = nullptr;
+	void _camera_2d_set(Camera2D *p_camera_2d);
 #if DEBUG_ENABLED
 	CameraOverride<Camera2D> camera_2d_override;
-#endif // DEBUG_ENABLED
-	void _camera_2d_set(Camera2D *p_camera_2d);
 
+public:
+	void enable_camera_2d_override(bool p_enable);
+	bool is_camera_2d_override_enabled() const;
+	Camera2D *get_overridden_camera_2d() const;
+	Camera2D *get_override_camera_2d() const;
+#endif // DEBUG_ENABLED
+
+private:
 #ifndef PHYSICS_2D_DISABLED
 	// Collider to frame
 	HashMap<ObjectID, uint64_t> physics_2d_mouseover;
