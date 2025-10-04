@@ -530,6 +530,18 @@ void CanvasItemEditor::shortcut_input(const Ref<InputEvent> &p_ev) {
 				viewport->queue_redraw();
 			}
 		}
+
+		if (k->is_pressed() && !k->is_echo()) {
+			if (reset_transform_position_shortcut.is_valid() && reset_transform_position_shortcut->matches_event(p_ev)) {
+				_reset_transform(TransformType::POSITION);
+			}
+			if (reset_transform_rotation_shortcut.is_valid() && reset_transform_rotation_shortcut->matches_event(p_ev)) {
+				_reset_transform(TransformType::ROTATION);
+			}
+			if (reset_transform_scale_shortcut.is_valid() && reset_transform_scale_shortcut->matches_event(p_ev)) {
+				_reset_transform(TransformType::SCALE);
+			}
+		}
 	}
 }
 
@@ -1092,6 +1104,53 @@ void CanvasItemEditor::_on_grid_menu_id_pressed(int p_id) {
 		}
 	}
 	viewport->queue_redraw();
+}
+
+void CanvasItemEditor::_reset_transform(TransformType p_type) {
+	List<Node *> selection = editor_selection->get_full_selected_node_list();
+	if (selection.is_empty()) {
+		return;
+	}
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Reset Transform"));
+	for (Node *node : selection) {
+		Node2D *res_node = Object::cast_to<Node2D>(node);
+		if (res_node) {
+			switch (p_type) {
+				case TransformType::POSITION:
+					undo_redo->add_undo_method(res_node, "set_position", res_node->get_position());
+					undo_redo->add_do_method(res_node, "set_position", Vector2());
+					break;
+				case TransformType::ROTATION:
+					undo_redo->add_undo_method(res_node, "set_rotation", res_node->get_rotation());
+					undo_redo->add_do_method(res_node, "set_rotation", 0);
+					break;
+				case TransformType::SCALE:
+					undo_redo->add_undo_method(res_node, "set_scale", res_node->get_scale());
+					undo_redo->add_do_method(res_node, "set_scale", Size2(1, 1));
+					break;
+			}
+			continue;
+		}
+		Control *res_control = Object::cast_to<Control>(node);
+		if (res_control) {
+			switch (p_type) {
+				case TransformType::POSITION:
+					undo_redo->add_undo_method(res_control, "set_position", res_control->get_position());
+					undo_redo->add_do_method(res_control, "set_position", Vector2());
+					break;
+				case TransformType::ROTATION:
+					undo_redo->add_undo_method(res_control, "set_rotation", res_control->get_rotation());
+					undo_redo->add_do_method(res_control, "set_rotation", 0);
+					break;
+				case TransformType::SCALE:
+					undo_redo->add_undo_method(res_control, "set_scale", res_control->get_scale());
+					undo_redo->add_do_method(res_control, "set_scale", Size2(1, 1));
+					break;
+			}
+		}
+	}
+	undo_redo->commit_action();
 }
 
 void CanvasItemEditor::_switch_theme_preview(int p_mode) {
@@ -5802,6 +5861,9 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	multiply_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/multiply_grid_step", TTRC("Multiply grid step by 2"), Key::KP_MULTIPLY);
 	divide_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/divide_grid_step", TTRC("Divide grid step by 2"), Key::KP_DIVIDE);
+	reset_transform_position_shortcut = ED_SHORTCUT("canvas_item_editor/reset_transform_position", TTRC("Reset Position"), KeyModifierMask::ALT + Key::W);
+	reset_transform_rotation_shortcut = ED_SHORTCUT("canvas_item_editor/reset_transform_rotation", TTRC("Reset Rotation"), KeyModifierMask::ALT + Key::E);
+	reset_transform_scale_shortcut = ED_SHORTCUT("canvas_item_editor/reset_transform_scale", TTRC("Reset Scale"), KeyModifierMask::ALT + Key::R);
 
 	skeleton_menu->get_popup()->set_item_checked(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES), true);
 

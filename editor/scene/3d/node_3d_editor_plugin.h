@@ -364,6 +364,11 @@ private:
 		TRANSFORM_XZ,
 		TRANSFORM_XY,
 	};
+	enum TransformType {
+		POSITION,
+		ROTATION,
+		SCALE,
+	};
 
 	struct EditData {
 		TransformMode mode;
@@ -522,6 +527,8 @@ private:
 	void _project_settings_changed();
 
 	Transform3D _compute_transform(TransformMode p_mode, const Transform3D &p_original, const Transform3D &p_original_local, Vector3 p_motion, double p_extra, bool p_local, bool p_orthogonal);
+
+	void _reset_transform(TransformType p_type);
 
 	void begin_transform(TransformMode p_mode, bool instant);
 	void commit_transform();
