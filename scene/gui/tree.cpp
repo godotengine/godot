@@ -3713,6 +3713,17 @@ Rect2 Tree::_get_content_rect() const {
 	return content_rect.grow_individual(0, 0, -offset.x, -offset.y);
 }
 
+Control::CursorShape Tree::get_cursor_shape(const Point2 &p_pos) const {
+	if (v_scroll && v_scroll->is_panning()) {
+		return CURSOR_MOVE;
+	}
+	if (h_scroll && h_scroll->is_panning()) {
+		return CURSOR_MOVE;
+	}
+
+	return get_default_cursor_shape();
+}
+
 void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -3968,6 +3979,13 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			drag_accum -= mm->get_relative().y;
 			v_scroll->set_value(drag_from + drag_accum);
 			drag_speed = -mm->get_velocity().y;
+		}
+
+		if (h_scroll && h_scroll_enabled && h_scroll->is_panning()) {
+			h_scroll->pan_callback(mm, this);
+		}
+		if (v_scroll && v_scroll_enabled && v_scroll->is_panning()) {
+			v_scroll->pan_callback(mm, this);
 		}
 	}
 

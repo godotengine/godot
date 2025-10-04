@@ -2573,6 +2573,13 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		_update_minimap_hover();
 	}
 
+	if (h_scroll && h_scroll->is_panning()) {
+		h_scroll->pan_callback(mm, this, get_process_delta_time());
+	}
+	if (v_scroll && v_scroll->is_panning()) {
+		v_scroll->pan_callback(mm, this, get_process_delta_time());
+	}
+
 	if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
 		accept_event(); // Accept event if scroll changed.
 	}
@@ -3592,6 +3599,13 @@ void TextEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 }
 
 Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
+	if (v_scroll && v_scroll->is_panning()) {
+		return CURSOR_MOVE;
+	}
+	if (h_scroll && h_scroll->is_panning()) {
+		return CURSOR_MOVE;
+	}
+
 	if (dragging_selection) {
 		return get_default_cursor_shape();
 	}
