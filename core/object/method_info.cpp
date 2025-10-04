@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 #include "method_info.h"
-#include "property_info.h"
+#include "core/variant/typed_array.h"
 
 MethodInfo::operator Dictionary() const {
 	Dictionary d;
