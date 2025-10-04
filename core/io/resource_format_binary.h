@@ -33,6 +33,7 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/templates/rb_map.h"
 
 class ResourceLoaderBinary {
 	bool translation_remapped = false;
