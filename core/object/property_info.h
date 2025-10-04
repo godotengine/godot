@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PROPERTY_INFO_H
-#define PROPERTY_INFO_H
+#pragma once
 
 #include "core/extension/gdextension_interface.h"
 #include "core/variant/variant.h"
@@ -185,5 +184,3 @@ struct PropertyInfo {
 
 TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list);
 TypedArray<Dictionary> convert_property_list(const Vector<PropertyInfo> &p_vector);
-
-#endif // PROPERTY_INFO_H
