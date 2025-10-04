@@ -30,6 +30,8 @@
 
 #include "audio_stream_ogg_vorbis.h"
 
+#include "core/templates/rb_map.h"
+
 #include <ogg/ogg.h>
 
 int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_frames) {
