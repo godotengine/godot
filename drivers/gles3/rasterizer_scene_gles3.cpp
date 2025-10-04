@@ -2720,26 +2720,12 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		_draw_sky(render_data.environment, projection, transform, sky_energy_multiplier, render_data.luminance_multiplier, p_camera_data->view_count > 1, flip_y, apply_color_adjustments_in_post);
 	}
 
-	if (rt && (scene_state.used_screen_texture || scene_state.used_depth_texture)) {
-		Size2i size;
-		GLuint backbuffer_fbo = 0;
-		GLuint backbuffer = 0;
-		GLuint backbuffer_depth = 0;
-
-		if (rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_OFF) {
-			texture_storage->check_backbuffer(rt, scene_state.used_screen_texture, scene_state.used_depth_texture); // note, badly names, this just allocates!
-
-			size = rt->size;
-			backbuffer_fbo = rt->backbuffer_fbo;
-			backbuffer = rt->backbuffer;
-			backbuffer_depth = rt->backbuffer_depth;
-		} else {
-			rb->check_backbuffer(scene_state.used_screen_texture, scene_state.used_depth_texture);
-			size = rb->get_internal_size();
-			backbuffer_fbo = rb->get_backbuffer_fbo();
-			backbuffer = rb->get_backbuffer();
-			backbuffer_depth = rb->get_backbuffer_depth();
-		}
+	if (scene_state.used_screen_texture || scene_state.used_depth_texture) {
+		rb->check_backbuffer(scene_state.used_screen_texture, scene_state.used_depth_texture);
+		Size2i size = rb->get_internal_size();
+		GLuint backbuffer_fbo = rb->get_backbuffer_fbo();
+		GLuint backbuffer = rb->get_backbuffer();
+		GLuint backbuffer_depth = rb->get_backbuffer_depth();
 
 		if (backbuffer_fbo != 0) {
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
