@@ -48,6 +48,7 @@ void XRInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_render_target_size"), &XRInterface::get_render_target_size);
 	ClassDB::bind_method(D_METHOD("get_view_count"), &XRInterface::get_view_count);
+	ClassDB::bind_method(D_METHOD("get_viewports_are_hdr"), &XRInterface::get_viewports_are_hdr);
 
 	ClassDB::bind_method(D_METHOD("trigger_haptic_pulse", "action_name", "tracker_name", "frequency", "amplitude", "duration_sec", "delay_sec"), &XRInterface::trigger_haptic_pulse);
 
@@ -74,6 +75,7 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("stop_passthrough"), &XRInterface::stop_passthrough);
 	ClassDB::bind_method(D_METHOD("get_transform_for_view", "view", "cam_transform"), &XRInterface::get_transform_for_view);
 	ClassDB::bind_method(D_METHOD("get_projection_for_view", "view", "aspect", "near", "far"), &XRInterface::get_projection_for_view);
+	ClassDB::bind_method(D_METHOD("get_viewport_for_view", "view"), &XRInterface::get_viewport_for_view);
 
 	/** environment blend mode. */
 	ClassDB::bind_method(D_METHOD("get_supported_environment_blend_modes"), &XRInterface::get_supported_environment_blend_modes);

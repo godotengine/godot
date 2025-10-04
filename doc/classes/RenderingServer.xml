@@ -5336,7 +5336,10 @@
 		<constant name="VIEWPORT_VRS_XR" value="2" enum="ViewportVRSMode">
 			Variable rate shading texture is supplied by the primary [XRInterface]. Note that this may override the update mode.
 		</constant>
-		<constant name="VIEWPORT_VRS_MAX" value="3" enum="ViewportVRSMode">
+		<constant name="VIEWPORT_VRS_XR_RASTERIZATION_RATE_MAP" value="3" enum="ViewportVRSMode">
+			The variable rate shading texture is actually rasterization rate map (an opaque Objective-C object), used by Metal on Apple platforms to perform foveation. The Metal rendering driver applies it on the pipeline for rendering.
+		</constant>
+		<constant name="VIEWPORT_VRS_MAX" value="4" enum="ViewportVRSMode">
 			Represents the size of the [enum ViewportVRSMode] enum.
 		</constant>
 		<constant name="VIEWPORT_VRS_UPDATE_DISABLED" value="0" enum="ViewportVRSUpdateMode">
