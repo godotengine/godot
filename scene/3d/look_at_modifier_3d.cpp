@@ -34,7 +34,7 @@ void LookAtModifier3D::_validate_property(PropertyInfo &p_property) const {
 	if (Engine::get_singleton()->is_editor_hint() && (p_property.name == "bone_name" || p_property.name == "origin_bone_name")) {
 		Skeleton3D *skeleton = get_skeleton();
 		if (skeleton) {
-			p_property.hint = PROPERTY_HINT_ENUM;
+			p_property.hint = PROPERTY_HINT_ENUM_SUGGESTION;
 			p_property.hint_string = skeleton->get_concatenated_bone_names();
 		} else {
 			p_property.hint = PROPERTY_HINT_NONE;
@@ -457,7 +457,7 @@ void LookAtModifier3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bone_name", PROPERTY_HINT_ENUM_SUGGESTION, ""), "set_bone_name", "get_bone_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_bone", "get_bone");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "forward_axis", PROPERTY_HINT_ENUM, "+X,-X,+Y,-Y,+Z,-Z"), "set_forward_axis", "get_forward_axis");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "forward_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_bone_axis()), "set_forward_axis", "get_forward_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "primary_rotation_axis", PROPERTY_HINT_ENUM, "X,Y,Z"), "set_primary_rotation_axis", "get_primary_rotation_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_secondary_rotation"), "set_use_secondary_rotation", "is_using_secondary_rotation");
 
