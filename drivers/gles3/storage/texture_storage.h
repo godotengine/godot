@@ -643,8 +643,6 @@ public:
 	RenderTarget *get_render_target(RID p_rid) { return render_target_owner.get_or_null(p_rid); }
 	bool owns_render_target(RID p_rid) { return render_target_owner.owns(p_rid); }
 
-	void check_backbuffer(RenderTarget *rt, const bool uses_screen_texture, const bool uses_depth_texture);
-
 	virtual RID render_target_create() override;
 	virtual void render_target_free(RID p_rid) override;
 
