@@ -36,7 +36,8 @@
 			If [code]false[/code], the original animation length is respected. If you set the loop to [member loop_mode], the animation will loop in [member timeline_length].
 		</member>
 		<member name="timeline_length" type="float" setter="set_timeline_length" getter="get_timeline_length">
-			If [member use_custom_timeline] is [code]true[/code], offset the start position of the animation.
+			The length of the custom timeline.
+			If [member stretch_time_scale] is [code]true[/code], scales the animation to this length.
 		</member>
 		<member name="use_custom_timeline" type="bool" setter="set_use_custom_timeline" getter="is_using_custom_timeline" default="false">
 			If [code]true[/code], [AnimationNode] provides an animation based on the [Animation] resource with some parameters adjusted.
