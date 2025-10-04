@@ -265,6 +265,110 @@ String RichTextLabel::_get_prefix(Item *p_item, const Vector<int> &p_list_index,
 	return prefix + " ";
 }
 
+void RichTextLabel::_add_list_prefixes(ItemFrame *p_frame, int p_line, Line &l) {
+	Vector<int> list_index;
+	Vector<int> list_count;
+	Vector<ItemList *> list_items;
+	_find_list(l.from, list_index, list_count, list_items);
+	if (list_items.size() > 0) {
+		ItemList *this_list = list_items[0];
+		if (list_index[0] == 1) {
+			// List level start, shape all prefixes for this level and compute max. prefix width.
+			list_items[0]->max_width = 0;
+			int index = 0;
+			for (int i = p_line; i < (int)p_frame->lines.size(); i++) { // For all the list rows in all lists in this frame.
+				Line &list_row_line = p_frame->lines[i];
+				if (_find_list_item(list_row_line.from) == this_list) { // Is a row inside this list.
+					index++;
+					Ref<Font> font = theme_cache.normal_font;
+					int font_size = theme_cache.normal_font_size;
+					int list_row_char_ofs = list_row_line.from->char_ofs;
+					int item_font_size = -1;
+					ItemFont *found_font_item = nullptr;
+					Vector<Item *> formatting_items_info;
+					ItemText *this_row_text_item = nullptr;
+					Item *it = _get_next_item(this_list);
+					while (it && (this_row_text_item != nullptr || it->char_ofs <= list_row_char_ofs)) { // Find the ItemText for this list row. There is only one per row or none.
+						if (it->type == ITEM_TEXT && it->char_ofs == list_row_char_ofs) {
+							ItemText *text_item = static_cast<ItemText *>(it);
+							this_row_text_item = text_item;
+							// `parent` is the enclosing item tag, if any, which itself can be further enclosed by another tag and so on,
+							// all of which will be applied to the text item. The `parent` is an interval predecessor, not a hierarchical parent.
+							Item *parent = text_item->parent;
+							while (parent && parent != main) {
+								// `formatting_items` is an Array of all ITEM types affecting glyph appearance, like ITEM_FONT, ITEM_COLOR, etc.
+								if (formatting_items.has(parent->type)) {
+									formatting_items_info.append(parent);
+								}
+								parent = parent->parent;
+							}
+						}
+						it = _get_next_item(it);
+					}
+					if (this_row_text_item == nullptr) { // If the row doesn't have any text yet.
+						it = _get_next_item(this_list);
+						// All format items at the same char location should be applied to the prefix.
+						// This won't add any earlier tags.
+						while (it && it->char_ofs <= list_row_char_ofs) {
+							if (formatting_items.has(it->type) && it->char_ofs == list_row_char_ofs) {
+								formatting_items_info.append(it);
+							}
+							it = _get_next_item(it);
+						}
+					}
+					for (Item *format_item : formatting_items_info) {
+						switch (format_item->type) {
+							case ITEM_FONT: {
+								ItemFont *font_item = static_cast<ItemFont *>(format_item);
+								if (font_item->def_font != RTL_CUSTOM_FONT) {
+									font_item = _find_font(format_item); // Sets `def_font` based on font type.
+								}
+								if (font_item->font.is_valid()) {
+									if (font_item->def_font == RTL_BOLD_ITALICS_FONT) { // Always set bold italic.
+										found_font_item = font_item;
+									} else if (found_font_item == nullptr || found_font_item->def_font != RTL_BOLD_ITALICS_FONT) { // Don't overwrite BOLD_ITALIC with BOLD or ITALIC.
+										found_font_item = font_item;
+									}
+								}
+								if (found_font_item->font_size > 0) {
+									font_size = found_font_item->font_size;
+								}
+							} break;
+							case ITEM_FONT_SIZE: {
+								ItemFontSize *font_size_item = static_cast<ItemFontSize *>(format_item);
+								item_font_size = font_size_item->font_size;
+							} break;
+							case ITEM_COLOR: {
+								ItemColor *color_item = static_cast<ItemColor *>(format_item);
+								list_row_line.prefix_color_info.append(color_item->color);
+							} break;
+							case ITEM_OUTLINE_SIZE: {
+								ItemOutlineSize *outline_size_item = static_cast<ItemOutlineSize *>(format_item);
+								list_row_line.prefix_outline_size = outline_size_item->outline_size;
+							} break;
+							case ITEM_OUTLINE_COLOR: {
+								ItemOutlineColor *outline_color_item = static_cast<ItemOutlineColor *>(format_item);
+								list_row_line.prefix_outline_color_info.append(outline_color_item->color);
+							} break;
+							default: {
+							} break;
+						}
+					}
+					font = found_font_item != nullptr ? found_font_item->font : font;
+					font_size = item_font_size != -1 ? item_font_size : font_size;
+					list_index.write[0] = index;
+					String prefix = _get_prefix(list_row_line.from, list_index, list_items);
+					list_row_line.text_prefix.instantiate();
+					list_row_line.text_prefix->set_direction(_find_direction(list_row_line.from));
+					list_row_line.text_prefix->add_string(prefix, font, font_size);
+					list_items.write[0]->max_width = MAX(this_list->max_width, list_row_line.text_prefix->get_size().x);
+				}
+			}
+		}
+		l.prefix_width = this_list->max_width;
+	}
+}
+
 void RichTextLabel::_update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size) {
 	ERR_FAIL_NULL(p_frame);
 	ERR_FAIL_COND(p_line < 0 || p_line >= (int)p_frame->lines.size());
@@ -272,50 +376,8 @@ void RichTextLabel::_update_line_font(ItemFrame *p_frame, int p_line, const Ref<
 	Line &l = p_frame->lines[p_line];
 	MutexLock lock(l.text_buf->get_mutex());
 
-	// Prefix.
-	Vector<int> list_index;
-	Vector<int> list_count;
-	Vector<ItemList *> list_items;
-	_find_list(l.from, list_index, list_count, list_items);
-
-	if (list_items.size() > 0) {
-		if (list_index[0] == 1) {
-			// List level start, shape all prefixes for this level and compute max. prefix width.
-			list_items[0]->max_width = 0;
-			int index = 0;
-			for (int i = p_line; i < (int)p_frame->lines.size(); i++) {
-				Line &list_l = p_frame->lines[i];
-				if (_find_list_item(list_l.from) == list_items[0]) {
-					index++;
-
-					Ref<Font> font = theme_cache.normal_font;
-					int font_size = theme_cache.normal_font_size;
-
-					ItemFont *font_it = _find_font(list_l.from);
-					if (font_it) {
-						if (font_it->font.is_valid()) {
-							font = font_it->font;
-						}
-						if (font_it->font_size > 0) {
-							font_size = font_it->font_size;
-						}
-					}
-					ItemFontSize *font_size_it = _find_font_size(list_l.from);
-					if (font_size_it && font_size_it->font_size > 0) {
-						font_size = font_size_it->font_size;
-					}
-
-					list_index.write[0] = index;
-					String prefix = _get_prefix(list_l.from, list_index, list_items);
-					list_l.text_prefix.instantiate();
-					list_l.text_prefix->set_direction(_find_direction(list_l.from));
-					list_l.text_prefix->add_string(prefix, font, font_size);
-					list_items.write[0]->max_width = MAX(list_items[0]->max_width, list_l.text_prefix->get_size().x);
-				}
-			}
-		}
-		l.prefix_width = list_items[0]->max_width;
-	}
+	// List.
+	_add_list_prefixes(p_frame, p_line, l);
 
 	RID t = l.text_buf->get_rid();
 	int spans = TS->shaped_get_span_count(t);
@@ -470,50 +532,8 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	l.char_offset = *r_char_offset;
 	l.char_count = 0;
 
-	// List prefix.
-	Vector<int> list_index;
-	Vector<int> list_count;
-	Vector<ItemList *> list_items;
-	_find_list(l.from, list_index, list_count, list_items);
-
-	if (list_items.size() > 0) {
-		if (list_index[0] == 1) {
-			// List level start, shape all prefixes for this level and compute max. prefix width.
-			list_items[0]->max_width = 0;
-			int index = 0;
-			for (int i = p_line; i < (int)p_frame->lines.size(); i++) {
-				Line &list_l = p_frame->lines[i];
-				if (_find_list_item(list_l.from) == list_items[0]) {
-					index++;
-
-					Ref<Font> font = theme_cache.normal_font;
-					int font_size = theme_cache.normal_font_size;
-
-					ItemFont *font_it = _find_font(list_l.from);
-					if (font_it) {
-						if (font_it->font.is_valid()) {
-							font = font_it->font;
-						}
-						if (font_it->font_size > 0) {
-							font_size = font_it->font_size;
-						}
-					}
-					ItemFontSize *font_size_it = _find_font_size(list_l.from);
-					if (font_size_it && font_size_it->font_size > 0) {
-						font_size = font_size_it->font_size;
-					}
-
-					list_index.write[0] = index;
-					String prefix = _get_prefix(list_l.from, list_index, list_items);
-					list_l.text_prefix.instantiate();
-					list_l.text_prefix->set_direction(_find_direction(list_l.from));
-					list_l.text_prefix->add_string(prefix, font, font_size);
-					list_items.write[0]->max_width = MAX(list_items[0]->max_width, list_l.text_prefix->get_size().x);
-				}
-			}
-		}
-		l.prefix_width = list_items[0]->max_width;
-	}
+	// List.
+	_add_list_prefixes(p_frame, p_line, l);
 
 	// Add indent.
 	l.indent = _find_margin(l.from, p_base_font, p_base_font_size) + l.prefix_width;
@@ -933,9 +953,9 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 
 		bool skip_prefix = (trim_chars && l.char_offset > visible_characters) || (trim_glyphs_ltr && (r_processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (r_processed_glyphs < total_glyphs - visible_glyphs));
 		if (l.text_prefix.is_valid() && line == 0 && !skip_prefix) {
-			Color font_color = _find_color(l.from, p_base_color);
-			int outline_size = _find_outline_size(l.from, p_outline_size);
-			Color font_outline_color = _find_outline_color(l.from, p_outline_color);
+			Color font_color = l.prefix_color_info.is_empty() ? _find_color(l.from, p_base_color) : Color(l.prefix_color_info[0]);
+			int outline_size = l.prefix_outline_size == -1 ? _find_outline_size(l.from, p_outline_size) : l.prefix_outline_size;
+			Color font_outline_color = l.prefix_outline_color_info.is_empty() ? _find_outline_color(l.from, p_base_color) : Color(l.prefix_outline_color_info[0]);
 			Color font_shadow_color = p_font_shadow_color * Color(1, 1, 1, font_color.a);
 			if (rtl) {
 				if (p_shadow_outline_size > 0 && font_shadow_color.a != 0.0) {
@@ -3142,6 +3162,19 @@ RichTextLabel::ItemFont *RichTextLabel::_find_font(Item *p_item) {
 						fi->font_size = theme_cache.normal_font_size;
 					}
 				} break;
+				case RTL_BOLD_ITALICS_FONT: {
+					if (fi->variation) {
+						Ref<FontVariation> fc = fi->font;
+						if (fc.is_valid()) {
+							fc->set_base_font(theme_cache.bold_italics_font);
+						}
+					} else {
+						fi->font = theme_cache.bold_italics_font;
+					}
+					if (fi->def_size) {
+						fi->font_size = theme_cache.bold_italics_font_size;
+					}
+				} break;
 				case RTL_BOLD_FONT: {
 					if (fi->variation) {
 						Ref<FontVariation> fc = fi->font;
@@ -3166,19 +3199,6 @@ RichTextLabel::ItemFont *RichTextLabel::_find_font(Item *p_item) {
 					}
 					if (fi->def_size) {
 						fi->font_size = theme_cache.italics_font_size;
-					}
-				} break;
-				case RTL_BOLD_ITALICS_FONT: {
-					if (fi->variation) {
-						Ref<FontVariation> fc = fi->font;
-						if (fc.is_valid()) {
-							fc->set_base_font(theme_cache.bold_italics_font);
-						}
-					} else {
-						fi->font = theme_cache.bold_italics_font;
-					}
-					if (fi->def_size) {
-						fi->font_size = theme_cache.bold_italics_font_size;
 					}
 				} break;
 				case RTL_MONO_FONT: {
@@ -3950,13 +3970,13 @@ void RichTextLabel::add_text(const String &p_text) {
 		}
 
 		if (eol) {
-			ItemNewline *item = memnew(ItemNewline);
+			ItemNewline *item = memnew(ItemNewline); // Sets item->type to ITEM_NEWLINE.
 			item->owner = get_instance_id();
 			item->rid = items.make_rid(item);
 			item->line = current_frame->lines.size();
 			_add_item(item, false);
 			current_frame->lines.resize(current_frame->lines.size() + 1);
-			if (item->type != ITEM_NEWLINE) {
+			if (item->type != ITEM_NEWLINE) { // item IS an ITEM_NEWLINE so this will never get called?
 				current_frame->lines[current_frame->lines.size() - 1].from = item;
 			}
 			_invalidate_current_line(current_frame);
