@@ -2788,7 +2788,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 			menu->set_position(get_screen_transform().xform(b->get_position()));
 			menu->reset_size();
 			menu->popup();
-			grab_focus();
+			menu->grab_focus();
 		}
 	}
 
