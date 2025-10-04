@@ -36,7 +36,6 @@
 #include "core/templates/cowdata.h"
 #include "core/templates/vector.h"
 #include "core/typedefs.h"
-#include "core/variant/array.h"
 
 class String;
 template <typename T>
