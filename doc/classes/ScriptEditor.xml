@@ -83,6 +83,12 @@
 				Goes to the specified line in the current script.
 			</description>
 		</method>
+		<method name="is_editor_floating">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the Script Editor is floating, i.e. the Script Editor is running in a separate window.
+			</description>
+		</method>
 		<method name="open_script_create_dialog">
 			<return type="void" />
 			<param index="0" name="base_name" type="String" />
