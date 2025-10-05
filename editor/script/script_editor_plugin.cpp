@@ -1679,13 +1679,14 @@ void ScriptEditor::_notification(int p_what) {
 			// Can't set own styles in NOTIFICATION_THEME_CHANGED, so for now this will do.
 			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
 
-			get_tree()->connect("tree_changed", callable_mp(this, &ScriptEditor::_tree_changed));
 			InspectorDock::get_singleton()->connect("request_help", callable_mp(this, &ScriptEditor::_help_class_open));
 			EditorNode::get_singleton()->connect("request_help_search", callable_mp(this, &ScriptEditor::_help_search));
 			EditorNode::get_singleton()->connect("scene_closed", callable_mp(this, &ScriptEditor::_close_builtin_scripts_from_scene));
 			EditorNode::get_singleton()->connect("script_add_function_request", callable_mp(this, &ScriptEditor::_add_callback));
 			EditorNode::get_singleton()->connect("resource_saved", callable_mp(this, &ScriptEditor::_res_saved_callback));
 			EditorNode::get_singleton()->connect("scene_saved", callable_mp(this, &ScriptEditor::_scene_saved_callback));
+			// Connect to scene_root child entered instead of scene_changed for new scenes.
+			EditorNode::get_singleton()->get_scene_root()->connect("child_entered_tree", callable_mp(this, &ScriptEditor::_connect_to_scene).unbind(1));
 			FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &ScriptEditor::_files_moved));
 			FileSystemDock::get_singleton()->connect("file_removed", callable_mp(this, &ScriptEditor::_file_removed));
 			script_list->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditor::_script_selected));
@@ -1856,7 +1857,45 @@ bool ScriptEditor::is_editor_floating() {
 	return is_floating;
 }
 
-void ScriptEditor::_find_scripts(Node *p_base, Node *p_current, HashSet<Ref<Script>> &used) {
+void ScriptEditor::_connect_to_scene() {
+	if (!highlight_scene_scripts) {
+		return;
+	}
+	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+	if (!edited_scene) {
+		return;
+	}
+	_connect_to_scene_recursive(edited_scene, edited_scene);
+}
+
+void ScriptEditor::_connect_to_scene_recursive(Node *p_current, Node *p_base) {
+	if (p_current != p_base && p_current->get_owner() != p_base) {
+		return;
+	}
+
+	_queue_update_script_names();
+	const Callable update_callable = callable_mp(this, &ScriptEditor::_queue_update_script_names);
+	if (p_current->is_connected(CoreStringName(script_changed), update_callable)) {
+		return;
+	}
+	p_current->connect(CoreStringName(script_changed), update_callable);
+	p_current->connect(SceneStringName(tree_exited), update_callable);
+	p_current->connect(SNAME("child_entered_tree"), callable_mp(this, &ScriptEditor::_connect_to_scene_recursive).bind(p_base), CONNECT_DEFERRED);
+
+	for (Node *child : p_current->iterate_children()) {
+		_connect_to_scene_recursive(child, p_base);
+	}
+}
+
+void ScriptEditor::_queue_update_script_names() {
+	if (script_names_update_queued || !highlight_scene_scripts) {
+		return;
+	}
+	script_names_update_queued = true;
+	callable_mp(this, &ScriptEditor::_update_script_names).call_deferred();
+}
+
+static void _find_scripts(Node *p_base, Node *p_current, HashSet<Ref<Script>> &r_used_scripts) {
 	if (p_current != p_base && p_current->get_owner() != p_base) {
 		return;
 	}
@@ -1864,12 +1903,12 @@ void ScriptEditor::_find_scripts(Node *p_base, Node *p_current, HashSet<Ref<Scri
 	if (p_current->get_script_instance()) {
 		Ref<Script> scr = p_current->get_script();
 		if (scr.is_valid()) {
-			used.insert(scr);
+			r_used_scripts.insert(scr);
 		}
 	}
 
-	for (int i = 0; i < p_current->get_child_count(); i++) {
-		_find_scripts(p_base, p_current->get_child(i), used);
+	for (Node *child : p_current->iterate_children()) {
+		_find_scripts(p_base, child, r_used_scripts);
 	}
 }
 
@@ -1954,10 +1993,11 @@ void ScriptEditor::_update_script_names() {
 	if (restoring_layout) {
 		return;
 	}
+	script_names_update_queued = false;
 
 	HashSet<Ref<Script>> used;
 	Node *edited = EditorNode::get_singleton()->get_edited_scene();
-	if (edited && EDITOR_GET("text_editor/script_list/highlight_scene_scripts")) {
+	if (highlight_scene_scripts && edited) {
 		_find_scripts(edited, edited, used);
 	}
 
@@ -2074,28 +2114,12 @@ void ScriptEditor::_update_script_names() {
 
 	if (_sort_list_on_update && !sedata.is_empty()) {
 		sedata.sort();
-
-		// change actual order of tab_container so that the order can be rearranged by user
-		int cur_tab = tab_container->get_current_tab();
-		int prev_tab = tab_container->get_previous_tab();
-		int new_cur_tab = -1;
-		int new_prev_tab = -1;
+		// Change actual order in tab_container so it persists.
 		for (int i = 0; i < sedata.size(); i++) {
 			tab_container->move_child(sedata[i].ref, i);
-			if (new_prev_tab == -1 && sedata[i].index == prev_tab) {
-				new_prev_tab = i;
-			}
-			if (new_cur_tab == -1 && sedata[i].index == cur_tab) {
-				new_cur_tab = i;
-			}
-			// Update index of sd entries for sorted order
-			_ScriptEditorItemData sd = sedata[i];
-			sd.index = i;
-			sedata.set(i, sd);
+			// Update index of entries for sorted order.
+			sedata.write[i].index = i;
 		}
-
-		_go_to_tab(new_prev_tab);
-		_go_to_tab(new_cur_tab);
 		_sort_list_on_update = false;
 	}
 
@@ -2162,11 +2186,7 @@ void ScriptEditor::_update_script_names() {
 		script_name_button->hide();
 	}
 
-	if (!waiting_update_names) {
-		document_outline->update_outline();
-	} else {
-		waiting_update_names = false;
-	}
+	document_outline->update_outline();
 	document_outline->update_visibility();
 	_update_script_colors();
 }
@@ -2795,6 +2815,11 @@ void ScriptEditor::_apply_editor_settings() {
 	trim_trailing_whitespace_on_save = EDITOR_GET("text_editor/behavior/files/trim_trailing_whitespace_on_save");
 	trim_final_newlines_on_save = EDITOR_GET("text_editor/behavior/files/trim_final_newlines_on_save");
 	convert_indent_on_save = EDITOR_GET("text_editor/behavior/files/convert_indent_on_save");
+	bool previous_highlight_scene_scripts = highlight_scene_scripts;
+	highlight_scene_scripts = EDITOR_GET("text_editor/script_list/highlight_scene_scripts");
+	if (highlight_scene_scripts && !previous_highlight_scene_scripts) {
+		_connect_to_scene();
+	}
 
 	external_editor_active = EDITOR_GET("text_editor/external/use_external_editor");
 	document_outline->update_editor_settings();
@@ -2889,15 +2914,6 @@ void ScriptEditor::_update_autosave_timer() {
 	} else {
 		autosave_timer->stop();
 	}
-}
-
-void ScriptEditor::_tree_changed() {
-	if (waiting_update_names) {
-		return;
-	}
-
-	waiting_update_names = true;
-	callable_mp(this, &ScriptEditor::_update_script_names).call_deferred();
 }
 
 void ScriptEditor::_split_dragged(float) {
@@ -3909,7 +3925,6 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_editor_cache->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("script_editor_cache.cfg"));
 
 	restoring_layout = false;
-	waiting_update_names = false;
 	pending_auto_reload = false;
 	auto_reload_running_scripts = true;
 	external_editor_active = false;
@@ -4226,6 +4241,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	trim_trailing_whitespace_on_save = EDITOR_GET("text_editor/behavior/files/trim_trailing_whitespace_on_save");
 	trim_final_newlines_on_save = EDITOR_GET("text_editor/behavior/files/trim_final_newlines_on_save");
 	convert_indent_on_save = EDITOR_GET("text_editor/behavior/files/convert_indent_on_save");
+	highlight_scene_scripts = EDITOR_GET("text_editor/script_list/highlight_scene_scripts");
 
 	Ref<EditorJSONSyntaxHighlighter> json_syntax_highlighter;
 	json_syntax_highlighter.instantiate();
