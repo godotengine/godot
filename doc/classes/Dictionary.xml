@@ -508,7 +508,7 @@
 			<param index="0" name="key" type="Variant" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Sets the value of the element at the given [param key] to the given [param value]. This is the same as using the [code][][/code] operator ([code]array[index] = value[/code]).
+				Sets the value of the element at the given [param key] to the given [param value]. This is the same as using the [code][][/code] operator ([code]dictionary[key] = value[/code]).
 			</description>
 		</method>
 		<method name="size" qualifiers="const">
