@@ -133,7 +133,7 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 
 	if (frames_selected.is_empty()) {
 		split_sheet_dialog->get_ok_button()->set_disabled(true);
-		split_sheet_dialog->set_ok_button_text(TTR("No Frames Selected"));
+		split_sheet_dialog->set_ok_button_text(TTRC("No Frames Selected"));
 		return;
 	}
 
@@ -676,9 +676,30 @@ void SpriteFramesEditor::_notification(int p_what) {
 			_update_show_settings();
 		} break;
 
-		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			_update_show_settings();
+		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_update_show_settings();
+			anim_speed->set_suffix(TTR("FPS"));
+
+			// Similar to `_update_library_impl()`, but only updates text for "empty" items.
+			if (frames.is_valid()) {
+				for (int i = 0; i < frames->get_frame_count(edited_anim); i++) {
+					Ref<Texture2D> texture = frames->get_frame_texture(edited_anim, i);
+					if (texture.is_null()) {
+						String name = itos(i);
+						float duration = frames->get_frame_duration(edited_anim, i);
+						texture = empty_icon;
+						name += ": " + TTR("(empty)");
+						if (duration != 1.0f) {
+							name += String::utf8(" [× ") + String::num(duration, 2) + "]";
+						}
+						frame_list->set_item_text(i, name);
+					}
+				}
+			}
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -701,11 +722,11 @@ void SpriteFramesEditor::_file_load_request(const Vector<String> &p_path, int p_
 		resource = ResourceLoader::load(p_path[i]);
 
 		if (resource.is_null()) {
-			dialog->set_text(TTR("ERROR: Couldn't load frame resource!"));
-			dialog->set_title(TTR("Error!"));
+			dialog->set_text(TTRC("ERROR: Couldn't load frame resource!"));
+			dialog->set_title(TTRC("Error!"));
 
 			//dialog->get_cancel()->set_text("Close");
-			dialog->set_ok_button_text(TTR("Close"));
+			dialog->set_ok_button_text(TTRC("Close"));
 			dialog->popup_centered();
 			return; ///beh should show an error i guess
 		}
@@ -1235,7 +1256,7 @@ void SpriteFramesEditor::_animation_remove() {
 		return;
 	}
 
-	delete_dialog->set_text(TTR("Delete Animation?"));
+	delete_dialog->set_text(TTRC("Delete Animation?"));
 	delete_dialog->popup_centered();
 }
 
@@ -1550,6 +1571,8 @@ void SpriteFramesEditor::_update_library_impl() {
 	}
 
 	bool is_first_selection = true;
+	// NOTE: When the language is changed, the text of the items is updated in `NOTIFICATION_TRANSLATION_CHANGED`.
+	// If there are changes related to the items and their text in the loop below, the code in `NOTIFICATION_TRANSLATION_CHANGED` must also be changed.
 	for (int i = 0; i < frames->get_frame_count(edited_anim); i++) {
 		String name = itos(i);
 		Ref<Texture2D> texture = frames->get_frame_texture(edited_anim, i);
@@ -1963,7 +1986,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	vbc_animlist->set_custom_minimum_size(Size2(150, 0) * EDSCALE);
 
 	VBoxContainer *sub_vb = memnew(VBoxContainer);
-	vbc_animlist->add_margin_child(TTR("Animations:"), sub_vb, true);
+	vbc_animlist->add_margin_child(TTRC("Animations:"), sub_vb, true);
 	sub_vb->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	HBoxContainer *hbc_animlist = memnew(HBoxContainer);
@@ -1995,7 +2018,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	autoplay = memnew(Button);
 	autoplay->set_theme_type_variation(SceneStringName(FlatButton));
-	autoplay->set_tooltip_text(TTR("Autoplay on Load"));
+	autoplay->set_tooltip_text(TTRC("Autoplay on Load"));
 	autoplay_container->add_child(autoplay);
 
 	hbc_animlist->add_child(memnew(VSeparator));
@@ -2003,7 +2026,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_loop = memnew(Button);
 	anim_loop->set_toggle_mode(true);
 	anim_loop->set_theme_type_variation(SceneStringName(FlatButton));
-	anim_loop->set_tooltip_text(TTR("Animation Looping"));
+	anim_loop->set_tooltip_text(TTRC("Animation Looping"));
 	anim_loop->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_loop_changed));
 	hbc_animlist->add_child(anim_loop);
 
@@ -2013,7 +2036,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_speed->set_max(120);
 	anim_speed->set_step(0.01);
 	anim_speed->set_custom_arrow_step(1);
-	anim_speed->set_tooltip_text(TTR("Animation Speed"));
+	anim_speed->set_tooltip_text(TTRC("Animation Speed"));
 	anim_speed->get_line_edit()->set_expand_to_text_length_enabled(true);
 	anim_speed->get_line_edit()->connect(SceneStringName(resized), callable_mp(this, &SpriteFramesEditor::_animation_speed_resized));
 	anim_speed->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_animation_speed_changed));
@@ -2022,7 +2045,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_search_box = memnew(LineEdit);
 	sub_vb->add_child(anim_search_box);
 	anim_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	anim_search_box->set_placeholder(TTR("Filter Animations"));
+	anim_search_box->set_placeholder(TTRC("Filter Animations"));
 	anim_search_box->set_clear_button_enabled(true);
 	anim_search_box->connect(SceneStringName(text_changed), callable_mp(this, &SpriteFramesEditor::_animation_search_text_changed));
 
@@ -2030,6 +2053,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	sub_vb->add_child(animations);
 	animations->set_v_size_flags(SIZE_EXPAND_FILL);
 	animations->set_hide_root(true);
+	animations->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	// HACK: The cell_selected signal is emitted before the FPS spinbox loses focus and applies the change.
 	animations->connect("cell_selected", callable_mp(this, &SpriteFramesEditor::_animation_selected), CONNECT_DEFERRED);
 	animations->connect("item_edited", callable_mp(this, &SpriteFramesEditor::_animation_name_edited));
@@ -2045,7 +2069,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	missing_anim_label = memnew(Label);
 	missing_anim_label->set_focus_mode(FOCUS_ACCESSIBILITY);
-	missing_anim_label->set_text(TTR("This resource does not have any animations."));
+	missing_anim_label->set_text(TTRC("This resource does not have any animations."));
 	missing_anim_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	missing_anim_label->set_v_size_flags(SIZE_EXPAND_FILL);
 	missing_anim_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -2059,7 +2083,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_frames_vb->hide();
 
 	sub_vb = memnew(VBoxContainer);
-	anim_frames_vb->add_margin_child(TTR("Animation Frames:"), sub_vb, true);
+	anim_frames_vb->add_margin_child(TTRC("Animation Frames:"), sub_vb, true);
 
 	HFlowContainer *hfc = memnew(HFlowContainer);
 	sub_vb->add_child(hfc);
@@ -2070,27 +2094,27 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	play_bw_from = memnew(Button);
 	play_bw_from->set_theme_type_variation(SceneStringName(FlatButton));
-	play_bw_from->set_tooltip_text(TTR("Play selected animation backwards from current pos. (A)"));
+	play_bw_from->set_tooltip_text(TTRC("Play selected animation backwards from current pos. (A)"));
 	playback_container->add_child(play_bw_from);
 
 	play_bw = memnew(Button);
 	play_bw->set_theme_type_variation(SceneStringName(FlatButton));
-	play_bw->set_tooltip_text(TTR("Play selected animation backwards from end. (Shift+A)"));
+	play_bw->set_tooltip_text(TTRC("Play selected animation backwards from end. (Shift+A)"));
 	playback_container->add_child(play_bw);
 
 	stop = memnew(Button);
 	stop->set_theme_type_variation(SceneStringName(FlatButton));
-	stop->set_tooltip_text(TTR("Pause/stop animation playback. (S)"));
+	stop->set_tooltip_text(TTRC("Pause/stop animation playback. (S)"));
 	playback_container->add_child(stop);
 
 	play = memnew(Button);
 	play->set_theme_type_variation(SceneStringName(FlatButton));
-	play->set_tooltip_text(TTR("Play selected animation from start. (Shift+D)"));
+	play->set_tooltip_text(TTRC("Play selected animation from start. (Shift+D)"));
 	playback_container->add_child(play);
 
 	play_from = memnew(Button);
 	play_from->set_theme_type_variation(SceneStringName(FlatButton));
-	play_from->set_tooltip_text(TTR("Play selected animation from current pos. (D)"));
+	play_from->set_tooltip_text(TTRC("Play selected animation from current pos. (D)"));
 	playback_container->add_child(play_from);
 
 	hfc->add_child(memnew(VSeparator));
@@ -2163,7 +2187,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hfc->add_child(hbc_frame_duration);
 
 	Label *label = memnew(Label);
-	label->set_text(TTR("Frame Duration:"));
+	label->set_text(TTRC("Frame Duration:"));
 	hbc_frame_duration->add_child(label);
 
 	frame_duration = memnew(SpinBox);
@@ -2276,7 +2300,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	split_sheet_dialog = memnew(ConfirmationDialog);
 	add_child(split_sheet_dialog);
-	split_sheet_dialog->set_title(TTR("Select Frames"));
+	split_sheet_dialog->set_title(TTRC("Select Frames"));
 	split_sheet_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SpriteFramesEditor::_sheet_add_frames));
 
 	HBoxContainer *split_sheet_hb = memnew(HBoxContainer);
@@ -2291,30 +2315,30 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	HBoxContainer *split_sheet_menu_hb = memnew(HBoxContainer);
 
-	split_sheet_menu_hb->add_child(memnew(Label(TTR("Frame Order"))));
+	split_sheet_menu_hb->add_child(memnew(Label(TTRC("Frame Order"))));
 
 	split_sheet_order = memnew(OptionButton);
-	split_sheet_order->add_item(TTR("As Selected"), FRAME_ORDER_SELECTION);
-	split_sheet_order->add_separator(TTR("By Row"));
-	split_sheet_order->add_item(TTR("Left to Right, Top to Bottom"), FRAME_ORDER_LEFT_RIGHT_TOP_BOTTOM);
-	split_sheet_order->add_item(TTR("Left to Right, Bottom to Top"), FRAME_ORDER_LEFT_RIGHT_BOTTOM_TOP);
-	split_sheet_order->add_item(TTR("Right to Left, Top to Bottom"), FRAME_ORDER_RIGHT_LEFT_TOP_BOTTOM);
-	split_sheet_order->add_item(TTR("Right to Left, Bottom to Top"), FRAME_ORDER_RIGHT_LEFT_BOTTOM_TOP);
-	split_sheet_order->add_separator(TTR("By Column"));
-	split_sheet_order->add_item(TTR("Top to Bottom, Left to Right"), FRAME_ORDER_TOP_BOTTOM_LEFT_RIGHT);
-	split_sheet_order->add_item(TTR("Top to Bottom, Right to Left"), FRAME_ORDER_TOP_BOTTOM_RIGHT_LEFT);
-	split_sheet_order->add_item(TTR("Bottom to Top, Left to Right"), FRAME_ORDER_BOTTOM_TOP_LEFT_RIGHT);
-	split_sheet_order->add_item(TTR("Bottom to Top, Right to Left"), FRAME_ORDER_BOTTOM_TOP_RIGHT_LEFT);
+	split_sheet_order->add_item(TTRC("As Selected"), FRAME_ORDER_SELECTION);
+	split_sheet_order->add_separator(TTRC("By Row"));
+	split_sheet_order->add_item(TTRC("Left to Right, Top to Bottom"), FRAME_ORDER_LEFT_RIGHT_TOP_BOTTOM);
+	split_sheet_order->add_item(TTRC("Left to Right, Bottom to Top"), FRAME_ORDER_LEFT_RIGHT_BOTTOM_TOP);
+	split_sheet_order->add_item(TTRC("Right to Left, Top to Bottom"), FRAME_ORDER_RIGHT_LEFT_TOP_BOTTOM);
+	split_sheet_order->add_item(TTRC("Right to Left, Bottom to Top"), FRAME_ORDER_RIGHT_LEFT_BOTTOM_TOP);
+	split_sheet_order->add_separator(TTRC("By Column"));
+	split_sheet_order->add_item(TTRC("Top to Bottom, Left to Right"), FRAME_ORDER_TOP_BOTTOM_LEFT_RIGHT);
+	split_sheet_order->add_item(TTRC("Top to Bottom, Right to Left"), FRAME_ORDER_TOP_BOTTOM_RIGHT_LEFT);
+	split_sheet_order->add_item(TTRC("Bottom to Top, Left to Right"), FRAME_ORDER_BOTTOM_TOP_LEFT_RIGHT);
+	split_sheet_order->add_item(TTRC("Bottom to Top, Right to Left"), FRAME_ORDER_BOTTOM_TOP_RIGHT_LEFT);
 	split_sheet_order->connect(SceneStringName(item_selected), callable_mp(this, &SpriteFramesEditor::_sheet_order_selected));
 	split_sheet_menu_hb->add_child(split_sheet_order);
 
 	Button *select_all = memnew(Button);
-	select_all->set_text(TTR("Select All"));
+	select_all->set_text(TTRC("Select All"));
 	select_all->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_sheet_select_all_frames));
 	split_sheet_menu_hb->add_child(select_all);
 
 	Button *clear_all = memnew(Button);
-	clear_all->set_text(TTR("Select None"));
+	clear_all->set_text(TTRC("Select None"));
 	clear_all->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_sheet_clear_all_frames));
 	split_sheet_menu_hb->add_child(clear_all);
 
@@ -2324,7 +2348,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	toggle_settings_button->set_h_size_flags(SIZE_SHRINK_END);
 	toggle_settings_button->set_theme_type_variation(SceneStringName(FlatButton));
 	toggle_settings_button->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_toggle_show_settings));
-	toggle_settings_button->set_tooltip_text(TTR("Toggle Settings Panel"));
+	toggle_settings_button->set_tooltip_text(TTRC("Toggle Settings Panel"));
 	split_sheet_menu_hb->add_child(toggle_settings_button);
 
 	split_sheet_vb->add_child(split_sheet_menu_hb);
@@ -2362,21 +2386,21 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_zoom_out = memnew(Button);
 	split_sheet_zoom_out->set_theme_type_variation(SceneStringName(FlatButton));
 	split_sheet_zoom_out->set_focus_mode(FOCUS_ACCESSIBILITY);
-	split_sheet_zoom_out->set_tooltip_text(TTR("Zoom Out"));
+	split_sheet_zoom_out->set_tooltip_text(TTRC("Zoom Out"));
 	split_sheet_zoom_out->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_sheet_zoom_out));
 	split_sheet_zoom_hb->add_child(split_sheet_zoom_out);
 
 	split_sheet_zoom_reset = memnew(Button);
 	split_sheet_zoom_reset->set_theme_type_variation(SceneStringName(FlatButton));
 	split_sheet_zoom_reset->set_focus_mode(FOCUS_ACCESSIBILITY);
-	split_sheet_zoom_reset->set_tooltip_text(TTR("Zoom Reset"));
+	split_sheet_zoom_reset->set_tooltip_text(TTRC("Zoom Reset"));
 	split_sheet_zoom_reset->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_sheet_zoom_reset));
 	split_sheet_zoom_hb->add_child(split_sheet_zoom_reset);
 
 	split_sheet_zoom_in = memnew(Button);
 	split_sheet_zoom_in->set_theme_type_variation(SceneStringName(FlatButton));
 	split_sheet_zoom_in->set_focus_mode(FOCUS_ACCESSIBILITY);
-	split_sheet_zoom_in->set_tooltip_text(TTR("Zoom In"));
+	split_sheet_zoom_in->set_tooltip_text(TTRC("Zoom In"));
 	split_sheet_zoom_in->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_sheet_zoom_in));
 	split_sheet_zoom_hb->add_child(split_sheet_zoom_in);
 
@@ -2386,7 +2410,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	HBoxContainer *split_sheet_h_hb = memnew(HBoxContainer);
 	split_sheet_h_hb->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	Label *split_sheet_h_label = memnew(Label(TTR("Horizontal")));
+	Label *split_sheet_h_label = memnew(Label(TTRC("Horizontal")));
 	split_sheet_h_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	split_sheet_h_hb->add_child(split_sheet_h_label);
 
@@ -2404,7 +2428,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	HBoxContainer *split_sheet_v_hb = memnew(HBoxContainer);
 	split_sheet_v_hb->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	Label *split_sheet_v_label = memnew(Label(TTR("Vertical")));
+	Label *split_sheet_v_label = memnew(Label(TTRC("Vertical")));
 	split_sheet_v_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	split_sheet_v_hb->add_child(split_sheet_v_label);
 
@@ -2422,7 +2446,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	HBoxContainer *split_sheet_size_hb = memnew(HBoxContainer);
 	split_sheet_size_hb->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	Label *split_sheet_size_label = memnew(Label(TTR("Size")));
+	Label *split_sheet_size_label = memnew(Label(TTRC("Size")));
 	split_sheet_size_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	split_sheet_size_label->set_v_size_flags(SIZE_SHRINK_BEGIN);
 	split_sheet_size_hb->add_child(split_sheet_size_label);
@@ -2453,7 +2477,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	HBoxContainer *split_sheet_sep_hb = memnew(HBoxContainer);
 	split_sheet_sep_hb->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	Label *split_sheet_sep_label = memnew(Label(TTR("Separation")));
+	Label *split_sheet_sep_label = memnew(Label(TTRC("Separation")));
 	split_sheet_sep_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	split_sheet_sep_label->set_v_size_flags(SIZE_SHRINK_BEGIN);
 	split_sheet_sep_hb->add_child(split_sheet_sep_label);
@@ -2482,7 +2506,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	HBoxContainer *split_sheet_offset_hb = memnew(HBoxContainer);
 	split_sheet_offset_hb->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	Label *split_sheet_offset_label = memnew(Label(TTR("Offset")));
+	Label *split_sheet_offset_label = memnew(Label(TTRC("Offset")));
 	split_sheet_offset_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	split_sheet_offset_label->set_v_size_flags(SIZE_SHRINK_BEGIN);
 	split_sheet_offset_hb->add_child(split_sheet_offset_label);
@@ -2509,14 +2533,14 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_settings_vb->add_child(split_sheet_offset_hb);
 
 	Button *auto_slice = memnew(Button);
-	auto_slice->set_text(TTR("Auto Slice"));
+	auto_slice->set_text(TTRC("Auto Slice"));
 	auto_slice->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_auto_slice_sprite_sheet));
 	split_sheet_settings_vb->add_child(auto_slice);
 
 	split_sheet_hb->add_child(split_sheet_settings_vb);
 
 	file_split_sheet = memnew(EditorFileDialog);
-	file_split_sheet->set_title(TTR("Create Frames from Sprite Sheet"));
+	file_split_sheet->set_title(TTRC("Create Frames from Sprite Sheet"));
 	file_split_sheet->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(file_split_sheet);
 	file_split_sheet->connect("file_selected", callable_mp(this, &SpriteFramesEditor::_prepare_sprite_sheet));
