@@ -35,6 +35,7 @@
 #import "native_menu_macos.h"
 #import "os_macos.h"
 
+#import "core/os/main_loop.h"
 #import "main/main.h"
 
 #import <Carbon/Carbon.h>

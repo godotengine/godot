@@ -40,6 +40,7 @@
 
 #include "core/crypto/crypto_core.h"
 #include "core/io/file_access.h"
+#include "core/os/main_loop.h"
 #include "core/version_generated.gen.h"
 #include "drivers/apple/os_log_logger.h"
 #include "main/main.h"

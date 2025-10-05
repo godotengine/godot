@@ -55,6 +55,7 @@
 #import "core/config/project_settings.h"
 #import "core/debugger/engine_debugger.h"
 #import "core/io/marshalls.h"
+#import "core/os/main_loop.h"
 
 DisplayServerEmbedded::DisplayServerEmbedded(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	EmbeddedDebugger::initialize(this);

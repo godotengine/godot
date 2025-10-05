@@ -40,6 +40,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "core/os/keyboard.h"
+#include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
 

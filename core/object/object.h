@@ -566,6 +566,7 @@ public:                                              \
                                                      \
 private:
 
+class ClassDB;
 class ScriptInstance;
 
 class Object {
@@ -781,7 +782,7 @@ protected:
 
 	void _clear_internal_resource_paths(const Variant &p_var);
 
-	friend class ClassDB;
+	friend class ::ClassDB;
 	friend class PlaceholderExtensionInstance;
 
 	static void _add_class_to_classdb(const StringName &p_class, const StringName &p_inherits);

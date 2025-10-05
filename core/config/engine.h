@@ -30,9 +30,12 @@
 
 #pragma once
 
-#include "core/os/main_loop.h"
-#include "core/string/ustring.h"
+#include "core/string/string_name.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/list.h"
+
+class Object;
+class Dictionary;
 
 template <typename T>
 class TypedArray;
