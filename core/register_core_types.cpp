@@ -187,6 +187,7 @@ void register_core_types() {
 	GDREGISTER_CLASS(InputEventMouseMotion);
 	GDREGISTER_CLASS(InputEventJoypadButton);
 	GDREGISTER_CLASS(InputEventJoypadMotion);
+	GDREGISTER_CLASS(InputEventJoypadHat);
 	GDREGISTER_CLASS(InputEventScreenDrag);
 	GDREGISTER_CLASS(InputEventScreenTouch);
 	GDREGISTER_CLASS(InputEventAction);

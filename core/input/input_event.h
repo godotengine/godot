@@ -346,6 +346,36 @@ public:
 	InputEventJoypadMotion() {}
 };
 
+class InputEventJoypadHat : public InputEvent {
+	GDCLASS(InputEventJoypadHat, InputEvent);
+
+	JoyHat hat_index = (JoyHat)0;
+	BitField<HatMask> hat_mask = (HatMask)0;
+protected:
+	static void _bind_methods();
+
+public:
+	void set_hat_index(JoyHat p_index);
+	JoyHat get_hat_index() const;
+
+	void set_hat_mask(BitField<HatMask> p_mask);
+	BitField<HatMask> get_hat_mask() const;
+
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
+	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
+
+	virtual bool is_action_type() const override { return true; }
+
+	virtual String as_text() const override;
+	virtual String to_string() override;
+
+	static Ref<InputEventJoypadHat> create_reference(JoyHat p_hat_index);
+
+	InputEventType get_type() const final override { return InputEventType::JOY_HAT; }
+
+	InputEventJoypadHat() {}
+};
+
 class InputEventJoypadButton : public InputEvent {
 	GDCLASS(InputEventJoypadButton, InputEvent);
 

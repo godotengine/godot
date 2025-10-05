@@ -46,6 +46,7 @@ enum class InputEventType {
 	MIDI,
 	SHORTCUT,
 	ACTION,
+	JOY_HAT,
 	MAX,
 };
 
@@ -63,6 +64,19 @@ enum class HatMask {
 	RIGHT = 2,
 	DOWN = 4,
 	LEFT = 8,
+};
+
+constexpr HatMask operator|(HatMask p_a, HatMask p_b) {
+	return static_cast<HatMask>(static_cast<int>(p_a) | static_cast<int>(p_b));
+}
+
+constexpr HatMask &operator|=(HatMask &p_a, HatMask p_b) {
+	return p_a = p_a | p_b;
+}
+
+enum class JoyHat {
+	INVALID = -1,
+	MAX = 256, // SDL supports up to 256 hats.
 };
 
 enum class JoyAxis {

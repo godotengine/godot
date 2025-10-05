@@ -90,6 +90,7 @@ private:
 	RBSet<Key> keys_pressed;
 	RBSet<JoyButton> joy_buttons_pressed;
 	RBMap<JoyAxis, float> _joy_axis;
+	RBMap<JoyHat, BitField<HatMask>> _joy_hat;
 	//RBMap<StringName,int> custom_action_press;
 	bool gravity_enabled = false;
 	Vector3 gravity;
@@ -171,7 +172,7 @@ private:
 		float last_axis[(size_t)JoyAxis::MAX] = { 0.0f };
 		HatMask last_hat = HatMask::CENTER;
 		int mapping = -1;
-		int hat_current = 0;
+		int hat_current[(size_t)JoyHat::MAX] = { 0 };
 		bool raw = false;
 		Dictionary info;
 	};
@@ -252,6 +253,7 @@ private:
 	JoyAxis _get_output_axis(const String &output);
 	void _button_event(int p_device, JoyButton p_index, bool p_pressed);
 	void _axis_event(int p_device, JoyAxis p_axis, float p_value);
+	void _hat_event(int p_device, JoyHat p_hat, BitField<HatMask> p_hat_mask);
 	void _update_action_cache(const StringName &p_action_name, ActionState &r_action_state);
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
@@ -318,6 +320,7 @@ public:
 	Vector2 get_vector(const StringName &p_negative_x, const StringName &p_positive_x, const StringName &p_negative_y, const StringName &p_positive_y, float p_deadzone = -1.0f) const;
 
 	float get_joy_axis(int p_device, JoyAxis p_axis) const;
+	BitField<HatMask> get_joy_hat(int p_device, JoyHat p_hat_index) const;
 	String get_joy_name(int p_idx);
 	TypedArray<int> get_connected_joypads();
 	Vector2 get_joy_vibration_strength(int p_device);
@@ -345,6 +348,7 @@ public:
 	void set_magnetometer(const Vector3 &p_magnetometer);
 	void set_gyroscope(const Vector3 &p_gyroscope);
 	void set_joy_axis(int p_device, JoyAxis p_axis, float p_value);
+	void set_joy_hat(int p_device, JoyHat p_hat_index, BitField<HatMask> p_hat_mask);
 
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
@@ -370,7 +374,7 @@ public:
 	void parse_mapping(const String &p_mapping);
 	void joy_button(int p_device, JoyButton p_button, bool p_pressed);
 	void joy_axis(int p_device, JoyAxis p_axis, float p_value);
-	void joy_hat(int p_device, BitField<HatMask> p_val);
+	void joy_hat(int p_device, JoyHat p_hat, BitField<HatMask> p_val);
 
 	void add_joy_mapping(const String &p_mapping, bool p_update_existing = false);
 	void remove_joy_mapping(const String &p_guid);

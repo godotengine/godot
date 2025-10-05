@@ -245,8 +245,11 @@ void JoypadSDL::process_events() {
 					break;
 
 				case SDL_EVENT_JOYSTICK_HAT_MOTION:
+					// We don't skip events when non-raw here as hats have no associated gamepad event.
+
 					Input::get_singleton()->joy_hat(
 							joy_id,
+							static_cast<JoyHat>(sdl_event.jhat.hat), // Godot hat constants are intentionally the same as SDL's
 							(HatMask)sdl_event.jhat.value // Godot hat masks are identical to SDL hat masks, so we can just use them as-is.
 					);
 					break;

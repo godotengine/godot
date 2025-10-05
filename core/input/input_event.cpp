@@ -1210,6 +1210,106 @@ void InputEventJoypadMotion::_bind_methods() {
 
 ///////////////////////////////////
 
+void InputEventJoypadHat::set_hat_index(JoyHat p_index) {
+	hat_index = p_index;
+	emit_changed();
+}
+
+JoyHat InputEventJoypadHat::get_hat_index() const {
+	return hat_index;
+}
+
+void InputEventJoypadHat::set_hat_mask(BitField<HatMask> p_mask) {
+	hat_mask = p_mask;
+}
+
+BitField<HatMask> InputEventJoypadHat::get_hat_mask() const {
+	return hat_mask;
+}
+
+bool InputEventJoypadHat::action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
+	Ref<InputEventJoypadHat> jh = p_event;
+	if (jh.is_null()) {
+		return false;
+	}
+
+	bool match = hat_index == jh->hat_index;
+	if (p_exact_match) {
+		match &= hat_mask == jh->hat_mask;
+	}
+	if (match) {
+		bool jh_pressed = !jh->hat_mask.is_empty();
+		if (r_pressed != nullptr) {
+			*r_pressed = jh_pressed;
+		}
+		float strength = jh_pressed ? 1.0f : 0.0f;
+		if (r_strength != nullptr) {
+			*r_strength = strength;
+		}
+		if (r_raw_strength != nullptr) {
+			*r_raw_strength = strength;
+		}
+	}
+
+	return match;
+}
+
+bool InputEventJoypadHat::is_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
+	Ref<InputEventJoypadHat> hat = p_event;
+	if (hat.is_null()) {
+		return false;
+	}
+
+	return hat_index == hat->hat_index && (p_exact_match && hat_mask == hat->hat_mask);
+}
+
+String InputEventJoypadHat::as_text() const {
+	String text = vformat(RTR("Joypad Hat %d"), (int64_t)hat_index);
+
+	if (hat_mask == HatMask::CENTER) {
+		text += ", " + RTR("Center");
+	}
+	if (hat_mask.has_flag(HatMask::UP)) {
+		text += ", " + RTR("Up");
+	}
+	if (hat_mask.has_flag(HatMask::RIGHT)) {
+		text += ", " + RTR("Right");
+	}
+	if (hat_mask.has_flag(HatMask::DOWN)) {
+		text += ", " + RTR("Down");
+	}
+	if (hat_mask.has_flag(HatMask::LEFT)) {
+		text += ", " + RTR("Left");
+	}
+
+	return text;
+}
+
+String InputEventJoypadHat::to_string() {
+	return vformat("InputEventJoypadHat: hat_index=%d, hat_mask=%d", hat_index, hat_mask);
+}
+
+Ref<InputEventJoypadHat> InputEventJoypadHat::create_reference(JoyHat p_hat_index) {
+	Ref<InputEventJoypadHat> ie;
+	ie.instantiate();
+	ie->set_hat_index(p_hat_index);
+
+	return ie;
+}
+
+void InputEventJoypadHat::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_hat_index", "hat_index"), &InputEventJoypadHat::set_hat_index);
+	ClassDB::bind_method(D_METHOD("get_hat_index"), &InputEventJoypadHat::get_hat_index);
+
+	ClassDB::bind_method(D_METHOD("set_hat_mask", "mask"), &InputEventJoypadHat::set_hat_mask);
+	ClassDB::bind_method(D_METHOD("get_hat_mask"), &InputEventJoypadHat::get_hat_mask);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "hat_index"), "set_hat_index", "get_hat_index");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "hat_mask"), "set_hat_mask", "get_hat_mask");
+}
+
+///////////////////////////////////
+
 void InputEventJoypadButton::set_button_index(JoyButton p_index) {
 	button_index = p_index;
 	emit_changed();

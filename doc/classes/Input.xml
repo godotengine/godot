@@ -125,6 +125,14 @@
 				On Windows, all XInput joypad GUIDs will be overridden by Godot to [code]__XINPUT_DEVICE__[/code], because their mappings are the same.
 			</description>
 		</method>
+		<method name="get_joy_hat" qualifiers="const">
+			<return type="int" enum="HatMask" is_bitfield="true" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="hat" type="int" enum="JoyHat" />
+			<description>
+				Returns the hat position as a bitmask. If multiple directions are present at the same time, the bits are added together.
+			</description>
+		</method>
 		<method name="get_joy_info" qualifiers="const">
 			<return type="Dictionary" />
 			<param index="0" name="device" type="int" />
