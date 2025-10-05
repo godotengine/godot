@@ -50,7 +50,7 @@
 #include "editor/themes/builtin_fonts.gen.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 #define FAIL_COND_V_MSG(cond, return_value, msg) \
 	if (cond) {                                  \
