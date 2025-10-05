@@ -143,6 +143,8 @@ private:
 	void _edit_filter_list(HashSet<String> &r_list, const String &p_filter, bool exclude);
 
 	static Vector<uint8_t> _filter_extension_list_config_file(const String &p_config_path, const HashSet<String> &p_paths);
+	static Vector<uint8_t> _get_filtered_uid_cache(const HashSet<String> &p_paths);
+	static Vector<uint8_t> _get_filtered_global_class_cache(const String &p_cache_path, const HashSet<String> &p_paths);
 
 	struct FileExportCache {
 		uint64_t source_modified_time = 0;

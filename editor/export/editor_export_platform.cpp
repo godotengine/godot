@@ -39,6 +39,7 @@
 #include "core/io/file_access_pack.h" // PACK_HEADER_MAGIC, PACK_FORMAT_VERSION
 #include "core/io/image_loader.h"
 #include "core/io/resource_uid.h"
+#include "core/io/stream_peer.h"
 #include "core/io/zip_io.h"
 #include "core/math/random_pcg.h"
 #include "core/version.h"
@@ -1029,10 +1030,6 @@ Vector<String> EditorExportPlatform::get_forced_export_files(const Ref<EditorExp
 	if (!splash.is_empty() && FileAccess::exists(splash) && icon != splash) {
 		files.push_back(splash);
 	}
-	String resource_cache_file = ResourceUID::get_cache_file();
-	if (FileAccess::exists(resource_cache_file)) {
-		files.push_back(resource_cache_file);
-	}
 
 	String extension_list_config_file = GDExtension::get_extension_list_config_file();
 	if (FileAccess::exists(extension_list_config_file)) {
@@ -1609,19 +1606,33 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 	Vector<String> forced_export = get_forced_export_files(p_preset);
 	for (int i = 0; i < forced_export.size(); i++) {
+		const String &file = forced_export[i];
 		Vector<uint8_t> array;
-		if (GDExtension::get_extension_list_config_file() == forced_export[i]) {
-			array = _filter_extension_list_config_file(forced_export[i], paths);
-			if (array.is_empty()) {
-				continue;
-			}
+
+		if (file == GDExtension::get_extension_list_config_file()) {
+			array = _filter_extension_list_config_file(file, paths);
+		} else if (file == ProjectSettings::get_singleton()->get_global_class_list_path()) {
+			array = _get_filtered_global_class_cache(file, paths);
 		} else {
-			array = FileAccess::get_file_as_bytes(forced_export[i]);
+			array = FileAccess::get_file_as_bytes(file);
 		}
-		err = save_proxy.save_file(p_udata, forced_export[i], array, idx, total, enc_in_filters, enc_ex_filters, key, seed);
+
+		if (array.is_empty()) {
+			continue;
+		}
+
+		err = save_proxy.save_file(p_udata, file, array, idx, total, enc_in_filters, enc_ex_filters, key, seed);
 		if (err != OK) {
 			return err;
 		}
+	}
+
+	// Generate a UID cache from the exported paths.
+	Vector<uint8_t> uid_cache_data = _get_filtered_uid_cache(paths);
+	String uid_cache_file_path = ResourceUID::get_cache_file();
+	err = save_proxy.save_file(p_udata, uid_cache_file_path, uid_cache_data, idx, total, enc_in_filters, enc_ex_filters, key, seed);
+	if (err != OK) {
+		return err;
 	}
 
 	Dictionary int_export = get_internal_export_files(p_preset, p_debug);
@@ -1674,6 +1685,59 @@ Vector<uint8_t> EditorExportPlatform::_filter_extension_list_config_file(const S
 		}
 	}
 	return data;
+}
+
+Vector<uint8_t> EditorExportPlatform::_get_filtered_uid_cache(const HashSet<String> &p_paths) {
+	Vector<Pair<ResourceUID::ID, String>> valid_entries;
+	valid_entries.reserve(p_paths.size());
+
+	for (const String &path : p_paths) {
+		ResourceUID::ID uid = EditorFileSystem::get_singleton()->get_file_uid(path);
+		if (uid != ResourceUID::INVALID_ID) {
+			valid_entries.push_back(Pair<ResourceUID::ID, String>(uid, path));
+		}
+	}
+
+	// Same binary format as in ResourceUID::save_to_cache():
+	Ref<StreamPeerBuffer> buffer;
+	buffer.instantiate();
+	buffer->put_u32(valid_entries.size());
+
+	for (const Pair<ResourceUID::ID, String> &entry : valid_entries) {
+		buffer->put_u64(uint64_t(entry.first));
+		CharString cs = entry.second.utf8();
+		buffer->put_u32(cs.length());
+		buffer->put_data((const uint8_t *)cs.ptr(), cs.length());
+	}
+
+	return buffer->get_data_array();
+}
+
+Vector<uint8_t> EditorExportPlatform::_get_filtered_global_class_cache(const String &p_cache_path, const HashSet<String> &p_paths) {
+	Ref<ConfigFile> cf;
+	cf.instantiate();
+	if (cf->load(p_cache_path) != OK) {
+		return Vector<uint8_t>();
+	}
+
+	Array original_list = cf->get_value("", "list", Array());
+	Array filtered_list;
+	filtered_list.reserve(original_list.size());
+
+	for (const Variant &item : original_list) {
+		const Dictionary class_dict = item;
+		ERR_CONTINUE(!class_dict.has("path"));
+		if (p_paths.has(class_dict["path"])) {
+			filtered_list.push_back(class_dict);
+		}
+	}
+
+	if (filtered_list.size() == original_list.size()) {
+		return FileAccess::get_file_as_bytes(p_cache_path);
+	}
+
+	cf->set_value("", "list", filtered_list);
+	return cf->encode_to_text().to_utf8_buffer();
 }
 
 Error EditorExportPlatform::_pack_add_shared_object(void *p_userdata, const SharedObject &p_so) {
