@@ -446,7 +446,7 @@ void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataR
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data) {
+void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data, bool p_use_msaa) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
 	ERR_FAIL_NULL(p_render_data);
@@ -530,7 +530,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 			for (uint32_t i = 0; i < rb->get_view_count(); i++) {
 				buffers.base_texture = use_upscaled_texture ? rb->get_upscaled_texture(i) : rb->get_internal_texture(i);
-				buffers.depth_texture = rb->get_depth_texture(i);
+				buffers.depth_texture = p_use_msaa ? rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BACK_DEPTH, i, 0) : rb->get_depth_texture(i);
 				buffers.base_fb = FramebufferCacheRD::get_singleton()->get_cache(buffers.base_texture); // TODO move this into bokeh_dof_raster, we can do this internally
 
 				// In stereo p_render_data->z_near and p_render_data->z_far can be offset for our combined frustum.
