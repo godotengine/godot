@@ -36,6 +36,7 @@
 #include "wgl_detect_version.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/xml_parser.h"
 #include "core/version.h"

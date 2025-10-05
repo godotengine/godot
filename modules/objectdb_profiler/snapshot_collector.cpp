@@ -32,6 +32,7 @@
 
 #include "core/core_bind.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/io/compression.h"
 #include "core/os/time.h"
 #include "core/version.h"
 #include "scene/main/node.h"
