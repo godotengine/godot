@@ -41,6 +41,24 @@
 #include <camera/NdkCameraMetadataTags.h>
 #include <media/NdkImageReader.h>
 
+enum class CameraFacing {
+	BACK = 0,
+	FRONT = 1
+};
+
+struct CameraRotationParams {
+	int sensorOrientation;
+	CameraFacing cameraFacing;
+	int displayRotation;
+	bool needsMirror;
+};
+
+struct RotationResult {
+	int rotationAngle;
+	bool shouldMirror;
+	bool isValid;
+};
+
 class CameraFeedAndroid : public CameraFeed {
 	GDSOFTCLASS(CameraFeedAndroid, CameraFeed);
 
@@ -66,6 +84,11 @@ private:
 	void _set_rotation();
 
 	static void compact_stride_inplace(uint8_t *data, size_t width, int height, size_t stride);
+
+	static RotationResult calculate_rotation(const CameraRotationParams &params);
+	static int normalize_angle(int angle);
+	static int get_display_rotation();
+	static int get_app_orientation();
 	static void onError(void *context, ACameraDevice *p_device, int error);
 	static void onDisconnected(void *context, ACameraDevice *p_device);
 	static void onImage(void *context, AImageReader *p_reader);

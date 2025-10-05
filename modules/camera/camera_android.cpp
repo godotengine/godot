@@ -32,6 +32,8 @@
 
 #include "core/os/os.h"
 #include "platform/android/display_server_android.h"
+#include "platform/android/java_godot_io_wrapper.h"
+#include "platform/android/os_android.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Helper functions
@@ -94,22 +96,35 @@ CameraFeedAndroid::~CameraFeedAndroid() {
 }
 
 void CameraFeedAndroid::_set_rotation() {
-	int display_rotation = DisplayServerAndroid::get_singleton()->get_display_rotation();
-	// reverse rotation
-	switch (display_rotation) {
-		case 90:
-			display_rotation = 270;
-			break;
-		case 270:
-			display_rotation = 90;
-			break;
-		default:
-			break;
-	}
+	CameraRotationParams params;
+	params.sensorOrientation = orientation;
+	params.cameraFacing = (position == CameraFeed::FEED_FRONT) ? CameraFacing::FRONT : CameraFacing::BACK;
+	params.displayRotation = get_app_orientation();
+	params.needsMirror = false;
 
-	int sign = position == CameraFeed::FEED_FRONT ? 1 : -1;
-	float imageRotation = (orientation - display_rotation * sign + 360) % 360;
-	transform.set_rotation(real_t(Math::deg_to_rad(imageRotation)));
+	RotationResult result = calculate_rotation(params);
+
+	if (result.isValid) {
+		float imageRotation = static_cast<float>(result.rotationAngle);
+		transform.set_rotation(real_t(Math::deg_to_rad(imageRotation)));
+	} else {
+		// Fallback.
+		int display_rotation = DisplayServerAndroid::get_singleton()->get_display_rotation();
+		switch (display_rotation) {
+			case 90:
+				display_rotation = 270;
+				break;
+			case 270:
+				display_rotation = 90;
+				break;
+			default:
+				break;
+		}
+
+		int sign = position == CameraFeed::FEED_FRONT ? 1 : -1;
+		float imageRotation = (orientation - display_rotation * sign + 360) % 360;
+		transform.set_rotation(real_t(Math::deg_to_rad(imageRotation)));
+	}
 }
 
 void CameraFeedAndroid::_add_formats() {
@@ -593,4 +608,58 @@ void CameraAndroid::set_monitoring_feeds(bool p_monitoring_feeds) {
 
 CameraAndroid::~CameraAndroid() {
 	remove_all_feeds();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Camera rotation calculation
+// Based on https://developer.android.com/media/camera/camerax/orientation-rotation
+
+RotationResult CameraFeedAndroid::calculate_rotation(const CameraRotationParams &params) {
+	RotationResult result = { 0, false, false };
+
+	if (params.sensorOrientation < 0 || params.sensorOrientation > 270 ||
+			params.sensorOrientation % 90 != 0) {
+		return result;
+	}
+
+	int rotationAngle = params.sensorOrientation - params.displayRotation;
+
+	result.rotationAngle = normalize_angle(rotationAngle);
+	result.shouldMirror = params.needsMirror || (params.cameraFacing == CameraFacing::FRONT);
+	result.isValid = true;
+
+	return result;
+}
+
+int CameraFeedAndroid::normalize_angle(int angle) {
+	while (angle < 0) {
+		angle += 360;
+	}
+	return angle % 360;
+}
+
+int CameraFeedAndroid::get_display_rotation() {
+	return DisplayServerAndroid::get_singleton()->get_display_rotation();
+}
+
+int CameraFeedAndroid::get_app_orientation() {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_NULL_V(godot_io_java, 0);
+
+	int orientation = godot_io_java->get_screen_orientation();
+	switch (orientation) {
+		case 0: // SCREEN_LANDSCAPE
+			return 90;
+		case 1: // SCREEN_PORTRAIT
+			return 0;
+		case 2: // SCREEN_REVERSE_LANDSCAPE
+			return 270;
+		case 3: // SCREEN_REVERSE_PORTRAIT
+			return 180;
+		case 4: // SCREEN_SENSOR_LANDSCAPE
+		case 5: // SCREEN_SENSOR_PORTRAIT
+		case 6: // SCREEN_SENSOR
+		default:
+			return get_display_rotation();
+	}
 }
