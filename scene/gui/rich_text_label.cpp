@@ -37,6 +37,7 @@
 #include "core/os/os.h"
 #include "scene/gui/label.h"
 #include "scene/gui/rich_text_effect.h"
+#include "scene/main/timer.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/display_server.h"

@@ -40,6 +40,7 @@ class LineEdit;
 class Popup;
 class PopupMenu;
 class TextEdit;
+class Timer;
 class Tree;
 class VScrollBar;
 

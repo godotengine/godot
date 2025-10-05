@@ -50,6 +50,7 @@ class PopupMenu;
 class SpinBox;
 class StyleBoxFlat;
 class TextureRect;
+class Timer;
 
 class EditorPropertyRevert {
 public:
