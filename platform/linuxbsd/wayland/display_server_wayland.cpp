@@ -39,6 +39,7 @@
 #define DEBUG_LOG_WAYLAND(...)
 #endif
 
+#include "core/os/main_loop.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #ifdef VULKAN_ENABLED

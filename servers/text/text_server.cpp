@@ -32,6 +32,7 @@
 #include "text_server.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/os/main_loop.h"
 #include "core/variant/typed_array.h"
 #include "servers/rendering/rendering_server.h"
 

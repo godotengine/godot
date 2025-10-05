@@ -48,6 +48,7 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/os/main_loop.h"
 #include "main/main.h"
 #include "servers/rendering/rendering_server.h"
 
