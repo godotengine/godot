@@ -44,7 +44,8 @@ public:
 
 	enum VisibilityMode {
 		VISIBILITY_ALWAYS,
-		VISIBILITY_TOUCHSCREEN_ONLY
+		VISIBILITY_TOUCHSCREEN_ONLY,
+		WHEN_TOUCHED
 	};
 
 private:
@@ -75,6 +76,9 @@ private:
 
 	Vector2 joystick_pos = Vector2(0, 0);
 	Vector2 tip_pos = Vector2(0, 0);
+
+	Ref<Texture2D> joystick_texture;
+	Ref<Texture2D> tip_texture;
 
 	void _update_joystick(const Vector2 &p_pos);
 	float _get_deadzone_size() const;
@@ -107,6 +111,11 @@ public:
 
 	void set_visibility_mode(VisibilityMode p_mode);
 	VisibilityMode get_visibility_mode() const;
+
+	void set_joystick_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_joystick_texture() const;
+	void set_tip_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_tip_texture() const;
 
 	VirtualJoystick();
 };
