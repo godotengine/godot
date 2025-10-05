@@ -684,6 +684,9 @@ void SpriteFramesEditor::_notification(int p_what) {
 			_update_show_settings();
 			anim_speed->set_suffix(TTR("FPS"));
 
+			const int max_char_count = anim_speed->get_suffix().length() + String::num_real(anim_speed->get_max() + anim_speed->get_step(), true).length() + 1;
+			anim_speed->get_line_edit()->set_max_length(max_char_count);
+
 			// Similar to `_update_library_impl()`, but only updates text for "empty" items.
 			if (frames.is_valid()) {
 				for (int i = 0; i < frames->get_frame_count(edited_anim); i++) {
@@ -708,6 +711,18 @@ void SpriteFramesEditor::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			get_tree()->disconnect("node_removed", callable_mp(this, &SpriteFramesEditor::_node_removed));
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			// Setting the `split_offset` value once to "default" minimum value.
+			// This is used instead of setting a custom_minimum_size or similar, as this may cause the panel to be outside the window (see GH-26835).
+			// If `SpriteFramesEditor` is selected when starting the editor, this code will be executed first and then the saved layout will load.
+			if (use_default_editor_size && is_visible()) {
+				use_default_editor_size = false;
+				int offset = EditorNode::get_bottom_panel()->get_combined_minimum_size().y;
+				offset += (300 * EDSCALE) - get_combined_minimum_size().y; // Take into account previously used custom minimum size (before fixing GH-26835).
+				EditorNode::get_singleton()->set_center_split_offset(-offset);
+			}
 		} break;
 	}
 }
@@ -1983,7 +1998,7 @@ void SpriteFramesEditor::_node_removed(Node *p_node) {
 SpriteFramesEditor::SpriteFramesEditor() {
 	VBoxContainer *vbc_animlist = memnew(VBoxContainer);
 	add_child(vbc_animlist);
-	vbc_animlist->set_custom_minimum_size(Size2(150, 0) * EDSCALE);
+	set_split_offset(150 * EDSCALE);
 
 	VBoxContainer *sub_vb = memnew(VBoxContainer);
 	vbc_animlist->add_margin_child(TTRC("Animations:"), sub_vb, true);
@@ -2019,6 +2034,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	autoplay = memnew(Button);
 	autoplay->set_theme_type_variation(SceneStringName(FlatButton));
 	autoplay->set_tooltip_text(TTRC("Autoplay on Load"));
+	autoplay->set_toggle_mode(true);
+	autoplay->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_autoplay_pressed));
 	autoplay_container->add_child(autoplay);
 
 	hbc_animlist->add_child(memnew(VSeparator));
@@ -2054,6 +2071,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	animations->set_v_size_flags(SIZE_EXPAND_FILL);
 	animations->set_hide_root(true);
 	animations->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	animations->set_custom_minimum_size(Size2(0, 40 * EDSCALE));
 	// HACK: The cell_selected signal is emitted before the FPS spinbox loses focus and applies the change.
 	animations->connect("cell_selected", callable_mp(this, &SpriteFramesEditor::_animation_selected), CONNECT_DEFERRED);
 	animations->connect("item_edited", callable_mp(this, &SpriteFramesEditor::_animation_name_edited));
@@ -2070,6 +2088,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	missing_anim_label = memnew(Label);
 	missing_anim_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	missing_anim_label->set_text(TTRC("This resource does not have any animations."));
+	missing_anim_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	missing_anim_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	missing_anim_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	missing_anim_label->set_v_size_flags(SIZE_EXPAND_FILL);
 	missing_anim_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -2095,52 +2115,52 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	play_bw_from = memnew(Button);
 	play_bw_from->set_theme_type_variation(SceneStringName(FlatButton));
 	play_bw_from->set_tooltip_text(TTRC("Play selected animation backwards from current pos. (A)"));
+	play_bw_from->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_bw_from_pressed));
 	playback_container->add_child(play_bw_from);
 
 	play_bw = memnew(Button);
 	play_bw->set_theme_type_variation(SceneStringName(FlatButton));
 	play_bw->set_tooltip_text(TTRC("Play selected animation backwards from end. (Shift+A)"));
+	play_bw->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_bw_pressed));
 	playback_container->add_child(play_bw);
 
 	stop = memnew(Button);
 	stop->set_theme_type_variation(SceneStringName(FlatButton));
 	stop->set_tooltip_text(TTRC("Pause/stop animation playback. (S)"));
+	stop->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_stop_pressed));
 	playback_container->add_child(stop);
 
 	play = memnew(Button);
 	play->set_theme_type_variation(SceneStringName(FlatButton));
 	play->set_tooltip_text(TTRC("Play selected animation from start. (Shift+D)"));
+	play->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_pressed));
 	playback_container->add_child(play);
 
 	play_from = memnew(Button);
 	play_from->set_theme_type_variation(SceneStringName(FlatButton));
 	play_from->set_tooltip_text(TTRC("Play selected animation from current pos. (D)"));
+	play_from->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_from_pressed));
 	playback_container->add_child(play_from);
 
-	hfc->add_child(memnew(VSeparator));
+	playback_container->add_child(memnew(VSeparator));
 
-	autoplay->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_autoplay_pressed));
-	autoplay->set_toggle_mode(true);
-	play->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_pressed));
-	play_from->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_from_pressed));
-	play_bw->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_bw_pressed));
-	play_bw_from->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_bw_from_pressed));
-	stop->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_stop_pressed));
-
-	HBoxContainer *hbc_actions = memnew(HBoxContainer);
-	hfc->add_child(hbc_actions);
+	HBoxContainer *hbc_load_frames = memnew(HBoxContainer);
+	hfc->add_child(hbc_load_frames);
 
 	load = memnew(Button);
 	load->set_accessibility_name(TTRC("Load"));
 	load->set_theme_type_variation(SceneStringName(FlatButton));
-	hbc_actions->add_child(load);
+	hbc_load_frames->add_child(load);
 
 	load_sheet = memnew(Button);
 	load_sheet->set_accessibility_name(TTRC("Load Sheet"));
 	load_sheet->set_theme_type_variation(SceneStringName(FlatButton));
-	hbc_actions->add_child(load_sheet);
+	hbc_load_frames->add_child(load_sheet);
 
-	hbc_actions->add_child(memnew(VSeparator));
+	hbc_load_frames->add_child(memnew(VSeparator));
+
+	HBoxContainer *hbc_actions = memnew(HBoxContainer);
+	hfc->add_child(hbc_actions);
 
 	copy = memnew(Button);
 	copy->set_accessibility_name(TTRC("Copy"));
@@ -2202,13 +2222,9 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_duration->set_accessibility_name(TTRC("Frame Duration:"));
 	hbc_frame_duration->add_child(frame_duration);
 
-	// Wide empty separation control. (like BoxContainer::add_spacer())
-	Control *c = memnew(Control);
-	c->set_mouse_filter(MOUSE_FILTER_PASS);
-	c->set_h_size_flags(SIZE_EXPAND_FILL);
-	hfc->add_child(c);
-
 	HBoxContainer *hbc_zoom = memnew(HBoxContainer);
+	hbc_zoom->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbc_zoom->set_alignment(BoxContainer::ALIGNMENT_END);
 	hfc->add_child(hbc_zoom);
 
 	zoom_out = memnew(Button);
@@ -2240,6 +2256,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_list->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 	frame_list->set_select_mode(ItemList::SELECT_MULTI);
 
+	frame_list->set_custom_minimum_size(Size2(0, 40 * EDSCALE));
 	frame_list->set_max_columns(0);
 	frame_list->set_max_text_lines(2);
 	SET_DRAG_FORWARDING_GCD(frame_list, SpriteFramesEditor);
@@ -2609,7 +2626,6 @@ void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
 
 SpriteFramesEditorPlugin::SpriteFramesEditorPlugin() {
 	frames_editor = memnew(SpriteFramesEditor);
-	frames_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 	button = EditorNode::get_bottom_panel()->add_item(TTRC("SpriteFrames"), frames_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_sprite_frames_bottom_panel", TTRC("Toggle SpriteFrames Bottom Panel")));
 	button->hide();
 }
