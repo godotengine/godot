@@ -47,6 +47,7 @@
 
 class EditorAudioBuses;
 class EditorFileDialog;
+class Timer;
 
 class EditorAudioBus : public PanelContainer {
 	GDCLASS(EditorAudioBus, PanelContainer);
