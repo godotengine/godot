@@ -51,10 +51,10 @@ private:
 	JoystickMode joystick_mode = JOYSTICK_FIXED;
 	float joystick_size = 100.0f;
 	Vector2 initial_offset_ratio = Vector2(0.5, 0.5);
-	String action_left = "ui_left";
-	String action_right = "ui_right";
-	String action_up = "ui_up";
-	String action_down = "ui_down";
+	StringName action_left = "ui_left";
+	StringName action_right = "ui_right";
+	StringName action_up = "ui_up";
+	StringName action_down = "ui_down";
 	VisibilityMode visibility = VISIBILITY_ALWAYS;
 
 	struct ThemeCache {

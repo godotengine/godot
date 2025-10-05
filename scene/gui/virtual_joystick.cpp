@@ -186,7 +186,7 @@ void VirtualJoystick::_reset() {
 	tip_pos = joystick_pos;
 
 	Input *input = Input::get_singleton();
-	for (const String &action : { action_left, action_right, action_down, action_up }) {
+	for (const StringName &action : { action_left, action_right, action_down, action_up }) {
 		if (input->is_action_pressed(action)) {
 			input->action_release(action);
 		}
@@ -230,10 +230,10 @@ void VirtualJoystick::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "joystick_size", PROPERTY_HINT_RANGE, "10,500,10"), "set_joystick_size", "get_joystick_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "initial_offset_ratio", PROPERTY_HINT_RANGE, "0.0,1,0.01"), "set_initial_offset_ratio", "get_initial_offset_ratio");
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action_left", PROPERTY_HINT_INPUT_NAME), "set_action_left", "get_action_left");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action_right", PROPERTY_HINT_INPUT_NAME), "set_action_right", "get_action_right");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action_up", PROPERTY_HINT_INPUT_NAME), "set_action_up", "get_action_up");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action_down", PROPERTY_HINT_INPUT_NAME), "set_action_down", "get_action_down");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action_left", PROPERTY_HINT_INPUT_NAME), "set_action_left", "get_action_left");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action_right", PROPERTY_HINT_INPUT_NAME), "set_action_right", "get_action_right");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action_up", PROPERTY_HINT_INPUT_NAME), "set_action_up", "get_action_up");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action_down", PROPERTY_HINT_INPUT_NAME), "set_action_down", "get_action_down");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_mode", PROPERTY_HINT_ENUM, "Always,Touchscreen Only"), "set_visibility_mode", "get_visibility_mode");
 
