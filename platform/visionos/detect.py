@@ -24,6 +24,7 @@ def get_opts():
     from SCons.Variables import BoolVariable
 
     return [
+        ("SWIFT_FRONTEND", "Path to the swift-frontend binary", ""),
         # APPLE_TOOLCHAIN_PATH Example: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain
         ("APPLE_TOOLCHAIN_PATH", "Path to the Apple toolchain", ""),
         (("APPLE_SDK_PATH", "VISIONOS_SDK_PATH"), "Path to the visionOS SDK", ""),
