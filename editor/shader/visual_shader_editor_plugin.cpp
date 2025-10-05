@@ -71,7 +71,7 @@
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/visual_shader_particle_nodes.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
 

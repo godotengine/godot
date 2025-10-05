@@ -254,11 +254,45 @@ Object::Connection::Connection(const Variant &p_variant) {
 bool Object::_predelete() {
 	_predelete_ok = 1;
 	notification(NOTIFICATION_PREDELETE, true);
-	if (_predelete_ok) {
-		_class_name_ptr = nullptr; // Must restore, so constructors/destructors have proper class name access at each stage.
-		notification(NOTIFICATION_PREDELETE_CLEANUP, true);
+	if (!_predelete_ok) {
+		return false;
 	}
-	return _predelete_ok;
+
+	_class_name_ptr = nullptr; // Must restore, so constructors/destructors have proper class name access at each stage.
+	notification(NOTIFICATION_PREDELETE_CLEANUP, true);
+
+	// Destruction order starts with the most derived class, and progresses towards the base Object class:
+	// Script subclasses -> GDExtension subclasses -> C++ subclasses -> Object
+	if (script_instance) {
+		memdelete(script_instance);
+	}
+	script_instance = nullptr;
+
+	if (_extension) {
+#ifdef TOOLS_ENABLED
+		if (_extension->untrack_instance) {
+			_extension->untrack_instance(_extension->tracking_userdata, this);
+		}
+#endif
+		if (_extension->free_instance) {
+			_extension->free_instance(_extension->class_userdata, _extension_instance);
+		}
+		_extension = nullptr;
+		_extension_instance = nullptr;
+	}
+#ifdef TOOLS_ENABLED
+	else if (_instance_bindings != nullptr) {
+		Engine *engine = Engine::get_singleton();
+		GDExtensionManager *gdextension_manager = GDExtensionManager::get_singleton();
+		if (engine && gdextension_manager && engine->is_extension_reloading_enabled()) {
+			for (uint32_t i = 0; i < _instance_binding_count; i++) {
+				gdextension_manager->untrack_instance_binding(_instance_bindings[i].token, this);
+			}
+		}
+	}
+#endif
+
+	return true;
 }
 
 void Object::cancel_free() {
@@ -2273,35 +2307,6 @@ void Object::assign_class_name_static(const Span<char> &p_name, StringName &r_ta
 }
 
 Object::~Object() {
-	if (script_instance) {
-		memdelete(script_instance);
-	}
-	script_instance = nullptr;
-
-	if (_extension) {
-#ifdef TOOLS_ENABLED
-		if (_extension->untrack_instance) {
-			_extension->untrack_instance(_extension->tracking_userdata, this);
-		}
-#endif
-		if (_extension->free_instance) {
-			_extension->free_instance(_extension->class_userdata, _extension_instance);
-		}
-		_extension = nullptr;
-		_extension_instance = nullptr;
-	}
-#ifdef TOOLS_ENABLED
-	else if (_instance_bindings != nullptr) {
-		Engine *engine = Engine::get_singleton();
-		GDExtensionManager *gdextension_manager = GDExtensionManager::get_singleton();
-		if (engine && gdextension_manager && engine->is_extension_reloading_enabled()) {
-			for (uint32_t i = 0; i < _instance_binding_count; i++) {
-				gdextension_manager->untrack_instance_binding(_instance_bindings[i].token, this);
-			}
-		}
-	}
-#endif
-
 	if (_emitting) {
 		//@todo this may need to actually reach the debugger prioritarily somehow because it may crash before
 		ERR_PRINT(vformat("Object '%s' was freed or unreferenced while a signal is being emitted from it. Try connecting to the signal using 'CONNECT_DEFERRED' flag, or use queue_free() to free the object (if this object is a Node) to avoid this error and potential crashes.", to_string()));
@@ -2369,12 +2374,12 @@ void postinitialize_handler(Object *p_object) {
 	p_object->_postinitialize();
 }
 
-void ObjectDB::debug_objects(DebugFunc p_func) {
+void ObjectDB::debug_objects(DebugFunc p_func, void *p_user_data) {
 	spin_lock.lock();
 
 	for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
 		if (object_slots[i].validator) {
-			p_func(object_slots[i].object);
+			p_func(object_slots[i].object, p_user_data);
 			count--;
 		}
 	}
@@ -2541,6 +2546,9 @@ void ObjectDB::cleanup() {
 					}
 					if (obj->is_class("Resource")) {
 						extra_info = " - Resource path: " + String(resource_get_path->call(obj, nullptr, 0, call_error));
+					}
+					if (obj->is_class("RefCounted")) {
+						extra_info = " - Reference count: " + itos((static_cast<RefCounted *>(obj))->get_reference_count());
 					}
 
 					uint64_t id = uint64_t(i) | (uint64_t(object_slots[i].validator) << OBJECTDB_SLOT_MAX_COUNT_BITS) | (object_slots[i].is_ref_counted ? OBJECTDB_REFERENCE_BIT : 0);

@@ -67,10 +67,10 @@ void GI::voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xfo
 	ERR_FAIL_NULL(voxel_gi);
 
 	if (voxel_gi->octree_buffer.is_valid()) {
-		RD::get_singleton()->free(voxel_gi->octree_buffer);
-		RD::get_singleton()->free(voxel_gi->data_buffer);
+		RD::get_singleton()->free_rid(voxel_gi->octree_buffer);
+		RD::get_singleton()->free_rid(voxel_gi->data_buffer);
 		if (voxel_gi->sdf_texture.is_valid()) {
-			RD::get_singleton()->free(voxel_gi->sdf_texture);
+			RD::get_singleton()->free_rid(voxel_gi->sdf_texture);
 		}
 
 		voxel_gi->sdf_texture = RID();
@@ -1126,56 +1126,56 @@ void GI::SDFGI::free_data() {
 
 GI::SDFGI::~SDFGI() {
 	for (const SDFGI::Cascade &c : cascades) {
-		RD::get_singleton()->free(c.light_data);
-		RD::get_singleton()->free(c.light_aniso_0_tex);
-		RD::get_singleton()->free(c.light_aniso_1_tex);
-		RD::get_singleton()->free(c.sdf_tex);
-		RD::get_singleton()->free(c.solid_cell_dispatch_buffer_storage);
-		RD::get_singleton()->free(c.solid_cell_dispatch_buffer_call);
-		RD::get_singleton()->free(c.solid_cell_buffer);
-		RD::get_singleton()->free(c.lightprobe_history_tex);
-		RD::get_singleton()->free(c.lightprobe_average_tex);
-		RD::get_singleton()->free(c.lights_buffer);
+		RD::get_singleton()->free_rid(c.light_data);
+		RD::get_singleton()->free_rid(c.light_aniso_0_tex);
+		RD::get_singleton()->free_rid(c.light_aniso_1_tex);
+		RD::get_singleton()->free_rid(c.sdf_tex);
+		RD::get_singleton()->free_rid(c.solid_cell_dispatch_buffer_storage);
+		RD::get_singleton()->free_rid(c.solid_cell_dispatch_buffer_call);
+		RD::get_singleton()->free_rid(c.solid_cell_buffer);
+		RD::get_singleton()->free_rid(c.lightprobe_history_tex);
+		RD::get_singleton()->free_rid(c.lightprobe_average_tex);
+		RD::get_singleton()->free_rid(c.lights_buffer);
 	}
 
-	RD::get_singleton()->free(render_albedo);
-	RD::get_singleton()->free(render_emission);
-	RD::get_singleton()->free(render_emission_aniso);
+	RD::get_singleton()->free_rid(render_albedo);
+	RD::get_singleton()->free_rid(render_emission);
+	RD::get_singleton()->free_rid(render_emission_aniso);
 
-	RD::get_singleton()->free(render_sdf[0]);
-	RD::get_singleton()->free(render_sdf[1]);
+	RD::get_singleton()->free_rid(render_sdf[0]);
+	RD::get_singleton()->free_rid(render_sdf[1]);
 
-	RD::get_singleton()->free(render_sdf_half[0]);
-	RD::get_singleton()->free(render_sdf_half[1]);
+	RD::get_singleton()->free_rid(render_sdf_half[0]);
+	RD::get_singleton()->free_rid(render_sdf_half[1]);
 
 	for (int i = 0; i < 8; i++) {
-		RD::get_singleton()->free(render_occlusion[i]);
+		RD::get_singleton()->free_rid(render_occlusion[i]);
 	}
 
-	RD::get_singleton()->free(render_geom_facing);
+	RD::get_singleton()->free_rid(render_geom_facing);
 
-	RD::get_singleton()->free(lightprobe_data);
-	RD::get_singleton()->free(lightprobe_history_scroll);
-	RD::get_singleton()->free(lightprobe_average_scroll);
-	RD::get_singleton()->free(occlusion_data);
-	RD::get_singleton()->free(ambient_texture);
+	RD::get_singleton()->free_rid(lightprobe_data);
+	RD::get_singleton()->free_rid(lightprobe_history_scroll);
+	RD::get_singleton()->free_rid(lightprobe_average_scroll);
+	RD::get_singleton()->free_rid(occlusion_data);
+	RD::get_singleton()->free_rid(ambient_texture);
 
-	RD::get_singleton()->free(cascades_ubo);
+	RD::get_singleton()->free_rid(cascades_ubo);
 
 	for (uint32_t v = 0; v < RendererSceneRender::MAX_RENDER_VIEWS; v++) {
 		if (RD::get_singleton()->uniform_set_is_valid(debug_uniform_set[v])) {
-			RD::get_singleton()->free(debug_uniform_set[v]);
+			RD::get_singleton()->free_rid(debug_uniform_set[v]);
 		}
 		debug_uniform_set[v] = RID();
 	}
 
 	if (RD::get_singleton()->uniform_set_is_valid(debug_probes_uniform_set)) {
-		RD::get_singleton()->free(debug_probes_uniform_set);
+		RD::get_singleton()->free_rid(debug_probes_uniform_set);
 	}
 	debug_probes_uniform_set = RID();
 
 	if (debug_probes_scene_data_ubo.is_valid()) {
-		RD::get_singleton()->free(debug_probes_scene_data_ubo);
+		RD::get_singleton()->free_rid(debug_probes_scene_data_ubo);
 		debug_probes_scene_data_ubo = RID();
 	}
 }
@@ -1238,7 +1238,7 @@ void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
 }
 
 void GI::SDFGI::update_light() {
-	RD::get_singleton()->draw_command_begin_label("SDFGI Update dynamic Light");
+	RD::get_singleton()->draw_command_begin_label("SDFGI Update Dynamic Light");
 
 	for (uint32_t i = 0; i < cascades.size(); i++) {
 		RD::get_singleton()->buffer_copy(cascades[i].solid_cell_dispatch_buffer_storage, cascades[i].solid_cell_dispatch_buffer_call, 0, 0, sizeof(uint32_t) * 4);
@@ -3254,8 +3254,8 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 void GI::VoxelGIInstance::free_resources() {
 	if (texture.is_valid()) {
-		RD::get_singleton()->free(texture);
-		RD::get_singleton()->free(write_buffer);
+		RD::get_singleton()->free_rid(texture);
+		RD::get_singleton()->free_rid(write_buffer);
 
 		texture = RID();
 		write_buffer = RID();
@@ -3263,21 +3263,21 @@ void GI::VoxelGIInstance::free_resources() {
 	}
 
 	for (int i = 0; i < dynamic_maps.size(); i++) {
-		RD::get_singleton()->free(dynamic_maps[i].texture);
-		RD::get_singleton()->free(dynamic_maps[i].depth);
+		RD::get_singleton()->free_rid(dynamic_maps[i].texture);
+		RD::get_singleton()->free_rid(dynamic_maps[i].depth);
 
 		// these only exist on the first level...
 		if (dynamic_maps[i].fb_depth.is_valid()) {
-			RD::get_singleton()->free(dynamic_maps[i].fb_depth);
+			RD::get_singleton()->free_rid(dynamic_maps[i].fb_depth);
 		}
 		if (dynamic_maps[i].albedo.is_valid()) {
-			RD::get_singleton()->free(dynamic_maps[i].albedo);
+			RD::get_singleton()->free_rid(dynamic_maps[i].albedo);
 		}
 		if (dynamic_maps[i].normal.is_valid()) {
-			RD::get_singleton()->free(dynamic_maps[i].normal);
+			RD::get_singleton()->free_rid(dynamic_maps[i].normal);
 		}
 		if (dynamic_maps[i].orm.is_valid()) {
-			RD::get_singleton()->free(dynamic_maps[i].orm);
+			RD::get_singleton()->free_rid(dynamic_maps[i].orm);
 		}
 	}
 	dynamic_maps.clear();
@@ -3313,7 +3313,7 @@ void GI::VoxelGIInstance::debug(RD::DrawListID p_draw_list, RID p_framebuffer, c
 	}
 
 	if (gi->voxel_gi_debug_uniform_set.is_valid()) {
-		RD::get_singleton()->free(gi->voxel_gi_debug_uniform_set);
+		RD::get_singleton()->free_rid(gi->voxel_gi_debug_uniform_set);
 	}
 	Vector<RD::Uniform> uniforms;
 	{
@@ -3643,13 +3643,13 @@ void GI::init(SkyRD *p_sky) {
 
 void GI::free() {
 	if (default_voxel_gi_buffer.is_valid()) {
-		RD::get_singleton()->free(default_voxel_gi_buffer);
+		RD::get_singleton()->free_rid(default_voxel_gi_buffer);
 	}
 	if (voxel_gi_lights_uniform.is_valid()) {
-		RD::get_singleton()->free(voxel_gi_lights_uniform);
+		RD::get_singleton()->free_rid(voxel_gi_lights_uniform);
 	}
 	if (sdfgi_ubo.is_valid()) {
-		RD::get_singleton()->free(sdfgi_ubo);
+		RD::get_singleton()->free_rid(sdfgi_ubo);
 	}
 
 	if (voxel_gi_lights) {
@@ -3749,7 +3749,7 @@ void GI::setup_voxel_gi_instances(RenderDataRD *p_render_data, Ref<RenderSceneBu
 	if (voxel_gi_instances_changed) {
 		for (uint32_t v = 0; v < RendererSceneRender::MAX_RENDER_VIEWS; v++) {
 			if (RD::get_singleton()->uniform_set_is_valid(rbgi->uniform_set[v])) {
-				RD::get_singleton()->free(rbgi->uniform_set[v]);
+				RD::get_singleton()->free_rid(rbgi->uniform_set[v]);
 			}
 			rbgi->uniform_set[v] = RID();
 		}
@@ -3780,18 +3780,18 @@ RID GI::RenderBuffersGI::get_voxel_gi_buffer() {
 void GI::RenderBuffersGI::free_data() {
 	for (uint32_t v = 0; v < RendererSceneRender::MAX_RENDER_VIEWS; v++) {
 		if (RD::get_singleton()->uniform_set_is_valid(uniform_set[v])) {
-			RD::get_singleton()->free(uniform_set[v]);
+			RD::get_singleton()->free_rid(uniform_set[v]);
 		}
 		uniform_set[v] = RID();
 	}
 
 	if (scene_data_ubo.is_valid()) {
-		RD::get_singleton()->free(scene_data_ubo);
+		RD::get_singleton()->free_rid(scene_data_ubo);
 		scene_data_ubo = RID();
 	}
 
 	if (voxel_gi_buffer.is_valid()) {
-		RD::get_singleton()->free(voxel_gi_buffer);
+		RD::get_singleton()->free_rid(voxel_gi_buffer);
 		voxel_gi_buffer = RID();
 	}
 }

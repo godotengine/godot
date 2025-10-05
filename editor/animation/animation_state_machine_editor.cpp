@@ -1393,11 +1393,11 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 			if (error_time > 0) {
 				error = error_text;
 				error_time -= get_process_delta_time();
-			} else if (!tree->is_active()) {
-				error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
-			} else if (tree->is_state_invalid()) {
-				error = tree->get_invalid_state_reason();
-			} else if (playback.is_null()) {
+			} else {
+				error = tree->get_editor_error_message();
+			}
+
+			if (error.is_empty() && playback.is_null()) {
 				error = vformat(TTR("No playback resource set at path: %s."), AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 			}
 

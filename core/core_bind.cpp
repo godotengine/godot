@@ -1526,6 +1526,10 @@ void Thread::set_thread_safety_checks_enabled(bool p_enabled) {
 	set_current_thread_safe_for_nodes(!p_enabled);
 }
 
+bool Thread::is_main_thread() {
+	return ::Thread::is_main_thread();
+}
+
 void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start", "callable", "priority"), &Thread::start, DEFVAL(PRIORITY_NORMAL));
 	ClassDB::bind_method(D_METHOD("get_id"), &Thread::get_id);
@@ -1534,6 +1538,7 @@ void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("wait_to_finish"), &Thread::wait_to_finish);
 
 	ClassDB::bind_static_method("Thread", D_METHOD("set_thread_safety_checks_enabled", "enabled"), &Thread::set_thread_safety_checks_enabled);
+	ClassDB::bind_static_method("Thread", D_METHOD("is_main_thread"), &Thread::is_main_thread);
 
 	BIND_ENUM_CONSTANT(PRIORITY_LOW);
 	BIND_ENUM_CONSTANT(PRIORITY_NORMAL);

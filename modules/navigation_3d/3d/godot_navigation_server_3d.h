@@ -39,9 +39,9 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
 #include "core/templates/rid_owner.h"
-#include "servers/navigation/navigation_path_query_parameters_3d.h"
-#include "servers/navigation/navigation_path_query_result_3d.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
+#include "servers/navigation_3d/navigation_path_query_result_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 /// The commands are functions executed during the `sync` phase.
 
@@ -280,7 +280,7 @@ public:
 	virtual Vector<Vector3> simplify_path(const Vector<Vector3> &p_path, real_t p_epsilon) override;
 
 public:
-	COMMAND_1(free, RID, p_object);
+	COMMAND_1(free_rid, RID, p_object);
 
 	virtual void set_active(bool p_active) override;
 

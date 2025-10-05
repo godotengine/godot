@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/os/mutex.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>

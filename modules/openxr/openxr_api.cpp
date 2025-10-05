@@ -1788,10 +1788,14 @@ void OpenXRAPI::set_xr_interface(OpenXRInterface *p_xr_interface) {
 }
 
 void OpenXRAPI::register_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper) {
+	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+	ERR_FAIL_COND_MSG(openxr_api && openxr_api->instance != XR_NULL_HANDLE, "Cannot register OpenXR extension wrappers after the OpenXR instance has been created.");
 	registered_extension_wrappers.push_back(p_extension_wrapper);
 }
 
 void OpenXRAPI::unregister_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper) {
+	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+	ERR_FAIL_COND_MSG(openxr_api && openxr_api->instance != XR_NULL_HANDLE, "Cannot unregister OpenXR extension wrappers after the OpenXR instance has been created.");
 	registered_extension_wrappers.erase(p_extension_wrapper);
 }
 
@@ -2099,7 +2103,7 @@ bool OpenXRAPI::poll_events() {
 	}
 }
 
-void OpenXRAPI::_allocate_view_buffers(uint32_t p_view_count, bool p_submit_depth_buffer) {
+void OpenXRAPI::_allocate_view_buffers_rt(uint32_t p_view_count, bool p_submit_depth_buffer) {
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD;
 
@@ -2145,7 +2149,7 @@ void OpenXRAPI::_allocate_view_buffers(uint32_t p_view_count, bool p_submit_dept
 	}
 }
 
-void OpenXRAPI::_set_render_session_running(bool p_is_running) {
+void OpenXRAPI::_set_render_session_running_rt(bool p_is_running) {
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD;
 
@@ -2154,7 +2158,7 @@ void OpenXRAPI::_set_render_session_running(bool p_is_running) {
 	openxr_api->render_state.running = p_is_running;
 }
 
-void OpenXRAPI::_set_render_display_info(XrTime p_predicted_display_time, bool p_should_render) {
+void OpenXRAPI::_set_render_display_info_rt(XrTime p_predicted_display_time, bool p_should_render) {
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD;
 
@@ -2164,7 +2168,16 @@ void OpenXRAPI::_set_render_display_info(XrTime p_predicted_display_time, bool p
 	openxr_api->render_state.should_render = p_should_render;
 }
 
-void OpenXRAPI::_set_render_play_space(uint64_t p_play_space) {
+void OpenXRAPI::_set_render_environment_blend_mode_rt(int32_t p_environment_blend_mode) {
+	// Must be called from rendering thread!
+	ERR_NOT_ON_RENDER_THREAD;
+
+	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+	ERR_FAIL_NULL(openxr_api);
+	openxr_api->render_state.environment_blend_mode = XrEnvironmentBlendMode(p_environment_blend_mode);
+}
+
+void OpenXRAPI::_set_render_play_space_rt(uint64_t p_play_space) {
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD;
 
@@ -2173,7 +2186,7 @@ void OpenXRAPI::_set_render_play_space(uint64_t p_play_space) {
 	openxr_api->render_state.play_space = XrSpace(p_play_space);
 }
 
-void OpenXRAPI::_set_render_state_multiplier(double p_render_target_size_multiplier) {
+void OpenXRAPI::_set_render_state_multiplier_rt(double p_render_target_size_multiplier) {
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD;
 
@@ -2182,7 +2195,7 @@ void OpenXRAPI::_set_render_state_multiplier(double p_render_target_size_multipl
 	openxr_api->render_state.render_target_size_multiplier = p_render_target_size_multiplier;
 }
 
-void OpenXRAPI::_set_render_state_render_region(const Rect2i &p_render_region) {
+void OpenXRAPI::_set_render_state_render_region_rt(const Rect2i &p_render_region) {
 	ERR_NOT_ON_RENDER_THREAD;
 
 	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
@@ -2515,7 +2528,7 @@ void OpenXRAPI::end_frame() {
 			XR_TYPE_FRAME_END_INFO, // type
 			nullptr, // next
 			render_state.predicted_display_time, // displayTime
-			environment_blend_mode, // environmentBlendMode
+			render_state.environment_blend_mode, // environmentBlendMode
 			0, // layerCount
 			nullptr // layers
 		};
@@ -2565,7 +2578,7 @@ void OpenXRAPI::end_frame() {
 	}
 
 	XrCompositionLayerFlags layer_flags = XR_COMPOSITION_LAYER_CORRECT_CHROMATIC_ABERRATION_BIT;
-	if (!projection_layer_is_first || environment_blend_mode != XR_ENVIRONMENT_BLEND_MODE_OPAQUE) {
+	if (!projection_layer_is_first || render_state.environment_blend_mode != XR_ENVIRONMENT_BLEND_MODE_OPAQUE) {
 		layer_flags |= XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
 	}
 
@@ -2610,7 +2623,7 @@ void OpenXRAPI::end_frame() {
 		XR_TYPE_FRAME_END_INFO, // type
 		frame_end_info_next_pointer, // next
 		render_state.predicted_display_time, // displayTime
-		environment_blend_mode, // environmentBlendMode
+		render_state.environment_blend_mode, // environmentBlendMode
 		static_cast<uint32_t>(layers_list.size()), // layerCount
 		layers_list.ptr() // layers
 	};
@@ -3751,26 +3764,32 @@ bool OpenXRAPI::trigger_haptic_pulse(RID p_action, RID p_tracker, float p_freque
 }
 
 void OpenXRAPI::register_composition_layer_provider(OpenXRExtensionWrapper *p_extension) {
+	ERR_FAIL_COND_MSG(running, "Cannot register OpenXR composition layer providers while the session is running.");
 	composition_layer_providers.append(p_extension);
 }
 
 void OpenXRAPI::unregister_composition_layer_provider(OpenXRExtensionWrapper *p_extension) {
+	ERR_FAIL_COND_MSG(running, "Cannot unregister OpenXR composition layer providers while the session is running.");
 	composition_layer_providers.erase(p_extension);
 }
 
 void OpenXRAPI::register_projection_views_extension(OpenXRExtensionWrapper *p_extension) {
+	ERR_FAIL_COND_MSG(running, "Cannot register OpenXR projection views extensions while the session is running.");
 	projection_views_extensions.append(p_extension);
 }
 
 void OpenXRAPI::unregister_projection_views_extension(OpenXRExtensionWrapper *p_extension) {
+	ERR_FAIL_COND_MSG(running, "Cannot unregister OpenXR projection views extensions while the session is running.");
 	projection_views_extensions.erase(p_extension);
 }
 
 void OpenXRAPI::register_frame_info_extension(OpenXRExtensionWrapper *p_extension) {
+	ERR_FAIL_COND_MSG(running, "Cannot register OpenXR frame info extensions while the session is running.");
 	frame_info_extensions.append(p_extension);
 }
 
 void OpenXRAPI::unregister_frame_info_extension(OpenXRExtensionWrapper *p_extension) {
+	ERR_FAIL_COND_MSG(running, "Cannot unregister OpenXR frame info extensions while the session is running.");
 	frame_info_extensions.erase(p_extension);
 }
 
@@ -3786,6 +3805,7 @@ bool OpenXRAPI::set_environment_blend_mode(XrEnvironmentBlendMode p_blend_mode) 
 	if (emulate_environment_blend_mode_alpha_blend && p_blend_mode == XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND) {
 		requested_environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND;
 		environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+		set_render_environment_blend_mode(environment_blend_mode);
 		return true;
 	}
 	// We allow setting this when not initialized and will check if it is supported when initializing.
@@ -3793,6 +3813,7 @@ bool OpenXRAPI::set_environment_blend_mode(XrEnvironmentBlendMode p_blend_mode) 
 	else if (!is_initialized() || is_environment_blend_mode_supported(p_blend_mode)) {
 		requested_environment_blend_mode = p_blend_mode;
 		environment_blend_mode = p_blend_mode;
+		set_render_environment_blend_mode(environment_blend_mode);
 		return true;
 	}
 	return false;

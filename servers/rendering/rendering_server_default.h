@@ -38,7 +38,7 @@
 #include "renderer_viewport.h"
 #include "rendering_server_globals.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/server_wrap_mt_common.h"
 
 class RenderingServerDefault : public RenderingServer {
@@ -124,8 +124,6 @@ public:
 #ifdef DEBUG_ENABLED
 #define MAIN_THREAD_SYNC_WARN WARN_PRINT("Call to " + String(__FUNCTION__) + " causing RenderingServer synchronizations on every frame. This significantly affects performance.");
 #endif
-
-#include "servers/server_wrap_mt_common.h"
 
 	/* TEXTURE API */
 
@@ -1140,7 +1138,7 @@ public:
 
 	/* FREE */
 
-	virtual void free(RID p_rid) override {
+	virtual void free_rid(RID p_rid) override {
 		if (Thread::get_caller_id() == server_thread) {
 			command_queue.flush_if_pending();
 			_free(p_rid);

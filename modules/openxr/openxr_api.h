@@ -41,7 +41,7 @@
 #include "core/string/ustring.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/vector.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/xr/xr_pose.h"
 
 #include <openxr/openxr.h>
@@ -337,6 +337,7 @@ private:
 		bool has_xr_viewport = false;
 		XrTime predicted_display_time = 0;
 		XrSpace play_space = XR_NULL_HANDLE;
+		XrEnvironmentBlendMode environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
 		double render_target_size_multiplier = 1.0;
 		uint64_t frame = 0;
 		Rect2i render_region;
@@ -363,19 +364,20 @@ private:
 		OpenXRSwapChainInfo main_swapchains[OPENXR_SWAPCHAIN_MAX];
 	} render_state;
 
-	static void _allocate_view_buffers(uint32_t p_view_count, bool p_submit_depth_buffer);
-	static void _set_render_session_running(bool p_is_running);
-	static void _set_render_display_info(XrTime p_predicted_display_time, bool p_should_render);
-	static void _set_render_play_space(uint64_t p_play_space);
-	static void _set_render_state_multiplier(double p_render_target_size_multiplier);
-	static void _set_render_state_render_region(const Rect2i &p_render_region);
+	static void _allocate_view_buffers_rt(uint32_t p_view_count, bool p_submit_depth_buffer);
+	static void _set_render_session_running_rt(bool p_is_running);
+	static void _set_render_display_info_rt(XrTime p_predicted_display_time, bool p_should_render);
+	static void _set_render_play_space_rt(uint64_t p_play_space);
+	static void _set_render_environment_blend_mode_rt(int32_t p_environment_blend_mode);
+	static void _set_render_state_multiplier_rt(double p_render_target_size_multiplier);
+	static void _set_render_state_render_region_rt(const Rect2i &p_render_region);
 
 	_FORCE_INLINE_ void allocate_view_buffers(uint32_t p_view_count, bool p_submit_depth_buffer) {
 		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
 		RenderingServer *rendering_server = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rendering_server);
 
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_allocate_view_buffers).bind(p_view_count, p_submit_depth_buffer));
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_allocate_view_buffers_rt).bind(p_view_count, p_submit_depth_buffer));
 	}
 
 	_FORCE_INLINE_ void set_render_session_running(bool p_is_running) {
@@ -383,7 +385,7 @@ private:
 		RenderingServer *rendering_server = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rendering_server);
 
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_session_running).bind(p_is_running));
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_session_running_rt).bind(p_is_running));
 	}
 
 	_FORCE_INLINE_ void set_render_display_info(XrTime p_predicted_display_time, bool p_should_render) {
@@ -391,7 +393,7 @@ private:
 		RenderingServer *rendering_server = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rendering_server);
 
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_display_info).bind(p_predicted_display_time, p_should_render));
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_display_info_rt).bind(p_predicted_display_time, p_should_render));
 	}
 
 	_FORCE_INLINE_ void set_render_play_space(XrSpace p_play_space) {
@@ -399,7 +401,15 @@ private:
 		RenderingServer *rendering_server = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rendering_server);
 
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_play_space).bind(uint64_t(p_play_space)));
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_play_space_rt).bind(uint64_t(p_play_space)));
+	}
+
+	_FORCE_INLINE_ void set_render_environment_blend_mode(XrEnvironmentBlendMode p_mode) {
+		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+		RenderingServer *rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_NULL(rendering_server);
+
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_environment_blend_mode_rt).bind((int32_t)p_mode));
 	}
 
 	_FORCE_INLINE_ void set_render_state_multiplier(double p_render_target_size_multiplier) {
@@ -407,14 +417,14 @@ private:
 		RenderingServer *rendering_server = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rendering_server);
 
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_state_multiplier).bind(p_render_target_size_multiplier));
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_state_multiplier_rt).bind(p_render_target_size_multiplier));
 	}
 
 	_FORCE_INLINE_ void set_render_state_render_region(const Rect2i &p_render_region) {
 		RenderingServer *rendering_server = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rendering_server);
 
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_state_render_region).bind(p_render_region));
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_state_render_region_rt).bind(p_render_region));
 	}
 
 public:

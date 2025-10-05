@@ -204,7 +204,7 @@ void GridMapEditor::_update_cursor_transform() {
 			_set_selection(false);
 		}
 		// Rotation is only applied in paint mode, we don't want the cursor box to rotate otherwise.
-		cursor_transform.basis = node->get_basis_with_orthogonal_index(cursor_rot);
+		cursor_transform.basis *= node->get_basis_with_orthogonal_index(cursor_rot);
 		if (selected_palette >= 0 && node && node->get_mesh_library().is_valid()) {
 			cursor_transform *= node->get_mesh_library()->get_item_mesh_transform(selected_palette);
 		}
@@ -507,7 +507,7 @@ void GridMapEditor::_clear_clipboard_data() {
 		if (E.instance.is_null()) {
 			continue;
 		}
-		RenderingServer::get_singleton()->free(E.instance);
+		RenderingServer::get_singleton()->free_rid(E.instance);
 	}
 
 	clipboard_items.clear();
@@ -1172,16 +1172,16 @@ void GridMapEditor::_notification(int p_what) {
 			_clear_clipboard_data();
 
 			for (int i = 0; i < 3; i++) {
-				RS::get_singleton()->free(grid_instance[i]);
-				RS::get_singleton()->free(grid[i]);
+				RS::get_singleton()->free_rid(grid_instance[i]);
+				RS::get_singleton()->free_rid(grid[i]);
 				grid_instance[i] = RID();
 				grid[i] = RID();
-				RenderingServer::get_singleton()->free(selection_level_instance[i]);
+				RenderingServer::get_singleton()->free_rid(selection_level_instance[i]);
 			}
 
-			RenderingServer::get_singleton()->free(cursor_instance);
-			RenderingServer::get_singleton()->free(selection_instance);
-			RenderingServer::get_singleton()->free(paste_instance);
+			RenderingServer::get_singleton()->free_rid(cursor_instance);
+			RenderingServer::get_singleton()->free_rid(selection_instance);
+			RenderingServer::get_singleton()->free_rid(paste_instance);
 			cursor_instance = RID();
 			selection_instance = RID();
 			paste_instance = RID();
@@ -1233,7 +1233,7 @@ void GridMapEditor::_update_cursor_instance() {
 	}
 
 	if (cursor_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(cursor_instance);
+		RenderingServer::get_singleton()->free_rid(cursor_instance);
 	}
 	cursor_instance = RID();
 
@@ -1721,32 +1721,32 @@ GridMapEditor::~GridMapEditor() {
 
 	for (int i = 0; i < 3; i++) {
 		if (grid[i].is_valid()) {
-			RenderingServer::get_singleton()->free(grid[i]);
+			RenderingServer::get_singleton()->free_rid(grid[i]);
 		}
 		if (grid_instance[i].is_valid()) {
-			RenderingServer::get_singleton()->free(grid_instance[i]);
+			RenderingServer::get_singleton()->free_rid(grid_instance[i]);
 		}
 		if (selection_level_instance[i].is_valid()) {
-			RenderingServer::get_singleton()->free(selection_level_instance[i]);
+			RenderingServer::get_singleton()->free_rid(selection_level_instance[i]);
 		}
 		if (selection_level_mesh[i].is_valid()) {
-			RenderingServer::get_singleton()->free(selection_level_mesh[i]);
+			RenderingServer::get_singleton()->free_rid(selection_level_mesh[i]);
 		}
 	}
 
-	RenderingServer::get_singleton()->free(cursor_mesh);
+	RenderingServer::get_singleton()->free_rid(cursor_mesh);
 	if (cursor_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(cursor_instance);
+		RenderingServer::get_singleton()->free_rid(cursor_instance);
 	}
 
-	RenderingServer::get_singleton()->free(selection_mesh);
+	RenderingServer::get_singleton()->free_rid(selection_mesh);
 	if (selection_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(selection_instance);
+		RenderingServer::get_singleton()->free_rid(selection_instance);
 	}
 
-	RenderingServer::get_singleton()->free(paste_mesh);
+	RenderingServer::get_singleton()->free_rid(paste_mesh);
 	if (paste_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(paste_instance);
+		RenderingServer::get_singleton()->free_rid(paste_instance);
 	}
 }
 

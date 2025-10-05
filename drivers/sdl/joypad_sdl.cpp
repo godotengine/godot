@@ -122,13 +122,19 @@ void JoypadSDL::process_events() {
 				SDL_Joystick *sdl_joy = SDL_GetJoystickFromID(joypads[i].sdl_instance_idx);
 				Vector2 strength = Input::get_singleton()->get_joy_vibration_strength(i);
 
-				// If the vibration was requested to start, SDL_RumbleJoystick will start it.
-				// If the vibration was requested to stop, strength and duration will be 0, so SDL will stop the rumble.
+				/*
+					If the vibration was requested to start, SDL_RumbleJoystick will start it.
+					If the vibration was requested to stop, strength and duration will be 0, so SDL will stop the rumble.
+
+					Here strength.y goes first and then strength.x, because Input.get_joy_vibration_strength().x
+					is vibration's weak magnitude (high frequency rumble), and .y is strong magnitude (low frequency rumble),
+					SDL_RumbleJoystick takes low frequency rumble first and then high frequency rumble.
+				*/
 				SDL_RumbleJoystick(
 						sdl_joy,
 						// Rumble strength goes from 0 to 0xFFFF
-						strength.x * UINT16_MAX,
 						strength.y * UINT16_MAX,
+						strength.x * UINT16_MAX,
 						Input::get_singleton()->get_joy_vibration_duration(i) * 1000);
 			}
 		}

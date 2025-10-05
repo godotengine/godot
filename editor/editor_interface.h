@@ -101,7 +101,7 @@ public:
 	// Editor tools.
 
 	EditorCommandPalette *get_command_palette() const;
-	EditorFileSystem *get_resource_file_system() const;
+	EditorFileSystem *get_resource_filesystem() const;
 	EditorPaths *get_editor_paths() const;
 	EditorResourcePreview *get_resource_previewer() const;
 	EditorSelection *get_selection() const;
@@ -177,6 +177,8 @@ public:
 	PackedStringArray get_open_scenes() const;
 	TypedArray<Node> get_open_scene_roots() const;
 	Node *get_edited_scene_root() const;
+
+	void add_root_node(Node *p_node);
 
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);

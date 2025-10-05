@@ -1302,7 +1302,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	}
 
 	if (rb_data.is_valid() && !using_subpass_post_process) {
-		RD::get_singleton()->draw_command_begin_label("Post process pass");
+		RD::get_singleton()->draw_command_begin_label("Post Process Pass");
 
 		if (ce_has_post_transparent) {
 			_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT, p_render_data);
@@ -1778,7 +1778,7 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 
 void RenderForwardMobile::base_uniforms_changed() {
 	if (!render_base_uniform_set.is_null() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
-		RD::get_singleton()->free(render_base_uniform_set);
+		RD::get_singleton()->free_rid(render_base_uniform_set);
 	}
 	render_base_uniform_set = RID();
 }
@@ -1788,7 +1788,7 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 
 	if (render_base_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set) || (lightmap_texture_array_version != light_storage->lightmap_array_get_version())) {
 		if (render_base_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
-			RD::get_singleton()->free(render_base_uniform_set);
+			RD::get_singleton()->free_rid(render_base_uniform_set);
 		}
 
 		lightmap_texture_array_version = light_storage->lightmap_array_get_version();
@@ -1904,7 +1904,7 @@ void RenderForwardMobile::_update_instance_data_buffer(RenderListType p_render_l
 	if (scene_state.instance_data[p_render_list].size() > 0) {
 		if (scene_state.instance_buffer[p_render_list] == RID() || scene_state.instance_buffer_size[p_render_list] < scene_state.instance_data[p_render_list].size()) {
 			if (scene_state.instance_buffer[p_render_list] != RID()) {
-				RD::get_singleton()->free(scene_state.instance_buffer[p_render_list]);
+				RD::get_singleton()->free_rid(scene_state.instance_buffer[p_render_list]);
 			}
 			uint32_t new_size = nearest_power_of_2_templated(MAX(uint64_t(INSTANCE_DATA_BUFFER_MIN_SIZE), scene_state.instance_data[p_render_list].size()));
 			scene_state.instance_buffer[p_render_list] = RD::get_singleton()->storage_buffer_create(new_size * sizeof(SceneState::InstanceData));
@@ -1935,19 +1935,22 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 		}
 
 		if (inst->store_transform_cache) {
-			RendererRD::MaterialStorage::store_transform(inst->transform, instance_data.transform);
-			RendererRD::MaterialStorage::store_transform(inst->prev_transform, instance_data.prev_transform);
+			RendererRD::MaterialStorage::store_transform_transposed_3x4(inst->transform, instance_data.transform);
+			RendererRD::MaterialStorage::store_transform_transposed_3x4(inst->prev_transform, instance_data.prev_transform);
 
 #ifdef REAL_T_IS_DOUBLE
 			// Split the origin into two components, the float approximation and the missing precision.
 			// In the shader we will combine these back together to restore the lost precision.
-			RendererRD::MaterialStorage::split_double(inst->transform.origin.x, &instance_data.transform[12], &instance_data.transform[3]);
-			RendererRD::MaterialStorage::split_double(inst->transform.origin.y, &instance_data.transform[13], &instance_data.transform[7]);
-			RendererRD::MaterialStorage::split_double(inst->transform.origin.z, &instance_data.transform[14], &instance_data.transform[11]);
+			RendererRD::MaterialStorage::split_double(inst->transform.origin.x, &instance_data.transform[12], &instance_data.model_precision[0]);
+			RendererRD::MaterialStorage::split_double(inst->transform.origin.y, &instance_data.transform[13], &instance_data.model_precision[1]);
+			RendererRD::MaterialStorage::split_double(inst->transform.origin.z, &instance_data.transform[14], &instance_data.model_precision[2]);
+			RendererRD::MaterialStorage::split_double(inst->prev_transform.origin.x, &instance_data.prev_transform[12], &instance_data.prev_model_precision[0]);
+			RendererRD::MaterialStorage::split_double(inst->prev_transform.origin.y, &instance_data.prev_transform[13], &instance_data.prev_model_precision[1]);
+			RendererRD::MaterialStorage::split_double(inst->prev_transform.origin.z, &instance_data.prev_transform[14], &instance_data.prev_model_precision[2]);
 #endif
 		} else {
-			RendererRD::MaterialStorage::store_transform(Transform3D(), instance_data.transform);
-			RendererRD::MaterialStorage::store_transform(Transform3D(), instance_data.prev_transform);
+			RendererRD::MaterialStorage::store_transform_transposed_3x4(Transform3D(), instance_data.transform);
+			RendererRD::MaterialStorage::store_transform_transposed_3x4(Transform3D(), instance_data.prev_transform);
 		}
 
 		instance_data.flags = inst->flags_cache;
@@ -3390,15 +3393,15 @@ RenderForwardMobile::~RenderForwardMobile() {
 
 	{
 		for (const RID &rid : scene_state.uniform_buffers) {
-			RD::get_singleton()->free(rid);
+			RD::get_singleton()->free_rid(rid);
 		}
 		for (uint32_t i = 0; i < RENDER_LIST_MAX; i++) {
 			if (scene_state.instance_buffer[i].is_valid()) {
-				RD::get_singleton()->free(scene_state.instance_buffer[i]);
+				RD::get_singleton()->free_rid(scene_state.instance_buffer[i]);
 			}
 		}
-		RD::get_singleton()->free(scene_state.lightmap_buffer);
-		RD::get_singleton()->free(scene_state.lightmap_capture_buffer);
+		RD::get_singleton()->free_rid(scene_state.lightmap_buffer);
+		RD::get_singleton()->free_rid(scene_state.lightmap_capture_buffer);
 		memdelete_arr(scene_state.lightmap_captures);
 	}
 }

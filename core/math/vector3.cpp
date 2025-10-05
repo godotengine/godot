@@ -45,20 +45,6 @@ Vector3 Vector3::rotated(const Vector3 &p_axis, real_t p_angle) const {
 	return r;
 }
 
-Vector3 Vector3::clamp(const Vector3 &p_min, const Vector3 &p_max) const {
-	return Vector3(
-			CLAMP(x, p_min.x, p_max.x),
-			CLAMP(y, p_min.y, p_max.y),
-			CLAMP(z, p_min.z, p_max.z));
-}
-
-Vector3 Vector3::clampf(real_t p_min, real_t p_max) const {
-	return Vector3(
-			CLAMP(x, p_min, p_max),
-			CLAMP(y, p_min, p_max),
-			CLAMP(z, p_min, p_max));
-}
-
 void Vector3::snap(const Vector3 &p_step) {
 	x = Math::snapped(x, p_step.x);
 	y = Math::snapped(y, p_step.y);

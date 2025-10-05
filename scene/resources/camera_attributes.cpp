@@ -31,7 +31,7 @@
 #include "camera_attributes.h"
 
 #include "core/config/project_settings.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 void CameraAttributes::set_exposure_multiplier(float p_multiplier) {
 	exposure_multiplier = p_multiplier;
@@ -139,7 +139,7 @@ CameraAttributes::CameraAttributes() {
 
 CameraAttributes::~CameraAttributes() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(camera_attributes);
+	RS::get_singleton()->free_rid(camera_attributes);
 }
 
 //////////////////////////////////////////////////////
@@ -259,8 +259,8 @@ void CameraAttributesPractical::_validate_property(PropertyInfo &p_property) con
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
-	if ((!dof_blur_far_enabled && p_property.name.begins_with("dof_blur_far_")) ||
-			(!dof_blur_near_enabled && p_property.name.begins_with("dof_blur_near_"))) {
+	if ((p_property.name != "dof_blur_far_enabled" && !dof_blur_far_enabled && p_property.name.begins_with("dof_blur_far_")) ||
+			(p_property.name != "dof_blur_near_enabled" && !dof_blur_near_enabled && p_property.name.begins_with("dof_blur_near_"))) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }

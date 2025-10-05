@@ -81,6 +81,8 @@ void EditorExportPlatformExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_platform_features);
 
 	GDVIRTUAL_BIND(_get_debug_protocol);
+
+	GDVIRTUAL_BIND(_initialize);
 }
 
 void EditorExportPlatformExtension::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
@@ -356,6 +358,10 @@ String EditorExportPlatformExtension::get_debug_protocol() const {
 		return ret;
 	}
 	return EditorExportPlatform::get_debug_protocol();
+}
+
+void EditorExportPlatformExtension::initialize() {
+	GDVIRTUAL_CALL(_initialize);
 }
 
 EditorExportPlatformExtension::EditorExportPlatformExtension() {
