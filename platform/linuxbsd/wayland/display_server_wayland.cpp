@@ -46,6 +46,7 @@
 #endif
 
 #ifdef GLES3_ENABLED
+#include "core/io/file_access.h"
 #include "detect_prime_egl.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "wayland/egl_manager_wayland.h"
