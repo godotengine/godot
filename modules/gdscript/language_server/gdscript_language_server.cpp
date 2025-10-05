@@ -56,7 +56,8 @@ void GDScriptLanguageServer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (!started && EditorNode::get_singleton()->is_editor_ready()) {
+			if (!start_attempted && EditorNode::get_singleton()->is_editor_ready()) {
+				start_attempted = true;
 				start();
 			}
 
