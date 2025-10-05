@@ -171,6 +171,8 @@ private:
 
 	Size2i max_size_used;
 
+	Rect2i nonclient_area;
+
 	Size2i _clamp_limit_size(const Size2i &p_limit_size);
 	Size2i _clamp_window_size(const Size2i &p_size);
 	void _validate_limit_size();
@@ -390,6 +392,9 @@ public:
 
 	void set_content_scale_factor(real_t p_factor);
 	real_t get_content_scale_factor() const;
+
+	void set_nonclient_area(const Rect2i &p_rect);
+	Rect2i get_nonclient_area() const;
 
 	void set_mouse_passthrough_polygon(const Vector<Vector2> &p_region);
 	Vector<Vector2> get_mouse_passthrough_polygon() const;

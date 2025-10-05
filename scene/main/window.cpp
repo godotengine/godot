@@ -1726,6 +1726,15 @@ real_t Window::get_content_scale_factor() const {
 	return content_scale_factor;
 }
 
+void Window::set_nonclient_area(const Rect2i &p_rect) {
+	ERR_MAIN_THREAD_GUARD;
+	nonclient_area = p_rect;
+}
+
+Rect2i Window::get_nonclient_area() const {
+	return nonclient_area;
+}
+
 DisplayServer::WindowID Window::get_window_id() const {
 	ERR_READ_THREAD_GUARD_V(DisplayServer::INVALID_WINDOW_ID);
 	if (get_embedder()) {
@@ -1816,6 +1825,12 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	ERR_MAIN_THREAD_GUARD;
 
 	if (exclusive_child != nullptr) {
+		if (nonclient_area.has_area() && is_inside_tree()) {
+			Ref<InputEventMouse> me = p_ev;
+			if (me.is_valid() && nonclient_area.has_point(me->get_position())) {
+				emit_signal(SceneStringName(nonclient_window_input), p_ev);
+			}
+		}
 		if (!is_embedding_subwindows()) { // Not embedding, no need for event.
 			return;
 		}
@@ -3227,6 +3242,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_content_scale_stretch", "stretch"), &Window::set_content_scale_stretch);
 	ClassDB::bind_method(D_METHOD("get_content_scale_stretch"), &Window::get_content_scale_stretch);
 
+	ClassDB::bind_method(D_METHOD("set_nonclient_area", "area"), &Window::set_nonclient_area);
+	ClassDB::bind_method(D_METHOD("get_nonclient_area"), &Window::get_nonclient_area);
+
 	ClassDB::bind_method(D_METHOD("set_keep_title_visible", "title_visible"), &Window::set_keep_title_visible);
 	ClassDB::bind_method(D_METHOD("get_keep_title_visible"), &Window::get_keep_title_visible);
 
@@ -3331,6 +3349,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), "set_current_screen", "get_current_screen");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2I, "nonclient_area", PROPERTY_HINT_NONE, ""), "set_nonclient_area", "get_nonclient_area");
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "mouse_passthrough_polygon"), "set_mouse_passthrough_polygon", "get_mouse_passthrough_polygon");
 
@@ -3380,6 +3399,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "theme_type_variation", PROPERTY_HINT_ENUM_SUGGESTION), "set_theme_type_variation", "get_theme_type_variation");
 
 	ADD_SIGNAL(MethodInfo("window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	ADD_SIGNAL(MethodInfo("nonclient_window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
