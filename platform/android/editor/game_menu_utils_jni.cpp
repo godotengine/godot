@@ -142,4 +142,22 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_set
 	}
 #endif
 }
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_resetTimeScale(JNIEnv *env, jclass clazz) {
+#ifdef TOOLS_ENABLED
+	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
+	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
+		game_view_plugin->get_debugger()->reset_time_scale();
+	}
+#endif
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setTimeScale(JNIEnv *env, jclass clazz, jdouble scale) {
+#ifdef TOOLS_ENABLED
+	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
+	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
+		game_view_plugin->get_debugger()->set_time_scale(scale);
+	}
+#endif
+}
 }

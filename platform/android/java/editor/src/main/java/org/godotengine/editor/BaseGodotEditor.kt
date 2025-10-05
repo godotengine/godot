@@ -150,6 +150,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		internal const val GAME_MENU_ACTION_RESET_CAMERA_3D_POSITION = "resetCamera3DPosition"
 		internal const val GAME_MENU_ACTION_EMBED_GAME_ON_PLAY = "embedGameOnPlay"
 		internal const val GAME_MENU_ACTION_SET_DEBUG_MUTE_AUDIO = "setDebugMuteAudio"
+		internal const val GAME_MENU_ACTION_RESET_TIME_SCALE = "resetTimeScale"
+		internal const val GAME_MENU_ACTION_SET_TIME_SCALE = "setTimeScale"
 
 		private const val GAME_WORKSPACE = "Game"
 
@@ -839,6 +841,13 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				val enabled = actionData.getBoolean(KEY_GAME_MENU_ACTION_PARAM1)
 				muteAudio(enabled)
 			}
+			GAME_MENU_ACTION_RESET_TIME_SCALE -> {
+				resetTimeScale()
+			}
+			GAME_MENU_ACTION_SET_TIME_SCALE -> {
+				val scale = actionData.getDouble(KEY_GAME_MENU_ACTION_PARAM1)
+				setTimeScale(scale)
+			}
 		}
 	}
 
@@ -906,6 +915,20 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		gameMenuState.putBoolean(GAME_MENU_ACTION_SET_DEBUG_MUTE_AUDIO, enabled)
 		godot?.runOnRenderThread {
 			GameMenuUtils.setDebugMuteAudio(enabled)
+		}
+	}
+
+	override fun resetTimeScale() {
+		gameMenuState.putDouble(GAME_MENU_ACTION_SET_TIME_SCALE, 1.0)
+		godot?.runOnRenderThread {
+			GameMenuUtils.resetTimeScale()
+		}
+	}
+
+	override fun setTimeScale(scale: Double) {
+		gameMenuState.putDouble(GAME_MENU_ACTION_SET_TIME_SCALE, scale)
+		godot?.runOnRenderThread {
+			GameMenuUtils.setTimeScale(scale)
 		}
 	}
 
