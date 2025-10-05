@@ -29,6 +29,7 @@ def get_opts():
 
     return [
         ("osxcross_sdk", "OSXCross SDK version", "darwin16"),
+        ("SWIFT_FRONTEND", "Path to the swift-frontend binary", ""),
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
         ("vulkan_sdk_path", "Path to the Vulkan SDK", ""),
         EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ["no", "5.0", "devel"], ignorecase=2),
