@@ -1029,6 +1029,7 @@ public:
 			type = PATTERN;
 		}
 	};
+
 	struct PreloadNode : public ExpressionNode {
 		ExpressionNode *path = nullptr;
 		String resolved_path;
@@ -1399,6 +1400,10 @@ private:
 	static HashMap<StringName, AnnotationInfo> valid_annotations;
 	List<AnnotationNode *> annotation_stack;
 
+	// member name -> metadata name -> value
+	HashMap<StringName, HashMap<StringName, Variant>> member_meta_annotations;
+	HashMap<StringName, Variant> script_meta_annotations;
+
 	typedef ExpressionNode *(GDScriptParser::*ParseFunction)(ExpressionNode *p_previous_operand, bool p_can_assign);
 	// Higher value means higher precedence (i.e. is evaluated first).
 	enum Precedence {
@@ -1616,6 +1621,9 @@ public:
 		// TODO: Keep track of deps.
 		return List<String>();
 	}
+	const HashMap<StringName, Variant> get_script_meta_annotations() const { return script_meta_annotations; }
+	const HashMap<StringName, HashMap<StringName, Variant>> get_member_meta_annotations() const { return member_meta_annotations; }
+
 #ifdef DEBUG_ENABLED
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }
 	const HashSet<int> &get_unsafe_lines() const { return unsafe_lines; }

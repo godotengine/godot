@@ -139,6 +139,10 @@ protected:
 		return get_rpc_config().duplicate(true);
 	}
 
+private:
+	HashMap<StringName, Variant> script_metadata;
+	HashMap<StringName, HashMap<StringName, Variant>> member_metadata;
+
 public:
 	static constexpr AncestralClass static_ancestral_class = AncestralClass::SCRIPT;
 
@@ -159,6 +163,19 @@ public:
 	virtual String get_source_code() const = 0;
 	virtual void set_source_code(const String &p_code) = 0;
 	virtual Error reload(bool p_keep_state = false) = 0;
+
+	// TODO: Is there a better interface that works for both class- and member-level metadata?
+	bool has_class_meta(const StringName &p_name) const;
+	void set_class_meta(const StringName &p_name, const Variant &p_value);
+	void remove_class_meta(const StringName &p_name);
+	Variant get_class_meta(const StringName &p_name, const Variant &p_default = Variant()) const;
+	TypedArray<StringName> get_class_meta_list() const;
+
+	bool has_member_meta(const StringName &p_member, const StringName &p_name) const;
+	void set_member_meta(const StringName &p_member, const StringName &p_name, const Variant &p_value);
+	void remove_member_meta(const StringName &p_member, const StringName &p_name);
+	Variant get_member_meta(const StringName &p_member, const StringName &p_name, const Variant &p_default = Variant()) const;
+	TypedArray<StringName> get_member_meta_list(const StringName &p_member) const;
 
 #ifdef TOOLS_ENABLED
 	virtual StringName get_doc_class_name() const = 0;

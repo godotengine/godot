@@ -129,7 +129,8 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@export_group", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_GROUP>, varray(""));
 		register_annotation(MethodInfo("@export_subgroup", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_SUBGROUP>, varray(""));
 		// Metadata annotation.
-		register_annotation(MethodInfo("@meta", PropertyInfo(Variant::NIL, "metadata", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)), AnnotationInfo::CLASS_LEVEL, &GDScriptParser::meta_annotation, varray(), true);
+		// TODO: Can we make it so that "value" is optional and defaults to "true", making it easy to do e.g. @meta("some_tag")?
+		register_annotation(MethodInfo("@meta", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)), AnnotationInfo::CLASS_LEVEL, &GDScriptParser::meta_annotation, varray(), false);
 		// Warning annotations.
 		register_annotation(MethodInfo("@warning_ignore", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::CLASS_LEVEL | AnnotationInfo::STATEMENT, &GDScriptParser::warning_ignore_annotation, varray(), true);
 		register_annotation(MethodInfo("@warning_ignore_start", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::STANDALONE, &GDScriptParser::warning_ignore_region_annotations, varray(), true);
@@ -5176,6 +5177,36 @@ bool GDScriptParser::rpc_annotation(AnnotationNode *p_annotation, Node *p_target
 }
 
 bool GDScriptParser::meta_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V(p_annotation->resolved_arguments.size() < 2, false);
+	ERR_FAIL_COND_V(!Variant::can_convert(p_annotation->resolved_arguments[0].get_type(), Variant::STRING_NAME), false);
+
+	StringName member_name;
+	switch (p_target->type) {
+		case Node::CLASS:
+			// TODO: Can we make it work for inner classes and inner class members?
+			ERR_FAIL_COND_V_MSG(static_cast<ClassNode *>(p_target)->outer != nullptr, false, R"("@meta" annotation does not support inner classes.)");
+			script_meta_annotations.insert(p_annotation->resolved_arguments[0], p_annotation->resolved_arguments[1]);
+			return true;
+		case Node::VARIABLE:
+			member_name = static_cast<VariableNode *>(p_target)->identifier->name;
+			break;
+		case Node::CONSTANT:
+			member_name = static_cast<ConstantNode *>(p_target)->identifier->name;
+			break;
+		case Node::SIGNAL:
+			member_name = static_cast<SignalNode *>(p_target)->identifier->name;
+			break;
+		case Node::FUNCTION:
+			member_name = static_cast<FunctionNode *>(p_target)->identifier->name;
+			break;
+		default:
+			push_error(R"("@meta" annotation does not apply here.)");
+			return false;
+	}
+	if (!member_meta_annotations.has(member_name)) {
+		member_meta_annotations.insert(member_name, HashMap<StringName, Variant>());
+	}
+	member_meta_annotations[member_name].insert(p_annotation->resolved_arguments[0], p_annotation->resolved_arguments[1]);
 	return true;
 }
 
