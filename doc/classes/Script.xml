@@ -73,17 +73,17 @@
 		<method name="get_script_meta">
 			<return type="Array[Dictionary]" />
 			<description>
-				Returns an [Array] of dictionaries describing each target in this [Script] that was annotated with a [annotation @GDScript.@meta] annotation having its first argument equal to [param name]. Each [Dictionary] contains the following entries:
+				Returns an [Array] of dictionaries describing each [annotation @GDScript.@meta] annotation target in this [Script] with first argument [param name]. Each [Dictionary] contains the following entries:
 				- [code]target_type[/code] is a [enum MetaTargetType] indicating the type of the annotation target.
 				- [code]target_name[/code] is the [StringName] identifier of the target, if any.
-				- [code]target_container[/code] is a [StringName] fully specifying the class containing this annotation target.
-				- [code]value[/code] is the [Variant] value that was passed as the second argument to the [code]@meta[/code] annotation.
+				- [code]target_container[/code] is a [StringName] fully specifying the class containing the annotation target. For example, if an inner class property is annotated the [code]target_container[/code] might be [code]"OuterClass.InnerClass"[/code].
+				- [code]value[/code] holds the [Variant] passed as the second argument to the [annotation @GDScript.@meta] annotation.
 			</description>
 		</method>
 		<method name="get_script_meta_list">
 			<return type="Array[StringName]" />
 			<description>
-				Returns the list of all the [StringNames] that were passed as the first argument to [annotation @GDScript.@meta] annotations in this [Script].
+				Returns the list of all the distinct [StringName] values passed as [code]name[/code] arguments to [annotation @GDScript.@meta] annotations in this [Script].
 			</description>
 		</method>
 		<method name="get_script_method_list">
@@ -155,19 +155,19 @@
 	</members>
 	<constants>
 		<constant name="META_TARGET_CLASS" value="0" enum="MetaTargetType">
-			Indicates that the target of a [code]@meta[/code] annotation is a class.
+			Indicates that the target of a [annotation @GDScript.@meta] annotation is a class.
 		</constant>
 		<constant name="META_TARGET_VARIABLE" value="1" enum="MetaTargetType">
-			Indicates that the target of a [code]@meta[/code] annotation is a variable.
+			Indicates that the target of a [annotation @GDScript.@meta] annotation is a variable.
 		</constant>
 		<constant name="META_TARGET_CONSTANT" value="2" enum="MetaTargetType">
-			Indicates that the target of a [code]@meta[/code] annotation is a constant.
+			Indicates that the target of a [annotation @GDScript.@meta] annotation is a constant.
 		</constant>
 		<constant name="META_TARGET_SIGNAL" value="3" enum="MetaTargetType">
-			Indicates that the target of a [code]@meta[/code] annotation is a signal.
+			Indicates that the target of a [annotation @GDScript.@meta] annotation is a signal.
 		</constant>
 		<constant name="META_TARGET_FUNCTION" value="3" enum="MetaTargetType">
-			Indicates that the target of a [code]@meta[/code] annotation is a function.
+			Indicates that the target of a [annotation @GDScript.@meta] annotation is a function.
 		</constant>
 	</constants>
 </class>

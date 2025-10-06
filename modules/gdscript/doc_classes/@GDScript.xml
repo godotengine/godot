@@ -780,16 +780,14 @@
 			<description>
 				Attach a piece of named metadata to the given class or class member. The metadata can then be read back at runtime using [method Script.get_script_meta].
 				[codeblock]
-				class_name MyClass
-				extends RefCounted
-
-				@meta("my_tag", true)
+				@meta("my_tag", "my_data")
 				var my_property: String
 
 				func _init():
 					var script = get_script()
 					for metadata in script.get_script_meta("my_tag"):
-						print("The member %s was annotated with @meta(\"my_tag\", %s)" % [metadata.target_name, metadata.value])
+						# prints "my_property has my_data"
+						print("%s has %s" % [metadata.target_name, metadata.value])
 				[/codeblock]
 			</description>
 		</annotation>
