@@ -481,7 +481,7 @@ def configure_msvc(env: "SConsEnvironment"):
                 "libGLES.windows." + env["arch"] + prebuilt_lib_extra_suffix,
             ]
             LIBS += ["dxgi", "d3d9", "d3d11"]
-        env.Prepend(CPPEXTPATH=["#thirdparty/angle/include"])
+        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     if env["target"] in ["editor", "template_debug"]:
         LIBS += ["psapi", "dbghelp"]
@@ -874,7 +874,7 @@ def configure_mingw(env: "SConsEnvironment"):
                 ]
             )
             env.Append(LIBS=["dxgi", "d3d9", "d3d11"])
-        env.Prepend(CPPEXTPATH=["#thirdparty/angle/include"])
+        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
 

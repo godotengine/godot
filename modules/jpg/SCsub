@@ -81,7 +81,7 @@ if env["builtin_libjpeg_turbo"]:
     def source_paths(files):
         return [thirdparty_dir + "/src/" + f for f in files]
 
-    env_jpg.Prepend(CPPEXTPATH=[thirdparty_dir + "/src"])
+    env_jpg.Prepend(CPPPATH=[thirdparty_dir + "/src"])
 
     def add_bit_depth(bit_depth: int):
         env_bit_depth = env_jpg.Clone()
