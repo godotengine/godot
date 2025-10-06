@@ -39,6 +39,7 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
+#include "core/string/char_buffer.h"
 
 Ref<FileAccess> FileAccess::create(AccessType p_access) {
 	ERR_FAIL_INDEX_V(p_access, ACCESS_MAX, nullptr);
@@ -415,54 +416,8 @@ String FileAccess::get_token() const {
 	return String::utf8(token.get_data());
 }
 
-class CharBuffer {
-	Vector<char> vector;
-	char stack_buffer[256];
-
-	char *buffer = nullptr;
-	int64_t capacity = 0;
-	int64_t written = 0;
-
-	bool grow() {
-		if (vector.resize(next_power_of_2((uint64_t)1 + (uint64_t)written)) != OK) {
-			return false;
-		}
-
-		if (buffer == stack_buffer) { // first chunk?
-
-			for (int64_t i = 0; i < written; i++) {
-				vector.write[i] = stack_buffer[i];
-			}
-		}
-
-		buffer = vector.ptrw();
-		capacity = vector.size();
-		ERR_FAIL_COND_V(written >= capacity, false);
-
-		return true;
-	}
-
-public:
-	_FORCE_INLINE_ CharBuffer() :
-			buffer(stack_buffer),
-			capacity(std::size(stack_buffer)) {
-	}
-
-	_FORCE_INLINE_ void push_back(char c) {
-		if (written >= capacity) {
-			ERR_FAIL_COND(!grow());
-		}
-
-		buffer[written++] = c;
-	}
-
-	_FORCE_INLINE_ const char *get_data() const {
-		return buffer;
-	}
-};
-
 String FileAccess::get_line() const {
-	CharBuffer line;
+	CharBuffer<char, 256> line;
 
 	uint8_t c = get_8();
 
@@ -480,16 +435,15 @@ String FileAccess::get_line() const {
 					get_8();
 				}
 			}
-			line.push_back(0);
-			return String::utf8(line.get_data());
+			return String::utf8(line.get_terminated_buffer());
 		} else {
-			line.push_back(char(c));
+			line += char(c);
 		}
 
 		c = get_8();
 	}
-	line.push_back(0);
-	return String::utf8(line.get_data());
+
+	return String::utf8(line.get_terminated_buffer());
 }
 
 Vector<String> FileAccess::get_csv_line(const String &p_delim) const {

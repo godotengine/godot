@@ -38,6 +38,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Dictionary);
 #include "core/object/object.h"
 #include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/string/char_buffer.h"
 #include "core/string/print_string.h"
 #include "core/string/string_name.h"
 #include "core/string/translation_server.h"
@@ -4545,25 +4546,24 @@ bool String::is_valid_string() const {
 
 String String::uri_encode() const {
 	const CharString temp = utf8();
-	String res;
+	CharBuffer<char32_t> res;
 
 	for (int i = 0; i < temp.length(); ++i) {
 		uint8_t ord = uint8_t(temp[i]);
 		if (ord == '.' || ord == '-' || ord == '~' || is_ascii_identifier_char(ord)) {
 			res += ord;
 		} else {
-			char p[4] = { '%', 0, 0, 0 };
-			p[1] = hex_char_table_upper[ord >> 4];
-			p[2] = hex_char_table_upper[ord & 0xF];
-			res += p;
+			res += '%';
+			res += hex_char_table_upper[ord >> 4];
+			res += hex_char_table_upper[ord & 0xF];
 		}
 	}
-	return res;
+	return res.finalize();
 }
 
 String String::uri_decode() const {
 	CharString src = utf8();
-	CharString res;
+	CharBuffer<char> res;
 	for (int i = 0; i < src.length(); ++i) {
 		if (src[i] == '%' && i + 2 < src.length()) {
 			char ord1 = src[i + 1];
@@ -4583,12 +4583,12 @@ String String::uri_decode() const {
 			res += src[i];
 		}
 	}
-	return String::utf8(res);
+	return String::utf8(res.get_terminated_buffer());
 }
 
 String String::uri_file_decode() const {
 	CharString src = utf8();
-	CharString res;
+	CharBuffer<char> res;
 	for (int i = 0; i < src.length(); ++i) {
 		if (src[i] == '%' && i + 2 < src.length()) {
 			char ord1 = src[i + 1];
@@ -4606,7 +4606,7 @@ String String::uri_file_decode() const {
 			res += src[i];
 		}
 	}
-	return String::utf8(res);
+	return String::utf8(res.get_terminated_buffer());
 }
 
 String String::c_unescape() const {
