@@ -462,29 +462,49 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				if (i > 0) {
 					if (parent) {
 						bool pending_add = true;
+
+						Node *existing = parent->_get_child_by_name(snames[n.name]);
+						if (existing) {
+							// There's already a node in the same parent with the same name.
+							// This means that somehow the node was added both to the scene being
+							// loaded and another one instantiated in the former, maybe because of
+							// manual editing, or a bug in scene saving, or a loophole in the workflow
+							// (with any of the bugs possibly already fixed).
+							// Bring consistency back by letting it be assigned a non-clashing name.
+							// This simple workaround at least avoids leaks and helps the user realize
+							// something awkward has happened.
 #ifdef TOOLS_ENABLED
-						if (Engine::get_singleton()->is_editor_hint()) {
-							Node *existing = parent->_get_child_by_name(snames[n.name]);
-							if (existing) {
-								// There's already a node in the same parent with the same name.
-								// This means that somehow the node was added both to the scene being
-								// loaded and another one instantiated in the former, maybe because of
-								// manual editing, or a bug in scene saving, or a loophole in the workflow
-								// (with any of the bugs possibly already fixed).
-								// Bring consistency back by letting it be assigned a non-clashing name.
-								// This simple workaround at least avoids leaks and helps the user realize
-								// something awkward has happened.
-								if (instantiation_warn_notify) {
-									instantiation_warn_notify(vformat(
-											TTR("An incoming node's name clashes with %s already in the scene (presumably, from a more nested instance).\nThe less nested node will be renamed. Please fix and re-save the scene."),
-											ret_nodes[0]->get_path_to(existing)));
-								}
+							if (instantiation_warn_notify) {
+								instantiation_warn_notify(vformat(
+										TTR("An incoming node's name clashes with %s already in the scene (presumably, from a more nested instance).\nThe less nested node will be renamed. Please fix and re-save the scene."),
+										ret_nodes[0]->get_path_to(existing)));
+							} else {
+#endif // TOOLS_ENABLED
+								WARN_PRINT(vformat(
+										RTR("An incoming node's name clashes with %s already in the scene (presumably, from a more nested instance).\nThe more nested node (tree) will be replaced and may cause orphan nodes (will be automatically freed). Please fix the scene."),
+										ret_nodes[0]->get_path_to(existing)));
+#ifdef TOOLS_ENABLED
+							}
+
+							if (Engine::get_singleton()->is_editor_hint()) {
 								node->set_name(snames[n.name]);
 								parent->add_child(node, true);
 								pending_add = false;
+							} else {
+#endif // TOOLS_ENABLED
+
+								// Pending add cases, _add_child_nocheck() will be used, nodes with the same name may cause replacement and orphan nodes.
+								// Attempts to proactively clean up corruption caused by orphaned nodes to avoid data inconsistencies.
+								if (existing->is_unique_name_in_owner()) {
+									existing->_release_unique_name_in_owner(); // Release immediately.
+								}
+								parent->remove_child(existing); // Clear the data cache immediately.
+								existing->queue_free();
+#ifdef TOOLS_ENABLED
 							}
+#endif // TOOLS_ENABLED
 						}
-#endif
+
 						if (pending_add) {
 							parent->_add_child_nocheck(node, snames[n.name]);
 						}
@@ -1022,6 +1042,30 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 	int parent_node = NO_PARENT_SAVED;
 
 	if (save_node) {
+		if (Engine::get_singleton()->is_editor_hint()) {
+			// Checks if there are already duplicate nodepaths in the subscenes.
+			NodePath np = p_owner->get_path_to(p_node);
+			Node *parent = p_node->get_parent();
+			Node *check = nullptr;
+			while (parent) {
+				if (parent == p_owner) {
+					break;
+				}
+				check = parent;
+				parent = check->get_parent();
+				if (check->get_scene_file_path().is_empty()) {
+					continue;
+				}
+				Ref<SceneState> ss = check->get_scene_instance_state();
+				if (ss.is_valid()) {
+					NodePath checked_path = check->get_path_to(p_node);
+					int found = ss->find_node_by_path(checked_path);
+					ERR_FAIL_COND_V_MSG(found != -1, ERR_ALREADY_EXISTS,
+							vformat("The path of the node to be saved is \"%s\" in the scene, but its equivalent path \"%s\" already exists in the sub scene file \"%s\".", np, checked_path, check->get_scene_file_path()));
+				}
+			}
+		}
+
 		//don't save the node if nothing and subscene
 
 		node_map[p_node] = idx;
