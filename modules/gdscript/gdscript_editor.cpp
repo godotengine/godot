@@ -4622,9 +4622,18 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 						if (CoreConstants::is_global_enum(enum_name)) {
 							OUTSIDE_REFACTOR(REFACTOR_RENAME_SYMBOL_RESULT_CLASS_CONSTANT);
 						} else {
-							const int dot_pos = enum_name.rfind_char('.');
-							if (dot_pos >= 0) {
-								OUTSIDE_REFACTOR(REFACTOR_RENAME_SYMBOL_RESULT_CLASS_CONSTANT);
+							const GDScriptParser::ClassNode::Member &member_enum = base_type.class_type->get_member(base_type.enum_type);
+							switch (member_enum.type) {
+								case GDScriptParser::ClassNode::Member::ENUM: {
+									return _refactor_rename_symbol_match_from_class(
+											p_context, p_symbol, p_path, p_class_path,
+											p_unsaved_scripts_source_code, r_result,
+											_refactor_rename_symbol_get_expected_type_from_classnode_member_type(member_enum.type),
+											member_enum.get_source_node());
+								} break;
+								default: {
+									return ERR_BUG;
+								}
 							}
 						}
 					} else if (Variant::has_builtin_method(Variant::DICTIONARY, p_symbol)) {
