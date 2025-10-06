@@ -810,9 +810,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	RENDER_TIMESTAMP("Setup 3D Scene");
 
+	bool has_depth_texture_override = false;
 	RID render_target = rb->get_render_target();
 	if (render_target.is_valid()) {
-		p_render_data->scene_data->calculate_motion_vectors = RendererRD::TextureStorage::get_singleton()->render_target_get_override_velocity(render_target).is_valid();
+		p_render_data->scene_data->calculate_motion_vectors = texture_storage->render_target_get_override_velocity(render_target).is_valid();
+		has_depth_texture_override = texture_storage->render_target_get_override_depth(render_target).is_valid();
 	} else {
 		p_render_data->scene_data->calculate_motion_vectors = false;
 	}
@@ -1238,8 +1240,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				RD::get_singleton()->draw_command_end_label(); // Render Transparent Subpass
 			}
 
-			// note if we are using MSAA we should get an automatic resolve through our subpass configuration.
-
 			// blit to tonemap
 			if (rb_data.is_valid() && using_subpass_post_process) {
 				_post_process_subpass(p_render_data->render_buffers->get_internal_texture(), framebuffer, p_render_data);
@@ -1248,6 +1248,19 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			RD::get_singleton()->draw_command_end_label(); // Render 3D Pass / Render Reflection Probe Pass
 
 			RD::get_singleton()->draw_list_end();
+
+			// note, if MSAA is used we should get an automatic resolve of the color buffer here.
+
+			if (use_msaa && has_depth_texture_override) {
+				// Copy MSAA depth texture to depth texture as we are using it externally.
+				for (uint32_t v = 0; v < p_render_data->scene_data->view_count; v++) {
+					static const int texture_multisamples[RS::VIEWPORT_MSAA_MAX] = { 1, 2, 4, 8 };
+
+					RID depth_texture = rb->get_depth_texture(v);
+					RID depth_back_fb = FramebufferCacheRD::get_singleton()->get_cache(depth_texture);
+					resolve_effects->resolve_depth_raster(rb->get_depth_msaa(v), depth_back_fb, texture_multisamples[rb->get_msaa_3d()]);
+				}
+			}
 		} else {
 			// We're done with our subpasses so end our container pass
 			// note, if MSAA is used we should get an automatic resolve of the color buffer here.
@@ -1270,12 +1283,23 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				}
 			}
 
+			if (use_msaa && has_depth_texture_override) {
+				// Copy MSAA depth texture to depth texture as we are using it externally.
+				for (uint32_t v = 0; v < p_render_data->scene_data->view_count; v++) {
+					static const int texture_multisamples[RS::VIEWPORT_MSAA_MAX] = { 1, 2, 4, 8 };
+
+					RID depth_texture = rb->get_depth_texture(v);
+					RID depth_back_fb = FramebufferCacheRD::get_singleton()->get_cache(depth_texture);
+					resolve_effects->resolve_depth_raster(rb->get_depth_msaa(v), depth_back_fb, texture_multisamples[rb->get_msaa_3d()]);
+				}
+			}
+
 			if (scene_state.used_depth_texture || global_surface_data.depth_texture_used) {
 				_render_buffers_ensure_depth_texture(p_render_data);
 
 				if (scene_state.used_depth_texture) {
 					// Copy depth texture to backbuffer so we can read from it.
-					_render_buffers_copy_depth_texture(p_render_data, use_msaa);
+					_render_buffers_copy_depth_texture(p_render_data, use_msaa && !has_depth_texture_override);
 				}
 			}
 
