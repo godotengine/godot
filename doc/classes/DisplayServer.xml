@@ -1774,11 +1774,11 @@
 				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
 			</description>
 		</method>
-		<method name="screen_get_refresh_rate" qualifiers="const">
+		<method name="screen_get_refresh_rate" qualifiers="const" keywords="vsync">
 			<return type="float" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the current refresh rate of the specified screen. Returns [code]-1.0[/code] if [param screen] is invalid or the [DisplayServer] fails to find the refresh rate for the specified screen.
+				Returns the current refresh rate of the specified screen. When V-Sync is enabled, this returns the maximum framerate the project can effectively reach. Returns [code]-1.0[/code] if [param screen] is invalid or the [DisplayServer] fails to find the refresh rate for the specified screen.
 				To fallback to a default refresh rate if the method fails, try:
 				[codeblock]
 				var refresh_rate = DisplayServer.screen_get_refresh_rate()
