@@ -129,8 +129,7 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@export_group", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_GROUP>, varray(""));
 		register_annotation(MethodInfo("@export_subgroup", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_SUBGROUP>, varray(""));
 		// Metadata annotation.
-		// TODO: Can we make it so that "value" is optional and defaults to "true", making it easy to do e.g. @meta("some_tag")?
-		register_annotation(MethodInfo("@meta", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)), AnnotationInfo::CLASS_LEVEL, &GDScriptParser::meta_annotation, varray(), false);
+		register_annotation(MethodInfo("@meta", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)), AnnotationInfo::CLASS_LEVEL, &GDScriptParser::meta_annotation, varray(true));
 		// Warning annotations.
 		register_annotation(MethodInfo("@warning_ignore", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::CLASS_LEVEL | AnnotationInfo::STATEMENT, &GDScriptParser::warning_ignore_annotation, varray(), true);
 		register_annotation(MethodInfo("@warning_ignore_start", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::STANDALONE, &GDScriptParser::warning_ignore_region_annotations, varray(), true);
@@ -5177,7 +5176,7 @@ bool GDScriptParser::rpc_annotation(AnnotationNode *p_annotation, Node *p_target
 }
 
 bool GDScriptParser::meta_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
-	ERR_FAIL_COND_V(p_annotation->resolved_arguments.size() < 2, false);
+	ERR_FAIL_COND_V(p_annotation->resolved_arguments.is_empty(), false);
 	ERR_FAIL_COND_V(!Variant::can_convert(p_annotation->resolved_arguments[0].get_type(), Variant::STRING_NAME), false);
 
 	Script::MetaTargetType target_type;
@@ -5225,9 +5224,10 @@ bool GDScriptParser::meta_annotation(AnnotationNode *p_annotation, Node *p_targe
 	}
 
 	StringName name = p_annotation->resolved_arguments[0];
+	Variant value = p_annotation->resolved_arguments.size() < 2 ? Variant(true) : p_annotation->resolved_arguments[1];
 	ScriptMetadata metadata;
 	metadata.name = name;
-	metadata.value = p_annotation->resolved_arguments[1];
+	metadata.value = value;
 	metadata.target_name = target_name;
 	metadata.target_container = String(".").join(class_path);
 	metadata.target_type = target_type;

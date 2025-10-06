@@ -776,7 +776,7 @@
 		<annotation name="@meta">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="value" type="Variant" />
+			<param index="1" name="value" type="Variant" default="true" />
 			<description>
 				Attach a piece of named metadata to the given class or class member. The metadata can then be read back at runtime using [method Script.get_script_meta].
 				[codeblock]
