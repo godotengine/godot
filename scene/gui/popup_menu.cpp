@@ -37,6 +37,7 @@
 #include "core/os/os.h"
 #include "scene/gui/menu_bar.h"
 #include "scene/gui/panel_container.h"
+#include "scene/main/timer.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
 

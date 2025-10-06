@@ -45,6 +45,7 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/separator.h"
+#include "scene/main/timer.h"
 #include "scene/resources/font.h"
 #include "servers/audio/audio_server.h"
 

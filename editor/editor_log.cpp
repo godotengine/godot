@@ -42,6 +42,7 @@
 #include "editor/themes/editor_scale.h"
 #include "modules/regex/regex.h"
 #include "scene/gui/separator.h"
+#include "scene/main/timer.h"
 #include "scene/resources/font.h"
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
