@@ -159,80 +159,38 @@ PropertyInfo Script::get_class_category() const {
 
 #endif // TOOLS_ENABLED
 
-bool Script::has_class_meta(const StringName &p_name) const {
-	return script_metadata.has(p_name);
+Dictionary ScriptMetadata::to_dictionary() const {
+	Dictionary result;
+	result[StringName("target_container")] = target_container;
+	result[StringName("target_name")] = target_name;
+	result[StringName("target_type")] = target_type;
+	result[StringName("value")] = value;
+	return result;
 }
 
-void Script::set_class_meta(const StringName &p_name, const Variant &p_value) {
-	script_metadata[p_name] = p_value;
-}
-
-void Script::remove_class_meta(const StringName &p_name) {
-	script_metadata.erase(p_name);
-}
-
-Variant Script::get_class_meta(const StringName &p_name, const Variant &p_default) const {
-	if (!script_metadata.has(p_name)) {
-		if (p_default != Variant()) {
-			return p_default;
-		} else {
-			ERR_FAIL_V_MSG(Variant(), vformat("The script does not have any 'meta' values with the key '%s'.", p_name));
+TypedArray<Dictionary> Script::get_script_meta(const StringName &p_name) const {
+	Array result;
+	if (script_metadata.has(p_name)) {
+		for (const auto& meta : script_metadata[p_name]) {
+			result.append(meta.to_dictionary());
 		}
-	}
-	return script_metadata[p_name];
-}
-
-TypedArray<StringName> Script::get_class_meta_list() const {
-	TypedArray<StringName> result;
-	for (const auto &[key, _] : script_metadata) {
-		result.append(key);
 	}
 	return result;
 }
 
-bool Script::has_member_meta(const StringName &p_member, const StringName &p_name) const {
-	return member_metadata.has(p_name);
-}
-
-void Script::set_member_meta(const StringName &p_member, const StringName &p_name, const Variant &p_value) {
-	if (!member_metadata.has(p_member)) {
-		member_metadata.insert(p_member, HashMap<StringName, Variant>());
-	}
-	member_metadata[p_member][p_name] = p_value;
-}
-
-void Script::remove_member_meta(const StringName &p_member, const StringName &p_name) {
-	if (member_metadata.has(p_member)) {
-		member_metadata.erase(p_name);
-	}
-}
-
-Variant Script::get_member_meta(const StringName &p_member, const StringName &p_name, const Variant &p_default) const {
-	if (member_metadata.has(p_member)) {
-		if (!member_metadata[p_member].has(p_name)) {
-			if (p_default != Variant()) {
-				return p_default;
-			} else {
-				ERR_FAIL_V_MSG(Variant(), vformat("The member does not have any 'meta' values with the key '%s'.", p_name));
-			}
-		}
-		return member_metadata[p_member][p_name];
-	}
-	if (p_default != Variant()) {
-		return p_default;
-	} else {
-		ERR_FAIL_V_MSG(Variant(), vformat("The script does not have a member '%s' with 'meta' values.", p_member));
-	}
-}
-
-TypedArray<StringName> Script::get_member_meta_list(const StringName &p_member) const {
-	TypedArray<StringName> result;
-	if (member_metadata.has(p_member)) {
-		for (const auto &[key, _] : member_metadata[p_member]) {
-			result.append(key);
-		}
+PackedStringArray Script::get_script_meta_list() const {
+	PackedStringArray result;
+	for (const auto &[meta_name, _] : script_metadata) {
+		result.append(meta_name);
 	}
 	return result;
+}
+
+void Script::copy_script_meta_from(const HashMap<StringName, Vector<ScriptMetadata>> &p_source) {
+	script_metadata.clear();
+	for (const auto &[key, value] : p_source) {
+		script_metadata.insert(key, value);
+	}
 }
 
 void Script::_bind_methods() {
@@ -261,18 +219,17 @@ void Script::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Script::_get_rpc_config_bind);
 
-	ClassDB::bind_method(D_METHOD("has_class_meta", "name"), &Script::has_class_meta);
-	ClassDB::bind_method(D_METHOD("set_class_meta", "name", "value"), &Script::set_class_meta);
-	ClassDB::bind_method(D_METHOD("remove_class_meta", "name"), &Script::remove_class_meta);
-	ClassDB::bind_method(D_METHOD("get_class_meta", "name", "default"), &Script::get_class_meta, DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("get_class_meta_list"), &Script::get_class_meta_list);
-	ClassDB::bind_method(D_METHOD("has_member_meta", "name"), &Script::has_member_meta);
-	ClassDB::bind_method(D_METHOD("set_member_meta", "name", "value"), &Script::set_member_meta);
-	ClassDB::bind_method(D_METHOD("remove_member_meta", "name"), &Script::remove_member_meta);
-	ClassDB::bind_method(D_METHOD("get_member_meta", "name", "default"), &Script::get_member_meta, DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("get_member_meta_list"), &Script::get_member_meta_list);
+	ClassDB::bind_method(D_METHOD("get_script_meta", "name"), &Script::get_script_meta);
+	ClassDB::bind_method(D_METHOD("get_script_meta_list"), &Script::get_script_meta_list);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
+
+	// TODO: Figure out why BIND_ENUM_CONSTANT doesn't work here.
+	ClassDB::bind_integer_constant(get_class_static(), StringName("MetaTargetType"), "META_TARGET_CLASS", META_TARGET_CLASS);
+	ClassDB::bind_integer_constant(get_class_static(), StringName("MetaTargetType"), "META_TARGET_VARIABLE", META_TARGET_VARIABLE);
+	ClassDB::bind_integer_constant(get_class_static(), StringName("MetaTargetType"), "META_TARGET_CONSTANT", META_TARGET_CONSTANT);
+	ClassDB::bind_integer_constant(get_class_static(), StringName("MetaTargetType"), "META_TARGET_SIGNAL", META_TARGET_SIGNAL);
+	ClassDB::bind_integer_constant(get_class_static(), StringName("MetaTargetType"), "META_TARGET_FUNCTION", META_TARGET_FUNCTION);
 }
 
 void Script::reload_from_file() {

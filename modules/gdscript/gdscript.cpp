@@ -579,14 +579,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 						break; // Nothing.
 				}
 			}
-			for (const auto& [key, value] : parser.get_script_meta_annotations()) {
-				set_class_meta(key, value);
-			}
-			for (const auto& [member, member_meta] : parser.get_member_meta_annotations()) {
-				for (const auto& [key, value] : member_meta) {
-					set_member_meta(member, key, value);
-				}
-			}
+			copy_script_meta_from(parser.get_script_metadata());
 		} else {
 			placeholder_fallback_enabled = true;
 			return false;
@@ -861,14 +854,7 @@ Error GDScript::reload(bool p_keep_state) {
 
 	can_run = ScriptServer::is_scripting_enabled() || parser.is_tool();
 
-	for (const auto& [key, value] : parser.get_script_meta_annotations()) {
-		set_class_meta(key, value);
-	}
-	for (const auto& [member, member_meta] : parser.get_member_meta_annotations()) {
-		for (const auto& [key, value] : member_meta) {
-			set_member_meta(member, key, value);
-		}
-	}
+	copy_script_meta_from(parser.get_script_metadata());
 
 	GDScriptCompiler compiler;
 	err = compiler.compile(&parser, this, p_keep_state);

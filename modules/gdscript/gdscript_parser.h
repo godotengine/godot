@@ -1400,9 +1400,7 @@ private:
 	static HashMap<StringName, AnnotationInfo> valid_annotations;
 	List<AnnotationNode *> annotation_stack;
 
-	// member name -> metadata name -> value
-	HashMap<StringName, HashMap<StringName, Variant>> member_meta_annotations;
-	HashMap<StringName, Variant> script_meta_annotations;
+	HashMap<StringName, Vector<ScriptMetadata>> script_metadata;
 
 	typedef ExpressionNode *(GDScriptParser::*ParseFunction)(ExpressionNode *p_previous_operand, bool p_can_assign);
 	// Higher value means higher precedence (i.e. is evaluated first).
@@ -1621,8 +1619,7 @@ public:
 		// TODO: Keep track of deps.
 		return List<String>();
 	}
-	const HashMap<StringName, Variant> get_script_meta_annotations() const { return script_meta_annotations; }
-	const HashMap<StringName, HashMap<StringName, Variant>> get_member_meta_annotations() const { return member_meta_annotations; }
+	const HashMap<StringName, Vector<ScriptMetadata>> get_script_metadata() const { return script_metadata; }
 
 #ifdef DEBUG_ENABLED
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }

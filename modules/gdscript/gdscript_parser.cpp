@@ -5180,33 +5180,61 @@ bool GDScriptParser::meta_annotation(AnnotationNode *p_annotation, Node *p_targe
 	ERR_FAIL_COND_V(p_annotation->resolved_arguments.size() < 2, false);
 	ERR_FAIL_COND_V(!Variant::can_convert(p_annotation->resolved_arguments[0].get_type(), Variant::STRING_NAME), false);
 
-	StringName member_name;
+	Script::MetaTargetType target_type;
+	StringName target_name;
 	switch (p_target->type) {
-		case Node::CLASS:
-			// TODO: Can we make it work for inner classes and inner class members?
-			ERR_FAIL_COND_V_MSG(static_cast<ClassNode *>(p_target)->outer != nullptr, false, R"("@meta" annotation does not support inner classes.)");
-			script_meta_annotations.insert(p_annotation->resolved_arguments[0], p_annotation->resolved_arguments[1]);
-			return true;
-		case Node::VARIABLE:
-			member_name = static_cast<VariableNode *>(p_target)->identifier->name;
-			break;
-		case Node::CONSTANT:
-			member_name = static_cast<ConstantNode *>(p_target)->identifier->name;
-			break;
-		case Node::SIGNAL:
-			member_name = static_cast<SignalNode *>(p_target)->identifier->name;
-			break;
-		case Node::FUNCTION:
-			member_name = static_cast<FunctionNode *>(p_target)->identifier->name;
-			break;
+		case Node::CLASS: {
+			target_type = Script::MetaTargetType::META_TARGET_CLASS;
+			ClassNode *class_node = static_cast<ClassNode *>(p_target);
+			if (class_node->identifier != nullptr) {
+				target_name = class_node->identifier->name;
+			}
+		} break;
+		case Node::VARIABLE: {
+			target_type = Script::MetaTargetType::META_TARGET_VARIABLE;
+			VariableNode *variable_node = static_cast<VariableNode *>(p_target);
+			target_name = variable_node->identifier->name;
+		} break;
+		case Node::CONSTANT: {
+			target_type = Script::MetaTargetType::META_TARGET_CONSTANT;
+			ConstantNode *constant_node = static_cast<ConstantNode *>(p_target);
+			target_name = constant_node->identifier->name;
+		} break;
+		case Node::SIGNAL: {
+			target_type = Script::MetaTargetType::META_TARGET_SIGNAL;
+			SignalNode *signal_node = static_cast<SignalNode *>(p_target);
+			target_name = signal_node->identifier->name;
+		} break;
+		case Node::FUNCTION: {
+			target_type = Script::MetaTargetType::META_TARGET_FUNCTION;
+			FunctionNode *function_noade = static_cast<FunctionNode *>(p_target);
+			target_name = function_noade->identifier->name;
+		} break;
 		default:
-			push_error(R"("@meta" annotation does not apply here.)");
-			return false;
+			ERR_FAIL_V_MSG(false, R"("@meta" annotation does not apply here.)");
 	}
-	if (!member_meta_annotations.has(member_name)) {
-		member_meta_annotations.insert(member_name, HashMap<StringName, Variant>());
+
+	// Figure out the fully qualified path of the class containing this target.
+	PackedStringArray class_path;
+	ClassNode *containing_class = p_class;
+	while (containing_class != nullptr) {
+		if (containing_class->identifier != nullptr) {
+			class_path.insert(0, containing_class->identifier->name);
+		}
+		containing_class = containing_class->outer;
 	}
-	member_meta_annotations[member_name].insert(p_annotation->resolved_arguments[0], p_annotation->resolved_arguments[1]);
+
+	StringName name = p_annotation->resolved_arguments[0];
+	ScriptMetadata metadata;
+	metadata.name = name;
+	metadata.value = p_annotation->resolved_arguments[1]; // <- Only works for primitives??;
+	metadata.target_name = target_name;
+	metadata.target_container = String(".").join(class_path);
+	metadata.target_type = target_type;
+	if (!script_metadata.has(name)) {
+		script_metadata.insert(name, Vector<ScriptMetadata>());
+	}
+	script_metadata[name].append(metadata);
 	return true;
 }
 

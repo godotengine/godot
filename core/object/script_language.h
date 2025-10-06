@@ -112,6 +112,17 @@ public:
 
 class PlaceHolderScriptInstance;
 
+class ScriptMetadata {
+public:
+	StringName name;
+	StringName target_container;
+	StringName target_name;
+	int target_type; // Script::MetaTargetType
+	Variant value;
+
+	Dictionary to_dictionary() const;
+};
+
 class Script : public Resource {
 	GDCLASS(Script, Resource);
 	OBJ_SAVE_TYPE(Script);
@@ -140,11 +151,18 @@ protected:
 	}
 
 private:
-	HashMap<StringName, Variant> script_metadata;
-	HashMap<StringName, HashMap<StringName, Variant>> member_metadata;
+	HashMap<StringName, Vector<ScriptMetadata>> script_metadata;
 
 public:
 	static constexpr AncestralClass static_ancestral_class = AncestralClass::SCRIPT;
+
+	enum MetaTargetType {
+		META_TARGET_CLASS,
+		META_TARGET_VARIABLE,
+		META_TARGET_CONSTANT,
+		META_TARGET_SIGNAL,
+		META_TARGET_FUNCTION
+	};
 
 	virtual void reload_from_file() override;
 
@@ -164,18 +182,9 @@ public:
 	virtual void set_source_code(const String &p_code) = 0;
 	virtual Error reload(bool p_keep_state = false) = 0;
 
-	// TODO: Is there a better interface that works for both class- and member-level metadata?
-	bool has_class_meta(const StringName &p_name) const;
-	void set_class_meta(const StringName &p_name, const Variant &p_value);
-	void remove_class_meta(const StringName &p_name);
-	Variant get_class_meta(const StringName &p_name, const Variant &p_default = Variant()) const;
-	TypedArray<StringName> get_class_meta_list() const;
-
-	bool has_member_meta(const StringName &p_member, const StringName &p_name) const;
-	void set_member_meta(const StringName &p_member, const StringName &p_name, const Variant &p_value);
-	void remove_member_meta(const StringName &p_member, const StringName &p_name);
-	Variant get_member_meta(const StringName &p_member, const StringName &p_name, const Variant &p_default = Variant()) const;
-	TypedArray<StringName> get_member_meta_list(const StringName &p_member) const;
+	TypedArray<Dictionary> get_script_meta(const StringName &p_name) const;
+	PackedStringArray get_script_meta_list() const;
+	void copy_script_meta_from(const HashMap<StringName, Vector<ScriptMetadata>> &p_source);
 
 #ifdef TOOLS_ENABLED
 	virtual StringName get_doc_class_name() const = 0;
