@@ -35,6 +35,7 @@
 
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
+#include "core/variant/array.h"
 
 #define KEY_CAMERAS String("cameras")
 #define KEY_CAPABILITIES String("capabilities")
