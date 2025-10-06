@@ -132,6 +132,9 @@ public:
 #ifdef DEBUG_ENABLED
 	static SafeNumeric<uint64_t> total_node_count;
 #endif
+	enum {
+		UNIQUE_SCENE_ID_UNASSIGNED = 0
+	};
 
 	void _update_process(bool p_enable, bool p_for_children);
 
@@ -280,6 +283,8 @@ private:
 
 		mutable bool is_translation_domain_inherited : 1;
 		mutable bool is_translation_domain_dirty : 1;
+
+		int32_t unique_scene_id = UNIQUE_SCENE_ID_UNASSIGNED;
 
 		mutable NodePath *path_cache = nullptr;
 
@@ -526,6 +531,9 @@ public:
 	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true);
 	Node *get_parent() const;
 	Node *find_parent(const String &p_pattern) const;
+
+	void set_unique_scene_id(int32_t p_unique_id);
+	int32_t get_unique_scene_id() const;
 
 	Window *get_window() const;
 	Window *get_non_popup_window() const;
