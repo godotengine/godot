@@ -44,6 +44,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
+#include "core/string/string_builder.h"
 #include "core/variant/dictionary.h"
 #include "core/variant/variant.h"
 #include "editor/settings/editor_settings.h"
@@ -146,6 +147,10 @@ static void run_test_cfg(const String &p_config_path) {
 	CHECK_REFACTOR_DICT_ENTRY(dict_element, key_name, STRING);             \
 	FAIL_COND_MSG(((String)dict_element[#key_name]).is_empty(), "refactor." #key_name " is invalid")
 
+	typedef ScriptLanguage::RefactorRenameSymbolResult::Match Match;
+	typedef LocalVector<Match> MatchList;
+	typedef HashMap<String, MatchList> MatchMap;
+
 	String config_path = ProjectSettings::get_singleton()->localize_path(p_config_path);
 
 	String file_message = vformat("[File] %s", config_path);
@@ -180,19 +185,27 @@ static void run_test_cfg(const String &p_config_path) {
 		}
 
 		// [output] matches
-		Dictionary expected_result_matches = conf.get_value("output", "matches", Dictionary());
-		for (Variant matches_array_key : expected_result_matches.keys()) {
-			FAIL_COND_MSG(matches_array_key.get_type() != Variant::Type::STRING, "match key is not a String");
-			FAIL_COND_MSG(expected_result_matches[matches_array_key].get_type() != Variant::Type::ARRAY, "match value is not an Array");
-			Array matches_array = expected_result_matches[matches_array_key];
-			for (Variant match : matches_array) {
-				FAIL_COND_MSG(match.get_type() != Variant::Type::DICTIONARY, "match entry is not a Dictionary");
-				Dictionary match_dict = match;
-
+		MatchMap expected_result_matches;
+		Dictionary expected_result_matches_dict = conf.get_value("output", "matches", Dictionary());
+		for (Variant matches_array_key_variant : expected_result_matches_dict.keys()) {
+			FAIL_COND_MSG(matches_array_key_variant.get_type() != Variant::Type::STRING, "match key is not a String");
+			FAIL_COND_MSG(expected_result_matches_dict[matches_array_key_variant].get_type() != Variant::Type::ARRAY, "match value is not an Array");
+			String matches_array_key = matches_array_key_variant;
+			Array matches_array = expected_result_matches_dict[matches_array_key_variant];
+			for (Variant match_variant : matches_array) {
+				FAIL_COND_MSG(match_variant.get_type() != Variant::Type::DICTIONARY, "match entry is not a Dictionary");
+				Dictionary match_dict = match_variant;
 				CHECK_REFACTOR_DICT_ENTRY_POSITION(match_dict, start_line);
 				CHECK_REFACTOR_DICT_ENTRY_POSITION(match_dict, start_column);
 				CHECK_REFACTOR_DICT_ENTRY_POSITION(match_dict, end_line);
 				CHECK_REFACTOR_DICT_ENTRY_POSITION(match_dict, end_column);
+
+				Match match = { match_dict["start_line"],
+					match_dict["start_column"],
+					match_dict["end_line"],
+					match_dict["end_column"] };
+				expected_result_matches[matches_array_key_variant]
+						.push_back(match);
 			}
 		}
 
@@ -223,41 +236,88 @@ static void run_test_cfg(const String &p_config_path) {
 			CHECK(refactor_to == refactor_result.new_symbol);
 		}
 
-		// Comparing results.
-		for (KeyValue<String, LocalVector<ScriptLanguage::RefactorRenameSymbolResult::Match>> KV : refactor_result.matches) {
-			Array expected_result_matches_array;
-			if (expected_result_matches.size() > 0) {
-				CHECK_MESSAGE(expected_result_matches.has(KV.key), vformat("unexpected match for \"%s\" not defined in the cfg", KV.key));
-				CHECK_MESSAGE(expected_result_matches[KV.key].get_type() == Variant::Type::ARRAY, vformat("number of matches don't match the expected result for \"%s\"", KV.key));
-				CHECK_MESSAGE((uint32_t)((Array)expected_result_matches[KV.key]).size() == KV.value.size(), vformat("number of matches don't match the expected result for \"%s\"", KV.key));
-				expected_result_matches_array = expected_result_matches[KV.key];
+		auto indent_string = [](const String &p_text, uint8_t p_size) -> String {
+			PackedStringArray indent_result;
+			for (const String &line : p_text.split("\n")) {
+				indent_result.append(String(" ").repeat(p_size) + line);
 			}
+			return String("\n").join(indent_result);
+		};
 
-			for (ScriptLanguage::RefactorRenameSymbolResult::Match match : KV.value) {
-				bool found_result = false;
+		auto matchlist_to_string = [&indent_string](const MatchList &p_match_list) -> String {
+			StringBuilder matchlist_string;
+			matchlist_string.append("[\n");
 
-				if (expected_result_matches.size() > 0) {
-					for (Dictionary expected_result_match : expected_result_matches_array) {
-						ScriptLanguage::RefactorRenameSymbolResult::Match refactor_match = {
-							expected_result_match["start_line"],
-							expected_result_match["start_column"],
-							expected_result_match["end_line"],
-							expected_result_match["end_column"]
-						};
-						if (refactor_match == match) {
-							found_result = true;
-							break;
-						}
-					}
+			bool first_match = true;
+			for (const Match &match : p_match_list) {
+				if (first_match) {
+					first_match = false;
 				} else {
-					print_line(vformat("[DEBUG] %s: %s", KV.key, match.to_string()));
-					MESSAGE(vformat("[DEBUG] %s: %s", KV.key, match.to_string()));
-					found_result = true;
+					matchlist_string.append(",\n");
+				}
+				matchlist_string.append(indent_string(match.to_string(), 4));
+			}
+			matchlist_string.append("\n]");
+			return matchlist_string.as_string();
+		};
+
+		auto matchmap_to_string = [&matchlist_to_string](const MatchMap &p_match_map) -> String {
+			StringBuilder match_string;
+			match_string.append("{\n");
+			bool first_match_entry = true;
+			for (KeyValue<String, LocalVector<Match>> KV : p_match_map) {
+				if (first_match_entry) {
+					first_match_entry = false;
+				} else {
+					match_string.append(",\n");
 				}
 
-				CHECK_MESSAGE(found_result, vformat("got a %s for \"%s\", but it wasn't expected", match.to_string(), KV.key));
+				StringBuilder match_file_entry;
+				match_file_entry.append(vformat("\"%s\": %s", KV.key, matchlist_to_string(KV.value)));
+			}
+
+			match_string.append("\n}\n");
+			return match_string.as_string();
+		};
+
+		expected_result_matches.sort();
+		refactor_result.matches.sort();
+
+		// Comparing results.
+		for (KeyValue<String, LocalVector<Match>> KV : refactor_result.matches) {
+			String refactor_result_key = KV.key;
+			LocalVector<Match> refactor_result_key_matches = KV.value;
+
+			if (expected_result_matches.size() > 0) {
+				CHECK_MESSAGE(expected_result_matches.has(refactor_result_key), vformat("unexpected match for \"%s\" not defined in the cfg", refactor_result_key));
+			}
+
+			for (Match &match : KV.value) {
+				bool found_match = false;
+				if (expected_result_matches.has(KV.key)) {
+					for (Match &expected_result_match : expected_result_matches[KV.key]) {
+						if (match != expected_result_match) {
+							continue;
+						}
+						found_match = true;
+						break;
+					}
+				} else {
+					MESSAGE(vformat("[DEBUG] %s: %s", KV.key, match.to_string()));
+					found_match = true;
+				}
+
+				CHECK_MESSAGE(found_match, vformat("got a %s for \"%s\", but it wasn't expected", match.to_string(), KV.key));
+			}
+
+			if (expected_result_matches.has(refactor_result_key)) {
+				INFO(vformat("\nFor \"%s\":\nExpected: %s\nGot: %s", refactor_result_key, matchlist_to_string(expected_result_matches[refactor_result_key]), matchlist_to_string(refactor_result_key_matches)));
+				CHECK_MESSAGE(expected_result_matches[refactor_result_key].size() == refactor_result_key_matches.size(), vformat("unexpected number of matches for \"%s\", expected %s but got %s", refactor_result_key, expected_result_matches[refactor_result_key].size(), refactor_result_key_matches.size()));
 			}
 		}
+
+		INFO(vformat("\nExpected: %s\nGot: %s", matchmap_to_string(expected_result_matches), matchmap_to_string(refactor_result.matches)));
+		CHECK(expected_result_matches.size() == refactor_result.matches.size());
 	} // SUBCASE
 
 #undef CHECK_REFACTOR_ENTRY_SYMBOL
