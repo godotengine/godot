@@ -41,8 +41,8 @@
 #include <cstdlib>
 
 class OS {
-	static OS *singleton;
-	static uint64_t target_ticks;
+	static inline OS *singleton = nullptr;
+	static inline uint64_t target_ticks = 0;
 	String _execpath;
 	List<String> _cmdline;
 	List<String> _user_args;
