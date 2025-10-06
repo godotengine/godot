@@ -4253,7 +4253,20 @@ static Error _refactor_rename_symbol_match_from_class_loop_nodes(const LocalVect
 				case GDScriptParser::Node::ENUM: {
 					member_type = RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_ENUM;
 					GDScriptParser::EnumNode *member_enum = static_cast<GDScriptParser::EnumNode *>(p_source_node);
-					member_identifier = member_enum->identifier;
+
+					if (member_enum->identifier == p_identifier_node) {
+						_refactor_rename_symbol_add_match(p_path, p_identifier_node, r_result);
+						return true;
+					}
+
+					for (GDScriptParser::EnumNode::Value &enum_value : member_enum->values) {
+						if (enum_value.identifier == p_identifier_node) {
+							_refactor_rename_symbol_add_match(p_path, p_identifier_node, r_result);
+							return true;
+						}
+					}
+
+					return false;
 				} break;
 				case GDScriptParser::Node::FUNCTION: {
 					member_type = RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_FUNCTION;
@@ -4300,7 +4313,6 @@ static Error _refactor_rename_symbol_match_from_class_loop_nodes(const LocalVect
 		}
 
 		_refactor_rename_symbol_add_match(p_path, p_identifier_node, r_result);
-
 		return true;
 	};
 
