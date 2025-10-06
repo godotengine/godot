@@ -6420,6 +6420,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 	// Note: p_scene_parent and p_scene_root must either both be null or both be valid.
 	_set_node_tree_owner(current_node, p_scene_root);
 	current_node->set_transform(gltf_node->transform);
+	current_node->set_visible(gltf_node->visible);
 	current_node->merge_meta_from(*gltf_node);
 	p_state->scene_nodes.insert(p_node_index, current_node);
 	for (int i = 0; i < gltf_node->children.size(); ++i) {
@@ -6890,6 +6891,14 @@ Ref<GLTFObjectModelProperty> GLTFDocument::import_object_model_property(Ref<GLTF
 			}
 			// Else, Godot's MeshInstance3D does not expose the blend shape weights as one property.
 			// But that's fine, we handle this case in _parse_animation_pointer instead.
+		} else if (node_prop == "extensions") {
+			ERR_FAIL_COND_V(split.size() < 5, ret);
+			const String &ext_name = split[3];
+			const String &ext_prop = split[4];
+			if (ext_name == "KHR_node_visibility" && ext_prop == "visible") {
+				ret->append_path_to_property(node_path, "visible");
+				ret->set_types(Variant::BOOL, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_BOOL);
+			}
 		}
 	} else if (split[0] == "cameras") {
 		const String &camera_prop = split[2];
@@ -7197,7 +7206,7 @@ Ref<GLTFObjectModelProperty> GLTFDocument::export_object_model_property(Ref<GLTF
 			split_json_pointer.append("weights");
 			split_json_pointer.append(weight_index_string);
 		}
-		// Transform properties. Check for all 3D nodes if we haven't resolved the JSON pointer yet.
+		// Transform and visibility properties. Check for all 3D nodes if we haven't resolved the JSON pointer yet.
 		// Note: Do not put this in an `else`, because otherwise this will not be reached.
 		if (split_json_pointer.is_empty() && Object::cast_to<Node3D>(target_object)) {
 			split_json_pointer.append("nodes");
@@ -7219,6 +7228,11 @@ Ref<GLTFObjectModelProperty> GLTFDocument::export_object_model_property(Ref<GLTF
 			} else if (target_prop == "global_transform") {
 				split_json_pointer.append("globalMatrix");
 				ret->set_types(Variant::TRANSFORM3D, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4X4);
+			} else if (target_prop == "visible") {
+				split_json_pointer.append("extensions");
+				split_json_pointer.append("KHR_node_visibility");
+				split_json_pointer.append("visible");
+				ret->set_types(Variant::BOOL, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_BOOL);
 			} else {
 				split_json_pointer.clear();
 			}
