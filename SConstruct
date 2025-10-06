@@ -1163,6 +1163,12 @@ for key in (emitters := env.StaticObject.builder.emitter):
 for key in (emitters := env.SharedObject.builder.emitter):
     emitters[key] = ListEmitter([methods.redirect_emitter] + env.Flatten(emitters[key]))
 
+# Ensure external paths are scanned for includes.
+env["CSCANNERADVANCED"] = methods.c_scanner_advanced()
+for key in (scanner_base := env["SCANNERS"][0]).get_skeys(env):
+    if isinstance(scanner_base.function[key], type(CScan)):
+        scanner_base.function[key] = env["CSCANNERADVANCED"]
+
 # Prepend compiler launchers
 if "c_compiler_launcher" in env:
     env["CC"] = " ".join([env["c_compiler_launcher"], env["CC"]])

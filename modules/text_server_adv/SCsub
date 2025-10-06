@@ -450,7 +450,14 @@ if env["builtin_icu4c"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    if not env.editor_build:
+    if env.editor_build:
+        env_icu.CommandNoCache(
+            "#thirdparty/icu4c/icudata.gen.h",
+            "#thirdparty/icu4c/icudt_godot.dat",
+            env.Run(text_server_adv_builders.make_icu_data),
+        )
+        env_text_server_adv.Prepend(CPPEXTPATH=["#thirdparty/icu4c/"])
+    else:
         thirdparty_sources += ["icu_data/icudata_stub.cpp"]
 
     env_icu.Prepend(CPPEXTPATH=["#thirdparty/icu4c/common/", "#thirdparty/icu4c/i18n/"])
@@ -486,15 +493,6 @@ if env["builtin_icu4c"]:
 
     lib = env_icu.add_library("icu_builtin", thirdparty_sources)
     thirdparty_obj += lib
-
-    if env.editor_build:
-        icudata = env_icu.CommandNoCache(
-            "#thirdparty/icu4c/icudata.gen.h",
-            "#thirdparty/icu4c/icudt_godot.dat",
-            env.Run(text_server_adv_builders.make_icu_data),
-        )
-        env_text_server_adv.Prepend(CPPEXTPATH=["#thirdparty/icu4c/"])
-        env_icu.Depends(lib, icudata)
 
     # Needs to be appended to arrive after libscene in the linker call,
     # but we don't want it to arrive *after* system libs, so manual hack
