@@ -1815,8 +1815,12 @@ void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List
 				pf == "is_class_enabled" || pf == "is_class_enum_bitfield" || pf == "class_get_api_type");
 	}
 	if (first_argument_is_class || pf == "is_parent_class") {
-		for (const String &E : get_class_list()) {
-			r_options->push_back(E.quote());
+		LocalVector<StringName> classes;
+		::ClassDB::get_class_list(classes);
+		for (const StringName &E : classes) {
+			if (::ClassDB::is_class_exposed(E)) {
+				r_options->push_back(E.operator String().quote());
+			}
 		}
 	}
 
