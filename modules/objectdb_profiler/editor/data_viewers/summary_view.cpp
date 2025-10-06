@@ -36,71 +36,51 @@
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
-#include "scene/resources/style_box_flat.h"
 
 SnapshotSummaryView::SnapshotSummaryView() {
 	set_name(TTRC("Summary"));
 
-	set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-
-	MarginContainer *mc = memnew(MarginContainer);
-	mc->add_theme_constant_override("margin_left", 5);
-	mc->add_theme_constant_override("margin_right", 5);
-	mc->add_theme_constant_override("margin_top", 5);
-	mc->add_theme_constant_override("margin_bottom", 5);
-	mc->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
+	MarginContainer *margin = memnew(MarginContainer);
+	margin->add_theme_constant_override("margin_left", 5);
+	margin->add_theme_constant_override("margin_right", 5);
+	margin->add_theme_constant_override("margin_top", 5);
+	margin->add_theme_constant_override("margin_bottom", 5);
 	PanelContainer *content_wrapper = memnew(PanelContainer);
-	content_wrapper->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
-	Ref<StyleBoxFlat> content_wrapper_sbf;
-	content_wrapper_sbf.instantiate();
-	content_wrapper_sbf->set_bg_color(EditorNode::get_singleton()->get_editor_theme()->get_color("dark_color_2", "Editor"));
-	content_wrapper->add_theme_style_override(SceneStringName(panel), content_wrapper_sbf);
-	content_wrapper->add_child(mc);
-	add_child(content_wrapper);
+	content_wrapper->set_theme_type_variation("PanelContainerDarkFlat");
+	content_wrapper->add_child(margin);
 
 	VBoxContainer *content = memnew(VBoxContainer);
-	mc->add_child(content);
-	content->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
+	margin->add_child(content);
+	content_wrapper->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+	add_child(content_wrapper);
 
-	PanelContainer *pc = memnew(PanelContainer);
-	Ref<StyleBoxFlat> sbf;
-	sbf.instantiate();
-	sbf->set_bg_color(EditorNode::get_singleton()->get_editor_theme()->get_color("dark_color_3", "Editor"));
-	pc->add_theme_style_override("panel", sbf);
-	content->add_child(pc);
-	pc->set_anchors_preset(LayoutPreset::PRESET_TOP_WIDE);
+	PanelContainer *panel = memnew(PanelContainer);
+	panel->set_theme_type_variation("PanelContainerDarkFlat");
+	content->add_child(panel);
 	Label *title = memnew(Label(TTRC("ObjectDB Snapshot Summary")));
-	pc->add_child(title);
-	title->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
-	title->set_vertical_alignment(VerticalAlignment::VERTICAL_ALIGNMENT_CENTER);
+	panel->add_child(title);
+	title->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	title->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 
 	explainer_text = memnew(CenterContainer);
-	explainer_text->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	explainer_text->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	explainer_text->set_v_size_flags(SIZE_EXPAND_FILL);
 	content->add_child(explainer_text);
 	VBoxContainer *explainer_lines = memnew(VBoxContainer);
 	explainer_text->add_child(explainer_lines);
-	Label *l1 = memnew(Label(TTRC("Press 'Take ObjectDB Snapshot' to snapshot the ObjectDB.")));
-	Label *l2 = memnew(Label(TTRC("Memory in Godot is either owned natively by the engine or owned by the ObjectDB.")));
-	Label *l3 = memnew(Label(TTRC("ObjectDB Snapshots capture only memory owned by the ObjectDB.")));
-	l1->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
-	l2->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
-	l3->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
-	explainer_lines->add_child(l1);
-	explainer_lines->add_child(l2);
-	explainer_lines->add_child(l3);
+	Label *label = memnew(Label());
+	label->set_text(TTRC("Press 'Take ObjectDB Snapshot' to snapshot the ObjectDB.\n\nMemory in Godot is either owned natively by the engine or owned by the ObjectDB.\n\nObjectDB Snapshots capture only memory owned by the ObjectDB."));
+	label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	explainer_lines->add_child(label);
 
-	ScrollContainer *sc = memnew(ScrollContainer);
-	sc->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
-	sc->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	sc->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	content->add_child(sc);
+	ScrollContainer *scroll = memnew(ScrollContainer);
+	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	content->add_child(scroll);
 
 	blurb_list = memnew(VBoxContainer);
-	sc->add_child(blurb_list);
-	blurb_list->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	blurb_list->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	scroll->add_child(blurb_list);
+	blurb_list->set_v_size_flags(SIZE_EXPAND_FILL);
+	blurb_list->set_h_size_flags(SIZE_EXPAND_FILL);
 }
 
 void SnapshotSummaryView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) {
@@ -142,14 +122,14 @@ void SnapshotSummaryView::clear_snapshot() {
 }
 
 SummaryBlurb::SummaryBlurb(const String &p_title, const String &p_rtl_content) {
-	add_theme_constant_override("margin_left", 2);
-	add_theme_constant_override("margin_right", 2);
-	add_theme_constant_override("margin_top", 2);
-	add_theme_constant_override("margin_bottom", 2);
+	add_theme_constant_override("margin_left", 2 * EDSCALE);
+	add_theme_constant_override("margin_right", 2 * EDSCALE);
+	add_theme_constant_override("margin_top", 2 * EDSCALE);
+	add_theme_constant_override("margin_bottom", 2 * EDSCALE);
 
 	label = memnew(RichTextLabel);
 	label->add_theme_constant_override(SceneStringName(line_separation), 6);
-	label->set_text_direction(Control::TEXT_DIRECTION_INHERITED);
+	label->set_text_direction(TEXT_DIRECTION_INHERITED);
 	label->set_fit_content(true);
 	label->set_use_bbcode(true);
 	label->add_newline();
