@@ -1323,12 +1323,18 @@
 		<member name="input/ui_graph_follow_left.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to follow a [GraphNode] input port connection.
 		</member>
+		<member name="input/ui_graph_follow_left.web_macos" type="Dictionary" setter="" getter="">
+			macOS (web) specific override for the shortcut to follow a [GraphNode] input port connection.
+		</member>
 		<member name="input/ui_graph_follow_right" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to follow a [GraphNode] output port connection.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_graph_follow_right.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to follow a [GraphNode] output port connection.
+		</member>
+		<member name="input/ui_graph_follow_right.web_macos" type="Dictionary" setter="" getter="">
+			macOS (web) specific override for the shortcut to follow a [GraphNode] output port connection.
 		</member>
 		<member name="input/ui_home" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to go to the start position of a [Control] (e.g. first item in an [ItemList] or a [Tree]), matching the behavior of [constant KEY_HOME] on typical desktop UI systems.
@@ -1387,6 +1393,9 @@
 		<member name="input/ui_text_backspace_all_to_left.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to delete all text before the text cursor.
 		</member>
+		<member name="input/ui_text_backspace_all_to_left.web_macos" type="Dictionary" setter="" getter="">
+			macOS (web) specific override for the shortcut to delete all text before the text cursor.
+		</member>
 		<member name="input/ui_text_backspace_word" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to delete all characters before the cursor up until a whitespace or punctuation character.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -1394,17 +1403,26 @@
 		<member name="input/ui_text_backspace_word.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to delete a word.
 		</member>
+		<member name="input/ui_text_backspace_word.web_macos" type="Dictionary" setter="" getter="">
+			macOS (web) specific override for the shortcut to delete a word.
+		</member>
 		<member name="input/ui_text_caret_add_above" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to add an additional caret above every caret of a text.
 		</member>
 		<member name="input/ui_text_caret_add_above.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to add a caret above every caret.
 		</member>
+		<member name="input/ui_text_caret_add_above.web_macos" type="Dictionary" setter="" getter="">
+			macOS (web) specific override for the shortcut to add a caret above every caret.
+		</member>
 		<member name="input/ui_text_caret_add_below" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to add an additional caret below every caret of a text.
 		</member>
 		<member name="input/ui_text_caret_add_below.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to add a caret below every caret.
+		</member>
+		<member name="input/ui_text_caret_add_below.web_macos" type="Dictionary" setter="" getter="">
+			macOS (web) specific override for the shortcut to add a caret below every caret.
 		</member>
 		<member name="input/ui_text_caret_document_end" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move the text cursor to the end of the text.
@@ -1413,12 +1431,18 @@
 		<member name="input/ui_text_caret_document_end.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to move the text cursor to the end of the text.
 		</member>
+		<member name="input/ui_text_caret_document_end.web_macos" type="Dictionary" setter="" getter="">
+			macOS (web) specific override for the shortcut to move the text cursor to the end of the text.
+		</member>
 		<member name="input/ui_text_caret_document_start" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move the text cursor to the start of the text.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_document_start.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to move the text cursor to the start of the text.
+		</member>
+		<member name="input/ui_text_caret_document_start.web_macos" type="Dictionary" setter="" getter="">
+			macOS (web) specific override for the shortcut to move the text cursor to the start of the text.
 		</member>
 		<member name="input/ui_text_caret_down" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move the text cursor down.
@@ -1435,12 +1459,18 @@
 		<member name="input/ui_text_caret_line_end.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to move the text cursor to the end of the line.
 		</member>
+		<member name="input/ui_text_caret_line_end.web_macos" type="Dictionary" setter="" getter="">
+			macOS (web) specific override for the shortcut to move the text cursor to the end of the line.
+		</member>
 		<member name="input/ui_text_caret_line_start" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move the text cursor to the start of the line.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_line_start.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to move the text cursor to the start of the line.
+		</member>
+		<member name="input/ui_text_caret_line_start.web_macos" type="Dictionary" setter="" getter="">
+			macOS (web) specific override for the shortcut to move the text cursor to the start of the line.
 		</member>
 		<member name="input/ui_text_caret_page_down" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move the text cursor down one page.
@@ -1465,12 +1495,18 @@
 		<member name="input/ui_text_caret_word_left.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to move the text cursor back one word.
 		</member>
+		<member name="input/ui_text_caret_word_left.web_macos" type="Dictionary" setter="" getter="">
+			macOS (web) specific override for the shortcut to move the text cursor back one word.
+		</member>
 		<member name="input/ui_text_caret_word_right" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move the text cursor right to the next whitespace or punctuation.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_word_right.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to move the text cursor forward one word.
+		</member>
+		<member name="input/ui_text_caret_word_right.web_macos" type="Dictionary" setter="" getter="">
+			macOS (web) specific override for the shortcut to move the text cursor forward one word.
 		</member>
 		<member name="input/ui_text_clear_carets_and_selection" type="Dictionary" setter="" getter="">
 			If there's only one caret active and with a selection, clears the selection.
@@ -1504,12 +1540,18 @@
 		<member name="input/ui_text_delete_all_to_right.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to delete all text after the text cursor.
 		</member>
+		<member name="input/ui_text_delete_all_to_right.web_macos" type="Dictionary" setter="" getter="">
+			macOS (web) specific override for the shortcut to delete all text after the text cursor.
+		</member>
 		<member name="input/ui_text_delete_word" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to delete all characters after the cursor up until a whitespace or punctuation character.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_delete_word.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to delete a word after the text cursor.
+		</member>
+		<member name="input/ui_text_delete_word.web_macos" type="Dictionary" setter="" getter="">
+			macOS (web) specific override for the shortcut to delete a word after the text cursor.
 		</member>
 		<member name="input/ui_text_indent" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to indent the current line.
@@ -1534,12 +1576,18 @@
 		<member name="input/ui_text_scroll_down.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to scroll down one line.
 		</member>
+		<member name="input/ui_text_scroll_down.web_macos" type="Dictionary" setter="" getter="">
+			macOS (web) specific override for the shortcut to scroll down one line.
+		</member>
 		<member name="input/ui_text_scroll_up" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to scroll up one line of text.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_scroll_up.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to scroll up one line.
+		</member>
+		<member name="input/ui_text_scroll_up.web_macos" type="Dictionary" setter="" getter="">
+			macOS (web) specific override for the shortcut to scroll up one line.
 		</member>
 		<member name="input/ui_text_select_all" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to select all text.
@@ -1551,6 +1599,9 @@
 		</member>
 		<member name="input/ui_text_select_word_under_caret.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to select the word currently under the caret.
+		</member>
+		<member name="input/ui_text_select_word_under_caret.web_macos" type="Dictionary" setter="" getter="">
+			macOS (web) specific override for the shortcut to select the word currently under the caret.
 		</member>
 		<member name="input/ui_text_skip_selection_for_next_occurrence" type="Dictionary" setter="" getter="">
 			If no selection is currently active with the last caret in text fields, searches for the next occurrence of the word currently under the caret and moves the caret to the next occurrence. The action can be performed sequentially for other occurrences of the word under the last caret.
