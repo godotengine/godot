@@ -49,7 +49,6 @@ GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
 GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
 GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
 GODOT_CLANG_WARNING_IGNORE("-Wswitch")
-GODOT_MSVC_WARNING_PUSH
 
 #include <dxcapi.h>
 
