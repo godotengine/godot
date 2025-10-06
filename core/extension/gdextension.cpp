@@ -802,9 +802,6 @@ void GDExtension::_bind_methods() {
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_EDITOR);
 }
 
-GDExtension::GDExtension() {
-}
-
 GDExtension::~GDExtension() {
 	if (is_library_open()) {
 		close_library();

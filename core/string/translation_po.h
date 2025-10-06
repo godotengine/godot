@@ -97,6 +97,4 @@ public:
 #ifdef DEBUG_TRANSLATION_PO
 	void print_translation_map();
 #endif
-
-	TranslationPO() {}
 };
