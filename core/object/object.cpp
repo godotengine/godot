@@ -1047,18 +1047,8 @@ String Object::to_string() {
 	return "<" + get_class() + "#" + itos(get_instance_id()) + ">";
 }
 
-void Object::set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance) {
-	//this function is not meant to be used in any of these ways
-	ERR_FAIL_COND(p_script.is_null());
-	ERR_FAIL_NULL(p_instance);
-	ERR_FAIL_COND(script_instance != nullptr || !script.is_null());
-
-	script = p_script;
-	script_instance = p_instance;
-}
-
 void Object::set_script(const Variant &p_script) {
-	if (script == p_script) {
+	if (get_script() == p_script) {
 		return;
 	}
 
@@ -1067,8 +1057,6 @@ void Object::set_script(const Variant &p_script) {
 		ERR_FAIL_COND_MSG(s.is_null(), "Cannot set object script. Parameter should be null or a reference to a valid script.");
 		ERR_FAIL_COND_MSG(s->is_abstract(), vformat("Cannot set object script. Script '%s' should not be abstract.", s->get_path()));
 	}
-
-	script = p_script;
 
 	if (script_instance) {
 		memdelete(script_instance);
@@ -1099,16 +1087,10 @@ void Object::set_script_instance(ScriptInstance *p_instance) {
 	}
 
 	script_instance = p_instance;
-
-	if (p_instance) {
-		script = p_instance->get_script();
-	} else {
-		script = Variant();
-	}
 }
 
 Variant Object::get_script() const {
-	return script;
+	return script_instance ? Variant(script_instance->get_script()) : Variant();
 }
 
 bool Object::has_meta(const StringName &p_name) const {
@@ -1291,7 +1273,7 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 #ifdef DEBUG_ENABLED
 			bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_name);
 			//check in script
-			ERR_FAIL_COND_V_MSG(!signal_is_valid && !script.is_null() && !Ref<Script>(script)->has_script_signal(p_name), ERR_UNAVAILABLE, vformat("Can't emit non-existing signal \"%s\".", p_name));
+			ERR_FAIL_COND_V_MSG(!signal_is_valid && script_instance && !script_instance->get_script()->has_script_signal(p_name), ERR_UNAVAILABLE, vformat("Can't emit non-existing signal \"%s\".", p_name));
 #endif
 			//not connected? just return
 			return ERR_UNAVAILABLE;
@@ -1361,7 +1343,7 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 
 			if (ce.error != Callable::CallError::CALL_OK) {
 #ifdef DEBUG_ENABLED
-				if (flags & CONNECT_PERSIST && Engine::get_singleton()->is_editor_hint() && (script.is_null() || !Ref<Script>(script)->is_tool())) {
+				if (flags & CONNECT_PERSIST && Engine::get_singleton()->is_editor_hint() && (!script_instance || !script_instance->get_script()->is_tool())) {
 					continue;
 				}
 #endif
@@ -1465,11 +1447,8 @@ TypedArray<Dictionary> Object::_get_incoming_connections() const {
 }
 
 bool Object::has_signal(const StringName &p_name) const {
-	if (!script.is_null()) {
-		Ref<Script> scr = script;
-		if (scr.is_valid() && scr->has_script_signal(p_name)) {
-			return true;
-		}
+	if (script_instance && script_instance->get_script()->has_script_signal(p_name)) {
+		return true;
 	}
 
 	if (ClassDB::has_signal(get_class_name(), p_name)) {
@@ -1486,11 +1465,8 @@ bool Object::has_signal(const StringName &p_name) const {
 void Object::get_signal_list(List<MethodInfo> *p_signals) const {
 	OBJ_SIGNAL_LOCK
 
-	if (!script.is_null()) {
-		Ref<Script> scr = script;
-		if (scr.is_valid()) {
-			scr->get_script_signal_list(p_signals);
-		}
+	if (script_instance) {
+		script_instance->get_script()->get_script_signal_list(p_signals);
 	}
 
 	ClassDB::get_signal_list(get_class_name(), p_signals);
@@ -1571,14 +1547,14 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
 		//check in script
-		if (!signal_is_valid && !script.is_null()) {
-			if (Ref<Script>(script)->has_script_signal(p_signal)) {
+		if (!signal_is_valid && script_instance) {
+			if (script_instance->get_script()->has_script_signal(p_signal)) {
 				signal_is_valid = true;
 			}
 #ifdef TOOLS_ENABLED
 			else {
 				//allow connecting signals anyway if script is invalid, see issue #17070
-				if (!Ref<Script>(script)->is_valid()) {
+				if (!script_instance->get_script()->is_valid()) {
 					signal_is_valid = true;
 				}
 			}
@@ -1634,7 +1610,7 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 			return false;
 		}
 
-		if (!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal)) {
+		if (script_instance && script_instance->get_script()->has_script_signal(p_signal)) {
 			return false;
 		}
 
@@ -1654,7 +1630,7 @@ bool Object::has_connections(const StringName &p_signal) const {
 			return false;
 		}
 
-		if (!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal)) {
+		if (script_instance && script_instance->get_script()->has_script_signal(p_signal)) {
 			return false;
 		}
 
@@ -1675,7 +1651,7 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal) ||
-				(!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal));
+				(script_instance && script_instance->get_script()->has_script_signal(p_signal));
 		ERR_FAIL_COND_V_MSG(signal_is_valid, false, vformat("Attempt to disconnect a nonexistent connection from '%s'. Signal: '%s', callable: '%s'.", to_string(), p_signal, p_callable));
 	}
 	ERR_FAIL_NULL_V_MSG(s, false, vformat("Disconnecting nonexistent signal '%s' in '%s'.", p_signal, to_string()));
