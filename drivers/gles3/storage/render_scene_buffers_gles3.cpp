@@ -193,6 +193,10 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 	uint32_t depth_format_size = 4;
 	bool use_multiview = view_count > 1;
 
+	if (!use_internal_buffer && internal3d.color != 0) {
+		_clear_intermediate_buffers();
+	}
+
 	if ((!use_internal_buffer || internal3d.color != 0) && (msaa3d.mode == RS::VIEWPORT_MSAA_DISABLED || msaa3d.color != 0)) {
 		// already setup!
 		return;
