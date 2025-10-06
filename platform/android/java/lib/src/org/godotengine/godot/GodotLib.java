@@ -151,26 +151,6 @@ public class GodotLib {
 	public static native void key(int p_physical_keycode, int p_unicode, int p_key_label, boolean p_pressed, boolean p_echo);
 
 	/**
-	 * Forward game device's key events.
-	 */
-	public static native void joybutton(int p_device, int p_but, boolean p_pressed);
-
-	/**
-	 * Forward joystick devices axis motion events.
-	 */
-	public static native void joyaxis(int p_device, int p_axis, float p_value);
-
-	/**
-	 * Forward joystick devices hat motion events.
-	 */
-	public static native void joyhat(int p_device, int p_hat_x, int p_hat_y);
-
-	/**
-	 * Fires when a joystick device is added or removed.
-	 */
-	public static native void joyconnectionchanged(int p_device, boolean p_connected, String p_name);
-
-	/**
 	 * Invoked when the Android app resumes.
 	 * @see androidx.fragment.app.Fragment#onResume()
 	 */

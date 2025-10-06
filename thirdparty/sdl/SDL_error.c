@@ -64,9 +64,9 @@ bool SDL_SetErrorV(SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
 // Enable this if you want to see all errors printed as they occur.
 // Note that there are many recoverable errors that may happen internally and
 // can be safely ignored if the public API doesn't return an error code.
-#if 0
+//#if 0
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s", error->str);
-#endif
+//#endif
     }
 
     return false;
