@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/class_db.h"
+#include "core/os/thread_safe.h"
 
 template <typename T>
 class TypedArray;
