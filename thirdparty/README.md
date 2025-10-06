@@ -90,7 +90,7 @@ Patches:
 - `0003-remove-tinydds-qoi.patch` (GH-97582)
 - `0004-ambiguous-calls.patch` (GH-103968)
 - `0005-msvc-include-ctype.patch` (GH-106155)
-
+- `0006-clang-warning-exclude.patch` (GH-111346)
 
 ## brotli
 
