@@ -349,16 +349,6 @@ struct ObjectGDExtension {
 	GDExtensionClassReference unreference;
 	GDExtensionClassGetRID get_rid;
 
-	_FORCE_INLINE_ bool is_class(const String &p_class) const {
-		const ObjectGDExtension *e = this;
-		while (e) {
-			if (p_class == e->class_name.operator String()) {
-				return true;
-			}
-			e = e->parent;
-		}
-		return false;
-	}
 	void *class_userdata = nullptr;
 
 #ifndef DISABLE_DEPRECATED
@@ -380,6 +370,14 @@ struct ObjectGDExtension {
 	void (*track_instance)(void *p_userdata, void *p_instance) = nullptr;
 	void (*untrack_instance)(void *p_userdata, void *p_instance) = nullptr;
 #endif
+
+	/// A type for this Object extension.
+	/// This is not exposed through the GDExtension API (yet) so it is inferred from above parameters.
+	const GDType *gdtype;
+	void create_gdtype();
+	void destroy_gdtype();
+
+	~ObjectGDExtension();
 };
 
 #define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call(__VA_ARGS__)
@@ -525,7 +523,7 @@ public:                                                                         
 			return;                                                                                                                         \
 		}                                                                                                                                   \
 		m_inherits::initialize_class();                                                                                                     \
-		_add_class_to_classdb(get_class_static(), super_type::get_class_static());                                                          \
+		_add_class_to_classdb(get_gdtype_static(), &super_type::get_gdtype_static());                                                       \
 		if (m_class::_get_bind_methods() != m_inherits::_get_bind_methods()) {                                                              \
 			_bind_methods();                                                                                                                \
 		}                                                                                                                                   \
@@ -673,6 +671,7 @@ private:
 	HashMap<StringName, Variant> metadata;
 	HashMap<StringName, Variant *> metadata_properties;
 	mutable const GDType *_gdtype_ptr = nullptr;
+	void _reset_gdtype() const;
 
 	void _add_user_signal(const String &p_name, const Array &p_args = Array());
 	bool _has_user_signal(const StringName &p_name) const;
@@ -793,7 +792,7 @@ protected:
 	friend class ::ClassDB;
 	friend class PlaceholderExtensionInstance;
 
-	static void _add_class_to_classdb(const StringName &p_class, const StringName &p_inherits);
+	static void _add_class_to_classdb(const GDType &p_class, const GDType *p_inherits);
 	static void _get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator);
 
 	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);

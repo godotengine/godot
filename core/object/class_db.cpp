@@ -196,6 +196,8 @@ public:
 		obj->_extension = ClassDB::get_placeholder_extension(ti->name);
 		obj->_extension_instance = memnew(PlaceholderExtensionInstance(ti->name));
 
+		obj->_reset_gdtype();
+
 #ifdef TOOLS_ENABLED
 		if (obj->_extension->track_instance) {
 			obj->_extension->track_instance(obj->_extension->tracking_userdata, obj);
@@ -756,9 +758,18 @@ ObjectGDExtension *ClassDB::get_placeholder_extension(const StringName &p_class)
 	placeholder_extension->call_virtual_with_data = nullptr;
 	placeholder_extension->recreate_instance = &PlaceholderExtensionInstance::placeholder_class_recreate_instance;
 
+	placeholder_extension->create_gdtype();
+
 	return placeholder_extension;
 }
 #endif
+
+const GDType *ClassDB::get_gdtype(const StringName &p_class) {
+	Locker::Lock lock(Locker::STATE_READ);
+	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL_V(type, nullptr);
+	return type->gdtype;
+}
 
 void ClassDB::set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance) {
 	ERR_FAIL_NULL(p_object);
@@ -778,6 +789,8 @@ void ClassDB::set_object_extension_instance(Object *p_object, const StringName &
 
 	p_object->_extension = ti->gdextension;
 	p_object->_extension_instance = p_instance;
+
+	p_object->_reset_gdtype();
 
 #ifdef TOOLS_ENABLED
 	if (p_object->_extension->track_instance) {
@@ -870,17 +883,20 @@ use_script:
 	return scr.is_valid() && scr->is_valid() && scr->is_abstract();
 }
 
-void ClassDB::_add_class(const StringName &p_class, const StringName &p_inherits) {
+void ClassDB::_add_class(const GDType &p_class, const GDType *p_inherits) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 
-	const StringName &name = p_class;
+	const StringName &name = p_class.get_name();
 
-	ERR_FAIL_COND_MSG(classes.has(name), vformat("Class '%s' already exists.", String(p_class)));
+	ERR_FAIL_COND_MSG(classes.has(name), vformat("Class '%s' already exists.", name));
 
 	classes[name] = ClassInfo();
 	ClassInfo &ti = classes[name];
 	ti.name = name;
-	ti.inherits = p_inherits;
+	ti.gdtype = &p_class;
+	if (p_inherits) {
+		ti.inherits = p_inherits->get_name();
+	}
 	ti.api = current_api;
 
 	if (ti.inherits) {
@@ -2349,6 +2365,8 @@ void ClassDB::register_extension_class(ObjectGDExtension *p_extension) {
 #ifdef TOOLS_ENABLED
 	c.is_runtime = p_extension->is_runtime;
 #endif
+
+	c.gdtype = p_extension->gdtype;
 
 	classes[p_extension->class_name] = c;
 }
