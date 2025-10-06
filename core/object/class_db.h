@@ -123,6 +123,7 @@ public:
 		APIType api = API_NONE;
 		ClassInfo *inherits_ptr = nullptr;
 		void *class_ptr = nullptr;
+		const GDType *gdtype = nullptr;
 
 		ObjectGDExtension *gdextension = nullptr;
 
@@ -218,7 +219,7 @@ public:
 	static APIType current_api;
 	static HashMap<APIType, uint32_t> api_hashes_cache;
 
-	static void _add_class(const StringName &p_class, const StringName &p_inherits);
+	static void _add_class(const GDType &p_class, const GDType *p_inherits);
 
 	static HashMap<StringName, HashMap<StringName, Variant>> default_values;
 	static HashSet<StringName> default_values_cached;
@@ -334,6 +335,7 @@ public:
 	static void get_extension_class_list(const Ref<GDExtension> &p_extension, List<StringName> *p_classes);
 	static ObjectGDExtension *get_placeholder_extension(const StringName &p_class);
 #endif
+	static const GDType *get_gdtype(const StringName &p_class);
 	static void get_inheriters_from_class(const StringName &p_class, LocalVector<StringName> &p_classes);
 	static void get_direct_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes);
 	static StringName get_parent_class_nocheck(const StringName &p_class);
