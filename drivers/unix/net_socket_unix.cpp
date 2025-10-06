@@ -429,20 +429,16 @@ Error NetSocketUnix::bind(NetSocket::Address p_addr) {
 	ERR_FAIL_COND_V(_family != p_addr.get_family(), ERR_INVALID_PARAMETER);
 	switch (p_addr.get_family()) {
 		case Family::INET: {
-			Error res = _inet_bind(p_addr.ip(), p_addr.port());
-			ERR_FAIL_COND_V(res != OK, res);
-		} break;
+			return _inet_bind(p_addr.ip(), p_addr.port());
+		}
 		case Family::UNIX: {
 			_unix_path = p_addr.get_path();
-			Error res = _unix_bind(_unix_path);
-			ERR_FAIL_COND_V(res != OK, res);
-		} break;
+			return _unix_bind(_unix_path);
+		}
 		case Family::NONE:
 		default:
 			return ERR_INVALID_PARAMETER;
 	}
-
-	return OK;
 }
 
 Error NetSocketUnix::listen(int p_max_pending) {
