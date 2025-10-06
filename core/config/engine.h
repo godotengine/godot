@@ -61,6 +61,7 @@ private:
 	int ips = 60;
 	double physics_jitter_fix = 0.5;
 	double _fps = 1;
+	int fixed_fps = 0;
 	int _max_fps = 0;
 	int _audio_output_latency = 0;
 	double _time_scale = 1.0;
@@ -118,6 +119,9 @@ public:
 
 	virtual void set_audio_output_latency(int p_msec);
 	virtual int get_audio_output_latency() const;
+
+	virtual void set_fixed_fps(int p_fps);
+	virtual int get_fixed_fps() const;
 
 	virtual double get_frames_per_second() const { return _fps; }
 
