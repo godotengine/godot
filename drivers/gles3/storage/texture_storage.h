@@ -357,6 +357,9 @@ struct RenderTarget {
 	GLuint backbuffer_fbo = 0;
 	GLuint backbuffer = 0;
 	GLuint backbuffer_depth = 0;
+	GLuint velocity_fbo = 0;
+	GLuint velocity_texture = 0;
+	GLuint velocity_depth_texture = 0;
 	bool depth_has_stencil = true;
 
 	Size2i velocity_target_size;
@@ -403,9 +406,7 @@ struct RenderTarget {
 			bool depth_has_stencil;
 		};
 		RBMap<uint32_t, FBOCacheEntry> fbo_cache;
-
-		GLuint velocity_fbo = 0;
-		RBMap<uint32_t, GLuint> velocity_fbo_cache;
+		RBMap<uint32_t, FBOCacheEntry> velocity_fbo_cache;
 	} overridden;
 
 	RID texture;
