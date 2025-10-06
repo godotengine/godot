@@ -48,6 +48,8 @@ void VirtualJoystick::gui_input(const Ref<InputEvent> &p_event) {
 						joystick_pos = touch->get_position();
 					}
 
+					emit_signal("pressed");
+
 					is_pressed = true;
 					touch_index = touch->get_index();
 					_update_joystick(touch->get_position());
@@ -80,7 +82,7 @@ void VirtualJoystick::_notification(int p_what) {
 				return;
 			}
 
-			if (visibility == WHEN_TOUCHED && !is_pressed) {
+			if (!Engine::get_singleton()->is_editor_hint() && visibility == VISIBILITY_WHEN_TOUCHED && !is_pressed) {
 				return;
 			}
 
@@ -129,7 +131,6 @@ void VirtualJoystick::_update_joystick(const Vector2 &p_pos) {
 	tip_pos = joystick_pos + offset;
 
 	bool was_pressed = has_input;
-	float deadzone_size = _get_deadzone_size();
 	raw_input_vector = offset / clampzone_size;
 	if (length > deadzone_size) {
 		has_input = true;
@@ -151,14 +152,6 @@ void VirtualJoystick::_update_joystick(const Vector2 &p_pos) {
 	_handle_input_actions();
 
 	queue_redraw();
-}
-
-float VirtualJoystick::_get_deadzone_size() const {
-	return clampzone_size * 0.25 *
-			(InputMap::get_singleton()->action_get_deadzone(action_left) +
-					InputMap::get_singleton()->action_get_deadzone(action_right) +
-					InputMap::get_singleton()->action_get_deadzone(action_up) +
-					InputMap::get_singleton()->action_get_deadzone(action_down));
 }
 
 void VirtualJoystick::_handle_input_actions() {
@@ -217,6 +210,12 @@ void VirtualJoystick::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_joystick_size", "size"), &VirtualJoystick::set_joystick_size);
 	ClassDB::bind_method(D_METHOD("get_joystick_size"), &VirtualJoystick::get_joystick_size);
 
+	ClassDB::bind_method(D_METHOD("set_deadzone_size", "size"), &VirtualJoystick::set_deadzone_size);
+	ClassDB::bind_method(D_METHOD("get_deadzone_size"), &VirtualJoystick::get_deadzone_size);
+
+	ClassDB::bind_method(D_METHOD("set_clampzone_size", "size"), &VirtualJoystick::set_clampzone_size);
+	ClassDB::bind_method(D_METHOD("get_clampzone_size"), &VirtualJoystick::get_clampzone_size);
+
 	ClassDB::bind_method(D_METHOD("set_initial_offset_ratio", "ratio"), &VirtualJoystick::set_initial_offset_ratio);
 	ClassDB::bind_method(D_METHOD("get_initial_offset_ratio"), &VirtualJoystick::get_initial_offset_ratio);
 
@@ -240,14 +239,17 @@ void VirtualJoystick::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tip_texture", "texture"), &VirtualJoystick::set_tip_texture);
 	ClassDB::bind_method(D_METHOD("get_tip_texture"), &VirtualJoystick::get_tip_texture);
 
-	ADD_SIGNAL(MethodInfo("released", PropertyInfo(Variant::VECTOR2, "input_vector")));
+	ADD_SIGNAL(MethodInfo("pressed"));
 	ADD_SIGNAL(MethodInfo("tapped"));
+	ADD_SIGNAL(MethodInfo("released", PropertyInfo(Variant::VECTOR2, "input_vector")));
 	ADD_SIGNAL(MethodInfo("flicked", PropertyInfo(Variant::VECTOR2, "input_vector")));
 	ADD_SIGNAL(MethodInfo("flick_canceled"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "joystick_mode", PROPERTY_HINT_ENUM, "Fixed,Dynamic,Following"), "set_joystick_mode", "get_joystick_mode");
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "joystick_size", PROPERTY_HINT_RANGE, "10,500,10"), "set_joystick_size", "get_joystick_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "deadzone_size", PROPERTY_HINT_RANGE, "0,500,5"), "set_deadzone_size", "get_deadzone_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "clampzone_size", PROPERTY_HINT_RANGE, "10,500,10"), "set_clampzone_size", "get_clampzone_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "initial_offset_ratio", PROPERTY_HINT_RANGE, "0.0,1,0.01"), "set_initial_offset_ratio", "get_initial_offset_ratio");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action_left", PROPERTY_HINT_INPUT_NAME), "set_action_left", "get_action_left");
@@ -255,7 +257,7 @@ void VirtualJoystick::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action_up", PROPERTY_HINT_INPUT_NAME), "set_action_up", "get_action_up");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action_down", PROPERTY_HINT_INPUT_NAME), "set_action_down", "get_action_down");
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_mode", PROPERTY_HINT_ENUM, "Always,Touchscreen Only"), "set_visibility_mode", "get_visibility_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_mode", PROPERTY_HINT_ENUM, "Always,Touchscreen Only,When Touched"), "set_visibility_mode", "get_visibility_mode");
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "joystick_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_joystick_texture", "get_joystick_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tip_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_tip_texture", "get_tip_texture");
@@ -265,7 +267,7 @@ void VirtualJoystick::_bind_methods() {
 	BIND_ENUM_CONSTANT(JOYSTICK_FOLLOWING);
 	BIND_ENUM_CONSTANT(VISIBILITY_ALWAYS);
 	BIND_ENUM_CONSTANT(VISIBILITY_TOUCHSCREEN_ONLY);
-	BIND_ENUM_CONSTANT(WHEN_TOUCHED);
+	BIND_ENUM_CONSTANT(VISIBILITY_WHEN_TOUCHED);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, VirtualJoystick, base_normal_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, VirtualJoystick, tip_normal_color);
@@ -281,6 +283,22 @@ void VirtualJoystick::set_joystick_size(float p_size) {
 
 float VirtualJoystick::get_joystick_size() const {
 	return joystick_size;
+}
+
+void VirtualJoystick::set_deadzone_size(float p_size) {
+	deadzone_size = p_size;
+}
+
+float VirtualJoystick::get_deadzone_size() const {
+	return deadzone_size;
+}
+
+void VirtualJoystick::set_clampzone_size(float p_size) {
+	clampzone_size = p_size;
+}
+
+float VirtualJoystick::get_clampzone_size() const {
+	return clampzone_size;
 }
 
 void VirtualJoystick::set_initial_offset_ratio(const Vector2 &p_ratio) {

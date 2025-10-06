@@ -20,6 +20,12 @@
 		<member name="action_up" type="String" setter="set_action_up" getter="get_action_up" default="&quot;ui_up&quot;">
 			The action to trigger when the joystick is moved up.
 		</member>
+		<member name="clampzone_size" type="float" setter="set_clampzone_size" getter="get_clampzone_size" default="100.0">
+			The size of the area in which the joystick tip can move.
+		</member>
+		<member name="deadzone_size" type="float" setter="set_deadzone_size" getter="get_deadzone_size" default="25.0">
+			The size of the area in which the joystick tip must move before it is considered active.
+		</member>
 		<member name="initial_offset_ratio" type="Vector2" setter="set_initial_offset_ratio" getter="get_initial_offset_ratio" default="Vector2(0.5, 0.5)">
 			The initial position of the joystick as a ratio of the control's size. (0,0) is top-left, (1,1) is bottom-right.
 		</member>
@@ -36,7 +42,7 @@
 			The texture to use for the joystick tip. When null, a circle will be drawn instead with the color in the theme.
 		</member>
 		<member name="visibility_mode" type="int" setter="set_visibility_mode" getter="get_visibility_mode" enum="VirtualJoystick.VisibilityMode" default="0">
-			The visibility mode to use (must be one of [constant VISIBILITY_ALWAYS] or [constant VISIBILITY_TOUCHSCREEN_ONLY]).
+			The visibility mode to use.
 		</member>
 	</members>
 	<signals>
@@ -49,6 +55,11 @@
 			<param index="0" name="input_vector" type="Vector2" />
 			<description>
 				Emitted when the tip moved outside the deadzone and the joystick is released.
+			</description>
+		</signal>
+		<signal name="pressed">
+			<description>
+				Emitted when the joystick is pressed.
 			</description>
 		</signal>
 		<signal name="released">
@@ -79,8 +90,8 @@
 		<constant name="VISIBILITY_TOUCHSCREEN_ONLY" value="1" enum="VisibilityMode">
 			The joystick is only visible on touchscreen devices.
 		</constant>
-		<constant name="WHEN_TOUCHED" value="2" enum="VisibilityMode">
-			The joystick is visible only when being touched.
+		<constant name="VISIBILITY_WHEN_TOUCHED" value="2" enum="VisibilityMode">
+			The joystick is only visible when being touched.
 		</constant>
 	</constants>
 	<theme_items>

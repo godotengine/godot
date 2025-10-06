@@ -45,12 +45,14 @@ public:
 	enum VisibilityMode {
 		VISIBILITY_ALWAYS,
 		VISIBILITY_TOUCHSCREEN_ONLY,
-		WHEN_TOUCHED
+		VISIBILITY_WHEN_TOUCHED
 	};
 
 private:
 	JoystickMode joystick_mode = JOYSTICK_FIXED;
 	float joystick_size = 100.0f;
+	float deadzone_size = 25.0f;
+	float clampzone_size = 100.0f;
 	Vector2 initial_offset_ratio = Vector2(0.5, 0.5);
 	StringName action_left = "ui_left";
 	StringName action_right = "ui_right";
@@ -72,7 +74,6 @@ private:
 	Vector2 input_vector = Vector2();
 	bool is_flick_canceled = false;
 	int touch_index = -1;
-	float clampzone_size;
 
 	Vector2 joystick_pos = Vector2(0, 0);
 	Vector2 tip_pos = Vector2(0, 0);
@@ -81,7 +82,6 @@ private:
 	Ref<Texture2D> tip_texture;
 
 	void _update_joystick(const Vector2 &p_pos);
-	float _get_deadzone_size() const;
 	void _handle_input_actions();
 	void _reset();
 
@@ -96,6 +96,12 @@ public:
 
 	void set_joystick_size(float p_size);
 	float get_joystick_size() const;
+
+	void set_deadzone_size(float p_size);
+	float get_deadzone_size() const;
+
+	void set_clampzone_size(float p_size);
+	float get_clampzone_size() const;
 
 	void set_initial_offset_ratio(const Vector2 &p_ratio);
 	Vector2 get_initial_offset_ratio() const;
