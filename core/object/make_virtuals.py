@@ -127,6 +127,15 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
         callsiargs = f"Variant vargs[{argcount}] = {{ "
         callsiargptrs = f"\t\t\tconst Variant *vargptrs[{argcount}] = {{ "
         callptrargsptr = f"\t\t\tGDExtensionConstTypePtr argptrs[{argcount}] = {{ "
+
+        if method_info:
+            method_info += "\\\n\t\t"
+        method_info += (
+            "_gdvirtual_set_method_info_args<"
+            + ", ".join(f"m_type{i + 1}" for i in range(argcount))
+            + ">(method_info);"
+        )
+
     callptrargs = ""
     for i in range(argcount):
         if i > 0:
@@ -144,10 +153,6 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
             f"PtrToArg<m_type{i + 1}>::EncodeT argval{i + 1} = (PtrToArg<m_type{i + 1}>::EncodeT)arg{i + 1};\\\n"
         )
         callptrargsptr += f"&argval{i + 1}"
-        if method_info:
-            method_info += "\\\n\t\t"
-        method_info += f"method_info.arguments.push_back(GetTypeInfo<m_type{i + 1}>::get_class_info());\\\n"
-        method_info += f"\t\tmethod_info.arguments_metadata.push_back(GetTypeInfo<m_type{i + 1}>::METADATA);"
 
     if argcount:
         callsiargs += " };\\\n"
@@ -196,6 +201,12 @@ def run(target, source, env):
 #include "core/object/script_instance.h"
 
 inline constexpr uintptr_t _INVALID_GDVIRTUAL_FUNC_ADDR = static_cast<uintptr_t>(-1);
+
+template <typename... Args>
+void _gdvirtual_set_method_info_args(MethodInfo &p_method_info) {
+	p_method_info.arguments = { GetTypeInfo<Args>::get_class_info()... };
+	p_method_info.arguments_metadata = { GetTypeInfo<Args>::METADATA... };
+}
 
 """
 
