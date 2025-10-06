@@ -36,27 +36,14 @@
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
-#include "scene/resources/style_box_flat.h"
 
 SpanningHeader::SpanningHeader(const String &p_text) {
-	Ref<StyleBoxFlat> title_sbf;
-	title_sbf.instantiate();
-	title_sbf->set_bg_color(EditorNode::get_singleton()->get_editor_theme()->get_color("dark_color_3", "Editor"));
-	add_theme_style_override(SceneStringName(panel), title_sbf);
-	set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	set_theme_type_variation("PanelContainerDarkFlat");
+	set_h_size_flags(SIZE_EXPAND_FILL);
 	Label *title = memnew(Label(p_text));
 	add_child(title);
-	title->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
-	title->set_vertical_alignment(VerticalAlignment::VERTICAL_ALIGNMENT_CENTER);
-}
-
-DarkPanelContainer::DarkPanelContainer() {
-	set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	Ref<StyleBoxFlat> content_wrapper_sbf;
-	content_wrapper_sbf.instantiate();
-	content_wrapper_sbf->set_bg_color(EditorNode::get_singleton()->get_editor_theme()->get_color("dark_color_2", "Editor"));
-	add_theme_style_override(SceneStringName(panel), content_wrapper_sbf);
+	title->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	title->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 }
 
 void TreeSortAndFilterBar::_apply_filter(TreeItem *p_current_node) {
@@ -127,17 +114,17 @@ void TreeSortAndFilterBar::_apply_sort() {
 			items.push_back(TreeItemColumn(to_sort->get_child(i), sort.column));
 		}
 
-		if (sort.type == ALPHA_SORT && sort.ascending == true) {
+		if (sort.type == SORT_TYPE_ALPHA && sort.ascending == true) {
 			items.sort_custom<TreeItemAlphaComparator>();
 		}
-		if (sort.type == ALPHA_SORT && sort.ascending == false) {
+		if (sort.type == SORT_TYPE_ALPHA && sort.ascending == false) {
 			items.sort_custom<TreeItemAlphaComparator>();
 			items.reverse();
 		}
-		if (sort.type == NUMERIC_SORT && sort.ascending == true) {
+		if (sort.type == SORT_TYPE_NUMERIC && sort.ascending == true) {
 			items.sort_custom<TreeItemNumericComparator>();
 		}
-		if (sort.type == NUMERIC_SORT && sort.ascending == false) {
+		if (sort.type == SORT_TYPE_NUMERIC && sort.ascending == false) {
 			items.sort_custom<TreeItemNumericComparator>();
 			items.reverse();
 		}
@@ -166,11 +153,11 @@ void TreeSortAndFilterBar::_filter_changed(const String &p_filter) {
 
 TreeSortAndFilterBar::TreeSortAndFilterBar(Tree *p_managed_tree, const String &p_filter_placeholder_text) :
 		managed_tree(p_managed_tree) {
-	set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	set_h_size_flags(SIZE_EXPAND_FILL);
 	add_theme_constant_override("h_separation", 10 * EDSCALE);
 	filter_edit = memnew(LineEdit);
 	filter_edit->set_clear_button_enabled(true);
-	filter_edit->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	filter_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter_edit->set_placeholder(p_filter_placeholder_text);
 	add_child(filter_edit);
 	filter_edit->connect(SceneStringName(text_changed), callable_mp(this, &TreeSortAndFilterBar::_filter_changed));

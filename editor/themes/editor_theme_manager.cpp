@@ -701,6 +701,10 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 		// PanelContainer.
 		p_theme->set_stylebox(SceneStringName(panel), "PanelContainer", p_config.panel_container_style);
+		p_theme->set_type_variation("PanelContainerFlat", "PanelContainer");
+		p_theme->set_stylebox(SceneStringName(panel), "PanelContainerFlat", make_flat_stylebox(p_config.dark_color_1));
+		p_theme->set_type_variation("PanelContainerDarkFlat", "PanelContainer");
+		p_theme->set_stylebox(SceneStringName(panel), "PanelContainerDarkFlat", make_flat_stylebox(p_config.dark_color_3));
 
 		// TooltipPanel & TooltipLabel.
 		{

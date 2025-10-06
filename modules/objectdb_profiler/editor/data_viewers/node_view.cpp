@@ -43,11 +43,8 @@ SnapshotNodeView::SnapshotNodeView() {
 void SnapshotNodeView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) {
 	SnapshotView::show_snapshot(p_data, p_diff_data);
 
-	set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-
 	HSplitContainer *diff_sides = memnew(HSplitContainer);
-	diff_sides->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
+	diff_sides->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	add_child(diff_sides);
 
 	main_tree = _make_node_tree(diff_data && !combined_diff_view ? TTRC("A Nodes") : TTRC("Nodes"));
@@ -87,12 +84,13 @@ void SnapshotNodeView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsho
 NodeTreeElements SnapshotNodeView::_make_node_tree(const String &p_tree_name) {
 	NodeTreeElements elements;
 	elements.root = memnew(VBoxContainer);
-	elements.root->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
+	elements.root->set_h_size_flags(SIZE_EXPAND_FILL);
 	elements.tree = memnew(Tree);
+	elements.tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	elements.filter_bar = memnew(TreeSortAndFilterBar(elements.tree, TTRC("Filter Nodes")));
 	elements.root->add_child(elements.filter_bar);
-	elements.tree->set_select_mode(Tree::SelectMode::SELECT_ROW);
-	elements.tree->set_custom_minimum_size(Size2(150, 0) * EDSCALE);
+	elements.tree->set_select_mode(Tree::SELECT_ROW);
+	elements.tree->set_custom_minimum_size(Size2(150 * EDSCALE, 0));
 	elements.tree->set_hide_folding(false);
 	elements.root->add_child(elements.tree);
 	elements.tree->set_hide_root(true);
@@ -104,9 +102,7 @@ NodeTreeElements SnapshotNodeView::_make_node_tree(const String &p_tree_name) {
 	elements.tree->set_column_clip_content(0, false);
 	elements.tree->set_column_custom_minimum_width(0, 150 * EDSCALE);
 	elements.tree->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotNodeView::_node_selected).bind(elements.tree));
-	elements.tree->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	elements.tree->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	elements.tree->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
+	elements.tree->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	elements.tree->create_item();
 
