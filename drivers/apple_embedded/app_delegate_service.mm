@@ -35,6 +35,7 @@
 #import "os_apple_embedded.h"
 
 #include "core/config/project_settings.h"
+#include "core/os/main_loop.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "main/main.h"
 

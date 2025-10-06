@@ -40,6 +40,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/os/main_loop.h"
 #import "drivers/apple/os_log_logger.h"
 #include "main/main.h"
 

@@ -31,6 +31,7 @@
 #include "jolt_project_settings.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_method_pointer.h"
 
 void JoltProjectSettings::register_settings() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "physics/jolt_physics_3d/simulation/velocity_steps", PROPERTY_HINT_RANGE, U"2,16,or_greater"), 10);

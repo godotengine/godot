@@ -37,6 +37,7 @@
 #include "core/io/file_access_encrypted.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_uid.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
 
