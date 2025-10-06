@@ -34,6 +34,8 @@
 #include "core/variant/typed_array.h"
 
 #ifdef ANDROID_ENABLED
+#include "core/templates/rb_map.h"
+
 #include <android/log.h>
 #include <jni.h>
 #endif

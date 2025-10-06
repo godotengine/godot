@@ -35,6 +35,8 @@
 #include "gdscript_function.h"
 #include "gdscript_utility_functions.h"
 
+#include "core/templates/rb_map.h"
+
 class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	struct StackSlot {
 		Variant::Type type = Variant::NIL;
