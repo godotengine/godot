@@ -538,7 +538,7 @@ void add_exposed_classes(Context &r_context) {
 			continue;
 		}
 
-		ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(class_name);
+		ClassDB::ClassInfo *class_info = deref_or_null(ClassDB::classes.getptr(class_name));
 
 		ExposedClass exposed_class;
 		exposed_class.name = class_name;
