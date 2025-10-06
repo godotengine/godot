@@ -321,7 +321,7 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/photolibrary_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need access to the photo library"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/photolibrary_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 
-	for (uint64_t i = 0; i < std::size(api_info); ++i) {
+	for (uint64_t i = 0; i < std_size(api_info); ++i) {
 		String prop_name = vformat("privacy/%s_access_reasons", api_info[i].prop_name);
 		String hint;
 		for (int j = 0; j < api_info[i].prop_flag_value.size(); j++) {
@@ -338,13 +338,13 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 
 	{
 		String hint;
-		for (uint64_t i = 0; i < std::size(data_collect_purpose_info); ++i) {
+		for (uint64_t i = 0; i < std_size(data_collect_purpose_info); ++i) {
 			if (i != 0) {
 				hint += ",";
 			}
 			hint += vformat("%s:%d", data_collect_purpose_info[i].prop_name, (1 << i));
 		}
-		for (uint64_t i = 0; i < std::size(data_collect_type_info); ++i) {
+		for (uint64_t i = 0; i < std_size(data_collect_type_info); ++i) {
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/collected", data_collect_type_info[i].prop_name)), false));
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[i].prop_name)), false));
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[i].prop_name)), false));
@@ -640,7 +640,7 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		strnew += p_line.replace("$pbx_locale_build_reference", locale_files);
 	} else if (p_line.contains("$priv_collection")) {
 		bool section_opened = false;
-		for (uint64_t j = 0; j < std::size(data_collect_type_info); ++j) {
+		for (uint64_t j = 0; j < std_size(data_collect_type_info); ++j) {
 			bool data_collected = p_preset->get(vformat("privacy/collected_data/%s/collected", data_collect_type_info[j].prop_name));
 			bool linked = p_preset->get(vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[j].prop_name));
 			bool tracking = p_preset->get(vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[j].prop_name));
@@ -669,7 +669,7 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 				if (purposes != 0) {
 					strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypePurposes</key>\n";
 					strnew += "\t\t\t\t<array>\n";
-					for (uint64_t k = 0; k < std::size(data_collect_purpose_info); ++k) {
+					for (uint64_t k = 0; k < std_size(data_collect_purpose_info); ++k) {
 						if (purposes & (1 << k)) {
 							strnew += vformat("\t\t\t\t\t<string>%s</string>\n", data_collect_purpose_info[k].type_name);
 						}
@@ -701,7 +701,7 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		}
 	} else if (p_line.contains("$priv_api_types")) {
 		strnew += "\t<array>\n";
-		for (uint64_t j = 0; j < std::size(api_info); ++j) {
+		for (uint64_t j = 0; j < std_size(api_info); ++j) {
 			int api_access = p_preset->get(vformat("privacy/%s_access_reasons", api_info[j].prop_name));
 			if (api_access != 0) {
 				strnew += "\t\t<dict>\n";

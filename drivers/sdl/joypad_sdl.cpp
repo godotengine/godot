@@ -36,8 +36,6 @@
 #include "core/os/time.h"
 #include "core/variant/dictionary.h"
 
-#include <iterator>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
