@@ -162,6 +162,10 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		return mCurrentIntent;
 	}
 
+	public boolean isImmersive() {
+		return use_immersive;
+	}
+
 	private void setState(int newState) {
 		if (mState != newState) {
 			mState = newState;

@@ -48,7 +48,7 @@ void mbedtls_ripemd160_clone(mbedtls_ripemd160_context *dst,
 /*
  * RIPEMD-160 context setup
  */
-int mbedtls_ripemd160_starts_ret(mbedtls_ripemd160_context *ctx)
+int mbedtls_ripemd160_starts(mbedtls_ripemd160_context *ctx)
 {
     ctx->total[0] = 0;
     ctx->total[1] = 0;
@@ -61,13 +61,6 @@ int mbedtls_ripemd160_starts_ret(mbedtls_ripemd160_context *ctx)
 
     return 0;
 }
-
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-void mbedtls_ripemd160_starts(mbedtls_ripemd160_context *ctx)
-{
-    mbedtls_ripemd160_starts_ret(ctx);
-}
-#endif
 
 #if !defined(MBEDTLS_RIPEMD160_PROCESS_ALT)
 /*
@@ -265,21 +258,14 @@ int mbedtls_internal_ripemd160_process(mbedtls_ripemd160_context *ctx,
     return 0;
 }
 
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-void mbedtls_ripemd160_process(mbedtls_ripemd160_context *ctx,
-                               const unsigned char data[64])
-{
-    mbedtls_internal_ripemd160_process(ctx, data);
-}
-#endif
 #endif /* !MBEDTLS_RIPEMD160_PROCESS_ALT */
 
 /*
  * RIPEMD-160 process buffer
  */
-int mbedtls_ripemd160_update_ret(mbedtls_ripemd160_context *ctx,
-                                 const unsigned char *input,
-                                 size_t ilen)
+int mbedtls_ripemd160_update(mbedtls_ripemd160_context *ctx,
+                             const unsigned char *input,
+                             size_t ilen)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t fill;
@@ -327,15 +313,6 @@ int mbedtls_ripemd160_update_ret(mbedtls_ripemd160_context *ctx,
     return 0;
 }
 
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-void mbedtls_ripemd160_update(mbedtls_ripemd160_context *ctx,
-                              const unsigned char *input,
-                              size_t ilen)
-{
-    mbedtls_ripemd160_update_ret(ctx, input, ilen);
-}
-#endif
-
 static const unsigned char ripemd160_padding[64] =
 {
     0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -347,8 +324,8 @@ static const unsigned char ripemd160_padding[64] =
 /*
  * RIPEMD-160 final digest
  */
-int mbedtls_ripemd160_finish_ret(mbedtls_ripemd160_context *ctx,
-                                 unsigned char output[20])
+int mbedtls_ripemd160_finish(mbedtls_ripemd160_context *ctx,
+                             unsigned char output[20])
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     uint32_t last, padn;
@@ -365,14 +342,14 @@ int mbedtls_ripemd160_finish_ret(mbedtls_ripemd160_context *ctx,
     last = ctx->total[0] & 0x3F;
     padn = (last < 56) ? (56 - last) : (120 - last);
 
-    ret = mbedtls_ripemd160_update_ret(ctx, ripemd160_padding, padn);
+    ret = mbedtls_ripemd160_update(ctx, ripemd160_padding, padn);
     if (ret != 0) {
-        return ret;
+        goto exit;
     }
 
-    ret = mbedtls_ripemd160_update_ret(ctx, msglen, 8);
+    ret = mbedtls_ripemd160_update(ctx, msglen, 8);
     if (ret != 0) {
-        return ret;
+        goto exit;
     }
 
     MBEDTLS_PUT_UINT32_LE(ctx->state[0], output,  0);
@@ -381,40 +358,36 @@ int mbedtls_ripemd160_finish_ret(mbedtls_ripemd160_context *ctx,
     MBEDTLS_PUT_UINT32_LE(ctx->state[3], output, 12);
     MBEDTLS_PUT_UINT32_LE(ctx->state[4], output, 16);
 
-    return 0;
-}
+    ret = 0;
 
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-void mbedtls_ripemd160_finish(mbedtls_ripemd160_context *ctx,
-                              unsigned char output[20])
-{
-    mbedtls_ripemd160_finish_ret(ctx, output);
+exit:
+    mbedtls_ripemd160_free(ctx);
+    return ret;
 }
-#endif
 
 #endif /* ! MBEDTLS_RIPEMD160_ALT */
 
 /*
  * output = RIPEMD-160( input buffer )
  */
-int mbedtls_ripemd160_ret(const unsigned char *input,
-                          size_t ilen,
-                          unsigned char output[20])
+int mbedtls_ripemd160(const unsigned char *input,
+                      size_t ilen,
+                      unsigned char output[20])
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_ripemd160_context ctx;
 
     mbedtls_ripemd160_init(&ctx);
 
-    if ((ret = mbedtls_ripemd160_starts_ret(&ctx)) != 0) {
+    if ((ret = mbedtls_ripemd160_starts(&ctx)) != 0) {
         goto exit;
     }
 
-    if ((ret = mbedtls_ripemd160_update_ret(&ctx, input, ilen)) != 0) {
+    if ((ret = mbedtls_ripemd160_update(&ctx, input, ilen)) != 0) {
         goto exit;
     }
 
-    if ((ret = mbedtls_ripemd160_finish_ret(&ctx, output)) != 0) {
+    if ((ret = mbedtls_ripemd160_finish(&ctx, output)) != 0) {
         goto exit;
     }
 
@@ -423,15 +396,6 @@ exit:
 
     return ret;
 }
-
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-void mbedtls_ripemd160(const unsigned char *input,
-                       size_t ilen,
-                       unsigned char output[20])
-{
-    mbedtls_ripemd160_ret(input, ilen, output);
-}
-#endif
 
 #if defined(MBEDTLS_SELF_TEST)
 /*
@@ -491,8 +455,8 @@ int mbedtls_ripemd160_self_test(int verbose)
             mbedtls_printf("  RIPEMD-160 test #%d: ", i + 1);
         }
 
-        ret = mbedtls_ripemd160_ret(ripemd160_test_str[i],
-                                    ripemd160_test_strlen[i], output);
+        ret = mbedtls_ripemd160(ripemd160_test_str[i],
+                                ripemd160_test_strlen[i], output);
         if (ret != 0) {
             goto fail;
         }

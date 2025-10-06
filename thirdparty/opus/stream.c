@@ -96,6 +96,9 @@ static int op_fseek(void *_stream,opus_int64 _offset,int _whence){
   if(pos<0||_offset<-pos||_offset>OP_INT64_MAX-pos)return -1;
   pos+=_offset;
   return fsetpos((FILE *)_stream,(fpos_t *)&pos);
+#elif defined(__ANDROID__) && __ANDROID_API__ < 24
+  /*fseeko is not available on Android API < 24, use 32-bit fseek instead.*/
+  return fseek((FILE *)_stream,(long)_offset,_whence);
 #else
   /*This function actually conforms to the SUSv2 and POSIX.1-2001, so we prefer
      it except on Windows.*/
@@ -111,6 +114,9 @@ static opus_int64 op_ftell(void *_stream){
   opus_int64 pos;
   OP_ASSERT(sizeof(pos)==sizeof(fpos_t));
   return fgetpos((FILE *)_stream,(fpos_t *)&pos)?-1:pos;
+#elif defined(__ANDROID__) && __ANDROID_API__ < 24
+  /*ftello is not available on Android API < 24, use 32-bit ftell instead.*/
+  return ftell((FILE *)_stream);
 #else
   /*This function actually conforms to the SUSv2 and POSIX.1-2001, so we prefer
      it except on Windows.*/
