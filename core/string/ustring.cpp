@@ -30,8 +30,9 @@
 
 #include "ustring.h"
 
-STATIC_ASSERT_INCOMPLETE_TYPE(class, Dictionary);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Array);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Dictionary);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 
 #include "core/crypto/crypto_core.h"
 #include "core/math/color.h"
