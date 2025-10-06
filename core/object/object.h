@@ -651,7 +651,6 @@ private:
 #ifdef DEBUG_ENABLED
 	SafeRefCount _lock_index;
 #endif // DEBUG_ENABLED
-	int _predelete_ok = 0;
 	ObjectID _instance_id;
 	bool _predelete();
 	void _initialize();
@@ -662,6 +661,12 @@ private:
 	bool _block_signals : 1;
 	bool _can_translate : 1;
 	bool _emitting : 1;
+	bool _predelete_ok : 1;
+
+public:
+	bool _is_queued_for_deletion : 1; // Set to true by SceneTree::queue_delete().
+
+private:
 #ifdef TOOLS_ENABLED
 	bool _edited : 1;
 	uint32_t _edited_version = 0;
@@ -996,7 +1001,6 @@ public:
 	String tr(const StringName &p_message, const StringName &p_context = "") const;
 	String tr_n(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 
-	bool _is_queued_for_deletion = false; // Set to true by SceneTree::queue_delete().
 	bool is_queued_for_deletion() const;
 
 	_FORCE_INLINE_ void set_message_translation(bool p_enable) { _can_translate = p_enable; }
