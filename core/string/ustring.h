@@ -347,7 +347,8 @@ public:
 	String &operator+=(const wchar_t *p_str);
 	String &operator+=(const char32_t *p_str);
 
-	bool operator==(const char *p_str) const;
+	bool operator==(Span<char> p_str) const;
+	_FORCE_INLINE_ bool operator==(const char *p_str) const { return operator==(Span(p_str, strlen(p_str))); }
 	bool operator==(const wchar_t *p_str) const;
 	bool operator==(const char32_t *p_str) const;
 	bool operator==(const Span<char32_t> &p_str_range) const;

@@ -2303,7 +2303,7 @@ void Object::assign_class_name_static(const Span<char> &p_name, StringName &r_ta
 		// Already assigned while we were waiting for the mutex.
 		return;
 	}
-	r_target = StringName(p_name.ptr(), true);
+	r_target = StringName(p_name, true);
 }
 
 Object::~Object() {
