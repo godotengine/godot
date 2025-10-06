@@ -263,7 +263,7 @@ private:
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 	void _texture_changed();
 
-	void _edit(bool p_show_virtual_keyboard = true);
+	void _edit(bool p_show_virtual_keyboard = true, bool p_hide_focus = false);
 
 protected:
 	bool _is_over_clear_button(const Point2 &p_pos) const;
@@ -274,6 +274,11 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _edit_bind_compat_111117();
+	static void _bind_compatibility_methods();
+#endif
+
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
@@ -283,7 +288,7 @@ protected:
 	void _accessibility_action_menu(const Variant &p_data);
 
 public:
-	void edit();
+	void edit(bool p_hide_focus = false);
 	void unedit();
 	bool is_editing() const;
 	void set_keep_editing_on_text_submit(bool p_enabled);
