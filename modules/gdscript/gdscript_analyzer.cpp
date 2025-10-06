@@ -1695,7 +1695,7 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 
 		Variant value = argument->reduced_value;
 
-		if (value.get_type() != argument_info.type) {
+		if (value.get_type() != argument_info.type && !(argument_info.type == Variant::NIL && (argument_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT))) {
 #ifdef DEBUG_ENABLED
 			if (argument_info.type == Variant::INT && value.get_type() == Variant::FLOAT) {
 				parser->push_warning(argument, GDScriptWarning::NARROWING_CONVERSION);
@@ -1707,21 +1707,17 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 				return;
 			}
 
-			// Only validate the conversion if the argument's type isn't explicitly Variant.
-			if (!(argument_info.type == Variant::NIL && (argument_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT))) {
+			Variant converted_to;
+			const Variant *converted_from = &value;
+			Callable::CallError call_error;
+			Variant::construct(argument_info.type, converted_to, &converted_from, 1, call_error);
 
-				Variant converted_to;
-				const Variant *converted_from = &value;
-				Callable::CallError call_error;
-				Variant::construct(argument_info.type, converted_to, &converted_from, 1, call_error);
-
-				if (call_error.error != Callable::CallError::CALL_OK) {
-					push_error(vformat(R"(Cannot convert argument %d of annotation "%s" from "%s" to "%s".)", i + 1, p_annotation->name, Variant::get_type_name(value.get_type()), Variant::get_type_name(argument_info.type)), argument);
-					return;
-				}
-
-				value = converted_to;
+			if (call_error.error != Callable::CallError::CALL_OK) {
+				push_error(vformat(R"(Cannot convert argument %d of annotation "%s" from "%s" to "%s".)", i + 1, p_annotation->name, Variant::get_type_name(value.get_type()), Variant::get_type_name(argument_info.type)), argument);
+				return;
 			}
+
+			value = converted_to;
 		}
 
 		p_annotation->resolved_arguments.push_back(value);
@@ -2699,6 +2695,15 @@ void GDScriptAnalyzer::reduce_array(GDScriptParser::ArrayNode *p_array) {
 		GDScriptParser::ExpressionNode *element = p_array->elements[i];
 		reduce_expression(element);
 		p_array->is_constant &= element->is_constant;
+	}
+
+	// If the array is constant we can assign a reduced value.
+	if (p_array->is_constant) {
+		Array reduced_value;
+		for (const auto &element : p_array->elements) {
+			reduced_value.append(element->reduced_value);
+		}
+		p_array->reduced_value = reduced_value;
 	}
 
 	// It's array in any case.
@@ -3858,6 +3863,15 @@ void GDScriptAnalyzer::reduce_dictionary(GDScriptParser::DictionaryNode *p_dicti
 				elements[element.key->reduced_value] = element.value;
 			}
 		}
+	}
+
+	// If the dictionary is constant, we can assign a reduced value.
+	if (p_dictionary->is_constant) {
+		Dictionary reduced_value;
+		for (const auto &[key, value] : p_dictionary->elements) {
+			reduced_value[key->reduced_value] = value->reduced_value;
+		}
+		p_dictionary->reduced_value = reduced_value;
 	}
 
 	// It's dictionary in any case.

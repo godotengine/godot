@@ -5227,7 +5227,7 @@ bool GDScriptParser::meta_annotation(AnnotationNode *p_annotation, Node *p_targe
 	StringName name = p_annotation->resolved_arguments[0];
 	ScriptMetadata metadata;
 	metadata.name = name;
-	metadata.value = p_annotation->resolved_arguments[1]; // <- Only works for primitives??;
+	metadata.value = p_annotation->resolved_arguments[1];
 	metadata.target_name = target_name;
 	metadata.target_container = String(".").join(class_path);
 	metadata.target_type = target_type;
