@@ -263,7 +263,7 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	String base_path;
 
 	AnimationNode::NodeTimeInfo current_nti;
-	StringName current;
+	StringName current = SceneStringName(Start);
 	Ref<Curve> current_curve;
 
 	Ref<AnimationNodeStateMachineTransition> group_start_transition;
