@@ -392,6 +392,10 @@ public:
 						end_column == r.end_column;
 			}
 
+			_FORCE_INLINE_ bool operator!=(const Match &r) const {
+				return !(operator==(r));
+			}
+
 			String to_string() const {
 				return vformat("Match{(%s,%s)=>(%s,%s)}", start_line, start_column, end_line, end_column);
 			}
