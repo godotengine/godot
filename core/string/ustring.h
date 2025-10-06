@@ -180,7 +180,10 @@ public:
 	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
 	_FORCE_INLINE_ const T *get_data() const { return size() ? ptr() : &_null; }
 
+	// Returns the number of characters in the buffer, including the terminating NUL character.
+	// In most cases, length() should be used instead.
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
+	// Returns the number of characters in the string (excluding terminating NUL character).
 	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
 	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
@@ -302,7 +305,10 @@ public:
 	_FORCE_INLINE_ const char32_t *ptr() const { return _cowdata.ptr(); }
 	_FORCE_INLINE_ const char32_t *get_data() const { return size() ? ptr() : &_null; }
 
+	// Returns the number of characters in the buffer, including the terminating NUL character.
+	// In most cases, length() should be used instead.
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
+	// Returns the number of characters in the string (excluding terminating NUL character).
 	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
 	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
