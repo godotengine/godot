@@ -108,7 +108,7 @@ namespace basisu
 	}
 
 #ifndef __EMSCRIPTEN__
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wclass-memaccess"            
 #endif                  
@@ -117,7 +117,7 @@ namespace basisu
 	template <typename T> inline void clear_obj(T& obj) { memset(&obj, 0, sizeof(obj)); }
 
 #ifndef __EMSCRIPTEN__
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif                            
 #endif

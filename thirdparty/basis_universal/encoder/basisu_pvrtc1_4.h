@@ -232,14 +232,14 @@ namespace basisu
 		inline void set_to_black()
 		{
 #ifndef __EMSCRIPTEN__
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wclass-memaccess"            
 #endif                          
 #endif
 			memset(m_blocks.get_ptr(), 0, m_blocks.size_in_bytes());
 #ifndef __EMSCRIPTEN__
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif                
 #endif
