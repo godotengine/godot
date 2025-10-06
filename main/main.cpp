@@ -147,6 +147,15 @@
 #endif // TOOLS_ENABLED && !GDSCRIPT_NO_LSP
 #endif // MODULE_GDSCRIPT_ENABLED
 
+#ifdef WINDOWS_ENABLED
+#include <io.h>
+#include <stdio.h>
+#define isatty _isatty
+#define fileno _fileno
+#else
+#include <unistd.h>
+#endif
+
 /* Static members */
 
 // Singletons
@@ -539,6 +548,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("-v, --verbose", "Use verbose stdout mode.\n");
 	print_help_option("--quiet", "Quiet mode, silences stdout messages. Errors are still displayed.\n");
 	print_help_option("--no-header", "Do not print engine version and rendering method header on startup.\n");
+	print_help_option("--color", "Use colors for console output (\"auto\", \"always\", \"never\").\n");
 
 	print_help_title("Run options");
 	print_help_option("--, ++", "Separator for user-provided arguments. Following arguments are not used by the engine, but can be read from `OS.get_cmdline_user_args()`.\n");
@@ -1049,6 +1059,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		packed_data = memnew(PackedData);
 	}
 
+	// Disable color codes if stdout is not a TTY, or if the `NO_COLOR` environment variable
+	// is set to a non-empty string (https://no-color.org/).
+	// This prevents Godot from writing ANSI escape codes when redirecting stdout and stderr to a file.
+	// If we are running in a CI environment or `CLICOLOR_FORCE` is set to `1`, force colored output.
+	//
+	// These options are overridden by the `--color` command line argument.
+	const bool no_color = !OS::get_singleton()->get_environment("NO_COLOR").is_empty();
+	const bool force_color = bool(OS::get_singleton()->get_environment("CLICOLOR_FORCE").to_int()) || bool(OS::get_singleton()->get_environment("CI").to_int());
+	Engine::get_singleton()->set_color_standard_output(no_color ? false : (force_color || isatty(fileno(stdout))));
+
 #ifdef MINIZIP_ENABLED
 
 	//XXX: always get_singleton() == 0x0
@@ -1136,7 +1156,23 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		} else if (arg == "--no-header") {
 			Engine::get_singleton()->_print_header = false;
+		} else if (arg == "--color") { // Color console output.
+			if (N) {
+				// The "auto" case is already handled above.
+				if (N->get() == "always") {
+					Engine::get_singleton()->set_color_standard_output(true);
+				} else if (N->get() == "never") {
+					Engine::get_singleton()->set_color_standard_output(false);
+				} else if (N->get() != "auto") {
+					OS::get_singleton()->print("Unknown color argument '%s', aborting.\nValid options are 'auto', 'always' and 'never'.\n", N->get().utf8().get_data());
+					goto error;
+				}
 
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing color argument, aborting.\nValid options are 'auto', 'always' and 'never'.\n");
+				goto error;
+			}
 		} else if (arg == "--audio-driver") { // audio driver
 
 			if (N) {
