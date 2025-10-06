@@ -31,6 +31,8 @@
 #include "dictionary.h"
 
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Array);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, String);
 
 #include "core/templates/hash_map.h"
 #include "core/templates/safe_refcount.h"
