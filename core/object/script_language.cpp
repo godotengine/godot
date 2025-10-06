@@ -171,7 +171,7 @@ Dictionary ScriptMetadata::to_dictionary() const {
 TypedArray<Dictionary> Script::get_script_meta(const StringName &p_name) const {
 	Array result;
 	if (script_metadata.has(p_name)) {
-		for (const auto& meta : script_metadata[p_name]) {
+		for (const auto &meta : script_metadata[p_name]) {
 			result.append(meta.to_dictionary());
 		}
 	}

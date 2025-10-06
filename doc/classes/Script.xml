@@ -71,7 +71,8 @@
 			</description>
 		</method>
 		<method name="get_script_meta">
-			<return type="Array[Dictionary]" />
+			<param index="0" name="name" type="StringName" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns an [Array] of dictionaries describing each [annotation @GDScript.@meta] annotation target in this [Script] with first argument [param name]. Each [Dictionary] contains the following entries:
 				- [code]target_type[/code] is a [enum MetaTargetType] indicating the type of the annotation target.
@@ -81,7 +82,7 @@
 			</description>
 		</method>
 		<method name="get_script_meta_list">
-			<return type="Array[StringName]" />
+			<return type="StringName[]" />
 			<description>
 				Returns the list of all the distinct [StringName] values passed as [code]name[/code] arguments to [annotation @GDScript.@meta] annotations in this [Script].
 			</description>
