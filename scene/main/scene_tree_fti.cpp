@@ -781,13 +781,13 @@ SceneTreeFTI::SceneTreeFTI() {
 
 	switch (data.traversal_mode) {
 		default: {
-			print_verbose("SceneTreeFTI: traversal method DEFAULT");
+			PRINT_VERBOSE("SceneTreeFTI: traversal method DEFAULT");
 		} break;
 		case TM_LEGACY: {
-			print_verbose("SceneTreeFTI: traversal method Legacy");
+			PRINT_VERBOSE("SceneTreeFTI: traversal method Legacy");
 		} break;
 		case TM_DEBUG: {
-			print_verbose("SceneTreeFTI: traversal method Debug");
+			PRINT_VERBOSE("SceneTreeFTI: traversal method Debug");
 		} break;
 	}
 
