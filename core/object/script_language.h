@@ -161,7 +161,7 @@ public:
 		META_TARGET_VARIABLE,
 		META_TARGET_CONSTANT,
 		META_TARGET_SIGNAL,
-		META_TARGET_FUNCTION
+		META_TARGET_FUNCTION,
 	};
 
 	virtual void reload_from_file() override;

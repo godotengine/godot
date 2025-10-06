@@ -224,7 +224,8 @@ void Script::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
 
-	// TODO: Figure out why BIND_ENUM_CONSTANT doesn't work here.
+	// TODO: Why doesn't e.g. BIND_ENUM_CONSTANT(META_TARGET_CLASS) work here?
+	// error: incomplete type 'GetTypeInfo<Script::MetaTargetType, void>' used in nested name specifier
 	ClassDB::bind_integer_constant(get_class_static(), StringName("MetaTargetType"), "META_TARGET_CLASS", META_TARGET_CLASS);
 	ClassDB::bind_integer_constant(get_class_static(), StringName("MetaTargetType"), "META_TARGET_VARIABLE", META_TARGET_VARIABLE);
 	ClassDB::bind_integer_constant(get_class_static(), StringName("MetaTargetType"), "META_TARGET_CONSTANT", META_TARGET_CONSTANT);
