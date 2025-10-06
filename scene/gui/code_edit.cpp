@@ -754,25 +754,169 @@ void CodeEdit::_handle_unicode_input_internal(const uint32_t p_unicode, int p_ca
 					insert_text_at_caret(selection_text + close_key, i);
 					set_caret_column(get_caret_column(i) - 1, i == 0, i);
 				}
+			} else if (is_in_comment(cl, cc) != -1) {
+				insert_text_at_caret(chr, i);
 			} else {
 				int caret_move_offset = 1;
+				const bool is_string_delimiter = has_string_delimiter(chr);
+				const int line_length = get_line(cl).length();
+				int post_brace_pair = cc < line_length ? _get_auto_brace_pair_close_at_pos(cl, cc) : -1;
 
-				int post_brace_pair = cc < get_line(cl).length() ? _get_auto_brace_pair_close_at_pos(cl, cc) : -1;
-
-				if (has_string_delimiter(chr) && cc > 0 && !is_symbol(get_line(cl)[cc - 1]) && post_brace_pair == -1) {
+				if (is_string_delimiter && cc > 0 && !is_symbol(get_line(cl)[cc - 1]) && post_brace_pair == -1) {
 					insert_text_at_caret(chr, i);
-				} else if (cc < get_line(cl).length() && !is_symbol(get_line(cl)[cc])) {
+				} else if (cc < line_length && !is_symbol(get_line(cl)[cc])) {
 					insert_text_at_caret(chr, i);
 				} else if (post_brace_pair != -1 && auto_brace_completion_pairs[post_brace_pair].close_key[0] == chr[0]) {
 					caret_move_offset = auto_brace_completion_pairs[post_brace_pair].close_key.length();
-				} else if (is_in_comment(cl, cc) != -1 || (is_in_string(cl, cc) != -1 && has_string_delimiter(chr))) {
-					insert_text_at_caret(chr, i);
 				} else {
+					int in_string = -2;
+					bool proceed = true;
+					if (is_string_delimiter) {
+						in_string = is_in_string(cl, cc);
+						if (in_string != -1 && delimiters[in_string].end_key[0] == chr[0]) {
+							proceed = false;
+						}
+					}
 					insert_text_at_caret(chr, i);
 
-					int pre_brace_pair = _get_auto_brace_pair_open_at_pos(cl, cc + 1);
-					if (pre_brace_pair != -1) {
-						insert_text_at_caret(auto_brace_completion_pairs[pre_brace_pair].close_key, i);
+					if (proceed) {
+						int pre_brace_pair = _get_auto_brace_pair_open_at_pos(cl, cc + 1);
+						if (pre_brace_pair != -1) {
+							int opened_braces = 0;
+							int start = 0;
+							bool char_escaped = false;
+
+							if (in_string == -2) {
+								in_string = is_in_string(cl, cc);
+							}
+
+							// If in string; determine where the string starts.
+							if (in_string != -1 && cc > 0) {
+								for (int j = cc - 1; j >= 0; j--) {
+									char32_t ch = get_line(cl)[j];
+									if (ch == delimiters[in_string].start_key[0]) {
+										start = j + 1;
+										break;
+									}
+								}
+							}
+
+							if ((!is_string_delimiter || in_string != -1) && start < cc) {
+								for (int j = start; j < cc; j++) {
+									char32_t ch = get_line(cl)[j];
+									// Ignore any brackets inside a string.
+									if (in_string == -1 && (ch == '"' || ch == '\'')) {
+										char32_t quotation = ch;
+										do {
+											j++;
+											if (j >= cc) {
+												break;
+											}
+											ch = get_line(cl)[j];
+											// Skip over escaped quotation marks inside strings.
+											if (ch == '\\') {
+												bool escaped = true;
+												while (j + 1 < cc && get_line(cl)[j + 1] == '\\') {
+													escaped = !escaped;
+													j++;
+												}
+												if (escaped) {
+													j++;
+													continue;
+												}
+											}
+										} while (ch != quotation);
+									} else if (opened_braces > 0 && _is_auto_brace_closed_at_pos(pre_brace_pair, cl, j)) {
+										opened_braces--;
+									} else if (_is_auto_brace_open_at_pos(pre_brace_pair, cl, j + 1)) {
+										opened_braces++;
+									}
+								}
+							}
+
+							if (opened_braces == 0 || chr[0] != auto_brace_completion_pairs[pre_brace_pair].close_key[0]) {
+								const bool identical_pair = auto_brace_completion_pairs[pre_brace_pair].open_key == auto_brace_completion_pairs[pre_brace_pair].close_key;
+
+								PackedStringArray comment_keys;
+								PackedInt32Array comment_key_indices;
+								for (int j = 0; j < delimiters.size(); j++) {
+									if (delimiters[j].type == TYPE_COMMENT) {
+										comment_keys.append(delimiters[j].start_key);
+										comment_key_indices.append(0);
+									}
+								}
+
+								for (int j = cc + 1; j <= line_length; j++) {
+									char32_t ch = get_line(cl)[j];
+									// Stop when a comment is reached.
+									bool reached_comment = false;
+									for (int x = 0; x < comment_keys.size(); x++) {
+										if (ch == comment_keys[x][comment_key_indices[x]]) {
+											int new_pos = comment_key_indices[x] + 1;
+											if (new_pos == comment_keys[x].length()) {
+												reached_comment = true;
+												break;
+											}
+											comment_key_indices.set(x, new_pos);
+										}
+									}
+									if (reached_comment) {
+										break;
+									} else if (ch == '\\') {
+										char_escaped = !char_escaped;
+									} else if (char_escaped) {
+										char_escaped = false;
+									} else if (in_string != -1 && ch == delimiters[in_string].end_key[0]) {
+										// If in string; stop when the string ends.
+										break;
+									} else if (in_string == -1 && (ch == '"' || ch == '\'')) {
+										// Ignore any brackets inside a string.
+										char32_t quotation = ch;
+										bool can_close_string = chr[0] == quotation;
+										do {
+											j++;
+											if (j > line_length) {
+												// Avoid adding an additional quotation mark if the previous one can close this string.
+												if (can_close_string) {
+													opened_braces = -1;
+												}
+												break;
+											}
+											ch = get_line(cl)[j];
+											if (!can_close_string && ch == chr[0]) {
+												can_close_string = true;
+											}
+											// Skip over escaped quotation marks inside strings.
+											if (ch == '\\') {
+												bool escaped = true;
+												while (j + 1 <= line_length && get_line(cl)[j + 1] == '\\') {
+													escaped = !escaped;
+													j++;
+												}
+												if (escaped) {
+													j++;
+													continue;
+												}
+											}
+										} while (ch != quotation);
+									} else if (_is_auto_brace_closed_at_pos(pre_brace_pair, cl, j)) {
+										if (opened_braces-- == 0) {
+											if (identical_pair) {
+												opened_braces = 1;
+											} else {
+												break;
+											}
+										}
+									} else if (_is_auto_brace_open_at_pos(pre_brace_pair, cl, j + 1)) {
+										opened_braces++;
+									}
+								}
+
+								if (identical_pair ? opened_braces == 0 : opened_braces >= 0) {
+									insert_text_at_caret(auto_brace_completion_pairs[pre_brace_pair].close_key, i);
+								}
+							}
+						}
 					}
 				}
 				set_caret_column(cc + caret_move_offset, i == 0, i);
@@ -828,7 +972,7 @@ void CodeEdit::_backspace_internal(int p_caret) {
 
 		merge_gutters(from_line, to_line);
 
-		if (auto_brace_completion_enabled && to_column > 0) {
+		if (auto_brace_completion_enabled && to_column > 0 && is_in_comment(to_line, to_column) == -1) {
 			int idx = _get_auto_brace_pair_open_at_pos(to_line, to_column);
 			if (idx != -1) {
 				from_column = to_column - auto_brace_completion_pairs[idx].open_key.length();
@@ -3022,49 +3166,72 @@ void CodeEdit::_bind_methods() {
 }
 
 /* Auto brace completion */
-int CodeEdit::_get_auto_brace_pair_open_at_pos(int p_line, int p_col) {
+bool CodeEdit::_is_auto_brace_open_at_pos(int p_auto_brace_index, int p_line, int p_col) const {
 	const String &line = get_line(p_line);
+	const String &open_key = auto_brace_completion_pairs[p_auto_brace_index].open_key;
 
+	if (p_col - open_key.length() < 0) {
+		return false;
+	}
+
+	for (int i = 0; i < open_key.length(); i++) {
+		if (line[p_col - 1 - i] != open_key[open_key.length() - 1 - i]) {
+			return false;
+		}
+	}
+
+	// Check if brace is escaped.
+	bool escaped = false;
+	for (int i = p_col - open_key.length() - 1; i >= 0; i--) {
+		if (line[i] == '\\') {
+			escaped = !escaped;
+		} else {
+			break;
+		}
+	}
+	return !escaped;
+}
+
+bool CodeEdit::_is_auto_brace_closed_at_pos(int p_auto_brace_index, int p_line, int p_col) const {
+	const String &line = get_line(p_line);
+	const String &close_key = auto_brace_completion_pairs[p_auto_brace_index].close_key;
+
+	if (p_col + close_key.length() > line.length()) {
+		return false;
+	}
+
+	for (int i = 0; i < close_key.length(); i++) {
+		if (line[p_col + i] != close_key[i]) {
+			return false;
+		}
+	}
+
+	// Check if brace is escaped.
+	bool escaped = false;
+	for (int i = p_col - 1; i >= 0; i--) {
+		if (line[i] == '\\') {
+			escaped = !escaped;
+		} else {
+			break;
+		}
+	}
+	return !escaped;
+}
+
+int CodeEdit::_get_auto_brace_pair_open_at_pos(int p_line, int p_col) const {
 	/* Should be fast enough, expecting low amount of pairs... */
 	for (int i = 0; i < auto_brace_completion_pairs.size(); i++) {
-		const String &open_key = auto_brace_completion_pairs[i].open_key;
-		if (p_col - open_key.length() < 0) {
-			continue;
-		}
-
-		bool is_match = true;
-		for (int j = 0; j < open_key.length(); j++) {
-			if (line[(p_col - 1) - j] != open_key[(open_key.length() - 1) - j]) {
-				is_match = false;
-				break;
-			}
-		}
-
-		if (is_match) {
+		if (_is_auto_brace_open_at_pos(i, p_line, p_col)) {
 			return i;
 		}
 	}
 	return -1;
 }
 
-int CodeEdit::_get_auto_brace_pair_close_at_pos(int p_line, int p_col) {
-	const String &line = get_line(p_line);
-
+int CodeEdit::_get_auto_brace_pair_close_at_pos(int p_line, int p_col) const {
 	/* Should be fast enough, expecting low amount of pairs... */
 	for (int i = 0; i < auto_brace_completion_pairs.size(); i++) {
-		if (p_col + auto_brace_completion_pairs[i].close_key.length() > line.length()) {
-			continue;
-		}
-
-		bool is_match = true;
-		for (int j = 0; j < auto_brace_completion_pairs[i].close_key.length(); j++) {
-			if (line[p_col + j] != auto_brace_completion_pairs[i].close_key[j]) {
-				is_match = false;
-				break;
-			}
-		}
-
-		if (is_match) {
+		if (_is_auto_brace_closed_at_pos(i, p_line, p_col)) {
 			return i;
 		}
 	}

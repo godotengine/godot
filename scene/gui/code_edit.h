@@ -84,8 +84,11 @@ private:
 	};
 	Vector<BracePair> auto_brace_completion_pairs;
 
-	int _get_auto_brace_pair_open_at_pos(int p_line, int p_col);
-	int _get_auto_brace_pair_close_at_pos(int p_line, int p_col);
+	bool _is_auto_brace_open_at_pos(int p_auto_brace_index, int p_line, int p_col) const;
+	bool _is_auto_brace_closed_at_pos(int p_auto_brace_index, int p_line, int p_col) const;
+
+	int _get_auto_brace_pair_open_at_pos(int p_line, int p_col) const;
+	int _get_auto_brace_pair_close_at_pos(int p_line, int p_col) const;
 
 	/* Main Gutter */
 	enum MainGutterType {
