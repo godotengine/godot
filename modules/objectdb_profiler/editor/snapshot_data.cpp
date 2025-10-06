@@ -31,6 +31,7 @@
 #include "snapshot_data.h"
 
 #include "core/core_bind.h"
+#include "core/io/compression.h"
 #include "core/object/script_language.h"
 #include "scene/debugger/scene_debugger.h"
 

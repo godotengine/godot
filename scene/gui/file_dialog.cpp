@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/os/keyboard.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"

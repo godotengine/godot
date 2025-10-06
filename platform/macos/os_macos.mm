@@ -39,6 +39,7 @@
 #import "godot_application_delegate.h"
 
 #include "core/crypto/crypto_core.h"
+#include "core/io/file_access.h"
 #include "core/version_generated.gen.h"
 #include "drivers/apple/os_log_logger.h"
 #include "main/main.h"

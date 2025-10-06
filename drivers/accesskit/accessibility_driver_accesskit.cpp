@@ -33,6 +33,7 @@
 #include "accessibility_driver_accesskit.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/version.h"
 
 #include "servers/text/text_server.h"
