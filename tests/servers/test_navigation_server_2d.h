@@ -31,7 +31,7 @@
 #pragma once
 
 #include "modules/navigation_2d/nav_utils_2d.h"
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 
 #include "scene/2d/polygon_2d.h"
 
@@ -124,12 +124,12 @@ TEST_SUITE("[Navigation2D]") {
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer2D::INFO_AGENT_COUNT), 1);
 			navigation_server->agent_set_map(agent, RID());
-			navigation_server->free(map);
+			navigation_server->free_rid(map);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer2D::INFO_AGENT_COUNT), 0);
 		}
 
-		navigation_server->free(agent);
+		navigation_server->free_rid(agent);
 	}
 
 	TEST_CASE("[NavigationServer2D] Server should manage map properly") {
@@ -198,7 +198,7 @@ TEST_SUITE("[Navigation2D]") {
 			navigation_server->agent_set_map(agent, map);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->map_get_agents(map).size(), 1);
-			navigation_server->free(agent);
+			navigation_server->free_rid(agent);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->map_get_agents(map).size(), 0);
 		}
@@ -209,7 +209,7 @@ TEST_SUITE("[Navigation2D]") {
 			navigation_server->link_set_map(link, map);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->map_get_links(map).size(), 1);
-			navigation_server->free(link);
+			navigation_server->free_rid(link);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->map_get_links(map).size(), 0);
 		}
@@ -220,7 +220,7 @@ TEST_SUITE("[Navigation2D]") {
 			navigation_server->obstacle_set_map(obstacle, map);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->map_get_obstacles(map).size(), 1);
-			navigation_server->free(obstacle);
+			navigation_server->free_rid(obstacle);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->map_get_obstacles(map).size(), 0);
 		}
@@ -231,7 +231,7 @@ TEST_SUITE("[Navigation2D]") {
 			navigation_server->region_set_map(region, map);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->map_get_regions(map).size(), 1);
-			navigation_server->free(region);
+			navigation_server->free_rid(region);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->map_get_regions(map).size(), 0);
 		}
@@ -264,7 +264,7 @@ TEST_SUITE("[Navigation2D]") {
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 		}
 
-		navigation_server->free(map);
+		navigation_server->free_rid(map);
 		navigation_server->physics_process(0.0); // Give server some cycles to actually remove map.
 		CHECK_EQ(navigation_server->get_maps().size(), 0);
 	}
@@ -307,12 +307,12 @@ TEST_SUITE("[Navigation2D]") {
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer2D::INFO_LINK_COUNT), 1);
 			navigation_server->link_set_map(link, RID());
-			navigation_server->free(map);
+			navigation_server->free_rid(map);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer2D::INFO_LINK_COUNT), 0);
 		}
 
-		navigation_server->free(link);
+		navigation_server->free_rid(link);
 	}
 
 	TEST_CASE("[NavigationServer2D] Server should manage obstacles properly") {
@@ -323,7 +323,7 @@ TEST_SUITE("[Navigation2D]") {
 
 		// TODO: Add tests for setters/getters once getters are added.
 
-		navigation_server->free(obstacle);
+		navigation_server->free_rid(obstacle);
 	}
 
 	TEST_CASE("[NavigationServer2D] Server should manage regions properly") {
@@ -360,7 +360,7 @@ TEST_SUITE("[Navigation2D]") {
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer2D::INFO_REGION_COUNT), 1);
 			navigation_server->region_set_map(region, RID());
-			navigation_server->free(map);
+			navigation_server->free_rid(map);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer2D::INFO_REGION_COUNT), 0);
 		}
@@ -373,7 +373,7 @@ TEST_SUITE("[Navigation2D]") {
 			ERR_PRINT_ON;
 		}
 
-		navigation_server->free(region);
+		navigation_server->free_rid(region);
 	}
 
 	// This test case does not check precise values on purpose - to not be too sensitivte.
@@ -394,8 +394,8 @@ TEST_SUITE("[Navigation2D]") {
 		CHECK_EQ(agent_avoidance_callback_mock.function1_calls, 1);
 		CHECK_NE(agent_avoidance_callback_mock.function1_latest_arg0, Vector2(0, 0));
 
-		navigation_server->free(agent);
-		navigation_server->free(map);
+		navigation_server->free_rid(agent);
+		navigation_server->free_rid(map);
 	}
 
 	// This test case does not check precise values on purpose - to not be too sensitivte.
@@ -436,9 +436,9 @@ TEST_SUITE("[Navigation2D]") {
 		CHECK_MESSAGE(agent_1_safe_velocity.y < 0, "agent 1 should move a bit to the side so that it avoids agent 2");
 		CHECK_MESSAGE(agent_2_safe_velocity.y > 0, "agent 2 should move a bit to the side so that it avoids agent 1");
 
-		navigation_server->free(agent_2);
-		navigation_server->free(agent_1);
-		navigation_server->free(map);
+		navigation_server->free_rid(agent_2);
+		navigation_server->free_rid(agent_1);
+		navigation_server->free_rid(map);
 	}
 
 	TEST_CASE("[NavigationServer2D] Server should make agents avoid dynamic obstacles when avoidance enabled") {
@@ -470,9 +470,9 @@ TEST_SUITE("[Navigation2D]") {
 		CHECK_MESSAGE(agent_1_safe_velocity.x > 0, "Agent 1 should move a bit along desired velocity (+X).");
 		CHECK_MESSAGE(agent_1_safe_velocity.y < 0, "Agent 1 should move a bit to the side so that it avoids obstacle.");
 
-		navigation_server->free(obstacle_1);
-		navigation_server->free(agent_1);
-		navigation_server->free(map);
+		navigation_server->free_rid(obstacle_1);
+		navigation_server->free_rid(agent_1);
+		navigation_server->free_rid(map);
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 	}
 
@@ -525,10 +525,10 @@ TEST_SUITE("[Navigation2D]") {
 		CHECK_MESSAGE(agent_2_safe_velocity.x > 0, "Agent 2 should move a bit along desired velocity (+X).");
 		CHECK_MESSAGE(agent_2_safe_velocity.y == 0, "Agent 2 should not move to the side.");
 
-		navigation_server->free(obstacle_1);
-		navigation_server->free(agent_2);
-		navigation_server->free(agent_1);
-		navigation_server->free(map);
+		navigation_server->free_rid(obstacle_1);
+		navigation_server->free_rid(agent_2);
+		navigation_server->free_rid(agent_1);
+		navigation_server->free_rid(map);
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 	}
 
@@ -630,8 +630,8 @@ TEST_SUITE("[Navigation2D]") {
 			CHECK_NE(navigation_server->map_get_closest_point(map, Vector2(0, 0)), Vector2(0, 0));
 		}
 
-		navigation_server->free(region);
-		navigation_server->free(map);
+		navigation_server->free_rid(region);
+		navigation_server->free_rid(map);
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 
 		memdelete(polygon);
@@ -736,8 +736,8 @@ TEST_SUITE("[Navigation2D]") {
 			CHECK_EQ(query_result->get_path_owner_ids().size(), 0);
 		}
 
-		navigation_server->free(region);
-		navigation_server->free(map);
+		navigation_server->free_rid(region);
+		navigation_server->free_rid(map);
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 	}
 

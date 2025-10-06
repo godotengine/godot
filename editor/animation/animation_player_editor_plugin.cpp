@@ -52,9 +52,27 @@
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/image_texture.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 ///////////////////////////////////
+
+void AnimationPlayerEditor::_find_player() {
+	if (!is_visible() || player) {
+		return;
+	}
+
+	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+
+	if (!edited_scene) {
+		return;
+	}
+
+	TypedArray<Node> players = edited_scene->find_children("", "AnimationPlayer");
+
+	if (players.size() == 1) {
+		plugin->edit(players.front());
+	}
+}
 
 void AnimationPlayerEditor::_node_removed(Node *p_node) {
 	if (player && original_node == p_node) {
@@ -130,6 +148,8 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 			get_tree()->connect(SNAME("node_removed"), callable_mp(this, &AnimationPlayerEditor::_node_removed));
 
+			EditorNode::get_singleton()->connect("scene_changed", callable_mp(this, &AnimationPlayerEditor::_find_player));
+
 			add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
 		} break;
 
@@ -190,6 +210,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
+			_find_player();
 			_ensure_dummy_player();
 		} break;
 	}
@@ -1699,7 +1720,7 @@ void AnimationPlayerEditor::_allocate_onion_layers() {
 void AnimationPlayerEditor::_free_onion_layers() {
 	for (uint32_t i = 0; i < onion.captures.size(); i++) {
 		if (onion.captures[i].is_valid()) {
-			RS::get_singleton()->free(onion.captures[i]);
+			RS::get_singleton()->free_rid(onion.captures[i]);
 		}
 	}
 	onion.captures.clear();
@@ -2283,8 +2304,8 @@ void fragment() {
 
 AnimationPlayerEditor::~AnimationPlayerEditor() {
 	_free_onion_layers();
-	RS::get_singleton()->free(onion.capture.canvas);
-	RS::get_singleton()->free(onion.capture.canvas_item);
+	RS::get_singleton()->free_rid(onion.capture.canvas);
+	RS::get_singleton()->free_rid(onion.capture.canvas_item);
 	onion.capture = {};
 }
 

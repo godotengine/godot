@@ -40,6 +40,7 @@ class LineEdit;
 class Popup;
 class PopupMenu;
 class TextEdit;
+class Timer;
 class Tree;
 class VScrollBar;
 
@@ -286,7 +287,7 @@ public:
 	void set_structured_text_bidi_override(int p_column, TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override(int p_column) const;
 
-	void set_structured_text_bidi_override_options(int p_column, Array p_args);
+	void set_structured_text_bidi_override_options(int p_column, const Array &p_args);
 	Array get_structured_text_bidi_override_options(int p_column) const;
 
 	void set_language(int p_column, const String &p_language);
@@ -511,6 +512,7 @@ private:
 		int expand_ratio = 1;
 		bool expand = true;
 		bool clip_content = false;
+		String title_tooltip;
 		String title;
 		String xl_title;
 		HorizontalAlignment title_alignment = HORIZONTAL_ALIGNMENT_CENTER;
@@ -549,6 +551,8 @@ private:
 
 	int compute_item_height(TreeItem *p_item) const;
 	int get_item_height(TreeItem *p_item) const;
+	Point2i convert_rtl_position(const Point2i &pos, int width = 0) const;
+	Rect2i convert_rtl_rect(const Rect2i &Rect2) const;
 	void _update_all();
 	void update_column(int p_col);
 	void update_item_cell(TreeItem *p_item, int p_col) const;
@@ -836,6 +840,9 @@ public:
 
 	void set_column_title(int p_column, const String &p_title);
 	String get_column_title(int p_column) const;
+
+	void set_column_title_tooltip_text(int p_column, const String &p_tooltip);
+	String get_column_title_tooltip_text(int p_column) const;
 
 	void set_column_title_alignment(int p_column, HorizontalAlignment p_alignment);
 	HorizontalAlignment get_column_title_alignment(int p_column) const;

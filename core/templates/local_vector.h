@@ -166,7 +166,11 @@ public:
 			if (tight) {
 				capacity = p_size;
 			} else {
+				// Try 1.5x the current capacity.
+				// This ratio was chosen because it is close to the ideal growth rate of the golden ratio.
+				// See https://archive.ph/Z2R8w for details.
 				capacity = MAX((U)2, capacity + ((1 + capacity) >> 1));
+				// If 1.5x growth isn't enough, just use the needed size exactly.
 				if (p_size > capacity) {
 					capacity = p_size;
 				}
@@ -318,18 +322,12 @@ public:
 		insert(i, p_val);
 	}
 
-	operator Vector<T>() const {
+	explicit operator Vector<T>() const {
 		Vector<T> ret;
 		ret.resize(count);
 		T *w = ret.ptrw();
 		if (w) {
-			if constexpr (std::is_trivially_copyable_v<T>) {
-				memcpy(w, data, sizeof(T) * count);
-			} else {
-				for (U i = 0; i < count; i++) {
-					w[i] = data[i];
-				}
-			}
+			copy_arr_placement(w, data, count);
 		}
 		return ret;
 	}

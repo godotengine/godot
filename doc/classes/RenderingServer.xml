@@ -3350,12 +3350,12 @@
 				Sets the render reflection mask for this reflection probe. Only instances with a matching layer will have reflections applied from this probe. Equivalent to [member ReflectionProbe.reflection_mask].
 			</description>
 		</method>
-		<method name="reflection_probe_set_resolution">
+		<method name="reflection_probe_set_resolution" deprecated="This method has not done anything since Godot 3.">
 			<return type="void" />
 			<param index="0" name="probe" type="RID" />
 			<param index="1" name="resolution" type="int" />
 			<description>
-				Sets the resolution to use when rendering the specified reflection probe. The [param resolution] is specified for each cubemap face: for instance, specifying [code]512[/code] will allocate 6 faces of 512×512 each (plus mipmaps for roughness levels).
+				Deprecated. This method does nothing.
 			</description>
 		</method>
 		<method name="reflection_probe_set_size">

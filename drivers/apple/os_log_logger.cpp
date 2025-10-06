@@ -30,6 +30,7 @@
 
 #include "os_log_logger.h"
 
+#include "core/object/script_backtrace.h"
 #include "core/string/print_string.h"
 
 #include <cstdlib> // For malloc/free

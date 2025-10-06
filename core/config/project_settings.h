@@ -30,7 +30,8 @@
 
 #pragma once
 
-#include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/templates/rb_map.h"
 
 template <typename T>
 class TypedArray;

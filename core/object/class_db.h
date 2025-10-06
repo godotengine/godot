@@ -32,6 +32,7 @@
 
 #include "core/object/method_bind.h"
 #include "core/object/object.h"
+#include "core/os/rw_lock.h"
 #include "core/string/print_string.h"
 
 // Makes callable_mp readily available in all classes connecting signals.
@@ -329,9 +330,9 @@ public:
 		T::register_custom_data_to_otdb();
 	}
 
-	static void get_class_list(List<StringName> *p_classes);
+	static void get_class_list(LocalVector<StringName> &p_classes);
 #ifdef TOOLS_ENABLED
-	static void get_extensions_class_list(List<StringName> *p_classes);
+	static void get_extensions_class_list(LocalVector<StringName> &p_classes);
 	static void get_extension_class_list(const Ref<GDExtension> &p_extension, List<StringName> *p_classes);
 	static ObjectGDExtension *get_placeholder_extension(const StringName &p_class);
 #endif

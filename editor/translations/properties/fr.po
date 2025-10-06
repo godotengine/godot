@@ -148,13 +148,15 @@
 # Omgeta <anooptiger@hotmail.com>, 2025.
 # Creator of Fun <Thewhiteshadow664@gmail.com>, 2025.
 # TermNinja <termninja@users.noreply.hosted.weblate.org>, 2025.
+# Fabien2S <fabien2s+github@proton.me>, 2025.
+# Natahan-Tatan <me@natahan.net>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-07 17:17+0000\n"
-"Last-Translator: aioshiro <aioshiro57@proton.me>\n"
+"PO-Revision-Date: 2025-09-27 00:24+0000\n"
+"Last-Translator: Natahan-Tatan <me@natahan.net>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/fr/>\n"
 "Language: fr\n"
@@ -187,6 +189,12 @@ msgstr "Exécuter"
 
 msgid "Main Scene"
 msgstr "Scène principale"
+
+msgid "Disable stdout"
+msgstr "Désactiver la sortie standard"
+
+msgid "Disable stderr"
+msgstr "Désactiver la sortie d'erreur standard"
 
 msgid "Print Header"
 msgstr "Afficher l'entête"
@@ -2170,6 +2178,9 @@ msgstr "Mode par défaut du sélecteur de couleur"
 msgid "Default Color Picker Shape"
 msgstr "Forme par défaut du sélecteur de couleur"
 
+msgid "Color Picker Show Intensity"
+msgstr "Afficher l'intensité du sélecteur de couleur"
+
 msgid "Theme"
 msgstr "Thème"
 
@@ -2256,6 +2267,9 @@ msgstr "Multi fenêtre"
 
 msgid "Restore Windows on Load"
 msgstr "Restaurer les fenêtres au chargement"
+
+msgid "Maximize Window"
+msgstr "Agrandir la fenêtre"
 
 msgid "FileSystem"
 msgstr "Système de fichiers"
@@ -3811,8 +3825,20 @@ msgstr "Déclaration non typée"
 msgid "Inferred Declaration"
 msgstr "Déclaration inférée"
 
+msgid "Unsafe Property Access"
+msgstr "Accès dangereux à une propriété"
+
+msgid "Unsafe Method Access"
+msgstr "Accès dangereux à une méthode"
+
 msgid "Unsafe Cast"
 msgstr "Cast dangereux"
+
+msgid "Unsafe Call Argument"
+msgstr "Appel d'argument dangereux"
+
+msgid "Unsafe Void Return"
+msgstr "Retour void dangereux"
 
 msgid "Return Value Discarded"
 msgstr "Valeur de renvoi ignorée"
@@ -3822,6 +3848,9 @@ msgstr "Statique appelé sur instance"
 
 msgid "Missing Tool"
 msgstr "Tool manquant"
+
+msgid "Redundant Static Unload"
+msgstr "Déchargement statique redondant"
 
 msgid "Redundant Await"
 msgstr "Await redondant"
@@ -4797,6 +4826,9 @@ msgstr "Répertoire de compilation Gradle"
 
 msgid "Android Source Template"
 msgstr "Modèle de source Android"
+
+msgid "Compress Native Libraries"
+msgstr "Compresser les bibliothèques natives"
 
 msgid "Export Format"
 msgstr "Format d'exportation"

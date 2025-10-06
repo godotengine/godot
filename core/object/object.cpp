@@ -254,11 +254,45 @@ Object::Connection::Connection(const Variant &p_variant) {
 bool Object::_predelete() {
 	_predelete_ok = 1;
 	notification(NOTIFICATION_PREDELETE, true);
-	if (_predelete_ok) {
-		_class_name_ptr = nullptr; // Must restore, so constructors/destructors have proper class name access at each stage.
-		notification(NOTIFICATION_PREDELETE_CLEANUP, true);
+	if (!_predelete_ok) {
+		return false;
 	}
-	return _predelete_ok;
+
+	_gdtype_ptr = nullptr; // Must restore, so constructors/destructors have proper class name access at each stage.
+	notification(NOTIFICATION_PREDELETE_CLEANUP, true);
+
+	// Destruction order starts with the most derived class, and progresses towards the base Object class:
+	// Script subclasses -> GDExtension subclasses -> C++ subclasses -> Object
+	if (script_instance) {
+		memdelete(script_instance);
+	}
+	script_instance = nullptr;
+
+	if (_extension) {
+#ifdef TOOLS_ENABLED
+		if (_extension->untrack_instance) {
+			_extension->untrack_instance(_extension->tracking_userdata, this);
+		}
+#endif
+		if (_extension->free_instance) {
+			_extension->free_instance(_extension->class_userdata, _extension_instance);
+		}
+		_extension = nullptr;
+		_extension_instance = nullptr;
+	}
+#ifdef TOOLS_ENABLED
+	else if (_instance_bindings != nullptr) {
+		Engine *engine = Engine::get_singleton();
+		GDExtensionManager *gdextension_manager = GDExtensionManager::get_singleton();
+		if (engine && gdextension_manager && engine->is_extension_reloading_enabled()) {
+			for (uint32_t i = 0; i < _instance_binding_count; i++) {
+				gdextension_manager->untrack_instance_binding(_instance_bindings[i].token, this);
+			}
+		}
+	}
+#endif
+
+	return true;
 }
 
 void Object::cancel_free() {
@@ -267,7 +301,7 @@ void Object::cancel_free() {
 
 void Object::_initialize() {
 	// Cache the class name in the object for quick reference.
-	_class_name_ptr = _get_class_namev();
+	_gdtype_ptr = &_get_typev();
 	_initialize_classv();
 }
 
@@ -2051,18 +2085,34 @@ uint32_t Object::get_edited_version() const {
 }
 #endif
 
+const GDType &Object::get_gdtype() const {
+	if (unlikely(!_gdtype_ptr)) {
+		// While class is initializing / deinitializing, constructors and destructors
+		// need access to the proper type at the proper stage.
+		return _get_typev();
+	}
+	return *_gdtype_ptr;
+}
+
+bool Object::is_class(const String &p_class) const {
+	if (_extension && _extension->is_class(p_class)) {
+		return true;
+	}
+	for (const StringName &name : get_gdtype().get_name_hierarchy()) {
+		if (name == p_class) {
+			return true;
+		}
+	}
+	return false;
+}
+
 const StringName &Object::get_class_name() const {
 	if (_extension) {
 		// Can't put inside the unlikely as constructor can run it.
 		return _extension->class_name;
 	}
 
-	if (unlikely(!_class_name_ptr)) {
-		// While class is initializing / deinitializing, constructors and destructors
-		// need access to the proper class at the proper stage.
-		return *_get_class_namev();
-	}
-	return *_class_name_ptr;
+	return get_gdtype().get_name();
 }
 
 StringName Object::get_class_name_for_extension(const GDExtension *p_library) const {
@@ -2071,8 +2121,7 @@ StringName Object::get_class_name_for_extension(const GDExtension *p_library) co
 	// have to return the closest native parent's class name, so that it doesn't try to
 	// use this like the real object.
 	if (unlikely(_extension && _extension->library == p_library && _extension->is_placeholder)) {
-		const StringName *class_name = _get_class_namev();
-		return *class_name;
+		return get_class_name();
 	}
 #endif
 
@@ -2082,13 +2131,13 @@ StringName Object::get_class_name_for_extension(const GDExtension *p_library) co
 	}
 
 	// Extensions only have wrapper classes for classes exposed in ClassDB.
-	const StringName *class_name = _get_class_namev();
-	if (ClassDB::is_class_exposed(*class_name)) {
-		return *class_name;
+	const StringName &class_name = get_class_name();
+	if (ClassDB::is_class_exposed(class_name)) {
+		return class_name;
 	}
 
 	// Find the nearest parent class that's exposed.
-	StringName parent_class = ClassDB::get_parent_class(*class_name);
+	StringName parent_class = ClassDB::get_parent_class(class_name);
 	while (parent_class != StringName()) {
 		if (ClassDB::is_class_exposed(parent_class)) {
 			return parent_class;
@@ -2262,46 +2311,19 @@ void Object::detach_from_objectdb() {
 	}
 }
 
-void Object::assign_class_name_static(const Span<char> &p_name, StringName &r_target) {
+void Object::assign_type_static(GDType **type_ptr, const char *p_name, const GDType *super_type) {
 	static BinaryMutex _mutex;
 	MutexLock lock(_mutex);
-	if (r_target) {
-		// Already assigned while we were waiting for the mutex.
+	GDType *type = *type_ptr;
+	if (type) {
+		// Assigned while we were waiting.
 		return;
 	}
-	r_target = StringName(p_name.ptr(), true);
+	type = memnew(GDType(super_type, StringName(p_name, true)));
+	*type_ptr = type;
 }
 
 Object::~Object() {
-	if (script_instance) {
-		memdelete(script_instance);
-	}
-	script_instance = nullptr;
-
-	if (_extension) {
-#ifdef TOOLS_ENABLED
-		if (_extension->untrack_instance) {
-			_extension->untrack_instance(_extension->tracking_userdata, this);
-		}
-#endif
-		if (_extension->free_instance) {
-			_extension->free_instance(_extension->class_userdata, _extension_instance);
-		}
-		_extension = nullptr;
-		_extension_instance = nullptr;
-	}
-#ifdef TOOLS_ENABLED
-	else if (_instance_bindings != nullptr) {
-		Engine *engine = Engine::get_singleton();
-		GDExtensionManager *gdextension_manager = GDExtensionManager::get_singleton();
-		if (engine && gdextension_manager && engine->is_extension_reloading_enabled()) {
-			for (uint32_t i = 0; i < _instance_binding_count; i++) {
-				gdextension_manager->untrack_instance_binding(_instance_bindings[i].token, this);
-			}
-		}
-	}
-#endif
-
 	if (_emitting) {
 		//@todo this may need to actually reach the debugger prioritarily somehow because it may crash before
 		ERR_PRINT(vformat("Object '%s' was freed or unreferenced while a signal is being emitted from it. Try connecting to the signal using 'CONNECT_DEFERRED' flag, or use queue_free() to free the object (if this object is a Node) to avoid this error and potential crashes.", to_string()));
@@ -2369,12 +2391,12 @@ void postinitialize_handler(Object *p_object) {
 	p_object->_postinitialize();
 }
 
-void ObjectDB::debug_objects(DebugFunc p_func) {
+void ObjectDB::debug_objects(DebugFunc p_func, void *p_user_data) {
 	spin_lock.lock();
 
 	for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
 		if (object_slots[i].validator) {
-			p_func(object_slots[i].object);
+			p_func(object_slots[i].object, p_user_data);
 			count--;
 		}
 	}
@@ -2541,6 +2563,9 @@ void ObjectDB::cleanup() {
 					}
 					if (obj->is_class("Resource")) {
 						extra_info = " - Resource path: " + String(resource_get_path->call(obj, nullptr, 0, call_error));
+					}
+					if (obj->is_class("RefCounted")) {
+						extra_info = " - Reference count: " + itos((static_cast<RefCounted *>(obj))->get_reference_count());
 					}
 
 					uint64_t id = uint64_t(i) | (uint64_t(object_slots[i].validator) << OBJECTDB_SLOT_MAX_COUNT_BITS) | (object_slots[i].is_ref_counted ? OBJECTDB_REFERENCE_BIT : 0);

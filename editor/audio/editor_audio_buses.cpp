@@ -45,8 +45,9 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/separator.h"
+#include "scene/main/timer.h"
 #include "scene/resources/font.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 void EditorAudioBus::_update_visible_channels() {
 	int i = 0;

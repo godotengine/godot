@@ -32,7 +32,7 @@
 
 		// This typed array can only contain integers.
 		// Attempting to add any other type will result in an error.
-		Godot.Collections.Array&gt;int&lt; typedArray = [1, 2, 3];
+		Godot.Collections.Array&lt;int&gt; typedArray = [1, 2, 3];
 		[/csharp]
 		[/codeblocks]
 		[b]Note:[/b] Arrays are always passed by [b]reference[/b]. To get a copy of an array that can be modified independently of the original array, use [method duplicate].

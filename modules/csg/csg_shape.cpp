@@ -37,7 +37,7 @@
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
 #ifndef NAVIGATION_3D_DISABLED
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 #endif // NAVIGATION_3D_DISABLED
 
 #include <manifold/manifold.h>
@@ -106,7 +106,7 @@ void CSGShape3D::set_use_collision(bool p_enable) {
 		set_collision_priority(collision_priority);
 		_make_dirty(); //force update
 	} else {
-		PhysicsServer3D::get_singleton()->free(root_collision_instance);
+		PhysicsServer3D::get_singleton()->free_rid(root_collision_instance);
 		root_collision_instance = RID();
 		root_collision_shape.unref();
 	}
@@ -809,7 +809,7 @@ void CSGShape3D::_update_debug_collision_shape() {
 
 void CSGShape3D::_clear_debug_collision_shape() {
 	if (root_collision_debug_instance.is_valid()) {
-		RS::get_singleton()->free(root_collision_debug_instance);
+		RS::get_singleton()->free_rid(root_collision_debug_instance);
 		root_collision_debug_instance = RID();
 	}
 }
@@ -913,7 +913,7 @@ void CSGShape3D::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
-				PhysicsServer3D::get_singleton()->free(root_collision_instance);
+				PhysicsServer3D::get_singleton()->free_rid(root_collision_instance);
 				root_collision_instance = RID();
 				root_collision_shape.unref();
 				_clear_debug_collision_shape();

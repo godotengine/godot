@@ -31,7 +31,7 @@
 #pragma once
 
 /*
-	The OpenXR future extension forms the basis of OpenXRs ability to
+	The OpenXR future extension forms the basis of OpenXR's ability to
 	execute logic asynchronously.
 
 	Asynchronous functions will return a future object which can be

@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "scene/resources/gradient_texture.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 RID Environment::get_rid() const {
 	return environment;
@@ -1120,7 +1120,7 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (p_property.name == "glow_intensity" && glow_blend_mode == GLOW_BLEND_MODE_MIX) {
+	if (p_property.name == "glow_intensity" && glow_blend_mode == GLOW_BLEND_MODE_MIX && OS::get_singleton()->get_current_rendering_method() != "gl_compatibility") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
@@ -1596,5 +1596,5 @@ Environment::Environment() {
 
 Environment::~Environment() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(environment);
+	RS::get_singleton()->free_rid(environment);
 }

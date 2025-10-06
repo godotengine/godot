@@ -62,16 +62,16 @@
 #include "scene/gui/separator.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
-#include "servers/display_server.h"
-#include "servers/navigation_server_3d.h"
-
-#ifndef PHYSICS_3D_DISABLED
-#include "servers/physics_server_3d.h"
-#endif // PHYSICS_3D_DISABLED
+#include "servers/display/display_server.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 #ifndef PHYSICS_2D_DISABLED
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 #endif // PHYSICS_2D_DISABLED
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/physics_server_3d.h"
+#endif // PHYSICS_3D_DISABLED
 
 constexpr int GODOT4_CONFIG_VERSION = 5;
 
@@ -1842,7 +1842,7 @@ ProjectManager::ProjectManager() {
 		new_tag_name->connect(SceneStringName(text_changed), callable_mp(this, &ProjectManager::_set_new_tag_name));
 		new_tag_name->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectManager::_create_new_tag).unbind(1));
 		create_tag_dialog->connect("about_to_popup", callable_mp(new_tag_name, &LineEdit::clear));
-		create_tag_dialog->connect("about_to_popup", callable_mp((Control *)new_tag_name, &Control::grab_focus), CONNECT_DEFERRED);
+		create_tag_dialog->connect("about_to_popup", callable_mp((Control *)new_tag_name, &Control::grab_focus).bind(false), CONNECT_DEFERRED);
 
 		tag_error = memnew(Label);
 		tag_error->set_focus_mode(FOCUS_ACCESSIBILITY);

@@ -356,7 +356,7 @@ bool NavRegion3D::get_use_async_iterations() const {
 
 NavRegion3D::NavRegion3D() :
 		sync_dirty_request_list_element(this), async_list_element(this) {
-	type = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_REGION;
+	type = NavigationEnums3D::PathSegmentType::PATH_SEGMENT_TYPE_REGION;
 	iteration_build.region = this;
 	iteration.instantiate();
 

@@ -53,7 +53,7 @@ void OpenXRActionEditor::_notification(int p_what) {
 	}
 }
 
-void OpenXRActionEditor::_on_action_name_changed(const String p_new_text) {
+void OpenXRActionEditor::_on_action_name_changed(const String &p_new_text) {
 	if (action->get_name() != p_new_text) {
 		undo_redo->create_action(TTR("Rename Action"));
 		undo_redo->add_do_method(this, "_do_set_name", p_new_text);
@@ -75,13 +75,13 @@ void OpenXRActionEditor::_on_action_name_changed(const String p_new_text) {
 	}
 }
 
-void OpenXRActionEditor::_do_set_name(const String p_new_text) {
+void OpenXRActionEditor::_do_set_name(const String &p_new_text) {
 	action->set_name(p_new_text);
 	action->set_edited(true);
 	action_name->set_text(p_new_text);
 }
 
-void OpenXRActionEditor::_on_action_localized_name_changed(const String p_new_text) {
+void OpenXRActionEditor::_on_action_localized_name_changed(const String &p_new_text) {
 	if (action->get_localized_name() != p_new_text) {
 		undo_redo->create_action(TTR("Rename Actions Localized name"));
 		undo_redo->add_do_method(this, "_do_set_localized_name", p_new_text);
@@ -93,7 +93,7 @@ void OpenXRActionEditor::_on_action_localized_name_changed(const String p_new_te
 	}
 }
 
-void OpenXRActionEditor::_do_set_localized_name(const String p_new_text) {
+void OpenXRActionEditor::_do_set_localized_name(const String &p_new_text) {
 	action->set_localized_name(p_new_text);
 	action->set_edited(true);
 	action_localized_name->set_text(p_new_text);
@@ -125,7 +125,7 @@ void OpenXRActionEditor::_on_remove_action() {
 	emit_signal("remove", this);
 }
 
-OpenXRActionEditor::OpenXRActionEditor(Ref<OpenXRAction> p_action) {
+OpenXRActionEditor::OpenXRActionEditor(const Ref<OpenXRAction> &p_action) {
 	undo_redo = EditorUndoRedoManager::get_singleton();
 	action = p_action;
 

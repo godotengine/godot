@@ -15455,9 +15455,6 @@ msgstr "3D-Text"
 msgid "Threshold at which the alpha scissor will discard values."
 msgstr "Schwellwert, ab der die Alpha-Schere Werte verwerfen wird."
 
-msgid "The light will affect objects in the selected layers."
-msgstr "Das Licht wirkt sich auf Objekte in den ausgewählten Ebenen aus."
-
 msgid "Using Lightmap global illumination"
 msgstr "Verwenden der globalen Lightmap-Beleuchtung"
 

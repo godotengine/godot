@@ -33,7 +33,7 @@
 #include "nav_rid_3d.h"
 #include "nav_utils_3d.h"
 
-#include "servers/navigation/navigation_utilities.h"
+#include "servers/navigation_3d/navigation_constants_3d.h"
 
 class NavMap3D;
 
@@ -43,10 +43,10 @@ protected:
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
 	ObjectID owner_id;
-	NavigationUtilities::PathSegmentType type;
+	NavigationEnums3D::PathSegmentType type;
 
 public:
-	NavigationUtilities::PathSegmentType get_type() const { return type; }
+	NavigationEnums3D::PathSegmentType get_type() const { return type; }
 
 	virtual void set_use_edge_connections(bool p_enabled) {}
 	virtual bool get_use_edge_connections() const { return false; }
