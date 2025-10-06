@@ -2001,7 +2001,9 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 			// Assuming layers are tightly packed. If this is not true on some driver, we must modify the copy algorithm.
 			DEV_ASSERT(mip_layouts[i].layer_pitch == mip_layouts[i].size / tex->layers);
 
-			work_buffer_size = STEPIFY(work_buffer_size, work_mip_alignment) + mip_layouts[i].size;
+			// Write current offset to the mip layout struct.
+			mip_layouts[i].offset = STEPIFY(work_buffer_size, work_mip_alignment);
+			work_buffer_size = mip_layouts[i].offset + mip_layouts[i].size;
 		}
 
 		RDD::BufferID tmp_buffer = driver->buffer_create(work_buffer_size, RDD::BUFFER_USAGE_TRANSFER_TO_BIT, RDD::MEMORY_ALLOCATION_TYPE_CPU);
@@ -2062,7 +2064,7 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 			uint32_t tight_row_pitch = tight_mip_size / ((height / block_h) * depth);
 
 			// Copy row-by-row to erase padding due to alignments.
-			const uint8_t *rp = read_ptr;
+			const uint8_t *rp = read_ptr + mip_layouts[i].offset;
 			uint8_t *wp = write_ptr;
 			for (uint32_t row = h * d / block_h; row != 0; row--) {
 				memcpy(wp, rp, tight_row_pitch);
@@ -2073,7 +2075,6 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 			w = MAX(block_w, w >> 1);
 			h = MAX(block_h, h >> 1);
 			d = MAX(1u, d >> 1);
-			read_ptr += mip_layouts[i].size;
 			write_ptr += tight_mip_size;
 		}
 
