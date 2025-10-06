@@ -677,7 +677,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// SSL
 	_initial_set("network/ssl/editor_ssl_certificates", _SYSTEM_CERTS_PATH);
 	hints["network/ssl/editor_ssl_certificates"] = PropertyInfo(Variant::STRING, "network/ssl/editor_ssl_certificates", PROPERTY_HINT_GLOBAL_FILE, "*.crt,*.pem", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
-	_initial_set("network/ssl/enable_tls_v1.3", true);
+	_initial_set("network/ssl/enable_tls_v1.3", false);
 
 	// HTTP Proxy
 	_initial_set("network/http_proxy/host", "");

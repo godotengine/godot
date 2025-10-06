@@ -73,7 +73,7 @@ int godot_mbedtls_mutex_unlock(mbedtls_threading_mutex_t *p_mutex) {
 #endif
 
 void register_mbedtls_types() {
-	GLOBAL_DEF("network/ssl/enable_tls_v1.3", true);
+	GLOBAL_DEF("network/ssl/enable_tls_v1.3", false);
 
 #ifdef GODOT_MBEDTLS_THREADING_ALT
 	mbedtls_threading_set_alt(
