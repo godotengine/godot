@@ -108,6 +108,9 @@ public:
 	/// Note: Assumes that elements in the span are sorted. Otherwise, use find() instead.
 	template <typename Comparator = Comparator<T>>
 	constexpr uint64_t bisect(const T &p_value, bool p_before, Comparator compare = Comparator()) const;
+
+	/// The caller is responsible to ensure size() > 0.
+	constexpr T max() const;
 };
 
 template <typename T>
@@ -202,6 +205,18 @@ constexpr uint64_t Span<T>::bisect(const T &p_value, bool p_before, Comparator c
 		}
 	}
 	return lo;
+}
+
+template <typename T>
+constexpr T Span<T>::max() const {
+	DEV_ASSERT(size() > 0);
+	T max_val = _ptr[0];
+	for (size_t i = 1; i < _len; ++i) {
+		if (_ptr[i] > max_val) {
+			max_val = _ptr[i];
+		}
+	}
+	return max_val;
 }
 
 // Zero-constructing Span initializes _ptr and _len to 0 (and thus empty).

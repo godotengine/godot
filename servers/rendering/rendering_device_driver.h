@@ -70,7 +70,7 @@ class RenderingShaderContainerFormat;
 template <typename... RESOURCE_TYPES>
 struct VersatileResourceTemplate {
 	static constexpr size_t RESOURCE_SIZES[] = { sizeof(RESOURCE_TYPES)... };
-	static constexpr size_t MAX_RESOURCE_SIZE = std::max_element(RESOURCE_SIZES, RESOURCE_SIZES + sizeof...(RESOURCE_TYPES))[0];
+	static constexpr size_t MAX_RESOURCE_SIZE = Span(RESOURCE_SIZES).max();
 	uint8_t data[MAX_RESOURCE_SIZE];
 
 	template <typename T>
