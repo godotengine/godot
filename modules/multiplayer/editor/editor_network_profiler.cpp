@@ -392,6 +392,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	counters_display->set_column_expand(2, false);
 	counters_display->set_column_clip_content(2, true);
 	counters_display->set_column_custom_minimum_width(2, 120 * EDSCALE);
+	counters_display->add_theme_constant_override("draw_color_guides", 1);
 	sc->add_child(counters_display);
 
 	// Replication
@@ -424,6 +425,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	replication_display->set_column_clip_content(4, true);
 	replication_display->set_column_custom_minimum_width(4, 80 * EDSCALE);
 	replication_display->connect("button_clicked", callable_mp(this, &EditorNetworkProfiler::_replication_button_clicked));
+	replication_display->add_theme_constant_override("draw_color_guides", 1);
 	sc->add_child(replication_display);
 
 	refresh_timer = memnew(Timer);

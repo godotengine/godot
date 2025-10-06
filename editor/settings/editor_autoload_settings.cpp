@@ -976,6 +976,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->connect("item_edited", callable_mp(this, &EditorAutoloadSettings::_autoload_edited));
 	tree->connect("button_clicked", callable_mp(this, &EditorAutoloadSettings::_autoload_button_pressed));
 	tree->connect("item_activated", callable_mp(this, &EditorAutoloadSettings::_autoload_activated));
+	tree->add_theme_constant_override("draw_color_guides", 1);
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	add_child(tree, true);
