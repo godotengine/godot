@@ -936,6 +936,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			using_subpass_post_process = false;
 		}
 
+		if (use_msaa && p_render_data->environment.is_valid() && RSG::camera_attributes->camera_attributes_uses_dof(p_render_data->camera_attributes)) {
+			// Need to resolve depth texture for DOF when using MSAA.
+			scene_state.used_depth_texture = true;
+		}
+
 		if (scene_state.used_screen_texture || scene_state.used_depth_texture) {
 			// can't use our last two subpasses because we're reading from screen texture or depth texture
 			merge_transparent_pass = false;
@@ -1311,7 +1316,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		// If we need extra effects we do this in its own pass
 		RENDER_TIMESTAMP("Tonemap");
 
-		_render_buffers_post_process_and_tonemap(p_render_data);
+		_render_buffers_post_process_and_tonemap(p_render_data, use_msaa);
 
 		RD::get_singleton()->draw_command_end_label(); // Post process pass
 	}
