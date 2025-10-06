@@ -844,7 +844,7 @@ void RenderForwardClustered::_fill_instance_data(RenderListType p_render_list, i
 
 		RenderElementInfo &element_info = rl->element_info[p_offset + i];
 
-		element_info.value = uint32_t(surface->sort.sort_key2 & 0x0FFF00000000);
+		element_info.value = uint32_t((surface->sort.sort_key2 & 0x0FFF00000000) >> 32u);
 
 		if (cant_repeat) {
 			prev_surface = nullptr;
