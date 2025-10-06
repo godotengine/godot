@@ -2442,12 +2442,14 @@ void ColorPickerButton::_color_changed(const Color &p_color) {
 }
 
 void ColorPickerButton::_modal_closed() {
-	if (Input::get_singleton()->is_action_just_pressed(SNAME("ui_cancel"))) {
-		set_pick_color(picker->get_old_color());
-		emit_signal(SNAME("color_changed"), color);
+	if (picker->is_visible_in_tree()) {
+		if (Input::get_singleton()->is_action_just_pressed(SNAME("ui_cancel"))) {
+			set_pick_color(picker->get_old_color());
+			emit_signal(SNAME("color_changed"), color);
+		}
+		emit_signal(SNAME("popup_closed"));
+		set_pressed(false);
 	}
-	emit_signal(SNAME("popup_closed"));
-	set_pressed(false);
 	if (!get_tree()->get_root()->is_embedding_subwindows()) {
 		get_viewport()->set_disable_input(false);
 	}
