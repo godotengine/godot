@@ -2517,11 +2517,16 @@ void main() {
 	frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
 #endif // !FOG_DISABLED
 
+#ifdef DISABLE_REFLECTION_PROBE
 	// Tonemap before writing as we are writing to an sRGB framebuffer
 	frag_color.rgb *= exposure;
+
 #ifdef APPLY_TONEMAPPING
 	frag_color.rgb = apply_tonemapping(frag_color.rgb, white);
-#endif
+#endif // APPLY_TONEMAPPING
+
+#endif // DISABLE_REFLECTION_PROBE
+
 	frag_color.rgb = linear_to_srgb(frag_color.rgb);
 
 #else // !BASE_PASS
@@ -2785,11 +2790,16 @@ void main() {
 	additive_light_color *= (1.0 - fog.a);
 #endif // !FOG_DISABLED
 
+#ifdef DISABLE_REFLECTION_PROBE
 	// Tonemap before writing as we are writing to an sRGB framebuffer
 	additive_light_color *= exposure;
+
 #ifdef APPLY_TONEMAPPING
 	additive_light_color = apply_tonemapping(additive_light_color, white);
-#endif
+#endif // APPLY_TONEMAPPING
+
+#endif // DISABLE_REFLECTION_PROBE
+
 	additive_light_color = linear_to_srgb(additive_light_color);
 
 	frag_color.rgb += additive_light_color;

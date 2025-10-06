@@ -2533,6 +2533,10 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		scene_state.prev_multiview_data = scene_state.multiview_data;
 	}
 
+	if (is_reflection_probe) {
+		apply_color_adjustments_in_post = false;
+	}
+
 	GLuint fbo = 0;
 	if (is_reflection_probe && GLES3::LightStorage::get_singleton()->reflection_probe_has_atlas_index(render_data.reflection_probe)) {
 		fbo = GLES3::LightStorage::get_singleton()->reflection_probe_instance_get_framebuffer(render_data.reflection_probe, render_data.reflection_probe_pass);
