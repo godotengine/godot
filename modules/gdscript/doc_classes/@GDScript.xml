@@ -773,6 +773,26 @@
 				[b]Note:[/b] Unlike most other annotations, the argument of the [annotation @icon] annotation must be a string literal (constant expressions are not supported).
 			</description>
 		</annotation>
+		<annotation name="@meta">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Attach a piece of named metadata to the given class or class member. The metadata can then be read back at runtime using [method Script.get_script_meta].
+				[codeblock]
+				class_name MyClass
+				extends RefCounted
+
+				@meta("my_tag", true)
+				var my_property: String
+
+				func _init():
+					var script = get_script()
+					for metadata in script.get_script_meta("my_tag"):
+						print("The member %s was annotated with @meta(\"my_tag\", %s)" % [metadata.target_name, metadata.value])
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@onready">
 			<return type="void" />
 			<description>
