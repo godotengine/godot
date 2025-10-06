@@ -1478,7 +1478,7 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "self_modulate"), "set_self_modulate", "get_self_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_behind_parent"), "set_draw_behind_parent", "is_draw_behind_parent_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "clip_children", PROPERTY_HINT_ENUM, "Disabled,Clip Only,Clip + Draw"), "set_clip_children_mode", "get_clip_children_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "clip_children", PROPERTY_HINT_ENUM, "Disabled,Clip Only,Clip + Draw,CanvasGroup"), "set_clip_children_mode", "get_clip_children_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_light_mask", "get_light_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_layer", PROPERTY_HINT_LAYERS_2D_RENDER), "set_visibility_layer", "get_visibility_layer");
 
@@ -1527,6 +1527,7 @@ void CanvasItem::_bind_methods() {
 	BIND_ENUM_CONSTANT(CLIP_CHILDREN_DISABLED);
 	BIND_ENUM_CONSTANT(CLIP_CHILDREN_ONLY);
 	BIND_ENUM_CONSTANT(CLIP_CHILDREN_AND_DRAW);
+	BIND_ENUM_CONSTANT(CLIP_CHILDREN_CANVASGROUP);
 	BIND_ENUM_CONSTANT(CLIP_CHILDREN_MAX);
 }
 
