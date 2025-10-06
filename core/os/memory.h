@@ -31,74 +31,63 @@
 #pragma once
 
 #include "core/error/error_macros.h"
-#include "core/templates/safe_refcount.h"
 
 #include <new> // IWYU pragma: keep // `new` operators.
 #include <type_traits>
 
-class Memory {
-#ifdef DEBUG_ENABLED
-	static SafeNumeric<uint64_t> mem_usage;
-	static SafeNumeric<uint64_t> max_usage;
-#endif
-
-public:
-	// Alignment:  ↓ max_align_t        ↓ uint64_t          ↓ max_align_t
-	//             ┌─────────────────┬──┬────────────────┬──┬───────────...
-	//             │ uint64_t        │░░│ uint64_t       │░░│ T[]
-	//             │ alloc size      │░░│ element count  │░░│ data
-	//             └─────────────────┴──┴────────────────┴──┴───────────...
-	// Offset:     ↑ SIZE_OFFSET        ↑ ELEMENT_OFFSET    ↑ DATA_OFFSET
-
-	static const size_t SIZE_OFFSET;
-	static const size_t ELEMENT_OFFSET;
-	static const size_t DATA_OFFSET;
-
-	template <bool p_ensure_zero = false>
-	static void *alloc_static(size_t p_bytes, bool p_pad_align = false);
-	_FORCE_INLINE_ static void *alloc_static_zeroed(size_t p_bytes, bool p_pad_align = false) { return alloc_static<true>(p_bytes, p_pad_align); }
-	static void *realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align = false);
-	static void free_static(void *p_ptr, bool p_pad_align = false);
-
-	//	                            ↓ return value of alloc_aligned_static
-	//	┌─────────────────┬─────────┬─────────┬──────────────────┐
-	//	│ padding (up to  │ uint32_t│ void*   │ padding (up to   │
-	//	│ p_alignment - 1)│ offset  │ p_bytes │ p_alignment - 1) │
-	//	└─────────────────┴─────────┴─────────┴──────────────────┘
-	//
-	// alloc_aligned_static will allocate p_bytes + p_alignment - 1 + sizeof(uint32_t) and
-	// then offset the pointer until alignment is satisfied.
-	//
-	// This offset is stored before the start of the returned ptr so we can retrieve the original/real
-	// start of the ptr in order to free it.
-	//
-	// The rest is wasted as padding in the beginning and end of the ptr. The sum of padding at
-	// both start and end of the block must add exactly to p_alignment - 1.
-	//
-	// p_alignment MUST be a power of 2.
-	static void *alloc_aligned_static(size_t p_bytes, size_t p_alignment);
-	static void *realloc_aligned_static(void *p_memory, size_t p_bytes, size_t p_prev_bytes, size_t p_alignment);
-	// Pass the ptr returned by alloc_aligned_static to free it.
-	// e.g.
-	//	void *data = realloc_aligned_static( bytes, 16 );
-	//  free_aligned_static( data );
-	static void free_aligned_static(void *p_memory);
-
-	static uint64_t get_mem_available();
-	static uint64_t get_mem_usage();
-	static uint64_t get_mem_max_usage();
-
-	static constexpr size_t get_aligned_address(size_t p_address, size_t p_alignment);
-};
-
-constexpr size_t Memory::get_aligned_address(size_t p_address, size_t p_alignment) {
+namespace Memory {
+constexpr size_t get_aligned_address(size_t p_address, size_t p_alignment) {
 	const size_t n_bytes_unaligned = p_address % p_alignment;
 	return (n_bytes_unaligned == 0) ? p_address : (p_address + p_alignment - n_bytes_unaligned);
 }
 
-inline constexpr size_t Memory::SIZE_OFFSET = 0;
-inline constexpr size_t Memory::ELEMENT_OFFSET = get_aligned_address(SIZE_OFFSET + sizeof(uint64_t), alignof(uint64_t));
-inline constexpr size_t Memory::DATA_OFFSET = get_aligned_address(ELEMENT_OFFSET + sizeof(uint64_t), alignof(max_align_t));
+// Alignment:  ↓ max_align_t        ↓ uint64_t          ↓ max_align_t
+//             ┌─────────────────┬──┬────────────────┬──┬───────────...
+//             │ uint64_t        │░░│ uint64_t       │░░│ T[]
+//             │ alloc size      │░░│ element count  │░░│ data
+//             └─────────────────┴──┴────────────────┴──┴───────────...
+// Offset:     ↑ SIZE_OFFSET        ↑ ELEMENT_OFFSET    ↑ DATA_OFFSET
+
+inline constexpr size_t SIZE_OFFSET = 0;
+inline constexpr size_t ELEMENT_OFFSET = get_aligned_address(SIZE_OFFSET + sizeof(uint64_t), alignof(uint64_t));
+inline constexpr size_t DATA_OFFSET = get_aligned_address(ELEMENT_OFFSET + sizeof(uint64_t), alignof(max_align_t));
+
+template <bool p_ensure_zero = false>
+void *alloc_static(size_t p_bytes, bool p_pad_align = false);
+_FORCE_INLINE_ static void *alloc_static_zeroed(size_t p_bytes, bool p_pad_align = false) {
+	return alloc_static<true>(p_bytes, p_pad_align);
+}
+void *realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align = false);
+void free_static(void *p_ptr, bool p_pad_align = false);
+
+//	                            ↓ return value of alloc_aligned_static
+//	┌─────────────────┬─────────┬─────────┬──────────────────┐
+//	│ padding (up to  │ uint32_t│ void*   │ padding (up to   │
+//	│ p_alignment - 1)│ offset  │ p_bytes │ p_alignment - 1) │
+//	└─────────────────┴─────────┴─────────┴──────────────────┘
+//
+// alloc_aligned_static will allocate p_bytes + p_alignment - 1 + sizeof(uint32_t) and
+// then offset the pointer until alignment is satisfied.
+//
+// This offset is stored before the start of the returned ptr so we can retrieve the original/real
+// start of the ptr in order to free it.
+//
+// The rest is wasted as padding in the beginning and end of the ptr. The sum of padding at
+// both start and end of the block must add exactly to p_alignment - 1.
+//
+// p_alignment MUST be a power of 2.
+void *alloc_aligned_static(size_t p_bytes, size_t p_alignment);
+void *realloc_aligned_static(void *p_memory, size_t p_bytes, size_t p_prev_bytes, size_t p_alignment);
+// Pass the ptr returned by alloc_aligned_static to free it.
+// e.g.
+//	void *data = realloc_aligned_static( bytes, 16 );
+//  free_aligned_static( data );
+void free_aligned_static(void *p_memory);
+
+uint64_t get_mem_available();
+uint64_t get_mem_usage();
+uint64_t get_mem_max_usage();
+}; //namespace Memory
 
 class DefaultAllocator {
 public:
