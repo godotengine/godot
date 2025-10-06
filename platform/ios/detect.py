@@ -163,7 +163,7 @@ def configure(env: "SConsEnvironment"):
                 "$APPLE_SDK_PATH/System/Library/Frameworks/QuartzCore.framework/Headers",
             ]
         )
-        env.Prepend(CPPEXTPATH=["#thirdparty/spirv-cross"])
+        env.Prepend(CPPPATH=["#thirdparty/spirv-cross"])
 
     if env["vulkan"] and env["simulator"]:
         print_warning("iOS Simulator does not support the Vulkan rendering driver")

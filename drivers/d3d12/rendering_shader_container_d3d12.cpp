@@ -41,13 +41,6 @@
 #define __REQUIRED_RPCNDR_H_VERSION__ 475
 #endif
 
-#include <d3dx12.h>
-#include <dxgi1_6.h>
-#define D3D12MA_D3D12_HEADERS_ALREADY_INCLUDED
-#include <D3D12MemAlloc.h>
-
-#include <wrl/client.h>
-
 GODOT_GCC_WARNING_PUSH
 GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
 GODOT_GCC_WARNING_IGNORE("-Wlogical-not-parentheses")
@@ -65,6 +58,13 @@ GODOT_CLANG_WARNING_IGNORE("-Wswitch")
 GODOT_MSVC_WARNING_PUSH
 GODOT_MSVC_WARNING_IGNORE(4200) // "nonstandard extension used: zero-sized array in struct/union".
 GODOT_MSVC_WARNING_IGNORE(4806) // "'&': unsafe operation: no value of type 'bool' promoted to type 'uint32_t' can equal the given constant".
+
+#include <d3dx12.h>
+#include <dxgi1_6.h>
+#define D3D12MA_D3D12_HEADERS_ALREADY_INCLUDED
+#include <D3D12MemAlloc.h>
+
+#include <wrl/client.h>
 
 #include <nir_spirv.h>
 #include <nir_to_dxil.h>

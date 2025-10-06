@@ -37,6 +37,19 @@
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_context_driver.h"
 
+GODOT_GCC_WARNING_PUSH
+GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
+GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
+GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
+GODOT_GCC_WARNING_IGNORE("-Wshadow")
+GODOT_GCC_WARNING_IGNORE("-Wswitch")
+GODOT_CLANG_WARNING_PUSH
+GODOT_CLANG_WARNING_IGNORE("-Wimplicit-fallthrough")
+GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
+GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
+GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
+GODOT_CLANG_WARNING_IGNORE("-Wswitch")
+
 #if defined(AS)
 #undef AS
 #endif
@@ -49,6 +62,9 @@
 #include <dxgi1_6.h>
 
 #include <wrl/client.h>
+
+GODOT_GCC_WARNING_POP
+GODOT_CLANG_WARNING_POP
 
 using Microsoft::WRL::ComPtr;
 

@@ -302,7 +302,7 @@ def configure(env: "SConsEnvironment"):
 
     if not env["builtin_recastnavigation"]:
         # No pkgconfig file so far, hardcode default paths.
-        env.Prepend(CPPEXTPATH=["/usr/include/recastnavigation"])
+        env.Prepend(CPPPATH=["/usr/include/recastnavigation"])
         env.Append(LIBS=["Recast"])
 
     if not env["builtin_embree"] and env["arch"] in ["x86_64", "arm64"]:
@@ -414,7 +414,7 @@ def configure(env: "SConsEnvironment"):
 
     env.Prepend(CPPPATH=["#platform/linuxbsd"])
     if env["use_sowrap"]:
-        env.Prepend(CPPEXTPATH=["#thirdparty/linuxbsd_headers"])
+        env.Prepend(CPPPATH=["#thirdparty/linuxbsd_headers"])
 
     env.Append(
         CPPDEFINES=[
@@ -476,9 +476,9 @@ def configure(env: "SConsEnvironment"):
                 sys.exit(255)
             env.ParseConfig("pkg-config wayland-egl --cflags --libs")
         else:
-            env.Prepend(CPPEXTPATH=["#thirdparty/linuxbsd_headers/wayland/"])
+            env.Prepend(CPPPATH=["#thirdparty/linuxbsd_headers/wayland/"])
             if env["libdecor"]:
-                env.Prepend(CPPEXTPATH=["#thirdparty/linuxbsd_headers/libdecor-0/"])
+                env.Prepend(CPPPATH=["#thirdparty/linuxbsd_headers/libdecor-0/"])
 
         if env["libdecor"]:
             env.Append(CPPDEFINES=["LIBDECOR_ENABLED"])
