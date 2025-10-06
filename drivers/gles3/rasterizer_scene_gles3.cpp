@@ -787,7 +787,7 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 	}
 }
 
-void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_sky_energy_multiplier, float p_luminance_multiplier, bool p_use_multiview, bool p_flip_y, bool p_apply_color_adjustments_in_post) {
+void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_sky_energy_multiplier, float p_luminance_multiplier, bool p_use_multiview, bool p_flip_y, bool p_apply_tonemapping) {
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	ERR_FAIL_COND(p_env.is_null());
 
@@ -800,7 +800,7 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 	if (p_flip_y) {
 		spec_constants |= SkyShaderGLES3::USE_INVERTED_Y;
 	}
-	if (!p_apply_color_adjustments_in_post) {
+	if (p_apply_tonemapping) {
 		spec_constants |= SkyShaderGLES3::APPLY_TONEMAPPING;
 	}
 
@@ -2379,7 +2379,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	bool use_wireframe = get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME;
 
 	SceneState::TonemapUBO tonemap_ubo;
-	if (render_data.environment.is_valid()) {
+	if (render_data.environment.is_valid() && !is_reflection_probe) {
 		bool use_bcs = environment_get_adjustments_enabled(render_data.environment);
 		if (use_bcs) {
 			apply_color_adjustments_in_post = true;
@@ -2567,6 +2567,10 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		scene_state.prev_data_state = 2;
 	}
 
+	if (is_reflection_probe) {
+		apply_color_adjustments_in_post = false;
+	}
+
 	GLuint fbo = 0;
 	if (is_reflection_probe && GLES3::LightStorage::get_singleton()->reflection_probe_has_atlas_index(render_data.reflection_probe)) {
 		fbo = GLES3::LightStorage::get_singleton()->reflection_probe_instance_get_framebuffer(render_data.reflection_probe, render_data.reflection_probe_pass);
@@ -2702,7 +2706,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 			spec_constant_base_flags |= SceneShaderGLES3::USE_DEPTH_FOG;
 		}
 
-		if (!apply_color_adjustments_in_post) {
+		if (!(apply_color_adjustments_in_post || is_reflection_probe)) {
 			spec_constant_base_flags |= SceneShaderGLES3::APPLY_TONEMAPPING;
 		}
 	}
@@ -2756,7 +2760,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 			projection[2].y = -projection[2].y;
 		}
 
-		_draw_sky(render_data.environment, projection, transform, sky_energy_multiplier, render_data.luminance_multiplier, p_camera_data->view_count > 1, flip_y, apply_color_adjustments_in_post);
+		_draw_sky(render_data.environment, projection, transform, sky_energy_multiplier, render_data.luminance_multiplier, p_camera_data->view_count > 1, flip_y, !(apply_color_adjustments_in_post || is_reflection_probe));
 	}
 
 	if (scene_state.used_screen_texture || scene_state.used_depth_texture) {
