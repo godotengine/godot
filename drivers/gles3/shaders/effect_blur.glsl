@@ -282,8 +282,8 @@ void main() {
 
 #ifdef GLOW_FIRST_PASS
 
-	float luminance = max(frag_color.r, max(frag_color.g, frag_color.b));
-	float feedback = max(smoothstep(glow_hdr_threshold, glow_hdr_threshold + glow_hdr_scale, luminance), glow_bloom);
+	float max_value = max(frag_color.r, max(frag_color.g, frag_color.b));
+	float feedback = max(smoothstep(glow_hdr_threshold, glow_hdr_threshold + glow_hdr_scale, max_value), glow_bloom);
 
 	frag_color = min(frag_color * feedback, vec4(luminance_cap));
 
