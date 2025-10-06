@@ -34,6 +34,7 @@
 
 #include "core/string/char_utils.h" // IWYU pragma: export
 #include "core/templates/cowdata.h"
+#include "core/templates/hashfuncs.h"
 #include "core/templates/vector.h"
 #include "core/typedefs.h"
 #include "core/variant/array.h"
@@ -231,6 +232,8 @@ public:
 
 		return *this;
 	}
+
+	uint32_t hash() const { return hash_djb2(get_data()); }
 
 protected:
 	void copy_from(const T *p_cstr) {

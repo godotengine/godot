@@ -30,7 +30,11 @@
 
 #pragma once
 
+#include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
+
+class StringName;
+class Variant;
 
 /**
  * An array-based implementation of a hash map. It is very efficient in terms of performance and

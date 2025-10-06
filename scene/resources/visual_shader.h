@@ -153,8 +153,9 @@ private:
 			uint64_t port : 32;
 		};
 		uint64_t key = 0;
-		// This is used to apply default equal and hash methods for uint64_t to ConnectionKey.
-		operator uint64_t() const { return key; }
+
+		uint32_t hash() const { return HashMapHasherDefault::hash(key); }
+		bool is_same(const ConnectionKey &p_key) const { return HashMapComparatorDefault<uint64_t>::compare(key, p_key.key); }
 	};
 
 	Error _write_node(Type p_type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<DefaultTextureParam> &r_def_tex_params, const HashMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const;
