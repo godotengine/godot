@@ -91,6 +91,9 @@
 		<member name="primary_rotation_axis" type="int" setter="set_primary_rotation_axis" getter="get_primary_rotation_axis" enum="Vector3.Axis" default="1">
 			The axis of the first rotation. This [SkeletonModifier3D] works by compositing the rotation by Euler angles to prevent to rotate the [member forward_axis].
 		</member>
+		<member name="relative" type="bool" setter="set_relative" getter="is_relative" default="true">
+			The relative option. If [code]true[/code], the rotation is applied relative to the pose. If [code]false[/code], the rotation is applied relative to the rest. It means to replace the current pose with the [LookAtModifier3D]'s result.
+		</member>
 		<member name="secondary_damp_threshold" type="float" setter="set_secondary_damp_threshold" getter="get_secondary_damp_threshold">
 			The threshold to start damping for [member secondary_limit_angle].
 		</member>
