@@ -130,16 +130,23 @@ void register_core_types() {
 	static_assert(sizeof(Callable) <= 16);
 
 	ObjectDB::setup();
-
 	StringName::setup();
+	register_global_constants();
+	CoreStringNames::create();
+
+	GDREGISTER_CLASS(Object);
+	GDREGISTER_CLASS(RefCounted);
+	GDREGISTER_CLASS(WeakRef);
+	GDREGISTER_CLASS(Resource);
+
+	GDREGISTER_CLASS(Time);
 	_time = memnew(Time);
 	ResourceLoader::initialize();
 
-	register_global_constants();
-
 	Variant::register_types();
 
-	CoreStringNames::create();
+	GDREGISTER_CLASS(ResourceFormatLoader);
+	GDREGISTER_CLASS(ResourceFormatSaver);
 
 	if constexpr (GD_IS_CLASS_ENABLED(Translation)) {
 		resource_format_po.instantiate();
@@ -162,17 +169,12 @@ void register_core_types() {
 		ResourceLoader::add_resource_format_loader(resource_format_image);
 	}
 
-	GDREGISTER_CLASS(Object);
-
 	GDREGISTER_ABSTRACT_CLASS(Script);
 	GDREGISTER_ABSTRACT_CLASS(ScriptLanguage);
 	GDREGISTER_CLASS(ScriptBacktrace);
 	GDREGISTER_VIRTUAL_CLASS(ScriptExtension);
 	GDREGISTER_VIRTUAL_CLASS(ScriptLanguageExtension);
 
-	GDREGISTER_CLASS(RefCounted);
-	GDREGISTER_CLASS(WeakRef);
-	GDREGISTER_CLASS(Resource);
 	GDREGISTER_VIRTUAL_CLASS(MissingResource);
 	GDREGISTER_CLASS(Image);
 
@@ -255,9 +257,6 @@ void register_core_types() {
 	GDREGISTER_CLASS(OptimizedTranslation);
 	GDREGISTER_CLASS(UndoRedo);
 	GDREGISTER_CLASS(TriangleMesh);
-
-	GDREGISTER_CLASS(ResourceFormatLoader);
-	GDREGISTER_CLASS(ResourceFormatSaver);
 
 	GDREGISTER_ABSTRACT_CLASS(FileAccess);
 	GDREGISTER_ABSTRACT_CLASS(DirAccess);
@@ -347,7 +346,6 @@ void register_early_core_singletons() {
 	GDREGISTER_CLASS(CoreBind::OS);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("OS", CoreBind::OS::get_singleton()));
 
-	GDREGISTER_CLASS(Time);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
 }
 
