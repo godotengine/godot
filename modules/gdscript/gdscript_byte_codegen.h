@@ -104,7 +104,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	List<int> temp_stack;
 #endif
 
-	HashMap<Variant, int, VariantHasher, VariantComparator> constant_map;
+	HashMap<Variant, int> constant_map;
 	RBMap<StringName, int> name_map;
 #ifdef TOOLS_ENABLED
 	Vector<StringName> named_globals;

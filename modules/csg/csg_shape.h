@@ -82,15 +82,6 @@ private:
 
 	Ref<ArrayMesh> root_mesh;
 
-	struct Vector3Hasher {
-		_ALWAYS_INLINE_ uint32_t hash(const Vector3 &p_vec3) const {
-			uint32_t h = hash_murmur3_one_float(p_vec3.x);
-			h = hash_murmur3_one_float(p_vec3.y, h);
-			h = hash_murmur3_one_float(p_vec3.z, h);
-			return h;
-		}
-	};
-
 	struct ShapeUpdateSurface {
 		Vector<Vector3> vertices;
 		Vector<Vector3> normals;
