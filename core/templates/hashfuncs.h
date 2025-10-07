@@ -50,7 +50,7 @@ struct Pair;
  * @param C String
  * @return 32-bits hashcode
  */
-static _FORCE_INLINE_ uint32_t hash_djb2(const char *p_cstr) {
+_FORCE_INLINE_ uint32_t hash_djb2(const char *p_cstr) {
 	const unsigned char *chr = (const unsigned char *)p_cstr;
 	uint32_t hash = 5381;
 	uint32_t c = *chr++;
@@ -63,7 +63,7 @@ static _FORCE_INLINE_ uint32_t hash_djb2(const char *p_cstr) {
 	return hash;
 }
 
-static _FORCE_INLINE_ uint32_t hash_djb2_buffer(const uint8_t *p_buff, int p_len, uint32_t p_prev = 5381) {
+_FORCE_INLINE_ uint32_t hash_djb2_buffer(const uint8_t *p_buff, int p_len, uint32_t p_prev = 5381) {
 	uint32_t hash = p_prev;
 
 	for (int i = 0; i < p_len; i++) {
@@ -73,7 +73,7 @@ static _FORCE_INLINE_ uint32_t hash_djb2_buffer(const uint8_t *p_buff, int p_len
 	return hash;
 }
 
-static _FORCE_INLINE_ uint32_t hash_djb2_one_32(uint32_t p_in, uint32_t p_prev = 5381) {
+_FORCE_INLINE_ uint32_t hash_djb2_one_32(uint32_t p_in, uint32_t p_prev = 5381) {
 	return ((p_prev << 5) + p_prev) ^ p_in;
 }
 
@@ -84,7 +84,7 @@ static _FORCE_INLINE_ uint32_t hash_djb2_one_32(uint32_t p_in, uint32_t p_prev =
  * @param p_int - 64-bit unsigned integer key to be hashed
  * @return unsigned 32-bit value representing hashcode
  */
-static _FORCE_INLINE_ uint32_t hash_one_uint64(const uint64_t p_int) {
+_FORCE_INLINE_ uint32_t hash_one_uint64(const uint64_t p_int) {
 	uint64_t v = p_int;
 	v = (~v) + (v << 18); // v = (v << 18) - v - 1;
 	v = v ^ (v >> 31);
@@ -95,7 +95,7 @@ static _FORCE_INLINE_ uint32_t hash_one_uint64(const uint64_t p_int) {
 	return uint32_t(v);
 }
 
-static _FORCE_INLINE_ uint64_t hash64_murmur3_64(uint64_t key, uint64_t seed) {
+_FORCE_INLINE_ uint64_t hash64_murmur3_64(uint64_t key, uint64_t seed) {
 	key ^= seed;
 	key ^= key >> 33;
 	key *= 0xff51afd7ed558ccd;
@@ -109,7 +109,7 @@ static _FORCE_INLINE_ uint64_t hash64_murmur3_64(uint64_t key, uint64_t seed) {
 // Murmurhash3 32-bit version.
 // All MurmurHash versions are public domain software, and the author disclaims all copyright to their code.
 
-static _FORCE_INLINE_ uint32_t hash_murmur3_one_32(uint32_t p_in, uint32_t p_seed = HASH_MURMUR3_SEED) {
+_FORCE_INLINE_ uint32_t hash_murmur3_one_32(uint32_t p_in, uint32_t p_seed = HASH_MURMUR3_SEED) {
 	p_in *= 0xcc9e2d51;
 	p_in = (p_in << 15) | (p_in >> 17);
 	p_in *= 0x1b873593;
@@ -121,48 +121,15 @@ static _FORCE_INLINE_ uint32_t hash_murmur3_one_32(uint32_t p_in, uint32_t p_see
 	return p_seed;
 }
 
-static _FORCE_INLINE_ uint32_t hash_murmur3_one_float(float p_in, uint32_t p_seed = HASH_MURMUR3_SEED) {
-	union {
-		float f;
-		uint32_t i;
-	} u;
-
-	// Normalize +/- 0.0 and NaN values so they hash the same.
-	if (p_in == 0.0f) {
-		u.f = 0.0;
-	} else if (Math::is_nan(p_in)) {
-		u.f = Math::NaN;
-	} else {
-		u.f = p_in;
-	}
-
-	return hash_murmur3_one_32(u.i, p_seed);
-}
-
-static _FORCE_INLINE_ uint32_t hash_murmur3_one_64(uint64_t p_in, uint32_t p_seed = HASH_MURMUR3_SEED) {
+_FORCE_INLINE_ uint32_t hash_murmur3_one_64(uint64_t p_in, uint32_t p_seed = HASH_MURMUR3_SEED) {
 	p_seed = hash_murmur3_one_32(p_in & 0xFFFFFFFF, p_seed);
 	return hash_murmur3_one_32(p_in >> 32, p_seed);
 }
 
-static _FORCE_INLINE_ uint32_t hash_murmur3_one_double(double p_in, uint32_t p_seed = HASH_MURMUR3_SEED) {
-	union {
-		double d;
-		uint64_t i;
-	} u;
+uint32_t hash_murmur3_one_float(float p_in, uint32_t p_seed = HASH_MURMUR3_SEED);
+uint32_t hash_murmur3_one_double(double p_in, uint32_t p_seed = HASH_MURMUR3_SEED);
 
-	// Normalize +/- 0.0 and NaN values so they hash the same.
-	if (p_in == 0.0f) {
-		u.d = 0.0;
-	} else if (Math::is_nan(p_in)) {
-		u.d = Math::NaN;
-	} else {
-		u.d = p_in;
-	}
-
-	return hash_murmur3_one_64(u.i, p_seed);
-}
-
-static _FORCE_INLINE_ uint32_t hash_murmur3_one_real(real_t p_in, uint32_t p_seed = HASH_MURMUR3_SEED) {
+_FORCE_INLINE_ uint32_t hash_murmur3_one_real(real_t p_in, uint32_t p_seed = HASH_MURMUR3_SEED) {
 #ifdef REAL_T_IS_DOUBLE
 	return hash_murmur3_one_double(p_in, p_seed);
 #else
@@ -170,11 +137,11 @@ static _FORCE_INLINE_ uint32_t hash_murmur3_one_real(real_t p_in, uint32_t p_see
 #endif
 }
 
-static _FORCE_INLINE_ uint32_t hash_rotl32(uint32_t x, int8_t r) {
+_FORCE_INLINE_ uint32_t hash_rotl32(uint32_t x, int8_t r) {
 	return (x << r) | (x >> (32 - r));
 }
 
-static _FORCE_INLINE_ uint32_t hash_fmix32(uint32_t h) {
+_FORCE_INLINE_ uint32_t hash_fmix32(uint32_t h) {
 	h ^= h >> 16;
 	h *= 0x85ebca6b;
 	h ^= h >> 13;
@@ -184,115 +151,13 @@ static _FORCE_INLINE_ uint32_t hash_fmix32(uint32_t h) {
 	return h;
 }
 
-static _FORCE_INLINE_ uint32_t hash_murmur3_buffer(const void *key, int length, const uint32_t seed = HASH_MURMUR3_SEED) {
-	// Although not required, this is a random prime number.
-	const uint8_t *data = (const uint8_t *)key;
-	const int nblocks = length / 4;
+uint32_t hash_murmur3_buffer(const void *key, int length, uint32_t seed = HASH_MURMUR3_SEED);
 
-	uint32_t h1 = seed;
+uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev = 5381);
+uint64_t hash_djb2_one_float_64(double p_in, uint64_t p_prev = 5381);
 
-	const uint32_t c1 = 0xcc9e2d51;
-	const uint32_t c2 = 0x1b873593;
-
-	const uint32_t *blocks = (const uint32_t *)(data + nblocks * 4);
-
-	for (int i = -nblocks; i; i++) {
-		uint32_t k1 = blocks[i];
-
-		k1 *= c1;
-		k1 = hash_rotl32(k1, 15);
-		k1 *= c2;
-
-		h1 ^= k1;
-		h1 = hash_rotl32(h1, 13);
-		h1 = h1 * 5 + 0xe6546b64;
-	}
-
-	const uint8_t *tail = (const uint8_t *)(data + nblocks * 4);
-
-	uint32_t k1 = 0;
-
-	switch (length & 3) {
-		case 3:
-			k1 ^= tail[2] << 16;
-			[[fallthrough]];
-		case 2:
-			k1 ^= tail[1] << 8;
-			[[fallthrough]];
-		case 1:
-			k1 ^= tail[0];
-			k1 *= c1;
-			k1 = hash_rotl32(k1, 15);
-			k1 *= c2;
-			h1 ^= k1;
-	};
-
-	// Finalize with additional bit mixing.
-	h1 ^= length;
-	return hash_fmix32(h1);
-}
-
-static _FORCE_INLINE_ uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev = 5381) {
-	union {
-		double d;
-		uint64_t i;
-	} u;
-
-	// Normalize +/- 0.0 and NaN values so they hash the same.
-	if (p_in == 0.0f) {
-		u.d = 0.0;
-	} else if (Math::is_nan(p_in)) {
-		u.d = Math::NaN;
-	} else {
-		u.d = p_in;
-	}
-
-	return ((p_prev << 5) + p_prev) + hash_one_uint64(u.i);
-}
-
-template <typename T>
-static _FORCE_INLINE_ uint32_t hash_make_uint32_t(T p_in) {
-	union {
-		T t;
-		uint32_t _u32;
-	} _u;
-	_u._u32 = 0;
-	_u.t = p_in;
-	return _u._u32;
-}
-
-static _FORCE_INLINE_ uint64_t hash_djb2_one_float_64(double p_in, uint64_t p_prev = 5381) {
-	union {
-		double d;
-		uint64_t i;
-	} u;
-
-	// Normalize +/- 0.0 and NaN values so they hash the same.
-	if (p_in == 0.0f) {
-		u.d = 0.0;
-	} else if (Math::is_nan(p_in)) {
-		u.d = Math::NaN;
-	} else {
-		u.d = p_in;
-	}
-
-	return ((p_prev << 5) + p_prev) + u.i;
-}
-
-static _FORCE_INLINE_ uint64_t hash_djb2_one_64(uint64_t p_in, uint64_t p_prev = 5381) {
+_FORCE_INLINE_ uint64_t hash_djb2_one_64(uint64_t p_in, uint64_t p_prev = 5381) {
 	return ((p_prev << 5) + p_prev) ^ p_in;
-}
-
-template <typename T>
-static _FORCE_INLINE_ uint64_t hash_make_uint64_t(T p_in) {
-	union {
-		T t;
-		uint64_t _u64;
-	} _u;
-	_u._u64 = 0; // in case p_in is smaller
-
-	_u.t = p_in;
-	return _u._u64;
 }
 
 template <typename, typename = std::void_t<>>
