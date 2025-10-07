@@ -4473,6 +4473,7 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 				}
 
 				bool fb_use_msdf = key.msdf;
+#ifdef MODULE_FREETYPE_ENABLED
 				if (fb_use_msdf) {
 					FontFallback *fd = _get_font_data(sysf.rid);
 					if (fd) {
@@ -4486,6 +4487,7 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 						}
 					}
 				}
+#endif
 
 				_font_set_antialiasing(sysf.rid, key.antialiasing);
 				_font_set_disable_embedded_bitmaps(sysf.rid, key.disable_embedded_bitmaps);
