@@ -13,6 +13,7 @@ env_text_server_adv = env_modules.Clone()
 thirdparty_obj = []
 freetype_enabled = "freetype" in env.module_list
 msdfgen_enabled = "msdfgen" in env.module_list
+builtin_libs = []
 
 if "svg" in env.module_list:
     env_text_server_adv.Prepend(
@@ -150,19 +151,7 @@ if env["builtin_harfbuzz"]:
 
     lib = env_harfbuzz.add_library("harfbuzz_builtin", thirdparty_sources)
     thirdparty_obj += lib
-
-    # Needs to be appended to arrive after libscene in the linker call,
-    # but we don't want it to arrive *after* system libs, so manual hack
-    # LIBS contains first SCons Library objects ("SCons.Node.FS.File object")
-    # and then plain strings for system library. We insert between the two.
-    inserted = False
-    for idx, linklib in enumerate(env["LIBS"]):
-        if isinstance(linklib, (str, bytes)):  # first system lib such as "X11", otherwise SCons lib object
-            env["LIBS"].insert(idx, lib)
-            inserted = True
-            break
-    if not inserted:
-        env.Append(LIBS=[lib])
+    builtin_libs.append(lib)
 
 
 if env["builtin_graphite"] and freetype_enabled and env["graphite"]:
@@ -220,19 +209,7 @@ if env["builtin_graphite"] and freetype_enabled and env["graphite"]:
 
     lib = env_graphite.add_library("graphite_builtin", thirdparty_sources)
     thirdparty_obj += lib
-
-    # Needs to be appended to arrive after libscene in the linker call,
-    # but we don't want it to arrive *after* system libs, so manual hack
-    # LIBS contains first SCons Library objects ("SCons.Node.FS.File object")
-    # and then plain strings for system library. We insert between the two.
-    inserted = False
-    for idx, linklib in enumerate(env["LIBS"]):
-        if isinstance(linklib, (str, bytes)):  # first system lib such as "X11", otherwise SCons lib object
-            env["LIBS"].insert(idx, lib)
-            inserted = True
-            break
-    if not inserted:
-        env.Append(LIBS=[lib])
+    builtin_libs.append(lib)
 
 
 if env["builtin_icu4c"]:
@@ -493,18 +470,9 @@ if env["builtin_icu4c"]:
     lib = env_icu.add_library("icu_builtin", thirdparty_sources)
     thirdparty_obj += lib
 
-    # Needs to be appended to arrive after libscene in the linker call,
-    # but we don't want it to arrive *after* system libs, so manual hack
-    # LIBS contains first SCons Library objects ("SCons.Node.FS.File object")
-    # and then plain strings for system library. We insert between the two.
-    inserted = False
-    for idx, linklib in enumerate(env["LIBS"]):
-        if isinstance(linklib, (str, bytes)):  # first system lib such as "X11", otherwise SCons lib object
-            env["LIBS"].insert(idx, lib)
-            inserted = True
-            break
-    if not inserted:
-        env.Append(LIBS=[lib])
+    builtin_libs.append(lib)
+
+env.Prepend(LIBS=builtin_libs)
 
 
 # Godot source files
