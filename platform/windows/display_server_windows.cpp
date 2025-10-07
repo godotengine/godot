@@ -67,7 +67,6 @@
 #include "drivers/accesskit/accessibility_driver_accesskit.h"
 #endif
 
-#include <WinDNS.h> // For QWORD.
 #include <avrt.h>
 #include <dwmapi.h>
 #include <propkey.h>
@@ -77,6 +76,7 @@
 #include <shlwapi.h>
 #include <shobjidl.h>
 #include <wbemcli.h>
+#include <windns.h> // For QWORD.
 #include <winuser.h>
 
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
@@ -4261,8 +4261,22 @@ void DisplayServerWindows::process_events() {
 			return PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
 		}
 		BOOL ret = PeekMessage(&msg, NULL, 0, WM_INPUT - 1, PM_REMOVE);
+		// Avoid polling what we're polling further below in `peekKeysMouseButtons()`.
 		if (!ret) {
-			ret = PeekMessage(&msg, NULL, WM_INPUT + 1, std::numeric_limits<UINT>::max(), PM_REMOVE);
+			ret = PeekMessage(&msg, NULL, WM_INPUT + 4, WM_MOUSEMOVE, PM_REMOVE);
+		}
+		if (!ret) {
+			ret = PeekMessage(&msg, NULL, WM_MOUSELAST + 1, std::numeric_limits<UINT>::max(), PM_REMOVE);
+		}
+		return ret;
+	};
+
+	// Peek only keyboard and mouse button messages separately, with its own limit.
+	auto peekKeysMouseButtons = [&] {
+		BOOL ret = PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYUP, PM_REMOVE);
+		if (!ret) {
+			// Do not process `WM_MOUSEMOVE` here.
+			ret = PeekMessage(&msg, NULL, WM_LBUTTONDOWN, WM_MOUSELAST, PM_REMOVE);
 		}
 		return ret;
 	};
@@ -4279,11 +4293,20 @@ void DisplayServerWindows::process_events() {
 	//
 	// See <https://ph3at.github.io/posts/Windows-Input/> for more information.
 	int events_processed_this_frame = 0;
+	int events_processed_this_frame_kmb = 0;
 	constexpr int MAX_EVENTS_PER_FRAME = 5;
+	constexpr int MAX_EVENTS_PER_FRAME_KMB = 1;
+
 	while (events_processed_this_frame < MAX_EVENTS_PER_FRAME && peekNotInput()) {
 		TranslateMessage(&msg);
 		DispatchMessageW(&msg);
 		events_processed_this_frame += 1;
+	}
+
+	if (events_processed_this_frame_kmb < MAX_EVENTS_PER_FRAME_KMB && peekKeysMouseButtons()) {
+		TranslateMessage(&msg);
+		DispatchMessageW(&msg);
+		events_processed_this_frame_kmb += 1;
 	}
 
 	_THREAD_SAFE_UNLOCK_
