@@ -150,12 +150,12 @@ public:
 		Vector3 gravity_direction = Vector3(0, -1, 0);
 		RotationAxis rotation_axis = ROTATION_AXIS_ALL;
 		Vector3 rotation_axis_vector = Vector3(1, 0, 0);
-		Vector<SpringBone3DJointSetting *> joints;
+		LocalVector<SpringBone3DJointSetting *> joints;
 
 		// Cache into collisions.
 		bool enable_all_child_collisions = true;
-		Vector<NodePath> collisions;
-		Vector<NodePath> exclude_collisions;
+		LocalVector<NodePath> collisions;
+		LocalVector<NodePath> exclude_collisions;
 		LocalVector<ObjectID> cached_collisions;
 
 		// To process.
@@ -165,7 +165,7 @@ public:
 	};
 
 protected:
-	Vector<SpringBone3DSetting *> settings;
+	LocalVector<SpringBone3DSetting *> settings;
 	Vector3 external_force;
 
 	bool _get(const StringName &p_path, Variant &r_ret) const;
@@ -183,7 +183,7 @@ protected:
 	virtual void _set_active(bool p_active) override;
 	virtual void _process_modification(double p_delta) override;
 	void _init_joints(Skeleton3D *p_skeleton, SpringBone3DSetting *p_setting);
-	void _process_joints(double p_delta, Skeleton3D *p_skeleton, Vector<SpringBone3DJointSetting *> &p_joints, const LocalVector<ObjectID> &p_collisions, const Transform3D &p_center_transform, const Transform3D &p_inverted_center_transform, const Quaternion &p_inverted_center_rotation);
+	void _process_joints(double p_delta, Skeleton3D *p_skeleton, LocalVector<SpringBone3DJointSetting *> &p_joints, const LocalVector<ObjectID> &p_collisions, const Transform3D &p_center_transform, const Transform3D &p_inverted_center_transform, const Quaternion &p_inverted_center_rotation);
 
 	void _make_joints_dirty(int p_index);
 	void _make_all_joints_dirty();
