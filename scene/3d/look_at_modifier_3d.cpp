@@ -143,6 +143,14 @@ bool LookAtModifier3D::is_using_secondary_rotation() const {
 	return use_secondary_rotation;
 }
 
+void LookAtModifier3D::set_relative(bool p_enabled) {
+	relative = p_enabled;
+}
+
+bool LookAtModifier3D::is_relative() const {
+	return relative;
+}
+
 void LookAtModifier3D::set_target_node(const NodePath &p_target_node) {
 	if (target_node != p_target_node) {
 		init_transition();
@@ -394,9 +402,11 @@ void LookAtModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_primary_rotation_axis"), &LookAtModifier3D::get_primary_rotation_axis);
 	ClassDB::bind_method(D_METHOD("set_use_secondary_rotation", "enabled"), &LookAtModifier3D::set_use_secondary_rotation);
 	ClassDB::bind_method(D_METHOD("is_using_secondary_rotation"), &LookAtModifier3D::is_using_secondary_rotation);
+	ClassDB::bind_method(D_METHOD("set_relative", "enabled"), &LookAtModifier3D::set_relative);
+	ClassDB::bind_method(D_METHOD("is_relative"), &LookAtModifier3D::is_relative);
+
 	ClassDB::bind_method(D_METHOD("set_origin_safe_margin", "margin"), &LookAtModifier3D::set_origin_safe_margin);
 	ClassDB::bind_method(D_METHOD("get_origin_safe_margin"), &LookAtModifier3D::get_origin_safe_margin);
-
 	ClassDB::bind_method(D_METHOD("set_origin_from", "origin_from"), &LookAtModifier3D::set_origin_from);
 	ClassDB::bind_method(D_METHOD("get_origin_from"), &LookAtModifier3D::get_origin_from);
 	ClassDB::bind_method(D_METHOD("set_origin_bone_name", "bone_name"), &LookAtModifier3D::set_origin_bone_name);
@@ -460,6 +470,7 @@ void LookAtModifier3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "forward_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_bone_axis()), "set_forward_axis", "get_forward_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "primary_rotation_axis", PROPERTY_HINT_ENUM, "X,Y,Z"), "set_primary_rotation_axis", "get_primary_rotation_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_secondary_rotation"), "set_use_secondary_rotation", "is_using_secondary_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "relative"), "set_relative", "is_relative");
 
 	ADD_GROUP("Origin Settings", "origin_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "origin_from", PROPERTY_HINT_ENUM, "Self,SpecificBone,ExternalNode"), "set_origin_from", "get_origin_from");
@@ -506,14 +517,15 @@ void LookAtModifier3D::_process_modification(double p_delta) {
 	}
 
 	// Calculate bone rest space in the world.
+	Transform3D bone_rest = relative ? skeleton->get_bone_pose(bone) : skeleton->get_bone_rest(bone);
 	Transform3D bone_rest_space;
 	int parent_bone = skeleton->get_bone_parent(bone);
 	if (parent_bone < 0) {
 		bone_rest_space = skeleton->get_global_transform_interpolated();
-		bone_rest_space.translate_local(skeleton->get_bone_rest(bone).origin);
+		bone_rest_space.translate_local(bone_rest.origin);
 	} else {
 		bone_rest_space = skeleton->get_global_transform_interpolated() * skeleton->get_bone_global_pose(parent_bone);
-		bone_rest_space.translate_local(skeleton->get_bone_rest(bone).origin);
+		bone_rest_space.translate_local(bone_rest.origin);
 	}
 
 	// Calculate forward_vector and destination.
@@ -543,7 +555,7 @@ void LookAtModifier3D::_process_modification(double p_delta) {
 			destination = skeleton->get_bone_pose_rotation(bone);
 			forward_vector = Vector3(0, 0, 0); // The zero-vector to be used for checking in the line immediately below to avoid animation glitch.
 		} else {
-			destination = look_at_with_axes(skeleton->get_bone_rest(bone)).basis.get_rotation_quaternion();
+			destination = look_at_with_axes(bone_rest).basis.get_rotation_quaternion();
 		}
 	}
 
