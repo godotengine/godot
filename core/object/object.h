@@ -664,7 +664,6 @@ private:
 	bool _emitting : 1;
 #ifdef TOOLS_ENABLED
 	bool _edited : 1;
-	uint32_t _edited_version = 0;
 	HashSet<String> editor_section_folding;
 #endif
 	ScriptInstance *script_instance = nullptr;
@@ -944,8 +943,6 @@ public:
 #ifdef TOOLS_ENABLED
 	void set_edited(bool p_edited);
 	bool is_edited() const;
-	// This function is used to check when something changed beyond a point, it's used mainly for generating previews.
-	uint32_t get_edited_version() const;
 #endif
 
 	void set_script_instance(ScriptInstance *p_instance);

@@ -299,7 +299,7 @@ void EditorResourcePreview::_iterate() {
 	if (item.resource.is_valid()) {
 		Dictionary preview_metadata;
 		_generate_preview(texture, small_texture, item, String(), preview_metadata);
-		_preview_ready(item.path, item.resource->hash_edited_version_for_preview(), texture, small_texture, item.callback, preview_metadata);
+		_preview_ready(item.path, item.resource->hash_modified_version_for_preview(), texture, small_texture, item.callback, preview_metadata);
 		return;
 	}
 
@@ -471,7 +471,7 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
 		String path_id = "ID:" + itos(p_res->get_instance_id());
 		HashMap<String, EditorResourcePreview::Item>::Iterator I = cache.find(path_id);
 
-		if (I && I->value.last_hash == p_res->hash_edited_version_for_preview()) {
+		if (I && I->value.last_hash == p_res->hash_modified_version_for_preview()) {
 			p_callback.call(path_id, I->value.preview, I->value.small_preview);
 			return;
 		}

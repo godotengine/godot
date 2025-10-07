@@ -2073,15 +2073,10 @@ bool Object::is_queued_for_deletion() const {
 #ifdef TOOLS_ENABLED
 void Object::set_edited(bool p_edited) {
 	_edited = p_edited;
-	_edited_version++;
 }
 
 bool Object::is_edited() const {
 	return _edited;
-}
-
-uint32_t Object::get_edited_version() const {
-	return _edited_version;
 }
 #endif
 
