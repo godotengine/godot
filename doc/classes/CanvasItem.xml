@@ -809,7 +809,10 @@
 		<constant name="CLIP_CHILDREN_AND_DRAW" value="2" enum="ClipChildrenMode">
 			This node is used as a mask and is also drawn. The mask is based on this node's alpha channel: Opaque pixels are kept, transparent pixels are discarded, and semi-transparent pixels are blended in according to their opacity. Children are clipped to the parent's drawn area.
 		</constant>
-		<constant name="CLIP_CHILDREN_MAX" value="3" enum="ClipChildrenMode">
+		<constant name="CLIP_CHILDREN_CANVASGROUP" value="3" enum="ClipChildrenMode">
+			This node is used as a [CanvasGroup]. Child [CanvasItem] nodes are drawn as a single object and their color values are multiplied by this node's color values. Overlapping opaque pixels are kept, transparent pixels are discarded.
+		</constant>
+		<constant name="CLIP_CHILDREN_MAX" value="4" enum="ClipChildrenMode">
 			Represents the size of the [enum ClipChildrenMode] enum.
 		</constant>
 	</constants>
