@@ -1803,7 +1803,10 @@ StringName Variant::get_enum_for_enumeration(Variant::Type p_type, const StringN
 	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
 
 	const StringName *enum_name = enum_data.value_to_enum.getptr(p_enumeration);
-	return (enum_name == nullptr) ? StringName() : *enum_name;
+	if (enum_name == nullptr) {
+		return StringName();
+	}
+	return *enum_name;
 }
 
 #ifdef DEBUG_ENABLED
