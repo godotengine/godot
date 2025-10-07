@@ -408,6 +408,8 @@ void register_scene_types() {
 		ResourceLoader::add_resource_format_loader(resource_loader_shader_include, true);
 	}
 
+	GLOBAL_DEF("filesystem/inline_text_resource_uids/compatibility/no_inline_text_resource_uids_in_addons", false);
+
 	OS::get_singleton()->yield(); // may take time to init
 
 	GDREGISTER_CLASS(Object);

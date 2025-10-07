@@ -1364,6 +1364,18 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 					}
 					f->store_line(ResourceUID::get_singleton()->id_to_text(fi->uid));
 				}
+			} else {
+				if (fi->uid == ResourceUID::INVALID_ID) {
+					ResourceUID::ID new_uid = ResourceUID::get_singleton()->create_id_for_path(path);
+					if (ResourceSaver::set_uid(path, new_uid) == OK) {
+						fi->uid = new_uid;
+						ResourceUID::get_singleton()->add_id(new_uid, path);
+					}
+				} else {
+					if (ResourceLoader::get_resource_uid(path) != fi->uid) {
+						ResourceSaver::set_uid(path, fi->uid);
+					}
+				}
 			}
 		}
 
@@ -2468,6 +2480,10 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			fi->import_valid = (type == "TextFile" || type == "OtherFile") ? true : ResourceLoader::is_import_valid(file);
 
 			if (uid != ResourceUID::INVALID_ID) {
+				if (ResourceLoader::get_resource_uid(file) != uid) {
+					ResourceSaver::set_uid(file, uid);
+				}
+
 				if (ResourceUID::get_singleton()->has_id(uid)) {
 					ResourceUID::get_singleton()->set_id(uid, file);
 				} else {
@@ -2483,6 +2499,12 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 						ResourceUID::get_singleton()->add_id(id, file);
 						f->store_line(ResourceUID::get_singleton()->id_to_text(id));
 						fi->uid = id;
+					}
+				} else {
+					ResourceUID::ID new_uid = ResourceUID::get_singleton()->create_id_for_path(file);
+					if (ResourceSaver::set_uid(file, new_uid) == OK) {
+						fi->uid = new_uid;
+						ResourceUID::get_singleton()->add_id(new_uid, file);
 					}
 				}
 			}
