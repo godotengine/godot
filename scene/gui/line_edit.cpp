@@ -845,17 +845,17 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 			alt_mode = ALT_INPUT_NONE;
+			// Mirror paste behavior: defer _text_changed once per frame while emitting text_changed signal.
+			if (!text_changed_dirty) {
+				if (is_inside_tree() && text.length() != prev_len) {
+					callable_mp(this, &LineEdit::_text_changed).call_deferred();
+				}
+				text_changed_dirty = true;
+			}
 		} else {
 			ime_text = String();
 			ime_selection = Vector2i();
 			_shape();
-		}
-		// Mirror paste behavior: defer text_changed once per frame while emitting text_changed signal.
-		if (!text_changed_dirty) {
-			if (is_inside_tree() && text.length() != prev_len) {
-				callable_mp(this, &LineEdit::_text_changed).call_deferred();
-			}
-			text_changed_dirty = true;
 		}
 		queue_redraw();
 		accept_event();
@@ -2746,7 +2746,7 @@ void LineEdit::menu_option(int p_option) {
 		} break;
 	}
 
-	// Mirror paste/drag behavior, emit _text_changed signal if a control character was inserted.
+	// Mirror paste/drag behavior, emit text_changed signal if a control character was inserted.
 	if (inserted_control_char && !text_changed_dirty) {
 		if (is_inside_tree() && text.length() != prev_len) {
 			callable_mp(this, &LineEdit::_text_changed).call_deferred();
