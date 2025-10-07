@@ -3047,7 +3047,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			continue; //Shader skips opaque
 		}
 		
-		if (p_pass_mode == PASS_MODE_DEPTH && !(surf->flags & GeometryInstanceSurface::FLAG_SKIPS_DEPTH)) {
+		if (p_pass_mode == PASS_MODE_DEPTH && (surf->flags & GeometryInstanceSurface::FLAG_SKIPS_DEPTH)) {
 			continue; // Shader skips depth
 		}
 
