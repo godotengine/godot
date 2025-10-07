@@ -40,3 +40,10 @@ GH-111117
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/LineEdit/methods/edit': arguments
 
 Optional argument added. Compatibility method registered.
+
+
+GH-110433
+---------
+Validate extension JSON: Error: Field 'classes/Performance/methods/add_custom_monitor/arguments': size changed value in new API, from 3 to 4.
+
+Optional argument added. Compatibility method registered.
