@@ -198,8 +198,6 @@ void register_core_types() {
 	GDREGISTER_CLASS(InputEventMIDI);
 
 	// Network
-	GDREGISTER_ABSTRACT_CLASS(IP);
-
 	GDREGISTER_ABSTRACT_CLASS(StreamPeer);
 	GDREGISTER_ABSTRACT_CLASS(StreamPeerSocket);
 	GDREGISTER_ABSTRACT_CLASS(SocketServer);
@@ -303,6 +301,23 @@ void register_core_types() {
 		ResourceLoader::add_resource_format_loader(resource_loader_gdextension);
 	}
 
+	GDREGISTER_ABSTRACT_CLASS(IP);
+	GDREGISTER_CLASS(CoreBind::Geometry2D);
+	GDREGISTER_CLASS(CoreBind::Geometry3D);
+	GDREGISTER_CLASS(CoreBind::ResourceLoader);
+	GDREGISTER_CLASS(CoreBind::ResourceSaver);
+	GDREGISTER_CLASS(CoreBind::OS);
+	GDREGISTER_CLASS(CoreBind::Engine);
+	GDREGISTER_CLASS(CoreBind::Special::ClassDB);
+	GDREGISTER_CLASS(CoreBind::Marshalls);
+	GDREGISTER_CLASS(CoreBind::EngineDebugger);
+
+	GDREGISTER_CLASS(TranslationServer);
+	GDREGISTER_ABSTRACT_CLASS(Input);
+	GDREGISTER_CLASS(InputMap);
+	GDREGISTER_CLASS(Expression);
+	GDREGISTER_CLASS(ProjectSettings);
+
 	ip = IP::create();
 
 	_geometry_2d = memnew(CoreBind::Geometry2D);
@@ -337,33 +352,14 @@ void register_core_settings() {
 }
 
 void register_early_core_singletons() {
-	GDREGISTER_CLASS(CoreBind::Engine);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Engine", CoreBind::Engine::get_singleton()));
-
-	GDREGISTER_CLASS(ProjectSettings);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
-
-	GDREGISTER_CLASS(CoreBind::OS);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("OS", CoreBind::OS::get_singleton()));
-
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
 }
 
 void register_core_singletons() {
 	OS::get_singleton()->benchmark_begin_measure("Core", "Register Singletons");
-
-	GDREGISTER_ABSTRACT_CLASS(IP);
-	GDREGISTER_CLASS(CoreBind::Geometry2D);
-	GDREGISTER_CLASS(CoreBind::Geometry3D);
-	GDREGISTER_CLASS(CoreBind::ResourceLoader);
-	GDREGISTER_CLASS(CoreBind::ResourceSaver);
-	GDREGISTER_CLASS(CoreBind::Special::ClassDB);
-	GDREGISTER_CLASS(CoreBind::Marshalls);
-	GDREGISTER_CLASS(TranslationServer);
-	GDREGISTER_ABSTRACT_CLASS(Input);
-	GDREGISTER_CLASS(InputMap);
-	GDREGISTER_CLASS(Expression);
-	GDREGISTER_CLASS(CoreBind::EngineDebugger);
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton(), "IP"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry2D", CoreBind::Geometry2D::get_singleton()));
