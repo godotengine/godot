@@ -84,7 +84,7 @@ void AimModifier3D::_get_property_list(List<PropertyInfo> *p_list) const {
 		String path = "settings/" + itos(i) + "/";
 		int rotation_usage = is_using_euler(i) ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_NONE;
 
-		p_list->push_back(PropertyInfo(Variant::INT, path + "forward_axis", PROPERTY_HINT_ENUM, "+X,-X,+Y,-Y,+Z,-Z"));
+		p_list->push_back(PropertyInfo(Variant::INT, path + "forward_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_bone_axis()));
 		p_list->push_back(PropertyInfo(Variant::BOOL, path + "use_euler"));
 		p_list->push_back(PropertyInfo(Variant::INT, path + "primary_rotation_axis", PROPERTY_HINT_ENUM, "X,Y,Z", rotation_usage));
 		p_list->push_back(PropertyInfo(Variant::BOOL, path + "use_secondary_rotation", PROPERTY_HINT_NONE, "", rotation_usage));
@@ -171,16 +171,28 @@ void AimModifier3D::_bind_methods() {
 	ADD_ARRAY_COUNT("Settings", "setting_count", "set_setting_count", "get_setting_count", "settings/");
 }
 
-void AimModifier3D::_process_constraint(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, int p_reference_bone, float p_amount) {
+void AimModifier3D::_process_constraint_by_bone(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, int p_reference_bone, float p_amount) {
 	if (p_apply_bone == p_reference_bone) {
 		ERR_PRINT_ONCE_ED(vformat("In setting %s, the reference bone must not be same with the apply bone.", itos(p_index)));
 		return;
 	}
+	Vector3 reference_origin = p_skeleton->get_bone_global_pose(p_reference_bone).origin;
+	_process_aim(p_index, p_skeleton, p_apply_bone, reference_origin, p_amount);
+}
 
+void AimModifier3D::_process_constraint_by_node(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, const NodePath &p_reference_node, float p_amount) {
+	Node3D *nd = Object::cast_to<Node3D>(get_node_or_null(p_reference_node));
+	if (!nd) {
+		return;
+	}
+	Vector3 reference_origin = nd->get_global_transform_interpolated().origin - p_skeleton->get_global_transform_interpolated().origin;
+	_process_aim(p_index, p_skeleton, p_apply_bone, reference_origin, p_amount);
+}
+
+void AimModifier3D::_process_aim(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, Vector3 p_target, float p_amount) {
 	AimModifier3DSetting *setting = static_cast<AimModifier3DSetting *>(settings[p_index]);
 
 	// Prepare forward_vector and rest.
-	Vector3 reference_origin = p_skeleton->get_bone_global_pose(p_reference_bone).origin;
 	Transform3D src_bone_rest = p_skeleton->get_bone_rest(p_apply_bone);
 	Transform3D bone_rest_space;
 	int parent_bone = p_skeleton->get_bone_parent(p_apply_bone);
@@ -190,7 +202,7 @@ void AimModifier3D::_process_constraint(int p_index, Skeleton3D *p_skeleton, int
 		bone_rest_space = p_skeleton->get_bone_global_pose(parent_bone);
 		bone_rest_space.translate_local(src_bone_rest.origin);
 	}
-	Vector3 forward_vector = bone_rest_space.basis.get_rotation_quaternion().xform_inv(reference_origin - bone_rest_space.origin);
+	Vector3 forward_vector = bone_rest_space.basis.get_rotation_quaternion().xform_inv(p_target - bone_rest_space.origin);
 	if (forward_vector.is_zero_approx()) {
 		return;
 	}
