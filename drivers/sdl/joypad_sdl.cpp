@@ -210,6 +210,12 @@ void JoypadSDL::process_events() {
 				case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
 					SKIP_EVENT_FOR_GAMEPAD;
 
+					// Some devices report pressing buttons with indices like 232+, 241+, etc. that are not valid,
+					// so we ignore them here.
+					if (sdl_event.jbutton.button >= (int)SDLJoyButton::MAX) {
+						continue;
+					}
+
 					input->joy_button(
 							joy_id,
 							map_sdl_button_to_joystick_list(sdl_event.jbutton.button),
