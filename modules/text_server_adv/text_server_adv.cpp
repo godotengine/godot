@@ -6742,6 +6742,11 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 						p_sd->descent = MAX(p_sd->descent, Math::round(get_hex_code_box_size(fs, gl.index).x * 0.5));
 					}
 				}
+				bool zero_w = (p_sd->preserve_control) ? (p_sd->text[i] == 0x200B || p_sd->text[i] == 0xFEFF) : ((p_sd->text[i] >= 0x200B && p_sd->text[i] <= 0x200D) || p_sd->text[i] == 0x2060 || p_sd->text[i] == 0xFEFF);
+				if (zero_w) {
+					gl.index = 0;
+					gl.advance = 0.0;
+				}
 
 				p_sd->width += gl.advance;
 
@@ -6885,7 +6890,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 #endif
 
 			gl.index = glyph_info[i].codepoint;
-			bool zero_w = (p_sd->preserve_control) ? (p_sd->text[glyph_info[i].cluster] == 0x200B || p_sd->text[glyph_info[i].cluster] == 0xFEF) : (p_sd->text[glyph_info[i].cluster] >= 0x200B && p_sd->text[glyph_info[i].cluster] <= 0x200D) || p_sd->text[glyph_info[i].cluster] == 0x2060 || p_sd->text[glyph_info[i].cluster] == 0xFEFF;
+			bool zero_w = (p_sd->preserve_control) ? (p_sd->text[glyph_info[i].cluster] == 0x200B || p_sd->text[glyph_info[i].cluster] == 0xFEFF) : ((p_sd->text[glyph_info[i].cluster] >= 0x200B && p_sd->text[glyph_info[i].cluster] <= 0x200D) || p_sd->text[glyph_info[i].cluster] == 0x2060 || p_sd->text[glyph_info[i].cluster] == 0xFEFF);
 			if (zero_w) {
 				gl.index = 0;
 				gl.advance = 0.0;
