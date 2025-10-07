@@ -41,6 +41,7 @@ public:
 		bool use_euler = false;
 		Vector3::Axis primary_rotation_axis = Vector3::AXIS_X;
 		bool use_secondary_rotation = true;
+		bool relative = true;
 	};
 
 protected:
@@ -65,6 +66,8 @@ public:
 	Vector3::Axis get_primary_rotation_axis(int p_index) const;
 	void set_use_secondary_rotation(int p_index, bool p_enabled);
 	bool is_using_secondary_rotation(int p_index) const;
+	void set_relative(int p_index, bool p_enabled);
+	bool is_relative(int p_index) const;
 
 	~AimModifier3D();
 };
