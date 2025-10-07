@@ -252,7 +252,7 @@ Object::Connection::Connection(const Variant &p_variant) {
 }
 
 bool Object::_predelete() {
-	_predelete_ok = 1;
+	_predelete_ok = true;
 	notification(NOTIFICATION_PREDELETE, true);
 	if (!_predelete_ok) {
 		return false;
@@ -2394,7 +2394,7 @@ Object::~Object() {
 		ObjectDB::remove_instance(this);
 		_instance_id = ObjectID();
 	}
-	_predelete_ok = 2;
+	_predelete_ok = true;
 
 	if (_instance_bindings != nullptr) {
 		for (uint32_t i = 0; i < _instance_binding_count; i++) {
