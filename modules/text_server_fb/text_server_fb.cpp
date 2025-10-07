@@ -62,11 +62,15 @@ using namespace godot;
 // Thirdparty headers.
 
 #ifdef MODULE_MSDFGEN_ENABLED
+GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4458) // "Declaration of 'identifier' hides class member".
+
 #include <core/EdgeHolder.h>
 #include <core/ShapeDistanceFinder.h>
 #include <core/contour-combiners.h>
 #include <core/edge-selectors.h>
 #include <msdfgen.h>
+
+GODOT_MSVC_WARNING_POP
 #endif
 
 #ifdef MODULE_FREETYPE_ENABLED
