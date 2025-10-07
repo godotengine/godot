@@ -5761,6 +5761,16 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 	return result;
 }
 
+void GDScriptAnalyzer::update_dict_array_return_type(GDScriptParser::DataType p_base_type, const StringName &p_function_name, GDScriptParser::DataType &r_return_type) {
+	if (p_function_name == "keys") {
+		r_return_type.builtin_type = Variant::ARRAY;
+		r_return_type.container_element_types = { p_base_type.get_container_element_type_or_variant(0) };
+	} else if (p_function_name == "values") {
+		r_return_type.builtin_type = Variant::ARRAY;
+		r_return_type.container_element_types = { p_base_type.get_container_element_type_or_variant(1) };
+	}
+}
+
 bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bool p_is_constructor, GDScriptParser::DataType p_base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, BitField<MethodFlags> &r_method_flags, StringName *r_native_class) {
 	r_method_flags = METHOD_FLAGS_DEFAULT;
 	r_default_arg_count = 0;
@@ -5799,6 +5809,9 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 				// Cannot use non-const methods on enums.
 				if (!r_method_flags.has_flag(METHOD_FLAG_STATIC) && was_enum && !(E.flags & METHOD_FLAG_CONST)) {
 					push_error(vformat(R"*(Cannot call non-const Dictionary function "%s()" on enum "%s".)*", p_function, p_base_type.enum_type), p_source);
+				}
+				if (p_base_type.builtin_type == Variant::DICTIONARY) {
+					update_dict_array_return_type(p_base_type, E.name, r_return_type);
 				}
 				return true;
 			}

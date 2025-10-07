@@ -407,7 +407,8 @@
 		<method name="is_typed" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the dictionary is typed. Typed dictionaries can only store keys/values of their associated type and provide type safety for the [code][][/code] operator. Methods of typed dictionary still return [Variant].
+				Returns [code]true[/code] if the dictionary is typed. Typed dictionaries can only store keys/values of their associated type and provide type safety for the [code][][/code] operator.
+				[b]Note:[/b] Regardless of typing, some methods of a dictionary are always expected to require or return [Variant].
 			</description>
 		</method>
 		<method name="is_typed_key" qualifiers="const">
@@ -425,7 +426,7 @@
 		<method name="keys" qualifiers="const">
 			<return type="Array" />
 			<description>
-				Returns the list of keys in the dictionary.
+				Returns the list of keys in the dictionary. The returned array is typed to match this dictionary (see [method is_typed_key]).
 			</description>
 		</method>
 		<method name="make_read_only">
@@ -534,7 +535,7 @@
 		<method name="values" qualifiers="const">
 			<return type="Array" />
 			<description>
-				Returns the list of values in this dictionary.
+				Returns the list of values in the dictionary. The returned array is typed to match this dictionary (see [method is_typed_value]).
 			</description>
 		</method>
 	</methods>
