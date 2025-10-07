@@ -768,7 +768,10 @@ public:
 		bool resolved_body = false;
 
 		StringName get_global_name() const {
-			return (outer == nullptr && identifier != nullptr) ? identifier->name : StringName();
+			if (outer == nullptr && identifier != nullptr) {
+				return identifier->name;
+			}
+			return StringName();
 		}
 
 		Member get_member(const StringName &p_name) const {

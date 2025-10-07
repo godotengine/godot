@@ -2933,7 +2933,10 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	if (r_is_tool) {
 		*r_is_tool = parser.is_tool();
 	}
-	return c->identifier != nullptr ? String(c->identifier->name) : String();
+	if (c->identifier != nullptr) {
+		return String(c->identifier->name);
+	}
+	return String();
 }
 
 thread_local GDScriptLanguage::CallLevel *GDScriptLanguage::_call_stack = nullptr;

@@ -825,7 +825,10 @@ public:
 		if (can_auto_translate()) {
 			return tr_n(p_message, p_message_plural, p_n, p_context);
 		}
-		return p_n == 1 ? p_message : String(p_message_plural);
+		if (p_n == 1) {
+			return p_message;
+		}
+		return String(p_message_plural);
 	}
 
 	/* THREADING */
