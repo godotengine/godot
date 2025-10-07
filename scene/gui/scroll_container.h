@@ -85,6 +85,8 @@ private:
 	bool _is_h_scroll_visible() const;
 	bool _is_v_scroll_visible() const;
 
+	Rect2 _get_margins() const;
+
 	bool draw_focus_border = false;
 	bool focus_border_is_drawn = false;
 	bool child_has_focus();
