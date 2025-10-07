@@ -459,7 +459,13 @@ WaylandEmbedder::WaylandObject *WaylandEmbedder::Client::new_global_instance(uin
 	gid_info.history_elem = global_id_history.push_back(p_global_id);
 	global_ids[p_local_id] = gid_info;
 
-	local_ids[p_global_id] = p_global_id;
+	// NOTE: Normally, for each client, there's a single local object per global
+	// object, but global instances break this expectation. This is technically
+	// wrong but should work fine, as we have special logic whenever needed.
+	//
+	// TODO: it might be nice to enforce that this table is never looked up for
+	// global instances or even just log attempts.
+	local_ids[p_global_id] = p_local_id;
 
 	return &new_object;
 }
@@ -2656,7 +2662,7 @@ void WaylandEmbedder::_thread_loop(void *p_data) {
 
 	DEBUG_LOG_WAYLAND_EMBED("Proxy thread started");
 
-	while (true) {
+	while (!proxy->thread_done.is_set()) {
 		proxy->poll_sockets();
 	}
 }
@@ -2807,18 +2813,21 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 		return;
 	}
 
-	for (KeyValue<int, Client> &pair : clients) {
-		const Client &client = pair.value;
-
-		if (client.socket < 0 || p_fd != client.socket) {
-			continue;
+	const Client *client = clients.getptr(p_fd);
+	if (client) {
+		if (main_client && client == main_client && p_revents & (POLLHUP | POLLERR)) {
+			DEBUG_LOG_WAYLAND_EMBED("Main client disconnected, shutting down.");
+			cleanup_socket(p_fd);
+			thread_done.set();
+			return;
 		}
 
 		if (p_revents & POLLIN) {
-			if (!handle_sock(client.socket)) {
+			if (!handle_sock(p_fd)) {
 				DEBUG_LOG_WAYLAND_EMBED("disconnecting");
-				cleanup_socket(client.socket);
+				cleanup_socket(p_fd);
 			}
+
 			return;
 		} else if (p_revents & (POLLHUP | POLLERR | POLLNVAL)) {
 			if (p_revents & POLLHUP) {
@@ -2831,11 +2840,19 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 				DEBUG_LOG_WAYLAND_EMBED(vformat("Socket %d invalid FD.", p_fd));
 			}
 
-			cleanup_socket(client.socket);
+			cleanup_socket(p_fd);
 
 			return;
 		}
 	}
+}
+
+WaylandEmbedder::~WaylandEmbedder() {
+	thread_done.set();
+
+	// TODO: Uninitialize global data and stuff.
+
+	proxy_thread.wait_to_finish();
 }
 
 #endif // TOOLS_ENABLED

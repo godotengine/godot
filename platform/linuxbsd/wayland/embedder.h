@@ -503,6 +503,8 @@ private:
 	LocalVector<uint32_t> msg_buf;
 	LocalVector<uint8_t> ancillary_buf;
 
+	SafeFlag thread_done;
+
 	static size_t wl_array_word_offset(uint32_t p_size);
 	const static struct wl_interface *wl_interface_from_string(const char *name, size_t size);
 	static int wl_interface_get_destructor_opcode(const struct wl_interface *p_iface, uint32_t p_version);
@@ -596,9 +598,10 @@ private:
 public:
 	// Returns path to socket.
 	Error init();
-	void uninit();
 
 	String get_socket_path() const { return socket_path; }
+
+	~WaylandEmbedder();
 };
 
 #endif // TOOLS_ENABLED
