@@ -552,7 +552,7 @@ bool Viewport::_can_hide_focus_state() {
 }
 
 void Viewport::_on_settings_changed() {
-	if (!gui.hide_focus && _can_hide_focus_state()) {
+	if (!gui.hide_focus || _can_hide_focus_state()) {
 		return;
 	}
 

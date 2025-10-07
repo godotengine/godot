@@ -277,6 +277,7 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 			case Key::ESCAPE: {
 				value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
 				if (value_input_popup) {
+					value_input_focus_visible = value_input->has_focus(true);
 					value_input_popup->hide();
 				}
 			} break;
@@ -612,6 +613,7 @@ void EditorSpinSlider::_evaluate_input_text() {
 void EditorSpinSlider::_value_input_submitted(const String &p_text) {
 	value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
 	if (value_input_popup) {
+		value_input_focus_visible = value_input->has_focus(true);
 		value_input_popup->hide();
 	}
 }
@@ -646,9 +648,10 @@ void EditorSpinSlider::_value_focus_exited() {
 			value_input_popup->hide();
 		}
 	} else {
-		// Enter or Esc was pressed.
-		grab_focus();
+		// Enter or Esc was pressed. Keep showing the focus if already present.
+		grab_focus(!value_input_focus_visible);
 	}
+	value_input_focus_visible = false;
 
 	emit_signal("value_focus_exited");
 }

@@ -515,7 +515,7 @@ void GroupsEditor::_confirm_add() {
 	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
-	tree->grab_focus();
+	tree->grab_focus(true);
 }
 
 void GroupsEditor::_confirm_rename() {
@@ -566,7 +566,7 @@ void GroupsEditor::_confirm_rename() {
 
 	undo_redo->commit_action();
 
-	tree->grab_focus();
+	tree->grab_focus(true);
 }
 
 void GroupsEditor::_confirm_delete() {
@@ -606,7 +606,7 @@ void GroupsEditor::_confirm_delete() {
 	undo_redo->add_undo_method(this, "_update_tree");
 
 	undo_redo->commit_action();
-	tree->grab_focus();
+	tree->grab_focus(true);
 }
 
 void GroupsEditor::_show_add_group_dialog() {
