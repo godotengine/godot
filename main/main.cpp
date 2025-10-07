@@ -861,8 +861,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	MAIN_PRINT("Main: Parse CMDLine");
 
 	LaunchOptions options;
-	// options.register_option(LaunchOptions::Option{ .id = LaunchOptions::ARG_HELP, .alias = "-h", .name = "--help", .description = "Display this help message." }); // C++20 when
 	options.register_option_group("General options");
+	// options.register_option(LaunchOptions::Option{ .id = LaunchOptions::ARG_HELP, .name = "--help", .alias = "-h", .description = "Display this help message." });
 	options.register_option(LaunchOptions::ARG_HELP, "--help", "Display this help message.", "", "-h");
 	options.register_option(LaunchOptions::ARG_VERSION, "--version", "Display the version string.");
 	options.register_option(LaunchOptions::ARG_VERBOSE, "--verbose", "Use verbose stdout mode.", "", "-v");
@@ -1125,10 +1125,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					editor = true;
 #endif
 #else
-			ERR_PRINT(
-					"`project.godot` path was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
-					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
-			goto error;
+					ERR_PRINT(
+							"`project.godot` path was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+							"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+					goto error;
 #endif // OVERRIDE_PATH_ENABLED
 				} else if (start_config.game_path.is_empty() && !arg.begins_with("-") && !arg.begins_with("+")) {
 					String scene_path = ResourceUID::ensure_path(arg);
@@ -1331,10 +1331,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					goto error;
 				}
 #else
-			ERR_PRINT(
-					"`--path` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
-					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
-			goto error;
+				ERR_PRINT(
+						"`--path` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+						"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+				goto error;
 #endif
 			} break;
 
@@ -1342,20 +1342,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef OVERRIDE_PATH_ENABLED
 				const String path = options.get_next_argument();
 				if (path.is_empty()) {
-									ERR_FAIL_V_MSG(EXIT_FAILURE, "Missing scene path, aborting.");
-
+					OS::get_singleton()->print("Missing scene path, aborting.\n");
+					goto error;
 				}
 				start_config.game_path = ResourceUID::ensure_path(path);
 #else
-			ERR_PRINT(
-					"`--scene` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
-					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
-			return EXIT_FAILURE;
+				ERR_PRINT(
+						"`--scene` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+						"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+				return EXIT_FAILURE;
 #endif
-			} break;
-
-			case LaunchOptions::ARG_UPWARDS: {
-				upwards = true;
 			} break;
 
 			case LaunchOptions::ARG_MAIN_PACK: {
@@ -1366,10 +1362,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					goto error;
 				}
 #else
-			ERR_PRINT(
-					"`--main-pack` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
-					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
-			goto error;
+				ERR_PRINT(
+						"`--main-pack` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+						"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+				goto error;
 #endif
 			} break;
 
@@ -1408,9 +1404,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					goto error;
 				}
 #else
-			ERR_PRINT(
-					"`--remote-fs` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
-					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
+				ERR_PRINT(
+						"`--remote-fs` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
+						"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
 #endif
 			} break;
 
@@ -1422,10 +1418,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					goto error;
 				}
 #else
-			ERR_PRINT(
-					"`--remote-fs-password` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
-					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
-			goto error;
+				ERR_PRINT(
+						"`--remote-fs-password` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
+						"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
+				goto error;
 #endif
 			} break;
 
@@ -1590,12 +1586,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			case LaunchOptions::ARG_FULLSCREEN: {
 				init_fullscreen = true;
-				window_mode = DisplayServer::WINDOW_MODE_FULLSCREEN;
+				window_mode = DisplayServerEnums::WINDOW_MODE_FULLSCREEN;
 			} break;
 
 			case LaunchOptions::ARG_MAXIMIZED: {
 				init_maximized = true;
-				window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+				window_mode = DisplayServerEnums::WINDOW_MODE_MAXIMIZED;
 			} break;
 
 			case LaunchOptions::ARG_WINDOWED: {
@@ -1715,13 +1711,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				}
 
 				if (string == "auto") {
-					accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO;
+					accessibility_mode = AccessibilityServerEnums::AccessibilityMode::ACCESSIBILITY_AUTO;
 					accessibility_mode_set = true;
 				} else if (string == "always") {
-					accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_ALWAYS;
+					accessibility_mode = AccessibilityServerEnums::AccessibilityMode::ACCESSIBILITY_ALWAYS;
 					accessibility_mode_set = true;
 				} else if (string == "disabled") {
-					accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED;
+					accessibility_mode = AccessibilityServerEnums::AccessibilityMode::ACCESSIBILITY_DISABLED;
 					accessibility_mode_set = true;
 				} else {
 					OS::get_singleton()->print("Accessibility mode argument not recognized, aborting.\n");
@@ -1735,7 +1731,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					OS::get_singleton()->print("Missing accessibility driver argument, aborting.\n");
 					goto error;
 				}
-					accessibility_driver_name = string;
+				accessibility_driver_name = string;
 			} break;
 
 			case LaunchOptions::ARG_DEBUG: {
@@ -1806,10 +1802,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					goto error;
 				}
 #else
-			ERR_PRINT(
-					"`--remote-debug` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
-					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
-			goto error;
+				ERR_PRINT(
+						"`--remote-debug` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
+						"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
+				goto error;
 #endif
 			} break;
 
@@ -1948,7 +1944,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			case LaunchOptions::ARG_EDITOR_PSEUDOLOCALIZATION: {
 				editor_pseudolocalization = true;
 				forward_cli_argument(options.get_current_argument(), CLI_SCOPE_TOOL);
-				main_args.push_back(arg);
+				main_args.push_back(options.get_current_argument());
 			} break;
 
 			case LaunchOptions::ARG_IMPORT: {

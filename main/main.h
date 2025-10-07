@@ -52,11 +52,11 @@ class Main {
 	struct LaunchOptions {
 		struct Option {
 			int id = ARG_UNDEFINED;
-			CLIOptionAvailability availability = CLI_OPTION_AVAILABILITY_TEMPLATE_RELEASE;
 			String name;
 			String alias;
 			String params;
 			String description;
+			CLIOptionAvailability availability = CLI_OPTION_AVAILABILITY_TEMPLATE_RELEASE;
 		};
 
 		enum {
@@ -79,7 +79,6 @@ class Main {
 			ARG_LANGUAGE,
 			ARG_PATH,
 			ARG_SCENE,
-			ARG_UPWARDS,
 			ARG_MAIN_PACK,
 			ARG_RENDER_THREAD_MODE,
 			ARG_RENDER_REMOTE_FS,
