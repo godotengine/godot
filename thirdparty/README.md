@@ -90,7 +90,7 @@ Patches:
 - `0003-remove-tinydds-qoi.patch` (GH-97582)
 - `0004-ambiguous-calls.patch` (GH-103968)
 - `0005-msvc-include-ctype.patch` (GH-106155)
-
+- `0006-clang-warning-exclude.patch` (GH-111346)
 
 ## brotli
 
@@ -492,7 +492,7 @@ Files generated from upstream source:
 ## jolt_physics
 
 - Upstream: https://github.com/jrouwe/JoltPhysics
-- Version: 5.3.0 (0373ec0dd762e4bc2f6acdb08371ee84fa23c6db, 2025)
+- Version: 5.4.0 (036ea7b1d717b3e713ac9d8cbd47118fb9cd5d60, 2025)
 - License: MIT
 
 Files extracted from upstream source:

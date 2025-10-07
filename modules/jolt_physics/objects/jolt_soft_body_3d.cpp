@@ -78,6 +78,7 @@ void JoltSoftBody3D::_space_changing() {
 	if (jolt_body != nullptr) {
 		jolt_settings = new JPH::SoftBodyCreationSettings(jolt_body->GetSoftBodyCreationSettings());
 		jolt_settings->mSettings = nullptr;
+		jolt_settings->mVertexRadius = JoltProjectSettings::soft_body_point_radius;
 	}
 
 	_deref_shared_data();
@@ -146,8 +147,6 @@ bool JoltSoftBody3D::_ref_shared_data() {
 		LocalVector<int> &mesh_to_physics = iter_shared_data->value.mesh_to_physics;
 
 		JPH::SoftBodySharedSettings &settings = *iter_shared_data->value.settings;
-		settings.mVertexRadius = JoltProjectSettings::soft_body_point_radius;
-
 		JPH::Array<JPH::SoftBodySharedSettings::Vertex> &physics_vertices = settings.mVertices;
 		JPH::Array<JPH::SoftBodySharedSettings::Face> &physics_faces = settings.mFaces;
 

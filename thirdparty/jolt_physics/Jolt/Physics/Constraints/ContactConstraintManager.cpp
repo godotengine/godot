@@ -794,8 +794,6 @@ inline void ContactConstraintManager::CalculateFrictionAndNonPenetrationConstrai
 
 void ContactConstraintManager::GetContactsFromCache(ContactAllocator &ioContactAllocator, Body &inBody1, Body &inBody2, bool &outPairHandled, bool &outConstraintCreated)
 {
-	JPH_PROFILE_FUNCTION();
-
 	// Start with nothing found and not handled
 	outConstraintCreated = false;
 	outPairHandled = false;
@@ -923,7 +921,7 @@ void ContactConstraintManager::GetContactsFromCache(ContactAllocator &ioContactA
 				const CachedContactPoint &ccp = output_cm->mContactPoints[i];
 				manifold.mRelativeContactPointsOn1[i] = transform_body1.Multiply3x3(Vec3::sLoadFloat3Unsafe(ccp.mPosition1));
 				manifold.mRelativeContactPointsOn2[i] = local_transform_body2 * Vec3::sLoadFloat3Unsafe(ccp.mPosition2);
-				penetration_depth = max(penetration_depth, (manifold.mRelativeContactPointsOn1[0] - manifold.mRelativeContactPointsOn2[0]).Dot(world_space_normal));
+				penetration_depth = max(penetration_depth, (manifold.mRelativeContactPointsOn1[i] - manifold.mRelativeContactPointsOn2[i]).Dot(world_space_normal));
 			}
 			manifold.mPenetrationDepth = penetration_depth; // We don't have the penetration depth anymore, estimate it
 
@@ -996,8 +994,6 @@ void ContactConstraintManager::GetContactsFromCache(ContactAllocator &ioContactA
 
 ContactConstraintManager::BodyPairHandle ContactConstraintManager::AddBodyPair(ContactAllocator &ioContactAllocator, const Body &inBody1, const Body &inBody2)
 {
-	JPH_PROFILE_FUNCTION();
-
 	// Swap bodies so that body 1 id < body 2 id
 	const Body *body1, *body2;
 	if (inBody1.GetID() < inBody2.GetID())

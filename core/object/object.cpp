@@ -252,7 +252,7 @@ Object::Connection::Connection(const Variant &p_variant) {
 }
 
 bool Object::_predelete() {
-	_predelete_ok = 1;
+	_predelete_ok = true;
 	notification(NOTIFICATION_PREDELETE, true);
 	if (!_predelete_ok) {
 		return false;
@@ -957,6 +957,34 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 	}
 
 	return ret;
+}
+
+void Object::_gdvirtual_init_method_ptr(uint32_t p_compat_hash, void *&r_fn_ptr, const StringName &p_fn_name, bool p_compat) const {
+	r_fn_ptr = nullptr;
+	if (_extension->get_virtual_call_data2 && _extension->call_virtual_with_data) {
+		r_fn_ptr = _extension->get_virtual_call_data2(_extension->class_userdata, &p_fn_name, p_compat_hash);
+	} else if (_extension->get_virtual2) {
+		r_fn_ptr = (void *)_extension->get_virtual2(_extension->class_userdata, &p_fn_name, p_compat_hash);
+#ifndef DISABLE_DEPRECATED
+	} else if (p_compat || ClassDB::get_virtual_method_compatibility_hashes(get_class_name(), p_fn_name).size() == 0) {
+		if (_extension->get_virtual_call_data && _extension->call_virtual_with_data) {
+			r_fn_ptr = _extension->get_virtual_call_data(_extension->class_userdata, &p_fn_name);
+		} else if (_extension->get_virtual) {
+			r_fn_ptr = (void *)_extension->get_virtual(_extension->class_userdata, &p_fn_name);
+		}
+#endif
+	}
+#ifdef TOOLS_ENABLED
+	if (_extension->reloadable) {
+		VirtualMethodTracker *tracker = memnew(VirtualMethodTracker);
+		tracker->method = (void **)&r_fn_ptr;
+		tracker->next = virtual_method_list;
+		virtual_method_list = tracker;
+	}
+#endif
+	if (r_fn_ptr == nullptr) {
+		r_fn_ptr = reinterpret_cast<void *>(_INVALID_GDVIRTUAL_FUNC_ADDR);
+	}
 }
 
 void Object::_notification_forward(int p_notification) {
@@ -2366,7 +2394,7 @@ Object::~Object() {
 		ObjectDB::remove_instance(this);
 		_instance_id = ObjectID();
 	}
-	_predelete_ok = 2;
+	_predelete_ok = true;
 
 	if (_instance_bindings != nullptr) {
 		for (uint32_t i = 0; i < _instance_binding_count; i++) {
