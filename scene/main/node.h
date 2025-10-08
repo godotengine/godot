@@ -512,7 +512,7 @@ public:
 
 	InternalMode get_internal_mode() const;
 
-	void add_child(Node *p_child, bool p_force_readable_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED);
+	void add_child(RequiredParam<Node> rp_child, bool p_force_readable_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED);
 	void add_sibling(Node *p_sibling, bool p_force_readable_name = false);
 	void remove_child(Node *p_child);
 
@@ -608,7 +608,7 @@ public:
 		}
 	}
 
-	Ref<Tween> create_tween();
+	RequiredResult<Tween> create_tween();
 
 	void print_tree();
 	void print_tree_pretty();
