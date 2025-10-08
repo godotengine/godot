@@ -639,7 +639,8 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	bool animation_changing_awaiting_update = false;
 	void _animation_update(); // Updated by AnimationTrackEditor(this)
-	int _get_track_selected();
+	int _get_track_edit_selected();
+	int _get_real_track_selected();
 	void _animation_changed();
 	void _update_tracks();
 	void _redraw_tracks();

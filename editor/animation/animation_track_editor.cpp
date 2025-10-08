@@ -3920,8 +3920,8 @@ void AnimationTrackEditor::remove_track_edit_plugin(const Ref<AnimationTrackEdit
 }
 
 void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_read_only) {
-	if (animation != p_anim && _get_track_selected() >= 0) {
-		track_edits[_get_track_selected()]->release_focus();
+	if (animation != p_anim && _get_track_edit_selected() >= 0) {
+		track_edits[_get_track_edit_selected()]->release_focus();
 	}
 	if (animation.is_valid()) {
 		animation->disconnect_changed(callable_mp(this, &AnimationTrackEditor::_animation_changed));
@@ -4190,7 +4190,11 @@ void AnimationTrackEditor::_animation_track_remove_request(int p_track, Ref<Anim
 void AnimationTrackEditor::_track_grab_focus(int p_track) {
 	// Don't steal focus if not working with the track editor.
 	if (Object::cast_to<AnimationTrackEdit>(get_viewport()->gui_get_focus_owner())) {
-		track_edits[p_track]->grab_focus();
+		for (int i = 0; i < track_edits.size(); i++) {
+			if (track_edits[i]->get_track() == p_track) {
+				track_edits[i]->grab_focus();
+			}
+		}
 	}
 }
 
@@ -4962,7 +4966,7 @@ void AnimationTrackEditor::_on_filter_updated(const String &p_filter) {
 }
 
 void AnimationTrackEditor::_update_tracks() {
-	int selected = _get_track_selected();
+	int selected = _get_real_track_selected();
 
 	while (track_vbox->get_child_count()) {
 		memdelete(track_vbox->get_child(0));
@@ -5700,10 +5704,20 @@ void AnimationTrackEditor::_timeline_value_changed(double) {
 	marker_edit->update_play_position();
 }
 
-int AnimationTrackEditor::_get_track_selected() {
+int AnimationTrackEditor::_get_track_edit_selected() {
 	for (int i = 0; i < track_edits.size(); i++) {
 		if (track_edits[i]->has_focus()) {
 			return i;
+		}
+	}
+
+	return -1;
+}
+
+int AnimationTrackEditor::_get_real_track_selected() {
+	for (int i = 0; i < track_edits.size(); i++) {
+		if (track_edits[i]->has_focus()) {
+			return track_edits[i]->get_track();
 		}
 	}
 
@@ -6180,7 +6194,7 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 					track_edits[i]->append_to_selection(local_rect, mb->is_command_or_control_pressed());
 				}
 
-				if (_get_track_selected() == -1 && track_edits.size() > 0) { // Minimal hack to make shortcuts work.
+				if (_get_track_edit_selected() == -1 && track_edits.size() > 0) { // Minimal hack to make shortcuts work.
 					track_edits[track_edits.size() - 1]->grab_focus();
 				}
 			} else if (!mb->is_command_or_control_pressed() && !mb->is_shift_pressed()) {
@@ -6343,8 +6357,8 @@ void AnimationTrackEditor::_anim_duplicate_keys(float p_ofs, bool p_ofs_valid, i
 
 		int start_track = p_track;
 		if (p_track == -1) { // Duplicating from shortcut or Edit menu.
-			bool is_valid_track_selected = _get_track_selected() >= 0 && _get_track_selected() < animation->get_track_count();
-			start_track = is_valid_track_selected ? _get_track_selected() : top_track;
+			bool is_valid_track_selected = _get_real_track_selected() >= 0 && _get_real_track_selected() < animation->get_track_count();
+			start_track = is_valid_track_selected ? _get_real_track_selected() : top_track;
 		}
 
 		bool all_compatible = true;
@@ -6494,8 +6508,8 @@ void AnimationTrackEditor::_anim_paste_keys(float p_ofs, bool p_ofs_valid, int p
 	if (is_key_clipboard_active() && animation.is_valid()) {
 		int start_track = p_track;
 		if (p_track == -1) { // Pasting from shortcut or Edit menu.
-			bool is_valid_track_selected = _get_track_selected() >= 0 && _get_track_selected() < animation->get_track_count();
-			start_track = is_valid_track_selected ? _get_track_selected() : key_clipboard.top_track;
+			bool is_valid_track_selected = _get_real_track_selected() >= 0 && _get_real_track_selected() < animation->get_track_count();
+			start_track = is_valid_track_selected ? _get_real_track_selected() : key_clipboard.top_track;
 		}
 
 		bool all_compatible = true;
