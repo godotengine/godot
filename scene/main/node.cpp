@@ -31,6 +31,10 @@
 #include "node.h"
 #include "node.compat.inc"
 
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Mesh);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Shader);
+
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "core/object/message_queue.h"

@@ -35,6 +35,7 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
+#include "scene/resources/mesh.h"
 
 class Timer;
 class EditorNode3DGizmoPlugin;
