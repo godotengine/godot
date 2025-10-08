@@ -33,7 +33,7 @@
 #include "core/variant/variant.h"
 
 template <typename T>
-class RequiredValue {
+class RequiredResult {
 	// We can't explicitly check if the type is an Object here, as it might've been forward-declared.
 	//  However, we can at least assert that it's an unqualified, non-builtin type.
 	static_assert(!std::is_scalar_v<T>, "T may not be a scalar type");
@@ -47,64 +47,66 @@ public:
 private:
 	value_type _value;
 
-	_FORCE_INLINE_ RequiredValue() {
+	_FORCE_INLINE_ RequiredResult() {
 		if constexpr (!std::is_base_of_v<RefCounted, T>) {
 			_value = nullptr;
 		}
 	}
 
 public:
-	RequiredValue(const RequiredValue &p_other) = default;
-	RequiredValue(RequiredValue &&p_other) = default;
-	RequiredValue &operator=(const RequiredValue &p_other) = default;
-	RequiredValue &operator=(RequiredValue &&p_other) = default;
+	RequiredResult(const RequiredResult &p_other) = default;
+	RequiredResult(RequiredResult &&p_other) = default;
+	RequiredResult &operator=(const RequiredResult &p_other) = default;
+	RequiredResult &operator=(RequiredResult &&p_other) = default;
 
-	_FORCE_INLINE_ RequiredValue(std::nullptr_t) :
-			RequiredValue() {}
-	_FORCE_INLINE_ RequiredValue &operator=(std::nullptr_t) { _value = nullptr; }
+	_FORCE_INLINE_ RequiredResult(std::nullptr_t) :
+			RequiredResult() {}
+	_FORCE_INLINE_ RequiredResult &operator=(std::nullptr_t) { _value = nullptr; }
 
 	[[nodiscard, deprecated("Should not be called directly; only for internal use.")]]
-	_FORCE_INLINE_ static RequiredValue<T> err_return() { return RequiredValue<T>(); }
+	_FORCE_INLINE_ value_type _internal_ptr() const { return _value; }
+	[[nodiscard, deprecated("Should not be called directly; only for internal use.")]]
+	_FORCE_INLINE_ static RequiredResult<T> err_return() { return RequiredResult<T>(); }
 
 	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
-	_FORCE_INLINE_ RequiredValue(const RequiredValue<T_Other> &p_other) :
+	_FORCE_INLINE_ RequiredResult(const RequiredResult<T_Other> &p_other) :
 			_value(p_other._value) {}
 	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
-	_FORCE_INLINE_ RequiredValue &operator=(const RequiredValue<T_Other> &p_other) {
+	_FORCE_INLINE_ RequiredResult &operator=(const RequiredResult<T_Other> &p_other) {
 		_value = p_other._value;
 		return *this;
 	}
 
 	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
-	_FORCE_INLINE_ RequiredValue(const T_Other *p_ptr) :
+	_FORCE_INLINE_ RequiredResult(const T_Other *p_ptr) :
 			_value(const_cast<std::remove_const_t<T_Other> *>(p_ptr)) {}
 	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
-	_FORCE_INLINE_ RequiredValue &operator=(const T_Other *p_ptr) {
+	_FORCE_INLINE_ RequiredResult &operator=(const T_Other *p_ptr) {
 		_value = const_cast<std::remove_const_t<T_Other> *>(p_ptr);
 		return *this;
 	}
 
 	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
-	_FORCE_INLINE_ RequiredValue(const Ref<T_Other> &p_ref) :
+	_FORCE_INLINE_ RequiredResult(const Ref<T_Other> &p_ref) :
 			_value(p_ref) {}
 	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
-	_FORCE_INLINE_ RequiredValue &operator=(const Ref<T_Other> &p_ref) {
+	_FORCE_INLINE_ RequiredResult &operator=(const Ref<T_Other> &p_ref) {
 		_value = p_ref;
 		return *this;
 	}
 
 	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
-	_FORCE_INLINE_ RequiredValue(Ref<T_Other> &&p_ref) :
+	_FORCE_INLINE_ RequiredResult(Ref<T_Other> &&p_ref) :
 			_value(std::move(p_ref)) {}
 	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
-	_FORCE_INLINE_ RequiredValue &operator=(Ref<T_Other> &&p_ref) {
+	_FORCE_INLINE_ RequiredResult &operator=(Ref<T_Other> &&p_ref) {
 		_value = std::move(p_ref);
 		return &this;
 	}
 
-	_FORCE_INLINE_ RequiredValue(const Variant &p_variant) :
+	_FORCE_INLINE_ RequiredResult(const Variant &p_variant) :
 			_value(static_cast<T *>(p_variant.get_validated_object())) {}
-	_FORCE_INLINE_ RequiredValue &operator=(const Variant &p_variant) {
+	_FORCE_INLINE_ RequiredResult &operator=(const Variant &p_variant) {
 		_value = static_cast<T *>(p_variant.get_validated_object());
 		return *this;
 	}
@@ -251,6 +253,6 @@ public:
 
 // Technically zero-constructible, but not recommended.
 template <typename T>
-struct is_zero_constructible<RequiredValue<T>> : std::true_type {};
+struct is_zero_constructible<RequiredResult<T>> : std::true_type {};
 template <typename T>
 struct is_zero_constructible<RequiredParam<T>> : std::true_type {};

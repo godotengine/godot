@@ -273,7 +273,7 @@ struct PtrToArg<const T *> {
 
 template <class T>
 struct PtrToArg<RequiredParam<T>> {
-	typedef T *EncodeT;
+	typedef typename RequiredParam<T>::value_type EncodeT;
 
 	_FORCE_INLINE_ static RequiredParam<T> convert(const void *p_ptr) {
 		if (p_ptr == nullptr) {
@@ -286,27 +286,31 @@ struct PtrToArg<RequiredParam<T>> {
 	}
 
 	_FORCE_INLINE_ static void encode(const RequiredParam<T> &p_var, void *p_ptr) {
-		*((T **)p_ptr) = p_var._internal_ptr();
+		GODOT_DEPRECATED_BEGIN
+		*((typename RequiredParam<T>::value_type *)p_ptr) = p_var._internal_ptr();
+		GODOT_DEPRECATED_END
 	}
 };
 
-// This is for RequiredValue.
+// This is for RequiredResult.
 
 template <class T>
-struct PtrToArg<RequiredValue<T>> {
-	typedef T *EncodeT;
+struct PtrToArg<RequiredResult<T>> {
+	typedef typename RequiredResult<T>::value_type EncodeT;
 
-	_FORCE_INLINE_ static RequiredValue<T> convert(const void *p_ptr) {
+	_FORCE_INLINE_ static RequiredResult<T> convert(const void *p_ptr) {
 		if (p_ptr == nullptr) {
 			GODOT_DEPRECATED_BEGIN
-			return RequiredValue<T>::err_return();
+			return RequiredResult<T>::err_return();
 			GODOT_DEPRECATED_END
 		}
-		return RequiredValue<T>(*reinterpret_cast<T *const *>(p_ptr));
+		return RequiredResult<T>(*reinterpret_cast<T *const *>(p_ptr));
 	}
 
-	_FORCE_INLINE_ static void encode(const RequiredValue<T> &p_var, void *p_ptr) {
-		*((T **)p_ptr) = p_var.ptr();
+	_FORCE_INLINE_ static void encode(const RequiredResult<T> &p_var, void *p_ptr) {
+		GODOT_DEPRECATED_BEGIN
+		*((typename RequiredResult<T>::value_type *)p_ptr) = p_var._internal_ptr();
+		GODOT_DEPRECATED_END
 	}
 };
 

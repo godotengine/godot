@@ -187,7 +187,7 @@ template <class T>
 class RequiredParam;
 
 template <class T>
-class RequiredValue;
+class RequiredResult;
 
 template <typename T>
 struct GetTypeInfo<RequiredParam<T>, std::enable_if_t<std::is_base_of_v<Object, T>>> {
@@ -206,7 +206,7 @@ struct GetTypeInfo<RequiredParam<T>, std::enable_if_t<std::is_base_of_v<Object, 
 };
 
 template <typename T>
-struct GetTypeInfo<RequiredValue<T>, std::enable_if_t<std::is_base_of_v<Object, T>>> {
+struct GetTypeInfo<RequiredResult<T>, std::enable_if_t<std::is_base_of_v<Object, T>>> {
 	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_OBJECT_IS_REQUIRED;
 
