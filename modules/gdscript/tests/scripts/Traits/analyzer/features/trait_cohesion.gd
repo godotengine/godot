@@ -1,6 +1,7 @@
 extends Node
 uses TraitA, TraitB
 uses TraitC, TraitC.TraitD, ClassA.TraitE
+uses GlobalTrait
 
 trait TraitA extends Object:
 	func func_one():
