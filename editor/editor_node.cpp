@@ -1230,9 +1230,10 @@ void EditorNode::_fs_changed() {
 			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 			if (da->file_exists("res://export_presets.cfg")) {
 				err = FAILED;
-				export_error = vformat(
-						"Invalid export preset name: %s.\nThe following presets were detected in this project's `export_presets.cfg`:\n\n",
-						preset_name);
+				if (preset_name != "?") {
+					export_error = vformat("Invalid export preset name: %s.\n", preset_name);
+				}
+				export_error += "The following presets were detected in this project's `export_presets.cfg`:\n\n";
 				for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); ++i) {
 					// Write the preset name between double quotes since it needs to be written between quotes on the command line if it contains spaces.
 					export_error += vformat("        \"%s\"\n", EditorExport::get_singleton()->get_export_preset(i)->get_name());
