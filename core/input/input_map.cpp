@@ -29,6 +29,10 @@
 /**************************************************************************/
 
 #include "input_map.h"
+#include "core/input/input_event.h"
+#include "core/object/ref_counted.h"
+#include "core/string/print_string.h"
+#include "core/templates/list.h"
 #include "input_map.compat.inc"
 
 #include "core/config/project_settings.h"
@@ -226,6 +230,10 @@ void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEve
 
 void InputMap::action_erase_events(const StringName &p_action) {
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), suggest_actions(p_action));
+
+	if (Input::get_singleton()->is_action_pressed(p_action)) {
+		Input::get_singleton()->action_release(p_action);
+	}
 
 	input_map[p_action].inputs.clear();
 }
