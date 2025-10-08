@@ -1252,6 +1252,15 @@
 		<member name="gui/timers/tooltip_delay_sec.editor_hint" type="float" setter="" getter="" default="0.5">
 			Delay for tooltips in the editor.
 		</member>
+		<member name="input/keyboard_player_id_override" type="int" setter="" getter="">
+			The player id the keyboard is assigned to.
+		</member>
+		<member name="input/mouse_player_id_override" type="int" setter="" getter="">
+			The player id the mouse is assigned to.
+		</member>
+		<member name="input/touch_player_id_override" type="int" setter="" getter="">
+			The player id the touch events are assigned to.
+		</member>
 		<member name="input/ui_accept" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to confirm a focused button, menu or list item, or validate input.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.

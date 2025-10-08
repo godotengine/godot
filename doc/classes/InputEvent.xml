@@ -31,6 +31,7 @@
 			<return type="float" />
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="exact_match" type="bool" default="false" />
+			<param index="2" name="player_id" type="int" enum="PlayerID" default="0" />
 			<description>
 				Returns a value between 0.0 and 1.0 depending on the given actions' state. Useful for getting the value of events of type [InputEventJoypadMotion].
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
@@ -50,6 +51,7 @@
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="allow_echo" type="bool" default="false" />
 			<param index="2" name="exact_match" type="bool" default="false" />
+			<param index="3" name="player_id" type="int" enum="PlayerID" default="0" />
 			<description>
 				Returns [code]true[/code] if the given action matches this event and is being pressed (and is not an echo event for [InputEventKey] events, unless [param allow_echo] is [code]true[/code]). Not relevant for events of type [InputEventMouseMotion] or [InputEventScreenDrag].
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
@@ -60,6 +62,7 @@
 			<return type="bool" />
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="exact_match" type="bool" default="false" />
+			<param index="2" name="player_id" type="int" enum="PlayerID" default="0" />
 			<description>
 				Returns [code]true[/code] if the given action matches this event and is released (i.e. not pressed). Not relevant for events of type [InputEventMouseMotion] or [InputEventScreenDrag].
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
@@ -107,6 +110,12 @@
 				Returns [code]true[/code] if this input event is released. Not relevant for events of type [InputEventMouseMotion] or [InputEventScreenDrag].
 			</description>
 		</method>
+		<method name="set_player_from_device">
+			<return type="void" />
+			<description>
+				Sets the player ID corresponding to the device ID internal mapping.
+			</description>
+		</method>
 		<method name="xformed_by" qualifiers="const">
 			<return type="InputEvent" />
 			<param index="0" name="xform" type="Transform2D" />
@@ -120,6 +129,9 @@
 		<member name="device" type="int" setter="set_device" getter="get_device" default="0">
 			The event's device ID.
 			[b]Note:[/b] [member device] can be negative for special use cases that don't refer to devices physically present on the system. See [constant DEVICE_ID_EMULATION].
+		</member>
+		<member name="player" type="int" setter="set_player" getter="get_player" enum="PlayerID" default="0">
+			The event's player ID.
 		</member>
 	</members>
 	<constants>

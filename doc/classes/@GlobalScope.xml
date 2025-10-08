@@ -2442,6 +2442,30 @@
 		<constant name="MOUSE_BUTTON_MASK_MB_XBUTTON2" value="256" enum="MouseButtonMask" is_bitfield="true">
 			Extra mouse button 2 mask.
 		</constant>
+		<constant name="PLAYER_ID_P1" value="0" enum="PlayerID">
+			Player 1 (value: 0).
+		</constant>
+		<constant name="PLAYER_ID_P2" value="1" enum="PlayerID">
+			Player 2 (value: 1).
+		</constant>
+		<constant name="PLAYER_ID_P3" value="2" enum="PlayerID">
+			Player 3 (value: 2).
+		</constant>
+		<constant name="PLAYER_ID_P4" value="3" enum="PlayerID">
+			Player 4 (value: 3).
+		</constant>
+		<constant name="PLAYER_ID_P5" value="4" enum="PlayerID">
+			Player 5 (value: 4).
+		</constant>
+		<constant name="PLAYER_ID_P6" value="5" enum="PlayerID">
+			Player 6 (value: 5).
+		</constant>
+		<constant name="PLAYER_ID_P7" value="6" enum="PlayerID">
+			Player 7 (value: 6).
+		</constant>
+		<constant name="PLAYER_ID_P8" value="7" enum="PlayerID">
+			Player 8 (value: 7).
+		</constant>
 		<constant name="JOY_BUTTON_INVALID" value="-1" enum="JoyButton">
 			An invalid game controller button.
 		</constant>

@@ -863,6 +863,7 @@ void Window::update_mouse_cursor_state() {
 	mm->set_position(pos);
 	mm->set_global_position(xform.xform(pos));
 	mm->set_device(InputEvent::DEVICE_ID_INTERNAL);
+	mm->set_player_from_device();
 	push_input(mm, true);
 }
 

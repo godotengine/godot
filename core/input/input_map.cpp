@@ -440,6 +440,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventJoypadButton::create_reference(JoyButton::Y));
+	inputs.back()->get()->set_device(ALL_DEVICES);
 	inputs.push_back(InputEventKey::create_reference(Key::SPACE));
 	default_builtin_cache.insert("ui_select", inputs);
 
@@ -458,25 +459,33 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::LEFT));
 	inputs.push_back(InputEventJoypadButton::create_reference(JoyButton::DPAD_LEFT));
+	inputs.back()->get()->set_device(ALL_DEVICES);
 	inputs.push_back(InputEventJoypadMotion::create_reference(JoyAxis::LEFT_X, -1.0));
+	inputs.back()->get()->set_device(ALL_DEVICES);
 	default_builtin_cache.insert("ui_left", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::RIGHT));
 	inputs.push_back(InputEventJoypadButton::create_reference(JoyButton::DPAD_RIGHT));
+	inputs.back()->get()->set_device(ALL_DEVICES);
 	inputs.push_back(InputEventJoypadMotion::create_reference(JoyAxis::LEFT_X, 1.0));
+	inputs.back()->get()->set_device(ALL_DEVICES);
 	default_builtin_cache.insert("ui_right", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::UP));
 	inputs.push_back(InputEventJoypadButton::create_reference(JoyButton::DPAD_UP));
+	inputs.back()->get()->set_device(ALL_DEVICES);
 	inputs.push_back(InputEventJoypadMotion::create_reference(JoyAxis::LEFT_Y, -1.0));
+	inputs.back()->get()->set_device(ALL_DEVICES);
 	default_builtin_cache.insert("ui_up", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::DOWN));
 	inputs.push_back(InputEventJoypadButton::create_reference(JoyButton::DPAD_DOWN));
+	inputs.back()->get()->set_device(ALL_DEVICES);
 	inputs.push_back(InputEventJoypadMotion::create_reference(JoyAxis::LEFT_Y, 1.0));
+	inputs.back()->get()->set_device(ALL_DEVICES);
 	default_builtin_cache.insert("ui_down", inputs);
 
 	inputs = List<Ref<InputEvent>>();

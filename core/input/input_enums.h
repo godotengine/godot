@@ -161,3 +161,18 @@ constexpr MouseButtonMask operator|(MouseButtonMask p_a, MouseButtonMask p_b) {
 constexpr MouseButtonMask &operator|=(MouseButtonMask &p_a, MouseButtonMask p_b) {
 	return p_a = p_a | p_b;
 }
+
+enum class PlayerID : uint8_t {
+	P1 = 0,
+	P2 = 1,
+	P3 = 2,
+	P4 = 3,
+	P5 = 4,
+	P6 = 5,
+	P7 = 6,
+	P8 = 7,
+};
+
+enum {
+	PLAYERS_MAX = 8,
+};

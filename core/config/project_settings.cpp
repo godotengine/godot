@@ -1621,6 +1621,10 @@ ProjectSettings::ProjectSettings() {
 
 	_add_builtin_input_map();
 
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "input/keyboard_player_id_override", PROPERTY_HINT_ENUM, "P1,P2,P3,P4,P5,P6,P7,P8"), (int)PlayerID::P1);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "input/mouse_player_id_override", PROPERTY_HINT_ENUM, "P1,P2,P3,P4,P5,P6,P7,P8"), (int)PlayerID::P1);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "input/touch_player_id_override", PROPERTY_HINT_ENUM, "P1,P2,P3,P4,P5,P6,P7,P8"), (int)PlayerID::P1);
+
 	// Keep the enum values in sync with the `DisplayServer::ScreenOrientation` enum.
 	custom_prop_info["display/window/handheld/orientation"] = PropertyInfo(Variant::INT, "display/window/handheld/orientation", PROPERTY_HINT_ENUM, "Landscape,Portrait,Reverse Landscape,Reverse Portrait,Sensor Landscape,Sensor Portrait,Sensor");
 	GLOBAL_DEF("display/window/subwindows/embed_subwindows", true);

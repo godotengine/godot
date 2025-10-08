@@ -797,6 +797,7 @@ void Viewport::_process_picking() {
 		mm.instantiate();
 
 		mm->set_device(InputEvent::DEVICE_ID_INTERNAL);
+		mm->set_player_from_device();
 		mm->set_position(get_mouse_position());
 		mm->set_global_position(mm->get_position());
 		mm->set_alt_pressed(Input::get_singleton()->is_key_pressed(Key::ALT));
@@ -2711,6 +2712,7 @@ void Viewport::_drop_mouse_focus() {
 			mb->set_button_index(MouseButton(i + 1));
 			mb->set_pressed(false);
 			mb->set_device(InputEvent::DEVICE_ID_INTERNAL);
+			mb->set_player_from_device();
 			c->_call_gui_input(mb);
 		}
 	}
@@ -2770,6 +2772,7 @@ void Viewport::_post_gui_grab_click_focus() {
 				mb->set_button_index(MouseButton(i + 1));
 				mb->set_pressed(false);
 				mb->set_device(InputEvent::DEVICE_ID_INTERNAL);
+				mb->set_player_from_device();
 				gui.mouse_focus->_call_gui_input(mb);
 			}
 		}
@@ -2788,6 +2791,7 @@ void Viewport::_post_gui_grab_click_focus() {
 				mb->set_button_index(MouseButton(i + 1));
 				mb->set_pressed(true);
 				mb->set_device(InputEvent::DEVICE_ID_INTERNAL);
+				mb->set_player_from_device();
 				callable_mp(gui.mouse_focus, &Control::_call_gui_input).call_deferred(mb);
 			}
 		}
