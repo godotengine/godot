@@ -1473,11 +1473,11 @@ void Window::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PARENTED: {
-			theme_owner->assign_theme_on_parented(this);
+			theme_owner.assign_theme_on_parented(this);
 		} break;
 
 		case NOTIFICATION_UNPARENTED: {
-			theme_owner->clear_theme_on_unparented(this);
+			theme_owner.clear_theme_on_unparented(this);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -2274,22 +2274,22 @@ void Window::remove_child_notify(Node *p_child) {
 
 void Window::set_theme_owner_node(Node *p_node) {
 	ERR_MAIN_THREAD_GUARD;
-	theme_owner->set_owner_node(p_node);
+	theme_owner.set_owner_node(p_node);
 }
 
 Node *Window::get_theme_owner_node() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
-	return theme_owner->get_owner_node();
+	return theme_owner.get_owner_node();
 }
 
 bool Window::has_theme_owner_node() const {
 	ERR_READ_THREAD_GUARD_V(false);
-	return theme_owner->has_owner_node();
+	return theme_owner.has_owner_node();
 }
 
 void Window::set_theme_context(ThemeContext *p_context, bool p_propagate) {
 	ERR_MAIN_THREAD_GUARD;
-	theme_owner->set_owner_context(p_context, p_propagate);
+	theme_owner.set_owner_context(p_context, p_propagate);
 }
 
 void Window::set_theme(const Ref<Theme> &p_theme) {
@@ -2304,24 +2304,24 @@ void Window::set_theme(const Ref<Theme> &p_theme) {
 
 	theme = p_theme;
 	if (theme.is_valid()) {
-		theme_owner->propagate_theme_changed(this, this, is_inside_tree(), true);
+		theme_owner.propagate_theme_changed(this, this, is_inside_tree(), true);
 		theme->connect_changed(callable_mp(this, &Window::_theme_changed), CONNECT_DEFERRED);
 		return;
 	}
 
 	Control *parent_c = Object::cast_to<Control>(get_parent());
 	if (parent_c && parent_c->has_theme_owner_node()) {
-		theme_owner->propagate_theme_changed(this, parent_c->get_theme_owner_node(), is_inside_tree(), true);
+		theme_owner.propagate_theme_changed(this, parent_c->get_theme_owner_node(), is_inside_tree(), true);
 		return;
 	}
 
 	Window *parent_w = cast_to<Window>(get_parent());
 	if (parent_w && parent_w->has_theme_owner_node()) {
-		theme_owner->propagate_theme_changed(this, parent_w->get_theme_owner_node(), is_inside_tree(), true);
+		theme_owner.propagate_theme_changed(this, parent_w->get_theme_owner_node(), is_inside_tree(), true);
 		return;
 	}
 
-	theme_owner->propagate_theme_changed(this, nullptr, is_inside_tree(), true);
+	theme_owner.propagate_theme_changed(this, nullptr, is_inside_tree(), true);
 }
 
 Ref<Theme> Window::get_theme() const {
@@ -2331,7 +2331,7 @@ Ref<Theme> Window::get_theme() const {
 
 void Window::_theme_changed() {
 	if (is_inside_tree()) {
-		theme_owner->propagate_theme_changed(this, this, true, false);
+		theme_owner.propagate_theme_changed(this, this, true, false);
 	}
 }
 
@@ -2408,8 +2408,8 @@ Ref<Texture2D> Window::get_theme_icon(const StringName &p_name, const StringName
 	}
 
 	Vector<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
-	Ref<Texture2D> icon = theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_ICON, p_name, theme_types);
+	theme_owner.get_theme_type_dependencies(this, p_theme_type, theme_types);
+	Ref<Texture2D> icon = theme_owner.get_theme_item_in_types(Theme::DATA_TYPE_ICON, p_name, theme_types);
 	theme_icon_cache[p_theme_type][p_name] = icon;
 	return icon;
 }
@@ -2432,8 +2432,8 @@ Ref<StyleBox> Window::get_theme_stylebox(const StringName &p_name, const StringN
 	}
 
 	Vector<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
-	Ref<StyleBox> style = theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
+	theme_owner.get_theme_type_dependencies(this, p_theme_type, theme_types);
+	Ref<StyleBox> style = theme_owner.get_theme_item_in_types(Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
 	theme_style_cache[p_theme_type][p_name] = style;
 	return style;
 }
@@ -2456,8 +2456,8 @@ Ref<Font> Window::get_theme_font(const StringName &p_name, const StringName &p_t
 	}
 
 	Vector<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
-	Ref<Font> font = theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_FONT, p_name, theme_types);
+	theme_owner.get_theme_type_dependencies(this, p_theme_type, theme_types);
+	Ref<Font> font = theme_owner.get_theme_item_in_types(Theme::DATA_TYPE_FONT, p_name, theme_types);
 	theme_font_cache[p_theme_type][p_name] = font;
 	return font;
 }
@@ -2480,8 +2480,8 @@ int Window::get_theme_font_size(const StringName &p_name, const StringName &p_th
 	}
 
 	Vector<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
-	int font_size = theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
+	theme_owner.get_theme_type_dependencies(this, p_theme_type, theme_types);
+	int font_size = theme_owner.get_theme_item_in_types(Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
 	theme_font_size_cache[p_theme_type][p_name] = font_size;
 	return font_size;
 }
@@ -2504,8 +2504,8 @@ Color Window::get_theme_color(const StringName &p_name, const StringName &p_them
 	}
 
 	Vector<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
-	Color color = theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_COLOR, p_name, theme_types);
+	theme_owner.get_theme_type_dependencies(this, p_theme_type, theme_types);
+	Color color = theme_owner.get_theme_item_in_types(Theme::DATA_TYPE_COLOR, p_name, theme_types);
 	theme_color_cache[p_theme_type][p_name] = color;
 	return color;
 }
@@ -2528,8 +2528,8 @@ int Window::get_theme_constant(const StringName &p_name, const StringName &p_the
 	}
 
 	Vector<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
-	int constant = theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
+	theme_owner.get_theme_type_dependencies(this, p_theme_type, theme_types);
+	int constant = theme_owner.get_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 	theme_constant_cache[p_theme_type][p_name] = constant;
 	return constant;
 }
@@ -2586,8 +2586,8 @@ bool Window::has_theme_icon(const StringName &p_name, const StringName &p_theme_
 	}
 
 	Vector<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
-	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_ICON, p_name, theme_types);
+	theme_owner.get_theme_type_dependencies(this, p_theme_type, theme_types);
+	return theme_owner.has_theme_item_in_types(Theme::DATA_TYPE_ICON, p_name, theme_types);
 }
 
 bool Window::has_theme_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
@@ -2603,8 +2603,8 @@ bool Window::has_theme_stylebox(const StringName &p_name, const StringName &p_th
 	}
 
 	Vector<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
-	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
+	theme_owner.get_theme_type_dependencies(this, p_theme_type, theme_types);
+	return theme_owner.has_theme_item_in_types(Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
 }
 
 bool Window::has_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
@@ -2620,8 +2620,8 @@ bool Window::has_theme_font(const StringName &p_name, const StringName &p_theme_
 	}
 
 	Vector<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
-	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_FONT, p_name, theme_types);
+	theme_owner.get_theme_type_dependencies(this, p_theme_type, theme_types);
+	return theme_owner.has_theme_item_in_types(Theme::DATA_TYPE_FONT, p_name, theme_types);
 }
 
 bool Window::has_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
@@ -2637,8 +2637,8 @@ bool Window::has_theme_font_size(const StringName &p_name, const StringName &p_t
 	}
 
 	Vector<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
-	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
+	theme_owner.get_theme_type_dependencies(this, p_theme_type, theme_types);
+	return theme_owner.has_theme_item_in_types(Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
 }
 
 bool Window::has_theme_color(const StringName &p_name, const StringName &p_theme_type) const {
@@ -2654,8 +2654,8 @@ bool Window::has_theme_color(const StringName &p_name, const StringName &p_theme
 	}
 
 	Vector<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
-	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_COLOR, p_name, theme_types);
+	theme_owner.get_theme_type_dependencies(this, p_theme_type, theme_types);
+	return theme_owner.has_theme_item_in_types(Theme::DATA_TYPE_COLOR, p_name, theme_types);
 }
 
 bool Window::has_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
@@ -2671,8 +2671,8 @@ bool Window::has_theme_constant(const StringName &p_name, const StringName &p_th
 	}
 
 	Vector<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
-	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
+	theme_owner.get_theme_type_dependencies(this, p_theme_type, theme_types);
+	return theme_owner.has_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 }
 
 /// Local property overrides.
@@ -2822,17 +2822,17 @@ bool Window::has_theme_constant_override(const StringName &p_name) const {
 
 float Window::get_theme_default_base_scale() const {
 	ERR_READ_THREAD_GUARD_V(0);
-	return theme_owner->get_theme_default_base_scale();
+	return theme_owner.get_theme_default_base_scale();
 }
 
 Ref<Font> Window::get_theme_default_font() const {
 	ERR_READ_THREAD_GUARD_V(Ref<Font>());
-	return theme_owner->get_theme_default_font();
+	return theme_owner.get_theme_default_font();
 }
 
 int Window::get_theme_default_font_size() const {
 	ERR_READ_THREAD_GUARD_V(0);
-	return theme_owner->get_theme_default_font_size();
+	return theme_owner.get_theme_default_font_size();
 }
 
 /// Bulk actions.
@@ -3469,13 +3469,13 @@ void Window::_bind_methods() {
 }
 
 Window::Window() {
+	theme_owner.holder = this;
 	RenderingServer *rendering_server = RenderingServer::get_singleton();
 	if (rendering_server) {
 		max_size = rendering_server->get_maximum_viewport_size();
 		max_size_used = max_size; // Update max_size_used.
 	}
 
-	theme_owner = memnew(ThemeOwner(this));
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
 }
 
@@ -3483,7 +3483,6 @@ Window::~Window() {
 	if (focused_window == this) {
 		focused_window = nullptr;
 	}
-	memdelete(theme_owner);
 
 	// Resources need to be disconnected.
 	for (KeyValue<StringName, Ref<Texture2D>> &E : theme_icon_override) {

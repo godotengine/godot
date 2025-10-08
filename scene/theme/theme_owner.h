@@ -38,21 +38,19 @@ class Node;
 class ThemeContext;
 class Window;
 
-class ThemeOwner : public Object {
-	GDSOFTCLASS(ThemeOwner, Object);
-
-	Node *holder = nullptr;
-
+struct ThemeOwner {
+private:
 	Node *owner_node = nullptr;
 	ThemeContext *owner_context = nullptr;
 
-	void _owner_context_changed();
+	static void _owner_context_changed(Node *p_node);
 	ThemeContext *_get_active_owner_context() const;
 
 	Node *_get_next_owner_node(Node *p_from_node) const;
 	Ref<Theme> _get_owner_node_theme(Node *p_owner_node) const;
 
 public:
+	Node *holder = nullptr;
 	// Theme owner node.
 
 	void set_owner_node(Node *p_node);
@@ -71,12 +69,10 @@ public:
 
 	void get_theme_type_dependencies(const Node *p_for_node, const StringName &p_theme_type, Vector<StringName> &r_result) const;
 
-	Variant get_theme_item_in_types(Theme::DataType p_data_type, const StringName &p_name, const Vector<StringName> &p_theme_types);
-	bool has_theme_item_in_types(Theme::DataType p_data_type, const StringName &p_name, const Vector<StringName> &p_theme_types);
+	Variant get_theme_item_in_types(Theme::DataType p_data_type, const StringName &p_name, const Vector<StringName> &p_theme_types) const;
+	bool has_theme_item_in_types(Theme::DataType p_data_type, const StringName &p_name, const Vector<StringName> &p_theme_types) const;
 
-	float get_theme_default_base_scale();
-	Ref<Font> get_theme_default_font();
-	int get_theme_default_font_size();
-
-	ThemeOwner(Node *p_holder) { holder = p_holder; }
+	float get_theme_default_base_scale() const;
+	Ref<Font> get_theme_default_font() const;
+	int get_theme_default_font_size() const;
 };
