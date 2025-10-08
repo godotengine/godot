@@ -14,52 +14,62 @@ script_has_method = """ScriptInstance *_script_instance = ((Object *)(this))->ge
 			return true;\\
 		}"""
 
-proto = """#define GDVIRTUAL$VER($ALIAS $RET m_name $ARG)\\
+proto = """\
+#define _GDVIRTUAL$VER_CALL($ALIAS $RET m_name $ARG)\\
+	static const StringName _gdvirtual_##$VARNAME##_sn = StringName(#m_name, true);\\
+	$SCRIPTCALL\\
+	if (_get_extension()) {\\
+		if (unlikely(!_gdvirtual_##$VARNAME)) {\\
+			_gdvirtual_init_method_ptr(_gdvirtual_##$VARNAME##_get_method_info().get_compatibility_hash(), _gdvirtual_##$VARNAME, _gdvirtual_##$VARNAME##_sn, $COMPAT);\\
+		}\\
+		if (_gdvirtual_##$VARNAME != reinterpret_cast<void*>(_INVALID_GDVIRTUAL_FUNC_ADDR)) {\\
+			$CALLPTRARGS\\
+			$CALLPTRRETDEF\\
+			if (_get_extension()->call_virtual_with_data) {\\
+				_get_extension()->call_virtual_with_data(_get_extension_instance(), &_gdvirtual_##$VARNAME##_sn, _gdvirtual_##$VARNAME, $CALLPTRARGPASS, $CALLPTRRETPASS);\\
+				$CALLPTRRET\\
+			} else {\\
+				((GDExtensionClassCallVirtual)_gdvirtual_##$VARNAME)(_get_extension_instance(), $CALLPTRARGPASS, $CALLPTRRETPASS);\\
+				$CALLPTRRET\\
+			}\\
+			return true;\\
+		}\\
+	}\\
+	$REQCHECK\\
+	$RVOID\\
+	return false;
+#define _GDVIRTUAL$VER_OVERRIDE($ALIAS $RET m_name $ARG)\\
+	static const StringName _gdvirtual_##$VARNAME##_sn = StringName(#m_name, true);\\
+	$SCRIPTHASMETHOD\\
+	if (_get_extension()) {\\
+		if (unlikely(!_gdvirtual_##$VARNAME)) {\\
+			_gdvirtual_init_method_ptr(_gdvirtual_##$VARNAME##_get_method_info().get_compatibility_hash(), _gdvirtual_##$VARNAME, _gdvirtual_##$VARNAME##_sn, $COMPAT);\\
+		}\\
+		if (_gdvirtual_##$VARNAME != reinterpret_cast<void*>(_INVALID_GDVIRTUAL_FUNC_ADDR)) {\\
+			return true;\\
+		}\\
+	}\\
+	return false;
+#define _GDVIRTUAL$VER_GET_METHOD_INFO($ALIAS $RET m_name $ARG)\\
+	MethodInfo method_info;\\
+	method_info.name = #m_name;\\
+	method_info.flags = $METHOD_FLAGS;\\
+	$FILL_METHOD_INFO\\
+	return method_info;
+#define GDVIRTUAL$VER($ALIAS $RET m_name $ARG)\\
 	mutable void *_gdvirtual_##$VARNAME = nullptr;\\
-	_FORCE_INLINE_ bool _gdvirtual_##$VARNAME##_call($CALLARGS) $CONST {\\
-		static const StringName _gdvirtual_##$VARNAME##_sn = StringName(#m_name, true);\\
-		$SCRIPTCALL\\
-		if (_get_extension()) {\\
-			if (unlikely(!_gdvirtual_##$VARNAME)) {\\
-			    _gdvirtual_init_method_ptr(_gdvirtual_##$VARNAME##_get_method_info().get_compatibility_hash(), _gdvirtual_##$VARNAME, _gdvirtual_##$VARNAME##_sn, $COMPAT);\\
-			}\\
-			if (_gdvirtual_##$VARNAME != reinterpret_cast<void*>(_INVALID_GDVIRTUAL_FUNC_ADDR)) {\\
-				$CALLPTRARGS\\
-				$CALLPTRRETDEF\\
-				if (_get_extension()->call_virtual_with_data) {\\
-					_get_extension()->call_virtual_with_data(_get_extension_instance(), &_gdvirtual_##$VARNAME##_sn, _gdvirtual_##$VARNAME, $CALLPTRARGPASS, $CALLPTRRETPASS);\\
-					$CALLPTRRET\\
-				} else {\\
-					((GDExtensionClassCallVirtual)_gdvirtual_##$VARNAME)(_get_extension_instance(), $CALLPTRARGPASS, $CALLPTRRETPASS);\\
-					$CALLPTRRET\\
-				}\\
-				return true;\\
-			}\\
-		}\\
-		$REQCHECK\\
-		$RVOID\\
-		return false;\\
-	}\\
-	_FORCE_INLINE_ bool _gdvirtual_##$VARNAME##_overridden() const {\\
-		static const StringName _gdvirtual_##$VARNAME##_sn = StringName(#m_name, true);\\
-		$SCRIPTHASMETHOD\\
-		if (_get_extension()) {\\
-			if (unlikely(!_gdvirtual_##$VARNAME)) {\\
-			    _gdvirtual_init_method_ptr(_gdvirtual_##$VARNAME##_get_method_info().get_compatibility_hash(), _gdvirtual_##$VARNAME, _gdvirtual_##$VARNAME##_sn, $COMPAT);\\
-			}\\
-			if (_gdvirtual_##$VARNAME != reinterpret_cast<void*>(_INVALID_GDVIRTUAL_FUNC_ADDR)) {\\
-				return true;\\
-			}\\
-		}\\
-		return false;\\
-	}\\
-	_FORCE_INLINE_ static MethodInfo _gdvirtual_##$VARNAME##_get_method_info() {\\
-		MethodInfo method_info;\\
-		method_info.name = #m_name;\\
-		method_info.flags = $METHOD_FLAGS;\\
-		$FILL_METHOD_INFO\\
-		return method_info;\\
-	}
+	_FORCE_INLINE_ bool _gdvirtual_##$VARNAME##_call($CALLARGS) $CONST { _GDVIRTUAL$VER_CALL($ALIAS $RET m_name $ARG) }\\
+	_FORCE_INLINE_ bool _gdvirtual_##$VARNAME##_overridden() const { _GDVIRTUAL$VER_OVERRIDE($ALIAS $RET m_name $ARG) }\\
+	_FORCE_INLINE_ static MethodInfo _gdvirtual_##$VARNAME##_get_method_info() { _GDVIRTUAL$VER_GET_METHOD_INFO($ALIAS $RET m_name $ARG) }
+#define DECLARE_GDVIRTUAL$VER($ALIAS $RET m_name $ARG)\\
+	mutable void *_gdvirtual_##$VARNAME = nullptr;\\
+	bool _gdvirtual_##$VARNAME##_call($CALLARGS) $CONST ;\\
+	bool _gdvirtual_##$VARNAME##_overridden() const;\\
+	static MethodInfo _gdvirtual_##$VARNAME##_get_method_info();
+#define IMPLEMENT_GDVIRTUAL$VER(m_class, $ALIAS $RET m_name $ARG)\\
+	bool m_class::_gdvirtual_##$VARNAME##_call($CALLARGS) $CONST { _GDVIRTUAL$VER_CALL($ALIAS $RET m_name $ARG) }\\
+	bool m_class::_gdvirtual_##$VARNAME##_overridden() const { _GDVIRTUAL$VER_OVERRIDE($ALIAS $RET m_name $ARG) }\\
+	MethodInfo m_class::_gdvirtual_##$VARNAME##_get_method_info() { _GDVIRTUAL$VER_GET_METHOD_INFO($ALIAS $RET m_name $ARG) }
 
 """
 
@@ -67,8 +77,8 @@ proto = """#define GDVIRTUAL$VER($ALIAS $RET m_name $ARG)\\
 def generate_version(argcount, const=False, returns=False, required=False, compat=False):
     s = proto
     if compat:
-        s = s.replace("$SCRIPTCALL", "")
-        s = s.replace("$SCRIPTHASMETHOD", "")
+        s = s.replace("\t$SCRIPTCALL\\\n", "")
+        s = s.replace("\t$SCRIPTHASMETHOD\\\n", "")
     else:
         s = s.replace("$SCRIPTCALL", script_call)
         s = s.replace("$SCRIPTHASMETHOD", script_has_method)
@@ -82,11 +92,11 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
         s = s.replace("$RVOID", "(void)r_ret;")  # If required, may lead to uninitialized errors
         s = s.replace("$CALLPTRRETDEF", "PtrToArg<m_ret>::EncodeT ret;")
         method_info += "method_info.return_val = GetTypeInfo<m_ret>::get_class_info();\\\n"
-        method_info += "\t\tmethod_info.return_val_metadata = GetTypeInfo<m_ret>::METADATA;"
+        method_info += "\tmethod_info.return_val_metadata = GetTypeInfo<m_ret>::METADATA;"
     else:
         s = s.replace("$RET ", "")
-        s = s.replace("\t\t$RVOID\\\n", "")
-        s = s.replace("\t\t\t$CALLPTRRETDEF\\\n", "")
+        s = s.replace("\t$RVOID\\\n", "")
+        s = s.replace("\t\t$CALLPTRRETDEF\\\n", "")
 
     if const:
         sproto += "C"
@@ -103,7 +113,7 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
             'ERR_PRINT_ONCE("Required virtual method " + get_class() + "::" + #m_name + " must be overridden before calling.");',
         )
     else:
-        s = s.replace("\t\t$REQCHECK\\\n", "")
+        s = s.replace("\t$REQCHECK\\\n", "")
 
     if compat:
         sproto += "_COMPAT"
@@ -125,11 +135,11 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
     if argcount > 0:
         argtext += ", "
         callsiargs = f"Variant vargs[{argcount}] = {{ "
-        callsiargptrs = f"\t\t\tconst Variant *vargptrs[{argcount}] = {{ "
-        callptrargsptr = f"\t\t\tGDExtensionConstTypePtr argptrs[{argcount}] = {{ "
+        callsiargptrs = f"\t\tconst Variant *vargptrs[{argcount}] = {{ "
+        callptrargsptr = f"\t\tGDExtensionConstTypePtr argptrs[{argcount}] = {{ "
 
         if method_info:
-            method_info += "\\\n\t\t"
+            method_info += "\\\n\t"
         method_info += (
             "_gdvirtual_set_method_info_args<"
             + ", ".join(f"m_type{i + 1}" for i in range(argcount))
@@ -163,9 +173,9 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
         s = s.replace("$CALLPTRARGS", callptrargs + callptrargsptr)
         s = s.replace("$CALLPTRARGPASS", "reinterpret_cast<GDExtensionConstTypePtr *>(argptrs)")
     else:
-        s = s.replace("\t\t\t$CALLSIARGS\\\n", "")
+        s = s.replace("\t\t$CALLSIARGS\\\n", "")
         s = s.replace("$CALLSIARGPASS", "nullptr, 0")
-        s = s.replace("\t\t\t$CALLPTRARGS\\\n", "")
+        s = s.replace("\t\t$CALLPTRARGS\\\n", "")
         s = s.replace("$CALLPTRARGPASS", "nullptr")
 
     if returns:
@@ -178,16 +188,16 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
         s = s.replace("$CALLPTRRET", "r_ret = (m_ret)ret;")
     else:
         s = s.replace("$CALLSIBEGIN", "")
-        s = s.replace("\t\t\t\t$CALLSIRET\\\n", "")
+        s = s.replace("\t\t\t$CALLSIRET\\\n", "")
         s = s.replace("$CALLPTRRETPASS", "nullptr")
-        s = s.replace("\t\t\t\t$CALLPTRRET\\\n", "")
+        s = s.replace("\t\t\t$CALLPTRRET\\\n", "")
 
     s = s.replace(" $ARG", argtext)
     s = s.replace("$CALLARGS", callargtext)
     if method_info:
         s = s.replace("$FILL_METHOD_INFO", method_info)
     else:
-        s = s.replace("\t\t$FILL_METHOD_INFO\\\n", method_info)
+        s = s.replace("\t$FILL_METHOD_INFO\\\n", method_info)
 
     return s
 

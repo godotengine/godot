@@ -37,6 +37,11 @@
 #include "core/variant/container_type_validate.h"
 #include "scene/main/node.h" //only so casting works
 
+IMPLEMENT_GDVIRTUAL0(Resource, _setup_local_to_scene);
+IMPLEMENT_GDVIRTUAL0RC(Resource, RID, _get_rid);
+IMPLEMENT_GDVIRTUAL1C(Resource, _set_path_cache, String);
+IMPLEMENT_GDVIRTUAL0(Resource, _reset_state);
+
 void Resource::emit_changed() {
 	if (emit_changed_state != EMIT_CHANGED_UNBLOCKED) {
 		emit_changed_state = EMIT_CHANGED_BLOCKED_PENDING_EMIT;

@@ -114,12 +114,12 @@ protected:
 	void _take_over_path(const String &p_path);
 
 	virtual void reset_local_to_scene();
-	GDVIRTUAL0(_setup_local_to_scene);
+	DECLARE_GDVIRTUAL0(_setup_local_to_scene);
 
-	GDVIRTUAL0RC(RID, _get_rid);
+	DECLARE_GDVIRTUAL0RC(RID, _get_rid);
 
-	GDVIRTUAL1C(_set_path_cache, String);
-	GDVIRTUAL0(_reset_state);
+	DECLARE_GDVIRTUAL1C(_set_path_cache, String);
+	DECLARE_GDVIRTUAL0(_reset_state);
 
 	virtual Ref<Resource> _duplicate(const DuplicateParams &p_params) const;
 
