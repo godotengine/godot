@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  dr_bridge.h                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,35 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#include "core/io/file_access.h"
+#include "core/os/memory.h"
+#include "core/typedefs.h"
 
-#include "audio_stream_mp3.h"
+typedef struct {
+	void *user_data;
+	void *(*malloc_func)(size_t size, void *user_data);
+	void *(*realloc_func)(void *ptr, size_t size, void *user_data);
+	void (*free_func)(void *ptr, void *user_data);
+} dr_allocation_callbacks;
 
-#ifdef TOOLS_ENABLED
-#include "core/config/engine.h"
-#include "editor/editor_node.h"
-#include "resource_importer_mp3.h"
-
-static void _editor_init() {
-	Ref<ResourceImporterMP3> mp3_import;
-	mp3_import.instantiate();
-	ResourceFormatImporter::get_singleton()->add_importer(mp3_import);
+static void *dr_memalloc(size_t size, void *user_data) {
+	return memalloc(size);
 }
-#endif
 
-void initialize_minimp3_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-		GDREGISTER_CLASS(AudioStreamMP3);
+static void *dr_memrealloc(void *ptr, size_t size, void *user_data) {
+	return memrealloc(ptr, size);
+}
+
+static void dr_memfree(void *ptr, void *user_data) {
+	if (ptr) {
+		memfree(ptr);
 	}
-
-#ifdef TOOLS_ENABLED
-	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		GDREGISTER_CLASS(ResourceImporterMP3);
-
-		EditorNode::add_init_callback(_editor_init);
-	}
-#endif
 }
 
-void uninitialize_minimp3_module(ModuleInitializationLevel p_level) {
-}
+const dr_allocation_callbacks dr_alloc_calls = {
+	nullptr,
+	dr_memalloc,
+	dr_memrealloc,
+	dr_memfree
+};
