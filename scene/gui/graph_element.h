@@ -35,6 +35,8 @@
 class GraphElement : public Container {
 	GDCLASS(GraphElement, Container);
 
+	friend class GraphEdit;
+
 protected:
 	bool selected = false;
 	bool resizable = false;
@@ -50,6 +52,8 @@ protected:
 
 	struct ThemeCache {
 		Ref<Texture2D> resizer;
+		Ref<StyleBox> minimap_panel;
+		Ref<StyleBox> minimap_panel_selected;
 	} theme_cache;
 
 #ifdef TOOLS_ENABLED

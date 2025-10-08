@@ -42,6 +42,9 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/graph_connection.h"
+#include "scene/gui/graph_node_indexed.h"
+#include "scene/gui/graph_port.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
@@ -132,7 +135,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 	graph->clear_connections();
 	//erase all nodes
 	for (int i = 0; i < graph->get_child_count(); i++) {
-		if (Object::cast_to<GraphNode>(graph->get_child(i))) {
+		if (Object::cast_to<GraphNodeIndexed>(graph->get_child(i))) {
 			memdelete(graph->get_child(i));
 			i--;
 		}
@@ -143,7 +146,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 	LocalVector<StringName> nodes = blend_tree->get_node_list();
 
 	for (const StringName &E : nodes) {
-		GraphNode *node = memnew(GraphNode);
+		GraphNodeIndexed *node = memnew(GraphNodeIndexed);
 		graph->add_child(node);
 
 		node->set_draggable(!read_only);
@@ -164,7 +167,8 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			name->set_expand_to_text_length_enabled(true);
 			name->set_custom_minimum_size(Vector2(100, 0) * EDSCALE);
 			node->add_child(name);
-			node->set_slot(0, false, 0, Color(), true, read_only ? -1 : 0, get_theme_color(SceneStringName(font_color), SNAME("Label")));
+			node->set_output_port_properties(0, true, read_only ? -1 : 0);
+			node->get_output_port_by_slot(0)->add_theme_color_override("color", get_theme_color(SceneStringName(font_color), SNAME("Label")));
 			name->connect(SceneStringName(text_submitted), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed).bind(agnode), CONNECT_DEFERRED);
 			name->connect(SceneStringName(focus_exited), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(agnode), CONNECT_DEFERRED);
 			name->connect(SceneStringName(text_changed), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed), CONNECT_DEFERRED);
@@ -186,7 +190,8 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			Label *in_name = memnew(Label);
 			node->add_child(in_name);
 			in_name->set_text(agnode->get_input_name(i));
-			node->set_slot(base + i, true, read_only ? -1 : 0, get_theme_color(SceneStringName(font_color), SNAME("Label")), false, 0, Color());
+			node->set_input_port_properties(base + i, true, read_only ? -1 : 0);
+			node->get_input_port_by_slot(0)->add_theme_color_override("color", get_theme_color(SceneStringName(font_color), SNAME("Label")));
 		}
 
 		List<PropertyInfo> pinfo;
@@ -279,7 +284,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			mb->get_popup()->connect("index_pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_anim_selected).bind(options, E), CONNECT_DEFERRED);
 		}
 
-		Ref<StyleBox> sb_panel = node->get_theme_stylebox(SceneStringName(panel), "GraphNode")->duplicate();
+		Ref<StyleBox> sb_panel = node->get_theme_stylebox(SceneStringName(panel), "GraphNodeIndexed")->duplicate();
 		if (sb_panel.is_valid()) {
 			sb_panel->set_content_margin(SIDE_TOP, 12 * EDSCALE);
 			sb_panel->set_content_margin(SIDE_BOTTOM, 12 * EDSCALE);
@@ -297,7 +302,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 		StringName to = E.input_node;
 		int to_idx = E.input_index;
 
-		graph->connect_node(from, 0, to, to_idx);
+		graph->connect_nodes_indexed_legacy(from, 0, to, to_idx);
 	}
 
 	float graph_minimap_opacity = EDITOR_GET("editors/visual_editors/minimap_opacity");
@@ -416,28 +421,24 @@ void AnimationNodeBlendTreeEditor::_popup_request(const Vector2 &p_position) {
 	_popup(false, p_position);
 }
 
-void AnimationNodeBlendTreeEditor::_connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position) {
+void AnimationNodeBlendTreeEditor::_connection_to_empty(GraphPort *p_from_port, const Vector2 &p_release_position) {
 	if (read_only) {
 		return;
 	}
+	GraphNodeIndexed *_from_node = Object::cast_to<GraphNodeIndexed>(p_from_port->get_graph_node());
+	ERR_FAIL_NULL(_from_node);
+	StringName _from_node_name = _from_node->get_name();
 
-	Ref<AnimationNode> node = blend_tree->get_node(p_from);
+	Ref<AnimationNode> node = blend_tree->get_node(_from_node_name);
 	if (node.is_valid()) {
-		from_node = p_from;
-		_popup(true, p_release_position);
-	}
-}
-
-void AnimationNodeBlendTreeEditor::_connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position) {
-	if (read_only) {
-		return;
-	}
-
-	Ref<AnimationNode> node = blend_tree->get_node(p_to);
-	if (node.is_valid()) {
-		to_node = p_to;
-		to_slot = p_to_slot;
-		_popup(false, p_release_position);
+		if (p_from_port->get_direction() == GraphPort::PortDirection::INPUT) {
+			from_node = String(_from_node_name);
+			_popup(true, p_release_position);
+		} else {
+			to_node = String(_from_node_name);
+			to_slot = _from_node->slot_index_of_port(p_from_port);
+			_popup(false, p_release_position);
+		}
 	}
 }
 
@@ -489,7 +490,7 @@ void AnimationNodeBlendTreeEditor::_disconnection_request(const String &p_from, 
 		return;
 	}
 
-	graph->disconnect_node(p_from, p_from_index, p_to, p_to_index);
+	graph->disconnect_nodes_indexed_legacy(p_from, p_from_index, p_to, p_to_index);
 
 	updating = true;
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -550,7 +551,7 @@ void AnimationNodeBlendTreeEditor::_delete_nodes_request(const TypedArray<String
 
 	if (p_nodes.is_empty()) {
 		for (int i = 0; i < graph->get_child_count(); i++) {
-			GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+			GraphNodeIndexed *gn = Object::cast_to<GraphNodeIndexed>(graph->get_child(i));
 			if (gn && gn->is_selected()) {
 				Ref<AnimationNode> anode = blend_tree->get_node(gn->get_name());
 				if (anode->is_deletable()) {
@@ -586,7 +587,7 @@ void AnimationNodeBlendTreeEditor::_node_selected(Object *p_node) {
 		return;
 	}
 
-	GraphNode *gn = Object::cast_to<GraphNode>(p_node);
+	GraphNodeIndexed *gn = Object::cast_to<GraphNodeIndexed>(p_node);
 	ERR_FAIL_NULL(gn);
 
 	String name = gn->get_name();
@@ -989,7 +990,7 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 				if (!tree->is_state_invalid()) {
 					activity = tree->get_connection_activity(path, E.input_index);
 				}
-				graph->set_connection_activity(E.output_node, 0, E.input_node, E.input_index, activity);
+				graph->set_connection_activity_indexed_legacy(E.output_node, 0, E.input_node, E.input_index, activity);
 			}
 
 			for (const KeyValue<StringName, ProgressBar *> &E : animations) {
@@ -1067,7 +1068,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 
 	String prev_name = blend_tree->get_node_name(p_node);
 	ERR_FAIL_COND(prev_name.is_empty());
-	GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(prev_name));
+	GraphNodeIndexed *gn = Object::cast_to<GraphNodeIndexed>(graph->get_node(prev_name));
 	ERR_FAIL_NULL(gn);
 
 	const String &new_name = p_text;
@@ -1120,7 +1121,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 		StringName to = E.input_node;
 		int to_idx = E.input_index;
 
-		graph->connect_node(from, 0, to, to_idx);
+		graph->connect_nodes_indexed_legacy(from, 0, to, to_idx);
 	}
 
 	//update animations
@@ -1182,8 +1183,8 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 
 	graph = memnew(GraphEdit);
 	add_child(graph);
-	graph->add_valid_right_disconnect_type(0);
-	graph->add_valid_left_disconnect_type(0);
+	graph->add_valid_input_disconnect_type(0);
+	graph->add_valid_output_disconnect_type(0);
 	graph->set_v_size_flags(SIZE_EXPAND_FILL);
 	graph->connect("connection_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_connection_request), CONNECT_DEFERRED);
 	graph->connect("disconnection_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_disconnection_request), CONNECT_DEFERRED);
@@ -1192,7 +1193,6 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	graph->connect("delete_nodes_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_delete_nodes_request));
 	graph->connect("popup_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_popup_request));
 	graph->connect("connection_to_empty", callable_mp(this, &AnimationNodeBlendTreeEditor::_connection_to_empty));
-	graph->connect("connection_from_empty", callable_mp(this, &AnimationNodeBlendTreeEditor::_connection_from_empty));
 	float graph_minimap_opacity = EDITOR_GET("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
 	float graph_lines_curvature = EDITOR_GET("editors/visual_editors/lines_curvature");

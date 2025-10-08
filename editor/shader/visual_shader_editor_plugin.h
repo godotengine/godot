@@ -35,6 +35,7 @@
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/shader/shader_editor.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/gui/graph_node_indexed.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/visual_shader.h"
 
@@ -68,12 +69,21 @@ public:
 	virtual Control *create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node);
 };
 
-class VSGraphNode : public GraphNode {
-	GDCLASS(VSGraphNode, GraphNode);
+class VSGraphNode : public GraphNodeIndexed {
+	GDCLASS(VSGraphNode, GraphNodeIndexed);
+
+	virtual void create_slot_and_ports(int p_slot_index, bool p_draw_stylebox, StringName p_slot_node_name) override;
+};
+
+class VSGraphPort : public GraphPort {
+	GDCLASS(VSGraphPort, GraphPort);
 
 protected:
-	void _draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color, const Color &p_rim_color);
-	virtual void draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color) override;
+	virtual void _draw() override;
+
+public:
+	VSGraphPort();
+	VSGraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction);
 };
 
 class VSRerouteNode : public VSGraphNode {
@@ -85,8 +95,6 @@ class VSRerouteNode : public VSGraphNode {
 
 protected:
 	void _notification(int p_what);
-
-	virtual void draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color) override;
 
 public:
 	VSRerouteNode();
@@ -222,6 +230,8 @@ class VisualShaderEditor : public ShaderEditor {
 	Button *code_preview_button = nullptr;
 	Button *shader_preview_button = nullptr;
 	HFlowContainer *toolbar_hflow = nullptr;
+
+	LocalVector<Color> category_color;
 
 	int last_to_node = -1;
 	int last_to_port = -1;
@@ -474,8 +484,8 @@ class VisualShaderEditor : public ShaderEditor {
 	void _node_dragged(const Vector2 &p_from, const Vector2 &p_to, int p_node);
 	void _nodes_dragged();
 
-	void _connection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index);
-	void _disconnection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index);
+	void _connection_request(GraphPort *p_from_port, GraphPort *p_to_port);
+	void _disconnection_request(const Ref<GraphConnection> p_connection);
 
 	void _scroll_offset_changed(const Vector2 &p_scroll);
 	void _node_selected(Object *p_node);
@@ -497,7 +507,7 @@ class VisualShaderEditor : public ShaderEditor {
 	int from_node = -1;
 	int from_slot = -1;
 
-	Ref<GraphEdit::Connection> clicked_connection;
+	Ref<GraphConnection> clicked_connection;
 	bool connection_node_insert_requested = false;
 
 	HashSet<int> selected_constants;
@@ -515,9 +525,9 @@ class VisualShaderEditor : public ShaderEditor {
 	void _unlink_node_from_parent_frame(int p_node_id);
 
 	void _connection_drag_ended();
-	void _connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position);
-	void _connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position);
-	bool _check_node_drop_on_connection(const Vector2 &p_position, Ref<GraphEdit::Connection> *r_closest_connection, int *r_node_id = nullptr, int *r_to_port = nullptr);
+	void _connection_to_empty(GraphPort *p_from_port, const Vector2 &p_release_position);
+	void _connection_from_empty(GraphPort *p_to_port, const Vector2 &p_release_position);
+	bool _check_node_drop_on_connection(const Vector2 &p_position, Ref<GraphConnection> *r_closest_connection, int *r_from_port = nullptr, int *r_to_port = nullptr);
 	void _handle_node_drop_on_connection();
 
 	void _frame_title_popup_show(const Point2 &p_position, int p_node_id);

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GraphConnection" inherits="Resource" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A [Resource] used by [GraphEdit] to represent a connection between [GraphPort]s.
+	</brief_description>
+	<description>
+		A [Resource] used by [GraphEdit] to represent a connection between two [GraphPort]s.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_first_node" qualifiers="const">
+			<return type="GraphNode" />
+			<description>
+				Returns the [GraphNode] that [member first_port] is attached to, if it exists.
+			</description>
+		</method>
+		<method name="get_other_node" qualifiers="const">
+			<return type="GraphNode" />
+			<param index="0" name="node" type="GraphNode" />
+			<description>
+				If the given [param node] is attached to a port in this connection, return the node attached to the *other* port in the connection.
+				Fails if [param node] is not attached to either [member first_port] or [member second_port].
+			</description>
+		</method>
+		<method name="get_other_node_by_port" qualifiers="const">
+			<return type="GraphNode" />
+			<param index="0" name="port" type="GraphPort" />
+			<description>
+				If this connection has the given [param port], return the node attached to the *other* port in the connection.
+				Fails if [param port] is neither [member first_port] nor [member second_port].
+			</description>
+		</method>
+		<method name="get_other_port" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="port" type="GraphPort" />
+			<description>
+				If this connection has the given [param port], return the *other* port in the connection.
+				Fails if [param port] is neither [member first_port] nor [member second_port].
+			</description>
+		</method>
+		<method name="get_other_port_by_node" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="node" type="GraphNode" />
+			<description>
+				If the given [param node] is attached to a port in this connection, return the *other* port in the connection.
+				Fails if [param node] is not attached to either [member first_port] or [member second_port].
+			</description>
+		</method>
+		<method name="get_port_by_node" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="node" type="GraphNode" />
+			<description>
+				If the given [param node] is attached to a port in this connection, return the corresponding port in the connection.
+				Fails if [param node] is not attached to either [member first_port] or [member second_port].
+			</description>
+		</method>
+		<method name="get_second_node" qualifiers="const">
+			<return type="GraphNode" />
+			<description>
+				Returns the [GraphNode] that [member second_port] is attached to, if it exists.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="clear_if_invalid" type="bool" setter="set_clear_if_invalid" getter="get_clear_if_invalid" default="true">
+			If [code]true[/code], this connection may be removed from the graph if it is invalid on draw. A connection is considered invalid if one or both of its [GraphPort]s are missing or null.
+		</member>
+		<member name="first_port" type="GraphPort" setter="set_first_port" getter="get_first_port">
+			The first [GraphPort] in this connection.
+		</member>
+		<member name="second_port" type="GraphPort" setter="set_second_port" getter="get_second_port">
+			The second [GraphPort] in this connection.
+		</member>
+	</members>
+</class>

@@ -58,9 +58,12 @@
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/foldable_container.h"
+#include "scene/gui/graph_connection.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/graph_frame.h"
 #include "scene/gui/graph_node.h"
+#include "scene/gui/graph_node_indexed.h"
+#include "scene/gui/graph_port.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/label.h"
@@ -525,8 +528,11 @@ void register_scene_types() {
 	GDREGISTER_CLASS(HSplitContainer);
 	GDREGISTER_CLASS(VSplitContainer);
 
+	GDREGISTER_CLASS(GraphPort);
+	GDREGISTER_CLASS(GraphConnection);
 	GDREGISTER_CLASS(GraphElement);
 	GDREGISTER_CLASS(GraphNode);
+	GDREGISTER_CLASS(GraphNodeIndexed);
 	GDREGISTER_CLASS(GraphFrame);
 	GDREGISTER_CLASS(GraphEdit);
 

@@ -30,64 +30,45 @@
 
 #pragma once
 
-#include "scene/gui/graph_element.h"
+#include "core/templates/vector.h"
+#include "core/variant/typed_array.h"
+#include "scene/gui/graph_port.h"
 
 class HBoxContainer;
+class GraphConnection;
+class GraphEdit;
 
 class GraphNode : public GraphElement {
 	GDCLASS(GraphNode, GraphElement);
 
-	friend class GraphEdit;
+	friend GraphEdit;
+	friend class GraphNodeIndexed;
 
-	struct Slot {
-		bool enable_left = false;
-		int type_left = 0;
-		Color color_left = Color(1, 1, 1, 1);
-		Ref<Texture2D> custom_port_icon_left;
-
-		bool enable_right = false;
-		int type_right = 0;
-		Color color_right = Color(1, 1, 1, 1);
-		Ref<Texture2D> custom_port_icon_right;
-
-		bool draw_stylebox = true;
-	};
-
-	struct PortCache {
-		Vector2 pos;
-		int slot_index;
-		int type = 0;
-		Color color;
-	};
-
+protected:
 	struct _MinSizeCache {
 		int min_size = 0;
 		bool will_stretch = false;
 		int final_size = 0;
 	};
 
-	enum CustomAccessibilityAction {
-		ACTION_CONNECT_INPUT,
-		ACTION_CONNECT_OUTPUT,
-		ACTION_FOLLOW_INPUT,
-		ACTION_FOLLOW_OUTPUT,
-	};
-	void _accessibility_action_slot(const Variant &p_data);
+	GraphEdit *graph_edit = nullptr;
 
 	HBoxContainer *titlebar_hbox = nullptr;
 	Label *title_label = nullptr;
-
 	String title;
+	bool title_hidden = false;
 
-	Vector<PortCache> left_port_cache;
-	Vector<PortCache> right_port_cache;
+	Vector<GraphPort *> ports;
+	int port_count = 0;
+	int enabled_port_count = 0;
+	PackedByteArray directed_port_count = { 0, 0, 0 };
+	PackedByteArray directed_enabled_port_count = { 0, 0, 0 };
 
-	HashMap<int, Slot> slot_table;
-	Vector<int> slot_y_cache;
+	bool port_pos_dirty = true;
+	bool updating_port_pos = false;
 
-	Control::FocusMode slots_focus_mode = Control::FOCUS_ACCESSIBILITY;
-	int slot_count = 0;
-	int selected_slot = -1;
+	bool ignore_invalid_connection_type = false;
+	const StringName ignore_node_meta_tag = StringName("GraphNodeIgnored");
 
 	struct ThemeCache {
 		Ref<StyleBox> panel;
@@ -95,35 +76,38 @@ class GraphNode : public GraphElement {
 		Ref<StyleBox> panel_focus;
 		Ref<StyleBox> titlebar;
 		Ref<StyleBox> titlebar_selected;
-		Ref<StyleBox> slot;
-		Ref<StyleBox> slot_selected;
 
 		int separation = 0;
 		int port_h_offset = 0;
 
-		Ref<Texture2D> port;
 		Ref<Texture2D> resizer;
 		Color resizer_color;
 	} theme_cache;
 
-	bool port_pos_dirty = true;
-
-	bool ignore_invalid_connection_type = false;
-
-	void _port_pos_update();
-
-protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-
 	virtual void _resort() override;
+	void _deferred_resort();
 
-	virtual void draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color);
-	GDVIRTUAL4(_draw_port, int, Point2i, bool, const Color &);
+	void _set_ports(const Vector<GraphPort *> &p_ports);
+	const Vector<GraphPort *> &_get_ports();
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _add_port(GraphPort *p_port);
+	void _insert_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true);
+	GraphPort *_remove_port(int p_port_index, bool p_include_disabled = true);
+	GraphPort *_set_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true);
+	void _remove_all_ports();
+
+	virtual void _update_port_positions();
+	void _queue_update_port_positions();
+	virtual void _port_rebuild_cache();
+	void _port_modified();
+
+	virtual void _on_replacing_by(Node *new_node);
+
+	Callable modified_callable;
+	Callable connected_callable;
+	Callable disconnected_callable;
 
 public:
 	virtual String get_accessibility_container_name(const Node *p_node) const override;
@@ -131,57 +115,74 @@ public:
 
 	void set_title(const String &p_title);
 	String get_title() const;
+	void set_hide_title(bool p_hide);
+	bool is_title_hidden() const;
 
-	HBoxContainer *get_titlebar_hbox();
+	HBoxContainer *get_titlebar_hbox() const;
+	void add_node_to_titlebar(Control *p_node);
+	void remove_node_from_titlebar(Control *p_node);
+	void clear_titlebar_nodes();
 
-	void set_slot(int p_slot_index, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left = Ref<Texture2D>(), const Ref<Texture2D> &p_custom_right = Ref<Texture2D>(), bool p_draw_stylebox = true);
-	void clear_slot(int p_slot_index);
-	void clear_all_slots();
+	void set_ports(const TypedArray<GraphPort> &p_ports);
+	TypedArray<GraphPort> get_ports() const;
+	TypedArray<GraphPort> get_filtered_ports(GraphPort::PortDirection p_direction, bool p_include_disabled = true) const;
+	TypedArray<GraphPort> get_input_ports(bool p_include_disabled = true) const;
+	TypedArray<GraphPort> get_output_ports(bool p_include_disabled = true) const;
+	void remove_all_ports();
 
-	bool is_slot_enabled_left(int p_slot_index) const;
-	void set_slot_enabled_left(int p_slot_index, bool p_enable);
+	virtual GraphPort *set_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true);
+	GraphPort *get_port(int p_port_index, bool p_include_disabled = true) const;
+	GraphPort *get_filtered_port(int p_port_index, GraphPort::PortDirection p_direction, bool p_include_disabled = true) const;
+	GraphPort *get_input_port(int p_port_index, bool p_include_disabled = true) const;
+	GraphPort *get_output_port(int p_port_index, bool p_include_disabled = true) const;
+	GraphPort *get_next_port(const GraphPort *p_port, bool p_include_disabled = true) const;
+	GraphPort *get_next_matching_port(const GraphPort *p_port, bool p_include_disabled = true) const;
+	GraphPort *get_previous_port(const GraphPort *p_port, bool p_include_disabled = true) const;
+	GraphPort *get_previous_matching_port(const GraphPort *p_port, bool p_include_disabled = true) const;
+	virtual void add_port(GraphPort *port);
+	virtual void insert_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true);
+	virtual GraphPort *remove_port(int p_port_index, bool p_include_disabled = true);
 
-	void set_slot_type_left(int p_slot_index, int p_type);
-	int get_slot_type_left(int p_slot_index) const;
+	int get_port_count(bool p_include_disabled = true) const;
+	int get_filtered_port_count(GraphPort::PortDirection p_filter_direction, bool p_include_disabled = true) const;
+	int get_input_port_count(bool p_include_disabled = true) const;
+	int get_output_port_count(bool p_include_disabled = true) const;
 
-	void set_slot_color_left(int p_slot_index, const Color &p_color);
-	Color get_slot_color_left(int p_slot_index) const;
+	int index_of_port(const GraphPort *p_port, bool p_include_disabled = true) const;
+	int filtered_index_of_port(const GraphPort *p_port, bool p_include_disabled = true) const;
 
-	void set_slot_custom_icon_left(int p_slot_index, const Ref<Texture2D> &p_custom_icon);
-	Ref<Texture2D> get_slot_custom_icon_left(int p_slot_index) const;
+	int enabled_index_to_port_index(int p_port_index) const;
+	int port_index_to_enabled_index(int p_port_index) const;
 
-	bool is_slot_enabled_right(int p_slot_index) const;
-	void set_slot_enabled_right(int p_slot_index, bool p_enable);
-
-	void set_slot_type_right(int p_slot_index, int p_type);
-	int get_slot_type_right(int p_slot_index) const;
-
-	void set_slot_color_right(int p_slot_index, const Color &p_color);
-	Color get_slot_color_right(int p_slot_index) const;
-
-	void set_slot_custom_icon_right(int p_slot_index, const Ref<Texture2D> &p_custom_icon);
-	Ref<Texture2D> get_slot_custom_icon_right(int p_slot_index) const;
-
-	bool is_slot_draw_stylebox(int p_slot_index) const;
-	void set_slot_draw_stylebox(int p_slot_index, bool p_enable);
+	virtual GraphPort *get_port_navigation(Side side, const GraphPort *p_port) const;
 
 	void set_ignore_invalid_connection_type(bool p_ignore);
 	bool is_ignoring_valid_connection_type() const;
 
-	int get_input_port_count();
-	Vector2 get_input_port_position(int p_port_idx);
-	int get_input_port_type(int p_port_idx);
-	Color get_input_port_color(int p_port_idx);
-	int get_input_port_slot(int p_port_idx);
+	TypedArray<Ref<GraphConnection>> get_connections() const;
+	TypedArray<Ref<GraphConnection>> get_filtered_connections(GraphPort::PortDirection p_filter_direction) const;
+	TypedArray<Ref<GraphConnection>> get_input_connections() const;
+	TypedArray<Ref<GraphConnection>> get_output_connections() const;
+	void set_connections(const TypedArray<Ref<GraphConnection>> &p_connections);
+	void add_connections(const TypedArray<Ref<GraphConnection>> &p_connections);
+	void clear_connections();
 
-	int get_output_port_count();
-	Vector2 get_output_port_position(int p_port_idx);
-	int get_output_port_type(int p_port_idx);
-	Color get_output_port_color(int p_port_idx);
-	int get_output_port_slot(int p_port_idx);
+	void add_connection(Ref<GraphConnection> p_connection);
+	void remove_connection(Ref<GraphConnection> p_connection);
+	bool is_connected_to(GraphNode *p_node) const;
+	bool has_connection() const;
 
-	void set_slots_focus_mode(Control::FocusMode p_focus_mode);
-	Control::FocusMode get_slots_focus_mode() const;
+	TypedArray<GraphNode> get_connected_nodes() const;
+	TypedArray<GraphNode> get_filtered_connected_nodes(GraphPort::PortDirection p_filter_direction) const;
+	TypedArray<GraphNode> get_input_connected_nodes() const;
+	TypedArray<GraphNode> get_output_connected_nodes() const;
+
+	void clear_filtered_connections(GraphPort::PortDirection p_filter_direction);
+	void clear_input_connections();
+	void clear_output_connections();
+
+	void _on_connected(const Ref<GraphConnection> p_conn);
+	void _on_disconnected(const Ref<GraphConnection> p_conn);
 
 	virtual Size2 get_minimum_size() const override;
 
