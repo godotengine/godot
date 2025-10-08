@@ -604,16 +604,19 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
  * using the following merit order:
  *  - If using NetworkClient, try to lookup project file or fail.
  *  - If --main-pack was passed by the user (`p_main_pack`), load it or fail.
- *  - Search for project PCKs automatically. For each step we try loading a potential
- *    PCK, and if it doesn't work, we proceed to the next step. If any step succeeds,
+ *  - Search for project data packs automatically. For each step we try loading a potential
+ *    PCK or ZIP, and if it doesn't work, we proceed to the next step. If any step succeeds,
  *    we try loading the project settings, and abort if it fails. Steps:
  *    o Bundled PCK in the executable.
- *    o [macOS only] PCK with same basename as the binary in the .app resource dir.
- *    o PCK with same basename as the binary in the binary's directory. We handle both
- *      changing the extension to '.pck' (e.g. 'win_game.exe' -> 'win_game.pck') and
- *      appending '.pck' to the binary name (e.g. 'linux_game' -> 'linux_game.pck').
- *    o PCK with the same basename as the binary in the current working directory.
+ *    o [macOS only] PCK/ZIP with same basename as the binary in the .app resource dir.
+ * 		PCK is attempted first, then ZIP.
+ *    o PCK/ZIP with same basename as the binary in the binary's directory. We handle both
+ *      changing the extension to '.pck' or '.zip' (e.g. 'win_game.exe' -> 'win_game.pck') and
+ *      appending '.pck' or '.zip' to the binary name (e.g. 'linux_game' -> 'linux_game.pck').
+ * 		PCK is attempted first, then ZIP.
+ *    o PCK/ZIP with the same basename as the binary in the current working directory.
  *      Same as above for the two possible PCK file names.
+ *      PCK is attempted first, then ZIP.
  *  - On Android, look for 'assets.sparsepck' and try loading it, if it doesn't work,
  *    proceed to the next step.
  *  - On relevant platforms (Android/iOS), lookup project file in OS resource path.
@@ -654,40 +657,57 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	String exec_path = OS::get_singleton()->get_executable_path();
 
 	if (!exec_path.is_empty()) {
-		// We do several tests sequentially until one succeeds to find a PCK,
+		// We do several tests sequentially until one succeeds to find a PCK or ZIP,
 		// and if so, we attempt loading it at the end.
 
 		// Attempt with PCK bundled into executable.
 		bool found = _load_resource_pack(exec_path, false, 0, true);
 
-		// Attempt with exec_name.pck.
+		// Attempt with exec_name.pck then exec_name.zip.
 		// (This is the usual case when distributing a Godot game.)
 		String exec_dir = exec_path.get_base_dir();
 		String exec_filename = exec_path.get_file();
 		String exec_basename = exec_filename.get_basename();
 
-		// Based on the OS, it can be the exec path + '.pck' (Linux w/o extension, macOS in .app bundle)
-		// or the exec path's basename + '.pck' (Windows).
+		// Based on the OS, it can be the exec path + '.pck' or '.zip' (Linux w/o extension, macOS in .app bundle)
+		// or the exec path's basename + '.pck' or '.zip' (Windows).
 		// We need to test both possibilities as extensions for Linux binaries are optional
-		// (so both 'mygame.bin' and 'mygame' should be able to find 'mygame.pck').
+		// (so both 'mygame.bin' and 'mygame' should be able to find 'mygame.pck' or 'mygame.zip').
 
 #ifdef MACOS_ENABLED
 		if (!found) {
 			// Attempt to load PCK from macOS .app bundle resources.
 			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_basename + ".pck"), false, 0, true) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_filename + ".pck"), false, 0, true);
 		}
+
+		if (!found) {
+			// Attempt to load ZIP from macOS .app bundle resources.
+			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_basename + ".zip")) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_filename + ".zip"));
+		}
 #endif
 
 		if (!found) {
-			// Try to load data pack at the location of the executable.
+			// Try to load PCK data pack at the location of the executable.
 			// As mentioned above, we have two potential names to attempt.
 			found = _load_resource_pack(exec_dir.path_join(exec_basename + ".pck"), false, 0, true) || _load_resource_pack(exec_dir.path_join(exec_filename + ".pck"), false, 0, true);
 		}
 
 		if (!found) {
-			// If we couldn't find them next to the executable, we attempt
+			// Try to load ZIP data pack at the location of the executable.
+			// As mentioned above, we have two potential names to attempt.
+			found = _load_resource_pack(exec_dir.plus_file(exec_basename + ".zip")) || _load_resource_pack(exec_dir.plus_file(exec_filename + ".zip"));
+		}
+
+		if (!found) {
+			// If we couldn't find either PCK name next to the executable, we attempt
 			// the current working directory. Same story, two tests.
 			found = _load_resource_pack(exec_basename + ".pck", false, 0, true) || _load_resource_pack(exec_filename + ".pck", false, 0, true);
+		}
+
+		if (!found) {
+			// If we couldn't find either ZIP name next to the executable, we attempt
+			// the current working directory. Same story, two tests.
+			found = _load_resource_pack(exec_basename + ".zip") || _load_resource_pack(exec_filename + ".zip");
 		}
 
 		// If we opened our package, try and load our project.
