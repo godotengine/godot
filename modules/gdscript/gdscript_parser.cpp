@@ -672,8 +672,8 @@ void GDScriptParser::parse_program() {
 		}
 	}
 
-	if (current.type == GDScriptTokenizer::Token::CLASS_NAME || current.type == GDScriptTokenizer::Token::EXTENDS) {
-		// Set range of the class to only start at extends or class_name if present.
+	if (current.type == GDScriptTokenizer::Token::TRAIT_NAME || current.type == GDScriptTokenizer::Token::CLASS_NAME || current.type == GDScriptTokenizer::Token::EXTENDS) {
+		// Set range of the class/trait to only start at extends or class_name or trait_name if present.
 		reset_extents(head, current);
 	}
 
@@ -684,8 +684,20 @@ void GDScriptParser::parse_program() {
 				PUSH_PENDING_ANNOTATIONS_TO_HEAD;
 				advance();
 				if (head->identifier != nullptr) {
-					push_error(R"("class_name" can only be used once.)");
+					push_error(R"("class_name"/ "trait_name" can only be used once.)");
 				} else {
+					parse_class_name();
+				}
+				break;
+			case GDScriptTokenizer::Token::TRAIT_NAME:
+				PUSH_PENDING_ANNOTATIONS_TO_HEAD;
+				advance();
+				if (head->identifier != nullptr) {
+					push_error(R"("trait_name"/ "class_name"  can only be used once.)");
+				} else {
+					_is_trait_file = true;
+					_is_trait = true;
+					head->type = Node::TRAIT;
 					parse_class_name();
 				}
 				break;
@@ -4283,6 +4295,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // STATIC,
 		{ &GDScriptParser::parse_call,						nullptr,                                        PREC_NONE }, // SUPER,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // TRAIT,
+		{ nullptr,                                          nullptr,                                        PREC_NONE }, // TRAIT_NAME,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // USES,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // VAR,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // TK_VOID,

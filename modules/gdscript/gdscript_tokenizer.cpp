@@ -120,6 +120,7 @@ static const char *token_names[] = {
 	"static", // STATIC,
 	"super", // SUPER,
 	"trait", // TRAIT,
+	"trait_name", // TRAIT_NAME,
 	"uses", // USES,
 	"var", // VAR,
 	"void", // TK_VOID,
@@ -250,6 +251,7 @@ bool GDScriptTokenizer::Token::is_node_name() const {
 		case STATIC:
 		case SUPER:
 		case TRAIT:
+		case TRAIT_NAME:
 		case USES:
 		case UNDERSCORE:
 		case VAR:
@@ -533,6 +535,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
 	KEYWORD("super", Token::SUPER)           \
 	KEYWORD_GROUP('t')                       \
 	KEYWORD("trait", Token::TRAIT)           \
+	KEYWORD("trait_name", Token::TRAIT_NAME) \
 	KEYWORD_GROUP('u')                       \
 	KEYWORD("uses", Token::USES)             \
 	KEYWORD_GROUP('v')                       \
