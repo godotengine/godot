@@ -535,7 +535,7 @@ bool EditorSpatialGizmo::intersect_frustum(const Camera *p_camera, const Vector<
 			transformed_frustum.push_back(it.xform(p_frustum[i]));
 		}
 
-		Vector<Vector3> convex_points = Geometry::compute_convex_mesh_points(p_frustum.ptr(), p_frustum.size());
+		Vector<Vector3> convex_points = Geometry::compute_convex_mesh_points(p_frustum);
 
 		if (collision_mesh->inside_convex_shape(transformed_frustum.ptr(), transformed_frustum.size(), convex_points.ptr(), convex_points.size(), mesh_scale)) {
 			return true;

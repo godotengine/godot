@@ -806,7 +806,7 @@ public:
 		return _polypath_offset(p_polygon, p_delta, p_join_type, p_end_type);
 	}
 
-	static Vector<int> triangulate_delaunay_2d(const Vector<Vector2> &p_points) {
+	static Vector<int> triangulate_delaunay_2d(const Span<Vector2> &p_points) {
 		Vector<Delaunay2D::Triangle> tr = Delaunay2D::triangulate(p_points);
 		Vector<int> triangles;
 
@@ -1017,7 +1017,7 @@ public:
 	};
 	static Vector<PackRectsResult> partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size);
 
-	static Vector<Vector3> compute_convex_mesh_points(const Plane *p_planes, int p_plane_count, real_t p_epsilon = CMP_EPSILON);
+	static Vector<Vector3> compute_convex_mesh_points(const Span<Plane> &p_planes, real_t p_epsilon = CMP_EPSILON);
 	static bool convex_hull_intersects_convex_hull(const Plane *p_planes_a, int p_plane_count_a, const Plane *p_planes_b, int p_plane_count_b);
 	static real_t calculate_convex_hull_volume(const Geometry::MeshData &p_md);
 	static bool verify_indices(const int *p_indices, int p_num_indices, int p_num_vertices);

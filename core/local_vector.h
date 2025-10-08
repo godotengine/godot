@@ -35,6 +35,7 @@
 #include "core/os/memory.h"
 #include "core/pool_vector.h"
 #include "core/sort_array.h"
+#include "core/span.h"
 #include "core/vector.h"
 
 #include <type_traits>
@@ -283,6 +284,9 @@ public:
 		return ret;
 	}
 
+	_FORCE_INLINE_ Span<T> span() const { return Span(data, count); }
+	_FORCE_INLINE_ operator Span<T>() const { return span(); }
+
 	_FORCE_INLINE_ LocalVector() {}
 	_FORCE_INLINE_ LocalVector(const LocalVector &p_from) {
 		resize(p_from.size());
@@ -290,12 +294,21 @@ public:
 			data[i] = p_from.data[i];
 		}
 	}
+
+	LocalVector(const Span<T> &p_from) {
+		resize(p_from.size());
+		for (U i = 0; i < count; i++) {
+			data[i] = p_from[i];
+		}
+	}
+
 	LocalVector(const Vector<T> &p_from) {
 		resize(p_from.size());
 		for (U i = 0; i < count; i++) {
 			data[i] = p_from[i];
 		}
 	}
+
 	LocalVector(const PoolVector<T> &p_from) {
 		resize(p_from.size());
 		typename PoolVector<T>::Read r = p_from.read();
