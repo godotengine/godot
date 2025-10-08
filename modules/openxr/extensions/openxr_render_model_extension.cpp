@@ -379,7 +379,13 @@ RID OpenXRRenderModelExtension::render_model_create(XrRenderModelIdEXT p_render_
 		nullptr, // next
 	};
 
-	XrRenderModelPropertiesEXT properties;
+	XrRenderModelPropertiesEXT properties = {
+		XR_TYPE_RENDER_MODEL_PROPERTIES_EXT, // type
+		nullptr, // next
+		{}, // cacheId
+		0, // animatableNodeCount
+	};
+
 	result = xrGetRenderModelPropertiesEXT(render_model.xr_render_model, &properties_info, &properties);
 	if (XR_FAILED(result)) {
 		ERR_PRINT("OpenXR: Failed to get render model properties [" + OpenXRAPI::get_singleton()->get_error_string(result) + "]");
