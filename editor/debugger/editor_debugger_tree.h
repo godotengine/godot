@@ -72,6 +72,7 @@ private:
 	String last_filter;
 
 	void _scene_tree_folded(Object *p_obj);
+	void _scene_tree_selected();
 	void _scene_tree_selection_changed(TreeItem *p_item, int p_column, bool p_selected);
 	void _scene_tree_nothing_selected();
 	void _notify_selection_changed();

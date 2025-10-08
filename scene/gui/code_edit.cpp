@@ -2378,6 +2378,7 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 		}
 
 		// Handle merging of symbols eg strings, brackets.
+		caret_line = get_caret_line(i);
 		const String line = get_line(caret_line);
 		char32_t next_char = line[get_caret_column(i)];
 		char32_t last_completion_char = insert_text[insert_text.length() - 1];
@@ -3020,17 +3021,18 @@ void CodeEdit::_bind_methods() {
 /* Auto brace completion */
 int CodeEdit::_get_auto_brace_pair_open_at_pos(int p_line, int p_col) {
 	const String &line = get_line(p_line);
+	int caret_col = MIN(p_col, line.length());
 
 	/* Should be fast enough, expecting low amount of pairs... */
 	for (int i = 0; i < auto_brace_completion_pairs.size(); i++) {
 		const String &open_key = auto_brace_completion_pairs[i].open_key;
-		if (p_col - open_key.length() < 0) {
+		if (caret_col < open_key.length()) {
 			continue;
 		}
 
 		bool is_match = true;
 		for (int j = 0; j < open_key.length(); j++) {
-			if (line[(p_col - 1) - j] != open_key[(open_key.length() - 1) - j]) {
+			if (line[(caret_col - 1) - j] != open_key[(open_key.length() - 1) - j]) {
 				is_match = false;
 				break;
 			}
