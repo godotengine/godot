@@ -96,6 +96,7 @@ class EditorThemeManager {
 		Color contrast_color_2;
 		Color highlight_color;
 		Color highlight_disabled_color;
+		Color info_color;
 		Color success_color;
 		Color warning_color;
 		Color error_color;
