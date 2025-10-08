@@ -792,6 +792,8 @@ protected:
 	void _accessibility_action_button_press(const Variant &p_data, TreeItem *p_item, int p_col, int p_btn);
 
 public:
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+
 	PackedStringArray get_accessibility_configuration_warnings() const override;
 	virtual RID get_focused_accessibility_element() const override;
 

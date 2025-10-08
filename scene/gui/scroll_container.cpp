@@ -111,6 +111,17 @@ bool ScrollContainer::_is_v_scroll_visible() const {
 	return v_scroll->is_visible() && v_scroll->get_parent() == this;
 }
 
+Control::CursorShape ScrollContainer::get_cursor_shape(const Point2 &p_pos) const {
+	if (v_scroll && v_scroll->is_panning()) {
+		return CURSOR_MOVE;
+	}
+	if (h_scroll && h_scroll->is_panning()) {
+		return CURSOR_MOVE;
+	}
+
+	return get_default_cursor_shape();
+}
+
 void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 	ERR_FAIL_COND(p_gui_input.is_null());
 
@@ -239,6 +250,13 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 				time_since_motion = 0;
 			}
+		}
+
+		if (h_scroll && h_scroll_enabled && h_scroll->is_panning()) {
+			h_scroll->pan_callback(mm, this);
+		}
+		if (v_scroll && v_scroll_enabled && v_scroll->is_panning()) {
+			v_scroll->pan_callback(mm, this);
 		}
 
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {

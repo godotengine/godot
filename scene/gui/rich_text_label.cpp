@@ -2634,6 +2634,10 @@ void RichTextLabel::_notification(int p_what) {
 }
 
 Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const {
+	if (vscroll && vscroll->is_panning()) {
+		return CURSOR_MOVE;
+	}
+
 	if (selection.click_item) {
 		return CURSOR_IBEAM;
 	}
@@ -2970,6 +2974,10 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 	if (m.is_valid()) {
 		local_mouse_pos = get_local_mouse_position();
 		last_clamped_mouse_pos = local_mouse_pos.clamp(Vector2(), get_size());
+
+		if (vscroll && vscroll->is_panning()) {
+			vscroll->pan_callback(m, this);
+		}
 	}
 }
 

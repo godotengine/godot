@@ -115,6 +115,9 @@ public:
 	void scroll(double p_amount);
 	void scroll_to(double p_position);
 
+	void pan_callback(const Ref<InputEventMouseMotion> &p_motion, Control *p_parent_control, double p_delta = 1.0);
+	bool is_panning();
+
 	void set_custom_step(float p_custom_step);
 	float get_custom_step() const;
 
