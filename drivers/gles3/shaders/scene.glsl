@@ -1902,9 +1902,6 @@ void main() {
 #CODE : FRAGMENT
 	}
 
-	// Keep albedo values in positive number range as negative values "wraparound" into positive numbers resulting in wrong colors
-	albedo = max(albedo, vec3(0.0));
-
 #ifdef LIGHT_VERTEX_USED
 	vertex = light_vertex;
 #ifdef USE_MULTIVIEW
@@ -1933,7 +1930,9 @@ void main() {
 	if (alpha < alpha_scissor_threshold) {
 		discard;
 	}
+#if !defined(ALPHA_ANTIALIASING_EDGE_USED)
 	alpha = 1.0;
+#endif //!ALPHA_ANTIALIASING_EDGE_USED
 #endif // MODE_RENDER_DEPTH
 #endif // RENDER_MATERIAL
 #else
@@ -2624,7 +2623,7 @@ void main() {
 
 #endif // !RENDER_MATERIAL
 #endif // !MODE_RENDER_DEPTH
-
+	frag_color.a = alpha;
 #ifdef PREMUL_ALPHA_USED
 	frag_color.rgb *= premul_alpha;
 #endif // PREMUL_ALPHA_USED

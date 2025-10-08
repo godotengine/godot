@@ -472,6 +472,7 @@ private:
 		bool current_depth_draw_enabled = false;
 		bool current_depth_test_enabled = false;
 		bool current_scissor_test_enabled = false;
+		bool alpha_to_coverage_and_one_enabled = false;
 
 		void reset_gl_state() {
 			glDisable(GL_BLEND);
@@ -500,6 +501,10 @@ private:
 			current_stencil_compare = GL_ALWAYS;
 			current_stencil_reference = 0;
 			current_stencil_compare_mask = 255;
+
+			glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+			glDisable(GL_SAMPLE_ALPHA_TO_ONE);
+			alpha_to_coverage_and_one_enabled = false;
 		}
 
 		void set_gl_cull_mode(RS::CullMode p_mode) {
@@ -543,6 +548,19 @@ private:
 			if (current_depth_draw_enabled != p_enabled) {
 				glDepthMask(p_enabled ? GL_TRUE : GL_FALSE);
 				current_depth_draw_enabled = p_enabled;
+			}
+		}
+
+		void enable_gl_alpha_to_coverage(bool p_enabled) {
+			if (alpha_to_coverage_and_one_enabled != p_enabled) {
+				if (p_enabled) {
+					glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+					glEnable(GL_SAMPLE_ALPHA_TO_ONE);
+				} else {
+					glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+					glDisable(GL_SAMPLE_ALPHA_TO_ONE);
+				}
+				alpha_to_coverage_and_one_enabled = p_enabled;
 			}
 		}
 

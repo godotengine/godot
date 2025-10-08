@@ -202,7 +202,7 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(Geometry
 	GLES3::MeshStorage *mesh_storage = GLES3::MeshStorage::get_singleton();
 
 	bool has_read_screen_alpha = p_material->shader_data->uses_screen_texture || p_material->shader_data->uses_normal_texture;
-	bool has_base_alpha = ((p_material->shader_data->uses_alpha && !p_material->shader_data->uses_alpha_clip) || has_read_screen_alpha);
+	bool has_base_alpha = ((p_material->shader_data->uses_alpha && !p_material->shader_data->uses_alpha_clip && !p_material->shader_data->opaque_skipped) || has_read_screen_alpha);
 	bool has_blend_alpha = p_material->shader_data->uses_blend_alpha;
 	bool has_alpha = has_base_alpha || has_blend_alpha;
 
@@ -2537,6 +2537,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 	// Don't do depth prepass we are rendering overdraw
 	use_depth_prepass = use_depth_prepass && get_debug_draw_mode() != RS::VIEWPORT_DEBUG_DRAW_OVERDRAW;
+	scene_state.enable_gl_alpha_to_coverage(true);
 
 	if (use_depth_prepass) {
 		RENDER_TIMESTAMP("Depth Prepass");
@@ -2592,6 +2593,8 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	if (scene_state.used_depth_prepass) {
 		scene_state.set_gl_depth_func(GL_EQUAL);
 	}
+
+	scene_state.enable_gl_alpha_to_coverage(false);
 	
 
 	{
