@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "scene/resources/compositor.h"
 #include "scene/resources/environment.h"
 
 #ifndef PHYSICS_3D_DISABLED
@@ -40,6 +39,7 @@
 
 class CameraAttributes;
 class Camera3D;
+class Compositor;
 class VisibleOnScreenNotifier3D;
 struct SpatialIndexer;
 
