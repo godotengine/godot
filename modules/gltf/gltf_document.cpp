@@ -7066,7 +7066,8 @@ Ref<GLTFObjectModelProperty> GLTFDocument::export_object_model_property(Ref<GLTF
 	const Vector<StringName> subpath = p_node_path.get_subnames();
 	ERR_FAIL_COND_V_MSG(subpath.is_empty(), ret, "glTF: Cannot export empty property. No property was specified in the NodePath: " + String(p_node_path));
 	int target_prop_depth = 0;
-	for (StringName subname : subpath) {
+	for (int64_t i = 0; i < subpath.size() - 1; i++) {
+		const StringName &subname = subpath[i];
 		Variant target_property = target_object->get(subname);
 		if (target_property.get_type() == Variant::OBJECT) {
 			target_object = target_property;
