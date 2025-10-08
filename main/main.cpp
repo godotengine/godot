@@ -556,16 +556,20 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--quit-after <int>", "Quit after the given number of iterations. Set to 0 to disable.\n");
 	print_help_option("-l, --language <locale>", "Use a specific locale (<locale> being a two-letter code).\n");
 	print_help_option("--path <directory>", "Path to a project (<directory> must contain a \"project.godot\" file).\n");
+#ifdef OVERRIDE_ENABLED
 	print_help_option("--scene <path>", "Path or UID of a scene in the project that should be started.\n");
 	print_help_option("-u, --upwards", "Scan folders upwards for project.godot file.\n");
 	print_help_option("--main-pack <file>", "Path to a pack (.pck) file to load.\n");
+#endif // OVERRIDE_ENABLED
 #ifdef DISABLE_DEPRECATED
 	print_help_option("--render-thread <mode>", "Render thread mode (\"safe\", \"separate\").\n");
 #else
 	print_help_option("--render-thread <mode>", "Render thread mode (\"unsafe\" [deprecated], \"safe\", \"separate\").\n");
-#endif
+#endif // DISABLE_DEPRECATED
+#ifdef OVERRIDE_ENABLED
 	print_help_option("--remote-fs <address>", "Remote filesystem (<host/IP>[:<port>] address).\n");
 	print_help_option("--remote-fs-password <password>", "Password for remote filesystem.\n");
+#endif // OVERRIDE_ENABLED
 
 	print_help_option("--audio-driver <driver>", "Audio driver [");
 	for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
@@ -662,10 +666,12 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--editor-pseudolocalization", "Enable pseudolocalization for the editor and the project manager.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif
 
+#ifdef OVERRIDE_ENABLED
 	print_help_title("Standalone tools");
 	print_help_option("-s, --script <script>", "Run a script.\n");
 	print_help_option("--main-loop <main_loop_name>", "Run a MainLoop specified by its global class name.\n");
 	print_help_option("--check-only", "Only parse for errors and quit (use with --script).\n");
+#endif // OVERRIDE_ENABLED
 #ifdef TOOLS_ENABLED
 	print_help_option("--import", "Starts the editor, waits for any resources to be imported, and then quits.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--export-release <preset> <path>", "Export the project in release mode using the given preset and output path. The preset name should match one defined in \"export_presets.cfg\".\n", CLI_OPTION_AVAILABILITY_EDITOR);
@@ -1432,7 +1438,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing language argument, aborting.\n");
 				goto error;
 			}
-
+#ifdef OVERRIDE_ENABLED
 		} else if (arg == "--remote-fs") { // remote filesystem
 
 			if (N) {
@@ -1451,6 +1457,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing remote filesystem password, aborting.\n");
 				goto error;
 			}
+#endif // OVERRIDE_ENABLED
 		} else if (arg == "--render-thread") { // render thread mode
 
 			if (N) {
@@ -1651,8 +1658,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing relative or absolute path, aborting.\n");
 				goto error;
 			}
+#ifdef OVERRIDE_ENABLED
 		} else if (arg == "-u" || arg == "--upwards") { // scan folders upwards
 			upwards = true;
+#endif // OVERRIDE_ENABLED
 		} else if (arg == "--quit") { // Auto quit at the end of the first main loop iteration
 			quit_after = 1;
 #ifdef TOOLS_ENABLED
@@ -1723,7 +1732,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing time scale argument, aborting.\n");
 				goto error;
 			}
-
+#ifdef OVERRIDE_ENABLED
 		} else if (arg == "--main-pack") {
 			if (N) {
 				main_pack = N->get();
@@ -1732,7 +1741,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing path to main pack file, aborting.\n");
 				goto error;
 			}
-
+#endif // OVERRIDE_ENABLED
 		} else if (arg == "-d" || arg == "--debug") {
 			debug_uri = "local://";
 			OS::get_singleton()->_debug_stdout = true;
@@ -1913,6 +1922,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 #endif
 
+#ifdef OVERRIDE_ENABLED
 	// Network file system needs to be configured before globals, since globals are based on the
 	// 'project.godot' file which will only be available through the network if this is enabled
 	if (!remotefs.is_empty()) {
@@ -1930,6 +1940,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			goto error;
 		}
 	}
+#endif // OVERRIDE_ENABLED
 
 	OS::get_singleton()->_in_editor = editor;
 	if (globals->setup(project_path, main_pack, upwards, editor) == OK) {
@@ -3815,6 +3826,7 @@ int Main::start() {
 		} else if (E->get() == "--install-android-build-template") {
 			install_android_build_template = true;
 #endif // TOOLS_ENABLED
+#ifdef OVERRIDE_ENABLED
 		} else if (E->get() == "--scene") {
 			E = E->next();
 			if (E) {
@@ -3839,6 +3851,7 @@ int Main::start() {
 				// for non-game applications.
 				game_path = scene_path;
 			}
+#endif // OVERRIDE_ENABLED
 		}
 		// Then parameters that have an argument to the right.
 		else if (E->next()) {
@@ -4042,6 +4055,19 @@ int Main::start() {
 #endif // DISABLE_DEPRECATED
 
 #endif // TOOLS_ENABLED
+
+#ifdef OVERRIDE_ENABLED
+	bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+	if (disable_override) {
+		script = String();
+		game_path = String();
+		main_loop_type = String();
+	}
+#else
+	script = String();
+	game_path = String();
+	main_loop_type = String();
+#endif // OVERRIDE_ENABLED
 
 	if (script.is_empty() && game_path.is_empty()) {
 		const String main_scene = GLOBAL_GET("application/run/main_scene");
