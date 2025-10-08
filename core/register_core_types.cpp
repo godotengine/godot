@@ -181,8 +181,8 @@ void register_core_types() {
 
 	GDREGISTER_CLASS(Shortcut);
 	GDREGISTER_ABSTRACT_CLASS(InputEvent);
-	GDREGISTER_ABSTRACT_CLASS(InputEventWithModifiers);
 	GDREGISTER_ABSTRACT_CLASS(InputEventFromWindow);
+	GDREGISTER_ABSTRACT_CLASS(InputEventWithModifiers);
 	GDREGISTER_CLASS(InputEventKey);
 	GDREGISTER_CLASS(InputEventShortcut);
 	GDREGISTER_ABSTRACT_CLASS(InputEventMouse);
