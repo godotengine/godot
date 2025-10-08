@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A color represented in RGBA format by a red ([member r]), green ([member g]), blue ([member b]), and alpha ([member a]) component. Each component is a 32-bit floating-point value, usually ranging from [code]0.0[/code] to [code]1.0[/code]. Some properties (such as [member CanvasItem.modulate]) may support values greater than [code]1.0[/code], for overbright or HDR (High Dynamic Range) colors.
-		Colors can be created in a number of ways: By the various [Color] constructors, by static methods such as [method from_hsv], and by using a name from the set of standardized colors based on [url=https://en.wikipedia.org/wiki/X11_color_names]X11 color names[/url] with the addition of [constant TRANSPARENT]. GDScript also provides [method @GDScript.Color8], which uses integers from [code]0[/code] to [code]255[/code] and doesn't support overbright colors.
+		Colors can be created in a number of ways: By the various [Color] constructors, by static methods such as [method from_hsv], and by using a name from the set of standardized colors based on [url=https://en.wikipedia.org/wiki/X11_color_names]X11 color names[/url] with the addition of [constant TRANSPARENT].
 		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/color_constants.png]Color constants cheatsheet[/url]
 		Although [Color] may be used to store values of any encoding, the red ([member r]), green ([member g]), and blue ([member b]) properties of [Color] are expected by Godot to be encoded using the [url=https://en.wikipedia.org/wiki/SRGB#Transfer_function_(%22gamma%22)]nonlinear sRGB transfer function[/url] unless otherwise stated. This color encoding is used by many traditional art and web tools, making it easy to match colors between Godot and these tools. Godot uses [url=https://en.wikipedia.org/wiki/Rec._709]Rec. ITU-R BT.709[/url] color primaries, which are used by the sRGB standard.
 		All physical simulation, such as lighting calculations, and colorimetry transformations, such as [method get_luminance], must be performed on linearly encoded values to produce correct results. When performing these calculations, convert [Color] to and from linear encoding using [method srgb_to_linear] and [method linear_to_srgb].
@@ -71,7 +71,7 @@
 				Constructs a [Color] from RGB values, typically between 0.0 and 1.0. [member a] is set to 1.0.
 				[codeblocks]
 				[gdscript]
-				var color = Color(0.2, 1.0, 0.7) # Similar to `Color8(51, 255, 178, 255)`
+				var color = Color(0.2, 1.0, 0.7) # Similar to `Color.from_rgba8(51, 255, 178, 255)`
 				[/gdscript]
 				[csharp]
 				var color = new Color(0.2f, 1.0f, 0.7f); // Similar to `Color.Color8(51, 255, 178, 255)`
@@ -89,7 +89,7 @@
 				Constructs a [Color] from RGBA values, typically between 0.0 and 1.0.
 				[codeblocks]
 				[gdscript]
-				var color = Color(0.2, 1.0, 0.7, 0.8) # Similar to `Color8(51, 255, 178, 204)`
+				var color = Color(0.2, 1.0, 0.7, 0.8) # Similar to `Color.from_rgba8(51, 255, 178, 204)`
 				[/gdscript]
 				[csharp]
 				var color = new Color(0.2f, 1.0f, 0.7f, 0.8f); // Similar to `Color.Color8(51, 255, 178, 255, 204)`
