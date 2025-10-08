@@ -1744,7 +1744,7 @@ Ref<SceneTreeTimer> SceneTree::create_timer(double p_delay_sec, bool p_process_a
 	return stt;
 }
 
-Ref<Tween> SceneTree::create_tween() {
+RequiredResult<Tween> SceneTree::create_tween() {
 	_THREAD_SAFE_METHOD_
 	Ref<Tween> tween;
 	tween.instantiate(this);
