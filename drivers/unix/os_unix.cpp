@@ -86,10 +86,11 @@
 #define RTLD_DEEPBIND 0
 #endif
 
+#define GODOT_DLOPEN_MODE_BASE RTLD_NOW
 #ifndef SANITIZERS_ENABLED
-#define GODOT_DLOPEN_MODE RTLD_NOW | RTLD_DEEPBIND
+#define GODOT_DLOPEN_MODE_GDEXTENSION RTLD_DEEPBIND
 #else
-#define GODOT_DLOPEN_MODE RTLD_NOW
+#define GODOT_DLOPEN_MODE_GDEXTENSION 0
 #endif
 
 #if defined(MACOS_ENABLED) || (defined(__ANDROID_API__) && __ANDROID_API__ >= 28)
@@ -1051,7 +1052,11 @@ Error OS_Unix::open_dynamic_library(const String &p_path, void *&p_library_handl
 
 	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
 
-	p_library_handle = dlopen(path.utf8().get_data(), GODOT_DLOPEN_MODE);
+	int flags = GODOT_DLOPEN_MODE_BASE;
+	if (p_data) {
+		flags |= GODOT_DLOPEN_MODE_GDEXTENSION;
+	}
+	p_library_handle = dlopen(path.utf8().get_data(), flags);
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
 	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
