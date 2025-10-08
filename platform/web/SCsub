@@ -103,7 +103,9 @@ if env["dlink_enabled"]:
     sys = sys_env.add_program(build_targets, ["web_runtime.cpp"])
 
     # The side library, containing all Godot code.
-    wasm = env.add_program("#bin/godot.side${PROGSUFFIX}.wasm", web_files)
+    wasm = env.add_program(
+        f"#{env['output_path']}" if env["output_path"] else "#bin/godot.side${PROGSUFFIX}.wasm", web_files
+    )
     build = sys + [wasm[0]]
 else:
     # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.

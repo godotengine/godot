@@ -35,7 +35,9 @@ if env["dbus"]:
     if env["use_sowrap"]:
         common_linuxbsd.append("dbus-so_wrap.c")
 
-prog = env.add_program("#bin/godot", ["godot_linuxbsd.cpp"] + common_linuxbsd)
+prog = env.add_program(
+    f"#{env['output_path']}" if env["output_path"] else "#bin/godot", ["godot_linuxbsd.cpp"] + common_linuxbsd
+)
 
 if env["debug_symbols"] and env["separate_debug_symbols"]:
     env.AddPostAction(prog, env.Run(platform_linuxbsd_builders.make_debug_linuxbsd))
