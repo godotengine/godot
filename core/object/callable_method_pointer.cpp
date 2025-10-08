@@ -41,7 +41,7 @@ bool CallableCustomMethodPointerBase::compare_equal(const CallableCustom *p_a, c
 	// Avoid sorting by memory address proximity, which leads to unpredictable performance over time
 	// due to the reuse of old addresses for newer objects. Use byte-wise comparison to leverage the
 	// backwards encoding of little-endian systems as a way to decouple spatiality and time.
-	return memcmp(a->comp_ptr, b->comp_ptr, a->comp_size * 4) == 0;
+	return memcmp(a->comp_ptr, b->comp_ptr, a->comp_size) == 0;
 }
 
 bool CallableCustomMethodPointerBase::compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
@@ -53,7 +53,7 @@ bool CallableCustomMethodPointerBase::compare_less(const CallableCustom *p_a, co
 	}
 
 	// See note in compare_equal().
-	return memcmp(a->comp_ptr, b->comp_ptr, a->comp_size * 4) < 0;
+	return memcmp(a->comp_ptr, b->comp_ptr, a->comp_size) < 0;
 }
 
 CallableCustom::CompareEqualFunc CallableCustomMethodPointerBase::get_compare_equal_func() const {
@@ -68,16 +68,20 @@ uint32_t CallableCustomMethodPointerBase::hash() const {
 	return h;
 }
 
-void CallableCustomMethodPointerBase::_setup(uint32_t *p_base_ptr, uint32_t p_ptr_size) {
+void CallableCustomMethodPointerBase::_setup(const uint8_t *p_base_ptr, uint32_t p_ptr_size) {
 	comp_ptr = p_base_ptr;
-	comp_size = p_ptr_size / 4;
+	comp_size = p_ptr_size;
+	h = 0;
 
 	// Precompute hash.
-	for (uint32_t i = 0; i < comp_size; i++) {
+	for (uint32_t i = 0; i < comp_size; i += sizeof(uint32_t)) {
+		uint32_t v = 0;
+		// Use memcpy to avoid UB with strict-aliasing.
+		memcpy(&v, comp_ptr + i, MIN(sizeof(uint32_t), comp_size - i));
 		if (i == 0) {
-			h = hash_murmur3_one_32(comp_ptr[i]);
+			h = hash_murmur3_one_32(v);
 		} else {
-			h = hash_murmur3_one_32(comp_ptr[i], h);
+			h = hash_murmur3_one_32(v, h);
 		}
 	}
 }
