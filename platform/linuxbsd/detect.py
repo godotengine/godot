@@ -182,6 +182,9 @@ def configure(env: "SConsEnvironment"):
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
 
+    if env["library_type"] == "shared_library":
+        env.Append(CCFLAGS=["-fPIC"])
+
     # LTO
 
     if env["lto"] == "auto":  # Enable LTO for production.

@@ -3,36 +3,38 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
+File = env.File
+
 source_files = [
-    "display_server_x11.cpp",
-    "key_mapping_x11.cpp",
+    File("display_server_x11.cpp"),
+    File("key_mapping_x11.cpp"),
 ]
 
 if env["use_sowrap"]:
     source_files.append(
         [
-            "dynwrappers/xlib-so_wrap.c",
-            "dynwrappers/xcursor-so_wrap.c",
-            "dynwrappers/xinerama-so_wrap.c",
-            "dynwrappers/xinput2-so_wrap.c",
-            "dynwrappers/xrandr-so_wrap.c",
-            "dynwrappers/xrender-so_wrap.c",
-            "dynwrappers/xext-so_wrap.c",
+            File("dynwrappers/xlib-so_wrap.c"),
+            File("dynwrappers/xcursor-so_wrap.c"),
+            File("dynwrappers/xinerama-so_wrap.c"),
+            File("dynwrappers/xinput2-so_wrap.c"),
+            File("dynwrappers/xrandr-so_wrap.c"),
+            File("dynwrappers/xrender-so_wrap.c"),
+            File("dynwrappers/xext-so_wrap.c"),
         ]
     )
 
 if env["vulkan"]:
-    source_files.append("rendering_context_driver_vulkan_x11.cpp")
+    source_files.append(File("rendering_context_driver_vulkan_x11.cpp"))
 
 if env["opengl3"]:
     env.Append(CPPDEFINES=["GLAD_GLX_NO_X11"])
     source_files.append(
-        ["gl_manager_x11_egl.cpp", "gl_manager_x11.cpp", "detect_prime_x11.cpp", "#thirdparty/glad/glx.c"]
+        [
+            File("gl_manager_x11_egl.cpp"),
+            File("gl_manager_x11.cpp"),
+            File("detect_prime_x11.cpp"),
+            File("#thirdparty/glad/glx.c"),
+        ]
     )
 
-objects = []
-
-for source_file in source_files:
-    objects.append(env.Object(source_file))
-
-Return("objects")
+Return("source_files")
