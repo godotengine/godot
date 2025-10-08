@@ -30,8 +30,6 @@
 
 #include "input_map.h"
 #include "core/input/input_event.h"
-#include "core/object/ref_counted.h"
-#include "core/string/print_string.h"
 #include "core/templates/list.h"
 #include "input_map.compat.inc"
 
