@@ -25,6 +25,7 @@
 		[/csharp]
 		[/codeblocks]
 		[b]Note:[/b] Generating complex geometries with [ImmediateMesh] is highly inefficient. Instead, it is designed to generate simple geometry that changes often.
+		[b]Note:[/b] The custom data attributes will use the [constant Mesh.ARRAY_CUSTOM_RGBA_FLOAT] format.
 	</description>
 	<tutorials>
 		<link title="Using ImmediateMesh">$DOCS_URL/tutorials/3d/procedural_geometry/immediatemesh.html</link>
@@ -69,6 +70,34 @@
 			<param index="0" name="color" type="Color" />
 			<description>
 				Set the color attribute that will be pushed with the next vertex.
+			</description>
+		</method>
+		<method name="surface_set_custom0">
+			<return type="void" />
+			<param index="0" name="custom0" type="Vector4" />
+			<description>
+				Set the CUSTOM0 attribute that will be pushed with the next vertex.
+			</description>
+		</method>
+		<method name="surface_set_custom1">
+			<return type="void" />
+			<param index="0" name="custom1" type="Vector4" />
+			<description>
+				Set the CUSTOM1 attribute that will be pushed with the next vertex.
+			</description>
+		</method>
+		<method name="surface_set_custom2">
+			<return type="void" />
+			<param index="0" name="custom2" type="Vector4" />
+			<description>
+				Set the CUSTOM2 attribute that will be pushed with the next vertex.
+			</description>
+		</method>
+		<method name="surface_set_custom3">
+			<return type="void" />
+			<param index="0" name="custom3" type="Vector4" />
+			<description>
+				Set the CUSTOM3 attribute that will be pushed with the next vertex.
 			</description>
 		</method>
 		<method name="surface_set_normal">
