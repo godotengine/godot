@@ -20,7 +20,11 @@ func test() -> ClassA:
 resource_name = "InternalScript2"
 script/source = "extends Control
 
+signal inner_script_signal
 @export var class_a_instance: ClassA
+
+func _ready() -> void:
+	inner_script_signal.emit()
 "
 
 [node name="SceneOne" type="Node"]
