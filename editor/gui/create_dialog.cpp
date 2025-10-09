@@ -856,6 +856,8 @@ CreateDialog::CreateDialog() {
 
 	type_blacklist.insert("PluginScript"); // PluginScript must be initialized before use, which is not possible here.
 	type_blacklist.insert("ScriptCreateDialog"); // This is an exposed editor Node that doesn't have an Editor prefix.
+	type_blacklist.insert("MissingNode");
+	type_blacklist.insert("MissingResource");
 
 	HSplitContainer *hsc = memnew(HSplitContainer);
 	add_child(hsc);

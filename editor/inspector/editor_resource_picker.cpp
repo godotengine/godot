@@ -653,6 +653,18 @@ String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource)
 	return res_type;
 }
 
+static bool _should_hide_type(const StringName &p_type) {
+	if (ClassDB::is_virtual(p_type)) {
+		return true;
+	}
+
+	if (p_type == SNAME("MissingResource")) {
+		return true;
+	}
+
+	return false;
+}
+
 static void _add_allowed_type(const StringName &p_type, List<StringName> *p_vector) {
 	if (p_vector->find(p_type)) {
 		// Already added.
@@ -660,9 +672,9 @@ static void _add_allowed_type(const StringName &p_type, List<StringName> *p_vect
 	}
 
 	if (ClassDB::class_exists(p_type)) {
-		// Engine class,
+		// Engine class.
 
-		if (!ClassDB::is_virtual(p_type)) {
+		if (!_should_hide_type(p_type)) {
 			p_vector->push_back(p_type);
 		}
 
