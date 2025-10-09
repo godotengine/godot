@@ -4236,17 +4236,25 @@ static Error _refactor_rename_symbol_match_from_class_loop_nodes(GDScriptParser:
 		switch (node->type) {
 			case GDScriptParser::Node::Type::IDENTIFIER: {
 				GDScriptParser::IdentifierNode *identifier_node = static_cast<GDScriptParser::IdentifierNode *>(node);
-				GDScriptParser::Node *identifier_node_source_node = identifier_node->get_source_node();
+				if (identifier_node->name != p_symbol) {
+					continue;
+				}
 
+				// If the identifier is a reference to something, it will be in the source node.
+				GDScriptParser::Node *identifier_node_source_node = identifier_node->get_source_node();
 				if (identifier_node_source_node == p_source_node) {
 					_refactor_rename_symbol_add_match(p_path, identifier_node, r_result);
 					continue;
 				}
 
+				// Maybe the identifier is in the definition itself of the source, so it doesn't have any source.
+				// Though, it's owner could be the same as the source node.
 				GDScriptParser::Node *identifier_node_owner = p_node_list.get_owner(identifier_node);
-				if (identifier_node->name != p_symbol) {
-					break;
+				if (identifier_node_owner == p_source_node) {
+					_refactor_rename_symbol_add_match(p_path, identifier_node, r_result);
+					continue;
 				}
+
 				switch (p_source_node->type) {
 					case GDScriptParser::Node::IDENTIFIER: {
 						GDScriptParser::IdentifierNode *source_node_identifier_node = static_cast<GDScriptParser::IdentifierNode *>(p_source_node);
@@ -4267,21 +4275,6 @@ static Error _refactor_rename_symbol_match_from_class_loop_nodes(GDScriptParser:
 							_refactor_rename_symbol_add_match(p_path, identifier_node, r_result);
 						}
 						continue;
-					} break;
-					case GDScriptParser::Node::VARIABLE: {
-						GDScriptParser::VariableNode *source_node_variable_node = static_cast<GDScriptParser::VariableNode *>(p_source_node);
-						ERR_FAIL_COND_V_MSG(identifier_node_owner == nullptr, FAILED, "identifier node owner datatype is not of kind ENUM");
-						GDScriptParser::DataType identifier_node_owner_datatype = identifier_node_owner->get_datatype();
-						if (identifier_node->name == identifier_node_owner_datatype.class_type->identifier->name) {
-							if (identifier_node_owner_datatype.class_type->fqcn == source_node_variable_node->get_datatype().class_type->fqcn) {
-								_refactor_rename_symbol_add_match(p_path, identifier_node, r_result);
-								continue;
-							}
-						} else if (identifier_node_owner == source_node_variable_node) {
-							_refactor_rename_symbol_add_match(p_path, identifier_node, r_result);
-							continue;
-						}
-						ERR_FAIL_V_MSG(FAILED, "failed to parse variable identifier");
 					} break;
 					default: {
 						// Do nothing.
