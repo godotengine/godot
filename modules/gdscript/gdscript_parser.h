@@ -295,7 +295,7 @@ public:
 
 	struct Node {
 	protected:
-		void _get_nodes_push(Node *p_node, LocalVector<GDScriptParser::Node *> &p_nodes) const {
+		void _get_nodes_push(Node *p_node, LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const {
 			if (p_node == nullptr) {
 				return;
 			}
@@ -303,17 +303,21 @@ public:
 				return;
 			}
 			p_nodes.push_back(p_node);
-			p_node->get_nodes(p_nodes);
+			if (p_deep) {
+				p_node->get_nodes(p_nodes, p_deep);
+			}
 		}
 
 		template <typename T>
-		void _get_nodes_push_iterable(T p_nodes_to_iterate, LocalVector<GDScriptParser::Node *> &p_nodes) const {
+		void _get_nodes_push_iterable(T p_nodes_to_iterate, LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const {
 			for (Node *node : p_nodes_to_iterate) {
 				if (p_nodes.has(node)) {
 					continue;
 				}
 				p_nodes.push_back(node);
-				node->get_nodes(p_nodes);
+				if (p_deep) {
+					node->get_nodes(p_nodes, p_deep);
+				}
 			}
 		}
 
@@ -374,7 +378,7 @@ public:
 
 		virtual bool is_expression() const { return false; }
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const {}
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const {}
 
 		virtual ~Node() {}
 	};
@@ -406,9 +410,9 @@ public:
 		bool apply(GDScriptParser *p_this, Node *p_target, ClassNode *p_class);
 		bool applies_to(uint32_t p_target_kinds) const;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			Node::get_nodes(p_nodes);
-			_get_nodes_push_iterable(arguments, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push_iterable(arguments, p_nodes, p_deep);
 		}
 
 		AnnotationNode() {
@@ -419,9 +423,9 @@ public:
 	struct ArrayNode : public ExpressionNode {
 		Vector<ExpressionNode *> elements;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			ExpressionNode::get_nodes(p_nodes);
-			_get_nodes_push_iterable(elements, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push_iterable(elements, p_nodes, p_deep);
 		}
 
 		ArrayNode() {
@@ -433,10 +437,10 @@ public:
 		ExpressionNode *condition = nullptr;
 		ExpressionNode *message = nullptr;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			Node::get_nodes(p_nodes);
-			_get_nodes_push(condition, p_nodes);
-			_get_nodes_push(message, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(condition, p_nodes, p_deep);
+			_get_nodes_push(message, p_nodes, p_deep);
 		}
 
 		AssertNode() {
@@ -452,10 +456,11 @@ public:
 		bool use_conversion_assign = false;
 		int usages = 0;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			Node::get_nodes(p_nodes);
-			_get_nodes_push(identifier, p_nodes);
-			_get_nodes_push(initializer, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(identifier, p_nodes, p_deep);
+			_get_nodes_push(initializer, p_nodes, p_deep);
+			_get_nodes_push(datatype_specifier, p_nodes, p_deep);
 		}
 
 		virtual ~AssignableNode() {}
@@ -487,10 +492,10 @@ public:
 		ExpressionNode *assigned_value = nullptr;
 		bool use_conversion_assign = false;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			ExpressionNode::get_nodes(p_nodes);
-			_get_nodes_push(assignee, p_nodes);
-			_get_nodes_push(assigned_value, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(assignee, p_nodes, p_deep);
+			_get_nodes_push(assigned_value, p_nodes, p_deep);
 		}
 
 		AssignmentNode() {
@@ -501,9 +506,9 @@ public:
 	struct AwaitNode : public ExpressionNode {
 		ExpressionNode *to_await = nullptr;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			ExpressionNode::get_nodes(p_nodes);
-			_get_nodes_push(to_await, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(to_await, p_nodes, p_deep);
 		}
 
 		AwaitNode() {
@@ -540,10 +545,10 @@ public:
 		ExpressionNode *left_operand = nullptr;
 		ExpressionNode *right_operand = nullptr;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			ExpressionNode::get_nodes(p_nodes);
-			_get_nodes_push(left_operand, p_nodes);
-			_get_nodes_push(right_operand, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(left_operand, p_nodes, p_deep);
+			_get_nodes_push(right_operand, p_nodes, p_deep);
 		}
 
 		BinaryOpNode() {
@@ -570,10 +575,10 @@ public:
 		bool is_super = false;
 		bool is_static = false;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			ExpressionNode::get_nodes(p_nodes);
-			_get_nodes_push(callee, p_nodes);
-			_get_nodes_push_iterable(arguments, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(callee, p_nodes, p_deep);
+			_get_nodes_push_iterable(arguments, p_nodes, p_deep);
 		}
 
 		CallNode() {
@@ -593,10 +598,10 @@ public:
 		ExpressionNode *operand = nullptr;
 		TypeNode *cast_type = nullptr;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			ExpressionNode::get_nodes(p_nodes);
-			_get_nodes_push(operand, p_nodes);
-			_get_nodes_push(cast_type, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(operand, p_nodes, p_deep);
+			_get_nodes_push(cast_type, p_nodes, p_deep);
 		}
 
 		CastNode() {
@@ -627,13 +632,13 @@ public:
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			Node::get_nodes(p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
 			_get_nodes_push(identifier, p_nodes);
 			for (const Value &value : values) {
-				_get_nodes_push(value.identifier, p_nodes);
-				_get_nodes_push(value.custom_value, p_nodes);
-				_get_nodes_push(value.parent_enum, p_nodes);
+				_get_nodes_push(value.identifier, p_nodes, p_deep);
+				_get_nodes_push(value.custom_value, p_nodes, p_deep);
+				_get_nodes_push(value.parent_enum, p_nodes, p_deep);
 			}
 		}
 
@@ -884,14 +889,14 @@ public:
 			members.push_back(Member(p_annotation_node));
 		}
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			Node::get_nodes(p_nodes);
-			_get_nodes_push(identifier, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(identifier, p_nodes, p_deep);
 			for (const Member &member : members) {
-				_get_nodes_push(member.get_source_node(), p_nodes);
+				_get_nodes_push(member.get_source_node(), p_nodes, p_deep);
 			}
-			_get_nodes_push(outer, p_nodes);
-			_get_nodes_push_iterable(extends, p_nodes);
+			_get_nodes_push(outer, p_nodes, p_deep);
+			_get_nodes_push_iterable(extends, p_nodes, p_deep);
 		}
 
 		ClassNode() {
@@ -928,11 +933,11 @@ public:
 		};
 		Style style = PYTHON_DICT;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			ExpressionNode::get_nodes(p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
 			for (const Pair &element : elements) {
-				_get_nodes_push(element.key, p_nodes);
-				_get_nodes_push(element.value, p_nodes);
+				_get_nodes_push(element.key, p_nodes, p_deep);
+				_get_nodes_push(element.value, p_nodes, p_deep);
 			}
 		}
 
@@ -948,12 +953,12 @@ public:
 		ExpressionNode *list = nullptr;
 		SuiteNode *loop = nullptr;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			Node::get_nodes(p_nodes);
-			_get_nodes_push(variable, p_nodes);
-			_get_nodes_push(datatype_specifier, p_nodes);
-			_get_nodes_push(list, p_nodes);
-			_get_nodes_push(loop, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(variable, p_nodes, p_deep);
+			_get_nodes_push(datatype_specifier, p_nodes, p_deep);
+			_get_nodes_push(list, p_nodes, p_deep);
+			_get_nodes_push(loop, p_nodes, p_deep);
 		}
 
 		ForNode() {
@@ -986,12 +991,12 @@ public:
 
 		_FORCE_INLINE_ bool is_vararg() const { return rest_parameter != nullptr; }
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			Node::get_nodes(p_nodes);
-			_get_nodes_push(identifier, p_nodes);
-			_get_nodes_push_iterable(parameters, p_nodes);
-			_get_nodes_push(return_type, p_nodes);
-			_get_nodes_push(body, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(identifier, p_nodes, p_deep);
+			_get_nodes_push_iterable(parameters, p_nodes, p_deep);
+			_get_nodes_push(return_type, p_nodes, p_deep);
+			_get_nodes_push(body, p_nodes, p_deep);
 		}
 
 		FunctionNode() {
@@ -1089,11 +1094,11 @@ public:
 		SuiteNode *true_block = nullptr;
 		SuiteNode *false_block = nullptr;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			Node::get_nodes(p_nodes);
-			_get_nodes_push(condition, p_nodes);
-			_get_nodes_push(true_block, p_nodes);
-			_get_nodes_push(false_block, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(condition, p_nodes, p_deep);
+			_get_nodes_push(true_block, p_nodes, p_deep);
+			_get_nodes_push(false_block, p_nodes, p_deep);
 		}
 
 		IfNode() {
@@ -1113,10 +1118,10 @@ public:
 			return function && function->identifier;
 		}
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			ExpressionNode::get_nodes(p_nodes);
-			_get_nodes_push(function, p_nodes);
-			_get_nodes_push_iterable(captures, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(function, p_nodes, p_deep);
+			_get_nodes_push_iterable(captures, p_nodes, p_deep);
 		}
 
 		LambdaNode() {
@@ -1136,10 +1141,10 @@ public:
 		ExpressionNode *test = nullptr;
 		Vector<MatchBranchNode *> branches;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			Node::get_nodes(p_nodes);
-			_get_nodes_push(test, p_nodes);
-			_get_nodes_push_iterable(branches, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(test, p_nodes, p_deep);
+			_get_nodes_push_iterable(branches, p_nodes, p_deep);
 		}
 
 		MatchNode() {
@@ -1153,11 +1158,11 @@ public:
 		bool has_wildcard = false;
 		SuiteNode *guard_body = nullptr;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			Node::get_nodes(p_nodes);
-			_get_nodes_push_iterable(patterns, p_nodes);
-			_get_nodes_push(block, p_nodes);
-			_get_nodes_push(guard_body, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push_iterable(patterns, p_nodes, p_deep);
+			_get_nodes_push(block, p_nodes, p_deep);
+			_get_nodes_push(guard_body, p_nodes, p_deep);
 		}
 
 		MatchBranchNode() {
@@ -1208,28 +1213,28 @@ public:
 		bool has_bind(const StringName &p_name);
 		IdentifierNode *get_bind(const StringName &p_name);
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			Node::get_nodes(p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
 			for (const KeyValue<StringName, IdentifierNode *> &kv : binds) {
-				_get_nodes_push(kv.value, p_nodes);
+				_get_nodes_push(kv.value, p_nodes, p_deep);
 			}
 			switch (pattern_type) {
 				case PT_LITERAL: {
-					_get_nodes_push(literal, p_nodes);
+					_get_nodes_push(literal, p_nodes, p_deep);
 				} break;
 				case PT_EXPRESSION: {
-					_get_nodes_push(expression, p_nodes);
+					_get_nodes_push(expression, p_nodes, p_deep);
 				} break;
 				case PT_BIND: {
-					_get_nodes_push(bind, p_nodes);
+					_get_nodes_push(bind, p_nodes, p_deep);
 				} break;
 				case PT_ARRAY: {
-					_get_nodes_push_iterable(array, p_nodes);
+					_get_nodes_push_iterable(array, p_nodes, p_deep);
 				} break;
 				case PT_DICTIONARY: {
 					for (const Pair &pair : dictionary) {
-						_get_nodes_push(pair.key, p_nodes);
-						_get_nodes_push(pair.value_pattern, p_nodes);
+						_get_nodes_push(pair.key, p_nodes, p_deep);
+						_get_nodes_push(pair.value_pattern, p_nodes, p_deep);
 					}
 				} break;
 				default: {
@@ -1247,9 +1252,9 @@ public:
 		String resolved_path;
 		Ref<Resource> resource;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			ExpressionNode::get_nodes(p_nodes);
-			_get_nodes_push(path, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(path, p_nodes, p_deep);
 		}
 
 		PreloadNode() {
@@ -1261,9 +1266,9 @@ public:
 		ExpressionNode *return_value = nullptr;
 		bool void_return = false;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			Node::get_nodes(p_nodes);
-			_get_nodes_push(return_value, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(return_value, p_nodes, p_deep);
 		}
 
 		ReturnNode() {
@@ -1274,9 +1279,9 @@ public:
 	struct SelfNode : public ExpressionNode {
 		ClassNode *current_class = nullptr;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			ExpressionNode::get_nodes(p_nodes);
-			_get_nodes_push(current_class, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(current_class, p_nodes, p_deep);
 		}
 
 		SelfNode() {
@@ -1295,10 +1300,10 @@ public:
 
 		int usages = 0;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			Node::get_nodes(p_nodes);
-			_get_nodes_push(identifier, p_nodes);
-			_get_nodes_push_iterable(parameters, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(identifier, p_nodes, p_deep);
+			_get_nodes_push_iterable(parameters, p_nodes, p_deep);
 		}
 
 		SignalNode() {
@@ -1315,13 +1320,13 @@ public:
 
 		bool is_attribute = false;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			ExpressionNode::get_nodes(p_nodes);
-			_get_nodes_push(base, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(base, p_nodes, p_deep);
 			if (is_attribute) {
-				_get_nodes_push(attribute, p_nodes);
+				_get_nodes_push(attribute, p_nodes, p_deep);
 			} else {
-				_get_nodes_push(index, p_nodes);
+				_get_nodes_push(index, p_nodes, p_deep);
 			}
 		}
 
@@ -1449,12 +1454,12 @@ public:
 			locals.push_back(p_local);
 		}
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			Node::get_nodes(p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
 			for (const Local &local : locals) {
-				_get_nodes_push(local.get_node(), p_nodes);
+				_get_nodes_push(local.get_node(), p_nodes, p_deep);
 			}
-			_get_nodes_push_iterable(statements, p_nodes);
+			_get_nodes_push_iterable(statements, p_nodes, p_deep);
 		}
 
 		SuiteNode() {
@@ -1468,11 +1473,11 @@ public:
 		ExpressionNode *true_expr = nullptr;
 		ExpressionNode *false_expr = nullptr;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			ExpressionNode::get_nodes(p_nodes);
-			_get_nodes_push(condition, p_nodes);
-			_get_nodes_push(true_expr, p_nodes);
-			_get_nodes_push(false_expr, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(condition, p_nodes, p_deep);
+			_get_nodes_push(true_expr, p_nodes, p_deep);
+			_get_nodes_push(false_expr, p_nodes, p_deep);
 		}
 
 		TernaryOpNode() {
@@ -1488,10 +1493,10 @@ public:
 			return p_index >= 0 && p_index < container_types.size() ? container_types[p_index] : nullptr;
 		}
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			Node::get_nodes(p_nodes);
-			_get_nodes_push_iterable(type_chain, p_nodes);
-			_get_nodes_push_iterable(container_types, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push_iterable(type_chain, p_nodes, p_deep);
+			_get_nodes_push_iterable(container_types, p_nodes, p_deep);
 		}
 
 		TypeNode() {
@@ -1504,10 +1509,10 @@ public:
 		TypeNode *test_type = nullptr;
 		DataType test_datatype;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			ExpressionNode::get_nodes(p_nodes);
-			_get_nodes_push(operand, p_nodes);
-			_get_nodes_push(test_type, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(operand, p_nodes, p_deep);
+			_get_nodes_push(test_type, p_nodes, p_deep);
 		}
 
 		TypeTestNode() {
@@ -1527,9 +1532,9 @@ public:
 		Variant::Operator variant_op = Variant::OP_MAX;
 		ExpressionNode *operand = nullptr;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			ExpressionNode::get_nodes(p_nodes);
-			_get_nodes_push(operand, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(operand, p_nodes, p_deep);
 		}
 
 		UnaryOpNode() {
@@ -1594,11 +1599,11 @@ public:
 			}
 		}
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			AssignableNode::get_nodes(p_nodes);
-			_get_nodes_push(get_setter(), p_nodes);
-			_get_nodes_push(setter_parameter, p_nodes);
-			_get_nodes_push(get_getter(), p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			AssignableNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(get_setter(), p_nodes, p_deep);
+			_get_nodes_push(setter_parameter, p_nodes, p_deep);
+			_get_nodes_push(get_getter(), p_nodes, p_deep);
 		}
 
 		VariableNode() {
@@ -1610,14 +1615,84 @@ public:
 		ExpressionNode *condition = nullptr;
 		SuiteNode *loop = nullptr;
 
-		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes) const override {
-			Node::get_nodes(p_nodes);
-			_get_nodes_push(condition, p_nodes);
-			_get_nodes_push(loop, p_nodes);
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(condition, p_nodes, p_deep);
+			_get_nodes_push(loop, p_nodes, p_deep);
 		}
 
 		WhileNode() {
 			type = WHILE;
+		}
+	};
+
+	class NodeList {
+	protected:
+		LocalVector<GDScriptParser::Node *> nodes;
+		HashMap<GDScriptParser::Node *, LocalVector<GDScriptParser::Node *>> node_map;
+		HashMap<GDScriptParser::Node *, GDScriptParser::Node *> node_owners;
+
+		void _insert_entry(GDScriptParser::Node *p_node, GDScriptParser::Node *p_owner) {
+			if (p_node == p_owner) {
+				return;
+			}
+
+			if (nodes.has(p_node)) {
+				return;
+			}
+			if (node_map[p_owner].has(p_node)) {
+				return;
+			}
+			if (node_owners.has(p_node)) {
+				return;
+			}
+			nodes.push_back(p_node);
+			node_map[p_owner].push_back(p_node);
+			node_owners[p_node] = p_owner;
+
+			LocalVector<GDScriptParser::Node *> local_nodes;
+			p_node->get_nodes(local_nodes, false);
+			for (GDScriptParser::Node *node : local_nodes) {
+				_insert_entry(node, p_node);
+			}
+		}
+
+	public:
+		LocalVector<GDScriptParser::Node *>::Iterator begin() {
+			return nodes.begin();
+		}
+
+		LocalVector<GDScriptParser::Node *>::Iterator end() {
+			return nodes.end();
+		}
+
+		GDScriptParser::Node *get_head() {
+			return node_map[nullptr][0];
+		}
+
+		GDScriptParser::Node *get_owner(GDScriptParser::Node *p_node) {
+			return node_owners[p_node];
+		}
+
+		LocalVector<GDScriptParser::Node *> &get_children(GDScriptParser::Node *p_node) {
+			return node_map[p_node];
+		}
+
+		NodeList(GDScriptParser::Node *p_node) {
+			nodes.push_back(p_node);
+			node_map[nullptr].push_back(p_node);
+
+			LocalVector<GDScriptParser::Node *> nodes;
+			p_node->get_nodes(nodes, false);
+			for (GDScriptParser::Node *node : nodes) {
+				_insert_entry(node, p_node);
+			}
+		}
+
+		~NodeList() {
+			nodes.clear();
+			node_map.clear();
+			node_owners.clear();
 		}
 	};
 
