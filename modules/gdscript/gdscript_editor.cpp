@@ -4225,114 +4225,68 @@ static RefactorRenameSymbolDefinintionType _refactor_rename_symbol_get_expected_
 }
 
 static void _refactor_rename_symbol_add_match(const String &p_path, const GDScriptParser::Node *p_node, ScriptLanguage::RefactorRenameSymbolResult &r_result) {
-	r_result.add_match(p_path, p_node->start_line, p_node->start_column, p_node->end_line, p_node->end_column);
+	ScriptLanguage::RefactorRenameSymbolResult::Match match = {
+		p_node->start_line, p_node->start_column, p_node->end_line, p_node->end_column
+	};
+	r_result.add_match(p_path, match);
 }
 
-static Error _refactor_rename_symbol_match_from_class_loop_nodes(const LocalVector<GDScriptParser::Node *> &p_nodes, const String &p_symbol, const String &p_path, ScriptLanguage::RefactorRenameSymbolResult &r_result, RefactorRenameSymbolDefinintionType p_expected_definition_type, GDScriptParser::Node *p_source_node) {
-	auto process_identifier = [&p_path,
-									  &r_result,
-									  &p_expected_definition_type,
-									  &p_source_node](GDScriptParser::IdentifierNode *p_identifier_node)
-			-> bool {
-		const GDScriptParser::Node *target_source_node = p_identifier_node->get_source_node();
-		if (target_source_node == nullptr) {
-			RefactorRenameSymbolDefinintionType member_type = RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_UNDEFINED;
-			GDScriptParser::IdentifierNode *member_identifier;
-			bool source_node_is_identifier = false;
-			switch (p_source_node->type) {
-				case GDScriptParser::Node::IDENTIFIER: {
-					// Special case, we don't have to match the expected type.
-					source_node_is_identifier = true;
-					member_identifier = static_cast<GDScriptParser::IdentifierNode *>(p_source_node);
-				} break;
-				case GDScriptParser::Node::CLASS: {
-					member_type = RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_CLASS;
-					GDScriptParser::ClassNode *member_class = static_cast<GDScriptParser::ClassNode *>(p_source_node);
-					member_identifier = member_class->identifier;
-				} break;
-				case GDScriptParser::Node::ENUM: {
-					member_type = RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_ENUM;
-					GDScriptParser::EnumNode *member_enum = static_cast<GDScriptParser::EnumNode *>(p_source_node);
-
-					if (member_enum->identifier == p_identifier_node) {
-						_refactor_rename_symbol_add_match(p_path, p_identifier_node, r_result);
-						return true;
-					}
-
-					for (GDScriptParser::EnumNode::Value &enum_value : member_enum->values) {
-						if (enum_value.identifier == p_identifier_node) {
-							_refactor_rename_symbol_add_match(p_path, p_identifier_node, r_result);
-							return true;
-						}
-					}
-
-					return false;
-				} break;
-				case GDScriptParser::Node::FUNCTION: {
-					member_type = RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_FUNCTION;
-					GDScriptParser::FunctionNode *member_function = static_cast<GDScriptParser::FunctionNode *>(p_source_node);
-					member_identifier = member_function->identifier;
-				} break;
-				case GDScriptParser::Node::VARIABLE: {
-					member_type = RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_VARIABLE;
-					GDScriptParser::VariableNode *member_variable = static_cast<GDScriptParser::VariableNode *>(p_source_node);
-					member_identifier = member_variable->identifier;
-				} break;
-				case GDScriptParser::Node::CONSTANT: {
-					member_type = RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_CONSTANT;
-					GDScriptParser::ConstantNode *member_constant = static_cast<GDScriptParser::ConstantNode *>(p_source_node);
-					member_identifier = member_constant->identifier;
-				} break;
-				case GDScriptParser::Node::SIGNAL: {
-					member_type = RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_SIGNAL;
-					GDScriptParser::SignalNode *member_signal = static_cast<GDScriptParser::SignalNode *>(p_source_node);
-					member_identifier = member_signal->identifier;
-				} break;
-				default: {
-					return false;
-				}
-			}
-			if (!source_node_is_identifier && p_expected_definition_type != member_type) {
-				return false;
-			}
-			if (p_identifier_node->name != member_identifier->name) {
-				return false;
-			}
-		} else if (p_source_node != target_source_node) {
-			// We can't only compare pointers because the target_source_node can come from
-			// another parser.
-			if (p_source_node->type != target_source_node->type) {
-				return false;
-			}
-			if (p_source_node->get_datatype().script_path != target_source_node->get_datatype().script_path) {
-				return false;
-			}
-			if (p_source_node->start_line != target_source_node->start_line || p_source_node->start_column != target_source_node->start_column || p_source_node->end_line != target_source_node->end_line || p_source_node->end_column != target_source_node->end_column) {
-				return false;
-			}
-		}
-
-		_refactor_rename_symbol_add_match(p_path, p_identifier_node, r_result);
-		return true;
-	};
-
-	for (GDScriptParser::Node *node : p_nodes) {
+static Error _refactor_rename_symbol_match_from_class_loop_nodes(GDScriptParser::NodeList &p_node_list, const String &p_symbol, const String &p_path, ScriptLanguage::RefactorRenameSymbolResult &r_result, RefactorRenameSymbolDefinintionType p_expected_definition_type, GDScriptParser::Node *p_source_node) {
+	for (GDScriptParser::Node *node : p_node_list) {
 		switch (node->type) {
-			case GDScriptParser::Node::Type::VARIABLE: {
-				GDScriptParser::VariableNode *variable_node = static_cast<GDScriptParser::VariableNode *>(node);
-				if (variable_node->datatype_specifier == nullptr) {
-					continue;
-				}
-				for (GDScriptParser::IdentifierNode *type_chain_element : variable_node->datatype_specifier->type_chain) {
-					process_identifier(type_chain_element);
-				}
-			} break;
 			case GDScriptParser::Node::Type::IDENTIFIER: {
 				GDScriptParser::IdentifierNode *identifier_node = static_cast<GDScriptParser::IdentifierNode *>(node);
+				GDScriptParser::Node *identifier_node_source_node = identifier_node->get_source_node();
+
+				if (identifier_node_source_node == p_source_node) {
+					_refactor_rename_symbol_add_match(p_path, identifier_node, r_result);
+					continue;
+				}
+
+				GDScriptParser::Node *identifier_node_owner = p_node_list.get_owner(identifier_node);
 				if (identifier_node->name != p_symbol) {
 					break;
 				}
-				process_identifier(identifier_node);
+				switch (p_source_node->type) {
+					case GDScriptParser::Node::IDENTIFIER: {
+						GDScriptParser::IdentifierNode *source_node_identifier_node = static_cast<GDScriptParser::IdentifierNode *>(p_source_node);
+						if (identifier_node->name != source_node_identifier_node->name) {
+							continue;
+						}
+						if (ScriptServer::is_global_class(source_node_identifier_node->name)) {
+							_refactor_rename_symbol_add_match(p_path, identifier_node, r_result);
+							continue;
+						}
+						continue;
+					} break;
+					case GDScriptParser::Node::ENUM: {
+						GDScriptParser::EnumNode *source_node_enum_node = static_cast<GDScriptParser::EnumNode *>(p_source_node);
+						ERR_FAIL_COND_V_MSG(identifier_node_owner == nullptr, FAILED, "identifier node owner datatype is not of kind ENUM");
+						GDScriptParser::DataType identifier_node_owner_datatype = identifier_node_owner->get_datatype();
+						if (identifier_node_owner_datatype.class_type->fqcn == source_node_enum_node->get_datatype().class_type->fqcn) {
+							_refactor_rename_symbol_add_match(p_path, identifier_node, r_result);
+						}
+						continue;
+					} break;
+					case GDScriptParser::Node::VARIABLE: {
+						GDScriptParser::VariableNode *source_node_variable_node = static_cast<GDScriptParser::VariableNode *>(p_source_node);
+						ERR_FAIL_COND_V_MSG(identifier_node_owner == nullptr, FAILED, "identifier node owner datatype is not of kind ENUM");
+						GDScriptParser::DataType identifier_node_owner_datatype = identifier_node_owner->get_datatype();
+						if (identifier_node->name == identifier_node_owner_datatype.class_type->identifier->name) {
+							if (identifier_node_owner_datatype.class_type->fqcn == source_node_variable_node->get_datatype().class_type->fqcn) {
+								_refactor_rename_symbol_add_match(p_path, identifier_node, r_result);
+								continue;
+							}
+						} else if (identifier_node_owner == source_node_variable_node) {
+							_refactor_rename_symbol_add_match(p_path, identifier_node, r_result);
+							continue;
+						}
+						ERR_FAIL_V_MSG(FAILED, "failed to parse variable identifier");
+					} break;
+					default: {
+						// Do nothing.
+					}
+				}
 			} break;
 			default: {
 				// Do nothing.
@@ -4374,11 +4328,8 @@ static Error _refactor_rename_symbol_match_from_class_find_matching_nodes(GDScri
 	}
 
 	// As we found that the match comes from a class, let's find all the matches in that class.
-	LocalVector<GDScriptParser::Node *> nodes;
-	nodes.push_back(p_class_node);
-	p_class_node->get_nodes(nodes);
-
-	return _refactor_rename_symbol_match_from_class_loop_nodes(nodes, p_symbol, p_path, r_result, p_expected_definition_type, p_source_node);
+	GDScriptParser::NodeList list(p_class_node);
+	return _refactor_rename_symbol_match_from_class_loop_nodes(list, p_symbol, p_path, r_result, p_expected_definition_type, p_source_node);
 }
 
 // This function finds and match all instances of the symbol outside the class.
@@ -4426,6 +4377,22 @@ static Error _refactor_rename_symbol_match_from_class_find_matching_nodes_from_s
 		if (err != OK) {
 			continue;
 		}
+		err = analyzer.resolve_dependencies();
+		if (err != OK) {
+			continue;
+		}
+		err = analyzer.resolve_inheritance();
+		if (err != OK) {
+			continue;
+		}
+		err = analyzer.resolve_interface();
+		if (err != OK) {
+			continue;
+		}
+		err = analyzer.resolve_body();
+		if (err != OK) {
+			continue;
+		}
 
 		if (script_path == p_class_path) {
 			// We are currently in the source of the refactored symbol.
@@ -4439,12 +4406,8 @@ static Error _refactor_rename_symbol_match_from_class_find_matching_nodes_from_s
 			continue;
 		}
 
-		const GDScriptParser::ClassNode *parser_head = parser.get_head();
-		LocalVector<GDScriptParser::Node *> nodes;
-		nodes.push_back(const_cast<GDScriptParser::ClassNode *>(parser_head));
-		parser_head->get_nodes(nodes);
-
-		_refactor_rename_symbol_match_from_class_loop_nodes(nodes, p_symbol, script_path, r_result, p_expected_definition_type, p_source_node);
+		GDScriptParser::NodeList node_list(const_cast<GDScriptParser::ClassNode *>(parser.get_head()));
+		_refactor_rename_symbol_match_from_class_loop_nodes(node_list, p_symbol, script_path, r_result, p_expected_definition_type, p_source_node);
 	}
 
 	return OK;
@@ -4553,7 +4516,6 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 				if (ClassDB::has_signal(class_name, p_symbol, true)) {
 					OUTSIDE_REFACTOR(REFACTOR_RENAME_SYMBOL_RESULT_CLASS_SIGNAL);
 				}
-
 				List<StringName> enums;
 				ClassDB::get_enum_list(class_name, &enums);
 				for (const StringName &E : enums) {
@@ -4735,6 +4697,9 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 
 	GDScriptAnalyzer analyzer(&parser);
 	analyzer.analyze();
+	analyzer.resolve_inheritance();
+	analyzer.resolve_interface();
+	analyzer.resolve_body();
 
 	if (context.current_class && context.current_class->extends.size() > 0) {
 		StringName class_name = context.current_class->extends[0]->name;
