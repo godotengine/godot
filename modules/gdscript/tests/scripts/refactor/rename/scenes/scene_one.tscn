@@ -13,7 +13,9 @@ func test() -> ClassA:
 	const NoNameB = preload(\"res://scripts/noname_b.gd\")
 	print(\"NoNameB name is \" + NoNameB.NONAME_B_NAME)
 	class_b_instance
-	return ClassA.new()
+	var class_a_instance: = ClassA.new()
+	class_a_instance.signal_of_a.emit()
+	return class_a_instance
 "
 
 [sub_resource type="GDScript" id="GDScript_11pc1"]
