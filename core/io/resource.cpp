@@ -629,6 +629,10 @@ uint32_t Resource::hash_edited_version_for_preview() const {
 	return hash;
 }
 
+bool Resource::is_valid_property_value(const String &p_path, const Variant &p_value, String &p_error_message) const {
+	return true;
+}
+
 #endif
 
 void Resource::set_local_to_scene(bool p_enable) {
