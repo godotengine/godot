@@ -13,10 +13,12 @@
 			<return type="void" />
 			<param index="0" name="filter" type="String" />
 			<param index="1" name="description" type="String" default="&quot;&quot;" />
+			<param index="2" name="mime_type" type="String" default="&quot;&quot;" />
 			<description>
-				Adds a comma-separated file name [param filter] option to the [FileDialog] with an optional [param description], which restricts what files can be picked.
+				Adds a comma-separated file extension [param filter] and comma-separated MIME type [param mime_type] option to the [FileDialog] with an optional [param description], which restricts what files can be picked.
 				A [param filter] should be of the form [code]"filename.extension"[/code], where filename and extension can be [code]*[/code] to match any string. Filters starting with [code].[/code] (i.e. empty filenames) are not allowed.
-				For example, a [param filter] of [code]"*.png, *.jpg"[/code] and a [param description] of [code]"Images"[/code] results in filter text "Images (*.png, *.jpg)".
+				For example, a [param filter] of [code]"*.png, *.jpg"[/code], a [param mime_type] of [code]image/png, image/jpeg[/code], and a [param description] of [code]"Images"[/code] results in filter text "Images (*.png, *.jpg)".
+				[b]Note:[/b] Embedded file dialogs and Windows file dialogs support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
 			</description>
 		</method>
 		<method name="add_option">
@@ -232,7 +234,7 @@
 		</member>
 		<member name="filters" type="PackedStringArray" setter="set_filters" getter="get_filters" default="PackedStringArray()">
 			The available file type filters. Each filter string in the array should be formatted like this: [code]*.png,*.jpg,*.jpeg;Image Files;image/png,image/jpeg[/code]. The description text of the filter is optional and can be omitted. Both file extensions and MIME type should be always set.
-			[b]Note:[/b] Embedded file dialog and Windows file dialog support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
+			[b]Note:[/b] Embedded file dialogs and Windows file dialogs support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
 		</member>
 		<member name="folder_creation_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
 			If [code]true[/code], shows the button for creating new directories (when using [constant FILE_MODE_OPEN_DIR], [constant FILE_MODE_OPEN_ANY], or [constant FILE_MODE_SAVE_FILE]), and the context menu will have the "New Folder..." option.
