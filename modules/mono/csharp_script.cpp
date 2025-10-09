@@ -1611,6 +1611,24 @@ bool CSharpInstance::property_can_revert(const StringName &p_name) const {
 	return (bool)ret;
 }
 
+bool CSharpInstance::is_valid_property_value(const StringName &p_name, const Variant &p_value, Variant &p_error_message) const {
+	ERR_FAIL_COND_V(script.is_null(), false);
+
+	Variant name_arg = p_name;
+	const Variant *args[3] = { &name_arg, &p_value, &p_error_message };
+
+	Variant ret;
+	Callable::CallError call_error;
+	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
+			gchandle.get_intptr(), &SNAME("_is_valid_property_value"), args, 3, &call_error, &ret);
+
+	if (call_error.error != Callable::CallError::CALL_OK) {
+		return false;
+	}
+
+	return (bool)ret;
+}
+
 void CSharpInstance::validate_property(PropertyInfo &p_property) const {
 	ERR_FAIL_COND(script.is_null());
 

@@ -792,6 +792,12 @@ public:
 		}
 		return false;
 	}
+	virtual bool is_valid_property_value(const StringName &p_name, const Variant &p_value, Variant &r_error_message) const override {
+		if (native_info->is_valid_property_value_func) {
+			return native_info->is_valid_property_value_func(instance, (GDExtensionConstStringNamePtr)&p_name, (GDExtensionConstVariantPtr)&p_value, (GDExtensionVariantPtr)&r_error_message);
+		}
+		return false;
+	}
 
 	virtual Object *get_owner() override {
 		if (native_info->get_owner_func) {

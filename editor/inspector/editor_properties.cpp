@@ -183,6 +183,10 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 		text->set_tooltip_text(get_tooltip_string(text->get_text()));
 	}
 
+#ifdef TOOLS_ENABLED
+	mark_unsaved();
+#endif
+
 	if (string_name) {
 		emit_changed(get_edited_property(), StringName(p_string));
 	} else {
@@ -191,6 +195,11 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 }
 
 void EditorPropertyText::update_property() {
+#ifdef TOOLS_ENABLED
+	if (is_unsaved()) {
+		return;
+	}
+#endif
 	String s = get_edited_property_value();
 	updating = true;
 	if (text->get_text() != s) {

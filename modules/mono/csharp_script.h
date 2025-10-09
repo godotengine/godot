@@ -350,6 +350,7 @@ public:
 
 	bool property_can_revert(const StringName &p_name) const override;
 	bool property_get_revert(const StringName &p_name, Variant &r_ret) const override;
+	bool is_valid_property_value(const StringName &p_name, const Variant &p_value, Variant &p_error_message) const override;
 
 	void get_method_list(List<MethodInfo> *p_list) const override;
 	bool has_method(const StringName &p_method) const override;

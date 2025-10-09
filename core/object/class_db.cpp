@@ -157,6 +157,10 @@ public:
 		return false;
 	}
 
+	static GDExtensionBool placeholder_instance_is_valid_property_value(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_path, GDExtensionVariantPtr p_value, GDExtensionBool *r_is_valid, GDExtensionVariantPtr r_ret) {
+		return false;
+	}
+
 	static GDExtensionBool placeholder_instance_validate_property(GDExtensionClassInstancePtr p_instance, GDExtensionPropertyInfo *p_property) {
 		return false;
 	}

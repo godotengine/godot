@@ -390,6 +390,7 @@ public:
 
 	virtual bool property_can_revert(const StringName &p_name) const;
 	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const;
+	virtual bool is_valid_property_value(const StringName &p_path, const Variant &p_value, Variant &_ret) const;
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
@@ -573,6 +574,7 @@ public:
 		StringName _validate_property;
 		StringName _property_can_revert;
 		StringName _property_get_revert;
+		StringName _is_valid_property_value;
 		StringName _script_source;
 
 	} strings;

@@ -2104,6 +2104,30 @@ bool Object::is_edited() const {
 uint32_t Object::get_edited_version() const {
 	return _edited_version;
 }
+
+bool Object::is_valid_property_value(const StringName &p_path, const Variant &p_value, String &p_error_message) const {
+	Variant ret;
+	if (get_script_instance()) {
+		bool is_script_valid = get_script_instance()->is_valid_property_value(p_path, p_value, ret);
+		if (is_script_valid) {
+			p_error_message = ret;
+			return ret == String();
+		}
+	}
+	if (_get_extension() && _get_extension()->is_valid_property_value) {
+		GDExtensionBool is_valid = _get_extension()->is_valid_property_value(_get_extension_instance(),
+				(GDExtensionConstStringNamePtr)&p_path, p_value, (GDExtensionVariantPtr)&ret);
+		if (is_valid) {
+			p_error_message = ret;
+			return ret == String();
+		}
+	}
+	return _is_valid_property_value(p_path, p_value, p_error_message);
+}
+
+bool Object::_is_valid_property_value(const StringName &p_path, const Variant &p_value, String &p_error_message) const {
+	return true;
+}
 #endif
 
 const GDType &Object::get_gdtype() const {

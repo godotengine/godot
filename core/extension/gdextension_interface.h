@@ -261,6 +261,7 @@ typedef void (*GDExtensionClassFreePropertyList)(GDExtensionClassInstancePtr p_i
 typedef void (*GDExtensionClassFreePropertyList2)(GDExtensionClassInstancePtr p_instance, const GDExtensionPropertyInfo *p_list, uint32_t p_count);
 typedef GDExtensionBool (*GDExtensionClassPropertyCanRevert)(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name);
 typedef GDExtensionBool (*GDExtensionClassPropertyGetRevert)(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret);
+typedef GDExtensionBool (*GDExtensionClassIsValidPropertyValue)(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_path, GDExtensionConstVariantPtr p_value, GDExtensionVariantPtr r_ret);
 typedef GDExtensionBool (*GDExtensionClassValidateProperty)(GDExtensionClassInstancePtr p_instance, GDExtensionPropertyInfo *p_property);
 typedef void (*GDExtensionClassNotification)(GDExtensionClassInstancePtr p_instance, int32_t p_what); // Deprecated. Use GDExtensionClassNotification2 instead.
 typedef void (*GDExtensionClassNotification2)(GDExtensionClassInstancePtr p_instance, int32_t p_what, GDExtensionBool p_reversed);
@@ -377,6 +378,7 @@ typedef struct {
 	GDExtensionClassFreePropertyList2 free_property_list_func;
 	GDExtensionClassPropertyCanRevert property_can_revert_func;
 	GDExtensionClassPropertyGetRevert property_get_revert_func;
+	GDExtensionClassIsValidPropertyValue is_valid_property_value_func;
 	GDExtensionClassValidateProperty validate_property_func;
 	GDExtensionClassNotification2 notification_func;
 	GDExtensionClassToString to_string_func;
@@ -571,6 +573,7 @@ typedef GDExtensionBool (*GDExtensionScriptInstanceValidateProperty)(GDExtension
 
 typedef GDExtensionBool (*GDExtensionScriptInstancePropertyCanRevert)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name);
 typedef GDExtensionBool (*GDExtensionScriptInstancePropertyGetRevert)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret);
+typedef GDExtensionBool (*GDExtensionScriptInstanceIsValidPropertyValue)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionConstVariantPtr p_value, GDExtensionVariantPtr r_ret);
 
 typedef GDExtensionObjectPtr (*GDExtensionScriptInstanceGetOwner)(GDExtensionScriptInstanceDataPtr p_instance);
 typedef void (*GDExtensionScriptInstancePropertyStateAdd)(GDExtensionConstStringNamePtr p_name, GDExtensionConstVariantPtr p_value, void *p_userdata);
@@ -692,6 +695,7 @@ typedef struct {
 
 	GDExtensionScriptInstancePropertyCanRevert property_can_revert_func;
 	GDExtensionScriptInstancePropertyGetRevert property_get_revert_func;
+	GDExtensionScriptInstanceIsValidPropertyValue is_valid_property_value_func;
 
 	GDExtensionScriptInstanceGetOwner get_owner_func;
 	GDExtensionScriptInstanceGetPropertyState get_property_state_func;
