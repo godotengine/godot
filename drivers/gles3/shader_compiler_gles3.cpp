@@ -426,6 +426,14 @@ String ShaderCompilerGLES3::_dump_node_code(const SL::Node *p_node, int p_level,
 				}
 			}
 
+			int max_spheres = CLAMP((int)GLOBAL_GET("rendering/quality/blob_shadows/max_spheres"), 0, 256);
+			String max_spheres_string = "#define MAX_SPHERE_CASTERS " + itos(max_spheres) + "\n";
+			r_gen_code.defines.push_back(max_spheres_string.utf8());
+
+			int max_capsules = CLAMP((int)GLOBAL_GET("rendering/quality/blob_shadows/max_capsules"), 0, 256);
+			String max_capsules_string = "#define MAX_CAPSULE_CASTERS " + itos(max_capsules) + "\n";
+			r_gen_code.defines.push_back(max_capsules_string.utf8());
+
 			// structs
 
 			for (int i = 0; i < pnode->vstructs.size(); i++) {
@@ -1290,6 +1298,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].render_mode_defines["specular_toon"] = "#define SPECULAR_TOON\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["specular_disabled"] = "#define SPECULAR_DISABLED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["shadows_disabled"] = "#define SHADOWS_DISABLED\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["blob_shadows_disabled"] = "#define BLOB_SHADOWS_DISABLED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["ambient_light_disabled"] = "#define AMBIENT_LIGHT_DISABLED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["shadow_to_opacity"] = "#define USE_SHADOW_TO_OPACITY\n";
 

@@ -42,6 +42,7 @@
 
 RID VisualServerScene::camera_create() {
 	Camera *camera = memnew(Camera);
+	_blob_shadows.request_focus(camera->blob_focus_handle);
 	return camera_owner.make_rid(camera);
 }
 
@@ -71,6 +72,13 @@ void VisualServerScene::camera_set_frustum(RID p_camera, float p_size, Vector2 p
 	camera->offset = p_offset;
 	camera->znear = p_z_near;
 	camera->zfar = p_z_far;
+}
+
+void VisualServerScene::camera_set_blob_focus_position(RID p_camera, const Vector3 &p_pos) {
+	Camera *camera = camera_owner.get(p_camera);
+	ERR_FAIL_COND(!camera);
+
+	camera->blob_focus_pos = p_pos;
 }
 
 void VisualServerScene::camera_set_transform(RID p_camera, const Transform &p_transform) {
@@ -618,6 +626,7 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 				if (instance->base_type == VS::INSTANCE_MESH) {
 					instance->blend_values.resize(VSG::storage->mesh_get_blend_shape_count(p_base));
 				}
+
 			} break;
 			case VS::INSTANCE_REFLECTION_PROBE: {
 				InstanceReflectionProbeData *reflection_probe = memnew(InstanceReflectionProbeData);
@@ -1075,6 +1084,158 @@ bool VisualServerScene::_instance_get_transformed_aabb(RID p_instance, AABB &r_a
 	r_aabb = instance->transformed_aabb;
 
 	return true;
+}
+
+RID VisualServerScene::blob_light_create() {
+	BlobLight *blob_light = memnew(BlobLight);
+	ERR_FAIL_NULL_V(blob_light, RID());
+	RID blob_light_rid = blob_light_owner.make_rid(blob_light);
+
+	_blob_shadows.request_light(blob_light->handle);
+	return blob_light_rid;
+}
+
+void VisualServerScene::blob_light_update(RID p_blob_light, const Transform &p_global_transform) {
+	BlobLight *blob_light = blob_light_owner.getornull(p_blob_light);
+	ERR_FAIL_NULL(blob_light);
+	ERR_FAIL_COND(blob_light->handle == 0);
+	VisualServerBlobShadows::Light &blight = _blob_shadows.get_light(blob_light->handle);
+
+	blight.pos = p_global_transform.origin;
+	blight.direction = -p_global_transform.basis.get_axis(2);
+	blight.direction.normalize();
+
+	_blob_shadows.make_light_dirty(blight);
+}
+
+void VisualServerScene::blob_light_set_light_param(RID p_blob_light, VisualServer::LightParam p_param, real_t p_value) {
+	// This is our opportunity to intercept some of the more usual light parameters,
+	// if we can use them for blob shadows.
+	BlobLight *blob_light = blob_light_owner.getornull(p_blob_light);
+	ERR_FAIL_NULL(blob_light);
+	ERR_FAIL_COND(!blob_light->handle);
+
+	VisualServerBlobShadows::Light &blight = _blob_shadows.get_light(blob_light->handle);
+
+	switch (p_param) {
+		case VisualServer::LIGHT_PARAM_SPOT_ANGLE: {
+			blight.set_spot_degrees(p_value);
+		} break;
+		case VisualServer::LIGHT_PARAM_ENERGY: {
+			blight.energy = p_value;
+			blight.calculate_energy_intensity();
+		} break;
+		default:
+			break;
+	}
+
+	_blob_shadows.make_light_dirty(blight);
+}
+
+void VisualServerScene::blob_light_set_param(RID p_blob_light, VisualServer::LightBlobShadowParam p_param, real_t p_value) {
+	BlobLight *blob_light = blob_light_owner.getornull(p_blob_light);
+	ERR_FAIL_NULL(blob_light);
+	ERR_FAIL_COND(!blob_light->handle);
+
+	VisualServerBlobShadows::Light &blight = _blob_shadows.get_light(blob_light->handle);
+
+	switch (p_param) {
+		case VisualServer::LIGHT_BLOB_SHADOW_PARAM_RANGE_HARDNESS: {
+			blob_light->range_hardness = p_value;
+		} break;
+		case VisualServer::LIGHT_BLOB_SHADOW_PARAM_RANGE_MAX: {
+			blob_light->range_max = p_value;
+		} break;
+		case VisualServer::LIGHT_BLOB_SHADOW_PARAM_INTENSITY: {
+			blight.intensity = p_value;
+			blight.calculate_energy_intensity();
+		} break;
+		default:
+			break;
+	}
+
+	blight.range_max = blob_light->range_max;
+	blight.range_mid = blight.range_max * blob_light->range_hardness;
+
+	// Enforce positive non-zero
+	blight.range_mid_max = blight.range_max - blight.range_mid;
+	blight.range_mid_max = MAX(blight.range_mid_max, (real_t)0.00001f);
+
+	_blob_shadows.make_light_dirty(blight);
+}
+
+void VisualServerScene::blob_light_set_visible(RID p_blob_light, bool p_visible) {
+	BlobLight *blob_light = blob_light_owner.getornull(p_blob_light);
+	ERR_FAIL_NULL(blob_light);
+	ERR_FAIL_COND(blob_light->handle == 0);
+	_blob_shadows.set_light_visible(blob_light->handle, p_visible);
+}
+
+void VisualServerScene::blob_light_set_type(RID p_blob_light, VisualServer::LightType p_type) {
+	BlobLight *blob_light = blob_light_owner.getornull(p_blob_light);
+	ERR_FAIL_NULL(blob_light);
+	ERR_FAIL_COND(blob_light->handle == 0);
+	VisualServerBlobShadows::Light &blight = _blob_shadows.get_light(blob_light->handle);
+
+	switch (p_type) {
+		case VS::LIGHT_DIRECTIONAL: {
+			blight.type = VisualServerBlobShadows::DIRECTIONAL;
+		} break;
+		case VS::LIGHT_SPOT: {
+			blight.type = VisualServerBlobShadows::SPOT;
+		} break;
+		default: {
+			blight.type = VisualServerBlobShadows::OMNI;
+		} break;
+	}
+}
+
+RID VisualServerScene::blob_shadow_create() {
+	BlobShadow *blob = memnew(BlobShadow);
+	ERR_FAIL_NULL_V(blob, RID());
+	RID blob_rid = blob_shadow_owner.make_rid(blob);
+
+	_blob_shadows.request_blob(blob->handle);
+	return blob_rid;
+}
+
+void VisualServerScene::blob_shadow_update(RID p_blob, const Vector3 &p_occluder_pos, real_t p_occluder_radius) {
+	BlobShadow *blob = blob_shadow_owner.getornull(p_blob);
+	ERR_FAIL_NULL(blob);
+	ERR_FAIL_COND(blob->handle == 0);
+	VisualServerBlobShadows::Blob &caster = _blob_shadows.get_blob(blob->handle);
+
+	// Shader expects radius squared, cheaper to do on CPU than in fragment shader.
+	caster.pos = p_occluder_pos;
+	caster.pos_center = p_occluder_pos;
+	caster.size = p_occluder_radius * p_occluder_radius;
+	_blob_shadows.make_blob_dirty(caster);
+}
+
+RID VisualServerScene::capsule_shadow_create() {
+	CapsuleShadow *capsule = memnew(CapsuleShadow);
+	ERR_FAIL_NULL_V(capsule, RID());
+	RID capsule_rid = capsule_shadow_owner.make_rid(capsule);
+
+	_blob_shadows.request_capsule(capsule->handle);
+	return capsule_rid;
+}
+
+void VisualServerScene::capsule_shadow_update(RID p_blob, const Vector3 &p_occluder_a_pos, real_t p_occluder_a_radius, const Vector3 &p_occluder_b_pos, real_t p_occluder_b_radius) {
+	CapsuleShadow *capsule = capsule_shadow_owner.getornull(p_blob);
+	ERR_FAIL_NULL(capsule);
+	ERR_FAIL_COND(capsule->handle == 0);
+	VisualServerBlobShadows::Capsule &caster = _blob_shadows.get_capsule(capsule->handle);
+
+	// Shader expects radius squared, cheaper to do on CPU than in fragment shader.
+	caster.pos = p_occluder_a_pos;
+	caster.size = p_occluder_a_radius * p_occluder_a_radius;
+	caster.pos_b = p_occluder_b_pos;
+	caster.size_b = p_occluder_b_radius * p_occluder_b_radius;
+
+	caster.pos_center = (caster.pos + caster.pos_b) * (real_t)0.5;
+
+	_blob_shadows.make_capsule_dirty(caster);
 }
 
 // the portal has to be associated with a scenario, this is assumed to be
@@ -2585,6 +2746,8 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_view
 		} break;
 	}
 
+	_blob_shadows.render_set_focus_handle(camera->blob_focus_handle, camera->blob_focus_pos, camera->transform, camera_matrix);
+
 	_prepare_scene(camera->transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID(), camera->previous_room_id_hint);
 	_render_scene(camera->transform, camera_matrix, 0, ortho, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
 #endif
@@ -2604,6 +2767,8 @@ void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInter
 	// Instead we take our origin point and have our ar/vr interface add fresh tracking data! Whoohoo!
 	Transform world_origin = ARVRServer::get_singleton()->get_world_origin();
 	Transform cam_transform = p_interface->get_transform_for_eye(p_eye, world_origin);
+
+	_blob_shadows.render_set_focus_handle(camera->blob_focus_handle, camera->blob_focus_pos, cam_transform, camera_matrix);
 
 	// For stereo render we only prepare for our left eye and then reuse the outcome for our right eye
 	if (p_eye == ARVRInterface::EYE_LEFT) {
@@ -4086,6 +4251,14 @@ void VisualServerScene::render_probes() {
 	}
 }
 
+uint32_t VisualServerScene::blob_shadows_fill_background_uniforms(const AABB &p_aabb, float *r_casters, float *r_lights, uint32_t p_max_casters) {
+	return _blob_shadows.fill_background_uniforms_blobs(p_aabb, r_casters, r_lights, p_max_casters);
+}
+
+uint32_t VisualServerScene::capsule_shadows_fill_background_uniforms(const AABB &p_aabb, float *r_casters, float *r_lights, uint32_t p_max_casters) {
+	return _blob_shadows.fill_background_uniforms_capsules(p_aabb, r_casters, r_lights, p_max_casters);
+}
+
 void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 	if (p_instance->update_aabb) {
 		_update_instance_aabb(p_instance);
@@ -4263,11 +4436,17 @@ void VisualServerScene::update_dirty_instances() {
 	if (scenario) {
 		scenario->sps->update();
 	}
+
+	_blob_shadows.update();
 }
 
 bool VisualServerScene::free(RID p_rid) {
 	if (camera_owner.owns(p_rid)) {
 		Camera *camera = camera_owner.get(p_rid);
+
+		_blob_shadows.delete_focus(camera->blob_focus_handle);
+		camera->blob_focus_handle = 0;
+
 		camera_owner.free(p_rid);
 		memdelete(camera);
 	} else if (scenario_owner.owns(p_rid)) {
@@ -4325,6 +4504,27 @@ bool VisualServerScene::free(RID p_rid) {
 		occ_res->destroy(_portal_resources);
 		occluder_resource_owner.free(p_rid);
 		memdelete(occ_res);
+	} else if (capsule_shadow_owner.owns(p_rid)) {
+		CapsuleShadow *capsule = capsule_shadow_owner.get(p_rid);
+		capsule_shadow_owner.free(p_rid);
+		if (capsule->handle) {
+			_blob_shadows.delete_capsule(capsule->handle);
+		}
+		memdelete(capsule);
+	} else if (blob_shadow_owner.owns(p_rid)) {
+		BlobShadow *blob = blob_shadow_owner.get(p_rid);
+		blob_shadow_owner.free(p_rid);
+		if (blob->handle) {
+			_blob_shadows.delete_blob(blob->handle);
+		}
+		memdelete(blob);
+	} else if (blob_light_owner.owns(p_rid)) {
+		BlobLight *blob_light = blob_light_owner.get(p_rid);
+		blob_light_owner.free(p_rid);
+		if (blob_light->handle) {
+			_blob_shadows.delete_light(blob_light->handle);
+		}
+		memdelete(blob_light);
 	} else {
 		return false;
 	}

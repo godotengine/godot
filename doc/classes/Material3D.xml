@@ -186,6 +186,9 @@
 		<member name="flags_disable_ambient_light" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the object receives no ambient light.
 		</member>
+		<member name="flags_do_not_receive_blob_shadows" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the object receives no blob shadow that would otherwise be cast onto it.
+		</member>
 		<member name="flags_do_not_receive_shadows" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the object receives no shadow that would otherwise be cast onto it.
 		</member>
@@ -566,6 +569,9 @@
 		<constant name="FLAG_DONT_RECEIVE_SHADOWS" value="15" enum="Flags">
 			Disables receiving shadows from other objects.
 		</constant>
+		<constant name="FLAG_DONT_RECEIVE_BLOB_SHADOWS" value="20" enum="Flags">
+			Disables receiving blob shadows.
+		</constant>
 		<constant name="FLAG_DISABLE_AMBIENT_LIGHT" value="17" enum="Flags">
 			Disables receiving ambient light.
 		</constant>
@@ -578,7 +584,7 @@
 		<constant name="FLAG_ALBEDO_TEXTURE_SDF" value="19" enum="Flags">
 			Enables signed distance field rendering shader.
 		</constant>
-		<constant name="FLAG_MAX" value="20" enum="Flags">
+		<constant name="FLAG_MAX" value="21" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">

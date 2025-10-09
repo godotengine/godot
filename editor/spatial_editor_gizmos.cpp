@@ -34,6 +34,7 @@
 #include "core/math/geometry.h"
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/baked_lightmap.h"
+#include "scene/3d/blob_shadow.h"
 #include "scene/3d/collision_polygon.h"
 #include "scene/3d/collision_shape.h"
 #include "scene/3d/cpu_particles.h"
@@ -5531,4 +5532,125 @@ OccluderSpatialGizmo::OccluderSpatialGizmo(Occluder *p_occluder) {
 	_color_poly_front = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/occluder_polygon_front", Color(1.0, 0.25, 0.8, 0.3));
 	_color_poly_back = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/occluder_polygon_back", Color(0.85, 0.1, 1.0, 0.3));
 	_color_hole = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/occluder_hole", Color(0.0, 1.0, 1.0, 0.3));
+}
+
+////
+
+BlobShadowSpatialGizmoPlugin::BlobShadowSpatialGizmoPlugin() {
+	Color col = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/blob_shadow", Color(1.0, 0.5, 1.0, 1.0));
+
+	create_material("lines_billboard", col, true, true, true);
+	create_material("lines", col, false, true, true);
+	create_handle_material("handles_billboard", true);
+}
+
+bool BlobShadowSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
+	return Object::cast_to<BlobShadow>(p_spatial) != nullptr;
+}
+
+String BlobShadowSpatialGizmoPlugin::get_name() const {
+	return "BlobShadow";
+}
+
+int BlobShadowSpatialGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+void BlobShadowSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
+	p_gizmo->clear();
+
+	const Ref<Material> lines_billboard_material = get_material("lines_billboard", p_gizmo);
+
+	BlobShadow *bs = Object::cast_to<BlobShadow>(p_gizmo->get_spatial_node());
+	const float r = bs->get_radius();
+	Vector<Vector3> points_billboard;
+
+	for (int i = 0; i < 120; i++) {
+		// Create a circle
+		const float ra = Math::deg2rad((float)(i * 3));
+		const float rb = Math::deg2rad((float)((i + 1) * 3));
+		const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
+		const Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
+
+		// Draw a billboarded circle
+		points_billboard.push_back(Vector3(a.x, a.y, 0));
+		points_billboard.push_back(Vector3(b.x, b.y, 0));
+	}
+
+	if (bs->get_shadow_type() == BlobShadow::BLOB_SHADOW_CAPSULE) {
+		const Ref<Material> lines_material = get_material("lines", p_gizmo);
+		Vector<Vector3> points;
+
+		const float r2 = bs->get_radius(1);
+
+		Vector3 offset = bs->get_offset();
+
+		const int deg_change = 4;
+
+		for (int i = 0; i <= 360; i += deg_change) {
+			real_t ra = Math::deg2rad((real_t)i);
+			real_t rb = Math::deg2rad((real_t)i + deg_change);
+			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r2;
+			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r2;
+
+			points.push_back(offset + Vector3(a.x, 0, a.y));
+			points.push_back(offset + Vector3(b.x, 0, b.y));
+			points.push_back(offset + Vector3(0, a.x, a.y));
+			points.push_back(offset + Vector3(0, b.x, b.y));
+			points.push_back(offset + Vector3(a.x, a.y, 0));
+			points.push_back(offset + Vector3(b.x, b.y, 0));
+		}
+
+		p_gizmo->add_lines(points, lines_material, false);
+	}
+
+	p_gizmo->add_lines(points_billboard, lines_billboard_material, true);
+
+	Vector<Vector3> handles;
+	handles.push_back(Vector3(r, 0, 0));
+	p_gizmo->add_handles(handles, get_material("handles_billboard"), true);
+}
+
+String BlobShadowSpatialGizmoPlugin::get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const {
+	return "Radius";
+}
+
+Variant BlobShadowSpatialGizmoPlugin::get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const {
+	BlobShadow *bs = Object::cast_to<BlobShadow>(p_gizmo->get_spatial_node());
+	return bs->get_radius();
+}
+
+void BlobShadowSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_idx, Camera *p_camera, const Point2 &p_point) {
+	BlobShadow *bs = Object::cast_to<BlobShadow>(p_gizmo->get_spatial_node());
+	Transform gt = bs->get_global_transform();
+
+	Vector3 ray_from = p_camera->project_ray_origin(p_point);
+	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
+
+	if (p_idx == 0) {
+		Plane cp = Plane(gt.origin, p_camera->get_transform().basis.get_axis(2));
+
+		Vector3 inters;
+		if (cp.intersects_ray(ray_from, ray_dir, &inters)) {
+			float r = inters.distance_to(gt.origin);
+			if (SpatialEditor::get_singleton()->is_snap_enabled()) {
+				r = Math::stepify(r, SpatialEditor::get_singleton()->get_translate_snap());
+			}
+
+			bs->set_radius(0, r);
+		}
+	}
+}
+
+void BlobShadowSpatialGizmoPlugin::commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+	BlobShadow *bs = Object::cast_to<BlobShadow>(p_gizmo->get_spatial_node());
+	if (p_cancel) {
+		bs->set_radius(0, p_restore);
+	} else {
+		UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
+		ur->create_action(TTR("Change BlobShadow Radius"));
+		ur->add_do_method(bs, "set_radius", 0, bs->get_radius());
+		ur->add_undo_method(bs, "set_radius", 0, p_restore);
+		ur->commit_action();
+	}
 }

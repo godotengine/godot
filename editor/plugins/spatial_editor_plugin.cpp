@@ -6933,6 +6933,7 @@ void SpatialEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<NavigationMeshSpatialGizmoPlugin>(memnew(NavigationMeshSpatialGizmoPlugin)));
 	add_gizmo_plugin(Ref<JointSpatialGizmoPlugin>(memnew(JointSpatialGizmoPlugin)));
 	add_gizmo_plugin(Ref<PhysicalBoneSpatialGizmoPlugin>(memnew(PhysicalBoneSpatialGizmoPlugin)));
+	add_gizmo_plugin(Ref<BlobShadowSpatialGizmoPlugin>(memnew(BlobShadowSpatialGizmoPlugin)));
 }
 
 void SpatialEditor::_bind_methods() {

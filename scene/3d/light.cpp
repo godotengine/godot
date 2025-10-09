@@ -33,6 +33,7 @@
 #include "core/engine.h"
 #include "core/project_settings.h"
 #include "scene/resources/surface_tool.h"
+#include "servers/visual/visual_server_blob_shadows.h"
 
 void Light::set_param(Param p_param, float p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
@@ -49,6 +50,25 @@ void Light::set_param(Param p_param, float p_value) {
 		} else if (p_param == PARAM_RANGE) {
 			_change_notify("omni_range");
 			_change_notify("spot_range");
+		}
+	}
+
+	// Blob shadows are also interested in some of the regular parameters.
+	if (blob_light.is_valid()) {
+		switch (p_param) {
+			case PARAM_SPOT_ANGLE: {
+				VS::get_singleton()->blob_light_set_light_param(blob_light, VS::LightParam(p_param), p_value);
+			} break;
+			case PARAM_ENERGY: {
+				VS::get_singleton()->blob_light_set_light_param(blob_light, VS::LightParam(p_param), p_value);
+			} break;
+			case PARAM_RANGE: {
+				if (get_blob_shadow_param(BLOB_SHADOW_PARAM_RANGE_MAX) == 0) {
+					_update_blob_shadow_param(BLOB_SHADOW_PARAM_RANGE_MAX);
+				}
+			} break;
+			default:
+				break;
 		}
 	}
 }
@@ -144,6 +164,82 @@ Light::BakeMode Light::get_bake_mode() const {
 	return bake_mode;
 }
 
+void Light::set_blob_shadow(bool p_enable) {
+	if (p_enable == blob_shadow) {
+		return;
+	}
+	blob_shadow = p_enable;
+
+	set_notify_transform(p_enable);
+	if (p_enable) {
+		if (!blob_light.is_valid()) {
+			blob_light = RID_PRIME(VisualServer::get_singleton()->blob_light_create());
+
+			// Must refresh all parameters when recreating.
+			VisualServer::get_singleton()->blob_light_set_type(blob_light, get_light_type());
+			VisualServer::get_singleton()->blob_light_set_visible(blob_light, is_visible_in_tree());
+			for (int n = 0; n < BLOB_SHADOW_PARAM_MAX; n++) {
+				_update_blob_shadow_param((BlobShadowParam)n);
+			}
+			VisualServer::get_singleton()->blob_light_set_light_param(blob_light, VS::LIGHT_PARAM_SPOT_ANGLE, get_param(PARAM_SPOT_ANGLE));
+			VisualServer::get_singleton()->blob_light_set_light_param(blob_light, VS::LIGHT_PARAM_ENERGY, get_param(PARAM_ENERGY));
+
+			// Only set initial position if in the tree, else it will be updated when entering the tree.
+			if (is_inside_tree()) {
+				VisualServer::get_singleton()->blob_light_update(blob_light, get_global_transform());
+			}
+		}
+	} else {
+		if (blob_light.is_valid()) {
+			VisualServer::get_singleton()->free(blob_light);
+			blob_light = RID();
+		}
+	}
+}
+
+void Light::_update_blob_shadow_param(BlobShadowParam p_param) {
+	if (blob_light.is_valid()) {
+		real_t value = get_blob_shadow_param(p_param);
+
+		// Special case for range, if set to zero, we override with the light range.
+		if (p_param == BLOB_SHADOW_PARAM_RANGE_MAX) {
+			if (value == 0) {
+				if (type != VisualServer::LIGHT_DIRECTIONAL) {
+					value = get_param(PARAM_RANGE);
+				} else {
+					// Directional lights are hard coded with near infinite range
+					// if set to zero (default).
+					value = 10000000;
+				}
+			}
+		}
+		VS::get_singleton()->blob_light_set_param(blob_light, VS::LightBlobShadowParam(p_param), value);
+	}
+}
+
+void Light::set_blob_shadow_param(BlobShadowParam p_param, real_t p_value) {
+	blob_shadow_params[p_param] = p_value;
+	if (blob_light.is_valid()) {
+		_update_blob_shadow_param(p_param);
+	}
+}
+
+real_t Light::get_blob_shadow_param(BlobShadowParam p_param) const {
+	return blob_shadow_params[p_param];
+}
+
+void Light::set_blob_shadow_shadow_only(bool p_enable) {
+	if (p_enable == blob_shadow_shadow_only) {
+		return;
+	}
+	blob_shadow_shadow_only = p_enable;
+	_update_visibility();
+}
+
+bool Light::is_blob_shadow_shadow_only() const {
+	return blob_shadow_shadow_only;
+}
+
 void Light::owner_changed_notify() {
 	// For cases where owner changes _after_ entering tree (as example, editor editing).
 	_update_visibility();
@@ -170,18 +266,41 @@ void Light::_update_visibility() {
 	}
 #endif
 
-	VS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree() && editor_ok);
+	VS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree() && editor_ok && !blob_shadow_shadow_only);
+	if (blob_light.is_valid()) {
+		VS::get_singleton()->blob_light_set_visible(blob_light, is_visible_in_tree() && editor_ok);
+		if (is_visible_in_tree() && editor_ok) {
+			VS::get_singleton()->blob_light_update(blob_light, get_global_transform_interpolated());
+		}
+	}
 
 	_change_notify("geometry/visible");
 }
 
-void Light::_notification(int p_what) {
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		_update_visibility();
+void Light::fti_update_servers_xform() {
+	if (blob_light.is_valid() && is_visible_in_tree()) {
+		VisualServer::get_singleton()->blob_light_update(blob_light, _get_cached_global_transform_interpolated());
 	}
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		_update_visibility();
+	VisualInstance::fti_update_servers_xform();
+}
+
+void Light::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			_update_visibility();
+		} break;
+		case NOTIFICATION_ENTER_TREE: {
+			_update_visibility();
+		} break;
+
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			if (blob_light.is_valid() && is_visible_in_tree() && !is_physics_interpolated_and_enabled()) {
+				VisualServer::get_singleton()->blob_light_update(blob_light, get_global_transform());
+			}
+		} break;
+		default:
+			break;
 	}
 }
 
@@ -232,6 +351,15 @@ void Light::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bake_mode", "bake_mode"), &Light::set_bake_mode);
 	ClassDB::bind_method(D_METHOD("get_bake_mode"), &Light::get_bake_mode);
 
+	ClassDB::bind_method(D_METHOD("set_blob_shadow", "enabled"), &Light::set_blob_shadow);
+	ClassDB::bind_method(D_METHOD("has_blob_shadow"), &Light::has_blob_shadow);
+
+	ClassDB::bind_method(D_METHOD("set_blob_shadow_param", "parameter", "value"), &Light::set_blob_shadow_param);
+	ClassDB::bind_method(D_METHOD("get_blob_shadow_param"), &Light::get_blob_shadow_param);
+
+	ClassDB::bind_method(D_METHOD("set_blob_shadow_shadow_only", "enabled"), &Light::set_blob_shadow_shadow_only);
+	ClassDB::bind_method(D_METHOD("is_blob_shadow_shadow_only"), &Light::is_blob_shadow_shadow_only);
+
 	ADD_GROUP("Light", "light_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "light_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_color", "get_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "light_energy", PROPERTY_HINT_RANGE, "0,16,0.001,or_greater"), "set_param", "get_param", PARAM_ENERGY);
@@ -247,6 +375,12 @@ void Light::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "shadow_bias", PROPERTY_HINT_RANGE, "-10,10,0.001"), "set_param", "get_param", PARAM_SHADOW_BIAS);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "shadow_contact", PROPERTY_HINT_RANGE, "0,10,0.001"), "set_param", "get_param", PARAM_CONTACT_SHADOW_SIZE);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_reverse_cull_face"), "set_shadow_reverse_cull_face", "get_shadow_reverse_cull_face");
+	ADD_GROUP("Blob Shadow", "blob_shadow_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "blob_shadow_enabled"), "set_blob_shadow", "has_blob_shadow");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "blob_shadow_shadow_only"), "set_blob_shadow_shadow_only", "is_blob_shadow_shadow_only");
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "blob_shadow_intensity", PROPERTY_HINT_RANGE, "0,2,0.01"), "set_blob_shadow_param", "get_blob_shadow_param", BLOB_SHADOW_PARAM_INTENSITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "blob_shadow_range_max", PROPERTY_HINT_RANGE, "0,100,0.1"), "set_blob_shadow_param", "get_blob_shadow_param", BLOB_SHADOW_PARAM_RANGE_MAX);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "blob_shadow_range_hardness", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_blob_shadow_param", "get_blob_shadow_param", BLOB_SHADOW_PARAM_RANGE_HARDNESS);
 	ADD_GROUP("Editor", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_only"), "set_editor_only", "is_editor_only");
 	ADD_GROUP("", "");
@@ -269,6 +403,11 @@ void Light::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BIAS_SPLIT_SCALE);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_FADE_START);
 	BIND_ENUM_CONSTANT(PARAM_MAX);
+
+	BIND_ENUM_CONSTANT(BLOB_SHADOW_PARAM_RANGE_HARDNESS);
+	BIND_ENUM_CONSTANT(BLOB_SHADOW_PARAM_RANGE_MAX);
+	BIND_ENUM_CONSTANT(BLOB_SHADOW_PARAM_INTENSITY);
+	BIND_ENUM_CONSTANT(BLOB_SHADOW_PARAM_MAX);
 
 	BIND_ENUM_CONSTANT(BAKE_DISABLED);
 	BIND_ENUM_CONSTANT(BAKE_INDIRECT);
@@ -293,10 +432,6 @@ Light::Light(VisualServer::LightType p_type) {
 
 	VS::get_singleton()->instance_set_base(get_instance(), light);
 
-	reverse_cull = false;
-	bake_mode = BAKE_INDIRECT;
-
-	editor_only = false;
 	set_color(Color(1, 1, 1, 1));
 	set_shadow(false);
 	set_negative(false);
@@ -319,10 +454,16 @@ Light::Light(VisualServer::LightType p_type) {
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 0.0);
 	set_param(PARAM_SHADOW_BIAS, 0.15);
 	set_disable_scale(true);
+
+	for (int n = 0; n < BLOB_SHADOW_PARAM_MAX; n++) {
+		blob_shadow_params[n] = 0;
+	}
+	set_blob_shadow_param(BLOB_SHADOW_PARAM_RANGE_HARDNESS, 0.8f);
+	set_blob_shadow_param(BLOB_SHADOW_PARAM_RANGE_MAX, 0);
+	set_blob_shadow_param(BLOB_SHADOW_PARAM_INTENSITY, 1);
 }
 
 Light::Light() {
-	type = VisualServer::LIGHT_DIRECTIONAL;
 	ERR_PRINT("Light should not be instanced directly; use the DirectionalLight, OmniLight or SpotLight subtypes instead.");
 }
 
@@ -331,6 +472,10 @@ Light::~Light() {
 
 	if (light.is_valid()) {
 		VisualServer::get_singleton()->free(light);
+	}
+
+	if (blob_light.is_valid()) {
+		VisualServer::get_singleton()->free(blob_light);
 	}
 }
 /////////////////////////////////////////
