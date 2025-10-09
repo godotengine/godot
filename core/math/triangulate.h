@@ -41,10 +41,10 @@ class Triangulate {
 public:
 	// triangulate a contour/polygon, places results in STL vector
 	// as series of triangles.
-	static bool triangulate(const Vector<Vector2> &contour, Vector<int> &result);
+	static bool triangulate(const Span<Vector2> &contour, Vector<int> &result);
 
 	// compute area of a contour/polygon
-	static real_t get_area(const Vector<Vector2> &contour);
+	static real_t get_area(const Span<Vector2> &contour);
 
 	// decide if point Px/Py is inside triangle defined by
 	// (Ax,Ay) (Bx,By) (Cx,Cy)
@@ -55,7 +55,7 @@ public:
 			bool include_edges);
 
 private:
-	static bool snip(const Vector<Vector2> &p_contour, int u, int v, int w, int n, const Vector<int> &V, bool relaxed);
+	static bool snip(const Span<Vector2> &p_contour, int u, int v, int w, int n, const Span<int> &V, bool relaxed);
 };
 
 #endif // TRIANGULATE_H

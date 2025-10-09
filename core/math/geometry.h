@@ -772,35 +772,35 @@ public:
 		END_ROUND
 	};
 
-	static Vector<Vector<Point2>> merge_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
+	static Vector<Vector<Point2>> merge_polygons_2d(const Span<Point2> &p_polygon_a, const Span<Point2> &p_polygon_b) {
 		return _polypaths_do_operation(OPERATION_UNION, p_polygon_a, p_polygon_b);
 	}
 
-	static Vector<Vector<Point2>> clip_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
+	static Vector<Vector<Point2>> clip_polygons_2d(const Span<Point2> &p_polygon_a, const Span<Point2> &p_polygon_b) {
 		return _polypaths_do_operation(OPERATION_DIFFERENCE, p_polygon_a, p_polygon_b);
 	}
 
-	static Vector<Vector<Point2>> intersect_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
+	static Vector<Vector<Point2>> intersect_polygons_2d(const Span<Point2> &p_polygon_a, const Span<Point2> &p_polygon_b) {
 		return _polypaths_do_operation(OPERATION_INTERSECTION, p_polygon_a, p_polygon_b);
 	}
 
-	static Vector<Vector<Point2>> exclude_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
+	static Vector<Vector<Point2>> exclude_polygons_2d(const Span<Point2> &p_polygon_a, const Span<Point2> &p_polygon_b) {
 		return _polypaths_do_operation(OPERATION_XOR, p_polygon_a, p_polygon_b);
 	}
 
-	static Vector<Vector<Point2>> clip_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
+	static Vector<Vector<Point2>> clip_polyline_with_polygon_2d(const Span<Vector2> &p_polyline, const Span<Vector2> &p_polygon) {
 		return _polypaths_do_operation(OPERATION_DIFFERENCE, p_polyline, p_polygon, true);
 	}
 
-	static Vector<Vector<Point2>> intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
+	static Vector<Vector<Point2>> intersect_polyline_with_polygon_2d(const Span<Vector2> &p_polyline, const Span<Vector2> &p_polygon) {
 		return _polypaths_do_operation(OPERATION_INTERSECTION, p_polyline, p_polygon, true);
 	}
 
-	static Vector<Vector<Point2>> offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
+	static Vector<Vector<Point2>> offset_polygon_2d(const Span<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
 		return _polypath_offset(p_polygon, p_delta, p_join_type, END_POLYGON);
 	}
 
-	static Vector<Vector<Point2>> offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
+	static Vector<Vector<Point2>> offset_polyline_2d(const Span<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
 		ERR_FAIL_COND_V_MSG(p_end_type == END_POLYGON, Vector<Vector<Point2>>(), "Attempt to offset a polyline like a polygon (use offset_polygon_2d instead).");
 
 		return _polypath_offset(p_polygon, p_delta, p_join_type, p_end_type);
@@ -818,7 +818,7 @@ public:
 		return triangles;
 	}
 
-	static Vector<int> triangulate_polygon(const Vector<Vector2> &p_polygon) {
+	static Vector<int> triangulate_polygon(const Span<Vector2> &p_polygon) {
 		Vector<int> triangles;
 		if (!Triangulate::triangulate(p_polygon, triangles)) {
 			return Vector<int>(); //fail
@@ -826,7 +826,7 @@ public:
 		return triangles;
 	}
 
-	static bool is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
+	static bool is_polygon_clockwise(const Span<Vector2> &p_polygon) {
 		int c = p_polygon.size();
 		if (c < 3) {
 			return false;
@@ -843,7 +843,7 @@ public:
 	}
 
 	// Alternate implementation that should be faster.
-	static bool is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon) {
+	static bool is_point_in_polygon(const Vector2 &p_point, const Span<Vector2> &p_polygon) {
 		int c = p_polygon.size();
 		if (c < 3) {
 			return false;
@@ -1008,14 +1008,14 @@ public:
 	static void sort_polygon_winding(Vector<Vector2> &r_verts, bool p_clockwise = true);
 	static real_t find_polygon_area(const Vector3 *p_verts, int p_num_verts);
 
-	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
+	static void make_atlas(const Span<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
 
 	struct PackRectsResult {
 		int x;
 		int y;
 		bool packed;
 	};
-	static Vector<PackRectsResult> partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size);
+	static Vector<PackRectsResult> partial_pack_rects(const Span<Vector2i> &p_sizes, const Size2i &p_atlas_size);
 
 	static Vector<Vector3> compute_convex_mesh_points(const Span<Plane> &p_planes, real_t p_epsilon = CMP_EPSILON);
 	static bool convex_hull_intersects_convex_hull(const Plane *p_planes_a, int p_plane_count_a, const Plane *p_planes_b, int p_plane_count_b);
@@ -1023,8 +1023,8 @@ public:
 	static bool verify_indices(const int *p_indices, int p_num_indices, int p_num_vertices);
 
 private:
-	static Vector<Vector<Point2>> _polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open = false);
-	static Vector<Vector<Point2>> _polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type);
+	static Vector<Vector<Point2>> _polypaths_do_operation(PolyBooleanOperation p_op, const Span<Point2> &p_polypath_a, const Span<Point2> &p_polypath_b, bool is_a_open = false);
+	static Vector<Vector<Point2>> _polypath_offset(const Span<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type);
 };
 
 #endif // GEOMETRY_H

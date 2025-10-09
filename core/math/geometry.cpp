@@ -1042,7 +1042,7 @@ struct _AtlasWorkRectResult {
 	int max_h;
 };
 
-void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size) {
+void Geometry::make_atlas(const Span<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size) {
 	// Super simple, almost brute force scanline stacking fitter.
 	// It's pretty basic for now, but it tries to make sure that the aspect ratio of the
 	// resulting atlas is somehow square. This is necessary because video cards have limits.
@@ -1052,14 +1052,14 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 	// 256x8192 atlas (won't work anywhere).
 
 	ERR_FAIL_COND(p_rects.size() == 0);
-	for (int i = 0; i < p_rects.size(); i++) {
+	for (uint32_t i = 0; i < p_rects.size(); i++) {
 		ERR_FAIL_COND(p_rects[i].width <= 0);
 		ERR_FAIL_COND(p_rects[i].height <= 0);
 	}
 
 	Vector<_AtlasWorkRect> wrects;
 	wrects.resize(p_rects.size());
-	for (int i = 0; i < p_rects.size(); i++) {
+	for (uint32_t i = 0; i < p_rects.size(); i++) {
 		wrects.write[i].s = p_rects[i];
 		wrects.write[i].idx = i;
 	}
@@ -1146,14 +1146,14 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 
 	r_result.resize(p_rects.size());
 
-	for (int i = 0; i < p_rects.size(); i++) {
+	for (uint32_t i = 0; i < p_rects.size(); i++) {
 		r_result.write[results[best].result[i].idx] = results[best].result[i].p;
 	}
 
 	r_size = Size2(results[best].max_w, results[best].max_h);
 }
 
-Vector<Vector<Point2>> Geometry::_polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open) {
+Vector<Vector<Point2>> Geometry::_polypaths_do_operation(PolyBooleanOperation p_op, const Span<Point2> &p_polypath_a, const Span<Point2> &p_polypath_b, bool is_a_open) {
 	using namespace ClipperLib;
 
 	ClipType op = ctUnion;
@@ -1175,10 +1175,10 @@ Vector<Vector<Point2>> Geometry::_polypaths_do_operation(PolyBooleanOperation p_
 	Path path_a, path_b;
 
 	// Need to scale points (Clipper's requirement for robust computation).
-	for (int i = 0; i != p_polypath_a.size(); ++i) {
+	for (uint32_t i = 0; i != p_polypath_a.size(); ++i) {
 		path_a << IntPoint(p_polypath_a[i].x * (real_t)SCALE_FACTOR, p_polypath_a[i].y * (real_t)SCALE_FACTOR);
 	}
-	for (int i = 0; i != p_polypath_b.size(); ++i) {
+	for (uint32_t i = 0; i != p_polypath_b.size(); ++i) {
 		path_b << IntPoint(p_polypath_b[i].x * (real_t)SCALE_FACTOR, p_polypath_b[i].y * (real_t)SCALE_FACTOR);
 	}
 	Clipper clp;
@@ -1212,7 +1212,7 @@ Vector<Vector<Point2>> Geometry::_polypaths_do_operation(PolyBooleanOperation p_
 	return polypaths;
 }
 
-Vector<Vector<Point2>> Geometry::_polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
+Vector<Vector<Point2>> Geometry::_polypath_offset(const Span<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
 	using namespace ClipperLib;
 
 	JoinType jt = jtSquare;
@@ -1252,7 +1252,7 @@ Vector<Vector<Point2>> Geometry::_polypath_offset(const Vector<Point2> &p_polypa
 	Path path;
 
 	// Need to scale points (Clipper's requirement for robust computation).
-	for (int i = 0; i != p_polypath.size(); ++i) {
+	for (uint32_t i = 0; i != p_polypath.size(); ++i) {
 		path << IntPoint(p_polypath[i].x * (real_t)SCALE_FACTOR, p_polypath[i].y * (real_t)SCALE_FACTOR);
 	}
 	co.AddPath(path, jt, et);
@@ -1436,7 +1436,7 @@ Vector<Vector3> Geometry::compute_convex_mesh_points(const Span<Plane> &p_planes
 	return points;
 }
 
-Vector<Geometry::PackRectsResult> Geometry::partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size) {
+Vector<Geometry::PackRectsResult> Geometry::partial_pack_rects(const Span<Vector2i> &p_sizes, const Size2i &p_atlas_size) {
 	Vector<stbrp_node> nodes;
 	nodes.resize(p_atlas_size.width);
 	memset(nodes.ptrw(), 0, sizeof(stbrp_node) * nodes.size());
@@ -1447,7 +1447,7 @@ Vector<Geometry::PackRectsResult> Geometry::partial_pack_rects(const Vector<Vect
 	Vector<stbrp_rect> rects;
 	rects.resize(p_sizes.size());
 
-	for (int i = 0; i < p_sizes.size(); i++) {
+	for (uint32_t i = 0; i < p_sizes.size(); i++) {
 		rects.write[i].id = i;
 		rects.write[i].w = p_sizes[i].width;
 		rects.write[i].h = p_sizes[i].height;
@@ -1461,7 +1461,7 @@ Vector<Geometry::PackRectsResult> Geometry::partial_pack_rects(const Vector<Vect
 	Vector<PackRectsResult> ret;
 	ret.resize(p_sizes.size());
 
-	for (int i = 0; i < p_sizes.size(); i++) {
+	for (uint32_t i = 0; i < p_sizes.size(); i++) {
 		ret.write[rects[i].id] = { rects[i].x, rects[i].y, static_cast<bool>(rects[i].was_packed) };
 	}
 
