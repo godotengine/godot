@@ -1551,17 +1551,17 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 #endif
 
 #if defined(LIGHT_CLEARCOAT_USED)
-		// Clearcoat ignores normal_map, use vertex normal instead
-		float ccNdotH = clamp(A + dot(vertex_normal, H), 0.0, 1.0);
-		float cLdotH5 = SchlickFresnel(cLdotH);
+	// Clearcoat ignores normal_map, use vertex normal instead
+	float ccNdotH = clamp(A + dot(vertex_normal, H), 0.0, 1.0);
+	float cLdotH5 = SchlickFresnel(cLdotH);
 
-		float Dr = D_GGX(ccNdotH, mix(0.001, 0.1, clearcoat_roughness));
-		float Gr = V_Kelemen(cLdotH);
-		float Fr = mix(0.04, 1.0, cLdotH5) * clearcoat;
-		cc_attenuation = 1.0 - Fr;
-		float clearcoat_specular_brdf_NL = clearcoat * Gr * Fr * Dr * cNdotL;
+	float Dr = D_GGX(ccNdotH, mix(0.001, 0.1, clearcoat_roughness));
+	float Gr = V_Kelemen(cLdotH);
+	float Fr = mix(0.04, 1.0, cLdotH5) * clearcoat;
+	cc_attenuation = 1.0 - Fr;
+	float clearcoat_specular_brdf_NL = clearcoat * Gr * Fr * Dr * cNdotL;
 
-		specular_light += clearcoat_specular_brdf_NL * light_color * attenuation * specular_amount;
+	specular_light += clearcoat_specular_brdf_NL * light_color * attenuation * specular_amount;
 #endif // LIGHT_CLEARCOAT_USED
 
 	if (metallic < 1.0) {
