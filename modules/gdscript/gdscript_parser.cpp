@@ -1533,6 +1533,8 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 	signal->identifier = parse_identifier();
 	make_refactor_rename_context(REFACTOR_RENAME_TYPE_IDENTIFIER, signal->identifier);
 
+	signal->current_class = current_class;
+
 	if (check(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
 		push_multiline(true);
 		advance();

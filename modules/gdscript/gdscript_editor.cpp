@@ -4269,11 +4269,52 @@ static Error _refactor_rename_symbol_match_from_class_loop_nodes(GDScriptParser:
 					} break;
 					case GDScriptParser::Node::ENUM: {
 						GDScriptParser::EnumNode *source_node_enum_node = static_cast<GDScriptParser::EnumNode *>(p_source_node);
-						ERR_FAIL_COND_V_MSG(identifier_node_owner == nullptr, FAILED, "identifier node owner datatype is not of kind ENUM");
-						GDScriptParser::DataType identifier_node_owner_datatype = identifier_node_owner->get_datatype();
-						if (identifier_node_owner_datatype.class_type->fqcn == source_node_enum_node->get_datatype().class_type->fqcn) {
-							_refactor_rename_symbol_add_match(p_path, identifier_node, r_result);
+						if (identifier_node->name != source_node_enum_node->identifier->name) {
+							bool found = false;
+							for (GDScriptParser::EnumNode::Value &value : source_node_enum_node->values) {
+								if (identifier_node->name == value.identifier->name) {
+									found = true;
+									break;
+								}
+							}
+							if (!found) {
+								continue;
+							}
 						}
+						ERR_FAIL_COND_V_MSG(identifier_node_owner == nullptr, FAILED, "identifier node owner datatype is null");
+						GDScriptParser::DataType identifier_node_owner_datatype = identifier_node_owner->get_datatype();
+						ERR_FAIL_COND_V_MSG(identifier_node_owner_datatype.class_type == nullptr, FAILED, "identifier node owner datatype class_type is null");
+						if (identifier_node_owner_datatype.script_path != source_node_enum_node->get_datatype().script_path) {
+							continue;
+						}
+						if (identifier_node_owner_datatype.class_type->fqcn != source_node_enum_node->get_datatype().class_type->fqcn) {
+							continue;
+						}
+						_refactor_rename_symbol_add_match(p_path, identifier_node, r_result);
+						continue;
+					} break;
+					case GDScriptParser::Node::SIGNAL: {
+						GDScriptParser::SignalNode *source_node_signal_node = static_cast<GDScriptParser::SignalNode *>(p_source_node);
+						if (identifier_node->name != source_node_signal_node->identifier->name) {
+							continue;
+						}
+						GDScriptParser::SignalNode *identifier_signal_node;
+						if (identifier_node_source_node) {
+							ERR_FAIL_COND_V_MSG(identifier_node_source_node->type != GDScriptParser::Node::SIGNAL, FAILED, "identifier_node_source_node is not of type SIGNAL");
+							identifier_signal_node = static_cast<GDScriptParser::SignalNode *>(identifier_node_source_node);
+						} else {
+							ERR_FAIL_COND_V_MSG(identifier_node_owner->type != GDScriptParser::Node::SIGNAL, FAILED, "identifier_node_owner is not of type SIGNAL");
+							identifier_signal_node = static_cast<GDScriptParser::SignalNode *>(identifier_node_owner);
+						}
+						if (identifier_signal_node != source_node_signal_node) {
+							if (identifier_signal_node->current_class->fqcn != source_node_signal_node->current_class->fqcn) {
+								continue;
+							}
+							if (identifier_signal_node->start_line != source_node_signal_node->start_line || identifier_signal_node->start_column != source_node_signal_node->start_column || identifier_signal_node->end_line != source_node_signal_node->end_line || identifier_signal_node->end_column != source_node_signal_node->end_column) {
+								continue;
+							}
+						}
+						_refactor_rename_symbol_add_match(p_path, identifier_node, r_result);
 						continue;
 					} break;
 					default: {

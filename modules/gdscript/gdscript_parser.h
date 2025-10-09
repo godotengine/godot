@@ -1291,6 +1291,7 @@ public:
 
 	struct SignalNode : public Node {
 		IdentifierNode *identifier = nullptr;
+		ClassNode *current_class = nullptr;
 		Vector<ParameterNode *> parameters;
 		HashMap<StringName, int> parameters_indices;
 		MethodInfo method_info;
