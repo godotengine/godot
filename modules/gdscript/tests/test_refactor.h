@@ -72,15 +72,15 @@ struct ProcessCodeData {
 	String symbol;
 };
 
-static ProcessCodeData process_code(const String &p_code, const Point2i &p_pos) {
+static Error process_code(const String &p_code, const Point2i &p_pos, ProcessCodeData &p_data) {
 	Ref<TextServer> text_server = TextServerManager::get_singleton()->get_primary_interface();
 	int refactor_line = p_pos.y;
 	int refactor_column = p_pos.x;
 
 	RID code_shaped_text = text_server->create_shaped_text();
-	FAIL_COND_V_MSG(code_shaped_text == RID(), ProcessCodeData(), "Creating text buffer failed.");
+	FAIL_COND_V_MSG(code_shaped_text == RID(), FAILED, "Creating text buffer failed.");
 	RID font = text_server->create_font();
-	FAIL_COND_V_MSG(font == RID(), ProcessCodeData(), "Creating font failed.");
+	FAIL_COND_V_MSG(font == RID(), FAILED, "Creating font failed.");
 	text_server->font_set_data_ptr(font, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
 	text_server->font_set_allow_system_fallback(font, true);
 	Array fonts = { font };
@@ -125,15 +125,15 @@ static ProcessCodeData process_code(const String &p_code, const Point2i &p_pos) 
 
 		current_line += 1;
 	}
+	ERR_FAIL_COND_V(found_word.is_empty(), FAILED);
 
 	text_server->free_rid(code_shaped_text);
 	text_server->free_rid(font);
 
-	ProcessCodeData return_value;
-	return_value.code = code_with_sentinel;
-	return_value.symbol = found_word;
+	p_data.code = code_with_sentinel;
+	p_data.symbol = found_word;
 
-	return return_value;
+	return OK;
 }
 
 static void run_test_cfg(const String &p_config_path) {
@@ -217,7 +217,9 @@ static void run_test_cfg(const String &p_config_path) {
 		Ref<GDScript> gdscript = ResourceLoader::load(refactor_file);
 		FAIL_COND_MSG(gdscript.is_null(), vformat("couldn't load script \"%s\"", refactor_file));
 
-		ProcessCodeData data = process_code(gdscript->get_source_code(), Point2i(refactor_column, refactor_line));
+		ProcessCodeData data;
+		Error err = process_code(gdscript->get_source_code(), Point2i(refactor_column, refactor_line), data);
+		FAIL_COND_MSG(err != OK, "couldn't process code");
 		FAIL_COND_MSG(data.symbol != refactor_symbol, vformat("symbol found (%s) doesn't match with the symbol specified in the configuration file (%s)", data.symbol, refactor_symbol));
 
 		ScriptLanguage::RefactorRenameSymbolResult refactor_result;
