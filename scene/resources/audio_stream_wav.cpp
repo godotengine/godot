@@ -994,6 +994,20 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 		}
 	}
 
+	float volume_db = p_options["edit/volume_db"];
+	if (volume_db != 0.0f) {
+		float volume_linear = Math::db_to_linear(volume_db);
+		float max = 0.0f;
+		for (int i = 0; i < data.size(); i++) {
+			data.write[i] *= volume_linear;
+			max = MAX(max, abs(data[i]));
+			data.write[i] = CLAMP(data[i], -1.0f, 1.0f);
+		}
+		if (max > 1.0f) {
+			WARN_PRINT(vformat("%f decibels of clipping occurred when importing WAV. Consider lowering \"Volume dB\" on the WAV import panel.", Math::linear_to_db(max)));
+		}
+	}
+
 	bool trim = p_options["edit/trim"];
 
 	if (trim && (loop_mode == AudioStreamWAV::LOOP_DISABLED) && format_channels > 0) {
