@@ -209,6 +209,7 @@ private:
 		int blocked = 0; // Safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
 		StringName name;
 		SceneTree *tree = nullptr;
+		HashMap<uint32_t, Node *> connection_owners; // Maintain the level at which signals were connected so connections can be packed correctly.
 
 		String editor_description;
 
@@ -630,6 +631,11 @@ public:
 	void get_storable_properties(HashSet<StringName> &r_storable_properties) const;
 
 	virtual String to_string() override;
+
+	/* USED ONLY BY PACKED SCENE */
+
+	void add_connection_owner(Node *p_owner, Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable, bool is_inherited);
+	Node *get_connection_owner(Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable) const;
 
 	/* NOTIFICATIONS */
 
