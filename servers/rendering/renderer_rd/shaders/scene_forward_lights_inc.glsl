@@ -59,6 +59,18 @@ hvec3 F0(half metallic, half specular, hvec3 albedo) {
 	return mix(hvec3(dielectric), albedo, hvec3(metallic));
 }
 
+half V_Kelemen(half LdotH) {
+	// Kelemen 2001, "A Microfacet Based Coupled Specular-Matte BRDF Model with Importance Sampling"
+	return saturateHalf(half(0.25) / (LdotH * LdotH + half(1e-4)));
+}
+
+hvec3 f0_Clear_Coat_To_Surface(hvec3 f0) {
+	// Approximation of iorTof0(f0ToIor(f0), 1.5)
+	// This assumes that the clear coat layer has an IOR of 1.5
+	// see https://github.com/google/filament/blob/837b2715a05f4656d4f524bce50d1b23ff8f84c9/shaders/src/surface_material.fs#L54-L62
+	return clamp(f0 * (f0 * (half(0.941892) - half(0.263008) * f0) + half(0.346479)) - half(0.0285998), half(0.0), half(1.0));
+}
+
 void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is_directional, half attenuation, hvec3 f0, half roughness, half metallic, half specular_amount, hvec3 albedo, inout half alpha, vec2 screen_uv, hvec3 energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 		hvec3 backlight,
@@ -163,6 +175,8 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 	diffuse_light += rim_light * rim * mix(hvec3(1.0), albedo, rim_tint) * light_color;
 #endif
 
+	half cc_attenuation = half(1.0);
+
 	// We skip checking on attenuation on directional lights to avoid a branch that is not as beneficial for directional lights as the other ones.
 	if (is_directional || attenuation > HALF_FLT_MIN) {
 		half cNdotL = max(NdotL, half(0.0));
@@ -170,22 +184,19 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 		hvec3 H = normalize(V + L);
 		half cLdotH = clamp(A + dot(L, H), half(0.0), half(1.0));
 #endif
+
 #if defined(LIGHT_CLEARCOAT_USED)
 		// Clearcoat ignores normal_map, use vertex normal instead
 		half ccNdotL = clamp(A + dot(vertex_normal, L), half(0.0), half(1.0));
 		half ccNdotH = clamp(A + dot(vertex_normal, H), half(0.0), half(1.0));
-		half ccNdotV = max(dot(vertex_normal, V), half(1e-4));
 		half cLdotH5 = SchlickFresnel(cLdotH);
 
 		half Dr = D_GGX(ccNdotH, half(mix(half(0.001), half(0.1), clearcoat_roughness)), vertex_normal, H);
-		half Gr = half(0.25) / (cLdotH * cLdotH + half(1e-4));
-		half Fr = mix(half(0.04), half(1.0), cLdotH5);
-		half clearcoat_specular_brdf_NL = clearcoat * Gr * Fr * Dr * cNdotL;
-
+		half Gr = V_Kelemen(cLdotH);
+		half Fr = mix(half(0.04), half(1.0), cLdotH5) * clearcoat;
+		cc_attenuation = half(1.0) - Fr;
+		half clearcoat_specular_brdf_NL = Dr * Gr * Fr * ccNdotL;
 		specular_light += clearcoat_specular_brdf_NL * light_color * attenuation * specular_amount;
-
-		// TODO: Clearcoat adds light to the scene right now (it is non-energy conserving), both diffuse and specular need to be scaled by (1.0 - FR)
-		// but to do so we need to rearrange this entire function
 #endif // LIGHT_CLEARCOAT_USED
 
 		if (metallic < half(1.0)) {
@@ -212,7 +223,7 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 			diffuse_brdf_NL = cNdotL * half(1.0 / M_PI);
 #endif
 
-			diffuse_light += light_color * diffuse_brdf_NL * attenuation;
+			diffuse_light += light_color * diffuse_brdf_NL * attenuation * cc_attenuation;
 
 #if defined(LIGHT_BACKLIGHT_USED)
 			diffuse_light += light_color * (hvec3(1.0 / M_PI) - diffuse_brdf_NL) * backlight * attenuation;
@@ -260,7 +271,7 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 			half f90 = clamp(dot(f0, hvec3(50.0 * 0.33)), metallic, half(1.0));
 			hvec3 F = f0 + (f90 - f0) * cLdotH5;
 			hvec3 specular_brdf_NL = energy_compensation * cNdotL * D * F * G;
-			specular_light += specular_brdf_NL * light_color * attenuation * specular_amount;
+			specular_light += specular_brdf_NL * light_color * attenuation * cc_attenuation * specular_amount;
 #endif
 		}
 
@@ -920,7 +931,11 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 			diffuse_light, specular_light);
 }
 
-void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal, half roughness, hvec3 ambient_light, hvec3 specular_light, inout hvec4 ambient_accum, inout hvec4 reflection_accum) {
+void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal, half roughness, hvec3 ambient_light, hvec3 specular_light,
+#ifdef LIGHT_CLEARCOAT_USED
+		hvec3 cc_specular_light, hvec3 cc_ref_vec, half cc_roughness, inout hvec3 cc_reflection_accum,
+#endif
+		inout hvec4 ambient_accum, inout hvec4 reflection_accum) {
 	vec3 box_extents = reflections.data[ref_index].box_extents;
 	vec3 local_pos = (reflections.data[ref_index].local_matrix * vec4(vertex, 1.0)).xyz;
 
@@ -969,6 +984,33 @@ void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal
 
 		reflection_accum += reflection;
 	}
+
+#ifdef LIGHT_CLEARCOAT_USED
+	vec3 local_cc_ref_vec = (reflections.data[ref_index].local_matrix * vec4(cc_ref_vec, 0.0)).xyz;
+
+	if (reflections.data[ref_index].box_project) { // Box project.
+
+		vec3 nrdir = normalize(local_cc_ref_vec);
+		vec3 rbmax = (box_extents - local_pos) / nrdir;
+		vec3 rbmin = (-box_extents - local_pos) / nrdir;
+
+		vec3 rbminmax = mix(rbmin, rbmax, greaterThan(nrdir, vec3(0.0, 0.0, 0.0)));
+
+		float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
+		vec3 posonbox = local_pos + nrdir * fa;
+		local_cc_ref_vec = posonbox - reflections.data[ref_index].box_offset;
+	}
+
+	float cc_roughness_lod = sqrt(cc_roughness) * MAX_ROUGHNESS_LOD;
+	vec2 cc_reflection_uv = vec3_to_oct_with_border(local_cc_ref_vec, border_size);
+	hvec3 cc_reflection = hvec3(textureLod(sampler2DArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(cc_reflection_uv, reflections.data[ref_index].index), cc_roughness_lod).rgb) * REFLECTION_MULTIPLIER;
+	cc_reflection *= half(reflections.data[ref_index].exposure_normalization);
+	if (reflections.data[ref_index].exterior) {
+		cc_reflection = mix(cc_specular_light, cc_reflection, blend);
+	}
+	cc_reflection *= half(reflections.data[ref_index].intensity) * blend;
+	cc_reflection_accum += cc_reflection;
+#endif // LIGHT_CLEARCOAT_USED
 
 	if (ambient_accum.a >= half(1.0)) {
 		return;
