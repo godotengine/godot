@@ -386,8 +386,9 @@ bool CameraFeedWindows::activate_feed() {
 						if (SUCCEEDED(hr)) {
 							result = true;
 							use_mf_conversion = true;
-							// Create CopyBufferDecoder for MF-converted RGB24 data.
-							buffer_decoder = memnew(CopyBufferDecoder(this, CopyBufferDecoder::rgb));
+							// Windows RGB24 uses BGR byte order. See:
+							// https://learn.microsoft.com/en-us/windows/win32/directshow/uncompressed-rgb-video-subtypes
+							buffer_decoder = memnew(CopyBufferDecoder(this, CopyBufferDecoder::bgr));
 						} else {
 							// Fallback to manual conversion for formats that support it.
 							const GUID &video_format = format_guids[selected_format];
@@ -518,24 +519,59 @@ void CameraFeedWindows::read() {
 		IMFMediaBuffer *buffer = nullptr;
 		hr = pSample->ConvertToContiguousBuffer(&buffer);
 		if (SUCCEEDED(hr) && buffer) {
-			// Get image buffer.
 			BYTE *data = nullptr;
 			DWORD buffer_length = 0;
-			hr = buffer->Lock(&data, nullptr, &buffer_length);
-			if (SUCCEEDED(hr)) {
-				// Use buffer decoder to process the frame.
-				StreamingBuffer streaming_buffer;
-				streaming_buffer.start = data;
-				streaming_buffer.length = buffer_length;
+			bool flip_detected = false;
+			bool used_2d_buffer = false;
 
-				if (buffer_decoder) {
-					buffer_decoder->decode(streaming_buffer);
+			// Try IMF2DBuffer for stride information (faster).
+			IMF2DBuffer *buffer2d = nullptr;
+			if (SUCCEEDED(buffer->QueryInterface(IID_PPV_ARGS(&buffer2d)))) {
+				LONG pitch = 0;
+				BYTE *scan_line = nullptr;
+				hr = buffer2d->Lock2D(&scan_line, &pitch);
+				if (SUCCEEDED(hr)) {
+					data = scan_line;
+					buffer_length = abs(pitch) * get_format().height;
+					flip_detected = (pitch < 0);
+					used_2d_buffer = true;
+
+					if (buffer_decoder) {
+						buffer_decoder->set_flip_vertical(flip_detected);
+					}
+
+					StreamingBuffer streaming_buffer;
+					streaming_buffer.start = data;
+					streaming_buffer.length = buffer_length;
+
+					if (buffer_decoder) {
+						buffer_decoder->decode(streaming_buffer);
+					}
+
+					buffer2d->Unlock2D();
 				}
-
-				buffer->Unlock();
-			} else {
-				ERR_PRINT(vformat("IMFMediaBuffer::Lock failed: 0x%08x", (uint32_t)hr));
+				buffer2d->Release();
 			}
+
+			// Fallback: Use standard buffer lock.
+			if (!used_2d_buffer) {
+				hr = buffer->Lock(&data, nullptr, &buffer_length);
+				if (SUCCEEDED(hr)) {
+					StreamingBuffer streaming_buffer;
+					streaming_buffer.start = data;
+					streaming_buffer.length = buffer_length;
+
+					if (buffer_decoder) {
+						buffer_decoder->set_flip_vertical(true);
+						buffer_decoder->decode(streaming_buffer);
+					}
+
+					buffer->Unlock();
+				} else {
+					ERR_PRINT(vformat("IMFMediaBuffer::Lock failed: 0x%08x", (uint32_t)hr));
+				}
+			}
+
 			buffer->Release();
 		} else {
 			ERR_PRINT(vformat("ConvertToContiguousBuffer failed: 0x%08x", (uint32_t)hr));
@@ -581,7 +617,9 @@ BufferDecoder *CameraFeedWindows::_create_buffer_decoder() {
 	} else if (video_format == MFVideoFormat_YUY2) {
 		return memnew(SeparateYuyvBufferDecoder(this));
 	} else if (video_format == MFVideoFormat_RGB24) {
-		return memnew(CopyBufferDecoder(this, CopyBufferDecoder::rgb));
+		// Windows RGB24 uses BGR byte order. See:
+		// https://learn.microsoft.com/en-us/windows/win32/directshow/uncompressed-rgb-video-subtypes
+		return memnew(CopyBufferDecoder(this, CopyBufferDecoder::bgr));
 	}
 
 	// Default to null decoder for unsupported formats.
