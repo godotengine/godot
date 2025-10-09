@@ -1062,6 +1062,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	export_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
 	set_title(TTR("Manage Editor Feature Profiles"));
+	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	EDITOR_DEF("_default_feature_profile", "");
 
 	update_timer = memnew(Timer);

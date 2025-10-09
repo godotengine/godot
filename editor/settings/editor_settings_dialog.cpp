@@ -875,6 +875,7 @@ void EditorSettingsDialog::_bind_methods() {
 
 EditorSettingsDialog::EditorSettingsDialog() {
 	set_title(TTRC("Editor Settings"));
+	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	set_clamp_to_embedder(true);
 
 	tabs = memnew(TabContainer);
