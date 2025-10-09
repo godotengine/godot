@@ -34,6 +34,11 @@
 
 TTS_Linux *TTS_Linux::singleton = nullptr;
 
+void TTS_Linux::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_speech_event", "msg_id", "client_id", "type"), &TTS_Linux::_speech_event);
+	ClassDB::bind_method(D_METHOD("_speech_index_mark", "msg_id", "client_id", "type", "index_mark"), &TTS_Linux::_speech_index_mark);
+}
+
 static bool _is_whitespace(CharType c) {
 	return c == '\t' || c == ' ';
 }
@@ -75,69 +80,81 @@ void TTS_Linux::speech_init_thread_func(void *p_userdata) {
 
 void TTS_Linux::speech_event_index_mark(size_t p_msg_id, size_t p_client_id, SPDNotificationType p_type, char *p_index_mark) {
 	TTS_Linux *tts = TTS_Linux::get_singleton();
-	if (tts && tts->ids.has(p_msg_id)) {
-		MutexLock thread_safe_method(tts->_thread_safe_);
-		// Get word offset from the index mark injected to the text stream.
-		String mark = String::utf8(p_index_mark);
-		OS::get_singleton()->tts_post_utterance_event(OS::TTS_UTTERANCE_BOUNDARY, tts->ids[p_msg_id], mark.to_int());
+	if (tts) {
+		tts->call_deferred("_speech_index_mark", p_msg_id, p_client_id, (int)p_type, String::utf8(p_index_mark));
+	}
+}
+
+void TTS_Linux::_speech_index_mark(size_t p_msg_id, size_t p_client_id, int p_type, const String &p_index_mark) {
+	_THREAD_SAFE_METHOD_
+
+	if (ids.has(p_msg_id)) {
+		OS::get_singleton()->tts_post_utterance_event(OS::TTS_UTTERANCE_BOUNDARY, ids[p_msg_id], p_index_mark.to_int());
 	}
 }
 
 void TTS_Linux::speech_event_callback(size_t p_msg_id, size_t p_client_id, SPDNotificationType p_type) {
 	TTS_Linux *tts = TTS_Linux::get_singleton();
 	if (tts) {
-		MutexLock thread_safe_method(tts->_thread_safe_);
-		List<OS::TTSUtterance> &queue = tts->queue;
-		if (!tts->paused && tts->ids.has(p_msg_id)) {
-			if (p_type == SPD_EVENT_END) {
-				OS::get_singleton()->tts_post_utterance_event(OS::TTS_UTTERANCE_ENDED, tts->ids[p_msg_id]);
-				tts->ids.erase(p_msg_id);
-				tts->last_msg_id = -1;
-				tts->speaking = false;
-			} else if (p_type == SPD_EVENT_CANCEL) {
-				OS::get_singleton()->tts_post_utterance_event(OS::TTS_UTTERANCE_CANCELED, tts->ids[p_msg_id]);
-				tts->ids.erase(p_msg_id);
-				tts->last_msg_id = -1;
-				tts->speaking = false;
+		tts->call_deferred("_speech_event", p_msg_id, p_client_id, (int)p_type);
+	}
+}
+
+void TTS_Linux::_speech_event(size_t p_msg_id, size_t p_client_id, int p_type) {
+	_THREAD_SAFE_METHOD_
+
+	if (!paused && ids.has(p_msg_id)) {
+		if ((SPDNotificationType)p_type == SPD_EVENT_END) {
+			OS::get_singleton()->tts_post_utterance_event(OS::TTS_UTTERANCE_ENDED, ids[p_msg_id]);
+			ids.erase(p_msg_id);
+			last_msg_id = -1;
+			speaking = false;
+		} else if ((SPDNotificationType)p_type == SPD_EVENT_CANCEL) {
+			OS::get_singleton()->tts_post_utterance_event(OS::TTS_UTTERANCE_CANCELED, ids[p_msg_id]);
+			ids.erase(p_msg_id);
+			last_msg_id = -1;
+			speaking = false;
+		}
+	}
+	if (!speaking && queue.size() > 0) {
+		OS::TTSUtterance &message = queue.front()->get();
+
+		// Inject index mark after each word.
+		String text;
+
+		// Inject index mark after each word.
+		PoolIntArray breaks;
+		for (int i = 0; i < message.text.size(); i++) {
+			if (_is_whitespace(message.text[i])) {
+				breaks.push_back(i);
 			}
 		}
-		if (!tts->speaking && queue.size() > 0) {
-			OS::TTSUtterance &message = queue.front()->get();
 
-			// Inject index mark after each word.
-			String text;
-			PoolIntArray breaks;
-			for (int i = 0; i < message.text.size(); i++) {
-				if (_is_whitespace(message.text[i])) {
-					breaks.push_back(i);
-				}
-			}
-			int prev = 0;
-			for (int i = 0; i < breaks.size(); i++) {
-				text += message.text.substr(prev, breaks[i] - prev);
-				text += "<mark name=\"" + String::num_int64(breaks[i], 10) + "\"/>";
-				prev = breaks[i];
-			}
-			text += message.text.substr(prev, -1);
-
-			spd_set_synthesis_voice(tts->synth, message.voice.utf8().get_data());
-			spd_set_volume(tts->synth, message.volume * 2 - 100);
-			spd_set_voice_pitch(tts->synth, (message.pitch - 1) * 100);
-			float rate = 0;
-			if (message.rate > 1.f) {
-				rate = log10(MIN(message.rate, 2.5f)) / log10(2.5f) * 100;
-			} else if (message.rate < 1.f) {
-				rate = log10(MAX(message.rate, 0.5f)) / log10(0.5f) * -100;
-			}
-			spd_set_voice_rate(tts->synth, rate);
-			spd_set_data_mode(tts->synth, SPD_DATA_SSML);
-			tts->last_msg_id = spd_say(tts->synth, SPD_TEXT, text.utf8().get_data());
-			tts->ids[tts->last_msg_id] = message.id;
-			OS::get_singleton()->tts_post_utterance_event(OS::TTS_UTTERANCE_STARTED, message.id);
-
-			queue.pop_front();
-			tts->speaking = true;
+		int prev = 0;
+		for (int i = 0; i < breaks.size(); i++) {
+			text += message.text.substr(prev, breaks[i] - prev);
+			text += "<mark name=\"" + String::num_int64(breaks[i], 10) + "\"/>";
+			prev = breaks[i];
 		}
+		text += message.text.substr(prev, -1);
+
+		spd_set_synthesis_voice(synth, message.voice.utf8().get_data());
+		spd_set_volume(synth, message.volume * 2 - 100);
+		spd_set_voice_pitch(synth, (message.pitch - 1) * 100);
+		float rate = 0;
+		if (message.rate > 1.f) {
+			rate = log10(MIN(message.rate, 2.5f)) / log10(2.5f) * 100;
+		} else if (message.rate < 1.f) {
+			rate = log10(MAX(message.rate, 0.5f)) / log10(0.5f) * -100;
+		}
+		spd_set_voice_rate(synth, rate);
+		spd_set_data_mode(synth, SPD_DATA_SSML);
+		last_msg_id = spd_say(synth, SPD_TEXT, text.utf8().get_data());
+		ids[last_msg_id] = message.id;
+		OS::get_singleton()->tts_post_utterance_event(OS::TTS_UTTERANCE_STARTED, message.id);
+
+		queue.pop_front();
+		speaking = true;
 	}
 }
 
@@ -196,7 +213,7 @@ void TTS_Linux::speak(const String &p_text, const String &p_voice, int p_volume,
 	if (is_paused()) {
 		resume();
 	} else {
-		speech_event_callback(0, 0, SPD_EVENT_BEGIN);
+		_speech_event(0, 0, (int)SPD_EVENT_BEGIN);
 	}
 }
 
