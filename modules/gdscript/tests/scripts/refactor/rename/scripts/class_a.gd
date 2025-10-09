@@ -14,10 +14,12 @@ class InnerA:
 		ENUM_VALUE_2,
 	}
 
+	signal signal_of_a
 	signal signal_of_inner_a
 	var property_of_inner_a
 	func func_of_inner_a():
-		pass
+		signal_of_a.emit()
+		signal_of_inner_a.emit()
 
 enum EnumOfA {
 	ENUM_VALUE_1,
@@ -41,7 +43,7 @@ static func func_of_a_static():
 	pass
 
 func func_of_a_args(a: int):
-	pass
+	signal_of_a.emit()
 
 func func_of_a_callable(call := func():
 	var x_of_a = 10):
