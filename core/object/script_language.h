@@ -453,12 +453,12 @@ public:
 					symbol, new_symbol, matches_string);
 		}
 
-		void add_match(const String &p_path, int p_start_line, int p_start_column, int p_end_line, int p_end_column) {
-			matches[p_path].push_back({ p_start_line,
-					p_start_column,
-					p_end_line,
-					p_end_column });
+		void add_match(const String &p_path, Match p_match) {
+			matches[p_path].push_back(p_match);
 			matches[p_path].sort_custom<RefactorRenameSymbolResult::Match::Compare>();
+		}
+		void add_match(const String &p_path, int p_start_line, int p_start_column, int p_end_line, int p_end_column) {
+			add_match(p_path, { p_start_line, p_start_column, p_end_line, p_end_column });
 		}
 
 		Dictionary to_dictionary() {
