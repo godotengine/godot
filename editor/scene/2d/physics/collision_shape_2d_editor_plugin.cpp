@@ -389,17 +389,30 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 
 				return true;
 
-			} else {
-				if (pressed) {
-					if (original_mouse_pos != gpoint) {
-						commit_handle(edit_handle, original);
-					}
-
-					edit_handle = -1;
-					pressed = false;
-
-					return true;
+			} else if (pressed) {
+				Ref<InputEventMouse> m = p_event;
+				if (m.is_valid() && original_mouse_pos != m->get_position()) {
+					commit_handle(edit_handle, original);
 				}
+
+				edit_handle = -1;
+				pressed = false;
+
+				return true;
+			}
+		} else if (pressed) {
+			// Cancel the drag.
+			if (ED_IS_SHORTCUT("canvas_item_editor/cancel_transform", p_event) ||
+					(mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT)) {
+				Ref<InputEventMouse> m = p_event;
+				if (m.is_valid() && original_mouse_pos != m->get_position()) {
+					set_handle(edit_handle, original_point);
+				}
+
+				edit_handle = -1;
+				pressed = false;
+
+				return true;
 			}
 		}
 
@@ -622,6 +635,16 @@ void CollisionShape2DEditor::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/polygon_editor")) {
 				grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+			}
+		} break;
+
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			// Commit the drag if the window is focused out.
+			if (pressed && edit_handle > 0) {
+				commit_handle(edit_handle, original);
+
+				edit_handle = -1;
+				pressed = false;
 			}
 		} break;
 	}

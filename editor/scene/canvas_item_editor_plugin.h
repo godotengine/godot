@@ -481,6 +481,8 @@ private:
 	bool _gui_input_rulers_and_guides(const Ref<InputEvent> &p_event);
 	bool _gui_input_hover(const Ref<InputEvent> &p_event);
 
+	void _commit_drag();
+
 	void _gui_input_viewport(const Ref<InputEvent> &p_event);
 	void _update_cursor();
 	void _update_lock_and_group_button();
