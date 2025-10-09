@@ -80,7 +80,7 @@ class SceneTreeFTI {
 	};
 
 	struct Data {
-		static const uint32_t scene_tree_depth_limit = 32;
+		static const uint32_t scene_tree_depth_limit = 48;
 
 		// Prev / Curr lists of spatials having local xforms pumped.
 		LocalVector<Spatial *> tick_xform_list[2];
