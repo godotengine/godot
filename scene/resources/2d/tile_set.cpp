@@ -547,6 +547,16 @@ bool TileSet::has_source(int p_source_id) const {
 	return sources.has(p_source_id);
 }
 
+#ifdef TOOLS_ENABLED
+TileSetSource *TileSet::get_source_ptr(int p_source_id) const {
+	const Ref<TileSetSource> *source_ptr = sources.getptr(p_source_id);
+	if (source_ptr == nullptr) {
+		return nullptr;
+	}
+	return **source_ptr;
+}
+#endif
+
 Ref<TileSetSource> TileSet::get_source(int p_source_id) const {
 	ERR_FAIL_COND_V_MSG(!sources.has(p_source_id), nullptr, vformat("No TileSet atlas source with id %d.", p_source_id));
 
@@ -1281,7 +1291,7 @@ Array TileSet::map_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_a
 	// Check if the tile is valid, and if so, don't map the tile and return the input.
 	if (has_source(p_source_from)) {
 		Ref<TileSetSource> source = get_source(p_source_from);
-		if (source->has_tile(p_coords_from) && source->has_alternative_tile(p_coords_from, p_alternative_from)) {
+		if (source->has_tile_with_alternative(p_coords_from, p_alternative_from)) {
 			return from;
 		}
 	}
@@ -1336,7 +1346,7 @@ void TileSet::cleanup_invalid_tile_proxies() {
 	Vector<Array> alternative_to_remove;
 	for (const KeyValue<Array, Array> &E : alternative_level_proxies) {
 		Array a = E.key;
-		if (has_source(a[0]) && get_source(a[0])->has_tile(a[1]) && get_source(a[0])->has_alternative_tile(a[1], a[2])) {
+		if (has_source(a[0]) && get_source(a[0])->has_tile_with_alternative(a[1], a[2])) {
 			alternative_to_remove.push_back(a);
 		}
 	}
@@ -5437,6 +5447,11 @@ bool TileSetAtlasSource::has_alternative_tile(const Vector2i p_atlas_coords, int
 	return tiles[p_atlas_coords].alternatives.has(alternative_no_transform(p_alternative_tile));
 }
 
+bool TileSetAtlasSource::has_tile_with_alternative(const Vector2i p_atlas_coords, int p_alternative_tile) const {
+	const TileAlternativesData *tile_data = tiles.getptr(p_atlas_coords);
+	return tile_data && tile_data->alternatives.has(alternative_no_transform(p_alternative_tile));
+}
+
 int TileSetAtlasSource::get_next_alternative_tile_id(const Vector2i p_atlas_coords) const {
 	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), TileSetSource::INVALID_TILE_ALTERNATIVE, vformat("The TileSetAtlasSource atlas has no tile at %s.", String(p_atlas_coords)));
 	return tiles[p_atlas_coords].next_alternative_id;
@@ -5774,6 +5789,10 @@ int TileSetScenesCollectionSource::get_alternative_tile_id(const Vector2i p_atla
 bool TileSetScenesCollectionSource::has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const {
 	ERR_FAIL_COND_V(p_atlas_coords != Vector2i(), false);
 	return scenes.has(p_alternative_tile);
+}
+
+bool TileSetScenesCollectionSource::has_tile_with_alternative(const Vector2i p_atlas_coords, int p_alternative_tile) const {
+	return p_atlas_coords == Vector2i() && scenes.has(p_alternative_tile);
 }
 
 int TileSetScenesCollectionSource::create_scene_tile(Ref<PackedScene> p_packed_scene, int p_id_override) {

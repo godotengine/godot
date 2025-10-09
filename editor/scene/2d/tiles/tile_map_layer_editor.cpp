@@ -1586,8 +1586,7 @@ void TileMapLayerEditorTilesPlugin::_update_fix_selected_and_hovered() {
 	// Clear hovered if needed.
 	if (source_id != hovered_tile.source_id ||
 			!tile_set->has_source(hovered_tile.source_id) ||
-			!tile_set->get_source(hovered_tile.source_id)->has_tile(hovered_tile.get_atlas_coords()) ||
-			!tile_set->get_source(hovered_tile.source_id)->has_alternative_tile(hovered_tile.get_atlas_coords(), hovered_tile.alternative_tile)) {
+			!tile_set->get_source(hovered_tile.source_id)->has_tile_with_alternative(hovered_tile.get_atlas_coords(), hovered_tile.alternative_tile)) {
 		hovered_tile.source_id = TileSet::INVALID_SOURCE;
 		hovered_tile.set_atlas_coords(TileSetSource::INVALID_ATLAS_COORDS);
 		hovered_tile.alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE;
@@ -1598,8 +1597,7 @@ void TileMapLayerEditorTilesPlugin::_update_fix_selected_and_hovered() {
 		RBSet<TileMapCell>::Element *N = E->next();
 		const TileMapCell *selected = &(E->get());
 		if (!tile_set->has_source(selected->source_id) ||
-				!tile_set->get_source(selected->source_id)->has_tile(selected->get_atlas_coords()) ||
-				!tile_set->get_source(selected->source_id)->has_alternative_tile(selected->get_atlas_coords(), selected->alternative_tile)) {
+				!tile_set->get_source(selected->source_id)->has_tile_with_alternative(selected->get_atlas_coords(), selected->alternative_tile)) {
 			tile_set_selection.erase(E);
 		}
 		E = N;
@@ -1610,8 +1608,7 @@ void TileMapLayerEditorTilesPlugin::_update_fix_selected_and_hovered() {
 		const Vector2i key = E.key;
 		const TileMapCell &selected = E.value;
 		if (!tile_set->has_source(selected.source_id) ||
-				!tile_set->get_source(selected.source_id)->has_tile(selected.get_atlas_coords()) ||
-				!tile_set->get_source(selected.source_id)->has_alternative_tile(selected.get_atlas_coords(), selected.alternative_tile)) {
+				!tile_set->get_source(selected.source_id)->has_tile_with_alternative(selected.get_atlas_coords(), selected.alternative_tile)) {
 			selection_pattern->remove_cell(key);
 		}
 	}
@@ -4247,20 +4244,18 @@ void TileMapLayerEditor::_draw_overlay() {
 	Vector2i tile_shape_size = tile_set->get_tile_size();
 
 	// Draw tiles with invalid IDs in the grid.
-	TypedArray<Vector2i> used_cells = edited_layer->get_used_cells();
-	for (int i = 0; i < used_cells.size(); i++) {
-		Vector2i coords = used_cells[i];
-		int tile_source_id = edited_layer->get_cell_source_id(coords);
+	const HashMap<Vector2i, CellData> &tile_map_layer_data = edited_layer->get_tile_map_layer_data();
+
+	for (const KeyValue<Vector2i, CellData> &E : tile_map_layer_data) {
+		const TileMapCell &c = E.value.cell;
+		const Vector2i &coords = E.key;
+		int tile_source_id = c.source_id;
 		if (tile_source_id >= 0) {
-			Vector2i tile_atlas_coords = edited_layer->get_cell_atlas_coords(coords);
-			int tile_alternative_tile = edited_layer->get_cell_alternative_tile(coords);
+			Vector2i tile_atlas_coords = c.get_atlas_coords();
+			int tile_alternative_tile = c.alternative_tile;
 
-			TileSetSource *source = nullptr;
-			if (tile_set->has_source(tile_source_id)) {
-				source = *tile_set->get_source(tile_source_id);
-			}
-
-			if (!source || !source->has_tile(tile_atlas_coords) || !source->has_alternative_tile(tile_atlas_coords, tile_alternative_tile)) {
+			TileSetSource *source = tile_set->get_source_ptr(tile_source_id);
+			if (!source || !source->has_tile_with_alternative(tile_atlas_coords, tile_alternative_tile)) {
 				// Generate a random color from the hashed identifier of the tiles.
 				Array to_hash = { tile_source_id, tile_atlas_coords, tile_alternative_tile };
 				uint32_t hash = RandomPCG(to_hash.hash()).rand();
