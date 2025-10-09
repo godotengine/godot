@@ -1358,7 +1358,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					code += ")";
 					if (is_screen_texture && !texture_func_returns_data && actions.apply_luminance_multiplier) {
 						if (RS::get_singleton()->is_low_end()) {
-							code = "(" + code + " / vec4(vec3(scene_data_block.data.luminance_multiplier), 1.0))";
+							code = "(" + code + " / vec4(vec3(scene_data.luminance_multiplier), 1.0))";
 						} else {
 							code = "(" + code + " * vec4(vec3(sc_luminance_multiplier()), 1.0))";
 						}
