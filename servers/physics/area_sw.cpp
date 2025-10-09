@@ -199,7 +199,7 @@ void AreaSW::set_monitorable(bool p_monitorable) {
 }
 
 void AreaSW::call_queries() {
-	if (monitor_callback_id && !monitored_bodies.empty()) {
+	if (monitor_callback_id.is_valid() && !monitored_bodies.empty()) {
 		Object *obj = ObjectDB::get_instance(monitor_callback_id);
 		if (obj) {
 			Variant res[5];
@@ -235,11 +235,11 @@ void AreaSW::call_queries() {
 			}
 		} else {
 			monitored_bodies.clear();
-			monitor_callback_id = 0;
+			monitor_callback_id = ObjectID();
 		}
 	}
 
-	if (area_monitor_callback_id && !monitored_areas.empty()) {
+	if (area_monitor_callback_id.is_valid() && !monitored_areas.empty()) {
 		Object *obj = ObjectDB::get_instance(area_monitor_callback_id);
 		if (obj) {
 			Variant res[5];
@@ -275,7 +275,7 @@ void AreaSW::call_queries() {
 			}
 		} else {
 			monitored_areas.clear();
-			area_monitor_callback_id = 0;
+			area_monitor_callback_id = ObjectID();
 		}
 	}
 }
@@ -295,8 +295,6 @@ AreaSW::AreaSW() :
 	linear_damp = 0.1;
 	priority = 0;
 	set_ray_pickable(false);
-	monitor_callback_id = 0;
-	area_monitor_callback_id = 0;
 	monitorable = false;
 }
 

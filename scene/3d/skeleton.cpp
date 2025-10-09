@@ -140,7 +140,7 @@ bool Skeleton::_get(const StringName &p_path, Variant &r_ret) const {
 	} else if (what == "bound_children") {
 		Array children;
 
-		const LocalVectori<uint32_t> &nodes = bones[which].nodes_bound;
+		const LocalVectori<ObjectID> &nodes = bones[which].nodes_bound;
 		for (int i = 0; i < nodes.size(); i++) {
 			Object *obj = ObjectDB::get_instance(nodes[i]);
 			ERR_CONTINUE(!obj);
@@ -291,7 +291,7 @@ void Skeleton::_notification(int p_what) {
 					b.global_pose_override_amount = 0.0;
 				}
 
-				const LocalVectori<uint32_t> &nodes = b.nodes_bound;
+				const LocalVectori<ObjectID> &nodes = b.nodes_bound;
 				for (int j = 0; j < nodes.size(); j++) {
 					Object *obj = ObjectDB::get_instance(nodes[j]);
 					ERR_CONTINUE(!obj);
@@ -525,7 +525,7 @@ void Skeleton::bind_child_node_to_bone(int p_bone, Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	ERR_FAIL_INDEX(p_bone, bones.size());
 
-	uint32_t id = p_node->get_instance_id();
+	ObjectID id = p_node->get_instance_id();
 
 	if (bones[p_bone].nodes_bound.find(id) != -1) {
 		return; // Already here.
@@ -537,7 +537,7 @@ void Skeleton::unbind_child_node_from_bone(int p_bone, Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	ERR_FAIL_INDEX(p_bone, bones.size());
 
-	uint32_t id = p_node->get_instance_id();
+	ObjectID id = p_node->get_instance_id();
 
 	int index = bones[p_bone].nodes_bound.find(id);
 	if (index == -1) {
@@ -549,7 +549,7 @@ void Skeleton::unbind_child_node_from_bone(int p_bone, Node *p_node) {
 void Skeleton::get_bound_child_nodes_to_bone(int p_bone, List<Node *> *p_bound) const {
 	ERR_FAIL_INDEX(p_bone, bones.size());
 
-	const LocalVectori<uint32_t> &nodes = bones[p_bone].nodes_bound;
+	const LocalVectori<ObjectID> &nodes = bones[p_bone].nodes_bound;
 	for (int i = 0; i < nodes.size(); i++) {
 		Object *obj = ObjectDB::get_instance(nodes[i]);
 		ERR_CONTINUE(!obj);
