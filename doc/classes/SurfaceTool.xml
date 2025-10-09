@@ -258,6 +258,7 @@
 			<param index="0" name="tangent" type="Plane" />
 			<description>
 				Specifies a tangent to use for the [i]next[/i] vertex. If every vertex needs to have this information set and you fail to submit it for the first vertex, this information may not be used at all.
+				[b]Note:[/b] Even though [param tangent] is a [Plane], it does not directly represent the tangent plane. Its [member Plane.x], [member Plane.y], and [member Plane.z] represent the tangent vector and [member Plane.d] should be either [code]-1[/code] or [code]1[/code]. See also [constant Mesh.ARRAY_TANGENT].
 			</description>
 		</method>
 		<method name="set_uv">
