@@ -214,7 +214,7 @@ License: Apache-2.0
 
 Files: thirdparty/basis_universal/*
 Comment: Basis Universal
-Copyright: 2019-2024, Binomial LLC.
+Copyright: 2019-2025, Binomial LLC.
 License: Apache-2.0
 
 Files: thirdparty/brotli/*
