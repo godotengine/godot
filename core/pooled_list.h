@@ -110,7 +110,7 @@ public:
 		r_id = list.size();
 		list.resize(r_id + 1);
 
-		static_assert((!zero_on_first_request) || (__is_pod(T)), "zero_on_first_request requires trivial type");
+		static_assert((!zero_on_first_request) || (std::is_trivially_destructible<T>::value), "zero_on_first_request requires trivial type");
 		if (zero_on_first_request && __is_pod(T)) {
 			list[r_id] = {};
 		}

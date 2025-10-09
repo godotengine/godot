@@ -2190,7 +2190,13 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("instances_cull_aabb", "aabb", "scenario"), &VisualServer::_instances_cull_aabb_bind, DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("instances_cull_ray", "from", "to", "scenario"), &VisualServer::_instances_cull_ray_bind, DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("instances_cull_convex", "convex", "scenario"), &VisualServer::_instances_cull_convex_bind, DEFVAL(RID()));
+
+	ClassDB::bind_method(D_METHOD("fti_instance_create"), &VisualServer::fti_instance_create);
+	ClassDB::bind_method(D_METHOD("fti_instance_prepare", "fti_instance", "instance"), &VisualServer::fti_instance_prepare);
+	ClassDB::bind_method(D_METHOD("fti_instance_set_transform", "fti_instance", "transform"), &VisualServer::fti_instance_set_transform);
+	ClassDB::bind_method(D_METHOD("fti_instance_reset", "fti_instance"), &VisualServer::fti_instance_reset);
 #endif
+
 	ClassDB::bind_method(D_METHOD("canvas_create"), &VisualServer::canvas_create);
 	ClassDB::bind_method(D_METHOD("canvas_set_item_mirroring", "canvas", "item", "mirroring"), &VisualServer::canvas_set_item_mirroring);
 	ClassDB::bind_method(D_METHOD("canvas_set_modulate", "canvas", "color"), &VisualServer::canvas_set_modulate);
