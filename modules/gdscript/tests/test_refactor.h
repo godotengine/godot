@@ -286,9 +286,10 @@ static void run_test_cfg(const String &p_config_path) {
 		// Comparing results.
 		for (KeyValue<String, LocalVector<Match>> KV : refactor_result.matches) {
 			String refactor_result_key = KV.key;
-			LocalVector<Match> refactor_result_key_matches = KV.value;
+			MatchList refactor_result_key_matches = KV.value;
 
 			if (expected_result_matches.size() > 0) {
+				INFO(vformat("\nGot: %s", matchlist_to_string(refactor_result_key_matches)));
 				CHECK_MESSAGE(expected_result_matches.has(refactor_result_key), vformat("unexpected match for \"%s\" not defined in the cfg", refactor_result_key));
 			}
 
