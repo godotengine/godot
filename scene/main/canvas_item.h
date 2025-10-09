@@ -114,6 +114,10 @@ private:
 	bool notify_transform = false;
 	bool hide_clip_children = false;
 
+	real_t fit_margin = 10.0;
+	real_t clear_margin = 10.0;
+	bool use_mipmaps = false;
+
 	ClipChildrenMode clip_children_mode = CLIP_CHILDREN_DISABLED;
 
 	mutable RS::CanvasItemTextureFilter texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
@@ -147,6 +151,15 @@ private:
 	void _window_visibility_changed();
 
 	void _notify_transform(CanvasItem *p_node);
+
+	void set_fit_margin(real_t p_fit_margin);
+	real_t get_fit_margin() const;
+
+	void set_clear_margin(real_t p_clear_margin);
+	real_t get_clear_margin() const;
+
+	void set_use_mipmaps(bool p_use_mipmaps);
+	bool is_using_mipmaps() const;
 
 	static CanvasItem *current_item_drawn;
 	friend class Viewport;
