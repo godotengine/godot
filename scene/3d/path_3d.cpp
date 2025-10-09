@@ -30,6 +30,8 @@
 
 #include "path_3d.h"
 
+#include "scene/resources/mesh.h"
+
 Path3D::Path3D() {
 	SceneTree *st = SceneTree::get_singleton();
 	if (st && st->is_debugging_paths_hint()) {
