@@ -263,7 +263,7 @@ static void run_test_cfg(const String &p_config_path) {
 			return matchlist_string.as_string();
 		};
 
-		auto matchmap_to_string = [&matchlist_to_string](const MatchMap &p_match_map) -> String {
+		auto matchmap_to_string = [&matchlist_to_string, &indent_string](const MatchMap &p_match_map) -> String {
 			StringBuilder match_string;
 			match_string.append("{\n");
 			bool first_match_entry = true;
@@ -276,6 +276,7 @@ static void run_test_cfg(const String &p_config_path) {
 
 				StringBuilder match_file_entry;
 				match_file_entry.append(vformat("\"%s\": %s", KV.key, matchlist_to_string(KV.value)));
+				match_string.append(indent_string(match_file_entry.as_string(), 4));
 			}
 
 			match_string.append("\n}\n");
