@@ -74,7 +74,7 @@ Files extracted from upstream source:
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal
-- Version: 1.60 (323239a6a5ffa57d6570cfc403be99156e33a8b0, 2025)
+- Version: git (b1110111d4a93c7dd7de93ce3d9ed8fcdfd114f2, 2025)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -88,9 +88,9 @@ Patches:
 - `0001-external-zstd-pr344.patch` (GH-73441)
 - `0002-external-tinyexr.patch` (GH-97582)
 - `0003-remove-tinydds-qoi.patch` (GH-97582)
-- `0004-ambiguous-calls.patch` (GH-103968)
-- `0005-msvc-include-ctype.patch` (GH-106155)
-- `0006-clang-warning-exclude.patch` (GH-111346)
+- `0004-clang-warning-exclude.patch` (GH-111346)
+- `0005-unused-typedef.patch` (GH-111445)
+
 
 ## brotli
 

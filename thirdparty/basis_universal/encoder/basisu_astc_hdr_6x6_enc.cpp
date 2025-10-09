@@ -2376,7 +2376,7 @@ static void filter_block(uint32_t grid_x, uint32_t grid_y, const vec3F* pSrc_blo
 	// filter columns
 	if (grid_y == 6)
 	{
-		memcpy(pDst_block, temp_block, sizeof(vec3F) * 6 * 6);
+		memcpy((void *)pDst_block, temp_block, sizeof(vec3F) * 6 * 6);
 	}
 	else
 	{
@@ -3360,6 +3360,7 @@ static bool pack_bc6h_image(const imagef &src_img, vector2D<basist::bc6h_block> 
 
 	interval_timer tm;
 	double total_enc_time = 0.0f;
+	BASISU_NOTE_UNUSED(total_enc_time);
 
 	const uint32_t num_blocks_x = src_img.get_block_width(4);
 	const uint32_t num_blocks_y = src_img.get_block_height(4);
@@ -4422,7 +4423,18 @@ static bool compress_strip_task(
 				float min_corr = BIG_FLOAT_VAL, max_corr = -BIG_FLOAT_VAL;
 				for (uint32_t i = 0; i < 3; i++)
 				{
-					if (half_comp_stats[i].m_range > 0.0f)
+#if 0
+					// 9/5/2025, wrong metric, we're iterating channels pairs here, not individual channels. 
+					// On 3 active channel blocks this causes no difference.
+					if (half_comp_stats[i].m_range > 0.0f) 
+#else
+					static const uint8_t s_chan_pairs[3][2] = { {0, 1}, {0, 2}, {1, 2} };
+					
+					const uint32_t chanA = s_chan_pairs[i][0];
+					const uint32_t chanB = s_chan_pairs[i][1];
+					
+					if ((half_comp_stats[chanA].m_range > 0.0f) && (half_comp_stats[chanB].m_range > 0.0f))
+#endif
 					{
 						const float c = fabsf((float)half_cross_chan_stats[i].m_pearson);
 						min_corr = minimum(min_corr, c);
@@ -4437,7 +4449,7 @@ static bool compress_strip_task(
 					// TODO: Transform grayscale axis by covar matrix, compute variance vs. total variance
 					const float MODE7_MIN_CHAN_CORR = .5f;
 					const float MODE7_PCA_ANGLE_THRESH = .9f;
-					use_single_subset_mode7 = is_grayscale || is_solid_block || (min_corr >= MODE7_MIN_CHAN_CORR);
+					use_single_subset_mode7 = is_grayscale || is_solid_block || ((total_used_block_chans == 1) || (min_corr >= MODE7_MIN_CHAN_CORR));
 
 					if (use_single_subset_mode7)
 					{
