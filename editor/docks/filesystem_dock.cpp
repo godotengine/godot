@@ -4024,7 +4024,7 @@ void FileSystemDock::update_layout(EditorDock::DockLayout p_layout) {
 	}
 
 	if (horizontal) {
-    path_hb->reparent(toolbar_hbc, false);
+		path_hb->reparent(toolbar_hbc, false);
 		toolbar_hbc->move_child(path_hb, 2);
 		set_meta("_dock_display_mode", get_display_mode());
 		set_meta("_dock_file_display_mode", get_file_list_display_mode());
