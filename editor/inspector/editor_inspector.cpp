@@ -2307,7 +2307,13 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 				fold();
 			}
 		}
-	} else if (mb.is_valid() && !mb->is_pressed()) {
+	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+		_update_popup();
+		menu->set_position(get_screen_position() + get_local_mouse_position());
+		menu->reset_size();
+		menu->popup();
+	}
+	else if (mb.is_valid() && !mb->is_pressed()) {
 		queue_redraw();
 	}
 }
@@ -2447,6 +2453,72 @@ void EditorInspectorSection::update_property() {
 
 	if (valid) {
 		set_checked(value_checked.operator bool());
+	}
+}
+
+void EditorInspectorSection::_update_popup() {
+	if (menu) {
+		menu->clear();
+	} else {
+		menu = memnew(PopupMenu);
+		add_child(menu);
+		menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorInspectorSection::menu_option));
+	}
+
+	menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("property_editor/copy_group_values"), MENU_COPY_VALUE);
+	menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("property_editor/paste_group_values"), MENU_PASTE_VALUE);
+}
+
+void EditorInspectorSection::_collect_properties(EditorInspectorSection* targetSection, Vector<EditorProperty*>& out_properties) {
+	VBoxContainer* targetVbox = targetSection->get_vbox();
+	if (!targetVbox) {
+		return;
+	}
+
+	for (int i = 0; i < targetVbox->get_child_count(); i++) {
+		Node* child = targetVbox->get_child(i);
+
+		if (EditorProperty* prop = Object::cast_to<EditorProperty>(child)) {
+			out_properties.push_back(prop);
+		} else if (Object::cast_to<VBoxContainer>(child) && child->get_child_count() > 0) {
+			if (EditorInspectorSection* nested = Object::cast_to<EditorInspectorSection>(child->get_child(0))) {
+				// Recursively collect from nested sections
+				_collect_properties(nested, out_properties);
+			}
+		}
+	}
+}
+
+void EditorInspectorSection::menu_option(int p_option) {
+	switch (p_option) {
+		case MENU_COPY_VALUE: {
+			Vector<EditorProperty*> properties;
+			Dictionary clipboard;
+			_collect_properties(this, properties);
+
+			clipboard["group_name"] = section;
+			for (EditorProperty* prop : properties) {
+				String property_name = prop->get_edited_property();
+				clipboard[property_name] = object->get(property_name);
+			}
+			InspectorDock::get_inspector_singleton()->set_property_clipboard(clipboard);
+		} break;
+		case MENU_PASTE_VALUE: {
+			Dictionary clipboard = InspectorDock::get_inspector_singleton()->get_property_clipboard();
+			String group_name = clipboard["group_name"];
+			String action_name = "Set group" + group_name;
+
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(action_name);
+
+			for (String property_name : clipboard.keys()) {
+				Variant value = clipboard[property_name];
+				undo_redo->add_do_property(object, property_name, value);
+				undo_redo->add_undo_property(object, property_name, object->get(property_name));
+			}
+
+			undo_redo->commit_action();
+		} break;
 	}
 }
 
@@ -5782,6 +5854,8 @@ EditorInspector::EditorInspector() {
 
 	ED_SHORTCUT("property_editor/copy_value", TTRC("Copy Value"), KeyModifierMask::CMD_OR_CTRL | Key::C);
 	ED_SHORTCUT("property_editor/paste_value", TTRC("Paste Value"), KeyModifierMask::CMD_OR_CTRL | Key::V);
+	ED_SHORTCUT("property_editor/copy_group_values", TTRC("Copy Group Values"), KeyModifierMask::CMD_OR_CTRL | Key::C);
+	ED_SHORTCUT("property_editor/paste_group_values", TTRC("Paste Group Values"), KeyModifierMask::CMD_OR_CTRL | Key::V);
 	ED_SHORTCUT("property_editor/copy_property_path", TTRC("Copy Property Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 
 	// `use_settings_name_style` is true by default, set the name style accordingly.

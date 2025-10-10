@@ -378,6 +378,11 @@ class EditorInspectorSection : public Container {
 
 	friend class EditorInspector;
 
+	enum MenuItems {
+		MENU_COPY_VALUE,
+		MENU_PASTE_VALUE,
+	};
+
 	String label;
 	String section;
 	Color bg_color;
@@ -400,6 +405,8 @@ class EditorInspectorSection : public Container {
 	bool header_hover = false;
 
 	bool checkbox_only = false;
+
+	PopupMenu *menu = nullptr;
 
 	HashSet<StringName> revertable_properties;
 
@@ -475,6 +482,10 @@ public:
 	void property_can_revert_changed(const String &p_path, bool p_can_revert);
 	void _property_edited(const String &p_property);
 	void update_property();
+
+	void _update_popup();
+	void _collect_properties(EditorInspectorSection* targetSection, Vector<EditorProperty*>& out_properties);
+	void menu_option(int p_option);
 
 	EditorInspectorSection();
 	~EditorInspectorSection();
