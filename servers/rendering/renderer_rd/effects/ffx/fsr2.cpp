@@ -79,13 +79,14 @@ FSR2Effect::FSR2Effect() {
 		pass.shader_version = pass.shader->version_create();
 		pass.shader_variant = capabilities.fp16Supported ? 1 : 0;
 
-		pass.sampled_bindings = {
+		pass.sampled_texture_bindings = {
 			FfxResourceBinding{ 0, 0, 0, L"r_reconstructed_previous_nearest_depth" },
 			FfxResourceBinding{ 1, 0, 0, L"r_dilated_motion_vectors" },
 			FfxResourceBinding{ 2, 0, 0, L"r_dilatedDepth" },
 			FfxResourceBinding{ 3, 0, 0, L"r_reactive_mask" },
 			FfxResourceBinding{ 4, 0, 0, L"r_transparency_and_composition_mask" },
-			FfxResourceBinding{ 5, 0, 0, L"r_prepared_input_color" },
+			// Godot render graph forces one resource to serve only one usage so we have to remove this binding
+			// FfxResourceBinding{ 5, 0, 0, L"r_prepared_input_color" },
 			FfxResourceBinding{ 6, 0, 0, L"r_previous_dilated_motion_vectors" },
 			FfxResourceBinding{ 7, 0, 0, L"r_input_motion_vectors" },
 			FfxResourceBinding{ 8, 0, 0, L"r_input_color_jittered" },
@@ -93,7 +94,7 @@ FSR2Effect::FSR2Effect() {
 			FfxResourceBinding{ 10, 0, 0, L"r_input_exposure" }
 		};
 
-		pass.storage_bindings = {
+		pass.storage_texture_bindings = {
 			// FSR2_BIND_UAV_DEPTH_CLIP (11) does not point to anything.
 			FfxResourceBinding{ 2012, 0, 0, L"rw_dilated_reactive_masks" },
 			FfxResourceBinding{ 2013, 0, 0, L"rw_prepared_input_color" }
@@ -111,7 +112,7 @@ FSR2Effect::FSR2Effect() {
 		pass.shader_version = pass.shader->version_create();
 		pass.shader_variant = capabilities.fp16Supported ? 1 : 0;
 
-		pass.sampled_bindings = {
+		pass.sampled_texture_bindings = {
 			FfxResourceBinding{ 0, 0, 0, L"r_input_motion_vectors" },
 			FfxResourceBinding{ 1, 0, 0, L"r_input_depth" },
 			FfxResourceBinding{ 2, 0, 0, L"r_input_color_jittered" },
@@ -119,7 +120,7 @@ FSR2Effect::FSR2Effect() {
 			FfxResourceBinding{ 4, 0, 0, L"r_luma_history" }
 		};
 
-		pass.storage_bindings = {
+		pass.storage_texture_bindings = {
 			FfxResourceBinding{ 2005, 0, 0, L"rw_reconstructed_previous_nearest_depth" },
 			FfxResourceBinding{ 2006, 0, 0, L"rw_dilated_motion_vectors" },
 			FfxResourceBinding{ 2007, 0, 0, L"rw_dilatedDepth" },
@@ -141,11 +142,11 @@ FSR2Effect::FSR2Effect() {
 		pass.shader_version = pass.shader->version_create();
 		pass.shader_variant = capabilities.fp16Supported ? 1 : 0;
 
-		pass.sampled_bindings = {
+		pass.sampled_texture_bindings = {
 			FfxResourceBinding{ 0, 0, 0, L"r_lock_input_luma" }
 		};
 
-		pass.storage_bindings = {
+		pass.storage_texture_bindings = {
 			FfxResourceBinding{ 2001, 0, 0, L"rw_new_locks" },
 			FfxResourceBinding{ 2002, 0, 0, L"rw_reconstructed_previous_nearest_depth" }
 		};
@@ -170,7 +171,7 @@ FSR2Effect::FSR2Effect() {
 		pass.shader_version = pass.shader->version_create();
 		pass.shader_variant = capabilities.fp16Supported && fp16_path_supported ? 2 : 0;
 
-		pass.sampled_bindings = {
+		pass.sampled_texture_bindings = {
 			FfxResourceBinding{ 0, 0, 0, L"r_input_exposure" },
 			FfxResourceBinding{ 1, 0, 0, L"r_dilated_reactive_masks" },
 			FfxResourceBinding{ 2, 0, 0, L"r_input_motion_vectors" },
@@ -186,7 +187,7 @@ FSR2Effect::FSR2Effect() {
 			FfxResourceBinding{ 12, 0, 0, L"r_luma_history" }
 		};
 
-		pass.storage_bindings = {
+		pass.storage_texture_bindings = {
 			FfxResourceBinding{ 2013, 0, 0, L"rw_internal_upscaled_color" },
 			FfxResourceBinding{ 2014, 0, 0, L"rw_lock_status" },
 			FfxResourceBinding{ 2015, 0, 0, L"rw_upscaled_output" },
@@ -210,12 +211,12 @@ FSR2Effect::FSR2Effect() {
 		pass.shader->initialize(modes_single, general_defines);
 		pass.shader_version = pass.shader->version_create();
 
-		pass.sampled_bindings = {
+		pass.sampled_texture_bindings = {
 			FfxResourceBinding{ 0, 0, 0, L"r_input_exposure" },
 			FfxResourceBinding{ 1, 0, 0, L"r_rcas_input" }
 		};
 
-		pass.storage_bindings = {
+		pass.storage_texture_bindings = {
 			FfxResourceBinding{ 2002, 0, 0, L"rw_upscaled_output" }
 		};
 
@@ -231,11 +232,11 @@ FSR2Effect::FSR2Effect() {
 		pass.shader->initialize(modes_single, general_defines);
 		pass.shader_version = pass.shader->version_create();
 
-		pass.sampled_bindings = {
+		pass.sampled_texture_bindings = {
 			FfxResourceBinding{ 0, 0, 0, L"r_input_color_jittered" }
 		};
 
-		pass.storage_bindings = {
+		pass.storage_texture_bindings = {
 			FfxResourceBinding{ 2001, 0, 0, L"rw_spd_global_atomic" },
 			FfxResourceBinding{ 2002, 0, 0, L"rw_img_mip_shading_change" },
 			FfxResourceBinding{ 2003, 0, 0, L"rw_img_mip_5" },
@@ -255,12 +256,12 @@ FSR2Effect::FSR2Effect() {
 		pass.shader_version = pass.shader->version_create();
 		pass.shader_variant = capabilities.fp16Supported ? 1 : 0;
 
-		pass.sampled_bindings = {
+		pass.sampled_texture_bindings = {
 			FfxResourceBinding{ 0, 0, 0, L"r_input_opaque_only" },
 			FfxResourceBinding{ 1, 0, 0, L"r_input_color_jittered" }
 		};
 
-		pass.storage_bindings = {
+		pass.storage_texture_bindings = {
 			FfxResourceBinding{ 2002, 0, 0, L"rw_output_autoreactive" }
 		};
 
@@ -277,7 +278,7 @@ FSR2Effect::FSR2Effect() {
 		pass.shader_version = pass.shader->version_create();
 		pass.shader_variant = capabilities.fp16Supported ? 1 : 0;
 
-		pass.sampled_bindings = {
+		pass.sampled_texture_bindings = {
 			FfxResourceBinding{ 0, 0, 0, L"r_input_opaque_only" },
 			FfxResourceBinding{ 1, 0, 0, L"r_input_color_jittered" },
 			FfxResourceBinding{ 2, 0, 0, L"r_input_motion_vectors" },
@@ -287,7 +288,7 @@ FSR2Effect::FSR2Effect() {
 			FfxResourceBinding{ 6, 0, 0, L"r_transparency_and_composition_mask" },
 		};
 
-		pass.storage_bindings = {
+		pass.storage_texture_bindings = {
 			FfxResourceBinding{ 2007, 0, 0, L"rw_output_autoreactive" },
 			FfxResourceBinding{ 2008, 0, 0, L"rw_output_autocomposition" },
 			FfxResourceBinding{ 2009, 0, 0, L"rw_output_prev_color_pre_alpha" },
@@ -366,7 +367,7 @@ void FSR2Effect::upscale(const Parameters &p_params) {
 	dispatch_desc.autoReactiveScale = 1.0f;
 	dispatch_desc.autoReactiveMax = 1.0f;
 
-	// RendererRD::MaterialStorage::store_camera(p_params.reprojection, dispatch_desc.repro);
+	RendererRD::MaterialStorage::store_camera(p_params.reprojection, dispatch_desc.reprojectionMatrix);
 
 	FfxErrorCode result = ffxFsr2ContextDispatch(&p_params.context->fsr_context, &dispatch_desc);
 	ERR_FAIL_COND(result != FFX_OK);

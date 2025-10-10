@@ -15,6 +15,9 @@ thirdparty_dir = "#thirdparty/amd-ffx/"
 thirdparty_sources = ["ffx_assert.cpp", "ffx_frameinterpolation.cpp", "ffx_fsr1.cpp", "ffx_fsr2.cpp", "ffx_fsr3.cpp", "ffx_fsr3upscaler.cpp", "ffx_message.cpp", "ffx_object_management.cpp", "ffx_opticalflow.cpp"]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
+if env.dev_build:
+    env_effects.Append(CPPDEFINES=["FFX_DEBUG"])
+
 env_effects.Prepend(CPPPATH=[thirdparty_dir])
 
 

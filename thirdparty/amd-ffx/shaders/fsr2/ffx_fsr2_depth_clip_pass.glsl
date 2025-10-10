@@ -30,7 +30,10 @@
 #define FSR2_BIND_SRV_DILATED_DEPTH                         2
 #define FSR2_BIND_SRV_REACTIVE_MASK                         3
 #define FSR2_BIND_SRV_TRANSPARENCY_AND_COMPOSITION_MASK     4
-#define FSR2_BIND_SRV_PREPARED_INPUT_COLOR                  5
+// GODOT BEGINS
+// Godot render graph forces one resource to serve only one usage so we have to remove this binding
+//#define FSR2_BIND_SRV_PREPARED_INPUT_COLOR                  5
+// GODOT ENDS
 #define FSR2_BIND_SRV_PREVIOUS_DILATED_MOTION_VECTORS       6
 #define FSR2_BIND_SRV_INPUT_MOTION_VECTORS                  7
 #define FSR2_BIND_SRV_INPUT_COLOR                           8

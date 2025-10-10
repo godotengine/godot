@@ -66,6 +66,11 @@ typedef struct Fsr2Constants {
     float                       deltaTime;
     float                       dynamicResChangeFactor;
     float                       viewSpaceToMetersFactor;
+
+    // GODOT BEGINS
+    float                       pad;
+    float                       reprojectionMatrix[16];
+    // GODOT ENDS
 } Fsr2Constants;
 
 struct FfxFsr2ContextDescription;
