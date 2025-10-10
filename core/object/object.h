@@ -926,22 +926,22 @@ public:
 
 	/* SCRIPT */
 
-// When in debug, some non-virtual functions can be overridden for multithreaded guards.
+// When in debug, some non-virtual functions can be overridden.
 #ifdef DEBUG_ENABLED
-#define MTVIRTUAL virtual
+#define DEBUG_VIRTUAL virtual
 #else
-#define MTVIRTUAL
+#define DEBUG_VIRTUAL
 #endif // DEBUG_ENABLED
 
-	MTVIRTUAL void set_script(const Variant &p_script);
-	MTVIRTUAL Variant get_script() const;
+	DEBUG_VIRTUAL void set_script(const Variant &p_script);
+	DEBUG_VIRTUAL Variant get_script() const;
 
-	MTVIRTUAL bool has_meta(const StringName &p_name) const;
-	MTVIRTUAL void set_meta(const StringName &p_name, const Variant &p_value);
-	MTVIRTUAL void remove_meta(const StringName &p_name);
-	MTVIRTUAL Variant get_meta(const StringName &p_name, const Variant &p_default = Variant()) const;
-	MTVIRTUAL void get_meta_list(List<StringName> *p_list) const;
-	MTVIRTUAL void merge_meta_from(const Object *p_src);
+	DEBUG_VIRTUAL bool has_meta(const StringName &p_name) const;
+	DEBUG_VIRTUAL void set_meta(const StringName &p_name, const Variant &p_value);
+	DEBUG_VIRTUAL void remove_meta(const StringName &p_name);
+	DEBUG_VIRTUAL Variant get_meta(const StringName &p_name, const Variant &p_default = Variant()) const;
+	DEBUG_VIRTUAL void get_meta_list(List<StringName> *p_list) const;
+	DEBUG_VIRTUAL void merge_meta_from(const Object *p_src);
 
 #ifdef TOOLS_ENABLED
 	void set_edited(bool p_edited);
@@ -968,18 +968,18 @@ public:
 		return emit_signalp(p_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
-	MTVIRTUAL Error emit_signalp(const StringName &p_name, const Variant **p_args, int p_argcount);
-	MTVIRTUAL bool has_signal(const StringName &p_name) const;
-	MTVIRTUAL void get_signal_list(List<MethodInfo> *p_signals) const;
-	MTVIRTUAL void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const;
-	MTVIRTUAL void get_all_signal_connections(List<Connection> *p_connections) const;
-	MTVIRTUAL int get_persistent_signal_connection_count() const;
-	MTVIRTUAL void get_signals_connected_to_this(List<Connection> *p_connections) const;
+	DEBUG_VIRTUAL Error emit_signalp(const StringName &p_name, const Variant **p_args, int p_argcount);
+	DEBUG_VIRTUAL bool has_signal(const StringName &p_name) const;
+	DEBUG_VIRTUAL void get_signal_list(List<MethodInfo> *p_signals) const;
+	DEBUG_VIRTUAL void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const;
+	DEBUG_VIRTUAL void get_all_signal_connections(List<Connection> *p_connections) const;
+	DEBUG_VIRTUAL int get_persistent_signal_connection_count() const;
+	DEBUG_VIRTUAL void get_signals_connected_to_this(List<Connection> *p_connections) const;
 
-	MTVIRTUAL Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0);
-	MTVIRTUAL void disconnect(const StringName &p_signal, const Callable &p_callable);
-	MTVIRTUAL bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
-	MTVIRTUAL bool has_connections(const StringName &p_signal) const;
+	DEBUG_VIRTUAL Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0);
+	DEBUG_VIRTUAL void disconnect(const StringName &p_signal, const Callable &p_callable);
+	DEBUG_VIRTUAL bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
+	DEBUG_VIRTUAL bool has_connections(const StringName &p_signal) const;
 
 	template <typename... VarArgs>
 	void call_deferred(const StringName &p_name, VarArgs... p_args) {
