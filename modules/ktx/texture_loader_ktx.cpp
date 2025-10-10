@@ -33,6 +33,7 @@
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
 #include "scene/resources/image_texture.h"
+#include "servers/rendering/rendering_server.h"
 
 #include <ktx.h>
 #include <vk_format.h>
