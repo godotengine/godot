@@ -79,7 +79,7 @@ SnapshotDataObject::SnapshotDataObject(SceneDebuggerObject &p_obj, GameStateSnap
 					if (scr.is_valid()) {
 						ScriptInstance *scr_instance = scr->placeholder_instance_create(this);
 						if (scr_instance) {
-							set_script_and_instance(pvalue, scr_instance);
+							set_script_instance(scr_instance);
 						}
 					}
 				}
