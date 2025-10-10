@@ -11,8 +11,8 @@ env_effects = env.Clone()
 
 thirdparty_obj = []
 
-thirdparty_dir = "#thirdparty/amd-fsr2/"
-thirdparty_sources = ["ffx_assert.cpp", "ffx_fsr2.cpp"]
+thirdparty_dir = "#thirdparty/amd-ffx/"
+thirdparty_sources = ["ffx_assert.cpp", "ffx_frameinterpolation.cpp", "ffx_fsr1.cpp", "ffx_fsr2.cpp", "ffx_fsr3.cpp", "ffx_fsr3upscaler.cpp", "ffx_message.cpp", "ffx_object_management.cpp", "ffx_opticalflow.cpp"]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
 env_effects.Prepend(CPPPATH=[thirdparty_dir])
@@ -69,6 +69,7 @@ env.servers_sources += thirdparty_obj
 module_obj = []
 
 env_effects.add_source_files(module_obj, "*.cpp")
+env_effects.add_source_files(module_obj, "ffx/*.cpp")
 if env["metal"]:
     env_effects.add_source_files(module_obj, "metal_fx.mm")
 env.servers_sources += module_obj

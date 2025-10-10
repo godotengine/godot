@@ -169,7 +169,7 @@ static uint32_t ffx_usage_to_rd_usage_flags(uint32_t p_flags) {
 }
 
 static FfxErrorCode create_backend_context_rd(FfxFsr2Interface *p_backend_interface, FfxDevice p_device) {
-	FSR2Context::Scratch &scratch = *reinterpret_cast<FSR2Context::Scratch *>(p_backend_interface->scratchBuffer);
+	FSR2ContextOld::Scratch &scratch = *reinterpret_cast<FSR2ContextOld::Scratch *>(p_backend_interface->scratchBuffer);
 
 	// Store pointer to the device common to all contexts.
 	scratch.device = p_device;
@@ -185,7 +185,7 @@ static FfxErrorCode create_backend_context_rd(FfxFsr2Interface *p_backend_interf
 }
 
 static FfxErrorCode get_device_capabilities_rd(FfxFsr2Interface *p_backend_interface, FfxDeviceCapabilities *p_out_device_capabilities, FfxDevice p_device) {
-	FSR2Effect::Device &effect_device = *reinterpret_cast<FSR2Effect::Device *>(p_device);
+	FSR2EffectOld::Device &effect_device = *reinterpret_cast<FSR2EffectOld::Device *>(p_device);
 
 	*p_out_device_capabilities = effect_device.capabilities;
 
@@ -193,7 +193,7 @@ static FfxErrorCode get_device_capabilities_rd(FfxFsr2Interface *p_backend_inter
 }
 
 static FfxErrorCode destroy_backend_context_rd(FfxFsr2Interface *p_backend_interface) {
-	FSR2Context::Scratch &scratch = *reinterpret_cast<FSR2Context::Scratch *>(p_backend_interface->scratchBuffer);
+	FSR2ContextOld::Scratch &scratch = *reinterpret_cast<FSR2ContextOld::Scratch *>(p_backend_interface->scratchBuffer);
 
 	for (uint32_t i = 0; i < FSR2_UBO_RING_BUFFER_SIZE; i++) {
 		RD::get_singleton()->free_rid(scratch.ubo_ring_buffer[i]);
@@ -208,7 +208,7 @@ static FfxErrorCode create_resource_rd(FfxFsr2Interface *p_backend_interface, co
 	ERR_FAIL_COND_V(p_create_resource_description->heapType != FFX_HEAP_TYPE_DEFAULT, FFX_ERROR_INVALID_ARGUMENT);
 
 	RenderingDevice *rd = RD::get_singleton();
-	FSR2Context::Scratch &scratch = *reinterpret_cast<FSR2Context::Scratch *>(p_backend_interface->scratchBuffer);
+	FSR2ContextOld::Scratch &scratch = *reinterpret_cast<FSR2ContextOld::Scratch *>(p_backend_interface->scratchBuffer);
 	FfxResourceDescription res_desc = p_create_resource_description->resourceDescription;
 
 	// FSR2's base implementation never requests buffer creation.
@@ -255,18 +255,18 @@ static FfxErrorCode register_resource_rd(FfxFsr2Interface *p_backend_interface, 
 		return FFX_OK;
 	}
 
-	FSR2Context::Scratch &scratch = *reinterpret_cast<FSR2Context::Scratch *>(p_backend_interface->scratchBuffer);
+	FSR2ContextOld::Scratch &scratch = *reinterpret_cast<FSR2ContextOld::Scratch *>(p_backend_interface->scratchBuffer);
 	const RID &rid = *reinterpret_cast<const RID *>(p_in_resource->resource);
 	ERR_FAIL_COND_V(rid.is_null(), FFX_ERROR_INVALID_ARGUMENT);
 
 	// Add the resource to the storage and use the internal index to reference it.
-	p_out_resource->internalIndex = scratch.resources.add(rid, true, FSR2Context::RESOURCE_ID_DYNAMIC, p_in_resource->description);
+	p_out_resource->internalIndex = scratch.resources.add(rid, true, FSR2ContextOld::RESOURCE_ID_DYNAMIC, p_in_resource->description);
 
 	return FFX_OK;
 }
 
 static FfxErrorCode unregister_resources_rd(FfxFsr2Interface *p_backend_interface) {
-	FSR2Context::Scratch &scratch = *reinterpret_cast<FSR2Context::Scratch *>(p_backend_interface->scratchBuffer);
+	FSR2ContextOld::Scratch &scratch = *reinterpret_cast<FSR2ContextOld::Scratch *>(p_backend_interface->scratchBuffer);
 	LocalVector<uint32_t> dynamic_list_copy = scratch.resources.dynamic_list;
 	for (uint32_t i : dynamic_list_copy) {
 		scratch.resources.remove(i);
@@ -277,7 +277,7 @@ static FfxErrorCode unregister_resources_rd(FfxFsr2Interface *p_backend_interfac
 
 static FfxResourceDescription get_resource_description_rd(FfxFsr2Interface *p_backend_interface, FfxResourceInternal p_resource) {
 	if (p_resource.internalIndex != -1) {
-		FSR2Context::Scratch &scratch = *reinterpret_cast<FSR2Context::Scratch *>(p_backend_interface->scratchBuffer);
+		FSR2ContextOld::Scratch &scratch = *reinterpret_cast<FSR2ContextOld::Scratch *>(p_backend_interface->scratchBuffer);
 		return scratch.resources.descriptions[p_resource.internalIndex];
 	} else {
 		return {};
@@ -286,7 +286,7 @@ static FfxResourceDescription get_resource_description_rd(FfxFsr2Interface *p_ba
 
 static FfxErrorCode destroy_resource_rd(FfxFsr2Interface *p_backend_interface, FfxResourceInternal p_resource) {
 	if (p_resource.internalIndex != -1) {
-		FSR2Context::Scratch &scratch = *reinterpret_cast<FSR2Context::Scratch *>(p_backend_interface->scratchBuffer);
+		FSR2ContextOld::Scratch &scratch = *reinterpret_cast<FSR2ContextOld::Scratch *>(p_backend_interface->scratchBuffer);
 		if (scratch.resources.rids[p_resource.internalIndex].is_valid()) {
 			RD::get_singleton()->free_rid(scratch.resources.rids[p_resource.internalIndex]);
 			scratch.resources.remove(p_resource.internalIndex);
@@ -297,9 +297,9 @@ static FfxErrorCode destroy_resource_rd(FfxFsr2Interface *p_backend_interface, F
 }
 
 static FfxErrorCode create_pipeline_rd(FfxFsr2Interface *p_backend_interface, FfxFsr2Pass p_pass, const FfxPipelineDescription *p_pipeline_description, FfxPipelineState *p_out_pipeline) {
-	FSR2Context::Scratch &scratch = *reinterpret_cast<FSR2Context::Scratch *>(p_backend_interface->scratchBuffer);
-	FSR2Effect::Device &device = *reinterpret_cast<FSR2Effect::Device *>(scratch.device);
-	FSR2Effect::Pass &effect_pass = device.passes[p_pass];
+	FSR2ContextOld::Scratch &scratch = *reinterpret_cast<FSR2ContextOld::Scratch *>(p_backend_interface->scratchBuffer);
+	FSR2EffectOld::Device &device = *reinterpret_cast<FSR2EffectOld::Device *>(scratch.device);
+	FSR2EffectOld::Pass &effect_pass = device.passes[p_pass];
 
 	if (effect_pass.pipeline.pipeline_rid.is_null()) {
 		// Create pipeline for the device if it hasn't been created yet.
@@ -350,13 +350,13 @@ static FfxErrorCode schedule_gpu_job_rd(FfxFsr2Interface *p_backend_interface, c
 	ERR_FAIL_NULL_V(p_backend_interface, FFX_ERROR_INVALID_ARGUMENT);
 	ERR_FAIL_NULL_V(p_job, FFX_ERROR_INVALID_ARGUMENT);
 
-	FSR2Context::Scratch &scratch = *reinterpret_cast<FSR2Context::Scratch *>(p_backend_interface->scratchBuffer);
+	FSR2ContextOld::Scratch &scratch = *reinterpret_cast<FSR2ContextOld::Scratch *>(p_backend_interface->scratchBuffer);
 	scratch.gpu_jobs.push_back(*p_job);
 
 	return FFX_OK;
 }
 
-static FfxErrorCode execute_gpu_job_clear_float_rd(FSR2Context::Scratch &p_scratch, const FfxClearFloatJobDescription &p_job) {
+static FfxErrorCode execute_gpu_job_clear_float_rd(FSR2ContextOld::Scratch &p_scratch, const FfxClearFloatJobDescription &p_job) {
 	RID resource = p_scratch.resources.rids[p_job.target.internalIndex];
 	FfxResourceDescription &desc = p_scratch.resources.descriptions[p_job.target.internalIndex];
 
@@ -368,7 +368,7 @@ static FfxErrorCode execute_gpu_job_clear_float_rd(FSR2Context::Scratch &p_scrat
 	return FFX_OK;
 }
 
-static FfxErrorCode execute_gpu_job_copy_rd(FSR2Context::Scratch &p_scratch, const FfxCopyJobDescription &p_job) {
+static FfxErrorCode execute_gpu_job_copy_rd(FSR2ContextOld::Scratch &p_scratch, const FfxCopyJobDescription &p_job) {
 	RID src = p_scratch.resources.rids[p_job.src.internalIndex];
 	RID dst = p_scratch.resources.rids[p_job.dst.internalIndex];
 	FfxResourceDescription &src_desc = p_scratch.resources.descriptions[p_job.src.internalIndex];
@@ -384,14 +384,14 @@ static FfxErrorCode execute_gpu_job_copy_rd(FSR2Context::Scratch &p_scratch, con
 	return FFX_OK;
 }
 
-static FfxErrorCode execute_gpu_job_compute_rd(FSR2Context::Scratch &p_scratch, const FfxComputeJobDescription &p_job) {
+static FfxErrorCode execute_gpu_job_compute_rd(FSR2ContextOld::Scratch &p_scratch, const FfxComputeJobDescription &p_job) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL_V(uniform_set_cache, FFX_ERROR_BACKEND_API_ERROR);
 
-	FSR2Effect::RootSignature &root_signature = *reinterpret_cast<FSR2Effect::RootSignature *>(p_job.pipeline.rootSignature);
+	FSR2EffectOld::RootSignature &root_signature = *reinterpret_cast<FSR2EffectOld::RootSignature *>(p_job.pipeline.rootSignature);
 	ERR_FAIL_COND_V(root_signature.shader_rid.is_null(), FFX_ERROR_INVALID_ARGUMENT);
 
-	FSR2Effect::Pipeline &backend_pipeline = *reinterpret_cast<FSR2Effect::Pipeline *>(p_job.pipeline.pipeline);
+	FSR2EffectOld::Pipeline &backend_pipeline = *reinterpret_cast<FSR2EffectOld::Pipeline *>(p_job.pipeline.pipeline);
 	ERR_FAIL_COND_V(backend_pipeline.pipeline_rid.is_null(), FFX_ERROR_INVALID_ARGUMENT);
 
 	thread_local LocalVector<RD::Uniform> compute_uniforms;
@@ -441,7 +441,7 @@ static FfxErrorCode execute_gpu_job_compute_rd(FSR2Context::Scratch &p_scratch, 
 		compute_uniforms.push_back(buffer_uniform);
 	}
 
-	FSR2Effect::Device &device = *reinterpret_cast<FSR2Effect::Device *>(p_scratch.device);
+	FSR2EffectOld::Device &device = *reinterpret_cast<FSR2EffectOld::Device *>(p_scratch.device);
 	RD::Uniform u_point_clamp_sampler(RD::UniformType::UNIFORM_TYPE_SAMPLER, 0, device.point_clamp_sampler);
 	RD::Uniform u_linear_clamp_sampler(RD::UniformType::UNIFORM_TYPE_SAMPLER, 1, device.linear_clamp_sampler);
 
@@ -458,7 +458,7 @@ static FfxErrorCode execute_gpu_job_compute_rd(FSR2Context::Scratch &p_scratch, 
 static FfxErrorCode execute_gpu_jobs_rd(FfxFsr2Interface *p_backend_interface, FfxCommandList p_command_list) {
 	ERR_FAIL_NULL_V(p_backend_interface, FFX_ERROR_INVALID_ARGUMENT);
 
-	FSR2Context::Scratch &scratch = *reinterpret_cast<FSR2Context::Scratch *>(p_backend_interface->scratchBuffer);
+	FSR2ContextOld::Scratch &scratch = *reinterpret_cast<FSR2ContextOld::Scratch *>(p_backend_interface->scratchBuffer);
 	FfxErrorCode error_code = FFX_OK;
 	for (const FfxGpuJobDescription &job : scratch.gpu_jobs) {
 		switch (job.jobType) {
@@ -509,11 +509,11 @@ static FfxResource get_resource_rd(RID *p_rid, const wchar_t *p_name) {
 	return res;
 }
 
-FSR2Context::~FSR2Context() {
+FSR2ContextOld::~FSR2ContextOld() {
 	ffxFsr2ContextDestroy(&fsr_context);
 }
 
-FSR2Effect::FSR2Effect() {
+FSR2EffectOld::FSR2EffectOld() {
 	FfxDeviceCapabilities &capabilities = device.capabilities;
 	capabilities.minimumSupportedShaderModel = FFX_SHADER_MODEL_5_1;
 	capabilities.waveLaneCountMin = 32;
@@ -791,7 +791,7 @@ FSR2Effect::FSR2Effect() {
 	ERR_FAIL_COND(device.linear_clamp_sampler.is_null());
 }
 
-FSR2Effect::~FSR2Effect() {
+FSR2EffectOld::~FSR2EffectOld() {
 	RD::get_singleton()->free_rid(device.point_clamp_sampler);
 	RD::get_singleton()->free_rid(device.linear_clamp_sampler);
 
@@ -800,8 +800,8 @@ FSR2Effect::~FSR2Effect() {
 	}
 }
 
-FSR2Context *FSR2Effect::create_context(Size2i p_internal_size, Size2i p_target_size) {
-	FSR2Context *context = memnew(RendererRD::FSR2Context);
+FSR2ContextOld *FSR2EffectOld::create_context(Size2i p_internal_size, Size2i p_target_size) {
+	FSR2ContextOld *context = memnew(RendererRD::FSR2ContextOld);
 	context->fsr_desc.flags = FFX_FSR2_ENABLE_HIGH_DYNAMIC_RANGE | FFX_FSR2_ENABLE_DEPTH_INVERTED;
 	context->fsr_desc.maxRenderSize.width = p_internal_size.x;
 	context->fsr_desc.maxRenderSize.height = p_internal_size.y;
@@ -834,7 +834,7 @@ FSR2Context *FSR2Effect::create_context(Size2i p_internal_size, Size2i p_target_
 	}
 }
 
-void FSR2Effect::upscale(const Parameters &p_params) {
+void FSR2EffectOld::upscale(const Parameters &p_params) {
 	// TODO: Transparency & Composition mask is not implemented.
 	FfxFsr2DispatchDescription dispatch_desc = {};
 	RID color = p_params.color;
