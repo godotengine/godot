@@ -31,6 +31,7 @@
 #include "texture.h"
 
 #include "scene/resources/placeholder_textures.h"
+#include "servers/rendering/rendering_server.h"
 
 int Texture2D::get_width() const {
 	int ret = 0;
