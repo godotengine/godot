@@ -360,8 +360,13 @@ void CameraMacOS::update_feeds() {
 			newfeed.instantiate();
 			newfeed->set_device(device);
 
-			// assume display camera so inverse
-			Transform2D transform = Transform2D(-1.0, 0.0, 0.0, -1.0, 1.0, 1.0);
+			// Front cameras need mirroring for display, back cameras don't
+			Transform2D transform;
+			if ([device position] == AVCaptureDevicePositionFront) {
+				transform = Transform2D(-1.0, 0.0, 0.0, -1.0, 1.0, 1.0);
+			} else {
+				transform = Transform2D(1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+			}
 			newfeed->set_transform(transform);
 
 			add_feed(newfeed);
