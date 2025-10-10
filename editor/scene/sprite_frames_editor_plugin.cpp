@@ -324,17 +324,46 @@ void SpriteFramesEditor::_sheet_zoom_on_position(float p_zoom, const Vector2 &p_
 }
 
 void SpriteFramesEditor::_sheet_zoom_in() {
+	sheet_zoom_fitted = false;
 	_sheet_zoom_on_position(scale_ratio, Vector2());
 }
 
 void SpriteFramesEditor::_sheet_zoom_out() {
+	sheet_zoom_fitted = false;
 	_sheet_zoom_on_position(1 / scale_ratio, Vector2());
 }
 
 void SpriteFramesEditor::_sheet_zoom_reset() {
+	sheet_zoom_fitted = false;
 	// Default the zoom to match the editor scale, but don't dezoom on editor scales below 100% to prevent pixel art from looking bad.
 	sheet_zoom = MAX(1.0f, EDSCALE);
 	Size2 texture_size = split_sheet_preview->get_texture()->get_size();
+	split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
+}
+
+void SpriteFramesEditor::_sheet_zoom_fit() {
+	sheet_zoom_fitted = true;
+
+	const float margin_percentage = 0.1f;
+	const Size2 max_margin = Vector2(64.0f, 64.0f);
+	const Size2 margin = (margin_percentage * split_sheet_scroll->get_size()).min(max_margin);
+	const Size2 display_area_size = split_sheet_scroll->get_size() - margin;
+	const Size2 texture_size = split_sheet_preview->get_texture()->get_size();
+	const Vector2 texture_ratio = display_area_size / texture_size;
+	const float texture_fit_zoom = MIN(texture_ratio.x, texture_ratio.y);
+
+	const Size2 min_frame_size = Size2(64.0, 64.0);
+	const Size2 frame_size = _get_frame_size().maxi(1);
+	const Size2 frame_ratio = min_frame_size / frame_size;
+	const float frame_fit_zoom = MAX(frame_ratio.x, frame_ratio.y);
+
+	// Zoom in to fit the texture or to ensure minimum frame render size.
+	// Zoom is floored to avoid subpixel rendering issues.
+	const float fit_zoom = Math::floor(MAX(texture_fit_zoom, frame_fit_zoom));
+
+	// Default the zoom to match the editor scale
+	// and don't dezoom below 100% to prevent pixels merging.
+	sheet_zoom = MAX(MAX(fit_zoom, 1.0f), EDSCALE);
 	split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
 }
 
@@ -484,6 +513,10 @@ void SpriteFramesEditor::_sheet_spin_changed(double p_value, int p_dominant_para
 		} break;
 	}
 
+	if (sheet_zoom_fitted) {
+		_sheet_zoom_fit();
+	}
+
 	updating_split_settings = false;
 
 	frames_selected.clear();
@@ -596,6 +629,7 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 	selected_count = 0;
 	last_frame_selected = -1;
 
+	bool first_open = split_sheet_preview->get_texture().is_null();
 	bool new_texture = texture != split_sheet_preview->get_texture();
 	split_sheet_preview->set_texture(texture);
 	if (new_texture) {
@@ -626,7 +660,11 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 		previous_texture_size = size;
 
 		// Reset zoom.
-		_sheet_zoom_reset();
+		if (first_open) {
+			split_sheet_dialog->connect(SceneStringName(focus_entered), callable_mp(this, &SpriteFramesEditor::_sheet_zoom_fit), CONNECT_ONE_SHOT);
+		} else {
+			_sheet_zoom_fit();
+		}
 	}
 
 	split_sheet_dialog->popup_centered_ratio(0.65);
@@ -669,8 +707,8 @@ void SpriteFramesEditor::_notification(int p_what) {
 			delete_anim->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 			anim_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			split_sheet_zoom_out->set_button_icon(get_editor_theme_icon(SNAME("ZoomLess")));
-			split_sheet_zoom_reset->set_button_icon(get_editor_theme_icon(SNAME("ZoomReset")));
 			split_sheet_zoom_in->set_button_icon(get_editor_theme_icon(SNAME("ZoomMore")));
+			split_sheet_zoom_fit->set_button_icon(get_editor_theme_icon(SNAME("DistractionFree")));
 			split_sheet_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 
 			_update_show_settings();
@@ -2390,19 +2428,19 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_zoom_out->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_sheet_zoom_out));
 	split_sheet_zoom_hb->add_child(split_sheet_zoom_out);
 
-	split_sheet_zoom_reset = memnew(Button);
-	split_sheet_zoom_reset->set_theme_type_variation(SceneStringName(FlatButton));
-	split_sheet_zoom_reset->set_focus_mode(FOCUS_ACCESSIBILITY);
-	split_sheet_zoom_reset->set_tooltip_text(TTRC("Zoom Reset"));
-	split_sheet_zoom_reset->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_sheet_zoom_reset));
-	split_sheet_zoom_hb->add_child(split_sheet_zoom_reset);
-
 	split_sheet_zoom_in = memnew(Button);
 	split_sheet_zoom_in->set_theme_type_variation(SceneStringName(FlatButton));
 	split_sheet_zoom_in->set_focus_mode(FOCUS_ACCESSIBILITY);
 	split_sheet_zoom_in->set_tooltip_text(TTRC("Zoom In"));
 	split_sheet_zoom_in->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_sheet_zoom_in));
 	split_sheet_zoom_hb->add_child(split_sheet_zoom_in);
+
+	split_sheet_zoom_fit = memnew(Button);
+	split_sheet_zoom_fit->set_theme_type_variation(SceneStringName(FlatButton));
+	split_sheet_zoom_fit->set_focus_mode(FOCUS_ACCESSIBILITY);
+	split_sheet_zoom_fit->set_tooltip_text(TTRC("Zoom to Fit Frames"));
+	split_sheet_zoom_fit->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_sheet_zoom_fit));
+	split_sheet_zoom_hb->add_child(split_sheet_zoom_fit);
 
 	split_sheet_settings_vb = memnew(VBoxContainer);
 	split_sheet_settings_vb->set_v_size_flags(SIZE_EXPAND_FILL);

@@ -161,8 +161,8 @@ class SpriteFramesEditor : public HSplitContainer {
 	SpinBox *split_sheet_offset_x = nullptr;
 	SpinBox *split_sheet_offset_y = nullptr;
 	Button *split_sheet_zoom_out = nullptr;
-	Button *split_sheet_zoom_reset = nullptr;
 	Button *split_sheet_zoom_in = nullptr;
+	Button *split_sheet_zoom_fit = nullptr;
 	Button *toggle_settings_button = nullptr;
 	OptionButton *split_sheet_order = nullptr;
 	EditorFileDialog *file_split_sheet = nullptr;
@@ -183,6 +183,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	float sheet_zoom;
 	float max_sheet_zoom;
 	float min_sheet_zoom;
+	bool sheet_zoom_fitted = false;
 
 	Size2i _get_frame_count() const;
 	Size2i _get_frame_size() const;
@@ -258,6 +259,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _sheet_zoom_in();
 	void _sheet_zoom_out();
 	void _sheet_zoom_reset();
+	void _sheet_zoom_fit();
 	void _sheet_order_selected(int p_option);
 	void _sheet_select_all_frames();
 	void _sheet_clear_all_frames();
