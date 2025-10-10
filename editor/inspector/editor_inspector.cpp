@@ -2369,6 +2369,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+		accept_event();
 		_update_popup();
 		menu->set_position(get_screen_position() + get_local_mouse_position());
 		menu->reset_size();
