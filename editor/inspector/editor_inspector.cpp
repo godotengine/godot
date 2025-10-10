@@ -32,6 +32,7 @@
 #include "editor_inspector.compat.inc"
 
 #include "core/os/keyboard.h"
+#include "editor/editor_interface.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/doc/doc_tools.h"
 #include "editor/docks/inspector_dock.h"
@@ -1757,8 +1758,66 @@ Size2 EditorInspectorCategory::get_minimum_size() const {
 	return ms;
 }
 
+void EditorInspectorCategory::_collect_properties(Vector<EditorProperty*>& out_properties) {
+	VBoxContainer* targetVbox = nullptr;
+
+	if (get_parent()->get_child(get_index() + 1)->get_child_count() == 1) {
+		targetVbox = cast_to<VBoxContainer>(get_parent()->get_child(get_index() + 1)->get_child(0));
+	} else {
+		targetVbox = cast_to<VBoxContainer>(get_parent()->get_child(get_index() + 1));
+	}
+
+	if (!targetVbox) {
+		return;
+	}
+
+	for (int i = 0; i < targetVbox->get_child_count(); i++) {
+		Node* child = targetVbox->get_child(i);
+
+		if (EditorProperty* prop = Object::cast_to<EditorProperty>(child)) {
+			out_properties.push_back(prop);
+		} else if (EditorInspectorSection* nested = Object::cast_to<EditorInspectorSection>(child)) {
+			nested->collect_properties(nested, out_properties);
+		} else if (EditorInspectorSection* nested = Object::cast_to<EditorInspectorSection>(child->get_child(0))) {
+			nested->collect_properties(nested, out_properties);
+		}
+	}
+}
+
 void EditorInspectorCategory::_handle_menu_option(int p_option) {
 	switch (p_option) {
+		case MENU_COPY_VALUE: {
+			Object* object = EditorInterface::get_singleton()->get_inspector()->get_edited_object();
+			Dictionary clipboard;
+			Vector<EditorProperty*> properties;
+			_collect_properties(properties);
+
+			clipboard["category_name"] = label;
+			for (EditorProperty* prop : properties) {
+				String property_name = prop->get_edited_property();
+				clipboard[property_name] = object->get(property_name);
+			}
+			InspectorDock::get_inspector_singleton()->set_property_clipboard(clipboard);
+		} break;
+
+		case MENU_PASTE_VALUE: {
+			Object* object = EditorInterface::get_singleton()->get_inspector()->get_edited_object();
+			Dictionary clipboard = InspectorDock::get_inspector_singleton()->get_property_clipboard();
+			String category_name = clipboard["category_name"];
+			String action_name = "Set category " + category_name;
+
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(action_name);
+
+			for (String property_name : clipboard.keys()) {
+				Variant value = clipboard[property_name];
+				undo_redo->add_do_property(object, property_name, value);
+				undo_redo->add_undo_property(object, property_name, object->get(property_name));
+			}
+
+			undo_redo->commit_action();
+		} break;
+
 		case MENU_OPEN_DOCS: {
 			ScriptEditor::get_singleton()->goto_help("class:" + doc_class_name);
 			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
@@ -1781,6 +1840,8 @@ void EditorInspectorCategory::_popup_context_menu(const Point2i &p_position) {
 		if (is_favorite) {
 			menu->add_item(TTRC("Unfavorite All"), MENU_UNFAVORITE_ALL);
 		} else {
+			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("property_editor/copy_category_values"), MENU_COPY_VALUE);
+			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("property_editor/paste_category_values"), MENU_PASTE_VALUE);
 			menu->add_item(TTRC("Open Documentation"), MENU_OPEN_DOCS);
 			menu->set_item_disabled(-1, !EditorHelp::get_doc_data()->class_list.has(doc_class_name));
 		}
@@ -2469,8 +2530,8 @@ void EditorInspectorSection::_update_popup() {
 	menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("property_editor/paste_group_values"), MENU_PASTE_VALUE);
 }
 
-void EditorInspectorSection::_collect_properties(EditorInspectorSection* targetSection, Vector<EditorProperty*>& out_properties) {
-	VBoxContainer* targetVbox = targetSection->get_vbox();
+void EditorInspectorSection::collect_properties(EditorInspectorSection* target_section, Vector<EditorProperty*>& out_properties) {
+	VBoxContainer* targetVbox = target_section->get_vbox();
 	if (!targetVbox) {
 		return;
 	}
@@ -2483,7 +2544,7 @@ void EditorInspectorSection::_collect_properties(EditorInspectorSection* targetS
 		} else if (Object::cast_to<VBoxContainer>(child) && child->get_child_count() > 0) {
 			if (EditorInspectorSection* nested = Object::cast_to<EditorInspectorSection>(child->get_child(0))) {
 				// Recursively collect from nested sections
-				_collect_properties(nested, out_properties);
+				collect_properties(nested, out_properties);
 			}
 		}
 	}
@@ -2494,7 +2555,7 @@ void EditorInspectorSection::menu_option(int p_option) {
 		case MENU_COPY_VALUE: {
 			Vector<EditorProperty*> properties;
 			Dictionary clipboard;
-			_collect_properties(this, properties);
+			collect_properties(this, properties);
 
 			clipboard["group_name"] = section;
 			for (EditorProperty* prop : properties) {
@@ -5854,6 +5915,8 @@ EditorInspector::EditorInspector() {
 
 	ED_SHORTCUT("property_editor/copy_value", TTRC("Copy Value"), KeyModifierMask::CMD_OR_CTRL | Key::C);
 	ED_SHORTCUT("property_editor/paste_value", TTRC("Paste Value"), KeyModifierMask::CMD_OR_CTRL | Key::V);
+	ED_SHORTCUT("property_editor/copy_category_values", TTRC("Copy Category Values"), KeyModifierMask::CMD_OR_CTRL | Key::C);
+	ED_SHORTCUT("property_editor/paste_category_values", TTRC("Paste Category Values"), KeyModifierMask::CMD_OR_CTRL | Key::V);
 	ED_SHORTCUT("property_editor/copy_group_values", TTRC("Copy Group Values"), KeyModifierMask::CMD_OR_CTRL | Key::C);
 	ED_SHORTCUT("property_editor/paste_group_values", TTRC("Paste Group Values"), KeyModifierMask::CMD_OR_CTRL | Key::V);
 	ED_SHORTCUT("property_editor/copy_property_path", TTRC("Copy Property Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);

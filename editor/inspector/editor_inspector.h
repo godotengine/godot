@@ -320,6 +320,8 @@ class EditorInspectorCategory : public Control {
 
 	// Right-click context menu options.
 	enum ClassMenuOption {
+		MENU_COPY_VALUE,
+		MENU_PASTE_VALUE,
 		MENU_OPEN_DOCS,
 		MENU_UNFAVORITE_ALL,
 	};
@@ -350,6 +352,7 @@ class EditorInspectorCategory : public Control {
 	bool is_favorite = false;
 	bool menu_icon_dirty = true;
 
+	void _collect_properties(Vector<EditorProperty*>& out_properties);
 	void _handle_menu_option(int p_option);
 	void _popup_context_menu(const Point2i &p_position);
 	void _update_icon();
@@ -484,7 +487,7 @@ public:
 	void update_property();
 
 	void _update_popup();
-	void _collect_properties(EditorInspectorSection* targetSection, Vector<EditorProperty*>& out_properties);
+	void collect_properties(EditorInspectorSection* target_section, Vector<EditorProperty*>& out_properties);
 	void menu_option(int p_option);
 
 	EditorInspectorSection();
