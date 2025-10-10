@@ -401,7 +401,7 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 				// Lamé curve for superellipse smoothing of corners.
 				// Corner smoothing strength of 0.0 produces a circular arc and results similar to corner_smoothing_enable == false.
 				// Higher smoothing strengths produce more rounded corner shapes.
-				// The corner_smoothing_strength is offset by -2.0f due to semantic reasons: to produce regular corner rounding when the strength is 0.0f.
+				// The corner_smoothing_strength is offset by +2.0f due to semantic reasons: to produce regular corner rounding when the strength is 0.0f.
                 x = inner_corner_radius[corner_idx] * cos_sign * Math::pow(cos_abs, 2.0f / (corner_smoothing_strength + 2.0f)) * inner_scale[corner_idx].x + inner_points[corner_idx].x;
                 y = inner_corner_radius[corner_idx] * sin_sign * Math::pow(sin_abs, 2.0f / (corner_smoothing_strength + 2.0f)) * inner_scale[corner_idx].y + inner_points[corner_idx].y;
 			}
