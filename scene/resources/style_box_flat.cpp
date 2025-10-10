@@ -402,8 +402,8 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 				// Corner smoothing strength of 0.0 produces a circular arc and results similar to corner_smoothing_enable == false.
 				// Higher smoothing strengths produce more rounded corner shapes.
 				// The corner_smoothing_strength is offset by -2.0f due to semantic reasons: to produce regular corner rounding when the strength is 0.0f.
-                x = inner_corner_radius[corner_idx] * cos_sign * Math::pow(cos_abs, 2.0f / corner_smoothing_strength + 2.0f) * inner_scale[corner_idx].x + inner_points[corner_idx].x;
-                y = inner_corner_radius[corner_idx] * sin_sign * Math::pow(sin_abs, 2.0f / corner_smoothing_strength + 2.0f) * inner_scale[corner_idx].y + inner_points[corner_idx].y;
+                x = inner_corner_radius[corner_idx] * cos_sign * Math::pow(cos_abs, 2.0f / (corner_smoothing_strength + 2.0f)) * inner_scale[corner_idx].x + inner_points[corner_idx].x;
+                y = inner_corner_radius[corner_idx] * sin_sign * Math::pow(sin_abs, 2.0f / (corner_smoothing_strength + 2.0f)) * inner_scale[corner_idx].y + inner_points[corner_idx].y;
 			}
 			else {
 				x = inner_corner_radius[corner_idx] * angle_cosine * inner_scale[corner_idx].x + inner_points[corner_idx].x;
@@ -421,8 +421,8 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 					real_t sin_abs = Math::abs(angle_sine);
 					real_t cos_sign = angle_cosine >= 0 ? 1.0f : -1.0f;
 					real_t sin_sign = angle_sine >= 0 ? 1.0f : -1.0f;
-					x = ring_corner_radius[corner_idx] * cos_sign * Math::pow(cos_abs, 2.0f / corner_smoothing_strength + 2.0f) * ring_scale[corner_idx].x + outer_points[corner_idx].x;
-					y = ring_corner_radius[corner_idx] * sin_sign * Math::pow(sin_abs, 2.0f / corner_smoothing_strength + 2.0f) * ring_scale[corner_idx].y + outer_points[corner_idx].y;
+					x = ring_corner_radius[corner_idx] * cos_sign * Math::pow(cos_abs, 2.0f / (corner_smoothing_strength + 2.0f)) * ring_scale[corner_idx].x + outer_points[corner_idx].x;
+					y = ring_corner_radius[corner_idx] * sin_sign * Math::pow(sin_abs, 2.0f / (corner_smoothing_strength + 2.0f)) * ring_scale[corner_idx].y + outer_points[corner_idx].y;
 				}
 				else {
 					x = ring_corner_radius[corner_idx] * angle_cosine * ring_scale[corner_idx].x + outer_points[corner_idx].x;
@@ -771,7 +771,7 @@ void StyleBoxFlat::_bind_methods() {
 	
 	ADD_GROUP("Corner Smoothing", "corner_smoothing_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "corner_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_use_corner_smoothing", "is_corner_smoothing_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "corner_smoothing_strength", PROPERTY_HINT_RANGE, "2.0,10,0.1"), "set_corner_smoothing_strength", "get_corner_smoothing_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "corner_smoothing_strength", PROPERTY_HINT_RANGE, "0.0,10,0.1"), "set_corner_smoothing_strength", "get_corner_smoothing_strength");
 
 	ADD_GROUP("Expand Margins", "expand_margin_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "expand_margin_left", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:px"), "set_expand_margin", "get_expand_margin", SIDE_LEFT);
