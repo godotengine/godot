@@ -80,8 +80,8 @@ public:
 	void set_corner_radius(Corner p_corner, const int radius);
 	int get_corner_radius(Corner p_corner) const;
 
-	void set_corner_smoothing_strength(real_t p_corner_smoothing_strength);
-	real_t get_corner_smoothing_strength() const;
+	void set_corner_radius_smoothing(real_t p_corner_radius_smoothing);
+	real_t get_corner_radius_smoothing() const;
 
 	void set_corner_detail(const int &p_corner_detail);
 	int get_corner_detail() const;
