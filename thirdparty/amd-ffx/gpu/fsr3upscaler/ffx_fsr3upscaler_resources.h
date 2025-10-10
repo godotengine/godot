@@ -1,0 +1,100 @@
+// This file is part of the FidelityFX SDK.
+//
+// Copyright (C) 2024 Advanced Micro Devices, Inc.
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files(the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and /or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions :
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+#ifndef FFX_FSR3UPSCALER_RESOURCES_H
+#define FFX_FSR3UPSCALER_RESOURCES_H
+
+#if defined(FFX_CPU) || defined(FFX_GPU)
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_NULL                                           0
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_INPUT_OPAQUE_ONLY                              1
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_INPUT_COLOR                                    2
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_INPUT_MOTION_VECTORS                           3
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_INPUT_DEPTH                                    4
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_INPUT_EXPOSURE                                 5
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_INPUT_REACTIVE_MASK                            6
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_INPUT_TRANSPARENCY_AND_COMPOSITION_MASK        7
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_RECONSTRUCTED_PREVIOUS_NEAREST_DEPTH           8
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_DILATED_MOTION_VECTORS                         9
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_DILATED_DEPTH                                  10
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_INTERNAL_UPSCALED_COLOR                        11
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_ACCUMULATION                                   12
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_NEW_LOCKS                                      13
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_LUMA_HISTORY                                   14
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_DEBUG_OUTPUT                                   15
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_LANCZOS_LUT                                    16
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_SPD_ATOMIC_COUNT                               17
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_UPSCALED_OUTPUT                                18
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_RCAS_INPUT                                     19
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_ACCUMULATION_1                                 20
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_ACCUMULATION_2                                 21
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_INTERNAL_UPSCALED_COLOR_1                      22
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_INTERNAL_UPSCALED_COLOR_2                      23
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_INTERNAL_DEFAULT_REACTIVITY                    24
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_INTERNAL_DEFAULT_TRANSPARENCY_AND_COMPOSITION  25
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_DILATED_REACTIVE_MASKS                         26
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_SPD_MIPS                                       27 // same as FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_SPD_MIPS_LEVEL_0
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_SPD_MIPS_LEVEL_0                               27
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_SPD_MIPS_LEVEL_1                               28
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_SPD_MIPS_LEVEL_2                               29
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_SPD_MIPS_LEVEL_3                               30
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_SPD_MIPS_LEVEL_4                               31
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_SPD_MIPS_LEVEL_5                               32
+
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_INTERNAL_DEFAULT_EXPOSURE                      33
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_FRAME_INFO                                     34
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_AUTOREACTIVE                                   35
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_AUTOCOMPOSITION_DEPRECATED                     36
+
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_LUMA_HISTORY_1                                 37
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_LUMA_HISTORY_2                                 38
+
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_LUMA_1                                         40
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_LUMA_2                                         41
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_SHADING_CHANGE                                 42
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_FARTHEST_DEPTH                                 43
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_FARTHEST_DEPTH_MIP1                            44
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_CURRENT_LUMA                                   45
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_PREVIOUS_LUMA                                  46
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_LUMA_INSTABILITY                               48
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_INTERMEDIATE_FP16x1                            49
+
+
+// Shading change detection mip level setting, value must be in the range [FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_SCENE_LUMINANCE_MIPMAP_0, FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_SCENE_LUMINANCE_MIPMAP_12]
+//#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_SCENE_LUMINANCE_MIPMAP_SHADING_CHANGE          FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_SCENE_LUMINANCE_MIPMAP_4
+//#define FFX_FSR3UPSCALER_SHADING_CHANGE_MIP_LEVEL                                           (FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_SCENE_LUMINANCE_MIPMAP_SHADING_CHANGE - FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_SCENE_LUMINANCE)
+
+#define FFX_FSR3UPSCALER_RESOURCE_IDENTIFIER_COUNT                                          60
+
+#define FFX_FSR3UPSCALER_CONSTANTBUFFER_IDENTIFIER_FSR3UPSCALER                             0
+#define FFX_FSR3UPSCALER_CONSTANTBUFFER_IDENTIFIER_SPD                                      1
+#define FFX_FSR3UPSCALER_CONSTANTBUFFER_IDENTIFIER_RCAS                                     2
+#define FFX_FSR3UPSCALER_CONSTANTBUFFER_IDENTIFIER_GENREACTIVE                              3
+#define FFX_FSR3UPSCALER_CONSTANTBUFFER_COUNT                                               4
+
+#define FFX_FSR3UPSCALER_AUTOREACTIVEFLAGS_APPLY_TONEMAP                                    1
+#define FFX_FSR3UPSCALER_AUTOREACTIVEFLAGS_APPLY_INVERSETONEMAP                             2
+#define FFX_FSR3UPSCALER_AUTOREACTIVEFLAGS_APPLY_THRESHOLD                                  4
+#define FFX_FSR3UPSCALER_AUTOREACTIVEFLAGS_USE_COMPONENTS_MAX                               8
+
+#endif // #if defined(FFX_CPU) || defined(FFX_GPU)
+
+#endif //!defined( FFX_FSR3UPSCALER_RESOURCES_H )

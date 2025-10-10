@@ -18,3 +18,4 @@ if "RD_GLSL" in env["BUILDERS"]:
         env.RD_GLSL(glsl_file)
 
 SConscript("fsr2/SCsub")
+SConscript("ffx/SCsub")
