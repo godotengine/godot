@@ -131,8 +131,10 @@ const Variant &Dictionary::operator[](const Variant &p_key) const {
 		VariantInternal::initialize(_p->typed_fallback, _p->typed_value.type);
 		return *_p->typed_fallback;
 	} else {
-		// Will not insert key, so no initialization is necessary.
-		return _p->variant_map[key];
+		static Variant empty;
+		const Variant *value = _p->variant_map.getptr(key);
+		ERR_FAIL_COND_V_MSG(!value, empty, "Bug: Dictionary::operator[] used when there was no value for the given key, please report.");
+		return *value;
 	}
 }
 
