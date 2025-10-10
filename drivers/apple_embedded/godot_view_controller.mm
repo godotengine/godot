@@ -42,6 +42,13 @@
 #import <AVFoundation/AVFoundation.h>
 #import <GameController/GameController.h>
 
+#include "modules/modules_enabled.gen.h" // For camera.
+
+#ifdef MODULE_CAMERA_ENABLED
+// C function from camera module to update orientation
+extern "C" void godot_camera_update_orientation_ios(int p_orientation);
+#endif
+
 @interface GDTViewController () <GDTViewDelegate>
 
 @property(strong, nonatomic) GDTViewRenderer *renderer;
@@ -237,6 +244,23 @@
 }
 
 // MARK: Orientation
+
+#if TARGET_OS_IPHONE
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+	[super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+
+	[coordinator animateAlongsideTransition:nil
+								 completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+#ifdef MODULE_CAMERA_ENABLED
+									 // Get the new interface orientation after rotation completes (iOS only)
+									 UIInterfaceOrientation orientation = self.view.window.windowScene.interfaceOrientation;
+
+									 // Notify camera server of orientation change
+									 godot_camera_update_orientation_ios((int)orientation);
+#endif // MODULE_CAMERA_ENABLED
+								 }];
+}
+#endif // TARGET_OS_IPHONE
 
 - (UIRectEdge)preferredScreenEdgesDeferringSystemGestures {
 	if (GLOBAL_GET("display/window/ios/suppress_ui_gesture")) {

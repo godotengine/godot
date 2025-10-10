@@ -33,9 +33,18 @@
 
 #import "camera_macos.h"
 
+#if TARGET_OS_IPHONE
+// C function to call from view controller
+extern "C" void godot_camera_update_orientation_ios(int p_orientation);
+#endif
+
+#include "core/math/math_defs.h"
 #include "servers/camera/camera_feed.h"
 
 #import <AVFoundation/AVFoundation.h>
+#if TARGET_OS_IPHONE
+#import <UIKit/UIKit.h>
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // MyCaptureSession - This is a little helper class so we can capture our frames
@@ -201,6 +210,10 @@ private:
 	AVCaptureDevice *device;
 	MyCaptureSession *capture_session;
 
+#if TARGET_OS_IPHONE
+	int current_orientation = 1; // UIInterfaceOrientation value (1 = Portrait)
+#endif
+
 public:
 	AVCaptureDevice *get_device() const;
 
@@ -210,6 +223,11 @@ public:
 
 	bool activate_feed() override;
 	void deactivate_feed() override;
+
+#if TARGET_OS_IPHONE
+	void update_orientation(int p_orientation);
+	void update_transform();
+#endif
 };
 
 AVCaptureDevice *CameraFeedMacOS::get_device() const {
@@ -258,6 +276,24 @@ bool CameraFeedMacOS::activate_feed() {
 		}
 	};
 
+#if TARGET_OS_IPHONE
+	CameraMacOS *camera_server = (CameraMacOS *)CameraServer::get_singleton();
+	if (camera_server) {
+		int orientation = camera_server->get_current_orientation();
+		if (orientation == 0) {
+			UIWindowScene *windowScene = nil;
+			for (UIScene *scene in [UIApplication sharedApplication].connectedScenes) {
+				if ([scene isKindOfClass:[UIWindowScene class]] && scene.activationState == UISceneActivationStateForegroundActive) {
+					windowScene = (UIWindowScene *)scene;
+					break;
+				}
+			}
+			orientation = windowScene ? (int)windowScene.interfaceOrientation : 1;
+		}
+		update_orientation(orientation);
+	}
+#endif
+
 	return true;
 }
 
@@ -268,6 +304,42 @@ void CameraFeedMacOS::deactivate_feed() {
 		capture_session = nullptr;
 	};
 }
+
+#if TARGET_OS_IPHONE
+void CameraFeedMacOS::update_orientation(int p_orientation) {
+	current_orientation = p_orientation;
+	update_transform();
+}
+
+void CameraFeedMacOS::update_transform() {
+	int display_rotation = 0;
+	switch (current_orientation) {
+		case 1:
+			display_rotation = 0;
+			break;
+		case 2:
+			display_rotation = 180;
+			break;
+		case 3:
+			display_rotation = 270;
+			break;
+		case 4:
+			display_rotation = 90;
+			break;
+		default:
+			display_rotation = 0;
+			break;
+	}
+
+	// iOS camera sensor orientation is 90 degrees (same as Android).
+	int sensor_orientation = 90;
+	int sign = position == CameraFeed::FEED_FRONT ? 1 : -1;
+	float image_rotation = (sensor_orientation - display_rotation * sign + 360) % 360;
+
+	transform = Transform2D();
+	transform = transform.rotated(Math::deg_to_rad(image_rotation));
+}
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // MyDeviceNotifications - This is a little helper class gets notifications
@@ -307,6 +379,19 @@ MyDeviceNotifications *device_notifications = nil;
 
 //////////////////////////////////////////////////////////////////////////
 // CameraMacOS - Subclass for our camera server on macOS
+
+#if TARGET_OS_IPHONE
+void CameraMacOS::update_orientation(int p_orientation) {
+	current_orientation = p_orientation;
+
+	for (int i = 0; i < feeds.size(); i++) {
+		Ref<CameraFeedMacOS> feed = (Ref<CameraFeedMacOS>)feeds[i];
+		if (feed.is_valid() && feed->is_active()) {
+			feed->update_orientation(p_orientation);
+		}
+	}
+}
+#endif
 
 void CameraMacOS::update_feeds() {
 	NSArray<AVCaptureDevice *> *devices = nullptr;
@@ -360,10 +445,6 @@ void CameraMacOS::update_feeds() {
 			newfeed.instantiate();
 			newfeed->set_device(device);
 
-			// assume display camera so inverse
-			Transform2D transform = Transform2D(-1.0, 0.0, 0.0, -1.0, 1.0, 1.0);
-			newfeed->set_transform(transform);
-
 			add_feed(newfeed);
 		};
 	};
@@ -387,3 +468,13 @@ void CameraMacOS::set_monitoring_feeds(bool p_monitoring_feeds) {
 		device_notifications = nil;
 	}
 }
+
+#if TARGET_OS_IPHONE
+// C function implementation for view controller
+void godot_camera_update_orientation_ios(int p_orientation) {
+	CameraMacOS *camera_server = (CameraMacOS *)CameraServer::get_singleton();
+	if (camera_server) {
+		camera_server->update_orientation(p_orientation);
+	}
+}
+#endif
