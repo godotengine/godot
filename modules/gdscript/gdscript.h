@@ -93,7 +93,6 @@ class GDScript : public Script {
 
 	Ref<GDScriptNativeClass> native;
 	Ref<GDScript> base;
-	GDScript *_base = nullptr; //fast pointer access
 	GDScript *_owner = nullptr; //for subclasses
 
 	// Members are just indices to the instantiated script.
