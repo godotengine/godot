@@ -2368,7 +2368,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 				fold();
 			}
 		}
-	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+	} else if ((!checkable || checked) && mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		accept_event();
 		_update_popup();
 		menu->set_position(get_screen_position() + get_local_mouse_position());
