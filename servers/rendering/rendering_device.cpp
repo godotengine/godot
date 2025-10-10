@@ -38,6 +38,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "modules/modules_enabled.gen.h"
+#include "renderer_rd/effects/ffx/ffx_common.h"
 #include "servers/rendering/rendering_shader_container.h"
 
 #ifdef MODULE_GLSLANG_ENABLED
@@ -7148,6 +7149,9 @@ void RenderingDevice::finalize() {
 
 	// Delete everything the graph has created.
 	draw_graph.finalize();
+
+	// Free FFX context if created
+	RendererRD::FFXCommonContext::free_singleton();
 
 	// Free all resources.
 	_free_rids(render_pipeline_owner, "Pipeline");
