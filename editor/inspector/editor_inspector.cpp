@@ -33,8 +33,10 @@
 
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_inspector.h"
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc/doc_tools.h"
 #include "editor/docks/inspector_dock.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -1348,7 +1350,11 @@ void EditorProperty::menu_option(int p_option) {
 			InspectorDock::get_inspector_singleton()->set_property_clipboard(object->get(property));
 		} break;
 		case MENU_PASTE_VALUE: {
-			emit_changed(property, InspectorDock::get_inspector_singleton()->get_property_clipboard());
+			const Dictionary clipboard = InspectorDock::get_inspector_singleton()->get_property_clipboard();
+			if (clipboard.has("@pastebin_category_name") || clipboard.has("@pastebin_section_name")) {
+				break;
+			}
+			emit_changed(property, clipboard);
 		} break;
 		case MENU_COPY_PROPERTY_PATH: {
 			DisplayServer::get_singleton()->clipboard_set(property_path);
@@ -1757,8 +1763,135 @@ Size2 EditorInspectorCategory::get_minimum_size() const {
 	return ms;
 }
 
+void EditorInspectorCategory::_collect_properties(const Object *p_object, LocalVector<String> &r_properties) const {
+	List<PropertyInfo> property_list;
+	p_object->get_property_list(&property_list, true);
+
+	String current_category;
+	for (const PropertyInfo &prop_info : property_list) {
+		if (prop_info.usage & PROPERTY_USAGE_GROUP) {
+			continue;
+		}
+		if (prop_info.usage & PROPERTY_USAGE_CATEGORY) {
+			current_category = prop_info.name;
+			continue;
+		}
+		if (!(prop_info.usage & PROPERTY_USAGE_EDITOR)) {
+			continue;
+		}
+		if (!current_category.ends_with(info.name)) {
+			continue;
+		}
+
+		r_properties.push_back(prop_info.name);
+	}
+}
+
 void EditorInspectorCategory::_handle_menu_option(int p_option) {
 	switch (p_option) {
+		case MENU_COPY_VALUE: {
+			const Object *object = EditorInterface::get_singleton()->get_inspector()->get_edited_object();
+			String category_name = info.name;
+			if (!EditorNode::get_editor_data().is_type_recognized(info.name) && ResourceLoader::exists(info.hint_string, "Script")) {
+				Ref<Script> scr = ResourceLoader::load(info.hint_string, "Script");
+				if (scr.is_valid()) {
+					category_name = scr->get_doc_class_name();
+				}
+			}
+			Dictionary clipboard;
+			LocalVector<String> properties;
+			_collect_properties(object, properties);
+
+			clipboard["@pastebin_category_name"] = category_name;
+			for (const String &property_name : properties) {
+				clipboard[property_name] = object->get(property_name);
+			}
+			InspectorDock::get_inspector_singleton()->set_property_clipboard(clipboard);
+		} break;
+
+		case MENU_PASTE_VALUE: {
+			Object *object = EditorInterface::get_singleton()->get_inspector()->get_edited_object();
+			const Dictionary clipboard = InspectorDock::get_inspector_singleton()->get_property_clipboard();
+			if (!clipboard.has("@pastebin_category_name")) {
+				break;
+			}
+			const String pastebin_category_name = clipboard["@pastebin_category_name"];
+			String category_name = info.name;
+
+			if (!EditorNode::get_editor_data().is_type_recognized(info.name) && ResourceLoader::exists(info.hint_string, "Script")) {
+				Ref<Script> scr = ResourceLoader::load(info.hint_string, "Script");
+				if (scr.is_valid()) {
+					category_name = scr->get_doc_class_name();
+				}
+			}
+
+			if (category_name != pastebin_category_name) {
+				break;
+			}
+
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+			if (const MultiNodeEdit *multi_node_edit = Object::cast_to<MultiNodeEdit>(object)) {
+				const Node *es = EditorNode::get_singleton()->get_edited_scene();
+				const String action_name = vformat(TTR("Set category %s on %d nodes"), category_name, multi_node_edit->get_node_count());
+				ur->create_action(action_name);
+
+				for (int i = 0; i < multi_node_edit->get_node_count(); i++) {
+					const NodePath E = multi_node_edit->get_node(i);
+					Node *n = es->get_node(E);
+					if (!n) {
+						continue;
+					}
+
+					for (const KeyValue<Variant, Variant> &pair : clipboard) {
+						String property_name = pair.key;
+						ur->add_do_property(n, property_name, pair.value);
+						ur->add_undo_property(n, property_name, n->get(property_name));
+					}
+				}
+
+				ur->commit_action();
+			} else if (EditorDebuggerRemoteObjects *remote_objects = Object::cast_to<EditorDebuggerRemoteObjects>(object)) {
+				const int size = remote_objects->remote_object_ids.size();
+				ur->create_action(size == 1 ? vformat(TTR("Set category %s"), category_name) : vformat(TTR("Set %s on %d objects"), category_name, size), UndoRedo::MERGE_ENDS);
+
+				for (const KeyValue<Variant, Variant> &pair : clipboard) {
+					const String property_name = pair.key;
+					String name = property_name;
+					if (!remote_objects->prop_values.has(name) || String(name).begins_with("Constants/")) {
+						continue;
+					}
+
+					// Change it back to the real name when fetching.
+					if (name == "Script") {
+						name = "script";
+					} else if (name.begins_with("Metadata/")) {
+						name = name.replace_first("Metadata/", "metadata/");
+					}
+
+					Dictionary values = remote_objects->prop_values[property_name];
+					Dictionary old_values = values.duplicate();
+					for (const uint64_t key : values.keys()) {
+						values.set(key, pair.value);
+					}
+					ur->add_do_method(remote_objects, SNAME("emit_signal"), SNAME("values_edited"), name, values, "");
+					ur->add_undo_method(remote_objects, SNAME("emit_signal"), SNAME("values_edited"), name, old_values, "");
+				}
+
+				ur->commit_action();
+			} else {
+				const String action_name = vformat(TTR("Set category %s on node %s"), category_name, object->get("name"));
+				ur->create_action(action_name);
+
+				for (const KeyValue<Variant, Variant> &pair : clipboard) {
+					const String property_name = pair.key;
+					ur->add_do_property(object, property_name, pair.value);
+					ur->add_undo_property(object, property_name, object->get(property_name));
+				}
+
+				ur->commit_action();
+			}
+		} break;
+
 		case MENU_OPEN_DOCS: {
 			ScriptEditor::get_singleton()->goto_help("class:" + doc_class_name);
 			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
@@ -1781,6 +1914,14 @@ void EditorInspectorCategory::_popup_context_menu(const Point2i &p_position) {
 		if (is_favorite) {
 			menu->add_item(TTRC("Unfavorite All"), MENU_UNFAVORITE_ALL);
 		} else {
+			const Dictionary clipboard = InspectorDock::get_inspector_singleton()->get_property_clipboard();
+
+			menu->add_item(TTRC("Copy Category Values"), MENU_COPY_VALUE);
+			menu->set_item_icon(menu->get_item_index(MENU_COPY_VALUE), theme_cache.icon_copy);
+
+			menu->add_item(TTRC("Paste Category Values"), MENU_PASTE_VALUE);
+			menu->set_item_icon(menu->get_item_index(MENU_PASTE_VALUE), theme_cache.icon_paste);
+
 			menu->add_item(TTRC("Open Documentation"), MENU_OPEN_DOCS);
 			menu->set_item_disabled(-1, !EditorHelp::get_doc_data()->class_list.has(doc_class_name));
 		}
@@ -2214,9 +2355,10 @@ Control *EditorInspectorSection::make_custom_tooltip(const String &p_text) const
 	return nullptr;
 }
 
-void EditorInspectorSection::setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth, int p_level) {
+void EditorInspectorSection::setup(const String &p_inspector_path, const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth, int p_level) {
 	section = p_section;
 	label = p_label;
+	inspector_path = p_inspector_path;
 	object = p_object;
 	bg_color = p_bg_color;
 	foldable = p_foldable;
@@ -2307,6 +2449,12 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 				fold();
 			}
 		}
+	} else if ((!checkable || checked) && inspector_path != "" && mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+		accept_event();
+		_update_popup();
+		menu->set_position(get_screen_position() + get_local_mouse_position());
+		menu->reset_size();
+		menu->popup();
 	} else if (mb.is_valid() && !mb->is_pressed()) {
 		queue_redraw();
 	}
@@ -2447,6 +2595,127 @@ void EditorInspectorSection::update_property() {
 
 	if (valid) {
 		set_checked(value_checked.operator bool());
+	}
+}
+
+void EditorInspectorSection::_update_popup() {
+	if (menu) {
+		menu->clear();
+	} else {
+		menu = memnew(PopupMenu);
+		add_child(menu);
+		menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorInspectorSection::menu_option));
+	}
+
+	menu->add_item(TTRC("Copy Section Values"), MENU_COPY_VALUE);
+	menu->add_item(TTRC("Paste Section Values"), MENU_PASTE_VALUE);
+
+	menu->set_item_icon(menu->get_item_index(MENU_COPY_VALUE), theme_cache.icon_copy);
+	menu->set_item_icon(menu->get_item_index(MENU_PASTE_VALUE), theme_cache.icon_paste);
+}
+
+void EditorInspectorSection::_collect_properties(LocalVector<String> &r_properties) const {
+	List<PropertyInfo> property_list;
+	object->get_property_list(&property_list, true);
+
+	String current_category;
+	String current_group;
+	String current_subgroup;
+	for (const PropertyInfo &prop_info : property_list) {
+		if (prop_info.usage & PROPERTY_USAGE_GROUP) {
+			current_group = prop_info.name;
+			continue;
+		}
+		if (prop_info.usage & PROPERTY_USAGE_SUBGROUP) {
+			current_subgroup = prop_info.name;
+			continue;
+		}
+		if (prop_info.usage & PROPERTY_USAGE_CATEGORY) {
+			current_category = prop_info.name;
+			if (!EditorNode::get_editor_data().is_type_recognized(prop_info.name) && ResourceLoader::exists(prop_info.hint_string, "Script")) {
+				Ref<Script> scr = ResourceLoader::load(prop_info.hint_string, "Script");
+				if (scr.is_valid()) {
+					current_category = scr->get_doc_class_name();
+				}
+			}
+			current_group = "";
+			current_subgroup = "";
+			continue;
+		}
+		if (!(prop_info.usage & PROPERTY_USAGE_EDITOR)) {
+			continue;
+		}
+		if (prop_info.name.get_slice_count("/") > 1) {
+			current_group = prop_info.name.get_slicec('/', 0);
+		}
+		if (!(current_category + "/" + current_group + "/" + current_subgroup).begins_with(get_inspector_path())) {
+			continue;
+		}
+
+		r_properties.push_back(prop_info.name);
+	}
+}
+
+void EditorInspectorSection::menu_option(int p_option) const {
+	switch (p_option) {
+		case MENU_COPY_VALUE: {
+			LocalVector<String> properties;
+			Dictionary clipboard;
+			_collect_properties(properties);
+
+			clipboard["@pastebin_section_name"] = get_inspector_path();
+			for (const String &property_name : properties) {
+				clipboard[property_name] = object->get(property_name);
+			}
+			InspectorDock::get_inspector_singleton()->set_property_clipboard(clipboard);
+		} break;
+		case MENU_PASTE_VALUE: {
+			Dictionary clipboard = InspectorDock::get_inspector_singleton()->get_property_clipboard();
+			if (!clipboard.has("@pastebin_section_name")) {
+				break;
+			}
+			const String section_path = clipboard["@pastebin_section_name"];
+			if (!get_inspector_path().begins_with(section_path)) {
+				break;
+			}
+
+			LocalVector<String> properties;
+
+			_collect_properties(properties);
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+
+			if (const MultiNodeEdit *multi_node_edit = Object::cast_to<MultiNodeEdit>(object)) {
+				const Node *es = EditorNode::get_singleton()->get_edited_scene();
+				const String action_name = vformat(TTR("Set section %s on %d nodes"), section_path, multi_node_edit->get_node_count());
+				ur->create_action(action_name);
+
+				for (int i = 0; i < multi_node_edit->get_node_count(); i++) {
+					const NodePath E = multi_node_edit->get_node(i);
+					Node *n = es->get_node(E);
+					if (!n) {
+						continue;
+					}
+
+					for (const String &property_name : properties) {
+						ur->add_do_property(n, property_name, clipboard[property_name]);
+						ur->add_undo_property(n, property_name, n->get(property_name));
+					}
+				}
+
+				ur->commit_action();
+			} else {
+				const String action_name = vformat(TTR("Set section %s on node %s"), section_path, object->get("name"));
+				ur->create_action(action_name);
+
+				for (const String &property_name : properties) {
+					ur->add_do_property(object, property_name, clipboard[property_name]);
+					ur->add_undo_property(object, property_name, object->get(property_name));
+				}
+
+				ur->commit_action();
+			}
+
+		} break;
 	}
 }
 
@@ -3240,7 +3509,7 @@ void EditorInspectorArray::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("page_change_request"));
 }
 
-void EditorInspectorArray::setup_with_move_element_function(Object *p_object, const String &p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_is_const, bool p_numbered, int p_page_length, const String &p_add_item_text) {
+void EditorInspectorArray::setup_with_move_element_function(Object *p_object, const String &p_category, const String &p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_is_const, bool p_numbered, int p_page_length, const String &p_add_item_text) {
 	count_property = "";
 	mode = MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION;
 	array_element_prefix = p_array_element_prefix;
@@ -3250,12 +3519,12 @@ void EditorInspectorArray::setup_with_move_element_function(Object *p_object, co
 	page_length = p_page_length;
 	numbered = p_numbered;
 
-	EditorInspectorSection::setup(String(p_array_element_prefix) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
+	EditorInspectorSection::setup(p_category + "/" + p_label.to_lower(), String(p_array_element_prefix) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
 
 	_setup();
 }
 
-void EditorInspectorArray::setup_with_count_property(Object *p_object, const String &p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_is_const, bool p_numbered, int p_page_length, const String &p_add_item_text, const String &p_swap_method) {
+void EditorInspectorArray::setup_with_count_property(Object *p_object, const String &p_category, const String &p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_is_const, bool p_numbered, int p_page_length, const String &p_add_item_text, const String &p_swap_method) {
 	count_property = p_count_property;
 	mode = MODE_USE_COUNT_PROPERTY;
 	array_element_prefix = p_array_element_prefix;
@@ -3267,7 +3536,7 @@ void EditorInspectorArray::setup_with_count_property(Object *p_object, const Str
 	swap_method = p_swap_method;
 
 	add_button->set_text(p_add_item_text);
-	EditorInspectorSection::setup(String(count_property) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
+	EditorInspectorSection::setup(p_category + "/" + p_label.to_lower(), String(count_property) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
 
 	_setup();
 }
@@ -3501,6 +3770,8 @@ void EditorInspector::initialize_section_theme(EditorInspectorSection::ThemeCach
 	p_cache.icon_gui_checked = p_control->get_editor_theme_icon(SNAME("GuiChecked"));
 	p_cache.icon_gui_unchecked = p_control->get_editor_theme_icon(SNAME("GuiUnchecked"));
 	p_cache.icon_gui_animation_key = p_control->get_editor_theme_icon(SNAME("Key"));
+	p_cache.icon_copy = p_control->get_editor_theme_icon(SNAME("ActionCopy"));
+	p_cache.icon_paste = p_control->get_editor_theme_icon(SNAME("ActionPaste"));
 
 	p_cache.indent_box = p_control->get_theme_stylebox(SNAME("indent_box"), SNAME("EditorInspectorSection"));
 	p_cache.key_hover = p_control->get_theme_stylebox(SceneStringName(hover), SceneStringName(FlatButton));
@@ -3521,6 +3792,9 @@ void EditorInspector::initialize_category_theme(EditorInspectorCategory::ThemeCa
 
 	p_cache.bold_font = p_control->get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
 	p_cache.bold_font_size = p_control->get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
+
+	p_cache.icon_copy = p_control->get_editor_theme_icon(SNAME("ActionCopy"));
+	p_cache.icon_paste = p_control->get_editor_theme_icon(SNAME("ActionPaste"));
 
 	p_cache.icon_favorites = p_control->get_editor_theme_icon(SNAME("Favorites"));
 	p_cache.icon_unfavorite = p_control->get_editor_theme_icon(SNAME("Unfavorite"));
@@ -4135,7 +4409,7 @@ void EditorInspector::update_tree() {
 
 				Color c = sscolor;
 				c.a /= level;
-				section->setup(acc_path, label, object, c, use_folding, section_depth, level);
+				section->setup((doc_name.is_empty() ? acc_path : String(doc_name) + (acc_path.is_empty() ? "" : "/" + acc_path)), acc_path, label, object, c, use_folding, section_depth, level);
 				section->set_tooltip_text(tooltip);
 
 				section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
@@ -4202,7 +4476,7 @@ void EditorInspector::update_tree() {
 				String array_label = path.contains_char('/') ? path.substr(path.rfind_char('/') + 1) : path;
 				array_label = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string, property_name_style, p.name, doc_name);
 				int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
-				editor_inspector_array->setup_with_move_element_function(object, array_label, array_element_prefix, page, c, use_folding);
+				editor_inspector_array->setup_with_move_element_function(object, p.hint_string, array_label, array_element_prefix, page, c, use_folding);
 				editor_inspector_array->connect("page_change_request", callable_mp(this, &EditorInspector::_page_change_request).bind(array_element_prefix));
 			} else if (p.type == Variant::INT) {
 				// Setup the array to use the count property and built-in functions to create/move/delete elements.
@@ -4211,7 +4485,7 @@ void EditorInspector::update_tree() {
 					editor_inspector_array = memnew(EditorInspectorArray(all_read_only));
 					int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
 
-					editor_inspector_array->setup_with_count_property(object, class_name_components[0], p.name, array_element_prefix, page, c, foldable, movable, is_const, numbered, page_size, add_button_text, swap_method);
+					editor_inspector_array->setup_with_count_property(object, p.hint_string, class_name_components[0], p.name, array_element_prefix, page, c, foldable, movable, is_const, numbered, page_size, add_button_text, swap_method);
 					editor_inspector_array->connect("page_change_request", callable_mp(this, &EditorInspector::_page_change_request).bind(array_element_prefix));
 				}
 			}
@@ -4559,7 +4833,8 @@ void EditorInspector::update_tree() {
 				get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
 				favorites_groups_vbox->add_child(section);
 				parent_vbox = section->get_vbox();
-				section->setup("", section_name, object, sscolor, false);
+
+				section->setup("", "", section_name, object, sscolor, false);
 				section->set_tooltip_text(tooltip);
 
 				if (togglable_editor_inspector_sections.has(section_name)) {
@@ -4598,7 +4873,7 @@ void EditorInspector::update_tree() {
 					get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
 					vbox->add_child(section);
 					vbox = section->get_vbox();
-					section->setup("", section_name, object, sscolor, false);
+					section->setup("", "", section_name, object, sscolor, false);
 					section->set_tooltip_text(tooltip);
 
 					if (togglable_editor_inspector_sections.has(KV.key + "/" + section_name)) {
