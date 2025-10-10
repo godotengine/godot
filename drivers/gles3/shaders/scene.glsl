@@ -560,7 +560,7 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 #if defined(UV_USED)
 		vec2 uv_attrib_input,
 #endif
-#if defined(UV2_USED) || defined(USE_LIGHTMAP)
+#if defined(UV2_USED) || defined(USE_LIGHTMAP) || defined(RENDER_MATERIAL)
 		vec2 uv2_attrib_input,
 #endif
 #ifdef USE_MULTIVIEW
@@ -915,7 +915,7 @@ void main() {
 #if defined(UV_USED)
 			uv_attrib,
 #endif
-#if defined(UV2_USED) || defined(USE_LIGHTMAP)
+#if defined(UV2_USED) || defined(USE_LIGHTMAP) || defined(RENDER_MATERIAL)
 			uv2_attrib,
 #endif
 #ifdef USE_MULTIVIEW
@@ -948,7 +948,7 @@ void main() {
 #if defined(UV_USED)
 			uv_attrib,
 #endif
-#if defined(UV2_USED) || defined(USE_LIGHTMAP)
+#if defined(UV2_USED) || defined(USE_LIGHTMAP) || defined(RENDER_MATERIAL)
 			uv2_attrib,
 #endif
 #ifdef USE_MULTIVIEW
