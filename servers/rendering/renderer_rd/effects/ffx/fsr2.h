@@ -42,9 +42,6 @@
 #include "ffx_common.h"
 #include "servers/rendering/rendering_server.h"
 
-#ifdef DEV_ENABLED
-#define FFX_DEBUG
-#endif
 
 #include "thirdparty/amd-ffx/ffx_fsr2.h"
 

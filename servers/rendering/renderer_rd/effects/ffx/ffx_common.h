@@ -108,8 +108,8 @@ public:
 		RootSignature root_signature;
 		uint32_t shader_variant = 0;
 		Pipeline pipeline;
-		Vector<FfxResourceBinding> sampled_bindings;
-		Vector<FfxResourceBinding> storage_bindings;
+		Vector<FfxResourceBinding> sampled_texture_bindings;
+		Vector<FfxResourceBinding> storage_texture_bindings;
 		Vector<FfxResourceBinding> uniform_bindings;
 	};
 

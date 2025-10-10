@@ -337,18 +337,26 @@ static FfxErrorCode create_pipeline_rd(FfxInterface *p_backend_interface, FfxEff
 		ERR_FAIL_COND_V(effect_pass.pipeline.pipeline_rid.is_null(), FFX_ERROR_BACKEND_API_ERROR);
 	}
 
+#ifdef DEV_ENABLED
+	memcpy(p_out_pipeline->name, p_pipeline_description->name, sizeof(p_out_pipeline->name));
+#endif
+
 	// While this is not their intended use, we use the pipeline and root signature pointers to store the
 	// RIDs to the pipeline and shader that RD needs for the compute pipeline.
 	p_out_pipeline->pipeline = reinterpret_cast<FfxPipeline>(&effect_pass.pipeline);
 	p_out_pipeline->rootSignature = reinterpret_cast<FfxRootSignature>(&effect_pass.root_signature);
 
-	p_out_pipeline->srvBufferCount = effect_pass.sampled_bindings.size();
-	ERR_FAIL_COND_V(p_out_pipeline->srvBufferCount > FFX_MAX_NUM_SRVS, FFX_ERROR_OUT_OF_RANGE);
-	memcpy(p_out_pipeline->srvBufferBindings, effect_pass.sampled_bindings.ptr(), sizeof(FfxResourceBinding) * p_out_pipeline->srvBufferCount);
+	// FSR doesn't use any buffers
+	p_out_pipeline->srvBufferCount = 0;
+	p_out_pipeline->srvTextureCount = effect_pass.sampled_texture_bindings.size();
+	ERR_FAIL_COND_V(p_out_pipeline->srvTextureCount + p_out_pipeline->srvBufferCount > FFX_MAX_NUM_SRVS, FFX_ERROR_OUT_OF_RANGE);
+	memcpy(p_out_pipeline->srvTextureBindings, effect_pass.sampled_texture_bindings.ptr(), sizeof(FfxResourceBinding) * p_out_pipeline->srvTextureCount);
 
-	p_out_pipeline->uavBufferCount = effect_pass.storage_bindings.size();
-	ERR_FAIL_COND_V(p_out_pipeline->uavBufferCount > FFX_MAX_NUM_UAVS, FFX_ERROR_OUT_OF_RANGE);
-	memcpy(p_out_pipeline->uavBufferBindings, effect_pass.storage_bindings.ptr(), sizeof(FfxResourceBinding) * p_out_pipeline->uavBufferCount);
+	// FSR doesn't use any buffers
+	p_out_pipeline->uavBufferCount = 0;
+	p_out_pipeline->uavTextureCount = effect_pass.storage_texture_bindings.size();
+	ERR_FAIL_COND_V(p_out_pipeline->uavTextureCount + p_out_pipeline->uavBufferCount > FFX_MAX_NUM_UAVS, FFX_ERROR_OUT_OF_RANGE);
+	memcpy(p_out_pipeline->uavTextureBindings, effect_pass.storage_texture_bindings.ptr(), sizeof(FfxResourceBinding) * p_out_pipeline->uavTextureCount);
 
 	p_out_pipeline->constCount = effect_pass.uniform_bindings.size();
 	ERR_FAIL_COND_V(p_out_pipeline->constCount > FFX_MAX_NUM_CONST_BUFFERS, FFX_ERROR_OUT_OF_RANGE);
@@ -360,7 +368,7 @@ static FfxErrorCode create_pipeline_rd(FfxInterface *p_backend_interface, FfxEff
 		if (p_pass == FFX_FSR2_PASS_ACCUMULATE || p_pass == FFX_FSR2_PASS_ACCUMULATE_SHARPEN) {
 			// Change the binding for motion vectors in this particular pass if low resolution MVs are used.
 			if (low_resolution_mvs) {
-				FfxResourceBinding &binding = p_out_pipeline->srvBufferBindings[2];
+				FfxResourceBinding &binding = p_out_pipeline->srvTextureBindings[2];
 				wcscpy_s(binding.name, L"r_dilated_motion_vectors");
 			}
 		}
@@ -426,22 +434,24 @@ static FfxErrorCode execute_gpu_job_compute_rd(FFXCommonContext::Scratch &p_scra
 	thread_local LocalVector<RD::Uniform> compute_uniforms;
 	compute_uniforms.clear();
 
-	for (uint32_t i = 0; i < p_job.pipeline.srvBufferCount; i++) {
-		RID texture_rid = p_scratch.resources.rids[p_job.srvBuffers[i].resource.internalIndex];
-		RD::Uniform texture_uniform(RD::UNIFORM_TYPE_TEXTURE, p_job.pipeline.srvBufferBindings[i].slotIndex, texture_rid);
+	for (uint32_t i = 0; i < p_job.pipeline.srvTextureCount; i++) {
+		RID texture_rid = p_scratch.resources.rids[p_job.srvTextures[i].resource.internalIndex];
+		RD::Uniform texture_uniform(RD::UNIFORM_TYPE_TEXTURE, p_job.pipeline.srvTextureBindings[i].slotIndex, texture_rid);
 		compute_uniforms.push_back(texture_uniform);
 	}
 
-	for (uint32_t i = 0; i < p_job.pipeline.uavBufferCount; i++) {
-		RID image_rid = p_scratch.resources.rids[p_job.uavBuffers[i].resource.internalIndex];
+	ERR_FAIL_COND_V_MSG(p_job.pipeline.srvBufferCount > 0, FFX_ERROR_BACKEND_API_ERROR, "Since FSR doesn't use buffers, SRV buffers are not supported.");
+
+	for (uint32_t i = 0; i < p_job.pipeline.uavTextureCount; i++) {
+		RID image_rid = p_scratch.resources.rids[p_job.uavTextures[i].resource.internalIndex];
 		RD::Uniform storage_uniform;
 		storage_uniform.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-		storage_uniform.binding = p_job.pipeline.uavBufferBindings[i].slotIndex;
+		storage_uniform.binding = p_job.pipeline.uavTextureBindings[i].slotIndex;
 
 		if (p_job.uavTextures[i].mip > 0) {
-			LocalVector<RID> &mip_slice_rids = p_scratch.resources.mip_slice_rids[p_job.uavBuffers[i].resource.internalIndex];
+			LocalVector<RID> &mip_slice_rids = p_scratch.resources.mip_slice_rids[p_job.uavTextures[i].resource.internalIndex];
 			if (mip_slice_rids.is_empty()) {
-				mip_slice_rids.resize(p_scratch.resources.descriptions[p_job.uavBuffers[i].resource.internalIndex].mipCount);
+				mip_slice_rids.resize(p_scratch.resources.descriptions[p_job.uavTextures[i].resource.internalIndex].mipCount);
 			}
 
 			ERR_FAIL_COND_V(p_job.uavTextures[i].mip >= mip_slice_rids.size(), FFX_ERROR_INVALID_ARGUMENT);
@@ -459,6 +469,8 @@ static FfxErrorCode execute_gpu_job_compute_rd(FFXCommonContext::Scratch &p_scra
 
 		compute_uniforms.push_back(storage_uniform);
 	}
+
+	ERR_FAIL_COND_V_MSG(p_job.pipeline.uavBufferCount > 0, FFX_ERROR_BACKEND_API_ERROR, "Since FSR doesn't use buffers, UAV buffers are not supported.");
 
 	for (uint32_t i = 0; i < p_job.pipeline.constCount; i++) {
 		RID buffer_rid = p_scratch.ubo_ring_buffer[p_scratch.ubo_ring_buffer_index];
