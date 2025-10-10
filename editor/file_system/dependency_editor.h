@@ -33,19 +33,36 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/tree.h"
 
 class EditorFileDialog;
 class EditorFileSystemDirectory;
+
+enum DependencyEditorSortBy {
+	DEPENDENCY_EDITOR_SORT_BY_NONE,
+	DEPENDENCY_EDITOR_SORT_BY_TYPE,
+	DEPENDENCY_EDITOR_SORT_BY_PATH,
+	DEPENDENCY_EDITOR_SORT_BY_FILE,
+};
+
+enum DependencyEditorColumn {
+	DEPENDENCY_EDITOR_COLUMN_TYPE,
+	DEPENDENCY_EDITOR_COLUMN_RESOURCE,
+	DEPENDENCY_EDITOR_COLUMN_PATH,
+	DEPENDENCY_EDITOR_COLUMN_MAX,
+};
 
 class DependencyEditor : public AcceptDialog {
 	GDCLASS(DependencyEditor, AcceptDialog);
 
 	Tree *tree = nullptr;
 	Button *fixdeps = nullptr;
+	LineEdit *filter = nullptr;
 
 	EditorFileDialog *search = nullptr;
 
+	DependencyEditorSortBy sort_by;
 	String replacing;
 	String editing;
 	List<String> missing;
@@ -54,6 +71,9 @@ class DependencyEditor : public AcceptDialog {
 
 	void _searched(const String &p_path);
 	void _load_pressed(Object *p_item, int p_cell, int p_button, MouseButton p_mouse_button);
+	void _column_title_clicked(int column, MouseButton mouse_button);
+	void _filter_changed(String text);
+	List<String> _filter_deps(List<String> deps);
 	void _fix_all();
 	void _update_list();
 

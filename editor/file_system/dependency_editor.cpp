@@ -38,8 +38,50 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/popup_menu.h"
+
+struct DependencyEditorSortByType {
+	bool operator()(const String &a, const String &b) const {
+		String a_type = a.contains("::") ? a.get_slice("::", 1) : "Resource";
+		String b_type = b.contains("::") ? b.get_slice("::", 1) : "Resource";
+
+		String a_path = a.contains("::") ? a.get_slice("::", 2) : a;
+		String b_path = b.contains("::") ? b.get_slice("::", 2) : b;
+
+		if (a_type == b_type) {
+			return a_path < b_path;
+		}
+
+		return a_type < b_type;
+	}
+};
+
+struct DependencyEditorSortByPath {
+	bool operator()(const String &a, const String &b) const {
+		String a_path = a.contains("::") ? a.get_slice("::", 2) : a;
+		String b_path = b.contains("::") ? b.get_slice("::", 2) : b;
+
+		return a_path < b_path;
+	}
+};
+
+struct DependencyEditorSortByFile {
+	bool operator()(const String &a, const String &b) const {
+		String a_path = a.contains("::") ? a.get_slice("::", 2) : a;
+		String b_path = b.contains("::") ? b.get_slice("::", 2) : b;
+
+		String a_file = a_path.get_file();
+		String b_file = b_path.get_file();
+
+		if (a_file == b_file) {
+			return a_path < b_path;
+		}
+
+		return a_file < b_file;
+	}
+};
 
 void DependencyEditor::_searched(const String &p_path) {
 	HashMap<String, String> dep_rename;
@@ -56,7 +98,7 @@ void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button, M
 		return;
 	}
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
-	replacing = ti->get_text(1);
+	replacing = ti->get_text(DEPENDENCY_EDITOR_COLUMN_PATH);
 
 	search->set_title(TTR("Search Replacement For:") + " " + replacing.get_file());
 
@@ -65,7 +107,7 @@ void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button, M
 
 	search->clear_filters();
 	List<String> ext;
-	ResourceLoader::get_recognized_extensions_for_type(ti->get_metadata(0), &ext);
+	ResourceLoader::get_recognized_extensions_for_type(ti->get_metadata(DEPENDENCY_EDITOR_COLUMN_TYPE), &ext);
 	for (const String &E : ext) {
 		search->add_filter("*." + E);
 	}
@@ -164,17 +206,51 @@ void DependencyEditor::_update_file() {
 	EditorFileSystem::get_singleton()->update_file(editing);
 }
 
+List<String> DependencyEditor::_filter_deps(List<String> deps) {
+	String filter_text = filter->get_text();
+
+	if (filter_text.is_empty()) {
+		return deps;
+	}
+
+	List<String> filtered;
+
+	for (const String &item : deps) {
+		String path = item.contains("::") ? item.get_slice("::", 2) : item;
+
+		if (item.containsn(filter_text)) {
+			filtered.push_back(item);
+		}
+	}
+
+	return filtered;
+}
+
 void DependencyEditor::_update_list() {
+	filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 	List<String> deps;
 	ResourceLoader::get_dependencies(editing, &deps, true);
+	deps = _filter_deps(deps);
+
+	switch (sort_by) {
+		case DEPENDENCY_EDITOR_SORT_BY_TYPE:
+			deps.sort_custom<DependencyEditorSortByType>();
+			break;
+		case DEPENDENCY_EDITOR_SORT_BY_PATH:
+			deps.sort_custom<DependencyEditorSortByPath>();
+			break;
+		case DEPENDENCY_EDITOR_SORT_BY_FILE:
+			deps.sort_custom<DependencyEditorSortByFile>();
+			break;
+		default:
+			break;
+	}
 
 	tree->clear();
 	missing.clear();
 
 	TreeItem *root = tree->create_item();
-
 	Ref<Texture2D> folder = tree->get_theme_icon(SNAME("folder"), SNAME("FileDialog"));
-
 	bool broken = false;
 
 	for (const String &n : deps) {
@@ -207,18 +283,19 @@ void DependencyEditor::_update_list() {
 		String name = path.get_file();
 
 		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(type);
-		item->set_text(0, name);
-		item->set_icon(0, icon);
-		item->set_metadata(0, type);
-		item->set_text(1, path);
+		item->set_icon(DEPENDENCY_EDITOR_COLUMN_TYPE, icon);
+		item->set_text(DEPENDENCY_EDITOR_COLUMN_TYPE, type);
+		item->set_text(DEPENDENCY_EDITOR_COLUMN_RESOURCE, name);
+		item->set_metadata(DEPENDENCY_EDITOR_COLUMN_TYPE, type);
+		item->set_text(DEPENDENCY_EDITOR_COLUMN_PATH, path);
 
 		if (!FileAccess::exists(path)) {
-			item->set_custom_color(1, Color(1, 0.4, 0.3));
+			item->set_custom_color(DEPENDENCY_EDITOR_COLUMN_PATH, Color(1, 0.4, 0.3));
 			missing.push_back(path);
 			broken = true;
 		}
 
-		item->add_button(1, folder, 0);
+		item->add_button(DEPENDENCY_EDITOR_COLUMN_PATH, folder, 0);
 	}
 
 	fixdeps->set_disabled(!broken);
@@ -227,6 +304,9 @@ void DependencyEditor::_update_list() {
 void DependencyEditor::edit(const String &p_path) {
 	editing = p_path;
 	set_title(TTR("Dependencies For:") + " " + p_path.get_file());
+
+	filter->set_text("");
+	sort_by = DEPENDENCY_EDITOR_SORT_BY_NONE;
 
 	_update_list();
 	popup_centered_ratio(0.4);
@@ -238,22 +318,61 @@ void DependencyEditor::edit(const String &p_path) {
 	}
 }
 
+void DependencyEditor::_filter_changed(String text) {
+	_update_list();
+}
+
+void DependencyEditor::_column_title_clicked(int column, MouseButton mouse_button) {
+	if (mouse_button != MouseButton::LEFT) {
+		return;
+	}
+
+	DependencyEditorSortBy _sort_by = DEPENDENCY_EDITOR_SORT_BY_NONE;
+
+	switch (column) {
+		case DEPENDENCY_EDITOR_COLUMN_TYPE:
+			_sort_by = DEPENDENCY_EDITOR_SORT_BY_TYPE;
+			break;
+		case DEPENDENCY_EDITOR_COLUMN_RESOURCE:
+			_sort_by = DEPENDENCY_EDITOR_SORT_BY_FILE;
+			break;
+		case DEPENDENCY_EDITOR_COLUMN_PATH:
+			_sort_by = DEPENDENCY_EDITOR_SORT_BY_PATH;
+			break;
+		default:
+			break;
+	}
+
+	if (sort_by == _sort_by) {
+		_sort_by = DEPENDENCY_EDITOR_SORT_BY_NONE;
+	}
+
+	sort_by = _sort_by;
+	_update_list();
+}
+
 DependencyEditor::DependencyEditor() {
+	sort_by = DEPENDENCY_EDITOR_SORT_BY_PATH;
 	VBoxContainer *vb = memnew(VBoxContainer);
 	vb->set_name(TTR("Dependencies"));
+	vb->add_theme_constant_override("separation", 8);
 	add_child(vb);
 
 	tree = memnew(Tree);
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	tree->set_columns(2);
+	tree->set_columns(DEPENDENCY_EDITOR_COLUMN_MAX);
 	tree->set_column_titles_visible(true);
-	tree->set_column_title(0, TTR("Resource"));
-	tree->set_column_clip_content(0, true);
-	tree->set_column_expand_ratio(0, 2);
-	tree->set_column_title(1, TTR("Path"));
-	tree->set_column_clip_content(1, true);
-	tree->set_column_expand_ratio(1, 1);
+	tree->set_column_title(DEPENDENCY_EDITOR_COLUMN_TYPE, TTR("Type"));
+	tree->set_column_clip_content(DEPENDENCY_EDITOR_COLUMN_TYPE, true);
+	tree->set_column_expand_ratio(DEPENDENCY_EDITOR_COLUMN_TYPE, 2);
+	tree->set_column_title(DEPENDENCY_EDITOR_COLUMN_RESOURCE, TTR("Resource"));
+	tree->set_column_clip_content(DEPENDENCY_EDITOR_COLUMN_RESOURCE, true);
+	tree->set_column_expand_ratio(DEPENDENCY_EDITOR_COLUMN_RESOURCE, 3);
+	tree->set_column_title(DEPENDENCY_EDITOR_COLUMN_PATH, TTR("Path"));
+	tree->set_column_clip_content(DEPENDENCY_EDITOR_COLUMN_PATH, true);
+	tree->set_column_expand_ratio(DEPENDENCY_EDITOR_COLUMN_PATH, 5);
 	tree->set_hide_root(true);
+	tree->connect("column_title_clicked", callable_mp(this, &DependencyEditor::_column_title_clicked));
 	tree->connect("button_clicked", callable_mp(this, &DependencyEditor::_load_pressed));
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
@@ -267,6 +386,12 @@ DependencyEditor::DependencyEditor() {
 	fixdeps->connect(SceneStringName(pressed), callable_mp(this, &DependencyEditor::_fix_all));
 
 	vb->add_child(hbc);
+
+	filter = memnew(LineEdit);
+	filter->set_placeholder(TTR("Filter Dependencies"));
+	filter->set_clear_button_enabled(true);
+	filter->connect("text_changed", callable_mp(this, &DependencyEditor::_filter_changed));
+	vb->add_child(filter);
 
 	MarginContainer *mc = memnew(MarginContainer);
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
