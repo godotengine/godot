@@ -17,6 +17,22 @@ Files extracted from upstream source:
 - `LICENSE-MIT`
 
 
+## amd-ffx
+
+- Upstream: https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK
+- Version: 1.1.4 (c6efa6bf7f2027b3ec94f28578bb5965eabb9e55, 2025)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `ffx_*.h` from `sdk/include/FidelityFX/host`
+- `ffx_message.cpp`, `ffx_assert.cpp`, `ffx_object_management.cpp` and `ffx_object_management.h` from `sdk/src/shared`
+- `ffx_*.cpp` and `ffx_*_private.h` from `sdk/src/components/*`
+- `gpu` folder from `sdk/include/FidelityFX/gpu`
+- `shaders` folder from `sdk/src/backends/vk/shaders`
+- `license.md`
+
+
 ## amd-fsr
 
 - Upstream: https://github.com/GPUOpen-Effects/FidelityFX-FSR

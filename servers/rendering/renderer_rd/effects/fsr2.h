@@ -53,7 +53,7 @@
 #define FSR2_UBO_RING_BUFFER_SIZE (FSR2_MAX_BUFFERED_DESCRIPTORS * FSR2_MAX_UNIFORM_BUFFERS)
 
 namespace RendererRD {
-class FSR2Context {
+class FSR2ContextOld {
 public:
 	enum ResourceID : uint32_t {
 		RESOURCE_ID_DYNAMIC = 0xFFFFFFFF
@@ -121,10 +121,10 @@ public:
 	FfxFsr2Context fsr_context;
 	FfxFsr2ContextDescription fsr_desc;
 
-	~FSR2Context();
+	~FSR2ContextOld();
 };
 
-class FSR2Effect {
+class FSR2EffectOld {
 public:
 	struct RootSignature {
 		// Proxy structure to store the shader required by RD that uses the terminology used by the FSR2 API.
@@ -154,7 +154,7 @@ public:
 	};
 
 	struct Parameters {
-		FSR2Context *context;
+		FSR2ContextOld *context;
 		Size2i internal_size;
 		RID color;
 		RID depth;
@@ -172,9 +172,9 @@ public:
 		Projection reprojection;
 	};
 
-	FSR2Effect();
-	~FSR2Effect();
-	FSR2Context *create_context(Size2i p_internal_size, Size2i p_target_size);
+	FSR2EffectOld();
+	~FSR2EffectOld();
+	FSR2ContextOld *create_context(Size2i p_internal_size, Size2i p_target_size);
 	void upscale(const Parameters &p_params);
 
 private:
