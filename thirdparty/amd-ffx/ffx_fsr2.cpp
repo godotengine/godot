@@ -1201,6 +1201,8 @@ static FfxErrorCode fsr2Dispatch(FfxFsr2Context_Private* context, const FfxFsr2D
     context->constants.lumaMipDimensions[0] = uint32_t(context->constants.maxRenderSize[0] / mipDiv);
     context->constants.lumaMipDimensions[1] = uint32_t(context->constants.maxRenderSize[1] / mipDiv);
 
+    memcpy(context->constants.reprojectionMatrix, params->reprojectionMatrix, sizeof(context->constants.reprojectionMatrix));
+
     // reactive mask bias
     const int32_t threadGroupWorkRegionDim = 8;
     const int32_t dispatchSrcX = FFX_DIVIDE_ROUNDING_UP(context->constants.renderSize[0], threadGroupWorkRegionDim);

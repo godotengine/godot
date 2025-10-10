@@ -41,6 +41,12 @@
 #define FSR2_BIND_CB_FSR2								 3000
 #define FSR2_BIND_CB_AUTOREACTIVE                        3001
 
+// GODOT BEGINS
+#if FFX_FSR2_OPTION_GODOT_DERIVE_INVALID_MOTION_VECTORS
+#define FSR2_BIND_SRV_INPUT_DEPTH                           13
+#endif
+// GODOT ENDS
+
 #include "../../gpu/fsr2/ffx_fsr2_callbacks_glsl.h"
 #include "../../gpu/fsr2/ffx_fsr2_common.h"
 #include "../../gpu/fsr2/ffx_fsr2_tcr_autogen.h"
