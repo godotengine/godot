@@ -736,25 +736,26 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 
 	c = tab_container->get_current_tab_control();
 
-	if (Object::cast_to<ScriptEditorBase>(c)) {
-		script_name_label->set_text(Object::cast_to<ScriptEditorBase>(c)->get_name());
-		script_icon->set_texture(Object::cast_to<ScriptEditorBase>(c)->get_theme_icon());
+	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(c);
+	if (seb) {
 		if (is_visible_in_tree()) {
-			Object::cast_to<ScriptEditorBase>(c)->ensure_focus();
+			seb->ensure_focus();
 		}
 
-		Ref<Script> scr = Object::cast_to<ScriptEditorBase>(c)->get_edited_resource();
+		Ref<Script> scr = seb->get_edited_resource();
 		if (scr.is_valid()) {
 			notify_script_changed(scr);
 		}
 
-		Object::cast_to<ScriptEditorBase>(c)->validate();
+		seb->validate();
 	}
-	if (Object::cast_to<EditorHelp>(c)) {
-		script_name_label->set_text(Object::cast_to<EditorHelp>(c)->get_class());
-		script_icon->set_texture(get_editor_theme_icon(SNAME("Help")));
+
+	EditorHelp *eh = Object::cast_to<EditorHelp>(c);
+	if (eh) {
+		script_name_label->set_text(eh->get_class());
+
 		if (is_visible_in_tree()) {
-			Object::cast_to<EditorHelp>(c)->set_focused();
+			eh->set_focused();
 		}
 	}
 
@@ -934,6 +935,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		} else {
 			_update_selected_editor_menu();
 			_update_online_doc();
+			script_name_label->set_text(String());
 		}
 
 		_update_history_arrows();
@@ -1836,8 +1838,6 @@ void ScriptEditor::_notification(int p_what) {
 			filter_scripts->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			filter_methods->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
-			filename->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit")));
-
 			recent_scripts->reset_size();
 
 			if (is_inside_tree()) {
@@ -2013,6 +2013,7 @@ void ScriptEditor::_script_selected(int p_idx) {
 	grab_focus_block = !Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT); //amazing hack, simply amazing
 
 	_go_to_tab(script_list->get_item_metadata(p_idx));
+	script_name_label->set_text(script_list->get_item_text(p_idx));
 	grab_focus_block = false;
 }
 
@@ -2145,11 +2146,6 @@ void ScriptEditor::_update_members_overview() {
 			members_overview->set_item_metadata(-1, line);
 		}
 	}
-
-	String path = se->get_edited_resource()->get_path();
-	bool built_in = !path.is_resource_file();
-	String name = built_in ? path.get_file() : se->get_name();
-	filename->set_text(name);
 }
 
 void ScriptEditor::_update_help_overview_visibility() {
@@ -2171,7 +2167,6 @@ void ScriptEditor::_update_help_overview_visibility() {
 		filter_methods->set_visible(false);
 		help_overview->set_visible(true);
 		overview_vbox->set_visible(true);
-		filename->set_text(se->get_name());
 	} else {
 		help_overview->set_visible(false);
 		overview_vbox->set_visible(false);
@@ -2444,7 +2439,6 @@ void ScriptEditor::_update_script_names() {
 			script_list->select(index);
 
 			script_name_label->set_text(sedata_filtered[i].name);
-			script_icon->set_texture(sedata_filtered[i].icon);
 
 			ScriptEditorBase *se = _get_current_editor();
 			if (se) {
@@ -4271,14 +4265,13 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	buttons_hbox = memnew(HBoxContainer);
 	overview_vbox->add_child(buttons_hbox);
 
-	filename = memnew(Label);
-	filename->set_focus_mode(FOCUS_ACCESSIBILITY);
-	filename->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	filename->set_clip_text(true);
-	filename->set_h_size_flags(SIZE_EXPAND_FILL);
-	filename->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
-	filename->add_theme_style_override(CoreStringName(normal), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(CoreStringName(normal), SNAME("LineEdit")));
-	buttons_hbox->add_child(filename);
+	filter_methods = memnew(LineEdit);
+	filter_methods->set_placeholder(TTRC("Filter Methods"));
+	filter_methods->set_accessibility_name(TTRC("Filter Methods"));
+	filter_methods->set_clear_button_enabled(true);
+	filter_methods->set_h_size_flags(SIZE_EXPAND_FILL);
+	filter_methods->connect(SceneStringName(text_changed), callable_mp(this, &ScriptEditor::_filter_methods_text_changed));
+	buttons_hbox->add_child(filter_methods);
 
 	members_overview_alphabeta_sort_button = memnew(Button);
 	members_overview_alphabeta_sort_button->set_theme_type_variation(SceneStringName(FlatButton));
@@ -4286,15 +4279,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	members_overview_alphabeta_sort_button->set_toggle_mode(true);
 	members_overview_alphabeta_sort_button->set_pressed(EDITOR_GET("text_editor/script_list/sort_members_outline_alphabetically"));
 	members_overview_alphabeta_sort_button->connect(SceneStringName(toggled), callable_mp(this, &ScriptEditor::_toggle_members_overview_alpha_sort));
-
 	buttons_hbox->add_child(members_overview_alphabeta_sort_button);
-
-	filter_methods = memnew(LineEdit);
-	filter_methods->set_placeholder(TTRC("Filter Methods"));
-	filter_methods->set_accessibility_name(TTRC("Filter Methods"));
-	filter_methods->set_clear_button_enabled(true);
-	filter_methods->connect(SceneStringName(text_changed), callable_mp(this, &ScriptEditor::_filter_methods_text_changed));
-	overview_vbox->add_child(filter_methods);
 
 	members_overview = memnew(ItemList);
 	members_overview->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -4431,18 +4416,12 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	debugger->connect("breakpoint_set_in_tree", callable_mp(this, &ScriptEditor::_set_breakpoint));
 	debugger->connect("breakpoints_cleared_in_tree", callable_mp(this, &ScriptEditor::_clear_breakpoints));
 
-	menu_hb->add_spacer();
-
-	script_icon = memnew(TextureRect);
-	menu_hb->add_child(script_icon);
 	script_name_label = memnew(Label);
+	script_name_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	script_name_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	script_name_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	script_name_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	menu_hb->add_child(script_name_label);
-
-	script_icon->hide();
-	script_name_label->hide();
-
-	menu_hb->add_spacer();
 
 	site_search = memnew(Button);
 	site_search->set_theme_type_variation(SceneStringName(FlatButton));
