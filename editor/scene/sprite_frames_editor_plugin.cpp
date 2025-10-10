@@ -332,9 +332,15 @@ void SpriteFramesEditor::_sheet_zoom_out() {
 }
 
 void SpriteFramesEditor::_sheet_zoom_reset() {
-	// Default the zoom to match the editor scale, but don't dezoom on editor scales below 100% to prevent pixel art from looking bad.
-	sheet_zoom = MAX(1.0f, EDSCALE);
-	Size2 texture_size = split_sheet_preview->get_texture()->get_size();
+	const Size2 display_area_size = 0.9 * split_sheet_scroll->get_size();
+	const Size2 texture_size = split_sheet_preview->get_texture()->get_size();
+	const Size2 texture_ratio = display_area_size / texture_size;
+	const float min_texture_ratio = MIN(texture_ratio.x, texture_ratio.y);
+	const float default_zoom = MAX(Math::floor(min_texture_ratio), 1.0f);
+	// Default the zoom to match the editor scale
+	// while zooming in as much as possible without overflowing the display area
+	// and don't dezoom below 100% to prevent pixels merging.
+	sheet_zoom = MAX(default_zoom, EDSCALE);
 	split_sheet_preview->set_custom_minimum_size(texture_size * sheet_zoom);
 }
 
@@ -626,7 +632,7 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 		previous_texture_size = size;
 
 		// Reset zoom.
-		_sheet_zoom_reset();
+		split_sheet_dialog->connect(SceneStringName(focus_entered), callable_mp(this, &SpriteFramesEditor::_sheet_zoom_reset), CONNECT_ONE_SHOT);
 	}
 
 	split_sheet_dialog->popup_centered_ratio(0.65);
