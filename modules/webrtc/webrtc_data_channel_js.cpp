@@ -84,7 +84,7 @@ void WebRTCDataChannelJS::_on_message(void *p_obj, const uint8_t *p_data, int p_
 }
 
 void WebRTCDataChannelJS::close() {
-	in_buffer.resize(0);
+	in_buffer.clear();
 	queue_count = 0;
 	_was_string = false;
 	godot_js_rtc_datachannel_close(_js_id);
