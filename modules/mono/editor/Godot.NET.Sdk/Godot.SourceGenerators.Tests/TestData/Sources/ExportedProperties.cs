@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-public partial class ExportedProperties : GodotObject
+public partial class ExportedProperties(string primaryCtorParameter) : GodotObject
 {
     // Do not generate default value
     private String _notGeneratePropertyString = new string("not generate");
@@ -90,6 +90,18 @@ public partial class ExportedProperties : GodotObject
         get => _lamdaPropertyString;
         set => _lamdaPropertyString = value;
     }
+
+    // Primary Constructor Parameter
+    [Export]
+    public String PrimaryCtorParameter { get; set; } = primaryCtorParameter;
+
+    // Constant Math Expression
+    [Export]
+    public Single ConstantMath { get; set; } = 2 * Mathf.Pi;
+
+    // Static Strings Addition
+    [Export]
+    public string StaticStringAddition { get; set; } = string.Empty + string.Empty;
 
     // Auto Property
     [Export] private Boolean PropertyBoolean { get; set; } = true;
