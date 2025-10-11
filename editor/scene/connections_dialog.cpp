@@ -272,6 +272,10 @@ StringName ConnectDialog::generate_method_callback_name(Node *p_source, const St
 	for (int i = 0; i < node_name.length(); i++) { // TODO: Regex filter may be cleaner.
 		char32_t c = node_name[i];
 		if ((i == 0 && !is_unicode_identifier_start(c)) || (i > 0 && !is_unicode_identifier_continue(c))) {
+			if (i == 0 && is_digit(c)) {
+				// Don't replace digits at the beginning.
+				continue;
+			}
 			if (c == ' ') {
 				// Replace spaces with underlines.
 				c = '_';
