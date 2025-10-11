@@ -329,8 +329,8 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		GDREGISTER_ABSTRACT_CLASS(OpenXRInteractionProfileEditorBase);
-		GDREGISTER_CLASS(OpenXRInteractionProfileEditor);
-		GDREGISTER_CLASS(OpenXRBindingModifierEditor);
+		GDREGISTER_VIRTUAL_CLASS(OpenXRInteractionProfileEditor);
+		GDREGISTER_VIRTUAL_CLASS(OpenXRBindingModifierEditor);
 
 		EditorNode::add_init_callback(_editor_init);
 	}
