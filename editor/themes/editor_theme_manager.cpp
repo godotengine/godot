@@ -938,7 +938,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 		Ref<StyleBoxFlat> style_tree_selected = style_tree_focus->duplicate();
 
-		const Color guide_color = p_config.mono_color * Color(1, 1, 1, 0.05);
+		const Color guide_color = p_config.mono_color * Color(1, 1, 1, p_config.dark_theme ? 0.025 : 0.075);
 
 		// Tree.
 		{

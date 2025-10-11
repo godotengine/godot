@@ -2235,7 +2235,7 @@ void Tree::update_item_cache(TreeItem *p_item) const {
 	}
 }
 
-int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height) {
+int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height, int &r_row_idx) {
 	if (p_pos.y - theme_cache.offset.y > (p_draw_size.height)) {
 		return -1; // Draw no more!
 	}
@@ -2258,6 +2258,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 		// Draw separation.
 
 		ERR_FAIL_COND_V(theme_cache.font.is_null(), -1);
+
+		r_row_idx++;
 
 		int ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? theme_cache.h_separation : theme_cache.item_margin);
 		int skip2 = 0;
@@ -2342,118 +2344,118 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				cell_rect.position.x -= theme_cache.h_separation;
 				cell_rect.size.x += theme_cache.h_separation;
 			}
+			Rect2i rect = convert_rtl_rect(cell_rect);
 
-			if (i == 0 && select_mode == SELECT_ROW) {
-				if (p_item->cells[0].selected || is_row_hovered) {
-					const Rect2 content_rect = _get_content_rect();
-					Rect2i row_rect = Rect2i(Point2i(content_rect.position.x, item_rect.position.y), Size2i(content_rect.size.x, item_rect.size.y));
-					row_rect = convert_rtl_rect(row_rect);
+			if (i == 0) {
+				const Rect2 content_rect = _get_content_rect();
+				Rect2i row_rect = Rect2i(Point2i(content_rect.position.x, item_rect.position.y), Size2i(content_rect.size.x, item_rect.size.y));
 
-					if (p_item->cells[0].selected) {
-						if (is_row_hovered) {
-							if (has_focus(true)) {
-								theme_cache.hovered_selected_focus->draw(ci, row_rect);
+				if (select_mode == SELECT_ROW) {
+					if (p_item->cells[0].selected || is_row_hovered) {
+						if (p_item->cells[0].selected) {
+							if (is_row_hovered) {
+								if (has_focus(true)) {
+									theme_cache.hovered_selected_focus->draw(ci, row_rect);
+								} else {
+									theme_cache.hovered_selected->draw(ci, row_rect);
+								}
 							} else {
-								theme_cache.hovered_selected->draw(ci, row_rect);
+								if (has_focus(true)) {
+									theme_cache.selected_focus->draw(ci, row_rect);
+								} else {
+									theme_cache.selected->draw(ci, row_rect);
+								}
 							}
-						} else {
-							if (has_focus(true)) {
-								theme_cache.selected_focus->draw(ci, row_rect);
+						} else if (!drop_mode_flags) {
+							if (is_cell_button_hovered) {
+								theme_cache.hovered_dimmed->draw(ci, row_rect);
 							} else {
-								theme_cache.selected->draw(ci, row_rect);
+								theme_cache.hovered->draw(ci, row_rect);
 							}
-						}
-					} else if (!drop_mode_flags) {
-						if (is_cell_button_hovered) {
-							theme_cache.hovered_dimmed->draw(ci, row_rect);
-						} else {
-							theme_cache.hovered->draw(ci, row_rect);
 						}
 					}
+				}
+
+				if (theme_cache.draw_color_guides && (r_row_idx % 2 != 0)) {
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, row_rect, theme_cache.guide_color);
+				}
+
+				if (theme_cache.draw_guides) {
+					RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(row_rect.position.x, row_rect.position.y + row_rect.size.height), row_rect.position + row_rect.size, theme_cache.guide_color, 1);
 				}
 			}
 
 			if (select_mode != SELECT_ROW) {
-				Rect2i r = convert_rtl_rect(cell_rect);
-
 				// Cell hover.
 				if (is_cell_hovered && !p_item->cells[i].selected && !drop_mode_flags) {
 					if (is_cell_button_hovered) {
-						theme_cache.hovered_dimmed->draw(ci, r);
+						theme_cache.hovered_dimmed->draw(ci, rect);
 					} else {
-						theme_cache.hovered->draw(ci, r);
+						theme_cache.hovered->draw(ci, rect);
 					}
 				}
 			}
 
 			if ((select_mode == SELECT_ROW && selected_item == p_item) || (select_mode == SELECT_MULTI && selected_item == p_item && selected_col == i) || p_item->cells[i].selected || !p_item->has_meta("__focus_rect")) {
-				Rect2i r = cell_rect;
-
 				if (select_mode != SELECT_ROW) {
-					p_item->set_meta("__focus_rect", Rect2(r.position, r.size));
-					r = convert_rtl_rect(r);
+					p_item->set_meta("__focus_rect", Rect2(cell_rect.position, cell_rect.size));
 					if (p_item->cells[i].selected) {
 						if (is_cell_hovered) {
 							if (has_focus(true)) {
-								theme_cache.hovered_selected_focus->draw(ci, r);
+								theme_cache.hovered_selected_focus->draw(ci, rect);
 							} else {
-								theme_cache.hovered_selected->draw(ci, r);
+								theme_cache.hovered_selected->draw(ci, rect);
 							}
 						} else {
 							if (has_focus(true)) {
-								theme_cache.selected_focus->draw(ci, r);
+								theme_cache.selected_focus->draw(ci, rect);
 							} else {
-								theme_cache.selected->draw(ci, r);
+								theme_cache.selected->draw(ci, rect);
 							}
 						}
 					}
 				} else {
-					p_item->set_meta("__focus_col_" + itos(i), Rect2(r.position, r.size));
+					p_item->set_meta("__focus_col_" + itos(i), Rect2(rect.position, rect.size));
 				}
-			}
-
-			if (theme_cache.draw_guides) {
-				Rect2 r = convert_rtl_rect(cell_rect);
-				RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(r.position.x, r.position.y + r.size.height), r.position + r.size, theme_cache.guide_color, 1);
 			}
 
 			if (p_item->cells[i].custom_bg_color) {
-				Rect2 r = cell_rect;
+				Rect2 bg_rect = cell_rect;
 				if (i == 0) {
-					r.position.x = p_draw_ofs.x;
-					r.size.x = item_width + ofs;
+					bg_rect.position.x = p_draw_ofs.x;
+					bg_rect.size.x = item_width + ofs;
 				}
-				r = convert_rtl_rect(r);
+				bg_rect = convert_rtl_rect(bg_rect);
+
 				if (p_item->cells[i].custom_bg_outline) {
-					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), p_item->cells[i].bg_color);
-					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y + r.size.y - 1, r.size.x, 1), p_item->cells[i].bg_color);
-					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, 1, r.size.y), p_item->cells[i].bg_color);
-					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x + r.size.x - 1, r.position.y, 1, r.size.y), p_item->cells[i].bg_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(bg_rect.position.x, bg_rect.position.y, bg_rect.size.x, 1), p_item->cells[i].bg_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(bg_rect.position.x, bg_rect.position.y + bg_rect.size.y - 1, bg_rect.size.x, 1), p_item->cells[i].bg_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(bg_rect.position.x, bg_rect.position.y, 1, bg_rect.size.y), p_item->cells[i].bg_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(bg_rect.position.x + bg_rect.size.x - 1, bg_rect.position.y, 1, bg_rect.size.y), p_item->cells[i].bg_color);
 				} else {
-					RenderingServer::get_singleton()->canvas_item_add_rect(ci, r, p_item->cells[i].bg_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, bg_rect, p_item->cells[i].bg_color);
 				}
 			}
 
 			if (drop_mode_flags && drop_mode_over) {
-				Rect2 r = convert_rtl_rect(cell_rect);
 				if (drop_mode_over == p_item) {
 					if (drop_mode_section == 0 || drop_mode_section == -1) {
 						// Line above.
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), theme_cache.drop_position_color);
+						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(rect.position.x, rect.position.y, rect.size.x, 1), theme_cache.drop_position_color);
 					}
 					if (drop_mode_section == 0) {
 						// Side lines.
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, 1, r.size.y), theme_cache.drop_position_color);
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x + r.size.x - 1, r.position.y, 1, r.size.y), theme_cache.drop_position_color);
+						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(rect.position.x, rect.position.y, 1, rect.size.y), theme_cache.drop_position_color);
+						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(rect.position.x + rect.size.x - 1, rect.position.y, 1, rect.size.y), theme_cache.drop_position_color);
 					}
 					if (drop_mode_section == 0 || (drop_mode_section == 1 && (!p_item->get_first_child() || p_item->is_collapsed()))) {
 						// Line below.
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y + r.size.y, r.size.x, 1), theme_cache.drop_position_color);
+						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(rect.position.x, rect.position.y + rect.size.y, rect.size.x, 1), theme_cache.drop_position_color);
 					}
 				} else if (drop_mode_over == p_item->get_parent()) {
 					if (drop_mode_section == 1 && !p_item->get_prev()) {
 						// Line above.
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), theme_cache.drop_position_color);
+						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(rect.position.x, rect.position.y, rect.size.x, 1), theme_cache.drop_position_color);
 					}
 				}
 			}
@@ -2673,11 +2675,10 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			}
 
 			if (select_mode == SELECT_MULTI && selected_item == p_item && selected_col == i) {
-				cell_rect = convert_rtl_rect(cell_rect);
 				if (has_focus(true)) {
-					theme_cache.cursor->draw(ci, cell_rect);
+					theme_cache.cursor->draw(ci, rect);
 				} else {
-					theme_cache.cursor_unfocus->draw(ci, cell_rect);
+					theme_cache.cursor_unfocus->draw(ci, rect);
 				}
 			}
 		}
@@ -2741,7 +2742,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			int child_h = -1;
 			int child_self_height = 0;
 			if (htotal >= 0) {
-				child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c, child_self_height);
+				child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c, child_self_height, r_row_idx);
 				child_self_height += theme_cache.v_separation;
 			}
 
@@ -5029,7 +5030,8 @@ void Tree::_notification(int p_what) {
 
 			if (root && get_size().x > 0 && get_size().y > 0) {
 				int self_height = 0; // Just to pass a reference, we don't need the root's `self_height`.
-				draw_item(Point2(), draw_ofs, draw_size, root, self_height);
+				int row_idx = -1;
+				draw_item(Point2(), draw_ofs, draw_size, root, self_height, row_idx);
 			}
 
 			if (show_column_titles) {
@@ -6703,6 +6705,7 @@ void Tree::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Tree, font_outline_size, "outline_size");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, draw_guides);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, draw_color_guides);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, guide_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, draw_relationship_lines);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, relationship_line_width);
