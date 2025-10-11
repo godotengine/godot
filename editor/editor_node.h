@@ -465,6 +465,7 @@ private:
 
 	Ref<Resource> saving_resource;
 	HashSet<Ref<Resource>> saving_resources_in_path;
+	HashMap<Resource *, List<Node *>> resource_count; // Keeps track of linked Resources from a Scene.
 
 	uint64_t update_spinner_step_msec = 0;
 	uint64_t update_spinner_step_frame = 0;
@@ -807,6 +808,12 @@ public:
 	void save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path);
 	void save_resource(const Ref<Resource> &p_resource);
 	void save_resource_as(const Ref<Resource> &p_resource, const String &p_at_path = String());
+	void gather_resources(const Variant &p_variant, List<Ref<Resource>> &p_l, bool subresources = false);
+	void update_resource_count(Node *p_node, bool remove = false);
+	void update_node_reference(const Variant &p_value, Node *p_node, bool remove = false);
+	void clear_resource_count() { resource_count.clear(); }
+	int get_resource_count(Ref<Resource> p_res) const;
+	List<Node *> get_resource_node_list(Ref<Resource> p_res);
 
 	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
 

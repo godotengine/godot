@@ -71,12 +71,39 @@ void EditorResourcePicker::_update_resource() {
 		preview_rect->set_texture(Ref<Texture2D>());
 
 		assign_button->set_custom_minimum_size(assign_button_min_size);
-
 		if (edited_resource == Ref<Resource>()) {
 			assign_button->set_button_icon(Ref<Texture2D>());
 			assign_button->set_text(TTR("<empty>"));
 			assign_button->set_tooltip_text("");
+			make_unique_button->set_text("");
+			make_unique_button->set_disabled(true);
 		} else {
+			bool inside_scene = edited_resource->get_path().get_slice("::", 1).length() == 5 || EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path() == edited_resource->get_path().get_slice("::", 0);
+			bool internal_res = (inside_scene && edited_resource->is_built_in()) || edited_resource->get_path().is_empty();
+			Ref<Resource> ref_owner = _has_parent_resource();
+			bool is_subres = ref_owner.is_valid();
+			if (internal_res) {
+				int num_of_copies = EditorNode::get_singleton()->get_resource_count(edited_resource);
+				bool unique_disable = num_of_copies <= 1 || (is_subres && EditorNode::get_singleton()->get_resource_count(ref_owner) > 1) || !editable;
+				if (is_subres) {
+					if (num_of_copies <= 1) {
+						make_unique_button->set_tooltip_text(TTR("This is a nested Resource."));
+					} else {
+						make_unique_button->set_tooltip_text(TTR((!unique_disable) ? "This is a nested Resource.\nLeft-click to make the Resource unique.\nRight-click to make the Resource and its subresources unique." : "This is a nested Resource.\nTo duplicate it, make its parent Resource unique."));
+					}
+				} else {
+					make_unique_button->set_tooltip_text(TTR((unique_disable) ? "Number of linked Resources." : "Number of linked Resources.\nLeft-click to make the Resource unique.\nRight-click to make the Resource and its subresources unique."));
+				}
+				make_unique_button->set_text(String::num_uint64(num_of_copies));
+				make_unique_button->set_disabled(unique_disable);
+				make_unique_button->set_button_icon(Ref<Texture2D>());
+			} else {
+				// External.
+				make_unique_button->set_tooltip_text(TTR("This Resource is not built into the scene.\nLeft-click to make it built-in and unique.\nRight-click to make the Resource and its subresources built-in and unique."));
+				make_unique_button->set_text("");
+				make_unique_button->set_button_icon(get_editor_theme_icon(SNAME("Duplicate")));
+				make_unique_button->set_disabled(!editable);
+			}
 			assign_button->set_button_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), SNAME("Object")));
 
 			if (!edited_resource->get_name().is_empty()) {
@@ -100,6 +127,7 @@ void EditorResourcePicker::_update_resource() {
 	}
 
 	assign_button->set_disabled(!editable && edited_resource.is_null());
+	make_unique_button->set_visible(!edited_resource.is_null() && Ref<Script>(edited_resource).is_null());
 	quick_load_button->set_visible(editable && edited_resource.is_null());
 }
 
@@ -247,9 +275,22 @@ void EditorResourcePicker::_update_menu_items() {
 				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Clear")), TTR("Clear"), OBJ_MENU_CLEAR);
 			}
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
+			Ref<Resource> ref_owner = _has_parent_resource();
+			bool is_subres = ref_owner.is_valid() && EditorNode::get_singleton()->get_resource_count(ref_owner) > 1;
+			bool inside_scene = edited_resource->get_path().is_empty() || (edited_resource->get_path().get_slice("::", 1).length() == 5 || EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path() == edited_resource->get_path().get_slice("::", 0)) && edited_resource->is_built_in();
+			bool unique_disable = is_subres || (inside_scene && EditorNode::get_singleton()->get_resource_count(edited_resource) <= 1);
+			edit_menu->set_item_disabled(edit_menu->get_item_count() - 1, unique_disable);
+
+			if (unique_disable) {
+				edit_menu->set_item_tooltip(edit_menu->get_item_count() - 1, (is_subres) ? "In order to duplicate it, make its parent Resource unique." : "This Resource is already unique.");
+			}
 
 			if (_has_sub_resources(edited_resource)) {
 				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique (Recursive)"), OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
+				if (is_subres) {
+					edit_menu->set_item_disabled(edit_menu->get_item_count() - 1, true);
+					edit_menu->set_item_tooltip(edit_menu->get_item_count() - 1, "In order to duplicate this it and its subresources, make its parent Resource unique.");
+				}
 			}
 
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save"), OBJ_MENU_SAVE);
@@ -379,7 +420,6 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			if (edited_resource.is_null()) {
 				return;
 			}
-
 			Ref<Resource> unique_resource = edited_resource->duplicate();
 			ERR_FAIL_COND(unique_resource.is_null()); // duplicate() may fail.
 
@@ -604,6 +644,15 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 			edit_menu->reset_size();
 			edit_menu->set_position(pos);
 			edit_menu->popup();
+		}
+	}
+}
+
+void EditorResourcePicker::_unique_button_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+		if (make_unique_button->is_visible() && !make_unique_button->is_disabled()) {
+			_edit_menu_cbk((_has_sub_resources(edited_resource) ? OBJ_MENU_MAKE_UNIQUE_RECURSIVE : OBJ_MENU_MAKE_UNIQUE));
 		}
 	}
 }
@@ -917,6 +966,7 @@ void EditorResourcePicker::_bind_methods() {
 void EditorResourcePicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+			EditorNode::get_singleton()->connect("resource_counter_changed", callable_mp(this, &EditorResourcePicker::_update_resource));
 			_update_resource();
 			[[fallthrough]];
 		}
@@ -951,8 +1001,12 @@ void EditorResourcePicker::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			Callable resource_saved = callable_mp(this, &EditorResourcePicker::_resource_saved);
+			Callable resource_counter_changed = callable_mp(this, &EditorResourcePicker::_update_resource);
 			if (EditorNode::get_singleton()->is_connected("resource_saved", resource_saved)) {
 				EditorNode::get_singleton()->disconnect("resource_saved", resource_saved);
+			}
+			if (EditorNode::get_singleton()->is_connected("resource_counter_changed", resource_counter_changed)) {
+				EditorNode::get_singleton()->disconnect("resource_counter_changed", resource_counter_changed);
 			}
 		} break;
 	}
@@ -1155,21 +1209,41 @@ void EditorResourcePicker::_duplicate_selected_resources() {
 		Array meta = item->get_metadata(0);
 		Ref<Resource> res = meta[0];
 		Ref<Resource> unique_resource = res->duplicate();
+		Ref<Resource> prev_resource = res.ptr();
 		ERR_FAIL_COND(unique_resource.is_null()); // duplicate() may fail.
 		meta[0] = unique_resource;
 
 		if (meta.size() == 1) { // Root.
 			edited_resource = unique_resource;
-			_resource_changed();
 		} else {
 			Array parent_meta = item->get_parent()->get_metadata(0);
 			Ref<Resource> parent = parent_meta[0];
 			parent->set(meta[1], unique_resource);
 		}
 	}
+	_resource_changed();
+}
+
+Ref<Resource> EditorResourcePicker::_has_parent_resource() {
+	Node *current_node = this->get_parent();
+	while (current_node != nullptr) {
+		EditorProperty *ep = Object::cast_to<EditorProperty>(current_node);
+		if (ep && Object::cast_to<Resource>(ep->get_edited_object())) {
+			return Object::cast_to<Resource>(ep->get_edited_object());
+		}
+		current_node = current_node->get_parent();
+	}
+	return nullptr;
 }
 
 EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
+	make_unique_button = memnew(Button);
+	make_unique_button->set_flat(true);
+	make_unique_button->set_accessibility_name(TTRC("Number of Linked Resources."));
+	add_child(make_unique_button);
+	make_unique_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_edit_menu_cbk).bind(OBJ_MENU_MAKE_UNIQUE));
+	make_unique_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_unique_button_input));
+
 	assign_button = memnew(Button);
 	assign_button->set_flat(true);
 	assign_button->set_h_size_flags(SIZE_EXPAND_FILL);
