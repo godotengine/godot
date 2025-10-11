@@ -256,9 +256,9 @@ void ObjectDBProfilerPanel::_snapshot_rmb(const Vector2 &p_pos, MouseButton p_bu
 	}
 	rmb_menu->clear(false);
 
-	rmb_menu->add_icon_item(get_editor_theme_icon(SNAME("Rename")), TTRC("Rename"), OdbProfilerMenuOptions::ODB_MENU_RENAME);
-	rmb_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTRC("Show in File Manager"), OdbProfilerMenuOptions::ODB_MENU_SHOW_IN_FOLDER);
-	rmb_menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTRC("Delete"), OdbProfilerMenuOptions::ODB_MENU_DELETE);
+	rmb_menu->add_icon_item(get_editor_theme_icon(SNAME("Rename")), TTRC("Rename"), OPTION_RENAME);
+	rmb_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTRC("Show in File Manager"), OPTION_SHOW_IN_FOLDER);
+	rmb_menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTRC("Delete"), OPTION_DELETE);
 
 	rmb_menu->set_position(snapshot_list->get_screen_position() + p_pos);
 	rmb_menu->reset_size();
@@ -269,11 +269,11 @@ void ObjectDBProfilerPanel::_rmb_menu_pressed(int p_tool, bool p_confirm_overrid
 	String file_path = snapshot_list->get_selected()->get_metadata(0);
 	String global_path = ProjectSettings::get_singleton()->globalize_path(file_path);
 	switch (rmb_menu->get_item_id(p_tool)) {
-		case OdbProfilerMenuOptions::ODB_MENU_SHOW_IN_FOLDER: {
+		case OPTION_SHOW_IN_FOLDER: {
 			OS::get_singleton()->shell_show_in_file_manager(global_path, true);
 			break;
 		}
-		case OdbProfilerMenuOptions::ODB_MENU_DELETE: {
+		case OPTION_DELETE: {
 			DirAccess::remove_file_or_error(global_path);
 			snapshot_list->get_root()->remove_child(snapshot_list->get_selected());
 			if (snapshot_list->get_root()->get_child_count() > 0) {
@@ -285,7 +285,7 @@ void ObjectDBProfilerPanel::_rmb_menu_pressed(int p_tool, bool p_confirm_overrid
 			_update_diff_items();
 			break;
 		}
-		case OdbProfilerMenuOptions::ODB_MENU_RENAME: {
+		case OPTION_RENAME: {
 			snapshot_list->edit_selected(true);
 			break;
 		}
@@ -338,9 +338,7 @@ ObjectDBProfilerPanel::ObjectDBProfilerPanel() {
 	EditorDebuggerNode::get_singleton()->get_current_debugger()->connect("breaked", callable_mp(this, &ObjectDBProfilerPanel::_on_debug_breaked));
 
 	HSplitContainer *root_container = memnew(HSplitContainer);
-	root_container->set_anchors_preset(Control::LayoutPreset::PRESET_FULL_RECT);
-	root_container->set_v_size_flags(Control::SizeFlags::SIZE_EXPAND_FILL);
-	root_container->set_h_size_flags(Control::SizeFlags::SIZE_EXPAND_FILL);
+	root_container->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	root_container->set_split_offset(300 * EDSCALE);
 	add_child(root_container);
 
@@ -354,45 +352,41 @@ ObjectDBProfilerPanel::ObjectDBProfilerPanel() {
 	snapshot_list = memnew(Tree);
 	snapshot_list->create_item();
 	snapshot_list->set_hide_folding(true);
+	snapshot_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	snapshot_column->add_child(snapshot_list);
-	snapshot_list->set_select_mode(Tree::SelectMode::SELECT_ROW);
+	snapshot_list->set_select_mode(Tree::SELECT_ROW);
 	snapshot_list->set_hide_root(true);
 	snapshot_list->set_columns(1);
 	snapshot_list->set_column_titles_visible(true);
 	snapshot_list->set_column_title(0, "Snapshots");
 	snapshot_list->set_column_expand(0, true);
 	snapshot_list->set_column_clip_content(0, true);
+	snapshot_list->set_allow_rmb_select(true);
 	snapshot_list->connect(SceneStringName(item_selected), callable_mp(this, &ObjectDBProfilerPanel::_show_selected_snapshot));
 	snapshot_list->connect("nothing_selected", callable_mp(this, &ObjectDBProfilerPanel::_on_snapshot_deselected));
 	snapshot_list->connect("item_edited", callable_mp(this, &ObjectDBProfilerPanel::_edit_snapshot_name));
-	snapshot_list->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	snapshot_list->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	snapshot_list->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
-
-	snapshot_list->set_allow_rmb_select(true);
 	snapshot_list->connect("item_mouse_selected", callable_mp(this, &ObjectDBProfilerPanel::_snapshot_rmb));
 
 	rmb_menu = memnew(PopupMenu);
 	add_child(rmb_menu);
 	rmb_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ObjectDBProfilerPanel::_rmb_menu_pressed).bind(false));
 
-	HBoxContainer *diff_button_and_label = memnew(HBoxContainer);
-	diff_button_and_label->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	snapshot_column->add_child(diff_button_and_label);
-	Label *diff_against = memnew(Label(TTRC("Diff Against:")));
-	diff_button_and_label->add_child(diff_against);
+	HBoxContainer *bottom_hb = memnew(HBoxContainer);
+	snapshot_column->add_child(bottom_hb);
+	bottom_hb->add_child(memnew(Label(TTRC("Diff Against:"))));
 
 	diff_button = memnew(OptionButton);
-	diff_button->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	diff_button->set_fit_to_longest_item(false);
+	diff_button->set_clip_text(true);
+	diff_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	diff_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	diff_button->connect(SceneStringName(item_selected), callable_mp(this, &ObjectDBProfilerPanel::_show_selected_snapshot).unbind(1));
-	diff_button_and_label->add_child(diff_button);
+	bottom_hb->add_child(diff_button);
 
 	// Tabs of various views right for each snapshot.
 	view_tabs = memnew(TabContainer);
 	root_container->add_child(view_tabs);
 	view_tabs->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
-	view_tabs->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	view_tabs->connect("tab_changed", callable_mp(this, &ObjectDBProfilerPanel::_view_tab_changed));
 
 	add_view(memnew(SnapshotSummaryView));
@@ -435,7 +429,7 @@ void ObjectDBProfilerPanel::_update_diff_items() {
 	diff_button->clear();
 	diff_button->add_item(TTRC("None"), 0);
 	diff_button->set_item_metadata(0, String());
-	diff_button->set_item_auto_translate_mode(0, Node::AUTO_TRANSLATE_MODE_ALWAYS);
+	diff_button->set_item_auto_translate_mode(0, AUTO_TRANSLATE_MODE_ALWAYS);
 
 	for (int i = 0; i < snapshot_list->get_root()->get_child_count(); i++) {
 		String name = snapshot_list->get_root()->get_child(i)->get_text(0);

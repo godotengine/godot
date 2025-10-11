@@ -44,13 +44,6 @@ public:
 	SpanningHeader(const String &p_text);
 };
 
-class DarkPanelContainer : public PanelContainer {
-	GDCLASS(DarkPanelContainer, PanelContainer);
-
-public:
-	DarkPanelContainer();
-};
-
 // Utility class that creates a filter text box and a sort menu.
 // Takes a reference to a tree and applies the sort and filter to the tree.
 class TreeSortAndFilterBar : public HBoxContainer {
@@ -59,8 +52,8 @@ class TreeSortAndFilterBar : public HBoxContainer {
 public:
 	// The ways a column can be sorted, either alphabetically or numerically.
 	enum SortType {
-		NUMERIC_SORT = 0,
-		ALPHA_SORT,
+		SORT_TYPE_NUMERIC,
+		SORT_TYPE_ALPHA,
 		SORT_TYPE_MAX
 	};
 
@@ -80,7 +73,7 @@ protected:
 				id(p_id), label(p_label), type(p_type), ascending(p_ascending), column(p_column) {}
 		int id = 0;
 		String label;
-		SortType type = SortType::NUMERIC_SORT;
+		SortType type = SORT_TYPE_NUMERIC;
 		bool ascending = false;
 		int column = 0;
 	};

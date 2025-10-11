@@ -45,15 +45,12 @@ void SnapshotRefCountedView::show_snapshot(GameStateSnapshot *p_data, GameStateS
 	item_data_map.clear();
 	data_item_map.clear();
 
-	set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-
 	refs_view = memnew(HSplitContainer);
+	refs_view->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	add_child(refs_view);
-	refs_view->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
 
 	VBoxContainer *refs_column = memnew(VBoxContainer);
-	refs_column->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
+	refs_column->set_h_size_flags(SIZE_EXPAND_FILL);
 	refs_view->add_child(refs_column);
 
 	// Tree of Refs.
@@ -63,25 +60,24 @@ void SnapshotRefCountedView::show_snapshot(GameStateSnapshot *p_data, GameStateS
 	refs_column->add_child(filter_bar);
 	int offset = diff_data ? 1 : 0;
 	if (diff_data) {
-		filter_bar->add_sort_option(TTRC("Snapshot"), TreeSortAndFilterBar::SortType::ALPHA_SORT, 0);
+		filter_bar->add_sort_option(TTRC("Snapshot"), TreeSortAndFilterBar::SORT_TYPE_ALPHA, 0);
 	}
-	filter_bar->add_sort_option(TTRC("Class"), TreeSortAndFilterBar::SortType::ALPHA_SORT, offset + 0);
-	filter_bar->add_sort_option(TTRC("Name"), TreeSortAndFilterBar::SortType::ALPHA_SORT, offset + 1);
-	TreeSortAndFilterBar::SortOptionIndexes default_sort = filter_bar->add_sort_option(
-			TTRC("Native Refs"),
-			TreeSortAndFilterBar::SortType::NUMERIC_SORT,
-			offset + 2);
-	filter_bar->add_sort_option(TTRC("ObjectDB Refs"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, offset + 3);
-	filter_bar->add_sort_option(TTRC("Total Refs"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, offset + 4);
-	filter_bar->add_sort_option(TTRC("ObjectDB Cycles"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, offset + 5);
 
-	refs_list->set_select_mode(Tree::SelectMode::SELECT_ROW);
-	refs_list->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
-	refs_list->set_hide_folding(false);
-	refs_column->add_child(refs_list);
+	TreeSortAndFilterBar::SortOptionIndexes default_sort;
+	filter_bar->add_sort_option(TTRC("Class Name"), TreeSortAndFilterBar::SORT_TYPE_ALPHA, offset + 0);
+	filter_bar->add_sort_option(TTRC("Object Name"), TreeSortAndFilterBar::SORT_TYPE_ALPHA, offset + 1);
+	filter_bar->add_sort_option(TTRC("Refs"), TreeSortAndFilterBar::SORT_TYPE_NUMERIC, offset + 2);
+	default_sort = filter_bar->add_sort_option(TTRC("Native Refs"), TreeSortAndFilterBar::SORT_TYPE_NUMERIC, offset + 3);
+	filter_bar->add_sort_option(TTRC("Total Refs"), TreeSortAndFilterBar::SORT_TYPE_NUMERIC, offset + 4);
+	filter_bar->add_sort_option(TTRC("Cycles"), TreeSortAndFilterBar::SORT_TYPE_NUMERIC, offset + 5);
+
+	refs_list->set_select_mode(Tree::SELECT_ROW);
+	refs_list->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
+	refs_list->set_hide_folding(true);
 	refs_list->set_hide_root(true);
 	refs_list->set_columns(diff_data ? 7 : 6);
 	refs_list->set_column_titles_visible(true);
+	refs_column->add_child(refs_list);
 
 	if (diff_data) {
 		refs_list->set_column_title(0, TTRC("Snapshot"));
@@ -89,41 +85,43 @@ void SnapshotRefCountedView::show_snapshot(GameStateSnapshot *p_data, GameStateS
 		refs_list->set_column_title_tooltip_text(0, "A: " + snapshot_data->name + ", B: " + diff_data->name);
 	}
 
-	refs_list->set_column_title(offset + 0, TTRC("Class"));
+	refs_list->set_column_title(offset + 0, TTRC("Class Name"));
 	refs_list->set_column_expand(offset + 0, true);
 	refs_list->set_column_title_tooltip_text(offset + 0, TTRC("Object's class"));
 
-	refs_list->set_column_title(offset + 1, TTRC("Name"));
+	refs_list->set_column_title(offset + 1, TTRC("Object Name"));
 	refs_list->set_column_expand(offset + 1, true);
 	refs_list->set_column_expand_ratio(offset + 1, 2);
 	refs_list->set_column_title_tooltip_text(offset + 1, TTRC("Object's name"));
 
-	refs_list->set_column_title(offset + 2, TTRC("Native Refs"));
+	refs_list->set_column_title(offset + 2, TTRC("Refs"));
+	refs_list->set_column_custom_minimum_width(offset + 2, 50 * EDSCALE);
 	refs_list->set_column_expand(offset + 2, false);
-	refs_list->set_column_title_tooltip_text(offset + 2, TTRC("References not owned by the ObjectDB"));
+	refs_list->set_column_title_tooltip_text(offset + 2, TTRC("References owned by the ObjectDB"));
 
-	refs_list->set_column_title(offset + 3, TTRC("ObjectDB Refs"));
+	refs_list->set_column_title(offset + 3, TTRC("Native Refs"));
+	refs_list->set_column_custom_minimum_width(offset + 3, 50 * EDSCALE);
 	refs_list->set_column_expand(offset + 3, false);
-	refs_list->set_column_title_tooltip_text(offset + 3, TTRC("References owned by the ObjectDB"));
+	refs_list->set_column_title_tooltip_text(offset + 3, TTRC("References not owned by the ObjectDB"));
 
 	refs_list->set_column_title(offset + 4, TTRC("Total Refs"));
+	refs_list->set_column_custom_minimum_width(offset + 4, 50 * EDSCALE);
 	refs_list->set_column_expand(offset + 4, false);
 	refs_list->set_column_title_tooltip_text(offset + 4, TTRC("ObjectDB References + Native References"));
 
-	refs_list->set_column_title(offset + 5, TTRC("ObjectDB Cycles"));
+	refs_list->set_column_title(offset + 5, TTRC("Cycles"));
+	refs_list->set_column_custom_minimum_width(offset + 5, 50 * EDSCALE);
 	refs_list->set_column_expand(offset + 5, false);
 	refs_list->set_column_title_tooltip_text(offset + 5, TTRC("Cycles detected in the ObjectDB"));
 
 	refs_list->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotRefCountedView::_refcounted_selected));
-	refs_list->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	refs_list->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	refs_list->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	// View of the selected refcounted.
 	ref_details = memnew(VBoxContainer);
-	ref_details->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
+	ref_details->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
+	ref_details->set_h_size_flags(SIZE_EXPAND_FILL);
 	refs_view->add_child(ref_details);
-	ref_details->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	ref_details->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 
 	refs_list->create_item();
 	_insert_data(snapshot_data, TTRC("A"));
@@ -171,9 +169,13 @@ void SnapshotRefCountedView::_insert_data(GameStateSnapshot *p_snapshot, const S
 		item->set_text(offset + 1, pair.value->get_name());
 		item->set_auto_translate_mode(offset + 1, AUTO_TRANSLATE_MODE_DISABLED);
 		item->set_text(offset + 2, String::num_uint64(native_refs));
+		item->set_text_alignment(offset + 2, HORIZONTAL_ALIGNMENT_CENTER);
 		item->set_text(offset + 3, String::num_uint64(objectdb_refs));
+		item->set_text_alignment(offset + 3, HORIZONTAL_ALIGNMENT_CENTER);
 		item->set_text(offset + 4, String::num_uint64(total_refs));
+		item->set_text_alignment(offset + 4, HORIZONTAL_ALIGNMENT_CENTER);
 		item->set_text(offset + 5, String::num_uint64(ref_cycles.size())); // Compute cycles and attach it to refcounted object.
+		item->set_text_alignment(offset + 5, HORIZONTAL_ALIGNMENT_CENTER);
 
 		if (total_refs == ref_cycles.size()) {
 			// Often, references are held by the engine so we can't know if we're stuck in a cycle or not
@@ -192,29 +194,23 @@ void SnapshotRefCountedView::_refcounted_selected() {
 	SnapshotDataObject *d = item_data_map[refs_list->get_selected()];
 	EditorNode::get_singleton()->push_item(static_cast<Object *>(d));
 
-	DarkPanelContainer *refcounted_panel = memnew(DarkPanelContainer);
-	VBoxContainer *refcounted_panel_content = memnew(VBoxContainer);
-	refcounted_panel_content->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	refcounted_panel_content->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	PanelContainer *refcounted_panel = memnew(PanelContainer);
+	refcounted_panel->set_theme_type_variation("PanelContainerFlat");
+	refcounted_panel->set_v_size_flags(SIZE_EXPAND_FILL);
 	ref_details->add_child(refcounted_panel);
+	VBoxContainer *refcounted_panel_content = memnew(VBoxContainer);
 	refcounted_panel->add_child(refcounted_panel_content);
 	refcounted_panel_content->add_child(memnew(SpanningHeader(d->get_name())));
 
 	ScrollContainer *properties_scroll = memnew(ScrollContainer);
 	properties_scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-	properties_scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_AUTO);
-	properties_scroll->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	properties_scroll->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	properties_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
 	refcounted_panel_content->add_child(properties_scroll);
 
 	VBoxContainer *properties_container = memnew(VBoxContainer);
-	properties_container->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	properties_container->set_h_size_flags(SIZE_EXPAND_FILL);
+	properties_container->add_theme_constant_override("separation", 4 * EDSCALE);
 	properties_scroll->add_child(properties_container);
-	properties_container->add_theme_constant_override("separation", 5);
-	properties_container->add_theme_constant_override("margin_left", 2);
-	properties_container->add_theme_constant_override("margin_right", 2);
-	properties_container->add_theme_constant_override("margin_top", 2);
-	properties_container->add_theme_constant_override("margin_bottom", 2);
 
 	int total_refs = d->extra_debug_data.has("ref_count") ? (uint64_t)d->extra_debug_data["ref_count"] : 0;
 	int objectdb_refs = d->get_unique_inbound_references().size();
@@ -241,7 +237,7 @@ void SnapshotRefCountedView::_refcounted_selected() {
 		Tree *inbound_tree = memnew(Tree);
 		inbound_tree->set_hide_folding(true);
 		properties_container->add_child(inbound_tree);
-		inbound_tree->set_select_mode(Tree::SelectMode::SELECT_ROW);
+		inbound_tree->set_select_mode(Tree::SELECT_ROW);
 		inbound_tree->set_hide_root(true);
 		inbound_tree->set_columns(3);
 		inbound_tree->set_column_titles_visible(true);
@@ -256,8 +252,7 @@ void SnapshotRefCountedView::_refcounted_selected() {
 		inbound_tree->set_column_title(2, TTRC("Duplicate?"));
 		inbound_tree->set_column_expand(2, false);
 		inbound_tree->set_column_title_tooltip_text(2, TTRC("Was the same reference returned by multiple getters on the source object?"));
-		inbound_tree->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-		inbound_tree->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+		inbound_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 		inbound_tree->set_v_scroll_enabled(false);
 		inbound_tree->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotRefCountedView::_ref_selected).bind(inbound_tree));
 
@@ -289,22 +284,21 @@ void SnapshotRefCountedView::_refcounted_selected() {
 		properties_container->add_child(memnew(SpanningHeader(TTRC("ObjectDB Cycles"))));
 		Tree *cycles_tree = memnew(Tree);
 		cycles_tree->set_hide_folding(true);
-		properties_container->add_child(cycles_tree);
-		cycles_tree->set_select_mode(Tree::SelectMode::SELECT_ROW);
+		cycles_tree->set_select_mode(Tree::SELECT_ROW);
 		cycles_tree->set_hide_root(true);
 		cycles_tree->set_columns(1);
 		cycles_tree->set_column_titles_visible(false);
 		cycles_tree->set_column_expand(0, true);
 		cycles_tree->set_column_clip_content(0, false);
-		cycles_tree->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-		cycles_tree->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+		cycles_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 		cycles_tree->set_v_scroll_enabled(false);
+		properties_container->add_child(cycles_tree);
 
 		TreeItem *root = cycles_tree->create_item();
 		for (const Variant &cycle : ref_cycles) {
 			TreeItem *i = cycles_tree->create_item(root);
 			i->set_text(0, cycle);
-			i->set_text_overrun_behavior(0, TextServer::OverrunBehavior::OVERRUN_NO_TRIMMING);
+			i->set_text_overrun_behavior(0, TextServer::OVERRUN_NO_TRIMMING);
 		}
 	}
 }
