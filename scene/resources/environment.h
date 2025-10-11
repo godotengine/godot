@@ -115,6 +115,7 @@ private:
 	ToneMapper tone_mapper = TONE_MAPPER_LINEAR;
 	float tonemap_exposure = 1.0;
 	float tonemap_white = 1.0;
+	float tonemap_contrast = 1.25; // Default to approximately Blender's AgX contrast.
 	void _update_tonemap();
 
 	// SSR
@@ -163,11 +164,11 @@ private:
 	bool glow_enabled = false;
 	Vector<float> glow_levels;
 	bool glow_normalize_levels = false;
-	float glow_intensity = 0.8;
+	float glow_intensity = 0.3;
 	float glow_strength = 1.0;
 	float glow_mix = 0.05;
 	float glow_bloom = 0.0;
-	GlowBlendMode glow_blend_mode = GLOW_BLEND_MODE_SOFTLIGHT;
+	GlowBlendMode glow_blend_mode = GLOW_BLEND_MODE_SCREEN;
 	float glow_hdr_bleed_threshold = 1.0;
 	float glow_hdr_bleed_scale = 2.0;
 	float glow_hdr_luminance_cap = 12.0;
@@ -271,6 +272,8 @@ public:
 	float get_tonemap_exposure() const;
 	void set_tonemap_white(float p_white);
 	float get_tonemap_white() const;
+	void set_tonemap_contrast(float p_contrast);
+	float get_tonemap_contrast() const;
 
 	// SSR
 	void set_ssr_enabled(bool p_enabled);

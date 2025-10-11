@@ -87,7 +87,7 @@ void PostEffects::_draw_screen_triangle() {
 	glBindVertexArray(0);
 }
 
-void PostEffects::post_copy(GLuint p_dest_framebuffer, Size2i p_dest_size, GLuint p_source_color, Size2i p_source_size, float p_luminance_multiplier, const Glow::GLOWLEVEL *p_glow_buffers, float p_glow_intensity, uint32_t p_view, bool p_use_multiview, uint64_t p_spec_constants) {
+void PostEffects::post_copy(GLuint p_dest_framebuffer, Size2i p_dest_size, GLuint p_source_color, Size2i p_source_size, float p_luminance_multiplier, const Glow::GLOWLEVEL *p_glow_buffers, float p_glow_intensity, float p_srgb_white, uint32_t p_view, bool p_use_multiview, uint64_t p_spec_constants) {
 	glDisable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);
 	glDisable(GL_BLEND);
@@ -124,6 +124,7 @@ void PostEffects::post_copy(GLuint p_dest_framebuffer, Size2i p_dest_size, GLuin
 
 		post.shader.version_set_uniform(PostShaderGLES3::PIXEL_SIZE, 1.0 / p_source_size.x, 1.0 / p_source_size.y, post.shader_version, mode, flags);
 		post.shader.version_set_uniform(PostShaderGLES3::GLOW_INTENSITY, p_glow_intensity, post.shader_version, mode, flags);
+		post.shader.version_set_uniform(PostShaderGLES3::SRGB_WHITE, p_srgb_white, post.shader_version, mode, flags);
 	}
 
 	post.shader.version_set_uniform(PostShaderGLES3::VIEW, float(p_view), post.shader_version, mode, flags);
