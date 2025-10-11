@@ -36,7 +36,7 @@
 #endif
 #define FSR2_BIND_SRV_INTERNAL_UPSCALED                      3
 #define FSR2_BIND_SRV_LOCK_STATUS                            4
-#define FSR2_BIND_SRV_INPUT_DEPTH_CLIP                       5
+//#define FSR2_BIND_SRV_INPUT_DEPTH_CLIP                       5
 #define FSR2_BIND_SRV_PREPARED_INPUT_COLOR                   6
 #define FSR2_BIND_SRV_LUMA_INSTABILITY                       7
 #define FSR2_BIND_SRV_LANCZOS_LUT                            8
@@ -44,6 +44,10 @@
 #define FSR2_BIND_SRV_SCENE_LUMINANCE_MIPS                   10
 #define FSR2_BIND_SRV_AUTO_EXPOSURE                          11
 #define FSR2_BIND_SRV_LUMA_HISTORY                           12
+
+#if FFX_FSR2_OPTION_GODOT_DERIVE_INVALID_MOTION_VECTORS
+#define FSR2_BIND_SRV_INPUT_DEPTH                            5
+#endif
 
 #define FSR2_BIND_UAV_INTERNAL_UPSCALED                      2013
 #define FSR2_BIND_UAV_LOCK_STATUS                            2014

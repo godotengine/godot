@@ -140,6 +140,11 @@ void RenderSceneBuffersRD::cleanup() {
 		}
 	}
 
+	if (fsr1_context) {
+		memdelete(fsr1_context);
+		fsr1_context = nullptr;
+	}
+
 #ifdef METAL_ENABLED
 	if (mfx_spatial_context) {
 		memdelete(mfx_spatial_context);
@@ -250,6 +255,22 @@ void RenderSceneBuffersRD::set_anisotropic_filtering_level(RS::ViewportAnisotrop
 
 void RenderSceneBuffersRD::set_use_debanding(bool p_use_debanding) {
 	use_debanding = p_use_debanding;
+}
+
+void RenderSceneBuffersRD::ensure_fsr1(RendererRD::FSR1Effect *p_effect) {
+	if (fsr1_context) {
+		return;
+	}
+
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	RenderingDevice *rd = RD::get_singleton();
+
+	// Determine the output format of the render target.
+	RID dest = texture_storage->render_target_get_rd_texture(render_target);
+	RD::TextureFormat tf = rd->texture_get_format(dest);
+	RD::DataFormat output_format = tf.format;
+
+	fsr1_context = p_effect->create_context(internal_size, target_size, output_format);
 }
 
 #ifdef METAL_ENABLED

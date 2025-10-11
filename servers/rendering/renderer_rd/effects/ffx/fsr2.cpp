@@ -73,7 +73,7 @@ FSR2Effect::FSR2Effect() {
 	// error if the bindings do not match.
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts.passes[FFX_FSR2_PASS_DEPTH_CLIP];
+		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[FFX_FSR2_PASS_DEPTH_CLIP];
 		pass.shader = &shaders.depth_clip;
 		pass.shader->initialize(modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -106,7 +106,7 @@ FSR2Effect::FSR2Effect() {
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts.passes[FFX_FSR2_PASS_RECONSTRUCT_PREVIOUS_DEPTH];
+		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[FFX_FSR2_PASS_RECONSTRUCT_PREVIOUS_DEPTH];
 		pass.shader = &shaders.reconstruct_previous_depth;
 		pass.shader->initialize(modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -136,7 +136,7 @@ FSR2Effect::FSR2Effect() {
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts.passes[FFX_FSR2_PASS_LOCK];
+		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[FFX_FSR2_PASS_LOCK];
 		pass.shader = &shaders.lock;
 		pass.shader->initialize(modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -165,7 +165,7 @@ FSR2Effect::FSR2Effect() {
 
 		// Workaround: Disable FP16 path for the accumulate pass on NVIDIA due to reduced occupancy and high VRAM throughput.
 		const bool fp16_path_supported = RD::get_singleton()->get_device_vendor_name() != "NVIDIA";
-		FFXCommonContext::Pass &pass = device.effect_contexts.passes[FFX_FSR2_PASS_ACCUMULATE];
+		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[FFX_FSR2_PASS_ACCUMULATE];
 		pass.shader = &shaders.accumulate;
 		pass.shader->initialize(accumulate_modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -200,13 +200,13 @@ FSR2Effect::FSR2Effect() {
 		};
 
 		// Sharpen pass is a clone of the accumulate pass with the sharpening variant.
-		FFXCommonContext::Pass &sharpen_pass = device.effect_contexts.passes[FFX_FSR2_PASS_ACCUMULATE_SHARPEN];
+		FFXCommonContext::Pass &sharpen_pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[FFX_FSR2_PASS_ACCUMULATE_SHARPEN];
 		sharpen_pass = pass;
 		sharpen_pass.shader_variant = pass.shader_variant + 1;
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts.passes[FFX_FSR2_PASS_RCAS];
+		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[FFX_FSR2_PASS_RCAS];
 		pass.shader = &shaders.rcas;
 		pass.shader->initialize(modes_single, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -227,7 +227,7 @@ FSR2Effect::FSR2Effect() {
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts.passes[FFX_FSR2_PASS_COMPUTE_LUMINANCE_PYRAMID];
+		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[FFX_FSR2_PASS_COMPUTE_LUMINANCE_PYRAMID];
 		pass.shader = &shaders.compute_luminance_pyramid;
 		pass.shader->initialize(modes_single, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -250,7 +250,7 @@ FSR2Effect::FSR2Effect() {
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts.passes[FFX_FSR2_PASS_GENERATE_REACTIVE];
+		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[FFX_FSR2_PASS_GENERATE_REACTIVE];
 		pass.shader = &shaders.autogen_reactive;
 		pass.shader->initialize(modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -258,7 +258,8 @@ FSR2Effect::FSR2Effect() {
 
 		pass.sampled_texture_bindings = {
 			FfxResourceBinding{ 0, 0, 0, L"r_input_opaque_only" },
-			FfxResourceBinding{ 1, 0, 0, L"r_input_color_jittered" }
+			FfxResourceBinding{ 1, 0, 0, L"r_input_color_jittered" },
+			FfxResourceBinding{ 13, 0, 0, L"r_input_depth" },
 		};
 
 		pass.storage_texture_bindings = {
@@ -272,7 +273,7 @@ FSR2Effect::FSR2Effect() {
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts.passes[FFX_FSR2_PASS_TCR_AUTOGENERATE];
+		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[FFX_FSR2_PASS_TCR_AUTOGENERATE];
 		pass.shader = &shaders.tcr_autogen;
 		pass.shader->initialize(modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -306,7 +307,7 @@ FSR2Effect::~FSR2Effect() {
 	FFXCommonContext::Device& device = FFXCommonContext::get_singleton()->device;
 
 	for (uint32_t i = 0; i < FFX_FSR2_PASS_COUNT; i++) {
-		device.effect_contexts.passes[i].shader->version_free(device.effect_contexts.passes[i].shader_version);
+		device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[i].shader->version_free(device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[i].shader_version);
 	}
 }
 
