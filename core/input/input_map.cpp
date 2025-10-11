@@ -410,6 +410,7 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 	{ "ui_unicode_start",                              TTRC("Start Unicode Character Input") },
 	{ "ui_colorpicker_delete_preset",                  TTRC("ColorPicker: Delete Preset") },
 	{ "ui_accessibility_drag_and_drop",                TTRC("Accessibility: Keyboard Drag and Drop") },
+	{ "ui_close_window",                               TTRC("Close Window") },
 	{ "",                                              ""}
 	/* clang-format on */
 };
@@ -497,6 +498,12 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	default_builtin_cache.insert("ui_accessibility_drag_and_drop", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+#ifdef MACOS_ENABLED
+	inputs.push_back(InputEventKey::create_reference(Key::W | KeyModifierMask::META));
+#endif
+	default_builtin_cache.insert("ui_close_window", inputs);
 
 	// ///// UI basic Shortcuts /////
 
