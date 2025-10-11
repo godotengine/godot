@@ -160,9 +160,7 @@ void EditorPropertyVectorN::setup(double p_min, double p_max, double p_step, boo
 		spin->set_min(p_min);
 		spin->set_max(p_max);
 		spin->set_step(p_step);
-		if (p_hide_control) {
-			spin->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
-		}
+		spin->set_hide_control(p_hide_control);
 		spin->set_allow_greater(true);
 		spin->set_allow_lesser(true);
 		spin->set_suffix(p_suffix);
