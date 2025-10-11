@@ -37,6 +37,14 @@
 #define FFX_UBO_RING_BUFFER_SIZE 144
 
 namespace RendererRD {
+enum FFXEffectContext {
+	FFX_EFFECT_CONTEXT_FSR1 = 0,
+	FFX_EFFECT_CONTEXT_FSR2 = 1,
+	FFX_EFFECT_CONTEXT_FSR3_UPSCALE = 2,
+	FFX_EFFECT_CONTEXT_FSR3_INTERPOLATE = 3,
+	FFX_EFFECT_CONTEXT_COUNT
+};
+
 class FFXCommonContext {
 public:
 	enum ResourceID : uint32_t {
@@ -121,7 +129,7 @@ public:
 		RID point_clamp_sampler;
 		RID linear_clamp_sampler;
 		FfxDeviceCapabilities capabilities;
-		EffectContext effect_contexts;
+		EffectContext effect_contexts[FFX_EFFECT_CONTEXT_COUNT];
 	} device;
 
 	struct Scratch {
@@ -142,7 +150,13 @@ public:
 
 	void init_device();
 	void create_ffx_interface(FfxInterface* p_interface);
+	EffectContext& get_effect_context(uint32_t p_effect);
+
 	static FfxResource get_resource_rd(RID *p_rid, const wchar_t *p_name);
+	static RD::TextureType ffx_resource_type_to_rd_texture_type(FfxResourceType p_type);
+	static FfxResourceType rd_texture_type_to_ffx_resource_type(RD::TextureType p_type);
+	static RD::DataFormat ffx_surface_format_to_rd_format(FfxSurfaceFormat p_format);
+	static FfxSurfaceFormat rd_format_to_ffx_surface_format(RD::DataFormat p_format);
 
 	static FFXCommonContext *get_singleton() {
 		if (singleton == nullptr) {
