@@ -505,10 +505,10 @@ void AnimationPlayer::play_section(const StringName &p_name, double p_start_time
 		c.assigned = name;
 		emit_signal(SNAME("current_animation_changed"), c.assigned);
 	} else {
-		if (p_from_end && Math::is_equal_approx(c.current.pos, start)) {
+		if (p_from_end && Animation::is_less_or_equal_approx(c.current.pos, start)) {
 			// Animation reset but played backwards, set position to the end.
 			seek_internal(end, true, true, true);
-		} else if (!p_from_end && Math::is_equal_approx(c.current.pos, end)) {
+		} else if (!p_from_end && Animation::is_greater_or_equal_approx(c.current.pos, end)) {
 			// Animation resumed but already ended, set position to the beginning.
 			seek_internal(start, true, true, true);
 		} else if (playing) {
