@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include <cstddef>
+
 #include "servers/camera/camera_feed.h"
 #include "servers/camera/camera_server.h"
 
@@ -38,6 +40,24 @@
 #include <camera/NdkCameraManager.h>
 #include <camera/NdkCameraMetadataTags.h>
 #include <media/NdkImageReader.h>
+
+enum class CameraFacing {
+	BACK = 0,
+	FRONT = 1
+};
+
+struct CameraRotationParams {
+	int sensorOrientation;
+	CameraFacing cameraFacing;
+	int displayRotation;
+	bool needsMirror;
+};
+
+struct RotationResult {
+	int rotationAngle;
+	bool shouldMirror;
+	bool isValid;
+};
 
 class CameraFeedAndroid : public CameraFeed {
 	GDSOFTCLASS(CameraFeedAndroid, CameraFeed);
@@ -49,6 +69,9 @@ private:
 	Ref<Image> image_uv;
 	Vector<uint8_t> data_y;
 	Vector<uint8_t> data_uv;
+	// Scratch buffers to avoid per-frame reallocations when handling padded strides.
+	Vector<uint8_t> scratch_y;
+	Vector<uint8_t> scratch_uv;
 
 	ACameraManager *manager = nullptr;
 	ACameraMetadata *metadata = nullptr;
@@ -60,6 +83,12 @@ private:
 	void _add_formats();
 	void _set_rotation();
 
+	static void compact_stride_inplace(uint8_t *data, size_t width, int height, size_t stride);
+
+	static RotationResult calculate_rotation(const CameraRotationParams &params);
+	static int normalize_angle(int angle);
+	static int get_display_rotation();
+	static int get_app_orientation();
 	static void onError(void *context, ACameraDevice *p_device, int error);
 	static void onDisconnected(void *context, ACameraDevice *p_device);
 	static void onImage(void *context, AImageReader *p_reader);

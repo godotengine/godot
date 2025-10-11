@@ -32,6 +32,8 @@
 
 #include "core/os/os.h"
 #include "platform/android/display_server_android.h"
+#include "platform/android/java_godot_io_wrapper.h"
+#include "platform/android/os_android.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Helper functions
@@ -94,22 +96,35 @@ CameraFeedAndroid::~CameraFeedAndroid() {
 }
 
 void CameraFeedAndroid::_set_rotation() {
-	int display_rotation = DisplayServerAndroid::get_singleton()->get_display_rotation();
-	// reverse rotation
-	switch (display_rotation) {
-		case 90:
-			display_rotation = 270;
-			break;
-		case 270:
-			display_rotation = 90;
-			break;
-		default:
-			break;
-	}
+	CameraRotationParams params;
+	params.sensorOrientation = orientation;
+	params.cameraFacing = (position == CameraFeed::FEED_FRONT) ? CameraFacing::FRONT : CameraFacing::BACK;
+	params.displayRotation = get_app_orientation();
+	params.needsMirror = false;
 
-	int sign = position == CameraFeed::FEED_FRONT ? 1 : -1;
-	float imageRotation = (orientation - display_rotation * sign + 360) % 360;
-	transform.set_rotation(real_t(Math::deg_to_rad(imageRotation)));
+	RotationResult result = calculate_rotation(params);
+
+	if (result.isValid) {
+		float imageRotation = static_cast<float>(result.rotationAngle);
+		transform.set_rotation(real_t(Math::deg_to_rad(imageRotation)));
+	} else {
+		// Fallback.
+		int display_rotation = DisplayServerAndroid::get_singleton()->get_display_rotation();
+		switch (display_rotation) {
+			case 90:
+				display_rotation = 270;
+				break;
+			case 270:
+				display_rotation = 90;
+				break;
+			default:
+				break;
+		}
+
+		int sign = position == CameraFeed::FEED_FRONT ? 1 : -1;
+		float imageRotation = (orientation - display_rotation * sign + 360) % 360;
+		transform.set_rotation(real_t(Math::deg_to_rad(imageRotation)));
+	}
 }
 
 void CameraFeedAndroid::_add_formats() {
@@ -281,6 +296,24 @@ CameraFeed::FeedFormat CameraFeedAndroid::get_format() const {
 	return selected_format == -1 ? feed_format : formats[selected_format];
 }
 
+// In-place stride compaction (handles 16-byte alignment seen)
+void CameraFeedAndroid::compact_stride_inplace(uint8_t *data, size_t width, int height, size_t stride) {
+	if (stride == width) {
+		return; // No padding, nothing to do
+	}
+
+	uint8_t *src_row = data + stride; // Start from second row
+	uint8_t *dst_row = data + width; // Target position for second row
+
+	// Process rows from second to last, moving data forward
+	for (int y = 1; y < height; y++) {
+		// Use memmove to handle potential overlap safely
+		memmove(dst_row, src_row, width);
+		src_row += stride;
+		dst_row += width;
+	}
+}
+
 void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 	CameraFeedAndroid *feed = static_cast<CameraFeedAndroid *>(context);
 	Vector<uint8_t> data_y = feed->data_y;
@@ -301,34 +334,102 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 	int width = format.width;
 	int height = format.height;
 	switch (format.pixel_format) {
-		case AIMAGE_FORMAT_YUV_420_888:
+		case AIMAGE_FORMAT_YUV_420_888: {
+			// Handle Y plane with optimized processing
+			int32_t y_row_stride;
+			AImage_getPlaneRowStride(image, 0, &y_row_stride);
 			AImage_getPlaneData(image, 0, &data, &len);
 			if (len <= 0) {
 				return;
 			}
-			if (len != data_y.size()) {
-				int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_R8, false);
-				data_y.resize(len > size ? len : size);
-			}
-			memcpy(data_y.ptrw(), data, len);
 
+			int64_t y_size = Image::get_image_data_size(width, height, Image::FORMAT_R8, false);
+
+			if (y_row_stride == width && len == y_size) {
+				// No padding, direct copy (fastest path)
+				data_y.resize(y_size);
+				memcpy(data_y.ptrw(), data, y_size);
+			} else {
+				// Stride alignment present - use scratch buffer to avoid realloc
+				if (feed->scratch_y.size() < len) {
+					feed->scratch_y.resize(len);
+				}
+				memcpy(feed->scratch_y.ptrw(), data, len);
+				CameraFeedAndroid::compact_stride_inplace(feed->scratch_y.ptrw(), width, height, y_row_stride);
+				data_y.resize(y_size);
+				memcpy(data_y.ptrw(), feed->scratch_y.ptr(), y_size);
+			}
+
+			// Handle UV plane
 			AImage_getPlanePixelStride(image, 1, &pixel_stride);
 			AImage_getPlaneRowStride(image, 1, &row_stride);
 			AImage_getPlaneData(image, 1, &data, &len);
 			if (len <= 0) {
 				return;
 			}
-			if (len != data_uv.size()) {
-				int64_t size = Image::get_image_data_size(width / 2, height / 2, Image::FORMAT_RG8, false);
-				data_uv.resize(len > size ? len : size);
+
+			int64_t uv_size = Image::get_image_data_size(width / 2, height / 2, Image::FORMAT_RG8, false);
+
+			int uv_width = width / 2;
+			int uv_height = height / 2;
+
+			uint8_t *data_v = nullptr;
+			int32_t v_pixel_stride = 0;
+			int32_t v_row_stride = 0;
+			int len_v = 0;
+
+			if (pixel_stride != 2) {
+				AImage_getPlanePixelStride(image, 2, &v_pixel_stride);
+				AImage_getPlaneRowStride(image, 2, &v_row_stride);
+				AImage_getPlaneData(image, 2, &data_v, &len_v);
+				if (len_v <= 0) {
+					return;
+				}
 			}
-			memcpy(data_uv.ptrw(), data, len);
+
+			if (pixel_stride == 2 && row_stride == uv_width * 2 && len == uv_size) {
+				// Semiplanar format without padding - direct copy (fastest path)
+				data_uv.resize(uv_size);
+				memcpy(data_uv.ptrw(), data, uv_size);
+			} else if (pixel_stride == 2) {
+				// Semiplanar format with stride alignment - use scratch buffer
+				if (feed->scratch_uv.size() < len) {
+					feed->scratch_uv.resize(len);
+				}
+				memcpy(feed->scratch_uv.ptrw(), data, len);
+				if (row_stride != uv_width * 2) {
+					CameraFeedAndroid::compact_stride_inplace(feed->scratch_uv.ptrw(), uv_width * 2, uv_height, row_stride);
+				}
+				data_uv.resize(uv_size);
+				memcpy(data_uv.ptrw(), feed->scratch_uv.ptr(), uv_size);
+			} else {
+				// Planar format - interleave U and V safely (no overlap)
+				if (data_v && len_v > 0) {
+					data_uv.resize(uv_size);
+					uint8_t *dst = data_uv.ptrw();
+					uint8_t *src_u = data;
+					uint8_t *src_v = data_v;
+					for (int row = 0; row < uv_height; row++) {
+						for (int col = 0; col < uv_width; col++) {
+							dst[col * 2] = src_u[col * pixel_stride];
+							dst[col * 2 + 1] = src_v[col * v_pixel_stride];
+						}
+						dst += uv_width * 2;
+						src_u += row_stride;
+						src_v += v_row_stride;
+					}
+				} else {
+					data_uv.resize(uv_size);
+					memset(data_uv.ptrw(), 128, uv_size); // Fill with neutral chroma
+				}
+			}
 
 			image_y->initialize_data(width, height, false, Image::FORMAT_R8, data_y);
 			image_uv->initialize_data(width / 2, height / 2, false, Image::FORMAT_RG8, data_uv);
 
 			feed->set_ycbcr_images(image_y, image_uv);
 			break;
+		}
 		case AIMAGE_FORMAT_RGBA_8888:
 			AImage_getPlaneData(image, 0, &data, &len);
 			if (len <= 0) {
@@ -507,4 +608,58 @@ void CameraAndroid::set_monitoring_feeds(bool p_monitoring_feeds) {
 
 CameraAndroid::~CameraAndroid() {
 	remove_all_feeds();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Camera rotation calculation
+// Based on https://developer.android.com/media/camera/camerax/orientation-rotation
+
+RotationResult CameraFeedAndroid::calculate_rotation(const CameraRotationParams &params) {
+	RotationResult result = { 0, false, false };
+
+	if (params.sensorOrientation < 0 || params.sensorOrientation > 270 ||
+			params.sensorOrientation % 90 != 0) {
+		return result;
+	}
+
+	int rotationAngle = params.sensorOrientation - params.displayRotation;
+
+	result.rotationAngle = normalize_angle(rotationAngle);
+	result.shouldMirror = params.needsMirror || (params.cameraFacing == CameraFacing::FRONT);
+	result.isValid = true;
+
+	return result;
+}
+
+int CameraFeedAndroid::normalize_angle(int angle) {
+	while (angle < 0) {
+		angle += 360;
+	}
+	return angle % 360;
+}
+
+int CameraFeedAndroid::get_display_rotation() {
+	return DisplayServerAndroid::get_singleton()->get_display_rotation();
+}
+
+int CameraFeedAndroid::get_app_orientation() {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_NULL_V(godot_io_java, 0);
+
+	int orientation = godot_io_java->get_screen_orientation();
+	switch (orientation) {
+		case 0: // SCREEN_LANDSCAPE
+			return 90;
+		case 1: // SCREEN_PORTRAIT
+			return 0;
+		case 2: // SCREEN_REVERSE_LANDSCAPE
+			return 270;
+		case 3: // SCREEN_REVERSE_PORTRAIT
+			return 180;
+		case 4: // SCREEN_SENSOR_LANDSCAPE
+		case 5: // SCREEN_SENSOR_PORTRAIT
+		case 6: // SCREEN_SENSOR
+		default:
+			return get_display_rotation();
+	}
 }
