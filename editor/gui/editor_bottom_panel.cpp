@@ -31,6 +31,7 @@
 #include "editor_bottom_panel.h"
 
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_toaster.h"
@@ -159,6 +160,9 @@ void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx, bool p_ignore
 	}
 
 	last_opened_control = items[p_idx].control;
+
+	DockSplitContainer *center_split_dock = EditorNode::get_center_split();
+	center_split_dock->set_split_offset(get_bottom_panel_offset());
 }
 
 void EditorBottomPanel::_pin_button_toggled(bool p_pressed) {
@@ -300,6 +304,23 @@ void EditorBottomPanel::toggle_last_opened_bottom_panel() {
 		// Open the first panel in the list if no panel was opened this session.
 		_switch_to_item(true, 0, true);
 	}
+}
+
+void EditorBottomPanel::set_bottom_panel_offset(const int p_offset) {
+	for (BottomPanelItem &item : items) {
+		if (item.control == last_opened_control) {
+			item.offset = p_offset;
+		}
+	}
+}
+
+int EditorBottomPanel::get_bottom_panel_offset() {
+	for (const BottomPanelItem &item : items) {
+		if (item.control == last_opened_control) {
+			return item.offset;
+		}
+	}
+	return 0;
 }
 
 void EditorBottomPanel::set_expanded(bool p_expanded) {

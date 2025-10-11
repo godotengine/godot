@@ -46,6 +46,7 @@ class EditorBottomPanel : public PanelContainer {
 		String name;
 		Control *control = nullptr;
 		Button *button = nullptr;
+		int offset = 0;
 	};
 
 	Vector<BottomPanelItem> items;
@@ -87,6 +88,9 @@ public:
 	void hide_bottom_panel();
 	void toggle_last_opened_bottom_panel();
 	void set_expanded(bool p_expanded);
+
+	void set_bottom_panel_offset(const int p_offset);
+	int get_bottom_panel_offset();
 
 	EditorBottomPanel();
 };
