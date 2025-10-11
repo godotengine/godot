@@ -314,10 +314,14 @@ void CameraMacOS::update_feeds() {
 	if (@available(macOS 10.15, *)) {
 #endif
 		AVCaptureDeviceDiscoverySession *session;
-		if (@available(macOS 14.0, *)) {
+		if (@available(macOS 14.0, iOS 17.0, *)) {
 			session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternal, AVCaptureDeviceTypeBuiltInWideAngleCamera, AVCaptureDeviceTypeContinuityCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
 		} else {
-			session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternalUnknown, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+#if TARGET_OS_IPHONE || TARGET_OS_MACCATALYST
+			session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+#else
+		session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternalUnknown, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+#endif
 		}
 		devices = session.devices;
 #if defined(__x86_64__)
@@ -356,8 +360,13 @@ void CameraMacOS::update_feeds() {
 			newfeed.instantiate();
 			newfeed->set_device(device);
 
-			// assume display camera so inverse
-			Transform2D transform = Transform2D(-1.0, 0.0, 0.0, -1.0, 1.0, 1.0);
+			// Front cameras need mirroring for display, back cameras don't
+			Transform2D transform;
+			if ([device position] == AVCaptureDevicePositionFront) {
+				transform = Transform2D(-1.0, 0.0, 0.0, -1.0, 1.0, 1.0);
+			} else {
+				transform = Transform2D(1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+			}
 			newfeed->set_transform(transform);
 
 			add_feed(newfeed);
