@@ -25,6 +25,7 @@ common_win = [
     "wgl_detect_version.cpp",
     "rendering_context_driver_vulkan_windows.cpp",
     "drop_target_windows.cpp",
+    "nvapi_profile.cpp",
 ]
 
 if env["library_type"] == "executable":
