@@ -725,7 +725,11 @@ static String _get_visual_datatype(const PropertyInfo &p_info, bool p_is_arg, co
 
 	if ((p_info.type == Variant::OBJECT || is_enum) && !class_name.is_empty()) {
 		if (is_enum && CoreConstants::is_global_enum(p_info.class_name)) {
-			return class_name;
+			if (p_info.hint == PROPERTY_HINT_WEAKREF_TYPE) {
+				return "WeakRef[" + p_info.hint_string + "]";
+			} else {
+				return class_name;
+			}
 		}
 		return _trim_parent_class(class_name, p_base_class);
 	} else if (p_info.type == Variant::ARRAY && p_info.hint == PROPERTY_HINT_ARRAY_TYPE && !p_info.hint_string.is_empty()) {
