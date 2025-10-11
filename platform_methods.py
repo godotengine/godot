@@ -270,7 +270,11 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
 
     env["ALL_SWIFT_FILES"] = all_swift_files
     env["CURRENT_PATH"] = current_path
-    frontend_path = "$APPLE_TOOLCHAIN_PATH/usr/bin/swift-frontend"
+    if "osxcross" in env:
+        # TODO: swiftly use --print-location
+        frontend_path = "/root/.local/share/swiftly/toolchains/6.2.0/usr/bin/swift-frontend"
+    else:
+        frontend_path = "$APPLE_TOOLCHAIN_PATH/usr/bin/swift-frontend"
     bridging_header_path = current_path + "/" + bridging_header_filename
     env["SWIFTC"] = frontend_path + " -frontend -c"  # Swift compiler
     env["SWIFTCFLAGS"] = [
@@ -289,6 +293,14 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
         "godot_swift_module",
         "-I./",  # Pass the current directory as the header root so bridging headers can include files from any point of the hierarchy
     ]
+
+    if "osxcross" in env:
+        env.Append(
+            SWIFTCFLAGS=[
+                "-resource-dir",
+                "/root/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift",
+            ]
+        )
 
     if env["debug_symbols"]:
         env.Append(SWIFTCFLAGS=["-g"])
