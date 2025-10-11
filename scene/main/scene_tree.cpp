@@ -639,7 +639,7 @@ bool SceneTree::physics_process(double p_time) {
 	call_group(SNAME("_picking_viewports"), SNAME("_process_picking"));
 #endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 
-	_process(true);
+	_process(PROCESS_KIND_PHYSICS);
 
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
@@ -652,6 +652,28 @@ bool SceneTree::physics_process(double p_time) {
 	// This should happen last because any processing that deletes something beforehand might expect the object to be removed in the same frame.
 	_flush_delete_queue();
 
+	_call_idle_callbacks();
+
+	return _quit;
+}
+
+bool SceneTree::late_physics_process(double p_time) {
+	flush_transform_notifications();
+
+	if (MainLoop::late_physics_process(p_time)) {
+		_quit = true;
+	}
+	emit_signal(SNAME("late_physics_frame"));
+
+	_process(PROCESS_KIND_LATE_PHYSICS);
+
+	_flush_ugc();
+	MessageQueue::get_singleton()->flush(); //small little hack
+
+	flush_transform_notifications();
+
+	// This should happen last because any processing that deletes something beforehand might expect the object to be removed in the same frame.
+	_flush_delete_queue();
 	_call_idle_callbacks();
 
 	return _quit;
@@ -703,7 +725,7 @@ bool SceneTree::process(double p_time) {
 
 	flush_transform_notifications();
 
-	_process(false);
+	_process(PROCESS_KIND_IDLE);
 
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
@@ -1146,27 +1168,39 @@ bool SceneTree::is_suspended() const {
 	return suspended;
 }
 
-void SceneTree::_process_group(ProcessGroup *p_group, bool p_physics) {
+void SceneTree::_process_group(ProcessGroup *p_group, ProcessKind p_processKind) {
 	// When reading this function, keep in mind that this code must work in a way where
 	// if any node is removed, this needs to continue working.
 
 	p_group->call_queue.flush(); // Flush messages before processing.
 
-	Vector<Node *> &nodes = p_physics ? p_group->physics_nodes : p_group->nodes;
+	Vector<Node *> &nodes = (p_processKind == PROCESS_KIND_IDLE) ? p_group->nodes
+			: (p_processKind == PROCESS_KIND_PHYSICS)			 ? p_group->physics_nodes
+																 : p_group->late_physics_nodes;
+
 	if (nodes.is_empty()) {
 		return;
 	}
 
-	if (p_physics) {
-		if (p_group->physics_node_order_dirty) {
-			nodes.sort_custom<Node::ComparatorWithPhysicsPriority>();
-			p_group->physics_node_order_dirty = false;
-		}
-	} else {
-		if (p_group->node_order_dirty) {
-			nodes.sort_custom<Node::ComparatorWithPriority>();
-			p_group->node_order_dirty = false;
-		}
+	switch (p_processKind) {
+		case PROCESS_KIND_IDLE:
+			if (p_group->node_order_dirty) {
+				nodes.sort_custom<Node::ComparatorWithPriority>();
+				p_group->node_order_dirty = false;
+			}
+			break;
+		case PROCESS_KIND_PHYSICS:
+			if (p_group->physics_node_order_dirty) {
+				nodes.sort_custom<Node::ComparatorWithPhysicsPriority>();
+				p_group->physics_node_order_dirty = false;
+			}
+			break;
+		case PROCESS_KIND_LATE_PHYSICS:
+			if (p_group->late_physics_node_order_dirty) {
+				nodes.sort_custom<Node::ComparatorWithPhysicsPriority>();
+				p_group->late_physics_node_order_dirty = false;
+			}
+			break;
 	}
 
 	// Make a copy, so if nodes are added/removed from process, this does not break
@@ -1187,33 +1221,41 @@ void SceneTree::_process_group(ProcessGroup *p_group, bool p_physics) {
 			continue;
 		}
 
-		if (p_physics) {
-			if (n->is_physics_processing_internal()) {
-				n->notification(Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
-			}
-			if (n->is_physics_processing()) {
-				n->notification(Node::NOTIFICATION_PHYSICS_PROCESS);
-			}
-		} else {
-			if (n->is_processing_internal()) {
-				n->notification(Node::NOTIFICATION_INTERNAL_PROCESS);
-			}
-			if (n->is_processing()) {
-				n->notification(Node::NOTIFICATION_PROCESS);
-			}
+		switch (p_processKind) {
+			case PROCESS_KIND_IDLE:
+				if (n->is_processing_internal()) {
+					n->notification(Node::NOTIFICATION_INTERNAL_PROCESS);
+				}
+				if (n->is_processing()) {
+					n->notification(Node::NOTIFICATION_PROCESS);
+				}
+				break;
+			case PROCESS_KIND_PHYSICS:
+				if (n->is_physics_processing_internal()) {
+					n->notification(Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
+				}
+				if (n->is_physics_processing()) {
+					n->notification(Node::NOTIFICATION_PHYSICS_PROCESS);
+				}
+				break;
+			case PROCESS_KIND_LATE_PHYSICS:
+				if (n->is_late_physics_processing()) {
+					n->notification(Node::NOTIFICATION_LATE_PHYSICS_PROCESS);
+				}
+				break;
 		}
 	}
 
 	p_group->call_queue.flush(); // Flush messages also after processing (for potential deferred calls).
 }
 
-void SceneTree::_process_groups_thread(uint32_t p_index, bool p_physics) {
+void SceneTree::_process_groups_thread(uint32_t p_index, ProcessKind p_processKind) {
 	Node::current_process_thread_group = local_process_group_cache[p_index]->owner;
-	_process_group(local_process_group_cache[p_index], p_physics);
+	_process_group(local_process_group_cache[p_index], p_processKind);
 	Node::current_process_thread_group = nullptr;
 }
 
-void SceneTree::_process(bool p_physics) {
+void SceneTree::_process(ProcessKind p_processKind) {
 	if (process_groups_dirty) {
 		{
 			// First, remove dirty groups.
@@ -1276,13 +1318,13 @@ void SceneTree::_process(bool p_physics) {
 						if (using_threads) {
 							local_process_group_cache.push_back(process_groups[j]);
 						} else {
-							_process_group(process_groups[j], p_physics);
+							_process_group(process_groups[j], p_processKind);
 						}
 					}
 				}
 
 				if (using_threads) {
-					WorkerThreadPool::GroupID id = WorkerThreadPool::get_singleton()->add_template_group_task(this, &SceneTree::_process_groups_thread, p_physics, local_process_group_cache.size(), -1, true);
+					WorkerThreadPool::GroupID id = WorkerThreadPool::get_singleton()->add_template_group_task(this, &SceneTree::_process_groups_thread, p_processKind, local_process_group_cache.size(), -1, true);
 					WorkerThreadPool::get_singleton()->wait_for_group_task_completion(id);
 				}
 			}
@@ -1305,18 +1347,28 @@ void SceneTree::_process(bool p_physics) {
 
 		// Validate group for processing
 		bool process_valid = false;
-		if (p_physics) {
-			if (!pg->physics_nodes.is_empty()) {
-				process_valid = true;
-			} else if ((pg == &default_process_group || (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES_PHYSICS))) && pg->call_queue.has_messages()) {
-				process_valid = true;
-			}
-		} else {
-			if (!pg->nodes.is_empty()) {
-				process_valid = true;
-			} else if ((pg == &default_process_group || (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES))) && pg->call_queue.has_messages()) {
-				process_valid = true;
-			}
+		switch (p_processKind) {
+			case PROCESS_KIND_IDLE:
+				if (!pg->nodes.is_empty()) {
+					process_valid = true;
+				} else if ((pg == &default_process_group || (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES))) && pg->call_queue.has_messages()) {
+					process_valid = true;
+				}
+				break;
+			case PROCESS_KIND_PHYSICS:
+				if (!pg->physics_nodes.is_empty()) {
+					process_valid = true;
+				} else if ((pg == &default_process_group || (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES_PHYSICS))) && pg->call_queue.has_messages()) {
+					process_valid = true;
+				}
+				break;
+			case PROCESS_KIND_LATE_PHYSICS:
+				if (!pg->late_physics_nodes.is_empty()) {
+					process_valid = true;
+				} else if ((pg == &default_process_group || (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES_PHYSICS))) && pg->call_queue.has_messages()) {
+					process_valid = true;
+				}
+				break;
 		}
 
 		if (process_valid) {
@@ -1382,6 +1434,11 @@ void SceneTree::_remove_node_from_process_group(Node *p_node, Node *p_owner) {
 		bool found = pg->physics_nodes.erase(p_node);
 		ERR_FAIL_COND(!found);
 	}
+
+	if (p_node->is_late_physics_processing()) {
+		bool found = pg->late_physics_nodes.erase(p_node);
+		ERR_FAIL_COND(!found);
+	}
 }
 
 void SceneTree::_add_node_to_process_group(Node *p_node, Node *p_owner) {
@@ -1396,6 +1453,11 @@ void SceneTree::_add_node_to_process_group(Node *p_node, Node *p_owner) {
 	if (p_node->is_physics_processing() || p_node->is_physics_processing_internal()) {
 		pg->physics_nodes.push_back(p_node);
 		pg->physics_node_order_dirty = true;
+	}
+
+	if (p_node->is_late_physics_processing()) {
+		pg->late_physics_nodes.push_back(p_node);
+		pg->late_physics_node_order_dirty = true;
 	}
 }
 

@@ -41,6 +41,7 @@ protected:
 
 	GDVIRTUAL0(_initialize)
 	GDVIRTUAL1R(bool, _physics_process, double)
+	GDVIRTUAL1R(bool, _late_physics_process, double)
 	GDVIRTUAL1R(bool, _process, double)
 	GDVIRTUAL0(_finalize)
 
@@ -62,6 +63,7 @@ public:
 	virtual void initialize();
 	virtual void iteration_prepare() {}
 	virtual bool physics_process(double p_time);
+	virtual bool late_physics_process(double p_time);
 	virtual void iteration_end() {}
 	virtual bool process(double p_time);
 	virtual void finalize();

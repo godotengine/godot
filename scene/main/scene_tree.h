@@ -95,8 +95,10 @@ private:
 		CallQueue call_queue;
 		Vector<Node *> nodes;
 		Vector<Node *> physics_nodes;
+		Vector<Node *> late_physics_nodes;
 		bool node_order_dirty = true;
 		bool physics_node_order_dirty = true;
+		bool late_physics_node_order_dirty = true;
 		bool removed = false;
 		Node *owner = nullptr;
 		uint64_t last_pass = 0;
@@ -120,6 +122,12 @@ private:
 	struct Group {
 		Vector<Node *> nodes;
 		bool changed = false;
+	};
+
+	enum ProcessKind {
+		PROCESS_KIND_IDLE,
+		PROCESS_KIND_PHYSICS,
+		PROCESS_KIND_LATE_PHYSICS,
 	};
 
 #ifndef _3D_DISABLED
@@ -236,9 +244,9 @@ private:
 	Group *add_to_group(const StringName &p_group, Node *p_node);
 	void remove_from_group(const StringName &p_group, Node *p_node);
 
-	void _process_group(ProcessGroup *p_group, bool p_physics);
-	void _process_groups_thread(uint32_t p_index, bool p_physics);
-	void _process(bool p_physics);
+	void _process_group(ProcessGroup *p_group, ProcessKind p_processKind);
+	void _process_groups_thread(uint32_t p_index, ProcessKind p_processKind);
+	void _process(ProcessKind p_processKind);
 
 	void _remove_process_group(Node *p_node);
 	void _add_process_group(Node *p_node);
@@ -344,6 +352,7 @@ public:
 	virtual void iteration_prepare() override;
 
 	virtual bool physics_process(double p_time) override;
+	virtual bool late_physics_process(double p_time) override;
 	virtual void iteration_end() override;
 	virtual bool process(double p_time) override;
 
