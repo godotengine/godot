@@ -36,6 +36,10 @@ void main() {
 
 #define M_PI 3.14159265359
 
+#ifdef WRITE_DEPTH
+#define SKY_DEPTH 0.00000001
+#endif
+
 layout(location = 0) in vec2 uv_interp;
 
 layout(push_constant, std430) uniform Params {
@@ -302,5 +306,8 @@ void main() {
 
 #ifdef USE_DEBANDING
 	frag_color.rgb += interleaved_gradient_noise(gl_FragCoord.xy) * params.luminance_multiplier;
+#endif
+#ifdef WRITE_DEPTH
+	gl_FragDepth = SKY_DEPTH;
 #endif
 }

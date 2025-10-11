@@ -211,11 +211,24 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 	uint32_t view_count = render_buffers->get_view_count();
 
 	RID vrs_texture;
+	void *rasterization_rate_map = nullptr;
 #ifndef XR_DISABLED
-	if (render_buffers->get_vrs_mode() == RS::VIEWPORT_VRS_XR) {
-		Ref<XRInterface> interface = XRServer::get_singleton()->get_primary_interface();
-		if (interface.is_valid() && RD::get_singleton()->vrs_get_method() == RD::VRS_METHOD_FRAGMENT_DENSITY_MAP && interface->get_vrs_texture_format() == XRInterface::XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP) {
-			vrs_texture = interface->get_vrs_texture();
+	RS::ViewportVRSMode vrs_mode = render_buffers->get_vrs_mode();
+	if (vrs_mode == RS::VIEWPORT_VRS_XR) {
+		Ref<XRInterface> xr_interface = XRServer::get_singleton()->get_primary_interface();
+		if (xr_interface.is_valid()) {
+			if (RD::get_singleton()->vrs_get_method() == RD::VRS_METHOD_FRAGMENT_DENSITY_MAP && xr_interface->get_vrs_texture_format() == XRInterface::XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP) {
+				vrs_texture = xr_interface->get_vrs_texture();
+			}
+#ifdef VISIONOS_ENABLED
+			if (xr_interface->get_vrs_texture_format() == XRInterface::XR_VRS_TEXTURE_FORMAT_RASTERIZATION_RATE_MAP) {
+				RID rasterization_rate_map_rid = xr_interface->get_vrs_texture();
+				RD::Texture *texture = RenderingDevice::get_singleton()->texture_owner.get_or_null(rasterization_rate_map_rid);
+				if (texture) {
+					rasterization_rate_map = (void *)texture->driver_id.id;
+				}
+			}
+#endif
 		}
 	}
 #endif // XR_DISABLED
@@ -243,6 +256,7 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 			RD::FramebufferPass pass;
 			pass.color_attachments.push_back(0);
 			pass.depth_attachment = 1;
+			pass.rasterization_rate_map = rasterization_rate_map;
 
 			if (use_msaa) {
 				// Add resolve
@@ -263,6 +277,7 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 			RD::FramebufferPass pass;
 			pass.color_attachments.push_back(0);
 			pass.depth_attachment = 1;
+			pass.rasterization_rate_map = rasterization_rate_map;
 
 			if (use_msaa) {
 				// add resolve
@@ -289,7 +304,8 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 			RD::FramebufferPass blit_pass;
 			blit_pass.input_attachments.push_back(color_buffer_id); // Read from our (resolved) color buffer
 			blit_pass.color_attachments.push_back(target_buffer_id); // Write into our target buffer
-			// this doesn't need VRS
+			// this doesn't need VRS nor rasterization_rate_map
+			blit_pass.rasterization_rate_map = nullptr;
 			passes.push_back(blit_pass);
 
 			return FramebufferCacheRD::get_singleton()->get_cache_multipass(textures, passes, view_count);
@@ -1193,6 +1209,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		}
 
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, load_color ? RD::DRAW_CLEAR_DEPTH : (RD::DRAW_CLEAR_COLOR_0 | RD::DRAW_CLEAR_DEPTH), c, 0.0f, 0, p_render_data->render_region, breadcrumb);
+		if (p_render_data->xr_viewports.size() == 2) {
+			RD::get_singleton()->draw_list_set_viewports(draw_list, p_render_data->xr_viewports);
+			RD::get_singleton()->draw_list_set_empty_scissor(draw_list);
+		}
+
 		RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
 
 		if (copy_canvas) {
