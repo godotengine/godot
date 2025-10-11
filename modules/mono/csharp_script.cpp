@@ -2892,7 +2892,7 @@ bool ResourceFormatLoaderCSharpScript::handles_type(const String &p_type) const 
 }
 
 String ResourceFormatLoaderCSharpScript::get_resource_type(const String &p_path) const {
-	return p_path.get_extension().to_lower() == "cs" ? CSharpLanguage::get_singleton()->get_type() : "";
+	return p_path.has_extension("cs") ? CSharpLanguage::get_singleton()->get_type() : "";
 }
 
 Error ResourceFormatSaverCSharpScript::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
