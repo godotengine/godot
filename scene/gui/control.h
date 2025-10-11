@@ -251,6 +251,8 @@ private:
 
 		ObjectID shortcut_context;
 
+		bool autofocus = false;
+
 		// Accessibility.
 
 		String accessibility_name;
@@ -615,6 +617,10 @@ public:
 	NodePath get_focus_next() const;
 	void set_focus_previous(const NodePath &p_prev);
 	NodePath get_focus_previous() const;
+
+	void set_autofocus(bool p_enable);
+	bool get_autofocus() const;
+	void attempt_autofocus();
 
 	// Accessibility.
 
