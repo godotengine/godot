@@ -320,6 +320,8 @@ class EditorInspectorCategory : public Control {
 
 	// Right-click context menu options.
 	enum ClassMenuOption {
+		MENU_COPY_VALUE,
+		MENU_PASTE_VALUE,
 		MENU_OPEN_DOCS,
 		MENU_UNFAVORITE_ALL,
 	};
@@ -350,6 +352,7 @@ class EditorInspectorCategory : public Control {
 	bool is_favorite = false;
 	bool menu_icon_dirty = true;
 
+	void _collect_properties(const Object *p_object, Vector<String> &p_properties) const;
 	void _handle_menu_option(int p_option);
 	void _popup_context_menu(const Point2i &p_position);
 	void _update_icon();
@@ -378,8 +381,14 @@ class EditorInspectorSection : public Container {
 
 	friend class EditorInspector;
 
+	enum MenuItems {
+		MENU_COPY_VALUE,
+		MENU_PASTE_VALUE,
+	};
+
 	String label;
 	String section;
+	String inspector_path;
 	Color bg_color;
 	bool vbox_added = false; // Optimization.
 	bool foldable = false;
@@ -400,6 +409,8 @@ class EditorInspectorSection : public Container {
 	bool header_hover = false;
 
 	bool checkbox_only = false;
+
+	PopupMenu *menu = nullptr;
 
 	HashSet<StringName> revertable_properties;
 
@@ -458,9 +469,10 @@ public:
 	virtual Size2 get_minimum_size() const override;
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
 
-	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0, int p_level = 1);
+	void setup(const String &p_inspector_path, const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0, int p_level = 1);
 	String get_section() const;
 	String get_label() const { return label; }
+	String get_inspector_path() const { return inspector_path; }
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();
@@ -475,6 +487,10 @@ public:
 	void property_can_revert_changed(const String &p_path, bool p_can_revert);
 	void _property_edited(const String &p_property);
 	void update_property();
+
+	void _update_popup();
+	void _collect_properties(Vector<String> &p_properties) const;
+	void menu_option(int p_option);
 
 	EditorInspectorSection();
 	~EditorInspectorSection();

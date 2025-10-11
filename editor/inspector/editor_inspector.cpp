@@ -35,6 +35,7 @@
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/doc/doc_tools.h"
 #include "editor/docks/inspector_dock.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -1757,8 +1758,63 @@ Size2 EditorInspectorCategory::get_minimum_size() const {
 	return ms;
 }
 
+void EditorInspectorCategory::_collect_properties(const Object *p_object, Vector<String> &p_properties) const {
+	List<PropertyInfo> property_list;
+	p_object->get_property_list(&property_list, true);
+
+	String current_category = "";
+	for (const PropertyInfo &prop_info : property_list) {
+		if (prop_info.usage & PROPERTY_USAGE_GROUP) {
+			continue;
+		}
+		if (prop_info.usage & PROPERTY_USAGE_CATEGORY) {
+			current_category = prop_info.name;
+			continue;
+		}
+		if (!(prop_info.usage & PROPERTY_USAGE_EDITOR)) {
+			continue;
+		}
+		if (current_category != label && !current_category.ends_with(".gd")) {
+			continue;
+		}
+
+		p_properties.push_back(prop_info.name);
+	}
+}
+
 void EditorInspectorCategory::_handle_menu_option(int p_option) {
 	switch (p_option) {
+		case MENU_COPY_VALUE: {
+			Object *object = EditorInterface::get_singleton()->get_inspector()->get_edited_object();
+			Dictionary clipboard;
+			Vector<String> properties;
+			_collect_properties(object, properties);
+
+			clipboard["category_name"] = label;
+			for (String property_name : properties) {
+				clipboard[property_name] = object->get(property_name);
+			}
+			InspectorDock::get_inspector_singleton()->set_property_clipboard(clipboard);
+		} break;
+
+		case MENU_PASTE_VALUE: {
+			Object *object = EditorInterface::get_singleton()->get_inspector()->get_edited_object();
+			Dictionary clipboard = InspectorDock::get_inspector_singleton()->get_property_clipboard();
+			String category_name = clipboard["category_name"];
+			String action_name = "Set category " + category_name;
+
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(action_name);
+
+			for (String property_name : clipboard.keys()) {
+				Variant value = clipboard[property_name];
+				undo_redo->add_do_property(object, property_name, value);
+				undo_redo->add_undo_property(object, property_name, object->get(property_name));
+			}
+
+			undo_redo->commit_action();
+		} break;
+
 		case MENU_OPEN_DOCS: {
 			ScriptEditor::get_singleton()->goto_help("class:" + doc_class_name);
 			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
@@ -1781,6 +1837,8 @@ void EditorInspectorCategory::_popup_context_menu(const Point2i &p_position) {
 		if (is_favorite) {
 			menu->add_item(TTRC("Unfavorite All"), MENU_UNFAVORITE_ALL);
 		} else {
+			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("property_editor/copy_category_values"), MENU_COPY_VALUE);
+			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("property_editor/paste_category_values"), MENU_PASTE_VALUE);
 			menu->add_item(TTRC("Open Documentation"), MENU_OPEN_DOCS);
 			menu->set_item_disabled(-1, !EditorHelp::get_doc_data()->class_list.has(doc_class_name));
 		}
@@ -2214,9 +2272,10 @@ Control *EditorInspectorSection::make_custom_tooltip(const String &p_text) const
 	return nullptr;
 }
 
-void EditorInspectorSection::setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth, int p_level) {
+void EditorInspectorSection::setup(const String &p_inspector_path, const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth, int p_level) {
 	section = p_section;
 	label = p_label;
+	inspector_path = p_inspector_path;
 	object = p_object;
 	bg_color = p_bg_color;
 	foldable = p_foldable;
@@ -2307,6 +2366,12 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 				fold();
 			}
 		}
+	} else if ((!checkable || checked) && mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+		accept_event();
+		_update_popup();
+		menu->set_position(get_screen_position() + get_local_mouse_position());
+		menu->reset_size();
+		menu->popup();
 	} else if (mb.is_valid() && !mb->is_pressed()) {
 		queue_redraw();
 	}
@@ -2447,6 +2512,89 @@ void EditorInspectorSection::update_property() {
 
 	if (valid) {
 		set_checked(value_checked.operator bool());
+	}
+}
+
+void EditorInspectorSection::_update_popup() {
+	if (menu) {
+		menu->clear();
+	} else {
+		menu = memnew(PopupMenu);
+		add_child(menu);
+		menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorInspectorSection::menu_option));
+	}
+
+	menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("property_editor/copy_group_values"), MENU_COPY_VALUE);
+	menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("property_editor/paste_group_values"), MENU_PASTE_VALUE);
+}
+
+void EditorInspectorSection::_collect_properties(Vector<String> &p_properties) const {
+	List<PropertyInfo> property_list;
+	object->get_property_list(&property_list, true);
+
+	String current_category = "";
+	String current_group = "";
+	for (const PropertyInfo &prop_info : property_list) {
+		if (prop_info.usage & PROPERTY_USAGE_GROUP) {
+			current_group = prop_info.name;
+			continue;
+		}
+		if (prop_info.usage & PROPERTY_USAGE_CATEGORY) {
+			current_category = prop_info.name;
+			current_group = "";
+
+			continue;
+		}
+		if (!(prop_info.usage & PROPERTY_USAGE_EDITOR)) {
+			continue;
+		}
+		if (!(current_category + "/" + current_group).begins_with(get_inspector_path())) {
+			if (current_category.ends_with(".gd")) {
+				String section_path = inspector_path;
+				section_path = section_path.replace(section_path.split("/")[0] + "/", "");
+				if (!current_group.begins_with(section_path)) {
+					continue;
+				}
+			} else {
+				continue;
+			}
+		}
+
+		p_properties.push_back(prop_info.name);
+	}
+}
+
+void EditorInspectorSection::menu_option(int p_option) {
+	switch (p_option) {
+		case MENU_COPY_VALUE: {
+			Vector<String> properties;
+			Dictionary clipboard;
+			_collect_properties(properties);
+
+			print_line("Group path: " + get_inspector_path());
+
+			clipboard["group_name"] = section;
+			for (String property_name : properties) {
+				clipboard[property_name] = object->get(property_name);
+			}
+			InspectorDock::get_inspector_singleton()->set_property_clipboard(clipboard);
+		} break;
+		case MENU_PASTE_VALUE: {
+			Dictionary clipboard = InspectorDock::get_inspector_singleton()->get_property_clipboard();
+			String group_name = clipboard["group_name"];
+			String action_name = "Set group " + group_name;
+
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(action_name);
+
+			for (String property_name : clipboard.keys()) {
+				Variant value = clipboard[property_name];
+				undo_redo->add_do_property(object, property_name, value);
+				undo_redo->add_undo_property(object, property_name, object->get(property_name));
+			}
+
+			undo_redo->commit_action();
+		} break;
 	}
 }
 
@@ -3250,7 +3398,7 @@ void EditorInspectorArray::setup_with_move_element_function(Object *p_object, co
 	page_length = p_page_length;
 	numbered = p_numbered;
 
-	EditorInspectorSection::setup(String(p_array_element_prefix) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
+	EditorInspectorSection::setup("", String(p_array_element_prefix) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
 
 	_setup();
 }
@@ -3267,7 +3415,7 @@ void EditorInspectorArray::setup_with_count_property(Object *p_object, const Str
 	swap_method = p_swap_method;
 
 	add_button->set_text(p_add_item_text);
-	EditorInspectorSection::setup(String(count_property) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
+	EditorInspectorSection::setup("", String(count_property) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
 
 	_setup();
 }
@@ -4135,7 +4283,7 @@ void EditorInspector::update_tree() {
 
 				Color c = sscolor;
 				c.a /= level;
-				section->setup(acc_path, label, object, c, use_folding, section_depth, level);
+				section->setup((doc_name.is_empty() ? acc_path : String(doc_name) + (acc_path.is_empty() ? "" : "/" + acc_path)), acc_path, label, object, c, use_folding, section_depth, level);
 				section->set_tooltip_text(tooltip);
 
 				section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
@@ -4559,7 +4707,8 @@ void EditorInspector::update_tree() {
 				get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
 				favorites_groups_vbox->add_child(section);
 				parent_vbox = section->get_vbox();
-				section->setup("", section_name, object, sscolor, false);
+
+				section->setup("", "", section_name, object, sscolor, false);
 				section->set_tooltip_text(tooltip);
 
 				if (togglable_editor_inspector_sections.has(section_name)) {
@@ -4598,7 +4747,7 @@ void EditorInspector::update_tree() {
 					get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
 					vbox->add_child(section);
 					vbox = section->get_vbox();
-					section->setup("", section_name, object, sscolor, false);
+					section->setup("", "", section_name, object, sscolor, false);
 					section->set_tooltip_text(tooltip);
 
 					if (togglable_editor_inspector_sections.has(KV.key + "/" + section_name)) {
@@ -5782,6 +5931,10 @@ EditorInspector::EditorInspector() {
 
 	ED_SHORTCUT("property_editor/copy_value", TTRC("Copy Value"), KeyModifierMask::CMD_OR_CTRL | Key::C);
 	ED_SHORTCUT("property_editor/paste_value", TTRC("Paste Value"), KeyModifierMask::CMD_OR_CTRL | Key::V);
+	ED_SHORTCUT("property_editor/copy_category_values", TTRC("Copy Category Values"), KeyModifierMask::CMD_OR_CTRL | Key::C);
+	ED_SHORTCUT("property_editor/paste_category_values", TTRC("Paste Category Values"), KeyModifierMask::CMD_OR_CTRL | Key::V);
+	ED_SHORTCUT("property_editor/copy_group_values", TTRC("Copy Group Values"), KeyModifierMask::CMD_OR_CTRL | Key::C);
+	ED_SHORTCUT("property_editor/paste_group_values", TTRC("Paste Group Values"), KeyModifierMask::CMD_OR_CTRL | Key::V);
 	ED_SHORTCUT("property_editor/copy_property_path", TTRC("Copy Property Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 
 	// `use_settings_name_style` is true by default, set the name style accordingly.
