@@ -262,6 +262,12 @@ int AudioStreamPlaybackSynchronized::mix(AudioFrame *p_buffer, float p_rate_scal
 	return p_frames;
 }
 
+Ref<AudioStreamPlayback> AudioStreamPlaybackSynchronized::get_playback(int p_index) {
+	ERR_FAIL_INDEX_V_MSG(p_index, stream->stream_count, Ref<AudioStreamPlayback>(), "Stream index out of bounds.");
+
+	return playback[p_index];
+}
+
 void AudioStreamPlaybackSynchronized::tag_used_streams() {
 	if (active) {
 		for (int i = 0; i < stream->stream_count; i++) {
@@ -317,4 +323,8 @@ void AudioStreamPlaybackSynchronized::_update_playback_instances() {
 			playback[i].unref();
 		}
 	}
+}
+
+void AudioStreamPlaybackSynchronized::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_playback", "stream_index"), &AudioStreamPlaybackSynchronized::get_playback);
 }
