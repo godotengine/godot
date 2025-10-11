@@ -37,6 +37,9 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/tree.h"
 
+class CheckButton;
+class HBoxContainer;
+
 class CreateDialog : public ConfirmationDialog {
 	GDCLASS(CreateDialog, ConfirmationDialog);
 
@@ -46,12 +49,26 @@ class CreateDialog : public ConfirmationDialog {
 		OTHER_TYPE
 	};
 
+	enum TypeGroup {
+		TYPE_BUILT_IN,
+		TYPE_CUSTOM,
+		TYPE_EDITOR,
+		TYPE_MAX,
+	};
+
 	struct TypeInfo {
 		StringName type_name;
 		PackedStringArray search_keywords;
 	};
 
+	bool type_filter_enabled = true;
+	bool types_enabled[TYPE_MAX];
+
 	LineEdit *search_box = nullptr;
+	CheckButton *show_builtin_button = nullptr;
+	CheckButton *show_custom_button = nullptr;
+	CheckButton *show_editor_button = nullptr;
+	HBoxContainer *filter_hb = nullptr;
 	Tree *search_options = nullptr;
 
 	String base_type;
@@ -72,7 +89,9 @@ class CreateDialog : public ConfirmationDialog {
 	List<TypeInfo> type_info_list;
 	HashSet<StringName> type_blacklist;
 	HashSet<StringName> custom_type_blocklist;
+	HashSet<StringName> selectable_types;
 
+	void _update_filter_button_state();
 	void _update_search();
 	bool _should_hide_type(const StringName &p_type) const;
 	void _add_type(const StringName &p_type, TypeCategory p_type_category, const String &p_match_keyword);
@@ -93,6 +112,7 @@ class CreateDialog : public ConfirmationDialog {
 	void _confirmed();
 	virtual void cancel_pressed() override;
 
+	void _filter_button_toggled(bool p_pressed, int p_type);
 	void _favorite_toggled();
 
 	void _history_selected(int p_idx);
