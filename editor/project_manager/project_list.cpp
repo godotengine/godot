@@ -66,6 +66,27 @@ void ProjectListItemControl::_notification(int p_what) {
 			project_title->end_bulk_theme_override();
 
 			project_path->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("ProjectList")));
+
+			switch (version_match_type) {
+				case VER_PROJECT_USES_OLDER_MAJOR:
+					project_different_version->set_texture(get_editor_theme_icon(SNAME("ProjectUpgradeMajor")));
+					break;
+				case VER_PROJECT_USES_OLDER_MINOR:
+					project_different_version->set_texture(get_editor_theme_icon(SNAME("ProjectUpgrade")));
+					break;
+				case VER_PROJECT_USES_NEWER_MAJOR:
+					project_different_version->set_texture(get_editor_theme_icon(SNAME("ProjectDowngradeMajor")));
+					break;
+				case VER_PROJECT_USES_NEWER_MINOR:
+					project_different_version->set_texture(get_editor_theme_icon(SNAME("ProjectDowngrade")));
+					break;
+				case VER_PROJECT_USES_UNKNOWN:
+					project_different_version->set_texture(get_editor_theme_icon(SNAME("ProjectConvert")));
+					break;
+				default:
+					break;
+			}
+
 			project_unsupported_features->set_texture(get_editor_theme_icon(SNAME("NodeWarning")));
 
 			favorite_focus_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
@@ -270,14 +291,54 @@ void ProjectListItemControl::set_unsupported_features(PackedStringArray p_featur
 					project_version_major = project_version_split[0].to_int();
 					project_version_minor = project_version_split[1].to_int();
 				}
-				if (GODOT_VERSION_MAJOR != project_version_major || GODOT_VERSION_MINOR <= project_version_minor) {
-					// Don't show a warning if the project was last edited in a previous minor version.
-					tooltip_text += TTR("This project was last edited in a different Godot version: ") + p_features[i] + "\n";
+
+				version_match_type = VER_PROJECT_IS_THIS_VER;
+				if (project_version_major > GODOT_VERSION_MAJOR) {
+					version_match_type = VER_PROJECT_USES_NEWER_MAJOR;
+				} else if (project_version_major < GODOT_VERSION_MAJOR) {
+					version_match_type = VER_PROJECT_USES_OLDER_MINOR;
+				} else {
+					// Project is same major version.
+					// Is it the same minor version, or an upgrade or downgrade?
+					if (project_version_minor > GODOT_VERSION_MINOR) {
+						version_match_type = VER_PROJECT_USES_NEWER_MINOR;
+					} else if (project_version_minor < GODOT_VERSION_MINOR) {
+						version_match_type = VER_PROJECT_USES_OLDER_MINOR;
+					}
 				}
-				p_features.remove_at(i);
-				i--;
+
+				if (version_match_type != VER_PROJECT_IS_THIS_VER) {
+					String project_version_tooltip_text = TTR("This project was last edited in a different Godot version: ") + p_features[i] + "\n";
+					if (version_match_type == VER_PROJECT_USES_OLDER_MAJOR || version_match_type == VER_PROJECT_USES_OLDER_MINOR) {
+						project_version_tooltip_text += vformat(TTR("Opening it will upgrade it to Godot %s.%s."), GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR) + "\n";
+					} else if (version_match_type == VER_PROJECT_USES_NEWER_MAJOR || version_match_type == VER_PROJECT_USES_NEWER_MINOR) {
+						project_version_tooltip_text += vformat(TTR("Opening it will downgrade it to Godot %s.%s."), GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR) + "\n";
+						project_version_tooltip_text += TTR("Downgrading projects is not recommended.") + "\n";
+					}
+					project_different_version->set_focus_mode(FOCUS_ACCESSIBILITY);
+					project_different_version->set_tooltip_text(project_version_tooltip_text);
+					project_different_version->show();
+				} else {
+					project_different_version->hide();
+				}
+			} else {
+				String project_version_tooltip_text = TTR("This project was last edited in a different Godot version: ") + p_features[i] + "\n";
+				if (p_features[i] == "3.x") {
+					version_match_type = VER_PROJECT_USES_OLDER_MAJOR;
+					project_version_tooltip_text += vformat(TTR("Opening it will upgrade it to Godot %s.%s."), GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR) + "\n";
+				} else if (p_features[i] == "Unknown version") {
+					version_match_type = VER_PROJECT_USES_UNKNOWN;
+					project_version_tooltip_text += vformat(TTR("Opening it will convert it to Godot %s.%s."), GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR) + "\n";
+				}
+				project_different_version->set_focus_mode(FOCUS_ACCESSIBILITY);
+				project_different_version->set_tooltip_text(project_version_tooltip_text);
+				project_different_version->show();
 			}
+
+			p_features.remove_at(i);
+			i--;
 		}
+
 		if (p_features.size() > 0) {
 			String unsupported_features_str = String(", ").join(p_features);
 			tooltip_text += TTR("This project uses features unsupported by the current build:") + "\n" + unsupported_features_str;
@@ -290,6 +351,7 @@ void ProjectListItemControl::set_unsupported_features(PackedStringArray p_featur
 		project_unsupported_features->set_tooltip_text(tooltip_text);
 		project_unsupported_features->show();
 	} else {
+		project_different_version->hide();
 		project_unsupported_features->hide();
 	}
 }
@@ -433,6 +495,12 @@ ProjectListItemControl::ProjectListItemControl() {
 		project_unsupported_features->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 		path_hb->add_child(project_unsupported_features);
 		project_unsupported_features->hide();
+
+		project_different_version = memnew(TextureRect);
+		project_different_version->set_name("ProjectDifferentVersion");
+		project_different_version->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+		path_hb->add_child(project_different_version);
+		project_different_version->hide();
 
 		project_version = memnew(Label);
 		project_version->set_focus_mode(FOCUS_ACCESSIBILITY);
