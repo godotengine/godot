@@ -112,7 +112,7 @@ Error EMWSPeer::connect_to_url(const String &p_url, const Ref<TLSOptions> &p_tls
 	return OK;
 }
 
-Error EMWSPeer::accept_stream(const Ref<StreamPeer> &p_stream) {
+Error EMWSPeer::accept_stream(const Ref<StreamPeer> &p_stream, String p_received_headers) {
 	WARN_PRINT_ONCE("Acting as WebSocket server is not supported in Web platforms.");
 	return ERR_UNAVAILABLE;
 }
