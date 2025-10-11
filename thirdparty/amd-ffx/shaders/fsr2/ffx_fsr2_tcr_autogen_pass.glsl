@@ -33,6 +33,12 @@
 #define FSR2_BIND_SRV_REACTIVE_MASK                         5
 #define FSR2_BIND_SRV_TRANSPARENCY_AND_COMPOSITION_MASK     6
 
+// GODOT BEGINS
+#if FFX_FSR2_OPTION_GODOT_DERIVE_INVALID_MOTION_VECTORS
+#define FSR2_BIND_SRV_INPUT_DEPTH                           13
+#endif
+// GODOT ENDS
+
 #define FSR2_BIND_UAV_AUTOREACTIVE                       2007
 #define FSR2_BIND_UAV_AUTOCOMPOSITION                    2008
 #define FSR2_BIND_UAV_PREV_PRE_ALPHA_COLOR               2009
@@ -41,11 +47,6 @@
 #define FSR2_BIND_CB_FSR2								 3000
 #define FSR2_BIND_CB_AUTOREACTIVE                        3001
 
-// GODOT BEGINS
-#if FFX_FSR2_OPTION_GODOT_DERIVE_INVALID_MOTION_VECTORS
-#define FSR2_BIND_SRV_INPUT_DEPTH                           13
-#endif
-// GODOT ENDS
 
 #include "../../gpu/fsr2/ffx_fsr2_callbacks_glsl.h"
 #include "../../gpu/fsr2/ffx_fsr2_common.h"

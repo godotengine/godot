@@ -31,11 +31,12 @@
 #include "ffx_common.h"
 
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
+#include "thirdparty/amd-ffx/ffx_fsr1.h"
 #include "thirdparty/amd-ffx/ffx_fsr2.h"
 
 using namespace RendererRD;
 
-static RD::TextureType ffx_resource_type_to_rd_texture_type(FfxResourceType p_type) {
+RD::TextureType FFXCommonContext::ffx_resource_type_to_rd_texture_type(FfxResourceType p_type) {
 	switch (p_type) {
 		case FFX_RESOURCE_TYPE_TEXTURE1D:
 			return RD::TEXTURE_TYPE_1D;
@@ -51,7 +52,7 @@ static RD::TextureType ffx_resource_type_to_rd_texture_type(FfxResourceType p_ty
 	}
 }
 
-static FfxResourceType rd_texture_type_to_ffx_resource_type(RD::TextureType p_type) {
+FfxResourceType FFXCommonContext::rd_texture_type_to_ffx_resource_type(RD::TextureType p_type) {
 	switch (p_type) {
 		case RD::TEXTURE_TYPE_1D:
 			return FFX_RESOURCE_TYPE_TEXTURE1D;
@@ -67,7 +68,7 @@ static FfxResourceType rd_texture_type_to_ffx_resource_type(RD::TextureType p_ty
 	}
 }
 
-static RD::DataFormat ffx_surface_format_to_rd_format(FfxSurfaceFormat p_format) {
+RD::DataFormat FFXCommonContext::ffx_surface_format_to_rd_format(FfxSurfaceFormat p_format) {
 	switch (p_format) {
 		case FFX_SURFACE_FORMAT_R32G32B32A32_TYPELESS:
 			return RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
@@ -113,7 +114,7 @@ static RD::DataFormat ffx_surface_format_to_rd_format(FfxSurfaceFormat p_format)
 	}
 }
 
-static FfxSurfaceFormat rd_format_to_ffx_surface_format(RD::DataFormat p_format) {
+FfxSurfaceFormat FFXCommonContext::rd_format_to_ffx_surface_format(RD::DataFormat p_format) {
 	switch (p_format) {
 		case RD::DATA_FORMAT_R32G32B32A32_SFLOAT:
 			return FFX_SURFACE_FORMAT_R32G32B32A32_FLOAT;
@@ -172,7 +173,7 @@ static FfxVersionNumber get_sdk_version_rd(FfxInterface* backendInterface) {
 	return FFX_SDK_MAKE_VERSION(FFX_SDK_VERSION_MAJOR, FFX_SDK_VERSION_MINOR, FFX_SDK_VERSION_PATCH);
 }
 
-static FfxErrorCode create_backend_context_rd(FfxInterface *p_backend_interface, FfxEffect effect,
+static FfxErrorCode create_backend_context_rd(FfxInterface *p_backend_interface, FfxEffect p_effect,
 	FfxEffectBindlessConfig* p_bindless_config, FfxUInt32* p_effect_context_id) {
 	FFXCommonContext::Scratch &scratch = *reinterpret_cast<FFXCommonContext::Scratch *>(p_backend_interface->scratchBuffer);
 
@@ -190,6 +191,24 @@ static FfxErrorCode create_backend_context_rd(FfxInterface *p_backend_interface,
 	for (uint32_t i = 0; i < FFX_UBO_RING_BUFFER_SIZE; i++) {
 		scratch.ubo_ring_buffer[i] = RD::get_singleton()->uniform_buffer_create(FFX_BUFFER_SIZE);
 		ERR_FAIL_COND_V(scratch.ubo_ring_buffer[i].is_null(), FFX_ERROR_BACKEND_API_ERROR);
+	}
+
+	switch (p_effect) {
+		case FFX_EFFECT_FSR1:
+			*p_effect_context_id = FFX_EFFECT_CONTEXT_FSR1;
+			break;
+		case FFX_EFFECT_FSR2:
+			*p_effect_context_id = FFX_EFFECT_CONTEXT_FSR2;
+			break;
+		case FFX_EFFECT_FSR3UPSCALER:
+			*p_effect_context_id = FFX_EFFECT_CONTEXT_FSR3_UPSCALE;
+			break;
+		case FFX_EFFECT_FRAMEINTERPOLATION:
+			*p_effect_context_id = FFX_EFFECT_CONTEXT_FSR3_INTERPOLATE;
+			break;
+		default:
+			ERR_PRINT("Unknown FFX effect.");
+			return FFX_ERROR_INVALID_ARGUMENT;
 	}
 
 	return FFX_OK;
@@ -255,8 +274,8 @@ static FfxErrorCode create_resource_rd(FfxInterface *p_backend_interface, const 
 	}
 
 	RD::TextureFormat texture_format;
-	texture_format.texture_type = ffx_resource_type_to_rd_texture_type(res_desc.type);
-	texture_format.format = ffx_surface_format_to_rd_format(res_desc.format);
+	texture_format.texture_type = FFXCommonContext::ffx_resource_type_to_rd_texture_type(res_desc.type);
+	texture_format.format = FFXCommonContext::ffx_surface_format_to_rd_format(res_desc.format);
 	texture_format.usage_bits = ffx_usage_to_rd_usage_flags(p_create_resource_description->resourceDescription.usage);
 	texture_format.width = res_desc.width;
 	texture_format.height = res_desc.height;
@@ -326,7 +345,13 @@ static FfxErrorCode destroy_resource_rd(FfxInterface *p_backend_interface, FfxRe
 static FfxErrorCode create_pipeline_rd(FfxInterface *p_backend_interface, FfxEffect p_effect, FfxPass p_pass,  uint32_t p_permutation_options, const FfxPipelineDescription *p_pipeline_description, FfxUInt32 p_effect_context_id, FfxPipelineState *p_out_pipeline) {
 	FFXCommonContext::Scratch &scratch = *reinterpret_cast<FFXCommonContext::Scratch *>(p_backend_interface->scratchBuffer);
 	FFXCommonContext::Device &device = *reinterpret_cast<FFXCommonContext::Device *>(scratch.device);
-	FFXCommonContext::Pass &effect_pass = device.effect_contexts.passes[p_pass];
+
+	if (p_effect == FFX_EFFECT_FSR1 && p_pass == FFX_FSR1_PASS_EASU_RCAS) {
+		// `EASU_RCAS` and `EASU` are basically variants of a same thing and thus shall share the same pipeline
+		p_pass = FFX_FSR1_PASS_EASU;
+	}
+
+	FFXCommonContext::Pass &effect_pass = device.effect_contexts[p_effect_context_id].passes[p_pass];
 
 	if (effect_pass.pipeline.pipeline_rid.is_null()) {
 		// Create pipeline for the device if it hasn't been created yet.
@@ -393,7 +418,7 @@ static FfxErrorCode schedule_gpu_job_rd(FfxInterface *p_backend_interface, const
 	return FFX_OK;
 }
 
-static FfxErrorCode execute_gpu_job_clear_float_rd(FFXCommonContext::Scratch &p_scratch, const FfxClearFloatJobDescription &p_job) {
+static FfxErrorCode execute_gpu_job_clear_float_rd(FFXCommonContext::Scratch &p_scratch, const FfxClearFloatJobDescription &p_job, FfxUInt32 p_effect_context_id) {
 	RID resource = p_scratch.resources.rids[p_job.target.internalIndex];
 	FfxResourceDescription &desc = p_scratch.resources.descriptions[p_job.target.internalIndex];
 
@@ -405,7 +430,7 @@ static FfxErrorCode execute_gpu_job_clear_float_rd(FFXCommonContext::Scratch &p_
 	return FFX_OK;
 }
 
-static FfxErrorCode execute_gpu_job_copy_rd(FFXCommonContext::Scratch &p_scratch, const FfxCopyJobDescription &p_job) {
+static FfxErrorCode execute_gpu_job_copy_rd(FFXCommonContext::Scratch &p_scratch, const FfxCopyJobDescription &p_job, FfxUInt32 p_effect_context_id) {
 	RID src = p_scratch.resources.rids[p_job.src.internalIndex];
 	RID dst = p_scratch.resources.rids[p_job.dst.internalIndex];
 	FfxResourceDescription &src_desc = p_scratch.resources.descriptions[p_job.src.internalIndex];
@@ -421,7 +446,7 @@ static FfxErrorCode execute_gpu_job_copy_rd(FFXCommonContext::Scratch &p_scratch
 	return FFX_OK;
 }
 
-static FfxErrorCode execute_gpu_job_compute_rd(FFXCommonContext::Scratch &p_scratch, const FfxComputeJobDescription &p_job) {
+static FfxErrorCode execute_gpu_job_compute_rd(FFXCommonContext::Scratch &p_scratch, const FfxComputeJobDescription &p_job, FfxUInt32 p_effect_context_id) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL_V(uniform_set_cache, FFX_ERROR_BACKEND_API_ERROR);
 
@@ -483,10 +508,16 @@ static FfxErrorCode execute_gpu_job_compute_rd(FFXCommonContext::Scratch &p_scra
 	}
 
 	FFXCommonContext::Device &device = *reinterpret_cast<FFXCommonContext::Device *>(p_scratch.device);
-	RD::Uniform u_point_clamp_sampler(RD::UniformType::UNIFORM_TYPE_SAMPLER, 1000, device.point_clamp_sampler);
-	RD::Uniform u_linear_clamp_sampler(RD::UniformType::UNIFORM_TYPE_SAMPLER, 1001, device.linear_clamp_sampler);
-	compute_uniforms.push_back(u_point_clamp_sampler);
-	compute_uniforms.push_back(u_linear_clamp_sampler);
+
+	if (p_effect_context_id == FFX_EFFECT_CONTEXT_FSR1) {
+		RD::Uniform u_linear_clamp_sampler(RD::UniformType::UNIFORM_TYPE_SAMPLER, 1000, device.linear_clamp_sampler);
+		compute_uniforms.push_back(u_linear_clamp_sampler);
+	} else if (p_effect_context_id == FFX_EFFECT_CONTEXT_FSR2) {
+		RD::Uniform u_point_clamp_sampler(RD::UniformType::UNIFORM_TYPE_SAMPLER, 1000, device.point_clamp_sampler);
+		RD::Uniform u_linear_clamp_sampler(RD::UniformType::UNIFORM_TYPE_SAMPLER, 1001, device.linear_clamp_sampler);
+		compute_uniforms.push_back(u_point_clamp_sampler);
+		compute_uniforms.push_back(u_linear_clamp_sampler);
+	}
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, backend_pipeline.pipeline_rid);
@@ -497,7 +528,7 @@ static FfxErrorCode execute_gpu_job_compute_rd(FFXCommonContext::Scratch &p_scra
 	return FFX_OK;
 }
 
-static FfxErrorCode execute_gpu_jobs_rd(FfxInterface *p_backend_interface, FfxCommandList p_command_list, FfxUInt32 effect_context_id) {
+static FfxErrorCode execute_gpu_jobs_rd(FfxInterface *p_backend_interface, FfxCommandList p_command_list, FfxUInt32 p_effect_context_id) {
 	ERR_FAIL_NULL_V(p_backend_interface, FFX_ERROR_INVALID_ARGUMENT);
 
 	FFXCommonContext::Scratch &scratch = *reinterpret_cast<FFXCommonContext::Scratch *>(p_backend_interface->scratchBuffer);
@@ -505,13 +536,13 @@ static FfxErrorCode execute_gpu_jobs_rd(FfxInterface *p_backend_interface, FfxCo
 	for (const FfxGpuJobDescription &job : scratch.gpu_jobs) {
 		switch (job.jobType) {
 			case FFX_GPU_JOB_CLEAR_FLOAT: {
-				error_code = execute_gpu_job_clear_float_rd(scratch, job.clearJobDescriptor);
+				error_code = execute_gpu_job_clear_float_rd(scratch, job.clearJobDescriptor, p_effect_context_id);
 			} break;
 			case FFX_GPU_JOB_COPY: {
-				error_code = execute_gpu_job_copy_rd(scratch, job.copyJobDescriptor);
+				error_code = execute_gpu_job_copy_rd(scratch, job.copyJobDescriptor, p_effect_context_id);
 			} break;
 			case FFX_GPU_JOB_COMPUTE: {
-				error_code = execute_gpu_job_compute_rd(scratch, job.computeJobDescriptor);
+				error_code = execute_gpu_job_compute_rd(scratch, job.computeJobDescriptor, p_effect_context_id);
 			} break;
 			default: {
 				error_code = FFX_ERROR_INVALID_ARGUMENT;

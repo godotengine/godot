@@ -1,7 +1,7 @@
 // This file is part of the FidelityFX SDK.
 //
 // Copyright (C) 2024 Advanced Micro Devices, Inc.
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files(the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -23,7 +23,7 @@
 #include "ffx_fsr1_resources.h"
 
 #if defined(FFX_GPU)
-#include "ffx_core.h"
+#include "../ffx_core.h"
 
 #ifndef FFX_PREFER_WAVE64
 #define FFX_PREFER_WAVE64
@@ -87,7 +87,7 @@ layout (set = 0, binding = 1000) uniform sampler s_LinearClamp;
 #endif
 #if defined FSR1_BIND_SRV_UPSCALED_OUTPUT
     layout (set = 0, binding = FSR1_BIND_SRV_UPSCALED_OUTPUT)          uniform texture2D  r_upscaled_output;
-#endif 
+#endif
 
 // UAV declarations
 #if defined FSR1_BIND_UAV_INPUT_COLOR

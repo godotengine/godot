@@ -33,6 +33,7 @@
 #ifdef METAL_ENABLED
 #include "../effects/metal_fx.h"
 #endif
+#include "../effects/ffx/fsr1.h"
 #include "../effects/vrs.h"
 #include "core/templates/hash_map.h"
 #include "material_storage.h"
@@ -83,6 +84,7 @@ private:
 	float texture_mipmap_bias = 0.0f;
 	RS::ViewportAnisotropicFiltering anisotropic_filtering_level = RS::VIEWPORT_ANISOTROPY_4X;
 
+	RendererRD::FSR1Context *fsr1_context = nullptr;
 #ifdef METAL_ENABLED
 	RendererRD::MFXSpatialContext *mfx_spatial_context = nullptr;
 #endif
@@ -200,6 +202,9 @@ public:
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override;
 	virtual void set_anisotropic_filtering_level(RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level) override;
 	virtual void set_use_debanding(bool p_use_debanding) override;
+
+	void ensure_fsr1(RendererRD::FSR1Effect *p_effect);
+	_FORCE_INLINE_ RendererRD::FSR1Context *get_fsr1_context() const { return fsr1_context; }
 
 #ifdef METAL_ENABLED
 	void ensure_mfx(RendererRD::MFXSpatialEffect *p_effect);
