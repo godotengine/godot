@@ -165,6 +165,7 @@ private:
 	Button *button_hist_prev = nullptr;
 	LineEdit *current_path_line_edit = nullptr;
 
+	HBoxContainer *toolbar_hbc = nullptr;
 	HBoxContainer *toolbar2_hbc = nullptr;
 	LineEdit *tree_search_box = nullptr;
 	MenuButton *tree_button_sort = nullptr;
