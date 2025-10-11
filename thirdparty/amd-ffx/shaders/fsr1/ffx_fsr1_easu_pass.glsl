@@ -26,7 +26,7 @@
 // UAV  1 : FSR1_UpscaledOutput         : rw_upscaled_output            (if not)
 // CB   0 : cbFSR1
 
-#version 450
+//#version 450
 
 #extension GL_GOOGLE_include_directive : require
 #extension GL_EXT_samplerless_texture_functions : require
