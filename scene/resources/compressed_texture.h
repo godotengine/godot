@@ -39,6 +39,9 @@ class CompressedTexture2D : public Texture2D {
 	GDCLASS(CompressedTexture2D, Texture2D);
 
 public:
+	// Godot Streamable Texture 2D.
+	static constexpr uint32_t FOURCC = make_fourcc("GST2");
+
 	enum DataFormat {
 		DATA_FORMAT_IMAGE,
 		DATA_FORMAT_PNG,
@@ -123,6 +126,9 @@ class CompressedTextureLayered : public TextureLayered {
 	GDCLASS(CompressedTextureLayered, TextureLayered);
 
 public:
+	// Godot Streamable Texture Layered.
+	static constexpr uint32_t FOURCC = make_fourcc("GSTL");
+
 	enum DataFormat {
 		DATA_FORMAT_IMAGE,
 		DATA_FORMAT_PNG,
@@ -212,6 +218,8 @@ class CompressedTexture3D : public Texture3D {
 	GDCLASS(CompressedTexture3D, Texture3D);
 
 public:
+	static constexpr uint32_t FOURCC = CompressedTextureLayered::FOURCC;
+
 	enum DataFormat {
 		DATA_FORMAT_IMAGE,
 		DATA_FORMAT_PNG,

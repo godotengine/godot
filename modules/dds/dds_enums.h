@@ -32,12 +32,10 @@
 
 #include "core/io/image.h"
 
-#define PF_FOURCC(m_s) ((uint32_t)(((m_s)[3] << 24U) | ((m_s)[2] << 16U) | ((m_s)[1] << 8U) | ((m_s)[0])))
-
 // Reference: https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-header
 
 enum {
-	DDS_MAGIC = 0x20534444,
+	DDS_MAGIC = make_fourcc("DDS "),
 	DDS_HEADER_SIZE = 124,
 	DDS_PIXELFORMAT_SIZE = 32,
 
@@ -63,17 +61,17 @@ enum {
 };
 
 enum DDSFourCC {
-	DDFCC_DXT1 = PF_FOURCC("DXT1"),
-	DDFCC_DXT2 = PF_FOURCC("DXT2"),
-	DDFCC_DXT3 = PF_FOURCC("DXT3"),
-	DDFCC_DXT4 = PF_FOURCC("DXT4"),
-	DDFCC_DXT5 = PF_FOURCC("DXT5"),
-	DDFCC_ATI1 = PF_FOURCC("ATI1"),
-	DDFCC_BC4U = PF_FOURCC("BC4U"),
-	DDFCC_ATI2 = PF_FOURCC("ATI2"),
-	DDFCC_BC5U = PF_FOURCC("BC5U"),
-	DDFCC_A2XY = PF_FOURCC("A2XY"),
-	DDFCC_DX10 = PF_FOURCC("DX10"),
+	DDFCC_DXT1 = make_fourcc("DXT1"),
+	DDFCC_DXT2 = make_fourcc("DXT2"),
+	DDFCC_DXT3 = make_fourcc("DXT3"),
+	DDFCC_DXT4 = make_fourcc("DXT4"),
+	DDFCC_DXT5 = make_fourcc("DXT5"),
+	DDFCC_ATI1 = make_fourcc("ATI1"),
+	DDFCC_BC4U = make_fourcc("BC4U"),
+	DDFCC_ATI2 = make_fourcc("ATI2"),
+	DDFCC_BC5U = make_fourcc("BC5U"),
+	DDFCC_A2XY = make_fourcc("A2XY"),
+	DDFCC_DX10 = make_fourcc("DX10"),
 	DDFCC_RGBA16 = 36,
 	DDFCC_R16F = 111,
 	DDFCC_RG16F = 112,
