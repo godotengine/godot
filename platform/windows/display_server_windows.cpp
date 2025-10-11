@@ -555,7 +555,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 			if (!exts.is_empty()) {
 				String str = String(";").join(exts);
 				filter_exts.push_back(str.utf16());
-				if (tokens.size() == 2) {
+				if (tokens.size() >= 2) {
 					filter_names.push_back(tokens[1].strip_edges().utf16());
 				} else {
 					filter_names.push_back(str.utf16());

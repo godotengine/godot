@@ -1162,13 +1162,13 @@ void FileDialog::update_filters() {
 		}
 
 		String native_all_name;
+		native_all_name += all_filters;
 		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_MIME)) {
-			native_all_name += all_filters;
+			if (!native_all_name.is_empty()) {
+				native_all_name += ", ";
+			}
+			native_all_name += all_mime;
 		}
-		if (!native_all_name.is_empty()) {
-			native_all_name += ", ";
-		}
-		native_all_name += all_mime;
 
 		if (max_filters < filters.size()) {
 			all_filters += ", ...";
@@ -1183,13 +1183,14 @@ void FileDialog::update_filters() {
 		String desc = filters[i].get_slicec(';', 1).strip_edges();
 		String mime = filters[i].get_slicec(';', 2).strip_edges();
 		String native_name;
+
+		native_name += flt;
 		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_MIME)) {
-			native_name += flt;
+			if (!native_name.is_empty() && !mime.is_empty()) {
+				native_name += ", ";
+			}
+			native_name += mime;
 		}
-		if (!native_name.is_empty() && !mime.is_empty()) {
-			native_name += ", ";
-		}
-		native_name += mime;
 		if (!desc.is_empty()) {
 			filter->add_item(atr(desc) + " (" + flt + ")");
 			processed_filters.push_back(flt + ";" + atr(desc) + " (" + native_name + ");" + mime);
