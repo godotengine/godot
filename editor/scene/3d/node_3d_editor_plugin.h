@@ -403,14 +403,15 @@ private:
 	struct Cursor {
 		Vector3 pos;
 		real_t x_rot, y_rot, distance, fov_scale;
+		real_t unsnapped_x_rot, unsnapped_y_rot;
 		Vector3 eye_pos; // Used in freelook mode
 		bool region_select;
 		Point2 region_begin, region_end;
 
 		Cursor() {
 			// These rotations place the camera in +X +Y +Z, aka south east, facing north west.
-			x_rot = 0.5;
-			y_rot = -0.5;
+			x_rot = unsnapped_x_rot = 0.5;
+			y_rot = unsnapped_y_rot = -0.5;
 			distance = 4;
 			fov_scale = 1.0;
 			region_select = false;
