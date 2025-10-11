@@ -3605,6 +3605,159 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		return;
 	}
 
+#ifdef DEBUG_ENABLED
+	if (p_call->callee && p_call->callee->type == GDScriptParser::Node::SUBSCRIPT && p_call->function_name == SNAME("emit")) {
+		GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_call->callee);
+		reduce_subscript(subscript);
+		StringName signal_name;
+		GDScriptParser::ClassNode *signal_origin = nullptr;
+		StringName signal_origin_native;
+
+		if (subscript->base->type == GDScriptParser::Node::IDENTIFIER) {
+			signal_name = static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name;
+			signal_origin = parser->current_class;
+		} else if (subscript->base->type == GDScriptParser::Node::SUBSCRIPT) {
+			GDScriptParser::SubscriptNode *inner_subscript = static_cast<GDScriptParser::SubscriptNode *>(subscript->base);
+			reduce_subscript(inner_subscript);
+			signal_name = static_cast<GDScriptParser::IdentifierNode *>(inner_subscript->attribute)->name;
+			signal_origin = inner_subscript->base->get_datatype().class_type;
+			signal_origin_native = inner_subscript->base->get_datatype().native_type;
+		}
+
+		// signal can be from class parent.
+		if (signal_origin != nullptr && !signal_origin->has_member(signal_name)) {
+			if (signal_origin->base_type.kind == GDScriptParser::DataType::NATIVE) {
+				signal_origin_native = signal_origin->base_type.native_type;
+				signal_origin = nullptr;
+			} else {
+				GDScriptParser::ClassNode *parent = signal_origin->base_type.class_type;
+				while (parent != nullptr) {
+					if (parent->has_member(signal_name)) {
+						signal_origin = parent;
+						break;
+					}
+
+					if (parent->base_type.kind == GDScriptParser::DataType::NATIVE && ClassDB::has_signal(parent->base_type.native_type, signal_name)) {
+						signal_origin_native = parent->base_type.native_type;
+						signal_origin = nullptr;
+						break;
+					}
+					parent = parent->base_type.class_type;
+				}
+			}
+		}
+
+		if (signal_origin != nullptr && signal_origin->has_member(signal_name)) {
+			const GDScriptParser::ClassNode::Member &member = signal_origin->get_member(signal_name);
+			if (member.type == GDScriptParser::ClassNode::Member::SIGNAL) {
+				for (int i = 0; i < p_call->arguments.size(); i++) {
+					if (i >= member.signal->parameters.size()) {
+						push_error(vformat(R"*(Signal "%s" expects only %s parameter(s) when emitted.)*", signal_name, itos(member.signal->parameters.size())), p_call);
+						break;
+					}
+
+					GDScriptParser::ExpressionNode *signal_arg_emitted = p_call->arguments[i];
+					GDScriptParser::ParameterNode *signal_param = member.signal->parameters[i];
+					if (signal_arg_emitted->get_datatype().to_string_strict() != "Variant" && !is_type_compatible(signal_param->get_datatype(), signal_arg_emitted->get_datatype())) {
+						push_error(vformat(R"*(Signal "%s" %s parameter is typed as "%s" not "%s".)*", signal_name, itos(i + 1), signal_param->get_datatype().to_string_strict(), signal_arg_emitted->get_datatype().to_string_strict()), p_call);
+					}
+				}
+			}
+		} else {
+			MethodInfo signal_info;
+			if (ClassDB::get_signal(signal_origin_native, signal_name, &signal_info)) {
+				for (int i = 0; i < p_call->arguments.size(); i++) {
+					if (i >= signal_info.arguments.size()) {
+						push_error(vformat(R"*(Signal "%s" expects only %s parameter(s) when emitted.)*", signal_name, itos(signal_info.arguments.size())), p_call);
+						break;
+					}
+
+					GDScriptParser::ExpressionNode *signal_arg_emitted = p_call->arguments[i];
+					PropertyInfo signal_param = signal_info.arguments[i];
+					if (signal_arg_emitted->get_datatype().to_string_strict() != "Variant" && !is_type_compatible(type_from_property(signal_param), signal_arg_emitted->get_datatype())) {
+						push_error(vformat(R"*(Signal "%s" %s parameter is typed as "%s" not "%s".)*", signal_name, itos(i + 1), type_from_property(signal_param).to_string_strict(), signal_arg_emitted->get_datatype().to_string_strict()), p_call);
+					}
+				}
+			}
+		}
+	}
+
+	if (p_call->function_name == SNAME("emit_signal") && p_call->arguments.size() > 0) {
+		StringName signal_name;
+		GDScriptParser::ClassNode *signal_origin = nullptr;
+		StringName signal_origin_native;
+
+		const GDScriptParser::ExpressionNode *signal_arg = p_call->arguments[0];
+		if (signal_arg && signal_arg->is_constant) {
+			signal_name = signal_arg->reduced_value;
+		}
+		if (is_self) {
+			signal_origin = parser->current_class;
+		} else if (p_call->callee->type == GDScriptParser::Node::SUBSCRIPT) {
+			GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_call->callee);
+			reduce_subscript(subscript);
+			signal_origin = subscript->base->get_datatype().class_type;
+			signal_origin_native = subscript->base->get_datatype().native_type;
+		}
+
+		// signal can be from class parent.
+		if (signal_origin != nullptr && !signal_origin->has_member(signal_name)) {
+			if (signal_origin->base_type.kind == GDScriptParser::DataType::NATIVE) {
+				signal_origin_native = signal_origin->base_type.native_type;
+				signal_origin = nullptr;
+			} else {
+				GDScriptParser::ClassNode *parent = signal_origin->base_type.class_type;
+				while (parent != nullptr) {
+					if (parent->has_member(signal_name)) {
+						signal_origin = parent;
+						break;
+					}
+
+					if (parent->base_type.kind == GDScriptParser::DataType::NATIVE && ClassDB::has_signal(parent->base_type.native_type, signal_name)) {
+						signal_origin_native = parent->base_type.native_type;
+						signal_origin = nullptr;
+						break;
+					}
+					parent = parent->base_type.class_type;
+				}
+			}
+		}
+
+		if (signal_origin != nullptr && signal_origin->has_member(signal_name)) {
+			const GDScriptParser::ClassNode::Member &member = signal_origin->get_member(signal_name);
+			if (member.type == GDScriptParser::ClassNode::Member::SIGNAL) {
+				for (int i = 1; i < p_call->arguments.size(); i++) {
+					if (i - 1 >= member.signal->parameters.size()) {
+						push_error(vformat(R"*(Signal "%s" expects only %s parameter(s) when emitted.)*", signal_name, itos(member.signal->parameters.size())), p_call);
+						break;
+					}
+					GDScriptParser::ExpressionNode *signal_arg_emitted = p_call->arguments[i];
+					GDScriptParser::ParameterNode *signal_param = member.signal->parameters[i - 1];
+					if (signal_arg_emitted->get_datatype().to_string_strict() != "Variant" && !is_type_compatible(signal_param->get_datatype(), signal_arg_emitted->get_datatype())) {
+						push_error(vformat(R"*(Signal "%s" %s parameter is typed as "%s" not "%s".)*", signal_name, itos(i + 1), signal_param->get_datatype().to_string_strict(), signal_arg_emitted->get_datatype().to_string_strict()), p_call);
+					}
+				}
+			}
+		} else {
+			MethodInfo signal_info;
+			if (ClassDB::get_signal(signal_origin_native, signal_name, &signal_info)) {
+				for (int i = 1; i < p_call->arguments.size(); i++) {
+					if (i - 1 >= signal_info.arguments.size()) {
+						push_error(vformat(R"*(Signal "%s" expects only %s parameter(s) when emitted.)*", signal_name, itos(signal_info.arguments.size())), p_call);
+						break;
+					}
+
+					GDScriptParser::ExpressionNode *signal_arg_emitted = p_call->arguments[i];
+					PropertyInfo signal_param = signal_info.arguments[i - 1];
+					if (signal_arg_emitted->get_datatype().to_string_strict() != "Variant" && !is_type_compatible(type_from_property(signal_param), signal_arg_emitted->get_datatype())) {
+						push_error(vformat(R"*(Signal "%s" %s parameter is typed as "%s" not "%s".)*", signal_name, itos(i + 1), type_from_property(signal_param).to_string_strict(), signal_arg_emitted->get_datatype().to_string_strict()), p_call);
+					}
+				}
+			}
+		}
+	}
+#endif // DEBUG_ENABLED
+
 	int default_arg_count = 0;
 	BitField<MethodFlags> method_flags = {};
 	GDScriptParser::DataType return_type;
