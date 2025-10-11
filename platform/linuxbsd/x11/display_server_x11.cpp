@@ -3024,6 +3024,7 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled, boo
 	if (p_enabled) {
 		// Set the window as resizable to prevent window managers to ignore the fullscreen state flag.
 		_update_size_hints(p_window);
+		XMoveWindow(x11_display, wd.x11_window, 1, 1);
 	}
 
 	// Using EWMH -- Extended Window Manager Hints
@@ -3061,6 +3062,7 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled, boo
 	if (!p_enabled) {
 		// Reset the non-resizable flags if we un-set these before.
 		_update_size_hints(p_window);
+		XMoveWindow(x11_display, wd.x11_window, wd.position.x, wd.position.y);
 
 		// put back or remove decorations according to the last set borderless state
 		Hints hints;
