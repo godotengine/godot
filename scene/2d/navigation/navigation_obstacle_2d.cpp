@@ -369,8 +369,7 @@ void NavigationObstacle2D::navmesh_parse_source_geometry(const Ref<NavigationPol
 
 	if (obstacle_radius > 0.0) {
 		// Radius defined obstacle should be uniformly scaled from obstacle basis max scale axis.
-		const float scaling_max_value = safe_scale[safe_scale.max_axis_index()];
-		const Vector2 uniform_max_scale = Vector2(scaling_max_value, scaling_max_value);
+		const Vector2 uniform_max_scale = vec2_from_scalar((float)safe_scale[safe_scale.max_axis_index()]);
 		const Transform2D obstacle_circle_transform = p_source_geometry_data->root_node_transform * Transform2D(obstacle->get_global_rotation(), uniform_max_scale, 0.0, obstacle->get_global_position());
 
 		Vector<Vector2> obstruction_circle_vertices;

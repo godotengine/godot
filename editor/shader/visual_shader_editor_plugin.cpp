@@ -161,7 +161,7 @@ VSRerouteNode::VSRerouteNode() {
 	Label *title_lbl = Object::cast_to<Label>(get_titlebar_hbox()->get_child(0));
 	title_lbl->hide();
 
-	const Size2 size = Size2(32, 32) * EDSCALE;
+	const Size2 size = vec2_from_scalar(32 * EDSCALE);
 
 	Control *slot_area = memnew(Control);
 	slot_area->set_custom_minimum_size(size);
@@ -5595,7 +5595,7 @@ void VisualShaderEditor::_duplicate_nodes() {
 		return;
 	}
 
-	_dup_paste_nodes(type, items, node_connections, Vector2(10, 10) * EDSCALE, true);
+	_dup_paste_nodes(type, items, node_connections, vec2_from_scalar(10 * EDSCALE), true);
 }
 
 void VisualShaderEditor::_copy_nodes(bool p_cut) {
@@ -8386,7 +8386,7 @@ void VisualShaderNodePortPreview::setup(const Ref<VisualShader> &p_shader, Ref<S
 
 Size2 VisualShaderNodePortPreview::get_minimum_size() const {
 	int port_preview_size = EDITOR_GET("editors/visual_editors/visual_shader/port_preview_size");
-	return Size2(port_preview_size, port_preview_size) * EDSCALE;
+	return vec2_from_scalar(port_preview_size * EDSCALE);
 }
 
 void VisualShaderNodePortPreview::_notification(int p_what) {
