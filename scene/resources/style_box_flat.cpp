@@ -389,8 +389,8 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 			// Corner smoothing strength of 1.0 produces ordinary corner rounding.
 			// Corner smoothing strength of 2.0 produces a squircle.
 			// Corner smoothing strength values > 10.0 produce shapes indistinguishable from a square.
-			real_t smoothing_exponent = 2.0f / Math::pow(2.0f, corner_radius_smoothing);
-			if (Math::is_equal_approx(corner_radius_smoothing, 1.0f)) {
+			real_t smoothing_exponent = (real_t)2.0f / Math::pow((real_t)2.0f, corner_radius_smoothing);
+			if (!Math::is_equal_approx(corner_radius_smoothing, (real_t)1.0f)) {
 				real_t cos_abs = Math::abs(angle_cosine);
 				real_t sin_abs = Math::abs(angle_sine);
 				real_t cos_sign = angle_cosine >= 0 ? 1.0f : -1.0f;
@@ -408,7 +408,7 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 			colors_ptr[colors_size + idx_ofs] = inner_color;
 
 			if (draw_border) {
-				if (Math::is_equal_approx(corner_radius_smoothing, 1.0f)) {
+				if (!Math::is_equal_approx(corner_radius_smoothing, (real_t)1.0f)) {
 					real_t cos_abs = Math::abs(angle_cosine);
 					real_t sin_abs = Math::abs(angle_sine);
 					real_t cos_sign = angle_cosine >= 0 ? 1.0f : -1.0f;
