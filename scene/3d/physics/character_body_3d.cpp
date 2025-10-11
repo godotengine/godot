@@ -134,6 +134,32 @@ bool CharacterBody3D::move_and_slide() {
 	return motion_results.size() > 0;
 }
 
+bool CharacterBody3D::move_and_push() {
+	bool collided = move_and_slide();
+	if (collided) {
+		// Gets all colliders and checks if they are RigidBody3D.
+		for (int i = 0; i < get_slide_collision_count(); i++) {
+			const PhysicsServer3D::MotionResult &result = motion_results[i];
+			for (int j = 0; j < result.collision_count; j++) {
+				const PhysicsServer3D::MotionCollision &collision = result.collisions[j];
+				Object *collider_obj = ObjectDB::get_instance(collision.collider_id);
+				RigidBody3D *rigid_body = Object::cast_to<RigidBody3D>(collider_obj);
+				// Rigid body gets an impulse applied to it based on collision position and normal.
+				if (rigid_body) {
+					Ref<PhysicsMaterial> material = rigid_body->get_physics_material_override();
+					// Scale impulse by character's relative velocity multiplier.
+					Vector3 impulse = -collision.normal * (get_real_velocity() - collision.collider_velocity).length() * collision_push_multiplier;
+					if (!material.is_null()) {
+						impulse *= material->get_bounce();
+					}
+					rigid_body->apply_impulse(impulse);
+				}
+			}
+		}
+	}
+	return collided;
+}
+
 void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_floor) {
 	Vector3 motion = velocity * p_delta;
 	Vector3 motion_slide_up = motion.slide(up_direction);
@@ -863,8 +889,17 @@ void CharacterBody3D::_notification(int p_what) {
 	}
 }
 
+void CharacterBody3D::set_collision_push_multiplier(real_t p_multiplier) {
+	collision_push_multiplier = p_multiplier;
+}
+
+real_t CharacterBody3D::get_collision_push_multiplier() const {
+	return collision_push_multiplier;
+}
+
 void CharacterBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_slide"), &CharacterBody3D::move_and_slide);
+	ClassDB::bind_method(D_METHOD("move_and_push"), &CharacterBody3D::move_and_push);
 	ClassDB::bind_method(D_METHOD("apply_floor_snap"), &CharacterBody3D::apply_floor_snap);
 
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &CharacterBody3D::set_velocity);
@@ -900,6 +935,9 @@ void CharacterBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_motion_mode"), &CharacterBody3D::get_motion_mode);
 	ClassDB::bind_method(D_METHOD("set_platform_on_leave", "on_leave_apply_velocity"), &CharacterBody3D::set_platform_on_leave);
 	ClassDB::bind_method(D_METHOD("get_platform_on_leave"), &CharacterBody3D::get_platform_on_leave);
+
+	ClassDB::bind_method(D_METHOD("set_collision_push_multiplier", "multiplier"), &CharacterBody3D::set_collision_push_multiplier);
+	ClassDB::bind_method(D_METHOD("get_collision_push_multiplier"), &CharacterBody3D::get_collision_push_multiplier);
 
 	ClassDB::bind_method(D_METHOD("is_on_floor"), &CharacterBody3D::is_on_floor);
 	ClassDB::bind_method(D_METHOD("is_on_floor_only"), &CharacterBody3D::is_on_floor_only);
@@ -939,6 +977,7 @@ void CharacterBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_wall_layers", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_platform_wall_layers", "get_platform_wall_layers");
 
 	ADD_GROUP("Collision", "");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_push_multiplier", PROPERTY_HINT_NONE, "0.0,2.0,0.001,or_greater", PROPERTY_USAGE_DEFAULT), "set_collision_push_multiplier", "get_collision_push_multiplier");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001,suffix:m"), "set_safe_margin", "get_safe_margin");
 
 	BIND_ENUM_CONSTANT(MOTION_MODE_GROUNDED);
