@@ -310,14 +310,14 @@ inline void set_corner_scale(const Rect2 &style_rect, const Rect2 &inner_rect, c
 	}
 }
 
-void StyleBoxFlat::set_corner_radius_smoothing(float p_corner_radius_smoothing) {
+void StyleBoxFlat::set_corner_radius_smoothing(real_t p_corner_radius_smoothing) {
 	// Below corner_radius_smoothing 0.0 antialiasing and border_width break.
 	ERR_FAIL_COND_MSG(p_corner_radius_smoothing < 0.0 || p_corner_radius_smoothing > 10.0, "Corner smoothing strength must be between 0.0 and 10.0");
 	corner_radius_smoothing = CLAMP(p_corner_radius_smoothing, 0.0, 10.0);
 	emit_changed();
 }
 
-float StyleBoxFlat::get_corner_radius_smoothing() const {
+real_t StyleBoxFlat::get_corner_radius_smoothing() const {
 	return corner_radius_smoothing;
 }
 
