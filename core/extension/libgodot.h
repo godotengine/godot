@@ -53,9 +53,9 @@ extern "C" {
  * @param p_argv The C-style array of command line arguments.
  * @param p_init_func GDExtension initialization function of the host application.
  *
- * @return A pointer to created \ref GodotInstance GDExtension object or nullptr if there was an error.
+ * @return An instance ID of created \ref GodotInstance object or 0 if there was an error.
  */
-LIBGODOT_API GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func);
+LIBGODOT_API GDObjectInstanceID libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func);
 
 /**
  * @name libgodot_destroy_godot_instance
@@ -63,10 +63,10 @@ LIBGODOT_API GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, cha
  *
  * Destroys an existing Godot instance.
  *
- * @param p_godot_instance The reference to the GodotInstance object to destroy.
+ * @param p_godot_instance_id The instance ID of the \ref GodotInstance object to destroy.
  *
  */
-LIBGODOT_API void libgodot_destroy_godot_instance(GDExtensionObjectPtr p_godot_instance);
+LIBGODOT_API void libgodot_destroy_godot_instance(GDObjectInstanceID p_godot_instance_id);
 
 #ifdef __cplusplus
 }

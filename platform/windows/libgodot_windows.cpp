@@ -39,28 +39,28 @@ static OS_Windows *os = nullptr;
 
 static GodotInstance *instance = nullptr;
 
-GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func) {
-	ERR_FAIL_COND_V_MSG(instance != nullptr, nullptr, "Only one Godot Instance may be created at a time.");
+GDObjectInstanceID libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func) {
+	ERR_FAIL_COND_V_MSG(instance != nullptr, 0, "Only one Godot Instance may be created at a time.");
 
 	os = new OS_Windows(GetModuleHandle(nullptr));
 
 	Error err = Main::setup(p_argv[0], p_argc - 1, &p_argv[1], false);
 	if (err != OK) {
-		return nullptr;
+		return 0;
 	}
 
 	instance = memnew(GodotInstance);
 	if (!instance->initialize(p_init_func)) {
 		memdelete(instance);
 		instance = nullptr;
-		return nullptr;
+		return 0;
 	}
 
-	return (GDExtensionObjectPtr)instance;
+	return instance->get_instance_id();
 }
 
-void libgodot_destroy_godot_instance(GDExtensionObjectPtr p_godot_instance) {
-	GodotInstance *godot_instance = (GodotInstance *)p_godot_instance;
+void libgodot_destroy_godot_instance(GDObjectInstanceID p_godot_instance_id) {
+	GodotInstance *godot_instance = ObjectDB::get_instance<GodotInstance>(ObjectID(p_godot_instance_id));
 	if (instance == godot_instance) {
 		godot_instance->stop();
 		memdelete(godot_instance);
