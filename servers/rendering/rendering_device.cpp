@@ -46,6 +46,7 @@
 
 #define FORCE_SEPARATE_PRESENT_QUEUE 0
 #define PRINT_FRAMEBUFFER_FORMAT 0
+#define PRINT_PIPELINE_CREATION_TIME 0
 
 #define ERR_RENDER_THREAD_MSG String("This function (") + String(__func__) + String(") can only be called from the render thread. ")
 #define ERR_RENDER_THREAD_GUARD() ERR_FAIL_COND_MSG(render_thread_id != Thread::get_caller_id(), ERR_RENDER_THREAD_MSG);
@@ -4084,6 +4085,10 @@ RID RenderingDevice::render_pipeline_create(RID p_shader, FramebufferFormatID p_
 		}
 	}
 
+#if PRINT_PIPELINE_CREATION_TIME
+	uint64_t start_creation_time = OS::get_singleton()->get_ticks_usec();
+#endif
+
 	RenderPipeline pipeline;
 	pipeline.driver_id = driver->render_pipeline_create(
 			shader->driver_id,
@@ -4099,6 +4104,19 @@ RID RenderingDevice::render_pipeline_create(RID p_shader, FramebufferFormatID p_
 			p_for_render_pass,
 			p_specialization_constants);
 	ERR_FAIL_COND_V(!pipeline.driver_id, RID());
+
+#if PRINT_PIPELINE_CREATION_TIME
+	static Mutex total_creation_mutex;
+	static uint64_t total_creation_time[2] = {};
+	static uint64_t total_creation_count[2] = {};
+	uint32_t time_index = (p_specialization_constants.size() > 1 && p_specialization_constants[0].int_value != 0) ? 1 : 0;
+	total_creation_mutex.lock();
+	uint64_t creation_time = OS::get_singleton()->get_ticks_usec() - start_creation_time;
+	total_creation_time[time_index] += creation_time;
+	total_creation_count[time_index]++;
+	print_line("Created", time_index ? "specialized" : "regular", "pipeline in", creation_time, "us (Average", total_creation_time[time_index] / total_creation_count[time_index], "us).");
+	total_creation_mutex.unlock();
+#endif
 
 	if (pipeline_cache_enabled) {
 		_update_pipeline_cache();
