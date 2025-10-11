@@ -1183,6 +1183,52 @@ namespace Godot
             return Math.Log(linear) * 8.6858896380650365530225783783321;
         }
 
+        private const double LogSemitone = 0.05776226504666210911810267678818d;
+
+        /// <summary>
+        /// Converts from pitch scale multipliers to semitones.
+        /// </summary>
+        /// <seealso cref="SemitonesToPitchScale(double)"/>
+        /// <param name="scale">The pitch scale multiplier to convert to semitones.</param>
+        /// <returns>Number of semitones represented by scaling speed by the given scale factor.</returns>
+        public static double PitchScaleToSemitones(double scale)
+        {
+            return Math.Log(scale) / LogSemitone;
+        }
+
+        /// <summary>
+        /// Converts from pitch scale multipliers to semitones.
+        /// </summary>
+        /// <seealso cref="SemitonesToPitchScale(double)"/>
+        /// <param name="scale">The pitch scale multiplier to convert to semitones.</param>
+        /// <returns>Number of semitones represented by scaling speed by the given scale factor.</returns>
+        public static float PitchScaleToSemitones(float scale)
+        {
+            return MathF.Log(scale) / (float)LogSemitone;
+        }
+
+        /// <summary>
+        /// Converts from semitones to a pitch scale multiplier.
+        /// </summary>
+        /// <seealso cref="PitchScaleToSemitones(double)"/>
+        /// <param name="semitones">The number of semitones</param>
+        /// <returns>A number by which to scale the speed of a sample to achieve the given semitone distance.</returns>
+        public static double SemitonesToPitchScale(double semitones)
+        {
+            return Math.Exp(semitones * LogSemitone);
+        }
+
+        /// <summary>
+        /// Converts from semitones to a pitch scale multiplier.
+        /// </summary>
+        /// <seealso cref="PitchScaleToSemitones(double)"/>
+        /// <param name="semitones">The number of semitones</param>
+        /// <returns>A number by which to scale the speed of a sample to achieve the given semitone distance.</returns>
+        public static float SemitonesToPitchScale(float semitones)
+        {
+            return MathF.Exp(semitones * (float)LogSemitone);
+        }
+
         /// <summary>
         /// Natural logarithm. The amount of time needed to reach a certain level of continuous growth.
         ///
