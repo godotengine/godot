@@ -244,10 +244,10 @@ void main() {
 #CODE : SKY
 	}
 
-	color *= sky_energy_multiplier;
-
 	// Convert to Linear for tonemapping so color matches scene shader better
 	color = srgb_to_linear(color);
+
+	color *= sky_energy_multiplier;
 
 #if !defined(DISABLE_FOG) && !defined(USE_CUBEMAP_PASS)
 
@@ -269,10 +269,10 @@ void main() {
 #endif
 	color = linear_to_srgb(color);
 
+#ifdef USE_DEBANDING
+	color += interleaved_gradient_noise(gl_FragCoord.xy) * sky_energy_multiplier;
+#endif
+
 	frag_color.rgb = color * luminance_multiplier;
 	frag_color.a = alpha;
-
-#ifdef USE_DEBANDING
-	frag_color.rgb += interleaved_gradient_noise(gl_FragCoord.xy) * sky_energy_multiplier * luminance_multiplier;
-#endif
 }
