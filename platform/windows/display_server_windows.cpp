@@ -97,8 +97,6 @@
 
 #define WM_INDICATOR_CALLBACK_MESSAGE (WM_USER + 1)
 
-int constexpr FS_TRANSP_BORDER = 2;
-
 static String format_error_message(DWORD id) {
 	LPWSTR messageBuffer = nullptr;
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -170,6 +168,49 @@ String DisplayServerWindows::get_name() const {
 	return "Windows";
 }
 
+Vector2i _logical_to_physical(const Vector2i &p_point) {
+	POINT p1;
+	p1.x = p_point.x;
+	p1.y = p_point.y;
+	LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p1);
+	return Vector2i(p1.x, p1.y);
+}
+
+Vector2i DisplayServerWindows::_get_screen_expand_offset(int p_screen) const {
+	Vector2i p1 = _logical_to_physical(screen_get_position(p_screen));
+	Vector2i p2 = _logical_to_physical(screen_get_position(p_screen) + screen_get_size(p_screen));
+
+	int screen_down = -1;
+	int screen_right = -1;
+	for (int i = 0; i < get_screen_count(); i++) {
+		if (i == p_screen) {
+			continue;
+		}
+		Vector2i sp1 = _logical_to_physical(screen_get_position(i));
+		Vector2i sp2 = _logical_to_physical(screen_get_position(i) + screen_get_size(i));
+		if (sp1.y >= p2.y - 5 && sp1.y <= p2.y + 5 && sp1.x <= p2.x && p1.x <= sp2.x) {
+			screen_down = i;
+		}
+		if (sp1.x >= p2.x - 5 && sp1.x <= p2.x + 5 && sp1.y <= p2.y && p1.y <= sp2.y) {
+			screen_right = i;
+		}
+	}
+
+	if (screen_down == -1) {
+		return Vector2i(0, 2);
+	} else if (screen_right == -1) {
+		return Vector2i(2, 0);
+	} else {
+		int diff_d = screen_get_refresh_rate(p_screen) - screen_get_refresh_rate(screen_down);
+		int diff_r = screen_get_refresh_rate(p_screen) - screen_get_refresh_rate(screen_right);
+		if (diff_d < diff_r) {
+			return Vector2i(0, 2);
+		} else {
+			return Vector2i(2, 0);
+		}
+	}
+}
+
 void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 	if (p_mode == MOUSE_MODE_HIDDEN || p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		// Hide cursor before moving.
@@ -189,11 +230,12 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 
 		WindowData &wd = windows[window_id];
 
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(window_id)) : Vector2i();
 
 		RECT clipRect;
 		GetClientRect(wd.hWnd, &clipRect);
-		clipRect.right -= off_x;
+		clipRect.right -= off.x;
+		clipRect.bottom -= off.y;
 		ClientToScreen(wd.hWnd, (POINT *)&clipRect.left);
 		ClientToScreen(wd.hWnd, (POINT *)&clipRect.right);
 		ClipCursor(&clipRect);
@@ -2030,16 +2072,16 @@ void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_wi
 	if (wd.fullscreen) {
 		Point2 pos = screen_get_position(p_screen) + _get_screens_origin();
 		Size2 size = screen_get_size(p_screen);
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(p_screen) : Vector2i();
 
-		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off_x, size.height, TRUE);
+		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off.x, size.height + off.y, TRUE);
 	} else if (wd.maximized) {
 		Point2 pos = screen_get_position(p_screen) + _get_screens_origin();
 		Size2 size = screen_get_size(p_screen);
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(p_screen) : Vector2i();
 
 		ShowWindow(wd.hWnd, SW_RESTORE);
-		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off_x, size.height, TRUE);
+		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off.x, size.height + off.y, TRUE);
 		ShowWindow(wd.hWnd, SW_MAXIMIZE);
 	} else {
 		Rect2i srect = screen_get_usable_rect(p_screen);
@@ -2288,8 +2330,8 @@ Size2i DisplayServerWindows::window_get_size(WindowID p_window) const {
 
 	RECT r;
 	if (GetClientRect(wd.hWnd, &r)) { // Retrieves area inside of window border, including decoration.
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
-		return Size2(r.right - r.left - off_x, r.bottom - r.top);
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(p_window)) : Vector2i();
+		return Size2(r.right - r.left - off.x, r.bottom - r.top - off.y);
 	}
 	return Size2();
 }
@@ -2302,8 +2344,8 @@ Size2i DisplayServerWindows::window_get_size_with_decorations(WindowID p_window)
 
 	RECT r;
 	if (GetWindowRect(wd.hWnd, &r)) { // Retrieves area inside of window border, including decoration.
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
-		return Size2(r.right - r.left - off_x, r.bottom - r.top);
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(p_window)) : Vector2i();
+		return Size2(r.right - r.left - off.x, r.bottom - r.top - off.y);
 	}
 	return Size2();
 }
@@ -2413,8 +2455,8 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	if (p_repaint) {
 		RECT rect;
 		GetWindowRect(wd.hWnd, &rect);
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
-		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left + off_x, rect.bottom - rect.top, TRUE);
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(p_window)) : Vector2i();
+		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left + off.x, rect.bottom - rect.top - off.y, TRUE);
 	}
 }
 
@@ -2553,8 +2595,8 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 
 		_update_window_style(p_window, false);
 
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
-		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off_x, size.height, TRUE);
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(cs) : Vector2i();
+		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off.x, size.height + off.y, TRUE);
 
 		// If the user has mouse trails enabled in windows, then sometimes the cursor disappears in fullscreen mode.
 		// Save number of trails so we can restore when exiting, then turn off mouse trails
@@ -5739,7 +5781,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_WINDOWPOSCHANGED: {
 			WindowData &window = windows[window_id];
 
-			int off_x = (window.multiwindow_fs || (!window.fullscreen && window.borderless && IsZoomed(hWnd))) ? FS_TRANSP_BORDER : 0;
+			Vector2i off = (window.multiwindow_fs || (!window.fullscreen && window.borderless && window.maximized)) ? _get_screen_expand_offset(window_get_current_screen(window_id)) : Vector2i();
 			Rect2i window_client_rect;
 			Rect2i window_rect;
 			{
@@ -5747,12 +5789,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				GetClientRect(hWnd, &rect);
 				ClientToScreen(hWnd, (POINT *)&rect.left);
 				ClientToScreen(hWnd, (POINT *)&rect.right);
-				window_client_rect = Rect2i(rect.left, rect.top, rect.right - rect.left - off_x, rect.bottom - rect.top);
+				window_client_rect = Rect2i(rect.left, rect.top, rect.right - rect.left - off.x, rect.bottom - rect.top - off.y);
 				window_client_rect.position -= _get_screens_origin();
 
 				RECT wrect;
 				GetWindowRect(hWnd, &wrect);
-				window_rect = Rect2i(wrect.left, wrect.top, wrect.right - wrect.left - off_x, wrect.bottom - wrect.top);
+				window_rect = Rect2i(wrect.left, wrect.top, wrect.right - wrect.left - off.x, wrect.bottom - wrect.top - off.y);
 				window_rect.position -= _get_screens_origin();
 			}
 
@@ -5833,7 +5875,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 					RECT crect;
 					GetClientRect(window.hWnd, &crect);
-					crect.right -= off_x;
+					crect.right -= off.x;
+					crect.bottom -= off.y;
 					ClientToScreen(window.hWnd, (POINT *)&crect.left);
 					ClientToScreen(window.hWnd, (POINT *)&crect.right);
 					ClipCursor(&crect);
@@ -6330,21 +6373,21 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 	RECT WindowRect;
 
-	int off_x = (p_mode == WINDOW_MODE_FULLSCREEN || ((p_flags & WINDOW_FLAG_BORDERLESS_BIT) && p_mode == WINDOW_MODE_MAXIMIZED)) ? FS_TRANSP_BORDER : 0;
+	Vector2i off = (p_mode == WINDOW_MODE_FULLSCREEN || ((p_flags & WINDOW_FLAG_BORDERLESS_BIT) && p_mode == WINDOW_MODE_MAXIMIZED)) ? _get_screen_expand_offset(rq_screen) : Vector2i();
 
 	WindowRect.left = p_rect.position.x;
-	WindowRect.right = p_rect.position.x + p_rect.size.x + off_x;
+	WindowRect.right = p_rect.position.x + p_rect.size.x + off.x;
 	WindowRect.top = p_rect.position.y;
-	WindowRect.bottom = p_rect.position.y + p_rect.size.y;
+	WindowRect.bottom = p_rect.position.y + p_rect.size.y + off.y;
 
 	if (!p_parent_hwnd) {
 		if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 			Rect2i screen_rect = Rect2i(screen_get_position(rq_screen), screen_get_size(rq_screen));
 
 			WindowRect.left = screen_rect.position.x;
-			WindowRect.right = screen_rect.position.x + screen_rect.size.x + off_x;
+			WindowRect.right = screen_rect.position.x + screen_rect.size.x + off.x;
 			WindowRect.top = screen_rect.position.y;
-			WindowRect.bottom = screen_rect.position.y + screen_rect.size.y;
+			WindowRect.bottom = screen_rect.position.y + screen_rect.size.y + off.y;
 		} else {
 			Rect2i srect = screen_get_usable_rect(rq_screen);
 			Point2i wpos = p_rect.position;
@@ -6353,9 +6396,9 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			}
 
 			WindowRect.left = wpos.x;
-			WindowRect.right = wpos.x + p_rect.size.x + off_x;
+			WindowRect.right = wpos.x + p_rect.size.x + off.x;
 			WindowRect.top = wpos.y;
-			WindowRect.bottom = wpos.y + p_rect.size.y;
+			WindowRect.bottom = wpos.y + p_rect.size.y + off.y;
 		}
 	}
 
@@ -6492,7 +6535,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				return INVALID_WINDOW_ID;
 			}
 
-			rendering_context->window_set_size(id, real_client_rect.right - real_client_rect.left - off_x, real_client_rect.bottom - real_client_rect.top);
+			rendering_context->window_set_size(id, real_client_rect.right - real_client_rect.left - off.x, real_client_rect.bottom - real_client_rect.top - off.y);
 			rendering_context->window_set_vsync_mode(id, p_vsync_mode);
 			wd.context_created = true;
 		}
@@ -6500,7 +6543,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 #ifdef GLES3_ENABLED
 		if (gl_manager_native) {
-			if (gl_manager_native->window_create(id, wd.hWnd, hInstance, real_client_rect.right - real_client_rect.left - off_x, real_client_rect.bottom - real_client_rect.top) != OK) {
+			if (gl_manager_native->window_create(id, wd.hWnd, hInstance, real_client_rect.right - real_client_rect.left - off.x, real_client_rect.bottom - real_client_rect.top - off.y) != OK) {
 				memdelete(gl_manager_native);
 				gl_manager_native = nullptr;
 				windows.erase(id);
@@ -6510,7 +6553,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		}
 
 		if (gl_manager_angle) {
-			if (gl_manager_angle->window_create(id, nullptr, wd.hWnd, real_client_rect.right - real_client_rect.left - off_x, real_client_rect.bottom - real_client_rect.top) != OK) {
+			if (gl_manager_angle->window_create(id, nullptr, wd.hWnd, real_client_rect.right - real_client_rect.left - off.x, real_client_rect.bottom - real_client_rect.top - off.y) != OK) {
 				memdelete(gl_manager_angle);
 				gl_manager_angle = nullptr;
 				windows.erase(id);
@@ -6605,8 +6648,8 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			ClientToScreen(wd.hWnd, (POINT *)&r.left);
 			ClientToScreen(wd.hWnd, (POINT *)&r.right);
 			wd.last_pos = Point2i(r.left, r.top) - _get_screens_origin();
-			wd.width = r.right - r.left - off_x;
-			wd.height = r.bottom - r.top;
+			wd.width = r.right - r.left - off.x;
+			wd.height = r.bottom - r.top - off.y;
 		} else {
 			wd.last_pos = p_rect.position;
 			wd.width = p_rect.size.width;
@@ -6616,7 +6659,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		wd.create_completed = true;
 		// Set size of maximized borderless window (by default it covers the entire screen).
 		if (!p_parent_hwnd && p_mode == WINDOW_MODE_MAXIMIZED && (p_flags & WINDOW_FLAG_BORDERLESS_BIT)) {
-			SetWindowPos(wd.hWnd, HWND_TOP, usable_rect.position.x - off_x, usable_rect.position.y, usable_rect.size.width + off_x, usable_rect.size.height, SWP_NOZORDER | SWP_NOACTIVATE);
+			SetWindowPos(wd.hWnd, HWND_TOP, usable_rect.position.x - off.x, usable_rect.position.y - off.y, usable_rect.size.width + off.x, usable_rect.size.height + off.y, SWP_NOZORDER | SWP_NOACTIVATE);
 		}
 		_update_window_mouse_passthrough(id);
 		window_id_counter++;
