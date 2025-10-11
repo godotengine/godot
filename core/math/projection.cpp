@@ -934,6 +934,28 @@ void Projection::add_jitter_offset(const Vector2 &p_offset) {
 	columns[3][1] += p_offset.y;
 }
 
+void Projection::project_origin_and_ray(const Vector2 &p_screen_pos, const Vector2 &p_screen_size, Vector3 &r_origin, Vector3 &r_ray) const {
+	// Use full matrix.
+	Projection inv_cm = inverse();
+
+	// Clip-Space point in near plane.
+	Vector4 clip_near(
+			(2.0 * p_screen_pos.x) / p_screen_size.width - 1.0,
+			1.0 - (2.0 * p_screen_pos.y) / p_screen_size.height,
+			-1.0, // Near plane in OpenGL clip space.
+			1.0);
+
+	Vector4 view_near = inv_cm.xform(clip_near);
+	r_origin = Vector3(view_near.x, view_near.y, view_near.z) / view_near.w;
+
+	Vector4 clip_adv = clip_near;
+	clip_adv.z = 1.0;
+
+	Vector4 view_adv = inv_cm.xform(clip_adv);
+	Vector3 point_adv = Vector3(view_adv.x, view_adv.y, view_adv.z) / view_adv.w;
+	r_ray = (point_adv - r_origin).normalized();
+}
+
 Projection::operator Transform3D() const {
 	Transform3D tr;
 	const real_t *m = &columns[0][0];
