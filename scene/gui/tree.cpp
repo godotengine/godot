@@ -2008,7 +2008,8 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 	for (int i = 0; i < columns.size(); i++) {
 		height = MAX(height, p_item->get_minimum_size(i).y);
 	}
-	int item_min_height = MAX(theme_cache.font->get_height(theme_cache.font_size), p_item->get_custom_minimum_height());
+	int font_height = cache.font_height != -1 ? cache.font_height : theme_cache.font->get_height(theme_cache.font_size);
+	int item_min_height = MAX(font_height, p_item->get_custom_minimum_height());
 	if (height < item_min_height) {
 		height = item_min_height;
 	}
@@ -5108,6 +5109,7 @@ void Tree::_update_all() {
 	if (root) {
 		update_item_cache(root);
 	}
+	cache.font_height = theme_cache.font->get_height(theme_cache.font_size);
 }
 
 Size2 Tree::get_minimum_size() const {
