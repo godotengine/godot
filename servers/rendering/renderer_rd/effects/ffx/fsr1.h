@@ -34,8 +34,8 @@
 #include "servers/rendering/renderer_rd/shaders/effects/ffx/fsr1/fsr1_rcas_pass.glsl.gen.h"
 
 #include "ffx_common.h"
-#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/renderer_rd/effects/spatial_upscaler.h"
+#include "servers/rendering/rendering_server.h"
 
 #include "thirdparty/amd-ffx/ffx_fsr1.h"
 
@@ -66,4 +66,4 @@ private:
 		Fsr1RcasPassShaderRD rcas;
 	} shaders;
 };
-}
+} //namespace RendererRD

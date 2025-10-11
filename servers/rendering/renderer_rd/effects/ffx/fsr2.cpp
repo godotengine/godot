@@ -45,7 +45,7 @@ FSR2Context::~FSR2Context() {
 }
 
 FSR2Effect::FSR2Effect() {
-	FFXCommonContext::Device& device = FFXCommonContext::get_singleton()->device;
+	FFXCommonContext::Device &device = FFXCommonContext::get_singleton()->device;
 	FfxDeviceCapabilities &capabilities = device.capabilities;
 
 	String general_defines =
@@ -304,7 +304,7 @@ FSR2Effect::FSR2Effect() {
 }
 
 FSR2Effect::~FSR2Effect() {
-	FFXCommonContext::Device& device = FFXCommonContext::get_singleton()->device;
+	FFXCommonContext::Device &device = FFXCommonContext::get_singleton()->device;
 
 	for (uint32_t i = 0; i < FFX_FSR2_PASS_COUNT; i++) {
 		device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[i].shader->version_free(device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[i].shader_version);

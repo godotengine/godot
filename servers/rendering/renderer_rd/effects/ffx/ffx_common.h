@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/renderer_rd/shader_rd.h"
+#include "servers/rendering/rendering_server.h"
 #include "thirdparty/amd-ffx/ffx_interface.h"
 
 #define FFX_UBO_RING_BUFFER_SIZE 144
@@ -139,7 +139,7 @@ public:
 		RID ubo_ring_buffer[FFX_UBO_RING_BUFFER_SIZE];
 		uint32_t ubo_ring_buffer_index = 0;
 		// Staging buffer for constant buffer data.
-		uint8_t* staging_constant_buffer;
+		uint8_t *staging_constant_buffer;
 		size_t staging_constant_buffer_base = 0;
 		// Pointer to the device common to all contexts.
 		// Static functions cannot access class members, so we store it here.
@@ -149,8 +149,8 @@ public:
 	Scratch scratch;
 
 	void init_device();
-	void create_ffx_interface(FfxInterface* p_interface);
-	EffectContext& get_effect_context(uint32_t p_effect);
+	void create_ffx_interface(FfxInterface *p_interface);
+	EffectContext &get_effect_context(uint32_t p_effect);
 
 	static FfxResource get_resource_rd(RID *p_rid, const wchar_t *p_name);
 	static RD::TextureType ffx_resource_type_to_rd_texture_type(FfxResourceType p_type);
@@ -173,6 +173,7 @@ public:
 	}
 
 	~FFXCommonContext();
+
 private:
 	static FFXCommonContext *singleton;
 };
