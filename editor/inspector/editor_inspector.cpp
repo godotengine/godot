@@ -1758,7 +1758,7 @@ Size2 EditorInspectorCategory::get_minimum_size() const {
 	return ms;
 }
 
-void EditorInspectorCategory::_collect_properties(const Object *p_object, Vector<String> &out_properties) const {
+void EditorInspectorCategory::_collect_properties(const Object *p_object, Vector<String> &p_properties) const {
 	List<PropertyInfo> property_list;
 	p_object->get_property_list(&property_list, true);
 
@@ -1778,7 +1778,7 @@ void EditorInspectorCategory::_collect_properties(const Object *p_object, Vector
 			continue;
 		}
 
-		out_properties.push_back(prop_info.name);
+		p_properties.push_back(prop_info.name);
 	}
 }
 
@@ -2528,7 +2528,7 @@ void EditorInspectorSection::_update_popup() {
 	menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("property_editor/paste_group_values"), MENU_PASTE_VALUE);
 }
 
-void EditorInspectorSection::_collect_properties(Vector<String> &out_properties) const {
+void EditorInspectorSection::_collect_properties(Vector<String> &p_properties) const {
 	List<PropertyInfo> property_list;
 	object->get_property_list(&property_list, true);
 
@@ -2560,7 +2560,7 @@ void EditorInspectorSection::_collect_properties(Vector<String> &out_properties)
 			}
 		}
 
-		out_properties.push_back(prop_info.name);
+		p_properties.push_back(prop_info.name);
 	}
 }
 
