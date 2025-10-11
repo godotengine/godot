@@ -371,7 +371,10 @@ String ResourceFormatImporter::get_import_group_file(const String &p_path) const
 	bool valid = true;
 	PathAndType pat;
 	_get_path_and_type(p_path, pat, false, &valid);
-	return valid ? pat.group_file : String();
+	if (valid) {
+		return pat.group_file;
+	}
+	return String();
 }
 
 bool ResourceFormatImporter::is_import_valid(const String &p_path) const {
