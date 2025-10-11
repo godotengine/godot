@@ -184,6 +184,25 @@ gen_hash = env.CommandNoCache(
 )
 env.add_source_files(env.core_sources, gen_hash)
 
+# Generate buildsystem info
+gen_buildsystem_info = env.CommandNoCache(
+    "buildsystem.gen.h",
+    env.Value(
+        [
+            os.name,
+            env.using_gcc,
+            env.using_clang,
+            env.is_apple_clang,
+            env.msvc,
+            env.using_emcc,
+            env.compiler_version,
+            env["optimize"],
+            env["lto"],
+        ]
+    ),
+    env.Run(core_builders.buildsystem_info_builder),
+)
+
 # Generate AES256 script encryption key
 encryption_key = os.environ.get("SCRIPT_AES256_ENCRYPTION_KEY")
 if encryption_key:
