@@ -37,6 +37,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/templates/fixed_vector.h"
 #include "modules/modules_enabled.gen.h"
 #include "servers/rendering/rendering_shader_container.h"
 
@@ -1987,24 +1988,31 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 		// Does not need anything fancy, map and read.
 		return _texture_get_data(tex, p_layer);
 	} else {
-		LocalVector<RDD::TextureCopyableLayout> mip_layouts;
-		uint32_t work_mip_alignment = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT);
-		uint32_t work_buffer_size = 0;
-		mip_layouts.resize(tex->mipmaps);
+		// Calculate buffer layout directly - command_copy_texture_to_buffer copies tightly packed data.
+		uint32_t buffer_size = get_image_format_required_size(tex->format, tex->width, tex->height, tex->depth, tex->mipmaps);
+		uint32_t mip_alignment = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT);
+
+		// 20 mipmaps gives us a max texture width of 1048576 pixels. gpuinfo.org lists 65536 as the max for a few devices.
+		FixedVector<uint32_t, 20> mip_offsets;
+		mip_offsets.clear();
+		mip_offsets.resize_uninitialized(tex->mipmaps);
+
+		// Calculate aligned offsets for each mipmap.
+		uint64_t offset = 0;
 		for (uint32_t i = 0; i < tex->mipmaps; i++) {
-			RDD::TextureSubresource subres;
-			subres.aspect = RDD::TEXTURE_ASPECT_COLOR;
-			subres.layer = p_layer;
-			subres.mipmap = i;
-			driver->texture_get_copyable_layout(tex->driver_id, subres, &mip_layouts[i]);
-
-			// Assuming layers are tightly packed. If this is not true on some driver, we must modify the copy algorithm.
-			DEV_ASSERT(mip_layouts[i].layer_pitch == mip_layouts[i].size / tex->layers);
-
-			work_buffer_size = STEPIFY(work_buffer_size, work_mip_alignment) + mip_layouts[i].size;
+			mip_offsets[i] = offset;
+			uint32_t mip_w = MAX(1u, tex->width >> i);
+			uint32_t mip_h = MAX(1u, tex->height >> i);
+			uint32_t mip_d = MAX(1u, tex->depth >> i);
+			uint32_t mip_size = get_image_format_required_size(tex->format, mip_w, mip_h, mip_d, 1);
+			offset += mip_size;
+			// Align offset for next mipmap.
+			if (i + 1 < tex->mipmaps) {
+				offset = STEPIFY(offset, mip_alignment);
+			}
 		}
 
-		RDD::BufferID tmp_buffer = driver->buffer_create(work_buffer_size, RDD::BUFFER_USAGE_TRANSFER_TO_BIT, RDD::MEMORY_ALLOCATION_TYPE_CPU);
+		RDD::BufferID tmp_buffer = driver->buffer_create(offset, RDD::BUFFER_USAGE_TRANSFER_TO_BIT, RDD::MEMORY_ALLOCATION_TYPE_CPU);
 		ERR_FAIL_COND_V(!tmp_buffer, Vector<uint8_t>());
 
 		thread_local LocalVector<RDD::BufferTextureCopyRegion> command_buffer_texture_copy_regions_vector;
@@ -2015,7 +2023,7 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 		uint32_t d = tex->depth;
 		for (uint32_t i = 0; i < tex->mipmaps; i++) {
 			RDD::BufferTextureCopyRegion copy_region;
-			copy_region.buffer_offset = mip_layouts[i].offset;
+			copy_region.buffer_offset = mip_offsets[i];
 			copy_region.texture_subresources.aspect = tex->read_aspect_flags;
 			copy_region.texture_subresources.mipmap = i;
 			copy_region.texture_subresources.base_layer = p_layer;
@@ -2043,38 +2051,18 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 		const uint8_t *read_ptr = driver->buffer_map(tmp_buffer);
 		ERR_FAIL_NULL_V(read_ptr, Vector<uint8_t>());
 
-		uint32_t block_w = 0;
-		uint32_t block_h = 0;
-		get_compressed_image_format_block_dimensions(tex->format, block_w, block_h);
-
+		// Data is tightly packed in the buffer, just copy it.
 		Vector<uint8_t> buffer_data;
-		uint32_t tight_buffer_size = get_image_format_required_size(tex->format, tex->width, tex->height, tex->depth, tex->mipmaps);
-		buffer_data.resize(tight_buffer_size);
-
+		buffer_data.resize(buffer_size);
 		uint8_t *write_ptr = buffer_data.ptrw();
 
-		w = tex->width;
-		h = tex->height;
-		d = tex->depth;
 		for (uint32_t i = 0; i < tex->mipmaps; i++) {
-			uint32_t width = 0, height = 0, depth = 0;
-			uint32_t tight_mip_size = get_image_format_required_size(tex->format, w, h, d, 1, &width, &height, &depth);
-			uint32_t tight_row_pitch = tight_mip_size / ((height / block_h) * depth);
-
-			// Copy row-by-row to erase padding due to alignments.
-			const uint8_t *rp = read_ptr;
-			uint8_t *wp = write_ptr;
-			for (uint32_t row = h * d / block_h; row != 0; row--) {
-				memcpy(wp, rp, tight_row_pitch);
-				rp += mip_layouts[i].row_pitch;
-				wp += tight_row_pitch;
-			}
-
-			w = MAX(block_w, w >> 1);
-			h = MAX(block_h, h >> 1);
-			d = MAX(1u, d >> 1);
-			read_ptr += mip_layouts[i].size;
-			write_ptr += tight_mip_size;
+			uint32_t mip_w = MAX(1u, tex->width >> i);
+			uint32_t mip_h = MAX(1u, tex->height >> i);
+			uint32_t mip_d = MAX(1u, tex->depth >> i);
+			uint32_t mip_size = get_image_format_required_size(tex->format, mip_w, mip_h, mip_d, 1);
+			memcpy(write_ptr, read_ptr + mip_offsets[i], mip_size);
+			write_ptr += mip_size;
 		}
 
 		driver->buffer_unmap(tmp_buffer);
