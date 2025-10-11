@@ -863,6 +863,15 @@ use_script:
 	return scr.is_valid() && scr->is_valid() && scr->is_abstract();
 }
 
+bool ClassDB::is_gdextension(const StringName &p_class) {
+	Locker::Lock lock(Locker::STATE_READ);
+	ClassInfo *ti = classes.getptr(p_class);
+	if (ti) {
+		return ti->gdextension;
+	}
+	return false;
+}
+
 void ClassDB::_add_class(GDType &p_class, const GDType *p_inherits) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 
