@@ -32,6 +32,7 @@
 
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/script_editor_debugger.h"
+#include "editor/editor_string_names.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/line_edit.h"
@@ -75,8 +76,7 @@ void EditorExpressionEvaluator::_clear() {
 }
 
 void EditorExpressionEvaluator::_remote_object_selected(ObjectID p_id) {
-	Array arr = { p_id };
-	editor_debugger->emit_signal(SNAME("remote_objects_requested"), arr);
+	editor_debugger->emit_signal(SNAME("remote_objects_requested"), Array{ p_id });
 }
 
 void EditorExpressionEvaluator::_on_expression_input_changed(const String &p_expression) {
@@ -98,6 +98,10 @@ void EditorExpressionEvaluator::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			EditorDebuggerNode::get_singleton()->connect("breaked", callable_mp(this, &EditorExpressionEvaluator::_on_debugger_breaked));
 			EditorDebuggerNode::get_singleton()->connect("clear_execution", callable_mp(this, &EditorExpressionEvaluator::_on_debugger_clear_execution));
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			expression_input->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("expression"), EditorStringName(EditorFonts)));
+			expression_input->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts)));
 		} break;
 	}
 }

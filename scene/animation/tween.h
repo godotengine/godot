@@ -111,7 +111,8 @@ private:
 	ObjectID bound_node;
 
 	SceneTree *parent_tree = nullptr;
-	Vector<List<Ref<Tweener>>> tweeners;
+	LocalVector<List<Ref<Tweener>>> tweeners;
+	LocalVector<Ref<Tween>> subtweens;
 	double total_time = 0;
 	int current_step = -1;
 	int loops = 1;

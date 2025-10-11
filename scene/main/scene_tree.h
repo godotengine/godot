@@ -35,10 +35,11 @@
 #include "core/templates/paged_allocator.h"
 #include "core/templates/self_list.h"
 #include "scene/main/scene_tree_fti.h"
-#include "scene/resources/mesh.h"
+#include "servers/display/display_server.h"
 
 #undef Window
 
+class ArrayMesh;
 class PackedScene;
 class Node;
 #ifndef _3D_DISABLED

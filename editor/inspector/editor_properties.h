@@ -134,6 +134,7 @@ class EditorPropertyTextEnum : public EditorProperty {
 	Button *cancel_button = nullptr;
 
 	Vector<String> options;
+	Vector<String> option_names;
 	bool string_name = false;
 	bool loose_mode = false;
 
@@ -150,7 +151,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void setup(const Vector<String> &p_options, bool p_string_name = false, bool p_loose_mode = false);
+	void setup(const Vector<String> &p_options, const Vector<String> &p_option_names = {}, bool p_string_name = false, bool p_loose_mode = false);
 	virtual void update_property() override;
 	EditorPropertyTextEnum();
 };
@@ -370,7 +371,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_hide_slider, bool p_allow_greater, bool p_allow_lesser, const String &p_suffix = String());
+	void setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_prefer_slider, bool p_hide_control, bool p_allow_greater, bool p_allow_lesser, const String &p_suffix = String());
 	EditorPropertyInteger();
 };
 
@@ -421,7 +422,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix = String(), bool p_radians_as_degrees = false);
+	void setup(double p_min, double p_max, double p_step, bool p_hide_control, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix = String(), bool p_radians_as_degrees = false);
 	EditorPropertyFloat();
 };
 
@@ -477,7 +478,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, double p_step, bool p_hide_control, const String &p_suffix = String());
 	EditorPropertyRect2(bool p_force_wide = false);
 };
 
@@ -507,7 +508,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, double p_step, bool p_hide_control, const String &p_suffix = String());
 	EditorPropertyPlane(bool p_force_wide = false);
 };
 
@@ -539,7 +540,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix = String(), bool p_hide_editor = false);
+	void setup(double p_min, double p_max, double p_step, bool p_hide_control, const String &p_suffix = String(), bool p_hide_editor = false);
 	EditorPropertyQuaternion();
 };
 
@@ -554,7 +555,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, double p_step, bool p_hide_control, const String &p_suffix = String());
 	EditorPropertyAABB();
 };
 
@@ -569,7 +570,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, double p_step, bool p_hide_control, const String &p_suffix = String());
 	EditorPropertyTransform2D(bool p_include_origin = true);
 };
 
@@ -584,7 +585,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, double p_step, bool p_hide_control, const String &p_suffix = String());
 	EditorPropertyBasis();
 };
 
@@ -600,7 +601,7 @@ protected:
 public:
 	virtual void update_property() override;
 	virtual void update_using_transform(Transform3D p_transform);
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, double p_step, bool p_hide_control, const String &p_suffix = String());
 	EditorPropertyTransform3D();
 };
 
@@ -616,7 +617,7 @@ protected:
 public:
 	virtual void update_property() override;
 	virtual void update_using_transform(Projection p_transform);
-	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, double p_step, bool p_hide_control, const String &p_suffix = String());
 	EditorPropertyProjection();
 };
 

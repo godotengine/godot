@@ -214,7 +214,7 @@ License: Apache-2.0
 
 Files: thirdparty/basis_universal/*
 Comment: Basis Universal
-Copyright: 2019-2024, Binomial LLC.
+Copyright: 2019-2025, Binomial LLC.
 License: Apache-2.0
 
 Files: thirdparty/brotli/*
@@ -555,7 +555,7 @@ License: Zlib
 Files: thirdparty/sdl/hidapi/*
 Comment: hidapi
 Copyright: 2010, Alan Ott, Signal 11 Software
-License: BSD-3-Clause
+License: BSD-3-clause
 
 Files: thirdparty/spirv-cross/*
 Comment: SPIRV-Cross

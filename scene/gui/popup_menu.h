@@ -37,6 +37,7 @@
 #include "scene/resources/text_line.h"
 
 class PanelContainer;
+class Timer;
 
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);

@@ -38,6 +38,8 @@
 #include <ws2tcpip.h>
 
 class NetSocketWinSock : public NetSocket {
+	GDSOFTCLASS(NetSocketWinSock, NetSocket);
+
 private:
 	SOCKET _sock = INVALID_SOCKET;
 	IP::Type _ip_type = IP::TYPE_NONE;
@@ -68,21 +70,21 @@ public:
 	static void _set_ip_port(struct sockaddr_storage *p_addr, IPAddress *r_ip, uint16_t *r_port);
 	static size_t _set_addr_storage(struct sockaddr_storage *p_addr, const IPAddress &p_ip, uint16_t p_port, IP::Type p_ip_type);
 
-	virtual Error open(Type p_sock_type, IP::Type &ip_type) override;
+	virtual Error open(Family p_family, Type p_sock_type, IP::Type &ip_type) override;
 	virtual void close() override;
-	virtual Error bind(IPAddress p_addr, uint16_t p_port) override;
+	virtual Error bind(Address p_addr) override;
 	virtual Error listen(int p_max_pending) override;
-	virtual Error connect_to_host(IPAddress p_host, uint16_t p_port) override;
+	virtual Error connect_to_host(Address p_addr) override;
 	virtual Error poll(PollType p_type, int timeout) const override;
 	virtual Error recv(uint8_t *p_buffer, int p_len, int &r_read) override;
 	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IPAddress &r_ip, uint16_t &r_port, bool p_peek = false) override;
 	virtual Error send(const uint8_t *p_buffer, int p_len, int &r_sent) override;
 	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IPAddress p_ip, uint16_t p_port) override;
-	virtual Ref<NetSocket> accept(IPAddress &r_ip, uint16_t &r_port) override;
+	virtual Ref<NetSocket> accept(Address &r_addr) override;
 
 	virtual bool is_open() const override;
 	virtual int get_available_bytes() const override;
-	virtual Error get_socket_address(IPAddress *r_ip, uint16_t *r_port) const override;
+	virtual Error get_socket_address(Address *r_addr) const override;
 
 	virtual Error set_broadcasting_enabled(bool p_enabled) override;
 	virtual void set_blocking_enabled(bool p_enabled) override;

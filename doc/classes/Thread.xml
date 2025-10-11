@@ -30,6 +30,13 @@
 				To check if a [Thread] is joinable, use [method is_started].
 			</description>
 		</method>
+		<method name="is_main_thread" qualifiers="static">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the thread this method was called from is the main thread.
+				[b]Note:[/b] This is a static method and isn't associated with a specific [Thread] object.
+			</description>
+		</method>
 		<method name="is_started" qualifiers="const">
 			<return type="bool" />
 			<description>

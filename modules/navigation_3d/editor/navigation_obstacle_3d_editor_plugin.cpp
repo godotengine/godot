@@ -39,7 +39,7 @@
 #include "scene/3d/navigation/navigation_obstacle_3d.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 bool NavigationObstacle3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
 	return Object::cast_to<NavigationObstacle3D>(p_spatial) != nullptr;
@@ -882,20 +882,20 @@ NavigationObstacle3DEditorPlugin::~NavigationObstacle3DEditorPlugin() {
 	ERR_FAIL_NULL(rs);
 
 	if (point_lines_instance_rid.is_valid()) {
-		rs->free(point_lines_instance_rid);
+		rs->free_rid(point_lines_instance_rid);
 		point_lines_instance_rid = RID();
 	}
 	if (point_lines_mesh_rid.is_valid()) {
-		rs->free(point_lines_mesh_rid);
+		rs->free_rid(point_lines_mesh_rid);
 		point_lines_mesh_rid = RID();
 	}
 
 	if (point_handles_instance_rid.is_valid()) {
-		rs->free(point_handles_instance_rid);
+		rs->free_rid(point_handles_instance_rid);
 		point_handles_instance_rid = RID();
 	}
 	if (point_handle_mesh_rid.is_valid()) {
-		rs->free(point_handle_mesh_rid);
+		rs->free_rid(point_handle_mesh_rid);
 		point_handle_mesh_rid = RID();
 	}
 }

@@ -36,8 +36,10 @@
 #include "wgl_detect_version.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/xml_parser.h"
+#include "core/os/main_loop.h"
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
@@ -6642,7 +6644,80 @@ GetImmersiveColorFromColorSetExPtr DisplayServerWindows::GetImmersiveColorFromCo
 GetImmersiveColorTypeFromNamePtr DisplayServerWindows::GetImmersiveColorTypeFromName = nullptr;
 GetImmersiveUserColorSetPreferencePtr DisplayServerWindows::GetImmersiveUserColorSetPreference = nullptr;
 
-Vector2i _get_device_ids(const String &p_device_name) {
+Vector2i _get_device_ids_reg(const String &p_device_name) {
+	Vector2i out;
+
+	String subkey = "SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}";
+	HKEY hkey = nullptr;
+	LSTATUS result = RegOpenKeyExW(HKEY_LOCAL_MACHINE, (LPCWSTR)subkey.utf16().get_data(), 0, KEY_READ, &hkey);
+	if (result != ERROR_SUCCESS) {
+		return Vector2i();
+	}
+
+	DWORD subkeys = 0;
+	result = RegQueryInfoKeyW(hkey, nullptr, nullptr, nullptr, &subkeys, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+	if (result != ERROR_SUCCESS) {
+		RegCloseKey(hkey);
+		return Vector2i();
+	}
+	for (DWORD i = 0; i < subkeys; i++) {
+		WCHAR key_name[MAX_PATH] = L"";
+		DWORD key_name_size = MAX_PATH;
+		result = RegEnumKeyExW(hkey, i, key_name, &key_name_size, nullptr, nullptr, nullptr, nullptr);
+		if (result != ERROR_SUCCESS) {
+			continue;
+		}
+		String id = String::utf16((const char16_t *)key_name, key_name_size);
+		if (!id.is_empty()) {
+			HKEY sub_hkey = nullptr;
+			result = RegOpenKeyExW(HKEY_LOCAL_MACHINE, (LPCWSTR)(subkey + "\\" + id).utf16().get_data(), 0, KEY_QUERY_VALUE, &sub_hkey);
+			if (result != ERROR_SUCCESS) {
+				continue;
+			}
+
+			WCHAR buffer[4096];
+			DWORD buffer_len = 4096;
+			DWORD vtype = REG_SZ;
+			if (RegQueryValueExW(sub_hkey, L"DriverDesc", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) != ERROR_SUCCESS || buffer_len == 0) {
+				buffer_len = 4096;
+				if (RegQueryValueExW(sub_hkey, L"HardwareInformation.AdapterString", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) != ERROR_SUCCESS || buffer_len == 0) {
+					RegCloseKey(sub_hkey);
+					continue;
+				}
+			}
+
+			String driver_name = String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+			if (driver_name == p_device_name) {
+				String driver_id;
+
+				buffer_len = 4096;
+				if (RegQueryValueExW(sub_hkey, L"MatchingDeviceId", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS && buffer_len != 0) {
+					driver_id = String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+
+					Vector<String> id_parts = driver_id.to_lower().split("&");
+					for (const String &id_part : id_parts) {
+						int ven_off = id_part.find("ven_");
+						if (ven_off >= 0) {
+							out.x = id_part.substr(ven_off + 4).hex_to_int();
+						}
+						int dev_off = id_part.find("dev_");
+						if (dev_off >= 0) {
+							out.y = id_part.substr(dev_off + 4).hex_to_int();
+						}
+					}
+
+					RegCloseKey(sub_hkey);
+					break;
+				}
+			}
+			RegCloseKey(sub_hkey);
+		}
+	}
+	RegCloseKey(hkey);
+	return out;
+}
+
+Vector2i _get_device_ids_wmi(const String &p_device_name) {
 	if (p_device_name.is_empty()) {
 		return Vector2i();
 	}
@@ -6702,6 +6777,14 @@ Vector2i _get_device_ids(const String &p_device_name) {
 	SAFE_RELEASE(iter)
 
 	return ids;
+}
+
+Vector2i _get_device_ids(const String &p_device_name) {
+	Vector2i out = _get_device_ids_reg(p_device_name);
+	if (out == Vector2i()) {
+		out = _get_device_ids_wmi(p_device_name);
+	}
+	return out;
 }
 
 bool DisplayServerWindows::is_dark_mode_supported() const {
@@ -6824,9 +6907,12 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	os_ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
 
 	HMODULE nt_lib = LoadLibraryW(L"ntdll.dll");
+	bool is_wine = false;
 	if (nt_lib) {
 		WineGetVersionPtr wine_get_version = (WineGetVersionPtr)(void *)GetProcAddress(nt_lib, "wine_get_version"); // Do not read Windows build number under Wine, it can be set to arbitrary value.
-		if (!wine_get_version) {
+		if (wine_get_version) {
+			is_wine = true;
+		} else {
 			RtlGetVersionPtr RtlGetVersion = (RtlGetVersionPtr)(void *)GetProcAddress(nt_lib, "RtlGetVersion");
 			if (RtlGetVersion) {
 				RtlGetVersion(&os_ver);
@@ -7072,27 +7158,33 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	}
 
 	bool gl_supported = true;
-	if (fallback && (rendering_driver == "opengl3")) {
+	if (fallback && !is_wine && (rendering_driver == "opengl3")) {
 		Dictionary gl_info = detect_wgl();
 
 		bool force_angle = false;
 		gl_supported = gl_info["version"].operator int() >= 30003;
 
-		Vector2i device_id = _get_device_ids(gl_info["name"]);
+		Vector2i device_id = Vector2i(-1, -1);
 		Array device_list = GLOBAL_GET("rendering/gl_compatibility/force_angle_on_devices");
 		for (int i = 0; i < device_list.size(); i++) {
 			const Dictionary &device = device_list[i];
 			if (device.has("vendor") && device.has("name")) {
 				const String &vendor = device["vendor"];
 				const String &name = device["name"];
-				if (device_id != Vector2i() && vendor.begins_with("0x") && name.begins_with("0x") && device_id.x == vendor.lstrip("0x").hex_to_int() && device_id.y == name.lstrip("0x").hex_to_int()) {
-					// Check vendor/device IDs.
-					force_angle = true;
-					break;
-				} else if (gl_info["vendor"].operator String().to_upper().contains(vendor.to_upper()) && (name == "*" || gl_info["name"].operator String().to_upper().contains(name.to_upper()))) {
+				if (gl_info["vendor"].operator String().containsn(vendor) && (name == "*" || gl_info["name"].operator String().containsn(name))) {
 					// Check vendor/device names.
 					force_angle = true;
 					break;
+				} else if (vendor.begins_with("0x") && name.begins_with("0x")) {
+					if (device_id == Vector2i(-1, -1)) {
+						// Load device IDs.
+						device_id = _get_device_ids(gl_info["name"]);
+					}
+					if (device_id.x == vendor.lstrip("0x").hex_to_int() && device_id.y == name.lstrip("0x").hex_to_int()) {
+						// Check vendor/device IDs.
+						force_angle = true;
+						break;
+					}
 				}
 			}
 		}

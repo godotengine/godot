@@ -33,6 +33,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/locales.h"
 

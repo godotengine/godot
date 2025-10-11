@@ -513,10 +513,10 @@ void LookAtModifier3D::_process_modification(double p_delta) {
 	Transform3D bone_rest_space;
 	int parent_bone = skeleton->get_bone_parent(bone);
 	if (parent_bone < 0) {
-		bone_rest_space = skeleton->get_global_transform();
+		bone_rest_space = skeleton->get_global_transform_interpolated();
 		bone_rest_space.translate_local(skeleton->get_bone_rest(bone).origin);
 	} else {
-		bone_rest_space = skeleton->get_global_transform() * skeleton->get_bone_global_pose(parent_bone);
+		bone_rest_space = skeleton->get_global_transform_interpolated() * skeleton->get_bone_global_pose(parent_bone);
 		bone_rest_space.translate_local(skeleton->get_bone_rest(bone).origin);
 	}
 
@@ -530,18 +530,18 @@ void LookAtModifier3D::_process_modification(double p_delta) {
 	} else {
 		Transform3D origin_tr;
 		if (origin_from == ORIGIN_FROM_SPECIFIC_BONE && origin_bone >= 0 && origin_bone < skeleton->get_bone_count()) {
-			origin_tr = skeleton->get_global_transform() * skeleton->get_bone_global_pose(origin_bone);
+			origin_tr = skeleton->get_global_transform_interpolated() * skeleton->get_bone_global_pose(origin_bone);
 		} else if (origin_from == ORIGIN_FROM_EXTERNAL_NODE) {
 			Node3D *origin_src = Object::cast_to<Node3D>(get_node_or_null(origin_external_node));
 			if (origin_src) {
-				origin_tr = origin_src->get_global_transform();
+				origin_tr = origin_src->get_global_transform_interpolated();
 			} else {
 				origin_tr = bone_rest_space;
 			}
 		} else {
 			origin_tr = bone_rest_space;
 		}
-		forward_vector = bone_rest_space.orthonormalized().basis.xform_inv(target->get_global_position() - origin_tr.translated_local(origin_offset).origin);
+		forward_vector = bone_rest_space.orthonormalized().basis.xform_inv(target->get_global_transform_interpolated().origin - origin_tr.translated_local(origin_offset).origin);
 		forward_vector_nrm = forward_vector.normalized();
 		if (forward_vector_nrm.abs().is_equal_approx(get_vector_from_axis(primary_rotation_axis))) {
 			destination = skeleton->get_bone_pose_rotation(bone);

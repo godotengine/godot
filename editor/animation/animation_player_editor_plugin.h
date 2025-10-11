@@ -206,7 +206,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _list_changed();
 	void _animation_finished(const String &p_name);
-	void _current_animation_changed(const String &p_name);
+	void _current_animation_changed(const StringName &p_name);
 	void _update_animation();
 	void _update_player();
 	void _set_controls_disabled(bool p_disabled);
@@ -249,6 +249,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
+	void _find_player();
 	static void _bind_methods();
 
 public:

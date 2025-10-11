@@ -47,6 +47,7 @@
 
 class EditorAudioBuses;
 class EditorFileDialog;
+class Timer;
 
 class EditorAudioBus : public PanelContainer {
 	GDCLASS(EditorAudioBus, PanelContainer);
@@ -168,6 +169,8 @@ class EditorAudioBuses : public VBoxContainer {
 	Timer *save_timer = nullptr;
 	String edited_path;
 
+	void _update_file_label_size();
+
 	void _rebuild_buses();
 	void _update_bus(int p_index);
 	void _update_sends();
@@ -190,6 +193,8 @@ class EditorAudioBuses : public VBoxContainer {
 
 	EditorFileDialog *file_dialog = nullptr;
 	bool new_layout = false;
+
+	bool use_default_editor_size = true;
 
 	void _file_dialog_callback(const String &p_string);
 

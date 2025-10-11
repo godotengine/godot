@@ -111,7 +111,7 @@ void EditorSceneTabs::_scene_tab_hovered(int p_tab) {
 	} else {
 		String path = EditorNode::get_editor_data().get_scene_path(p_tab);
 		if (!path.is_empty()) {
-			EditorResourcePreview::get_singleton()->queue_resource_preview(path, this, "_tab_preview_done", p_tab);
+			EditorResourcePreview::get_singleton()->queue_resource_preview(path, callable_mp(this, &EditorSceneTabs::_tab_preview_done).bind(p_tab));
 		}
 	}
 }
@@ -208,7 +208,8 @@ void EditorSceneTabs::_update_context_menu() {
 		DISABLE_LAST_OPTION_IF(EditorNode::get_editor_data().get_edited_scene_count() <= 1);
 		scene_tabs_context_menu->add_item(TTR("Close Tabs to the Right"), SCENE_CLOSE_RIGHT);
 		DISABLE_LAST_OPTION_IF(EditorNode::get_editor_data().get_edited_scene_count() == tab_id + 1);
-		scene_tabs_context_menu->add_item(TTR("Close All Tabs"), SCENE_CLOSE_ALL);
+		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/close_all_scenes"), EditorNode::SCENE_CLOSE_ALL);
+		scene_tabs_context_menu->set_item_text(-1, TTRC("Close All Tabs"));
 
 		const PackedStringArray paths = { EditorNode::get_editor_data().get_scene_path(tab_id) };
 		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(scene_tabs_context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, paths);
@@ -337,8 +338,7 @@ void EditorSceneTabs::_scene_tabs_resized() {
 	}
 }
 
-void EditorSceneTabs::_tab_preview_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
-	int p_tab = p_udata;
+void EditorSceneTabs::_tab_preview_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_tab) {
 	if (p_preview.is_valid()) {
 		tab_preview->set_texture(p_preview);
 
@@ -395,8 +395,6 @@ int EditorSceneTabs::get_current_tab() const {
 void EditorSceneTabs::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab_index")));
 	ADD_SIGNAL(MethodInfo("tab_closed", PropertyInfo(Variant::INT, "tab_index")));
-
-	ClassDB::bind_method("_tab_preview_done", &EditorSceneTabs::_tab_preview_done);
 }
 
 EditorSceneTabs::EditorSceneTabs() {

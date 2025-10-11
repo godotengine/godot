@@ -33,8 +33,6 @@
 #include "core/object/object.h"
 #include "core/variant/type_info.h"
 
-#include <algorithm>
-
 #define STEPIFY(m_number, m_alignment) ((((m_number) + ((m_alignment) - 1)) / (m_alignment)) * (m_alignment))
 
 // This may one day be used in Godot for interoperability between C arrays, Vector and LocalVector.
@@ -67,6 +65,8 @@ public:
 };
 
 class RenderingDeviceCommons : public Object {
+	GDSOFTCLASS(RenderingDeviceCommons, Object);
+
 	////////////////////////////////////////////
 	// PUBLIC STUFF
 	// Exposed by RenderingDevice, and shared
@@ -1071,6 +1071,4 @@ public:
 		BitField<ShaderStage> stages_bits = {};
 		BitField<ShaderStage> push_constant_stages = {};
 	};
-
-	static Error reflect_spirv(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection);
 };

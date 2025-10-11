@@ -32,6 +32,7 @@
 
 #include "core/math/expression.h"
 #include "scene/animation/animation_tree.h"
+#include "scene/resources/curve.h"
 
 class AnimationNodeStateMachineTransition : public Resource {
 	GDCLASS(AnimationNodeStateMachineTransition, Resource);

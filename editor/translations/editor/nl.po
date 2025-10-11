@@ -87,13 +87,14 @@
 # tristanvong <tristan.vong@student.ehb.be>, 2025.
 # Cas Vankrunkelsven <cas.vankrunkelsven@protonmail.com>, 2025.
 # Sven Slootweg <admin@cryto.net>, 2025.
+# Max de Kroon <dekroon.mja@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-08-14 17:49+0000\n"
-"Last-Translator: Sven Slootweg <admin@cryto.net>\n"
+"PO-Revision-Date: 2025-09-18 03:38+0000\n"
+"Last-Translator: Max de Kroon <dekroon.mja@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -101,7 +102,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "Ongezet"
@@ -158,22 +159,22 @@ msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
 msgstr "Rechterpook y-as, Joystick 1 y-as"
 
 msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
-msgstr "Joystick 2 x-as, Linkse trekker, Sony L2, Xbox LT"
+msgstr "Joystick 2 x-as, Linker trekker, Sony L2, Xbox LT"
 
 msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
-msgstr "Joystick 2 y-as, Rechtse trekker, Sony R2, Xbox RT"
+msgstr "Joystick 2 y-as, Rechter trekker, Sony R2, Xbox RT"
 
 msgid "Joystick 3 X-Axis"
-msgstr "Joystick 3 x-as"
+msgstr "Joystick 3 X-as"
 
 msgid "Joystick 3 Y-Axis"
-msgstr "Joystick 3 y-as"
+msgstr "Joystick 3 Y-as"
 
 msgid "Joystick 4 X-Axis"
-msgstr "Joystick 4 x-as"
+msgstr "Joystick 4 X-as"
 
 msgid "Joystick 4 Y-Axis"
-msgstr "Joystick 4 y-as"
+msgstr "Joystick 4 Y-as"
 
 msgid "Unknown Joypad Axis"
 msgstr "Onbekende Joypad-as"
@@ -185,13 +186,13 @@ msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
 msgstr "Onderste actie, Sony Kruis, Xbox A, Nintendo B"
 
 msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
-msgstr "Rechtse Actie, Sony cirkel, Xbox B, Nintendo A"
+msgstr "Rechter Actie, Sony cirkel, Xbox B, Nintendo A"
 
 msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
-msgstr "Linkse actie, Sony Vierkant, Xbox X, Nintendo Y"
+msgstr "Linker actie, Sony Vierkant, Xbox X, Nintendo Y"
 
 msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
-msgstr "Bovenste actie, Sony Driehoek, Xbox Y, Nintendo X"
+msgstr "Bovenste Actie, Sony Driehoek, Xbox Y, Nintendo X"
 
 msgid "Back, Sony Select, Xbox Back, Nintendo -"
 msgstr "Terug, Sony selecteer, Xbox terug, Nintendo -"
@@ -200,7 +201,7 @@ msgid "Guide, Sony PS, Xbox Home"
 msgstr "Gids, Sony PS, Xbox Home"
 
 msgid "Start, Xbox Menu, Nintendo +"
-msgstr "Start, Xbox menu, Nintendo +"
+msgstr "Start, Xbox Menu, Nintendo +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Linkse pook, Sony L3, Xbox L/LS"

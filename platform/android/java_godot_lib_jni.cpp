@@ -48,11 +48,12 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/os/main_loop.h"
 #include "main/main.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef XR_DISABLED
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 #endif // XR_DISABLED
 
 #ifdef TOOLS_ENABLED
@@ -514,7 +515,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setEditorSetting(JNIE
 }
 
 JNIEXPORT jobject JNICALL Java_org_godotengine_godot_GodotLib_getEditorProjectMetadata(JNIEnv *env, jclass clazz, jstring p_section, jstring p_key, jobject p_default_value) {
-	jvalret result;
+	jvalue result;
 
 #ifdef TOOLS_ENABLED
 	if (EditorSettings::get_singleton() != nullptr) {
@@ -528,7 +529,7 @@ JNIEXPORT jobject JNICALL Java_org_godotengine_godot_GodotLib_getEditorProjectMe
 	WARN_PRINT("Access to the Editor Settings Project Metadata is only available on Editor builds");
 #endif
 
-	return result.obj;
+	return result.l;
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setEditorProjectMetadata(JNIEnv *env, jclass clazz, jstring p_section, jstring p_key, jobject p_data) {

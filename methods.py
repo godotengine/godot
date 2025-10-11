@@ -42,8 +42,8 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
             files = [f for f in files if not str(f).endswith(".gen.cpp")]
 
     # Add each path as compiled Object following environment (self) configuration
-    for path in files:
-        obj = self.Object(path)
+    for file in files:
+        obj = self.Object(file)
         if obj in sources:
             print_warning('Object "{}" already included in environment sources.'.format(obj))
             continue
@@ -88,15 +88,19 @@ def redirect_emitter(target, source, env):
     Emitter to automatically redirect object/library build files to the `bin/obj` directory,
     retaining subfolder structure. External build files will attempt to retain subfolder
     structure relative to their environment's parent directory, sorted under `bin/obj/external`.
-    If `redirect_build_objects` is `False`, or an external build file isn't relative to the
-    passed environment, this emitter does nothing.
+    If `redirect_build_objects` is `False`, an external build file isn't relative to the passed
+    environment, or a file is being written directly into `bin`, this emitter does nothing.
     """
     if not env["redirect_build_objects"]:
         return target, source
 
     redirected_targets = []
     for item in target:
-        if base_folder in (path := Path(item.get_abspath()).resolve()).parents:
+        path = Path(item.get_abspath()).resolve()
+
+        if path.parent == base_folder / "bin":
+            pass
+        elif base_folder in path.parents:
             item = env.File(f"#bin/obj/{path.relative_to(base_folder)}")
         elif (alt_base := Path(env.Dir(".").get_abspath()).resolve().parent) in path.parents:
             item = env.File(f"#bin/obj/external/{path.relative_to(alt_base)}")
@@ -437,6 +441,7 @@ def no_verbose(env):
 
     env["CXXCOMSTR"] = compile_source_message
     env["CCCOMSTR"] = compile_source_message
+    env["SWIFTCOMSTR"] = compile_source_message
     env["SHCCCOMSTR"] = compile_shared_source_message
     env["SHCXXCOMSTR"] = compile_shared_source_message
     env["ARCOMSTR"] = link_library_message
@@ -630,19 +635,19 @@ def detect_darwin_sdk_path(platform, env):
 
     elif platform == "ios":
         sdk_name = "iphoneos"
-        var_name = "IOS_SDK_PATH"
+        var_name = "APPLE_SDK_PATH"
 
     elif platform == "iossimulator":
         sdk_name = "iphonesimulator"
-        var_name = "IOS_SDK_PATH"
+        var_name = "APPLE_SDK_PATH"
 
     elif platform == "visionos":
         sdk_name = "xros"
-        var_name = "VISIONOS_SDK_PATH"
+        var_name = "APPLE_SDK_PATH"
 
     elif platform == "visionossimulator":
         sdk_name = "xrsimulator"
-        var_name = "VISIONOS_SDK_PATH"
+        var_name = "APPLE_SDK_PATH"
 
     else:
         raise Exception("Invalid platform argument passed to detect_darwin_sdk_path")

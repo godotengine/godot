@@ -49,7 +49,9 @@
 #include "core/variant/type_info.h"
 #include "servers/rendering/rendering_context_driver.h"
 #include "servers/rendering/rendering_device_commons.h"
-#include "servers/rendering/rendering_shader_container.h"
+
+class RenderingShaderContainer;
+class RenderingShaderContainerFormat;
 
 // These utilities help drivers avoid allocations.
 #define ALLOCA(m_size) ((m_size != 0) ? alloca(m_size) : nullptr)
@@ -68,7 +70,7 @@
 template <typename... RESOURCE_TYPES>
 struct VersatileResourceTemplate {
 	static constexpr size_t RESOURCE_SIZES[] = { sizeof(RESOURCE_TYPES)... };
-	static constexpr size_t MAX_RESOURCE_SIZE = std::max_element(RESOURCE_SIZES, RESOURCE_SIZES + sizeof...(RESOURCE_TYPES))[0];
+	static constexpr size_t MAX_RESOURCE_SIZE = Span(RESOURCE_SIZES).max();
 	uint8_t data[MAX_RESOURCE_SIZE];
 
 	template <typename T>
@@ -86,6 +88,8 @@ struct VersatileResourceTemplate {
 };
 
 class RenderingDeviceDriver : public RenderingDeviceCommons {
+	GDSOFTCLASS(RenderingDeviceDriver, RenderingDeviceCommons);
+
 public:
 	struct ID {
 		uint64_t id = 0;
@@ -339,7 +343,8 @@ public:
 		BARRIER_ACCESS_STORAGE_CLEAR_BIT = (1 << 27),
 	};
 
-	struct MemoryBarrier {
+	// https://github.com/godotengine/godot/pull/110360 - "MemoryBarrier" conflicts with Windows header defines
+	struct MemoryAccessBarrier {
 		BitField<BarrierAccessBits> src_access = {};
 		BitField<BarrierAccessBits> dst_access = {};
 	};
@@ -365,7 +370,7 @@ public:
 			CommandBufferID p_cmd_buffer,
 			BitField<PipelineStageBits> p_src_stages,
 			BitField<PipelineStageBits> p_dst_stages,
-			VectorView<MemoryBarrier> p_memory_barriers,
+			VectorView<MemoryAccessBarrier> p_memory_barriers,
 			VectorView<BufferBarrier> p_buffer_barriers,
 			VectorView<TextureBarrier> p_texture_barriers) = 0;
 

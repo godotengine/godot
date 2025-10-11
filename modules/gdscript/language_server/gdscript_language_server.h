@@ -41,6 +41,8 @@ class GDScriptLanguageServer : public EditorPlugin {
 
 	Thread thread;
 	bool thread_running = false;
+	// There is no notification when the editor is initialized. We need to poll till we attempted to start the server.
+	bool start_attempted = false;
 	bool started = false;
 	bool use_thread = false;
 	String host = "127.0.0.1";

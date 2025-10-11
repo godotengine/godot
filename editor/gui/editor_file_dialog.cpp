@@ -50,7 +50,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 void EditorFileDialog::_native_popup() {
 	// Show native dialog directly.
@@ -229,6 +229,7 @@ void EditorFileDialog::_update_theme_item_cache() {
 	theme_cache.filter_box = get_editor_theme_icon(SNAME("Search"));
 	theme_cache.file_sort_button = get_editor_theme_icon(SNAME("Sort"));
 
+	theme_cache.file = get_editor_theme_icon(SNAME("File"));
 	theme_cache.folder = get_editor_theme_icon(SNAME("Folder"));
 	theme_cache.folder_icon_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
 
@@ -482,9 +483,9 @@ void EditorFileDialog::_post_popup() {
 	set_current_dir(current);
 
 	if (mode == FILE_MODE_SAVE_FILE) {
-		file->grab_focus();
+		file->grab_focus(true);
 	} else {
-		item_list->grab_focus();
+		item_list->grab_focus(true);
 	}
 
 	bool is_open_directory_mode = mode == FILE_MODE_OPEN_DIR;
@@ -510,7 +511,7 @@ void EditorFileDialog::_post_popup() {
 	set_process_shortcut_input(true);
 }
 
-void EditorFileDialog::_thumbnail_result(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
+void EditorFileDialog::_thumbnail_result(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview) {
 	if (display_mode == DISPLAY_LIST || p_preview.is_null()) {
 		return;
 	}
@@ -525,7 +526,7 @@ void EditorFileDialog::_thumbnail_result(const String &p_path, const Ref<Texture
 	}
 }
 
-void EditorFileDialog::_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
+void EditorFileDialog::_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview) {
 	set_process(false);
 	preview_waiting = false;
 
@@ -551,7 +552,7 @@ void EditorFileDialog::_request_single_thumbnail(const String &p_path) {
 	set_process(true);
 	preview_waiting = true;
 	preview_wheel_timeout = 0;
-	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, this, "_thumbnail_done", p_path);
+	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, callable_mp(this, &EditorFileDialog::_thumbnail_done));
 }
 
 void EditorFileDialog::_action_pressed() {
@@ -1114,9 +1115,9 @@ void EditorFileDialog::update_file_list() {
 			item_list->add_item(dir_name);
 
 			if (display_mode == DISPLAY_THUMBNAILS) {
-				item_list->set_item_icon(-1, folder_thumbnail);
+				item_list->set_item_icon(-1, bundle ? file_thumbnail : folder_thumbnail);
 			} else {
-				item_list->set_item_icon(-1, theme_cache.folder);
+				item_list->set_item_icon(-1, bundle ? theme_cache.file : theme_cache.folder);
 			}
 
 			Dictionary d;
@@ -1172,7 +1173,7 @@ void EditorFileDialog::update_file_list() {
 			item_list->set_item_metadata(-1, d);
 
 			if (display_mode == DISPLAY_THUMBNAILS && previews_enabled) {
-				EditorResourcePreview::get_singleton()->queue_resource_preview(file_info.path, this, "_thumbnail_result", file_info.path);
+				EditorResourcePreview::get_singleton()->queue_resource_preview(file_info.path, callable_mp(this, &EditorFileDialog::_thumbnail_result));
 			}
 
 			if (file->get_text() == file_info.name) {
@@ -2171,10 +2172,8 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_access"), &EditorFileDialog::get_access);
 	ClassDB::bind_method(D_METHOD("set_show_hidden_files", "show"), &EditorFileDialog::set_show_hidden_files);
 	ClassDB::bind_method(D_METHOD("is_showing_hidden_files"), &EditorFileDialog::is_showing_hidden_files);
-	ClassDB::bind_method(D_METHOD("_thumbnail_done"), &EditorFileDialog::_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("set_display_mode", "mode"), &EditorFileDialog::set_display_mode);
 	ClassDB::bind_method(D_METHOD("get_display_mode"), &EditorFileDialog::get_display_mode);
-	ClassDB::bind_method(D_METHOD("_thumbnail_result"), &EditorFileDialog::_thumbnail_result);
 	ClassDB::bind_method(D_METHOD("set_disable_overwrite_warning", "disable"), &EditorFileDialog::set_disable_overwrite_warning);
 	ClassDB::bind_method(D_METHOD("is_overwrite_warning_disabled"), &EditorFileDialog::is_overwrite_warning_disabled);
 	ClassDB::bind_method(D_METHOD("add_side_menu", "menu", "title"), &EditorFileDialog::add_side_menu, DEFVAL(""));

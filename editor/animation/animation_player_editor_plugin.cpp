@@ -52,9 +52,27 @@
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/image_texture.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 ///////////////////////////////////
+
+void AnimationPlayerEditor::_find_player() {
+	if (!is_visible() || player) {
+		return;
+	}
+
+	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+
+	if (!edited_scene) {
+		return;
+	}
+
+	TypedArray<Node> players = edited_scene->find_children("", "AnimationPlayer");
+
+	if (players.size() == 1) {
+		plugin->edit(players.front());
+	}
+}
 
 void AnimationPlayerEditor::_node_removed(Node *p_node) {
 	if (player && original_node == p_node) {
@@ -95,7 +113,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 			if (player->is_playing()) {
 				{
-					String animname = player->get_assigned_animation();
+					StringName animname = player->get_assigned_animation();
 
 					if (player->has_animation(animname)) {
 						Ref<Animation> anim = player->get_animation(animname);
@@ -129,6 +147,8 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			blend_editor.next->connect(SceneStringName(item_selected), callable_mp(this, &AnimationPlayerEditor::_blend_editor_next_changed));
 
 			get_tree()->connect(SNAME("node_removed"), callable_mp(this, &AnimationPlayerEditor::_node_removed));
+
+			EditorNode::get_singleton()->connect("scene_changed", callable_mp(this, &AnimationPlayerEditor::_find_player));
 
 			add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
 		} break;
@@ -190,6 +210,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
+			_find_player();
 			_ensure_dummy_player();
 		} break;
 	}
@@ -208,7 +229,7 @@ void AnimationPlayerEditor::_autoplay_pressed() {
 	if (player->get_autoplay() == current) {
 		//unset
 		undo_redo->create_action(TTR("Toggle Autoplay"));
-		undo_redo->add_do_method(player, "set_autoplay", "");
+		undo_redo->add_do_method(player, "set_autoplay", StringName());
 		undo_redo->add_undo_method(player, "set_autoplay", player->get_autoplay());
 		undo_redo->add_do_method(this, "_animation_player_changed", player);
 		undo_redo->add_undo_method(this, "_animation_player_changed", player);
@@ -217,7 +238,7 @@ void AnimationPlayerEditor::_autoplay_pressed() {
 	} else {
 		//set
 		undo_redo->create_action(TTR("Toggle Autoplay"));
-		undo_redo->add_do_method(player, "set_autoplay", current);
+		undo_redo->add_do_method(player, "set_autoplay", StringName(current));
 		undo_redo->add_undo_method(player, "set_autoplay", player->get_autoplay());
 		undo_redo->add_do_method(this, "_animation_player_changed", player);
 		undo_redo->add_undo_method(this, "_animation_player_changed", player);
@@ -543,8 +564,8 @@ void AnimationPlayerEditor::_animation_remove_confirmed() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Remove Animation"));
 	if (player->get_autoplay() == current) {
-		undo_redo->add_do_method(player, "set_autoplay", "");
-		undo_redo->add_undo_method(player, "set_autoplay", current);
+		undo_redo->add_do_method(player, "set_autoplay", StringName());
+		undo_redo->add_undo_method(player, "set_autoplay", StringName(current));
 		// Avoid having the autoplay icon linger around if there is only one animation in the player.
 		undo_redo->add_do_method(this, "_animation_player_changed", player);
 	}
@@ -576,7 +597,7 @@ void AnimationPlayerEditor::_select_anim_by_name(const String &p_anim) {
 }
 
 float AnimationPlayerEditor::_get_editor_step() const {
-	const String current = player->get_assigned_animation();
+	const StringName current = player->get_assigned_animation();
 	const Ref<Animation> anim = player->get_animation(current);
 	ERR_FAIL_COND_V(anim.is_null(), 0.0);
 
@@ -1390,7 +1411,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_timeline_o
 	};
 
 	updating = true;
-	String current = player->get_assigned_animation();
+	StringName current = player->get_assigned_animation();
 	if (current.is_empty() || !player->has_animation(current)) {
 		updating = false;
 		current = "";
@@ -1439,7 +1460,7 @@ void AnimationPlayerEditor::_animation_finished(const String &p_name) {
 	finishing = true;
 }
 
-void AnimationPlayerEditor::_current_animation_changed(const String &p_name) {
+void AnimationPlayerEditor::_current_animation_changed(const StringName &p_name) {
 	if (is_visible_in_tree()) {
 		if (finishing) {
 			finishing = false; // Maybe redundant since it will be false in the AnimationPlayerEditor::_process(), but for safety.
@@ -1699,7 +1720,7 @@ void AnimationPlayerEditor::_allocate_onion_layers() {
 void AnimationPlayerEditor::_free_onion_layers() {
 	for (uint32_t i = 0; i < onion.captures.size(); i++) {
 		if (onion.captures[i].is_valid()) {
-			RS::get_singleton()->free(onion.captures[i]);
+			RS::get_singleton()->free_rid(onion.captures[i]);
 		}
 	}
 	onion.captures.clear();
@@ -2283,8 +2304,8 @@ void fragment() {
 
 AnimationPlayerEditor::~AnimationPlayerEditor() {
 	_free_onion_layers();
-	RS::get_singleton()->free(onion.capture.canvas);
-	RS::get_singleton()->free(onion.capture.canvas_item);
+	RS::get_singleton()->free_rid(onion.capture.canvas);
+	RS::get_singleton()->free_rid(onion.capture.canvas_item);
 	onion.capture = {};
 }
 

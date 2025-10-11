@@ -57,7 +57,7 @@ import java.util.Set;
  */
 @Keep
 public class GodotTTS extends UtteranceProgressListener implements TextToSpeech.OnInitListener {
-	// Note: These constants must be in sync with DisplayServer::TTSUtteranceEvent enum from "servers/display_server.h".
+	// Note: These constants must be in sync with DisplayServer::TTSUtteranceEvent enum from "servers/display/display_server.h".
 	final private static int EVENT_START = 0;
 	final private static int EVENT_END = 1;
 	final private static int EVENT_CANCEL = 2;

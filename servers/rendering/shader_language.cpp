@@ -33,8 +33,8 @@
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
 #include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
-#include "servers/rendering_server.h"
 #include "shader_types.h"
 
 #define HAS_WARNING(flag) (warning_flags & flag)
@@ -4726,8 +4726,8 @@ Variant ShaderLanguage::get_default_datatype_value(DataType p_type, int p_array_
 				}
 				value = Variant(array);
 			} else {
-				VariantInitializer<float>::init(&value);
-				VariantDefaultInitializer<float>::init(&value);
+				VariantInitializer<double>::init(&value);
+				VariantDefaultInitializer<double>::init(&value);
 			}
 			break;
 		case ShaderLanguage::TYPE_VEC2:
@@ -5282,7 +5282,7 @@ ShaderLanguage::DataType ShaderLanguage::get_scalar_type(DataType p_type) {
 		TYPE_VOID,
 	};
 
-	static_assert(std::size(scalar_types) == TYPE_MAX);
+	static_assert(std_size(scalar_types) == TYPE_MAX);
 
 	return scalar_types[p_type];
 }
@@ -5324,7 +5324,7 @@ int ShaderLanguage::get_cardinality(DataType p_type) {
 		1,
 	};
 
-	static_assert(std::size(cardinality_table) == TYPE_MAX);
+	static_assert(std_size(cardinality_table) == TYPE_MAX);
 
 	return cardinality_table[p_type];
 }
@@ -11369,7 +11369,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 #ifdef DEBUG_ENABLED
 	// Adds context keywords.
 	if (keyword_completion_context != CF_UNSPECIFIED) {
-		constexpr int sz = std::size(keyword_list);
+		constexpr int sz = std_size(keyword_list);
 		for (int i = 0; i < sz; i++) {
 			if (keyword_list[i].flags == CF_UNSPECIFIED) {
 				break; // Ignore hint keywords (parsed below).

@@ -36,6 +36,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/rich_text_label.h"
 
+class Timer;
 class UndoRedo;
 
 class EditorLog : public HBoxContainer {

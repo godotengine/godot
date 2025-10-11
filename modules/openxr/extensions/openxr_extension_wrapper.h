@@ -56,6 +56,8 @@ class OpenXRExtensionWrapper : public Object {
 protected:
 	static void _bind_methods();
 
+	Ref<OpenXRAPIExtension> openxr_api_extension;
+
 public:
 	// `get_requested_extensions` should return a list of OpenXR extensions related to this extension.
 	// If the bool * is a nullptr this extension is mandatory
@@ -71,7 +73,7 @@ public:
 	// You should return the pointer to the last struct you define as your result.
 	// If you are not adding any structs, just return `p_next_pointer`.
 	// See existing extensions for examples of this implementation.
-	virtual void *set_system_properties_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when we interrogate OpenXRS system abilities.
+	virtual void *set_system_properties_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when we interrogate OpenXR's system abilities.
 	virtual void *set_instance_create_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when we create our OpenXR instance.
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when we create our OpenXR session.
 	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when creating OpenXR swap chains.
@@ -180,8 +182,8 @@ public:
 
 	GDVIRTUAL1R(bool, _on_event_polled, GDExtensionConstPtr<void>);
 
-	OpenXRExtensionWrapper() = default;
-	virtual ~OpenXRExtensionWrapper() = default;
+	OpenXRExtensionWrapper();
+	virtual ~OpenXRExtensionWrapper() override;
 };
 
 // `OpenXRGraphicsExtensionWrapper` implements specific logic for each supported graphics API.

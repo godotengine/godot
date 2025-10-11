@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "line_edit.h"
+#include "line_edit.compat.inc"
 
 #include "core/input/input_map.h"
 #include "core/os/keyboard.h"
@@ -38,24 +39,24 @@
 #include "scene/gui/label.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
-#include "servers/display_server.h"
-#include "servers/text_server.h"
+#include "servers/display/display_server.h"
+#include "servers/text/text_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/settings/editor_settings.h"
 #endif
 
-void LineEdit::edit() {
-	_edit(true);
+void LineEdit::edit(bool p_hide_focus) {
+	_edit(true, p_hide_focus);
 }
 
-void LineEdit::_edit(bool p_show_virtual_keyboard) {
+void LineEdit::_edit(bool p_show_virtual_keyboard, bool p_hide_focus) {
 	if (!is_inside_tree()) {
 		return;
 	}
 
 	if (!has_focus()) {
-		grab_focus();
+		grab_focus(p_hide_focus);
 		return;
 	}
 
@@ -415,7 +416,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (editable && !editing) {
-				edit();
+				edit(true);
 				emit_signal(SNAME("editing_toggled"), true);
 			}
 
@@ -432,7 +433,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			set_caret_at_pixel_pos(b->get_position().x);
 
 			if (!editing) {
-				edit();
+				edit(true);
 				emit_signal(SNAME("editing_toggled"), true);
 			}
 
@@ -480,12 +481,12 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				selection.creating = true;
 
 			} else {
-				if (selecting_enabled) {
+				if (selecting_enabled && !text.is_empty()) {
 					const int triple_click_timeout = 600;
 					const int triple_click_tolerance = 5;
 					const bool is_triple_click = !b->is_double_click() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < triple_click_timeout && b->get_position().distance_to(last_dblclk_pos) < triple_click_tolerance;
 
-					if (is_triple_click && !text.is_empty()) {
+					if (is_triple_click) {
 						// Triple-click select all.
 						selection.enabled = true;
 						selection.begin = 0;
@@ -535,7 +536,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (editable && !editing) {
-				edit();
+				edit(true);
 				emit_signal(SNAME("editing_toggled"), true);
 				return;
 			}
@@ -1099,10 +1100,10 @@ void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 			selection_delete();
 			set_caret_column(caret_column_tmp);
 			insert_text_at_caret(p_data);
-			grab_focus();
+			grab_focus(true);
 		} else {
 			insert_text_at_caret(p_data);
-			grab_focus();
+			grab_focus(true);
 		}
 		select(caret_column_tmp, caret_column);
 		if (!text_changed_dirty) {
@@ -1343,7 +1344,7 @@ void LineEdit::_notification(int p_what) {
 				style->draw(ci, Rect2(Point2(), size));
 			}
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				theme_cache.focus->draw(ci, Rect2(Point2(), size));
 			}
 
@@ -2148,14 +2149,14 @@ TextServer::StructuredTextParser LineEdit::get_structured_text_bidi_override() c
 	return st_parser;
 }
 
-void LineEdit::set_structured_text_bidi_override_options(Array p_args) {
-	st_args = p_args;
+void LineEdit::set_structured_text_bidi_override_options(const Array &p_args) {
+	st_args = Array(p_args);
 	_shape();
 	queue_redraw();
 }
 
 Array LineEdit::get_structured_text_bidi_override_options() const {
-	return st_args;
+	return Array(st_args);
 }
 
 void LineEdit::clear() {
@@ -3196,7 +3197,7 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &LineEdit::set_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &LineEdit::get_horizontal_alignment);
 
-	ClassDB::bind_method(D_METHOD("edit"), &LineEdit::edit);
+	ClassDB::bind_method(D_METHOD("edit", "hide_focus"), &LineEdit::edit, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("unedit"), &LineEdit::unedit);
 	ClassDB::bind_method(D_METHOD("is_editing"), &LineEdit::is_editing);
 	ClassDB::bind_method(D_METHOD("set_keep_editing_on_text_submit", "enable"), &LineEdit::set_keep_editing_on_text_submit);

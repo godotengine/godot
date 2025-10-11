@@ -72,6 +72,7 @@ public:
 		MISSING_TOOL, // The base class script has the "@tool" annotation, but this script does not have it.
 		REDUNDANT_STATIC_UNLOAD, // The `@static_unload` annotation is used but the class does not have static data.
 		REDUNDANT_AWAIT, // await is used but expression is synchronous (not a signal nor a coroutine).
+		MISSING_AWAIT, // await is not used but expression is a coroutine.
 		ASSERT_ALWAYS_TRUE, // Expression for assert argument is always true.
 		ASSERT_ALWAYS_FALSE, // Expression for assert argument is always false.
 		INTEGER_DIVISION, // Integer divide by integer, decimal part is discarded.
@@ -129,6 +130,7 @@ public:
 		WARN, // MISSING_TOOL
 		WARN, // REDUNDANT_STATIC_UNLOAD
 		WARN, // REDUNDANT_AWAIT
+		IGNORE, // MISSING_AWAIT
 		WARN, // ASSERT_ALWAYS_TRUE
 		WARN, // ASSERT_ALWAYS_FALSE
 		WARN, // INTEGER_DIVISION
@@ -153,7 +155,7 @@ public:
 #endif
 	};
 
-	static_assert(std::size(default_warning_levels) == WARNING_MAX, "Amount of default levels does not match the amount of warnings.");
+	static_assert(std_size(default_warning_levels) == WARNING_MAX, "Amount of default levels does not match the amount of warnings.");
 
 	Code code = WARNING_MAX;
 	int start_line = -1, end_line = -1;

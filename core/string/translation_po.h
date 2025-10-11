@@ -50,6 +50,8 @@ class TranslationPO : public Translation {
 
 	// Cache temporary variables related to _get_plural_index() to make it faster
 	class EQNode : public RefCounted {
+		GDSOFTCLASS(EQNode, RefCounted);
+
 	public:
 		String regex;
 		Ref<EQNode> left;

@@ -33,6 +33,8 @@
 #include "core/object/ref_counted.h"
 #include "servers/rendering/rendering_device_commons.h"
 
+struct SpvReflectShaderModule;
+
 class RenderingShaderContainer : public RefCounted {
 	GDSOFTCLASS(RenderingShaderContainer, RefCounted);
 
@@ -118,10 +120,29 @@ protected:
 	virtual uint32_t _to_bytes_footer_extra_data(uint8_t *p_bytes) const;
 
 	// This method will be called when set_from_shader_reflection() is finished. Used to update internal structures to match the reflection if necessary.
-	virtual void _set_from_shader_reflection_post(const String &p_shader_name, const RenderingDeviceCommons::ShaderReflection &p_reflection);
+	virtual void _set_from_shader_reflection_post(const RenderingDeviceCommons::ShaderReflection &p_reflection);
+
+	class ReflectedShaderStage {
+		friend class RenderingShaderContainer;
+
+		Vector<uint8_t> _spirv_data;
+		SpvReflectShaderModule *_module = nullptr;
+
+	public:
+		RenderingDeviceCommons::ShaderStage shader_stage = RenderingDeviceCommons::SHADER_STAGE_MAX;
+		const SpvReflectShaderModule &module() const;
+		const Span<uint32_t> spirv() const;
+		const Vector<uint8_t> spirv_data() const { return _spirv_data; }
+
+		ReflectedShaderStage();
+		~ReflectedShaderStage();
+	};
 
 	// This method will be called when set_code_from_spirv() is called.
-	virtual bool _set_code_from_spirv(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv) = 0;
+	virtual bool _set_code_from_spirv(Span<ReflectedShaderStage> p_spirv) = 0;
+
+	void set_from_shader_reflection(const RenderingDeviceCommons::ShaderReflection &p_reflection);
+	Error reflect_spirv(const String &p_shader_name, Span<RenderingDeviceCommons::ShaderStageSPIRVData> p_spirv, LocalVector<ReflectedShaderStage> &r_refl);
 
 public:
 	enum CompressionFlags {
@@ -138,8 +159,7 @@ public:
 	CharString shader_name;
 	Vector<Shader> shaders;
 
-	void set_from_shader_reflection(const String &p_shader_name, const RenderingDeviceCommons::ShaderReflection &p_reflection);
-	bool set_code_from_spirv(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv);
+	bool set_code_from_spirv(const String &p_shader_name, Span<RenderingDeviceCommons::ShaderStageSPIRVData> p_spirv);
 	RenderingDeviceCommons::ShaderReflection get_shader_reflection() const;
 	bool from_bytes(const PackedByteArray &p_bytes);
 	PackedByteArray to_bytes() const;
@@ -150,6 +170,8 @@ public:
 };
 
 class RenderingShaderContainerFormat : public RenderingDeviceCommons {
+	GDSOFTCLASS(RenderingShaderContainerFormat, RenderingDeviceCommons);
+
 public:
 	virtual Ref<RenderingShaderContainer> create_container() const = 0;
 	virtual ShaderLanguageVersion get_shader_language_version() const = 0;

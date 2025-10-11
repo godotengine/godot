@@ -56,7 +56,6 @@ class PluginConfigDialog : public ConfirmationDialog {
 	LineEdit *version_edit = nullptr;
 	OptionButton *script_option_edit = nullptr;
 	LineEdit *script_edit = nullptr;
-	CheckBox *active_edit = nullptr;
 
 	LocalVector<Control *> plugin_edit_hidden_controls;
 

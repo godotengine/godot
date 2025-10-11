@@ -11,6 +11,8 @@
 	#include <x86intrin.h>
 #elif defined(JPH_CPU_E2K)
 	#include <x86intrin.h>
+#elif defined(JPH_CPU_LOONGARCH)
+	#include <larchintrin.h>
 #endif
 
 JPH_NAMESPACE_BEGIN
@@ -35,7 +37,16 @@ JPH_INLINE uint64 GetProcessorTickCount()
 	uint64 val;
 	asm volatile("mrs %0, cntvct_el0" : "=r" (val));
 	return val;
-#elif defined(JPH_CPU_ARM) || defined(JPH_CPU_RISCV) || defined(JPH_CPU_WASM) || defined(JPH_CPU_PPC) || defined(JPH_CPU_LOONGARCH)
+#elif defined(JPH_CPU_LOONGARCH)
+	#if JPH_CPU_ADDRESS_BITS == 64
+		__drdtime_t t = __rdtime_d();
+		return t.dvalue;
+	#else
+		__rdtime_t h = __rdtimeh_w();
+		__rdtime_t l = __rdtimel_w();
+		return ((uint64)h.value << 32) + l.value;
+	#endif
+#elif defined(JPH_CPU_ARM) || defined(JPH_CPU_RISCV) || defined(JPH_CPU_WASM) || defined(JPH_CPU_PPC)
 	return 0; // Not supported
 #else
 	#error Undefined

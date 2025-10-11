@@ -56,6 +56,7 @@
 #import "rendering_shader_container_metal.h"
 
 #import <os/signpost.h>
+#import <algorithm>
 
 // We have to undefine these macros because they are defined in NSObjCRuntime.h.
 #undef MIN

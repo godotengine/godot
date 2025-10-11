@@ -360,13 +360,16 @@ void *OpenXRExtensionWrapper::set_android_surface_swapchain_create_info_and_get_
 }
 
 Ref<OpenXRAPIExtension> OpenXRExtensionWrapper::_gdextension_get_openxr_api() {
-	static Ref<OpenXRAPIExtension> openxr_api_extension;
-	if (unlikely(openxr_api_extension.is_null())) {
-		openxr_api_extension.instantiate();
-	}
 	return openxr_api_extension;
 }
 
 void OpenXRExtensionWrapper::_gdextension_register_extension_wrapper() {
 	OpenXRAPI::register_extension_wrapper(this);
+}
+
+OpenXRExtensionWrapper::OpenXRExtensionWrapper() {
+	openxr_api_extension.instantiate();
+}
+
+OpenXRExtensionWrapper::~OpenXRExtensionWrapper() {
 }

@@ -46,6 +46,7 @@ class ConfirmationDialog;
 class Control;
 class FileDialog;
 class HBoxContainer;
+class ImageTexture;
 class MenuBar;
 class MenuButton;
 class OptionButton;
@@ -54,6 +55,7 @@ class PanelContainer;
 class RichTextLabel;
 class SubViewport;
 class TextureProgressBar;
+class Timer;
 class Translation;
 class Tree;
 class VBoxContainer;
@@ -155,6 +157,7 @@ public:
 		SCENE_REDO,
 		SCENE_RELOAD_SAVED_SCENE,
 		SCENE_CLOSE,
+		SCENE_CLOSE_ALL,
 		SCENE_QUIT,
 
 		FILE_EXPORT_MESH_LIBRARY,
@@ -346,8 +349,6 @@ private:
 	PopupMenu *tool_menu = nullptr;
 	PopupMenu *export_as_menu = nullptr;
 	Button *export_button = nullptr;
-	Button *search_button = nullptr;
-	TextureProgressBar *audio_vu = nullptr;
 
 	Timer *screenshot_timer = nullptr;
 
@@ -408,10 +409,8 @@ private:
 	EditorBuildProfileManager *build_profile_manager = nullptr;
 	EditorFileDialog *file_templates = nullptr;
 	EditorFileDialog *file_export_lib = nullptr;
-	EditorFileDialog *file_script = nullptr;
 	EditorFileDialog *file_android_build_source = nullptr;
 	EditorFileDialog *file_pack_zip = nullptr;
-	String current_path;
 	MenuButton *update_spinner = nullptr;
 
 	EditorMainScreen *editor_main_screen = nullptr;
@@ -463,7 +462,6 @@ private:
 	int current_menu_option = 0;
 
 	SubViewport *scene_root = nullptr; // Root of the scene being edited.
-	Object *current = nullptr;
 
 	Ref<Resource> saving_resource;
 	HashSet<Ref<Resource>> saving_resources_in_path;
@@ -478,8 +476,6 @@ private:
 	DynamicFontImportSettingsDialog *fontdata_import_settings = nullptr;
 	SceneImportSettingsDialog *scene_import_settings = nullptr;
 	AudioStreamImportSettingsDialog *audio_stream_import_settings = nullptr;
-
-	String import_reload_fn;
 
 	HashSet<String> textfile_extensions;
 	HashSet<String> other_file_extensions;
@@ -518,6 +514,10 @@ private:
 	}
 
 	static Ref<Texture2D> _file_dialog_get_icon(const String &p_path);
+	static Ref<Texture2D> _file_dialog_get_thumbnail(const String &p_path);
+	static void _file_dialog_thumbnail_callback(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, Ref<ImageTexture> p_texture);
+	Ref<ImageTexture> default_thumbnail;
+
 	static void _file_dialog_register(FileDialog *p_dialog);
 	static void _file_dialog_unregister(FileDialog *p_dialog);
 	static void _editor_file_dialog_register(EditorFileDialog *p_dialog);
@@ -774,6 +774,9 @@ public:
 	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTR("Ok"), const String &p_cancel_text = TTR("Cancel"), uint32_t p_wrap_width = 0);
 
 	static bool is_cmdline_mode();
+
+	static HashMap<String, Variant> get_initial_settings();
+
 	static void cleanup();
 
 	EditorPluginList *get_editor_plugins_force_input_forwarding() { return editor_plugins_force_input_forwarding; }
@@ -792,6 +795,8 @@ public:
 	void update_distraction_free_mode();
 	void set_distraction_free_mode(bool p_enter);
 	bool is_distraction_free_mode_enabled() const;
+
+	void set_center_split_offset(int p_offset);
 
 	void set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed = false);
 	bool is_addon_plugin_enabled(const String &p_addon) const;
@@ -1020,6 +1025,8 @@ public:
 };
 
 class EditorPluginList : public Object {
+	GDSOFTCLASS(EditorPluginList, Object);
+
 private:
 	Vector<EditorPlugin *> plugins_list;
 

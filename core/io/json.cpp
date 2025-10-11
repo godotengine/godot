@@ -31,6 +31,7 @@
 #include "json.h"
 
 #include "core/config/engine.h"
+#include "core/io/file_access.h"
 #include "core/object/script_language.h"
 #include "core/variant/container_type_validate.h"
 
@@ -75,6 +76,17 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 		case Variant::FLOAT: {
 			const double num = p_var;
 
+			// JSON does not support NaN or Infinity, so use extremely large numbers for infinity.
+			if (!Math::is_finite(num)) {
+				if (num == Math::INF) {
+					r_result += "1e99999";
+				} else if (num == -Math::INF) {
+					r_result += "-1e99999";
+				} else {
+					r_result += "\"NaN\"";
+				}
+				return;
+			}
 			// Only for exactly 0. If we have approximately 0 let the user decide how much
 			// precision they want.
 			if (num == double(0.0)) {
@@ -82,11 +94,18 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 				return;
 			}
 
-			const double magnitude = std::log10(Math::abs(num));
-			const int total_digits = p_full_precision ? 17 : 14;
-			const int precision = MAX(1, total_digits - (int)Math::floor(magnitude));
-
-			r_result += String::num(num, precision);
+			if (p_full_precision) {
+				const String num_sci = String::num_scientific(num);
+				if (num_sci.contains_char('.') || num_sci.contains_char('e')) {
+					r_result += num_sci;
+				} else {
+					r_result += num_sci + ".0";
+				}
+			} else {
+				const double magnitude = std::log10(Math::abs(num));
+				const int precision = MAX(1, 14 - (int)Math::floor(magnitude));
+				r_result += String::num(num, precision);
+			}
 			return;
 		}
 		case Variant::PACKED_INT32_ARRAY:

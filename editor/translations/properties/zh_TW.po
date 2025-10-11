@@ -55,8 +55,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-19 09:02+0000\n"
-"Last-Translator: Myeongjin <aranet100@gmail.com>\n"
+"PO-Revision-Date: 2025-09-19 22:59+0000\n"
+"Last-Translator: STENYIN lee <stenyin@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot-properties/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -64,7 +64,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Application"
 msgstr "應用"
@@ -486,6 +486,9 @@ msgstr "世界"
 msgid "Map Use Async Iterations"
 msgstr "地圖使用非同步迭代"
 
+msgid "Region Use Async Iterations"
+msgstr "區域使用非同步迭代"
+
 msgid "Avoidance"
 msgstr "避障"
 
@@ -752,6 +755,9 @@ msgstr "資料陣列"
 
 msgid "Max Pending Connections"
 msgstr "最大等待連接數"
+
+msgid "Neighbor Filter Enabled"
+msgstr "已啟用鄰近篩選"
 
 msgid "Region"
 msgstr "區域"
@@ -1218,6 +1224,9 @@ msgstr "強制停用網格壓縮"
 msgid "Node"
 msgstr "節點"
 
+msgid "Node Type"
+msgstr "節點型別"
+
 msgid "Script"
 msgstr "腳本"
 
@@ -1407,6 +1416,9 @@ msgstr "根型別"
 msgid "Root Name"
 msgstr "根名稱"
 
+msgid "Root Script"
+msgstr "根腳本"
+
 msgid "Apply Root Scale"
 msgstr "套用根縮放"
 
@@ -1463,6 +1475,15 @@ msgstr "匯入腳本"
 
 msgid "Materials"
 msgstr "材質"
+
+msgid "Extract"
+msgstr "擷取"
+
+msgid "Extract Format"
+msgstr "擷取格式"
+
+msgid "Extract Path"
+msgstr "擷取路徑"
 
 msgid "Antialiasing"
 msgstr "抗鋸齒"
@@ -2686,6 +2707,9 @@ msgstr "骨骼形狀"
 msgid "Path 3D Tilt Disk Size"
 msgstr "3D路徑傾斜圓盤大小"
 
+msgid "Lightmap GI Probe Size"
+msgstr "光照貼圖 GI 探針大小"
+
 msgid "Primary Grid Steps"
 msgstr "主要格線間距"
 
@@ -3328,6 +3352,9 @@ msgstr "手部互動設定檔"
 msgid "Eye Gaze Interaction"
 msgstr "眼動追蹤互動"
 
+msgid "Render Model"
+msgstr "算繪模型"
+
 msgid "Binding Modifiers"
 msgstr "綁定修飾符"
 
@@ -3675,6 +3702,138 @@ msgstr "排除外掛程式"
 
 msgid "Renamed in Godot 4 Hint"
 msgstr "在 Godot 4 中已重新命名提示"
+
+msgid "Unassigned Variable"
+msgstr "未指派變數"
+
+msgid "Unassigned Variable Op Assign"
+msgstr "未指派變數之運算指定"
+
+msgid "Unused Variable"
+msgstr "未使用的變數"
+
+msgid "Unused Local Constant"
+msgstr "未使用的區域常數"
+
+msgid "Unused Private Class Variable"
+msgstr "未使用的私有類別變數"
+
+msgid "Unused Parameter"
+msgstr "未使用的參數"
+
+msgid "Unused Signal"
+msgstr "未使用的訊號"
+
+msgid "Shadowed Variable"
+msgstr "被遮蔽的變數"
+
+msgid "Shadowed Variable Base Class"
+msgstr "基底類別中的變數被遮蔽"
+
+msgid "Shadowed Global Identifier"
+msgstr "被遮蔽的全域識別字"
+
+msgid "Unreachable Code"
+msgstr "不可達程式碼"
+
+msgid "Unreachable Pattern"
+msgstr "不可達樣式"
+
+msgid "Standalone Expression"
+msgstr "獨立表示式"
+
+msgid "Standalone Ternary"
+msgstr "獨立三元運算"
+
+msgid "Incompatible Ternary"
+msgstr "不相容的三元運算"
+
+msgid "Untyped Declaration"
+msgstr "未註明型別的宣告"
+
+msgid "Inferred Declaration"
+msgstr "推斷型別的宣告"
+
+msgid "Unsafe Property Access"
+msgstr "不安全的屬性存取"
+
+msgid "Unsafe Method Access"
+msgstr "不安全的方法存取"
+
+msgid "Unsafe Cast"
+msgstr "不安全的轉型"
+
+msgid "Unsafe Call Argument"
+msgstr "不安全的呼叫引數"
+
+msgid "Unsafe Void Return"
+msgstr "不安全的 void 回傳"
+
+msgid "Return Value Discarded"
+msgstr "回傳值遭捨棄"
+
+msgid "Static Called On Instance"
+msgstr "於實例上呼叫了靜態方法"
+
+msgid "Missing Tool"
+msgstr "缺少 tool"
+
+msgid "Redundant Static Unload"
+msgstr "多餘的靜態卸載"
+
+msgid "Redundant Await"
+msgstr "多餘的 await"
+
+msgid "Assert Always True"
+msgstr "斷言永遠為真"
+
+msgid "Assert Always False"
+msgstr "斷言永遠為假"
+
+msgid "Integer Division"
+msgstr "整數除法"
+
+msgid "Narrowing Conversion"
+msgstr "窄化轉換"
+
+msgid "Int As Enum Without Cast"
+msgstr "以整數當列舉而未轉型"
+
+msgid "Int As Enum Without Match"
+msgstr "以整數當列舉而未比對"
+
+msgid "Enum Variable Without Default"
+msgstr "列舉變數未給預設值"
+
+msgid "Empty File"
+msgstr "空白檔案"
+
+msgid "Deprecated Keyword"
+msgstr "已淘汰的關鍵字"
+
+msgid "Confusable Identifier"
+msgstr "易混淆的識別字"
+
+msgid "Confusable Local Declaration"
+msgstr "易混淆的區域宣告"
+
+msgid "Confusable Local Usage"
+msgstr "易混淆的區域用法"
+
+msgid "Confusable Capture Reassignment"
+msgstr "易混淆的捕捉變數重新指派"
+
+msgid "Inference On Variant"
+msgstr "在 Variant 上進行型別推斷"
+
+msgid "Native Method Override"
+msgstr "覆寫原生方法"
+
+msgid "Get Node Default Without Onready"
+msgstr "未使用 onready 即存取節點預設值"
+
+msgid "Onready With Export"
+msgstr "onready 與 export 同時使用"
 
 msgid "Language Server"
 msgstr "語言伺服器"
@@ -4507,6 +4666,9 @@ msgstr "骨骼更新"
 msgid "Tracker"
 msgstr "追蹤器"
 
+msgid "Make Local to Pose"
+msgstr "使相對於姿勢為本地座標"
+
 msgid "Subject"
 msgstr "對象"
 
@@ -4654,6 +4816,9 @@ msgstr "Gradle 建置目錄"
 msgid "Android Source Template"
 msgstr "Android 原始碼範本"
 
+msgid "Compress Native Libraries"
+msgstr "壓縮原生程式庫"
+
 msgid "Export Format"
 msgstr "匯出格式"
 
@@ -4731,6 +4896,9 @@ msgstr "滑動以關閉"
 
 msgid "Immersive Mode"
 msgstr "沉浸模式"
+
+msgid "Edge to Edge"
+msgstr "邊到邊"
 
 msgid "Support Small"
 msgstr "支援 Small"
@@ -5073,6 +5241,9 @@ msgstr "可移除標名使用描述"
 
 msgid "Removable Volumes Usage Description Localized"
 msgstr "可移除標名使用描述當地語系化"
+
+msgid "Min visionOS Version"
+msgstr "最低 visionOS 版本"
 
 msgid "Web"
 msgstr "Web"
@@ -5673,6 +5844,18 @@ msgstr "簡化路徑"
 
 msgid "Simplify Epsilon"
 msgstr "簡化容差"
+
+msgid "Path Return Max Length"
+msgstr "回傳路徑最大長度"
+
+msgid "Path Return Max Radius"
+msgstr "回傳路徑最大半徑"
+
+msgid "Path Search Max Polygons"
+msgstr "路徑搜尋最大多邊形數"
+
+msgid "Path Search Max Distance"
+msgstr "路徑搜尋最大距離"
 
 msgid "Avoidance Enabled"
 msgstr "啟用避障"
@@ -7680,6 +7863,27 @@ msgstr "檔案名稱篩選器"
 msgid "Use Native Dialog"
 msgstr "使用原生對話方塊"
 
+msgid "Hidden Files Toggle Enabled"
+msgstr "已啟用隱藏檔切換"
+
+msgid "File Filter Toggle Enabled"
+msgstr "已啟用檔案過濾器切換"
+
+msgid "File Sort Options Enabled"
+msgstr "已啟用檔案排序選項"
+
+msgid "Folder Creation Enabled"
+msgstr "已啟用資料夾建立"
+
+msgid "Favorites Enabled"
+msgstr "已啟用我的最愛"
+
+msgid "Recent List Enabled"
+msgstr "已啟用最近清單"
+
+msgid "Layout Toggle Enabled"
+msgstr "已啟用版面切換"
+
 msgid "Last Wrap Alignment"
 msgstr "最後換行對齊方式"
 
@@ -7790,6 +7994,9 @@ msgstr "色調顏色"
 
 msgid "Ignore Invalid Connection Type"
 msgstr "忽略無效連接類型"
+
+msgid "Slots Focus Mode"
+msgstr "插槽聚焦模式"
 
 msgid "Select Mode"
 msgstr "選擇模式"
@@ -8064,6 +8271,9 @@ msgstr "滾動啟動"
 msgid "Scroll Following"
 msgstr "滾動跟隨"
 
+msgid "Scroll Following Visible Characters"
+msgstr "捲動跟隨可見字元"
+
 msgid "Tab Size"
 msgstr "定位字元大小"
 
@@ -8126,6 +8336,9 @@ msgstr "刻度數量"
 
 msgid "Ticks on Borders"
 msgstr "邊界刻度"
+
+msgid "Ticks Position"
+msgstr "刻度位置"
 
 msgid "Update on Text Changed"
 msgstr "文字更改時更新"
@@ -9562,6 +9775,9 @@ msgstr "著色器"
 msgid "Depth Draw Mode"
 msgstr "深度繪製模式"
 
+msgid "Depth Test"
+msgstr "深度測試"
+
 msgid "Shading"
 msgstr "著色"
 
@@ -9738,6 +9954,18 @@ msgstr "MSDF"
 
 msgid "Pixel Range"
 msgstr "像素範圍"
+
+msgid "Stencil"
+msgstr "模版"
+
+msgid "Compare"
+msgstr "比較"
+
+msgid "Reference"
+msgstr "參考值"
+
+msgid "Outline Thickness"
+msgstr "外框粗細"
 
 msgid "Convex Hull Downsampling"
 msgstr "凸包降採樣"
@@ -10059,6 +10287,12 @@ msgstr "預覽輸出埠"
 
 msgid "Modes"
 msgstr "模式"
+
+msgid "Stencil Modes"
+msgstr "模版模式"
+
+msgid "Stencil Flags"
+msgstr "模版旗標"
 
 msgid "Input Name"
 msgstr "輸入名稱"
@@ -10437,6 +10671,9 @@ msgstr "抓取器居中"
 
 msgid "Grabber Offset"
 msgstr "抓取器偏移"
+
+msgid "Tick Offset"
+msgstr "刻度偏移"
 
 msgid "Updown"
 msgstr "上下"
@@ -10984,6 +11221,9 @@ msgstr "預設焦點"
 msgid "Preset BG"
 msgstr "預設背景"
 
+msgid "Horizontal Rule"
+msgstr "水平線"
+
 msgid "Normal Font"
 msgstr "正常字體"
 
@@ -11040,6 +11280,15 @@ msgstr "底線透明度"
 
 msgid "Strikethrough Alpha"
 msgstr "刪除線透明度"
+
+msgid "Touch Dragger Color"
+msgstr "觸控拖曳器顏色"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "觸控拖曳器按下顏色"
+
+msgid "Touch Dragger Hover Color"
+msgstr "觸控拖曳器游標暫留顏色"
 
 msgid "H Touch Dragger"
 msgstr "水平觸控拖曳器"
@@ -11335,6 +11584,21 @@ msgstr "影片寫入工具"
 msgid "Speaker Mode"
 msgstr "揚聲器模式"
 
+msgid "Video Quality"
+msgstr "視訊品質"
+
+msgid "OGV"
+msgstr "OGV"
+
+msgid "Audio Quality"
+msgstr "音訊品質"
+
+msgid "Encoding Speed"
+msgstr "編碼速度"
+
+msgid "Keyframe Interval"
+msgstr "關鍵影格間隔"
+
 msgid "Movie File"
 msgstr "電影檔案"
 
@@ -11358,6 +11622,9 @@ msgstr "路徑 RID"
 
 msgid "Path Owner IDs"
 msgstr "路徑所有者 ID"
+
+msgid "Path Length"
+msgstr "路徑長度"
 
 msgid "Default Cell Size"
 msgstr "預設儲存格大小"
@@ -11653,6 +11920,15 @@ msgstr "停用霧"
 msgid "Specular Occlusion Disabled"
 msgstr "已停用高光遮蔽"
 
+msgid "Read"
+msgstr "讀取"
+
+msgid "Write"
+msgstr "寫入"
+
+msgid "Write Depth Fail"
+msgstr "寫入深度失敗"
+
 msgid "Light Only"
 msgstr "僅燈光"
 
@@ -11673,6 +11949,36 @@ msgstr "使用二分之一解析度階段"
 
 msgid "Use Quarter Res Pass"
 msgstr "使用四分之一解析度階段"
+
+msgid "Float Comparison"
+msgstr "浮點數比較"
+
+msgid "Unused Constant"
+msgstr "未使用的常數"
+
+msgid "Unused Function"
+msgstr "未使用的函式"
+
+msgid "Unused Struct"
+msgstr "未使用的結構"
+
+msgid "Unused Uniform"
+msgstr "未使用的 uniform"
+
+msgid "Unused Varying"
+msgstr "未使用的 varying"
+
+msgid "Unused Local Variable"
+msgstr "未使用的區域變數"
+
+msgid "Formatting Error"
+msgstr "格式錯誤"
+
+msgid "Device Limit Exceeded"
+msgstr "超出裝置限制"
+
+msgid "Magic Position Write"
+msgstr "寫入特殊位置"
 
 msgid "Internal Size"
 msgstr "內部大小"
@@ -11970,6 +12276,9 @@ msgstr "LCD 次像素佈局"
 
 msgid "Include Text Server Data"
 msgstr "包括文字伺服器資料"
+
+msgid "Line Breaking Strictness"
+msgstr "換行嚴格程度"
 
 msgid "Has Tracking Data"
 msgstr "有追蹤資料"

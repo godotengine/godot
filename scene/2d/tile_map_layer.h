@@ -369,6 +369,7 @@ public:
 		DIRTY_FLAGS_LAYER_NAVIGATION_MAP,
 		DIRTY_FLAGS_LAYER_NAVIGATION_VISIBILITY_MODE,
 		DIRTY_FLAGS_LAYER_RUNTIME_UPDATE,
+		DIRTY_FLAGS_LAYER_HIGHLIGHT_MODE,
 
 		DIRTY_FLAGS_LAYER_INDEX_IN_TILE_MAP_NODE, // For compatibility.
 
@@ -440,16 +441,18 @@ private:
 	// Per-system methods.
 #ifdef DEBUG_ENABLED
 	HashMap<Vector2i, Ref<DebugQuadrant>> debug_quadrant_map;
-	bool _debug_was_cleaned_up = false;
+	bool _debug_was_cleaned_up = true;
 	void _debug_update(bool p_force_cleanup);
 	void _debug_quadrants_update_cell(CellData &r_cell_data);
 	void _get_debug_quadrant_for_cell(const Vector2i &p_coords);
 #endif // DEBUG_ENABLED
 
 	HashMap<Vector2i, Ref<RenderingQuadrant>> rendering_quadrant_map;
-	bool _rendering_was_cleaned_up = false;
+	bool _rendering_was_cleaned_up = true;
+	bool _occlusion_was_cleaned_up = true;
 	void _rendering_update(bool p_force_cleanup);
 	void _rendering_notification(int p_what);
+	Color _highlight_color(const Color &p_modulate) const;
 	void _rendering_quadrants_update_cell(CellData &r_cell_data, SelfList<RenderingQuadrant>::List &r_dirty_rendering_quadrant_list);
 	void _rendering_occluders_clear_cell(CellData &r_cell_data);
 	void _rendering_occluders_update_cell(CellData &r_cell_data);
@@ -460,7 +463,7 @@ private:
 #ifndef PHYSICS_2D_DISABLED
 	HashMap<Vector2i, Ref<PhysicsQuadrant>> physics_quadrant_map;
 	HashMap<RID, Vector2i> bodies_coords; // Mapping for RID to coords.
-	bool _physics_was_cleaned_up = false;
+	bool _physics_was_cleaned_up = true;
 	void _physics_update(bool p_force_cleanup);
 	void _physics_notification(int p_what);
 	void _physics_quadrants_update_cell(CellData &r_cell_data, SelfList<PhysicsQuadrant>::List &r_dirty_physics_quadrant_list);
@@ -472,7 +475,7 @@ private:
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef NAVIGATION_2D_DISABLED
-	bool _navigation_was_cleaned_up = false;
+	bool _navigation_was_cleaned_up = true;
 	void _navigation_update(bool p_force_cleanup);
 	void _navigation_notification(int p_what);
 	void _navigation_clear_cell(CellData &r_cell_data);
@@ -482,7 +485,7 @@ private:
 #endif // DEBUG_ENABLED
 #endif // NAVIGATION_2D_DISABLED
 
-	bool _scenes_was_cleaned_up = false;
+	bool _scenes_was_cleaned_up = true;
 	void _scenes_update(bool p_force_cleanup);
 	void _scenes_clear_cell(CellData &r_cell_data);
 	void _scenes_update_cell(CellData &r_cell_data);

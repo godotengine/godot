@@ -260,7 +260,7 @@ String _get_gles_tag() {
 String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset) {
 	String manifest_screen_sizes = "    <supports-screens \n        tools:node=\"replace\"";
 	String sizes[] = { "small", "normal", "large", "xlarge" };
-	constexpr size_t num_sizes = std::size(sizes);
+	constexpr size_t num_sizes = std_size(sizes);
 	for (size_t i = 0; i < num_sizes; i++) {
 		String feature_name = vformat("screen/support_%s", sizes[i]);
 		String feature_support = bool_to_string(p_preset->get(feature_name));

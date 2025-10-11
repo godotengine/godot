@@ -30,6 +30,7 @@
 
 #include "http_request.h"
 
+#include "core/io/file_access.h"
 #include "scene/main/timer.h"
 
 Error HTTPRequest::_request() {
