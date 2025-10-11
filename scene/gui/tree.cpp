@@ -4939,7 +4939,7 @@ void Tree::_notification(int p_what) {
 
 		case NOTIFICATION_DRAG_BEGIN: {
 			single_select_defer = nullptr;
-			if (theme_cache.scroll_speed > 0) {
+			if (theme_cache.scroll_speed > 0 && drop_mode_flags != DROP_MODE_DISABLED) {
 				scrolling = true;
 				set_process_internal(true);
 			}
@@ -4981,7 +4981,11 @@ void Tree::_notification(int p_what) {
 					}
 				}
 			}
-
+			if (scrolling && (!get_viewport() || !get_viewport()->gui_is_dragging())) {
+				scrolling = false;
+				set_process_internal(false);
+				break;
+			}
 			Point2 mouse_position = get_viewport()->get_mouse_position() - get_global_position();
 			if (scrolling && get_rect().grow(theme_cache.scroll_border).has_point(mouse_position)) {
 				Point2 point;
@@ -6316,7 +6320,15 @@ bool Tree::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 		return false;
 	}
 
-	return Control::can_drop_data(p_point, p_data);
+	bool is_drop_possible = Control::can_drop_data(p_point, p_data);
+	Tree *tree = const_cast<Tree *>(this);
+	if (is_drop_possible && theme_cache.scroll_speed > 0) {
+		tree->scrolling = true;
+		tree->set_process_internal(true);
+	} else if (!scrolling) {
+		tree->set_process_internal(false);
+	}
+	return is_drop_possible;
 }
 
 Variant Tree::get_drag_data(const Point2 &p_point) {
