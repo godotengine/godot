@@ -184,6 +184,8 @@ class SpriteFramesEditor : public HSplitContainer {
 	float max_sheet_zoom;
 	float min_sheet_zoom;
 
+	bool use_default_editor_size = true;
+
 	Size2i _get_frame_count() const;
 	Size2i _get_frame_size() const;
 	Size2i _get_offset() const;
