@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/templates/rid_owner.h"
+#include "servers/rendering/push_constants_emu.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/environment/sky.glsl.gen.h"
@@ -137,6 +138,8 @@ private:
 	void _render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const Projection &p_projection, const Basis &p_orientation, const Vector3 &p_position, float p_luminance_multiplier, float p_brightness_modifier);
 
 public:
+	RID _create_push_constant_uniform_set(RID p_params_uniform_buffer);
+
 	struct SkySceneState {
 		struct UBO {
 			float combined_reprojection[RendererSceneRender::MAX_RENDER_VIEWS][16]; // 2 x 64 - 128
@@ -173,10 +176,13 @@ public:
 		uint32_t max_directional_lights;
 		uint32_t last_frame_directional_light_count;
 		RID directional_light_buffer;
-		RID uniform_set;
 		RID uniform_buffer;
 		RID fog_uniform_set;
 		RID default_fog_uniform_set;
+
+		// Replacing push constants with uniform buffer. Only keep up to 6 (i.e. a cubemap) since
+		// that should be the general case. Peak may be much bigger though.
+		PushConstantsEmuEmbedded<SkyPushConstant, SkyRD, 6u> push_constant = { "sky_scene_state" };
 
 		RID fog_shader;
 		RID fog_material;
