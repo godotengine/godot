@@ -578,6 +578,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 						break; // Nothing.
 				}
 			}
+			copy_script_meta_from(parser.get_script_metadata());
 		} else {
 			placeholder_fallback_enabled = true;
 			return false;
@@ -851,6 +852,8 @@ Error GDScript::reload(bool p_keep_state) {
 	}
 
 	can_run = ScriptServer::is_scripting_enabled() || parser.is_tool();
+
+	copy_script_meta_from(parser.get_script_metadata());
 
 	GDScriptCompiler compiler;
 	err = compiler.compile(&parser, this, p_keep_state);

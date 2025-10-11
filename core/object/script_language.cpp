@@ -159,6 +159,40 @@ PropertyInfo Script::get_class_category() const {
 
 #endif // TOOLS_ENABLED
 
+Dictionary ScriptMetadata::to_dictionary() const {
+	Dictionary result;
+	result[StringName("target_container")] = target_container;
+	result[StringName("target_name")] = target_name;
+	result[StringName("target_type")] = target_type;
+	result[StringName("value")] = value;
+	return result;
+}
+
+TypedArray<Dictionary> Script::get_script_meta(const StringName &p_name) const {
+	Array result;
+	if (script_metadata.has(p_name)) {
+		for (const auto &meta : script_metadata[p_name]) {
+			result.append(meta.to_dictionary());
+		}
+	}
+	return result;
+}
+
+PackedStringArray Script::get_script_meta_list() const {
+	PackedStringArray result;
+	for (const auto &[meta_name, _] : script_metadata) {
+		result.append(meta_name);
+	}
+	return result;
+}
+
+void Script::copy_script_meta_from(const HashMap<StringName, Vector<ScriptMetadata>> &p_source) {
+	script_metadata.clear();
+	for (const auto &[key, value] : p_source) {
+		script_metadata.insert(key, value);
+	}
+}
+
 void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("can_instantiate"), &Script::can_instantiate);
 	//ClassDB::bind_method(D_METHOD("instance_create","base_object"),&Script::instance_create);
@@ -185,7 +219,18 @@ void Script::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Script::_get_rpc_config_bind);
 
+	ClassDB::bind_method(D_METHOD("get_script_meta", "name"), &Script::get_script_meta);
+	ClassDB::bind_method(D_METHOD("get_script_meta_list"), &Script::get_script_meta_list);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
+
+	// TODO: Why doesn't e.g. BIND_ENUM_CONSTANT(META_TARGET_CLASS) work here?
+	// error: incomplete type 'GetTypeInfo<Script::MetaTargetType, void>' used in nested name specifier
+	ClassDB::bind_integer_constant(get_class_static(), StringName("MetaTargetType"), "META_TARGET_CLASS", META_TARGET_CLASS);
+	ClassDB::bind_integer_constant(get_class_static(), StringName("MetaTargetType"), "META_TARGET_VARIABLE", META_TARGET_VARIABLE);
+	ClassDB::bind_integer_constant(get_class_static(), StringName("MetaTargetType"), "META_TARGET_CONSTANT", META_TARGET_CONSTANT);
+	ClassDB::bind_integer_constant(get_class_static(), StringName("MetaTargetType"), "META_TARGET_SIGNAL", META_TARGET_SIGNAL);
+	ClassDB::bind_integer_constant(get_class_static(), StringName("MetaTargetType"), "META_TARGET_FUNCTION", META_TARGET_FUNCTION);
 }
 
 void Script::reload_from_file() {

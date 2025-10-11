@@ -1695,7 +1695,7 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 
 		Variant value = argument->reduced_value;
 
-		if (value.get_type() != argument_info.type) {
+		if (value.get_type() != argument_info.type && !(argument_info.type == Variant::NIL && (argument_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT))) {
 #ifdef DEBUG_ENABLED
 			if (argument_info.type == Variant::INT && value.get_type() == Variant::FLOAT) {
 				parser->push_warning(argument, GDScriptWarning::NARROWING_CONVERSION);
@@ -2690,9 +2690,20 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 }
 
 void GDScriptAnalyzer::reduce_array(GDScriptParser::ArrayNode *p_array) {
+	p_array->is_constant = true;
 	for (int i = 0; i < p_array->elements.size(); i++) {
 		GDScriptParser::ExpressionNode *element = p_array->elements[i];
 		reduce_expression(element);
+		p_array->is_constant &= element->is_constant;
+	}
+
+	// If the array is constant we can assign a reduced value.
+	if (p_array->is_constant) {
+		Array reduced_value;
+		for (const auto &element : p_array->elements) {
+			reduced_value.append(element->reduced_value);
+		}
+		p_array->reduced_value = reduced_value;
 	}
 
 	// It's array in any case.
@@ -3835,12 +3846,15 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 void GDScriptAnalyzer::reduce_dictionary(GDScriptParser::DictionaryNode *p_dictionary) {
 	HashMap<Variant, GDScriptParser::ExpressionNode *, HashMapHasherDefault, StringLikeVariantComparator> elements;
 
+	p_dictionary->is_constant = true;
 	for (int i = 0; i < p_dictionary->elements.size(); i++) {
 		const GDScriptParser::DictionaryNode::Pair &element = p_dictionary->elements[i];
 		if (p_dictionary->style == GDScriptParser::DictionaryNode::PYTHON_DICT) {
 			reduce_expression(element.key);
+			p_dictionary->is_constant &= element.key->is_constant;
 		}
 		reduce_expression(element.value);
+		p_dictionary->is_constant &= element.value->is_constant;
 
 		if (element.key->is_constant) {
 			if (elements.has(element.key->reduced_value)) {
@@ -3849,6 +3863,15 @@ void GDScriptAnalyzer::reduce_dictionary(GDScriptParser::DictionaryNode *p_dicti
 				elements[element.key->reduced_value] = element.value;
 			}
 		}
+	}
+
+	// If the dictionary is constant, we can assign a reduced value.
+	if (p_dictionary->is_constant) {
+		Dictionary reduced_value;
+		for (const auto &[key, value] : p_dictionary->elements) {
+			reduced_value[key->reduced_value] = value->reduced_value;
+		}
+		p_dictionary->reduced_value = reduced_value;
 	}
 
 	// It's dictionary in any case.
