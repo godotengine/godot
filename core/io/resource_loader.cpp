@@ -697,10 +697,17 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 		}
 
 		String local_path = _validate_local_path(p_path);
-		ERR_FAIL_COND_V_MSG(!thread_load_tasks.has(local_path), THREAD_LOAD_INVALID_RESOURCE, "Bug in ResourceLoader logic, please report.");
+		LoadToken *load_token = user_load_tokens[p_path];
+		ThreadLoadTask *load_task_ptr;
 
-		ThreadLoadTask &load_task = thread_load_tasks[local_path];
-		status = load_task.status;
+		if (load_token->task_if_unregistered) {
+			load_task_ptr = load_token->task_if_unregistered;
+		} else {
+			ERR_FAIL_COND_V_MSG(!thread_load_tasks.has(local_path), THREAD_LOAD_INVALID_RESOURCE, "Bug in ResourceLoader logic, please report.");
+			load_task_ptr = &thread_load_tasks[local_path];
+		}
+
+		status = load_task_ptr->status;
 		if (r_progress) {
 			*r_progress = _dependency_get_progress(local_path);
 		}
@@ -708,10 +715,10 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 		// Support userland polling in a loop on the main thread.
 		if (Thread::is_main_thread() && status == THREAD_LOAD_IN_PROGRESS) {
 			uint64_t frame = Engine::get_singleton()->get_process_frames();
-			if (frame == load_task.last_progress_check_main_thread_frame) {
+			if (frame == load_task_ptr->last_progress_check_main_thread_frame) {
 				ensure_progress = true;
 			} else {
-				load_task.last_progress_check_main_thread_frame = frame;
+				load_task_ptr->last_progress_check_main_thread_frame = frame;
 			}
 		}
 	}
@@ -745,8 +752,23 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 
 		// Support userland requesting on the main thread before the load is reported to be complete.
 		if (Thread::is_main_thread() && !load_token->local_path.is_empty()) {
-			const ThreadLoadTask &load_task = thread_load_tasks[load_token->local_path];
-			while (load_task.status == THREAD_LOAD_IN_PROGRESS) {
+			ThreadLoadTask *load_task_ptr;
+
+			if (load_token->task_if_unregistered) {
+				load_task_ptr = load_token->task_if_unregistered;
+			} else {
+				if (!thread_load_tasks.has(load_token->local_path)) {
+					print_error("Bug in ResourceLoader logic, please report.");
+					if (r_error) {
+						*r_error = ERR_BUG;
+					}
+					return Ref<Resource>();
+				}
+
+				load_task_ptr = &thread_load_tasks[load_token->local_path];
+			}
+
+			while (load_task_ptr->status == THREAD_LOAD_IN_PROGRESS) {
 				thread_load_lock.temp_unlock();
 				bool exit = !_ensure_load_progress();
 				OS::get_singleton()->delay_usec(1000);
