@@ -100,6 +100,10 @@ protected:
 	bool project_loaded = false;
 	List<String> input_presets;
 
+	PlayerID keyboard_player_id_override = PlayerID::P1;
+	PlayerID mouse_player_id_override = PlayerID::P1;
+	PlayerID touch_player_id_override = PlayerID::P1;
+
 	HashSet<String> custom_features;
 	HashMap<StringName, LocalVector<Pair<StringName, StringName>>> feature_overrides;
 

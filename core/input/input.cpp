@@ -120,20 +120,22 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_key_label_pressed", "keycode"), &Input::is_key_label_pressed);
 	ClassDB::bind_method(D_METHOD("is_mouse_button_pressed", "button"), &Input::is_mouse_button_pressed);
 	ClassDB::bind_method(D_METHOD("is_joy_button_pressed", "device", "button"), &Input::is_joy_button_pressed);
-	ClassDB::bind_method(D_METHOD("is_action_pressed", "action", "exact_match"), &Input::is_action_pressed, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("is_action_just_pressed", "action", "exact_match"), &Input::is_action_just_pressed, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("is_action_just_released", "action", "exact_match"), &Input::is_action_just_released, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("is_action_just_pressed_by_event", "action", "event", "exact_match"), &Input::is_action_just_pressed_by_event, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("is_action_just_released_by_event", "action", "event", "exact_match"), &Input::is_action_just_released_by_event, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_action_strength", "action", "exact_match"), &Input::get_action_strength, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_action_raw_strength", "action", "exact_match"), &Input::get_action_raw_strength, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_axis", "negative_action", "positive_action"), &Input::get_axis);
-	ClassDB::bind_method(D_METHOD("get_vector", "negative_x", "positive_x", "negative_y", "positive_y", "deadzone"), &Input::get_vector, DEFVAL(-1.0f));
+	ClassDB::bind_method(D_METHOD("is_action_pressed", "action", "exact_match", "player_id"), &Input::is_action_pressed, DEFVAL(false), DEFVAL(PlayerID::P1));
+	ClassDB::bind_method(D_METHOD("is_action_just_pressed", "action", "exact_match", "player_id"), &Input::is_action_just_pressed, DEFVAL(false), DEFVAL(PlayerID::P1));
+	ClassDB::bind_method(D_METHOD("is_action_just_released", "action", "exact_match", "player_id"), &Input::is_action_just_released, DEFVAL(false), DEFVAL(PlayerID::P1));
+	ClassDB::bind_method(D_METHOD("is_action_just_pressed_by_event", "action", "event", "exact_match", "player_id"), &Input::is_action_just_pressed_by_event, DEFVAL(false), DEFVAL(PlayerID::P1));
+	ClassDB::bind_method(D_METHOD("is_action_just_released_by_event", "action", "event", "exact_match", "player_id"), &Input::is_action_just_released_by_event, DEFVAL(false), DEFVAL(PlayerID::P1));
+	ClassDB::bind_method(D_METHOD("get_action_strength", "action", "exact_match", "player_id"), &Input::get_action_strength, DEFVAL(false), DEFVAL(PlayerID::P1));
+	ClassDB::bind_method(D_METHOD("get_action_raw_strength", "action", "exact_match", "player_id"), &Input::get_action_raw_strength, DEFVAL(false), DEFVAL(PlayerID::P1));
+	ClassDB::bind_method(D_METHOD("get_axis", "negative_action", "positive_action", "player_id"), &Input::get_axis, DEFVAL(PlayerID::P1));
+	ClassDB::bind_method(D_METHOD("get_vector", "negative_x", "positive_x", "negative_y", "positive_y", "deadzone", "player_id"), &Input::get_vector, DEFVAL(-1.0f), DEFVAL(PlayerID::P1));
 	ClassDB::bind_method(D_METHOD("add_joy_mapping", "mapping", "update_existing"), &Input::add_joy_mapping, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_joy_mapping", "guid"), &Input::remove_joy_mapping);
 	ClassDB::bind_method(D_METHOD("is_joy_known", "device"), &Input::is_joy_known);
 	ClassDB::bind_method(D_METHOD("get_joy_axis", "device", "axis"), &Input::get_joy_axis);
 	ClassDB::bind_method(D_METHOD("get_joy_name", "device"), &Input::get_joy_name);
+	ClassDB::bind_method(D_METHOD("get_joy_player_id", "device"), &Input::get_joy_player_id);
+	ClassDB::bind_method(D_METHOD("set_joy_player_id", "device", "player_id"), &Input::set_joy_player_id);
 	ClassDB::bind_method(D_METHOD("get_joy_guid", "device"), &Input::get_joy_guid);
 	ClassDB::bind_method(D_METHOD("get_joy_info", "device"), &Input::get_joy_info);
 	ClassDB::bind_method(D_METHOD("should_ignore_device", "vendor_id", "product_id"), &Input::should_ignore_device);
@@ -157,8 +159,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mouse_mode", "mode"), &Input::set_mouse_mode);
 	ClassDB::bind_method(D_METHOD("get_mouse_mode"), &Input::get_mouse_mode);
 	ClassDB::bind_method(D_METHOD("warp_mouse", "position"), &Input::warp_mouse);
-	ClassDB::bind_method(D_METHOD("action_press", "action", "strength"), &Input::action_press, DEFVAL(1.f));
-	ClassDB::bind_method(D_METHOD("action_release", "action"), &Input::action_release);
+	ClassDB::bind_method(D_METHOD("action_press", "action", "strength", "player_id"), &Input::action_press, DEFVAL(1.f), DEFVAL(PlayerID::P1));
+	ClassDB::bind_method(D_METHOD("action_release", "action", "player_id"), &Input::action_release, DEFVAL(PlayerID::P1));
 	ClassDB::bind_method(D_METHOD("set_default_cursor_shape", "shape"), &Input::set_default_cursor_shape, DEFVAL(CURSOR_ARROW));
 	ClassDB::bind_method(D_METHOD("get_current_cursor_shape"), &Input::get_current_cursor_shape);
 	ClassDB::bind_method(D_METHOD("set_custom_mouse_cursor", "image", "shape", "hotspot"), &Input::set_custom_mouse_cursor, DEFVAL(CURSOR_ARROW), DEFVAL(Vector2()));
@@ -200,6 +202,8 @@ void Input::_bind_methods() {
 	BIND_ENUM_CONSTANT(CURSOR_VSPLIT);
 	BIND_ENUM_CONSTANT(CURSOR_HSPLIT);
 	BIND_ENUM_CONSTANT(CURSOR_HELP);
+
+	BIND_CONSTANT(PLAYERS_MAX);
 
 	ADD_SIGNAL(MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "device"), PropertyInfo(Variant::BOOL, "connected")));
 }
@@ -285,9 +289,12 @@ bool Input::is_anything_pressed() const {
 		return true;
 	}
 
-	for (const KeyValue<StringName, Input::ActionState> &E : action_states) {
-		if (E.value.cache.pressed) {
-			return true;
+	for (const KeyValue<int, HashMap<StringName, Input::ActionState>> &player_entry : action_states) {
+		const HashMap<StringName, Input::ActionState> &player_action_states = player_entry.value;
+		for (const KeyValue<StringName, Input::ActionState> &action_entry : player_action_states) {
+			if (action_entry.value.cache.pressed) {
+				return true;
+			}
 		}
 	}
 
@@ -305,9 +312,12 @@ bool Input::is_anything_pressed_except_mouse() const {
 		return true;
 	}
 
-	for (const KeyValue<StringName, Input::ActionState> &E : action_states) {
-		if (E.value.cache.pressed) {
-			return true;
+	for (const KeyValue<int, HashMap<StringName, Input::ActionState>> &player_entry : action_states) {
+		const HashMap<StringName, Input::ActionState> &player_action_states = player_entry.value;
+		for (const KeyValue<StringName, Input::ActionState> &action_entry : player_action_states) {
+			if (action_entry.value.cache.pressed) {
+				return true;
+			}
 		}
 	}
 
@@ -372,48 +382,58 @@ bool Input::is_joy_button_pressed(int p_device, JoyButton p_button) const {
 	return joy_buttons_pressed.has(_combine_device(p_button, p_device));
 }
 
-bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
+bool Input::is_action_pressed(const StringName &p_action, bool p_exact, PlayerID p_player_id) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 
 	if (disable_input) {
 		return false;
 	}
 
-	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
-	if (!E) {
+	HashMap<int, HashMap<StringName, ActionState>>::ConstIterator player_entry = action_states.find((int)p_player_id);
+	if (!player_entry) {
 		return false;
 	}
 
-	return E->value.cache.pressed && (p_exact ? E->value.exact : true);
+	HashMap<StringName, ActionState>::ConstIterator action_entry = player_entry->value.find(p_action);
+	if (!action_entry) {
+		return false;
+	}
+
+	return action_entry->value.cache.pressed && (p_exact ? action_entry->value.exact : true);
 }
 
-bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) const {
+bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact, PlayerID p_player_id) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 
 	if (disable_input) {
 		return false;
 	}
 
-	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
-	if (!E) {
+	HashMap<int, HashMap<StringName, ActionState>>::ConstIterator player_entry = action_states.find((int)p_player_id);
+	if (!player_entry) {
 		return false;
 	}
 
-	if (p_exact && E->value.exact == false) {
+	HashMap<StringName, ActionState>::ConstIterator action_entry = player_entry->value.find(p_action);
+	if (!action_entry) {
+		return false;
+	}
+
+	if (p_exact && action_entry->value.exact == false) {
 		return false;
 	}
 
 	// Backward compatibility for legacy behavior, only return true if currently pressed.
-	bool pressed_requirement = legacy_just_pressed_behavior ? E->value.cache.pressed : true;
+	bool pressed_requirement = legacy_just_pressed_behavior ? action_entry->value.cache.pressed : true;
 
 	if (Engine::get_singleton()->is_in_physics_frame()) {
-		return pressed_requirement && E->value.pressed_physics_frame == Engine::get_singleton()->get_physics_frames();
+		return pressed_requirement && action_entry->value.pressed_physics_frame == Engine::get_singleton()->get_physics_frames();
 	} else {
-		return pressed_requirement && E->value.pressed_process_frame == Engine::get_singleton()->get_process_frames();
+		return pressed_requirement && action_entry->value.pressed_process_frame == Engine::get_singleton()->get_process_frames();
 	}
 }
 
-bool Input::is_action_just_pressed_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact) const {
+bool Input::is_action_just_pressed_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact, PlayerID p_player_id) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 	ERR_FAIL_COND_V(p_event.is_null(), false);
 
@@ -421,7 +441,12 @@ bool Input::is_action_just_pressed_by_event(const StringName &p_action, const Re
 		return false;
 	}
 
-	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
+	HashMap<int, HashMap<StringName, ActionState>>::ConstIterator player_entry = action_states.find((int)p_player_id);
+	if (!player_entry) {
+		return false;
+	}
+
+	HashMap<StringName, ActionState>::ConstIterator E = player_entry->value.find(p_action);
 	if (!E) {
 		return false;
 	}
@@ -444,33 +469,38 @@ bool Input::is_action_just_pressed_by_event(const StringName &p_action, const Re
 	}
 }
 
-bool Input::is_action_just_released(const StringName &p_action, bool p_exact) const {
+bool Input::is_action_just_released(const StringName &p_action, bool p_exact, PlayerID p_player_id) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 
 	if (disable_input) {
 		return false;
 	}
 
-	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
-	if (!E) {
+	HashMap<int, HashMap<StringName, ActionState>>::ConstIterator player_entry = action_states.find((int)p_player_id);
+	if (!player_entry) {
 		return false;
 	}
 
-	if (p_exact && E->value.exact == false) {
+	HashMap<StringName, ActionState>::ConstIterator action_entry = player_entry->value.find(p_action);
+	if (!action_entry) {
+		return false;
+	}
+
+	if (p_exact && action_entry->value.exact == false) {
 		return false;
 	}
 
 	// Backward compatibility for legacy behavior, only return true if currently released.
-	bool released_requirement = legacy_just_pressed_behavior ? !E->value.cache.pressed : true;
+	bool released_requirement = legacy_just_pressed_behavior ? !action_entry->value.cache.pressed : true;
 
 	if (Engine::get_singleton()->is_in_physics_frame()) {
-		return released_requirement && E->value.released_physics_frame == Engine::get_singleton()->get_physics_frames();
+		return released_requirement && action_entry->value.released_physics_frame == Engine::get_singleton()->get_physics_frames();
 	} else {
-		return released_requirement && E->value.released_process_frame == Engine::get_singleton()->get_process_frames();
+		return released_requirement && action_entry->value.released_process_frame == Engine::get_singleton()->get_process_frames();
 	}
 }
 
-bool Input::is_action_just_released_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact) const {
+bool Input::is_action_just_released_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact, PlayerID p_player_id) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 	ERR_FAIL_COND_V(p_event.is_null(), false);
 
@@ -478,7 +508,12 @@ bool Input::is_action_just_released_by_event(const StringName &p_action, const R
 		return false;
 	}
 
-	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
+	HashMap<int, HashMap<StringName, ActionState>>::ConstIterator player_entry = action_states.find((int)p_player_id);
+	if (!player_entry) {
+		return false;
+	}
+
+	HashMap<StringName, ActionState>::ConstIterator E = player_entry->value.find(p_action);
 	if (!E) {
 		return false;
 	}
@@ -501,52 +536,62 @@ bool Input::is_action_just_released_by_event(const StringName &p_action, const R
 	}
 }
 
-float Input::get_action_strength(const StringName &p_action, bool p_exact) const {
+float Input::get_action_strength(const StringName &p_action, bool p_exact, PlayerID p_player_id) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), 0.0, InputMap::get_singleton()->suggest_actions(p_action));
 
 	if (disable_input) {
 		return 0.0f;
 	}
 
-	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
-	if (!E) {
+	HashMap<int, HashMap<StringName, ActionState>>::ConstIterator player_entry = action_states.find((int)p_player_id);
+	if (!player_entry) {
 		return 0.0f;
 	}
 
-	if (p_exact && E->value.exact == false) {
+	HashMap<StringName, ActionState>::ConstIterator action_entry = player_entry->value.find(p_action);
+	if (!action_entry) {
 		return 0.0f;
 	}
 
-	return E->value.cache.strength;
+	if (p_exact && action_entry->value.exact == false) {
+		return 0.0f;
+	}
+
+	return action_entry->value.cache.strength;
 }
 
-float Input::get_action_raw_strength(const StringName &p_action, bool p_exact) const {
+float Input::get_action_raw_strength(const StringName &p_action, bool p_exact, PlayerID p_player_id) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), 0.0, InputMap::get_singleton()->suggest_actions(p_action));
 
 	if (disable_input) {
 		return 0.0f;
 	}
 
-	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
-	if (!E) {
+	HashMap<int, HashMap<StringName, ActionState>>::ConstIterator player_entry = action_states.find((int)p_player_id);
+	if (!player_entry) {
 		return 0.0f;
 	}
 
-	if (p_exact && E->value.exact == false) {
+	HashMap<StringName, ActionState>::ConstIterator action_entry = player_entry->value.find(p_action);
+	if (!action_entry) {
 		return 0.0f;
 	}
 
-	return E->value.cache.raw_strength;
+	if (p_exact && action_entry->value.exact == false) {
+		return 0.0f;
+	}
+
+	return action_entry->value.cache.raw_strength;
 }
 
-float Input::get_axis(const StringName &p_negative_action, const StringName &p_positive_action) const {
-	return get_action_strength(p_positive_action) - get_action_strength(p_negative_action);
+float Input::get_axis(const StringName &p_negative_action, const StringName &p_positive_action, PlayerID p_player_id) const {
+	return get_action_strength(p_positive_action, false, p_player_id) - get_action_strength(p_negative_action, false, p_player_id);
 }
 
-Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_positive_x, const StringName &p_negative_y, const StringName &p_positive_y, float p_deadzone) const {
+Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_positive_x, const StringName &p_negative_y, const StringName &p_positive_y, float p_deadzone, PlayerID p_player_id) const {
 	Vector2 vector = Vector2(
-			get_action_raw_strength(p_positive_x) - get_action_raw_strength(p_negative_x),
-			get_action_raw_strength(p_positive_y) - get_action_raw_strength(p_negative_y));
+			get_action_raw_strength(p_positive_x, false, p_player_id) - get_action_raw_strength(p_negative_x, false, p_player_id),
+			get_action_raw_strength(p_positive_y, false, p_player_id) - get_action_raw_strength(p_negative_y, false, p_player_id));
 
 	if (p_deadzone < 0.0f) {
 		// If the deadzone isn't specified, get it from the average of the actions.
@@ -629,11 +674,14 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 
 	// Clear the pressed status if a Joypad gets disconnected.
 	if (!p_connected) {
-		for (KeyValue<StringName, ActionState> &E : action_states) {
-			HashMap<int, ActionState::DeviceState>::Iterator it = E.value.device_states.find(p_idx);
-			if (it) {
-				E.value.device_states.remove(it);
-				_update_action_cache(E.key, E.value);
+		for (KeyValue<int, HashMap<StringName, Input::ActionState>> &player_entry : action_states) {
+			HashMap<StringName, Input::ActionState> &player_action_states = player_entry.value;
+			for (KeyValue<StringName, ActionState> &action_entry : player_action_states) {
+				HashMap<int, ActionState::DeviceState>::Iterator it = action_entry.value.device_states.find(p_idx);
+				if (it) {
+					action_entry.value.device_states.remove(it);
+					_update_action_cache(action_entry.key, action_entry.value);
+				}
 			}
 		}
 	}
@@ -641,6 +689,7 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 	Joypad js;
 	js.name = p_connected ? p_name : "";
 	js.uid = p_connected ? p_guid : "";
+	js.player_id = PlayerID(CLAMP(p_idx, 0, PLAYERS_MAX));
 	js.info = p_connected ? p_joypad_info : Dictionary();
 
 	if (p_connected) {
@@ -667,6 +716,9 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 		js.info.erase("mapping_handled");
 
 		_set_joypad_mapping(js, mapping);
+
+		// Create player action states.
+		action_states[(int)js.player_id];
 	} else {
 		js.connected = false;
 		for (int i = 0; i < (int)JoyButton::MAX; i++) {
@@ -675,6 +727,11 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 		}
 		for (int i = 0; i < (int)JoyAxis::MAX; i++) {
 			set_joy_axis(p_idx, (JoyAxis)i, 0.0f);
+		}
+
+		// Remove player action states.
+		if (action_states.has((int)js.player_id)) {
+			action_states.erase((int)js.player_id);
 		}
 	}
 	joy_names[p_idx] = js;
@@ -788,6 +845,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			touch_event->set_position(mb->get_position());
 			touch_event->set_double_tap(mb->is_double_click());
 			touch_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+			touch_event->set_player_from_device();
 			_THREAD_SAFE_UNLOCK_
 			event_dispatch_function(touch_event);
 			_THREAD_SAFE_LOCK_
@@ -818,6 +876,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			drag_event->set_velocity(get_last_mouse_velocity());
 			drag_event->set_screen_velocity(get_last_mouse_screen_velocity());
 			drag_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+			drag_event->set_player_from_device();
 
 			_THREAD_SAFE_UNLOCK_
 			event_dispatch_function(drag_event);
@@ -856,6 +915,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 				button_event.instantiate();
 
 				button_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+				button_event->set_player_from_device();
 				button_event->set_position(st->get_position());
 				button_event->set_global_position(st->get_position());
 				button_event->set_pressed(st->is_pressed());
@@ -890,6 +950,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			motion_event.instantiate();
 
 			motion_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+			motion_event->set_player_from_device();
 			motion_event->set_tilt(sd->get_tilt());
 			motion_event->set_pen_inverted(sd->get_pen_inverted());
 			motion_event->set_pressure(sd->get_pressure());
@@ -942,14 +1003,17 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		ERR_FAIL_COND_MSG(event_index >= (int)MAX_EVENT, vformat("Input singleton does not support more than %d events assigned to an action.", MAX_EVENT));
 
 		int device_id = p_event->get_device();
-		bool is_pressed = p_event->is_action_pressed(E.key, true);
-		ActionState &action_state = action_states[E.key];
+		PlayerID player_id = p_event->get_player();
+		bool is_pressed = p_event->is_action_pressed(E.key, true, false, player_id);
+
+		HashMap<StringName, ActionState> &player_action_states = action_states[(int)player_id];
+		ActionState &action_state = player_action_states[E.key];
 
 		// Update the action's per-device state.
 		ActionState::DeviceState &device_state = action_state.device_states[device_id];
 		device_state.pressed[event_index] = is_pressed;
-		device_state.strength[event_index] = p_event->get_action_strength(E.key);
-		device_state.raw_strength[event_index] = p_event->get_action_raw_strength(E.key);
+		device_state.strength[event_index] = p_event->get_action_strength(E.key, false, player_id);
+		device_state.raw_strength[event_index] = p_event->get_action_raw_strength(E.key, false, player_id);
 
 		// Update the action's global state and cache.
 		if (!is_pressed) {
@@ -1088,11 +1152,14 @@ Point2 Input::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, cons
 	return rel_warped;
 }
 
-void Input::action_press(const StringName &p_action, float p_strength) {
+void Input::action_press(const StringName &p_action, float p_strength, PlayerID p_player_id) {
 	ERR_FAIL_COND_MSG(!InputMap::get_singleton()->has_action(p_action), InputMap::get_singleton()->suggest_actions(p_action));
 
+	// Create or retrieve existing player action states.
+	HashMap<StringName, ActionState> &player_entry = action_states[(int)p_player_id];
+
 	// Create or retrieve existing action.
-	ActionState &action_state = action_states[p_action];
+	ActionState &action_state = player_entry[p_action];
 
 	// As input may come in part way through a physics tick, the earliest we can react to it is the next physics tick.
 	if (!action_state.cache.pressed) {
@@ -1106,11 +1173,15 @@ void Input::action_press(const StringName &p_action, float p_strength) {
 	_update_action_cache(p_action, action_state);
 }
 
-void Input::action_release(const StringName &p_action) {
+void Input::action_release(const StringName &p_action, PlayerID p_player_id) {
 	ERR_FAIL_COND_MSG(!InputMap::get_singleton()->has_action(p_action), InputMap::get_singleton()->suggest_actions(p_action));
 
+	// Create or retrieve existing player action states.
+	HashMap<StringName, ActionState> &player_entry = action_states[(int)p_player_id];
+
 	// Create or retrieve existing action.
-	ActionState &action_state = action_states[p_action];
+	ActionState &action_state = player_entry[p_action];
+
 	action_state.cache.pressed = false;
 	action_state.cache.strength = 0.0;
 	action_state.cache.raw_strength = 0.0;
@@ -1143,6 +1214,7 @@ void Input::ensure_touch_mouse_raised() {
 		button_event.instantiate();
 
 		button_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+		button_event->set_player_from_device();
 		button_event->set_position(mouse_pos);
 		button_event->set_global_position(mouse_pos);
 		button_event->set_pressed(false);
@@ -1180,6 +1252,7 @@ void Input::set_default_cursor_shape(CursorShape p_shape) {
 	mm->set_position(mouse_pos);
 	mm->set_global_position(mouse_pos);
 	mm->set_device(InputEvent::DEVICE_ID_INTERNAL);
+	mm->set_player_from_device();
 	parse_input_event(mm);
 }
 
@@ -1201,6 +1274,9 @@ void Input::parse_input_event(const Ref<InputEvent> &p_event) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(p_event.is_null());
+
+	// Override player id of the event.
+	p_event->set_player_from_device();
 
 #ifdef DEBUG_ENABLED
 	uint64_t curr_frame = Engine::get_singleton()->get_process_frames();
@@ -1287,9 +1363,12 @@ void Input::release_pressed_events() {
 	joy_buttons_pressed.clear();
 	_joy_axis.clear();
 
-	for (KeyValue<StringName, Input::ActionState> &E : action_states) {
-		if (E.value.cache.pressed) {
-			action_release(E.key);
+	for (KeyValue<int, HashMap<StringName, Input::ActionState>> &player_entry : action_states) {
+		HashMap<StringName, Input::ActionState> &player_action_states = player_entry.value;
+		for (KeyValue<StringName, Input::ActionState> &action_entry : player_action_states) {
+			if (action_entry.value.cache.pressed) {
+				action_release(action_entry.key);
+			}
 		}
 	}
 }
@@ -1439,6 +1518,7 @@ void Input::_button_event(int p_device, JoyButton p_index, bool p_pressed) {
 	Ref<InputEventJoypadButton> ievent;
 	ievent.instantiate();
 	ievent->set_device(p_device);
+	ievent->set_player_from_device();
 	ievent->set_button_index(p_index);
 	ievent->set_pressed(p_pressed);
 
@@ -1449,6 +1529,7 @@ void Input::_axis_event(int p_device, JoyAxis p_axis, float p_value) {
 	Ref<InputEventJoypadMotion> ievent;
 	ievent.instantiate();
 	ievent->set_device(p_device);
+	ievent->set_player_from_device();
 	ievent->set_axis(p_axis);
 	ievent->set_axis_value(p_value);
 
@@ -1871,6 +1952,16 @@ bool Input::is_joy_known(int p_device) {
 String Input::get_joy_guid(int p_device) const {
 	ERR_FAIL_COND_V(!joy_names.has(p_device), "");
 	return joy_names[p_device].uid;
+}
+
+PlayerID Input::get_joy_player_id(int p_device) const {
+	ERR_FAIL_COND_V(!joy_names.has(p_device), PlayerID::P1);
+	return joy_names[p_device].player_id;
+}
+
+void Input::set_joy_player_id(int p_device, PlayerID p_player_id) {
+	ERR_FAIL_COND(!joy_names.has(p_device));
+	joy_names[p_device].player_id = p_player_id;
 }
 
 Dictionary Input::get_joy_info(int p_device) const {
