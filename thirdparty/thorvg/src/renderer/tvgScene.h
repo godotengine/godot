@@ -97,10 +97,11 @@ struct Scene::Impl
         //Half translucent requires intermediate composition.
         if (opacity == 255) return compFlag;
 
-        //If scene has several children or only scene, it may require composition.
-        //OPTIMIZE: the bitmap type of the picture would not need the composition.
-        //OPTIMIZE: a single paint of a scene would not need the composition.
-        if (paints.size() == 1 && paints.front()->type() == Type::Shape) return compFlag;
+        //Only shape or picture may not require composition.
+        if (paints.size() == 1) {
+            auto type = paints.front()->type();
+            if (type == Type::Shape || type == Type::Picture) return compFlag;
+        }
 
         compFlag |= CompositionFlag::Opacity;
 
