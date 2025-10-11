@@ -885,6 +885,193 @@ bool DisplayServerMacOS::is_dark_mode() const {
 	}
 }
 
+void DisplayServerMacOS::_check_for_changes_poll_thread(void *ud) {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	while (!ds->quit_request.is_set()) {
+		SysIconTheme th = ds->_get_sys_theme();
+		if (th.theme != ds->cur_theme.theme || th.tint != ds->cur_theme.tint) {
+			ds->cur_theme = th;
+			callable_mp(ds, &DisplayServerMacOS::emit_system_theme_changed).call_deferred();
+		}
+
+		uint64_t sleep = 200;
+		uint64_t wait = 1000000;
+		uint64_t time = OS::get_singleton()->get_ticks_usec();
+		while (OS::get_singleton()->get_ticks_usec() - time < wait) {
+			OS::get_singleton()->delay_usec(1000 * sleep);
+			if (ds->quit_request.is_set()) {
+				break;
+			}
+		}
+	}
+}
+
+DisplayServerMacOS::SysIconTheme DisplayServerMacOS::_get_sys_theme() const {
+	SysIconTheme ret;
+	if (@available(macOS 11.0, *)) {
+		NSString *theme = [[NSUserDefaults standardUserDefaults] stringForKey:@"AppleIconAppearanceTheme"];
+		if (theme) {
+			ret.theme = String::utf8([theme UTF8String]);
+			NSString *tint = [[NSUserDefaults standardUserDefaults] stringForKey:@"AppleIconAppearanceTintColor"];
+			if (tint) {
+				if ([tint isEqual:@"Other"]) {
+					NSString *str_color = [[NSUserDefaults standardUserDefaults] stringForKey:@"AppleIconAppearanceCustomTintColor"];
+					if (str_color) {
+						Vector<String> components = String::utf8([str_color UTF8String]).split(" ");
+						if (components.size() == 4) {
+							ret.tint = Color(components[0].to_float(), components[1].to_float(), components[2].to_float(), components[3].to_float());
+						} else if (components.size() == 3) {
+							ret.tint = Color(components[0].to_float(), components[1].to_float(), components[2].to_float(), 1.0);
+						}
+					}
+				} else {
+					__block NSColor *color = nullptr;
+					if ([tint isEqual:@"Red"]) {
+						[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
+							color = [[NSColor systemRedColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+						}];
+					} else if ([tint isEqual:@"Orange"]) {
+						[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
+							color = [[NSColor systemOrangeColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+						}];
+					} else if ([tint isEqual:@"Yellow"]) {
+						[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
+							color = [[NSColor systemYellowColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+						}];
+					} else if ([tint isEqual:@"Green"]) {
+						[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
+							color = [[NSColor systemGreenColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+						}];
+					} else if ([tint isEqual:@"Blue"]) {
+						[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
+							color = [[NSColor systemBlueColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+						}];
+					} else if ([tint isEqual:@"Purple"]) {
+						[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
+							color = [[NSColor systemPurpleColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+						}];
+					} else if ([tint isEqual:@"Pink"]) {
+						[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
+							color = [[NSColor systemPinkColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+						}];
+					} else if ([tint isEqual:@"Graphite"]) {
+						[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
+							color = [[NSColor systemGrayColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+						}];
+					}
+					if (color) {
+						CGFloat components[4];
+						[color getRed:&components[0] green:&components[1] blue:&components[2] alpha:&components[3]];
+						ret.tint = Color(components[0], components[1], components[2], components[3]);
+					}
+				}
+			}
+		}
+	}
+	return ret;
+}
+
+Dictionary DisplayServerMacOS::get_system_icon_theme() const {
+	Dictionary ret;
+	SysIconTheme th = _get_sys_theme();
+	ret["theme"] = th.theme;
+	if (th.tint != Color()) {
+		ret["tint"] = th.tint;
+	} else {
+		ret["tint"] = get_accent_color();
+	}
+	return ret;
+}
+
+void DisplayServerMacOS::_update_themed_icon() {
+	if (themed_icons.is_empty()) {
+		return;
+	}
+
+	Dictionary theme = get_system_icon_theme();
+	String theme_name = theme["theme"];
+	if (theme_name == "ClearAutomatic") {
+		theme_name = is_dark_mode() ? "ClearDark" : "ClearLight";
+	} else if (theme_name == "TintedAutomatic") {
+		theme_name = is_dark_mode() ? "TintedDark" : "TintedLight";
+	}
+	Ref<Image> img;
+	if (themed_icons.has(theme_name)) {
+		Ref<Image> icon = themed_icons[theme_name];
+		if (icon.is_valid()) {
+			img = icon->duplicate();
+		}
+	}
+	if (img.is_valid()) {
+		ERR_FAIL_COND(img->get_width() <= 0 || img->get_height() <= 0);
+		img->convert(Image::FORMAT_RGBA8);
+
+		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
+				initWithBitmapDataPlanes:nullptr
+							  pixelsWide:img->get_width()
+							  pixelsHigh:img->get_height()
+						   bitsPerSample:8
+						 samplesPerPixel:4
+								hasAlpha:YES
+								isPlanar:NO
+						  colorSpaceName:NSDeviceRGBColorSpace
+							 bytesPerRow:img->get_width() * 4
+							bitsPerPixel:32];
+		ERR_FAIL_NULL(imgrep);
+		uint8_t *pixels = [imgrep bitmapData];
+
+		int len = img->get_width() * img->get_height();
+		const uint8_t *r = img->get_data().ptr();
+
+		/* Premultiply the alpha channel */
+		for (int i = 0; i < len; i++) {
+			uint8_t alpha = r[i * 4 + 3];
+			pixels[i * 4 + 0] = (uint8_t)(((uint16_t)r[i * 4 + 0] * alpha) / 255);
+			pixels[i * 4 + 1] = (uint8_t)(((uint16_t)r[i * 4 + 1] * alpha) / 255);
+			pixels[i * 4 + 2] = (uint8_t)(((uint16_t)r[i * 4 + 2] * alpha) / 255);
+			pixels[i * 4 + 3] = alpha;
+		}
+
+		NSImage *nsimg = [[NSImage alloc] initWithSize:NSMakeSize(img->get_width(), img->get_height())];
+		ERR_FAIL_NULL(nsimg);
+		[nsimg addRepresentation:imgrep];
+
+		if (theme_name == "TintedLight" || theme_name == "TintedDark") {
+			Color tint;
+			if (theme.has("tint")) {
+				tint = theme["tint"];
+			} else {
+				tint = get_accent_color();
+			}
+			NSImage *nsimg_tinted = [NSImage imageWithSize:nsimg.size
+												   flipped:NO
+											drawingHandler:^BOOL(NSRect dstRect) {
+												CIImage *base_image = [CIImage imageWithData:[nsimg TIFFRepresentation]];
+
+												CIFilter *color_generator = [CIFilter filterWithName:@"CIConstantColorGenerator"];
+												CIColor *color = [[CIColor alloc] initWithColor:[NSColor colorWithCalibratedRed:tint.r green:tint.g blue:tint.b alpha:tint.a]];
+												[color_generator setValue:color forKey:@"inputColor"];
+
+												CIFilter *monochrome_filter = [CIFilter filterWithName:@"CIColorMonochrome"];
+												[monochrome_filter setValue:base_image forKey:@"inputImage"];
+												[monochrome_filter setValue:[CIColor colorWithRed:0.75 green:0.75 blue:0.75] forKey:@"inputColor"];
+												[monochrome_filter setValue:[NSNumber numberWithFloat:1.0] forKey:@"inputIntensity"];
+
+												CIFilter *compositing_filter = [CIFilter filterWithName:@"CIMultiplyCompositing"];
+												[compositing_filter setValue:[color_generator valueForKey:@"outputImage"] forKey:@"inputImage"];
+												[compositing_filter setValue:[monochrome_filter valueForKey:@"outputImage"] forKey:@"inputBackgroundImage"];
+
+												CIImage *output_image = [compositing_filter valueForKey:@"outputImage"];
+												[output_image drawAtPoint:NSZeroPoint fromRect:{ NSZeroPoint, [nsimg size] } operation:NSCompositeCopy fraction:1.0];
+
+												return YES;
+											}];
+			nsimg = nsimg_tinted;
+		}
+		[NSApp setApplicationIconImage:nsimg];
+	}
+}
+
 Color DisplayServerMacOS::get_accent_color() const {
 	if (@available(macOS 10.14, *)) {
 		__block NSColor *color = nullptr;
@@ -940,6 +1127,7 @@ void DisplayServerMacOS::set_system_theme_change_callback(const Callable &p_call
 }
 
 void DisplayServerMacOS::emit_system_theme_changed() {
+	_update_themed_icon();
 	if (system_theme_changed.is_valid()) {
 		Variant ret;
 		Callable::CallError ce;
@@ -3411,6 +3599,13 @@ void DisplayServerMacOS::set_icon(const Ref<Image> &p_icon) {
 	}
 }
 
+void DisplayServerMacOS::set_themed_icons(const Dictionary &p_icons) {
+	_THREAD_SAFE_METHOD_
+
+	themed_icons = p_icons;
+	_update_themed_icon();
+}
+
 DisplayServer::IndicatorID DisplayServerMacOS::create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) {
 	NSImage *nsimg = nullptr;
 	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
@@ -3969,9 +4164,16 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 #endif
 
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
+
+	check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 }
 
 DisplayServerMacOS::~DisplayServerMacOS() {
+	quit_request.set();
+	if (check_for_changes_thread.is_started()) {
+		check_for_changes_thread.wait_to_finish();
+	}
+
 	if (screen_keep_on_assertion) {
 		IOPMAssertionRelease(screen_keep_on_assertion);
 		screen_keep_on_assertion = kIOPMNullAssertionID;
