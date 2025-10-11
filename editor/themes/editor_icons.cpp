@@ -39,8 +39,8 @@
 
 #include "modules/svg/image_loader_svg.h"
 
-void editor_configure_icons(bool p_dark_theme) {
-	if (p_dark_theme) {
+void editor_configure_icons(bool p_dark_icon_and_font) {
+	if (p_dark_icon_and_font) {
 		ImageLoaderSVG::set_forced_color_map(HashMap<Color, Color>());
 	} else {
 		ImageLoaderSVG::set_forced_color_map(EditorColorMap::get_color_conversion_map());
