@@ -1445,6 +1445,7 @@ void ProjectExportDialog::_bind_methods() {
 
 ProjectExportDialog::ProjectExportDialog() {
 	set_title(TTR("Export"));
+	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	set_clamp_to_embedder(true);
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
