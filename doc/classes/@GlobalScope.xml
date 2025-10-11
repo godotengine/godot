@@ -2442,6 +2442,21 @@
 		<constant name="MOUSE_BUTTON_MASK_MB_XBUTTON2" value="256" enum="MouseButtonMask" is_bitfield="true">
 			Extra mouse button 2 mask.
 		</constant>
+		<constant name="HAT_MASK_CENTER" value="0" enum="HatMask" is_bitfield="true">
+			Joypad hat center direction mask.
+		</constant>
+		<constant name="HAT_MASK_UP" value="1" enum="HatMask" is_bitfield="true">
+			Joypad hat up direction mask.
+		</constant>
+		<constant name="HAT_MASK_RIGHT" value="2" enum="HatMask" is_bitfield="true">
+			Joypad hat right direction mask.
+		</constant>
+		<constant name="HAT_MASK_DOWN" value="4" enum="HatMask" is_bitfield="true">
+			Joypad hat down direction mask.
+		</constant>
+		<constant name="HAT_MASK_LEFT" value="8" enum="HatMask" is_bitfield="true">
+			Joypad hat left direction mask.
+		</constant>
 		<constant name="JOY_BUTTON_INVALID" value="-1" enum="JoyButton">
 			An invalid game controller button.
 		</constant>
@@ -2516,6 +2531,12 @@
 			- [b]Android:[/b] Up to 36 buttons.
 			- [b]Linux:[/b] Up to 80 buttons.
 			- [b]Windows[/b] and [b]macOS:[/b] Up to 128 buttons.
+		</constant>
+		<constant name="JOY_HAT_INVALID" value="-1" enum="JoyHat">
+			An invalid joypad hat.
+		</constant>
+		<constant name="JOY_HAT_MAX" value="256" enum="JoyHat">
+			The maximum number of joypad hats.
 		</constant>
 		<constant name="JOY_AXIS_INVALID" value="-1" enum="JoyAxis">
 			An invalid game controller axis.
