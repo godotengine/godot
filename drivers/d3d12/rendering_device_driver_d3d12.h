@@ -328,6 +328,7 @@ private:
 
 public:
 	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) override final;
+	virtual BufferID buffer_create_video_session(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, const VideoProfile &p_profile) override final;
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) override final;
 	virtual void buffer_free(BufferID p_buffer) override final;
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) override final;
@@ -475,6 +476,7 @@ private:
 
 public:
 	virtual CommandQueueID command_queue_create(CommandQueueFamilyID p_cmd_queue_family, bool p_identify_as_main_queue = false) override;
+	virtual Error command_queue_execute(CommandQueueID p_cmd_queue, CommandBufferID p_cmd_buffer, FenceID p_fence) override final;
 	virtual Error command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) override;
 	virtual void command_queue_free(CommandQueueID p_cmd_queue) override;
 
@@ -957,6 +959,24 @@ private:
 public:
 	virtual void begin_segment(uint32_t p_frame_index, uint32_t p_frames_drawn) override final;
 	virtual void end_segment() override final;
+
+	/**********************/
+	/**** VIDEO CODING ****/
+	/**********************/
+	virtual void video_profile_get_capabilities(const VideoProfile &p_profile) override final;
+	virtual void video_profile_get_format_properties(const VideoProfile &p_profile) override final;
+
+	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, DataFormat p_image_format, uint32_t p_width, uint32_t p_height, uint32_t p_max_dpb_slots) override final;
+	virtual void video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) override final;
+	virtual void video_session_add_h265_parameters() override final;
+	virtual void video_session_add_av1_parameters() override final;
+	virtual void video_session_add_vp9_parameters() override final;
+	virtual void video_session_free(VideoSessionID p_video_session) override final;
+
+	virtual void command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, TextureID p_dpb_texture) override final;
+	virtual void command_video_control(CommandBufferID p_cmd_buffer) override final;
+	virtual void command_video_decode(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, VideoCodingDecodeH264SliceHeader p_std_h264_info, TextureID p_dst_texture, uint32_t p_array_layer, TextureID p_dpb_texture) override final;
+	virtual void command_video_coding_end(CommandBufferID p_cmd_buffer) override final;
 
 	/**************/
 	/**** MISC ****/

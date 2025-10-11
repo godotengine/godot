@@ -32,6 +32,8 @@
 #include "rendering_device.compat.inc"
 
 #include "rendering_device_binds.h"
+#include "servers/rendering/rendering_device_commons.h"
+#include "servers/rendering/rendering_device_driver.h"
 #include "shader_include_db.h"
 
 #include "core/config/project_settings.h"
@@ -793,6 +795,9 @@ RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, Span<uint8_t> 
 	if (p_usage.has_flag(STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT)) {
 		buffer.usage.set_flag(RDD::BUFFER_USAGE_INDIRECT_BIT);
 	}
+	if (p_usage.has_flag(STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC)) {
+		buffer.usage.set_flag(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT);
+	}
 	if (p_creation_bits.has_flag(BUFFER_CREATION_DEVICE_ADDRESS_BIT)) {
 #ifdef DEBUG_ENABLED
 		ERR_FAIL_COND_V_MSG(!has_feature(SUPPORTS_BUFFER_DEVICE_ADDRESS), RID(),
@@ -802,6 +807,49 @@ RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, Span<uint8_t> 
 		buffer.usage.set_flag(RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT);
 	}
 	buffer.driver_id = driver->buffer_create(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU);
+	ERR_FAIL_COND_V(!buffer.driver_id, RID());
+
+	// Storage buffers are assumed to be mutable.
+	buffer.draw_tracker = RDG::resource_tracker_create();
+	buffer.draw_tracker->buffer_driver_id = buffer.driver_id;
+
+	if (p_data.size()) {
+		_buffer_initialize(&buffer, p_data);
+	}
+
+	_THREAD_SAFE_LOCK_
+	buffer_memory += buffer.size;
+	_THREAD_SAFE_UNLOCK_
+
+	RID id = storage_buffer_owner.make_rid(buffer);
+#ifdef DEV_ENABLED
+	set_resource_name(id, "RID:" + itos(id.get_id()));
+#endif
+	return id;
+}
+
+RID RenderingDevice::storage_buffer_create_video_session(uint32_t p_size_bytes, const VideoProfile &p_profile, Span<uint8_t> p_data, BitField<StorageBufferUsage> p_usage, BitField<BufferCreationBits> p_creation_bits) {
+	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
+
+	Buffer buffer;
+	buffer.size = p_size_bytes;
+	buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_FROM_BIT | RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_STORAGE_BIT);
+	if (p_usage.has_flag(STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT)) {
+		buffer.usage.set_flag(RDD::BUFFER_USAGE_INDIRECT_BIT);
+	}
+	if (p_usage.has_flag(STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC)) {
+		buffer.usage.set_flag(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT);
+	}
+	if (p_creation_bits.has_flag(BUFFER_CREATION_DEVICE_ADDRESS_BIT)) {
+#ifdef DEBUG_ENABLED
+		ERR_FAIL_COND_V_MSG(!has_feature(SUPPORTS_BUFFER_DEVICE_ADDRESS), RID(),
+				"The GPU doesn't support buffer address flag.");
+#endif
+
+		buffer.usage.set_flag(RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT);
+	}
+
+	buffer.driver_id = driver->buffer_create_video_session(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU, p_profile);
 	ERR_FAIL_COND_V(!buffer.driver_id, RID());
 
 	// Storage buffers are assumed to be mutable.
@@ -1017,6 +1065,13 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 	tv.swizzle_g = p_view.swizzle_g;
 	tv.swizzle_b = p_view.swizzle_b;
 	tv.swizzle_a = p_view.swizzle_a;
+
+	RDD::SamplerID *sampler = sampler_owner.get_or_null(p_view.ycbcr_sampler);
+	if (sampler != nullptr) {
+		tv.ycbcr_sampler = *sampler;
+	} else {
+		tv.ycbcr_sampler = RDD::SamplerID();
+	}
 
 	// Create.
 
@@ -2014,16 +2069,29 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 		uint32_t h = tex->height;
 		uint32_t d = tex->depth;
 		for (uint32_t i = 0; i < tex->mipmaps; i++) {
-			RDD::BufferTextureCopyRegion copy_region;
-			copy_region.buffer_offset = mip_layouts[i].offset;
-			copy_region.texture_subresources.aspect = tex->read_aspect_flags;
-			copy_region.texture_subresources.mipmap = i;
-			copy_region.texture_subresources.base_layer = p_layer;
-			copy_region.texture_subresources.layer_count = 1;
-			copy_region.texture_region_size.x = w;
-			copy_region.texture_region_size.y = h;
-			copy_region.texture_region_size.z = d;
-			command_buffer_texture_copy_regions_vector.push_back(copy_region);
+			if (tex->format == RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM) {
+				RDD::BufferTextureCopyRegion copy_region;
+				copy_region.buffer_offset = mip_layouts[i].offset;
+				copy_region.texture_subresources.aspect = RDD::TEXTURE_ASPECT_PLANE0_BIT;
+				copy_region.texture_subresources.mipmap = i;
+				copy_region.texture_subresources.base_layer = p_layer;
+				copy_region.texture_subresources.layer_count = 1;
+				copy_region.texture_region_size.x = w;
+				copy_region.texture_region_size.y = h;
+				copy_region.texture_region_size.z = d;
+				command_buffer_texture_copy_regions_vector.push_back(copy_region);
+			} else {
+				RDD::BufferTextureCopyRegion copy_region;
+				copy_region.buffer_offset = mip_layouts[i].offset;
+				copy_region.texture_subresources.aspect = tex->read_aspect_flags;
+				copy_region.texture_subresources.mipmap = i;
+				copy_region.texture_subresources.base_layer = p_layer;
+				copy_region.texture_subresources.layer_count = 1;
+				copy_region.texture_region_size.x = w;
+				copy_region.texture_region_size.y = h;
+				copy_region.texture_region_size.z = d;
+				command_buffer_texture_copy_regions_vector.push_back(copy_region);
+			}
 
 			w = MAX(1u, w >> 1);
 			h = MAX(1u, h >> 1);
@@ -3402,9 +3470,19 @@ RID RenderingDevice::shader_create_from_bytecode_with_samplers(const Vector<uint
 		driver_sampler.type = source_sampler.uniform_type;
 		driver_sampler.binding = source_sampler.binding;
 
-		for (uint32_t j = 0; j < source_sampler.get_id_count(); j++) {
-			RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(source_sampler.get_id(j));
-			driver_sampler.ids.push_back(*sampler_driver_id);
+		if (source_sampler.uniform_type == UNIFORM_TYPE_SAMPLER) {
+			for (uint32_t j = 0; j < source_sampler.get_id_count(); j++) {
+				RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(source_sampler.get_id(j));
+				driver_sampler.ids.push_back(*sampler_driver_id);
+			}
+		} else if (source_sampler.uniform_type == UNIFORM_TYPE_SAMPLER_WITH_TEXTURE) {
+			for (uint32_t j = 0; j < source_sampler.get_id_count(); j += 2) {
+				RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(source_sampler.get_id(j));
+				driver_sampler.ids.push_back(*sampler_driver_id);
+
+				Texture *texture_driver_id = texture_owner.get_or_null(source_sampler.get_id(j + 1));
+				driver_sampler.ids.push_back(texture_driver_id->driver_id);
+			}
 		}
 
 		driver_immutable_samplers.append(driver_sampler);
@@ -5555,6 +5633,82 @@ void RenderingDevice::compute_list_end() {
 	compute_list = ComputeList();
 }
 
+void RenderingDevice::video_profile_get_capabilities(const VideoProfile &p_profile) {
+}
+
+void RenderingDevice::video_profile_get_format_properties(const VideoProfile &p_profile) {
+}
+
+// TODO validate everything is alright
+RID RenderingDevice::video_session_create(const VideoProfile &p_profile, DataFormat p_image_format, uint32_t p_width, uint32_t p_height, uint32_t p_max_dpb_slots) {
+	VideoSession video_session;
+	video_session.video_profile = p_profile;
+	video_session.driver_id = driver->video_session_create(p_profile, p_image_format, p_width, p_height, p_max_dpb_slots);
+
+	RID rid = video_session_owner.make_rid(video_session);
+	return rid;
+}
+
+// TODO validate everything is alright
+void RenderingDevice::video_session_add_h264_parameters(RID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) {
+	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
+	ERR_FAIL_NULL(video_session);
+
+	driver->video_session_add_h264_parameters(video_session->driver_id, p_sps_sets, p_pps_sets);
+}
+
+void RenderingDevice::video_coding_begin(RID p_video_session, RID p_dpb_texture) {
+	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
+	ERR_FAIL_NULL(video_session);
+
+	active_session = p_video_session;
+
+	Texture *dpb_texture = texture_owner.get_or_null(p_dpb_texture);
+	ERR_FAIL_NULL(dpb_texture);
+
+	driver->command_buffer_begin(decode_buffer);
+	driver->command_video_coding_begin(decode_buffer, video_session->driver_id, dpb_texture->driver_id);
+	driver->command_video_control(decode_buffer);
+}
+
+void RenderingDevice::video_coding_decode(Span<uint8_t> p_nal_unit, VideoCodingDecodeH264SliceHeader p_std_h264_info, RID p_dst_texture, uint32_t p_array_layer, RID p_dpb_texture) {
+	VideoSession *video_session = video_session_owner.get_or_null(active_session);
+	ERR_FAIL_NULL(video_session);
+
+	uint64_t buffer_size = p_nal_unit.size() + 3;
+	buffer_size += 128 - (buffer_size % 128);
+
+	BitField<RDD::BufferUsageBits> buffer_usage = {};
+	buffer_usage.set_flag(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT);
+	buffer_usage.set_flag(RDD::BUFFER_USAGE_TRANSFER_FROM_BIT);
+
+	RDD::BufferID src_buffer = driver->buffer_create_video_session(buffer_size, buffer_usage, RDD::MEMORY_ALLOCATION_TYPE_CPU, video_session->video_profile);
+	uint8_t *write_ptr = driver->buffer_map(src_buffer);
+
+	uint8_t start_code[3] = { 0, 0, 1 };
+	memcpy(write_ptr, start_code, 3);
+	memcpy(write_ptr + 3, p_nal_unit.begin(), p_nal_unit.size());
+	driver->buffer_unmap(src_buffer);
+
+	Texture *dst_texture = texture_owner.get_or_null(p_dst_texture);
+	ERR_FAIL_NULL(dst_texture);
+
+	Texture *dpb_texture = texture_owner.get_or_null(p_dpb_texture);
+	ERR_FAIL_NULL(dpb_texture);
+
+	driver->command_video_decode(decode_buffer, src_buffer, p_std_h264_info, dst_texture->driver_id, p_array_layer, dpb_texture->driver_id);
+	driver->buffer_free(src_buffer);
+}
+
+void RenderingDevice::video_coding_end() {
+	driver->command_video_coding_end(decode_buffer);
+	driver->command_buffer_end(decode_buffer);
+
+	RDD::FenceID fence = driver->fence_create();
+	driver->command_queue_execute(decode_queue, decode_buffer, fence);
+	driver->fence_wait(fence);
+}
+
 #ifndef DISABLE_DEPRECATED
 void RenderingDevice::barrier(BitField<BarrierMask> p_from, BitField<BarrierMask> p_to) {
 	WARN_PRINT("Deprecated. Barriers are automatically inserted by RenderingDevice.");
@@ -6768,6 +6922,13 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 		present_queue_family = main_queue_family;
 	}
 
+	decode_queue_family = driver->command_queue_family_get(RDD::COMMAND_QUEUE_FAMILY_DECODE_BIT);
+	if (decode_queue_family) {
+		decode_queue = driver->command_queue_create(decode_queue_family);
+		decode_pool = driver->command_pool_create(decode_queue_family, RDD::COMMAND_BUFFER_TYPE_PRIMARY);
+		decode_buffer = driver->command_buffer_create(decode_pool);
+	}
+
 	// Use the processor count as the max amount of transfer workers that can be created.
 	transfer_worker_pool_max_size = OS::get_singleton()->get_processor_count();
 
@@ -7176,6 +7337,7 @@ void RenderingDevice::finalize() {
 	_free_rids(vertex_buffer_owner, "VertexBuffer");
 	_free_rids(framebuffer_owner, "Framebuffer");
 	_free_rids(sampler_owner, "Sampler");
+	_free_rids(video_session_owner, "VideoSession");
 	{
 		// For textures it's a bit more difficult because they may be shared.
 		LocalVector<RID> owned = texture_owner.get_owned_list();
@@ -7265,6 +7427,17 @@ void RenderingDevice::finalize() {
 	}
 
 	screen_swap_chains.clear();
+
+	if (decode_queue_family) {
+		if (decode_queue) {
+			driver->command_queue_free(decode_queue);
+			decode_queue = RDD::CommandQueueID();
+		}
+
+		if (decode_pool) {
+			driver->command_pool_free(decode_pool);
+		}
+	}
 
 	// Delete the command queues.
 	if (present_queue) {
