@@ -216,6 +216,26 @@ env.CommandNoCache(
     "#core/license.gen.h", ["#COPYRIGHT.txt", "#LICENSE.txt"], env.Run(core_builders.make_license_header)
 )
 
+# Locale names
+env.Depends("#core/string/language_names.gen.h", ["string/locale_data/language_names.csv"])
+env.CommandNoCache(
+    "#core/string/language_names.gen.h",
+    ["string/locale_data/language_names.csv"],
+    env.Run(core_builders.make_lang_header),
+)
+env.Depends("#core/string/country_names.gen.h", ["string/locale_data/country_names.csv"])
+env.CommandNoCache(
+    "#core/string/country_names.gen.h",
+    ["string/locale_data/country_names.csv"],
+    env.Run(core_builders.make_cnt_header),
+)
+env.Depends("#core/string/script_names.gen.h", ["string/locale_data/script_names.csv"])
+env.CommandNoCache(
+    "#core/string/script_names.gen.h",
+    ["string/locale_data/script_names.csv"],
+    env.Run(core_builders.make_scr_header),
+)
+
 # Chain load SCsubs
 SConscript("os/SCsub")
 SConscript("math/SCsub")
