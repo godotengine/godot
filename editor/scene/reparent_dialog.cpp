@@ -33,6 +33,12 @@
 #include "editor/scene/scene_tree_editor.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/line_edit.h"
+
+void ReparentDialog::_pre_popup() {
+	filter_nodes->clear();
+	callable_mp(filter_nodes, &LineEdit::edit).call_deferred();
+}
 
 void ReparentDialog::_notification(int p_what) {
 	switch (p_what) {
@@ -74,11 +80,17 @@ ReparentDialog::ReparentDialog() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 
+	filter_nodes = memnew(LineEdit);
+	filter_nodes->set_placeholder(TTRC("Filter Nodes"));
+	filter_nodes->set_accessibility_name(TTRC("Filter Nodes"));
+	vbc->add_child(filter_nodes);
+
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_update_when_invisible(false);
 	tree->set_show_enabled_subscene(true);
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ReparentDialog::_reparent));
 	vbc->add_margin_child(TTR("Select new parent:"), tree, true);
+	filter_nodes->connect(SceneStringName(text_changed), callable_mp(tree, &SceneTreeEditor::set_filter));
 
 	keep_transform = memnew(CheckBox);
 	keep_transform->set_text(TTR("Keep Global Transform"));
