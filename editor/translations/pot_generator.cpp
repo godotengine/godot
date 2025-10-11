@@ -84,7 +84,12 @@ void POTGenerator::generate_pot(const String &p_file) {
 			const String &msgctxt = (translation.size() > 1) ? translation[1] : String();
 			const String &msgid_plural = (translation.size() > 2) ? translation[2] : String();
 			const String &comment = (translation.size() > 3) ? translation[3] : String();
-			_add_new_msgid(translation[0], msgctxt, msgid_plural, file_path, comment);
+			const int source_line = (translation.size() > 4) ? translation[4].to_int() : 0;
+			String location = file_path;
+			if (source_line > 0) {
+				location += vformat(":%d", source_line);
+			}
+			_add_new_msgid(translation[0], msgctxt, msgid_plural, location, comment);
 		}
 	}
 
