@@ -572,7 +572,7 @@ float RendererEnvironmentStorage::environment_get_ssr_fade_out(RID p_env) const 
 
 float RendererEnvironmentStorage::environment_get_ssr_depth_tolerance(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, 0.2);
+	ERR_FAIL_NULL_V(env, 0.5);
 	return env->ssr_depth_tolerance;
 }
 

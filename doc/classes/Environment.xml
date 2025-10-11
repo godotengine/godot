@@ -297,7 +297,7 @@
 		<member name="ssil_sharpness" type="float" setter="set_ssil_sharpness" getter="get_ssil_sharpness" default="0.98">
 			The amount that the screen-space indirect lighting effect is allowed to blur over the edges of objects. Setting too high will result in aliasing around the edges of objects. Setting too low will make object edges appear blurry.
 		</member>
-		<member name="ssr_depth_tolerance" type="float" setter="set_ssr_depth_tolerance" getter="get_ssr_depth_tolerance" default="0.2">
+		<member name="ssr_depth_tolerance" type="float" setter="set_ssr_depth_tolerance" getter="get_ssr_depth_tolerance" default="0.5">
 			The depth tolerance for screen-space reflections.
 		</member>
 		<member name="ssr_enabled" type="bool" setter="set_ssr_enabled" getter="is_ssr_enabled" default="false">

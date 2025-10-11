@@ -1597,6 +1597,12 @@ void fragment_shader(in SceneData scene_data) {
 		float kernelRoughness2 = min(2.0 * variance, scene_data.roughness_limiter_limit); //limit effect
 		float filteredRoughness2 = min(1.0, roughness2 + kernelRoughness2);
 		roughness = sqrt(filteredRoughness2);
+
+		// Reject very small roughness values. Lack of precision can collapse
+		// roughness^4 to 0 in GGX specular equations and cause divisions by zero.
+		if (roughness < 0.00000001) {
+			roughness = 0.0;
+		}
 	}
 #endif
 	//apply energy conservation
@@ -2027,6 +2033,16 @@ void fragment_shader(in SceneData scene_data) {
 			ambient_light = ambient_accum.rgb;
 		}
 #endif
+	}
+
+	//process ssr
+	if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR)) {
+#ifdef USE_MULTIVIEW
+		vec4 ssr = textureLod(sampler2DArray(ssr_buffer, SAMPLER_NEAREST_CLAMP), vec3(screen_uv, ViewIndex), 0.0);
+#else
+		vec4 ssr = textureLod(sampler2D(ssr_buffer, SAMPLER_NEAREST_CLAMP), screen_uv, 0.0);
+#endif // USE_MULTIVIEW
+		indirect_specular_light = indirect_specular_light * (1.0 - ssr.a) + ssr.rgb;
 	}
 
 	//finalize ambient light here
