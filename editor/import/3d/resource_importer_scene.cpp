@@ -1699,6 +1699,11 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								base = col;
 							} break;
 							case MESH_PHYSICS_RIGID_BODY_AND_MESH: {
+								NodePath skeleton_path = mi->get_skeleton_path();
+								Skeleton3D *skeleton = nullptr;
+								if (!skeleton_path.is_empty()) {
+									skeleton = Object::cast_to<Skeleton3D>(mi->get_node_or_null(skeleton_path));
+								}
 								RigidBody3D *rigid_body = memnew(RigidBody3D);
 								rigid_body->set_name(p_node->get_name());
 								_copy_meta(p_node, rigid_body);
@@ -1714,6 +1719,10 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 									rigid_body->set_physics_material_override(pmo);
 								}
 								base = rigid_body;
+								if (skeleton) {
+									skeleton_path = mi->get_path_to(skeleton);
+									mi->set_skeleton_path(skeleton_path);
+								}
 							} break;
 							case MESH_PHYSICS_STATIC_COLLIDER_ONLY: {
 								StaticBody3D *col = memnew(StaticBody3D);
