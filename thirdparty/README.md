@@ -17,34 +17,20 @@ Files extracted from upstream source:
 - `LICENSE-MIT`
 
 
-## amd-fsr
+## amd-ffx
 
-- Upstream: https://github.com/GPUOpen-Effects/FidelityFX-FSR
-- Version: 1.0.2 (a21ffb8f6c13233ba336352bdff293894c706575, 2021)
+- Upstream: https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK
+- Version: 1.1.4 (c6efa6bf7f2027b3ec94f28578bb5965eabb9e55, 2025)
 - License: MIT
 
 Files extracted from upstream source:
 
-- `ffx_a.h` and `ffx_fsr1.h` from `ffx-fsr`
-- `license.txt`
-
-
-## amd-fsr2
-
-- Upstream: https://github.com/GPUOpen-Effects/FidelityFX-FSR2
-- Version: 2.2.1 (1680d1edd5c034f88ebbbb793d8b88f8842cf804, 2023)
-- License: MIT
-
-Files extracted from upstream source:
-
-- `ffx_*.cpp` and `ffx_*.h` from `src/ffx-fsr2-api`
-- `shaders` folder from `src/ffx-fsr2-api` with `ffx_*.hlsl` files excluded
-- `LICENSE.txt`
-
-Patches:
-
-- `0001-build-fixes.patch` (GH-81197)
-- `0002-godot-fsr2-options.patch` (GH-81197)
+- `ffx_*.h` from `sdk/include/FidelityFX/host`
+- `ffx_message.cpp`, `ffx_assert.cpp`, `ffx_object_management.cpp` and `ffx_object_management.h` from `sdk/src/shared`
+- `ffx_*.cpp` and `ffx_*_private.h` from `sdk/src/components/*`
+- `gpu` folder from `sdk/include/FidelityFX/gpu`
+- `shaders` folder from `sdk/src/backends/vk/shaders`
+- `license.md`
 
 
 ## angle

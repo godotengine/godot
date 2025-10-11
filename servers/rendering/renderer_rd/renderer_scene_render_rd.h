@@ -34,7 +34,7 @@
 #include "servers/rendering/renderer_rd/effects/bokeh_dof.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/effects/debug_effects.h"
-#include "servers/rendering/renderer_rd/effects/fsr.h"
+#include "servers/rendering/renderer_rd/effects/ffx/fsr1.h"
 #include "servers/rendering/renderer_rd/effects/luminance.h"
 #ifdef METAL_ENABLED
 #include "servers/rendering/renderer_rd/effects/metal_fx.h"
@@ -65,9 +65,9 @@ protected:
 	RendererRD::Luminance *luminance = nullptr;
 	RendererRD::SMAA *smaa = nullptr;
 	RendererRD::ToneMapper *tone_mapper = nullptr;
-	RendererRD::FSR *fsr = nullptr;
 	RendererRD::VRS *vrs = nullptr;
 	RendererRD::Resolve *resolve_effects = nullptr;
+	RendererRD::FSR1Effect *fsr1 = nullptr;
 #ifdef METAL_ENABLED
 	RendererRD::MFXSpatialEffect *mfx_spatial = nullptr;
 #endif
