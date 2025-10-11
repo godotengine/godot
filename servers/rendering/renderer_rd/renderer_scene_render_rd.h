@@ -336,6 +336,7 @@ public:
 
 	int get_roughness_layers() const;
 	bool is_using_radiance_cubemap_array() const;
+	bool is_using_material_debanding() const;
 
 	virtual TypedArray<Image> bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) override;
 
