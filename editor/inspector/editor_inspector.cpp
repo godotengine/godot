@@ -2061,8 +2061,7 @@ void EditorInspectorSection::_notification(int p_what) {
 				String num_revertable_str;
 				int num_revertable_width = 0;
 
-				bool folded = (foldable || !checkbox_only) && !object->editor_is_section_unfolded(section);
-
+				bool folded = (foldable || !checkbox_only) && !vbox->is_visible();
 				if (folded && revertable_properties.size()) {
 					int label_width = theme_cache.bold_font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, available, theme_cache.bold_font_size, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS).x;
 
@@ -5554,11 +5553,8 @@ void EditorInspector::_notification(int p_what) {
 			if (update_tree_pending) {
 				update_tree();
 				update_tree_pending = false;
-				pending.clear();
-
 			} else {
-				while (pending.size()) {
-					StringName prop = *pending.begin();
+				for (const StringName &prop : pending) {
 					if (editor_property_map.has(prop)) {
 						for (EditorProperty *E : editor_property_map[prop]) {
 							E->update_property();
@@ -5566,13 +5562,14 @@ void EditorInspector::_notification(int p_what) {
 							E->update_cache();
 						}
 					}
-					pending.remove(pending.begin());
 				}
 
 				for (EditorInspectorSection *S : sections) {
 					S->update_property();
 				}
 			}
+
+			pending.clear();
 
 			changing--;
 		} break;
