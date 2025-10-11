@@ -56,7 +56,7 @@ OpenXRCompositionLayerExtension::~OpenXRCompositionLayerExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRCompositionLayerExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRCompositionLayerExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_KHR_COMPOSITION_LAYER_CYLINDER_EXTENSION_NAME] = &cylinder_ext_available;

@@ -106,7 +106,7 @@ OpenXRSpatialEntityExtension::~OpenXRSpatialEntityExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRSpatialEntityExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRSpatialEntityExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	if (GLOBAL_GET_CACHED(bool, "xr/openxr/extensions/spatial_entity/enabled")) {
