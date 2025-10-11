@@ -154,7 +154,7 @@
 			The top-right corner's radius. If [code]0[/code], the corner is not rounded.
 		</member>
 		<member name="corner_radius_smoothing" type="float" setter="set_corner_radius_smoothing" getter="get_corner_radius_smoothing" default="1.0">
-			Controls the shape of rounded corners. A value of [code]0.0[/code] results in sharp (unsmoothed) corners, [code]1.0[/code] produces standard rounded corners, and [code]2.0[/code] creates a squircle-like shape. Increasing the value further makes corners gradually approach a perfect squre. With values above [code]10.0[/code], the corners are virtually indistinguishable from square. 
+			Controls the shape of rounded corners. A value of [code]0.0[/code] results in sharp (unsmoothed) corners, [code]1.0[/code] produces standard rounded corners, and [code]2.0[/code] creates a squircle-like shape. Increasing the value further makes corners gradually approach a perfect square. With values above [code]10.0[/code], the corners are virtually indistinguishable from square. 
 		</member>
 		<member name="draw_center" type="bool" setter="set_draw_center" getter="is_draw_center_enabled" default="true">
 			Toggles drawing of the inner part of the stylebox.
