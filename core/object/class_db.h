@@ -118,6 +118,16 @@ public:
 		Variant::Type type;
 	};
 
+	struct PropertyVariant {
+		enum {
+			PROPERTY,
+			CONSTANT,
+			METHOD,
+			SIGNAL
+		} type;
+		void *ptr;
+	};
+
 	struct ClassInfo {
 		APIType api = API_NONE;
 		ClassInfo *inherits_ptr = nullptr;
@@ -127,14 +137,14 @@ public:
 
 		HashMap<StringName, MethodBind *> method_map;
 		HashMap<StringName, LocalVector<MethodBind *>> method_map_compatibility;
-		HashMap<StringName, int64_t> constant_map;
+		HashMap<StringName, int64_t *> constant_map;
 		struct EnumInfo {
 			List<StringName> constants;
 			bool is_bitfield = false;
 		};
 
 		HashMap<StringName, EnumInfo> enum_map;
-		HashMap<StringName, MethodInfo> signal_map;
+		HashMap<StringName, MethodInfo *> signal_map;
 		List<PropertyInfo> property_list;
 		HashMap<StringName, PropertyInfo> property_map;
 
@@ -152,7 +162,7 @@ public:
 		List<StringName> dependency_list;
 #endif
 
-		HashMap<StringName, PropertySetGet> property_setget;
+		HashMap<StringName, PropertySetGet *> property_setget;
 		HashMap<StringName, Vector<uint32_t>> virtual_methods_compat;
 
 		StringName inherits;
@@ -164,6 +174,8 @@ public:
 		bool is_runtime = false;
 		// The bool argument indicates the need to postinitialize.
 		Object *(*creation_func)(bool) = nullptr;
+
+		HashMap<StringName, PropertyVariant> property_cache;
 
 		ClassInfo() {}
 		~ClassInfo() {}
@@ -246,6 +258,8 @@ private:
 	static Object *_instantiate_internal(const StringName &p_class, bool p_require_real_class = false, bool p_notify_postinitialize = true, bool p_exposed_only = true);
 
 	static bool _can_instantiate(ClassInfo *p_class_info, bool p_exposed_only = true);
+
+	static void _insert_property_cache(ClassInfo *p_class_info, const StringName &p_property_name, const PropertyVariant &p_variant);
 
 public:
 	template <typename T>
