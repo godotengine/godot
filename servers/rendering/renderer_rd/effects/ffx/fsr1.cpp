@@ -31,7 +31,6 @@
 #include "fsr1.h"
 
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
-#include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 
 using namespace RendererRD;
@@ -50,7 +49,7 @@ void FSR1Effect::ensure_context(Ref<RenderSceneBuffersRD> p_render_buffers) {
 }
 
 FSR1Effect::FSR1Effect() {
-	FFXCommonContext::Device& device = FFXCommonContext::get_singleton()->device;
+	FFXCommonContext::Device &device = FFXCommonContext::get_singleton()->device;
 	FfxDeviceCapabilities &capabilities = device.capabilities;
 
 	String general_defines =
@@ -113,7 +112,7 @@ FSR1Effect::FSR1Effect() {
 }
 
 FSR1Effect::~FSR1Effect() {
-	FFXCommonContext::Device& device = FFXCommonContext::get_singleton()->device;
+	FFXCommonContext::Device &device = FFXCommonContext::get_singleton()->device;
 
 	for (uint32_t i = 0; i < FFX_FSR1_PASS_COUNT; i++) {
 		if (i == FFX_FSR1_PASS_EASU_RCAS) {
