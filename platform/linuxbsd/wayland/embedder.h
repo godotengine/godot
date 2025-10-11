@@ -376,14 +376,15 @@ private:
 		&zwp_relative_pointer_v1_interface,
 
 		// tablet
-		&zwp_tablet_manager_v2_interface,
-		&zwp_tablet_seat_v2_interface,
-		&zwp_tablet_tool_v2_interface,
-		&zwp_tablet_v2_interface,
-		&zwp_tablet_pad_ring_v2_interface,
-		&zwp_tablet_pad_strip_v2_interface,
-		&zwp_tablet_pad_group_v2_interface,
-		&zwp_tablet_pad_v2_interface,
+		// TODO: Needs some extra work
+		//&zwp_tablet_manager_v2_interface,
+		//&zwp_tablet_seat_v2_interface,
+		//&zwp_tablet_tool_v2_interface,
+		//&zwp_tablet_v2_interface,
+		//&zwp_tablet_pad_ring_v2_interface,
+		//&zwp_tablet_pad_strip_v2_interface,
+		//&zwp_tablet_pad_group_v2_interface,
+		//&zwp_tablet_pad_v2_interface,
 
 		// text-input
 		&zwp_text_input_v3_interface,
