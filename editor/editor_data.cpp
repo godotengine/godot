@@ -1045,22 +1045,7 @@ void EditorData::script_class_set_name(const String &p_path, const StringName &p
 }
 
 void EditorData::script_class_save_global_classes() {
-	LocalVector<StringName> global_classes;
-	ScriptServer::get_global_class_list(global_classes);
-	Array array_classes;
-	for (const StringName &class_name : global_classes) {
-		Dictionary d;
-		String *icon = _script_class_icon_paths.getptr(class_name);
-		d["class"] = class_name;
-		d["language"] = ScriptServer::get_global_class_language(class_name);
-		d["path"] = ScriptServer::get_global_class_path(class_name);
-		d["base"] = ScriptServer::get_global_class_base(class_name);
-		d["icon"] = icon ? *icon : String();
-		d["is_abstract"] = ScriptServer::is_global_class_abstract(class_name);
-		d["is_tool"] = ScriptServer::is_global_class_tool(class_name);
-		array_classes.push_back(d);
-	}
-	ProjectSettings::get_singleton()->store_global_class_list(array_classes);
+	ScriptServer::save_global_classes(_script_class_icon_paths);
 }
 
 void EditorData::script_class_load_icon_paths() {
