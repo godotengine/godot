@@ -152,6 +152,6 @@ CameraTexture::CameraTexture() {
 CameraTexture::~CameraTexture() {
 	if (_texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(_texture);
+		RenderingServer::get_singleton()->free_rid(_texture);
 	}
 }

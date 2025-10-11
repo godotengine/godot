@@ -135,7 +135,7 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::free_data() {
 #endif
 
 	if (!render_sdfgi_uniform_set.is_null() && RD::get_singleton()->uniform_set_is_valid(render_sdfgi_uniform_set)) {
-		RD::get_singleton()->free(render_sdfgi_uniform_set);
+		RD::get_singleton()->free_rid(render_sdfgi_uniform_set);
 	}
 }
 
@@ -489,11 +489,7 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 		RID vertex_array_rd;
 		RID index_array_rd;
 		RID pipeline_rd;
-		uint32_t ubershader_iterations = 2;
-		if constexpr (p_pass_mode == PASS_MODE_DEPTH_MATERIAL || p_pass_mode == PASS_MODE_SDF) {
-			ubershader_iterations = 1;
-		}
-
+		const uint32_t ubershader_iterations = 2;
 		bool pipeline_valid = false;
 		while (pipeline_key.ubershader < ubershader_iterations) {
 			// Skeleton and blend shape.
@@ -519,9 +515,8 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 			pipeline_hash = pipeline_key.hash();
 
 			if (shader != prev_shader || pipeline_hash != prev_pipeline_hash) {
-				bool wait_for_compilation = (ubershader_iterations == 1) || pipeline_key.ubershader;
-				RS::PipelineSource pipeline_source = wait_for_compilation ? RS::PIPELINE_SOURCE_DRAW : RS::PIPELINE_SOURCE_SPECIALIZATION;
-				pipeline_rd = shader->pipeline_hash_map.get_pipeline(pipeline_key, pipeline_hash, wait_for_compilation, pipeline_source);
+				RS::PipelineSource pipeline_source = pipeline_key.ubershader ? RS::PIPELINE_SOURCE_DRAW : RS::PIPELINE_SOURCE_SPECIALIZATION;
+				pipeline_rd = shader->pipeline_hash_map.get_pipeline(pipeline_key, pipeline_hash, pipeline_key.ubershader, pipeline_source);
 
 				if (pipeline_rd.is_valid()) {
 					pipeline_valid = true;
@@ -765,7 +760,7 @@ void RenderForwardClustered::_update_instance_data_buffer(RenderListType p_rende
 	if (scene_state.instance_data[p_render_list].size() > 0) {
 		if (scene_state.instance_buffer[p_render_list] == RID() || scene_state.instance_buffer_size[p_render_list] < scene_state.instance_data[p_render_list].size()) {
 			if (scene_state.instance_buffer[p_render_list] != RID()) {
-				RD::get_singleton()->free(scene_state.instance_buffer[p_render_list]);
+				RD::get_singleton()->free_rid(scene_state.instance_buffer[p_render_list]);
 			}
 			uint32_t new_size = nearest_power_of_2_templated(MAX(uint64_t(INSTANCE_DATA_BUFFER_MIN_SIZE), scene_state.instance_data[p_render_list].size()));
 			scene_state.instance_buffer[p_render_list] = RD::get_singleton()->storage_buffer_create(new_size * sizeof(SceneState::InstanceData));
@@ -794,19 +789,22 @@ void RenderForwardClustered::_fill_instance_data(RenderListType p_render_list, i
 		SceneState::InstanceData &instance_data = scene_state.instance_data[p_render_list][i + p_offset];
 
 		if (likely(inst->store_transform_cache)) {
-			RendererRD::MaterialStorage::store_transform(inst->transform, instance_data.transform);
-			RendererRD::MaterialStorage::store_transform(inst->prev_transform, instance_data.prev_transform);
+			RendererRD::MaterialStorage::store_transform_transposed_3x4(inst->transform, instance_data.transform);
+			RendererRD::MaterialStorage::store_transform_transposed_3x4(inst->prev_transform, instance_data.prev_transform);
 
 #ifdef REAL_T_IS_DOUBLE
 			// Split the origin into two components, the float approximation and the missing precision.
 			// In the shader we will combine these back together to restore the lost precision.
-			RendererRD::MaterialStorage::split_double(inst->transform.origin.x, &instance_data.transform[12], &instance_data.transform[3]);
-			RendererRD::MaterialStorage::split_double(inst->transform.origin.y, &instance_data.transform[13], &instance_data.transform[7]);
-			RendererRD::MaterialStorage::split_double(inst->transform.origin.z, &instance_data.transform[14], &instance_data.transform[11]);
+			RendererRD::MaterialStorage::split_double(inst->transform.origin.x, &instance_data.transform[3], &instance_data.model_precision[0]);
+			RendererRD::MaterialStorage::split_double(inst->transform.origin.y, &instance_data.transform[7], &instance_data.model_precision[1]);
+			RendererRD::MaterialStorage::split_double(inst->transform.origin.z, &instance_data.transform[11], &instance_data.model_precision[2]);
+			RendererRD::MaterialStorage::split_double(inst->prev_transform.origin.x, &instance_data.prev_transform[3], &instance_data.prev_model_precision[0]);
+			RendererRD::MaterialStorage::split_double(inst->prev_transform.origin.y, &instance_data.prev_transform[7], &instance_data.prev_model_precision[1]);
+			RendererRD::MaterialStorage::split_double(inst->prev_transform.origin.z, &instance_data.prev_transform[11], &instance_data.prev_model_precision[2]);
 #endif
 		} else {
-			RendererRD::MaterialStorage::store_transform(Transform3D(), instance_data.transform);
-			RendererRD::MaterialStorage::store_transform(Transform3D(), instance_data.prev_transform);
+			RendererRD::MaterialStorage::store_transform_transposed_3x4(Transform3D(), instance_data.transform);
+			RendererRD::MaterialStorage::store_transform_transposed_3x4(Transform3D(), instance_data.prev_transform);
 		}
 
 		instance_data.flags = inst->flags_cache;
@@ -846,7 +844,7 @@ void RenderForwardClustered::_fill_instance_data(RenderListType p_render_list, i
 
 		RenderElementInfo &element_info = rl->element_info[p_offset + i];
 
-		element_info.value = uint32_t(surface->sort.sort_key1 & 0xFFF);
+		element_info.value = uint32_t((surface->sort.sort_key2 & 0x0FFF00000000) >> 32u);
 
 		if (cant_repeat) {
 			prev_surface = nullptr;
@@ -1820,9 +1818,13 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				using_sdfgi = true;
 			}
 			if (environment_get_ssr_enabled(p_render_data->environment)) {
-				using_separate_specular = true;
-				using_ssr = true;
-				color_pass_flags |= COLOR_PASS_FLAG_SEPARATE_SPECULAR;
+				if (!p_render_data->transparent_bg) {
+					using_separate_specular = true;
+					using_ssr = true;
+					color_pass_flags |= COLOR_PASS_FLAG_SEPARATE_SPECULAR;
+				} else {
+					WARN_PRINT_ONCE("Screen-space reflections are not supported in viewports with a transparent background. Disabling SSR in transparent viewport.");
+				}
 			}
 		}
 
@@ -1899,6 +1901,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 
 	bool using_sss = rb_data.is_valid() && !is_reflection_probe && scene_state.used_sss && ss_effects->sss_get_quality() != RS::SUB_SURFACE_SCATTERING_QUALITY_DISABLED;
+
+	if (using_sss && p_render_data->transparent_bg) {
+		WARN_PRINT_ONCE("Sub-surface scattering is not supported in viewports with a transparent background. Disabling SSS in transparent viewport.");
+		using_sss = false;
+	}
 
 	if ((using_sss || ce_needs_separate_specular) && !using_separate_specular) {
 		using_separate_specular = true;
@@ -2392,7 +2399,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT, p_render_data);
 	}
 
-	RD::get_singleton()->draw_command_begin_label("Copy framebuffer for SSIL");
+	RD::get_singleton()->draw_command_begin_label("Copy Framebuffer for SSIL");
 	if (using_ssil) {
 		RENDER_TIMESTAMP("Copy Final Framebuffer (SSIL)");
 		_copy_framebuffer_to_ssil(rb);
@@ -3086,7 +3093,7 @@ void RenderForwardClustered::_render_sdfgi(Ref<RenderSceneBuffersRD> p_render_bu
 
 void RenderForwardClustered::base_uniforms_changed() {
 	if (!render_base_uniform_set.is_null() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
-		RD::get_singleton()->free(render_base_uniform_set);
+		RD::get_singleton()->free_rid(render_base_uniform_set);
 	}
 	render_base_uniform_set = RID();
 }
@@ -3096,7 +3103,7 @@ void RenderForwardClustered::_update_render_base_uniform_set() {
 
 	if (render_base_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set) || (lightmap_texture_array_version != light_storage->lightmap_array_get_version())) {
 		if (render_base_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
-			RD::get_singleton()->free(render_base_uniform_set);
+			RD::get_singleton()->free_rid(render_base_uniform_set);
 		}
 
 		lightmap_texture_array_version = light_storage->lightmap_array_get_version();
@@ -3778,7 +3785,7 @@ RID RenderForwardClustered::_setup_sdfgi_render_pass_uniform_set(RID p_albedo_te
 		// The variant for SDF from the default material should only be retrieved when SDFGI is required.
 		ERR_FAIL_NULL_V(scene_shader.default_material_shader_ptr, RID());
 		scene_shader.enable_advanced_shader_group();
-		scene_shader.default_shader_sdfgi_rd = scene_shader.default_material_shader_ptr->get_shader_variant(SceneShaderForwardClustered::PIPELINE_VERSION_DEPTH_PASS_WITH_SDF, 0, false);
+		scene_shader.default_shader_sdfgi_rd = scene_shader.default_material_shader_ptr->get_shader_variant(SceneShaderForwardClustered::PIPELINE_VERSION_DEPTH_PASS_WITH_SDF, 0, true);
 		ERR_FAIL_COND_V(scene_shader.default_shader_sdfgi_rd.is_null(), RID());
 	}
 
@@ -4417,7 +4424,7 @@ static RD::FramebufferFormatID _get_depth_framebuffer_format_for_pipeline(bool p
 
 	passes.ptrw()[0].depth_attachment = 0;
 
-	return RD::get_singleton()->framebuffer_format_create_multipass(attachments, passes);
+	return RD::get_singleton()->framebuffer_format_create_multipass(Vector<RD::AttachmentFormat>(attachments), passes);
 }
 
 static RD::FramebufferFormatID _get_shadow_cubemap_framebuffer_format_for_pipeline() {
@@ -4429,7 +4436,7 @@ static RD::FramebufferFormatID _get_shadow_cubemap_framebuffer_format_for_pipeli
 	attachment.usage_flags = RendererRD::LightStorage::get_cubemap_depth_usage_bits();
 	attachments.push_back(attachment);
 
-	return RD::get_singleton()->framebuffer_format_create(attachments);
+	return RD::get_singleton()->framebuffer_format_create(Vector<RD::AttachmentFormat>(attachments));
 }
 
 static RD::FramebufferFormatID _get_shadow_atlas_framebuffer_format_for_pipeline(bool p_use_16_bits) {
@@ -4441,7 +4448,7 @@ static RD::FramebufferFormatID _get_shadow_atlas_framebuffer_format_for_pipeline
 	attachment.usage_flags = RendererRD::LightStorage::get_shadow_atlas_depth_usage_bits();
 	attachments.push_back(attachment);
 
-	return RD::get_singleton()->framebuffer_format_create(attachments);
+	return RD::get_singleton()->framebuffer_format_create(Vector<RD::AttachmentFormat>(attachments));
 }
 
 static RD::FramebufferFormatID _get_reflection_probe_depth_framebuffer_format_for_pipeline() {
@@ -4453,7 +4460,7 @@ static RD::FramebufferFormatID _get_reflection_probe_depth_framebuffer_format_fo
 	attachment.usage_flags = RendererRD::LightStorage::get_reflection_probe_depth_usage_bits();
 	attachments.push_back(attachment);
 
-	return RD::get_singleton()->framebuffer_format_create(attachments);
+	return RD::get_singleton()->framebuffer_format_create(Vector<RD::AttachmentFormat>(attachments));
 }
 
 void RenderForwardClustered::_mesh_compile_pipeline_for_surface(SceneShaderForwardClustered::ShaderData *p_shader, void *p_mesh_surface, bool p_ubershader, bool p_instanced_surface, RS::PipelineSource p_source, SceneShaderForwardClustered::ShaderData::PipelineKey &r_pipeline_key, Vector<ShaderPipelinePair> *r_pipeline_pairs) {
@@ -4570,11 +4577,11 @@ void RenderForwardClustered::_mesh_compile_pipelines_for_surface(const SurfacePi
 		// Depth pass with SDFGI support.
 		pipeline_key.version = SceneShaderForwardClustered::PIPELINE_VERSION_DEPTH_PASS_WITH_SDF;
 		pipeline_key.framebuffer_format_id = _get_depth_framebuffer_format_for_pipeline(buffers_can_be_storage, RD::TextureSamples(p_global.texture_samples), false, false);
-		_mesh_compile_pipeline_for_surface(p_surface.shader, p_surface.mesh_surface, false, p_surface.instanced, p_source, pipeline_key, r_pipeline_pairs);
+		_mesh_compile_pipeline_for_surface(p_surface.shader, p_surface.mesh_surface, true, p_surface.instanced, p_source, pipeline_key, r_pipeline_pairs);
 
 		// Depth pass with SDFGI support for an empty framebuffer.
 		pipeline_key.framebuffer_format_id = RD::get_singleton()->framebuffer_format_create_empty();
-		_mesh_compile_pipeline_for_surface(p_surface.shader, p_surface.mesh_surface, false, p_surface.instanced, p_source, pipeline_key, r_pipeline_pairs);
+		_mesh_compile_pipeline_for_surface(p_surface.shader, p_surface.mesh_surface, true, p_surface.instanced, p_source, pipeline_key, r_pipeline_pairs);
 	}
 
 	// The dedicated depth passes use a different version of the surface and the shader.
@@ -5035,7 +5042,6 @@ RenderForwardClustered::RenderForwardClustered() {
 	_update_shader_quality_settings();
 	_update_global_pipeline_data_requirements_from_project();
 
-	resolve_effects = memnew(RendererRD::Resolve());
 	taa = memnew(RendererRD::TAA);
 	fsr2_effect = memnew(RendererRD::FSR2Effect);
 	ss_effects = memnew(RendererRD::SSEffects);
@@ -5073,41 +5079,36 @@ RenderForwardClustered::~RenderForwardClustered() {
 	}
 #endif
 
-	if (resolve_effects != nullptr) {
-		memdelete(resolve_effects);
-		resolve_effects = nullptr;
-	}
-
-	RD::get_singleton()->free(shadow_sampler);
+	RD::get_singleton()->free_rid(shadow_sampler);
 	RSG::light_storage->directional_shadow_atlas_set_size(0);
 
-	RD::get_singleton()->free(best_fit_normal.pipeline);
-	RD::get_singleton()->free(best_fit_normal.texture);
+	RD::get_singleton()->free_rid(best_fit_normal.pipeline);
+	RD::get_singleton()->free_rid(best_fit_normal.texture);
 	best_fit_normal.shader.version_free(best_fit_normal.shader_version);
 
-	RD::get_singleton()->free(dfg_lut.pipeline);
-	RD::get_singleton()->free(dfg_lut.texture);
+	RD::get_singleton()->free_rid(dfg_lut.pipeline);
+	RD::get_singleton()->free_rid(dfg_lut.texture);
 	dfg_lut.shader.version_free(dfg_lut.shader_version);
 
 	{
 		for (const RID &rid : scene_state.uniform_buffers) {
-			RD::get_singleton()->free(rid);
+			RD::get_singleton()->free_rid(rid);
 		}
 		for (const RID &rid : scene_state.implementation_uniform_buffers) {
-			RD::get_singleton()->free(rid);
+			RD::get_singleton()->free_rid(rid);
 		}
-		RD::get_singleton()->free(scene_state.lightmap_buffer);
-		RD::get_singleton()->free(scene_state.lightmap_capture_buffer);
+		RD::get_singleton()->free_rid(scene_state.lightmap_buffer);
+		RD::get_singleton()->free_rid(scene_state.lightmap_capture_buffer);
 		for (uint32_t i = 0; i < RENDER_LIST_MAX; i++) {
 			if (scene_state.instance_buffer[i] != RID()) {
-				RD::get_singleton()->free(scene_state.instance_buffer[i]);
+				RD::get_singleton()->free_rid(scene_state.instance_buffer[i]);
 			}
 		}
 		memdelete_arr(scene_state.lightmap_captures);
 	}
 
 	while (sdfgi_framebuffer_size_cache.begin()) {
-		RD::get_singleton()->free(sdfgi_framebuffer_size_cache.begin()->value);
+		RD::get_singleton()->free_rid(sdfgi_framebuffer_size_cache.begin()->value);
 		sdfgi_framebuffer_size_cache.remove(sdfgi_framebuffer_size_cache.begin());
 	}
 }

@@ -31,7 +31,7 @@
 #include "xr_face_modifier_3d.h"
 
 #include "servers/xr/xr_face_tracker.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 
 // This method takes the name of a mesh blend shape and returns the
 // corresponding XRFaceTracker blend shape. If no match is
@@ -504,6 +504,10 @@ void XRFaceModifier3D::_bind_methods() {
 
 void XRFaceModifier3D::set_face_tracker(const StringName &p_tracker_name) {
 	tracker_name = p_tracker_name;
+
+	if (is_inside_tree()) {
+		_get_blend_data();
+	}
 }
 
 StringName XRFaceModifier3D::get_face_tracker() const {

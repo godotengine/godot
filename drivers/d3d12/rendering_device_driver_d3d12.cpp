@@ -2348,7 +2348,7 @@ static D3D12_BARRIER_LAYOUT _rd_texture_layout_to_d3d12_barrier_layout(RDD::Text
 void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_buffer,
 		BitField<PipelineStageBits> p_src_stages,
 		BitField<PipelineStageBits> p_dst_stages,
-		VectorView<RDD::MemoryBarrier> p_memory_barriers,
+		VectorView<RDD::MemoryAccessBarrier> p_memory_barriers,
 		VectorView<RDD::BufferBarrier> p_buffer_barriers,
 		VectorView<RDD::TextureBarrier> p_texture_barriers) {
 	if (!barrier_capabilities.enhanced_barriers_supported) {
@@ -2377,7 +2377,7 @@ void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_
 
 	D3D12_GLOBAL_BARRIER global_barrier = {};
 	for (uint32_t i = 0; i < p_memory_barriers.size(); i++) {
-		const MemoryBarrier &memory_barrier = p_memory_barriers[i];
+		const MemoryAccessBarrier &memory_barrier = p_memory_barriers[i];
 		_rd_stages_and_access_to_d3d12(p_src_stages, RDD::TEXTURE_LAYOUT_MAX, memory_barrier.src_access, global_barrier.SyncBefore, global_barrier.AccessBefore);
 		_rd_stages_and_access_to_d3d12(p_dst_stages, RDD::TEXTURE_LAYOUT_MAX, memory_barrier.dst_access, global_barrier.SyncAfter, global_barrier.AccessAfter);
 		global_barriers.push_back(global_barrier);
@@ -3055,7 +3055,7 @@ D3D12_UNORDERED_ACCESS_VIEW_DESC RenderingDeviceDriverD3D12::_make_ranged_uav_fo
 		} break;
 		case D3D12_UAV_DIMENSION_TEXTURE3D: {
 			uav_desc.Texture3D.MipSlice = mip;
-			uav_desc.Texture3D.WSize >>= p_mipmap_offset;
+			uav_desc.Texture3D.WSize = MAX(uav_desc.Texture3D.WSize >> p_mipmap_offset, 1U);
 		} break;
 		default:
 			break;
@@ -4571,8 +4571,7 @@ void RenderingDeviceDriverD3D12::command_begin_render_pass(CommandBufferID p_cmd
 			p_rect.position.y,
 			p_rect.position.x + p_rect.size.x,
 			p_rect.position.y + p_rect.size.y);
-	cmd_buf_info->render_pass_state.region_is_all = !(
-			cmd_buf_info->render_pass_state.region_rect.left == 0 &&
+	cmd_buf_info->render_pass_state.region_is_all = (cmd_buf_info->render_pass_state.region_rect.left == 0 &&
 			cmd_buf_info->render_pass_state.region_rect.top == 0 &&
 			cmd_buf_info->render_pass_state.region_rect.right == fb_info->size.x &&
 			cmd_buf_info->render_pass_state.region_rect.bottom == fb_info->size.y);
@@ -4619,8 +4618,11 @@ void RenderingDeviceDriverD3D12::command_begin_render_pass(CommandBufferID p_cmd
 				tex_info->pending_clear.remove_from_list();
 			}
 		} else if ((tex_info->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)) {
-			if (pass_info->attachments[i].stencil_load_op == ATTACHMENT_LOAD_OP_CLEAR) {
+			if (pass_info->attachments[i].load_op == ATTACHMENT_LOAD_OP_CLEAR) {
 				clear.aspect.set_flag(TEXTURE_ASPECT_DEPTH_BIT);
+			}
+			if (pass_info->attachments[i].stencil_load_op == ATTACHMENT_LOAD_OP_CLEAR) {
+				clear.aspect.set_flag(TEXTURE_ASPECT_STENCIL_BIT);
 			}
 		}
 		if (!clear.aspect.is_empty()) {

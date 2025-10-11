@@ -13,7 +13,8 @@ if env["platform"] in ["macos", "windows", "linuxbsd"]:
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env.Prepend(CPPEXTPATH=[thirdparty_dir])
+    env.Prepend(CPPPATH=[thirdparty_dir])
+
     env.Append(CPPDEFINES=["GLAD_ENABLED"])
     env.Append(CPPDEFINES=["EGL_ENABLED"])
 

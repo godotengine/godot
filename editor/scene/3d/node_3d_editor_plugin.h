@@ -296,6 +296,7 @@ private:
 	void _update_name();
 	void _compute_edit(const Point2 &p_point);
 	void _clear_selected();
+	bool _is_rotation_arc_visible() const;
 	void _select_clicked(bool p_allow_locked);
 	ObjectID _select_ray(const Point2 &p_pos) const;
 	void _find_items_at_pos(const Point2 &p_pos, Vector<_RayResult> &r_results, bool p_include_locked);
@@ -400,6 +401,13 @@ private:
 		double numeric_input = 0.0;
 		bool numeric_negate = false;
 		int numeric_next_decimal = 0;
+
+		Vector3 rotation_axis;
+		double accumulated_rotation_angle = 0.0;
+		double display_rotation_angle = 0.0;
+		Vector3 initial_click_vector;
+		Vector3 previous_rotation_vector;
+		bool gizmo_initiated = false;
 	} _edit;
 
 	struct Cursor {
@@ -824,6 +832,7 @@ private:
 	HashMap<Control *, VSeparator *> context_toolbar_separators;
 
 	void _update_context_toolbar();
+	void _on_editor_settings_changed();
 
 	void _generate_selection_boxes();
 
@@ -990,6 +999,7 @@ public:
 	void update_grid();
 	void update_transform_gizmo();
 	void update_all_gizmos(Node *p_node = nullptr);
+	void update_gizmo_opacity();
 	void snap_selected_nodes_to_floor();
 	void select_gizmo_highlight_axis(int p_axis);
 	void set_custom_camera(Node *p_camera) { custom_camera = p_camera; }

@@ -37,7 +37,6 @@
 #include "servers/rendering/renderer_rd/effects/metal_fx.h"
 #endif
 #include "servers/rendering/renderer_rd/effects/motion_vectors_store.h"
-#include "servers/rendering/renderer_rd/effects/resolve.h"
 #include "servers/rendering/renderer_rd/effects/ss_effects.h"
 #include "servers/rendering/renderer_rd/effects/taa.h"
 #include "servers/rendering/renderer_rd/forward_clustered/scene_shader_forward_clustered.h"
@@ -323,16 +322,20 @@ private:
 		};
 
 		struct InstanceData {
-			float transform[16];
-			float prev_transform[16];
+			float transform[12];
+			float compressed_aabb_position[4];
+			float compressed_aabb_size[4];
+			float uv_scale[4];
 			uint32_t flags;
 			uint32_t instance_uniforms_ofs; //base offset in global buffer for instance variables
 			uint32_t gi_offset; //GI information when using lightmapping (VCT or lightmap index)
 			uint32_t layer_mask;
+			float prev_transform[12];
 			float lightmap_uv_scale[4];
-			float compressed_aabb_position[4];
-			float compressed_aabb_size[4];
-			float uv_scale[4];
+#ifdef REAL_T_IS_DOUBLE
+			float model_precision[4];
+			float prev_model_precision[4];
+#endif
 
 			// These setters allow us to copy the data over with operation when using floats.
 			inline void set_lightmap_uv_scale(const Rect2 &p_rect) {
@@ -495,6 +498,10 @@ private:
 				uint64_t sort_key2;
 			};
 			struct {
+				uint64_t geometry_id : 32;
+				uint64_t material_id : 32;
+
+				uint64_t shader_id : 32;
 				uint64_t lod_index : 8;
 				uint64_t uses_softshadow : 1;
 				uint64_t uses_projector : 1;
@@ -503,10 +510,6 @@ private:
 				uint64_t depth_layer : 4;
 				uint64_t surface_index : 8;
 				uint64_t priority : 8;
-				uint64_t geometry_id : 32;
-
-				uint64_t material_id : 32;
-				uint64_t shader_id : 32;
 			};
 		} sort;
 
@@ -716,7 +719,6 @@ private:
 
 	/* Effects */
 
-	RendererRD::Resolve *resolve_effects = nullptr;
 	RendererRD::TAA *taa = nullptr;
 	RendererRD::FSR2Effect *fsr2_effect = nullptr;
 	RendererRD::SSEffects *ss_effects = nullptr;

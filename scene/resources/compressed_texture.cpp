@@ -30,6 +30,7 @@
 
 #include "compressed_texture.h"
 
+#include "core/io/file_access.h"
 #include "scene/resources/bit_map.h"
 
 Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit) {
@@ -458,7 +459,7 @@ void CompressedTexture2D::_bind_methods() {
 CompressedTexture2D::~CompressedTexture2D() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free(texture);
+		RS::get_singleton()->free_rid(texture);
 	}
 }
 
@@ -642,7 +643,7 @@ void CompressedTexture3D::_bind_methods() {
 CompressedTexture3D::~CompressedTexture3D() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free(texture);
+		RS::get_singleton()->free_rid(texture);
 	}
 }
 
@@ -835,7 +836,7 @@ CompressedTextureLayered::CompressedTextureLayered(LayeredType p_type) {
 CompressedTextureLayered::~CompressedTextureLayered() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free(texture);
+		RS::get_singleton()->free_rid(texture);
 	}
 }
 

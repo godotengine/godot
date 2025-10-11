@@ -83,6 +83,11 @@ const PackedStringArray ProjectSettings::get_required_features() {
 // Returns the features supported by this build of Godot. Includes all required features.
 const PackedStringArray ProjectSettings::_get_supported_features() {
 	PackedStringArray features = get_required_features();
+
+#ifdef LIBGODOT_ENABLED
+	features.append("LibGodot");
+#endif
+
 #ifdef MODULE_MONO_ENABLED
 	features.append("C#");
 #endif
@@ -280,7 +285,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_value.get_type() == Variant::NIL) {
 		props.erase(p_name);
 		if (p_name.operator String().begins_with("autoload/")) {
-			String node_name = p_name.operator String().split("/")[1];
+			String node_name = p_name.operator String().get_slicec('/', 1);
 			if (autoloads.has(node_name)) {
 				remove_autoload(node_name);
 			}
@@ -326,7 +331,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			props[p_name] = VariantContainer(p_value, last_order++);
 		}
 		if (p_name.operator String().begins_with("autoload/")) {
-			String node_name = p_name.operator String().split("/")[1];
+			String node_name = p_name.operator String().get_slicec('/', 1);
 			AutoloadInfo autoload;
 			autoload.name = node_name;
 			String path = p_value;
@@ -643,11 +648,16 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		ERR_FAIL_COND_V_MSG(!ok, ERR_CANT_OPEN, vformat("Cannot open resource pack '%s'.", p_main_pack));
 
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+#ifdef OVERRIDE_ENABLED
 		if (err == OK && !p_ignore_override) {
 			// Load override from location of the main pack
 			// Optional, we don't mind if it fails
-			_load_settings_text(p_main_pack.get_base_dir().path_join("override.cfg"));
+			bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+			if (!disable_override) {
+				_load_settings_text(p_main_pack.get_base_dir().path_join("override.cfg"));
+			}
 		}
+#endif // OVERRIDE_ENABLED
 		return err;
 	}
 
@@ -693,12 +703,17 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// If we opened our package, try and load our project.
 		if (found) {
 			Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+#ifdef OVERRIDE_ENABLED
 			if (err == OK && !p_ignore_override) {
 				// Load overrides from the PCK and the executable location.
 				// Optional, we don't mind if either fails.
-				_load_settings_text("res://override.cfg");
-				_load_settings_text(exec_path.get_base_dir().path_join("override.cfg"));
+				bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+				if (!disable_override) {
+					_load_settings_text("res://override.cfg");
+					_load_settings_text(exec_path.get_base_dir().path_join("override.cfg"));
+				}
 			}
+#endif // OVERRIDE_ENABLED
 			return err;
 		}
 	}
@@ -713,10 +728,15 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 	if (!OS::get_singleton()->get_resource_dir().is_empty()) {
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+#ifdef OVERRIDE_ENABLED
 		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
-			_load_settings_text("res://override.cfg");
+			bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+			if (!disable_override) {
+				_load_settings_text("res://override.cfg");
+			}
 		}
+#endif // OVERRIDE_ENABLED
 		return err;
 	}
 
@@ -736,11 +756,16 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		err = _load_settings_text_or_binary(resource_path.path_join("project.godot"), resource_path.path_join("project.binary"));
 		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
-			_load_settings_text(resource_path.path_join("override.cfg"));
+#ifdef OVERRIDE_ENABLED
+			bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+			if (!disable_override) {
+				_load_settings_text(resource_path.path_join("override.cfg"));
+			}
+#endif // OVERRIDE_ENABLED
 			return err;
 		}
 	}
-#endif
+#endif // MACOS_ENABLED
 
 	// Nothing was found, try to find a project file in provided path (`p_path`)
 	// or, if requested (`p_upwards`) in parent directories.
@@ -760,7 +785,12 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		err = _load_settings_text_or_binary(current_dir.path_join("project.godot"), current_dir.path_join("project.binary"));
 		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
-			_load_settings_text(current_dir.path_join("override.cfg"));
+#ifdef OVERRIDE_ENABLED
+			bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+			if (!disable_override) {
+				_load_settings_text(current_dir.path_join("override.cfg"));
+			}
+#endif // OVERRIDE_ENABLED
 			found = true;
 			break;
 		}
@@ -1569,6 +1599,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/config/use_custom_user_dir", false);
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
 	GLOBAL_DEF("application/config/project_settings_override", "");
+	GLOBAL_DEF("application/config/disable_project_settings_override", false);
 
 	GLOBAL_DEF("application/run/main_loop_type", "SceneTree");
 	GLOBAL_DEF("application/config/auto_accept_quit", true);
@@ -1675,6 +1706,7 @@ ProjectSettings::ProjectSettings() {
 #endif
 
 	GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
+	GLOBAL_DEF("gui/common/always_show_focus_state", false);
 	GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);
 
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/vsync/frame_queue_size", PROPERTY_HINT_RANGE, "2,3,1"), 2);
@@ -1698,7 +1730,7 @@ ProjectSettings::ProjectSettings() {
 	// installed by the scripts provided in the repository
 	// (check `misc/scripts/install_d3d12_sdk_windows.py`).
 	// For example, if the script installs 1.613.3, the default value must be 613.
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version", PROPERTY_HINT_RANGE, "0,10000,1,or_greater,hide_slider"), 613);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version", PROPERTY_HINT_RANGE, "0,10000,1,or_greater,hide_control"), 613);
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), 1);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"), 0);
@@ -1732,6 +1764,14 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("navigation/baking/thread_model/baking_use_multiple_threads", true);
 	GLOBAL_DEF("navigation/baking/thread_model/baking_use_high_priority_threads", true);
 #endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
+#ifndef NAVIGATION_2D_DISABLED
+	GLOBAL_DEF("navigation/2d/warnings/navmesh_edge_merge_errors", true);
+	GLOBAL_DEF("navigation/2d/warnings/navmesh_cell_size_mismatch", true);
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+	GLOBAL_DEF("navigation/3d/warnings/navmesh_edge_merge_errors", true);
+	GLOBAL_DEF("navigation/3d/warnings/navmesh_cell_size_mismatch", true);
+#endif // NAVIGATION_3D_DISABLED
 
 	ProjectSettings::get_singleton()->add_hidden_prefix("input/");
 }

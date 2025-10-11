@@ -133,10 +133,10 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->create_action(TTR("Unlock Node"));
 		undo_redo->add_do_method(n, "remove_meta", "_edit_lock_");
 		undo_redo->add_undo_method(n, "set_meta", "_edit_lock_", true);
-		undo_redo->add_do_method(this, "_update_tree");
-		undo_redo->add_undo_method(this, "_update_tree");
 		undo_redo->add_do_method(this, "emit_signal", "node_changed");
 		undo_redo->add_undo_method(this, "emit_signal", "node_changed");
+		undo_redo->add_do_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
+		undo_redo->add_undo_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_PIN) {
 		if (n->is_class("AnimationMixer")) {
@@ -150,10 +150,10 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		if (n->is_class("CanvasItem") || n->is_class("Node3D")) {
 			undo_redo->add_do_method(n, "remove_meta", "_edit_group_");
 			undo_redo->add_undo_method(n, "set_meta", "_edit_group_", true);
-			undo_redo->add_do_method(this, "_update_tree");
-			undo_redo->add_undo_method(this, "_update_tree");
 			undo_redo->add_do_method(this, "emit_signal", "node_changed");
 			undo_redo->add_undo_method(this, "emit_signal", "node_changed");
+			undo_redo->add_do_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
+			undo_redo->add_undo_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
 		}
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_WARNING) {
@@ -670,7 +670,7 @@ void SceneTreeEditor::_update_node_tooltip(Node *p_node, TreeItem *p_item) {
 			p_item->add_button(0, get_editor_theme_icon(SNAME("InstanceOptions")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
 		}
 		tooltip += String("\n" + TTR("Inherits:") + " " + p_node->get_scene_inherited_state()->get_path());
-	} else if (p_node != get_scene_node() && !p_node->get_scene_file_path().is_empty() && can_open_instance) {
+	} else if (p_node != get_scene_node() && p_node->is_instance() && can_open_instance) {
 		if (p_item->get_button_by_id(0, BUTTON_SUBSCENE) == -1) {
 			p_item->add_button(0, get_editor_theme_icon(SNAME("InstanceOptions")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
 		}
@@ -706,7 +706,12 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 		return;
 	}
 
-	TreeItem *item = _find(tree->get_root(), p_node->get_path());
+	TreeItem *item;
+	if (I->value.item && I->value.item->get_metadata(0) == p_node->get_path()) {
+		item = I->value.item;
+	} else {
+		item = _find(tree->get_root(), p_node->get_path());
+	}
 
 	if (!item) {
 		return;
@@ -1312,9 +1317,15 @@ void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_
 	}
 
 	// Emitted "selected" in _selected_changed() when select single node, so select multiple node emit "changed".
-	if (editor_selection->get_selected_nodes().size() > 1) {
-		emit_signal(SNAME("node_changed"));
+	if (editor_selection->get_selection().size() > 1 && !pending_selection_update) {
+		pending_selection_update = true;
+		callable_mp(this, &SceneTreeEditor::_process_selection_update).call_deferred();
 	}
+}
+
+void SceneTreeEditor::_process_selection_update() {
+	pending_selection_update = false;
+	emit_signal(SNAME("node_changed"));
 }
 
 void SceneTreeEditor::_tree_scroll_to_item(ObjectID p_item_id) {
@@ -1433,7 +1444,7 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 		if (auto_expand_selected) {
 			// Make visible when it's collapsed.
 			TreeItem *node = item->get_parent();
-			while (node && node != tree->get_root()) {
+			while (node) {
 				node->set_collapsed(false);
 				node = node->get_parent();
 			}
@@ -1521,7 +1532,7 @@ void SceneTreeEditor::rename_node(Node *p_node, const String &p_name, TreeItem *
 	// Trim leading/trailing whitespace to prevent node names from containing accidental whitespace,
 	// which would make it more difficult to get the node via `get_node()`.
 	new_name = new_name.strip_edges();
-	if (new_name.is_empty() && p_node->get_owner() != nullptr && !p_node->get_scene_file_path().is_empty()) {
+	if (new_name.is_empty() && p_node->get_owner() != nullptr && p_node->is_instance()) {
 		// If name is empty and node is root of an instance, revert to the original name.
 		const Ref<PackedScene> node_scene = ResourceLoader::load(p_node->get_scene_file_path());
 		if (node_scene.is_valid()) {
@@ -1955,7 +1966,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 		for (int i = 0; i < nodes.size(); i++) {
 			Node *n = get_node(nodes[i]);
 			// Nodes from an instantiated scene can't be rearranged.
-			if (n && n->get_owner() && n->get_owner() != get_scene_node() && !n->get_owner()->get_scene_file_path().is_empty()) {
+			if (n && n->get_owner() && n->get_owner() != get_scene_node() && n->get_owner()->is_instance()) {
 				return false;
 			}
 		}
@@ -2274,7 +2285,7 @@ void SceneTreeDialog::_notification(int p_what) {
 				tree->update_tree();
 
 				// Select the search bar by default.
-				callable_mp((Control *)filter, &Control::grab_focus).call_deferred();
+				callable_mp((Control *)filter, &Control::grab_focus).call_deferred(false);
 			}
 		} break;
 

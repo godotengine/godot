@@ -1219,7 +1219,7 @@ PhysicsServer2D::JointType GodotPhysicsServer2D::joint_get_type(RID p_joint) con
 	return joint->get_type();
 }
 
-void GodotPhysicsServer2D::free(RID p_rid) {
+void GodotPhysicsServer2D::free_rid(RID p_rid) {
 	_update_shapes(); // just in case
 
 	if (shape_owner.owns(p_rid)) {
@@ -1264,7 +1264,7 @@ void GodotPhysicsServer2D::free(RID p_rid) {
 		}
 
 		active_spaces.erase(space);
-		free(space->get_default_area()->get_self());
+		free_rid(space->get_default_area()->get_self());
 		space_owner.free(p_rid);
 		memdelete(space);
 	} else if (joint_owner.owns(p_rid)) {

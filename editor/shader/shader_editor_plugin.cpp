@@ -459,6 +459,7 @@ void ShaderEditorPlugin::_close_shader(int p_index) {
 	if (make_floating->get_parent()) {
 		make_floating->get_parent()->remove_child(make_floating);
 	}
+	empty_menu->set_visible(false);
 	ShaderEditor *shader_editor = Object::cast_to<ShaderEditor>(shader_tabs->get_tab_control(p_index));
 	ERR_FAIL_NULL(shader_editor);
 
@@ -469,6 +470,8 @@ void ShaderEditorPlugin::_close_shader(int p_index) {
 
 	if (shader_tabs->get_tab_count() == 0) {
 		shader_list->show(); // Make sure the panel is visible, because it can't be toggled without open shaders.
+		empty_menu->add_child(file_menu);
+		empty_menu->set_visible(true);
 	} else {
 		_switch_to_editor(edited_shaders[shader_tabs->get_current_tab()].shader_editor);
 	}
@@ -788,6 +791,7 @@ void ShaderEditorPlugin::_switch_to_editor(ShaderEditor *p_editor) {
 	if (make_floating->get_parent()) {
 		make_floating->get_parent()->remove_child(make_floating);
 	}
+	empty_menu->set_visible(false);
 	p_editor->use_menu_bar_items(file_menu, make_floating);
 }
 
@@ -896,11 +900,20 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	main_container->add_child(files_split);
 	main_container->set_custom_minimum_size(Size2(100, 300) * EDSCALE);
 
+	VBoxContainer *shader_vb = memnew(VBoxContainer);
+	shader_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	files_split->add_child(shader_vb);
+	empty_menu = memnew(HBoxContainer);
+	shader_vb->add_child(empty_menu);
+	empty_menu->add_child(file_menu);
+	empty_menu->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
+
 	shader_tabs = memnew(TabContainer);
 	shader_tabs->set_custom_minimum_size(Size2(460, 300) * EDSCALE);
 	shader_tabs->set_tabs_visible(false);
 	shader_tabs->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	files_split->add_child(shader_tabs);
+	shader_tabs->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	shader_vb->add_child(shader_tabs);
 	Ref<StyleBoxEmpty> empty;
 	empty.instantiate();
 	shader_tabs->add_theme_style_override(SceneStringName(panel), empty);

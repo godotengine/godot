@@ -94,8 +94,13 @@ void NavRegion2D::set_transform(Transform2D p_transform) {
 
 void NavRegion2D::set_navigation_mesh(Ref<NavigationPolygon> p_navigation_mesh) {
 #ifdef DEBUG_ENABLED
-	if (map && p_navigation_mesh.is_valid() && !Math::is_equal_approx(double(map->get_cell_size()), double(p_navigation_mesh->get_cell_size()))) {
-		ERR_PRINT_ONCE(vformat("Attempted to update a navigation region with a navigation mesh that uses a `cell_size` of %s while assigned to a navigation map set to a `cell_size` of %s. The cell size for navigation maps can be changed by using the NavigationServer map_set_cell_size() function. The cell size for default navigation maps can also be changed in the ProjectSettings.", double(p_navigation_mesh->get_cell_size()), double(map->get_cell_size())));
+	if (map && p_navigation_mesh.is_valid() && GLOBAL_GET_CACHED(bool, "navigation/2d/warnings/navmesh_cell_size_mismatch")) {
+		const double map_cell_size = double(map->get_cell_size());
+		const double navmesh_cell_size = double(p_navigation_mesh->get_cell_size());
+
+		if (map_cell_size > navmesh_cell_size) {
+			WARN_PRINT(vformat("A navigation mesh that uses a `cell_size` of %s was assigned to a navigation map set to a larger `cell_size` of %s.\nThis mismatch in cell size can cause rasterization errors with navigation mesh edges on the navigation map.\nThe cell size for navigation maps can be changed by using the NavigationServer map_set_cell_size() function.\nThe cell size for default navigation maps can also be changed in the project settings.\nThis warning can be toggled under 'navigation/2d/warnings/navmesh_cell_size_mismatch' in the project settings.", navmesh_cell_size, map_cell_size));
+		}
 	}
 #endif // DEBUG_ENABLED
 
@@ -333,7 +338,7 @@ bool NavRegion2D::get_use_async_iterations() const {
 
 NavRegion2D::NavRegion2D() :
 		sync_dirty_request_list_element(this), async_list_element(this) {
-	type = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_REGION;
+	type = NavigationEnums2D::PathSegmentType::PATH_SEGMENT_TYPE_REGION;
 	iteration_build.region = this;
 	iteration.instantiate();
 

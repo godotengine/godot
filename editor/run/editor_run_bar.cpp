@@ -49,7 +49,7 @@
 #include "scene/gui/panel_container.h"
 
 #ifndef XR_DISABLED
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 #endif // XR_DISABLED
 
 EditorRunBar *EditorRunBar::singleton = nullptr;
@@ -314,8 +314,12 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 	if (!EditorNode::get_singleton()->call_build()) {
 		return;
 	}
-
-	EditorDebuggerNode::get_singleton()->start();
+	// Use the existing URI, in case it is overridden by the CLI.
+	String uri = EditorDebuggerNode::get_singleton()->get_server_uri();
+	if (uri.is_empty()) {
+		uri = "tcp://";
+	}
+	EditorDebuggerNode::get_singleton()->start(uri);
 	Error error = editor_run.run(run_filename, write_movie_file, p_run_args);
 	if (error != OK) {
 		EditorDebuggerNode::get_singleton()->stop();

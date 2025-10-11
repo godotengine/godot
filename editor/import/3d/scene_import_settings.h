@@ -49,6 +49,7 @@
 class EditorFileDialog;
 class EditorInspector;
 class SceneImportSettingsData;
+class Timer;
 
 class SceneImportSettingsDialog : public ConfirmationDialog {
 	GDCLASS(SceneImportSettingsDialog, ConfirmationDialog)

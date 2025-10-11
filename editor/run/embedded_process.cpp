@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "editor/editor_string_names.h"
+#include "scene/main/timer.h"
 #include "scene/main/window.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
@@ -415,7 +416,7 @@ void EmbeddedProcess::_check_focused_process_id() {
 			if (modal_window->get_mode() == Window::MODE_MINIMIZED) {
 				modal_window->set_mode(Window::MODE_WINDOWED);
 			}
-			callable_mp(modal_window, &Window::grab_focus).call_deferred();
+			callable_mp(modal_window, &Window::grab_focus).call_deferred(false);
 		}
 	}
 }

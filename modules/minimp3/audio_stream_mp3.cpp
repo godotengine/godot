@@ -33,6 +33,7 @@
 #define MINIMP3_NO_STDIO
 
 #include "audio_stream_mp3.h"
+#include "core/io/file_access.h"
 
 int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	if (!active) {
@@ -239,7 +240,7 @@ void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 }
 
 Vector<uint8_t> AudioStreamMP3::get_data() const {
-	return data;
+	return Vector<uint8_t>(data);
 }
 
 void AudioStreamMP3::set_loop(bool p_enable) {

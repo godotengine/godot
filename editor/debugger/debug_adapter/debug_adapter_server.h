@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "debug_adapter_protocol.h"
+#include "editor/debugger/debug_adapter/debug_adapter_protocol.h"
 #include "editor/plugins/editor_plugin.h"
 
 class DebugAdapterServer : public EditorPlugin {

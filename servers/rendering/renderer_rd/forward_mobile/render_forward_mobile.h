@@ -209,20 +209,24 @@ private:
 		};
 
 		struct InstanceData {
-			float transform[16];
-			float prev_transform[16];
+			float transform[12];
+			float compressed_aabb_position[4];
+			float compressed_aabb_size[4];
+			float uv_scale[4];
 			uint32_t flags;
 			uint32_t instance_uniforms_ofs; // Base offset in global buffer for instance variables.
 			uint32_t gi_offset; // GI information when using lightmapping (VCT or lightmap index).
 			uint32_t layer_mask;
+			float prev_transform[12];
 			float lightmap_uv_scale[4]; // Doubles as uv_offset when needed.
 			uint32_t reflection_probes[2]; // Packed reflection probes.
 			uint32_t omni_lights[2]; // Packed omni lights.
 			uint32_t spot_lights[2]; // Packed spot lights.
 			uint32_t decals[2]; // Packed spot lights.
-			float compressed_aabb_position[4];
-			float compressed_aabb_size[4];
-			float uv_scale[4];
+#ifdef REAL_T_IS_DOUBLE
+			float model_precision[4];
+			float prev_model_precision[4];
+#endif
 
 			// These setters allow us to copy the data over with operation when using floats.
 			inline void set_lightmap_uv_scale(const Rect2 &p_rect) {
@@ -474,16 +478,16 @@ protected:
 				uint64_t sort_key2;
 			};
 			struct {
+				uint64_t geometry_id : 32;
+				uint64_t material_id : 32;
+
+				uint64_t shader_id : 32;
 				uint64_t lod_index : 8;
 				uint64_t uses_lightmap : 1;
 				uint64_t pad : 3;
 				uint64_t depth_layer : 4;
 				uint64_t surface_index : 8;
 				uint64_t priority : 8;
-				uint64_t geometry_id : 32;
-
-				uint64_t material_id : 32;
-				uint64_t shader_id : 32;
 			};
 		} sort;
 

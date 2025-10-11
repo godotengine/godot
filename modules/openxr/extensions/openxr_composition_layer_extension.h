@@ -161,6 +161,7 @@ private:
 		Size2i viewport_size;
 		OpenXRAPI::OpenXRSwapChainInfo swapchain_info;
 		bool static_image = false;
+		bool swapchain_protected_content = false;
 	} subviewport;
 
 #ifdef ANDROID_ENABLED
@@ -171,6 +172,7 @@ private:
 #endif
 
 	bool use_android_surface = false;
+	bool protected_content = false;
 	Size2i swapchain_size;
 
 	OpenXRAPI *openxr_api = nullptr;
@@ -203,6 +205,9 @@ public:
 
 	void set_use_android_surface(bool p_enable, Size2i p_size);
 	bool get_use_android_surface() const { return use_android_surface; }
+
+	void set_protected_content(bool p_protected_content) { protected_content = p_protected_content; }
+	bool is_protected_content() const { return protected_content; }
 
 	Ref<JavaObject> get_android_surface();
 

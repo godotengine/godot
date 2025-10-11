@@ -2988,9 +2988,9 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 						}
 					}
 					gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i);
-					attributes[gltf_texcoord_key] = _encode_accessor_as_vec2(p_state, first_channel, true);
+					attributes[gltf_texcoord_key] = _encode_accessor_as_vec2(p_state, Vector<Vector2>(first_channel), true);
 					gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i + 1);
-					attributes[gltf_texcoord_key] = _encode_accessor_as_vec2(p_state, second_channel, true);
+					attributes[gltf_texcoord_key] = _encode_accessor_as_vec2(p_state, Vector<Vector2>(second_channel), true);
 				}
 			}
 			{
@@ -7066,7 +7066,8 @@ Ref<GLTFObjectModelProperty> GLTFDocument::export_object_model_property(Ref<GLTF
 	const Vector<StringName> subpath = p_node_path.get_subnames();
 	ERR_FAIL_COND_V_MSG(subpath.is_empty(), ret, "glTF: Cannot export empty property. No property was specified in the NodePath: " + String(p_node_path));
 	int target_prop_depth = 0;
-	for (StringName subname : subpath) {
+	for (int64_t i = 0; i < subpath.size() - 1; i++) {
+		const StringName &subname = subpath[i];
 		Variant target_property = target_object->get(subname);
 		if (target_property.get_type() == Variant::OBJECT) {
 			target_object = target_property;
@@ -8423,7 +8424,7 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state, const String p_path)
 		constexpr uint32_t text_chunk_type = 0x4E4F534A; // The byte sequence "JSON" as little-endian.
 		constexpr uint32_t binary_chunk_type = 0x004E4942; // The byte sequence "BIN\0" as little-endian.
 
-		String json_string = Variant(p_state->json).to_json_string();
+		String json_string = JSON::stringify(p_state->json, "", true, true);
 		CharString cs = json_string.utf8();
 		uint64_t text_data_length = cs.length();
 		uint64_t text_chunk_length = ((text_data_length + 3) & (~3));
@@ -8440,7 +8441,7 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state, const String p_path)
 				err = _encode_buffer_bins(p_state, p_path);
 				ERR_FAIL_COND_V(err != OK, err);
 				// Since the buffer bins were re-encoded, we need to re-convert the JSON to string.
-				json_string = Variant(p_state->json).to_json_string();
+				json_string = JSON::stringify(p_state->json, "", true, true);
 				cs = json_string.utf8();
 				text_data_length = cs.length();
 				text_chunk_length = ((text_data_length + 3) & (~3));
@@ -8483,7 +8484,7 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state, const String p_path)
 		ERR_FAIL_COND_V(file.is_null(), FAILED);
 
 		file->create(FileAccess::ACCESS_RESOURCES);
-		String json = Variant(p_state->json).to_json_string();
+		String json = JSON::stringify(p_state->json, "", true, true);
 		file->store_string(json);
 	}
 	return err;
@@ -8617,7 +8618,7 @@ PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> p_state, Erro
 		*r_err = err;
 	}
 	ERR_FAIL_COND_V(err != OK, PackedByteArray());
-	String json_string = Variant(p_state->json).to_json_string();
+	String json_string = JSON::stringify(p_state->json, "", true, true);
 
 	constexpr uint64_t header_size = 12;
 	constexpr uint64_t chunk_header_size = 8;

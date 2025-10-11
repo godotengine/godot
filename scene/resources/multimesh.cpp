@@ -30,7 +30,7 @@
 
 #include "multimesh.h"
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef DISABLE_DEPRECATED
 // Kept for compatibility from 3.x to 4.0.
@@ -433,5 +433,5 @@ MultiMesh::MultiMesh() {
 
 MultiMesh::~MultiMesh() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(multimesh);
+	RenderingServer::get_singleton()->free_rid(multimesh);
 }

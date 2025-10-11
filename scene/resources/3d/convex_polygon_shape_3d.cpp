@@ -31,7 +31,7 @@
 #include "convex_polygon_shape_3d.h"
 #include "core/math/convex_hull.h"
 #include "scene/resources/mesh.h"
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 Vector<Vector3> ConvexPolygonShape3D::get_debug_mesh_lines() const {
 	Vector<Vector3> poly_points = get_points();
@@ -65,7 +65,7 @@ Ref<ArrayMesh> ConvexPolygonShape3D::get_debug_arraymesh_faces(const Color &p_mo
 		Geometry3D::MeshData md;
 		Error err = ConvexHullComputer::convex_hull(hull_points, md);
 		if (err == OK) {
-			verts = md.vertices;
+			verts = Vector<Vector3>(md.vertices);
 			for (int i = 0; i < verts.size(); i++) {
 				colors.push_back(p_modulate);
 			}

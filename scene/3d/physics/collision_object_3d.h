@@ -32,11 +32,14 @@
 
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/node_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
 class CollisionObject3D : public Node3D {
 	GDCLASS(CollisionObject3D, Node3D);
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::COLLISION_OBJECT_3D;
+
 	enum DisableMode {
 		DISABLE_MODE_REMOVE,
 		DISABLE_MODE_MAKE_STATIC,

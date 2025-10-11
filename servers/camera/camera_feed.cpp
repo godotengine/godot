@@ -30,7 +30,7 @@
 
 #include "camera_feed.h"
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 void CameraFeed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_id"), &CameraFeed::get_id);
@@ -178,8 +178,8 @@ CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
 CameraFeed::~CameraFeed() {
 	// Free our textures
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(texture[CameraServer::FEED_Y_IMAGE]);
-	RenderingServer::get_singleton()->free(texture[CameraServer::FEED_CBCR_IMAGE]);
+	RenderingServer::get_singleton()->free_rid(texture[CameraServer::FEED_Y_IMAGE]);
+	RenderingServer::get_singleton()->free_rid(texture[CameraServer::FEED_CBCR_IMAGE]);
 }
 
 void CameraFeed::set_rgb_image(const Ref<Image> &p_rgb_img) {

@@ -339,7 +339,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
-	static Ref<InputEventJoypadMotion> create_reference(JoyAxis p_axis, float p_value);
+	// The default device ID is `InputMap::ALL_DEVICES`.
+	static Ref<InputEventJoypadMotion> create_reference(JoyAxis p_axis, float p_value, int p_device = -1);
 
 	InputEventType get_type() const final override { return InputEventType::JOY_MOTION; }
 
@@ -371,7 +372,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
-	static Ref<InputEventJoypadButton> create_reference(JoyButton p_btn_index);
+	// The default device ID is `InputMap::ALL_DEVICES`.
+	static Ref<InputEventJoypadButton> create_reference(JoyButton p_btn_index, int p_device = -1);
 
 	InputEventType get_type() const final override { return InputEventType::JOY_BUTTON; }
 

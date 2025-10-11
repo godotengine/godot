@@ -44,7 +44,7 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-08-14 05:02+0000\n"
+"PO-Revision-Date: 2025-09-27 08:07+0000\n"
 "Last-Translator: Максим Горпиніч <gorpinicmaksim0@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
@@ -54,7 +54,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Application"
 msgstr "Застосування"
@@ -564,7 +564,7 @@ msgid "Enable Accelerometer"
 msgstr "Увімкнути акселерометр"
 
 msgid "Enable Gravity"
-msgstr "Увімкніть гравітацію"
+msgstr "Увімкнути гравітацію"
 
 msgid "Enable Gyroscope"
 msgstr "Увімкнути гіроскоп"
@@ -2431,7 +2431,7 @@ msgid "Stay in Script Editor on Node Selected"
 msgstr "Залишатися в редакторі скриптів на вибраному вузлі"
 
 msgid "Open Script When Connecting Signal to Existing Method"
-msgstr "Відкрити сценарій під час підключення сигналу до існуючого методу"
+msgstr "Відкрити скрипт під час підключення сигналу до існуючого методу"
 
 msgid "Use Default Word Separators"
 msgstr "Використовуйте роздільники слів за умовчанням"
@@ -2476,7 +2476,7 @@ msgid "Auto Reload and Parse Scripts on Save"
 msgstr "Автоматичне перезавантаження та аналіз сценаріїв під час збереження"
 
 msgid "Open Dominant Script on Scene Change"
-msgstr "Відкрийте домінуючий сценарій під час зміни сцени"
+msgstr "Відкрийте домінуючий скрипт під час зміни сцени"
 
 msgid "Drop Preload Resources as UID"
 msgstr "Видалити ресурси попереднього завантаження як UID"
@@ -3037,7 +3037,7 @@ msgid "Editor TLS Certificates"
 msgstr "Сертифікати TLS редактора"
 
 msgid "Enable TLS V 1"
-msgstr "Увімкніть TLS V1"
+msgstr "Увімкнути TLS версії 1"
 
 msgid "Remote Host"
 msgstr "Віддалений вузол"
@@ -4806,6 +4806,9 @@ msgstr "Каталог збірок Gradle"
 msgid "Android Source Template"
 msgstr "Шаблон вихідного коду Android"
 
+msgid "Compress Native Libraries"
+msgstr "Стиснення рідних бібліотек"
+
 msgid "Export Format"
 msgstr "Формат експортування"
 
@@ -5017,10 +5020,10 @@ msgid "Extra Args SCP"
 msgstr "Додаткові аргументи SCP"
 
 msgid "Run Script"
-msgstr "Запустіть сценарій"
+msgstr "Запустіть скрипт"
 
 msgid "Cleanup Script"
-msgstr "Сценарій очищення"
+msgstr "Скрипт очищення"
 
 msgid "macOS"
 msgstr "macOS"
@@ -6609,7 +6612,7 @@ msgid "Justification Flags"
 msgstr "Прапори обґрунтування"
 
 msgid "BiDi"
-msgstr "BiDi'"
+msgstr "BiDi"
 
 msgid "Text Direction"
 msgstr "Напрямок тексту"
@@ -8148,7 +8151,7 @@ msgid "Start Index"
 msgstr "Початковий індекс"
 
 msgid "Switch on Hover"
-msgstr "Увімкніть наведення"
+msgstr "Увімкнути наведення курсора"
 
 msgid "Prefer Global Menu"
 msgstr "Віддавайте перевагу глобальному меню"
@@ -11191,7 +11194,7 @@ msgid "Picker Cursor BG"
 msgstr "Курсор вибору BG"
 
 msgid "Color Script"
-msgstr "Кольоровий сценарій"
+msgstr "Кольоровий скрипт"
 
 msgid "Color Hue"
 msgstr "Відтінок кольору"
@@ -12187,7 +12190,7 @@ msgid "Texel Size"
 msgstr "Розмір текселів"
 
 msgid "Lightmap GI"
-msgstr "Lightmap GI'"
+msgstr "Lightmap GI"
 
 msgid "Use Bicubic Filter"
 msgstr "Використовуйте бікубічний фільтр"

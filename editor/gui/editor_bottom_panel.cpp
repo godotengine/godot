@@ -100,6 +100,15 @@ void EditorBottomPanel::_update_disabled_buttons() {
 	right_button->set_disabled(h_scroll->get_value() + h_scroll->get_page() == h_scroll->get_max());
 }
 
+void EditorBottomPanel::_ensure_control_visible(ObjectID p_id) {
+	Control *c = ObjectDB::get_instance<Control>(p_id);
+	if (!c) {
+		return;
+	}
+
+	button_scroll->ensure_control_visible(c);
+}
+
 void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx, bool p_ignore_lock) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
@@ -134,7 +143,7 @@ void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx, bool p_ignore
 		if (expand_button->is_pressed()) {
 			EditorNode::get_top_split()->hide();
 		}
-		callable_mp(button_scroll, &ScrollContainer::ensure_control_visible).call_deferred(items[p_idx].button);
+		callable_mp(this, &EditorBottomPanel::_ensure_control_visible).call_deferred(items[p_idx].button->get_instance_id());
 	} else {
 		add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
 		items[p_idx].button->set_pressed_no_signal(false);

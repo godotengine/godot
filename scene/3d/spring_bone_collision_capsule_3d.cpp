@@ -84,10 +84,8 @@ bool SpringBoneCollisionCapsule3D::is_inside() const {
 }
 
 Pair<Vector3, Vector3> SpringBoneCollisionCapsule3D::get_head_and_tail(const Transform3D &p_center) const {
-	static const Vector3 VECTOR3_UP = Vector3(0, 1, 0);
-	static const Vector3 VECTOR3_DOWN = Vector3(0, -1, 0);
 	Transform3D tr = get_transform_from_skeleton(p_center);
-	return Pair<Vector3, Vector3>(tr.origin + tr.basis.xform(VECTOR3_UP * (height * 0.5 - radius)), tr.origin + tr.basis.xform(VECTOR3_DOWN * (height * 0.5 - radius)));
+	return Pair<Vector3, Vector3>(tr.origin + tr.basis.xform(Vector3::UP * (height * 0.5 - radius)), tr.origin + tr.basis.xform(Vector3::DOWN * (height * 0.5 - radius)));
 }
 
 void SpringBoneCollisionCapsule3D::_bind_methods() {

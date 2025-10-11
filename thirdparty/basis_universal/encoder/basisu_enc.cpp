@@ -651,7 +651,7 @@ namespace basisu
 			}
 
 			img.resize(width, height);
-			memcpy(img.get_ptr(), pMem, width * height * sizeof(float) * 4);
+			memcpy((void *)img.get_ptr(), pMem, width * height * sizeof(float) * 4);
 
 			break;
 		}
@@ -2236,7 +2236,10 @@ namespace basisu
 		debug_printf("job_pool::~job_pool\n");
 		
 		// Notify all workers that they need to die right now.
-		m_kill_flag.store(true);
+		{
+			std::lock_guard<std::mutex> lk(m_mutex);
+			m_kill_flag.store(true);
+		}
 		
 		m_has_work.notify_all();
 
@@ -2326,16 +2329,26 @@ namespace basisu
 
 		m_num_active_workers.fetch_add(1);
 		
-		while (true)
+		while (!m_kill_flag)
 		{
 			std::unique_lock<std::mutex> lock(m_mutex);
 
 			// Wait for any jobs to be issued.
+#if 0
 			m_has_work.wait(lock, [this] { return m_kill_flag || m_queue.size(); } );
+#else
+			// For more safety vs. buggy RTL's. Worse case we stall for a second vs. locking up forever if something goes wrong.
+			m_has_work.wait_for(lock, std::chrono::milliseconds(1000), [this] {
+				return m_kill_flag || !m_queue.empty();
+				});
+#endif
 
 			// Check to see if we're supposed to exit.
 			if (m_kill_flag)
 				break;
+
+			if (m_queue.empty())
+				continue;
 
 			// Get the job and execute it.
 			std::function<void()> job(m_queue.back());
@@ -3449,7 +3462,7 @@ namespace basisu
 		}
 		else
 		{
-			memcpy(img.get_ptr(), out_rgba, sizeof(float) * 4 * img.get_total_pixels());
+			memcpy((void *)img.get_ptr(), out_rgba, static_cast<size_t>(sizeof(float) * 4 * img.get_total_pixels()));
 		}
 
 		free(out_rgba);
@@ -3471,7 +3484,7 @@ namespace basisu
 		}
 
 		img.resize(width, height);
-		memcpy(img.get_ptr(), out_rgba, width * height * sizeof(float) * 4);
+		memcpy((void *)img.get_ptr(), out_rgba, width * height * sizeof(float) * 4);
 		free(out_rgba);
 
 		return true;
