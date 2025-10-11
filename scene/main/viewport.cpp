@@ -1079,6 +1079,20 @@ float Viewport::get_oversampling_override() const {
 	return font_oversampling_override;
 }
 
+void Viewport::set_use_mipmaps(bool p_use_mipmaps) {
+	ERR_MAIN_THREAD_GUARD;
+	if (use_mipmaps == p_use_mipmaps) {
+		return;
+	}
+	use_mipmaps = p_use_mipmaps;
+	RS::get_singleton()->viewport_set_use_mipmaps(viewport, p_use_mipmaps);
+}
+
+bool Viewport::is_using_mipmaps() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return use_mipmaps;
+}
+
 bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, bool p_allocated) {
 	Transform2D stretch_transform_new = Transform2D();
 	float new_font_oversampling = 1.0;
@@ -4948,6 +4962,9 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_texture"), &Viewport::get_texture);
 
+	ClassDB::bind_method(D_METHOD("set_use_mipmaps", "enable"), &Viewport::set_use_mipmaps);
+	ClassDB::bind_method(D_METHOD("is_using_mipmaps"), &Viewport::is_using_mipmaps);
+
 #if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	ClassDB::bind_method(D_METHOD("set_physics_object_picking", "enable"), &Viewport::set_physics_object_picking);
 	ClassDB::bind_method(D_METHOD("get_physics_object_picking"), &Viewport::get_physics_object_picking);
@@ -5107,6 +5124,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mesh_lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_mesh_lod_threshold", "get_mesh_lod_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Lighting,Overdraw,Wireframe,Normal Buffer,VoxelGI Albedo,VoxelGI Lighting,VoxelGI Emission,Shadow Atlas,Directional Shadow Map,Scene Luminance,SSAO,SSIL,Directional Shadow Splits,Decal Atlas,SDFGI Cascades,SDFGI Probes,VoxelGI/SDFGI Buffer,Disable Mesh LOD,OmniLight3D Cluster,SpotLight3D Cluster,Decal Cluster,ReflectionProbe Cluster,Occlusion Culling Buffer,Motion Vectors,Internal Buffer"), "set_debug_draw", "get_debug_draw");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr_2d"), "set_use_hdr_2d", "is_using_hdr_2d");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_mipmaps"), "set_use_mipmaps", "is_using_mipmaps");
 
 #ifndef _3D_DISABLED
 	ADD_GROUP("Scaling 3D", "");

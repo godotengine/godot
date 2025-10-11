@@ -357,8 +357,11 @@ private:
 		Size2i size;
 		uint32_t view_count;
 		RID color;
+		RID color_mipmap0;
 		Vector<RID> color_slices;
 		RID color_multisample; // Needed when 2D MSAA is enabled.
+		bool use_mipmaps = false;
+		Vector<RID> color_mipmaps;
 
 		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED; // 2D MSAA mode
 		bool msaa_needs_resolve = false; // 2D MSAA needs resolved
@@ -766,6 +769,10 @@ public:
 	virtual bool render_target_is_using_hdr(RID p_render_target) const override;
 	virtual void render_target_set_use_debanding(RID p_render_target, bool p_use_debanding) override;
 	virtual bool render_target_is_using_debanding(RID p_render_target) const override;
+
+	virtual void render_target_set_use_mipmaps(RID p_render_target, bool p_use_mipmaps) override;
+	virtual bool render_target_is_using_mipmaps(RID p_render_target) const override;
+	virtual void render_target_gen_mipmaps(RID p_render_target) override;
 
 	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps);
 	void render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color);
