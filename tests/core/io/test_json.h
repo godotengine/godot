@@ -401,4 +401,38 @@ TEST_CASE("[JSON] Serialization") {
 		}
 	}
 }
+
+TEST_CASE("[JSON] Passing from/to native") {
+	JSON json;
+
+	struct Native {
+		Variant native;
+		Variant parsed;
+	};
+
+	static const Native tests_native[] = {
+		{ Variant(), Variant() },
+		{ true, true },
+		{ false, false },
+		{ 123456, "i:123456" },
+		{ 0.123456, "f:0.123456" },
+		{ "Hello", "s:Hello" },
+		{ Math::INF, "f:inf" },
+		{ -Math::INF, "f:-inf" },
+		{ Math::NaN, "f:nan" },
+	};
+
+	for (const Native &test : tests_native) {
+		const Variant from_native = json.from_native(test.native);
+		CHECK_MESSAGE(
+				from_native == test.parsed,
+				vformat("Converting `%s` from native should result in `%s`, got `%s` instead.", test.native, test.parsed, from_native));
+
+		const Variant to_native = json.to_native(from_native);
+		CHECK_MESSAGE(
+				to_native == test.native,
+				vformat("Converting `%s` to native should result in `%s`, got `%s` instead.", test.parsed, test.native, to_native));
+	}
+}
+
 } // namespace TestJSON
