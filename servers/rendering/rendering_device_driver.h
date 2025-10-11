@@ -387,6 +387,7 @@ public:
 	/********************/
 
 	virtual SemaphoreID semaphore_create() = 0;
+	virtual SemaphoreID semaphore_create_from_extension(uint64_t p_native_semaphore) = 0;
 	virtual void semaphore_free(SemaphoreID p_semaphore) = 0;
 
 	/*************************/
@@ -750,6 +751,7 @@ public:
 		OBJECT_TYPE_SHADER,
 		OBJECT_TYPE_UNIFORM_SET,
 		OBJECT_TYPE_PIPELINE,
+		OBJECT_TYPE_SEMAPHORE,
 	};
 
 	struct MultiviewCapabilities {
