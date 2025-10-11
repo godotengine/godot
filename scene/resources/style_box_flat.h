@@ -42,6 +42,7 @@ class StyleBoxFlat : public StyleBox {
 	real_t border_width[4] = {};
 	real_t expand_margin[4] = {};
 	real_t corner_radius[4] = {};
+	real_t corner_radius_smoothing = 1.0;
 
 	bool draw_center = true;
 	bool blend_border = false;
@@ -78,6 +79,9 @@ public:
 	void set_corner_radius_individual(const int radius_top_left, const int radius_top_right, const int radius_bottom_right, const int radius_bottom_left);
 	void set_corner_radius(Corner p_corner, const int radius);
 	int get_corner_radius(Corner p_corner) const;
+
+	void set_corner_radius_smoothing(real_t p_corner_radius_smoothing);
+	real_t get_corner_radius_smoothing() const;
 
 	void set_corner_detail(const int &p_corner_detail);
 	int get_corner_detail() const;
