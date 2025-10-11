@@ -301,6 +301,10 @@ void EditorPropertyArray::_object_id_selected(const StringName &p_property, Obje
 	emit_signal(SNAME("object_id_selected"), p_property, p_id);
 }
 
+void EditorPropertyArray::_resource_selected(const String &p_path, Ref<Resource> p_resource) {
+	emit_signal(SNAME("resource_selected"), get_edited_property(), p_resource);
+}
+
 void EditorPropertyArray::_create_new_property_slot() {
 	int idx = slots.size();
 	HBoxContainer *hbox = memnew(HBoxContainer);
@@ -511,6 +515,9 @@ void EditorPropertyArray::update_property() {
 				new_prop->set_use_folding(is_using_folding());
 				new_prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyArray::_property_changed));
 				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyArray::_object_id_selected));
+				if (value_type == Variant::OBJECT) {
+					new_prop->connect("resource_selected", callable_mp(this, &EditorPropertyArray::_resource_selected), CONNECT_DEFERRED);
+				}
 				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
 				new_prop->set_read_only(is_read_only());
 				slot.prop->add_sibling(new_prop, false);
@@ -1393,6 +1400,9 @@ void EditorPropertyDictionary::update_property() {
 				new_prop->set_use_folding(is_using_folding());
 				new_prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyDictionary::_property_changed));
 				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
+				if (value_type == Variant::OBJECT) {
+					new_prop->connect("resource_selected", callable_mp(this, &EditorPropertyDictionary::_resource_selected), CONNECT_DEFERRED);
+				}
 				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
 				if (slot.index != EditorPropertyDictionaryObject::NEW_KEY_INDEX && slot.index != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
 					new_prop->set_draw_label(false);
@@ -1441,6 +1451,10 @@ void EditorPropertyDictionary::_remove_pressed(int p_slot_index) {
 
 void EditorPropertyDictionary::_object_id_selected(const StringName &p_property, ObjectID p_id) {
 	emit_signal(SNAME("object_id_selected"), p_property, p_id);
+}
+
+void EditorPropertyDictionary::_resource_selected(const String &p_path, Ref<Resource> p_resource) {
+	emit_signal(SNAME("resource_selected"), get_edited_property(), p_resource);
 }
 
 void EditorPropertyDictionary::_notification(int p_what) {
