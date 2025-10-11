@@ -9,7 +9,7 @@ namespace Godot
         /// Gets an Awaiter for this <see cref="IAwaitable"/>.
         /// </summary>
         /// <returns>An Awaiter.</returns>
-        IAwaiter GetAwaiter();
+        public IAwaiter GetAwaiter();
     }
 
     /// <summary>
@@ -22,6 +22,6 @@ namespace Godot
         /// Gets an Awaiter for this <see cref="IAwaitable{TResult}"/>.
         /// </summary>
         /// <returns>An Awaiter.</returns>
-        IAwaiter<TResult> GetAwaiter();
+        public IAwaiter<TResult> GetAwaiter();
     }
 }
