@@ -727,7 +727,7 @@ Error WaylandEmbedder::send_wayland_message(int p_socket, uint32_t p_id, uint32_
 
 	struct msghdr msg = {};
 	msg.msg_iov = vecs;
-	msg.msg_iovlen = std::size(vecs);
+	msg.msg_iovlen = std_size(vecs);
 
 #ifdef WAYLAND_EMBED_DEBUG_LOGS_ENABLED
 	printf("[PROXY] Sending: ");
