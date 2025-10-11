@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NoiseTextureGenerator" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Singleton to facilitate the baking and updating of noise textures.
+	</brief_description>
+	<description>
+		Baking and updating noise textures is a performance costly operation best done behind a loading screen or using background threads.
+		Each bake function is available as a single-threaded version and as an async task version that uses the [WorkerThreadPool].
+
+		The single-threaded version will be executed instant but block the main thread until the baking of the noise image(s) is finished.
+		The async version will use a background thread to do the baking and may take multiple frames until finished and synchronized back with the main thread.
+		Noise textures that finished their bake using async threads are synced on the [signal RenderingServer.frame_pre_draw] signal.
+
+		On platforms that do not support threads (e.g. web) the async functions automatically do a fallback to the single-threaded function equivalent.
+		Be aware of such fallback as spawning or updating noise textures at runtime without thread support can easily impact a projects frame rate.
+
+		Noise textures that are already baking can not be queued again for another bake until the current bake is finished.
+		Use [method is_noise_texture_2d_baking] and [method is_noise_texture_3d_baking] to check the bake state of a noise texture before queuing them.
+		Be aware that most noise textures queue themself automatically for an update when changing their properties but do so deferred with a delay.
+
+		Avoid connecting signals and callbacks to functions that immediately rebake a noise texture on a callback from the generator, or one of the emitted resource changed signals.
+		Such signal spaghetti can cause a deadlock due to often creating an endless loop of baking and signal emit.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="bake_noise_texture_2d" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="noise_texture" type="NoiseTexture2D" />
+			<description>
+				Bakes the provided [param noise_texture].
+			</description>
+		</method>
+		<method name="bake_noise_texture_2d_async" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="noise_texture" type="NoiseTexture2D" />
+			<param index="1" name="callback" type="Callable" default="Callable()" />
+			<description>
+				Bakes the provided [param noise_texture] as an async task running on a background thread. After the process is finished the optional [param callback] will be called.
+			</description>
+		</method>
+		<method name="bake_noise_texture_3d" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="noise_texture" type="NoiseTexture3D" />
+			<description>
+				Bakes the provided [param noise_texture].
+			</description>
+		</method>
+		<method name="bake_noise_texture_3d_async" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="noise_texture" type="NoiseTexture3D" />
+			<param index="1" name="callback" type="Callable" default="Callable()" />
+			<description>
+				Bakes the provided [param noise_texture] as an async task running on a background thread. After the process is finished the optional [param callback] will be called.
+			</description>
+		</method>
+		<method name="is_noise_texture_2d_baking" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="noise_texture" type="NoiseTexture2D" />
+			<description>
+				Returns [code]true[/code] when the provided noise texture is being baked on a background thread.
+			</description>
+		</method>
+		<method name="is_noise_texture_3d_baking" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="noise_texture" type="NoiseTexture3D" />
+			<description>
+				Returns [code]true[/code] when the provided noise texture is being baked on a background thread.
+			</description>
+		</method>
+	</methods>
+</class>
