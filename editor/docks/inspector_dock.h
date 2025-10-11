@@ -100,8 +100,8 @@ class InspectorDock : public EditorDock {
 
 	int current_option = -1;
 	ConfirmationDialog *unique_resources_confirmation = nullptr;
-	Label *unique_resources_label = nullptr;
 	Tree *unique_resources_list_tree = nullptr;
+	LocalVector<StringName> properties_to_unique;
 
 	EditorPropertyNameProcessor::Style property_name_style;
 	List<Pair<StringName, Variant>> stored_properties;
