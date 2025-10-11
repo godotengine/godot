@@ -784,7 +784,7 @@ void RoomManager::_generate_room_overlap_zones() {
 
 			memcpy(dest, &other->_planes[0], other->_planes.size() * sizeof(Plane));
 
-			Vector<Vector3> overlap_pts = Geometry::compute_convex_mesh_points(planes.ptr(), planes.size());
+			Vector<Vector3> overlap_pts = Geometry::compute_convex_mesh_points(Span<Plane>(planes.ptr(), planes.size()));
 
 			if (overlap_pts.size() < 4) {
 				continue;
@@ -1642,7 +1642,7 @@ void RoomManager::_build_simplified_bound(const Room *p_room, Geometry::MeshData
 		return;
 	}
 
-	Vector<Vector3> pts = Geometry::compute_convex_mesh_points(&r_planes[0], r_planes.size(), 0.001);
+	Vector<Vector3> pts = Geometry::compute_convex_mesh_points(Span<Plane>(r_planes.ptr(), r_planes.size()), 0.001);
 	Error err = _build_room_convex_hull(p_room, pts, r_md);
 
 	if (err != OK) {

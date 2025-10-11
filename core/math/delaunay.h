@@ -31,6 +31,7 @@
 #ifndef DELAUNAY_H
 #define DELAUNAY_H
 
+#include "core/local_vector.h"
 #include "core/math/rect2.h"
 
 class Delaunay2D {
@@ -58,7 +59,7 @@ public:
 		}
 	};
 
-	static bool circum_circle_contains(const Vector<Vector2> &p_vertices, const Triangle &p_triangle, int p_vertex) {
+	static bool circum_circle_contains(const Span<Vector2> &p_vertices, const Triangle &p_triangle, int p_vertex) {
 		Vector2 p1 = p_vertices[p_triangle.points[0]];
 		Vector2 p2 = p_vertices[p_triangle.points[1]];
 		Vector2 p3 = p_vertices[p_triangle.points[2]];
@@ -77,7 +78,7 @@ public:
 		return d <= r;
 	}
 
-	static bool edge_compare(const Vector<Vector2> &p_vertices, const Edge &p_a, const Edge &p_b) {
+	static bool edge_compare(const Span<Vector2> &p_vertices, const Edge &p_a, const Edge &p_b) {
 		if (p_vertices[p_a.edge[0]].is_equal_approx(p_vertices[p_b.edge[0]]) && p_vertices[p_a.edge[1]].is_equal_approx(p_vertices[p_b.edge[1]])) {
 			return true;
 		}
@@ -89,12 +90,12 @@ public:
 		return false;
 	}
 
-	static Vector<Triangle> triangulate(const Vector<Vector2> &p_points) {
-		Vector<Vector2> points = p_points;
+	static Vector<Triangle> triangulate(const Span<Vector2> &p_points) {
+		LocalVector<Vector2> points(p_points);
 		Vector<Triangle> triangles;
 
 		Rect2 rect;
-		for (int i = 0; i < p_points.size(); i++) {
+		for (uint32_t i = 0; i < p_points.size(); i++) {
 			if (i == 0) {
 				rect.position = p_points[i];
 			} else {
@@ -111,7 +112,7 @@ public:
 
 		triangles.push_back(Triangle(p_points.size() + 0, p_points.size() + 1, p_points.size() + 2));
 
-		for (int i = 0; i < p_points.size(); i++) {
+		for (uint32_t i = 0; i < p_points.size(); i++) {
 			//std::cout << "Traitement du point " << *p << std::endl;
 			//std::cout << "_triangles contains " << _triangles.size() << " elements" << std::endl;
 
@@ -150,10 +151,12 @@ public:
 			}
 		}
 
+		int point_count = p_points.size();
+
 		for (int i = 0; i < triangles.size(); i++) {
 			bool invalid = false;
 			for (int j = 0; j < 3; j++) {
-				if (triangles[i].points[j] >= p_points.size()) {
+				if (triangles[i].points[j] >= point_count) {
 					invalid = true;
 					break;
 				}

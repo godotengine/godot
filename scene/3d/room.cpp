@@ -172,7 +172,7 @@ PoolVector<Vector3> Room::generate_points() {
 	scaled_epsilon = MAX(scaled_epsilon * 0.01, 0.001);
 
 	LocalVector<Vector3, int32_t> pts;
-	pts = Geometry::compute_convex_mesh_points(&_planes[0], _planes.size(), scaled_epsilon);
+	pts = Geometry::compute_convex_mesh_points(Span<Plane>(_planes.ptr(), _planes.size()), scaled_epsilon);
 
 	// eliminate duplicates
 	for (int n = 0; n < pts.size(); n++) {

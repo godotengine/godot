@@ -1398,11 +1398,13 @@ bool Geometry::convex_hull_intersects_convex_hull(const Plane *p_planes_a, int p
 	return false;
 }
 
-Vector<Vector3> Geometry::compute_convex_mesh_points(const Plane *p_planes, int p_plane_count, real_t p_epsilon) {
+Vector<Vector3> Geometry::compute_convex_mesh_points(const Span<Plane> &p_planes, real_t p_epsilon) {
 	Vector<Vector3> points;
 
 	// Iterate through every unique combination of any three planes.
-	for (int i = p_plane_count - 1; i >= 0; i--) {
+	int plane_count = p_planes.size();
+
+	for (int i = plane_count - 1; i >= 0; i--) {
 		for (int j = i - 1; j >= 0; j--) {
 			for (int k = j - 1; k >= 0; k--) {
 				// Find the point where these planes all cross over (if they
@@ -1412,7 +1414,7 @@ Vector<Vector3> Geometry::compute_convex_mesh_points(const Plane *p_planes, int 
 					// See if any *other* plane excludes this point because it's
 					// on the wrong side.
 					bool excluded = false;
-					for (int n = 0; n < p_plane_count; n++) {
+					for (int n = 0; n < plane_count; n++) {
 						if (n != i && n != j && n != k) {
 							real_t dist = p_planes[n].distance_to(convex_shape_point);
 							if (dist > p_epsilon) {
