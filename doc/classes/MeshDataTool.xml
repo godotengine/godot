@@ -318,6 +318,7 @@
 			<param index="1" name="tangent" type="Plane" />
 			<description>
 				Sets the tangent of the given vertex.
+				[b]Note:[/b] [param tangent] being a [Plane] doesn't mean it directly represents the tangent plane. [Plane] is used as a [Vector4] here: [code]x[/code], [code]y[/code], [code]z[/code] represent the tangent vector and [code]d[/code] should be -1 or 1. See [constant Mesh.ARRAY_TANGENT].
 			</description>
 		</method>
 		<method name="set_vertex_uv">
