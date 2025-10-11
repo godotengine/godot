@@ -418,8 +418,9 @@ private:
 			float sky_color_or_orientation[3];
 			float y_mult;
 
+			float sky_irradiance_pixel_size[2];
 			uint32_t store_ambient_texture;
-			uint32_t pad[3];
+			uint32_t pad;
 		};
 
 		SdfgiIntegrateShaderRD integrate;
