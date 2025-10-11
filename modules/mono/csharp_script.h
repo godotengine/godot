@@ -434,6 +434,11 @@ class CSharpLanguage : public ScriptLanguage {
 	friend class GDMono;
 
 #ifdef TOOLS_ENABLED
+	Vector<String> pending_file_system_update_paths;
+	bool is_flushing_filesystem_updates = false;
+	void _queue_for_filesystem_update(String p_script_path);
+	void _flush_filesystem_updates();
+
 	EditorPlugin *godotsharp_editor = nullptr;
 
 	static void _editor_init_callback();
