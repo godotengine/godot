@@ -371,7 +371,7 @@ void EditorRunBar::recovery_mode_reload_project() {
 	EditorNode::get_singleton()->trigger_menu_option(EditorNode::PROJECT_RELOAD_CURRENT_PROJECT, false);
 }
 
-void EditorRunBar::play_main_scene(bool p_from_native) {
+void EditorRunBar::play_main_scene(bool p_from_native, const Vector<String> &p_play_args) {
 	if (Engine::get_singleton()->is_recovery_mode_hint()) {
 		EditorToaster::get_singleton()->popup_str(TTR("Recovery Mode is enabled. Disable it to run the project."), EditorToaster::SEVERITY_WARNING);
 		return;
@@ -383,7 +383,7 @@ void EditorRunBar::play_main_scene(bool p_from_native) {
 		stop_playing();
 
 		current_mode = RunMode::RUN_MAIN;
-		_run_scene();
+		_run_scene("", p_play_args);
 	}
 }
 
@@ -450,7 +450,7 @@ String EditorRunBar::get_playing_scene() const {
 	return run_filename;
 }
 
-Error EditorRunBar::start_native_device(int p_device_id) {
+Error EditorRunBar::start_native_device(int p_device_id) const {
 	return run_native->start_run_native(p_device_id);
 }
 
@@ -578,7 +578,7 @@ EditorRunBar::EditorRunBar() {
 	play_button->set_toggle_mode(true);
 	play_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	play_button->set_tooltip_text(TTRC("Run the project's default scene."));
-	play_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::play_main_scene).bind(false));
+	play_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::play_main_scene).bind(false, Vector<String>()));
 
 	ED_SHORTCUT_AND_COMMAND("editor/run_project", TTRC("Run Project"), Key::F5);
 	ED_SHORTCUT_OVERRIDE("editor/run_project", "macos", KeyModifierMask::META | Key::B);
