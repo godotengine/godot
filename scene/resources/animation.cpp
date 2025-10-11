@@ -1062,9 +1062,9 @@ Animation::TrackType Animation::get_cache_type(TrackType p_type) {
 }
 
 void Animation::_track_update_hash(int p_track) {
-	NodePath track_path = tracks[p_track]->path;
-	TrackType track_cache_type = get_cache_type(tracks[p_track]->type);
-	tracks[p_track]->thash = StringName(String(track_path.get_concatenated_names()) + String(track_path.get_concatenated_subnames()) + itos(track_cache_type)).hash();
+	const NodePath &track_path = tracks[p_track]->path;
+	const TrackType track_cache_type = get_cache_type(tracks[p_track]->type);
+	tracks[p_track]->thash = hash_fmix32(hash_murmur3_one_32(track_path.hash(), track_cache_type));
 }
 
 Animation::TypeHash Animation::track_get_type_hash(int p_track) const {
