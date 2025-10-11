@@ -1573,12 +1573,6 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 	tex_info->view_descs.srv = srv_desc;
 	tex_info->view_descs.uav = uav_desc;
 
-	if (!barrier_capabilities.enhanced_barriers_supported && (p_format.usage_bits & (TEXTURE_USAGE_STORAGE_BIT | TEXTURE_USAGE_COLOR_ATTACHMENT_BIT))) {
-		// Fallback to clear resources when they're first used in a uniform set. Not necessary if enhanced barriers
-		// are supported, as the discard flag will be used instead when transitioning from an undefined layout.
-		textures_pending_clear.add(&tex_info->pending_clear);
-	}
-
 	return TextureID(tex_info);
 }
 
@@ -3643,21 +3637,6 @@ void RenderingDeviceDriverD3D12::command_uniform_set_prepare_for_use(CommandBuff
 		return;
 	}
 
-	// Perform pending blackouts.
-	{
-		SelfList<TextureInfo> *E = textures_pending_clear.first();
-		while (E) {
-			TextureSubresourceRange subresources;
-			subresources.layer_count = E->self()->layers;
-			subresources.mipmap_count = E->self()->mipmaps;
-			command_clear_color_texture(p_cmd_buffer, TextureID(E->self()), TEXTURE_LAYOUT_UNDEFINED, Color(), subresources);
-
-			SelfList<TextureInfo> *next = E->next();
-			E->remove_from_list();
-			E = next;
-		}
-	}
-
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	const UniformSetInfo *uniform_set_info = (const UniformSetInfo *)p_uniform_set.id;
 	const ShaderInfo *shader_info_in = (const ShaderInfo *)p_shader.id;
@@ -4615,7 +4594,6 @@ void RenderingDeviceDriverD3D12::command_begin_render_pass(CommandBufferID p_cmd
 			if (pass_info->attachments[i].load_op == ATTACHMENT_LOAD_OP_CLEAR) {
 				clear.aspect.set_flag(TEXTURE_ASPECT_COLOR_BIT);
 				clear.color_attachment = i;
-				tex_info->pending_clear.remove_from_list();
 			}
 		} else if ((tex_info->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)) {
 			if (pass_info->attachments[i].load_op == ATTACHMENT_LOAD_OP_CLEAR) {
@@ -5798,6 +5776,8 @@ uint64_t RenderingDeviceDriverD3D12::api_trait_get(ApiTrait p_trait) {
 			return true;
 		case API_TRAIT_BUFFERS_REQUIRE_TRANSITIONS:
 			return !barrier_capabilities.enhanced_barriers_supported;
+		case API_TRAIT_TEXTURE_OUTPUTS_REQUIRE_CLEARS:
+			return true;
 		default:
 			return RenderingDeviceDriver::api_trait_get(p_trait);
 	}
