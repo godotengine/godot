@@ -568,13 +568,12 @@ static bool _are_formats_compatible(Image::Format p_format0, Image::Format p_for
 
 void Image::convert(Format p_new_format) {
 	ERR_FAIL_INDEX_MSG(p_new_format, FORMAT_MAX, vformat("The Image format specified (%d) is out of range. See Image's Format enum.", p_new_format));
+	ERR_FAIL_COND_MSG(Image::is_format_compressed(format) || Image::is_format_compressed(p_new_format),
+			"Cannot convert to (or from) compressed formats. Use compress() and decompress() instead.");
 
 	if (data.is_empty() || p_new_format == format) {
 		return;
 	}
-
-	ERR_FAIL_COND_MSG(Image::is_format_compressed(format) || Image::is_format_compressed(p_new_format),
-			"Cannot convert to (or from) compressed formats. Use compress() and decompress() instead.");
 
 	// Includes the main image.
 	const int mipmap_count = get_mipmap_count() + 1;
@@ -584,24 +583,23 @@ void Image::convert(Format p_new_format) {
 		Image new_img(width, height, mipmaps, p_new_format);
 
 		for (int mip = 0; mip < mipmap_count; mip++) {
-			Ref<Image> src_mip = get_image_from_mipmap(mip);
-			Ref<Image> new_mip = new_img.get_image_from_mipmap(mip);
+			int64_t src_mip_ofs, dst_mip_ofs;
+			int w, h;
+			_get_mipmap_offset_and_size(mip, src_mip_ofs, w, h);
+			new_img._get_mipmap_offset_and_size(mip, dst_mip_ofs, w, h);
 
-			for (int y = 0; y < src_mip->height; y++) {
-				for (int x = 0; x < src_mip->width; x++) {
-					new_mip->set_pixel(x, y, src_mip->get_pixel(x, y));
+			uint8_t *dst_mip_ptr = new_img.ptrw() + dst_mip_ofs;
+			const uint8_t *src_mip_ptr = ptr() + src_mip_ofs;
+
+			for (int y = 0; y < h; y++) {
+				for (int x = 0; x < w; x++) {
+					uint32_t mip_ofs = y * w + x;
+					new_img._set_color_at_ofs(dst_mip_ptr, mip_ofs, _get_color_at_ofs(src_mip_ptr, mip_ofs));
 				}
 			}
-
-			int64_t mip_offset = 0;
-			int64_t mip_size = 0;
-			new_img.get_mipmap_offset_and_size(mip, mip_offset, mip_size);
-
-			memcpy(new_img.data.ptrw() + mip_offset, new_mip->data.ptr(), mip_size);
 		}
 
 		_copy_internals_from(new_img);
-
 		return;
 	}
 
