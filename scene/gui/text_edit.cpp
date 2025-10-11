@@ -878,6 +878,7 @@ void TextEdit::_notification(int p_what) {
 			window_has_focus = false;
 			draw_caret = false;
 			queue_redraw();
+			set_selection_mode(SelectionMode::SELECTION_MODE_NONE);
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -2480,6 +2481,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				dragging_minimap = false;
 				dragging_selection = false;
 				can_drag_minimap = false;
+				set_selection_mode(SelectionMode::SELECTION_MODE_NONE);
 				click_select_held->stop();
 				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 					DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
@@ -8395,7 +8397,10 @@ void TextEdit::_update_selection_mode_pointer(bool p_initial) {
 		carets.write[caret_index].selection.word_begin_column = column;
 		carets.write[caret_index].selection.word_end_column = column;
 	} else {
-		select(get_selection_origin_line(caret_index), get_selection_origin_column(caret_index), line, column, caret_index);
+		int origin_line = get_selection_origin_line(caret_index);
+		bool is_new_selection_dir_right = line > origin_line || (line == origin_line && column >= carets[caret_index].selection.word_begin_column);
+		int origin_col = is_new_selection_dir_right ? carets[caret_index].selection.word_begin_column : carets[caret_index].selection.word_end_column;
+		select(origin_line, origin_col, line, column, caret_index);
 	}
 	adjust_viewport_to_caret(caret_index);
 
@@ -8462,7 +8467,7 @@ void TextEdit::_update_selection_mode_line(bool p_initial) {
 	int line = pos.y;
 	int caret_index = get_caret_count() - 1;
 
-	int origin_line = p_initial && !has_selection(caret_index) ? line : get_selection_origin_line();
+	int origin_line = p_initial && !has_selection(caret_index) ? line : get_selection_origin_line(caret_index);
 	bool line_below = line >= origin_line;
 	int origin_col = line_below ? 0 : get_line(origin_line).length();
 	int caret_line = line_below ? line + 1 : line;
