@@ -1758,29 +1758,27 @@ Size2 EditorInspectorCategory::get_minimum_size() const {
 	return ms;
 }
 
-void EditorInspectorCategory::_collect_properties(Vector<EditorProperty *> &out_properties) {
-	VBoxContainer *targetVbox = nullptr;
+void EditorInspectorCategory::_collect_properties(const Object *p_object, Vector<String> &out_properties) const {
+	List<PropertyInfo> property_list;
+	p_object->get_property_list(&property_list, true);
 
-	if (get_parent()->get_child(get_index() + 1)->get_child_count() == 1) {
-		targetVbox = cast_to<VBoxContainer>(get_parent()->get_child(get_index() + 1)->get_child(0));
-	} else {
-		targetVbox = cast_to<VBoxContainer>(get_parent()->get_child(get_index() + 1));
-	}
-
-	if (!targetVbox) {
-		return;
-	}
-
-	for (int i = 0; i < targetVbox->get_child_count(); i++) {
-		Node *child = targetVbox->get_child(i);
-
-		if (EditorProperty *prop = Object::cast_to<EditorProperty>(child)) {
-			out_properties.push_back(prop);
-		} else if (EditorInspectorSection *nested = Object::cast_to<EditorInspectorSection>(child)) {
-			nested->collect_properties(nested, out_properties);
-		} else if (EditorInspectorSection *nested_child = Object::cast_to<EditorInspectorSection>(child->get_child(0))) {
-			nested_child->collect_properties(nested_child, out_properties);
+	String current_category = "";
+	for (const PropertyInfo &prop_info : property_list) {
+		if (prop_info.usage & PROPERTY_USAGE_GROUP) {
+			continue;
 		}
+		if (prop_info.usage & PROPERTY_USAGE_CATEGORY) {
+			current_category = prop_info.name;
+			continue;
+		}
+		if (!(prop_info.usage & PROPERTY_USAGE_EDITOR)) {
+			continue;
+		}
+		if (current_category != label && !current_category.ends_with(".gd")) {
+			continue;
+		}
+
+		out_properties.push_back(prop_info.name);
 	}
 }
 
@@ -1789,12 +1787,11 @@ void EditorInspectorCategory::_handle_menu_option(int p_option) {
 		case MENU_COPY_VALUE: {
 			Object *object = EditorInterface::get_singleton()->get_inspector()->get_edited_object();
 			Dictionary clipboard;
-			Vector<EditorProperty *> properties;
-			_collect_properties(properties);
+			Vector<String> properties;
+			_collect_properties(object, properties);
 
 			clipboard["category_name"] = label;
-			for (EditorProperty *prop : properties) {
-				String property_name = prop->get_edited_property();
+			for (String property_name : properties) {
 				clipboard[property_name] = object->get(property_name);
 			}
 			InspectorDock::get_inspector_singleton()->set_property_clipboard(clipboard);
@@ -2275,9 +2272,10 @@ Control *EditorInspectorSection::make_custom_tooltip(const String &p_text) const
 	return nullptr;
 }
 
-void EditorInspectorSection::setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth, int p_level) {
+void EditorInspectorSection::setup(const String &p_inspector_path, const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth, int p_level) {
 	section = p_section;
 	label = p_label;
+	inspector_path = p_inspector_path;
 	object = p_object;
 	bg_color = p_bg_color;
 	foldable = p_foldable;
@@ -2530,36 +2528,53 @@ void EditorInspectorSection::_update_popup() {
 	menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("property_editor/paste_group_values"), MENU_PASTE_VALUE);
 }
 
-void EditorInspectorSection::collect_properties(EditorInspectorSection *target_section, Vector<EditorProperty *> &out_properties) {
-	VBoxContainer *targetVbox = target_section->get_vbox();
-	if (!targetVbox) {
-		return;
-	}
+void EditorInspectorSection::_collect_properties(Vector<String> &out_properties) const {
+	List<PropertyInfo> property_list;
+	object->get_property_list(&property_list, true);
 
-	for (int i = 0; i < targetVbox->get_child_count(); i++) {
-		Node *child = targetVbox->get_child(i);
+	String current_category = "";
+	String current_group = "";
+	for (const PropertyInfo &prop_info : property_list) {
+		if (prop_info.usage & PROPERTY_USAGE_GROUP) {
+			current_group = prop_info.name;
+			continue;
+		}
+		if (prop_info.usage & PROPERTY_USAGE_CATEGORY) {
+			current_category = prop_info.name;
+			current_group = "";
 
-		if (EditorProperty *prop = Object::cast_to<EditorProperty>(child)) {
-			out_properties.push_back(prop);
-		} else if (Object::cast_to<VBoxContainer>(child) && child->get_child_count() > 0) {
-			if (EditorInspectorSection *nested = Object::cast_to<EditorInspectorSection>(child->get_child(0))) {
-				// Recursively collect from nested sections
-				collect_properties(nested, out_properties);
+			continue;
+		}
+		if (!(prop_info.usage & PROPERTY_USAGE_EDITOR)) {
+			continue;
+		}
+		if (!(current_category + "/" + current_group).begins_with(get_inspector_path())) {
+			if (current_category.ends_with(".gd")) {
+				String section_path = inspector_path;
+				section_path = section_path.replace(section_path.split("/")[0] + "/", "");
+				if (!current_group.begins_with(section_path)) {
+					continue;
+				}
+			} else {
+				continue;
 			}
 		}
+
+		out_properties.push_back(prop_info.name);
 	}
 }
 
 void EditorInspectorSection::menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_COPY_VALUE: {
-			Vector<EditorProperty *> properties;
+			Vector<String> properties;
 			Dictionary clipboard;
-			collect_properties(this, properties);
+			_collect_properties(properties);
+
+			print_line("Group path: " + get_inspector_path());
 
 			clipboard["group_name"] = section;
-			for (EditorProperty *prop : properties) {
-				String property_name = prop->get_edited_property();
+			for (String property_name : properties) {
 				clipboard[property_name] = object->get(property_name);
 			}
 			InspectorDock::get_inspector_singleton()->set_property_clipboard(clipboard);
@@ -2567,7 +2582,7 @@ void EditorInspectorSection::menu_option(int p_option) {
 		case MENU_PASTE_VALUE: {
 			Dictionary clipboard = InspectorDock::get_inspector_singleton()->get_property_clipboard();
 			String group_name = clipboard["group_name"];
-			String action_name = "Set group" + group_name;
+			String action_name = "Set group " + group_name;
 
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(action_name);
@@ -3383,7 +3398,7 @@ void EditorInspectorArray::setup_with_move_element_function(Object *p_object, co
 	page_length = p_page_length;
 	numbered = p_numbered;
 
-	EditorInspectorSection::setup(String(p_array_element_prefix) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
+	EditorInspectorSection::setup("", String(p_array_element_prefix) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
 
 	_setup();
 }
@@ -3400,7 +3415,7 @@ void EditorInspectorArray::setup_with_count_property(Object *p_object, const Str
 	swap_method = p_swap_method;
 
 	add_button->set_text(p_add_item_text);
-	EditorInspectorSection::setup(String(count_property) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
+	EditorInspectorSection::setup("", String(count_property) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
 
 	_setup();
 }
@@ -4268,7 +4283,7 @@ void EditorInspector::update_tree() {
 
 				Color c = sscolor;
 				c.a /= level;
-				section->setup(acc_path, label, object, c, use_folding, section_depth, level);
+				section->setup((doc_name.is_empty() ? acc_path : String(doc_name) + (acc_path.is_empty() ? "" : "/" + acc_path)), acc_path, label, object, c, use_folding, section_depth, level);
 				section->set_tooltip_text(tooltip);
 
 				section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
@@ -4692,7 +4707,8 @@ void EditorInspector::update_tree() {
 				get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
 				favorites_groups_vbox->add_child(section);
 				parent_vbox = section->get_vbox();
-				section->setup("", section_name, object, sscolor, false);
+
+				section->setup("", "", section_name, object, sscolor, false);
 				section->set_tooltip_text(tooltip);
 
 				if (togglable_editor_inspector_sections.has(section_name)) {
@@ -4731,7 +4747,7 @@ void EditorInspector::update_tree() {
 					get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
 					vbox->add_child(section);
 					vbox = section->get_vbox();
-					section->setup("", section_name, object, sscolor, false);
+					section->setup("", "", section_name, object, sscolor, false);
 					section->set_tooltip_text(tooltip);
 
 					if (togglable_editor_inspector_sections.has(KV.key + "/" + section_name)) {
