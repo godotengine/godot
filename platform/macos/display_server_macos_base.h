@@ -39,6 +39,8 @@
 
 #undef FontVariation
 
+class NativeMenuMacOS;
+
 class DisplayServerMacOSBase : public DisplayServer {
 	GDSOFTCLASS(DisplayServerMacOSBase, DisplayServer)
 
@@ -52,8 +54,24 @@ class DisplayServerMacOSBase : public DisplayServer {
 	mutable int current_layout = 0;
 	mutable bool keyboard_layout_dirty = true;
 
+	mutable Point2i origin;
+	mutable bool displays_arrangement_dirty = true;
+
+	Callable system_theme_changed;
+
+	struct IndicatorData {
+		id delegate;
+		id item;
+	};
+
+	IndicatorID indicator_id_counter = 0;
+	HashMap<IndicatorID, IndicatorData> indicators;
+
 protected:
 	_THREAD_SAFE_CLASS_
+
+	id menu_delegate = nullptr;
+	NativeMenuMacOS *native_menu = nullptr;
 
 	void initialize_tts() const;
 
@@ -61,6 +79,29 @@ protected:
 	static void _keyboard_layout_changed(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef user_info);
 
 public:
+	void _update_displays_arrangement() const;
+	Point2i _get_screens_origin() const;
+	Point2i _get_native_screen_position(int p_screen) const;
+	static void _displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplayChangeSummaryFlags flags, void *user_info);
+
+	NSImage *_convert_to_nsimg(Ref<Image> &p_image) const;
+	void emit_system_theme_changed();
+
+	virtual bool is_dark_mode_supported() const override;
+	virtual bool is_dark_mode() const override;
+	virtual Color get_accent_color() const override;
+	virtual Color get_base_color() const override;
+	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
+
+	virtual void beep() const override;
+
+	virtual int accessibility_should_increase_contrast() const override;
+	virtual int accessibility_should_reduce_animation() const override;
+	virtual int accessibility_should_reduce_transparency() const override;
+	virtual int accessibility_screen_reader_active() const override;
+
+	virtual bool get_swap_cancel_ok() override;
+
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
 	virtual Ref<Image> clipboard_get_image() const override;
@@ -84,6 +125,14 @@ public:
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
+
+	virtual IndicatorID create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) override;
+	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) override;
+	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) override;
+	virtual void status_indicator_set_menu(IndicatorID p_id, const RID &p_menu_rid) override;
+	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) override;
+	virtual Rect2 status_indicator_get_rect(IndicatorID p_id) const override;
+	virtual void delete_status_indicator(IndicatorID p_id) override;
 
 	DisplayServerMacOSBase();
 	~DisplayServerMacOSBase();
