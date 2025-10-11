@@ -357,12 +357,12 @@ public:
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 	virtual float screen_get_max_scale() const {
-		float scale = 1.f;
+		float max_scale = 1.f;
 		int screen_count = get_screen_count();
 		for (int i = 0; i < screen_count; i++) {
-			scale = std::fmax(scale, screen_get_scale(i));
+			max_scale = std::fmax(max_scale, screen_get_scale(i));
 		}
-		return scale;
+		return max_scale;
 	}
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual Color screen_get_pixel(const Point2i &p_position) const { return Color(); }

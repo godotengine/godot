@@ -37,6 +37,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/spin_box.h"
+#include "scene/resources/gradient.h"
 #include "scene/resources/immediate_mesh.h"
 
 class AcceptDialog;

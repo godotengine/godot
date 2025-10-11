@@ -31,6 +31,7 @@
 #include "editor_fonts.h"
 
 #include "core/io/dir_access.h"
+#include "core/os/os.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/builtin_fonts.gen.h"
