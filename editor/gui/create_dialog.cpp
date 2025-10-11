@@ -37,9 +37,16 @@
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/check_button.h"
 
 void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_current_type, const String &p_current_name) {
 	_fill_type_list();
+
+	types_enabled[TYPE_BUILT_IN] = EditorSettings::get_singleton()->get_project_metadata("create_dialog", "built_in_enabled", true);
+	types_enabled[TYPE_CUSTOM] = EditorSettings::get_singleton()->get_project_metadata("create_dialog", "custom_enabled", true);
+	types_enabled[TYPE_EDITOR] = EditorSettings::get_singleton()->get_project_metadata("create_dialog", "editor_enabled", false);
+	_update_filter_button_state();
 
 	icon_fallback = search_options->has_theme_icon(base_type, EditorStringName(EditorIcons)) ? base_type : "Object";
 
@@ -168,10 +175,6 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 		return true;
 	}
 
-	if (is_base_type_node && p_type.operator String().begins_with("Editor")) {
-		return true; // Do not show editor nodes.
-	}
-
 	if (ClassDB::class_exists(p_type)) {
 		if (!ClassDB::can_instantiate(p_type) || ClassDB::is_virtual(p_type)) {
 			return true; // Can't create abstract or virtual class.
@@ -242,12 +245,32 @@ void CreateDialog::_update_search() {
 	search_options_types[base_type] = root;
 	_configure_search_option_item(root, base_type, ClassDB::class_exists(base_type) ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE, "");
 
+	if (type_filter_enabled) {
+		selectable_types.clear();
+
+		for (const TypeInfo &candidate : type_info_list) {
+			if (!show_editor_button->is_pressed() && (candidate.type_name.operator String().begins_with("Editor") || candidate.type_name == SNAME("ScriptCreateDialog"))) {
+				continue;
+			}
+			if (!show_builtin_button->is_pressed() || !show_custom_button->is_pressed()) {
+				bool is_builtin = ClassDB::class_exists(candidate.type_name);
+				if ((!show_builtin_button->is_pressed() && is_builtin) || (!show_custom_button->is_pressed() && !is_builtin)) {
+					continue;
+				}
+			}
+			selectable_types.insert(candidate.type_name);
+		}
+	}
+
 	const String search_text = search_box->get_text();
 
 	float highest_score = 0.0f;
 	StringName best_match;
 
 	for (const TypeInfo &candidate : type_info_list) {
+		if (type_filter_enabled && !selectable_types.has(candidate.type_name)) {
+			continue;
+		}
 		String match_keyword;
 
 		// First check if the name matches. If it does not, try the search keywords.
@@ -399,7 +422,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 
 	bool can_instantiate = (p_type_category == TypeCategory::CPP_TYPE && ClassDB::can_instantiate(p_type)) ||
 			(p_type_category == TypeCategory::OTHER_TYPE && !(!allow_abstract_scripts && is_abstract));
-	bool instantiable = can_instantiate && !(ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type));
+	bool instantiable = (!type_filter_enabled || selectable_types.has(p_type)) && can_instantiate && !(ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type));
 
 	r_item->set_meta(SNAME("__instantiable"), instantiable);
 
@@ -530,7 +553,29 @@ void CreateDialog::_confirmed() {
 	_cleanup();
 }
 
+void CreateDialog::_update_filter_button_state() {
+	if (!type_filter_enabled) {
+		return;
+	}
+
+	const bool is_searching = !search_box->get_text().is_empty();
+	show_builtin_button->set_disabled(is_searching);
+	show_custom_button->set_disabled(is_searching);
+	show_editor_button->set_disabled(is_searching);
+
+	if (is_searching) {
+		show_builtin_button->set_pressed_no_signal(true);
+		show_custom_button->set_pressed_no_signal(true);
+		show_editor_button->set_pressed_no_signal(true);
+	} else {
+		show_builtin_button->set_pressed_no_signal(types_enabled[TYPE_BUILT_IN]);
+		show_custom_button->set_pressed_no_signal(types_enabled[TYPE_CUSTOM]);
+		show_editor_button->set_pressed_no_signal(types_enabled[TYPE_EDITOR]);
+	}
+}
+
 void CreateDialog::_text_changed(const String &p_newtext) {
+	_update_filter_button_state();
 	_update_search();
 }
 
@@ -553,6 +598,22 @@ void CreateDialog::_sbox_input(const Ref<InputEvent> &p_event) {
 
 void CreateDialog::_notification(int p_what) {
 	switch (p_what) {
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("docks/scene_tree")) {
+				break;
+			}
+
+			[[fallthrough]];
+		}
+
+		case NOTIFICATION_READY: {
+			type_filter_enabled = EDITOR_GET("docks/scene_tree/create_dialog_filters");
+			filter_hb->set_visible(type_filter_enabled);
+			if (is_visible()) {
+				_update_search();
+			}
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			connect(SceneStringName(confirmed), callable_mp(this, &CreateDialog::_confirmed));
 		} break;
@@ -668,6 +729,22 @@ void CreateDialog::_hide_requested() {
 
 void CreateDialog::cancel_pressed() {
 	_cleanup();
+}
+
+void CreateDialog::_filter_button_toggled(bool p_pressed, int p_type) {
+	switch (p_type) {
+		case TYPE_BUILT_IN:
+			EditorSettings::get_singleton()->set_project_metadata("create_dialog", "built_in_enabled", p_pressed);
+			break;
+		case TYPE_CUSTOM:
+			EditorSettings::get_singleton()->set_project_metadata("create_dialog", "custom_enabled", p_pressed);
+			break;
+		case TYPE_EDITOR:
+			EditorSettings::get_singleton()->set_project_metadata("create_dialog", "editor_enabled", p_pressed);
+			break;
+	}
+	types_enabled[p_type] = p_pressed;
+	_update_search();
 }
 
 void CreateDialog::_favorite_toggled() {
@@ -855,7 +932,6 @@ CreateDialog::CreateDialog() {
 	preferred_search_result_type = "";
 
 	type_blacklist.insert("PluginScript"); // PluginScript must be initialized before use, which is not possible here.
-	type_blacklist.insert("ScriptCreateDialog"); // This is an exposed editor Node that doesn't have an Editor prefix.
 
 	HSplitContainer *hsc = memnew(HSplitContainer);
 	add_child(hsc);
@@ -917,6 +993,26 @@ CreateDialog::CreateDialog() {
 	favorite->connect(SceneStringName(pressed), callable_mp(this, &CreateDialog::_favorite_toggled));
 	search_hb->add_child(favorite);
 	vbc->add_margin_child(TTR("Search:"), search_hb);
+
+	filter_hb = memnew(HBoxContainer);
+	vbc->add_child(filter_hb);
+
+	show_builtin_button = memnew(CheckButton);
+	show_builtin_button->set_text(TTRC("Built-in"));
+	show_builtin_button->set_pressed(true);
+	show_builtin_button->connect(SceneStringName(toggled), callable_mp(this, &CreateDialog::_filter_button_toggled).bind(TYPE_BUILT_IN));
+	filter_hb->add_child(show_builtin_button);
+
+	show_custom_button = memnew(CheckButton);
+	show_custom_button->set_text(TTRC("Custom"));
+	show_custom_button->set_pressed(true);
+	show_custom_button->connect(SceneStringName(toggled), callable_mp(this, &CreateDialog::_filter_button_toggled).bind(TYPE_CUSTOM));
+	filter_hb->add_child(show_custom_button);
+
+	show_editor_button = memnew(CheckButton);
+	show_editor_button->set_text(TTRC("Editor"));
+	show_editor_button->connect(SceneStringName(toggled), callable_mp(this, &CreateDialog::_filter_button_toggled).bind(TYPE_EDITOR));
+	filter_hb->add_child(show_editor_button);
 
 	search_options = memnew(Tree);
 	search_options->set_accessibility_name(TTRC("Matches:"));
