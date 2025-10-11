@@ -34,6 +34,8 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/io/dir_access.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/math/math_fieldwise.h"
 #include "core/object/script_language.h"
 #include "core/os/time.h"
