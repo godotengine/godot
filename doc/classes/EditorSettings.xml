@@ -869,6 +869,9 @@
 		<member name="interface/editor/dock_tab_style" type="int" setter="" getter="">
 			Tab style of editor docks.
 		</member>
+		<member name="interface/editor/dragging_hover_wait_seconds" type="float" setter="" getter="">
+			During a drag-and-drop, this is how long to wait over a UI element before it triggers a reaction (e.g. a section unfolds to show nested items).
+		</member>
 		<member name="interface/editor/editor_language" type="String" setter="" getter="">
 			The language to use for the editor interface.
 			Translations are provided by the community. If you spot a mistake, [url=https://contributing.godotengine.org/en/latest/documentation/translation/index.html]contribute to editor translations on Weblate![/url]
