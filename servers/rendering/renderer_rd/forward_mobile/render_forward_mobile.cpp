@@ -1927,7 +1927,8 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 	rl->element_info.resize(p_offset + element_total);
 
 	uint64_t frame = RSG::rasterizer->get_frame_number();
-
+	uint32_t repeats = 0;
+	GeometryInstanceSurfaceDataCache *prev_surface = nullptr;
 	for (uint32_t i = 0; i < element_total; i++) {
 		GeometryInstanceSurfaceDataCache *surface = rl->elements[i + p_offset];
 		GeometryInstanceForwardMobile *inst = surface->owner;
@@ -1978,10 +1979,36 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 		instance_data.set_compressed_aabb(surface_aabb);
 		instance_data.set_uv_scale(uv_scale);
 
+		bool cant_repeat = instance_data.flags & INSTANCE_DATA_FLAG_MULTIMESH || inst->mesh_instance.is_valid();
+
+		if (prev_surface != nullptr && !cant_repeat && prev_surface->sort.sort_key1 == surface->sort.sort_key1 && prev_surface->sort.sort_key2 == surface->sort.sort_key2 && inst->mirror == prev_surface->owner->mirror && repeats < RenderElementInfo::MAX_REPEATS) {
+			//this element is the same as the previous one, count repeats to draw it using instancing
+			repeats++;
+		} else {
+			if (repeats > 0) {
+				for (uint32_t j = 1; j <= repeats; j++) {
+					rl->element_info[p_offset + i - j].repeat = j;
+				}
+			}
+			repeats = 1;
+		}
+
 		RenderElementInfo &element_info = rl->element_info[p_offset + i];
 
 		// Sets lod_index and uses_lightmap at once.
 		element_info.value = uint32_t(surface->sort.sort_key1 & 0x1FF);
+
+		if (cant_repeat) {
+			prev_surface = nullptr;
+		} else {
+			prev_surface = surface;
+		}
+	}
+
+	if (repeats > 0) {
+		for (uint32_t j = 1; j <= repeats; j++) {
+			rl->element_info[p_offset + element_total - j].repeat = j;
+		}
 	}
 
 	if (p_update_buffer) {
@@ -2485,7 +2512,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 
 			RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, push_constant_size);
 
-			uint32_t instance_count = surf->owner->instance_count > 1 ? surf->owner->instance_count : 1;
+			uint32_t instance_count = surf->owner->instance_count > 1 ? surf->owner->instance_count : element_info.repeat;
 			if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_PARTICLE_TRAILS) {
 				instance_count /= surf->owner->trail_steps;
 			}
@@ -2496,6 +2523,8 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 				RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), instance_count);
 			}
 		}
+
+		i += element_info.repeat - 1; //skip equal elements
 	}
 
 	// Make the actual redraw request
