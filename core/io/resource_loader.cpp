@@ -643,13 +643,12 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 		// the token anymore so it's released.
 		load_task_ptr->load_token->reference();
 
+		load_task_ptr->thread_id = Thread::get_caller_id();
 		if (p_thread_mode == LOAD_THREAD_FROM_CURRENT) {
 			// The current thread may happen to be a thread from the pool.
 			WorkerThreadPool::TaskID tid = WorkerThreadPool::get_singleton()->get_caller_task_id();
 			if (tid != WorkerThreadPool::INVALID_TASK_ID) {
 				load_task_ptr->task_id = tid;
-			} else {
-				load_task_ptr->thread_id = Thread::get_caller_id();
 			}
 		} else {
 			load_task_ptr->task_id = WorkerThreadPool::get_singleton()->add_native_task(&ResourceLoader::_run_load_task, load_task_ptr);
@@ -803,12 +802,18 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 		ThreadLoadTask &load_task = thread_load_tasks[p_load_token.local_path];
 
 		if (load_task.status == THREAD_LOAD_IN_PROGRESS) {
-			DEV_ASSERT((load_task.task_id == 0) != (load_task.thread_id == 0));
-
-			if ((load_task.task_id != 0 && load_task.task_id == WorkerThreadPool::get_singleton()->get_caller_task_id()) ||
-					(load_task.thread_id != 0 && load_task.thread_id == Thread::get_caller_id())) {
-				// Load is in progress, but it's precisely this thread the one in charge.
-				// That means this is a cyclic load.
+			if (&load_task != curr_load_task && load_task.thread_id == Thread::get_caller_id()) {
+				// Load is in progress, but it's precisely this thread the one in charge,
+				// and it's not the topmost task in the stack, which means this is a cyclic load.
+				// There are two different cases of this:
+				// 1. There is an actual cyclic dependency between resources, which is not allowed.
+				//    (In this case, the segment of stack frames belonging to this root load has
+				//    two tasks to load the same resource.)
+				// 2. There's some resource format loader that exceptionally allows cyclic loads;
+				//    for instance, GDScript's preload.
+				//    (In a case like this, there is an ongoing load task for a given resource
+				//    in the stack, but not necessarily belonging to the same root load. We must
+				//    still detect it and the component supporting that should handle the situation.)
 				if (r_error) {
 					*r_error = ERR_BUSY;
 				}
