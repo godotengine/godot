@@ -3794,6 +3794,31 @@ String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
 	return ret;
 }
 
+void DisplayServerWindows::kb_map_insert(HANDLE new_kb_id) {
+	if (id_map.end() != id_map.find(new_kb_id)) {
+		return; // raw id already existed in map
+	}
+	id_map.insert(new_kb_id, true);
+	// Look for the 1st unused id
+	for (const auto &[raw_kb_id, in_use] : id_map) {
+		if (false == in_use) {
+			// Erase the 1st unused id found, the newly added id will take its place thanks to Array Hash Map
+			id_map.erase(raw_kb_id);
+			break;
+		}
+	}
+	return;
+}
+
+void DisplayServerWindows::kb_map_remove(HANDLE raw_kb_id) {
+	if (id_map.end() == id_map.find(raw_kb_id)) {
+		return; // raw id not existed in map
+	}
+	// Mark as unused to delete later
+	id_map[raw_kb_id] = false;
+	return;
+}
+
 void DisplayServerWindows::process_events() {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 
@@ -4692,7 +4717,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	WindowID window_id = INVALID_WINDOW_ID;
 	bool window_created = false;
-	static HANDLE current_keyboard_id;
+	static int current_keyboard_id;
 
 	// Check whether window exists
 	// FIXME this is O(n), where n is the set of currently open windows and subwindows
@@ -4946,7 +4971,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			const BitField<WinKeyModifierMask> &mods = _get_mods();
 			if (raw->header.dwType == RIM_TYPEKEYBOARD) {
-				current_keyboard_id = raw->header.hDevice;
+				this->kb_map_insert(raw->header.hDevice);
+				current_keyboard_id = id_map.get_index(raw->header.hDevice);
 				if (raw->data.keyboard.VKey == VK_SHIFT) {
 					// If multiple Shifts are held down at the same time,
 					// Windows natively only sends a KEYUP for the last one to be released.
@@ -5031,6 +5057,56 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 			}
 			delete[] lpb;
+		} break;
+		case WM_DEVICECHANGE: {
+			UINT device_count = 0;
+
+			if (GetRawInputDeviceList(NULL, &device_count, sizeof(RAWINPUTDEVICELIST)) != 0) {
+				break;
+			}
+			if (0 == device_count) {
+				break;
+			}
+			PRAWINPUTDEVICELIST device_list = NULL;
+			device_list = (PRAWINPUTDEVICELIST)malloc(sizeof(RAWINPUTDEVICELIST) * device_count);
+			if (NULL == device_list) {
+				break;
+			}
+			device_count = GetRawInputDeviceList(device_list, &device_count, sizeof(RAWINPUTDEVICELIST));
+
+			if (device_count != (UINT)-1) {
+				// Remove loop
+				for (const auto &[raw_kb_id, in_use] : id_map) {
+					if (!in_use) {
+						continue; // Skip unused raw IDs
+					}
+					bool listed = false;
+					for (UINT i = 0; i < device_count; ++i) {
+						if (device_list[i].hDevice == raw_kb_id) {
+							listed = true;
+							break;
+						}
+					}
+					// Only remove the 1st ID that is not listed
+					if (!listed) {
+						this->kb_map_remove(raw_kb_id);
+						break;
+					}
+				}
+				// Insert loop
+				for (UINT i = 0; i < device_count; ++i) {
+					if (RIM_TYPEKEYBOARD != device_list[i].dwType) {
+						continue; // Only check keyboards
+					}
+					if (id_map.has(device_list[i].hDevice)) {
+						continue; // Skip if already mapped
+					}
+					// Only insert the 1st ID that is not mapped
+					this->kb_map_insert(device_list[i].hDevice);
+					break;
+				}
+			}
+			free(device_list);
 		} break;
 		case WT_CSRCHANGE:
 		case WT_PROXIMITY: {
@@ -6275,9 +6351,6 @@ void DisplayServerWindows::_process_key_events() {
 				}
 
 				k->set_echo((ke.uMsg == WM_KEYDOWN && (ke.lParam & (1 << 30))));
-
-				// Send legacy input
-				// Input::get_singleton()->parse_input_event(k);
 
 				// Send raw input
 				Ref<InputEventKey> k_raw = k->duplicate();
