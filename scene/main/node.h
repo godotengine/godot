@@ -405,6 +405,7 @@ protected:
 	void _call_unhandled_key_input(const Ref<InputEvent> &p_event);
 
 	void _validate_property(PropertyInfo &p_property) const;
+	virtual String _to_string() override;
 
 	Variant _get_node_rpc_config_bind() const {
 		return get_node_rpc_config().duplicate(true);
@@ -628,8 +629,6 @@ public:
 	bool is_part_of_edited_scene() const { return false; }
 #endif
 	void get_storable_properties(HashSet<StringName> &r_storable_properties) const;
-
-	virtual String to_string() override;
 
 	/* NOTIFICATIONS */
 

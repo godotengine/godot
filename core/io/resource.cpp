@@ -660,6 +660,10 @@ void Resource::reset_local_to_scene() {
 	// Restores the state as if setup_local_to_scene() hadn't been called.
 }
 
+String Resource::_to_string() {
+	return (name.is_empty() ? "" : String(name) + " ") + "(" + path_cache + "):" + Object::_to_string();
+}
+
 Node *(*Resource::_get_local_scene_func)() = nullptr;
 void (*Resource::_update_configuration_warning)() = nullptr;
 
