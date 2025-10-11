@@ -62,7 +62,7 @@ protected:
 	virtual void load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) override;
 
 public:
-	void set_node(Node *p_node);
+	void set_object(Object *p_object);
 
 	void show_groups();
 	void show_connections();
