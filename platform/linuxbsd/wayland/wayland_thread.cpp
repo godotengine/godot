@@ -3057,6 +3057,11 @@ void WaylandThread::_poll_events_thread(void *p_data) {
 			// Note that the main thread can still call wl_display_roundtrip as that
 			// method directly handles all events, effectively bypassing this polling
 			// loop and thus the mutex locking, avoiding a deadlock.
+			//
+			// WARNING: Never call `wl_display_roundtrip` inside event handlers or while
+			// this mutex isn't held! `wl_display_roundtrip` manually handles new events
+			// and if not properly gated it _will_ cause potentially stall-inducing race
+			// conditions. Ask me how I know.
 			MutexLock mutex_lock(data->mutex);
 
 			if (wl_display_dispatch_pending(data->wl_display) == -1) {
@@ -4439,8 +4444,6 @@ Error WaylandThread::init() {
 
 	thread_data.wl_display = wl_display;
 
-	events_thread.start(_poll_events_thread, &thread_data);
-
 	wl_registry = wl_display_get_registry(wl_display);
 
 	ERR_FAIL_NULL_V_MSG(wl_registry, ERR_UNAVAILABLE, "Can't obtain the Wayland registry global.");
@@ -4518,6 +4521,8 @@ Error WaylandThread::init() {
 
 	// Update the cursor.
 	cursor_set_shape(DisplayServer::CURSOR_ARROW);
+
+	events_thread.start(_poll_events_thread, &thread_data);
 
 	initialized = true;
 	return OK;
