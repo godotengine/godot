@@ -4802,7 +4802,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 
 		// If the base is a metatype, use the analyzer instead.
 		if (p_subscript->base->is_constant && !base_type.is_meta_type) {
-			// GH-92534. If the base is a GDScript, use the analyzer instead.
+			// GH-92534. If the base is a GDScript, try to find the specific class and use the analyzer instead.
 			bool base_is_gdscript = false;
 			if (p_subscript->base->reduced_value.get_type() == Variant::OBJECT) {
 				Ref<GDScript> gdscript = Object::cast_to<GDScript>(p_subscript->base->reduced_value.get_validated_object());
@@ -4810,25 +4810,17 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					base_is_gdscript = true;
 					// Makes a metatype from a constant GDScript, since `base_type` is not a metatype.
 					GDScriptParser::DataType base_type_meta = type_from_variant(gdscript, p_subscript);
-					// First try to reduce the attribute from the metatype.
-					reduce_identifier_from_base(p_subscript->attribute, &base_type_meta);
-					GDScriptParser::DataType attr_type = p_subscript->attribute->get_datatype();
-					if (attr_type.is_set()) {
-						valid = !attr_type.is_pseudo_type || p_can_be_pseudo_type;
-						result_type = attr_type;
-						p_subscript->is_constant = p_subscript->attribute->is_constant;
-						p_subscript->reduced_value = p_subscript->attribute->reduced_value;
-					}
-					if (!valid) {
-						// If unsuccessful, reset and return to the normal route.
-						p_subscript->attribute->set_datatype(GDScriptParser::DataType());
+					if (base_type_meta.kind == GDScriptParser::DataType::CLASS) {
+						base_type = base_type_meta;
 					}
 				}
 			}
 			if (!base_is_gdscript) {
 				// Just try to get it.
-				Variant value = p_subscript->base->reduced_value.get_named(p_subscript->attribute->name, valid);
-				if (valid) {
+				bool is_const_valid = false;
+				Variant value = p_subscript->base->reduced_value.get_named(p_subscript->attribute->name, is_const_valid);
+				if (is_const_valid) {
+					valid = true;
 					p_subscript->is_constant = true;
 					p_subscript->reduced_value = value;
 					result_type = type_from_variant(value, p_subscript);
@@ -5533,7 +5525,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 	if (p_value.get_type() == Variant::ARRAY) {
 		const Array &array = p_value;
 		if (array.get_typed_script()) {
-			result.set_container_element_type(0, type_from_metatype(make_script_meta_type(array.get_typed_script())));
+			result.set_container_element_type(0, type_from_metatype(type_from_variant(array.get_typed_script(), p_source)));
 		} else if (array.get_typed_class_name()) {
 			result.set_container_element_type(0, type_from_metatype(make_native_meta_type(array.get_typed_class_name())));
 		} else if (array.get_typed_builtin() != Variant::NIL) {
@@ -5542,14 +5534,14 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 	} else if (p_value.get_type() == Variant::DICTIONARY) {
 		const Dictionary &dict = p_value;
 		if (dict.get_typed_key_script()) {
-			result.set_container_element_type(0, type_from_metatype(make_script_meta_type(dict.get_typed_key_script())));
+			result.set_container_element_type(0, type_from_metatype(type_from_variant(dict.get_typed_key_script(), p_source)));
 		} else if (dict.get_typed_key_class_name()) {
 			result.set_container_element_type(0, type_from_metatype(make_native_meta_type(dict.get_typed_key_class_name())));
 		} else if (dict.get_typed_key_builtin() != Variant::NIL) {
 			result.set_container_element_type(0, type_from_metatype(make_builtin_meta_type((Variant::Type)dict.get_typed_key_builtin())));
 		}
 		if (dict.get_typed_value_script()) {
-			result.set_container_element_type(1, type_from_metatype(make_script_meta_type(dict.get_typed_value_script())));
+			result.set_container_element_type(1, type_from_metatype(type_from_variant(dict.get_typed_value_script(), p_source)));
 		} else if (dict.get_typed_value_class_name()) {
 			result.set_container_element_type(1, type_from_metatype(make_native_meta_type(dict.get_typed_value_class_name())));
 		} else if (dict.get_typed_value_builtin() != Variant::NIL) {
