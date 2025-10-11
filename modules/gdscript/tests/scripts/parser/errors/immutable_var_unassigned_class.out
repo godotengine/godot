@@ -1,0 +1,2 @@
+GDTEST_PARSER_ERROR
+Expected "=" after immutable "let" declaration. Immutable variable must have an initial value.
