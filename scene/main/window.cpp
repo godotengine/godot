@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
-#include "core/string/translation_server.h"
 #include "scene/gui/control.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
@@ -2932,12 +2931,9 @@ bool Window::is_layout_rtl() const {
 				} else if (proj_root_layout_direction == 2) {
 					return true;
 				} else if (proj_root_layout_direction == 3) {
-					String locale = OS::get_singleton()->get_locale();
-					return TS->is_locale_right_to_left(locale);
+					return TS->is_locale_right_to_left(OS::get_singleton()->get_locale());
 				} else {
-					const Ref<Translation> &t = TranslationServer::get_singleton()->get_translation_object(TranslationServer::get_singleton()->get_locale());
-					String locale = t.is_valid() ? t->get_locale() : TranslationServer::get_singleton()->get_fallback_locale();
-					return TS->is_locale_right_to_left(locale);
+					return TS->is_locale_right_to_left(_get_locale());
 				}
 			}
 		}
@@ -2946,8 +2942,9 @@ bool Window::is_layout_rtl() const {
 			return true;
 		}
 #endif
+		const StringName domain_name = get_translation_domain();
 		Node *parent_node = get_parent();
-		while (parent_node) {
+		while (parent_node && parent_node->get_translation_domain() == domain_name) {
 			Control *parent_control = Object::cast_to<Control>(parent_node);
 			if (parent_control) {
 				return parent_control->is_layout_rtl();
@@ -2965,25 +2962,21 @@ bool Window::is_layout_rtl() const {
 		} else if (root_layout_direction == 2) {
 			return true;
 		} else if (root_layout_direction == 3) {
-			String locale = OS::get_singleton()->get_locale();
-			return TS->is_locale_right_to_left(locale);
+			return TS->is_locale_right_to_left(OS::get_singleton()->get_locale());
 		} else {
-			String locale = TranslationServer::get_singleton()->get_tool_locale();
-			return TS->is_locale_right_to_left(locale);
+			return TS->is_locale_right_to_left(_get_locale());
 		}
 	} else if (layout_dir == LAYOUT_DIRECTION_APPLICATION_LOCALE) {
 		if (GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
 			return true;
 		} else {
-			String locale = TranslationServer::get_singleton()->get_tool_locale();
-			return TS->is_locale_right_to_left(locale);
+			return TS->is_locale_right_to_left(_get_locale());
 		}
 	} else if (layout_dir == LAYOUT_DIRECTION_SYSTEM_LOCALE) {
 		if (GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
 			return true;
 		} else {
-			String locale = OS::get_singleton()->get_locale();
-			return TS->is_locale_right_to_left(locale);
+			return TS->is_locale_right_to_left(OS::get_singleton()->get_locale());
 		}
 	} else {
 		return (layout_dir == LAYOUT_DIRECTION_RTL);
