@@ -176,6 +176,8 @@ public:
 	void set_import_path(const String &p_path) { import_path = p_path; }
 	String get_import_path() const { return import_path; }
 
+	virtual bool is_valid_property_value(const String &p_path, const Variant &p_value, String &p_error_message) const;
+
 #endif
 
 	void set_as_translation_remapped(bool p_remapped);
