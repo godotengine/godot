@@ -667,6 +667,14 @@ uint32_t RendererCanvasCull::canvas_item_get_visibility_layer(RID p_item) {
 	return canvas_item->visibility_layer;
 }
 
+uint32_t RendererCanvasCull::canvas_item_get_z_render(RID p_item) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	if (!canvas_item) {
+		return 0;
+	}
+	return canvas_item->z_render;
+}
+
 void RendererCanvasCull::canvas_item_set_clip(RID p_item, bool p_clip) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
