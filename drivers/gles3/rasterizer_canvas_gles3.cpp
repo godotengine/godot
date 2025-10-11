@@ -108,11 +108,23 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	GLES3::MeshStorage *mesh_storage = GLES3::MeshStorage::get_singleton();
+	GLES3::RenderTarget *render_target = texture_storage->get_render_target(p_to_render_target);
 
 	Transform2D canvas_transform_inverse = p_canvas_transform.affine_inverse();
 
 	// Clear out any state that may have been left from the 3D pass.
 	reset_canvas();
+
+	// Blit FBO to MSAA 2D FBO
+	if (render_target->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED) {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, render_target->fbo);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, render_target->msaa_2d.fbo);
+
+		glBlitFramebuffer(0, 0, render_target->size.x, render_target->size.y,
+				0, 0, render_target->size.x, render_target->size.y,
+				GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		glBindFramebuffer(GL_FRAMEBUFFER, render_target->msaa_2d.fbo);
+	}
 
 	if (state.canvas_instance_data_buffers[state.current_data_buffer_index].fence != GLsync()) {
 		GLint syncStatus;
@@ -521,7 +533,6 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 				update_skeletons = false;
 			}
 			//render anything pending, including clearing if no items
-
 			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, false, r_render_info, material_screen_texture_mipmaps_cached);
 			item_count = 0;
 
@@ -566,14 +577,31 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 
 	state.canvas_instance_data_buffers[state.current_data_buffer_index].fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
+	// Blit MSAA 2D buffer to final buffer
+	if (render_target->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED && render_target->msaa_2d.needs_resolve) {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, render_target->msaa_2d.fbo);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, render_target->fbo);
+
+		glBlitFramebuffer(0, 0, render_target->size.x, render_target->size.y,
+				0, 0, render_target->size.x, render_target->size.y,
+				GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		glBindFramebuffer(GL_FRAMEBUFFER, render_target->fbo);
+	}
+
 	// Clear out state used in 2D pass
 	reset_canvas();
 	state.current_data_buffer_index = (state.current_data_buffer_index + 1) % state.canvas_instance_data_buffers.size();
 	state.current_instance_buffer_index = 0;
+	if (!backbuffer_cleared) {
+		texture_storage->render_target_clear_back_buffer(p_to_render_target, Rect2i(), Color(0, 0, 0, 0));
+		backbuffer_cleared = true;
+	}
 }
 
 void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer, RenderingMethod::RenderInfo *r_render_info, bool p_backbuffer_has_mipmaps) {
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+	GLES3::RenderTarget *render_target = texture_storage->get_render_target(p_to_render_target);
 
 	canvas_begin(p_to_render_target, p_to_backbuffer, p_backbuffer_has_mipmaps);
 
@@ -808,6 +836,18 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 	state.current_batch_index = 0;
 	state.canvas_instance_batches.clear();
 	state.last_item_index += index;
+
+	// Blit MSAA 2D Backbuffer to normal backbuffer
+	// to support sampling from backbuffer
+	if (p_to_backbuffer && render_target->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED && render_target->msaa_2d.backbuffer_fbo != 0 && render_target->msaa_2d.needs_resolve) {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, render_target->msaa_2d.backbuffer_fbo);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, render_target->backbuffer_fbo);
+
+		glBlitFramebuffer(0, 0, render_target->size.x, render_target->size.y,
+				0, 0, render_target->size.x, render_target->size.y,
+				GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		glBindFramebuffer(GL_FRAMEBUFFER, render_target->msaa_2d.backbuffer_fbo);
+	}
 }
 
 void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_render_target, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, GLES3::CanvasShaderData::BlendMode p_blend_mode, Light *p_lights, uint32_t &r_index, bool &r_batch_broken, bool &r_sdf_used, const Point2 &p_repeat_offset) {
@@ -2209,12 +2249,20 @@ void RasterizerCanvasGLES3::canvas_begin(RID p_to_render_target, bool p_to_backb
 	GLES3::RenderTarget *render_target = texture_storage->get_render_target(p_to_render_target);
 
 	if (p_to_backbuffer) {
-		glBindFramebuffer(GL_FRAMEBUFFER, render_target->backbuffer_fbo);
+		if (render_target->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED && render_target->msaa_2d.backbuffer_fbo != 0) {
+			glBindFramebuffer(GL_FRAMEBUFFER, render_target->msaa_2d.backbuffer_fbo);
+		} else {
+			glBindFramebuffer(GL_FRAMEBUFFER, render_target->backbuffer_fbo);
+		}
 		glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 4);
 		GLES3::Texture *tex = texture_storage->get_texture(texture_storage->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_WHITE));
 		glBindTexture(GL_TEXTURE_2D, tex->tex_id);
 	} else {
-		glBindFramebuffer(GL_FRAMEBUFFER, render_target->fbo);
+		if (render_target->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED && render_target->msaa_2d.fbo != 0) {
+			glBindFramebuffer(GL_FRAMEBUFFER, render_target->msaa_2d.fbo);
+		} else {
+			glBindFramebuffer(GL_FRAMEBUFFER, render_target->fbo);
+		}
 		glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 4);
 		glBindTexture(GL_TEXTURE_2D, render_target->backbuffer);
 		if (render_target->backbuffer != 0) {
