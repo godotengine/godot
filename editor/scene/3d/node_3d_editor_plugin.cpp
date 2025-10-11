@@ -3410,6 +3410,22 @@ void Node3DEditorViewport::_notification(int p_what) {
 			set_freelook_active(false);
 			cursor.region_select = false;
 			surface->queue_redraw();
+
+			// Commit the drag if the window is focused out.
+			if (_edit.mode != TRANSFORM_NONE) {
+				commit_transform();
+				return;
+			}
+
+			if (_edit.gizmo.is_valid()) {
+				// Certain gizmo plugins should be able to commit handles without dragging them.
+				if (_edit.original_mouse_pos != _edit.mouse_pos || _edit.gizmo->get_plugin()->can_commit_handle_on_click()) {
+					_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, false);
+				}
+
+				spatial_editor->get_single_selected_node()->update_gizmos();
+				_edit.gizmo = Ref<EditorNode3DGizmo>();
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
