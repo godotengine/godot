@@ -30,8 +30,9 @@
 
 #include "core_constants.h"
 
+STATIC_ASSERT_INCOMPLETE_TYPE(class, ClassDB)
+
 #include "core/input/input_event.h"
-#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/variant/variant.h"
 
