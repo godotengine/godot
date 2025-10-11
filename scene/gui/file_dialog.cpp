@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "file_dialog.h"
+#include "file_dialog.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
@@ -1247,12 +1248,14 @@ void FileDialog::clear_filters() {
 	invalidate();
 }
 
-void FileDialog::add_filter(const String &p_filter, const String &p_description) {
+void FileDialog::add_filter(const String &p_filter, const String &p_description, const String &p_mime) {
 	ERR_FAIL_COND_MSG(p_filter.begins_with("."), "Filter must be \"filename.extension\", can't start with dot.");
-	if (p_description.is_empty()) {
+	if (p_description.is_empty() && p_mime.is_empty()) {
 		filters.push_back(p_filter);
-	} else {
+	} else if (p_mime.is_empty()) {
 		filters.push_back(vformat("%s ; %s", p_filter, p_description));
+	} else {
+		filters.push_back(vformat("%s ; %s ; %s", p_filter, p_description, p_mime));
 	}
 	update_filters();
 	invalidate();
@@ -2035,7 +2038,7 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_cancel_pressed"), &FileDialog::_cancel_pressed);
 
 	ClassDB::bind_method(D_METHOD("clear_filters"), &FileDialog::clear_filters);
-	ClassDB::bind_method(D_METHOD("add_filter", "filter", "description"), &FileDialog::add_filter, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("add_filter", "filter", "description", "mime_type"), &FileDialog::add_filter, DEFVAL(""), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("set_filters", "filters"), &FileDialog::set_filters);
 	ClassDB::bind_method(D_METHOD("get_filters"), &FileDialog::get_filters);
 	ClassDB::bind_method(D_METHOD("clear_filename_filter"), &FileDialog::clear_filename_filter);
