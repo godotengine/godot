@@ -254,8 +254,6 @@ private:
 
 	void _update_displayed_title();
 
-	Ref<Shortcut> debugger_stop_shortcut;
-
 	static int root_layout_direction;
 
 protected:
