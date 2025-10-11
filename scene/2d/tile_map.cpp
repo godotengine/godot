@@ -147,7 +147,7 @@ Vector<int> TileMap::_get_tile_map_data_using_compatibility_format(int p_layer) 
 	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), Vector<int>());
 
 	// Export tile data to raw format.
-	const HashMap<Vector2i, CellData> tile_map_layer_data = layers[p_layer]->get_tile_map_layer_data();
+	const HashMap<Vector2i, CellData> &tile_map_layer_data = layers[p_layer]->get_tile_map_layer_data();
 	Vector<int> tile_data;
 	tile_data.resize(tile_map_layer_data.size() * 3);
 	int *w = tile_data.ptrw();
