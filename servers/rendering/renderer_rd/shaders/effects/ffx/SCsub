@@ -5,7 +5,11 @@ Import("env")
 
 if "RD_GLSL" in env["BUILDERS"]:
     # find all include files
-    gl_include_files = [str(f) for f in Glob("*_inc.glsl")] + [str(f) for f in Glob("../*_inc.glsl")] + [str(f) for f in Glob("*/*_inc.glsl")]
+    gl_include_files = (
+        [str(f) for f in Glob("*_inc.glsl")]
+        + [str(f) for f in Glob("../*_inc.glsl")]
+        + [str(f) for f in Glob("*/*_inc.glsl")]
+    )
 
     # Add all FSR2 shader and header files.
     ffx_dir = "#thirdparty/amd-ffx"

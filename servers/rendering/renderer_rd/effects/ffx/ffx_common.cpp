@@ -169,12 +169,12 @@ static uint32_t ffx_usage_to_rd_usage_flags(uint32_t p_flags) {
 	return ret;
 }
 
-static FfxVersionNumber get_sdk_version_rd(FfxInterface* backendInterface) {
+static FfxVersionNumber get_sdk_version_rd(FfxInterface *p_backend_interface) {
 	return FFX_SDK_MAKE_VERSION(FFX_SDK_VERSION_MAJOR, FFX_SDK_VERSION_MINOR, FFX_SDK_VERSION_PATCH);
 }
 
 static FfxErrorCode create_backend_context_rd(FfxInterface *p_backend_interface, FfxEffect p_effect,
-	FfxEffectBindlessConfig* p_bindless_config, FfxUInt32* p_effect_context_id) {
+	FfxEffectBindlessConfig *p_bindless_config, FfxUInt32 *p_effect_context_id) {
 	FFXCommonContext::Scratch &scratch = *reinterpret_cast<FFXCommonContext::Scratch *>(p_backend_interface->scratchBuffer);
 
 	if (p_bindless_config) {
@@ -183,7 +183,7 @@ static FfxErrorCode create_backend_context_rd(FfxInterface *p_backend_interface,
 
 	// Store pointer to the device common to all contexts.
 	scratch.device = p_backend_interface->device;
-	scratch.staging_constant_buffer = (uint8_t*)memalloc(FFX_CONSTANT_BUFFER_RING_BUFFER_SIZE);
+	scratch.staging_constant_buffer = (uint8_t *)memalloc(FFX_CONSTANT_BUFFER_RING_BUFFER_SIZE);
 	ERR_FAIL_NULL_V(scratch.staging_constant_buffer, FFX_ERROR_OUT_OF_MEMORY);
 
 	// Create a ring buffer of uniform buffers.
@@ -342,7 +342,7 @@ static FfxErrorCode destroy_resource_rd(FfxInterface *p_backend_interface, FfxRe
 	return FFX_OK;
 }
 
-static FfxErrorCode create_pipeline_rd(FfxInterface *p_backend_interface, FfxEffect p_effect, FfxPass p_pass,  uint32_t p_permutation_options, const FfxPipelineDescription *p_pipeline_description, FfxUInt32 p_effect_context_id, FfxPipelineState *p_out_pipeline) {
+static FfxErrorCode create_pipeline_rd(FfxInterface *p_backend_interface, FfxEffect p_effect, FfxPass p_pass, uint32_t p_permutation_options, const FfxPipelineDescription *p_pipeline_description, FfxUInt32 p_effect_context_id, FfxPipelineState *p_out_pipeline) {
 	FFXCommonContext::Scratch &scratch = *reinterpret_cast<FFXCommonContext::Scratch *>(p_backend_interface->scratchBuffer);
 	FFXCommonContext::Device &device = *reinterpret_cast<FFXCommonContext::Device *>(scratch.device);
 
@@ -560,7 +560,7 @@ static FfxErrorCode execute_gpu_jobs_rd(FfxInterface *p_backend_interface, FfxCo
 	return FFX_OK;
 }
 
-static FfxErrorCode stage_constant_buffer_data_rd(FfxInterface* p_backend_interface, void* p_data, FfxUInt32 p_size, FfxConstantBuffer* p_constant_buffer) {
+static FfxErrorCode stage_constant_buffer_data_rd(FfxInterface *p_backend_interface, void *p_data, FfxUInt32 p_size, FfxConstantBuffer *p_constant_buffer) {
 	ERR_FAIL_NULL_V(p_backend_interface, FFX_ERROR_INVALID_POINTER);
 	ERR_FAIL_NULL_V(p_data, FFX_ERROR_INVALID_POINTER);
 	ERR_FAIL_NULL_V(p_constant_buffer, FFX_ERROR_INVALID_POINTER);
@@ -570,10 +570,10 @@ static FfxErrorCode stage_constant_buffer_data_rd(FfxInterface* p_backend_interf
 		scratch.staging_constant_buffer_base = 0;
 	}
 
-	void* dst = scratch.staging_constant_buffer + scratch.staging_constant_buffer_base;
+	void *dst = scratch.staging_constant_buffer + scratch.staging_constant_buffer_base;
 	memcpy(dst, p_data, p_size);
 
-	p_constant_buffer->data = (uint32_t*)dst;
+	p_constant_buffer->data = (uint32_t *)dst;
 	p_constant_buffer->num32BitEntries = p_size / sizeof(uint32_t);
 	scratch.staging_constant_buffer_base += FFX_ALIGN_UP(p_size, 256);
 

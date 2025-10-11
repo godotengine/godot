@@ -42,7 +42,6 @@
 #include "ffx_common.h"
 #include "servers/rendering/rendering_server.h"
 
-
 #include "thirdparty/amd-ffx/ffx_fsr2.h"
 
 namespace RendererRD {
