@@ -386,6 +386,16 @@ struct RenderTarget {
 
 	Rect2i render_region;
 
+	struct RTmsaa2d {
+		RS::ViewportMSAA mode = RS::VIEWPORT_MSAA_DISABLED;
+		bool needs_resolve = false;
+		GLsizei samples = 1;
+		GLuint fbo = 0;
+		GLuint color = 0;
+		GLuint backbuffer_fbo = 0;
+		GLuint backbuffer = 0;
+	} msaa_2d;
+
 	struct RTOverridden {
 		bool is_overridden = false;
 		bool depth_has_stencil = false;
