@@ -98,6 +98,7 @@ _FORCE_INLINE_ ShaderStageUsage &operator|=(ShaderStageUsage &p_a, int p_b) {
 }
 
 enum StageResourceUsage : uint32_t {
+	ResourceUnused = 0,
 	VertexRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_VERTEX * 2),
 	VertexWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_VERTEX * 2),
 	FragmentRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_FRAGMENT * 2),
@@ -110,8 +111,59 @@ enum StageResourceUsage : uint32_t {
 	ComputeWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_COMPUTE * 2),
 };
 
-typedef LocalVector<__unsafe_unretained id<MTLResource>> ResourceVector;
+typedef id<MTLResource> __unsafe_unretained MTLResourceUnsafe;
+
+struct HashMapHashedMetalResource {
+	static _FORCE_INLINE_ uint32_t hash(const MTLResourceUnsafe p_pointer) { return hash_one_uint64((uint64_t)p_pointer); }
+};
+
+typedef LocalVector<MTLResourceUnsafe> ResourceVector;
 typedef HashMap<StageResourceUsage, ResourceVector> ResourceUsageMap;
+
+struct ResourceUsageEntry {
+	StageResourceUsage usage = ResourceUnused;
+	uint32_t unused = 0;
+
+	ResourceUsageEntry() {}
+	ResourceUsageEntry(StageResourceUsage p_usage) :
+			usage(p_usage) {}
+};
+
+template <>
+struct is_zero_constructible<ResourceUsageEntry> : std::true_type {};
+
+/*! Track the cumulative usage for a resource during a render or compute pass */
+typedef HashMap<MTLResourceUnsafe, ResourceUsageEntry, HashMapHashedMetalResource> ResourceToStageUsage;
+
+/*! Track resource and ensure they are resident prior to dispatch or draw commands.
+ *
+ * The primary purpose of this data structure is to track all the resources that must be made resident prior
+ * to issuing the next dispatch or draw command. It aggregates all resources used from argument buffers.
+ *
+ * As an optimization, this data structure also tracks previous usage for resources, so that
+ * it may avoid binding them again in later commands if the resource is already resident and its usage flagged.
+ */
+struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) ResourceTracker {
+	// A constant specifying how many iterations a resource can remain in
+	// the _previous HashSet before it will be removed permanently.
+	//
+	// Keeping them in the _previous HashMap reduces churn if resources are regularly
+	// bound. 256 is arbitrary, but if an object remains unused for 256 encoders,
+	// it will be released.
+	static constexpr uint32_t RESOURCE_UNUSED_CLEANUP_COUNT = 256;
+
+	// Used as a scratch buffer to periodically clean up resources from _previous.
+	ResourceVector _scratch;
+	// Tracks all resources and their prior usage for the duration of the encoder.
+	ResourceToStageUsage _previous;
+	// Tracks resources for the current command that must be made resident
+	ResourceUsageMap _current;
+
+	void merge_from(const ResourceUsageMap &p_from);
+	void encode(id<MTLRenderCommandEncoder> __unsafe_unretained p_enc);
+	void encode(id<MTLComputeCommandEncoder> __unsafe_unretained p_enc);
+	void reset();
+};
 
 enum class MDCommandBufferStateType {
 	None,
@@ -366,7 +418,7 @@ public:
 		uint32_t index_offset = 0;
 		LocalVector<id<MTLBuffer> __unsafe_unretained> vertex_buffers;
 		LocalVector<NSUInteger> vertex_offsets;
-		ResourceUsageMap resource_usage;
+		ResourceTracker resource_tracker;
 		// clang-format off
 		enum DirtyFlag: uint16_t {
 			DIRTY_NONE     = 0,
@@ -492,7 +544,7 @@ public:
 	struct ComputeState {
 		MDComputePipeline *pipeline = nullptr;
 		id<MTLComputeCommandEncoder> encoder = nil;
-		ResourceUsageMap resource_usage;
+		ResourceTracker resource_tracker;
 		// clang-format off
 		enum DirtyFlag: uint16_t {
 			DIRTY_NONE     = 0,
@@ -809,7 +861,7 @@ public:
 	void bind_uniforms(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index);
 	void bind_uniforms(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index);
 
-	BoundUniformSet &bound_uniform_set(MDShader *p_shader, id<MTLDevice> p_device, ResourceUsageMap &p_resource_usage, uint32_t p_set_index);
+	BoundUniformSet &bound_uniform_set(MDShader *p_shader, id<MTLDevice> p_device, uint32_t p_set_index);
 };
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDPipeline {
