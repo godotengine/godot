@@ -177,6 +177,7 @@ private:
 		StringName name;
 		StringName uid;
 		bool connected = false;
+		bool is_known = false;
 		bool last_buttons[(size_t)JoyButton::MAX] = { false };
 		float last_axis[(size_t)JoyAxis::MAX] = { 0.0f };
 		HatMask last_hat = HatMask::CENTER;
