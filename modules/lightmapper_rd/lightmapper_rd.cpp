@@ -2065,6 +2065,14 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	/* DENOISE */
 
+	if (p_bake_sh) {
+		SWAP(light_accum_tex, light_accum_tex2);
+		BakeError error = _pack_l1(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, light_accum_tex, atlas_size, atlas_slices);
+		if (unlikely(error != BAKE_OK)) {
+			return error;
+		}
+	}
+
 	if (p_use_denoiser) {
 		if (p_step_function) {
 			if (p_step_function(0.8, RTR("Denoising"), p_bake_userdata, true)) {
@@ -2287,14 +2295,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			}
 			seam_offset += slice_seam_count[i];
 			triangle_offset += slice_triangle_count[i];
-		}
-	}
-
-	if (p_bake_sh) {
-		SWAP(light_accum_tex, light_accum_tex2);
-		BakeError error = _pack_l1(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, light_accum_tex, atlas_size, atlas_slices);
-		if (unlikely(error != BAKE_OK)) {
-			return error;
 		}
 	}
 
