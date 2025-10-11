@@ -31,6 +31,7 @@
 #include "editor_export.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 
 bool EditorExportPreset::_set(const StringName &p_name, const Variant &p_value) {
 	values[p_name] = p_value;

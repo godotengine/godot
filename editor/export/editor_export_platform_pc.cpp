@@ -31,6 +31,8 @@
 #include "editor_export_platform_pc.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/os/shared_object.h"
 #include "scene/resources/image_texture.h"
 
 void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
