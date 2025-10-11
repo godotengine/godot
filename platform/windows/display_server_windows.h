@@ -38,6 +38,7 @@
 #include "core/input/input.h"
 #include "core/io/image.h"
 #include "core/os/os.h"
+#include "core/templates/a_hash_map.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/midi_driver_winmidi.h"
 #include "servers/audio/audio_server.h"
@@ -247,11 +248,14 @@ class DisplayServerWindows : public DisplayServer {
 
 	struct KeyEvent {
 		WindowID window_id;
+		int keyboard_id;
 		bool alt, shift, control, meta, altgr;
 		UINT uMsg;
 		WPARAM wParam;
 		LPARAM lParam;
 	};
+
+	AHashMap<HANDLE, bool> id_map;
 
 	WindowID window_mouseover_id = INVALID_WINDOW_ID;
 
@@ -514,6 +518,9 @@ class DisplayServerWindows : public DisplayServer {
 	HWND _find_window_from_process_id(OS::ProcessID p_pid, HWND p_current_hwnd);
 
 	void initialize_tts() const;
+
+	virtual void kb_map_insert(HANDLE new_kb_id);
+	virtual void kb_map_remove(HANDLE raw_kb_id);
 
 public:
 	LRESULT WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
