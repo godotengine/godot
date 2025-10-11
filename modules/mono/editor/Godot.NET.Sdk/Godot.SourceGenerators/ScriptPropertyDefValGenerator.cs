@@ -336,7 +336,11 @@ namespace Godot.SourceGenerators
                 if (initializer != null)
                 {
                     var sm = context.Compilation.GetSemanticModel(initializer.SyntaxTree);
-                    value = initializer.Value.FullQualifiedSyntax(sm);
+                    var initializerValue = initializer.Value;
+                    if (!IsStaticallyResolvable(initializerValue, sm))
+                        value = "default";
+                    else
+                        value = initializer.Value.FullQualifiedSyntax(sm);
                 }
 
                 exportedMembers.Add(new ExportedPropertyMetadata(
@@ -424,109 +428,28 @@ namespace Godot.SourceGenerators
 
         private static bool IsStaticallyResolvable(ExpressionSyntax expression, SemanticModel semanticModel)
         {
-            // Handle literals (e.g., `10`, `"string"`, `true`, etc.)
-            if (expression is LiteralExpressionSyntax)
+            // Find non-static node in expression
+            foreach (SyntaxNode descendant in expression.DescendantNodesAndSelf())
             {
-                return true;
-            }
-
-            // Handle negative literals (e.g., `-10`)
-            if (expression is PrefixUnaryExpressionSyntax { Operand: LiteralExpressionSyntax } &&
-                expression.Kind() == SyntaxKind.UnaryMinusExpression)
-            {
-                return true;
-            }
-
-            // Handle identifiers (e.g., variable names)
-            if (expression is IdentifierNameSyntax identifier)
-            {
-                var symbolInfo = semanticModel.GetSymbolInfo(identifier).Symbol;
-
-                // Ensure it's a static member
-                return symbolInfo is { IsStatic: true };
-            }
-
-            // Handle member access (e.g., `MyClass.StaticValue`)
-            if (expression is MemberAccessExpressionSyntax memberAccess)
-            {
-                var symbolInfo = semanticModel.GetSymbolInfo(memberAccess).Symbol;
-
-                // Ensure it's referring to a static member
-                return symbolInfo is { IsStatic: true };
-            }
-
-            // Handle object creation expressions (e.g., `new Vector2(1.0f, 2.0f)`)
-            if (expression is ObjectCreationExpressionSyntax objectCreation)
-            {
-                // Recursively ensure all its arguments are self-contained
-                if (objectCreation.ArgumentList == null)
+                // Constant nodes are static
+                if (semanticModel.GetConstantValue(descendant).HasValue)
                 {
-                    return true;
+                    continue;
                 }
-                foreach (var argument in objectCreation.ArgumentList.Arguments)
+
+                // Check non-static symbol
+                SymbolInfo symbolInfo = semanticModel.GetSymbolInfo(descendant);
+                if (symbolInfo.Symbol is ISymbol symbol)
                 {
-                    if (!IsStaticallyResolvable(argument.Expression, semanticModel))
+                    if (symbol.Kind is SymbolKind.Local or SymbolKind.Parameter)
                     {
                         return false;
                     }
                 }
-
-                return true;
             }
 
-            if (expression is ImplicitObjectCreationExpressionSyntax)
-            {
-                return true;
-            }
-
-            if (expression is InvocationExpressionSyntax invocationExpression)
-            {
-                // Resolve the method being invoked
-                var symbolInfo = semanticModel.GetSymbolInfo(invocationExpression).Symbol;
-
-                if (symbolInfo is IMethodSymbol methodSymbol)
-                {
-                    // Ensure the method is static
-                    if (methodSymbol.IsStatic)
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            if (expression is InterpolatedStringExpressionSyntax interpolatedString)
-            {
-                foreach (var content in interpolatedString.Contents)
-                {
-                    if (content is not InterpolationSyntax interpolation)
-                    {
-                        continue;
-                    }
-                    // Analyze the expression inside `${...}`
-                    var interpolatedExpression = interpolation.Expression;
-
-                    if (!IsStaticallyResolvable(interpolatedExpression, semanticModel))
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            }
-
-            if (expression is InitializerExpressionSyntax initializerExpressionSyntax)
-            {
-                foreach (var content in initializerExpressionSyntax.Expressions)
-                {
-                    if (!IsStaticallyResolvable(content, semanticModel))
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            }
-
-            // Handle other expressions conservatively (e.g., method calls, instance references, etc.)
-            return false;
+            // No non-static nodes found
+            return true;
         }
 
         private static bool MemberHasNodeType(ITypeSymbol memberType, MarshalType marshalType)
