@@ -30,8 +30,9 @@
 
 #include "message_queue.h"
 
+STATIC_ASSERT_INCOMPLETE_TYPE(class, ClassDB);
+
 #include "core/config/project_settings.h"
-#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 
 #include <cstdio>
