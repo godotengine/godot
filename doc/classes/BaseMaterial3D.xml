@@ -666,13 +666,15 @@
 			The color of the object is added to the background and the alpha channel is used to mask out the background. This is effectively a hybrid of the blend mix and add modes, useful for effects like fire where you want the flame to add but the smoke to mix. By default, this works with unshaded materials using premultiplied textures. For shaded materials, use the [code]PREMUL_ALPHA_FACTOR[/code] built-in so that lighting can be modulated as well.
 		</constant>
 		<constant name="ALPHA_ANTIALIASING_OFF" value="0" enum="AlphaAntiAliasing">
-			Disables Alpha AntiAliasing for the material.
+			Disables alpha antialiasing for the material.
 		</constant>
 		<constant name="ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE" value="1" enum="AlphaAntiAliasing">
-			Enables AlphaToCoverage. Alpha values in the material are passed to the AntiAliasing sample mask.
+			Enables MSAA alpha to coverage. Alpha values in the material are passed to the antialiasing sample mask. Requires [member Viewport.msaa_3d] to be set to [constant Viewport.MSAA_2X] or greater to have a noticeable effect.
+			[b]Note:[/b] Due to OpenGL ES limitations, alpha antialiasing is only supported in the Forward+ and Mobile renderers, not Compatibility.
 		</constant>
 		<constant name="ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE" value="2" enum="AlphaAntiAliasing">
-			Enables AlphaToCoverage and forces all non-zero alpha values to [code]1[/code]. Alpha values in the material are passed to the AntiAliasing sample mask.
+			Enables MSAA alpha to coverage and forces all non-zero alpha values to [code]1[/code]. Alpha values in the material are passed to the antialiasing sample mask. Requires [member Viewport.msaa_3d] to be set to [constant Viewport.MSAA_2X] or greater to have a noticeable effect.
+			[b]Note:[/b] Due to OpenGL ES limitations, alpha antialiasing is only supported in the Forward+ and Mobile renderers, not Compatibility.
 		</constant>
 		<constant name="DEPTH_DRAW_OPAQUE_ONLY" value="0" enum="DepthDrawMode">
 			Default depth draw mode. Depth is drawn only for opaque objects during the opaque prepass (if any) and during the opaque pass.
