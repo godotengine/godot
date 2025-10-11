@@ -42,7 +42,7 @@ class StyleBoxFlat : public StyleBox {
 	real_t border_width[4] = {};
 	real_t expand_margin[4] = {};
 	real_t corner_radius[4] = {};
-	real_t corner_radius_smoothing = 0.0;
+	real_t corner_radius_smoothing = 1.0;
 
 	bool draw_center = true;
 	bool blend_border = false;

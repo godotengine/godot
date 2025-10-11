@@ -384,17 +384,19 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 			const real_t angle_sine = Math::sin(pt_angle);
 
 			real_t x, y;
-			if (corner_radius_smoothing > 0.0f) {
+			// Corner smoothing formula is adapted from CSS documentation: https://developer.mozilla.org/en-US/docs/Web/CSS/superellipse.
+			// Corner smoothing strength of 0.0 produces straight line corners.
+			// Corner smoothing strength of 1.0 produces ordinary corner rounding.
+			// Corner smoothing strength of 2.0 produces a squircle.
+			// Corner smoothing strength values > 10.0 produce shapes indistinguishable from a square.
+			real_t smoothing_exponent = 2.0f / Math::pow(2.0f, corner_radius_smoothing);
+			if (Math::is_equal_approx(corner_radius_smoothing, 1.0f)) {
 				real_t cos_abs = Math::abs(angle_cosine);
 				real_t sin_abs = Math::abs(angle_sine);
 				real_t cos_sign = angle_cosine >= 0 ? 1.0f : -1.0f;
 				real_t sin_sign = angle_sine >= 0 ? 1.0f : -1.0f;
-				// Lamé curve for superellipse smoothing of corners.
-				// Corner smoothing strength of 0.0 produces a circular arc and looks like regular rounded corners.
-				// Higher smoothing strengths produce more rounded corner shapes.
-				// The corner_radius_smoothing is offset by +2.0f due to semantic reasons: to produce regular corner rounding when the strength is 0.0f.
-				x = inner_corner_radius[corner_idx] * cos_sign * Math::pow(cos_abs, 2.0f / (corner_radius_smoothing + 2.0f)) * inner_scale[corner_idx].x + inner_points[corner_idx].x;
-				y = inner_corner_radius[corner_idx] * sin_sign * Math::pow(sin_abs, 2.0f / (corner_radius_smoothing + 2.0f)) * inner_scale[corner_idx].y + inner_points[corner_idx].y;
+				x = inner_corner_radius[corner_idx] * cos_sign * Math::pow(cos_abs, smoothing_exponent) * inner_scale[corner_idx].x + inner_points[corner_idx].x;
+				y = inner_corner_radius[corner_idx] * sin_sign * Math::pow(sin_abs, smoothing_exponent) * inner_scale[corner_idx].y + inner_points[corner_idx].y;
 			} else {
 				x = inner_corner_radius[corner_idx] * angle_cosine * inner_scale[corner_idx].x + inner_points[corner_idx].x;
 				y = inner_corner_radius[corner_idx] * angle_sine * inner_scale[corner_idx].y + inner_points[corner_idx].y;
@@ -406,13 +408,13 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 			colors_ptr[colors_size + idx_ofs] = inner_color;
 
 			if (draw_border) {
-				if (corner_radius_smoothing > 0.0f) {
+				if (Math::is_equal_approx(corner_radius_smoothing, 1.0f)) {
 					real_t cos_abs = Math::abs(angle_cosine);
 					real_t sin_abs = Math::abs(angle_sine);
 					real_t cos_sign = angle_cosine >= 0 ? 1.0f : -1.0f;
 					real_t sin_sign = angle_sine >= 0 ? 1.0f : -1.0f;
-					x = ring_corner_radius[corner_idx] * cos_sign * Math::pow(cos_abs, 2.0f / (corner_radius_smoothing + 2.0f)) * ring_scale[corner_idx].x + outer_points[corner_idx].x;
-					y = ring_corner_radius[corner_idx] * sin_sign * Math::pow(sin_abs, 2.0f / (corner_radius_smoothing + 2.0f)) * ring_scale[corner_idx].y + outer_points[corner_idx].y;
+					x = ring_corner_radius[corner_idx] * cos_sign * Math::pow(cos_abs, smoothing_exponent) * ring_scale[corner_idx].x + outer_points[corner_idx].x;
+					y = ring_corner_radius[corner_idx] * sin_sign * Math::pow(sin_abs, smoothing_exponent) * ring_scale[corner_idx].y + outer_points[corner_idx].y;
 				} else {
 					x = ring_corner_radius[corner_idx] * angle_cosine * ring_scale[corner_idx].x + outer_points[corner_idx].x;
 					y = ring_corner_radius[corner_idx] * angle_sine * ring_scale[corner_idx].y + outer_points[corner_idx].y;
