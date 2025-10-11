@@ -4834,6 +4834,7 @@ void Tree::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_EXIT_TREE:
 		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
+#ifdef ACCESSKIT_ENABLED
 			if (root) {
 				_accessibility_clean_info(root);
 			}
@@ -4841,8 +4842,10 @@ void Tree::_notification(int p_what) {
 				col.accessibility_col_element = RID();
 			}
 			accessibility_scroll_element = RID();
+#endif // ACCESSKIT_ENABLED
 		} break;
 
+#ifdef ACCESSKIT_ENABLED
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
@@ -4901,6 +4904,7 @@ void Tree::_notification(int p_what) {
 			DisplayServer::get_singleton()->accessibility_update_set_table_row_count(ae, rows);
 
 		} break;
+#endif // ACCESSKIT_ENABLED
 
 		case NOTIFICATION_FOCUS_ENTER: {
 			if (get_viewport()) {
