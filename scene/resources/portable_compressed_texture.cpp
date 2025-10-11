@@ -331,12 +331,12 @@ Size2 PortableCompressedTexture2D::get_size_override() const {
 	return size_override;
 }
 
-void PortableCompressedTexture2D::set_path(const String &p_path, bool p_take_over) {
+void PortableCompressedTexture2D::set_path(const String &p_path, bool p_take_over, bool p_lock_cache) {
 	if (texture.is_valid()) {
 		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
 	}
 
-	Resource::set_path(p_path, p_take_over);
+	Resource::set_path(p_path, p_take_over, p_lock_cache);
 }
 
 bool PortableCompressedTexture2D::keep_all_compressed_buffers = false;
