@@ -1627,6 +1627,9 @@
 		</constant>
 	</constants>
 	<theme_items>
+		<theme_item name="text_changed_sound" data_type="audio" type="AudioStream">
+			Played when text is changed through keyboard input (physical or virtual).
+		</theme_item>
 		<theme_item name="background_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
 			Sets the background [Color] of this [TextEdit].
 		</theme_item>

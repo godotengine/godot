@@ -541,6 +541,15 @@
 		</constant>
 	</constants>
 	<theme_items>
+		<theme_item name="text_change_rejected_sound" data_type="audio" type="AudioStream">
+			Played when a text change is rejected (for instance, due to [member max_length] being exceeded).
+		</theme_item>
+		<theme_item name="text_changed_sound" data_type="audio" type="AudioStream">
+			Played when text is changed through keyboard input (physical or virtual).
+		</theme_item>
+		<theme_item name="text_submitted_sound" data_type="audio" type="AudioStream">
+			Played when text is submitted using the [code]ui_text_submit[/code] action.
+		</theme_item>
 		<theme_item name="caret_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
 			Color of the [LineEdit]'s caret (text cursor). This can be set to a fully transparent color to hide the caret entirely.
 		</theme_item>

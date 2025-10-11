@@ -513,6 +513,9 @@
 		</constant>
 	</constants>
 	<theme_items>
+		<theme_item name="item_selected_sound" data_type="audio" type="AudioStream">
+			Played when an item is selected.
+		</theme_item>
 		<theme_item name="children_hl_line_color" data_type="color" type="Color" default="Color(0.27, 0.27, 0.27, 1)">
 			The [Color] of the relationship lines between the selected [TreeItem] and its children.
 		</theme_item>

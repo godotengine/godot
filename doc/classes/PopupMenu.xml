@@ -695,6 +695,12 @@
 		</signal>
 	</signals>
 	<theme_items>
+		<theme_item name="item_activated_disabled_sound" data_type="audio" type="AudioStream">
+			Played when a disabled item is attempted to be activated.
+		</theme_item>
+		<theme_item name="item_activated_sound" data_type="audio" type="AudioStream">
+			Played when an item is activated.
+		</theme_item>
 		<theme_item name="font_accelerator_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 0.8)">
 			The text [Color] used for shortcuts and accelerators that show next to the menu item name when defined. See [method get_item_accelerator] for more info on accelerators.
 		</theme_item>

@@ -55,6 +55,15 @@
 		</constant>
 	</constants>
 	<theme_items>
+		<theme_item name="drag_ended_sound" data_type="audio" type="AudioStream">
+			Played when mouse or touch drag is ended.
+		</theme_item>
+		<theme_item name="drag_started_sound" data_type="audio" type="AudioStream">
+			Played when mouse or touch drag has begun.
+		</theme_item>
+		<theme_item name="value_changed_sound" data_type="audio" type="AudioStream">
+			Played when the value is changed through keyboard or gamepad input.
+		</theme_item>
 		<theme_item name="center_grabber" data_type="constant" type="int" default="0">
 			Boolean constant. If [code]1[/code], the grabber texture size will be ignored and it will fit within slider's bounds based only on its center position.
 		</theme_item>

@@ -53,6 +53,8 @@ bool Theme::_set(const StringName &p_name, const Variant &p_value) {
 			set_color(prop_name, theme_type, p_value);
 		} else if (type == "constants") {
 			set_constant(prop_name, theme_type, p_value);
+		} else if (type == "audios") {
+			set_audio(prop_name, theme_type, p_value);
 		} else if (type == "base_type") {
 			set_type_variation(theme_type, p_value);
 		} else {
@@ -97,6 +99,12 @@ bool Theme::_get(const StringName &p_name, Variant &r_ret) const {
 			r_ret = get_color(prop_name, theme_type);
 		} else if (type == "constants") {
 			r_ret = get_constant(prop_name, theme_type);
+		} else if (type == "audios") {
+			if (!has_audio(prop_name, theme_type)) {
+				r_ret = Ref<AudioStream>();
+			} else {
+				r_ret = get_audio(prop_name, theme_type);
+			}
 		} else if (type == "base_type") {
 			r_ret = get_type_variation_base(theme_type);
 		} else {
@@ -156,6 +164,13 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const KeyValue<StringName, ThemeConstantMap> &E : constant_map) {
 		for (const KeyValue<StringName, int> &F : E.value) {
 			list.push_back(PropertyInfo(Variant::INT, String() + E.key + "/constants/" + F.key));
+		}
+	}
+
+	// Audios.
+	for (const KeyValue<StringName, ThemeAudioMap> &E : audio_map) {
+		for (const KeyValue<StringName, Ref<AudioStream>> &F : E.value) {
+			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/audios/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
 
@@ -941,6 +956,126 @@ void Theme::get_constant_type_list(List<StringName> *p_list) const {
 	}
 }
 
+void Theme::set_audio(const StringName &p_name, const StringName &p_theme_type, const Ref<AudioStream> &p_audio) {
+	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
+	bool existing = false;
+	if (audio_map[p_theme_type][p_name].is_valid()) {
+		existing = true;
+		audio_map[p_theme_type][p_name]->disconnect_changed(callable_mp(this, &Theme::_emit_theme_changed));
+	}
+
+	audio_map[p_theme_type][p_name] = p_audio;
+
+	if (p_audio.is_valid()) {
+		audio_map[p_theme_type][p_name]->connect_changed(callable_mp(this, &Theme::_emit_theme_changed).bind(false), CONNECT_REFERENCE_COUNTED);
+	}
+
+	_emit_theme_changed(!existing);
+}
+
+Ref<AudioStream> Theme::get_audio(const StringName &p_name, const StringName &p_theme_type) const {
+	if (audio_map.has(p_theme_type) && audio_map[p_theme_type].has(p_name) && audio_map[p_theme_type][p_name].is_valid()) {
+		return audio_map[p_theme_type][p_name];
+	} else {
+		return ThemeDB::get_singleton()->get_fallback_audio();
+	}
+}
+
+bool Theme::has_audio(const StringName &p_name, const StringName &p_theme_type) const {
+	return (audio_map.has(p_theme_type) && audio_map[p_theme_type].has(p_name) && audio_map[p_theme_type][p_name].is_valid());
+}
+
+bool Theme::has_audio_nocheck(const StringName &p_name, const StringName &p_theme_type) const {
+	return (audio_map.has(p_theme_type) && audio_map[p_theme_type].has(p_name));
+}
+
+void Theme::rename_audio(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+	ERR_FAIL_COND_MSG(!audio_map.has(p_theme_type), "Cannot rename the audio '" + String(p_old_name) + "' because the node type '" + String(p_theme_type) + "' does not exist.");
+	ERR_FAIL_COND_MSG(audio_map[p_theme_type].has(p_name), "Cannot rename the audio '" + String(p_old_name) + "' because the new name '" + String(p_name) + "' already exists.");
+	ERR_FAIL_COND_MSG(!audio_map[p_theme_type].has(p_old_name), "Cannot rename the audio '" + String(p_old_name) + "' because it does not exist.");
+
+	audio_map[p_theme_type][p_name] = audio_map[p_theme_type][p_old_name];
+	audio_map[p_theme_type].erase(p_old_name);
+
+	_emit_theme_changed(true);
+}
+
+void Theme::clear_audio(const StringName &p_name, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!audio_map.has(p_theme_type), "Cannot clear the audio '" + String(p_name) + "' because the node type '" + String(p_theme_type) + "' does not exist.");
+	ERR_FAIL_COND_MSG(!audio_map[p_theme_type].has(p_name), "Cannot clear the audio '" + String(p_name) + "' because it does not exist.");
+
+	if (audio_map[p_theme_type][p_name].is_valid()) {
+		audio_map[p_theme_type][p_name]->disconnect_changed(callable_mp(this, &Theme::_emit_theme_changed));
+	}
+
+	audio_map[p_theme_type].erase(p_name);
+
+	_emit_theme_changed(true);
+}
+
+void Theme::get_audio_list(StringName p_theme_type, List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
+
+	if (!audio_map.has(p_theme_type)) {
+		return;
+	}
+
+	for (const KeyValue<StringName, Ref<AudioStream>> &E : audio_map[p_theme_type]) {
+		p_list->push_back(E.key);
+	}
+}
+
+void Theme::add_audio_type(const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
+	if (audio_map.has(p_theme_type)) {
+		return;
+	}
+	audio_map[p_theme_type] = ThemeAudioMap();
+}
+
+void Theme::remove_audio_type(const StringName &p_theme_type) {
+	if (!audio_map.has(p_theme_type)) {
+		return;
+	}
+
+	_freeze_change_propagation();
+
+	for (const KeyValue<StringName, Ref<AudioStream>> &E : audio_map[p_theme_type]) {
+		Ref<AudioStream> audio = E.value;
+		if (audio.is_valid()) {
+			audio->disconnect_changed(callable_mp(this, &Theme::_emit_theme_changed));
+		}
+	}
+
+	audio_map.erase(p_theme_type);
+
+	_unfreeze_and_propagate_changes();
+}
+
+void Theme::rename_audio_type(const StringName &p_old_theme_type, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
+	if (!audio_map.has(p_old_theme_type) || audio_map.has(p_theme_type)) {
+		return;
+	}
+
+	audio_map[p_theme_type] = audio_map[p_old_theme_type];
+	audio_map.erase(p_old_theme_type);
+}
+
+void Theme::get_audio_type_list(List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
+
+	for (const KeyValue<StringName, ThemeAudioMap> &E : audio_map) {
+		p_list->push_back(E.key);
+	}
+}
+
 // Generic methods for managing theme items.
 void Theme::set_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_theme_type, const Variant &p_value) {
 	switch (p_data_type) {
@@ -980,6 +1115,12 @@ void Theme::set_theme_item(DataType p_data_type, const StringName &p_name, const
 			Ref<StyleBox> stylebox_value = Object::cast_to<StyleBox>(p_value.get_validated_object());
 			set_stylebox(p_name, p_theme_type, stylebox_value);
 		} break;
+		case DATA_TYPE_AUDIOSTREAM: {
+			ERR_FAIL_COND_MSG(p_value.get_type() != Variant::OBJECT, "Theme item's data type (Object) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
+
+			Ref<AudioStream> audio_value = Object::cast_to<AudioStream>(p_value.get_validated_object());
+			set_audio(p_name, p_theme_type, audio_value);
+		} break;
 		case DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
 	}
@@ -999,6 +1140,8 @@ Variant Theme::get_theme_item(DataType p_data_type, const StringName &p_name, co
 			return get_icon(p_name, p_theme_type);
 		case DATA_TYPE_STYLEBOX:
 			return get_stylebox(p_name, p_theme_type);
+		case DATA_TYPE_AUDIOSTREAM:
+			return get_audio(p_name, p_theme_type);
 		case DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
 	}
@@ -1028,6 +1171,8 @@ bool Theme::has_theme_item(DataType p_data_type, const StringName &p_name, const
 			return has_icon(p_name, p_theme_type);
 		case DATA_TYPE_STYLEBOX:
 			return has_stylebox(p_name, p_theme_type);
+		case DATA_TYPE_AUDIOSTREAM:
+			return has_audio(p_name, p_theme_type);
 		case DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
 	}
@@ -1049,6 +1194,8 @@ bool Theme::has_theme_item_nocheck(DataType p_data_type, const StringName &p_nam
 			return has_icon_nocheck(p_name, p_theme_type);
 		case DATA_TYPE_STYLEBOX:
 			return has_stylebox_nocheck(p_name, p_theme_type);
+		case DATA_TYPE_AUDIOSTREAM:
+			return has_audio_nocheck(p_name, p_theme_type);
 		case DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
 	}
@@ -1076,6 +1223,9 @@ void Theme::rename_theme_item(DataType p_data_type, const StringName &p_old_name
 		case DATA_TYPE_STYLEBOX:
 			rename_stylebox(p_old_name, p_name, p_theme_type);
 			break;
+		case DATA_TYPE_AUDIOSTREAM:
+			rename_audio(p_old_name, p_name, p_theme_type);
+			break;
 		case DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
 	}
@@ -1100,6 +1250,9 @@ void Theme::clear_theme_item(DataType p_data_type, const StringName &p_name, con
 			break;
 		case DATA_TYPE_STYLEBOX:
 			clear_stylebox(p_name, p_theme_type);
+			break;
+		case DATA_TYPE_AUDIOSTREAM:
+			clear_audio(p_name, p_theme_type);
 			break;
 		case DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
@@ -1126,6 +1279,9 @@ void Theme::get_theme_item_list(DataType p_data_type, const StringName &p_theme_
 		case DATA_TYPE_STYLEBOX:
 			get_stylebox_list(p_theme_type, p_list);
 			break;
+		case DATA_TYPE_AUDIOSTREAM:
+			get_audio_list(p_theme_type, p_list);
+			break;
 		case DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
 	}
@@ -1150,6 +1306,9 @@ void Theme::add_theme_item_type(DataType p_data_type, const StringName &p_theme_
 			break;
 		case DATA_TYPE_STYLEBOX:
 			add_stylebox_type(p_theme_type);
+			break;
+		case DATA_TYPE_AUDIOSTREAM:
+			add_audio_type(p_theme_type);
 			break;
 		case DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
@@ -1176,6 +1335,9 @@ void Theme::remove_theme_item_type(DataType p_data_type, const StringName &p_the
 		case DATA_TYPE_STYLEBOX:
 			remove_stylebox_type(p_theme_type);
 			break;
+		case DATA_TYPE_AUDIOSTREAM:
+			remove_audio_type(p_theme_type);
+			break;
 		case DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
 	}
@@ -1201,6 +1363,9 @@ void Theme::rename_theme_item_type(DataType p_data_type, const StringName &p_old
 		case DATA_TYPE_STYLEBOX:
 			rename_stylebox_type(p_old_theme_type, p_theme_type);
 			break;
+		case DATA_TYPE_AUDIOSTREAM:
+			rename_audio_type(p_old_theme_type, p_theme_type);
+			break;
 		case DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
 	}
@@ -1225,6 +1390,9 @@ void Theme::get_theme_item_type_list(DataType p_data_type, List<StringName> *p_l
 			break;
 		case DATA_TYPE_STYLEBOX:
 			get_stylebox_type_list(p_list);
+			break;
+		case DATA_TYPE_AUDIOSTREAM:
+			get_audio_type_list(p_list);
 			break;
 		case DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
@@ -1388,6 +1556,11 @@ void Theme::get_type_list(List<StringName> *p_list) const {
 
 	// Constants.
 	for (const KeyValue<StringName, ThemeConstantMap> &E : constant_map) {
+		types.insert(E.key);
+	}
+
+	// Audios.
+	for (const KeyValue<StringName, ThemeAudioMap> &E : audio_map) {
 		types.insert(E.key);
 	}
 
@@ -1601,6 +1774,36 @@ Vector<String> Theme::_get_constant_type_list() const {
 	return ilret;
 }
 
+Vector<String> Theme::_get_audio_list(const String &p_theme_type) const {
+	Vector<String> ilret;
+	List<StringName> il;
+
+	get_audio_list(p_theme_type, &il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	String *w = ilret.ptrw();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
+	}
+	return ilret;
+}
+
+Vector<String> Theme::_get_audio_type_list() const {
+	Vector<String> ilret;
+	List<StringName> il;
+
+	get_audio_type_list(&il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	String *w = ilret.ptrw();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
+	}
+	return ilret;
+}
+
 Vector<String> Theme::_get_theme_item_list(DataType p_data_type, const String &p_theme_type) const {
 	switch (p_data_type) {
 		case DATA_TYPE_COLOR:
@@ -1615,6 +1818,8 @@ Vector<String> Theme::_get_theme_item_list(DataType p_data_type, const String &p
 			return _get_icon_list(p_theme_type);
 		case DATA_TYPE_STYLEBOX:
 			return _get_stylebox_list(p_theme_type);
+		case DATA_TYPE_AUDIOSTREAM:
+			return _get_audio_list(p_theme_type);
 		case DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
 	}
@@ -1636,6 +1841,8 @@ Vector<String> Theme::_get_theme_item_type_list(DataType p_data_type) const {
 			return _get_icon_type_list();
 		case DATA_TYPE_STYLEBOX:
 			return _get_stylebox_type_list();
+		case DATA_TYPE_AUDIOSTREAM:
+			return _get_audio_type_list();
 		case DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
 	}
@@ -1755,6 +1962,15 @@ void Theme::merge_with(const Ref<Theme> &p_other) {
 		}
 	}
 
+	// Audios.
+	{
+		for (const KeyValue<StringName, ThemeAudioMap> &E : p_other->audio_map) {
+			for (const KeyValue<StringName, Ref<AudioStream>> &F : E.value) {
+				set_audio(F.key, E.key, F.value);
+			}
+		}
+	}
+
 	// Type variations.
 	{
 		for (const KeyValue<StringName, StringName> &E : p_other->variation_map) {
@@ -1811,12 +2027,24 @@ void Theme::clear() {
 		}
 	}
 
+	{
+		for (const KeyValue<StringName, ThemeAudioMap> &E : audio_map) {
+			for (const KeyValue<StringName, Ref<AudioStream>> &F : E.value) {
+				if (F.value.is_valid()) {
+					Ref<AudioStream> audio = F.value;
+					audio->disconnect_changed(callable_mp(this, &Theme::_emit_theme_changed));
+				}
+			}
+		}
+	}
+
 	icon_map.clear();
 	style_map.clear();
 	font_map.clear();
 	font_size_map.clear();
 	color_map.clear();
 	constant_map.clear();
+	audio_map.clear();
 
 	variation_map.clear();
 	variation_base_map.clear();
@@ -1877,6 +2105,14 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_constant_list", "theme_type"), &Theme::_get_constant_list);
 	ClassDB::bind_method(D_METHOD("get_constant_type_list"), &Theme::_get_constant_type_list);
 
+	ClassDB::bind_method(D_METHOD("set_audio", "name", "theme_type", "audio"), &Theme::set_audio);
+	ClassDB::bind_method(D_METHOD("get_audio", "name", "theme_type"), &Theme::get_audio);
+	ClassDB::bind_method(D_METHOD("has_audio", "name", "theme_type"), &Theme::has_audio);
+	ClassDB::bind_method(D_METHOD("rename_audio", "old_name", "name", "theme_type"), &Theme::rename_audio);
+	ClassDB::bind_method(D_METHOD("clear_audio", "name", "theme_type"), &Theme::clear_audio);
+	ClassDB::bind_method(D_METHOD("get_audio_list", "theme_type"), &Theme::_get_audio_list);
+	ClassDB::bind_method(D_METHOD("get_audio_type_list"), &Theme::_get_font_type_list);
+
 	ClassDB::bind_method(D_METHOD("set_default_base_scale", "base_scale"), &Theme::set_default_base_scale);
 	ClassDB::bind_method(D_METHOD("get_default_base_scale"), &Theme::get_default_base_scale);
 	ClassDB::bind_method(D_METHOD("has_default_base_scale"), &Theme::has_default_base_scale);
@@ -1921,6 +2157,7 @@ void Theme::_bind_methods() {
 	BIND_ENUM_CONSTANT(DATA_TYPE_FONT_SIZE);
 	BIND_ENUM_CONSTANT(DATA_TYPE_ICON);
 	BIND_ENUM_CONSTANT(DATA_TYPE_STYLEBOX);
+	BIND_ENUM_CONSTANT(DATA_TYPE_AUDIOSTREAM);
 	BIND_ENUM_CONSTANT(DATA_TYPE_MAX);
 }
 

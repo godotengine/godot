@@ -86,6 +86,13 @@
 		</constant>
 	</constants>
 	<theme_items>
+		<theme_item name="expanded_sound" data_type="audio" type="AudioStream">
+			Played when the container is expanded with any input method.
+		</theme_item>
+		<theme_item name="folded_sound" data_type="audio" type="AudioStream">
+			Played when the container is folded with any input method.
+			[b]Note:[/b] This does not play if the container is folded as a result of being part of a [FoldableGroup] and another container in the same group was expanded.
+		</theme_item>
 		<theme_item name="collapsed_font_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The title's font color when collapsed.
 		</theme_item>
