@@ -30,6 +30,8 @@
 
 #include "fsr2.h"
 
+#include "core/templates/fixed_vector.h"
+
 #include "../storage_rd/material_storage.h"
 #include "../uniform_set_cache_rd.h"
 
@@ -219,12 +221,12 @@ static FfxErrorCode create_resource_rd(FfxFsr2Interface *p_backend_interface, co
 		res_desc.mipCount = uint32_t(1 + std::floor(std::log2(MAX(MAX(res_desc.width, res_desc.height), res_desc.depth))));
 	}
 
-	Vector<PackedByteArray> initial_data;
+	Vector<uint8_t> initial_data_vector;
+	FixedVector<Span<uint8_t>, 1> initial_data;
 	if (p_create_resource_description->initDataSize) {
-		PackedByteArray byte_array;
-		byte_array.resize(p_create_resource_description->initDataSize);
-		memcpy(byte_array.ptrw(), p_create_resource_description->initData, p_create_resource_description->initDataSize);
-		initial_data.push_back(byte_array);
+		initial_data_vector.resize(p_create_resource_description->initDataSize);
+		memcpy(initial_data_vector.ptrw(), p_create_resource_description->initData, p_create_resource_description->initDataSize);
+		initial_data.push_back(initial_data_vector.span());
 	}
 
 	RD::TextureFormat texture_format;
