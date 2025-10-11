@@ -1213,7 +1213,7 @@ void Node3DEditorViewport::_update_name() {
 		} break;
 	}
 
-	if (auto_orthogonal) {
+	if (orthogonal && auto_orthogonal) {
 		// TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
 		name += " " + TTR("[auto]");
 	}
@@ -2541,27 +2541,32 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_down", p_event)) {
 			// Clamp rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
 			cursor.x_rot = CLAMP(cursor.x_rot - Math::PI / 12.0, -1.57, 1.57);
+			cursor.unsnapped_x_rot = cursor.x_rot;
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_up", p_event)) {
 			// Clamp rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
 			cursor.x_rot = CLAMP(cursor.x_rot + Math::PI / 12.0, -1.57, 1.57);
+			cursor.unsnapped_x_rot = cursor.x_rot;
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_right", p_event)) {
 			cursor.y_rot -= Math::PI / 12.0;
+			cursor.unsnapped_y_rot = cursor.y_rot;
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_left", p_event)) {
 			cursor.y_rot += Math::PI / 12.0;
+			cursor.unsnapped_y_rot = cursor.y_rot;
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_180", p_event)) {
 			cursor.y_rot += Math::PI;
+			cursor.unsnapped_y_rot = cursor.y_rot;
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
@@ -2766,30 +2771,69 @@ void Node3DEditorViewport::_nav_orbit(Ref<InputEventWithModifiers> p_event, cons
 		return;
 	}
 
-	if (orthogonal && auto_orthogonal) {
-		_menu_option(VIEW_PERSPECTIVE);
-	}
-
 	const real_t degrees_per_pixel = EDITOR_GET("editors/3d/navigation_feel/orbit_sensitivity");
 	const real_t radians_per_pixel = Math::deg_to_rad(degrees_per_pixel);
 	const bool invert_y_axis = EDITOR_GET("editors/3d/navigation/invert_y_axis");
 	const bool invert_x_axis = EDITOR_GET("editors/3d/navigation/invert_x_axis");
 
-	if (invert_y_axis) {
-		cursor.x_rot -= p_relative.y * radians_per_pixel;
-	} else {
-		cursor.x_rot += p_relative.y * radians_per_pixel;
-	}
-	// Clamp the Y rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
-	cursor.x_rot = CLAMP(cursor.x_rot, -1.57, 1.57);
+	cursor.unsnapped_x_rot += p_relative.y * radians_per_pixel * (invert_y_axis ? -1 : 1);
+	cursor.unsnapped_x_rot = CLAMP(cursor.unsnapped_x_rot, -1.57, 1.57);
+	cursor.unsnapped_y_rot += p_relative.x * radians_per_pixel * (invert_x_axis ? -1 : 1);
 
-	if (invert_x_axis) {
-		cursor.y_rot -= p_relative.x * radians_per_pixel;
-	} else {
-		cursor.y_rot += p_relative.x * radians_per_pixel;
+	cursor.x_rot = cursor.unsnapped_x_rot;
+	cursor.y_rot = cursor.unsnapped_y_rot;
+
+	if (_is_nav_modifier_pressed("spatial_editor/viewport_orbit_snap_modifier_1") &&
+			_is_nav_modifier_pressed("spatial_editor/viewport_orbit_snap_modifier_2")) {
+		const real_t snap_angle = Math::deg_to_rad(45.0);
+		const real_t snap_threshold = Math::deg_to_rad((real_t)EDITOR_GET("editors/3d/navigation_feel/angle_snap_threshold"));
+
+		real_t x_rot_snapped = Math::snapped(cursor.unsnapped_x_rot, snap_angle);
+		real_t y_rot_snapped = Math::snapped(cursor.unsnapped_y_rot, snap_angle);
+
+		real_t x_dist = Math::abs(cursor.unsnapped_x_rot - x_rot_snapped);
+		real_t y_dist = Math::abs(cursor.unsnapped_y_rot - y_rot_snapped);
+
+		if (x_dist < snap_threshold && y_dist < snap_threshold) {
+			cursor.x_rot = x_rot_snapped;
+			cursor.y_rot = y_rot_snapped;
+
+			real_t y_rot_wrapped = Math::wrapf(y_rot_snapped, (real_t)-Math::PI, (real_t)Math::PI);
+
+			if (Math::abs(x_rot_snapped) < snap_threshold) {
+				if (Math::abs(y_rot_wrapped) < snap_threshold) {
+					view_type = VIEW_TYPE_FRONT;
+				} else if (Math::abs(Math::abs(y_rot_wrapped) - Math::PI) < snap_threshold) {
+					view_type = VIEW_TYPE_REAR;
+				} else if (Math::abs(y_rot_wrapped - Math::PI / 2.0) < snap_threshold) {
+					view_type = VIEW_TYPE_LEFT;
+				} else if (Math::abs(y_rot_wrapped + Math::PI / 2.0) < snap_threshold) {
+					view_type = VIEW_TYPE_RIGHT;
+				} else {
+					// Only switch to ortho for 90-degree views.
+					return;
+				}
+				_set_auto_orthogonal();
+				_update_name();
+			} else if (Math::abs(Math::abs(x_rot_snapped) - Math::PI / 2.0) < snap_threshold) {
+				if (Math::abs(y_rot_wrapped) < snap_threshold ||
+						Math::abs(Math::abs(y_rot_wrapped) - Math::PI) < snap_threshold ||
+						Math::abs(y_rot_wrapped - Math::PI / 2.0) < snap_threshold ||
+						Math::abs(y_rot_wrapped + Math::PI / 2.0) < snap_threshold) {
+					view_type = x_rot_snapped > 0 ? VIEW_TYPE_TOP : VIEW_TYPE_BOTTOM;
+					_set_auto_orthogonal();
+					_update_name();
+				}
+			}
+
+			return;
+		}
 	}
+
 	view_type = VIEW_TYPE_USER;
-	_update_name();
+	if (orthogonal && auto_orthogonal) {
+		_menu_option(VIEW_PERSPECTIVE);
+	}
 }
 
 void Node3DEditorViewport::_nav_look(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative) {
@@ -2817,8 +2861,10 @@ void Node3DEditorViewport::_nav_look(Ref<InputEventWithModifiers> p_event, const
 	}
 	// Clamp the Y rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
 	cursor.x_rot = CLAMP(cursor.x_rot, -1.57, 1.57);
+	cursor.unsnapped_x_rot = cursor.x_rot;
 
 	cursor.y_rot += p_relative.x * radians_per_pixel;
+	cursor.unsnapped_y_rot = cursor.y_rot;
 
 	// Look is like the opposite of Orbit: the focus point rotates around the camera
 	Transform3D camera_transform = to_camera_transform(cursor);
@@ -3803,6 +3849,8 @@ void Node3DEditorViewport::_apply_camera_transform_to_cursor() {
 
 	cursor.x_rot = -camera_transform.basis.get_euler().x;
 	cursor.y_rot = -camera_transform.basis.get_euler().y;
+	cursor.unsnapped_x_rot = cursor.x_rot;
+	cursor.unsnapped_y_rot = cursor.y_rot;
 }
 
 void Node3DEditorViewport::_menu_option(int p_option) {
@@ -3811,6 +3859,8 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_TOP: {
 			cursor.y_rot = 0;
 			cursor.x_rot = Math::PI / 2.0;
+			cursor.unsnapped_y_rot = cursor.y_rot;
+			cursor.unsnapped_x_rot = cursor.x_rot;
 			set_message(TTR("Top View."), 2);
 			view_type = VIEW_TYPE_TOP;
 			_set_auto_orthogonal();
@@ -3820,6 +3870,8 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_BOTTOM: {
 			cursor.y_rot = 0;
 			cursor.x_rot = -Math::PI / 2.0;
+			cursor.unsnapped_y_rot = cursor.y_rot;
+			cursor.unsnapped_x_rot = cursor.x_rot;
 			set_message(TTR("Bottom View."), 2);
 			view_type = VIEW_TYPE_BOTTOM;
 			_set_auto_orthogonal();
@@ -3829,6 +3881,8 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_LEFT: {
 			cursor.x_rot = 0;
 			cursor.y_rot = Math::PI / 2.0;
+			cursor.unsnapped_x_rot = cursor.x_rot;
+			cursor.unsnapped_y_rot = cursor.y_rot;
 			set_message(TTR("Left View."), 2);
 			view_type = VIEW_TYPE_LEFT;
 			_set_auto_orthogonal();
@@ -3838,6 +3892,8 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_RIGHT: {
 			cursor.x_rot = 0;
 			cursor.y_rot = -Math::PI / 2.0;
+			cursor.unsnapped_x_rot = cursor.x_rot;
+			cursor.unsnapped_y_rot = cursor.y_rot;
 			set_message(TTR("Right View."), 2);
 			view_type = VIEW_TYPE_RIGHT;
 			_set_auto_orthogonal();
@@ -3847,6 +3903,8 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_FRONT: {
 			cursor.x_rot = 0;
 			cursor.y_rot = 0;
+			cursor.unsnapped_x_rot = cursor.x_rot;
+			cursor.unsnapped_y_rot = cursor.y_rot;
 			set_message(TTR("Front View."), 2);
 			view_type = VIEW_TYPE_FRONT;
 			_set_auto_orthogonal();
@@ -3856,6 +3914,8 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_REAR: {
 			cursor.x_rot = 0;
 			cursor.y_rot = Math::PI;
+			cursor.unsnapped_x_rot = cursor.x_rot;
+			cursor.unsnapped_y_rot = cursor.y_rot;
 			set_message(TTR("Rear View."), 2);
 			view_type = VIEW_TYPE_REAR;
 			_set_auto_orthogonal();
@@ -4485,9 +4545,11 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 	}
 	if (p_state.has("x_rotation")) {
 		cursor.x_rot = p_state["x_rotation"];
+		cursor.unsnapped_x_rot = cursor.x_rot;
 	}
 	if (p_state.has("y_rotation")) {
 		cursor.y_rot = p_state["y_rotation"];
+		cursor.unsnapped_y_rot = cursor.y_rot;
 	}
 	if (p_state.has("distance")) {
 		cursor.distance = p_state["distance"];
@@ -6056,6 +6118,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	// Registering with Key::NONE intentionally creates an empty Array.
 	register_shortcut_action("spatial_editor/viewport_orbit_modifier_1", TTRC("Viewport Orbit Modifier 1"), Key::NONE);
 	register_shortcut_action("spatial_editor/viewport_orbit_modifier_2", TTRC("Viewport Orbit Modifier 2"), Key::NONE);
+	register_shortcut_action("spatial_editor/viewport_orbit_snap_modifier_1", TTRC("Viewport Orbit Snap Modifier 1"), Key::ALT);
+	register_shortcut_action("spatial_editor/viewport_orbit_snap_modifier_2", TTRC("Viewport Orbit Snap Modifier 2"), Key::NONE);
 	register_shortcut_action("spatial_editor/viewport_pan_modifier_1", TTRC("Viewport Pan Modifier 1"), Key::SHIFT);
 	register_shortcut_action("spatial_editor/viewport_pan_modifier_2", TTRC("Viewport Pan Modifier 2"), Key::NONE);
 	register_shortcut_action("spatial_editor/viewport_zoom_modifier_1", TTRC("Viewport Zoom Modifier 1"), Key::SHIFT);
