@@ -215,7 +215,7 @@ public:
 	_FORCE_INLINE_ CowData() {}
 	_FORCE_INLINE_ ~CowData() { _unref(); }
 	_FORCE_INLINE_ CowData(std::initializer_list<T> p_init);
-	_FORCE_INLINE_ CowData(const CowData<T> &p_from) { _ref(p_from); }
+	_FORCE_INLINE_ explicit CowData(const CowData<T> &p_from) { _ref(p_from); }
 	_FORCE_INLINE_ CowData(CowData<T> &&p_from) {
 		_ptr = p_from._ptr;
 		p_from._ptr = nullptr;

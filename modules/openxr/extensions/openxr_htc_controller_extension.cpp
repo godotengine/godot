@@ -39,7 +39,7 @@ HashMap<String, bool *> OpenXRHTCControllerExtension::get_requested_extensions()
 	request_extensions[XR_HTC_VIVE_FOCUS3_CONTROLLER_INTERACTION_EXTENSION_NAME] = &available[HTC_VIVE_FOCUS3];
 	request_extensions[XR_HTC_HAND_INTERACTION_EXTENSION_NAME] = &available[HTC_HAND_INTERACTION];
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 PackedStringArray OpenXRHTCControllerExtension::get_suggested_tracker_names() {

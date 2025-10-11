@@ -1693,7 +1693,7 @@ BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevic
 		}
 	}
 
-	BoundUniformSet bs = { .buffer = enc_buffer, .usage_to_resources = usage_to_resources };
+	BoundUniformSet bs = { .buffer = enc_buffer, .usage_to_resources = ResourceUsageMap(usage_to_resources) };
 	bound_uniforms.insert(p_shader, bs);
 	bs.merge_into(p_resource_usage);
 	return bound_uniforms.get(p_shader);

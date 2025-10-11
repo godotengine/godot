@@ -776,7 +776,7 @@ void SurfaceTool::deindex() {
 		return; //nothing to deindex
 	}
 
-	LocalVector<Vertex> old_vertex_array = vertex_array;
+	LocalVector<Vertex> old_vertex_array = LocalVector<Vertex>(vertex_array);
 	vertex_array.clear();
 	for (const int &index : index_array) {
 		ERR_FAIL_COND(uint32_t(index) >= old_vertex_array.size());
@@ -1289,7 +1289,7 @@ void SurfaceTool::optimize_indices_for_cache() {
 	ERR_FAIL_COND(primitive != Mesh::PRIMITIVE_TRIANGLES);
 	ERR_FAIL_COND(index_array.size() % 3 != 0);
 
-	LocalVector old_index_array = index_array;
+	LocalVector<int> old_index_array = LocalVector<int>(index_array);
 	memset(index_array.ptr(), 0, index_array.size() * sizeof(int));
 	optimize_vertex_cache_func((unsigned int *)index_array.ptr(), (unsigned int *)old_index_array.ptr(), old_index_array.size(), vertex_array.size());
 }
