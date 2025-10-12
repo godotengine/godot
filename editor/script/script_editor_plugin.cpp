@@ -3441,7 +3441,7 @@ void ScriptEditor::input(const Ref<InputEvent> &p_event) {
 void ScriptEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (!is_visible_in_tree() || !p_event->is_pressed() || p_event->is_echo()) {
+	if (!is_visible_in_tree() || !p_event->is_pressed()) {
 		return;
 	}
 	if (ED_IS_SHORTCUT("script_editor/next_script", p_event)) {
@@ -3469,6 +3469,10 @@ void ScriptEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	if (ED_IS_SHORTCUT("script_editor/window_move_down", p_event)) {
 		_menu_option(FILE_MENU_MOVE_DOWN);
 		accept_event();
+	}
+
+	if (p_event->is_echo()) {
+		return;
 	}
 
 	Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR, p_event);
