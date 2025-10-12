@@ -591,6 +591,8 @@ private:
 	void _invalidate_accessibility();
 	void _invalidate_current_line(ItemFrame *p_frame);
 
+	void _prepare_scroll_anchor();
+
 	void _thread_function(void *p_userdata);
 	void _thread_end();
 	void _stop_thread();
