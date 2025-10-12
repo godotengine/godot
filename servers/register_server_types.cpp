@@ -149,8 +149,6 @@ void register_server_types() {
 	GDREGISTER_NATIVE_STRUCT(Glyph, "int start = -1;int end = -1;uint8_t count = 0;uint8_t repeat = 1;uint16_t flags = 0;float x_off = 0.f;float y_off = 0.f;float advance = 0.f;RID font_rid;int font_size = 0;int32_t index = 0");
 	GDREGISTER_NATIVE_STRUCT(CaretInfo, "Rect2 leading_caret;Rect2 trailing_caret;TextServer::Direction leading_direction;TextServer::Direction trailing_direction");
 
-	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton(), "TextServerManager"));
-
 	OS::get_singleton()->set_has_server_feature_callback(has_server_feature_callback);
 
 	GDREGISTER_ABSTRACT_CLASS(DisplayServer);
@@ -269,7 +267,6 @@ void register_server_types() {
 #ifndef PHYSICS_2D_DISABLED
 	// Physics 2D
 	GDREGISTER_CLASS(PhysicsServer2DManager);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer2DManager", PhysicsServer2DManager::get_singleton(), "PhysicsServer2DManager"));
 
 	GDREGISTER_ABSTRACT_CLASS(PhysicsServer2D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsServer2DExtension);
@@ -290,8 +287,6 @@ void register_server_types() {
 	GDREGISTER_CLASS(PhysicsTestMotionResult2D);
 
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, PhysicsServer2DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"), "DEFAULT");
-
-	PhysicsServer2DManager::get_singleton()->register_server("Dummy", callable_mp_static(_create_dummy_physics_server_2d));
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef NAVIGATION_3D_DISABLED
@@ -303,7 +298,6 @@ void register_server_types() {
 #ifndef PHYSICS_3D_DISABLED
 	// Physics 3D
 	GDREGISTER_CLASS(PhysicsServer3DManager);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer3DManager", PhysicsServer3DManager::get_singleton(), "PhysicsServer3DManager"));
 
 	GDREGISTER_ABSTRACT_CLASS(PhysicsServer3D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsServer3DExtension);
@@ -327,7 +321,6 @@ void register_server_types() {
 
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, PhysicsServer3DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"), "DEFAULT");
 
-	PhysicsServer3DManager::get_singleton()->register_server("Dummy", callable_mp_static(_create_dummy_physics_server_3d));
 #endif // PHYSICS_3D_DISABLED
 
 #ifndef XR_DISABLED
@@ -372,6 +365,15 @@ void register_server_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("DisplayServer", DisplayServer::get_singleton(), "DisplayServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NativeMenu", NativeMenu::get_singleton(), "NativeMenu"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("RenderingServer", RenderingServer::get_singleton(), "RenderingServer"));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton(), "TextServerManager"));
+#ifndef PHYSICS_2D_DISABLED
+	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer2DManager", PhysicsServer2DManager::get_singleton(), "PhysicsServer2DManager"));
+	PhysicsServer2DManager::get_singleton()->register_server("Dummy", callable_mp_static(_create_dummy_physics_server_2d));
+#endif
+#ifndef PHYSICS_3D_DISABLED
+	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer3DManager", PhysicsServer3DManager::get_singleton(), "PhysicsServer3DManager"));
+	PhysicsServer3DManager::get_singleton()->register_server("Dummy", callable_mp_static(_create_dummy_physics_server_3d));
+#endif
 #ifndef NAVIGATION_2D_DISABLED
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer2D", NavigationServer2D::get_singleton(), "NavigationServer2D"));
 #endif // NAVIGATION_2D_DISABLED

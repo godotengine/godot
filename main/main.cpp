@@ -730,6 +730,16 @@ Error Main::test_setup() {
 
 	register_core_settings(); // Here globals are present.
 
+	// From `Main::setup2()`.
+	register_early_core_singletons();
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
+	register_core_extensions();
+
+	register_core_singletons();
+
+	/** INITIALIZE SERVERS **/
+	register_server_types();
+
 	translation_server = memnew(TranslationServer);
 	tsman = memnew(TextServerManager);
 
@@ -746,15 +756,6 @@ Error Main::test_setup() {
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
 #endif // PHYSICS_2D_DISABLED
 
-	// From `Main::setup2()`.
-	register_early_core_singletons();
-	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
-	register_core_extensions();
-
-	register_core_singletons();
-
-	/** INITIALIZE SERVERS **/
-	register_server_types();
 #ifndef XR_DISABLED
 	XRServer::set_xr_mode(XRServer::XRMODE_OFF); // Skip in tests.
 #endif // XR_DISABLED
@@ -989,7 +990,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	register_core_settings(); //here globals are present
 
-	translation_server = memnew(TranslationServer);
 	performance = memnew(Performance);
 	GDREGISTER_CLASS(Performance);
 	engine->add_singleton(Engine::Singleton("Performance", performance));
@@ -3004,6 +3004,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 	OS::get_singleton()->benchmark_begin_measure("Startup", "Servers");
 
+	register_server_types();
+
+	translation_server = memnew(TranslationServer);
 	tsman = memnew(TextServerManager);
 	if (tsman) {
 		Ref<TextServerDummy> ts;
@@ -3018,7 +3021,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
 #endif // PHYSICS_2D_DISABLED
 
-	register_server_types();
 	{
 		OS::get_singleton()->benchmark_begin_measure("Servers", "Modules and Extensions");
 
