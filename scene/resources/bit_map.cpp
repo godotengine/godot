@@ -781,8 +781,8 @@ static Vector<Vector2i> find_intersections_sweep(const Vector<ChainBoxData> &obb
 
 	for (int i = 0; i < obb_aabb_data.size(); ++i) {
 		const Vector4 rect = obb_aabb_data[i].aabb;
-		events.push_back({ rect[0], 0, rect[1], rect[3], i });
-		events.push_back({ rect[2], 1, rect[1], rect[3], i });
+		events.push_back({ (float)rect[0], 0, (float)rect[1], (float)rect[3], i });
+		events.push_back({ (float)rect[2], 1, (float)rect[1], (float)rect[3], i });
 	}
 	// Sort by x; 'start' comes before 'end' if equal
 	events.sort();
