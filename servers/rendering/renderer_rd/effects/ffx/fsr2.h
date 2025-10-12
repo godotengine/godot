@@ -86,7 +86,6 @@ private:
 		Fsr2ReconstructPreviousDepthPassShaderRD reconstruct_previous_depth;
 		Fsr2LockPassShaderRD lock;
 		Fsr2AccumulatePassShaderRD accumulate;
-		Fsr2AccumulatePassShaderRD accumulate_sharpen;
 		Fsr2RcasPassShaderRD rcas;
 		Fsr2ComputeLuminancePyramidPassShaderRD compute_luminance_pyramid;
 		Fsr2AutogenReactivePassShaderRD autogen_reactive;
