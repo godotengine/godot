@@ -30,6 +30,8 @@
 
 #include "openxr_structure.h"
 
+#include "core/object/class_db.h"
+
 void OpenXRStructureBase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_structure_type"), &OpenXRStructureBase::_get_structure_type);
 

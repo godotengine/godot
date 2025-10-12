@@ -32,6 +32,7 @@
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
+#include "core/variant/binder_common.h"
 #include "openxr_util.h"
 #include "util.h"
 
