@@ -206,7 +206,9 @@ opts.Add(BoolVariable("sdl", "Enable the SDL3 input driver", True))
 # Advanced options
 opts.Add(
     BoolVariable(
-        "dev_mode", "Alias for dev options: verbose=yes warnings=extra werror=yes tests=yes strict_checks=yes", False
+        "dev_mode",
+        "Alias for dev options: verbose=yes warnings=extra werror=yes tests=yes strict_checks=yes optimize=none",
+        False,
     )
 )
 opts.Add(BoolVariable("tests", "Build the unit tests", False))
@@ -458,6 +460,23 @@ env.modules_detected = modules_detected
 opts.Update(env, {**ARGUMENTS, **env.Dictionary()})
 Help(opts.GenerateHelpText(env))
 
+# "dev_mode" and "production" are aliases to set default options if they haven't been set manually
+# by the user.
+if env["dev_mode"]:
+    env["verbose"] = methods.get_cmdline_bool("verbose", True)
+    env["warnings"] = ARGUMENTS.get("warnings", "extra")
+    env["werror"] = methods.get_cmdline_bool("werror", True)
+    env["tests"] = methods.get_cmdline_bool("tests", True)
+    env["strict_checks"] = methods.get_cmdline_bool("strict_checks", True)
+    env["optimize"] = ARGUMENTS.get("optimize", "none")
+if env["production"]:
+    env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
+    env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
+    if env["platform"] == "android":
+        env["swappy"] = methods.get_cmdline_bool("swappy", True)
+    # LTO "auto" means we handle the preferred option in each platform detect.py.
+    env["lto"] = ARGUMENTS.get("lto", "auto")
+
 
 # FIXME: Tool assignment happening at this stage is a direct consequence of getting the platform logic AFTER the SCons
 # environment was already been constructed. Fixing this would require a broader refactor where all options are setup
@@ -618,22 +637,6 @@ if env["build_profile"] != "":
     except json.JSONDecodeError:
         print_error(f'Failed to open feature build profile: "{env["build_profile"]}"')
         Exit(255)
-
-# 'dev_mode' and 'production' are aliases to set default options if they haven't been
-# set manually by the user.
-if env["dev_mode"]:
-    env["verbose"] = methods.get_cmdline_bool("verbose", True)
-    env["warnings"] = ARGUMENTS.get("warnings", "extra")
-    env["werror"] = methods.get_cmdline_bool("werror", True)
-    env["tests"] = methods.get_cmdline_bool("tests", True)
-    env["strict_checks"] = methods.get_cmdline_bool("strict_checks", True)
-if env["production"]:
-    env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
-    env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
-    if env["platform"] == "android":
-        env["swappy"] = methods.get_cmdline_bool("swappy", True)
-    # LTO "auto" means we handle the preferred option in each platform detect.py.
-    env["lto"] = ARGUMENTS.get("lto", "auto")
 
 if env["strict_checks"]:
     env.Append(CPPDEFINES=["STRICT_CHECKS"])

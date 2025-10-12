@@ -637,12 +637,6 @@ def configure_mingw(env: "SConsEnvironment"):
         print("Detected GCC to be a wrapper for Clang.")
         env["use_llvm"] = True
 
-    if env.dev_build:
-        # Allow big objects. It's supposed not to have drawbacks but seems to break
-        # GCC LTO, so enabling for debug builds only (which are not built with LTO
-        # and are the only ones with too big objects).
-        env.Append(CCFLAGS=["-Wa,-mbig-obj"])
-
     if env["windows_subsystem"] == "gui":
         env.Append(LINKFLAGS=["-Wl,--subsystem,windows"])
     else:
@@ -697,6 +691,11 @@ def configure_mingw(env: "SConsEnvironment"):
 
     if env["lto"] == "auto":  # Enable LTO for production with MinGW.
         env["lto"] = "thin" if env["use_llvm"] else "full"
+
+    if env["lto"] == "none" and not env["use_llvm"]:
+        # FIXME: Allow big objects. It's supposed to have no drawbacks, but seems to break LTO on
+        # GCC specifically.
+        env.Append(CCFLAGS=["-Wa,-mbig-obj"])
 
     if env["lto"] != "none":
         if env["lto"] == "thin":
