@@ -2244,6 +2244,33 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 	return MessageStatus::UNHANDLED;
 }
 
+void WaylandEmbedder::shutdown() {
+	thread_done.set();
+
+	{
+		// First making a list of all clients so that we can iteratively delete them.
+		LocalVector<int> sockets;
+		for (KeyValue<int, Client> &pair : clients) {
+			sockets.push_back(pair.key);
+		}
+
+		for (int socket : sockets) {
+			cleanup_socket(socket);
+		}
+	}
+
+	close(compositor_socket);
+	compositor_socket = -1;
+
+	for (KeyValue<uint32_t, RegistryGlobalInfo> &pair : registry_globals) {
+		RegistryGlobalInfo &info = pair.value;
+		if (info.data) {
+			memdelete(info.data);
+			info.data = nullptr;
+		}
+	}
+}
+
 Error WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *info, uint32_t *buf, int *fds_requested) {
 	ERR_FAIL_NULL_V(info, ERR_BUG);
 	ERR_FAIL_NULL_V(fds_requested, ERR_BUG);
@@ -2513,8 +2540,8 @@ Error WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *in
 	return OK;
 }
 
-bool WaylandEmbedder::handle_sock(int p_fd) {
-	ERR_FAIL_COND_V(p_fd < 0, false);
+Error WaylandEmbedder::handle_sock(int p_fd) {
+	ERR_FAIL_COND_V(p_fd < 0, ERR_INVALID_PARAMETER);
 
 	struct msg_info info = {};
 
@@ -2530,19 +2557,20 @@ bool WaylandEmbedder::handle_sock(int p_fd) {
 
 		if (head_rec == 0) {
 			// Client disconnected.
-			return false;
+			return ERR_CONNECTION_ERROR;
 		}
 
 		if (head_rec == -1) {
 			if (errno == ECONNRESET) {
-				// No need to error out, the client forcefully disconnected.
-				return false;
+				// No need to print the error, the client forcefully disconnected, that's
+				// fine.
+				return ERR_CONNECTION_ERROR;
 			}
 
-			ERR_FAIL_V_MSG(false, vformat("Can't read message header: %s", strerror(errno)));
+			ERR_FAIL_V_MSG(FAILED, vformat("Can't read message header: %s", strerror(errno)));
 		}
 
-		ERR_FAIL_COND_V_MSG(((size_t)head_rec) != vec.iov_len, false, vformat("Should've received %d bytes, instead got %d bytes", vec.iov_len, head_rec));
+		ERR_FAIL_COND_V_MSG(((size_t)head_rec) != vec.iov_len, ERR_CONNECTION_ERROR, vformat("Should've received %d bytes, instead got %d bytes", vec.iov_len, head_rec));
 
 		// Header is two 32-bit words: first is ID, second has size in most significant
 		// half and opcode in the other half.
@@ -2556,7 +2584,7 @@ bool WaylandEmbedder::handle_sock(int p_fd) {
 		msg_buf.resize(info.words());
 	}
 
-	ERR_FAIL_COND_V_MSG(info.size % WL_WORD_SIZE != 0, false, "Invalid message length.");
+	ERR_FAIL_COND_V_MSG(info.size % WL_WORD_SIZE != 0, ERR_CONNECTION_ERROR, "Invalid message length.");
 
 	struct msghdr full_msg = {};
 	struct iovec vec = { msg_buf.ptr(), info.size };
@@ -2570,14 +2598,15 @@ bool WaylandEmbedder::handle_sock(int p_fd) {
 
 		if (full_rec == -1) {
 			if (errno == ECONNRESET) {
-				// No need to error out, the client forcefully disconnected.
-				return false;
+				// No need to print the error, the client forcefully disconnected, that's
+				// fine.
+				return ERR_CONNECTION_ERROR;
 			}
 
-			ERR_FAIL_V_MSG(false, vformat("Can't read message: %s", strerror(errno)));
+			ERR_FAIL_V_MSG(FAILED, vformat("Can't read message: %s", strerror(errno)));
 		}
 
-		ERR_FAIL_COND_V_MSG(((size_t)full_rec) != info.size, false, "Invalid message length.");
+		ERR_FAIL_COND_V_MSG(((size_t)full_rec) != info.size, ERR_CONNECTION_ERROR, "Invalid message length.");
 
 		DEBUG_LOG_WAYLAND_EMBED(" === START PACKET === ");
 
@@ -2657,14 +2686,12 @@ bool WaylandEmbedder::handle_sock(int p_fd) {
 	}
 
 	if (handle_msg_info(client, &info, msg_buf.ptr(), &fds_requested) != OK) {
-		// TODO: Propagate this error further up, disconnect everything and shutdown
-		// the thread cleanly.
-		CRASH_NOW_MSG("Error while handling message info.");
+		return ERR_BUG;
 	}
 
 	DEBUG_LOG_WAYLAND_EMBED(" === END PACKET === ");
 
-	return true;
+	return OK;
 }
 
 void WaylandEmbedder::_thread_loop(void *p_data) {
@@ -2822,7 +2849,14 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 	}
 
 	if (p_fd == compositor_socket && p_revents & POLLIN) {
-		handle_sock(compositor_socket);
+		Error err = handle_sock(p_fd);
+
+		if (err == ERR_BUG) {
+			ERR_PRINT("Unexpected error while handling socket, shutting down.");
+			shutdown();
+			return;
+		}
+
 		return;
 	}
 
@@ -2830,15 +2864,22 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 	if (client) {
 		if (main_client && client == main_client && p_revents & (POLLHUP | POLLERR)) {
 			DEBUG_LOG_WAYLAND_EMBED("Main client disconnected, shutting down.");
-			cleanup_socket(p_fd);
-			thread_done.set();
+			shutdown();
 			return;
 		}
 
 		if (p_revents & POLLIN) {
-			if (!handle_sock(p_fd)) {
+			Error err = handle_sock(p_fd);
+			if (err == ERR_BUG) {
+				ERR_PRINT("Unexpected error while handling socket, shutting down.");
+				shutdown();
+				return;
+			}
+
+			if (err != OK) {
 				DEBUG_LOG_WAYLAND_EMBED("disconnecting");
 				cleanup_socket(p_fd);
+				return;
 			}
 
 			return;
@@ -2861,17 +2902,8 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 }
 
 WaylandEmbedder::~WaylandEmbedder() {
-	thread_done.set();
-
+	shutdown();
 	proxy_thread.wait_to_finish();
-
-	for (KeyValue<uint32_t, RegistryGlobalInfo> &pair : registry_globals) {
-		RegistryGlobalInfo &info = pair.value;
-		if (info.data) {
-			memdelete(info.data);
-			info.data = nullptr;
-		}
-	}
 }
 
 #endif // TOOLS_ENABLED
