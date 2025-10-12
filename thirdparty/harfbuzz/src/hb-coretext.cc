@@ -167,8 +167,8 @@ create_cg_font (CFArrayRef ct_font_desc_array, unsigned int named_instance_index
   }
   else
     named_instance_index--;
-  auto ct_font_desc = (CFArrayGetCount (ct_font_desc_array) > named_instance_index) ?
-		      (CTFontDescriptorRef) CFArrayGetValueAtIndex (ct_font_desc_array, named_instance_index) : nullptr;
+  auto ct_font_desc = (CFArrayGetCount (ct_font_desc_array) > (CFIndex) named_instance_index) ?
+		      (CTFontDescriptorRef) CFArrayGetValueAtIndex (ct_font_desc_array, (CFIndex) named_instance_index) : nullptr;
   if (unlikely (!ct_font_desc))
   {
     CFRelease (ct_font_desc_array);

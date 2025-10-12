@@ -388,13 +388,18 @@ struct avar
     const auto &var_store = this+v2.varStore;
     auto *var_store_cache = var_store.create_cache ();
 
+    hb_vector_t<int> coords_2_14;
+    coords_2_14.resize (coords_length);
+    for (unsigned i = 0; i < coords_length; i++)
+      coords_2_14[i] = roundf (coords[i] / 4.f); // 16.16 -> 2.14
+
     hb_vector_t<int> out;
     out.alloc (coords_length);
     for (unsigned i = 0; i < coords_length; i++)
     {
       int v = coords[i];
       uint32_t varidx = varidx_map.map (i);
-      float delta = var_store.get_delta (varidx, coords, coords_length, var_store_cache);
+      float delta = var_store.get_delta (varidx, coords_2_14.arrayZ, coords_2_14.length, var_store_cache);
       v += roundf (delta * 4); // 2.14 -> 16.16
       v = hb_clamp (v, -(1<<16), +(1<<16));
       out.push (v);

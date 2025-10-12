@@ -77,6 +77,13 @@ struct AnchorMatrix
 
     return_trace (true);
   }
+
+  bool offset_is_null (unsigned row, unsigned col, unsigned num_cols) const
+  {
+    if (unlikely (row >= rows || col >= num_cols)) return true;
+    auto &offset = matrixZ[row * num_cols + col];
+    return offset.is_null ();
+  }
 };
 
 

@@ -266,7 +266,7 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
   gr_segment *seg = nullptr;
   const gr_slot *is;
   unsigned int ci = 0, ic = 0;
-  unsigned int curradvx = 0, curradvy = 0;
+  int curradvx = 0, curradvy = 0;
 
   unsigned int scratch_size;
   hb_buffer_t::scratch_buffer_t *scratch = buffer->get_scratch_buffer (&scratch_size);

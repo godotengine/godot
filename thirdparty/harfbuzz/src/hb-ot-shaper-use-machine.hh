@@ -53,7 +53,7 @@ enum use_syllable_type_t {
 };
 
 
-#line 57 "hb-ot-shaper-use-machine.hh"
+#line 54 "hb-ot-shaper-use-machine.hh"
 #define use_syllable_machine_ex_B 1u
 #define use_syllable_machine_ex_CGJ 6u
 #define use_syllable_machine_ex_CMAbv 31u
@@ -100,7 +100,7 @@ enum use_syllable_type_t {
 #define use_syllable_machine_ex_ZWNJ 14u
 
 
-#line 104 "hb-ot-shaper-use-machine.hh"
+#line 99 "hb-ot-shaper-use-machine.hh"
 static const unsigned char _use_syllable_machine_trans_keys[] = {
 	49u, 51u, 0u, 56u, 11u, 56u, 11u, 56u, 1u, 53u, 14u, 48u, 14u, 47u, 14u, 47u, 
 	14u, 47u, 14u, 46u, 14u, 46u, 14u, 14u, 14u, 48u, 14u, 48u, 14u, 48u, 1u, 14u, 
@@ -929,7 +929,7 @@ find_syllables_use (hb_buffer_t *buffer)
   unsigned int act HB_UNUSED;
   int cs;
   
-#line 933 "hb-ot-shaper-use-machine.hh"
+#line 922 "hb-ot-shaper-use-machine.hh"
 	{
 	cs = use_syllable_machine_start;
 	ts = 0;
@@ -942,7 +942,7 @@ find_syllables_use (hb_buffer_t *buffer)
 
   unsigned int syllable_serial = 1;
   
-#line 946 "hb-ot-shaper-use-machine.hh"
+#line 931 "hb-ot-shaper-use-machine.hh"
 	{
 	int _slen;
 	int _trans;
@@ -956,7 +956,7 @@ _resume:
 #line 1 "NONE"
 	{ts = p;}
 	break;
-#line 960 "hb-ot-shaper-use-machine.hh"
+#line 943 "hb-ot-shaper-use-machine.hh"
 	}
 
 	_keys = _use_syllable_machine_trans_keys + (cs<<1);
@@ -1078,7 +1078,7 @@ _eof_trans:
 #line 181 "hb-ot-shaper-use-machine.rl"
 	{act = 9;}
 	break;
-#line 1082 "hb-ot-shaper-use-machine.hh"
+#line 1039 "hb-ot-shaper-use-machine.hh"
 	}
 
 _again:
@@ -1087,7 +1087,7 @@ _again:
 #line 1 "NONE"
 	{ts = 0;}
 	break;
-#line 1091 "hb-ot-shaper-use-machine.hh"
+#line 1046 "hb-ot-shaper-use-machine.hh"
 	}
 
 	if ( ++p != pe )

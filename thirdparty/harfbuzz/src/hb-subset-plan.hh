@@ -300,6 +300,7 @@ struct hb_subset_plan_t
 // compile times more reasonable:
 // - hb-subset-plan.cc
 // - hb-subset-plan-layout.cc
+// - hb-subset-plan-var.cc
 //
 // The functions below are those needed to connect the split files
 // above together.

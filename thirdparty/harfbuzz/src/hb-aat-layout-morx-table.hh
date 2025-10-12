@@ -1169,14 +1169,14 @@ struct Chain
 		   hb_map ([subtable_flags] (const hb_aat_map_t::range_flags_t _) -> bool { return subtable_flags & (_.flags); })))
 	goto skip;
 
-      c->subtable_flags = subtable_flags;
-      c->machine_glyph_set = accel ? &accel->subtables[i].glyph_set : &Null(hb_bit_set_t);
-      c->machine_class_cache = accel ? &accel->subtables[i].class_cache : nullptr;
-
       if (!(coverage & ChainSubtable<Types>::AllDirections) &&
 	  HB_DIRECTION_IS_VERTICAL (c->buffer->props.direction) !=
 	  bool (coverage & ChainSubtable<Types>::Vertical))
 	goto skip;
+
+      c->subtable_flags = subtable_flags;
+      c->first_set = accel ? &accel->subtables[i].glyph_set : &Null(hb_bit_set_t);
+      c->machine_class_cache = accel ? &accel->subtables[i].class_cache : nullptr;
 
       if (!c->buffer_intersects_machine ())
       {
@@ -1219,22 +1219,21 @@ struct Chain
       if (!c->buffer->message (c->font, "start chainsubtable %u", c->lookup_index))
 	goto skip;
 
-      if (reverse)
-	c->buffer->reverse ();
+      if (reverse != c->buffer_is_reversed)
+        c->reverse_buffer ();
 
       subtable->apply (c);
 
-      if (reverse)
-	c->buffer->reverse ();
-
       (void) c->buffer->message (c->font, "end chainsubtable %u", c->lookup_index);
 
-      if (unlikely (!c->buffer->successful)) return;
+      if (unlikely (!c->buffer->successful)) break;
 
     skip:
       subtable = &StructAfter<ChainSubtable<Types>> (*subtable);
       c->set_lookup_index (c->lookup_index + 1);
     }
+    if (c->buffer_is_reversed)
+      c->reverse_buffer ();
   }
 
   unsigned int get_size () const { return length; }

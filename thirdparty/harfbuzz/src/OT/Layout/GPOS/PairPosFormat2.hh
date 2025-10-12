@@ -123,56 +123,32 @@ struct PairPosFormat2_4 : ValueBase
 
   const Coverage &get_coverage () const { return this+coverage; }
 
-  struct pair_pos_cache_t
+  struct external_cache_t
   {
-    hb_ot_lookup_cache_t coverage;
-    hb_ot_lookup_cache_t first;
-    hb_ot_lookup_cache_t second;
+    hb_ot_layout_mapping_cache_t coverage;
+    hb_ot_layout_mapping_cache_t first;
+    hb_ot_layout_mapping_cache_t second;
   };
-
-  unsigned cache_cost () const
+  void *external_cache_create () const
   {
-    return (this+coverage).cost () + (this+classDef1).cost () + (this+classDef2).cost ();
-  }
-  static void * cache_func (void *p, hb_ot_lookup_cache_op_t op)
-  {
-    switch (op)
+    external_cache_t *cache = (external_cache_t *) hb_malloc (sizeof (external_cache_t));
+    if (likely (cache))
     {
-      case hb_ot_lookup_cache_op_t::CREATE:
-      {
-	pair_pos_cache_t *cache = (pair_pos_cache_t *) hb_malloc (sizeof (pair_pos_cache_t));
-	if (likely (cache))
-	{
-	  cache->coverage.clear ();
-	  cache->first.clear ();
-	  cache->second.clear ();
-	}
-	return cache;
-      }
-      case hb_ot_lookup_cache_op_t::ENTER:
-	return (void *) true;
-      case hb_ot_lookup_cache_op_t::LEAVE:
-	return nullptr;
-      case hb_ot_lookup_cache_op_t::DESTROY:
-	{
-	  pair_pos_cache_t *cache = (pair_pos_cache_t *) p;
-	  hb_free (cache);
-	  return nullptr;
-	}
+      cache->coverage.clear ();
+      cache->first.clear ();
+      cache->second.clear ();
     }
-    return nullptr;
+    return cache;
   }
 
-  bool apply_cached (hb_ot_apply_context_t *c) const { return _apply (c, true); }
-  bool apply (hb_ot_apply_context_t *c) const { return _apply (c, false); }
-  bool _apply (hb_ot_apply_context_t *c, bool cached) const
+  bool apply (hb_ot_apply_context_t *c, void *external_cache) const
   {
     TRACE_APPLY (this);
 
     hb_buffer_t *buffer = c->buffer;
 
 #ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
-    pair_pos_cache_t *cache = cached ? (pair_pos_cache_t *) c->lookup_accel->cache : nullptr;
+    external_cache_t *cache = (external_cache_t *) external_cache;
     unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint, cache ? &cache->coverage : nullptr);
 #else
     unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);

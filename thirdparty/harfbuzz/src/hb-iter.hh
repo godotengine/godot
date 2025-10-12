@@ -972,7 +972,7 @@ struct
 		    Proj&& f = hb_identity) const
   {
     for (auto it = hb_iter (c); it; ++it)
-      if (!hb_match (std::forward<Pred> (p), hb_get (std::forward<Proj> (f), *it)))
+      if (!hb_match (p, hb_get (f, *it)))
 	return false;
     return true;
   }
@@ -989,7 +989,7 @@ struct
 		    Proj&& f = hb_identity) const
   {
     for (auto it = hb_iter (c); it; ++it)
-      if (hb_match (std::forward<Pred> (p), hb_get (std::forward<Proj> (f), *it)))
+      if (hb_match (p, hb_get (f, *it)))
 	return true;
     return false;
   }
@@ -1006,7 +1006,7 @@ struct
 		    Proj&& f = hb_identity) const
   {
     for (auto it = hb_iter (c); it; ++it)
-      if (hb_match (std::forward<Pred> (p), hb_get (std::forward<Proj> (f), *it)))
+      if (hb_match (p, hb_get (f, *it)))
 	return false;
     return true;
   }

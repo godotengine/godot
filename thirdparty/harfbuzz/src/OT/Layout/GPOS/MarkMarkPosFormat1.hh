@@ -196,25 +196,33 @@ struct MarkMarkPosFormat1_2
     ;
 
     new_coverage.reset ();
-    + mark2_iter
-    | hb_map (hb_first)
-    | hb_map (glyph_map)
-    | hb_sink (new_coverage)
-    ;
-
-    if (!out->mark2Coverage.serialize_serialize (c->serializer, new_coverage.iter ()))
-      return_trace (false);
-
     hb_sorted_vector_t<unsigned> mark2_indexes;
-    for (const unsigned row : + mark2_iter
-                              | hb_map (hb_second))
+    auto &mark2_array = (this+mark2Array);
+    for (const auto _ : + mark2_iter)
     {
+      unsigned row = _.second;
+
+      bool non_empty = + hb_range ((unsigned) classCount)
+                       | hb_filter (klass_mapping)
+                       | hb_map ([&] (const unsigned col) { return !mark2_array.offset_is_null (row, col, (unsigned) classCount); })
+                       | hb_any
+                       ;
+
+      if (!non_empty) continue;
+
+      hb_codepoint_t new_g = glyph_map.get ( _.first);
+      new_coverage.push (new_g);
+
       + hb_range ((unsigned) classCount)
       | hb_filter (klass_mapping)
       | hb_map ([&] (const unsigned col) { return row * (unsigned) classCount + col; })
       | hb_sink (mark2_indexes)
       ;
     }
+
+    if (!new_coverage) return_trace (false);
+    if (!out->mark2Coverage.serialize_serialize (c->serializer, new_coverage.iter ()))
+      return_trace (false);
 
     return_trace (out->mark2Array.serialize_subset (c, mark2Array, this,
 						    mark2_iter.len (),

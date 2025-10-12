@@ -92,6 +92,7 @@ template <typename Type>
 struct __attribute__((packed)) hb_packed_t { Type v; };
 
 #ifndef HB_FAST_NUM_ACCESS
+
 #if defined(__OPTIMIZE__) && \
     defined(__BYTE_ORDER) && \
     (__BYTE_ORDER == __BIG_ENDIAN || \
@@ -102,6 +103,13 @@ struct __attribute__((packed)) hb_packed_t { Type v; };
 #else
 #define HB_FAST_NUM_ACCESS 0
 #endif
+
+// https://github.com/harfbuzz/harfbuzz/issues/5456
+#if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ <= 12)
+#undef HB_FAST_NUM_ACCESS
+#define HB_FAST_NUM_ACCESS 0
+#endif
+
 #endif
 
 template <bool BE, typename Type, int Bytes = sizeof (Type)>
@@ -845,6 +853,17 @@ HB_FUNCOBJ (hb_clamp);
 /*
  * Bithacks.
  */
+
+/* Return the number of 1 bits in a uint8_t; faster than hb_popcount() */
+static inline unsigned
+hb_popcount8 (uint8_t v)
+{
+  static const uint8_t popcount4[16] = {
+    0, 1, 1, 2, 1, 2, 2, 3,
+    1, 2, 2, 3, 2, 3, 3, 4
+  };
+  return popcount4[v & 0xF] + popcount4[v >> 4];
+}
 
 /* Return the number of 1 bits in v. */
 template <typename T>
