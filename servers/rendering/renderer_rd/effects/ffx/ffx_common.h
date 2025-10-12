@@ -177,4 +177,4 @@ public:
 private:
 	static FFXCommonContext *singleton;
 };
-}
+} //namespace RendererRD

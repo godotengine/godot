@@ -92,4 +92,4 @@ private:
 		Fsr2TcrAutogenPassShaderRD tcr_autogen;
 	} shaders;
 };
-}
+} //namespace RendererRD
