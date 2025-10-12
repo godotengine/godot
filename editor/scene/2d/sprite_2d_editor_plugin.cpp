@@ -706,7 +706,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	grow_pixels->set_accessibility_name(TTRC("Grow (Pixels):"));
 	hb->add_child(grow_pixels);
 	hb->add_spacer();
-	hb->add_child(memnew(Label(TTR("Enable Advanced RDP:"))));
+	hb->add_child(memnew(Label(TTRC("Enable Advanced RDP:"))));
 	enable_advanced_rdp = memnew(CheckBox);
 	hb->add_child(enable_advanced_rdp);
 	hb->add_spacer();
