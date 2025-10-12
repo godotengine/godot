@@ -164,6 +164,7 @@ public:
 		TEXTURE_DETAIL_NORMAL,
 		TEXTURE_ORM,
 		TEXTURE_BENT_NORMAL,
+		TEXTURE_SHEEN,
 		TEXTURE_MAX
 	};
 
@@ -220,6 +221,7 @@ public:
 		FEATURE_REFRACTION,
 		FEATURE_DETAIL,
 		FEATURE_BENT_NORMAL_MAPPING,
+		FEATURE_SHEEN,
 		FEATURE_MAX
 	};
 
@@ -471,6 +473,9 @@ private:
 		StringName normal_scale;
 		StringName rim;
 		StringName rim_tint;
+		StringName sheen;
+		StringName sheen_roughness;
+		StringName sheen_color;
 		StringName clearcoat;
 		StringName clearcoat_roughness;
 		StringName anisotropy;
@@ -504,6 +509,7 @@ private:
 
 		StringName metallic_texture_channel;
 		StringName ao_texture_channel;
+		StringName sheen_texture_channel;
 		StringName clearcoat_texture_channel;
 		StringName rim_texture_channel;
 		StringName heightmap_texture_channel;
@@ -545,6 +551,9 @@ private:
 	float normal_scale = 0.0f;
 	float rim = 0.0f;
 	float rim_tint = 0.0f;
+	float sheen = 0.0f;
+	float sheen_roughness = 0.0f;
+	Color sheen_color;
 	float clearcoat = 0.0f;
 	float clearcoat_roughness = 0.0f;
 	float anisotropy = 0.0f;
@@ -674,6 +683,15 @@ public:
 
 	void set_ao_light_affect(float p_ao_light_affect);
 	float get_ao_light_affect() const;
+
+	void set_sheen(float p_sheen);
+	float get_sheen() const;
+
+	void set_sheen_roughness(float p_sheen_roughness);
+	float get_sheen_roughness() const;
+
+	void set_sheen_color(const Color &p_sheen_color);
+	Color get_sheen_color() const;
 
 	void set_clearcoat(float p_clearcoat);
 	float get_clearcoat() const;
