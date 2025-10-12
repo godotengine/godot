@@ -161,17 +161,17 @@ DebugEffects::~DebugEffects() {
 
 	// Destroy vertex buffer and array.
 	if (frustum.vertex_buffer.is_valid()) {
-		RD::get_singleton()->free(frustum.vertex_buffer); // Array gets freed as dependency.
+		RD::get_singleton()->free_rid(frustum.vertex_buffer); // Array gets freed as dependency.
 	}
 
 	// Destroy index buffer and array,
 	if (frustum.index_buffer.is_valid()) {
-		RD::get_singleton()->free(frustum.index_buffer); // Array gets freed as dependency.
+		RD::get_singleton()->free_rid(frustum.index_buffer); // Array gets freed as dependency.
 	}
 
 	// Destroy lines buffer and array.
 	if (frustum.lines_buffer.is_valid()) {
-		RD::get_singleton()->free(frustum.lines_buffer); // Array gets freed as dependency.
+		RD::get_singleton()->free_rid(frustum.lines_buffer); // Array gets freed as dependency.
 	}
 
 	motion_vectors.shader.version_free(motion_vectors.shader_version);

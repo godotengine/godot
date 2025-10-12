@@ -62,7 +62,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-13 12:37+0000\n"
+"PO-Revision-Date: 2025-09-17 13:56+0000\n"
 "Last-Translator: Myeongjin <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ko/>\n"
@@ -2064,7 +2064,7 @@ msgid "Default Float Step"
 msgstr "디폴트 실수형 단계"
 
 msgid "Disable Folding"
-msgstr "폴딩 비활성화"
+msgstr "접기 비활성화"
 
 msgid "Auto Unfold Foreign Scenes"
 msgstr "외부 씬 자동으로 펼치기"
@@ -2079,7 +2079,7 @@ msgid "Open Resources in Current Inspector"
 msgstr "현재 인스펙터에서 리소스 열기"
 
 msgid "Resources to Open in New Inspector"
-msgstr "새로운 인스펙터에서 열 리소스"
+msgstr "새 인스펙터에서 열 리소스"
 
 msgid "Default Color Picker Mode"
 msgstr "디폴트 색상 선택기 모드"
@@ -4017,7 +4017,7 @@ msgid "Byte Offset"
 msgstr "바이트 오프셋"
 
 msgid "Component Type"
-msgstr "구성 요소 유형"
+msgstr "컴포넌트 유형"
 
 msgid "Normalized"
 msgstr "정규화"
@@ -4044,7 +4044,7 @@ msgid "Sparse Indices Byte Offset"
 msgstr "희소 인덱스 바이트 오프셋"
 
 msgid "Sparse Indices Component Type"
-msgstr "희소 인덱스 구성 요소 유형"
+msgstr "희소 인덱스 컴포넌트 유형"
 
 msgid "Sparse Values Buffer View"
 msgstr "희소 값 버퍼 보기"
@@ -4440,7 +4440,7 @@ msgid "Allow Object Decoding"
 msgstr "오브젝트 디코딩 허용"
 
 msgid "Refuse New Connections"
-msgstr "새로운 연결 거부"
+msgstr "새 연결 거부"
 
 msgid "Server Relay"
 msgstr "서버 릴레이"

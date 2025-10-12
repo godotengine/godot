@@ -126,6 +126,11 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 	@Override
 	public void onDetach() {
+		if (godotContainerLayout != null && godotContainerLayout.getParent() != null) {
+			Log.d(TAG, "Cleaning up Godot container layout during detach.");
+			((ViewGroup)godotContainerLayout.getParent()).removeView(godotContainerLayout);
+		}
+
 		super.onDetach();
 		parentHost = null;
 	}
@@ -233,11 +238,21 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 			return downloadingExpansionView;
 		}
 
+		if (godotContainerLayout != null && godotContainerLayout.getParent() != null) {
+			Log.w(TAG, "Godot container layout already has a parent, removing it.");
+			((ViewGroup)godotContainerLayout.getParent()).removeView(godotContainerLayout);
+		}
+
 		return godotContainerLayout;
 	}
 
 	@Override
 	public void onDestroy() {
+		if (godotContainerLayout != null && godotContainerLayout.getParent() != null) {
+			Log.w(TAG, "Removing Godot container layout from parent during destruction.");
+			((ViewGroup)godotContainerLayout.getParent()).removeView(godotContainerLayout);
+		}
+
 		godot.onDestroy(this);
 		super.onDestroy();
 	}

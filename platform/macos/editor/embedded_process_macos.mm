@@ -34,6 +34,7 @@
 #include "platform/macos/display_server_macos.h"
 
 #include "core/input/input_event_codec.h"
+#include "core/os/main_loop.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -149,16 +150,6 @@ void EmbeddedProcessMacOS::_try_embed_process() {
 		embedding_state = EmbeddingState::COMPLETED;
 		queue_redraw();
 		emit_signal(SNAME("embedding_completed"));
-
-		// Send initial joystick state.
-		{
-			Input *input = Input::get_singleton();
-			TypedArray<int> joy_pads = input->get_connected_joypads();
-			for (const Variant &idx : joy_pads) {
-				String name = input->get_joy_name(idx);
-				script_debugger->send_message("embed:joy_add", { idx, name });
-			}
-		}
 
 		layer_host->grab_focus();
 	} else {

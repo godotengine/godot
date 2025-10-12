@@ -319,6 +319,7 @@ void MeshShape::sFindActiveEdges(const MeshShapeSettings &inSettings, IndexedTri
 				uint32 mask = 1 << (edge_idx + FLAGS_ACTIVE_EGDE_SHIFT);
 				JPH_ASSERT((triangle.mMaterialIndex & mask) == 0);
 				triangle.mMaterialIndex |= mask;
+				indices.mNumTriangles = 3; // Indicate that we have 3 or more triangles
 			}
 		}
 	}

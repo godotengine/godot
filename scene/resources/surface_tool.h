@@ -89,6 +89,10 @@ public:
 		SIMPLIFY_ERROR_ABSOLUTE = 1 << 2, // From meshopt_SimplifyErrorAbsolute
 		/* Remove disconnected parts of the mesh during simplification incrementally, regardless of the topological restrictions inside components. */
 		SIMPLIFY_PRUNE = 1 << 3, // From meshopt_SimplifyPrune
+		/* Produce more regular triangle sizes and shapes during simplification, at some cost to geometric quality. */
+		SIMPLIFY_REGULARIZE = 1 << 4, // From meshopt_SimplifyRegularize
+		/* Allow collapses across attribute discontinuities, except for vertices that are tagged with 0x02 in vertex_lock. */
+		SIMPLIFY_PERMISSIVE = 1 << 5, // From meshopt_SimplifyPermissive
 	};
 
 	typedef void (*OptimizeVertexCacheFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, size_t vertex_count);

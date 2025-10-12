@@ -67,6 +67,7 @@ class GDExtension : public Resource {
 
 	struct ClassCreationDeprecatedInfo {
 #ifndef DISABLE_DEPRECATED
+		bool legacy_unexposed_class = false;
 		GDExtensionClassNotification notification_func = nullptr;
 		GDExtensionClassFreePropertyList free_property_list_func = nullptr;
 		GDExtensionClassCreateInstance create_instance_func = nullptr;
@@ -183,6 +184,8 @@ public:
 VARIANT_ENUM_CAST(GDExtension::InitializationLevel)
 
 class GDExtensionResourceLoader : public ResourceFormatLoader {
+	GDSOFTCLASS(GDExtensionResourceLoader, ResourceFormatLoader);
+
 public:
 	static Error load_gdextension_resource(const String &p_path, Ref<GDExtension> &p_extension);
 

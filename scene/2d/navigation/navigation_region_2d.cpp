@@ -32,7 +32,7 @@
 
 #include "core/math/random_pcg.h"
 #include "scene/resources/world_2d.h"
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 
 RID NavigationRegion2D::get_rid() const {
 	return region;
@@ -394,16 +394,16 @@ NavigationRegion2D::NavigationRegion2D() {
 
 NavigationRegion2D::~NavigationRegion2D() {
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
-	NavigationServer2D::get_singleton()->free(region);
+	NavigationServer2D::get_singleton()->free_rid(region);
 
 #ifdef DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->disconnect(SNAME("map_changed"), callable_mp(this, &NavigationRegion2D::_navigation_map_changed));
 	NavigationServer2D::get_singleton()->disconnect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion2D::_navigation_debug_changed));
 	if (debug_instance_rid.is_valid()) {
-		RS::get_singleton()->free(debug_instance_rid);
+		RS::get_singleton()->free_rid(debug_instance_rid);
 	}
 	if (debug_mesh_rid.is_valid()) {
-		RS::get_singleton()->free(debug_mesh_rid);
+		RS::get_singleton()->free_rid(debug_mesh_rid);
 	}
 #endif // DEBUG_ENABLED
 }

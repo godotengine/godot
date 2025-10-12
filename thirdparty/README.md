@@ -74,7 +74,7 @@ Files extracted from upstream source:
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal
-- Version: 1.60 (323239a6a5ffa57d6570cfc403be99156e33a8b0, 2025)
+- Version: git (b1110111d4a93c7dd7de93ce3d9ed8fcdfd114f2, 2025)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -88,8 +88,8 @@ Patches:
 - `0001-external-zstd-pr344.patch` (GH-73441)
 - `0002-external-tinyexr.patch` (GH-97582)
 - `0003-remove-tinydds-qoi.patch` (GH-97582)
-- `0004-ambiguous-calls.patch` (GH-103968)
-- `0005-msvc-include-ctype.patch` (GH-106155)
+- `0004-clang-warning-exclude.patch` (GH-111346)
+- `0005-unused-typedef.patch` (GH-111445)
 
 
 ## brotli
@@ -492,7 +492,7 @@ Files generated from upstream source:
 ## jolt_physics
 
 - Upstream: https://github.com/jrouwe/JoltPhysics
-- Version: 5.3.0 (0373ec0dd762e4bc2f6acdb08371ee84fa23c6db, 2025)
+- Version: 5.4.0 (036ea7b1d717b3e713ac9d8cbd47118fb9cd5d60, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -679,7 +679,7 @@ Patches:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: 0.24 (7b2d4f4c817aea55d74dcd65d9763ac2ca608026, 2025)
+- Version: 0.25 (6daea4695c48338363b08022d2fb15deaef6ac09, 2025)
 - License: MIT
 
 Files extracted from upstream repository:
@@ -864,7 +864,7 @@ Files extracted from the upstream source:
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.1.49 (977f6675bc0057d5a54ed290cb5c71c699b1c0ab, 2025)
+- Version: 1.1.52 (a664705dee0b1041096d1e21b539bf9fb2489f00, 2025)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -1157,7 +1157,7 @@ Files extracted from upstream source:
 # wayland-protocols
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
-- Version: 1.33 (54346071a5f211f2c482889f2c8ee3b5ecda63ab, 2024)
+- Version: 1.45 (54346071a5f211f2c482889f2c8ee3b5ecda63ab, 2025)
 - License: MIT
 
 Files extracted from upstream source:

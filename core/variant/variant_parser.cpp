@@ -1978,19 +1978,10 @@ Error VariantParser::parse(Stream *p_stream, Variant &r_ret, String &r_err_str, 
 //////////////////////////////////////////////////////////////////////////////////
 
 // These two functions serialize floats or doubles using num_scientific to ensure
-// it can be read back in the same way (except collapsing -0 to 0, and NaN values).
-static String rtos_fix(float p_value, bool p_compat) {
-	if (p_value == 0.0f) {
-		return "0"; // Avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
-	} else if (p_compat) {
-		// Write old inf_neg for compatibility.
-		if (std::isinf(p_value) && p_value < 0.0f) {
-			return "inf_neg";
-		}
-	}
-	return String::num_scientific(p_value);
-}
-
+// it can be read back in the same way, except collapsing -0 to 0, collapsing
+// NaN values, handling old inf_neg for compatibility, and collapsing doubles
+// that match their 32-bit float representation to avoid serializing garbage
+// digits when the underlying float is 32-bit.
 static String rtos_fix(double p_value, bool p_compat) {
 	if (p_value == 0.0) {
 		return "0"; // Avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
@@ -1999,6 +1990,10 @@ static String rtos_fix(double p_value, bool p_compat) {
 		if (std::isinf(p_value) && p_value < 0.0) {
 			return "inf_neg";
 		}
+	}
+	// Hack to avoid garbage digits when the underlying float is 32-bit.
+	if ((double)(float)p_value == p_value) {
+		return String::num_scientific((float)p_value);
 	}
 	return String::num_scientific(p_value);
 }
@@ -2026,13 +2021,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::FLOAT: {
 			const double value = p_variant.operator double();
-			String s;
-			// Hack to avoid garbage digits when the underlying float is 32-bit.
-			if ((double)(float)value == value) {
-				s = rtos_fix((float)value, p_compat);
-			} else {
-				s = rtos_fix(value, p_compat);
-			}
+			String s = rtos_fix(value, p_compat);
 			// Append ".0" to floats to ensure they are float literals.
 			if (s != "inf" && s != "-inf" && s != "nan" && !s.contains_char('.') && !s.contains_char('e') && !s.contains_char('E')) {
 				s += ".0";

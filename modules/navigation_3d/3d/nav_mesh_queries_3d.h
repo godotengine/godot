@@ -34,12 +34,13 @@
 
 #include "core/templates/a_hash_map.h"
 
-#include "servers/navigation/navigation_globals.h"
-#include "servers/navigation/navigation_path_query_parameters_3d.h"
-#include "servers/navigation/navigation_path_query_result_3d.h"
-#include "servers/navigation/navigation_utilities.h"
+#include "servers/nav_heap.h"
+#include "servers/navigation_3d/navigation_constants_3d.h"
+#include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
+#include "servers/navigation_3d/navigation_path_query_result_3d.h"
 
-using namespace NavigationUtilities;
+using namespace NavigationDefaults3D;
+using namespace NavigationEnums3D;
 
 class NavMap3D;
 struct NavMapIteration3D;

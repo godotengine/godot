@@ -233,7 +233,7 @@ def get_flags():
 
     return {
         "arch": arch,
-        "supported": ["d3d12", "dcomp", "mono", "xaudio2"],
+        "supported": ["d3d12", "dcomp", "library", "mono", "xaudio2"],
     }
 
 
@@ -243,7 +243,7 @@ def configure_msvc(env: "SConsEnvironment"):
     ## Build type
 
     # TODO: Re-evaluate the need for this / streamline with common config.
-    if env["target"] == "template_release":
+    if env["target"] == "template_release" and env["library_type"] == "executable":
         env.Append(LINKFLAGS=["/ENTRY:mainCRTStartup"])
 
     if env["windows_subsystem"] == "gui":
@@ -316,7 +316,7 @@ def configure_msvc(env: "SConsEnvironment"):
                 if not caught and (is_cl and re_cl_capture.match(line)) or (not is_cl and re_link_capture.match(line)):
                     caught = True
                     try:
-                        with open(capture_path, "a", encoding=sys.stdout.encoding) as log:
+                        with open(capture_path, "a", encoding=sys.stdout.encoding, errors="replace") as log:
                             log.write(line + "\n")
                     except OSError:
                         print_warning(f'Failed to log captured line: "{line}".')
@@ -362,8 +362,8 @@ def configure_msvc(env: "SConsEnvironment"):
             "WINMIDI_ENABLED",
             "TYPED_METHOD_BIND",
             "WIN32",
-            "WINVER=0x0A00",
-            "_WIN32_WINNT=0x0A00",
+            ("WINVER", "0x0A00"),
+            ("_WIN32_WINNT", "0x0A00"),
         ]
     )
     env.AppendUnique(CPPDEFINES=["NOMINMAX"])  # disable bogus min/max WinDef.h macros
@@ -481,7 +481,7 @@ def configure_msvc(env: "SConsEnvironment"):
                 "libGLES.windows." + env["arch"] + prebuilt_lib_extra_suffix,
             ]
             LIBS += ["dxgi", "d3d9", "d3d11"]
-        env.Prepend(CPPEXTPATH=["#thirdparty/angle/include"])
+        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     if env["target"] in ["editor", "template_debug"]:
         LIBS += ["psapi", "dbghelp"]
@@ -753,8 +753,8 @@ def configure_mingw(env: "SConsEnvironment"):
     env.Append(CPPDEFINES=["WINDOWS_ENABLED", "WASAPI_ENABLED", "WINMIDI_ENABLED"])
     env.Append(
         CPPDEFINES=[
-            "WINVER=0x0A00",
-            "_WIN32_WINNT=0x0A00",
+            ("WINVER", "0x0A00"),
+            ("_WIN32_WINNT", "0x0A00"),
         ]
     )
     env.Append(
@@ -874,7 +874,7 @@ def configure_mingw(env: "SConsEnvironment"):
                 ]
             )
             env.Append(LIBS=["dxgi", "d3d9", "d3d11"])
-        env.Prepend(CPPEXTPATH=["#thirdparty/angle/include"])
+        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
 

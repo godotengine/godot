@@ -37,6 +37,7 @@
 #include "core/os/os.h"
 #include "scene/gui/menu_bar.h"
 #include "scene/gui/panel_container.h"
+#include "scene/main/timer.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
 
@@ -3230,6 +3231,10 @@ void PopupMenu::_pre_popup() {
 	set_content_scale_factor(popup_scale);
 	Size2 minsize = get_contents_minimum_size() * popup_scale;
 	minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
+	real_t max_h = get_max_size().height;
+	if (max_h > 0) {
+		minsize.height = MIN(minsize.height, max_h);
+	}
 	set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
 	reset_size(); // Shrinkwraps to min size.
 }

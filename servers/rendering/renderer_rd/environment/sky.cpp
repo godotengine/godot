@@ -267,7 +267,7 @@ void SkyRD::ReflectionData::clear_reflection_data() {
 	layers.clear();
 	radiance_base_cubemap = RID();
 	if (downsampled_radiance_cubemap.is_valid()) {
-		RD::get_singleton()->free(downsampled_radiance_cubemap);
+		RD::get_singleton()->free_rid(downsampled_radiance_cubemap);
 	}
 	downsampled_radiance_cubemap = RID();
 	downsampled_layer.mipmaps.clear();
@@ -390,7 +390,7 @@ void SkyRD::ReflectionData::create_reflection_fast_filter(bool p_use_arrays) {
 	bool prefer_raster_effects = copy_effects->get_prefer_raster_effects();
 
 	if (prefer_raster_effects) {
-		RD::get_singleton()->draw_command_begin_label("Downsample radiance map");
+		RD::get_singleton()->draw_command_begin_label("Downsample Radiance Map");
 		for (int k = 0; k < 6; k++) {
 			copy_effects->cubemap_downsample_raster(radiance_base_cubemap, downsampled_layer.mipmaps[0].framebuffers[k], k, downsampled_layer.mipmaps[0].size);
 		}
@@ -403,14 +403,14 @@ void SkyRD::ReflectionData::create_reflection_fast_filter(bool p_use_arrays) {
 		RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
 
 		if (p_use_arrays) {
-			RD::get_singleton()->draw_command_begin_label("filter radiance map into array heads");
+			RD::get_singleton()->draw_command_begin_label("Filter Radiance Map into Array Heads");
 			for (int i = 0; i < layers.size(); i++) {
 				for (int k = 0; k < 6; k++) {
 					copy_effects->cubemap_filter_raster(downsampled_radiance_cubemap, layers[i].mipmaps[0].framebuffers[k], k, i);
 				}
 			}
 		} else {
-			RD::get_singleton()->draw_command_begin_label("filter radiance map into mipmaps directly");
+			RD::get_singleton()->draw_command_begin_label("Filter Radiance Map into Mipmaps Directly");
 			for (int j = 0; j < layers[0].mipmaps.size(); j++) {
 				for (int k = 0; k < 6; k++) {
 					copy_effects->cubemap_filter_raster(downsampled_radiance_cubemap, layers[0].mipmaps[j].framebuffers[k], k, j);
@@ -419,7 +419,7 @@ void SkyRD::ReflectionData::create_reflection_fast_filter(bool p_use_arrays) {
 		}
 		RD::get_singleton()->draw_command_end_label(); // Filter radiance
 	} else {
-		RD::get_singleton()->draw_command_begin_label("Downsample radiance map");
+		RD::get_singleton()->draw_command_begin_label("Downsample Radiance Map");
 		copy_effects->cubemap_downsample(radiance_base_cubemap, downsampled_layer.mipmaps[0].view, downsampled_layer.mipmaps[0].size);
 
 		for (int i = 1; i < downsampled_layer.mipmaps.size(); i++) {
@@ -436,7 +436,7 @@ void SkyRD::ReflectionData::create_reflection_fast_filter(bool p_use_arrays) {
 				views.push_back(layers[0].views[i]);
 			}
 		}
-		RD::get_singleton()->draw_command_begin_label("Fast filter radiance");
+		RD::get_singleton()->draw_command_begin_label("Fast Filter Radiance");
 		copy_effects->cubemap_filter(downsampled_radiance_cubemap, views, p_use_arrays);
 		RD::get_singleton()->draw_command_end_label(); // Filter radiance
 	}
@@ -449,7 +449,7 @@ void SkyRD::ReflectionData::create_reflection_importance_sample(bool p_use_array
 
 	if (prefer_raster_effects) {
 		if (p_base_layer == 1) {
-			RD::get_singleton()->draw_command_begin_label("Downsample radiance map");
+			RD::get_singleton()->draw_command_begin_label("Downsample Radiance Map");
 			for (int k = 0; k < 6; k++) {
 				copy_effects->cubemap_downsample_raster(radiance_base_cubemap, downsampled_layer.mipmaps[0].framebuffers[k], k, downsampled_layer.mipmaps[0].size);
 			}
@@ -462,7 +462,7 @@ void SkyRD::ReflectionData::create_reflection_importance_sample(bool p_use_array
 			RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
 		}
 
-		RD::get_singleton()->draw_command_begin_label("High Quality filter radiance");
+		RD::get_singleton()->draw_command_begin_label("High Quality Filter Radiance");
 		if (p_use_arrays) {
 			for (int k = 0; k < 6; k++) {
 				copy_effects->cubemap_roughness_raster(
@@ -486,7 +486,7 @@ void SkyRD::ReflectionData::create_reflection_importance_sample(bool p_use_array
 		}
 	} else {
 		if (p_base_layer == 1) {
-			RD::get_singleton()->draw_command_begin_label("Downsample radiance map");
+			RD::get_singleton()->draw_command_begin_label("Downsample Radiance Map");
 			copy_effects->cubemap_downsample(radiance_base_cubemap, downsampled_layer.mipmaps[0].view, downsampled_layer.mipmaps[0].size);
 
 			for (int i = 1; i < downsampled_layer.mipmaps.size(); i++) {
@@ -495,7 +495,7 @@ void SkyRD::ReflectionData::create_reflection_importance_sample(bool p_use_array
 			RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
 		}
 
-		RD::get_singleton()->draw_command_begin_label("High Quality filter radiance");
+		RD::get_singleton()->draw_command_begin_label("High Quality Filter Radiance");
 		if (p_use_arrays) {
 			copy_effects->cubemap_roughness(downsampled_radiance_cubemap, layers[p_base_layer].views[0], p_cube_side, p_sky_ggx_samples_quality, float(p_base_layer) / (layers.size() - 1.0), layers[p_base_layer].mipmaps[0].size.x);
 		} else {
@@ -540,13 +540,13 @@ void SkyRD::ReflectionData::update_reflection_mipmaps(int p_start, int p_end) {
 
 void SkyRD::Sky::free() {
 	if (radiance.is_valid()) {
-		RD::get_singleton()->free(radiance);
+		RD::get_singleton()->free_rid(radiance);
 		radiance = RID();
 	}
 	reflection.clear_reflection_data();
 
 	if (uniform_buffer.is_valid()) {
-		RD::get_singleton()->free(uniform_buffer);
+		RD::get_singleton()->free_rid(uniform_buffer);
 		uniform_buffer = RID();
 	}
 
@@ -629,7 +629,7 @@ bool SkyRD::Sky::set_radiance_size(int p_radiance_size) {
 	}
 
 	if (radiance.is_valid()) {
-		RD::get_singleton()->free(radiance);
+		RD::get_singleton()->free_rid(radiance);
 		radiance = RID();
 	}
 	reflection.clear_reflection_data();
@@ -650,7 +650,7 @@ bool SkyRD::Sky::set_mode(RS::SkyMode p_mode) {
 	}
 
 	if (radiance.is_valid()) {
-		RD::get_singleton()->free(radiance);
+		RD::get_singleton()->free_rid(radiance);
 		radiance = RID();
 	}
 	reflection.clear_reflection_data();
@@ -680,7 +680,7 @@ Ref<Image> SkyRD::Sky::bake_panorama(float p_energy, int p_roughness_layers, con
 		RID rad_tex = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		copy_effects->copy_cubemap_to_panorama(radiance, rad_tex, p_size, p_roughness_layers, reflection.layers.size() > 1);
 		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(rad_tex, 0);
-		RD::get_singleton()->free(rad_tex);
+		RD::get_singleton()->free_rid(rad_tex);
 
 		Ref<Image> img = Image::create_from_data(p_size.width, p_size.height, false, Image::FORMAT_RGBAF, data);
 		for (int i = 0; i < p_size.width; i++) {
@@ -727,6 +727,12 @@ SkyRD::SkyRD() {
 	roughness_layers = GLOBAL_GET("rendering/reflections/sky_reflections/roughness_layers");
 	sky_ggx_samples_quality = GLOBAL_GET("rendering/reflections/sky_reflections/ggx_samples");
 	sky_use_cubemap_array = GLOBAL_GET("rendering/reflections/sky_reflections/texture_array_reflections");
+#if defined(MACOS_ENABLED) && defined(__x86_64__)
+	if (OS::get_singleton()->get_current_rendering_driver_name() == "vulkan" && RenderingDevice::get_singleton()->get_device_name().contains("Intel")) {
+		// Disable texture array reflections on macOS on Intel GPUs due to driver bugs.
+		sky_use_cubemap_array = false;
+	}
+#endif
 }
 
 void SkyRD::init() {
@@ -952,23 +958,14 @@ void SkyRD::set_texture_format(RD::DataFormat p_texture_format) {
 	texture_format = p_texture_format;
 }
 
-#if defined(MACOS_ENABLED) && defined(__x86_64__)
-void SkyRD::check_cubemap_array() {
-	if (OS::get_singleton()->get_current_rendering_driver_name() == "vulkan" && RenderingServer::get_singleton()->get_video_adapter_name().contains("Intel")) {
-		// Disable texture array reflections on macOS on Intel GPUs due to driver bugs.
-		sky_use_cubemap_array = false;
-	}
-}
-#endif
-
 SkyRD::~SkyRD() {
 	// cleanup anything created in init...
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
 	SkyMaterialData *md = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_shader.default_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 	sky_shader.shader.version_free(md->shader_data->version);
-	RD::get_singleton()->free(sky_scene_state.directional_light_buffer);
-	RD::get_singleton()->free(sky_scene_state.uniform_buffer);
+	RD::get_singleton()->free_rid(sky_scene_state.directional_light_buffer);
+	RD::get_singleton()->free_rid(sky_scene_state.uniform_buffer);
 	memdelete_arr(sky_scene_state.directional_lights);
 	memdelete_arr(sky_scene_state.last_frame_directional_lights);
 	material_storage->shader_free(sky_shader.default_shader);
@@ -977,15 +974,15 @@ SkyRD::~SkyRD() {
 	material_storage->material_free(sky_scene_state.fog_material);
 
 	if (RD::get_singleton()->uniform_set_is_valid(sky_scene_state.uniform_set)) {
-		RD::get_singleton()->free(sky_scene_state.uniform_set);
+		RD::get_singleton()->free_rid(sky_scene_state.uniform_set);
 	}
 
 	if (RD::get_singleton()->uniform_set_is_valid(sky_scene_state.default_fog_uniform_set)) {
-		RD::get_singleton()->free(sky_scene_state.default_fog_uniform_set);
+		RD::get_singleton()->free_rid(sky_scene_state.default_fog_uniform_set);
 	}
 
 	if (RD::get_singleton()->uniform_set_is_valid(sky_scene_state.fog_only_texture_uniform_set)) {
-		RD::get_singleton()->free(sky_scene_state.fog_only_texture_uniform_set);
+		RD::get_singleton()->free_rid(sky_scene_state.fog_only_texture_uniform_set);
 	}
 }
 
@@ -1324,7 +1321,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 		// Note, we ignore environment_get_sky_orientation here as this is applied when we do our lookup in our scene shader.
 
 		if (shader_data->uses_quarter_res && roughness_layers >= 3) {
-			RD::get_singleton()->draw_command_begin_label("Render Sky to Quarter Res Cubemap");
+			RD::get_singleton()->draw_command_begin_label("Render Sky to Quarter-Resolution Cubemap");
 			PipelineCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_CUBEMAP_QUARTER_RES];
 
 			Vector<Color> clear_colors;
@@ -1345,7 +1342,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 		}
 
 		if (shader_data->uses_half_res && roughness_layers >= 2) {
-			RD::get_singleton()->draw_command_begin_label("Render Sky to Half Res Cubemap");
+			RD::get_singleton()->draw_command_begin_label("Render Sky to Half-Resolution Cubemap");
 			PipelineCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_CUBEMAP_HALF_RES];
 
 			Vector<Color> clear_colors;

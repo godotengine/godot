@@ -36,8 +36,8 @@
 #include "core/string/print_string.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
-#include "servers/rendering_server.h"
 
 HashMap<String, bool *> OpenXRVulkanExtension::get_requested_extensions() {
 	HashMap<String, bool *> request_extensions;
@@ -417,9 +417,8 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 }
 
 bool OpenXRVulkanExtension::create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) {
-	// Even though this is a Vulkan renderer we're using OpenGL coordinate systems.
 	OpenXRUtil::XrMatrix4x4f matrix;
-	OpenXRUtil::XrMatrix4x4f_CreateProjectionFov(&matrix, OpenXRUtil::GRAPHICS_OPENGL, p_fov, (float)p_z_near, (float)p_z_far);
+	OpenXRUtil::XrMatrix4x4f_CreateProjectionFov(&matrix, p_fov, (float)p_z_near, (float)p_z_far);
 
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
@@ -460,13 +459,13 @@ void OpenXRVulkanExtension::cleanup_swapchain_graphics_data(void **p_swapchain_g
 
 	for (const RID &texture_rid : data->texture_rids) {
 		// This should clean up our RIDs and associated texture objects but shouldn't destroy the images, they are owned by our XrSwapchain.
-		rendering_device->free(texture_rid);
+		rendering_device->free_rid(texture_rid);
 	}
 	data->texture_rids.clear();
 
 	for (int i = 0; i < data->density_map_rids.size(); i++) {
 		if (data->density_map_rids[i].is_valid()) {
-			rendering_device->free(data->density_map_rids[i]);
+			rendering_device->free_rid(data->density_map_rids[i]);
 		}
 	}
 	data->density_map_rids.clear();

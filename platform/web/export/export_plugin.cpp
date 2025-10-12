@@ -172,7 +172,7 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 	replaces["$GODOT_CONFIG"] = str_config;
 	replaces["$GODOT_SPLASH_COLOR"] = "#" + Color(get_project_setting(p_preset, "application/boot_splash/bg_color")).to_html(false);
 
-	LocalVector<String> godot_splash_classes;
+	Vector<String> godot_splash_classes;
 	godot_splash_classes.push_back("show-image--" + String(get_project_setting(p_preset, "application/boot_splash/show_image")));
 	godot_splash_classes.push_back("fullsize--" + String(get_project_setting(p_preset, "application/boot_splash/fullsize")));
 	godot_splash_classes.push_back("use-filter--" + String(get_project_setting(p_preset, "application/boot_splash/use_filter")));
@@ -916,7 +916,7 @@ Ref<Texture2D> EditorExportPlatformWeb::get_run_icon() const {
 	return run_icon;
 }
 
-EditorExportPlatformWeb::EditorExportPlatformWeb() {
+void EditorExportPlatformWeb::initialize() {
 	if (EditorNode::get_singleton()) {
 		server.instantiate();
 

@@ -166,16 +166,6 @@ AABB Decal::get_aabb() const {
 	return aabb;
 }
 
-void Decal::_validate_property(PropertyInfo &p_property) const {
-	if (Engine::get_singleton()->is_editor_hint() && !distance_fade_enabled && (p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_length")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-
-	if (p_property.name == "sorting_offset") {
-		p_property.usage = PROPERTY_USAGE_DEFAULT;
-	}
-}
-
 PackedStringArray Decal::get_configuration_warnings() const {
 	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
@@ -259,7 +249,7 @@ void Decal::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lower_fade", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_lower_fade", "get_lower_fade");
 
 	ADD_GROUP("Distance Fade", "distance_fade_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distance_fade_enabled"), "set_enable_distance_fade", "is_distance_fade_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distance_fade_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_enable_distance_fade", "is_distance_fade_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_begin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_distance_fade_begin", "get_distance_fade_begin");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_length", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_distance_fade_length", "get_distance_fade_length");
 
@@ -298,5 +288,5 @@ Decal::Decal() {
 
 Decal::~Decal() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(decal);
+	RS::get_singleton()->free_rid(decal);
 }

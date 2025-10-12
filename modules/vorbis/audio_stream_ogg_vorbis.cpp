@@ -29,6 +29,9 @@
 /**************************************************************************/
 
 #include "audio_stream_ogg_vorbis.h"
+#include "core/io/file_access.h"
+
+#include "core/templates/rb_map.h"
 
 #include <ogg/ogg.h>
 
@@ -462,7 +465,7 @@ void AudioStreamOggVorbis::maybe_update_info() {
 		int equals = c.find_char('=');
 
 		if (equals == -1) {
-			WARN_PRINT("Invalid comment in Ogg Vorbis file.");
+			WARN_PRINT(vformat(R"(Invalid comment in Ogg Vorbis file "%s", should contain '=': "%s".)", get_path(), c));
 			continue;
 		}
 

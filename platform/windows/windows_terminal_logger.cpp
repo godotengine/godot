@@ -30,6 +30,7 @@
 
 #include "windows_terminal_logger.h"
 
+#include "core/object/script_backtrace.h"
 #include "core/os/os.h"
 
 #ifdef WINDOWS_ENABLED

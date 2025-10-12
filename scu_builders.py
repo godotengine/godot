@@ -386,7 +386,8 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["servers/rendering/renderer_rd/forward_mobile"])
     process_folder(["servers/audio"])
     process_folder(["servers/audio/effects"])
-    process_folder(["servers/navigation"])
+    process_folder(["servers/navigation_2d"])
+    process_folder(["servers/navigation_3d"])
     process_folder(["servers/xr"])
 
     # Finally change back the path to the calling folder

@@ -32,12 +32,20 @@
 
 #include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
+#include "core/templates/hashfuncs.h"
 
 class String;
 struct Vector3;
 
 struct [[nodiscard]] Vector3i {
-	static const int AXIS_COUNT = 3;
+	static const Vector3i LEFT;
+	static const Vector3i RIGHT;
+	static const Vector3i UP;
+	static const Vector3i DOWN;
+	static const Vector3i FORWARD;
+	static const Vector3i BACK;
+
+	static constexpr int AXIS_COUNT = 3;
 
 	enum Axis {
 		AXIS_X,
@@ -133,11 +141,25 @@ struct [[nodiscard]] Vector3i {
 	explicit operator String() const;
 	operator Vector3() const;
 
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_32(uint32_t(x));
+		h = hash_murmur3_one_32(uint32_t(y), h);
+		h = hash_murmur3_one_32(uint32_t(z), h);
+		return hash_fmix32(h);
+	}
+
 	constexpr Vector3i() :
 			x(0), y(0), z(0) {}
 	constexpr Vector3i(int32_t p_x, int32_t p_y, int32_t p_z) :
 			x(p_x), y(p_y), z(p_z) {}
 };
+
+inline constexpr Vector3i Vector3i::LEFT = { -1, 0, 0 };
+inline constexpr Vector3i Vector3i::RIGHT = { 1, 0, 0 };
+inline constexpr Vector3i Vector3i::UP = { 0, 1, 0 };
+inline constexpr Vector3i Vector3i::DOWN = { 0, -1, 0 };
+inline constexpr Vector3i Vector3i::FORWARD = { 0, 0, -1 };
+inline constexpr Vector3i Vector3i::BACK = { 0, 0, 1 };
 
 int64_t Vector3i::length_squared() const {
 	return x * (int64_t)x + y * (int64_t)y + z * (int64_t)z;
