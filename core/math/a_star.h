@@ -30,9 +30,11 @@
 
 #pragma once
 
+#include "core/object/class_db.h"
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
 #include "core/templates/a_hash_map.h"
+#include "core/variant/binder_common.h"
 
 /**
 	A* pathfinding algorithm.

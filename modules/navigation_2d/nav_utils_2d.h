@@ -32,6 +32,7 @@
 
 #include "core/math/vector3.h"
 #include "core/object/ref_counted.h"
+#include "core/os/rw_lock.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hashfuncs.h"
 #include "core/templates/local_vector.h"

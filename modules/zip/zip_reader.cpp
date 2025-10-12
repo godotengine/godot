@@ -32,6 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/io/zip_io.h"
+#include "core/object/class_db.h"
 
 Error ZIPReader::open(const String &p_path) {
 	if (fa.is_valid()) {
