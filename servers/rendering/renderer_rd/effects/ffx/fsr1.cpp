@@ -54,8 +54,7 @@ FSR1Effect::FSR1Effect() {
 
 	String general_defines =
 			"\n#define FFX_GPU\n"
-			"\n#define FFX_GLSL 1\n"
-			"\n#define FFX_FSR1_OPTION_APPLY_RCAS 1\n";
+			"\n#define FFX_GLSL 1\n";
 
 	Vector<String> modes_with_fp16;
 	modes_with_fp16.push_back("");
@@ -70,11 +69,17 @@ FSR1Effect::FSR1Effect() {
 	// error if the bindings do not match.
 
 	{
+		Vector<String> easu_modes_with_fp16;
+		easu_modes_with_fp16.push_back("\n");
+		easu_modes_with_fp16.push_back("\n#define FFX_FSR1_OPTION_APPLY_RCAS 1\n");
+		easu_modes_with_fp16.push_back("\n#define FFX_HALF 1\n");
+		easu_modes_with_fp16.push_back("\n#define FFX_HALF 1\n#define FFX_FSR1_OPTION_APPLY_RCAS 1\n");
+
 		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR1].passes[FFX_FSR1_PASS_EASU];
 		pass.shader = &shaders.easu;
-		pass.shader->initialize(modes_with_fp16, general_defines);
+		pass.shader->initialize(easu_modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
-		pass.shader_variant = capabilities.fp16Supported ? 1 : 0;
+		pass.shader_variant = capabilities.fp16Supported ? 2 : 0;
 
 		pass.sampled_texture_bindings = {
 			FfxResourceBinding{ 0, 0, 0, L"r_input_color" },
@@ -88,6 +93,11 @@ FSR1Effect::FSR1Effect() {
 		pass.uniform_bindings = {
 			FfxResourceBinding{ 3000, 0, 0, L"cbFSR1" }
 		};
+
+		// EASU RCAS pass is a clone of the EASU pass with the RCAS variant.
+		FFXCommonContext::Pass &easu_rcas_pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR1].passes[FFX_FSR1_PASS_EASU_RCAS];
+		easu_rcas_pass = pass;
+		easu_rcas_pass.shader_variant = pass.shader_variant + 1;
 	}
 
 	{
