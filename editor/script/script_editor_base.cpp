@@ -201,6 +201,7 @@ TextEditorBase::EditMenus::EditMenus() {
 		edit_menu_line->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent"), EDIT_INDENT);
 		edit_menu_line->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unindent"), EDIT_UNINDENT);
 		edit_menu_line->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
+		edit_menu_line->add_shortcut(ED_GET_SHORTCUT("script_text_editor/join_lines"), EDIT_JOIN_LINES);
 		edit_menu_line->connect(SceneStringName(id_pressed), callable_mp(this, &EditMenus::_edit_option));
 		edit_menu->get_popup()->add_submenu_node_item(TTRC("Line"), edit_menu_line);
 	}
@@ -412,6 +413,9 @@ bool TextEditorBase::_edit_option(int p_op) {
 		} break;
 		case EDIT_DELETE_LINE: {
 			tx->delete_lines();
+		} break;
+		case EDIT_JOIN_LINES: {
+			tx->join_lines();
 		} break;
 		case EDIT_DUPLICATE_SELECTION: {
 			tx->duplicate_selection();
