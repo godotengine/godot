@@ -115,10 +115,10 @@ void XRPositionalTracker::set_pose(const StringName &p_action_name, const Transf
 		new_pose = poses[p_action_name];
 	} else {
 		new_pose.instantiate();
+		new_pose->set_name(p_action_name);
 		poses[p_action_name] = new_pose;
 	}
 
-	new_pose->set_name(p_action_name);
 	new_pose->set_has_tracking_data(true);
 	new_pose->set_transform(p_transform);
 	new_pose->set_linear_velocity(p_linear_velocity);
