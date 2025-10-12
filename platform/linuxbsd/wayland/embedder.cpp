@@ -2536,7 +2536,15 @@ bool WaylandEmbedder::handle_sock(int p_fd) {
 			return false;
 		}
 
-		ERR_FAIL_COND_V_MSG(head_rec == -1, false, vformat("Can't read message header: %s", strerror(errno)));
+		if (head_rec == -1) {
+			if (errno == ECONNRESET) {
+				// No need to error out, the client forcefully disconnected.
+				return false;
+			}
+
+			ERR_FAIL_V_MSG(false, vformat("Can't read message header: %s", strerror(errno)));
+		}
+
 		ERR_FAIL_COND_V_MSG(((size_t)head_rec) != vec.iov_len, false, vformat("Should've received %d bytes, instead got %d bytes", vec.iov_len, head_rec));
 
 		// Header is two 32-bit words: first is ID, second has size in most significant
@@ -2563,7 +2571,15 @@ bool WaylandEmbedder::handle_sock(int p_fd) {
 
 		ssize_t full_rec = recvmsg(p_fd, &full_msg, 0);
 
-		ERR_FAIL_COND_V_MSG(full_rec == -1, false, vformat("Can't read full message: %s", strerror(errno)));
+		if (full_rec == -1) {
+			if (errno == ECONNRESET) {
+				// No need to error out, the client forcefully disconnected.
+				return false;
+			}
+
+			ERR_FAIL_V_MSG(false, vformat("Can't read message: %s", strerror(errno)));
+		}
+
 		ERR_FAIL_COND_V_MSG(((size_t)full_rec) != info.size, false, "Invalid message length.");
 
 		DEBUG_LOG_WAYLAND_EMBED(" === START PACKET === ");
