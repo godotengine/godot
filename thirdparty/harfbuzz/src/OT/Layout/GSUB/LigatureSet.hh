@@ -62,6 +62,15 @@ struct LigatureSet
     ;
   }
 
+  template <typename set_t>
+  void collect_seconds (set_t &s) const
+  {
+    + hb_iter (ligature)
+    | hb_map (hb_add (this))
+    | hb_apply ([&s] (const Ligature<Types> &_) { _.collect_second (s); })
+    ;
+  }
+
   bool would_apply (hb_would_apply_context_t *c) const
   {
     return
@@ -72,14 +81,14 @@ struct LigatureSet
     ;
   }
 
-  bool apply (hb_ot_apply_context_t *c) const
+  bool apply (hb_ot_apply_context_t *c, const hb_set_digest_t *seconds = nullptr) const
   {
     TRACE_APPLY (this);
 
     unsigned int num_ligs = ligature.len;
 
 #ifndef HB_NO_OT_RULESETS_FAST_PATH
-    if (HB_OPTIMIZE_SIZE_VAL || num_ligs <= 4)
+    if (HB_OPTIMIZE_SIZE_VAL || num_ligs <= 1)
 #endif
     {
     slow:
@@ -91,7 +100,7 @@ struct LigatureSet
       return_trace (false);
     }
 
-    /* This version is optimized for speed by matching the first component
+    /* This version is optimized for speed by matching the second component
      * of the ligature here, instead of calling into the ligation code.
      *
      * This is replicated in ChainRuleSet and RuleSet. */
@@ -101,11 +110,11 @@ struct LigatureSet
     skippy_iter.set_match_func (match_always, nullptr);
     skippy_iter.set_glyph_data ((HBUINT16 *) nullptr);
     unsigned unsafe_to;
-    hb_codepoint_t first = (unsigned) -1;
+    hb_codepoint_t second = (unsigned) -1;
     bool matched = skippy_iter.next (&unsafe_to);
     if (likely (matched))
     {
-      first = c->buffer->info[skippy_iter.idx].codepoint;
+      second = c->buffer->info[skippy_iter.idx].codepoint;
       unsafe_to = skippy_iter.idx + 1;
 
       if (skippy_iter.may_skip (c->buffer->info[skippy_iter.idx]))
@@ -118,13 +127,14 @@ struct LigatureSet
     else
       goto slow;
 
+    if (seconds && !seconds->may_have (second))
+      return_trace (false);
     bool unsafe_to_concat = false;
-
     for (unsigned int i = 0; i < num_ligs; i++)
     {
       const auto &lig = this+ligature.arrayZ[i];
       if (unlikely (lig.component.lenP1 <= 1) ||
-	  lig.component.arrayZ[0] == first)
+	  lig.component.arrayZ[0] == second)
       {
 	if (lig.apply (c))
 	{

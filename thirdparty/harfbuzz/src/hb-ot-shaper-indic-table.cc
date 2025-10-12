@@ -6,12 +6,12 @@
  *
  * on files with these headers:
  *
- * # IndicSyllabicCategory-16.0.0.txt
- * # Date: 2024-04-30, 21:48:21 GMT
- * # IndicPositionalCategory-16.0.0.txt
- * # Date: 2024-04-30, 21:48:21 GMT
- * # Blocks-16.0.0.txt
- * # Date: 2024-02-02
+ * # IndicSyllabicCategory-17.0.0.txt
+ * # Date: 2025-08-01, 04:02:23 GMT
+ * # IndicPositionalCategory-17.0.0.txt
+ * # Date: 2025-07-29, 13:35:52 GMT
+ * # Blocks-17.0.0.txt
+ * # Date: 2025-08-01
  */
 
 #include "hb.hh"

@@ -34,7 +34,7 @@
 #include "hb.hh"
 #include "hb-blob.hh"
 #include "hb-map.hh"
-#include "hb-pool.hh"
+#include "hb-free-pool.hh"
 
 #include "hb-subset-serialize.h"
 
@@ -724,7 +724,7 @@ struct hb_serialize_context_t
 	   hb_requires (hb_is_iterator (Iterator)),
 	   typename ...Ts>
   void copy_all (Iterator it, Ts&&... ds)
-  { for (decltype (*it) _ : it) copy (_, std::forward<Ts> (ds)...); }
+  { for (decltype (*it) _ : it) copy (_, ds...); }
 
   template <typename Type>
   hb_serialize_context_t& operator << (const Type &obj) & { embed (obj); return *this; }
@@ -815,7 +815,7 @@ struct hb_serialize_context_t
   }
 
   /* Object memory pool. */
-  hb_pool_t<object_t> object_pool;
+  hb_free_pool_t<object_t> object_pool;
 
   /* Stack of currently under construction objects. */
   object_t *current;

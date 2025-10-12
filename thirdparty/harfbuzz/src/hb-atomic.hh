@@ -40,7 +40,6 @@
  * Atomic integers and pointers.
  */
 
-
 /* We need external help for these */
 
 #if defined(hb_atomic_int_impl_add) \
@@ -80,26 +79,10 @@ _hb_atomic_ptr_impl_cmplexch (const void **P, const void *O_, const void *N)
 
 #include <atomic>
 
+#define HB_STL_ATOMIC_IMPL
+
 #define _hb_memory_r_barrier()			std::atomic_thread_fence(std::memory_order_acquire)
 #define _hb_memory_w_barrier()			std::atomic_thread_fence(std::memory_order_release)
-
-#define hb_atomic_int_impl_add(AI, V)		(reinterpret_cast<std::atomic<typename std::decay<decltype (*(AI))>::type> *> (AI)->fetch_add ((V), std::memory_order_acq_rel))
-#define hb_atomic_int_impl_set_relaxed(AI, V)	(reinterpret_cast<std::atomic<typename std::decay<decltype (*(AI))>::type> *> (AI)->store ((V), std::memory_order_relaxed))
-#define hb_atomic_int_impl_set(AI, V)		(reinterpret_cast<std::atomic<typename std::decay<decltype (*(AI))>::type> *> (AI)->store ((V), std::memory_order_release))
-#define hb_atomic_int_impl_get_relaxed(AI)	(reinterpret_cast<std::atomic<typename std::decay<decltype (*(AI))>::type> const *> (AI)->load (std::memory_order_relaxed))
-#define hb_atomic_int_impl_get(AI)		(reinterpret_cast<std::atomic<typename std::decay<decltype (*(AI))>::type> const *> (AI)->load (std::memory_order_acquire))
-
-#define hb_atomic_ptr_impl_set_relaxed(P, V)	(reinterpret_cast<std::atomic<void*> *> (P)->store ((V), std::memory_order_relaxed))
-#define hb_atomic_ptr_impl_get_relaxed(P)	(reinterpret_cast<std::atomic<void*> const *> (P)->load (std::memory_order_relaxed))
-#define hb_atomic_ptr_impl_get(P)		(reinterpret_cast<std::atomic<void*> *> (P)->load (std::memory_order_acquire))
-static inline bool
-_hb_atomic_ptr_impl_cmplexch (const void **P, const void *O_, const void *N)
-{
-  const void *O = O_; // Need lvalue
-  return reinterpret_cast<std::atomic<const void*> *> (P)->compare_exchange_weak (O, N, std::memory_order_acq_rel, std::memory_order_relaxed);
-}
-#define hb_atomic_ptr_impl_cmpexch(P,O,N)	_hb_atomic_ptr_impl_cmplexch ((const void **) (P), (O), (N))
-
 
 #else /* defined(HB_NO_MT) */
 
@@ -159,6 +142,81 @@ inline T hb_atomic_int_impl_get (const T *AI)	{ T v = *AI; _hb_memory_r_barrier 
 inline void *hb_atomic_ptr_impl_get (void ** const P)	{ void *v = *P; _hb_memory_r_barrier (); return v; }
 #endif
 
+#ifdef HB_STL_ATOMIC_IMPL
+template <typename T>
+struct hb_atomic_t
+{
+  hb_atomic_t () = default;
+  constexpr hb_atomic_t (T v) : v (v) {}
+  constexpr hb_atomic_t (const hb_atomic_t& o) : v (o.get_relaxed ()) {}
+  constexpr hb_atomic_t (hb_atomic_t&& o) : v (o.get_relaxed ()) { o.set_relaxed ({}); }
+
+  hb_atomic_t &operator= (const hb_atomic_t& o) { set_relaxed (o.get_relaxed ()); return *this; }
+  hb_atomic_t &operator= (hb_atomic_t&& o){ set_relaxed (o.get_relaxed ()); o.set_relaxed ({}); return *this; }
+  hb_atomic_t &operator= (T v_)
+  {
+    set_relaxed (v_);
+    return *this;
+  }
+  operator T () const { return get_relaxed (); }
+
+  void set_relaxed (T v_) { v.store (v_, std::memory_order_relaxed); }
+  void set_release (T v_) { v.store (v_, std::memory_order_release); }
+  T get_relaxed () const { return v.load (std::memory_order_relaxed); }
+  T get_acquire () const { return v.load (std::memory_order_acquire); }
+  T inc () { return v.fetch_add (1, std::memory_order_acq_rel); }
+  T dec () { return v.fetch_add (-1, std::memory_order_acq_rel); }
+
+  int operator++ (int) { return inc (); }
+  int operator-- (int) { return dec (); }
+  long operator|= (long v_)
+  {
+    set_relaxed (get_relaxed () | v_);
+    return *this;
+  }
+
+  friend void swap (hb_atomic_t &a, hb_atomic_t &b) noexcept
+  {
+    T v = a.get_acquire ();
+    a.set_relaxed (b.get_acquire ());
+    b.set_relaxed (v);
+  }
+
+  std::atomic<T> v = 0;
+};
+
+template <typename T>
+struct hb_atomic_t<T *>
+{
+  hb_atomic_t () = default;
+  constexpr hb_atomic_t (T *v) : v (v) {}
+  hb_atomic_t (const hb_atomic_t &other) = delete;
+
+  void init (T *v_ = nullptr) { set_relaxed (v_); }
+  void set_relaxed (T *v_) { v.store (v_, std::memory_order_relaxed); }
+  T *get_relaxed () const { return v.load (std::memory_order_relaxed); }
+  T *get_acquire () const { return v.load (std::memory_order_acquire); }
+  bool cmpexch (T *old, T *new_) { return v.compare_exchange_weak (old, new_, std::memory_order_acq_rel, std::memory_order_relaxed); }
+
+  operator bool () const { return get_acquire () != nullptr; }
+  T *operator->() const { return get_acquire (); }
+  template <typename C>
+  operator C * () const
+  {
+    return get_acquire ();
+  }
+
+  friend void swap (hb_atomic_t &a, hb_atomic_t &b) noexcept
+  {
+    T *p = a.get_acquire ();
+    a.set_relaxed (b.get_acquire ());
+    b.set_relaxed (p);
+  }
+
+  std::atomic<T *> v = nullptr;
+};
+
+#else
 
 template <typename T>
 struct hb_atomic_t
@@ -194,7 +252,7 @@ struct hb_atomic_t<T*>
   void set_relaxed (T* v_) { hb_atomic_ptr_impl_set_relaxed (&v, v_); }
   T *get_relaxed () const { return (T *) hb_atomic_ptr_impl_get_relaxed (&v); }
   T *get_acquire () const { return (T *) hb_atomic_ptr_impl_get ((void **) &v); }
-  bool cmpexch (const T *old, T *new_) { return hb_atomic_ptr_impl_cmpexch ((void **) &v, (void *) old, (void *) new_); }
+  bool cmpexch (T *old, T *new_) { return hb_atomic_ptr_impl_cmpexch ((void **) &v, (void *) old, (void *) new_); }
 
   operator bool () const { return get_acquire () != nullptr; }
   T * operator -> () const                    { return get_acquire (); }
@@ -202,6 +260,8 @@ struct hb_atomic_t<T*>
 
   T *v = nullptr;
 };
+
+#endif
 
 static inline bool hb_barrier ()
 {

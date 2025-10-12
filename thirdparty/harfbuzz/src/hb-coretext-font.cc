@@ -410,8 +410,8 @@ hb_coretext_get_glyph_name (hb_font_t *font,
     return false;
 
   CFIndex len = CFStringGetLength (cf_name);
-  if (len > size - 1)
-    len = size - 1;
+  if (len > (CFIndex)size - 1)
+    len = (CFIndex)size - 1;
 
   CFStringGetBytes (cf_name, CFRangeMake (0, len),
 		    kCFStringEncodingUTF8, 0, false,

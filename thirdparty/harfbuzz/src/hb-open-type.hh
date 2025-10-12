@@ -82,6 +82,7 @@ struct NumType
   NumType operator ++ (int) { NumType c (*this); ++*this; return c; }
   NumType operator -- (int) { NumType c (*this); --*this; return c; }
 
+  uint32_t hash () const { return hb_array ((const char *) &v, sizeof (v)).hash (); }
   HB_INTERNAL static int cmp (const NumType *a, const NumType *b)
   { return b->cmp (*a); }
   HB_INTERNAL static int cmp (const void *a, const void *b)
@@ -1498,8 +1499,8 @@ struct TupleValues
     VALUE_RUN_COUNT_MASK = 0x3F
   };
 
-  static unsigned compile (hb_array_t<const int> values, /* IN */
-			   hb_array_t<unsigned char> encoded_bytes /* OUT */)
+  static unsigned compile_unsafe (hb_array_t<const int> values, /* IN */
+				  unsigned char *encoded_bytes /* OUT */)
   {
     unsigned num_values = values.length;
     unsigned encoded_len = 0;
@@ -1508,24 +1509,23 @@ struct TupleValues
     {
       int val = values.arrayZ[i];
       if (val == 0)
-        encoded_len += encode_value_run_as_zeroes (i, encoded_bytes.sub_array (encoded_len), values);
-      else if (val >= -128 && val <= 127)
-        encoded_len += encode_value_run_as_bytes (i, encoded_bytes.sub_array (encoded_len), values);
-      else if (val >= -32768 && val <= 32767)
-        encoded_len += encode_value_run_as_words (i, encoded_bytes.sub_array (encoded_len), values);
+        encoded_len += encode_value_run_as_zeroes (i, encoded_bytes + encoded_len, values);
+      else if ((int8_t) val == val)
+        encoded_len += encode_value_run_as_bytes (i, encoded_bytes + encoded_len, values);
+      else if ((int16_t) val == val)
+        encoded_len += encode_value_run_as_words (i, encoded_bytes + encoded_len, values);
       else
-        encoded_len += encode_value_run_as_longs (i, encoded_bytes.sub_array (encoded_len), values);
+        encoded_len += encode_value_run_as_longs (i, encoded_bytes + encoded_len, values);
     }
     return encoded_len;
   }
 
   static unsigned encode_value_run_as_zeroes (unsigned& i,
-					      hb_array_t<unsigned char> encoded_bytes,
+					      unsigned char *it,
 					      hb_array_t<const int> values)
   {
     unsigned num_values = values.length;
     unsigned run_length = 0;
-    auto it = encoded_bytes.iter ();
     unsigned encoded_len = 0;
     while (i < num_values && values.arrayZ[i] == 0)
     {
@@ -1549,7 +1549,7 @@ struct TupleValues
   }
 
   static unsigned encode_value_run_as_bytes (unsigned &i,
-					     hb_array_t<unsigned char> encoded_bytes,
+					     unsigned char *it,
 					     hb_array_t<const int> values)
   {
     unsigned start = i;
@@ -1557,7 +1557,7 @@ struct TupleValues
     while (i < num_values)
     {
       int val = values.arrayZ[i];
-      if (val > 127 || val < -128)
+      if ((int8_t) val != val)
         break;
 
       /* from fonttools: if there're 2 or more zeros in a sequence,
@@ -1570,7 +1570,6 @@ struct TupleValues
     unsigned run_length = i - start;
 
     unsigned encoded_len = 0;
-    auto it = encoded_bytes.iter ();
 
     while (run_length >= 64)
     {
@@ -1578,10 +1577,9 @@ struct TupleValues
       encoded_len++;
 
       for (unsigned j = 0; j < 64; j++)
-      {
-        *it++ = static_cast<char> (values.arrayZ[start + j]);
-        encoded_len++;
-      }
+	it[j] = static_cast<char> (values.arrayZ[start + j]);
+      it += 64;
+      encoded_len += 64;
 
       start += 64;
       run_length -= 64;
@@ -1592,18 +1590,16 @@ struct TupleValues
       *it++ = (VALUES_ARE_BYTES | (run_length - 1));
       encoded_len++;
 
-      while (start < i)
-      {
-        *it++ = static_cast<char> (values.arrayZ[start++]);
-        encoded_len++;
-      }
+      for (unsigned j = 0; j < run_length; j++)
+        it[j] = static_cast<char> (values.arrayZ[start + j]);
+      encoded_len += run_length;
     }
 
     return encoded_len;
   }
 
   static unsigned encode_value_run_as_words (unsigned &i,
-					     hb_array_t<unsigned char> encoded_bytes,
+					     unsigned char *it,
 					     hb_array_t<const int> values)
   {
     unsigned start = i;
@@ -1612,22 +1608,24 @@ struct TupleValues
     {
       int val = values.arrayZ[i];
 
-      /* start a new run for a single zero value*/
+      if ((int16_t) val != val)
+        break;
+
+      /* start a new run for a single zero value. */
       if (val == 0) break;
 
-      /* from fonttools: continue word-encoded run if there's only one
+      /* From fonttools: continue word-encoded run if there's only one
        * single value in the range [-128, 127] because it is more compact.
        * Only start a new run when there're 2 continuous such values. */
-      if (val >= -128 && val <= 127 &&
+      if ((int8_t) val == val &&
           i + 1 < num_values &&
-          values.arrayZ[i+1] >= -128 && values.arrayZ[i+1] <= 127)
+          (int8_t) values.arrayZ[i+1] == values.arrayZ[i+1])
         break;
 
       i++;
     }
 
     unsigned run_length = i - start;
-    auto it = encoded_bytes.iter ();
     unsigned encoded_len = 0;
     while (run_length >= 64)
     {
@@ -1664,7 +1662,7 @@ struct TupleValues
   }
 
   static unsigned encode_value_run_as_longs (unsigned &i,
-					     hb_array_t<unsigned char> encoded_bytes,
+					     unsigned char *it,
 					     hb_array_t<const int> values)
   {
     unsigned start = i;
@@ -1673,14 +1671,13 @@ struct TupleValues
     {
       int val = values.arrayZ[i];
 
-      if (val >= -32768 && val <= 32767)
+      if ((int16_t) val == val)
         break;
 
       i++;
     }
 
     unsigned run_length = i - start;
-    auto it = encoded_bytes.iter ();
     unsigned encoded_len = 0;
     while (run_length >= 64)
     {
@@ -1738,7 +1735,7 @@ struct TupleValues
       unsigned run_count = (control & VALUE_RUN_COUNT_MASK) + 1;
       if (consume_all)
       {
-        if (unlikely (!values.resize (values.length + run_count, false)))
+        if (unlikely (!values.resize_dirty  (values.length + run_count)))
 	  return false;
       }
       unsigned stop = i + run_count;

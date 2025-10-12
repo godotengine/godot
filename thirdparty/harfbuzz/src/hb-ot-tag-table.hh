@@ -7,7 +7,7 @@
  * on files with these headers:
  *
  * <meta name="updated_at" content="2024-12-06T06:35:00Z" />
- * File-Date: 2025-03-10
+ * File-Date: 2025-08-25
  */
 
 #ifndef HB_OT_TAG_TABLE_HH
@@ -704,7 +704,7 @@ static const LangTag ot_languages3[] = {
 /*{HB_TAG('g','u','z',' '),	HB_TAG('G','U','Z',' ')},*/	/* Gusii */
   {HB_TAG('g','w','i',' '),	HB_TAG('A','T','H',' ')},	/* Gwichʼin -> Athapaskan */
   {HB_TAG('g','y','n',' '),	HB_TAG('C','P','P',' ')},	/* Guyanese Creole English -> Creoles */
-  {HB_TAG('h','a','a',' '),	HB_TAG('A','T','H',' ')},	/* Han -> Athapaskan */
+  {HB_TAG('h','a','a',' '),	HB_TAG('A','T','H',' ')},	/* Hän -> Athapaskan */
   {HB_TAG('h','a','e',' '),	HB_TAG('O','R','O',' ')},	/* Eastern Oromo -> Oromo */
   {HB_TAG('h','a','i',' '),	HB_TAG('H','A','I','0')},	/* Haida [macrolanguage] */
   {HB_TAG('h','a','k',' '),	HB_TAG('Z','H','S',' ')},	/* Hakka Chinese -> Chinese, Simplified */
@@ -921,7 +921,7 @@ static const LangTag ot_languages3[] = {
   {HB_TAG('k','v','t',' '),	HB_TAG('K','R','N',' ')},	/* Lahta Karen -> Karen */
   {HB_TAG('k','v','u',' '),	HB_TAG('K','R','N',' ')},	/* Yinbaw Karen -> Karen */
   {HB_TAG('k','v','y',' '),	HB_TAG('K','R','N',' ')},	/* Yintale Karen -> Karen */
-/*{HB_TAG('k','w','k',' '),	HB_TAG('K','W','K',' ')},*/	/* Kwakiutl -> Kwakʼwala */
+/*{HB_TAG('k','w','k',' '),	HB_TAG('K','W','K',' ')},*/	/* Kwakʼwala */
   {HB_TAG('k','w','w',' '),	HB_TAG('C','P','P',' ')},	/* Kwinti -> Creoles */
   {HB_TAG('k','w','y',' '),	HB_TAG('K','O','N','0')},	/* San Salvador Kongo -> Kongo */
   {HB_TAG('k','x','c',' '),	HB_TAG('K','M','S',' ')},	/* Konso -> Komso */

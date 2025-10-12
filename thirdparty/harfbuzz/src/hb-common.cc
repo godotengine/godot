@@ -631,6 +631,9 @@ hb_script_get_horizontal_direction (hb_script_t script)
     /* Unicode-16.0 additions */
     case HB_SCRIPT_GARAY:
 
+    /* Unicode-17.0 additions */
+    case HB_SCRIPT_SIDETIC:
+
       return HB_DIRECTION_RTL;
 
 

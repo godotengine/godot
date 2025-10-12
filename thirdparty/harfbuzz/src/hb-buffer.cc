@@ -158,13 +158,14 @@ hb_segment_properties_overlay (hb_segment_properties_t *p,
 bool
 hb_buffer_t::enlarge (unsigned int size)
 {
-  if (unlikely (!successful))
-    return false;
   if (unlikely (size > max_len))
   {
     successful = false;
     return false;
   }
+
+  if (unlikely (!successful))
+    return false;
 
   unsigned int new_allocated = allocated;
   hb_glyph_position_t *new_pos = nullptr;
@@ -225,6 +226,13 @@ hb_buffer_t::shift_forward (unsigned int count)
 {
   assert (have_output);
   if (unlikely (!ensure (len + count))) return false;
+
+  max_ops -= len - idx;
+  if (unlikely (max_ops < 0))
+  {
+    successful = false;
+    return false;
+  }
 
   memmove (info + idx + count, info + idx, (len - idx) * sizeof (info[0]));
   if (idx + count > len)
@@ -297,7 +305,6 @@ hb_buffer_t::clear ()
   props = default_props;
 
   successful = true;
-  shaping_failed = false;
   have_output = false;
   have_positions = false;
 
@@ -320,7 +327,6 @@ hb_buffer_t::enter ()
 {
   deallocate_var_all ();
   serial = 0;
-  shaping_failed = false;
   scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
   unsigned mul;
   if (likely (!hb_unsigned_mul_overflows (len, HB_BUFFER_MAX_LEN_FACTOR, &mul)))
@@ -339,7 +345,6 @@ hb_buffer_t::leave ()
   max_ops = HB_BUFFER_MAX_OPS_DEFAULT;
   deallocate_var_all ();
   serial = 0;
-  // Intentionally not reseting shaping_failed, such that it can be inspected.
 }
 
 
@@ -520,7 +525,19 @@ hb_buffer_t::set_masks (hb_mask_t    value,
   hb_mask_t not_mask = ~mask;
   value &= mask;
 
+  max_ops -= len;
+  if (unlikely (max_ops < 0))
+    successful = false;
+
   unsigned int count = len;
+
+  if (cluster_start == 0 && cluster_end == (unsigned int) -1)
+  {
+    for (unsigned int i = 0; i < count; i++)
+      info[i].mask = (info[i].mask & not_mask) | value;
+    return;
+  }
+
   for (unsigned int i = 0; i < count; i++)
     if (cluster_start <= info[i].cluster && info[i].cluster < cluster_end)
       info[i].mask = (info[i].mask & not_mask) | value;
@@ -535,6 +552,10 @@ hb_buffer_t::merge_clusters_impl (unsigned int start,
     unsafe_to_break (start, end);
     return;
   }
+
+  max_ops -= end - start;
+  if (unlikely (max_ops < 0))
+    successful = false;
 
   unsigned int cluster = info[start].cluster;
 
@@ -568,6 +589,10 @@ hb_buffer_t::merge_out_clusters (unsigned int start,
 
   if (unlikely (end - start < 2))
     return;
+
+  max_ops -= end - start;
+  if (unlikely (max_ops < 0))
+    successful = false;
 
   unsigned int cluster = out_info[start].cluster;
 
@@ -726,7 +751,6 @@ DEFINE_NULL_INSTANCE (hb_buffer_t) =
   HB_SEGMENT_PROPERTIES_DEFAULT,
 
   false, /* successful */
-  true, /* shaping_failed */
   false, /* have_output */
   true  /* have_positions */
 
