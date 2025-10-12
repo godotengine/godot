@@ -71,7 +71,20 @@ hvec3 f0_Clear_Coat_To_Surface(hvec3 f0) {
 	return clamp(f0 * (f0 * (half(0.941892) - half(0.263008) * f0) + half(0.346479)) - half(0.0285998), half(0.0), half(1.0));
 }
 
-void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is_directional, half attenuation, hvec3 f0, half roughness, half metallic, half specular_amount, hvec3 albedo, inout half alpha, vec2 screen_uv, hvec3 energy_compensation,
+float D_Charlie(float roughness, float NdotH) {
+	// Estevez and Kulla 2017, "Production Friendly Microfacet Sheen BRDF"
+	float invAlpha = 1.0 / roughness;
+	float cos2h = NdotH * NdotH;
+	float sin2h = 1.0 - cos2h;
+	return (2.0 + invAlpha) * pow(sin2h, invAlpha * 0.5) / (2.0 * M_PI);
+}
+
+float V_Neubelt(float NdotV, float NdotL) {
+	// Neubelt and Pettineo 2013, "Crafting a Next-gen Material Pipeline for The Order: 1886"
+	return 1.0 / (4.0 * (NdotL + NdotV - NdotL * NdotV));
+}
+
+void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is_directional, half attenuation, hvec3 f0, half roughness, half metallic, half specular_amount, hvec3 albedo, inout half alpha, vec2 screen_uv, hvec3 energy_compensation, half s_attenuation,
 #ifdef LIGHT_BACKLIGHT_USED
 		hvec3 backlight,
 #endif
@@ -83,6 +96,9 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 #endif
 #ifdef LIGHT_RIM_USED
 		half rim, half rim_tint,
+#endif
+#ifdef LIGHT_SHEEN_USED
+		half sheen, half sheen_roughness, hvec3 sheen_color,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 		half clearcoat, half clearcoat_roughness, hvec3 vertex_normal,
@@ -199,6 +215,15 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 		specular_light += clearcoat_specular_brdf_NL * light_color * attenuation * specular_amount;
 #endif // LIGHT_CLEARCOAT_USED
 
+#if defined(LIGHT_SHEEN_USED)
+		half alpha_sheen = sheen_roughness * sheen_roughness;
+		half Dc = D_Charlie(alpha_sheen, cNdotH);
+		half Vn = V_Neubelt(cNdotV, cNdotL);
+		hvec3 sheen_specular_brdf_NL = Dc * Vn * sheen_color * sheen * cNdotL;
+
+		specular_light += sheen_specular_brdf_NL * light_color * attenuation * specular_amount;
+#endif // LIGHT_SHEEN_USED
+
 		if (metallic < half(1.0)) {
 			half diffuse_brdf_NL; // BRDF times N.L for calculating diffuse radiance
 
@@ -223,7 +248,7 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 			diffuse_brdf_NL = cNdotL * half(1.0 / M_PI);
 #endif
 
-			diffuse_light += light_color * diffuse_brdf_NL * attenuation * cc_attenuation;
+			diffuse_light += light_color * diffuse_brdf_NL * attenuation * cc_attenuation * s_attenuation;
 
 #if defined(LIGHT_BACKLIGHT_USED)
 			diffuse_light += light_color * (hvec3(1.0 / M_PI) - diffuse_brdf_NL) * backlight * attenuation;
@@ -231,7 +256,7 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 		}
 
 		if (roughness > half(0.0)) {
-#if defined(SPECULAR_SCHLICK_GGX)
+#if defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_SHEEN_USED)
 			half cNdotH = clamp(A + dot(N, H), half(0.0), half(1.0));
 #endif
 			// Apply specular light.
@@ -271,7 +296,7 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 			half f90 = clamp(dot(f0, hvec3(50.0 * 0.33)), metallic, half(1.0));
 			hvec3 F = f0 + (f90 - f0) * cLdotH5;
 			hvec3 specular_brdf_NL = energy_compensation * cNdotL * D * F * G;
-			specular_light += specular_brdf_NL * light_color * attenuation * cc_attenuation * specular_amount;
+			specular_light += specular_brdf_NL * light_color * attenuation * cc_attenuation * s_attenuation * specular_amount;
 #endif
 		}
 
@@ -445,7 +470,7 @@ half get_omni_attenuation(float distance, float inv_range, float decay) {
 	return half(nd * pow(max(distance, 0.0001), -decay));
 }
 
-void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3 vertex_ddx, vec3 vertex_ddy, hvec3 f0, half roughness, half metallic, float taa_frame_count, hvec3 albedo, inout half alpha, vec2 screen_uv, hvec3 energy_compensation,
+void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3 vertex_ddx, vec3 vertex_ddy, hvec3 f0, half roughness, half metallic, float taa_frame_count, hvec3 albedo, inout half alpha, vec2 screen_uv, hvec3 energy_compensation, half s_attenuation,
 #ifdef LIGHT_BACKLIGHT_USED
 		hvec3 backlight,
 #endif
@@ -456,6 +481,9 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #endif
 #ifdef LIGHT_RIM_USED
 		half rim, half rim_tint,
+#endif
+#ifdef LIGHT_SHEEN_USED
+		half sheen, half sheen_roughness, hvec3 sheen_color,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 		half clearcoat, half clearcoat_roughness, hvec3 vertex_normal,
@@ -711,7 +739,7 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	}
 
 	vec3 light_rel_vec_norm = light_rel_vec / light_length;
-	light_compute(normal, hvec3(light_rel_vec_norm), eye_vec, size, hvec3(color), false, omni_attenuation * shadow, f0, roughness, metallic, half(omni_lights.data[idx].specular_amount), albedo, alpha, screen_uv, energy_compensation,
+	light_compute(normal, hvec3(light_rel_vec_norm), eye_vec, size, hvec3(color), false, omni_attenuation * shadow, f0, roughness, metallic, half(omni_lights.data[idx].specular_amount), albedo, alpha, screen_uv, energy_compensation, s_attenuation,
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
@@ -723,6 +751,9 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #endif
 #ifdef LIGHT_RIM_USED
 			rim * omni_attenuation, rim_tint,
+#endif
+#ifdef LIGHT_SHEEN_USED
+			sheen, sheen_roughness, sheen_color,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 			clearcoat, clearcoat_roughness, vertex_normal,
@@ -746,7 +777,7 @@ vec2 normal_to_panorama(vec3 n) {
 	return panorama_coords;
 }
 
-void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3 vertex_ddx, vec3 vertex_ddy, hvec3 f0, half roughness, half metallic, float taa_frame_count, hvec3 albedo, inout half alpha, vec2 screen_uv, hvec3 energy_compensation,
+void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3 vertex_ddx, vec3 vertex_ddy, hvec3 f0, half roughness, half metallic, float taa_frame_count, hvec3 albedo, inout half alpha, vec2 screen_uv, hvec3 energy_compensation, half s_attenuation,
 #ifdef LIGHT_BACKLIGHT_USED
 		hvec3 backlight,
 #endif
@@ -757,6 +788,9 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #endif
 #ifdef LIGHT_RIM_USED
 		half rim, half rim_tint,
+#endif
+#ifdef LIGHT_SHEEN_USED
+		half sheen, half sheen_roughness, hvec3 sheen_color,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 		half clearcoat, half clearcoat_roughness, hvec3 vertex_normal,
@@ -913,7 +947,7 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 		}
 	}
 
-	light_compute(normal, hvec3(light_rel_vec_norm), eye_vec, size, hvec3(color), false, spot_attenuation * shadow, f0, roughness, metallic, half(spot_lights.data[idx].specular_amount), albedo, alpha, screen_uv, energy_compensation,
+	light_compute(normal, hvec3(light_rel_vec_norm), eye_vec, size, hvec3(color), false, spot_attenuation * shadow, f0, roughness, metallic, half(spot_lights.data[idx].specular_amount), albedo, alpha, screen_uv, energy_compensation, s_attenuation,
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
@@ -925,6 +959,9 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #endif
 #ifdef LIGHT_RIM_USED
 			rim * spot_attenuation, rim_tint,
+#endif
+#ifdef LIGHT_SHEEN_USED
+			sheen, sheen_roughness, sheen_color,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 			clearcoat, clearcoat_roughness, vertex_normal,
@@ -938,6 +975,9 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal, half roughness, hvec3 ambient_light, hvec3 specular_light,
 #ifdef LIGHT_CLEARCOAT_USED
 		hvec3 cc_specular_light, hvec3 cc_ref_vec, half cc_roughness, inout hvec3 cc_reflection_accum,
+#endif
+#ifdef LIGHT_SHEEN_USED
+		hvec3 s_specular_light, hvec3 s_ref_vec, half s_roughness, inout hvec3 s_reflection_accum,
 #endif
 		inout hvec4 ambient_accum, inout hvec4 reflection_accum) {
 	vec3 box_extents = reflections.data[ref_index].box_extents;
@@ -1015,6 +1055,33 @@ void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal
 	cc_reflection *= half(reflections.data[ref_index].intensity) * blend;
 	cc_reflection_accum += cc_reflection;
 #endif // LIGHT_CLEARCOAT_USED
+
+#ifdef LIGHT_SHEEN_USED
+	vec3 local_s_ref_vec = (reflections.data[ref_index].local_matrix * vec4(s_ref_vec, 0.0)).xyz;
+
+	if (reflections.data[ref_index].box_project) { // Box project.
+
+		vec3 nrdir = normalize(local_s_ref_vec);
+		vec3 rbmax = (box_extents - local_pos) / nrdir;
+		vec3 rbmin = (-box_extents - local_pos) / nrdir;
+
+		vec3 rbminmax = mix(rbmin, rbmax, greaterThan(nrdir, vec3(0.0, 0.0, 0.0)));
+
+		float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
+		vec3 posonbox = local_pos + nrdir * fa;
+		local_s_ref_vec = posonbox - reflections.data[ref_index].box_offset;
+	}
+
+	float s_roughness_lod = sqrt(s_roughness) * MAX_ROUGHNESS_LOD;
+	vec2 s_reflection_uv = vec3_to_oct_with_border(local_s_ref_vec, border_size);
+	hvec3 s_reflection = hvec3(textureLod(sampler2DArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(s_reflection_uv, reflections.data[ref_index].index), s_roughness_lod).rgb) * REFLECTION_MULTIPLIER;
+	s_reflection *= half(reflections.data[ref_index].exposure_normalization);
+	if (reflections.data[ref_index].exterior) {
+		s_reflection = mix(s_specular_light, s_reflection, blend);
+	}
+	s_reflection *= half(reflections.data[ref_index].intensity) * blend;
+	s_reflection_accum += s_reflection;
+#endif // LIGHT_SHEEN_USED
 
 	if (ambient_accum.a >= half(1.0)) {
 		return;

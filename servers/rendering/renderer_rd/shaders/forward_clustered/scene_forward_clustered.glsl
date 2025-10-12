@@ -1232,6 +1232,9 @@ void fragment_shader(in SceneData scene_data) {
 	float roughness_highp = 1.0;
 	float rim = 0.0;
 	float rim_tint = 0.0;
+	float sheen = 0.0;
+	float sheen_roughness = 0.0;
+	vec3 sheen_color = vec3(1.0);
 	float clearcoat = 0.0;
 	float clearcoat_roughness = 0.0;
 	float anisotropy = 0.0;
@@ -1647,12 +1650,13 @@ void fragment_shader(in SceneData scene_data) {
 	/////////////////////// LIGHTING //////////////////////////////
 
 #ifdef NORMAL_USED
+	float kernelRoughness2 = 0.0;
 	if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_ROUGHNESS_LIMITER)) {
 		//https://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf
 		float roughness2 = roughness * roughness;
 		vec3 dndu = dFdx(normal), dndv = dFdy(normal);
 		float variance = scene_data.roughness_limiter_amount * (dot(dndu, dndu) + dot(dndv, dndv));
-		float kernelRoughness2 = min(2.0 * variance, scene_data.roughness_limiter_limit); //limit effect
+		kernelRoughness2 = min(2.0 * variance, scene_data.roughness_limiter_limit); //limit effect
 		float filteredRoughness2 = min(1.0, roughness2 + kernelRoughness2);
 		roughness = sqrt(filteredRoughness2);
 
@@ -1662,13 +1666,25 @@ void fragment_shader(in SceneData scene_data) {
 			roughness = 0.0;
 		}
 	}
+
+#ifdef LIGHT_SHEEN_USED
+	sheen_roughness = max(sheen_roughness, 0.045); // to avoid artifacts
+	if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_ROUGHNESS_LIMITER)) {
+		float sheen_roughness2 = sheen_roughness * sheen_roughness;
+		float filteredSheenRoughness2 = min(1.0, sheen_roughness2 + kernelRoughness2);
+		sheen_roughness = sqrt(filteredSheenRoughness2);
+	}
 #endif
+#endif // NORMAL_USED
+
 	//apply energy conservation
 
 	vec3 direct_specular_light = vec3(0.0, 0.0, 0.0);
 	vec3 indirect_specular_light = vec3(0.0, 0.0, 0.0);
 	vec3 diffuse_light = vec3(0.0, 0.0, 0.0);
 	vec3 ambient_light = vec3(0.0, 0.0, 0.0);
+
+	float s_attenuation = 1.0;
 #ifndef MODE_UNSHADED
 	// Used in regular draw pass and when drawing SDFs for SDFGI and materials for VoxelGI.
 	emission *= scene_data.emissive_exposure_normalization;
@@ -1782,6 +1798,36 @@ void fragment_shader(in SceneData scene_data) {
 		cc_specular_light += clearcoat_light * scene_data.IBL_exposure_normalization * scene_data.ambient_light_color_energy.a;
 	}
 #endif // LIGHT_CLEARCOAT_USED
+
+#ifdef LIGHT_SHEEN_USED
+	vec3 s_specular_light = vec3(0.0);
+	vec3 s_ref_vec = vec3(0.0);
+
+	if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_REFLECTION_CUBEMAP)) {
+		s_ref_vec = reflect(-view, normal);
+		s_ref_vec = mix(s_ref_vec, normal, sheen_roughness * sheen_roughness);
+
+		vec3 s_radiance_ref_vec = scene_data.radiance_inverse_xform * s_ref_vec;
+		float roughness_lod = sqrt(sheen_roughness) * MAX_ROUGHNESS_LOD;
+#ifdef USE_RADIANCE_CUBEMAP_ARRAY
+
+		float lod, blend;
+		blend = modf(roughness_lod, lod);
+
+		float ref_lod = vec3_to_oct_lod(dFdx(s_radiance_ref_vec), dFdy(s_radiance_ref_vec), scene_data_block.data.radiance_pixel_size);
+		vec2 ref_uv = vec3_to_oct_with_border(s_radiance_ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		vec3 sheen_sample_a = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, lod), ref_lod).rgb;
+		vec3 sheen_sample_b = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, lod + 1), ref_lod).rgb;
+		vec3 sheen_light = mix(sheen_sample_a, sheen_sample_b, blend);
+
+#else
+		vec2 ref_uv = vec3_to_oct_with_border(s_radiance_ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
+		vec3 sheen_light = textureLod(sampler2D(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ref_uv, roughness_lod).rgb;
+
+#endif //USE_RADIANCE_CUBEMAP_ARRAY
+		s_specular_light += sheen_light * scene_data.IBL_exposure_normalization * scene_data.ambient_light_color_energy.a;
+	}
+#endif // LIGHT_SHEEN_USED
 #endif // !AMBIENT_LIGHT_DISABLED
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
@@ -2035,6 +2081,9 @@ void fragment_shader(in SceneData scene_data) {
 		vec3 cc_reflection_accum = vec3(0.0, 0.0, 0.0);
 #endif
 
+#ifdef LIGHT_SHEEN_USED
+		vec3 s_reflection_accum = vec3(0.0, 0.0, 0.0);
+#endif
 		uint cluster_reflection_offset = cluster_offset + implementation_data.cluster_type_size * 3;
 
 		uint item_min;
@@ -2086,6 +2135,8 @@ void fragment_shader(in SceneData scene_data) {
 				reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light, indirect_specular_light,
 #ifdef LIGHT_CLEARCOAT_USED
 						cc_specular_light, cc_ref_vec, mix(0.001, 0.1, clearcoat_roughness), cc_reflection_accum,
+#ifdef LIGHT_SHEEN_USED
+						s_specular_light, s_ref_vec, sheen_roughness, s_reflection_accum,
 #endif
 						ambient_accum, reflection_accum);
 			}
@@ -2103,6 +2154,9 @@ void fragment_shader(in SceneData scene_data) {
 			indirect_specular_light = reflection_accum.rgb;
 #ifdef LIGHT_CLEARCOAT_USED
 			cc_specular_light = cc_reflection_accum.rgb;
+#endif
+#ifdef LIGHT_SHEEN_USED
+			s_specular_light = s_reflection_accum.rgb;
 #endif
 		}
 
@@ -2251,6 +2305,19 @@ void fragment_shader(in SceneData scene_data) {
 		// We don't need DFG for clearcoat, so we can use the fresnel directly.
 		indirect_specular_light += cc_specular_light * F;
 #endif
+
+#ifdef LIGHT_SHEEN_USED
+		float dfg_sheen = prefiltered_dfg(sheen_roughness, NdotV).z;
+		// Albedo scaling of the base layer before we layer sheen on top
+		s_attenuation = 1.0 - sheen * max(sheen_color.x, max(sheen_color.y, sheen_color.z)) * dfg_sheen;
+
+		ambient_light *= s_attenuation;
+		indirect_specular_light *= s_attenuation;
+
+		// Sheen Layer
+		vec3 reflectance = dfg_sheen * sheen_color;
+		indirect_specular_light += s_specular_light * (reflectance * sheen);
+#endif // LIGHT_SHEEN_USED
 
 #endif // DIFFUSE_TOON
 	}
@@ -2645,7 +2712,7 @@ void fragment_shader(in SceneData scene_data) {
 #else
 					directional_lights.data[i].color * directional_lights.data[i].energy * tint,
 #endif
-					true, shadow, f0, roughness, metallic, directional_lights.data[i].specular, albedo, alpha, screen_uv, energy_compensation,
+					true, shadow, f0, roughness, metallic, directional_lights.data[i].specular, albedo, alpha, screen_uv, energy_compensation, s_attenuation,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
@@ -2657,6 +2724,9 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 #ifdef LIGHT_RIM_USED
 					rim, rim_tint,
+#endif
+#ifdef LIGHT_SHEEN_USED
+					sheen, sheen_roughness, sheen_color,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 					clearcoat, clearcoat_roughness, geo_normal,
@@ -2709,7 +2779,7 @@ void fragment_shader(in SceneData scene_data) {
 					continue; // Statically baked light and object uses lightmap, skip
 				}
 
-				light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, roughness, metallic, scene_data.taa_frame_count, albedo, alpha, screen_uv, energy_compensation,
+				light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, roughness, metallic, scene_data.taa_frame_count, albedo, alpha, screen_uv, energy_compensation, s_attenuation,
 #ifdef LIGHT_BACKLIGHT_USED
 						backlight,
 #endif
@@ -2721,6 +2791,9 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef LIGHT_RIM_USED
 						rim,
 						rim_tint,
+#endif
+#ifdef LIGHT_SHEEN_USED
+						sheen, sheen_roughness, sheen_color,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 						clearcoat, clearcoat_roughness, geo_normal,
@@ -2770,7 +2843,7 @@ void fragment_shader(in SceneData scene_data) {
 					continue; // Statically baked light and object uses lightmap, skip
 				}
 
-				light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, roughness, metallic, scene_data.taa_frame_count, albedo, alpha, screen_uv, energy_compensation,
+				light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, roughness, metallic, scene_data.taa_frame_count, albedo, alpha, screen_uv, energy_compensation, s_attenuation,
 #ifdef LIGHT_BACKLIGHT_USED
 						backlight,
 #endif
@@ -2782,6 +2855,9 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef LIGHT_RIM_USED
 						rim,
 						rim_tint,
+#endif
+#ifdef LIGHT_SHEEN_USED
+						sheen, sheen_roughness, sheen_color,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 						clearcoat, clearcoat_roughness, geo_normal,
