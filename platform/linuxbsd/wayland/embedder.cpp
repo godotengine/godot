@@ -1970,20 +1970,17 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 					int new_global_name = registry_globals_counter++;
 
 					if (global_info.interface == &wl_shm_interface) {
-						// FIXME: Cleanup.
 						DEBUG_LOG_WAYLAND_EMBED("Allocating global wl_shm data.");
 						global_info.data = memnew(WaylandShmGlobalData);
 					}
 
 					if (global_info.interface == &wl_seat_interface) {
-						// FIXME: Cleanup.
 						DEBUG_LOG_WAYLAND_EMBED("Allocating global wl_seat data.");
 						global_info.data = memnew(WaylandSeatGlobalData);
 						wl_seat_names.push_back(new_global_name);
 					}
 
 					if (global_info.interface == &wl_drm_interface) {
-						// FIXME: Cleanup.
 						DEBUG_LOG_WAYLAND_EMBED("Allocating global wl_drm data.");
 						global_info.data = memnew(WaylandDrmGlobalData);
 					}
@@ -2866,9 +2863,15 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 WaylandEmbedder::~WaylandEmbedder() {
 	thread_done.set();
 
-	// TODO: Uninitialize global data and stuff.
-
 	proxy_thread.wait_to_finish();
+
+	for (KeyValue<uint32_t, RegistryGlobalInfo> &pair : registry_globals) {
+		RegistryGlobalInfo &info = pair.value;
+		if (info.data) {
+			memdelete(info.data);
+			info.data = nullptr;
+		}
+	}
 }
 
 #endif // TOOLS_ENABLED
