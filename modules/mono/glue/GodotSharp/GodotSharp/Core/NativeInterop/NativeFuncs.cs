@@ -545,7 +545,7 @@ namespace Godot.NativeInterop
 
         public static partial int godotsharp_node_path_get_subname_count(in godot_node_path p_self);
 
-        public static partial void godotsharp_node_path_slice(scoped in godot_node_path p_self, int p_begin, int p_end
+        public static partial void godotsharp_node_path_slice(scoped in godot_node_path p_self, int p_begin, int p_end,
             out godot_node_path r_result);
 
         public static partial godot_bool godotsharp_node_path_is_absolute(in godot_node_path p_self);
