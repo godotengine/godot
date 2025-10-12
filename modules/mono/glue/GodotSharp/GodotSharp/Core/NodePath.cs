@@ -294,7 +294,8 @@ namespace Godot
             var self = (godot_node_path)NativeValue;
             NativeFuncs.godotsharp_node_path_slice(self, begin, end, out godot_node_path slicedNodePath);
 
-            using(slicedNodePath) return new NodePath(slicedNodePath);
+            using (slicedNodePath)
+                return new NodePath(slicedNodePath);
         }
 
         /// <summary>
