@@ -390,3 +390,4 @@ $RECYCLE.BIN/
 *.msp
 *.lnk
 *.generated.props
+godot.gdkey
