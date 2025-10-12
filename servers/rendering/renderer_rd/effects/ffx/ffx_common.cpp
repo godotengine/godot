@@ -33,6 +33,7 @@
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 #include "thirdparty/amd-ffx/ffx_fsr1.h"
 #include "thirdparty/amd-ffx/ffx_fsr2.h"
+#include "thirdparty/amd-ffx/ffx_fsr3upscaler.h"
 
 using namespace RendererRD;
 
@@ -345,11 +346,6 @@ static FfxErrorCode destroy_resource_rd(FfxInterface *p_backend_interface, FfxRe
 static FfxErrorCode create_pipeline_rd(FfxInterface *p_backend_interface, FfxEffect p_effect, FfxPass p_pass, uint32_t p_permutation_options, const FfxPipelineDescription *p_pipeline_description, FfxUInt32 p_effect_context_id, FfxPipelineState *p_out_pipeline) {
 	FFXCommonContext::Scratch &scratch = *reinterpret_cast<FFXCommonContext::Scratch *>(p_backend_interface->scratchBuffer);
 	FFXCommonContext::Device &device = *reinterpret_cast<FFXCommonContext::Device *>(scratch.device);
-
-	if (p_effect == FFX_EFFECT_FSR1 && p_pass == FFX_FSR1_PASS_EASU_RCAS) {
-		// `EASU_RCAS` and `EASU` are basically variants of a same thing and thus shall share the same pipeline
-		p_pass = FFX_FSR1_PASS_EASU;
-	}
 
 	FFXCommonContext::Pass &effect_pass = device.effect_contexts[p_effect_context_id].passes[p_pass];
 
