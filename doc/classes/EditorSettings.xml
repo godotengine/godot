@@ -1462,7 +1462,7 @@
 			How many script names can be highlighted at most, if [member text_editor/script_list/script_temperature_enabled] is [code]true[/code]. Scripts older than this value use the default font color.
 		</member>
 		<member name="text_editor/script_list/show_members_overview" type="bool" setter="" getter="">
-			If [code]true[/code], displays an overview of the current script's member variables and functions at the left of the script editor. See also [member text_editor/script_list/sort_members_outline_alphabetically].
+			If [code]true[/code], displays an overview of the current script's member functions at the left of the script editor. See also [member text_editor/script_list/sort_members_outline_alphabetically].
 		</member>
 		<member name="text_editor/script_list/sort_members_outline_alphabetically" type="bool" setter="" getter="">
 			If [code]true[/code], sorts the members outline (located at the left of the script editor) using alphabetical order. If [code]false[/code], sorts the members outline depending on the order in which members are found in the script.
