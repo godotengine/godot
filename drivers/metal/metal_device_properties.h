@@ -70,7 +70,8 @@ typedef NS_OPTIONS(NSUInteger, SampleCount) {
 };
 
 struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalFeatures {
-	uint32_t mslVersion = 0;
+	uint32_t mslVersionMajor = 0;
+	uint32_t mslVersionMinor = 0;
 	MTLGPUFamily highestFamily = MTLGPUFamilyApple4;
 	bool supportsBCTextureCompression = false;
 	bool supportsDepth24Stencil8 = false;
@@ -93,6 +94,9 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalFeatures {
 	bool metal_fx_spatial = false; /**< If true, Metal FX spatial functions are supported. */
 	bool metal_fx_temporal = false; /**< If true, Metal FX temporal functions are supported. */
 	bool supports_gpu_address = false; /**< If true, referencing a GPU address in a shader is supported. */
+	bool supports_image_atomic_32_bit = false; /**< If true, 32-bit atomic operations on images are supported by the GPU. */
+	bool supports_image_atomic_64_bit = false; /**< If true, 64-bit atomic operations on images are supported by the GPU. */
+	bool supports_native_image_atomics = false; /**< If true, native image atomic operations are supported by the OS. */
 };
 
 struct MetalLimits {
@@ -139,10 +143,14 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalDeviceProperties {
 private:
 	void init_features(id<MTLDevice> p_device);
 	void init_limits(id<MTLDevice> p_device);
+	void init_os_props();
 
 public:
 	MetalFeatures features;
 	MetalLimits limits;
+
+	// maj * 10000 + min * 100 + patch
+	uint32_t os_version;
 
 	SampleCount find_nearest_supported_sample_count(RenderingDevice::TextureSamples p_samples) const;
 

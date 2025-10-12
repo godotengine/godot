@@ -188,7 +188,7 @@ private:
 		uint32_t cell_offset;
 		uint32_t cell_count;
 		float aniso_strength;
-		uint32_t pad;
+		float cell_size;
 	};
 
 	struct VoxelGIDynamicPushConstant {
@@ -209,7 +209,8 @@ private:
 		float dynamic_range;
 		uint32_t on_mipmap;
 		float propagation;
-		float pad[3];
+		float cell_size;
+		float pad[2];
 	};
 
 	VoxelGILight *voxel_gi_lights = nullptr;
@@ -788,10 +789,17 @@ public:
 
 	RID sdfgi_ubo;
 
+	enum Group {
+		GROUP_NORMAL,
+		GROUP_VRS,
+	};
+
 	enum Mode {
 		MODE_VOXEL_GI,
+		MODE_VOXEL_GI_WITHOUT_SAMPLER,
 		MODE_SDFGI,
 		MODE_COMBINED,
+		MODE_COMBINED_WITHOUT_SAMPLER,
 		MODE_MAX
 	};
 
@@ -825,6 +833,8 @@ public:
 	bool voxel_gi_needs_update(RID p_probe) const;
 	void voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects);
 	void debug_voxel_gi(RID p_voxel_gi, RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
+
+	void enable_vrs_shader_group();
 };
 
 } // namespace RendererRD

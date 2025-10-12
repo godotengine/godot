@@ -35,7 +35,7 @@ def get_opts():
         ),
         BoolVariable("store_release", "Editor build for Google Play Store (for official builds only)", False),
         BoolVariable(
-            "generate_android_binaries",
+            ("generate_android_binaries", "generate_apk"),
             "Generate APK, AAB & AAR binaries after building Android library by calling Gradle",
             False,
         ),
@@ -63,17 +63,17 @@ def get_min_sdk_version(platform):
 
 
 def get_android_ndk_root(env: "SConsEnvironment"):
-    return env["ANDROID_HOME"] + "/ndk/" + get_ndk_version()
+    return os.path.join(env["ANDROID_HOME"], "ndk", get_ndk_version())
 
 
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
 def get_ndk_version():
-    return "27.2.12479018"
+    return "28.1.13356709"
 
 
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
 def get_min_target_api():
-    return 21
+    return 24
 
 
 def get_flags():
@@ -90,7 +90,7 @@ def install_ndk_if_needed(env: "SConsEnvironment"):
     sdk_root = env["ANDROID_HOME"]
     if not os.path.exists(get_android_ndk_root(env)):
         extension = ".bat" if os.name == "nt" else ""
-        sdkmanager = sdk_root + "/cmdline-tools/latest/bin/sdkmanager" + extension
+        sdkmanager = os.path.join(sdk_root, "cmdline-tools", "latest", "bin", "sdkmanager" + extension)
         if os.path.exists(sdkmanager):
             # Install the Android NDK
             print("Installing Android NDK...")
@@ -175,14 +175,14 @@ def configure(env: "SConsEnvironment"):
         else:
             host_subpath = "windows"
 
-    toolchain_path = ndk_root + "/toolchains/llvm/prebuilt/" + host_subpath
-    compiler_path = toolchain_path + "/bin"
+    toolchain_path = os.path.join(ndk_root, "toolchains", "llvm", "prebuilt", host_subpath)
+    compiler_path = os.path.join(toolchain_path, "bin")
 
-    env["CC"] = compiler_path + "/clang"
-    env["CXX"] = compiler_path + "/clang++"
-    env["AR"] = compiler_path + "/llvm-ar"
-    env["RANLIB"] = compiler_path + "/llvm-ranlib"
-    env["AS"] = compiler_path + "/clang"
+    env["CC"] = os.path.join(compiler_path, "clang")
+    env["CXX"] = os.path.join(compiler_path, "clang++")
+    env["AR"] = os.path.join(compiler_path, "llvm-ar")
+    env["RANLIB"] = os.path.join(compiler_path, "llvm-ranlib")
+    env["AS"] = os.path.join(compiler_path, "clang")
 
     env.Append(
         CCFLAGS=(["-fpic", "-ffunction-sections", "-funwind-tables", "-fstack-protector-strong", "-fvisibility=hidden"])
@@ -228,6 +228,7 @@ def configure(env: "SConsEnvironment"):
     # Link flags
 
     env.Append(LINKFLAGS=["-Wl,--gc-sections", "-Wl,--no-undefined", "-Wl,-z,now"])
+    env.Append(LINKFLAGS=["-Wl,--build-id"])
     env.Append(LINKFLAGS=["-Wl,-soname,libgodot_android.so"])
 
     env.Prepend(CPPPATH=["#platform/android"])

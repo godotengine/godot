@@ -67,6 +67,7 @@ class GDExtension : public Resource {
 
 	struct ClassCreationDeprecatedInfo {
 #ifndef DISABLE_DEPRECATED
+		bool legacy_unexposed_class = false;
 		GDExtensionClassNotification notification_func = nullptr;
 		GDExtensionClassFreePropertyList free_property_list_func = nullptr;
 		GDExtensionClassCreateInstance create_instance_func = nullptr;
@@ -80,9 +81,10 @@ class GDExtension : public Resource {
 	static void _register_extension_class(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo *p_extension_funcs);
 	static void _register_extension_class2(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo2 *p_extension_funcs);
 	static void _register_extension_class3(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo3 *p_extension_funcs);
-#endif // DISABLE_DEPRECATED
 	static void _register_extension_class4(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo4 *p_extension_funcs);
-	static void _register_extension_class_internal(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo4 *p_extension_funcs, const ClassCreationDeprecatedInfo *p_deprecated_funcs = nullptr);
+#endif // DISABLE_DEPRECATED
+	static void _register_extension_class5(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo5 *p_extension_funcs);
+	static void _register_extension_class_internal(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo5 *p_extension_funcs, const ClassCreationDeprecatedInfo *p_deprecated_funcs = nullptr);
 	static void _register_extension_class_method(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionClassMethodInfo *p_method_info);
 	static void _register_extension_class_virtual_method(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionClassVirtualMethodInfo *p_method_info);
 	static void _register_extension_class_integer_constant(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_enum_name, GDExtensionConstStringNamePtr p_constant_name, GDExtensionInt p_constant_value, GDExtensionBool p_is_bitfield);
@@ -94,6 +96,7 @@ class GDExtension : public Resource {
 	static void _unregister_extension_class(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name);
 	static void _get_library_path(GDExtensionClassLibraryPtr p_library, GDExtensionStringPtr r_path);
 	static void _register_get_classes_used_callback(GDExtensionClassLibraryPtr p_library, GDExtensionEditorGetClassesUsedCallback p_callback);
+	static void _register_main_loop_callbacks(GDExtensionClassLibraryPtr p_library, const GDExtensionMainLoopCallbacks *p_callbacks);
 
 	GDExtensionInitialization initialization;
 	int32_t level_initialized = -1;
@@ -114,6 +117,10 @@ class GDExtension : public Resource {
 	void finish_reload();
 	void clear_instance_bindings();
 #endif
+
+	GDExtensionMainLoopStartupCallback startup_callback = nullptr;
+	GDExtensionMainLoopShutdownCallback shutdown_callback = nullptr;
+	GDExtensionMainLoopFrameCallback frame_callback = nullptr;
 
 	static inline HashMap<StringName, GDExtensionInterfaceFunctionPtr> gdextension_interface_functions;
 
@@ -177,6 +184,8 @@ public:
 VARIANT_ENUM_CAST(GDExtension::InitializationLevel)
 
 class GDExtensionResourceLoader : public ResourceFormatLoader {
+	GDSOFTCLASS(GDExtensionResourceLoader, ResourceFormatLoader);
+
 public:
 	static Error load_gdextension_resource(const String &p_path, Ref<GDExtension> &p_extension);
 
@@ -184,6 +193,9 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 	virtual bool handles_type(const String &p_type) const override;
 	virtual String get_resource_type(const String &p_path) const override;
+#ifdef TOOLS_ENABLED
+	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes) override;
+#endif // TOOLS_ENABLED
 };
 
 #ifdef TOOLS_ENABLED

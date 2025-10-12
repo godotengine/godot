@@ -51,8 +51,11 @@ class Node3D : public Node {
 	GDCLASS(Node3D, Node);
 
 	friend class SceneTreeFTI;
+	friend class SceneTreeFTITests;
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::NODE_3D;
+
 	// Edit mode for the rotation.
 	// THIS MODE ONLY AFFECTS HOW DATA IS EDITED AND SAVED
 	// IT DOES _NOT_ AFFECT THE TRANSFORM LOGIC (see comment in TransformDirty).
@@ -143,17 +146,24 @@ private:
 		bool fti_on_tick_property_list : 1;
 		bool fti_global_xform_interp_set : 1;
 		bool fti_frame_xform_force_update : 1;
+		bool fti_is_identity_xform : 1;
+		bool fti_processed : 1;
 
 		RID visibility_parent;
 
 		Node3D *parent = nullptr;
-		List<Node3D *> children;
-		List<Node3D *>::Element *C = nullptr;
+
+		// An unordered vector of `Spatial` children only.
+		// This is a subset of the `Node::children`, purely
+		// an optimization for faster traversal.
+		LocalVector<Node3D *> node3d_children;
+		uint32_t index_in_parent = UINT32_MAX;
 
 		ClientPhysicsInterpolationData *client_physics_interpolation_data = nullptr;
 
 #ifdef TOOLS_ENABLED
 		Vector<Ref<Node3DGizmo>> gizmos;
+		bool gizmos_requested : 1;
 		bool gizmos_disabled : 1;
 		bool gizmos_dirty : 1;
 		bool transform_gizmo_visible : 1;
@@ -317,8 +327,8 @@ public:
 	void global_scale(const Vector3 &p_scale);
 	void global_translate(const Vector3 &p_offset);
 
-	void look_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0), bool p_use_model_front = false);
-	void look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0), bool p_use_model_front = false);
+	void look_at(const Vector3 &p_target, const Vector3 &p_up = Vector3::UP, bool p_use_model_front = false);
+	void look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up = Vector3::UP, bool p_use_model_front = false);
 
 	Vector3 to_local(Vector3 p_global) const;
 	Vector3 to_global(Vector3 p_local) const;

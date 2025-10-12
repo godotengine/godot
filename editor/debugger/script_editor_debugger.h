@@ -118,7 +118,7 @@ private:
 
 	TabContainer *tabs = nullptr;
 
-	Label *reason = nullptr;
+	RichTextLabel *reason = nullptr;
 
 	Button *skip_breakpoints = nullptr;
 	Button *ignore_error_breaks = nullptr;
@@ -185,6 +185,9 @@ private:
 	void _select_thread(int p_index);
 
 	bool debug_mute_audio = false;
+	bool audio_muted_on_break = false;
+	void _mute_audio_on_break(bool p_mute);
+	void _send_debug_mute_audio_msg(bool p_mute);
 
 	EditorDebuggerNode::CameraOverride camera_override;
 
@@ -203,6 +206,10 @@ private:
 	void _msg_scene_click_ctrl(uint64_t p_thread_id, const Array &p_data);
 	void _msg_scene_scene_tree(uint64_t p_thread_id, const Array &p_data);
 	void _msg_scene_inspect_objects(uint64_t p_thread_id, const Array &p_data);
+#ifndef DISABLE_DEPRECATED
+	void _msg_scene_inspect_object(uint64_t p_thread_id, const Array &p_data);
+#endif // DISABLE_DEPRECATED
+	void _msg_scene_debug_mute_audio(uint64_t p_thread_id, const Array &p_data);
 	void _msg_servers_memory_usage(uint64_t p_thread_id, const Array &p_data);
 	void _msg_servers_drawn(uint64_t p_thread_id, const Array &p_data);
 	void _msg_stack_dump(uint64_t p_thread_id, const Array &p_data);
@@ -231,6 +238,7 @@ private:
 
 	void _parse_message(const String &p_msg, uint64_t p_thread_id, const Array &p_data);
 	void _set_reason_text(const String &p_reason, MessageType p_type);
+	void _update_reason_content_height();
 	void _update_buttons_state();
 	void _remote_object_selected(ObjectID p_object);
 	void _remote_objects_edited(const String &p_prop, const TypedDictionary<uint64_t, Variant> &p_values, const String &p_field);

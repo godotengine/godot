@@ -21,14 +21,17 @@ msgstr ""
 msgid "All Recognized"
 msgstr "Lahat na Kilalang Ekstensyon"
 
+msgid "Save"
+msgstr "I-save"
+
+msgid "Clear"
+msgstr "Linisin"
+
 msgid "Open"
 msgstr "Buksan"
 
 msgid "Select Current Folder"
 msgstr "Piliin Ang Tinututukang Folder"
-
-msgid "Save"
-msgstr "I-save"
 
 msgid "Select This Folder"
 msgstr "Piliin ang Folder na Ito"
@@ -63,11 +66,11 @@ msgstr "Kinaroroonan:"
 msgid "Refresh files."
 msgstr "I-refresh ang mga file."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "I-toggle ang pagkakakita ng mga nakatagong file."
-
 msgid "Directories & Files:"
 msgstr "Mga Direktoryo at mga File:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "I-toggle ang pagkakakita ng mga nakatagong file."
 
 msgid "File:"
 msgstr "File:"
@@ -101,9 +104,6 @@ msgstr "I-pasta"
 
 msgid "Select All"
 msgstr "Piliin Lahat"
-
-msgid "Clear"
-msgstr "Linisin"
 
 msgid "Undo"
 msgstr "I-undo"

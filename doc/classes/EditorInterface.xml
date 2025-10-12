@@ -19,6 +19,19 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_root_node">
+			<return type="void" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Makes [param node] root of the currently opened scene. Only works if the scene is empty. If the [param node] is a scene instance, an inheriting scene will be created.
+			</description>
+		</method>
+		<method name="close_scene">
+			<return type="int" enum="Error" />
+			<description>
+				Closes the currently active scene, discarding any pending changes in the process. Returns [constant OK] on success or [constant ERR_DOES_NOT_EXIST] if there is no scene to close.
+			</description>
+		</method>
 		<method name="edit_node">
 			<return type="void" />
 			<param index="0" name="node" type="Node" />
@@ -156,6 +169,24 @@
 				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
+		<method name="get_node_3d_rotate_snap" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the amount of degrees the 3D editor's rotational snapping is set to.
+			</description>
+		</method>
+		<method name="get_node_3d_scale_snap" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the amount of units the 3D editor's scale snapping is set to.
+			</description>
+		</method>
+		<method name="get_node_3d_translate_snap" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the amount of units the 3D editor's translation snapping is set to.
+			</description>
+		</method>
 		<method name="get_open_scene_roots" qualifiers="const">
 			<return type="Node[]" />
 			<description>
@@ -221,6 +252,12 @@
 				- [member EditorSettings.interface/multi_window/enable] is [code]true[/code].
 				- [member EditorSettings.interface/editor/single_window_mode] is [code]false[/code].
 				- [member Viewport.gui_embed_subwindows] is [code]false[/code]. This is forced to [code]true[/code] on platforms that don't support multiple windows such as Web, or when the [code]--single-window[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url] is used.
+			</description>
+		</method>
+		<method name="is_node_3d_snap_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the 3D editor currently has snapping mode enabled, and [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="is_playing_scene" qualifiers="const">
@@ -350,14 +387,14 @@
 				[b]Example:[/b] Display the node selection dialog as soon as this node is added to the tree for the first time:
 				[codeblock]
 				func _ready():
-				    if Engine.is_editor_hint():
-				        EditorInterface.popup_node_selector(_on_node_selected, ["Button"])
+					if Engine.is_editor_hint():
+						EditorInterface.popup_node_selector(_on_node_selected, ["Button"])
 
 				func _on_node_selected(node_path):
-				    if node_path.is_empty():
-				        print("node selection canceled")
-				    else:
-				        print("selected ", node_path)
+					if node_path.is_empty():
+						print("node selection canceled")
+					else:
+						print("selected ", node_path)
 				[/codeblock]
 			</description>
 		</method>
@@ -371,14 +408,14 @@
 				Pops up an editor dialog for selecting properties from [param object]. The [param callback] must take a single argument of type [NodePath]. It is called on the selected property path (see [method NodePath.get_as_property_path]) or the empty path [code]^""[/code] if the dialog is canceled. If [param type_filter] is provided, the dialog will only show properties that match one of the listed [enum Variant.Type] values. If [param current_value] is provided, the property will be selected automatically in the property list, if it exists.
 				[codeblock]
 				func _ready():
-				    if Engine.is_editor_hint():
-				        EditorInterface.popup_property_selector(this, _on_property_selected, [TYPE_INT])
+					if Engine.is_editor_hint():
+						EditorInterface.popup_property_selector(this, _on_property_selected, [TYPE_INT])
 
 				func _on_property_selected(property_path):
-				    if property_path.is_empty():
-				        print("property selection canceled")
-				    else:
-				        print("selected ", property_path)
+					if property_path.is_empty():
+						print("property selection canceled")
+					else:
+						print("selected ", property_path)
 				[/codeblock]
 			</description>
 		</method>

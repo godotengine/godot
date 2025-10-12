@@ -453,6 +453,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 		case SL::Node::NODE_TYPE_SHADER: {
 			SL::ShaderNode *pnode = (SL::ShaderNode *)p_node;
 
+			// Render modes.
+
 			for (int i = 0; i < pnode->render_modes.size(); i++) {
 				if (p_default_actions.render_mode_defines.has(pnode->render_modes[i]) && !used_rmode_defines.has(pnode->render_modes[i])) {
 					r_gen_code.defines.push_back(p_default_actions.render_mode_defines[pnode->render_modes[i]]);
@@ -467,6 +469,21 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					Pair<int *, int> &p = p_actions.render_mode_values[pnode->render_modes[i]];
 					*p.first = p.second;
 				}
+			}
+
+			// Stencil modes.
+
+			for (int i = 0; i < pnode->stencil_modes.size(); i++) {
+				if (p_actions.stencil_mode_values.has(pnode->stencil_modes[i])) {
+					Pair<int *, int> &p = p_actions.stencil_mode_values[pnode->stencil_modes[i]];
+					*p.first = p.second;
+				}
+			}
+
+			// Stencil reference value.
+
+			if (p_actions.stencil_reference && pnode->stencil_reference != -1) {
+				*p_actions.stencil_reference = pnode->stencil_reference;
 			}
 
 			// structs
@@ -1306,18 +1323,22 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 								}
 
 								code += data_type_name + "(" + node_code + ", " + sampler_name + ")";
-							} else if (actions.check_multiview_samplers && correct_texture_uniform && RS::get_singleton()->is_low_end()) {
+							} else if (correct_texture_uniform && RS::get_singleton()->is_low_end()) {
 								// Texture function on low end hardware (i.e. OpenGL).
-								// We just need to know if the texture supports multiview.
 
 								if (shader->uniforms.has(texture_uniform)) {
 									const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[texture_uniform];
+									if (actions.check_multiview_samplers) {
+										if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
+											multiview_uv_needed = true;
+										} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+											multiview_uv_needed = true;
+										} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
+											multiview_uv_needed = true;
+										}
+									}
 									if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
-										multiview_uv_needed = true;
-									} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
-										multiview_uv_needed = true;
-									} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
-										multiview_uv_needed = true;
+										is_screen_texture = true;
 									}
 								}
 
@@ -1336,7 +1357,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					}
 					code += ")";
 					if (is_screen_texture && !texture_func_returns_data && actions.apply_luminance_multiplier) {
-						code = "(" + code + " * vec4(vec3(sc_luminance_multiplier()), 1.0))";
+						if (RS::get_singleton()->is_low_end()) {
+							code = "(" + code + " / vec4(vec3(scene_data_block.data.luminance_multiplier), 1.0))";
+						} else {
+							code = "(" + code + " * vec4(vec3(sc_luminance_multiplier()), 1.0))";
+						}
 					}
 					if (is_normal_roughness_texture && !texture_func_returns_data) {
 						code = "normal_roughness_compatibility(" + code + ")";
@@ -1463,6 +1488,7 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 	SL::ShaderCompileInfo info;
 	info.functions = ShaderTypes::get_singleton()->get_functions(p_mode);
 	info.render_modes = ShaderTypes::get_singleton()->get_modes(p_mode);
+	info.stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(p_mode);
 	info.shader_types = ShaderTypes::get_singleton()->get_types();
 	info.global_shader_uniform_type_func = _get_global_shader_uniform_type;
 	info.base_varying_index = actions.base_varying_index;
@@ -1502,6 +1528,17 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 
 		// Print the files.
 		for (const KeyValue<String, Vector<String>> &E : includes) {
+			int err_line = -1;
+			for (const ShaderLanguage::FilePosition &include_position : include_positions) {
+				if (include_position.file == E.key) {
+					err_line = include_position.line;
+				}
+			}
+			if (err_line < 0) {
+				// Skip files that don't contain errors.
+				continue;
+			}
+
 			if (E.key.is_empty()) {
 				if (p_path == "") {
 					print_line("--Main Shader--");
@@ -1511,19 +1548,14 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 			} else {
 				print_line("--" + E.key + "--");
 			}
-			int err_line = -1;
-			for (int i = 0; i < include_positions.size(); i++) {
-				if (include_positions[i].file == E.key) {
-					err_line = include_positions[i].line;
-				}
-			}
 			const Vector<String> &V = E.value;
 			for (int i = 0; i < V.size(); i++) {
 				if (i == err_line - 1) {
 					// Mark the error line to be visible without having to look at
 					// the trace at the end.
 					print_line(vformat("E%4d-> %s", i + 1, V[i]));
-				} else {
+				} else if ((i == err_line - 3) || (i == err_line - 2) || (i == err_line) || (i == err_line + 1)) {
+					// Print 4 lines around the error line.
 					print_line(vformat("%5d | %s", i + 1, V[i]));
 				}
 			}

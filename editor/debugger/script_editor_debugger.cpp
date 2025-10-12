@@ -34,23 +34,23 @@
 #include "core/debugger/remote_debugger.h"
 #include "core/string/ustring.h"
 #include "core/version.h"
+#include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/debugger/editor_expression_evaluator.h"
 #include "editor/debugger/editor_performance_profiler.h"
 #include "editor/debugger/editor_profiler.h"
 #include "editor/debugger/editor_visual_profiler.h"
-#include "editor/editor_file_system.h"
+#include "editor/docks/filesystem_dock.h"
+#include "editor/docks/inspector_dock.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
-#include "editor/editor_property_name_processor.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/filesystem_dock.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_toaster.h"
-#include "editor/inspector_dock.h"
-#include "editor/plugins/canvas_item_editor_plugin.h"
-#include "editor/plugins/editor_debugger_plugin.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/inspector/editor_property_name_processor.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/scene/canvas_item_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/performance.h"
 #include "scene/3d/camera_3d.h"
@@ -66,7 +66,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 #include "servers/debugger/servers_debugger.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 using CameraOverride = EditorDebuggerNode::CameraOverride;
 
@@ -129,6 +129,7 @@ void ScriptEditorDebugger::debug_break() {
 	ERR_FAIL_COND(is_breaked());
 
 	_put_msg("break", Array());
+	_mute_audio_on_break(true);
 }
 
 void ScriptEditorDebugger::debug_continue() {
@@ -142,6 +143,7 @@ void ScriptEditorDebugger::debug_continue() {
 	_clear_execution();
 	_put_msg("continue", Array(), debugging_thread_id);
 	_put_msg("servers:foreground", Array());
+	_mute_audio_on_break(false);
 }
 
 void ScriptEditorDebugger::update_tabs() {
@@ -286,8 +288,7 @@ void ScriptEditorDebugger::clear_inspector(bool p_send_msg) {
 }
 
 void ScriptEditorDebugger::_remote_object_selected(ObjectID p_id) {
-	Array arr = { p_id };
-	emit_signal(SNAME("remote_objects_requested"), arr);
+	emit_signal(SNAME("remote_objects_requested"), Array{ p_id });
 }
 
 void ScriptEditorDebugger::_remote_objects_edited(const String &p_prop, const TypedDictionary<uint64_t, Variant> &p_values, const String &p_field) {
@@ -324,6 +325,7 @@ void ScriptEditorDebugger::_thread_debug_enter(uint64_t p_thread_id) {
 	ThreadDebugged &td = threads_debugged[p_thread_id];
 	_set_reason_text(td.error, MESSAGE_ERROR);
 	emit_signal(SNAME("breaked"), true, td.can_debug, td.error, td.has_stackdump);
+	_mute_audio_on_break(true);
 	if (!td.error.is_empty() && EDITOR_GET("debugger/auto_switch_to_stack_trace")) {
 		tabs->set_current_tab(0);
 	}
@@ -395,6 +397,7 @@ void ScriptEditorDebugger::_msg_debug_exit(uint64_t p_thread_id, const Array &p_
 
 			_set_reason_text(TTR("Execution resumed."), MESSAGE_SUCCESS);
 			emit_signal(SNAME("breaked"), false, false, "", false);
+			_mute_audio_on_break(false);
 
 			_update_buttons_state();
 		} else {
@@ -433,6 +436,22 @@ void ScriptEditorDebugger::_msg_scene_inspect_objects(uint64_t p_thread_id, cons
 
 		emit_signal(SNAME("remote_objects_updated"), objs);
 	}
+}
+
+#ifndef DISABLE_DEPRECATED
+void ScriptEditorDebugger::_msg_scene_inspect_object(uint64_t p_thread_id, const Array &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
+	// Legacy compatibility: convert single object response to new format.
+	// p_data is [id, className, properties] - wrap it as first element of array for new handler.
+	Array wrapped_data;
+	wrapped_data.push_back(p_data);
+	_msg_scene_inspect_objects(p_thread_id, wrapped_data);
+}
+#endif // DISABLE_DEPRECATED
+
+void ScriptEditorDebugger::_msg_scene_debug_mute_audio(uint64_t p_thread_id, const Array &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
+	// This is handled by SceneDebugger, we need to ignore here to not show a warning.
 }
 
 void ScriptEditorDebugger::_msg_servers_memory_usage(uint64_t p_thread_id, const Array &p_data) {
@@ -643,6 +662,7 @@ void ScriptEditorDebugger::_msg_error(uint64_t p_thread_id, const Array &p_data)
 	// item with the original error condition.
 	error_title += oe.error_descr.is_empty() ? oe.error : oe.error_descr;
 	error->set_text(1, error_title);
+	error->set_autowrap_mode(1, TextServer::AUTOWRAP_WORD_SMART);
 	tooltip += " " + error_title + "\n";
 
 	// Find the language of the error's source file.
@@ -951,6 +971,10 @@ void ScriptEditorDebugger::_init_parse_message_handlers() {
 	parse_message_handlers["scene:click_ctrl"] = &ScriptEditorDebugger::_msg_scene_click_ctrl;
 	parse_message_handlers["scene:scene_tree"] = &ScriptEditorDebugger::_msg_scene_scene_tree;
 	parse_message_handlers["scene:inspect_objects"] = &ScriptEditorDebugger::_msg_scene_inspect_objects;
+#ifndef DISABLE_DEPRECATED
+	parse_message_handlers["scene:inspect_object"] = &ScriptEditorDebugger::_msg_scene_inspect_object;
+#endif // DISABLE_DEPRECATED
+	parse_message_handlers["scene:debug_mute_audio"] = &ScriptEditorDebugger::_msg_scene_debug_mute_audio;
 	parse_message_handlers["servers:memory_usage"] = &ScriptEditorDebugger::_msg_servers_memory_usage;
 	parse_message_handlers["servers:drawn"] = &ScriptEditorDebugger::_msg_servers_drawn;
 	parse_message_handlers["stack_dump"] = &ScriptEditorDebugger::_msg_stack_dump;
@@ -980,15 +1004,19 @@ void ScriptEditorDebugger::_init_parse_message_handlers() {
 void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType p_type) {
 	switch (p_type) {
 		case MESSAGE_ERROR:
-			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			break;
 		case MESSAGE_WARNING:
-			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			break;
 		default:
-			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+			break;
 	}
+
 	reason->set_text(p_reason);
+
+	_update_reason_content_height();
 
 	const PackedInt32Array boundaries = TS->string_get_word_breaks(p_reason, "", 80);
 	PackedStringArray lines;
@@ -999,6 +1027,26 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 	}
 
 	reason->set_tooltip_text(String("\n").join(lines));
+}
+
+void ScriptEditorDebugger::_update_reason_content_height() {
+	float margin_height = 0;
+	const Ref<StyleBox> style = reason->get_theme_stylebox(CoreStringName(normal));
+	if (style.is_valid()) {
+		margin_height += style->get_content_margin(SIDE_TOP) + style->get_content_margin(SIDE_BOTTOM);
+	}
+
+	const float content_height = margin_height + reason->get_content_height();
+
+	float content_max_height = margin_height;
+	for (int i = 0; i < 3; i++) {
+		if (i >= reason->get_line_count()) {
+			break;
+		}
+		content_max_height += reason->get_line_height(i);
+	}
+
+	reason->set_custom_minimum_size(Size2(0, CLAMP(content_height, 0, content_max_height)));
 }
 
 void ScriptEditorDebugger::_notification(int p_what) {
@@ -1031,7 +1079,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			vmem_export->set_button_icon(get_editor_theme_icon(SNAME("Save")));
 			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
-			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			reason->add_theme_style_override(SNAME("normal"), get_theme_stylebox(SNAME("normal"), SNAME("Label"))); // Empty stylebox.
 
 			TreeItem *error_root = error_tree->get_root();
 			if (error_root) {
@@ -1245,6 +1294,7 @@ void ScriptEditorDebugger::stop() {
 		peer.unref();
 		reason->set_text("");
 		reason->set_tooltip_text("");
+		reason->set_custom_minimum_size(Size2(0, 0));
 	}
 
 	node_path_cache.clear();
@@ -1531,7 +1581,7 @@ void ScriptEditorDebugger::update_live_edit_root() {
 		msg.push_back("");
 	}
 	_put_msg("scene:live_set_root", msg);
-	live_edit_root->set_text(np);
+	live_edit_root->set_text(String(np));
 }
 
 void ScriptEditorDebugger::live_debug_create_node(const NodePath &p_parent, const String &p_type, const String &p_name) {
@@ -1587,10 +1637,25 @@ bool ScriptEditorDebugger::get_debug_mute_audio() const {
 	return debug_mute_audio;
 }
 
-void ScriptEditorDebugger::set_debug_mute_audio(bool p_mute) {
+void ScriptEditorDebugger::_send_debug_mute_audio_msg(bool p_mute) {
 	Array msg = { p_mute };
 	_put_msg("scene:debug_mute_audio", msg);
+}
+
+void ScriptEditorDebugger::set_debug_mute_audio(bool p_mute) {
+	// Send the message if we want to mute the audio or if it isn't muted already due to a break.
+	if (p_mute || !audio_muted_on_break) {
+		_send_debug_mute_audio_msg(p_mute);
+	}
 	debug_mute_audio = p_mute;
+}
+
+void ScriptEditorDebugger::_mute_audio_on_break(bool p_mute) {
+	// Send the message if we want to mute the audio on a break or if it isn't muted already.
+	if (p_mute || !debug_mute_audio) {
+		_send_debug_mute_audio_msg(p_mute);
+	}
+	audio_muted_on_break = p_mute;
 }
 
 CameraOverride ScriptEditorDebugger::get_camera_override() const {
@@ -1838,7 +1903,7 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 			}
 
 			// Parse back the `file:line @ method()` string.
-			const Vector<String> file_line_number = ci->get_text(1).split("@")[0].strip_edges().split(":");
+			const Vector<String> file_line_number = ci->get_text(1).get_slicec('@', 0).strip_edges().split(":");
 			ERR_FAIL_COND_MSG(file_line_number.size() < 2, "Incorrect C++ source stack trace file:line format (please report).");
 			const String &file = file_line_number[0];
 			const int line_number = file_line_number[1].to_int();
@@ -1966,14 +2031,14 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		HBoxContainer *hbc = memnew(HBoxContainer);
 		vbc->add_child(hbc);
 
-		reason = memnew(Label);
+		reason = memnew(RichTextLabel);
 		reason->set_focus_mode(FOCUS_ACCESSIBILITY);
-		reason->set_text("");
-		hbc->add_child(reason);
+		reason->set_selection_enabled(true);
+		reason->set_context_menu_enabled(true);
 		reason->set_h_size_flags(SIZE_EXPAND_FILL);
-		reason->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-		reason->set_max_lines_visible(3);
-		reason->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		reason->set_v_size_flags(SIZE_SHRINK_CENTER);
+		reason->connect(SceneStringName(resized), callable_mp(this, &ScriptEditorDebugger::_update_reason_content_height));
+		hbc->add_child(reason);
 
 		hbc->add_child(memnew(VSeparator));
 
@@ -1981,15 +2046,13 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		skip_breakpoints->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(skip_breakpoints);
 		skip_breakpoints->set_tooltip_text(TTR("Skip Breakpoints"));
-		skip_breakpoints->set_accessibility_name(TTRC("Skip Breakpoints"));
 		skip_breakpoints->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_skip_breakpoints));
 
 		ignore_error_breaks = memnew(Button);
-		ignore_error_breaks->set_flat(true);
+		ignore_error_breaks->set_theme_type_variation(SceneStringName(FlatButton));
 		ignore_error_breaks->set_tooltip_text(TTR("Ignore Error Breaks"));
-		ignore_error_breaks->set_accessibility_name(TTRC("Ignore Error Breaks"));
 		hbc->add_child(ignore_error_breaks);
-		ignore_error_breaks->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_ignore_error_breaks));
+		ignore_error_breaks->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_ignore_error_breaks));
 
 		hbc->add_child(memnew(VSeparator));
 
@@ -1997,7 +2060,6 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		copy->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(copy);
 		copy->set_tooltip_text(TTR("Copy Error"));
-		copy->set_accessibility_name(TTRC("Copy Error"));
 		copy->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_copy));
 
 		hbc->add_child(memnew(VSeparator));
@@ -2006,7 +2068,6 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		step->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(step);
 		step->set_tooltip_text(TTR("Step Into"));
-		step->set_accessibility_name(TTRC("Step Into"));
 		step->set_shortcut(ED_GET_SHORTCUT("debugger/step_into"));
 		step->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_step));
 
@@ -2014,7 +2075,6 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		next->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(next);
 		next->set_tooltip_text(TTR("Step Over"));
-		next->set_accessibility_name(TTRC("Step Over"));
 		next->set_shortcut(ED_GET_SHORTCUT("debugger/step_over"));
 		next->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_next));
 
@@ -2024,7 +2084,6 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		dobreak->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(dobreak);
 		dobreak->set_tooltip_text(TTR("Break"));
-		dobreak->set_accessibility_name(TTRC("Break"));
 		dobreak->set_shortcut(ED_GET_SHORTCUT("debugger/break"));
 		dobreak->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_break));
 
@@ -2032,7 +2091,6 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		docontinue->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(docontinue);
 		docontinue->set_tooltip_text(TTR("Continue"));
-		docontinue->set_accessibility_name(TTRC("Continue"));
 		docontinue->set_shortcut(ED_GET_SHORTCUT("debugger/continue"));
 		docontinue->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_continue));
 
@@ -2162,6 +2220,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		error_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 		error_tree->set_allow_rmb_select(true);
 		error_tree->set_allow_reselect(true);
+		error_tree->set_theme_type_variation("TreeSecondary");
 		error_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_error_tree_item_rmb_selected));
 		errors_tab->add_child(error_tree);
 
@@ -2247,7 +2306,6 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		vmem_export = memnew(Button);
 		vmem_export->set_theme_type_variation(SceneStringName(FlatButton));
 		vmem_export->set_tooltip_text(TTR("Export list to a CSV file"));
-		vmem_export->set_accessibility_name(TTRC("Export to CSV"));
 		vmem_hb->add_child(vmem_export);
 		vmem_vb->add_child(vmem_hb);
 		vmem_refresh->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_video_mem_request));
@@ -2291,13 +2349,13 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		misc->add_child(info_left);
 		clicked_ctrl = memnew(LineEdit);
 		clicked_ctrl->set_editable(false);
-		clicked_ctrl->set_accessibility_name(TTRC("Clicked Control"));
+		clicked_ctrl->set_accessibility_name(TTRC("Clicked Control:"));
 		clicked_ctrl->set_h_size_flags(SIZE_EXPAND_FILL);
 		info_left->add_child(memnew(Label(TTR("Clicked Control:"))));
 		info_left->add_child(clicked_ctrl);
 		clicked_ctrl_type = memnew(LineEdit);
 		clicked_ctrl_type->set_editable(false);
-		clicked_ctrl_type->set_accessibility_name(TTRC("Clicked Control Type"));
+		clicked_ctrl_type->set_accessibility_name(TTRC("Clicked Control Type:"));
 		info_left->add_child(memnew(Label(TTR("Clicked Control Type:"))));
 		info_left->add_child(clicked_ctrl_type);
 
@@ -2305,7 +2363,7 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		live_edit_root = memnew(LineEdit);
 		live_edit_root->set_editable(false);
 		live_edit_root->set_h_size_flags(SIZE_EXPAND_FILL);
-		live_edit_root->set_accessibility_name(TTRC("Live Edit Root"));
+		live_edit_root->set_accessibility_name(TTRC("Live Edit Root:"));
 
 		{
 			HBoxContainer *lehb = memnew(HBoxContainer);

@@ -34,9 +34,9 @@
 #include "gdscript_extend_parser.h"
 #include "gdscript_language_protocol.h"
 
-#include "editor/editor_settings.h"
-#include "editor/plugins/script_text_editor.h"
-#include "servers/display_server.h"
+#include "editor/script/script_text_editor.h"
+#include "editor/settings/editor_settings.h"
+#include "servers/display/display_server.h"
 
 void GDScriptTextDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("didOpen"), &GDScriptTextDocument::didOpen);
@@ -355,13 +355,11 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 }
 
 Array GDScriptTextDocument::foldingRange(const Dictionary &p_params) {
-	Array arr;
-	return arr;
+	return Array();
 }
 
 Array GDScriptTextDocument::codeLens(const Dictionary &p_params) {
-	Array arr;
-	return arr;
+	return Array();
 }
 
 Array GDScriptTextDocument::documentLink(const Dictionary &p_params) {
@@ -379,8 +377,7 @@ Array GDScriptTextDocument::documentLink(const Dictionary &p_params) {
 }
 
 Array GDScriptTextDocument::colorPresentation(const Dictionary &p_params) {
-	Array arr;
-	return arr;
+	return Array();
 }
 
 Variant GDScriptTextDocument::hover(const Dictionary &p_params) {
@@ -416,8 +413,7 @@ Array GDScriptTextDocument::definition(const Dictionary &p_params) {
 	LSP::TextDocumentPositionParams params;
 	params.load(p_params);
 	List<const LSP::DocumentSymbol *> symbols;
-	Array arr = find_symbols(params, symbols);
-	return arr;
+	return find_symbols(params, symbols);
 }
 
 Variant GDScriptTextDocument::declaration(const Dictionary &p_params) {
@@ -494,12 +490,14 @@ Array GDScriptTextDocument::find_symbols(const LSP::TextDocumentPositionParams &
 	if (symbol) {
 		LSP::Location location;
 		location.uri = symbol->uri;
-		location.range = symbol->selectionRange;
-		const String &path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(symbol->uri);
-		if (file_checker->file_exists(path)) {
-			arr.push_back(location.to_json());
+		if (!location.uri.is_empty()) {
+			location.range = symbol->selectionRange;
+			const String &path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(symbol->uri);
+			if (file_checker->file_exists(path)) {
+				arr.push_back(location.to_json());
+			}
+			r_list.push_back(symbol);
 		}
-		r_list.push_back(symbol);
 	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
 		List<const LSP::DocumentSymbol *> list;
 		GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_related_symbols(p_location, list);

@@ -60,9 +60,9 @@ private:
 	Error _msg_mouse_set_mode(const Array &p_args);
 	Error _msg_event(const Array &p_args);
 	Error _msg_win_event(const Array &p_args);
+	Error _msg_notification(const Array &p_args);
 	Error _msg_ime_update(const Array &p_args);
-	Error _msg_joy_add(const Array &p_args);
-	Error _msg_joy_del(const Array &p_args);
+	Error _msg_ds_state(const Array &p_args);
 
 public:
 	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);

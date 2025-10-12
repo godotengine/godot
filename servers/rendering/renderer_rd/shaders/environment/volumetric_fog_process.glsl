@@ -4,14 +4,9 @@
 
 #VERSION_DEFINES
 
-/* Do not use subgroups here, seems there is not much advantage and causes glitches
-#if defined(has_GL_KHR_shader_subgroup_ballot) && defined(has_GL_KHR_shader_subgroup_arithmetic)
-#extension GL_KHR_shader_subgroup_ballot: enable
-#extension GL_KHR_shader_subgroup_arithmetic: enable
-
-#define USE_SUBGROUPS
+#ifdef USE_VULKAN_MEMORY_MODEL
+#pragma use_vulkan_memory_model
 #endif
-*/
 
 #ifdef MODE_DENSITY
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
@@ -459,28 +454,15 @@ void main() {
 
 			cluster_get_item_range(cluster_omni_offset + params.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
 
-#ifdef USE_SUBGROUPS
-			item_from = subgroupBroadcastFirst(subgroupMin(item_from));
-			item_to = subgroupBroadcastFirst(subgroupMax(item_to));
-#endif
-
 			for (uint i = item_from; i < item_to; i++) {
 				uint mask = cluster_buffer.data[cluster_omni_offset + i];
 				mask &= cluster_get_range_clip_mask(i, item_min, item_max);
-#ifdef USE_SUBGROUPS
-				uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
-#else
 				uint merged_mask = mask;
-#endif
 
 				while (merged_mask != 0) {
 					uint bit = findMSB(merged_mask);
 					merged_mask &= ~(1 << bit);
-#ifdef USE_SUBGROUPS
-					if (((1 << bit) & mask) == 0) { //do not process if not originally here
-						continue;
-					}
-#endif
+
 					uint light_index = 32 * i + bit;
 
 					//if (!bool(omni_omni_lights.data[light_index].mask & draw_call.layer_mask)) {
@@ -539,28 +521,14 @@ void main() {
 
 			cluster_get_item_range(cluster_spot_offset + params.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
 
-#ifdef USE_SUBGROUPS
-			item_from = subgroupBroadcastFirst(subgroupMin(item_from));
-			item_to = subgroupBroadcastFirst(subgroupMax(item_to));
-#endif
-
 			for (uint i = item_from; i < item_to; i++) {
 				uint mask = cluster_buffer.data[cluster_spot_offset + i];
 				mask &= cluster_get_range_clip_mask(i, item_min, item_max);
-#ifdef USE_SUBGROUPS
-				uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
-#else
 				uint merged_mask = mask;
-#endif
 
 				while (merged_mask != 0) {
 					uint bit = findMSB(merged_mask);
 					merged_mask &= ~(1 << bit);
-#ifdef USE_SUBGROUPS
-					if (((1 << bit) & mask) == 0) { //do not process if not originally here
-						continue;
-					}
-#endif
 
 					//if (!bool(omni_lights.data[light_index].mask & draw_call.layer_mask)) {
 					//	continue; //not masked
@@ -577,7 +545,7 @@ void main() {
 						float attenuation = get_omni_attenuation(d, spot_lights.data[light_index].inv_radius, spot_lights.data[light_index].attenuation);
 
 						vec3 spot_dir = spot_lights.data[light_index].direction;
-						highp float cone_angle = spot_lights.data[light_index].cone_angle;
+						float cone_angle = spot_lights.data[light_index].cone_angle;
 						float scos = max(dot(-normalize(light_rel_vec), spot_dir), cone_angle);
 						float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cone_angle));
 						attenuation *= 1.0 - pow(spot_rim, spot_lights.data[light_index].cone_attenuation);
@@ -591,7 +559,7 @@ void main() {
 							vec4 v = vec4(view_pos, 1.0);
 
 							vec4 splane = (spot_lights.data[light_index].shadow_matrix * v);
-							splane.z -= spot_lights.data[light_index].shadow_bias / (d * spot_lights.data[light_index].inv_radius);
+							splane.z -= spot_lights.data[light_index].shadow_bias;
 							splane /= splane.w;
 
 							vec3 pos = vec3(splane.xy * spot_lights.data[light_index].atlas_rect.zw + spot_lights.data[light_index].atlas_rect.xy, splane.z);

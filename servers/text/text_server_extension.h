@@ -34,7 +34,7 @@
 #include "core/os/thread_safe.h"
 #include "core/variant/native_ptr.h"
 #include "core/variant/typed_array.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 class TextServerExtension : public TextServer {
 	GDCLASS(TextServerExtension, TextServer);
@@ -221,12 +221,10 @@ public:
 	GDVIRTUAL2(_font_set_variation_coordinates, RID, Dictionary);
 	GDVIRTUAL1RC(Dictionary, _font_get_variation_coordinates, RID);
 
-#ifndef DISABLE_DEPRECATED
 	virtual void font_set_oversampling(const RID &p_font_rid, double p_oversampling) override;
 	virtual double font_get_oversampling(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_oversampling, RID, double);
 	GDVIRTUAL1RC(double, _font_get_oversampling, RID);
-#endif
 
 	virtual TypedArray<Vector2i> font_get_size_cache_list(const RID &p_font_rid) const override;
 	virtual void font_clear_size_cache(const RID &p_font_rid) override;

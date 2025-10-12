@@ -93,12 +93,18 @@ private:
 		Color font_disabled_color;
 		Color font_outline_color;
 
+		Color icon_selected_color;
+		Color icon_hovered_color;
+		Color icon_unselected_color;
+		Color icon_disabled_color;
+
 		Ref<Font> tab_font;
 		int tab_font_size;
 	} theme_cache;
 
 	HashMap<Node *, RID> tab_panels;
 
+	Rect2 _get_tab_rect() const;
 	int _get_tab_height() const;
 	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();

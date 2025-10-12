@@ -39,7 +39,7 @@
 #include "scene/resources/image_texture.h"
 
 #ifndef NAVIGATION_2D_DISABLED
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 #endif // NAVIGATION_2D_DISABLED
 
 /////////////////////////////// TileMapPattern //////////////////////////////////////
@@ -1301,12 +1301,10 @@ Array TileSet::map_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_a
 
 	// Source matches.
 	if (source_level_proxies.has(p_source_from)) {
-		Array output = { source_level_proxies[p_source_from], p_coords_from, p_alternative_from };
-		return output;
+		return Array{ source_level_proxies[p_source_from], p_coords_from, p_alternative_from };
 	}
 
-	Array output = { p_source_from, p_coords_from, p_alternative_from };
-	return output;
+	return Array{ p_source_from, p_coords_from, p_alternative_from };
 }
 
 void TileSet::cleanup_invalid_tile_proxies() {
@@ -3509,6 +3507,7 @@ void TileSet::_compatibility_conversion() {
 							compatibility_tilemap_mapping_tile_modes[E.key] = COMPATIBILITY_TILE_MODE_ATLAS_TILE;
 
 							TileData *tile_data = atlas_source->get_tile_data(coords, alternative_tile);
+							ERR_CONTINUE(!tile_data);
 
 							tile_data->set_flip_h(flip_h);
 							tile_data->set_flip_v(flip_v);
@@ -4232,6 +4231,9 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void TileSet::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "tile_layout" && tile_shape == TILE_SHAPE_SQUARE) {
 		p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
 	} else if (p_property.name == "tile_offset_axis" && tile_shape == TILE_SHAPE_SQUARE) {
@@ -6420,7 +6422,7 @@ void TileData::set_collision_polygon_points(int p_layer_id, int p_polygon_index,
 Vector<Vector2> TileData::get_collision_polygon_points(int p_layer_id, int p_polygon_index) const {
 	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), Vector<Vector2>());
 	ERR_FAIL_INDEX_V(p_polygon_index, physics[p_layer_id].polygons.size(), Vector<Vector2>());
-	return physics[p_layer_id].polygons[p_polygon_index].polygon;
+	return Vector<Vector2>(physics[p_layer_id].polygons[p_polygon_index].polygon);
 }
 
 void TileData::set_collision_polygon_one_way(int p_layer_id, int p_polygon_index, bool p_one_way) {

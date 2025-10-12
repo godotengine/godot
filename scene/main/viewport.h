@@ -136,6 +136,7 @@ public:
 	enum ScreenSpaceAA {
 		SCREEN_SPACE_AA_DISABLED,
 		SCREEN_SPACE_AA_FXAA,
+		SCREEN_SPACE_AA_SMAA,
 		SCREEN_SPACE_AA_MAX
 	};
 
@@ -247,9 +248,6 @@ private:
 	RID current_canvas;
 	RID subwindow_canvas;
 
-	bool override_canvas_transform = false;
-
-	Transform2D canvas_transform_override;
 	Transform2D canvas_transform;
 	Transform2D global_canvas_transform;
 	Transform2D stretch_transform;
@@ -262,11 +260,8 @@ private:
 	RID contact_3d_debug_multimesh;
 	RID contact_3d_debug_instance;
 
-	Rect2 last_vp_rect;
-
 	bool transparent_bg = false;
 	bool use_hdr_2d = false;
-	bool gen_mipmaps = false;
 
 	bool snap_controls_to_pixels = true;
 	bool snap_2d_transforms_to_pixel = false;
@@ -329,6 +324,9 @@ private:
 
 	void _update_viewport_path();
 
+	bool _can_hide_focus_state();
+	void _on_settings_changed();
+
 	SDFOversize sdf_oversize = SDF_OVERSIZE_120_PERCENT;
 	SDFScale sdf_scale = SDF_SCALE_50_PERCENT;
 
@@ -373,6 +371,7 @@ private:
 		Control *mouse_click_grabber = nullptr;
 		BitField<MouseButtonMask> mouse_focus_mask = MouseButtonMask::NONE;
 		Control *key_focus = nullptr;
+		bool hide_focus = false;
 		Control *mouse_over = nullptr;
 		LocalVector<Control *> mouse_over_hierarchy;
 		bool sending_mouse_enter_exit_notifications = false;
@@ -458,8 +457,8 @@ private:
 
 	void _gui_remove_focus_for_window(Node *p_window);
 	void _gui_unfocus_control(Control *p_control);
-	bool _gui_control_has_focus(const Control *p_control);
-	void _gui_control_grab_focus(Control *p_control);
+	bool _gui_control_has_focus(const Control *p_control, bool p_ignore_hidden_focus = false);
+	void _gui_control_grab_focus(Control *p_control, bool p_hide_focus = false);
 	void _gui_grab_click_focus(Control *p_control);
 	void _post_gui_grab_click_focus();
 	void _gui_accept_event();
@@ -531,12 +530,6 @@ public:
 	void set_world_2d(const Ref<World2D> &p_world_2d);
 	Ref<World2D> get_world_2d() const;
 	Ref<World2D> find_world_2d() const;
-
-	void enable_canvas_transform_override(bool p_enable);
-	bool is_canvas_transform_override_enabled() const;
-
-	void set_canvas_transform_override(const Transform2D &p_transform);
-	Transform2D get_canvas_transform_override() const;
 
 	void set_canvas_transform(const Transform2D &p_transform);
 	Transform2D get_canvas_transform() const;
@@ -729,12 +722,30 @@ public:
 
 	Transform2D get_screen_transform() const;
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const;
+	virtual Transform2D get_popup_base_transform_native() const { return Transform2D(); }
 	virtual Transform2D get_popup_base_transform() const { return Transform2D(); }
 	virtual Viewport *get_section_root_viewport() const { return nullptr; }
 	virtual bool is_attached_in_viewport() const { return false; }
 	virtual bool is_sub_viewport() const { return false; }
 
 private:
+#if DEBUG_ENABLED
+	template <class T>
+	class CameraOverride {
+	private:
+		bool enabled = false;
+		ObjectID overridden_camera_id;
+
+	public:
+		bool is_enabled() const;
+		void enable(Viewport *p_viewport, const T *p_current_camera);
+		void disable(T *p_current_camera);
+
+		void set_overridden_camera(const T *p_camera);
+		T *get_overridden_camera() const;
+	};
+#endif // DEBUG_ENABLED
+
 	// 2D audio, camera, and physics. (don't put World2D here because World2D is needed for Control nodes).
 	friend class AudioListener2D; // Needs _audio_listener_2d_set and _audio_listener_2d_remove
 	AudioListener2D *audio_listener_2d = nullptr;
@@ -746,12 +757,22 @@ private:
 	friend class Camera2D; // Needs _camera_2d_set
 	Camera2D *camera_2d = nullptr;
 	void _camera_2d_set(Camera2D *p_camera_2d);
+#if DEBUG_ENABLED
+	CameraOverride<Camera2D> camera_2d_override;
 
+public:
+	void enable_camera_2d_override(bool p_enable);
+	bool is_camera_2d_override_enabled() const;
+	Camera2D *get_overridden_camera_2d() const;
+	Camera2D *get_override_camera_2d() const;
+#endif // DEBUG_ENABLED
+
+private:
 #ifndef PHYSICS_2D_DISABLED
 	// Collider to frame
 	HashMap<ObjectID, uint64_t> physics_2d_mouseover;
 	// Collider & shape to frame
-	HashMap<Pair<ObjectID, int>, uint64_t, PairHash<ObjectID, int>> physics_2d_shape_mouseover;
+	HashMap<Pair<ObjectID, int>, uint64_t> physics_2d_shape_mouseover;
 	// Cleans up colliders corresponding to old frames or all of them.
 	void _cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference = 0);
 #endif // PHYSICS_2D_DISABLED
@@ -784,26 +805,11 @@ private:
 	void _collision_object_3d_input_event(CollisionObject3D *p_object, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
 #endif // PHYSICS_3D_DISABLED
 
-	struct Camera3DOverrideData {
-		Transform3D transform;
-		enum Projection {
-			PROJECTION_PERSPECTIVE,
-			PROJECTION_ORTHOGONAL
-		};
-		Projection projection = Projection::PROJECTION_PERSPECTIVE;
-		real_t fov = 0.0;
-		real_t size = 0.0;
-		real_t z_near = 0.0;
-		real_t z_far = 0.0;
-		RID rid;
-
-		operator bool() const {
-			return rid != RID();
-		}
-	} camera_3d_override;
-
 	friend class Camera3D;
 	Camera3D *camera_3d = nullptr;
+#if DEBUG_ENABLED
+	CameraOverride<Camera3D> camera_3d_override;
+#endif // DEBUG_ENABLED
 	HashSet<Camera3D *> camera_3d_set;
 	void _camera_3d_transform_changed_notify();
 	void _camera_3d_set(Camera3D *p_camera);
@@ -823,19 +829,13 @@ public:
 	bool is_audio_listener_3d() const;
 
 	Camera3D *get_camera_3d() const;
+
+#if DEBUG_ENABLED
 	void enable_camera_3d_override(bool p_enable);
 	bool is_camera_3d_override_enabled() const;
-
-	void set_camera_3d_override_transform(const Transform3D &p_transform);
-	Transform3D get_camera_3d_override_transform() const;
-
-	void set_camera_3d_override_perspective(real_t p_fovy_degrees, real_t p_z_near, real_t p_z_far);
-	void set_camera_3d_override_orthogonal(real_t p_size, real_t p_z_near, real_t p_z_far);
-	HashMap<StringName, real_t> get_camera_3d_override_properties() const;
-
-	Vector3 camera_3d_override_project_ray_normal(const Point2 &p_pos) const;
-	Vector3 camera_3d_override_project_ray_origin(const Point2 &p_pos) const;
-	Vector3 camera_3d_override_project_local_ray_normal(const Point2 &p_pos) const;
+	Camera3D *get_overridden_camera_3d() const;
+	Camera3D *get_override_camera_3d() const;
+#endif // DEBUG_ENABLED
 
 	void set_disable_3d(bool p_disable);
 	bool is_3d_disabled() const;

@@ -37,9 +37,9 @@
 #include "core/math/math_defs.h"
 #include "core/os/semaphore.h"
 
-struct NavLinkIteration3D;
+class NavLinkIteration3D;
 class NavRegion3D;
-struct NavRegionIteration3D;
+class NavRegionIteration3D;
 struct NavMapIteration3D;
 
 struct NavMapIterationBuild3D {
@@ -52,7 +52,7 @@ struct NavMapIterationBuild3D {
 	int free_edge_count = 0;
 
 	HashMap<Nav3D::EdgeKey, Nav3D::EdgeConnectionPair, Nav3D::EdgeKey> iter_connection_pairs_map;
-	LocalVector<Nav3D::Edge::Connection> iter_free_edges;
+	LocalVector<Nav3D::Connection> iter_free_edges;
 
 	NavMapIteration3D *map_iteration = nullptr;
 
@@ -76,19 +76,34 @@ struct NavMapIteration3D {
 
 	Vector3 map_up;
 
-	LocalVector<NavRegionIteration3D> region_iterations;
-	LocalVector<NavLinkIteration3D> link_iterations;
+	LocalVector<Ref<NavRegionIteration3D>> region_iterations;
+	LocalVector<Ref<NavLinkIteration3D>> link_iterations;
 
 	int navmesh_polygon_count = 0;
 
 	// The edge connections that the map builds on top with the edge connection margin.
-	HashMap<uint32_t, LocalVector<Nav3D::Edge::Connection>> external_region_connections;
+	HashMap<const NavBaseIteration3D *, LocalVector<Nav3D::Connection>> external_region_connections;
+	HashMap<const NavBaseIteration3D *, LocalVector<LocalVector<Nav3D::Connection>>> navbases_polygons_external_connections;
 
-	HashMap<NavRegion3D *, uint32_t> region_ptr_to_region_id;
+	LocalVector<Nav3D::Polygon> navlink_polygons;
+
+	HashMap<NavRegion3D *, Ref<NavRegionIteration3D>> region_ptr_to_region_iteration;
 
 	LocalVector<NavMeshQueries3D::PathQuerySlot> path_query_slots;
 	Mutex path_query_slots_mutex;
 	Semaphore path_query_slots_semaphore;
+
+	void clear() {
+		map_up = Vector3();
+		navmesh_polygon_count = 0;
+
+		region_iterations.clear();
+		link_iterations.clear();
+		external_region_connections.clear();
+		navbases_polygons_external_connections.clear();
+		navlink_polygons.clear();
+		region_ptr_to_region_iteration.clear();
+	}
 };
 
 class NavMapIterationRead3D {

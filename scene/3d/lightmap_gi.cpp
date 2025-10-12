@@ -81,9 +81,8 @@ void LightmapGIData::clear_users() {
 }
 
 void LightmapGIData::_set_user_data(const Array &p_data) {
-	ERR_FAIL_COND(p_data.is_empty());
 	ERR_FAIL_COND((p_data.size() % 4) != 0);
-
+	users.clear();
 	for (int i = 0; i < p_data.size(); i += 4) {
 		add_user(p_data[i + 0], p_data[i + 1], p_data[i + 2], p_data[i + 3]);
 	}
@@ -366,7 +365,7 @@ LightmapGIData::LightmapGIData() {
 
 LightmapGIData::~LightmapGIData() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(lightmap);
+	RS::get_singleton()->free_rid(lightmap);
 }
 
 ///////////////////////////
@@ -1511,8 +1510,15 @@ void LightmapGI::_notification(int p_what) {
 void LightmapGI::_assign_lightmaps() {
 	ERR_FAIL_COND(light_data.is_null());
 
+	Vector<String> missing_node_paths;
+
 	for (int i = 0; i < light_data->get_user_count(); i++) {
-		Node *node = get_node(light_data->get_user_path(i));
+		NodePath user_path = light_data->get_user_path(i);
+		Node *node = get_node_or_null(user_path);
+		if (!node) {
+			missing_node_paths.push_back(String(user_path));
+			continue;
+		}
 		int instance_idx = light_data->get_user_sub_instance(i);
 		if (instance_idx >= 0) {
 			RID instance_id = node->call("get_bake_mesh_instance", instance_idx);
@@ -1525,12 +1531,25 @@ void LightmapGI::_assign_lightmaps() {
 			RS::get_singleton()->instance_geometry_set_lightmap(vi->get_instance(), get_instance(), light_data->get_user_lightmap_uv_scale(i), light_data->get_user_lightmap_slice_index(i));
 		}
 	}
+
+	if (!missing_node_paths.is_empty()) {
+		String missing_paths_text;
+		if (missing_node_paths.size() <= 3) {
+			missing_paths_text = String(", ").join(missing_node_paths);
+		} else {
+			missing_paths_text = vformat("%s and %d more", String(", ").join(missing_node_paths.slice(0, 3)), missing_node_paths.size() - 3);
+		}
+		WARN_PRINT(vformat("%s couldn't find previously baked nodes and needs a rebake (missing nodes: %s).", get_name(), missing_paths_text));
+	}
 }
 
 void LightmapGI::_clear_lightmaps() {
 	ERR_FAIL_COND(light_data.is_null());
 	for (int i = 0; i < light_data->get_user_count(); i++) {
-		Node *node = get_node(light_data->get_user_path(i));
+		Node *node = get_node_or_null(light_data->get_user_path(i));
+		if (!node) {
+			continue;
+		}
 		int instance_idx = light_data->get_user_sub_instance(i);
 		if (instance_idx >= 0) {
 			RID instance_id = node->call("get_bake_mesh_instance", instance_idx);
@@ -1771,7 +1790,7 @@ PackedStringArray LightmapGI::get_configuration_warnings() const {
 		warnings.push_back(RTR("The lightmap has no baked shadowmask textures. Please rebake with the Shadowmask Mode set to anything other than None."));
 	}
 
-#elif defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
+#elif defined(ANDROID_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 	warnings.push_back(vformat(RTR("Lightmaps cannot be baked on %s. Rendering existing baked lightmaps will still work."), OS::get_singleton()->get_name()));
 #else
 	warnings.push_back(RTR("Lightmaps cannot be baked, as the `lightmapper_rd` module was disabled at compile-time. Rendering existing baked lightmaps will still work."));
@@ -1781,6 +1800,9 @@ PackedStringArray LightmapGI::get_configuration_warnings() const {
 }
 
 void LightmapGI::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "supersampling_factor" && !supersampling_enabled) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}

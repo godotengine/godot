@@ -38,7 +38,7 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_direction"), &TextParagraph::get_direction);
 	ClassDB::bind_method(D_METHOD("get_inferred_direction"), &TextParagraph::get_inferred_direction);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Auto,Light-to-right,Right-to-left"), "set_direction", "get_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Auto,Left-to-right,Right-to-left"), "set_direction", "get_direction");
 	// If compiling the editor with TextServerFallback only,
 	// `--doctool` would change the default value to `TextServer::DIRECTION_LTR`.
 	// Force it so that it's consistent regardless of the backend.
@@ -218,40 +218,7 @@ void TextParagraph::_shape_lines() const {
 			}
 		}
 
-		BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::OVERRUN_NO_TRIM;
-		if (overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
-			switch (overrun_behavior) {
-				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS_FORCE: {
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
-				} break;
-				case TextServer::OVERRUN_TRIM_ELLIPSIS_FORCE: {
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
-				} break;
-				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					break;
-				case TextServer::OVERRUN_TRIM_ELLIPSIS:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					break;
-				case TextServer::OVERRUN_TRIM_WORD:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-					break;
-				case TextServer::OVERRUN_TRIM_CHAR:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					break;
-				case TextServer::OVERRUN_NO_TRIMMING:
-					break;
-			}
-		}
+		BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::get_overrun_flags_from_behavior(overrun_behavior);
 
 		bool autowrap_enabled = brk_flags.has_flag(TextServer::BREAK_WORD_BOUND) || brk_flags.has_flag(TextServer::BREAK_GRAPHEME_BOUND);
 

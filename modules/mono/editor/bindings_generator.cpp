@@ -30,7 +30,7 @@
 
 #include "bindings_generator.h"
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 
 #include "../godotsharp_defs.h"
 #include "../utils/naming_utils.h"
@@ -173,7 +173,7 @@ static String fix_doc_description(const String &p_bbcode) {
 	// This seems to be the correct way to do this. It's the same EditorHelp does.
 
 	return p_bbcode.dedent()
-			.remove_chars("\t\r")
+			.remove_chars("\r")
 			.strip_edges();
 }
 
@@ -964,7 +964,7 @@ void BindingsGenerator::_append_text_enum(StringBuilder &p_output, const TypeInt
 		p_output.append(target_enum_itype.proxy_name); // Includes nesting class if any
 		p_output.append("'");
 	} else {
-		if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+		if (p_target_itype == nullptr || !p_target_itype->is_intentionally_ignored(p_link_target)) {
 			ERR_PRINT("Cannot resolve enum reference in documentation: '" + p_link_target + "'.");
 		}
 
@@ -1258,7 +1258,7 @@ void BindingsGenerator::_append_xml_enum(StringBuilder &p_xml_output, const Type
 			p_xml_output.append("\"/>");
 		}
 	} else {
-		if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+		if (p_target_itype == nullptr || !p_target_itype->is_intentionally_ignored(p_link_target)) {
 			ERR_PRINT("Cannot resolve enum reference in documentation: '" + p_link_target + "'.");
 		}
 
@@ -3858,35 +3858,28 @@ struct SortMethodWithHashes {
 bool BindingsGenerator::_populate_object_type_interfaces() {
 	obj_types.clear();
 
-	List<StringName> class_list;
-	ClassDB::get_class_list(&class_list);
-	class_list.sort_custom<StringName::AlphCompare>();
+	LocalVector<StringName> class_list;
+	ClassDB::get_class_list(class_list);
 
-	while (class_list.size()) {
-		StringName type_cname = class_list.front()->get();
-
+	for (const StringName &type_cname : class_list) {
 		ClassDB::APIType api_type = ClassDB::get_api_type(type_cname);
 
 		if (api_type == ClassDB::API_NONE) {
-			class_list.pop_front();
 			continue;
 		}
 
 		if (ignored_types.has(type_cname)) {
 			_log("Ignoring type '%s' because it's in the list of ignored types\n", String(type_cname).utf8().get_data());
-			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_exposed(type_cname)) {
 			_log("Ignoring type '%s' because it's not exposed\n", String(type_cname).utf8().get_data());
-			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_enabled(type_cname)) {
 			_log("Ignoring type '%s' because it's not enabled\n", String(type_cname).utf8().get_data());
-			class_list.pop_front();
 			continue;
 		}
 
@@ -4009,7 +4002,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		List<Pair<MethodInfo, uint32_t>> method_list_with_hashes;
 		ClassDB::get_method_list_with_compatibility(type_cname, &method_list_with_hashes, true);
-		method_list_with_hashes.sort_custom_inplace<SortMethodWithHashes>();
+		method_list_with_hashes.sort_custom<SortMethodWithHashes>();
 
 		List<MethodInterface> compat_methods;
 		for (const Pair<MethodInfo, uint32_t> &E : method_list_with_hashes) {
@@ -4447,8 +4440,6 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			obj_types.insert(itype.name + CS_SINGLETON_INSTANCE_SUFFIX, itype);
 		}
-
-		class_list.pop_front();
 	}
 
 	return true;
@@ -5300,4 +5291,4 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 	}
 }
 
-#endif
+#endif // DEBUG_ENABLED

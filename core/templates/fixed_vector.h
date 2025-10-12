@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/templates/span.h"
+
 /**
  * A high performance Vector of fixed capacity.
  * Especially useful if you need to create an array on the stack, to
@@ -51,6 +53,7 @@ class FixedVector {
 
 public:
 	_FORCE_INLINE_ constexpr FixedVector() = default;
+
 	constexpr FixedVector(std::initializer_list<T> p_init) {
 		ERR_FAIL_COND(p_init.size() > CAPACITY);
 		for (const T &element : p_init) {
@@ -58,9 +61,7 @@ public:
 		}
 	}
 
-	template <uint32_t p_capacity>
-	constexpr FixedVector(const FixedVector<T, p_capacity> &p_from) {
-		ERR_FAIL_COND(p_from.size() > CAPACITY);
+	constexpr FixedVector(const FixedVector &p_from) {
 		if constexpr (std::is_trivially_copyable_v<T>) {
 			// Copy size and all provided elements at once.
 			memcpy((void *)&_size, (void *)&p_from._size, sizeof(_size) + DATA_PADDING + p_from.size() * sizeof(T));
@@ -71,13 +72,46 @@ public:
 		}
 	}
 
-	template <uint32_t p_capacity>
-	constexpr FixedVector(FixedVector<T, p_capacity> &&p_from) {
-		ERR_FAIL_COND(p_from.size() > CAPACITY);
+	constexpr FixedVector(FixedVector &&p_from) {
 		// Copy size and all provided elements at once.
 		// Note: Assumes trivial relocatability.
 		memcpy((void *)&_size, (void *)&p_from._size, sizeof(_size) + DATA_PADDING + p_from.size() * sizeof(T));
 		p_from._size = 0;
+	}
+
+	constexpr FixedVector &operator=(const FixedVector &p_from) {
+		if constexpr (std::is_trivially_copyable_v<T>) {
+			// Copy size and all provided elements at once.
+			memcpy((void *)&_size, (void *)&p_from._size, sizeof(_size) + DATA_PADDING + p_from.size() * sizeof(T));
+		} else {
+			// Destruct extraneous elements.
+			if constexpr (!std::is_trivially_destructible_v<T>) {
+				for (uint32_t i = p_from.size(); i < _size; i++) {
+					ptr()[i].~T();
+				}
+			}
+
+			_size = 0; // Loop-assign the rest.
+			for (const T &element : p_from) {
+				ptr()[_size++] = element;
+			}
+		}
+		return *this;
+	}
+
+	constexpr FixedVector &operator=(FixedVector &&p_from) {
+		// Destruct extraneous elements.
+		if constexpr (!std::is_trivially_destructible_v<T>) {
+			for (uint32_t i = p_from.size(); i < _size; i++) {
+				ptr()[i].~T();
+			}
+		}
+
+		// Relocate elements (and size) into our buffer.
+		memcpy((void *)&_size, (void *)&p_from._size, sizeof(_size) + DATA_PADDING + p_from.size() * sizeof(T));
+		p_from._size = 0;
+
+		return *this;
 	}
 
 	~FixedVector() {
@@ -107,7 +141,7 @@ public:
 	constexpr Error resize_initialized(uint32_t p_size) {
 		if (p_size > _size) {
 			ERR_FAIL_COND_V(p_size > CAPACITY, ERR_OUT_OF_MEMORY);
-			memnew_arr_placement<true>(ptr() + _size, p_size - _size);
+			memnew_arr_placement(ptr() + _size, p_size - _size);
 		} else if (p_size < _size) {
 			if constexpr (!std::is_trivially_destructible_v<T>) {
 				for (uint32_t i = p_size; i < _size; i++) {
@@ -133,6 +167,12 @@ public:
 	constexpr void push_back(const T &p_val) {
 		ERR_FAIL_COND(_size >= CAPACITY);
 		memnew_placement(ptr() + _size, T(p_val));
+		_size++;
+	}
+
+	constexpr void push_back(T &&p_val) {
+		ERR_FAIL_COND(_size >= CAPACITY);
+		memnew_placement(ptr() + _size, T(std::move(p_val)));
 		_size++;
 	}
 

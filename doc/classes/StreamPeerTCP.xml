@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StreamPeerTCP" inherits="StreamPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="StreamPeerTCP" inherits="StreamPeerSocket" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A stream peer that handles TCP connections.
 	</brief_description>
@@ -27,12 +27,6 @@
 				Connects to the specified [code]host:port[/code] pair. A hostname will be resolved if valid. Returns [constant OK] on success.
 			</description>
 		</method>
-		<method name="disconnect_from_host">
-			<return type="void" />
-			<description>
-				Disconnects from host.
-			</description>
-		</method>
 		<method name="get_connected_host" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -51,18 +45,6 @@
 				Returns the local port to which this peer is bound.
 			</description>
 		</method>
-		<method name="get_status" qualifiers="const">
-			<return type="int" enum="StreamPeerTCP.Status" />
-			<description>
-				Returns the status of the connection, see [enum Status].
-			</description>
-		</method>
-		<method name="poll">
-			<return type="int" enum="Error" />
-			<description>
-				Poll the socket, updating its state. See [method get_status].
-			</description>
-		</method>
 		<method name="set_no_delay">
 			<return type="void" />
 			<param index="0" name="enabled" type="bool" />
@@ -72,18 +54,4 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="STATUS_NONE" value="0" enum="Status">
-			The initial status of the [StreamPeerTCP]. This is also the status after disconnecting.
-		</constant>
-		<constant name="STATUS_CONNECTING" value="1" enum="Status">
-			A status representing a [StreamPeerTCP] that is connecting to a host.
-		</constant>
-		<constant name="STATUS_CONNECTED" value="2" enum="Status">
-			A status representing a [StreamPeerTCP] that is connected to a host.
-		</constant>
-		<constant name="STATUS_ERROR" value="3" enum="Status">
-			A status representing a [StreamPeerTCP] in error state.
-		</constant>
-	</constants>
 </class>

@@ -1,5 +1,6 @@
 import os
 import platform
+import shutil
 import subprocess
 import sys
 
@@ -16,7 +17,7 @@ compatibility_platform_aliases = {
 }
 
 # CPU architecture options.
-architectures = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64", "wasm32", "loongarch64"]
+architectures = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc64", "wasm32", "loongarch64"]
 architecture_aliases = {
     "x86": "x86_32",
     "x64": "x86_64",
@@ -28,8 +29,6 @@ architecture_aliases = {
     "rv": "rv64",
     "riscv": "rv64",
     "riscv64": "rv64",
-    "ppcle": "ppc32",
-    "ppc": "ppc32",
     "ppc64le": "ppc64",
     "loong64": "loongarch64",
 }
@@ -160,3 +159,169 @@ def detect_mvk(env, osname):
             return mvk_path
 
     return ""
+
+
+def combine_libs_apple_embedded(target, source, env):
+    lib_path = target[0].srcnode().abspath
+    if "osxcross" in env:
+        libtool = "$APPLE_TOOLCHAIN_PATH/usr/bin/${apple_target_triple}libtool"
+    else:
+        libtool = "$APPLE_TOOLCHAIN_PATH/usr/bin/libtool"
+    env.Execute(
+        libtool + ' -static -o "' + lib_path + '" ' + " ".join([('"' + lib.srcnode().abspath + '"') for lib in source])
+    )
+
+
+def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, use_mkv, target, source, env):
+    bin_dir = env.Dir("#bin").abspath
+
+    # Template bundle.
+    app_prefix = "godot." + platform
+    rel_prefix = "libgodot." + platform + "." + "template_release"
+    dbg_prefix = "libgodot." + platform + "." + "template_debug"
+    if env.dev_build:
+        app_prefix += ".dev"
+        rel_prefix += ".dev"
+        dbg_prefix += ".dev"
+    if env["precision"] == "double":
+        app_prefix += ".double"
+        rel_prefix += ".double"
+        dbg_prefix += ".double"
+
+    # Lipo template libraries.
+    #
+    # env.extra_suffix contains ".simulator" when building for simulator,
+    # but it's undesired when calling lipo()
+    extra_suffix = env.extra_suffix.replace(".simulator", "")
+    rel_target_bin = lipo(bin_dir + "/" + rel_prefix, extra_suffix + ".a")
+    dbg_target_bin = lipo(bin_dir + "/" + dbg_prefix, extra_suffix + ".a")
+    rel_target_bin_sim = lipo(bin_dir + "/" + rel_prefix, ".simulator" + extra_suffix + ".a")
+    dbg_target_bin_sim = lipo(bin_dir + "/" + dbg_prefix, ".simulator" + extra_suffix + ".a")
+    # Assemble Xcode project bundle.
+    app_dir = env.Dir("#bin/" + platform + "_xcode").abspath
+    templ = env.Dir("#misc/dist/apple_embedded_xcode").abspath
+    if os.path.exists(app_dir):
+        shutil.rmtree(app_dir)
+    shutil.copytree(templ, app_dir)
+    if rel_target_bin != "":
+        print(f' Copying "{platform}" release framework')
+        shutil.copy(
+            rel_target_bin, app_dir + "/libgodot." + platform + ".release.xcframework/" + framework_dir + "/libgodot.a"
+        )
+    if dbg_target_bin != "":
+        print(f' Copying "{platform}" debug framework')
+        shutil.copy(
+            dbg_target_bin, app_dir + "/libgodot." + platform + ".debug.xcframework/" + framework_dir + "/libgodot.a"
+        )
+    if rel_target_bin_sim != "":
+        print(f' Copying "{platform}" (simulator) release framework')
+        shutil.copy(
+            rel_target_bin_sim,
+            app_dir + "/libgodot." + platform + ".release.xcframework/" + framework_dir_sim + "/libgodot.a",
+        )
+    if dbg_target_bin_sim != "":
+        print(f' Copying "{platform}" (simulator) debug framework')
+        shutil.copy(
+            dbg_target_bin_sim,
+            app_dir + "/libgodot." + platform + ".debug.xcframework/" + framework_dir_sim + "/libgodot.a",
+        )
+
+    # Remove other platform xcframeworks
+    for entry in os.listdir(app_dir):
+        if entry.startswith("libgodot.") and entry.endswith(".xcframework"):
+            parts = entry.split(".")
+            if len(parts) >= 3 and parts[1] != platform:
+                full_path = os.path.join(app_dir, entry)
+                shutil.rmtree(full_path)
+
+    if use_mkv:
+        mvk_path = detect_mvk(env, "ios-arm64")
+        if mvk_path != "":
+            shutil.copytree(mvk_path, app_dir + "/MoltenVK.xcframework")
+
+    # ZIP Xcode project bundle.
+    zip_dir = env.Dir("#bin/" + (app_prefix + extra_suffix).replace(".", "_")).abspath
+    shutil.make_archive(zip_dir, "zip", root_dir=app_dir)
+    shutil.rmtree(app_dir)
+
+
+def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_header_filename, all_swift_files):
+    from SCons.Script import Action, Builder
+
+    if apple_platform == "macos":
+        target_suffix = "macosx10.9"
+
+    elif apple_platform == "ios":
+        target_suffix = "ios14.0"  # iOS 14.0 needed for SwiftUI lifecycle
+
+    elif apple_platform == "iossimulator":
+        target_suffix = "ios14.0-simulator"  # iOS 14.0 needed for SwiftUI lifecycle
+
+    elif apple_platform == "visionos":
+        target_suffix = "xros26.0"
+
+    elif apple_platform == "visionossimulator":
+        target_suffix = "xros26.0-simulator"
+
+    else:
+        raise Exception("Invalid platform argument passed to detect_darwin_sdk_path")
+
+    swiftc_target = env["arch"] + "-apple-" + target_suffix
+
+    env["ALL_SWIFT_FILES"] = all_swift_files
+    env["CURRENT_PATH"] = current_path
+    frontend_path = "$APPLE_TOOLCHAIN_PATH/usr/bin/swift-frontend"
+    bridging_header_path = current_path + "/" + bridging_header_filename
+    env["SWIFTC"] = frontend_path + " -frontend -c"  # Swift compiler
+    env["SWIFTCFLAGS"] = [
+        "-cxx-interoperability-mode=default",
+        "-emit-object",
+        "-target",
+        swiftc_target,
+        "-sdk",
+        sdk_path,
+        "-import-objc-header",
+        bridging_header_path,
+        "-swift-version",
+        "6",
+        "-parse-as-library",
+        "-module-name",
+        "godot_swift_module",
+        "-I./",  # Pass the current directory as the header root so bridging headers can include files from any point of the hierarchy
+    ]
+
+    if env["debug_symbols"]:
+        env.Append(SWIFTCFLAGS=["-g"])
+
+    if env["optimize"] in ["speed", "speed_trace"]:
+        env.Append(SWIFTCFLAGS=["-O"])
+
+    elif env["optimize"] == "size":
+        env.Append(SWIFTCFLAGS=["-Osize"])
+
+    elif env["optimize"] in ["debug", "none"]:
+        env.Append(SWIFTCFLAGS=["-Onone"])
+
+    def generate_swift_action(source, target, env, for_signature):
+        fullpath_swift_files = [env["CURRENT_PATH"] + "/" + file for file in env["ALL_SWIFT_FILES"]]
+        fullpath_swift_files.remove(source[0].abspath)
+
+        fullpath_swift_files_string = '"' + '" "'.join(fullpath_swift_files) + '"'
+        compile_command = "$SWIFTC " + fullpath_swift_files_string + " -primary-file $SOURCE -o $TARGET $SWIFTCFLAGS"
+
+        swift_comdstr = env.get("SWIFTCOMSTR")
+        if swift_comdstr is not None:
+            swift_action = Action(compile_command, cmdstr=swift_comdstr)
+        else:
+            swift_action = Action(compile_command)
+
+        return swift_action
+
+    # Define Builder for Swift files
+    swift_builder = Builder(
+        generator=generate_swift_action, suffix=env["OBJSUFFIX"], src_suffix=".swift", emitter=methods.redirect_emitter
+    )
+
+    env.Append(BUILDERS={"Swift": swift_builder})
+    env["BUILDERS"]["Library"].add_src_builder("Swift")
+    env["BUILDERS"]["Object"].add_action(".swift", Action(generate_swift_action, generator=1))

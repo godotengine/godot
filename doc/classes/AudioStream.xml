@@ -51,13 +51,20 @@
 				Override this method to customize the name assigned to this audio stream. Unused by the engine.
 			</description>
 		</method>
+		<method name="_get_tags" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<description>
+				Override this method to customize the tags for this audio stream. Should return a [Dictionary] of strings with the tag as the key and its content as the value.
+				Commonly used tags include [code]title[/code], [code]artist[/code], [code]album[/code], [code]tracknumber[/code], and [code]date[/code].
+			</description>
+		</method>
 		<method name="_has_loop" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
 				Override this method to return [code]true[/code] if this stream has a loop.
 			</description>
 		</method>
-		<method name="_instantiate_playback" qualifiers="virtual const">
+		<method name="_instantiate_playback" qualifiers="virtual required const">
 			<return type="AudioStreamPlayback" />
 			<description>
 				Override this method to customize the returned value of [method instantiate_playback]. Should return a new [AudioStreamPlayback] created when the stream is played (such as by an [AudioStreamPlayer]).
@@ -84,7 +91,7 @@
 		<method name="get_length" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the length of the audio stream in seconds.
+				Returns the length of the audio stream in seconds. If this stream is an [AudioStreamRandomizer], returns the length of the last played stream. If this stream has an indefinite length (such as for [AudioStreamGenerator] and [AudioStreamMicrophone]), returns [code]0.0[/code].
 			</description>
 		</method>
 		<method name="instantiate_playback">

@@ -42,7 +42,7 @@
 #ifndef NAVIGATION_3D_DISABLED
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 Callable MeshInstance3D::_navmesh_source_geometry_parsing_callback;
 RID MeshInstance3D::_navmesh_source_geometry_parser;
@@ -176,7 +176,7 @@ void MeshInstance3D::_resolve_skeleton_path() {
 	Ref<SkinReference> new_skin_reference;
 
 	if (!skeleton_path.is_empty()) {
-		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(get_node(skeleton_path));
+		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(get_node_or_null(skeleton_path)); // skeleton_path may be outdated when reparenting.
 		if (skeleton) {
 			if (skin_internal.is_null()) {
 				new_skin_reference = skeleton->register_skin(skeleton->create_skin_from_rest_transforms());
@@ -380,17 +380,17 @@ Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 		return mat_override;
 	}
 
+	Ref<Mesh> m = get_mesh();
+	if (m.is_null() || m->get_surface_count() == 0) {
+		return Ref<Material>();
+	}
+
 	Ref<Material> surface_material = get_surface_override_material(p_surface);
 	if (surface_material.is_valid()) {
 		return surface_material;
 	}
 
-	Ref<Mesh> m = get_mesh();
-	if (m.is_valid()) {
-		return m->surface_get_material(p_surface);
-	}
-
-	return Ref<Material>();
+	return m->surface_get_material(p_surface);
 }
 
 void MeshInstance3D::_mesh_changed() {
@@ -925,6 +925,7 @@ void MeshInstance3D::_bind_methods() {
 }
 
 MeshInstance3D::MeshInstance3D() {
+	_define_ancestry(AncestralClass::MESH_INSTANCE_3D);
 }
 
 MeshInstance3D::~MeshInstance3D() {

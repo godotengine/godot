@@ -34,9 +34,9 @@
 
 #include "core/string/char_utils.h" // IWYU pragma: export
 #include "core/templates/cowdata.h"
+#include "core/templates/hashfuncs.h"
 #include "core/templates/vector.h"
 #include "core/typedefs.h"
-#include "core/variant/array.h"
 
 class String;
 template <typename T>
@@ -177,12 +177,21 @@ class [[nodiscard]] CharStringT {
 public:
 	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
+	_FORCE_INLINE_ const T *get_data() const { return size() ? ptr() : &_null; }
+
+	// Returns the number of characters in the buffer, including the terminating NUL character.
+	// In most cases, length() should be used instead.
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
+	// Returns the number of characters in the string (excluding terminating NUL character).
+	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
+	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
 	_FORCE_INLINE_ operator Span<T>() const { return Span(ptr(), length()); }
 	_FORCE_INLINE_ Span<T> span() const { return Span(ptr(), length()); }
 
-	_FORCE_INLINE_ Error resize(int p_size) { return _cowdata.resize(p_size); }
+	/// Resizes the string. The given size must include the null terminator.
+	/// New characters are not initialized, and should be set by the caller.
+	_FORCE_INLINE_ Error resize_uninitialized(int64_t p_size) { return _cowdata.template resize<false>(p_size); }
 
 	_FORCE_INLINE_ T get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
@@ -217,7 +226,7 @@ public:
 	}
 	_FORCE_INLINE_ CharStringT<T> &operator+=(T p_char) {
 		const int lhs_len = length();
-		resize(lhs_len + 2);
+		resize_uninitialized(lhs_len + 2);
 
 		T *dst = ptrw();
 		dst[lhs_len] = p_char;
@@ -226,28 +235,22 @@ public:
 		return *this;
 	}
 
-	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
-	_FORCE_INLINE_ const T *get_data() const {
-		if (size()) {
-			return &operator[](0);
-		}
-		return &_null;
-	}
+	uint32_t hash() const { return hash_djb2(get_data()); }
 
 protected:
 	void copy_from(const T *p_cstr) {
 		if (!p_cstr) {
-			resize(0);
+			resize_uninitialized(0);
 			return;
 		}
 
 		size_t len = strlen(p_cstr);
 		if (len == 0) {
-			resize(0);
+			resize_uninitialized(0);
 			return;
 		}
 
-		Error err = resize(++len); // include terminating null char.
+		Error err = resize_uninitialized(++len); // include terminating null char.
 
 		ERR_FAIL_COND_MSG(err != OK, "Failed to copy C-string.");
 
@@ -270,26 +273,12 @@ class [[nodiscard]] String {
 	static constexpr char32_t _null = 0;
 	static constexpr char32_t _replacement_char = 0xfffd;
 
-	// Known-length copy.
-	void copy_from_unchecked(const char32_t *p_char, int p_length);
-
 	// NULL-terminated c string copy - automatically parse the string to find the length.
 	void append_latin1(const char *p_cstr) {
 		append_latin1(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
 	}
 	void append_utf32(const char32_t *p_cstr) {
 		append_utf32(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
-	}
-
-	// wchar_t copy_from depends on the platform.
-	void append_wstring(const Span<wchar_t> &p_cstr) {
-#ifdef WINDOWS_ENABLED
-		// wchar_t is 16-bit, parse as UTF-16
-		append_utf16((const char16_t *)p_cstr.ptr(), p_cstr.size());
-#else
-		// wchar_t is 32-bit, copy directly
-		append_utf32((Span<char32_t> &)p_cstr);
-#endif
 	}
 	void append_wstring(const wchar_t *p_cstr) {
 #ifdef WINDOWS_ENABLED
@@ -313,18 +302,33 @@ public:
 
 	_FORCE_INLINE_ char32_t *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char32_t *ptr() const { return _cowdata.ptr(); }
+	_FORCE_INLINE_ const char32_t *get_data() const { return size() ? ptr() : &_null; }
+
+	// Returns the number of characters in the buffer, including the terminating NUL character.
+	// In most cases, length() should be used instead.
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
+	// Returns the number of characters in the string (excluding terminating NUL character).
+	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
+	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
 	_FORCE_INLINE_ operator Span<char32_t>() const { return Span(ptr(), length()); }
 	_FORCE_INLINE_ Span<char32_t> span() const { return Span(ptr(), length()); }
 
 	void remove_at(int p_index) { _cowdata.remove_at(p_index); }
 
-	_FORCE_INLINE_ void clear() { resize(0); }
+	_FORCE_INLINE_ void clear() { resize_uninitialized(0); }
 
 	_FORCE_INLINE_ char32_t get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const char32_t &p_elem) { _cowdata.set(p_index, p_elem); }
-	Error resize(int p_size) { return _cowdata.resize(p_size); }
+
+	/// Resizes the string. The given size must include the null terminator.
+	/// New characters are not initialized, and should be set by the caller.
+	Error resize_uninitialized(int64_t p_size) { return _cowdata.resize<false>(p_size); }
+
+	Error reserve(int64_t p_size) {
+		ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
+		return _cowdata.reserve(p_size);
+	}
 
 	_FORCE_INLINE_ const char32_t &operator[](int p_index) const {
 		if (unlikely(p_index == _cowdata.size())) {
@@ -376,14 +380,6 @@ public:
 	// Special sorting for file names. Names starting with `_` are put before all others except those starting with `.`, otherwise natural comparison is used.
 	signed char filecasecmp_to(const String &p_str) const;
 	signed char filenocasecmp_to(const String &p_str) const;
-
-	const char32_t *get_data() const;
-	/* standard size stuff */
-
-	_FORCE_INLINE_ int length() const {
-		int s = size();
-		return s ? (s - 1) : 0; // length does not include zero
-	}
 
 	bool is_valid_string() const;
 
@@ -441,11 +437,12 @@ public:
 	String trim_suffix(const char *p_suffix) const;
 	String lpad(int min_length, const String &character = " ") const;
 	String rpad(int min_length, const String &character = " ") const;
-	String sprintf(const Array &values, bool *error) const;
+	String sprintf(const Span<Variant> &values, bool *error) const;
 	String quote(const String &quotechar = "\"") const;
 	String unquote() const;
 	static String num(double p_num, int p_decimals = -1);
 	static String num_scientific(double p_num);
+	static String num_scientific(float p_num);
 	static String num_real(double p_num, bool p_trailing = true);
 	static String num_real(float p_num, bool p_trailing = true);
 	static String num_int64(int64_t p_num, int base = 10, bool capitalize_hex = false);
@@ -541,9 +538,9 @@ public:
 	}
 
 	CharString utf8(Vector<uint8_t> *r_ch_length_map = nullptr) const;
-	Error append_utf8(const char *p_utf8, int p_len = -1, bool p_skip_cr = false);
-	Error append_utf8(const Span<char> &p_range, bool p_skip_cr = false) {
-		return append_utf8(p_range.ptr(), p_range.size(), p_skip_cr);
+	Error append_utf8(const char *p_utf8, int p_len = -1);
+	Error append_utf8(const Span<char> &p_range) {
+		return append_utf8(p_range.ptr(), p_range.size());
 	}
 	static String utf8(const char *p_utf8, int p_len = -1) {
 		String ret;
@@ -564,10 +561,35 @@ public:
 	}
 	static String utf16(const Span<char16_t> &p_range) { return utf16(p_range.ptr(), p_range.size()); }
 
-	void append_utf32(const Span<char32_t> &p_cstr);
+	// wchar_t copy_from depends on the platform.
+	Error append_wstring(const Span<wchar_t> &p_cstr) {
+#ifdef WINDOWS_ENABLED
+		// wchar_t is 16-bit, parse as UTF-16
+		return append_utf16((const char16_t *)p_cstr.ptr(), p_cstr.size());
+#else
+		// wchar_t is 32-bit, copy directly
+		return append_utf32((Span<char32_t> &)p_cstr);
+#endif
+	}
+	static String wstring(const Span<wchar_t> &p_string) {
+		String string;
+		string.append_wstring(p_string);
+		return string;
+	}
+
+	Error append_utf32(const Span<char32_t> &p_cstr);
 	static String utf32(const Span<char32_t> &p_span) {
 		String string;
 		string.append_utf32(p_span);
+		return string;
+	}
+
+	// Like append_utf32, but does not check the string for string integrity (and is thus faster).
+	// Prefer this function for conversion from trusted utf32 strings.
+	void append_utf32_unchecked(const Span<char32_t> &p_span);
+	static String utf32_unchecked(const Span<char32_t> &p_string) {
+		String string;
+		string.append_utf32_unchecked(p_string);
 		return string;
 	}
 
@@ -586,7 +608,6 @@ public:
 	Vector<uint8_t> sha1_buffer() const;
 	Vector<uint8_t> sha256_buffer() const;
 
-	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 	_FORCE_INLINE_ bool contains(const char *p_str) const { return find(p_str) != -1; }
 	_FORCE_INLINE_ bool contains(const String &p_str) const { return find(p_str) != -1; }
 	_FORCE_INLINE_ bool contains_char(char32_t p_chr) const { return find_char(p_chr) != -1; }
@@ -790,24 +811,7 @@ _FORCE_INLINE_ String ETRN(const String &p_text, const String &p_text_plural, in
 	return p_text_plural;
 }
 
-bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end);
-
-_FORCE_INLINE_ void sarray_add_str(Vector<String> &arr) {
-}
-
-_FORCE_INLINE_ void sarray_add_str(Vector<String> &arr, const String &p_str) {
-	arr.push_back(p_str);
-}
-
-template <typename... P>
-_FORCE_INLINE_ void sarray_add_str(Vector<String> &arr, const String &p_str, P... p_args) {
-	arr.push_back(p_str);
-	sarray_add_str(arr, p_args...);
-}
-
 template <typename... P>
 _FORCE_INLINE_ Vector<String> sarray(P... p_args) {
-	Vector<String> arr;
-	sarray_add_str(arr, p_args...);
-	return arr;
+	return Vector<String>({ String(p_args)... });
 }

@@ -125,8 +125,8 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 	private val collapseMenuButton: View? by lazy {
 		view?.findViewById(R.id.game_menu_collapse_button)
 	}
-	private val pauseButton: View? by lazy {
-		view?.findViewById(R.id.game_menu_pause_button)
+	private val suspendButton: View? by lazy {
+		view?.findViewById(R.id.game_menu_suspend_button)
 	}
 	private val nextFrameButton: View? by lazy {
 		view?.findViewById(R.id.game_menu_next_frame_button)
@@ -267,7 +267,7 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 				menuListener?.closeGameWindow()
 			}
 		}
-		pauseButton?.apply {
+		suspendButton?.apply {
 			setOnClickListener {
 				val isActivated = !it.isActivated
 				menuListener?.suspendGame(isActivated)
@@ -348,7 +348,7 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 		isGameEmbedded = gameMenuState.getBoolean(BaseGodotEditor.EXTRA_IS_GAME_EMBEDDED, false)
 		isGameRunning = gameMenuState.getBoolean(BaseGodotEditor.EXTRA_IS_GAME_RUNNING, false)
 
-		pauseButton?.isEnabled = isGameRunning
+		suspendButton?.isEnabled = isGameRunning
 		nextFrameButton?.isEnabled = isGameRunning
 
 		val nodeType = gameMenuState.getSerializable(BaseGodotEditor.GAME_MENU_ACTION_SET_NODE_TYPE) as GameMenuListener.NodeType? ?: GameMenuListener.NodeType.NONE

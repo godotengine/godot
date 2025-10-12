@@ -60,6 +60,7 @@ public:
 	GLint max_texture_image_units = 0;
 	GLint max_texture_size = 0;
 	GLint max_viewport_size[2] = { 0, 0 };
+	GLint max_vertex_attribs = 0;
 	GLint64 max_uniform_buffer_size = 0;
 	uint32_t max_shader_varyings = 0;
 
@@ -80,9 +81,12 @@ public:
 	bool astc_supported = false;
 	bool astc_hdr_supported = false;
 	bool astc_layered_supported = false;
+	bool astc_3d_supported = false;
 	bool srgb_framebuffer_supported = false;
+	bool unorm16_texture_supported = false;
 
 	bool force_vertex_shading = false;
+	bool specular_occlusion = false;
 
 	bool support_anisotropic_filter = false;
 	float anisotropic_level = 0.0f;
@@ -97,7 +101,6 @@ public:
 
 	// Adreno 3XX compatibility.
 	bool disable_particles_workaround = false; // Set to 'true' to disable 'GPUParticles'.
-	bool flip_xy_workaround = false;
 
 	// PowerVR GE 8320 workaround.
 	bool disable_transform_feedback_shader_cache = false;
@@ -111,7 +114,13 @@ public:
 	PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC eglFramebufferTexture2DMultisampleEXT = nullptr;
 	PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC eglFramebufferTextureMultisampleMultiviewOVR = nullptr;
 	PFNEGLIMAGETARGETTEXTURE2DOESPROC eglEGLImageTargetTexture2DOES = nullptr;
-#endif
+
+#define glFramebufferTextureMultiviewOVR GLES3::Config::get_singleton()->eglFramebufferTextureMultiviewOVR
+#define glTexStorage3DMultisample GLES3::Config::get_singleton()->eglTexStorage3DMultisample
+#define glFramebufferTexture2DMultisampleEXT GLES3::Config::get_singleton()->eglFramebufferTexture2DMultisampleEXT
+#define glFramebufferTextureMultisampleMultiviewOVR GLES3::Config::get_singleton()->eglFramebufferTextureMultisampleMultiviewOVR
+#define glEGLImageTargetTexture2DOES GLES3::Config::get_singleton()->eglEGLImageTargetTexture2DOES
+#endif // ANDROID_ENABLED
 
 	static Config *get_singleton() { return singleton; }
 

@@ -33,12 +33,16 @@
 #include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
+#include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/script/script_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "modules/regex/regex.h"
 #include "scene/gui/separator.h"
+#include "scene/main/timer.h"
 #include "scene/resources/font.h"
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
@@ -46,9 +50,9 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 
 	String err_str;
 	if (p_errorexp && p_errorexp[0]) {
-		err_str = String::utf8(p_errorexp);
+		err_str = String::utf8(p_errorexp).replace("[", "[lb]");
 	} else {
-		err_str = String::utf8(p_file) + ":" + itos(p_line) + " - " + String::utf8(p_error);
+		err_str = vformat("[url]%s:%d[/url] - %s", String::utf8(p_file).replace("[", "[lb]"), p_line, String::utf8(p_error).replace("[", "[lb]"));
 	}
 
 	MessageType message_type = p_type == ERR_HANDLER_WARNING ? MSG_TYPE_WARNING : MSG_TYPE_ERROR;
@@ -196,7 +200,23 @@ void EditorLog::_load_state() {
 }
 
 void EditorLog::_meta_clicked(const String &p_meta) {
-	OS::get_singleton()->shell_open(p_meta);
+	Ref<RegExMatch> uri_match = RegEx(R"(^([a-zA-Z][a-zA-Z0-9+.-]*):(?://)?(.+?)(?::([0-9]+))?$)").search(p_meta);
+	if (uri_match.is_null()) {
+		return;
+	}
+
+	String scheme = uri_match->get_string(1);
+	if (scheme == "res") {
+		String file = uri_match->get_string(2);
+		int line = (int)uri_match->get_string(3).to_int();
+		if (ResourceLoader::exists(file)) {
+			Ref<Resource> res = ResourceLoader::load(file);
+			ScriptEditor::get_singleton()->edit(res, line - 1, 0);
+			InspectorDock::get_singleton()->edit_resource(res);
+		}
+	} else {
+		OS::get_singleton()->shell_open(p_meta);
+	}
 }
 
 void EditorLog::_clear_request() {
@@ -384,7 +404,8 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		log->pop();
 	}
 
-	if (p_message.type == MSG_TYPE_STD_RICH) {
+	// Note that errors and warnings only support BBCode in the file part of the message.
+	if (p_message.type == MSG_TYPE_STD_RICH || p_message.type == MSG_TYPE_ERROR || p_message.type == MSG_TYPE_WARNING) {
 		log->append_text(p_message.text);
 	} else {
 		log->add_text(p_message.text);
@@ -484,7 +505,7 @@ EditorLog::EditorLog() {
 	clear_button = memnew(Button);
 	clear_button->set_accessibility_name(TTRC("Clear Log"));
 	clear_button->set_theme_type_variation(SceneStringName(FlatButton));
-	clear_button->set_focus_mode(FOCUS_NONE);
+	clear_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	clear_button->set_shortcut(ED_SHORTCUT("editor/clear_output", TTRC("Clear Output"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::K));
 	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_clear_request));
 	hb_tools->add_child(clear_button);
@@ -493,7 +514,7 @@ EditorLog::EditorLog() {
 	copy_button = memnew(Button);
 	copy_button->set_accessibility_name(TTRC("Copy Selection"));
 	copy_button->set_theme_type_variation(SceneStringName(FlatButton));
-	copy_button->set_focus_mode(FOCUS_NONE);
+	copy_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	copy_button->set_shortcut(ED_SHORTCUT("editor/copy_output", TTRC("Copy Selection"), KeyModifierMask::CMD_OR_CTRL | Key::C));
 	copy_button->set_shortcut_context(this);
 	copy_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_copy_request));
@@ -510,9 +531,8 @@ EditorLog::EditorLog() {
 	// Collapse.
 	collapse_button = memnew(Button);
 	collapse_button->set_theme_type_variation(SceneStringName(FlatButton));
-	collapse_button->set_focus_mode(FOCUS_NONE);
+	collapse_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	collapse_button->set_tooltip_text(TTR("Collapse duplicate messages into one log entry. Shows number of occurrences."));
-	collapse_button->set_accessibility_name(TTRC("Collapse Duplicate Messages"));
 	collapse_button->set_toggle_mode(true);
 	collapse_button->set_pressed(false);
 	collapse_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_collapse));
@@ -522,7 +542,7 @@ EditorLog::EditorLog() {
 	show_search_button = memnew(Button);
 	show_search_button->set_accessibility_name(TTRC("Show Search"));
 	show_search_button->set_theme_type_variation(SceneStringName(FlatButton));
-	show_search_button->set_focus_mode(FOCUS_NONE);
+	show_search_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	show_search_button->set_toggle_mode(true);
 	show_search_button->set_pressed(true);
 	show_search_button->set_shortcut(ED_SHORTCUT("editor/open_search", TTRC("Focus Search/Filter Bar"), KeyModifierMask::CMD_OR_CTRL | Key::F));

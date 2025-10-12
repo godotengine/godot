@@ -78,7 +78,7 @@ LightStorage::~LightStorage() {
 	free_light_data();
 
 	for (const KeyValue<int, ShadowCubemap> &E : shadow_cubemaps) {
-		RD::get_singleton()->free(E.value.cubemap);
+		RD::get_singleton()->free_rid(E.value.cubemap);
 	}
 
 	singleton = nullptr;
@@ -268,7 +268,7 @@ void LightStorage::light_set_cull_mask(RID p_light, uint32_t p_mask) {
 	light->cull_mask = p_mask;
 
 	light->version++;
-	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_CULL_MASK);
 }
 
 void LightStorage::light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) {
@@ -432,7 +432,14 @@ AABB LightStorage::light_get_aabb(RID p_light) const {
 	switch (light->type) {
 		case RS::LIGHT_SPOT: {
 			float len = light->param[RS::LIGHT_PARAM_RANGE];
-			float size = Math::tan(Math::deg_to_rad(light->param[RS::LIGHT_PARAM_SPOT_ANGLE])) * len;
+			float angle = Math::deg_to_rad(light->param[RS::LIGHT_PARAM_SPOT_ANGLE]);
+
+			if (angle > Math::PI * 0.5) {
+				// Light casts backwards as well.
+				return AABB(Vector3(-1, -1, -1) * len, Vector3(2, 2, 2) * len);
+			}
+
+			float size = Math::sin(angle) * len;
 			return AABB(Vector3(-size, -size, -len), Vector3(size * 2, size * 2, len));
 		};
 		case RS::LIGHT_OMNI: {
@@ -539,17 +546,17 @@ void LightStorage::light_instance_mark_visible(RID p_light_instance) {
 
 void LightStorage::free_light_data() {
 	if (directional_light_buffer.is_valid()) {
-		RD::get_singleton()->free(directional_light_buffer);
+		RD::get_singleton()->free_rid(directional_light_buffer);
 		directional_light_buffer = RID();
 	}
 
 	if (omni_light_buffer.is_valid()) {
-		RD::get_singleton()->free(omni_light_buffer);
+		RD::get_singleton()->free_rid(omni_light_buffer);
 		omni_light_buffer = RID();
 	}
 
 	if (spot_light_buffer.is_valid()) {
-		RD::get_singleton()->free(spot_light_buffer);
+		RD::get_singleton()->free_rid(spot_light_buffer);
 		spot_light_buffer = RID();
 	}
 
@@ -714,9 +721,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 						light_data.shadow_split_offsets[j] = split;
 						float bias_scale = light_instance->shadow_transform[j].bias_scale * light_data.soft_shadow_scale;
 						light_data.shadow_bias[j] = light->param[RS::LIGHT_PARAM_SHADOW_BIAS] / 100.0 * bias_scale;
-						// Use lower shadow normal bias for distant splits, relative to the share taken by the split.
-						// This helps reduce peter-panning at a distance.
-						light_data.shadow_normal_bias[j] = light->param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] * light_instance->shadow_transform[j].shadow_texel_size * light_data.shadow_split_offsets[0] / split;
+						light_data.shadow_normal_bias[j] = light->param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] * light_instance->shadow_transform[j].shadow_texel_size;
 						light_data.shadow_transmittance_bias[j] = light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] / 100.0 * bias_scale;
 						light_data.shadow_z_range[j] = light_instance->shadow_transform[j].farplane;
 						light_data.shadow_range_begin[j] = light_instance->shadow_transform[j].range_begin;
@@ -1171,11 +1176,7 @@ void LightStorage::reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_
 }
 
 void LightStorage::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
-	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
-	ERR_FAIL_NULL(reflection_probe);
-	ERR_FAIL_COND(p_resolution < 32);
-
-	reflection_probe->resolution = p_resolution;
+	WARN_PRINT_ONCE("reflection_probe_set_resolution is not available in Godot 4. ReflectionProbe size is configured in the project settings with the rendering/reflections/reflection_atlas/reflection_size setting.");
 }
 
 void LightStorage::reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) {
@@ -1259,13 +1260,6 @@ float LightStorage::reflection_probe_get_mesh_lod_threshold(RID p_probe) const {
 	ERR_FAIL_NULL_V(reflection_probe, 0);
 
 	return reflection_probe->mesh_lod_threshold;
-}
-
-int LightStorage::reflection_probe_get_resolution(RID p_probe) const {
-	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
-	ERR_FAIL_NULL_V(reflection_probe, 0);
-
-	return reflection_probe->resolution;
 }
 
 float LightStorage::reflection_probe_get_baked_exposure(RID p_probe) const {
@@ -1367,9 +1361,9 @@ void LightStorage::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_s
 
 	if (ra->reflection.is_valid()) {
 		//clear and invalidate everything
-		RD::get_singleton()->free(ra->reflection);
+		RD::get_singleton()->free_rid(ra->reflection);
 		ra->reflection = RID();
-		RD::get_singleton()->free(ra->depth_buffer);
+		RD::get_singleton()->free_rid(ra->depth_buffer);
 		ra->depth_buffer = RID();
 		for (int i = 0; i < ra->reflections.size(); i++) {
 			ra->reflections.write[i].data.clear_reflection_data();
@@ -1488,6 +1482,9 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 
 	ERR_FAIL_NULL_V(atlas, false);
 
+	ERR_FAIL_COND_V_MSG(atlas->size < 2, false, "Attempted to render to a reflection atlas of invalid resolution.");
+	ERR_FAIL_COND_V_MSG(atlas->count < 1, false, "Attempted to render to a reflection atlas of size < 1.");
+
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL_V(rpi, false);
 
@@ -1495,16 +1492,19 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		atlas->render_buffers.instantiate();
 	}
 
-	RD::get_singleton()->draw_command_begin_label("Reflection probe render");
+	RD::get_singleton()->draw_command_begin_label("Reflection Probe Render");
 
-	if (LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->size != 256) {
+	const bool update_always = LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS;
+	if (update_always && atlas->reflection.is_valid() && atlas->size != 256) {
 		WARN_PRINT("ReflectionProbes set to UPDATE_ALWAYS must have an atlas size of 256. Please update the atlas size in the ProjectSettings.");
 		reflection_atlas_set_size(p_reflection_atlas, 256, atlas->count);
 	}
 
-	if (LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != 8) {
+	const bool update_mode_changed = atlas->update_always != update_always && atlas->reflection.is_valid();
+	const bool real_time_mipmaps_different = update_always && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != 8;
+	if (update_mode_changed || real_time_mipmaps_different) {
 		// Invalidate reflection atlas, need to regenerate
-		RD::get_singleton()->free(atlas->reflection);
+		RD::get_singleton()->free_rid(atlas->reflection);
 		atlas->reflection = RID();
 
 		for (int i = 0; i < atlas->reflections.size(); i++) {
@@ -1519,7 +1519,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 
 	if (atlas->reflection.is_null()) {
 		int mipmaps = MIN(RendererSceneRenderRD::get_singleton()->get_sky()->roughness_layers, Image::get_image_required_mipmaps(atlas->size, atlas->size, Image::FORMAT_RGBAH) + 1);
-		mipmaps = LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS ? 8 : mipmaps; // always use 8 mipmaps with real time filtering
+		mipmaps = update_always ? 8 : mipmaps; // always use 8 mipmaps with real time filtering
 		{
 			//reflection atlas was unused, create:
 			RD::TextureFormat tf;
@@ -1542,7 +1542,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		}
 		atlas->reflections.resize(atlas->count);
 		for (int i = 0; i < atlas->count; i++) {
-			atlas->reflections.write[i].data.update_reflection_data(atlas->size, mipmaps, false, atlas->reflection, i * 6, LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS, RendererSceneRenderRD::get_singleton()->get_sky()->roughness_layers, RendererSceneRenderRD::get_singleton()->_render_buffers_get_color_format());
+			atlas->reflections.write[i].data.update_reflection_data(atlas->size, mipmaps, false, atlas->reflection, i * 6, update_always, RendererSceneRenderRD::get_singleton()->get_sky()->roughness_layers, RendererSceneRenderRD::get_singleton()->_render_buffers_get_color_format());
 			for (int j = 0; j < 6; j++) {
 				atlas->reflections.write[i].fbs[j] = RendererSceneRenderRD::get_singleton()->reflection_probe_create_framebuffer(atlas->reflections.write[i].data.layers[0].mipmaps[0].views[j], atlas->depth_buffer);
 			}
@@ -1553,6 +1553,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		atlas->depth_fb = RD::get_singleton()->framebuffer_create(fb);
 
 		atlas->render_buffers->configure_for_reflections(Size2i(atlas->size, atlas->size));
+		atlas->update_always = update_always;
 	}
 
 	if (rpi->atlas_index == -1) {
@@ -1665,6 +1666,8 @@ RID LightStorage::reflection_probe_instance_get_framebuffer(RID p_instance, int 
 
 	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	ERR_FAIL_NULL_V(atlas, RID());
+	ERR_FAIL_COND_V_MSG(rpi->atlas_index < 0, RID(), "Reflection probe atlas index invalid. Maximum amount of reflection probes in use (" + itos(atlas->count) + ") may have been exceeded, reflections will not display properly. Consider increasing Rendering > Reflections > Reflection Atlas > Reflection Count in the Project Settings.");
+
 	return atlas->reflections[rpi->atlas_index].fbs[p_index];
 }
 
@@ -1698,7 +1701,7 @@ ClusterBuilderRD *LightStorage::reflection_probe_instance_get_cluster_builder(RI
 
 void LightStorage::free_reflection_data() {
 	if (reflection_buffer.is_valid()) {
-		RD::get_singleton()->free(reflection_buffer);
+		RD::get_singleton()->free_rid(reflection_buffer);
 		reflection_buffer = RID();
 	}
 
@@ -1888,7 +1891,7 @@ void LightStorage::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_use
 				}
 			}
 		}
-		ERR_FAIL_COND_MSG(lm->array_index < 0, "Maximum amount of lightmaps in use (" + itos(lightmap_textures.size()) + ") has been exceeded, lightmap will nod display properly.");
+		ERR_FAIL_COND_MSG(lm->array_index < 0, "Maximum amount of lightmaps in use (" + itos(lightmap_textures.size()) + ") has been exceeded, lightmap will not display properly.");
 
 		lightmap_textures.write[lm->array_index] = t->rd_texture;
 	}
@@ -2133,7 +2136,7 @@ void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits
 	ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_atlas);
 	ERR_FAIL_NULL(shadow_atlas);
 	ERR_FAIL_COND(p_size < 0);
-	p_size = next_power_of_2(p_size);
+	p_size = next_power_of_2((uint32_t)p_size);
 
 	if (p_size == shadow_atlas->size && p_16_bits == shadow_atlas->use_16_bits) {
 		return;
@@ -2141,7 +2144,7 @@ void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits
 
 	// erasing atlas
 	if (shadow_atlas->depth.is_valid()) {
-		RD::get_singleton()->free(shadow_atlas->depth);
+		RD::get_singleton()->free_rid(shadow_atlas->depth);
 		shadow_atlas->depth = RID();
 	}
 	for (int i = 0; i < 4; i++) {
@@ -2170,7 +2173,7 @@ void LightStorage::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quad
 	ERR_FAIL_INDEX(p_quadrant, 4);
 	ERR_FAIL_INDEX(p_subdivision, 16384);
 
-	uint32_t subdiv = next_power_of_2(p_subdivision);
+	uint32_t subdiv = next_power_of_2((uint32_t)p_subdivision);
 	if (subdiv & 0xaaaaaaaa) { //sqrt(subdiv) must be integer
 		subdiv <<= 1;
 	}
@@ -2365,7 +2368,7 @@ bool LightStorage::shadow_atlas_update_light(RID p_atlas, RID p_light_instance, 
 	}
 
 	uint32_t quad_size = shadow_atlas->size >> 1;
-	int desired_fit = MIN(quad_size / shadow_atlas->smallest_subdiv, next_power_of_2(quad_size * p_coverage));
+	int desired_fit = MIN(quad_size / shadow_atlas->smallest_subdiv, next_power_of_2(uint32_t(quad_size * p_coverage)));
 
 	int valid_quadrants[4];
 	int valid_quadrant_count = 0;
@@ -2540,7 +2543,7 @@ void LightStorage::directional_shadow_atlas_set_size(int p_size, bool p_16_bits)
 	directional_shadow.use_16_bits = p_16_bits;
 
 	if (directional_shadow.depth.is_valid()) {
-		RD::get_singleton()->free(directional_shadow.depth);
+		RD::get_singleton()->free_rid(directional_shadow.depth);
 		directional_shadow.depth = RID();
 		RendererSceneRenderRD::get_singleton()->base_uniforms_changed();
 	}

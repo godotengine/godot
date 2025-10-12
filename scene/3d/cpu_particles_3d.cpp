@@ -37,6 +37,7 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
+#include "scene/resources/mesh.h"
 #include "scene/resources/particle_process_material.h"
 
 AABB CPUParticles3D::get_aabb() const {
@@ -48,7 +49,7 @@ void CPUParticles3D::set_emitting(bool p_emitting) {
 		return;
 	}
 
-	if (p_emitting && !use_fixed_seed) {
+	if (p_emitting && !use_fixed_seed && one_shot) {
 		set_seed(Math::rand());
 	}
 
@@ -587,7 +588,7 @@ void CPUParticles3D::request_particles_process(real_t p_requested_process_time) 
 }
 
 void CPUParticles3D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "emitting") {
+	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "emitting") {
 		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
 	}
 
@@ -1822,5 +1823,5 @@ CPUParticles3D::CPUParticles3D() {
 
 CPUParticles3D::~CPUParticles3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(multimesh);
+	RS::get_singleton()->free_rid(multimesh);
 }

@@ -32,7 +32,7 @@
 
 #include "core/io/image.h"
 #include "core/templates/local_vector.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 class MovieWriter : public Object {
 	GDCLASS(MovieWriter, Object);
@@ -43,6 +43,7 @@ class MovieWriter : public Object {
 
 	float cpu_time = 0.0f;
 	float gpu_time = 0.0f;
+	uint64_t encoding_time_usec = 0;
 
 	String project_name;
 

@@ -32,7 +32,7 @@
 
 #include "../gdscript.h"
 #include "../gdscript_analyzer.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "gdscript_language_protocol.h"
 #include "gdscript_workspace.h"
 
@@ -253,7 +253,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 	}
 	r_symbol.detail = "class " + r_symbol.name;
 	{
-		String doc = p_class->doc_data.description;
+		String doc = p_class->doc_data.brief;
 		if (!p_class->doc_data.description.is_empty()) {
 			doc += "\n\n" + p_class->doc_data.description;
 		}
@@ -403,8 +403,8 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.name = m.enum_value.identifier->name;
 				symbol.kind = LSP::SymbolKind::EnumMember;
 				symbol.deprecated = false;
-				symbol.range.start = GodotPosition(m.enum_value.line, m.enum_value.leftmost_column).to_lsp(lines);
-				symbol.range.end = GodotPosition(m.enum_value.line, m.enum_value.rightmost_column).to_lsp(lines);
+				symbol.range.start = GodotPosition(m.enum_value.line, m.enum_value.start_column).to_lsp(lines);
+				symbol.range.end = GodotPosition(m.enum_value.line, m.enum_value.end_column).to_lsp(lines);
 				symbol.selectionRange = range_of_node(m.enum_value.identifier);
 				symbol.documentation = m.enum_value.doc_data.description;
 				symbol.uri = uri;
@@ -439,8 +439,8 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					child.name = value.identifier->name;
 					child.kind = LSP::SymbolKind::EnumMember;
 					child.deprecated = false;
-					child.range.start = GodotPosition(value.line, value.leftmost_column).to_lsp(lines);
-					child.range.end = GodotPosition(value.line, value.rightmost_column).to_lsp(lines);
+					child.range.start = GodotPosition(value.line, value.start_column).to_lsp(lines);
+					child.range.end = GodotPosition(value.line, value.end_column).to_lsp(lines);
 					child.selectionRange = range_of_node(value.identifier);
 					child.documentation = value.doc_data.description;
 					child.uri = uri;
@@ -508,9 +508,22 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 			parameters += " = " + parameter->initializer->reduced_value.to_json_string();
 		}
 	}
+	if (p_func->is_vararg()) {
+		if (!p_func->parameters.is_empty()) {
+			parameters += ", ";
+		}
+		const ParameterNode *rest_param = p_func->rest_parameter;
+		parameters += "..." + rest_param->identifier->name + ": " + rest_param->get_datatype().to_string();
+	}
 	r_symbol.detail += parameters + ")";
-	if (p_func->get_datatype().is_hard_type()) {
-		r_symbol.detail += " -> " + p_func->get_datatype().to_string();
+
+	const DataType return_type = p_func->get_datatype();
+	if (return_type.is_hard_type()) {
+		if (return_type.kind == DataType::BUILTIN && return_type.builtin_type == Variant::NIL) {
+			r_symbol.detail += " -> void";
+		} else {
+			r_symbol.detail += " -> " + return_type.to_string();
+		}
 	}
 
 	List<GDScriptParser::SuiteNode *> function_nodes;
@@ -712,9 +725,9 @@ String ExtendGDScriptParser::get_identifier_under_position(const LSP::Position &
 	LSP::Position pos = p_position;
 	if (
 			pos.character >= line.length() // Cursor at end of line.
-			|| (!is_ascii_identifier_char(line[pos.character]) // Not on valid identifier char.
+			|| (!is_unicode_identifier_continue(line[pos.character]) // Not on valid identifier char.
 					   && (pos.character > 0 // Not line start -> there is a prev char.
-								  && is_ascii_identifier_char(line[pos.character - 1]) // Prev is valid identifier char.
+								  && is_unicode_identifier_continue(line[pos.character - 1]) // Prev is valid identifier char.
 								  ))) {
 		pos.character--;
 	}
@@ -723,7 +736,7 @@ String ExtendGDScriptParser::get_identifier_under_position(const LSP::Position &
 	for (int c = pos.character; c >= 0; c--) {
 		start_pos = c;
 		char32_t ch = line[c];
-		bool valid_char = is_ascii_identifier_char(ch);
+		bool valid_char = is_unicode_identifier_continue(ch);
 		if (!valid_char) {
 			break;
 		}
@@ -732,11 +745,15 @@ String ExtendGDScriptParser::get_identifier_under_position(const LSP::Position &
 	int end_pos = pos.character;
 	for (int c = pos.character; c < line.length(); c++) {
 		char32_t ch = line[c];
-		bool valid_char = is_ascii_identifier_char(ch);
+		bool valid_char = is_unicode_identifier_continue(ch);
 		if (!valid_char) {
 			break;
 		}
 		end_pos = c;
+	}
+
+	if (!is_unicode_identifier_start(line[start_pos + 1])) {
+		return "";
 	}
 
 	if (start_pos < end_pos) {
@@ -868,8 +885,8 @@ const Array &ExtendGDScriptParser::get_member_completions() {
 }
 
 Dictionary ExtendGDScriptParser::dump_function_api(const GDScriptParser::FunctionNode *p_func) const {
+	ERR_FAIL_NULL_V(p_func, Dictionary());
 	Dictionary func;
-	ERR_FAIL_NULL_V(p_func, func);
 	func["name"] = p_func->identifier->name;
 	func["return_type"] = p_func->get_datatype().to_string();
 	func["rpc_config"] = p_func->rpc_config;
@@ -892,9 +909,8 @@ Dictionary ExtendGDScriptParser::dump_function_api(const GDScriptParser::Functio
 }
 
 Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode *p_class) const {
+	ERR_FAIL_NULL_V(p_class, Dictionary());
 	Dictionary class_api;
-
-	ERR_FAIL_NULL_V(p_class, class_api);
 
 	class_api["name"] = p_class->identifier != nullptr ? String(p_class->identifier->name) : String();
 	class_api["path"] = path;

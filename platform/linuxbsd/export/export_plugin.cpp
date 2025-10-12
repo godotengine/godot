@@ -35,9 +35,9 @@
 
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
+#include "editor/file_system/editor_paths.h"
 #include "editor/themes/editor_scale.h"
 
 #include "modules/svg/image_loader_svg.h"
@@ -184,7 +184,7 @@ bool EditorExportPlatformLinuxBSD::get_export_option_visibility(const EditorExpo
 void EditorExportPlatformLinuxBSD::get_export_options(List<ExportOption> *r_options) const {
 	EditorExportPlatformPC::get_export_options(r_options);
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "x86_64,x86_32,arm64,arm32,rv64,ppc64,ppc32,loongarch64"), "x86_64"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "x86_64,x86_32,arm64,arm32,rv64,ppc64,loongarch64"), "x86_64"));
 
 	String run_script = "#!/usr/bin/env bash\n"
 						"export DISPLAY=:0\n"
@@ -276,8 +276,6 @@ String EditorExportPlatformLinuxBSD::_get_exe_arch(const String &p_path) const {
 			return "x86_32";
 		case 0x003e:
 			return "x86_64";
-		case 0x0014:
-			return "ppc32";
 		case 0x0015:
 			return "ppc64";
 		case 0x0028:
@@ -427,8 +425,12 @@ bool EditorExportPlatformLinuxBSD::poll_export() {
 	return menu_options != prev;
 }
 
-Ref<ImageTexture> EditorExportPlatformLinuxBSD::get_option_icon(int p_index) const {
-	return p_index == 1 ? stop_icon : EditorExportPlatform::get_option_icon(p_index);
+Ref<Texture2D> EditorExportPlatformLinuxBSD::get_option_icon(int p_index) const {
+	if (p_index == 1) {
+		return stop_icon;
+	} else {
+		return EditorExportPlatform::get_option_icon(p_index);
+	}
 }
 
 int EditorExportPlatformLinuxBSD::get_options_count() const {
@@ -528,7 +530,7 @@ Error EditorExportPlatformLinuxBSD::run(const Ref<EditorExportPreset> &p_preset,
 	}
 
 	const bool use_remote = p_debug_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG) || p_debug_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT);
-	int dbg_port = EditorSettings::get_singleton()->get("network/debug/remote_port");
+	int dbg_port = EDITOR_GET("network/debug/remote_port");
 
 	print_line("Creating temporary directory...");
 	ep.step(TTR("Creating temporary directory..."), 2);
@@ -610,7 +612,7 @@ Error EditorExportPlatformLinuxBSD::run(const Ref<EditorExportPreset> &p_preset,
 #undef CLEANUP_AND_RETURN
 }
 
-EditorExportPlatformLinuxBSD::EditorExportPlatformLinuxBSD() {
+void EditorExportPlatformLinuxBSD::initialize() {
 	if (EditorNode::get_singleton()) {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);

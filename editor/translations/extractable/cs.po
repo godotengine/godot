@@ -21,12 +21,11 @@ msgstr ""
 msgid "All Recognized"
 msgstr "Všechny rozpoznatelné"
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"Barva: #%s\n"
-"LMB: Nastavit barvu"
+msgid "Save"
+msgstr "Uložit"
+
+msgid "Clear"
+msgstr "Promazat"
 
 msgid "Add current color as a preset."
 msgstr "Přidat aktuální barvu jako předvolbu."
@@ -39,9 +38,6 @@ msgstr "Otevřít"
 
 msgid "Select Current Folder"
 msgstr "Vybrat stávající složku"
-
-msgid "Save"
-msgstr "Uložit"
 
 msgid "Select This Folder"
 msgstr "Vybrat tuto složku"
@@ -79,11 +75,11 @@ msgstr "Cesta:"
 msgid "Refresh files."
 msgstr "Obnovit soubory."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Změnit viditelnost skrytých souborů."
-
 msgid "Directories & Files:"
 msgstr "Složky a soubory:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Změnit viditelnost skrytých souborů."
 
 msgid "File:"
 msgstr "Soubor:"
@@ -117,9 +113,6 @@ msgstr "Vložit"
 
 msgid "Select All"
 msgstr "Označit vše"
-
-msgid "Clear"
-msgstr "Promazat"
 
 msgid "Undo"
 msgstr "Zpět"

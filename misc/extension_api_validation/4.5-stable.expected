@@ -1,0 +1,56 @@
+This file contains the expected output of --validate-extension-api when run against the extension_api.json of the
+4.5-stable tag (the basename of this file).
+
+Only lines that start with "Validate extension JSON:" matter, everything else is considered a comment and ignored. They
+should instead be used to justify these changes and describe how users should work around these changes.
+
+Add new entries at the end of the file.
+
+## Changes between 4.5-stable and 4.6-stable
+
+GH-107954
+---------
+Validate extension JSON: API was removed: classes/TCPServer/methods/is_connection_available
+Validate extension JSON: API was removed: classes/TCPServer/methods/is_listening
+Validate extension JSON: API was removed: classes/TCPServer/methods/stop
+Validate extension JSON: API was removed: classes/StreamPeerTCP/methods/disconnect_from_host
+Validate extension JSON: API was removed: classes/StreamPeerTCP/methods/get_status
+Validate extension JSON: API was removed: classes/StreamPeerTCP/methods/poll
+
+These were moved to the parent classes, and are still available.
+
+
+GH-110250
+---------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Control/methods/grab_focus': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Control/methods/has_focus': arguments
+
+Optional argument added. Compatibility methods registered.
+
+
+GH-110867
+---------
+ERROR: Validate extension JSON: Missing field in current API 'classes/FileAccess/methods/get_as_text': arguments. This is a bug.
+
+Optional argument removed. Compatibility method registered.
+
+
+GH-111117
+---------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/LineEdit/methods/edit': arguments
+
+Optional argument added. Compatibility method registered.
+
+
+GH-110767
+---------
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/get_assigned_animation/return_value': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/get_autoplay/return_value': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/get_current_animation/return_value': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/get_queue/return_value': type changed value in new API, from "PackedStringArray" to "typedarray::StringName".
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/set_assigned_animation/arguments/0': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/set_autoplay/arguments/0': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/set_current_animation/arguments/0': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/signals/current_animation_changed/arguments/0': type changed value in new API, from "String" to "StringName".
+
+Return types and parameters changed to StringName to improve performance. Compatibility methods registered; No compatibility system for signal arguments.

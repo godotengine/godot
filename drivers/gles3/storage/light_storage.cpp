@@ -209,7 +209,7 @@ void LightStorage::light_set_cull_mask(RID p_light, uint32_t p_mask) {
 	light->cull_mask = p_mask;
 
 	light->version++;
-	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_CULL_MASK);
 }
 
 void LightStorage::light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) {
@@ -350,7 +350,14 @@ AABB LightStorage::light_get_aabb(RID p_light) const {
 	switch (light->type) {
 		case RS::LIGHT_SPOT: {
 			float len = light->param[RS::LIGHT_PARAM_RANGE];
-			float size = Math::tan(Math::deg_to_rad(light->param[RS::LIGHT_PARAM_SPOT_ANGLE])) * len;
+			float angle = Math::deg_to_rad(light->param[RS::LIGHT_PARAM_SPOT_ANGLE]);
+
+			if (angle > Math::PI * 0.5) {
+				// Light casts backwards as well.
+				return AABB(Vector3(-1, -1, -1) * len, Vector3(2, 2, 2) * len);
+			}
+
+			float size = Math::sin(angle) * len;
 			return AABB(Vector3(-size, -size, -len), Vector3(size * 2, size * 2, len));
 		};
 		case RS::LIGHT_OMNI: {
@@ -562,10 +569,7 @@ void LightStorage::reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_
 }
 
 void LightStorage::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
-	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
-	ERR_FAIL_NULL(reflection_probe);
-
-	reflection_probe->resolution = p_resolution;
+	WARN_PRINT_ONCE("reflection_probe_set_resolution is not available in Godot 4. ReflectionProbe size is configured in the project settings with the rendering/reflections/reflection_atlas/reflection_size setting.");
 }
 
 AABB LightStorage::reflection_probe_get_aabb(RID p_probe) const {
@@ -807,6 +811,9 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 
 	ERR_FAIL_NULL_V(atlas, false);
 
+	ERR_FAIL_COND_V_MSG(atlas->size < 4, false, "Attempted to render to a reflection atlas of invalid resolution.");
+	ERR_FAIL_COND_V_MSG(atlas->count < 1, false, "Attempted to render to a reflection atlas of size < 1.");
+
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL_V(rpi, false);
 
@@ -1032,6 +1039,7 @@ GLuint LightStorage::reflection_probe_instance_get_texture(RID p_instance) {
 
 	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	ERR_FAIL_NULL_V(atlas, 0);
+	ERR_FAIL_COND_V(rpi->atlas_index < 0, 0);
 
 	return atlas->reflections[rpi->atlas_index].radiance;
 }
@@ -1043,6 +1051,8 @@ GLuint LightStorage::reflection_probe_instance_get_framebuffer(RID p_instance, i
 
 	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	ERR_FAIL_NULL_V(atlas, 0);
+	ERR_FAIL_COND_V(rpi->atlas_index < 0, 0);
+
 	return atlas->reflections[rpi->atlas_index].fbos[p_index];
 }
 
@@ -1270,7 +1280,7 @@ void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits
 	ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_atlas);
 	ERR_FAIL_NULL(shadow_atlas);
 	ERR_FAIL_COND(p_size < 0);
-	p_size = next_power_of_2(p_size);
+	p_size = next_power_of_2((uint32_t)p_size);
 
 	if (p_size == shadow_atlas->size && p_16_bits == shadow_atlas->use_16_bits) {
 		return;
@@ -1317,7 +1327,7 @@ void LightStorage::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quad
 	ERR_FAIL_INDEX(p_quadrant, 4);
 	ERR_FAIL_INDEX(p_subdivision, 16384);
 
-	uint32_t subdiv = next_power_of_2(p_subdivision);
+	uint32_t subdiv = next_power_of_2((uint32_t)p_subdivision);
 	if (subdiv & 0xaaaaaaaa) { // sqrt(subdiv) must be integer.
 		subdiv <<= 1;
 	}
@@ -1391,7 +1401,7 @@ bool LightStorage::shadow_atlas_update_light(RID p_atlas, RID p_light_instance, 
 	}
 
 	uint32_t quad_size = shadow_atlas->size >> 1;
-	int desired_fit = MIN(quad_size / shadow_atlas->smallest_subdiv, next_power_of_2(quad_size * p_coverage));
+	int desired_fit = MIN(quad_size / shadow_atlas->smallest_subdiv, next_power_of_2(uint32_t(quad_size * p_coverage)));
 
 	int valid_quadrants[4];
 	int valid_quadrant_count = 0;

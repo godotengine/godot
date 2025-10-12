@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class DependencyTracker;
 
@@ -50,6 +50,7 @@ public:
 		DEPENDENCY_CHANGED_LIGHT,
 		DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR,
 		DEPENDENCY_CHANGED_REFLECTION_PROBE,
+		DEPENDENCY_CHANGED_CULL_MASK,
 	};
 
 	void changed_notify(DependencyChangedNotification p_notification);

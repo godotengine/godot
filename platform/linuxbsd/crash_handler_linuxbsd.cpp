@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/script_language.h"
+#include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/version.h"
@@ -146,14 +147,11 @@ static void handle_crash(int sig) {
 	print_error("-- END OF C++ BACKTRACE --");
 	print_error("================================================================");
 
-	if (ScriptServer::are_languages_initialized()) {
-		Vector<Ref<ScriptBacktrace>> script_backtraces = ScriptServer::capture_script_backtraces(false);
-		for (const Ref<ScriptBacktrace> &backtrace : script_backtraces) {
-			if (!backtrace->is_empty()) {
-				print_error(backtrace->format());
-				print_error(vformat("-- END OF %s BACKTRACE --", backtrace->get_language_name().to_upper()));
-				print_error("================================================================");
-			}
+	for (const Ref<ScriptBacktrace> &backtrace : ScriptServer::capture_script_backtraces(false)) {
+		if (!backtrace->is_empty()) {
+			print_error(backtrace->format());
+			print_error(vformat("-- END OF %s BACKTRACE --", backtrace->get_language_name().to_upper()));
+			print_error("================================================================");
 		}
 	}
 

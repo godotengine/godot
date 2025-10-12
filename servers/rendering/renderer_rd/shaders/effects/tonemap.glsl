@@ -4,12 +4,6 @@
 
 #VERSION_DEFINES
 
-#ifdef USE_MULTIVIEW
-#ifdef has_VK_KHR_multiview
-#extension GL_EXT_multiview : enable
-#endif
-#endif
-
 layout(location = 0) out vec2 uv_interp;
 
 void main() {
@@ -38,12 +32,8 @@ void main() {
 #VERSION_DEFINES
 
 #ifdef USE_MULTIVIEW
-#ifdef has_VK_KHR_multiview
 #extension GL_EXT_multiview : enable
 #define ViewIndex gl_ViewIndex
-#else // has_VK_KHR_multiview
-#define ViewIndex 0
-#endif // has_VK_KHR_multiview
 #endif //USE_MULTIVIEW
 
 layout(location = 0) in vec2 uv_interp;
@@ -75,8 +65,9 @@ layout(set = 3, binding = 0) uniform sampler3D source_color_correction;
 #define FLAG_USE_AUTO_EXPOSURE (1 << 2)
 #define FLAG_USE_COLOR_CORRECTION (1 << 3)
 #define FLAG_USE_FXAA (1 << 4)
-#define FLAG_USE_DEBANDING (1 << 5)
-#define FLAG_CONVERT_TO_SRGB (1 << 6)
+#define FLAG_USE_8_BIT_DEBANDING (1 << 5)
+#define FLAG_USE_10_BIT_DEBANDING (1 << 6)
+#define FLAG_CONVERT_TO_SRGB (1 << 7)
 
 layout(push_constant, std430) uniform Params {
 	vec3 bcs;
@@ -338,7 +329,8 @@ vec3 tonemap_agx(vec3 color) {
 }
 
 vec3 linear_to_srgb(vec3 color) {
-	//if going to srgb, clamp from 0 to 1.
+	// Clamping is not strictly necessary for floating point nonlinear sRGB encoding,
+	// but many cases that call this function need the result clamped.
 	color = clamp(color, vec3(0.0), vec3(1.0));
 	const vec3 a = vec3(0.055f);
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
@@ -826,18 +818,27 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 // From https://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
 // and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
 // NOTE: `frag_coord` is in pixels (i.e. not normalized UV).
-vec3 screen_space_dither(vec2 frag_coord) {
+// This dithering must be applied after encoding changes (linear/nonlinear) have been applied
+// as the final step before quantization from floating point to integer values.
+vec3 screen_space_dither(vec2 frag_coord, float bit_alignment_diviser) {
 	// Iestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR.
+	// Removed the time component to avoid passing time into this shader.
 	vec3 dither = vec3(dot(vec2(171.0, 231.0), frag_coord));
 	dither.rgb = fract(dither.rgb / vec3(103.0, 71.0, 97.0));
 
 	// Subtract 0.5 to avoid slightly brightening the whole viewport.
-	return (dither.rgb - 0.5) / 255.0;
+	// Use a dither strength of 100% rather than the 37.5% suggested by the original source.
+	return (dither.rgb - 0.5) / bit_alignment_diviser;
 }
 
 void main() {
 #ifdef SUBPASS
 	// SUBPASS and USE_MULTIVIEW can be combined but in that case we're already reading from the correct layer
+#ifdef USE_MULTIVIEW
+	// In order to ensure the `SpvCapabilityMultiView` is included in the SPIR-V capabilities, gl_ViewIndex must
+	// be read in the shader. Without this, transpilation to Metal fails to include the multi-view variant.
+	uint vi = ViewIndex;
+#endif
 	vec4 color = subpassLoad(input_color);
 #elif defined(USE_MULTIVIEW)
 	vec4 color = textureLod(source_color, vec3(uv_interp, ViewIndex), 0.0f);
@@ -876,7 +877,8 @@ void main() {
 
 	color.rgb = apply_tonemapping(color.rgb, params.white);
 
-	if (bool(params.flags & FLAG_CONVERT_TO_SRGB)) {
+	bool convert_to_srgb = bool(params.flags & FLAG_CONVERT_TO_SRGB);
+	if (convert_to_srgb) {
 		color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
 	}
 #ifndef SUBPASS
@@ -889,7 +891,7 @@ void main() {
 
 		// high dynamic range -> SRGB
 		glow = apply_tonemapping(glow, params.white);
-		if (bool(params.flags & FLAG_CONVERT_TO_SRGB)) {
+		if (convert_to_srgb) {
 			glow = linear_to_srgb(glow);
 		}
 
@@ -904,13 +906,24 @@ void main() {
 	}
 
 	if (bool(params.flags & FLAG_USE_COLOR_CORRECTION)) {
+		// apply_color_correction requires nonlinear sRGB encoding
+		if (!convert_to_srgb) {
+			color.rgb = linear_to_srgb(color.rgb);
+		}
 		color.rgb = apply_color_correction(color.rgb);
+		// When convert_to_srgb is false, there is no need to convert back to
+		// linear because the color correction texture sampling does this for us.
 	}
 
-	if (bool(params.flags & FLAG_USE_DEBANDING)) {
-		// Debanding should be done at the end of tonemapping, but before writing to the LDR buffer.
-		// Otherwise, we're adding noise to an already-quantized image.
-		color.rgb += screen_space_dither(gl_FragCoord.xy);
+	// Debanding should be done at the end of tonemapping, but before writing to the LDR buffer.
+	// Otherwise, we're adding noise to an already-quantized image.
+
+	if (bool(params.flags & FLAG_USE_8_BIT_DEBANDING)) {
+		// Divide by 255 to align to 8-bit quantization.
+		color.rgb += screen_space_dither(gl_FragCoord.xy, 255.0);
+	} else if (bool(params.flags & FLAG_USE_10_BIT_DEBANDING)) {
+		// Divide by 1023 to align to 10-bit quantization.
+		color.rgb += screen_space_dither(gl_FragCoord.xy, 1023.0);
 	}
 
 	frag_color = color;

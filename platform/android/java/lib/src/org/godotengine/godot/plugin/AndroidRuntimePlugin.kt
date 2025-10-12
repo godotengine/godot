@@ -34,54 +34,24 @@ import org.godotengine.godot.Godot
 import org.godotengine.godot.variant.Callable
 
 /**
- * Provides access to the Android runtime capabilities.
+ * Built-in Godot Android plugin used to provide access to the Android runtime capabilities.
  *
- * For example, from gdscript, developers can use [getApplicationContext] to access system services
- * and check if the device supports vibration.
- *
- * 	var android_runtime = Engine.get_singleton("AndroidRuntime")
- * 	if android_runtime:
- * 		print("Checking if the device supports vibration")
- * 		var vibrator_service = android_runtime.getApplicationContext().getSystemService("vibrator")
- * 		if vibrator_service:
- * 			if vibrator_service.hasVibrator():
- * 				print("Vibration is supported on device!")
- * 			else:
- * 				printerr("Vibration is not supported on device")
- * 		else:
- * 			printerr("Unable to retrieve the vibrator service")
- * 	else:
- * 		printerr("Couldn't find AndroidRuntime singleton")
- *
- *
- * Or it can be used to display an Android native toast from gdscript
- *
- * 	var android_runtime = Engine.get_singleton("AndroidRuntime")
- * 	if android_runtime:
- * 		var activity = android_runtime.getActivity()
- *
- * 		var toastCallable = func ():
- * 			var ToastClass = JavaClassWrapper.wrap("android.widget.Toast")
- * 			ToastClass.makeText(activity, "This is a test", ToastClass.LENGTH_LONG).show()
- *
- * 		activity.runOnUiThread(android_runtime.createRunnableFromGodotCallable(toastCallable))
- * 	else:
- * 		printerr("Unable to access android runtime")
+ * @see <a href="https://docs.godotengine.org/en/latest/tutorials/platform/android/javaclasswrapper_and_androidruntimeplugin.html">Integrating with Android APIs</a>
  */
 class AndroidRuntimePlugin(godot: Godot) : GodotPlugin(godot) {
 	override fun getPluginName() = "AndroidRuntime"
 
 	/**
-	 * Provides access to the application context to GDScript
+	 * Provides access to the application [android.content.Context] to GDScript
 	 */
 	@UsedByGodot
 	fun getApplicationContext() = activity?.applicationContext
 
 	/**
-	 * Provides access to the host activity to GDScript
+	 * Provides access to the host [android.app.Activity] to GDScript
 	 */
 	@UsedByGodot
-	override fun getActivity() = super.getActivity()
+	public override fun getActivity() = super.getActivity()
 
 	/**
 	 * Utility method used to create [Runnable] from Godot [Callable].

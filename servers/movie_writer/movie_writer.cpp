@@ -32,9 +32,10 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/time.h"
+#include "scene/main/window.h"
 #include "servers/audio/audio_driver_dummy.h"
-#include "servers/display_server.h"
-#include "servers/rendering_server.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 MovieWriter *MovieWriter::writers[MovieWriter::MAX_WRITERS];
 uint32_t MovieWriter::writer_count = 0;
@@ -125,6 +126,7 @@ void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String
 
 	cpu_time = 0.0f;
 	gpu_time = 0.0f;
+	encoding_time_usec = 0;
 
 	mix_rate = get_audio_mix_rate();
 	AudioDriverDummy::get_dummy_singleton()->set_mix_rate(mix_rate);
@@ -154,7 +156,11 @@ void MovieWriter::_bind_methods() {
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/movie_writer/mix_rate", PROPERTY_HINT_RANGE, "8000,192000,1,suffix:Hz"), 48000);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/movie_writer/speaker_mode", PROPERTY_HINT_ENUM, "Stereo,3.1,5.1,7.1"), 0);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "editor/movie_writer/mjpeg_quality", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"), 0.75);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "editor/movie_writer/video_quality", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), 0.75);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "editor/movie_writer/ogv/audio_quality", PROPERTY_HINT_RANGE, "-0.1,1.0,0.01"), 0.5);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/movie_writer/ogv/encoding_speed", PROPERTY_HINT_ENUM, "Fastest (Lowest Efficiency):4,Fast (Low Efficiency):3,Slow (High Efficiency):2,Slowest (Highest Efficiency):1"), 4);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/movie_writer/ogv/keyframe_interval", PROPERTY_HINT_RANGE, "1,1024,1"), 64);
+
 	// Used by the editor.
 	GLOBAL_DEF_BASIC("editor/movie_writer/movie_file", "");
 	GLOBAL_DEF_BASIC("editor/movie_writer/disable_vsync", false);
@@ -191,11 +197,10 @@ void MovieWriter::add_frame() {
 			String::num(movie_time_seconds % 60, 0).pad_zeros(2),
 			String::num(frame_remainder, 0).pad_zeros(2));
 
-#ifdef DEBUG_ENABLED
-	DisplayServer::get_singleton()->window_set_title(vformat("MovieWriter: Frame %d (time: %s) - %s (DEBUG)", Engine::get_singleton()->get_frames_drawn(), movie_time, project_name));
-#else
-	DisplayServer::get_singleton()->window_set_title(vformat("MovieWriter: Frame %d (time: %s) - %s", Engine::get_singleton()->get_frames_drawn(), movie_time, project_name));
-#endif
+	Window *main_window = Window::get_from_id(DisplayServer::MAIN_WINDOW_ID);
+	if (main_window) {
+		main_window->set_title(vformat("MovieWriter: Frame %d (time: %s) - %s", Engine::get_singleton()->get_frames_drawn(), movie_time, project_name));
+	}
 
 	RID main_vp_rid = RenderingServer::get_singleton()->viewport_find_from_screen_attachment(DisplayServer::MAIN_WINDOW_ID);
 	RID main_vp_texture = RenderingServer::get_singleton()->viewport_get_texture(main_vp_rid);
@@ -211,11 +216,18 @@ void MovieWriter::add_frame() {
 	gpu_time += RenderingServer::get_singleton()->viewport_get_measured_render_time_gpu(main_vp_rid);
 
 	AudioDriverDummy::get_dummy_singleton()->mix_audio(mix_rate / fps, audio_mix_buffer.ptr());
+
+	uint64_t encoding_start_usec = Time::get_singleton()->get_ticks_usec();
 	write_frame(vp_tex, audio_mix_buffer.ptr());
+	uint64_t encoding_end_usec = Time::get_singleton()->get_ticks_usec();
+	encoding_time_usec += encoding_end_usec - encoding_start_usec;
 }
 
 void MovieWriter::end() {
+	uint64_t encoding_start_usec = Time::get_singleton()->get_ticks_usec();
 	write_end();
+	uint64_t encoding_end_usec = Time::get_singleton()->get_ticks_usec();
+	encoding_time_usec += encoding_end_usec - encoding_start_usec;
 
 	// Print a report with various statistics.
 	print_line("--------------------------------------------------------------------------------");
@@ -242,7 +254,8 @@ void MovieWriter::end() {
 			String::num(real_time_seconds % 60, 0).pad_zeros(2));
 
 	print_line(vformat("%d frames at %d FPS (movie length: %s), recorded in %s (%d%% of real-time speed).", Engine::get_singleton()->get_frames_drawn(), fps, movie_time, real_time, (float(MAX(1, movie_time_seconds)) / MAX(1, real_time_seconds)) * 100));
-	print_line(vformat("CPU time: %.2f seconds (average: %.2f ms/frame)", cpu_time / 1000, cpu_time / Engine::get_singleton()->get_frames_drawn()));
-	print_line(vformat("GPU time: %.2f seconds (average: %.2f ms/frame)", gpu_time / 1000, gpu_time / Engine::get_singleton()->get_frames_drawn()));
+	print_line(vformat("CPU render time: %.2f seconds (average: %.2f ms/frame)", cpu_time / 1000, cpu_time / Engine::get_singleton()->get_frames_drawn()));
+	print_line(vformat("GPU render time: %.2f seconds (average: %.2f ms/frame)", gpu_time / 1000, gpu_time / Engine::get_singleton()->get_frames_drawn()));
+	print_line(vformat("Encoding time: %.2f seconds (average: %.2f ms/frame)", encoding_time_usec / 1000000.f, encoding_time_usec / 1000.f / Engine::get_singleton()->get_frames_drawn()));
 	print_line("--------------------------------------------------------------------------------");
 }

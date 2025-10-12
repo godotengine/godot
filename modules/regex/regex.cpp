@@ -271,7 +271,7 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 }
 
 TypedArray<RegExMatch> RegEx::search_all(const String &p_subject, int p_offset, int p_end) const {
-	ERR_FAIL_COND_V_MSG(p_offset < 0, Array(), "RegEx search offset must be >= 0");
+	ERR_FAIL_COND_V_MSG(p_offset < 0, TypedArray<RegExMatch>(), "RegEx search offset must be >= 0");
 
 	int last_end = 0;
 	TypedArray<RegExMatch> result;

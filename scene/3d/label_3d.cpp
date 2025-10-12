@@ -31,6 +31,7 @@
 #include "label_3d.h"
 
 #include "scene/main/window.h"
+#include "scene/resources/mesh.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
 
@@ -180,6 +181,9 @@ void Label3D::_bind_methods() {
 }
 
 void Label3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (
 			p_property.name == "material_override" ||
 			p_property.name == "material_overlay" ||
@@ -467,7 +471,7 @@ void Label3D::_shape() {
 
 	// Clear materials.
 	for (const KeyValue<SurfaceKey, SurfaceData> &E : surfaces) {
-		RenderingServer::get_singleton()->free(E.value.material);
+		RenderingServer::get_singleton()->free_rid(E.value.material);
 	}
 	surfaces.clear();
 
@@ -736,16 +740,16 @@ TextServer::StructuredTextParser Label3D::get_structured_text_bidi_override() co
 	return st_parser;
 }
 
-void Label3D::set_structured_text_bidi_override_options(Array p_args) {
+void Label3D::set_structured_text_bidi_override_options(const Array &p_args) {
 	if (st_args != p_args) {
-		st_args = p_args;
+		st_args = Array(p_args);
 		dirty_text = true;
 		_queue_update();
 	}
 }
 
 Array Label3D::get_structured_text_bidi_override_options() const {
-	return st_args;
+	return Array(st_args);
 }
 
 void Label3D::set_uppercase(bool p_uppercase) {
@@ -1102,9 +1106,9 @@ Label3D::~Label3D() {
 	TS->free_rid(text_rid);
 
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(mesh);
+	RenderingServer::get_singleton()->free_rid(mesh);
 	for (KeyValue<SurfaceKey, SurfaceData> E : surfaces) {
-		RenderingServer::get_singleton()->free(E.value.material);
+		RenderingServer::get_singleton()->free_rid(E.value.material);
 	}
 	surfaces.clear();
 }

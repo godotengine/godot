@@ -165,6 +165,47 @@ static void decodeFilterExp(unsigned int* data, size_t count)
 		data[i] = u.ui;
 	}
 }
+
+template <typename ST, typename T>
+static void decodeFilterColor(T* data, size_t count)
+{
+	const float max = float((1 << (sizeof(T) * 8)) - 1);
+
+	for (size_t i = 0; i < count; ++i)
+	{
+		// recover scale from alpha high bit
+		int as = data[i * 4 + 3];
+		as |= as >> 1;
+		as |= as >> 2;
+		as |= as >> 4;
+		as |= as >> 8; // noop for 8-bit
+
+		// convert to RGB in fixed point (co/cg are sign extended)
+		int y = data[i * 4 + 0], co = ST(data[i * 4 + 1]), cg = ST(data[i * 4 + 2]);
+
+		int r = y + co - cg;
+		int g = y + cg;
+		int b = y - co - cg;
+
+		// expand alpha by one bit to match other components
+		int a = data[i * 4 + 3];
+		a = ((a << 1) & as) | (a & 1);
+
+		// compute scaling factor
+		float ss = max / float(as);
+
+		// rounded float->int
+		int rf = int(float(r) * ss + 0.5f);
+		int gf = int(float(g) * ss + 0.5f);
+		int bf = int(float(b) * ss + 0.5f);
+		int af = int(float(a) * ss + 0.5f);
+
+		data[i * 4 + 0] = T(rf);
+		data[i * 4 + 1] = T(gf);
+		data[i * 4 + 2] = T(bf);
+		data[i * 4 + 3] = T(af);
+	}
+}
 #endif
 
 #if defined(SIMD_SSE) || defined(SIMD_NEON) || defined(SIMD_WASM)
@@ -201,7 +242,7 @@ inline uint64_t rotateleft64(uint64_t v, int x)
 #endif
 
 #ifdef SIMD_SSE
-static void decodeFilterOctSimd(signed char* data, size_t count)
+static void decodeFilterOctSimd8(signed char* data, size_t count)
 {
 	const __m128 sign = _mm_set1_ps(-0.f);
 
@@ -246,7 +287,7 @@ static void decodeFilterOctSimd(signed char* data, size_t count)
 	}
 }
 
-static void decodeFilterOctSimd(short* data, size_t count)
+static void decodeFilterOctSimd16(short* data, size_t count)
 {
 	const __m128 sign = _mm_set1_ps(-0.f);
 
@@ -295,8 +336,9 @@ static void decodeFilterOctSimd(short* data, size_t count)
 		__m128i res_1 = _mm_unpackhi_epi16(xzr, y0r);
 
 		// patch in .w
-		res_0 = _mm_or_si128(res_0, _mm_and_si128(_mm_castps_si128(n4_0), _mm_set1_epi64x(0xffff000000000000)));
-		res_1 = _mm_or_si128(res_1, _mm_and_si128(_mm_castps_si128(n4_1), _mm_set1_epi64x(0xffff000000000000)));
+		__m128i maskw = _mm_set_epi32(0xffff0000, 0, 0xffff0000, 0);
+		res_0 = _mm_or_si128(res_0, _mm_and_si128(_mm_castps_si128(n4_0), maskw));
+		res_1 = _mm_or_si128(res_1, _mm_and_si128(_mm_castps_si128(n4_1), maskw));
 
 		_mm_storeu_si128(reinterpret_cast<__m128i*>(&data[(i + 0) * 4]), res_0);
 		_mm_storeu_si128(reinterpret_cast<__m128i*>(&data[(i + 2) * 4]), res_1);
@@ -385,6 +427,105 @@ static void decodeFilterExpSimd(unsigned int* data, size_t count)
 		_mm_storeu_ps(reinterpret_cast<float*>(&data[i]), r);
 	}
 }
+
+static void decodeFilterColorSimd8(unsigned char* data, size_t count)
+{
+	for (size_t i = 0; i < count; i += 4)
+	{
+		__m128i c4 = _mm_loadu_si128(reinterpret_cast<__m128i*>(&data[i * 4]));
+
+		// unpack y/co/cg/a (co/cg are sign extended with arithmetic shifts)
+		__m128i yf = _mm_and_si128(c4, _mm_set1_epi32(0xff));
+		__m128i cof = _mm_srai_epi32(_mm_slli_epi32(c4, 16), 24);
+		__m128i cgf = _mm_srai_epi32(_mm_slli_epi32(c4, 8), 24);
+		__m128i af = _mm_srli_epi32(c4, 24);
+
+		// recover scale from alpha high bit
+		__m128i as = af;
+		as = _mm_or_si128(as, _mm_srli_epi32(as, 1));
+		as = _mm_or_si128(as, _mm_srli_epi32(as, 2));
+		as = _mm_or_si128(as, _mm_srli_epi32(as, 4));
+
+		// expand alpha by one bit to match other components
+		af = _mm_or_si128(_mm_and_si128(_mm_slli_epi32(af, 1), as), _mm_and_si128(af, _mm_set1_epi32(1)));
+
+		// compute scaling factor
+		__m128 ss = _mm_mul_ps(_mm_set1_ps(255.f), _mm_rcp_ps(_mm_cvtepi32_ps(as)));
+
+		// convert to RGB in fixed point
+		__m128i rf = _mm_add_epi32(yf, _mm_sub_epi32(cof, cgf));
+		__m128i gf = _mm_add_epi32(yf, cgf);
+		__m128i bf = _mm_sub_epi32(yf, _mm_add_epi32(cof, cgf));
+
+		// rounded signed float->int
+		__m128i rr = _mm_cvtps_epi32(_mm_mul_ps(_mm_cvtepi32_ps(rf), ss));
+		__m128i gr = _mm_cvtps_epi32(_mm_mul_ps(_mm_cvtepi32_ps(gf), ss));
+		__m128i br = _mm_cvtps_epi32(_mm_mul_ps(_mm_cvtepi32_ps(bf), ss));
+		__m128i ar = _mm_cvtps_epi32(_mm_mul_ps(_mm_cvtepi32_ps(af), ss));
+
+		// repack rgba into final value
+		__m128i res = rr;
+		res = _mm_or_si128(res, _mm_slli_epi32(gr, 8));
+		res = _mm_or_si128(res, _mm_slli_epi32(br, 16));
+		res = _mm_or_si128(res, _mm_slli_epi32(ar, 24));
+
+		_mm_storeu_si128(reinterpret_cast<__m128i*>(&data[i * 4]), res);
+	}
+}
+
+static void decodeFilterColorSimd16(unsigned short* data, size_t count)
+{
+	for (size_t i = 0; i < count; i += 4)
+	{
+		__m128i c4_0 = _mm_loadu_si128(reinterpret_cast<__m128i*>(&data[(i + 0) * 4]));
+		__m128i c4_1 = _mm_loadu_si128(reinterpret_cast<__m128i*>(&data[(i + 2) * 4]));
+
+		// gather both y/co 16-bit pairs in each 32-bit lane
+		__m128i c4_yco = _mm_castps_si128(_mm_shuffle_ps(_mm_castsi128_ps(c4_0), _mm_castsi128_ps(c4_1), _MM_SHUFFLE(2, 0, 2, 0)));
+		__m128i c4_cga = _mm_castps_si128(_mm_shuffle_ps(_mm_castsi128_ps(c4_0), _mm_castsi128_ps(c4_1), _MM_SHUFFLE(3, 1, 3, 1)));
+
+		// unpack y/co/cg/a components (co/cg are sign extended with arithmetic shifts)
+		__m128i yf = _mm_and_si128(c4_yco, _mm_set1_epi32(0xffff));
+		__m128i cof = _mm_srai_epi32(c4_yco, 16);
+		__m128i cgf = _mm_srai_epi32(_mm_slli_epi32(c4_cga, 16), 16);
+		__m128i af = _mm_srli_epi32(c4_cga, 16);
+
+		// recover scale from alpha high bit
+		__m128i as = af;
+		as = _mm_or_si128(as, _mm_srli_epi32(as, 1));
+		as = _mm_or_si128(as, _mm_srli_epi32(as, 2));
+		as = _mm_or_si128(as, _mm_srli_epi32(as, 4));
+		as = _mm_or_si128(as, _mm_srli_epi32(as, 8));
+
+		// expand alpha by one bit to match other components
+		af = _mm_or_si128(_mm_and_si128(_mm_slli_epi32(af, 1), as), _mm_and_si128(af, _mm_set1_epi32(1)));
+
+		// compute scaling factor
+		__m128 ss = _mm_div_ps(_mm_set1_ps(65535.f), _mm_cvtepi32_ps(as));
+
+		// convert to RGB in fixed point
+		__m128i rf = _mm_add_epi32(yf, _mm_sub_epi32(cof, cgf));
+		__m128i gf = _mm_add_epi32(yf, cgf);
+		__m128i bf = _mm_sub_epi32(yf, _mm_add_epi32(cof, cgf));
+
+		// rounded signed float->int
+		__m128i rr = _mm_cvtps_epi32(_mm_mul_ps(_mm_cvtepi32_ps(rf), ss));
+		__m128i gr = _mm_cvtps_epi32(_mm_mul_ps(_mm_cvtepi32_ps(gf), ss));
+		__m128i br = _mm_cvtps_epi32(_mm_mul_ps(_mm_cvtepi32_ps(bf), ss));
+		__m128i ar = _mm_cvtps_epi32(_mm_mul_ps(_mm_cvtepi32_ps(af), ss));
+
+		// mix r/b and g/a to make 16-bit unpack easier
+		__m128i rbr = _mm_or_si128(_mm_and_si128(rr, _mm_set1_epi32(0xffff)), _mm_slli_epi32(br, 16));
+		__m128i gar = _mm_or_si128(_mm_and_si128(gr, _mm_set1_epi32(0xffff)), _mm_slli_epi32(ar, 16));
+
+		// pack r/g/b/a using 16-bit unpacks
+		__m128i res_0 = _mm_unpacklo_epi16(rbr, gar);
+		__m128i res_1 = _mm_unpackhi_epi16(rbr, gar);
+
+		_mm_storeu_si128(reinterpret_cast<__m128i*>(&data[(i + 0) * 4]), res_0);
+		_mm_storeu_si128(reinterpret_cast<__m128i*>(&data[(i + 2) * 4]), res_1);
+	}
+}
 #endif
 
 #if defined(SIMD_NEON) && !defined(__aarch64__) && !defined(_M_ARM64)
@@ -404,7 +545,7 @@ inline float32x4_t vdivq_f32(float32x4_t x, float32x4_t y)
 #endif
 
 #ifdef SIMD_NEON
-static void decodeFilterOctSimd(signed char* data, size_t count)
+static void decodeFilterOctSimd8(signed char* data, size_t count)
 {
 	const int32x4_t sign = vdupq_n_s32(0x80000000);
 
@@ -453,7 +594,7 @@ static void decodeFilterOctSimd(signed char* data, size_t count)
 	}
 }
 
-static void decodeFilterOctSimd(short* data, size_t count)
+static void decodeFilterOctSimd16(short* data, size_t count)
 {
 	const int32x4_t sign = vdupq_n_s32(0x80000000);
 
@@ -595,10 +736,115 @@ static void decodeFilterExpSimd(unsigned int* data, size_t count)
 		vst1q_f32(reinterpret_cast<float*>(&data[i]), r);
 	}
 }
+
+static void decodeFilterColorSimd8(unsigned char* data, size_t count)
+{
+	for (size_t i = 0; i < count; i += 4)
+	{
+		int32x4_t c4 = vld1q_s32(reinterpret_cast<int32_t*>(&data[i * 4]));
+
+		// unpack y/co/cg/a (co/cg are sign extended with arithmetic shifts)
+		int32x4_t yf = vandq_s32(c4, vdupq_n_s32(0xff));
+		int32x4_t cof = vshrq_n_s32(vshlq_n_s32(c4, 16), 24);
+		int32x4_t cgf = vshrq_n_s32(vshlq_n_s32(c4, 8), 24);
+		int32x4_t af = vreinterpretq_s32_u32(vshrq_n_u32(vreinterpretq_u32_s32(c4), 24));
+
+		// recover scale from alpha high bit
+		int32x4_t as = af;
+		as = vorrq_s32(as, vshrq_n_s32(as, 1));
+		as = vorrq_s32(as, vshrq_n_s32(as, 2));
+		as = vorrq_s32(as, vshrq_n_s32(as, 4));
+
+		// expand alpha by one bit to match other components
+		af = vorrq_s32(vandq_s32(vshlq_n_s32(af, 1), as), vandq_s32(af, vdupq_n_s32(1)));
+
+		// compute scaling factor
+		float32x4_t ss = vmulq_f32(vdupq_n_f32(255.f), vrecpeq_f32(vcvtq_f32_s32(as)));
+
+		// convert to RGB in fixed point
+		int32x4_t rf = vaddq_s32(yf, vsubq_s32(cof, cgf));
+		int32x4_t gf = vaddq_s32(yf, cgf);
+		int32x4_t bf = vsubq_s32(yf, vaddq_s32(cof, cgf));
+
+		// fast rounded signed float->int: addition triggers renormalization after which mantissa stores the integer value
+		// note: the result is offset by 0x4B40_0000, but we only need the low 16 bits so we can omit the subtraction
+		const float32x4_t fsnap = vdupq_n_f32(3 << 22);
+
+		int32x4_t rr = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(vcvtq_f32_s32(rf), ss), fsnap));
+		int32x4_t gr = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(vcvtq_f32_s32(gf), ss), fsnap));
+		int32x4_t br = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(vcvtq_f32_s32(bf), ss), fsnap));
+		int32x4_t ar = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(vcvtq_f32_s32(af), ss), fsnap));
+
+		// repack rgba into final value
+		int32x4_t res = vandq_s32(rr, vdupq_n_s32(0xff));
+		res = vorrq_s32(res, vshlq_n_s32(vandq_s32(gr, vdupq_n_s32(0xff)), 8));
+		res = vorrq_s32(res, vshlq_n_s32(vandq_s32(br, vdupq_n_s32(0xff)), 16));
+		res = vorrq_s32(res, vshlq_n_s32(ar, 24));
+
+		vst1q_s32(reinterpret_cast<int32_t*>(&data[i * 4]), res);
+	}
+}
+
+static void decodeFilterColorSimd16(unsigned short* data, size_t count)
+{
+	for (size_t i = 0; i < count; i += 4)
+	{
+		int32x4_t c4_0 = vld1q_s32(reinterpret_cast<int32_t*>(&data[(i + 0) * 4]));
+		int32x4_t c4_1 = vld1q_s32(reinterpret_cast<int32_t*>(&data[(i + 2) * 4]));
+
+		// gather both y/co 16-bit pairs in each 32-bit lane
+		int32x4_t c4_yco = vuzpq_s32(c4_0, c4_1).val[0];
+		int32x4_t c4_cga = vuzpq_s32(c4_0, c4_1).val[1];
+
+		// unpack y/co/cg/a components (co/cg are sign extended with arithmetic shifts)
+		int32x4_t yf = vandq_s32(c4_yco, vdupq_n_s32(0xffff));
+		int32x4_t cof = vshrq_n_s32(c4_yco, 16);
+		int32x4_t cgf = vshrq_n_s32(vshlq_n_s32(c4_cga, 16), 16);
+		int32x4_t af = vreinterpretq_s32_u32(vshrq_n_u32(vreinterpretq_u32_s32(c4_cga), 16));
+
+		// recover scale from alpha high bit
+		int32x4_t as = af;
+		as = vorrq_s32(as, vshrq_n_s32(as, 1));
+		as = vorrq_s32(as, vshrq_n_s32(as, 2));
+		as = vorrq_s32(as, vshrq_n_s32(as, 4));
+		as = vorrq_s32(as, vshrq_n_s32(as, 8));
+
+		// expand alpha by one bit to match other components
+		af = vorrq_s32(vandq_s32(vshlq_n_s32(af, 1), as), vandq_s32(af, vdupq_n_s32(1)));
+
+		// compute scaling factor
+		float32x4_t ss = vdivq_f32(vdupq_n_f32(65535.f), vcvtq_f32_s32(as));
+
+		// convert to RGB in fixed point
+		int32x4_t rf = vaddq_s32(yf, vsubq_s32(cof, cgf));
+		int32x4_t gf = vaddq_s32(yf, cgf);
+		int32x4_t bf = vsubq_s32(yf, vaddq_s32(cof, cgf));
+
+		// fast rounded signed float->int: addition triggers renormalization after which mantissa stores the integer value
+		// note: the result is offset by 0x4B40_0000, but we only need the low 16 bits so we can omit the subtraction
+		const float32x4_t fsnap = vdupq_n_f32(3 << 22);
+
+		int32x4_t rr = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(vcvtq_f32_s32(rf), ss), fsnap));
+		int32x4_t gr = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(vcvtq_f32_s32(gf), ss), fsnap));
+		int32x4_t br = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(vcvtq_f32_s32(bf), ss), fsnap));
+		int32x4_t ar = vreinterpretq_s32_f32(vaddq_f32(vmulq_f32(vcvtq_f32_s32(af), ss), fsnap));
+
+		// mix r/b and g/a to make 16-bit unpack easier
+		int32x4_t rbr = vorrq_s32(vandq_s32(rr, vdupq_n_s32(0xffff)), vshlq_n_s32(br, 16));
+		int32x4_t gar = vorrq_s32(vandq_s32(gr, vdupq_n_s32(0xffff)), vshlq_n_s32(ar, 16));
+
+		// pack r/g/b/a using 16-bit unpacks
+		int32x4_t res_0 = vreinterpretq_s32_s16(vzipq_s16(vreinterpretq_s16_s32(rbr), vreinterpretq_s16_s32(gar)).val[0]);
+		int32x4_t res_1 = vreinterpretq_s32_s16(vzipq_s16(vreinterpretq_s16_s32(rbr), vreinterpretq_s16_s32(gar)).val[1]);
+
+		vst1q_s32(reinterpret_cast<int32_t*>(&data[(i + 0) * 4]), res_0);
+		vst1q_s32(reinterpret_cast<int32_t*>(&data[(i + 2) * 4]), res_1);
+	}
+}
 #endif
 
 #ifdef SIMD_WASM
-static void decodeFilterOctSimd(signed char* data, size_t count)
+static void decodeFilterOctSimd8(signed char* data, size_t count)
 {
 	const v128_t sign = wasm_f32x4_splat(-0.f);
 
@@ -647,10 +893,11 @@ static void decodeFilterOctSimd(signed char* data, size_t count)
 	}
 }
 
-static void decodeFilterOctSimd(short* data, size_t count)
+static void decodeFilterOctSimd16(short* data, size_t count)
 {
 	const v128_t sign = wasm_f32x4_splat(-0.f);
-	const v128_t zmask = wasm_i32x4_splat(0x7fff);
+	// TODO: volatile here works around LLVM mis-optimizing code; https://github.com/llvm/llvm-project/issues/149457
+	volatile v128_t zmask = wasm_i32x4_splat(0x7fff);
 
 	for (size_t i = 0; i < count; i += 4)
 	{
@@ -762,8 +1009,7 @@ static void decodeFilterQuatSimd(short* data, size_t count)
 		v128_t res_1 = wasmx_unpackhi_v16x8(wyr, xzr);
 
 		// compute component index shifted left by 4 (and moved into i32x4 slot)
-		// TODO: volatile here works around LLVM mis-optimizing code; https://github.com/emscripten-core/emscripten/issues/11449
-		volatile v128_t cm = wasm_i32x4_shl(cf, 4);
+		v128_t cm = wasm_i32x4_shl(cf, 4);
 
 		// rotate and store
 		uint64_t* out = reinterpret_cast<uint64_t*>(&data[i * 4]);
@@ -792,6 +1038,117 @@ static void decodeFilterExpSimd(unsigned int* data, size_t count)
 		v128_t r = wasm_f32x4_mul(es, m);
 
 		wasm_v128_store(&data[i], r);
+	}
+}
+
+static void decodeFilterColorSimd8(unsigned char* data, size_t count)
+{
+	// TODO: volatile here works around LLVM mis-optimizing code; https://github.com/llvm/llvm-project/issues/149457
+	volatile v128_t zero = wasm_i32x4_splat(0);
+
+	for (size_t i = 0; i < count; i += 4)
+	{
+		v128_t c4 = wasm_v128_load(&data[i * 4]);
+
+		// unpack y/co/cg/a (co/cg are sign extended with arithmetic shifts)
+		v128_t yf = wasm_v128_and(c4, wasm_i32x4_splat(0xff));
+		v128_t cof = wasm_i32x4_shr(wasm_i32x4_shl(c4, 16), 24);
+		v128_t cgf = wasm_i32x4_shr(wasm_i32x4_shl(c4, 8), 24);
+		v128_t af = wasm_v128_or(zero, wasm_u32x4_shr(c4, 24));
+
+		// recover scale from alpha high bit
+		v128_t as = af;
+		as = wasm_v128_or(as, wasm_i32x4_shr(as, 1));
+		as = wasm_v128_or(as, wasm_i32x4_shr(as, 2));
+		as = wasm_v128_or(as, wasm_i32x4_shr(as, 4));
+
+		// expand alpha by one bit to match other components
+		af = wasm_v128_or(wasm_v128_and(wasm_i32x4_shl(af, 1), as), wasm_v128_and(af, wasm_i32x4_splat(1)));
+
+		// compute scaling factor
+		v128_t ss = wasm_f32x4_div(wasm_f32x4_splat(255.f), wasm_f32x4_convert_i32x4(as));
+
+		// convert to RGB in fixed point
+		v128_t rf = wasm_i32x4_add(yf, wasm_i32x4_sub(cof, cgf));
+		v128_t gf = wasm_i32x4_add(yf, cgf);
+		v128_t bf = wasm_i32x4_sub(yf, wasm_i32x4_add(cof, cgf));
+
+		// fast rounded signed float->int: addition triggers renormalization after which mantissa stores the integer value
+		// note: the result is offset by 0x4B40_0000, but we only need the low 8 bits so we can omit the subtraction
+		const v128_t fsnap = wasm_f32x4_splat(3 << 22);
+
+		v128_t rr = wasm_f32x4_add(wasm_f32x4_mul(wasm_f32x4_convert_i32x4(rf), ss), fsnap);
+		v128_t gr = wasm_f32x4_add(wasm_f32x4_mul(wasm_f32x4_convert_i32x4(gf), ss), fsnap);
+		v128_t br = wasm_f32x4_add(wasm_f32x4_mul(wasm_f32x4_convert_i32x4(bf), ss), fsnap);
+		v128_t ar = wasm_f32x4_add(wasm_f32x4_mul(wasm_f32x4_convert_i32x4(af), ss), fsnap);
+
+		// repack rgba into final value
+		v128_t res = wasm_v128_and(rr, wasm_i32x4_splat(0xff));
+		res = wasm_v128_or(res, wasm_i32x4_shl(wasm_v128_and(gr, wasm_i32x4_splat(0xff)), 8));
+		res = wasm_v128_or(res, wasm_i32x4_shl(wasm_v128_and(br, wasm_i32x4_splat(0xff)), 16));
+		res = wasm_v128_or(res, wasm_i32x4_shl(ar, 24));
+
+		wasm_v128_store(&data[i * 4], res);
+	}
+}
+
+static void decodeFilterColorSimd16(unsigned short* data, size_t count)
+{
+	// TODO: volatile here works around LLVM mis-optimizing code; https://github.com/llvm/llvm-project/issues/149457
+	volatile v128_t zero = wasm_i32x4_splat(0);
+
+	for (size_t i = 0; i < count; i += 4)
+	{
+		v128_t c4_0 = wasm_v128_load(&data[(i + 0) * 4]);
+		v128_t c4_1 = wasm_v128_load(&data[(i + 2) * 4]);
+
+		// gather both y/co 16-bit pairs in each 32-bit lane
+		v128_t c4_yco = wasmx_unziplo_v32x4(c4_0, c4_1);
+		v128_t c4_cga = wasmx_unziphi_v32x4(c4_0, c4_1);
+
+		// unpack y/co/cg/a components (co/cg are sign extended with arithmetic shifts)
+		v128_t yf = wasm_v128_and(c4_yco, wasm_i32x4_splat(0xffff));
+		v128_t cof = wasm_i32x4_shr(c4_yco, 16);
+		v128_t cgf = wasm_i32x4_shr(wasm_i32x4_shl(c4_cga, 16), 16);
+		v128_t af = wasm_v128_or(zero, wasm_u32x4_shr(c4_cga, 16));
+
+		// recover scale from alpha high bit
+		v128_t as = af;
+		as = wasm_v128_or(as, wasm_i32x4_shr(as, 1));
+		as = wasm_v128_or(as, wasm_i32x4_shr(as, 2));
+		as = wasm_v128_or(as, wasm_i32x4_shr(as, 4));
+		as = wasm_v128_or(as, wasm_i32x4_shr(as, 8));
+
+		// expand alpha by one bit to match other components
+		af = wasm_v128_or(wasm_v128_and(wasm_i32x4_shl(af, 1), as), wasm_v128_and(af, wasm_i32x4_splat(1)));
+
+		// compute scaling factor
+		v128_t ss = wasm_f32x4_div(wasm_f32x4_splat(65535.f), wasm_f32x4_convert_i32x4(as));
+
+		// convert to RGB in fixed point
+		v128_t rf = wasm_i32x4_add(yf, wasm_i32x4_sub(cof, cgf));
+		v128_t gf = wasm_i32x4_add(yf, cgf);
+		v128_t bf = wasm_i32x4_sub(yf, wasm_i32x4_add(cof, cgf));
+
+		// fast rounded signed float->int: addition triggers renormalization after which mantissa stores the integer value
+		// note: the result is offset by 0x4B40_0000, but we only need the low 8 bits so we can omit the subtraction
+		const v128_t fsnap = wasm_f32x4_splat(3 << 22);
+
+		v128_t rr = wasm_f32x4_add(wasm_f32x4_mul(wasm_f32x4_convert_i32x4(rf), ss), fsnap);
+		v128_t gr = wasm_f32x4_add(wasm_f32x4_mul(wasm_f32x4_convert_i32x4(gf), ss), fsnap);
+		v128_t br = wasm_f32x4_add(wasm_f32x4_mul(wasm_f32x4_convert_i32x4(bf), ss), fsnap);
+		v128_t ar = wasm_f32x4_add(wasm_f32x4_mul(wasm_f32x4_convert_i32x4(af), ss), fsnap);
+
+		// mix r/b and g/a to make 16-bit unpack easier
+		v128_t rbr = wasm_v128_or(wasm_v128_and(rr, wasm_i32x4_splat(0xffff)), wasm_i32x4_shl(br, 16));
+		v128_t gar = wasm_v128_or(wasm_v128_and(gr, wasm_i32x4_splat(0xffff)), wasm_i32x4_shl(ar, 16));
+
+		// pack r/g/b/a using 16-bit unpacks
+		v128_t res_0 = wasmx_unpacklo_v16x8(rbr, gar);
+		v128_t res_1 = wasmx_unpackhi_v16x8(rbr, gar);
+
+		wasm_v128_store(&data[(i + 0) * 4], res_0);
+		wasm_v128_store(&data[(i + 2) * 4], res_1);
 	}
 }
 #endif
@@ -833,9 +1190,9 @@ void meshopt_decodeFilterOct(void* buffer, size_t count, size_t stride)
 
 #if defined(SIMD_SSE) || defined(SIMD_NEON) || defined(SIMD_WASM)
 	if (stride == 4)
-		dispatchSimd(decodeFilterOctSimd, static_cast<signed char*>(buffer), count, 4);
+		dispatchSimd(decodeFilterOctSimd8, static_cast<signed char*>(buffer), count, 4);
 	else
-		dispatchSimd(decodeFilterOctSimd, static_cast<short*>(buffer), count, 4);
+		dispatchSimd(decodeFilterOctSimd16, static_cast<short*>(buffer), count, 4);
 #else
 	if (stride == 4)
 		decodeFilterOct(static_cast<signed char*>(buffer), count);
@@ -868,6 +1225,25 @@ void meshopt_decodeFilterExp(void* buffer, size_t count, size_t stride)
 	dispatchSimd(decodeFilterExpSimd, static_cast<unsigned int*>(buffer), count * (stride / 4), 1);
 #else
 	decodeFilterExp(static_cast<unsigned int*>(buffer), count * (stride / 4));
+#endif
+}
+
+void meshopt_decodeFilterColor(void* buffer, size_t count, size_t stride)
+{
+	using namespace meshopt;
+
+	assert(stride == 4 || stride == 8);
+
+#if defined(SIMD_SSE) || defined(SIMD_NEON) || defined(SIMD_WASM)
+	if (stride == 4)
+		dispatchSimd(decodeFilterColorSimd8, static_cast<unsigned char*>(buffer), count, 4);
+	else
+		dispatchSimd(decodeFilterColorSimd16, static_cast<unsigned short*>(buffer), count, 4);
+#else
+	if (stride == 4)
+		decodeFilterColor<signed char>(static_cast<unsigned char*>(buffer), count);
+	else
+		decodeFilterColor<short>(static_cast<unsigned short*>(buffer), count);
 #endif
 }
 
@@ -1037,6 +1413,51 @@ void meshopt_encodeFilterExp(void* destination_, size_t count, size_t stride, in
 			int m = int(v[j] * optexp2(-exp) + (v[j] >= 0 ? 0.5f : -0.5f));
 
 			d[j] = (m & mmask) | (unsigned(exp) << 24);
+		}
+	}
+}
+
+void meshopt_encodeFilterColor(void* destination, size_t count, size_t stride, int bits, const float* data)
+{
+	assert(stride == 4 || stride == 8);
+	assert(bits >= 2 && bits <= 16);
+
+	unsigned char* d8 = static_cast<unsigned char*>(destination);
+	unsigned short* d16 = static_cast<unsigned short*>(destination);
+
+	for (size_t i = 0; i < count; ++i)
+	{
+		const float* c = &data[i * 4];
+
+		int fr = meshopt_quantizeUnorm(c[0], bits);
+		int fg = meshopt_quantizeUnorm(c[1], bits);
+		int fb = meshopt_quantizeUnorm(c[2], bits);
+
+		// YCoCg-R encoding with truncated Co/Cg ensures that decoding can be done using integers
+		int fco = (fr - fb) / 2;
+		int tmp = fb + fco;
+		int fcg = (fg - tmp) / 2;
+		int fy = tmp + fcg;
+
+		// validate that R/G/B can be reconstructed with K bit integers
+		assert(unsigned((fy + fco - fcg) | (fy + fcg) | (fy - fco - fcg)) < (1u << bits));
+
+		// alpha: K-1-bit encoding with high bit set to 1
+		int fa = meshopt_quantizeUnorm(c[3], bits - 1) | (1 << (bits - 1));
+
+		if (stride == 4)
+		{
+			d8[i * 4 + 0] = (unsigned char)(fy);
+			d8[i * 4 + 1] = (unsigned char)(fco);
+			d8[i * 4 + 2] = (unsigned char)(fcg);
+			d8[i * 4 + 3] = (unsigned char)(fa);
+		}
+		else
+		{
+			d16[i * 4 + 0] = (unsigned short)(fy);
+			d16[i * 4 + 1] = (unsigned short)(fco);
+			d16[i * 4 + 2] = (unsigned short)(fcg);
+			d16[i * 4 + 3] = (unsigned short)(fa);
 		}
 	}
 }

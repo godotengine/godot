@@ -56,6 +56,8 @@ class OpenXRExtensionWrapper : public Object {
 protected:
 	static void _bind_methods();
 
+	Ref<OpenXRAPIExtension> openxr_api_extension;
+
 public:
 	// `get_requested_extensions` should return a list of OpenXR extensions related to this extension.
 	// If the bool * is a nullptr this extension is mandatory
@@ -71,7 +73,7 @@ public:
 	// You should return the pointer to the last struct you define as your result.
 	// If you are not adding any structs, just return `p_next_pointer`.
 	// See existing extensions for examples of this implementation.
-	virtual void *set_system_properties_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when we interrogate OpenXRS system abilities.
+	virtual void *set_system_properties_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when we interrogate OpenXR's system abilities.
 	virtual void *set_instance_create_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when we create our OpenXR instance.
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when we create our OpenXR session.
 	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when creating OpenXR swap chains.
@@ -120,6 +122,7 @@ public:
 	// this happens right before physics process and normal processing is run.
 	// This is when controller data is queried and made available to game logic.
 	virtual void on_process();
+	virtual void on_sync_actions(); // `on_sync_actions` is called right after we sync our action sets.
 	virtual void on_pre_render(); // `on_pre_render` is called right before we start rendering our XR viewports.
 	virtual void on_main_swapchains_created(); // `on_main_swapchains_created` is called right after our main swapchains are (re)created.
 	virtual void on_pre_draw_viewport(RID p_render_target); // `on_pre_draw_viewport` is called right before we start rendering this viewport
@@ -131,6 +134,7 @@ public:
 	GDVIRTUAL0(_on_instance_destroyed);
 	GDVIRTUAL1(_on_session_created, uint64_t);
 	GDVIRTUAL0(_on_process);
+	GDVIRTUAL0(_on_sync_actions);
 	GDVIRTUAL0(_on_pre_render);
 	GDVIRTUAL0(_on_main_swapchains_created);
 	GDVIRTUAL0(_on_session_destroyed);
@@ -178,8 +182,8 @@ public:
 
 	GDVIRTUAL1R(bool, _on_event_polled, GDExtensionConstPtr<void>);
 
-	OpenXRExtensionWrapper() = default;
-	virtual ~OpenXRExtensionWrapper() = default;
+	OpenXRExtensionWrapper();
+	virtual ~OpenXRExtensionWrapper() override;
 };
 
 // `OpenXRGraphicsExtensionWrapper` implements specific logic for each supported graphics API.

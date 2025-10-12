@@ -30,26 +30,31 @@
 
 #include "embedded_process_macos.h"
 
+#include "platform/macos/display_server_embedded.h"
 #include "platform/macos/display_server_macos.h"
 
 #include "core/input/input_event_codec.h"
+#include "core/os/main_loop.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
 
 void EmbeddedProcessMacOS::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_RESIZED:
+		case NOTIFICATION_ENTER_TREE: {
+			set_notify_transform(true);
+		} break;
+		case NOTIFICATION_TRANSFORM_CHANGED:
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			update_embedded_process();
 		} break;
 	}
 }
 
-void EmbeddedProcessMacOS::update_embedded_process() const {
+void EmbeddedProcessMacOS::update_embedded_process() {
 	layer_host->set_rect(get_adjusted_embedded_window_rect(get_rect()));
 	if (is_embedding_completed()) {
 		ds->embed_process_update(window->get_window_id(), this);
@@ -93,19 +98,6 @@ void EmbeddedProcessMacOS::embed_process(OS::ProcessID p_pid) {
 	_try_embed_process();
 }
 
-void EmbeddedProcessMacOS::_joy_connection_changed(int p_index, bool p_connected) const {
-	if (!script_debugger) {
-		return;
-	}
-
-	if (p_connected) {
-		String name = Input::get_singleton()->get_joy_name(p_index);
-		script_debugger->send_message("embed:joy_add", { p_index, name });
-	} else {
-		script_debugger->send_message("embed:joy_del", { p_index });
-	}
-}
-
 void EmbeddedProcessMacOS::reset() {
 	if (!ds) {
 		ds = static_cast<DisplayServerMacOS *>(DisplayServer::get_singleton());
@@ -122,8 +114,22 @@ void EmbeddedProcessMacOS::reset() {
 
 void EmbeddedProcessMacOS::request_close() {
 	if (current_process_id != 0 && is_embedding_completed()) {
-		ds->request_close_embedded_process(current_process_id);
+		script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_CLOSE_REQUEST });
 	}
+	reset();
+}
+
+void EmbeddedProcessMacOS::display_state_changed() {
+	DisplayServerEmbeddedState state;
+	state.screen_max_scale = ds->screen_get_max_scale();
+	state.screen_dpi = ds->screen_get_dpi();
+	DisplayServer::WindowID wid = window->get_window_id();
+	state.screen_window_scale = ds->screen_get_scale(ds->window_get_current_screen(wid));
+	state.display_id = ds->window_get_display_id(wid);
+
+	PackedByteArray data;
+	state.serialize(data);
+	script_debugger->send_message("embed:ds_state", { data });
 }
 
 void EmbeddedProcessMacOS::_try_embed_process() {
@@ -131,30 +137,19 @@ void EmbeddedProcessMacOS::_try_embed_process() {
 		return;
 	}
 
-	Error err = ds->embed_process_update(window->get_window_id(), this);
+	DisplayServer::WindowID wid = window->get_window_id();
+	Error err = ds->embed_process_update(wid, this);
 	if (err == OK) {
+		layer_host->set_rect(get_adjusted_embedded_window_rect(get_rect()));
+
+		// Replicate important DisplayServer state.
+		display_state_changed();
+
 		Rect2i rect = get_screen_embedded_window_rect();
 		script_debugger->send_message("embed:window_size", { rect.size });
 		embedding_state = EmbeddingState::COMPLETED;
 		queue_redraw();
 		emit_signal(SNAME("embedding_completed"));
-
-		// Replicate some of the DisplayServer state.
-		{
-			Dictionary state;
-			state["screen_get_max_scale"] = ds->screen_get_max_scale();
-			// script_debugger->send_message("embed:ds_state", { state });
-		}
-
-		// Send initial joystick state.
-		{
-			Input *input = Input::get_singleton();
-			TypedArray<int> joy_pads = input->get_connected_joypads();
-			for (const Variant &idx : joy_pads) {
-				String name = input->get_joy_name(idx);
-				script_debugger->send_message("embed:joy_add", { idx, name });
-			}
-		}
 
 		layer_host->grab_focus();
 	} else {
@@ -201,35 +196,60 @@ EmbeddedProcessMacOS::EmbeddedProcessMacOS() :
 	layer_host->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	layer_host->set_custom_minimum_size(Size2(100, 100));
 
-	Input *input = Input::get_singleton();
-	input->connect(SNAME("joy_connection_changed"), callable_mp(this, &EmbeddedProcessMacOS::_joy_connection_changed));
-
 	// This shortcut allows a user to forcibly release a captured mouse from within the editor, regardless of whether
 	// the embedded process has implemented support to release the cursor.
 	ED_SHORTCUT("game_view/release_mouse", TTRC("Release Mouse"), KeyModifierMask::ALT | Key::ESCAPE);
 }
 
+EmbeddedProcessMacOS::~EmbeddedProcessMacOS() {
+	if (current_process_id != 0) {
+		// Stop embedding the last process.
+		OS::get_singleton()->kill(current_process_id);
+		reset();
+	}
+}
+
 void LayerHost::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_FOCUS_ENTER: {
+		case NOTIFICATION_MOUSE_ENTER: {
+			DisplayServer *ds = DisplayServer::get_singleton();
+			for (const KeyValue<DisplayServer::CursorShape, CustomCursor> &E : custom_cursors) {
+				ds->cursor_set_custom_image(E.value.image, E.key, E.value.hotspot);
+			}
 			if (script_debugger) {
 				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_MOUSE_ENTER });
 			}
-			// Temporarily release mouse capture, so we can interact with the editor.
+		} break;
+		case NOTIFICATION_FOCUS_ENTER: {
+			// Restore mouse capture, if necessary.
 			DisplayServer *ds = DisplayServer::get_singleton();
 			if (process->get_mouse_mode() != ds->mouse_get_mode()) {
 				// Restore embedded process mouse mode.
 				ds->mouse_set_mode(process->get_mouse_mode());
 			}
+			if (!window_focused && script_debugger) {
+				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_FOCUS_IN });
+				window_focused = true;
+			}
 		} break;
-		case NOTIFICATION_FOCUS_EXIT: {
+		case NOTIFICATION_MOUSE_EXIT: {
+			DisplayServer *ds = DisplayServer::get_singleton();
+			for (int i = 0; i < DisplayServer::CURSOR_MAX; i++) {
+				ds->cursor_set_custom_image(Ref<Resource>(), (DisplayServer::CursorShape)i, Vector2());
+			}
 			if (script_debugger) {
 				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_MOUSE_EXIT });
 			}
+		} break;
+		case NOTIFICATION_FOCUS_EXIT: {
 			// Temporarily set mouse state back to visible, so the user can interact with the editor.
 			DisplayServer *ds = DisplayServer::get_singleton();
 			if (ds->mouse_get_mode() != DisplayServer::MOUSE_MODE_VISIBLE) {
 				ds->mouse_set_mode(DisplayServer::MOUSE_MODE_VISIBLE);
+			}
+			if (window_focused && script_debugger) {
+				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_FOCUS_OUT });
+				window_focused = false;
 			}
 		} break;
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
@@ -239,7 +259,42 @@ void LayerHost::_notification(int p_what) {
 				script_debugger->send_message("embed:ime_update", { ime_text, ime_selection });
 			}
 		} break;
+		case NOTIFICATION_EXIT_TREE:
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible_in_tree()) {
+				DisplayServer *ds = DisplayServer::get_singleton();
+				for (int i = 0; i < DisplayServer::CURSOR_MAX; i++) {
+					ds->cursor_set_custom_image(Ref<Resource>(), (DisplayServer::CursorShape)i, Vector2());
+				}
+			}
+		} break;
+		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
+			if (!window_focused && script_debugger) {
+				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_FOCUS_IN });
+				window_focused = true;
+			}
+		} break;
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			if (window_focused && script_debugger) {
+				script_debugger->send_message("embed:win_event", { DisplayServer::WINDOW_EVENT_FOCUS_OUT });
+				window_focused = false;
+			}
+		} break;
+		case NOTIFICATION_APPLICATION_FOCUS_IN: {
+			if (script_debugger) {
+				script_debugger->send_message("embed:notification", { NOTIFICATION_APPLICATION_FOCUS_IN });
+			}
+		} break;
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			if (script_debugger) {
+				script_debugger->send_message("embed:notification", { NOTIFICATION_APPLICATION_FOCUS_OUT });
+			}
+		} break;
 	}
+}
+
+void LayerHost::cursor_set_custom_image(const Ref<Image> &p_image, DisplayServer::CursorShape p_shape, const Vector2 &p_hotspot) {
+	custom_cursors[p_shape] = CustomCursor(p_image, p_hotspot);
 }
 
 void LayerHost::gui_input(const Ref<InputEvent> &p_event) {
@@ -257,6 +312,13 @@ void LayerHost::gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 			return;
 		}
+	}
+
+	Ref<InputEventJoypadMotion> jm = p_event;
+	Ref<InputEventJoypadButton> jb = p_event;
+	if (jm.is_valid() || jb.is_valid()) {
+		accept_event();
+		return;
 	}
 
 	PackedByteArray data;

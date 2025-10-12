@@ -37,12 +37,12 @@
 #include "servers/rendering/renderer_rd/effects/metal_fx.h"
 #endif
 #include "servers/rendering/renderer_rd/effects/motion_vectors_store.h"
-#include "servers/rendering/renderer_rd/effects/resolve.h"
 #include "servers/rendering/renderer_rd/effects/ss_effects.h"
 #include "servers/rendering/renderer_rd/effects/taa.h"
 #include "servers/rendering/renderer_rd/forward_clustered/scene_shader_forward_clustered.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/shaders/forward_clustered/best_fit_normal.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/forward_clustered/integrate_dfg.glsl.gen.h"
 
 #define RB_SCOPE_FORWARD_CLUSTERED SNAME("forward_clustered")
 
@@ -94,7 +94,7 @@ public:
 	private:
 		RenderSceneBuffersRD *render_buffers = nullptr;
 		RendererRD::FSR2Context *fsr2_context = nullptr;
-#ifdef METAL_ENABLED
+#ifdef METAL_MFXTEMPORAL_ENABLED
 		RendererRD::MFXTemporalContext *mfx_temporal_context = nullptr;
 #endif
 
@@ -140,7 +140,7 @@ public:
 		void ensure_fsr2(RendererRD::FSR2Effect *p_effect);
 		RendererRD::FSR2Context *get_fsr2_context() const { return fsr2_context; }
 
-#ifdef METAL_ENABLED
+#ifdef METAL_MFXTEMPORAL_ENABLED
 		bool ensure_mfx_temporal(RendererRD::MFXTemporalEffect *p_effect);
 		RendererRD::MFXTemporalContext *get_mfx_temporal_context() const { return mfx_temporal_context; }
 #endif
@@ -179,6 +179,13 @@ private:
 		RID pipeline;
 		RID texture;
 	} best_fit_normal;
+
+	struct IntegrateDFG {
+		IntegrateDfgShaderRD shader;
+		RID shader_version;
+		RID pipeline;
+		RID texture;
+	} dfg_lut;
 
 	enum PassMode {
 		PASS_MODE_COLOR,
@@ -315,16 +322,20 @@ private:
 		};
 
 		struct InstanceData {
-			float transform[16];
-			float prev_transform[16];
+			float transform[12];
+			float compressed_aabb_position[4];
+			float compressed_aabb_size[4];
+			float uv_scale[4];
 			uint32_t flags;
 			uint32_t instance_uniforms_ofs; //base offset in global buffer for instance variables
 			uint32_t gi_offset; //GI information when using lightmapping (VCT or lightmap index)
 			uint32_t layer_mask;
+			float prev_transform[12];
 			float lightmap_uv_scale[4];
-			float compressed_aabb_position[4];
-			float compressed_aabb_size[4];
-			float uv_scale[4];
+#ifdef REAL_T_IS_DOUBLE
+			float model_precision[4];
+			float prev_model_precision[4];
+#endif
 
 			// These setters allow us to copy the data over with operation when using floats.
 			inline void set_lightmap_uv_scale(const Rect2 &p_rect) {
@@ -400,6 +411,7 @@ private:
 		bool used_depth_texture = false;
 		bool used_sss = false;
 		bool used_lightmap = false;
+		bool used_opaque_stencil = false;
 
 		struct ShadowPass {
 			uint32_t element_from;
@@ -477,6 +489,7 @@ private:
 			FLAG_USES_DOUBLE_SIDED_SHADOWS = 32768,
 			FLAG_USES_PARTICLE_TRAILS = 65536,
 			FLAG_USES_MOTION_VECTOR = 131072,
+			FLAG_USES_STENCIL = 262144,
 		};
 
 		union {
@@ -485,6 +498,10 @@ private:
 				uint64_t sort_key2;
 			};
 			struct {
+				uint64_t geometry_id : 32;
+				uint64_t material_id : 32;
+
+				uint64_t shader_id : 32;
 				uint64_t lod_index : 8;
 				uint64_t uses_softshadow : 1;
 				uint64_t uses_projector : 1;
@@ -493,10 +510,6 @@ private:
 				uint64_t depth_layer : 4;
 				uint64_t surface_index : 8;
 				uint64_t priority : 8;
-				uint64_t geometry_id : 32;
-
-				uint64_t material_id : 32;
-				uint64_t shader_id : 32;
 			};
 		} sort;
 
@@ -706,12 +719,11 @@ private:
 
 	/* Effects */
 
-	RendererRD::Resolve *resolve_effects = nullptr;
 	RendererRD::TAA *taa = nullptr;
 	RendererRD::FSR2Effect *fsr2_effect = nullptr;
 	RendererRD::SSEffects *ss_effects = nullptr;
 
-#ifdef METAL_ENABLED
+#ifdef METAL_MFXTEMPORAL_ENABLED
 	RendererRD::MFXTemporalEffect *mfx_temporal_effect = nullptr;
 #endif
 	RendererRD::MotionVectorsStore *motion_vectors_store = nullptr;
@@ -803,6 +815,11 @@ public:
 
 	virtual void mesh_generate_pipelines(RID p_mesh, bool p_background_compilation) override;
 	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source) override;
+
+	/* SHADER LIBRARY */
+
+	virtual void enable_features(BitField<FeatureBits> p_feature_bits) override;
+	virtual String get_name() const override;
 
 	virtual bool free(RID p_rid) override;
 

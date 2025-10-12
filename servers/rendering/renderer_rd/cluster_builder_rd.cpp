@@ -49,29 +49,96 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 	{
 		RD::FramebufferFormatID fb_format;
 		RD::PipelineColorBlendState blend_state;
-		String defines;
-		if (RD::get_singleton()->has_feature(RD::SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS)) {
-			fb_format = RD::get_singleton()->framebuffer_format_create_empty();
+		RD::PipelineRasterizationState rasterization_state;
+		RD::PipelineMultisampleState ms;
+		rasterization_state.enable_depth_clamp = true;
+		ms.sample_count = RD::TEXTURE_SAMPLES_4;
+
+		Vector<String> variants;
+		variants.push_back("");
+		variants.push_back("\n#define USE_ATTACHMENT\n");
+		variants.push_back("\n#define MOLTENVK_USED\n#define NO_IMAGE_ATOMICS\n");
+		variants.push_back("\n#define USE_ATTACHMENT\n#define MOLTENVK_USED\n#define NO_IMAGE_ATOMICS\n");
+		variants.push_back("\n#define NO_IMAGE_ATOMICS\n");
+		variants.push_back("\n#define MOLTENVK_USED\n#define NO_IMAGE_ATOMICS\n");
+
+		ClusterRender::ShaderVariant shader_variant;
+		RenderingDevice *rd = RD::get_singleton();
+		if (rd->has_feature(RD::SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS)) {
+			fb_format = rd->framebuffer_format_create_empty();
 			blend_state = RD::PipelineColorBlendState::create_disabled();
+#if (defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED))
+			if (rd->get_device_capabilities().device_family == RDD::DEVICE_VULKAN) {
+				shader_variant = ClusterRender::SHADER_NORMAL_MOLTENVK;
+			} else if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
+				shader_variant = ClusterRender::SHADER_NORMAL;
+			} else {
+				shader_variant = ClusterRender::SHADER_NORMAL_NO_ATOMICS;
+			}
+#else
+			if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
+				shader_variant = ClusterRender::SHADER_NORMAL;
+			} else {
+				shader_variant = ClusterRender::SHADER_NORMAL_NO_ATOMICS;
+			}
+#endif
 		} else {
 			Vector<RD::AttachmentFormat> afs;
 			afs.push_back(RD::AttachmentFormat());
 			afs.write[0].usage_flags = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-			fb_format = RD::get_singleton()->framebuffer_format_create(afs);
+			fb_format = rd->framebuffer_format_create(afs);
 			blend_state = RD::PipelineColorBlendState::create_blend();
-			defines = "\n#define USE_ATTACHMENT\n";
+#if (defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED))
+			if (rd->get_device_capabilities().device_family == RDD::DEVICE_VULKAN) {
+				shader_variant = ClusterRender::SHADER_USE_ATTACHMENT_MOLTENVK;
+			} else if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
+				shader_variant = ClusterRender::SHADER_USE_ATTACHMENT;
+			} else {
+				shader_variant = ClusterRender::SHADER_USE_ATTACHMENT_NO_ATOMICS;
+			}
+#else
+			if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
+				shader_variant = ClusterRender::SHADER_USE_ATTACHMENT;
+			} else {
+				shader_variant = ClusterRender::SHADER_USE_ATTACHMENT_NO_ATOMICS;
+			}
+#endif
 		}
 
-		RD::PipelineRasterizationState rasterization_state;
-		rasterization_state.enable_depth_clamp = true;
-		Vector<String> versions;
-		versions.push_back("");
-		cluster_render.cluster_render_shader.initialize(versions, defines);
+		cluster_render.cluster_render_shader.initialize(variants);
+#if (defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED))
+		if (rd->get_device_capabilities().device_family == RDD::DEVICE_VULKAN) {
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL, false);
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT, false);
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL_NO_ATOMICS, false);
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT_NO_ATOMICS, false);
+		} else if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL_MOLTENVK, false);
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT_MOLTENVK, false);
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL_NO_ATOMICS, false);
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT_NO_ATOMICS, false);
+		} else {
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL, false);
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT, false);
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL_MOLTENVK, false);
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT_MOLTENVK, false);
+		}
+#else
+		if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL_MOLTENVK, false);
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT_MOLTENVK, false);
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL_NO_ATOMICS, false);
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT_NO_ATOMICS, false);
+		} else {
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL, false);
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT, false);
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL_MOLTENVK, false);
+			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT_MOLTENVK, false);
+		}
+#endif
 		cluster_render.shader_version = cluster_render.cluster_render_shader.version_create();
-		cluster_render.shader = cluster_render.cluster_render_shader.version_get_shader(cluster_render.shader_version, 0);
+		cluster_render.shader = cluster_render.cluster_render_shader.version_get_shader(cluster_render.shader_version, shader_variant);
 		cluster_render.shader_pipelines[ClusterRender::PIPELINE_NORMAL] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rasterization_state, RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
-		RD::PipelineMultisampleState ms;
-		ms.sample_count = RD::TEXTURE_SAMPLES_4;
 		cluster_render.shader_pipelines[ClusterRender::PIPELINE_MSAA] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rasterization_state, ms, RD::PipelineDepthStencilState(), blend_state, 0);
 	}
 	{
@@ -220,12 +287,12 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 	}
 }
 ClusterBuilderSharedDataRD::~ClusterBuilderSharedDataRD() {
-	RD::get_singleton()->free(sphere_vertex_buffer);
-	RD::get_singleton()->free(sphere_index_buffer);
-	RD::get_singleton()->free(cone_vertex_buffer);
-	RD::get_singleton()->free(cone_index_buffer);
-	RD::get_singleton()->free(box_vertex_buffer);
-	RD::get_singleton()->free(box_index_buffer);
+	RD::get_singleton()->free_rid(sphere_vertex_buffer);
+	RD::get_singleton()->free_rid(sphere_index_buffer);
+	RD::get_singleton()->free_rid(cone_vertex_buffer);
+	RD::get_singleton()->free_rid(cone_index_buffer);
+	RD::get_singleton()->free_rid(box_vertex_buffer);
+	RD::get_singleton()->free_rid(box_index_buffer);
 
 	cluster_render.cluster_render_shader.version_free(cluster_render.shader_version);
 	cluster_store.cluster_store_shader.version_free(cluster_store.shader_version);
@@ -239,9 +306,9 @@ void ClusterBuilderRD::_clear() {
 		return;
 	}
 
-	RD::get_singleton()->free(cluster_buffer);
-	RD::get_singleton()->free(cluster_render_buffer);
-	RD::get_singleton()->free(element_buffer);
+	RD::get_singleton()->free_rid(cluster_buffer);
+	RD::get_singleton()->free_rid(cluster_render_buffer);
+	RD::get_singleton()->free_rid(element_buffer);
 	cluster_buffer = RID();
 	cluster_render_buffer = RID();
 	element_buffer = RID();
@@ -252,7 +319,7 @@ void ClusterBuilderRD::_clear() {
 	render_element_max = 0;
 	render_element_count = 0;
 
-	RD::get_singleton()->free(framebuffer);
+	RD::get_singleton()->free_rid(framebuffer);
 	framebuffer = RID();
 
 	cluster_render_uniform_set = RID();
@@ -569,5 +636,5 @@ ClusterBuilderRD::ClusterBuilderRD() {
 
 ClusterBuilderRD::~ClusterBuilderRD() {
 	_clear();
-	RD::get_singleton()->free(state_uniform);
+	RD::get_singleton()->free_rid(state_uniform);
 }

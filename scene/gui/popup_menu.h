@@ -37,6 +37,7 @@
 #include "scene/resources/text_line.h"
 
 class PanelContainer;
+class Timer;
 
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);
@@ -168,6 +169,7 @@ class PopupMenu : public Popup {
 	const float DEFAULT_GAMEPAD_EVENT_DELAY_MS = 0.5;
 	const float GAMEPAD_EVENT_REPEAT_RATE_MS = 1.0 / 20;
 	float gamepad_event_delay_ms = DEFAULT_GAMEPAD_EVENT_DELAY_MS;
+	bool joypad_event_process = false;
 
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
@@ -226,6 +228,7 @@ class PopupMenu : public Popup {
 	String _atr(int p_idx, const String &p_text) const;
 
 protected:
+	virtual void _pre_popup() override;
 	virtual Rect2i _popup_adjust_rect() const override;
 
 	virtual void add_child_notify(Node *p_child) override;

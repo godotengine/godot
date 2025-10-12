@@ -31,9 +31,7 @@
 #include "look_at_modifier_3d.h"
 
 void LookAtModifier3D::_validate_property(PropertyInfo &p_property) const {
-	SkeletonModifier3D::_validate_property(p_property);
-
-	if (p_property.name == "bone_name" || p_property.name == "origin_bone_name") {
+	if (Engine::get_singleton()->is_editor_hint() && (p_property.name == "bone_name" || p_property.name == "origin_bone_name")) {
 		Skeleton3D *skeleton = get_skeleton();
 		if (skeleton) {
 			p_property.hint = PROPERTY_HINT_ENUM;
@@ -73,6 +71,20 @@ PackedStringArray LookAtModifier3D::get_configuration_warnings() const {
 		warnings.push_back(RTR("Forward axis and primary rotation axis must not be parallel."));
 	}
 	return warnings;
+}
+
+void LookAtModifier3D::_validate_bone_names() {
+	// Prior bone name.
+	if (!bone_name.is_empty()) {
+		set_bone_name(bone_name);
+	} else if (bone != -1) {
+		set_bone(bone);
+	}
+	if (!origin_bone_name.is_empty()) {
+		set_origin_bone_name(origin_bone_name);
+	} else if (origin_bone != -1) {
+		set_origin_bone(origin_bone);
+	}
 }
 
 void LookAtModifier3D::set_bone_name(const String &p_bone_name) {
@@ -501,10 +513,10 @@ void LookAtModifier3D::_process_modification(double p_delta) {
 	Transform3D bone_rest_space;
 	int parent_bone = skeleton->get_bone_parent(bone);
 	if (parent_bone < 0) {
-		bone_rest_space = skeleton->get_global_transform();
+		bone_rest_space = skeleton->get_global_transform_interpolated();
 		bone_rest_space.translate_local(skeleton->get_bone_rest(bone).origin);
 	} else {
-		bone_rest_space = skeleton->get_global_transform() * skeleton->get_bone_global_pose(parent_bone);
+		bone_rest_space = skeleton->get_global_transform_interpolated() * skeleton->get_bone_global_pose(parent_bone);
 		bone_rest_space.translate_local(skeleton->get_bone_rest(bone).origin);
 	}
 
@@ -518,18 +530,18 @@ void LookAtModifier3D::_process_modification(double p_delta) {
 	} else {
 		Transform3D origin_tr;
 		if (origin_from == ORIGIN_FROM_SPECIFIC_BONE && origin_bone >= 0 && origin_bone < skeleton->get_bone_count()) {
-			origin_tr = skeleton->get_global_transform() * skeleton->get_bone_global_pose(origin_bone);
+			origin_tr = skeleton->get_global_transform_interpolated() * skeleton->get_bone_global_pose(origin_bone);
 		} else if (origin_from == ORIGIN_FROM_EXTERNAL_NODE) {
 			Node3D *origin_src = Object::cast_to<Node3D>(get_node_or_null(origin_external_node));
 			if (origin_src) {
-				origin_tr = origin_src->get_global_transform();
+				origin_tr = origin_src->get_global_transform_interpolated();
 			} else {
 				origin_tr = bone_rest_space;
 			}
 		} else {
 			origin_tr = bone_rest_space;
 		}
-		forward_vector = bone_rest_space.orthonormalized().basis.xform_inv((target->get_global_position() - origin_tr.translated_local(origin_offset).origin));
+		forward_vector = bone_rest_space.orthonormalized().basis.xform_inv(target->get_global_transform_interpolated().origin - origin_tr.translated_local(origin_offset).origin);
 		forward_vector_nrm = forward_vector.normalized();
 		if (forward_vector_nrm.abs().is_equal_approx(get_vector_from_axis(primary_rotation_axis))) {
 			destination = skeleton->get_bone_pose_rotation(bone);

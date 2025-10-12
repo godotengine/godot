@@ -408,7 +408,7 @@ Error Expression::_get_token(Token &r_token) {
 						if (reading == READING_DONE) {
 							break;
 						}
-						num += String::chr(c);
+						num += c;
 						c = GET_CHAR();
 						is_first_char = false;
 					}
@@ -435,7 +435,7 @@ Error Expression::_get_token(Token &r_token) {
 					cchar = GET_CHAR();
 
 					while (is_unicode_identifier_continue(cchar)) {
-						id += String::chr(cchar);
+						id += cchar;
 						cchar = GET_CHAR();
 					}
 
@@ -823,7 +823,7 @@ Expression::ENode *Expression::_parse_expression() {
 				if (!Variant::is_utility_function_vararg(bifunc->func)) {
 					int expected_args = Variant::get_utility_function_argument_count(bifunc->func);
 					if (expected_args != bifunc->arguments.size()) {
-						_set_error("Builtin func '" + String(bifunc->func) + "' expects " + itos(expected_args) + " arguments.");
+						_set_error("Builtin func '" + String(bifunc->func) + "' expects " + itos(expected_args) + " argument(s).");
 					}
 				}
 

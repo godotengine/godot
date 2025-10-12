@@ -32,7 +32,7 @@
 
 #include "core/io/resource.h"
 #include "scene/property_list_helper.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/variant/native_ptr.h"
@@ -81,11 +81,11 @@ class AudioStreamPlayback : public RefCounted {
 protected:
 	static void _bind_methods();
 	PackedVector2Array _mix_audio_bind(float p_rate_scale, int p_frames);
-	GDVIRTUAL1(_start, double)
-	GDVIRTUAL0(_stop)
-	GDVIRTUAL0RC(bool, _is_playing)
+	GDVIRTUAL1_REQUIRED(_start, double)
+	GDVIRTUAL0_REQUIRED(_stop)
+	GDVIRTUAL0RC_REQUIRED(bool, _is_playing)
 	GDVIRTUAL0RC(int, _get_loop_count)
-	GDVIRTUAL0RC(double, _get_playback_position)
+	GDVIRTUAL0RC_REQUIRED(double, _get_playback_position)
 	GDVIRTUAL1(_seek, double)
 	GDVIRTUAL3R_REQUIRED(int, _mix, GDExtensionPtr<AudioFrame>, float, int)
 	GDVIRTUAL0(_tag_used_streams)
@@ -170,7 +170,7 @@ class AudioStream : public Resource {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL0RC(Ref<AudioStreamPlayback>, _instantiate_playback)
+	GDVIRTUAL0RC_REQUIRED(Ref<AudioStreamPlayback>, _instantiate_playback)
 	GDVIRTUAL0RC(String, _get_stream_name)
 	GDVIRTUAL0RC(double, _get_length)
 	GDVIRTUAL0RC(bool, _is_monophonic)
@@ -178,6 +178,7 @@ protected:
 	GDVIRTUAL0RC(bool, _has_loop)
 	GDVIRTUAL0RC(int, _get_bar_beats)
 	GDVIRTUAL0RC(int, _get_beat_count)
+	GDVIRTUAL0RC(Dictionary, _get_tags);
 	GDVIRTUAL0RC(TypedArray<Dictionary>, _get_parameter_list)
 
 public:
@@ -188,6 +189,7 @@ public:
 	virtual bool has_loop() const;
 	virtual int get_bar_beats() const;
 	virtual int get_beat_count() const;
+	virtual Dictionary get_tags() const;
 
 	virtual double get_length() const;
 	virtual bool is_monophonic() const;

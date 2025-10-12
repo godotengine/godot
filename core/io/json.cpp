@@ -31,6 +31,7 @@
 #include "json.h"
 
 #include "core/config/engine.h"
+#include "core/io/file_access.h"
 #include "core/object/script_language.h"
 #include "core/variant/container_type_validate.h"
 
@@ -73,20 +74,27 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 			r_result += itos(p_var);
 			return;
 		case Variant::FLOAT: {
-			double num = p_var;
+			const double num = p_var;
 
 			// Only for exactly 0. If we have approximately 0 let the user decide how much
 			// precision they want.
-			if (num == double(0)) {
+			if (num == double(0.0)) {
 				r_result += "0.0";
 				return;
 			}
 
-			double magnitude = std::log10(Math::abs(num));
-			int total_digits = p_full_precision ? 17 : 14;
-			int precision = MAX(1, total_digits - (int)Math::floor(magnitude));
-
-			r_result += String::num(num, precision);
+			if (p_full_precision) {
+				const String num_sci = String::num_scientific(num);
+				if (num_sci.contains_char('.') || num_sci.contains_char('e')) {
+					r_result += num_sci;
+				} else {
+					r_result += num_sci + ".0";
+				}
+			} else {
+				const double magnitude = std::log10(Math::abs(num));
+				const int precision = MAX(1, 14 - (int)Math::floor(magnitude));
+				r_result += String::num(num, precision);
+			}
 			return;
 		}
 		case Variant::PACKED_INT32_ARRAY:
@@ -120,7 +128,7 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 					r_result += end_statement;
 				}
 				_add_indent(r_result, p_indent, p_cur_indent + 1);
-				_stringify(r_result, var, p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
+				_stringify(r_result, var, p_indent, p_cur_indent + 1, p_sort_keys, p_markers, p_full_precision);
 			}
 			r_result += end_statement;
 			_add_indent(r_result, p_indent, p_cur_indent);
@@ -154,9 +162,9 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 					r_result += end_statement;
 				}
 				_add_indent(r_result, p_indent, p_cur_indent + 1);
-				_stringify(r_result, String(key), p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
+				_stringify(r_result, String(key), p_indent, p_cur_indent + 1, p_sort_keys, p_markers, p_full_precision);
 				r_result += colon;
-				_stringify(r_result, d[key], p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
+				_stringify(r_result, d[key], p_indent, p_cur_indent + 1, p_sort_keys, p_markers, p_full_precision);
 			}
 
 			r_result += end_statement;

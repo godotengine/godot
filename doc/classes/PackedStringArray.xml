@@ -108,7 +108,8 @@
 			<return type="String" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the [String] at the given [param index] in the array. This is the same as using the [code][][/code] operator ([code]array[index][/code]).
+				Returns the [String] at the given [param index] in the array. Returns an empty string and prints an error if the access is out of bounds. Negative indices are not supported; they will always consider the value to be out of bounds and return an empty string.
+				This is similar to using the [code][][/code] operator ([code]array[index][/code]), except that operator supports negative indices and causes a debugger break if out-of-bounds access is performed.
 			</description>
 		</method>
 		<method name="has" qualifiers="const">

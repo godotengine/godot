@@ -37,10 +37,6 @@
 #include "config.h"
 #include "utilities.h"
 
-#ifdef ANDROID_ENABLED
-#define glFramebufferTextureMultiviewOVR GLES3::Config::get_singleton()->eglFramebufferTextureMultiviewOVR
-#endif
-
 using namespace GLES3;
 
 TextureStorage *TextureStorage::singleton = nullptr;
@@ -50,12 +46,12 @@ TextureStorage *TextureStorage::get_singleton() {
 }
 
 static const GLenum _cube_side_enum[6] = {
-	GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
 	GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-	GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+	GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
 	GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-	GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+	GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
 	GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+	GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
 };
 
 TextureStorage::TextureStorage() {
@@ -106,7 +102,12 @@ TextureStorage::TextureStorage() {
 			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_BLACK], image);
 
 			Vector<Ref<Image>> images;
-			for (int i = 0; i < 6; i++) {
+			images.push_back(image);
+
+			default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_BLACK] = texture_allocate();
+			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_BLACK], images, RS::TEXTURE_LAYERED_2D_ARRAY);
+
+			for (int i = 0; i < 5; i++) {
 				images.push_back(image);
 			}
 			default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_BLACK] = texture_allocate();
@@ -132,6 +133,31 @@ TextureStorage::TextureStorage() {
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_TRANSPARENT] = texture_allocate();
 			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_TRANSPARENT], image);
+
+			Vector<Ref<Image>> images;
+			images.push_back(image);
+
+			default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_TRANSPARENT] = texture_allocate();
+			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_TRANSPARENT], images, RS::TEXTURE_LAYERED_2D_ARRAY);
+
+			for (int i = 0; i < 5; i++) {
+				images.push_back(image);
+			}
+
+			default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_TRANSPARENT] = texture_allocate();
+			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_TRANSPARENT], images, RS::TEXTURE_LAYERED_CUBEMAP);
+		}
+
+		{
+			Ref<Image> image = Image::create_empty(4, 4, false, Image::FORMAT_RGBA8);
+			image->fill(Color(0, 0, 0, 0));
+
+			Vector<Ref<Image>> images;
+			for (int i = 0; i < 4; i++) {
+				images.push_back(image);
+			}
+			default_gl_textures[DEFAULT_GL_TEXTURE_3D_TRANSPARENT] = texture_allocate();
+			texture_3d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_3D_TRANSPARENT], image->get_format(), 4, 4, 4, false, images);
 		}
 
 		{
@@ -475,6 +501,126 @@ static inline Error _get_gl_uncompressed_format(const Ref<Image> &p_image, Image
 			r_gl_format = GL_RGB;
 			r_gl_type = GL_UNSIGNED_INT_5_9_9_9_REV;
 		} break;
+		case Image::FORMAT_R16: {
+			if (config->unorm16_texture_supported) {
+				r_gl_internal_format = _EXT_R16;
+				r_gl_format = GL_RED;
+				r_gl_type = GL_UNSIGNED_SHORT;
+			} else {
+				if (config->float_texture_linear_supported) {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RF);
+					}
+					r_real_format = Image::FORMAT_RF;
+					r_gl_internal_format = GL_R32F;
+					r_gl_format = GL_RED;
+					r_gl_type = GL_FLOAT;
+				} else {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RH);
+					}
+					r_real_format = Image::FORMAT_RH;
+					r_gl_internal_format = GL_R16F;
+					r_gl_format = GL_RED;
+					r_gl_type = GL_HALF_FLOAT;
+				}
+			}
+		} break;
+		case Image::FORMAT_RG16: {
+			if (config->unorm16_texture_supported) {
+				r_gl_internal_format = _EXT_RG16;
+				r_gl_format = GL_RG;
+				r_gl_type = GL_UNSIGNED_SHORT;
+			} else {
+				if (config->float_texture_linear_supported) {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RGF);
+					}
+					r_real_format = Image::FORMAT_RGF;
+					r_gl_internal_format = GL_RG32F;
+					r_gl_format = GL_RG;
+					r_gl_type = GL_FLOAT;
+				} else {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RGH);
+					}
+					r_real_format = Image::FORMAT_RGH;
+					r_gl_internal_format = GL_RG16F;
+					r_gl_format = GL_RG;
+					r_gl_type = GL_HALF_FLOAT;
+				}
+			}
+		} break;
+		case Image::FORMAT_RGB16: {
+			if (config->unorm16_texture_supported) {
+				r_gl_internal_format = _EXT_RGB16;
+				r_gl_format = GL_RGB;
+				r_gl_type = GL_UNSIGNED_SHORT;
+			} else {
+				if (config->float_texture_linear_supported) {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RGBF);
+					}
+					r_real_format = Image::FORMAT_RGBF;
+					r_gl_internal_format = GL_RGB32F;
+					r_gl_format = GL_RGB;
+					r_gl_type = GL_FLOAT;
+				} else {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RGBH);
+					}
+					r_real_format = Image::FORMAT_RGBH;
+					r_gl_internal_format = GL_RGB16F;
+					r_gl_format = GL_RGB;
+					r_gl_type = GL_HALF_FLOAT;
+				}
+			}
+		} break;
+		case Image::FORMAT_RGBA16: {
+			if (config->unorm16_texture_supported) {
+				r_gl_internal_format = _EXT_RGBA16;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_SHORT;
+			} else {
+				if (config->float_texture_linear_supported) {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RGBAF);
+					}
+					r_real_format = Image::FORMAT_RGBAF;
+					r_gl_internal_format = GL_RGBA32F;
+					r_gl_format = GL_RGBA;
+					r_gl_type = GL_FLOAT;
+				} else {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RGH);
+					}
+					r_real_format = Image::FORMAT_RGH;
+					r_gl_internal_format = GL_RGBA16F;
+					r_gl_format = GL_RGBA;
+					r_gl_type = GL_HALF_FLOAT;
+				}
+			}
+		} break;
+		case Image::FORMAT_R16I: {
+			r_gl_internal_format = GL_R16UI;
+			r_gl_format = GL_RED_INTEGER;
+			r_gl_type = GL_UNSIGNED_SHORT;
+		} break;
+		case Image::FORMAT_RG16I: {
+			r_gl_internal_format = GL_RG16UI;
+			r_gl_format = GL_RG_INTEGER;
+			r_gl_type = GL_UNSIGNED_SHORT;
+		} break;
+		case Image::FORMAT_RGB16I: {
+			r_gl_internal_format = GL_RGB16UI;
+			r_gl_format = GL_RGB_INTEGER;
+			r_gl_type = GL_UNSIGNED_SHORT;
+		} break;
+		case Image::FORMAT_RGBA16I: {
+			r_gl_internal_format = GL_RGBA16UI;
+			r_gl_format = GL_RGBA_INTEGER;
+			r_gl_type = GL_UNSIGNED_SHORT;
+		} break;
 		default: {
 			return ERR_UNAVAILABLE;
 		}
@@ -508,8 +654,8 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 	switch (p_format) {
 		case Image::FORMAT_DXT1: {
 			if (config->s3tc_supported) {
-				r_gl_internal_format = _EXT_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-				r_gl_format = GL_RGBA;
+				r_gl_internal_format = _EXT_COMPRESSED_RGB_S3TC_DXT1_EXT;
+				r_gl_format = GL_RGB;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
 			} else {
@@ -789,7 +935,7 @@ void TextureStorage::texture_free(RID p_texture) {
 
 	texture_atlas_remove_texture(p_texture);
 
-	for (int i = 0; i < t->proxies.size(); i++) {
+	for (uint32_t i = 0; i < t->proxies.size(); i++) {
 		Texture *p = texture_owner.get_or_null(t->proxies[i]);
 		ERR_CONTINUE(!p);
 		p->proxy_to = RID();
@@ -1062,6 +1208,27 @@ void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 	tex->canvas_texture = nullptr;
 	tex->tex_id = 0;
 	proxy_to->proxies.push_back(p_texture);
+}
+
+void TextureStorage::texture_remap_proxies(RID p_from_texture, RID p_to_texture) {
+	Texture *from_tex = texture_owner.get_or_null(p_from_texture);
+	ERR_FAIL_NULL(from_tex);
+	ERR_FAIL_COND(from_tex->is_proxy);
+	Texture *to_tex = texture_owner.get_or_null(p_to_texture);
+	ERR_FAIL_NULL(to_tex);
+	ERR_FAIL_COND(to_tex->is_proxy);
+
+	if (from_tex == to_tex) {
+		return;
+	}
+
+	// Make a local copy, we're about to change the content of the original.
+	thread_local LocalVector<RID> proxies = from_tex->proxies;
+
+	// Now change them to our new texture.
+	for (RID &proxy : proxies) {
+		texture_proxy_update(proxy, p_to_texture);
+	}
 }
 
 void TextureStorage::texture_2d_placeholder_initialize(RID p_texture) {
@@ -1392,8 +1559,8 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 		tex_to->tex_id = 0;
 	}
 
-	Vector<RID> proxies_to_update = tex_to->proxies;
-	Vector<RID> proxies_to_redirect = tex_from->proxies;
+	Vector<RID> proxies_to_update = Vector<RID>(tex_to->proxies);
+	Vector<RID> proxies_to_redirect = Vector<RID>(tex_from->proxies);
 
 	*tex_to = *tex_from;
 
@@ -2094,7 +2261,7 @@ AABB TextureStorage::decal_get_aabb(RID p_decal) const {
 
 GLuint TextureStorage::system_fbo = 0;
 
-void TextureStorage::_update_render_target(RenderTarget *rt) {
+void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 	// do not allocate a render target with no size
 	if (rt->size.x <= 0 || rt->size.y <= 0) {
 		return;
@@ -2183,14 +2350,15 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 			ERR_FAIL_NULL(texture);
 
 			rt->depth = texture->tex_id;
+			rt->depth_has_stencil = rt->overridden.depth_has_stencil;
 		} else {
 			glGenTextures(1, &rt->depth);
 			glBindTexture(texture_target, rt->depth);
 
 			if (use_multiview) {
-				glTexImage3D(texture_target, 0, GL_DEPTH_COMPONENT24, rt->size.x, rt->size.y, rt->view_count, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+				glTexImage3D(texture_target, 0, GL_DEPTH24_STENCIL8, rt->size.x, rt->size.y, rt->view_count, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
 			} else {
-				glTexImage2D(texture_target, 0, GL_DEPTH_COMPONENT24, rt->size.x, rt->size.y, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+				glTexImage2D(texture_target, 0, GL_DEPTH24_STENCIL8, rt->size.x, rt->size.y, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
 			}
 
 			glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -2198,16 +2366,19 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 			glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-			GLES3::Utilities::get_singleton()->texture_allocated_data(rt->depth, rt->size.x * rt->size.y * rt->view_count * 3, "Render target depth texture");
+			rt->depth_has_stencil = true;
+
+			GLES3::Utilities::get_singleton()->texture_allocated_data(rt->depth, rt->size.x * rt->size.y * rt->view_count * 4, "Render target depth texture");
 		}
+
 #ifndef IOS_ENABLED
 		if (use_multiview) {
-			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, rt->depth, 0, 0, rt->view_count);
+			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, rt->depth_has_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, rt->depth, 0, 0, rt->view_count);
 		} else {
 #else
 		{
 #endif
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texture_target, rt->depth, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, rt->depth_has_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, texture_target, rt->depth, 0);
 		}
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -2260,6 +2431,60 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
+}
+
+void TextureStorage::_update_render_target_velocity(RenderTarget *rt) {
+	GLuint new_velocity_fbo;
+	glGenFramebuffers(1, &new_velocity_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, new_velocity_fbo);
+
+	uint32_t view_count = rt->view_count;
+	GLuint texture_target = view_count > 1 ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
+
+	GLuint velocity_texture_id = texture_get_texid(rt->overridden.velocity);
+	glBindTexture(texture_target, velocity_texture_id);
+	glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+#ifndef IOS_ENABLED
+	if (view_count > 1) {
+		glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, velocity_texture_id, 0, 0, view_count);
+	} else {
+#else
+	{
+#endif
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, velocity_texture_id, 0);
+	}
+
+	GLuint velocity_depth_texture_id = texture_get_texid(rt->overridden.velocity_depth);
+	glBindTexture(texture_target, velocity_depth_texture_id);
+	glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+#ifndef IOS_ENABLED
+	if (view_count > 1) {
+		glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, velocity_depth_texture_id, 0, 0, view_count);
+	} else {
+#else
+	{
+#endif
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, velocity_depth_texture_id, 0);
+	}
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		glDeleteFramebuffers(1, &new_velocity_fbo);
+		WARN_PRINT(vformat("Could not create motion vector render target, status: %s.", GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status)));
+	} else {
+		rt->overridden.velocity_fbo = new_velocity_fbo;
+	}
+
+	glBindTexture(texture_target, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void TextureStorage::_create_render_target_backbuffer(RenderTarget *rt) {
@@ -2316,71 +2541,18 @@ void TextureStorage::_create_render_target_backbuffer(RenderTarget *rt) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 }
-void GLES3::TextureStorage::check_backbuffer(RenderTarget *rt, const bool uses_screen_texture, const bool uses_depth_texture) {
-	if (rt->backbuffer != 0 && rt->backbuffer_depth != 0) {
-		return;
-	}
 
-	Config *config = Config::get_singleton();
-	bool use_multiview = rt->view_count > 1 && config->multiview_supported;
-	GLenum texture_target = use_multiview ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
-	if (rt->backbuffer_fbo == 0) {
-		glGenFramebuffers(1, &rt->backbuffer_fbo);
-	}
-	glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
-	if (rt->backbuffer == 0 && uses_screen_texture) {
-		glGenTextures(1, &rt->backbuffer);
-		glBindTexture(texture_target, rt->backbuffer);
-		if (use_multiview) {
-			glTexImage3D(texture_target, 0, rt->color_internal_format, rt->size.x, rt->size.y, rt->view_count, 0, rt->color_format, rt->color_type, nullptr);
-		} else {
-			glTexImage2D(texture_target, 0, rt->color_internal_format, rt->size.x, rt->size.y, 0, rt->color_format, rt->color_type, nullptr);
-		}
-		GLES3::Utilities::get_singleton()->texture_allocated_data(rt->backbuffer, rt->size.x * rt->size.y * rt->view_count * rt->color_format_size, "Render target backbuffer color texture (3D)");
-		glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-#ifndef IOS_ENABLED
-		if (use_multiview) {
-			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rt->backbuffer, 0, 0, rt->view_count);
-		} else {
-#else
-		{
-#endif
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, 0);
-		}
-	}
-	if (rt->backbuffer_depth == 0 && uses_depth_texture) {
-		glGenTextures(1, &rt->backbuffer_depth);
-		glBindTexture(texture_target, rt->backbuffer_depth);
-		if (use_multiview) {
-			glTexImage3D(texture_target, 0, GL_DEPTH_COMPONENT24, rt->size.x, rt->size.y, rt->view_count, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
-		} else {
-			glTexImage2D(texture_target, 0, GL_DEPTH_COMPONENT24, rt->size.x, rt->size.y, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
-		}
-		GLES3::Utilities::get_singleton()->texture_allocated_data(rt->backbuffer_depth, rt->size.x * rt->size.y * rt->view_count * 3, "Render target backbuffer depth texture");
-
-		glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-#ifndef IOS_ENABLED
-		if (use_multiview) {
-			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, rt->backbuffer_depth, 0, 0, rt->view_count);
-		} else {
-#else
-		{
-#endif
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->backbuffer_depth, 0);
-		}
-	}
-}
 void TextureStorage::_clear_render_target(RenderTarget *rt) {
 	// there is nothing else to clear when DIRECT_TO_SCREEN is used
 	if (rt->direct_to_screen) {
 		return;
 	}
+
+	for (KeyValue<uint32_t, GLuint> &E : rt->overridden.velocity_fbo_cache) {
+		glDeleteFramebuffers(1, &E.value);
+	}
+	rt->overridden.velocity_fbo_cache.clear();
+	rt->overridden.velocity_fbo = 0;
 
 	// Dispose of the cached fbo's and the allocated textures
 	for (KeyValue<uint32_t, RenderTarget::RTOverridden::FBOCacheEntry> &E : rt->overridden.fbo_cache) {
@@ -2434,7 +2606,6 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 	}
 	rt->depth = 0;
 
-	rt->overridden.velocity = RID();
 	rt->overridden.is_overridden = false;
 
 	if (rt->backbuffer_fbo != 0) {
@@ -2463,7 +2634,7 @@ RID TextureStorage::render_target_create() {
 	t.is_render_target = true;
 
 	render_target.texture = texture_owner.make_rid(t);
-	_update_render_target(&render_target);
+	_update_render_target_color(&render_target);
 	return render_target_owner.make_rid(render_target);
 }
 
@@ -2512,7 +2683,7 @@ void TextureStorage::render_target_set_size(RID p_render_target, int p_width, in
 	rt->size = Size2i(p_width, p_height);
 	rt->view_count = p_view_count;
 
-	_update_render_target(rt);
+	_update_render_target_color(rt);
 }
 
 // TODO: convert to Size2i internally
@@ -2528,16 +2699,25 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 	ERR_FAIL_NULL(rt);
 	ERR_FAIL_COND(rt->direct_to_screen);
 
-	rt->overridden.velocity = p_velocity_texture;
+	// Remember what our current color output is.
+	RID was_color_texture = render_target_get_texture(p_render_target);
 
-	if (rt->overridden.color == p_color_texture && rt->overridden.depth == p_depth_texture) {
+	bool create_new_color_fbo = true;
+	bool create_new_velocity_fbo = true;
+
+	if (rt->overridden.color == p_color_texture && rt->overridden.depth == p_depth_texture && rt->overridden.velocity == p_velocity_texture && rt->overridden.velocity_depth == p_velocity_depth_texture) {
 		return;
 	}
 
 	if (p_color_texture.is_null() && p_depth_texture.is_null()) {
+		// Set this back to our default textures.
+		if (was_color_texture.is_valid()) {
+			texture_remap_proxies(was_color_texture, rt->texture);
+		}
+
 		_clear_render_target(rt);
-		_update_render_target(rt);
-		return;
+		_update_render_target_color(rt);
+		create_new_color_fbo = false;
 	}
 
 	if (!rt->overridden.is_overridden) {
@@ -2546,7 +2726,16 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 
 	rt->overridden.color = p_color_texture;
 	rt->overridden.depth = p_depth_texture;
+	rt->overridden.depth_has_stencil = p_depth_texture.is_null();
+	rt->overridden.velocity = p_velocity_texture;
+	rt->overridden.velocity_depth = p_velocity_depth_texture;
 	rt->overridden.is_overridden = true;
+
+	// Update to our new color output.
+	RID new_color_texture = render_target_get_texture(p_render_target);
+	if (was_color_texture.is_valid() && new_color_texture.is_valid()) {
+		texture_remap_proxies(was_color_texture, new_color_texture);
+	}
 
 	uint32_t hash_key = hash_murmur3_one_64(p_color_texture.get_id());
 	hash_key = hash_murmur3_one_64(p_depth_texture.get_id(), hash_key);
@@ -2557,26 +2746,54 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 		rt->fbo = cache->get().fbo;
 		rt->color = cache->get().color;
 		rt->depth = cache->get().depth;
+		rt->depth_has_stencil = cache->get().depth_has_stencil;
 		rt->size = cache->get().size;
 		rt->texture = p_color_texture;
-		return;
+		create_new_color_fbo = false;
 	}
 
-	_update_render_target(rt);
+	uint32_t velocity_hash_key = hash_murmur3_one_64(p_velocity_texture.get_id());
+	velocity_hash_key = hash_murmur3_one_64(p_velocity_depth_texture.get_id(), velocity_hash_key);
+	velocity_hash_key = hash_fmix32(velocity_hash_key);
 
-	RenderTarget::RTOverridden::FBOCacheEntry new_entry;
-	new_entry.fbo = rt->fbo;
-	new_entry.color = rt->color;
-	new_entry.depth = rt->depth;
-	new_entry.size = rt->size;
-	// Keep track of any textures we had to allocate because they weren't overridden.
-	if (p_color_texture.is_null()) {
-		new_entry.allocated_textures.push_back(rt->color);
+	RBMap<uint32_t, GLuint>::Element *fbo = rt->overridden.velocity_fbo_cache.find(velocity_hash_key);
+	if (fbo != nullptr) {
+		rt->overridden.velocity_fbo = fbo->get();
+		create_new_velocity_fbo = false;
 	}
-	if (p_depth_texture.is_null()) {
-		new_entry.allocated_textures.push_back(rt->depth);
+
+	if (p_velocity_texture.is_null()) {
+		for (KeyValue<uint32_t, GLuint> &E : rt->overridden.velocity_fbo_cache) {
+			glDeleteFramebuffers(1, &E.value);
+		}
+
+		rt->overridden.velocity_fbo_cache.clear();
+		rt->overridden.velocity_fbo = 0;
+		create_new_velocity_fbo = false;
 	}
-	rt->overridden.fbo_cache.insert(hash_key, new_entry);
+
+	if (create_new_color_fbo) {
+		_update_render_target_color(rt);
+
+		RenderTarget::RTOverridden::FBOCacheEntry new_entry;
+		new_entry.fbo = rt->fbo;
+		new_entry.color = rt->color;
+		new_entry.depth = rt->depth;
+		new_entry.size = rt->size;
+		// Keep track of any textures we had to allocate because they weren't overridden.
+		if (p_color_texture.is_null()) {
+			new_entry.allocated_textures.push_back(rt->color);
+		}
+		if (p_depth_texture.is_null()) {
+			new_entry.allocated_textures.push_back(rt->depth);
+		}
+		rt->overridden.fbo_cache.insert(hash_key, new_entry);
+	}
+
+	if (create_new_velocity_fbo) {
+		_update_render_target_velocity(rt);
+		rt->overridden.velocity_fbo_cache.insert(velocity_hash_key, rt->overridden.velocity_fbo);
+	}
 }
 
 RID TextureStorage::render_target_get_override_color(RID p_render_target) const {
@@ -2598,6 +2815,13 @@ RID TextureStorage::render_target_get_override_velocity(RID p_render_target) con
 	ERR_FAIL_NULL_V(rt, RID());
 
 	return rt->overridden.velocity;
+}
+
+RID TextureStorage::render_target_get_override_velocity_depth(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, RID());
+
+	return rt->overridden.velocity_depth;
 }
 
 void TextureStorage::render_target_set_render_region(RID p_render_target, const Rect2i &p_render_region) {
@@ -2625,6 +2849,20 @@ RID TextureStorage::render_target_get_texture(RID p_render_target) {
 	return rt->texture;
 }
 
+void TextureStorage::render_target_set_velocity_target_size(RID p_render_target, const Size2i &p_target_size) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	rt->velocity_target_size = p_target_size;
+}
+
+Size2i TextureStorage::render_target_get_velocity_target_size(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, Size2i(0, 0));
+
+	return rt->velocity_target_size;
+}
+
 void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_transparent) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
@@ -2633,7 +2871,7 @@ void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_t
 
 	if (rt->overridden.color.is_null()) {
 		_clear_render_target(rt);
-		_update_render_target(rt);
+		_update_render_target_color(rt);
 	}
 }
 
@@ -2659,8 +2897,9 @@ void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, boo
 		rt->overridden.color = RID();
 		rt->overridden.depth = RID();
 		rt->overridden.velocity = RID();
+		rt->overridden.velocity_depth = RID();
 	}
-	_update_render_target(rt);
+	_update_render_target_color(rt);
 }
 
 bool TextureStorage::render_target_get_direct_to_screen(RID p_render_target) const {
@@ -2696,7 +2935,7 @@ void TextureStorage::render_target_set_msaa(RID p_render_target, RS::ViewportMSA
 
 	_clear_render_target(rt);
 	rt->msaa = p_msaa;
-	_update_render_target(rt);
+	_update_render_target_color(rt);
 }
 
 RS::ViewportMSAA TextureStorage::render_target_get_msaa(RID p_render_target) const {
@@ -2716,7 +2955,7 @@ void TextureStorage::render_target_set_use_hdr(RID p_render_target, bool p_use_h
 
 	_clear_render_target(rt);
 	rt->hdr = p_use_hdr_2d;
-	_update_render_target(rt);
+	_update_render_target_color(rt);
 }
 
 bool TextureStorage::render_target_is_using_hdr(RID p_render_target) const {
@@ -2824,6 +3063,13 @@ GLuint TextureStorage::render_target_get_depth(RID p_render_target) const {
 	} else {
 		return rt->depth;
 	}
+}
+
+bool TextureStorage::render_target_get_depth_has_stencil(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, 0);
+
+	return rt->depth_has_stencil;
 }
 
 void TextureStorage::render_target_set_reattach_textures(RID p_render_target, bool p_reattach_textures) const {

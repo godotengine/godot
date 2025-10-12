@@ -61,6 +61,7 @@
 #include "core/variant/array.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
+#include "core/variant/variant_deep_duplicate.h"
 
 class Object;
 class RefCounted;
@@ -172,6 +173,12 @@ private:
 
 	friend struct _VariantCall;
 	friend class VariantInternal;
+	template <typename>
+	friend struct _VariantInternalAccessorLocal;
+	template <typename>
+	friend struct _VariantInternalAccessorElsewhere;
+	template <typename>
+	friend struct _VariantInternalAccessorPackedArrayRef;
 	// Variant takes 24 bytes when real_t is float, and 40 bytes if double.
 	// It only allocates extra memory for AABB/Transform2D (24, 48 if double),
 	// Basis/Transform3D (48, 96 if double), Projection (64, 128 if double),
@@ -612,7 +619,8 @@ public:
 
 	void zero();
 	Variant duplicate(bool p_deep = false) const;
-	Variant recursive_duplicate(bool p_deep, int recursion_count) const;
+	Variant duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode = RESOURCE_DEEP_DUPLICATE_INTERNAL) const;
+	Variant recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const;
 
 	/* Built-In Methods */
 
@@ -871,33 +879,14 @@ public:
 	}
 };
 
-//typedef Dictionary Dictionary; no
-//typedef Array Array;
-
 template <typename... VarArgs>
 Vector<Variant> varray(VarArgs... p_args) {
-	Vector<Variant> v;
-
-	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-	uint32_t argc = sizeof...(p_args);
-
-	if (argc > 0) {
-		v.resize(argc);
-		Variant *vw = v.ptrw();
-
-		for (uint32_t i = 0; i < argc; i++) {
-			vw[i] = args[i];
-		}
-	}
-	return v;
+	return Vector<Variant>{ p_args... };
 }
 
-struct VariantHasher {
-	static _FORCE_INLINE_ uint32_t hash(const Variant &p_variant) { return p_variant.hash(); }
-};
-
-struct VariantComparator {
-	static _FORCE_INLINE_ bool compare(const Variant &p_lhs, const Variant &p_rhs) { return p_lhs.hash_compare(p_rhs); }
+template <>
+struct HashMapComparatorDefault<Variant> {
+	static bool compare(const Variant &p_lhs, const Variant &p_rhs) { return p_lhs.hash_compare(p_rhs); }
 };
 
 struct StringLikeVariantComparator {
@@ -923,14 +912,9 @@ const Variant::ObjData &Variant::_get_obj() const {
 template <typename... VarArgs>
 String vformat(const String &p_text, const VarArgs... p_args) {
 	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-	Array args_array;
-	args_array.resize(sizeof...(p_args));
-	for (uint32_t i = 0; i < sizeof...(p_args); i++) {
-		args_array[i] = args[i];
-	}
 
 	bool error = false;
-	String fmt = p_text.sprintf(args_array, &error);
+	String fmt = p_text.sprintf(Span(args, sizeof...(p_args)), &error);
 
 	ERR_FAIL_COND_V_MSG(error, String(), String("Formatting error in string \"") + p_text + "\": " + fmt + ".");
 
@@ -985,14 +969,6 @@ Array::Iterator &Array::Iterator::operator++() {
 Array::Iterator &Array::Iterator::operator--() {
 	element_ptr--;
 	return *this;
-}
-
-const Variant &Array::ConstIterator::operator*() const {
-	return *element_ptr;
-}
-
-const Variant *Array::ConstIterator::operator->() const {
-	return element_ptr;
 }
 
 Array::ConstIterator &Array::ConstIterator::operator++() {

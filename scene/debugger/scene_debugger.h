@@ -74,55 +74,55 @@ private:
 	static void _next_frame();
 
 	/// Message handler function for parse_message.
-	typedef Error (*ParseMessageFunc)(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select);
-	static HashMap<String, ParseMessageFunc> parse_message_handlers;
-	static void _init_parse_message_handlers();
+	typedef Error (*ParseMessageFunc)(const Array &p_args);
+	static HashMap<String, ParseMessageFunc> message_handlers;
+	static void _init_message_handlers();
 
-#define HANDLER(name) static Error _msg_##name(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select)
+	static Error _msg_setup_scene(const Array &p_args);
+	static Error _msg_setup_embedded_shortcuts(const Array &p_args);
+	static Error _msg_request_scene_tree(const Array &p_args);
+	static Error _msg_save_node(const Array &p_args);
+	static Error _msg_inspect_objects(const Array &p_args);
+#ifndef DISABLE_DEPRECATED
+	static Error _msg_inspect_object(const Array &p_args);
+#endif // DISABLE_DEPRECATED
+	static Error _msg_clear_selection(const Array &p_args);
+	static Error _msg_suspend_changed(const Array &p_args);
+	static Error _msg_next_frame(const Array &p_args);
+	static Error _msg_speed_changed(const Array &p_args);
+	static Error _msg_debug_mute_audio(const Array &p_args);
+	static Error _msg_override_cameras(const Array &p_args);
+	static Error _msg_set_object_property(const Array &p_args);
+	static Error _msg_set_object_property_field(const Array &p_args);
+	static Error _msg_reload_cached_files(const Array &p_args);
+	static Error _msg_live_set_root(const Array &p_args);
+	static Error _msg_live_node_path(const Array &p_args);
+	static Error _msg_live_res_path(const Array &p_args);
+	static Error _msg_live_node_prop_res(const Array &p_args);
+	static Error _msg_live_node_prop(const Array &p_args);
+	static Error _msg_live_res_prop_res(const Array &p_args);
+	static Error _msg_live_res_prop(const Array &p_args);
+	static Error _msg_live_node_call(const Array &p_args);
+	static Error _msg_live_res_call(const Array &p_args);
+	static Error _msg_live_create_node(const Array &p_args);
+	static Error _msg_live_instantiate_node(const Array &p_args);
+	static Error _msg_live_remove_node(const Array &p_args);
+	static Error _msg_live_remove_and_keep_node(const Array &p_args);
+	static Error _msg_live_restore_node(const Array &p_args);
+	static Error _msg_live_duplicate_node(const Array &p_args);
+	static Error _msg_live_reparent_node(const Array &p_args);
+	static Error _msg_runtime_node_select_setup(const Array &p_args);
+	static Error _msg_runtime_node_select_set_type(const Array &p_args);
+	static Error _msg_runtime_node_select_set_mode(const Array &p_args);
+	static Error _msg_runtime_node_select_set_visible(const Array &p_args);
+	static Error _msg_rq_screenshot(const Array &p_args);
 
-	HANDLER(setup_scene);
-	HANDLER(setup_embedded_shortcuts);
-	HANDLER(request_scene_tree);
-	HANDLER(save_node);
-	HANDLER(inspect_objects);
-	HANDLER(clear_selection);
-	HANDLER(suspend_changed);
-	HANDLER(next_frame);
-	HANDLER(debug_mute_audio);
-	HANDLER(override_cameras);
-	HANDLER(transform_camera_2d);
+	static Error _msg_runtime_node_select_reset_camera_2d(const Array &p_args);
+	static Error _msg_transform_camera_2d(const Array &p_args);
 #ifndef _3D_DISABLED
-	HANDLER(transform_camera_3d);
-#endif
-	HANDLER(set_object_property);
-	HANDLER(set_object_property_field);
-	HANDLER(reload_cached_files);
-	HANDLER(live_set_root);
-	HANDLER(live_node_path);
-	HANDLER(live_res_path);
-	HANDLER(live_node_prop_res);
-	HANDLER(live_node_prop);
-	HANDLER(live_res_prop_res);
-	HANDLER(live_res_prop);
-	HANDLER(live_node_call);
-	HANDLER(live_res_call);
-	HANDLER(live_create_node);
-	HANDLER(live_instantiate_node);
-	HANDLER(live_remove_node);
-	HANDLER(live_remove_and_keep_node);
-	HANDLER(live_restore_node);
-	HANDLER(live_duplicate_node);
-	HANDLER(live_reparent_node);
-	HANDLER(runtime_node_select_setup);
-	HANDLER(runtime_node_select_set_type);
-	HANDLER(runtime_node_select_set_mode);
-	HANDLER(runtime_node_select_set_visible);
-	HANDLER(runtime_node_select_reset_camera_2d);
-#ifndef _3D_DISABLED
-	HANDLER(runtime_node_select_reset_camera_3d);
-#endif
-
-#undef HANDLER
+	static Error _msg_runtime_node_select_reset_camera_3d(const Array &p_args);
+	static Error _msg_transform_camera_3d(const Array &p_args);
+#endif // _3D_DISABLED
 
 public:
 	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
@@ -144,10 +144,12 @@ public:
 	List<SceneDebuggerProperty> properties;
 
 	SceneDebuggerObject(ObjectID p_id);
+	SceneDebuggerObject(Object *p_obj);
 	SceneDebuggerObject() {}
 
 	void serialize(Array &r_arr, int p_max_size = 1 << 20);
 	void deserialize(const Array &p_arr);
+	void deserialize(uint64_t p_id, const String &p_class_name, const Array &p_props);
 };
 
 class SceneDebuggerTree {
@@ -284,6 +286,7 @@ private:
 	RID sel_drag_ci;
 
 	bool camera_override = false;
+	bool camera_first_override = true;
 
 	// Values taken from EditorZoomWidget.
 	const float VIEW_2D_MIN_ZOOM = 1.0 / 128;
@@ -326,7 +329,6 @@ private:
 	const float CAMERA_MIN_FOV_SCALE = 0.1;
 	const float CAMERA_MAX_FOV_SCALE = 2.5;
 
-	bool camera_first_override = true;
 	bool camera_freelook = false;
 
 	real_t camera_fov = 0;
@@ -355,10 +357,10 @@ private:
 
 		~SelectionBox3D() {
 			if (instance.is_valid()) {
-				RS::get_singleton()->free(instance);
-				RS::get_singleton()->free(instance_ofs);
-				RS::get_singleton()->free(instance_xray);
-				RS::get_singleton()->free(instance_xray_ofs);
+				RS::get_singleton()->free_rid(instance);
+				RS::get_singleton()->free_rid(instance_ofs);
+				RS::get_singleton()->free_rid(instance_xray);
+				RS::get_singleton()->free_rid(instance_xray_ofs);
 			}
 		}
 	};

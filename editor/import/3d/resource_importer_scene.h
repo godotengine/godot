@@ -57,8 +57,8 @@ protected:
 	Node *import_scene_wrapper(const String &p_path, uint32_t p_flags, const Dictionary &p_options);
 	Ref<Animation> import_animation_wrapper(const String &p_path, uint32_t p_flags, const Dictionary &p_options);
 
-	GDVIRTUAL0RC(Vector<String>, _get_extensions)
-	GDVIRTUAL3R(Object *, _import_scene, String, uint32_t, Dictionary)
+	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_extensions)
+	GDVIRTUAL3R_REQUIRED(Object *, _import_scene, String, uint32_t, Dictionary)
 	GDVIRTUAL1(_get_import_options, String)
 	GDVIRTUAL3RC(Variant, _get_option_visibility, String, bool, String)
 
@@ -216,6 +216,7 @@ class ResourceImporterScene : public ResourceImporter {
 	Node *_generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches);
 	void _add_shapes(Node *p_node, const Vector<Ref<Shape3D>> &p_shapes);
 	void _copy_meta(Object *p_src_object, Object *p_dst_object);
+	Node *_replace_node_with_type_and_script(Node *p_node, String p_node_type, Ref<Script> p_script);
 
 	enum AnimationImportTracks {
 		ANIMATION_IMPORT_TRACKS_IF_PRESENT,
@@ -231,11 +232,11 @@ class ResourceImporterScene : public ResourceImporter {
 	};
 
 	void _optimize_track_usage(AnimationPlayer *p_player, AnimationImportTracks *p_track_actions);
-	void _generate_editor_preview_for_scene(const String &p_path, Node *p_scene);
 
 	String _scene_import_type = "PackedScene";
 
 public:
+	static const String material_extension[3];
 	static ResourceImporterScene *get_scene_singleton() { return scene_singleton; }
 	static ResourceImporterScene *get_animation_singleton() { return animation_singleton; }
 
@@ -286,7 +287,7 @@ public:
 	void _pre_fix_global(Node *p_scene, const HashMap<StringName, Variant> &p_options) const;
 	Node *_pre_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &r_collision_map, Pair<PackedVector3Array, PackedInt32Array> *r_occluder_arrays, List<Pair<NodePath, Node *>> &r_node_renames, const HashMap<StringName, Variant> &p_options);
 	Node *_pre_fix_animations(Node *p_node, Node *p_root, const Dictionary &p_node_data, const Dictionary &p_animation_data, float p_animation_fps);
-	Node *_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps, float p_applied_root_scale);
+	Node *_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps, float p_applied_root_scale, const String &p_source_file, const HashMap<StringName, Variant> &p_options);
 	Node *_post_fix_animations(Node *p_node, Node *p_root, const Dictionary &p_node_data, const Dictionary &p_animation_data, float p_animation_fps, bool p_remove_immutable_tracks);
 
 	Ref<Animation> _save_animation_to_file(Ref<Animation> anim, bool p_save_to_file, const String &p_save_to_path, bool p_keep_custom_tracks);

@@ -59,6 +59,7 @@ BASE_STRINGS = [
     "value",
     "Getter",
     "This method should typically be overridden by the user to have any effect.",
+    "This method is required to be overridden when extending its base class.",
     "This method has no side effects. It doesn't modify any of the instance's member variables.",
     "This method accepts any number of arguments after the ones described here.",
     "This method is used to construct a type.",
@@ -66,16 +67,16 @@ BASE_STRINGS = [
     "This method describes a valid operator to use with this type as left-hand operand.",
     "This value is an integer composed as a bitmask of the following flags.",
     "No return value.",
-    "There is currently no description for this class. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
-    "There is currently no description for this signal. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
-    "There is currently no description for this enum. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
-    "There is currently no description for this constant. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
-    "There is currently no description for this annotation. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
-    "There is currently no description for this property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
-    "There is currently no description for this constructor. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
-    "There is currently no description for this method. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
-    "There is currently no description for this operator. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
-    "There is currently no description for this theme property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this class. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this signal. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this enum. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this constant. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this annotation. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this constructor. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this operator. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this theme property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
     "There are notable differences when using this API with C#. See :ref:`doc_c_sharp_differences` for more information.",
     "Deprecated:",
     "Experimental:",
@@ -89,6 +90,7 @@ BASE_STRINGS = [
     "[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details.",
 ]
 strings_l10n: Dict[str, str] = {}
+writing_translation = False
 
 CLASS_GROUPS: Dict[str, str] = {
     "global": "Globals",
@@ -703,6 +705,8 @@ def main() -> None:
 
     # Retrieve heading translations for the given language.
     if not args.dry_run and args.lang != "en":
+        global writing_translation
+        writing_translation = True
         lang_file = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "..", "translations", "{}.po".format(args.lang)
         )
@@ -897,18 +901,18 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         if class_def.keywords is not None and class_def.keywords != "":
             f.write(f".. meta::\n\t:keywords: {class_def.keywords}\n\n")
 
-        # Warn contributors not to edit this file directly.
-        # Also provide links to the source files for reference.
+        if not writing_translation:  # Skip for translations to reduce diff.
+            # Warn contributors not to edit this file directly.
+            # Also provide links to the source files for reference.
+            git_branch = get_git_branch()
+            source_xml_path = os.path.relpath(class_def.filepath, root_directory).replace("\\", "/")
+            source_github_url = f"https://github.com/godotengine/godot/tree/{git_branch}/{source_xml_path}"
+            generator_github_url = f"https://github.com/godotengine/godot/tree/{git_branch}/doc/tools/make_rst.py"
 
-        git_branch = get_git_branch()
-        source_xml_path = os.path.relpath(class_def.filepath, root_directory).replace("\\", "/")
-        source_github_url = f"https://github.com/godotengine/godot/tree/{git_branch}/{source_xml_path}"
-        generator_github_url = f"https://github.com/godotengine/godot/tree/{git_branch}/doc/tools/make_rst.py"
-
-        f.write(".. DO NOT EDIT THIS FILE!!!\n")
-        f.write(".. Generated automatically from Godot engine sources.\n")
-        f.write(f".. Generator: {generator_github_url}.\n")
-        f.write(f".. XML source: {source_github_url}.\n\n")
+            f.write(".. DO NOT EDIT THIS FILE!!!\n")
+            f.write(".. Generated automatically from Godot engine sources.\n")
+            f.write(f".. Generator: {generator_github_url}.\n")
+            f.write(f".. XML source: {source_github_url}.\n\n")
 
         # Document reference id and header.
         f.write(f".. _class_{sanitize_class_name(class_name)}:\n\n")
@@ -978,7 +982,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             f.write(".. container:: contribute\n\n\t")
             f.write(
                 translate(
-                    "There is currently no description for this class. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                    "There is currently no description for this class. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                 )
                 + "\n\n"
             )
@@ -1104,7 +1108,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
-                            "There is currently no description for this signal. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                            "There is currently no description for this signal. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                         )
                         + "\n\n"
                     )
@@ -1153,7 +1157,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this enum. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                                "There is currently no description for this enum. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1188,7 +1192,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
-                            "There is currently no description for this constant. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                            "There is currently no description for this constant. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                         )
                         + "\n\n"
                     )
@@ -1198,6 +1202,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         # Annotation descriptions
         if len(class_def.annotations) > 0:
             f.write(make_separator(True))
+            f.write(".. rst-class:: classref-descriptions-group\n\n")
             f.write(make_heading("Annotations", "-"))
 
             index = 0
@@ -1228,7 +1233,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this annotation. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                                "There is currently no description for this annotation. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1291,7 +1296,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
-                            "There is currently no description for this property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                            "There is currently no description for this property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                         )
                         + "\n\n"
                     )
@@ -1339,7 +1344,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this constructor. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                                "There is currently no description for this constructor. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1386,7 +1391,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this method. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                                "There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1430,7 +1435,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this operator. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                                "There is currently no description for this operator. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1475,7 +1480,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
-                            "There is currently no description for this theme property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                            "There is currently no description for this theme property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
                         )
                         + "\n\n"
                     )
@@ -1663,6 +1668,7 @@ def make_footer() -> str:
     # Generate reusable abbreviation substitutions.
     # This way, we avoid bloating the generated rST with duplicate abbreviations.
     virtual_msg = translate("This method should typically be overridden by the user to have any effect.")
+    required_msg = translate("This method is required to be overridden when extending its base class.")
     const_msg = translate("This method has no side effects. It doesn't modify any of the instance's member variables.")
     vararg_msg = translate("This method accepts any number of arguments after the ones described here.")
     constructor_msg = translate("This method is used to construct a type.")
@@ -1675,6 +1681,7 @@ def make_footer() -> str:
 
     return (
         f".. |virtual| replace:: :abbr:`virtual ({virtual_msg})`\n"
+        f".. |required| replace:: :abbr:`required ({required_msg})`\n"
         f".. |const| replace:: :abbr:`const ({const_msg})`\n"
         f".. |vararg| replace:: :abbr:`vararg ({vararg_msg})`\n"
         f".. |constructor| replace:: :abbr:`constructor ({constructor_msg})`\n"
@@ -1837,41 +1844,10 @@ def format_text_block(
     context: DefinitionBase,
     state: State,
 ) -> str:
-    # Linebreak + tabs in the XML should become two line breaks unless in a "codeblock"
-    pos = 0
-    while True:
-        pos = text.find("\n", pos)
-        if pos == -1:
-            break
-
-        pre_text = text[:pos]
-        indent_level = 0
-        while pos + 1 < len(text) and text[pos + 1] == "\t":
-            pos += 1
-            indent_level += 1
-        post_text = text[pos + 1 :]
-
-        # Handle codeblocks
-        if (
-            post_text.startswith("[codeblock]")
-            or post_text.startswith("[codeblock ")
-            or post_text.startswith("[gdscript]")
-            or post_text.startswith("[gdscript ")
-            or post_text.startswith("[csharp]")
-            or post_text.startswith("[csharp ")
-        ):
-            tag_text = post_text[1:].split("]", 1)[0]
-            tag_state = get_tag_and_args(tag_text)
-            result = format_codeblock(tag_state, post_text, indent_level, state)
-            if result is None:
-                return ""
-            text = f"{pre_text}{result[0]}"
-            pos += result[1] - indent_level
-
-        # Handle normal text
-        else:
-            text = f"{pre_text}\n\n{post_text}"
-            pos += 2 - indent_level
+    result = preformat_text_block(text, state)
+    if result is None:
+        return ""
+    text = result
 
     next_brac_pos = text.find("[")
     text = escape_rst(text, next_brac_pos)
@@ -2179,6 +2155,12 @@ def format_text_block(
                                         state,
                                     )
 
+                                elif class_def.properties[target_name].overrides is not None:
+                                    print_error(
+                                        f'{state.current_class}.xml: Invalid member reference "{link_target}" in {context_name}. The reference must point to the original definition, not to the override.',
+                                        state,
+                                    )
+
                             elif tag_state.name == "signal" and target_name not in class_def.signals:
                                 print_error(
                                     f'{state.current_class}.xml: Unresolved signal reference "{link_target}" in {context_name}.',
@@ -2423,6 +2405,56 @@ def format_text_block(
     return text
 
 
+def preformat_text_block(text: str, state: State) -> Optional[str]:
+    result = ""
+    codeblock_tag = ""
+    indent_level = 0
+
+    for line in text.splitlines():
+        stripped_line = line.lstrip("\t")
+        tab_count = len(line) - len(stripped_line)
+
+        if codeblock_tag:
+            if line == "":
+                result += "\n"
+                continue
+
+            if tab_count < indent_level:
+                print_error(f"{state.current_class}.xml: Invalid indentation.", state)
+                return None
+
+            if stripped_line.startswith("[/" + codeblock_tag):
+                result += stripped_line
+                codeblock_tag = ""
+            else:
+                # Remove extraneous tabs and replace remaining tabs with spaces.
+                result += "\n" + "    " * (tab_count - indent_level + 1) + stripped_line
+        else:
+            if (
+                stripped_line.startswith("[codeblock]")
+                or stripped_line.startswith("[codeblock ")
+                or stripped_line.startswith("[gdscript]")
+                or stripped_line.startswith("[gdscript ")
+                or stripped_line.startswith("[csharp]")
+                or stripped_line.startswith("[csharp ")
+            ):
+                if result:
+                    result += "\n"
+                result += stripped_line
+
+                tag_text = stripped_line[1:].split("]", 1)[0]
+                tag_state = get_tag_and_args(tag_text)
+                codeblock_tag = tag_state.name
+                indent_level = tab_count
+            else:
+                # A line break in XML should become two line breaks (unless in a code block).
+                if result:
+                    result += "\n\n"
+                result += stripped_line
+
+    return result
+
+
 def format_context_name(context: Union[DefinitionBase, None]) -> str:
     context_name: str = "unknown context"
     if context is not None:
@@ -2463,50 +2495,6 @@ def escape_rst(text: str, until_pos: int = -1) -> str:
             pos += 1
 
     return text
-
-
-def format_codeblock(
-    tag_state: TagState, post_text: str, indent_level: int, state: State
-) -> Union[Tuple[str, int], None]:
-    end_pos = post_text.find("[/" + tag_state.name + "]")
-    if end_pos == -1:
-        print_error(
-            f"{state.current_class}.xml: Tag depth mismatch for [{tag_state.name}]: no closing [/{tag_state.name}].",
-            state,
-        )
-        return None
-
-    opening_formatted = tag_state.name
-    if len(tag_state.arguments) > 0:
-        opening_formatted += " " + tag_state.arguments
-
-    code_text = post_text[len(f"[{opening_formatted}]") : end_pos]
-    post_text = post_text[end_pos:]
-
-    # Remove extraneous tabs
-    code_pos = 0
-    while True:
-        code_pos = code_text.find("\n", code_pos)
-        if code_pos == -1:
-            break
-
-        to_skip = 0
-        while code_pos + to_skip + 1 < len(code_text) and code_text[code_pos + to_skip + 1] == "\t":
-            to_skip += 1
-
-        if to_skip > indent_level:
-            print_error(
-                f"{state.current_class}.xml: Four spaces should be used for indentation within [{tag_state.name}].",
-                state,
-            )
-
-        if len(code_text[code_pos + to_skip + 1 :]) == 0:
-            code_text = f"{code_text[:code_pos]}\n"
-            code_pos += 1
-        else:
-            code_text = f"{code_text[:code_pos]}\n    {code_text[code_pos + to_skip + 1 :]}"
-            code_pos += 5 - to_skip
-    return (f"\n[{opening_formatted}]{code_text}{post_text}", len(f"\n[{opening_formatted}]{code_text}"))
 
 
 def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_columns: bool = False) -> None:

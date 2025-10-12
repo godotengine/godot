@@ -58,6 +58,7 @@ public:
 		WRITE = 2,
 		READ_WRITE = 3,
 		WRITE_READ = 7,
+		SKIP_PACK = 16,
 	};
 
 	enum UnixPermissionFlags : int32_t {
@@ -131,6 +132,7 @@ protected:
 	void store_line_bind_compat_78289(const String &p_line);
 	void store_csv_line_bind_compat_78289(const Vector<String> &p_values, const String &p_delim = ",");
 	void store_pascal_string_bind_compat_78289(const String &p_string);
+	String get_as_text_bind_compat_110867(bool p_skip_cr) const;
 
 	static void _bind_compatibility_methods();
 #endif
@@ -187,8 +189,8 @@ public:
 	virtual String get_line() const;
 	virtual String get_token() const;
 	virtual Vector<String> get_csv_line(const String &p_delim = ",") const;
-	String get_as_text(bool p_skip_cr = false) const;
-	virtual String get_as_utf8_string(bool p_skip_cr = false) const;
+	String get_as_text() const;
+	virtual String get_as_utf8_string() const;
 
 	/**
 

@@ -89,25 +89,13 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 	private View mCellMessage;
 
 	private Button mPauseButton;
-	private Button mWiFiSettingsButton;
 
 	private FrameLayout godotContainerLayout;
-	private boolean mStatePaused;
 	private int mState;
 
 	@Nullable
 	private GodotHost parentHost;
 	private Godot godot;
-
-	static private Intent mCurrentIntent;
-
-	public void onNewIntent(Intent intent) {
-		mCurrentIntent = intent;
-	}
-
-	static public Intent getCurrentIntent() {
-		return mCurrentIntent;
-	}
 
 	private void setState(int newState) {
 		if (mState != newState) {
@@ -117,15 +105,9 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 	}
 
 	private void setButtonPausedState(boolean paused) {
-		mStatePaused = paused;
 		int stringResourceID = paused ? R.string.text_button_resume : R.string.text_button_pause;
 		mPauseButton.setText(stringResourceID);
 	}
-
-	public interface ResultCallback {
-		void callback(int requestCode, int resultCode, Intent data);
-	}
-	public ResultCallback resultCallback;
 
 	@Override
 	public Godot getGodot() {
@@ -144,6 +126,11 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 	@Override
 	public void onDetach() {
+		if (godotContainerLayout != null && godotContainerLayout.getParent() != null) {
+			Log.d(TAG, "Cleaning up Godot container layout during detach.");
+			((ViewGroup)godotContainerLayout.getParent()).removeView(godotContainerLayout);
+		}
+
 		super.onDetach();
 		parentHost = null;
 	}
@@ -159,11 +146,6 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (resultCallback != null) {
-			resultCallback.callback(requestCode, resultCode, data);
-			resultCallback = null;
-		}
-
 		godot.onActivityResult(requestCode, resultCode, data);
 	}
 
@@ -185,14 +167,11 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 		BenchmarkUtils.beginBenchmarkMeasure("Startup", "GodotFragment::onCreate");
 		super.onCreate(icicle);
 
-		final Activity activity = getActivity();
-		mCurrentIntent = activity.getIntent();
-
 		if (parentHost != null) {
 			godot = parentHost.getGodot();
 		}
 		if (godot == null) {
-			godot = new Godot(requireContext());
+			godot = Godot.getInstance(requireContext());
 		}
 		performEngineInitialization();
 		BenchmarkUtils.endBenchmarkMeasure("Startup", "GodotFragment::onCreate");
@@ -200,10 +179,8 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 	private void performEngineInitialization() {
 		try {
-			godot.onCreate(this);
-
-			if (!godot.onInitNativeLayer(this)) {
-				throw new IllegalStateException("Unable to initialize engine native layer");
+			if (!godot.initEngine(this, getCommandLine(), getHostPlugins(godot))) {
+				throw new IllegalStateException("Unable to initialize Godot engine");
 			}
 
 			godotContainerLayout = godot.onInitRenderView(this);
@@ -221,14 +198,8 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 			Intent notifierIntent = new Intent(activity, activity.getClass());
 			notifierIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-			PendingIntent pendingIntent;
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				pendingIntent = PendingIntent.getActivity(activity, 0,
-						notifierIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-			} else {
-				pendingIntent = PendingIntent.getActivity(activity, 0,
-						notifierIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-			}
+			PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0,
+					notifierIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
 			int startResult;
 			try {
@@ -263,9 +234,13 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 			mDashboard = downloadingExpansionView.findViewById(R.id.downloaderDashboard);
 			mCellMessage = downloadingExpansionView.findViewById(R.id.approveCellular);
 			mPauseButton = (Button)downloadingExpansionView.findViewById(R.id.pauseButton);
-			mWiFiSettingsButton = (Button)downloadingExpansionView.findViewById(R.id.wifiSettingsButton);
 
 			return downloadingExpansionView;
+		}
+
+		if (godotContainerLayout != null && godotContainerLayout.getParent() != null) {
+			Log.w(TAG, "Godot container layout already has a parent, removing it.");
+			((ViewGroup)godotContainerLayout.getParent()).removeView(godotContainerLayout);
 		}
 
 		return godotContainerLayout;
@@ -273,6 +248,11 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 	@Override
 	public void onDestroy() {
+		if (godotContainerLayout != null && godotContainerLayout.getParent() != null) {
+			Log.w(TAG, "Removing Godot container layout from parent during destruction.");
+			((ViewGroup)godotContainerLayout.getParent()).removeView(godotContainerLayout);
+		}
+
 		godot.onDestroy(this);
 		super.onDestroy();
 	}

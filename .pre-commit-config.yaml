@@ -34,9 +34,9 @@ repos:
         stages: [manual] # Not automatically triggered, invoked via `pre-commit run --hook-stage manual clang-tidy`
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.4
+    rev: v0.13.1
     hooks:
-      - id: ruff
+      - id: ruff-check
         args: [--fix]
         files: (\.py|SConstruct|SCsub)$
         types_or: [text]

@@ -55,6 +55,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::NODE_2D;
+
 #ifdef TOOLS_ENABLED
 	virtual Dictionary _edit_get_state() const override;
 	virtual void _edit_set_state(const Dictionary &p_state) override;
@@ -115,4 +117,6 @@ public:
 	Transform2D get_relative_transform_to_parent(const Node *p_parent) const;
 
 	Transform2D get_transform() const override;
+
+	Node2D();
 };

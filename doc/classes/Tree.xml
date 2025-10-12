@@ -9,24 +9,24 @@
 		[codeblocks]
 		[gdscript]
 		func _ready():
-		    var tree = Tree.new()
-		    var root = tree.create_item()
-		    tree.hide_root = true
-		    var child1 = tree.create_item(root)
-		    var child2 = tree.create_item(root)
-		    var subchild1 = tree.create_item(child1)
-		    subchild1.set_text(0, "Subchild1")
+			var tree = Tree.new()
+			var root = tree.create_item()
+			tree.hide_root = true
+			var child1 = tree.create_item(root)
+			var child2 = tree.create_item(root)
+			var subchild1 = tree.create_item(child1)
+			subchild1.set_text(0, "Subchild1")
 		[/gdscript]
 		[csharp]
 		public override void _Ready()
 		{
-		    var tree = new Tree();
-		    TreeItem root = tree.CreateItem();
-		    tree.HideRoot = true;
-		    TreeItem child1 = tree.CreateItem(root);
-		    TreeItem child2 = tree.CreateItem(root);
-		    TreeItem subchild1 = tree.CreateItem(child1);
-		    subchild1.SetText(0, "Subchild1");
+			var tree = new Tree();
+			TreeItem root = tree.CreateItem();
+			tree.HideRoot = true;
+			TreeItem child1 = tree.CreateItem(root);
+			TreeItem child2 = tree.CreateItem(root);
+			TreeItem subchild1 = tree.CreateItem(child1);
+			subchild1.SetText(0, "Subchild1");
 		}
 		[/csharp]
 		[/codeblocks]
@@ -124,6 +124,13 @@
 				Returns column title language code.
 			</description>
 		</method>
+		<method name="get_column_title_tooltip_text" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the column title's tooltip text.
+			</description>
+		</method>
 		<method name="get_column_width" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="column" type="int" />
@@ -153,20 +160,20 @@
 				[codeblocks]
 				[gdscript]
 				func _ready():
-				    $Tree.item_edited.connect(on_Tree_item_edited)
+					$Tree.item_edited.connect(on_Tree_item_edited)
 
 				func on_Tree_item_edited():
-				    print($Tree.get_edited()) # This item just got edited (e.g. checked).
+					print($Tree.get_edited()) # This item just got edited (e.g. checked).
 				[/gdscript]
 				[csharp]
 				public override void _Ready()
 				{
-				    GetNode&lt;Tree&gt;("Tree").ItemEdited += OnTreeItemEdited;
+					GetNode&lt;Tree&gt;("Tree").ItemEdited += OnTreeItemEdited;
 				}
 
 				public void OnTreeItemEdited()
 				{
-				    GD.Print(GetNode&lt;Tree&gt;("Tree").GetEdited()); // This item just got edited (e.g. checked).
+					GD.Print(GetNode&lt;Tree&gt;("Tree").GetEdited()); // This item just got edited (e.g. checked).
 				}
 				[/csharp]
 				[/codeblocks]
@@ -322,6 +329,14 @@
 				Sets language code of column title used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 			</description>
 		</method>
+		<method name="set_column_title_tooltip_text">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="tooltip_text" type="String" />
+			<description>
+				Sets the column title's tooltip text.
+			</description>
+		</method>
 		<method name="set_selected">
 			<return type="void" />
 			<param index="0" name="item" type="TreeItem" />
@@ -431,7 +446,8 @@
 		<signal name="item_collapsed">
 			<param index="0" name="item" type="TreeItem" />
 			<description>
-				Emitted when an item is collapsed by a click on the folding arrow.
+				Emitted when an item is expanded or collapsed by clicking on the folding arrow or through code.
+				[b]Note:[/b] Despite its name, this signal is also emitted when an item is expanded.
 			</description>
 		</signal>
 		<signal name="item_edited">

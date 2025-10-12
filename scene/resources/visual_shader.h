@@ -38,9 +38,6 @@
 class VisualShaderNodeParameter;
 class VisualShaderNode;
 
-template <typename T, typename V>
-class VMap;
-
 class VisualShader : public Shader {
 	GDCLASS(VisualShader, Shader);
 
@@ -100,13 +97,12 @@ public:
 				name(p_name), mode(p_mode), type(p_type) {}
 
 		bool from_string(const String &p_str) {
-			Vector<String> arr = p_str.split(",");
-			if (arr.size() != 2) {
+			if (p_str.get_slice_count(",") != 2) {
 				return false;
 			}
 
-			mode = (VaryingMode)arr[0].to_int();
-			type = (VaryingType)arr[1].to_int();
+			mode = (VaryingMode)p_str.get_slicec(',', 0).to_int();
+			type = (VaryingType)p_str.get_slicec(',', 1).to_int();
 
 			return true;
 		}
@@ -117,8 +113,6 @@ public:
 	};
 
 private:
-	Type current_type;
-
 	struct Node {
 		Ref<VisualShaderNode> node;
 		Vector2 position;
@@ -136,10 +130,13 @@ private:
 
 	TypedArray<Dictionary> _get_node_connections(Type p_type) const;
 
-	Vector2 graph_offset;
-
 	HashMap<String, int> modes;
 	HashSet<StringName> flags;
+
+	bool stencil_enabled = false;
+	HashMap<String, int> stencil_modes;
+	HashSet<StringName> stencil_flags;
+	int stencil_reference = 1;
 
 	HashMap<String, Varying> varyings;
 #ifdef TOOLS_ENABLED
@@ -156,12 +153,12 @@ private:
 			uint64_t port : 32;
 		};
 		uint64_t key = 0;
-		bool operator<(const ConnectionKey &p_key) const {
-			return key < p_key.key;
-		}
+
+		uint32_t hash() const { return HashMapHasherDefault::hash(key); }
+		bool is_same(const ConnectionKey &p_key) const { return HashMapComparatorDefault<uint64_t>::compare(key, p_key.key); }
 	};
 
-	Error _write_node(Type p_type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<DefaultTextureParam> &r_def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &p_output_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const;
+	Error _write_node(Type p_type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<DefaultTextureParam> &r_def_tex_params, const HashMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const;
 
 	void _input_type_changed(Type p_type, int p_id);
 	bool has_func_name(RenderingServer::ShaderMode p_mode, const String &p_func_name) const;
@@ -175,13 +172,11 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	virtual void reset_state() override;
 
 public: // internal methods
-	void set_shader_type(Type p_type);
-	Type get_shader_type() const;
-
 	enum {
 		NODE_ID_INVALID = -1,
 		NODE_ID_OUTPUT = 0,
@@ -189,6 +184,7 @@ public: // internal methods
 
 	void add_node(Type p_type, const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id);
 	void set_node_position(Type p_type, int p_id, const Vector2 &p_position);
+	int has_node_embeds() const;
 
 	void add_varying(const String &p_name, VaryingMode p_mode, VaryingType p_type);
 	void remove_varying(const String &p_name);
@@ -248,8 +244,10 @@ public: // internal methods
 
 	virtual bool is_text_shader() const override;
 
+#ifndef DISABLE_DEPRECATED
 	void set_graph_offset(const Vector2 &p_offset);
 	Vector2 get_graph_offset() const;
+#endif
 
 	String generate_preview_shader(Type p_type, int p_node, int p_port, Vector<DefaultTextureParam> &r_default_tex_params) const;
 

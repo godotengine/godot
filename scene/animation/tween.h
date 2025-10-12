@@ -111,7 +111,8 @@ private:
 	ObjectID bound_node;
 
 	SceneTree *parent_tree = nullptr;
-	Vector<List<Ref<Tweener>>> tweeners;
+	LocalVector<List<Ref<Tweener>>> tweeners;
+	LocalVector<Ref<Tween>> subtweens;
 	double total_time = 0;
 	int current_step = -1;
 	int loops = 1;
@@ -122,6 +123,7 @@ private:
 	bool is_bound = false;
 	bool started = false;
 	bool running = true;
+	bool in_step = false;
 	bool dead = false;
 	bool valid = false;
 	bool default_parallel = false;
@@ -135,7 +137,6 @@ private:
 
 	void _start_tweeners();
 	void _stop_internal(bool p_reset);
-	bool _validate_type_match(const Variant &p_from, Variant &r_to);
 
 protected:
 	static void _bind_methods();

@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 const GodotWebXR = {
-	$GodotWebXR__deps: ['$Browser', '$GL', '$GodotRuntime', '$runtimeKeepalivePush', '$runtimeKeepalivePop'],
+	$GodotWebXR__deps: ['$MainLoop', '$GL', '$GodotRuntime', '$runtimeKeepalivePush', '$runtimeKeepalivePop'],
 	$GodotWebXR: {
 		gl: null,
 
@@ -64,9 +64,9 @@ const GodotWebXR = {
 		},
 		monkeyPatchRequestAnimationFrame: (enable) => {
 			if (GodotWebXR.orig_requestAnimationFrame === null) {
-				GodotWebXR.orig_requestAnimationFrame = Browser.requestAnimationFrame;
+				GodotWebXR.orig_requestAnimationFrame = MainLoop.requestAnimationFrame;
 			}
-			Browser.requestAnimationFrame = enable
+			MainLoop.requestAnimationFrame = enable
 				? GodotWebXR.requestAnimationFrame
 				: GodotWebXR.orig_requestAnimationFrame;
 		},
@@ -76,11 +76,11 @@ const GodotWebXR = {
 			// enabled or disabled. When using the WebXR API Emulator, this
 			// gets picked up automatically, however, in the Oculus Browser
 			// on the Quest, we need to pause and resume the main loop.
-			Browser.mainLoop.pause();
+			MainLoop.pause();
 			runtimeKeepalivePush();
 			window.setTimeout(function () {
 				runtimeKeepalivePop();
-				Browser.mainLoop.resume();
+				MainLoop.resume();
 			}, 0);
 		},
 
@@ -94,7 +94,7 @@ const GodotWebXR = {
 				return layer;
 			}
 
-			if (!GodotWebXR.session || !GodotWebXR.gl_binding) {
+			if (!GodotWebXR.session || !GodotWebXR.gl_binding || !GodotWebXR.gl_binding.createProjectionLayer) {
 				return null;
 			}
 
@@ -293,10 +293,29 @@ const GodotWebXR = {
 			GodotWebXR.gl = gl;
 
 			gl.makeXRCompatible().then(function () {
-				GodotWebXR.gl_binding = new XRWebGLBinding(session, gl);
+				const throwNoWebXRLayersError = () => {
+					throw new Error('This browser doesn\'t support WebXR Layers (which Godot requires) nor is the polyfill in use. If you are the developer of this application, please consider including the polyfill.');
+				};
+
+				try {
+					GodotWebXR.gl_binding = new XRWebGLBinding(session, gl);
+				} catch (error) {
+					// We'll end up here for browsers that don't have XRWebGLBinding at all, or if the browser does support WebXR Layers,
+					// but is using the WebXR polyfill, so calling native XRWebGLBinding with the polyfilled XRSession won't work.
+					throwNoWebXRLayersError();
+				}
+
+				if (!GodotWebXR.gl_binding.createProjectionLayer) {
+					// On other browsers, XRWebGLBinding exists and works, but it doesn't support creating projection layers (which is
+					// contrary to the spec, which says this MUST be supported) and so the polyfill is required.
+					throwNoWebXRLayersError();
+				}
 
 				// This will trigger the layer to get created.
-				GodotWebXR.getLayer();
+				const layer = GodotWebXR.getLayer();
+				if (!layer) {
+					throw new Error('Unable to create WebXR Layer.');
+				}
 
 				function onReferenceSpaceSuccess(reference_space, reference_space_type) {
 					GodotWebXR.space = reference_space;

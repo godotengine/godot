@@ -38,8 +38,8 @@
 #include "scene/animation/animation_player.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/resources/animation.h"
+#include "servers/audio/audio_server.h"
 #include "servers/audio/audio_stream.h"
-#include "servers/audio_server.h"
 
 #ifndef _3D_DISABLED
 #include "scene/3d/audio_stream_player_3d.h"
@@ -106,21 +106,17 @@ bool AnimationMixer::_get(const StringName &p_name, Variant &r_ret) const {
 	return true;
 }
 
-void AnimationMixer::_get_property_list(List<PropertyInfo> *p_list) const {
-	List<PropertyInfo> anim_names;
-	anim_names.push_back(PropertyInfo(Variant::DICTIONARY, PNAME("libraries"), PROPERTY_HINT_DICTIONARY_TYPE, "StringName;AnimationLibrary"));
-	for (const PropertyInfo &E : anim_names) {
-		p_list->push_back(E);
-	}
+uint32_t AnimationMixer::_get_libraries_property_usage() const {
+	return PROPERTY_USAGE_DEFAULT;
+}
 
-	for (PropertyInfo &E : *p_list) {
-		_validate_property(E);
-	}
+void AnimationMixer::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::DICTIONARY, PNAME("libraries"), PROPERTY_HINT_DICTIONARY_TYPE, "StringName;AnimationLibrary", _get_libraries_property_usage()));
 }
 
 void AnimationMixer::_validate_property(PropertyInfo &p_property) const {
-#ifdef TOOLS_ENABLED
-	if (editing && (p_property.name == "active" || p_property.name == "deterministic" || p_property.name == "root_motion_track")) {
+#ifdef TOOLS_ENABLED // `editing` is surrounded by TOOLS_ENABLED so this should also be.
+	if (Engine::get_singleton()->is_editor_hint() && editing && (p_property.name == "active" || p_property.name == "deterministic" || p_property.name == "root_motion_track")) {
 		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 	}
 #endif // TOOLS_ENABLED
@@ -611,12 +607,16 @@ void AnimationMixer::_init_root_motion_cache() {
 }
 
 void AnimationMixer::_create_track_num_to_track_cache_for_animation(Ref<Animation> &p_animation) {
-	ERR_FAIL_COND(animation_track_num_to_track_cache.has(p_animation));
+	if (animation_track_num_to_track_cache.has(p_animation)) {
+		// In AnimationMixer::_update_caches, it retrieves all animations via AnimationMixer::get_animation_list
+		// Since multiple AnimationLibraries can share the same Animation, it is possible that the cache is already created.
+		return;
+	}
 	LocalVector<TrackCache *> &track_num_to_track_cache = animation_track_num_to_track_cache.insert_new(p_animation, LocalVector<TrackCache *>())->value;
-	const Vector<Animation::Track *> &tracks = p_animation->get_tracks();
+	const LocalVector<Animation::Track *> &tracks = p_animation->get_tracks();
 
 	track_num_to_track_cache.resize(tracks.size());
-	for (int i = 0; i < tracks.size(); i++) {
+	for (uint32_t i = 0; i < tracks.size(); i++) {
 		TrackCache **track_ptr = track_cache.getptr(tracks[i]->thash);
 		if (track_ptr == nullptr) {
 			track_num_to_track_cache[i] = nullptr;
@@ -1137,7 +1137,7 @@ void AnimationMixer::_blend_calc_total_weight() {
 		LocalVector<TrackCache *> &track_num_to_track_cache = animation_track_num_to_track_cache[a];
 		thread_local HashSet<Animation::TypeHash, HashHasher> processed_hashes;
 		processed_hashes.clear();
-		const Vector<Animation::Track *> tracks = a->get_tracks();
+		const LocalVector<Animation::Track *> &tracks = a->get_tracks();
 		Animation::Track *const *tracks_ptr = tracks.ptr();
 		int count = tracks.size();
 		for (int i = 0; i < count; i++) {
@@ -1185,7 +1185,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 #endif // _3D_DISABLED
 		ERR_CONTINUE_EDMSG(!animation_track_num_to_track_cache.has(a), "No animation in cache.");
 		LocalVector<TrackCache *> &track_num_to_track_cache = animation_track_num_to_track_cache[a];
-		const Vector<Animation::Track *> tracks = a->get_tracks();
+		const LocalVector<Animation::Track *> &tracks = a->get_tracks();
 		Animation::Track *const *tracks_ptr = tracks.ptr();
 		real_t a_length = a->get_length();
 		int count = tracks.size();
@@ -2508,7 +2508,7 @@ void AnimatedValuesBackup::set_data(const AHashMap<Animation::TypeHash, Animatio
 }
 
 AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher> AnimatedValuesBackup::get_data() const {
-	HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> ret;
+	AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher> ret;
 	for (const KeyValue<Animation::TypeHash, AnimationMixer::TrackCache *> &E : data) {
 		AnimationMixer::TrackCache *track = get_cache_copy(E.value);
 		ERR_CONTINUE(!track); // Backup shouldn't contain tracks that cannot be copied, this is a mistake.

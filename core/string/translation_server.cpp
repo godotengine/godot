@@ -33,12 +33,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/locales.h"
-
-#ifdef TOOLS_ENABLED
-#include "main/main.h"
-#endif
 
 Vector<TranslationServer::LocaleScriptInfo> TranslationServer::locale_script_info;
 
@@ -381,6 +378,10 @@ String TranslationServer::get_locale() const {
 	return locale;
 }
 
+void TranslationServer::set_fallback_locale(const String &p_locale) {
+	fallback = p_locale;
+}
+
 String TranslationServer::get_fallback_locale() const {
 	return fallback;
 }
@@ -406,44 +407,11 @@ void TranslationServer::clear() {
 }
 
 StringName TranslationServer::translate(const StringName &p_message, const StringName &p_context) const {
-	if (!enabled) {
-		return p_message;
-	}
-
 	return main_domain->translate(p_message, p_context);
 }
 
 StringName TranslationServer::translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
-	if (!enabled) {
-		if (p_n == 1) {
-			return p_message;
-		}
-		return p_message_plural;
-	}
-
 	return main_domain->translate_plural(p_message, p_message_plural, p_n, p_context);
-}
-
-bool TranslationServer::_load_translations(const String &p_from) {
-	if (ProjectSettings::get_singleton()->has_setting(p_from)) {
-		const Vector<String> &translation_names = GLOBAL_GET(p_from);
-
-		int tcount = translation_names.size();
-
-		if (tcount) {
-			const String *r = translation_names.ptr();
-
-			for (int i = 0; i < tcount; i++) {
-				Ref<Translation> tr = ResourceLoader::load(r[i]);
-				if (tr.is_valid()) {
-					add_translation(tr);
-				}
-			}
-		}
-		return true;
-	}
-
-	return false;
 }
 
 bool TranslationServer::has_domain(const StringName &p_domain) const {
@@ -641,11 +609,16 @@ void TranslationServer::_bind_methods() {
 }
 
 void TranslationServer::load_translations() {
-	_load_translations("internationalization/locale/translations"); //all
-	_load_translations("internationalization/locale/translations_" + locale.substr(0, 2));
-
-	if (locale.substr(0, 2) != locale) {
-		_load_translations("internationalization/locale/translations_" + locale);
+	const String prop = "internationalization/locale/translations";
+	if (!ProjectSettings::get_singleton()->has_setting(prop)) {
+		return;
+	}
+	const Vector<String> &translations = GLOBAL_GET(prop);
+	for (const String &path : translations) {
+		Ref<Translation> tr = ResourceLoader::load(path);
+		if (tr.is_valid()) {
+			add_translation(tr);
+		}
 	}
 }
 

@@ -33,7 +33,6 @@
 #include "core/math/transform_2d.h"
 #include "core/object/gdvirtual.gen.inc"
 #include "scene/main/canvas_item.h"
-#include "scene/main/timer.h"
 #include "scene/resources/theme.h"
 
 class Viewport;
@@ -50,6 +49,8 @@ class Control : public CanvasItem {
 #endif //TOOLS_ENABLED
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::CONTROL;
+
 	enum Anchor {
 		ANCHOR_BEGIN = 0,
 		ANCHOR_END = 1
@@ -250,6 +251,17 @@ private:
 
 		ObjectID shortcut_context;
 
+		// Accessibility.
+
+		String accessibility_name;
+		String accessibility_description;
+		DisplayServer::AccessibilityLiveMode accessibility_live = DisplayServer::AccessibilityLiveMode::LIVE_OFF;
+
+		TypedArray<NodePath> accessibility_controls_nodes;
+		TypedArray<NodePath> accessibility_described_by_nodes;
+		TypedArray<NodePath> accessibility_labeled_by_nodes;
+		TypedArray<NodePath> accessibility_flow_to_nodes;
+
 		// Theming.
 
 		ThemeOwner *theme_owner = nullptr;
@@ -307,7 +319,6 @@ private:
 
 	void _compute_offsets(Rect2 p_rect, const real_t p_anchors[4], real_t (&r_offsets)[4]);
 	void _compute_anchors(Rect2 p_rect, const real_t p_offsets[4], real_t (&r_anchors)[4]);
-	void _compute_edge_positions(Rect2 p_rect, real_t (&r_edge_positions)[4]);
 
 	void _set_layout_mode(LayoutMode p_mode);
 	void _update_layout_mode();
@@ -384,6 +395,12 @@ protected:
 	void _accessibility_action_hide_tooltip(const Variant &p_data);
 	void _accessibility_action_scroll_into_view(const Variant &p_data);
 
+#ifndef DISABLE_DEPRECATED
+	bool _has_focus_bind_compat_110250() const;
+	void _grab_focus_bind_compat_110250();
+	static void _bind_compatibility_methods();
+#endif //DISABLE_DEPRECATED
+
 	// Exposed virtual methods.
 
 	GDVIRTUAL1RC(bool, _has_point, Vector2)
@@ -397,6 +414,7 @@ protected:
 	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
 
 	GDVIRTUAL0RC(String, _accessibility_get_contextual_info);
+	GDVIRTUAL1RC(String, _get_accessibility_container_name, const Node *)
 
 	GDVIRTUAL1(_gui_input, Ref<InputEvent>)
 
@@ -581,8 +599,8 @@ public:
 	FocusMode get_focus_mode_with_override() const;
 	void set_focus_behavior_recursive(FocusBehaviorRecursive p_focus_behavior_recursive);
 	FocusBehaviorRecursive get_focus_behavior_recursive() const;
-	bool has_focus() const;
-	void grab_focus();
+	bool has_focus(bool p_ignore_hidden_focus = false) const;
+	void grab_focus(bool p_hide_focus = false);
 	void grab_click_focus();
 	void release_focus();
 
@@ -597,6 +615,31 @@ public:
 	NodePath get_focus_next() const;
 	void set_focus_previous(const NodePath &p_prev);
 	NodePath get_focus_previous() const;
+
+	// Accessibility.
+
+	virtual String get_accessibility_container_name(const Node *p_node) const;
+
+	void set_accessibility_name(const String &p_name);
+	String get_accessibility_name() const;
+
+	void set_accessibility_description(const String &p_description);
+	String get_accessibility_description() const;
+
+	void set_accessibility_live(DisplayServer::AccessibilityLiveMode p_mode);
+	DisplayServer::AccessibilityLiveMode get_accessibility_live() const;
+
+	void set_accessibility_controls_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_controls_nodes() const;
+
+	void set_accessibility_described_by_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_described_by_nodes() const;
+
+	void set_accessibility_labeled_by_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_labeled_by_nodes() const;
+
+	void set_accessibility_flow_to_nodes(const TypedArray<NodePath> &p_node_path);
+	TypedArray<NodePath> get_accessibility_flow_to_nodes() const;
 
 	// Rendering.
 

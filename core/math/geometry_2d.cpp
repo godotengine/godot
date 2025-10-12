@@ -226,8 +226,8 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 	real_t best_aspect = 1e20;
 
 	for (int i = 0; i < results.size(); i++) {
-		real_t h = next_power_of_2(results[i].max_h);
-		real_t w = next_power_of_2(results[i].max_w);
+		real_t h = next_power_of_2((uint32_t)results[i].max_h);
+		real_t w = next_power_of_2((uint32_t)results[i].max_w);
 		real_t aspect = h > w ? h / w : w / h;
 		if (aspect < best_aspect) {
 			best = i;
@@ -292,14 +292,16 @@ Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation(PolyBooleanOperation 
 	}
 
 	Vector<Vector<Point2>> polypaths;
-	for (PathsD::size_type i = 0; i < paths.size(); ++i) {
+	polypaths.resize(paths.size());
+	for (PathsD::size_type i = 0; i < paths.size(); i++) {
 		const PathD &path = paths[i];
 
 		Vector<Vector2> polypath;
+		polypath.resize(path.size());
 		for (PathsD::size_type j = 0; j < path.size(); ++j) {
-			polypath.push_back(Point2(static_cast<real_t>(path[j].x), static_cast<real_t>(path[j].y)));
+			polypath.set(j, Point2(static_cast<real_t>(path[j].x), static_cast<real_t>(path[j].y)));
 		}
-		polypaths.push_back(polypath);
+		polypaths.set(i, polypath);
 	}
 	return polypaths;
 }
@@ -353,14 +355,16 @@ Vector<Vector<Point2>> Geometry2D::_polypath_offset(const Vector<Point2> &p_poly
 	// to attain the desired precision.
 
 	Vector<Vector<Point2>> polypaths;
+	polypaths.resize(paths.size());
 	for (PathsD::size_type i = 0; i < paths.size(); ++i) {
 		const PathD &path = paths[i];
 
 		Vector<Vector2> polypath2;
+		polypath2.resize(path.size());
 		for (PathsD::size_type j = 0; j < path.size(); ++j) {
-			polypath2.push_back(Point2(static_cast<real_t>(path[j].x), static_cast<real_t>(path[j].y)));
+			polypath2.set(j, Point2(static_cast<real_t>(path[j].x), static_cast<real_t>(path[j].y)));
 		}
-		polypaths.push_back(polypath2);
+		polypaths.set(i, polypath2);
 	}
 	return polypaths;
 }

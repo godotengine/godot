@@ -41,6 +41,7 @@
 #include <poll.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <cerrno>
@@ -92,6 +93,20 @@ size_t NetSocketUnix::_set_addr_storage(struct sockaddr_storage *p_addr, const I
 
 		return sizeof(sockaddr_in);
 	}
+}
+
+socklen_t NetSocketUnix::_unix_set_sockaddr(struct sockaddr_un *p_addr, const CharString &p_path) {
+	memset(p_addr, 0, sizeof(struct sockaddr_un));
+	p_addr->sun_family = AF_UNIX;
+
+	// Path must not exceed maximum path length for Unix domain socket
+	size_t path_len = p_path.length();
+	ERR_FAIL_COND_V(path_len >= sizeof(p_addr->sun_path) - 1, 0);
+
+	// Regular file system socket
+	memcpy(p_addr->sun_path, p_path.get_data(), path_len);
+	p_addr->sun_path[path_len] = '\0';
+	return sizeof(struct sockaddr_un);
 }
 
 void NetSocketUnix::_set_ip_port(struct sockaddr_storage *p_addr, IPAddress *r_ip, uint16_t *r_port) {
@@ -172,8 +187,14 @@ bool NetSocketUnix::_can_use_ip(const IPAddress &p_ip, const bool p_for_bind) co
 	return !(_ip_type != IP::TYPE_ANY && !p_ip.is_wildcard() && _ip_type != type);
 }
 
+bool NetSocketUnix::_can_use_path(const CharString &p_path) const {
+	// Path must not exceed maximum path length for Unix domain socket
+	return !p_path.is_empty() && (size_t)p_path.length() < sizeof(((sockaddr_un *)0)->sun_path);
+}
+
 _FORCE_INLINE_ Error NetSocketUnix::_change_multicast_group(IPAddress p_ip, String p_if_name, bool p_add) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(_family != Family::INET, ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(!_can_use_ip(p_ip, false), ERR_INVALID_PARAMETER);
 
 	// Need to force level and af_family to IP(v4) when using dual stacking and provided multicast group is IPv4.
@@ -240,36 +261,36 @@ void NetSocketUnix::_set_close_exec_enabled(bool p_enabled) {
 	fcntl(_sock, F_SETFD, opts | FD_CLOEXEC);
 }
 
-Error NetSocketUnix::open(Type p_sock_type, IP::Type &ip_type) {
-	ERR_FAIL_COND_V(is_open(), ERR_ALREADY_IN_USE);
-	ERR_FAIL_COND_V(ip_type > IP::TYPE_ANY || ip_type < IP::TYPE_NONE, ERR_INVALID_PARAMETER);
+Error NetSocketUnix::_inet_open(Type p_sock_type, IP::Type &r_ip_type) {
+	ERR_FAIL_COND_V(r_ip_type > IP::TYPE_ANY || r_ip_type < IP::TYPE_NONE, ERR_INVALID_PARAMETER);
 
 #if defined(__OpenBSD__)
 	// OpenBSD does not support dual stacking, fallback to IPv4 only.
-	if (ip_type == IP::TYPE_ANY) {
-		ip_type = IP::TYPE_IPV4;
+	if (r_ip_type == IP::TYPE_ANY) {
+		r_ip_type = IP::TYPE_IPV4;
 	}
 #endif
 
-	int family = ip_type == IP::TYPE_IPV4 ? AF_INET : AF_INET6;
+	int family = r_ip_type == IP::TYPE_IPV4 ? AF_INET : AF_INET6;
 	int protocol = p_sock_type == TYPE_TCP ? IPPROTO_TCP : IPPROTO_UDP;
 	int type = p_sock_type == TYPE_TCP ? SOCK_STREAM : SOCK_DGRAM;
 	_sock = socket(family, type, protocol);
 
-	if (_sock == -1 && ip_type == IP::TYPE_ANY) {
+	if (_sock == -1 && r_ip_type == IP::TYPE_ANY) {
 		// Careful here, changing the referenced parameter so the caller knows that we are using an IPv4 socket
 		// in place of a dual stack one, and further calls to _set_sock_addr will work as expected.
-		ip_type = IP::TYPE_IPV4;
+		r_ip_type = IP::TYPE_IPV4;
 		family = AF_INET;
 		_sock = socket(family, type, protocol);
 	}
 
 	ERR_FAIL_COND_V(_sock == -1, FAILED);
-	_ip_type = ip_type;
+	_ip_type = r_ip_type;
+	_family = Family::INET;
 
 	if (family == AF_INET6) {
 		// Select IPv4 over IPv6 mapping.
-		set_ipv6_only_enabled(ip_type != IP::TYPE_ANY);
+		set_ipv6_only_enabled(r_ip_type != IP::TYPE_ANY);
 	}
 
 	if (protocol == IPPROTO_UDP) {
@@ -293,18 +314,59 @@ Error NetSocketUnix::open(Type p_sock_type, IP::Type &ip_type) {
 	return OK;
 }
 
+Error NetSocketUnix::_unix_open() {
+	_sock = socket(AF_UNIX, SOCK_STREAM, 0);
+	ERR_FAIL_COND_V(_sock == -1, FAILED);
+
+	_family = Family::UNIX;
+
+	_set_close_exec_enabled(true);
+
+#if defined(SO_NOSIGPIPE)
+	// Disable SIGPIPE (should only be relevant to stream sockets, but seems to affect UDP too on iOS).
+	int par = 1;
+	if (setsockopt(_sock, SOL_SOCKET, SO_NOSIGPIPE, &par, sizeof(int)) != 0) {
+		print_verbose("Unable to turn off SIGPIPE on socket.");
+	}
+#endif
+
+	return OK;
+}
+
+Error NetSocketUnix::open(NetSocket::Family p_family, NetSocket::Type p_sock_type, IP::Type &r_ip_type) {
+	ERR_FAIL_COND_V(is_open(), ERR_ALREADY_IN_USE);
+
+	switch (p_family) {
+		case Family::INET:
+			return _inet_open(p_sock_type, r_ip_type);
+		case Family::UNIX:
+			return _unix_open();
+		case Family::NONE:
+		default:
+			return ERR_INVALID_PARAMETER;
+	}
+}
+
 void NetSocketUnix::close() {
 	if (_sock != -1) {
 		::close(_sock);
+
+		if (_family == Family::UNIX) {
+			if (_unlink_on_close) {
+				::unlink(_unix_path.get_data());
+				_unlink_on_close = false;
+				_unix_path = CharString();
+			}
+		}
 	}
 
 	_sock = -1;
+	_family = Family::NONE;
 	_ip_type = IP::TYPE_NONE;
 	_is_stream = false;
 }
 
-Error NetSocketUnix::bind(IPAddress p_addr, uint16_t p_port) {
-	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
+Error NetSocketUnix::_inet_bind(IPAddress p_addr, uint16_t p_port) {
 	ERR_FAIL_COND_V(!_can_use_ip(p_addr, true), ERR_INVALID_PARAMETER);
 
 	sockaddr_storage addr;
@@ -320,6 +382,65 @@ Error NetSocketUnix::bind(IPAddress p_addr, uint16_t p_port) {
 	return OK;
 }
 
+Error NetSocketUnix::_unix_bind(const CharString &p_path) {
+	ERR_FAIL_COND_V(p_path.is_empty(), ERR_INVALID_PARAMETER);
+
+	struct sockaddr_un addr;
+	socklen_t addr_size = _unix_set_sockaddr(&addr, p_path);
+	ERR_FAIL_COND_V(addr_size == 0, ERR_INVALID_PARAMETER);
+
+	// If the socket file exists, attempt to remove it.
+	if (access(p_path.get_data(), F_OK) == 0) {
+		// Check if it's a socket
+		struct stat st;
+		if (stat(p_path.get_data(), &st) == 0) {
+			if (S_ISSOCK(st.st_mode)) {
+				// It is a socket, try to remove it.
+				if (unlink(p_path.get_data()) != 0) {
+					// Failed to remove existing socket file.
+					return FAILED;
+				}
+			} else {
+				// It's not a socket, don't remove it.
+				return ERR_ALREADY_EXISTS;
+			}
+		}
+	}
+
+	_unlink_on_close = true;
+
+	if (::bind(_sock, (struct sockaddr *)&addr, addr_size) != 0) {
+		NetError err = _get_socket_error();
+		print_verbose("Failed to bind socket. Error: " + itos(err) + ".");
+		close();
+		switch (err) {
+			case ERR_NET_UNAUTHORIZED:
+				return ERR_UNAUTHORIZED;
+			default:
+				return ERR_UNAVAILABLE;
+		}
+	}
+
+	return OK;
+}
+
+Error NetSocketUnix::bind(NetSocket::Address p_addr) {
+	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(_family != p_addr.get_family(), ERR_INVALID_PARAMETER);
+	switch (p_addr.get_family()) {
+		case Family::INET: {
+			return _inet_bind(p_addr.ip(), p_addr.port());
+		}
+		case Family::UNIX: {
+			_unix_path = p_addr.get_path();
+			return _unix_bind(_unix_path);
+		}
+		case Family::NONE:
+		default:
+			return ERR_INVALID_PARAMETER;
+	}
+}
+
 Error NetSocketUnix::listen(int p_max_pending) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 
@@ -333,8 +454,7 @@ Error NetSocketUnix::listen(int p_max_pending) {
 	return OK;
 }
 
-Error NetSocketUnix::connect_to_host(IPAddress p_host, uint16_t p_port) {
-	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
+Error NetSocketUnix::_inet_connect_to_host(IPAddress p_host, uint16_t p_port) {
 	ERR_FAIL_COND_V(!_can_use_ip(p_host, false), ERR_INVALID_PARAMETER);
 
 	struct sockaddr_storage addr;
@@ -359,6 +479,49 @@ Error NetSocketUnix::connect_to_host(IPAddress p_host, uint16_t p_port) {
 	}
 
 	return OK;
+}
+
+Error NetSocketUnix::_unix_connect_to_host(const CharString &p_path) {
+	ERR_FAIL_COND_V(!_can_use_path(p_path), ERR_INVALID_PARAMETER);
+
+	struct sockaddr_un addr;
+	socklen_t addr_size = _unix_set_sockaddr(&addr, p_path);
+	ERR_FAIL_COND_V(addr_size == 0, ERR_INVALID_PARAMETER);
+
+	if (::connect(_sock, (struct sockaddr *)&addr, addr_size) != 0) {
+		NetError err = _get_socket_error();
+		switch (err) {
+			case ERR_NET_ADDRESS_INVALID_OR_UNAVAILABLE:
+				return ERR_INVALID_PARAMETER;
+			// Still waiting to connect, try again in a while.
+			case ERR_NET_WOULD_BLOCK:
+			case ERR_NET_IN_PROGRESS:
+				return ERR_BUSY;
+			case ERR_NET_UNAUTHORIZED:
+				return ERR_UNAUTHORIZED;
+			default:
+				print_verbose("Connection to host failed.");
+				close();
+				return FAILED;
+		}
+	}
+
+	return OK;
+}
+
+Error NetSocketUnix::connect_to_host(NetSocket::Address p_addr) {
+	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(_family != p_addr.get_family(), ERR_INVALID_PARAMETER);
+
+	switch (p_addr.get_family()) {
+		case Family::INET:
+			return _inet_connect_to_host(p_addr.ip(), p_addr.port());
+		case Family::UNIX:
+			return _unix_connect_to_host(p_addr.get_path());
+		case Family::NONE:
+		default:
+			return ERR_INVALID_PARAMETER;
+	}
 }
 
 Error NetSocketUnix::poll(PollType p_type, int p_timeout) const {
@@ -418,6 +581,7 @@ Error NetSocketUnix::recv(uint8_t *p_buffer, int p_len, int &r_read) {
 
 Error NetSocketUnix::recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IPAddress &r_ip, uint16_t &r_port, bool p_peek) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(_family != Family::INET, ERR_UNAVAILABLE);
 
 	struct sockaddr_storage from;
 	socklen_t len = sizeof(struct sockaddr_storage);
@@ -459,7 +623,7 @@ Error NetSocketUnix::send(const uint8_t *p_buffer, int p_len, int &r_sent) {
 
 	int flags = 0;
 #ifdef MSG_NOSIGNAL
-	if (_is_stream) {
+	if (_is_stream || _family == Family::UNIX) {
 		flags = MSG_NOSIGNAL;
 	}
 #endif
@@ -482,6 +646,7 @@ Error NetSocketUnix::send(const uint8_t *p_buffer, int p_len, int &r_sent) {
 
 Error NetSocketUnix::sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IPAddress p_ip, uint16_t p_port) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(_family != Family::INET, ERR_UNAVAILABLE);
 
 	struct sockaddr_storage addr;
 	size_t addr_size = _set_addr_storage(&addr, p_ip, p_port, _ip_type);
@@ -580,9 +745,7 @@ int NetSocketUnix::get_available_bytes() const {
 	return len;
 }
 
-Error NetSocketUnix::get_socket_address(IPAddress *r_ip, uint16_t *r_port) const {
-	ERR_FAIL_COND_V(!is_open(), FAILED);
-
+Error NetSocketUnix::_inet_get_socket_address(IPAddress *r_ip, uint16_t *r_port) const {
 	struct sockaddr_storage saddr;
 	socklen_t len = sizeof(saddr);
 	if (getsockname(_sock, (struct sockaddr *)&saddr, &len) != 0) {
@@ -594,17 +757,40 @@ Error NetSocketUnix::get_socket_address(IPAddress *r_ip, uint16_t *r_port) const
 	return OK;
 }
 
-Ref<NetSocket> NetSocketUnix::accept(IPAddress &r_ip, uint16_t &r_port) {
-	Ref<NetSocket> out;
-	ERR_FAIL_COND_V(!is_open(), out);
+Error NetSocketUnix::get_socket_address(NetSocket::Address *r_addr) const {
+	ERR_FAIL_COND_V(!is_open(), FAILED);
+	switch (_family) {
+		case Family::INET: {
+			IPAddress ip;
+			uint16_t port = 0;
+			Error res = _inet_get_socket_address(&ip, &port);
+			ERR_FAIL_COND_V(res != OK, res);
+			if (r_addr) {
+				Address addr(ip, port);
+				*r_addr = addr;
+			}
+		} break;
+		case Family::UNIX: {
+			if (r_addr) {
+				*r_addr = Address(_unix_path);
+			}
+		} break;
+		case Family::NONE:
+		default:
+			return FAILED;
+	}
 
+	return OK;
+}
+
+Ref<NetSocket> NetSocketUnix::_inet_accept(IPAddress &r_ip, uint16_t &r_port) {
 	struct sockaddr_storage their_addr;
 	socklen_t size = sizeof(their_addr);
 	int fd = ::accept(_sock, (struct sockaddr *)&their_addr, &size);
 	if (fd == -1) {
 		_get_socket_error();
 		print_verbose("Error when accepting socket connection.");
-		return out;
+		return Ref<NetSocket>();
 	}
 
 	_set_ip_port(&their_addr, &r_ip, &r_port);
@@ -613,6 +799,48 @@ Ref<NetSocket> NetSocketUnix::accept(IPAddress &r_ip, uint16_t &r_port) {
 	ns->_set_socket(fd, _ip_type, _is_stream);
 	ns->set_blocking_enabled(false);
 	return Ref<NetSocket>(ns);
+}
+
+Ref<NetSocket> NetSocketUnix::_unix_accept() {
+	struct sockaddr_un addr;
+	socklen_t addr_len = sizeof(addr);
+
+	int fd = ::accept(_sock, (struct sockaddr *)&addr, &addr_len);
+	if (fd == -1) {
+		_get_socket_error();
+		print_verbose("Error when accepting socket connection.");
+		return Ref<NetSocket>();
+	}
+
+	NetSocketUnix *ret = memnew(NetSocketUnix);
+	ret->_sock = fd;
+	ret->_family = _family;
+	ret->_unix_path = _unix_path;
+	ret->set_blocking_enabled(false);
+	return Ref<NetSocket>(ret);
+}
+
+Ref<NetSocket> NetSocketUnix::accept(NetSocket::Address &r_addr) {
+	Ref<NetSocket> out;
+	ERR_FAIL_COND_V(!is_open(), out);
+
+	switch (_family) {
+		case Family::INET: {
+			IPAddress ip;
+			uint16_t port;
+			out = _inet_accept(ip, port);
+			if (out.is_valid()) {
+				r_addr = Address(ip, port);
+			}
+		} break;
+		case Family::UNIX: {
+			out = _unix_accept();
+		} break;
+		case Family::NONE:
+		default:
+			break;
+	}
+	return out;
 }
 
 Error NetSocketUnix::join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) {

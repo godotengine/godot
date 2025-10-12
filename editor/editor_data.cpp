@@ -36,8 +36,8 @@
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/multi_node_edit.h"
-#include "editor/plugins/editor_context_menu_plugin.h"
+#include "editor/inspector/editor_context_menu_plugin.h"
+#include "editor/inspector/multi_node_edit.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
@@ -668,7 +668,7 @@ bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, HashSet<Str
 
 	if (p_node == p_root) {
 		ss = p_node->get_scene_inherited_state();
-	} else if (!p_node->get_scene_file_path().is_empty()) {
+	} else if (p_node->is_instance()) {
 		ss = p_node->get_scene_instance_state();
 	}
 
@@ -773,7 +773,7 @@ void EditorData::set_edited_scene_root(Node *p_root) {
 	ERR_FAIL_INDEX(current_edited_scene, edited_scene.size());
 	edited_scene.write[current_edited_scene].root = p_root;
 	if (p_root) {
-		if (!p_root->get_scene_file_path().is_empty()) {
+		if (p_root->is_instance()) {
 			edited_scene.write[current_edited_scene].path = p_root->get_scene_file_path();
 		} else {
 			p_root->set_scene_file_path(edited_scene[current_edited_scene].path);
@@ -839,7 +839,7 @@ Ref<Script> EditorData::get_scene_root_script(int p_idx) const {
 	Ref<Script> s = edited_scene[p_idx].root->get_script();
 	if (s.is_null() && edited_scene[p_idx].root->get_child_count()) {
 		Node *n = edited_scene[p_idx].root->get_child(0);
-		while (s.is_null() && n && n->get_scene_file_path().is_empty()) {
+		while (s.is_null() && n && !n->is_instance()) {
 			s = n->get_script();
 			n = n->get_parent();
 		}
@@ -950,6 +950,7 @@ void EditorData::clear_edited_scenes() {
 		}
 	}
 	edited_scene.clear();
+	SceneTree::get_singleton()->set_edited_scene_root(nullptr);
 }
 
 void EditorData::set_plugin_window_layout(Ref<ConfigFile> p_layout) {
@@ -1024,10 +1025,12 @@ String EditorData::script_class_get_icon_path(const String &p_class, bool *r_val
 		}
 		HashMap<StringName, String>::ConstIterator E = _script_class_icon_paths.find(current);
 		if ((bool)E) {
-			if (r_valid && !E->value.is_empty()) {
-				*r_valid = true;
+			if (r_valid) {
+				*r_valid = !E->value.is_empty();
+				return E->value;
+			} else if (!E->value.is_empty()) {
+				return E->value;
 			}
-			return E->value;
 		}
 		current = ScriptServer::get_global_class_base(current);
 	}
@@ -1042,8 +1045,8 @@ void EditorData::script_class_set_name(const String &p_path, const StringName &p
 }
 
 void EditorData::script_class_save_global_classes() {
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
+	LocalVector<StringName> global_classes;
+	ScriptServer::get_global_class_list(global_classes);
 	Array array_classes;
 	for (const StringName &class_name : global_classes) {
 		Dictionary d;
@@ -1114,10 +1117,13 @@ Ref<Texture2D> EditorData::_load_script_icon(const String &p_path) const {
 
 Ref<Texture2D> EditorData::get_script_icon(const String &p_script_path) {
 	// Take from the local cache, if available.
-	if (_script_icon_cache.has(p_script_path)) {
-		// Can be an empty value if we can't resolve any icon for this script.
-		// An empty value is still cached to avoid unnecessary attempts at resolving it again.
-		return _script_icon_cache[p_script_path];
+	{
+		Ref<Texture2D> *icon = _script_icon_cache.getptr(p_script_path);
+		if (icon) {
+			// Can be an empty value if we can't resolve any icon for this script.
+			// An empty value is still cached to avoid unnecessary attempts at resolving it again.
+			return *icon;
+		}
 	}
 
 	// Fast path in case the whole hierarchy is made of global classes.
@@ -1290,7 +1296,7 @@ void EditorSelection::_update_node_list() {
 		top_selected_node_list.push_back(E.key);
 	}
 
-	node_list_changed = true;
+	node_list_changed = false;
 }
 
 void EditorSelection::update() {

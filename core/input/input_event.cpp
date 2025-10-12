@@ -153,6 +153,9 @@ int64_t InputEventFromWindow::get_window_id() const {
 ///////////////////////////////////
 
 void InputEventWithModifiers::set_command_or_control_autoremap(bool p_enabled) {
+	if (command_or_control_autoremap == p_enabled) {
+		return;
+	}
 	command_or_control_autoremap = p_enabled;
 	if (command_or_control_autoremap) {
 		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
@@ -166,6 +169,7 @@ void InputEventWithModifiers::set_command_or_control_autoremap(bool p_enabled) {
 		ctrl_pressed = false;
 		meta_pressed = false;
 	}
+	notify_property_list_changed();
 	emit_changed();
 }
 
@@ -256,11 +260,11 @@ String InputEventWithModifiers::as_text() const {
 	if (is_ctrl_pressed()) {
 		mod_names.push_back(find_keycode_name(Key::CTRL));
 	}
-	if (is_shift_pressed()) {
-		mod_names.push_back(find_keycode_name(Key::SHIFT));
-	}
 	if (is_alt_pressed()) {
 		mod_names.push_back(find_keycode_name(Key::ALT));
+	}
+	if (is_shift_pressed()) {
+		mod_names.push_back(find_keycode_name(Key::SHIFT));
 	}
 	if (is_meta_pressed()) {
 		mod_names.push_back(find_keycode_name(Key::META));
@@ -309,9 +313,11 @@ void InputEventWithModifiers::_validate_property(PropertyInfo &p_property) const
 		// Cannot be used with Meta/Command or Control!
 		if (p_property.name == "meta_pressed") {
 			p_property.usage ^= PROPERTY_USAGE_STORAGE;
+			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
 		if (p_property.name == "ctrl_pressed") {
 			p_property.usage ^= PROPERTY_USAGE_STORAGE;
+			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
 	} else {
 		if (p_property.name == "command_or_control_autoremap") {
@@ -1182,11 +1188,12 @@ String InputEventJoypadMotion::to_string() {
 	return vformat("InputEventJoypadMotion: axis=%d, axis_value=%.2f", axis, axis_value);
 }
 
-Ref<InputEventJoypadMotion> InputEventJoypadMotion::create_reference(JoyAxis p_axis, float p_value) {
+Ref<InputEventJoypadMotion> InputEventJoypadMotion::create_reference(JoyAxis p_axis, float p_value, int p_device) {
 	Ref<InputEventJoypadMotion> ie;
 	ie.instantiate();
 	ie->set_axis(p_axis);
 	ie->set_axis_value(p_value);
+	ie->set_device(p_device);
 
 	return ie;
 }
@@ -1301,10 +1308,11 @@ String InputEventJoypadButton::to_string() {
 	return vformat("InputEventJoypadButton: button_index=%d, pressed=%s, pressure=%.2f", button_index, p, pressure);
 }
 
-Ref<InputEventJoypadButton> InputEventJoypadButton::create_reference(JoyButton p_btn_index) {
+Ref<InputEventJoypadButton> InputEventJoypadButton::create_reference(JoyButton p_btn_index, int p_device) {
 	Ref<InputEventJoypadButton> ie;
 	ie.instantiate();
 	ie->set_button_index(p_btn_index);
+	ie->set_device(p_device);
 
 	return ie;
 }
@@ -1665,7 +1673,7 @@ void InputEventAction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_event_index", "index"), &InputEventAction::set_event_index);
 	ClassDB::bind_method(D_METHOD("get_event_index"), &InputEventAction::get_event_index);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action"), "set_action", "get_action");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action", PROPERTY_HINT_INPUT_NAME, "show_builtin,loose_mode"), "set_action", "get_action");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_strength", "get_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "event_index", PROPERTY_HINT_RANGE, "-1,31,1"), "set_event_index", "get_event_index"); // The max value equals to Input::MAX_EVENT - 1.

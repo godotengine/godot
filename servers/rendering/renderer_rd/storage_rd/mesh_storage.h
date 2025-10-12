@@ -383,6 +383,7 @@ public:
 	virtual void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
 	virtual void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
 	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
+	virtual void mesh_surface_update_index_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) override;
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const override;
@@ -688,26 +689,31 @@ public:
 
 	_FORCE_INLINE_ bool multimesh_uses_indirect(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, false);
 		return multimesh->indirect;
 	}
 
 	_FORCE_INLINE_ RS::MultimeshTransformFormat multimesh_get_transform_format(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, RS::MULTIMESH_TRANSFORM_3D);
 		return multimesh->xform_format;
 	}
 
 	_FORCE_INLINE_ bool multimesh_uses_colors(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, false);
 		return multimesh->uses_colors;
 	}
 
 	_FORCE_INLINE_ bool multimesh_uses_custom_data(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, false);
 		return multimesh->uses_custom_data;
 	}
 
 	_FORCE_INLINE_ uint32_t multimesh_get_instances_to_draw(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		ERR_FAIL_NULL_V(multimesh, 0);
 		if (multimesh->visible_instances >= 0) {
 			return multimesh->visible_instances;
 		}

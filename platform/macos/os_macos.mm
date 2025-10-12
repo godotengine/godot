@@ -37,17 +37,45 @@
 #import "display_server_macos.h"
 #import "godot_application.h"
 #import "godot_application_delegate.h"
-#import "macos_terminal_logger.h"
 
 #include "core/crypto/crypto_core.h"
+#include "core/io/file_access.h"
+#include "core/os/main_loop.h"
 #include "core/version_generated.gen.h"
+#include "drivers/apple/os_log_logger.h"
 #include "main/main.h"
+
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
 
 #include <dlfcn.h>
 #include <libproc.h>
 #import <mach-o/dyld.h>
 #include <os/log.h>
 #include <sys/sysctl.h>
+
+void OS_MacOS::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
+	if (p_wake_for_events) {
+		uint64_t delay = get_frame_delay(p_can_draw);
+		if (delay == 0) {
+			return;
+		}
+		if (wait_timer) {
+			CFRunLoopTimerInvalidate(wait_timer);
+			CFRelease(wait_timer);
+		}
+		wait_timer = CFRunLoopTimerCreateWithHandler(kCFAllocatorDefault, CFAbsoluteTimeGetCurrent() + (double(delay) / 1000000.0), 0, 0, 0,
+				^(CFRunLoopTimerRef timer) {
+					CFRunLoopTimerInvalidate(wait_timer);
+					CFRelease(wait_timer);
+					wait_timer = nil;
+				});
+		CFRunLoopAddTimer(CFRunLoopGetCurrent(), wait_timer, kCFRunLoopCommonModes);
+		return;
+	}
+	OS_Unix::add_frame_delay(p_can_draw, p_wake_for_events);
+}
 
 void OS_MacOS::initialize() {
 	crash_handler.initialize();
@@ -78,7 +106,7 @@ bool OS_MacOS::is_sandboxed() const {
 }
 
 bool OS_MacOS::request_permission(const String &p_name) {
-	if (@available(macOS 10.15, *)) {
+	if (@available(macOS 11.0, *)) {
 		if (p_name == "macos.permission.RECORD_SCREEN") {
 			if (CGPreflightScreenCaptureAccess()) {
 				return true;
@@ -98,7 +126,7 @@ bool OS_MacOS::request_permission(const String &p_name) {
 Vector<String> OS_MacOS::get_granted_permissions() const {
 	Vector<String> ret;
 
-	if (@available(macOS 10.15, *)) {
+	if (@available(macOS 11.0, *)) {
 		if (CGPreflightScreenCaptureAccess()) {
 			ret.push_back("macos.permission.RECORD_SCREEN");
 		}
@@ -208,13 +236,22 @@ void OS_MacOS::finalize() {
 
 	delete_main_loop();
 
-	if (joypad_apple) {
-		memdelete(joypad_apple);
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		memdelete(joypad_sdl);
 	}
+#endif
 }
 
 void OS_MacOS::initialize_joypads() {
-	joypad_apple = memnew(JoypadApple());
+#ifdef SDL_ENABLED
+	joypad_sdl = memnew(JoypadSDL());
+	if (joypad_sdl->initialize() != OK) {
+		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
+		memdelete(joypad_sdl);
+		joypad_sdl = nullptr;
+	}
+#endif
 }
 
 void OS_MacOS::set_main_loop(MainLoop *p_main_loop) {
@@ -238,6 +275,32 @@ List<String> OS_MacOS::get_cmdline_platform_args() const {
 	return launch_service_args;
 }
 
+void OS_MacOS::load_shell_environment() const {
+	static bool shell_env_loaded = false;
+	if (unlikely(!shell_env_loaded)) {
+		shell_env_loaded = true;
+		if (OS::get_singleton()->has_environment("TERM") || OS::get_singleton()->has_environment("__GODOT_SHELL_ENV_SET")) {
+			return; // Already started from terminal, or other the instance with the shell environment, do nothing.
+		}
+		String pipe;
+		List<String> args;
+		args.push_back("-c");
+		args.push_back(". /etc/zshrc;. /etc/zprofile;. ~/.zshenv;. ~/.zshrc;. ~/.zprofile;env");
+		Error err = OS::get_singleton()->execute("zsh", args, &pipe);
+		if (err == OK) {
+			Vector<String> env_vars = pipe.split("\n");
+			for (const String &E : env_vars) {
+				Vector<String> tags = E.split("=", 2);
+				if (tags.size() != 2 || tags[0] == "SHELL" || tags[0] == "USER" || tags[0] == "COMMAND_MODE" || tags[0] == "TMPDIR" || tags[0] == "TERM_SESSION_ID" || tags[0] == "PWD" || tags[0] == "OLDPWD" || tags[0] == "SHLVL" || tags[0] == "HOME" || tags[0] == "DISPLAY" || tags[0] == "LOGNAME" || tags[0] == "TERM" || tags[0] == "COLORTERM" || tags[0] == "_" || tags[0].begins_with("__CF") || tags[0].begins_with("XPC_") || tags[0].begins_with("__GODOT")) {
+					continue;
+				}
+				OS::get_singleton()->set_environment(tags[0], tags[1]);
+			}
+		}
+		OS::get_singleton()->set_environment("__GODOT_SHELL_ENV_SET", "1");
+	}
+}
+
 String OS_MacOS::get_name() const {
 	return "macOS";
 }
@@ -254,7 +317,9 @@ String OS_MacOS::get_version() const {
 String OS_MacOS::get_version_alias() const {
 	NSOperatingSystemVersion ver = [NSProcessInfo processInfo].operatingSystemVersion;
 	String macos_string;
-	if (ver.majorVersion == 15) {
+	if (ver.majorVersion == 26) {
+		macos_string += "Tahoe";
+	} else if (ver.majorVersion == 15) {
 		macos_string += "Sequoia";
 	} else if (ver.majorVersion == 14) {
 		macos_string += "Sonoma";
@@ -401,6 +466,19 @@ String OS_MacOS::get_bundle_icon_path() const {
 		NSString *icon_path = [[main infoDictionary] objectForKey:@"CFBundleIconFile"];
 		if (icon_path) {
 			ret.append_utf8([icon_path UTF8String]);
+		}
+	}
+	return ret;
+}
+
+String OS_MacOS::get_bundle_icon_name() const {
+	String ret;
+
+	NSBundle *main = [NSBundle mainBundle];
+	if (main) {
+		NSString *icon_name = [[main infoDictionary] objectForKey:@"CFBundleIconName"];
+		if (icon_name) {
+			ret.append_utf8([icon_name UTF8String]);
 		}
 	}
 	return ret;
@@ -777,10 +855,80 @@ Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_ch
 	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 	if (nsappname != nil) {
 		String path = String::utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
+#ifdef TOOLS_ENABLED
+		if (Engine::get_singleton() && !Engine::get_singleton()->is_project_manager_hint() && !Engine::get_singleton()->is_editor_hint()) {
+			// Project started from the editor, inject "path" argument to set instance working directory.
+			char cwd[PATH_MAX];
+			if (::getcwd(cwd, sizeof(cwd)) != nullptr) {
+				List<String> arguments = p_arguments;
+				arguments.push_back("--path");
+				arguments.push_back(String::utf8(cwd));
+				return create_process(path, arguments, r_child_id, false);
+			}
+		}
+#endif
 		return create_process(path, p_arguments, r_child_id, false);
 	} else {
 		return create_process(get_executable_path(), p_arguments, r_child_id, false);
 	}
+}
+
+Error OS_MacOS::open_with_program(const String &p_program_path, const List<String> &p_paths) {
+	NSURL *app_url = [NSURL fileURLWithPath:@(p_program_path.utf8().get_data())];
+	if (!app_url) {
+		return ERR_INVALID_PARAMETER;
+	}
+
+	NSBundle *bundle = [NSBundle bundleWithURL:app_url];
+	if (!bundle) {
+		return OS_Unix::create_process(p_program_path, p_paths);
+	}
+
+	NSMutableArray *urls_to_open = [[NSMutableArray alloc] init];
+	for (const String &path : p_paths) {
+		NSURL *file_url = [NSURL fileURLWithPath:@(path.utf8().get_data())];
+		if (file_url) {
+			[urls_to_open addObject:file_url];
+		}
+	}
+
+	if ([urls_to_open count] == 0) {
+		return ERR_INVALID_PARAMETER;
+	}
+
+#if defined(__x86_64__)
+	if (@available(macOS 10.15, *)) {
+#endif
+		NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
+		[configuration setCreatesNewApplicationInstance:NO];
+		__block dispatch_semaphore_t lock = dispatch_semaphore_create(0);
+		__block Error err = ERR_TIMEOUT;
+
+		[[NSWorkspace sharedWorkspace] openURLs:urls_to_open
+						   withApplicationAtURL:app_url
+								  configuration:configuration
+							  completionHandler:^(NSRunningApplication *app, NSError *error) {
+								  if (error) {
+									  err = ERR_CANT_FORK;
+									  NSLog(@"Failed to open paths: %@", error.localizedDescription);
+								  } else {
+									  err = OK;
+								  }
+								  dispatch_semaphore_signal(lock);
+							  }];
+		dispatch_semaphore_wait(lock, dispatch_time(DISPATCH_TIME_NOW, 20000000000)); // 20 sec timeout, wait for app to launch.
+
+		return err;
+#if defined(__x86_64__)
+	} else {
+		NSError *error = nullptr;
+		[[NSWorkspace sharedWorkspace] openURLs:urls_to_open withApplicationAtURL:app_url options:NSWorkspaceLaunchDefault configuration:@{} error:&error];
+		if (error) {
+			return ERR_CANT_FORK;
+		}
+		return OK;
+	}
+#endif
 }
 
 bool OS_MacOS::is_process_running(const ProcessID &p_pid) const {
@@ -905,9 +1053,9 @@ OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
 		}
 		[[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
 	}
-
 	Vector<Logger *> loggers;
-	loggers.push_back(memnew(MacOSTerminalLogger));
+	loggers.push_back(memnew(OsLogLogger(NSBundle.mainBundle.bundleIdentifier.UTF8String)));
+	loggers.push_back(memnew(UnixTerminalLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
 
 #ifdef COREAUDIO_ENABLED
@@ -921,6 +1069,14 @@ OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
 
 void OS_MacOS_NSApp::run() {
 	[NSApp run];
+}
+
+static bool sig_received = false;
+
+static void handle_interrupt(int sig) {
+	if (sig == SIGINT) {
+		sig_received = true;
+	}
 }
 
 void OS_MacOS_NSApp::start_main() {
@@ -952,17 +1108,22 @@ void OS_MacOS_NSApp::start_main() {
 							} else if (ds) {
 								ds->process_events();
 							}
-							joypad_apple->process_joypads();
+#ifdef SDL_ENABLED
+							if (joypad_sdl) {
+								joypad_sdl->process_events();
+							}
+#endif
 
-							if (Main::iteration()) {
+							if (Main::iteration() || sig_received) {
 								terminate();
 							}
 						} @catch (NSException *exception) {
 							ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
 						}
 					}
-
-					CFRunLoopWakeUp(CFRunLoopGetCurrent()); // Prevent main loop from sleeping.
+					if (wait_timer == nil) {
+						CFRunLoopWakeUp(CFRunLoopGetCurrent()); // Prevent main loop from sleeping.
+					}
 				});
 				CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
 				return;
@@ -1007,7 +1168,7 @@ OS_MacOS_NSApp::OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv
 	[GodotApplication sharedApplication];
 
 	// In case we are unbundled, make us a proper UI application.
-	[NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
+	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 
 	// Menu bar setup must go between sharedApplication above and
 	// finishLaunching below, in order to properly emulate the behavior
@@ -1020,6 +1181,64 @@ OS_MacOS_NSApp::OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv
 	ERR_FAIL_NULL(delegate);
 	[NSApp setDelegate:delegate];
 	[NSApp registerUserInterfaceItemSearchHandler:delegate];
+
+	struct sigaction action;
+	memset(&action, 0, sizeof(action));
+	action.sa_handler = handle_interrupt;
+	sigaction(SIGINT, &action, nullptr);
+}
+
+// MARK: - OS_MacOS_Headless
+
+void OS_MacOS_Headless::run() {
+	CFRunLoopGetCurrent();
+
+	@autoreleasepool {
+		Error err = Main::setup(execpath, argc, argv);
+		if (err != OK) {
+			if (err == ERR_HELP) {
+				return set_exit_code(EXIT_SUCCESS);
+			}
+			return set_exit_code(EXIT_FAILURE);
+		}
+	}
+
+	int ret;
+	@autoreleasepool {
+		ret = Main::start();
+	}
+
+	if (ret == EXIT_SUCCESS && main_loop) {
+		@autoreleasepool {
+			main_loop->initialize();
+		}
+
+		while (true) {
+			@autoreleasepool {
+				@try {
+					if (Input::get_singleton()) {
+						Input::get_singleton()->flush_buffered_events();
+					}
+
+					if (Main::iteration()) {
+						break;
+					}
+
+					CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, 0);
+				} @catch (NSException *exception) {
+					ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
+				}
+			}
+		}
+
+		main_loop->finalize();
+	}
+
+	Main::cleanup();
+}
+
+OS_MacOS_Headless::OS_MacOS_Headless(const char *p_execpath, int p_argc, char **p_argv) :
+		OS_MacOS(p_execpath, p_argc, p_argv) {
 }
 
 // MARK: - OS_MacOS_Embedded
@@ -1059,6 +1278,11 @@ void OS_MacOS_Embedded::run() {
 				@try {
 					ds->process_events();
 
+#ifdef SDL_ENABLED
+					if (joypad_sdl) {
+						joypad_sdl->process_events();
+					}
+#endif
 					if (Main::iteration()) {
 						break;
 					}

@@ -32,7 +32,7 @@
 #include "bone_attachment_3d.compat.inc"
 
 void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "bone_name") {
+	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "bone_name") {
 		// Because it is a constant function, we cannot use the get_skeleton function.
 		const Skeleton3D *parent = nullptr;
 		if (use_external_skeleton) {
@@ -51,36 +51,9 @@ void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
 			p_property.hint_string = "";
 		}
 	}
-}
 
-bool BoneAttachment3D::_set(const StringName &p_path, const Variant &p_value) {
-	if (p_path == SNAME("use_external_skeleton")) {
-		set_use_external_skeleton(p_value);
-		return true;
-	} else if (p_path == SNAME("external_skeleton")) {
-		set_external_skeleton(p_value);
-		return true;
-	}
-
-	return false;
-}
-
-bool BoneAttachment3D::_get(const StringName &p_path, Variant &r_ret) const {
-	if (p_path == SNAME("use_external_skeleton")) {
-		r_ret = get_use_external_skeleton();
-		return true;
-	} else if (p_path == SNAME("external_skeleton")) {
-		r_ret = get_external_skeleton();
-		return true;
-	}
-
-	return false;
-}
-
-void BoneAttachment3D::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::BOOL, "use_external_skeleton", PROPERTY_HINT_NONE, ""));
-	if (use_external_skeleton) {
-		p_list->push_back(PropertyInfo(Variant::NODE_PATH, "external_skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton3D"));
+	if (p_property.name == "external_skeleton" && !use_external_skeleton) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -111,7 +84,7 @@ void BoneAttachment3D::_update_external_skeleton_cache() {
 		Node *node = get_node(external_skeleton_node);
 		ERR_FAIL_NULL_MSG(node, "Cannot update external skeleton cache: Node cannot be found!");
 
-		// Make sure it's a skeleton3D
+		// Make sure it's a Skeleton3D.
 		Skeleton3D *sk = Object::cast_to<Skeleton3D>(node);
 		ERR_FAIL_NULL_MSG(sk, "Cannot update external skeleton cache: Skeleton3D Nodepath does not point to a Skeleton3D node!");
 
@@ -125,7 +98,7 @@ void BoneAttachment3D::_update_external_skeleton_cache() {
 					Node *node = parent_attachment->get_node(parent_attachment->external_skeleton_node);
 					ERR_FAIL_NULL_MSG(node, "Cannot update external skeleton cache: Parent's Skeleton3D node cannot be found!");
 
-					// Make sure it's a skeleton3D
+					// Make sure it's a Skeleton3D.
 					Skeleton3D *sk = Object::cast_to<Skeleton3D>(node);
 					ERR_FAIL_NULL_MSG(sk, "Cannot update external skeleton cache: Parent Skeleton3D Nodepath does not point to a Skeleton3D node!");
 
@@ -244,12 +217,12 @@ int BoneAttachment3D::get_bone_idx() const {
 	return bone_idx;
 }
 
-void BoneAttachment3D::set_override_pose(bool p_override) {
-	if (override_pose == p_override) {
+void BoneAttachment3D::set_override_pose(bool p_override_pose) {
+	if (override_pose == p_override_pose) {
 		return;
 	}
 
-	override_pose = p_override;
+	override_pose = p_override_pose;
 	set_notify_transform(override_pose);
 	set_process_internal(override_pose);
 	if (!override_pose && bone_idx >= 0) {
@@ -266,8 +239,8 @@ bool BoneAttachment3D::get_override_pose() const {
 	return override_pose;
 }
 
-void BoneAttachment3D::set_use_external_skeleton(bool p_use_external) {
-	use_external_skeleton = p_use_external;
+void BoneAttachment3D::set_use_external_skeleton(bool p_use_external_skeleton) {
+	use_external_skeleton = p_use_external_skeleton;
 
 	if (use_external_skeleton) {
 		_check_unbind();
@@ -283,8 +256,8 @@ bool BoneAttachment3D::get_use_external_skeleton() const {
 	return use_external_skeleton;
 }
 
-void BoneAttachment3D::set_external_skeleton(NodePath p_path) {
-	external_skeleton_node = p_path;
+void BoneAttachment3D::set_external_skeleton(NodePath p_external_skeleton) {
+	external_skeleton_node = p_external_skeleton;
 	_update_external_skeleton_cache();
 	notify_property_list_changed();
 }
@@ -328,7 +301,12 @@ void BoneAttachment3D::on_skeleton_update() {
 		if (sk) {
 			if (!override_pose) {
 				if (use_external_skeleton) {
-					set_global_transform(sk->get_global_transform() * sk->get_bone_global_pose(bone_idx));
+					if (sk->is_inside_tree()) {
+						set_global_transform(sk->get_global_transform() * sk->get_bone_global_pose(bone_idx));
+						// Else, do nothing, the transform will be set when the skeleton enters the tree:
+						// Skeleton3D::_notification(NOTIFICATION_ENTER_TREE) -> calls Skeleton3D::_notification(NOTIFICATION_UPDATE_SKELETON)
+						// -> emits skeleton_updated signal -> connected to BoneAttachment3D::on_skeleton_update()
+					}
 				} else {
 					set_transform(sk->get_bone_global_pose(bone_idx));
 				}
@@ -398,4 +376,6 @@ void BoneAttachment3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bone_name"), "set_bone_name", "get_bone_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_idx"), "set_bone_idx", "get_bone_idx");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_pose"), "set_override_pose", "get_override_pose");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_external_skeleton"), "set_use_external_skeleton", "get_use_external_skeleton");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "external_skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton3D"), "set_external_skeleton", "get_external_skeleton");
 }

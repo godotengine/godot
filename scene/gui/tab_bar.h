@@ -156,6 +156,11 @@ private:
 		Color font_disabled_color;
 		Color font_outline_color;
 
+		Color icon_selected_color;
+		Color icon_hovered_color;
+		Color icon_unselected_color;
+		Color icon_disabled_color;
+
 		Ref<Texture2D> close_icon;
 		Ref<StyleBox> button_pressed_style;
 		Ref<StyleBox> button_hl_style;
@@ -172,7 +177,7 @@ private:
 	void _on_mouse_exited();
 
 	void _shape(int p_tab);
-	void _draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x, bool p_focus);
+	void _draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, const Color &p_icon_color, int p_index, float p_x, bool p_focus);
 
 	void _accessibility_action_scroll_into_view(const Variant &p_data, int p_index);
 	void _accessibility_action_focus(const Variant &p_data, int p_index);
@@ -201,6 +206,7 @@ public:
 	Variant _handle_get_drag_data(const String &p_type, const Point2 &p_point);
 	bool _handle_can_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data) const;
 	void _handle_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data, const Callable &p_move_tab_callback, const Callable &p_move_tab_from_other_callback);
+	void _draw_tab_drop(RID p_canvas_item);
 
 	void add_tab(const String &p_str = "", const Ref<Texture2D> &p_icon = Ref<Texture2D>());
 
@@ -260,6 +266,9 @@ public:
 	int get_current_tab() const;
 	int get_previous_tab() const;
 	int get_hovered_tab() const;
+
+	int get_previous_available(int p_idx = -1) const;
+	int get_next_available(int p_idx = -1) const;
 
 	bool select_previous_available();
 	bool select_next_available();

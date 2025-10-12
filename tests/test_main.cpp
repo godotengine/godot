@@ -30,11 +30,13 @@
 
 #include "test_main.h"
 
+#include "core/error/error_macros.h"
+#include "core/io/dir_access.h"
 #include "modules/modules_enabled.gen.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/settings/editor_settings.h"
 #endif // TOOLS_ENABLED
 
 #include "tests/core/config/test_project_settings.h"
@@ -60,6 +62,7 @@
 #include "tests/core/io/test_stream_peer_gzip.h"
 #include "tests/core/io/test_tcp_server.h"
 #include "tests/core/io/test_udp_server.h"
+#include "tests/core/io/test_uds_server.h"
 #include "tests/core/io/test_xml_parser.h"
 #include "tests/core/math/test_aabb.h"
 #include "tests/core/math/test_astar.h"
@@ -101,11 +104,12 @@
 #include "tests/core/templates/test_list.h"
 #include "tests/core/templates/test_local_vector.h"
 #include "tests/core/templates/test_lru.h"
-#include "tests/core/templates/test_oa_hash_map.h"
 #include "tests/core/templates/test_paged_array.h"
 #include "tests/core/templates/test_rid.h"
+#include "tests/core/templates/test_self_list.h"
 #include "tests/core/templates/test_span.h"
 #include "tests/core/templates/test_vector.h"
+#include "tests/core/templates/test_vset.h"
 #include "tests/core/test_crypto.h"
 #include "tests/core/test_hashing_context.h"
 #include "tests/core/test_time.h"
@@ -116,6 +120,7 @@
 #include "tests/core/variant/test_variant.h"
 #include "tests/core/variant/test_variant_utility.h"
 #include "tests/scene/test_animation.h"
+#include "tests/scene/test_animation_blend_tree.h"
 #include "tests/scene/test_audio_stream_wav.h"
 #include "tests/scene/test_bit_map.h"
 #include "tests/scene/test_button.h"
@@ -136,6 +141,7 @@
 #include "tests/scene/test_parallax_2d.h"
 #include "tests/scene/test_path_2d.h"
 #include "tests/scene/test_path_follow_2d.h"
+#include "tests/scene/test_sprite_2d.h"
 #include "tests/scene/test_sprite_frames.h"
 #include "tests/scene/test_style_box_texture.h"
 #include "tests/scene/test_texture_progress_bar.h"
@@ -165,6 +171,8 @@
 #include "tests/core/math/test_triangle_mesh.h"
 #include "tests/scene/test_arraymesh.h"
 #include "tests/scene/test_camera_3d.h"
+#include "tests/scene/test_convert_transform_modifier_3d.h"
+#include "tests/scene/test_copy_transform_modifier_3d.h"
 #include "tests/scene/test_gltf_document.h"
 #include "tests/scene/test_path_3d.h"
 #include "tests/scene/test_path_follow_3d.h"
@@ -183,6 +191,7 @@
 #include "tests/scene/test_navigation_obstacle_2d.h"
 #include "tests/scene/test_navigation_region_2d.h"
 #include "tests/servers/test_navigation_server_2d.h"
+#include "tests/servers/test_triangle2.h"
 #endif // MODULE_NAVIGATION_2D_ENABLED
 
 #ifdef MODULE_NAVIGATION_3D_ENABLED
@@ -200,19 +209,19 @@
 #include "scene/theme/theme_db.h"
 
 #ifndef NAVIGATION_2D_DISABLED
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 #endif // NAVIGATION_2D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 #endif // NAVIGATION_3D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
-#include "servers/physics_server_2d.h"
-#include "servers/physics_server_2d_dummy.h"
+#include "servers/physics_2d/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d_dummy.h"
 #endif // PHYSICS_2D_DISABLED
 #ifndef PHYSICS_3D_DISABLED
-#include "servers/physics_server_3d.h"
-#include "servers/physics_server_3d_dummy.h"
+#include "servers/physics_3d/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d_dummy.h"
 #endif // PHYSICS_3D_DISABLED
 
 #include "servers/rendering/rendering_server_default.h"
@@ -230,6 +239,13 @@ int test_main(int argc, char *argv[]) {
 	DisplayServerMock::register_mock_driver();
 
 	WorkerThreadPool::get_singleton()->init();
+
+	{
+		const String test_path = TestUtils::get_temp_path("");
+		Ref<DirAccess> da = DirAccess::open(test_path); // get_temp_path() automatically creates the folder.
+		ERR_FAIL_COND_V(da.is_null(), 0);
+		ERR_FAIL_COND_V_MSG(da->erase_contents_recursive() != OK, 0, "Failed to delete files");
+	}
 
 	// Run custom test tools.
 	if (test_commands) {

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #if defined(RD_ENABLED)
 class RenderingContextDriver;
@@ -144,6 +144,7 @@ public:
 
 	virtual void screen_set_orientation(ScreenOrientation p_orientation, int p_screen = SCREEN_OF_MAIN_WINDOW) override;
 	virtual ScreenOrientation screen_get_orientation(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	int get_display_rotation() const;
 
 	virtual int get_screen_count() const override;
 	virtual int get_primary_screen() const override;
@@ -219,6 +220,8 @@ public:
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
 
+	virtual void window_set_color(const Color &p_color) override;
+
 	virtual void process_events() override;
 
 	void process_accelerometer(const Vector3 &p_accelerometer);
@@ -254,6 +257,8 @@ public:
 
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
+
+	virtual bool is_window_transparency_available() const override;
 
 	DisplayServerAndroid(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	~DisplayServerAndroid();

@@ -42,8 +42,8 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
             files = [f for f in files if not str(f).endswith(".gen.cpp")]
 
     # Add each path as compiled Object following environment (self) configuration
-    for path in files:
-        obj = self.Object(path)
+    for file in files:
+        obj = self.Object(file)
         if obj in sources:
             print_warning('Object "{}" already included in environment sources.'.format(obj))
             continue
@@ -68,7 +68,7 @@ def add_source_files_scu(self, sources, files, allow_gen=False):
             return False
 
         # Add all the gen.cpp files in the SCU directory
-        add_source_files_orig(self, sources, subdir + "scu/scu_*.gen.cpp", True)
+        add_source_files_orig(self, sources, subdir + ".scu/scu_*.gen.cpp", True)
         return True
     return False
 
@@ -88,15 +88,19 @@ def redirect_emitter(target, source, env):
     Emitter to automatically redirect object/library build files to the `bin/obj` directory,
     retaining subfolder structure. External build files will attempt to retain subfolder
     structure relative to their environment's parent directory, sorted under `bin/obj/external`.
-    If `redirect_build_objects` is `False`, or an external build file isn't relative to the
-    passed environment, this emitter does nothing.
+    If `redirect_build_objects` is `False`, an external build file isn't relative to the passed
+    environment, or a file is being written directly into `bin`, this emitter does nothing.
     """
     if not env["redirect_build_objects"]:
         return target, source
 
     redirected_targets = []
     for item in target:
-        if base_folder in (path := Path(item.get_abspath()).resolve()).parents:
+        path = Path(item.get_abspath()).resolve()
+
+        if path.parent == base_folder / "bin":
+            pass
+        elif base_folder in path.parents:
             item = env.File(f"#bin/obj/{path.relative_to(base_folder)}")
         elif (alt_base := Path(env.Dir(".").get_abspath()).resolve().parent) in path.parents:
             item = env.File(f"#bin/obj/external/{path.relative_to(alt_base)}")
@@ -437,6 +441,7 @@ def no_verbose(env):
 
     env["CXXCOMSTR"] = compile_source_message
     env["CCCOMSTR"] = compile_source_message
+    env["SWIFTCOMSTR"] = compile_source_message
     env["SHCCCOMSTR"] = compile_shared_source_message
     env["SHCXXCOMSTR"] = compile_shared_source_message
     env["ARCOMSTR"] = link_library_message
@@ -603,23 +608,47 @@ def CommandNoCache(env, target, sources, command, **args):
     return result
 
 
-def Run(env, function):
+def Run(env, function, comstr="$GENCOMSTR"):
     from SCons.Script import Action
 
-    return Action(function, "$GENCOMSTR")
+    return Action(function, comstr)
+
+
+def detect_darwin_toolchain_path(env):
+    var_name = "APPLE_TOOLCHAIN_PATH"
+    if not env[var_name]:
+        try:
+            xcode_path = subprocess.check_output(["xcode-select", "-p"]).strip().decode("utf-8")
+            if xcode_path:
+                env[var_name] = xcode_path + "/Toolchains/XcodeDefault.xctoolchain"
+        except (subprocess.CalledProcessError, OSError):
+            print_error("Failed to find SDK path while running 'xcode-select -p'.")
+            raise
 
 
 def detect_darwin_sdk_path(platform, env):
     sdk_name = ""
+
     if platform == "macos":
         sdk_name = "macosx"
         var_name = "MACOS_SDK_PATH"
+
     elif platform == "ios":
         sdk_name = "iphoneos"
-        var_name = "IOS_SDK_PATH"
+        var_name = "APPLE_SDK_PATH"
+
     elif platform == "iossimulator":
         sdk_name = "iphonesimulator"
-        var_name = "IOS_SDK_PATH"
+        var_name = "APPLE_SDK_PATH"
+
+    elif platform == "visionos":
+        sdk_name = "xros"
+        var_name = "APPLE_SDK_PATH"
+
+    elif platform == "visionossimulator":
+        sdk_name = "xrsimulator"
+        var_name = "APPLE_SDK_PATH"
+
     else:
         raise Exception("Invalid platform argument passed to detect_darwin_sdk_path")
 
@@ -629,7 +658,7 @@ def detect_darwin_sdk_path(platform, env):
             if sdk_path:
                 env[var_name] = sdk_path
         except (subprocess.CalledProcessError, OSError):
-            print_error("Failed to find SDK path while running xcrun --sdk {} --show-sdk-path.".format(sdk_name))
+            print_error("Failed to find SDK path while running 'xcrun --sdk {} --show-sdk-path'.".format(sdk_name))
             raise
 
 
@@ -641,7 +670,11 @@ def is_apple_clang(env):
     if not using_clang(env):
         return False
     try:
-        version = subprocess.check_output(shlex.split(env.subst(env["CXX"])) + ["--version"]).strip().decode("utf-8")
+        version = (
+            subprocess.check_output(shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"])
+            .strip()
+            .decode("utf-8")
+        )
     except (subprocess.CalledProcessError, OSError):
         print_warning("Couldn't parse CXX environment variable to infer compiler version.")
         return False
@@ -713,7 +746,7 @@ def get_compiler_version(env):
     # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
     try:
         version = subprocess.check_output(
-            shlex.split(env.subst(env["CXX"])) + ["--version"], shell=(os.name == "nt"), encoding="utf-8"
+            shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"], shell=(os.name == "nt"), encoding="utf-8"
         ).strip()
     except (subprocess.CalledProcessError, OSError):
         print_warning("Couldn't parse CXX environment variable to infer compiler version.")
@@ -1264,6 +1297,11 @@ def generate_vs_project(env, original_args, project_name="godot"):
                 "<ActiveProjectItemList_%s>;%s;</ActiveProjectItemList_%s>" % (x, ";".join(itemlist[x]), x)
             )
         output = os.path.join("bin", f"godot{env['PROGSUFFIX']}")
+
+        # The modules_enabled.gen.h header containing the defines is only generated on build, and only for the most recently built
+        # platform, which means VS can't properly render code that's inside module-specific ifdefs. This adds those defines to the
+        # platform-specific VS props file, so that VS knows which defines are enabled for the selected platform.
+        env.Append(VSHINT_DEFINES=[f"MODULE_{module.upper()}_ENABLED" for module in env.module_list])
 
         with open("misc/msvs/props.template", "r", encoding="utf-8") as file:
             props_template = file.read()

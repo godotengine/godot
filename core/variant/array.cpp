@@ -30,15 +30,17 @@
 
 #include "array.h"
 
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Dictionary);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, String);
+
 #include "container_type_validate.h"
 #include "core/math/math_funcs.h"
 #include "core/object/script_language.h"
 #include "core/templates/hashfuncs.h"
-#include "core/templates/search_array.h"
 #include "core/templates/vector.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
-#include "core/variant/variant.h"
 
 struct ArrayPrivate {
 	SafeRefCount refcount;
@@ -305,13 +307,19 @@ Error Array::resize(int p_new_size) {
 	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
 	Variant::Type &variant_type = _p->typed.type;
 	int old_size = _p->array.size();
-	Error err = _p->array.resize_zeroed(p_new_size);
+	Error err = _p->array.resize_initialized(p_new_size);
 	if (!err && variant_type != Variant::NIL && variant_type != Variant::OBJECT) {
+		Variant *write = _p->array.ptrw();
 		for (int i = old_size; i < p_new_size; i++) {
-			VariantInternal::initialize(&_p->array.write[i], variant_type);
+			VariantInternal::initialize(&write[i], variant_type);
 		}
 	}
 	return err;
+}
+
+Error Array::reserve(int p_new_size) {
+	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
+	return _p->array.reserve(p_new_size);
 }
 
 Error Array::insert(int p_pos, const Variant &p_value) {
@@ -519,10 +527,14 @@ const Variant &Array::get(int p_idx) const {
 }
 
 Array Array::duplicate(bool p_deep) const {
-	return recursive_duplicate(p_deep, 0);
+	return recursive_duplicate(p_deep, RESOURCE_DEEP_DUPLICATE_NONE, 0);
 }
 
-Array Array::recursive_duplicate(bool p_deep, int recursion_count) const {
+Array Array::duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode) const {
+	return recursive_duplicate(true, p_deep_subresources_mode, 0);
+}
+
+Array Array::recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const {
 	Array new_arr;
 	new_arr._p->typed = _p->typed;
 
@@ -532,12 +544,19 @@ Array Array::recursive_duplicate(bool p_deep, int recursion_count) const {
 	}
 
 	if (p_deep) {
+		bool is_call_chain_end = recursion_count == 0;
+
 		recursion_count++;
 		int element_count = size();
 		new_arr.resize(element_count);
 		Variant *write = new_arr._p->array.ptrw();
 		for (int i = 0; i < element_count; i++) {
-			write[i] = get(i).recursive_duplicate(true, recursion_count);
+			write[i] = get(i).recursive_duplicate(true, p_deep_subresources_mode, recursion_count);
+		}
+
+		// Variant::recursive_duplicate() may have created a remap cache by now.
+		if (is_call_chain_end) {
+			Resource::_teardown_duplicate_from_variant();
 		}
 	} else {
 		new_arr._p->array = _p->array;
@@ -737,8 +756,7 @@ void Array::shuffle() {
 int Array::bsearch(const Variant &p_value, bool p_before) const {
 	Variant value = p_value;
 	ERR_FAIL_COND_V(!_p->typed.validate(value, "binary search"), -1);
-	SearchArray<Variant, _ArrayVariantSort> avs;
-	return avs.bisect(_p->array.ptrw(), _p->array.size(), value, p_before);
+	return _p->array.span().bisect<_ArrayVariantSort>(value, p_before);
 }
 
 int Array::bsearch_custom(const Variant &p_value, const Callable &p_callable, bool p_before) const {
@@ -925,6 +943,10 @@ void Array::make_read_only() {
 
 bool Array::is_read_only() const {
 	return _p->read_only != nullptr;
+}
+
+Span<Variant> Array::span() const {
+	return _p->array.span();
 }
 
 Array::Array(const Array &p_from) {

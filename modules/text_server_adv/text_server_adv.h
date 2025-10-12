@@ -94,6 +94,11 @@ using namespace godot;
 
 // Thirdparty headers.
 
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wshadow")
+#ifdef __EMSCRIPTEN__
+GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunnecessary-virtual-specifier")
+#endif
+
 #include <unicode/ubidi.h>
 #include <unicode/ubrk.h>
 #include <unicode/uchar.h>
@@ -106,6 +111,11 @@ using namespace godot;
 #include <unicode/uspoof.h>
 #include <unicode/ustring.h>
 #include <unicode/utypes.h>
+
+GODOT_GCC_WARNING_POP
+#ifdef __EMSCRIPTEN__
+GODOT_CLANG_WARNING_POP
+#endif
 
 #ifdef MODULE_FREETYPE_ENABLED
 #include <ft2build.h>
@@ -152,7 +162,15 @@ class TextServerAdvanced : public TextServerExtension {
 	HashMap<StringName, int32_t> feature_sets;
 	HashMap<int32_t, FeatureInfo> feature_sets_inv;
 
+	enum LineBreakStrictness {
+		LB_AUTO,
+		LB_LOOSE,
+		LB_NORMAL,
+		LB_STRICT,
+	};
+
 	SafeNumeric<TextServer::FontLCDSubpixelLayout> lcd_subpixel_layout{ TextServer::FontLCDSubpixelLayout::FONT_LCD_SUBPIXEL_LAYOUT_NONE };
+	LineBreakStrictness lb_strictness = LB_AUTO;
 	void _update_settings();
 
 	void _insert_num_systems_lang();
@@ -336,6 +354,7 @@ class TextServerAdvanced : public TextServerExtension {
 		TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 		bool keep_rounding_remainders = true;
 		Dictionary variation_coordinates;
+		double oversampling_override = 0.0;
 		double embolden = 0.0;
 		Transform2D transform;
 
@@ -516,7 +535,7 @@ class TextServerAdvanced : public TextServerExtension {
 			Rect2 rect;
 			double baseline = 0;
 		};
-		HashMap<Variant, EmbeddedObject, VariantHasher, VariantComparator> objects;
+		HashMap<Variant, EmbeddedObject> objects;
 
 		/* Shaped data */
 		TextServer::Direction para_direction = DIRECTION_LTR; // Detected text direction.
@@ -543,8 +562,8 @@ class TextServerAdvanced : public TextServerExtension {
 		TrimData overrun_trim_data;
 		bool fit_width_minimum_reached = false;
 
-		Vector<Glyph> glyphs;
-		Vector<Glyph> glyphs_logical;
+		LocalVector<Glyph> glyphs;
+		LocalVector<Glyph> glyphs_logical;
 
 		/* Intermediate data */
 		Char16String utf16;
@@ -717,7 +736,7 @@ class TextServerAdvanced : public TextServerExtension {
 	static void _bmp_font_set_funcs(hb_font_t *p_font, TextServerAdvanced::FontForSizeAdvanced *p_face, bool p_unref);
 	static hb_font_t *_bmp_font_create(TextServerAdvanced::FontForSizeAdvanced *p_face, hb_destroy_func_t p_destroy);
 
-	hb_font_t *_font_get_hb_handle(const RID &p_font, int64_t p_font_size) const;
+	hb_font_t *_font_get_hb_handle(const RID &p_font, int64_t p_font_size, bool &r_is_color) const;
 
 	struct GlyphCompare { // For line breaking reordering.
 		_FORCE_INLINE_ bool operator()(const Glyph &l, const Glyph &r) const {
@@ -840,6 +859,9 @@ public:
 
 	MODBIND2(font_set_variation_coordinates, const RID &, const Dictionary &);
 	MODBIND1RC(Dictionary, font_get_variation_coordinates, const RID &);
+
+	MODBIND2(font_set_oversampling, const RID &, double);
+	MODBIND1RC(double, font_get_oversampling, const RID &);
 
 	MODBIND2(font_set_hinting, const RID &, TextServer::Hinting);
 	MODBIND1RC(TextServer::Hinting, font_get_hinting, const RID &);

@@ -50,7 +50,7 @@ void ProgressBar::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (is_visible_in_tree()) {
-				_inderminate_fill_progress += get_process_delta_time() * MAX(indeterminate_min_speed, MAX(get_size().width, get_size().height) / 2);
+				_indeterminate_fill_progress += get_process_delta_time() * MAX(indeterminate_min_speed, MAX(get_size().width, get_size().height) / 2);
 				queue_redraw();
 			}
 		} break;
@@ -71,7 +71,7 @@ void ProgressBar::_notification(int p_what) {
 
 				if (is_part_of_edited_scene() && !editor_preview_indeterminate) {
 					// Center the filled bar when we're not previewing the animation.
-					_inderminate_fill_progress = (MAX(size.width, size.height) / 2) + (fill_size / 2);
+					_indeterminate_fill_progress = (MAX(size.width, size.height) / 2) + (fill_size / 2);
 				}
 
 				switch (mode) {
@@ -80,26 +80,26 @@ void ProgressBar::_notification(int p_what) {
 						// Follow the RTL layout with the animation to match how the bar would fill.
 						bool right_to_left = mode == (is_layout_rtl() ? FILL_BEGIN_TO_END : FILL_END_TO_BEGIN);
 
-						if (_inderminate_fill_progress > size.width + fill_size) {
-							_inderminate_fill_progress = right_to_left ? -fill_size : 0;
+						if (_indeterminate_fill_progress > size.width + fill_size) {
+							_indeterminate_fill_progress = right_to_left ? -fill_size : 0;
 						}
 
-						real_t x = right_to_left ? size.width - _inderminate_fill_progress : _inderminate_fill_progress - fill_size;
+						real_t x = right_to_left ? size.width - _indeterminate_fill_progress : _indeterminate_fill_progress - fill_size;
 						draw_style_box(theme_cache.fill_style, Rect2(x, 0, fill_size, size.height).intersection(Rect2(Point2(), size)));
 					} break;
 					case FILL_TOP_TO_BOTTOM: {
-						if (_inderminate_fill_progress > size.height + fill_size) {
-							_inderminate_fill_progress = 0;
+						if (_indeterminate_fill_progress > size.height + fill_size) {
+							_indeterminate_fill_progress = 0;
 						}
 
-						draw_style_box(theme_cache.fill_style, Rect2(0, _inderminate_fill_progress - fill_size, size.width, fill_size).intersection(Rect2(Point2(), size)));
+						draw_style_box(theme_cache.fill_style, Rect2(0, _indeterminate_fill_progress - fill_size, size.width, fill_size).intersection(Rect2(Point2(), size)));
 					} break;
 					case FILL_BOTTOM_TO_TOP: {
-						if (_inderminate_fill_progress > size.height + fill_size) {
-							_inderminate_fill_progress = -fill_size;
+						if (_indeterminate_fill_progress > size.height + fill_size) {
+							_indeterminate_fill_progress = -fill_size;
 						}
 
-						draw_style_box(theme_cache.fill_style, Rect2(0, size.height - _inderminate_fill_progress, size.width, fill_size).intersection(Rect2(Point2(), size)));
+						draw_style_box(theme_cache.fill_style, Rect2(0, size.height - _indeterminate_fill_progress, size.width, fill_size).intersection(Rect2(Point2(), size)));
 					} break;
 					case FILL_MODE_MAX:
 						break;
@@ -186,7 +186,7 @@ void ProgressBar::_notification(int p_what) {
 }
 
 void ProgressBar::_validate_property(PropertyInfo &p_property) const {
-	if (indeterminate && p_property.name == "show_percentage") {
+	if (Engine::get_singleton()->is_editor_hint() && indeterminate && p_property.name == "show_percentage") {
 		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 	}
 	if (!indeterminate && p_property.name == "editor_preview_indeterminate") {
@@ -197,7 +197,7 @@ void ProgressBar::_validate_property(PropertyInfo &p_property) const {
 void ProgressBar::set_fill_mode(int p_fill) {
 	ERR_FAIL_INDEX(p_fill, FILL_MODE_MAX);
 	mode = (FillMode)p_fill;
-	_inderminate_fill_progress = 0;
+	_indeterminate_fill_progress = 0;
 	queue_redraw();
 }
 
@@ -223,7 +223,7 @@ void ProgressBar::set_indeterminate(bool p_indeterminate) {
 		return;
 	}
 	indeterminate = p_indeterminate;
-	_inderminate_fill_progress = 0;
+	_indeterminate_fill_progress = 0;
 
 	bool should_process = !is_part_of_edited_scene() || editor_preview_indeterminate;
 	set_process_internal(indeterminate && should_process);
@@ -244,7 +244,7 @@ void ProgressBar::set_editor_preview_indeterminate(bool p_preview_indeterminate)
 	editor_preview_indeterminate = p_preview_indeterminate;
 
 	if (is_part_of_edited_scene()) {
-		_inderminate_fill_progress = 0;
+		_indeterminate_fill_progress = 0;
 		set_process_internal(indeterminate && editor_preview_indeterminate);
 		queue_redraw();
 	}

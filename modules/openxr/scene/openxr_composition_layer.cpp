@@ -113,6 +113,9 @@ void OpenXRCompositionLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_android_surface"), &OpenXRCompositionLayer::get_android_surface);
 	ClassDB::bind_method(D_METHOD("is_natively_supported"), &OpenXRCompositionLayer::is_natively_supported);
 
+	ClassDB::bind_method(D_METHOD("is_protected_content"), &OpenXRCompositionLayer::is_protected_content);
+	ClassDB::bind_method(D_METHOD("set_protected_content", "protected_content"), &OpenXRCompositionLayer::set_protected_content);
+
 	ClassDB::bind_method(D_METHOD("set_min_filter", "mode"), &OpenXRCompositionLayer::set_min_filter);
 	ClassDB::bind_method(D_METHOD("get_min_filter"), &OpenXRCompositionLayer::get_min_filter);
 
@@ -150,6 +153,7 @@ void OpenXRCompositionLayer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "layer_viewport", PROPERTY_HINT_NODE_TYPE, "SubViewport"), "set_layer_viewport", "get_layer_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_android_surface", PROPERTY_HINT_NONE, ""), "set_use_android_surface", "get_use_android_surface");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "protected_content", PROPERTY_HINT_NONE, ""), "set_protected_content", "is_protected_content");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "android_surface_size", PROPERTY_HINT_NONE, ""), "set_android_surface_size", "get_android_surface_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sort_order", PROPERTY_HINT_NONE, ""), "set_sort_order", "get_sort_order");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "alpha_blend", PROPERTY_HINT_NONE, ""), "set_alpha_blend", "get_alpha_blend");
@@ -245,7 +249,7 @@ void OpenXRCompositionLayer::_clear_composition_layer_provider() {
 
 void OpenXRCompositionLayer::_on_openxr_session_begun() {
 	openxr_session_running = true;
-	if (is_natively_supported() && is_visible() && is_inside_tree()) {
+	if (_should_register()) {
 		_setup_composition_layer_provider();
 	}
 	if (!fallback && _should_use_fallback_node()) {
@@ -263,6 +267,10 @@ void OpenXRCompositionLayer::_on_openxr_session_stopping() {
 
 void OpenXRCompositionLayer::update_fallback_mesh() {
 	should_update_fallback_mesh = true;
+}
+
+bool OpenXRCompositionLayer::_should_register() {
+	return !registered && openxr_session_running && is_inside_tree() && is_visible() && is_natively_supported();
 }
 
 XrPosef OpenXRCompositionLayer::get_openxr_pose() {
@@ -298,7 +306,7 @@ void OpenXRCompositionLayer::set_layer_viewport(SubViewport *p_viewport) {
 	}
 
 	layer_viewport = p_viewport;
-	if (!registered && is_natively_supported() && openxr_session_running && is_inside_tree() && is_visible()) {
+	if (_should_register()) {
 		_setup_composition_layer_provider();
 	}
 
@@ -328,8 +336,13 @@ void OpenXRCompositionLayer::set_use_android_surface(bool p_use_android_surface)
 
 	use_android_surface = p_use_android_surface;
 	if (use_android_surface) {
+		// It's possible that the layer provider is unregistered here (if previously invisible)
 		set_layer_viewport(nullptr);
 		openxr_layer_provider->set_use_android_surface(true, android_surface_size);
+		// ...and it may not be set up above because of viewport = null, android surface is false, so set it up again:
+		if (_should_register()) {
+			_setup_composition_layer_provider();
+		}
 	} else {
 		openxr_layer_provider->set_use_android_surface(false, Size2i());
 	}
@@ -408,6 +421,14 @@ bool OpenXRCompositionLayer::is_natively_supported() const {
 		return composition_layer_extension->is_available(openxr_layer_provider->get_openxr_type());
 	}
 	return false;
+}
+
+void OpenXRCompositionLayer::set_protected_content(bool p_protected_content) {
+	openxr_layer_provider->set_protected_content(p_protected_content);
+}
+
+bool OpenXRCompositionLayer::is_protected_content() const {
+	return openxr_layer_provider->is_protected_content();
 }
 
 void OpenXRCompositionLayer::set_min_filter(Filter p_mode) {
@@ -677,6 +698,9 @@ bool OpenXRCompositionLayer::_set(const StringName &p_property, const Variant &p
 }
 
 void OpenXRCompositionLayer::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "layer_viewport") {
 		if (use_android_surface) {
 			p_property.usage &= ~PROPERTY_USAGE_EDITOR;

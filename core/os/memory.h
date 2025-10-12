@@ -31,61 +31,63 @@
 #pragma once
 
 #include "core/error/error_macros.h"
-#include "core/templates/safe_refcount.h"
 
 #include <new> // IWYU pragma: keep // `new` operators.
 #include <type_traits>
 
-class Memory {
-#ifdef DEBUG_ENABLED
-	static SafeNumeric<uint64_t> mem_usage;
-	static SafeNumeric<uint64_t> max_usage;
-#endif
+namespace Memory {
+constexpr size_t get_aligned_address(size_t p_address, size_t p_alignment) {
+	const size_t n_bytes_unaligned = p_address % p_alignment;
+	return (n_bytes_unaligned == 0) ? p_address : (p_address + p_alignment - n_bytes_unaligned);
+}
 
-public:
-	// Alignment:  ↓ max_align_t        ↓ uint64_t          ↓ max_align_t
-	//             ┌─────────────────┬──┬────────────────┬──┬───────────...
-	//             │ uint64_t        │░░│ uint64_t       │░░│ T[]
-	//             │ alloc size      │░░│ element count  │░░│ data
-	//             └─────────────────┴──┴────────────────┴──┴───────────...
-	// Offset:     ↑ SIZE_OFFSET        ↑ ELEMENT_OFFSET    ↑ DATA_OFFSET
+// Alignment:  ↓ max_align_t        ↓ uint64_t          ↓ max_align_t
+//             ┌─────────────────┬──┬────────────────┬──┬───────────...
+//             │ uint64_t        │░░│ uint64_t       │░░│ T[]
+//             │ alloc size      │░░│ element count  │░░│ data
+//             └─────────────────┴──┴────────────────┴──┴───────────...
+// Offset:     ↑ SIZE_OFFSET        ↑ ELEMENT_OFFSET    ↑ DATA_OFFSET
 
-	static constexpr size_t SIZE_OFFSET = 0;
-	static constexpr size_t ELEMENT_OFFSET = ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t) == 0) ? (SIZE_OFFSET + sizeof(uint64_t)) : ((SIZE_OFFSET + sizeof(uint64_t)) + alignof(uint64_t) - ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t)));
-	static constexpr size_t DATA_OFFSET = ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t) == 0) ? (ELEMENT_OFFSET + sizeof(uint64_t)) : ((ELEMENT_OFFSET + sizeof(uint64_t)) + alignof(max_align_t) - ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t)));
+inline constexpr size_t SIZE_OFFSET = 0;
+inline constexpr size_t ELEMENT_OFFSET = get_aligned_address(SIZE_OFFSET + sizeof(uint64_t), alignof(uint64_t));
+inline constexpr size_t DATA_OFFSET = get_aligned_address(ELEMENT_OFFSET + sizeof(uint64_t), alignof(max_align_t));
 
-	static void *alloc_static(size_t p_bytes, bool p_pad_align = false);
-	static void *realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align = false);
-	static void free_static(void *p_ptr, bool p_pad_align = false);
+template <bool p_ensure_zero = false>
+void *alloc_static(size_t p_bytes, bool p_pad_align = false);
+_FORCE_INLINE_ static void *alloc_static_zeroed(size_t p_bytes, bool p_pad_align = false) {
+	return alloc_static<true>(p_bytes, p_pad_align);
+}
+void *realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align = false);
+void free_static(void *p_ptr, bool p_pad_align = false);
 
-	//	                            ↓ return value of alloc_aligned_static
-	//	┌─────────────────┬─────────┬─────────┬──────────────────┐
-	//	│ padding (up to  │ uint32_t│ void*   │ padding (up to   │
-	//	│ p_alignment - 1)│ offset  │ p_bytes │ p_alignment - 1) │
-	//	└─────────────────┴─────────┴─────────┴──────────────────┘
-	//
-	// alloc_aligned_static will allocate p_bytes + p_alignment - 1 + sizeof(uint32_t) and
-	// then offset the pointer until alignment is satisfied.
-	//
-	// This offset is stored before the start of the returned ptr so we can retrieve the original/real
-	// start of the ptr in order to free it.
-	//
-	// The rest is wasted as padding in the beginning and end of the ptr. The sum of padding at
-	// both start and end of the block must add exactly to p_alignment - 1.
-	//
-	// p_alignment MUST be a power of 2.
-	static void *alloc_aligned_static(size_t p_bytes, size_t p_alignment);
-	static void *realloc_aligned_static(void *p_memory, size_t p_bytes, size_t p_prev_bytes, size_t p_alignment);
-	// Pass the ptr returned by alloc_aligned_static to free it.
-	// e.g.
-	//	void *data = realloc_aligned_static( bytes, 16 );
-	//  free_aligned_static( data );
-	static void free_aligned_static(void *p_memory);
+//	                            ↓ return value of alloc_aligned_static
+//	┌─────────────────┬─────────┬─────────┬──────────────────┐
+//	│ padding (up to  │ uint32_t│ void*   │ padding (up to   │
+//	│ p_alignment - 1)│ offset  │ p_bytes │ p_alignment - 1) │
+//	└─────────────────┴─────────┴─────────┴──────────────────┘
+//
+// alloc_aligned_static will allocate p_bytes + p_alignment - 1 + sizeof(uint32_t) and
+// then offset the pointer until alignment is satisfied.
+//
+// This offset is stored before the start of the returned ptr so we can retrieve the original/real
+// start of the ptr in order to free it.
+//
+// The rest is wasted as padding in the beginning and end of the ptr. The sum of padding at
+// both start and end of the block must add exactly to p_alignment - 1.
+//
+// p_alignment MUST be a power of 2.
+void *alloc_aligned_static(size_t p_bytes, size_t p_alignment);
+void *realloc_aligned_static(void *p_memory, size_t p_bytes, size_t p_prev_bytes, size_t p_alignment);
+// Pass the ptr returned by alloc_aligned_static to free it.
+// e.g.
+//	void *data = realloc_aligned_static( bytes, 16 );
+//  free_aligned_static( data );
+void free_aligned_static(void *p_memory);
 
-	static uint64_t get_mem_available();
-	static uint64_t get_mem_usage();
-	static uint64_t get_mem_max_usage();
-};
+uint64_t get_mem_available();
+uint64_t get_mem_usage();
+uint64_t get_mem_max_usage();
+}; //namespace Memory
 
 class DefaultAllocator {
 public:
@@ -107,6 +109,7 @@ void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_d
 #endif
 
 #define memalloc(m_size) Memory::alloc_static(m_size)
+#define memalloc_zeroed(m_size) Memory::alloc_static_zeroed(m_size)
 #define memrealloc(m_mem, m_size) Memory::realloc_static(m_mem, m_size)
 #define memfree(m_mem) Memory::free_static(m_mem)
 
@@ -193,19 +196,37 @@ T *memnew_arr_template(size_t p_elements) {
 }
 
 // Fast alternative to a loop constructor pattern.
-template <bool p_ensure_zero = false, typename T>
+template <typename T>
 _FORCE_INLINE_ void memnew_arr_placement(T *p_start, size_t p_num) {
-	if constexpr (std::is_trivially_constructible_v<T> && !p_ensure_zero) {
-		// Don't need to do anything :)
-		(void)p_start;
-		(void)p_num;
-	} else if constexpr (is_zero_constructible_v<T>) {
+	if constexpr (is_zero_constructible_v<T>) {
 		// Can optimize with memset.
 		memset(static_cast<void *>(p_start), 0, p_num * sizeof(T));
 	} else {
 		// Need to use a for loop.
 		for (size_t i = 0; i < p_num; i++) {
-			memnew_placement(p_start + i, T);
+			memnew_placement(p_start + i, T());
+		}
+	}
+}
+
+// Convenient alternative to a loop copy pattern.
+template <typename T>
+_FORCE_INLINE_ void copy_arr_placement(T *p_dst, const T *p_src, size_t p_num) {
+	if constexpr (std::is_trivially_copyable_v<T>) {
+		memcpy((uint8_t *)p_dst, (uint8_t *)p_src, p_num * sizeof(T));
+	} else {
+		for (size_t i = 0; i < p_num; i++) {
+			memnew_placement(p_dst + i, T(p_src[i]));
+		}
+	}
+}
+
+// Convenient alternative to a loop destructor pattern.
+template <typename T>
+_FORCE_INLINE_ void destruct_arr_placement(T *p_dst, size_t p_num) {
+	if constexpr (!std::is_trivially_destructible_v<T>) {
+		for (size_t i = 0; i < p_num; i++) {
+			p_dst[i].~T();
 		}
 	}
 }

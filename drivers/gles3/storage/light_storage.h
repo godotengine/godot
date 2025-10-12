@@ -113,7 +113,6 @@ struct LightInstance {
 
 struct ReflectionProbe {
 	RS::ReflectionProbeUpdateMode update_mode = RS::REFLECTION_PROBE_UPDATE_ONCE;
-	int resolution = 256;
 	float intensity = 1.0;
 	float blend_distance = 1.0;
 	RS::ReflectionProbeAmbientMode ambient_mode = RS::REFLECTION_PROBE_AMBIENT_ENVIRONMENT;

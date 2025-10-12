@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SocketServer" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An abstract class for servers based on sockets.
+	</brief_description>
+	<description>
+		A socket server.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="is_connection_available" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if a connection is available for taking.
+			</description>
+		</method>
+		<method name="is_listening" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the server is currently listening for connections.
+			</description>
+		</method>
+		<method name="stop">
+			<return type="void" />
+			<description>
+				Stops listening.
+			</description>
+		</method>
+		<method name="take_socket_connection">
+			<return type="StreamPeerSocket" />
+			<description>
+				If a connection is available, returns a StreamPeerSocket with the connection.
+			</description>
+		</method>
+	</methods>
+</class>

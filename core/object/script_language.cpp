@@ -31,9 +31,11 @@
 #include "script_language.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_bind.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/resource_loader.h"
+#include "core/templates/sort_array.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;
@@ -44,6 +46,15 @@ thread_local bool ScriptServer::thread_entered = false;
 bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
 ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
+
+// These need to be the last static variables in this file, since we're exploiting the reverse-order destruction of static variables.
+static bool is_program_exiting = false;
+struct ProgramExitGuard {
+	~ProgramExitGuard() {
+		is_program_exiting = true;
+	}
+};
+static ProgramExitGuard program_exit_guard;
 
 void Script::_notification(int p_what) {
 	switch (p_what) {
@@ -172,7 +183,7 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_tool"), &Script::is_tool);
 	ClassDB::bind_method(D_METHOD("is_abstract"), &Script::is_abstract);
 
-	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Script::get_rpc_config);
+	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Script::_get_rpc_config_bind);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
 }
@@ -321,6 +332,9 @@ void ScriptServer::finish_languages() {
 	}
 
 	for (ScriptLanguage *E : langs_to_finish) {
+		if (CoreBind::OS::get_singleton()) {
+			CoreBind::OS::get_singleton()->remove_script_loggers(E); // Unregister loggers using this script language.
+		}
 		E->finish();
 	}
 
@@ -494,15 +508,18 @@ bool ScriptServer::is_global_class_tool(const String &p_class) {
 	return global_classes[p_class].is_tool;
 }
 
-void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
-	List<StringName> classes;
-	for (const KeyValue<StringName, GlobalScriptClass> &E : global_classes) {
-		classes.push_back(E.key);
+// This function only sorts items added by this function.
+// If `r_global_classes` is not empty before calling and a global sort is needed, caller must handle that separately.
+void ScriptServer::get_global_class_list(LocalVector<StringName> &r_global_classes) {
+	if (global_classes.is_empty()) {
+		return;
 	}
-	classes.sort_custom<StringName::AlphCompare>();
-	for (const StringName &E : classes) {
-		r_global_classes->push_back(E);
+	r_global_classes.reserve(r_global_classes.size() + global_classes.size());
+	for (const KeyValue<StringName, GlobalScriptClass> &global_class : global_classes) {
+		r_global_classes.push_back(global_class.key);
 	}
+	SortArray<StringName> sorter;
+	sorter.sort(&r_global_classes[r_global_classes.size() - global_classes.size()], global_classes.size());
 }
 
 void ScriptServer::save_global_classes() {
@@ -517,17 +534,17 @@ void ScriptServer::save_global_classes() {
 		class_icons[d["name"]] = d["icon"];
 	}
 
-	List<StringName> gc;
-	get_global_class_list(&gc);
+	LocalVector<StringName> gc;
+	get_global_class_list(gc);
 	Array gcarr;
-	for (const StringName &E : gc) {
-		const GlobalScriptClass &global_class = global_classes[E];
+	for (const StringName &class_name : gc) {
+		const GlobalScriptClass &global_class = global_classes[class_name];
 		Dictionary d;
-		d["class"] = E;
+		d["class"] = class_name;
 		d["language"] = global_class.language;
 		d["path"] = global_class.path;
 		d["base"] = global_class.base;
-		d["icon"] = class_icons.get(E, "");
+		d["icon"] = class_icons.get(class_name, "");
 		d["is_abstract"] = global_class.is_abstract;
 		d["is_tool"] = global_class.is_tool;
 		gcarr.push_back(d);
@@ -536,13 +553,21 @@ void ScriptServer::save_global_classes() {
 }
 
 Vector<Ref<ScriptBacktrace>> ScriptServer::capture_script_backtraces(bool p_include_variables) {
-	int language_count = ScriptServer::get_language_count();
-	Vector<Ref<ScriptBacktrace>> result;
-	result.resize(language_count);
-	for (int i = 0; i < language_count; i++) {
-		ScriptLanguage *language = ScriptServer::get_language(i);
-		result.write[i].instantiate(language, p_include_variables);
+	if (is_program_exiting) {
+		return Vector<Ref<ScriptBacktrace>>();
 	}
+
+	MutexLock lock(languages_mutex);
+	if (!languages_ready) {
+		return Vector<Ref<ScriptBacktrace>>();
+	}
+
+	Vector<Ref<ScriptBacktrace>> result;
+	result.resize(_language_count);
+	for (int i = 0; i < _language_count; i++) {
+		result.write[i].instantiate(_languages[i], p_include_variables);
+	}
+
 	return result;
 }
 
@@ -778,7 +803,7 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 		StringName n = E.name;
 		new_values.insert(n);
 
-		if (!values.has(n) || values[n].get_type() != E.type) {
+		if (!values.has(n) || (E.type != Variant::NIL && values[n].get_type() != E.type)) {
 			if (p_values.has(n)) {
 				values[n] = p_values[n];
 			}

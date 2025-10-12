@@ -32,9 +32,14 @@
 
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/os/main_loop.h"
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
 #include "main/main.h"
-#include "servers/display_server.h"
-#include "servers/rendering_server.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef X11_ENABLED
 #include "x11/detect_prime_x11.h"
@@ -91,7 +96,7 @@ void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	String program;
 
 	for (int i = 0; i < path_elems.size(); i++) {
-		for (uint64_t k = 0; k < std::size(message_programs); k++) {
+		for (uint64_t k = 0; k < std_size(message_programs); k++) {
 			String tested_path = path_elems[i].path_join(message_programs[k]);
 
 			if (FileAccess::exists(tested_path)) {
@@ -158,8 +163,13 @@ void OS_LinuxBSD::initialize() {
 }
 
 void OS_LinuxBSD::initialize_joypads() {
-#ifdef JOYDEV_ENABLED
-	joypad = memnew(JoypadLinux(Input::get_singleton()));
+#ifdef SDL_ENABLED
+	joypad_sdl = memnew(JoypadSDL());
+	if (joypad_sdl->initialize() != OK) {
+		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
+		memdelete(joypad_sdl);
+		joypad_sdl = nullptr;
+	}
 #endif
 }
 
@@ -202,7 +212,7 @@ String OS_LinuxBSD::get_processor_name() const {
 	while (!f->eof_reached()) {
 		const String line = f->get_line();
 		if (line.to_lower().contains("model name")) {
-			return line.split(":")[1].strip_edges();
+			return line.get_slicec(':', 1).strip_edges();
 		}
 	}
 #endif
@@ -241,9 +251,9 @@ void OS_LinuxBSD::finalize() {
 	driver_alsamidi.close();
 #endif
 
-#ifdef JOYDEV_ENABLED
-	if (joypad) {
-		memdelete(joypad);
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		memdelete(joypad_sdl);
 	}
 #endif
 }
@@ -287,7 +297,7 @@ String OS_LinuxBSD::get_systemd_os_release_info_value(const String &key) const {
 		while (!f->eof_reached()) {
 			const String line = f->get_line();
 			if (line.contains(key)) {
-				String value = line.split("=")[1].strip_edges();
+				String value = line.get_slicec('=', 1).strip_edges();
 				value = value.trim_prefix("\"");
 				return value.trim_suffix("\"");
 			}
@@ -768,7 +778,7 @@ Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_n
 
 	Vector<String> ret;
 	static const char *allowed_formats[] = { "TrueType", "CFF" };
-	for (size_t i = 0; i < std::size(allowed_formats); i++) {
+	for (size_t i = 0; i < std_size(allowed_formats); i++) {
 		FcPattern *pattern = FcPatternCreate();
 		if (pattern) {
 			FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
@@ -973,8 +983,10 @@ void OS_LinuxBSD::run() {
 
 	while (true) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
-#ifdef JOYDEV_ENABLED
-		joypad->process_joypads();
+#ifdef SDL_ENABLED
+		if (joypad_sdl) {
+			joypad_sdl->process_events();
+		}
 #endif
 		if (Main::iteration()) {
 			break;
@@ -1197,6 +1209,7 @@ String OS_LinuxBSD::get_system_ca_certificates() {
 	return f->get_as_text();
 }
 
+#ifdef TOOLS_ENABLED
 bool OS_LinuxBSD::_test_create_rendering_device(const String &p_display_driver) const {
 	// Tests Rendering Device creation.
 
@@ -1263,6 +1276,7 @@ bool OS_LinuxBSD::_test_create_rendering_device_and_gl(const String &p_display_d
 #endif
 	return _test_create_rendering_device(p_display_driver);
 }
+#endif
 
 OS_LinuxBSD::OS_LinuxBSD() {
 	main_loop = nullptr;

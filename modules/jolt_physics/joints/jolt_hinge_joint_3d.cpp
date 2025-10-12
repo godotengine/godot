@@ -41,16 +41,16 @@
 
 namespace {
 
-constexpr double DEFAULT_BIAS = 0.3;
-constexpr double DEFAULT_LIMIT_BIAS = 0.3;
-constexpr double DEFAULT_SOFTNESS = 0.9;
-constexpr double DEFAULT_RELAXATION = 1.0;
+constexpr double HINGE_DEFAULT_BIAS = 0.3;
+constexpr double HINGE_DEFAULT_LIMIT_BIAS = 0.3;
+constexpr double HINGE_DEFAULT_SOFTNESS = 0.9;
+constexpr double HINGE_DEFAULT_RELAXATION = 1.0;
 
 double estimate_physics_step() {
 	Engine *engine = Engine::get_singleton();
 
-	const double step = 1.0 / engine->get_physics_ticks_per_second();
-	const double step_scaled = step * engine->get_time_scale();
+	const double step = 1.0 / engine->get_user_physics_ticks_per_second();
+	const double step_scaled = step * engine->get_effective_time_scale();
 
 	return step_scaled;
 }
@@ -171,7 +171,7 @@ JoltHingeJoint3D::JoltHingeJoint3D(const JoltJoint3D &p_old_joint, JoltBody3D *p
 double JoltHingeJoint3D::get_param(Parameter p_param) const {
 	switch (p_param) {
 		case PhysicsServer3D::HINGE_JOINT_BIAS: {
-			return DEFAULT_BIAS;
+			return HINGE_DEFAULT_BIAS;
 		}
 		case PhysicsServer3D::HINGE_JOINT_LIMIT_UPPER: {
 			return limit_upper;
@@ -180,13 +180,13 @@ double JoltHingeJoint3D::get_param(Parameter p_param) const {
 			return limit_lower;
 		}
 		case PhysicsServer3D::HINGE_JOINT_LIMIT_BIAS: {
-			return DEFAULT_LIMIT_BIAS;
+			return HINGE_DEFAULT_LIMIT_BIAS;
 		}
 		case PhysicsServer3D::HINGE_JOINT_LIMIT_SOFTNESS: {
-			return DEFAULT_SOFTNESS;
+			return HINGE_DEFAULT_SOFTNESS;
 		}
 		case PhysicsServer3D::HINGE_JOINT_LIMIT_RELAXATION: {
-			return DEFAULT_RELAXATION;
+			return HINGE_DEFAULT_RELAXATION;
 		}
 		case PhysicsServer3D::HINGE_JOINT_MOTOR_TARGET_VELOCITY: {
 			return motor_target_speed;
@@ -204,7 +204,7 @@ double JoltHingeJoint3D::get_param(Parameter p_param) const {
 void JoltHingeJoint3D::set_param(Parameter p_param, double p_value) {
 	switch (p_param) {
 		case PhysicsServer3D::HINGE_JOINT_BIAS: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_BIAS)) {
+			if (!Math::is_equal_approx(p_value, HINGE_DEFAULT_BIAS)) {
 				WARN_PRINT(vformat("Hinge joint bias is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
@@ -217,17 +217,17 @@ void JoltHingeJoint3D::set_param(Parameter p_param, double p_value) {
 			_limits_changed();
 		} break;
 		case PhysicsServer3D::HINGE_JOINT_LIMIT_BIAS: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_LIMIT_BIAS)) {
+			if (!Math::is_equal_approx(p_value, HINGE_DEFAULT_LIMIT_BIAS)) {
 				WARN_PRINT(vformat("Hinge joint bias limit is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
 		case PhysicsServer3D::HINGE_JOINT_LIMIT_SOFTNESS: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_SOFTNESS)) {
+			if (!Math::is_equal_approx(p_value, HINGE_DEFAULT_SOFTNESS)) {
 				WARN_PRINT(vformat("Hinge joint softness is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
 		case PhysicsServer3D::HINGE_JOINT_LIMIT_RELAXATION: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_RELAXATION)) {
+			if (!Math::is_equal_approx(p_value, HINGE_DEFAULT_RELAXATION)) {
 				WARN_PRINT(vformat("Hinge joint relaxation is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;

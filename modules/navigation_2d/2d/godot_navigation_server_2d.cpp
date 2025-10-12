@@ -353,6 +353,20 @@ real_t GodotNavigationServer2D::map_get_cell_size(RID p_map) const {
 	return map->get_cell_size();
 }
 
+COMMAND_2(map_set_merge_rasterizer_cell_scale, RID, p_map, float, p_value) {
+	NavMap2D *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_NULL(map);
+
+	map->set_merge_rasterizer_cell_scale(p_value);
+}
+
+float GodotNavigationServer2D::map_get_merge_rasterizer_cell_scale(RID p_map) const {
+	NavMap2D *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_NULL_V(map, false);
+
+	return map->get_merge_rasterizer_cell_scale();
+}
+
 COMMAND_2(map_set_use_edge_connections, RID, p_map, bool, p_enabled) {
 	NavMap2D *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_NULL(map);
@@ -455,6 +469,19 @@ uint32_t GodotNavigationServer2D::region_get_iteration_id(RID p_region) const {
 	ERR_FAIL_NULL_V(region, 0);
 
 	return region->get_iteration_id();
+}
+
+COMMAND_2(region_set_use_async_iterations, RID, p_region, bool, p_enabled) {
+	NavRegion2D *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL(region);
+	region->set_use_async_iterations(p_enabled);
+}
+
+bool GodotNavigationServer2D::region_get_use_async_iterations(RID p_region) const {
+	NavRegion2D *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, false);
+
+	return region->get_use_async_iterations();
 }
 
 COMMAND_2(region_set_enabled, RID, p_region, bool, p_enabled) {
@@ -581,7 +608,7 @@ void GodotNavigationServer2D::region_set_navigation_polygon(RID p_region, Ref<Na
 	NavRegion2D *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL(region);
 
-	region->set_navigation_polygon(p_navigation_polygon);
+	region->set_navigation_mesh(p_navigation_polygon);
 }
 
 int GodotNavigationServer2D::region_get_connections_count(RID p_region) const {
@@ -1162,7 +1189,7 @@ void GodotNavigationServer2D::flush_queries() {
 	commands.clear();
 }
 
-COMMAND_1(free, RID, p_object) {
+COMMAND_1(free_rid, RID, p_object) {
 	if (geometry_parser_owner.owns(p_object)) {
 		RWLockWrite write_lock(geometry_parser_rwlock);
 
@@ -1170,7 +1197,7 @@ COMMAND_1(free, RID, p_object) {
 		ERR_FAIL_NULL(parser);
 
 		generator_parsers.erase(parser);
-#ifndef CLIPPER2_ENABLED
+#ifdef CLIPPER2_ENABLED
 		NavMeshGenerator2D::get_singleton()->set_generator_parsers(generator_parsers);
 #endif
 		geometry_parser_owner.free(parser->self);

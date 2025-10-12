@@ -30,7 +30,7 @@
 
 #include "compositor.h"
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 /* Compositor Effect */
 
@@ -186,14 +186,14 @@ CompositorEffect::CompositorEffect() {
 	RenderingServer *rs = RenderingServer::get_singleton();
 	if (rs != nullptr) {
 		rid = rs->compositor_effect_create();
-		rs->compositor_effect_set_callback(rid, RenderingServer::CompositorEffectCallbackType(effect_callback_type), Callable(this, "_render_callback"));
+		rs->compositor_effect_set_callback(rid, RenderingServer::CompositorEffectCallbackType(effect_callback_type), callable_mp(this, &CompositorEffect::_call_render_callback));
 	}
 }
 
 CompositorEffect::~CompositorEffect() {
 	RenderingServer *rs = RenderingServer::get_singleton();
 	if (rs != nullptr && rid.is_valid()) {
-		rs->free(rid);
+		rs->free_rid(rid);
 	}
 }
 
@@ -217,7 +217,7 @@ Compositor::Compositor() {
 Compositor::~Compositor() {
 	RenderingServer *rs = RenderingServer::get_singleton();
 	if (rs != nullptr && compositor.is_valid()) {
-		rs->free(compositor);
+		rs->free_rid(compositor);
 	}
 }
 

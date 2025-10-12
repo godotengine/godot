@@ -172,15 +172,24 @@ Error store_string_at_path(const String &p_path, const String &p_data) {
 Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
 	CustomExportData *export_data = static_cast<CustomExportData *>(p_userdata);
 
-	String path = p_path.simplify_path();
-	if (path.begins_with("uid://")) {
-		path = ResourceUID::uid_to_path(path).simplify_path();
-		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, path));
+	String simplified_path = p_path.simplify_path();
+	if (simplified_path.begins_with("uid://")) {
+		simplified_path = ResourceUID::uid_to_path(simplified_path).simplify_path();
+		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, simplified_path));
 	}
-	const String dst_path = path.replace_first("res://", export_data->assets_directory + "/");
 
-	print_verbose("Saving project files from " + path + " into " + dst_path);
-	Error err = store_file_at_path(dst_path, p_data);
+	Vector<uint8_t> enc_data;
+	EditorExportPlatform::SavedData sd;
+	Error err = _store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, enc_data, sd);
+	if (err != OK) {
+		return err;
+	}
+
+	const String dst_path = export_data->assets_directory + String("/") + simplified_path.trim_prefix("res://");
+	print_verbose("Saving project files from " + simplified_path + " into " + dst_path);
+	err = store_file_at_path(dst_path, enc_data);
+
+	export_data->pd.file_ofs.push_back(sd);
 	return err;
 }
 
@@ -251,7 +260,7 @@ String _get_gles_tag() {
 String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset) {
 	String manifest_screen_sizes = "    <supports-screens \n        tools:node=\"replace\"";
 	String sizes[] = { "small", "normal", "large", "xlarge" };
-	constexpr size_t num_sizes = std::size(sizes);
+	constexpr size_t num_sizes = std_size(sizes);
 	for (size_t i = 0; i < num_sizes; i++) {
 		String feature_name = vformat("screen/support_%s", sizes[i]);
 		String feature_support = bool_to_string(p_preset->get(feature_name));
@@ -353,4 +362,35 @@ String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, 
 	manifest_application_text += _get_activity_tag(p_export_platform, p_preset, p_debug);
 	manifest_application_text += "    </application>\n";
 	return manifest_application_text;
+}
+
+Error _store_temp_file(const String &p_simplified_path, const Vector<uint8_t> &p_data, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, Vector<uint8_t> &r_enc_data, EditorExportPlatform::SavedData &r_sd) {
+	Error err = OK;
+	Ref<FileAccess> ftmp = FileAccess::create_temp(FileAccess::WRITE_READ, "export", "tmp", false, &err);
+	if (err != OK) {
+		return err;
+	}
+	r_sd.path_utf8 = p_simplified_path.trim_prefix("res://").utf8();
+	r_sd.ofs = 0;
+	r_sd.size = p_data.size();
+	err = EditorExportPlatform::_encrypt_and_store_data(ftmp, p_simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, r_sd.encrypted);
+	if (err != OK) {
+		return err;
+	}
+
+	r_enc_data.resize(ftmp->get_length());
+	ftmp->seek(0);
+	ftmp->get_buffer(r_enc_data.ptrw(), r_enc_data.size());
+	ftmp.unref();
+
+	// Store MD5 of original file.
+	{
+		unsigned char hash[16];
+		CryptoCore::md5(p_data.ptr(), p_data.size(), hash);
+		r_sd.md5.resize(16);
+		for (int i = 0; i < 16; i++) {
+			r_sd.md5.write[i] = hash[i];
+		}
+	}
+	return OK;
 }

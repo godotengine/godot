@@ -34,15 +34,16 @@
 #include "core/io/json.h"
 #include "core/io/zip_io.h"
 #include "core/version.h"
-#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export_preset.h"
-#include "editor/progress_dialog.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/gui/progress_dialog.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
@@ -58,8 +59,6 @@ enum DownloadsAvailability {
 };
 
 static DownloadsAvailability _get_downloads_availability() {
-	const int network_mode = EDITOR_GET("network/connection/network_mode");
-
 	// Downloadable export templates are only available for stable and official alpha/beta/RC builds
 	// (which always have a number following their status, e.g. "alpha1").
 	// Therefore, don't display download-related features when using a development version
@@ -73,13 +72,16 @@ static DownloadsAvailability _get_downloads_availability() {
 
 #ifdef REAL_T_IS_DOUBLE
 	return DOWNLOADS_NOT_AVAILABLE_FOR_DOUBLE_BUILDS;
-#endif
+#else
+
+	const int network_mode = EDITOR_GET("network/connection/network_mode");
 
 	if (network_mode == EditorSettings::NETWORK_OFFLINE) {
 		return DOWNLOADS_NOT_AVAILABLE_IN_OFFLINE_MODE;
 	}
 
 	return DOWNLOADS_AVAILABLE;
+#endif
 }
 
 void ExportTemplateManager::_update_template_status() {

@@ -72,7 +72,7 @@ class JSON : public Resource {
 	static const char *tk_name[];
 
 	static void _add_indent(String &r_result, const String &p_indent, int p_size);
-	static void _stringify(String &r_result, const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, HashSet<const void *> &p_markers, bool p_full_precision = false);
+	static void _stringify(String &r_result, const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, HashSet<const void *> &p_markers, bool p_full_precision);
 	static Error _get_token(const char32_t *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str);
 	static Error _parse_value(Variant &value, Token &token, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str);
 	static Error _parse_array(Array &array, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str);
@@ -107,6 +107,8 @@ public:
 };
 
 class ResourceFormatLoaderJSON : public ResourceFormatLoader {
+	GDSOFTCLASS(ResourceFormatLoaderJSON, ResourceFormatLoader);
+
 public:
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
@@ -119,6 +121,8 @@ public:
 };
 
 class ResourceFormatSaverJSON : public ResourceFormatSaver {
+	GDSOFTCLASS(ResourceFormatSaverJSON, ResourceFormatSaver);
+
 public:
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;

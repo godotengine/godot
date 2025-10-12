@@ -43,7 +43,7 @@
 #include "core/string/translation_server.h"
 #include "core/templates/rb_set.h"
 #include "core/variant/variant_parser.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef DEBUG_LOAD_THREADED
 #define print_lt(m_text) print_line(m_text)
@@ -174,7 +174,7 @@ Ref<Resource> ResourceFormatLoader::load(const String &p_path, const String &p_o
 		}
 	}
 
-	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Failed to load resource '%s'. ResourceFormatLoader::load was not implemented for this resource type.", p_path));
+	return Ref<Resource>();
 }
 
 void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
@@ -296,7 +296,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		// Avoid double-tracking, for progress reporting, resources that boil down to a remapped path containing the real payload (e.g., imported resources).
 		bool is_remapped_load = original_path == parent_task_path;
 		if (E && !is_remapped_load) {
-			E->value.sub_tasks.insert(p_original_path);
+			E->value.sub_tasks.insert(original_path);
 		}
 	}
 	load_paths_stack.push_back(original_path);
@@ -339,8 +339,8 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		}
 	}
 #endif
-	ERR_FAIL_COND_V_MSG(found, Ref<Resource>(),
-			vformat("Failed loading resource: %s. Make sure resources have been imported by opening the project in the editor at least once.", p_path));
+
+	ERR_FAIL_COND_V_MSG(found, Ref<Resource>(), vformat("Failed loading resource: %s.", p_path));
 
 #ifdef TOOLS_ENABLED
 	Ref<FileAccess> file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
@@ -348,14 +348,14 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		if (r_error) {
 			*r_error = ERR_FILE_NOT_FOUND;
 		}
-		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Resource file not found: %s (expected type: %s)", p_path, p_type_hint));
+		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Resource file not found: %s (expected type: %s)", p_path, !p_type_hint.is_empty() ? p_type_hint : "unknown"));
 	}
 #endif
 
 	if (r_error) {
 		*r_error = ERR_FILE_UNRECOGNIZED;
 	}
-	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("No loader found for resource: %s (expected type: %s)", p_path, p_type_hint));
+	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("No loader found for resource: %s (expected type: %s)", p_path, !p_type_hint.is_empty() ? p_type_hint : "unknown"));
 }
 
 // This implementation must allow re-entrancy for a task that started awaiting in a deeper stack frame.
@@ -565,6 +565,7 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 
 Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode, bool p_for_user) {
 	String local_path = _validate_local_path(p_path);
+	ERR_FAIL_COND_V(local_path.is_empty(), Ref<ResourceLoader::LoadToken>());
 
 	bool ignoring_cache = p_cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE || p_cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP;
 
@@ -1268,7 +1269,9 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		}
 
 		// Fallback to p_path if new_path does not exist.
-		if (!FileAccess::exists(new_path + ".import") && !FileAccess::exists(new_path)) {
+		if (!FileAccess::exists(new_path + ".import") &&
+				!FileAccess::exists(new_path + ".remap") &&
+				!FileAccess::exists(new_path)) {
 			WARN_PRINT(vformat("Translation remap '%s' does not exist. Falling back to '%s'.", new_path, p_path));
 			new_path = p_path;
 		}
@@ -1462,8 +1465,8 @@ void ResourceLoader::add_custom_loaders() {
 
 	String custom_loader_base_class = ResourceFormatLoader::get_class_static();
 
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
+	LocalVector<StringName> global_classes;
+	ScriptServer::get_global_class_list(global_classes);
 
 	for (const StringName &class_name : global_classes) {
 		StringName base_class = ScriptServer::get_global_class_native_base(class_name);

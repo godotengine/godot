@@ -33,11 +33,12 @@
 #include "crash_handler_macos.h"
 
 #include "core/input/input.h"
-#import "drivers/apple/joypad_apple.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "drivers/coremidi/midi_driver_coremidi.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
+
+class JoypadSDL;
 
 class OS_MacOS : public OS_Unix {
 #ifdef COREAUDIO_ENABLED
@@ -62,8 +63,11 @@ protected:
 	int argc = 0;
 	char **argv = nullptr;
 
-	JoypadApple *joypad_apple = nullptr;
+#ifdef SDL_ENABLED
+	JoypadSDL *joypad_sdl = nullptr;
+#endif
 	MainLoop *main_loop = nullptr;
+	CFRunLoopTimerRef wait_timer = nil;
 
 	virtual void initialize_core() override;
 	virtual void initialize() override;
@@ -75,8 +79,12 @@ protected:
 	virtual void delete_main_loop() override;
 
 public:
+	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
+
 	virtual void set_cmdline_platform_args(const List<String> &p_args);
 	virtual List<String> get_cmdline_platform_args() const override;
+
+	virtual void load_shell_environment() const override;
 
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
@@ -95,6 +103,7 @@ public:
 	virtual String get_temp_path() const override;
 	virtual String get_bundle_resource_dir() const override;
 	virtual String get_bundle_icon_path() const override;
+	virtual String get_bundle_icon_name() const override;
 	virtual String get_godot_dir_name() const override;
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
@@ -110,6 +119,7 @@ public:
 	virtual String get_executable_path() const override;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
+	virtual Error open_with_program(const String &p_program_path, const List<String> &p_paths) override;
 	virtual bool is_process_running(const ProcessID &p_pid) const override;
 
 	virtual String get_unique_id() const override;
@@ -160,6 +170,13 @@ public:
 	virtual void run() override;
 
 	OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv);
+};
+
+class OS_MacOS_Headless : public OS_MacOS {
+public:
+	virtual void run() override;
+
+	OS_MacOS_Headless(const char *p_execpath, int p_argc, char **p_argv);
 };
 
 #ifdef DEBUG_ENABLED

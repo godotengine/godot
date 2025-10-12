@@ -66,17 +66,22 @@ void EditorColorMap::create() {
 	add_conversion_color_pair("#699ce8", "#699ce8"); // GUI highlight color
 	add_conversion_color_pair("#f9f9f9", "#606060"); // Scrollbar grabber highlight color
 
-	add_conversion_color_pair("#c38ef1", "#a85de9"); // Animation
-	add_conversion_color_pair("#8da5f3", "#3d64dd"); // 2D
-	add_conversion_color_pair("#7582a8", "#6d83c8"); // 2D Abstract
-	add_conversion_color_pair("#fc7f7f", "#cd3838"); // 3D
-	add_conversion_color_pair("#b56d6d", "#be6a6a"); // 3D Abstract
-	add_conversion_color_pair("#8eef97", "#2fa139"); // GUI Control
-	add_conversion_color_pair("#76ad7b", "#64a66a"); // GUI Control Abstract
-
 	add_conversion_color_pair("#5fb2ff", "#0079f0"); // Selection (blue)
 	add_conversion_color_pair("#003e7a", "#2b74bb"); // Selection (darker blue)
 	add_conversion_color_pair("#f7f5cf", "#615f3a"); // Gizmo (yellow)
+
+	add_conversion_color_pair("#c38ef1", "#a85de9"); // Animation
+	add_conversion_color_pair("#8da5f3", "#3d64dd"); // 2D Node
+	add_conversion_color_pair("#7582a8", "#6d83c8"); // 2D Node Abstract
+	add_conversion_color_pair("#fc7f7f", "#cd3838"); // 3D Node
+	add_conversion_color_pair("#b56d6d", "#be6a6a"); // 3D Node Abstract
+	add_conversion_color_pair("#99c4ff", "#4589e6"); // 2D Non-Node
+	add_conversion_color_pair("#869ebf", "#7097cd"); // 2D Non-Node Abstract
+	add_conversion_color_pair("#ffa6bd", "#e65c7f"); // 3D Non-Node
+	add_conversion_color_pair("#bf909c", "#cd8b9c"); // 3D Non-Node Abstract
+	add_conversion_color_pair("#8eef97", "#2fa139"); // GUI Control
+	add_conversion_color_pair("#76ad7b", "#64a66a"); // GUI Control Abstract
+	add_conversion_color_pair("#f0caa0", "#844b0e"); // Editor-only
 
 	// Rainbow
 	add_conversion_color_pair("#ff4545", "#ff2929"); // Red

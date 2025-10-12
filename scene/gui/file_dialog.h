@@ -39,17 +39,74 @@ class GridContainer;
 class HBoxContainer;
 class ItemList;
 class LineEdit;
+class MenuButton;
 class OptionButton;
 class PopupMenu;
 class VBoxContainer;
+class VSeparator;
 
 class FileDialog : public ConfirmationDialog {
 	GDCLASS(FileDialog, ConfirmationDialog);
+
+	inline static constexpr int MAX_RECENTS = 20;
 
 	struct Option {
 		String name;
 		Vector<String> values;
 		int default_idx = 0;
+	};
+
+	struct DirInfo {
+		String name;
+		uint64_t modified_time = 0;
+		bool bundle = false;
+
+		struct NameComparator {
+			bool operator()(const DirInfo &p_a, const DirInfo &p_b) const {
+				return FileNoCaseComparator()(p_a.name, p_b.name);
+			}
+		};
+
+		struct TimeComparator {
+			bool operator()(const DirInfo &p_a, const DirInfo &p_b) const {
+				return p_a.modified_time > p_b.modified_time;
+			}
+		};
+	};
+
+	struct FileInfo {
+		String name;
+		String match_string;
+		String type_sort;
+		uint64_t modified_time = 0;
+
+		struct NameComparator {
+			bool operator()(const FileInfo &p_a, const FileInfo &p_b) const {
+				return FileNoCaseComparator()(p_a.name, p_b.name);
+			}
+		};
+
+		struct TypeComparator {
+			bool operator()(const FileInfo &p_a, const FileInfo &p_b) const {
+				return FileNoCaseComparator()(p_a.type_sort, p_b.type_sort);
+			}
+		};
+
+		struct TimeComparator {
+			bool operator()(const FileInfo &p_a, const FileInfo &p_b) const {
+				return p_a.modified_time > p_b.modified_time;
+			}
+		};
+	};
+
+	enum class FileSortOption {
+		NAME,
+		NAME_REVERSE,
+		TYPE,
+		TYPE_REVERSE,
+		MODIFIED_TIME,
+		MODIFIED_TIME_REVERSE,
+		MAX
 	};
 
 public:
@@ -67,16 +124,38 @@ public:
 		FILE_MODE_SAVE_FILE,
 	};
 
+	enum DisplayMode {
+		DISPLAY_THUMBNAILS,
+		DISPLAY_LIST,
+	};
+
 	enum ItemMenu {
 		ITEM_MENU_COPY_PATH,
+		ITEM_MENU_DELETE,
+		ITEM_MENU_REFRESH,
+		ITEM_MENU_NEW_FOLDER,
 		ITEM_MENU_SHOW_IN_EXPLORER,
 		ITEM_MENU_SHOW_BUNDLE_CONTENT,
 	};
 
-	typedef Ref<Texture2D> (*GetIconFunc)(const String &);
+	enum Customization {
+		CUSTOMIZATION_HIDDEN_FILES,
+		CUSTOMIZATION_CREATE_FOLDER,
+		CUSTOMIZATION_FILE_FILTER,
+		CUSTOMIZATION_FILE_SORT,
+		CUSTOMIZATION_FAVORITES,
+		CUSTOMIZATION_RECENT,
+		CUSTOMIZATION_LAYOUT,
+		CUSTOMIZATION_OVERWRITE_WARNING,
+		CUSTOMIZATION_DELETE,
+		CUSTOMIZATION_MAX
+	};
+
 	typedef void (*RegisterFunc)(FileDialog *);
 
-	inline static GetIconFunc get_icon_func = nullptr;
+	inline static Callable get_icon_callback;
+	inline static Callable get_thumbnail_callback;
+
 	inline static RegisterFunc register_func = nullptr;
 	inline static RegisterFunc unregister_func = nullptr;
 
@@ -85,11 +164,19 @@ private:
 	PropertyListHelper property_helper;
 
 	inline static bool default_show_hidden_files = false;
+	static inline DisplayMode default_display_mode = DISPLAY_THUMBNAILS;
 	bool show_hidden_files = false;
 	bool use_native_dialog = false;
+	bool can_create_folders = true;
+	bool customization_flags[CUSTOMIZATION_MAX]; // Initialized to true in the constructor.
+
+	inline static LocalVector<String> global_favorites;
+	inline static LocalVector<String> global_recents;
 
 	Access access = ACCESS_RESOURCES;
 	FileMode mode = FILE_MODE_SAVE_FILE;
+	DisplayMode display_mode = DISPLAY_THUMBNAILS;
+	FileSortOption file_sort = FileSortOption::NAME;
 	Ref<DirAccess> dir_access;
 
 	Vector<String> filters;
@@ -110,6 +197,7 @@ private:
 	String root_prefix;
 	String full_dir;
 
+	Callable thumbnail_callback;
 	bool is_invalidating = false;
 
 	VBoxContainer *main_vbox = nullptr;
@@ -124,9 +212,25 @@ private:
 	HBoxContainer *shortcuts_container = nullptr;
 
 	Button *refresh_button = nullptr;
-	Button *show_hidden = nullptr;
-	Button *show_filename_filter_button = nullptr;
+	Button *favorite_button = nullptr;
+	HBoxContainer *make_dir_container = nullptr;
 	Button *make_dir_button = nullptr;
+
+	Button *show_hidden = nullptr;
+	VSeparator *show_hidden_separator = nullptr;
+	HBoxContainer *layout_container = nullptr;
+	VSeparator *layout_separator = nullptr;
+	Button *thumbnail_mode_button = nullptr;
+	Button *list_mode_button = nullptr;
+	Button *show_filename_filter_button = nullptr;
+	MenuButton *file_sort_button = nullptr;
+
+	VBoxContainer *favorite_vbox = nullptr;
+	Button *fav_up_button = nullptr;
+	Button *fav_down_button = nullptr;
+	ItemList *favorite_list = nullptr;
+	VBoxContainer *recent_vbox = nullptr;
+	ItemList *recent_list = nullptr;
 
 	ItemList *file_list = nullptr;
 	Label *message = nullptr;
@@ -142,6 +246,7 @@ private:
 	FlowContainer *flow_checkbox_options = nullptr;
 	GridContainer *grid_select_options = nullptr;
 
+	ConfirmationDialog *delete_dialog = nullptr;
 	ConfirmationDialog *make_dir_dialog = nullptr;
 	LineEdit *new_dir_name = nullptr;
 	AcceptDialog *mkdirerr = nullptr;
@@ -149,15 +254,25 @@ private:
 	ConfirmationDialog *confirm_save = nullptr;
 
 	struct ThemeCache {
+		int thumbnail_size = 64;
+
 		Ref<Texture2D> parent_folder;
 		Ref<Texture2D> forward_folder;
 		Ref<Texture2D> back_folder;
 		Ref<Texture2D> reload;
 		Ref<Texture2D> toggle_hidden;
 		Ref<Texture2D> toggle_filename_filter;
+		Ref<Texture2D> thumbnail_mode;
+		Ref<Texture2D> list_mode;
 		Ref<Texture2D> folder;
 		Ref<Texture2D> file;
 		Ref<Texture2D> create_folder;
+		Ref<Texture2D> sort;
+		Ref<Texture2D> favorite;
+		Ref<Texture2D> favorite_up;
+		Ref<Texture2D> favorite_down;
+		Ref<Texture2D> file_thumbnail;
+		Ref<Texture2D> folder_thumbnail;
 
 		Color folder_icon_color;
 		Color file_icon_color;
@@ -175,14 +290,17 @@ private:
 	void update_filename_filter();
 	void update_filename_filter_gui();
 	void update_filters();
+	void update_customization();
 
 	void _item_menu_id_pressed(int p_option);
 	void _empty_clicked(const Vector2 &p_pos, MouseButton p_button);
 	void _item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_button);
+	void _popup_menu(const Vector2 &p_pos, int p_for_item);
 
 	void _focus_file_text();
 
 	int _get_selected_file_idx();
+	String _get_item_path(int p_idx) const;
 	void _file_list_multi_selected(int p_item, bool p_selected);
 	void _file_list_selected(int p_item);
 	void _file_list_item_activated(int p_item);
@@ -197,6 +315,7 @@ private:
 	void _filename_filter_changed();
 	void _filename_filter_selected();
 	void _file_list_select_first();
+	void _delete_confirm();
 	void _make_dir();
 	void _make_dir_confirm();
 	void _go_up();
@@ -206,9 +325,23 @@ private:
 
 	void _change_dir(const String &p_new_dir);
 	void _update_drives(bool p_select = true);
+	void _sort_option_selected(int p_option);
+
+	void _favorite_selected(int p_item);
+	void _favorite_pressed();
+	void _favorite_move_up();
+	void _favorite_move_down();
+	void _update_favorite_list();
+	void _update_fav_buttons();
+
+	void _recent_selected(int p_item);
+	void _save_to_recent();
+	void _update_recent_list();
+	bool _path_matches_access(const String &p_path) const;
 
 	void _invalidate();
 	void _setup_button(Button *p_button, const Ref<Texture2D> &p_icon);
+	void _update_make_dir_visible();
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
@@ -218,6 +351,7 @@ private:
 	void _native_dialog_cb_with_options(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options);
 
 	bool _is_open_should_be_disabled();
+	void _thumbnail_callback(const Ref<Texture2D> &p_texture, const String &p_path);
 
 	TypedArray<Dictionary> _get_options() const;
 	void _update_option_controls();
@@ -285,6 +419,18 @@ public:
 	void set_file_mode(FileMode p_mode);
 	FileMode get_file_mode() const;
 
+	void set_display_mode(DisplayMode p_mode);
+	DisplayMode get_display_mode() const;
+
+	static void set_favorite_list(const PackedStringArray &p_favorites);
+	static PackedStringArray get_favorite_list();
+
+	static void set_recent_list(const PackedStringArray &p_recents);
+	static PackedStringArray get_recent_list();
+
+	void set_customization_flag_enabled(Customization p_flag, bool p_enabled);
+	bool is_customization_flag_enabled(Customization p_flag) const;
+
 	VBoxContainer *get_vbox() { return main_vbox; }
 	LineEdit *get_line_edit() { return filename_edit; }
 
@@ -297,6 +443,10 @@ public:
 	bool get_show_filename_filter() const;
 
 	static void set_default_show_hidden_files(bool p_show);
+	static void set_default_display_mode(DisplayMode p_mode);
+
+	static void set_get_icon_callback(const Callable &p_callback);
+	static void set_get_thumbnail_callback(const Callable &p_callback);
 
 	void invalidate();
 
@@ -308,3 +458,5 @@ public:
 
 VARIANT_ENUM_CAST(FileDialog::FileMode);
 VARIANT_ENUM_CAST(FileDialog::Access);
+VARIANT_ENUM_CAST(FileDialog::DisplayMode);
+VARIANT_ENUM_CAST(FileDialog::Customization);

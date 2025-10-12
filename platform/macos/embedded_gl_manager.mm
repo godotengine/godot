@@ -30,10 +30,10 @@
 
 #import "embedded_gl_manager.h"
 
+#if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
+
 #import "drivers/gles3/storage/texture_storage.h"
 #import "platform_gl.h"
-
-#if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
 #import <QuartzCore/QuartzCore.h>
 #include <dlfcn.h>
@@ -237,6 +237,10 @@ void GLManagerEmbedded::swap_buffers() {
 	}
 	last_valid = true;
 
+	if (display_link_running) {
+		dispatch_semaphore_wait(display_semaphore, DISPATCH_TIME_FOREVER);
+	}
+
 	[CATransaction begin];
 	[CATransaction setDisableActions:YES];
 	win.layer.contents = (__bridge id)win.framebuffers[win.current_fb].surface;
@@ -249,7 +253,65 @@ Error GLManagerEmbedded::initialize() {
 	return framework_loaded ? OK : ERR_CANT_CREATE;
 }
 
+void GLManagerEmbedded::create_display_link() {
+	DEV_ASSERT(display_link == nullptr);
+
+	CVReturn err = CVDisplayLinkCreateWithCGDisplay(CGMainDisplayID(), &display_link);
+	ERR_FAIL_COND_MSG(err != kCVReturnSuccess, "Failed to create display link.");
+
+	__block dispatch_semaphore_t local_semaphore = display_semaphore;
+
+	CVDisplayLinkSetOutputHandler(display_link, ^CVReturn(CVDisplayLinkRef p_display_link, const CVTimeStamp *p_now, const CVTimeStamp *p_output_time, CVOptionFlags p_flags, CVOptionFlags *p_flags_out) {
+		dispatch_semaphore_signal(local_semaphore);
+		return kCVReturnSuccess;
+	});
+}
+
+void GLManagerEmbedded::release_display_link() {
+	DEV_ASSERT(display_link != nullptr);
+	if (CVDisplayLinkIsRunning(display_link)) {
+		CVDisplayLinkStop(display_link);
+	}
+	CVDisplayLinkRelease(display_link);
+	display_link = nullptr;
+}
+
+void GLManagerEmbedded::set_display_id(uint32_t p_display_id) {
+	if (display_id == p_display_id) {
+		return;
+	}
+
+	CVReturn err = CVDisplayLinkSetCurrentCGDisplay(display_link, static_cast<CGDirectDisplayID>(p_display_id));
+	ERR_FAIL_COND_MSG(err != kCVReturnSuccess, "Failed to set display ID for display link.");
+}
+
+void GLManagerEmbedded::set_vsync_enabled(bool p_enabled) {
+	if (p_enabled == vsync_enabled) {
+		return;
+	}
+
+	vsync_enabled = p_enabled;
+
+	if (vsync_enabled) {
+		if (!CVDisplayLinkIsRunning(display_link)) {
+			CVReturn err = CVDisplayLinkStart(display_link);
+			ERR_FAIL_COND_MSG(err != kCVReturnSuccess, "Failed to start display link.");
+			display_link_running = true;
+		}
+	} else {
+		if (CVDisplayLinkIsRunning(display_link)) {
+			CVReturn err = CVDisplayLinkStop(display_link);
+			ERR_FAIL_COND_MSG(err != kCVReturnSuccess, "Failed to stop display link.");
+			display_link_running = false;
+		}
+	}
+}
+
 GLManagerEmbedded::GLManagerEmbedded() {
+	display_semaphore = dispatch_semaphore_create(BUFFER_COUNT);
+
+	create_display_link();
+
 	NSBundle *framework = [NSBundle bundleWithIdentifier:@"com.apple.opengl"];
 	if ([framework load]) {
 		void *library_handle = dlopen([framework.executablePath UTF8String], RTLD_NOW);
@@ -263,6 +325,7 @@ GLManagerEmbedded::GLManagerEmbedded() {
 }
 
 GLManagerEmbedded::~GLManagerEmbedded() {
+	release_display_link();
 	release_current();
 }
 

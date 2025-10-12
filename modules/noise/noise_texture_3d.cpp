@@ -41,7 +41,7 @@ NoiseTexture3D::NoiseTexture3D() {
 NoiseTexture3D::~NoiseTexture3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (texture.is_valid()) {
-		RS::get_singleton()->free(texture);
+		RS::get_singleton()->free_rid(texture);
 	}
 	if (noise_thread.is_started()) {
 		noise_thread.wait_to_finish();
@@ -53,36 +53,39 @@ void NoiseTexture3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &NoiseTexture3D::set_height);
 	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &NoiseTexture3D::set_depth);
 
-	ClassDB::bind_method(D_METHOD("set_invert", "invert"), &NoiseTexture3D::set_invert);
-	ClassDB::bind_method(D_METHOD("get_invert"), &NoiseTexture3D::get_invert);
-
-	ClassDB::bind_method(D_METHOD("set_seamless", "seamless"), &NoiseTexture3D::set_seamless);
-	ClassDB::bind_method(D_METHOD("get_seamless"), &NoiseTexture3D::get_seamless);
-
-	ClassDB::bind_method(D_METHOD("set_seamless_blend_skirt", "seamless_blend_skirt"), &NoiseTexture3D::set_seamless_blend_skirt);
-	ClassDB::bind_method(D_METHOD("get_seamless_blend_skirt"), &NoiseTexture3D::get_seamless_blend_skirt);
-
-	ClassDB::bind_method(D_METHOD("set_normalize", "normalize"), &NoiseTexture3D::set_normalize);
-	ClassDB::bind_method(D_METHOD("is_normalized"), &NoiseTexture3D::is_normalized);
+	ClassDB::bind_method(D_METHOD("set_noise", "noise"), &NoiseTexture3D::set_noise);
+	ClassDB::bind_method(D_METHOD("get_noise"), &NoiseTexture3D::get_noise);
 
 	ClassDB::bind_method(D_METHOD("set_color_ramp", "gradient"), &NoiseTexture3D::set_color_ramp);
 	ClassDB::bind_method(D_METHOD("get_color_ramp"), &NoiseTexture3D::get_color_ramp);
 
-	ClassDB::bind_method(D_METHOD("set_noise", "noise"), &NoiseTexture3D::set_noise);
-	ClassDB::bind_method(D_METHOD("get_noise"), &NoiseTexture3D::get_noise);
+	ClassDB::bind_method(D_METHOD("set_seamless", "seamless"), &NoiseTexture3D::set_seamless);
+	ClassDB::bind_method(D_METHOD("get_seamless"), &NoiseTexture3D::get_seamless);
+
+	ClassDB::bind_method(D_METHOD("set_invert", "invert"), &NoiseTexture3D::set_invert);
+	ClassDB::bind_method(D_METHOD("get_invert"), &NoiseTexture3D::get_invert);
+
+	ClassDB::bind_method(D_METHOD("set_normalize", "normalize"), &NoiseTexture3D::set_normalize);
+	ClassDB::bind_method(D_METHOD("is_normalized"), &NoiseTexture3D::is_normalized);
+
+	ClassDB::bind_method(D_METHOD("set_seamless_blend_skirt", "seamless_blend_skirt"), &NoiseTexture3D::set_seamless_blend_skirt);
+	ClassDB::bind_method(D_METHOD("get_seamless_blend_skirt"), &NoiseTexture3D::get_seamless_blend_skirt);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,2048,1,or_greater,suffix:px"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "height", PROPERTY_HINT_RANGE, "1,2048,1,or_greater,suffix:px"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth", PROPERTY_HINT_RANGE, "1,2048,1,or_greater,suffix:px"), "set_depth", "get_depth");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert"), "set_invert", "get_invert");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "seamless"), "set_seamless", "get_seamless");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "seamless_blend_skirt", PROPERTY_HINT_RANGE, "0.05,1,0.001"), "set_seamless_blend_skirt", "get_seamless_blend_skirt");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "normalize"), "set_normalize", "is_normalized");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_ramp", "get_color_ramp");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise", PROPERTY_HINT_RESOURCE_TYPE, "Noise"), "set_noise", "get_noise");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_ramp", "get_color_ramp");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "seamless"), "set_seamless", "get_seamless");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert"), "set_invert", "get_invert");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "normalize"), "set_normalize", "is_normalized");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "seamless_blend_skirt", PROPERTY_HINT_RANGE, "0.05,1,0.001"), "set_seamless_blend_skirt", "get_seamless_blend_skirt");
 }
 
 void NoiseTexture3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "seamless_blend_skirt") {
 		if (!seamless) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;

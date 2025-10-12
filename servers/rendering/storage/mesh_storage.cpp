@@ -63,9 +63,9 @@ void RendererMeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instanc
 		mmi->_stride = mmi->_vf_size_xform + mmi->_vf_size_color + mmi->_vf_size_data;
 
 		int size_in_floats = p_instances * mmi->_stride;
-		mmi->_data_curr.resize_zeroed(size_in_floats);
-		mmi->_data_prev.resize_zeroed(size_in_floats);
-		mmi->_data_interpolated.resize_zeroed(size_in_floats);
+		mmi->_data_curr.resize_initialized(size_in_floats);
+		mmi->_data_prev.resize_initialized(size_in_floats);
+		mmi->_data_interpolated.resize_initialized(size_in_floats);
 	}
 
 	_multimesh_allocate_data(p_multimesh, p_instances, p_transform_format, p_use_colors, p_use_custom_data, p_use_indirect);
@@ -118,6 +118,37 @@ void RendererMeshStorage::multimesh_instance_set_transform(RID p_multimesh, int 
 }
 
 void RendererMeshStorage::multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) {
+	MultiMeshInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
+	if (mmi && mmi->interpolated) {
+		ERR_FAIL_COND(p_index >= mmi->_num_instances);
+		ERR_FAIL_COND(mmi->_vf_size_xform != 8);
+
+		int start = p_index * mmi->_stride;
+		float *ptr = mmi->_data_curr.ptrw();
+		ptr += start;
+
+		const Transform2D &t = p_transform;
+
+		ptr[0] = t.columns[0][0];
+		ptr[1] = t.columns[1][0];
+		ptr[2] = 0;
+		ptr[3] = t.columns[2][0];
+		ptr[4] = t.columns[0][1];
+		ptr[5] = t.columns[1][1];
+		ptr[6] = 0;
+		ptr[7] = t.columns[2][1];
+
+		_multimesh_add_to_interpolation_lists(p_multimesh, *mmi);
+
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+		if (!Engine::get_singleton()->is_in_physics_frame()) {
+			PHYSICS_INTERPOLATION_WARNING("MultiMesh interpolation is being triggered from outside physics process, this might lead to issues");
+		}
+#endif
+
+		return;
+	}
+
 	_multimesh_instance_set_transform_2d(p_multimesh, p_index, p_transform);
 }
 
@@ -258,7 +289,20 @@ void RendererMeshStorage::multimesh_set_buffer_interpolated(RID p_multimesh, con
 void RendererMeshStorage::multimesh_set_physics_interpolated(RID p_multimesh, bool p_interpolated) {
 	MultiMeshInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
 	if (mmi) {
+		if (p_interpolated == mmi->interpolated) {
+			return;
+		}
+
 		mmi->interpolated = p_interpolated;
+
+		// If we are turning on physics interpolation, as a convenience,
+		// we want to get the current buffer data from the backend,
+		// and reset all the instances.
+		if (p_interpolated) {
+			mmi->_data_curr = _multimesh_get_buffer(p_multimesh);
+			mmi->_data_prev = mmi->_data_curr;
+			mmi->_data_interpolated = mmi->_data_curr;
+		}
 	}
 }
 
@@ -337,6 +381,9 @@ void RendererMeshStorage::update_interpolation_tick(bool p_process) {
 
 			// ... and that both prev and current are the same, just in case of any interpolations.
 			mmi->_data_prev = mmi->_data_curr;
+
+			// Update the actual stable buffer to the backend.
+			_multimesh_set_buffer(rid, mmi->_data_interpolated);
 		}
 
 		if (!mmi) {

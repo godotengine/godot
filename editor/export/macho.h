@@ -36,6 +36,8 @@
 #include "core/object/ref_counted.h"
 
 class MachO : public RefCounted {
+	GDSOFTCLASS(MachO, RefCounted);
+
 public:
 	struct MachHeader {
 		uint32_t cputype;
@@ -111,6 +113,8 @@ public:
 		PLATFORM_TVOSSIMULATOR = 8,
 		PLATFORM_WATCHOSSIMULATOR = 9,
 		PLATFORM_DRIVERKIT = 10,
+		PLATFORM_VISIONOS = 11,
+		PLATFORM_VISIONOSSIMULATOR = 12,
 	};
 
 	struct LoadCommandHeader {

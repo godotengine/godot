@@ -313,8 +313,8 @@ bool PortableCompressedTexture2D::is_pixel_opaque(int p_x, int p_y) const {
 		int x = p_x * aw / size.width;
 		int y = p_y * ah / size.height;
 
-		x = CLAMP(x, 0, aw);
-		y = CLAMP(y, 0, ah);
+		x = CLAMP(x, 0, aw - 1);
+		y = CLAMP(y, 0, ah - 1);
 
 		return alpha_cache->get_bit(x, y);
 	}
@@ -400,6 +400,6 @@ void PortableCompressedTexture2D::_bind_methods() {
 PortableCompressedTexture2D::~PortableCompressedTexture2D() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(texture);
+		RenderingServer::get_singleton()->free_rid(texture);
 	}
 }

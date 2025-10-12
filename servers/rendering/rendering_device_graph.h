@@ -104,7 +104,7 @@ public:
 
 		Type type = TYPE_NONE;
 		int32_t adjacent_command_list_index = -1;
-		RDD::MemoryBarrier memory_barrier;
+		RDD::MemoryAccessBarrier memory_barrier;
 		int32_t normalization_barrier_index = -1;
 		int normalization_barrier_count = 0;
 		int32_t transition_barrier_index = -1;
@@ -150,6 +150,7 @@ public:
 		RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE,
 		RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ,
 		RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ,
+		RESOURCE_USAGE_GENERAL,
 		RESOURCE_USAGE_MAX
 	};
 
@@ -662,7 +663,7 @@ private:
 	struct BarrierGroup {
 		BitField<RDD::PipelineStageBits> src_stages = {};
 		BitField<RDD::PipelineStageBits> dst_stages = {};
-		RDD::MemoryBarrier memory_barrier;
+		RDD::MemoryAccessBarrier memory_barrier;
 		LocalVector<RDD::TextureBarrier> normalization_barriers;
 		LocalVector<RDD::TextureBarrier> transition_barriers;
 #if USE_BUFFER_BARRIERS
@@ -816,7 +817,7 @@ public:
 	void add_texture_update(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, VectorView<RecordedBufferToTextureCopy> p_buffer_copies, VectorView<ResourceTracker *> p_buffer_trackers = VectorView<ResourceTracker *>());
 	void add_capture_timestamp(RDD::QueryPoolID p_query_pool, uint32_t p_index);
 	void add_synchronization();
-	void begin_label(const String &p_label_name, const Color &p_color);
+	void begin_label(const Span<char> &p_label_name, const Color &p_color);
 	void end_label();
 	void end(bool p_reorder_commands, bool p_full_barriers, RDD::CommandBufferID &r_command_buffer, CommandBufferPool &r_command_buffer_pool);
 	static ResourceTracker *resource_tracker_create();

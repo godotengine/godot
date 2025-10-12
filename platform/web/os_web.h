@@ -37,7 +37,7 @@
 
 #include "core/input/input.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #include <emscripten/html5.h>
 
@@ -91,7 +91,7 @@ public:
 	int get_process_exit_code(const ProcessID &p_pid) const override;
 	int get_processor_count() const override;
 	String get_unique_id() const override;
-	int get_default_thread_pool_size() const override { return 1; }
+	int get_default_thread_pool_size() const override;
 
 	String get_executable_path() const override;
 	Error shell_open(const String &p_uri) override;
@@ -99,7 +99,7 @@ public:
 
 	// Override default OS implementation which would block the main thread with delay_usec.
 	// Implemented in web_main.cpp loop callback instead.
-	void add_frame_delay(bool p_can_draw) override;
+	void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
 
 	void vibrate_handheld(int p_duration_ms, float p_amplitude) override;
 

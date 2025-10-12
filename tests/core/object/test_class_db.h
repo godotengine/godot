@@ -407,13 +407,13 @@ void validate_property(const Context &p_context, const ExposedClass &p_class, co
 }
 
 void validate_argument(const Context &p_context, const ExposedClass &p_class, const String &p_owner_name, const String &p_owner_type, const ArgumentData &p_arg) {
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	TEST_COND((p_arg.name.is_empty() || p_arg.name.begins_with("_unnamed_arg")),
 			vformat("Unnamed argument in position %d of %s '%s.%s'.", p_arg.position, p_owner_type, p_class.name, p_owner_name));
 
 	TEST_FAIL_COND((p_arg.name != "@varargs@" && !p_arg.name.is_valid_ascii_identifier()),
 			vformat("Invalid argument name '%s' of %s '%s.%s'.", p_arg.name, p_owner_type, p_class.name, p_owner_name));
-#endif // DEBUG_METHODS_ENABLED
+#endif // DEBUG_ENABLED
 
 	const ExposedClass *arg_class = p_context.find_exposed_class(p_arg.type);
 	if (arg_class) {
@@ -516,29 +516,25 @@ void validate_class(const Context &p_context, const ExposedClass &p_exposed_clas
 }
 
 void add_exposed_classes(Context &r_context) {
-	List<StringName> class_list;
-	ClassDB::get_class_list(&class_list);
-	class_list.sort_custom<StringName::AlphCompare>();
+	LocalVector<StringName> class_list;
+	ClassDB::get_class_list(class_list);
 
-	while (class_list.size()) {
-		StringName class_name = class_list.front()->get();
+	for (uint32_t class_list_idx = 0; class_list_idx < class_list.size(); class_list_idx++) {
+		StringName class_name = class_list[class_list_idx];
 
 		ClassDB::APIType api_type = ClassDB::get_api_type(class_name);
 
 		if (api_type == ClassDB::API_NONE) {
-			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_exposed(class_name)) {
 			INFO(vformat("Ignoring class '%s' because it's not exposed.", class_name));
-			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_enabled(class_name)) {
 			INFO(vformat("Ignoring class '%s' because it's not enabled.", class_name));
-			class_list.pop_front();
 			continue;
 		}
 
@@ -815,7 +811,6 @@ void add_exposed_classes(Context &r_context) {
 		}
 
 		r_context.exposed_classes.insert(class_name, exposed_class);
-		class_list.pop_front();
 	}
 }
 

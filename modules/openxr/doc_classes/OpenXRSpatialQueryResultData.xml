@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialQueryResultData" inherits="OpenXRSpatialComponentData" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Object for storing the main query result data.
+	</brief_description>
+	<description>
+		Object for storing the main query result data when calling [method OpenXRSpatialEntityExtension.query_snapshot]. This must always be the first component requested.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_capacity" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of entities that were retrieved.
+			</description>
+		</method>
+		<method name="get_entity_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the entity id ([code]XrSpatialEntityIdEXT[/code]) for the entity at this [param index].
+			</description>
+		</method>
+		<method name="get_entity_state" qualifiers="const">
+			<return type="int" enum="OpenXRSpatialEntityTracker.EntityTrackingState" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the entity state for the entity at this [param index].
+			</description>
+		</method>
+	</methods>
+</class>

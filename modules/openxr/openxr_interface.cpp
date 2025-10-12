@@ -44,6 +44,7 @@ void OpenXRInterface::_bind_methods() {
 	// lifecycle signals
 	ADD_SIGNAL(MethodInfo("session_begun"));
 	ADD_SIGNAL(MethodInfo("session_stopping"));
+	ADD_SIGNAL(MethodInfo("session_synchronized"));
 	ADD_SIGNAL(MethodInfo("session_focussed"));
 	ADD_SIGNAL(MethodInfo("session_visible"));
 	ADD_SIGNAL(MethodInfo("session_loss_pending"));
@@ -53,6 +54,9 @@ void OpenXRInterface::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("cpu_level_changed", PropertyInfo(Variant::INT, "sub_domain"), PropertyInfo(Variant::INT, "from_level"), PropertyInfo(Variant::INT, "to_level")));
 	ADD_SIGNAL(MethodInfo("gpu_level_changed", PropertyInfo(Variant::INT, "sub_domain"), PropertyInfo(Variant::INT, "from_level"), PropertyInfo(Variant::INT, "to_level")));
+
+	// State
+	ClassDB::bind_method(D_METHOD("get_session_state"), &OpenXRInterface::get_session_state);
 
 	// Display refresh rate
 	ClassDB::bind_method(D_METHOD("get_display_refresh_rate"), &OpenXRInterface::get_display_refresh_rate);
@@ -115,6 +119,16 @@ void OpenXRInterface::_bind_methods() {
 	ADD_GROUP("Vulkan VRS", "vrs_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vrs_min_radius", PROPERTY_HINT_RANGE, "1.0,100.0,1.0"), "set_vrs_min_radius", "get_vrs_min_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vrs_strength", PROPERTY_HINT_RANGE, "0.1,10.0,0.1"), "set_vrs_strength", "get_vrs_strength");
+
+	BIND_ENUM_CONSTANT(SESSION_STATE_UNKNOWN);
+	BIND_ENUM_CONSTANT(SESSION_STATE_IDLE);
+	BIND_ENUM_CONSTANT(SESSION_STATE_READY);
+	BIND_ENUM_CONSTANT(SESSION_STATE_SYNCHRONIZED);
+	BIND_ENUM_CONSTANT(SESSION_STATE_VISIBLE);
+	BIND_ENUM_CONSTANT(SESSION_STATE_FOCUSED);
+	BIND_ENUM_CONSTANT(SESSION_STATE_STOPPING);
+	BIND_ENUM_CONSTANT(SESSION_STATE_LOSS_PENDING);
+	BIND_ENUM_CONSTANT(SESSION_STATE_EXITING);
 
 	BIND_ENUM_CONSTANT(HAND_LEFT);
 	BIND_ENUM_CONSTANT(HAND_RIGHT);
@@ -1014,17 +1028,17 @@ uint32_t OpenXRInterface::get_view_count() {
 	return 2;
 }
 
-void OpenXRInterface::_set_default_pos(Transform3D &p_transform, double p_world_scale, uint64_t p_eye) {
-	p_transform = Transform3D();
+void OpenXRInterface::_set_default_pos(Transform3D &r_transform, double p_world_scale, uint64_t p_eye) {
+	r_transform = Transform3D();
 
 	// if we're not tracking, don't put our head on the floor...
-	p_transform.origin.y = 1.5 * p_world_scale;
+	r_transform.origin.y = 1.5 * p_world_scale;
 
 	// overkill but..
 	if (p_eye == 1) {
-		p_transform.origin.x = 0.03 * p_world_scale;
+		r_transform.origin.x = 0.03 * p_world_scale;
 	} else if (p_eye == 2) {
-		p_transform.origin.x = -0.03 * p_world_scale;
+		r_transform.origin.x = -0.03 * p_world_scale;
 	}
 }
 
@@ -1293,11 +1307,10 @@ void OpenXRInterface::stop_passthrough() {
 }
 
 Array OpenXRInterface::get_supported_environment_blend_modes() {
-	Array modes;
-
 	if (!openxr_api) {
-		return modes;
+		return Array();
 	}
+	Array modes;
 
 	const Vector<XrEnvironmentBlendMode> env_blend_modes = openxr_api->get_supported_environment_blend_modes();
 
@@ -1375,6 +1388,10 @@ void OpenXRInterface::on_state_visible() {
 	emit_signal(SNAME("session_visible"));
 }
 
+void OpenXRInterface::on_state_synchronized() {
+	emit_signal(SNAME("session_synchronized"));
+}
+
 void OpenXRInterface::on_state_focused() {
 	emit_signal(SNAME("session_focussed"));
 }
@@ -1397,6 +1414,14 @@ void OpenXRInterface::on_reference_space_change_pending() {
 
 void OpenXRInterface::on_refresh_rate_changes(float p_new_rate) {
 	emit_signal(SNAME("refresh_rate_changed"), p_new_rate);
+}
+
+OpenXRInterface::SessionState OpenXRInterface::get_session_state() {
+	if (openxr_api) {
+		return (SessionState)openxr_api->get_session_state();
+	}
+
+	return SESSION_STATE_UNKNOWN;
 }
 
 /** Hand tracking. */
@@ -1456,9 +1481,10 @@ OpenXRInterface::HandTrackedSource OpenXRInterface::get_hand_tracking_source(con
 			case OpenXRHandTrackingExtension::OPENXR_SOURCE_CONTROLLER:
 				return HAND_TRACKED_SOURCE_CONTROLLER;
 			case OpenXRHandTrackingExtension::OPENXR_SOURCE_UNKNOWN:
+			case OpenXRHandTrackingExtension::OPENXR_SOURCE_NOT_TRACKED:
 				return HAND_TRACKED_SOURCE_UNKNOWN;
 			default:
-				ERR_FAIL_V_MSG(HAND_TRACKED_SOURCE_UNKNOWN, "Unknown hand tracking source returned by OpenXR");
+				ERR_FAIL_V_MSG(HAND_TRACKED_SOURCE_UNKNOWN, "Unknown hand tracking source (" + String::num_int64(source) + ") returned by OpenXR");
 		}
 	}
 

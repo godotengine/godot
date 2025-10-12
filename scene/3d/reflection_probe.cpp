@@ -201,6 +201,9 @@ AABB ReflectionProbe::get_aabb() const {
 }
 
 void ReflectionProbe::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "ambient_color" || p_property.name == "ambient_color_energy") {
 		if (ambient_mode != AMBIENT_COLOR) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
@@ -306,5 +309,5 @@ ReflectionProbe::ReflectionProbe() {
 
 ReflectionProbe::~ReflectionProbe() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(probe);
+	RS::get_singleton()->free_rid(probe);
 }

@@ -47,7 +47,7 @@ String ResourceUID::get_cache_file() {
 }
 
 static constexpr uint8_t uuid_characters[] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', '0', '1', '2', '3', '4', '5', '6', '7', '8' };
-static constexpr uint32_t uuid_characters_element_count = std::size(uuid_characters);
+static constexpr uint32_t uuid_characters_element_count = std_size(uuid_characters);
 static constexpr uint8_t max_uuid_number_length = 13; // Max 0x7FFFFFFFFFFFFFFF (uid://d4n4ub6itg400) size is 13 characters.
 
 String ResourceUID::id_to_text(ID p_id) const {
@@ -66,7 +66,7 @@ String ResourceUID::id_to_text(ID p_id) const {
 
 	// tmp_size + uid:// (6) + 1 for null.
 	String txt;
-	txt.resize(tmp_size + 7);
+	txt.resize_uninitialized(tmp_size + 7);
 
 	char32_t *p = txt.ptrw();
 	p[0] = 'u';
@@ -109,6 +109,13 @@ ResourceUID::ID ResourceUID::text_to_id(const String &p_text) const {
 }
 
 ResourceUID::ID ResourceUID::create_id() {
+	// mbedTLS may not be fully initialized when the ResourceUID is created, so we
+	// need to lazily instantiate the random number generator.
+	if (crypto == nullptr) {
+		crypto = memnew(CryptoCore::RandomGenerator);
+		((CryptoCore::RandomGenerator *)crypto)->init();
+	}
+
 	while (true) {
 		ID id = INVALID_ID;
 		MutexLock lock(mutex);
@@ -266,7 +273,7 @@ Error ResourceUID::load_from_cache(bool p_reset) {
 		int64_t id = f->get_64();
 		int32_t len = f->get_32();
 		Cache c;
-		c.cs.resize(len + 1);
+		c.cs.resize_uninitialized(len + 1);
 		ERR_FAIL_COND_V(c.cs.size() != len + 1, ERR_FILE_CORRUPT); // Out of memory.
 		c.cs[len] = 0;
 		int32_t rl = f->get_buffer((uint8_t *)c.cs.ptrw(), len);
@@ -326,7 +333,7 @@ String ResourceUID::get_path_from_cache(Ref<FileAccess> &p_cache_file, const Str
 	for (uint32_t i = 0; i < entry_count; i++) {
 		int64_t id = p_cache_file->get_64();
 		int32_t len = p_cache_file->get_32();
-		cs.resize(len + 1);
+		cs.resize_uninitialized(len + 1);
 		ERR_FAIL_COND_V(cs.size() != len + 1, String());
 		cs[len] = 0;
 		int32_t rl = p_cache_file->get_buffer((uint8_t *)cs.ptrw(), len);
@@ -344,6 +351,7 @@ void ResourceUID::clear() {
 	unique_ids.clear();
 	changed = false;
 }
+
 void ResourceUID::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("id_to_text", "id"), &ResourceUID::id_to_text);
 	ClassDB::bind_method(D_METHOD("text_to_id", "text_id"), &ResourceUID::text_to_id);
@@ -357,15 +365,19 @@ void ResourceUID::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_id_path", "id"), &ResourceUID::get_id_path);
 	ClassDB::bind_method(D_METHOD("remove_id", "id"), &ResourceUID::remove_id);
 
+	ClassDB::bind_static_method("ResourceUID", D_METHOD("uid_to_path", "uid"), &ResourceUID::uid_to_path);
+	ClassDB::bind_static_method("ResourceUID", D_METHOD("path_to_uid", "path"), &ResourceUID::path_to_uid);
+	ClassDB::bind_static_method("ResourceUID", D_METHOD("ensure_path", "path_or_uid"), &ResourceUID::ensure_path);
+
 	BIND_CONSTANT(INVALID_ID)
 }
 ResourceUID *ResourceUID::singleton = nullptr;
 ResourceUID::ResourceUID() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
-	crypto = memnew(CryptoCore::RandomGenerator);
-	((CryptoCore::RandomGenerator *)crypto)->init();
 }
 ResourceUID::~ResourceUID() {
-	memdelete((CryptoCore::RandomGenerator *)crypto);
+	if (crypto != nullptr) {
+		memdelete((CryptoCore::RandomGenerator *)crypto);
+	}
 }

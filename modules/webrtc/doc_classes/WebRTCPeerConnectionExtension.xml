@@ -7,7 +7,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_add_ice_candidate" qualifiers="virtual">
+		<method name="_add_ice_candidate" qualifiers="virtual required">
 			<return type="int" enum="Error" />
 			<param index="0" name="p_sdp_mid_name" type="String" />
 			<param index="1" name="p_sdp_mline_index" type="int" />
@@ -15,57 +15,57 @@
 			<description>
 			</description>
 		</method>
-		<method name="_close" qualifiers="virtual">
+		<method name="_close" qualifiers="virtual required">
 			<return type="void" />
 			<description>
 			</description>
 		</method>
-		<method name="_create_data_channel" qualifiers="virtual">
+		<method name="_create_data_channel" qualifiers="virtual required">
 			<return type="WebRTCDataChannel" />
 			<param index="0" name="p_label" type="String" />
 			<param index="1" name="p_config" type="Dictionary" />
 			<description>
 			</description>
 		</method>
-		<method name="_create_offer" qualifiers="virtual">
+		<method name="_create_offer" qualifiers="virtual required">
 			<return type="int" enum="Error" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_connection_state" qualifiers="virtual const">
+		<method name="_get_connection_state" qualifiers="virtual required const">
 			<return type="int" enum="WebRTCPeerConnection.ConnectionState" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_gathering_state" qualifiers="virtual const">
+		<method name="_get_gathering_state" qualifiers="virtual required const">
 			<return type="int" enum="WebRTCPeerConnection.GatheringState" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_signaling_state" qualifiers="virtual const">
+		<method name="_get_signaling_state" qualifiers="virtual required const">
 			<return type="int" enum="WebRTCPeerConnection.SignalingState" />
 			<description>
 			</description>
 		</method>
-		<method name="_initialize" qualifiers="virtual">
+		<method name="_initialize" qualifiers="virtual required">
 			<return type="int" enum="Error" />
 			<param index="0" name="p_config" type="Dictionary" />
 			<description>
 			</description>
 		</method>
-		<method name="_poll" qualifiers="virtual">
+		<method name="_poll" qualifiers="virtual required">
 			<return type="int" enum="Error" />
 			<description>
 			</description>
 		</method>
-		<method name="_set_local_description" qualifiers="virtual">
+		<method name="_set_local_description" qualifiers="virtual required">
 			<return type="int" enum="Error" />
 			<param index="0" name="p_type" type="String" />
 			<param index="1" name="p_sdp" type="String" />
 			<description>
 			</description>
 		</method>
-		<method name="_set_remote_description" qualifiers="virtual">
+		<method name="_set_remote_description" qualifiers="virtual required">
 			<return type="int" enum="Error" />
 			<param index="0" name="p_type" type="String" />
 			<param index="1" name="p_sdp" type="String" />

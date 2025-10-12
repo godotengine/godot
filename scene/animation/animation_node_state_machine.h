@@ -32,6 +32,7 @@
 
 #include "core/math/expression.h"
 #include "scene/animation/animation_tree.h"
+#include "scene/resources/curve.h"
 
 class AnimationNodeStateMachineTransition : public Resource {
 	GDCLASS(AnimationNodeStateMachineTransition, Resource);
@@ -288,6 +289,8 @@ class AnimationNodeStateMachinePlayback : public Resource {
 
 	bool is_grouped = false;
 
+	void _clear_fading(AnimationNodeStateMachine *p_state_machine, const StringName &p_state);
+	void _signal_state_change(AnimationTree *p_animation_tree, const StringName &p_state, bool p_started);
 	void _travel_main(const StringName &p_state, bool p_reset_on_teleport = true);
 	void _start_main(const StringName &p_state, bool p_reset = true);
 	void _next_main();
@@ -302,8 +305,8 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	bool _travel_children(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, const String &p_path, bool p_is_allow_transition_to_self, bool p_is_parent_same_state, bool p_test_only);
 	void _start_children(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, const String &p_path, bool p_test_only);
 
-	AnimationNode::NodeTimeInfo process(const String &p_base_path, AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only);
-	AnimationNode::NodeTimeInfo _process(const String &p_base_path, AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only);
+	AnimationNode::NodeTimeInfo process(AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only);
+	AnimationNode::NodeTimeInfo _process(AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only);
 
 	bool _check_advance_condition(const Ref<AnimationNodeStateMachine> p_state_machine, const Ref<AnimationNodeStateMachineTransition> p_transition) const;
 	bool _transition_to_next_recursive(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, double p_delta, bool p_test_only);

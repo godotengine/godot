@@ -36,6 +36,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/rich_text_label.h"
 
+class Timer;
 class UndoRedo;
 
 class EditorLog : public HBoxContainer {
@@ -94,7 +95,7 @@ private:
 			toggle_button->set_text(itos(message_count));
 			toggle_button->set_accessibility_name(TTRGET(p_name));
 			toggle_button->set_tooltip_text(TTRGET(p_tooltip));
-			toggle_button->set_focus_mode(FOCUS_NONE);
+			toggle_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 			// When toggled call the callback and pass the MessageType this button is for.
 			toggle_button->connect(SceneStringName(toggled), p_toggled_callback.bind(type));
 		}

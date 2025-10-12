@@ -29,10 +29,10 @@
 				ProjectSettings.set("category/property_name", 0)
 
 				var property_info = {
-				    "name": "category/property_name",
-				    "type": TYPE_INT,
-				    "hint": PROPERTY_HINT_ENUM,
-				    "hint_string": "one,two,three"
+					"name": "category/property_name",
+					"type": TYPE_INT,
+					"hint": PROPERTY_HINT_ENUM,
+					"hint_string": "one,two,three"
 				}
 
 				ProjectSettings.add_property_info(property_info)
@@ -42,10 +42,10 @@
 
 				var propertyInfo = new Godot.Collections.Dictionary
 				{
-				    {"name", "category/propertyName"},
-				    {"type", (int)Variant.Type.Int},
-				    {"hint", (int)PropertyHint.Enum},
-				    {"hint_string", "one,two,three"},
+					{ "name", "category/propertyName" },
+					{ "type", (int)Variant.Type.Int },
+					{ "hint", (int)PropertyHint.Enum },
+					{ "hint_string", "one,two,three" },
 				};
 
 				ProjectSettings.AddPropertyInfo(propertyInfo);
@@ -97,6 +97,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] This method doesn't take potential feature overrides into account automatically. Use [method get_setting_with_override] to handle seamlessly.
+				See also [method has_setting] to check whether a setting exists.
 			</description>
 		</method>
 		<method name="get_setting_with_override" qualifiers="const">
@@ -132,15 +133,15 @@
 				[codeblock]
 				var path = ""
 				if OS.has_feature("editor"):
-				    # Running from an editor binary.
-				    # `path` will contain the absolute path to `hello.txt` located in the project root.
-				    path = ProjectSettings.globalize_path("res://hello.txt")
+					# Running from an editor binary.
+					# `path` will contain the absolute path to `hello.txt` located in the project root.
+					path = ProjectSettings.globalize_path("res://hello.txt")
 				else:
-				    # Running from an exported project.
-				    # `path` will contain the absolute path to `hello.txt` next to the executable.
-				    # This is *not* identical to using `ProjectSettings.globalize_path()` with a `res://` path,
-				    # but is close enough in spirit.
-				    path = OS.get_executable_path().get_base_dir().path_join("hello.txt")
+					# Running from an exported project.
+					# `path` will contain the absolute path to `hello.txt` next to the executable.
+					# This is *not* identical to using `ProjectSettings.globalize_path()` with a `res://` path,
+					# but is close enough in spirit.
+					path = OS.get_executable_path().get_base_dir().path_join("hello.txt")
 				[/codeblock]
 			</description>
 		</method>
@@ -149,6 +150,7 @@
 			<param index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if a configuration value is present.
+				[b]Note:[/b] In order to be be detected, custom settings have to be either defined with [method set_setting], or exist in the [code]project.godot[/code] file. This is especially relevant when using [method set_initial_value].
 			</description>
 		</method>
 		<method name="load_resource_pack">
@@ -205,7 +207,20 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Sets the specified setting's initial value. This is the value the setting reverts to.
+				Sets the specified setting's initial value. This is the value the setting reverts to. The setting should already exist before calling this method. Note that project settings equal to their default value are not saved, so your code needs to account for that.
+				[codeblock]
+				extends EditorPlugin
+
+				const SETTING_NAME = "addons/my_setting"
+				const SETTING_DEFAULT = 10.0
+
+				func _enter_tree():
+					if not ProjectSettings.has_setting(SETTING_NAME):
+						ProjectSettings.set_setting(SETTING_NAME, SETTING_DEFAULT)
+
+					ProjectSettings.set_initial_value(SETTING_NAME, SETTING_DEFAULT)
+				[/codeblock]
+				If you have a project setting defined by an [EditorPlugin], but want to use it in a running project, you will need a similar code at runtime.
 			</description>
 		</method>
 		<method name="set_order">
@@ -246,10 +261,10 @@
 	<members>
 		<member name="accessibility/general/accessibility_support" type="int" setter="" getter="" default="0">
 			Accessibility support mode:
-			- [b]Auto[/b] ([code]0[/code]): accessibility support is enabled, but accessibility information updates are processed only if an assistive app (e.g. screen reader or Braille display) is active (default).
-			- [b]Always Active[/b] ([code]1[/code]): accessibility support is enabled, and accessibility information updates are processed regardless of current assistive apps' status.
-			- [b]Disabled[/b] ([code]2[/code]): accessibility support is fully disabled.
-			[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, macOS Accessibility Inspector, or AT-SPI Browser do not count as assistive apps. To test your app with these tools, use [code]1[/code].
+			- [b]Auto[/b] ([code]0[/code]): Accessibility support is enabled, but updates to the accessibility information are processed only if an assistive app (such as a screen reader or a Braille display) is active (default).
+			- [b]Always Active[/b] ([code]1[/code]): Accessibility support is enabled, and updates to the accessibility information are always processed, regardless of the status of assistive apps.
+			- [b]Disabled[/b] ([code]2[/code]): Accessibility support is fully disabled.
+			[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, Accessibility Inspector (macOS), or AT-SPI Browser (Linux/BSD) do not count as assistive apps. To test your project with these tools, use [b]Always Active[/b].
 		</member>
 		<member name="accessibility/general/updates_per_second" type="int" setter="" getter="" default="60">
 			The number of accessibility information updates per second.
@@ -291,6 +306,9 @@
 		</member>
 		<member name="application/config/description" type="String" setter="" getter="" default="&quot;&quot;">
 			The project's description, displayed as a tooltip in the Project Manager when hovering the project.
+		</member>
+		<member name="application/config/disable_project_settings_override" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], disables loading of project settings overrides (file defined in [member application/config/project_settings_override] and [code]res://override.cfg[/code]) and related CLI arguments.
 		</member>
 		<member name="application/config/icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon used for the project, set when project loads. Exporters will also use this icon as a fallback if necessary.
@@ -360,6 +378,10 @@
 			Forces a [i]constant[/i] delay between frames in the main loop (in milliseconds). In most situations, [member application/run/max_fps] should be preferred as an FPS limiter as it's more precise.
 			This setting can be overridden using the [code]--frame-delay &lt;ms;&gt;[/code] command line argument.
 		</member>
+		<member name="application/run/load_shell_environment" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], loads the default shell and copies environment variables set by the shell startup scripts to the app environment.
+			[b]Note:[/b] This setting is implemented on macOS for non-sandboxed applications only.
+		</member>
 		<member name="application/run/low_processor_mode" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables low-processor usage mode. When enabled, the engine takes longer to redraw, but only redraws the screen if necessary. This may lower power consumption, and is intended for editors or mobile applications. For most games, because the screen needs to be redrawn every frame, it is recommended to keep this setting disabled.
 		</member>
@@ -402,7 +424,7 @@
 		</member>
 		<member name="audio/driver/enable_input" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
-			[b]Note:[/b] If the operating system blocks access to audio input devices (due to the user's privacy settings), audio capture will only return silence. On Windows 10 and later, make sure that apps are allowed to access the microphone in the OS' privacy settings.
+			[b]Note:[/b] If the operating system blocks access to audio input devices (due to the user's privacy settings), audio capture will only return silence. On Windows, make sure that apps are allowed to access the microphone in the OS' privacy settings.
 		</member>
 		<member name="audio/driver/mix_rate" type="int" setter="" getter="" default="44100">
 			Target mixing rate used for audio (in Hz). In general, it's better to not touch this and leave it to the host operating system.
@@ -416,7 +438,7 @@
 			Specifies the preferred output latency in milliseconds for audio. Lower values will result in lower audio latency at the cost of increased CPU usage. Low values may result in audible crackling on slower hardware.
 			Audio output latency may be constrained by the host operating system and audio hardware drivers. If the host can not provide the specified audio output latency then Godot will attempt to use the nearest latency allowed by the host. As such you should always use [method AudioServer.get_output_latency] to determine the actual audio output latency.
 			Audio output latency can be overridden using the [code]--audio-output-latency &lt;ms&gt;[/code] command line argument.
-			[b]Note:[/b] This setting is ignored on Android, and on all versions of Windows prior to Windows 10.
+			[b]Note:[/b] This setting is ignored on Android.
 		</member>
 		<member name="audio/driver/output_latency.web" type="int" setter="" getter="" default="50">
 			Safer override for [member audio/driver/output_latency] in the Web platform, to avoid audio issues especially on mobile devices.
@@ -508,9 +530,6 @@
 		<member name="debug/gdscript/warnings/confusable_local_usage" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an identifier that will be shadowed below in the block is used.
 		</member>
-		<member name="debug/gdscript/warnings/constant_used_as_function" type="int" setter="" getter="" default="1" deprecated="This warning is never produced. Instead, an error is generated if the expression type is known at compile time.">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a constant is used as a function.
-		</member>
 		<member name="debug/gdscript/warnings/deprecated_keyword" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when deprecated keywords are used.
 			[b]Note:[/b] There are currently no deprecated keywords, so this warning is never produced.
@@ -527,9 +546,6 @@
 		<member name="debug/gdscript/warnings/exclude_addons" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], scripts in the [code]res://addons[/code] folder will not generate warnings.
 		</member>
-		<member name="debug/gdscript/warnings/function_used_as_property" type="int" setter="" getter="" default="1" deprecated="This warning is never produced. When a function is used as a property, a [Callable] is returned.">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a function as if it is a property.
-		</member>
 		<member name="debug/gdscript/warnings/get_node_default_without_onready" type="int" setter="" getter="" default="2">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when [method Node.get_node] (or the shorthand [code]$[/code]) is used as default value of a class variable without the [code]@onready[/code] annotation.
 		</member>
@@ -540,7 +556,7 @@
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a static inferred type uses a [Variant] as initial value, which makes the static type to also be Variant.
 		</member>
 		<member name="debug/gdscript/warnings/inferred_declaration" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a variable, constant, or parameter has an implicitly inferred static type.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a variable, constant, or parameter has an implicitly inferred static type. In GDScript, type inference is performed by declaring a variable with [code]:=[/code] instead of [code]=[/code] and leaving out the type specifier. For example, [code]var x := 1[/code] will [i]infer[/i] the [int] type, while [code]var x: int = 1[/code] explicitly declares the variable as [int].
 			[b]Note:[/b] This warning is recommended [i]in addition[/i] to [member debug/gdscript/warnings/untyped_declaration] if you want to always specify the type explicitly. Having [code]INFERRED_DECLARATION[/code] warning level higher than [code]UNTYPED_DECLARATION[/code] warning level makes little sense and is not recommended.
 		</member>
 		<member name="debug/gdscript/warnings/int_as_enum_without_cast" type="int" setter="" getter="" default="1">
@@ -551,6 +567,9 @@
 		</member>
 		<member name="debug/gdscript/warnings/integer_division" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when dividing an integer by another integer (the decimal part will be discarded).
+		</member>
+		<member name="debug/gdscript/warnings/missing_await" type="int" setter="" getter="" default="0">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a coroutine without [code]await[/code].
 		</member>
 		<member name="debug/gdscript/warnings/missing_tool" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the base class script has the [code]@tool[/code] annotation, but the current class script does not have it.
@@ -563,9 +582,6 @@
 		</member>
 		<member name="debug/gdscript/warnings/onready_with_export" type="int" setter="" getter="" default="2">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the [code]@onready[/code] annotation is used together with the [code]@export[/code] annotation, since it may not behave as expected.
-		</member>
-		<member name="debug/gdscript/warnings/property_used_as_function" type="int" setter="" getter="" default="1" deprecated="This warning is never produced. Instead, an error is generated if the expression type is known at compile time.">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a property as if it is a function.
 		</member>
 		<member name="debug/gdscript/warnings/redundant_await" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a function that is not a coroutine is called with await.
@@ -651,7 +667,6 @@
 		</member>
 		<member name="debug/settings/gdscript/always_track_call_stacks" type="bool" setter="" getter="" default="false">
 			Whether GDScript call stacks will be tracked in release builds, thus allowing [method Engine.capture_script_backtraces] to function.
-			Enabling this comes at the cost of roughly 40 KiB for every thread that runs any GDScript code.
 			[b]Note:[/b] This setting has no effect on editor builds or debug builds, where GDScript call stacks are tracked regardless.
 		</member>
 		<member name="debug/settings/gdscript/always_track_local_variables" type="bool" setter="" getter="" default="false">
@@ -900,6 +915,9 @@
 		<member name="display/display_server/driver.macos" type="String" setter="" getter="">
 			MacOS override for [member display/display_server/driver].
 		</member>
+		<member name="display/display_server/driver.visionos" type="String" setter="" getter="">
+			visionOS override for [member display/display_server/driver].
+		</member>
 		<member name="display/display_server/driver.windows" type="String" setter="" getter="">
 			Windows override for [member display/display_server/driver].
 		</member>
@@ -1004,6 +1022,7 @@
 			If [code]true[/code], enables a window manager hint that the main window background [i]can[/i] be transparent. This does not make the background actually transparent. For the background to be transparent, the root viewport must also be made transparent by enabling [member rendering/viewport/transparent_background].
 			[b]Note:[/b] To use a transparent splash screen, set [member application/boot_splash/bg_color] to [code]Color(0, 0, 0, 0)[/code].
 			[b]Note:[/b] This setting has no effect if [member display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
+			[b]Note:[/b] This setting has no effect on Android as transparency is controlled only via [member display/window/per_pixel_transparency/allowed].
 		</member>
 		<member name="display/window/size/viewport_height" type="int" setter="" getter="" default="648">
 			Sets the game's main viewport height. On desktop platforms, this is also the initial window height, represented by an indigo-colored rectangle in the 2D editor. Stretch mode settings also use this as a reference when using the [code]canvas_items[/code] or [code]viewport[/code] stretch modes. See also [member display/window/size/viewport_width], [member display/window/size/window_width_override] and [member display/window/size/window_height_override].
@@ -1039,7 +1058,7 @@
 		<member name="display/window/subwindows/embed_subwindows" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], subwindows are embedded in the main window (this is also called single-window mode). Single-window mode can be faster as it does not need to create a separate window for every popup and tooltip, which can be a slow operation depending on the operating system and rendering method in use.
 			If [code]false[/code], subwindows are created as separate windows (this is also called multi-window mode). This allows them to be moved outside the main window and use native operating system window decorations.
-			This is equivalent to [member EditorSettings.interface/editor/single_window_mode] in the editor, except the setting's value is inverted.
+			This is equivalent to [member EditorSettings.interface/editor/single_window_mode] in the editor.
 		</member>
 		<member name="display/window/vsync/vsync_mode" type="int" setter="" getter="" default="1">
 			Sets the V-Sync mode for the main game window. The editor's own V-Sync mode can be set using [member EditorSettings.interface/editor/vsync_mode].
@@ -1083,20 +1102,30 @@
 		<member name="editor/movie_writer/mix_rate" type="int" setter="" getter="" default="48000">
 			The audio mix rate to use in the recorded audio when writing a movie (in Hz). This can be different from [member audio/driver/mix_rate], but this value must be divisible by [member editor/movie_writer/fps] to prevent audio from desynchronizing over time.
 		</member>
-		<member name="editor/movie_writer/mjpeg_quality" type="float" setter="" getter="" default="0.75">
-			The JPEG quality to use when writing a video to an AVI file, between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-looking output at the cost of larger file sizes. Recommended [code]quality[/code] values are between [code]0.75[/code] and [code]0.9[/code]. Even at quality [code]1.0[/code], JPEG compression remains lossy.
-			[b]Note:[/b] This does not affect the audio quality or writing PNG image sequences.
-		</member>
 		<member name="editor/movie_writer/movie_file" type="String" setter="" getter="" default="&quot;&quot;">
 			The output path for the movie. The file extension determines the [MovieWriter] that will be used.
-			Godot has 2 built-in [MovieWriter]s:
-			- AVI container with MJPEG for video and uncompressed audio ([code].avi[/code] file extension). Lossy compression, medium file sizes, fast encoding. The lossy compression quality can be adjusted by changing [member ProjectSettings.editor/movie_writer/mjpeg_quality]. The resulting file can be viewed in most video players, but it must be converted to another format for viewing on the web or by Godot with [VideoStreamPlayer]. MJPEG does not support transparency. AVI output is currently limited to a file of 4 GB in size at most.
+			Godot has 3 built-in [MovieWriter]s:
+			- OGV container with Theora for video and Vorbis for audio ([code].ogv[/code] file extension). Lossy compression, medium file sizes, fast encoding. The lossy compression quality can be adjusted by changing [member ProjectSettings.editor/movie_writer/video_quality] and [member ProjectSettings.editor/movie_writer/ogv/audio_quality]. The resulting file can be viewed in Godot with [VideoStreamPlayer] and most video players, but not web browsers as they don't support Theora.
+			- AVI container with MJPEG for video and uncompressed audio ([code].avi[/code] file extension). Lossy compression, medium file sizes, fast encoding. The lossy compression quality can be adjusted by changing [member ProjectSettings.editor/movie_writer/video_quality]. The resulting file can be viewed in most video players, but it must be converted to another format for viewing on the web or by Godot with [VideoStreamPlayer]. MJPEG does not support transparency. AVI output is currently limited to a file of 4 GB in size at most.
 			- PNG image sequence for video and WAV for audio ([code].png[/code] file extension). Lossless compression, large file sizes, slow encoding. Designed to be encoded to a video file with another tool such as [url=https://ffmpeg.org/]FFmpeg[/url] after recording. Transparency is currently not supported, even if the root viewport is set to be transparent.
 			If you need to encode to a different format or pipe a stream through third-party software, you can extend this [MovieWriter] class to create your own movie writers.
 			When using PNG output, the frame number will be appended at the end of the file name. It starts from 0 and is padded with 8 digits to ensure correct sorting and easier processing. For example, if the output path is [code]/tmp/hello.png[/code], the first two frames will be [code]/tmp/hello00000000.png[/code] and [code]/tmp/hello00000001.png[/code]. The audio will be saved at [code]/tmp/hello.wav[/code].
 		</member>
+		<member name="editor/movie_writer/ogv/audio_quality" type="float" setter="" getter="" default="0.5">
+			The audio encoding quality to use when writing Vorbis audio to a file, between [code]-0.1[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-sounding output at the cost of larger file sizes. Even at quality [code]1.0[/code], compression remains lossy.
+			[b]Note:[/b] This does not affect video quality, which is controlled by [member editor/movie_writer/video_quality] instead.
+		</member>
+		<member name="editor/movie_writer/ogv/encoding_speed" type="int" setter="" getter="" default="4">
+			The tradeoff between encoding speed and compression efficiency. Speed [code]1[/code] is the slowest but provides the best compression. Speed [code]4[/code] is the fastest but provides the worst compression. Video quality is generally not affected significantly by this setting.
+		</member>
+		<member name="editor/movie_writer/ogv/keyframe_interval" type="int" setter="" getter="" default="64">
+			Forces keyframes at the specified interval (in frame count). Higher values can improve compression up to a certain level at the expense of higher latency when seeking.
+		</member>
 		<member name="editor/movie_writer/speaker_mode" type="int" setter="" getter="" default="0">
 			The speaker mode to use in the recorded audio when writing a movie. See [enum AudioServer.SpeakerMode] for possible values.
+		</member>
+		<member name="editor/movie_writer/video_quality" type="float" setter="" getter="" default="0.75">
+			The video encoding quality to use when writing a Theora or AVI (MJPEG) video to a file, between [code]0.0[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-looking output at the cost of larger file sizes. Recommended [code]quality[/code] values are between [code]0.75[/code] and [code]0.9[/code]. Even at quality [code]1.0[/code], compression remains lossy.
 		</member>
 		<member name="editor/naming/default_signal_callback_name" type="String" setter="" getter="" default="&quot;_on_{node_name}_{signal_name}&quot;">
 			The format of the default signal callback name (in the Signal Connection Dialog). The following substitutions are available: [code]{NodeName}[/code], [code]{nodeName}[/code], [code]{node_name}[/code], [code]{SignalName}[/code], [code]{signalName}[/code], and [code]{signal_name}[/code].
@@ -1154,6 +1183,9 @@
 		<member name="filesystem/import/fbx2gltf/enabled.web" type="bool" setter="" getter="" default="false">
 			Override for [member filesystem/import/fbx2gltf/enabled] on the Web where FBX2glTF can't easily be accessed from Godot.
 		</member>
+		<member name="gui/common/always_show_focus_state" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], [Control]s will always show if they're focused, even if said focus was gained via mouse/touch input.
+		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
@@ -1171,7 +1203,7 @@
 			Maximum undo/redo history size for [TextEdit] fields.
 		</member>
 		<member name="gui/fonts/dynamic_fonts/use_oversampling" type="bool" setter="" getter="" default="true">
-			If set to [code]true[/code] and [member display/window/stretch/mode] is set to [b]"canvas_items"[/b], font and [SVGTexture] oversampling is enabled in the main window. Use [member Viewport.oversampling] to control oversampling in other viewports and windows.
+			If set to [code]true[/code] and [member display/window/stretch/mode] is set to [b]"canvas_items"[/b], font and [DPITexture] oversampling is enabled in the main window. Use [member Viewport.oversampling] to control oversampling in other viewports and windows.
 		</member>
 		<member name="gui/theme/custom" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Theme] resource file to use for the project ([code].theme[/code] or generic [code].tres[/code]/[code].res[/code] extension).
@@ -1613,6 +1645,14 @@
 			If [code]true[/code], text server break iteration rule sets, dictionaries and other optional data are included in the exported project.
 			[b]Note:[/b] "ICU / HarfBuzz / Graphite" text server data includes dictionaries for Burmese, Chinese, Japanese, Khmer, Lao and Thai as well as Unicode Standard Annex #29 and Unicode Standard Annex #14 word and line breaking rules. Data is about 4 MB large.
 			[b]Note:[/b] [TextServerFallback] does not use additional data.
+		</member>
+		<member name="internationalization/locale/line_breaking_strictness" type="int" setter="" getter="" default="0">
+			Default strictness of line-breaking rules. Can be overridden by adding [code]@lb={auto,loose,normal,strict}[/code] to the language code.
+			- [b]Auto[/b] ([code]0[/code]) - strictness is based on the length of the line.
+			- [b]Loose[/b] ([code]1[/code]) - the least restrictive set of line-breaking rules. Typically used for short lines.
+			- [b]Normal[/b] ([code]2[/code]) - the most common set of line-breaking rules.
+			- [b]Strict[/b] ([code]3[/code]) - the most stringent set of line-breaking rules.
+			See [url=https://www.w3.org/TR/css-text-3/#line-break-property]Line Breaking Strictness: the line-break property[/url] for more info.
 		</member>
 		<member name="internationalization/locale/test" type="String" setter="" getter="" default="&quot;&quot;">
 			If non-empty, this locale will be used instead of the automatically detected system locale.
@@ -2274,8 +2314,17 @@
 		<member name="navigation/2d/default_link_connection_radius" type="float" setter="" getter="" default="4.0">
 			Default link connection radius for 2D navigation maps. See [method NavigationServer2D.map_set_link_connection_radius].
 		</member>
+		<member name="navigation/2d/merge_rasterizer_cell_scale" type="float" setter="" getter="" default="1.0">
+			Default merge rasterizer cell scale for 2D navigation maps. See [method NavigationServer2D.map_set_merge_rasterizer_cell_scale].
+		</member>
 		<member name="navigation/2d/use_edge_connections" type="bool" setter="" getter="" default="true">
 			If enabled 2D navigation regions will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin. This setting only affects World2D default navigation maps.
+		</member>
+		<member name="navigation/2d/warnings/navmesh_cell_size_mismatch" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the navigation system will print warnings when a navigation mesh with a small cell size is used on a navigation map with a larger size as this commonly causes rasterization errors.
+		</member>
+		<member name="navigation/2d/warnings/navmesh_edge_merge_errors" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the navigation system will print warnings about navigation mesh edge merge errors occurring in navigation regions or maps.
 		</member>
 		<member name="navigation/3d/default_cell_height" type="float" setter="" getter="" default="0.25">
 			Default cell height for 3D navigation maps. See [method NavigationServer3D.map_set_cell_height].
@@ -2298,6 +2347,12 @@
 		<member name="navigation/3d/use_edge_connections" type="bool" setter="" getter="" default="true">
 			If enabled 3D navigation regions will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin. This setting only affects World3D default navigation maps.
 		</member>
+		<member name="navigation/3d/warnings/navmesh_cell_size_mismatch" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the navigation system will print warnings when a navigation mesh with a small cell size (or in 3D height) is used on a navigation map with a larger size as this commonly causes rasterization errors.
+		</member>
+		<member name="navigation/3d/warnings/navmesh_edge_merge_errors" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the navigation system will print warnings about navigation mesh edge merge errors occurring in navigation regions or maps.
+		</member>
 		<member name="navigation/avoidance/thread_model/avoidance_use_high_priority_threads" type="bool" setter="" getter="" default="true">
 			If enabled and avoidance calculations use multiple threads the threads run with high priority.
 		</member>
@@ -2319,6 +2374,9 @@
 		<member name="navigation/world/map_use_async_iterations" type="bool" setter="" getter="" default="true">
 			If enabled, navigation map synchronization uses an async process that runs on a background thread. This avoids stalling the main thread but adds an additional delay to any navigation map change.
 		</member>
+		<member name="navigation/world/region_use_async_iterations" type="bool" setter="" getter="" default="true">
+			If enabled, navigation region synchronization uses an async process that runs on a background thread. This avoids stalling the main thread but adds an additional delay to any navigation region change.
+		</member>
 		<member name="network/limits/debugger/max_chars_per_second" type="int" setter="" getter="" default="32768">
 			Maximum number of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
@@ -2336,6 +2394,9 @@
 		</member>
 		<member name="network/limits/tcp/connect_timeout_seconds" type="int" setter="" getter="" default="30">
 			Timeout (in seconds) for connection attempts using TCP.
+		</member>
+		<member name="network/limits/unix/connect_timeout_seconds" type="int" setter="" getter="" default="30">
+			Timeout (in seconds) for connection attempts using UNIX domain socket.
 		</member>
 		<member name="network/limits/webrtc/max_channel_in_buffer_kb" type="int" setter="" getter="" default="64">
 			Maximum size (in kiB) for the [WebRTCDataChannel] input buffer.
@@ -2400,7 +2461,7 @@
 		<member name="physics/2d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the 2D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 2D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
 		</member>
-		<member name="physics/2d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
+		<member name="physics/2d/sleep_threshold_angular" type="float" setter="" getter="" default="0.13962634">
 			Threshold angular velocity under which a 2D physics body will be considered inactive. See [constant PhysicsServer2D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].
 		</member>
 		<member name="physics/2d/sleep_threshold_linear" type="float" setter="" getter="" default="2.0">
@@ -2475,15 +2536,21 @@
 			Sets which physics engine to use for 3D physics.
 			[b]DEFAULT[/b] is currently equivalent to [b]GodotPhysics3D[/b], but may change in future releases. Select an explicit implementation if you want to ensure that your project stays on the same engine.
 			[b]GodotPhysics3D[/b] is Godot's internal 3D physics engine.
-			[b]Jolt Physics[/b] is an alternative physics engine that is generally faster and more reliable than [b]GodotPhysics3D[/b]. As it was recently implemented, it is currently considered experimental and its behavior may change in future releases.
+			[b]Jolt Physics[/b] is an alternative physics engine that is generally faster and more reliable than [b]GodotPhysics3D[/b]. Jolt Physics is the default for projects created starting in Godot 4.6.
 			[b]Dummy[/b] is a 3D physics server that does nothing and returns only dummy values, effectively disabling all 3D physics functionality.
 			Third-party extensions and modules can add other physics engines to select with this setting.
+		</member>
+		<member name="physics/3d/physics_interpolation/scene_traversal" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
+			The approach used for 3D scene traversal when physics interpolation is enabled.
+			- [code]DEFAULT[/code]: The default optimized method.
+			- [code]Legacy[/code]: The previous reference method used for scene tree traversal, which is slower.
+			- [code]Debug[/code]: Swaps between [code]DEFAULT[/code] and [code]Legacy[/code] methods on alternating frames, and provides logging information (which in turn makes it slower). Intended for debugging only; you should use the [code]DEFAULT[/code] method in most cases.
 		</member>
 		<member name="physics/3d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the 3D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 3D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
 			[b]Note:[/b] When [member physics/3d/physics_engine] is set to [code]Jolt Physics[/code], enabling this setting will prevent the 3D physics server from being able to provide any context when reporting errors and warnings, and will instead always refer to nodes as [code]&lt;unknown&gt;[/code].
 		</member>
-		<member name="physics/3d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
+		<member name="physics/3d/sleep_threshold_angular" type="float" setter="" getter="" default="0.13962634">
 			Threshold angular velocity under which a 3D physics body will be considered inactive. See [constant PhysicsServer3D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].
 		</member>
 		<member name="physics/3d/sleep_threshold_linear" type="float" setter="" getter="" default="0.1">
@@ -2512,7 +2579,8 @@
 			Enables [member Viewport.physics_object_picking] on the root viewport.
 		</member>
 		<member name="physics/common/max_physics_steps_per_frame" type="int" setter="" getter="" default="8">
-			Controls the maximum number of physics steps that can be simulated each rendered frame. The default value is tuned to avoid "spiral of death" situations where expensive physics simulations trigger more expensive simulations indefinitely. However, the game will appear to slow down if the rendering FPS is less than [code]1 / max_physics_steps_per_frame[/code] of [member physics/common/physics_ticks_per_second]. This occurs even if [code]delta[/code] is consistently used in physics calculations. To avoid this, increase [member physics/common/max_physics_steps_per_frame] if you have increased [member physics/common/physics_ticks_per_second] significantly above its default value.
+			Controls the maximum number of physics steps that can be simulated each rendered frame. The default value is tuned to avoid situations where the framerate suddenly drops to a very low value beyond a certain amount of physics simulation. This occurs because the physics engine can't keep up with the expected simulation rate. In this case, the framerate will start dropping, but the engine is only allowed to simulate a certain number of physics steps per rendered frame. This snowballs into a situation where framerate keeps dropping until it reaches a very low framerate (typically 1-2 FPS) and is called the [i]physics spiral of death[/i].
+			However, the game will appear to slow down if the rendering FPS is less than [code]1 / max_physics_steps_per_frame[/code] of [member physics/common/physics_ticks_per_second]. This occurs even if [code]delta[/code] is consistently used in physics calculations. To avoid this, increase [member physics/common/max_physics_steps_per_frame] if you have increased [member physics/common/physics_ticks_per_second] significantly above its default value.
 			[b]Note:[/b] This property is only read when the project starts. To change the maximum number of simulated physics steps per frame at runtime, set [member Engine.max_physics_steps_per_frame] instead.
 		</member>
 		<member name="physics/common/physics_interpolation" type="bool" setter="" getter="" default="false">
@@ -2532,7 +2600,7 @@
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_ticks_per_second] instead.
 			[b]Note:[/b] Only [member physics/common/max_physics_steps_per_frame] physics ticks may be simulated per rendered frame at most. If more physics ticks have to be simulated per rendered frame to keep up with rendering, the project will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended to also increase [member physics/common/max_physics_steps_per_frame] if increasing [member physics/common/physics_ticks_per_second] significantly above its default value.
 		</member>
-		<member name="physics/jolt_physics_3d/collisions/active_edge_threshold" type="float" setter="" getter="" default="0.872665">
+		<member name="physics/jolt_physics_3d/collisions/active_edge_threshold" type="float" setter="" getter="" default="0.87266463">
 			The maximum angle, in radians, between two adjacent triangles in a [ConcavePolygonShape3D] or [HeightMapShape3D] for which the edge between those triangles is considered inactive.
 			Collisions against an inactive edge will have its normal overridden to instead be the surface normal of the triangle. This can help alleviate ghost collisions.
 			[b]Note:[/b] Setting this too high can result in objects not depenetrating properly.
@@ -2548,7 +2616,7 @@
 			Which of the two nodes bound by a joint should represent the world when one of the two is omitted, as either [member Joint3D.node_a] or [member Joint3D.node_b]. This can be thought of as having the omitted node be a [StaticBody3D] at the joint's position. Joint limits are more easily expressed when [member Joint3D.node_a] represents the world.
 			[b]Note:[/b] In Godot Physics, only [member Joint3D.node_b] can represent the world.
 		</member>
-		<member name="physics/jolt_physics_3d/limits/max_angular_velocity" type="float" setter="" getter="" default="47.1239">
+		<member name="physics/jolt_physics_3d/limits/max_angular_velocity" type="float" setter="" getter="" default="47.12389">
 			The maximum angular velocity that a [RigidBody3D] can reach, in radians per second.
 			This is mainly used as a fail-safe, to prevent the simulation from exploding, as fast-moving objects colliding with complex physics structures can otherwise cause them to go out of control. Fast-moving objects can also cause a lot of stress on the collision detection system, which can slow down the simulation considerably.
 		</member>
@@ -2598,17 +2666,11 @@
 		<member name="physics/jolt_physics_3d/simulation/allow_sleep" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], [RigidBody3D] nodes are allowed to go to sleep if their velocity is below the threshold defined in [member physics/jolt_physics_3d/simulation/sleep_velocity_threshold] for the duration set in [member physics/jolt_physics_3d/simulation/sleep_time_threshold]. This can improve physics simulation performance when there are non-moving [RigidBody3D] nodes, at the cost of some nodes possibly failing to wake up in certain scenarios. Consider disabling this temporarily to troubleshoot [RigidBody3D] nodes not moving when they should.
 		</member>
-		<member name="physics/jolt_physics_3d/simulation/areas_detect_static_bodies" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], [Area3D] nodes are able to detect overlaps with [StaticBody3D] nodes.
-			[b]Note:[/b] Enabling this setting can come at a heavy CPU and memory cost if you allow many/large [Area3D] to overlap with complex static geometry, such as [ConcavePolygonShape3D] or [HeightMapShape3D]. It is strongly recommended that you set up your collision layers and masks in such a way that only a few small [Area3D] nodes can detect [StaticBody3D] nodes.
-			[b]Note:[/b] This also applies to overlaps with a [RigidBody3D] frozen with [constant RigidBody3D.FREEZE_MODE_STATIC].
-			[b]Note:[/b] This is not needed to detect overlaps with [AnimatableBody3D], as it is a kinematic body, despite inheriting from [StaticBody3D].
-		</member>
 		<member name="physics/jolt_physics_3d/simulation/baumgarte_stabilization_factor" type="float" setter="" getter="" default="0.2">
 			How much of the position error of a [RigidBody3D] to fix during a physics step, where [code]0.0[/code] is none and [code]1.0[/code] is the full amount. This affects things like how quickly bodies depenetrate.
 			[b]Note:[/b] Setting this value too high can make [RigidBody3D] nodes unstable.
 		</member>
-		<member name="physics/jolt_physics_3d/simulation/body_pair_contact_cache_angle_threshold" type="float" setter="" getter="" default="0.0349066">
+		<member name="physics/jolt_physics_3d/simulation/body_pair_contact_cache_angle_threshold" type="float" setter="" getter="" default="0.034906585">
 			The maximum relative angle by which a body pair can move and still reuse the collision results from the previous physics step, in radians.
 		</member>
 		<member name="physics/jolt_physics_3d/simulation/body_pair_contact_cache_distance_threshold" type="float" setter="" getter="" default="0.001">
@@ -2661,7 +2723,7 @@
 		</member>
 		<member name="rendering/2d/batching/uniform_set_cache_size" type="int" setter="" getter="" default="4096">
 			Maximum number of uniform sets that will be cached by the 2D renderer when batching draw calls.
-			[b]Note:[/b] A project that uses a large number of unique sprite textures per frame may benefit from increasing this value.
+			[b]Note:[/b] Increasing this value can improve performance if the project renders many unique sprite textures every frame.
 		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
 			Controls how much of the original viewport size should be covered by the 2D signed distance field. This SDF can be sampled in [CanvasItem] shaders and is used for [GPUParticles2D] collision. Higher values allow portions of occluders located outside the viewport to still be taken into account in the generated signed distance field, at the cost of performance. If you notice particles falling through [LightOccluder2D]s as the occluders leave the viewport, increase this setting.
@@ -2703,10 +2765,14 @@
 			[b]Note:[/b] Screen-space antialiasing is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 			[b]Note:[/b] This property is only read when the project starts. To set the screen-space antialiasing mode at runtime, set [member Viewport.screen_space_aa] on the root [Viewport] instead, or use [method RenderingServer.viewport_set_screen_space_aa].
 		</member>
+		<member name="rendering/anti_aliasing/quality/smaa_edge_detection_threshold" type="float" setter="" getter="" default="0.05">
+			Sets the sensitivity to edges when using SMAA for antialiasing. Lower values will catch more edges, at a potentially higher performance cost.
+			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
+		</member>
 		<member name="rendering/anti_aliasing/quality/use_debanding" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible in 3D. 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS].
+			If [code]true[/code], uses a fast dithering filter just before transforming floating point color values to integer color values to make banding significantly less visible. Debanding is applied at different steps of the rendering process depending on the rendering method and [member rendering/viewport/hdr_2d] setting.
 			In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
-			[b]Note:[/b] This property is only read when the project starts. To set debanding at runtime, set [member Viewport.use_debanding] on the root [Viewport] instead, or use [method RenderingServer.viewport_set_use_debanding].
+			[b]Note:[/b] This property is only read when the project starts and configures [method RenderingServer.material_set_use_debanding] and [member Viewport.use_debanding] of the root [Viewport]. When [member rendering/viewport/hdr_2d] is disabled, you should additionally set the [member Viewport.use_debanding] of other viewports in your project. To set debanding at run-time, the property that should be set depends on the renderer: Forward+ only uses [member Viewport.use_debanding] and Mobile uses both [method RenderingServer.material_set_use_debanding] and [member Viewport.use_debanding].
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_taa" type="bool" setter="" getter="" default="false">
 			Enables temporal antialiasing for the default screen [Viewport]. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion. Enabling TAA can make the image blurrier, which is partially counteracted by automatically using a negative mipmap LOD bias (see [member rendering/textures/default_filters/texture_mipmap_bias]).
@@ -2861,15 +2927,15 @@
 			- [code]opengl3_angle[/code], OpenGL ES 3.0 using the ANGLE compatibility layer over native Direct3D 11 drivers. If [member rendering/gl_compatibility/fallback_to_angle] is enabled, this is used as a fallback if OpenGL 3.3 is not supported. By default, ANGLE is used as the default driver for some devices listed in [member rendering/gl_compatibility/force_angle_on_devices].
 		</member>
 		<member name="rendering/gl_compatibility/fallback_to_angle" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the compatibility renderer will fall back to ANGLE if native OpenGL is not supported or the device is listed in [member rendering/gl_compatibility/force_angle_on_devices].
+			If [code]true[/code], the Compatibility renderer will fall back to ANGLE if native OpenGL is not supported or the device is listed in [member rendering/gl_compatibility/force_angle_on_devices].
 			[b]Note:[/b] This setting is implemented only on Windows.
 		</member>
 		<member name="rendering/gl_compatibility/fallback_to_gles" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the compatibility renderer will fall back to OpenGLES if desktop OpenGL is not supported.
+			If [code]true[/code], the Compatibility renderer will fall back to OpenGLES if desktop OpenGL is not supported.
 			[b]Note:[/b] This setting is implemented only on Linux/X11.
 		</member>
 		<member name="rendering/gl_compatibility/fallback_to_native" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the compatibility renderer will fall back to native OpenGL if ANGLE is not supported, or ANGLE dynamic libraries aren't found.
+			If [code]true[/code], the Compatibility renderer will fall back to native OpenGL if ANGLE is not supported, or ANGLE dynamic libraries aren't found.
 			[b]Note:[/b] This setting is implemented on macOS and Windows.
 		</member>
 		<member name="rendering/gl_compatibility/force_angle_on_devices" type="Array" setter="" getter="">
@@ -2985,19 +3051,19 @@
 			Use 16 bits for the omni/spot shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_0_subdiv" type="int" setter="" getter="" default="2">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+			The subdivision amount of the first quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_1_subdiv" type="int" setter="" getter="" default="2">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+			The subdivision amount of the second quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_2_subdiv" type="int" setter="" getter="" default="3">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+			The subdivision amount of the third quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_3_subdiv" type="int" setter="" getter="" default="4">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+			The subdivision amount of the fourth quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_size" type="int" setter="" getter="" default="4096">
-			Size for shadow atlas (used for OmniLights and SpotLights). See documentation.
+			The size of the shadow atlas used for [OmniLight3D] and [SpotLight3D] nodes. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/lights_and_shadows/positional_shadow/atlas_size] on mobile devices, due to performance concerns or driver support.
@@ -3096,11 +3162,14 @@
 		<member name="rendering/reflections/sky_reflections/texture_array_reflections.mobile" type="bool" setter="" getter="" default="false">
 			Lower-end override for [member rendering/reflections/sky_reflections/texture_array_reflections] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/reflections/specular_occlusion/enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], reduces reflections based on ambient light.
+		</member>
 		<member name="rendering/renderer/rendering_method" type="String" setter="" getter="" default="&quot;forward_plus&quot;">
 			Sets the renderer that will be used by the project. Options are:
 			[b]forward_plus[/b] (Forward+): High-end renderer designed for desktop devices. Has a higher base overhead, but scales well with complex scenes. Not suitable for older devices or mobile.
 			[b]mobile[/b] (Mobile): Modern renderer designed for mobile devices. Has a lower base overhead than Forward+, but does not scale as well to large scenes with many elements.
-			[b]gl_compatibility[/b] (Compatibility): Low-end renderer designed for older devices. Based on the limitations of the OpenGL 3.3 / OpenGL ES 3.0 / WebGL 2 APIs.
+			[b]gl_compatibility[/b] (Compatibility): Low-end renderer designed for older devices. Based on the limitations of the OpenGL 3.3 / OpenGL ES 3.0 / WebGL 2 APIs. Lighting calculations are performed on nonlinear sRGB-encoded color data, which produces inaccurate results that may look acceptable for some games.
 			This can be overridden using the [code]--rendering-method &lt;method&gt;[/code] command line argument.
 			[b]Note:[/b] The actual rendering method may be automatically changed by the engine as a result of a fallback, or a user-specified command line argument. To get the actual rendering method that is used at runtime, use [method RenderingServer.get_current_rendering_method] instead of reading this project setting's value.
 		</member>
@@ -3159,6 +3228,11 @@
 			Two options are supported:
 			- [code]metal[/code] (default), Metal from native drivers, only supported on Apple Silicon Macs. On Intel Macs, it will automatically fall back to [code]vulkan[/code] as Metal support is not implemented.
 			- [code]vulkan[/code], Vulkan over Metal via MoltenVK, supported on both Apple Silicon and Intel Macs.
+		</member>
+		<member name="rendering/rendering_device/driver.visionos" type="String" setter="" getter="" default="&quot;metal&quot;">
+			visionOS override for [member rendering/rendering_device/driver].
+			Only one option is supported:
+			- [code]metal[/code] (default), Metal from native drivers.
 		</member>
 		<member name="rendering/rendering_device/driver.windows" type="String" setter="" getter="" default="&quot;vulkan&quot;">
 			Windows override for [member rendering/rendering_device/driver].
@@ -3325,8 +3399,9 @@
 			The default compression factor for lossless WebP. Decompression speed is mostly unaffected by the compression factor. Supported values are 0 to 100.
 		</member>
 		<member name="rendering/viewport/hdr_2d" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables [member Viewport.use_hdr_2d] on the root viewport. 2D rendering will use an high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be an [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be an [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen. Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
-			[b]Note:[/b] This setting will have no effect when using the Compatibility renderer, which always renders in low dynamic range for performance reasons.
+			If [code]true[/code], enables [member Viewport.use_hdr_2d] on the root viewport. 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ or Compatibility renderer, this will be an [code]RGBA16[/code] framebuffer. When using the Mobile renderer, it will be an [code]RGB10_A2[/code] framebuffer.
+			Additionally, 2D rendering will be performed on linear values and will be converted using the appropriate transfer function immediately before blitting to the screen (if the Viewport is attached to the screen).
+			Practically speaking, this means that the end result of the Viewport will not be clamped to the [code]0-1[/code] range and can be used in 3D rendering without color encoding adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
 			[b]Note:[/b] This property is only read when the project starts. To toggle HDR 2D at runtime, set [member Viewport.use_hdr_2d] on the root [Viewport].
 		</member>
 		<member name="rendering/viewport/transparent_background" type="bool" setter="" getter="" default="false">
@@ -3395,6 +3470,48 @@
 		<member name="xr/openxr/extensions/hand_tracking_unobstructed_data_source" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], support for the unobstructed data source is requested. If supported, you will receive hand tracking data based on the actual finger positions of the user often determined by optical tracking.
 			[b]Note:[/b] This requires the OpenXR data source extension and unobstructed handtracking to be supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/hand_tracking] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/render_model" type="bool" setter="" getter="" default="false">
+			If [code]true[/code] we enable the render model extension if available.
+			[b]Note:[/b] This relates to the core OpenXR render model extension and has no relation to any vendor render model extensions.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/april_tag_dict" type="int" setter="" getter="" default="&quot;3&quot;">
+			The April Tag marker types the built-in marker tracking is set to recognize (if April Tag marker tracking is available and enabled).
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/aruco_dict" type="int" setter="" getter="" default="&quot;15&quot;">
+			The ArUco marker types the built-in marker tracking is set to recognize (if ArUco marker tracking is available and enabled).
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_builtin_anchor_detection" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], we enable the built-in logic for handling anchors. Godot will query (persistent) anchors and manage [OpenXRAnchorTracker] instances for you. If disabled you'll need to create your own spatial and persistence context and perform your own discovery queries.
+			[b]Note:[/b] This functionality requires that spatial anchors are supported and enabled.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_builtin_marker_tracking" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], we enable the built-in logic for handling marker tracking. Godot will query markers and manage [OpenXRMarkerTracker] instances for you. If disabled you'll need to create your own spatial context and perform your own discovery queries.
+			[b]Note:[/b] This functionality requires that marker tracking is supported and enabled.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_builtin_plane_detection" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], we enable the built-in logic for handling plane detection. Godot will query detected planes (walls, floors, ceilings, etc.) and manage [OpenXRPlaneTracker] instances for you. If disabled you'll need to create your own spatial context and perform your own discovery queries.
+			[b]Note:[/b] This functionality requires that plane tracking is supported and enabled.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_marker_tracking" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the marker tracking extension is requested. If supported, you will be able to query information about markers detected by the XR runtime, e.g. QR codes, aruca markers and april tags.
+			[b]Note:[/b] This requires that the OpenXR spatial entities and marker tracking extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_persistent_anchors" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the persistent anchors extension is requested. If supported, you will be able to store spatial anchors and they will be restored on application startup.
+			[b]Note:[/b] This requires that the OpenXR spatial entities, spatial anchors, and spatial persistence extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] and [member xr/openxr/extensions/spatial_entity/enable_spatial_anchors] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_plane_tracking" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the plane tracking extension is requested. If supported, you will be able to query information about planes detected by the XR runtime, e.g. walls, floors, etc.
+			[b]Note:[/b] This requires that the OpenXR spatial entities and plane tracking extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_spatial_anchors" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the spatial anchors extension is requested. If supported, you will be able to register anchor locations in the real world that the XR runtime will adjust as needed and/or potentially share with other headsets.
+			[b]Note:[/b] This requires that the OpenXR spatial entities and spatial anchors extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the spatial entity extension is requested. If supported, you will be able to access spatial information about the real environment around you. What information is available is dependent on additional extensions.
+			[b]Note:[/b] This requires that the OpenXR spatial entities extension is supported by the XR runtime. If not supported this setting will be ignored.
 		</member>
 		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify whether OpenXR should be configured for an HMD or a hand held device.

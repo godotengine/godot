@@ -407,21 +407,25 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (p_event->is_pressed() && slot_count > 0) {
-		if (p_event->is_action("ui_up", true)) {
-			selected_slot--;
-			if (selected_slot < 0) {
-				selected_slot = -1;
-			} else {
-				accept_event();
+		bool ac_enabled = get_tree() && get_tree()->is_accessibility_enabled();
+		if ((ac_enabled && slots_focus_mode == Control::FOCUS_ACCESSIBILITY) || slots_focus_mode == Control::FOCUS_ALL) {
+			if (p_event->is_action("ui_up", true)) {
+				selected_slot--;
+				if (selected_slot < 0) {
+					selected_slot = -1;
+				} else {
+					accept_event();
+				}
+			} else if (p_event->is_action("ui_down", true)) {
+				selected_slot++;
+				if (selected_slot >= slot_count) {
+					selected_slot = -1;
+				} else {
+					accept_event();
+				}
 			}
-		} else if (p_event->is_action("ui_down", true)) {
-			selected_slot++;
-			if (selected_slot >= slot_count) {
-				selected_slot = -1;
-			} else {
-				accept_event();
-			}
-		} else if (p_event->is_action("ui_cancel", true)) {
+		}
+		if (p_event->is_action("ui_cancel", true)) {
 			GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
 			if (graph && graph->is_keyboard_connecting()) {
 				graph->force_connection_drag_end();
@@ -664,9 +668,18 @@ void GraphNode::_notification(int p_what) {
 					}
 
 					if (slot_index == selected_slot) {
-						Size2i port_sz = theme_cache.port->get_size();
-						draw_style_box(sb_slot_selected, Rect2i(port_h_offset - port_sz.x, slot_y_cache[E.key] + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
-						draw_style_box(sb_slot_selected, Rect2i(get_size().x - port_h_offset - port_sz.x, slot_y_cache[E.key] + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
+						Ref<Texture2D> port_icon = slot.custom_port_icon_left;
+						if (port_icon.is_null()) {
+							port_icon = theme_cache.port;
+						}
+						Size2i port_sz = port_icon->get_size() + sb_slot_selected->get_minimum_size();
+						draw_style_box(sb_slot_selected, Rect2i(port_h_offset - port_sz.x * 0.5, slot_y_cache[E.key] - port_sz.y * 0.5, port_sz.x, port_sz.y));
+						port_icon = slot.custom_port_icon_right;
+						if (port_icon.is_null()) {
+							port_icon = theme_cache.port;
+						}
+						port_sz = port_icon->get_size() + sb_slot_selected->get_minimum_size();
+						draw_style_box(sb_slot_selected, Rect2i(get_size().x - port_h_offset - port_sz.x * 0.5, slot_y_cache[E.key] - port_sz.y * 0.5, port_sz.x, port_sz.y));
 					}
 
 					// Draw slot stylebox.
@@ -1180,6 +1193,23 @@ Vector<int> GraphNode::get_allowed_size_flags_vertical() const {
 	return flags;
 }
 
+void GraphNode::set_slots_focus_mode(Control::FocusMode p_focus_mode) {
+	if (slots_focus_mode == p_focus_mode) {
+		return;
+	}
+	ERR_FAIL_COND((int)p_focus_mode < 1 || (int)p_focus_mode > 3);
+
+	slots_focus_mode = p_focus_mode;
+	if (slots_focus_mode == Control::FOCUS_CLICK && selected_slot > -1) {
+		selected_slot = -1;
+		queue_redraw();
+	}
+}
+
+Control::FocusMode GraphNode::get_slots_focus_mode() const {
+	return slots_focus_mode;
+}
+
 void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &GraphNode::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &GraphNode::get_title);
@@ -1220,6 +1250,9 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ignore_invalid_connection_type", "ignore"), &GraphNode::set_ignore_invalid_connection_type);
 	ClassDB::bind_method(D_METHOD("is_ignoring_valid_connection_type"), &GraphNode::is_ignoring_valid_connection_type);
 
+	ClassDB::bind_method(D_METHOD("set_slots_focus_mode", "focus_mode"), &GraphNode::set_slots_focus_mode);
+	ClassDB::bind_method(D_METHOD("get_slots_focus_mode"), &GraphNode::get_slots_focus_mode);
+
 	ClassDB::bind_method(D_METHOD("get_input_port_count"), &GraphNode::get_input_port_count);
 	ClassDB::bind_method(D_METHOD("get_input_port_position", "port_idx"), &GraphNode::get_input_port_position);
 	ClassDB::bind_method(D_METHOD("get_input_port_type", "port_idx"), &GraphNode::get_input_port_type);
@@ -1236,6 +1269,7 @@ void GraphNode::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_invalid_connection_type"), "set_ignore_invalid_connection_type", "is_ignoring_valid_connection_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "slots_focus_mode", PROPERTY_HINT_ENUM, "Click:1,All:2,Accessibility:3"), "set_slots_focus_mode", "get_slots_focus_mode");
 
 	ADD_SIGNAL(MethodInfo("slot_updated", PropertyInfo(Variant::INT, "slot_index")));
 	ADD_SIGNAL(MethodInfo("slot_sizes_changed"));

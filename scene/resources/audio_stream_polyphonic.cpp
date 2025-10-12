@@ -31,7 +31,7 @@
 #include "audio_stream_polyphonic.h"
 #include "audio_stream_polyphonic.compat.inc"
 
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 constexpr uint64_t ID_MASK = 0xFFFFFFFF;
 constexpr uint64_t INDEX_SHIFT = 32;
@@ -216,6 +216,13 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 			: p_playback_type;
 
 	for (uint32_t i = 0; i < streams.size(); i++) {
+		if (streams[i].active.is_set() && streams[i].stream_playback->get_is_sample()) {
+			Ref<AudioSamplePlayback> active_sample_playback = streams[i].stream_playback->get_sample_playback();
+			if (active_sample_playback.is_null() || !AudioServer::get_singleton()->is_sample_playback_active(active_sample_playback)) {
+				streams[i].active.clear();
+			}
+		}
+
 		if (!streams[i].active.is_set()) {
 			// Can use this stream, as it's not active.
 			streams[i].stream = p_stream;

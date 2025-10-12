@@ -121,7 +121,7 @@
 		</method>
 		<method name="get_forced_export_files" qualifiers="static">
 			<return type="PackedStringArray" />
-			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="0" name="preset" type="EditorExportPreset" default="null" />
 			<description>
 				Returns array of core file names that always should be exported regardless of preset config.
 			</description>
@@ -260,19 +260,19 @@
 			Message type for error messages that must be addressed and fail the export.
 		</constant>
 		<constant name="DEBUG_FLAG_DUMB_CLIENT" value="1" enum="DebugFlags" is_bitfield="true">
-			Flag is set if remotely debugged project is expected to use remote file system. If set, [method gen_export_flags] will add [code]--remote-fs[/code] and [code]--remote-fs-password[/code] (if password is set in the editor settings) command line arguments to the list.
+			Flag is set if the remotely debugged project is expected to use the remote file system. If set, [method gen_export_flags] will append [code]--remote-fs[/code] and [code]--remote-fs-password[/code] (if [member EditorSettings.filesystem/file_server/password] is defined) command line arguments to the returned list.
 		</constant>
 		<constant name="DEBUG_FLAG_REMOTE_DEBUG" value="2" enum="DebugFlags" is_bitfield="true">
-			Flag is set if remote debug is enabled. If set, [method gen_export_flags] will add [code]--remote-debug[/code] and [code]--breakpoints[/code] (if breakpoints are selected in the script editor or added by the plugin) command line arguments to the list.
+			Flag is set if remote debug is enabled. If set, [method gen_export_flags] will append [code]--remote-debug[/code] and [code]--breakpoints[/code] (if breakpoints are selected in the script editor or added by the plugin) command line arguments to the returned list.
 		</constant>
 		<constant name="DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST" value="4" enum="DebugFlags" is_bitfield="true">
 			Flag is set if remotely debugged project is running on the localhost. If set, [method gen_export_flags] will use [code]localhost[/code] instead of [member EditorSettings.network/debug/remote_host] as remote debugger host.
 		</constant>
 		<constant name="DEBUG_FLAG_VIEW_COLLISIONS" value="8" enum="DebugFlags" is_bitfield="true">
-			Flag is set if "Visible Collision Shapes" remote debug option is enabled. If set, [method gen_export_flags] will add [code]--debug-collisions[/code] command line arguments to the list.
+			Flag is set if the "Visible Collision Shapes" remote debug option is enabled. If set, [method gen_export_flags] will append the [code]--debug-collisions[/code] command line argument to the returned list.
 		</constant>
 		<constant name="DEBUG_FLAG_VIEW_NAVIGATION" value="16" enum="DebugFlags" is_bitfield="true">
-			Flag is set if Visible Navigation" remote debug option is enabled. If set, [method gen_export_flags] will add [code]--debug-navigation[/code] command line arguments to the list.
+			Flag is set if the "Visible Navigation" remote debug option is enabled. If set, [method gen_export_flags] will append the [code]--debug-navigation[/code] command line argument to the returned list.
 		</constant>
 	</constants>
 </class>

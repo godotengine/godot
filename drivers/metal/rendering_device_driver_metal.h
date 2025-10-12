@@ -31,6 +31,7 @@
 #pragma once
 
 #import "metal_objects.h"
+#import "rendering_shader_container_metal.h"
 
 #include "servers/rendering/rendering_device_driver.h"
 
@@ -57,9 +58,9 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingDeviceDriverMet
 	RenderingContextDriver::Device context_device;
 	id<MTLDevice> device = nil;
 
-	uint32_t version_major = 2;
-	uint32_t version_minor = 0;
 	MetalDeviceProperties *device_properties = nullptr;
+	MetalDeviceProfile device_profile;
+	RenderingShaderContainerFormatMetal *shader_container_format = nullptr;
 	PixelFormats *pixel_formats = nullptr;
 	std::unique_ptr<MDResourceCache> resource_cache;
 
@@ -77,7 +78,7 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingDeviceDriverMet
 	String pipeline_cache_id;
 
 	Error _create_device();
-	Error _check_capabilities();
+	void _check_capabilities();
 
 #pragma mark - Shader Cache
 
@@ -89,7 +90,7 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingDeviceDriverMet
 	 * To prevent unbounded growth of the cache, cache entries are automatically freed when
 	 * there are no more references to the MDLibrary associated with the cache entry.
 	 */
-	HashMap<SHA256Digest, ShaderCacheEntry *, HashableHasher<SHA256Digest>> _shader_cache;
+	HashMap<SHA256Digest, ShaderCacheEntry *> _shader_cache;
 	void shader_cache_free_entry(const SHA256Digest &key);
 
 public:
@@ -148,7 +149,7 @@ public:
 			CommandBufferID p_cmd_buffer,
 			BitField<PipelineStageBits> p_src_stages,
 			BitField<PipelineStageBits> p_dst_stages,
-			VectorView<MemoryBarrier> p_memory_barriers,
+			VectorView<MemoryAccessBarrier> p_memory_barriers,
 			VectorView<BufferBarrier> p_buffer_barriers,
 			VectorView<TextureBarrier> p_texture_barriers) override final;
 
@@ -241,21 +242,11 @@ private:
 	friend struct ShaderBinaryData;
 	friend struct PushConstantData;
 
-private:
-	/// Contains additional metadata about the shader.
-	struct ShaderMeta {
-		/// Indicates whether the shader uses multiview.
-		bool has_multiview = false;
-	};
-
-	Error _reflect_spirv16(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection, ShaderMeta &r_shader_meta);
-
 public:
-	virtual String shader_get_binary_cache_key() override final;
-	virtual Vector<uint8_t> shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) override final;
-	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers) override final;
+	virtual ShaderID shader_create_from_container(const Ref<RenderingShaderContainer> &p_shader_container, const Vector<ImmutableSampler> &p_immutable_samplers) override final;
 	virtual void shader_free(ShaderID p_shader) override final;
 	virtual void shader_destroy_modules(ShaderID p_shader) override final;
+	virtual const RenderingShaderContainerFormat &get_shader_container_format() const override final;
 
 #pragma mark - Uniform Set
 

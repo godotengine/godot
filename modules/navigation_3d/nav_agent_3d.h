@@ -34,6 +34,7 @@
 
 #include "core/object/class_db.h"
 #include "core/templates/self_list.h"
+#include "servers/navigation_3d/navigation_constants_3d.h"
 
 #include <Agent2d.h>
 #include <Agent3d.h>
@@ -45,13 +46,13 @@ class NavAgent3D : public NavRid3D {
 	Vector3 target_position;
 	Vector3 velocity;
 	Vector3 velocity_forced;
-	real_t height = 1.0;
-	real_t radius = 1.0;
-	real_t max_speed = 1.0;
-	real_t time_horizon_agents = 1.0;
-	real_t time_horizon_obstacles = 0.0;
-	int max_neighbors = 5;
-	real_t neighbor_distance = 5.0;
+	real_t height = NavigationDefaults3D::AVOIDANCE_AGENT_HEIGHT;
+	real_t radius = NavigationDefaults3D::AVOIDANCE_AGENT_RADIUS;
+	real_t max_speed = NavigationDefaults3D::AVOIDANCE_AGENT_MAX_SPEED;
+	real_t time_horizon_agents = NavigationDefaults3D::AVOIDANCE_AGENT_TIME_HORIZON_AGENTS;
+	real_t time_horizon_obstacles = NavigationDefaults3D::AVOIDANCE_AGENT_TIME_HORIZON_OBSTACLES;
+	int max_neighbors = NavigationDefaults3D::AVOIDANCE_AGENT_MAX_NEIGHBORS;
+	real_t neighbor_distance = NavigationDefaults3D::AVOIDANCE_AGENT_NEIGHBOR_DISTANCE;
 	Vector3 safe_velocity;
 	bool clamp_speed = true; // Experimental, clamps velocity to max_speed.
 

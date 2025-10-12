@@ -59,7 +59,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #include <climits>
 #include <cstdio>
@@ -341,6 +341,8 @@ public:
 
 	virtual void release_rendering_thread() override;
 	virtual void swap_buffers() override;
+
+	virtual void set_icon(const Ref<Image> &p_icon) override;
 
 	virtual void set_context(Context p_context) override;
 

@@ -215,6 +215,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] If you just want to know whether the string contains [param what], use [method contains]. In GDScript, you may also use the [code]in[/code] operator.
+				[b]Note:[/b] A negative value of [param from] is converted to a starting index by counting back from the last possible index with enough space to find [param what].
 			</description>
 		</method>
 		<method name="findn" qualifiers="const">
@@ -415,7 +416,7 @@
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order.
+				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order. This is not the same as [method contains].
 				[codeblock]
 				var text = "Wow, incredible!"
 
@@ -430,7 +431,7 @@
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order, [b]ignoring case[/b].
+				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order, [b]ignoring case[/b]. This is not the same as [method containsn].
 			</description>
 		</method>
 		<method name="is_valid_ascii_identifier" qualifiers="const">
@@ -705,7 +706,7 @@
 			<param index="0" name="key" type="int" />
 			<param index="1" name="with" type="int" />
 			<description>
-				Replaces all occurrences of the Unicode character with code [param key] with the Unicode character with code [param with]. Faster version of [method replace] when the key is only one character long. To get a single character use [code]"X".unicode_at(0)[/code] (note that some strings, like compound letters and emoji, can be made up of multiple unicode codepoints, and will not work with this method, use [method length] to make sure).
+				Replaces all occurrences of the Unicode character with code [param key] with the Unicode character with code [param with]. Faster version of [method replace] when the key is only one character long. To get a single character use [code]"X".unicode_at(0)[/code] (note that some strings, like compound letters and emoji, can be composed of multiple unicode codepoints, and will not work with this method, use [method length] to make sure).
 			</description>
 		</method>
 		<method name="replace_chars" qualifiers="const">
@@ -736,6 +737,8 @@
 			<param index="1" name="from" type="int" default="-1" />
 			<description>
 				Returns the index of the [b]last[/b] occurrence of [param what] in this string, or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the beginning of the string. This method is the reverse of [method find].
+				[b]Note:[/b] A negative value of [param from] is converted to a starting index by counting back from the last possible index with enough space to find [param what].
+				[b]Note:[/b] A value of [param from] that is greater than the last possible index with enough space to find [param what] is considered out-of-bounds, and returns [code]-1[/code].
 			</description>
 		</method>
 		<method name="rfindn" qualifiers="const">
@@ -1057,6 +1060,7 @@
 			<param index="0" name="at" type="int" />
 			<description>
 				Returns the character code at position [param at].
+				See also [method String.chr], [method @GDScript.char], and [method @GDScript.ord].
 			</description>
 		</method>
 		<method name="uri_decode" qualifiers="const">

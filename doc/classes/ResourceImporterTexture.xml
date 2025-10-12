@@ -12,7 +12,7 @@
 	<members>
 		<member name="compress/channel_pack" type="int" setter="" getter="" default="0">
 			Controls how color channels should be used in the imported texture.
-			[b]sRGB Friendly:[/b] Prevents the RG color format from being used, as it does not support sRGB color.
+			[b]sRGB Friendly:[/b] Prevents the R and RG color formats from being used, as they do not support nonlinear sRGB encoding.
 			[b]Optimized:[/b] Allows the RG color format to be used if the texture does not use the blue channel. This reduces memory usage if the texture's blue channel can be discarded (all pixels must have a blue value of [code]0[/code]).
 		</member>
 		<member name="compress/hdr_compression" type="int" setter="" getter="" default="1">
@@ -56,7 +56,7 @@
 			Changing this import option only has an effect if a texture is detected as being used in 3D. Changing this to [b]Disabled[/b] then reimporting will not change the existing compress mode on a texture (if it's detected to be used in 3D), but choosing [b]VRAM Compressed[/b] or [b]Basis Universal[/b] will.
 		</member>
 		<member name="editor/convert_colors_with_editor_theme" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], converts the imported image's colors to match [member EditorSettings.interface/theme/icon_and_font_color]. This assumes the image uses the exact same colors as [url=$DOCS_URL/contributing/development/editor/creating_icons.html]Godot's own color palette for editor icons[/url], with the source file designed for a dark editor theme. This should be enabled for editor plugin icons and custom class icons, but should be left disabled otherwise.
+			If [code]true[/code], converts the imported image's colors to match [member EditorSettings.interface/theme/icon_and_font_color]. This assumes the image uses the exact same colors as [url=$DOCS_URL/engine_details/editor/creating_icons.html]Godot's own color palette for editor icons[/url], with the source file designed for a dark editor theme. This should be enabled for editor plugin icons and custom class icons, but should be left disabled otherwise.
 			[b]Note:[/b] Only available for SVG images.
 		</member>
 		<member name="editor/scale_with_editor_scale" type="bool" setter="" getter="" default="false">
@@ -73,12 +73,68 @@
 		<member name="mipmaps/limit" type="int" setter="" getter="" default="-1">
 			Unimplemented. This currently has no effect when changed.
 		</member>
+		<member name="process/channel_remap/alpha" type="int" setter="" getter="" default="3">
+			Specifies the data source of the output image's alpha channel.
+			[b]Red:[/b] Use the values from the source image's red channel.
+			[b]Green:[/b] Use the values from the source image's green channel.
+			[b]Blue:[/b] Use the values from the source image's blue channel.
+			[b]Alpha:[/b] Use the values from the source image's alpha channel.
+			[b]Red Inverted:[/b] Use inverted values from the source image's red channel ([code]1.0 - R[/code]).
+			[b]Green Inverted:[/b] Use inverted values from the source image's green channel ([code]1.0 - G[/code]).
+			[b]Blue Inverted:[/b] Use inverted values from the source image's blue channel ([code]1.0 - B[/code]).
+			[b]Alpha Inverted:[/b] Use inverted values from the source image's alpha channel ([code]1.0 - A[/code]).
+			[b]Unused:[/b] Set the color channel's value to the default ([code]1.0[/code] for alpha, [code]0.0[/code] for red, green or blue).
+			[b]Zero:[/b] Set the color channel's value to [code]0.0[/code].
+			[b]One:[/b] Set the color channel's value to [code]1.0[/code].
+		</member>
+		<member name="process/channel_remap/blue" type="int" setter="" getter="" default="2">
+			Specifies the data source of the output image's blue channel.
+			[b]Red:[/b] Use the values from the source image's red channel.
+			[b]Green:[/b] Use the values from the source image's green channel.
+			[b]Blue:[/b] Use the values from the source image's blue channel.
+			[b]Alpha:[/b] Use the values from the source image's alpha channel.
+			[b]Red Inverted:[/b] Use inverted values from the source image's red channel ([code]1.0 - R[/code]).
+			[b]Green Inverted:[/b] Use inverted values from the source image's green channel ([code]1.0 - G[/code]).
+			[b]Blue Inverted:[/b] Use inverted values from the source image's blue channel ([code]1.0 - B[/code]).
+			[b]Alpha Inverted:[/b] Use inverted values from the source image's alpha channel ([code]1.0 - A[/code]).
+			[b]Unused:[/b] Set the color channel's value to the default ([code]1.0[/code] for alpha, [code]0.0[/code] for red, green or blue).
+			[b]Zero:[/b] Set the color channel's value to [code]0.0[/code].
+			[b]One:[/b] Set the color channel's value to [code]1.0[/code].
+		</member>
+		<member name="process/channel_remap/green" type="int" setter="" getter="" default="1">
+			Specifies the data source of the output image's green channel.
+			[b]Red:[/b] Use the values from the source image's red channel.
+			[b]Green:[/b] Use the values from the source image's green channel.
+			[b]Blue:[/b] Use the values from the source image's blue channel.
+			[b]Alpha:[/b] Use the values from the source image's alpha channel.
+			[b]Red Inverted:[/b] Use inverted values from the source image's red channel ([code]1.0 - R[/code]).
+			[b]Green Inverted:[/b] Use inverted values from the source image's green channel ([code]1.0 - G[/code]).
+			[b]Blue Inverted:[/b] Use inverted values from the source image's blue channel ([code]1.0 - B[/code]).
+			[b]Alpha Inverted:[/b] Use inverted values from the source image's alpha channel ([code]1.0 - A[/code]).
+			[b]Unused:[/b] Set the color channel's value to the default ([code]1.0[/code] for alpha, [code]0.0[/code] for red, green or blue).
+			[b]Zero:[/b] Set the color channel's value to [code]0.0[/code].
+			[b]One:[/b] Set the color channel's value to [code]1.0[/code].
+		</member>
+		<member name="process/channel_remap/red" type="int" setter="" getter="" default="0">
+			Specifies the data source of the output image's red channel.
+			[b]Red:[/b] Use the values from the source image's red channel.
+			[b]Green:[/b] Use the values from the source image's green channel.
+			[b]Blue:[/b] Use the values from the source image's blue channel.
+			[b]Alpha:[/b] Use the values from the source image's alpha channel.
+			[b]Red Inverted:[/b] Use inverted values from the source image's red channel ([code]1.0 - R[/code]).
+			[b]Green Inverted:[/b] Use inverted values from the source image's green channel ([code]1.0 - G[/code]).
+			[b]Blue Inverted:[/b] Use inverted values from the source image's blue channel ([code]1.0 - B[/code]).
+			[b]Alpha Inverted:[/b] Use inverted values from the source image's alpha channel ([code]1.0 - A[/code]).
+			[b]Unused:[/b] Set the color channel's value to the default ([code]1.0[/code] for alpha, [code]0.0[/code] for red, green or blue).
+			[b]Zero:[/b] Set the color channel's value to [code]0.0[/code].
+			[b]One:[/b] Set the color channel's value to [code]1.0[/code].
+		</member>
 		<member name="process/fix_alpha_border" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], puts pixels of the same surrounding color in transition from transparent to opaque areas. For textures displayed with bilinear filtering, this helps to reduce the outline effect when exporting images from an image editor.
 			It's recommended to leave this enabled (as it is by default), unless this causes issues for a particular image.
 		</member>
 		<member name="process/hdr_as_srgb" type="bool" setter="" getter="" default="false">
-			Some HDR images you can find online may be broken and contain sRGB color data (instead of linear color data). It is advised not to use those files. If you absolutely have to, enabling [member process/hdr_as_srgb] will make them look correct.
+			Some HDR images you can find online may be broken and contain data that is encoded using the nonlinear sRGB transfer function (instead of using linear encoding). It is advised not to use those files. If you absolutely have to, enabling [member process/hdr_as_srgb] will make them look correct.
 			[b]Warning:[/b] Enabling [member process/hdr_as_srgb] on well-formatted HDR images will cause the resulting image to look too dark, so leave this on [code]false[/code] if unsure.
 		</member>
 		<member name="process/hdr_clamp_exposure" type="bool" setter="" getter="" default="false">
@@ -86,7 +142,7 @@
 			Some HDR panorama images you can find online may contain extremely bright pixels, due to being taken from real life sources without any clipping.
 			While these HDR panorama images are accurate to real life, this can cause the radiance map generated by Godot to contain sparkles when used as a background sky. This can be seen in material reflections (even on rough materials in extreme cases). Enabling [member process/hdr_clamp_exposure] can resolve this.
 		</member>
-		<member name="process/normal_map_invert_y" type="bool" setter="" getter="" default="false">
+		<member name="process/normal_map_invert_y" type="bool" setter="" getter="" default="false" deprecated="The same result can be achieved by setting [member process/channel_remap/green] to [code]Green Inverted[/code].">
 			If [code]true[/code], convert the normal map from Y- (DirectX-style) to Y+ (OpenGL-style) by inverting its green color channel. This is the normal map convention expected by Godot.
 			More information about normal maps (including a coordinate order table for popular engines) can be found [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details]here[/url].
 		</member>

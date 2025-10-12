@@ -31,7 +31,7 @@
 #include "xr_body_modifier_3d.h"
 
 #include "scene/3d/skeleton_3d.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 
 void XRBodyModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_body_tracker", "tracker_name"), &XRBodyModifier3D::set_body_tracker);
@@ -66,6 +66,10 @@ StringName XRBodyModifier3D::get_body_tracker() const {
 
 void XRBodyModifier3D::set_body_update(BitField<BodyUpdate> p_body_update) {
 	body_update = p_body_update;
+
+	if (is_inside_tree()) {
+		_get_joint_data();
+	}
 }
 
 BitField<XRBodyModifier3D::BodyUpdate> XRBodyModifier3D::get_body_update() const {
@@ -82,7 +86,7 @@ XRBodyModifier3D::BoneUpdate XRBodyModifier3D::get_bone_update() const {
 }
 
 void XRBodyModifier3D::_get_joint_data() {
-	// Table of Godot Humanoid bone names.
+	// Table of Godot Humanoid bone names with some additions.
 	static const String bone_names[XRBodyTracker::JOINT_MAX] = {
 		"Root", // XRBodyTracker::JOINT_ROOT
 
@@ -168,6 +172,19 @@ void XRBodyModifier3D::_get_joint_data() {
 		"RightLittleIntermediate", // XRBodyTracker::JOINT_RIGHT_PINKY_FINGER_PHALANX_INTERMEDIATE
 		"RightLittleDistal", // XRBodyTracker::JOINT_RIGHT_PINKY_FINGER_PHALANX_DISTAL
 		"RightLittleTip", // XRBodyTracker::JOINT_RIGHT_PINKY_FINGER_TIP
+
+		// Extra Joints.
+		"LowerChest", // XRBodyTracker::JOINT_LOWER_CHEST
+		"LeftScapula", // XRBodyTracker::JOINT_LEFT_SCAPULA
+		"LeftWristTwist", // XRBodyTracker::JOINT_LEFT_WRIST_TWIST
+		"RightScapula", // XRBodyTracker::JOINT_RIGHT_SCAPULA
+		"RightWristTwist", // XRBodyTracker::JOINT_RIGHT_WRIST_TWIST
+		"LeftFootTwist", // XRBodyTracker::JOINT_LEFT_FOOT_TWIST
+		"LeftHeel", // XRBodyTracker::JOINT_LEFT_HEEL
+		"LeftMiddleFoot", // XRBodyTracker::JOINT_LEFT_MIDDLE_FOOT
+		"RightFootTwist", // XRBodyTracker::JOINT_RIGHT_FOOT_TWIST
+		"RightHeel", // XRBodyTracker::JOINT_RIGHT_HEEL
+		"RightMiddleFoot", // XRBodyTracker::JOINT_RIGHT_MIDDLE_FOOT
 	};
 
 	// reset JIC.

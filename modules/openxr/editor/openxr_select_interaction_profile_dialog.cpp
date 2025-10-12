@@ -47,7 +47,7 @@ void OpenXRSelectInteractionProfileDialog::_notification(int p_what) {
 	}
 }
 
-void OpenXRSelectInteractionProfileDialog::_on_select_interaction_profile(const String p_interaction_profile) {
+void OpenXRSelectInteractionProfileDialog::_on_select_interaction_profile(const String &p_interaction_profile) {
 	if (selected_interaction_profile != "") {
 		NodePath button_path = ip_buttons[selected_interaction_profile];
 		Button *button = Object::cast_to<Button>(get_node(button_path));
@@ -67,7 +67,7 @@ void OpenXRSelectInteractionProfileDialog::_on_select_interaction_profile(const 
 	}
 }
 
-void OpenXRSelectInteractionProfileDialog::open(PackedStringArray p_do_not_include) {
+void OpenXRSelectInteractionProfileDialog::open(const PackedStringArray &p_do_not_include) {
 	int available_count = 0;
 
 	OpenXRInteractionProfileMetadata *meta_data = OpenXRInteractionProfileMetadata::get_singleton();

@@ -55,6 +55,7 @@ void OpenXRExtensionWrapper::_bind_methods() {
 	GDVIRTUAL_BIND(_on_instance_destroyed);
 	GDVIRTUAL_BIND(_on_session_created, "session");
 	GDVIRTUAL_BIND(_on_process);
+	GDVIRTUAL_BIND(_on_sync_actions);
 	GDVIRTUAL_BIND(_on_pre_render);
 	GDVIRTUAL_BIND(_on_main_swapchains_created);
 	GDVIRTUAL_BIND(_on_pre_draw_viewport, "viewport");
@@ -252,6 +253,10 @@ void OpenXRExtensionWrapper::on_process() {
 	GDVIRTUAL_CALL(_on_process);
 }
 
+void OpenXRExtensionWrapper::on_sync_actions() {
+	GDVIRTUAL_CALL(_on_sync_actions);
+}
+
 void OpenXRExtensionWrapper::on_pre_render() {
 	GDVIRTUAL_CALL(_on_pre_render);
 }
@@ -355,13 +360,16 @@ void *OpenXRExtensionWrapper::set_android_surface_swapchain_create_info_and_get_
 }
 
 Ref<OpenXRAPIExtension> OpenXRExtensionWrapper::_gdextension_get_openxr_api() {
-	static Ref<OpenXRAPIExtension> openxr_api_extension;
-	if (unlikely(openxr_api_extension.is_null())) {
-		openxr_api_extension.instantiate();
-	}
 	return openxr_api_extension;
 }
 
 void OpenXRExtensionWrapper::_gdextension_register_extension_wrapper() {
 	OpenXRAPI::register_extension_wrapper(this);
+}
+
+OpenXRExtensionWrapper::OpenXRExtensionWrapper() {
+	openxr_api_extension.instantiate();
+}
+
+OpenXRExtensionWrapper::~OpenXRExtensionWrapper() {
 }

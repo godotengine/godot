@@ -32,17 +32,18 @@
 
 #include "core/config/project_settings.h"
 #include "core/string/fuzzy_search.h"
-#include "editor/editor_file_system.h"
+#include "editor/docks/filesystem_dock.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_resource_preview.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/filesystem_dock.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/inspector/editor_resource_preview.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
@@ -181,7 +182,7 @@ void EditorQuickOpenDialog::_search_box_text_changed(const String &p_query) {
 
 void style_button(Button *p_button) {
 	p_button->set_flat(true);
-	p_button->set_focus_mode(Control::FOCUS_NONE);
+	p_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	p_button->set_default_cursor_shape(Control::CURSOR_POINTING_HAND);
 }
 
@@ -264,7 +265,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 		fuzzy_search_toggle = memnew(CheckButton);
 		style_button(fuzzy_search_toggle);
 		fuzzy_search_toggle->set_text(TTR("Fuzzy Search"));
-		fuzzy_search_toggle->set_tooltip_text(TTR("Enable fuzzy matching"));
+		fuzzy_search_toggle->set_tooltip_text(TTRC("Include approximate matches."));
 		fuzzy_search_toggle->connect(SceneStringName(toggled), callable_mp(this, &QuickOpenResultContainer::_toggle_fuzzy_search));
 		bottom_bar->add_child(fuzzy_search_toggle);
 
@@ -474,7 +475,7 @@ void QuickOpenResultContainer::set_query_and_update(const String &p_query) {
 
 Vector<QuickOpenResultCandidate> *QuickOpenResultContainer::_get_history() {
 	if (base_types.size() == 1) {
-		return selected_history.lookup_ptr(base_types[0]);
+		return selected_history.getptr(base_types[0]);
 	}
 	return nullptr;
 }
@@ -484,7 +485,7 @@ void QuickOpenResultContainer::_setup_candidate(QuickOpenResultCandidate &p_cand
 	p_candidate.result = nullptr;
 	StringName actual_type;
 	{
-		StringName *actual_type_ptr = filetypes.lookup_ptr(p_filepath);
+		StringName *actual_type_ptr = filetypes.getptr(p_filepath);
 		if (actual_type_ptr) {
 			actual_type = *actual_type_ptr;
 		} else {
@@ -495,12 +496,12 @@ void QuickOpenResultContainer::_setup_candidate(QuickOpenResultCandidate &p_cand
 	if (item.preview.is_valid()) {
 		p_candidate.thumbnail = item.preview;
 	} else if (file_type_icons.has(actual_type)) {
-		p_candidate.thumbnail = *file_type_icons.lookup_ptr(actual_type);
+		p_candidate.thumbnail = *file_type_icons.getptr(actual_type);
 	} else if (has_theme_icon(actual_type, EditorStringName(EditorIcons))) {
 		p_candidate.thumbnail = get_editor_theme_icon(actual_type);
 		file_type_icons.insert(actual_type, p_candidate.thumbnail);
 	} else {
-		p_candidate.thumbnail = *file_type_icons.lookup_ptr(SNAME("__default_icon"));
+		p_candidate.thumbnail = *file_type_icons.getptr(SNAME("__default_icon"));
 	}
 }
 
@@ -520,19 +521,28 @@ void QuickOpenResultContainer::update_results() {
 }
 
 void QuickOpenResultContainer::_use_default_candidates() {
+	HashSet<String> existing_paths;
 	Vector<QuickOpenResultCandidate> *history = _get_history();
 	if (history) {
 		candidates.append_array(*history);
+		for (const QuickOpenResultCandidate &candi : *history) {
+			existing_paths.insert(candi.file_path);
+		}
 	}
-	int count = candidates.size();
+	int i = candidates.size();
+
 	candidates.resize(MIN(max_total_results, filepaths.size()));
+	QuickOpenResultCandidate *candidates_w = candidates.ptrw();
+	int count = candidates.size();
+
 	for (const String &filepath : filepaths) {
-		if (count >= max_total_results) {
+		if (i >= count) {
 			break;
 		}
-		if (!history || !history_set.has(filepath)) {
-			_setup_candidate(candidates.write[count++], filepath);
+		if (existing_paths.has(filepath)) {
+			continue;
 		}
+		_setup_candidate(candidates_w[i++], filepath);
 	}
 }
 
@@ -819,11 +829,11 @@ void QuickOpenResultContainer::save_selected_item() {
 
 	const StringName &base_type = base_types[0];
 	QuickOpenResultCandidate &selected = candidates.write[selection_index];
-	Vector<QuickOpenResultCandidate> *type_history = selected_history.lookup_ptr(base_type);
+	Vector<QuickOpenResultCandidate> *type_history = selected_history.getptr(base_type);
 
 	if (!type_history) {
 		selected_history.insert(base_type, Vector<QuickOpenResultCandidate>());
-		type_history = selected_history.lookup_ptr(base_type);
+		type_history = selected_history.getptr(base_type);
 	} else {
 		for (int i = 0; i < type_history->size(); i++) {
 			if (selected.file_path == type_history->get(i).file_path) {

@@ -38,10 +38,12 @@
 #include "renderer_viewport.h"
 #include "rendering_server_globals.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/server_wrap_mt_common.h"
 
 class RenderingServerDefault : public RenderingServer {
+	GDSOFTCLASS(RenderingServerDefault, RenderingServer);
+
 	enum {
 		MAX_INSTANCE_CULL = 8192,
 		MAX_INSTANCE_LIGHTS = 4,
@@ -109,6 +111,9 @@ public:
 #endif
 
 #define WRITE_ACTION redraw_request();
+#define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread)
+#define ASYNC_COND_PUSH_AND_RET (Thread::get_caller_id() != server_thread)
+#define ASYNC_COND_PUSH_AND_SYNC (Thread::get_caller_id() != server_thread)
 
 #ifdef DEBUG_SYNC
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));
@@ -119,8 +124,6 @@ public:
 #ifdef DEBUG_ENABLED
 #define MAIN_THREAD_SYNC_WARN WARN_PRINT("Call to " + String(__FUNCTION__) + " causing RenderingServer synchronizations on every frame. This significantly affects performance.");
 #endif
-
-#include "servers/server_wrap_mt_common.h"
 
 	/* TEXTURE API */
 
@@ -241,7 +244,15 @@ public:
 #define ServerName RendererMaterialStorage
 #define server_name RSG::material_storage
 
-	FUNCRIDSPLIT(shader)
+	virtual RID shader_create() override {
+		RID ret = RSG::material_storage->shader_allocate();
+		if (Thread::get_caller_id() == server_thread) {
+			RSG::material_storage->shader_initialize(ret, false);
+		} else {
+			command_queue.push(RSG::material_storage, &ServerName::shader_initialize, ret, false);
+		}
+		return ret;
+	}
 
 	virtual RID shader_create_from_code(const String &p_code, const String &p_path_hint = String()) override {
 		RID shader = RSG::material_storage->shader_allocate();
@@ -251,11 +262,11 @@ public:
 				command_queue.flush_if_pending();
 			}
 
-			RSG::material_storage->shader_initialize(shader);
+			RSG::material_storage->shader_initialize(shader, false);
 			RSG::material_storage->shader_set_code(shader, p_code);
 			RSG::material_storage->shader_set_path_hint(shader, p_path_hint);
 		} else {
-			command_queue.push(RSG::material_storage, &RendererMaterialStorage::shader_initialize, shader);
+			command_queue.push(RSG::material_storage, &RendererMaterialStorage::shader_initialize, shader, false);
 			command_queue.push(RSG::material_storage, &RendererMaterialStorage::shader_set_code, shader, p_code);
 			command_queue.push(RSG::material_storage, &RendererMaterialStorage::shader_set_path_hint, shader, p_path_hint);
 		}
@@ -358,6 +369,7 @@ public:
 	FUNC4(mesh_surface_update_vertex_region, RID, int, int, const Vector<uint8_t> &)
 	FUNC4(mesh_surface_update_attribute_region, RID, int, int, const Vector<uint8_t> &)
 	FUNC4(mesh_surface_update_skin_region, RID, int, int, const Vector<uint8_t> &)
+	FUNC4(mesh_surface_update_index_region, RID, int, int, const Vector<uint8_t> &)
 
 	FUNC3(mesh_surface_set_material, RID, int, RID)
 	FUNC2RC(RID, mesh_surface_get_material, RID, int)
@@ -841,6 +853,7 @@ public:
 	FUNC1(decals_set_filter, RS::DecalFilter);
 	FUNC1(light_projectors_set_filter, RS::LightProjectorFilter);
 	FUNC1(lightmaps_set_bicubic_filter, bool);
+	FUNC1(material_set_use_debanding, bool);
 
 	/* CAMERA ATTRIBUTES */
 
@@ -970,6 +983,7 @@ public:
 	FUNC5(canvas_item_add_polyline, RID, const Vector<Point2> &, const Vector<Color> &, float, bool)
 	FUNC5(canvas_item_add_multiline, RID, const Vector<Point2> &, const Vector<Color> &, float, bool)
 	FUNC4(canvas_item_add_rect, RID, const Rect2 &, const Color &, bool)
+	FUNC6(canvas_item_add_ellipse, RID, const Point2 &, float, float, const Color &, bool)
 	FUNC5(canvas_item_add_circle, RID, const Point2 &, float, const Color &, bool)
 	FUNC6(canvas_item_add_texture_rect, RID, const Rect2 &, RID, bool, const Color &, bool)
 	FUNC7(canvas_item_add_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &, bool, bool)
@@ -1125,7 +1139,7 @@ public:
 
 	/* FREE */
 
-	virtual void free(RID p_rid) override {
+	virtual void free_rid(RID p_rid) override {
 		if (Thread::get_caller_id() == server_thread) {
 			command_queue.flush_if_pending();
 			_free(p_rid);

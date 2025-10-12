@@ -75,27 +75,13 @@ void Tweener::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("finished"));
 }
 
-bool Tween::_validate_type_match(const Variant &p_from, Variant &r_to) {
-	if (p_from.get_type() != r_to.get_type()) {
-		// Cast r_to between double and int to avoid minor annoyances.
-		if (p_from.get_type() == Variant::FLOAT && r_to.get_type() == Variant::INT) {
-			r_to = double(r_to);
-		} else if (p_from.get_type() == Variant::INT && r_to.get_type() == Variant::FLOAT) {
-			r_to = int(r_to);
-		} else {
-			ERR_FAIL_V_MSG(false, "Type mismatch between initial and final value: " + Variant::get_type_name(p_from.get_type()) + " and " + Variant::get_type_name(r_to.get_type()));
-		}
-	}
-	return true;
-}
-
 void Tween::_start_tweeners() {
 	if (tweeners.is_empty()) {
 		dead = true;
 		ERR_FAIL_MSG("Tween without commands, aborting.");
 	}
 
-	for (Ref<Tweener> &tweener : tweeners.write[current_step]) {
+	for (Ref<Tweener> &tweener : tweeners[current_step]) {
 		tweener->start();
 	}
 }
@@ -122,7 +108,7 @@ Ref<PropertyTweener> Tween::tween_property(const Object *p_target, const NodePat
 	const Variant &prop_value = p_target->get_indexed(property_subnames);
 #endif
 
-	if (!_validate_type_match(prop_value, p_to)) {
+	if (!Animation::validate_type_match(prop_value, p_to)) {
 		return nullptr;
 	}
 
@@ -153,7 +139,7 @@ Ref<CallbackTweener> Tween::tween_callback(const Callable &p_callback) {
 Ref<MethodTweener> Tween::tween_method(const Callable &p_callback, const Variant p_from, Variant p_to, double p_duration) {
 	CHECK_VALID();
 
-	if (!_validate_type_match(p_from, p_to)) {
+	if (!Animation::validate_type_match(p_from, p_to)) {
 		return nullptr;
 	}
 
@@ -178,6 +164,7 @@ Ref<SubtweenTweener> Tween::tween_subtween(const Ref<Tween> &p_subtween) {
 	if (tweener->subtween->parent_tree != nullptr) {
 		tweener->subtween->parent_tree->remove_tween(tweener->subtween);
 	}
+	subtweens.push_back(p_subtween);
 	append(tweener);
 	return tweener;
 }
@@ -193,7 +180,7 @@ void Tween::append(Ref<Tweener> p_tweener) {
 	parallel_enabled = default_parallel;
 
 	tweeners.resize(current_step + 1);
-	tweeners.write[current_step].push_back(p_tweener);
+	tweeners[current_step].push_back(p_tweener);
 }
 
 void Tween::stop() {
@@ -214,6 +201,11 @@ void Tween::kill() {
 	running = false; // For the sake of is_running().
 	valid = false;
 	dead = true;
+
+	// Kill all subtweens of this tween.
+	for (Ref<Tween> &st : subtweens) {
+		st->kill();
+	}
 }
 
 bool Tween::is_running() {
@@ -317,6 +309,8 @@ Ref<Tween> Tween::chain() {
 }
 
 bool Tween::custom_step(double p_delta) {
+	ERR_FAIL_COND_V_MSG(in_step, true, "Can't call custom_step() during another Tween step.");
+
 	bool r = running;
 	running = true;
 	bool ret = step(p_delta);
@@ -343,6 +337,7 @@ bool Tween::step(double p_delta) {
 	if (!running) {
 		return true;
 	}
+	in_step = true;
 
 	if (!started) {
 		if (tweeners.is_empty()) {
@@ -353,6 +348,7 @@ bool Tween::step(double p_delta) {
 			} else {
 				tween_id = to_string();
 			}
+			in_step = false;
 			ERR_FAIL_V_MSG(false, tween_id + ": started with no Tweeners.");
 		}
 		current_step = 0;
@@ -371,11 +367,11 @@ bool Tween::step(double p_delta) {
 	bool potential_infinite = false;
 #endif
 
-	while (rem_delta > 0 && running) {
+	while (running && rem_delta > 0) {
 		double step_delta = rem_delta;
 		step_active = false;
 
-		for (Ref<Tweener> &tweener : tweeners.write[current_step]) {
+		for (Ref<Tweener> &tweener : tweeners[current_step]) {
 			// Modified inside Tweener.step().
 			double temp_delta = rem_delta;
 			// Turns to true if any Tweener returns true (i.e. is still not finished).
@@ -389,7 +385,7 @@ bool Tween::step(double p_delta) {
 			emit_signal(SNAME("step_finished"), current_step);
 			current_step++;
 
-			if (current_step == tweeners.size()) {
+			if (current_step == (int)tweeners.size()) {
 				loops_done++;
 				if (loops_done == loops) {
 					running = false;
@@ -406,6 +402,7 @@ bool Tween::step(double p_delta) {
 							potential_infinite = true;
 						} else {
 							// Looped twice without using any time, this is 100% certain infinite loop.
+							in_step = false;
 							ERR_FAIL_V_MSG(false, "Infinite loop detected. Check set_loops() description for more info.");
 						}
 					}
@@ -416,7 +413,7 @@ bool Tween::step(double p_delta) {
 			}
 		}
 	}
-
+	in_step = false;
 	return true;
 }
 
@@ -562,7 +559,7 @@ Ref<PropertyTweener> PropertyTweener::from(const Variant &p_value) {
 	ERR_FAIL_COND_V(tween.is_null(), nullptr);
 
 	Variant from_value = p_value;
-	if (!tween->_validate_type_match(final_val, from_value)) {
+	if (!Animation::validate_type_match(final_val, from_value)) {
 		return nullptr;
 	}
 
@@ -606,7 +603,6 @@ void PropertyTweener::start() {
 
 	Object *target_instance = ObjectDB::get_instance(target);
 	if (!target_instance) {
-		WARN_PRINT("Target object freed before starting, aborting Tweener.");
 		return;
 	}
 
@@ -884,7 +880,14 @@ void SubtweenTweener::start() {
 
 	// Reset the subtween.
 	subtween->stop();
-	subtween->play();
+
+	// It's possible that a subtween could be killed before it is started;
+	// if so, we just want to skip it entirely.
+	if (subtween->is_valid()) {
+		subtween->play();
+	} else {
+		_finish();
+	}
 }
 
 bool SubtweenTweener::step(double &r_delta) {

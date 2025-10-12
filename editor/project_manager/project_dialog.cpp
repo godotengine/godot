@@ -34,12 +34,13 @@
 #include "core/io/dir_access.h"
 #include "core/io/zip_io.h"
 #include "core/version.h"
-#include "editor/editor_settings.h"
+#include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/editor_vcs_interface.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_icons.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/version_control/editor_vcs_interface.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/line_edit.h"
@@ -242,6 +243,35 @@ void ProjectDialog::_validate_path() {
 			if (!is_folder_empty) {
 				_set_message(TTRC("The selected path is not empty. Choosing an empty folder is highly recommended."), MESSAGE_WARNING, target_path_input_type);
 			}
+		}
+	}
+
+	// Check if the target path is a subdirectory of original when duplicating
+	if (mode == MODE_DUPLICATE) {
+		String base_path = original_project_path;
+		String duplicate_target = target_path;
+
+		// Ensure the paths end with a slash
+		if (!base_path.ends_with("/")) {
+			base_path += "/";
+		}
+
+		if (!duplicate_target.ends_with("/")) {
+			duplicate_target += "/";
+		}
+
+		bool is_subdirectory_or_equal;
+
+		if (d->is_case_sensitive(base_path) || d->is_case_sensitive(duplicate_target)) {
+			is_subdirectory_or_equal = duplicate_target.begins_with(base_path);
+		} else {
+			base_path = base_path.to_lower();
+			String target_lower = duplicate_target.to_lower();
+			is_subdirectory_or_equal = target_lower.begins_with(base_path);
+		}
+
+		if (is_subdirectory_or_equal) {
+			_set_message(TTRC("Cannot duplicate a project into itself."), MESSAGE_ERROR, target_path_input_type);
 		}
 	}
 }
@@ -545,6 +575,11 @@ void ProjectDialog::ok_pressed() {
 		initial_settings["application/config/features"] = project_features;
 		initial_settings["application/config/name"] = project_name->get_text().strip_edges();
 		initial_settings["application/config/icon"] = "res://icon.svg";
+		ProjectSettings::CustomMap extra_settings = EditorNode::get_initial_settings();
+		for (const KeyValue<String, Variant> &extra_setting : extra_settings) {
+			// Merge with other initial settings defined above.
+			initial_settings[extra_setting.key] = extra_setting.value;
+		}
 
 		Error err = ProjectSettings::get_singleton()->save_custom(path.path_join("project.godot"), initial_settings, Vector<String>(), false);
 		if (err != OK) {
@@ -740,13 +775,18 @@ void ProjectDialog::ok_pressed() {
 	if (mode == MODE_NEW || mode == MODE_IMPORT || mode == MODE_INSTALL) {
 #ifdef ANDROID_ENABLED
 		// Create a .nomedia file to hide assets from media apps on Android.
-		const String nomedia_file_path = path.path_join(".nomedia");
-		Ref<FileAccess> f2 = FileAccess::open(nomedia_file_path, FileAccess::WRITE);
-		if (f2.is_null()) {
-			// .nomedia isn't so critical.
-			ERR_PRINT("Couldn't create .nomedia in project path.");
-		} else {
-			f2->close();
+		// Android 11 has some issues with nomedia files, so it's disabled there. See GH-106479, GH-105399 for details.
+		// NOTE: Nomedia file is also handled during the first filesystem scan. See editor_file_system.cpp -> EditorFileSystem::scan().
+		String sdk_version = OS::get_singleton()->get_version().get_slicec('.', 0);
+		if (sdk_version != "30") {
+			const String nomedia_file_path = path.path_join(".nomedia");
+			Ref<FileAccess> f2 = FileAccess::open(nomedia_file_path, FileAccess::WRITE);
+			if (f2.is_null()) {
+				// .nomedia isn't so critical.
+				ERR_PRINT("Couldn't create .nomedia in project path.");
+			} else {
+				f2->close();
+			}
 		}
 #endif
 		emit_signal(SNAME("project_created"), path, edit_check_box->is_pressed());
@@ -808,7 +848,7 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 		renderer_container->hide();
 		default_files_container->hide();
 
-		callable_mp((Control *)project_name, &Control::grab_focus).call_deferred();
+		callable_mp((Control *)project_name, &Control::grab_focus).call_deferred(false);
 		callable_mp(project_name, &LineEdit::select_all).call_deferred();
 	} else {
 		if (p_reset_name) {
@@ -855,12 +895,29 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 			set_title(TTRC("Create New Project"));
 			set_ok_button_text(TTRC("Create"));
 
+			if (!rendering_device_checked) {
+				rendering_device_supported = DisplayServer::is_rendering_device_supported();
+
+				if (!rendering_device_supported) {
+					List<BaseButton *> buttons;
+					renderer_button_group->get_buttons(&buttons);
+					for (BaseButton *button : buttons) {
+						if (button->get_meta(SNAME("rendering_method")) == "gl_compatibility") {
+							button->set_pressed(true);
+							break;
+						}
+					}
+				}
+				_renderer_selected();
+				rendering_device_checked = true;
+			}
+
 			name_container->show();
 			install_path_container->hide();
 			renderer_container->show();
 			default_files_container->show();
 
-			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred();
+			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred(false);
 			callable_mp(project_name, &LineEdit::select_all).call_deferred();
 		} else if (mode == MODE_INSTALL) {
 			set_title(TTR("Install Project:") + " " + zip_title);
@@ -873,7 +930,7 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 			renderer_container->hide();
 			default_files_container->hide();
 
-			callable_mp((Control *)project_path, &Control::grab_focus).call_deferred();
+			callable_mp((Control *)project_path, &Control::grab_focus).call_deferred(false);
 		} else if (mode == MODE_DUPLICATE) {
 			set_title(TTRC("Duplicate Project"));
 			set_ok_button_text(TTRC("Duplicate"));
@@ -886,7 +943,7 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 				edit_check_box->hide();
 			}
 
-			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred();
+			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred(false);
 			callable_mp(project_name, &LineEdit::select_all).call_deferred();
 		}
 
@@ -971,7 +1028,7 @@ ProjectDialog::ProjectDialog() {
 
 	project_path = memnew(LineEdit);
 	project_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	project_path->set_accessibility_name(TTRC("Project Path"));
+	project_path->set_accessibility_name(TTRC("Project Path:"));
 	project_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	pphb->add_child(project_path);
 
@@ -987,7 +1044,7 @@ ProjectDialog::ProjectDialog() {
 
 	install_path = memnew(LineEdit);
 	install_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	install_path->set_accessibility_name(TTRC("Install Path"));
+	install_path->set_accessibility_name(TTRC("Project Installation Path:"));
 	install_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	iphb->add_child(install_path);
 
@@ -1037,12 +1094,6 @@ ProjectDialog::ProjectDialog() {
 		default_renderer_type = EditorSettings::get_singleton()->get_setting("project_manager/default_renderer");
 	}
 
-	rendering_device_supported = DisplayServer::is_rendering_device_supported();
-
-	if (!rendering_device_supported) {
-		default_renderer_type = "gl_compatibility";
-	}
-
 	Button *rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTRC("Forward+"));
@@ -1088,6 +1139,7 @@ ProjectDialog::ProjectDialog() {
 	rvb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	rshc->add_child(rvb);
 	renderer_info = memnew(Label);
+	renderer_info->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	renderer_info->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	renderer_info->set_modulate(Color(1, 1, 1, 0.7));
 	rvb->add_child(renderer_info);
@@ -1100,8 +1152,6 @@ ProjectDialog::ProjectDialog() {
 	rd_not_supported->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	rd_not_supported->set_visible(false);
 	renderer_container->add_child(rd_not_supported);
-
-	_renderer_selected();
 
 	l = memnew(Label);
 	l->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
@@ -1123,7 +1173,7 @@ ProjectDialog::ProjectDialog() {
 	vcs_metadata_selection->add_item(TTRC("None"), (int)EditorVCSInterface::VCSMetadata::NONE);
 	vcs_metadata_selection->add_item(TTRC("Git"), (int)EditorVCSInterface::VCSMetadata::GIT);
 	vcs_metadata_selection->select((int)EditorVCSInterface::VCSMetadata::GIT);
-	vcs_metadata_selection->set_accessibility_name(TTRC("Version Control Metadata"));
+	vcs_metadata_selection->set_accessibility_name(TTRC("Version Control Metadata:"));
 	default_files_container->add_child(vcs_metadata_selection);
 	Control *spacer = memnew(Control);
 	spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);

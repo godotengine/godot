@@ -283,6 +283,7 @@ class TextServerFallback : public TextServerExtension {
 		TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 		bool keep_rounding_remainders = true;
 		Dictionary variation_coordinates;
+		double oversampling_override = 0.0;
 		double embolden = 0.0;
 		Transform2D transform;
 
@@ -457,7 +458,7 @@ class TextServerFallback : public TextServerExtension {
 			Rect2 rect;
 			double baseline = 0;
 		};
-		HashMap<Variant, EmbeddedObject, VariantHasher, VariantComparator> objects;
+		HashMap<Variant, EmbeddedObject> objects;
 
 		/* Shaped data */
 		TextServer::Direction para_direction = DIRECTION_LTR; // Detected text direction.
@@ -703,6 +704,9 @@ public:
 
 	MODBIND2(font_set_variation_coordinates, const RID &, const Dictionary &);
 	MODBIND1RC(Dictionary, font_get_variation_coordinates, const RID &);
+
+	MODBIND2(font_set_oversampling, const RID &, double);
+	MODBIND1RC(double, font_get_oversampling, const RID &);
 
 	MODBIND2(font_set_hinting, const RID &, TextServer::Hinting);
 	MODBIND1RC(TextServer::Hinting, font_get_hinting, const RID &);

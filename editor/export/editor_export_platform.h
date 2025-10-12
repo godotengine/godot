@@ -78,7 +78,6 @@ public:
 		String text;
 	};
 
-private:
 	struct SavedData {
 		uint64_t ofs = 0;
 		uint64_t size = 0;
@@ -93,12 +92,20 @@ private:
 	};
 
 	struct PackData {
+		String path;
 		Ref<FileAccess> f;
 		Vector<SavedData> file_ofs;
 		EditorProgress *ep = nullptr;
 		Vector<SharedObject> *so_files = nullptr;
+		bool use_sparse_pck = false;
 	};
 
+	static bool _store_header(Ref<FileAccess> p_fd, bool p_enc, bool p_sparse, uint64_t &r_file_base_ofs, uint64_t &r_dir_base_ofs);
+	static bool _encrypt_and_store_directory(Ref<FileAccess> p_fd, PackData &p_pack_data, const Vector<uint8_t> &p_key, uint64_t p_seed, uint64_t p_file_base);
+	static Error _encrypt_and_store_data(Ref<FileAccess> p_fd, const String &p_path, const Vector<uint8_t> &p_data, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool &r_encrypt);
+	String _get_script_encryption_key(const Ref<EditorExportPreset> &p_preset) const;
+
+private:
 	struct ZipData {
 		void *zip = nullptr;
 		EditorProgress *ep = nullptr;
@@ -151,7 +158,6 @@ private:
 	bool _is_editable_ancestor(Node *p_root, Node *p_node);
 
 	String _export_customize(const String &p_path, LocalVector<Ref<EditorExportPlugin>> &customize_resources_plugins, LocalVector<Ref<EditorExportPlugin>> &customize_scenes_plugins, HashMap<String, FileExportCache> &export_cache, const String &export_base_path, bool p_force_save);
-	String _get_script_encryption_key(const Ref<EditorExportPreset> &p_preset) const;
 
 protected:
 	struct ExportNotifier {
@@ -320,7 +326,7 @@ public:
 	virtual bool poll_export() { return false; }
 	virtual int get_options_count() const { return 0; }
 	virtual String get_options_tooltip() const { return ""; }
-	virtual Ref<ImageTexture> get_option_icon(int p_index) const;
+	virtual Ref<Texture2D> get_option_icon(int p_index) const;
 	virtual String get_option_label(int p_device) const { return ""; }
 	virtual String get_option_tooltip(int p_device) const { return ""; }
 	virtual String get_device_architecture(int p_device) const { return ""; }
@@ -343,6 +349,8 @@ public:
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {}
 	virtual String get_debug_protocol() const { return "tcp://"; }
 	virtual HashMap<String, Variant> get_custom_project_settings(const Ref<EditorExportPreset> &p_preset) const { return HashMap<String, Variant>(); }
+
+	virtual void initialize() {}
 };
 
 VARIANT_ENUM_CAST(EditorExportPlatform::ExportMessageType)

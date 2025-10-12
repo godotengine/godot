@@ -37,7 +37,7 @@
 
 namespace {
 
-constexpr int DEFAULT_SOLVER_PRIORITY = 1;
+constexpr int JOINT_DEFAULT_SOLVER_PRIORITY = 1;
 
 } // namespace
 
@@ -173,11 +173,11 @@ void JoltJoint3D::set_enabled(bool p_enabled) {
 }
 
 int JoltJoint3D::get_solver_priority() const {
-	return DEFAULT_SOLVER_PRIORITY;
+	return JOINT_DEFAULT_SOLVER_PRIORITY;
 }
 
 void JoltJoint3D::set_solver_priority(int p_priority) {
-	if (p_priority != DEFAULT_SOLVER_PRIORITY) {
+	if (p_priority != JOINT_DEFAULT_SOLVER_PRIORITY) {
 		WARN_PRINT(vformat("Joint solver priority is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 	}
 }

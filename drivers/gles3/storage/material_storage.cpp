@@ -779,6 +779,13 @@ void MaterialData::update_uniform_buffer(const HashMap<StringName, ShaderLanguag
 			} else if ((E.value.type == ShaderLanguage::TYPE_VEC3 || E.value.type == ShaderLanguage::TYPE_VEC4) && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR_CONVERSION_DISABLED) {
 				//colors must be set as black, with alpha as 1.0
 				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Color(0, 0, 0, 1), data);
+			} else if (E.value.type == ShaderLanguage::TYPE_MAT2) {
+				// mat uniforms are identity matrix by default.
+				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Transform2D(), data);
+			} else if (E.value.type == ShaderLanguage::TYPE_MAT3) {
+				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Basis(), data);
+			} else if (E.value.type == ShaderLanguage::TYPE_MAT4) {
+				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Projection(), data);
 			} else {
 				//else just zero it out
 				_fill_std140_ubo_empty(E.value.type, E.value.array_size, data);
@@ -854,7 +861,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 			GlobalShaderUniforms::Variable *v = material_storage->global_shader_uniforms.variables.getptr(uniform_name);
 			if (v) {
 				if (v->buffer_index >= 0) {
-					WARN_PRINT("Shader uses global parameter texture '" + String(uniform_name) + "', but it changed type and is no longer a texture!.");
+					WARN_PRINT("Shader uses global parameter texture '" + String(uniform_name) + "', but it changed type and is no longer a texture!");
 
 				} else {
 					HashMap<StringName, uint64_t>::Iterator E = used_global_textures.find(uniform_name);
@@ -865,7 +872,15 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 						E->value = global_textures_pass;
 					}
 
-					textures.push_back(v->override.get_type() != Variant::NIL ? v->override : v->value);
+					RID override_rid = v->override;
+					if (override_rid.is_valid()) {
+						textures.push_back(override_rid);
+					} else {
+						RID value_rid = v->value;
+						if (value_rid.is_valid()) {
+							textures.push_back(value_rid);
+						}
+					}
 				}
 
 			} else {
@@ -945,6 +960,9 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
 							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_CUBEMAP_BLACK);
 						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
+							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_CUBEMAP_TRANSPARENT);
+						} break;
 						default: {
 							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_CUBEMAP_WHITE);
 						} break;
@@ -964,6 +982,9 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
 							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_3D_BLACK);
 						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
+							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_3D_TRANSPARENT);
+						} break;
 						default: {
 							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_3D_WHITE);
 						} break;
@@ -973,7 +994,17 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
 				case ShaderLanguage::TYPE_USAMPLER2DARRAY:
 				case ShaderLanguage::TYPE_SAMPLER2DARRAY: {
-					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE);
+					switch (p_texture_uniforms[i].hint) {
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
+							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_2D_ARRAY_BLACK);
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
+							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_2D_ARRAY_TRANSPARENT);
+						} break;
+						default: {
+							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE);
+						} break;
+					}
 				} break;
 
 				default: {
@@ -1213,13 +1244,13 @@ MaterialStorage::MaterialStorage() {
 
 		actions.renames["MODEL_MATRIX"] = "model_matrix";
 		actions.renames["MODEL_NORMAL_MATRIX"] = "model_normal_matrix";
-		actions.renames["VIEW_MATRIX"] = "scene_data.view_matrix";
-		actions.renames["INV_VIEW_MATRIX"] = "scene_data.inv_view_matrix";
+		actions.renames["VIEW_MATRIX"] = "scene_data_block.data.view_matrix";
+		actions.renames["INV_VIEW_MATRIX"] = "scene_data_block.data.inv_view_matrix";
 		actions.renames["PROJECTION_MATRIX"] = "projection_matrix";
 		actions.renames["INV_PROJECTION_MATRIX"] = "inv_projection_matrix";
 		actions.renames["MODELVIEW_MATRIX"] = "modelview";
 		actions.renames["MODELVIEW_NORMAL_MATRIX"] = "modelview_normal";
-		actions.renames["MAIN_CAM_INV_VIEW_MATRIX"] = "scene_data.main_cam_inv_view_matrix";
+		actions.renames["MAIN_CAM_INV_VIEW_MATRIX"] = "scene_data_block.data.main_cam_inv_view_matrix";
 
 		actions.renames["VERTEX"] = "vertex";
 		actions.renames["NORMAL"] = "normal";
@@ -1232,6 +1263,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["POINT_SIZE"] = "point_size";
 		actions.renames["INSTANCE_ID"] = "gl_InstanceID";
 		actions.renames["VERTEX_ID"] = "gl_VertexID";
+		actions.renames["Z_CLIP_SCALE"] = "z_clip_scale";
 
 		actions.renames["ALPHA_SCISSOR_THRESHOLD"] = "alpha_scissor_threshold";
 		actions.renames["ALPHA_HASH_SCALE"] = "alpha_hash_scale";
@@ -1240,19 +1272,21 @@ MaterialStorage::MaterialStorage() {
 
 		//builtins
 
-		actions.renames["TIME"] = "scene_data.time";
-		actions.renames["EXPOSURE"] = "(1.0 / scene_data.emissive_exposure_normalization)";
+		actions.renames["TIME"] = "scene_data_block.data.time";
+		actions.renames["EXPOSURE"] = "(1.0 / scene_data_block.data.emissive_exposure_normalization)";
 		actions.renames["PI"] = String::num(Math::PI);
 		actions.renames["TAU"] = String::num(Math::TAU);
 		actions.renames["E"] = String::num(Math::E);
 		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
 		actions.renames["CLIP_SPACE_FAR"] = "SHADER_SPACE_FAR";
-		actions.renames["VIEWPORT_SIZE"] = "scene_data.viewport_size";
+		actions.renames["IN_SHADOW_PASS"] = "IN_SHADOW_PASS";
+		actions.renames["VIEWPORT_SIZE"] = "scene_data_block.data.viewport_size";
 
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["FRONT_FACING"] = "gl_FrontFacing";
 		actions.renames["NORMAL_MAP"] = "normal_map";
 		actions.renames["NORMAL_MAP_DEPTH"] = "normal_map_depth";
+		actions.renames["BENT_NORMAL_MAP"] = "bent_normal_map";
 		actions.renames["ALBEDO"] = "albedo";
 		actions.renames["ALPHA"] = "alpha";
 		actions.renames["PREMUL_ALPHA_FACTOR"] = "premul_alpha";
@@ -1289,10 +1323,10 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["LIGHT_VERTEX"] = "light_vertex";
 
 		actions.renames["NODE_POSITION_WORLD"] = "model_matrix[3].xyz";
-		actions.renames["CAMERA_POSITION_WORLD"] = "scene_data.inv_view_matrix[3].xyz";
-		actions.renames["CAMERA_DIRECTION_WORLD"] = "scene_data.inv_view_matrix[2].xyz";
-		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data.camera_visible_layers";
-		actions.renames["NODE_POSITION_VIEW"] = "(scene_data.view_matrix * model_matrix)[3].xyz";
+		actions.renames["CAMERA_POSITION_WORLD"] = "scene_data_block.data.inv_view_matrix[3].xyz";
+		actions.renames["CAMERA_DIRECTION_WORLD"] = "scene_data_block.data.inv_view_matrix[2].xyz";
+		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data_block.data.camera_visible_layers";
+		actions.renames["NODE_POSITION_VIEW"] = "(scene_data_block.data.view_matrix * model_matrix)[3].xyz";
 
 		actions.renames["VIEW_INDEX"] = "ViewIndex";
 		actions.renames["VIEW_MONO_LEFT"] = "uint(0)";
@@ -1330,10 +1364,12 @@ MaterialStorage::MaterialStorage() {
 		actions.usage_defines["CUSTOM3"] = "#define CUSTOM3_USED\n";
 		actions.usage_defines["NORMAL_MAP"] = "#define NORMAL_MAP_USED\n";
 		actions.usage_defines["NORMAL_MAP_DEPTH"] = "@NORMAL_MAP";
+		actions.usage_defines["BENT_NORMAL_MAP"] = "#define BENT_NORMAL_MAP_USED\n";
 		actions.usage_defines["COLOR"] = "#define COLOR_USED\n";
 		actions.usage_defines["INSTANCE_CUSTOM"] = "#define ENABLE_INSTANCE_CUSTOM\n";
 		actions.usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
 		actions.usage_defines["LIGHT_VERTEX"] = "#define LIGHT_VERTEX_USED\n";
+		actions.usage_defines["Z_CLIP_SCALE"] = "#define Z_CLIP_SCALE_USED\n";
 
 		actions.usage_defines["ALPHA_SCISSOR_THRESHOLD"] = "#define ALPHA_SCISSOR_USED\n";
 		actions.usage_defines["ALPHA_HASH_SCALE"] = "#define ALPHA_HASH_USED\n";
@@ -1382,9 +1418,12 @@ MaterialStorage::MaterialStorage() {
 		}
 		actions.render_mode_defines["fog_disabled"] = "#define FOG_DISABLED\n";
 
+		actions.render_mode_defines["specular_occlusion_disabled"] = "#define SPECULAR_OCCLUSION_DISABLED\n";
+
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
 
+		actions.apply_luminance_multiplier = true; // apply luminance multiplier to screen texture
 		actions.check_multiview_samplers = RasterizerGLES3::get_singleton()->is_xr_enabled();
 		actions.global_buffer_array_variable = "global_shader_uniforms";
 		actions.instance_uniform_index_variable = "instance_offset";
@@ -1474,22 +1513,22 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["QUARTER_RES_COLOR"] = "quarter_res_color";
 		actions.renames["RADIANCE"] = "radiance";
 		actions.renames["FOG"] = "custom_fog";
-		actions.renames["LIGHT0_ENABLED"] = "directional_lights.data[0].enabled";
+		actions.renames["LIGHT0_ENABLED"] = "bool(directional_lights.data[0].enabled_bake_mode & DIRECTIONAL_LIGHT_ENABLED)";
 		actions.renames["LIGHT0_DIRECTION"] = "directional_lights.data[0].direction_energy.xyz";
 		actions.renames["LIGHT0_ENERGY"] = "directional_lights.data[0].direction_energy.w";
 		actions.renames["LIGHT0_COLOR"] = "directional_lights.data[0].color_size.xyz";
 		actions.renames["LIGHT0_SIZE"] = "directional_lights.data[0].color_size.w";
-		actions.renames["LIGHT1_ENABLED"] = "directional_lights.data[1].enabled";
+		actions.renames["LIGHT1_ENABLED"] = "bool(directional_lights.data[1].enabled_bake_mode & DIRECTIONAL_LIGHT_ENABLED)";
 		actions.renames["LIGHT1_DIRECTION"] = "directional_lights.data[1].direction_energy.xyz";
 		actions.renames["LIGHT1_ENERGY"] = "directional_lights.data[1].direction_energy.w";
 		actions.renames["LIGHT1_COLOR"] = "directional_lights.data[1].color_size.xyz";
 		actions.renames["LIGHT1_SIZE"] = "directional_lights.data[1].color_size.w";
-		actions.renames["LIGHT2_ENABLED"] = "directional_lights.data[2].enabled";
+		actions.renames["LIGHT2_ENABLED"] = "bool(directional_lights.data[2].enabled_bake_mode & DIRECTIONAL_LIGHT_ENABLED)";
 		actions.renames["LIGHT2_DIRECTION"] = "directional_lights.data[2].direction_energy.xyz";
 		actions.renames["LIGHT2_ENERGY"] = "directional_lights.data[2].direction_energy.w";
 		actions.renames["LIGHT2_COLOR"] = "directional_lights.data[2].color_size.xyz";
 		actions.renames["LIGHT2_SIZE"] = "directional_lights.data[2].color_size.w";
-		actions.renames["LIGHT3_ENABLED"] = "directional_lights.data[3].enabled";
+		actions.renames["LIGHT3_ENABLED"] = "bool(directional_lights.data[3].enabled_bake_mode & DIRECTIONAL_LIGHT_ENABLED)";
 		actions.renames["LIGHT3_DIRECTION"] = "directional_lights.data[3].direction_energy.xyz";
 		actions.renames["LIGHT3_ENERGY"] = "directional_lights.data[3].direction_energy.w";
 		actions.renames["LIGHT3_COLOR"] = "directional_lights.data[3].color_size.xyz";
@@ -2150,7 +2189,7 @@ RID MaterialStorage::shader_allocate() {
 	return shader_owner.allocate_rid();
 }
 
-void MaterialStorage::shader_initialize(RID p_rid) {
+void MaterialStorage::shader_initialize(RID p_rid, bool p_embedded) {
 	Shader shader;
 	shader.data = nullptr;
 	shader.mode = RS::SHADER_MAX;
@@ -2376,7 +2415,8 @@ void MaterialStorage::material_free(RID p_rid) {
 	// This happens when the app is being closed.
 	for (KeyValue<StringName, Variant> &E : material->params) {
 		if (E.value.get_type() == Variant::ARRAY) {
-			Array(E.value).clear();
+			// Clear the array for this material only (the array may be shared).
+			E.value = Variant();
 		}
 	}
 
@@ -2902,6 +2942,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	uses_screen_texture_mipmaps = false;
 	uses_depth_texture = false;
 	uses_normal_texture = false;
+	uses_bent_normal_texture = false;
 	uses_time = false;
 	uses_vertex_time = false;
 	uses_fragment_time = false;
@@ -2926,10 +2967,17 @@ void SceneShaderData::set_code(const String &p_code) {
 
 	// Actual enums set further down after compilation.
 	int blend_modei = BLEND_MODE_MIX;
-	int depth_testi = DEPTH_TEST_ENABLED;
+	int depth_test_disabledi = 0;
+	int depth_test_invertedi = 0;
 	int alpha_antialiasing_modei = ALPHA_ANTIALIASING_OFF;
 	int cull_modei = RS::CULL_MODE_BACK;
 	int depth_drawi = DEPTH_DRAW_OPAQUE;
+
+	int stencil_readi = 0;
+	int stencil_writei = 0;
+	int stencil_write_depth_faili = 0;
+	int stencil_comparei = STENCIL_COMPARE_ALWAYS;
+	int stencil_referencei = -1;
 
 	ShaderCompiler::IdentifierActions actions;
 	actions.entry_point_stages["vertex"] = ShaderCompiler::STAGE_VERTEX;
@@ -2949,7 +2997,8 @@ void SceneShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["depth_draw_opaque"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_OPAQUE);
 	actions.render_mode_values["depth_draw_always"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_ALWAYS);
 
-	actions.render_mode_values["depth_test_disabled"] = Pair<int *, int>(&depth_testi, DEPTH_TEST_DISABLED);
+	actions.render_mode_values["depth_test_disabled"] = Pair<int *, int>(&depth_test_disabledi, 1);
+	actions.render_mode_values["depth_test_inverted"] = Pair<int *, int>(&depth_test_invertedi, 1);
 
 	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_DISABLED);
 	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_FRONT);
@@ -2975,6 +3024,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	actions.usage_flag_pointers["ROUGHNESS"] = &uses_roughness;
 	actions.usage_flag_pointers["NORMAL"] = &uses_normal;
 	actions.usage_flag_pointers["NORMAL_MAP"] = &uses_normal;
+	actions.usage_flag_pointers["BENT_NORMAL_MAP"] = &uses_bent_normal_texture;
 
 	actions.usage_flag_pointers["POINT_SIZE"] = &uses_point_size;
 	actions.usage_flag_pointers["POINT_COORD"] = &uses_point_size;
@@ -2998,6 +3048,20 @@ void SceneShaderData::set_code(const String &p_code) {
 	actions.usage_flag_pointers["BONE_INDICES"] = &uses_bones;
 	actions.usage_flag_pointers["BONE_WEIGHTS"] = &uses_weights;
 
+	actions.stencil_mode_values["read"] = Pair<int *, int>(&stencil_readi, STENCIL_FLAG_READ);
+	actions.stencil_mode_values["write"] = Pair<int *, int>(&stencil_writei, STENCIL_FLAG_WRITE);
+	actions.stencil_mode_values["write_depth_fail"] = Pair<int *, int>(&stencil_write_depth_faili, STENCIL_FLAG_WRITE_DEPTH_FAIL);
+
+	actions.stencil_mode_values["compare_less"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_LESS);
+	actions.stencil_mode_values["compare_equal"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_EQUAL);
+	actions.stencil_mode_values["compare_less_or_equal"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_LESS_OR_EQUAL);
+	actions.stencil_mode_values["compare_greater"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_GREATER);
+	actions.stencil_mode_values["compare_not_equal"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_NOT_EQUAL);
+	actions.stencil_mode_values["compare_greater_or_equal"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_GREATER_OR_EQUAL);
+	actions.stencil_mode_values["compare_always"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_ALWAYS);
+
+	actions.stencil_reference = &stencil_referencei;
+
 	actions.uniforms = &uniforms;
 
 	Error err = MaterialStorage::get_singleton()->shaders.compiler_scene.compile(RS::SHADER_SPATIAL, code, &actions, path, gen_code);
@@ -3010,7 +3074,13 @@ void SceneShaderData::set_code(const String &p_code) {
 	blend_mode = BlendMode(blend_modei);
 	alpha_antialiasing_mode = AlphaAntiAliasing(alpha_antialiasing_modei);
 	depth_draw = DepthDraw(depth_drawi);
-	depth_test = DepthTest(depth_testi);
+	if (depth_test_disabledi) {
+		depth_test = DEPTH_TEST_DISABLED;
+	} else if (depth_test_invertedi) {
+		depth_test = DEPTH_TEST_ENABLED_INVERTED;
+	} else {
+		depth_test = DEPTH_TEST_ENABLED;
+	}
 	cull_mode = RS::CullMode(cull_modei);
 
 	vertex_input_mask = RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_FORMAT_NORMAL; // We can always read vertices and normals.
@@ -3031,6 +3101,11 @@ void SceneShaderData::set_code(const String &p_code) {
 	uses_normal_texture = gen_code.uses_normal_roughness_texture;
 	uses_vertex_time = gen_code.uses_vertex_time;
 	uses_fragment_time = gen_code.uses_fragment_time;
+
+	stencil_enabled = stencil_referencei != -1;
+	stencil_flags = stencil_readi | stencil_writei | stencil_write_depth_faili;
+	stencil_compare = StencilCompare(stencil_comparei);
+	stencil_reference = stencil_referencei;
 
 #ifdef DEBUG_ENABLED
 	if (uses_particle_trails) {
@@ -3098,7 +3173,7 @@ bool SceneShaderData::casts_shadows() const {
 	bool has_base_alpha = (uses_alpha && !uses_alpha_clip) || has_read_screen_alpha;
 	bool has_alpha = has_base_alpha || uses_blend_alpha;
 
-	return !has_alpha || (uses_depth_prepass_alpha && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test == DEPTH_TEST_DISABLED));
+	return !has_alpha || (uses_depth_prepass_alpha && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test != DEPTH_TEST_ENABLED));
 }
 
 RS::ShaderNativeSourceCode SceneShaderData::get_native_source_code() const {

@@ -35,10 +35,11 @@
 #include "core/templates/paged_allocator.h"
 #include "core/templates/self_list.h"
 #include "scene/main/scene_tree_fti.h"
-#include "scene/resources/mesh.h"
+#include "servers/display/display_server.h"
 
 #undef Window
 
+class ArrayMesh;
 class PackedScene;
 class Node;
 #ifndef _3D_DISABLED
@@ -146,7 +147,14 @@ private:
 	HashMap<StringName, Group> group_map;
 	bool _quit = false;
 
-	bool _physics_interpolation_enabled = false;
+	// Static so we can get directly instead of via SceneTree pointer.
+	static bool _physics_interpolation_enabled;
+
+	// Note that physics interpolation is hard coded to OFF in the editor,
+	// therefore we have a second bool to enable e.g. configuration warnings
+	// to only take effect when the project is using physics interpolation.
+	static bool _physics_interpolation_enabled_in_project;
+
 	SceneTreeFTI scene_tree_fti;
 
 	StringName tree_changed_name = "tree_changed";
@@ -227,7 +235,6 @@ private:
 
 	Group *add_to_group(const StringName &p_group, Node *p_node);
 	void remove_from_group(const StringName &p_group, Node *p_node);
-	void make_group_changed(const StringName &p_group);
 
 	void _process_group(ProcessGroup *p_group, bool p_physics);
 	void _process_groups_thread(uint32_t p_index, bool p_physics);
@@ -447,7 +454,11 @@ public:
 	//default texture settings
 
 	void set_physics_interpolation_enabled(bool p_enabled);
-	bool is_physics_interpolation_enabled() const;
+	bool is_physics_interpolation_enabled() const { return _physics_interpolation_enabled; }
+
+	// Different name to disambiguate fast static versions from the user bound versions.
+	static bool is_fti_enabled() { return _physics_interpolation_enabled; }
+	static bool is_fti_enabled_in_project() { return _physics_interpolation_enabled_in_project; }
 
 #ifndef _3D_DISABLED
 	void client_physics_interpolation_add_node_3d(SelfList<Node3D> *p_elem);

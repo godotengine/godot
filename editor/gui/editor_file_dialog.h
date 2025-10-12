@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/io/dir_access.h"
-#include "editor/file_info.h"
+#include "editor/file_system/file_info.h"
 #include "scene/gui/dialogs.h"
 #include "scene/property_list_helper.h"
 
@@ -185,6 +185,7 @@ private:
 		Ref<Texture2D> filter_box;
 		Ref<Texture2D> file_sort_button;
 
+		Ref<Texture2D> file;
 		Ref<Texture2D> folder;
 		Color folder_icon_color;
 
@@ -271,8 +272,8 @@ private:
 	void _save_to_recent();
 	// Callback function is callback(String p_path,Ref<Texture2D> preview,Variant udata) preview null if could not load.
 
-	void _thumbnail_result(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
-	void _thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
+	void _thumbnail_result(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview);
+	void _thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview);
 	void _request_single_thumbnail(const String &p_path);
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
@@ -301,8 +302,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	Color get_dir_icon_color(const String &p_dir_path);
-
 	virtual void set_visible(bool p_visible) override;
 	virtual void popup(const Rect2i &p_rect = Rect2i()) override;
 

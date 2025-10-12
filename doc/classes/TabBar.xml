@@ -271,10 +271,10 @@
 			If [code]true[/code], enables selecting a tab with the right mouse button.
 		</member>
 		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="0">
-			Sets the position at which tabs will be placed. See [enum AlignmentMode] for details.
+			The position at which tabs will be placed.
 		</member>
 		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="TabBar.CloseButtonDisplayPolicy" default="0">
-			Sets when the close button will appear on the tabs. See [enum CloseButtonDisplayPolicy] for details.
+			When the close button will appear on the tabs.
 		</member>
 		<member name="tab_count" type="int" setter="set_tab_count" getter="get_tab_count" default="0">
 			The number of tabs currently in the bar.
@@ -387,6 +387,18 @@
 		</theme_item>
 		<theme_item name="font_unselected_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 1)">
 			Font color of the other, unselected tabs.
+		</theme_item>
+		<theme_item name="icon_disabled_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon color of disabled tabs.
+		</theme_item>
+		<theme_item name="icon_hovered_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon color of the currently hovered tab. Does not apply to the selected tab.
+		</theme_item>
+		<theme_item name="icon_selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon color of the currently selected tab.
+		</theme_item>
+		<theme_item name="icon_unselected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon color of the other, unselected tabs.
 		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal separation between the elements inside tabs.

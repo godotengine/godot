@@ -34,24 +34,27 @@
 #include "core/string/ustring.h"
 #include "core/templates/rid_owner.h"
 #include "rendering_device_driver_d3d12.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_context_driver.h"
+
+GODOT_GCC_WARNING_PUSH
+GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
+GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
+GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
+GODOT_GCC_WARNING_IGNORE("-Wshadow")
+GODOT_GCC_WARNING_IGNORE("-Wswitch")
+GODOT_CLANG_WARNING_PUSH
+GODOT_CLANG_WARNING_IGNORE("-Wimplicit-fallthrough")
+GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
+GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
+GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
+GODOT_CLANG_WARNING_IGNORE("-Wswitch")
 
 #if defined(AS)
 #undef AS
 #endif
 
-#if (WINVER < _WIN32_WINNT_WIN8) && defined(_MSC_VER)
-#pragma push_macro("NTDDI_VERSION")
-#pragma push_macro("WINVER")
-#undef NTDDI_VERSION
-#undef WINVER
-#define NTDDI_VERSION NTDDI_WIN8
-#define WINVER _WIN32_WINNT_WIN8
-#include <dcomp.h>
-#pragma pop_macro("WINVER")
-#pragma pop_macro("NTDDI_VERSION")
-#else
+#ifdef DCOMP_ENABLED
 #include <dcomp.h>
 #endif
 
@@ -60,9 +63,12 @@
 
 #include <wrl/client.h>
 
+GODOT_GCC_WARNING_POP
+GODOT_CLANG_WARNING_POP
+
 using Microsoft::WRL::ComPtr;
 
-#define ARRAY_SIZE(a) std::size(a)
+#define ARRAY_SIZE(a) std_size(a)
 
 class RenderingContextDriverD3D12 : public RenderingContextDriver {
 	ComPtr<ID3D12DeviceFactory> device_factory;
@@ -104,14 +110,18 @@ public:
 		uint32_t height = 0;
 		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
 		bool needs_resize = false;
+#ifdef DCOMP_ENABLED
 		ComPtr<IDCompositionDevice> composition_device;
 		ComPtr<IDCompositionTarget> composition_target;
 		ComPtr<IDCompositionVisual> composition_visual;
+#endif
 	};
 
 	HMODULE lib_d3d12 = nullptr;
 	HMODULE lib_dxgi = nullptr;
+#ifdef DCOMP_ENABLED
 	HMODULE lib_dcomp = nullptr;
+#endif
 
 	IDXGIAdapter1 *create_adapter(uint32_t p_adapter_index) const;
 	ID3D12DeviceFactory *device_factory_get() const;

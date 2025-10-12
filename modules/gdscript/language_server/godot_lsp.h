@@ -238,6 +238,25 @@ struct ReferenceContext {
 	bool includeDeclaration = false;
 };
 
+struct ShowMessageParams {
+	/**
+	 * The message type. See {@link MessageType}.
+	 */
+	int type;
+
+	/**
+	 * The actual message.
+	 */
+	String message;
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+		dict["type"] = type;
+		dict["message"] = message;
+		return dict;
+	}
+};
+
 struct ReferenceParams : TextDocumentPositionParams {
 	ReferenceContext context;
 };
@@ -405,6 +424,25 @@ static const int Full = 1;
 static const int Incremental = 2;
 }; // namespace TextDocumentSyncKind
 
+namespace MessageType {
+/**
+ * An error message.
+ */
+static const int Error = 1;
+/**
+ * A warning message.
+ */
+static const int Warning = 2;
+/**
+ * An information message.
+ */
+static const int Info = 3;
+/**
+ * A log message.
+ */
+static const int Log = 4;
+}; // namespace MessageType
+
 /**
  * Completion options.
  */
@@ -537,8 +575,7 @@ struct SaveOptions {
  */
 struct ColorProviderOptions {
 	Dictionary to_json() {
-		Dictionary dict;
-		return dict;
+		return Dictionary();
 	}
 };
 
@@ -547,8 +584,7 @@ struct ColorProviderOptions {
  */
 struct FoldingRangeProviderOptions {
 	Dictionary to_json() {
-		Dictionary dict;
-		return dict;
+		return Dictionary();
 	}
 };
 
