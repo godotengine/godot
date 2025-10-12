@@ -346,7 +346,6 @@ void FSR2Effect::upscale(const Parameters &p_params) {
 	dispatch_desc.exposure = FFXCommonContext::get_resource_rd(&exposure, L"exposure");
 	dispatch_desc.transparencyAndComposition = {};
 	dispatch_desc.output = FFXCommonContext::get_resource_rd(&output, L"output");
-	dispatch_desc.colorOpaqueOnly = {};
 	dispatch_desc.jitterOffset.x = p_params.jitter.x;
 	dispatch_desc.jitterOffset.y = p_params.jitter.y;
 	dispatch_desc.motionVectorScale.x = float(p_params.internal_size.width);
@@ -362,7 +361,12 @@ void FSR2Effect::upscale(const Parameters &p_params) {
 	dispatch_desc.cameraFar = p_params.z_far;
 	dispatch_desc.cameraFovAngleVertical = p_params.fovy;
 	dispatch_desc.viewSpaceToMetersFactor = 1.0f;
+	// FSR2 does provide automatic reactive mask generation, but that requires an opaque only color target,
+	// which isn't provided in the current Godot pipeline. So now we just disable it.
+	// When Godot adds a deferred renderer, we can re-enable this.
+	dispatch_desc.colorOpaqueOnly = {};
 	dispatch_desc.enableAutoReactive = false;
+
 	dispatch_desc.autoTcThreshold = 1.0f;
 	dispatch_desc.autoTcScale = 1.0f;
 	dispatch_desc.autoReactiveScale = 1.0f;

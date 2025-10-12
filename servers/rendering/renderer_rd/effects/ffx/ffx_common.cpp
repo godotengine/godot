@@ -175,7 +175,7 @@ static FfxVersionNumber get_sdk_version_rd(FfxInterface *p_backend_interface) {
 }
 
 static FfxErrorCode create_backend_context_rd(FfxInterface *p_backend_interface, FfxEffect p_effect,
-	FfxEffectBindlessConfig *p_bindless_config, FfxUInt32 *p_effect_context_id) {
+		FfxEffectBindlessConfig *p_bindless_config, FfxUInt32 *p_effect_context_id) {
 	FFXCommonContext::Scratch &scratch = *reinterpret_cast<FFXCommonContext::Scratch *>(p_backend_interface->scratchBuffer);
 
 	if (p_bindless_config) {
@@ -395,6 +395,18 @@ static FfxErrorCode create_pipeline_rd(FfxInterface *p_backend_interface, FfxEff
 		}
 	}
 
+	if (p_effect == FFX_EFFECT_FSR3UPSCALER) {
+		bool low_resolution_mvs = (p_pipeline_description->contextFlags & FFX_FSR3UPSCALER_ENABLE_DISPLAY_RESOLUTION_MOTION_VECTORS) == 0;
+
+		if (p_pass == FFX_FSR3UPSCALER_PASS_ACCUMULATE || p_pass == FFX_FSR3UPSCALER_PASS_ACCUMULATE_SHARPEN) {
+			// Change the binding for motion vectors in this particular pass if low resolution MVs are used.
+			if (low_resolution_mvs) {
+				FfxResourceBinding &binding = p_out_pipeline->srvTextureBindings[2];
+				wcscpy_s(binding.name, L"r_dilated_motion_vectors");
+			}
+		}
+	}
+
 	return FFX_OK;
 }
 
@@ -508,7 +520,7 @@ static FfxErrorCode execute_gpu_job_compute_rd(FFXCommonContext::Scratch &p_scra
 	if (p_effect_context_id == FFX_EFFECT_CONTEXT_FSR1) {
 		RD::Uniform u_linear_clamp_sampler(RD::UniformType::UNIFORM_TYPE_SAMPLER, 1000, device.linear_clamp_sampler);
 		compute_uniforms.push_back(u_linear_clamp_sampler);
-	} else if (p_effect_context_id == FFX_EFFECT_CONTEXT_FSR2) {
+	} else if (p_effect_context_id == FFX_EFFECT_CONTEXT_FSR2 || p_effect_context_id == FFX_EFFECT_CONTEXT_FSR3_UPSCALE) {
 		RD::Uniform u_point_clamp_sampler(RD::UniformType::UNIFORM_TYPE_SAMPLER, 1000, device.point_clamp_sampler);
 		RD::Uniform u_linear_clamp_sampler(RD::UniformType::UNIFORM_TYPE_SAMPLER, 1001, device.linear_clamp_sampler);
 		compute_uniforms.push_back(u_point_clamp_sampler);
