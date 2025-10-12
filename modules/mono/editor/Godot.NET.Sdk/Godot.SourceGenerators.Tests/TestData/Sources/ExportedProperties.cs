@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using static Godot.Mathf;
 
 public partial class ExportedProperties(string primaryCtorParameter) : GodotObject
 {
@@ -82,6 +83,20 @@ public partial class ExportedProperties(string primaryCtorParameter) : GodotObje
         }
     }
 
+    private Single _fullPropertyStaticImport = Pi;
+    [Export]
+    public Single FullPropertyStaticImport
+    {
+        get
+        {
+            return _fullPropertyStaticImport;
+        }
+        set
+        {
+            _fullPropertyStaticImport = value;
+        }
+    }
+
     // Lambda Property
     private String _lamdaPropertyString = "LamdaPropertyString";
     [Export]
@@ -91,6 +106,14 @@ public partial class ExportedProperties(string primaryCtorParameter) : GodotObje
         set => _lamdaPropertyString = value;
     }
 
+    private Single _lambdaPropertyStaticImport = Tau;
+    [Export]
+    public Single LambdaPropertyStaticImport
+    {
+        get => _lambdaPropertyStaticImport;
+        set => _lambdaPropertyStaticImport = value;
+    }
+
     // Primary Constructor Parameter
     [Export]
     public String PrimaryCtorParameter { get; set; } = primaryCtorParameter;
@@ -98,6 +121,10 @@ public partial class ExportedProperties(string primaryCtorParameter) : GodotObje
     // Constant Math Expression
     [Export]
     public Single ConstantMath { get; set; } = 2 * Mathf.Pi;
+
+    //Constant Math Expression With Static Import
+    [Export]
+    public Single ConstantMathStaticImport { get; set; } = RadToDeg(2 * Pi);
 
     // Static Strings Addition
     [Export]
