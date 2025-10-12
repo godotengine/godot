@@ -291,11 +291,10 @@ namespace Godot
         /// <returns>A slice of the <em>NodePath</em> bounded by <c>begin</c> and <c>end</c>.</returns>
         public NodePath Slice(int begin, int end = Int32.MaxValue)
         {
-            var self = (godot_node_path) NativeValue;
+            var self = (godot_node_path)NativeValue;
             NativeFuncs.godotsharp_node_path_slice(self, begin, end, out godot_node_path slicedNodePath);
 
-            using(slicedNodePath)
-                return new NodePath(slicedNodePath);
+            using(slicedNodePath) return new NodePath(slicedNodePath);
         }
 
         /// <summary>
