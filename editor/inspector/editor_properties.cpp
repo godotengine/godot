@@ -259,7 +259,7 @@ void EditorPropertyMultilineText::_text_changed() {
 	emit_changed(get_edited_property(), text->get_text(), "", true);
 }
 
-void EditorPropertyMultilineText::_open_big_text() {
+void EditorPropertyMultilineText::open_big_text_dialog() {
 	if (!big_text_dialog) {
 		big_text = memnew(TextEdit);
 		if (expression) {
@@ -332,7 +332,7 @@ EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) {
 	open_big_text = memnew(Button);
 	open_big_text->set_accessibility_name(TTRC("Open Text Edit Dialog"));
 	open_big_text->set_flat(true);
-	open_big_text->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyMultilineText::_open_big_text));
+	open_big_text->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyMultilineText::open_big_text_dialog));
 	hb->add_child(open_big_text);
 	big_text_dialog = nullptr;
 	big_text = nullptr;

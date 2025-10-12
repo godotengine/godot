@@ -830,6 +830,8 @@ public:
 	void set_property_prefix(const String &p_prefix);
 	String get_property_prefix() const;
 
+	EditorProperty *get_property(const String &p_property);
+
 	void add_custom_property_description(const String &p_class, const String &p_property, const String &p_description);
 	String get_custom_property_description(const String &p_property) const;
 

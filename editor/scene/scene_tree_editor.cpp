@@ -34,6 +34,7 @@
 #include "core/object/script_language.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/docks/editor_dock_manager.h"
+#include "editor/docks/inspector_dock.h"
 #include "editor/docks/node_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -215,6 +216,19 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 			revoke_dialog->popup_centered();
 		} else {
 			_revoke_unique_name();
+		}
+	} else if (p_id == BUTTON_EDITOR_DESCRIPTION) {
+		set_selected(n);
+		EditorDockManager::get_singleton()->focus_dock(InspectorDock::get_singleton());
+		InspectorDock::get_inspector_singleton()->edit(n);
+		EditorProperty *property = InspectorDock::get_inspector_singleton()->get_property("editor_description");
+
+		if (property) {
+			EditorPropertyMultilineText *multiline = Object::cast_to<EditorPropertyMultilineText>(property);
+			if (multiline) {
+				Callable open_call = callable_mp(multiline, &EditorPropertyMultilineText::open_big_text_dialog);
+				open_call.call_deferred();
+			}
 		}
 	}
 }
@@ -508,6 +522,18 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 			}
 
 			p_item->add_button(0, get_editor_theme_icon(warning_icon), BUTTON_WARNING, false, TTR("Node configuration warning:") + all_warnings);
+		}
+
+		if (!p_node->get_editor_description().is_empty()) {
+			String description;
+			const PackedInt32Array boundaries = TS->string_get_word_breaks(p_node->get_editor_description(), "", 80);
+
+			for (int i = 0; i < boundaries.size(); i += 2) {
+				const int start = boundaries[i];
+				const int end = boundaries[i + 1];
+				description = "\n" + p_node->get_editor_description().substr(start, end - start + 1).rstrip("\n");
+			}
+			p_item->add_button(0, get_editor_theme_icon(SNAME("StickyNote")), BUTTON_EDITOR_DESCRIPTION, false, description);
 		}
 
 		if (p_node->is_unique_name_in_owner()) {

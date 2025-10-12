@@ -108,7 +108,6 @@ class EditorPropertyMultilineText : public EditorProperty {
 
 	void _big_text_changed();
 	void _text_changed();
-	void _open_big_text();
 	bool expression = false;
 
 protected:
@@ -118,6 +117,7 @@ protected:
 public:
 	virtual void update_property() override;
 	EditorPropertyMultilineText(bool p_expression = false);
+	void open_big_text_dialog();
 };
 
 class EditorPropertyTextEnum : public EditorProperty {
