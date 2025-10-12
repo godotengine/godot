@@ -323,10 +323,3 @@ GH-108825
 Validate extension JSON: Error: Field 'classes/EditorExportPlatformExtension/methods/_get_option_icon/return_value': type changed value in new API, from "ImageTexture" to "Texture2D".
 
 Return type changed to allow returning both ImageTexture and DPITexture. Compatibility method registered.
-
-
-GH-94602
---------
-Validate extension JSON: Error: Field 'classes/BitMap/methods/opaque_to_polygons/arguments': size changed value in new API, from 2 to 3.
-
-Add an optional argument to use a mono-atomic chain based Ramer-Douglas-Peucker Algorithm. No adjustments should be necessary.
