@@ -826,7 +826,6 @@ private:
 	HashMap<Control *, VSeparator *> context_toolbar_separators;
 
 	void _update_context_toolbar();
-	void _on_editor_settings_changed();
 
 	void _generate_selection_boxes();
 
