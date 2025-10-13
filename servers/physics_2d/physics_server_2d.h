@@ -437,6 +437,7 @@ public:
 	virtual Variant body_get_param(RID p_body, BodyParameter p_param) const = 0;
 
 	virtual void body_reset_mass_properties(RID p_body) = 0;
+	virtual void body_teleport(RID p_body) = 0;
 
 	//state
 	enum BodyState {

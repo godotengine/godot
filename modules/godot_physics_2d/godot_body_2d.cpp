@@ -130,6 +130,10 @@ void GodotBody2D::reset_mass_properties() {
 	_mass_properties_changed();
 }
 
+void GodotBody2D::body_teleport() {
+	first_time_kinematic = true;
+}
+
 void GodotBody2D::set_active(bool p_active) {
 	if (active == p_active) {
 		return;
@@ -411,6 +415,14 @@ void GodotBody2D::set_space(GodotSpace2D *p_space) {
 
 		if (active && !active_list.in_list()) {
 			get_space()->body_add_to_active_list(&active_list);
+		}
+	} else {
+		// when the player is a Global singleton and reused in many scenes,
+		// when it exits tree from a scene and re-add to another scene,
+		// we need reset first_time_kinematic to true, otherwise it will ignore BODY_STATE_TRANSFORM,
+		// which leads incorrect physics collisions.
+		if (mode == PhysicsServer2D::BODY_MODE_KINEMATIC) {
+			first_time_kinematic = true;
 		}
 	}
 }
