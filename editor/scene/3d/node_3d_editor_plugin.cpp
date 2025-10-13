@@ -9838,58 +9838,36 @@ Node3DEditor::Node3DEditor() {
 	VBoxContainer *xform_vbc = memnew(VBoxContainer);
 	xform_dialog->add_child(xform_vbc);
 
-	Label *l = memnew(Label);
-	l->set_text(TTRC("Translate:"));
-	xform_vbc->add_child(l);
-
-	HBoxContainer *xform_hbc = memnew(HBoxContainer);
-	xform_vbc->add_child(xform_hbc);
+	HBoxContainer *translate_hb = memnew(HBoxContainer);
+	xform_vbc->add_margin_child(TTRC("Translate:"), translate_hb);
+	HBoxContainer *rotate_hb = memnew(HBoxContainer);
+	xform_vbc->add_margin_child(TTRC("Rotate (deg.):"), rotate_hb);
+	HBoxContainer *scale_hb = memnew(HBoxContainer);
+	xform_vbc->add_margin_child(TTRC("Scale (ratio):"), scale_hb);
 
 	for (int i = 0; i < 3; i++) {
 		xform_translate[i] = memnew(LineEdit);
 		xform_translate[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		xform_translate[i]->set_select_all_on_focus(true);
-		xform_hbc->add_child(xform_translate[i]);
-	}
+		translate_hb->add_child(xform_translate[i]);
 
-	l = memnew(Label);
-	l->set_text(TTRC("Rotate (deg.):"));
-	xform_vbc->add_child(l);
-
-	xform_hbc = memnew(HBoxContainer);
-	xform_vbc->add_child(xform_hbc);
-
-	for (int i = 0; i < 3; i++) {
 		xform_rotate[i] = memnew(LineEdit);
 		xform_rotate[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		xform_rotate[i]->set_select_all_on_focus(true);
-		xform_hbc->add_child(xform_rotate[i]);
-	}
+		rotate_hb->add_child(xform_rotate[i]);
 
-	l = memnew(Label);
-	l->set_text(TTRC("Scale (ratio):"));
-	xform_vbc->add_child(l);
-
-	xform_hbc = memnew(HBoxContainer);
-	xform_vbc->add_child(xform_hbc);
-
-	for (int i = 0; i < 3; i++) {
 		xform_scale[i] = memnew(LineEdit);
 		xform_scale[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		xform_scale[i]->set_select_all_on_focus(true);
-		xform_hbc->add_child(xform_scale[i]);
+		scale_hb->add_child(xform_scale[i]);
 	}
-
-	l = memnew(Label);
-	l->set_text(TTRC("Transform Type"));
-	xform_vbc->add_child(l);
 
 	xform_type = memnew(OptionButton);
 	xform_type->set_h_size_flags(SIZE_EXPAND_FILL);
 	xform_type->set_accessibility_name(TTRC("Transform Type"));
 	xform_type->add_item(TTRC("Pre"));
 	xform_type->add_item(TTRC("Post"));
-	xform_vbc->add_child(xform_type);
+	xform_vbc->add_margin_child(TTRC("Transform Type"), xform_type);
 
 	xform_dialog->connect(SceneStringName(confirmed), callable_mp(this, &Node3DEditor::_xform_dialog_action));
 
