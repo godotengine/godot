@@ -415,8 +415,8 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	Ref<Texture2D> folder_icon = get_editor_theme_icon(SNAME("Folder"));
 	const Color default_folder_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
 
-	for (int i = 0; i < favorite_paths.size(); i++) {
-		const String &favorite = favorite_paths[i];
+	const int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+	for (const String &favorite : favorite_paths) {
 		if (!favorite.begins_with("res://")) {
 			continue;
 		}
@@ -448,6 +448,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 		ti->set_text(0, text);
 		ti->set_icon(0, icon);
 		ti->set_icon_modulate(0, color);
+		ti->set_icon_max_width(0, icon_size);
 		ti->set_tooltip_text(0, favorite);
 		ti->set_selectable(0, true);
 		ti->set_metadata(0, favorite);
