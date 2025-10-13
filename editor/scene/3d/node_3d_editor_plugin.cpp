@@ -7050,9 +7050,9 @@ void Node3DEditor::edit(Node3D *p_spatial) {
 }
 
 void Node3DEditor::_snap_changed() {
-	snap_translate_value = snap_translate->get_text().to_float();
-	snap_rotate_value = snap_rotate->get_text().to_float();
-	snap_scale_value = snap_scale->get_text().to_float();
+	snap_translate_value = snap_translate->get_value();
+	snap_rotate_value = snap_rotate->get_value();
+	snap_scale_value = snap_scale->get_value();
 
 	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "snap_translate_value", snap_translate_value);
 	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "snap_rotate_value", snap_rotate_value);
@@ -7060,12 +7060,9 @@ void Node3DEditor::_snap_changed() {
 }
 
 void Node3DEditor::_snap_update() {
-	double snap = EDITOR_GET("interface/inspector/default_float_step");
-	int snap_step_decimals = Math::range_step_decimals(snap);
-
-	snap_translate->set_text(String::num(snap_translate_value, snap_step_decimals));
-	snap_rotate->set_text(String::num(snap_rotate_value, snap_step_decimals));
-	snap_scale->set_text(String::num(snap_scale_value, snap_step_decimals));
+	snap_translate->set_value(snap_translate_value);
+	snap_rotate->set_value(snap_rotate_value);
+	snap_scale->set_value(snap_scale_value);
 }
 
 void Node3DEditor::_xform_dialog_action() {
@@ -7076,9 +7073,9 @@ void Node3DEditor::_xform_dialog_action() {
 	Vector3 translate;
 
 	for (int i = 0; i < 3; i++) {
-		translate[i] = xform_translate[i]->get_text().to_float();
-		rotate[i] = Math::deg_to_rad(xform_rotate[i]->get_text().to_float());
-		scale[i] = xform_scale[i]->get_text().to_float();
+		translate[i] = xform_translate[i]->get_value();
+		rotate[i] = Math::deg_to_rad(xform_rotate[i]->get_value());
+		scale[i] = xform_scale[i]->get_value();
 	}
 
 	t.basis.scale(scale);
@@ -7176,9 +7173,9 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 		} break;
 		case MENU_TRANSFORM_DIALOG: {
 			for (int i = 0; i < 3; i++) {
-				xform_translate[i]->set_text("0");
-				xform_rotate[i]->set_text("0");
-				xform_scale[i]->set_text("1");
+				xform_translate[i]->set_value(0.0);
+				xform_rotate[i]->set_value(0.0);
+				xform_scale[i]->set_value(1.0);
 			}
 
 			xform_dialog->popup_centered(Size2(320, 240) * EDSCALE);
@@ -8740,6 +8737,17 @@ void Node3DEditor::_notification(int p_what) {
 				_finish_grid();
 				_init_grid();
 			}
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/inspector")) {
+				double float_step = EDITOR_GET("interface/inspector/default_float_step");
+				snap_translate->set_step(float_step);
+				snap_rotate->set_step(float_step);
+				snap_scale->set_step(float_step);
+				for (int i = 0; i < 3; i++) {
+					xform_translate[i]->set_step(float_step);
+					xform_rotate[i]->set_step(float_step);
+					xform_scale[i]->set_step(float_step);
+				}
+			}
 		} break;
 
 		case NOTIFICATION_PHYSICS_PROCESS: {
@@ -9773,20 +9781,32 @@ Node3DEditor::Node3DEditor() {
 	VBoxContainer *snap_dialog_vbc = memnew(VBoxContainer);
 	snap_dialog->add_child(snap_dialog_vbc);
 
-	snap_translate = memnew(LineEdit);
+	double float_step = EDITOR_GET("interface/inspector/default_float_step");
+	snap_translate = memnew(SpinBox);
+	snap_translate->set_suffix("m");
+	snap_translate->set_max(1024.0);
+	snap_translate->set_allow_greater(true);
+	snap_translate->set_step(float_step);
 	snap_translate->set_select_all_on_focus(true);
 	snap_translate->set_accessibility_name(TTRC("Translate Snap:"));
 	snap_dialog_vbc->add_margin_child(TTRC("Translate Snap:"), snap_translate);
 
-	snap_rotate = memnew(LineEdit);
+	snap_rotate = memnew(SpinBox);
+	snap_rotate->set_suffix(U"°");
+	snap_rotate->set_max(360.0);
+	snap_rotate->set_step(float_step);
 	snap_rotate->set_select_all_on_focus(true);
-	snap_rotate->set_accessibility_name(TTRC("Rotate Snap (deg.):"));
-	snap_dialog_vbc->add_margin_child(TTRC("Rotate Snap (deg.):"), snap_rotate);
+	snap_rotate->set_accessibility_name(TTRC("Rotate Snap:"));
+	snap_dialog_vbc->add_margin_child(TTRC("Rotate Snap:"), snap_rotate);
 
-	snap_scale = memnew(LineEdit);
+	snap_scale = memnew(SpinBox);
+	snap_scale->set_suffix("%");
+	snap_scale->set_max(1000.0);
+	snap_translate->set_allow_greater(true);
+	snap_scale->set_step(float_step);
 	snap_scale->set_select_all_on_focus(true);
-	snap_scale->set_accessibility_name(TTRC("Scale Snap (%):"));
-	snap_dialog_vbc->add_margin_child(TTRC("Scale Snap (%):"), snap_scale);
+	snap_scale->set_accessibility_name(TTRC("Scale Snap:"));
+	snap_dialog_vbc->add_margin_child(TTRC("Scale Snap:"), snap_scale);
 
 	/* SETTINGS DIALOG */
 
@@ -9846,21 +9866,31 @@ Node3DEditor::Node3DEditor() {
 	xform_vbc->add_child(xform_hbc);
 
 	for (int i = 0; i < 3; i++) {
-		xform_translate[i] = memnew(LineEdit);
+		xform_translate[i] = memnew(SpinBox);
+		xform_translate[i]->set_suffix("m");
+		xform_translate[i]->set_min(-1000000);
+		xform_translate[i]->set_allow_lesser(true);
+		xform_translate[i]->set_max(-1000000);
+		xform_translate[i]->set_allow_greater(true);
+		xform_translate[i]->set_step(float_step);
 		xform_translate[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		xform_translate[i]->set_select_all_on_focus(true);
 		xform_hbc->add_child(xform_translate[i]);
 	}
 
 	l = memnew(Label);
-	l->set_text(TTRC("Rotate (deg.):"));
+	l->set_text(TTRC("Rotate:"));
 	xform_vbc->add_child(l);
 
 	xform_hbc = memnew(HBoxContainer);
 	xform_vbc->add_child(xform_hbc);
 
 	for (int i = 0; i < 3; i++) {
-		xform_rotate[i] = memnew(LineEdit);
+		xform_rotate[i] = memnew(SpinBox);
+		xform_rotate[i]->set_suffix(U"°");
+		xform_rotate[i]->set_min(-360.0);
+		xform_rotate[i]->set_max(360.0);
+		xform_rotate[i]->set_step(float_step);
 		xform_rotate[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		xform_rotate[i]->set_select_all_on_focus(true);
 		xform_hbc->add_child(xform_rotate[i]);
@@ -9874,7 +9904,11 @@ Node3DEditor::Node3DEditor() {
 	xform_vbc->add_child(xform_hbc);
 
 	for (int i = 0; i < 3; i++) {
-		xform_scale[i] = memnew(LineEdit);
+		xform_scale[i] = memnew(SpinBox);
+		xform_rotate[i]->set_min(-100.0);
+		xform_rotate[i]->set_allow_lesser(true);
+		xform_rotate[i]->set_allow_greater(true);
+		xform_scale[i]->set_step(float_step);
 		xform_scale[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		xform_scale[i]->set_select_all_on_focus(true);
 		xform_hbc->add_child(xform_scale[i]);

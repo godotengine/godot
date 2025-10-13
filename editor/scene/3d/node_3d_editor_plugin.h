@@ -48,7 +48,6 @@ class EditorData;
 class EditorSelection;
 class EditorSpinSlider;
 class HSplitContainer;
-class LineEdit;
 class MenuButton;
 class Node3DEditor;
 class Node3DEditorViewport;
@@ -788,13 +787,13 @@ private:
 
 	bool snap_enabled;
 	bool snap_key_enabled;
-	LineEdit *snap_translate = nullptr;
-	LineEdit *snap_rotate = nullptr;
-	LineEdit *snap_scale = nullptr;
+	SpinBox *snap_translate = nullptr;
+	SpinBox *snap_rotate = nullptr;
+	SpinBox *snap_scale = nullptr;
 
-	LineEdit *xform_translate[3];
-	LineEdit *xform_rotate[3];
-	LineEdit *xform_scale[3];
+	SpinBox *xform_translate[3];
+	SpinBox *xform_rotate[3];
+	SpinBox *xform_scale[3];
 	OptionButton *xform_type = nullptr;
 
 	VBoxContainer *settings_vbc = nullptr;
