@@ -516,7 +516,9 @@ void CanvasItem::set_modulate(const Color &p_modulate) {
 
 	modulate = p_modulate;
 	RenderingServer::get_singleton()->canvas_item_set_modulate(canvas_item, modulate);
+#ifdef DEBUG_ENABLED
 	_update_debug_canvas_item_modulate();
+#endif //DEBUG_ENABLED
 }
 
 Color CanvasItem::get_modulate() const {
@@ -597,7 +599,9 @@ void CanvasItem::set_self_modulate(const Color &p_self_modulate) {
 
 	self_modulate = p_self_modulate;
 	RenderingServer::get_singleton()->canvas_item_set_self_modulate(canvas_item, self_modulate);
+#ifdef DEBUG_ENABLED
 	_update_debug_canvas_item_self_modulate();
+#endif //DEBUG_ENABLED
 }
 
 Color CanvasItem::get_self_modulate() const {
