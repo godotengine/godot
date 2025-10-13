@@ -1173,8 +1173,28 @@ Dictionary GLTFAccessor::to_dictionary() const {
 	}
 	dict["componentType"] = component_type;
 	dict["count"] = count;
-	dict["max"] = max;
-	dict["min"] = min;
+	switch (component_type) {
+		case COMPONENT_TYPE_NONE: {
+			ERR_PRINT("glTF export: Invalid component type 'NONE' for glTF accessor.");
+		} break;
+		case COMPONENT_TYPE_SIGNED_BYTE:
+		case COMPONENT_TYPE_UNSIGNED_BYTE:
+		case COMPONENT_TYPE_SIGNED_SHORT:
+		case COMPONENT_TYPE_UNSIGNED_SHORT:
+		case COMPONENT_TYPE_SIGNED_INT:
+		case COMPONENT_TYPE_UNSIGNED_INT:
+		case COMPONENT_TYPE_SIGNED_LONG:
+		case COMPONENT_TYPE_UNSIGNED_LONG: {
+			dict["max"] = PackedInt64Array(Variant(max));
+			dict["min"] = PackedInt64Array(Variant(min));
+		} break;
+		case COMPONENT_TYPE_SINGLE_FLOAT:
+		case COMPONENT_TYPE_DOUBLE_FLOAT:
+		case COMPONENT_TYPE_HALF_FLOAT: {
+			dict["max"] = max;
+			dict["min"] = min;
+		} break;
+	}
 	dict["normalized"] = normalized;
 	dict["type"] = _get_accessor_type_name();
 
