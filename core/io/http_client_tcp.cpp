@@ -679,7 +679,7 @@ PackedByteArray HTTPClientTCP::read_response_body_chunk() {
 		}
 
 	} else {
-		int to_read = !read_until_eof ? MIN(body_left, read_chunk_size) : read_chunk_size;
+		int to_read = read_until_eof ? read_chunk_size : MIN(body_left, read_chunk_size);
 		ret.resize(to_read);
 		int _offset = 0;
 		while (to_read > 0) {

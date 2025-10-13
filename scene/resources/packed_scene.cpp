@@ -279,7 +279,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						int32_t id = ids[i];
 						if (id != Node::UNIQUE_SCENE_ID_UNASSIGNED) {
 							if (!deep_search_warned) {
-								WARN_PRINT(vformat("%sA node in the scene this one inherits from has been removed or moved, so a recovery process needs to take place. Please re-save this scene to avoid the cost of this process next time.", !get_path().is_empty() ? get_path() + ": " : ""));
+								WARN_PRINT(vformat("%sA node in the scene this one inherits from has been removed or moved, so a recovery process needs to take place. Please re-save this scene to avoid the cost of this process next time.", get_path().is_empty() ? "" : (get_path() + ": ")));
 								deep_search_warned = true;
 							}
 							Node *base = parent;

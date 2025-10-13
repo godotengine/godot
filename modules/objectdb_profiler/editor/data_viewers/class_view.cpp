@@ -207,7 +207,7 @@ void SnapshotClassView::_add_objects_to_class_map(HashMap<String, ClassData> &p_
 			p_class_map[parent_class_name].child_classes.insert(class_name);
 
 			class_name = parent_class_name;
-			parent_class_name = !class_name.is_empty() ? ClassDB::get_parent_class(class_name) : "";
+			parent_class_name = class_name.is_empty() ? "" : ClassDB::get_parent_class(class_name);
 		}
 	}
 }

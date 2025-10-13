@@ -1318,10 +1318,10 @@ void RenderingDeviceGraph::_group_barriers_for_render_commands(RDD::CommandBuffe
 		return;
 	}
 
-	const VectorView<RDD::MemoryAccessBarrier> memory_barriers = !is_memory_barrier_empty ? barrier_group.memory_barrier : VectorView<RDD::MemoryAccessBarrier>();
+	const VectorView<RDD::MemoryAccessBarrier> memory_barriers = is_memory_barrier_empty ? VectorView<RDD::MemoryAccessBarrier>() : barrier_group.memory_barrier;
 	const VectorView<RDD::TextureBarrier> texture_barriers = barrier_group.normalization_barriers.is_empty() ? barrier_group.transition_barriers : barrier_group.normalization_barriers;
 #if USE_BUFFER_BARRIERS
-	const VectorView<RDD::BufferBarrier> buffer_barriers = !are_buffer_barriers_empty ? barrier_group.buffer_barriers : VectorView<RDD::BufferBarrier>();
+	const VectorView<RDD::BufferBarrier> buffer_barriers = are_buffer_barriers_empty ? VectorView<RDD::BufferBarrier>() : barrier_group.buffer_barriers;
 #else
 	const VectorView<RDD::BufferBarrier> buffer_barriers = VectorView<RDD::BufferBarrier>();
 #endif

@@ -293,8 +293,8 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 	text_line.data_buf->set_custom_punctuation(get_enabled_word_separators());
 	text_line.indent_ofs = -1.0;
 
-	const String &text_with_ime = (!text_line.ime_data.is_empty()) ? text_line.ime_data : text_line.data;
-	const Array &bidi_override_with_ime = (!text_line.ime_data.is_empty()) ? text_line.ime_bidi_override : text_line.bidi_override;
+	const String &text_with_ime = text_line.ime_data.is_empty() ? text_line.data : text_line.ime_data;
+	const Array &bidi_override_with_ime = text_line.ime_data.is_empty() ? text_line.bidi_override : text_line.ime_bidi_override;
 
 	if (p_text_changed) {
 		int from = 0;
@@ -1350,7 +1350,7 @@ void TextEdit::_notification(int p_what) {
 				const Vector<Pair<int64_t, Color>> color_map = _get_line_syntax_highlighting(line);
 
 				// Ensure we at least use the font color.
-				Color current_color = !editable ? theme_cache.font_readonly_color : theme_cache.font_color;
+				Color current_color = editable ? theme_cache.font_color : theme_cache.font_readonly_color;
 				if (draw_placeholder) {
 					current_color = theme_cache.font_placeholder_color;
 				}
@@ -1601,7 +1601,7 @@ void TextEdit::_notification(int p_what) {
 
 					if (!clipped && lookup_symbol_word.length() != 0) { // Highlight word
 						if (is_unicode_identifier_start(lookup_symbol_word[0]) || lookup_symbol_word[0] == '.') {
-							Color highlight_underline_color = !editable ? theme_cache.font_readonly_color : theme_cache.font_color;
+							Color highlight_underline_color = editable ? theme_cache.font_color : theme_cache.font_readonly_color;
 							int lookup_symbol_word_col = _get_column_pos_of_word(lookup_symbol_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
 							int lookup_symbol_word_len = lookup_symbol_word.length();
 							while (lookup_symbol_word_col != -1) {
@@ -3410,7 +3410,7 @@ void TextEdit::_update_caches() {
 	} else {
 		dir = (TextServer::Direction)text_direction;
 	}
-	text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
+	text.set_direction_and_language(dir, language.is_empty() ? TranslationServer::get_singleton()->get_tool_locale() : language);
 	text.set_draw_control_chars(draw_control_chars);
 	text.set_font(theme_cache.font);
 	text.set_font_size(theme_cache.font_size);
@@ -3741,7 +3741,7 @@ void TextEdit::set_text_direction(Control::TextDirection p_text_direction) {
 		} else {
 			dir = (TextServer::Direction)text_direction;
 		}
-		text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
+		text.set_direction_and_language(dir, language.is_empty() ? TranslationServer::get_singleton()->get_tool_locale() : language);
 		text.invalidate_font();
 		_update_placeholder();
 
@@ -3769,7 +3769,7 @@ void TextEdit::set_language(const String &p_language) {
 		} else {
 			dir = (TextServer::Direction)text_direction;
 		}
-		text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
+		text.set_direction_and_language(dir, language.is_empty() ? TranslationServer::get_singleton()->get_tool_locale() : language);
 		text.invalidate_all();
 		_update_placeholder();
 		queue_accessibility_update();
@@ -5328,7 +5328,7 @@ void TextEdit::add_caret_at_carets(bool p_below) {
 		const int selection_origin_line = get_selection_origin_line(i);
 		const int selection_origin_column = get_selection_origin_column(i);
 		const int caret_wrap_index = get_caret_wrap_index(i);
-		const int selection_origin_wrap_index = !is_selected ? -1 : get_line_wrap_index_at_column(selection_origin_line, selection_origin_column);
+		const int selection_origin_wrap_index = is_selected ? get_line_wrap_index_at_column(selection_origin_line, selection_origin_column) : -1;
 
 		if (caret_line == 0 && !p_below && (caret_wrap_index == 0 || selection_origin_wrap_index == 0)) {
 			// Can't add above the first line.
@@ -5588,7 +5588,7 @@ void TextEdit::merge_overlapping_carets() {
 			if (has_selection(caret_to_remove) && has_selection(caret_to_save)) {
 				caret_dir_to_copy = caret_to_remove == get_caret_count() - 1 ? caret_to_remove : caret_to_save;
 			} else {
-				caret_dir_to_copy = !has_selection(caret_to_remove) ? caret_to_save : caret_to_remove;
+				caret_dir_to_copy = has_selection(caret_to_remove) ? caret_to_remove : caret_to_save;
 			}
 
 			if (is_caret_after_selection_origin(caret_dir_to_copy)) {
@@ -8321,7 +8321,7 @@ void TextEdit::_offset_carets_after(int p_old_line, int p_old_column, int p_new_
 		if (!selected) {
 			continue;
 		}
-		bool include_selection_origin_at = !caret_at_end ? p_include_selection_end : p_include_selection_begin;
+		bool include_selection_origin_at = caret_at_end ? p_include_selection_begin : p_include_selection_end;
 
 		int selection_origin_line = get_selection_origin_line(i);
 		int selection_origin_column = get_selection_origin_column(i);

@@ -2291,7 +2291,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		} else {
 			//just mix specular back
 			RENDER_TIMESTAMP("Merge Specular");
-			copy_effects->merge_specular(color_only_framebuffer, rb_data->get_specular(), !use_msaa ? RID() : rb->get_internal_texture(), RID(), p_render_data->scene_data->view_count);
+			copy_effects->merge_specular(color_only_framebuffer, rb_data->get_specular(), use_msaa ? rb->get_internal_texture() : RID(), RID(), p_render_data->scene_data->view_count);
 		}
 	}
 

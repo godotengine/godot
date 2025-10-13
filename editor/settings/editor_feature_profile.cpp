@@ -418,7 +418,7 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 	profile_actions[PROFILE_EXPORT]->set_disabled(selected_profile.is_empty());
 	profile_actions[PROFILE_SET]->set_disabled(selected_profile.is_empty());
 
-	current_profile_name->set_text(!current_profile.is_empty() ? current_profile : TTR("(none)"));
+	current_profile_name->set_text(current_profile.is_empty() ? TTR("(none)") : current_profile);
 
 	_update_selected_profile();
 }

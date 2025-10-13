@@ -8852,7 +8852,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			if (tk.type == TK_SEMICOLON) {
 				//all is good
 				if (b->parent_function->return_type != TYPE_VOID) {
-					_set_error(vformat(RTR("Expected '%s' with an expression of type '%s'."), "return", (!return_struct_name.is_empty() ? return_struct_name : get_datatype_name(b->parent_function->return_type)) + array_size_string));
+					_set_error(vformat(RTR("Expected '%s' with an expression of type '%s'."), "return", (return_struct_name.is_empty() ? get_datatype_name(b->parent_function->return_type) : return_struct_name) + array_size_string));
 					return ERR_PARSE_ERROR;
 				}
 			} else {
@@ -8875,7 +8875,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				}
 
 				if (b->parent_function->return_type != expr->get_datatype() || b->parent_function->return_array_size != expr->get_array_size() || return_struct_name != expr->get_datatype_name()) {
-					_set_error(vformat(RTR("Expected return with an expression of type '%s'."), (!return_struct_name.is_empty() ? return_struct_name : get_datatype_name(b->parent_function->return_type)) + array_size_string));
+					_set_error(vformat(RTR("Expected return with an expression of type '%s'."), (return_struct_name.is_empty() ? get_datatype_name(b->parent_function->return_type) : return_struct_name) + array_size_string));
 					return ERR_PARSE_ERROR;
 				}
 

@@ -1660,7 +1660,7 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create_from_extension(uint64_
 	tex_info->owner_info.allocation = nullptr; // Not allocated by us.
 	tex_info->owner_info.states.subresource_states.resize(resource_desc.MipLevels * p_array_layers);
 	for (uint32_t i = 0; i < tex_info->owner_info.states.subresource_states.size(); i++) {
-		tex_info->owner_info.states.subresource_states[i] = !p_depth_stencil ? D3D12_RESOURCE_STATE_RENDER_TARGET : D3D12_RESOURCE_STATE_DEPTH_WRITE;
+		tex_info->owner_info.states.subresource_states[i] = p_depth_stencil ? D3D12_RESOURCE_STATE_DEPTH_WRITE : D3D12_RESOURCE_STATE_RENDER_TARGET;
 	}
 	tex_info->states_ptr = &tex_info->owner_info.states;
 	tex_info->format = p_format;

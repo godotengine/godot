@@ -949,7 +949,7 @@ void BindingsGenerator::_append_text_signal(StringBuilder &p_output, const TypeI
 }
 
 void BindingsGenerator::_append_text_enum(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
-	const StringName search_cname = !p_target_itype ? p_target_cname : StringName(p_target_itype->name + "." + (String)p_target_cname);
+	const StringName search_cname = p_target_itype ? StringName(p_target_itype->name + "." + (String)p_target_cname) : p_target_cname;
 
 	HashMap<StringName, TypeInterface>::ConstIterator enum_match = enum_types.find(search_cname);
 
@@ -1239,7 +1239,7 @@ void BindingsGenerator::_append_xml_signal(StringBuilder &p_xml_output, const Ty
 }
 
 void BindingsGenerator::_append_xml_enum(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype) {
-	const StringName search_cname = !p_target_itype ? p_target_cname : StringName(p_target_itype->name + "." + (String)p_target_cname);
+	const StringName search_cname = p_target_itype ? StringName(p_target_itype->name + "." + (String)p_target_cname) : p_target_cname;
 
 	HashMap<StringName, TypeInterface>::ConstIterator enum_match = enum_types.find(search_cname);
 
@@ -1683,7 +1683,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 			p_output << "\npublic partial struct " << enum_class_name << "\n" OPEN_BLOCK;
 		}
 
-		const String maybe_indent = !enum_in_static_class ? "" : INDENT1;
+		const String maybe_indent = enum_in_static_class ? INDENT1 : "";
 
 		if (ienum.is_flags) {
 			p_output << "\n"
@@ -3535,7 +3535,7 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 			r_output << base_indent << C_CLASS_NATIVE_FUNCS ".godotsharp_method_bind_ptrcall("
 					 << CS_PARAM_METHODBIND ", " << (p_icall.is_static ? "IntPtr.Zero" : CS_PARAM_INSTANCE)
 					 << ", " << (p_icall.get_arguments_count() ? C_LOCAL_PTRCALL_ARGS : "null")
-					 << ", " << (!ret_void ? "&" C_LOCAL_RET ");\n" : "null);\n");
+					 << ", " << (ret_void ? "null);\n" : "&" C_LOCAL_RET ");\n");
 		}
 
 		// Return statement

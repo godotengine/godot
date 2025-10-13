@@ -69,7 +69,7 @@ bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_
 	}
 
 	for (const String &E : extensions) {
-		const String ext = !E.begins_with(".") ? "." + E : E;
+		const String ext = E.begins_with(".") ? E : ("." + E);
 		if (p_path.right(ext.length()).nocasecmp_to(ext) == 0) {
 			return true;
 		}
@@ -348,14 +348,14 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		if (r_error) {
 			*r_error = ERR_FILE_NOT_FOUND;
 		}
-		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Resource file not found: %s (expected type: %s)", p_path, !p_type_hint.is_empty() ? p_type_hint : "unknown"));
+		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Resource file not found: %s (expected type: %s)", p_path, p_type_hint.is_empty() ? "unknown" : p_type_hint));
 	}
 #endif
 
 	if (r_error) {
 		*r_error = ERR_FILE_UNRECOGNIZED;
 	}
-	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("No loader found for resource: %s (expected type: %s)", p_path, !p_type_hint.is_empty() ? p_type_hint : "unknown"));
+	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("No loader found for resource: %s (expected type: %s)", p_path, p_type_hint.is_empty() ? "unknown" : p_type_hint));
 }
 
 // This implementation must allow re-entrancy for a task that started awaiting in a deeper stack frame.

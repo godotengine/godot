@@ -1441,7 +1441,7 @@ void ConvexHullInternal::merge(IntermediateHull &p_h0, IntermediateHull &p_h1) {
 			c1->edges = e;
 			return;
 		} else {
-			int32_t cmp = !min0 ? 1 : (!min1 ? -1 : min_cot0.compare(min_cot1));
+			int32_t cmp = min0 ? (min1 ? min_cot0.compare(min_cot1) : -1) : 1;
 #ifdef DEBUG_CONVEX_HULL
 			printf("    -> Result %d\n", cmp);
 #endif

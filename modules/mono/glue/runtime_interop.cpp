@@ -127,7 +127,7 @@ GCHandleIntPtr godotsharp_internal_object_get_associated_gchandle(Object *p_ptr)
 		CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
 		if (script_binding.inited) {
 			MonoGCHandleData &gchandle = script_binding.gchandle;
-			return !gchandle.is_released() ? gchandle.get_intptr() : GCHandleIntPtr{ nullptr };
+			return gchandle.is_released() ? GCHandleIntPtr{ nullptr } : gchandle.get_intptr();
 		}
 	}
 

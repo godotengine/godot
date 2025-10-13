@@ -283,7 +283,7 @@ void JoltSoftBody3D::_update_simulation_precision() {
 }
 
 void JoltSoftBody3D::_update_group_filter() {
-	JPH::GroupFilter *group_filter = !exceptions.is_empty() ? JoltGroupFilter::instance : nullptr;
+	JPH::GroupFilter *group_filter = exceptions.is_empty() ? nullptr : JoltGroupFilter::instance;
 
 	if (!in_space()) {
 		jolt_settings->mCollisionGroup.SetGroupFilter(group_filter);

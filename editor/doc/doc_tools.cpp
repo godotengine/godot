@@ -1681,7 +1681,7 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		_write_string(f, 1, "<tutorials>");
 		for (int i = 0; i < c.tutorials.size(); i++) {
 			DocData::TutorialDoc tutorial = c.tutorials.get(i);
-			String title_attribute = (!tutorial.title.is_empty()) ? " title=\"" + _translate_doc_string(tutorial.title).xml_escape(true) + "\"" : "";
+			String title_attribute = tutorial.title.is_empty() ? "" : (" title=\"" + _translate_doc_string(tutorial.title).xml_escape(true) + "\"");
 			_write_string(f, 2, "<link" + title_attribute + ">" + tutorial.link.xml_escape() + "</link>");
 		}
 		_write_string(f, 1, "</tutorials>");

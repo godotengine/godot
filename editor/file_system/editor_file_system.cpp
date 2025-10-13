@@ -3717,7 +3717,7 @@ void EditorFileSystem::_update_extensions() {
 	extensionsl.clear();
 	ResourceFormatImporter::get_singleton()->get_recognized_extensions(&extensionsl);
 	for (const String &E : extensionsl) {
-		import_extensions.insert(!E.begins_with(".") ? "." + E : E);
+		import_extensions.insert(E.begins_with(".") ? E : ("." + E));
 	}
 }
 
