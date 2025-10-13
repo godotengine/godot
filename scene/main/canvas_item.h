@@ -375,7 +375,6 @@ public:
 	void _prepare_debug_canvas_item();
 	void _update_debug_canvas_item_transform();
 	void _update_debug_canvas_item_modulate();
-	void _update_debug_canvas_item_self_modulate();
 	void _set_debug_canvas_item_visible(bool p_visible);
 #endif // DEBUG_ENABLED
 

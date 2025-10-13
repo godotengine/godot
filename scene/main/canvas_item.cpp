@@ -600,7 +600,7 @@ void CanvasItem::set_self_modulate(const Color &p_self_modulate) {
 	self_modulate = p_self_modulate;
 	RenderingServer::get_singleton()->canvas_item_set_self_modulate(canvas_item, self_modulate);
 #ifdef DEBUG_ENABLED
-	_update_debug_canvas_item_self_modulate();
+	_update_debug_canvas_item_modulate();
 #endif //DEBUG_ENABLED
 }
 
@@ -1208,7 +1208,7 @@ void CanvasItem::_prepare_debug_canvas_item() {
 	ERR_FAIL_COND(!is_inside_tree());
 	RenderingServer *rs = RenderingServer::get_singleton();
 	ERR_FAIL_NULL(rs);
-	if (!debug_canvas_item.is_valid()) {
+	if (debug_canvas_item.is_null()) {
 		debug_canvas_item = rs->canvas_item_create();
 		rs->canvas_item_set_parent(debug_canvas_item, get_world_2d()->get_canvas());
 	} else {
@@ -1219,11 +1219,11 @@ void CanvasItem::_prepare_debug_canvas_item() {
 }
 
 void CanvasItem::_set_debug_canvas_item_visible(bool p_visible) {
-	RenderingServer *rs = RenderingServer::get_singleton();
-	ERR_FAIL_NULL(rs);
-	if (debug_canvas_item.is_valid()) {
-		RS::get_singleton()->canvas_item_set_visible(debug_canvas_item, p_visible);
+	if (debug_canvas_item.is_null()) {
+		return;
 	}
+
+	RenderingServer::get_singleton()->canvas_item_set_visible(debug_canvas_item, p_visible);
 }
 
 void CanvasItem::_update_debug_canvas_item_transform() {
@@ -1237,20 +1237,12 @@ void CanvasItem::_update_debug_canvas_item_transform() {
 }
 
 void CanvasItem::_update_debug_canvas_item_modulate() {
-	if (!debug_canvas_item.is_valid()) {
+	if (debug_canvas_item.is_null()) {
 		return;
 	}
 
 	RenderingServer *rs = RenderingServer::get_singleton();
 	rs->canvas_item_set_modulate(debug_canvas_item, modulate);
-}
-
-void CanvasItem::_update_debug_canvas_item_self_modulate() {
-	if (!debug_canvas_item.is_valid()) {
-		return;
-	}
-
-	RenderingServer *rs = RenderingServer::get_singleton();
 	rs->canvas_item_set_self_modulate(debug_canvas_item, self_modulate);
 }
 #endif //DEBUG_ENABLED
