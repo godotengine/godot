@@ -174,7 +174,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP && !mb->is_command_or_control_pressed()) {
+		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::WHEEL_UP || (is_layout_rtl() ? mb->get_button_index() == MouseButton::WHEEL_RIGHT : mb->get_button_index() == MouseButton::WHEEL_LEFT)) && !mb->is_command_or_control_pressed()) {
 			if (scrolling_enabled && buttons_visible) {
 				if (offset > 0) {
 					offset--;
@@ -184,7 +184,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN && !mb->is_command_or_control_pressed()) {
+		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::WHEEL_DOWN || mb->get_button_index() == (is_layout_rtl() ? MouseButton::WHEEL_LEFT : MouseButton::WHEEL_RIGHT)) && !mb->is_command_or_control_pressed()) {
 			if (scrolling_enabled && buttons_visible) {
 				if (missing_right && offset < tabs.size()) {
 					offset++;
