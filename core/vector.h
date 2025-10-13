@@ -84,6 +84,10 @@ public:
 	_FORCE_INLINE_ const T &get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
+
+	_FORCE_INLINE_ operator Span<T>() const { return _cowdata.span(); }
+	_FORCE_INLINE_ Span<T> span() const { return _cowdata.span(); }
+
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
 	_FORCE_INLINE_ const T &operator[](int p_index) const { return _cowdata.get(p_index); }
 	Error insert(int p_pos, T p_val) { return _cowdata.insert(p_pos, p_val); }

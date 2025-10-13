@@ -396,7 +396,7 @@ public:
 			return 0;
 		}
 
-		Vector<Vector3> convex_points = Geometry::compute_convex_mesh_points(&p_convex[0], p_convex.size());
+		Vector<Vector3> convex_points = Geometry::compute_convex_mesh_points(p_convex);
 		if (convex_points.size() == 0) {
 			return 0;
 		}
