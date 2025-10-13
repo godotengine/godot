@@ -8271,7 +8271,20 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p
 		if (obj_model_prop.is_valid() && obj_model_prop->has_json_pointers()) {
 			// Insert the property track into the KHR_animation_pointer pointer tracks.
 			GLTFAnimation::Channel<Variant> channel;
-			channel.interpolation = gltf_interpolation;
+			// Animation samplers used with `int` or `bool` Object Model Data Types **MUST** use `STEP` interpolation.
+			// https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_animation_pointer
+			switch (obj_model_prop->get_object_model_type()) {
+				case GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_BOOL:
+				case GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_INT: {
+					channel.interpolation = GLTFAnimation::INTERP_STEP;
+					if (gltf_interpolation != GLTFAnimation::INTERP_STEP) {
+						WARN_PRINT(vformat("glTF export: Animation track %d on property %s is animating an int or bool, so it MUST use STEP interpolation (Godot \"Nearest\"), but the track in the Godot AnimationPlayer is using a different interpolation. Forcing STEP interpolation. Correct this track's interpolation in the source AnimationPlayer to avoid this warning.", track_index, String(track_path)));
+					}
+				} break;
+				default: {
+					channel.interpolation = gltf_interpolation;
+				} break;
+			}
 			channel.times = times;
 			channel.values.resize(anim_key_count);
 			// If using an expression, determine the base instance to pass to the expression.
