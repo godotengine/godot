@@ -45,6 +45,11 @@ TEST_CASE("[JSON] Stringify single data types") {
 	CHECK(JSON::stringify(0.75) == "0.75");
 	CHECK(JSON::stringify("test") == "\"test\"");
 	CHECK(JSON::stringify("\\\b\f\n\r\t\v\"") == "\"\\\\\\b\\f\\n\\r\\t\\v\\\"\"");
+	ERR_PRINT_OFF
+	CHECK(JSON::stringify(Math::INF) == "null");
+	CHECK(JSON::stringify(-Math::INF) == "null");
+	CHECK(JSON::stringify(Math::NaN) == "null");
+	ERR_PRINT_ON
 }
 
 TEST_CASE("[JSON] Stringify arrays") {
@@ -185,6 +190,49 @@ TEST_CASE("[JSON] Parsing single data types") {
 	CHECK_MESSAGE(
 			json.get_data() == "hello",
 			"Parsing a double quoted string as JSON should return the expected value.");
+
+	ERR_PRINT_OFF
+	// Previous iterations of the Godot engine erroneously output non-finite constants as their
+	//  serialized representations. This behavior was incorrect and never properly parsed.
+	Error err = json.parse(String::num(Math::INF));
+	CHECK_MESSAGE(
+			err != Error::OK,
+			"Parsing invalid keyword `inf` should not parse successfully.");
+
+	err = json.parse(String::num(-Math::INF));
+	CHECK_MESSAGE(
+			err != Error::OK,
+			"Parsing invalid keyword `-inf` should not parse successfully.");
+
+	err = json.parse(String::num(Math::NaN));
+	CHECK_MESSAGE(
+			err != Error::OK,
+			"Parsing invalid keyword `nan` should not parse successfully.");
+
+	err = json.parse("-nan"); // Sanity check. Concept of negative/signaling NAN isn't used anywhere.
+	CHECK_MESSAGE(
+			err != Error::OK,
+			"Parsing invalid keyword `-nan` should not parse successfully.");
+
+	// NOTE: While we strictly conform to the JSON Standard when it comes to encoding values,
+	//  a logical consequence of how we parse oversized exponents results in floats beyond the
+	//  subnormal range of `double` converting to infinity.
+	json.parse("1e99999"); // Greater than largest positive finite value of IEEE-standard 256-bit octuple-precision float (1e78914).
+	CHECK_MESSAGE(
+			json.get_error_line() == 0,
+			"Parsing a floating-point number exceeding `std::numeric_limits<double>::max()` as JSON should parse successfully.");
+	CHECK_MESSAGE(
+			double(json.get_data()) == Math::INF,
+			"Parsing a floating-point number exceeding `std::numeric_limits<double>::max()` as JSON should return the expected value.");
+
+	json.parse("-1e99999"); // Less than largest negative finite value of IEEE-standard 256-bit octuple-precision float (-1e78914).
+	CHECK_MESSAGE(
+			json.get_error_line() == 0,
+			"Parsing a floating-point number exceeding `std::numeric_limits<double>::min()` as JSON should parse successfully.");
+	CHECK_MESSAGE(
+			double(json.get_data()) == -Math::INF,
+			"Parsing a floating-point number exceeding `std::numeric_limits<double>::min()` as JSON should return the expected value.");
+	ERR_PRINT_ON
 }
 
 TEST_CASE("[JSON] Parsing arrays") {
