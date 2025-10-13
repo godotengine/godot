@@ -37,6 +37,7 @@
 #include "core/templates/rb_set.h"
 #include "scene/gui/control.h"
 #include "scene/resources/image_texture.h"
+#include "scene/resources/mesh.h"
 
 #ifndef NAVIGATION_2D_DISABLED
 #include "servers/navigation_2d/navigation_server_2d.h"

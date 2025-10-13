@@ -37,6 +37,7 @@
 #include "scene/2d/tile_map.h"
 #include "scene/gui/control.h"
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
+#include "scene/resources/material.h"
 #include "scene/resources/world_2d.h"
 
 #ifndef PHYSICS_2D_DISABLED
