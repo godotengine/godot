@@ -33,7 +33,10 @@
 
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Mesh);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, DisplayServer);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Shader);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, OS);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Engine);
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"

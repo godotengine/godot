@@ -35,12 +35,12 @@
 #include "core/templates/paged_allocator.h"
 #include "core/templates/self_list.h"
 #include "scene/main/scene_tree_fti.h"
-#include "servers/display/display_server.h"
 
 #undef Window
 
 class ArrayMesh;
 class PackedScene;
+class InputEvent;
 class Node;
 #ifndef _3D_DISABLED
 class Node3D;
@@ -337,7 +337,7 @@ public:
 	void _accessibility_force_update();
 	void _accessibility_notify_change(const Node *p_node, bool p_remove = false);
 	void _flush_accessibility_changes();
-	void _process_accessibility_changes(DisplayServer::WindowID p_window_id);
+	void _process_accessibility_changes(int p_window_id); // Effectively DisplayServer::WindowID
 
 	virtual void initialize() override;
 
