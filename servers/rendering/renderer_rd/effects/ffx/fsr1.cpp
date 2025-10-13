@@ -125,10 +125,6 @@ FSR1Effect::~FSR1Effect() {
 	FFXCommonContext::Device &device = FFXCommonContext::get_singleton()->device;
 
 	for (uint32_t i = 0; i < FFX_FSR1_PASS_COUNT; i++) {
-		if (i == FFX_FSR1_PASS_EASU_RCAS) {
-			continue;
-		}
-
 		device.effect_contexts[FFX_EFFECT_CONTEXT_FSR1].passes[i].shader->version_free(device.effect_contexts[FFX_EFFECT_CONTEXT_FSR1].passes[i].shader_version);
 	}
 }
