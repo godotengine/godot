@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/io/image.h"
 #include "editor/inspector/editor_resource_preview.h"
 
 class ScriptLanguage;
