@@ -1311,7 +1311,12 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 				EditorNode::get_singleton()->load_resource(fpath);
 			}
 		} else {
-			EditorNode::get_singleton()->load_resource(fpath);
+			const Ref<EditorExtensionSourceCodePlugin> source_code_plugin = ExtensionSourceCodeManager::get_singleton()->get_plugin_for_file(fpath);
+			if (source_code_plugin.is_valid() && source_code_plugin->overrides_external_editor()) {
+				source_code_plugin->open_in_external_editor(fpath, 0, 0);
+			} else {
+				EditorNode::get_singleton()->load_resource(fpath);
+			}
 		}
 	}
 	if (p_navigate) {

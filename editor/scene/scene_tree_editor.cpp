@@ -1982,6 +1982,12 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 			return true;
 		}
 
+		const Ref<EditorExtensionSourceCodePlugin> source_code_plugin = ExtensionSourceCodeManager::get_singleton()->get_plugin_for_file(files[0]);
+		if (source_code_plugin.is_valid()) {
+			tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
+			return true;
+		}
+
 		bool scene_drop = true;
 		bool audio_drop = true;
 		for (int i = 0; i < files.size(); i++) {
@@ -2078,7 +2084,15 @@ void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 		if (_is_script_type(ftype)) {
 			emit_signal(SNAME("script_dropped"), files[0], np);
 		} else {
-			emit_signal(SNAME("files_dropped"), files, np, section);
+			const Ref<EditorExtensionSourceCodePlugin> source_code_plugin = ExtensionSourceCodeManager::get_singleton()->get_plugin_for_file(files[0]);
+			if (source_code_plugin.is_valid()) {
+				const StringName &class_name = source_code_plugin->get_class_name_from_source_path(files[0]);
+				if (!class_name.is_empty()) {
+					emit_signal(SNAME("class_dropped"), class_name, np);
+				}
+			} else {
+				emit_signal(SNAME("files_dropped"), files, np, section);
+			}
 		}
 	}
 
@@ -2178,6 +2192,7 @@ void SceneTreeEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("nodes_rearranged", PropertyInfo(Variant::ARRAY, "paths"), PropertyInfo(Variant::NODE_PATH, "to_path"), PropertyInfo(Variant::INT, "type")));
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files"), PropertyInfo(Variant::NODE_PATH, "to_path"), PropertyInfo(Variant::INT, "type")));
 	ADD_SIGNAL(MethodInfo("script_dropped", PropertyInfo(Variant::STRING, "file"), PropertyInfo(Variant::NODE_PATH, "to_path")));
+	ADD_SIGNAL(MethodInfo("class_dropped", PropertyInfo(Variant::STRING_NAME, "class_name"), PropertyInfo(Variant::NODE_PATH, "to_path")));
 	ADD_SIGNAL(MethodInfo("rmb_pressed", PropertyInfo(Variant::VECTOR2, "position")));
 
 	ADD_SIGNAL(MethodInfo("open"));

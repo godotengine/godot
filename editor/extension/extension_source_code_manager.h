@@ -56,6 +56,13 @@ public:
 	 */
 	const Ref<EditorExtensionSourceCodePlugin> get_plugin_for_object(const Object *p_object) const;
 
+	/*
+	 * Attempt to get a registered plugin that can handle the extension class declared
+	 * at the given file. If the file declares a GDExtension class, and there is a registered plugin
+	 * that can handle it, it will return that plugin; otherwise, it will return null.
+	 */
+	const Ref<EditorExtensionSourceCodePlugin> get_plugin_for_file(const String &p_source_path) const;
+
 	bool has_plugins_that_can_create_class_source();
 
 	static void create();
