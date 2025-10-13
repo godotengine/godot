@@ -50,6 +50,12 @@ String EditorExtensionSourceCodePlugin::get_source_path(const StringName &p_clas
 	return path;
 }
 
+StringName EditorExtensionSourceCodePlugin::get_class_name_from_source_path(const String &p_source_path) const {
+	StringName class_name;
+	GDVIRTUAL_CALL(_get_class_name_from_source_path, p_source_path, class_name);
+	return class_name;
+}
+
 Error EditorExtensionSourceCodePlugin::open_in_external_editor(const String &p_source_path, int p_line, int p_col) const {
 	Error err = ERR_BUG;
 	GDVIRTUAL_CALL(_open_in_external_editor, p_source_path, p_line, p_col, err);
@@ -203,6 +209,7 @@ void EditorExtensionSourceCodePlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_can_handle_object, "object");
 
 	GDVIRTUAL_BIND(_get_source_path, "class_name");
+	GDVIRTUAL_BIND(_get_class_name_from_source_path, "source_path");
 
 	GDVIRTUAL_BIND(_overrides_external_editor);
 	GDVIRTUAL_BIND(_open_in_external_editor, "source_path", "line", "col");
