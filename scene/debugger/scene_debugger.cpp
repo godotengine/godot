@@ -30,7 +30,6 @@
 
 #include "scene_debugger.h"
 
-#include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/dir_access.h"
@@ -416,20 +415,6 @@ Error SceneDebugger::_msg_runtime_node_select_set_visible(const Array &p_args) {
 	return OK;
 }
 
-Error SceneDebugger::_msg_runtime_node_select_set_avoid_locked(const Array &p_args) {
-	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
-	bool avoid_locked = p_args[0];
-	RuntimeNodeSelect::get_singleton()->_set_avoid_locked(avoid_locked);
-	return OK;
-}
-
-Error SceneDebugger::_msg_runtime_node_select_set_prefer_group(const Array &p_args) {
-	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
-	bool prefer_group = p_args[0];
-	RuntimeNodeSelect::get_singleton()->_set_prefer_group(prefer_group);
-	return OK;
-}
-
 Error SceneDebugger::_msg_runtime_node_select_reset_camera_2d(const Array &p_args) {
 	RuntimeNodeSelect::get_singleton()->_reset_camera_2d();
 	return OK;
@@ -582,8 +567,6 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["runtime_node_select_set_type"] = _msg_runtime_node_select_set_type;
 	message_handlers["runtime_node_select_set_mode"] = _msg_runtime_node_select_set_mode;
 	message_handlers["runtime_node_select_set_visible"] = _msg_runtime_node_select_set_visible;
-	message_handlers["runtime_node_select_set_avoid_locked"] = _msg_runtime_node_select_set_avoid_locked;
-	message_handlers["runtime_node_select_set_prefer_group"] = _msg_runtime_node_select_set_prefer_group;
 	message_handlers["runtime_node_select_reset_camera_2d"] = _msg_runtime_node_select_reset_camera_2d;
 #ifndef _3D_DISABLED
 	message_handlers["runtime_node_select_reset_camera_3d"] = _msg_runtime_node_select_reset_camera_3d;
@@ -687,14 +670,13 @@ void SceneDebugger::_set_object_property(ObjectID p_id, const String &p_property
 		prop_name = p_property;
 	}
 
-	Variant value = p_value;
-	if (p_value.is_string() && (obj->get_static_property_type(prop_name) == Variant::OBJECT || p_property == "script")) {
-		value = ResourceLoader::load(p_value);
-	}
-
-	if (!p_field.is_empty()) {
-		// Only one specific field.
-		value = fieldwise_assign(obj->get(prop_name), value, p_field);
+	Variant value;
+	if (p_field.is_empty()) {
+		// Whole value.
+		value = p_value;
+	} else {
+		// Only one field.
+		value = fieldwise_assign(obj->get(prop_name), p_value, p_field);
 	}
 
 	obj->set(prop_name, value);
@@ -835,13 +817,11 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 
 	HashSet<String> exported_members;
 
-	if (p_instance) {
-		List<PropertyInfo> pinfo;
-		p_instance->get_property_list(&pinfo);
-		for (const PropertyInfo &E : pinfo) {
-			if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
-				exported_members.insert(E.name);
-			}
+	List<PropertyInfo> pinfo;
+	p_instance->get_property_list(&pinfo);
+	for (const PropertyInfo &E : pinfo) {
+		if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
+			exported_members.insert(E.name);
 		}
 	}
 
@@ -850,9 +830,6 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 		for (const StringName &E : sm.value) {
 			if (exported_members.has(E)) {
 				continue; // Exported variables already show up in the inspector.
-			}
-			if (String(E).begins_with("@")) {
-				continue; // Skip groups.
 			}
 
 			Variant m;
@@ -881,7 +858,7 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 
 void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 	Array send_props;
-	for (SceneDebuggerProperty &property : properties) {
+	for (SceneDebuggerObject::SceneDebuggerProperty &property : properties) {
 		const PropertyInfo &pi = property.first;
 		Variant &var = property.second;
 
@@ -1581,7 +1558,6 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	panner->set_scroll_speed(pan_speed);
 
 	sel_2d_grab_dist = p_settings.get("editors/polygon_editor/point_grab_radius", 0);
-	sel_2d_scale = MAX(1, Math::ceil(2.0 / (float)GLOBAL_GET("display/window/stretch/scale")));
 
 	selection_area_fill = p_settings.get("box_selection_fill_color", Color());
 	selection_area_outline = p_settings.get("box_selection_stroke_color", Color());
@@ -1877,6 +1853,18 @@ void RuntimeNodeSelect::_physics_frame() {
 			}
 		}
 
+		// Remove possible duplicates.
+		for (int i = 0; i < items.size(); i++) {
+			Node *item = items[i].item;
+			for (int j = 0; j < i; j++) {
+				if (items[j].item == item) {
+					items.remove_at(i);
+					i--;
+
+					break;
+				}
+			}
+		}
 #ifndef _3D_DISABLED
 	} else if (node_select_type == NODE_TYPE_3D) {
 		if (selection_drag_valid) {
@@ -1885,59 +1873,6 @@ void RuntimeNodeSelect::_physics_frame() {
 			_find_3d_items_at_pos(selection_position, items);
 		}
 #endif // _3D_DISABLED
-	}
-
-	if ((prefer_group_selection || avoid_locked_nodes) && !list_shortcut_pressed && node_select_mode == SELECT_MODE_SINGLE) {
-		for (int i = 0; i < items.size(); i++) {
-			Node *node = items[i].item;
-			Node *final_node = node;
-			real_t order = items[i].order;
-
-			// Replace the node by the group if grouped.
-			if (prefer_group_selection) {
-				while (node && node != root) {
-					if (node->has_meta("_edit_group_")) {
-						final_node = node;
-
-						if (Object::cast_to<CanvasItem>(final_node)) {
-							CanvasItem *ci_tmp = Object::cast_to<CanvasItem>(final_node);
-							order = ci_tmp->get_effective_z_index() + ci_tmp->get_canvas_layer();
-#ifndef _3D_DISABLED
-						} else if (Object::cast_to<Node3D>(final_node)) {
-							Node3D *node3d_tmp = Object::cast_to<Node3D>(final_node);
-							Camera3D *camera = root->get_camera_3d();
-							Vector3 pos = camera->project_ray_origin(selection_position);
-							order = -pos.distance_to(node3d_tmp->get_global_transform().origin);
-#endif // _3D_DISABLED
-						}
-					}
-					node = node->get_parent();
-				}
-			}
-
-			// Filter out locked nodes.
-			if (avoid_locked_nodes && final_node->get_meta("_edit_lock_", false)) {
-				items.remove_at(i);
-				i--;
-				continue;
-			}
-
-			items.write[i].item = final_node;
-			items.write[i].order = order;
-		}
-	}
-
-	// Remove possible duplicates.
-	for (int i = 0; i < items.size(); i++) {
-		Node *item = items[i].item;
-		for (int j = 0; j < i; j++) {
-			if (items[j].item == item) {
-				items.remove_at(i);
-				i--;
-
-				break;
-			}
-		}
 	}
 
 	items.sort();
@@ -2258,7 +2193,7 @@ void RuntimeNodeSelect::_update_selection() {
 
 		const Color selection_color_2d = Color(1, 0.6, 0.4, 0.7);
 		for (int i = 0; i < 4; i++) {
-			RS::get_singleton()->canvas_item_add_line(sbox_2d_ci, endpoints[i], endpoints[(i + 1) % 4], selection_color_2d, sel_2d_scale);
+			RS::get_singleton()->canvas_item_add_line(sbox_2d_ci, endpoints[i], endpoints[(i + 1) % 4], selection_color_2d, 2);
 		}
 	}
 
@@ -2393,40 +2328,13 @@ void RuntimeNodeSelect::_open_selection_list(const Vector<SelectResult> &p_items
 	root->add_child(selection_list);
 
 	for (const SelectResult &I : p_items) {
-		int locked = 0;
-		if (I.item->get_meta("_edit_lock_", false)) {
-			locked = 1;
-		} else {
-			Node *scene = SceneTree::get_singleton()->get_root();
-			Node *node = I.item;
-
-			while (node && node != scene->get_parent()) {
-				if (node->has_meta("_edit_group_")) {
-					locked = 2;
-				}
-				node = node->get_parent();
-			}
-		}
-
-		String suffix;
-		if (locked == 1) {
-			suffix = " (" + RTR("Locked") + ")";
-		} else if (locked == 2) {
-			suffix = " (" + RTR("Grouped") + ")";
-		}
-
-		selection_list->add_item((String)I.item->get_name() + suffix);
+		selection_list->add_item(I.item->get_name());
 		selection_list->set_item_metadata(-1, I.item);
 	}
 
 	selection_list->set_position(selection_list->is_embedded() ? p_pos : (Input::get_singleton()->get_mouse_position() + root->get_position()));
 	selection_list->reset_size();
 	selection_list->popup();
-
-	selection_list->set_content_scale_factor(1);
-	selection_list->set_min_size(selection_list->get_contents_minimum_size());
-	selection_list->reset_size();
-
 	// FIXME: Ugly hack that stops the popup from hiding when the button is released.
 	selection_list->call_deferred(SNAME("set_position"), selection_list->get_position() + Point2(1, 0));
 }
@@ -2442,14 +2350,6 @@ void RuntimeNodeSelect::_set_selection_visible(bool p_visible) {
 	if (has_selection) {
 		_update_selection();
 	}
-}
-
-void RuntimeNodeSelect::_set_avoid_locked(bool p_enabled) {
-	avoid_locked_nodes = p_enabled;
-}
-
-void RuntimeNodeSelect::_set_prefer_group(bool p_enabled) {
-	prefer_group_selection = p_enabled;
 }
 
 // Copied and trimmed from the CanvasItemEditor implementation.
@@ -2779,13 +2679,11 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 
 	// Start with physical objects.
 	PhysicsDirectSpaceState3D *ss = root->get_world_3d()->get_direct_space_state();
-	PhysicsDirectSpaceState3D::ShapeResult results[32];
+	PhysicsDirectSpaceState3D::ShapeResult result;
 	PhysicsDirectSpaceState3D::ShapeParameters shape_params;
 	shape_params.shape_rid = shape->get_rid();
 	shape_params.collide_with_areas = true;
-	const int num_hits = ss->intersect_shape(shape_params, results, 32);
-	for (int i = 0; i < num_hits; i++) {
-		const PhysicsDirectSpaceState3D::ShapeResult &result = results[i];
+	if (ss->intersect_shape(shape_params, &result, 32)) {
 		SelectResult res;
 		res.item = Object::cast_to<Node>(result.collider);
 		res.order = -dist_pos.distance_to(Object::cast_to<Node3D>(res.item)->get_global_transform().origin);
@@ -2798,18 +2696,12 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 			for (uint32_t &I : owners) {
 				SelectResult res_shape;
 				res_shape.item = Object::cast_to<Node>(collision->shape_owner_get_owner(I));
-				if (!node_list.has(res_shape.item)) {
-					node_list.insert(res_shape.item);
-					res_shape.order = res.order;
-					r_items.push_back(res_shape);
-				}
+				res_shape.order = res.order;
+				r_items.push_back(res_shape);
 			}
 		}
 
-		if (!node_list.has(res.item)) {
-			node_list.insert(res.item);
-			r_items.push_back(res);
-		}
+		r_items.push_back(res);
 	}
 #endif // PHYSICS_3D_DISABLED
 
@@ -2839,11 +2731,8 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 				if (mesh_collision->inside_convex_shape(transformed_frustum.ptr(), transformed_frustum.size(), convex_points.ptr(), convex_points.size(), mesh_scale)) {
 					SelectResult res;
 					res.item = Object::cast_to<Node>(obj);
-					if (!node_list.has(res.item)) {
-						node_list.insert(res.item);
-						res.order = -dist_pos.distance_to(gt.origin);
-						r_items.push_back(res);
-					}
+					res.order = -dist_pos.distance_to(gt.origin);
+					r_items.push_back(res);
 
 					continue;
 				}
