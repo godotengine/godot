@@ -200,7 +200,6 @@ class DisplayServerX11 : public DisplayServer {
 		bool resize_disabled = false;
 		bool no_min_btn = false;
 		bool no_max_btn = false;
-		Vector2i last_position_before_fs;
 		bool focused = true;
 		bool minimized = false;
 		bool maximized = false;
