@@ -35,6 +35,7 @@
 #include "openxr_interaction_profile_metadata.h"
 
 #include "core/io/resource.h"
+#include "core/object/class_db.h"
 
 class OpenXRActionMap;
 

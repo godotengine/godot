@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/class_db.h"
 #include "core/string/node_path.h"
 #include "core/templates/iterable.h"
 #include "core/variant/typed_array.h"

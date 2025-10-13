@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/callable_method_pointer.h"
 #include "core/object/ref_counted.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/variant.h"

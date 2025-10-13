@@ -32,6 +32,7 @@
 
 #include "gdscript_utility_functions.h"
 
+#include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
 #include "core/os/thread.h"

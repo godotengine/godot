@@ -33,6 +33,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/hash_set.h"

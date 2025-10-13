@@ -33,6 +33,7 @@
 #include "core/io/resource.h"
 #include "core/math/face3.h"
 #include "core/math/triangle_mesh.h"
+#include "core/object/class_db.h"
 #include "scene/resources/material.h"
 #include "servers/rendering/rendering_server.h"
 

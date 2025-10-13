@@ -31,23 +31,25 @@
 #pragma once
 
 #include "core/io/resource_uid.h"
-#include "core/object/class_db.h"
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
+#include "core/os/mutex.h"
+#include "core/os/rw_lock.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/self_list.h"
+#include "core/variant/binder_common.h"
 
 class Node;
 
-#define RES_BASE_EXTENSION(m_ext)                                        \
-public:                                                                  \
-	static void register_custom_data_to_otdb() {                         \
-		ClassDB::add_resource_base_extension(m_ext, get_class_static()); \
-	}                                                                    \
-	virtual String get_base_extension() const override {                 \
-		return m_ext;                                                    \
-	}                                                                    \
-                                                                         \
+#define RES_BASE_EXTENSION(m_ext)                               \
+public:                                                         \
+	static void register_custom_data_to_otdb() {                \
+		add_resource_base_extension(m_ext, get_class_static()); \
+	}                                                           \
+	virtual String get_base_extension() const override {        \
+		return m_ext;                                           \
+	}                                                           \
+                                                                \
 private:
 
 class Resource : public RefCounted {
@@ -56,7 +58,7 @@ class Resource : public RefCounted {
 public:
 	static constexpr AncestralClass static_ancestral_class = AncestralClass::RESOURCE;
 
-	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension("res", get_class_static()); }
+	static void register_custom_data_to_otdb() { add_resource_base_extension("res", get_class_static()); }
 	virtual String get_base_extension() const { return "res"; }
 
 protected:
@@ -144,6 +146,11 @@ public:
 	String get_path() const;
 	virtual void set_path_cache(const String &p_path); // Set raw path without involving resource cache.
 	_FORCE_INLINE_ bool is_built_in() const { return path_cache.is_empty() || path_cache.contains("::") || path_cache.begins_with("local://"); }
+
+	static void add_resource_base_extension(const StringName &p_extension, const StringName &p_class);
+	static void get_resource_base_extensions(List<String> *p_extensions);
+	static void get_extensions_for_type(const StringName &p_class, List<String> *p_extensions);
+	static bool is_resource_extension(const StringName &p_extension);
 
 	static void seed_scene_unique_id(uint32_t p_seed);
 	static String generate_scene_unique_id();

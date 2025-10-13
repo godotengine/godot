@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/resource.h"
+#include "core/object/class_db.h"
 
 class Shape2D : public Resource {
 	GDCLASS(Shape2D, Resource);

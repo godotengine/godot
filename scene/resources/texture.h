@@ -32,6 +32,7 @@
 
 #include "core/io/image.h"
 #include "core/io/resource.h"
+#include "core/object/class_db.h"
 #include "core/variant/typed_array.h"
 #include "scene/resources/curve.h"
 

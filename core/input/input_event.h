@@ -33,6 +33,7 @@
 #include "core/input/input_enums.h"
 #include "core/io/resource.h"
 #include "core/math/transform_2d.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/string/ustring.h"
 #include "core/typedefs.h"
