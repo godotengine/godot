@@ -80,6 +80,7 @@ private:
 	RID canvas_item;
 #ifdef DEBUG_ENABLED
 	RID debug_canvas_item;
+	bool should_update_canvas_item_parent = false;
 #endif //DEBUG_ENABLED
 	StringName canvas_group;
 

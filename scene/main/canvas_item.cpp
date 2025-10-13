@@ -454,7 +454,9 @@ void CanvasItem::_notification(int p_what) {
 		case NOTIFICATION_PARENTED: {
 			// The node is not inside the tree during this notification.
 			ERR_MAIN_THREAD_GUARD;
-
+#ifdef DEBUG_ENABLED
+			should_update_canvas_item_parent = true;
+#endif // DEBUG_ENABLED
 			_notify_transform();
 		} break;
 
@@ -1234,6 +1236,10 @@ void CanvasItem::_update_debug_canvas_item_transform() {
 	RenderingServer *rs = RenderingServer::get_singleton();
 	rs->canvas_item_set_transform(debug_canvas_item, get_global_transform());
 	rs->canvas_item_set_z_index(debug_canvas_item, get_effective_z_index());
+	if (should_update_canvas_item_parent) {
+		should_update_canvas_item_parent = false;
+		rs->canvas_item_set_parent(debug_canvas_item, get_world_2d()->get_canvas());
+	}
 }
 
 void CanvasItem::_update_debug_canvas_item_modulate() {
