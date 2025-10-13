@@ -295,7 +295,7 @@ public:
 		}
 	}
 
-	LocalVector(const Span<T> &p_from) {
+	explicit LocalVector(const Span<T> &p_from) {
 		resize(p_from.size());
 		for (U i = 0; i < count; i++) {
 			data[i] = p_from[i];
