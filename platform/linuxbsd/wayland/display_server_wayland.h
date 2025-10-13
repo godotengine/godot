@@ -228,6 +228,8 @@ public:
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
+	virtual Vector<String> clipboard_get_files() const override;
+	virtual int clipboard_get_file_count() const override;
 	virtual Ref<Image> clipboard_get_image() const override;
 	virtual void clipboard_set_primary(const String &p_text) override;
 	virtual String clipboard_get_primary() const override;
