@@ -427,6 +427,7 @@ public:
 						option.matches.push_back(Pair<int, int>(matches[j], matches[j + 1]));
 					}
 				}
+				option.matches_dirty = true;
 				r_options->push_back(option);
 			}
 		}
