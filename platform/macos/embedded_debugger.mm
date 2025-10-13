@@ -70,7 +70,7 @@ void EmbeddedDebugger::deinitialize() {
 
 #ifdef DEBUG_ENABLED
 void EmbeddedDebugger::_init_parse_message_handlers() {
-	parse_message_handlers["window_size"] = &EmbeddedDebugger::_msg_window_size;
+	parse_message_handlers["window_rect"] = &EmbeddedDebugger::_msg_window_rect;
 	parse_message_handlers["mouse_set_mode"] = &EmbeddedDebugger::_msg_mouse_set_mode;
 	parse_message_handlers["event"] = &EmbeddedDebugger::_msg_event;
 	parse_message_handlers["win_event"] = &EmbeddedDebugger::_msg_win_event;
@@ -79,10 +79,10 @@ void EmbeddedDebugger::_init_parse_message_handlers() {
 	parse_message_handlers["ds_state"] = &EmbeddedDebugger::_msg_ds_state;
 }
 
-Error EmbeddedDebugger::_msg_window_size(const Array &p_args) {
+Error EmbeddedDebugger::_msg_window_rect(const Array &p_args) {
 	ERR_FAIL_COND_V_MSG(p_args.size() != 1, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'window_size' message.");
-	Size2i size = p_args[0];
-	ds->window_set_size(size);
+	Rect2i rect = p_args[0];
+	ds->window_set_rect(rect);
 	return OK;
 }
 

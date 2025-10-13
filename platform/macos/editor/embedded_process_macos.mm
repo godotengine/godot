@@ -51,6 +51,11 @@ void EmbeddedProcessMacOS::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			update_embedded_process();
 		} break;
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (is_embedding_completed() && wpos != window->get_position()) {
+				update_embedded_process();
+			}
+		} break;
 	}
 }
 
@@ -59,7 +64,9 @@ void EmbeddedProcessMacOS::update_embedded_process() {
 	if (is_embedding_completed()) {
 		ds->embed_process_update(window->get_window_id(), this);
 		Rect2i rect = get_screen_embedded_window_rect();
-		script_debugger->send_message("embed:window_size", { rect.size });
+		wpos = window->get_position();
+		rect.position += wpos;
+		script_debugger->send_message("embed:window_rect", { rect });
 	}
 }
 
@@ -109,6 +116,7 @@ void EmbeddedProcessMacOS::reset() {
 	embedding_state = EmbeddingState::IDLE;
 	context_id = 0;
 	script_debugger = nullptr;
+	set_process_internal(false);
 	queue_redraw();
 }
 
@@ -121,11 +129,12 @@ void EmbeddedProcessMacOS::request_close() {
 
 void EmbeddedProcessMacOS::display_state_changed() {
 	DisplayServerEmbeddedState state;
-	state.screen_max_scale = ds->screen_get_max_scale();
-	state.screen_dpi = ds->screen_get_dpi();
 	DisplayServer::WindowID wid = window->get_window_id();
 	state.screen_window_scale = ds->screen_get_scale(ds->window_get_current_screen(wid));
 	state.display_id = ds->window_get_display_id(wid);
+	state.screen = ds->window_get_current_screen(wid);
+	state.window_rect = get_screen_embedded_window_rect();
+	state.window_rect.position += window->get_position();
 
 	PackedByteArray data;
 	state.serialize(data);
@@ -148,6 +157,7 @@ void EmbeddedProcessMacOS::_try_embed_process() {
 		Rect2i rect = get_screen_embedded_window_rect();
 		script_debugger->send_message("embed:window_size", { rect.size });
 		embedding_state = EmbeddingState::COMPLETED;
+		set_process_internal(true);
 		queue_redraw();
 		emit_signal(SNAME("embedding_completed"));
 
