@@ -164,7 +164,6 @@ class DisplayServerX11 : public DisplayServer {
 	struct WindowData {
 		Window x11_window;
 		Window x11_xim_window;
-		Window parent;
 		::XIC xic;
 		bool ime_active = false;
 		bool ime_in_progress = false;
