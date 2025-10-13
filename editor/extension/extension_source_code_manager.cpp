@@ -67,6 +67,19 @@ const Ref<EditorExtensionSourceCodePlugin> ExtensionSourceCodeManager::get_plugi
 	return nullptr;
 }
 
+const Ref<EditorExtensionSourceCodePlugin> ExtensionSourceCodeManager::get_plugin_for_file(const String &p_source_path) const {
+	ERR_FAIL_COND_V(p_source_path.is_empty(), nullptr);
+
+	for (const Ref<EditorExtensionSourceCodePlugin> &plugin : plugins) {
+		StringName class_name = plugin->get_class_name_from_source_path(p_source_path);
+		if (!class_name.is_empty()) {
+			return plugin;
+		}
+	}
+
+	return nullptr;
+}
+
 bool ExtensionSourceCodeManager::has_plugins_that_can_create_class_source() {
 	for (const Ref<EditorExtensionSourceCodePlugin> &plugin : plugins) {
 		if (plugin->can_create_class_source()) {
