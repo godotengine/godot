@@ -154,7 +154,7 @@ public:
 	static PoolVector<uint8_t> (*png_packer)(const Ref<Image> &p_image);
 	static Ref<Image> (*png_unpacker)(const PoolVector<uint8_t> &p_buffer);
 
-	PoolVector<uint8_t>::Write write_lock;
+	mutable PoolVector<uint8_t>::Write write_lock;
 
 protected:
 	static void _bind_methods();
