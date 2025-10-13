@@ -2394,11 +2394,12 @@ void DisplayServerX11::_update_size_hints(WindowID p_window) {
 	XSizeHints *xsh = XAllocSizeHints();
 
 	// Always set the position and size hints - they should be synchronized with the actual values after the window is mapped anyway
-	xsh->flags |= PPosition | PSize;
+	xsh->flags |= PPosition | PSize | PWinGravity;
 	xsh->x = wd.position.x;
 	xsh->y = wd.position.y;
 	xsh->width = wd.size.width;
 	xsh->height = wd.size.height;
+	xsh->win_gravity = StaticGravity;
 
 	if (window_mode == WINDOW_MODE_FULLSCREEN || window_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		// Do not set any other hints to prevent the window manager from ignoring the fullscreen flags
@@ -2562,29 +2563,7 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p
 	}
 
 	wd.position = p_position;
-	int x = 0;
-	int y = 0;
-	if (!window_get_flag(WINDOW_FLAG_BORDERLESS, p_window)) {
-		//exclude window decorations
-		XSync(x11_display, False);
-		Atom prop = XInternAtom(x11_display, "_NET_FRAME_EXTENTS", True);
-		if (prop != None) {
-			Atom type;
-			int format;
-			unsigned long len;
-			unsigned long remaining;
-			unsigned char *data = nullptr;
-			if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
-				if (format == 32 && len == 4 && data) {
-					long *extents = (long *)data;
-					x = extents[0];
-					y = extents[2];
-				}
-				XFree(data);
-			}
-		}
-	}
-	XMoveWindow(x11_display, wd.x11_window, p_position.x - x, p_position.y - y);
+	XMoveWindow(x11_display, wd.x11_window, p_position.x, p_position.y);
 	_update_real_mouse_position(wd);
 }
 
@@ -3100,21 +3079,12 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		} break;
 		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
-			//Remove full-screen
-			wd.fullscreen = false;
-			wd.exclusive_fullscreen = false;
-
-			_set_wm_fullscreen(p_window, false, false);
-
-			//un-maximize required for always on top
-			bool on_top = window_get_flag(WINDOW_FLAG_ALWAYS_ON_TOP, p_window);
-
-			window_set_position(wd.last_position_before_fs, p_window);
-
-			if (on_top) {
-				_set_wm_maximized(p_window, false);
+			// Only remove fullscreen when necessary.
+			if (p_mode == WINDOW_MODE_WINDOWED || p_mode == WINDOW_MODE_MAXIMIZED) {
+				wd.fullscreen = false;
+				wd.exclusive_fullscreen = false;
+				_set_wm_fullscreen(p_window, false, false);
 			}
-
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
 			// Varies between target modes, so do nothing here.
@@ -3132,8 +3102,6 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		} break;
 		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
-			wd.last_position_before_fs = wd.position;
-
 			if (window_get_flag(WINDOW_FLAG_ALWAYS_ON_TOP, p_window)) {
 				_set_wm_maximized(p_window, true);
 			}
