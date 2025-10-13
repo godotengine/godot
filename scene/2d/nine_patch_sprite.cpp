@@ -32,9 +32,6 @@
 #include "core/math/rect2.h"
 #include "scene/main/viewport.h"
 
-#include "servers/rendering_server.h"
-
-// #include
 #ifdef TOOLS_ENABLED
 Dictionary NinePatchSprite::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
