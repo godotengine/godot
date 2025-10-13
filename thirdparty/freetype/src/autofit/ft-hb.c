@@ -1,115 +1,197 @@
-/*
- * Copyright © 2009, 2023  Red Hat, Inc.
- * Copyright © 2015  Google, Inc.
+/****************************************************************************
  *
- * Permission is hereby granted, without written agreement and without
- * license or royalty fees, to use, copy, modify, and distribute this
- * software and its documentation for any purpose, provided that the
- * above copyright notice and the following two paragraphs appear in
- * all copies of this software.
+ * ft-hb.c
  *
- * IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE TO ANY PARTY FOR
- * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
- * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN
- * IF THE COPYRIGHT HOLDER HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
- * DAMAGE.
+ *   FreeType-HarfBuzz bridge (body).
  *
- * THE COPYRIGHT HOLDER SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING,
- * BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
- * ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+ * Copyright (C) 2025 by
+ * Behdad Esfahbod.
  *
- * Red Hat Author(s): Behdad Esfahbod, Matthias Clasen
- * Google Author(s): Behdad Esfahbod
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
  */
 
-#include <freetype/freetype.h>
-#include <freetype/tttables.h>
 
-#ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
+#if !defined( _WIN32 ) && !defined( _GNU_SOURCE )
+#  define _GNU_SOURCE  1  /* for RTLD_DEFAULT */
+#endif
+
+#include <freetype/freetype.h>
+#include <freetype/internal/ftmemory.h>
+
+#include "afglobal.h"
 
 #include "ft-hb.h"
 
-/* The following three functions are a more or less verbatim
- * copy of corresponding HarfBuzz code from hb-ft.cc
- */
 
-static hb_blob_t *
-hb_ft_reference_table_ (hb_face_t *face, hb_tag_t tag, void *user_data)
-{
-  FT_Face ft_face = (FT_Face) user_data;
-  FT_Byte *buffer;
-  FT_ULong  length = 0;
-  FT_Error error;
+#if defined( FT_CONFIG_OPTION_USE_HARFBUZZ )         && \
+    defined( FT_CONFIG_OPTION_USE_HARFBUZZ_DYNAMIC )
 
-  FT_UNUSED (face);
+#ifndef FT_LIBHARFBUZZ
+#  ifdef _WIN32
+#    define FT_LIBHARFBUZZ "libharfbuzz-0.dll"
+#  else
+#    ifdef __APPLE__
+#      define FT_LIBHARFBUZZ "libharfbuzz.0.dylib"
+#    else
+#      define FT_LIBHARFBUZZ "libharfbuzz.so.0"
+#    endif
+#  endif
+#endif
 
-  /* Note: FreeType like HarfBuzz uses the NONE tag for fetching the entire blob */
+#ifdef _WIN32
 
-  error = FT_Load_Sfnt_Table (ft_face, tag, 0, NULL, &length);
-  if (error)
-    return NULL;
+#  include <windows.h>
 
-  buffer = (FT_Byte *) ft_smalloc (length);
-  if (!buffer)
-    return NULL;
+#else /* !_WIN32 */
 
-  error = FT_Load_Sfnt_Table (ft_face, tag, 0, buffer, &length);
-  if (error)
+#  include <dlfcn.h>
+
+  /* The GCC pragma suppresses the warning "ISO C forbids     */
+  /* assignment between function pointer and 'void *'", which */
+  /* inevitably gets emitted with `-Wpedantic`; see the man   */
+  /* page of function `dlsym` for more information.           */
+#  if defined( __GNUC__ )
+#    pragma GCC diagnostic push
+#    ifndef __cplusplus
+#      pragma GCC diagnostic ignored "-Wpedantic"
+#    endif
+#  endif
+
+#endif /* !_WIN32 */
+
+
+  FT_LOCAL_DEF( void )
+  ft_hb_funcs_init( struct AF_ModuleRec_  *af_module )
   {
-    free (buffer);
-    return NULL;
+    FT_Memory  memory = af_module->root.memory;
+    FT_Error   error;
+
+    ft_hb_funcs_t                *funcs           = NULL;
+    ft_hb_version_atleast_func_t  version_atleast = NULL;
+
+#ifdef _WIN32
+    HANDLE  lib;
+#  define DLSYM( lib, name ) \
+            (ft_ ## name ## _func_t)GetProcAddress( lib, #name )
+#else
+    void  *lib;
+#  define DLSYM( lib, name ) \
+            (ft_ ## name ## _func_t)dlsym( lib, #name )
+#endif
+
+
+    af_module->hb_funcs = NULL;
+
+    if ( FT_NEW( funcs ) )
+      return;
+    FT_ZERO( funcs );
+
+#ifdef _WIN32
+
+    lib = LoadLibraryA( FT_LIBHARFBUZZ );
+    if ( !lib )
+      goto Fail;
+    version_atleast = DLSYM( lib, hb_version_atleast );
+
+#else /* !_WIN32 */
+
+#  ifdef RTLD_DEFAULT
+#    define FT_RTLD_FLAGS RTLD_LAZY | RTLD_GLOBAL
+    lib             = RTLD_DEFAULT;
+    version_atleast = DLSYM( lib, hb_version_atleast );
+#  else
+#    define FT_RTLD_FLAGS RTLD_LAZY
+#  endif
+
+    if ( !version_atleast )
+    {
+      /* Load the HarfBuzz library.
+       *
+       * We never close the library, since we opened it with RTLD_GLOBAL.
+       * This is important for the case where we are using HarfBuzz as a
+       * shared library, and we want to use the symbols from the library in
+       * other shared libraries or clients.  HarfBuzz holds onto global
+       * variables, and closing the library will cause them to be
+       * invalidated.
+       */
+      lib = dlopen( FT_LIBHARFBUZZ, FT_RTLD_FLAGS );
+      if ( !lib )
+        goto Fail;
+      version_atleast = DLSYM( lib, hb_version_atleast );
+    }
+
+#endif /* !_WIN32 */
+
+    if ( !version_atleast )
+      goto Fail;
+
+    /* Load all symbols we use. */
+#define HB_EXTERN( ret, name, args )  \
+  {                                   \
+    funcs->name = DLSYM( lib, name ); \
+    if ( !funcs->name )               \
+      goto Fail;                      \
+  }
+#include "ft-hb-decls.h"
+#undef HB_EXTERN
+
+#undef DLSYM
+
+    af_module->hb_funcs = funcs;
+    return;
+
+  Fail:
+    if ( funcs )
+      FT_FREE( funcs );
   }
 
-  return hb_blob_create ((const char *) buffer, length,
-                         HB_MEMORY_MODE_WRITABLE,
-                         buffer, ft_sfree);
-}
 
-static hb_face_t *
-hb_ft_face_create_ (FT_Face           ft_face,
-                    hb_destroy_func_t destroy)
-{
-  hb_face_t *face;
+  FT_LOCAL_DEF( void )
+  ft_hb_funcs_done( struct AF_ModuleRec_  *af_module )
+  {
+    FT_Memory  memory = af_module->root.memory;
 
-  if (!ft_face->stream->read) {
-    hb_blob_t *blob;
 
-    blob = hb_blob_create ((const char *) ft_face->stream->base,
-                           (unsigned int) ft_face->stream->size,
-                           HB_MEMORY_MODE_READONLY,
-                           ft_face, destroy);
-    face = hb_face_create (blob, ft_face->face_index);
-    hb_blob_destroy (blob);
-  } else {
-    face = hb_face_create_for_tables (hb_ft_reference_table_, ft_face, destroy);
+    if ( af_module->hb_funcs )
+    {
+      FT_FREE( af_module->hb_funcs );
+      af_module->hb_funcs = NULL;
+    }
   }
 
-  hb_face_set_index (face, ft_face->face_index);
-  hb_face_set_upem (face, ft_face->units_per_EM);
 
-  return face;
-}
+  FT_LOCAL_DEF( FT_Bool )
+  ft_hb_enabled( struct AF_FaceGlobalsRec_  *globals )
+  {
+    return globals->module->hb_funcs != NULL;
+  }
 
-FT_LOCAL_DEF(hb_font_t *)
-hb_ft_font_create_ (FT_Face           ft_face,
-                    hb_destroy_func_t destroy)
-{
-  hb_font_t *font;
-  hb_face_t *face;
+#ifndef _WIN32
+#  if defined( __GNUC__ )
+#    pragma GCC diagnostic pop
+#  endif
+#endif
 
-  face = hb_ft_face_create_ (ft_face, destroy);
-  font = hb_font_create (face);
-  hb_face_destroy (face);
-  return font;
-}
+#else /* !FT_CONFIG_OPTION_USE_HARFBUZZ_DYNAMIC */
 
-#else /* !FT_CONFIG_OPTION_USE_HARFBUZZ */
+  FT_LOCAL_DEF( FT_Bool )
+  ft_hb_enabled( struct AF_FaceGlobalsRec_  *globals )
+  {
+    FT_UNUSED( globals );
 
-/* ANSI C doesn't like empty source files */
-typedef int  ft_hb_dummy_;
+#ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
+    return TRUE;
+#else
+    return FALSE;
+#endif
+  }
 
-#endif /* !FT_CONFIG_OPTION_USE_HARFBUZZ */
+#endif /* !FT_CONFIG_OPTION_USE_HARFBUZZ_DYNAMIC */
+
 
 /* END */
