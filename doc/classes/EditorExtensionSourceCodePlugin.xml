@@ -127,6 +127,13 @@
 				Returns a list of available templates (more specifically their IDs) for creating new extension classes. The [param base_class_name] is the name of the base class to inherit from, and the returned templates should be filtered to match. If a template matches multiple base classes, it should only be returned for the most specific one, since this method will be called once for each class in the hierarchy and would otherwise list the same template multiple times.
 			</description>
 		</method>
+		<method name="_get_class_name_from_source_path" qualifiers="virtual const">
+			<return type="StringName" />
+			<param index="0" name="source_path" type="String" />
+			<description>
+				Implement to provide the name of the class declared in the given [param source_path]. This is used by the editor when dragging and dropping source files into the scene tree, to determine which registered class should be instantiated.
+			</description>
+		</method>
 		<method name="_get_language_icon" qualifiers="virtual const">
 			<return type="Texture2D" />
 			<description>
