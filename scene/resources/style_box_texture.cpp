@@ -30,6 +30,8 @@
 
 #include "style_box_texture.h"
 
+#include "servers/rendering/rendering_server.h"
+
 float StyleBoxTexture::get_style_margin(Side p_side) const {
 	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
 

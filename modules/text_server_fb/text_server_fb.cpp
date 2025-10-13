@@ -54,6 +54,7 @@ using namespace godot;
 #include "core/io/file_access.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
 

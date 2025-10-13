@@ -31,6 +31,7 @@
 #include "gradient_texture.h"
 
 #include "core/math/geometry_2d.h"
+#include "servers/rendering/rendering_server.h"
 
 GradientTexture1D::GradientTexture1D() {
 	_queue_update();
