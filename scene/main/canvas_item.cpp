@@ -442,7 +442,7 @@ void CanvasItem::_notification(int p_what) {
 
 			emit_signal(SceneStringName(visibility_changed));
 #ifdef DEBUG_ENABLED
-			_set_debug_canvas_item_visible(visible);
+			_set_debug_canvas_item_visible(is_visible_in_tree());
 #endif //DEBUG_ENABLED
 		} break;
 		case NOTIFICATION_WORLD_2D_CHANGED: {
@@ -516,6 +516,7 @@ void CanvasItem::set_modulate(const Color &p_modulate) {
 
 	modulate = p_modulate;
 	RenderingServer::get_singleton()->canvas_item_set_modulate(canvas_item, modulate);
+	_update_debug_canvas_item_modulate();
 }
 
 Color CanvasItem::get_modulate() const {
@@ -596,6 +597,7 @@ void CanvasItem::set_self_modulate(const Color &p_self_modulate) {
 
 	self_modulate = p_self_modulate;
 	RenderingServer::get_singleton()->canvas_item_set_self_modulate(canvas_item, self_modulate);
+	_update_debug_canvas_item_self_modulate();
 }
 
 Color CanvasItem::get_self_modulate() const {
@@ -805,10 +807,10 @@ void CanvasItem::draw_ellipse_arc(const Vector2 &p_center, real_t p_major, real_
 	draw_polyline(points, p_color, p_width, p_antialiased);
 }
 
-void CanvasItem::get_arc_points(Vector<Point2> &p_points, const Vector2 &p_center, real_t p_minor, real_t p_major, real_t p_start_angle, real_t p_end_angle, int p_point_count) {
-	p_points.clear();
-	p_points.resize(p_point_count);
-	Point2 *points_ptr = p_points.ptrw();
+void CanvasItem::get_arc_points(Vector<Point2> &r_points, const Vector2 &p_center, real_t p_minor, real_t p_major, real_t p_start_angle, real_t p_end_angle, int p_point_count) {
+	r_points.clear();
+	r_points.resize(p_point_count);
+	Point2 *points_ptr = r_points.ptrw();
 
 	// Clamp angle difference to full circle so arc won't overlap itself.
 	const real_t delta_angle = CLAMP(p_end_angle - p_start_angle, -Math::TAU, Math::TAU);
@@ -1221,13 +1223,31 @@ void CanvasItem::_set_debug_canvas_item_visible(bool p_visible) {
 }
 
 void CanvasItem::_update_debug_canvas_item_transform() {
-	if (!debug_canvas_item.is_valid()) {
+	if (debug_canvas_item.is_null()) {
 		return;
 	}
 
 	RenderingServer *rs = RenderingServer::get_singleton();
 	rs->canvas_item_set_transform(debug_canvas_item, get_global_transform());
 	rs->canvas_item_set_z_index(debug_canvas_item, get_effective_z_index());
+}
+
+void CanvasItem::_update_debug_canvas_item_modulate() {
+	if (!debug_canvas_item.is_valid()) {
+		return;
+	}
+
+	RenderingServer *rs = RenderingServer::get_singleton();
+	rs->canvas_item_set_modulate(debug_canvas_item, modulate);
+}
+
+void CanvasItem::_update_debug_canvas_item_self_modulate() {
+	if (!debug_canvas_item.is_valid()) {
+		return;
+	}
+
+	RenderingServer *rs = RenderingServer::get_singleton();
+	rs->canvas_item_set_self_modulate(debug_canvas_item, self_modulate);
 }
 #endif //DEBUG_ENABLED
 
@@ -1847,8 +1867,8 @@ CanvasItem::CanvasItem() :
 }
 
 CanvasItem::~CanvasItem() {
-	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer *rs = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rs);
 	rs->free_rid(canvas_item);
 
 #ifdef DEBUG_ENABLED

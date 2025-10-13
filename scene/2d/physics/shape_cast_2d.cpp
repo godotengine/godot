@@ -218,9 +218,8 @@ void ShapeCast2D::_notification(int p_what) {
 			}
 		} break;
 
-#ifdef DEBUG_ENABLED
-		case NOTIFICATION_DRAW: {
 #ifdef TOOLS_ENABLED
+		case NOTIFICATION_DRAW: {
 			ERR_FAIL_COND(!is_inside_tree());
 			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
@@ -273,9 +272,8 @@ void ShapeCast2D::_notification(int p_what) {
 
 				rs->canvas_item_add_primitive(_get_debug_canvas_item(), pts, cols, Vector<Vector2>(), RID{});
 			}
-#endif //TOOLS_ENABLED
 		} break;
-#endif //DEBUG_ENABLED
+#endif //TOOLS_ENABLED
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (!enabled) {

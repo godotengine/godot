@@ -186,7 +186,6 @@ void Bone2D::_notification(int p_what) {
 			cache_transform = tmp_trans;
 		} break;
 
-#ifdef DEBUG_ENABLED
 		// Bone2D Editor gizmo drawing.
 		// TODO: Bone2D gizmo drawing needs to be moved to an editor plugin.
 		case NOTIFICATION_DRAW: {
@@ -300,7 +299,6 @@ void Bone2D::_notification(int p_what) {
 				RenderingServer::get_singleton()->canvas_item_add_polygon(_get_debug_canvas_item(), bone_shape, colors);
 			}
 		} break;
-#endif // DEBUG_ENABLED
 #endif // TOOLS_ENABLED
 	}
 }
