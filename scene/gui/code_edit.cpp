@@ -3637,6 +3637,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 
 	for (ScriptLanguage::CodeCompletionOption &option : code_completion_option_sources) {
 		option.matches.clear();
+		option.matches_dirty = true;
 		if (single_quote && option.display.is_quoted()) {
 			option.display = option.display.unquote().quote("'");
 		}
@@ -3722,6 +3723,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		// go through all possible matches to get the best one as defined by CodeCompletionOptionCompare
 		if (all_possible_subsequence_matches.size() > 0) {
 			option.matches = all_possible_subsequence_matches[0];
+			option.matches_dirty = true;
 			option.get_option_characteristics(string_to_complete);
 			all_possible_subsequence_matches = all_possible_subsequence_matches.slice(1);
 			if (all_possible_subsequence_matches.size() > 0) {
@@ -3730,6 +3732,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 				compared_option.clear_characteristics();
 				for (Vector<Pair<int, int>> &matches : all_possible_subsequence_matches) {
 					compared_option.matches = matches;
+					compared_option.matches_dirty = true;
 					compared_option.get_option_characteristics(string_to_complete);
 					if (compare(compared_option, option)) {
 						option = compared_option;
