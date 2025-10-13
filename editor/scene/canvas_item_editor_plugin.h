@@ -58,6 +58,7 @@ public:
 	Transform2D prev_xform;
 	Rect2 prev_rect;
 	Vector2 prev_pivot;
+	Vector2 prev_pivot_ratio;
 	real_t prev_anchors[4] = { (real_t)0.0 };
 
 	Transform2D pre_drag_xform;
