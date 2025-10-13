@@ -16,6 +16,12 @@
 				Returns the size of the margin on the specified [enum Side].
 			</description>
 		</method>
+		<method name="get_rect" qualifiers="const">
+			<return type="Rect2" />
+			<description>
+				Returns a Rect2 representing the Sprite's boundary in local coordinates.
+			</description>
+		</method>
 		<method name="set_patch_margin">
 			<return type="void" />
 			<param index="0" name="margin" type="int" enum="Side" />

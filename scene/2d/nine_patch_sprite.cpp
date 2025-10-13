@@ -126,6 +126,7 @@ void NinePatchSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_h_axis_stretch_mode"), &NinePatchSprite::get_h_axis_stretch_mode);
 	ClassDB::bind_method(D_METHOD("set_v_axis_stretch_mode", "mode"), &NinePatchSprite::set_v_axis_stretch_mode);
 	ClassDB::bind_method(D_METHOD("get_v_axis_stretch_mode"), &NinePatchSprite::get_v_axis_stretch_mode);
+	ClassDB::bind_method(D_METHOD("get_rect"), &NinePatchSprite::get_rect);
 	// BIND_PROPERTY(texture, NineSprite, Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
 
 	ADD_SIGNAL(MethodInfo("texture_changed"));

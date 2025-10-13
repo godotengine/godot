@@ -31,9 +31,9 @@
 #include "register_scene_types.h"
 
 #include "core/config/project_settings.h"
-#include "scene/2d/nine_patch_sprite.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "scene/2d/nine_patch_sprite.h"
 #include "scene/animation/animation_blend_space_1d.h"
 #include "scene/animation/animation_blend_space_2d.h"
 #include "scene/animation/animation_blend_tree.h"
