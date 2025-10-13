@@ -34,6 +34,8 @@
 #include "core/io/json.h"
 #endif // DEV_ENABLED
 #include "core/math/geometry_2d.h"
+#include "core/math/triangulate.h"
+#include "core/templates/a_hash_map.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
 #ifndef NAVIGATION_3D_DISABLED

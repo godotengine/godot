@@ -31,6 +31,7 @@
 #include "animation_blend_space_2d.h"
 
 #include "animation_blend_tree.h"
+#include "core/math/delaunay_2d.h"
 #include "core/math/geometry_2d.h"
 #include "scene/resources/material.h"
 
