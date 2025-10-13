@@ -4452,17 +4452,6 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 		return;
 	}
 
-	// Readjusting the window position if the window is being reparented by the window manager for decoration
-	Window root, parent, *children;
-	unsigned int nchildren;
-	if (XQueryTree(x11_display, wd.x11_window, &root, &parent, &children, &nchildren) && wd.parent != parent) {
-		wd.parent = parent;
-		if (!wd.embed_parent) {
-			window_set_position(wd.position, window_id);
-		}
-	}
-	XFree(children);
-
 	{
 		//the position in xconfigure is not useful here, obtain it manually
 		int x = 0, y = 0;
@@ -6446,8 +6435,6 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 	{
 		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo.screen), win_rect.position.x, win_rect.position.y, win_rect.size.width > 0 ? win_rect.size.width : 1, win_rect.size.height > 0 ? win_rect.size.height : 1, 0, visualInfo.depth, InputOutput, visualInfo.visual, valuemask, &windowAttributes);
-
-		wd.parent = RootWindow(x11_display, visualInfo.screen);
 
 		DEBUG_LOG_X11("CreateWindow window=%lu, parent: %lu \n", wd.x11_window, wd.parent);
 
