@@ -3764,9 +3764,10 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> p_state) {
 				Dictionary sampler;
 				sampler["input"] = GLTFAccessor::encode_new_accessor_from_float64s(p_state, pointer_track.times);
 				sampler["interpolation"] = interpolation_to_string(pointer_track.interpolation);
+				GLTFAccessor::GLTFComponentType component_type = obj_model_prop->get_component_type(pointer_track.values);
 				// TODO: This can be made faster after this pull request is merged: https://github.com/godotengine/godot/pull/109003
 				Array values_arr = GLTFTemplateConvert::to_array(pointer_track.values);
-				sampler["output"] = GLTFAccessor::encode_new_accessor_from_variants(p_state, values_arr, obj_model_prop->get_variant_type(), obj_model_prop->get_accessor_type());
+				sampler["output"] = GLTFAccessor::encode_new_accessor_from_variants(p_state, values_arr, obj_model_prop->get_variant_type(), obj_model_prop->get_accessor_type(), component_type);
 				samplers.push_back(sampler);
 			}
 		}
