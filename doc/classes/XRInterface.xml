@@ -86,6 +86,19 @@
 				Returns the number of views that need to be rendered for this device. 1 for Monoscopic, 2 for Stereoscopic.
 			</description>
 		</method>
+		<method name="get_viewport_for_view">
+			<return type="Rect2i" />
+			<param index="0" name="view" type="int" />
+			<description>
+				Returns the viewport for the view. When using foveation on Apple platforms, the viewport is larger that the rendering area.
+			</description>
+		</method>
+		<method name="get_viewports_are_hdr">
+			<return type="bool" />
+			<description>
+				Returns whether the viewports are HDR for the given platform. Apple Vision Pro has HRD displays, so the engine skips sRGB conversion step on the tonemapper.
+			</description>
+		</method>
 		<method name="initialize">
 			<return type="bool" />
 			<description>

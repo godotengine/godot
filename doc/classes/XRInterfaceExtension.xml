@@ -131,6 +131,12 @@
 				Returns the number of views this interface requires, 1 for mono, 2 for stereoscopic.
 			</description>
 		</method>
+		<method name="_get_viewport_for_view" qualifiers="virtual">
+			<return type="Rect2i" />
+			<param index="0" name="view" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_vrs_texture" qualifiers="virtual">
 			<return type="RID" />
 			<description>

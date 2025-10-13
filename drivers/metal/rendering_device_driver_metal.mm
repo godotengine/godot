@@ -522,6 +522,10 @@ void RenderingDeviceDriverMetal::texture_free(TextureID p_texture) {
 
 uint64_t RenderingDeviceDriverMetal::texture_get_allocation_size(TextureID p_texture) {
 	id<MTLTexture> obj = rid::get(p_texture);
+	// For when texture contains a MTLRasterizationRateMap as returned by VisionOSXRInterface
+	if (![obj respondsToSelector:@selector(allocatedSize)]) {
+		return 0;
+	}
 	return obj.allocatedSize;
 }
 
@@ -1829,6 +1833,7 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 		subpass.color_references = p_subpasses[i].color_references;
 		subpass.depth_stencil_reference = p_subpasses[i].depth_stencil_reference;
 		subpass.resolve_references = p_subpasses[i].resolve_references;
+		subpass.rasterization_rate_map = (__bridge id<MTLRasterizationRateMap>)p_subpasses[i].rasterization_rate_map;
 	}
 
 	static const MTLLoadAction LOAD_ACTIONS[] = {
