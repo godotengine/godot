@@ -159,7 +159,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	String noto_cjk_path;
 	String noto_cjk_bold_path;
 	String var_suffix[] = { "HK", "KR", "SC", "TC", "JP" }; // Note: All Noto Sans CJK versions support all glyph variations, it should not match current locale.
-	for (size_t i = 0; i < std::size(var_suffix); i++) {
+	for (size_t i = 0; i < std_size(var_suffix); i++) {
 		if (noto_cjk_path.is_empty()) {
 			noto_cjk_path = OS::get_singleton()->get_system_font_path("Noto Sans CJK " + var_suffix[i], 400, 100);
 		}
@@ -286,7 +286,9 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 			custom_font->set_fallbacks(fallback_custom);
 		}
 		bold_fc->set_base_font(custom_font);
-		bold_fc->set_variation_embolden(embolden_strength);
+		if (!custom_font->get_supported_variation_list().has(TS->name_to_tag("wght"))) {
+			bold_fc->set_variation_embolden(embolden_strength);
+		}
 	} else {
 		EditorSettings::get_singleton()->set_manually("interface/editor/main_font_bold", "");
 		bold_fc->set_base_font(default_font_bold);
@@ -313,7 +315,9 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 			custom_font->set_fallbacks(fallback_custom);
 		}
 		bold_fc_msdf->set_base_font(custom_font);
-		bold_fc_msdf->set_variation_embolden(embolden_strength);
+		if (!custom_font->get_supported_variation_list().has(TS->name_to_tag("wght"))) {
+			bold_fc_msdf->set_variation_embolden(embolden_strength);
+		}
 	} else {
 		EditorSettings::get_singleton()->set_manually("interface/editor/main_font_bold", "");
 		bold_fc_msdf->set_base_font(default_font_bold_msdf);

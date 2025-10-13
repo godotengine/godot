@@ -31,7 +31,7 @@
 #pragma once
 
 #include "servers/rendering/rendering_device.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #define PRINT_PIPELINE_COMPILATION_KEYS 0
 
@@ -208,7 +208,7 @@ public:
 		_add_new_pipelines_to_map();
 
 		for (KeyValue<uint32_t, RID> entry : hash_map) {
-			RD::get_singleton()->free(entry.value);
+			RD::get_singleton()->free_rid(entry.value);
 		}
 
 		hash_map.clear();

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialPlaneTrackingCapability" inherits="OpenXRExtensionWrapper" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Implementation for handling spatial entity plane tracking logic.
+	</brief_description>
+	<description>
+		This class handles the OpenXR plane tracking spatial entity extension.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="is_supported">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if plane tracking is supported by the current device.
+			</description>
+		</method>
+	</methods>
+</class>

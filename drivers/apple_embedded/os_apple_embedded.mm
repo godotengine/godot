@@ -35,11 +35,12 @@
 #import "app_delegate_service.h"
 #import "display_server_apple_embedded.h"
 #import "godot_view_apple_embedded.h"
-#import "view_controller.h"
+#import "godot_view_controller.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/os/main_loop.h"
 #import "drivers/apple/os_log_logger.h"
 #include "main/main.h"
 

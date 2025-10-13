@@ -286,6 +286,6 @@ AnimatedTexture::AnimatedTexture() {
 
 AnimatedTexture::~AnimatedTexture() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(proxy);
-	RS::get_singleton()->free(proxy_ph);
+	RS::get_singleton()->free_rid(proxy);
+	RS::get_singleton()->free_rid(proxy_ph);
 }

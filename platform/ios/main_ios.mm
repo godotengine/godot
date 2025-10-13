@@ -37,28 +37,14 @@
 #import <UIKit/UIKit.h>
 #include <cstdio>
 
-int gargc;
-char **gargv;
-
 static OS_IOS *os = nullptr;
 
-int main(int argc, char *argv[]) {
+int apple_embedded_main(int argc, char **argv) {
 #if defined(VULKAN_ENABLED)
 	//MoltenVK - enable full component swizzling support
 	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
 #endif
 
-	gargc = argc;
-	gargv = argv;
-
-	@autoreleasepool {
-		NSString *className = NSStringFromClass([GDTApplicationDelegate class]);
-		UIApplicationMain(argc, argv, nil, className);
-	}
-	return 0;
-}
-
-int apple_embedded_main(int argc, char **argv) {
 	change_to_launch_dir(argv);
 
 	os = new OS_IOS();

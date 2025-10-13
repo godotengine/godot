@@ -4250,7 +4250,7 @@ void EditorExportPlatformAndroid::get_platform_features(List<String> *r_features
 void EditorExportPlatformAndroid::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {
 }
 
-EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
+void EditorExportPlatformAndroid::initialize() {
 	if (EditorNode::get_singleton()) {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);

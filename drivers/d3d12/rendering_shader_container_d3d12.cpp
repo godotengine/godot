@@ -41,13 +41,6 @@
 #define __REQUIRED_RPCNDR_H_VERSION__ 475
 #endif
 
-#include <d3dx12.h>
-#include <dxgi1_6.h>
-#define D3D12MA_D3D12_HEADERS_ALREADY_INCLUDED
-#include <D3D12MemAlloc.h>
-
-#include <wrl/client.h>
-
 GODOT_GCC_WARNING_PUSH
 GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
 GODOT_GCC_WARNING_IGNORE("-Wlogical-not-parentheses")
@@ -65,6 +58,13 @@ GODOT_CLANG_WARNING_IGNORE("-Wswitch")
 GODOT_MSVC_WARNING_PUSH
 GODOT_MSVC_WARNING_IGNORE(4200) // "nonstandard extension used: zero-sized array in struct/union".
 GODOT_MSVC_WARNING_IGNORE(4806) // "'&': unsafe operation: no value of type 'bool' promoted to type 'uint32_t' can equal the given constant".
+
+#include <d3dx12.h>
+#include <dxgi1_6.h>
+#define D3D12MA_D3D12_HEADERS_ALREADY_INCLUDED
+#include <D3D12MemAlloc.h>
+
+#include <wrl/client.h>
 
 #include <nir_spirv.h>
 #include <nir_to_dxil.h>
@@ -268,7 +268,7 @@ uint32_t RenderingShaderContainerD3D12::_to_bytes_footer_extra_data(uint8_t *p_b
 }
 
 #if NIR_ENABLED
-bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv, const nir_shader_compiler_options *p_compiler_options, HashMap<int, nir_shader *> &r_stages_nir_shaders, Vector<RenderingDeviceCommons::ShaderStage> &r_stages, BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed) {
+bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(Span<ReflectedShaderStage> p_spirv, const nir_shader_compiler_options *p_compiler_options, HashMap<int, nir_shader *> &r_stages_nir_shaders, Vector<RenderingDeviceCommons::ShaderStage> &r_stages, BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed) {
 	r_stages_processed.clear();
 
 	dxil_spirv_runtime_conf dxil_runtime_conf = {};
@@ -287,7 +287,7 @@ bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(const Vector<Rendering
 	dxil_runtime_conf.inferred_read_only_images_as_srvs = false;
 
 	// Translate SPIR-V to NIR.
-	for (int64_t i = 0; i < p_spirv.size(); i++) {
+	for (uint64_t i = 0; i < p_spirv.size(); i++) {
 		RenderingDeviceCommons::ShaderStage stage = p_spirv[i].shader_stage;
 		RenderingDeviceCommons::ShaderStage stage_flag = (RenderingDeviceCommons::ShaderStage)(1 << stage);
 		r_stages.push_back(stage);
@@ -302,9 +302,10 @@ bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(const Vector<Rendering
 			MESA_SHADER_COMPUTE, // SHADER_STAGE_COMPUTE
 		};
 
+		Span<uint32_t> code = p_spirv[i].spirv();
 		nir_shader *shader = spirv_to_nir(
-				(const uint32_t *)(p_spirv[i].spirv.ptr()),
-				p_spirv[i].spirv.size() / sizeof(uint32_t),
+				code.ptr(),
+				code.size(),
 				nullptr,
 				0,
 				SPIRV_TO_MESA_STAGES[stage],
@@ -429,7 +430,7 @@ bool RenderingShaderContainerD3D12::_convert_nir_to_dxil(const HashMap<int, nir_
 	return true;
 }
 
-bool RenderingShaderContainerD3D12::_convert_spirv_to_dxil(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv, HashMap<RenderingDeviceCommons::ShaderStage, Vector<uint8_t>> &r_dxil_blobs, Vector<RenderingDeviceCommons::ShaderStage> &r_stages, BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed) {
+bool RenderingShaderContainerD3D12::_convert_spirv_to_dxil(Span<ReflectedShaderStage> p_spirv, HashMap<RenderingDeviceCommons::ShaderStage, Vector<uint8_t>> &r_dxil_blobs, Vector<RenderingDeviceCommons::ShaderStage> &r_stages, BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed) {
 	r_dxil_blobs.clear();
 
 	HashMap<int, nir_shader *> stages_nir_shaders;
@@ -764,7 +765,7 @@ void RenderingShaderContainerD3D12::_nir_report_bitcode_bit_offset(uint64_t p_bi
 }
 #endif
 
-void RenderingShaderContainerD3D12::_set_from_shader_reflection_post(const String &p_shader_name, const RenderingDeviceCommons::ShaderReflection &p_reflection) {
+void RenderingShaderContainerD3D12::_set_from_shader_reflection_post(const RenderingDeviceCommons::ShaderReflection &p_reflection) {
 	reflection_binding_set_uniforms_data_d3d12.resize(reflection_binding_set_uniforms_data.size());
 	reflection_specialization_data_d3d12.resize(reflection_specialization_data.size());
 
@@ -780,7 +781,7 @@ void RenderingShaderContainerD3D12::_set_from_shader_reflection_post(const Strin
 	}
 }
 
-bool RenderingShaderContainerD3D12::_set_code_from_spirv(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv) {
+bool RenderingShaderContainerD3D12::_set_code_from_spirv(Span<ReflectedShaderStage> p_spirv) {
 #if NIR_ENABLED
 	reflection_data_d3d12.nir_runtime_data_root_param_idx = UINT32_MAX;
 

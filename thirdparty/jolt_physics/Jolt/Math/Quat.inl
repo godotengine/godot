@@ -71,6 +71,60 @@ Quat Quat::operator * (QuatArg inRHS) const
 #endif
 }
 
+Quat Quat::sMultiplyImaginary(Vec3Arg inLHS, QuatArg inRHS)
+{
+#if defined(JPH_USE_SSE4_1)
+	__m128 abc0 = inLHS.mValue;
+	__m128 xyzw = inRHS.mValue.mValue;
+
+	// [a,a,a,a] * [w,y,z,x] = [aw,ay,az,ax]
+	__m128 aaaa = _mm_shuffle_ps(abc0, abc0, _MM_SHUFFLE(0, 0, 0, 0));
+	__m128 xzyw = _mm_shuffle_ps(xyzw, xyzw, _MM_SHUFFLE(3, 1, 2, 0));
+	__m128 axazayaw = _mm_mul_ps(aaaa, xzyw);
+
+	// [b,b,b,b] * [z,x,w,y] = [bz,bx,bw,by]
+	__m128 bbbb = _mm_shuffle_ps(abc0, abc0, _MM_SHUFFLE(1, 1, 1, 1));
+	__m128 ywxz = _mm_shuffle_ps(xyzw, xyzw, _MM_SHUFFLE(2, 0, 3, 1));
+	__m128 bybwbxbz = _mm_mul_ps(bbbb, ywxz);
+
+	// [c,c,c,c] * [w,z,x,y] = [cw,cz,cx,cy]
+	__m128 cccc = _mm_shuffle_ps(abc0, abc0, _MM_SHUFFLE(2, 2, 2, 2));
+	__m128 yxzw = _mm_shuffle_ps(xyzw, xyzw, _MM_SHUFFLE(3, 2, 0, 1));
+	__m128 cycxczcw = _mm_mul_ps(cccc, yxzw);
+
+	// [+aw,+ay,-az,-ax]
+	__m128 e = _mm_xor_ps(axazayaw, _mm_set_ps(0.0f, 0.0f, -0.0f, -0.0f));
+
+	// [+aw,+ay,-az,-ax] + -[bz,bx,bw,by] = [+aw+bz,+ay-bx,-az+bw,-ax-by]
+	e = _mm_addsub_ps(e, bybwbxbz);
+
+	// [+ay-bx,-ax-by,-az+bw,+aw+bz]
+	e = _mm_shuffle_ps(e, e, _MM_SHUFFLE(2, 0, 1, 3));
+
+	// [+ay-bx,-ax-by,-az+bw,+aw+bz] + -[cw,cz,cx,cy] = [+ay-bx+cw,-ax-by-cz,-az+bw+cx,+aw+bz-cy]
+	e = _mm_addsub_ps(e, cycxczcw);
+
+	// [-ax-by-cz,+ay-bx+cw,-az+bw+cx,+aw+bz-cy]
+	return Quat(Vec4(_mm_shuffle_ps(e, e, _MM_SHUFFLE(2, 3, 1, 0))));
+#else
+	float lx = inLHS.GetX();
+	float ly = inLHS.GetY();
+	float lz = inLHS.GetZ();
+
+	float rx = inRHS.mValue.GetX();
+	float ry = inRHS.mValue.GetY();
+	float rz = inRHS.mValue.GetZ();
+	float rw = inRHS.mValue.GetW();
+
+	float x =  (lx * rw) + ly * rz - lz * ry;
+	float y = -(lx * rz) + ly * rw + lz * rx;
+	float z =  (lx * ry) - ly * rx + lz * rw;
+	float w = -(lx * rx) - ly * ry - lz * rz;
+
+	return Quat(x, y, z, w);
+#endif
+}
+
 Quat Quat::sRotation(Vec3Arg inAxis, float inAngle)
 {
 	// returns [inAxis * sin(0.5f * inAngle), cos(0.5f * inAngle)]
@@ -274,48 +328,72 @@ Quat Quat::SLERP(QuatArg inDestination, float inFraction) const
 
 Vec3 Quat::operator * (Vec3Arg inValue) const
 {
-	// Rotating a vector by a quaternion is done by: p' = q * p * q^-1 (q^-1 = conjugated(q) for a unit quaternion)
+	// Rotating a vector by a quaternion is done by: p' = q * (p, 0) * q^-1 (q^-1 = conjugated(q) for a unit quaternion)
+	// Using Rodrigues formula: https://en.m.wikipedia.org/wiki/Euler%E2%80%93Rodrigues_formula
+	// This is equivalent to: p' = p + 2 * (q.w * q.xyz x p + q.xyz x (q.xyz x p))
+	//
+	// This is:
+	//
+	// Vec3 xyz = GetXYZ();
+	// Vec3 q_cross_p = xyz.Cross(inValue);
+	// Vec3 q_cross_q_cross_p = xyz.Cross(q_cross_p);
+	// Vec3 v = mValue.SplatW3() * q_cross_p + q_cross_q_cross_p;
+	// return inValue + (v + v);
+	//
+	// But we can write out the cross products in a more efficient way:
 	JPH_ASSERT(IsNormalized());
-	return Vec3((*this * Quat(Vec4(inValue, 0)) * Conjugated()).mValue);
+	Vec3 xyz = GetXYZ();
+	Vec3 yzx = xyz.Swizzle<SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_X>();
+	Vec3 q_cross_p = (inValue.Swizzle<SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_X>() * xyz - yzx * inValue).Swizzle<SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_X>();
+	Vec3 q_cross_q_cross_p = (q_cross_p.Swizzle<SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_X>() * xyz - yzx * q_cross_p).Swizzle<SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_X>();
+	Vec3 v = mValue.SplatW3() * q_cross_p + q_cross_q_cross_p;
+	return inValue + (v + v);
 }
 
 Vec3 Quat::InverseRotate(Vec3Arg inValue) const
 {
 	JPH_ASSERT(IsNormalized());
-	return Vec3((Conjugated() * Quat(Vec4(inValue, 0)) * *this).mValue);
+	Vec3 xyz = GetXYZ(); // Needs to be negated, but we do this in the equations below
+	Vec3 yzx = xyz.Swizzle<SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_X>();
+	Vec3 q_cross_p = (yzx * inValue - inValue.Swizzle<SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_X>() * xyz).Swizzle<SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_X>();
+	Vec3 q_cross_q_cross_p = (yzx * q_cross_p - q_cross_p.Swizzle<SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_X>() * xyz).Swizzle<SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_X>();
+	Vec3 v = mValue.SplatW3() * q_cross_p + q_cross_q_cross_p;
+	return inValue + (v + v);
 }
 
 Vec3 Quat::RotateAxisX() const
 {
 	// This is *this * Vec3::sAxisX() written out:
 	JPH_ASSERT(IsNormalized());
-	float x = GetX(), y = GetY(), z = GetZ(), w = GetW();
-	float tx = 2.0f * x, tw = 2.0f * w;
-	return Vec3(tx * x + tw * w - 1.0f, tx * y + z * tw, tx * z - y * tw);
+	Vec4 t = mValue + mValue;
+	return Vec3(t.SplatX() * mValue + (t.SplatW() * mValue.Swizzle<SWIZZLE_W, SWIZZLE_Z, SWIZZLE_Y, SWIZZLE_X>()).FlipSign<1, 1, -1, 1>() - Vec4(1, 0, 0, 0));
 }
 
 Vec3 Quat::RotateAxisY() const
 {
 	// This is *this * Vec3::sAxisY() written out:
 	JPH_ASSERT(IsNormalized());
-	float x = GetX(), y = GetY(), z = GetZ(), w = GetW();
-	float ty = 2.0f * y, tw = 2.0f * w;
-	return Vec3(x * ty - z * tw, tw * w + ty * y - 1.0f, x * tw + ty * z);
+	Vec4 t = mValue + mValue;
+	return Vec3(t.SplatY() * mValue + (t.SplatW() * mValue.Swizzle<SWIZZLE_Z, SWIZZLE_W, SWIZZLE_X, SWIZZLE_Y>()).FlipSign<-1, 1, 1, 1>() - Vec4(0, 1, 0, 0));
 }
 
 Vec3 Quat::RotateAxisZ() const
 {
 	// This is *this * Vec3::sAxisZ() written out:
 	JPH_ASSERT(IsNormalized());
-	float x = GetX(), y = GetY(), z = GetZ(), w = GetW();
-	float tz = 2.0f * z, tw = 2.0f * w;
-	return Vec3(x * tz + y * tw, y * tz - x * tw, tw * w + tz * z - 1.0f);
+	Vec4 t = mValue + mValue;
+	return Vec3(t.SplatZ() * mValue + (t.SplatW() * mValue.Swizzle<SWIZZLE_Y, SWIZZLE_X, SWIZZLE_W, SWIZZLE_Z>()).FlipSign<1, -1, 1, 1>() - Vec4(0, 0, 1, 0));
 }
 
 void Quat::StoreFloat3(Float3 *outV) const
 {
 	JPH_ASSERT(IsNormalized());
 	EnsureWPositive().GetXYZ().StoreFloat3(outV);
+}
+
+void Quat::StoreFloat4(Float4 *outV) const
+{
+	mValue.StoreFloat4(outV);
 }
 
 Quat Quat::sLoadFloat3Unsafe(const Float3 &inV)

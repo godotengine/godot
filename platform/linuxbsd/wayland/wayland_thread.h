@@ -70,6 +70,7 @@
 #include "wayland/protocol/xdg_foreign_v2.gen.h"
 #include "wayland/protocol/xdg_shell.gen.h"
 #include "wayland/protocol/xdg_system_bell.gen.h"
+#include "wayland/protocol/xdg_toplevel_icon.gen.h"
 
 // NOTE: Deprecated.
 #include "wayland/protocol/xdg_foreign_v1.gen.h"
@@ -83,7 +84,7 @@
 #endif // LIBDECOR_ENABLED
 
 #include "core/os/thread.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 class WaylandThread {
 public:
@@ -196,6 +197,9 @@ public:
 
 		struct xdg_system_bell_v1 *xdg_system_bell = nullptr;
 		uint32_t xdg_system_bell_name = 0;
+
+		struct xdg_toplevel_icon_manager_v1 *xdg_toplevel_icon_manager = nullptr;
+		uint32_t xdg_toplevel_icon_manager_name = 0;
 
 		struct xdg_activation_v1 *xdg_activation = nullptr;
 		uint32_t xdg_activation_name = 0;
@@ -542,6 +546,9 @@ private:
 	HashMap<DisplayServer::WindowID, WindowState> windows;
 
 	List<Ref<Message>> messages;
+
+	xdg_toplevel_icon_v1 *xdg_icon = nullptr;
+	wl_buffer *icon_buffer = nullptr;
 
 	String cursor_theme_name;
 	int unscaled_cursor_size = 24;
@@ -1022,6 +1029,8 @@ public:
 	Ref<Message> pop_message();
 
 	void beep() const;
+
+	void set_icon(const Ref<Image> &p_icon);
 
 	void window_create(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 	void window_create_popup(DisplayServer::WindowID p_window_id, DisplayServer::WindowID p_parent_id, Rect2i p_rect);

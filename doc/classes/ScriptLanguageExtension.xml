@@ -215,7 +215,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="_has_named_classes" qualifiers="virtual required const" deprecated="This method is not called by the engine.">
+		<method name="_has_named_classes" qualifiers="virtual const" deprecated="This method is not called by the engine.">
 			<return type="bool" />
 			<description>
 			</description>

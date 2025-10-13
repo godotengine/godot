@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GodotInstance" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Provides access to an embedded Godot instance.
+	</brief_description>
+	<description>
+		GodotInstance represents a running Godot instance that is controlled from an outside codebase, without a perpetual main loop. It is created by the C API [code]libgodot_create_godot_instance[/code]. Only one may be created per process.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="focus_in">
+			<return type="void" />
+			<description>
+				Notifies the instance that it is now in focus.
+			</description>
+		</method>
+		<method name="focus_out">
+			<return type="void" />
+			<description>
+				Notifies the instance that it is now not in focus.
+			</description>
+		</method>
+		<method name="is_started">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this instance has been fully started.
+			</description>
+		</method>
+		<method name="iteration">
+			<return type="bool" />
+			<description>
+				Runs a single iteration of the main loop. Returns [code]true[/code] if the engine is attempting to quit.
+			</description>
+		</method>
+		<method name="pause">
+			<return type="void" />
+			<description>
+				Notifies the instance that it is going to be paused.
+			</description>
+		</method>
+		<method name="resume">
+			<return type="void" />
+			<description>
+				Notifies the instance that it is being resumed.
+			</description>
+		</method>
+		<method name="start">
+			<return type="bool" />
+			<description>
+				Finishes this instance's startup sequence. Returns [code]true[/code] on success.
+			</description>
+		</method>
+	</methods>
+</class>

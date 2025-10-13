@@ -287,12 +287,12 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 	}
 }
 ClusterBuilderSharedDataRD::~ClusterBuilderSharedDataRD() {
-	RD::get_singleton()->free(sphere_vertex_buffer);
-	RD::get_singleton()->free(sphere_index_buffer);
-	RD::get_singleton()->free(cone_vertex_buffer);
-	RD::get_singleton()->free(cone_index_buffer);
-	RD::get_singleton()->free(box_vertex_buffer);
-	RD::get_singleton()->free(box_index_buffer);
+	RD::get_singleton()->free_rid(sphere_vertex_buffer);
+	RD::get_singleton()->free_rid(sphere_index_buffer);
+	RD::get_singleton()->free_rid(cone_vertex_buffer);
+	RD::get_singleton()->free_rid(cone_index_buffer);
+	RD::get_singleton()->free_rid(box_vertex_buffer);
+	RD::get_singleton()->free_rid(box_index_buffer);
 
 	cluster_render.cluster_render_shader.version_free(cluster_render.shader_version);
 	cluster_store.cluster_store_shader.version_free(cluster_store.shader_version);
@@ -306,9 +306,9 @@ void ClusterBuilderRD::_clear() {
 		return;
 	}
 
-	RD::get_singleton()->free(cluster_buffer);
-	RD::get_singleton()->free(cluster_render_buffer);
-	RD::get_singleton()->free(element_buffer);
+	RD::get_singleton()->free_rid(cluster_buffer);
+	RD::get_singleton()->free_rid(cluster_render_buffer);
+	RD::get_singleton()->free_rid(element_buffer);
 	cluster_buffer = RID();
 	cluster_render_buffer = RID();
 	element_buffer = RID();
@@ -319,7 +319,7 @@ void ClusterBuilderRD::_clear() {
 	render_element_max = 0;
 	render_element_count = 0;
 
-	RD::get_singleton()->free(framebuffer);
+	RD::get_singleton()->free_rid(framebuffer);
 	framebuffer = RID();
 
 	cluster_render_uniform_set = RID();
@@ -636,5 +636,5 @@ ClusterBuilderRD::ClusterBuilderRD() {
 
 ClusterBuilderRD::~ClusterBuilderRD() {
 	_clear();
-	RD::get_singleton()->free(state_uniform);
+	RD::get_singleton()->free_rid(state_uniform);
 }

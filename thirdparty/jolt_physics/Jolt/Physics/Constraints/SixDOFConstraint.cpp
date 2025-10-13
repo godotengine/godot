@@ -444,12 +444,12 @@ void SixDOFConstraint::SetupVelocityConstraint(float inDeltaTime)
 	if (IsRotationFullyConstrained())
 	{
 		// All rotation locked: Setup rotation constraint
-		mRotationConstraintPart.CalculateConstraintProperties(*mBody1, Mat44::sRotation(mBody1->GetRotation()), *mBody2, Mat44::sRotation(mBody2->GetRotation()));
+		mRotationConstraintPart.CalculateConstraintProperties(*mBody1, Mat44::sRotation(rotation1), *mBody2, Mat44::sRotation(rotation2));
 	}
 	else if (IsRotationConstrained() || mRotationMotorActive)
 	{
 		// GetRotationInConstraintSpace without redoing the calculation of constraint_body1_to_world
-		Quat constraint_body2_to_world = mBody2->GetRotation() * mConstraintToBody2;
+		Quat constraint_body2_to_world = rotation2 * mConstraintToBody2;
 		Quat q = constraint_body1_to_world.Conjugated() * constraint_body2_to_world;
 
 		// Use swing twist constraint part

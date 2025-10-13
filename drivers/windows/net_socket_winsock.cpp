@@ -217,7 +217,8 @@ void NetSocketWinSock::_set_socket(SOCKET p_sock, IP::Type p_ip_type, bool p_is_
 	_is_stream = p_is_stream;
 }
 
-Error NetSocketWinSock::open(Type p_sock_type, IP::Type &ip_type) {
+Error NetSocketWinSock::open(Family p_family, Type p_sock_type, IP::Type &ip_type) {
+	ERR_FAIL_COND_V(p_family != Family::INET, ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(ip_type > IP::TYPE_ANY || ip_type < IP::TYPE_NONE, ERR_INVALID_PARAMETER);
 
@@ -275,12 +276,13 @@ void NetSocketWinSock::close() {
 	_is_stream = false;
 }
 
-Error NetSocketWinSock::bind(IPAddress p_addr, uint16_t p_port) {
+Error NetSocketWinSock::bind(Address p_addr) {
+	ERR_FAIL_COND_V(!p_addr.is_inet(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
-	ERR_FAIL_COND_V(!_can_use_ip(p_addr, true), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!_can_use_ip(p_addr.ip(), true), ERR_INVALID_PARAMETER);
 
 	sockaddr_storage addr;
-	size_t addr_size = _set_addr_storage(&addr, p_addr, p_port, _ip_type);
+	size_t addr_size = _set_addr_storage(&addr, p_addr.ip(), p_addr.port(), _ip_type);
 
 	if (::bind(_sock, (struct sockaddr *)&addr, addr_size) != 0) {
 		NetError err = _get_socket_error();
@@ -305,12 +307,13 @@ Error NetSocketWinSock::listen(int p_max_pending) {
 	return OK;
 }
 
-Error NetSocketWinSock::connect_to_host(IPAddress p_host, uint16_t p_port) {
+Error NetSocketWinSock::connect_to_host(Address p_addr) {
+	ERR_FAIL_COND_V(!p_addr.is_inet(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
-	ERR_FAIL_COND_V(!_can_use_ip(p_host, false), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!_can_use_ip(p_addr.ip(), false), ERR_INVALID_PARAMETER);
 
 	struct sockaddr_storage addr;
-	size_t addr_size = _set_addr_storage(&addr, p_host, p_port, _ip_type);
+	size_t addr_size = _set_addr_storage(&addr, p_addr.ip(), p_addr.port(), _ip_type);
 
 	if (::WSAConnect(_sock, (struct sockaddr *)&addr, addr_size, nullptr, nullptr, nullptr, nullptr) != 0) {
 		NetError err = _get_socket_error();
@@ -567,7 +570,7 @@ int NetSocketWinSock::get_available_bytes() const {
 	return len;
 }
 
-Error NetSocketWinSock::get_socket_address(IPAddress *r_ip, uint16_t *r_port) const {
+Error NetSocketWinSock::get_socket_address(Address *r_addr) const {
 	ERR_FAIL_COND_V(!is_open(), FAILED);
 
 	struct sockaddr_storage saddr;
@@ -577,11 +580,16 @@ Error NetSocketWinSock::get_socket_address(IPAddress *r_ip, uint16_t *r_port) co
 		print_verbose("Error when reading local socket address.");
 		return FAILED;
 	}
-	_set_ip_port(&saddr, r_ip, r_port);
+	IPAddress ip;
+	uint16_t port = 0;
+	_set_ip_port(&saddr, &ip, &port);
+	if (r_addr) {
+		*r_addr = Address(ip, port);
+	}
 	return OK;
 }
 
-Ref<NetSocket> NetSocketWinSock::accept(IPAddress &r_ip, uint16_t &r_port) {
+Ref<NetSocket> NetSocketWinSock::accept(Address &r_addr) {
 	Ref<NetSocket> out;
 	ERR_FAIL_COND_V(!is_open(), out);
 
@@ -594,7 +602,10 @@ Ref<NetSocket> NetSocketWinSock::accept(IPAddress &r_ip, uint16_t &r_port) {
 		return out;
 	}
 
-	_set_ip_port(&their_addr, &r_ip, &r_port);
+	IPAddress ip;
+	uint16_t port = 0;
+	_set_ip_port(&their_addr, &ip, &port);
+	r_addr = Address(ip, port);
 
 	NetSocketWinSock *ns = memnew(NetSocketWinSock);
 	ns->_set_socket(fd, _ip_type, _is_stream);

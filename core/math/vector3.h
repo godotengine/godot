@@ -106,6 +106,20 @@ struct [[nodiscard]] Vector3 {
 		return Vector3(MAX(x, p_scalar), MAX(y, p_scalar), MAX(z, p_scalar));
 	}
 
+	Vector3 clamp(const Vector3 &p_min, const Vector3 &p_max) const {
+		return Vector3(
+				CLAMP(x, p_min.x, p_max.x),
+				CLAMP(y, p_min.y, p_max.y),
+				CLAMP(z, p_min.z, p_max.z));
+	}
+
+	Vector3 clampf(real_t p_min, real_t p_max) const {
+		return Vector3(
+				CLAMP(x, p_min, p_max),
+				CLAMP(y, p_min, p_max),
+				CLAMP(z, p_min, p_max));
+	}
+
 	_FORCE_INLINE_ real_t length() const;
 	_FORCE_INLINE_ real_t length_squared() const;
 
@@ -151,8 +165,6 @@ struct [[nodiscard]] Vector3 {
 	_FORCE_INLINE_ Vector3 sign() const;
 	_FORCE_INLINE_ Vector3 ceil() const;
 	_FORCE_INLINE_ Vector3 round() const;
-	Vector3 clamp(const Vector3 &p_min, const Vector3 &p_max) const;
-	Vector3 clampf(real_t p_min, real_t p_max) const;
 
 	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_to) const;
 	_FORCE_INLINE_ real_t distance_squared_to(const Vector3 &p_to) const;
@@ -201,6 +213,13 @@ struct [[nodiscard]] Vector3 {
 
 	explicit operator String() const;
 	operator Vector3i() const;
+
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_real(x);
+		h = hash_murmur3_one_real(y, h);
+		h = hash_murmur3_one_real(z, h);
+		return hash_fmix32(h);
+	}
 
 	constexpr Vector3() :
 			x(0), y(0), z(0) {}

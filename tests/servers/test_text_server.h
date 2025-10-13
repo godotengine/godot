@@ -33,7 +33,7 @@
 #ifdef TOOLS_ENABLED
 
 #include "editor/themes/builtin_fonts.gen.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 #include "tests/test_macros.h"
 
 namespace TestTextServer {
@@ -497,7 +497,7 @@ TEST_SUITE("[TextServer]") {
 						{ U"test\r test", { 0, 5, 5, 10 } },
 						{ U"test\r test \r test", { 0, 5, 5, 12, 12, 17 } },
 					};
-					for (size_t j = 0; j < std::size(cases); j++) {
+					for (size_t j = 0; j < std_size(cases); j++) {
 						RID ctx = ts->create_shaped_text();
 						CHECK_FALSE_MESSAGE(ctx == RID(), "Creating text buffer failed.");
 						bool ok = ts->shaped_text_add_string(ctx, cases[j].text, font, 16);

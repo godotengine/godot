@@ -81,14 +81,25 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 		inout hvec3 diffuse_light, inout hvec3 specular_light) {
 #if defined(LIGHT_CODE_USED)
 	// Light is written by the user shader.
-	mat4 inv_view_matrix = scene_data_block.data.inv_view_matrix;
-	mat4 read_view_matrix = scene_data_block.data.view_matrix;
+	mat4 inv_view_matrix = transpose(mat4(scene_data_block.data.inv_view_matrix[0],
+			scene_data_block.data.inv_view_matrix[1],
+			scene_data_block.data.inv_view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+	mat4 read_view_matrix = transpose(mat4(scene_data_block.data.view_matrix[0],
+			scene_data_block.data.view_matrix[1],
+			scene_data_block.data.view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
 
 #ifdef USING_MOBILE_RENDERER
-	mat4 read_model_matrix = instances.data[draw_call.instance_index].transform;
+	uint instance_index = draw_call.instance_index;
 #else
-	mat4 read_model_matrix = instances.data[instance_index_interp].transform;
+	uint instance_index = instance_index_interp;
 #endif
+
+	mat4 read_model_matrix = transpose(mat4(instances.data[instance_index].transform[0],
+			instances.data[instance_index].transform[1],
+			instances.data[instance_index].transform[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
 
 #undef projection_matrix
 #define projection_matrix scene_data_block.data.projection_matrix

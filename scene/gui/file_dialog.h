@@ -131,6 +131,9 @@ public:
 
 	enum ItemMenu {
 		ITEM_MENU_COPY_PATH,
+		ITEM_MENU_DELETE,
+		ITEM_MENU_REFRESH,
+		ITEM_MENU_NEW_FOLDER,
 		ITEM_MENU_SHOW_IN_EXPLORER,
 		ITEM_MENU_SHOW_BUNDLE_CONTENT,
 	};
@@ -143,13 +146,16 @@ public:
 		CUSTOMIZATION_FAVORITES,
 		CUSTOMIZATION_RECENT,
 		CUSTOMIZATION_LAYOUT,
+		CUSTOMIZATION_OVERWRITE_WARNING,
+		CUSTOMIZATION_DELETE,
 		CUSTOMIZATION_MAX
 	};
 
-	typedef Ref<Texture2D> (*GetIconFunc)(const String &);
 	typedef void (*RegisterFunc)(FileDialog *);
 
-	inline static GetIconFunc get_icon_func = nullptr;
+	inline static Callable get_icon_callback;
+	inline static Callable get_thumbnail_callback;
+
 	inline static RegisterFunc register_func = nullptr;
 	inline static RegisterFunc unregister_func = nullptr;
 
@@ -158,8 +164,10 @@ private:
 	PropertyListHelper property_helper;
 
 	inline static bool default_show_hidden_files = false;
+	static inline DisplayMode default_display_mode = DISPLAY_THUMBNAILS;
 	bool show_hidden_files = false;
 	bool use_native_dialog = false;
+	bool can_create_folders = true;
 	bool customization_flags[CUSTOMIZATION_MAX]; // Initialized to true in the constructor.
 
 	inline static LocalVector<String> global_favorites;
@@ -189,6 +197,7 @@ private:
 	String root_prefix;
 	String full_dir;
 
+	Callable thumbnail_callback;
 	bool is_invalidating = false;
 
 	VBoxContainer *main_vbox = nullptr;
@@ -237,6 +246,7 @@ private:
 	FlowContainer *flow_checkbox_options = nullptr;
 	GridContainer *grid_select_options = nullptr;
 
+	ConfirmationDialog *delete_dialog = nullptr;
 	ConfirmationDialog *make_dir_dialog = nullptr;
 	LineEdit *new_dir_name = nullptr;
 	AcceptDialog *mkdirerr = nullptr;
@@ -285,10 +295,12 @@ private:
 	void _item_menu_id_pressed(int p_option);
 	void _empty_clicked(const Vector2 &p_pos, MouseButton p_button);
 	void _item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_button);
+	void _popup_menu(const Vector2 &p_pos, int p_for_item);
 
 	void _focus_file_text();
 
 	int _get_selected_file_idx();
+	String _get_item_path(int p_idx) const;
 	void _file_list_multi_selected(int p_item, bool p_selected);
 	void _file_list_selected(int p_item);
 	void _file_list_item_activated(int p_item);
@@ -303,6 +315,7 @@ private:
 	void _filename_filter_changed();
 	void _filename_filter_selected();
 	void _file_list_select_first();
+	void _delete_confirm();
 	void _make_dir();
 	void _make_dir_confirm();
 	void _go_up();
@@ -338,6 +351,7 @@ private:
 	void _native_dialog_cb_with_options(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options);
 
 	bool _is_open_should_be_disabled();
+	void _thumbnail_callback(const Ref<Texture2D> &p_texture, const String &p_path);
 
 	TypedArray<Dictionary> _get_options() const;
 	void _update_option_controls();
@@ -408,6 +422,12 @@ public:
 	void set_display_mode(DisplayMode p_mode);
 	DisplayMode get_display_mode() const;
 
+	static void set_favorite_list(const PackedStringArray &p_favorites);
+	static PackedStringArray get_favorite_list();
+
+	static void set_recent_list(const PackedStringArray &p_recents);
+	static PackedStringArray get_recent_list();
+
 	void set_customization_flag_enabled(Customization p_flag, bool p_enabled);
 	bool is_customization_flag_enabled(Customization p_flag) const;
 
@@ -423,6 +443,10 @@ public:
 	bool get_show_filename_filter() const;
 
 	static void set_default_show_hidden_files(bool p_show);
+	static void set_default_display_mode(DisplayMode p_mode);
+
+	static void set_get_icon_callback(const Callable &p_callback);
+	static void set_get_thumbnail_callback(const Callable &p_callback);
 
 	void invalidate();
 

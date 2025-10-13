@@ -29,6 +29,9 @@
 /**************************************************************************/
 
 #include "audio_stream_ogg_vorbis.h"
+#include "core/io/file_access.h"
+
+#include "core/templates/rb_map.h"
 
 #include <ogg/ogg.h>
 

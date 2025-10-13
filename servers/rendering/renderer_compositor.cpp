@@ -33,7 +33,7 @@
 #include "core/config/project_settings.h"
 
 #ifndef XR_DISABLED
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 #endif // XR_DISABLED
 
 RendererCompositor *RendererCompositor::singleton = nullptr;

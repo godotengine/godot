@@ -55,7 +55,7 @@
 #include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/os/keyboard.h"
@@ -1432,7 +1432,7 @@ void CSharpLanguage::tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_int
 
 	CSharpInstance *csharp_instance = CSharpInstance::create_for_managed_type(p_unmanaged, script.ptr(), gchandle);
 
-	p_unmanaged->set_script_and_instance(script, csharp_instance);
+	p_unmanaged->set_script_instance(csharp_instance);
 
 	csharp_instance->connect_event_signals();
 }

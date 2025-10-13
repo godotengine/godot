@@ -110,7 +110,7 @@ void OpenXRInteractionProfileMetadata::register_io_path(const String &p_interact
 	}
 }
 
-bool OpenXRInteractionProfileMetadata::has_top_level_path(const String p_openxr_path) const {
+bool OpenXRInteractionProfileMetadata::has_top_level_path(const String &p_openxr_path) const {
 	for (int i = 0; i < top_level_paths.size(); i++) {
 		if (top_level_paths[i].openxr_path == p_openxr_path) {
 			return true;
@@ -120,7 +120,7 @@ bool OpenXRInteractionProfileMetadata::has_top_level_path(const String p_openxr_
 	return false;
 }
 
-String OpenXRInteractionProfileMetadata::get_top_level_name(const String p_openxr_path) const {
+String OpenXRInteractionProfileMetadata::get_top_level_name(const String &p_openxr_path) const {
 	for (int i = 0; i < top_level_paths.size(); i++) {
 		if (top_level_paths[i].openxr_path == p_openxr_path) {
 			return top_level_paths[i].display_name;
@@ -130,7 +130,7 @@ String OpenXRInteractionProfileMetadata::get_top_level_name(const String p_openx
 	return String();
 }
 
-String OpenXRInteractionProfileMetadata::get_top_level_extension(const String p_openxr_path) const {
+String OpenXRInteractionProfileMetadata::get_top_level_extension(const String &p_openxr_path) const {
 	for (int i = 0; i < top_level_paths.size(); i++) {
 		if (top_level_paths[i].openxr_path == p_openxr_path) {
 			return top_level_paths[i].openxr_extension_name;
@@ -140,7 +140,7 @@ String OpenXRInteractionProfileMetadata::get_top_level_extension(const String p_
 	return XR_PATH_UNSUPPORTED_NAME;
 }
 
-bool OpenXRInteractionProfileMetadata::has_interaction_profile(const String p_openxr_path) const {
+bool OpenXRInteractionProfileMetadata::has_interaction_profile(const String &p_openxr_path) const {
 	for (const InteractionProfile &interaction_profile : interaction_profiles) {
 		if (interaction_profile.openxr_path == p_openxr_path) {
 			return true;
@@ -150,7 +150,7 @@ bool OpenXRInteractionProfileMetadata::has_interaction_profile(const String p_op
 	return false;
 }
 
-String OpenXRInteractionProfileMetadata::get_interaction_profile_extension(const String p_openxr_path) const {
+String OpenXRInteractionProfileMetadata::get_interaction_profile_extension(const String &p_openxr_path) const {
 	for (const InteractionProfile &interaction_profile : interaction_profiles) {
 		if (interaction_profile.openxr_path == p_openxr_path) {
 			return interaction_profile.openxr_extension_name;
@@ -160,7 +160,7 @@ String OpenXRInteractionProfileMetadata::get_interaction_profile_extension(const
 	return XR_PATH_UNSUPPORTED_NAME;
 }
 
-const OpenXRInteractionProfileMetadata::InteractionProfile *OpenXRInteractionProfileMetadata::get_profile(const String p_openxr_path) const {
+const OpenXRInteractionProfileMetadata::InteractionProfile *OpenXRInteractionProfileMetadata::get_profile(const String &p_openxr_path) const {
 	for (const InteractionProfile &interaction_profile : interaction_profiles) {
 		if (interaction_profile.openxr_path == p_openxr_path) {
 			return &interaction_profile;
@@ -170,7 +170,7 @@ const OpenXRInteractionProfileMetadata::InteractionProfile *OpenXRInteractionPro
 	return nullptr;
 }
 
-bool OpenXRInteractionProfileMetadata::InteractionProfile::has_io_path(const String p_io_path) const {
+bool OpenXRInteractionProfileMetadata::InteractionProfile::has_io_path(const String &p_io_path) const {
 	for (int i = 0; i < io_paths.size(); i++) {
 		if (io_paths[i].openxr_path == p_io_path) {
 			return true;
@@ -180,7 +180,7 @@ bool OpenXRInteractionProfileMetadata::InteractionProfile::has_io_path(const Str
 	return false;
 }
 
-const OpenXRInteractionProfileMetadata::IOPath *OpenXRInteractionProfileMetadata::InteractionProfile::get_io_path(const String p_io_path) const {
+const OpenXRInteractionProfileMetadata::IOPath *OpenXRInteractionProfileMetadata::InteractionProfile::get_io_path(const String &p_io_path) const {
 	for (int i = 0; i < io_paths.size(); i++) {
 		if (io_paths[i].openxr_path == p_io_path) {
 			return &io_paths[i];
@@ -190,7 +190,7 @@ const OpenXRInteractionProfileMetadata::IOPath *OpenXRInteractionProfileMetadata
 	return nullptr;
 }
 
-const OpenXRInteractionProfileMetadata::IOPath *OpenXRInteractionProfileMetadata::get_io_path(const String p_interaction_profile, const String p_io_path) const {
+const OpenXRInteractionProfileMetadata::IOPath *OpenXRInteractionProfileMetadata::get_io_path(const String &p_interaction_profile, const String &p_io_path) const {
 	const OpenXRInteractionProfileMetadata::InteractionProfile *profile = get_profile(p_interaction_profile);
 	if (profile != nullptr) {
 		return profile->get_io_path(p_io_path);

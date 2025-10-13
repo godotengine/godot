@@ -251,7 +251,11 @@ void vertex_shader(in vec3 vertex,
 		in vec3 tangent_highp,
 		in vec3 binormal_highp,
 #endif
-		in uint instance_index, in uint multimesh_offset, in mat4 model_matrix,
+		in uint instance_index, in uint multimesh_offset, in mat3x4 in_model_matrix,
+#ifdef USE_DOUBLE_PRECISION
+		in vec3 model_precision,
+		in vec3 view_precision,
+#endif
 #ifdef MODE_DUAL_PARABOLOID
 		in float dual_paraboloid_side,
 		in float z_far,
@@ -264,8 +268,8 @@ void vertex_shader(in vec3 vertex,
 #ifdef USE_MULTIVIEW
 		in vec4 scene_eye_offset,
 #endif
-		in mat4 view_matrix,
-		in mat4 inv_view_matrix,
+		in mat3x4 in_view_matrix,
+		in mat3x4 in_inv_view_matrix,
 		in vec2 viewport_size,
 		in uint scene_directional_light_count,
 		out vec4 screen_position_output) {
@@ -274,16 +278,15 @@ void vertex_shader(in vec3 vertex,
 	vec4 color_highp = color_attrib;
 #endif
 
-#ifdef USE_DOUBLE_PRECISION
-	vec3 model_precision = vec3(model_matrix[0][3], model_matrix[1][3], model_matrix[2][3]);
-	model_matrix[0][3] = 0.0;
-	model_matrix[1][3] = 0.0;
-	model_matrix[2][3] = 0.0;
-	vec3 view_precision = vec3(inv_view_matrix[0][3], inv_view_matrix[1][3], inv_view_matrix[2][3]);
-	inv_view_matrix[0][3] = 0.0;
-	inv_view_matrix[1][3] = 0.0;
-	inv_view_matrix[2][3] = 0.0;
-#endif
+	mat4 inv_view_matrix = transpose(mat4(in_inv_view_matrix[0],
+			in_inv_view_matrix[1],
+			in_inv_view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+
+	mat4 model_matrix = transpose(mat4(in_model_matrix[0],
+			in_model_matrix[1],
+			in_model_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
 
 	mat3 model_normal_matrix;
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
@@ -432,8 +435,13 @@ void vertex_shader(in vec3 vertex,
 
 	float roughness_highp = 1.0;
 
+	mat4 read_view_matrix = transpose(mat4(in_view_matrix[0],
+			in_view_matrix[1],
+			in_view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+
 #ifdef USE_DOUBLE_PRECISION
-	mat4 modelview = view_matrix * model_matrix;
+	mat4 modelview = read_view_matrix * model_matrix;
 
 	// We separate the basis from the origin because the basis is fine with single point precision.
 	// Then we combine the translations from the model matrix and the view matrix using emulated doubles.
@@ -449,13 +457,12 @@ void vertex_shader(in vec3 vertex,
 	// Overwrite the translation part of modelview with improved precision.
 	vec3 temp_precision; // Will be ignored.
 	modelview[3].xyz = double_add_vec3(model_origin, model_precision, inv_view_matrix[3].xyz, view_precision, temp_precision);
-	modelview[3].xyz = mat3(view_matrix) * modelview[3].xyz;
+	modelview[3].xyz = mat3(read_view_matrix) * modelview[3].xyz;
 #else
-	mat4 modelview = view_matrix * model_matrix;
+	mat4 modelview = read_view_matrix * model_matrix;
 #endif
-	mat3 modelview_normal = mat3(view_matrix) * model_normal_matrix;
-	mat4 read_view_matrix = view_matrix;
-	vec2 read_viewport_size = viewport_size;
+	mat3 modelview_normal = mat3(read_view_matrix) * model_normal_matrix;
+	vec2 read_viewport_size = scene_data.viewport_size;
 
 	{
 #CODE : VERTEX
@@ -486,14 +493,14 @@ void vertex_shader(in vec3 vertex,
 //using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
 
-	vertex = (view_matrix * vec4(vertex, 1.0)).xyz;
+	vertex = (read_view_matrix * vec4(vertex, 1.0)).xyz;
 #ifdef NORMAL_USED
-	normal_highp = (view_matrix * vec4(normal_highp, 0.0)).xyz;
+	normal_highp = (read_view_matrix * vec4(normal_highp, 0.0)).xyz;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	binormal_highp = (view_matrix * vec4(binormal_highp, 0.0)).xyz;
-	tangent_highp = (view_matrix * vec4(tangent_highp, 0.0)).xyz;
+	binormal_highp = (read_view_matrix * vec4(binormal_highp, 0.0)).xyz;
+	tangent_highp = (read_view_matrix * vec4(tangent_highp, 0.0)).xyz;
 #endif
 #endif
 
@@ -694,6 +701,11 @@ void main() {
 			prev_binormal,
 #endif
 			draw_call.instance_index, draw_call.multimesh_motion_vectors_previous_offset, instances.data[draw_call.instance_index].prev_transform,
+#ifdef USE_DOUBLE_PRECISION
+			instances.data[draw_call.instance_index].prev_model_precision.xyz,
+			scene_data_block.prev_data.inv_view_precision,
+#endif
+
 #ifdef MODE_DUAL_PARABOLOID
 			scene_data_block.prev_data.dual_paraboloid_side,
 			scene_data_block.prev_data.z_far,
@@ -751,6 +763,10 @@ void main() {
 			binormal,
 #endif
 			draw_call.instance_index, draw_call.multimesh_motion_vectors_current_offset, instances.data[draw_call.instance_index].transform,
+#ifdef USE_DOUBLE_PRECISION
+			instances.data[draw_call.instance_index].model_precision.xyz,
+			scene_data_block.data.inv_view_precision,
+#endif
 #ifdef MODE_DUAL_PARABOLOID
 			scene_data_block.data.dual_paraboloid_side,
 			scene_data_block.data.z_far,
@@ -1034,7 +1050,12 @@ hvec4 fog_process(vec3 vertex) {
 	}
 
 	if (sc_use_fog_height_density()) {
-		float y = (scene_data_block.data.inv_view_matrix * vec4(vertex, 1.0)).y;
+		mat4 inv_view_matrix = transpose(mat4(scene_data_block.data.inv_view_matrix[0],
+				scene_data_block.data.inv_view_matrix[1],
+				scene_data_block.data.inv_view_matrix[2],
+				vec4(0.0, 0.0, 0.0, 1.0)));
+
+		float y = (inv_view_matrix * vec4(vertex, 1.0)).y;
 
 		float y_dist = y - scene_data_block.data.fog_height;
 
@@ -1164,16 +1185,14 @@ void main() {
 	vec2 alpha_texture_coordinate = vec2(0.0, 0.0);
 #endif // ALPHA_ANTIALIASING_EDGE_USED
 
-	mat4 inv_view_matrix = scene_data.inv_view_matrix;
-	mat4 read_model_matrix = instances.data[draw_call.instance_index].transform;
-#ifdef USE_DOUBLE_PRECISION
-	read_model_matrix[0][3] = 0.0;
-	read_model_matrix[1][3] = 0.0;
-	read_model_matrix[2][3] = 0.0;
-	inv_view_matrix[0][3] = 0.0;
-	inv_view_matrix[1][3] = 0.0;
-	inv_view_matrix[2][3] = 0.0;
-#endif
+	mat4 inv_view_matrix = transpose(mat4(scene_data.inv_view_matrix[0],
+			scene_data.inv_view_matrix[1],
+			scene_data.inv_view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+	mat4 read_model_matrix = transpose(mat4(instances.data[draw_call.instance_index].transform[0],
+			instances.data[draw_call.instance_index].transform[1],
+			instances.data[draw_call.instance_index].transform[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
 
 #ifdef LIGHT_VERTEX_USED
 	vec3 light_vertex = vertex;
@@ -1186,7 +1205,10 @@ void main() {
 		model_normal_matrix = mat3(read_model_matrix);
 	}
 
-	mat4 read_view_matrix = scene_data.view_matrix;
+	mat4 read_view_matrix = transpose(mat4(scene_data.view_matrix[0],
+			scene_data.view_matrix[1],
+			scene_data.view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
 	vec2 read_viewport_size = scene_data.viewport_size;
 
 	{
@@ -1617,7 +1639,7 @@ void main() {
 		uint index = instances.data[draw_call.instance_index].gi_offset;
 
 		// The world normal.
-		hvec3 wnormal = hmat3(scene_data.inv_view_matrix) * indirect_normal;
+		hvec3 wnormal = hmat3(inv_view_matrix) * indirect_normal;
 
 		// The SH coefficients used for evaluating diffuse data from SH probes.
 		const half c[5] = half[](
@@ -2202,6 +2224,28 @@ void main() {
 #endif
 
 	frag_color = out_color;
+
+	if (sc_use_material_debanding()) {
+		// From https://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
+		// and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
+		// NOTE: `gl_FragCoord` is in pixels (i.e. not normalized UV).
+		// This dithering must be applied after encoding changes (linear/nonlinear) have been applied
+		// as the final step before quantization from floating point to integer values.
+
+		// Iestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR.
+		// Removed the time component to avoid passing time into this shader.
+		// This dither offset was chosen because it meshes nicely with the no-offset dither that
+		// is used for Viewport debanding.
+		const vec2 dither_offset = vec2(0.535, 8.715);
+		vec3 dither = vec3(dot(vec2(171.0, 231.0), gl_FragCoord.xy + dither_offset));
+		dither.rgb = fract(dither.rgb / vec3(103.0, 71.0, 97.0));
+
+		// Subtract 0.5 to avoid slightly brightening the whole viewport.
+		// Use a dither strength of 100% rather than the 37.5% suggested by the original source.
+		// Assume that this shader always writes to a 10-bit buffer, so divide by 1023 to align
+		// to 10-bit quantization.
+		frag_color.rgb += (dither.rgb - 0.5) / 1023.0;
+	}
 
 #endif //MODE_MULTIPLE_RENDER_TARGETS
 

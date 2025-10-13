@@ -448,7 +448,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 
 	Size2 s = blend_space_draw->get_size();
 
-	if (blend_space_draw->has_focus()) {
+	if (blend_space_draw->has_focus(true)) {
 		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 		blend_space_draw->draw_rect(Rect2(Point2(), s), color, false);
 	}
@@ -812,11 +812,9 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 
 			String error;
 
-			if (!tree->is_active()) {
-				error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
-			} else if (tree->is_state_invalid()) {
-				error = tree->get_invalid_state_reason();
-			} else if (blend_space->get_triangle_count() == 0) {
+			error = tree->get_editor_error_message();
+
+			if (error.is_empty() && blend_space->get_triangle_count() == 0) {
 				error = TTR("No triangles exist, so no blending can take place.");
 			}
 

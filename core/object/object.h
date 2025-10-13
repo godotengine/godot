@@ -31,14 +31,13 @@
 #pragma once
 
 #include "core/extension/gdextension_interface.h"
+#include "core/object/gdtype.h"
 #include "core/object/message_queue.h"
 #include "core/object/object_id.h"
-#include "core/os/rw_lock.h"
 #include "core/os/spin_lock.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
-#include "core/templates/rb_map.h"
 #include "core/templates/safe_refcount.h"
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant.h"
@@ -51,7 +50,7 @@ class Ref;
 
 enum PropertyHint {
 	PROPERTY_HINT_NONE, ///< no hint provided.
-	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_less][,hide_slider][,radians_as_degrees][,degrees][,exp][,suffix:<keyword>] range.
+	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_less][,prefer_slider][,hide_control][,radians_as_degrees][,degrees][,exp][,suffix:<keyword>] range.
 	PROPERTY_HINT_ENUM, ///< hint_text= "val1,val2,val3,etc"
 	PROPERTY_HINT_ENUM_SUGGESTION, ///< hint_text= "val1,val2,val3,etc"
 	PROPERTY_HINT_EXP_EASING, /// exponential easing function (Math::ease) use "attenuation" hint string to revert (flip h), "positive_only" to exclude in-out and out-in. (ie: "attenuation,positive_only")
@@ -330,6 +329,9 @@ struct ObjectGDExtension {
 	bool is_runtime = false;
 	bool is_placeholder = false;
 #endif
+#ifndef DISABLE_DEPRECATED
+	bool legacy_unexposed_class = false;
+#endif // DISABLE_DEPRECATED
 	GDExtensionClassSet set;
 	GDExtensionClassGet get;
 	GDExtensionClassGetPropertyList get_property_list;
@@ -494,21 +496,18 @@ private:                                                                        
 	friend class ::ClassDB;                                                                                                                 \
                                                                                                                                             \
 public:                                                                                                                                     \
-	virtual const StringName *_get_class_namev() const override {                                                                           \
-		return &get_class_static();                                                                                                         \
+	virtual const GDType &_get_typev() const override {                                                                                     \
+		return get_gdtype_static();                                                                                                         \
+	}                                                                                                                                       \
+	static const GDType &get_gdtype_static() {                                                                                              \
+		static GDType *_class_static;                                                                                                       \
+		if (unlikely(!_class_static)) {                                                                                                     \
+			assign_type_static(&_class_static, #m_class, &super_type::get_gdtype_static());                                                 \
+		}                                                                                                                                   \
+		return *_class_static;                                                                                                              \
 	}                                                                                                                                       \
 	static const StringName &get_class_static() {                                                                                           \
-		static StringName _class_name_static;                                                                                               \
-		if (unlikely(!_class_name_static)) {                                                                                                \
-			assign_class_name_static(#m_class, _class_name_static);                                                                         \
-		}                                                                                                                                   \
-		return _class_name_static;                                                                                                          \
-	}                                                                                                                                       \
-	virtual bool is_class(const String &p_class) const override {                                                                           \
-		if (_get_extension() && _get_extension()->is_class(p_class)) {                                                                      \
-			return true;                                                                                                                    \
-		}                                                                                                                                   \
-		return (p_class == (#m_class)) ? true : m_inherits::is_class(p_class);                                                              \
+		return get_gdtype_static().get_name();                                                                                              \
 	}                                                                                                                                       \
                                                                                                                                             \
 protected:                                                                                                                                  \
@@ -567,6 +566,7 @@ public:                                              \
                                                      \
 private:
 
+class ClassDB;
 class ScriptInstance;
 
 class Object {
@@ -581,6 +581,31 @@ public:
 		CONNECT_APPEND_SOURCE_OBJECT = 16,
 		CONNECT_INHERITED = 32, // Used in editor builds.
 	};
+
+	// Store on each object a bitfield to quickly test whether it is derived from some "key" classes
+	// that are commonly tested in performance sensitive code.
+	// Ensure unsigned to bitpack.
+	enum class AncestralClass : unsigned int {
+		REF_COUNTED = 1 << 0,
+		NODE = 1 << 1,
+		RESOURCE = 1 << 2,
+		SCRIPT = 1 << 3,
+
+		CANVAS_ITEM = 1 << 4,
+		CONTROL = 1 << 5,
+		NODE_2D = 1 << 6,
+		COLLISION_OBJECT_2D = 1 << 7,
+		AREA_2D = 1 << 8,
+
+		NODE_3D = 1 << 9,
+		VISUAL_INSTANCE_3D = 1 << 10,
+		GEOMETRY_INSTANCE_3D = 1 << 11,
+		COLLISION_OBJECT_3D = 1 << 12,
+		PHYSICS_BODY_3D = 1 << 13,
+		MESH_INSTANCE_3D = 1 << 14,
+	};
+
+	static constexpr AncestralClass static_ancestral_class = (AncestralClass)0;
 
 	struct Connection {
 		::Signal signal;
@@ -613,7 +638,7 @@ private:
 		};
 
 		MethodInfo user;
-		HashMap<Callable, Slot, HashableHasher<Callable>> slot_map;
+		HashMap<Callable, Slot> slot_map;
 		bool removable = false;
 	};
 	friend struct _ObjectSignalLock;
@@ -623,24 +648,31 @@ private:
 #ifdef DEBUG_ENABLED
 	SafeRefCount _lock_index;
 #endif // DEBUG_ENABLED
-	bool _block_signals = false;
-	int _predelete_ok = 0;
 	ObjectID _instance_id;
 	bool _predelete();
 	void _initialize();
 	void _postinitialize();
-	bool _can_translate = true;
-	bool _emitting = false;
+
+	uint32_t _ancestry : 15;
+
+	bool _block_signals : 1;
+	bool _can_translate : 1;
+	bool _emitting : 1;
+	bool _predelete_ok : 1;
+
+public:
+	bool _is_queued_for_deletion : 1; // Set to true by SceneTree::queue_delete().
+
+private:
 #ifdef TOOLS_ENABLED
-	bool _edited = false;
+	bool _edited : 1;
 	uint32_t _edited_version = 0;
 	HashSet<String> editor_section_folding;
 #endif
 	ScriptInstance *script_instance = nullptr;
-	Variant script; // Reference does not exist yet, store it in a Variant.
 	HashMap<StringName, Variant> metadata;
 	HashMap<StringName, Variant *> metadata_properties;
-	mutable const StringName *_class_name_ptr = nullptr;
+	mutable const GDType *_gdtype_ptr = nullptr;
 
 	void _add_user_signal(const String &p_name, const Array &p_args = Array());
 	bool _has_user_signal(const StringName &p_name) const;
@@ -658,7 +690,6 @@ private:
 	_FORCE_INLINE_ void _construct_object(bool p_reference);
 
 	friend class RefCounted;
-	bool type_is_reference = false;
 
 	BinaryMutex _instance_binding_mutex;
 	struct InstanceBinding {
@@ -689,6 +720,9 @@ protected:
 		}
 		return can_die;
 	}
+
+	// Used in gdvirtual.gen.inc
+	void _gdvirtual_init_method_ptr(uint32_t p_compat_hash, void *&r_fn_ptr, const StringName &p_fn_name, bool p_compat) const;
 
 	friend class GDExtensionMethodBind;
 	_ALWAYS_INLINE_ const ObjectGDExtension *_get_extension() const { return _extension; }
@@ -747,9 +781,7 @@ protected:
 	Variant _call_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
-	virtual const StringName *_get_class_namev() const {
-		return &get_class_static();
-	}
+	virtual const GDType &_get_typev() const { return get_gdtype_static(); }
 
 	TypedArray<StringName> _get_meta_list_bind() const;
 	TypedArray<Dictionary> _get_property_list_bind() const;
@@ -757,13 +789,16 @@ protected:
 
 	void _clear_internal_resource_paths(const Variant &p_var);
 
-	friend class ClassDB;
+	friend class ::ClassDB;
 	friend class PlaceholderExtensionInstance;
 
 	static void _add_class_to_classdb(const StringName &p_class, const StringName &p_inherits);
 	static void _get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator);
 
 	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
+	void _define_ancestry(AncestralClass p_class) { _ancestry |= (uint32_t)p_class; }
+	// Prefer using derives_from.
+	bool _has_ancestry(AncestralClass p_class) const { return _ancestry & (uint32_t)p_class; }
 
 	virtual bool _uses_signal_mutex() const;
 
@@ -795,16 +830,12 @@ public:
 	static T *cast_to(Object *p_object) {
 		// This is like dynamic_cast, but faster.
 		// The reason is that we can assume no virtual and multiple inheritance.
-		static_assert(std::is_base_of_v<Object, T>, "T must be derived from Object");
-		static_assert(std::is_same_v<std::decay_t<T>, typename T::self_type>, "T must use GDCLASS or GDSOFTCLASS");
-		return p_object && p_object->is_class_ptr(T::get_class_ptr_static()) ? static_cast<T *>(p_object) : nullptr;
+		return p_object && p_object->derives_from<T>() ? static_cast<T *>(p_object) : nullptr;
 	}
 
 	template <typename T>
 	static const T *cast_to(const Object *p_object) {
-		static_assert(std::is_base_of_v<Object, T>, "T must be derived from Object");
-		static_assert(std::is_same_v<std::decay_t<T>, typename T::self_type>, "T must use GDCLASS or GDSOFTCLASS");
-		return p_object && p_object->is_class_ptr(T::get_class_ptr_static()) ? static_cast<const T *>(p_object) : nullptr;
+		return p_object && p_object->derives_from<T>() ? static_cast<const T *>(p_object) : nullptr;
 	}
 
 	enum {
@@ -816,27 +847,29 @@ public:
 	};
 
 	/* TYPE API */
-	static void assign_class_name_static(const Span<char> &p_name, StringName &r_target);
+	static void assign_type_static(GDType **type_ptr, const char *p_name, const GDType *super_type);
 
-	static const StringName &get_class_static() {
-		static StringName _class_name_static;
-		if (unlikely(!_class_name_static)) {
-			assign_class_name_static("Object", _class_name_static);
+	static const GDType &get_gdtype_static() {
+		static GDType *_class_static;
+		if (unlikely(!_class_static)) {
+			assign_type_static(&_class_static, "Object", nullptr);
 		}
-		return _class_name_static;
+		return *_class_static;
 	}
+
+	const GDType &get_gdtype() const;
+
+	static const StringName &get_class_static() { return get_gdtype_static().get_name(); }
 
 	_FORCE_INLINE_ String get_class() const { return get_class_name(); }
 
 	virtual String get_save_class() const { return get_class(); } //class stored when saving
 
-	virtual bool is_class(const String &p_class) const {
-		if (_extension && _extension->is_class(p_class)) {
-			return true;
-		}
-		return (p_class == "Object");
-	}
+	bool is_class(const String &p_class) const;
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
+
+	template <typename T>
+	bool derives_from() const;
 
 	const StringName &get_class_name() const;
 
@@ -892,22 +925,22 @@ public:
 
 	/* SCRIPT */
 
-// When in debug, some non-virtual functions can be overridden for multithreaded guards.
+// When in debug, some non-virtual functions can be overridden.
 #ifdef DEBUG_ENABLED
-#define MTVIRTUAL virtual
+#define DEBUG_VIRTUAL virtual
 #else
-#define MTVIRTUAL
+#define DEBUG_VIRTUAL
 #endif // DEBUG_ENABLED
 
-	MTVIRTUAL void set_script(const Variant &p_script);
-	MTVIRTUAL Variant get_script() const;
+	DEBUG_VIRTUAL void set_script(const Variant &p_script);
+	DEBUG_VIRTUAL Variant get_script() const;
 
-	MTVIRTUAL bool has_meta(const StringName &p_name) const;
-	MTVIRTUAL void set_meta(const StringName &p_name, const Variant &p_value);
-	MTVIRTUAL void remove_meta(const StringName &p_name);
-	MTVIRTUAL Variant get_meta(const StringName &p_name, const Variant &p_default = Variant()) const;
-	MTVIRTUAL void get_meta_list(List<StringName> *p_list) const;
-	MTVIRTUAL void merge_meta_from(const Object *p_src);
+	DEBUG_VIRTUAL bool has_meta(const StringName &p_name) const;
+	DEBUG_VIRTUAL void set_meta(const StringName &p_name, const Variant &p_value);
+	DEBUG_VIRTUAL void remove_meta(const StringName &p_name);
+	DEBUG_VIRTUAL Variant get_meta(const StringName &p_name, const Variant &p_default = Variant()) const;
+	DEBUG_VIRTUAL void get_meta_list(List<StringName> *p_list) const;
+	DEBUG_VIRTUAL void merge_meta_from(const Object *p_src);
 
 #ifdef TOOLS_ENABLED
 	void set_edited(bool p_edited);
@@ -918,9 +951,6 @@ public:
 
 	void set_script_instance(ScriptInstance *p_instance);
 	_FORCE_INLINE_ ScriptInstance *get_script_instance() const { return script_instance; }
-
-	// Some script languages can't control instance creation, so this function eases the process.
-	void set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance);
 
 	void add_user_signal(const MethodInfo &p_signal);
 
@@ -934,18 +964,18 @@ public:
 		return emit_signalp(p_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
-	MTVIRTUAL Error emit_signalp(const StringName &p_name, const Variant **p_args, int p_argcount);
-	MTVIRTUAL bool has_signal(const StringName &p_name) const;
-	MTVIRTUAL void get_signal_list(List<MethodInfo> *p_signals) const;
-	MTVIRTUAL void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const;
-	MTVIRTUAL void get_all_signal_connections(List<Connection> *p_connections) const;
-	MTVIRTUAL int get_persistent_signal_connection_count() const;
-	MTVIRTUAL void get_signals_connected_to_this(List<Connection> *p_connections) const;
+	DEBUG_VIRTUAL Error emit_signalp(const StringName &p_name, const Variant **p_args, int p_argcount);
+	DEBUG_VIRTUAL bool has_signal(const StringName &p_name) const;
+	DEBUG_VIRTUAL void get_signal_list(List<MethodInfo> *p_signals) const;
+	DEBUG_VIRTUAL void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const;
+	DEBUG_VIRTUAL void get_all_signal_connections(List<Connection> *p_connections) const;
+	DEBUG_VIRTUAL int get_persistent_signal_connection_count() const;
+	DEBUG_VIRTUAL void get_signals_connected_to_this(List<Connection> *p_connections) const;
 
-	MTVIRTUAL Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0);
-	MTVIRTUAL void disconnect(const StringName &p_signal, const Callable &p_callable);
-	MTVIRTUAL bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
-	MTVIRTUAL bool has_connections(const StringName &p_signal) const;
+	DEBUG_VIRTUAL Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0);
+	DEBUG_VIRTUAL void disconnect(const StringName &p_signal, const Callable &p_callable);
+	DEBUG_VIRTUAL bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
+	DEBUG_VIRTUAL bool has_connections(const StringName &p_signal) const;
 
 	template <typename... VarArgs>
 	void call_deferred(const StringName &p_name, VarArgs... p_args) {
@@ -964,7 +994,6 @@ public:
 	String tr(const StringName &p_message, const StringName &p_context = "") const;
 	String tr_n(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 
-	bool _is_queued_for_deletion = false; // Set to true by SceneTree::queue_delete().
 	bool is_queued_for_deletion() const;
 
 	_FORCE_INLINE_ void set_message_translation(bool p_enable) { _can_translate = p_enable; }
@@ -996,7 +1025,7 @@ public:
 
 	void clear_internal_resource_paths();
 
-	_ALWAYS_INLINE_ bool is_ref_counted() const { return type_is_reference; }
+	_ALWAYS_INLINE_ bool is_ref_counted() const { return _has_ancestry(AncestralClass::REF_COUNTED); }
 
 	void cancel_free();
 
@@ -1006,6 +1035,29 @@ public:
 
 bool predelete_handler(Object *p_object);
 void postinitialize_handler(Object *p_object);
+
+template <typename T>
+bool Object::derives_from() const {
+	static_assert(std::is_base_of_v<Object, T>, "T must be derived from Object.");
+	static_assert(std::is_same_v<std::decay_t<T>, typename T::self_type>, "T must use GDCLASS or GDSOFTCLASS.");
+
+	// If there is an explicitly set ancestral class on the type, we can use that.
+	if constexpr (T::static_ancestral_class != T::super_type::static_ancestral_class) {
+		return _has_ancestry(T::static_ancestral_class);
+	} else {
+		return is_class_ptr(T::get_class_ptr_static());
+	}
+}
+
+template <>
+inline bool Object::derives_from<Object>() const {
+	return true;
+}
+
+template <>
+inline bool Object::derives_from<const Object>() const {
+	return true;
+}
 
 class ObjectDB {
 // This needs to add up to 63, 1 bit is for reference.
@@ -1039,7 +1091,7 @@ class ObjectDB {
 	static void setup();
 
 public:
-	typedef void (*DebugFunc)(Object *p_obj);
+	typedef void (*DebugFunc)(Object *p_obj, void *p_user_data);
 
 	_ALWAYS_INLINE_ static Object *get_instance(ObjectID p_instance_id) {
 		uint64_t id = p_instance_id;
@@ -1071,6 +1123,6 @@ public:
 	template <typename T>
 	_ALWAYS_INLINE_ static Ref<T> get_ref(ObjectID p_instance_id); // Defined in ref_counted.h
 
-	static void debug_objects(DebugFunc p_func);
+	static void debug_objects(DebugFunc p_func, void *p_user_data);
 	static int get_object_count();
 };
