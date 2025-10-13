@@ -23,7 +23,7 @@
 			<return type="float" />
 			<param index="0" name="point" type="Vector2" />
 			<description>
-				Returns the angle between the node and the [param point] in radians.
+				Returns the angle difference between the node's rotation and the direction towards [param point], in radians.
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/node2d_get_angle_to.png]Illustration of the returned angle.[/url]
 			</description>
 		</method>
