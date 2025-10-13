@@ -2323,16 +2323,35 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 			glGenTextures(1, &rt->color);
 			glBindTexture(texture_target, rt->color);
 
-			if (use_multiview) {
-				glTexImage3D(texture_target, 0, rt->color_internal_format, rt->size.x, rt->size.y, rt->view_count, 0, rt->color_format, rt->color_type, nullptr);
-			} else {
-				glTexImage2D(texture_target, 0, rt->color_internal_format, rt->size.x, rt->size.y, 0, rt->color_format, rt->color_type, nullptr);
+			GLsizei width = rt->size.x;
+			GLsizei height = rt->size.y;
+			uint32_t texture_size_bytes = 0;
+			texture->mipmaps = 0;
+			for (int l = 0; l < 32; l++) {
+				texture->mipmaps += 1;
+				texture_size_bytes += width * height * rt->view_count * rt->color_format_size;
+
+				if (use_multiview) {
+					glTexImage3D(texture_target, l, rt->color_internal_format, width, height, rt->view_count, 0, rt->color_format, rt->color_type, nullptr);
+				} else {
+					glTexImage2D(texture_target, l, rt->color_internal_format, width, height, 0, rt->color_format, rt->color_type, nullptr);
+				}
+
+				if (!rt->use_mipmaps || (width == 1 && height == 1)) {
+					break;
+				}
+
+				width = MAX(1, width >> 1);
+				height = MAX(1, height >> 1);
 			}
 
 			texture->gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 			texture->gl_set_repeat(RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
-			GLES3::Utilities::get_singleton()->texture_allocated_data(rt->color, rt->size.x * rt->size.y * rt->view_count * rt->color_format_size, "Render target color texture");
+			glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+			GLES3::Utilities::get_singleton()->texture_allocated_data(rt->color, texture_size_bytes, "Render target color texture");
 		}
 #ifndef IOS_ENABLED
 		if (use_multiview) {
@@ -2965,6 +2984,25 @@ bool TextureStorage::render_target_is_using_hdr(RID p_render_target) const {
 	return rt->hdr;
 }
 
+void TextureStorage::render_target_set_use_mipmaps(RID p_render_target, bool p_use_mipmaps) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+	if (p_use_mipmaps == rt->use_mipmaps) {
+		return;
+	}
+
+	_clear_render_target(rt);
+	rt->use_mipmaps = p_use_mipmaps;
+	_update_render_target_color(rt);
+}
+
+bool TextureStorage::render_target_is_using_mipmaps(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, false);
+
+	return rt->use_mipmaps;
+}
+
 GLuint TextureStorage::render_target_get_color_internal_format(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL_V(rt, GL_RGBA8);
@@ -3372,6 +3410,25 @@ void TextureStorage::render_target_sdf_process(RID p_render_target) {
 	glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
 	glDeleteFramebuffers(1, &temp_fb);
 	glDisable(GL_SCISSOR_TEST);
+}
+
+void TextureStorage::render_target_gen_mipmaps(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	if (!rt->use_mipmaps) {
+		return;
+	}
+
+	if (rt->fbo == 0) {
+		_update_render_target_color(rt);
+	}
+
+	Config *config = Config::get_singleton();
+	bool use_multiview = rt->view_count > 1 && config->multiview_supported;
+	GLenum texture_target = use_multiview ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
+	glBindTexture(texture_target, rt->color);
+	glGenerateMipmap(texture_target);
 }
 
 void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps) {

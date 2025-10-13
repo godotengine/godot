@@ -48,6 +48,8 @@ public:
 		// use xr interface to override camera positioning and projection matrices and control output
 		bool use_xr = false;
 
+		bool use_mipmaps = false;
+
 		Size2i internal_size;
 		Size2i size;
 		uint32_t view_count;
@@ -217,6 +219,8 @@ public:
 	void viewport_initialize(RID p_rid);
 
 	void viewport_set_use_xr(RID p_viewport, bool p_use_xr);
+
+	void viewport_set_use_mipmaps(RID p_viewport, bool p_use_mipmaps);
 
 	void viewport_set_size(RID p_viewport, int p_width, int p_height);
 

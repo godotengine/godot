@@ -362,6 +362,7 @@ struct RenderTarget {
 	Size2i velocity_target_size;
 
 	bool hdr = false; // For Compatibility this effects both 2D and 3D rendering!
+	bool use_mipmaps = false;
 	GLuint color_internal_format = GL_RGBA8;
 	GLuint color_format = GL_RGBA;
 	GLuint color_type = GL_UNSIGNED_BYTE;
@@ -665,6 +666,10 @@ public:
 	virtual bool render_target_is_using_hdr(RID p_render_target) const override;
 	virtual void render_target_set_use_debanding(RID p_render_target, bool p_use_debanding) override {}
 	virtual bool render_target_is_using_debanding(RID p_render_target) const override { return false; }
+
+	virtual void render_target_set_use_mipmaps(RID p_render_target, bool p_use_mipmaps) override;
+	virtual bool render_target_is_using_mipmaps(RID p_render_target) const override;
+	virtual void render_target_gen_mipmaps(RID p_render_target) override;
 
 	// new
 	void render_target_set_as_unused(RID p_render_target) override {
