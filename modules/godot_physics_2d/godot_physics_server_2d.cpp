@@ -766,6 +766,13 @@ void GodotPhysicsServer2D::body_reset_mass_properties(RID p_body) {
 	return body->reset_mass_properties();
 }
 
+void GodotPhysicsServer2D::body_teleport(RID p_body) {
+	GodotBody2D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	return body->body_teleport();
+}
+
 void GodotPhysicsServer2D::body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
