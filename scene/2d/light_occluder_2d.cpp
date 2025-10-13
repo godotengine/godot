@@ -68,7 +68,7 @@ Rect2 OccluderPolygon2D::_edit_get_rect() const {
 
 bool OccluderPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	if (closed) {
-		return Geometry::is_point_in_polygon(p_point, Variant(polygon));
+		return Geometry::is_point_in_polygon(p_point, polygon);
 	} else {
 		const real_t d = LINE_GRAB_WIDTH / 2 + p_tolerance;
 		PoolVector<Vector2>::Read points = polygon.read();

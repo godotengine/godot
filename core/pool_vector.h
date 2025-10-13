@@ -424,6 +424,9 @@ public:
 		return find(p_val) != -1;
 	}
 
+	_FORCE_INLINE_ Span<T> span() const { return Span(read().ptr(), (uint32_t)size()); }
+	_FORCE_INLINE_ operator Span<T>() const { return span(); }
+
 	inline int size() const;
 	inline bool empty() const;
 	T get(int p_index) const;

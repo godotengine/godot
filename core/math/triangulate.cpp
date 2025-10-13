@@ -30,7 +30,7 @@
 
 #include "triangulate.h"
 
-real_t Triangulate::get_area(const Vector<Vector2> &contour) {
+real_t Triangulate::get_area(const Span<Vector2> &contour) {
 	int n = contour.size();
 	const Vector2 *c = &contour[0];
 
@@ -78,7 +78,7 @@ bool Triangulate::is_inside_triangle(real_t Ax, real_t Ay,
 	}
 }
 
-bool Triangulate::snip(const Vector<Vector2> &p_contour, int u, int v, int w, int n, const Vector<int> &V, bool relaxed) {
+bool Triangulate::snip(const Span<Vector2> &p_contour, int u, int v, int w, int n, const Span<int> &V, bool relaxed) {
 	int p;
 	real_t Ax, Ay, Bx, By, Cx, Cy, Px, Py;
 	const Vector2 *contour = &p_contour[0];
@@ -117,7 +117,7 @@ bool Triangulate::snip(const Vector<Vector2> &p_contour, int u, int v, int w, in
 	return true;
 }
 
-bool Triangulate::triangulate(const Vector<Vector2> &contour, Vector<int> &result) {
+bool Triangulate::triangulate(const Span<Vector2> &contour, Vector<int> &result) {
 	/* allocate and initialize list of Vertices in polygon */
 
 	int n = contour.size();
