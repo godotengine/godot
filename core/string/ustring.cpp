@@ -4372,6 +4372,9 @@ String String::simplify_path() const {
 				dirs.remove_at(i);
 				dirs.remove_at(i - 1);
 				i -= 2;
+			} else if (i == 0 && !found && drive.length() > 0) {
+				dirs.remove_at(i);
+				i--;
 			}
 		}
 	}
