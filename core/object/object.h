@@ -39,7 +39,6 @@
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
 #include "core/templates/safe_refcount.h"
-#include "core/variant/callable_bind.h"
 #include "core/variant/variant.h"
 
 template <typename T>
