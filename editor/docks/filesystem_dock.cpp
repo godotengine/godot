@@ -3715,12 +3715,12 @@ void FileSystemDock::_reselect_items_selected_on_drag_begin(bool reset) {
 bool FileSystemDock::_handle_mouse_button_input(Ref<InputEvent> p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed()) {
-		// XButton2 == Mouse5
+		// Forward/Mouse5
 		if (mb->get_button_index() == MouseButton::MB_XBUTTON2) {
 			_fw_history();
 			return true;
 		}
-		// XButton1 == Mouse4
+		// Back/Mouse4
 		if (mb->get_button_index() == MouseButton::MB_XBUTTON1) {
 			_bw_history();
 			return true;
