@@ -91,10 +91,10 @@ struct hb_bit_set_t
     if (pages.length < count && (unsigned) pages.allocated < count && count <= 2)
       exact_size = true; // Most sets are small and local
 
-    if (unlikely (!pages.resize (count, clear, exact_size) ||
-	!page_map.resize (count, clear)))
+    if (unlikely (!pages.resize_full (count, clear, exact_size) ||
+	!page_map.resize_full (count, clear, false)))
     {
-      pages.resize (page_map.length, clear, exact_size);
+      pages.resize_full (page_map.length, clear, exact_size);
       successful = false;
       return false;
     }
@@ -108,10 +108,11 @@ struct hb_bit_set_t
     page_map.alloc (sz);
   }
 
-  void reset ()
+  hb_bit_set_t& reset ()
   {
     successful = true;
     clear ();
+    return *this;
   }
 
   void clear ()
@@ -394,7 +395,7 @@ struct hb_bit_set_t
   {
     if (unlikely (!successful)) return;
     unsigned int count = other.pages.length;
-    if (unlikely (!resize (count, false, exact_size)))
+    if (unlikely (!resize  (count, false, exact_size)))
       return;
     population = other.population;
 
@@ -922,7 +923,7 @@ struct hb_bit_set_t
     unsigned __len__ () const { return l; }
     iter_t end () const { return iter_t (*s, false); }
     bool operator != (const iter_t& o) const
-    { return s != o.s || v != o.v; }
+    { return v != o.v; }
 
     protected:
     const hb_bit_set_t *s;
