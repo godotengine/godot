@@ -4329,24 +4329,30 @@ String String::simplify_path() const {
 			s = s.substr(p + 3);
 		}
 	}
+	bool is_sys_absolute_path = false;
 	if (!found) {
 		if (is_network_share_path()) {
 			// Network path, beginning with // or \\.
 			drive = s.substr(0, 2);
 			s = s.substr(2);
+			is_sys_absolute_path = true;
 		} else if (s.begins_with("/") || s.begins_with("\\")) {
 			// Absolute path.
 			drive = s.substr(0, 1);
 			s = s.substr(1);
+			is_sys_absolute_path = true;
 		} else {
 			// Windows-style drive path, like C:/ or C:\.
 			p = s.find(":/");
+			int first_separator = s.find_char('/');
 			if (p == -1) {
 				p = s.find(":\\");
+				first_separator = s.find_char('\\');
 			}
-			if (p != -1 && p < s.find_char('/')) {
+			if (p != -1 && p < first_separator) {
 				drive = s.substr(0, p + 2);
 				s = s.substr(p + 2);
+				is_sys_absolute_path = true;
 			}
 		}
 	}
@@ -4372,7 +4378,7 @@ String String::simplify_path() const {
 				dirs.remove_at(i);
 				dirs.remove_at(i - 1);
 				i -= 2;
-			} else if (i == 0 && !found && drive.length() > 0) {
+			} else if (i == 0 && is_sys_absolute_path) {
 				dirs.remove_at(i);
 				i--;
 			}
