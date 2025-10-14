@@ -37,6 +37,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 
@@ -149,6 +150,12 @@ void QuickSettingsDialog::_update_current_values() {
 		}
 	}
 
+	// Default directory option.
+	{
+		const String current_directory = EDITOR_GET("filesystem/directories/user_defined_project_path");
+		default_directory_input->set_text(current_directory);
+	}
+
 	// Project directory naming options.
 	{
 		const int current_directory_naming = EDITOR_GET("project_manager/directory_naming_convention");
@@ -207,6 +214,10 @@ void QuickSettingsDialog::_check_for_update_selected(int p_id) {
 
 void QuickSettingsDialog::_directory_naming_convention_selected(int p_id) {
 	_set_setting_value("project_manager/directory_naming_convention", p_id);
+}
+
+void QuickSettingsDialog::_directory_input_changed(const String &p_text) {
+	_set_setting_value("filesystem/directories/user_defined_project_path", p_text);
 }
 
 void QuickSettingsDialog::_set_setting_value(const String &p_setting, const Variant &p_value, bool p_restart_required) {
@@ -359,6 +370,19 @@ QuickSettingsDialog::QuickSettingsDialog() {
 			}
 
 			_add_setting_control(TTRC("Check for Updates"), check_for_update_button);
+		}
+
+		// Default directory input.
+		{
+			HBoxContainer *dir_container = memnew(HBoxContainer);
+
+			default_directory_input = memnew(LineEdit);
+			default_directory_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			default_directory_input->set_placeholder(EDITOR_GET("filesystem/directories/default_project_path"));
+			default_directory_input->connect("text_changed", callable_mp(this, &QuickSettingsDialog::_directory_input_changed));
+			dir_container->add_child(default_directory_input);
+
+			_add_setting_control(TTRC("Default Project Directory"), dir_container);
 		}
 
 		// Project directory naming options.
