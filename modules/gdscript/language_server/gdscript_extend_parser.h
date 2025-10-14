@@ -111,7 +111,6 @@ struct GodotRange {
 };
 
 class ExtendGDScriptParser : public GDScriptParser {
-	String path;
 	Vector<String> lines;
 
 	LSP::DocumentSymbol class_symbol;
@@ -137,7 +136,6 @@ class ExtendGDScriptParser : public GDScriptParser {
 	Array member_completions;
 
 public:
-	_FORCE_INLINE_ const String &get_path() const { return path; }
 	_FORCE_INLINE_ const Vector<String> &get_lines() const { return lines; }
 	_FORCE_INLINE_ const LSP::DocumentSymbol &get_symbols() const { return class_symbol; }
 	_FORCE_INLINE_ const Vector<LSP::Diagnostic> &get_diagnostics() const { return diagnostics; }
