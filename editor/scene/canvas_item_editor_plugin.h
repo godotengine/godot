@@ -234,6 +234,7 @@ private:
 	real_t resample_delay = 0.3;
 
 	bool selected_from_canvas = false;
+	bool had_visible_selection = false;
 
 	// Defaults are defined in clear().
 	Point2 grid_offset;
