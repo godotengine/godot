@@ -390,7 +390,7 @@ void ProjectDialog::_install_path_changed() {
 void ProjectDialog::_browse_project_path() {
 	String path = project_path->get_text();
 	if (path.is_relative_path()) {
-		path = EDITOR_GET("filesystem/directories/default_project_path");
+		path = EDITOR_GET("filesystem/directories/user_defined_project_path");
 	}
 	if (mode == MODE_IMPORT && install_path->is_visible_in_tree()) {
 		// Select last ZIP file.
@@ -421,7 +421,7 @@ void ProjectDialog::_browse_install_path() {
 
 	String path = install_path->get_text();
 	if (path.is_relative_path() || !DirAccess::dir_exists_absolute(path)) {
-		path = EDITOR_GET("filesystem/directories/default_project_path");
+		path = EDITOR_GET("filesystem/directories/user_defined_project_path");
 	}
 	if (create_dir->is_pressed()) {
 		// Select parent directory of install path.
@@ -862,7 +862,7 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 			install_path->set_text(original_dir);
 			fdialog_project->set_current_dir(original_dir);
 		} else {
-			String fav_dir = EDITOR_GET("filesystem/directories/default_project_path");
+			String fav_dir = EDITOR_GET("filesystem/directories/user_defined_project_path");
 			fav_dir = fav_dir.simplify_path();
 			if (!fav_dir.is_empty()) {
 				project_path->set_text(fav_dir);

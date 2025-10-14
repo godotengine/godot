@@ -1693,7 +1693,7 @@ ProjectManager::ProjectManager() {
 		scan_dir->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 		scan_dir->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
 		scan_dir->set_title(TTRC("Select a Folder to Scan")); // Must be after mode or it's overridden.
-		scan_dir->set_current_dir(EDITOR_GET("filesystem/directories/default_project_path"));
+		scan_dir->set_current_dir(EDITOR_GET("filesystem/directories/user_defined_project_path"));
 		add_child(scan_dir);
 		scan_dir->connect("dir_selected", callable_mp(project_list, &ProjectList::find_projects));
 
@@ -1862,7 +1862,7 @@ ProjectManager::ProjectManager() {
 
 		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::AccessType::ACCESS_FILESYSTEM);
 
-		String default_project_path = EDITOR_GET("filesystem/directories/default_project_path");
+		String default_project_path = EDITOR_GET("filesystem/directories/user_defined_project_path");
 		if (!default_project_path.is_empty() && !dir_access->dir_exists(default_project_path)) {
 			Error error = dir_access->make_dir_recursive(default_project_path);
 			if (error != OK) {
