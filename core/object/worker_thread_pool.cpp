@@ -30,6 +30,7 @@
 
 #include "worker_thread_pool.h"
 
+#include "core/object/message_queue.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/os/safe_binary_mutex.h"
