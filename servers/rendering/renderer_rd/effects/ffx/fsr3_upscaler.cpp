@@ -40,7 +40,7 @@ using namespace RendererRD;
 #define wcscpy_s wcscpy
 #endif
 
-static void fsr3_recv_message(FfxMsgType type, const wchar_t* message) {
+static void fsr3_recv_message(FfxMsgType type, const wchar_t *message) {
 #ifdef DEV_ENABLED
 	switch (type) {
 		case FFX_MESSAGE_TYPE_ERROR:
