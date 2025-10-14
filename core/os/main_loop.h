@@ -32,6 +32,7 @@
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/object.h"
+#include "core/variant/binder_common.h"
 
 class MainLoop : public Object {
 	GDCLASS(MainLoop, Object);

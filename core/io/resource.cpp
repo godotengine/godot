@@ -33,6 +33,7 @@
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
 #include "core/math/random_pcg.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/variant/container_type_validate.h"
 #include "scene/main/node.h" //only so casting works
@@ -595,6 +596,22 @@ void Resource::_set_path(const String &p_path) {
 
 void Resource::_take_over_path(const String &p_path) {
 	set_path(p_path, true);
+}
+
+void Resource::add_resource_base_extension(const StringName &p_extension, const StringName &p_class) {
+	ClassDB::add_resource_base_extension(p_extension, p_class);
+}
+
+void Resource::get_resource_base_extensions(List<String> *p_extensions) {
+	ClassDB::get_resource_base_extensions(p_extensions);
+}
+
+bool Resource::is_resource_extension(const StringName &p_extension) {
+	return ClassDB::is_resource_extension(p_extension);
+}
+
+void Resource::get_extensions_for_type(const StringName &p_class, List<String> *p_extensions) {
+	ClassDB::get_extensions_for_type(p_class, p_extensions);
 }
 
 RID Resource::get_rid() const {

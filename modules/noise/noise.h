@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/image.h"
+#include "core/object/class_db.h"
 #include "core/variant/typed_array.h"
 
 class Noise : public Resource {

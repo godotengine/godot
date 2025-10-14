@@ -31,6 +31,7 @@
 #include "curve.h"
 
 #include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
 
 const char *Curve::SIGNAL_RANGE_CHANGED = "range_changed";
 const char *Curve::SIGNAL_DOMAIN_CHANGED = "domain_changed";

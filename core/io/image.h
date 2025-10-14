@@ -32,6 +32,7 @@
 
 #include "core/io/resource.h"
 #include "core/math/color.h"
+#include "core/object/class_db.h"
 
 /**
  * Image storage class. This is used to store an image in user memory, as well as

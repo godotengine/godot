@@ -33,6 +33,7 @@
 #include "../godotsharp_defs.h"
 
 #include "core/io/config_file.h"
+#include "core/object/class_db.h"
 
 #ifndef GD_CLR_STDCALL
 #ifdef WIN32

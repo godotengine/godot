@@ -30,6 +30,8 @@
 
 #include "missing_resource.h"
 
+#include "core/object/class_db.h"
+
 bool MissingResource::_set(const StringName &p_name, const Variant &p_value) {
 	if (is_recording_properties()) {
 		properties.insert(p_name, p_value);

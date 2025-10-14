@@ -34,6 +34,7 @@
 #include "core/extension/gdextension_loader.h"
 #include "core/io/config_file.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
 
 class GDExtensionMethodBind;

@@ -33,6 +33,7 @@
 #include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "core/templates/hash_set.h"
 
 class ShaderInclude : public Resource {

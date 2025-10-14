@@ -31,6 +31,7 @@
 #include "gdscript_byte_codegen.h"
 
 #include "core/debugger/engine_debugger.h"
+#include "core/object/class_db.h"
 
 uint32_t GDScriptByteCodeGenerator::add_parameter(const StringName &p_name, bool p_is_optional, const GDScriptDataType &p_type) {
 	function->_argument_count++;

@@ -30,7 +30,9 @@
 
 #pragma once
 
+#include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
+#include "core/variant/binder_common.h"
 
 class UPNPDevice : public RefCounted {
 	GDCLASS(UPNPDevice, RefCounted);
