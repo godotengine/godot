@@ -412,6 +412,7 @@
 		<method name="get_combined_pivot_offset" qualifiers="const">
 			<return type="Vector2" />
 			<description>
+				Returns the combined value of [member pivot_offset] and [member pivot_offset_ratio], in pixels. The ratio is multiplied by the control's size.
 			</description>
 		</method>
 		<method name="get_cursor_shape" qualifiers="const">
@@ -1099,6 +1100,8 @@
 			The actual offset is the combined value of this property and [member pivot_offset_ratio].
 		</member>
 		<member name="pivot_offset_ratio" type="Vector2" setter="set_pivot_offset_ratio" getter="get_pivot_offset_ratio" default="Vector2(0, 0)">
+			Same as [member pivot_offset], but expressed as uniform vector, where [code]Vector2(0, 0)[/code] is the top-left corner of this control, and [code]Vector2(1, 1)[/code] is its bottom-right corner. Set this property to [code]Vector2(0.5, 0.5)[/code] to pivot around this control's center.
+			The actual offset is the combined value of this property and [member pivot_offset].
 		</member>
 		<member name="position" type="Vector2" setter="_set_position" getter="get_position" default="Vector2(0, 0)">
 			The node's position, relative to its containing node. It corresponds to the rectangle's top-left corner. The property is not affected by [member pivot_offset].

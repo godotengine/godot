@@ -128,6 +128,7 @@
 			<return type="String" />
 			<param index="0" name="column" type="int" />
 			<description>
+				Returns the column title's tooltip text.
 			</description>
 		</method>
 		<method name="get_column_width" qualifiers="const">
@@ -333,6 +334,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="tooltip_text" type="String" />
 			<description>
+				Sets the column title's tooltip text.
 			</description>
 		</method>
 		<method name="set_selected">

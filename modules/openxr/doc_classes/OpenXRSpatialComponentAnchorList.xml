@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OpenXRSpatialComponentAnchorList" inherits="OpenXRSpatialComponentData" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="OpenXRSpatialComponentAnchorList" inherits="OpenXRSpatialComponentData" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
+		Object for storing the queries anchor result data.
 	</brief_description>
 	<description>
+		Object for storing the queries anchor result data when calling [method OpenXRSpatialEntityExtension.query_snapshot].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,6 +13,7 @@
 			<return type="Transform3D" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Returns the transform for the entity at this [param index].
 			</description>
 		</method>
 	</methods>

@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OpenXRSpatialComponentMesh2DList" inherits="OpenXRSpatialComponentData" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="OpenXRSpatialComponentMesh2DList" inherits="OpenXRSpatialComponentData" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
+		Object for storing the queries mesh2d result data.
 	</brief_description>
 	<description>
+		Object for storing the queries 2D mesh result data when calling [method OpenXRSpatialEntityExtension.query_snapshot].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,12 +14,14 @@
 			<param index="0" name="snapshot" type="RID" />
 			<param index="1" name="index" type="int" />
 			<description>
+				Returns the mesh indices for the entity at this [param index].
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">
 			<return type="Transform3D" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Returns the transform for positioning our mesh for the entity at this [param index].
 			</description>
 		</method>
 		<method name="get_vertices" qualifiers="const">
@@ -25,6 +29,7 @@
 			<param index="0" name="snapshot" type="RID" />
 			<param index="1" name="index" type="int" />
 			<description>
+				Returns the mesh vertices for the entity at this [param index].
 			</description>
 		</method>
 	</methods>
