@@ -102,4 +102,4 @@ private:
 		Fsr3UpscalerAutogenReactivePassShaderRD autogen_reactive;
 	} shaders;
 };
-}
+} //namespace RendererRD
