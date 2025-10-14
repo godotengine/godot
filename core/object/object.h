@@ -36,11 +36,17 @@
 #include "core/object/object_id.h"
 #include "core/os/spin_lock.h"
 #include "core/templates/hash_map.h"
-#include "core/templates/hash_set.h"
 #include "core/templates/list.h"
-#include "core/templates/safe_refcount.h"
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant.h"
+
+#ifdef TOOLS_ENABLED
+#include "core/templates/hash_set.h"
+#endif
+
+#ifdef DEBUG_ENABLED
+#include "core/templates/safe_refcount.h"
+#endif
 
 template <typename T>
 class TypedArray;

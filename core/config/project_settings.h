@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/object.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/rb_map.h"
 
 template <typename T>
