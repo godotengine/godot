@@ -695,7 +695,10 @@
 			[b]Note:[/b] Setting this path to a folder with very large amounts of files/folders can slow down the project manager startup significantly. To keep the project manager quick to start up, it is recommended to set this value to a folder as "specific" as possible.
 		</member>
 		<member name="filesystem/directories/default_project_path" type="String" setter="" getter="">
-			The folder where new projects should be created by default when clicking the project manager's [b]New Project[/b] button. This can be set to the same value as [member filesystem/directories/autoscan_project_path] for convenience.
+			The default folder Godot automatically selects based on operating system. This can be set to the same value as [member filesystem/directories/autoscan_project_path] for convenience.
+		</member>
+		<member name="filesystem/directories/user_defined_project_path" type="String" setter="" getter="">
+			The folder where new projects should be created by default when clicking the project manager's [b]New Project[/b] button. The user can define this option in the Project Manager's Settings menu.
 		</member>
 		<member name="filesystem/external_programs/3d_model_editor" type="String" setter="" getter="">
 			The program that opens 3D model scene files when clicking "Open in External Program" option in Filesystem Dock. If not specified, the file will be opened in the system's default program.
