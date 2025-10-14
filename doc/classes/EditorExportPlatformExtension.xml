@@ -224,7 +224,6 @@
 		<method name="_initialize" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Initializes the plugin. Called by the editor when platform is registered.
 			</description>
 		</method>
 		<method name="_is_executable" qualifiers="virtual const">

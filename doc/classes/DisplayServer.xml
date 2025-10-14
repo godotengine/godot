@@ -2265,8 +2265,6 @@
 			<return type="void" />
 			<param index="0" name="color" type="Color" />
 			<description>
-				Sets the background color of the root window.
-				[b]Note:[/b] This method is implemented only on Android.
 			</description>
 		</method>
 		<method name="window_set_current_screen">

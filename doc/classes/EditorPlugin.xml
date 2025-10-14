@@ -468,8 +468,6 @@
 			<return type="void" />
 			<param index="0" name="dock" type="EditorDock" />
 			<description>
-				Adds a new dock.
-				When your plugin is deactivated, make sure to remove your custom dock with [method remove_dock] and free it with [method Node.queue_free].
 			</description>
 		</method>
 		<method name="add_export_platform">
@@ -688,7 +686,6 @@
 			<return type="void" />
 			<param index="0" name="dock" type="EditorDock" />
 			<description>
-				Removes [param dock] from the available docks. You should manually call [method Node.queue_free] to free it.
 			</description>
 		</method>
 		<method name="remove_export_platform">
@@ -870,7 +867,6 @@
 			Tab of Project Settings dialog, to the right of other tabs.
 		</constant>
 		<constant name="DOCK_SLOT_NONE" value="-1" enum="DockSlot">
-			The dock is closed.
 		</constant>
 		<constant name="DOCK_SLOT_LEFT_UL" value="0" enum="DockSlot">
 			Dock slot, left side, upper-left (empty in default layout).
