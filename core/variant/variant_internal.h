@@ -590,6 +590,18 @@ struct VariantInternalAccessor<IPAddress> {
 	static _FORCE_INLINE_ void set(Variant *v, IPAddress p_value) { *VariantInternal::get_string(v) = String(p_value); }
 };
 
+template <typename T>
+struct VariantInternalAccessor<TypedArray<T>> {
+	static _FORCE_INLINE_ TypedArray<T> get(const Variant *v) { return TypedArray<T>(*VariantInternal::get_array(v)); }
+	static _FORCE_INLINE_ void set(Variant *v, const TypedArray<T> &p_array) { *VariantInternal::get_array(v) = Array(p_array); }
+};
+
+template <typename K, typename V>
+struct VariantInternalAccessor<TypedDictionary<K, V>> {
+	static _FORCE_INLINE_ TypedDictionary<K, V> get(const Variant *v) { return TypedDictionary<K, V>(*VariantInternal::get_dictionary(v)); }
+	static _FORCE_INLINE_ void set(Variant *v, const TypedDictionary<K, V> &p_dictionary) { *VariantInternal::get_dictionary(v) = Dictionary(p_dictionary); }
+};
+
 template <>
 struct VariantInternalAccessor<Object *> {
 	static _FORCE_INLINE_ Object *get(const Variant *v) { return const_cast<Object *>(*VariantInternal::get_object(v)); }

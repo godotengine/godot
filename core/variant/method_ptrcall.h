@@ -335,3 +335,25 @@ struct PtrToArg<Vector<Face3>> {
 		}
 	}
 };
+
+template <typename T>
+struct PtrToArg<TypedArray<T>> {
+	_FORCE_INLINE_ static TypedArray<T> convert(const void *p_ptr) {
+		return TypedArray<T>(*reinterpret_cast<const Array *>(p_ptr));
+	}
+	typedef Array EncodeT;
+	_FORCE_INLINE_ static void encode(TypedArray<T> p_val, void *p_ptr) {
+		*(Array *)p_ptr = p_val;
+	}
+};
+
+template <typename K, typename V>
+struct PtrToArg<TypedDictionary<K, V>> {
+	_FORCE_INLINE_ static TypedDictionary<K, V> convert(const void *p_ptr) {
+		return TypedDictionary<K, V>(*reinterpret_cast<const Dictionary *>(p_ptr));
+	}
+	typedef Dictionary EncodeT;
+	_FORCE_INLINE_ static void encode(TypedDictionary<K, V> p_val, void *p_ptr) {
+		*(Dictionary *)p_ptr = p_val;
+	}
+};
