@@ -947,8 +947,7 @@ void CanvasItem::draw_set_transform(const Point2 &p_offset, real_t p_rot, const 
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 
-	Transform2D xform(p_rot, p_offset);
-	xform.scale_basis(p_scale);
+	Transform2D xform(p_rot, p_scale, 0.0, p_offset);
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(canvas_item, xform);
 }
 
